@@ -12,7 +12,6 @@ import cint_call_match as ccm  # type: ignore
 from ida.build_labels_from_romlst import (
     collect_literal_macro_refs,
     iter_expanded_lines,
-    parse_rom_word_values,
     parse_src_ops,
     parse_rom_ops_from_addr,
     parse_int_token,
@@ -24,6 +23,7 @@ from ida.build_labels_from_romlst import (
     lookup_address_map_symbol,
     source_comment_tag,
     canonical_module_for_label,
+    read_rom_word,
 )
 
 ROM = ROOT / 'roms' / 'test.rom.lst'
@@ -80,7 +80,6 @@ def assert_rom_has_label(label: str, addr: int) -> None:
 def resolve_literal_macro_target(module: str, label: str, addr: int, macro: str, wanted: str) -> tuple[int, int]:
     macros = ccm.parse_macros(ROOT)
     symbols = ccm.parse_set_symbols(ROOT)
-    words = parse_rom_word_values(ROM)
 
     p = ROOT / f'{module}.ASM'
     lines = p.read_text(errors='ignore').splitlines()
@@ -118,14 +117,21 @@ def resolve_literal_macro_target(module: str, label: str, addr: int, macro: str,
             lit_ea = parse_int_token(rtoks[1])
             if lit_ea is None:
                 raise AssertionError(f'{label}: literal cell token is not numeric: {rtoks[1]}')
-            target_ea = words.get(lit_ea)
+            target_ea = read_rom_word(lit_ea)
             if target_ea is None:
-                raise AssertionError(f'{label}: literal cell 0x{lit_ea:08X} has no ROM word value')
+                raise AssertionError(f'{label}: literal cell 0x{lit_ea:08X} has no binary ROM word value')
             return lit_ea, target_ea
     raise AssertionError(f'{label}: did not resolve {macro} {wanted}')
 
 
 def main() -> None:
+    # 0) Literal pointer cells are read from the canonical bswap32 binary,
+    #    not from .lst .word lines.
+    assert read_rom_word(0xB0BF) == 0xA130, f'word 0xB0BF expected 0xA130, got {read_rom_word(0xB0BF)!r}'
+    assert read_rom_word(0xB124) == 0xA130, f'word 0xB124 expected 0xA130, got {read_rom_word(0xB124)!r}'
+    assert read_rom_word(0xB0C5) == 0xC10253, f'word 0xB0C5 expected 0xC10253, got {read_rom_word(0xB0C5)!r}'
+    assert read_rom_word(0xC737) == 0xA15E, f'word 0xC737 expected 0xA15E, got {read_rom_word(0xC737)!r}'
+
     # 1) MESSAGE1 must pair and resolve ACTIVE_SCREEN to 0xCE43.
     ea = pair_until_symbol('CUSA', 'MESSAGE1', 0x4F43, 'ACTIVE_SCREEN')
     assert ea == 0xCE43, f'MESSAGE1 ACTIVE_SCREEN expected 0xCE43, got 0x{ea:08X}'
@@ -180,12 +186,13 @@ def main() -> None:
     # 10) If IDA has already been labelled, operands can become symbolic
     #     without a definition line in the listing (for example @CPU_WS@CMOS).
     #     In that case, absolute .set symbols must still resolve from source.
-    assert parse_rom_operand_addr('@CPU_WS@CMOS', {}) is None
+    assert parse_rom_operand_addr('@CPU_WS@CMOS') is None
     cpu_ws = source_set_symbol_addr('CPU_WS', symbols)
     assert cpu_ws == 0x808064, f'CPU_WS .set expected 0x808064, got {cpu_ws!r}'
     fifo_control = source_set_symbol_addr('FIFO_CONTROL', symbols)
     assert fifo_control == 0x980080, f'FIFO_CONTROL .set expected 0x980080, got {fifo_control!r}'
     assert canonical_module_for_label('FIFO_STATUS', 'CUSA', set(), symbols) == ''
+    assert canonical_module_for_label('startup0_ptr_0000B0C5', 'CUSA', set(), symbols) == ''
 
     # 11) VUNIT.EQU hardware/window addresses should be emitted even when a
     #     port is only referenced numerically in the listing/source walk.

@@ -4,6 +4,7 @@ from __future__ import annotations
 import bisect
 import csv
 import datetime
+import functools
 import pathlib
 import re
 import subprocess
@@ -16,8 +17,6 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import cint_call_match as ccm  # type: ignore
 
 ROM_LINE_RE = re.compile(r"^CODE:([0-9A-Fa-f]{8})\s+(.*)$")
-SUBROUTINE_RE = re.compile(r"S U B R O U T I N E")
-LABEL_COLON_RE = re.compile(r"^([A-Za-z_.$?@][A-Za-z0-9_.$?@]*):")
 LABEL_TOKEN_RE = re.compile(r"^[A-Za-z_.$?@][A-Za-z0-9_.$?@]*$")
 NUMERIC_TOKEN_RE = re.compile(r"^(?:-?\d+|0x[0-9A-Fa-f]+|[0-9A-Fa-f]+h)$")
 CALL_RE = re.compile(r"^(CALL(?:[A-Z]+)?)$", re.IGNORECASE)
@@ -31,6 +30,21 @@ BRANCH_RE = re.compile(
 RPT_RE = re.compile(r"^(RPTB|RPTS)$", re.IGNORECASE)
 ADDRESS_MAP_RE = re.compile(r"^\s*[0-9A-Fa-f]{4}:([0-9A-Fa-f]{8})\s+(\S+)\s*$")
 SET_RE = re.compile(r"^\s*([A-Za-z_.$?][A-Za-z0-9_.$?]*)\s+\.set\s+(.+)$", re.IGNORECASE)
+GLOBL_RE = re.compile(r"^\.globl\s+(.+)$", re.IGNORECASE)
+WORD_VALUE_RE = re.compile(r"\.word\s+([^\s;]+)", re.IGNORECASE)
+PTR_SUFFIX_RE = re.compile(r"_ptr_[0-9A-Fa-f]{8}$")
+PARALLEL_PREFIX_RE = re.compile(r"^\s*\|\|\s*")
+LABEL_LIKE_RE = re.compile(r"^[A-Z_.$?][A-Z0-9_.$?]*$", re.IGNORECASE)
+HEX_H_SUFFIX_RE = re.compile(r"^[0-9a-fA-F]+h$")
+DECIMAL_RE = re.compile(r"^-?\d+$")
+ADDR_SUFFIX_RE = re.compile(r"_([0-9A-Fa-f]{3,8})$")
+IF_RE = re.compile(r"^\.if\s+(.+)$", re.IGNORECASE)
+ELSE_RE = re.compile(r"^\.else\b", re.IGNORECASE)
+ENDIF_RE = re.compile(r"^\.endif\b", re.IGNORECASE)
+INCLUDE_RE = re.compile(r"^\.include\b", re.IGNORECASE)
+TOKEN_SPLIT_RE = re.compile(r"[\s,]+")
+REGISTER_RE = re.compile(r"^(AR[0-7]|R[0-7]|DP|IR[01]|BK|SP|ST|RS|RC|IE|IOF)$")
+DEFAULT_WORD_ROM = pathlib.Path(__file__).resolve().parents[2] / "roms" / "crusnusa45_maindata_interleaved_bswap32.bin"
 
 
 @dataclass
@@ -74,7 +88,7 @@ def parse_globals_equ(root: pathlib.Path) -> Set[str]:
     for p in sorted(root.glob("*.ASM")) + sorted(root.glob("*.EQU")):
         for ln in p.read_text(errors="ignore").splitlines():
             code = ccm.strip_comment(ln).strip()
-            m = re.match(r"^\.globl\s+(.+)$", code, re.IGNORECASE)
+            m = GLOBL_RE.match(code)
             if not m:
                 continue
             for tok in [t.strip() for t in m.group(1).split(",")]:
@@ -106,43 +120,6 @@ def symbol_modules_lookup(symbol_modules: Dict[str, Set[str]], sym: str) -> Set[
     return mods
 
 
-def parse_rom_labels_and_functions(rom_path: pathlib.Path) -> Tuple[Dict[str, int], Dict[int, str], Dict[str, int]]:
-    lines = rom_path.read_text(errors="ignore").splitlines()
-    label_to_addr: Dict[str, int] = {}
-    addr_to_label: Dict[int, str] = {}
-    fn_to_addr: Dict[str, int] = {}
-
-    for ln in lines:
-        m = ROM_LINE_RE.match(ln)
-        if not m:
-            continue
-        ea = int(m.group(1), 16)
-        rhs = m.group(2).strip()
-        lm = LABEL_COLON_RE.match(rhs)
-        if lm:
-            lbl = lm.group(1)
-            label_to_addr.setdefault(lbl, ea)
-            addr_to_label.setdefault(ea, lbl)
-
-    for i, ln in enumerate(lines):
-        if not SUBROUTINE_RE.search(ln):
-            continue
-        for j in range(i + 1, min(i + 12, len(lines))):
-            m = ROM_LINE_RE.match(lines[j])
-            if not m:
-                continue
-            ea = int(m.group(1), 16)
-            rhs = m.group(2).strip()
-            lm = LABEL_COLON_RE.match(rhs)
-            if not lm:
-                continue
-            fn = lm.group(1)
-            fn_to_addr.setdefault(fn, ea)
-            break
-
-    return label_to_addr, addr_to_label, fn_to_addr
-
-
 def parse_rom_word_values(rom_path: pathlib.Path) -> Dict[int, int]:
     out: Dict[int, int] = {}
     for ln in rom_path.read_text(errors="ignore").splitlines():
@@ -150,7 +127,7 @@ def parse_rom_word_values(rom_path: pathlib.Path) -> Dict[int, int]:
         if not m:
             continue
         rhs = m.group(2)
-        wm = re.search(r"\.word\s+([^\s;]+)", rhs, re.IGNORECASE)
+        wm = WORD_VALUE_RE.search(rhs)
         if not wm:
             continue
         val = parse_int_token(wm.group(1))
@@ -159,21 +136,27 @@ def parse_rom_word_values(rom_path: pathlib.Path) -> Dict[int, int]:
     return out
 
 
-def parse_rom_function_module_hints(rom_path: pathlib.Path) -> Dict[str, str]:
-    hints: Dict[str, str] = {}
-    for ln in rom_path.read_text(errors="ignore").splitlines():
-        m = ROM_LINE_RE.match(ln)
-        if not m:
-            continue
-        rhs = m.group(2)
-        lm = LABEL_COLON_RE.match(rhs.strip())
-        if not lm:
-            continue
-        lbl = lm.group(1)
-        x = re.search(r"\b([A-Za-z0-9_.$?]+)\.ASM\b", rhs, re.IGNORECASE)
-        if x:
-            hints[lbl] = x.group(1).upper()
-    return hints
+@functools.lru_cache(maxsize=4)
+def _read_binary_bytes(binary_path: str) -> bytes:
+    return pathlib.Path(binary_path).read_bytes()
+
+
+def read_rom_word(word_addr: int, binary_path: pathlib.Path = DEFAULT_WORD_ROM) -> Optional[int]:
+    """Read a 32-bit big-endian TMS word from the canonical linear ROM.
+
+    MAME/IDA addresses in this project are TMS word addresses, so word N is
+    stored at byte offset N * 4 in the bswap32 binary.
+    """
+    if word_addr < 0:
+        return None
+    try:
+        data = _read_binary_bytes(str(binary_path))
+    except OSError:
+        return None
+    off = word_addr * 4
+    if off + 4 > len(data):
+        return None
+    return int.from_bytes(data[off:off + 4], "big")
 
 
 def parse_address_map(map_path: pathlib.Path) -> Dict[str, int]:
@@ -227,7 +210,12 @@ def address_map_segment_for_ea(ea: int) -> str:
     return "0002" if ea >= 0x00C00000 else "0000"
 
 
-def upsert_address_map(map_path: pathlib.Path, entries: Iterable[Tuple[str, int]]) -> Tuple[int, int, int]:
+def upsert_address_map(
+    map_path: pathlib.Path,
+    entries: Iterable[Tuple[str, int]],
+    *,
+    prune_scoped_aliases: bool = False,
+) -> Tuple[int, int, int]:
     """Merge discovered name -> address facts into address.map.
 
     Returns (existing_count, inserted_count, updated_count).
@@ -277,16 +265,17 @@ def upsert_address_map(map_path: pathlib.Path, entries: Iterable[Tuple[str, int]
             existing[key] = (name, ea, seg)
             inserted += 1
         elif old[1] != ea:
-            existing[key] = (old[0], ea, old[2] or seg)
+            existing[key] = (old[0], ea, seg)
             updated += 1
 
-    # If a bare/global name exists at an address, remove stale scoped aliases
-    # for that same base name at the same address (e.g. _SECshared@CUSA).
-    for name, ea in bare_entries:
-        prefix = f"{name}@"
-        for old_name, (_stored_name, old_ea, _seg) in list(existing.items()):
-            if old_ea == ea and old_name.startswith(prefix):
-                del existing[old_name]
+    if prune_scoped_aliases:
+        # If a bare/global name exists at an address, remove stale scoped aliases
+        # for that same base name at the same address (e.g. _SECshared@CUSA).
+        for name, ea in bare_entries:
+            prefix = f"{name}@"
+            for old_name, (_stored_name, old_ea, _seg) in list(existing.items()):
+                if old_ea == ea and old_name.startswith(prefix):
+                    del existing[old_name]
 
     lines = list(header)
     if lines and lines[-1] != "":
@@ -298,6 +287,11 @@ def upsert_address_map(map_path: pathlib.Path, entries: Iterable[Tuple[str, int]
 
 
 def lookup_address_map_symbol(sym: str, module: str, address_map: Dict[str, int]) -> Optional[int]:
+    found = lookup_address_map_entry(sym, module, address_map)
+    return found[1] if found is not None else None
+
+
+def lookup_address_map_entry(sym: str, module: str, address_map: Dict[str, int]) -> Optional[Tuple[str, int]]:
     raw = sym.strip().strip(",").lstrip("@*#+-").strip("()")
     if not raw:
         return None
@@ -321,7 +315,7 @@ def lookup_address_map_symbol(sym: str, module: str, address_map: Dict[str, int]
             continue
         seen_candidates.add(key)
         if key in address_map:
-            return address_map[key]
+            return key, address_map[key]
     return None
 
 
@@ -340,6 +334,10 @@ def resolve_module_for_symbol(sym: str, fallback_mod: str, symbol_modules: Dict[
 
 
 def canonical_module_for_label(lbl: str, mod: str, globals_set: Set[str], set_symbols: Dict[str, int]) -> str:
+    # Synthetic pointer-cell labels include the cell address, so they are
+    # already globally unique (e.g. startup0_ptr_0000B0C5).
+    if PTR_SUFFIX_RE.search(lbl):
+        return ""
     # .EQU/.ASM .set values are absolute symbols. Treat them as global
     # even when referenced from module-scoped code.
     if lbl.upper() in set_symbols:
@@ -401,7 +399,7 @@ def iter_expanded_lines(lines: List[str], macros: Dict[str, ccm.MacroDef], symbo
         if not code.strip() or code.strip().startswith("*"):
             return
         if code.lstrip().startswith("||"):
-            code = re.sub(r"^\s*\|\|\s*", "", code)
+            code = PARALLEL_PREFIX_RE.sub("", code)
             if not code.strip():
                 return
             code = "\t" + code
@@ -415,7 +413,7 @@ def iter_expanded_lines(lines: List[str], macros: Dict[str, ccm.MacroDef], symbo
         if (
             op_idx == 1
             and len(toks) >= 3
-            and re.match(r"^[A-Z_.$?][A-Z0-9_.$?]*$", toks[0], re.IGNORECASE)
+            and LABEL_LIKE_RE.match(toks[0])
             and not toks[0].endswith(":")
         ):
             op = toks[1].upper()
@@ -444,12 +442,12 @@ def parse_int_token(tok: str) -> Optional[int]:
             return int(t, 16)
         except Exception:
             return None
-    if t.lower().endswith("h") and re.match(r"^[0-9a-fA-F]+h$", t):
+    if t.lower().endswith("h") and HEX_H_SUFFIX_RE.match(t):
         try:
             return int(t[:-1], 16)
         except Exception:
             return None
-    if re.match(r"^-?\d+$", t):
+    if DECIMAL_RE.match(t):
         try:
             return int(t, 10)
         except Exception:
@@ -457,14 +455,12 @@ def parse_int_token(tok: str) -> Optional[int]:
     return None
 
 
-def parse_rom_operand_addr(tok: str, rom_label_to_addr: Dict[str, int]) -> Optional[int]:
+def parse_rom_operand_addr(tok: str) -> Optional[int]:
     s = tok.strip().strip(",").lstrip("@")
     v = parse_int_token(s)
     if v is not None:
         return v
-    if s in rom_label_to_addr:
-        return rom_label_to_addr[s]
-    m = re.search(r"_([0-9A-Fa-f]{3,8})$", s)
+    m = ADDR_SUFFIX_RE.search(s)
     if m:
         try:
             return int(m.group(1), 16)
@@ -485,13 +481,12 @@ def resolve_paired_operand_addr(
     rom_tok: str,
     source_sym: str,
     module: str,
-    rom_label_to_addr: Dict[str, int],
     symbols: Dict[str, int],
     address_map: Dict[str, int],
     *,
     allow_source_set: bool,
 ) -> Optional[int]:
-    ea = parse_rom_operand_addr(rom_tok, rom_label_to_addr)
+    ea = parse_rom_operand_addr(rom_tok)
     if ea is not None:
         return ea
     if allow_source_set:
@@ -516,7 +511,7 @@ def macro_invocation_tag(raw_line: str, macros: Dict[str, ccm.MacroDef]) -> Opti
     if (
         op_idx == 1
         and len(toks) >= 3
-        and re.match(r"^[A-Z_.$?][A-Z0-9_.$?]*$", toks[0], re.IGNORECASE)
+        and LABEL_LIKE_RE.match(toks[0])
         and not toks[0].endswith(":")
     ):
         op = toks[1].upper()
@@ -552,18 +547,18 @@ def iter_active_raw_with_lineno(lines: List[str], base_lineno: int, symbols: Dic
             continue
         if code.startswith("*"):
             continue
-        ifm = re.match(r"^\.if\s+(.+)$", code, re.IGNORECASE)
+        ifm = IF_RE.match(code)
         if ifm:
             cond = ccm.eval_if_expr(ifm.group(1), symbols) != 0
             active_stack.append(active_stack[-1] and cond)
             continue
-        if re.match(r"^\.else\b", code, re.IGNORECASE):
+        if ELSE_RE.match(code):
             if len(active_stack) > 1:
                 parent = active_stack[-2]
                 current = active_stack[-1]
                 active_stack[-1] = parent and (not current)
             continue
-        if re.match(r"^\.endif\b", code, re.IGNORECASE):
+        if ENDIF_RE.match(code):
             if len(active_stack) > 1:
                 active_stack.pop()
             continue
@@ -589,7 +584,7 @@ def iter_expanded_lines_with_lineno(
         if not code.strip() or code.strip().startswith("*"):
             return
         if code.lstrip().startswith("||"):
-            code = re.sub(r"^\s*\|\|\s*", "", code)
+            code = PARALLEL_PREFIX_RE.sub("", code)
             if not code.strip():
                 return
             code = "\t" + code
@@ -603,7 +598,7 @@ def iter_expanded_lines_with_lineno(
         if (
             op_idx == 1
             and len(toks) >= 3
-            and re.match(r"^[A-Z_.$?][A-Z0-9_.$?]*$", toks[0], re.IGNORECASE)
+            and LABEL_LIKE_RE.match(toks[0])
             and not toks[0].endswith(":")
         ):
             op = toks[1].upper()
@@ -631,7 +626,7 @@ def parse_raw_ops_with_lineno(lines: List[str], base_lineno: int, symbols: Dict[
         if not code.strip():
             continue
         if code.lstrip().startswith("||"):
-            code = re.sub(r"^\s*\|\|\s*", "", code)
+            code = PARALLEL_PREFIX_RE.sub("", code)
             if not code.strip():
                 continue
             code = "\t" + code
@@ -660,7 +655,7 @@ def parse_ops_with_lineno(expanded_with_lineno: List[Tuple[int, str]]) -> List[T
         if not code.strip():
             continue
         if code.lstrip().startswith("||"):
-            code = re.sub(r"^\s*\|\|\s*", "", code)
+            code = PARALLEL_PREFIX_RE.sub("", code)
             if not code.strip():
                 continue
             code = "\t" + code
@@ -810,6 +805,189 @@ def collect_instruction_line_numbers(
     return out
 
 
+def source_code_label_index(
+    root: pathlib.Path,
+    symbols: Dict[str, int],
+    macros: Dict[str, ccm.MacroDef],
+) -> Set[Tuple[str, str]]:
+    """Return (symbol_key(label), MODULE) pairs that bind to executable source.
+
+    This mirrors the coverage instruction classifier, but carries pending
+    label-only lines forward so aliases like:
+
+        FOO
+        BAR
+            LDI 1,R0
+
+    are all treated as code labels.
+    """
+    non_exec_ops = {
+        "FBSS",
+        "PBSS",
+        "HIBSS",
+        "LOBSS",
+        "PHIBSS",
+        "ROMDATA",
+        "FSECT",
+        "PSECT",
+        "HSECT",
+        "DIAGTEXT",
+    }
+    data_ops = {
+        ".BYTE",
+        ".WORD",
+        ".FLOAT",
+        ".DOUBLE",
+        ".STRING",
+        ".SPACE",
+        ".USECT",
+        ".BSS",
+        ".SET",
+        "EQU",
+        "RGB",
+    }
+    out: Set[Tuple[str, str]] = set()
+    macro_exec_cache: Dict[str, bool] = {}
+
+    def op_is_code(op: str) -> bool:
+        opu = op.upper()
+        if opu in non_exec_ops or opu in data_ops:
+            return False
+        if opu.startswith("."):
+            return False
+        if opu in macros:
+            return macro_emits_executable(opu, macros, symbols, macro_exec_cache, set())
+        return True
+
+    for p in sorted(root.glob("*.ASM")):
+        mod = p.stem
+        pending: List[str] = []
+        lines = p.read_text(errors="ignore").splitlines()
+        for _lineno, raw in iter_active_raw_with_lineno(lines, 1, symbols):
+            code = ccm.strip_comment(raw)
+            if not code.strip():
+                continue
+            if code.lstrip().startswith("||"):
+                code = PARALLEL_PREFIX_RE.sub("", code)
+                if not code.strip():
+                    continue
+                code = "\t" + code
+            lbl, rest = ccm.split_optional_label(code)
+            if lbl is not None:
+                if is_pseudo_local_label(lbl):
+                    lbl = None
+                elif not rest:
+                    pending.append(lbl)
+                    continue
+                else:
+                    pending.append(lbl)
+                    code = "\t" + rest
+            op_idx, toks = ccm.split_label_and_tokens(code)
+            if not toks or op_idx >= len(toks):
+                continue
+            op = toks[op_idx].upper()
+            if op.startswith("||"):
+                op = op[2:]
+            if op_is_code(op):
+                for plbl in pending:
+                    out.add((symbol_key(plbl), mod.upper()))
+            pending.clear()
+    return out
+
+
+def source_code_label_order(
+    root: pathlib.Path,
+    symbols: Dict[str, int],
+    macros: Dict[str, ccm.MacroDef],
+) -> List[Tuple[str, str, int]]:
+    """Return executable source labels in module/source order as (MODULE, label, line)."""
+    non_exec_ops = {
+        "FBSS",
+        "PBSS",
+        "HIBSS",
+        "LOBSS",
+        "PHIBSS",
+        "ROMDATA",
+        "FSECT",
+        "PSECT",
+        "HSECT",
+        "DIAGTEXT",
+    }
+    data_ops = {
+        ".BYTE",
+        ".WORD",
+        ".FLOAT",
+        ".DOUBLE",
+        ".STRING",
+        ".SPACE",
+        ".USECT",
+        ".BSS",
+        ".SET",
+        "EQU",
+        "RGB",
+    }
+    out: List[Tuple[str, str, int]] = []
+    macro_exec_cache: Dict[str, bool] = {}
+
+    def op_is_code(op: str) -> bool:
+        opu = op.upper()
+        if opu in non_exec_ops or opu in data_ops:
+            return False
+        if opu.startswith("."):
+            return False
+        if opu in macros:
+            return macro_emits_executable(opu, macros, symbols, macro_exec_cache, set())
+        return True
+
+    for p in sorted(root.glob("*.ASM")):
+        mod = p.stem.upper()
+        pending: List[Tuple[str, int]] = []
+        lines = p.read_text(errors="ignore").splitlines()
+        for lineno, raw in iter_active_raw_with_lineno(lines, 1, symbols):
+            code = ccm.strip_comment(raw)
+            if not code.strip():
+                continue
+            if code.lstrip().startswith("||"):
+                code = PARALLEL_PREFIX_RE.sub("", code)
+                if not code.strip():
+                    continue
+                code = "\t" + code
+            lbl, rest = ccm.split_optional_label(code)
+            if lbl is not None:
+                if is_pseudo_local_label(lbl):
+                    lbl = None
+                elif not rest:
+                    pending.append((lbl, lineno))
+                    continue
+                else:
+                    pending.append((lbl, lineno))
+                    code = "\t" + rest
+            op_idx, toks = ccm.split_label_and_tokens(code)
+            if not toks or op_idx >= len(toks):
+                continue
+            op = toks[op_idx].upper()
+            if op.startswith("||"):
+                op = op[2:]
+            if op_is_code(op):
+                out.extend((mod, plbl, pline) for plbl, pline in pending)
+            pending.clear()
+    return out
+
+
+def collect_source_call_target_keys(root: pathlib.Path, symbols: Dict[str, int]) -> Set[str]:
+    out: Set[str] = set()
+    for p in sorted(root.glob("*.ASM")):
+        lines = p.read_text(errors="ignore").splitlines()
+        for _lineno, op, toks in parse_raw_ops_with_lineno(lines, 1, symbols):
+            if not CALL_RE.match(op) or len(toks) < 2:
+                continue
+            target = toks[1].strip().strip(",")
+            if LABEL_TOKEN_RE.match(target) and not NUMERIC_TOKEN_RE.match(target):
+                out.add(symbol_key(target))
+    out.add(symbol_key("_c_int00"))
+    return out
+
+
 def source_rom_data_words_between(
     lines: List[str],
     start_line: int,
@@ -875,7 +1053,7 @@ def source_has_unknown_data_between(
         return False
     for _lineno, ln in iter_active_raw_with_lineno(lines[lo - 1:hi - 1], lo, symbols):
         code = ccm.strip_comment(ln).strip()
-        if re.match(r"^\.include\b", code, re.IGNORECASE):
+        if INCLUDE_RE.match(code):
             return True
     return False
 
@@ -952,7 +1130,7 @@ def parse_src_ops(lines: List[str]) -> List[Tuple[str, List[str]]]:
         if not code.strip():
             continue
         if code.lstrip().startswith("||"):
-            code = re.sub(r"^\s*\|\|\s*", "", code)
+            code = PARALLEL_PREFIX_RE.sub("", code)
             if not code.strip():
                 continue
             # Keep column-0 label heuristics from misclassifying this as a label.
@@ -991,7 +1169,7 @@ def parse_rom_ops(rom_lines: List[str]) -> List[Tuple[int, str, List[str]]]:
                 rhs = r.strip()
         if not rhs or rhs.startswith(";") or rhs.startswith("."):
             continue
-        toks = [t for t in re.split(r"[\s,]+", rhs) if t]
+        toks = [t for t in TOKEN_SPLIT_RE.split(rhs) if t]
         if not toks:
             continue
         op = toks[0].upper()
@@ -1022,7 +1200,7 @@ def parse_rom_ops_from_addr(rom_path: pathlib.Path, start_addr: int) -> List[Tup
                 rhs = r.strip()
         if not rhs or rhs.startswith(";") or rhs.startswith("."):
             continue
-        toks = [t for t in re.split(r"[\s,]+", rhs) if t]
+        toks = [t for t in TOKEN_SPLIT_RE.split(rhs) if t]
         if not toks:
             continue
         op = toks[0].upper()
@@ -1054,7 +1232,7 @@ def collect_source_operand_symbols(root: pathlib.Path, symbols: Dict[str, int]) 
                 if not s or NUMERIC_TOKEN_RE.match(s) or not LABEL_TOKEN_RE.match(s):
                     continue
                 up = s.upper()
-                if re.match(r"^(AR[0-7]|R[0-7]|DP|IR[01]|BK|SP|ST|RS|RC|IE|IOF)$", up):
+                if REGISTER_RE.match(up):
                     continue
                 out.add((s, mod))
     return out
@@ -1064,43 +1242,55 @@ def main() -> None:
     here = pathlib.Path(__file__).resolve().parent
     root = pathlib.Path(__file__).resolve().parents[2]
     rom = pathlib.Path("/Users/j.harris/Downloads/carma/cruisin/crusnusa45_maindata_interleaved_bswap32.bin.lst")
+    word_rom = root / "roms" / "crusnusa45_maindata_interleaved_bswap32.bin"
     outp = here / "romlst_labels.tsv"
     unp = here / "romlst_unresolved.tsv"
     py_out = here / "apply_romlst_labels.py"
     run_log = here / "romlst_run_log.tsv"
+    canonical_map = here / "address.map"
+    ida_map = pathlib.Path("~/Downloads/carma/cruisin/ida-address.map").expanduser()
 
     globals_set = parse_globals_equ(root)
     symbol_modules = parse_symbol_modules(root)
     macros = ccm.parse_macros(root)
     symbols = ccm.parse_set_symbols(root)
     vunit_hardware_symbols = parse_vunit_hardware_symbols(root)
-    address_map = parse_address_map(here / "address.map")
-    rom_label_to_addr, _addr_to_label, rom_functions = parse_rom_labels_and_functions(rom)
+    ida_map_before = 0
+    ida_map_inserted = 0
+    ida_map_updated = 0
+    if ida_map.exists():
+        ida_entries = parse_address_map(ida_map)
+        ida_map_before, ida_map_inserted, ida_map_updated = upsert_address_map(canonical_map, ida_entries.items())
+    address_map = parse_address_map(canonical_map)
     rom_word_values = parse_rom_word_values(rom)
-    rom_mod_hints = parse_rom_function_module_hints(rom)
     rom_ops_all = parse_all_rom_ops(rom)
     rom_ops_addrs = [ea for ea, _op, _toks in rom_ops_all]
+    source_code_labels = source_code_label_index(root, symbols, macros)
+    source_labels_ordered = source_code_label_order(root, symbols, macros)
+    source_call_target_keys = collect_source_call_target_keys(root, symbols)
 
-    anchors: Dict[Tuple[str, str], Anchor] = {}
-    for fn, ea in sorted(rom_functions.items(), key=lambda kv: kv[1]):
-        if is_auto_sub_name(fn):
+    module_anchor_candidates: Dict[str, Anchor] = {}
+    for mod, src_fn, _line in source_labels_ordered:
+        if mod in module_anchor_candidates:
             continue
-        src_fn, qualified_mod = split_rom_qualified_label(fn)
-        mod = qualified_mod
-        hint = rom_mod_hints.get(fn, "")
-        if hint:
-            mod = hint.upper()
-        elif not mod:
-            mods = symbol_modules_lookup(symbol_modules, src_fn)
-            if len(mods) == 1:
-                mod = next(iter(mods))
-        key = (src_fn, mod)
-        anchors[key] = Anchor(src_label=src_fn, module=mod, rom_label=fn, addr=ea)
+        if is_auto_sub_name(src_fn) or is_pseudo_local_label(src_fn) or src_fn.endswith("?"):
+            continue
+        skey = symbol_key(src_fn)
+        if not mod or (skey, mod.upper()) not in source_code_labels:
+            continue
+        # Initial module walks start at the first executable source label in
+        # that module that already has an address. Other functions are still
+        # enqueued when a paired walk encounters CALL operands.
+        found = lookup_address_map_entry(src_fn, mod, address_map)
+        if found is None:
+            continue
+        map_name, ea = found
+        module_anchor_candidates[mod] = Anchor(src_label=src_fn, module=mod, rom_label=map_name, addr=ea)
 
-    # Seed startup anchor directly from ROM function label.
-    cint_ea = rom_label_to_addr.get("_c_int00")
-    if cint_ea is not None:
-        anchors[("_c_int00", "CUSA")] = Anchor(src_label="_c_int00", module="CUSA", rom_label="_c_int00", addr=cint_ea)
+    anchors: Dict[Tuple[str, str], Anchor] = {
+        (a.src_label, a.module): a
+        for a in sorted(module_anchor_candidates.values(), key=lambda a: (a.module, a.addr, a.src_label.upper()))
+    }
 
     rows: Dict[Tuple[str, str], Tuple[str, str, str, str, str, str, str, str]] = {}
     unresolved: List[Tuple[str, str, str, str, str]] = []
@@ -1122,6 +1312,23 @@ def main() -> None:
     def has_row(lbl: str, mod: str) -> bool:
         mod = canonical_module_for_label(lbl, mod, globals_set, symbols)
         return (lbl, mod) in rows
+
+    def classify_address_map_entry(lbl: str, mod: str) -> str:
+        skey = symbol_key(lbl)
+        umod = mod.upper() if mod else ""
+        if PTR_SUFFIX_RE.search(lbl):
+            return "data"
+        if umod and (skey, umod) in source_code_labels:
+            if skey in source_call_target_keys or skey in globals_set:
+                return "code"
+            return "label"
+        if not umod:
+            code_mods = {m for key, m in source_code_labels if key == skey}
+            if code_mods:
+                if skey in source_call_target_keys or skey in globals_set:
+                    return "code"
+                return "label"
+        return "data"
 
     def promote_same_address_module_aliases() -> int:
         grouped: Dict[Tuple[str, int], List[Tuple[Tuple[str, str], Tuple[str, str, str, str, str, str, str, str]]]] = {}
@@ -1147,6 +1354,16 @@ def main() -> None:
             rows[(lbl, "")] = promoted_row
             promoted += len(vals) - 1
         return promoted
+
+    # address.map is the persistent name -> address database. Seed rows from it
+    # so regenerated output does not depend on IDA's current .lst label text.
+    for map_name, ea in sorted(address_map.items(), key=lambda kv: (kv[1], kv[0].upper())):
+        if is_auto_sub_name(map_name):
+            continue
+        lbl, mod = split_rom_qualified_label(map_name)
+        if is_auto_sub_name(lbl) or is_pseudo_local_label(lbl) or lbl.endswith("?"):
+            continue
+        add_row(lbl, mod.upper() if mod else "", classify_address_map_entry(lbl, mod), ea)
 
     for (_fn, _mod), a in anchors.items():
         add_row(a.src_label, a.module, "code", a.addr)
@@ -1310,9 +1527,11 @@ def main() -> None:
                         # placeholder text (which varies between macro styles/listings).
                         if curr_line == ref_line:
                             literal_ref_idx += 1
-                            lit_ea = parse_rom_operand_addr(rtoks[1], rom_label_to_addr)
+                            lit_ea = parse_rom_operand_addr(rtoks[1])
+                            if lit_ea is None:
+                                lit_ea = lookup_address_map_symbol(rtoks[1], module, address_map)
                             if lit_ea is not None and semantic_label:
-                                target_ea = rom_word_values.get(lit_ea)
+                                target_ea = read_rom_word(lit_ea, word_rom)
                                 smod = resolve_module_for_symbol(semantic_label, module, symbol_modules, globals_set)
                                 add_row(f"{semantic_label}_ptr_{lit_ea:08X}", smod, "data", lit_ea)
                                 if target_ea is not None:
@@ -1329,7 +1548,6 @@ def main() -> None:
                         rtoks[1],
                         st,
                         tmod,
-                        rom_label_to_addr,
                         symbols,
                         address_map,
                         allow_source_set=False,
@@ -1353,7 +1571,6 @@ def main() -> None:
                         rtoks[1],
                         st,
                         tmod,
-                        rom_label_to_addr,
                         symbols,
                         address_map,
                         allow_source_set=False,
@@ -1372,7 +1589,6 @@ def main() -> None:
                         rtoks[1],
                         st,
                         tmod,
-                        rom_label_to_addr,
                         symbols,
                         address_map,
                         allow_source_set=False,
@@ -1388,7 +1604,7 @@ def main() -> None:
                 if not s or NUMERIC_TOKEN_RE.match(s) or not LABEL_TOKEN_RE.match(s):
                     continue
                 up = s.upper()
-                if re.match(r"^(AR[0-7]|R[0-7]|DP|IR[01]|BK|SP|ST|RS|RC|IE|IOF)$", up):
+                if REGISTER_RE.match(up):
                     continue
                 ridx = idx + 1
                 if ridx >= len(rtoks):
@@ -1397,7 +1613,6 @@ def main() -> None:
                     rtoks[ridx],
                     s,
                     module,
-                    rom_label_to_addr,
                     symbols,
                     address_map,
                     allow_source_set=True,
@@ -1438,8 +1653,9 @@ def main() -> None:
     promoted_aliases = promote_same_address_module_aliases()
 
     map_before, map_inserted, map_updated = upsert_address_map(
-        here / "address.map",
+        canonical_map,
         ((r[1], int(r[4], 16)) for r in rows.values()),
+        prune_scoped_aliases=True,
     )
 
     with outp.open("w", newline="") as f:
@@ -1447,6 +1663,14 @@ def main() -> None:
         w.writerow(["label", "label_norm", "module", "kind", "address", "status", "src_first5", "rom_first5"])
         for _k, r in sorted(rows.items(), key=lambda kv: (int(kv[1][4], 16), kv[1][2], kv[1][0])):
             w.writerow(r)
+
+    seed_out = here / "romlst_initial_anchors.tsv"
+    with seed_out.open("w", newline="") as f:
+        w = csv.writer(f, delimiter="\t")
+        w.writerow(["module", "label", "label_norm", "address", "map_name"])
+        for mod, a in sorted(module_anchor_candidates.items(), key=lambda kv: (kv[0], kv[1].addr, kv[1].src_label.upper())):
+            label_norm = a.src_label if (a.src_label.upper() in globals_set or not a.module) else f"{a.src_label}@{a.module}"
+            w.writerow([mod, a.src_label, label_norm, f"0x{a.addr:08X}", a.rom_label])
 
     # Keep only where module walk stopped/desynced: one row per module.
     unresolved_unique: List[Tuple[str, str, str, str, str]] = []
@@ -1531,7 +1755,9 @@ def main() -> None:
     print(f"wrote {cmout}")
     print(f"rows={len(rows)} code={code_n} data={data_n} anchors={len(anchors)} unresolved={len(unresolved_unique)}")
     print(f"promoted_aliases={promoted_aliases}")
-    print(f"address_map={here / 'address.map'} existing={map_before} inserted={map_inserted} updated={map_updated}")
+    if ida_map.exists():
+        print(f"imported_ida_map={ida_map} existing={ida_map_before} inserted={ida_map_inserted} updated={ida_map_updated}")
+    print(f"address_map={canonical_map} existing={map_before} inserted={map_inserted} updated={map_updated}")
 
     # Automatically generate standalone IDAPython apply script.
     gen = pathlib.Path(__file__).resolve().parent / "generate_spider_labels_py.py"
@@ -1567,6 +1793,10 @@ def main() -> None:
         "address_map_existing",
         "address_map_inserted",
         "address_map_updated",
+        "ida_map",
+        "ida_map_existing",
+        "ida_map_inserted",
+        "ida_map_updated",
     ]
     if run_log.exists() and run_log.stat().st_size:
         old_rows = list(csv.reader(run_log.open(newline=""), delimiter="\t"))
@@ -1602,6 +1832,10 @@ def main() -> None:
             map_before,
             map_inserted,
             map_updated,
+            str(ida_map) if ida_map.exists() else "",
+            ida_map_before,
+            ida_map_inserted,
+            ida_map_updated,
         ])
     print(f"appended {run_log}")
 

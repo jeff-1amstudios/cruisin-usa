@@ -11,8 +11,8 @@ end_ea_excl = 0x00271ACC + 1  # exclusive end
 
 lst_c = r"C:\cruisin\crusnusa45_maindata_interleaved_bswap32.bin.lst"
 lst_z = r"Z:\cruisin\crusnusa45_maindata_interleaved_bswap32.bin.lst"
-map_c = r"C:\cruisin\address.map"
-map_z = r"Z:\cruisin\address.map"
+map_c = r"C:\cruisin\ida-address.map"
+map_z = r"Z:\cruisin\ida-address.map"
 
 
 def get_const(name, default=None):
