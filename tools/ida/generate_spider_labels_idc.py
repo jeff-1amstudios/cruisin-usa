@@ -41,7 +41,7 @@ def parse_int(s: str) -> int:
 
 def sanitize_ida_name(name: str) -> str:
     # Keep names deterministic and IDA-friendly.
-    out = re.sub(r"[^A-Za-z0-9_.$?]", "_", name)
+    out = re.sub(r"[^A-Za-z0-9_.$?@]", "_", name)
     if not out:
         out = "lbl"
     if out[0].isdigit():
@@ -117,7 +117,16 @@ def choose_unique_names(rows: List[LabelRow]) -> List[Tuple[int, str, str, str]]
 
     for addr in sorted(by_addr.keys()):
         group = by_addr[addr]
-        best = group[0]
+        # Prefer explicit module-qualified source names (label@MODULE)
+        # over ROM-generated aliases (e.g. LABEL_MODULE / sub_xxx).
+        def score(r: LabelRow) -> Tuple[int, int, int, int]:
+            is_global = 1 if not r.module and "@" not in r.norm_label else 0
+            has_at = 1 if "@" in r.norm_label else 0
+            rom_alias = 1 if re.search(r"_[A-Z0-9]+$", r.norm_label) else 0
+            is_sub = 1 if r.norm_label.lower().startswith("sub_") else 0
+            return (is_global, has_at, -rom_alias, -is_sub)
+
+        best = sorted(group, key=score, reverse=True)[0]
         base = sanitize_ida_name(best.norm_label)
         candidate = base
         i = 2
@@ -155,13 +164,8 @@ def generate_idc(labels: List[Tuple[int, str, str, str]], data_marks: Dict[int, 
     lines.append("{")
     lines.append("  // Remove existing user label at this address, if any.")
     lines.append('  set_name(ea, "", SN_FORCE);')
-    lines.append("}")
-    lines.append("")
-    lines.append("static force_data_word(ea)")
-    lines.append("{")
-    lines.append("  // On C31 in IDA, one address unit is a 32-bit wide byte.")
-    lines.append("  del_items(ea, DELIT_SIMPLE, 1);")
-    lines.append("  create_byte(ea);")
+    lines.append("  // Also clear local function labels that may survive global clear.")
+    lines.append('  set_name(ea, "", SN_FORCE|SN_LOCAL);')
     lines.append("}")
     lines.append("")
     lines.append("static force_code_word(ea)")
@@ -244,7 +248,6 @@ def generate_idc(labels: List[Tuple[int, str, str, str]], data_marks: Dict[int, 
     lines.append("    vec_ea = idx;")
     lines.append("    if (!in_mapped_memory(vec_ea))")
     lines.append("      continue;")
-    lines.append("    force_data_word(vec_ea);")
     lines.append("    target = bswap32(get_wide_byte(vec_ea));")
     lines.append("    vname = vec_name(idx);")
     lines.append("    set_name_safe(vec_ea, vname);")
@@ -263,12 +266,10 @@ def generate_idc(labels: List[Tuple[int, str, str, str]], data_marks: Dict[int, 
 
     if dp0_marks:
         lines.append("  // 3) Apply DP=0 assumptions at SETDP-derived points.")
-        lines.append('  dp_reg = str2reg("dp");')
-        lines.append("  if (dp_reg != -1)")
         lines.append("  {")
         for ea in sorted(dp0_marks):
             lines.append(f"    if (in_mapped_memory(0x{ea:08X})) {{")
-            lines.append(f"      split_sreg_range(0x{ea:08X}, dp_reg, 0, SR_user);")
+            lines.append(f'      split_sreg_range(0x{ea:08X}, "dp", 0, SR_user);')
             lines.append("      dp_set = dp_set + 1;")
             lines.append("    }")
         lines.append("  }")
@@ -278,7 +279,6 @@ def generate_idc(labels: List[Tuple[int, str, str, str]], data_marks: Dict[int, 
         lines.append("  // 4) Explicit data marks.")
         for ea in sorted(data_marks.keys()):
             lines.append(f"  if (in_mapped_memory(0x{ea:08X})) {{")
-            lines.append(f"    force_data_word(0x{ea:08X});")
             dname = data_marks[ea].strip()
             if dname:
                 dname = sanitize_ida_name(dname)
@@ -291,7 +291,6 @@ def generate_idc(labels: List[Tuple[int, str, str, str]], data_marks: Dict[int, 
     for ea, name, kind, comment in labels:
         lines.append(f"  if (in_mapped_memory(0x{ea:08X})) {{")
         if kind == "data":
-            lines.append(f"    force_data_word(0x{ea:08X});")
             lines.append("    marked_data = marked_data + 1;")
         lines.append(f'    set_name_safe(0x{ea:08X}, "{name}");')
         if comment:
@@ -317,7 +316,14 @@ def main() -> None:
     rows = load_labels(args.labels_tsv)
     labels = choose_unique_names(rows)
     data_marks = load_data_marks(args.data_tsv)
-    dp0_marks = load_dp0_marks(args.dp0_tsv)
+    dp0_path = args.dp0_tsv
+    if dp0_path is None:
+        dp0_path = args.labels_tsv.with_name(args.labels_tsv.stem.replace("_labels", "_dp0") + args.labels_tsv.suffix)
+    dp0_marks = load_dp0_marks(dp0_path if dp0_path.exists() else None)
+    if not dp0_marks:
+        fallback = pathlib.Path("/private/tmp/spider_dp0.tsv")
+        if fallback.exists():
+            dp0_marks = load_dp0_marks(fallback)
     text = generate_idc(labels, data_marks, dp0_marks)
     args.out.write_text(text)
     print(f"wrote {args.out}")

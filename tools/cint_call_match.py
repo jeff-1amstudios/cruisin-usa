@@ -840,11 +840,16 @@ def mnemonics_equivalent(src: List[str], rom: List[str]) -> bool:
             "retsz": "retse",
             "retsnz": "retsne",
             "b": "bu",
+            "br": "bu",
+            "bp": "bgt",
+            "db": "dbu",
             "bd": "bud",
+            "brd": "bud",
             "beq": "be",
             "bc": "blo",
             "bnc": "bhs",
             "bn": "blt",
+            "bnn": "bge",
             "bnnd": "bged",
             "bnz": "bne",
             "bnzd": "bned",
@@ -868,8 +873,11 @@ def mnemonics_equivalent(src: List[str], rom: List[str]) -> bool:
             "retsnc": "retshs",
             "retsn": "retslt",
             # Float-condition aliases seen in source vs ROM mnemonics.
+            "ldfeq": "ldfe",
             "ldfz": "ldfe",
             "ldfnz": "ldfne",
+            "ldfn": "ldflt",
+            "ldfnn": "ldfge",
         }
         x = direct.get(x, x)
         # Condition-code aliases from C3x docs: Z==E, NZ==NE, C==LO, NC==HS, N==LT, NN==GE.
@@ -878,6 +886,7 @@ def mnemonics_equivalent(src: List[str], rom: List[str]) -> bool:
             if x.startswith(pfx) and len(x) > len(pfx):
                 suf = x[len(pfx) :]
                 suf_alias = {
+                    "eq": "e",
                     "z": "e",
                     "nz": "ne",
                     "c": "lo",
@@ -890,6 +899,8 @@ def mnemonics_equivalent(src: List[str], rom: List[str]) -> bool:
                 break
         if x.endswith("3") and x[:-1] in three_operand_aliases:
             x = x[:-1]
+        if x == "cmpi3":
+            x = "cmpi"
         return x
 
     s = [canon(x) for x in src]
