@@ -10,6 +10,7 @@ sys.path.insert(0, str(ROOT / 'tools'))
 
 from ida import shared_lib as ccm  # type: ignore
 from ida.walk_source_and_rom import (
+    collect_include_gap_comments,
     collect_literal_macro_refs,
     iter_expanded_lines,
     parse_src_ops,
@@ -225,6 +226,19 @@ def main() -> None:
     assert changed, 'parallel ROM same-address ops should reorder to match source order'
     assert fake_rom_ops[0][1] == 'STI' and fake_rom_ops[1][1] == 'LDI'
 
+    # 15) Source .include lines inside a source-only gap should emit a
+    #     ``!include ...`` comment at the inferred ROM address where the
+    #     included payload begins.
+    include_gap_lines = [
+        '\tLDI\t#1,R0',
+        '\t.word\t1234h',
+        '\t.include\tfoo.pal',
+        '\t.word\t5678h',
+        '\tLDI\t#2,R0',
+    ]
+    include_cmts = collect_include_gap_comments(include_gap_lines, 1, 5, 0x1001, symbols)
+    assert include_cmts == [(0x1002, '!include foo.pal')], f'include gap comments mismatch: {include_cmts!r}'
+
     print('ok: MESSAGE1 ACTIVE_SCREEN=0xCE43')
     print('ok: _pixel ACTIVE_SCREEN=0xCE43')
     print('ok: LOAD_SECTION_REQ @0x0000A3ED')
@@ -240,6 +254,7 @@ def main() -> None:
     print('ok: address.map fallback resolves COMMINTM when ROM operand is symbolic')
     print('ok: LDP source lines emit semantic comments')
     print('ok: same-address parallel ROM ops reorder to source order')
+    print('ok: .include gap lines emit !include comments at inferred address')
 
 
 if __name__ == '__main__':
