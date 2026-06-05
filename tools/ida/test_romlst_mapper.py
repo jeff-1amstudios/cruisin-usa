@@ -11,13 +11,18 @@ sys.path.insert(0, str(ROOT / 'tools'))
 from ida import shared_lib as ccm  # type: ignore
 from ida.walk_source_and_rom import (
     collect_include_gap_comments,
+    collect_text_gap_word_symbol_rows,
+    collect_word_block_symbol_rows,
     collect_literal_macro_refs,
     iter_expanded_lines,
+    normalize_word_rom_read_ea,
     parse_src_ops,
     parse_rom_ops_from_addr,
     parse_int_token,
     parse_rom_operand_addr,
     parse_address_map,
+    parse_globals_equ,
+    parse_symbol_modules,
     parse_vunit_hardware_symbols,
     source_rom_data_words_between,
     source_set_symbol_addr,
@@ -239,6 +244,41 @@ def main() -> None:
     include_cmts = collect_include_gap_comments(include_gap_lines, 1, 5, 0x1001, symbols)
     assert include_cmts == [(0x1002, '!include foo.pal')], f'include gap comments mismatch: {include_cmts!r}'
 
+    include_header_lines = [
+        '\tLDI\t#1,R0',
+        '\t.include\tDELTA.EQU',
+        '\t.include\tRACER.EQU',
+        '\tCLRI',
+    ]
+    include_header_cmts = collect_include_gap_comments(include_header_lines, 1, 4, 0x196A, symbols)
+    assert include_header_cmts == [], f'non-payload include comments should be skipped: {include_header_cmts!r}'
+
+    include_romdata_lines = [
+        '\tLDI\t#1,R0',
+        '\tromdata',
+        '\t.include\tbabe.pal',
+        '\t.text',
+        '\tLDI\t#2,R0',
+    ]
+    include_romdata_cmts = collect_include_gap_comments(include_romdata_lines, 1, 5, 0x43AE, symbols)
+    assert include_romdata_cmts == [(0x43AE, '!include babe.pal')], f'romdata include comments mismatch: {include_romdata_cmts!r}'
+
+    globals_set = parse_globals_equ(ROOT)
+    symbol_modules = parse_symbol_modules(ROOT)
+    backgrnd_lines = (ROOT / 'BACKGRND.ASM').read_text(errors='ignore').splitlines()
+    babe_rows = collect_text_gap_word_symbol_rows(
+        backgrnd_lines, 1701, 1705, 0x4376, 'BACKGRND', symbols, symbol_modules, globals_set, ROOT / 'roms' / 'crusnusa45_maindata_interleaved_bswap32.bin'
+    )
+    assert ('BABE_PALISTI', 'BACKGRND', 0x4376, False) in babe_rows, f'BABE_PALISTI gap row missing: {babe_rows!r}'
+    assert ('BABE_PALIST', 'BACKGRND', 0x4376, True) in babe_rows, f'BABE_PALIST ref row missing: {babe_rows!r}'
+    babe_block_rows = collect_word_block_symbol_rows(
+        backgrnd_lines, 1705, 0x00C10398, 'BACKGRND', symbols, symbol_modules, globals_set, ROOT / 'roms' / 'crusnusa45_maindata_interleaved_bswap32.bin'
+    )
+    assert normalize_word_rom_read_ea(0x00C10398) == 0x10398
+    assert ('BABE_PALIST', 'BACKGRND', 0x00C10398) in babe_block_rows, f'BABE_PALIST block row missing: {babe_block_rows!r}'
+    assert ('ungh1_blue', 'BACKGRND', 0x00C10398) in babe_block_rows, f'ungh1_blue row missing: {babe_block_rows!r}'
+    assert ('logo_p', 'BACKGRND', 0x00C10399) in babe_block_rows, f'logo_p row missing: {babe_block_rows!r}'
+
     print('ok: MESSAGE1 ACTIVE_SCREEN=0xCE43')
     print('ok: _pixel ACTIVE_SCREEN=0xCE43')
     print('ok: LOAD_SECTION_REQ @0x0000A3ED')
@@ -255,6 +295,9 @@ def main() -> None:
     print('ok: LDP source lines emit semantic comments')
     print('ok: same-address parallel ROM ops reorder to source order')
     print('ok: .include gap lines emit !include comments at inferred address')
+    print('ok: .include EQU/ASM/INC lines do not emit !include comments')
+    print('ok: romdata-wrapped payload includes still emit !include comments')
+    print('ok: BABE_PALIST gap and block .word labels bind to table cell addresses')
 
 
 if __name__ == '__main__':
