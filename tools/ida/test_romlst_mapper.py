@@ -8,8 +8,8 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools'))
 
-import cint_call_match as ccm  # type: ignore
-from ida.build_labels_from_romlst import (
+from ida import shared_lib as ccm  # type: ignore
+from ida.walk_source_and_rom import (
     collect_literal_macro_refs,
     iter_expanded_lines,
     parse_src_ops,
@@ -24,6 +24,7 @@ from ida.build_labels_from_romlst import (
     source_comment_tag,
     canonical_module_for_label,
     read_rom_word,
+    reorder_same_address_parallel_rom_match,
 )
 
 ROM = ROOT / 'roms' / 'test.rom.lst'
@@ -211,6 +212,19 @@ def main() -> None:
     #     breadcrumb on their generated machine instruction.
     assert source_comment_tag('        LDP\t@FASTSTKI', macros) == 'LDP @FASTSTKI'
 
+    # 14) IDA may list same-word parallel issue instructions in the opposite
+    #     order from source.  The walker should reorder only within the same
+    #     ROM address group when source has a "||" continuation.
+    fake_lines = ['\tSTI\tR0,*AR0', ' ||\tLDI\t*AR1++,R0']
+    fake_src_lno = [(1, 'STI', ['STI', 'R0', '*AR0']), (2, 'LDI', ['LDI', '*AR1++', 'R0'])]
+    fake_rom_ops = [
+        (0xAF1B, 'LDI', ['ldi', '*ar1++(1)', 'r0']),
+        (0xAF1B, 'STI', ['sti', 'r0', '*ar0']),
+    ]
+    changed = reorder_same_address_parallel_rom_match(fake_lines, fake_src_lno, 0, 'STI', fake_rom_ops, 0)
+    assert changed, 'parallel ROM same-address ops should reorder to match source order'
+    assert fake_rom_ops[0][1] == 'STI' and fake_rom_ops[1][1] == 'LDI'
+
     print('ok: MESSAGE1 ACTIVE_SCREEN=0xCE43')
     print('ok: _pixel ACTIVE_SCREEN=0xCE43')
     print('ok: LOAD_SECTION_REQ @0x0000A3ED')
@@ -225,6 +239,7 @@ def main() -> None:
     print('ok: VUNIT hardware symbols include SWITCH2 and skip bit masks')
     print('ok: address.map fallback resolves COMMINTM when ROM operand is symbolic')
     print('ok: LDP source lines emit semantic comments')
+    print('ok: same-address parallel ROM ops reorder to source order')
 
 
 if __name__ == '__main__':
