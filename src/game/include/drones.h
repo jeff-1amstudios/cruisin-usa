@@ -1,0 +1,29 @@
+#ifndef DRONES_H
+#define DRONES_H
+
+/* Generated from asm/DRONES.ASM. */
+
+// asm: 	.bss	DRONE_DISPATCH_P,1	;FLAG dispatching active???
+#define DRONE_DISPATCH_P 0x0080E61B
+// asm: 	.bss	SUSPEND_MODE,1		;ALL DRONES *MUST* CHECK EVERY FRAME
+#define SUSPEND_MODE 0x0000E61C
+// asm: 	.bss	RACER_GRID_START,1	;Starting Index
+#define RACER_GRID_START 0x0000E61D
+// asm: 	.bss	DRONE_COUNT,1		;UD	NUMBER OF ACTIVE DRONES
+#define DRONE_COUNT 0x0000E61E
+// asm: 	.bss	ONCSCREEN_CARS,1
+#define ONCSCREEN_CARS 0x0000E621
+// asm: 	.bss	DD_SLP,1	;MINIMUM SLEEP VALUE (def=40)
+#define DD_SLP 0x0000E622
+// asm: 	.bss	DD_VAR,1	;SLEEP TIME VARIENCE (def=100)
+#define DD_VAR 0x0000E623
+// asm: 	.bss	DD_MAX_DRONES,1	;MAX DRONES (def=MAX_DRONES)
+#define DD_MAX_DRONES 0x0000E624
+// asm: 	.bss	DRONENUM,1
+#define DRONENUM 0x0000E625
+// asm: 	.bss	SMOKE_COUNT,1
+#define SMOKE_COUNT 0x0000E626
+// asm: 	.bss	COCONUT_COUNT,1
+#define COCONUT_COUNT 0x0000E627
+
+#endif /* DRONES_H */

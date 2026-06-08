@@ -1,0 +1,50 @@
+#ifndef RACER_H
+#define RACER_H
+
+/* Generated from asm/RACER.EQU. */
+/*
+ * RACER.EQU
+ * COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ * ALL RIGHTS RESERVED
+ * STARTING LINE INIT STRUCTURE
+ * RD STRUCT
+ * ENDSTRUCT
+ * PDATA PROCESS EQUATES
+ * (MOVED TO DELTA.EQU)
+ * ...
+ */
+
+/* Original .globl symbols in this module:
+ *   SPOS_INIT
+ *   FINISH_ID
+ *   LEG_MAP
+ *   ROADIR
+ *   LEG_MAPI
+ *   GETRPM
+ *   GETAUTO
+ *   ENGFRI
+ *   GEARACTABI
+ *   ENGACTABI
+ *   GETRDIR
+ *   PLYRFIRST
+ *   DRONESTOP
+ *   PLYRDRAFT
+ *   PLDRAFTVAL
+ *   CKAHEAD
+ *   STEERI
+ */
+
+#define RD_MODEL 0 /* UH */
+#define RD_POSITION 1 /* UD */
+#define RD_XLANE 2 /* FL */
+#define RD_MAXACCEL 3 /* FL */
+#define RD_REL 4 /* FL */
+#define RD_PALETTE 5 /* UH */
+#define RD_SIZE 6 /* SIZ */
+#define RELATIVITY (SUBDRNSTRT+6) /* DRONE RELATIVE RATIO */
+#define INITINDEX (SUBDRNSTRT+7) /* TEMP FOR INITTAB */
+#define PASSCNT (SUBDRNSTRT+8) /* TIMER TO INHIBIT PASS SND RETRIGGER */
+#define FINISHDIST (SUBDRNSTRT+9) /* FINISH DISTANCE */
+#define FINISHROT (SUBDRNSTRT+10) /* FINISH ROTATION */
+
+#endif /* RACER_H */

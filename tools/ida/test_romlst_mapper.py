@@ -31,26 +31,35 @@ from ida.walk_source_and_rom import (
     canonical_module_for_label,
     read_rom_word,
     reorder_same_address_parallel_rom_match,
+    should_preserve_existing_word_block_row,
 )
 
 ROM = ROOT / 'roms' / 'test.rom.lst'
 
 
 def find_src_start(module: str, label: str) -> int:
-    p = ROOT / f'{module}.ASM'
+    p = find_source_module(module)
     lines = p.read_text(errors='ignore').splitlines()
     for i, ln in enumerate(lines):
         l, _ = ccm.split_optional_label(ccm.strip_comment(ln))
         if l == label:
             return i
-    raise AssertionError(f'Could not find {label} in {module}.ASM')
+    raise AssertionError(f'Could not find {label} in {p}')
+
+
+def find_source_module(module: str) -> pathlib.Path:
+    p = ccm.iter_source_files(ROOT, ('.ASM',))
+    for candidate in p:
+        if candidate.stem.upper() == module.upper():
+            return candidate
+    raise FileNotFoundError(f'missing source module: {module}')
 
 
 def pair_until_symbol(module: str, label: str, addr: int, symbol: str) -> int:
     macros = ccm.parse_macros(ROOT)
     symbols = ccm.parse_set_symbols(ROOT)
 
-    p = ROOT / f'{module}.ASM'
+    p = find_source_module(module)
     lines = p.read_text(errors='ignore').splitlines()
     start = find_src_start(module, label)
     expanded = iter_expanded_lines(lines[start:], macros, symbols)
@@ -88,7 +97,7 @@ def resolve_literal_macro_target(module: str, label: str, addr: int, macro: str,
     macros = ccm.parse_macros(ROOT)
     symbols = ccm.parse_set_symbols(ROOT)
 
-    p = ROOT / f'{module}.ASM'
+    p = find_source_module(module)
     lines = p.read_text(errors='ignore').splitlines()
     start = find_src_start(module, label)
     src_lines = lines[start:]
@@ -162,7 +171,7 @@ def main() -> None:
     #    mpyf3 || stf / addf3 sequence around 0xB0 must not desync on "||".
     macros = ccm.parse_macros(ROOT)
     symbols = ccm.parse_set_symbols(ROOT)
-    dlines = (ROOT / 'DIRQ.ASM').read_text(errors='ignore').splitlines()
+    dlines = find_source_module('DIRQ').read_text(errors='ignore').splitlines()
     dstart = find_src_start('DIRQ', 'DIRQ')
     dexp = iter_expanded_lines(dlines[dstart:], macros, symbols)
     dsops = parse_src_ops(dexp)
@@ -186,7 +195,7 @@ def main() -> None:
 
     # 9) SPTR emits one inline text pointer word after its THEDATA string;
     #    this accounts for the five .word gap at 0x4FBB..0x4FBF before MSG3.
-    cusa_lines = (ROOT / 'CUSA.ASM').read_text(errors='ignore').splitlines()
+    cusa_lines = find_source_module('CUSA').read_text(errors='ignore').splitlines()
     sptr_words = source_rom_data_words_between(cusa_lines, 1967, 1974, macros, symbols)
     assert sptr_words == 5, f'SPTR gap expected 5 text words, got {sptr_words}'
 
@@ -265,7 +274,7 @@ def main() -> None:
 
     globals_set = parse_globals_equ(ROOT)
     symbol_modules = parse_symbol_modules(ROOT)
-    backgrnd_lines = (ROOT / 'BACKGRND.ASM').read_text(errors='ignore').splitlines()
+    backgrnd_lines = find_source_module('BACKGRND').read_text(errors='ignore').splitlines()
     babe_rows = collect_text_gap_word_symbol_rows(
         backgrnd_lines, 1701, 1705, 0x4376, 'BACKGRND', symbols, symbol_modules, globals_set, ROOT / 'roms' / 'crusnusa45_maindata_interleaved_bswap32.bin'
     )
@@ -278,6 +287,24 @@ def main() -> None:
     assert ('BABE_PALIST', 'BACKGRND', 0x00C10398) in babe_block_rows, f'BABE_PALIST block row missing: {babe_block_rows!r}'
     assert ('ungh1_blue', 'BACKGRND', 0x00C10398) in babe_block_rows, f'ungh1_blue row missing: {babe_block_rows!r}'
     assert ('logo_p', 'BACKGRND', 0x00C10399) in babe_block_rows, f'logo_p row missing: {babe_block_rows!r}'
+
+    source_label_lines = {
+        ('SPIN_CARTABI', 'ATTRACTA'): ('SPIN_CARTABI', 245),
+        ('SPIN_CARTAB', 'ATTRACTA'): ('SPIN_CARTAB', 247),
+    }
+    existing_rows = {
+        ('SPIN_CARTAB', 'ATTRACTA'): ('SPIN_CARTAB', 'SPIN_CARTAB@ATTRACTA', 'ATTRACTA', 'data', '0x00C10381', 'OK', '', ''),
+    }
+    assert should_preserve_existing_word_block_row(
+        existing_rows,
+        source_label_lines,
+        globals_set,
+        symbols,
+        'SPIN_CARTABI',
+        'SPIN_CARTAB',
+        'ATTRACTA',
+        0x0000A9F7,
+    ), 'SPIN_CARTAB should keep its own word-block address instead of being overwritten by SPIN_CARTABI'
 
     print('ok: MESSAGE1 ACTIVE_SCREEN=0xCE43')
     print('ok: _pixel ACTIVE_SCREEN=0xCE43')
@@ -298,6 +325,7 @@ def main() -> None:
     print('ok: .include EQU/ASM/INC lines do not emit !include comments')
     print('ok: romdata-wrapped payload includes still emit !include comments')
     print('ok: BABE_PALIST gap and block .word labels bind to table cell addresses')
+    print('ok: SPIN_CARTABI pointer cells do not overwrite SPIN_CARTAB table labels')
 
 
 if __name__ == '__main__':

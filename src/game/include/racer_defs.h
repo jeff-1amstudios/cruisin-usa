@@ -1,0 +1,21 @@
+#ifndef RACER_H
+#define RACER_H
+
+/* Generated from asm/RACER.ASM. */
+
+// asm: 	.bss	FINISHNUM,1		;NUMBER OF DRONES FINISHED
+#define FINISHNUM 0x0000E8D2
+// asm: 		.bss	RACER_PTR,10
+#define RACER_PTR 0x0000E8D3
+// asm: 	.bss	OM_TRACK_LO,1
+#define OM_TRACK_LO 0x0000E8DD
+// asm: 	.bss	OM_TRACK_HI,1
+#define OM_TRACK_HI 0x0000E8DE
+// asm: 	.BSS	ROADOBSTAB,50  		;ARRAY OF ROAD OBSTACLES
+#define ROADOBSTAB 0x0000E8DF
+// asm: 	.BSS	PLYRCLOSE,1		;CLOSING VELOCITY OF DRONE ON PLAYER
+#define PLYRCLOSE 0x0000E911
+// asm: 	.BSS	CARTMP1,1
+#define CARTMP1 0x0000E912
+
+#endif /* RACER_H */

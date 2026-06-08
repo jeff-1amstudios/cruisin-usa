@@ -1,0 +1,13 @@
+#ifndef WAVE_H
+#define WAVE_H
+
+/* Generated from asm/WAVE.ASM. */
+
+// asm: 	pbss	TEASE_COUNT,1	;WHEN SPUTTER SOUND CAN BE CALLED IN ATTR
+#define TEASE_COUNT 0x0000C916
+// asm: 	pbss	_ATTR_MODE,1	;CURRENT ATTRACT MODE
+#define _ATTR_MODE 0x0099C918
+// asm: 	pbss	LOADED,1	;IS THE SYSTEM READY TO SLAVE OVER TO A NEW SCREENP
+#define LOADED 0x0000C919
+
+#endif /* WAVE_H */
