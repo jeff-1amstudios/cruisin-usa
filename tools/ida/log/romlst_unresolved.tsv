@@ -1,3 +1,1 @@
 label	module	reason	context	source_line	rom_address
-DIRECT_ATTACK	CHOPPER	rom_data_in_code	line=1171 src=BR rom_words=1 source_words=0 rom_data_at=0x00007E9C next_code=0x00007E9D	1171	0x00007E9C
-TEXTDELER	HEADS	module_walk_desync	line=373 src=LDI rom=ABSI at=0x0000A297	373	0x0000A297

@@ -5,6 +5,7 @@ import bisect
 import csv
 import datetime
 import functools
+import os
 import pathlib
 import re
 import sys
@@ -43,6 +44,12 @@ LABEL_LIKE_RE = re.compile(r"^[A-Z_.$?][A-Z0-9_.$?]*$", re.IGNORECASE)
 HEX_H_SUFFIX_RE = re.compile(r"^[0-9a-fA-F]+h$")
 DECIMAL_RE = re.compile(r"^-?\d+$")
 ADDR_SUFFIX_RE = re.compile(r"_([0-9A-Fa-f]{3,8})$")
+IDA_AUTO_ADDR_NAME_RE = re.compile(
+    r"^(?:"
+    r"byte|word|dword|qword|off|unk|sub|loc|def|algn|asc|stru"
+    r")_([0-9A-Fa-f]{1,8})$",
+    re.IGNORECASE,
+)
 IF_RE = re.compile(r"^\.if\s+(.+)$", re.IGNORECASE)
 ELSE_RE = re.compile(r"^\.else\b", re.IGNORECASE)
 ENDIF_RE = re.compile(r"^\.endif\b", re.IGNORECASE)
@@ -238,97 +245,28 @@ def address_map_segment_for_ea(ea: int) -> str:
     return "0002" if ea >= 0x00C00000 else "0000"
 
 
-def upsert_address_map(
-    map_path: pathlib.Path,
-    entries: Iterable[Tuple[str, int]],
-    *,
-    prune_scoped_aliases: bool = False,
-) -> Tuple[int, int, int]:
-    """Merge discovered name -> address facts into address.map.
-
-    Returns (existing_count, inserted_count, updated_count).
-    """
+def write_address_map(map_path: pathlib.Path, entries: Iterable[Tuple[str, int]]) -> int:
+    """Write a fresh IDA map file from exact name -> address pairs."""
     existing: Dict[str, Tuple[str, int, str]] = {}
-    header: List[str] = []
-    saw_entry = False
-
-    if map_path.exists():
-        for ln in map_path.read_text(errors="ignore").splitlines():
-            m = ADDRESS_MAP_RE.match(ln)
-            if not m:
-                if not saw_entry:
-                    header.append(ln)
-                continue
-            saw_entry = True
-            seg = ln.strip().split(":", 1)[0]
-            ea = int(m.group(1), 16)
-            name = m.group(2).strip()
-            existing[name] = (name, ea, seg)
-
-    if not header:
-        header = [
-            "",
-            " Start         Length     Name                   Class",
-            " 0000:00000000 000A00000H CODE                   ",
-            " 0002:00000000 000A00000H seg001                 ",
-            "",
-            "",
-            "  Address         Publics by Value",
-            "",
-        ]
-
-    before = len(existing)
-    inserted = 0
-    updated = 0
-    bare_entries: List[Tuple[str, int]] = []
     for name, ea in entries:
         if not name:
             continue
-        if "@" not in name:
-            bare_entries.append((name, ea))
-        key = name
-        seg = address_map_segment_for_ea(ea)
-        old = existing.get(key)
-        if old is None:
-            existing[key] = (name, ea, seg)
-            inserted += 1
-        elif old[1] != ea:
-            existing[key] = (old[0], ea, seg)
-            updated += 1
+        existing[name] = (name, ea, address_map_segment_for_ea(ea))
 
-    if prune_scoped_aliases:
-        # If a bare/global name exists at an address, remove stale scoped aliases
-        # for that same base name at the same address (e.g. _SECshared@CUSA).
-        for name, ea in bare_entries:
-            prefix = f"{name}@"
-            for old_name, (_stored_name, old_ea, _seg) in list(existing.items()):
-                if old_ea == ea and old_name.startswith(prefix):
-                    del existing[old_name]
-
-    # IDA can bake an assumed DP page into synthetic LDL/TEXTIT pointer-cell
-    # names (e.g. CHOPPERANI_ptr_0080B14E) even though the real cell is low
-    # FASTRAM (e.g. CHOPPERANI_ptr_0000B14E). If the canonical low-address
-    # entry exists, drop the stale high-page alias from the persistent map.
-    for old_name, (_stored_name, old_ea, _seg) in list(existing.items()):
-        m = PTR_NAME_RE.match(old_name)
-        if not m:
-            continue
-        base = m.group(1)
-        canonical_ea = old_ea & 0x1FFFF
-        if canonical_ea == old_ea:
-            continue
-        canonical_name = f"{base}_ptr_{canonical_ea:08X}"
-        canonical = existing.get(canonical_name)
-        if canonical and canonical[1] == canonical_ea:
-            del existing[old_name]
-
-    lines = list(header)
-    if lines and lines[-1] != "":
-        lines.append("")
+    lines = [
+        "",
+        " Start         Length     Name                   Class",
+        " 0000:00000000 000A00000H CODE                   ",
+        " 0002:00000000 000A00000H seg001                 ",
+        "",
+        "",
+        "  Address         Publics by Value",
+        "",
+    ]
     for name, ea, seg in sorted(existing.values(), key=lambda item: (item[1], item[0].upper())):
         lines.append(f" {seg}:{ea:08X}       {name}")
     map_path.write_text("\n".join(lines) + "\n")
-    return before, inserted, updated
+    return len(existing)
 
 
 def lookup_address_map_symbol(sym: str, module: str, address_map: Dict[str, int]) -> Optional[int]:
@@ -518,8 +456,20 @@ def parse_rom_operand_addr(tok: str) -> Optional[int]:
     v = parse_int_token(s)
     if v is not None:
         return v
+    m = IDA_AUTO_ADDR_NAME_RE.match(s)
+    if m:
+        try:
+            return int(m.group(1), 16)
+        except Exception:
+            return None
     m = ADDR_SUFFIX_RE.search(s)
     if m:
+        # Only treat suffixes as embedded addresses when they contain at least
+        # one decimal digit and are at least 4 nybbles long. This accepts
+        # names like foo_ptr_0000C79C while avoiding false positives on
+        # legitimate symbols like AUDIT_ADD or INV_F30.
+        if len(m.group(1)) < 4 or not any(ch.isdigit() for ch in m.group(1)):
+            return None
         try:
             return int(m.group(1), 16)
         except Exception:
@@ -566,7 +516,60 @@ def resolve_paired_operand_addr(
     address_map: Dict[str, int],
     *,
     allow_source_set: bool,
+    fallback_map: Optional[Dict[str, int]] = None,
+    prefer_symbol_lookup: bool = False,
 ) -> Optional[int]:
+    def _lookup_exact(sym: str, amap: Dict[str, int]) -> Optional[int]:
+        raw = sym.strip().strip(",").lstrip("@*#+-").strip("()")
+        if not raw:
+            return None
+        if raw in amap:
+            return amap[raw]
+        if module:
+            scoped = f"{raw}@{module}"
+            if scoped in amap:
+                return amap[scoped]
+        return None
+
+    def _lookup_symbol_first() -> Optional[int]:
+        ea = _lookup_exact(source_sym, address_map)
+        if ea is not None:
+            return ea
+        ea = _lookup_exact(rom_tok, address_map)
+        if ea is not None:
+            return ea
+        if fallback_map is not None:
+            ea = _lookup_exact(source_sym, fallback_map)
+            if ea is not None:
+                return ea
+            ea = _lookup_exact(rom_tok, fallback_map)
+            if ea is not None:
+                return ea
+        ea = lookup_address_map_symbol(source_sym, module, address_map)
+        if ea is not None:
+            return ea
+        ea = lookup_address_map_symbol(rom_tok, module, address_map)
+        if ea is not None:
+            return ea
+        if fallback_map is not None:
+            ea = lookup_address_map_symbol(source_sym, module, fallback_map)
+            if ea is not None:
+                return ea
+            ea = lookup_address_map_symbol(rom_tok, module, fallback_map)
+            if ea is not None:
+                return ea
+        return None
+
+    if prefer_symbol_lookup:
+        if allow_source_set:
+            ea = source_set_symbol_addr(source_sym, symbols)
+            if ea is not None:
+                return ea
+        ea = _lookup_symbol_first()
+        if ea is not None:
+            return ea
+        return parse_rom_operand_addr(rom_tok)
+
     ea = parse_rom_operand_addr(rom_tok)
     if ea is not None:
         return ea
@@ -574,10 +577,7 @@ def resolve_paired_operand_addr(
         ea = source_set_symbol_addr(source_sym, symbols)
         if ea is not None:
             return ea
-    ea = lookup_address_map_symbol(source_sym, module, address_map)
-    if ea is not None:
-        return ea
-    return lookup_address_map_symbol(rom_tok, module, address_map)
+    return _lookup_symbol_first()
 
 
 def macro_invocation_tag(raw_line: str, macros: Dict[str, ccm.MacroDef]) -> Optional[str]:
@@ -1367,9 +1367,11 @@ def source_has_unknown_data_between(
 
 def parse_source_label_lines(root: pathlib.Path) -> Dict[Tuple[str, str], Tuple[str, int]]:
     out: Dict[Tuple[str, str], Tuple[str, int]] = {}
+    symbols = ccm.parse_set_symbols(root)
     for p in ccm.iter_source_files(root, (".ASM",)):
         mod = p.stem.upper()
-        for lineno, raw in enumerate(p.read_text(errors="ignore").splitlines(), start=1):
+        lines = p.read_text(errors="ignore").splitlines()
+        for lineno, raw in iter_active_raw_with_lineno(lines, 1, symbols):
             code = ccm.strip_comment(raw)
             lbl, _rest = ccm.split_optional_label(code)
             if not lbl or not LABEL_TOKEN_RE.match(lbl) or is_pseudo_local_label(lbl):
@@ -1415,6 +1417,39 @@ def source_label_starts_word_block(lines: List[str], line: int, symbols: Dict[st
         op = toks[op_idx].lower()
         return op in {".word", ".float", ".double", ".string"}
     return False
+
+
+def source_symbol_starts_word_block(
+    root: pathlib.Path,
+    label: str,
+    module: str,
+    source_label_lines: Dict[Tuple[str, str], Tuple[str, int]],
+    module_lines_cache: Dict[str, List[str]],
+    symbols: Dict[str, int],
+) -> bool:
+    found = source_label_lines.get((symbol_key(label), module.upper()))
+    if found is None:
+        return False
+    _exact_lbl, line = found
+    if module not in module_lines_cache:
+        p = find_module_source_path(root, module)
+        if p is None:
+            return False
+        module_lines_cache[module] = p.read_text(errors="ignore").splitlines()
+    return source_label_starts_word_block(module_lines_cache[module], line, symbols)
+
+
+def lookup_exact_address_map_symbol(sym: str, module: str, address_map: Dict[str, int]) -> Optional[int]:
+    raw = sym.strip().strip(",").lstrip("@*#+-").strip("()")
+    if not raw:
+        return None
+    if raw in address_map:
+        return address_map[raw]
+    if module:
+        scoped = f"{raw}@{module}"
+        if scoped in address_map:
+            return address_map[scoped]
+    return None
 
 
 def _collect_text_gap_word_symbol_rows_ex(
@@ -1849,20 +1884,17 @@ def main() -> None:
     py_out = here / "ida_label_import.py"
     run_log = log_dir / "romlst_run_log.tsv"
     canonical_map = here / "address.map"
-    ida_map = pathlib.Path("~/Downloads/carma/cruisin/ida-address.map").expanduser()
+    seed_map = here / "seed-addresses.map"
+    ida_map = rom.with_name("ida-address.map")
 
     globals_set = parse_globals_equ(root)
     symbol_modules = parse_symbol_modules(root)
     macros = ccm.parse_macros(root)
     symbols = ccm.parse_set_symbols(root)
     vunit_hardware_symbols = parse_vunit_hardware_symbols(root)
-    ida_map_before = 0
-    ida_map_inserted = 0
-    ida_map_updated = 0
-    if ida_map.exists():
-        ida_entries = parse_address_map(ida_map)
-        ida_map_before, ida_map_inserted, ida_map_updated = upsert_address_map(canonical_map, ida_entries.items())
-    address_map = parse_address_map(canonical_map)
+    seed_addresses = parse_address_map(seed_map)
+    use_ida_map = os.environ.get("CRUSNUSA_USE_IDA_MAP", "").strip() not in {"", "0", "false", "False"}
+    ida_lookup = parse_address_map(ida_map) if (use_ida_map and ida_map.exists()) else {}
     rom_ops_all = parse_all_rom_ops(rom)
     rom_ops_addrs = [ea for ea, _op, _toks in rom_ops_all]
     rom_ops_addr_set = set(rom_ops_addrs)
@@ -1887,7 +1919,7 @@ def main() -> None:
         # Initial module walks start at the first executable source label in
         # that module that already has an address. Other functions are still
         # enqueued when a paired walk encounters CALL operands.
-        found = lookup_address_map_entry(src_fn, mod, address_map)
+        found = lookup_address_map_entry(src_fn, mod, seed_addresses)
         if found is None:
             continue
         map_name, ea = found
@@ -1904,6 +1936,7 @@ def main() -> None:
     unresolved: List[Tuple[str, str, str, str, str]] = []
     dp0_marks: Set[int] = set()
     macro_comments: Dict[int, Set[str]] = {}
+    known_addresses: Dict[str, int] = dict(seed_addresses)
 
     def add_row(lbl: str, mod: str, kind: str, ea: int, *, overwrite: bool = False) -> None:
         if is_auto_sub_name(lbl):
@@ -1919,27 +1952,11 @@ def main() -> None:
             rows[(lbl, mod)] = row
         else:
             rows.setdefault((lbl, mod), row)
+        known_addresses[name] = ea
 
     def has_row(lbl: str, mod: str) -> bool:
         mod = canonical_module_for_label(lbl, mod, globals_set, symbols)
         return (lbl, mod) in rows
-
-    def classify_address_map_entry(lbl: str, mod: str) -> str:
-        skey = symbol_key(lbl)
-        umod = mod.upper() if mod else ""
-        if PTR_SUFFIX_RE.search(lbl):
-            return "data"
-        if umod and (skey, umod) in source_code_labels:
-            if skey in source_call_target_keys or skey in globals_set:
-                return "code"
-            return "label"
-        if not umod:
-            code_mods = {m for key, m in source_code_labels if key == skey}
-            if code_mods:
-                if skey in source_call_target_keys or skey in globals_set:
-                    return "code"
-                return "label"
-        return "data"
 
     def promote_same_address_module_aliases() -> int:
         grouped: Dict[Tuple[str, int], List[Tuple[Tuple[str, str], Tuple[str, str, str, str, str, str, str, str]]]] = {}
@@ -1965,16 +1982,6 @@ def main() -> None:
             rows[(lbl, "")] = promoted_row
             promoted += len(vals) - 1
         return promoted
-
-    # address.map is the persistent name -> address database. Seed rows from it
-    # so regenerated output does not depend on IDA's current .lst label text.
-    for map_name, ea in sorted(address_map.items(), key=lambda kv: (kv[1], kv[0].upper())):
-        if is_auto_sub_name(map_name):
-            continue
-        lbl, mod = split_rom_qualified_label(map_name)
-        if is_auto_sub_name(lbl) or is_pseudo_local_label(lbl) or lbl.endswith("?"):
-            continue
-        add_row(lbl, mod.upper() if mod else "", classify_address_map_entry(lbl, mod), ea)
 
     for (_fn, _mod), a in anchors.items():
         add_row(a.src_label, a.module, "code", a.addr)
@@ -2186,7 +2193,9 @@ def main() -> None:
                             literal_ref_idx += 1
                             lit_ea = parse_rom_operand_addr(rtoks[1])
                             if lit_ea is None:
-                                lit_ea = lookup_address_map_symbol(rtoks[1], module, address_map)
+                                lit_ea = lookup_address_map_symbol(rtoks[1], module, known_addresses)
+                            if lit_ea is None:
+                                lit_ea = lookup_address_map_symbol(rtoks[1], module, ida_lookup)
                             if lit_ea is not None and semantic_label:
                                 lit_ea = normalize_literal_cell_ea(lit_ea, word_rom)
                                 target_ea = read_rom_word(lit_ea, word_rom)
@@ -2207,8 +2216,9 @@ def main() -> None:
                         st,
                         tmod,
                         symbols,
-                        address_map,
+                        known_addresses,
                         allow_source_set=False,
+                        fallback_map=ida_lookup,
                     )
                     if tea is not None:
                         add_row(st, tmod, "code", tea)
@@ -2230,8 +2240,9 @@ def main() -> None:
                         st,
                         tmod,
                         symbols,
-                        address_map,
+                        known_addresses,
                         allow_source_set=False,
+                        fallback_map=ida_lookup,
                     )
                     if tea is not None:
                         add_row(st, tmod, "label", tea)
@@ -2248,8 +2259,9 @@ def main() -> None:
                         st,
                         tmod,
                         symbols,
-                        address_map,
+                        known_addresses,
                         allow_source_set=False,
+                        fallback_map=ida_lookup,
                     )
                     if tea is not None:
                         add_row(st, tmod, "label", tea)
@@ -2264,6 +2276,15 @@ def main() -> None:
                 up = s.upper()
                 if REGISTER_RE.match(up):
                     continue
+                if source_symbol_starts_word_block(root, s, module, source_label_lines, module_lines_cache, symbols):
+                    dea = lookup_exact_address_map_symbol(s, module, known_addresses)
+                    if dea is None:
+                        dea = lookup_exact_address_map_symbol(s, module, ida_lookup)
+                    if dea is None:
+                        continue
+                    dmod = resolve_module_for_symbol(s, module, symbol_modules, globals_set)
+                    add_row(s, dmod, "data", dea)
+                    continue
                 ridx = idx + 1
                 if ridx >= len(rtoks):
                     continue
@@ -2272,8 +2293,10 @@ def main() -> None:
                     s,
                     module,
                     symbols,
-                    address_map,
+                    known_addresses,
                     allow_source_set=True,
+                    fallback_map=ida_lookup,
+                    prefer_symbol_lookup=True,
                 )
                 if dea is None:
                     continue
@@ -2305,6 +2328,26 @@ def main() -> None:
             if hi < lo:
                 hi = lo
             module_walk_ranges.setdefault(module, []).append((lo, hi, a.src_label))
+
+    def emit_executable_source_labels_from_mapping() -> None:
+        mapped_lines_by_module: Dict[str, List[Tuple[int, int]]] = {}
+        for (mod, line), ea in module_line_rom_ea.items():
+            mapped_lines_by_module.setdefault(mod, []).append((line, ea))
+        for mod, vals in mapped_lines_by_module.items():
+            vals.sort()
+
+        for mod, lbl, line in source_labels_ordered:
+            vals = mapped_lines_by_module.get(mod)
+            if not vals:
+                continue
+            idx = bisect.bisect_left([ln for ln, _ea in vals], line)
+            if idx >= len(vals):
+                continue
+            _mapped_line, ea = vals[idx]
+            lmod = resolve_module_for_symbol(lbl, mod, symbol_modules, globals_set)
+            add_row(lbl, lmod, "code", ea)
+
+    emit_executable_source_labels_from_mapping()
 
     pending_word_blocks: List[Tuple[str, str, int, bool]] = []
     seen_word_blocks: Dict[Tuple[str, str], bool] = {}
@@ -2374,7 +2417,19 @@ def main() -> None:
                     if 0x00C00000 <= target_ea <= 0x00CFFFFF:
                         add_row(lbl, "", "data", target_ea)
                         if key in source_label_lines:
-                            enqueue_word_block(lbl, mod, target_ea, include_word_refs=False)
+                            enqueue_word_block(
+                                lbl,
+                                mod,
+                                target_ea,
+                                include_word_refs=source_symbol_starts_word_block(
+                                    root,
+                                    lbl,
+                                    mod,
+                                    source_label_lines,
+                                    module_lines_cache,
+                                    symbols,
+                                ),
+                            )
                         continue
                     if not has_inline_alias:
                         continue
@@ -2413,7 +2468,19 @@ def main() -> None:
                     continue
                 if 0x00C00000 <= target_ea <= 0x00CFFFFF:
                     add_row(child_lbl, "", "data", target_ea, overwrite=True)
-                    enqueue_word_block(child_lbl, child_mod, target_ea, include_word_refs=False)
+                    enqueue_word_block(
+                        child_lbl,
+                        child_mod,
+                        target_ea,
+                        include_word_refs=source_symbol_starts_word_block(
+                            root,
+                            child_lbl,
+                            child_mod,
+                            source_label_lines,
+                            module_lines_cache,
+                            symbols,
+                        ),
+                    )
                     continue
                 if not child_has_inline_alias:
                     continue
@@ -2438,10 +2505,9 @@ def main() -> None:
 
     promoted_aliases = promote_same_address_module_aliases()
 
-    map_before, map_inserted, map_updated = upsert_address_map(
+    map_entries = write_address_map(
         canonical_map,
         ((r[1], int(r[4], 16)) for r in rows.values()),
-        prune_scoped_aliases=True,
     )
 
     with outp.open("w", newline="") as f:
@@ -2556,9 +2622,10 @@ def main() -> None:
     print(f"wrote {cmout}")
     print(f"rows={len(rows)} code={code_n} data={data_n} anchors={len(anchors)} unresolved={len(unresolved_unique)}")
     print(f"promoted_aliases={promoted_aliases}")
-    if ida_map.exists():
-        print(f"imported_ida_map={ida_map} existing={ida_map_before} inserted={ida_map_inserted} updated={ida_map_updated}")
-    print(f"address_map={canonical_map} existing={map_before} inserted={map_inserted} updated={map_updated}")
+    print(f"seed_map={seed_map} seeds={len(seed_addresses)}")
+    if ida_lookup:
+        print(f"ida_lookup_map={ida_map} entries={len(ida_lookup)}")
+    print(f"address_map={canonical_map} entries={map_entries}")
 
     # Automatically generate standalone IDAPython apply script.
     labels_emitted, dp0_emitted, comments_emitted = build_ida_import_script.build_import_script(
@@ -2589,13 +2656,11 @@ def main() -> None:
         "dp0_marks",
         "labels_emitted",
         "promoted_aliases",
-        "address_map_existing",
-        "address_map_inserted",
-        "address_map_updated",
-        "ida_map",
-        "ida_map_existing",
-        "ida_map_inserted",
-        "ida_map_updated",
+        "seed_map",
+        "seed_entries",
+        "ida_lookup_map",
+        "ida_lookup_entries",
+        "address_map_entries",
     ]
     if run_log.exists() and run_log.stat().st_size:
         old_rows = list(csv.reader(run_log.open(newline=""), delimiter="\t"))
@@ -2628,13 +2693,11 @@ def main() -> None:
             len(dp0_marks),
             len(rows),  # one label row per emitted symbol candidate in TSV
             promoted_aliases,
-            map_before,
-            map_inserted,
-            map_updated,
-            str(ida_map) if ida_map.exists() else "",
-            ida_map_before,
-            ida_map_inserted,
-            ida_map_updated,
+            str(seed_map),
+            len(seed_addresses),
+            str(ida_map) if ida_lookup else "",
+            len(ida_lookup),
+            map_entries,
         ])
     print(f"appended {run_log}")
 

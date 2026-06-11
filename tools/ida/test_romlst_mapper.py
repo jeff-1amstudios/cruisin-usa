@@ -24,7 +24,9 @@ from ida.walk_source_and_rom import (
     parse_globals_equ,
     parse_symbol_modules,
     parse_vunit_hardware_symbols,
+    parse_source_label_lines,
     source_rom_data_words_between,
+    source_symbol_starts_word_block,
     source_set_symbol_addr,
     lookup_address_map_symbol,
     source_comment_tag,
@@ -203,12 +205,21 @@ def main() -> None:
     #     without a definition line in the listing (for example @CPU_WS@CMOS).
     #     In that case, absolute .set symbols must still resolve from source.
     assert parse_rom_operand_addr('@CPU_WS@CMOS') is None
+    assert parse_rom_operand_addr('INV_F30') is None
+    assert parse_rom_operand_addr('sub_64') == 0x64
+    assert parse_rom_operand_addr('loc_106') == 0x106
+    assert parse_rom_operand_addr('byte_40') == 0x40
     cpu_ws = source_set_symbol_addr('CPU_WS', symbols)
     assert cpu_ws == 0x808064, f'CPU_WS .set expected 0x808064, got {cpu_ws!r}'
     fifo_control = source_set_symbol_addr('FIFO_CONTROL', symbols)
     assert fifo_control == 0x980080, f'FIFO_CONTROL .set expected 0x980080, got {fifo_control!r}'
     assert canonical_module_for_label('FIFO_STATUS', 'CUSA', set(), symbols) == ''
     assert canonical_module_for_label('startup0_ptr_0000B0C5', 'CUSA', set(), symbols) == ''
+
+    active_label_lines = parse_source_label_lines(ROOT)
+    assert active_label_lines[('VERSION_STAMP', 'CUSA')][1] == 81, (
+        f'active VERSION_STAMP line expected 81, got {active_label_lines[("VERSION_STAMP", "CUSA")]!r}'
+    )
 
     # 11) VUNIT.EQU hardware/window addresses should be emitted even when a
     #     port is only referenced numerically in the listing/source walk.
@@ -217,11 +228,26 @@ def main() -> None:
     assert vunit_hw['FIFO_ADDR'] == 0x600000, f'FIFO_ADDR expected 0x600000, got {vunit_hw.get("FIFO_ADDR")!r}'
     assert 'WDOG' not in vunit_hw, 'WDOG bit mask should not be treated as a hardware address'
 
-    # 12) address.map preserves name -> address facts that disappear once IDA
-    #     renders operands symbolically in a regenerated listing.
+    # 12) address.map is regenerated from seed anchors each run, so the
+    #     VERSION_STAMP pointer targets must land on the live string and
+    #     not on the dead .if 0 copy later in the source block.
     address_map = parse_address_map(ROOT / 'tools' / 'ida' / 'address.map')
-    commintm = lookup_address_map_symbol('COMMINTM', 'CUSA', address_map)
-    assert commintm == 0x8099DF, f'COMMINTM map expected 0x8099DF, got {commintm!r}'
+    version_stamp = lookup_address_map_symbol('VERSION_STAMP', 'CUSA', address_map)
+    assert version_stamp == 0x00C10288, f'VERSION_STAMP map expected 0x00C10288, got {version_stamp!r}'
+    assert 0x00C102DC not in address_map.values(), 'stale dead-branch VERSION_STAMP address should not be regenerated'
+    inv_f30 = lookup_address_map_symbol('INV_F30', 'ROUTS', address_map)
+    assert inv_f30 == 0x0000A5B0, f'INV_F30 map expected 0x0000A5B0, got {inv_f30!r}'
+    camera_pos_i = lookup_address_map_symbol('_CAMERAPOSI', 'ATTRDRNE', address_map)
+    assert camera_pos_i == 0x0000B0DB, f'_CAMERAPOSI map expected 0x0000B0DB, got {camera_pos_i!r}'
+    display_high_scores = lookup_address_map_symbol('DISPLAY_HIGH_SCORES', 'HSTDP', address_map)
+    assert display_high_scores == 0x00003859, f'DISPLAY_HIGH_SCORES map expected 0x00003859, got {display_high_scores!r}'
+    scroll_white_i = lookup_address_map_symbol('scroll_whiteI', 'HSTDP', address_map)
+    assert scroll_white_i == 0x000038CC, f'scroll_whiteI map expected 0x000038CC, got {scroll_white_i!r}'
+    scroll_white = lookup_address_map_symbol('scroll_white', 'HSTDP', address_map)
+    assert scroll_white == 0x00C10A04, f'scroll_white map expected 0x00C10A04, got {scroll_white!r}'
+    assert 'scroll_white@HSTDP' not in address_map, 'scroll_white@HSTDP should not be regenerated from dereferenced table data'
+    ungh1_blue = lookup_address_map_symbol('ungh1_blue', 'BACKGRND', address_map)
+    assert ungh1_blue == 0x00C103A2, f'ungh1_blue map expected 0x00C103A2, got {ungh1_blue!r}'
 
     # 13) Non-macro source pseudo-ops like LDP should still leave a useful
     #     breadcrumb on their generated machine instruction.
@@ -288,6 +314,10 @@ def main() -> None:
     assert ('ungh1_blue', 'BACKGRND', 0x00C10398) in babe_block_rows, f'ungh1_blue row missing: {babe_block_rows!r}'
     assert ('logo_p', 'BACKGRND', 0x00C10399) in babe_block_rows, f'logo_p row missing: {babe_block_rows!r}'
 
+    assert source_symbol_starts_word_block(ROOT, 'scroll_whiteI', 'HSTDP', active_label_lines, {}, symbols)
+    assert source_symbol_starts_word_block(ROOT, 'FLASH_PALSI', 'HSTDP', active_label_lines, {}, symbols)
+    assert not source_symbol_starts_word_block(ROOT, 'scroll_white', 'HSTDP', active_label_lines, {}, symbols)
+
     source_label_lines = {
         ('SPIN_CARTABI', 'ATTRACTA'): ('SPIN_CARTABI', 245),
         ('SPIN_CARTAB', 'ATTRACTA'): ('SPIN_CARTAB', 247),
@@ -316,9 +346,13 @@ def main() -> None:
     print('ok: TEXTIT startup0 pointer=0x0000B0C5 target=0x00C10253')
     print('ok: CUSA SPTR data gap accounts for 0x4FBB..0x4FBF')
     print('ok: source .set fallback resolves CPU_WS/FIFO_CONTROL when ROM operand is symbolic')
+    print('ok: parse_rom_operand_addr does not misread INV_F30 as 0xF30')
     print('ok: .set labels canonicalize as globals')
+    print('ok: active-only source label scan keeps VERSION_STAMP on the live .else branch')
     print('ok: VUNIT hardware symbols include SWITCH2 and skip bit masks')
-    print('ok: address.map fallback resolves COMMINTM when ROM operand is symbolic')
+    print('ok: regenerated address.map keeps VERSION_STAMP on 0x00C10288 and drops 0x00C102DC')
+    print('ok: regenerated address.map keeps INV_F30 and _CAMERAPOSI at their pointer-cell addresses')
+    print('ok: label-only executable entries like DISPLAY_HIGH_SCORES are emitted from covered line mapping')
     print('ok: LDP source lines emit semantic comments')
     print('ok: same-address parallel ROM ops reorder to source order')
     print('ok: .include gap lines emit !include comments at inferred address')
