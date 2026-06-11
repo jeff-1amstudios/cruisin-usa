@@ -214,8 +214,9 @@ def parse_vunit_hardware_symbols(root: pathlib.Path) -> Dict[str, int]:
     """Return memory-mapped VUNIT hardware symbols from VUNIT.EQU.
 
     VUNIT.EQU also contains many bit masks and small constants. Keep only
-    absolute hardware/window addresses; skip low-valued flags and FASTRAM's
-    zero alias so vector labels remain authoritative at address 0.
+    exported hardware/window addresses at 0x00600000+; skip lower windows,
+    low-valued flags, and FASTRAM's zero alias so vector labels remain
+    authoritative at address 0.
     """
     out: Dict[str, int] = {}
     vunit = next((p for p in ccm.iter_source_files(root, (".EQU",)) if p.stem.upper() == "VUNIT"), None)
@@ -233,6 +234,39 @@ def parse_vunit_hardware_symbols(root: pathlib.Path) -> Dict[str, int]:
             ea = ccm.eval_if_expr(expr, symbols)
         except Exception:
             continue
+        if ea < 0x00600000:
+            continue
+        out.setdefault(name, ea)
+    return out
+
+
+def parse_exact_set_symbols(root: pathlib.Path, symbols: Dict[str, int]) -> Dict[str, int]:
+    """Return exact-case source `.set` definitions evaluated from their own lines."""
+    out: Dict[str, int] = {}
+    for p in ccm.iter_source_files(root, (".ASM", ".EQU")):
+        for raw in p.read_text(errors="ignore").splitlines():
+            code = ccm.strip_comment(raw).strip()
+            m = SET_RE.match(code)
+            if not m:
+                continue
+            name = m.group(1)
+            expr = m.group(2).strip()
+            if not LABEL_TOKEN_RE.match(name):
+                continue
+            if is_pseudo_local_label(name) or name.endswith("?"):
+                continue
+            try:
+                ea = ccm.eval_if_expr(expr, symbols)
+            except Exception:
+                continue
+            out.setdefault(name, ea)
+    return out
+
+
+def parse_high_set_symbols(root: pathlib.Path, symbols: Dict[str, int]) -> Dict[str, int]:
+    """Return exportable high absolute .set symbols as globals."""
+    out: Dict[str, int] = {}
+    for name, ea in parse_exact_set_symbols(root, symbols).items():
         if ea < 0x00600000:
             continue
         out.setdefault(name, ea)
@@ -514,17 +548,16 @@ def source_set_symbol_addr(sym: str, symbols: Dict[str, int]) -> Optional[int]:
     return None
 
 
-def resolve_paired_operand_addr(
+def resolve_paired_operand_addr_ex(
     rom_tok: str,
     source_sym: str,
     module: str,
     symbols: Dict[str, int],
     address_map: Dict[str, int],
     *,
-    allow_source_set: bool,
     fallback_map: Optional[Dict[str, int]] = None,
     prefer_symbol_lookup: bool = False,
-) -> Optional[int]:
+) -> Tuple[Optional[int], bool]:
     def _lookup_exact(sym: str, amap: Dict[str, int]) -> Optional[int]:
         raw = sym.strip().strip(",").lstrip("@*#+-").strip("()")
         if not raw:
@@ -567,23 +600,37 @@ def resolve_paired_operand_addr(
         return None
 
     if prefer_symbol_lookup:
-        if allow_source_set:
-            ea = source_set_symbol_addr(source_sym, symbols)
-            if ea is not None:
-                return ea
         ea = _lookup_symbol_first()
         if ea is not None:
-            return ea
-        return parse_rom_operand_addr(rom_tok)
+            return ea, False
+        return parse_rom_operand_addr(rom_tok), False
 
     ea = parse_rom_operand_addr(rom_tok)
     if ea is not None:
-        return ea
-    if allow_source_set:
-        ea = source_set_symbol_addr(source_sym, symbols)
-        if ea is not None:
-            return ea
-    return _lookup_symbol_first()
+        return ea, False
+    return _lookup_symbol_first(), False
+
+
+def resolve_paired_operand_addr(
+    rom_tok: str,
+    source_sym: str,
+    module: str,
+    symbols: Dict[str, int],
+    address_map: Dict[str, int],
+    *,
+    fallback_map: Optional[Dict[str, int]] = None,
+    prefer_symbol_lookup: bool = False,
+) -> Optional[int]:
+    ea, _used_source_set = resolve_paired_operand_addr_ex(
+        rom_tok,
+        source_sym,
+        module,
+        symbols,
+        address_map,
+        fallback_map=fallback_map,
+        prefer_symbol_lookup=prefer_symbol_lookup,
+    )
+    return ea
 
 
 def macro_invocation_tag(raw_line: str, macros: Dict[str, ccm.MacroDef]) -> Optional[str]:
@@ -1904,6 +1951,8 @@ def main() -> None:
     macros = ccm.parse_macros(root)
     symbols = ccm.parse_set_symbols(root)
     vunit_hardware_symbols = parse_vunit_hardware_symbols(root)
+    exact_set_symbols = parse_exact_set_symbols(root, symbols)
+    high_set_symbols = parse_high_set_symbols(root, symbols)
     seed_addresses = parse_address_map(seed_map)
     use_ida_map = os.environ.get("CRUSNUSA_USE_IDA_MAP", "").strip() not in {"", "0", "false", "False"}
     ida_lookup = parse_address_map(ida_map) if (use_ida_map and ida_map.exists()) else {}
@@ -2264,7 +2313,6 @@ def main() -> None:
                         tmod,
                         symbols,
                         known_addresses,
-                        allow_source_set=False,
                         fallback_map=ida_lookup,
                     )
                     if tea is not None:
@@ -2288,7 +2336,6 @@ def main() -> None:
                         tmod,
                         symbols,
                         known_addresses,
-                        allow_source_set=False,
                         fallback_map=ida_lookup,
                     )
                     if tea is not None:
@@ -2307,7 +2354,6 @@ def main() -> None:
                         tmod,
                         symbols,
                         known_addresses,
-                        allow_source_set=False,
                         fallback_map=ida_lookup,
                     )
                     if tea is not None:
@@ -2323,19 +2369,20 @@ def main() -> None:
                 up = s.upper()
                 if REGISTER_RE.match(up):
                     continue
+                if s in exact_set_symbols:
+                    continue
                 ridx = idx + 1
                 if source_symbol_starts_word_block(root, s, module, source_label_lines, module_lines_cache, symbols):
                     dea = lookup_exact_address_map_symbol(s, module, known_addresses)
                     if dea is None:
                         dea = lookup_exact_address_map_symbol(s, module, ida_lookup)
                     if dea is None and ridx < len(rtoks):
-                        dea = resolve_paired_operand_addr(
+                        dea, _used_source_set = resolve_paired_operand_addr_ex(
                             rtoks[ridx],
                             s,
                             module,
                             symbols,
                             known_addresses,
-                            allow_source_set=False,
                             fallback_map=ida_lookup,
                             prefer_symbol_lookup=False,
                         )
@@ -2346,13 +2393,12 @@ def main() -> None:
                     continue
                 if ridx >= len(rtoks):
                     continue
-                dea = resolve_paired_operand_addr(
+                dea, _used_source_set = resolve_paired_operand_addr_ex(
                     rtoks[ridx],
                     s,
                     module,
                     symbols,
                     known_addresses,
-                    allow_source_set=True,
                     fallback_map=ida_lookup,
                     prefer_symbol_lookup=True,
                 )
@@ -2563,6 +2609,21 @@ def main() -> None:
 
     for lbl, ea in sorted(vunit_hardware_symbols.items(), key=lambda kv: (kv[1], kv[0].upper())):
         add_row(lbl, "", "data", ea)
+
+    for lbl, ea in sorted(high_set_symbols.items(), key=lambda kv: (kv[1], kv[0].upper())):
+        add_row(lbl, "", "data", ea)
+
+    # Source .set symbols are not canonical labels for address.map / IDA
+    # import output unless they are high absolute MMIO/window addresses.
+    for key, row in list(rows.items()):
+        lbl, _name, mod, kind, ea_s, _status, _src, _rom = row
+        if kind != "data":
+            continue
+        if (symbol_key(lbl), mod.upper()) in source_label_lines:
+            continue
+        set_ea = exact_set_symbols.get(lbl)
+        if set_ea is not None and set_ea < 0x00600000:
+            rows.pop(key, None)
 
     promoted_aliases = promote_same_address_module_aliases()
     final_label_names = assign_final_label_names(rows)

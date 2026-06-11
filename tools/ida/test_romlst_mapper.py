@@ -29,6 +29,7 @@ from ida.walk_source_and_rom import (
     source_rom_data_words_between,
     source_symbol_starts_word_block,
     source_set_symbol_addr,
+    parse_high_set_symbols,
     lookup_address_map_symbol,
     source_comment_tag,
     canonical_module_for_label,
@@ -202,9 +203,8 @@ def main() -> None:
     sptr_words = source_rom_data_words_between(cusa_lines, 1967, 1974, macros, symbols)
     assert sptr_words == 5, f'SPTR gap expected 5 text words, got {sptr_words}'
 
-    # 10) If IDA has already been labelled, operands can become symbolic
-    #     without a definition line in the listing (for example @CPU_WS@CMOS).
-    #     In that case, absolute .set symbols must still resolve from source.
+    # 10) Source .set symbols are still parsed as values, but are no longer
+    #     used as an operand-address fallback during source<->ROM pairing.
     assert parse_rom_operand_addr('@CPU_WS@CMOS') is None
     assert parse_rom_operand_addr('INV_F30') is None
     assert parse_rom_operand_addr('sub_64') == 0x64
@@ -222,12 +222,17 @@ def main() -> None:
         f'active VERSION_STAMP line expected 81, got {active_label_lines[("VERSION_STAMP", "CUSA")]!r}'
     )
 
-    # 11) VUNIT.EQU hardware/window addresses should be emitted even when a
-    #     port is only referenced numerically in the listing/source walk.
+    # 11) VUNIT.EQU hardware/window addresses are exportable only in the
+    #     high MMIO/window range at 0x00600000 and above.
     vunit_hw = parse_vunit_hardware_symbols(ROOT)
+    high_sets = parse_high_set_symbols(ROOT, symbols)
     assert vunit_hw['SWITCH2'] == 0x991050, f'SWITCH2 expected 0x991050, got {vunit_hw.get("SWITCH2")!r}'
     assert vunit_hw['FIFO_ADDR'] == 0x600000, f'FIFO_ADDR expected 0x600000, got {vunit_hw.get("FIFO_ADDR")!r}'
     assert 'WDOG' not in vunit_hw, 'WDOG bit mask should not be treated as a hardware address'
+    assert high_sets['COMMPAL'] == 0x990000, f'COMMPAL expected 0x990000, got {high_sets.get("COMMPAL")!r}'
+    assert high_sets['WHEEL'] == 0x995000, f'WHEEL expected 0x995000, got {high_sets.get("WHEEL")!r}'
+    assert high_sets['COMMDP'] == 0x997000, f'COMMDP expected 0x997000, got {high_sets.get("COMMDP")!r}'
+    assert high_sets['COMM_CTL'] == 0x997001, f'COMM_CTL expected 0x997001, got {high_sets.get("COMM_CTL")!r}'
 
     # 12) address.map is regenerated from seed anchors each run, so the
     #     VERSION_STAMP pointer targets must land on the live string and
@@ -240,6 +245,18 @@ def main() -> None:
     assert inv_f30 == 0x0000A5B0, f'INV_F30 map expected 0x0000A5B0, got {inv_f30!r}'
     camera_pos_i = lookup_address_map_symbol('_CAMERAPOSI', 'ATTRDRNE', address_map)
     assert camera_pos_i == 0x0000B0DB, f'_CAMERAPOSI map expected 0x0000B0DB, got {camera_pos_i!r}'
+    assert '_CAMERAPOS' not in address_map, '_CAMERAPOS .set alias should not be regenerated into address.map'
+    assert '_CAMERARAD' not in address_map, '_CAMERARAD .set alias should not be regenerated into address.map'
+    assert '_CAMERAMATRIX' not in address_map, '_CAMERAMATRIX .set alias should not be regenerated into address.map'
+    assert address_map['FIFO_ADDR'] == 0x00600000, f'FIFO_ADDR map expected 0x00600000, got {address_map.get("FIFO_ADDR")!r}'
+    assert address_map['SCREEN'] == 0x00900000, f'SCREEN map expected 0x00900000, got {address_map.get("SCREEN")!r}'
+    assert address_map['COLORAM'] == 0x009E0000, f'COLORAM map expected 0x009E0000, got {address_map.get("COLORAM")!r}'
+    assert address_map['COMMPAL'] == 0x00990000, f'COMMPAL map expected 0x00990000, got {address_map.get("COMMPAL")!r}'
+    assert address_map['WHEEL'] == 0x00995000, f'WHEEL map expected 0x00995000, got {address_map.get("WHEEL")!r}'
+    assert address_map['COMMDP'] == 0x00997000, f'COMMDP map expected 0x00997000, got {address_map.get("COMMDP")!r}'
+    assert address_map['COMM_CTL'] == 0x00997001, f'COMM_CTL map expected 0x00997001, got {address_map.get("COMM_CTL")!r}'
+    assert address_map['pi'] == 0x00CD195B, f'pi map expected 0x00CD195B, got {address_map.get("pi")!r}'
+    assert 'COLORAM@MEMTEST' not in address_map, 'COLORAM .set should not be regenerated as a module-scoped operand alias'
     display_high_scores = lookup_address_map_symbol('DISPLAY_HIGH_SCORES', 'HSTDP', address_map)
     assert display_high_scores == 0x00003859, f'DISPLAY_HIGH_SCORES map expected 0x00003859, got {display_high_scores!r}'
     scroll_white_i = lookup_address_map_symbol('scroll_whiteI', 'HSTDP', address_map)
@@ -379,13 +396,15 @@ def main() -> None:
     print('ok: LDL _SECshared pointer=0x0000B0BF target=0x0000A130')
     print('ok: TEXTIT startup0 pointer=0x0000B0C5 target=0x00C10253')
     print('ok: CUSA SPTR data gap accounts for 0x4FBB..0x4FBF')
-    print('ok: source .set fallback resolves CPU_WS/FIFO_CONTROL when ROM operand is symbolic')
+    print('ok: source .set values still parse, but are not used as ROM operand fallback')
     print('ok: parse_rom_operand_addr does not misread INV_F30 as 0xF30')
     print('ok: .set labels canonicalize as globals')
     print('ok: active-only source label scan keeps VERSION_STAMP on the live .else branch')
-    print('ok: VUNIT hardware symbols include SWITCH2 and skip bit masks')
+    print('ok: VUNIT MMIO symbols include SWITCH2/FIFO_ADDR and skip low-range entries/bit masks')
+    print('ok: high non-VUNIT .set globals like COMMPAL/WHEEL/COMMDP/COMM_CTL are exportable')
     print('ok: regenerated address.map keeps VERSION_STAMP on 0x00C10288 and drops 0x00C102DC')
     print('ok: regenerated address.map keeps INV_F30 and _CAMERAPOSI at their pointer-cell addresses')
+    print('ok: regenerated address.map keeps only .set exports at 0x00600000+ and skips DIRQ.EQU aliases')
     print('ok: label-only executable entries like DISPLAY_HIGH_SCORES are emitted from covered line mapping')
     print('ok: LDP source lines emit semantic comments')
     print('ok: same-address parallel ROM ops reorder to source order')
