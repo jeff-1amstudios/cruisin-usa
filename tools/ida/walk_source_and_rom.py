@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import build_ida_dp0_script  # type: ignore
 import build_ida_import_script  # type: ignore
 import shared_lib as ccm  # type: ignore
 
@@ -2706,12 +2705,8 @@ def main() -> None:
         dp0_tsv=dpout,
         comments_tsv=cmout,
     )
-    dp_py_out = py_out.with_name("ida_dp0_import.py")
-    dp_only_marks = build_ida_dp0_script.build_dp0_script(dpout, dp_py_out)
     print(f"wrote {py_out}")
     print(f"labels={labels_emitted} dp0_marks={dp0_emitted} comments={comments_emitted}")
-    print(f"wrote {dp_py_out}")
-    print(f"dp0_only_marks={dp_only_marks}")
 
     # Append high-level run metrics for regression tracking.
     run_log.parent.mkdir(parents=True, exist_ok=True)

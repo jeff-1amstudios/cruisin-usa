@@ -9,7 +9,6 @@ Cruis'n USA reverse-engineering workspace.
 - `tools/ida/test_romlst_mapper.py`: regression tests for mapper behavior.
 - `tools/ida/address.map`: canonical persistent name -> address database.
 - `tools/ida/ida_label_import.py`: generated IDAPython label import script.
-- `tools/ida/ida_dp0_import.py`: generated IDAPython DP=0 mark script.
 - `tools/ida/log/`: generated TSV/log outputs.
 
 ## Sources Of Truth
@@ -28,7 +27,6 @@ Cruis'n USA reverse-engineering workspace.
    - `python3 tools/ida/walk_source_and_rom.py`
 3. Apply:
    - `tools/ida/ida_label_import.py`
-   - optionally `tools/ida/ida_dp0_import.py`
 
 ## Project Rules
 
