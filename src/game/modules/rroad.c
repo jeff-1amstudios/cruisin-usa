@@ -25,6 +25,14 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
+/* asm: FREEZE_IT	.bss	FREEZE_IT,1 */
+int FREEZE_IT;
+/* asm: COLL_POS	.bss	COLL_POS,3 */
+int COLL_POS[3];
+/* asm: THE_TRAIN_SPEED	.bss	THE_TRAIN_SPEED,1 */
+int THE_TRAIN_SPEED;
+/* asm: KILL_TRAIN	.bss	KILL_TRAIN,1 */
+int KILL_TRAIN;
 #define TRAIN_SPEED 240
 #define TRAIN_SPEED_MIN 170
 #define TRAIN_SPEED_MAX 280
@@ -39,8 +47,6 @@
 // ;	FLOAT	TRAIN_SPEED,R0
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: FLYTRAINPI	.word	FLYTRAINP */
-int FLYTRAINPI = (int)(FLYTRAINP);
 // *----------------------------------------------------------------------------
 
 void RRSTART_ENGINE(void)

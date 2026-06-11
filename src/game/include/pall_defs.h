@@ -4,18 +4,25 @@
 /* Generated from asm/PALL.ASM. */
 
 // asm: 	.bss  	PALRAM,PALNUM		;ACTIVE PALETTES
-#define PALRAM 0x0000C9BD
+// addr: 0x0000C9BD
+extern int PALRAM[PALNUM];
 // asm: 	.bss	RAWLOCS,PALNUM
-#define RAWLOCS 0x0000CA3D
+// addr: 0x0000CA3D
+extern int RAWLOCS[PALNUM];
 // asm: 	.bss	PTTRAM,PALNUM*3		;PALLETTE TRANSFER RAM
-#define PTTRAM 0x0000CABD
+// addr: 0x0000CABD
+extern int PTTRAM[PALNUM*3];
 // asm: 	.bss	PALXFER_ACTIVE,1
-#define PALXFER_ACTIVE 0x0000CC3F
+// addr: 0x0000CC3F
+extern int PALXFER_ACTIVE;
 // asm: 	.bss	PALXFER_FREE,1
-#define PALXFER_FREE 0x0000CC40
+// addr: 0x0000CC40
+extern int PALXFER_FREE;
 // asm: 	.bss	PALXFER_AVAILABLE_P,1
-#define PALXFER_AVAILABLE_P 0x0000CC41
+// addr: 0x0000CC41
+extern int PALXFER_AVAILABLE_P;
 // asm: 	.bss	PALXFER_STR,PALX_SIZE*NXFER_PALS
-#define PALXFER_STR 0x0000CC42
+// addr: 0x0000CC42
+extern int PALXFER_STR[PALX_SIZE*NXFER_PALS];
 
 #endif /* PALL_H */

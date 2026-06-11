@@ -32,14 +32,10 @@
 // *AR6 is set by the creator of this routine. 0= play dcs logo sound 1=don't play
 // *
 // *----------------------------------------------------------------------------
-/* asm: SPIN_CARTABI	.word	SPIN_CARTAB */
-int SPIN_CARTABI = (int)(SPIN_CARTAB);
 /* asm: SPIN_CARTAB	.word	missle,hotrod,testor,cvette */
 int SPIN_CARTAB[] = { missle, hotrod, testor, cvette };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: DEMOTHANKS_LISTI	.word	DEMOTHANKS_LIST */
-int DEMOTHANKS_LISTI = (int)(DEMOTHANKS_LIST);
 const char DT1[] = "THANK YOU FOR PLAYING";
 const char DT2[] = "CRUISIN USA";
 const char DT3[] = "SNEAK PREVIEW";

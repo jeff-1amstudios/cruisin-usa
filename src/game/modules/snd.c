@@ -24,13 +24,17 @@
 // *ALL RIGHTS RESERVED
 // *
 // *
-/* asm: SNDTABI	.word	SNDTAB */
-int SNDTABI = (int)(SNDTAB);
+/* asm: IN_RESET_MODE	fbss	IN_RESET_MODE,1 */
+int IN_RESET_MODE;
+/* asm: RESET_TIMER	fbss	RESET_TIMER,R0 */
+int RESET_TIMER[R0];
+/* asm: SNDSTR	.bss	SNDSTR,NCHAN*SND_SIZ */
+int SNDSTR[NCHAN*SND_SIZ];
+/* asm: SNDEND	.bss	SNDEND,0 */
+int SNDEND;
 // *----------------------------------------------------------------------------
 // *STATION TABLE
 // *
-/* asm: STATION_LISTI	.word	STATION_LIST */
-int STATION_LISTI = (int)(STATION_LIST);
 /* asm: STATION_LIST	.word	MUNSTER_SURF	;0 */
 /* asm: 	.word	SHUFFLE_DRIV */
 /* asm: 	.word	DISCODUCK */
@@ -40,17 +44,25 @@ int STATION_LISTI = (int)(STATION_LIST);
 /* asm: 	.word	DISCODUCK */
 /* asm: 	.word	BOOGIE */
 int STATION_LIST[] = { MUNSTER_SURF, SHUFFLE_DRIV, DISCODUCK, SPAGETTI, VENTURE, STRAIGHT_2_4, DISCODUCK, BOOGIE };
-/* asm: STATION_TEXTI	.word	STATION_TEXT */
-int STATION_TEXTI = (int)(STATION_TEXT);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: STATION_TIMEOUT	.bss	STATION_TIMEOUT,1 */
+int STATION_TIMEOUT;
+/* asm: RS_X	.bss	RS_X,1 */
+int RS_X;
 // *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+// *PARAMETERS
+// *	AR2	STATION #
+// *
+#endif
+// *----------------------------------------------------------------------------
+/* asm: TUNE_IDX	.bss	TUNE_IDX,1 */
+int TUNE_IDX;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CLEAR THE SOUND DATA BASE
 // *
-/* asm: SNDSTRI	.word	SNDSTR */
-int SNDSTRI = (int)(SNDSTR);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *MAINLY FOR DIAGNOSTICS
@@ -122,26 +134,6 @@ RBMGAME:
     // asm: 	CALL	CHANGE_STATION
     // asm: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_BUT", 0, 0);
-    UNIMPL();
-}
-
-void SET_STATION(void)
-{
-    // *----------------------------------------------------------------------------
-    // *----------------------------------------------------------------------------
-    // *PARAMETERS
-    // *	AR2	STATION #
-    // *
-#if DEBUG
-    // asm: 	CMPI	0,AR2
-    // asm: 	BLT	$
-    // asm: 	CMPI	NUM_STATIONS,AR2
-    // asm: 	BGE	$
-#endif
-    // asm: 	STI	AR2,@TUNE_IDX
-    // asm: 	CALL	RESUME_TUNE
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_STATION", 0, 0);
     UNIMPL();
 }
 

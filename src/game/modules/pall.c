@@ -24,18 +24,20 @@
 // *PALETTE MANAGEMENT ROUTINES
 // *PALETTES ARE ALLOCATED IN 128 BLOCKS OF 256 COLORS
 // *
+/* asm: PALRAM	.bss	PALRAM,PALNUM */
+int PALRAM[PALNUM];
+/* asm: RAWLOCS	.bss	RAWLOCS,PALNUM */
+int RAWLOCS[PALNUM];
+/* asm: PTTRAM	.bss	PTTRAM,PALNUM*3 */
+int PTTRAM[PALNUM*3];
+/* asm: NUM_FIXED	.bss	NUM_FIXED,1 */
+int NUM_FIXED;
 // *----------------------------------------------------------------------------
 // *INDEX STORAGE
 /* asm: PALROMI	.word	_PALROM		;INDEXED PALETTES SOURCE ADDR LIST */
 int PALROMI = (int)(_PALROM);
-/* asm: PTTRAMI	.word	PTTRAM		;PALETTE TRANSFER RAM */
-int PTTRAMI = (int)(PTTRAM);
-/* asm: PALRAMI	.word	PALRAM		;INDEXED PALETTE ACTIVE LOCATION LIST */
-int PALRAMI = (int)(PALRAM);
 /* asm: PALLISTI	.word	_PALLIST	;CROSS-REFERENCE LIST */
 int PALLISTI = (int)(_PALLIST);
-/* asm: RAWLOCSI	.word	RAWLOCS		;RAW LOCATION REFERENCE SPACE */
-int RAWLOCSI = (int)(RAWLOCS);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CLEAR OUT PALETTE RAM
@@ -49,6 +51,18 @@ int RAWLOCSI = (int)(RAWLOCS);
 // *CLOBBERS
 // *	R0,R1,R7,AR0,AR1,AR2
 // *
+/* asm: PALSXFER	.bss	PALSXFER,1 */
+int PALSXFER;
+/* asm: COLRAML	.word	COLORAM */
+int COLRAML = (int)(COLORAM);
+/* asm: COLRAMH	.word	COLORAM+7FFFh */
+int COLRAMH = (int)(COLORAM+0x7FFF);
+#endif
+// ;	STI	R1,*AR0++	;CLEAR OUT COUNT
+// ;	LDI	*AR0++,AR1	;GET SOURCE
+// ;	LDI	*AR0++,AR2	;GET DESTINATION
+#if DEBUG
+#endif
 // *----------------------------------------------------------------------------
 // *STRUCT PALXFER
 #define PALX_LINK 0
@@ -57,13 +71,15 @@ int RAWLOCSI = (int)(RAWLOCS);
 #define PALX_COUNT 3
 #define PALX_SIZE 4
 // *ENDSTRUCT
-/* asm: PALXFER_ACTIVEI	.word	PALXFER_ACTIVE */
-int PALXFER_ACTIVEI = (int)(PALXFER_ACTIVE);
-/* asm: PALXFER_FREEI	.word	PALXFER_FREE */
-int PALXFER_FREEI = (int)(PALXFER_FREE);
-/* asm: PALXFER_STRI	.word	PALXFER_STR */
-int PALXFER_STRI = (int)(PALXFER_STR);
 #define NXFER_PALS 128
+/* asm: PALXFER_ACTIVE	.bss	PALXFER_ACTIVE,1 */
+int PALXFER_ACTIVE;
+/* asm: PALXFER_FREE	.bss	PALXFER_FREE,1 */
+int PALXFER_FREE;
+/* asm: PALXFER_AVAILABLE_P	.bss	PALXFER_AVAILABLE_P,1 */
+int PALXFER_AVAILABLE_P;
+/* asm: PALXFER_STR	.bss	PALXFER_STR,PALX_SIZE*NXFER_PALS */
+int PALXFER_STR[PALX_SIZE*NXFER_PALS];
 // *----------------------------------------------------------------------------
 
 void PAL_INIT(void)
@@ -138,45 +154,6 @@ I889:
     // ;	LDI	*AR0++,AR1		;GET SOURCE
     // ;	LDI	*AR0++,AR2		;GET DESTINATION
 #if DEBUG
-    // asm: 	CMPI	@COLRAML,AR2
-    // asm: 	SLOCKON	LT,"PALL\PALTRANS SETUP XFER OUT OF CRAM LT"
-    // asm: 	CMPI	@COLRAMH,AR2
-    // asm: 	SLOCKON	GT,"PALL\PALTRANS SETUP XFER OUT OF CRAM GT"
-#endif
-    // asm: 	SUBI	1,R0		;DEC COUNT BY 1
-    // asm: 	LDI	R0,RC
-    // asm: 	RPTB	PACBLK
-    // asm: 	LDI	*AR1++,R2
-    // asm: 	STI	R2,*AR2++	;FIRST COLOR
-    // asm: 	RS	16,R2
-PACBLK:
-    // asm: STI	R2,*AR2++
-    // asm: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
-NOT_PACKED_PAL:
-    // ;	STI	R1,*AR0++	;CLEAR OUT COUNT
-    // asm: 	LDI	*+AR0(PALX_SADDR),AR1	;GET SOURCE
-    // asm: 	LDI	*+AR0(PALX_DADDR),AR2	;GET DESTINATION
-    // ;	LDI	*AR0++,AR1	;GET SOURCE
-    // ;	LDI	*AR0++,AR2	;GET DESTINATION
-#if DEBUG
-    // asm: 	CMPI	@COLRAML,AR2
-    // asm: 	SLOCKON	LT,"PALL\PALTRANS SETUP XFER OUT OF CRAM LT 2"
-    // asm: 	CMPI	@COLRAMH,AR2
-    // asm: 	SLOCKON	GT,"PALL\PALTRANS SETUP XFER OUT OF CRAM GT 2"
-#endif
-    // asm: 	SUBI	2,R0		;DEC COUNT BY 1
-    // asm: 	BNN	REGDOIT
-    // asm: 	LDI	*AR1++,R2	;single case
-    // asm: 	STI	R2,*AR2++
-    // asm: 	B	PALTR0
-REGDOIT:
-    // asm: 	LDI	*AR1++,R2
-    // asm: 	RPTS	R0
-    // asm: 	LDI	*AR1++,R2
-    // asm: 	STI	R2,*AR2++
-    // asm: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
-PALTRX:
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_XFER", 0, 0);
     UNIMPL();
 }

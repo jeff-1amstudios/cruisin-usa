@@ -24,34 +24,32 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
+/* asm: BABA1	SPTR	"THE PRESIDENT OF" */
+char *BABA1 = "THE PRESIDENT OF";
+/* asm: BABA2	SPTR	"THE UNITED STATES" */
+char *BABA2 = "THE UNITED STATES";
 // *----------------------------------------------------------------------------
 // *
 // *
 // *JSRPed from BONUS SCREEN
 // *
 // *----------------------------------------------------------------------------
-/* asm: ANI_HOTTUBI	.word	ANI_HOTTUB */
-int ANI_HOTTUBI = (int)(ANI_HOTTUB);
 /* asm: ANI_HOTTUB	.word	htub,htub1,htub2,htub3,htub4,htub5,-1 */
 int ANI_HOTTUB[] = { htub, htub1, htub2, htub3, htub4, htub5, -1 };
-/* asm: HILLANII	.word	HILLANI */
-int HILLANII = (int)(HILLANI);
 /* asm: HILLANI	.word	hilly1,hilly2,hilly3,hilly4,hilly5,hilly6,-1 */
 int HILLANI[] = { hilly1, hilly2, hilly3, hilly4, hilly5, hilly6, -1 };
-/* asm: GIRLANII	.word	GIRLANI */
-int GIRLANII = (int)(GIRLANI);
 /* asm: GIRLANI	.word	girl1,girl2,girl3,girl4,girl5,girl6,-1 */
 int GIRLANI[] = { girl1, girl2, girl3, girl4, girl5, girl6, -1 };
 // ;hott1,hott2,hott3,hott4,hott5,hott6,-1
-/* asm: ANI_RADARI	.word	ANI_RADAR */
-int ANI_RADARI = (int)(ANI_RADAR);
 /* asm: ANI_RADAR	.word	rad1,rad2,rad3,rad4,rad5,rad6,rad7,rad8,rad9,-1 */
 int ANI_RADAR[] = { rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9, -1 };
-/* asm: ANI_STAGI	.word	ANI_STAG */
-int ANI_STAGI = (int)(ANI_STAG);
 /* asm: ANI_STAG	.word	stagent1,stagent2,stagent3,5,stagent2,-1 */
 int ANI_STAG[] = { stagent1, stagent2, stagent3, 5, stagent2, -1 };
 // *----------------------------------------------------------------------------
+/* asm: PC1	SPTR	"CELEBRITY IMPERSONATION" */
+char *PC1 = "CELEBRITY IMPERSONATION";
+/* asm: PC2	SPTR	"POLITICAL CARTOON" */
+char *PC2 = "POLITICAL CARTOON";
 // *----------------------------------------------------------------------------
 #define BABE_ASTRT PDATA
 // *----------------------------------------------------------------------------

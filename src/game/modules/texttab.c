@@ -15,8 +15,9 @@
 // *ALL RIGHTS RESERVED
 // *
 // 	;size = 22
-/* asm: FONTDIGLGI	.word	FONTDIGLG */
-int FONTDIGLGI = (int)(FONTDIGLG);
+/* asm: FONT40TABI	.word	FONT40_TAB-(17*FONTENT_SIZE) */
+int FONT40TABI = (int)(FONT40_TAB-(17*FONTENT_SIZE));
+// *SIZE = 43?
 
 void FONTDIGLG(void)
 {
@@ -68,9 +69,6 @@ void FONTN43TAB(void)
     // asm: 	FONTENT	5,113,136,42,0	;8
     // asm: 	FONTENT	5,139,162,42,0	;9
     // asm: 	FONTENT	0,4,24,0,0	;#
-    // *SIZE = 43?
-    // asm: 	FONTENT	1,233,246,44,0	;.	73,87
-    // asm: 	FONTENT	1,229,242,44,0	;!	88,131
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FONTN43TAB", 0, 0);
     UNIMPL();
 }

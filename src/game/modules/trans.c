@@ -29,10 +29,16 @@
 int EPALR = (int)(EPALRR);
 /* asm: EPALL	.word	EPALRL */
 int EPALL = (int)(EPALRL);
+/* asm: EPALRR	.bss	EPALRR,129 */
+int EPALRR[129];
+/* asm: EPALRL	.bss	EPALRL,129 */
+int EPALRL[129];
 // *----------------------------------------------------------------------------
 // *CHOOSE TRANSMISSION
 // *
 // *
+// *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -44,17 +50,23 @@ int EPALL = (int)(EPALRL);
 // *
 // *
 // *
+/* asm: DOORTHETA	.bss	DOORTHETA,1 */
+int DOORTHETA;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
 // *
 // *
+/* asm: LASTCHOICEA	.bss	LASTCHOICEA,1 */
+int LASTCHOICEA;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
 // *RETURNS
 // *	R0	FL 0-1.0 Steering wheel position
 // *
+/* asm: GUWP	.bss	GUWP,1 */
+int GUWP;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -64,16 +76,30 @@ int EPALL = (int)(EPALRL);
 // *	forward objects	-1
 // *	others		0
 // *
+/* asm: CT_CURSOR	.bss	CT_CURSOR,1 */
+int CT_CURSOR;
+/* asm: CT_WHEEL	.bss	CT_WHEEL,1 */
+int CT_WHEEL;
+/* asm: CT_PUSHTOCYCLE	.bss	CT_PUSHTOCYCLE,1 */
+int CT_PUSHTOCYCLE;
+/* asm: CT_LENG	.bss	CT_LENG,1 */
+int CT_LENG;
+/* asm: CT_RENG	.bss	CT_RENG,1 */
+int CT_RENG;
+/* asm: CT_MAN	.bss	CT_MAN,1 */
+int CT_MAN;
+/* asm: CT_AUTO	.bss	CT_AUTO,1 */
+int CT_AUTO;
+/* asm: CT_TURNTOSEL	.bss	CT_TURNTOSEL,1 */
+int CT_TURNTOSEL;
+/* asm: TRANS_HEAD	.bss	TRANS_HEAD,1 */
+int TRANS_HEAD;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: TRNTABI	.word	TRNTAB */
-int TRNTABI = (int)(TRNTAB);
 /* asm: TRNTAB	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
 int TRNTAB[] = { whel1, whel2, whel3, whel4, whel3, whel2, -1 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: CYCTABI	.word	CYCTAB */
-int CYCTABI = (int)(CYCTAB);
 /* asm: CYCTAB	.word	trm3,trm2,trm1,trm2,trm3,trm4,-1 */
 int CYCTAB[] = { trm3, trm2, trm1, trm2, trm3, trm4, -1 };
 // *----------------------------------------------------------------------------
@@ -220,65 +246,6 @@ CTLPX:
     // asm: 	JSRP	OPEN_DOOR_PROC
     // asm: 	RETP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOOSE_TRANSMISSION", 0, 0);
-    UNIMPL();
-}
-
-void OPEN_DOOR_PROC(void)
-{
-    // *----------------------------------------------------------------------------
-    // *----------------------------------------------------------------------------
-    // asm: 	CREATE	THE_CAR_CHOICE_PROC,UTIL_C
-    // asm: 	LDI	@VECTORCI,AR2
-    // asm: 	CLRF	R0
-    // asm: 	STF	R0,*+AR2(X)
-    // asm: 	STF	R0,*+AR2(Y)
-    // asm: 	FLOAT	-8500,R0
-    // asm: 	STF	R0,*+AR2(Z)
-    // asm: 	LDI	@MATRIXAI,R2
-    // asm: 	LDI	AR2,R3
-    // asm: 	CALL	MATRIX_MUL
-    // asm: 	LDF	*+AR2(X),R0
-    // asm: 	ADDF	@START_POS+X,R0
-    // asm: 	STF	R0,*+AR2(X)
-    // asm: 	LDF	*+AR2(Z),R0
-    // asm: 	ADDF	@START_POS+Z,R0
-    // asm: 	STF	R0,*+AR2(Z)
-    // asm: 	LDI	30,AR4
-IJH:
-    // asm: LDF	@DOORTHETA,R0
-    // asm: 	ADDF	0.0628,R0
-    // asm: 	STF	R0,@DOORTHETA
-    // asm: 	PUSH	AR4
-    // asm: 	CALL	DOOR_OPENING
-    // asm: 	POP	AR4
-    // asm: 	LDI	@CAMERAPOSI,AR0
-    // asm: 	LDI	@VECTORCI,AR1
-    // asm: 	LDF	*+AR1(X),R0
-    // asm: 	SUBF	*+AR0(X),R0
-    // asm: 	MPYF	0.15,R0
-    // asm: 	ADDF	*+AR0(X),R0
-    // asm: 	STF	R0,*+AR0(X)
-    // asm: 	LDF	*+AR1(Z),R0
-    // asm: 	SUBF	*+AR0(Z),R0
-    // asm: 	MPYF	0.15,R0
-    // asm: 	ADDF	*+AR0(Z),R0
-    // asm: 	STF	R0,*+AR0(Z)
-    // asm: 	SLEEP	1
-    // asm: 	DBU	AR4,IJH
-    // asm: 	CALL	DOOR_ELEMENT_DELETE_ALL
-    // asm: 	LDI	UTIL_C|CHOOSETRANS_T,R0
-    // asm: 	LDI	-1,R1
-    // asm: 	CALL	PRC_KILLALL
-    // asm: 	LDI	@EPALL,AR2
-    // asm: 	CALL	PAL_FIND_RAW
-    // asm: 	LDI	R0,AR2
-    // asm: 	CALL	PAL_DELETE_RAW
-    // asm: 	LDI	@EPALR,AR2
-    // asm: 	CALL	PAL_FIND_RAW
-    // asm: 	LDI	R0,AR2
-    // asm: 	CALL	PAL_DELETE_RAW
-    // asm: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OPEN_DOOR_PROC", 0, 0);
     UNIMPL();
 }
 
@@ -444,14 +411,14 @@ void DOORLISTI(void)
 {
     // *
     // *
-    // *
-    // *
     /* no executable asm lines detected */
     UNIMPL();
 }
 
 void DOOR_OPENING(void)
 {
+    // *
+    // *
     // asm: 	LDF	@DOORTHETA,R2
     // asm: 	LDI	@MATRIXAI,AR2
     // asm: 	CALL	FIND_YMATRIX

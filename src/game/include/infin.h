@@ -4,16 +4,22 @@
 /* Generated from asm/INFIN.ASM. */
 
 // asm: 	.bss	CAMRADY,1  	;NORMALIZED 0-2PI CAMERA RAD
-#define CAMRADY 0x0000E428
+// addr: 0x0000E428
+extern int CAMRADY;
 // asm: 	.bss	HIGHEST_ROADY,1		;FL	CLIP LEVEL IN Y
-#define HIGHEST_ROADY 0x0000E429
+// addr: 0x0000E429
+extern int HIGHEST_ROADY;
 // asm: 	.bss	HIGHEST_ROADY_X,1	;FL	CLIP LEVEL IN Y
-#define HIGHEST_ROADY_X 0x0000E42A
+// addr: 0x0000E42A
+extern int HIGHEST_ROADY_X;
 // asm: 	.bss	VAR_ROAD_KFACTOR,1	;FL	CLIPPING OVERSHOOT FACTOR
-#define VAR_ROAD_KFACTOR 0x0000E42B
+// addr: 0x0000E42B
+extern int VAR_ROAD_KFACTOR;
 // asm: 		.bss	AMOUNT_CLIPPED,1
-#define AMOUNT_CLIPPED 0x0000E42C
+// addr: 0x0000E42C
+extern int AMOUNT_CLIPPED;
 // asm: 	.bss	INFIN_CORRECT,1
-#define INFIN_CORRECT 0x0000E42D
+// addr: 0x0000E42D
+extern int INFIN_CORRECT;
 
 #endif /* INFIN_H */

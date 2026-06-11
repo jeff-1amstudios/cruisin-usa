@@ -19,6 +19,8 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
+/* asm: CAMRADY	.bss	CAMRADY,1 */
+int CAMRADY;
 // *----------------------------------------------------------------------------
 // *SEARCH THE ROAD OBJECTS AND FIND THE HIGHEST POSITIONED OBJECT.
 // *
@@ -30,6 +32,12 @@
 // *
 // *
 #define HIGH_CLIP_LEVEL ((5000-1))
+/* asm: HIGHEST_ROADY	.bss	HIGHEST_ROADY,1 */
+int HIGHEST_ROADY;
+/* asm: HIGHEST_ROADY_X	.bss	HIGHEST_ROADY_X,1 */
+int HIGHEST_ROADY_X;
+/* asm: VAR_ROAD_KFACTOR	.bss	VAR_ROAD_KFACTOR,1 */
+int VAR_ROAD_KFACTOR;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *PLOT INFINITY PLANE
@@ -40,6 +48,8 @@
 // *     0	 2  4  etc.
 // *
 // *
+/* asm: AMOUNT_CLIPPED	.bss	AMOUNT_CLIPPED,1 */
+int AMOUNT_CLIPPED;
 /* asm: LOIVAL	.word	-768 */
 int LOIVAL = (int)(-768);
 /* asm: HIGHIVAL	.word	1536 */
@@ -64,6 +74,8 @@ int BLUESKY[] = { sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I
 // *
 // *
 // *
+/* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
+int INFIN_CORRECT;
 // *----------------------------------------------------------------------------
 
 void FIND_HIGHEST_ROADY(void)
@@ -647,7 +659,6 @@ LOOPA:
     // asm: 	NOP
     // asm: 	DBU	AR4,LOOPA
     // asm: 	RETS
-    // asm: WATERPOS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WATER_INFINITY", 0, 0);
     UNIMPL();
 }

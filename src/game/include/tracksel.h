@@ -4,14 +4,19 @@
 /* Generated from asm/TRACKSEL.ASM. */
 
 // asm: 	.bss	RAW_CHOOSENTRK,1	;BEFORE CONVERTING
-#define RAW_CHOOSENTRK 0x0080EA5D
+// addr: 0x0080EA5D
+extern int RAW_CHOOSENTRK;
 // asm: 	.bss	HIDDEN_ON,1
-#define HIDDEN_ON 0x0000EA60
+// addr: 0x0000EA60
+extern int HIDDEN_ON;
 // asm: 	.bss	TSEL_HEAD,1
-#define TSEL_HEAD 0x0080EA61
+// addr: 0x0080EA61
+extern int TSEL_HEAD;
 // asm: 	.bss	TSEL_THEONE,1
-#define TSEL_THEONE 0x0080EA62
+// addr: 0x0080EA62
+extern int TSEL_THEONE;
 // asm: 	.bss	BOILEROBJ,1
-#define BOILEROBJ 0x0080EA63
+// addr: 0x0080EA63
+extern int BOILEROBJ;
 
 #endif /* TRACKSEL_H */

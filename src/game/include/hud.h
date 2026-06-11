@@ -4,26 +4,37 @@
 /* Generated from asm/HUD.ASM. */
 
 // asm: 		.bss	COUNTDOWN_BUF,2
-#define COUNTDOWN_BUF 0xFFFFFFFF
+// addr: 0xFFFFFFFF
+extern int COUNTDOWN_BUF[2];
 // asm: 		.bss	MPH_BUFFER,2
-#define MPH_BUFFER 0x0000E632
+// addr: 0x0000E632
+extern int MPH_BUFFER[2];
 // asm: 		.bss	_countdown,1	;SD
-#define _countdown 0x0000E634
+// addr: 0x0000E634
+extern int _countdown;
 // asm: 		.bss	_MPH,1		;UD
-#define _MPH 0x0000E635
+// addr: 0x0000E635
+extern int _MPH;
 // asm: 		.bss	SCORE,1		;UD
-#define SCORE 0x0000E636
+// addr: 0x0000E636
+extern int SCORE;
 // asm: 		.bss	POSITION,1	;UD
-#define POSITION 0x0000E637
+// addr: 0x0000E637
+extern int POSITION;
 // asm: 		.bss	MAXMPH_COUNT,1	;FL
-#define MAXMPH_COUNT 0x0000E638
+// addr: 0x0000E638
+extern int MAXMPH_COUNT;
 // asm: 		.bss	OFFROADBUFF,2
-#define OFFROADBUFF 0x0000E63D
+// addr: 0x0000E63D
+extern int OFFROADBUFF[2];
 // asm: 	.bss	MOVEIN_OFFSET,1
-#define MOVEIN_OFFSET 0x0000E63F
+// addr: 0x0000E63F
+extern int MOVEIN_OFFSET;
 // asm: 	.bss	LASTSEC,1
-#define LASTSEC 0x0000E640
+// addr: 0x0000E640
+extern int LASTSEC;
 // asm: 	.bss	TACHOMETER_PAL,32
-#define TACHOMETER_PAL 0x0000E641
+// addr: 0x0000E641
+extern int TACHOMETER_PAL[32];
 
 #endif /* HUD_H */

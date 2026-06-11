@@ -28,6 +28,52 @@
 // *
 #define JARVK 0
 // *THESE ARE EDGE VARIABLES AND SHOULD NOT BE MESSED WITH
+/* asm: OFFROAD_TMR	.bss	OFFROAD_TMR,1 */
+int OFFROAD_TMR;
+/* asm: ZOOMRAM	.bss	ZOOMRAM,0 */
+int ZOOMRAM;
+/* asm: ZOOMD	.bss	ZOOMD,1 */
+int ZOOMD;
+/* asm: ZOOMDD	.bss	ZOOMDD,1 */
+int ZOOMDD;
+/* asm: ZOOMDG	.bss	ZOOMDG,1 */
+int ZOOMDG;
+/* asm: ZOOMH	.bss	ZOOMH,1 */
+int ZOOMH;
+/* asm: ZOOMHD	.bss	ZOOMHD,1 */
+int ZOOMHD;
+/* asm: ZOOMHG	.bss	ZOOMHG,1 */
+int ZOOMHG;
+/* asm: CAMVIEW	.bss	CAMVIEW,1 */
+int CAMVIEW;
+/* asm: BRAKEON	.bss	BRAKEON,1 */
+int BRAKEON;
+/* asm: WRECKFLG	.bss	WRECKFLG,1 */
+int WRECKFLG;
+/* asm: REVFLG	.bss	REVFLG,1 */
+int REVFLG;
+/* asm: _plyr1	.bss	_plyr1,0 */
+int _plyr1;
+/* asm: PLYSTAT	.bss	PLYSTAT,1 */
+int PLYSTAT;
+/* asm: PLYCAR	.bss	PLYCAR,1 */
+int PLYCAR;
+/* asm: PLYPROC	.bss	PLYPROC,1 */
+int PLYPROC;
+/* asm: PLYCBLK	.bss	PLYCBLK,1 */
+int PLYCBLK;
+/* asm: OLDPLYSPD	.bss	OLDPLYSPD,1 */
+int OLDPLYSPD;
+/* asm: OLDPLYAIR	.bss	OLDPLYAIR,1 */
+int OLDPLYAIR;
+/* asm: PLYRFIRST	.bss	PLYRFIRST,1 */
+int PLYRFIRST;
+/* asm: PLAIRTIM	.bss	PLAIRTIM,1 */
+int PLAIRTIM;
+/* asm: CHEATACC	.bss	CHEATACC,1 */
+int CHEATACC;
+/* asm: CHEAT	.bss	CHEAT,1 */
+int CHEAT;
 // *PLAYER 1ST, 2ND, 3RD POSTION COORDS:
 #define PLYPOS1Z 0
 #define PLYPOS1Y (-150)
@@ -52,6 +98,10 @@
 #define SHIFT 4
 #define BRAKE 1
 // *RAM VARIABLES
+/* asm: PLMSAV	.bss	PLMSAV,15 */
+int PLMSAV[15];
+/* asm: PMSAV	.bss	PMSAV,9 */
+int PMSAV[9];
 /* asm: ZOOMI	.word	ZOOMRAM */
 int ZOOMI = (int)(ZOOMRAM);
 #define GRAVITY 1.20
@@ -64,10 +114,24 @@ int ZOOMI = (int)(ZOOMRAM);
 // *
 // *ACCELERATION, TRACTION (0=total traction), ONROAD DAMPING, OFFROAD DAMPING
 // *
-/* asm: CARPARAMTABI	.word	CARPARAMTAB */
-int CARPARAMTABI = (int)(CARPARAMTAB);
 // *STDARD .float	0.82,1.00,0.0028,0.010
 // *NEWSTD	.float	0.82,0.90,0.0028,0.0060
+// *#1 XXX
+// *#2 MISSILE
+// *#3 FERRARI
+// *HIDDEN VEHICLES
+// *#4 jeep
+// *#5 sbusp
+// *#6 copcar
+// *#7 gtruck
+#define CARPARAMTABL (CARPARAMTAB1-CARPARAMTAB)
+// *----------------------------------------------------------------------------
+// *GET CAR PARAMETERS FOR PLAYER
+// *PARAMETERS
+// *	R0	CAR # 0-3
+// *	AR0	CAR BLOCK INDEX
+// *LOADS PARAMETERS INTO CAR BLOCK
+// *TRASHES R0,AR2
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *PLYR_CAR_INIT
@@ -76,6 +140,20 @@ int CARPARAMTABI = (int)(CARPARAMTAB);
 // *RETURNS
 // *	AR4	CAR (INSERTED)
 // *	AR5	CAR BLOCK
+#define LANESIZE 1152
+// 	;if a slave then ALWAYS appear on right side
+// 	;
+// 	;
+// *SET CAMERA POSITION
+// *CAMERA INIT
+// ;	LDF	1.0,R0			;INIT DRAFT VALUE
+// ;	STF	R0,@PLDRAFTVAL
+/* asm: VIEW0I	.word	_VIEW0 */
+int VIEW0I = (int)(_VIEW0);
+/* asm: VIEW1I	.word	_VIEW1 */
+int VIEW1I = (int)(_VIEW1);
+/* asm: VIEW2I	.word	_VIEW2 */
+int VIEW2I = (int)(_VIEW2);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *MIDWAY CHEAT IS HERE!!!!!!!!!!!!
@@ -87,23 +165,13 @@ int CARPARAMTABI = (int)(CARPARAMTAB);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *GEAR RATIO TABLE
-/* asm: GEARTABI	.word 	GEARTAB */
-int GEARTABI = (int)(GEARTAB);
+/* asm: ENGVOL	.BSS	ENGVOL,1 */
+int ENGVOL;
 // *----------------------------------------------------------------------------
 // *ENGINE ACCEL MULTIPLIER TABLE
 // *
-/* asm: GEARACTABI	.word	GEARACTAB */
-int GEARACTABI = (int)(GEARACTAB);
-/* asm: ENGACTABI	.word	ENGACTAB */
-int ENGACTABI = (int)(ENGACTAB);
 // *ENGINE FRICTION
-/* asm: ENGFRI	.word	ENGFR */
-int ENGFRI = (int)(ENGFR);
 // *----------------------------------------------------------------------------
-/* asm: HIREDI	.word	HIRED */
-int HIREDI = (int)(HIRED);
-/* asm: OFFREDI	.word	OFFRED */
-int OFFREDI = (int)(OFFRED);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CHECK IF DRIVING BACKWARDS
@@ -111,29 +179,23 @@ int OFFREDI = (int)(OFFRED);
 // *	AR4	CAR
 // *	AR5	CAR STRUCTURE
 // *----------------------------------------------------------------------------
+/* asm: WHLTIM	.bss	WHLTIM,1 */
+int WHLTIM;
+/* asm: WHLOLD	.bss	WHLOLD,1 */
+int WHLOLD;
 // *----------------------------------------------------------------------------
 // *SOUND TABLES
 // *PLAYER COLLISION SOUND TABLE
-/* asm: SCOLLTABI	.word	SCOLLTAB */
-int SCOLLTABI = (int)(SCOLLTAB);
 /* asm: SCOLLTAB	.word	SCOLLA,SCOLLB,SCOLLC */
 int SCOLLTAB[] = { SCOLLA, SCOLLB, SCOLLC };
 // *WALL HIT SOUND TABLE
-/* asm: WALLHITABI	.word	WALLHITAB */
-int WALLHITABI = (int)(WALLHITAB);
 /* asm: WALLHITAB	.word	WALLHITA,WALLHITB,WALLHITC */
 int WALLHITAB[] = { WALLHITA, WALLHITB, WALLHITC };
 // *SKID SOUND TABLE
-/* asm: SKIDTABI	.word	SKIDTAB */
-int SKIDTABI = (int)(SKIDTAB);
 /* asm: SKIDTAB	.word	SKIDB,SKIDC */
 int SKIDTAB[] = { SKIDB, SKIDC };
-/* asm: PLAIRSNDI	.word	PLAIRSND */
-int PLAIRSNDI = (int)(PLAIRSND);
 /* asm: PLAIRSND	.word 	RH_BABEWHOA,GL_WOOLAUGH,CHICKSCREAM */
 int PLAIRSND[] = { RH_BABEWHOA, GL_WOOLAUGH, CHICKSCREAM };
-/* asm: REVSNDTABI	.word	REVSNDTAB */
-int REVSNDTABI = (int)(REVSNDTAB);
 /* asm: REVSNDTAB	.word	SINGLEREV5,SINGLEREV6 */
 int REVSNDTAB[] = { SINGLEREV5, SINGLEREV6 };
 // *----------------------------------------------------------------------------
@@ -141,8 +203,22 @@ int REVSNDTAB[] = { SINGLEREV5, SINGLEREV6 };
 // *(VALUES ARE READ FROM CMOS AND COPIED INTO RAM FOR EASY ACCESS)
 // *(COPIED AT THE START OF EACH GAME)
 // *ALL FLOATS
-/* asm: PEDALMNI	.word	PEDALMN */
-int PEDALMNI = (int)(PEDALMN);
+/* asm: PEDALMN	.bss	PEDALMN,1 */
+int PEDALMN;
+/* asm: PEDALMX	.bss	PEDALMX,1 */
+int PEDALMX;
+/* asm: STEERMN	.bss	STEERMN,1 */
+int STEERMN;
+/* asm: STEERMX	.bss	STEERMX,1 */
+int STEERMX;
+/* asm: STEERCT	.bss	STEERCT,1 */
+int STEERCT;
+/* asm: BRAKEMN	.bss	BRAKEMN,1 */
+int BRAKEMN;
+/* asm: BRAKEMX	.bss	BRAKEMX,1 */
+int BRAKEMX;
+/* asm: STEERFR	.bss	STEERFR,1 */
+int STEERFR;
 #define ADJ_COINMODE 0
 #define ADJ_GASMIN 1
 #define ADJ_GASMAX 2
@@ -153,31 +229,8 @@ int PEDALMNI = (int)(PEDALMN);
 #define ADJ_BRAKEMAX 7
 // *----------------------------------------------------------------------------
 
-void CARPARAMTAB(void)
-{
-    // *#0 MUSCLE CAR
-    // asm: CARPARAMTAB1
-    // *#1 XXX
-    // *#2 MISSILE
-    // *#3 FERRARI
-    // *HIDDEN VEHICLES
-    // *#4 jeep
-    // *#5 sbusp
-    // *#6 copcar
-    // *#7 gtruck
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARPARAMTAB", 0, 0);
-    UNIMPL();
-}
-
 void GETCARPARAM(void)
 {
-    // *----------------------------------------------------------------------------
-    // *GET CAR PARAMETERS FOR PLAYER
-    // *PARAMETERS
-    // *	R0	CAR # 0-3
-    // *	AR0	CAR BLOCK INDEX
-    // *LOADS PARAMETERS INTO CAR BLOCK
-    // *TRASHES R0,AR2
     // asm: 	LDI	@CARPARAMTABI,AR2
     // asm: 	MPYI	CARPARAMTABL,R0
     // asm: 	ADDI	R0,AR2
@@ -467,91 +520,16 @@ PLYR_ENTER:
     // 	;
     // 	;if vehicle is a slave, then offset into lane #2
     // 	;
-    // 	;if a slave then ALWAYS appear on right side
-    // 	;
-    // 	;
-    // asm: 	LDI	@DIPRAM,R1
-    // asm: 	TSTB	DIP_COMMP,R1
-    // asm: 	BNZ	BABA
-    // asm: 	TSTB	CMDP_MASTER,R1
-    // asm: 	BZ	BABA
-    // asm: 	FLOAT	LANESIZE,R1
-    // asm: 	ADDF	R1,R0
-BABA:
-    // asm: 	STF	R0,*+AR2(X)
-    // asm: 	LDI	AR2,R3
-    // asm: 	CALL	MATRIX_MUL
-    // asm: 	LDI	R3,AR2
-    // asm: 	LDF	*+AR4(OPOSX),R0
-    // asm: 	ADDF	*+AR2(X),R0
-    // asm: 	STF	R0,*+AR4(OPOSX)
-    // asm: 	LDF	*+AR4(OPOSY),R0
-    // asm: 	ADDF	*+AR2(Y),R0
-    // asm: 	STF	R0,*+AR4(OPOSY)
-    // asm: 	LDF	*+AR4(OPOSZ),R0
-    // asm: 	ADDF	*+AR2(Z),R0
-    // asm: 	STF	R0,*+AR4(OPOSZ)
-    // *SET CAMERA POSITION
-    // asm: 	LDI	@CAMERAMATRIXI,AR2
-    // asm: 	LDI	AR2,R2
-    // asm: 	CALL	CLR_VECTORA
-    // asm: 	FLOAT	-20*FEET,R0
-    // asm: 	STF	R0,*+AR2(Y)
-    // asm: 	FLOAT	(-20*FEET),R0
-    // asm: 	STF	R0,*+AR2(Z)
-    // asm: 	LDI	AR2,R3
-    // asm: 	CALL	MATRIX_MUL
-    // asm: 	LDI	@CAMERAPOSI,AR3		;INIT CAMERA POSITION
-    // asm: 	LDF	*+AR4(OPOSX),R0
-    // asm: 	ADDF	*+AR2(X),R0
-    // asm: 	STF	R0,*+AR3(X)		;CAMERA X
-    // asm: 	LDF	*+AR4(OPOSY),R0
-    // asm: 	ADDF	*+AR2(Y),R0
-    // asm: 	STF	R0,*+AR3(Y)		;CAMERA Y
-    // asm: 	LDF	*+AR4(OPOSZ),R0
-    // asm: 	ADDF	*+AR2(Z),R0
-    // asm: 	STF	R0,*+AR3(Z)		;CAMERA Z
-    // asm: 	CALL	RESCAN	     		;RESET ACTIVE OBJECT LIST
-    // *CAMERA INIT
-PLYR_INTRO_JOIN:
-    // ;	LDF	1.0,R0			;INIT DRAFT VALUE
-    // ;	STF	R0,@PLDRAFTVAL
-    // asm: 	LDF	0,R0	 		;INITIALIZE PLAYER ZOOM POSITION
-    // asm:    	STF	R0,@ZOOMDD
-    // asm:    	STF	R0,@ZOOMHD
-    // asm: 	FLOAT	PLYPOS2Y,R0
-    // asm: 	STF	R0,@ZOOMH
-    // asm: 	STF	R0,@ZOOMHG
-    // asm: 	FLOAT	PLYPOS2Z,R0
-    // asm: 	STF	R0,@ZOOMD
-    // asm: 	STF	R0,@ZOOMDG
-    // asm: 	LDI	@VIEW1I,AR2
-    // asm: 	LDI	@CAMVIEW,R0
-    // asm: 	LDIEQ	@VIEW0I,AR2
-    // asm: 	LDI	1,R1
-    // asm: 	STI	R1,@CAMVIEW		;INIT CAMERA VIEW TO 3RD PERSON
-    // asm: 	CMPI	2,R0
-    // asm: 	LDIEQ	@VIEW2I,AR2
-    // asm: 	LDI	UTIL_C,R2  		;RESTORE OLD VIEW
-    // asm: 	CALL	PRC_CREATE
-L883:
-    // asm: LDI	0,R0
-    // asm: 	STPI	R0,@BRAKEON
-    // asm: 	STI	R0,@WRECKFLG		;WRECK OFF
-    // asm: 	STI	R0,@PLYRFIRST		;TIMER FOR PLAYER IN 1ST PLACE
-    // asm: 	CALL	_off_brake
-    // asm: 	LDF	1.0,R0			;INITIALIZE THE CHEAT
-    // asm: 	STF	R0,@CHEATACC
-    // asm:  	STF	R0,@CHEAT
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	OR	MHUD,R0
-    // asm: 	STI	R0,@_MODE
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_PLYR", 0, 0);
+    UNIMPL();
+}
+
+void PLYRLP(void)
+{
     // *
     // *PLAYER CAR LOOP
     // *
-PLYRLP:
     // asm: LDI	@END_OF_GAMEP,R0
-    // asm:  LDI	@END_OF_GAMEP,R0
     // asm: 	BNZ	ENDPLAYER
     // asm: 	LDI	@NFRAMES,R2
     // asm: 	NEGI	R2,R1
@@ -874,7 +852,7 @@ PLYS1:
 NOPLINK:
     // asm: 	SLEEP	1
     // asm: 	B	PLYRLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_PLYR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRLP", 0, 0);
     UNIMPL();
 }
 
@@ -994,7 +972,6 @@ void CAMROT(void)
     // *RETURNS
     // *	R0	ADJUSTED ANGLE
     // asm: PUSH	AR0
-    // asm:  PUSH	AR0
     // asm:  	PUSH	AR2
     // asm: 	LDF	R0,R3
     // asm: 	CALL	ROADIR			;R0=ROADIR

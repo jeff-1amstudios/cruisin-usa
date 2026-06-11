@@ -19,12 +19,16 @@
 // *COPYRIGHT (C) 1994  BY TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: TEXT_FREEI	.word	TEXT_FREE */
-int TEXT_FREEI = (int)(TEXT_FREE);
-/* asm: TEXT_ACTIVEI	.word	TEXT_ACTIVE */
-int TEXT_ACTIVEI = (int)(TEXT_ACTIVE);
-/* asm: TEXT_LISTI	.word	TEXT_LIST */
-int TEXT_LISTI = (int)(TEXT_LIST);
+/* asm: TEXT_LIST	hibss	TEXT_LIST,NUM_TEXTS*TEXT_SIZ */
+int TEXT_LIST[NUM_TEXTS*TEXT_SIZ];
+/* asm: TEXT_FREE	.bss	TEXT_FREE,1 */
+int TEXT_FREE;
+/* asm: TEXT_ACTIVE	.bss	TEXT_ACTIVE,1 */
+int TEXT_ACTIVE;
+/* asm: TEXT_FREE_COUNT	.bss	TEXT_FREE_COUNT,1 */
+int TEXT_FREE_COUNT;
+/* asm: TEXT_FREEZE	.bss	TEXT_FREEZE,1 */
+int TEXT_FREEZE;
 /* asm: FIXEDFONT_A	.word	fixedfnt */
 int FIXEDFONT_A = (int)(fixedfnt);
 /* asm: TEXTTABLEFIXEDI	.word	FIXEDFONT */
@@ -46,8 +50,6 @@ int FONT10_A = (int)(osg10fnt_I);
 int FONTN43_A = (int)(lgnum43_I);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: OGSMFONT_TABI	.word	OGSMFONT_TAB */
-int OGSMFONT_TABI = (int)(OGSMFONT_TAB);
 // *----------------------------------------------------------------------------
 
 void TEXT_INIT(void)

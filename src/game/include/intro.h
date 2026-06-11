@@ -4,70 +4,103 @@
 /* Generated from asm/INTRO.ASM. */
 
 // asm: 	.bss	START_HIT,1
-#define START_HIT 0x0000E661
+// addr: 0x0000E661
+extern int START_HIT;
 // asm: 	.bss	CHOSEN_VEHICLE,1	;WHEEL POSITION W/HYSTERISUS
-#define CHOSEN_VEHICLE 0x0000E662
+// addr: 0x0000E662
+extern int CHOSEN_VEHICLE;
 // asm: 	.bss	CHOSEN_TRANSMISSION,1
-#define CHOSEN_TRANSMISSION 0x0000E663
+// addr: 0x0000E663
+extern int CHOSEN_TRANSMISSION;
 // asm: 	.bss	CHOSEN_RACE,1
-#define CHOSEN_RACE 0x0000E664
+// addr: 0x0000E664
+extern int CHOSEN_RACE;
 // asm: 	.bss	END_OF_GAMEP,1
-#define END_OF_GAMEP 0x0000E665
+// addr: 0x0000E665
+extern int END_OF_GAMEP;
 // asm: 	.bss	RACE_MODE,1		;USA (A-Z) || SINGLE
-#define RACE_MODE 0x0000E666
+// addr: 0x0000E666
+extern int RACE_MODE;
 // asm: 	.bss	FIRST_RACE,1		;T or F
-#define FIRST_RACE 0x0000E667
+// addr: 0x0000E667
+extern int FIRST_RACE;
 // asm: 	.bss	POSES,1			;for the WHEEL
-#define POSES 0x0000E668
+// addr: 0x0000E668
+extern int POSES;
 // asm: 	.bss	GAMEDIFF,1
-#define GAMEDIFF 0x0000E669
+// addr: 0x0000E669
+extern int GAMEDIFF;
 // asm: 	.bss	CHECKPOINT_NUM,1
-#define CHECKPOINT_NUM 0x0000E66A
+// addr: 0x0000E66A
+extern int CHECKPOINT_NUM;
 // asm: 	.bss	H2H_FLAGSTATE,1		;WAVEFLAG
-#define H2H_FLAGSTATE 0x0000E66B
+// addr: 0x0000E66B
+extern int H2H_FLAGSTATE;
 // asm: 	.bss	FRAMELAG,1
-#define FRAMELAG 0x0000E66C
+// addr: 0x0000E66C
+extern int FRAMELAG;
 // asm: 	pbss	BONUS_WAITFLAG,1
-#define BONUS_WAITFLAG 0x0000C914
+// addr: 0x0000C914
+extern int BONUS_WAITFLAG;
 // asm: 	pbss	OM_BONUS_WAITFLAG,1
-#define OM_BONUS_WAITFLAG 0x0000C915
+// addr: 0x0000C915
+extern int OM_BONUS_WAITFLAG;
 // asm: 	.bss	NOASK_LINK,1
-#define NOASK_LINK 0x0000E66D
+// addr: 0x0000E66D
+extern int NOASK_LINK;
 // asm: 	.bss	DCALL,1		;IS CHOOSE TRANSMISSION ACTIVE?
-#define DCALL 0x0000E66E
+// addr: 0x0000E66E
+extern int DCALL;
 // asm: 	.bss	START_NOW_P,1
-#define START_NOW_P 0x0000E66F
+// addr: 0x0000E66F
+extern int START_NOW_P;
 // asm: 	.bss	CHOOSENCAR,1
-#define CHOOSENCAR 0x0000E670
+// addr: 0x0000E670
+extern int CHOOSENCAR;
 // asm: 	.bss	CAR_CHOICE_GOTTEN,1
-#define CAR_CHOICE_GOTTEN 0x0000E671
+// addr: 0x0000E671
+extern int CAR_CHOICE_GOTTEN;
 // asm: 	.bss	CAR_ARRAY,4
-#define CAR_ARRAY 0x0000E672
+// addr: 0x0000E672
+extern int CAR_ARRAY[4];
 // asm: 	.bss	CAR1PAL,129
-#define CAR1PAL 0x0000E676
+// addr: 0x0000E676
+extern int CAR1PAL[129];
 // asm: 	.bss	CAR2PAL,129
-#define CAR2PAL 0x0000E6F7
+// addr: 0x0000E6F7
+extern int CAR2PAL[129];
 // asm: 	.bss	CAR3PAL,129
-#define CAR3PAL 0x0000E778
+// addr: 0x0000E778
+extern int CAR3PAL[129];
 // asm: 	.bss	CAR4PAL,129
-#define CAR4PAL 0x0000E7F9
+// addr: 0x0000E7F9
+extern int CAR4PAL[129];
 // asm: 	.bss	IS_HIDDEN,1
-#define IS_HIDDEN 0x0000E87A
+// addr: 0x0000E87A
+extern int IS_HIDDEN;
 // asm: 	.bss	SPINCURR,1
-#define SPINCURR 0x0000E87B
+// addr: 0x0000E87B
+extern int SPINCURR;
 // asm: 	.bss	BABE_CONTROL,1
-#define BABE_CONTROL 0x0000E87C
+// addr: 0x0000E87C
+extern int BABE_CONTROL;
 // asm: 	.bss	CURR_FLAGSTATE,1
-#define CURR_FLAGSTATE 0x0000E87D
+// addr: 0x0000E87D
+extern int CURR_FLAGSTATE;
 // asm: 	.bss	LASTCHOICE,1
-#define LASTCHOICE 0x0080E87E
+// addr: 0x0080E87E
+extern int LASTCHOICE;
 // asm: 	.bss	_timer,1
-#define _timer 0x0000E87F
+// addr: 0x0000E87F
+extern int _timer;
 // asm: 	.bss	SAVEDMODE,1
-#define SAVEDMODE 0x0000E880
+// addr: 0x0000E880
+extern int SAVEDMODE;
 // asm: 	.bss	miniidle,1
-#define miniidle 0x0000E881
+// addr: 0x0000E881
+extern int miniidle;
 // asm: 	.bss	DIRTY_SHARED,1
-#define DIRTY_SHARED 0x0000E882
+// addr: 0x0000E882
+extern int DIRTY_SHARED;
 
 #endif /* INTRO_H */

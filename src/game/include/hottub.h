@@ -4,8 +4,10 @@
 /* Generated from asm/HOTTUB.ASM. */
 
 // asm: 	.bss	PRES,1
-#define PRES 0x0098E62B
+// addr: 0x0098E62B
+extern int PRES;
 // asm: 	.bss	WATCHOBJ,1
-#define WATCHOBJ 0x0098E62C
+// addr: 0x0098E62C
+extern int WATCHOBJ;
 
 #endif /* HOTTUB_H */

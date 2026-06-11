@@ -18,8 +18,6 @@
 // *ALL RIGHTS RESERVED
 // *
 // *----------------------------------------------------------------------------
-/* asm: CMOSI	.word	CMOS		;start of CMOS */
-int CMOSI = (int)(CMOS);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *DECREMENT HIGH SCORE RESET COUNTER
@@ -34,6 +32,19 @@ int CMOSI = (int)(CMOS);
 // *
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+// *AUDIT_WRITE
+// *
+// *PARAMETERS
+// *	AR2	INDEX
+// *	R2	VALUE
+// *RETURNS
+// *	R0	AUDIT VALUE
+// *
+#endif
+// *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+#define DEFAULT_TABLE_SIZE 2
+#define NUM_TABLES 14
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *Initialize the CMOS tables
@@ -173,13 +184,10 @@ RBLP:
 void _word(void)
 {
     // asm: LOW:
-LOW:
 _word:
     // asm: HIGH:
-HIGH:
 _word:
     // asm: DEFAULT:
-DEFAULT:
     // ;	.word	:HIGH:<<8|:LOW:|(:DEFAULT:<<16)
     // asm: VERIFY_ADJUSTMENTS_ACCURACYTAB
     // asm: 	VADJTAB	0,81,0		;ADJ_COINMODE
@@ -489,26 +497,6 @@ void ADJUSTMENT_WRITE(void)
     UNIMPL();
 }
 
-void AUDIT_WRITE(void)
-{
-    // *----------------------------------------------------------------------------
-    // *----------------------------------------------------------------------------
-    // *AUDIT_WRITE
-    // *
-    // *PARAMETERS
-    // *	AR2	INDEX
-    // *	R2	VALUE
-    // *RETURNS
-    // *	R0	AUDIT VALUE
-    // *
-#if DEBUG
-    // asm: 	CMPI	NUM_ADJUSTMENTS,AR2
-    // asm: 	BLT	$	;AUDIT BEING USED TO WRITE ADJUSTMENT
-#endif
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_WRITE", 0, 0);
-    UNIMPL();
-}
-
 void AUDIT_WRITE_ADJ(void)
 {
     // asm: 	LS	2,AR2
@@ -696,8 +684,6 @@ void _wr_cwR(void)
 void _string(void)
 {
     // asm: I1:,:I2:,:I3:,:POSTN:
-I1:
-    // asm: ,:I2:,:I3:,:POSTN:
     TRACE_EVENT(&g_crusn_machine->trace, "function", ".string", 0, 0);
     UNIMPL();
 }
@@ -730,14 +716,14 @@ void DEFAULT_TABLE_TOTAL(void)
     // asm: 	TABLEENT	'M','E','Y',31,10,3
     // asm: 	TABLEENT	'M','M','V',32,20,3
     // asm: 	TABLEENT	'B','D','P',34,30,3
-    // *INIT_LASTHS_TABLE
-    // *CHECK_LASTHS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEFAULT_TABLE_TOTAL", 0, 0);
     UNIMPL();
 }
 
 void INIT_LASTHS_TABLE(void)
 {
+    // *INIT_LASTHS_TABLE
+    // *CHECK_LASTHS
     // *----------------------------------------------------------------------------
     // *Initialize the LAST HS SET CMOS table
     // *

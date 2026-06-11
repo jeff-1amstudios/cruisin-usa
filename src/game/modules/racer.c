@@ -26,10 +26,14 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: RACER_DRONE_INITTABI	.word	RACER_DRONE_INITTAB */
-int RACER_DRONE_INITTABI = (int)(RACER_DRONE_INITTAB);
-/* asm: RACER_PTRI	.word	RACER_PTR */
-int RACER_PTRI = (int)(RACER_PTR);
+/* asm: FINISHNUM	.bss	FINISHNUM,1 */
+int FINISHNUM;
+/* asm: RACER_PTR	.bss	RACER_PTR,10 */
+int RACER_PTR[10];
+/* asm: OM_TRACK_LO	.bss	OM_TRACK_LO,1 */
+int OM_TRACK_LO;
+/* asm: OM_TRACK_HI	.bss	OM_TRACK_HI,1 */
+int OM_TRACK_HI;
 // *----------------------------------------------------------------------------
 // *
 // *PARAMETERS
@@ -39,6 +43,9 @@ int RACER_PTRI = (int)(RACER_PTR);
 // *
 /* asm: GMAX	.word	100000 */
 int GMAX = (int)(100000);
+// *
+// *TRANSFER ACTIVE RACER
+// *
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *AM I AHEAD OF THIS VEHICLE?
@@ -54,8 +61,8 @@ int GMAX = (int)(100000);
 // *	BLT AR2 CAR BEHIND AR4 CAR
 // *	AR0,R0,R1,R2 CLOBBERED
 // *----------------------------------------------------------------------------
-/* asm: ROADOBSTABI	.word	ROADOBSTAB */
-int ROADOBSTABI = (int)(ROADOBSTAB);
+/* asm: ROADOBSTAB	.BSS	ROADOBSTAB,50 */
+int ROADOBSTAB[50];
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: WACKER	.word	3D20AH */
@@ -74,6 +81,8 @@ int LAKEL = (int)(0x3EF0C);
 // *RETURNS
 // *	R0	CLOSING TIME (800H=OUT OF RANGE)
 // *
+/* asm: CARTMP1	.BSS	CARTMP1,1 */
+int CARTMP1;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -156,7 +165,6 @@ GD1:
     // asm: 	CMPF	1.25,R0
     // asm: 	LDFGT	1.25,R0				;ABSOLUTE MAX/MINS
     // asm: 	RETS
-    // asm: DIFFTAB
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDIFF", 0, 0);
     UNIMPL();
 }
@@ -771,9 +779,6 @@ LINKREC3:
     // asm: 	RETS
 LINKRECX:
     // asm: 	RETS
-    // *
-    // *TRANSFER ACTIVE RACER
-    // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_XSFER", 0, 0);
     UNIMPL();
 }

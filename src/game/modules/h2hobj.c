@@ -21,14 +21,16 @@
 // ;ROAD_MAPI:	.word	00h
 // ;
 // 	;SECTION DATA
+/* asm: _SEChead2head	_SEChead2head:		;(16345 lines, 102.16%) */
+/* asm: 	.word	0C15000h	;Src (Compressed) Addr */
+/* asm: 	.word	0BEFA00h	;Dest Addr */
+/* asm: 	;	.globl	head2head_PALETTES */
+/* asm: 	;head2head_PALETTES: */
+/* asm: 	;	.word	0,0 */
+/* asm: 	; */
+int _SEChead2head[] = { 0x0C15000, 0x0BEFA00 };
 
-void _SEChead2head(void)
+void h2hobj(void)
 {
-    //  ;(16345 lines, 102.16%)
-    // ;	.globl	head2head_PALETTES
-    // ;head2head_PALETTES:
-    // ;	.word	0,0
-    // ;
-    /* no executable asm lines detected */
     UNIMPL();
 }

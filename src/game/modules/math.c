@@ -39,12 +39,21 @@
 // *
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: SINTABLEI	.word	SINTABLE */
-int SINTABLEI = (int)(SINTABLE);
 // *----------------------------------------------------------------------------
+/* asm: ATTABV	.word	ATTAB */
+int ATTABV = (int)(ATTAB);
+/* asm: OFFTABV	.word	ATOFFTAB */
+int OFFTABV = (int)(ATOFFTAB);
+// *
+// *OFFSET TABLE
+// *OFFSET, MULTIPLIER
+// *
+// *
+// *ARCTAN TABLE 0-45
+// *
 // *----------------------------------------------------------------------------
-/* asm: LOCTEMPER_MAT2I	.word	LOCTEMPER_MAT2 */
-int LOCTEMPER_MAT2I = (int)(LOCTEMPER_MAT2);
+/* asm: LOCTEMPER_MAT2	fbss	LOCTEMPER_MAT2,12 */
+int LOCTEMPER_MAT2[12];
 // *----------------------------------------------------------------------------
 
 void _COSI(void)
@@ -207,15 +216,6 @@ AT1:
     // asm:       	POPF	R1
     // asm:       	POP	R1
     // asm: 	RETS
-    // *
-    // *OFFSET TABLE
-    // *OFFSET, MULTIPLIER
-    // *
-    // asm: ATOFFTAB
-    // *
-    // *ARCTAN TABLE 0-45
-    // *
-    // asm: ATTAB
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ARCTANF", 0, 0);
     UNIMPL();
 }

@@ -6,6 +6,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Iterable
 
 
 INCLUDE_RE = re.compile(r"^\s*\.include\s+([A-Za-z0-9_.]+)\s*$", re.IGNORECASE)
@@ -21,7 +22,12 @@ BRANCH_TARGET_RE = re.compile(r"\b([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\b")
 SEPARATOR_RE = re.compile(r"^\*[-]{8,}\s*$")
 HEX_SUFFIX_RE = re.compile(r"\b([0-9A-Fa-f]+)[Hh]\b")
 SIMPLE_STRING_RE = re.compile(r'^\s*("([^"\\]|\\.)*")\s*(?:,\s*0+\s*)?$')
+SPTR_LABEL_RE = re.compile(r'^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s+SPTR\b(.*)$', re.IGNORECASE)
 STANDALONE_STORAGE_RE = re.compile(r"^\s*(?:\.bss|\.usect|fbss|pbss|hibss|lobss|phibss)\b", re.IGNORECASE)
+STANDALONE_STORAGE_FULL_RE = re.compile(
+    r"^\s*((?:\.bss|\.usect|fbss|pbss|hibss|lobss|phibss))\s+([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\b(.*)$",
+    re.IGNORECASE,
+)
 STANDALONE_STORAGE_LABEL_RE = re.compile(
     r"^\s*(?:\.bss|\.usect|fbss|pbss|hibss|lobss|phibss)\s+([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\b",
     re.IGNORECASE,
@@ -136,11 +142,20 @@ class StringVariable:
 
 
 @dataclass
-class StorageDefine:
+class StorageVariable:
     name: str
     addr: int
     module: str
     asm_line: str
+    size_expr: str
+
+
+@dataclass
+class StandaloneLabeledData:
+    name: str
+    directive: str
+    rest: str
+    asm_lines: list[str]
 
 
 def sanitize_identifier(name: str) -> str:
@@ -199,28 +214,53 @@ def lookup_address_map_symbol(address_map: dict[str, int], name: str, module: st
     return address_map.get(scoped)
 
 
-def collect_module_storage_defines(src_path: Path, address_map: dict[str, int]) -> list[StorageDefine]:
+def parse_storage_size(rest: str) -> str:
+    operands, _comment = split_comment(rest.strip())
+    if not operands:
+        return "1"
+    parts = [part.strip() for part in operands.split(",") if part.strip()]
+    return parts[0] if parts else "1"
+
+
+def storage_declaration(name: str, size_expr: str, is_extern: bool = False) -> str:
+    ident = sanitize_identifier(name)
+    expr = convert_expr(size_expr).strip()
+    prefix = "extern " if is_extern else ""
+    if expr in {"", "0", "1"}:
+        return f"{prefix}int {ident};"
+    return f"{prefix}int {ident}[{expr}];"
+
+
+def collect_module_storage_defines(src_path: Path, address_map: dict[str, int]) -> list[StorageVariable]:
     lines = src_path.read_text(errors="ignore").splitlines()
     module = src_path.stem.upper()
-    out: list[StorageDefine] = []
+    out: list[StorageVariable] = []
     seen: set[str] = set()
     for raw in lines:
         code, _comment = split_comment(raw)
-        storage_match = STANDALONE_STORAGE_LABEL_RE.match(code)
+        storage_match = STANDALONE_STORAGE_FULL_RE.match(code)
         if not storage_match:
             continue
-        storage_name = storage_match.group(1)
+        _directive, storage_name, rest = storage_match.groups()
         if storage_name in seen:
             continue
         storage_addr = lookup_address_map_symbol(address_map, storage_name, module)
         if storage_addr is None:
             continue
-        out.append(StorageDefine(storage_name, storage_addr, module, raw.rstrip()))
+        out.append(
+            StorageVariable(
+                storage_name,
+                storage_addr,
+                module,
+                raw.rstrip(),
+                parse_storage_size(rest),
+            )
+        )
         seen.add(storage_name)
     return out
 
 
-def render_storage_header(src_path: Path, defines: list[StorageDefine]) -> str:
+def render_storage_header(src_path: Path, defines: list[StorageVariable]) -> str:
     guard = sanitize_identifier(src_path.stem).upper() + "_H"
     out: list[str] = []
     out.append(f"#ifndef {guard}")
@@ -230,7 +270,8 @@ def render_storage_header(src_path: Path, defines: list[StorageDefine]) -> str:
     out.append("")
     for entry in defines:
         out.append(f"// asm: {entry.asm_line}")
-        out.append(f"#define {sanitize_identifier(entry.name)} 0x{entry.addr:08X}")
+        out.append(f"// addr: 0x{entry.addr:08X}")
+        out.append(storage_declaration(entry.name, entry.size_expr, is_extern=True))
     out.append("")
     out.append(f"#endif /* {guard} */")
     out.append("")
@@ -339,6 +380,37 @@ def is_comment_or_blank(line: str) -> bool:
     return not stripped or stripped.startswith("*") or stripped.startswith(";")
 
 
+def parse_simple_string_operand(operand_text: str) -> str | None:
+    operands, _comment = split_comment(operand_text.strip())
+    string_match = SIMPLE_STRING_RE.match(operands)
+    if not string_match:
+        return None
+    return string_match.group(1)
+
+
+def parse_sptr_label(raw: str) -> tuple[str, str] | None:
+    if not is_flush_left(raw):
+        return None
+    match = SPTR_LABEL_RE.match(raw)
+    if not match:
+        return None
+    label, rest = match.groups()
+    c_string = parse_simple_string_operand(rest)
+    if c_string is None:
+        return None
+    return label, c_string
+
+
+def is_top_level_data_line(raw: str) -> bool:
+    if not is_flush_left(raw):
+        return False
+    if DATA_LABEL_RE.match(raw):
+        return True
+    if parse_sptr_label(raw) is not None:
+        return True
+    return False
+
+
 def classify_instruction_text(text: str) -> tuple[bool, str]:
     stripped = text.strip()
     if not stripped:
@@ -430,8 +502,12 @@ def collect_top_level_functions(lines: list[str], branch_targets: set[str]) -> l
 
         label_match = LABEL_RE.match(raw)
         if label_match:
+            standalone_data, _next_idx = collect_standalone_labeled_data(lines, idx)
+            if standalone_data is not None:
+                current = None
+                seen_separator = False
+                continue
             label = label_match.group(1)
-            rest = label_match.group(2)
             start_new = False
 
             if current is None:
@@ -453,9 +529,11 @@ def collect_top_level_functions(lines: list[str], branch_targets: set[str]) -> l
             current.labels.add(label)
             current.lines.append(raw.rstrip())
             current.end_index = idx
+            continue
 
-            if rest.strip():
-                current.lines.append(" " + rest.lstrip())
+        if current is not None and is_top_level_data_line(raw):
+            current = None
+            seen_separator = False
             continue
 
         inline_label_match = INLINE_LABEL_RE.match(raw)
@@ -581,6 +659,8 @@ def render_function(fn: FunctionBlock) -> list[str]:
 
 def render_word_variable(var: WordVariable) -> list[str]:
     out: list[str] = []
+    if len(var.values) == 1 and var.name.endswith("I") and var.values[0] == var.name[:-1]:
+        return out
     if var.asm_lines:
         out.append(f"/* asm: {var.name}\t{var.asm_lines[0].strip()} */")
         for extra_line in var.asm_lines[1:]:
@@ -602,6 +682,78 @@ def render_set_define(entry: SetDefine) -> list[str]:
 def render_string_variable(var: StringVariable) -> list[str]:
     ident = sanitize_identifier(var.name)
     return [f"const char {ident}[] = {var.c_string};"]
+
+
+def render_sptr_variable(name: str, c_string: str, asm_line: str) -> list[str]:
+    ident = sanitize_identifier(name)
+    return [
+        f"/* asm: {asm_line.strip()} */",
+        f"char *{ident} = {c_string};",
+    ]
+
+
+def render_storage_variable(name: str, size_expr: str, asm_line: str) -> list[str]:
+    return [
+        f"/* asm: {name}\t{asm_line.strip()} */",
+        storage_declaration(name, size_expr),
+    ]
+
+
+def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[StandaloneLabeledData | None, int]:
+    raw = lines[start_idx]
+    label_match = LABEL_RE.match(raw)
+    if not label_match:
+        return None, start_idx
+    label, rest = label_match.groups()
+    rest_code, _rest_comment = split_comment(rest)
+    if rest_code.strip():
+        return None, start_idx
+
+    asm_lines = [raw.rstrip()]
+    next_idx = start_idx + 1
+    while next_idx < len(lines):
+        next_raw = lines[next_idx]
+        if is_comment_or_blank(next_raw):
+            asm_lines.append(next_raw.rstrip())
+            next_idx += 1
+            continue
+        if is_flush_left(next_raw):
+            return None, start_idx
+        next_code, _next_comment = split_comment(next_raw)
+        stripped = next_code.strip()
+        if not stripped:
+            asm_lines.append(next_raw.rstrip())
+            next_idx += 1
+            continue
+        if stripped.lower().startswith(".word"):
+            asm_lines.append(next_raw.rstrip())
+            cont_idx = next_idx + 1
+            while cont_idx < len(lines):
+                cont_raw = lines[cont_idx]
+                if is_comment_or_blank(cont_raw):
+                    asm_lines.append(cont_raw.rstrip())
+                    cont_idx += 1
+                    continue
+                if is_flush_left(cont_raw):
+                    break
+                cont_code, _cont_comment = split_comment(cont_raw)
+                cont_stripped = cont_code.strip()
+                if cont_stripped.lower().startswith(".word"):
+                    asm_lines.append(cont_raw.rstrip())
+                    cont_idx += 1
+                    continue
+                break
+            return StandaloneLabeledData(label, ".word", "", asm_lines), cont_idx
+        directive_match = re.match(
+            r"^\s*((?:\.\w+)|EQU|equ|fbss|pbss|hibss|lobss|phibss)\b(.*)$",
+            stripped,
+        )
+        if directive_match is None:
+            return None, start_idx
+        directive, directive_rest = directive_match.groups()
+        asm_lines.append(next_raw.rstrip())
+        return StandaloneLabeledData(label, directive, directive_rest, asm_lines), next_idx + 1
+    return None, start_idx
 
 
 def render_top_level_items(
@@ -648,13 +800,63 @@ def render_top_level_items(
             idx += 1
             continue
 
-        if STANDALONE_STORAGE_RE.match(code):
+        storage_match = STANDALONE_STORAGE_FULL_RE.match(code)
+        if storage_match:
+            directive, label, rest = storage_match.groups()
+            out.extend(render_storage_variable(label, parse_storage_size(rest), f"{directive}\t{label}{rest}"))
             idx += 1
+            continue
+
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx)
+        if standalone_data is not None:
+            directive_lower = standalone_data.directive.lower()
+            if directive_lower == ".word":
+                values: list[str] = []
+                for asm_line in standalone_data.asm_lines[1:]:
+                    asm_code, _asm_comment = split_comment(asm_line)
+                    stripped = asm_code.strip()
+                    if not stripped.lower().startswith(".word"):
+                        continue
+                    operands = stripped[5:].strip()
+                    if operands:
+                        values.extend(part.strip() for part in operands.split(",") if part.strip())
+                if not values:
+                    values = ["0"]
+                out.extend(
+                    render_word_variable(
+                        WordVariable(
+                            name=standalone_data.name,
+                            values=values,
+                            asm_lines=[line for line in standalone_data.asm_lines if line.strip()],
+                        )
+                    )
+                )
+            elif directive_lower == ".string":
+                c_string = parse_simple_string_operand(standalone_data.rest)
+                if c_string is not None:
+                    out.extend(render_string_variable(StringVariable(name=standalone_data.name, c_string=c_string)))
+            elif directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
+                out.extend(
+                    render_storage_variable(
+                        standalone_data.name,
+                        parse_storage_size(standalone_data.rest),
+                        "\n".join(line for line in standalone_data.asm_lines if line.strip()),
+                    )
+                )
+            idx = next_idx
             continue
 
         if not is_flush_left(raw):
             idx += 1
             continue
+
+        sptr_match = parse_sptr_label(raw)
+        if sptr_match is not None:
+            label, c_string = sptr_match
+            out.extend(render_sptr_variable(label, c_string, raw))
+            idx += 1
+            continue
+
         data_match = DATA_LABEL_RE.match(raw)
         if not data_match:
             idx += 1
@@ -662,11 +864,14 @@ def render_top_level_items(
 
         label, directive, rest = data_match.groups()
         directive_lower = directive.lower()
+        if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
+            out.extend(render_storage_variable(label, parse_storage_size(rest), f"{directive}{rest}"))
+            idx += 1
+            continue
         if directive_lower == ".string":
-            operands, _comment = split_comment(rest.strip())
-            string_match = SIMPLE_STRING_RE.match(operands)
-            if string_match:
-                out.extend(render_string_variable(StringVariable(name=label, c_string=string_match.group(1))))
+            c_string = parse_simple_string_operand(rest)
+            if c_string is not None:
+                out.extend(render_string_variable(StringVariable(name=label, c_string=c_string)))
             idx += 1
             continue
 
@@ -771,17 +976,132 @@ def render_module(src_path: Path, address_map: dict[str, int], owner_headers: di
     return "\n".join(out).rstrip() + "\n"
 
 
+def parse_romlst_label_types(labels_path: Path) -> dict[str, str]:
+    out: dict[str, str] = {}
+    if not labels_path.exists():
+        return out
+    for raw in labels_path.read_text(errors="ignore").splitlines():
+        if not raw.strip():
+            continue
+        parts = raw.split("\t")
+        if len(parts) < 4:
+            continue
+        out.setdefault(parts[0], parts[3].lower())
+    return out
+
+
+def iter_operand_symbol_tokens(text: str) -> Iterable[str]:
+    stripped = text.strip()
+    if not stripped:
+        return ()
+    parts = stripped.split(None, 1)
+    if len(parts) < 2:
+        return ()
+    operands = parts[1]
+    return BRANCH_TARGET_RE.findall(operands)
+
+
+def extract_reference_text(raw: str) -> str:
+    label_match = LABEL_RE.match(raw)
+    if label_match:
+        return label_match.group(2)
+    inline_label_match = INLINE_LABEL_RE.match(raw)
+    if is_flush_left(raw) and inline_label_match and not looks_like_instruction_token(inline_label_match.group(1)):
+        return f"{inline_label_match.group(2)}{inline_label_match.group(3)}"
+    return raw
+
+
+def collect_defined_data_symbols(lines: list[str]) -> set[str]:
+    defined: set[str] = set()
+    idx = 0
+    while idx < len(lines):
+        raw = lines[idx]
+        code, _comment = split_comment(raw)
+        if STANDALONE_STORAGE_FULL_RE.match(code):
+            defined.add(STANDALONE_STORAGE_FULL_RE.match(code).group(2))  # type: ignore[union-attr]
+            idx += 1
+            continue
+        if parse_sptr_label(raw) is not None:
+            defined.add(parse_sptr_label(raw)[0])  # type: ignore[index]
+            idx += 1
+            continue
+        data_match = DATA_LABEL_RE.match(raw)
+        if data_match:
+            defined.add(data_match.group(1))
+            idx += 1
+            continue
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx)
+        if standalone_data is not None:
+            defined.add(standalone_data.name)
+            idx = next_idx
+            continue
+        idx += 1
+    return defined
+
+
+def collect_referenced_data_symbols(lines: list[str], label_types: dict[str, str]) -> set[str]:
+    refs: set[str] = set()
+    for raw in lines:
+        if is_comment_or_blank(raw):
+            continue
+        text = extract_reference_text(raw)
+        code, _comment = split_comment(text)
+        code = code.strip()
+        if not code:
+            continue
+        first = code.split()[0]
+        first_lower = first.lower()
+        if first_lower in {
+            ".globl",
+            ".include",
+            ".if",
+            ".else",
+            ".endif",
+            ".file",
+            ".version",
+            ".text",
+            ".data",
+            ".bss",
+            ".usect",
+            "romdata",
+            ".sect",
+            ".func",
+            ".endfunc",
+        }:
+            continue
+        for tok in iter_operand_symbol_tokens(code):
+            if tok.upper() in {
+                "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7",
+                "AR0", "AR1", "AR2", "AR3", "AR4", "AR5", "AR6", "AR7",
+                "RC", "RS", "RE", "BK", "DP", "SP", "ST", "IE", "IF", "IR0", "IR1", "IOF",
+            }:
+                continue
+            if tok.lower() in CONTROL_KEYWORDS_LOWER:
+                continue
+            if tok.endswith("?"):
+                continue
+            if "_ptr" in tok.lower():
+                continue
+            if label_types.get(tok) == "data":
+                refs.add(tok)
+    return refs
+
+
 def main() -> int:
     root = Path(__file__).resolve().parents[2]
     asm_dir = root / "asm"
     out_dir = root / "src" / "game" / "modules"
     include_dir = root / "src" / "game" / "include"
     address_map = parse_address_map(root / "tools" / "ida" / "address.map")
+    label_types = parse_romlst_label_types(root / "tools" / "ida" / "log" / "romlst_labels.tsv")
     out_dir.mkdir(parents=True, exist_ok=True)
     include_dir.mkdir(parents=True, exist_ok=True)
+    log_dir = root / "tools" / "port" / "log"
+    log_dir.mkdir(parents=True, exist_ok=True)
 
-    storage_defines_by_module: dict[str, list[StorageDefine]] = {}
+    storage_defines_by_module: dict[str, list[StorageVariable]] = {}
     owner_headers: dict[str, str] = {}
+    skipped_data_symbols: set[str] = set()
     for src_path in sorted(asm_dir.glob("*.ASM")):
         defines = collect_module_storage_defines(src_path, address_map)
         if not defines:
@@ -793,6 +1113,10 @@ def main() -> int:
         (include_dir / header_name).write_text(render_storage_header(src_path, defines))
 
     for src_path in sorted(asm_dir.glob("*.ASM")):
+        lines = src_path.read_text(errors="ignore").splitlines()
+        skipped_data_symbols.update(
+            collect_referenced_data_symbols(lines, label_types) - collect_defined_data_symbols(lines)
+        )
         out_path = out_dir / (src_path.stem.lower() + ".c")
         own_header = owner_headers.get(next(iter([d.name for d in storage_defines_by_module.get(src_path.stem.upper(), [])]), ""), None)
         if src_path.stem.upper() in storage_defines_by_module:
@@ -801,7 +1125,11 @@ def main() -> int:
             own_header = None
         out_path.write_text(render_module(src_path, address_map, owner_headers, own_header))
 
+    skipped_log = log_dir / "skipped_data_symbols.txt"
+    skipped_rows = sorted(skipped_data_symbols)
+    skipped_log.write_text("".join(f"{name}\n" for name in skipped_rows))
     print(f"generated {len(list(asm_dir.glob('*.ASM')))} C modules in {out_dir.relative_to(root)}")
+    print(f"logged {len(skipped_rows)} skipped data symbols to {skipped_log.relative_to(root)}")
     return 0
 
 

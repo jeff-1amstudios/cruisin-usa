@@ -25,6 +25,8 @@
 // *ALL RIGHTS RESERVED
 // *
 // *
+/* asm: COINOFF	.bss	COINOFF,1 */
+int COINOFF;
 // *----------------------------------------------------------------------------
 // *THESE ROUTINES MUST PRESERVE R3
 // *----------------------------------------------------------------------------
@@ -57,16 +59,47 @@
 // *	R2= COINMODE NUMBER
 // *----------------------------------------------------------------------------
 // *Set the custom coinage to the standard coin mode selected
+/* asm: CUSTOM_COINTAB	.bss	CUSTOM_COINTAB,COIN_ENTRY_SIZE */
+int CUSTOM_COINTAB[COIN_ENTRY_SIZE];
+/* asm: CUSTOM_COINSTR	.bss	CUSTOM_COINSTR,10 */
+int CUSTOM_COINSTR[10];
+/* asm: bufferi	.word	buffer */
+int bufferi = (int)(buffer);
+/* asm: buffer	.bss	buffer,2 */
+int buffer[2];
+const char CTS_STR[] = " TO START";
+const char CTC_STR[] = " TO CONTINUE";
+/* asm: FCB	.bss	FCB,1 */
+int FCB;
+/* asm: PCB	.bss	PCB,1 */
+int PCB;
+/* asm: CREDITBUFFI	.word	CREDITBUFFER */
+int CREDITBUFFI = (int)(CREDITBUFFER);
+/* asm: CREDITBUFFER	.bss	CREDITBUFFER,8 */
+int CREDITBUFFER[8];
+/* asm: TOSTARTBUFFI	.word	TOSTARTBUFFER */
+int TOSTARTBUFFI = (int)(TOSTARTBUFFER);
+/* asm: TOSTARTBUFFER	.bss	TOSTARTBUFFER,8 */
+int TOSTARTBUFFER[8];
+const char NCB[] = "@";
+const char SPC[] = " ";
+const char DBLSPC[] = "  ";
+const char CW[] = "CREDITS";
+const char CWS[] = "CREDIT";
+/* asm: SCI	.word	SCS	;CREDITS TO START (START CREDIT) */
+int SCI = (int)(SCS);
+/* asm: SCS	.bss	SCS,1 */
+int SCS;
+const char MSG_NULL[] = "";
+// *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
 // *	F  P/N  CREDITS
 // *
-/* asm: INSERTCOINSI	.word	INSERTCOINS */
-int INSERTCOINSI = (int)(INSERTCOINS);
 const char INSERTCOINS[] = "INSERT COINS";
-/* asm: HITSTARTI	.word	HITSTART */
-int HITSTARTI = (int)(HITSTART);
 const char HITSTART[] = "PRESS START";
+/* asm: ICF	.bss	ICF,1 */
+int ICF;
 // *----------------------------------------------------------------------------
 // *PRINT_COINAGE
 // *
@@ -81,10 +114,26 @@ const char HITSTART[] = "PRESS START";
 // *VOLUME DISPLAY
 // *
 // *
+/* asm: VOLUME_ACTIVE	.bss	VOLUME_ACTIVE,1 */
+int VOLUME_ACTIVE;
+/* asm: VOLUME_COUNT	.bss	VOLUME_COUNT,4 */
+int VOLUME_COUNT[4];
 const char VOLUME_TXT[] = "VOLUME";
 // *----------------------------------------------------------------------------
+/* asm: CMOS_WP_WORD_SHADOW	.bss	CMOS_WP_WORD_SHADOW,1 */
+int CMOS_WP_WORD_SHADOW;
+/* asm: COIN_COUNTER1	.bss	COIN_COUNTER1,1 */
+int COIN_COUNTER1;
+/* asm: COIN_COUNTER2	.bss	COIN_COUNTER2,1 */
+int COIN_COUNTER2;
+/* asm: COUNTER_IDX	.bss	COUNTER_IDX,1 */
+int COUNTER_IDX;
+/* asm: COUNTER_MODE	.bss	COUNTER_MODE,1 */
+int COUNTER_MODE;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: MOTIONDIS	SPTR	"MOTION OFF" */
+char *MOTIONDIS = "MOTION OFF";
 // *----------------------------------------------------------------------------
 
 void COIN1(void)
@@ -687,17 +736,6 @@ INICC_LP:
     UNIMPL();
 }
 
-void FONT18RED(void)
-{
-    // *----------------------------------------------------------------------------
-    // asm: 	LDL	font18_white,AR2
-    // asm: 	CALL	PAL_FIND_RAW
-    // asm: 	STI	R0,*+AR0(TEXT_PAL)
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FONT18RED", 0, 0);
-    UNIMPL();
-}
-
 void FONT18REDDS(void)
 {
     // asm: 	LDL	font18_white,AR2
@@ -1279,23 +1317,5 @@ CLEARIT:
     // asm: 	SETDP
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN_COUNTER", 0, 0);
-    UNIMPL();
-}
-
-void MOTION_VALID(void)
-{
-    // asm: 	CALL	CHECK_MOTION_DIP
-    // asm: 	RETSNZ			;RETURN IF NON MOVING
-    // asm: 	CALL	CHECK_MOTION_PRESENT
-    // asm: 	RETSEQ			;RETURN IF ALL OK
-    // asm: 	LDI	@MOTIONDIS,AR2
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	305,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_VALID", 0, 0);
     UNIMPL();
 }

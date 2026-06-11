@@ -26,19 +26,63 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: SEND_BUFFER_AI	.word	SEND_BUFFER_A */
-int SEND_BUFFER_AI = (int)(SEND_BUFFER_A);
+/* asm: IGNORE_UPDATES	.bss	IGNORE_UPDATES,1 */
+int IGNORE_UPDATES;
+/* asm: COMMQ_TMP_BUFF	fbss	COMMQ_TMP_BUFF,80 */
+int COMMQ_TMP_BUFF[80];
+/* asm: SEND_BUFFER_A	phibss	SEND_BUFFER_A,COMM_BUFFER_SIZE */
+int SEND_BUFFER_A[COMM_BUFFER_SIZE];
+/* asm: SEND_BUFFER_A_LEN	pbss	SEND_BUFFER_A_LEN,1 */
+int SEND_BUFFER_A_LEN;
 // 	;RECEIVE BUFFER
 // 	;
+/* asm: RBUFF_LEN	pbss	RBUFF_LEN,1 */
+int RBUFF_LEN;
+/* asm: RECEIVE_BUFFER	phibss	RECEIVE_BUFFER,COMM_BUFFER_SIZE */
+int RECEIVE_BUFFER[COMM_BUFFER_SIZE];
 // 	;OTHER MACHINE
 // 	;(OM_*)
 // 	;
-/* asm: COMMQ_TMP_BUFFI	.word	COMMQ_TMP_BUFF */
-int COMMQ_TMP_BUFFI = (int)(COMMQ_TMP_BUFF);
+/* asm: OM_DIFF	pbss	OM_DIFF,1 */
+int OM_DIFF;
+/* asm: OM_MODE	pbss	OM_MODE,1 */
+int OM_MODE;
+/* asm: OM_CHOSEN_RACE	pbss	OM_CHOSEN_RACE,1 */
+int OM_CHOSEN_RACE;
+/* asm: OM_VEHICLE	pbss	OM_VEHICLE,1 */
+int OM_VEHICLE;
+/* asm: OM_STATE	pbss	OM_STATE,1 */
+int OM_STATE;
+/* asm: MY_STATE	pbss	MY_STATE,1 */
+int MY_STATE;
+/* asm: OM_ATTR_MODE	pbss	OM_ATTR_MODE,1 */
+int OM_ATTR_MODE;
+/* asm: OLD_OM_ATTR_MODE	pbss	OLD_OM_ATTR_MODE,1 */
+int OLD_OM_ATTR_MODE;
+/* asm: OM_LINKWAIT	pbss	OM_LINKWAIT,1 */
+int OM_LINKWAIT;
+/* asm: MY_LINKWAIT	.bss	MY_LINKWAIT,1 */
+int MY_LINKWAIT;
+/* asm: LINKEDP	pbss	LINKEDP,1 */
+int LINKEDP;
+/* asm: OM_HIDDEN_ON	pbss	OM_HIDDEN_ON,1 */
+int OM_HIDDEN_ON;
+/* asm: OM_RACE_MODE	pbss	OM_RACE_MODE,1 */
+int OM_RACE_MODE;
+/* asm: BSYNC	.bss	BSYNC,1 */
+int BSYNC;
+/* asm: OM_BSYNC	pbss	OM_BSYNC,1 */
+int OM_BSYNC;
+/* asm: OM_POSITION	pbss	OM_POSITION,1 */
+int OM_POSITION;
+/* asm: HEAD2HEAD_ON	pbss	HEAD2HEAD_ON,1 */
+int HEAD2HEAD_ON;
 // *----------------------------------------------------------------------------
 // *Clear all of the linking elements
 // *
 // *
+/* asm: SAVED_PLY2CAR	.bss	SAVED_PLY2CAR,1 */
+int SAVED_PLY2CAR;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -51,8 +95,6 @@ int COMMQ_TMP_BUFFI = (int)(COMMQ_TMP_BUFF);
 // *	  AR2 should be incremented to the next block
 // *
 // *
-/* asm: DECODE_BLOCKI	.word	DECODE_BLOCK */
-int DECODE_BLOCKI = (int)(DECODE_BLOCK);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -69,7 +111,13 @@ int DECODE_BLOCKI = (int)(DECODE_BLOCK);
 // *DECODE RHO CREATION
 // *
 // *----------------------------------------------------------------------------
+/* asm: COINDROP	.bss	COINDROP,1 */
+int COINDROP;
 // *----------------------------------------------------------------------------
+/* asm: OM_DIAGVALUE	fbss	OM_DIAGVALUE,1 */
+int OM_DIAGVALUE;
+/* asm: DIAGVALUE	fbss	DIAGVALUE,1 */
+int DIAGVALUE;
 // *----------------------------------------------------------------------------
 
 void CLEAR_LINK(void)

@@ -28,14 +28,22 @@
 // *COPYRIGHT (C) 1994  BY TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: VLI	.word	VL */
-int VLI = (int)(VL);
-/* asm: TNORMI	.word	TNORM */
-int TNORMI = (int)(TNORM);
-/* asm: TVECT1I	.word	TVECT1 */
-int TVECT1I = (int)(TVECT1);
-/* asm: TVECT2I	.word	TVECT2 */
-int TVECT2I = (int)(TVECT2);
+/* asm: VL	.bss	VL,4 */
+int VL[4];
+/* asm: TNORM	.bss	TNORM,3 */
+int TNORM[3];
+/* asm: TVECT1	.bss	TVECT1,3 */
+int TVECT1[3];
+/* asm: TVECT2	.bss	TVECT2,3 */
+int TVECT2[3];
+/* asm: TMATRIX	.bss	TMATRIX,9 */
+int TMATRIX[9];
+/* asm: COLVEL	.bss	COLVEL,1 */
+int COLVEL;
+/* asm: PMULT	.bss	PMULT,1 */
+int PMULT;
+/* asm: SPINTEMP	.bss	SPINTEMP,1 */
+int SPINTEMP;
 // *----------------------------------------------------------------------------
 // *CAMERA SCAN FOR ROAD HEIGHT
 // *
@@ -52,8 +60,8 @@ int TVECT2I = (int)(TVECT2);
 // *AR4=OBJECT
 // *RET=R0=HT ABOVE ROAD (MIN)
 // *CS=FOUND A HIT, CC= NOTHING BELOW
-/* asm: BOXSCRAMI	.word	BOXSCRAM */
-int BOXSCRAMI = (int)(BOXSCRAM);
+/* asm: BOXSCRAM	FBSS	BOXSCRAM,50 */
+int BOXSCRAM[50];
 // *----------------------------------------------------------------------------
 // *CHECK OBJECT COLLISION WITH VECTOR IN X/Z SPACE
 // *
@@ -73,13 +81,13 @@ int BOXSCRAMI = (int)(BOXSCRAM);
 // ;	LDI	@_ATTR_MODE,R0
 // ;	CMPI	-3,R0		;BUG IN FUTURE
 // 				;display while in the attract mode
+/* asm: SAGETAB	.word	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
+int SAGETAB[] = { SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND };
 // *----------------------------------------------------------------------------
 // *FLYING SIGN COLLISION PROCESS
 // *
 // *AR4= SIGN OBJECT
 // *
-/* asm: FLYCOLLPI	.word	FLYCOLLP */
-int FLYCOLLPI = (int)(FLYCOLLP);
 // *----------------------------------------------------------------------------
 // *
 // *KILL OFFSCREEN ROAD DEBRIS
@@ -91,8 +99,6 @@ int FLYCOLLPI = (int)(FLYCOLLP);
 // *	AR4	SIGN OBJECT
 // *	R7	ROTATION DELTA
 // *
-/* asm: SIGNFALLI	.word	SIGNFALL */
-int SIGNFALLI = (int)(SIGNFALL);
 // *----------------------------------------------------------------------------
 // *TREE SHAKE PROCESS
 // *
@@ -100,8 +106,6 @@ int SIGNFALLI = (int)(SIGNFALL);
 // *	AR4	SIGN OBJECT
 // *	R7	ROTATION DELTA
 // *
-/* asm: TREESHAKI	.word	TREESHAK */
-int TREESHAKI = (int)(TREESHAK);
 // *SHAKE IT FORWARD
 // *SHAKE IT BACK
 // ;	LDP	@MATRIXAI
@@ -118,6 +122,24 @@ int TREESHAKI = (int)(TREESHAK);
 int SBUSI = (int)(sbus);
 /* asm: CBUSI	.word	cbus */
 int CBUSI = (int)(cbus);
+/* asm: DETHTAB1	.word	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
+/* asm: 	.WORD	NDETHSCREAM1,NDETHSCREAM3,NDETHSCREAM4,NDETHSCREAM7 */
+int DETHTAB1[] = { MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3, NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7 };
+/* asm: DETHTAB2	.word	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
+int DETHTAB2[] = { MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2 };
+// *
+// *KILL OFF FLY MESSAGE
+// *AR4= OBJECT
+// *AR5= CAR BLOCK
+// *AR7= PROCESS
+// *R4=  STATE PARAMETER
+// *
+// *
+// *GET A FLYER FROM OTHER GAME
+// *AR2=MESSAGE BUFFER
+// *
+/* asm: FLYCARP0I	.word	FLYCARP */
+int FLYCARP0I = (int)(FLYCARP);
 // *----------------------------------------------------------------------------
 // *SPINROT	CALCULATE SPIN ROTATION
 // *
@@ -135,6 +157,8 @@ int CBUSI = (int)(cbus);
 // *    	*+AR5(CAR_BUMP) 0=SMALL COLLISION, 1=BIG COLLISION
 // *    	*+AR5(CAR_SPIN)	SPIN TIME/ FLAG
 // *    	*+AR5(CARSPRAD)	RADIANS TO SPIN
+/* asm: PLYRBEHIND	.BSS	PLYRBEHIND,1 */
+int PLYRBEHIND;
 // *----------------------------------------------------------------------------
 // *
 // *CHECK FOR BOUNCE ALLOWED
@@ -150,12 +174,8 @@ int CBUSI = (int)(cbus);
 // *R0=IMPACT SPEED
 // *
 // * DRONE VS. DRONE
-/* asm: SCUPDTABI	.word	SCUPDTAB */
-int SCUPDTABI = (int)(SCUPDTAB);
 /* asm: SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
 int SCUPDTAB[] = { SCOLLF, SCOLLF, SCOLLG, SCOLLH };
-/* asm: SCTABI	.word	SCTAB */
-int SCTABI = (int)(SCTAB);
 /* asm: SCTAB	.word	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
 int SCTAB[] = { SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE };
 // *----------------------------------------------------------------------------
@@ -163,13 +183,9 @@ int SCTAB[] = { SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE };
 // *CLOCKWISE ORDER
 #define VCTO (BLOWLIST+24)
 #define VCTO1 (BLOWLIST+72)
-/* asm: EQTABI	.word	EQTAB */
-int EQTABI = (int)(EQTAB);
 // * OBJECT 0
 // * OBJECT 1
 // * LINE EQUATION TABLE PTS 2-6-7-3
-/* asm: LEQTABI	.word	LEQTAB */
-int LEQTABI = (int)(LEQTAB);
 
 void CAMSCAN(void)
 {
@@ -1758,6 +1774,12 @@ FC03:
     // asm: 	POP	AR1
     // asm: 	POP	AR0
     // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCAR", 0, 0);
+    UNIMPL();
+}
+
+void FLYCARP(void)
+{
     // *
     // *FLYING CAR PROCESS
     // *AR4=DRONE PROCESS
@@ -1770,12 +1792,6 @@ FC03:
     // *PDATA+5= Z RAD	TOTAL
     // *PDATA+6=MATRIX
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCAR", 0, 0);
-    UNIMPL();
-}
-
-void FLYCARP(void)
-{
     // *GET YOUR RADIANS
     // asm: 	LDF	0.2,R0
     // asm: 	CALL	SFRAND
@@ -2140,83 +2156,6 @@ DEADLP:
     // asm: 	LDI	@FLYCARPXXXXI,R2 	;KILL THE SOMBITCH
     // asm: 	STI	R2,*+AR7(PWAKE)		;CHANGE WAKE-UP ADDR
 DRKX:
-    // asm: 	RETS
-    // *
-    // *KILL OFF FLY MESSAGE
-    // *AR4= OBJECT
-    // *AR5= CAR BLOCK
-    // *AR7= PROCESS
-    // *R4=  STATE PARAMETER
-    // *
-    // asm: SEND_FLY_XSFER
-    // asm: 	LDI	@COMMQ_TMP_BUFFI,AR2
-    // asm: 	LDI	CB_FLY_XSFER,R1
-    // asm: 	STI	R1,*AR2++		;SEND HEADER
-    // asm: 	LDI	*+AR5(CARNUM),R1	;SEND ID
-    // asm: 	STI	R1,*AR2++
-    // asm: 	STI	R4,*AR2++		;SEND STATE
-    // asm: 	LDI	AR7,AR0
-    // asm: 	ADDI	PDATA,AR0		;GET PDATA 0-5
-    // asm: 	LDI	5,RC
-    // asm: 	RPTB	SENDP
-    // asm: 	LDI	*AR0++,R0
-    // asm: 	STI	R0,*AR2++
-    // asm: 	LSH	-8,R0
-    // asm: 	STI	R0,*AR2++
-    // asm: 	LSH	-8,R0
-    // asm: 	STI	R0,*AR2++
-    // asm: 	LSH	-8,R0
-SENDP:
-    // asm: STI	R0,*AR2++
-    // asm: 	LDI	27-1,RC
-    // asm: 	LDI	@COMMQ_TMP_BUFFI,AR2
-    // asm: 	CALL	MESSAGE_ADD
-    // asm: 	RETS
-    // *
-    // *GET A FLYER FROM OTHER GAME
-    // *AR2=MESSAGE BUFFER
-    // *
-    // asm: DECODE_FLY_XSFER
-    // asm: 	CALL	FIND_DRONE  		;GET DRONE OBJ IN AR0
-    // asm: 	BNZ	DFXX
-    // asm: 	LSH	R2,*AR2++,R4		;GET STATE
-    // asm: 	LDI	*+AR0(OPLINK),AR1
-    // asm: 	ADDI	PDATA,AR1		;GET PDATA 0-5
-    // asm: 	LDI	8,R5
-    // asm: 	LDI	5,RC
-    // asm: 	RPTB	DECP
-    // asm: 	LSH	R2,*AR2++,R0
-    // asm: 	LSH	R3,*AR2++,R1
-    // asm: 	ADDI	R1,R0
-    // asm: 	ADDI	*AR2++,R0
-    // asm: 	LSH	R5,*AR2++,R1
-    // asm: 	ADDI	R1,R0
-DECP:
-    // asm: STI	R0,*AR1++
-    // asm: 	LDI	*+AR0(OCARBLK),AR5
-    // asm: 	LDI	*+AR0(OPLINK),AR7
-    // asm: 	LDI	0,R0			;OUR CAR NOW....
-    // asm: 	STI	R0,*+AR5(CAR_OM)
-    // asm: 	LDI	*+AR5(CARTRACK_ID),R2	;GET TRACK ID
-    // asm: 	LDI	@FLYCARPXXXI,R5 	;KILL THE SOMBITCH
-    // asm: 	LDI	@DYNALIST_END,AR0	;GET FURTHEST ROAD ID
-    // asm: 	LDI	*+AR0(OUSR1),R0
-    // asm: 	CMPI	R0,R2
-    // asm: 	BGT	DFX1			;TOO FAR OUT, DIE
-    // asm: 	LDI	@DYNALIST_TRUEBEGIN,AR0
-    // asm: 	LDI	*+AR0(OUSR1),R0
-    // asm: 	CMPI	R0,R2
-    // asm: 	BLT	DFX1			;BEHIND US KILL HIM
-    // asm: 	LDI	@DEADLPI,R5		;DEFAULT
-    // asm: 	CMPI	0,R4	  		;FLYIN'
-    // asm: 	LDIZ	@FLYCARP0I,R5
-    // asm: 	CMPI	1,R4	  		;ROCKIN'
-    // asm: 	LDIZ	@FLYCARSTOPI,R5
-DFX1:
-    // asm: 	STI	R5,*+AR7(PWAKE)		;CHANGE WAKE-UP ADDR
-    // asm: 	RETS
-DFXX:
-    // asm: 	ADDI	25,AR2			;SKIP REST OF MESSAGE
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCARP", 0, 0);
     UNIMPL();

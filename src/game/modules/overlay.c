@@ -40,10 +40,63 @@
 // *
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: ROUTINE_TABLEI	.word	ROUTINE_TABLE */
-int ROUTINE_TABLEI = (int)(ROUTINE_TABLE);
+/* asm: ROUTINE_TABLE	ROUTINE_TABLE:					;routine */
+/* asm: 	.word	0				;0 none leave blank */
+/* asm: 	.word	CHECKPOINT_HIT			;1 */
+/* asm: 	.word	WATERON				;2 */
+/* asm: 	.word	WATEROFF			;3 */
+/* asm: 	.word	SET_BGNDCOL2BROWN		;4 */
+/* asm: 	.word	TURNOFF_INFINITY		;5 */
+/* asm: 	.word	TURNON_INFINITY			;6 */
+/* asm: 	.word	RR_UNFREEZE			;7 */
+/* asm: 	.word	RAILPRIME			;8 */
+/* asm: 	.word	HELISTART			;9 */
+/* asm: 	.word	HELIEND				;10 */
+/* asm: 	.word	BOFFNC				;11 */
+/* asm: 	.word	TOWER_PAL_LD			;12 */
+/* asm: 	.word	TOWER_PAL_RESTORE		;13 */
+/* asm: 	.word	TUNNEL_ON			;14 */
+/* asm: 	.word	TUNNEL_OFF			;15 */
+/* asm: 	.word	BRIDGE_ON			;16 */
+/* asm: 	.word	BRIDGE_OFF			;17 */
+/* asm: 	.word	CHANGE_TUNE			;18 */
+/* asm: 	.word	END_OF_GAME			;19 */
+/* asm: 	.word	LOOK_HOLLYWOOD			;20 */
+/* asm: 	.word	LOOK_GCANYON			;21 */
+/* asm: 	.word	LOOK_DEATHVALLEY		;22 */
+/* asm: 	.word	LOOK_MTRUSHMORE			;23 */
+/* asm: 	.word	LOOK_MIDWEST			;24 */
+/* asm: 	.word	LOOK_REDWOOD			;25 */
+/* asm: 	.word	LOOK_SANFRANCISCO		;26 */
+/* asm: 	.word	START_SANFRAN			;27 */
+/* asm: 	.word	REDWOOD_START			;28 */
+/* asm: 	.word	BEACHON				;29 */
+/* asm: 	.word	RAMPDOWNTRAINSND		;30 */
+/* asm: 	.word	OL				;31*** */
+/* asm: 	.word	BONUS1				;32 */
+/* asm: 	.word	BONUS2				;33 */
+/* asm: 	.word	BONUS3				;34 */
+/* asm: 	.word	BONUS4				;35 */
+/* asm: 	.word	BONUS5				;36 */
+/* asm: 	.word	BONUS6				;37 */
+/* asm: 	.word	BONUS7				;38 */
+/* asm: 	.word	BONUS8				;39 */
+/* asm: 	.word	BONUS9				;40 */
+/* asm: 	.word	BONUS10				;41 */
+/* asm: 	.word	BONUS11				;42 */
+/* asm: 	.word	BONUS12				;43 */
+/* asm: 	.word	BONUS13				;44 */
+/* asm: 	.word	BONUS14				;45 */
+int ROUTINE_TABLE[] = { 0, CHECKPOINT_HIT, WATERON, WATEROFF, SET_BGNDCOL2BROWN, TURNOFF_INFINITY, TURNON_INFINITY, RR_UNFREEZE, RAILPRIME, HELISTART, HELIEND, BOFFNC, TOWER_PAL_LD, TOWER_PAL_RESTORE, TUNNEL_ON, TUNNEL_OFF, BRIDGE_ON, BRIDGE_OFF, CHANGE_TUNE, END_OF_GAME, LOOK_HOLLYWOOD, LOOK_GCANYON, LOOK_DEATHVALLEY, LOOK_MTRUSHMORE, LOOK_MIDWEST, LOOK_REDWOOD, LOOK_SANFRANCISCO, START_SANFRAN, REDWOOD_START, BEACHON, RAMPDOWNTRAINSND, OL, BONUS1, BONUS2, BONUS3, BONUS4, BONUS5, BONUS6, BONUS7, BONUS8, BONUS9, BONUS10, BONUS11, BONUS12, BONUS13, BONUS14 };
+#if DEBUG
+#endif
+#endif
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: CHECKPOINT_TIME_BONUS	.bss	CHECKPOINT_TIME_BONUS,1 */
+int CHECKPOINT_TIME_BONUS;
+/* asm: REAL_CHECKPOINTS	.bss	REAL_CHECKPOINTS,1 */
+int REAL_CHECKPOINTS;
 // *----------------------------------------------------------------------------
 
 void SECTION_ROUTINE(void)
@@ -55,26 +108,6 @@ void SECTION_ROUTINE(void)
     // asm: 	CALLU	AR0
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SECTION_ROUTINE", 0, 0);
-    UNIMPL();
-}
-
-void ROUTINE_TABLE(void)
-{
-    //  ;routine
-#if DEBUG
-#endif
-    // asm: OL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROUTINE_TABLE", 0, 0);
-    UNIMPL();
-}
-
-void OVERLOCK(void)
-{
-#if DEBUG
-    // asm: 	BU	$
-#endif
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OVERLOCK", 0, 0);
     UNIMPL();
 }
 
@@ -183,7 +216,6 @@ void BRIDGE_OFF(void)
 {
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
-    //  ;#39
     // asm: 	LDI	@_MODE,R0
     // asm: 	ANDN	MBRIDGE,R0
     // asm: 	STI	R0,@_MODE
@@ -194,7 +226,6 @@ void BRIDGE_OFF(void)
 
 void BRIDGE_ON(void)
 {
-    //  ;#38
     // asm: 	LDI	@_MODE,R0
     // asm: 	OR	MBRIDGE,R0
     // asm: 	STI	R0,@_MODE
@@ -207,7 +238,6 @@ void BOFFNC(void)
 {
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
-    //  ;#40
     // asm: 	CALL	BRIDGE_OFF
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BOFFNC", 0, 0);
@@ -218,7 +248,6 @@ void TUNNEL_ON(void)
 {
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
-    //  ;#36
     // asm: 	LDI	@_MODE,R0
     // asm: 	OR	MINTUNNEL,R0
     // asm: 	STI	R0,@_MODE
@@ -243,7 +272,6 @@ void START_SANFRAN(void)
 {
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
-    //  ;#35
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "START_SANFRAN", 0, 0);
     UNIMPL();
@@ -253,7 +281,6 @@ void BEACHON(void)
 {
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
-    //  ;#29
     // asm: 	LDI	@_MODE,R0
     // asm: 	OR	MWATER,R0
     // asm: 	STI	R0,@_MODE
@@ -272,7 +299,6 @@ void REDWOOD_START(void)
 {
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
-    //  ;#28
     // asm: 	LDF	10,R0
     // asm: 	STF	R0,@VAR_ROAD_KFACTOR			;pixels UNDER (overshoot)
     // asm: 	FLOAT	75,R0	;75
@@ -292,7 +318,6 @@ void LOOK_SANFRANCISCO(void)
 {
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
-    //  ;#26
     // asm: 	SONDFX	ER_SANFRANCISCO
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_SANFRANCISCO", 0, 0);
@@ -395,7 +420,6 @@ void TOWER_PAL_LD(void)
 {
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
-    //  ;#12
     // 	;find the pal which tower is in
     // 	;do a palset with the new palette
     // asm: 	LDI	tower_p,AR2

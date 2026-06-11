@@ -39,8 +39,6 @@
 #define SIGT_PTRUCKG 6
 #define SIGT_JEEP 7
 #define SIGMA_LIST_LEN 16
-/* asm: SIGMA_LISTI	.word	SIGMA_LIST */
-int SIGMA_LISTI = (int)(SIGMA_LIST);
 #define SIGMA_PSYCHO 1
 // *----------------------------------------------------------------------------
 // *SIGMA IS A BIG FAT PIG THAT STARTS UP AHEAD OF THE PLAYER

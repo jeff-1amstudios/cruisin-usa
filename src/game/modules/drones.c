@@ -36,17 +36,35 @@
 // *	COPCAR
 // *	CHOPPER	the helicopter
 // *
+/* asm: DRONE_DISPATCH_P	.bss	DRONE_DISPATCH_P,1 */
+int DRONE_DISPATCH_P;
+/* asm: SUSPEND_MODE	.bss	SUSPEND_MODE,1 */
+int SUSPEND_MODE;
+/* asm: RACER_GRID_START	.bss	RACER_GRID_START,1 */
+int RACER_GRID_START;
 // *----------------------------------------------------------------------------
-/* asm: LANEPI	.word	LANEP */
-int LANEPI = (int)(LANEP);
+/* asm: DRONE_COUNT	.bss	DRONE_COUNT,1 */
+int DRONE_COUNT;
+/* asm: MIN_TRACK_TIME	.bss	MIN_TRACK_TIME,1 */
+int MIN_TRACK_TIME;
+/* asm: PSYCHO_RHO	.bss	PSYCHO_RHO,1 */
+int PSYCHO_RHO;
 /* asm: LANEP	.word	LANES,LANES4 */
 int LANEP[] = { LANES, LANES4 };
 // *----------------------------------------------------------------------------
+/* asm: ONCSCREEN_CARS	.bss	ONCSCREEN_CARS,1 */
+int ONCSCREEN_CARS;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *DRONE DISPATCHER
 // *
 // *
+/* asm: DD_SLP	.bss	DD_SLP,1 */
+int DD_SLP;
+/* asm: DD_VAR	.bss	DD_VAR,1 */
+int DD_VAR;
+/* asm: DD_MAX_DRONES	.bss	DD_MAX_DRONES,1 */
+int DD_MAX_DRONES;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *ADD ID TO DRONE POINTER TABLE
@@ -57,14 +75,14 @@ int LANEP[] = { LANES, LANES4 };
 // *RETURNS
 // *	R0	ID
 // *
+/* asm: DRONENUM	.bss	DRONENUM,1 */
+int DRONENUM;
 // *----------------------------------------------------------------------------
 // *
 // *CHECK IF AHEAD IN LINK FOR DISPATCH
 // *
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: EXP_ANII	.word	EXP_ANI */
-int EXP_ANII = (int)(EXP_ANI);
 // ;	.word	blast1,blast2,blast3,blast4,blast5
 // ;	.word	blast6,blast7,blast8,blast9,blast10,-1
 // *----------------------------------------------------------------------------
@@ -74,23 +92,21 @@ int EXP_ANII = (int)(EXP_ANI);
 // *PARAMETERS
 // *	AR4	OBJECT THAT IS SMOKING
 // *
+/* asm: SMOKE_COUNT	.bss	SMOKE_COUNT,1 */
+int SMOKE_COUNT;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: SMOKE_ANII	.word	SMOKE_ANI */
-int SMOKE_ANII = (int)(SMOKE_ANI);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
 // *PARAMETERS
 // *	AR5	PALM TREE OBJECT
 // *
+/* asm: COCONUT_COUNT	.bss	COCONUT_COUNT,1 */
+int COCONUT_COUNT;
 // *----------------------------------------------------------------------------
-/* asm: MODELTABI	.word	MODELTAB */
-int MODELTABI = (int)(MODELTAB);
 /* asm: MODELTAB	.word	cvettem,hotrodm,missle,testorm */
 int MODELTAB[] = { cvettem, hotrodm, missle, testorm };
-/* asm: TEXTTABSI	.word	TEXTTABS */
-int TEXTTABSI = (int)(TEXTTABS);
 /* asm: TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
 int TEXTTABS[] = { VETETXT, RODRTXT, BULLTXT, FERRTXT };
 /* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */

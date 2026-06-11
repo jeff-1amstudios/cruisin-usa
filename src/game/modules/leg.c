@@ -19,6 +19,8 @@
 // *
 #define USEFIXED 1
 #define USEEXTENDED 0
+/* asm: FINISH_ID	.bss	FINISH_ID,1 */
+int FINISH_ID;
 // *----------------------------------------------------------------------------
 // * USEAGE:
 // *
@@ -52,8 +54,16 @@
 // *
 // *
 // *
-/* asm: LEG_MAPI	.word	LEG_MAP */
-int LEG_MAPI = (int)(LEG_MAP);
+/* asm: LEG_ELEMENTS	.bss	LEG_ELEMENTS,1 */
+int LEG_ELEMENTS;
+/* asm: LEG_MAP	hibss	LEG_MAP,MAX_LEG_ELEMENTS*LEG_SIZE */
+int LEG_MAP[MAX_LEG_ELEMENTS*LEG_SIZE];
+/* asm: LAST_END_CACHE	.bss	LAST_END_CACHE,1 */
+int LAST_END_CACHE;
+/* asm: LAST_END_INDEX	.bss	LAST_END_INDEX,1 */
+int LAST_END_INDEX;
+/* asm: LAST_ORIENTATION	.bss	LAST_ORIENTATION,1 */
+int LAST_ORIENTATION;
 // *----------------------------------------------------------------------------
 // *
 // *
@@ -64,6 +74,12 @@ int LEG_MAPI = (int)(LEG_MAP);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 #define MINILL_SIZE 60
+/* asm: LEG_SSLL	hibss	LEG_SSLL,MINILL_SIZE*(LEG_SIZE+1) */
+int LEG_SSLL[MINILL_SIZE*(LEG_SIZE+1)];
+/* asm: LEGFREE	.bss	LEGFREE,1 */
+int LEGFREE;
+/* asm: LEGLL	.bss	LEGLL,1 */
+int LEGLL;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -72,9 +88,21 @@ int LEG_MAPI = (int)(LEG_MAP);
 // *
 // *INSERT LOWEST TO HIGHEST ONTO LEGLL
 // *
-/* asm: LEGLLI	.word	LEGLL */
-int LEGLLI = (int)(LEGLL);
 // *----------------------------------------------------------------------------
+/* asm: LEG_FLAG	.bss	LEG_FLAG,1 */
+int LEG_FLAG;
+/* asm: LEG_RADY	.bss	LEG_RADY,1 */
+int LEG_RADY;
+/* asm: LEG_SECTIONIDX	.bss	LEG_SECTIONIDX,1 */
+int LEG_SECTIONIDX;
+// *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+// *POST PROCESS LEG MAP
+// *
+// *
+// *
+// *
+#endif
 // *----------------------------------------------------------------------------
 
 void LEG_INIT(void)
@@ -461,50 +489,5 @@ NOTDYNAROAD:
     // asm: 	CALL	ELEMENT_DUMP_INTO_LEGMAP
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_ADD_GROUP", 0, 0);
-    UNIMPL();
-}
-
-void GENERATE_LINEAR_DISTANCE(void)
-{
-    // *----------------------------------------------------------------------------
-    // *----------------------------------------------------------------------------
-    // *POST PROCESS LEG MAP
-    // *
-    // *
-    // *
-    // *
-#if USEEXTENDED
-    // asm: 	LDL	LEG_MAP,AR2
-    // asm: 	FLOAT	*+AR2(LEG_POSX),R6	;STARTING POSITION
-    // asm: 	FLOAT	*+AR2(LEG_POSZ),R7
-    // asm: 	CLRF	R4			;ACCUMULATED DISTANCE
-GLDLP:
-    // asm: LDI	*AR2,R0
-    // asm: 	CMPI	-1,R0
-    // asm: 	BEQ	GLDX
-    // asm: 	FLOAT	*+AR2(LEG_POSX),R2	;STARTING POSITION
-    // asm: 	FLOAT	*+AR2(LEG_POSZ),R1
-    // asm: 	SUBF	R5,R2
-    // asm: 	SUBF	R6,R1
-    // asm: 	MPYF	R2,R2
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R1,R2
-    // asm: 	CALL	SQRT
-    // asm: 	ADDF	R0,R4
-    // asm: 	FIX	R4,R0
-    // asm: 	LS	16,R0
-    // asm: 	LDI	*+AR2(LEG_POSY),R6
-    // asm: 	LS	16,R6
-    // asm: 	RS	16,R6
-    // asm: 	OR	R0,R6
-    // asm: 	STI	R6,*+AR2(LEG_POSY)
-    // asm: 	FLOAT	*+AR2(LEG_POSX),R6	;STARTING POSITION
-    // asm: 	FLOAT	*+AR2(LEG_POSZ),R7
-    // asm: 	NOP	*AR3++(LEG_SIZE)
-    // asm: 	BU	GLDLP
-GLDX:
-#endif
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GENERATE_LINEAR_DISTANCE", 0, 0);
     UNIMPL();
 }

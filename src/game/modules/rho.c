@@ -30,8 +30,6 @@
 // *
 // *YELL B4 HIT TO PLAYER
 #define B4HIT_SIZE 6
-/* asm: B4HIT_TABLEI	.word	B4HIT_TABLE */
-int B4HIT_TABLEI = (int)(B4HIT_TABLE);
 /* asm: B4HIT_TABLE	.word	RH_GOFORIT,RH_TAKEHIM,RH_BABESCREAM1 */
 /* asm: 	.word	RH_BABEWHOA,RH_HURRYUP,RH_GONNACRASH */
 int B4HIT_TABLE[] = { RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1, RH_BABEWHOA, RH_HURRYUP, RH_GONNACRASH };
@@ -44,6 +42,8 @@ int B4HIT_TABLE[] = { RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1, RH_BABEWHOA, RH_HU
 #define RT_FLAG 1
 #define RT_ONSCREAM 2
 #define RT_SIZE 3
+/* asm: NOLONG_VEHICLES	.bss	NOLONG_VEHICLES,1 */
+int NOLONG_VEHICLES;
 // *
 // *RHO_TABLE
 // *	.word	VEHICLE_INDEX,RHO_FLAG
@@ -51,23 +51,46 @@ int B4HIT_TABLE[] = { RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1, RH_BABEWHOA, RH_HU
 // *
 // ;	.word	SBUS_MOD,RF_LONG,BUSDOPL
 #define RHO_TABLE_LENGTH 17
-/* asm: RHO_TABLEI	.word	RHO_TABLE */
-int RHO_TABLEI = (int)(RHO_TABLE);
-// *----------------------------------------------------------------------------
-// *RHO DRONE	ONCOMING TRAFFIC DRONE
-// *
-// *allocated standard drone
-// *
-// *starting position = end of the current universe (up ahead)
-// *
-// *in lane 0 or 1 accelerate past the player
-// *when rho has reached the begining of the universe
-// *
-// *
-// *RHO may be allocated as a suicide vehicle
-// *but in general plays a straight game as an
-// *oncomer.
-// *
+/* asm: RHO_TABLE	RHO_TABLE: */
+/* asm: 	.word	GTRUCK_MOD,0,DIESEL_DOPPLER */
+/* asm: 	.word	FTRUCK_MOD,RF_LONG,TRUCKHORN_BLAST */
+/* asm: 	.word	CBUS_MOD,RF_LONG,BUSDOPL */
+/* asm: 	.word	COPCAR_MOD,0,CARDOPL2 */
+/* asm: 	.word	MUSCLE_MOD,RF_WEAVER,CARDOPL3 */
+/* asm: 	.word	CARAVAN_MOD,0,CARDOPL3 */
+/* asm: 	.word	SBUS_MOD,RF_LONG,BUSDOPL */
+/* asm: 	.word	PTRUCKG_MOD,0,SEMIDOPL */
+/* asm: 	.word	MUSTANG_MOD,0,CARDOPL2 */
+/* asm: 	.word	JEEP_MOD,0,CARDOPL1 */
+/* asm: 	.word	GTRUCK_MOD,0,DIESEL_DOPPLER */
+/* asm: 	;	.word	CBUS_MOD,RF_LONG,BUSDOPL */
+/* asm: 	.word	COPCAR_MOD,0,CARDOPL2 */
+/* asm: 	.word	MUSCLE_MOD,RF_WEAVER,CARDOPL3 */
+/* asm: 	.word	CARAVAN_MOD,0,CARDOPL3 */
+/* asm: 	.word	PTRUCKG_MOD,0,SEMIDOPL */
+/* asm: 	.word	MUSTANG_MOD,0,CARDOPL2 */
+/* asm: 	;	.word	SBUS_MOD,RF_LONG,BUSDOPL */
+/* asm: 	.word	JEEP_MOD,0,CARDOPL1 */
+/* asm: 	*---------------------------------------------------------------------------- */
+/* asm: 	*RHO DRONE	ONCOMING TRAFFIC DRONE */
+/* asm: 	* */
+/* asm: 	*allocated standard drone */
+/* asm: 	* */
+/* asm: 	*starting position = end of the current universe (up ahead) */
+/* asm: 	* */
+/* asm: 	*in lane 0 or 1 accelerate past the player */
+/* asm: 	*when rho has reached the begining of the universe */
+/* asm: 	* */
+/* asm: 	* */
+/* asm: 	*RHO may be allocated as a suicide vehicle */
+/* asm: 	*but in general plays a straight game as an */
+/* asm: 	*oncomer. */
+/* asm: 	* */
+int RHO_TABLE[] = { GTRUCK_MOD, 0, DIESEL_DOPPLER, FTRUCK_MOD, RF_LONG, TRUCKHORN_BLAST, CBUS_MOD, RF_LONG, BUSDOPL, COPCAR_MOD, 0, CARDOPL2, MUSCLE_MOD, RF_WEAVER, CARDOPL3, CARAVAN_MOD, 0, CARDOPL3, SBUS_MOD, RF_LONG, BUSDOPL, PTRUCKG_MOD, 0, SEMIDOPL, MUSTANG_MOD, 0, CARDOPL2, JEEP_MOD, 0, CARDOPL1, GTRUCK_MOD, 0, DIESEL_DOPPLER, COPCAR_MOD, 0, CARDOPL2, MUSCLE_MOD, RF_WEAVER, CARDOPL3, CARAVAN_MOD, 0, CARDOPL3, PTRUCKG_MOD, 0, SEMIDOPL, MUSTANG_MOD, 0, CARDOPL2, JEEP_MOD, 0, CARDOPL1 };
+/* asm: RHOFLAG	.bss	RHOFLAG,1 */
+int RHOFLAG;
+/* asm: RHOPAL	.bss	RHOPAL,1 */
+int RHOPAL;
 // *
 // *RHO STARTER
 // *R4= VEHICLE INDEX
@@ -81,14 +104,6 @@ int RHO_TABLEI = (int)(RHO_TABLE);
 // *AR7=DRONE PROCESS
 // *
 // *----------------------------------------------------------------------------
-
-void RHO_TABLE(void)
-{
-    // ;	.word	CBUS_MOD,RF_LONG,BUSDOPL
-    // ;	.word	SBUS_MOD,RF_LONG,BUSDOPL
-    /* no executable asm lines detected */
-    UNIMPL();
-}
 
 void RHO_DRONE(void)
 {

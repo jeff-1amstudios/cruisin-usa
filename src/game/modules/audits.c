@@ -30,17 +30,21 @@
 // *	.word	AUDIT_#,string
 // *
 // *
+const char l_[] = ":ATEXT:";
+#define AUD_ROUTINE 0x5A
+#define AUD_ROUTINEH 0x5A0000
+const char l_[] = ":ATEXT:";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *AUDITS DISPLAY
 // *
+/* asm: OLDDIP	.bss	OLDDIP,1 */
+int OLDDIP;
 // *----------------------------------------------------------------------------
 
 void _word(void)
 {
     // asm: AUDITI:,l?
-AUDITI:
-    // asm: ,l?
     TRACE_EVENT(&g_crusn_machine->trace, "function", ".word", 0, 0);
     UNIMPL();
 }

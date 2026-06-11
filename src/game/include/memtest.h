@@ -4,6 +4,7 @@
 /* Generated from asm/MEMTEST.ASM. */
 
 // asm: 	fbss	BASICS_RAM,10
-#define BASICS_RAM 0x00809A7A
+// addr: 0x00809A7A
+extern int BASICS_RAM[10];
 
 #endif /* MEMTEST_H */

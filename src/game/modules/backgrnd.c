@@ -24,6 +24,20 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
+/* asm: STARTSECTION	.bss	STARTSECTION,1 */
+int STARTSECTION;
+/* asm: START_POS	.bss	START_POS,3 */
+int START_POS[3];
+/* asm: START_RADY	.bss	START_RADY,1 */
+int START_RADY;
+/* asm: DRIVE_LIST	.bss	DRIVE_LIST,1 */
+int DRIVE_LIST;
+/* asm: CAR_LIST	.bss	CAR_LIST,1 */
+int CAR_LIST;
+/* asm: SIGN_LIST	.bss	SIGN_LIST,1 */
+int SIGN_LIST;
+/* asm: GROUND_LIST	.bss	GROUND_LIST,1 */
+int GROUND_LIST;
 // *----------------------------------------------------------------------------
 // *DYNAMIC fLEX OBJECTS (THE ACTUAL ROAD OBJECTS (LIST))
 // *
@@ -33,7 +47,35 @@
 // *	OUSR1	fLEX code
 // *
 // *
+/* asm: NEW_GROUP	.bss	NEW_GROUP,1 */
+int NEW_GROUP;
+/* asm: DGROUPS	.bss	DGROUPS,DGRP_SIZE*MAX_DGROUPS */
+int DGROUPS[DGRP_SIZE*MAX_DGROUPS];
+/* asm: DGROUP_COUNT	.bss	DGROUP_COUNT,1 */
+int DGROUP_COUNT;
+/* asm: DGROUP_AW	.bss	DGROUP_AW,1 */
+int DGROUP_AW;
+/* asm: DYNALIST_TRUEBEGIN	.bss	DYNALIST_TRUEBEGIN,1 */
+int DYNALIST_TRUEBEGIN;
+/* asm: DYNALIST_BEGIN	.bss	DYNALIST_BEGIN,1 */
+int DYNALIST_BEGIN;
+/* asm: DYNALIST_END	.bss	DYNALIST_END,1 */
+int DYNALIST_END;
+/* asm: SUBLIST_BEGIN	.bss	SUBLIST_BEGIN,1 */
+int SUBLIST_BEGIN;
+/* asm: SUBLIST_END	.bss	SUBLIST_END,1 */
+int SUBLIST_END;
+/* asm: STARTS	.bss	STARTS,1 */
+int STARTS;
 // *----------------------------------------------------------------------------
+/* asm: SECTIONIDX	.bss	SECTIONIDX,1 */
+int SECTIONIDX;
+/* asm: TYCO_TRACK	.bss	TYCO_TRACK,1 */
+int TYCO_TRACK;
+/* asm: TYCO_TRACK_NTL	.bss	TYCO_TRACK_NTL,1 */
+int TYCO_TRACK_NTL;
+/* asm: TYCO_NTL_IDX	.bss	TYCO_NTL_IDX,1 */
+int TYCO_NTL_IDX;
 // ;ATTR_DDACT_DIST		.float	35000	;dynamic deactivate distance (+ radius)
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -57,44 +99,69 @@
 // *
 /* asm: NEWSUBLIST_TOP	.word	NEWSUBLIST_TOPB */
 int NEWSUBLIST_TOP = (int)(NEWSUBLIST_TOPB);
+/* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
+int NEWSUBLIST_TOPB;
+/* asm: GROUP_RADY	.bss	GROUP_RADY,1 */
+int GROUP_RADY;
+/* asm: TYCOFLAG	.bss	TYCOFLAG,1 */
+int TYCOFLAG;
+/* asm: PASS1	.bss	PASS1,1 */
+int PASS1;
+/* asm: SECRADY	.bss	SECRADY,1 */
+int SECRADY;
+/* asm: LVAL	.word	151720 */
+int LVAL = (int)(151720);
+// *CORNFLAKE END CHECK
+// 	;---->	BZD	REG_LD
+// 					;INTERNAL LINK (FOR DEALLOCATION)
+// 	;---->BZD	NOTREVERSED
+// 	;
+// 	;	SPECIAL REVERSED CASE
+// 	;
+// 	;TEST TO SEE IF WE SHOULD CALL A SPECIAL ROUTINE
+// 	;OR PALETTE SHIFT
+// 	;
+// 	;NOW FIND IF THE OBJECT BELONGS IN A SUPPLIMENTAL
+// 	;LIST.
+// 	;OID =	x3xx	-> DRIVE_SUPP
+// 	;	x4xx	-> BUILD_SUPP
+// 	;
+// 	;
+// 	;add this element to dynamic fLEX list
+// 	;
+// 	;*NOW DO THE FANCY MESS OF:
+// 	;*
+// 	;*	1)	DO WE LOAD A NEW OVERLAY INTO A SECTION?
+// 	;*	2)	WHICH SECTION DO WE OVERLAY IT INTO (1 OR 2)?
+// 	;*	3)	WHICH LOOK DO WE PLACE INTO THE SECTION (DESERT..)?
+// 	;*
+// 	;*
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: OVERCARLISTI	.word	OVERCARLIST */
-int OVERCARLISTI = (int)(OVERCARLIST);
 /* asm: OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
 int OVERCARLIST[] = { dcbus, dgtruck, dsbus, dcbus };
+/* asm: SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
+/* asm: 	.word	-1 */
+int SMOKE_ANI[] = { smoa, smob, smoc, smod, smoe, smof, -1 };
+// ;eug1,eug2,eug3,eug4,eug5,eug6
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: DC_MINIFOUNTAIN_ANII	.word	DC_MINIFOUNTAIN_ANI */
-int DC_MINIFOUNTAIN_ANII = (int)(DC_MINIFOUNTAIN_ANI);
 // *----------------------------------------------------------------------------
-/* asm: WATERFALL_ANII	.word	WATERFALL_ANI */
-int WATERFALL_ANII = (int)(WATERFALL_ANI);
 /* asm: WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
 int WATERFALL_ANI[] = { w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, -1 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: FLAGANII	.word	FLAGANI */
-int FLAGANII = (int)(FLAGANI);
 /* asm: FLAGANI	.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
 /* asm: 	.word	bflag6,bflag7,bflag9,bflag10,-1 */
 int FLAGANI[] = { bflag1, bflag2, bflag3, bflag4, bflag5, bflag6, bflag7, bflag9, bflag10, -1 };
-/* asm: FLAGANITALLI	.word	FLAGANITALL */
-int FLAGANITALLI = (int)(FLAGANITALL);
 /* asm: FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
 /* asm: 	.word	aflag6,aflag7,aflag9,aflag10,-1 */
 int FLAGANITALL[] = { aflag1, aflag2, aflag3, aflag4, aflag5, aflag6, aflag7, aflag9, aflag10, -1 };
-/* asm: RUT_ANISI	.word	RUT_ANIS */
-int RUT_ANISI = (int)(RUT_ANIS);
 /* asm: RUT_ANIS	.word	rut,rut2,rut3,-1 */
 int RUT_ANIS[] = { rut, rut2, rut3, -1 };
-/* asm: HUNGH_ANISI	.word	HUNGH_ANIS */
-int HUNGH_ANISI = (int)(HUNGH_ANIS);
 /* asm: HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
 int HUNGH_ANIS[] = { hungh1, hungh2, hungh3, hungh4, hungh5, hungh6, hungh7, -1 };
 // *----------------------------------------------------------------------------
-/* asm: BABE_PALISTI	.word	BABE_PALIST */
-int BABE_PALISTI = (int)(BABE_PALIST);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -110,13 +177,48 @@ int BABE_PALISTI = (int)(BABE_PALIST);
 // *RETURNS
 // *	R0	PTR TO THE FIRST OBJECT IN GROUP
 // *
+/* asm: SINGLE_SECTION_TEMPPTR	.bss	SINGLE_SECTION_TEMPPTR,1 */
+int SINGLE_SECTION_TEMPPTR;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *USE ACTUAL ID (0FFFh)
 // *
-/* asm: ROUTINE_TABI	.word	ROUTINE_TAB */
-int ROUTINE_TABI = (int)(ROUTINE_TAB);
-// *----------------------------------------------------------------------------
+/* asm: ROUTINE_TAB	ROUTINE_TAB: */
+/* asm: 	.word	40Ah,FLAGWAVE */
+/* asm: 	.word	460h,ROAD_DEBRIS_CREATE */
+/* asm: 	.word	461h,ROAD_DEBRIS_CREATE_55GAL */
+/* asm: 	.word	462h,ROAD_DEBRIS_CREATE_55GAL	;actually TOXIC */
+/* asm: 	.word	463h,ROAD_DEBRIS_CREATE_55GAL	;actually CONE */
+/* asm: 	.word	465h,FLAGWAVE			;short flag */
+/* asm: 	.word	466h,FLAGWAVE_TALL		;tall flag */
+/* asm: 	; */
+/* asm: 	.word	467h,WATERFALL */
+/* asm: 	.word	469h,OVERCAR		;LA & CHICAGO, FREEWAY OVERPASS CAR */
+/* asm: 	.word	470h,RRSTART_ENGINE */
+/* asm: 	.word	471h,RRSTART_BOXCAR */
+/* asm: 	.word	472h,RRSTART_BOXCAR */
+/* asm: 	.word	473h,RRSTART_BOXCAR */
+/* asm: 	.word	474h,RRSTART_BOXCAR */
+/* asm: 	.word	475h,RRSTART_BOXCAR */
+/* asm: 	.word	476h,RRSTART_BOXCAR */
+/* asm: 	; */
+/* asm: 	.word	481h,SMOKE_STACK */
+/* asm: 	.word	482h,CAR_FIRE */
+/* asm: 	; */
+/* asm: 	;	.word	485h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR (BRIDGE) */
+/* asm: 	;	.word	486h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE (BRIDGE) */
+/* asm: 	;	.word	487h,OIL_PUMP		;RUSHMORE OIL PUMP */
+/* asm: 	;	.word	495h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR */
+/* asm: 	;	.word	496h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE */
+/* asm: 	.word	498h,OHARE_PLANE	;CHICAGO AIRPLANE */
+/* asm: 	; */
+/* asm: 	.word	741h,RUT_ANI */
+/* asm: 	.word	742h,HUNGH_ANI */
+/* asm: 	.word	4A1h,DC_FOUNTAIN */
+/* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
+/* asm: 	.word	0	;END OF TABLE ID */
+/* asm: 	*---------------------------------------------------------------------------- */
+int ROUTINE_TAB[] = { 0x40A, FLAGWAVE, 0x460, ROAD_DEBRIS_CREATE, 0x461, ROAD_DEBRIS_CREATE_55GAL, 0x462, ROAD_DEBRIS_CREATE_55GAL, 0x463, ROAD_DEBRIS_CREATE_55GAL, 0x465, FLAGWAVE, 0x466, FLAGWAVE_TALL, 0x467, WATERFALL, 0x469, OVERCAR, 0x470, RRSTART_ENGINE, 0x471, RRSTART_BOXCAR, 0x472, RRSTART_BOXCAR, 0x473, RRSTART_BOXCAR, 0x474, RRSTART_BOXCAR, 0x475, RRSTART_BOXCAR, 0x476, RRSTART_BOXCAR, 0x481, SMOKE_STACK, 0x482, CAR_FIRE, 0x498, OHARE_PLANE, 0x741, RUT_ANI, 0x742, HUNGH_ANI, 0x4A1, DC_FOUNTAIN, 0x4A2, DC_MINIFOUNTAIN, 0 };
 
 void FIND_STARTING_VALUES(void)
 {
@@ -491,361 +593,6 @@ void BGD_ACTIVATE_TYCOGROUP(void)
     // asm: 	LDI	6700,R2
     // asm: 	LDI	-4250,R3
     // asm: 	LDI	32600,RC
-    // asm: 	ADDI	@LVAL,RC
-    // asm: 	CALL	OBJ_QMAKE
-    // asm: 	LDI	AR0,AR4
-    // asm: 	LDF	-0.2,R2
-    // asm: 	LDI	AR4,AR2
-    // asm: 	ADDI	OMATRIX,AR2
-    // asm: 	CALL	FIND_YMATRIX
-    // asm: 	LDI	*+AR4(OFLAGS),R0
-    // asm: 	OR	O_1PAL,R0
-    // asm: 	STI	R0,*+AR4(OFLAGS)
-    // asm: 	LDL	CORNPAL,AR2
-    // asm: 	CALL	PAL_FIND_RAW
-    // asm: 	STI	R0,*+AR4(OPAL)
-    // asm: 	LDI	AR4,AR2
-    // asm: 	CALL	OBJ_INSERT
-    // asm: 	LDI	@SECTIONIDX,R0
-    // asm: 	LS	8,R0
-    // asm: 	OR	0AAh,R0
-    // asm: 	STI	R0,*+AR4(OLINK2)
-    // asm: 	POP	AR4
-NOTCORNFLAKE:
-    // *CORNFLAKE END CHECK
-    // asm: 	LDI	-1,R0
-    // asm: 	STI	R0,@SUBLIST_BEGIN
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@PASS1
-    // asm: 	STI	R0,@NEW_GROUP
-    // asm: 	LDI	@TYCO_TRACK,AR2
-    // asm: 	LDI	AR2,AR7				;DEDICATED POINTER
-    // asm: 	LDI	*AR7,R0				;LOAD FLAG
-    // asm: 	STI	R0,@TYCOFLAG
-    // asm: 	TSTB	SC_OVERLAY,R0
-    // asm: 	BZ	NOVRDD
-    // asm: 	ADDI	1,AR2
-NOVRDD:
-    // asm: TSTB	SC_REVERSE,R0
-    // asm: 	BZD	REG_LD
-    // asm: 	NOP
-    // asm: 	ADDI	TB_REGSIZE-1,AR2
-    // asm: 	STI	AR2,@TYCO_TRACK
-    // 	;---->	BZD	REG_LD
-    // asm: 	ADDI	TB_RVSSIZE-TB_REGSIZE,AR2	;REVERSED SECTION HAS LARGER STRUCTURE
-    // asm: 	STI	AR2,@TYCO_TRACK
-REG_LD:
-    // asm: TSTB	SC_OVER2,R0			;hopefully...
-    // asm: 	BZ	NOEXTRA
-    // asm: 	LDI	@TYCO_TRACK,R0
-    // asm: 	INC	R0
-    // asm: 	STI	R0,@TYCO_TRACK
-NOEXTRA:
-    // asm: 	LDF	*+AR7(TB_RADY),R0
-    // asm: 	STF	R0,@SECRADY
-    // asm: 	LDI	@MATRIXAI,AR2		;Group rotation matrix
-    // asm: 	LDF	@SECRADY,R2
-    // asm: 	CALL	HPFIND_YMATRIX		;require High Precision
-    // asm: 	LDI	*+AR7(TB_GROUP),AR5	;Group pointer
-    // asm: 	ADDI	1,AR5			;skip radius
-    // asm: 	LDI	@SECTIONIDX,R0
-    // asm: 	LS	8,R0
-    // asm: 	OR	0AAh,R0
-    // asm: 	STI	R0,@NEWSUBLIST_TOPB
-    // asm: 	PUSH	R0
-    // asm: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND 1"
-    // asm: 	SUBI	1,R4
-    // asm: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS"
-L12:
-    // asm: 	LDI	*AR5++,AR2		;GET MODEL PTR
-    // asm: 	CALL	OBJ_GETE
-    // asm: 	SLOCKON	C,"BACKGRND\ACTIVATE   DANGER ERROR *FATAL*"
-    // asm: 	BC	ACTIVATE_X
-    // 					;INTERNAL LINK (FOR DEALLOCATION)
-    // asm: 	LDI	AR0,AR4			;SET OBJECT ROM PTR
-    // asm: 	POP	R0			;GET LAST BACK LINK
-    // asm: 	STI	R0,*+AR4(OLINK2)
-    // asm: 	PUSH	R0
-    // asm: 	FLOAT	*AR5++,R1		;GET X POSITION
-    // asm: 	STF	R1,*+AR4(OPOSX)
-    // asm: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    // asm: 	LDI	@TYCOFLAG,R0
-    // asm: 	TSTB	SC_REVERSE,R0
-    // asm: 	BZD	NOTREVERSED
-    // asm: 	STF	R1,*+AR4(OPOSY)
-    // asm: 	FLOAT	*AR5++,R1		;GET Z POSITION
-    // asm: 	STF	R1,*+AR4(OPOSZ)
-    // 	;---->BZD	NOTREVERSED
-    // 	;
-    // 	;	SPECIAL REVERSED CASE
-    // 	;
-    // asm: 	PUSH	AR7
-    // asm: 	TSTB	SC_OVERLAY,R0
-    // asm: 	BNZ	ISOVER
-    // asm: 	DEC	AR7
-ISOVER:
-    // asm: 	LDF	*+AR7(TB_RVS_POSX),R0	;TRANSLATE BY THE NEGATIVE OFFSET
-    // asm: 	ADDF	*+AR4(OPOSX),R0		;POSITION (THIS BLOCKS ENDING POSITION)
-    // asm: 	STF	R0,*+AR4(OPOSX)
-    // asm: 	LDF	*+AR7(TB_RVS_POSY),R0
-    // asm: 	ADDF	*+AR4(OPOSY),R0
-    // asm: 	STF	R0,*+AR4(OPOSY)
-    // asm: 	LDF	*+AR7(TB_RVS_POSZ),R0
-    // asm: 	ADDF	*+AR4(OPOSZ),R0
-    // asm: 	STF	R0,*+AR4(OPOSZ)
-    // asm: 	POP	AR7
-    // asm: 	LDI	@MATRIXAI,R2
-    // asm: 	LDI	AR4,AR2
-    // asm: 	ADDI	OPOSX,AR2
-    // asm: 	LDI	@VECTORAI,R3
-    // asm: 	CALL	MATRIX_MUL		;rotation by occurance matrix
-    // asm: 	LDI	@VECTORAI,AR0
-    // asm: 	LDF	*AR0++,R1
-    // asm: 	ADDF	*+AR7(TB_POSX),R1
-    // asm: 	STF	R1,*+AR4(OPOSX)
-    // asm: 	LDF	*AR0++,R1
-    // asm: 	ADDF	*+AR7(TB_POSY),R1
-    // asm: 	STF	R1,*+AR4(OPOSY)
-    // asm: 	LDF	*AR0++,R1
-    // asm: 	ADDF	*+AR7(TB_POSZ),R1
-    // asm: 	STF	R1,*+AR4(OPOSZ)
-    // asm: 	LDF	*AR5++,R2		;GET Y ROT
-    // asm: 	ADDF	@SECRADY,R2
-    // asm: 	STF	R2,*+AR4(ORADY)
-    // asm: 	LDI	AR4,AR2
-    // asm: 	ADDI	OMATRIX,AR2
-    // asm: 	CALL	HPFIND_YMATRIX
-    // asm: 	BU	JOIN_UP
-NOTREVERSED:
-    // asm: 	LDI	@MATRIXAI,R2
-    // asm: 	LDI	AR4,AR2
-    // asm: 	ADDI	OPOSX,AR2
-    // asm: 	LDI	R2,R3
-    // asm: 	LDI	@VECTORAI,R3
-    // asm: 	CALL	MATRIX_MUL		;ROTATION BY OCCURANCE MATRIX
-    // asm: 	LDI	@VECTORAI,AR0
-    // asm: 	LDF	*AR0++,R1
-    // asm: 	ADDF	*+AR7(TB_POSX),R1
-    // asm: 	STF	R1,*+AR4(OPOSX)
-    // asm: 	LDF	*AR0++,R1
-    // asm: 	ADDF	*+AR7(TB_POSY),R1
-    // asm: 	STF	R1,*+AR4(OPOSY)
-    // asm: 	LDF	*AR0++,R1
-    // asm: 	ADDF	*+AR7(TB_POSZ),R1
-    // asm: 	STF	R1,*+AR4(OPOSZ)
-    // asm: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
-    // asm: 	ADDF	@SECRADY,R2
-    // asm: 	STF	R2,*+AR4(ORADY)
-    // asm: 	LDI	AR4,AR2
-    // asm: 	ADDI	OMATRIX,AR2
-    // asm: 	CALL	HPFIND_YMATRIX
-JOIN_UP:
-    // asm: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
-    // asm: 	LDI	R1,R2
-    // asm: 	AND	CLASS_M|TYPE_M|SUBTYPE_M,R1
-    // asm: 	STI	R1,*+AR4(OID)
-    // 	;TEST TO SEE IF WE SHOULD CALL A SPECIAL ROUTINE
-    // 	;OR PALETTE SHIFT
-    // 	;
-    // asm: 	TSTB	BGD_ROUTINE,R2
-    // asm: 	CALLNZ	BGD_OROUTINE
-    // asm: 	LDI	R2,R0
-    // asm: 	RS	16,R2
-    // asm: 	AND	O_GENVSPEC,R2		;make sure list data is not ORed in
-    // asm: 	TSTB	BGD_BIGOBJ,R0		;BIG OBJECT TEST
-    // asm: 	BZ	NOTBIGOBJ
-    // asm: 	LDI	1,R0
-    // asm: 	LS	O_BIGOBJECT_B,R0
-    // asm: 	OR	R0,R2
-NOTBIGOBJ:
-    // asm: 	OR	*+AR4(OFLAGS),R2	;or in the flags
-    // asm: 	STI	R2,*+AR4(OFLAGS)
-    // asm: 	LDI	AR4,AR2
-    // asm: 	CALL	OBJ_INSERT			;INSERT THE BABE
-    // 	;NOW FIND IF THE OBJECT BELONGS IN A SUPPLIMENTAL
-    // 	;LIST.
-    // 	;OID =	x3xx	-> DRIVE_SUPP
-    // 	;	x4xx	-> BUILD_SUPP
-    // 	;
-    // asm: 	LDI	*+AR4(OID),R0
-    // asm: 	AND	CLASS_M,R0
-    // asm: 	CMPI	ROAD_C,R0
-    // asm: 	BNE	NOTDRIVE
-    // asm: 	LDI	@DRIVE_LIST,AR0
-    // asm: 	STI	AR0,*+AR4(OLINK3)
-    // asm: 	STI	AR4,@DRIVE_LIST
-    // asm: 	LDI	1,R1
-    // asm: 	BUD	DONELISTS
-    // asm: 	LS	28,R1			;O_ROAD_SUPP
-    // asm: 	OR	*+AR4(OFLAGS),R1
-    // asm: 	STI	R1,*+AR4(OFLAGS)
-NOTDRIVE:
-    // asm: 	CMPI	GROUND_C,R0
-    // asm: 	BNE	NOTGROUND
-    // asm: 	LDI	@GROUND_LIST,AR0
-    // asm: 	STI	AR0,*+AR4(OLINK3)
-    // asm: 	STI	AR4,@GROUND_LIST
-    // asm: 	LDI	1,R1
-    // asm: 	LS	O_GROUND_B,R1
-    // asm: 	OR	*+AR4(OFLAGS),R1
-    // asm: 	STI	R1,*+AR4(OFLAGS)
-    // asm: 	B	DONELISTS
-NOTGROUND:
-    // asm: 	CMPI	TSIGN_C,R0
-    // asm: 	BNE	NOTSIGN
-    // asm: 	LDI	@SIGN_LIST,AR0
-    // asm: 	STI	AR0,*+AR4(OLINK3)
-    // asm: 	STI	AR4,@SIGN_LIST
-    // asm: 	LDI	1,R1
-    // asm: 	LS	O_SIGN_SUPP_B,R1
-    // asm: 	OR	*+AR4(OFLAGS),R1
-    // asm: 	STI	R1,*+AR4(OFLAGS)
-    // asm: 	B	DONELISTS
-NOTSIGN:
-    // asm: 	CMPI	0B00h,R0
-    // asm: 	BNE	NOTDYNAROAD
-    // 	;
-    // 	;add this element to dynamic fLEX list
-    // 	;
-    // asm: 	LDI	@SECTIONIDX,R1
-    // asm: 	LS	8,R1
-    // asm: 	LDI	*+AR4(OID),R0
-    // asm: 	AND	0FFh,R0
-    // asm: 	LDI	@TYCOFLAG,R2			;in the case of reversed track
-    // asm: 	TSTB	SC_REVERSE,R2			;we say the index value is
-    // asm: 	BZ	NOTRVSTRK			;255 - index
-    // asm: 	SUBRI	255,R0				;
-    // asm: NOTRVSTRK					;
-    // asm: 	OR	R1,R0
-    // asm: 	STI	R0,*+AR4(OUSR1)
-    // asm: 	LDI	0300h,R0
-    // asm: 	STI	R0,*+AR4(OID)
-    // asm: 	LDI	@DRIVE_LIST,AR0
-    // asm: 	STI	AR0,*+AR4(OLINK3)
-    // asm: 	STI	AR4,@DRIVE_LIST
-    // asm: 	LDI	1,R1
-    // asm: 	LS	O_DRIVE_SUPP_B,R1
-    // asm: 	OR	*+AR4(OFLAGS),R1
-    // asm: 	STI	R1,*+AR4(OFLAGS)
-    // asm: 	CALL	ADD_TO_NEWLIST
-    // asm: 	BU	DONELISTS
-NOTDYNAROAD:
-DONELISTS:
-    // asm: 	SUBI	1,R4
-    // asm: 	BGE	L12
-ACTIVATE_X:
-    // asm: 	POP	AR0			;clear stack of last item
-    // asm: 	LDI	@PASS1,R0
-    // asm: 	BNZ	CHECK2
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@PASS1
-    // asm: 	LDI	*AR7,R0			;load flag
-    // asm: 	TSTB	SC_OVERLAY,R0
-    // asm: 	BZ	CHECK2II
-    // asm: 	LDI	*+AR7(TB_GROUPOVERLAY),AR5	;Group pointer
-    // asm: 	ADDI	1,AR5			;skip radius
-    // asm: 	LDI	@NEWSUBLIST_TOPB,R0
-    // asm: 	PUSH	R0
-    // asm: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED"
-    // asm: 	SUBI	1,R4
-    // asm: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
-    // asm: 	BU	L12
-CHECK2:
-    // asm: 	CMPI	2,R0
-    // asm: 	BEQ	NOOVERLAYGROUP
-    // asm: 	LDI	2,R0
-    // asm: 	STI	R0,@PASS1
-    // asm: 	LDI	*AR7,R0			;load flag
-    // asm: 	TSTB	SC_OVER2,R0
-    // asm: 	BZ	NOOVERLAYGROUP
-    // asm: 	PUSH	IR0
-    // asm: 	TSTB	SC_REVERSE,R0
-    // asm: 	LDIZ	TB_GROUPOVERLAY+1,IR0
-    // asm: 	LDINZ	TB_GROUPOVERLAY+5,IR0
-    // asm: 	LDI	*+AR7(IR0),AR5	;Group pointer
-    // asm: 	ADDI	1,AR5			;skip radius
-    // asm: 	TSTB	SC_REVERSE,R0
-    // asm: 	BZ	UHNO2
-    // asm: 	TSTB	SC_OVERLAY,R0
-    // asm: 	LDIZ	TB_RVS_RADY-1,IR0
-    // asm: 	LDINZ	TB_RVS_RADY,IR0
-    // asm: 	LDF	*+AR7(IR0),R0
-    // asm: 	STPF	R0,@SECRADY
-UHNO2:
-    // asm: 	POP	IR0
-    // asm: 	LDI	@TYCOFLAG,R0		;overlay 2 is not reversed - EVER!
-    // asm: 	ANDN	SC_REVERSE,R0
-    // asm: 	STI	R0,@TYCOFLAG
-    // asm: 	LDI	@NEWSUBLIST_TOPB,R0
-    // asm: 	PUSH	R0
-    // asm: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED OVER2"
-    // asm: 	SUBI	1,R4
-    // asm: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
-    // asm: 	BU	L12
-CHECK2II:
-    // asm: 	CMPI	2,R0
-    // asm: 	BEQ	NOOVERLAYGROUP
-    // asm: 	LDI	2,R0
-    // asm: 	STI	R0,@PASS1
-    // asm: 	LDI	*AR7,R0			;load flag
-    // asm: 	TSTB	SC_OVER2,R0
-    // asm: 	BZ	NOOVERLAYGROUP
-    // asm: 	PUSH	IR0
-    // asm: 	TSTB	SC_REVERSE,R0
-    // asm: 	LDIZ	TB_GROUPOVERLAY,IR0
-    // asm: 	LDINZ	TB_GROUPOVERLAY+4,IR0
-    // asm: 	LDI	*+AR7(IR0),AR5		;Group pointer
-    // asm: 	TSTB	SC_REVERSE,R0
-    // asm: 	BZ	UHNO
-    // asm: 	TSTB	SC_OVERLAY,R0
-    // asm: 	LDIZ	TB_RVS_RADY-1,IR0
-    // asm: 	LDINZ	TB_RVS_RADY,IR0
-    // asm: 	LDF	*+AR7(IR0),R0
-    // asm: 	STPF	R0,@SECRADY
-UHNO:
-    // asm: 	POP	IR0
-    // asm: 	ADDI	1,AR5			;skip radius
-    // asm: 	LDI	@TYCOFLAG,R0		;overlay 2 is not reversed - EVER!
-    // asm: 	ANDN	SC_REVERSE,R0
-    // asm: 	STI	R0,@TYCOFLAG
-    // asm: 	LDI	@NEWSUBLIST_TOPB,R0
-    // asm: 	PUSH	R0
-    // asm: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED OVER2"
-    // asm: 	SUBI	1,R4
-    // asm: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
-    // asm: 	BU	L12
-NOOVERLAYGROUP:
-    // 	;*NOW DO THE FANCY MESS OF:
-    // 	;*
-    // 	;*	1)	DO WE LOAD A NEW OVERLAY INTO A SECTION?
-    // 	;*	2)	WHICH SECTION DO WE OVERLAY IT INTO (1 OR 2)?
-    // 	;*	3)	WHICH LOOK DO WE PLACE INTO THE SECTION (DESERT..)?
-    // 	;*
-    // 	;*
-    // asm: 	LDI	@TYCOFLAG,R0
-    // asm: 	TSTB	SC_LDSECT,R0
-    // asm: 	BZ	NO_NEWLOAD
-NO_NEWLOAD:
-    // asm: 	CALL	FIND_SUBLIST_START_END
-    // asm: 	CALL	APPEND_NEWLIST
-    // asm: 	LDI	@NEWSUBLIST_TOPB,R0		;return pointer to 1st object
-    // asm: 	POP	AR7
-    // asm: 	POP	AR5
-    // asm: 	POP	AR4
-    // asm: 	POP	AR2
-    // asm: 	POP	AR1
-    // asm: 	POP	AR0
-    // asm: 	POP	R5
-    // asm: 	POP	R4
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_ACTIVATE_TYCOGROUP", 0, 0);
     UNIMPL();
 }
@@ -1279,8 +1026,6 @@ void CAR_FIRE(void)
     // asm: 	NOP
     // asm: 	LDI	@CAR_FIRE_ANII,AR6
     // 	;---->	BUD	MAKEPPP
-    // ;eug1,eug2,eug3,eug4,eug5,eug6
-    // asm: CAR_FIRE_ANI
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAR_FIRE", 0, 0);
     UNIMPL();
 }
@@ -1297,7 +1042,6 @@ void DC_MINIFOUNTAIN(void)
     // asm: 	CREATE	WATERANI_PROC,SPAWNER_C|ANIMATION_T
     // asm: 	BC	FWL1A
     // asm: 	BU	J262
-    // asm: DC_FOUNTAIN_ANI
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DC_MINIFOUNTAIN", 0, 0);
     UNIMPL();
 }
@@ -2114,20 +1858,5 @@ LS_ACTIVATE_XO:
     // asm: 	POP	R4
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SINGLE_SECTION_OFFSET", 0, 0);
-    UNIMPL();
-}
-
-void ROUTINE_TAB(void)
-{
-    // 	;
-    // 	;
-    // 	;
-    // ;	.word	485h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR (BRIDGE)
-    // ;	.word	486h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE (BRIDGE)
-    // ;	.word	487h,OIL_PUMP		;RUSHMORE OIL PUMP
-    // ;	.word	495h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR
-    // ;	.word	496h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE
-    // 	;
-    /* no executable asm lines detected */
     UNIMPL();
 }

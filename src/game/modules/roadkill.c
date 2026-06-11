@@ -24,8 +24,6 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: ROADKILL_TABI	.word	ROADKILL_TAB */
-int ROADKILL_TABI = (int)(ROADKILL_TAB);
 #define ROADKILL_TYPES (2-1)
 #define RKT_DEATH 0
 #define RKT_SND 1
@@ -33,6 +31,8 @@ int ROADKILL_TABI = (int)(ROADKILL_TAB);
 #define RKT_WIDTHL 3
 #define RKT_WIDTHR 4
 #define RKT_SIZE 5
+/* asm: ROADKILLXZ	.bss	ROADKILLXZ,2 */
+int ROADKILLXZ[2];
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *This checks collisions between the Player and the roadkill. This is needed
@@ -45,6 +45,8 @@ int ROADKILL_TABI = (int)(ROADKILL_TAB);
 // *
 // *
 // *
+/* asm: ROADKILL_SOUND_TIMER	.bss	ROADKILL_SOUND_TIMER,1 */
+int ROADKILL_SOUND_TIMER;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -65,8 +67,6 @@ int ROADKILL_TABI = (int)(ROADKILL_TAB);
 // *----------------------------------------------------------------------------
 // *	.FILE	"DEER.ASM"
 // *----------------------------------------------------------------------------
-/* asm: DEERANII	.word	DEERANI */
-int DEERANII = (int)(DEERANI);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *DEER_BLOOD_PROC	PROC
@@ -90,10 +90,13 @@ int DEERBLOOD_ANI[] = { adblud1, adblud2, adblud3, adblud4, adblud5, adblud6, -1
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: GEESEANII	.word	GEESEANI */
-int GEESEANII = (int)(GEESEANI);
-/* asm: GEESE_DIRI	.word	GEESE_DIR */
-int GEESE_DIRI = (int)(GEESE_DIR);
+/* asm: GEESEANI	GEESEANI: */
+/* asm: 	.word	geese1,geeseb,geesec,geesed */
+/* asm: 	.word	geesee,geesef,geeseg,geeseh,-1 */
+int GEESEANI[] = { geese1, geeseb, geesec, geesed, geesee, geesef, geeseg, geeseh, -1 };
+/* asm: GEESE_DIR	GEESE_DIR: */
+/* asm: 	.word	250,1 */
+int GEESE_DIR[] = { 250, 1 };
 // *----------------------------------------------------------------------------
 #define SPEED PDATA
 #define DIRECTION (PDATA+1)
@@ -104,8 +107,6 @@ int GEESE_DIRI = (int)(GEESE_DIR);
 // *	R4	=	SPEED
 // *	R5	=	DIRECTION INT (+/-1, Direction to travers road)
 // *	R6	=	RADS direction FL
-/* asm: SHIT_ANII	.word	SHIT_ANI */
-int SHIT_ANII = (int)(SHIT_ANI);
 /* asm: SHIT_ANI	.word	bdst,bdst2,bdst3,bdst4,bdst5,bdst6,-1 */
 int SHIT_ANI[] = { bdst, bdst2, bdst3, bdst4, bdst5, bdst6, -1 };
 // *---------------------------------------------------------------------------
@@ -116,8 +117,6 @@ int SHIT_ANI[] = { bdst, bdst2, bdst3, bdst4, bdst5, bdst6, -1 };
 // *Creates several BUG SPLAT PROCS
 // *	CREATE	BUG_SPAWNER_PROC,SPAWNER_C
 // *
-/* asm: BUG_ANII	.word	BUG_ANI */
-int BUG_ANII = (int)(BUG_ANI);
 /* asm: BUG_ANI	.word	bug1,bug2,bug3,bug4,bug5,-1 */
 int BUG_ANI[] = { bug1, bug2, bug3, bug4, bug5, -1 };
 // *---------------------------------------------------------------------------
@@ -630,7 +629,6 @@ INIT_DEERX:
 
 void DEER_EXPLODE(void)
 {
-    //  ;called from within colla
     // asm: 	CALL	PUSHALL
     // asm: 	LDI	AR1,AR6		;save off pointer to deer's object
     // asm: 	LDI	*+AR6(OID),R0
@@ -845,18 +843,6 @@ void FLY_PARTS(void)
 FLY_PARTSX:
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLY_PARTS", 0, 0);
-    UNIMPL();
-}
-
-void GEESEANI(void)
-{
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
-void GEESE_DIR(void)
-{
-    /* no executable asm lines detected */
     UNIMPL();
 }
 

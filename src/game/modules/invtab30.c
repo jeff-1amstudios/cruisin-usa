@@ -20,8 +20,7 @@
 // *with hand modifications -ELP
 // *
 
-void INVTAB(void)
+void invtab30(void)
 {
-    /* no executable asm lines detected */
     UNIMPL();
 }

@@ -4,8 +4,10 @@
 /* Generated from asm/HEADS.ASM. */
 
 // asm: 	.bss	YINCREMENT,1
-#define YINCREMENT 0x0098E629
+// addr: 0x0098E629
+extern int YINCREMENT;
 // asm: 	.bss	FONTUSED,1
-#define FONTUSED 0x0098E62A
+// addr: 0x0098E62A
+extern int FONTUSED;
 
 #endif /* HEADS_H */

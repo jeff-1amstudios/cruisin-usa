@@ -28,12 +28,38 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
+/* asm: TEASE_COUNT	pbss	TEASE_COUNT,1 */
+int TEASE_COUNT;
+/* asm: ATTR_MODEL	pbss	ATTR_MODEL,1 */
+int ATTR_MODEL;
+/* asm: _ATTR_MODE	pbss	_ATTR_MODE,1 */
+int _ATTR_MODE;
+/* asm: LOADED	pbss	LOADED,1 */
+int LOADED;
 // *----------------------------------------------------------------------------
 // *PARAMETERS
 // *	AR2	WAVE INDEX
 // *		<  0 -> ATTRACT MODE N
 // *		>= 0 -> REGULAR GAME
 // *
+/* asm: _ATTR_WAVETABI	.word	_ATTR_WAVETAB	;NOTE THE VALUES ARE NEGATVIE */
+/* asm: 	.word	HEAD2HEAD_WAIT */
+/* asm: 	.word	CREDITS */
+/* asm: 	.word	THANKS */
+/* asm: 	.word	MIDSPINHS */
+/* asm: 	.word	RACELEG */
+/* asm: 	.word	MIDSPIN */
+/* asm: 	.word	HIGH_SCORE */
+int _ATTR_WAVETABI[] = { _ATTR_WAVETAB, HEAD2HEAD_WAIT, CREDITS, THANKS, MIDSPINHS, RACELEG, MIDSPIN, HIGH_SCORE };
+// *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+/* asm: FIXEDPAL	FIXEDPAL: */
+/* asm: 	.word	14 */
+int FIXEDPAL = (int)(14);
+// 					;F  -cycling color
+/* asm: ILLUM_PAL	ILLUM_PAL: */
+/* asm: 	.word	16 */
+int ILLUM_PAL = (int)(16);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -66,8 +92,34 @@
 // *	.word	drone_dyna_table
 // *
 // *
-/* asm: VEHICLE_TABLEI	.word	VEHICLE_TABLE */
-int VEHICLE_TABLEI = (int)(VEHICLE_TABLE);
+/* asm: VEHICLE_TABLE	VEHICLE_TABLE: */
+/* asm: 	;#0 */
+/* asm: 	.word	cvette,cvette_p,VETTTAB,0,0 */
+/* asm: 	.word	1 */
+int VEHICLE_TABLE[] = { cvette, cvette_p, VETTTAB, 0, 0, 1 };
+// 	;#1
+// 	;#2
+// 	;#3
+// 	;#4
+// 	;#5
+// 	;#6	//locked
+// 	;#7
+// 	;#8
+// 	;#9
+// 	;#10	//locked
+// 	;#11	//locked
+// 	;#12
+// 	;#13
+// 	;#14
+// 	;#15 copcar for the player
+// 	;#16 gtruckp for the player
+// 	;#17 sbusp for the player
+// *	number of axels,number of vertices
+// *	{
+// *	vertices, xcenter,ycenter,zcenter
+// *	} * number of axels
+// *
+// ;	.word	3,120
 // *----------------------------------------------------------------------------
 // *PALETTE_TABLES :
 // *
@@ -100,6 +152,27 @@ int MUSCLEPAL[] = { 2, muscle_yellow, muscle_green };
 int PTRUCKGPAL[] = { 2, ptruckg_purple, ptruckg_yellr };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+// *OVERWRITTEN ON TOWER PALETTE, AND RESTORED IN GGATE PARK
+// *
+/* asm: tower_bgrey	tower_bgrey: */
+/* asm: 	.word	080000000h|256 */
+/* asm: 	.word	(00h<<16)|021h,(042h<<16)|0463h,(0463h<<16)|0884h,(0884h<<16)|0884h,(0884h<<16)|0CA5h,(0CA5h<<16)|0CA5h,(0CA5h<<16)|0CA5h,(0CA5h<<16)|0CA5h,(0CA5h<<16)|0CA5h */
+/* asm: 	.word	(0CA5h<<16)|0CA5h,(0CA5h<<16)|010C6h,(010C6h<<16)|0CA5h,(0CA5h<<16)|010C6h,(0CA5h<<16)|010C6h,(010C6h<<16)|010C6h,(010C6h<<16)|010C6h,(010C6h<<16)|010C6h,(010C6h<<16)|010C6h */
+/* asm: 	.word	(014E7h<<16)|010C6h,(010C6h<<16)|010C6h,(010C6h<<16)|014E7h,(010C6h<<16)|010C6h,(014E7h<<16)|010C6h,(014E7h<<16)|014E7h,(014E7h<<16)|014E7h,(014E7h<<16)|014E7h,(014E7h<<16)|014E7h */
+/* asm: 	.word	(014E7h<<16)|014E7h,(014E7h<<16)|014E7h,(014E7h<<16)|01908h,(01908h<<16)|01D29h,(014E7h<<16)|01908h,(014E7h<<16)|01908h,(01908h<<16)|01908h,(01908h<<16)|01908h,(01908h<<16)|01908h */
+/* asm: 	.word	(01908h<<16)|014E7h,(01908h<<16)|01908h,(01908h<<16)|01D29h,(01908h<<16)|01908h,(01908h<<16)|010C6h,(01D29h<<16)|01908h,(01908h<<16)|01D29h,(01908h<<16)|01D29h,(01D29h<<16)|01908h */
+/* asm: 	.word	(01908h<<16)|01D29h,(01908h<<16)|01D29h,(01908h<<16)|01D29h,(01D29h<<16)|01D29h,(01D29h<<16)|01D29h,(01D29h<<16)|01D29h,(01D29h<<16)|01908h,(01D29h<<16)|01908h,(01D29h<<16)|01D29h */
+/* asm: 	.word	(01D29h<<16)|0214Ah,(01D29h<<16)|01D29h,(01D29h<<16)|01D29h,(01D29h<<16)|01D29h,(01D29h<<16)|0214Ah,(01D29h<<16)|0214Ah,(014E7h<<16)|01D29h,(01D29h<<16)|01D29h,(0214Ah<<16)|0214Ah */
+/* asm: 	.word	(0214Ah<<16)|01D29h,(0214Ah<<16)|01D29h,(0214Ah<<16)|0214Ah,(0214Ah<<16)|01D29h,(0214Ah<<16)|0214Ah,(0256Bh<<16)|01D29h,(0214Ah<<16)|0214Ah,(0214Ah<<16)|0214Ah,(01D29h<<16)|0214Ah */
+/* asm: 	.word	(0256Bh<<16)|014E7h,(01D29h<<16)|0214Ah,(0256Bh<<16)|0214Ah,(0214Ah<<16)|0214Ah,(0256Bh<<16)|0214Ah,(0214Ah<<16)|0256Bh,(0256Bh<<16)|0214Ah,(0214Ah<<16)|0214Ah,(0256Bh<<16)|0214Ah */
+/* asm: 	.word	(0256Bh<<16)|0256Bh,(0214Ah<<16)|0256Bh,(0256Bh<<16)|0214Ah,(0256Bh<<16)|0256Bh,(0214Ah<<16)|0256Bh,(0298Ch<<16)|0256Bh,(0256Bh<<16)|0214Ah,(0256Bh<<16)|0256Bh,(0256Bh<<16)|0256Bh */
+/* asm: 	.word	(0256Bh<<16)|01D29h,(0298Ch<<16)|0256Bh,(0298Ch<<16)|0256Bh,(0256Bh<<16)|0256Bh,(0298Ch<<16)|0298Ch,(0298Ch<<16)|0256Bh,(0298Ch<<16)|0298Ch,(0298Ch<<16)|01D29h,(0298Ch<<16)|0298Ch */
+/* asm: 	.word	(0298Ch<<16)|0298Ch,(0298Ch<<16)|0256Bh,(0298Ch<<16)|0298Ch,(0256Bh<<16)|0298Ch,(0298Ch<<16)|0298Ch,(0298Ch<<16)|0298Ch,(02DADh<<16)|02DADh,(0298Ch<<16)|02DADh,(02DADh<<16)|0298Ch */
+/* asm: 	.word	(0298Ch<<16)|02DADh,(02DADh<<16)|02DADh,(02DADh<<16)|02DADh,(0298Ch<<16)|02DADh,(02DADh<<16)|02DADh,(031CEh<<16)|02DADh,(02DADh<<16)|031CEh,(031CEh<<16)|031CEh,(031CEh<<16)|02DADh */
+/* asm: 	.word	(031CEh<<16)|031CEh,(02DADh<<16)|031CEh,(031CEh<<16)|031CEh,(031CEh<<16)|035EFh,(035EFh<<16)|031CEh,(031CEh<<16)|035EFh,(03A10h<<16)|035EFh,(02DADh<<16)|03E31h,(035EFh<<16)|03E31h */
+/* asm: 	.word	(03E31h<<16)|04252h,(04673h<<16)|04A94h */
+/* asm: 	*---------------------------------------------------------------------------- */
+int tower_bgrey[] = { 0x080000000|256, (0x00<<16)|0x021, (0x042<<16)|0x0463, (0x0463<<16)|0x0884, (0x0884<<16)|0x0884, (0x0884<<16)|0x0CA5, (0x0CA5<<16)|0x0CA5, (0x0CA5<<16)|0x0CA5, (0x0CA5<<16)|0x0CA5, (0x0CA5<<16)|0x0CA5, (0x0CA5<<16)|0x0CA5, (0x0CA5<<16)|0x010C6, (0x010C6<<16)|0x0CA5, (0x0CA5<<16)|0x010C6, (0x0CA5<<16)|0x010C6, (0x010C6<<16)|0x010C6, (0x010C6<<16)|0x010C6, (0x010C6<<16)|0x010C6, (0x010C6<<16)|0x010C6, (0x014E7<<16)|0x010C6, (0x010C6<<16)|0x010C6, (0x010C6<<16)|0x014E7, (0x010C6<<16)|0x010C6, (0x014E7<<16)|0x010C6, (0x014E7<<16)|0x014E7, (0x014E7<<16)|0x014E7, (0x014E7<<16)|0x014E7, (0x014E7<<16)|0x014E7, (0x014E7<<16)|0x014E7, (0x014E7<<16)|0x014E7, (0x014E7<<16)|0x01908, (0x01908<<16)|0x01D29, (0x014E7<<16)|0x01908, (0x014E7<<16)|0x01908, (0x01908<<16)|0x01908, (0x01908<<16)|0x01908, (0x01908<<16)|0x01908, (0x01908<<16)|0x014E7, (0x01908<<16)|0x01908, (0x01908<<16)|0x01D29, (0x01908<<16)|0x01908, (0x01908<<16)|0x010C6, (0x01D29<<16)|0x01908, (0x01908<<16)|0x01D29, (0x01908<<16)|0x01D29, (0x01D29<<16)|0x01908, (0x01908<<16)|0x01D29, (0x01908<<16)|0x01D29, (0x01908<<16)|0x01D29, (0x01D29<<16)|0x01D29, (0x01D29<<16)|0x01D29, (0x01D29<<16)|0x01D29, (0x01D29<<16)|0x01908, (0x01D29<<16)|0x01908, (0x01D29<<16)|0x01D29, (0x01D29<<16)|0x0214A, (0x01D29<<16)|0x01D29, (0x01D29<<16)|0x01D29, (0x01D29<<16)|0x01D29, (0x01D29<<16)|0x0214A, (0x01D29<<16)|0x0214A, (0x014E7<<16)|0x01D29, (0x01D29<<16)|0x01D29, (0x0214A<<16)|0x0214A, (0x0214A<<16)|0x01D29, (0x0214A<<16)|0x01D29, (0x0214A<<16)|0x0214A, (0x0214A<<16)|0x01D29, (0x0214A<<16)|0x0214A, (0x0256B<<16)|0x01D29, (0x0214A<<16)|0x0214A, (0x0214A<<16)|0x0214A, (0x01D29<<16)|0x0214A, (0x0256B<<16)|0x014E7, (0x01D29<<16)|0x0214A, (0x0256B<<16)|0x0214A, (0x0214A<<16)|0x0214A, (0x0256B<<16)|0x0214A, (0x0214A<<16)|0x0256B, (0x0256B<<16)|0x0214A, (0x0214A<<16)|0x0214A, (0x0256B<<16)|0x0214A, (0x0256B<<16)|0x0256B, (0x0214A<<16)|0x0256B, (0x0256B<<16)|0x0214A, (0x0256B<<16)|0x0256B, (0x0214A<<16)|0x0256B, (0x0298C<<16)|0x0256B, (0x0256B<<16)|0x0214A, (0x0256B<<16)|0x0256B, (0x0256B<<16)|0x0256B, (0x0256B<<16)|0x01D29, (0x0298C<<16)|0x0256B, (0x0298C<<16)|0x0256B, (0x0256B<<16)|0x0256B, (0x0298C<<16)|0x0298C, (0x0298C<<16)|0x0256B, (0x0298C<<16)|0x0298C, (0x0298C<<16)|0x01D29, (0x0298C<<16)|0x0298C, (0x0298C<<16)|0x0298C, (0x0298C<<16)|0x0256B, (0x0298C<<16)|0x0298C, (0x0256B<<16)|0x0298C, (0x0298C<<16)|0x0298C, (0x0298C<<16)|0x0298C, (0x02DAD<<16)|0x02DAD, (0x0298C<<16)|0x02DAD, (0x02DAD<<16)|0x0298C, (0x0298C<<16)|0x02DAD, (0x02DAD<<16)|0x02DAD, (0x02DAD<<16)|0x02DAD, (0x0298C<<16)|0x02DAD, (0x02DAD<<16)|0x02DAD, (0x031CE<<16)|0x02DAD, (0x02DAD<<16)|0x031CE, (0x031CE<<16)|0x031CE, (0x031CE<<16)|0x02DAD, (0x031CE<<16)|0x031CE, (0x02DAD<<16)|0x031CE, (0x031CE<<16)|0x031CE, (0x031CE<<16)|0x035EF, (0x035EF<<16)|0x031CE, (0x031CE<<16)|0x035EF, (0x03A10<<16)|0x035EF, (0x02DAD<<16)|0x03E31, (0x035EF<<16)|0x03E31, (0x03E31<<16)|0x04252, (0x04673<<16)|0x04A94 };
 
 void WAVE(void)
 {
@@ -192,8 +265,12 @@ void WAVE(void)
     // asm: 	LDI	*AR0,R0
     // asm: 	CALLU	R0
     // asm: 	RETS
-    // asm: _ATTR_WAVETAB
-HEAD2HEADWATCH:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVE", 0, 0);
+    UNIMPL();
+}
+
+void HEAD2HEADWATCH(void)
+{
     // asm: 	SLEEP	1
     // asm: 	LDI	@OM_MODE,R0
     // asm: 	AND	MMODE,R0
@@ -209,7 +286,7 @@ ISTRUE:
     // asm: LDI	-7,R0
     // asm: 	STI	R0,@_ATTR_MODE
     // asm: 	BR	SET_ATTR
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HEAD2HEADWATCH", 0, 0);
     UNIMPL();
 }
 
@@ -356,51 +433,6 @@ void INIT_SYSTEM(void)
     UNIMPL();
 }
 
-void FIXEDPAL(void)
-{
-    // *----------------------------------------------------------------------------
-    // *----------------------------------------------------------------------------
-    // asm: 	RGB	0,0,0
-    // asm: 	RGB	255,255,255		;1  WHITE
-    // asm: 	RGB	070h,070h,070h		;2  GREY
-    // asm: 	RGB	255,0,0			;3  RED
-    // asm: 	RGB	0,255,0			;4  GREEN
-    // asm: 	RGB	055h,055h,99h		;5  BLUE  (for the sky paled out)
-    // asm: 	RGB	255,255,0		;6  YELLOW
-    // asm: 	RGB	0,255,255		;7  CYAN
-    // asm: 	RGB	0,0,0			;8  BLACK
-    // asm: 	RGB	0,0,255			;9  TRUE BLUE
-    // asm: 	RGB	0C0h,0A0h,0		;A  Amber color
-    // asm: 	RGB	050h,050h,050h		;B	DARK GREY
-    // asm: 	RGB	0A0h,0A0h,0A0h		;C	LIGHT GREY
-    // asm: 	RGB	030h,030h,030h		;D	VERY DARK GREY
-    // 					;F  -cycling color
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIXEDPAL", 0, 0);
-    UNIMPL();
-}
-
-void ILLUM_PAL(void)
-{
-    // asm: 	RGB	06Ah,000h,000h
-    // asm: 	RGB	06Fh,000h,000h
-    // asm: 	RGB	074h,000h,000h
-    // asm: 	RGB	079h,000h,000h
-    // asm: 	RGB	07Eh,000h,000h
-    // asm: 	RGB	083h,000h,000h
-    // asm: 	RGB	088h,000h,000h
-    // asm: 	RGB	08Dh,000h,000h
-    // asm: 	RGB	092h,000h,000h
-    // asm: 	RGB	097h,000h,000h
-    // asm: 	RGB	09Ch,000h,000h
-    // asm: 	RGB	0A1h,002h,005h
-    // asm: 	RGB	0A6h,007h,00Ah
-    // asm: 	RGB	0ABh,00Ch,00Fh
-    // asm: 	RGB	0B0h,011h,014h
-    // asm: 	RGB	0B5h,016h,019h
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ILLUM_PAL", 0, 0);
-    UNIMPL();
-}
-
 void LOAD_FIXED_PALETTES(void)
 {
     // *----------------------------------------------------------------------------
@@ -456,45 +488,6 @@ void LOAD_STARTUP_PALS(void)
     UNIMPL();
 }
 
-void VEHICLE_TABLE(void)
-{
-    // 	;#0
-    // 	;#1
-    // 	;#2
-    // 	;#3
-    // 	;#4
-    // 	;#5
-    // 	;#6	//locked
-    // 	;#7
-    // 	;#8
-    // 	;#9
-    // 	;#10	//locked
-    // 	;#11	//locked
-    // 	;#12
-    // 	;#13
-    // 	;#14
-    // 	;#15 copcar for the player
-    // 	;#16 gtruckp for the player
-    // 	;#17 sbusp for the player
-    // *	number of axels,number of vertices
-    // *	{
-    // *	vertices, xcenter,ycenter,zcenter
-    // *	} * number of axels
-    // *
-    // asm: DDYNA_GTRUCK
-    // asm: DDYNA_FTRUCK
-    // asm: DDYNA_CBUS
-    // ;	.word	3,120
-    // asm: DDYNA_COPCAR
-    // asm: DDYNA_MUSCLE
-    // asm: DDYNA_CARAVAN
-    // asm: DDYNA_SBUS
-    // asm: DDYNA_PTRUCKG
-    // asm: DDYNA_MUSTANG
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VEHICLE_TABLE", 0, 0);
-    UNIMPL();
-}
-
 void LOAD_VARIOUS_PALETTES(void)
 {
     // asm: 	LDL	caravan_redyelo,AR2
@@ -544,14 +537,5 @@ void LOAD_VARIOUS_PALETTES(void)
     // asm: 	CALL	PAL_ALLOC_RAW
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_VARIOUS_PALETTES", 0, 0);
-    UNIMPL();
-}
-
-void tower_bgrey(void)
-{
-    // *----------------------------------------------------------------------------
-    // *OVERWRITTEN ON TOWER PALETTE, AND RESTORED IN GGATE PARK
-    // *
-    /* no executable asm lines detected */
     UNIMPL();
 }

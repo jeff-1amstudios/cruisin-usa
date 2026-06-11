@@ -4,6 +4,7 @@
 /* Generated from asm/ATTRDRNE.ASM. */
 
 // asm: 		pbss	ATTRWAVE,1
-#define ATTRWAVE 0x0000C8FF
+// addr: 0x0000C8FF
+extern int ATTRWAVE;
 
 #endif /* ATTRDRNE_H */

@@ -5,8 +5,9 @@
  * Source module: asm/DATE.ASM
  */
 
-void DATE_STAMP(void)
+const char DATE_STAMP[] = "WED MAR 15 10:52:28 1995";
+
+void date(void)
 {
-    /* no executable asm lines detected */
     UNIMPL();
 }

@@ -25,6 +25,8 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
+/* asm: HELI_ABORT	.bss	HELI_ABORT,1 */
+int HELI_ABORT;
 // *
 // *	!!!!NO JSRPing!!!!
 // *
@@ -653,7 +655,6 @@ void FORWARD_BUZZ(void)
     // 	;
     // 	;END FORWARD BUZZ INIT. CODE
 CHOPPER_L:
-    //  ;FORWARD BUZZ LOOP
     // asm: 	LDI	@HELI_ABORT,R0
     // asm: 	BNZ	FLYAWAY
     // asm: 	LDI	@PLYCBLK,AR2

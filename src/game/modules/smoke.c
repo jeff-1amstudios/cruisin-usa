@@ -21,10 +21,8 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: SMOKEANII	.word	SMOKEANI */
-int SMOKEANII = (int)(SMOKEANI);
-/* asm: SMOKE2ANII	.word	SMOKE2ANI */
-int SMOKE2ANII = (int)(SMOKE2ANI);
+/* asm: TIRE_SMOKE_COUNT	.bss	TIRE_SMOKE_COUNT,1 */
+int TIRE_SMOKE_COUNT;
 // *----------------------------------------------------------------------------
 // * SMOKE	PROC
 // *INPUT	AR4 = CAROBJ
@@ -37,8 +35,6 @@ int SMOKE2ANII = (int)(SMOKE2ANI);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: SPARKANII	.word	SPARKANI */
-int SPARKANII = (int)(SPARKANI);
 // ;	.word	sparc10,sparc10,sparc11,sparc11,sparc12,sparc12,-1
 // ;	.word	x2,x4,x6,x8,x10,-1
 // *----------------------------------------------------------------------------

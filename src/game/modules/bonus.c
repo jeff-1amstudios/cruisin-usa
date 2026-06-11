@@ -27,9 +27,19 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
+/* asm: MAXMPH	.bss	MAXMPH,1 */
+int MAXMPH;
+/* asm: CHALLENGE_RACE	.bss	CHALLENGE_RACE,1 */
+int CHALLENGE_RACE;
+/* asm: NEXT_STARTUP	.bss	NEXT_STARTUP,1 */
+int NEXT_STARTUP;
+/* asm: BONUS_WAVE	.bss	BONUS_WAVE,1 */
+int BONUS_WAVE;
+/* asm: FINISH_LINE	.bss	FINISH_LINE,1 */
+int FINISH_LINE;
+/* asm: DO_FOLDFLAG	.bss	DO_FOLDFLAG,1 */
+int DO_FOLDFLAG;
 #define NUM_LEGS 14
-/* asm: LEG_NAMESI	.word	LEG_NAMES */
-int LEG_NAMESI = (int)(LEG_NAMES);
 /* asm: LEG_NAMES	.word	LEG1,LEG2,LEG3,LEG4,LEG5,LEG6,LEG7,LEG8 */
 /* asm: 	.word	LEG9,LEG10,LEG11,LEG12,LEG13,LEG14,LEG_USA */
 int LEG_NAMES[] = { LEG1, LEG2, LEG3, LEG4, LEG5, LEG6, LEG7, LEG8, LEG9, LEG10, LEG11, LEG12, LEG13, LEG14, LEG_USA };
@@ -62,17 +72,17 @@ const char EXPIRED[] = "EXPIRED";
 #define GT_COLLS 3
 #define GT_SIZE 4
 // *ENDSTRUCT
-/* asm: GAMETRAKI	.word	GAMETRAK */
-int GAMETRAKI = (int)(GAMETRAK);
+/* asm: GAMETRAK	.bss	GAMETRAK,NUM_LEGS*GT_SIZE */
+int GAMETRAK[NUM_LEGS*GT_SIZE];
+/* asm: ETIME	.bss	ETIME,1 */
+int ETIME;
 // ;etime,#,maxmph
 /* asm: BUFFERSI	.word	BIGBUFFER */
 int BUFFERSI = (int)(BIGBUFFER);
-/* asm: BONUS_POSTLAUNCHI	.word	BONUS_POSTLAUNCH */
-int BONUS_POSTLAUNCHI = (int)(BONUS_POSTLAUNCH);
+/* asm: BIGBUFFER	.bss	BIGBUFFER,(4+1+2+2)*NUM_LEGS */
+int BIGBUFFER[(4+1+2+2)*NUM_LEGS];
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: BONUS_TABLEI	.word	BONUS_TABLE */
-int BONUS_TABLEI = (int)(BONUS_TABLE);
 /* asm: BONUS_TABLE	.word	BONUS1,BONUS2,BONUS3,BONUS4,BONUS5 */
 /* asm: 	.word	BONUS6,BONUS7,BONUS8,BONUS9,BONUS10 */
 /* asm: 	.word	BONUS11,BONUS12,BONUS13,BONUS14 */
@@ -87,27 +97,28 @@ int BONUS_TABLE[] = { BONUS1, BONUS2, BONUS3, BONUS4, BONUS5, BONUS6, BONUS7, BO
 // 	;
 // 	;AUDIT MUMBO JUMBO
 // 	;
+const char BHDDFAS[] = "WINNER";
+/* asm: UNFOLDFLAG	.bss	UNFOLDFLAG,1 */
+int UNFOLDFLAG;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
+/* asm: SAVED_COUNTDOWN	.bss	SAVED_COUNTDOWN,1 */
+int SAVED_COUNTDOWN;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: DID_TIMED_OUT	.bss	DID_TIMED_OUT,1 */
+int DID_TIMED_OUT;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 const char FRA1[] = "FIRST PLACE";
 const char FRA2[] = "FREE RACE";
 #define CONGRATS 4
-/* asm: CONGRAT_SPEECHI	.word	CONGRAT_SPEECH */
-int CONGRAT_SPEECHI = (int)(CONGRAT_SPEECH);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
 // *
-/* asm: LCTSI	.word	LCTS */
-int LCTSI = (int)(LCTS);
-/* asm: LNLSI	.word	LNLS */
-int LNLSI = (int)(LNLS);
 const char LCTS[] = "RACE COMPLETED:";
 const char LNLS[] = "NEXT RACE:";
 // *
@@ -120,8 +131,6 @@ const char LNLS[] = "NEXT RACE:";
 // *	R4	INDEX
 // *
 // *
-/* asm: FLAG_POS_TABLEI	.word	FLAG_POS_TABLE */
-int FLAG_POS_TABLEI = (int)(FLAG_POS_TABLE);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 const char BT1[] = "AVERAGE MPH:";
@@ -133,6 +142,7 @@ const char RT2[] = "RECORD TIME:";
 // *----------------------------------------------------------------------------
 const char HH1[] = "NEW RECORD TIME";
 const char HH2[] = "NEW HOT TIME";
+const char NULLSTR5[] = " ";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 const char BT2[] = "ELAPSED TIME:";
@@ -247,50 +257,6 @@ void DISPLAY_H2H_WINNER(void)
     // asm: 	CALL	PAL_FIND_RAW
     // asm: 	STI	R0,*+AR0(OPAL)
     // asm: 	STI	AR0,*+AR7(PDATA+1)	;yellow (bottom)
-    // asm: DHHW_LP
-    // asm: 	LDI	@UNFOLDFLAG,R0
-    // asm: 	BNZ	DODIEXXX
-    // asm: 	CALL	JSUB
-    // asm: 	SLEEP	10
-    // asm: 	CALL	JSUB
-    // asm: 	SLEEP	5
-    // asm: 	FLOAT	-5000,R6
-    // asm: 	LDI	*+AR7(PDATA),AR2
-    // asm: 	LDF	*+AR2(OPOSZ),R0
-    // asm: 	ADDF	R6,R0
-    // asm: 	STF	R0,*+AR2(OPOSZ)
-    // asm: 	LDI	*+AR7(PDATA+1),AR2
-    // asm: 	LDF	*+AR2(OPOSZ),R0
-    // asm: 	ADDF	R6,R0
-    // asm: 	STF	R0,*+AR2(OPOSZ)
-    // asm: 	LDI	*+AR7(PDATA+2),AR2
-    // asm: 	LDF	*+AR2(OPOSZ),R0
-    // asm: 	ADDF	R6,R0
-    // asm: 	STF	R0,*+AR2(OPOSZ)
-    // asm: 	SLEEP	5
-    // asm: 	FLOAT	5000,R6
-    // asm: 	LDI	*+AR7(PDATA),AR2
-    // asm: 	LDF	*+AR2(OPOSZ),R0
-    // asm: 	ADDF	R6,R0
-    // asm: 	STF	R0,*+AR2(OPOSZ)
-    // asm: 	LDI	*+AR7(PDATA+1),AR2
-    // asm: 	LDF	*+AR2(OPOSZ),R0
-    // asm: 	ADDF	R6,R0
-    // asm: 	STF	R0,*+AR2(OPOSZ)
-    // asm: 	LDI	*+AR7(PDATA+2),AR2
-    // asm: 	LDF	*+AR2(OPOSZ),R0
-    // asm: 	ADDF	R6,R0
-    // asm: 	STF	R0,*+AR2(OPOSZ)
-    // asm: 	DBU	AR5,DHHW_LP
-DODIEXXX:
-    // asm: 	LDI	*+AR7(PDATA),AR2
-    // asm: 	CALL	OBJ_DELETE_HIGH_PRIORITY
-    // asm: 	LDI	*+AR7(PDATA+1),AR2
-    // asm: 	CALL	OBJ_DELETE_HIGH_PRIORITY
-    // asm: 	LDI	*+AR7(PDATA+2),AR2
-    // asm: 	CALL	OBJ_DELETE_HIGH_PRIORITY
-DODIE:
-    // asm: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_H2H_WINNER", 0, 0);
     UNIMPL();
 }

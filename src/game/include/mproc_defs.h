@@ -4,14 +4,19 @@
 /* Generated from asm/MPROC.ASM. */
 
 // asm: 	.bss	CURRENT_PROC,1		;CURRENT PROCESS POINTER (DEBUG ONLY!)
-#define CURRENT_PROC 0x0000C9AE
+// addr: 0x0000C9AE
+extern int CURRENT_PROC;
 // asm: 	.bss	OLDSP,1	    		;SAVE OLD STACK POINTER
-#define OLDSP 0x0000C9AF
+// addr: 0x0000C9AF
+extern int OLDSP;
 // asm: 	.bss	PACTIVE,1		;ACTIVE PROCESS LIST POINTER
-#define PACTIVE 0x0000C9B0
+// addr: 0x0000C9B0
+extern int PACTIVE;
 // asm: 	.bss	PFREE,1			;FREE PROCESS LIST POINTER
-#define PFREE 0x0000C9B1
+// addr: 0x0000C9B1
+extern int PFREE;
 // asm: 	hibss	PRCSTR,PRCSIZ*NUMPROC	;PROCESS STORE AREA
-#define PRCSTR 0x0000EC17
+// addr: 0x0000EC17
+extern int PRCSTR[PRCSIZ*NUMPROC];
 
 #endif /* MPROC_H */

@@ -21,6 +21,16 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
+/* asm: PADDING	.bss	PADDING,50 */
+int PADDING[50];
+/* asm: DECOMP_ACTIVE	.bss	DECOMP_ACTIVE,1 */
+int DECOMP_ACTIVE;
+/* asm: HARD_SECTION_LOAD	.bss	HARD_SECTION_LOAD,1 */
+int HARD_SECTION_LOAD;
+/* asm: FLUSH_COUNT	.bss	FLUSH_COUNT,1 */
+int FLUSH_COUNT;
+/* asm: PACIFY_COUNT	.bss	PACIFY_COUNT,1 */
+int PACIFY_COUNT;
 #define PACIFY_MOMENT 2048
 // ;PACIFY_MOMENT	.set	512
 // *----------------------------------------------------------------------------
@@ -72,14 +82,14 @@
 #define CHARACTER TABLE_SIZE
 #define DICT_SIZ 2
 // *ENDSTRUCT
-/* asm: CPU_WSI	.word	CPU_WS */
-int CPU_WSI = (int)(CPU_WS);
-/* asm: DICTI	.word	DICT */
-int DICTI = (int)(DICT);
-/* asm: DECODE_STACKI	.word	DECODE_STACK */
-int DECODE_STACKI = (int)(DECODE_STACK);
-/* asm: LINEBUFFERI	.word	LINEBUFFER */
-int LINEBUFFERI = (int)(LINEBUFFER);
+/* asm: DICT	hibss	DICT,TABLE_SIZE*DICT_SIZ */
+int DICT[TABLE_SIZE*DICT_SIZ];
+/* asm: DECODE_STACK	hibss	DECODE_STACK,TABLE_SIZE */
+int DECODE_STACK[TABLE_SIZE];
+/* asm: NEXT_BUMP_CODE	.bss	NEXT_BUMP_CODE,1 */
+int NEXT_BUMP_CODE;
+/* asm: LINEBUFFER	lobss	LINEBUFFER,64 */
+int LINEBUFFER[64];
 // *----------------------------------------------------------------------------
 // *
 // *BIT_ADDR
@@ -91,11 +101,17 @@ int LINEBUFFERI = (int)(LINEBUFFER);
 // *----------------------------------------------------------------------------
 /* asm: SAVESPCI	.word	SAVESPC+1 */
 int SAVESPCI = (int)(SAVESPC+1);
+/* asm: SAVESPC	.bss	SAVESPC,25 */
+int SAVESPC[25];
 // *----------------------------------------------------------------------------
 #define MIN_X 240
 #define MAX_X 300
 /* asm: BOOT_PACIFY_SCREEN_P	.word	1 */
 int BOOT_PACIFY_SCREEN_P = (int)(1);
+/* asm: PREVX	.bss	PREVX,1 */
+int PREVX;
+/* asm: DELTA	.bss	DELTA,1 */
+int DELTA;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *SECTION LOAD REQUEST
@@ -105,6 +121,8 @@ int BOOT_PACIFY_SCREEN_P = (int)(1);
 // *PARAMETERS
 // *	AR2	POINTER TO SECTION CONTROL
 // *
+/* asm: LASTLOAD	.bss	LASTLOAD,1 */
+int LASTLOAD;
 // *----------------------------------------------------------------------------
 
 void INPUT_BITS(void)

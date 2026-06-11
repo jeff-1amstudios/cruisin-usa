@@ -6,12 +6,12 @@
 - Preserve a close source-to-source relationship with the original ASM so stepping, tracing, and symbol lookup stay practical.
 - Keep each translated C file as the single working file for that module. No separate generated-vs-handwritten source tree.
 - Build a cross-platform host runtime around SDL, including a memory-backed 2D screen model.
+- Automated translation of asm to C
 
 ## Non-Goals
 
 - Do not optimize for idiomatic modern C early.
 - Do not rewrite control flow for readability before behavior is verified.
-- Do not replace machine concepts like word addressing, packed fields, or memory-mapped state with host-native abstractions too early.
 
 ## Repository Shape
 
@@ -69,55 +69,6 @@ Notes:
 - Keep generated headers in `src/game/include/`.
 - Keep generator metadata out of the source tree so regeneration does not force source layout changes.
 
-## Single-File Regeneration Rule
-
-Since each module `.c` file must remain the working file, regeneration has to be block-based rather than file-based.
-
-Each generated module should use fixed section markers:
-
-```c
-/* @gen:start file_prelude */
-/* generated content */
-/* @gen:end file_prelude */
-
-/* @gen:start equ_defs */
-/* generated content */
-/* @gen:end equ_defs */
-
-/* @gen:start function_Foo */
-void Foo(void)
-{
-    // asm: PUSH    DP
-Foo_L1:
-    // asm: LDI     @BAR,R0
-    UNIMPL();
-}
-/* @gen:end function_Foo */
-```
-
-Rules:
-
-- The generator may only replace text inside `@gen:start` / `@gen:end` blocks.
-- Handwritten code must live outside generated blocks, or inside explicit edit slots the generator preserves.
-- Every function gets a stable block key based on module + function name.
-- If a function name changes because symbol mapping improves, that should be treated as a deliberate migration step, not silent regeneration.
-
-Recommended preserved edit slots:
-
-```c
-/* @user:start includes */
-/* @user:end includes */
-
-/* @user:start helpers */
-/* @user:end helpers */
-
-/* @user:start function_Foo */
-/* handwritten implementation notes or local helpers */
-/* @user:end function_Foo */
-```
-
-This gives you one source file per module without losing the ability to regenerate safely.
-
 ## Translation Format
 
 Initial generated function format:
@@ -126,11 +77,11 @@ Initial generated function format:
 2. Original asm instructions become verbatim `// asm:` comments copied exactly from the asm source text.
 3. Each instruction line is emitted as its own single-line `// asm:` comment.
 4. Do not bundle instruction streams into block comments.
-3. Each asm instruction initially lowers to either:
+5. Each asm instruction initially lowers to either:
    - a placeholder helper call, or
    - a directly translated C statement when the lowering is mechanical and safe.
-4. Branches lower to `goto`.
-5. Delay-slot behavior must be expressed explicitly in the lowered code order.
+6. Branches lower to `goto`.
+7. Delay-slot behavior must be expressed explicitly in the lowered code order.
 
 Example:
 

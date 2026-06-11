@@ -21,14 +21,34 @@
 // *COPYRIGHT (C) 1994  BY TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: OFREEI	.word	OFREE */
-int OFREEI = (int)(OFREE);
-/* asm: OBJSTRI	.word	OBJSTR */
-int OBJSTRI = (int)(OBJSTR);
+/* asm: OACTIVE	.bss	OACTIVE,1 */
+int OACTIVE;
+/* asm: OFREE	.bss	OFREE,1 */
+int OFREE;
+/* asm: IDLE_LIST	.bss	IDLE_LIST,1 */
+int IDLE_LIST;
+/* asm: OACTIVE_PRIORITY	.bss	OACTIVE_PRIORITY,1 */
+int OACTIVE_PRIORITY;
+/* asm: OLOW_PRIORITY	.bss	OLOW_PRIORITY,1 */
+int OLOW_PRIORITY;
+/* asm: OHIGH_PRIORITY	.bss	OHIGH_PRIORITY,1 */
+int OHIGH_PRIORITY;
+/* asm: OACTIVECNT	.bss	OACTIVECNT,1 */
+int OACTIVECNT;
+/* asm: OFREECNT	.bss	OFREECNT,1 */
+int OFREECNT;
+/* asm: OMAX_OBJECTS	.bss	OMAX_OBJECTS,1 */
+int OMAX_OBJECTS;
+/* asm: OBJSTR	hibss	OBJSTR,OBJSIZ*NUM_OBJECTS */
+int OBJSTR[OBJSIZ*NUM_OBJECTS];
+/* asm: COMM_DRONE_PTR	.bss	COMM_DRONE_PTR,1 */
+int COMM_DRONE_PTR;
 // *----------------------------------------------------------------------------
 // *INITIALIZE OBJECT DATA STRUCTURES
 // *
 // *-----------------------------------------------------------------------------
+/* asm: PLYRTEMP	.BSS	PLYRTEMP,1 */
+int PLYRTEMP;
 // *----------------------------------------------------------------------------
 /* asm: ACTIVEHI1	.word	75000		;HI LIMIT FOR INACTIVE-ACTIVE */
 int ACTIVEHI1 = (int)(75000);

@@ -21,10 +21,6 @@
 // *
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
-/* asm: FLAMEANII	.word	FLAMEANI */
-int FLAMEANII = (int)(FLAMEANI);
-/* asm: FLAME_POSI	.word	FLAME_POS */
-int FLAME_POSI = (int)(FLAME_POS);
 // *----------------------------------------------------------------------------
 // * FLAME	PROC
 // *

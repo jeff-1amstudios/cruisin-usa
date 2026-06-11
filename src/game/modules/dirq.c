@@ -63,16 +63,6 @@
 #define POSTERCLIP 300
 #define LOW_CLIP_LEVEL 100
 #define HIGH_CLIP_LEVEL ((5000-1))
-/* asm: OACTIVEI	.word	OACTIVE */
-int OACTIVEI = (int)(OACTIVE);
-/* asm: IDLE_LISTI	.word	IDLE_LIST */
-int IDLE_LISTI = (int)(IDLE_LIST);
-/* asm: OACTIVE_PRIORITYI	.word	OACTIVE_PRIORITY */
-int OACTIVE_PRIORITYI = (int)(OACTIVE_PRIORITY);
-/* asm: OLOW_PRIORITYI	.word	OLOW_PRIORITY */
-int OLOW_PRIORITYI = (int)(OLOW_PRIORITY);
-/* asm: OHIGH_PRIORITYI	.word	OHIGH_PRIORITY */
-int OHIGH_PRIORITYI = (int)(OHIGH_PRIORITY);
 /* asm: CAMERAPOSI	.word	_CAMERAPOS */
 int CAMERAPOSI = (int)(_CAMERAPOS);
 /* asm: CAMERARADI	.word	_CAMERARAD */
@@ -83,8 +73,6 @@ int CAMERAMATRIXI = (int)(_CAMERAMATRIX);
 int ASHADOW = (int)(_ACNTL);
 /* asm: LIGHTIY	.word	_LIGHT+1 */
 int LIGHTIY = (int)(_LIGHT+1);
-/* asm: LOCTEMPER_MATI	.word	LOCTEMPER_MAT */
-int LOCTEMPER_MATI = (int)(LOCTEMPER_MAT);
 /* asm: transmatrixI	.word	ROTATION_MATRIX */
 int transmatrixI = (int)(ROTATION_MATRIX);
 /* asm: transvectorYI	.word	TRANSVECTOR+1 */
@@ -93,24 +81,12 @@ int transvectorYI = (int)(TRANSVECTOR+1);
 int POSTERMATI = (int)(POSTERMATRIX);
 /* asm: POSTERMAT2DI	.word	POSTERMATRIX2D */
 int POSTERMAT2DI = (int)(POSTERMATRIX2D);
-/* asm: BLOWLISTI	.word	BLOWLIST */
-int BLOWLISTI = (int)(BLOWLIST);
 /* asm: tmpmatI	.word	TMPMAT */
 int tmpmatI = (int)(TMPMAT);
 /* asm: tmpmatY	.word	TMPMAT+1 */
 int tmpmatY = (int)(TMPMAT+1);
-/* asm: INVTABI	.word	INVTAB */
-int INVTABI = (int)(INVTAB);
 /* asm: HIGH_CLIP_LEV8	.word	80000		;MATHEMATICAL LIMIT */
 int HIGH_CLIP_LEV8 = (int)(80000);
-/* asm: DRIVE_LISTI	.word	DRIVE_LIST */
-int DRIVE_LISTI = (int)(DRIVE_LIST);
-/* asm: CAR_LISTI	.word	CAR_LIST */
-int CAR_LISTI = (int)(CAR_LIST);
-/* asm: SIGN_LISTI	.word	SIGN_LIST */
-int SIGN_LISTI = (int)(SIGN_LIST);
-/* asm: GROUND_LISTI	.word	GROUND_LIST */
-int GROUND_LISTI = (int)(GROUND_LIST);
 /* asm: MATRIXAI	.word	_MATRIXA */
 int MATRIXAI = (int)(_MATRIXA);
 /* asm: MATRIXBI	.word	_MATRIXB */
@@ -127,10 +103,8 @@ int VECTORCI = (int)(_VECTORC);
 int VECTORDI = (int)(_VECTORD);
 /* asm: VECTORAYI	.word	_VECTORA+1 */
 int VECTORAYI = (int)(_VECTORA+1);
-/* asm: _PALLISTI	.word	_PALLIST */
-int _PALLISTI = (int)(_PALLIST);
-/* asm: FASTSTKI	.word	FASTSTK */
-int FASTSTKI = (int)(FASTSTK);
+/* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */
+int POSTERMATRIX2D[4];
 // *----------------------------------------------------------------------------
 // *DIRQ
 // *
@@ -176,6 +150,28 @@ int FASTSTKI = (int)(FASTSTK);
 // *
 // *NOTE	entry point is near the bottom of the routine
 // *
+/* asm: BREAKOBJ	.bss	BREAKOBJ,1 */
+int BREAKOBJ;
+// *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+// *	PLOTPOLY
+// *
+// *	Polygons are already transformed, now just preform HSR,
+// *	and stuff the fifo with appropriate data.
+// *	Note also that this only renders a block of polygons.
+// *
+// *	struct ROM_POLYGON  {
+// *		int	palnum<<16|cntl
+// *		int	(v4<<24)|(v3<<16)|(v2<<8)|(v1)
+// *		int	IV[0]|(IV[1]<<16)
+// *		int	IV[2]|(IV[3]<<16)
+// *		int	*addr_to_TM;
+// *	}
+// *
+// *
+#endif
+// 	;---->BZD	PLOT1PAL
+// 	;---->BNZD	PLOTILLUM	;BR-> if it is a one palette object
 // *----------------------------------------------------------------------------
 // 	;---->BGTD	PLTPOLY		;YES, NO CLIP LOOP
 // 	;------->BD	PLTPOLYLP
@@ -199,8 +195,6 @@ int FASTSTKI = (int)(FASTSTK);
 // *CLIP IT
 // *----------------------------------------------------------------------------
 // *warning moving this to top of file will crash program ask ti why
-/* asm: CLIPRAMI	.word	CLIPRAM */
-int CLIPRAMI = (int)(CLIPRAM);
 
 void DIRQ(void)
 {
@@ -320,7 +314,6 @@ TRANS_RET:
     // *ROTATE OBJECTS POSITION BY CAMERAS MATRIX
     // *
 UNIV_ROT:
-    //  ;COMPUTE  (TRANSVECTOR <- * CAMERAMATRIX)
     // asm: 	MPYF3	*AR5++,R3,R0
     // asm: 	MPYF3	*AR5++,R4,R1
     // asm: 	MPYF3	*AR5++,*+AR4(1),R1
@@ -1028,48 +1021,6 @@ NOSHAD:
     // asm: 	LDI	@transmatrixI,AR5	;RESTORE MATRIX POINTER
     // asm: 	BU	DYNALPX
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DYNAMIC_OBJECT", 0, 0);
-    UNIMPL();
-}
-
-void PLOTPOLY(void)
-{
-    // *----------------------------------------------------------------------------
-    // *----------------------------------------------------------------------------
-    // *	PLOTPOLY
-    // *
-    // *	Polygons are already transformed, now just preform HSR,
-    // *	and stuff the fifo with appropriate data.
-    // *	Note also that this only renders a block of polygons.
-    // *
-    // *	struct ROM_POLYGON  {
-    // *		int	palnum<<16|cntl
-    // *		int	(v4<<24)|(v3<<16)|(v2<<8)|(v1)
-    // *		int	IV[0]|(IV[1]<<16)
-    // *		int	IV[2]|(IV[3]<<16)
-    // *		int	*addr_to_TM;
-    // *	}
-    // *
-    // *
-#if STATISTICS
-    // asm: 	LDI	BK,R0			;# of polygons-1
-    // asm: 	ADDI	1,R0
-    // asm: 	ADDI	@ST_POLYGONS,R0
-    // asm: 	STI	R0,@ST_POLYGONS
-#endif
-    // asm: 	LDI	*+AR0(OFLAGS),R6	;test for illuminated object
-    // asm: 	TSTB	O_1PAL,R6
-    // asm: 	BNZD	PLOT1PAL		;BR-> if it is a one palette object
-    // asm: 	LDI	*+AR0(ODIST),R0		;CHECK IF DISTANT
-    // asm: 	SUBI	*+AR0(ORAD),R0		;FAR AWAY
-    // asm: 	LDI	BK,RC			;# of polygons-1
-    // 	;---->BZD	PLOT1PAL
-    // asm: 	TSTB	O_ILLUM,R6
-    // asm: 	BNZD	PLOTILLUM		;BR-> if it is a one palette object
-    // asm: 	LDI	@BLOWLISTI,IR0
-    // asm: 	LDI	IR0,IR1
-    // asm: 	ADDI	1,IR1
-    // 	;---->BNZD	PLOTILLUM	;BR-> if it is a one palette object
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTPOLY", 0, 0);
     UNIMPL();
 }
 

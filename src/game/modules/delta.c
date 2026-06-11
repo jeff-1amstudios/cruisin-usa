@@ -57,8 +57,6 @@
 // *	PDATA+1 BODY LEAN Z RADIANS
 // *	PDATA+2 X RADIANS FOR WHEEL SPIN
 // *
-/* asm: DRONE_DANI_PROCI	.word	DRONE_DANI_PROC */
-int DRONE_DANI_PROCI = (int)(DRONE_DANI_PROC);
 // *----------------------------------------------------------------------------
 
 void DELTA_OINIT(void)

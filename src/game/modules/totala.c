@@ -19,6 +19,16 @@
 #define NOFIFO 0
 /* asm: AIVI	.word	_AIVI */
 int AIVI = (int)(_AIVI);
+/* asm: _ACNTL	.bss	_ACNTL,1 */
+int _ACNTL;
+/* asm: _ACMAP	.bss	_ACMAP,1 */
+int _ACMAP;
+/* asm: _ARPS	.bss	_ARPS,12 */
+int _ARPS[12];
+/* asm: _AIVI	.bss	_AIVI,4 */
+int _AIVI[4];
+/* asm: _ADDRL	.bss	_ADDRL,1 */
+int _ADDRL;
 // *----------------------------------------------------------------------------
 // *	rdma(x1,y1,x2,y2,palette,addr)
 // *

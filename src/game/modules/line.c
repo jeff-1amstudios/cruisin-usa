@@ -15,6 +15,16 @@
 // ******************************************************
 // * FUNCTION DEF : _rectangle
 // ******************************************************
+// ***	B	R1	;BRANCH OCCURS
+// ***	BGE	L44	;BRANCH OCCURS
+// ***	BGE	L43	;BRANCH OCCURS
+// ***	B	L17	;BRANCH OCCURS
+// ***	BGE	L42	;BRANCH OCCURS
+// ***	BGE	L41	;BRANCH OCCURS
+// ***	B	R1	;BRANCH OCCURS
+// ******************************************************
+// * UNDEFINED REFERENCES                               *
+// ******************************************************
 
 void _rectangle(void)
 {
@@ -59,24 +69,11 @@ void _rectangle(void)
     UNIMPL();
 }
 
-void EPI0_1(void)
+void _line(void)
 {
-    // asm: 	LDI	*-FP(1),R1
-    // asm: 	LDI	*FP,FP
-    // asm: 	BD	R1
-    // asm: 	POP	R5
-    // asm: 	POP	R4
-    // asm: 	SUBI	5,SP
-    // ***	B	R1	;BRANCH OCCURS
     // ******************************************************
     // * FUNCTION DEF : _line
     // ******************************************************
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "EPI0_1", 0, 0);
-    UNIMPL();
-}
-
-void _line(void)
-{
     // asm: 	PUSH	FP
     // asm: 	LDI	SP,FP
     // asm: 	ADDI	3,SP
@@ -131,162 +128,13 @@ void _line(void)
     // asm: 	SUBI	*+FP(2),R2
     // asm: 	FLOAT	R2,R7
     // asm: 	MPYF	R0,R7
-L5:
-    // asm: 	FLOAT	*+FP(2),R6
-    // asm: 	CMPF	0,R7
-    // asm: 	BGT	L10
-    // asm: 	LDI	*+FP(3),R4
-    // asm: 	CMPI	RC,R4
-    // asm: 	BGT	L38
-    // asm: 	SUBI	R4,RC,R5
-L44:
-    // asm: 	FIX	R6,AR2
-    // asm: 	LDI	R4,R2
-    // asm: 	LDI	*+FP(1),R3
-    // asm: 	CALL	_pixel
-    // asm: 	SUBI	1,R5
-    // asm: 	BGED	L44
-    // asm: 	ADDF	R7,R6
-    // asm: 	NOP
-    // asm: 	ADDI	1,R4
-    // ***	BGE	L44	;BRANCH OCCURS
-    // asm: 	B	L38
-L10:
-    // asm: 	LDI	*+FP(3),R4
-    // asm: 	CMPI	RC,R4
-    // asm: 	BGT	L38
-    // asm: 	SUBI	R4,RC,R5
-L43:
-    // asm: 	FIX	R6,AR2
-    // asm: 	LDI	R4,R2
-    // asm: 	LDI	*+FP(1),R3
-    // asm: 	CALL	_pixel
-    // asm: 	SUBI	1,R5
-    // asm: 	BGED	L43
-    // asm: 	ADDF	R7,R6
-    // asm: 	NOP
-    // asm: 	ADDI	1,R4
-    // ***	BGE	L43	;BRANCH OCCURS
-    // asm: 	B	L38
-L14:
-    // asm: 	CMPI	*+FP(2),RS
-    // asm: 	BLT	L16
-    // asm: 	LDF	R3,R0
-    // asm: 	CALL	INV_F30
-    // asm: 	BD	L17
-    // asm: 	RND	R0
-    // asm: 	NOP
-    // asm: 	MPYF	R0,R2,R7
-    // ***	B	L17	;BRANCH OCCURS
-L16:
-    // asm: 	LDI	*+FP(2),R2
-    // asm: 	STI	RS,*+FP(2)
-    // asm: 	LDI	R2,RS
-    // asm: 	LDI	*+FP(3),R2
-    // asm: 	STI	RC,*+FP(3)
-    // asm: 	LDI	*+FP(2),R0
-    // asm: 	SUBI	R0,RS,R1
-    // asm: 	FLOAT	R1,R0
-    // asm: 	CALL	INV_F30
-    // asm: 	RND	R0
-    // asm: 	SUBI	*+FP(3),R2
-    // asm: 	FLOAT	R2,R7
-    // asm: 	MPYF	R0,R7
-L17:
-    // asm: 	FLOAT	*+FP(3),R6
-    // asm: 	CMPF	0,R7
-    // asm: 	BGT	L22
-    // asm: 	LDI	*+FP(2),R4
-    // asm: 	CMPI	RS,R4
-    // asm: 	BGT	L38
-    // asm: 	SUBI	R4,RS,R5
-L42:
-    // asm: 	LDI	R4,AR2
-    // asm: 	FIX	R6,R2
-    // asm: 	LDI	*+FP(1),R3
-    // asm: 	CALL	_pixel
-    // asm: 	SUBI	1,R5
-    // asm: 	BGED	L42
-    // asm: 	ADDF	R7,R6
-    // asm: 	NOP
-    // asm: 	ADDI	1,R4
-    // ***	BGE	L42	;BRANCH OCCURS
-    // asm: 	B	L38
-L22:
-    // asm: 	LDI	*+FP(2),R4
-    // asm: 	CMPI	RS,R4
-    // asm: 	BGT	L38
-    // asm: 	SUBI	R4,RS,R5
-L41:
-    // asm: 	LDI	R4,AR2
-    // asm: 	FIX	R6,R2
-    // asm: 	LDI	*+FP(1),R3
-    // asm: 	CALL	_pixel
-    // asm: 	SUBI	1,R5
-    // asm: 	BGED	L41
-    // asm: 	ADDF	R7,R6
-    // asm: 	NOP
-    // asm: 	ADDI	1,R4
-    // ***	BGE	L41	;BRANCH OCCURS
-    // asm: 	B	L38
-L26:
-    // asm: 	CMPI	*+FP(2),RS
-    // asm: 	BGE	L28
-    // asm: 	LDI	*+FP(2),R2
-    // asm: 	STI	RS,*+FP(2)
-    // asm: 	LDI	R2,RS
-L28:
-    // asm: 	LDI	*+FP(2),R4
-    // asm: 	CMPI	RS,R4
-    // asm: 	BGT	L38
-    // asm: 	SUBI	R4,RS,R5
-L40:
-    // asm: 	LDI	R4,AR2
-    // asm: 	LDI	*+FP(3),R2
-    // asm: 	LDI	*+FP(1),R3
-    // asm: 	CALL	_pixel
-    // asm: 	ADDI	1,R4
-    // asm: 	SUBI	1,R5
-    // asm: 	BGE	L40
-    // asm: 	B	L38
-L32:
-    // asm: 	CMPI	RC,R2
-    // asm: 	BLE	L34
-    // asm: 	STI	RC,*+FP(3)
-    // asm: 	LDI	R2,RC
-L34:
-    // asm: 	LDI	*+FP(3),R4
-    // asm: 	CMPI	RC,R4
-    // asm: 	BGT	L38
-    // asm: 	SUBI	R4,RC,R5
-L39:
-    // asm: 	LDI	*+FP(2),AR2
-    // asm: 	LDI	R4,R2
-    // asm: 	LDI	*+FP(1),R3
-    // asm: 	CALL	_pixel
-    // asm: 	ADDI	1,R4
-    // asm: 	SUBI	1,R5
-    // asm: 	BGE	L39
-L38:
-    // asm:  POP DP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_line", 0, 0);
     UNIMPL();
 }
 
-void EPI0_2(void)
+void L38(void)
 {
-    // asm: 	LDI	*-FP(1),R1
-    // asm: 	LDI	*FP,FP
-    // asm: 	POPF	R7
-    // asm: 	POPF	R6
-    // asm: 	BD	R1
-    // asm: 	POP	R5
-    // asm: 	POP	R4
-    // asm: 	SUBI	5,SP
-    // ***	B	R1	;BRANCH OCCURS
-    // ******************************************************
-    // * UNDEFINED REFERENCES                               *
-    // ******************************************************
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "EPI0_2", 0, 0);
+    // asm:  POP DP
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "L38", 0, 0);
     UNIMPL();
 }

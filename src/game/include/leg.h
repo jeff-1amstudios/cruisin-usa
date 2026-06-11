@@ -4,24 +4,34 @@
 /* Generated from asm/LEG.ASM. */
 
 // asm: 	.bss	FINISH_ID,1
-#define FINISH_ID 0x0000E883
+// addr: 0x0000E883
+extern int FINISH_ID;
 // asm: 	.bss	LEG_ELEMENTS,1
-#define LEG_ELEMENTS 0x0000E884
+// addr: 0x0000E884
+extern int LEG_ELEMENTS;
 // asm: 	hibss	LEG_MAP,MAX_LEG_ELEMENTS*LEG_SIZE
-#define LEG_MAP 0x0001CB6C
+// addr: 0x0001CB6C
+extern int LEG_MAP[MAX_LEG_ELEMENTS*LEG_SIZE];
 // asm: 	.bss	LAST_END_CACHE,1
-#define LAST_END_CACHE 0x0000E885
+// addr: 0x0000E885
+extern int LAST_END_CACHE;
 // asm: 	.bss	LAST_END_INDEX,1
-#define LAST_END_INDEX 0x0000E886
+// addr: 0x0000E886
+extern int LAST_END_INDEX;
 // asm: 	hibss	LEG_SSLL,MINILL_SIZE*(LEG_SIZE+1)
-#define LEG_SSLL 0x0001E46C
+// addr: 0x0001E46C
+extern int LEG_SSLL[MINILL_SIZE*(LEG_SIZE+1)];
 // asm: 	.bss	LEGFREE,1
-#define LEGFREE 0x0000E888
+// addr: 0x0000E888
+extern int LEGFREE;
 // asm: 	.bss	LEGLL,1
-#define LEGLL 0x0000E889
+// addr: 0x0000E889
+extern int LEGLL;
 // asm: 	.bss	LEG_RADY,1	;FL
-#define LEG_RADY 0x0000E88B
+// addr: 0x0000E88B
+extern int LEG_RADY;
 // asm: 	.bss	LEG_SECTIONIDX,1	;UH
-#define LEG_SECTIONIDX 0x0000E88C
+// addr: 0x0000E88C
+extern int LEG_SECTIONIDX;
 
 #endif /* LEG_H */

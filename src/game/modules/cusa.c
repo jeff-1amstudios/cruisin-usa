@@ -48,6 +48,8 @@
 // *
 #define MEMTESTS 1
 #define TIKS_PER_SECOND 57
+/* asm: COMMINTM	fbss	COMMINTM,1 */
+int COMMINTM;
 // 				;INT2_M  if linked
 #if 0
 const char startup0[] = "DO NOT EVEN CONSIDER RELEASING THESE ROMS";
@@ -89,21 +91,77 @@ const char M7[] = "USR/ELP/CUSA>FTP GET CUSA";
 const char M8[] = "37940813 BYTES RECEIVED OK";
 const char M9[] = "USR/ELP/CUSA>TV30 CUSA /L";
 // 	;*** RAM DEFINITIONS
+/* asm: _MODE	pbss	_MODE,1 */
+int _MODE;
+/* asm: STATE	pbss	STATE,1 */
+int STATE;
+/* asm: NFRAMES	.bss	NFRAMES,1 */
+int NFRAMES;
+/* asm: INFRAMES	.bss	INFRAMES,1 */
+int INFRAMES;
+/* asm: FRAMRATE	.bss	FRAMRATE,1 */
+int FRAMRATE;
+/* asm: IFRAMES	.bss	IFRAMES,1 */
+int IFRAMES;
+/* asm: OFRAMES	.bss	OFRAMES,1 */
+int OFRAMES;
+/* asm: ERRORN	.bss	ERRORN,1 */
+int ERRORN;
+/* asm: ERRORO	.bss	ERRORO,1 */
+int ERRORO;
+/* asm: FRAMETIME	.bss	FRAMETIME,1 */
+int FRAMETIME;
+/* asm: SWITCHBUTS	.bss	SWITCHBUTS,1 */
+int SWITCHBUTS;
+/* asm: BGNDCOLA	.bss	BGNDCOLA,1 */
+int BGNDCOLA;
+/* asm: DIAG_ACTIVE	.bss	DIAG_ACTIVE,1 */
+int DIAG_ACTIVE;
+/* asm: GAME_TIMER	.bss	GAME_TIMER,1 */
+int GAME_TIMER;
+/* asm: SYSCNTL	pbss	SYSCNTL,1 */
+int SYSCNTL;
+/* asm: _pot0	pbss	_pot0,1 */
+int _pot0;
+/* asm: _pot1	.bss	_pot1,1 */
+int _pot1;
+/* asm: _pot2	.bss	_pot2,1 */
+int _pot2;
+/* asm: RDPOT	.bss	RDPOT,1 */
+int RDPOT;
+/* asm: _sectime	.bss	_sectime,1 */
+int _sectime;
+/* asm: CLEARRDY	.bss	CLEARRDY,1 */
+int CLEARRDY;
+/* asm: NOAERASE	.bss	NOAERASE,1 */
+int NOAERASE;
+/* asm: NOSWAP	.bss	NOSWAP,1 */
+int NOSWAP;
+/* asm: DISPLAY_PAGE	.bss	DISPLAY_PAGE,1 */
+int DISPLAY_PAGE;
+/* asm: MPROC_TIK	fbss	MPROC_TIK,1 */
+int MPROC_TIK;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *READ IO  SWITCHES AND POTS
 // *
 // *
-/* asm: SWRAMI	.word	SWRAM */
-int SWRAMI = (int)(SWRAM);
+/* asm: _newbut	pbss	_newbut,0 */
+int _newbut;
+/* asm: SWRAM	pbss	SWRAM,3 */
+int SWRAM[3];
+/* asm: DIPRAM	pbss	DIPRAM,1 */
+int DIPRAM;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *SWITCH ROUTINE TABLE
 // *0 = NO PROCESS TO CREATE
-/* asm: SWTABI	.word	SWTAB */
-int SWTABI = (int)(SWTAB);
 // *----------------------------------------------------------------------------
+/* asm: PB1	.usect	pbsss,1 */
+int PB1[pbsss];
+/* asm: PB2	.usect	pbsse,1 */
+int PB2[pbsse];
 /* asm: PBSS_PTR	.word	PB1 */
 int PBSS_PTR = (int)(PB1);
 /* asm: PBSS_BSSEND	.word	PB2 */
@@ -125,6 +183,12 @@ int RAM_BSSEND = (int)(0x01EFFF);
 // *
 // *
 #define SPACER 20
+/* asm: BUTTON_TIKS	fbss	BUTTON_TIKS,1 */
+int BUTTON_TIKS;
+/* asm: BUTTON_STATUS	pbss	BUTTON_STATUS,1 */
+int BUTTON_STATUS;
+/* asm: OLD_BUTTON_STATUS	.bss	OLD_BUTTON_STATUS,1 */
+int OLD_BUTTON_STATUS;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // ;before syncing
@@ -147,10 +211,37 @@ int RAM_BSSEND = (int)(0x01EFFF);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 #if STATISTICS
+/* asm: ST_POLYGONS	.bss	ST_POLYGONS,1 */
+int ST_POLYGONS;
+/* asm: ST_VERTICES	.bss	ST_VERTICES,1 */
+int ST_VERTICES;
+/* asm: ST_OBJECTS	.bss	ST_OBJECTS,1 */
+int ST_OBJECTS;
 #endif
 // *----------------------------------------------------------------------------
-/* asm: TIMERAMI	.word	TIMERAM */
-int TIMERAMI = (int)(TIMERAM);
+/* asm: TIMEFRAME	.bss	TIMEFRAME,1 */
+int TIMEFRAME;
+/* asm: TIMEX	.bss	TIMEX,1 */
+int TIMEX;
+/* asm: TIMECLR	.bss	TIMECLR,1 */
+int TIMECLR;
+/* asm: TIMERAM	.bss	TIMERAM,50 */
+int TIMERAM[50];
+#define COMMPAL 0x0990000
+// 	;
+// 	;
+/* asm: MSG_CNT	.bss	MSG_CNT,1 */
+int MSG_CNT;
+/* asm: LINKDISABLED	SPTR	"LINK DISABLED BY U97  DIP6 OFF" */
+char *LINKDISABLED = "LINK DISABLED BY U97  DIP6 OFF";
+/* asm: IAMMASTER	SPTR	"LINK MASTER MACHINE" */
+char *IAMMASTER = "LINK MASTER MACHINE";
+/* asm: IAMSLAVE	SPTR	"LINK SLAVE MACHINE" */
+char *IAMSLAVE = "LINK SLAVE MACHINE";
+/* asm: TPALI		SPTR	"U38 LINK PAL INSTALLED" */
+char *TPALI = "U38 LINK PAL INSTALLED";
+/* asm: TPALNI		SPTR	"U38 LINK PAL NOT INSTALLED" */
+char *TPALNI = "U38 LINK PAL NOT INSTALLED";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *SECRET OCTOPUS
@@ -165,13 +256,19 @@ int TIMERAMI = (int)(TIMERAM);
 /* asm: 	.word	SW_VIEW0 */
 /* asm: 	.word	SW_VIEW0|SW_RADIO */
 int STATE_TABLE[] = { SW_VIEW0|SW_VIEW2, SW_VIEW2, SW_VIEW1|SW_VIEW2, SW_VIEW1, SW_VIEW0|SW_VIEW1, SW_VIEW0, SW_VIEW0|SW_RADIO };
-/* asm: STATE_TABLEI	.word	STATE_TABLE */
-int STATE_TABLEI = (int)(STATE_TABLE);
 // *
 /* asm: STATE_MASK	.word	SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO */
 int STATE_MASK = (int)(SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO);
 // *
+/* asm: STATE_NUM	.bss	STATE_NUM,1 */
+int STATE_NUM;
+/* asm: STATE_TIK	.bss	STATE_TIK,1 */
+int STATE_TIK;
 // *----------------------------------------------------------------------------
+/* asm: BUTTON_IBO	.bss	BUTTON_IBO,1 */
+int BUTTON_IBO;
+/* asm: BUTTON_TIK	.bss	BUTTON_TIK,1 */
+int BUTTON_TIK;
 // *----------------------------------------------------------------------------
 /* asm: BUTTONI	.word	BUTTII */
 int BUTTONI = (int)(BUTTII);
@@ -181,10 +278,19 @@ int BUTTII[] = { BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: SYSCNTL_OC	fbss	SYSCNTL_OC,1 */
+int SYSCNTL_OC;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: BSSSTARTI	.word	BSSSTART */
-int BSSSTARTI = (int)(BSSSTART);
+// 	;
+// 	;verify that the code has not been corrupted
+// 	;
+// 	;*this only works in RAM
+// 	;and, if used in ROM will cause a lockup
+// 	;
+#if CODE_CHECK
+#endif
+#endif
 // *----------------------------------------------------------------------------
 
 void _c_int00(void)
@@ -726,60 +832,6 @@ JJ88:
     // asm: 	SUBI	1,R0
     // asm: 	STI	R0,@_countdown
 NOTASEC:
-    // asm: 	LDF	@FLOAT_TIK,R0
-    // asm: 	ADDF	@GAME_TIMER,R0
-    // asm: 	STF	R0,@GAME_TIMER
-    // asm: NOTINGAME
-    // asm: 	INCM	@INFRAMES		;increment number of frames passed since last screen switch
-    // asm: 	INCMF	@IFRAMES
-    // asm: 	CALL	NUWHEEL			;motorized wheel
-    // asm: 	CALL	SNDPROC			;sound processor
-    // asm: 	CALL	READIO			;read the switches
-    // asm: 	CALL	RANDOM			;randomize further...
-    // asm: 	CALL	BUTTONS			;lighted buttons routine
-    // asm: 	CALL	COIN_COUNTER		;coin counter routine
-    // asm: 	CALL	CHECK_STATE
-    // asm: 	CALL	LATCH_ERROR		;motion error
-    // asm: 	ANDN	INT0_M,IF		;set 60Hz IRQ no longer pending
-    // asm: 	POP	AR7
-    // asm: 	POP	AR6
-    // asm: 	POP	AR5
-    // asm: 	POP	AR4
-    // asm: 	POP	AR3
-    // asm: 	POP	AR2
-    // asm: 	POP	AR1
-    // asm: 	POP	AR0
-    // asm: 	POP	IR1
-    // asm: 	POP	IR0
-    // asm: 	POP	BK
-    // asm: 	POP	RE
-    // asm: 	POP	RS
-    // asm: 	POP	RC
-    // asm: 	POPF	R7
-    // asm: 	POPF	R6
-    // asm: 	POPF	R5
-    // asm: 	POPF	R4
-    // asm: 	POPF	R3
-    // asm: 	POPF	R2
-    // asm: 	POPF	R1
-    // asm: 	POPF	R0
-    // asm: 	POP	R7
-    // asm: 	POP	R6
-    // asm: 	POP	R5
-    // asm: 	POP	R4
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	LDP	@CPU_WS
-    // asm: 	STI	R0,@CPU_WS
-    // asm: 	POP	R0
-    // asm: 	LDI	INT1_M|INT3_M|INT0_M,IE
-    // asm: 	LDP	@COMMINTM
-    // asm: 	OR	@COMMINTM,IE
-    // asm: 	POP	DP
-    // asm: 	POP	ST
-    // asm: 	RETI
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", 0, 0);
     UNIMPL();
 }
@@ -1550,30 +1602,6 @@ HJSADF:
     // 	;test if link pal is installed
     // 	;
     // 	;
-    // asm: 	CLRI	AR0
-    // asm: 	LDP	@COMMPAL
-    // asm: 	LDI	@COMMPAL,R0
-    // asm: 	LDI	*AR0,R1
-    // asm: 	SETDP
-    // asm: 	AND	0FH,R0
-    // asm: 	CMPI	4,R0			;BAD PAL ?
-    // asm: 	LDIZ	@TPALI,AR2
-    // asm: 	LDINZ	@TPALNI,AR2
-    // asm: 	LDI	40,R2
-    // asm: 	LDI	170,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	_outtextxyc
-    // 	;
-    // 	;
-    // asm: 	LDI	239,AR2
-    // asm: 	LDI	110,R2
-    // asm: 	LDI	301,R3
-    // asm: 	LDI	117,RC
-    // asm: 	LDI	11,RS
-    // asm: 	CALL	_rectangle
-    // asm: 	LDI	11,RC
-    // asm: 	TEXTIT	M1,1,190
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MESSAGE1", 0, 0);
     UNIMPL();
 }
@@ -1581,7 +1609,6 @@ HJSADF:
 void MSG1(void)
 {
     // asm: LDI	11,RC
-    // asm:  LDI	11,RC
     // asm: 	TEXTIT	M2,1,200
     // asm: 	TEXTIT	M3,1,220
     // asm: 	TEXTIT	M4,1,230
@@ -1594,20 +1621,9 @@ void MSG1(void)
 void MSG2(void)
 {
     // asm: LDI	11,RC
-    // asm:  LDI	11,RC
     // asm: 	TEXTIT	M6,1,260
     // asm: 	TEXTIT	M7,1,270
     // asm: 	RETS
-LINKDISABLED:
-    // asm: SPTR	"LINK DISABLED BY U97  DIP6 OFF"
-IAMMASTER:
-    // asm: SPTR	"LINK MASTER MACHINE"
-IAMSLAVE:
-    // asm: SPTR	"LINK SLAVE MACHINE"
-TPALI:
-    // asm: SPTR	"U38 LINK PAL INSTALLED"
-TPALNI:
-    // asm: SPTR	"U38 LINK PAL NOT INSTALLED"
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MSG2", 0, 0);
     UNIMPL();
 }
@@ -1615,7 +1631,6 @@ TPALNI:
 void MSG3(void)
 {
     // asm: LDI	11,RC
-    // asm:  LDI	11,RC
     // asm: 	TEXTIT	M8,1,280
     // asm: 	TEXTIT	M9,1,290
     // asm: 	RETS
@@ -1822,33 +1837,5 @@ void FEED_WATCHDOG_HARD(void)
     // asm: 	POP	DP
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FEED_WATCHDOG_HARD", 0, 0);
-    UNIMPL();
-}
-
-void VERIFY_CODE_INTEGRITY(void)
-{
-#if DEBUG
-    // 	;
-    // 	;verify that the code has not been corrupted
-    // 	;
-    // 	;*this only works in RAM
-    // 	;and, if used in ROM will cause a lockup
-    // 	;
-    // asm: 	LDI	40h,AR1			;SOURCE ADDRESS
-    // asm: 	LDI	0C00h,AR2		;DESINATION ADDRESS
-    // asm: 	LS	12,AR2
-    // asm: 	ADDI	40h,AR2
-    // asm: 	LDI	@BSSSTARTI,RC
-    // asm: 	SUBI	041h,RC
-    // asm: 	RPTB	LD_CHK1
-    // asm: 	LDI	*AR1++,R0
-    // asm: 	CMPI	*AR2++,R0
-#if CODE_CHECK
-    // asm: 	BNE	$
-#endif
-    // asm: LD_CHK1	NOP
-#endif
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VERIFY_CODE_INTEGRITY", 0, 0);
     UNIMPL();
 }

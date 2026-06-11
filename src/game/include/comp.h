@@ -4,26 +4,37 @@
 /* Generated from asm/COMP.ASM. */
 
 // asm: 	.bss	DECOMP_ACTIVE,1
-#define DECOMP_ACTIVE 0x0000E5FA
+// addr: 0x0000E5FA
+extern int DECOMP_ACTIVE;
 // asm: 	.bss	HARD_SECTION_LOAD,1
-#define HARD_SECTION_LOAD 0x0000E5FB
+// addr: 0x0000E5FB
+extern int HARD_SECTION_LOAD;
 // asm: 	.bss	FLUSH_COUNT,1
-#define FLUSH_COUNT 0x0000E5FC
+// addr: 0x0000E5FC
+extern int FLUSH_COUNT;
 // asm: 	.bss	PACIFY_COUNT,1
-#define PACIFY_COUNT 0x0000E5FD
+// addr: 0x0000E5FD
+extern int PACIFY_COUNT;
 // asm: 		hibss	DICT,TABLE_SIZE*DICT_SIZ
-#define DICT 0x0001979D
+// addr: 0x0001979D
+extern int DICT[TABLE_SIZE*DICT_SIZ];
 // asm: 		hibss	DECODE_STACK,TABLE_SIZE
-#define DECODE_STACK 0x0001BA27
+// addr: 0x0001BA27
+extern int DECODE_STACK[TABLE_SIZE];
 // asm: 		.bss	NEXT_BUMP_CODE,1
-#define NEXT_BUMP_CODE 0x0000E5FE
+// addr: 0x0000E5FE
+extern int NEXT_BUMP_CODE;
 // asm: 	lobss	LINEBUFFER,64
-#define LINEBUFFER 0x0000C91E
+// addr: 0x0000C91E
+extern int LINEBUFFER[64];
 // asm: 	.bss	SAVESPC,25
-#define SAVESPC 0x0000E5FF
+// addr: 0x0000E5FF
+extern int SAVESPC[25];
 // asm: 	.bss	PREVX,1
-#define PREVX 0x0000E618
+// addr: 0x0000E618
+extern int PREVX;
 // asm: 	.bss	DELTA,1
-#define DELTA 0x0000E619
+// addr: 0x0000E619
+extern int DELTA;
 
 #endif /* COMP_H */

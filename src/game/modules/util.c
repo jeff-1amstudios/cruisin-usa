@@ -28,6 +28,12 @@
 // *ALL RIGHTS RESERVED
 // *
 // *
+/* asm: RAND	pbss	RAND,1 */
+int RAND;
+/* asm: CRTCTLRAM	.bss	CRTCTLRAM,1 */
+int CRTCTLRAM;
+/* asm: ACTIVE_SCREEN	.bss	ACTIVE_SCREEN,1 */
+int ACTIVE_SCREEN;
 // *----------------------------------------------------------------------------
 // *ROM DEFINITIONS
 // *
@@ -35,10 +41,6 @@
 int LINE255I = (int)(SCREEN0+0x3F000);
 /* asm: LINE511I	.word	SCREEN0+7FC00H	;LAST LINE PAGE 1 */
 int LINE511I = (int)(SCREEN0+0x7FC00);
-/* asm: SCREEN0I	.word	SCREEN0		;PAGE ZERO OF SCREEN */
-int SCREEN0I = (int)(SCREEN0);
-/* asm: SCREEN1I	.word	SCREEN1		;PAGE ZERO OF SCREEN */
-int SCREEN1I = (int)(SCREEN1);
 /* asm: SCRSIZI	.word	3FFFFH */
 int SCRSIZI = (int)(0x3FFFF);
 #if DEBUG
@@ -50,6 +52,12 @@ int SCRSIZI = (int)(0x3FFFF);
 // *
 // *----------------------------------------------------------------------------
 #endif
+/* asm: PAGEWORD	.word	0 */
+int PAGEWORD = (int)(0);
+/* asm: FILSIZI	.word	3FFFFH */
+int FILSIZI = (int)(0x3FFFF);
+/* asm: FILWORD	.word	93093H */
+int FILWORD = (int)(0x93093);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CAR PROCESS
@@ -74,8 +82,6 @@ int SCRSIZI = (int)(0x3FFFF);
 // *	PDATA	OLD CAR ORADY
 // *	PDATA+1 BODY LEAN Z RADIANS
 // *	PDATA+2 X RADIANS FOR WHEEL SPIN
-/* asm: CARPROCI	.word	CARPROC */
-int CARPROCI = (int)(CARPROC);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -83,23 +89,24 @@ int CARPROCI = (int)(CARPROC);
 // *DYNAOBJECT DYNAMIC ALLOCATION SUBSYSTEM
 // *----------------------------------------------------------------------------
 // *
-/* asm: DYNALISTI	.word	DYNALIST */
-int DYNALISTI = (int)(DYNALIST);
-/* asm: DYNAFREEI	.word	DYNAFREE */
-int DYNAFREEI = (int)(DYNAFREE);
-/* asm: NULLI	.word	NULL */
-int NULLI = (int)(NULL);
+/* asm: DYNALIST	.bss	DYNALIST,NUM_DYNAS*DYNASIZE */
+int DYNALIST[NUM_DYNAS*DYNASIZE];
+/* asm: DYNAFREE	.bss	DYNAFREE,1 */
+int DYNAFREE;
+/* asm: NULL	.bss	NULL,1 */
+int NULL;
 // *----------------------------------------------------------------------------
-/* asm: CARLISTI	.word	CARLIST */
-int CARLISTI = (int)(CARLIST);
-/* asm: CARFREEI	.word	CARFREE */
-int CARFREEI = (int)(CARFREE);
+/* asm: CARLIST	.bss	CARLIST,NUM_CARS*CARSIZ */
+int CARLIST[NUM_CARS*CARSIZ];
+/* asm: CARFREE	.bss	CARFREE,1 */
+int CARFREE;
+/* asm: CAR_COUNT	.bss	CAR_COUNT,1 */
+int CAR_COUNT;
 // *----------------------------------------------------------------------------
 
 void TVBP(void)
 {
     // asm: RETS
-    // asm:  RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TVBP", 0, 0);
     UNIMPL();
 }
@@ -107,15 +114,7 @@ void TVBP(void)
 void TVBPX(void)
 {
     // asm: RETS
-    // asm:  RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TVBPX", 0, 0);
-    UNIMPL();
-}
-
-void TVPATCH(void)
-{
-    // asm: TVPATCHX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TVPATCH", 0, 0);
     UNIMPL();
 }
 
@@ -161,22 +160,13 @@ void SETPAGE1(void)
     // asm: 	SETDP
     // asm: 	RETS
     // ;	.if	DEBUG
-P1:
-    // asm: 	LDI	@SCREEN1I,R0		;set active screen to 1 (writeable)
-    // asm: 	STI	R0,@ACTIVE_SCREEN
-    // asm: 	LDP	@DMA_SETUP
-    // asm: 	LDI	@DMA_SETUP,R0
-    // asm: 	OR	DMA_VIDEO_PAG_DISPLAYED+DMA_DMA_WRITE_PAGE,R0
-    // asm: 	STI	R0,@DMA_SETUP
-    // asm: 	SETDP
-    // asm: 	RETS
-    // ;	.endif
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETPAGE1", 0, 0);
     UNIMPL();
 }
 
 void FASTCLR0(void)
 {
+    // ;	.endif
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
     // *SRT PAGE ONE
@@ -219,7 +209,6 @@ void CLRSCRN(void)
 
 void CLRSCRN1(void)
 {
-    //  ;CLEAR BITMAP 1
     // asm: 	PUSH	AR2
     // asm: 	LDI	@SCREEN1I,AR2
     // asm: 	B	CLRSC00

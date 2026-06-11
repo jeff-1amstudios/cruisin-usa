@@ -21,13 +21,15 @@
 // ;ROAD_MAPI:	.word	00h
 // ;
 // 	;SECTION DATA
+/* asm: _SECcorn	_SECcorn:		;(15779 lines, 98.62%) */
+/* asm: 	.word	0C16800h	;Src (Compressed) Addr */
+/* asm: 	.word	0BE9600h	;Dest Addr */
+/* asm: 	;	.globl	corn_PALETTES */
+/* asm: 	;corn_PALETTES: */
+/* asm: 	;	.word	0,0 */
+int _SECcorn[] = { 0x0C16800, 0x0BE9600 };
 
-void _SECcorn(void)
+void cornobj(void)
 {
-    //  ;(15779 lines, 98.62%)
-    // ;	.globl	corn_PALETTES
-    // ;corn_PALETTES:
-    // ;	.word	0,0
-    /* no executable asm lines detected */
     UNIMPL();
 }

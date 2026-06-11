@@ -15,6 +15,12 @@
 // ******************************************************
 // * FUNCTION DEF : _HPsin
 // ******************************************************
+// ******************************************************
+// * DEFINE CONSTANTS                                   *
+// ******************************************************
+// ******************************************************
+// * UNDEFINED REFERENCES                               *
+// ******************************************************
 
 void _HPsin(void)
 {
@@ -66,19 +72,11 @@ LL3:
     UNIMPL();
 }
 
-void EPI0_1(void)
+void _HPcos(void)
 {
-    // asm: 	POP	R4
-    // asm: 	RETS
     // ******************************************************
     // * FUNCTION DEF : _HPcos
     // ******************************************************
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "EPI0_1", 0, 0);
-    UNIMPL();
-}
-
-void _HPcos(void)
-{
     // asm: 	PUSH	R4
     // *
     // * R2	assigned to variable  xn
@@ -124,25 +122,5 @@ void _HPcos(void)
     // asm: 	ADDF	R3,R0
     // asm: 	MPYF	R4,R0
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_HPcos", 0, 0);
-    UNIMPL();
-}
-
-void EPI0_2(void)
-{
-    // asm: 	POP	R4
-    // asm: 	RETS
-    // ******************************************************
-    // * DEFINE CONSTANTS                                   *
-    // ******************************************************
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "EPI0_2", 0, 0);
-    UNIMPL();
-}
-
-void CONST(void)
-{
-    // ******************************************************
-    // * UNDEFINED REFERENCES                               *
-    // ******************************************************
-    /* no executable asm lines detected */
     UNIMPL();
 }

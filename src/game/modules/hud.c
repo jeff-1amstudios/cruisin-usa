@@ -27,16 +27,95 @@
 // *ALL RIGHTS RESERVED
 // *
 #define SECTION_COUNTER 0
-/* asm: COUNTDOWN_BUFI	.word	COUNTDOWN_BUF */
-int COUNTDOWN_BUFI = (int)(COUNTDOWN_BUF);
-/* asm: MPH_BUFFERI	.word	MPH_BUFFER */
-int MPH_BUFFERI = (int)(MPH_BUFFER);
+/* asm: COUNTDOWN_BUF	.bss	COUNTDOWN_BUF,2 */
+int COUNTDOWN_BUF[2];
+/* asm: MPH_BUFFER	.bss	MPH_BUFFER,2 */
+int MPH_BUFFER[2];
+/* asm: _countdown	.bss	_countdown,1 */
+int _countdown;
+/* asm: _MPH	.bss	_MPH,1 */
+int _MPH;
+/* asm: SCORE	.bss	SCORE,1 */
+int SCORE;
+/* asm: POSITION	.bss	POSITION,1 */
+int POSITION;
+/* asm: MAXMPH_COUNT	.bss	MAXMPH_COUNT,1 */
+int MAXMPH_COUNT;
 /* asm: STOPBUFFI	.word	STOPBUFFER */
 int STOPBUFFI = (int)(STOPBUFFER);
+/* asm: STOPBUFFER	.bss	STOPBUFFER,4 */
+int STOPBUFFER[4];
 const char YOURLOSTTXT[] = "YOU ARE LOST";
 const char OFFROADTXT[] = "OFFROAD";
+/* asm: OFFROADBUFF	.bss	OFFROADBUFF,2 */
+int OFFROADBUFF[2];
 // *----------------------------------------------------------------------------
+/* asm: MOVEIN_OFFSET	.bss	MOVEIN_OFFSET,1 */
+int MOVEIN_OFFSET;
+/* asm: SAFETS	.word	MSAF,BSAF,OSAF,MSSM */
+int SAFETS[] = { MSAF, BSAF, OSAF, MSSM };
+const char MSAF[] = "SAFETY MAT ACTIVATED";
+const char BSAF[] = "SAFETY BEAM ACTIVATED";
+const char OSAF[] = "FAIL SAFE SWITCH ACTIVATED";
+const char MSSM[] = "MOTION STOP BUTTON HIT";
+// 	;
+// 	;
+// 	;-------OFF ROAD TIMER
+// 	;
+// 	;
+// 	;-------ELAPSED TIME,SPEED TEXT
+// 	;
+// 	;
+// 	;show gear digit
+// 	;
+// 	;
+/* asm: GEARI	.word	GEARS */
+int GEARI = (int)(GEARS);
+/* asm: GEARS	.word	GEARN,GEAR1,GEAR2,GEAR3,GEAR4 */
+int GEARS[] = { GEARN, GEAR1, GEAR2, GEAR3, GEAR4 };
+const char GEAR1[] = "1";
+const char GEAR2[] = "2";
+const char GEAR3[] = "3";
+const char GEAR4[] = "4";
+const char GEARN[] = ";";
+// 	;show MPH or KPH
+// 	;
+// 	;-------time remaining
+// 	;
+// 	;-------TIME (_countdown)
+// 	;
+// 	;
+// 	;-------LAST 3/10 SECONDS OF TIME (_countdown)
+// 	;
+// 	;
+/* asm: LASTSEC	.bss	LASTSEC,1 */
+int LASTSEC;
+// 	;-------SPEED
+// 	;
+// 	;
+// 	;PLOT SPEED
+// 	;-------STOPWATCH (actual elapsed time)
+// 	;
+// 	;
+// 	;-------POSITION
+// 	;(PLAYERS RANK)
+// 	;
+#if SECTION_COUNTER
+// 	;-------DEBUGGING SECTION_COUNTER
+// 	;
+// 	;
+/* asm: SECIDX	.bss	SECIDX,2 */
+int SECIDX[2];
+#endif
+// 	;-------LOGIC: MAXMPH COMPUTATION
+// 	;(COMPUTE FOR BONUS SCREEN...)
+// 	;
+// 	;
+// ;	LDF	@MAXMPH_COUNT,R0
+// ;	INCF	R0
 // *----------------------------------------------------------------------------
+/* asm: TACHOMETER_PAL	.bss	TACHOMETER_PAL,32 */
+int TACHOMETER_PAL[32];
 // *----------------------------------------------------------------------------
 
 void MOVEIN_HUD_EQUIP(void)
@@ -103,283 +182,6 @@ void HUD(void)
     // asm: 	BNZ	NOMOTIONMSGS
     // asm: 	LDI	@MOTION_SAFETY_ON,R0
     // asm: 	BZ	BLAHBLAH
-    // asm: 	LDI	@SAFETSI,AR2
-    // asm: 	ADDI	@MOTION_SAFETY_TYPE,AR2
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	310,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-BLAHBLAH:
-    // 	;
-    // 	;
-NOMOTIONMSGS:
-    // 	;-------OFF ROAD TIMER
-    // 	;
-    // 	;
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	ANDN	MMODE,R0
-    // asm: 	CMPI	MGAME,R0
-    // asm: 	BNE	NOT_OFFROAD
-    // asm: 	LDI	@OFFROAD_TMR,R2
-    // asm: 	CMPI	10,R2
-    // asm: 	BGE	NOT_OFFROAD
-    // asm: 	CMPI	3,R2
-    // asm: 	BGT	NOTLOST
-    // asm: 	LDL	YOURLOSTTXT,AR2
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	5,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	CALL	SET18FONTDS
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-    // asm: 	BU	OFJN
-NOTLOST:
-    // asm: 	LDL	OFFROADTXT,AR2
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	5,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	CALL	SET18FONTDS
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-OFJN:
-    // asm: 	LDI	@OFFROAD_TMR,R2
-    // asm: 	LDL	OFFROADBUFF,AR2
-    // asm: 	CALL	_itoa
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	30,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-NOT_OFFROAD:
-    // 	;-------ELAPSED TIME,SPEED TEXT
-    // 	;
-    // 	;
-    // asm: 	LDL	rpm,AR2
-    // asm: 	LDI	420,R2			;R2	POS X
-    // asm: 	ADDI	@MOVEIN_OFFSET,R2
-    // asm: 	LDI	290,R3			;R3	POS Y
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D
-    // asm: 	LDI	@CHOSEN_TRANSMISSION,R0
-    // asm: 	CMPI	AUTO_TRANSMISSION,R0
-    // asm: 	BEQ	ISAUTOTRNS
-    // asm: 	LDL	rpmman,AR2
-    // asm: 	LDI	463,R2			;R2	POS X
-    // asm: 	ADDI	@MOVEIN_OFFSET,R2
-    // asm: 	LDI	380,R3			;R3	POS Y
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D
-    // asm: 	BU	DNDNL
-ISAUTOTRNS:
-    // asm: 	LDL	rpmauto,AR2
-    // asm: 	LDI	470,R2			;R2	POS X
-    // asm: 	ADDI	@MOVEIN_OFFSET,R2
-    // asm: 	LDI	380,R3			;R3	POS Y
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D
-DNDNL:
-    // 	;show gear digit
-    // 	;
-    // 	;
-    // asm: 	LDI	@PLYCBLK,AR0
-    // asm: 	LDI	*+AR0(CARGEAR),AR2
-    // asm: 	ADDI	@GEARI,AR2
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	FLOAT	458,R2			;R2	POS X
-    // asm: 	FLOAT	@MOVEIN_OFFSET,R0
-    // asm: 	ADDF	R0,R2
-    // asm: 	FLOAT	360,R3			;R3	POS Y
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADD
-    // asm: 	CALL	SETSMDIGITFONT
-    // 	;show MPH or KPH
-    // 	;
-    // asm: 	LDL	mph,AR2
-    // asm: 	LDI	0,R2			;R2	POS X
-    // asm: 	SUBI	@MOVEIN_OFFSET,R2
-    // asm: 	LDI	335,R3			;R3	POS Y
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D
-    // asm: 	READAUD	ADJ_MPHORKPM
-    // asm: 	CMPI	0,R0
-    // asm: 	BEQ	ISMPHT
-    // asm: 	LDL	kph,AR2
-    // asm: 	LDI	50,R2			;R2	POS X
-    // asm: 	SUBI	@MOVEIN_OFFSET,R2
-    // asm: 	LDI	385,R3			;R3	POS Y
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D
-    // asm: 	BU	ISDNN
-ISMPHT:
-    // asm: 	LDL	mphmph,AR2
-    // asm: 	LDI	50,R2			;R2	POS X
-    // asm: 	SUBI	@MOVEIN_OFFSET,R2
-    // asm: 	LDI	385,R3			;R3	POS Y
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D
-ISDNN:
-    // 	;-------time remaining
-    // 	;
-    // asm: 	LDL	time,AR2
-    // asm: 	LDI	242,R2			;R2	POS X
-    // asm: 	LDI	9,R3			;R3	POS Y
-    // asm: 	SUBI	@MOVEIN_OFFSET,R3
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D_DS
-    // 	;-------TIME (_countdown)
-    // 	;
-    // 	;
-    // asm: 	LDI	@_countdown,R2
-    // asm: 	LDI	@COUNTDOWN_BUFI,AR2
-    // asm: 	CALL	_itoa
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	24,R3
-    // asm: 	FLOAT	@MOVEIN_OFFSET,R0
-    // asm: 	SUBF	R0,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADD
-    // asm: 	CALL	SETN43FONT
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	LDL	lgnum43_coolyelo,AR2
-    // asm: 	CALL	PAL_FIND_RAW
-    // asm: 	STI	R0,*+AR0(TEXT_PAL)
-    // 	;-------LAST 3/10 SECONDS OF TIME (_countdown)
-    // 	;
-    // 	;
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	AND	MMODE,R0
-    // asm: 	CMPI	MGAME,R0
-    // asm: 	BNE	NBEEP
-    // asm: 	LDI	@_countdown,R0
-    // asm: 	CMPI	10,R0
-    // asm: 	BGT	NBEEP
-    // asm: 	BLT	NOINITBP
-    // asm: 	LDI	@LASTSEC,R1
-    // asm: 	CMPI	R1,R0
-    // asm: 	BEQ	NBEEP
-    // asm: 	STI	R0,@LASTSEC
-    // asm: 	SOND1	GV_TENSECONDS
-    // asm: 	BU	NBEEP
-NOINITBP:
-    // asm: 	LDI	@LASTSEC,R1
-    // asm: 	CMPI	R1,R0
-    // asm: 	BEQ	NBEEP
-    // asm: 	STI	R0,@LASTSEC
-    // asm: 	CMPI	3,R0
-    // asm: 	BGT	NBEEP
-    // asm: 	SOND1	BASICBEEPH
-NBEEP:
-    // 	;-------SPEED
-    // 	;
-    // 	;
-    // 	;PLOT SPEED
-    // asm: 	READAUD	ADJ_MPHORKPM
-    // asm: 	CMPI	0,R0
-    // asm: 	BEQ	ISMPH
-    // asm: 	FLOAT	@_MPH,R2
-    // asm: 	MPYF	1.6666,R2
-    // asm: 	FIX	R2
-    // asm: 	BU	ISKPH
-ISMPH:
-    // asm: LDI	@_MPH,R2
-ISKPH:
-    // asm: LDI	@MPH_BUFFERI,AR2
-    // asm: 	CALL	_itoa
-    // asm: 	FLOAT	66,R2
-    // asm: 	FLOAT	@MOVEIN_OFFSET,R0
-    // asm: 	SUBF	R0,R2
-    // asm: 	FLOAT	346,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	CALL	SETLGDIGITFONTDS
-    // asm: 	ORM	TXT_RIGHT,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_RIGHT,*+AR1(TEXT_COLOR)
-    // asm: 	LDL	dnums_amber,AR2
-    // asm: 	CALL	PAL_FIND_RAW
-    // asm: 	STI	R0,*+AR0(TEXT_PAL)
-    // asm: 	STI	R0,*+AR1(TEXT_PAL)
-    // 	;-------STOPWATCH (actual elapsed time)
-    // 	;
-    // 	;
-    // asm: 	LDI	8,R0
-    // asm: 	LDI	19,R1
-    // asm: 	SUBI	@MOVEIN_OFFSET,R1
-    // asm: 	LDI	106,R2
-    // asm: 	LDI	30,R3
-    // asm: 	CALL	FILL_DITHER
-    // asm: 	LDL	elap,AR2
-    // asm: 	LDI	10,R2			;R2	POS X
-    // asm: 	LDI	20,R3			;R3	POS Y
-    // asm: 	SUBI	@MOVEIN_OFFSET,R3
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D_DS
-    // asm: 	LDI	@STOPWATCH,R0
-    // asm: 	LDI	@STOPBUFFI,AR2
-    // asm: 	CALL	TIME2STR
-    // asm: 	FLOAT	20,R2
-    // asm: 	FLOAT	33,R3
-    // asm: 	FLOAT	@MOVEIN_OFFSET,R0
-    // asm: 	SUBF	R0,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	CALL	SETSMDIGITFONTDS
-    // 	;-------POSITION
-    // 	;(PLAYERS RANK)
-    // 	;
-    // asm: 	LDI	@POSITION,AR4
-    // asm: 	SUBI	1,AR4
-    // asm: 	MPYI	3,AR4
-    // asm: 	ADDI	@POS_TABLEI,AR4
-    // asm: 	LDI	*AR4++,AR2
-    // asm: 	LDI	415,R2
-    // asm: 	ADDI	*+AR4,R2
-    // asm: 	LDI	20,R3
-    // asm: 	SUBI	@MOVEIN_OFFSET,R3
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D_DS
-    // asm: 	LDI	*AR4++,AR2
-    // asm: 	LDI	450,R2
-    // asm: 	LDI	20,R3
-    // asm: 	SUBI	@MOVEIN_OFFSET,R3
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D_DS
-    // asm: POS_TABLE
-#if SECTION_COUNTER
-    // 	;-------DEBUGGING SECTION_COUNTER
-    // 	;
-    // 	;
-    // asm: 	LDI	@PLYCBLK,AR0
-    // asm: 	LDI	*+AR0(CARTRAK),AR0
-    // asm: 	LDI	*+AR0(OUSR1),R2
-    // asm: 	RS	8,R2
-    // asm: 	LDL	SECIDX,AR2
-    // asm: 	CALL	_itoa
-    // asm: 	FLOAT	10,R2
-    // asm: 	FLOAT	50,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADD
-#endif
-    // 	;-------LOGIC: MAXMPH COMPUTATION
-    // 	;(COMPUTE FOR BONUS SCREEN...)
-    // 	;
-    // 	;
-    // asm: 	FLOAT	@_MPH,R2
-    // asm: 	MPYF	@CHEAT,R2		;DO THE CHEAT THING !!!
-    // asm: 	FLOAT	@NFRAMES,R0
-    // asm: 	MPYF	R0,R2
-    // asm: 	ADDF	@MAXMPH,R2
-    // asm: 	STF	R2,@MAXMPH
-    // asm: 	ADDF	@MAXMPH_COUNT,R0
-    // ;	LDF	@MAXMPH_COUNT,R0
-    // ;	INCF	R0
-    // asm: 	STF	R0,@MAXMPH_COUNT
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HUD", 0, 0);
     UNIMPL();
 }

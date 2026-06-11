@@ -57,6 +57,11 @@
 #define PSS_SP 9
 #define PSS_R0 10
 // *----------------------------------------------------------------------------
+const char TIBO[] = "LOG";
+// 	;R6  X Position
+// 	;R7  Y Height
+// 	;
+// ;	CMPI	SW_VIEW1_H|SW_VIEW0_H|SW_VIEW2_H,R0
 // *----------------------------------------------------------------------------
 
 void ERROR_LOG(void)
@@ -219,80 +224,6 @@ BIGLOOP:
     // asm: 	LDI	@OBJSTRI,AR2
     // asm: 	LDI	DEFAULT_COLOR,RC
     // asm: 	CALL	_outtextxyc
-    // asm: 	LDI	100,R2
-    // asm: 	LDI	R7,R3
-    // asm: 	SUBI	10,R3
-    // asm: 	LDL	TIBO,AR2
-    // asm: 	LDI	DEFAULT_COLOR,RC
-    // asm: 	CALL	_outtextxyc
-    // asm: 	POP	AR2
-    // 	;R6  X Position
-    // 	;R7  Y Height
-    // 	;
-    // asm: 	LDI	ERR_SIZE-1,AR5
-    // asm: ONE_LOG
-    // asm: 	CALL	_rd_cw
-    // asm: 	LDI	R0,R2
-    // asm: 	PUSH	AR2
-    // asm: 	LDI	@OBJSTRI,AR2
-    // asm: 	CALL	HEX2ASC
-    // asm: 	LDI	R6,R2
-    // asm: 	LDI	R7,R3
-    // asm: 	LDI	@OBJSTRI,AR2
-    // asm: 	LDI	DEFAULT_COLOR,RC
-    // asm: 	CALL	_outtextxyc
-    // asm: 	POP	AR2
-    // asm: 	ADDI	70,R6
-    // asm: 	CMPI	450,R6
-    // asm: 	BLT	ION
-    // asm: 	LDI	10,R6
-    // asm: 	ADDI	10,R7
-ION:
-    // asm: DBU	AR5,ONE_LOG
-    // asm: 	LDI	10,R6
-    // asm: 	ADDI	20,R7
-    // asm: 	INC	AR6
-    // asm: 	DEC	R4
-    // asm: 	BLT	LLPPT
-    // asm: 	BU	BIGLOOP
-LLPPT:
-    // asm: 	CALL	WAIT_FOR_VBLANK
-    // asm: 	LDI	@_newbut,R1		;debounce
-    // asm: 	TSTB	SW_DIAG,R1		;start to return to main
-    // asm: 	BZ	BOOKX
-    // asm: 	RS	16,R1
-    // asm: 	LDI	R1,R0
-    // asm: 	AND	SW_VIEW1_H|SW_VIEW0_H|SW_VIEW2_H,R0
-    // ;	CMPI	SW_VIEW1_H|SW_VIEW0_H|SW_VIEW2_H,R0
-    // asm: 	BNE	NOCLEAR
-    // asm: 	CLRI	R2
-    // asm: 	SETAUD	AUD_LOG_COUNT
-    // asm: 	CALL	WAIT_FOR_VBLANK
-    // asm: 	CALL	WAIT_FOR_VBLANK
-    // asm: 	CALL	WAIT_FOR_VBLANK
-    // asm: 	BU	ERROR_LOG_DISPLAY
-NOCLEAR:
-    // asm: 	TSTB	SW_VIEW2_H,R1
-    // asm: 	BNZ	NOT_NEXT_PAGE
-    // asm: 	PUSH	AR2
-    // asm: 	READAUD	AUD_LOG_COUNT
-    // asm: 	POP	AR2
-    // asm: 	CMPI	R0,AR6
-    // asm: 	BGE	ERRLOG_D
-    // asm: 	BU	NEXT_PAGE
-NOT_NEXT_PAGE:
-    // asm: 	TSTB	SW_VIEW0_H,R1
-    // asm: 	BZ	BOOKX2
-    // asm: 	BU	LLPPT
-    // asm: BOOKX2	LDI	@_newbut,R1		;debounce
-    // asm: 	RS	16,R1
-    // asm: 	TSTB	SW_VIEW0_H,R1		;start to return to main
-    // asm: 	BNZ	BOOKX2
-    // asm: 	RETS
-    // asm: BOOKX	NOT	@_newbut,R0
-    // asm: 	AND	SW_DIAG,R0
-    // asm: 	BNZ	BOOKX
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ERROR_LOG_DISPLAY", 0, 0);
     UNIMPL();
 }

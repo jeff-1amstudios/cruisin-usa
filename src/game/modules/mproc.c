@@ -19,53 +19,47 @@
 // *
 // *
 #if DEBUG
+/* asm: NUM_PROCS_ACTIVE	.bss	NUM_PROCS_ACTIVE,1 */
+int NUM_PROCS_ACTIVE;
+/* asm: NUM_PROCS_IDLE	.bss	NUM_PROCS_IDLE,1 */
+int NUM_PROCS_IDLE;
 #endif
-/* asm: PACTIVEI	.word	PACTIVE */
-int PACTIVEI = (int)(PACTIVE);
-/* asm: PFREEI	.word	PFREE */
-int PFREEI = (int)(PFREE);
-/* asm: PRCSTRI	.word	PRCSTR */
-int PRCSTRI = (int)(PRCSTR);
+/* asm: CURRENT_PROC	.bss	CURRENT_PROC,1 */
+int CURRENT_PROC;
+/* asm: OLDSP	.bss	OLDSP,1 */
+int OLDSP;
+/* asm: PACTIVE	.bss	PACTIVE,1 */
+int PACTIVE;
+/* asm: PFREE	.bss	PFREE,1 */
+int PFREE;
+/* asm: PRCSTR	hibss	PRCSTR,PRCSIZ*NUMPROC */
+int PRCSTR[PRCSIZ*NUMPROC];
+// *----------------------------------------------------------------------------
+#endif
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-
-void PRC_DEBUG_CHECK(void)
-{
-#if DEBUG
-    // asm: 	PUSH	R0
-    // asm: 	LDI	@NUM_PROCS_ACTIVE,R0
-    // asm: 	ADDI	@NUM_PROCS_IDLE,R0
-    // asm: 	CMPI	NUMPROC,R0
-    // asm: 	BNE	$
-    // asm: 	POP	R0
-#endif
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_DEBUG_CHECK", 0, 0);
-    UNIMPL();
-}
+// *GET A PROCESS
+// *
+// *	START UP A PROCESS AT FUNCTION_NAME.
+// *	-FIND AN AVAILABLE PROCESS SPACE
+// *	-SETUP STORED VARIABLES (AR7-3,R4-7) AND START ADDRESS
+// *	-SETUP LSP POSITION (LOCAL STACK POINTER)
+// *	-SET SLEEP TIKS TO ZERO
+// *
+// *PARAMETERS
+// *	R2	PID
+// *	AR2	START ADDRESS
+// *RETURNS
+// *	(IF PROCESS IS AVAILABLE)
+// *		CARRY CLEAR
+// *		AR0	POINTER TO PROCESS BLOCK
+// *	(IF NO PROCESSES AVAILABLE)
+// *		CARRY SET
+// *
+// *----------------------------------------------------------------------------
 
 void PRC_CREATE(void)
 {
-    // *----------------------------------------------------------------------------
-    // *----------------------------------------------------------------------------
-    // *GET A PROCESS
-    // *
-    // *	START UP A PROCESS AT FUNCTION_NAME.
-    // *	-FIND AN AVAILABLE PROCESS SPACE
-    // *	-SETUP STORED VARIABLES (AR7-3,R4-7) AND START ADDRESS
-    // *	-SETUP LSP POSITION (LOCAL STACK POINTER)
-    // *	-SET SLEEP TIKS TO ZERO
-    // *
-    // *PARAMETERS
-    // *	R2	PID
-    // *	AR2	START ADDRESS
-    // *RETURNS
-    // *	(IF PROCESS IS AVAILABLE)
-    // *		CARRY CLEAR
-    // *		AR0	POINTER TO PROCESS BLOCK
-    // *	(IF NO PROCESSES AVAILABLE)
-    // *		CARRY SET
-    // *
     // asm: 	PUSH	R0
     // asm: 	LDI	@PFREE,R0		;TAKE OFF THE TOP OF PROCESS FREE LIST
     // asm: 	BNZ	GETPROC0

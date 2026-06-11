@@ -4,82 +4,121 @@
 /* Generated from asm/CUSA.ASM. */
 
 // asm: 	fbss	COMMINTM,1	;0       if NON-linked
-#define COMMINTM 0x008099DF
+// addr: 0x008099DF
+extern int COMMINTM;
 // asm: 	pbss	_MODE,1		;machine mode
-#define _MODE 0x0000C8F5
+// addr: 0x0000C8F5
+extern int _MODE;
 // asm: 	.bss	NFRAMES,1	;number of frames passed since last update
-#define NFRAMES 0x0000C95F
+// addr: 0x0000C95F
+extern int NFRAMES;
 // asm: 	.bss	INFRAMES,1
-#define INFRAMES 0x0000C960
+// addr: 0x0000C960
+extern int INFRAMES;
 // asm: 	.bss	FRAMRATE,1	;MIN frames allowed-1
-#define FRAMRATE 0x0000C961
+// addr: 0x0000C961
+extern int FRAMRATE;
 // asm: 	.bss	IFRAMES,1
-#define IFRAMES 0x0000C962
+// addr: 0x0000C962
+extern int IFRAMES;
 // asm: 	.bss	ERRORN,1
-#define ERRORN 0x0000C964
+// addr: 0x0000C964
+extern int ERRORN;
 // asm: 	.bss	ERRORO,1
-#define ERRORO 0x0000C965
+// addr: 0x0000C965
+extern int ERRORO;
 // asm: 	.bss	FRAMETIME,1	;TMR_FRAME
-#define FRAMETIME 0x0000C966
+// addr: 0x0000C966
+extern int FRAMETIME;
 // asm: 	.bss	SWITCHBUTS,1
-#define SWITCHBUTS 0x0000C967
+// addr: 0x0000C967
+extern int SWITCHBUTS;
 // asm: 	.bss	BGNDCOLA,1	;color 0 in COLORRAM
-#define BGNDCOLA 0x0000C968
+// addr: 0x0000C968
+extern int BGNDCOLA;
 // asm: 	.bss	DIAG_ACTIVE,1
-#define DIAG_ACTIVE 0x0000C969
+// addr: 0x0000C969
+extern int DIAG_ACTIVE;
 // asm: 	.bss	GAME_TIMER,1	;FL	minutes since last buyin
-#define GAME_TIMER 0x0000C96A
+// addr: 0x0000C96A
+extern int GAME_TIMER;
 // asm: 	pbss	SYSCNTL,1	;shadow location
-#define SYSCNTL 0x0000C8F7
+// addr: 0x0000C8F7
+extern int SYSCNTL;
 // asm: 	pbss	_pot0,1		;steering wheel
-#define _pot0 0x0000C8F8
+// addr: 0x0000C8F8
+extern int _pot0;
 // asm: 	.bss	_pot1,1		;accel pedal
-#define _pot1 0x0000C96B
+// addr: 0x0000C96B
+extern int _pot1;
 // asm: 	.bss	_pot2,1		;brake pedal
-#define _pot2 0x0000C96C
+// addr: 0x0000C96C
+extern int _pot2;
 // asm: 	.bss	RDPOT,1
-#define RDPOT 0x0000C96D
+// addr: 0x0000C96D
+extern int RDPOT;
 // asm: 	.bss	_sectime,1	;one second timer
-#define _sectime 0x0000C96E
+// addr: 0x0000C96E
+extern int _sectime;
 // asm: 	.bss	CLEARRDY,1	;clear screen is ready (1 = swap pages and clear screen)
-#define CLEARRDY 0x0000C96F
+// addr: 0x0000C96F
+extern int CLEARRDY;
 // asm: 	.bss	NOAERASE,1	;NO AUTOERASE FLAG
-#define NOAERASE 0x0000C970
+// addr: 0x0000C970
+extern int NOAERASE;
 // asm: 	.bss	NOSWAP,1	;NO PAGE SWAPPING
-#define NOSWAP 0x0000C971
+// addr: 0x0000C971
+extern int NOSWAP;
 // asm: 	.bss	DISPLAY_PAGE,1
-#define DISPLAY_PAGE 0x0000C972
+// addr: 0x0000C972
+extern int DISPLAY_PAGE;
 // asm: 	fbss	MPROC_TIK,1
-#define MPROC_TIK 0x008099E0
+// addr: 0x008099E0
+extern int MPROC_TIK;
 // asm: 	fbss	WDHIT,1
-#define WDHIT 0x008099E1
+// addr: 0x008099E1
+extern int WDHIT;
 // asm: 	pbss	_newbut,0
-#define _newbut 0x0000C8F9
+// addr: 0x0000C8F9
+extern int _newbut;
 // asm: 	pbss	SWRAM,3       		;SWITCH STATE STORE N,N-1,N-2
-#define SWRAM 0x0000C8F9
+// addr: 0x0000C8F9
+extern int SWRAM[3];
 // asm: 	pbss	DIPRAM,1		;DIP SWITCH RAM COPY
-#define DIPRAM 0x0000C8FC
+// addr: 0x0000C8FC
+extern int DIPRAM;
 // asm: 	fbss	BUTTON_TIKS,1
-#define BUTTON_TIKS 0x008099E2
+// addr: 0x008099E2
+extern int BUTTON_TIKS;
 // asm: 	pbss	BUTTON_STATUS,1
-#define BUTTON_STATUS 0x0000C8FD
+// addr: 0x0000C8FD
+extern int BUTTON_STATUS;
 // asm: 	.bss	OLD_BUTTON_STATUS,1
-#define OLD_BUTTON_STATUS 0x0000C973
+// addr: 0x0000C973
+extern int OLD_BUTTON_STATUS;
 // asm: 	.bss	TIMEFRAME,1
-#define TIMEFRAME 0x0000C974
+// addr: 0x0000C974
+extern int TIMEFRAME;
 // asm: 	.bss	TIMEX,1
-#define TIMEX 0x0000C975
+// addr: 0x0000C975
+extern int TIMEX;
 // asm: 	.bss	TIMECLR,1
-#define TIMECLR 0x0000C976
+// addr: 0x0000C976
+extern int TIMECLR;
 // asm: 	.bss	TIMERAM,50
-#define TIMERAM 0x0000C977
+// addr: 0x0000C977
+extern int TIMERAM[50];
 // asm: 		.bss	STATE_NUM,1
-#define STATE_NUM 0x0000C9AA
+// addr: 0x0000C9AA
+extern int STATE_NUM;
 // asm: 		.bss	STATE_TIK,1
-#define STATE_TIK 0x0000C9AB
+// addr: 0x0000C9AB
+extern int STATE_TIK;
 // asm: 	.bss	BUTTON_IBO,1
-#define BUTTON_IBO 0x0000C9AC
+// addr: 0x0000C9AC
+extern int BUTTON_IBO;
 // asm: 	.bss	BUTTON_TIK,1
-#define BUTTON_TIK 0x0000C9AD
+// addr: 0x0000C9AD
+extern int BUTTON_TIK;
 
 #endif /* CUSA_H */

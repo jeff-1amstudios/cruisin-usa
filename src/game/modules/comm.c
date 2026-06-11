@@ -28,12 +28,26 @@
 // *ALL RIGHTS RESERVED
 // *
 #define TIME_DELAY 18
+/* asm: COMM_MASTER_ERROR_CNT	fbss	COMM_MASTER_ERROR_CNT,1 */
+int COMM_MASTER_ERROR_CNT;
+/* asm: COMM_MASTER_TRANSES	fbss	COMM_MASTER_TRANSES,1 */
+int COMM_MASTER_TRANSES;
+/* asm: COMM_SLAVE_ERROR_CNT	fbss	COMM_SLAVE_ERROR_CNT,1 */
+int COMM_SLAVE_ERROR_CNT;
+/* asm: COMM_SLAVE_TRANSES	fbss	COMM_SLAVE_TRANSES,1 */
+int COMM_SLAVE_TRANSES;
+/* asm: COMM_SLAVE_NREADY	fbss	COMM_SLAVE_NREADY,1 */
+int COMM_SLAVE_NREADY;
+/* asm: COMMFLAG	.bss	COMMFLAG,1 */
+int COMMFLAG;
+/* asm: ONEFLAG	pbss	ONEFLAG,1 */
+int ONEFLAG;
+/* asm: TRANSMISSION_ACTIVE	pbss	TRANSMISSION_ACTIVE,1 */
+int TRANSMISSION_ACTIVE;
+/* asm: TRANSMISSION_DEAD	pbss	TRANSMISSION_DEAD,1 */
+int TRANSMISSION_DEAD;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: RECEIVE_BUFFERI	.word	RECEIVE_BUFFER */
-int RECEIVE_BUFFERI = (int)(RECEIVE_BUFFER);
-/* asm: COMM_IOI	.word	COMM_IO */
-int COMM_IOI = (int)(COMM_IO);
 // *----------------------------------------------------------------------------
 // *COMMUNICATIONS LINK
 // *

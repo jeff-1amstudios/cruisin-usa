@@ -41,7 +41,11 @@
 /* asm: 	.word	-1 */
 int HEADS[] = { jeno, marc, pet, xion, ted, matt, vince, carl, glen, ken, eric, -1 };
 // *----------------------------------------------------------------------------
+/* asm: YINCREMENT	.bss	YINCREMENT,1 */
+int YINCREMENT;
 // *----------------------------------------------------------------------------
+/* asm: CHISPRIB	SPTR	"CHRISTINE PRIBYL" */
+char *CHISPRIB = "CHRISTINE PRIBYL";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *SUBROUTINE FOR THE ABOVE
@@ -56,6 +60,8 @@ int HEADS[] = { jeno, marc, pet, xion, ted, matt, vince, carl, glen, ken, eric, 
 // *	AR0	S1
 // *	AR1	S2
 // *
+/* asm: FONTUSED	.bss	FONTUSED,1 */
+int FONTUSED;
 // *----------------------------------------------------------------------------
 
 void TEXTDELER(void)
@@ -291,7 +297,6 @@ NOTSPEC4:
     // asm: 	BU	DTLP2
 KRIS:
     // asm: SLEEP	1
-    // asm:  SLEEP	1
     // asm: 	LDF	*+AR4(TEXT_POSX),R0
     // asm: 	FLOAT	259,R1
     // asm: 	SUBF	R0,R1
@@ -321,9 +326,12 @@ NOTSPEC99:
     // asm: 	POP	AR5
     // asm: 	POP	AR4
     // asm: 	BU	DTLP2
-CHISPRIB:
-    // asm: SPTR	"CHRISTINE PRIBYL"
-ADAMSTOPRIBYL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_SUB", 0, 0);
+    UNIMPL();
+}
+
+void ADAMSTOPRIBYL(void)
+{
     // asm: 	SLEEP	1
     // asm: 	LDF	*+AR4(TEXT_POSY),R0
     // asm: 	FLOAT	250,R1
@@ -365,7 +373,7 @@ WTD55:
     // asm: 	LDI	-1,R1
     // asm: 	CALL	PRC_KILLALL
     // asm: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_SUB", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADAMSTOPRIBYL", 0, 0);
     UNIMPL();
 }
 

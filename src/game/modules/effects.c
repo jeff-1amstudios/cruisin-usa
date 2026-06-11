@@ -57,6 +57,8 @@ int MONKEYOBJLVI = (int)(mnklv);
 int MONKEYOBJUHI = (int)(mnkuh);
 /* asm: MONKEYOBJLHI	.word	mnklh */
 int MONKEYOBJLHI = (int)(mnklh);
+/* asm: SCREENWIPE_DONE	.bss	SCREENWIPE_DONE,1 */
+int SCREENWIPE_DONE;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 

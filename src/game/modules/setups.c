@@ -26,6 +26,14 @@
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: FULLSETUP_TABLE	FULLSETUP_TABLE: */
+/* asm: 	.word	FULLSETUP_GGPARK */
+/* asm: 	.word	FULLSETUP_SANFRAN,FULLSETUP_H280,FULLSETUP_REDWOOD */
+/* asm: 	.word	FULLSETUP_BEVERLY,FULLSETUP_LAFREEWAY,FULLSETUP_DEATHVALLEY */
+/* asm: 	.word	FULLSETUP_ARIZONA,FULLSETUP_GCANYON,FULLSETUP_IOWA */
+/* asm: 	.word	FULLSETUP_CHICAGO,FULLSETUP_INDIANA,FULLSETUP_APPALACHIA */
+/* asm: 	.word	FULLSETUP_WASHINGTONDC */
+int FULLSETUP_TABLE[] = { FULLSETUP_GGPARK, FULLSETUP_SANFRAN, FULLSETUP_H280, FULLSETUP_REDWOOD, FULLSETUP_BEVERLY, FULLSETUP_LAFREEWAY, FULLSETUP_DEATHVALLEY, FULLSETUP_ARIZONA, FULLSETUP_GCANYON, FULLSETUP_IOWA, FULLSETUP_CHICAGO, FULLSETUP_INDIANA, FULLSETUP_APPALACHIA, FULLSETUP_WASHINGTONDC };
 // *----------------------------------------------------------------------------
 
 void CLEANUP_PALS(void)
@@ -78,13 +86,6 @@ DONTDEL:
     // asm: 	CALL	dealloc_section
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEANUP_PALS", 0, 0);
-    UNIMPL();
-}
-
-void FULLSETUP_TABLE(void)
-{
-    // asm: LOADSECTION_TABLE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_TABLE", 0, 0);
     UNIMPL();
 }
 
@@ -183,7 +184,6 @@ void LOADARIZONA(void)
 
 void LOADGCANYON(void)
 {
-    //  ;(MOUNT RUSHMORE)
     // asm: 	LDL	_SECdeserts,AR2
     // asm: 	CALL	LOAD_SECTION_REQ
     // asm: 	LDL	_SECmtrush,AR2
@@ -450,7 +450,6 @@ void FULLSETUP_REDWOOD(void)
 
 void LOAD_TUNNEL(void)
 {
-    //  ;(ACTUAL)
     // asm: 	LDL	tunnel_PALETTES,AR2
     // asm: 	CALL	alloc_section
     // asm: 	LDL	_SECtunnel,AR2

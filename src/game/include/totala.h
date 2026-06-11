@@ -4,12 +4,16 @@
 /* Generated from asm/TOTALA.ASM. */
 
 // asm: 	.bss	_ACNTL,1
-#define _ACNTL 0x0000EA64
+// addr: 0x0000EA64
+extern int _ACNTL;
 // asm: 	.bss	_ACMAP,1
-#define _ACMAP 0x0000EA65
+// addr: 0x0000EA65
+extern int _ACMAP;
 // asm: 	.bss	_AIVI,4
-#define _AIVI 0x0000EA72
+// addr: 0x0000EA72
+extern int _AIVI[4];
 // asm: 	.bss	_ADDRL,1
-#define _ADDRL 0x0000EA76
+// addr: 0x0000EA76
+extern int _ADDRL;
 
 #endif /* TOTALA_H */

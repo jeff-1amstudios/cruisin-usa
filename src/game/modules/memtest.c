@@ -129,10 +129,11 @@ int RTU59[] = { 0x0400000, 0x020000, 0x000FF0000, 1, SOFT_WS, 1 };
 // *VECTOR PTR,XmYm,XM,YM,U_NUM
 // *
 const char tt_[] = ":UTP:";
+const char tt_[] = ":UTP:";
+#define ISRAM 0
+#define ISROM 1
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: CHIPTEST_TABLEI	.word	CHIPTEST_TABLE */
-int CHIPTEST_TABLEI = (int)(CHIPTEST_TABLE);
 // ;color ram
 // ;bitmap
 // *----------------------------------------------------------------------------
@@ -176,6 +177,12 @@ int CHIPTEST_TABLEI = (int)(CHIPTEST_TABLE);
 // *RESULTS.
 // *
 // *
+/* asm: BASICS_RAM	fbss	BASICS_RAM,10 */
+int BASICS_RAM[10];
+const char MEMTST1[] = "CRUISN USA (TM)";
+// 	;Static *MUST* be working to get this far,
+// 	;so mark them ALL as cool
+// 	;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *ROM CHIP CHECKSUMS
@@ -348,12 +355,6 @@ int CCHKSUME03 = (int)(~CHECKSUM_E03);
 void _word(void)
 {
     // asm: CTTP:,:MNX:,:MNY:,:MXX:,:MXY:,tt?,:RAMROM:
-CTTP:
-    // asm: ,:MNX:,:MNY:,:MXX:,:MXY:,tt?,:RAMROM:
-_word:
-    // asm: CTTP:,:MNX:,:MNY:,:MNX:+:MXX:,:MNY:+:MXY:,tt?,:RAMROM:
-CTTP:
-    // asm: ,:MNX:,:MNY:,:MNX:+:MXX:,:MNY:+:MXY:,tt?,:RAMROM:
     TRACE_EVENT(&g_crusn_machine->trace, "function", ".word", 0, 0);
     UNIMPL();
 }
@@ -863,74 +864,6 @@ void TEST_BASICS(void)
     // asm: 	LINE	220,360,490,360,COL_WHITE
     // asm: 	POP	DP
     // asm: 	CALL	PLOT_OUTLINE_OF_CHIPS
-    // asm: 	LDI	COL_VDGREY,RC
-    // asm: 	TEXTIT	MEMTST1,50,20
-    // asm: 	TEXTIT	DATE_STAMP,50,30
-    // asm: 	TEXTIT	VERSION_STAMP,270,30
-    // asm: 	LDL	BASICS_RAM,AR5
-    // asm: 	LDI	9,AR6
-    // asm: 	LDL	CHIPTEST_TABLE,AR4
-    // asm: TSTBL2
-    // asm: 	LDI	*AR5++,R0		;SAVE RESULTS
-    // asm: 	LDIZ	COL_GREEN,RS
-    // asm: 	LDINZ	COL_RED,RS
-    // asm: 	LDI	*+AR4(CTT_MINX),AR2
-    // asm: 	INC	AR2
-    // asm: 	LDI	*+AR4(CTT_MINY),R2
-    // asm: 	INC	R2
-    // asm: 	LDI	*+AR4(CTT_MAXX),R3
-    // asm: 	DEC	R3
-    // asm: 	LDI	*+AR4(CTT_MAXY),RC
-    // asm: 	DEC	RC
-    // asm: 	CALL	_fill
-    // asm: 	LDI	*+AR4(CTT_U),AR2
-    // asm: 	LDI	*+AR4(CTT_MAXX),R2
-    // asm: 	LDI	*+AR4(CTT_MAXY),R3
-    // asm: 	SUBI	*+AR4(CTT_MINX),R2
-    // asm: 	SUBI	*+AR4(CTT_MINY),R3
-    // asm: 	RS	1,R2
-    // asm: 	RS	1,R3
-    // asm: 	ADDI	*+AR4(CTT_MINX),R2
-    // asm: 	ADDI	*+AR4(CTT_MINY),R3
-    // asm: 	SUBI	15,R2
-    // asm: 	SUBI	4,R3
-    // asm: 	LDI	COL_BLACK,RC
-    // asm: 	CALL	_outtextxyc
-    // asm: 	LDI	*++AR4(CTT_SIZE),R0
-    // asm: 	DBU	AR6,TSTBL2
-    // 	;Static *MUST* be working to get this far,
-    // 	;so mark them ALL as cool
-    // 	;
-    // asm: 	LDI	3,AR6
-    // asm: 	LDL	STATIC_TABLE,AR4
-    // asm: TSTBL2C
-    // asm: 	LDI	COL_GREEN,RS
-    // asm: 	LDI	*+AR4(CTT_MINX),AR2
-    // asm: 	INC	AR2
-    // asm: 	LDI	*+AR4(CTT_MINY),R2
-    // asm: 	INC	R2
-    // asm: 	LDI	*+AR4(CTT_MAXX),R3
-    // asm: 	DEC	R3
-    // asm: 	LDI	*+AR4(CTT_MAXY),RC
-    // asm: 	DEC	RC
-    // asm: 	CALL	_fill
-    // asm: 	LDI	*+AR4(CTT_U),AR2
-    // asm: 	LDI	*+AR4(CTT_MAXX),R2
-    // asm: 	LDI	*+AR4(CTT_MAXY),R3
-    // asm: 	SUBI	*+AR4(CTT_MINX),R2
-    // asm: 	SUBI	*+AR4(CTT_MINY),R3
-    // asm: 	RS	1,R2
-    // asm: 	RS	1,R3
-    // asm: 	ADDI	*+AR4(CTT_MINX),R2
-    // asm: 	ADDI	*+AR4(CTT_MINY),R3
-    // asm: 	SUBI	15,R2
-    // asm: 	SUBI	4,R3
-    // asm: 	LDI	COL_BLACK,RC
-    // asm: 	CALL	_outtextxyc
-    // asm: 	LDI	*++AR4(CTT_SIZE),R0
-    // asm: 	DBU	AR6,TSTBL2C
-    // asm: 	CALL	CMOS_CHIP_TEST
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEST_BASICS", 0, 0);
     UNIMPL();
 }
@@ -962,7 +895,6 @@ void RAMTEST(void)
     // *	AR6	WATCHDOG FEEDER
     // *
     // *
-    //  ;THIS IS CALLED DURING RUNTIME
     // asm: 	LDL	BLOWLIST,R0
     // asm: 	BU	R0
     // 		;THIS IS THE ACTUAL ROUTINE, BUT IT MUST

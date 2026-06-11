@@ -4,6 +4,7 @@
 /* Generated from asm/DIRQ.ASM. */
 
 // asm: 	.bss	BREAKOBJ,1
-#define BREAKOBJ 0x0000C95E
+// addr: 0x0000C95E
+extern int BREAKOBJ;
 
 #endif /* DIRQ_H */

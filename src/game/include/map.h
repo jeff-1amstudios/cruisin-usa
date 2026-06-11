@@ -4,18 +4,25 @@
 /* Generated from asm/MAP.ASM. */
 
 // asm: 	.bss	MAPPAL13,1	;FL multiplier
-#define MAPPAL13 0x0000E88D
+// addr: 0x0000E88D
+extern int MAPPAL13;
 // asm: 	.bss	MAPPAL24,1	;FL multiplier
-#define MAPPAL24 0x0000E88E
+// addr: 0x0000E88E
+extern int MAPPAL24;
 // asm: 	.bss	STOPWATCH,1		;the counter
-#define STOPWATCH 0x0000E88F
+// addr: 0x0000E88F
+extern int STOPWATCH;
 // asm: 	.bss	STOPWATCH_CNTL,1	;the controller	0 = stop, 1 = go
-#define STOPWATCH_CNTL 0x0000E890
+// addr: 0x0000E890
+extern int STOPWATCH_CNTL;
 // asm: 		.bss	lap_buffer,4
-#define lap_buffer 0x0000E891
+// addr: 0x0000E891
+extern int lap_buffer[4];
 // asm: 		.bss	tmp_buffer,2
-#define tmp_buffer 0x0000E895
+// addr: 0x0000E895
+extern int tmp_buffer[2];
 // asm: 	.bss	THIS_MACHINE_AHEAD,1
-#define THIS_MACHINE_AHEAD 0x0000E897
+// addr: 0x0000E897
+extern int THIS_MACHINE_AHEAD;
 
 #endif /* MAP_H */

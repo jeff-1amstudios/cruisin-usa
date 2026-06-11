@@ -27,12 +27,8 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: _CAMERAPOSI	.word	_CAMERAPOS */
-int _CAMERAPOSI = (int)(_CAMERAPOS);
-/* asm: VIEWLISTI	.word	VIEWLIST */
-int VIEWLISTI = (int)(VIEWLIST);
-/* asm: ATTR_WAVETABI	.word	ATTR_WAVETAB */
-int ATTR_WAVETABI = (int)(ATTR_WAVETAB);
+/* asm: ATTRWAVE	pbss	ATTRWAVE,1 */
+int ATTRWAVE;
 // *----------------------------------------------------------------------------
 // * CAMERA variable space
 // *
@@ -82,6 +78,7 @@ int ATTR_WAVETABI = (int)(ATTR_WAVETAB);
 // *THE first call is to intialize
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+#define ATTR_WAVETAB_LEN ($-ATTR_WAVETAB-1)
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *OLD CODE THAT I DEARLY LIKE TO REFFERENCE
@@ -1110,7 +1107,6 @@ void GET_MAP_CARBLK(void)
     // *INPUTS  AR0=POINTER TO CARBLK
     // *OUPTUTS AR4=POINTER TO place in LEG_MAP
     // *SETS CAROBJ IF GET_MAP_SEGMENT is called
-    //  ;INPUT is AR0=POINTER TO THE CARBLK
     // asm: 	PUSH	R2
     // asm: 	LDI	*+AR0(OPLINK),AR2
     // asm: 	LDI	*+AR2(DELTA_SPTR),AR4
@@ -1326,7 +1322,6 @@ SVX:
 
 void SERIOUSLY_NORMALIZE(void)
 {
-    //  ;For those crazy wacked out vectors that are more than 360deg
     // asm: 	ABSF	R0,R1
     // asm: 	CMPF	@TWOPII,R1
     // asm: 	BLT	NORM_VECTOR

@@ -30,6 +30,28 @@
 // *ALL RIGHTS RESERVED
 // *
 // *
+/* asm: START_HIT	.bss	START_HIT,1 */
+int START_HIT;
+/* asm: CHOSEN_VEHICLE	.bss	CHOSEN_VEHICLE,1 */
+int CHOSEN_VEHICLE;
+/* asm: CHOSEN_TRANSMISSION	.bss	CHOSEN_TRANSMISSION,1 */
+int CHOSEN_TRANSMISSION;
+/* asm: CHOSEN_RACE	.bss	CHOSEN_RACE,1 */
+int CHOSEN_RACE;
+/* asm: END_OF_GAMEP	.bss	END_OF_GAMEP,1 */
+int END_OF_GAMEP;
+/* asm: RACE_MODE	.bss	RACE_MODE,1 */
+int RACE_MODE;
+/* asm: FIRST_RACE	.bss	FIRST_RACE,1 */
+int FIRST_RACE;
+/* asm: POSES	.bss	POSES,1 */
+int POSES;
+/* asm: GAMEDIFF	.bss	GAMEDIFF,1 */
+int GAMEDIFF;
+/* asm: CHECKPOINT_NUM	.bss	CHECKPOINT_NUM,1 */
+int CHECKPOINT_NUM;
+/* asm: H2H_FLAGSTATE	.bss	H2H_FLAGSTATE,1 */
+int H2H_FLAGSTATE;
 // *----------------------------------------------------------------------------
 // *
 // *
@@ -42,6 +64,8 @@ const char JINOW[] = "JOIN IN NOW";
 const char WFCHAL1[] = "WAITING";
 const char WFCHAL2[] = "FOR CHALLENGER";
 const char WFCHAL3[] = "HOLD RADIO OR VIEW3 TO CANCEL";
+/* asm: FRAMELAG	.bss	FRAMELAG,1 */
+int FRAMELAG;
 // *----------------------------------------------------------------------------
 #define PLYPOS2YL (-400)
 #define PLYPOS2ZL 2200
@@ -49,20 +73,63 @@ const char WFCHAL3[] = "HOLD RADIO OR VIEW3 TO CANCEL";
 // *----------------------------------------------------------------------------
 // *CHOOSECAR
 // *
-/* asm: CCTI	.word	CCT */
-int CCTI = (int)(CCT);
 const char CCT[] = "CHOOSE CAR";
-/* asm: CCTABI	.word	CCTAB */
-int CCTABI = (int)(CCTAB);
 // 	;all Y's were 0
 // 	;
-/* asm: RACE_STARTING_POINTSI	.word	RACE_STARTING_POINTS */
-int RACE_STARTING_POINTSI = (int)(RACE_STARTING_POINTS);
+/* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
+int CHOOSENCAR;
+#define LANESIZE 1152
+// 	;if a slave then ALWAYS appear on right side
+// 	;
+// 	;
+// 		;(BECOMES PLYR PROC)
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: CAR_CHOICE_GOTTEN	.bss	CAR_CHOICE_GOTTEN,1 */
+int CAR_CHOICE_GOTTEN;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+// *
+// *
+// *THIS PROCESS:
+// *	1)	MOVES THE CAMERA TO THE VEHICLE
+// *	2)	LOWERS VEHICLE TO GROUND
+// *	3)	TURNS VEHICLE TO FACING OUT
+// *	4)	DRIVES VEHICLE FORWARD (WHILE TRACKING
+// *		WITH CAMERA)
+// *	5)	INITIALIZES AS PLAYERS CAR
+// *	6)	TRANSFERS CONTROL TO THE PLYRS
+// *		MAIN ROUTINE
+// *
+// *
+// *
+// 	;NOW MOVE TO IN FRONT OF OBJECT
+// 	;TURN CAR TO FACE AWAY (SMOOTH)
+// 	;LOWER CAR TO GROUND
+// 	;NOW SET ALL FACING PROPERLY
+// 	;
+// *
+// *
+// *
+// *
+// 	;NOW MOVE TO IN FRONT OF OBJECT
+// 	;TURN CAR TO FACE AWAY
+// 	;LOWER CAR TO GROUND
+// *
+// *
+// *
+// *
+// *NOW WE MOVE FORWARD AND INTO THE POSITION
+// *OF INSIDE LANE OF ROAD PIECE (OUSR1==0102h)
+// *
+// 	;MOVE FORWARD LOOP
+// 	;
+// 	;if a slave then ALWAYS appear on right side
+// 	;
 // *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+/* asm: CAR_ARRAY	.bss	CAR_ARRAY,4 */
+int CAR_ARRAY[4];
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *SHOW CAR STATISTICS
@@ -70,13 +137,15 @@ int RACE_STARTING_POINTSI = (int)(RACE_STARTING_POINTS);
 // *USES
 // *	AR4,AR5,AR6,R4,R5
 // *
-/* asm: SCS_TABI	.word	SCS_TAB */
-int SCS_TABI = (int)(SCS_TAB);
 // *----------------------------------------------------------------------------
-/* asm: CARPAL_TABLEI	.word	CARPAL_TABLE */
-int CARPAL_TABLEI = (int)(CARPAL_TABLE);
-/* asm: CARSRCPAL_TABI	.word	CARSRCPAL_TAB */
-int CARSRCPAL_TABI = (int)(CARSRCPAL_TAB);
+/* asm: CAR1PAL	.bss	CAR1PAL,129 */
+int CAR1PAL[129];
+/* asm: CAR2PAL	.bss	CAR2PAL,129 */
+int CAR2PAL[129];
+/* asm: CAR3PAL	.bss	CAR3PAL,129 */
+int CAR3PAL[129];
+/* asm: CAR4PAL	.bss	CAR4PAL,129 */
+int CAR4PAL[129];
 /* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
 int CARPAL_TABLE[] = { CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL };
 /* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
@@ -115,11 +184,13 @@ int CARSRCPAL_TAB[] = { cvette_p, hotrod_p, missle_p, testor_p };
 // *
 // *
 // *
-/* asm: HIDDEN_TABLEI	.word	HIDDEN_TABLE */
-int HIDDEN_TABLEI = (int)(HIDDEN_TABLE);
+/* asm: IS_HIDDEN	.bss	IS_HIDDEN,1 */
+int IS_HIDDEN;
 /* asm: HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
 int HIDDEN_TABLE[] = { jeepm, sbuspm, copcar, gtruck };
 // *----------------------------------------------------------------------------
+/* asm: SPINCURR	.bss	SPINCURR,1 */
+int SPINCURR;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -132,17 +203,26 @@ const char T_CHALLENG[] = "CHALLENGE RACE";
 int TLIST[] = { T_READY, CHICK_READY, SEND_WAVEFL_READY, T_SET, CHICK_SET, SEND_WAVEFL_SET };
 /* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
 int TLGO[] = { T_GO, CHICK_GO, SEND_WAVEFL_GO };
+/* asm: BABE_CONTROL	.bss	BABE_CONTROL,1 */
+int BABE_CONTROL;
+/* asm: CURR_FLAGSTATE	.bss	CURR_FLAGSTATE,1 */
+int CURR_FLAGSTATE;
+#define MOTION_ERROR_TIKS ((57*5))
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *DIAL ROUT
 // *
 // *SET THE PROPER OBJECT COLOR CYCLING
 // *
+/* asm: LASTCHOICE	.bss	LASTCHOICE,1 */
+int LASTCHOICE;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *ATTRACT MODE TIMEOUT MECHANISM
 // *SLEEP _timer TIKS THEN JUMP TO CYCLE_ATTR
 // *
+/* asm: _timer	.bss	_timer,1 */
+int _timer;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *INSERT COINS ROUTINES
@@ -150,14 +230,24 @@ int TLGO[] = { T_GO, CHICK_GO, SEND_WAVEFL_GO };
 // *	INSMORE		JSRPed FROM PLYR.ASM
 // *	COIN_CNTDOWN	CREATED, KILLED
 // *
+/* asm: TROI	SPTR	"INSERT COINS" */
+char *TROI = "INSERT COINS";
+/* asm: ICCI	SPTR	"TO CONTINUE" */
+char *ICCI = "TO CONTINUE";
+/* asm: PSCI	SPTR	"PRESS START" */
+char *PSCI = "PRESS START";
+/* asm: SAVEDMODE	.bss	SAVEDMODE,1 */
+int SAVEDMODE;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: DIRTY_SHARED	.bss	DIRTY_SHARED,1 */
+int DIRTY_SHARED;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
+int TRAFFIC_LL[] = { light_yellowon, 10, light_redon, 32, light_greenon, 32, -1 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: RGBTAB_CPI	.word	RGBTAB_CP */
-int RGBTAB_CPI = (int)(RGBTAB_CP);
 // *----------------------------------------------------------------------------
 // ;*----------------------------------------------------------------------------
 // ;SKYPALSI	.word	SKYPALS
@@ -379,8 +469,6 @@ void JINMSG(void)
     // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
 NOJINMSG:
     // asm: 	RETS
-    // asm: 	ADDF	@l?,:REG:
-    // asm: 	SUBF	@l?,:REG:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "JINMSG", 0, 0);
     UNIMPL();
 }
@@ -1179,116 +1267,6 @@ JT75:
 KIBO:
     // asm: 	LDL	crace_PALETTES,AR2
     // asm: 	CALL	dealloc_section
-    // asm: 	LDI	@CHOSEN_VEHICLE,AR0
-    // asm: 	ADDI	@XOFFSETI,AR0
-    // asm: 	LDF	*AR0,R6
-    // asm: 	FLOAT	576,R1
-    // asm: 	SUBRF	R1,R6
-    // 	;if a slave then ALWAYS appear on right side
-    // 	;
-    // 	;
-    // asm: 	LDI	@DIPRAM,R0
-    // asm: 	TSTB	DIP_COMMP,R0
-    // asm: 	BNZ	BABA
-    // asm: 	TSTB	CMDP_MASTER,R0
-    // asm: 	BZ	BABA
-    // asm: 	FLOAT	LANESIZE,R1
-    // asm: 	ADDF	R1,R6
-BABA:
-    // asm: 	LDF	@START_RADY,R2
-    // asm: 	LDI	@MATRIXAI,AR2
-    // asm: 	CALL	HPFIND_YMATRIX
-    // asm: 	LDI	AR2,R2
-    // asm: 	CALL	CLR_VECTORA
-    // asm: 	STF	R6,*+AR2(X)
-    // asm: 	LDI	AR2,R3
-    // asm: 	CALL	MATRIX_MUL
-    // asm: 	LDF	*+AR2(X),R6
-    // asm: 	LDF	*+AR2(Z),R7
-    // asm: 	LDI	@SINGLE_SECTION_TEMPPTR,R0
-NLD:
-    // asm: LDI	R0,AR0
-    // asm: 	LDF	*+AR0(OPOSX),R0
-    // asm: 	ADDF	R6,R0
-    // asm: 	STF	R0,*+AR0(OPOSX)
-    // asm: 	LDF	*+AR0(OPOSZ),R0
-    // asm: 	ADDF	R7,R0
-    // asm: 	STF	R0,*+AR0(OPOSZ)
-    // asm: 	LDI	*+AR0(OLINK2),R0
-    // asm: 	BNZ	NLD
-    // asm: 	LDI	@CAMERAPOSI,AR2
-    // asm: 	LDF	*+AR2(X),R0
-    // asm: 	ADDF	R6,R0
-    // asm: 	STF	R0,*+AR2(X)
-    // asm: 	LDF	*+AR2(Z),R0
-    // asm: 	ADDF	R7,R0
-    // asm: 	STF	R0,*+AR2(Z)
-    // asm: 	LDL	CAR_ARRAY,AR3
-    // asm: 	LDI	3,AR5
-LNNN:
-    // asm: LDI	*AR3++,AR0
-    // asm: 	LDF	*+AR0(OPOSX),R0
-    // asm: 	ADDF	R6,R0
-    // asm: 	STF	R0,*+AR0(OPOSX)
-    // asm: 	LDF	*+AR0(OPOSZ),R0
-    // asm: 	ADDF	R7,R0
-    // asm: 	STF	R0,*+AR0(OPOSZ)
-    // asm: 	DBU	AR5,LNNN
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	ANDN	MGO,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	LDI	5,R0		;WAVEFLAG routine properly sets this
-    // asm: 	STI	R0,@_countdown	;we just need to set so PLYR doesnt puke
-    // asm: 	LDI	100h,R0		;FULL START INDEX
-    // asm: 	STI	R0,@RACER_GRID_START
-    // asm: 	CALL	TEXT_INIT			;ELIMINATE THE 'CHOOSE CAR' TEXT
-    // asm: 	LDI	@CHOSEN_VEHICLE,R0
-    // asm: 	LDI	@IS_HIDDEN,R1
-    // asm: 	CMPI	-1,R1
-    // asm: 	BEQ	NOHIDE
-    // asm: 	PUSH	R0
-    // asm: 	LDI	@CHOSEN_VEHICLE,AR2
-    // asm: 	CMPI	5,AR2
-    // asm: 	LDIEQ	1,AR2
-    // asm: 	CMPI	6,AR2
-    // asm: 	LDIEQ	2,AR2
-    // asm: 	CMPI	7,AR2
-    // asm: 	LDIEQ	3,AR2
-    // asm: 	ADDI	AUD_CAR_SELECTION+4,AR2
-    // asm: 	CALL	AUDIT_INC
-    // asm: 	POP	R0
-    // asm: 	ADDI	4,R0
-    // asm: 	BU	TMP886
-NOHIDE:
-    // asm: 	PUSH	R0
-    // asm: 	LDI	@CHOSEN_VEHICLE,AR2
-    // asm: 	ADDI	AUD_CAR_SELECTION,AR2
-    // asm: 	CALL	AUDIT_INC
-    // asm: 	POP	R0
-TMP886:
-    // asm: STI	R0,@CHOOSENCAR
-    // asm: 	LDI	UTIL_C|CHOOSECAR_T,R0
-    // asm: 	LDI	-1,R1
-    // asm: 	CALL	PRC_KILLALL
-    // asm: 	LDI	@DIPRAM,R0
-    // asm: 	TSTB	DIP_COMMP,R0
-    // asm: 	BNZ	JAJAKKA
-    // asm: 	JSRP	WAIT_FOR_CHALLENGER
-JAJAKKA:
-    // asm: 	CALL	INIT_GAMELEG
-    // asm: 	CREATE	DROPTHEWHEEL,UTIL_C|CHOOSECAR_T
-    // asm: 	CREATE	DROPTHECYCLE,UTIL_C|CHOOSECAR_T
-    // asm: 	CREATE	DROPTHETURN,UTIL_C|CHOOSECAR_T
-    // asm: 	CREATE	RAISE_DOOR,UTIL_C|CHOOSECAR_T	;in 50
-    // 		;(BECOMES PLYR PROC)
-    // asm: 	CREATE	ZOOMTOCAR,UTIL_C|CHOOSECAR_T	;in 25 (TRANS.ASM)
-    // asm: 	SLEEP	70
-    // asm: 	SLEEP	1
-    // asm: 	LDI	UTIL_C|CHOOSECAR_T,R0
-    // asm: 	LDI	-1,R1
-    // asm: 	CALL	PRC_KILLALL
-    // asm: 	CALL	CLEANUP_DIMCAR_PALS
-    // asm: 	RETP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOOSECAR", 0, 0);
     UNIMPL();
 }
@@ -1358,241 +1336,6 @@ void RAISE_DOOR(void)
     // asm: 	DBU	AR5,RDLP
     // asm: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RAISE_DOOR", 0, 0);
-    UNIMPL();
-}
-
-void ZOOMTOCAR(void)
-{
-    // *----------------------------------------------------------------------------
-    // *
-    // *
-    // *THIS PROCESS:
-    // *	1)	MOVES THE CAMERA TO THE VEHICLE
-    // *	2)	LOWERS VEHICLE TO GROUND
-    // *	3)	TURNS VEHICLE TO FACING OUT
-    // *	4)	DRIVES VEHICLE FORWARD (WHILE TRACKING
-    // *		WITH CAMERA)
-    // *	5)	INITIALIZES AS PLAYERS CAR
-    // *	6)	TRANSFERS CONTROL TO THE PLYRS
-    // *		MAIN ROUTINE
-    // *
-    // *
-    // *
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@START_NOW_P
-    // asm: 	LDI	@CHOSEN_VEHICLE,AR2
-    // asm: 	ADDI	481h,AR2
-    // asm: 	CALL	OBJ_FIND_FIRST
-    // asm: 	LDI	AR0,AR4
-    // asm: 	LDF	@START_RADY,R2
-    // asm: 	LDI	@MATRIXAI,AR2
-    // asm: 	CALL	FIND_YMATRIX
-    // asm: 	LDI	25,AR5
-    // asm: ZTCLP
-    // 	;NOW MOVE TO IN FRONT OF OBJECT
-    // asm: 	LDF	@START_RADY,R2
-    // asm: 	LDI	@MATRIXAI,AR2
-    // asm: 	CALL	FIND_YMATRIX
-    // asm: 	LDI	AR2,R2
-    // asm: 	CALL	CLR_VECTORA
-    // asm: 	FLOAT	-PLYPOS2ZL,R0
-    // asm: 	STF	R0,*+AR2(Z)
-    // asm: 	FLOAT	PLYPOS2YL,R0
-    // asm: 	STF	R0,*+AR2(Y)
-    // asm: 	LDI	@MATRIXAI,R2
-    // asm: 	LDI	AR2,R3
-    // asm: 	CALL	MATRIX_MUL
-    // asm: 	LDF	*+AR4(OPOSX),R0
-    // asm: 	LDF	*+AR4(OPOSY),R1
-    // asm: 	LDF	*+AR4(OPOSZ),R2
-    // asm: 	ADDF	*+AR2(X),R0
-    // asm: 	ADDF	*+AR2(Y),R1
-    // asm: 	ADDF	*+AR2(Z),R2
-    // asm: 	LDP	@_CAMERAPOS
-    // asm: 	SUBF	@_CAMERAPOS+X,R0
-    // asm: 	SUBF	@_CAMERAPOS+Y,R1
-    // asm: 	SUBF	@_CAMERAPOS+Z,R2
-    // asm: 	MPYF	0.2,R0
-    // asm: 	MPYF	0.2,R1
-    // asm: 	MPYF	0.2,R2
-    // asm: 	ADDF	@_CAMERAPOS+X,R0
-    // asm: 	ADDF	@_CAMERAPOS+Y,R1
-    // asm: 	ADDF	@_CAMERAPOS+Z,R2
-    // asm: 	STF	R0,@_CAMERAPOS+X
-    // asm: 	STF	R1,@_CAMERAPOS+Y
-    // asm: 	STF	R2,@_CAMERAPOS+Z
-    // asm: 	SETDP
-    // 	;TURN CAR TO FACE AWAY (SMOOTH)
-    // asm: 	LDF	@START_RADY,R2
-    // asm: 	CALL	NORMITS
-    // asm: 	LDF	R2,R0
-    // asm: 	LDF	*+AR4(ORADY),R2
-    // asm: 	CALL	NORMITS
-    // asm: 	STF	R2,*+AR4(ORADY)
-    // asm: 	CALL	GETTHETADIFF
-    // asm: 	ABSF	R0,R1
-    // asm: 	CMPF	0.04,R1
-    // asm: 	BLT	DOALL1
-    // asm: 	MPYF	0.10,R0
-    // asm: 	ADDF	R0,R2
-    // asm: 	BU	IBO45A
-DOALL1:
-    // asm: ADDF	R0,R2
-IBO45A:
-    // asm: STF	R2,*+AR4(ORADY)
-    // asm: 	LDI	AR4,AR2
-    // asm: 	ADDI	OMATRIX,AR2
-    // asm: 	CALL	FIND_YMATRIX
-    // 	;LOWER CAR TO GROUND
-    // asm: 	LDF	*+AR4(OPOSY),R0
-    // asm: 	LDF	*+AR4(OUSR1),R1
-    // asm: 	SUBF	R0,R1,R0
-    // asm: 	MPYF	0.15,R0
-    // asm: 	LDF	R0,R1
-    // asm: 	ADDF	*+AR4(OPOSY),R0
-    // asm: 	STF	R0,*+AR4(OPOSY)
-    // asm: 	LDI	@CHOSEN_VEHICLE,AR2
-    // asm: 	ADDI	401h,AR2
-    // asm: 	CALL	OBJ_FIND_FIRST
-    // asm: 	LDF	*+AR0(OPOSY),R0
-    // asm: 	ADDF	R1,R0
-    // asm: 	STF	R0,*+AR0(OPOSY)
-    // asm: 	SLEEP	1
-    // asm: 	DBU	AR5,ZTCLP
-    // 	;NOW SET ALL FACING PROPERLY
-    // 	;
-    // asm: 	PUSH	AR4
-    // asm: 	LDI	@CHOSEN_VEHICLE,AR2
-    // asm: 	ADDI	481h,AR2
-    // asm: 	CALL	OBJ_FIND_FIRST
-    // asm: 	LDI	AR0,AR4
-    // asm: 	POP	AR4
-    // asm: 	LDI	PLYR_C|PLYR1_T,R0
-    // asm: 	STI	R0,*+AR7(PID)
-    // *
-    // *
-    // *
-    // *
-    // 	;NOW MOVE TO IN FRONT OF OBJECT
-    // asm: 	LDI	@CAMERAPOSI,AR6
-    // asm: 	LDI	@CHOSEN_VEHICLE,AR2
-    // asm: 	CMPI	4,AR2
-    // asm: 	BLT	NDO
-    // asm: 	SUBI	4,AR2
-NDO:
-    // asm: ADDI	401h,AR2
-    // asm: 	CALL	OBJ_FIND_FIRST
-    // asm: 	LDI	AR0,AR2
-    // asm: 	CALL	OBJ_DELETE
-    // 	;TURN CAR TO FACE AWAY
-    // asm: 	LDF	*+AR4(ORADY),R2
-    // asm: 	LDF	@START_RADY,R0
-    // asm: 	CALL	GETTHETADIFF
-    // asm: 	ADDF	R0,R2
-    // asm: 	STF	R2,*+AR4(ORADY)
-    // asm: 	LDI	AR4,AR2
-    // asm: 	ADDI	OMATRIX,AR2
-    // asm: 	CALL	FIND_YMATRIX
-    // 	;LOWER CAR TO GROUND
-    // asm: 	LDF	*+AR4(OPOSY),R0
-    // asm: 	LDF	*+AR4(OUSR1),R1
-    // asm: 	SUBF	R0,R1,R0
-    // asm: 	ADDF	*+AR4(OPOSY),R0
-    // asm: 	STF	R0,*+AR4(OPOSY)
-    // asm: 	SONDFX	ENGINESTART
-    // *
-    // *
-    // *
-    // asm: 	LDI	24,AR5
-    // asm: 	LDI	@CHOSEN_VEHICLE,AR2
-    // asm: 	CMPI	4,AR2
-    // asm: 	BLT	NDO2
-    // asm: 	SUBI	4,AR2
-NDO2:
-    // asm: 	ADDI	481h,AR2
-    // asm: 	CALL	OBJ_FIND_FIRST
-    // asm: 	LDI	AR0,AR4
-    // asm: 	LDI	AR4,AR2
-    // asm: 	CALL	OBJ_PULL
-    // asm: 	CALL	PLYR_CAR_INIT
-    // asm: 	LDF	1,R6
-    // asm: 	PUSH	AR5
-    // asm: 	PUSHFL	R6
-    // asm: 	LDI	*+AR4(OCARBLK),AR5
-    // asm: 	STF	R6,*+AR5(CARSPEED)
-    // asm: 	LDF	@START_RADY,R6
-    // asm: 	STF	R6,*+AR5(CARYROT)
-    // asm: 	STF	R6,*+AR5(CARVROT)
-    // asm: 	STF	R6,*+AR5(CARDROT)
-    // asm: 	CLRF	R2
-    // asm: 	CALL	DRONEGO
-    // asm: 	POPFL	R6
-    // asm: 	POP	AR5
-    // asm: 	CALL	WATCH_PLYRS_CAR
-    // asm: 	SONDFX	STARTLINEREVS2
-    // *
-    // *NOW WE MOVE FORWARD AND INTO THE POSITION
-    // *OF INSIDE LANE OF ROAD PIECE (OUSR1==0102h)
-    // *
-    // asm: 	LDI	@DYNALIST_TRUEBEGIN,AR0
-    // asm: 	LDI	*+AR0(OUSR1),R1
-    // asm: 	ANDN	0FFh,R1
-    // asm: 	LDI	*+AR0(OLINK4),AR0
-    // asm: 	LDI	AR0,AR5
-    // 	;MOVE FORWARD LOOP
-    // 	;
-MOVELOOP:
-    // asm: 	LDF	*+AR5(OPOSX),R0
-    // asm: 	SUBF	*+AR4(OPOSX),R0
-    // asm: 	MPYF	R0,R0
-    // asm: 	LDF	*+AR5(OPOSZ),R1
-    // asm: 	SUBF	*+AR4(OPOSZ),R1
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R1,R0
-    // asm: 	LDF	R0,R4
-    // asm: 	FLOAT	700,R1
-    // 	;if a slave then ALWAYS appear on right side
-    // 	;
-    // asm: 	LDI	@DIPRAM,R3
-    // asm: 	TSTB	DIP_COMMP,R3
-    // asm: 	BNZ	BABADUY
-    // asm: 	TSTB	CMDP_MASTER,R3
-    // asm: 	BZ	BABADUY
-    // asm: 	FLOAT	LANESIZE,R3
-    // asm: 	ADDF	R3,R1
-BABADUY:
-    // asm: 	MPYF	R1,R1
-    // asm: 	CMPF	R1,R0
-    // asm: 	BLE	IBODONE
-    // asm: 	PUSH	AR5
-    // asm: 	LDI	*+AR4(OCARBLK),AR5
-    // asm: 	LDF	0.5,R0
-    // asm: 	STF	R0,*+AR5(CARTHROTTLE)
-    // asm: 	CLRF	R2
-    // asm: 	CALL	DRONEGO
-    // asm: 	POP	AR5
-    // asm: 	CALL	WATCH_PLYRS_CAR
-    // asm: 	SLEEP	1
-    // asm: 	BU	MOVELOOP
-IBODONE:
-    // asm: 	LDI	@DIPRAM,R3
-    // asm: 	TSTB	DIP_COMMP,R3
-    // asm: 	BNZ	BABADUY4
-    // asm: 	LDI	AR5,AR2
-    // asm: 	TSTB	CMDP_MASTER,R3
-    // asm: 	LDIZ	572,AR3
-    // asm: 	LDINZ	1724,AR3
-    // asm: 	FLOAT	AR3,R0
-    // asm: 	STF	R0,*+AR7(DELTA_XLANE)
-    // asm: 	LDI	0,AR3
-    // asm: 	CALL	SPOS_INIT		;INIT STARTING POSITION
-BABADUY4:
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@START_NOW_P
-    // asm: 	LDI	MGAME|MINFIN|MWATER,R0	;NOT MGO NOT MHUD
-    // asm: 	STI	R0,@_MODE
-    // asm: 	BU	PLYR_INTRO_ENTER
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMTOCAR", 0, 0);
     UNIMPL();
 }
 
@@ -2403,34 +2146,6 @@ BABAD666:
     // asm: 	LDL	0FF80h,R1
     // asm: 	AND	R1,R2
     // asm: 	BZ	NANAD
-    // asm: 	LDI	MOTION_ERROR_TIKS,R1
-    // asm: 	STI	R1,@WAITTIK
-    // asm: 	BU	NANAD
-    // asm: 	CALL	ABORT_RESET_GALIL
-    // asm: 	LDL	XQ,AR2				;tell galil to continue executing program
-    // asm: 	CALL	SEND_CMD
-    // asm: 	CALL	WAIT_ACK
-NANAD:
-    // asm: 	LDI	SM_GO,R0
-    // asm: 	STI	R0,@SUSPEND_MODE
-    // asm: 	SONDFX	PEELOUT
-    // asm: 	READAUD	ADJ_TIME_TO_START
-    // asm: 	MPYI	5,R0
-    // asm: 	ADDI	60,R0
-    // asm: 	STI	R0,@_countdown
-    // asm: 	LDI	@HEAD2HEAD_ON,R0
-    // asm: 	BZ	NOTHHHH
-    // asm: 	LDI	@OM_RACE_MODE,R0
-    // asm: 	CMPI	RM_USA,R0
-    // asm: 	BNE	NOTHHHH
-    // asm: 	LDI	RM_USA,R0
-    // asm: 	STI	R0,@RACE_MODE
-NOTHHHH:
-    // asm: 	LDI	@_MODE,R0	   	;MAKE SURE MODE IS IN GAME
-    // asm: 	AND	MMODE,R0
-    // asm: 	CMPI	MATTR,R0
-    // asm: 	CALLNE	RESUME_TUNE_NT
-    // asm:  	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVEFLAG", 0, 0);
     UNIMPL();
 }

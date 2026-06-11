@@ -48,6 +48,12 @@
 // *
 // *
 #define MIN_MOVE_DIST 200
+/* asm: MOTION_NOT_ON	.bss	MOTION_NOT_ON,1 */
+int MOTION_NOT_ON;
+/* asm: MOTION_STOP_HIT	.bss	MOTION_STOP_HIT,1 */
+int MOTION_STOP_HIT;
+/* asm: MOTION_RCV_TIKS	.bss	MOTION_RCV_TIKS,1 */
+int MOTION_RCV_TIKS;
 // *----------------------------------------------------------------------------
 // *This is the initial check of the galil board.
 // *The CMOS value will be set to ON if cool else OFF
@@ -58,6 +64,52 @@
 // *
 // *
 // *
+// 	;test limit switches if not found in 3 seconds shutdown
+// 	;motion
+// 	;
+// 	;
+// 	;
+// 	;check for safety errors
+// 	;hold for 10 seconds until all errors
+// 	;are cleared.
+// 	;
+// 	;
+// 	;no safety errors, continue on
+// 	;
+// 	;insert checking for limit switches
+// 	;
+// 	;
+// 	;if all limit switches are activated, then exit
+// 	;check for mats or optos
+// 	;start over if error
+// 	;here we would error out
+// 	;check failsafes
+// 	;
+// 	;
+// 	;
+// 	;---> BR if FAILSAFES STILL ON
+// 	;
+// 	;
+// 	;check lower limits
+// 	;
+// 	;insert checking for limit switches
+// 	;
+// 	;
+// 	;if all limit switches are activated, then exit
+// 	;check for mats or optos
+// 	;start over if error
+// 	;here we would error out
+// 	;
+// 	;initialize the stuff
+// 	;
+// 	;hang out for a moment
+// 	;
+// 	;now dl the program.
+// 	;
+// 	;
+// 	;execute the program
+// 	;we are now guarenteed to be cool
+// 	;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -75,6 +127,19 @@
 // ;MOTOROFF4	.string	"ST XYZ;MO",13,0
 // ;MOTOROFF4	.string	0
 // ;
+/* asm: BABAID	.word	JJG */
+int BABAID = (int)(JJG);
+/* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
+int JJG[] = { MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7 };
+const char MM0[] = "UNKNOWN ERROR";
+const char MM1[] = "MAT NOT PLUGGED IN";
+const char MM2[] = "MAT STEPPED ON";
+const char MM3[] = "SAFETY BEAM PATH BROKEN";
+const char MM4[] = "SAFETY BEAM DETECTOR NOT RECEIVING";
+const char MM5[] = "SAFETY BEAM LIGHT NOT EMITTING";
+const char MM6[] = "FAIL SAFE SWITCH ENGAGED";
+const char MM7[] = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
+// 	;maybe reported as 'error 48'
 // *----------------------------------------------------------------------------
 // ;if EVER failsafe problem MOTOR OFF
 // 	;now message on screen
@@ -99,6 +164,64 @@
 // ;TS
 // *----------------------------------------------------------------------------
 const char bbd[] = "MOTION BURNIN";
+// 	;
+// 	;MOTION SAFETY CODE
+// 	;
+#define MOTION_ERROR_TIKS ((57*5))
+/* asm: WAITTIK	.bss	WAITTIK,1 */
+int WAITTIK;
+// 	;here is where we want to test to see if we are done with the error
+// 	;and how we are to recover
+// ;	CALL	MOTION_DLPROG
+// ;	LDI	300,R0
+// ;	STI	R0,@MOTION_RCV_TIKS
+// ;	LDI	@LATCHED_ERROR,R0
+// ;	BZ	NONELAT
+// ;
+// ;	CALL	CLEAR_LATCH_ERROR
+// ;	CALL	ABORT_RESET_GALIL		;recover latch from mark
+// ;	CALL	MOTION_DLPROG
+// ;
+// ;	BU	RESETMOTIONANYWAY
+// ;NONELAT
+// 	;IF galil is NOT responding
+// 	;attempt to reset serious
+// 	;
+// ;
+// ;	CALL    RESET_GALIL
+// ;	CALL    WAIT_ACK_REAL
+// ;
+// ;
+// ;	LDS	"JG -26000,-2,AR2
+// ;	CALL    SEND_CMD
+// ;	CALL    WAIT_ACK
+// ;
+// ;	CALL	CHECK_MOTION_PRESENT
+// ;	BEQ	KKGK
+// ;
+// ;	LDI	1,R2
+// ;	SETAUD	ADJ_MOTION_PRESENT
+// 	;
+// 	;dl the program.
+// 	;
+/* asm: MOTION_SAFETY_ON	.bss	MOTION_SAFETY_ON,1 */
+int MOTION_SAFETY_ON;
+/* asm: MOTION_SAFETY_TYPE	.bss	MOTION_SAFETY_TYPE,1 */
+int MOTION_SAFETY_TYPE;
+// 	;we do have an error
+// 	;
+const char MSSM[] = "MOTION STOP BUTTON HIT";
+// *FIND AVERAGE Y POSITION = R5
+// *GET Y HEIGHT DELTA TO CENTER
+// *COMPUTE EQUATION M=2X-X*X/150
+// ;	MPYF	R0,R2
+// ;	MPYF	R0,R3
+// ;	MPYF	R0,R4
+// ;
+// *GET LEAN ANGLES 20% OF MOTION (10% OF MOTION RESERVED)
+// *FRONT-BACK (XLEAN)
+// *LEFT-RIGHT (ZLEAN)
+// *LIMIT MOTION +-1.0
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // ;	.word	T60,T1,T2,T3,T4,T61,T63,T64,T65,0
@@ -126,7 +249,29 @@ const char bbd[] = "MOTION BURNIN";
 int CME_MASK = (int)(0x0FF80);
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: LLG6X	.word	L4ABX */
+int LLG6X = (int)(L4ABX);
+/* asm: LLG6Y	.word	L4ABY */
+int LLG6Y = (int)(L4ABY);
+/* asm: LLG6Z	.word	L4ABZ */
+int LLG6Z = (int)(L4ABZ);
+const char L4ABX[] = "X ENCODER FAILURE";
+const char L4ABY[] = "Y ENCODER FAILURE";
+const char L4ABZ[] = "Z ENCODER FAILURE";
+// ;
+// ; galil program will take care of this - ml
+// ;
+// ;	;send shutdown commands
+// ;	LDL	MOTOROFF,AR2
+// ;	CALL	SEND_CMD
+// ;	RETS
 // *----------------------------------------------------------------------------
+/* asm: GALIL_STATUS_X	.bss	GALIL_STATUS_X,1 */
+int GALIL_STATUS_X;
+/* asm: GALIL_STATUS_Y	.bss	GALIL_STATUS_Y,1 */
+int GALIL_STATUS_Y;
+/* asm: GALIL_STATUS_Z	.bss	GALIL_STATUS_Z,1 */
+int GALIL_STATUS_Z;
 // *----------------------------------------------------------------------------
 // *
 // *GET HEX STRING
@@ -192,244 +337,6 @@ void INITIALIZATION_MOTION_CHECK(void)
     // asm: 	BNE	INIT_MOTION_ERROROUT
     // ;send it UP, for .5 inch  (1000)
     // ;
-    // 	;test limit switches if not found in 3 seconds shutdown
-    // 	;motion
-    // 	;
-    // 	;
-    // asm: 	LDI	1,RC
-    // asm: 	TEXTITT	"TESTING UPPER LIMITS",50,260
-    // asm:         LDL     MINIT10,AR2		;send init strings first
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm:         LDL     MINIT11,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm:         LDL     MINIT12,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm:         LDL     MINIT13,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	READAUD	ADJ_OUTOFDIAG
-    // asm: 	CMPI	1,R0
-    // asm: 	BNE	JAJA66
-    // asm: 	LDL	MINIT9DIAG,AR2
-    // asm: 	BU	JAJA887
-JAJA66:
-    // asm: LDL	MINIT9,AR2	;lift off the failsafes (PR 4000,4000,4000)
-JAJA887:
-    // asm: CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	LDI	100,AR3
-GLLLT:
-    // asm: CALL	WAIT_FOR_VBLANK
-    // asm: 	DBU	AR3,GLLLT
-    // asm: 	CALL	ABORT_RESET_GALIL
-    // 	;
-    // 	;check for safety errors
-    // 	;hold for 10 seconds until all errors
-    // 	;are cleared.
-    // 	;
-SAFETY_ERROR_CHK:
-    // asm: 	LDI	57*10,AR3
-    // asm: MILOOP2
-    // asm: 	CLRI	AR2
-    // asm: 	LDP	@991030h
-    // asm: 	LDI	@991030h,R0
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	SETDP
-    // asm: 	AND	@CME_MASK,R0
-    // asm: 	BZ	NO_ERRORMIL
-    // asm: 	LDI	1,RC
-    // asm: 	TEXTITT	"MOTION ERROR",50,270
-    // asm: 	TEXTITT	"CLEAR MATS AND BEAM TO CONTINUE",50,280
-    // asm: 	CALL	WAIT_FOR_VBLANK
-    // asm: 	DBU	AR3,MILOOP2
-    // asm: 	BU	INIT_MOTION_ERROROUT
-    // 	;
-    // 	;no safety errors, continue on
-    // 	;
-NO_ERRORMIL:
-    // asm: 	LDI	2000,R0
-    // asm: 	CALL	WAITMSEC
-    // asm: 	CALL	ABORT_RESET_GALIL
-    // asm: 	FILL	50,270,500,289,0
-    // asm: 	LDL	MINIT1,AR2	;send it up
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	LDI	10,AR3
-LLLT:
-    // asm: CALL	WAIT_FOR_VBLANK
-    // asm: 	DBU	AR3,LLLT
-    // asm: 	LDI	-1,R0
-    // asm: 	STI	R0,@GALIL_STATUS_X
-    // asm: 	STI	R0,@GALIL_STATUS_Y
-    // asm: 	STI	R0,@GALIL_STATUS_Z
-    // asm: 	LDI	57*9,AR3
-    // asm: MILOOP1
-    // asm: 	PUSH	AR3
-    // asm: 	LDL	MINITQX,AR2	;query X
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	LDL	MINITQY,AR2	;query Y
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	LDL	MINITQZ,AR2	;query Z
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	POP	AR3
-    // asm: 	CALL	WAIT_FOR_VBLANK
-    // 	;insert checking for limit switches
-    // 	;
-    // 	;
-    // asm: 	LDI	@GALIL_STATUS_X,R0
-    // asm: 	TSTB	08h,R0
-    // asm: 	BNZ	NO_UP_LIM_YET
-    // asm: 	LDI	@GALIL_STATUS_Y,R0
-    // asm: 	TSTB	08h,R0
-    // asm: 	BNZ	NO_UP_LIM_YET
-    // asm: 	LDI	@GALIL_STATUS_Z,R0
-    // asm: 	TSTB	08h,R0
-    // asm: 	BZ	GOT_ALL_UPPERS
-    // 	;if all limit switches are activated, then exit
-NO_UP_LIM_YET:
-    // asm: 	CLRI	AR2
-    // asm: 	LDP	@991030h
-    // asm: 	LDI	@991030h,R0
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	SETDP
-    // asm: 	AND	@CME_MASK,R0
-    // asm: 	BZ	NO_UP_SAFETY_ERROR
-    // asm: 	BU	SAFETY_ERROR_CHK
-    // 	;check for mats or optos
-    // 	;start over if error
-NO_UP_SAFETY_ERROR:
-    // asm: 	DBU	AR3,MILOOP1
-    // asm: 	BU	UPPER_LIMIT_ERROR
-    // 	;here we would error out
-GOT_ALL_UPPERS:
-    // 	;check failsafes
-    // 	;
-    // 	;
-    // asm: 	CALL	CHECK_MOTION_ERROR
-    // asm: 	BC	INIT_MOTION_ERROROUT
-    // asm: 	CLRI	AR2
-    // asm: 	LDP	@991030h
-    // asm: 	LDI	@991030h,R0
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	SETDP
-    // asm: 	AND	@CME_MASK,R0
-    // asm: 	RS	8,R0
-    // asm: 	AND	0F0h,R0
-    // asm: 	CMPI	060h,R0
-    // asm: 	BGE	INIT_MOTION_ERROROUT
-    // 	;
-    // 	;---> BR if FAILSAFES STILL ON
-    // 	;
-    // asm: 	LDI	1,RC
-    // asm: 	TEXTITT	"LOWER LIMIT TEST",250,260
-    // asm: 	LDL	MINIT1L,AR2	;send it up
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	LDI	10,AR3
-LLLLT:
-    // asm: CALL	WAIT_FOR_VBLANK
-    // asm: 	DBU	AR3,LLLLT
-    // 	;
-    // 	;check lower limits
-    // 	;
-    // asm: 	LDI	57*9,AR3
-    // asm: MILOOP1LOW
-    // asm: 	PUSH	AR3
-    // asm: 	LDL	MINITQX,AR2	;query X
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	LDL	MINITQY,AR2	;query Y
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	LDL	MINITQZ,AR2	;query Z
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	POP	AR3
-    // asm: 	CALL	WAIT_FOR_VBLANK
-    // 	;insert checking for limit switches
-    // 	;
-    // 	;
-    // asm: 	LDI	@GALIL_STATUS_X,R0
-    // asm: 	TSTB	04h,R0
-    // asm: 	BNZ	NO_LO_LIM_YET
-    // asm: 	LDI	@GALIL_STATUS_Y,R0
-    // asm: 	TSTB	04h,R0
-    // asm: 	BNZ	NO_LO_LIM_YET
-    // asm: 	LDI	@GALIL_STATUS_Z,R0
-    // asm: 	TSTB	04h,R0
-    // asm: 	BZ	GOT_ALL_LOWERS
-    // 	;if all limit switches are activated, then exit
-NO_LO_LIM_YET:
-    // asm: 	CLRI	AR2
-    // asm: 	LDP	@991030h
-    // asm: 	LDI	@991030h,R0
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	SETDP
-    // asm: 	AND	@CME_MASK,R0
-    // asm: 	BZ	NO_LO_SAFETY_ERROR
-    // asm: 	BU	SAFETY_ERROR_CHK
-    // 	;check for mats or optos
-    // 	;start over if error
-NO_LO_SAFETY_ERROR:
-    // asm: 	DBU	AR3,MILOOP1LOW
-    // asm: 	BU	LOWER_LIMIT_ERROR
-    // 	;here we would error out
-GOT_ALL_LOWERS:
-    // 	;
-    // 	;initialize the stuff
-    // 	;
-    // asm:         LDL     PP,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm: 	CALL	CHECK_MOTION_PRESENT
-    // asm: 	BNE	INIT_MOTION_ERROROUT
-    // asm: 	LDI	57*3,AR3
-LLLTA:
-    // asm: CALL	WAIT_FOR_VBLANK
-    // asm: 	DBU	AR3,LLLTA
-    // asm:         LDL     PP1,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm:         LDL     PP2,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm:         LDL     PP3,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // asm:         LDL     PP4,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-    // 	;hang out for a moment
-    // asm: 	CALL	WAIT_FOR_VBLANK
-    // 	;
-    // 	;now dl the program.
-    // 	;
-    // asm: 	CALL	CLEAR_LATCH_ERROR
-    // asm: 	CALL	ABORT_RESET_GALIL
-    // asm: 	CALL	MOTION_DLPROG
-    // asm: 	CLRI	AR2
-    // asm: 	LDP	@991030h
-    // asm: 	LDI	@991030h,R0
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	SETDP
-    // asm: 	AND	@CME_MASK,R0
-    // asm: 	BNZ	INIT_MOTION_ERROROUT
-    // asm: 	LDI	@LATCHED_ERROR,R0
-    // asm: 	BNZ	INIT_MOTION_ERROROUT
-    // 	;
-    // 	;execute the program
-    // 	;we are now guarenteed to be cool
-    // 	;
-    // asm: 	FILL	1,250,500,350,0
-    // asm: 	LDI	1,RC
-    // asm: 	TEXTITT	"MOTION SYSTEM OK",300,240
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INITIALIZATION_MOTION_CHECK", 0, 0);
     UNIMPL();
 }
@@ -530,7 +437,6 @@ FFFD:
     // asm: 	CALL	WAITMSEC
     // asm: 	FILL	1,250,500,350,0
     // asm: 	RETS
-    // 	;maybe reported as 'error 48'
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_MOTOR_OFF_NO_RESET", 0, 0);
     UNIMPL();
 }
@@ -762,245 +668,16 @@ void PLMOTION(void)
     // asm: 	CALL	SEND_CMD
     // asm: 	CALL	WAIT_ACK
 NOCHECK:
-    // 	;
-    // 	;MOTION SAFETY CODE
-    // 	;
-    // asm: 	LDI	@WAITTIK,R0			;is counter in a previous 5 second wait?
-    // asm: 	BZ	NO_PREVMOTION_ERRORS		;br -> NO, continue error checking
-    // asm: 	LDI	1,R1
-    // asm: 	STI	R1,@MOTION_SAFETY_ON
-    // asm: 	CLRI	AR2
-    // asm: 	LDP	@991030h
-    // asm: 	LDI	@991030h,R2
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	SETDP
-    // asm: 	LDL	0FF80h,R1
-    // asm: 	AND	R1,R2
-    // asm: 	BZ	NO_NEW_MOTION_ERRORS
-    // asm: 	LDI	MOTION_ERROR_TIKS,R1
-    // asm: 	STI	R1,@WAITTIK
-    // asm: 	RETS
-NO_NEW_MOTION_ERRORS:
-    // asm: 	SUBI	@NFRAMES,R0
-    // asm: 	LDILT	0,R0
-    // asm: 	STI	R0,@WAITTIK
-    // asm: 	CMPI	0,R0
-    // asm: 	RETSGT
-    // 	;here is where we want to test to see if we are done with the error
-    // 	;and how we are to recover
-    // asm: 	CALL	ABORT_RESET_GALIL		;recover latch from mark
-    // asm: 	CLRI	AR2
-    // asm: 	LDP	@991030h	;IF we have a motion error after
-    // asm: 	LDI	@991030h,R0	;we attempted to reset, THEN
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	SETDP			;try again next frame
-    // asm: 	LDL	0FF80h,R1	;
-    // asm: 	AND	R1,R0		;
-    // asm: 	RETSNZ			;
-    // ;	CALL	MOTION_DLPROG
-    // asm: RESETMOTIONANYWAY
-    // asm: 	LDL	XQ,AR2				;tell galil to continue executing program
-    // asm: 	CALL	SEND_CMD
-    // asm: 	CALL	WAIT_ACK
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@MOTION_SAFETY_ON
-    // ;	LDI	300,R0
-    // ;	STI	R0,@MOTION_RCV_TIKS
-    // asm: 	RETS
-NO_PREVMOTION_ERRORS:
-    // ;	LDI	@LATCHED_ERROR,R0
-    // ;	BZ	NONELAT
-    // ;
-    // ;	CALL	CLEAR_LATCH_ERROR
-    // ;	CALL	ABORT_RESET_GALIL		;recover latch from mark
-    // ;	CALL	MOTION_DLPROG
-    // ;
-    // ;	BU	RESETMOTIONANYWAY
-    // ;NONELAT
-    // 	;IF galil is NOT responding
-    // 	;attempt to reset serious
-    // 	;
-    // asm: 	LDI	@MOTION_RCV_TIKS,R0
-    // asm: 	BGT	NOTTLRST
-    // asm: 	LDI	1,R2
-    // asm: 	SETAUD	AUD_RESET_TOTALLY
-    // asm: 	LDI	0,R2
-    // asm: 	SETAUD	ADJ_MOTION_PRESENT
-    // asm: 	RETS
-    // ;
-    // ;	CALL    RESET_GALIL
-    // ;	CALL    WAIT_ACK_REAL
-    // ;
-    // ;
-    // ;	LDS	"JG -26000,-2,AR2
-    // ;	CALL    SEND_CMD
-    // ;	CALL    WAIT_ACK
-    // ;
-    // ;	CALL	CHECK_MOTION_PRESENT
-    // ;	BEQ	KKGK
-    // ;
-    // ;	LDI	1,R2
-    // ;	SETAUD	ADJ_MOTION_PRESENT
-    // asm: 	RETS
-    // asm: KKGK
-    // asm: 	LDL     PP1,AR2
-    // asm: 	CALL    SEND_CMD
-    // asm: 	CALL    WAIT_ACK
-    // asm: 	LDL     PP2,AR2
-    // asm: 	CALL    SEND_CMD
-    // asm: 	CALL    WAIT_ACK
-    // asm: 	LDL     PP3,AR2
-    // asm: 	CALL    SEND_CMD
-    // asm: 	CALL    WAIT_ACK
-    // asm: 	LDL     PP4,AR2
-    // asm: 	CALL    SEND_CMD
-    // asm: 	CALL    WAIT_ACK
-    // 	;
-    // 	;dl the program.
-    // 	;
-    // asm: 	CALL	CLEAR_LATCH_ERROR
-    // asm: 	CALL	MOTION_DLPROG
-    // asm: 	LDI	300,R0
-    // asm: 	STI	R0,@MOTION_RCV_TIKS
-NOTTLRST:
-    // asm: 	CLRI	AR2
-    // asm: 	LDP	@991030h
-    // asm: 	LDI	@991030h,R0
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	SETDP
-    // asm: 	LDL	0FF80h,R1
-    // asm: 	AND	R1,R0
-    // asm: 	BZ	NO_MOTION_ERRORS
-    // 	;we do have an error
-    // 	;
-    // asm: 	LDI	MOTION_ERROR_TIKS,R1
-    // asm: 	STI	R1,@WAITTIK
-    // asm: 	LDI	1,R1
-    // asm: 	STI	R1,@MOTION_SAFETY_ON
-    // asm: 	LDI	R0,R2
-    // asm: 	RS	12,R2
-    // asm: 	AND	0Fh,R2
-    // asm: 	LDI	0,R3	;assume its a mat
-    // asm: 	CMPI	3,R2
-    // asm: 	LDIEQ	1,R3
-    // asm: 	CMPI	4,R2
-    // asm: 	LDIEQ	1,R3
-    // asm: 	CMPI	5,R2
-    // asm: 	LDIEQ	1,R3
-    // asm: 	CMPI	6,R2
-    // asm: 	LDIEQ	2,R3
-    // asm: 	CMPI	7,R2
-    // asm: 	LDIEQ	2,R3
-    // asm: 	STI	R3,@MOTION_SAFETY_TYPE
-    // asm: 	LDI	R0,R1
-    // asm: 	RS	16,R1
-    // asm: 	RETSC					;BOARD NOT PLUGGED IN OR PAL NOT INSTALLED -> DONT DO ANYTHING
-    // asm: 	TSTB	080h,R0				;MOTION STOP IF HELD DOWN -> DONT DO ANYTHING
-    // asm: 	BZ	NOTTHIS
-    // asm: 	LDI	3,R0
-    // asm: 	STI	R0,@MOTION_SAFETY_TYPE
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@MOTION_STOP_HIT
-    // asm: 	LDL	MSSM,AR2
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	310,R3
-    // asm: 	LDI	57*3,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-    // asm: 	RETS
-NOTTHIS:
-    // asm: KDS
-NO_MOTION_ERRORS:
-    // asm: 	LDI	@MOTION_NOT_ON,R0
-    // asm: 	RETSNZ
-    // asm: 	CALL	CHECK_MOTION_PRESENT
-    // asm: 	RETSNE
-    // asm: 	LDF	*+AR5(RF_PY),R5
-    // asm: 	ADDF	*+AR5(LF_PY),R5
-    // asm: 	ADDF	*+AR5(LR_PY),R5
-    // asm: 	ADDF	*+AR5(RR_PY),R5
-    // asm: 	MPYF	0.25,R5
-    // *FIND AVERAGE Y POSITION = R5
-    // asm: 	LDF	*+AR5(RF_PY),R2
-    // asm: 	ADDF	*+AR5(LF_PY),R2
-    // asm: 	MPYF	0.5,R2
-    // asm: 	LDF	*+AR5(LR_PY),R3
-    // asm: 	LDF	*+AR5(RR_PY),R4
-    // *GET Y HEIGHT DELTA TO CENTER
-    // asm: 	SUBRF	R5,R2		;Z (FRONT) AXIS DELTA
-    // asm: 	SUBRF	R5,R3		;X (LREAR) AXIS DELTA
-    // asm: 	SUBRF	R5,R4		;Y (RREAR) AXIS DELTA
-    // asm: 	FLOAT	150,R0		;DIVIDE BY RADIUS FOR PROPORTIONALITY
-    // asm: 	CALL	INV_F30
-    // *COMPUTE EQUATION M=2X-X*X/150
-    // asm: 	LDF	2,R1
-    // asm: 	MPYF	R1,R2,R5   	;2*Z
-    // asm: 	MPYF	R2,R2
-    // asm: 	MPYF	R0,R2
-    // asm: 	SUBF	R2,R5,R2
-    // asm: 	MPYF	R0,R2
-    // asm: 	MPYF	R1,R3,R5   	;2*X
-    // asm: 	MPYF	R3,R3
-    // asm: 	MPYF	R0,R3
-    // asm: 	SUBF	R3,R5,R3
-    // asm: 	MPYF	R0,R3
-    // asm: 	MPYF	R1,R4,R5   	;2*Y
-    // asm: 	MPYF	R4,R4
-    // asm: 	MPYF	R0,R4
-    // asm: 	SUBF	R4,R5,R4
-    // asm: 	MPYF	R0,R4
-    // ;	MPYF	R0,R2
-    // ;	MPYF	R0,R3
-    // ;	MPYF	R0,R4
-    // ;
-    // asm: 	CMPF	0.9,R2		;RESTRICT RANGE TO -0.9->0.9
-    // asm: 	LDFGT	0.9,R2
-    // asm: 	CMPF	-0.9,R2
-    // asm: 	LDFLT	-0.9,R2
-    // asm: 	CMPF	0.9,R3		;RESTRICT RANGE TO -0.9->0.9
-    // asm: 	LDFGT	0.9,R3
-    // asm: 	CMPF	-0.9,R3
-    // asm: 	LDFLT	-0.9,R3
-    // asm: 	CMPF	0.9,R4		;RESTRICT RANGE TO -0.9->0.9
-    // asm: 	LDFGT	0.9,R4
-    // asm: 	CMPF	-0.9,R4
-    // asm: 	LDFLT	-0.9,R4
-    // *GET LEAN ANGLES 20% OF MOTION (10% OF MOTION RESERVED)
-    // *FRONT-BACK (XLEAN)
-    // asm: 	LDF	*+AR5(CARXLEAN),R1		;RADIAN LEAN -0.1->0.1
-    // asm: 	MPYF	6,R1
-    // asm: 	ADDF	R1,R3
-    // asm: 	ADDF	R1,R4
-    // asm: 	SUBF	R1,R2
-    // *LEFT-RIGHT (ZLEAN)
-    // asm: 	LDF	*+AR5(CARZLEAN),R1    	;RADIAN LEAN -0.1->0.1
-    // asm: 	MPYF	6,R1
-    // asm: 	ADDF	R1,R4
-    // asm: 	SUBF	R1,R3
-    // *LIMIT MOTION +-1.0
-    // asm: 	CMPF	1.0,R2
-    // asm: 	LDFGT	1.0,R2
-    // asm: 	CMPF	1.0,R3
-    // asm: 	LDFGT	1.0,R3
-    // asm: 	CMPF	1.0,R4
-    // asm: 	LDFGT	1.0,R4
-    // asm: 	CMPF	-1.0,R2
-    // asm: 	LDFLT	-1.0,R2
-    // asm: 	CMPF	-1.0,R3
-    // asm: 	LDFLT	-1.0,R3
-    // asm: 	CMPF	-1.0,R4
-    // asm: 	LDFLT	-1.0,R4
-    // *SEND STUFF TO MOTION PLATFORM
-    // *R2=Z FRONT		-1.0->1.0
-    // *R3=X LFT REAR		-1.0->1.0
-    // *R4=Y RT REAR		-1.0->1.0
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLMOTION", 0, 0);
     UNIMPL();
 }
 
 void MOTION_SCALE_ENTER(void)
 {
+    // *SEND STUFF TO MOTION PLATFORM
+    // *R2=Z FRONT		-1.0->1.0
+    // *R3=X LFT REAR		-1.0->1.0
+    // *R4=Y RT REAR		-1.0->1.0
     // 	;NOW SCALE INTO THE RANGE USEABLE
     // 	;BY OR MOTION SYSTEM
     // 	;
@@ -1574,48 +1251,6 @@ NOTQQERRORY:
     // asm: 	BNE	NOTQQERRORZ		;
     // asm: 	LDI	@LLG6Z,AR2
     // asm: 	BU	SHOWENCODER
-SHOWENCODER:
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	110,R3
-    // asm: 	LDI	60,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-    // asm: 	CALL	SET40FONTDS
-    // asm: 	CLRI	R2
-    // asm: 	SETAUD	ADJ_MOTION_PRESENT
-    // ;
-    // ; galil program will take care of this - ml
-    // ;
-    // ;	;send shutdown commands
-    // ;	LDL	MOTOROFF,AR2
-    // ;	CALL	SEND_CMD
-    // ;	RETS
-    // asm: 	RETS
-NOTQQERRORZ:
-    // asm: NOTQQERROR
-    // asm: 	CMPI	'X',R1
-    // asm: 	BNE	GS1
-    // asm: 	CALL	G_HEX
-    // asm: 	BNC	GSX
-    // asm: 	STI	R1,@GALIL_STATUS_X
-    // asm: 	B	GS0
-GS1:
-    // asm: 	CMPI	'Y',R1
-    // asm: 	BNE	GS2
-    // asm: 	CALL	G_HEX
-    // asm: 	BNC	GSX
-    // asm: 	STI	R1,@GALIL_STATUS_Y
-    // asm: 	B	GS0
-GS2:
-    // asm: 	CMPI	'Z',R1
-    // asm: 	BNE	GS0
-    // asm: 	CALL	G_HEX
-    // asm: 	BNC	GSX
-    // asm: 	STI	R1,@GALIL_STATUS_Z
-    // asm: 	B	GS0
-GSX:
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "G_STRING", 0, 0);
     UNIMPL();
 }

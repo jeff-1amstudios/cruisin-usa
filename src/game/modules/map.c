@@ -88,18 +88,24 @@
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: MAPPAL13	.bss	MAPPAL13,1 */
+int MAPPAL13;
+/* asm: MAPPAL24	.bss	MAPPAL24,1 */
+int MAPPAL24;
 // *----------------------------------------------------------------------------
-/* asm: COLONI	.word	COLON */
-int COLONI = (int)(COLON);
+/* asm: STOPWATCH	.bss	STOPWATCH,1 */
+int STOPWATCH;
+/* asm: STOPWATCH_CNTL	.bss	STOPWATCH_CNTL,1 */
+int STOPWATCH_CNTL;
 const char COLON[] = ":";
 // *----------------------------------------------------------------------------
 // *RETURNS
 // *	AR2	POINTING TO LAP BUFFER
 // *
-/* asm: lap_bufferI	.word	lap_buffer */
-int lap_bufferI = (int)(lap_buffer);
-/* asm: tmp_bufferI	.word	tmp_buffer */
-int tmp_bufferI = (int)(tmp_buffer);
+/* asm: lap_buffer	.bss	lap_buffer,4 */
+int lap_buffer[4];
+/* asm: tmp_buffer	.bss	tmp_buffer,2 */
+int tmp_buffer[2];
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CVTTIME	CVT TIMECODE TO COMPONENTS
@@ -123,6 +129,8 @@ int tmp_bufferI = (int)(tmp_buffer);
 #define BLIPSIZE_Y 4
 #define BLIPSIZE_XH 2
 #define BLIPSIZE_YH 2
+/* asm: THIS_MACHINE_AHEAD	.bss	THIS_MACHINE_AHEAD,1 */
+int THIS_MACHINE_AHEAD;
 // *----------------------------------------------------------------------------
 
 void UNFOLDMAP(void)
