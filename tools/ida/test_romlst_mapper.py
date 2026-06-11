@@ -10,6 +10,7 @@ sys.path.insert(0, str(ROOT / 'tools'))
 
 from ida import shared_lib as ccm  # type: ignore
 from ida.walk_source_and_rom import (
+    assign_final_label_names,
     collect_include_gap_comments,
     collect_text_gap_word_symbol_rows,
     collect_word_block_symbol_rows,
@@ -213,8 +214,8 @@ def main() -> None:
     assert cpu_ws == 0x808064, f'CPU_WS .set expected 0x808064, got {cpu_ws!r}'
     fifo_control = source_set_symbol_addr('FIFO_CONTROL', symbols)
     assert fifo_control == 0x980080, f'FIFO_CONTROL .set expected 0x980080, got {fifo_control!r}'
-    assert canonical_module_for_label('FIFO_STATUS', 'CUSA', set(), symbols) == ''
-    assert canonical_module_for_label('startup0_ptr_0000B0C5', 'CUSA', set(), symbols) == ''
+    assert canonical_module_for_label('FIFO_STATUS', 'CUSA', set(), symbols) == 'CUSA'
+    assert canonical_module_for_label('startup0_ptr_0000B0C5', 'CUSA', set(), symbols) == 'CUSA'
 
     active_label_lines = parse_source_label_lines(ROOT)
     assert active_label_lines[('VERSION_STAMP', 'CUSA')][1] == 81, (
@@ -248,6 +249,9 @@ def main() -> None:
     assert 'scroll_white@HSTDP' not in address_map, 'scroll_white@HSTDP should not be regenerated from dereferenced table data'
     ungh1_blue = lookup_address_map_symbol('ungh1_blue', 'BACKGRND', address_map)
     assert ungh1_blue == 0x00C103A2, f'ungh1_blue map expected 0x00C103A2, got {ungh1_blue!r}'
+    exact_map = {'CAMERAPOSI': 0x45, '_CAMERAPOSI': 0xB0DB}
+    assert lookup_address_map_symbol('_CAMERAPOSI', 'ATTRDRNE', exact_map) == 0xB0DB
+    assert lookup_address_map_symbol('CAMERAPOSI', 'DIRQ', exact_map) == 0x45
 
     # 13) Non-macro source pseudo-ops like LDP should still leave a useful
     #     breadcrumb on their generated machine instruction.
@@ -336,6 +340,15 @@ def main() -> None:
         0x0000A9F7,
     ), 'SPIN_CARTAB should keep its own word-block address instead of being overwritten by SPIN_CARTABI'
 
+    final_names = assign_final_label_names({
+        ('jeff', 'MODA'): ('jeff', 'jeff@MODA', 'MODA', 'label', '0x00000001', 'OK', '', ''),
+        ('jeff', 'MODB'): ('jeff', 'jeff@MODB', 'MODB', 'label', '0x00000002', 'OK', '', ''),
+        ('mike', 'MODC'): ('mike', 'mike@MODC', 'MODC', 'label', '0x00000003', 'OK', '', ''),
+    })
+    assert final_names[('jeff', 'MODA')] == 'jeff@MODA', f'jeff first duplicate expected jeff@MODA, got {final_names!r}'
+    assert final_names[('jeff', 'MODB')] == 'jeff@MODB', f'jeff second duplicate expected jeff@MODB, got {final_names!r}'
+    assert final_names[('mike', 'MODC')] == 'mike', f'mike unique label should stay unsuffixed, got {final_names!r}'
+
     print('ok: MESSAGE1 ACTIVE_SCREEN=0xCE43')
     print('ok: _pixel ACTIVE_SCREEN=0xCE43')
     print('ok: LOAD_SECTION_REQ @0x0000A3ED')
@@ -360,6 +373,7 @@ def main() -> None:
     print('ok: romdata-wrapped payload includes still emit !include comments')
     print('ok: BABE_PALIST gap and block .word labels bind to table cell addresses')
     print('ok: SPIN_CARTABI pointer cells do not overwrite SPIN_CARTAB table labels')
+    print('ok: final emitted names keep @MODULE for duplicate labels')
 
 
 if __name__ == '__main__':

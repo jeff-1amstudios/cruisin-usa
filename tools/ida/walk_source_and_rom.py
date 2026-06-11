@@ -102,7 +102,7 @@ def normalize_word_rom_read_ea(ea: int, binary_path: pathlib.Path = DEFAULT_WORD
 def symbol_key(name: Optional[str]) -> str:
     if not name:
         return ""
-    return name.lstrip("_").upper()
+    return name.upper()
 
 
 def map_symbol_alias(name: str) -> str:
@@ -269,6 +269,33 @@ def write_address_map(map_path: pathlib.Path, entries: Iterable[Tuple[str, int]]
     return len(existing)
 
 
+def assign_final_label_names(
+    rows: Dict[Tuple[str, str], Tuple[str, str, str, str, str, str, str, str]]
+) -> Dict[Tuple[str, str], str]:
+    """Assign final emitted names.
+
+    Internal row bookkeeping may still use module-qualified names to keep the
+    walk unambiguous. Final emitted names collapse to the raw label namespace
+    when that name is unique; otherwise they keep their existing
+    module-qualified ``name@MODULE`` form.
+    """
+    grouped: Dict[str, List[Tuple[Tuple[str, str], int]]] = {}
+    for key, row in rows.items():
+        grouped.setdefault(row[0], []).append((key, int(row[4], 16)))
+
+    out: Dict[Tuple[str, str], str] = {}
+    for raw_label, vals in grouped.items():
+        distinct_addrs = sorted({ea for _key, ea in vals})
+        if len(distinct_addrs) <= 1:
+            for key, _ea in vals:
+                out[key] = raw_label
+            continue
+        for key, _ea in vals:
+            row = rows[key]
+            out[key] = row[1]
+    return out
+
+
 def lookup_address_map_symbol(sym: str, module: str, address_map: Dict[str, int]) -> Optional[int]:
     found = lookup_address_map_entry(sym, module, address_map)
     return found[1] if found is not None else None
@@ -279,19 +306,11 @@ def lookup_address_map_entry(sym: str, module: str, address_map: Dict[str, int])
     if not raw:
         return None
     candidates = [raw]
-    skey = map_symbol_alias(raw)
-    if skey and skey != raw:
-        candidates.append(skey)
     if module:
         candidates.append(f"{raw}@{module}")
-        if skey and skey != raw:
-            candidates.append(f"{skey}@{module}")
     base, qmod = split_rom_qualified_label(raw)
     if qmod:
         candidates.append(f"{base}@{qmod}")
-        bkey = map_symbol_alias(base)
-        if bkey and bkey != base:
-            candidates.append(f"{bkey}@{qmod}")
     seen_candidates: Set[str] = set()
     for key in candidates:
         if key in seen_candidates:
@@ -317,18 +336,6 @@ def resolve_module_for_symbol(sym: str, fallback_mod: str, symbol_modules: Dict[
 
 
 def canonical_module_for_label(lbl: str, mod: str, globals_set: Set[str], set_symbols: Dict[str, int]) -> str:
-    # Synthetic pointer-cell labels include the cell address, so they are
-    # already globally unique (e.g. startup0_ptr_0000B0C5).
-    if PTR_SUFFIX_RE.search(lbl):
-        return ""
-    # .EQU/.ASM .set values are absolute symbols. Treat them as global
-    # even when referenced from module-scoped code.
-    if lbl.upper() in set_symbols:
-        return ""
-    # Globals should collapse to a single namespace key so we don't emit
-    # one row per caller module (e.g. ENABLEGIE duplicated across modules).
-    if lbl.upper() in globals_set or symbol_key(lbl) in globals_set:
-        return ""
     return mod
 
 
@@ -1946,7 +1953,7 @@ def main() -> None:
         if lbl.endswith("?"):
             return
         mod = canonical_module_for_label(lbl, mod, globals_set, symbols)
-        name = lbl if (lbl.upper() in globals_set or not mod) else f"{lbl}@{mod}"
+        name = lbl if not mod else f"{lbl}@{mod}"
         row = (lbl, name, mod, kind, f"0x{ea:08X}", "OK", "", "")
         if overwrite:
             rows[(lbl, mod)] = row
@@ -1990,11 +1997,17 @@ def main() -> None:
     queue: List[Anchor] = sorted(anchors.values(), key=lambda a: a.addr)
     seen: Set[Tuple[str, str]] = set()
     module_lines_cache: Dict[str, List[str]] = {}
+    module_src_ops_lno_cache: Dict[str, List[Tuple[int, str, List[str]]]] = {}
+    module_src_op_lines_cache: Dict[str, List[int]] = {}
+    module_literal_refs_cache: Dict[str, List[Tuple[int, str, str]]] = {}
+    module_literal_ref_lines_cache: Dict[str, List[int]] = {}
+    module_align_lines_cache: Dict[str, List[int]] = {}
     module_covered_lines: Dict[str, Set[int]] = {}
     module_walked_lines: Dict[str, Set[int]] = {}
     module_line_rom_ea: Dict[Tuple[str, int], int] = {}
     module_walk_ranges: Dict[str, List[Tuple[int, int, str]]] = {}
     module_instruction_lines: Dict[str, Set[int]] = {}
+    source_word_block_cache: Dict[Tuple[str, str], bool] = {}
 
     while queue:
         a = queue.pop(0)
@@ -2024,17 +2037,30 @@ def main() -> None:
                 continue
             module_lines_cache[module] = p.read_text(errors="ignore").splitlines()
             module_instruction_lines[module] = collect_instruction_line_numbers(module_lines_cache[module], symbols, macros)
-        src_lines = module_lines_cache[module][start:]
-        if not src_lines:
+            exp_ln = iter_expanded_lines_with_lineno(module_lines_cache[module], 1, macros, symbols)
+            module_src_ops_lno_cache[module] = parse_ops_with_lineno(exp_ln)
+            module_src_op_lines_cache[module] = [lineno for lineno, _op, _toks in module_src_ops_lno_cache[module]]
+            module_literal_refs_cache[module] = collect_literal_macro_refs(module_lines_cache[module], 1, symbols)
+            module_literal_ref_lines_cache[module] = [lineno for lineno, _macro, _label in module_literal_refs_cache[module]]
+            module_align_lines_cache[module] = collect_align_lines(module_lines_cache[module], 1, symbols)
+        if start_line > len(module_lines_cache[module]):
             unresolved.append((a.src_label, module, "source_function_empty", f"0x{a.addr:08X}", ""))
             continue
 
-        expanded = iter_expanded_lines(src_lines, macros, symbols)
-        src_ops = parse_src_ops(expanded)
-        exp_ln = iter_expanded_lines_with_lineno(src_lines, start + 1, macros, symbols)
-        src_ops_lno = parse_ops_with_lineno(exp_ln)
-        literal_refs = collect_literal_macro_refs(src_lines, start + 1, symbols)
-        align_lines = collect_align_lines(src_lines, start + 1, symbols)
+        src_ops_lno_all = module_src_ops_lno_cache[module]
+        src_op_lines_all = module_src_op_lines_cache[module]
+        src_start_idx = bisect.bisect_left(src_op_lines_all, start_line)
+        src_ops_lno = src_ops_lno_all[src_start_idx:]
+        src_ops = [(op, toks) for _lineno, op, toks in src_ops_lno]
+
+        literal_refs_all = module_literal_refs_cache[module]
+        literal_ref_lines_all = module_literal_ref_lines_cache[module]
+        literal_ref_start_idx = bisect.bisect_left(literal_ref_lines_all, start_line)
+        literal_refs = literal_refs_all[literal_ref_start_idx:]
+
+        align_lines_all = module_align_lines_cache[module]
+        align_start_idx = bisect.bisect_left(align_lines_all, start_line)
+        align_lines = align_lines_all[align_start_idx:]
         dp0_op_indexes = collect_dp0_op_indexes(src_ops_lno)
         literal_ref_idx = 0
         align_idx = 0
@@ -2276,16 +2302,27 @@ def main() -> None:
                 up = s.upper()
                 if REGISTER_RE.match(up):
                     continue
+                ridx = idx + 1
                 if source_symbol_starts_word_block(root, s, module, source_label_lines, module_lines_cache, symbols):
                     dea = lookup_exact_address_map_symbol(s, module, known_addresses)
                     if dea is None:
                         dea = lookup_exact_address_map_symbol(s, module, ida_lookup)
+                    if dea is None and ridx < len(rtoks):
+                        dea = resolve_paired_operand_addr(
+                            rtoks[ridx],
+                            s,
+                            module,
+                            symbols,
+                            known_addresses,
+                            allow_source_set=False,
+                            fallback_map=ida_lookup,
+                            prefer_symbol_lookup=False,
+                        )
                     if dea is None:
                         continue
                     dmod = resolve_module_for_symbol(s, module, symbol_modules, globals_set)
                     add_row(s, dmod, "data", dea)
                     continue
-                ridx = idx + 1
                 if ridx >= len(rtoks):
                     continue
                 dea = resolve_paired_operand_addr(
@@ -2352,6 +2389,22 @@ def main() -> None:
     pending_word_blocks: List[Tuple[str, str, int, bool]] = []
     seen_word_blocks: Dict[Tuple[str, str], bool] = {}
 
+    def source_symbol_starts_word_block_cached(label: str, mod: str) -> bool:
+        cache_key = (symbol_key(label), mod.upper())
+        cached = source_word_block_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        result = source_symbol_starts_word_block(
+            root,
+            label,
+            mod,
+            source_label_lines,
+            module_lines_cache,
+            symbols,
+        )
+        source_word_block_cache[cache_key] = result
+        return result
+
     def enqueue_word_block(lbl: str, mod: str, ea: int, *, include_word_refs: bool = True) -> None:
         if is_auto_sub_name(lbl) or is_pseudo_local_label(lbl) or lbl.endswith("?"):
             return
@@ -2368,7 +2421,7 @@ def main() -> None:
             if p is None:
                 return
             module_lines_cache[mod] = p.read_text(errors="ignore").splitlines()
-        if not source_label_starts_word_block(module_lines_cache[mod], line, symbols):
+        if not source_symbol_starts_word_block_cached(lbl, mod):
             return
         seen_word_blocks[key] = include_word_refs
         pending_word_blocks.append((lbl, mod, ea, include_word_refs))
@@ -2421,14 +2474,7 @@ def main() -> None:
                                 lbl,
                                 mod,
                                 target_ea,
-                                include_word_refs=source_symbol_starts_word_block(
-                                    root,
-                                    lbl,
-                                    mod,
-                                    source_label_lines,
-                                    module_lines_cache,
-                                    symbols,
-                                ),
+                                include_word_refs=source_symbol_starts_word_block_cached(lbl, mod),
                             )
                         continue
                     if not has_inline_alias:
@@ -2472,14 +2518,7 @@ def main() -> None:
                         child_lbl,
                         child_mod,
                         target_ea,
-                        include_word_refs=source_symbol_starts_word_block(
-                            root,
-                            child_lbl,
-                            child_mod,
-                            source_label_lines,
-                            module_lines_cache,
-                            symbols,
-                        ),
+                        include_word_refs=source_symbol_starts_word_block_cached(child_lbl, child_mod),
                     )
                     continue
                 if not child_has_inline_alias:
@@ -2504,24 +2543,26 @@ def main() -> None:
         add_row(lbl, "", "data", ea)
 
     promoted_aliases = promote_same_address_module_aliases()
+    final_label_names = assign_final_label_names(rows)
 
     map_entries = write_address_map(
         canonical_map,
-        ((r[1], int(r[4], 16)) for r in rows.values()),
+        ((final_label_names[key], int(row[4], 16)) for key, row in rows.items()),
     )
 
     with outp.open("w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
         w.writerow(["label", "label_norm", "module", "kind", "address", "status", "src_first5", "rom_first5"])
         for _k, r in sorted(rows.items(), key=lambda kv: (int(kv[1][4], 16), kv[1][2], kv[1][0])):
-            w.writerow(r)
+            w.writerow((r[0], final_label_names[_k], r[2], r[3], r[4], r[5], r[6], r[7]))
 
     seed_out = log_dir / "romlst_initial_anchors.tsv"
     with seed_out.open("w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
         w.writerow(["module", "label", "label_norm", "address", "map_name"])
         for mod, a in sorted(module_anchor_candidates.items(), key=lambda kv: (kv[0], kv[1].addr, kv[1].src_label.upper())):
-            label_norm = a.src_label if (a.src_label.upper() in globals_set or not a.module) else f"{a.src_label}@{a.module}"
+            row_key = (a.src_label, canonical_module_for_label(a.src_label, a.module, globals_set, symbols))
+            label_norm = final_label_names.get(row_key, a.src_label)
             w.writerow([mod, a.src_label, label_norm, f"0x{a.addr:08X}", a.rom_label])
 
     # Keep only where module walk stopped/desynced: one row per module.
