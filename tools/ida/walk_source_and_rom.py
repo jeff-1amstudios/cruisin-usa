@@ -1327,10 +1327,13 @@ def source_rom_data_words_between(
         if op in {".data", ".const"}:
             section = "data"
             continue
+        if op == "romdata":
+            section = "romdata"
+            continue
         if op == ".sect" and len(toks) > op_idx + 1:
             section = "text" if toks[op_idx + 1].strip('"').upper() == "THECODE" else "data"
             continue
-        if section != "text":
+        if section not in {"text", "romdata"}:
             continue
         if op == ".word" or op == ".float":
             total += max(1, len(toks) - op_idx - 1)
@@ -1465,6 +1468,7 @@ def _collect_text_gap_word_symbol_rows_ex(
     end_line: int,
     start_ea: int,
     module: str,
+    macros: Dict[str, ccm.MacroDef],
     symbols: Dict[str, int],
     symbol_modules: Dict[str, Set[str]],
     globals_set: Set[str],
@@ -1479,12 +1483,12 @@ def _collect_text_gap_word_symbol_rows_ex(
     cursor = start_ea
     section = "text"
     pending: List[str] = []
-    for _lineno, raw in iter_active_raw_with_lineno(lines[lo - 1:hi - 1], lo, symbols):
+    for _lineno, raw in iter_expanded_lines_with_lineno(lines[lo - 1:hi - 1], lo, macros, symbols):
         code = ccm.strip_comment(raw)
         if not code.strip():
             continue
         lbl, rest = ccm.split_optional_label(code)
-        if lbl and LABEL_TOKEN_RE.match(lbl) and not is_pseudo_local_label(lbl):
+        if lbl and LABEL_TOKEN_RE.match(lbl) and not is_pseudo_local_label(lbl) and not lbl.endswith("?"):
             pending.append(lbl)
             if not rest:
                 continue
@@ -1559,6 +1563,7 @@ def collect_text_gap_word_symbol_rows(
     end_line: int,
     start_ea: int,
     module: str,
+    macros: Dict[str, ccm.MacroDef],
     symbols: Dict[str, int],
     symbol_modules: Dict[str, Set[str]],
     globals_set: Set[str],
@@ -1572,6 +1577,7 @@ def collect_text_gap_word_symbol_rows(
             end_line,
             start_ea,
             module,
+            macros,
             symbols,
             symbol_modules,
             globals_set,
@@ -1940,26 +1946,42 @@ def main() -> None:
     }
 
     rows: Dict[Tuple[str, str], Tuple[str, str, str, str, str, str, str, str]] = {}
+    row_origins: Dict[Tuple[str, str], str] = {}
+    override_log: List[Tuple[str, str, str, str, str, str]] = []
     unresolved: List[Tuple[str, str, str, str, str]] = []
     dp0_marks: Set[int] = set()
     macro_comments: Dict[int, Set[str]] = {}
     known_addresses: Dict[str, int] = dict(seed_addresses)
 
-    def add_row(lbl: str, mod: str, kind: str, ea: int, *, overwrite: bool = False) -> None:
+    def add_row(lbl: str, mod: str, kind: str, ea: int, *, overwrite: bool = False, origin: str = "walk") -> int:
         if is_auto_sub_name(lbl):
-            return
+            return ea
         if is_pseudo_local_label(lbl):
-            return
+            return ea
         if lbl.endswith("?"):
-            return
+            return ea
         mod = canonical_module_for_label(lbl, mod, globals_set, symbols)
+        key = (lbl, mod)
         name = lbl if not mod else f"{lbl}@{mod}"
         row = (lbl, name, mod, kind, f"0x{ea:08X}", "OK", "", "")
         if overwrite:
-            rows[(lbl, mod)] = row
+            existing = rows.get(key)
+            if existing is not None and int(existing[4], 16) != ea:
+                override_log.append((lbl, mod, existing[4], row_origins.get(key, ""), f"0x{ea:08X}", origin))
+            rows[key] = row
+            row_origins[key] = origin
         else:
-            rows.setdefault((lbl, mod), row)
-        known_addresses[name] = ea
+            existing = rows.get(key)
+            if existing is None:
+                rows[key] = row
+                row_origins[key] = origin
+            elif int(existing[4], 16) != ea and row_origins.get(key) == "gap" and origin != "gap":
+                override_log.append((lbl, mod, existing[4], row_origins.get(key, ""), f"0x{ea:08X}", origin))
+                rows[key] = row
+                row_origins[key] = origin
+        final_ea = int(rows[key][4], 16)
+        known_addresses[name] = final_ea
+        return final_ea
 
     def has_row(lbl: str, mod: str) -> bool:
         mod = canonical_module_for_label(lbl, mod, globals_set, symbols)
@@ -2457,6 +2479,7 @@ def main() -> None:
                 curr_line,
                 prev_ea + 1,
                 module,
+                macros,
                 symbols,
                 symbol_modules,
                 globals_set,
@@ -2468,7 +2491,7 @@ def main() -> None:
                     if target_ea is None:
                         continue
                     if 0x00C00000 <= target_ea <= 0x00CFFFFF:
-                        add_row(lbl, "", "data", target_ea)
+                        add_row(lbl, "", "data", target_ea, origin="gap")
                         if key in source_label_lines:
                             enqueue_word_block(
                                 lbl,
@@ -2479,11 +2502,11 @@ def main() -> None:
                         continue
                     if not has_inline_alias:
                         continue
-                    add_row(lbl, mod, "data", target_ea)
+                    add_row(lbl, mod, "data", target_ea, origin="gap")
                     continue
-                add_row(lbl, mod, "data", ea)
+                stored_ea = add_row(lbl, mod, "data", ea, origin="gap")
                 if key in source_label_lines:
-                    enqueue_word_block(lbl, mod, ea)
+                    enqueue_word_block(lbl, mod, stored_ea)
 
     while pending_word_blocks:
         lbl, mod, ea, include_word_refs = pending_word_blocks.pop()
@@ -2513,7 +2536,7 @@ def main() -> None:
                 if target_ea is None:
                     continue
                 if 0x00C00000 <= target_ea <= 0x00CFFFFF:
-                    add_row(child_lbl, "", "data", target_ea, overwrite=True)
+                    add_row(child_lbl, "", "data", target_ea, overwrite=True, origin="word_block")
                     enqueue_word_block(
                         child_lbl,
                         child_mod,
@@ -2523,7 +2546,7 @@ def main() -> None:
                     continue
                 if not child_has_inline_alias:
                     continue
-                add_row(child_lbl, child_mod, "data", target_ea, overwrite=True)
+                add_row(child_lbl, child_mod, "data", target_ea, overwrite=True, origin="word_block")
                 continue
             if should_preserve_existing_word_block_row(
                 rows,
@@ -2536,7 +2559,7 @@ def main() -> None:
                 child_ea,
             ):
                 continue
-            add_row(child_lbl, child_mod, "data", child_ea, overwrite=True)
+            add_row(child_lbl, child_mod, "data", child_ea, overwrite=True, origin="word_block")
             enqueue_word_block(child_lbl, child_mod, child_ea, include_word_refs=include_word_refs)
 
     for lbl, ea in sorted(vunit_hardware_symbols.items(), key=lambda kv: (kv[1], kv[0].upper())):
@@ -2596,6 +2619,13 @@ def main() -> None:
         w = csv.writer(f, delimiter="\t")
         w.writerow(["label", "module", "reason", "context", "source_line", "rom_address"])
         for r in sorted(unresolved_unique, key=lambda row: (row[1], row[0], row[4])):
+            w.writerow(r)
+
+    ovp = outp.parent / (outp.stem.replace("_labels", "_overrides") + outp.suffix)
+    with ovp.open("w", newline="") as f:
+        w = csv.writer(f, delimiter="\t")
+        w.writerow(["label", "module", "old_address", "old_origin", "new_address", "new_origin"])
+        for r in sorted(override_log, key=lambda row: (row[1], row[0], row[2], row[4])):
             w.writerow(r)
 
     cov_out = outp.parent / (outp.stem.replace("_labels", "_module_coverage") + outp.suffix)
@@ -2658,6 +2688,7 @@ def main() -> None:
     data_n = sum(1 for r in rows.values() if r[3] == "data")
     print(f"wrote {outp}")
     print(f"wrote {unp}")
+    print(f"wrote {ovp}")
     print(f"wrote {cov_out}")
     print(f"wrote {dpout}")
     print(f"wrote {cmout}")

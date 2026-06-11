@@ -306,7 +306,7 @@ def main() -> None:
     symbol_modules = parse_symbol_modules(ROOT)
     backgrnd_lines = find_source_module('BACKGRND').read_text(errors='ignore').splitlines()
     babe_rows = collect_text_gap_word_symbol_rows(
-        backgrnd_lines, 1701, 1705, 0x4376, 'BACKGRND', symbols, symbol_modules, globals_set, ROOT / 'roms' / 'crusnusa45_maindata_interleaved_bswap32.bin'
+        backgrnd_lines, 1701, 1705, 0x4376, 'BACKGRND', macros, symbols, symbol_modules, globals_set, ROOT / 'roms' / 'crusnusa45_maindata_interleaved_bswap32.bin'
     )
     assert ('BABE_PALISTI', 'BACKGRND', 0x4376, False) in babe_rows, f'BABE_PALISTI gap row missing: {babe_rows!r}'
     assert ('BABE_PALIST', 'BACKGRND', 0x4376, True) in babe_rows, f'BABE_PALIST ref row missing: {babe_rows!r}'
@@ -317,6 +317,17 @@ def main() -> None:
     assert ('BABE_PALIST', 'BACKGRND', 0x00C10398) in babe_block_rows, f'BABE_PALIST block row missing: {babe_block_rows!r}'
     assert ('ungh1_blue', 'BACKGRND', 0x00C10398) in babe_block_rows, f'ungh1_blue row missing: {babe_block_rows!r}'
     assert ('logo_p', 'BACKGRND', 0x00C10399) in babe_block_rows, f'logo_p row missing: {babe_block_rows!r}'
+
+    diag_lines = find_source_module('DIAG').read_text(errors='ignore').splitlines()
+    diag_gap_rows = collect_text_gap_word_symbol_rows(
+        diag_lines, 1733, 1986, 0x00000BBA, 'DIAG', macros, symbols, symbol_modules, globals_set, ROOT / 'roms' / 'crusnusa45_maindata_interleaved_bswap32.bin'
+    )
+    assert ('COUNTRY_MENUTABI', 'DIAG', 0x00000BDB, False) in diag_gap_rows, (
+        f'DIAG gap rows should advance to COUNTRY_MENUTABI cell at 0x00000BDB, got {diag_gap_rows!r}'
+    )
+    assert ('COUNTRY_MENUTAB', 'DIAG', 0x00000BDB, True) in diag_gap_rows, (
+        f'DIAG gap rows should emit COUNTRY_MENUTAB from COUNTRY_MENUTABI cell, got {diag_gap_rows!r}'
+    )
 
     assert source_symbol_starts_word_block(ROOT, 'scroll_whiteI', 'HSTDP', active_label_lines, {}, symbols)
     assert source_symbol_starts_word_block(ROOT, 'FLASH_PALSI', 'HSTDP', active_label_lines, {}, symbols)
@@ -349,6 +360,16 @@ def main() -> None:
     assert final_names[('jeff', 'MODB')] == 'jeff@MODB', f'jeff second duplicate expected jeff@MODB, got {final_names!r}'
     assert final_names[('mike', 'MODC')] == 'mike', f'mike unique label should stay unsuffixed, got {final_names!r}'
 
+    country_menu_ptr = lookup_address_map_symbol('COUNTRY_MENUTABI', 'DIAG', address_map)
+    assert country_menu_ptr == 0x00000BDB, f'COUNTRY_MENUTABI expected 0x00000BDB, got {country_menu_ptr!r}'
+    country_menu = lookup_address_map_symbol('COUNTRY_MENUTAB', 'DIAG', address_map)
+    assert country_menu == 0x00C131F9, f'COUNTRY_MENUTAB expected 0x00C131F9, got {country_menu!r}'
+    assert 'COUNTRY_MENUTAB@DIAG' not in address_map, 'COUNTRY_MENUTAB@DIAG should not be emitted at wrong gap-derived address'
+
+    overrides_path = ROOT / 'tools' / 'ida' / 'log' / 'romlst_overrides.tsv'
+    overrides_text = overrides_path.read_text(errors='ignore')
+    assert 'COUNTRY_MENUTAB' not in overrides_text, 'COUNTRY_MENUTAB should not require gap override after DIAG drift fix'
+
     print('ok: MESSAGE1 ACTIVE_SCREEN=0xCE43')
     print('ok: _pixel ACTIVE_SCREEN=0xCE43')
     print('ok: LOAD_SECTION_REQ @0x0000A3ED')
@@ -372,6 +393,7 @@ def main() -> None:
     print('ok: .include EQU/ASM/INC lines do not emit !include comments')
     print('ok: romdata-wrapped payload includes still emit !include comments')
     print('ok: BABE_PALIST gap and block .word labels bind to table cell addresses')
+    print('ok: DIAG gap follower descends through MENUENTRY macro output and reaches COUNTRY_MENUTABI at 0x00000BDB')
     print('ok: SPIN_CARTABI pointer cells do not overwrite SPIN_CARTAB table labels')
     print('ok: final emitted names keep @MODULE for duplicate labels')
 
