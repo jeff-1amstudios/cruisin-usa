@@ -16,6 +16,7 @@
 #include "../include/dirq.h"
 #include "../include/delta.h"
 #include "../include/attrdrne.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/ATTRDRNE.ASM

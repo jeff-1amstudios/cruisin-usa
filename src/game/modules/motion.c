@@ -131,14 +131,14 @@ int MOTION_RCV_TIKS;
 int BABAID = (int)(JJG);
 /* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
 int JJG[] = { MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7 };
-const char MM0[] = "UNKNOWN ERROR";
-const char MM1[] = "MAT NOT PLUGGED IN";
-const char MM2[] = "MAT STEPPED ON";
-const char MM3[] = "SAFETY BEAM PATH BROKEN";
-const char MM4[] = "SAFETY BEAM DETECTOR NOT RECEIVING";
-const char MM5[] = "SAFETY BEAM LIGHT NOT EMITTING";
-const char MM6[] = "FAIL SAFE SWITCH ENGAGED";
-const char MM7[] = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
+const char *MM0 = "UNKNOWN ERROR";
+const char *MM1 = "MAT NOT PLUGGED IN";
+const char *MM2 = "MAT STEPPED ON";
+const char *MM3 = "SAFETY BEAM PATH BROKEN";
+const char *MM4 = "SAFETY BEAM DETECTOR NOT RECEIVING";
+const char *MM5 = "SAFETY BEAM LIGHT NOT EMITTING";
+const char *MM6 = "FAIL SAFE SWITCH ENGAGED";
+const char *MM7 = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
 // 	;maybe reported as 'error 48'
 // *----------------------------------------------------------------------------
 // ;if EVER failsafe problem MOTOR OFF
@@ -163,7 +163,7 @@ const char MM7[] = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
 // ;	stop sending commands
 // ;TS
 // *----------------------------------------------------------------------------
-const char bbd[] = "MOTION BURNIN";
+const char *bbd = "MOTION BURNIN";
 // 	;
 // 	;MOTION SAFETY CODE
 // 	;
@@ -210,7 +210,7 @@ int MOTION_SAFETY_ON;
 int MOTION_SAFETY_TYPE;
 // 	;we do have an error
 // 	;
-const char MSSM[] = "MOTION STOP BUTTON HIT";
+const char *MSSM = "MOTION STOP BUTTON HIT";
 // *FIND AVERAGE Y POSITION = R5
 // *GET Y HEIGHT DELTA TO CENTER
 // *COMPUTE EQUATION M=2X-X*X/150
@@ -255,9 +255,9 @@ int LLG6X = (int)(L4ABX);
 int LLG6Y = (int)(L4ABY);
 /* asm: LLG6Z	.word	L4ABZ */
 int LLG6Z = (int)(L4ABZ);
-const char L4ABX[] = "X ENCODER FAILURE";
-const char L4ABY[] = "Y ENCODER FAILURE";
-const char L4ABZ[] = "Z ENCODER FAILURE";
+const char *L4ABX = "X ENCODER FAILURE";
+const char *L4ABY = "Y ENCODER FAILURE";
+const char *L4ABZ = "Z ENCODER FAILURE";
 // ;
 // ; galil program will take care of this - ml
 // ;
@@ -315,9 +315,9 @@ int GALIL_STATUS_Z;
 // ;T35	.string	"JP #LOOP,(_TTX*_TTX)<7",13,0
 // ;T45	.string	"JP #LOOP,(_TTY*_TTY)<7",13,0
 // ;T55	.string	"JP #LOOP,(_TTZ*_TTZ)<7",13,0		;LOFF DLTA November 9,1994
-const char PXC1[] = "XA=";
-const char PYC1[] = "YA=";
-const char PZC1[] = "ZA=";
+const char *PXC1 = "XA=";
+const char *PYC1 = "YA=";
+const char *PZC1 = "ZA=";
 // *----------------------------------------------------------------------------
 
 void INITIALIZATION_MOTION_CHECK(void)

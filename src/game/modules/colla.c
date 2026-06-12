@@ -119,9 +119,9 @@ int SAGETAB[] = { SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND };
 // *	AR5	POINTS TO DRONE CAR BLOCK
 // *
 /* asm: SBUSI	.word	sbus */
-int SBUSI = (int)(sbus);
+#define SBUSI sbus
 /* asm: CBUSI	.word	cbus */
-int CBUSI = (int)(cbus);
+#define CBUSI cbus
 /* asm: DETHTAB1	.word	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
 /* asm: 	.WORD	NDETHSCREAM1,NDETHSCREAM3,NDETHSCREAM4,NDETHSCREAM7 */
 int DETHTAB1[] = { MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3, NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7 };
@@ -139,7 +139,7 @@ int DETHTAB2[] = { MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2 };
 // *AR2=MESSAGE BUFFER
 // *
 /* asm: FLYCARP0I	.word	FLYCARP */
-int FLYCARP0I = (int)(FLYCARP);
+#define FLYCARP0I FLYCARP
 // *----------------------------------------------------------------------------
 // *SPINROT	CALCULATE SPIN ROTATION
 // *

@@ -15,6 +15,7 @@
 #include "../include/delta.h"
 #include "../include/dirq.h"
 #include "../include/overlay.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/OVERLAY.ASM

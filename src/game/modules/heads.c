@@ -45,7 +45,7 @@ int HEADS[] = { jeno, marc, pet, xion, ted, matt, vince, carl, glen, ken, eric, 
 int YINCREMENT;
 // *----------------------------------------------------------------------------
 /* asm: CHISPRIB	SPTR	"CHRISTINE PRIBYL" */
-char *CHISPRIB = "CHRISTINE PRIBYL";
+const char *CHISPRIB = "CHRISTINE PRIBYL";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *SUBROUTINE FOR THE ABOVE

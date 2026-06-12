@@ -8,6 +8,7 @@
 #include "../include/text.h"
 #include "../include/texttab.h"
 #include "../include/text_defs.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/TEXT.ASM
@@ -32,7 +33,7 @@ int TEXT_FREEZE;
 /* asm: FIXEDFONT_A	.word	fixedfnt */
 int FIXEDFONT_A = (int)(fixedfnt);
 /* asm: TEXTTABLEFIXEDI	.word	FIXEDFONT */
-int TEXTTABLEFIXEDI = (int)(FIXEDFONT);
+#define TEXTTABLEFIXEDI FIXEDFONT
 /* asm: FONTDIGITSM_A	.word	dnums_I */
 int FONTDIGITSM_A = (int)(dnums_I);
 /* asm: FONT18_A	.word	font18_I */

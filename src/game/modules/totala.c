@@ -18,7 +18,7 @@
 // *
 #define NOFIFO 0
 /* asm: AIVI	.word	_AIVI */
-int AIVI = (int)(_AIVI);
+#define AIVI _AIVI
 /* asm: _ACNTL	.bss	_ACNTL,1 */
 int _ACNTL;
 /* asm: _ACMAP	.bss	_ACMAP,1 */

@@ -64,40 +64,40 @@ int CUSTOM_COINTAB[COIN_ENTRY_SIZE];
 /* asm: CUSTOM_COINSTR	.bss	CUSTOM_COINSTR,10 */
 int CUSTOM_COINSTR[10];
 /* asm: bufferi	.word	buffer */
-int bufferi = (int)(buffer);
+#define bufferi buffer
 /* asm: buffer	.bss	buffer,2 */
 int buffer[2];
-const char CTS_STR[] = " TO START";
-const char CTC_STR[] = " TO CONTINUE";
+const char *CTS_STR = " TO START";
+const char *CTC_STR = " TO CONTINUE";
 /* asm: FCB	.bss	FCB,1 */
 int FCB;
 /* asm: PCB	.bss	PCB,1 */
 int PCB;
 /* asm: CREDITBUFFI	.word	CREDITBUFFER */
-int CREDITBUFFI = (int)(CREDITBUFFER);
+#define CREDITBUFFI CREDITBUFFER
 /* asm: CREDITBUFFER	.bss	CREDITBUFFER,8 */
 int CREDITBUFFER[8];
 /* asm: TOSTARTBUFFI	.word	TOSTARTBUFFER */
-int TOSTARTBUFFI = (int)(TOSTARTBUFFER);
+#define TOSTARTBUFFI TOSTARTBUFFER
 /* asm: TOSTARTBUFFER	.bss	TOSTARTBUFFER,8 */
 int TOSTARTBUFFER[8];
-const char NCB[] = "@";
-const char SPC[] = " ";
-const char DBLSPC[] = "  ";
-const char CW[] = "CREDITS";
-const char CWS[] = "CREDIT";
+const char *NCB = "@";
+const char *SPC = " ";
+const char *DBLSPC = "  ";
+const char *CW = "CREDITS";
+const char *CWS = "CREDIT";
 /* asm: SCI	.word	SCS	;CREDITS TO START (START CREDIT) */
-int SCI = (int)(SCS);
+#define SCI SCS
 /* asm: SCS	.bss	SCS,1 */
 int SCS;
-const char MSG_NULL[] = "";
+const char *MSG_NULL = "";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
 // *	F  P/N  CREDITS
 // *
-const char INSERTCOINS[] = "INSERT COINS";
-const char HITSTART[] = "PRESS START";
+const char *INSERTCOINS = "INSERT COINS";
+const char *HITSTART = "PRESS START";
 /* asm: ICF	.bss	ICF,1 */
 int ICF;
 // *----------------------------------------------------------------------------
@@ -118,7 +118,7 @@ int ICF;
 int VOLUME_ACTIVE;
 /* asm: VOLUME_COUNT	.bss	VOLUME_COUNT,4 */
 int VOLUME_COUNT[4];
-const char VOLUME_TXT[] = "VOLUME";
+const char *VOLUME_TXT = "VOLUME";
 // *----------------------------------------------------------------------------
 /* asm: CMOS_WP_WORD_SHADOW	.bss	CMOS_WP_WORD_SHADOW,1 */
 int CMOS_WP_WORD_SHADOW;
@@ -133,7 +133,7 @@ int COUNTER_MODE;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: MOTIONDIS	SPTR	"MOTION OFF" */
-char *MOTIONDIS = "MOTION OFF";
+const char *MOTIONDIS = "MOTION OFF";
 // *----------------------------------------------------------------------------
 
 void COIN1(void)

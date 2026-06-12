@@ -35,9 +35,9 @@ int NUM_FIXED;
 // *----------------------------------------------------------------------------
 // *INDEX STORAGE
 /* asm: PALROMI	.word	_PALROM		;INDEXED PALETTES SOURCE ADDR LIST */
-int PALROMI = (int)(_PALROM);
+#define PALROMI _PALROM
 /* asm: PALLISTI	.word	_PALLIST	;CROSS-REFERENCE LIST */
-int PALLISTI = (int)(_PALLIST);
+#define PALLISTI _PALLIST
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CLEAR OUT PALETTE RAM

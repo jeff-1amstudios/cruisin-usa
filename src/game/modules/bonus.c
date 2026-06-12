@@ -16,6 +16,7 @@
 #include "../include/comm.h"
 #include "../include/h2hobj.h"
 #include "../include/bonus.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/BONUS.ASM
@@ -43,24 +44,24 @@ int DO_FOLDFLAG;
 /* asm: LEG_NAMES	.word	LEG1,LEG2,LEG3,LEG4,LEG5,LEG6,LEG7,LEG8 */
 /* asm: 	.word	LEG9,LEG10,LEG11,LEG12,LEG13,LEG14,LEG_USA */
 int LEG_NAMES[] = { LEG1, LEG2, LEG3, LEG4, LEG5, LEG6, LEG7, LEG8, LEG9, LEG10, LEG11, LEG12, LEG13, LEG14, LEG_USA };
-const char LEG1[] = "GOLDEN GATE PARK";
-const char LEG2[] = "SAN FRANCISCO";
-const char LEG3[] = "US 101";
-const char LEG4[] = "REDWOOD FOREST";
-const char LEG5[] = "BEVERLY HILLS";
-const char LEG6[] = "LA FREEWAY";
-const char LEG7[] = "DEATH VALLEY";
-const char LEG8[] = "ARIZONA";
-const char LEG9[] = "GRAND CANYON";
-const char LEG10[] = "IOWA";
-const char LEG11[] = "CHICAGO";
-const char LEG12[] = "INDIANA";
-const char LEG13[] = "APPALACHIA";
-const char LEG14[] = "WASHINGTON DC";
-const char LEG_USA[] = "SF TO WASHINGTON DC";
-const char WINT1[] = "FREE GAME FOR";
-const char WINT2[] = "1ST PLACE";
-const char EXPIRED[] = "EXPIRED";
+const char *LEG1 = "GOLDEN GATE PARK";
+const char *LEG2 = "SAN FRANCISCO";
+const char *LEG3 = "US 101";
+const char *LEG4 = "REDWOOD FOREST";
+const char *LEG5 = "BEVERLY HILLS";
+const char *LEG6 = "LA FREEWAY";
+const char *LEG7 = "DEATH VALLEY";
+const char *LEG8 = "ARIZONA";
+const char *LEG9 = "GRAND CANYON";
+const char *LEG10 = "IOWA";
+const char *LEG11 = "CHICAGO";
+const char *LEG12 = "INDIANA";
+const char *LEG13 = "APPALACHIA";
+const char *LEG14 = "WASHINGTON DC";
+const char *LEG_USA = "SF TO WASHINGTON DC";
+const char *WINT1 = "FREE GAME FOR";
+const char *WINT2 = "1ST PLACE";
+const char *EXPIRED = "EXPIRED";
 // *STATISTICAL STRUCTURE FOR THE GAME LEGS <NERD DATA>
 // *
 // *
@@ -78,7 +79,7 @@ int GAMETRAK[NUM_LEGS*GT_SIZE];
 int ETIME;
 // ;etime,#,maxmph
 /* asm: BUFFERSI	.word	BIGBUFFER */
-int BUFFERSI = (int)(BIGBUFFER);
+#define BUFFERSI BIGBUFFER
 /* asm: BIGBUFFER	.bss	BIGBUFFER,(4+1+2+2)*NUM_LEGS */
 int BIGBUFFER[(4+1+2+2)*NUM_LEGS];
 // *----------------------------------------------------------------------------
@@ -97,7 +98,7 @@ int BONUS_TABLE[] = { BONUS1, BONUS2, BONUS3, BONUS4, BONUS5, BONUS6, BONUS7, BO
 // 	;
 // 	;AUDIT MUMBO JUMBO
 // 	;
-const char BHDDFAS[] = "WINNER";
+const char *BHDDFAS = "WINNER";
 /* asm: UNFOLDFLAG	.bss	UNFOLDFLAG,1 */
 int UNFOLDFLAG;
 // *----------------------------------------------------------------------------
@@ -112,15 +113,15 @@ int SAVED_COUNTDOWN;
 int DID_TIMED_OUT;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char FRA1[] = "FIRST PLACE";
-const char FRA2[] = "FREE RACE";
+const char *FRA1 = "FIRST PLACE";
+const char *FRA2 = "FREE RACE";
 #define CONGRATS 4
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
 // *
-const char LCTS[] = "RACE COMPLETED:";
-const char LNLS[] = "NEXT RACE:";
+const char *LCTS = "RACE COMPLETED:";
+const char *LNLS = "NEXT RACE:";
 // *
 // *
 #define SHOWLEG_TIME (20+20+50)
@@ -133,22 +134,22 @@ const char LNLS[] = "NEXT RACE:";
 // *
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char BT1[] = "AVERAGE MPH:";
-const char BT1A[] = "AVERAGE KPH:";
+const char *BT1 = "AVERAGE MPH:";
+const char *BT1A = "AVERAGE KPH:";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char RT2[] = "RECORD TIME:";
+const char *RT2 = "RECORD TIME:";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char HH1[] = "NEW RECORD TIME";
-const char HH2[] = "NEW HOT TIME";
-const char NULLSTR5[] = " ";
+const char *HH1 = "NEW RECORD TIME";
+const char *HH2 = "NEW HOT TIME";
+const char *NULLSTR5 = " ";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char BT2[] = "ELAPSED TIME:";
+const char *BT2 = "ELAPSED TIME:";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char BT3[] = "POSITION:";
+const char *BT3 = "POSITION:";
 // *----------------------------------------------------------------------------
 
 void BONUS_SANFRAN(void)

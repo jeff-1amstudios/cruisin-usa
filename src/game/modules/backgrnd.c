@@ -13,6 +13,7 @@
 #include "../include/objects.h"
 #include "../include/cornobj.h"
 #include "../include/backgrnd.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/BACKGRND.ASM

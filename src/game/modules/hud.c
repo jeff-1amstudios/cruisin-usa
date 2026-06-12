@@ -15,6 +15,7 @@
 #include "../include/text.h"
 #include "../include/dirq.h"
 #include "../include/hud.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/HUD.ASM
@@ -42,11 +43,11 @@ int POSITION;
 /* asm: MAXMPH_COUNT	.bss	MAXMPH_COUNT,1 */
 int MAXMPH_COUNT;
 /* asm: STOPBUFFI	.word	STOPBUFFER */
-int STOPBUFFI = (int)(STOPBUFFER);
+#define STOPBUFFI STOPBUFFER
 /* asm: STOPBUFFER	.bss	STOPBUFFER,4 */
 int STOPBUFFER[4];
-const char YOURLOSTTXT[] = "YOU ARE LOST";
-const char OFFROADTXT[] = "OFFROAD";
+const char *YOURLOSTTXT = "YOU ARE LOST";
+const char *OFFROADTXT = "OFFROAD";
 /* asm: OFFROADBUFF	.bss	OFFROADBUFF,2 */
 int OFFROADBUFF[2];
 // *----------------------------------------------------------------------------
@@ -54,10 +55,10 @@ int OFFROADBUFF[2];
 int MOVEIN_OFFSET;
 /* asm: SAFETS	.word	MSAF,BSAF,OSAF,MSSM */
 int SAFETS[] = { MSAF, BSAF, OSAF, MSSM };
-const char MSAF[] = "SAFETY MAT ACTIVATED";
-const char BSAF[] = "SAFETY BEAM ACTIVATED";
-const char OSAF[] = "FAIL SAFE SWITCH ACTIVATED";
-const char MSSM[] = "MOTION STOP BUTTON HIT";
+const char *MSAF = "SAFETY MAT ACTIVATED";
+const char *BSAF = "SAFETY BEAM ACTIVATED";
+const char *OSAF = "FAIL SAFE SWITCH ACTIVATED";
+const char *MSSM = "MOTION STOP BUTTON HIT";
 // 	;
 // 	;
 // 	;-------OFF ROAD TIMER
@@ -70,14 +71,14 @@ const char MSSM[] = "MOTION STOP BUTTON HIT";
 // 	;
 // 	;
 /* asm: GEARI	.word	GEARS */
-int GEARI = (int)(GEARS);
+#define GEARI GEARS
 /* asm: GEARS	.word	GEARN,GEAR1,GEAR2,GEAR3,GEAR4 */
 int GEARS[] = { GEARN, GEAR1, GEAR2, GEAR3, GEAR4 };
-const char GEAR1[] = "1";
-const char GEAR2[] = "2";
-const char GEAR3[] = "3";
-const char GEAR4[] = "4";
-const char GEARN[] = ";";
+const char *GEAR1 = "1";
+const char *GEAR2 = "2";
+const char *GEAR3 = "3";
+const char *GEAR4 = "4";
+const char *GEARN = ";";
 // 	;show MPH or KPH
 // 	;
 // 	;-------time remaining

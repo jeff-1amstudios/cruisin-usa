@@ -128,8 +128,8 @@ int RTU59[] = { 0x0400000, 0x020000, 0x000FF0000, 1, SOFT_WS, 1 };
 // *----------------------------------------------------------------------------
 // *VECTOR PTR,XmYm,XM,YM,U_NUM
 // *
-const char tt_[] = ":UTP:";
-const char tt_[] = ":UTP:";
+const char *tt_ = ":UTP:";
+const char *tt_ = ":UTP:";
 #define ISRAM 0
 #define ISROM 1
 // *----------------------------------------------------------------------------
@@ -179,7 +179,7 @@ const char tt_[] = ":UTP:";
 // *
 /* asm: BASICS_RAM	fbss	BASICS_RAM,10 */
 int BASICS_RAM[10];
-const char MEMTST1[] = "CRUISN USA (TM)";
+const char *MEMTST1 = "CRUISN USA (TM)";
 // 	;Static *MUST* be working to get this far,
 // 	;so mark them ALL as cool
 // 	;

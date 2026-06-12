@@ -12,6 +12,7 @@
 #include "../include/objects.h"
 #include "../include/text.h"
 #include "../include/cornobj.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/SETUPS.ASM

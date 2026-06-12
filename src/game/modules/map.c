@@ -13,6 +13,7 @@
 #include "../include/text.h"
 #include "../include/h2hobj.h"
 #include "../include/map.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/MAP.ASM
@@ -97,7 +98,7 @@ int MAPPAL24;
 int STOPWATCH;
 /* asm: STOPWATCH_CNTL	.bss	STOPWATCH_CNTL,1 */
 int STOPWATCH_CNTL;
-const char COLON[] = ":";
+const char *COLON = ":";
 // *----------------------------------------------------------------------------
 // *RETURNS
 // *	AR2	POINTING TO LAP BUFFER

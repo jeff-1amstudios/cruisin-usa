@@ -36,9 +36,9 @@
 int SPIN_CARTAB[] = { missle, hotrod, testor, cvette };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char DT1[] = "THANK YOU FOR PLAYING";
-const char DT2[] = "CRUISIN USA";
-const char DT3[] = "SNEAK PREVIEW";
+const char *DT1 = "THANK YOU FOR PLAYING";
+const char *DT2 = "CRUISIN USA";
+const char *DT3 = "SNEAK PREVIEW";
 // *----------------------------------------------------------------------------
 
 void _MIDWAYSPIN(void)

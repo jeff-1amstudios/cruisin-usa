@@ -25,9 +25,9 @@
 // *ALL RIGHTS RESERVED
 // *
 /* asm: BABA1	SPTR	"THE PRESIDENT OF" */
-char *BABA1 = "THE PRESIDENT OF";
+const char *BABA1 = "THE PRESIDENT OF";
 /* asm: BABA2	SPTR	"THE UNITED STATES" */
-char *BABA2 = "THE UNITED STATES";
+const char *BABA2 = "THE UNITED STATES";
 // *----------------------------------------------------------------------------
 // *
 // *
@@ -47,9 +47,9 @@ int ANI_RADAR[] = { rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9, -1 };
 int ANI_STAG[] = { stagent1, stagent2, stagent3, 5, stagent2, -1 };
 // *----------------------------------------------------------------------------
 /* asm: PC1	SPTR	"CELEBRITY IMPERSONATION" */
-char *PC1 = "CELEBRITY IMPERSONATION";
+const char *PC1 = "CELEBRITY IMPERSONATION";
 /* asm: PC2	SPTR	"POLITICAL CARTOON" */
-char *PC2 = "POLITICAL CARTOON";
+const char *PC2 = "POLITICAL CARTOON";
 // *----------------------------------------------------------------------------
 #define BABE_ASTRT PDATA
 // *----------------------------------------------------------------------------

@@ -64,43 +64,43 @@
 #define LOW_CLIP_LEVEL 100
 #define HIGH_CLIP_LEVEL ((5000-1))
 /* asm: CAMERAPOSI	.word	_CAMERAPOS */
-int CAMERAPOSI = (int)(_CAMERAPOS);
+#define CAMERAPOSI _CAMERAPOS
 /* asm: CAMERARADI	.word	_CAMERARAD */
-int CAMERARADI = (int)(_CAMERARAD);
+#define CAMERARADI _CAMERARAD
 /* asm: CAMERAMATRIXI	.word	_CAMERAMATRIX */
-int CAMERAMATRIXI = (int)(_CAMERAMATRIX);
+#define CAMERAMATRIXI _CAMERAMATRIX
 /* asm: ASHADOW	.word	_ACNTL		;HEADS UP THE FIFO MIRROR */
 int ASHADOW = (int)(_ACNTL);
 /* asm: LIGHTIY	.word	_LIGHT+1 */
 int LIGHTIY = (int)(_LIGHT+1);
 /* asm: transmatrixI	.word	ROTATION_MATRIX */
-int transmatrixI = (int)(ROTATION_MATRIX);
+#define transmatrixI ROTATION_MATRIX
 /* asm: transvectorYI	.word	TRANSVECTOR+1 */
 int transvectorYI = (int)(TRANSVECTOR+1);
 /* asm: POSTERMATI	.word	POSTERMATRIX */
-int POSTERMATI = (int)(POSTERMATRIX);
+#define POSTERMATI POSTERMATRIX
 /* asm: POSTERMAT2DI	.word	POSTERMATRIX2D */
-int POSTERMAT2DI = (int)(POSTERMATRIX2D);
+#define POSTERMAT2DI POSTERMATRIX2D
 /* asm: tmpmatI	.word	TMPMAT */
-int tmpmatI = (int)(TMPMAT);
+#define tmpmatI TMPMAT
 /* asm: tmpmatY	.word	TMPMAT+1 */
 int tmpmatY = (int)(TMPMAT+1);
 /* asm: HIGH_CLIP_LEV8	.word	80000		;MATHEMATICAL LIMIT */
 int HIGH_CLIP_LEV8 = (int)(80000);
 /* asm: MATRIXAI	.word	_MATRIXA */
-int MATRIXAI = (int)(_MATRIXA);
+#define MATRIXAI _MATRIXA
 /* asm: MATRIXBI	.word	_MATRIXB */
-int MATRIXBI = (int)(_MATRIXB);
+#define MATRIXBI _MATRIXB
 /* asm: MATRIXCI	.word	_MATRIXC */
-int MATRIXCI = (int)(_MATRIXC);
+#define MATRIXCI _MATRIXC
 /* asm: VECTORAI	.word	_VECTORA */
-int VECTORAI = (int)(_VECTORA);
+#define VECTORAI _VECTORA
 /* asm: VECTORBI	.word	_VECTORB */
-int VECTORBI = (int)(_VECTORB);
+#define VECTORBI _VECTORB
 /* asm: VECTORCI	.word	_VECTORC */
-int VECTORCI = (int)(_VECTORC);
+#define VECTORCI _VECTORC
 /* asm: VECTORDI	.word	_VECTORD */
-int VECTORDI = (int)(_VECTORD);
+#define VECTORDI _VECTORD
 /* asm: VECTORAYI	.word	_VECTORA+1 */
 int VECTORAYI = (int)(_VECTORA+1);
 /* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */

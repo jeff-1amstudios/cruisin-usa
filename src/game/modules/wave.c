@@ -17,6 +17,7 @@
 #include "../include/comm.h"
 #include "../include/h2hobj.h"
 #include "../include/wave.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/WAVE.ASM

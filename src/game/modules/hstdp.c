@@ -48,7 +48,7 @@ int THREED_LETTERS[] = { ma, mb, mc, md, me, mf, mg, mh, mi, mj, mk, ml, mm, mn,
 /* asm: 	.word	ps,pt,pu,pv,pw,px,py,pz,arrow,p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,pend */
 int PLATE_LETTERS[] = { pa, pb, pc, pd, pe, pf, pg, ph, pi, pj, pk, pl, pm, pn, po, pp, pq, pr, ps, pt, pu, pv, pw, px, py, pz, arrow, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, pend };
 #define LASTCHAR (LAST_LETTER-PLATE_LETTERS-1)
-const char EIP[] = "ENTER INITIALS";
+const char *EIP = "ENTER INITIALS";
 // *----------------------------------------------------------------------------
 #define LETTER0 (PDATA+3)
 #define LETTER1 (PDATA+4)

@@ -57,7 +57,7 @@
 #define PSS_SP 9
 #define PSS_R0 10
 // *----------------------------------------------------------------------------
-const char TIBO[] = "LOG";
+const char *TIBO = "LOG";
 // 	;R6  X Position
 // 	;R7  Y Height
 // 	;

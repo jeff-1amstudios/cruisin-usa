@@ -38,10 +38,10 @@
 #define MW_Y1 2
 #define MW_X1 3
 // *----------------------------------------------------------------------------
-const char inst1[] = "USE UP/DOWN TO SELECT FUNCTION";
-const char inst2[] = "ENTER TO ACTIVATE";
-const char title[] = "CRUISIN USA   DIAGNOSTICS";
-const char toexit[] = "HIT ENTER TO EXIT";
+const char *inst1 = "USE UP/DOWN TO SELECT FUNCTION";
+const char *inst2 = "ENTER TO ACTIVATE";
+const char *title = "CRUISIN USA   DIAGNOSTICS";
+const char *toexit = "HIT ENTER TO EXIT";
 /* asm: DIAGPAL	DIAGPAL: */
 /* asm: 	.word	16			;LENGTH OF PALETTE */
 int DIAGPAL = (int)(16);
@@ -112,8 +112,8 @@ int LASTSHIFT;
 // *----------------------------------------------------------------------------
 // *
 // *
-const char SW1T[] = "DIP SW2";
-const char SW2T[] = "DIP SW3";
+const char *SW1T = "DIP SW2";
+const char *SW2T = "DIP SW3";
 /* asm: SW1BANK	.bss	SW1BANK,3 */
 int SW1BANK[3];
 /* asm: SW2BANK	.bss	SW2BANK,3 */
@@ -137,10 +137,10 @@ int DIPTMP[2];
 int ISON = (int)(ONTEXT);
 /* asm: ISOFF	.word	OFFTEXT */
 int ISOFF = (int)(OFFTEXT);
-const char ONTEXT[] = "ON";
-const char OFFTEXT[] = "OFF";
-const char DNSUP[] = "UPRIGHT";
-const char DSUP[] = "SITDOWN";
+const char *ONTEXT = "ON";
+const char *OFFTEXT = "OFF";
+const char *DNSUP = "UPRIGHT";
+const char *DSUP = "SITDOWN";
 // ;	.data
 // ;RF1I	.word	RF1
 // ;RF2I	.word	RF2
@@ -172,35 +172,35 @@ const char DSUP[] = "SITDOWN";
 // ;	LDI	200+(2*10),R3
 // ;	LDI	COL_VDGREY,RC
 // ;	CALL	_outtextxyc
-const char COINCNTR1[] = "ONE COIN COUNTER";
-const char COINCNTR2[] = "TWO COIN COUNTERS";
+const char *COINCNTR1 = "ONE COIN COUNTER";
+const char *COINCNTR2 = "TWO COIN COUNTERS";
 // *----------------------------------------------------------------------------
-const char DMOT[] = "MOTION ON";
-const char DNMOT[] = "MOTION OFF";
-const char DLINKD[] = "LINK ON";
-const char DNLINKD[] = "LINK OFF";
+const char *DMOT = "MOTION ON";
+const char *DNMOT = "MOTION OFF";
+const char *DLINKD = "LINK ON";
+const char *DNLINKD = "LINK OFF";
 /* asm: DMOD1	SPTR	"MASTER" */
-char *DMOD1 = "MASTER";
+const char *DMOD1 = "MASTER";
 /* asm: DMOD2	SPTR	"SLAVE" */
-char *DMOD2 = "SLAVE";
+const char *DMOD2 = "SLAVE";
 // *----------------------------------------------------------------------------
-const char l_[] = ":LABEL:";
+const char *l_ = ":LABEL:";
 // *----------------------------------------------------------------------------
 /* asm: MOMT	SPTR	"MOTION MENU" */
-char *MOMT = "MOTION MENU";
+const char *MOMT = "MOTION MENU";
 // *----------------------------------------------------------------------------
 /* asm: AMT	SPTR	"ADJUSTMENT MENU" */
-char *AMT = "ADJUSTMENT MENU";
+const char *AMT = "ADJUSTMENT MENU";
 // ;	.word	0,0
 // ;	.word	0,0
 // *----------------------------------------------------------------------------
 /* asm: UMT	SPTR	"UTILITIES MENU" */
-char *UMT = "UTILITIES MENU";
+const char *UMT = "UTILITIES MENU";
 // *----------------------------------------------------------------------------
 /* asm: MMT	SPTR	"MAIN MENU" */
-char *MMT = "MAIN MENU";
+const char *MMT = "MAIN MENU";
 /* asm: DMT	SPTR	"DIAGNOSTIC MENU" */
-char *DMT = "DIAGNOSTIC MENU";
+const char *DMT = "DIAGNOSTIC MENU";
 // *----------------------------------------------------------------------------
 // *
 // *PARAMETERS
@@ -212,11 +212,11 @@ char *DMT = "DIAGNOSTIC MENU";
 int MENU_SCROLL;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char l_[] = ":TTXT:";
+const char *l_ = ":TTXT:";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: AMODES	SPTR	"ATTRACT MODE SOUNDS" */
-char *AMODES = "ATTRACT MODE SOUNDS";
+const char *AMODES = "ATTRACT MODE SOUNDS";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // ;	.ref	COINMSG_TABI	;????
@@ -236,7 +236,7 @@ char *AMODES = "ATTRACT MODE SOUNDS";
 #define BELGIUM_MENU_LEN 4
 #define OTHER_MENU_LEN 8
 #define GENERAL_MENU_LEN 9
-const char ETMAIN[] = "EXIT TO MAIN";
+const char *ETMAIN = "EXIT TO MAIN";
 /* asm: COUNTRY	.bss	COUNTRY,1 */
 int COUNTRY;
 #define PSSTARTY 100
@@ -250,59 +250,59 @@ int PSLAST;
 // *USER INITIALIZE CONTROL VALUES
 // *
 // *
-const char sct[] = "CALIBRATE CONTROLS";
+const char *sct = "CALIBRATE CONTROLS";
 /* asm: INCIDENT	.word	CARPASS,TRUCKPASS */
 /* asm: 	.word	SCOLLA,TKEY */
 /* asm: 	.word	BOTTOMOUT,VIEW2IN */
 int INCIDENT[] = { CARPASS, TRUCKPASS, SCOLLA, TKEY, BOTTOMOUT, VIEW2IN };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char FFR[] = "FULL FACTORY RESTORE";
+const char *FFR = "FULL FACTORY RESTORE";
 /* asm: FFRST	SPTR	"FULL FACTORY RESTORE" */
-char *FFRST = "FULL FACTORY RESTORE";
+const char *FFRST = "FULL FACTORY RESTORE";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char RDA[] = "RESET DEFAULT ADJUSTMENTS";
+const char *RDA = "RESET DEFAULT ADJUSTMENTS";
 /* asm: DAS	SPTR	"DEFAULT ADJUSTMENTS SET" */
-char *DAS = "DEFAULT ADJUSTMENTS SET";
+const char *DAS = "DEFAULT ADJUSTMENTS SET";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char RHS[] = "RESET HIGH SCORES";
+const char *RHS = "RESET HIGH SCORES";
 /* asm: HSRS	SPTR	"HIGH SCORES RESET" */
-char *HSRS = "HIGH SCORES RESET";
+const char *HSRS = "HIGH SCORES RESET";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char CGA[] = "CLEAR GAME AUDITS";
+const char *CGA = "CLEAR GAME AUDITS";
 /* asm: BOOKR	SPTR	"BOOKKEEPING RESET" */
-char *BOOKR = "BOOKKEEPING RESET";
+const char *BOOKR = "BOOKKEEPING RESET";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: FREEPLAYT	SPTR	"FREE PLAY" */
-char *FREEPLAYT = "FREE PLAY";
+const char *FREEPLAYT = "FREE PLAY";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: FGOO1	SPTR	"GIVE FREE GAME" */
-char *FGOO1 = "GIVE FREE GAME";
+const char *FGOO1 = "GIVE FREE GAME";
 /* asm: FGOO2	SPTR	"ON 1ST POSITION" */
-char *FGOO2 = "ON 1ST POSITION";
+const char *FGOO2 = "ON 1ST POSITION";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: APHSTD	SPTR	"ALLOW PLAYER TO" */
-char *APHSTD = "ALLOW PLAYER TO";
+const char *APHSTD = "ALLOW PLAYER TO";
 /* asm: APHSTD2	SPTR	"ENTER INITIALS" */
-char *APHSTD2 = "ENTER INITIALS";
+const char *APHSTD2 = "ENTER INITIALS";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: GI1	SPTR	"SHOW GIRLS" */
-char *GI1 = "SHOW GIRLS";
+const char *GI1 = "SHOW GIRLS";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: CL1	SPTR	"SHOW PRESIDENT" */
-char *CL1 = "SHOW PRESIDENT";
+const char *CL1 = "SHOW PRESIDENT";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: RK1	SPTR	"SHOW ROADKILL" */
-char *RK1 = "SHOW ROADKILL";
+const char *RK1 = "SHOW ROADKILL";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -310,41 +310,41 @@ char *RK1 = "SHOW ROADKILL";
 // *	1 = KPH
 // *
 /* asm: MP1	SPTR	"SPEED IN MPH OR KPH" */
-char *MP1 = "SPEED IN MPH OR KPH";
+const char *MP1 = "SPEED IN MPH OR KPH";
 /* asm: MP2	SPTR	"KPH" */
-char *MP2 = "KPH";
+const char *MP2 = "KPH";
 /* asm: MP3	SPTR	"MPH" */
-char *MP3 = "MPH";
+const char *MP3 = "MPH";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: CLR_CRED	SPTR	"CLEAR CREDITS" */
-char *CLR_CRED = "CLEAR CREDITS";
+const char *CLR_CRED = "CLEAR CREDITS";
 /* asm: YES		SPTR	"YES" */
-char *YES = "YES";
+const char *YES = "YES";
 /* asm: NO		SPTR	"NO" */
-char *NO = "NO";
+const char *NO = "NO";
 /* asm: ONS		SPTR	"ON" */
-char *ONS = "ON";
+const char *ONS = "ON";
 /* asm: OFFS		SPTR	"OFF" */
-char *OFFS = "OFF";
+const char *OFFS = "OFF";
 /* asm: NULLSTR		SPTR	"" */
-char *NULLSTR = "";
+const char *NULLSTR = "";
 /* asm: AREUSURE	SPTR	"ARE YOU SURE?" */
-char *AREUSURE = "ARE YOU SURE?";
+const char *AREUSURE = "ARE YOU SURE?";
 /* asm: CCD2A	SPTR	"CREDITS CLEARED" */
-char *CCD2A = "CREDITS CLEARED";
+const char *CCD2A = "CREDITS CLEARED";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: SSGD	SPTR	"STEERING SENSITIVITY" */
-char *SSGD = "STEERING SENSITIVITY";
+const char *SSGD = "STEERING SENSITIVITY";
 /* asm: SSGD2	SPTR	"0 (ADOLT) TO 5 (GAMEPLAYER)" */
-char *SSGD2 = "0 (ADOLT) TO 5 (GAMEPLAYER)";
+const char *SSGD2 = "0 (ADOLT) TO 5 (GAMEPLAYER)";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: HSGD	SPTR	"PLAYS TO HIGHSCORE" */
-char *HSGD = "PLAYS TO HIGHSCORE";
+const char *HSGD = "PLAYS TO HIGHSCORE";
 /* asm: HSGD2	SPTR	"RESET 1000 TO 25000" */
-char *HSGD2 = "RESET 1000 TO 25000";
+const char *HSGD2 = "RESET 1000 TO 25000";
 // *----------------------------------------------------------------------------
 // ;*----------------------------------------------------------------------------
 // ;FSGD	SPTR	"FIRST PLACE PERCENT"
@@ -371,37 +371,37 @@ char *HSGD2 = "RESET 1000 TO 25000";
 // *
 // *
 /* asm: SGD	SPTR	"GAME DIFFICULTY" */
-char *SGD = "GAME DIFFICULTY";
+const char *SGD = "GAME DIFFICULTY";
 /* asm: SGD2	SPTR	"0 (EASY) TO 9 (HARD)" */
-char *SGD2 = "0 (EASY) TO 9 (HARD)";
+const char *SGD2 = "0 (EASY) TO 9 (HARD)";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
 // *
 // *
 /* asm: ITD	SPTR	"INITIAL TIME" */
-char *ITD = "INITIAL TIME";
+const char *ITD = "INITIAL TIME";
 /* asm: ITD2	SPTR	"60-90 SECONDS" */
-char *ITD2 = "60-90 SECONDS";
+const char *ITD2 = "60-90 SECONDS";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: CPBTT	SPTR	"CHECKPOINT TIME BONUS" */
-char *CPBTT = "CHECKPOINT TIME BONUS";
+const char *CPBTT = "CHECKPOINT TIME BONUS";
 /* asm: CPBTT2	SPTR	"10-25 SECONDS" */
-char *CPBTT2 = "10-25 SECONDS";
+const char *CPBTT2 = "10-25 SECONDS";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: MXT1	SPTR	"MAX CREDITS" */
-char *MXT1 = "MAX CREDITS";
+const char *MXT1 = "MAX CREDITS";
 /* asm: MXT2	SPTR	"10-50" */
-char *MXT2 = "10-50";
+const char *MXT2 = "10-50";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
 // *
 // *
 /* asm: MVL	SPTR	"MINIMUM VOLUME LEVEL" */
-char *MVL = "MINIMUM VOLUME LEVEL";
+const char *MVL = "MINIMUM VOLUME LEVEL";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *MULTI VALUE
@@ -423,30 +423,30 @@ int REPEAT_SW;
 int REPEAT_TIME;
 // *----------------------------------------------------------------------------
 /* asm: SPM	SPTR	"STANDARD PRICING MENU" */
-char *SPM = "STANDARD PRICING MENU";
+const char *SPM = "STANDARD PRICING MENU";
 // *----------------------------------------------------------------------------
-const char SELTP[] = "SELECT THIS PRICING";
+const char *SELTP = "SELECT THIS PRICING";
 /* asm: STP	SPTR	"PRICING SELECTED" */
-char *STP = "PRICING SELECTED";
+const char *STP = "PRICING SELECTED";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: RCMT	SPTR	"CUSTOM PRICING" */
-char *RCMT = "CUSTOM PRICING";
+const char *RCMT = "CUSTOM PRICING";
 // *----------------------------------------------------------------------------
-const char FRACYN[] = "SHOW FRACTION";
+const char *FRACYN = "SHOW FRACTION";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char USECP[] = "USE CUSTOM PRICING";
+const char *USECP = "USE CUSTOM PRICING";
 /* asm: CPS	SPTR	"CUSTOM PRICING SELECTED" */
-char *CPS = "CUSTOM PRICING SELECTED";
+const char *CPS = "CUSTOM PRICING SELECTED";
 // *----------------------------------------------------------------------------
-const char CPCS[] = "UNITS PER COIN";
-const char CUPC[] = "UNITS PER CREDIT";
-const char CTSS[] = "BONUS UNITS";
-const char CTCS[] = "MINIMUM UNITS";
-const char CCTS[] = "CREDITS TO START";
-const char CCTC[] = "CREDITS TO CONTINUE";
-const char CTPC[] = "COUNTER TICKS PER COIN";
+const char *CPCS = "UNITS PER COIN";
+const char *CUPC = "UNITS PER CREDIT";
+const char *CTSS = "BONUS UNITS";
+const char *CTCS = "MINIMUM UNITS";
+const char *CCTS = "CREDITS TO START";
+const char *CCTC = "CREDITS TO CONTINUE";
+const char *CTPC = "COUNTER TICKS PER COIN";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *MENU DEFINITIONS
@@ -460,7 +460,7 @@ const char CTPC[] = "COUNTER TICKS PER COIN";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: LAMPT	SPTR	"LAMP TEST" */
-char *LAMPT = "LAMP TEST";
+const char *LAMPT = "LAMP TEST";
 #define LAMP_MENU_LEN 11
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------

@@ -8,6 +8,7 @@
 #include "../include/vunit.h"
 #include "../include/pall.h"
 #include "../include/infin.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/INFIN.ASM
@@ -59,7 +60,7 @@ int HIGHIVAL = (int)(1536);
 /* asm: INFINITY_POINTS	.word	INFINPOINTS */
 int INFINITY_POINTS = (int)(INFINPOINTS);
 /* asm: INFIN_POLYGONSI	.word	BLUESKY */
-int INFIN_POLYGONSI = (int)(BLUESKY);
+#define INFIN_POLYGONSI BLUESKY
 /* asm: BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
 /* asm: 	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
 int BLUESKY[] = { sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I, sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I };

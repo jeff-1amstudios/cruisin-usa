@@ -302,6 +302,23 @@ def write_address_map(map_path: pathlib.Path, entries: Iterable[Tuple[str, int]]
     return len(existing)
 
 
+def format_discovered_define_value(value: int) -> str:
+    return str(value)
+
+
+def write_discovered_defines_file(
+    defines_path: pathlib.Path,
+    defines: Dict[str, int],
+    *,
+    discovered_modules: Dict[str, str],
+) -> int:
+    lines: List[str] = []
+    for name, value in sorted(defines.items(), key=lambda item: item[0].upper()):
+        lines.append(f"{name}\t{format_discovered_define_value(value)}\t{discovered_modules.get(name, '')}")
+    defines_path.write_text("\n".join(lines) + ("\n" if lines else ""))
+    return len(lines)
+
+
 def assign_final_label_names(
     rows: Dict[Tuple[str, str], Tuple[str, str, str, str, str, str, str, str]]
 ) -> Dict[Tuple[str, str], str]:
@@ -489,6 +506,38 @@ def parse_int_token(tok: str) -> Optional[int]:
         except Exception:
             return None
     return None
+
+
+def format_define_value(value: int) -> str:
+    if value < 0:
+        return f"-0x{abs(value):X}"
+    return f"0x{value:X}"
+
+
+def maybe_discovered_define(source_tok: str, rom_tok: str) -> Optional[Tuple[str, int]]:
+    """Infer ``name = immediate`` bindings from matched source/ROM operands."""
+    raw_source = source_tok.strip().strip(",")
+    if not raw_source or raw_source[0] in "@*#+-":
+        return None
+    if "(" in raw_source or ")" in raw_source:
+        return None
+    source_name = raw_source
+    if not source_name or not LABEL_TOKEN_RE.match(source_name):
+        return None
+    if is_pseudo_local_label(source_name) or source_name.endswith("?"):
+        return None
+    if REGISTER_RE.match(source_name.upper()):
+        return None
+    if parse_int_token(source_name) is not None:
+        return None
+
+    rom_imm = rom_tok.strip().strip(",")
+    if not rom_imm.startswith("#"):
+        return None
+    value = parse_int_token(rom_imm[1:])
+    if value is None:
+        return None
+    return source_name, value
 
 
 def parse_rom_operand_addr(tok: str) -> Optional[int]:
@@ -1943,6 +1992,7 @@ def main() -> None:
     py_out = here / "ida_label_import.py"
     run_log = log_dir / "romlst_run_log.tsv"
     canonical_map = here / "address.map"
+    discovered_defines_out = here / "discovered_defines.txt"
     seed_map = here / "seed-addresses.map"
     ida_map = rom.with_name("ida-address.map")
 
@@ -1953,6 +2003,9 @@ def main() -> None:
     vunit_hardware_symbols = parse_vunit_hardware_symbols(root)
     exact_set_symbols = parse_exact_set_symbols(root, symbols)
     high_set_symbols = parse_high_set_symbols(root, symbols)
+    discovered_defines: Dict[str, int] = {}
+    source_defined_names: Set[str] = set(exact_set_symbols)
+    discovered_first_modules: Dict[str, str] = {}
     seed_addresses = parse_address_map(seed_map)
     use_ida_map = os.environ.get("CRUSNUSA_USE_IDA_MAP", "").strip() not in {"", "0", "false", "False"}
     ida_lookup = parse_address_map(ida_map) if (use_ida_map and ida_map.exists()) else {}
@@ -1967,6 +2020,8 @@ def main() -> None:
     source_labels_ordered = source_code_label_order(root, symbols, macros)
     source_call_target_keys = collect_source_call_target_keys(root, symbols)
     source_label_lines = parse_source_label_lines(root)
+    source_defined_symbol_names: Set[str] = {symbol_key(name) for name, _mod in source_label_lines.keys()}
+    source_defined_symbol_names.update(symbol_key(name) for name in source_defined_names)
 
     module_anchor_candidates: Dict[str, Anchor] = {}
     for mod, src_fn, _line in source_labels_ordered:
@@ -2148,6 +2203,9 @@ def main() -> None:
         while si < len(src_ops) and ri < len(rom_ops):
             sop, stoks = src_ops[si]
             curr_src_line = src_ops_lno[si][0] if si < len(src_ops_lno) else 0
+            curr_raw_src_line = ""
+            if curr_src_line and 1 <= curr_src_line <= len(module_lines_cache[module]):
+                curr_raw_src_line = module_lines_cache[module][curr_src_line - 1]
             prev_src_line = src_ops_lno[si - 1][0] if si > 0 and (si - 1) < len(src_ops_lno) else 0
             # If source had .align between previous and current source op,
             # consume zero-or-more ROM NOPs before matching mnemonics.
@@ -2273,6 +2331,16 @@ def main() -> None:
             if si in dp0_op_indexes:
                 dp0_marks.add(rea)
                 dp0_marks.add(rea + 1)
+            if '"' not in curr_raw_src_line:
+                for source_tok, rom_tok in zip(stoks[1:], rtoks[1:]):
+                    discovered = maybe_discovered_define(source_tok, rom_tok)
+                    if discovered is None:
+                        continue
+                    define_name, define_value = discovered
+                    if symbol_key(define_name) in source_defined_symbol_names:
+                        continue
+                    discovered_defines.setdefault(define_name, define_value)
+                    discovered_first_modules.setdefault(define_name, module)
             # Temporarily disabled: post-call DP0 injection for specific callees.
             # Keep only direct SETDP-derived DP marks for now.
             if sop.upper() == "LDI" and len(stoks) >= 2 and len(rtoks) >= 2 and literal_ref_idx < len(literal_refs):
@@ -2632,6 +2700,11 @@ def main() -> None:
         canonical_map,
         ((final_label_names[key], int(row[4], 16)) for key, row in rows.items()),
     )
+    define_entries = write_discovered_defines_file(
+        discovered_defines_out,
+        discovered_defines,
+        discovered_modules=discovered_first_modules,
+    )
 
     with outp.open("w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
@@ -2752,12 +2825,14 @@ def main() -> None:
     print(f"wrote {cov_out}")
     print(f"wrote {dpout}")
     print(f"wrote {cmout}")
+    print(f"wrote {discovered_defines_out}")
     print(f"rows={len(rows)} code={code_n} data={data_n} anchors={len(anchors)} unresolved={len(unresolved_unique)}")
     print(f"promoted_aliases={promoted_aliases}")
     print(f"seed_map={seed_map} seeds={len(seed_addresses)}")
     if ida_lookup:
         print(f"ida_lookup_map={ida_map} entries={len(ida_lookup)}")
     print(f"address_map={canonical_map} entries={map_entries}")
+    print(f"discovered_defines={discovered_defines_out} entries={define_entries}")
 
     # Automatically generate standalone IDAPython apply script.
     labels_emitted, dp0_emitted, comments_emitted = build_ida_import_script.build_import_script(

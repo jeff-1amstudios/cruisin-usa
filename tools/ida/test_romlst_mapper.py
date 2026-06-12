@@ -16,6 +16,7 @@ from ida.walk_source_and_rom import (
     collect_word_block_symbol_rows,
     collect_literal_macro_refs,
     iter_expanded_lines,
+    maybe_discovered_define,
     normalize_word_rom_read_ea,
     parse_src_ops,
     parse_rom_ops_from_addr,
@@ -207,6 +208,12 @@ def main() -> None:
     #     used as an operand-address fallback during source<->ROM pairing.
     assert parse_rom_operand_addr('@CPU_WS@CMOS') is None
     assert parse_rom_operand_addr('INV_F30') is None
+    assert maybe_discovered_define('bottom_gtmp_p', '#0') == ('bottom_gtmp_p', 0)
+    assert source_set_symbol_addr('ADJ_COIN1_COUNTER', symbols) == 19
+    assert maybe_discovered_define('@CPU_WS', '@808064h') is None
+    assert maybe_discovered_define('@FASTSTKI', '#0') is None
+    assert maybe_discovered_define('*FASTSTKI', '#0') is None
+    assert maybe_discovered_define('R0', '#0') is None
     assert parse_rom_operand_addr('sub_64') == 0x64
     assert parse_rom_operand_addr('loc_106') == 0x106
     assert parse_rom_operand_addr('byte_40') == 0x40

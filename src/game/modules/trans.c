@@ -14,6 +14,7 @@
 #include "../include/text.h"
 #include "../include/delta.h"
 #include "../include/trans.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/TRANS.ASM

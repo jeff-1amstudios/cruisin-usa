@@ -13,6 +13,7 @@
 #include "../include/objects.h"
 #include "../include/text.h"
 #include "../include/roadkill.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/ROADKILL.ASM

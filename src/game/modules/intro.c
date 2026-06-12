@@ -18,6 +18,7 @@
 #include "../include/comm.h"
 #include "../include/racer.h"
 #include "../include/intro.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/INTRO.ASM
@@ -57,13 +58,13 @@ int H2H_FLAGSTATE;
 // *
 // *
 // *
-const char JINOW[] = "JOIN IN NOW";
+const char *JINOW = "JOIN IN NOW";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
-const char WFCHAL1[] = "WAITING";
-const char WFCHAL2[] = "FOR CHALLENGER";
-const char WFCHAL3[] = "HOLD RADIO OR VIEW3 TO CANCEL";
+const char *WFCHAL1 = "WAITING";
+const char *WFCHAL2 = "FOR CHALLENGER";
+const char *WFCHAL3 = "HOLD RADIO OR VIEW3 TO CANCEL";
 /* asm: FRAMELAG	.bss	FRAMELAG,1 */
 int FRAMELAG;
 // *----------------------------------------------------------------------------
@@ -73,7 +74,7 @@ int FRAMELAG;
 // *----------------------------------------------------------------------------
 // *CHOOSECAR
 // *
-const char CCT[] = "CHOOSE CAR";
+const char *CCT = "CHOOSE CAR";
 // 	;all Y's were 0
 // 	;
 /* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
@@ -194,10 +195,10 @@ int SPINCURR;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-const char T_READY[] = "READY";
-const char T_SET[] = "SET";
-const char T_GO[] = "GO";
-const char T_CHALLENG[] = "CHALLENGE RACE";
+const char *T_READY = "READY";
+const char *T_SET = "SET";
+const char *T_GO = "GO";
+const char *T_CHALLENG = "CHALLENGE RACE";
 /* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
 /* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
 int TLIST[] = { T_READY, CHICK_READY, SEND_WAVEFL_READY, T_SET, CHICK_SET, SEND_WAVEFL_SET };
@@ -231,11 +232,11 @@ int _timer;
 // *	COIN_CNTDOWN	CREATED, KILLED
 // *
 /* asm: TROI	SPTR	"INSERT COINS" */
-char *TROI = "INSERT COINS";
+const char *TROI = "INSERT COINS";
 /* asm: ICCI	SPTR	"TO CONTINUE" */
-char *ICCI = "TO CONTINUE";
+const char *ICCI = "TO CONTINUE";
 /* asm: PSCI	SPTR	"PRESS START" */
-char *PSCI = "PRESS START";
+const char *PSCI = "PRESS START";
 /* asm: SAVEDMODE	.bss	SAVEDMODE,1 */
 int SAVEDMODE;
 // *----------------------------------------------------------------------------

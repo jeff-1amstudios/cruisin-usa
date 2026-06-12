@@ -52,23 +52,23 @@
 int COMMINTM;
 // 				;INT2_M  if linked
 #if 0
-const char startup0[] = "DO NOT EVEN CONSIDER RELEASING THESE ROMS";
-const char startup2[] = "   THIS VERSION HAS A FATAL BUG";
-const char dlts[] = "TEST VERSION";
-const char VERSION_STAMP[] = "VERSION NOT FOR RELEASE";
+const char *startup0 = "DO NOT EVEN CONSIDER RELEASING THESE ROMS";
+const char *startup2 = "   THIS VERSION HAS A FATAL BUG";
+const char *dlts = "TEST VERSION";
+const char *VERSION_STAMP = "VERSION NOT FOR RELEASE";
 #else
-const char startup0[] = "          CRUISN USA (TM)     HEAD 2 HEAD";
-const char startup1[] = "  (C) 1994 NINTENDO, DEVELOPED BY TV GAMES, INC.";
-const char startup2[] = "MANUFACTURED AND SOLD BY MIDWAY MANUFACTURING COMPANY";
-const char startup3[] = "                  UNDER LICENSE.";
-const char dlts[] = "DOWNLOADING TEXTURES";
+const char *startup0 = "          CRUISN USA (TM)     HEAD 2 HEAD";
+const char *startup1 = "  (C) 1994 NINTENDO, DEVELOPED BY TV GAMES, INC.";
+const char *startup2 = "MANUFACTURED AND SOLD BY MIDWAY MANUFACTURING COMPANY";
+const char *startup3 = "                  UNDER LICENSE.";
+const char *dlts = "DOWNLOADING TEXTURES";
 // ;Release of linked version will be 4.0
 // ;	I = I4000
 // ;	VID = 40
 // ;
-const char VERSION_STAMP[] = "VERSION  4.4";
+const char *VERSION_STAMP = "VERSION  4.4";
 #endif
-const char INTERNAL_VERS[] = "I440";
+const char *INTERNAL_VERS = "I440";
 #define VERSION_ID 40
 // 	;Because of managements inability to deal with software projects,
 // 	;or being able to keep the version control straight
@@ -81,15 +81,15 @@ const char INTERNAL_VERS[] = "I440";
 // 	;Keep in mind that multiple releases exist under the external
 // 	;version name, and the true software version can be gotten from
 // 	;the title page.
-const char M1[] = "LOADING OS-WMS...";
-const char M2[] = "I-NODES ALLOCATED,  DCS DECODED (14-1715)";
-const char M3[] = "WMS SATELLITE COMM, CHANNEL 3 ACTIVE LYBIRP";
-const char M4[] = "USR/ELP/CUSA>NETLINK WMS 14.32.86.1 -K CIRE";
-const char M5[] = "CONNECTING TO HOST...";
-const char M6[] = "CONNECTION ESTABLISHED, PUBLIC-KEY: CIRE";
-const char M7[] = "USR/ELP/CUSA>FTP GET CUSA";
-const char M8[] = "37940813 BYTES RECEIVED OK";
-const char M9[] = "USR/ELP/CUSA>TV30 CUSA /L";
+const char *M1 = "LOADING OS-WMS...";
+const char *M2 = "I-NODES ALLOCATED,  DCS DECODED (14-1715)";
+const char *M3 = "WMS SATELLITE COMM, CHANNEL 3 ACTIVE LYBIRP";
+const char *M4 = "USR/ELP/CUSA>NETLINK WMS 14.32.86.1 -K CIRE";
+const char *M5 = "CONNECTING TO HOST...";
+const char *M6 = "CONNECTION ESTABLISHED, PUBLIC-KEY: CIRE";
+const char *M7 = "USR/ELP/CUSA>FTP GET CUSA";
+const char *M8 = "37940813 BYTES RECEIVED OK";
+const char *M9 = "USR/ELP/CUSA>TV30 CUSA /L";
 // 	;*** RAM DEFINITIONS
 /* asm: _MODE	pbss	_MODE,1 */
 int _MODE;
@@ -233,15 +233,15 @@ int TIMERAM[50];
 /* asm: MSG_CNT	.bss	MSG_CNT,1 */
 int MSG_CNT;
 /* asm: LINKDISABLED	SPTR	"LINK DISABLED BY U97  DIP6 OFF" */
-char *LINKDISABLED = "LINK DISABLED BY U97  DIP6 OFF";
+const char *LINKDISABLED = "LINK DISABLED BY U97  DIP6 OFF";
 /* asm: IAMMASTER	SPTR	"LINK MASTER MACHINE" */
-char *IAMMASTER = "LINK MASTER MACHINE";
+const char *IAMMASTER = "LINK MASTER MACHINE";
 /* asm: IAMSLAVE	SPTR	"LINK SLAVE MACHINE" */
-char *IAMSLAVE = "LINK SLAVE MACHINE";
+const char *IAMSLAVE = "LINK SLAVE MACHINE";
 /* asm: TPALI		SPTR	"U38 LINK PAL INSTALLED" */
-char *TPALI = "U38 LINK PAL INSTALLED";
+const char *TPALI = "U38 LINK PAL INSTALLED";
 /* asm: TPALNI		SPTR	"U38 LINK PAL NOT INSTALLED" */
-char *TPALNI = "U38 LINK PAL NOT INSTALLED";
+const char *TPALNI = "U38 LINK PAL NOT INSTALLED";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *SECRET OCTOPUS
@@ -271,7 +271,7 @@ int BUTTON_IBO;
 int BUTTON_TIK;
 // *----------------------------------------------------------------------------
 /* asm: BUTTONI	.word	BUTTII */
-int BUTTONI = (int)(BUTTII);
+#define BUTTONI BUTTII
 /* asm: BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
 int BUTTII[] = { BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2 };
 // *----------------------------------------------------------------------------

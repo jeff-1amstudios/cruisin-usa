@@ -30,10 +30,10 @@
 // *	.word	AUDIT_#,string
 // *
 // *
-const char l_[] = ":ATEXT:";
+const char *l_ = ":ATEXT:";
 #define AUD_ROUTINE 0x5A
 #define AUD_ROUTINEH 0x5A0000
-const char l_[] = ":ATEXT:";
+const char *l_ = ":ATEXT:";
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *AUDITS DISPLAY

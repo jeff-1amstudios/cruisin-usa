@@ -42,11 +42,11 @@ int TURNOBJ;
 /* asm: RAW_CHOOSENTRK	.bss	RAW_CHOOSENTRK,1 */
 int RAW_CHOOSENTRK;
 /* asm: CRUISE	SPTR	"CRUISE THE USA" */
-char *CRUISE = "CRUISE THE USA";
+const char *CRUISE = "CRUISE THE USA";
 /* asm: CRUISE2	SPTR	"JAM WITH THE PRESIDENT" */
-char *CRUISE2 = "JAM WITH THE PRESIDENT";
+const char *CRUISE2 = "JAM WITH THE PRESIDENT";
 /* asm: CRUISE3	SPTR	"IN THE WHITE HOUSE HOT TUB" */
-char *CRUISE3 = "IN THE WHITE HOUSE HOT TUB";
+const char *CRUISE3 = "IN THE WHITE HOUSE HOT TUB";
 // *----------------------------------------------------------------------------
 // *
 // *
@@ -60,9 +60,9 @@ int LLG2 = (int)(L5A);
 int LLG3 = (int)(L5B);
 /* asm: L88	.word	IBOIBOJ */
 int L88 = (int)(IBOIBOJ);
-const char L4A[] = "MOTION RECALIBRATION";
-const char L5A[] = "REMAIN SEATED";
-const char L5B[] = "DO NOT TOUCH MATS";
+const char *L4A = "MOTION RECALIBRATION";
+const char *L5A = "REMAIN SEATED";
+const char *L5B = "DO NOT TOUCH MATS";
 /* asm: IBOIBOJ	.bss	IBOIBOJ,2 */
 int IBOIBOJ[2];
 // 	;******

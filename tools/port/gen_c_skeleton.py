@@ -133,6 +133,14 @@ class WordVariable:
 class SetDefine:
     name: str
     expr: str
+    origin: str = "set"
+
+
+@dataclass
+class DefineEntry:
+    name: str
+    expr: str
+    module: str
 
 
 @dataclass
@@ -204,6 +212,55 @@ def parse_address_map(map_path: Path) -> dict[str, int]:
     return out
 
 
+def parse_int_token(tok: str) -> int | None:
+    text = tok.strip()
+    neg = text.startswith("-")
+    if neg:
+        text = text[1:].strip()
+    if text.lower().startswith("0x"):
+        try:
+            value = int(text, 16)
+        except ValueError:
+            return None
+        return -value if neg else value
+    if text.lower().endswith("h"):
+        try:
+            value = int(text[:-1], 16)
+        except ValueError:
+            return None
+        return -value if neg else value
+    if re.fullmatch(r"[0-9]+", text):
+        value = int(text, 10)
+        return -value if neg else value
+    return None
+
+
+def parse_discovered_defines_file(defines_path: Path) -> dict[str, DefineEntry]:
+    out: dict[str, DefineEntry] = {}
+    if not defines_path.exists():
+        return out
+    for raw in defines_path.read_text(errors="ignore").splitlines():
+        if not raw.strip():
+            continue
+        parts = raw.split("\t")
+        if len(parts) < 2:
+            continue
+        name = parts[0]
+        expr = parts[1].strip()
+        if not expr:
+            continue
+        module = parts[2].strip().upper() if len(parts) >= 3 else ""
+        out.setdefault(
+            name,
+            DefineEntry(
+                name=name,
+                expr=expr,
+                module=module,
+            ),
+        )
+    return out
+
+
 def lookup_address_map_symbol(address_map: dict[str, int], name: str, module: str) -> int | None:
     if name in address_map:
         return address_map[name]
@@ -270,7 +327,6 @@ def render_storage_header(src_path: Path, defines: list[StorageVariable]) -> str
     out.append("")
     for entry in defines:
         out.append(f"// asm: {entry.asm_line}")
-        out.append(f"// addr: 0x{entry.addr:08X}")
         out.append(storage_declaration(entry.name, entry.size_expr, is_extern=True))
     out.append("")
     out.append(f"#endif /* {guard} */")
@@ -667,7 +723,11 @@ def render_word_variable(var: WordVariable) -> list[str]:
             out.append(f"/* asm: \t{extra_line.strip()} */")
     ident = sanitize_identifier(var.name)
     if len(var.values) == 1:
-        out.append(f"int {ident} = (int)({convert_expr(var.values[0])});")
+        value = var.values[0].strip()
+        if var.name.lower().endswith("i") and BRANCH_TARGET_RE.fullmatch(value) and parse_int_token(value) is None:
+            out.append(f"#define {ident} {convert_expr(value)}")
+        else:
+            out.append(f"int {ident} = (int)({convert_expr(value)});")
     else:
         values = ", ".join(convert_expr(value) for value in var.values)
         out.append(f"int {ident}[] = {{ {values} }};")
@@ -679,16 +739,34 @@ def render_set_define(entry: SetDefine) -> list[str]:
     return [f"#define {entry.name} {expr}"]
 
 
+def render_discovered_defines_header(defines: list[DefineEntry]) -> str:
+    out = [
+        "#ifndef DISCOVERED_DEFINES_H",
+        "#define DISCOVERED_DEFINES_H",
+        "",
+        "/* Generated from tools/ida/discovered_defines.txt. */",
+        "",
+    ]
+    for entry in defines:
+        out.extend(render_set_define(SetDefine(name=entry.name, expr=entry.expr, origin="discovered")))
+    out.extend([
+        "",
+        "#endif /* DISCOVERED_DEFINES_H */",
+        "",
+    ])
+    return "\n".join(out)
+
+
 def render_string_variable(var: StringVariable) -> list[str]:
     ident = sanitize_identifier(var.name)
-    return [f"const char {ident}[] = {var.c_string};"]
+    return [f"const char *{ident} = {var.c_string};"]
 
 
 def render_sptr_variable(name: str, c_string: str, asm_line: str) -> list[str]:
     ident = sanitize_identifier(name)
     return [
         f"/* asm: {asm_line.strip()} */",
-        f"char *{ident} = {c_string};",
+        f"const char *{ident} = {c_string};",
     ]
 
 
@@ -793,9 +871,10 @@ def render_top_level_items(
         set_match = SET_RE.match(code)
         if set_match:
             name, expr = set_match.groups()
+            define_entry = SetDefine(name=name, expr=convert_expr(expr))
             if name in emitted_sets:
                 out.append(f"#undef {name}")
-            out.extend(render_set_define(SetDefine(name=name, expr=convert_expr(expr))))
+            out.extend(render_set_define(define_entry))
             emitted_sets.add(name)
             idx += 1
             continue
@@ -927,17 +1006,30 @@ def render_top_level_items(
     return out
 
 
-def render_module(src_path: Path, address_map: dict[str, int], owner_headers: dict[str, str], own_header: str | None) -> str:
+def render_module(
+    src_path: Path,
+    address_map: dict[str, int],
+    owner_headers: dict[str, str],
+    own_header: str | None,
+    discovered_header_needed: bool = False,
+) -> str:
     lines = src_path.read_text(errors="ignore").splitlines()
     headers = parse_include_headers(lines)
     if own_header is not None:
         headers.append(own_header)
+    if discovered_header_needed:
+        headers.append("discovered_defines.h")
     headers.extend(sorted(collect_word_symbol_dependencies(lines, owner_headers, src_path.stem.upper())))
     headers = list(dict.fromkeys(headers))
     branch_targets = collect_branch_targets(lines)
     functions = collect_top_level_functions(lines, branch_targets)
     attach_leading_context(lines, functions)
-    top_level_items = render_top_level_items(lines, functions, address_map, src_path.stem.upper())
+    top_level_items = render_top_level_items(
+        lines,
+        functions,
+        address_map,
+        src_path.stem.upper(),
+    )
 
     out: list[str] = []
     out.append('#include "../../core/cpu.h"')
@@ -1087,17 +1179,41 @@ def collect_referenced_data_symbols(lines: list[str], label_types: dict[str, str
     return refs
 
 
+def collect_referenced_define_symbols(lines: list[str], define_names: set[str]) -> set[str]:
+    refs: set[str] = set()
+    for raw in lines:
+        if is_comment_or_blank(raw):
+            continue
+        text = extract_reference_text(raw)
+        code, _comment = split_comment(text)
+        code = code.strip()
+        if not code:
+            continue
+        for tok in BRANCH_TARGET_RE.findall(code):
+            if tok in define_names:
+                refs.add(tok)
+    return refs
+
+
 def main() -> int:
     root = Path(__file__).resolve().parents[2]
     asm_dir = root / "asm"
     out_dir = root / "src" / "game" / "modules"
     include_dir = root / "src" / "game" / "include"
     address_map = parse_address_map(root / "tools" / "ida" / "address.map")
+    define_entries = parse_discovered_defines_file(root / "tools" / "ida" / "discovered_defines.txt")
     label_types = parse_romlst_label_types(root / "tools" / "ida" / "log" / "romlst_labels.tsv")
     out_dir.mkdir(parents=True, exist_ok=True)
     include_dir.mkdir(parents=True, exist_ok=True)
     log_dir = root / "tools" / "port" / "log"
     log_dir.mkdir(parents=True, exist_ok=True)
+    discovered_define_entries = sorted(
+        list(define_entries.values()),
+        key=lambda item: item.name.upper(),
+    )
+    discovered_define_names = {entry.name for entry in discovered_define_entries}
+    if discovered_define_entries:
+        (include_dir / "discovered_defines.h").write_text(render_discovered_defines_header(discovered_define_entries))
 
     storage_defines_by_module: dict[str, list[StorageVariable]] = {}
     owner_headers: dict[str, str] = {}
@@ -1117,13 +1233,14 @@ def main() -> int:
         skipped_data_symbols.update(
             collect_referenced_data_symbols(lines, label_types) - collect_defined_data_symbols(lines)
         )
+        discovered_header_needed = bool(collect_referenced_define_symbols(lines, discovered_define_names))
         out_path = out_dir / (src_path.stem.lower() + ".c")
         own_header = owner_headers.get(next(iter([d.name for d in storage_defines_by_module.get(src_path.stem.upper(), [])]), ""), None)
         if src_path.stem.upper() in storage_defines_by_module:
             own_header = storage_header_name(src_path.stem, include_dir)
         else:
             own_header = None
-        out_path.write_text(render_module(src_path, address_map, owner_headers, own_header))
+        out_path.write_text(render_module(src_path, address_map, owner_headers, own_header, discovered_header_needed))
 
     skipped_log = log_dir / "skipped_data_symbols.txt"
     skipped_rows = sorted(skipped_data_symbols)

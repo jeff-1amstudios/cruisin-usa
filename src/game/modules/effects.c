@@ -50,13 +50,13 @@
 // *and from there it would be moved to AR6, and checked each tik.
 // *
 /* asm: MONKEYOBJRVI	.word	mnkrv */
-int MONKEYOBJRVI = (int)(mnkrv);
+#define MONKEYOBJRVI mnkrv
 /* asm: MONKEYOBJLVI	.word	mnklv */
-int MONKEYOBJLVI = (int)(mnklv);
+#define MONKEYOBJLVI mnklv
 /* asm: MONKEYOBJUHI	.word	mnkuh */
-int MONKEYOBJUHI = (int)(mnkuh);
+#define MONKEYOBJUHI mnkuh
 /* asm: MONKEYOBJLHI	.word	mnklh */
-int MONKEYOBJLHI = (int)(mnklh);
+#define MONKEYOBJLHI mnklh
 /* asm: SCREENWIPE_DONE	.bss	SCREENWIPE_DONE,1 */
 int SCREENWIPE_DONE;
 // *----------------------------------------------------------------------------

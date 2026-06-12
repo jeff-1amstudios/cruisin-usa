@@ -103,7 +103,7 @@ int PLMSAV[15];
 /* asm: PMSAV	.bss	PMSAV,9 */
 int PMSAV[9];
 /* asm: ZOOMI	.word	ZOOMRAM */
-int ZOOMI = (int)(ZOOMRAM);
+#define ZOOMI ZOOMRAM
 #define GRAVITY 1.20
 // *RPM MAX
 #define NUM_RPMS 47
@@ -149,11 +149,11 @@ int ZOOMI = (int)(ZOOMRAM);
 // ;	LDF	1.0,R0			;INIT DRAFT VALUE
 // ;	STF	R0,@PLDRAFTVAL
 /* asm: VIEW0I	.word	_VIEW0 */
-int VIEW0I = (int)(_VIEW0);
+#define VIEW0I _VIEW0
 /* asm: VIEW1I	.word	_VIEW1 */
-int VIEW1I = (int)(_VIEW1);
+#define VIEW1I _VIEW1
 /* asm: VIEW2I	.word	_VIEW2 */
-int VIEW2I = (int)(_VIEW2);
+#define VIEW2I _VIEW2
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *MIDWAY CHEAT IS HERE!!!!!!!!!!!!
