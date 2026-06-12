@@ -42,7 +42,7 @@ int SCORE;
 int POSITION;
 /* asm: MAXMPH_COUNT	.bss	MAXMPH_COUNT,1 */
 int MAXMPH_COUNT;
-/* asm: STOPBUFFI	.word	STOPBUFFER */
+/* asm: STOPBUFFI	STOPBUFFI	.word	STOPBUFFER */
 #define STOPBUFFI STOPBUFFER
 /* asm: STOPBUFFER	.bss	STOPBUFFER,4 */
 int STOPBUFFER[4];
@@ -53,8 +53,10 @@ int OFFROADBUFF[2];
 // *----------------------------------------------------------------------------
 /* asm: MOVEIN_OFFSET	.bss	MOVEIN_OFFSET,1 */
 int MOVEIN_OFFSET;
-/* asm: SAFETS	.word	MSAF,BSAF,OSAF,MSSM */
-int SAFETS[] = { MSAF, BSAF, OSAF, MSSM };
+/* asm: SAFETS	SAFETS	.word	MSAF,BSAF,OSAF,MSSM */
+int SAFETS[] = {
+    MSAF, BSAF, OSAF, MSSM,
+};
 const char *MSAF = "SAFETY MAT ACTIVATED";
 const char *BSAF = "SAFETY BEAM ACTIVATED";
 const char *OSAF = "FAIL SAFE SWITCH ACTIVATED";
@@ -70,10 +72,12 @@ const char *MSSM = "MOTION STOP BUTTON HIT";
 // 	;show gear digit
 // 	;
 // 	;
-/* asm: GEARI	.word	GEARS */
+/* asm: GEARI	GEARI	.word	GEARS */
 #define GEARI GEARS
-/* asm: GEARS	.word	GEARN,GEAR1,GEAR2,GEAR3,GEAR4 */
-int GEARS[] = { GEARN, GEAR1, GEAR2, GEAR3, GEAR4 };
+/* asm: GEARS	GEARS	.word	GEARN,GEAR1,GEAR2,GEAR3,GEAR4 */
+int GEARS[] = {
+    GEARN, GEAR1, GEAR2, GEAR3, GEAR4,
+};
 const char *GEAR1 = "1";
 const char *GEAR2 = "2";
 const char *GEAR3 = "3";
@@ -101,6 +105,29 @@ int LASTSEC;
 // 	;-------POSITION
 // 	;(PLAYERS RANK)
 // 	;
+/* asm: POS_TABLE	POS_TABLE */
+/* asm: 	.word	scred1,dst,7 */
+/* asm: 	.word	scred2,dnd,0 */
+/* asm: 	.word	scred3,drd,0 */
+/* asm: 	.word	scred4,dth,0 */
+/* asm: 	.word	scred5,dth,0 */
+/* asm: 	.word	scred6,dth,0 */
+/* asm: 	.word	scred7,dth,0 */
+/* asm: 	.word	scred8,dth,0 */
+/* asm: 	.word	scred9,dth,0 */
+/* asm: 	.word	scred10,dth,-20 */
+int POS_TABLE[] = {
+    scred1, dst, 7,
+    scred2, dnd, 0,
+    scred3, drd, 0,
+    scred4, dth, 0,
+    scred5, dth, 0,
+    scred6, dth, 0,
+    scred7, dth, 0,
+    scred8, dth, 0,
+    scred9, dth, 0,
+    scred10, dth, -20,
+};
 #if SECTION_COUNTER
 // 	;-------DEBUGGING SECTION_COUNTER
 // 	;
@@ -117,6 +144,17 @@ int SECIDX[2];
 // *----------------------------------------------------------------------------
 /* asm: TACHOMETER_PAL	.bss	TACHOMETER_PAL,32 */
 int TACHOMETER_PAL[32];
+/* asm: GEARPAL	GEARPAL */
+/* asm: 	.word	0 */
+/* asm: 	.word	0 */
+/* asm: 	.word	0 */
+/* asm: 	.word	0 */
+int GEARPAL[] = {
+    0,
+    0,
+    0,
+    0,
+};
 // *----------------------------------------------------------------------------
 
 void MOVEIN_HUD_EQUIP(void)
@@ -303,8 +341,6 @@ LP89:
     // asm: 	LDI	4,R3
     // asm: 	CALL	PAL_SET
     // asm: 	RETS
-    // asm: GEARPAL
-    // asm: 	RGB	0,255,255
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TACHOMETER_ANIMATE", 0, 0);
     UNIMPL();
 }

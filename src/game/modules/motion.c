@@ -127,10 +127,41 @@ int MOTION_RCV_TIKS;
 // ;MOTOROFF4	.string	"ST XYZ;MO",13,0
 // ;MOTOROFF4	.string	0
 // ;
-/* asm: BABAID	.word	JJG */
-int BABAID = (int)(JJG);
-/* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
-int JJG[] = { MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7 };
+/* asm: MOTOFF_PROG	MOTOFF_PROG */
+/* asm: 	.word	MOTOROFF1 */
+/* asm: 	.word	MOTOROFF2 */
+/* asm: 	.word	MOTOROFF3 */
+/* asm: 	.word	MOTOROFF4 */
+/* asm: 	.word	MOTOROFF5 */
+/* asm: 	.word	MOTOROFF6 */
+/* asm: 	.word	MOTOROFF7 */
+/* asm: 	.word	MOTOROFF8 */
+/* asm: 	.word	MOTOROFF9 */
+/* asm: 	.word	MOTOROFF10 */
+/* asm: 	.word	MOTOROFF11 */
+/* asm: 	.word	MOTOROFF12 */
+/* asm: 	.word	0 */
+int MOTOFF_PROG[] = {
+    MOTOROFF1,
+    MOTOROFF2,
+    MOTOROFF3,
+    MOTOROFF4,
+    MOTOROFF5,
+    MOTOROFF6,
+    MOTOROFF7,
+    MOTOROFF8,
+    MOTOROFF9,
+    MOTOROFF10,
+    MOTOROFF11,
+    MOTOROFF12,
+    0,
+};
+/* asm: BABAID	BABAID	.word	JJG */
+int BABAID = JJG;
+/* asm: JJG	JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
+int JJG[] = {
+    MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7,
+};
 const char *MM0 = "UNKNOWN ERROR";
 const char *MM1 = "MAT NOT PLUGGED IN";
 const char *MM2 = "MAT STEPPED ON";
@@ -164,6 +195,9 @@ const char *MM7 = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
 // ;TS
 // *----------------------------------------------------------------------------
 const char *bbd = "MOTION BURNIN";
+/* asm: NOCHECK	NOCHECK
+	.bss	ABORT_QUERY,1 */
+int NOCHECK[ABORT_QUERY];
 // 	;
 // 	;MOTION SAFETY CODE
 // 	;
@@ -222,10 +256,72 @@ const char *MSSM = "MOTION STOP BUTTON HIT";
 // *FRONT-BACK (XLEAN)
 // *LEFT-RIGHT (ZLEAN)
 // *LIMIT MOTION +-1.0
+/* asm: JAJA555	JAJA555
+	.bss	sPOTVALUE,15 */
+int JAJA555[sPOTVALUE];
+/* asm: MOTION_CMDSTR	.bss	MOTION_CMDSTR,80 */
+int MOTION_CMDSTR[80];
+/* asm: LAST_ZF	.bss	LAST_ZF,1 */
+int LAST_ZF;
+/* asm: LAST_XL	.bss	LAST_XL,1 */
+int LAST_XL;
+/* asm: LAST_YR	.bss	LAST_YR,1 */
+int LAST_YR;
+// ;	PUSHFL	R3
+// ;	PUSHFL	R4
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-// ;	.word	T60,T1,T2,T3,T4,T61,T63,T64,T65,0
-// ;	.word	T60,T1,T2,T3,T4,T61,T62,T63,T64,T65,0
+/* asm: THEPROGL	THEPROGL */
+/* asm: 	.word	EDIT,T5,T6,T7,T8,T9 */
+/* asm: 	.word	T10,T11,T12,T13,T14,T15,T16,T17,T18,T19 */
+/* asm: 	.word	T20,T21,T22,T23,T24,T25,T26,T27,T28,T29 */
+/* asm: 	.word	T30,T31,T32,T33,T34,T35,T36,T37,T38,T39 */
+/* asm: 	.word	T40,T41,T42,T43,T44,T45,T46,T47,T48,T49 */
+/* asm: 	.word	T50,T51,T52,T53,T54,T55,T56,T57,T58,T59 */
+/* asm: 	.word	T60 */
+/* asm: 	;	.word	T60,T1,T2,T3,T4,T61,T63,T64,T65,0 */
+/* asm: 	;	.word	T60,T1,T2,T3,T4,T61,T62,T63,T64,T65,0 */
+/* asm: 	.word	T1,T2,T3 */
+/* asm: 	.word	T66X,T67X,T68X */
+/* asm: 	.word	T66Y,T67Y,T68Y */
+/* asm: 	.word	T66Z,T67Z,T68Z */
+/* asm: 	.word	T69 */
+/* asm: 	.word	T70,T71,T72,T73,T74,T75,T76,T77,T78,T79 */
+/* asm: 	.word	T80,T81,T82,T83,T84 */
+/* asm: 	.word	0 */
+/* asm: 	;INITPROGL */
+/* asm: 	;	.word	EDIT,T5,T6,T7,T8,T9 */
+/* asm: 	;	.word	T10,T11,T13,T14,T15,T16,T17,T18,T19 */
+/* asm: 	;	.word	T20,T21,T22,T23,T25,T26,T27,T28,T29 */
+/* asm: 	;	.word	T30,T31,T32,T33,T34,T35,T36,T37,T38,T39 */
+/* asm: 	;	.word	T40,T41,T42,T43,T44,T45,T46,T47,T48,T49 */
+/* asm: 	;	.word	T50,T51,T52,T53,T54,T55,T56,T57,T58,T59 */
+/* asm: 	;	.word	T60 */
+/* asm: 	; */
+/* asm: 	;	.word	T1,T2,T3 */
+/* asm: 	;	.word	T66,T67,T68,T69 */
+/* asm: 	;	.word	T70,T71,T72,T73,T74,T75,T76,T77,T78,T79 */
+/* asm: 	;	.word	T80,T81,T82,T83,T84 */
+/* asm: 	;	.word	0 */
+/* asm: 	; */
+/* asm: 	*---------------------------------------------------------------------------- */
+int THEPROGL[] = {
+    EDIT, T5, T6, T7, T8, T9,
+    T10, T11, T12, T13, T14, T15, T16, T17, T18, T19,
+    T20, T21, T22, T23, T24, T25, T26, T27, T28, T29,
+    T30, T31, T32, T33, T34, T35, T36, T37, T38, T39,
+    T40, T41, T42, T43, T44, T45, T46, T47, T48, T49,
+    T50, T51, T52, T53, T54, T55, T56, T57, T58, T59,
+    T60,
+    T1, T2, T3,
+    T66X, T67X, T68X,
+    T66Y, T67Y, T68Y,
+    T66Z, T67Z, T68Z,
+    T69,
+    T70, T71, T72, T73, T74, T75, T76, T77, T78, T79,
+    T80, T81, T82, T83, T84,
+    0,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -245,16 +341,16 @@ const char *MSSM = "MOTION STOP BUTTON HIT";
 // *	NC	IF NOT ERROR
 // *
 // *
-/* asm: CME_MASK	.word	0FF80h */
-int CME_MASK = (int)(0x0FF80);
+/* asm: CME_MASK	CME_MASK	.word	0FF80h */
+int CME_MASK = 0x0FF80;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: LLG6X	.word	L4ABX */
-int LLG6X = (int)(L4ABX);
-/* asm: LLG6Y	.word	L4ABY */
-int LLG6Y = (int)(L4ABY);
-/* asm: LLG6Z	.word	L4ABZ */
-int LLG6Z = (int)(L4ABZ);
+/* asm: LLG6X	LLG6X	.word	L4ABX */
+int LLG6X = L4ABX;
+/* asm: LLG6Y	LLG6Y	.word	L4ABY */
+int LLG6Y = L4ABY;
+/* asm: LLG6Z	LLG6Z	.word	L4ABZ */
+int LLG6Z = L4ABZ;
 const char *L4ABX = "X ENCODER FAILURE";
 const char *L4ABY = "Y ENCODER FAILURE";
 const char *L4ABZ = "Z ENCODER FAILURE";
@@ -667,7 +763,6 @@ void PLMOTION(void)
     // asm: 	LDL	ABORTQ,AR2
     // asm: 	CALL	SEND_CMD
     // asm: 	CALL	WAIT_ACK
-NOCHECK:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLMOTION", 0, 0);
     UNIMPL();
 }
@@ -692,77 +787,6 @@ void MOTION_SCALE_ENTER(void)
     // asm: 	FIX	R2
     // asm: 	FIX	R3
     // asm: 	FIX	R4
-    // asm: JAJA555
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	R4
-    // ;	PUSHFL	R3
-    // ;	PUSHFL	R4
-    // asm: 	LDI	@LAST_ZF,R1
-    // asm: 	SUBI	R2,R1
-    // asm: 	ABSI	R1
-    // asm: 	CMPI	MIN_MOVE_DIST,R1
-    // asm: 	BLT	N76
-    // asm: 	STI	R2,@LAST_ZF
-    // asm: 	LDL	sPOTVALUE,AR2
-    // asm: 	CALL	_itoa
-    // asm: 	LDL	PZC1,AR0
-    // asm: 	LDL	MOTION_CMDSTR,AR1
-    // asm: 	CALL	STRCPY
-    // asm: 	LDL	MOTION_CMDSTR,AR0
-    // asm: 	LDL	sPOTVALUE,AR1
-    // asm: 	CALL	STRCAT
-    // asm: 	LDL	MOTION_CMDSTR,AR0
-    // asm: 	LDL	PZC2,AR1
-    // asm: 	CALL	STRCAT
-    // asm: 	LDI	AR0,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-N76:
-    // asm: 	POP	R2		;RT REAR (Y)
-    // asm: 	LDI	@LAST_YR,R1
-    // asm: 	SUBI	R2,R1
-    // asm: 	ABSI	R1
-    // asm: 	CMPI	MIN_MOVE_DIST,R1
-    // asm: 	BLT	N77
-    // asm: 	STI	R0,@LAST_YR
-    // asm: 	LDL	sPOTVALUE,AR2
-    // asm: 	CALL	_itoa
-    // asm: 	LDL	PYC1,AR0
-    // asm: 	LDL	MOTION_CMDSTR,AR1
-    // asm: 	CALL	STRCPY
-    // asm: 	LDL	MOTION_CMDSTR,AR0
-    // asm: 	LDL	sPOTVALUE,AR1
-    // asm: 	CALL	STRCAT
-    // asm: 	LDL	MOTION_CMDSTR,AR0
-    // asm: 	LDL	PYC2,AR1
-    // asm: 	CALL	STRCAT
-    // asm: 	LDI	AR0,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-N77:
-    // asm: 	POP	R2		;LT REAR (X)
-    // asm: 	LDI	@LAST_XL,R1
-    // asm: 	SUBI	R2,R1
-    // asm: 	ABSI	R1
-    // asm: 	CMPI	MIN_MOVE_DIST,R1
-    // asm: 	BLT	N78
-    // asm: 	STI	R0,@LAST_XL
-    // asm: 	LDL	sPOTVALUE,AR2
-    // asm: 	CALL	_itoa
-    // asm: 	LDL	PXC1,AR0
-    // asm: 	LDL	MOTION_CMDSTR,AR1
-    // asm: 	CALL	STRCPY
-    // asm: 	LDL	MOTION_CMDSTR,AR0
-    // asm: 	LDL	sPOTVALUE,AR1
-    // asm: 	CALL	STRCAT
-    // asm: 	LDL	MOTION_CMDSTR,AR0
-    // asm: 	LDL	PXC2,AR1
-    // asm: 	CALL	STRCAT
-    // asm: 	LDI	AR0,AR2
-    // asm:         CALL    SEND_CMD
-    // asm:         CALL    WAIT_ACK
-N78:
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_SCALE_ENTER", 0, 0);
     UNIMPL();
 }

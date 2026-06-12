@@ -21,6 +21,30 @@
 // *
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
+/* asm: FLAME_POS	FLAME_POS */
+/* asm: 	.word	180,87,-450		;Vette */
+/* asm: 	.word	130,105,-586		;Coope */
+/* asm: 	.word	140,107,-460		;Missle */
+/* asm: 	.word	160,70,-460		;Ferrari */
+/* asm: 	.word	180,87,-450		;JEEP */
+/* asm: 	.word	190,87,-650		;SBUSP */
+/* asm: 	.word	160,155,-500		;COPCAR */
+int FLAME_POS[] = {
+    180, 87, -450, // Vette
+    130, 105, -586, // Coope
+    140, 107, -460, // Missle
+    160, 70, -460, // Ferrari
+    180, 87, -450, // JEEP
+    190, 87, -650, // SBUSP
+    160, 155, -500, // COPCAR
+};
+/* asm: FLAMEANI	FLAMEANI */
+/* asm: 	.word	sparc1,sparc3,sparc5,sparc7,sparc9,sparc7 */
+/* asm: 	.word	sparc5,sparc3,sparc1,-1 */
+int FLAMEANI[] = {
+    sparc1, sparc3, sparc5, sparc7, sparc9, sparc7,
+    sparc5, sparc3, sparc1, -1,
+};
 // *----------------------------------------------------------------------------
 // * FLAME	PROC
 // *

@@ -51,19 +51,93 @@ int VAR_ROAD_KFACTOR;
 // *
 /* asm: AMOUNT_CLIPPED	.bss	AMOUNT_CLIPPED,1 */
 int AMOUNT_CLIPPED;
-/* asm: LOIVAL	.word	-768 */
-int LOIVAL = (int)(-768);
-/* asm: HIGHIVAL	.word	1536 */
-int HIGHIVAL = (int)(1536);
+/* asm: LOIVAL	LOIVAL	.word	-768 */
+int LOIVAL = -768;
+/* asm: HIGHIVAL	HIGHIVAL	.word	1536 */
+int HIGHIVAL = 1536;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: INFINITY_POINTS	.word	INFINPOINTS */
-int INFINITY_POINTS = (int)(INFINPOINTS);
-/* asm: INFIN_POLYGONSI	.word	BLUESKY */
+/* asm: INFINITY_POINTS	INFINITY_POINTS	.word	INFINPOINTS */
+int INFINITY_POINTS = INFINPOINTS;
+/* asm: INFINPOINTS	INFINPOINTS */
+/* asm: 	.float	-1280,0,0 */
+/* asm: 	.float	-1280,-255,0 */
+/* asm: 	.float	-1024,0,0 */
+/* asm: 	.float	-1024,-255,0 */
+/* asm: 	.float	-768,0,0 */
+/* asm: 	.float	-768,-255,0 */
+/* asm: 	.float	-512,0,0 */
+/* asm: 	.float	-512,-255,0 */
+/* asm: 	.float	-256,0,0 */
+/* asm: 	.float	-256,-255,0 */
+/* asm: 	.float	0,0,0 */
+/* asm: 	.float	0,-255,0 */
+/* asm: 	.float	256,0,0 */
+/* asm: 	.float	256,-255,0 */
+/* asm: 	.float	512,0,0 */
+/* asm: 	.float	512,-255,0 */
+/* asm: 	.float	768,0,0 */
+/* asm: 	.float	768,-255,0 */
+/* asm: 	.float	1024,0,0 */
+/* asm: 	.float	1024,-255,0 */
+/* asm: 	.float	1280,0,0 */
+/* asm: 	.float	1280,-255,0 */
+/* asm: 	.float	1536,0,0 */
+/* asm: 	.float	1536,-255,0 */
+/* asm: 	.float	1792,0,0 */
+/* asm: 	.float	1792,-255,0 */
+/* asm: 	.float	-1280,-253,0 */
+/* asm: 	.float	-1280,-1250,0 */
+/* asm: 	.float	-300,-253,0 */
+/* asm: 	.float	-300,-1250,0 */
+/* asm: 	.float	700,-253,0 */
+/* asm: 	.float	700,-1250,0 */
+/* asm: 	.float	1700,-253,0 */
+/* asm: 	.float	1700,-1250,0 */
+int INFINPOINTS[] = {
+    -1280, 0, 0,
+    -1280, -255, 0,
+    -1024, 0, 0,
+    -1024, -255, 0,
+    -768, 0, 0,
+    -768, -255, 0,
+    -512, 0, 0,
+    -512, -255, 0,
+    -256, 0, 0,
+    -256, -255, 0,
+    0, 0, 0,
+    0, -255, 0,
+    256, 0, 0,
+    256, -255, 0,
+    512, 0, 0,
+    512, -255, 0,
+    768, 0, 0,
+    768, -255, 0,
+    1024, 0, 0,
+    1024, -255, 0,
+    1280, 0, 0,
+    1280, -255, 0,
+    1536, 0, 0,
+    1536, -255, 0,
+    1792, 0, 0,
+    1792, -255, 0,
+    -1280, -253, 0,
+    -1280, -1250, 0,
+    -300, -253, 0,
+    -300, -1250, 0,
+    700, -253, 0,
+    700, -1250, 0,
+    1700, -253, 0,
+    1700, -1250, 0,
+};
+/* asm: INFIN_POLYGONSI	INFIN_POLYGONSI	.word	BLUESKY */
 #define INFIN_POLYGONSI BLUESKY
-/* asm: BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
+/* asm: BLUESKY	BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
 /* asm: 	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
-int BLUESKY[] = { sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I, sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I };
+int BLUESKY[] = {
+    sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
+    sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -77,7 +151,62 @@ int BLUESKY[] = { sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I
 // *
 /* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
 int INFIN_CORRECT;
-// *----------------------------------------------------------------------------
+/* asm: WATERPOS	WATERPOS */
+/* asm: 	.float	-1280,128,0 */
+/* asm: 	.float	-1280,0,0 */
+/* asm: 	.float	-1024,128,0 */
+/* asm: 	.float	-1024,0,0 */
+/* asm: 	.float	-768,128,0 */
+/* asm: 	.float	-768,0,0 */
+/* asm: 	.float	-512,128,0 */
+/* asm: 	.float	-512,0,0 */
+/* asm: 	.float	-256,128,0 */
+/* asm: 	.float	-256,0,0 */
+/* asm: 	.float	0,128,0 */
+/* asm: 	.float	0,0,0 */
+/* asm: 	.float	256,128,0 */
+/* asm: 	.float	256,0,0 */
+/* asm: 	.float	512,128,0 */
+/* asm: 	.float	512,0,0 */
+/* asm: 	.float	768,128,0 */
+/* asm: 	.float	768,0,0 */
+/* asm: 	.float	1024,128,0 */
+/* asm: 	.float	1024,0,0 */
+/* asm: 	.float	1280,128,0 */
+/* asm: 	.float	1280,0,0 */
+/* asm: 	.float	1536,128,0 */
+/* asm: 	.float	1536,0,0 */
+/* asm: 	.float	1792,128,0 */
+/* asm: 	.float	1792,0,0 */
+/* asm: 	*---------------------------------------------------------------------------- */
+int WATERPOS[] = {
+    -1280, 128, 0,
+    -1280, 0, 0,
+    -1024, 128, 0,
+    -1024, 0, 0,
+    -768, 128, 0,
+    -768, 0, 0,
+    -512, 128, 0,
+    -512, 0, 0,
+    -256, 128, 0,
+    -256, 0, 0,
+    0, 128, 0,
+    0, 0, 0,
+    256, 128, 0,
+    256, 0, 0,
+    512, 128, 0,
+    512, 0, 0,
+    768, 128, 0,
+    768, 0, 0,
+    1024, 128, 0,
+    1024, 0, 0,
+    1280, 128, 0,
+    1280, 0, 0,
+    1536, 128, 0,
+    1536, 0, 0,
+    1792, 128, 0,
+    1792, 0, 0,
+};
 
 void FIND_HIGHEST_ROADY(void)
 {

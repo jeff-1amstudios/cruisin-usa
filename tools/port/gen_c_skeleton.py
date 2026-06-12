@@ -457,6 +457,41 @@ def parse_sptr_label(raw: str) -> tuple[str, str] | None:
     return label, c_string
 
 
+def parse_numeric_directive(stripped: str) -> tuple[str, list[str]] | None:
+    lower = stripped.lower()
+    if lower.startswith(".word"):
+        operands = stripped[5:].strip()
+        return ".word", [part.strip() for part in operands.split(",") if part.strip()] if operands else []
+    if lower.startswith(".float"):
+        operands = stripped[6:].strip()
+        return ".float", [part.strip() for part in operands.split(",") if part.strip()] if operands else []
+    return None
+
+
+def parse_numeric_data_line(raw: str, label_name: str | None = None) -> tuple[list[str], str] | None:
+    code, comment = split_comment(raw)
+    stripped = code.strip()
+    if not stripped:
+        return None
+
+    numeric_directive = parse_numeric_directive(stripped)
+    if numeric_directive is not None:
+        _directive, values = numeric_directive
+        return values, comment
+
+    data_match = DATA_LABEL_RE.match(stripped)
+    if data_match is None:
+        return None
+    label, directive, rest = data_match.groups()
+    if label_name is not None and label != label_name:
+        return None
+    numeric_directive = parse_numeric_directive(f"{directive}{rest}")
+    if numeric_directive is None:
+        return None
+    _directive, values = numeric_directive
+    return values, comment
+
+
 def is_top_level_data_line(raw: str) -> bool:
     if not is_flush_left(raw):
         return False
@@ -556,13 +591,14 @@ def collect_top_level_functions(lines: list[str], branch_targets: set[str]) -> l
             current = None
             continue
 
+        standalone_data, _next_idx = collect_standalone_labeled_data(lines, idx)
+        if standalone_data is not None:
+            current = None
+            seen_separator = False
+            continue
+
         label_match = LABEL_RE.match(raw)
         if label_match:
-            standalone_data, _next_idx = collect_standalone_labeled_data(lines, idx)
-            if standalone_data is not None:
-                current = None
-                seen_separator = False
-                continue
             label = label_match.group(1)
             start_new = False
 
@@ -724,13 +760,32 @@ def render_word_variable(var: WordVariable) -> list[str]:
     ident = sanitize_identifier(var.name)
     if len(var.values) == 1:
         value = var.values[0].strip()
+        rendered_value = convert_expr(value)
         if var.name.lower().endswith("i") and BRANCH_TARGET_RE.fullmatch(value) and parse_int_token(value) is None:
-            out.append(f"#define {ident} {convert_expr(value)}")
+            out.append(f"#define {ident} {rendered_value}")
         else:
-            out.append(f"int {ident} = (int)({convert_expr(value)});")
+            out.append(f"int {ident} = {rendered_value};")
     else:
-        values = ", ".join(convert_expr(value) for value in var.values)
-        out.append(f"int {ident}[] = {{ {values} }};")
+        structured_rows: list[str] = []
+        if var.asm_lines:
+            for asm_line in var.asm_lines:
+                parsed_row = parse_numeric_data_line(asm_line, var.name)
+                if parsed_row is None:
+                    continue
+                row_values, asm_comment = parsed_row
+                rendered_values = ", ".join(convert_expr(value) for value in row_values)
+                comment_text = asm_comment[1:].strip() if asm_comment.startswith(";") else asm_comment.strip()
+                if comment_text:
+                    structured_rows.append(f"    {rendered_values}, // {comment_text}")
+                else:
+                    structured_rows.append(f"    {rendered_values},")
+        if structured_rows:
+            out.append(f"int {ident}[] = {{")
+            out.extend(structured_rows)
+            out.append("};")
+        else:
+            values = ", ".join(convert_expr(value) for value in var.values)
+            out.append(f"int {ident}[] = {{ {values} }};")
     return out
 
 
@@ -780,15 +835,42 @@ def render_storage_variable(name: str, size_expr: str, asm_line: str) -> list[st
 def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[StandaloneLabeledData | None, int]:
     raw = lines[start_idx]
     label_match = LABEL_RE.match(raw)
-    if not label_match:
-        return None, start_idx
-    label, rest = label_match.groups()
-    rest_code, _rest_comment = split_comment(rest)
-    if rest_code.strip():
-        return None, start_idx
+    if label_match:
+        label, rest = label_match.groups()
+        rest_code, _rest_comment = split_comment(rest)
+        if rest_code.strip():
+            return None, start_idx
+    else:
+        raw_code, _raw_comment = split_comment(raw)
+        bare_label_match = BARE_LABEL_RE.match(raw_code)
+        if not bare_label_match or not is_flush_left(raw):
+            return None, start_idx
+        label = bare_label_match.group(1)
+        if looks_like_instruction_token(label):
+            probe_idx = start_idx + 1
+            next_data_like = False
+            while probe_idx < len(lines):
+                probe_raw = lines[probe_idx]
+                if is_comment_or_blank(probe_raw):
+                    probe_idx += 1
+                    continue
+                if is_flush_left(probe_raw):
+                    break
+                probe_code, _probe_comment = split_comment(probe_raw)
+                probe_stripped = probe_code.strip()
+                next_data_like = (
+                    parse_numeric_directive(probe_stripped) is not None
+                    or parse_simple_string_operand(probe_stripped) is not None
+                    or STANDALONE_STORAGE_RE.match(probe_stripped) is not None
+                )
+                break
+            if not next_data_like:
+                return None, start_idx
 
     asm_lines = [raw.rstrip()]
     next_idx = start_idx + 1
+    numeric_values: list[str] = []
+    saw_numeric_directive = False
     while next_idx < len(lines):
         next_raw = lines[next_idx]
         if is_comment_or_blank(next_raw):
@@ -796,6 +878,8 @@ def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[S
             next_idx += 1
             continue
         if is_flush_left(next_raw):
+            if saw_numeric_directive:
+                return StandaloneLabeledData(label, ".intdata", ",".join(numeric_values), asm_lines), next_idx
             return None, start_idx
         next_code, _next_comment = split_comment(next_raw)
         stripped = next_code.strip()
@@ -803,34 +887,27 @@ def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[S
             asm_lines.append(next_raw.rstrip())
             next_idx += 1
             continue
-        if stripped.lower().startswith(".word"):
+        numeric_directive = parse_numeric_directive(stripped)
+        if numeric_directive is not None:
+            _directive, values = numeric_directive
             asm_lines.append(next_raw.rstrip())
-            cont_idx = next_idx + 1
-            while cont_idx < len(lines):
-                cont_raw = lines[cont_idx]
-                if is_comment_or_blank(cont_raw):
-                    asm_lines.append(cont_raw.rstrip())
-                    cont_idx += 1
-                    continue
-                if is_flush_left(cont_raw):
-                    break
-                cont_code, _cont_comment = split_comment(cont_raw)
-                cont_stripped = cont_code.strip()
-                if cont_stripped.lower().startswith(".word"):
-                    asm_lines.append(cont_raw.rstrip())
-                    cont_idx += 1
-                    continue
-                break
-            return StandaloneLabeledData(label, ".word", "", asm_lines), cont_idx
+            numeric_values.extend(values)
+            saw_numeric_directive = True
+            next_idx += 1
+            continue
         directive_match = re.match(
             r"^\s*((?:\.\w+)|EQU|equ|fbss|pbss|hibss|lobss|phibss)\b(.*)$",
             stripped,
         )
         if directive_match is None:
-            return None, start_idx
+            break
         directive, directive_rest = directive_match.groups()
+        if saw_numeric_directive:
+            return StandaloneLabeledData(label, ".intdata", ",".join(numeric_values), asm_lines), next_idx
         asm_lines.append(next_raw.rstrip())
         return StandaloneLabeledData(label, directive, directive_rest, asm_lines), next_idx + 1
+    if saw_numeric_directive:
+        return StandaloneLabeledData(label, ".intdata", ",".join(numeric_values), asm_lines), next_idx
     return None, start_idx
 
 
@@ -889,16 +966,19 @@ def render_top_level_items(
         standalone_data, next_idx = collect_standalone_labeled_data(lines, idx)
         if standalone_data is not None:
             directive_lower = standalone_data.directive.lower()
-            if directive_lower == ".word":
+            if directive_lower in {".word", ".intdata"}:
                 values: list[str] = []
-                for asm_line in standalone_data.asm_lines[1:]:
-                    asm_code, _asm_comment = split_comment(asm_line)
-                    stripped = asm_code.strip()
-                    if not stripped.lower().startswith(".word"):
-                        continue
-                    operands = stripped[5:].strip()
-                    if operands:
-                        values.extend(part.strip() for part in operands.split(",") if part.strip())
+                if directive_lower == ".intdata":
+                    values = [part.strip() for part in standalone_data.rest.split(",") if part.strip()]
+                else:
+                    for asm_line in standalone_data.asm_lines[1:]:
+                        asm_code, _asm_comment = split_comment(asm_line)
+                        stripped = asm_code.strip()
+                        if not stripped.lower().startswith(".word"):
+                            continue
+                        operands = stripped[5:].strip()
+                        if operands:
+                            values.extend(part.strip() for part in operands.split(",") if part.strip())
                 if not values:
                     values = ["0"]
                 out.extend(
@@ -955,11 +1035,12 @@ def render_top_level_items(
             continue
 
         if directive_lower == ".word":
-            asm_lines = [f".word{rest}"]
+            asm_lines = [f"{label}\t.word{rest}"]
             values: list[str] = []
-            operands, _comment = split_comment(rest.strip())
-            if operands:
-                values.extend(part.strip() for part in operands.split(",") if part.strip())
+            first_row = parse_numeric_data_line(asm_lines[0], label)
+            if first_row is not None:
+                row_values, _comment = first_row
+                values.extend(row_values)
 
             next_idx = idx + 1
             while next_idx < len(lines):
@@ -975,11 +1056,11 @@ def render_top_level_items(
                 next_stripped = next_code.strip()
                 if not next_stripped:
                     break
-                if next_stripped.lower().startswith(".word"):
-                    asm_lines.append(next_stripped)
-                    cont_operands = next_stripped[5:].strip()
-                    if cont_operands:
-                        values.extend(part.strip() for part in cont_operands.split(",") if part.strip())
+                parsed_row = parse_numeric_data_line(next_raw)
+                if parsed_row is not None:
+                    asm_lines.append(next_raw.rstrip())
+                    row_values, _comment = parsed_row
+                    values.extend(row_values)
                     next_idx += 1
                     continue
                 break

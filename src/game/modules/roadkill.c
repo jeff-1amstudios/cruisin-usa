@@ -32,6 +32,17 @@
 #define RKT_WIDTHL 3
 #define RKT_WIDTHR 4
 #define RKT_SIZE 5
+/* asm: ROADKILL_TAB	ROADKILL_TAB */
+/* asm: 	.word	deerc1,EXP3,COW_PARTS */
+/* asm: 	.float	-200,200			;SOON TO BE A COW */
+/* asm: 	.word	deerc1,EXP3,DEER_PARTS */
+/* asm: 	.float	-400,400			;DEER */
+int ROADKILL_TAB[] = {
+    deerc1, EXP3, COW_PARTS,
+    -200, 200, // SOON TO BE A COW
+    deerc1, EXP3, DEER_PARTS,
+    -400, 400, // DEER
+};
 /* asm: ROADKILLXZ	.bss	ROADKILLXZ,2 */
 int ROADKILLXZ[2];
 // *----------------------------------------------------------------------------
@@ -68,7 +79,32 @@ int ROADKILL_SOUND_TIMER;
 // *----------------------------------------------------------------------------
 // *	.FILE	"DEER.ASM"
 // *----------------------------------------------------------------------------
+/* asm: DEERANI	DEERANI */
+/* asm: 	.word	edeer,edeer1,edeer2,edeer3,edeer4,edeer5,-1 */
+int DEERANI[] = {
+    edeer, edeer1, edeer2, edeer3, edeer4, edeer5, -1,
+};
 // *----------------------------------------------------------------------------
+/* asm: COW_PARTS	COW_PARTS */
+/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
+/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
+/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0,-1 */
+int COW_PARTS[] = {
+    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
+    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
+    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0, -1,
+};
+/* asm: DEER_PARTS	DEER_PARTS */
+/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0 */
+/* asm: 	.word	deerc4,0,antler,0,antler,0,dheada,0 */
+/* asm: 	.word	dheada,1,dheada,1,deerc1,1,deerc1,1,deerc2,0 */
+/* asm: 	.word	deerc2,0,deerc3,0,deerc4,0,-1 */
+int DEER_PARTS[] = {
+    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0,
+    deerc4, 0, antler, 0, antler, 0, dheada, 0,
+    dheada, 1, dheada, 1, deerc1, 1, deerc1, 1, deerc2, 0,
+    deerc2, 0, deerc3, 0, deerc4, 0, -1,
+};
 // *----------------------------------------------------------------------------
 // *DEER_BLOOD_PROC	PROC
 // *
@@ -77,8 +113,10 @@ int ROADKILL_SOUND_TIMER;
 // *	AR5	= CARBLK THAT HIT THE DEER
 // *Creates and maintains a single blood animation
 // *	CREATEC	DEER_BLOOD_PROC,UTIL_C
-/* asm: DEERBLOOD_ANI	.word	adblud1,adblud2,adblud3,adblud4,adblud5,adblud6,-1 */
-int DEERBLOOD_ANI[] = { adblud1, adblud2, adblud3, adblud4, adblud5, adblud6, -1 };
+/* asm: DEERBLOOD_ANI	DEERBLOOD_ANI	.word	adblud1,adblud2,adblud3,adblud4,adblud5,adblud6,-1 */
+int DEERBLOOD_ANI[] = {
+    adblud1, adblud2, adblud3, adblud4, adblud5, adblud6, -1,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -94,10 +132,29 @@ int DEERBLOOD_ANI[] = { adblud1, adblud2, adblud3, adblud4, adblud5, adblud6, -1
 /* asm: GEESEANI	GEESEANI: */
 /* asm: 	.word	geese1,geeseb,geesec,geesed */
 /* asm: 	.word	geesee,geesef,geeseg,geeseh,-1 */
-int GEESEANI[] = { geese1, geeseb, geesec, geesed, geesee, geesef, geeseg, geeseh, -1 };
+int GEESEANI[] = {
+    geese1, geeseb, geesec, geesed,
+    geesee, geesef, geeseg, geeseh, -1,
+};
 /* asm: GEESE_DIR	GEESE_DIR: */
 /* asm: 	.word	250,1 */
-int GEESE_DIR[] = { 250, 1 };
+/* asm: 	.float	0 */
+/* asm: 	.word	150,-1 */
+/* asm: 	.float	0 */
+/* asm: 	.word	150,-1 */
+/* asm: 	.float	-0.13 */
+/* asm: 	.word	250,1 */
+/* asm: 	.float	-0.13 */
+int GEESE_DIR[] = {
+    250, 1,
+    0,
+    150, -1,
+    0,
+    150, -1,
+    -0.13,
+    250, 1,
+    -0.13,
+};
 // *----------------------------------------------------------------------------
 #define SPEED PDATA
 #define DIRECTION (PDATA+1)
@@ -108,8 +165,10 @@ int GEESE_DIR[] = { 250, 1 };
 // *	R4	=	SPEED
 // *	R5	=	DIRECTION INT (+/-1, Direction to travers road)
 // *	R6	=	RADS direction FL
-/* asm: SHIT_ANI	.word	bdst,bdst2,bdst3,bdst4,bdst5,bdst6,-1 */
-int SHIT_ANI[] = { bdst, bdst2, bdst3, bdst4, bdst5, bdst6, -1 };
+/* asm: SHIT_ANI	SHIT_ANI	.word	bdst,bdst2,bdst3,bdst4,bdst5,bdst6,-1 */
+int SHIT_ANI[] = {
+    bdst, bdst2, bdst3, bdst4, bdst5, bdst6, -1,
+};
 // *---------------------------------------------------------------------------
 // *---------------------------------------------------------------------------
 // *---------------------------------------------------------------------------
@@ -118,8 +177,10 @@ int SHIT_ANI[] = { bdst, bdst2, bdst3, bdst4, bdst5, bdst6, -1 };
 // *Creates several BUG SPLAT PROCS
 // *	CREATE	BUG_SPAWNER_PROC,SPAWNER_C
 // *
-/* asm: BUG_ANI	.word	bug1,bug2,bug3,bug4,bug5,-1 */
-int BUG_ANI[] = { bug1, bug2, bug3, bug4, bug5, -1 };
+/* asm: BUG_ANI	BUG_ANI	.word	bug1,bug2,bug3,bug4,bug5,-1 */
+int BUG_ANI[] = {
+    bug1, bug2, bug3, bug4, bug5, -1,
+};
 // *---------------------------------------------------------------------------
 
 void PLYRROADKILL(void)

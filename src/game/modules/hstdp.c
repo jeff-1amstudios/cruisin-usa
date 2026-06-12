@@ -37,16 +37,24 @@
 #define PRESS_LASTY (-100)
 #define PRESS_TRAVELY (PRESS_LASTY-PRESS_STARTY)
 #define HIGH_SCORE_GROUP 0x200
-/* asm: NUMTAB	.word	dzero,done,dtwo,dthree,dfour,dfive,dsix,dseven,deight,dnine */
-int NUMTAB[] = { dzero, done, dtwo, dthree, dfour, dfive, dsix, dseven, deight, dnine };
-/* asm: THREED_LETTERS	.word	ma,mb,mc,md,me,mf,mg,mh,mi,mj,mk,ml,mm,mn,mo,mp,mq,mr */
+/* asm: NUMTAB	NUMTAB	.word	dzero,done,dtwo,dthree,dfour,dfive,dsix,dseven,deight,dnine */
+int NUMTAB[] = {
+    dzero, done, dtwo, dthree, dfour, dfive, dsix, dseven, deight, dnine,
+};
+/* asm: THREED_LETTERS	THREED_LETTERS	.word	ma,mb,mc,md,me,mf,mg,mh,mi,mj,mk,ml,mm,mn,mo,mp,mq,mr */
 /* asm: 	.word	ms,mt,mu,mv,mw,mx,my,mz */
-int THREED_LETTERS[] = { ma, mb, mc, md, me, mf, mg, mh, mi, mj, mk, ml, mm, mn, mo, mp, mq, mr, ms, mt, mu, mv, mw, mx, my, mz };
+int THREED_LETTERS[] = {
+    ma, mb, mc, md, me, mf, mg, mh, mi, mj, mk, ml, mm, mn, mo, mp, mq, mr,
+    ms, mt, mu, mv, mw, mx, my, mz,
+};
 #define THREED_END ($-THREED_LETTERS)
 #define RUB ('Z'-'A'+1)
-/* asm: PLATE_LETTERS	.word	pa,pb,pc,pd,pe,pf,pg,ph,pi,pj,pk,pl,pm,pn,po,pp,pq,pr */
+/* asm: PLATE_LETTERS	PLATE_LETTERS	.word	pa,pb,pc,pd,pe,pf,pg,ph,pi,pj,pk,pl,pm,pn,po,pp,pq,pr */
 /* asm: 	.word	ps,pt,pu,pv,pw,px,py,pz,arrow,p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,pend */
-int PLATE_LETTERS[] = { pa, pb, pc, pd, pe, pf, pg, ph, pi, pj, pk, pl, pm, pn, po, pp, pq, pr, ps, pt, pu, pv, pw, px, py, pz, arrow, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, pend };
+int PLATE_LETTERS[] = {
+    pa, pb, pc, pd, pe, pf, pg, ph, pi, pj, pk, pl, pm, pn, po, pp, pq, pr,
+    ps, pt, pu, pv, pw, px, py, pz, arrow, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, pend,
+};
 #define LASTCHAR (LAST_LETTER-PLATE_LETTERS-1)
 const char *EIP = "ENTER INITIALS";
 // *----------------------------------------------------------------------------
@@ -177,8 +185,17 @@ const char *EIP = "ENTER INITIALS";
 // * This positions the bar of letters during the Name Entry
 // *
 // *
-// 		;       P   Q   R   S  T  U   V    W    X    Y    Z	RUB 0    1    2
-// 		;	3	4   5   6   7     8    9     END
+/* asm: SCROLLBTAB	SCROLLBTAB	;	A    B	  C   D	  E   F	  G   H	  I   J	  K   L	  M   N	  O */
+/* asm: 	.word	1057,1010,960,911,855,803,753,696,648,598,546,494,426,367,307 */
+/* asm: 	;       P   Q   R   S  T  U   V    W    X    Y    Z	RUB 0    1    2 */
+/* asm: 	.word	252,193,138,82,24,-35,-97,-161,-230,-292,-347,-401,-465,-517,-573 */
+/* asm: 	;	3	4   5   6   7     8    9     END */
+/* asm: 	.word	-633,-697,-757,-820,-880,-945,-1007,-1063 */
+int SCROLLBTAB[] = {
+    1057, 1010, 960, 911, 855, 803, 753, 696, 648, 598, 546, 494, 426, 367, 307,
+    252, 193, 138, 82, 24, -35, -97, -161, -230, -292, -347, -401, -465, -517, -573,
+    -633, -697, -757, -820, -880, -945, -1007, -1063,
+};
 // *----------------------------------------------------------------------------
 // *ADJUST_ROLLERS	This routine places the rollers in a arc so that there
 // *		priorities are correct.
@@ -210,8 +227,8 @@ const char *EIP = "ENTER INITIALS";
 // *	AR5	= PLACE
 // *
 // *
-/* asm: LONGEST_TIME	.word	198000 */
-int LONGEST_TIME = (int)(198000);
+/* asm: LONGEST_TIME	LONGEST_TIME	.word	198000 */
+int LONGEST_TIME = 198000;
 // *----------------------------------------------------------------------------
 // *	PARAMETERS	AR0 = POINTER TO PLATE that owns this
 // *		LETTER0-LETTER2 = THE three letters
@@ -247,13 +264,20 @@ int LONGEST_TIME = (int)(198000);
 // *----------------------------------------------------------------------------
 // *PROC
 // *R4 = race number
+/* asm: FLASH_PALS	FLASH_PALS */
+/* asm: 	.word	plate_medp,plate_lightp,plate_lightp1,plate_lightp,-1 */
+int FLASH_PALS[] = {
+    plate_medp, plate_lightp, plate_lightp1, plate_lightp, -1,
+};
 #endif
 // *----------------------------------------------------------------------------
 // *REMOVES the objects in the list of ID's
 // *NOTE if the value of the ID is > FF it will eliminate the range (inclusive)
 // *
-/* asm: DELIST	.word	808Bh,0104h,3057h,0 */
-int DELIST[] = { 0x808B, 0x0104, 0x3057, 0 };
+/* asm: DELIST	DELIST	.word	808Bh,0104h,3057h,0 */
+int DELIST[] = {
+    0x808B, 0x0104, 0x3057, 0,
+};
 #define LOGO_X (-250)
 #define LOGO_Y (-170)
 #define LOGO_Z (368*2)

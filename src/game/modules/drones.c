@@ -49,8 +49,10 @@ int DRONE_COUNT;
 int MIN_TRACK_TIME;
 /* asm: PSYCHO_RHO	.bss	PSYCHO_RHO,1 */
 int PSYCHO_RHO;
-/* asm: LANEP	.word	LANES,LANES4 */
-int LANEP[] = { LANES, LANES4 };
+/* asm: LANEP	LANEP	.word	LANES,LANES4 */
+int LANEP[] = {
+    LANES, LANES4,
+};
 // *----------------------------------------------------------------------------
 /* asm: ONCSCREEN_CARS	.bss	ONCSCREEN_CARS,1 */
 int ONCSCREEN_CARS;
@@ -81,10 +83,19 @@ int DRONENUM;
 // *
 // *CHECK IF AHEAD IN LINK FOR DISPATCH
 // *
+#endif
+// 	;R0 now has distance to next check
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-// ;	.word	blast1,blast2,blast3,blast4,blast5
-// ;	.word	blast6,blast7,blast8,blast9,blast10,-1
+/* asm: EXP_ANI	EXP_ANI */
+/* asm: 	;	.word	blast1,blast2,blast3,blast4,blast5 */
+/* asm: 	;	.word	blast6,blast7,blast8,blast9,blast10,-1 */
+/* asm: 	.word	dexplo1,dexplo2,dexplo3,dexplo4,dexplo5 */
+/* asm: 	.word	dexplo6,dexplo7,dexplo8,dexplo9,dexplo10,dexplo11,-1 */
+int EXP_ANI[] = {
+    dexplo1, dexplo2, dexplo3, dexplo4, dexplo5,
+    dexplo6, dexplo7, dexplo8, dexplo9, dexplo10, dexplo11, -1,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *SMOKE_PUFF
@@ -96,6 +107,47 @@ int DRONENUM;
 int SMOKE_COUNT;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: SMOKE_ANI	SMOKE_ANI */
+/* asm: 	.word	bnout1,1 */
+/* asm: 	.float	10 */
+/* asm: 	.word	bnout2,2 */
+/* asm: 	.float	12 */
+/* asm: 	.word	bnout3,1 */
+/* asm: 	.float	16 */
+/* asm: 	.word	bnout4,1 */
+/* asm: 	.float	20 */
+/* asm: 	.word	bnout5,1 */
+/* asm: 	.float	24 */
+/* asm: 	.word	bnout6,1 */
+/* asm: 	.float	30 */
+/* asm: 	.word	bnout7,1 */
+/* asm: 	.float	35 */
+/* asm: 	.word	bnout8,1 */
+/* asm: 	.float	40 */
+/* asm: 	.word	bnout9,1 */
+/* asm: 	.float	45 */
+/* asm: 	.word	-1 */
+int SMOKE_ANI[] = {
+    bnout1, 1,
+    10,
+    bnout2, 2,
+    12,
+    bnout3, 1,
+    16,
+    bnout4, 1,
+    20,
+    bnout5, 1,
+    24,
+    bnout6, 1,
+    30,
+    bnout7, 1,
+    35,
+    bnout8, 1,
+    40,
+    bnout9, 1,
+    45,
+    -1,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -105,20 +157,34 @@ int SMOKE_COUNT;
 /* asm: COCONUT_COUNT	.bss	COCONUT_COUNT,1 */
 int COCONUT_COUNT;
 // *----------------------------------------------------------------------------
-/* asm: MODELTAB	.word	cvettem,hotrodm,missle,testorm */
-int MODELTAB[] = { cvettem, hotrodm, missle, testorm };
-/* asm: TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
-int TEXTTABS[] = { VETETXT, RODRTXT, BULLTXT, FERRTXT };
-/* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
-int TITLES[] = { HRT12, HRT13, HRT14, HRT15, HRT16 };
-/* asm: VETETXT	.word	HRS11,HRS12,HRS13,HRS14,HRS15,HRS16 */
-int VETETXT[] = { HRS11, HRS12, HRS13, HRS14, HRS15, HRS16 };
-/* asm: RODRTXT	.word	HRS21,HRS22,HRS23,HRS24,HRS25,HRS26 */
-int RODRTXT[] = { HRS21, HRS22, HRS23, HRS24, HRS25, HRS26 };
-/* asm: BULLTXT	.word	HRS31,HRS32,HRS33,HRS34,HRS35,HRS36 */
-int BULLTXT[] = { HRS31, HRS32, HRS33, HRS34, HRS35, HRS36 };
-/* asm: FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
-int FERRTXT[] = { HRS41, HRS42, HRS43, HRS44, HRS45, HRS46 };
+/* asm: MODELTAB	MODELTAB	.word	cvettem,hotrodm,missle,testorm */
+int MODELTAB[] = {
+    cvettem, hotrodm, missle, testorm,
+};
+/* asm: TEXTTABS	TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
+int TEXTTABS[] = {
+    VETETXT, RODRTXT, BULLTXT, FERRTXT,
+};
+/* asm: TITLES	TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
+int TITLES[] = {
+    HRT12, HRT13, HRT14, HRT15, HRT16,
+};
+/* asm: VETETXT	VETETXT	.word	HRS11,HRS12,HRS13,HRS14,HRS15,HRS16 */
+int VETETXT[] = {
+    HRS11, HRS12, HRS13, HRS14, HRS15, HRS16,
+};
+/* asm: RODRTXT	RODRTXT	.word	HRS21,HRS22,HRS23,HRS24,HRS25,HRS26 */
+int RODRTXT[] = {
+    HRS21, HRS22, HRS23, HRS24, HRS25, HRS26,
+};
+/* asm: BULLTXT	BULLTXT	.word	HRS31,HRS32,HRS33,HRS34,HRS35,HRS36 */
+int BULLTXT[] = {
+    HRS31, HRS32, HRS33, HRS34, HRS35, HRS36,
+};
+/* asm: FERRTXT	FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
+int FERRTXT[] = {
+    HRS41, HRS42, HRS43, HRS44, HRS45, HRS46,
+};
 const char *HRT12 = "TOP SPEED:";
 const char *HRT13 = "SKIDPAD:";
 const char *HRT14 = "AERO COEFF:";
@@ -682,25 +748,6 @@ void GET_TRACK_POS(void)
     // asm: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm: TRACK_PIECE
     // asm: 	CALL	SUB_FUNCTION		;GET LANE OFFSET (VECTOR A)
-TRKP2:
-#if DEBUG
-    // asm: 	LDI	*+AR2(OUSR1),R1
-    // asm: 	SLOCKON	LT,"DRONES\GET_TRACK_POS  probably tracking a deleted object"
-#endif
-    // asm: 	LDF	*+AR2(OPOSX),R2		;X
-    // asm: 	SUBF	*+AR4(OPOSX),R2
-    // asm: 	LDF	*+AR2(OPOSZ),R1		;Z
-    // asm: 	SUBF	*+AR4(OPOSZ),R1
-    // asm: 	MPYF	R2,R2
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R1,R2
-    // asm: 	CALL	SQRT
-    // 	;R0 now has distance to next check
-    // asm: DISTANCE_OK
-    // asm: 	POP	AR2
-    // asm: 	POPFL	R2
-    // asm: 	POPFL	R1
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TRACK_POS", 0, 0);
     UNIMPL();
 }

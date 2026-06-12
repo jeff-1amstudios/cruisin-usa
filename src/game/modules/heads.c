@@ -27,7 +27,7 @@
 #define HEADTYPE 0x88D0
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: HEADS	.word	jeno */
+/* asm: HEADS	HEADS	.word	jeno */
 /* asm: 	.word	marc */
 /* asm: 	.word	pet */
 /* asm: 	.word	xion */
@@ -39,7 +39,20 @@
 /* asm: 	.word	ken */
 /* asm: 	.word	eric */
 /* asm: 	.word	-1 */
-int HEADS[] = { jeno, marc, pet, xion, ted, matt, vince, carl, glen, ken, eric, -1 };
+int HEADS[] = {
+    jeno,
+    marc,
+    pet,
+    xion,
+    ted,
+    matt,
+    vince,
+    carl,
+    glen,
+    ken,
+    eric,
+    -1,
+};
 // *----------------------------------------------------------------------------
 /* asm: YINCREMENT	.bss	YINCREMENT,1 */
 int YINCREMENT;

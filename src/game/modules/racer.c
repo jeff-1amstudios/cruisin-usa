@@ -41,8 +41,53 @@ int OM_TRACK_HI;
 // *
 // *MODIFIES : ADJ_DIFFICULTY,ADJ_DIFF_LOCAL (CMOS)
 // *
-/* asm: GMAX	.word	100000 */
-int GMAX = (int)(100000);
+/* asm: GMAX	GMAX	.word	100000 */
+int GMAX = 100000;
+/* asm: DIFFTAB	DIFFTAB */
+/* asm: 	.float	0 		;GG */
+/* asm: 	.float	-0.03 		;SF */
+/* asm: 	.float	-0.02 		;101 */
+/* asm: 	.float	-0.03 		;REDWD */
+/* asm: 	.float	-0.03 		;BEVH */
+/* asm: 	.float	0 		;LA */
+/* asm: 	.float	-0.03 		;DV */
+/* asm: 	.float	-0.01 		;AZ */
+/* asm: 	.float	-0.02 		;GCAN */
+/* asm: 	.float	-0.03 		;IOWA */
+/* asm: 	.float	-0.03 		;CHI */
+/* asm: 	.float	-0.02 		;IND */
+/* asm: 	.float	-0.02 		;APP */
+/* asm: 	.float	0 		;DC */
+/* asm: 	*---------------------------------------------------------------------------- */
+/* asm: 	* */
+/* asm: 	*	1.	INIT */
+/* asm: 	*	2.	SPREAD */
+/* asm: 	*	3.	RUN */
+/* asm: 	* */
+/* asm: 	*PARAMETERS */
+/* asm: 	*	R4	RANK */
+/* asm: 	*	AR7	PROCESS */
+/* asm: 	* */
+/* asm: 	*	if R4 > 7 then */
+/* asm: 	*		this drone is possibly a linked drone */
+/* asm: 	*	end if */
+/* asm: 	* */
+int DIFFTAB[] = {
+    0, // GG
+    -0.03, // SF
+    -0.02, // 101
+    -0.03, // REDWD
+    -0.03, // BEVH
+    0, // LA
+    -0.03, // DV
+    -0.01, // AZ
+    -0.02, // GCAN
+    -0.03, // IOWA
+    -0.03, // CHI
+    -0.02, // IND
+    -0.02, // APP
+    0, // DC
+};
 // *
 // *TRANSFER ACTIVE RACER
 // *
@@ -65,10 +110,10 @@ int GMAX = (int)(100000);
 int ROADOBSTAB[50];
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: WACKER	.word	3D20AH */
-int WACKER = (int)(0x3D20A);
-/* asm: LAKEL	.word	3EF0CH */
-int LAKEL = (int)(0x3EF0C);
+/* asm: WACKER	WACKER	.word	3D20AH */
+int WACKER = 0x3D20A;
+/* asm: LAKEL	LAKEL	.word	3EF0CH */
+int LAKEL = 0x3EF0C;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CHECK CAR OBSTACLE

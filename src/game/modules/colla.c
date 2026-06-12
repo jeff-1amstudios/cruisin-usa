@@ -81,8 +81,14 @@ int BOXSCRAM[50];
 // ;	LDI	@_ATTR_MODE,R0
 // ;	CMPI	-3,R0		;BUG IN FUTURE
 // 				;display while in the attract mode
-/* asm: SAGETAB	.word	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
-int SAGETAB[] = { SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND };
+// *REPELL THE SUCKERS
+// *STRAIGHT KICKBACK
+// *SPIN THE DUDE
+// *SHAKE THE TREE
+/* asm: SAGETAB	SAGETAB	.word	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
+int SAGETAB[] = {
+    SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND,
+};
 // *----------------------------------------------------------------------------
 // *FLYING SIGN COLLISION PROCESS
 // *
@@ -118,15 +124,20 @@ int SAGETAB[] = { SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND };
 // *	AR4	POINTS TO PLAYER CAR BLOCK
 // *	AR5	POINTS TO DRONE CAR BLOCK
 // *
-/* asm: SBUSI	.word	sbus */
+/* asm: SBUSI	SBUSI	.word	sbus */
 #define SBUSI sbus
-/* asm: CBUSI	.word	cbus */
+/* asm: CBUSI	CBUSI	.word	cbus */
 #define CBUSI cbus
-/* asm: DETHTAB1	.word	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
+/* asm: DETHTAB1	DETHTAB1	.word	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
 /* asm: 	.WORD	NDETHSCREAM1,NDETHSCREAM3,NDETHSCREAM4,NDETHSCREAM7 */
-int DETHTAB1[] = { MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3, NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7 };
-/* asm: DETHTAB2	.word	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
-int DETHTAB2[] = { MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2 };
+int DETHTAB1[] = {
+    MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3,
+    NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7,
+};
+/* asm: DETHTAB2	DETHTAB2	.word	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
+int DETHTAB2[] = {
+    MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2,
+};
 // *
 // *KILL OFF FLY MESSAGE
 // *AR4= OBJECT
@@ -138,7 +149,7 @@ int DETHTAB2[] = { MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2 };
 // *GET A FLYER FROM OTHER GAME
 // *AR2=MESSAGE BUFFER
 // *
-/* asm: FLYCARP0I	.word	FLYCARP */
+/* asm: FLYCARP0I	FLYCARP0I	.word	FLYCARP */
 #define FLYCARP0I FLYCARP
 // *----------------------------------------------------------------------------
 // *SPINROT	CALCULATE SPIN ROTATION
@@ -174,18 +185,56 @@ int PLYRBEHIND;
 // *R0=IMPACT SPEED
 // *
 // * DRONE VS. DRONE
-/* asm: SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
-int SCUPDTAB[] = { SCOLLF, SCOLLF, SCOLLG, SCOLLH };
-/* asm: SCTAB	.word	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
-int SCTAB[] = { SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE };
+/* asm: SCUPDTAB	SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
+int SCUPDTAB[] = {
+    SCOLLF, SCOLLF, SCOLLG, SCOLLH,
+};
+/* asm: SCTAB	SCTAB	.word	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
+int SCTAB[] = {
+    SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE,
+};
 // *----------------------------------------------------------------------------
 // *TABLE OF 6 BOX EQUATIONS
 // *CLOCKWISE ORDER
 #define VCTO (BLOWLIST+24)
 #define VCTO1 (BLOWLIST+72)
-// * OBJECT 0
-// * OBJECT 1
-// * LINE EQUATION TABLE PTS 2-6-7-3
+/* asm: EQTAB	EQTAB */
+/* asm: 	* OBJECT 0 */
+/* asm: 	.WORD	VCTO+(3*0),VCTO+(3*2),VCTO+(3*3)	;FRONT */
+/* asm: 	.WORD	VCTO+(3*0),VCTO+(3*4),VCTO+(3*6)	;LSIDE */
+/* asm: 	.WORD	VCTO+(3*0),VCTO+(3*1),VCTO+(3*5) 	;BOTTOM */
+/* asm: 	.WORD	VCTO+(3*2),VCTO+(3*6),VCTO+(3*7)	;TOP */
+/* asm: 	.WORD	VCTO+(3*1),VCTO+(3*3),VCTO+(3*7)	;RSIDE */
+/* asm: 	.WORD	VCTO+(3*7),VCTO+(3*6),VCTO+(3*4)	;BACK */
+/* asm: 	* OBJECT 1 */
+/* asm: 	.WORD	VCTO1+(3*0),VCTO1+(3*2),VCTO1+(3*3)	;FRONT */
+/* asm: 	.WORD	VCTO1+(3*0),VCTO1+(3*4),VCTO1+(3*6)	;LSIDE */
+/* asm: 	.WORD	VCTO1+(3*0),VCTO1+(3*1),VCTO1+(3*5) 	;BOTTOM */
+/* asm: 	.WORD	VCTO1+(3*2),VCTO1+(3*6),VCTO1+(3*7)	;TOP */
+/* asm: 	.WORD	VCTO1+(3*1),VCTO1+(3*3),VCTO1+(3*7)	;RSIDE */
+/* asm: 	.WORD	VCTO1+(3*7),VCTO1+(3*6),VCTO1+(3*4)	;BACK */
+/* asm: 	* LINE EQUATION TABLE PTS 2-6-7-3 */
+int EQTAB[] = {
+    VCTO+(3*0), VCTO+(3*2), VCTO+(3*3), // FRONT
+    VCTO+(3*0), VCTO+(3*4), VCTO+(3*6), // LSIDE
+    VCTO+(3*0), VCTO+(3*1), VCTO+(3*5), // BOTTOM
+    VCTO+(3*2), VCTO+(3*6), VCTO+(3*7), // TOP
+    VCTO+(3*1), VCTO+(3*3), VCTO+(3*7), // RSIDE
+    VCTO+(3*7), VCTO+(3*6), VCTO+(3*4), // BACK
+    VCTO1+(3*0), VCTO1+(3*2), VCTO1+(3*3), // FRONT
+    VCTO1+(3*0), VCTO1+(3*4), VCTO1+(3*6), // LSIDE
+    VCTO1+(3*0), VCTO1+(3*1), VCTO1+(3*5), // BOTTOM
+    VCTO1+(3*2), VCTO1+(3*6), VCTO1+(3*7), // TOP
+    VCTO1+(3*1), VCTO1+(3*3), VCTO1+(3*7), // RSIDE
+    VCTO1+(3*7), VCTO1+(3*6), VCTO1+(3*4), // BACK
+};
+/* asm: LEQTAB	LEQTAB */
+/* asm: 	.WORD	VCTO+(3*2)+1,VCTO+(3*6)+1,VCTO+(3*7)+1 */
+/* asm: 	.WORD	VCTO+(3*3)+1,VCTO+(3*2)+1 */
+int LEQTAB[] = {
+    VCTO+(3*2)+1, VCTO+(3*6)+1, VCTO+(3*7)+1,
+    VCTO+(3*3)+1, VCTO+(3*2)+1,
+};
 
 void CAMSCAN(void)
 {
@@ -1202,111 +1251,17 @@ void HARDCOL(void)
     // asm: 	LDI	AR0,AR5		;parent object
     // asm: 	RANDN	3
     // asm: 	LDI	R0,AR3
-    // asm: LL88
-    // asm: 	CREATE	DROP_COCONUTS,TSIGN_C|TSC_IMMOBILE|TSC_V_PALM
-    // asm: 	DBU	AR3,LL88
-    // asm: 	POP	AR5
-    // asm: 	POP	AR3
-    // asm: 	POP	AR2
-    // asm: 	POP	AR0
-    // asm: 	POP	R2
-    // asm: 	POP	R0
-    // asm: 	BU	DOREPEL
-NOTCOCONUT:
-    // asm: 	AND	TYPE_M,R0		;REDWOODS MUST NOT GET KNOCKED OVER
-    // asm: 	CMPI	TSC_HARD,R0
-    // asm: 	BNE	RUNOVER
-    // *REPELL THE SUCKERS
-DOREPEL:
-    // asm: 	CALL	REPELL
-    // asm: 	MPYF	*AR2,R0,R1 			;X REPELL
-    // asm: 	MPYF	*+AR2(2),R0		     	;Z REPELL
-    // asm: 	ADDF	*+AR0(OPOSX),R1			;REPELL THE SUCKER (AR0)
-    // asm: 	ADDF	*+AR0(OPOSZ),R0
-    // asm: 	STF	R1,*+AR0(OPOSX)
-    // asm: 	STF	R0,*+AR0(OPOSZ)
-    // asm: 	LDF	*+AR5(CARSPEED),R2    		;GOING FAST???
-    // asm: 	MPYF	0.6,R2
-    // asm: 	CMPF	37,R2				;MINIMUM SPEED VALUE
-    // asm: 	LDFLT	37,R2
-    // asm: 	STF	R2,*+AR5(CARSPEED)		;REVERSE SPEED
-    // asm: 	BLT	HARDCOL00			;YES,SPINOUT
-    // asm: 	LDI	500,AR2				;STRAIGHT OR SPINNER?
-    // asm: 	CALL	RANDPER
-    // asm: 	BC	HARDCOL1			;SPINNER...
-    // *STRAIGHT KICKBACK
-HARDCOL00:
-    // asm: 	LDI	60,R0				;SPIN COUNT
-    // asm: 	STI	R0,*+AR5(CAR_SPIN)
-    // asm: 	LDI	AR0,AR4
-    // asm: 	CALL	GETNXTRDIR
-    // asm: 	LDI	AR4,AR0
-    // asm: 	LDF	R0,R2
-    // asm: 	SUBF	*+AR5(CARYROT),R2
-    // asm: 	CALL	NORMITS
-    // asm: 	LDF	R2,R2
-    // asm: 	LDFGT	0.02,R0
-    // asm: 	LDFLE	-0.02,R0
-    // asm: 	B	HARDCOL2			;STORE DROT, SET VROT
-    // *SPIN THE DUDE
-HARDCOL1:
-    // asm: 	LDI	1,R0				;SPIN THE DUDE
-    // asm: 	STI	R0,*+AR5(CAR_SPIN)
-    // asm: 	LDF	3.14,R1				;SET 180 MIN SPIN
-    // asm: 	STF	R1,*+AR5(CARSPRAD)
-    // asm: 	LDF	0.1,R0		 		;GET ROTATION AMOUNT
-HARDCOL2:
-    // asm: 	STF	R0,*+AR5(CARDROT)
-    // asm: 	LDPI	@VECTORAI,AR2    		;COMPUTE REPULSION VECTOR
-    // asm: 	LDF	*AR2,R2
-    // asm: 	LDF	*+AR2(2),R3
-    // asm: 	CALL	ARCTANF
-    // asm: 	SUBF	1.57,R0
-    // asm: 	SUBF	*+AR5(CARVROT),R0
-    // asm: 	LDF	R0,R2
-    // asm: 	CALL	NORMITS
-    // asm: 	ABSF	R2
-    // asm: 	CMPF	1.57,R2
-    // asm: 	BLT	HARDCOL3
-    // asm: 	LDF	*+AR5(CARVROT),R2		;REVERSE VELOCITY
-    // asm: 	LDF	R2,R3
-    // asm: 	ADDF	3.14,R2
-    // asm: 	CALL	NORMITS
-    // asm: 	STF	R2,*+AR5(CARVROT)
-    // *SHAKE THE TREE
-    // asm: 	LDI	*+AR1(OID),R0
-    // asm: 	AND	TYPE_M,R0
-    // asm: 	CMPI	TSC_HARD,R0
-    // asm: 	BEQ	HARDCOL3
-    // asm: 	LDF	R3,R2
-    // asm: 	LDI	AR1,AR2		 	;FORM OMATRIX POINTER
-    // asm: 	ADDI	OMATRIX,AR2		;STUFF
-    // asm: 	CALL    FIND_YMATRIX		;NEW MATRIX
-    // asm: 	LDI	AR1,AR4			;GET SIGN OBJECT POINTER
-    // asm: 	LDI	*+AR4(OFLAGS),R0	;MAKE IT SELF ROTATING
-    // asm: 	ANDN	O_POSTER,R0
-    // asm: 	LDI	1,R1			;SET 3D ROTATION BIT
-    // asm: 	LS	O_3DROT_B,R1
-    // asm: 	OR	R1,R0
-    // asm: 	STI	R0,*+AR4(OFLAGS)
-    // asm: 	LDF	*+AR5(CARSPEED),R7	;HIT CAR SPEED
-    // asm: 	MPYF	0.04,R7		   	;FALL RATE BASED UPON VELOCITY
-    // asm: 	CMPF	0.13,R7
-    // asm: 	LDFLT	0.13,R7
-    // asm: 	CMPF	1.0,R7
-    // asm: 	LDFGT	1.0,R7
-    // asm: 	LDPI	@TREESHAKI,AR2		;GET SIGN FALL PROCESS
-    // asm: 	LDI	DRONE_C|FLYER_T,R2
-    // asm: 	CALL	PRC_CREATE_CHILD		;CREATE A CHILD PROCESS
-HARDCOL3:
-    // asm: 	SONDFX	POLESND			;MAKE SOUND
-    // asm: 	B	COLSGCX
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDCOL", 0, 0);
+    UNIMPL();
+}
+
+void ROADKILL(void)
+{
     // *
     // *ROADKILL OBJECT
     // *	AR0	POINTS TO CAR OBJECT
     // *	AR1	POINTS TO ROADKILL OBJECT HIT
     // *
-ROADKILL:
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,*+AR1(OCARBLK)
     // asm: 	CALL	ROADKILL_HIT		;MAKE A SOUND
@@ -1394,7 +1349,7 @@ FLYCOLL1:
     // asm: 	LDIEQ	DRMBNCE,AR2
     // asm: 	LDINE	DSIGNSND,AR2
     // asm: 	B	COLSGCX0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDCOL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL", 0, 0);
     UNIMPL();
 }
 

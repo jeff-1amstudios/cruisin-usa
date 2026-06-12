@@ -37,12 +37,12 @@ int ACTIVE_SCREEN;
 // *----------------------------------------------------------------------------
 // *ROM DEFINITIONS
 // *
-/* asm: LINE255I	.word	SCREEN0+3F000H 	;LAST LINE PAGE 0 */
-int LINE255I = (int)(SCREEN0+0x3F000);
-/* asm: LINE511I	.word	SCREEN0+7FC00H	;LAST LINE PAGE 1 */
-int LINE511I = (int)(SCREEN0+0x7FC00);
-/* asm: SCRSIZI	.word	3FFFFH */
-int SCRSIZI = (int)(0x3FFFF);
+/* asm: LINE255I	LINE255I	.word	SCREEN0+3F000H 	;LAST LINE PAGE 0 */
+int LINE255I = SCREEN0+0x3F000;
+/* asm: LINE511I	LINE511I	.word	SCREEN0+7FC00H	;LAST LINE PAGE 1 */
+int LINE511I = SCREEN0+0x7FC00;
+/* asm: SCRSIZI	SCRSIZI	.word	3FFFFH */
+int SCRSIZI = 0x3FFFF;
 #if DEBUG
 // *----------------------------------------------------------------------------
 // *TV30 DEBUGGING ROUTINES
@@ -50,14 +50,12 @@ int SCRSIZI = (int)(0x3FFFF);
 // *The two rountines TVBP, and TVBPX, if present, are called upon entering and
 // *exiting a breakpoint (respectively).
 // *
-// *----------------------------------------------------------------------------
-#endif
-/* asm: PAGEWORD	.word	0 */
-int PAGEWORD = (int)(0);
-/* asm: FILSIZI	.word	3FFFFH */
-int FILSIZI = (int)(0x3FFFF);
-/* asm: FILWORD	.word	93093H */
-int FILWORD = (int)(0x93093);
+/* asm: PAGEWORD	PAGEWORD	.word	0 */
+int PAGEWORD = 0;
+/* asm: FILSIZI	FILSIZI	.word	3FFFFH */
+int FILSIZI = 0x3FFFF;
+/* asm: FILWORD	FILWORD	.word	93093H */
+int FILWORD = 0x93093;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CAR PROCESS

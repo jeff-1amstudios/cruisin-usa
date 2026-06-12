@@ -56,6 +56,11 @@ int PRCSTR[PRCSIZ*NUMPROC];
 // *	(IF NO PROCESSES AVAILABLE)
 // *		CARRY SET
 // *
+#endif
+#if DEBUG
+#endif
+#endif
+#endif
 // *----------------------------------------------------------------------------
 
 void PRC_CREATE(void)
@@ -240,51 +245,13 @@ void PRC_SUICIDE(void)
     // *
     // *PROCESSES MUST BRANCH TO SUICIDE
     // *
-SUICIDE:
-#if DEBUG
-    // asm: 	PUSH	R0
-    // asm: 	LDI	@NUM_PROCS_ACTIVE,R0
-    // asm: 	DEC	R0
-    // asm: 	STI	R0,@NUM_PROCS_ACTIVE
-    // asm: 	LDI	@NUM_PROCS_IDLE,R0
-    // asm: 	INC	R0
-    // asm: 	STI	R0,@NUM_PROCS_IDLE
-    // asm: 	POP	R0
-    // asm: 	CALL	PRC_DEBUG_CHECK
-#endif
-#if DEBUG
-    // asm: 	CMPI	0,DP
-    // asm: 	BNE	$
-    // asm: 	CMPI	@OLDSP,SP
-    // asm: 	SLOCKON	NE,"SUICIDE   OLD != SP  *FATAL*"
-    // asm: 	BNE	$			;PROC IN AR7
-    // asm: 	LDI	@CURRENT_PROC,R0
-    // asm: 	CMPI	R0,AR7
-    // asm: 	SLOCKON	NE,"SUICIDE   CURRENT_PROC != AR7  *FATAL*"
-#endif
-    // asm: 	LDI	*AR7,R0			;LINK TO NEXT PROC
-    // asm: 	LDI	@PFREE,AR1		;LINK TO START OF FREE
-    // asm: 	STI	AR1,*AR7
-    // asm: 	STI	AR7,@PFREE
-    // asm: 	LDI	@PACTIVEI,R1		;WE MUST FIND DEAD PROCESS TO LINK AROUND
-DIELP:
-    // asm: LDI	R1,AR1
-    // asm: 	LDI	*AR1,R1
-    // asm: 	ERRON	Z,EC_PROC|ET_DELETE	;SUICIDE   PROCESS NOT FOUND??? *FATAL*"
-    // asm: 	BZ	NEXTPRC
-    // asm: 	CMPI	R1,AR7
-    // asm: 	BNE	DIELP
-    // asm: 	BUD	NEXTPRC
-    // asm: 	STI	R0,*AR1			;LINK AROUND DEAD PROCESS
-    // asm: 	LDI	AR1,AR7			;SO SOMETHING IS POINTING TO NEXT PROC
-    // asm: 	NOP
-    // 	;--->BR NEXTPRC
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_SUICIDE", 0, 0);
+    /* no executable asm lines detected */
     UNIMPL();
 }
 
 void PRC_KILL(void)
 {
+    // 	;--->BR NEXTPRC
     // *----------------------------------------------------------------------------
     // *----------------------------------------------------------------------------
     // *KILL A PROCESS
@@ -313,20 +280,6 @@ KILLP:
     // asm: 	LDI	*AR1,R1
     // asm: 	STI	R1,*AR2
     // asm: 	STI	AR2,*AR1
-KILL_X:
-#if DEBUG
-    // asm: 	PUSH	R0
-    // asm: 	LDI	@NUM_PROCS_ACTIVE,R0
-    // asm: 	DEC	R0
-    // asm: 	STI	R0,@NUM_PROCS_ACTIVE
-    // asm: 	LDI	@NUM_PROCS_IDLE,R0
-    // asm: 	INC	R0
-    // asm: 	STI	R0,@NUM_PROCS_IDLE
-    // asm: 	POP	R0
-#endif
-    // asm: 	POP	AR1
-    // asm: 	POP	R1
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_KILL", 0, 0);
     UNIMPL();
 }
@@ -374,13 +327,6 @@ KLP0:
     // asm: 	POP	R0
 #endif
     // asm: 	BR	KLP0
-KADONE:
-#if DEBUG
-    // asm: 	CALL	PRC_DEBUG_CHECK
-#endif
-    // asm: 	POP	AR2
-    // asm: 	POP	AR1
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_KILLALL", 0, 0);
     UNIMPL();
 }

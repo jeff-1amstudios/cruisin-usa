@@ -157,15 +157,84 @@ int DIPRAM;
 // *----------------------------------------------------------------------------
 // *SWITCH ROUTINE TABLE
 // *0 = NO PROCESS TO CREATE
+/* asm: SWTAB	SWTAB */
+/* asm: 	.word	COIN1  		;00000001 SW_COIN1	(COIN.ASM) */
+/* asm: 	.word	COIN2		;00000002 SW_COIN2 	(COIN.ASM) */
+/* asm: 	.word	_start		;00000004 START		(INTRO.ASM) */
+/* asm: 	.word	0		;00000008 */
+/* asm: 	.word	0		;00000010 SW_DIAG	(DIAG.ASM) */
+/* asm: 	.word	0		;00000020 */
+/* asm: 	.word	SERV_COIN	;00000040 SW_COINSRV	(COIN.ASM) */
+/* asm: 	.word	COIN3		;00000080 */
+/* asm: 	.word	0		;00000100 */
+/* asm: 	.word	0		;00000200 */
+/* asm: 	.word	0		;00000400 */
+/* asm: 	.word	0		;00000800 */
+/* asm: 	.word	0		;00001000 */
+/* asm: 	.word	0		;00002000 */
+/* asm: 	.word	COIN4		;00004000 */
+/* asm: 	.word	0		;00008000 */
+/* asm: 	.word	0		;00010000 BRAKE */
+/* asm: 	.word	RADIO_BUT	;00020000 RADIO (OLD ABORT) */
+/* asm: 	.word	0		;00040000 LOW */
+/* asm: 	.word	_debug		;00080000 DEBUG */
+/* asm: 	.word	_VIEW0		;00100000 VIEW0 */
+/* asm: 	.word	_VIEW1		;00200000 VIEW1 */
+/* asm: 	.word	_VIEW2		;00400000 VIEW2 */
+/* asm: 	.word	0		;00800000 VIEW4 */
+/* asm: 	.word	0		;01000000 */
+/* asm: 	.word	0		;02000000 */
+/* asm: 	.word	0		;04000000 */
+/* asm: 	.word	0		;08000000 */
+/* asm: 	.word	0		;10000000 */
+/* asm: 	.word	0		;20000000 */
+/* asm: 	.word	0		;40000000 */
+/* asm: 	.word	0		;80000000 */
+/* asm: 	*---------------------------------------------------------------------------- */
+/* asm: 	*---------------------------------------------------------------------------- */
+int SWTAB[] = {
+    COIN1, // 00000001 SW_COIN1	(COIN.ASM)
+    COIN2, // 00000002 SW_COIN2 	(COIN.ASM)
+    _start, // 00000004 START		(INTRO.ASM)
+    0, // 00000008
+    0, // 00000010 SW_DIAG	(DIAG.ASM)
+    0, // 00000020
+    SERV_COIN, // 00000040 SW_COINSRV	(COIN.ASM)
+    COIN3, // 00000080
+    0, // 00000100
+    0, // 00000200
+    0, // 00000400
+    0, // 00000800
+    0, // 00001000
+    0, // 00002000
+    COIN4, // 00004000
+    0, // 00008000
+    0, // 00010000 BRAKE
+    RADIO_BUT, // 00020000 RADIO (OLD ABORT)
+    0, // 00040000 LOW
+    _debug, // 00080000 DEBUG
+    _VIEW0, // 00100000 VIEW0
+    _VIEW1, // 00200000 VIEW1
+    _VIEW2, // 00400000 VIEW2
+    0, // 00800000 VIEW4
+    0, // 01000000
+    0, // 02000000
+    0, // 04000000
+    0, // 08000000
+    0, // 10000000
+    0, // 20000000
+    0, // 40000000
+    0, // 80000000
+};
 // *----------------------------------------------------------------------------
 /* asm: PB1	.usect	pbsss,1 */
 int PB1[pbsss];
 /* asm: PB2	.usect	pbsse,1 */
 int PB2[pbsse];
-/* asm: PBSS_PTR	.word	PB1 */
-int PBSS_PTR = (int)(PB1);
-/* asm: PBSS_BSSEND	.word	PB2 */
-int PBSS_BSSEND = (int)(PB2);
+/* asm: PBSS_PTR	PBSS_PTR	.word	PB1 */
+int PBSS_PTR = PB1;
+/* asm: PBSS_BSSEND	PBSS_BSSEND	.word	PB2 */
+int PBSS_BSSEND = PB2;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CLR RAM  (SLOW RAM)
@@ -173,11 +242,11 @@ int PBSS_BSSEND = (int)(PB2);
 // *make sure nothing exists on the stack yet
 // *
 // *
-/* asm: RAM_PTR	.word	BSSSTART */
-int RAM_PTR = (int)(BSSSTART);
+/* asm: RAM_PTR	RAM_PTR	.word	BSSSTART */
+int RAM_PTR = BSSSTART;
 // ;RAM_BSSEND	.word	01F7FFh
-/* asm: RAM_BSSEND	.word	01EFFFh		;save protected hi bss ram */
-int RAM_BSSEND = (int)(0x01EFFF);
+/* asm: RAM_BSSEND	RAM_BSSEND	.word	01EFFFh		;save protected hi bss ram */
+int RAM_BSSEND = 0x01EFFF;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -191,19 +260,46 @@ int BUTTON_STATUS;
 int OLD_BUTTON_STATUS;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-// ;before syncing
-// ;	.word	400|CRT_SETUP_ICSYNC	;CRT_SETUP
-// ;	.word	01ffh		;CRT_HADDRINC
-// ;	.word	01feh		;CRT_HBLKSTART
-// ;	.word	020eh		;CRT_HSYNCSTART
-// ;	.word	0227h		;CRT_HSYNCEND
-// ;	.word	0299h		;CRT_HBLKEND
-// ;	.word	029ah		;CRT_HTTL
-// ;	.word	018fh		;CRT_VBLKSTART
-// ;	.word	0192h		;CRT_SYNCSTART
-// ;	.word	0195h		;CRT_SYNCEND
-// ;	.word	01b0h		;CRT_VBLK
-// ;	.word	01b0h		;CRT_VTTL
+/* asm: CRT_REG_SETUP_STR	CRT_REG_SETUP_STR */
+/* asm: 	.word	399|CRT_SETUP_ICSYNC	;CRT_SETUP */
+/* asm: 	.word	01ffh		;CRT_HADDRINC */
+/* asm: 	.word	01feh		;CRT_HBLKSTART */
+/* asm: 	.word	020eh		;CRT_HSYNCSTART */
+/* asm: 	.word	0227h		;CRT_HSYNCEND */
+/* asm: 	.word	0299h		;CRT_HBLKEND */
+/* asm: 	.word	029ah		;CRT_HTTL */
+/* asm: 	.word	018eh		;CRT_VBLKSTART */
+/* asm: 	.word	0191h		;CRT_SYNCSTART */
+/* asm: 	.word	0194h		;CRT_SYNCEND */
+/* asm: 	.word	01afh		;CRT_VBLK */
+/* asm: 	.word	01b0h		;CRT_VTTL */
+/* asm: 	;before syncing */
+/* asm: 	;	.word	400|CRT_SETUP_ICSYNC	;CRT_SETUP */
+/* asm: 	;	.word	01ffh		;CRT_HADDRINC */
+/* asm: 	;	.word	01feh		;CRT_HBLKSTART */
+/* asm: 	;	.word	020eh		;CRT_HSYNCSTART */
+/* asm: 	;	.word	0227h		;CRT_HSYNCEND */
+/* asm: 	;	.word	0299h		;CRT_HBLKEND */
+/* asm: 	;	.word	029ah		;CRT_HTTL */
+/* asm: 	;	.word	018fh		;CRT_VBLKSTART */
+/* asm: 	;	.word	0192h		;CRT_SYNCSTART */
+/* asm: 	;	.word	0195h		;CRT_SYNCEND */
+/* asm: 	;	.word	01b0h		;CRT_VBLK */
+/* asm: 	;	.word	01b0h		;CRT_VTTL */
+int CRT_REG_SETUP_STR[] = {
+    399|CRT_SETUP_ICSYNC, // CRT_SETUP
+    0x01ff, // CRT_HADDRINC
+    0x01fe, // CRT_HBLKSTART
+    0x020e, // CRT_HSYNCSTART
+    0x0227, // CRT_HSYNCEND
+    0x0299, // CRT_HBLKEND
+    0x029a, // CRT_HTTL
+    0x018e, // CRT_VBLKSTART
+    0x0191, // CRT_SYNCSTART
+    0x0194, // CRT_SYNCEND
+    0x01af, // CRT_VBLK
+    0x01b0, // CRT_VTTL
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *INTERRUPT VECTORS
@@ -248,17 +344,25 @@ const char *TPALNI = "U38 LINK PAL NOT INSTALLED";
 // *
 // *
 #define NUM_STATES 7
-/* asm: STATE_TABLE	.word	SW_VIEW0|SW_VIEW2 */
+/* asm: STATE_TABLE	STATE_TABLE	.word	SW_VIEW0|SW_VIEW2 */
 /* asm: 	.word	SW_VIEW2 */
 /* asm: 	.word	SW_VIEW1|SW_VIEW2 */
 /* asm: 	.word	SW_VIEW1 */
 /* asm: 	.word	SW_VIEW0|SW_VIEW1 */
 /* asm: 	.word	SW_VIEW0 */
 /* asm: 	.word	SW_VIEW0|SW_RADIO */
-int STATE_TABLE[] = { SW_VIEW0|SW_VIEW2, SW_VIEW2, SW_VIEW1|SW_VIEW2, SW_VIEW1, SW_VIEW0|SW_VIEW1, SW_VIEW0, SW_VIEW0|SW_RADIO };
+int STATE_TABLE[] = {
+    SW_VIEW0|SW_VIEW2,
+    SW_VIEW2,
+    SW_VIEW1|SW_VIEW2,
+    SW_VIEW1,
+    SW_VIEW0|SW_VIEW1,
+    SW_VIEW0,
+    SW_VIEW0|SW_RADIO,
+};
 // *
-/* asm: STATE_MASK	.word	SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO */
-int STATE_MASK = (int)(SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO);
+/* asm: STATE_MASK	STATE_MASK	.word	SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO */
+int STATE_MASK = SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO;
 // *
 /* asm: STATE_NUM	.bss	STATE_NUM,1 */
 int STATE_NUM;
@@ -270,10 +374,12 @@ int BUTTON_IBO;
 /* asm: BUTTON_TIK	.bss	BUTTON_TIK,1 */
 int BUTTON_TIK;
 // *----------------------------------------------------------------------------
-/* asm: BUTTONI	.word	BUTTII */
+/* asm: BUTTONI	BUTTONI	.word	BUTTII */
 #define BUTTONI BUTTII
-/* asm: BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
-int BUTTII[] = { BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2 };
+/* asm: BUTTII	BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
+int BUTTII[] = {
+    BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -831,7 +937,6 @@ JJ88:
     // asm: 	BZ	NOTASEC
     // asm: 	SUBI	1,R0
     // asm: 	STI	R0,@_countdown
-NOTASEC:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", 0, 0);
     UNIMPL();
 }

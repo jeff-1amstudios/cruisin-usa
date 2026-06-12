@@ -73,12 +73,114 @@ int ATTRWAVE;
 #define LOGO_WHOOSH_FRAMES 462
 #define LOGO_SPINZ 18.85
 // *----------------------------------------------------------------------------
-// *THE first call is to intialize
-// *THE first call is to intialize
-// *THE first call is to intialize
-// *THE first call is to intialize
+/* asm: VIEWLIST	VIEWLIST */
+/* asm: 	.word	GGPARK_LIST */
+/* asm: 	.word	BEVHILL_LIST */
+/* asm: 	.word	GCANYON_LIST */
+/* asm: 	.word	CHICAGO_LIST */
+/* asm: 	.word	GGPARK_LIST */
+/* asm: 	.word	BEVHILL_LIST */
+/* asm: 	.word	GCANYON_LIST */
+/* asm: 	.word	CHICAGO_LIST */
+int VIEWLIST[] = {
+    GGPARK_LIST,
+    BEVHILL_LIST,
+    GCANYON_LIST,
+    CHICAGO_LIST,
+    GGPARK_LIST,
+    BEVHILL_LIST,
+    GCANYON_LIST,
+    CHICAGO_LIST,
+};
+/* asm: GGPARK_LIST	GGPARK_LIST */
+/* asm: 	*THE first call is to intialize */
+/* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
+/* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
+/* asm: 	.word	INIT_WATCH,1214h,240,WATCH_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,1404h,SMOOTH_VIEW */
+/* asm: 	.word	INITVIEW1_VIEW,17FBh,SMOOTH_VIEW */
+/* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
+/* asm: 	.word	0,0 */
+int GGPARK_LIST[] = {
+    INIT_STARTING, 70, ROAD_VIEW,
+    INIT_LEAD, 80, LEAD_VIEW,
+    INIT_WATCH, 0x1214, 240, WATCH_VIEW,
+    CUT_TO_VIEW2, 0x1404, SMOOTH_VIEW,
+    INITVIEW1_VIEW, 0x17FB, SMOOTH_VIEW,
+    INIT_LEAD, 80, LEAD_VIEW,
+    0, 0,
+};
+/* asm: BEVHILL_LIST	BEVHILL_LIST */
+/* asm: 	*THE first call is to intialize */
+/* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,14AFBh,SMOOTH_VIEW */
+/* asm: 	.word	INITVIEW1_VIEW,14DF3h,SMOOTH_VIEW */
+/* asm: 	.word	INIT_STARTING,100,ROAD_VIEW */
+/* asm: 	.word	0,0 */
+int BEVHILL_LIST[] = {
+    INIT_STARTING, 80, ROAD_VIEW,
+    CUT_TO_VIEW2, 0x14AFB, SMOOTH_VIEW,
+    INITVIEW1_VIEW, 0x14DF3, SMOOTH_VIEW,
+    INIT_STARTING, 100, ROAD_VIEW,
+    0, 0,
+};
+/* asm: GCANYON_LIST	GCANYON_LIST */
+/* asm: 	*THE first call is to intialize */
+/* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
+/* asm: 	.word	INIT_WATCH,2E20Ah,220,WATCH_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,2E800h,SMOOTH_VIEW */
+/* asm: 	.word	INITVIEW1_VIEW,2EC00h,SMOOTH_VIEW */
+/* asm: 	.word	INIT_WATCH,2EF00h,240,WATCH_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,30000h,SMOOTH_VIEW */
+/* asm: 	.word	0,0 */
+int GCANYON_LIST[] = {
+    INIT_STARTING, 70, ROAD_VIEW,
+    INIT_WATCH, 0x2E20A, 220, WATCH_VIEW,
+    CUT_TO_VIEW2, 0x2E800, SMOOTH_VIEW,
+    INITVIEW1_VIEW, 0x2EC00, SMOOTH_VIEW,
+    INIT_WATCH, 0x2EF00, 240, WATCH_VIEW,
+    CUT_TO_VIEW2, 0x30000, SMOOTH_VIEW,
+    0, 0,
+};
+/* asm: CHICAGO_LIST	CHICAGO_LIST */
+/* asm: 	*THE first call is to intialize */
+/* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
+/* asm: 	.word	INIT_REVERS_CUP,60,REV_ROAD_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,3AA0Eh,SMOOTH_VIEW */
+/* asm: 	.word	INITVIEW1_VIEW,3C00Ah,SMOOTH_VIEW */
+/* asm: 	.word	INIT_WATCH,3C5F5h,240,WATCH_VIEW */
+/* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
+/* asm: 	.word	0,0 */
+int CHICAGO_LIST[] = {
+    INIT_STARTING, 80, ROAD_VIEW,
+    INIT_REVERS_CUP, 60, REV_ROAD_VIEW,
+    CUT_TO_VIEW2, 0x3AA0E, SMOOTH_VIEW,
+    INITVIEW1_VIEW, 0x3C00A, SMOOTH_VIEW,
+    INIT_WATCH, 0x3C5F5, 240, WATCH_VIEW,
+    INIT_LEAD, 80, LEAD_VIEW,
+    0, 0,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: ATTR_WAVETAB	ATTR_WAVETAB */
+/* asm: 	.word	0,0 */
+/* asm: 	.word	L_LEG5_BEGIN+1,4 */
+/* asm: 	.word	L_LEG9_BEGIN+1,8 */
+/* asm: 	.word	L_LEG11_BEGIN+1,10 */
+/* asm: 	.word	0,0 */
+/* asm: 	.word	L_LEG5_BEGIN+1,4 */
+/* asm: 	.word	L_LEG9_BEGIN+1,8 */
+/* asm: 	.word	L_LEG11_BEGIN+1,10 */
+int ATTR_WAVETAB[] = {
+    0, 0,
+    L_LEG5_BEGIN+1, 4,
+    L_LEG9_BEGIN+1, 8,
+    L_LEG11_BEGIN+1, 10,
+    0, 0,
+    L_LEG5_BEGIN+1, 4,
+    L_LEG9_BEGIN+1, 8,
+    L_LEG11_BEGIN+1, 10,
+};
 #define ATTR_WAVETAB_LEN ($-ATTR_WAVETAB-1)
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -1553,7 +1655,6 @@ void CAMERA_HORIZON_PROJECTION(void)
     // asm: 	ADDF	*+AR7(CAMERA_INFIN),R0
     // asm: 	STF	R0,@INFIN_CORRECT
     // asm: 	RETS
-    // asm: ATTR_WAVETAB
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMERA_HORIZON_PROJECTION", 0, 0);
     UNIMPL();
 }

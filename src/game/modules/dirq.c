@@ -63,46 +63,46 @@
 #define POSTERCLIP 300
 #define LOW_CLIP_LEVEL 100
 #define HIGH_CLIP_LEVEL ((5000-1))
-/* asm: CAMERAPOSI	.word	_CAMERAPOS */
+/* asm: CAMERAPOSI	CAMERAPOSI	.word	_CAMERAPOS */
 #define CAMERAPOSI _CAMERAPOS
-/* asm: CAMERARADI	.word	_CAMERARAD */
+/* asm: CAMERARADI	CAMERARADI	.word	_CAMERARAD */
 #define CAMERARADI _CAMERARAD
-/* asm: CAMERAMATRIXI	.word	_CAMERAMATRIX */
+/* asm: CAMERAMATRIXI	CAMERAMATRIXI	.word	_CAMERAMATRIX */
 #define CAMERAMATRIXI _CAMERAMATRIX
-/* asm: ASHADOW	.word	_ACNTL		;HEADS UP THE FIFO MIRROR */
-int ASHADOW = (int)(_ACNTL);
-/* asm: LIGHTIY	.word	_LIGHT+1 */
-int LIGHTIY = (int)(_LIGHT+1);
-/* asm: transmatrixI	.word	ROTATION_MATRIX */
+/* asm: ASHADOW	ASHADOW	.word	_ACNTL		;HEADS UP THE FIFO MIRROR */
+int ASHADOW = _ACNTL;
+/* asm: LIGHTIY	LIGHTIY	.word	_LIGHT+1 */
+int LIGHTIY = _LIGHT+1;
+/* asm: transmatrixI	transmatrixI	.word	ROTATION_MATRIX */
 #define transmatrixI ROTATION_MATRIX
-/* asm: transvectorYI	.word	TRANSVECTOR+1 */
-int transvectorYI = (int)(TRANSVECTOR+1);
-/* asm: POSTERMATI	.word	POSTERMATRIX */
+/* asm: transvectorYI	transvectorYI	.word	TRANSVECTOR+1 */
+int transvectorYI = TRANSVECTOR+1;
+/* asm: POSTERMATI	POSTERMATI	.word	POSTERMATRIX */
 #define POSTERMATI POSTERMATRIX
-/* asm: POSTERMAT2DI	.word	POSTERMATRIX2D */
+/* asm: POSTERMAT2DI	POSTERMAT2DI	.word	POSTERMATRIX2D */
 #define POSTERMAT2DI POSTERMATRIX2D
-/* asm: tmpmatI	.word	TMPMAT */
+/* asm: tmpmatI	tmpmatI	.word	TMPMAT */
 #define tmpmatI TMPMAT
-/* asm: tmpmatY	.word	TMPMAT+1 */
-int tmpmatY = (int)(TMPMAT+1);
-/* asm: HIGH_CLIP_LEV8	.word	80000		;MATHEMATICAL LIMIT */
-int HIGH_CLIP_LEV8 = (int)(80000);
-/* asm: MATRIXAI	.word	_MATRIXA */
+/* asm: tmpmatY	tmpmatY	.word	TMPMAT+1 */
+int tmpmatY = TMPMAT+1;
+/* asm: HIGH_CLIP_LEV8	HIGH_CLIP_LEV8	.word	80000		;MATHEMATICAL LIMIT */
+int HIGH_CLIP_LEV8 = 80000;
+/* asm: MATRIXAI	MATRIXAI	.word	_MATRIXA */
 #define MATRIXAI _MATRIXA
-/* asm: MATRIXBI	.word	_MATRIXB */
+/* asm: MATRIXBI	MATRIXBI	.word	_MATRIXB */
 #define MATRIXBI _MATRIXB
-/* asm: MATRIXCI	.word	_MATRIXC */
+/* asm: MATRIXCI	MATRIXCI	.word	_MATRIXC */
 #define MATRIXCI _MATRIXC
-/* asm: VECTORAI	.word	_VECTORA */
+/* asm: VECTORAI	VECTORAI	.word	_VECTORA */
 #define VECTORAI _VECTORA
-/* asm: VECTORBI	.word	_VECTORB */
+/* asm: VECTORBI	VECTORBI	.word	_VECTORB */
 #define VECTORBI _VECTORB
-/* asm: VECTORCI	.word	_VECTORC */
+/* asm: VECTORCI	VECTORCI	.word	_VECTORC */
 #define VECTORCI _VECTORC
-/* asm: VECTORDI	.word	_VECTORD */
+/* asm: VECTORDI	VECTORDI	.word	_VECTORD */
 #define VECTORDI _VECTORD
-/* asm: VECTORAYI	.word	_VECTORA+1 */
-int VECTORAYI = (int)(_VECTORA+1);
+/* asm: VECTORAYI	VECTORAYI	.word	_VECTORA+1 */
+int VECTORAYI = _VECTORA+1;
 /* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */
 int POSTERMATRIX2D[4];
 // *----------------------------------------------------------------------------
@@ -152,6 +152,12 @@ int POSTERMATRIX2D[4];
 // *
 /* asm: BREAKOBJ	.bss	BREAKOBJ,1 */
 int BREAKOBJ;
+#endif
+// *GENERATE TRANSLATION VECTOR
+// 	;---->BZ TRU_UNIV
+// 	;---->BZ UNIV_ROT
+// *SPECIAL CASE WHEN WE WANT SOMETHING NOT ROTATED BY THE
+// *UNIVMATRIX  (it has absolute coordinates)
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *	PLOTPOLY
@@ -260,44 +266,12 @@ void NEXTOBJ(void)
     // asm: 	BZ	NOBREAK_CONTINUE
     // asm: 	CMPI	R1,R0
     // asm: 	BEQ	$
-NOBREAK_CONTINUE:
-#if STATISTICS
-    // asm: 	LDI	@ST_OBJECTS,R1
-    // asm: 	INC	R1
-    // asm: 	STI	R1,@ST_OBJECTS
-#endif
-    // *GENERATE TRANSLATION VECTOR
-    // asm: 	LDI	R0,AR3			;transform the objects position
-    // asm: 	LDI	*+AR0(OFLAGS),R6	;holds the OBJECTS flags
-    // asm: 	LDI	*+AR0(OROMDATA),AR1	;get the romptr
-    // asm: 	TSTB	O_NOUNIV,R6		;has this object have an absolute distance from
-    // asm: 	BZD	TRU_UNIV		;CAMERAPOS or is it a regular object
-    // asm: 	ADDI	OPOSX,AR3		;for the CAMERAMATRIX
-    // asm: 	LDI	@CAMERAPOSI,AR6		;universe_center
-    // asm: 	LDI	@tmpmatI,AR4		;trans = object_pos + univ_pos
-    // 	;---->BZ TRU_UNIV
-    // asm: 	BUD	TRANS_RET		;this object has an absolute distance from
-    // asm: 	LDF	*AR3++,R3		;the cemeras position therefore its relative
-    // asm: 	LDF	*AR3++,R4		;position in our calculations does not change
-    // asm: 	LDF	*AR3++,R5		;
-TRU_UNIV:
-    // asm: 	SUBF	*AR6++,*AR3++,R3	;*trans++ = *tp++ - *up++
-    // asm: 	SUBF	*AR6++,*AR3++,R4	;*trans++ = *tp++ - *up++
-    // asm: 	SUBF	*AR6++,*AR3++,R5	;*trans++ = *tp++ - *up++
-TRANS_RET:
-    // asm: 	TSTB	O_NOUROT,R6		;is this object NOT rotatable by the CAMERAMATRIX?
-    // asm: 	BZD	UNIV_ROT		;BR -> it is
-    // asm: 	LDI	@CAMERAMATRIXI,AR5	;src 3x3
-    // asm: 	LDI	@transvectorYI,AR6	;dst 1x3
-    // asm: 	NOP
-    // 	;---->BZ UNIV_ROT
-    // *SPECIAL CASE WHEN WE WANT SOMETHING NOT ROTATED BY THE
-    // *UNIVMATRIX  (it has absolute coordinates)
-    // asm: 	STF	R3,*-AR6(1)		;TRANSVECTOR.x
-    // asm: 	BUD	TRIVIAL_REJECTION
-    // asm: 	STF	R4,*AR6			;TRANSVECTOR.y
-    // asm: 	LDF	R5,R2			;Z value
-    // asm: 	ADDI	9,AR5
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXTOBJ", 0, 0);
+    UNIMPL();
+}
+
+void UNIV_ROT(void)
+{
     // 	;---->	BUD	TRIVIAL_REJECTION
     // ;***	TRIVIAL REJECTION AND TRANSLATION VECTOR
     // 	;AR4	objects position   X,Z
@@ -313,7 +287,6 @@ TRANS_RET:
     // *
     // *ROTATE OBJECTS POSITION BY CAMERAS MATRIX
     // *
-UNIV_ROT:
     // asm: 	MPYF3	*AR5++,R3,R0
     // asm: 	MPYF3	*AR5++,R4,R1
     // asm: 	MPYF3	*AR5++,*+AR4(1),R1
@@ -487,7 +460,7 @@ INLP1:
     // 	;***
     // 	;***	VECTOR ROTATION/TRANSLATION
     // 	;***
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXTOBJ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "UNIV_ROT", 0, 0);
     UNIMPL();
 }
 

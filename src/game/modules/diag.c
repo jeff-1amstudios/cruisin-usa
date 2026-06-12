@@ -44,7 +44,7 @@ const char *title = "CRUISIN USA   DIAGNOSTICS";
 const char *toexit = "HIT ENTER TO EXIT";
 /* asm: DIAGPAL	DIAGPAL: */
 /* asm: 	.word	16			;LENGTH OF PALETTE */
-int DIAGPAL = (int)(16);
+int DIAGPAL = 16;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: SOFT_AUDIT	.bss	SOFT_AUDIT,1 */
@@ -61,16 +61,16 @@ int SOFT_AUDIT;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
-/* asm: FILSIZI	.word	3FFFFH */
-int FILSIZI = (int)(0x3FFFF);
-/* asm: REDV	.word	30003h		;these values point into fixed palette */
-int REDV = (int)(0x30003);
-/* asm: GREENV	.word	40004h */
-int GREENV = (int)(0x40004);
-/* asm: BLUEV	.word	90009h */
-int BLUEV = (int)(0x90009);
-/* asm: BLACKV	.word	80008h */
-int BLACKV = (int)(0x80008);
+/* asm: FILSIZI	FILSIZI	.word	3FFFFH */
+int FILSIZI = 0x3FFFF;
+/* asm: REDV	REDV	.word	30003h		;these values point into fixed palette */
+int REDV = 0x30003;
+/* asm: GREENV	GREENV	.word	40004h */
+int GREENV = 0x40004;
+/* asm: BLUEV	BLUEV	.word	90009h */
+int BLUEV = 0x90009;
+/* asm: BLACKV	BLACKV	.word	80008h */
+int BLACKV = 0x80008;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *SHOW SWITCHES (AND POTS)
@@ -89,7 +89,7 @@ int _opot2;
 int _onebut;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: SWITCHES_DIAG	.word	SW_VIEW0,180,130 */
+/* asm: SWITCHES_DIAG	SWITCHES_DIAG	.word	SW_VIEW0,180,130 */
 /* asm: 	.word	SW_VIEW1,200,130 */
 /* asm: 	.word	SW_VIEW2,220,130 */
 /* asm: 	.word	SW_START,240,130 */
@@ -103,7 +103,22 @@ int _onebut;
 /* asm: 	.word	SW_VOLMINUS,315,330 */
 /* asm: 	.word	SW_COINSRV,335,330 */
 /* asm: 	.word	-1 */
-int SWITCHES_DIAG[] = { SW_VIEW0, 180, 130, SW_VIEW1, 200, 130, SW_VIEW2, 220, 130, SW_START, 240, 130, SW_COIN1, 260, 130, SW_COIN2, 280, 130, SW_COIN3, 300, 130, SW_COIN4, 320, 130, SW_RADIO, 340, 130, SW_DIAG, 275, 330, SW_VOLPLUS, 295, 330, SW_VOLMINUS, 315, 330, SW_COINSRV, 335, 330, -1 };
+int SWITCHES_DIAG[] = {
+    SW_VIEW0, 180, 130,
+    SW_VIEW1, 200, 130,
+    SW_VIEW2, 220, 130,
+    SW_START, 240, 130,
+    SW_COIN1, 260, 130,
+    SW_COIN2, 280, 130,
+    SW_COIN3, 300, 130,
+    SW_COIN4, 320, 130,
+    SW_RADIO, 340, 130,
+    SW_DIAG, 275, 330,
+    SW_VOLPLUS, 295, 330,
+    SW_VOLMINUS, 315, 330,
+    SW_COINSRV, 335, 330,
+    -1,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: LASTSHIFT	.bss	LASTSHIFT,1 */
@@ -133,10 +148,10 @@ int LASTDIPPLOT;
 // *
 /* asm: DIPTMP	.bss	DIPTMP,2 */
 int DIPTMP[2];
-/* asm: ISON	.word	ONTEXT */
-int ISON = (int)(ONTEXT);
-/* asm: ISOFF	.word	OFFTEXT */
-int ISOFF = (int)(OFFTEXT);
+/* asm: ISON	ISON	.word	ONTEXT */
+int ISON = ONTEXT;
+/* asm: ISOFF	ISOFF	.word	OFFTEXT */
+int ISOFF = OFFTEXT;
 const char *ONTEXT = "ON";
 const char *OFFTEXT = "OFF";
 const char *DNSUP = "UPRIGHT";
@@ -191,8 +206,47 @@ const char *MOMT = "MOTION MENU";
 // *----------------------------------------------------------------------------
 /* asm: AMT	SPTR	"ADJUSTMENT MENU" */
 const char *AMT = "ADJUSTMENT MENU";
-// ;	.word	0,0
-// ;	.word	0,0
+/* asm: ADJTAB	ADJTAB */
+/* asm: 	.word	ADJ_COINMODE,PRINT_COINMODE */
+/* asm: 	.word	ADJ_STANDARD_PRICING,PRINT_CUSTOM_SELECTED */
+/* asm: 	;	.word	0,0 */
+/* asm: 	;	.word	0,0 */
+/* asm: 	.word	ADJ_FREE_PLAY,PRINT_ONOFF */
+/* asm: 	.word	ADJ_FREEGAME,PRINT_ONOFF */
+/* asm: 	.word	ADJ_TIME_TO_START,PRINT_TIME */
+/* asm: 	.word	ADJ_CHECKPOINT_BONUS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_ATTRACT_MODE_SOUND,PRINT_ONOFF */
+/* asm: 	.word	ADJ_HIGH_SCORE_ENTRY,PRINT_ONOFF */
+/* asm: 	.word	ADJ_MIN_VOL_LEVEL,PRINT_VOL */
+/* asm: 	.word	ADJ_MPHORKPM,PRINT_MPH */
+/* asm: 	.word	ADJ_ROADKILL,PRINT_ONOFF */
+/* asm: 	.word	ADJ_CLINTON,PRINT_ONOFF */
+/* asm: 	.word	ADJ_GIRLS,PRINT_ONOFF */
+/* asm: 	.word	ADJ_HIGHSCORE_RESET,PRINT_NUMBER */
+/* asm: 	.word	ADJ_DIFFICULTY,PRINT_NUMBER */
+/* asm: 	.word	ADJ_MAX_CREDITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_STEERING_SENSITIVITY,PRINT_NUMBER */
+/* asm: 	.word	0,0 */
+int ADJTAB[] = {
+    ADJ_COINMODE, PRINT_COINMODE,
+    ADJ_STANDARD_PRICING, PRINT_CUSTOM_SELECTED,
+    ADJ_FREE_PLAY, PRINT_ONOFF,
+    ADJ_FREEGAME, PRINT_ONOFF,
+    ADJ_TIME_TO_START, PRINT_TIME,
+    ADJ_CHECKPOINT_BONUS, PRINT_NUMBER,
+    ADJ_ATTRACT_MODE_SOUND, PRINT_ONOFF,
+    ADJ_HIGH_SCORE_ENTRY, PRINT_ONOFF,
+    ADJ_MIN_VOL_LEVEL, PRINT_VOL,
+    ADJ_MPHORKPM, PRINT_MPH,
+    ADJ_ROADKILL, PRINT_ONOFF,
+    ADJ_CLINTON, PRINT_ONOFF,
+    ADJ_GIRLS, PRINT_ONOFF,
+    ADJ_HIGHSCORE_RESET, PRINT_NUMBER,
+    ADJ_DIFFICULTY, PRINT_NUMBER,
+    ADJ_MAX_CREDITS, PRINT_NUMBER,
+    ADJ_STEERING_SENSITIVITY, PRINT_NUMBER,
+    0, 0,
+};
 // *----------------------------------------------------------------------------
 /* asm: UMT	SPTR	"UTILITIES MENU" */
 const char *UMT = "UTILITIES MENU";
@@ -222,21 +276,291 @@ const char *AMODES = "ATTRACT MODE SOUNDS";
 // ;	.ref	COINMSG_TABI	;????
 #define STANDARD_PRICING_MENU_LEN 16
 #define USA_MENU_LEN 13
+/* asm: USA_MENU	USA_MENU */
+/* asm: 	.word	MSGC_USA1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA3,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA4,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA5,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA6,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA7,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA8,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA9,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA10,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA11,PRICE_YES_NO */
+/* asm: 	.word	MSGC_USA12,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int USA_MENU[] = {
+    MSGC_USA1, PRICE_YES_NO,
+    MSGC_USA2, PRICE_YES_NO,
+    MSGC_USA3, PRICE_YES_NO,
+    MSGC_USA4, PRICE_YES_NO,
+    MSGC_USA5, PRICE_YES_NO,
+    MSGC_USA6, PRICE_YES_NO,
+    MSGC_USA7, PRICE_YES_NO,
+    MSGC_USA8, PRICE_YES_NO,
+    MSGC_USA9, PRICE_YES_NO,
+    MSGC_USA10, PRICE_YES_NO,
+    MSGC_USA11, PRICE_YES_NO,
+    MSGC_USA12, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define GERMAN_MENU_LEN 9
+/* asm: GERMAN_MENU	GERMAN_MENU */
+/* asm: 	.word	MSGC_GERMAN1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GERMAN2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GERMAN3,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GERMAN4,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GERMAN5,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GERMAN6,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GERMAN7,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GERMAN8,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int GERMAN_MENU[] = {
+    MSGC_GERMAN1, PRICE_YES_NO,
+    MSGC_GERMAN2, PRICE_YES_NO,
+    MSGC_GERMAN3, PRICE_YES_NO,
+    MSGC_GERMAN4, PRICE_YES_NO,
+    MSGC_GERMAN5, PRICE_YES_NO,
+    MSGC_GERMAN6, PRICE_YES_NO,
+    MSGC_GERMAN7, PRICE_YES_NO,
+    MSGC_GERMAN8, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define FRENCH_MENU_LEN 12
+/* asm: FRENCH_MENU	FRENCH_MENU */
+/* asm: 	.word	MSGC_FRENCH1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH3,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH4,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH5,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH6,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH7,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH8,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH9,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH10,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FRENCH11,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int FRENCH_MENU[] = {
+    MSGC_FRENCH1, PRICE_YES_NO,
+    MSGC_FRENCH2, PRICE_YES_NO,
+    MSGC_FRENCH3, PRICE_YES_NO,
+    MSGC_FRENCH4, PRICE_YES_NO,
+    MSGC_FRENCH5, PRICE_YES_NO,
+    MSGC_FRENCH6, PRICE_YES_NO,
+    MSGC_FRENCH7, PRICE_YES_NO,
+    MSGC_FRENCH8, PRICE_YES_NO,
+    MSGC_FRENCH9, PRICE_YES_NO,
+    MSGC_FRENCH10, PRICE_YES_NO,
+    MSGC_FRENCH11, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define CANADA_MENU_LEN 4
+/* asm: CANADA_MENU	CANADA_MENU */
+/* asm: 	.word	MSGC_CANADA1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_CANADA2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_CANADA3,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int CANADA_MENU[] = {
+    MSGC_CANADA1, PRICE_YES_NO,
+    MSGC_CANADA2, PRICE_YES_NO,
+    MSGC_CANADA3, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define SWISS_MENU_LEN 4
+/* asm: SWISS_MENU	SWISS_MENU */
+/* asm: 	.word	MSGC_SWISS1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_SWISS2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_SWISS3,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int SWISS_MENU[] = {
+    MSGC_SWISS1, PRICE_YES_NO,
+    MSGC_SWISS2, PRICE_YES_NO,
+    MSGC_SWISS3, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define ITALY_MENU_LEN 4
+/* asm: ITALY_MENU	ITALY_MENU */
+/* asm: 	.word	MSGC_ITALY1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_ITALY2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_ITALY3,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int ITALY_MENU[] = {
+    MSGC_ITALY1, PRICE_YES_NO,
+    MSGC_ITALY2, PRICE_YES_NO,
+    MSGC_ITALY3, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define UK_MENU_LEN 4
+/* asm: UK_MENU	UK_MENU */
+/* asm: 	.word	MSGC_UK1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_UK2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_UK3,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int UK_MENU[] = {
+    MSGC_UK1, PRICE_YES_NO,
+    MSGC_UK2, PRICE_YES_NO,
+    MSGC_UK3, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define SPAIN_MENU_LEN 7
+/* asm: SPAIN_MENU	SPAIN_MENU */
+/* asm: 	.word	MSGC_SPAIN1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_SPAIN2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_SPAIN3,PRICE_YES_NO */
+/* asm: 	.word	MSGC_SPAIN4,PRICE_YES_NO */
+/* asm: 	.word	MSGC_SPAIN5,PRICE_YES_NO */
+/* asm: 	.word	MSGC_SPAIN6,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int SPAIN_MENU[] = {
+    MSGC_SPAIN1, PRICE_YES_NO,
+    MSGC_SPAIN2, PRICE_YES_NO,
+    MSGC_SPAIN3, PRICE_YES_NO,
+    MSGC_SPAIN4, PRICE_YES_NO,
+    MSGC_SPAIN5, PRICE_YES_NO,
+    MSGC_SPAIN6, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define AUSTRALIA_MENU_LEN 5
+/* asm: AUSTRALIA_MENU	AUSTRALIA_MENU */
+/* asm: 	.word	MSGC_AUSTRALIA1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_AUSTRALIA2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_AUSTRALIA3,PRICE_YES_NO */
+/* asm: 	.word	MSGC_AUSTRALIA4,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int AUSTRALIA_MENU[] = {
+    MSGC_AUSTRALIA1, PRICE_YES_NO,
+    MSGC_AUSTRALIA2, PRICE_YES_NO,
+    MSGC_AUSTRALIA3, PRICE_YES_NO,
+    MSGC_AUSTRALIA4, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define JAPAN_MENU_LEN 4
+/* asm: JAPAN_MENU	JAPAN_MENU */
+/* asm: 	.word	MSGC_JAPAN1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_JAPAN2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_JAPAN3,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int JAPAN_MENU[] = {
+    MSGC_JAPAN1, PRICE_YES_NO,
+    MSGC_JAPAN2, PRICE_YES_NO,
+    MSGC_JAPAN3, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define TAIWAN_MENU_LEN 4
+/* asm: TAIWAN_MENU	TAIWAN_MENU */
+/* asm: 	.word	MSGC_TAIWAN1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_TAIWAN2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_TAIWAN3,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int TAIWAN_MENU[] = {
+    MSGC_TAIWAN1, PRICE_YES_NO,
+    MSGC_TAIWAN2, PRICE_YES_NO,
+    MSGC_TAIWAN3, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define AUSTRIA_MENU_LEN 5
+/* asm: AUSTRIA_MENU	AUSTRIA_MENU */
+/* asm: 	.word	MSGC_AUSTRIA1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_AUSTRIA2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_AUSTRIA3,PRICE_YES_NO */
+/* asm: 	.word	MSGC_AUSTRIA4,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int AUSTRIA_MENU[] = {
+    MSGC_AUSTRIA1, PRICE_YES_NO,
+    MSGC_AUSTRIA2, PRICE_YES_NO,
+    MSGC_AUSTRIA3, PRICE_YES_NO,
+    MSGC_AUSTRIA4, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define BELGIUM_MENU_LEN 4
+/* asm: BELGIUM_MENU	BELGIUM_MENU */
+/* asm: 	.word	MSGC_BELGIUM1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_BELGIUM2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_BELGIUM3,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int BELGIUM_MENU[] = {
+    MSGC_BELGIUM1, PRICE_YES_NO,
+    MSGC_BELGIUM2, PRICE_YES_NO,
+    MSGC_BELGIUM3, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define OTHER_MENU_LEN 8
+/* asm: OTHER_MENU	OTHER_MENU */
+/* asm: 	.word	MSGC_SWEDEN1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_FINLAND1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_NETHERLAND1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_NETHERLAND2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_NORWAY1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_DENMARK1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_HUNGARY1,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int OTHER_MENU[] = {
+    MSGC_SWEDEN1, PRICE_YES_NO,
+    MSGC_FINLAND1, PRICE_YES_NO,
+    MSGC_NETHERLAND1, PRICE_YES_NO,
+    MSGC_NETHERLAND2, PRICE_YES_NO,
+    MSGC_NORWAY1, PRICE_YES_NO,
+    MSGC_DENMARK1, PRICE_YES_NO,
+    MSGC_HUNGARY1, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 #define GENERAL_MENU_LEN 9
+/* asm: GENERAL_MENU	GENERAL_MENU */
+/* asm: 	.word	MSGC_GENERAL1,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GENERAL2,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GENERAL3,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GENERAL4,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GENERAL5,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GENERAL6,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GENERAL7,PRICE_YES_NO */
+/* asm: 	.word	MSGC_GENERAL8,PRICE_YES_NO */
+/* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+int GENERAL_MENU[] = {
+    MSGC_GENERAL1, PRICE_YES_NO,
+    MSGC_GENERAL2, PRICE_YES_NO,
+    MSGC_GENERAL3, PRICE_YES_NO,
+    MSGC_GENERAL4, PRICE_YES_NO,
+    MSGC_GENERAL5, PRICE_YES_NO,
+    MSGC_GENERAL6, PRICE_YES_NO,
+    MSGC_GENERAL7, PRICE_YES_NO,
+    MSGC_GENERAL8, PRICE_YES_NO,
+    ETMAIN, XIT_MENU_TO_MAIN,
+};
 const char *ETMAIN = "EXIT TO MAIN";
+/* asm: COUNTRY_MENUTAB	COUNTRY_MENUTAB */
+/* asm: 	.word	USA_MENU,USA_MENU_LEN */
+/* asm: 	.word	GERMAN_MENU,GERMAN_MENU_LEN */
+/* asm: 	.word	FRENCH_MENU,FRENCH_MENU_LEN */
+/* asm: 	.word	CANADA_MENU,CANADA_MENU_LEN */
+/* asm: 	.word	SWISS_MENU,SWISS_MENU_LEN */
+/* asm: 	.word	ITALY_MENU,ITALY_MENU_LEN */
+/* asm: 	.word	UK_MENU,UK_MENU_LEN */
+/* asm: 	.word	SPAIN_MENU,SPAIN_MENU_LEN */
+/* asm: 	.word	AUSTRALIA_MENU,AUSTRALIA_MENU_LEN */
+/* asm: 	.word	JAPAN_MENU,JAPAN_MENU_LEN */
+/* asm: 	.word	TAIWAN_MENU,TAIWAN_MENU_LEN */
+/* asm: 	.word	AUSTRIA_MENU,AUSTRIA_MENU_LEN */
+/* asm: 	.word	BELGIUM_MENU,BELGIUM_MENU_LEN */
+/* asm: 	.word	OTHER_MENU,OTHER_MENU_LEN */
+/* asm: 	.word	GENERAL_MENU,GENERAL_MENU_LEN */
+int COUNTRY_MENUTAB[] = {
+    USA_MENU, USA_MENU_LEN,
+    GERMAN_MENU, GERMAN_MENU_LEN,
+    FRENCH_MENU, FRENCH_MENU_LEN,
+    CANADA_MENU, CANADA_MENU_LEN,
+    SWISS_MENU, SWISS_MENU_LEN,
+    ITALY_MENU, ITALY_MENU_LEN,
+    UK_MENU, UK_MENU_LEN,
+    SPAIN_MENU, SPAIN_MENU_LEN,
+    AUSTRALIA_MENU, AUSTRALIA_MENU_LEN,
+    JAPAN_MENU, JAPAN_MENU_LEN,
+    TAIWAN_MENU, TAIWAN_MENU_LEN,
+    AUSTRIA_MENU, AUSTRIA_MENU_LEN,
+    BELGIUM_MENU, BELGIUM_MENU_LEN,
+    OTHER_MENU, OTHER_MENU_LEN,
+    GENERAL_MENU, GENERAL_MENU_LEN,
+};
 /* asm: COUNTRY	.bss	COUNTRY,1 */
 int COUNTRY;
 #define PSSTARTY 100
@@ -251,10 +575,14 @@ int PSLAST;
 // *
 // *
 const char *sct = "CALIBRATE CONTROLS";
-/* asm: INCIDENT	.word	CARPASS,TRUCKPASS */
+/* asm: INCIDENT	INCIDENT	.word	CARPASS,TRUCKPASS */
 /* asm: 	.word	SCOLLA,TKEY */
 /* asm: 	.word	BOTTOMOUT,VIEW2IN */
-int INCIDENT[] = { CARPASS, TRUCKPASS, SCOLLA, TKEY, BOTTOMOUT, VIEW2IN };
+int INCIDENT[] = {
+    CARPASS, TRUCKPASS,
+    SCOLLA, TKEY,
+    BOTTOMOUT, VIEW2IN,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 const char *FFR = "FULL FACTORY RESTORE";
@@ -440,6 +768,11 @@ const char *USECP = "USE CUSTOM PRICING";
 /* asm: CPS	SPTR	"CUSTOM PRICING SELECTED" */
 const char *CPS = "CUSTOM PRICING SELECTED";
 // *----------------------------------------------------------------------------
+/* asm: CMESSAGE_TAB	CMESSAGE_TAB */
+/* asm: 	.word	CPCS,CPCS,CPCS,CPCS,CUPC,CTSS,CTCS,CCTS,CCTC,CTPC,CTPC,CTPC,CTPC */
+int CMESSAGE_TAB[] = {
+    CPCS, CPCS, CPCS, CPCS, CUPC, CTSS, CTCS, CCTS, CCTC, CTPC, CTPC, CTPC, CTPC,
+};
 const char *CPCS = "UNITS PER COIN";
 const char *CUPC = "UNITS PER CREDIT";
 const char *CTSS = "BONUS UNITS";
@@ -447,6 +780,41 @@ const char *CTCS = "MINIMUM UNITS";
 const char *CCTS = "CREDITS TO START";
 const char *CCTC = "CREDITS TO CONTINUE";
 const char *CTPC = "COUNTER TICKS PER COIN";
+/* asm: PSTAB	PSTAB */
+/* asm: 	.word	ADJ_COIN1_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN2_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN3_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN4_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_UNITS_PER_CREDIT,PRINT_NUMBER */
+/* asm: 	.word	ADJ_BONUS_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_UNITS_MIN,PRINT_NUMBER */
+/* asm: 	.word	ADJ_CREDITS_TO_START,PRINT_NUMBER */
+/* asm: 	.word	ADJ_CREDITS_TO_CONTINUE,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN1_COUNTER,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN2_COUNTER,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN3_COUNTER,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN4_COUNTER,PRINT_NUMBER */
+/* asm: 	.word	ADJ_SHOW_FRAC,PRINT_YN */
+/* asm: 	.word	ADJ_STANDARD_PRICING,PRINT_YN_INV */
+/* asm: 	.word	0,0 */
+int PSTAB[] = {
+    ADJ_COIN1_UNITS, PRINT_NUMBER,
+    ADJ_COIN2_UNITS, PRINT_NUMBER,
+    ADJ_COIN3_UNITS, PRINT_NUMBER,
+    ADJ_COIN4_UNITS, PRINT_NUMBER,
+    ADJ_UNITS_PER_CREDIT, PRINT_NUMBER,
+    ADJ_BONUS_UNITS, PRINT_NUMBER,
+    ADJ_UNITS_MIN, PRINT_NUMBER,
+    ADJ_CREDITS_TO_START, PRINT_NUMBER,
+    ADJ_CREDITS_TO_CONTINUE, PRINT_NUMBER,
+    ADJ_COIN1_COUNTER, PRINT_NUMBER,
+    ADJ_COIN2_COUNTER, PRINT_NUMBER,
+    ADJ_COIN3_COUNTER, PRINT_NUMBER,
+    ADJ_COIN4_COUNTER, PRINT_NUMBER,
+    ADJ_SHOW_FRAC, PRINT_YN,
+    ADJ_STANDARD_PRICING, PRINT_YN_INV,
+    0, 0,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *MENU DEFINITIONS

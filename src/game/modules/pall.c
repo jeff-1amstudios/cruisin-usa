@@ -34,9 +34,9 @@ int PTTRAM[PALNUM*3];
 int NUM_FIXED;
 // *----------------------------------------------------------------------------
 // *INDEX STORAGE
-/* asm: PALROMI	.word	_PALROM		;INDEXED PALETTES SOURCE ADDR LIST */
+/* asm: PALROMI	PALROMI	.word	_PALROM		;INDEXED PALETTES SOURCE ADDR LIST */
 #define PALROMI _PALROM
-/* asm: PALLISTI	.word	_PALLIST	;CROSS-REFERENCE LIST */
+/* asm: PALLISTI	PALLISTI	.word	_PALLIST	;CROSS-REFERENCE LIST */
 #define PALLISTI _PALLIST
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -53,10 +53,10 @@ int NUM_FIXED;
 // *
 /* asm: PALSXFER	.bss	PALSXFER,1 */
 int PALSXFER;
-/* asm: COLRAML	.word	COLORAM */
-int COLRAML = (int)(COLORAM);
-/* asm: COLRAMH	.word	COLORAM+7FFFh */
-int COLRAMH = (int)(COLORAM+0x7FFF);
+/* asm: COLRAML	COLRAML	.word	COLORAM */
+int COLRAML = COLORAM;
+/* asm: COLRAMH	COLRAMH	.word	COLORAM+7FFFh */
+int COLRAMH = COLORAM+0x7FFF;
 #endif
 // ;	STI	R1,*AR0++	;CLEAR OUT COUNT
 // ;	LDI	*AR0++,AR1	;GET SOURCE
@@ -521,15 +521,6 @@ void PALXFER_GET(void)
     // asm: 	BNE	CNT
     // asm: 	EINT
     // asm: 	BU	$
-CNT:
-#endif
-    // asm: 	LDI	*+AR0(PALX_LINK),R0
-    // asm: 	STI	R0,@PALXFER_FREE
-    // asm: 	LDI	@PALXFER_ACTIVE,R0
-    // asm: 	STI	R0,*+AR0(PALX_LINK)
-    // asm: 	STI	AR0,@PALXFER_ACTIVE
-    // asm: 	POP	R0
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PALXFER_GET", 0, 0);
     UNIMPL();
 }

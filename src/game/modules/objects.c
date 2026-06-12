@@ -28,7 +28,10 @@
 /* asm: 	;head2head_PALETTES: */
 /* asm: 	;	.word	0,0 */
 /* asm: 	; */
-int _SEChead2head[] = { 0x0C15000, 0x0BEFA00 };
+int _SEChead2head[] = {
+    0x0C15000, // Src (Compressed) Addr
+    0x0BEFA00, // Dest Addr
+};
 
 void objects(void)
 {

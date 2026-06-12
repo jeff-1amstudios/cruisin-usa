@@ -99,15 +99,15 @@ int LINEBUFFER[64];
 // *
 // *
 // *----------------------------------------------------------------------------
-/* asm: SAVESPCI	.word	SAVESPC+1 */
-int SAVESPCI = (int)(SAVESPC+1);
+/* asm: SAVESPCI	SAVESPCI	.word	SAVESPC+1 */
+int SAVESPCI = SAVESPC+1;
 /* asm: SAVESPC	.bss	SAVESPC,25 */
 int SAVESPC[25];
 // *----------------------------------------------------------------------------
 #define MIN_X 240
 #define MAX_X 300
-/* asm: BOOT_PACIFY_SCREEN_P	.word	1 */
-int BOOT_PACIFY_SCREEN_P = (int)(1);
+/* asm: BOOT_PACIFY_SCREEN_P	BOOT_PACIFY_SCREEN_P	.word	1 */
+int BOOT_PACIFY_SCREEN_P = 1;
 /* asm: PREVX	.bss	PREVX,1 */
 int PREVX;
 /* asm: DELTA	.bss	DELTA,1 */

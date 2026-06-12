@@ -9,46 +9,46 @@
 // *WHICH WAS COMPILED Jun 24 1994  17:23:08
 // *
 // *
-/* asm: CHECKSUM_C00	.word	05148h */
-int CHECKSUM_C00 = (int)(0x05148);
-/* asm: CHECKSUM_C01	.word	04894h */
-int CHECKSUM_C01 = (int)(0x04894);
-/* asm: CHECKSUM_C02	.word	078FDh */
-int CHECKSUM_C02 = (int)(0x078FD);
-/* asm: CHECKSUM_C03	.word	03600h */
-int CHECKSUM_C03 = (int)(0x03600);
-/* asm: CHECKSUM_C80	.word	0CDE8h */
-int CHECKSUM_C80 = (int)(0x0CDE8);
-/* asm: CHECKSUM_C81	.word	0E370h */
-int CHECKSUM_C81 = (int)(0x0E370);
-/* asm: CHECKSUM_C82	.word	0599Ch */
-int CHECKSUM_C82 = (int)(0x0599C);
-/* asm: CHECKSUM_C83	.word	0615Ah */
-int CHECKSUM_C83 = (int)(0x0615A);
-/* asm: CHECKSUM_D00	.word	0C6FFh */
-int CHECKSUM_D00 = (int)(0x0C6FF);
-/* asm: CHECKSUM_D01	.word	0D187h */
-int CHECKSUM_D01 = (int)(0x0D187);
-/* asm: CHECKSUM_D02	.word	0224Eh */
-int CHECKSUM_D02 = (int)(0x0224E);
-/* asm: CHECKSUM_D03	.word	0F113h */
-int CHECKSUM_D03 = (int)(0x0F113);
-/* asm: CHECKSUM_D80	.word	04564h */
-int CHECKSUM_D80 = (int)(0x04564);
-/* asm: CHECKSUM_D81	.word	06600h */
-int CHECKSUM_D81 = (int)(0x06600);
-/* asm: CHECKSUM_D82	.word	0E866h */
-int CHECKSUM_D82 = (int)(0x0E866);
-/* asm: CHECKSUM_D83	.word	09E8h */
-int CHECKSUM_D83 = (int)(0x09E8);
-/* asm: CHECKSUM_E00	.word	021E1h */
-int CHECKSUM_E00 = (int)(0x021E1);
-/* asm: CHECKSUM_E01	.word	0FF00h */
-int CHECKSUM_E01 = (int)(0x0FF00);
-/* asm: CHECKSUM_E02	.word	09E3h */
-int CHECKSUM_E02 = (int)(0x09E3);
-/* asm: CHECKSUM_E03	.word	0CCCAh */
-int CHECKSUM_E03 = (int)(0x0CCCA);
+/* asm: CHECKSUM_C00	CHECKSUM_C00	.word	05148h */
+int CHECKSUM_C00 = 0x05148;
+/* asm: CHECKSUM_C01	CHECKSUM_C01	.word	04894h */
+int CHECKSUM_C01 = 0x04894;
+/* asm: CHECKSUM_C02	CHECKSUM_C02	.word	078FDh */
+int CHECKSUM_C02 = 0x078FD;
+/* asm: CHECKSUM_C03	CHECKSUM_C03	.word	03600h */
+int CHECKSUM_C03 = 0x03600;
+/* asm: CHECKSUM_C80	CHECKSUM_C80	.word	0CDE8h */
+int CHECKSUM_C80 = 0x0CDE8;
+/* asm: CHECKSUM_C81	CHECKSUM_C81	.word	0E370h */
+int CHECKSUM_C81 = 0x0E370;
+/* asm: CHECKSUM_C82	CHECKSUM_C82	.word	0599Ch */
+int CHECKSUM_C82 = 0x0599C;
+/* asm: CHECKSUM_C83	CHECKSUM_C83	.word	0615Ah */
+int CHECKSUM_C83 = 0x0615A;
+/* asm: CHECKSUM_D00	CHECKSUM_D00	.word	0C6FFh */
+int CHECKSUM_D00 = 0x0C6FF;
+/* asm: CHECKSUM_D01	CHECKSUM_D01	.word	0D187h */
+int CHECKSUM_D01 = 0x0D187;
+/* asm: CHECKSUM_D02	CHECKSUM_D02	.word	0224Eh */
+int CHECKSUM_D02 = 0x0224E;
+/* asm: CHECKSUM_D03	CHECKSUM_D03	.word	0F113h */
+int CHECKSUM_D03 = 0x0F113;
+/* asm: CHECKSUM_D80	CHECKSUM_D80	.word	04564h */
+int CHECKSUM_D80 = 0x04564;
+/* asm: CHECKSUM_D81	CHECKSUM_D81	.word	06600h */
+int CHECKSUM_D81 = 0x06600;
+/* asm: CHECKSUM_D82	CHECKSUM_D82	.word	0E866h */
+int CHECKSUM_D82 = 0x0E866;
+/* asm: CHECKSUM_D83	CHECKSUM_D83	.word	09E8h */
+int CHECKSUM_D83 = 0x09E8;
+/* asm: CHECKSUM_E00	CHECKSUM_E00	.word	021E1h */
+int CHECKSUM_E00 = 0x021E1;
+/* asm: CHECKSUM_E01	CHECKSUM_E01	.word	0FF00h */
+int CHECKSUM_E01 = 0x0FF00;
+/* asm: CHECKSUM_E02	CHECKSUM_E02	.word	09E3h */
+int CHECKSUM_E02 = 0x09E3;
+/* asm: CHECKSUM_E03	CHECKSUM_E03	.word	0CCCAh */
+int CHECKSUM_E03 = 0x0CCCA;
 
 void cksum(void)
 {

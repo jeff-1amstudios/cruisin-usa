@@ -67,6 +67,11 @@ const char *WFCHAL2 = "FOR CHALLENGER";
 const char *WFCHAL3 = "HOLD RADIO OR VIEW3 TO CANCEL";
 /* asm: FRAMELAG	.bss	FRAMELAG,1 */
 int FRAMELAG;
+/* asm: NTINLK	NTINLK
+	.bss	NOASK_LINK,1 */
+int NTINLK[NOASK_LINK];
+// *ELP CHANGE
+// *ELP END CHANGE
 // *----------------------------------------------------------------------------
 #define PLYPOS2YL (-400)
 #define PLYPOS2ZL 2200
@@ -77,8 +82,68 @@ int FRAMELAG;
 const char *CCT = "CHOOSE CAR";
 // 	;all Y's were 0
 // 	;
+/* asm: CCTAB	CCTAB */
+/* asm: 	.word	-1384,-164,-4708,cvettem */
+/* asm: 	.float	PI */
+/* asm: 	.word	0481h */
+/* asm: 	.word	-448,-200,-4708,hotrodm */
+/* asm: 	.float	PI */
+/* asm: 	.word	0482h */
+/* asm: 	.word	464,-177,-4708,misslem */
+/* asm: 	.float	PI */
+/* asm: 	.word	0483h */
+/* asm: 	.word	1424,-147,-4708,testorm */
+/* asm: 	.float	PI */
+/* asm: 	.word	0484h */
+/* asm: 	.word	-1 */
+int CCTAB[] = {
+    -1384, -164, -4708, cvettem,
+    PI,
+    0x0481,
+    -448, -200, -4708, hotrodm,
+    PI,
+    0x0482,
+    464, -177, -4708, misslem,
+    PI,
+    0x0483,
+    1424, -147, -4708, testorm,
+    PI,
+    0x0484,
+    -1,
+};
 /* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
 int CHOOSENCAR;
+/* asm: RACE_STARTING_POINTS	RACE_STARTING_POINTS */
+/* asm: 	.word	0 */
+/* asm: 	.word	L_LEG2_BEGIN+1 */
+/* asm: 	.word	L_LEG3_BEGIN+1 */
+/* asm: 	.word	L_LEG4_BEGIN+1 */
+/* asm: 	.word	L_LEG5_BEGIN+1 */
+/* asm: 	.word	L_LEG6_BEGIN+1 */
+/* asm: 	.word	L_LEG7_BEGIN+1 */
+/* asm: 	.word	L_LEG8_BEGIN+1 */
+/* asm: 	.word	L_LEG9_BEGIN+1 */
+/* asm: 	.word	L_LEG10_BEGIN+1 */
+/* asm: 	.word	L_LEG11_BEGIN+1 */
+/* asm: 	.word	L_LEG12_BEGIN+1 */
+/* asm: 	.word	L_LEG13_BEGIN+1 */
+/* asm: 	.word	L_LEG14_BEGIN+1 */
+int RACE_STARTING_POINTS[] = {
+    0,
+    L_LEG2_BEGIN+1,
+    L_LEG3_BEGIN+1,
+    L_LEG4_BEGIN+1,
+    L_LEG5_BEGIN+1,
+    L_LEG6_BEGIN+1,
+    L_LEG7_BEGIN+1,
+    L_LEG8_BEGIN+1,
+    L_LEG9_BEGIN+1,
+    L_LEG10_BEGIN+1,
+    L_LEG11_BEGIN+1,
+    L_LEG12_BEGIN+1,
+    L_LEG13_BEGIN+1,
+    L_LEG14_BEGIN+1,
+};
 #define LANESIZE 1152
 // 	;if a slave then ALWAYS appear on right side
 // 	;
@@ -147,10 +212,14 @@ int CAR2PAL[129];
 int CAR3PAL[129];
 /* asm: CAR4PAL	.bss	CAR4PAL,129 */
 int CAR4PAL[129];
-/* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
-int CARPAL_TABLE[] = { CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL };
-/* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
-int CARSRCPAL_TAB[] = { cvette_p, hotrod_p, missle_p, testor_p };
+/* asm: CARPAL_TABLE	CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
+int CARPAL_TABLE[] = {
+    CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL,
+};
+/* asm: CARSRCPAL_TAB	CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
+int CARSRCPAL_TAB[] = {
+    cvette_p, hotrod_p, missle_p, testor_p,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *GENERAL PURPOSE CHOOSE CAR LOOP ROUTINE
@@ -187,8 +256,10 @@ int CARSRCPAL_TAB[] = { cvette_p, hotrod_p, missle_p, testor_p };
 // *
 /* asm: IS_HIDDEN	.bss	IS_HIDDEN,1 */
 int IS_HIDDEN;
-/* asm: HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
-int HIDDEN_TABLE[] = { jeepm, sbuspm, copcar, gtruck };
+/* asm: HIDDEN_TABLE	HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
+int HIDDEN_TABLE[] = {
+    jeepm, sbuspm, copcar, gtruck,
+};
 // *----------------------------------------------------------------------------
 /* asm: SPINCURR	.bss	SPINCURR,1 */
 int SPINCURR;
@@ -199,11 +270,16 @@ const char *T_READY = "READY";
 const char *T_SET = "SET";
 const char *T_GO = "GO";
 const char *T_CHALLENG = "CHALLENGE RACE";
-/* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
+/* asm: TLIST	TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
 /* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
-int TLIST[] = { T_READY, CHICK_READY, SEND_WAVEFL_READY, T_SET, CHICK_SET, SEND_WAVEFL_SET };
-/* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
-int TLGO[] = { T_GO, CHICK_GO, SEND_WAVEFL_GO };
+int TLIST[] = {
+    T_READY, CHICK_READY, SEND_WAVEFL_READY,
+    T_SET, CHICK_SET, SEND_WAVEFL_SET,
+};
+/* asm: TLGO	TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
+int TLGO[] = {
+    T_GO, CHICK_GO, SEND_WAVEFL_GO,
+};
 /* asm: BABE_CONTROL	.bss	BABE_CONTROL,1 */
 int BABE_CONTROL;
 /* asm: CURR_FLAGSTATE	.bss	CURR_FLAGSTATE,1 */
@@ -217,6 +293,12 @@ int CURR_FLAGSTATE;
 // *
 /* asm: LASTCHOICE	.bss	LASTCHOICE,1 */
 int LASTCHOICE;
+// *ELP CHANGE February 8,1995
+// ;	OR	MGAME,R0
+// 	;we must begin the game in MINTRO
+// 	;
+// 	;
+// *ELP END CHANGE
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *ATTRACT MODE TIMEOUT MECHANISM
@@ -239,16 +321,31 @@ const char *ICCI = "TO CONTINUE";
 const char *PSCI = "PRESS START";
 /* asm: SAVEDMODE	.bss	SAVEDMODE,1 */
 int SAVEDMODE;
+/* asm: CANWT	CANWT
+	.bss	miniidle,1 */
+int CANWT[miniidle];
+// 	;Secret Button Combo!!
+// 	;
+// 	;if the plyr holds all the view buttons and radio as he
+// 	;hits the start button, he gets to CRUISE the USA
+// 	;-ELP August 11,1994
+// 	;
+// ;	DEC	R0
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: DIRTY_SHARED	.bss	DIRTY_SHARED,1 */
 int DIRTY_SHARED;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
-int TRAFFIC_LL[] = { light_yellowon, 10, light_redon, 32, light_greenon, 32, -1 };
+/* asm: TRAFFIC_LL	TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
+int TRAFFIC_LL[] = {
+    light_yellowon, 10, light_redon, 32, light_greenon, 32, -1,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: RGBTAB_CP	RGBTAB_CP */
+/* asm: 	.word	4 */
+int RGBTAB_CP = 4;
 // *----------------------------------------------------------------------------
 // ;*----------------------------------------------------------------------------
 // ;SKYPALSI	.word	SKYPALS
@@ -754,57 +851,6 @@ void WAIT_FOR_ENDBONUS(void)
     // asm: 	CALL	PAL_FIND_RAW
     // asm: 	STI	R0,*+AR0(OPAL)
     // asm: 	BU	LKJASDFGD
-NOOBJSSS:
-    // asm: 	CALL	BOILERPLATE_INIT
-    // asm: 	LDI	AR0,AR2
-    // asm: 	CALL	OBJ_INSERTP
-LKJASDFGD:
-    // asm: 	PUSHP	R6
-WAIT_FOR_ENDBONUS_LP:
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@BONUS_WAITFLAG
-    // asm: 	LDL	WFCHAL1,AR2
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	100,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADD
-    // asm: 	CALL	SET40FONT
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	LDL	WFCHAL2,AR2
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	160,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADD
-    // asm: 	CALL	SET40FONT
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	CALL	CHECK_ENDBONUS
-    // asm: 	BC	ISGAME5
-    // asm: 	SLEEP	1
-    // asm: 	BU	WAIT_FOR_ENDBONUS_LP
-ISGAME5:
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@BONUS_WAITFLAG
-    // asm: 	SLEEP	2
-    // asm: 	POPP	R6
-    // asm: 	CMPI	1,R6
-    // asm: 	BEQ	NOJHASD
-    // asm: 	POPP	AR2
-    // asm: 	CALL	OBJ_DELETE
-    // asm: 	POPP	AR2
-    // asm: 	CALL	OBJ_DELETE
-    // asm: 	POPP	AR2
-    // asm: 	CALL	OBJ_DELETE
-    // asm: 	LDL	H2HPAL2,AR2
-    // asm: 	CALL	PAL_DELETE_RAW
-    // asm: 	LDL	H2HPAL3,AR2
-    // asm: 	CALL	PAL_DELETE_RAW
-    // asm: 	BU	IURENDFL
-NOJHASD:
-    // asm: 	LDI	@BOILEROBJ,AR2
-    // asm: 	CMPI	0,AR2
-    // asm: 	CALLNE	OBJ_DELETE
-IURENDFL:
-    // asm: 	RETP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_FOR_ENDBONUS", 0, 0);
     UNIMPL();
 }
@@ -930,20 +976,6 @@ WTFORRETVAL:
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@OM_LINKWAIT
     // asm: 	STI	R0,@MY_LINKWAIT
-NTINLK:
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@NOASK_LINK
-    // asm: 	RETP
-NOGAME:
-    // *ELP CHANGE
-    // asm: 	CALL	SEND_LINKCANCELLED
-    // asm: 	SLEEP	1
-    // *ELP END CHANGE
-    // asm: 	CALL	CLEAR_LINK
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@NOASK_LINK
-    // asm: 	CALL	SETONE
-    // asm: 	RETP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ISSUE_STARTGAME", 0, 0);
     UNIMPL();
 }
@@ -2368,26 +2400,6 @@ CANSTART:
     // asm: 	BR	CYCLE_ATTR
     // 	;
     // 	;
-CYCLEOUT:
-#endif
-    // asm: 	ANDN	MMODE,R0
-    // *ELP CHANGE February 8,1995
-    // ;	OR	MGAME,R0
-    // 	;we must begin the game in MINTRO
-    // 	;
-    // 	;
-    // asm: 	OR	MINTRO,R0
-    // *ELP END CHANGE
-    // asm: 	STI	R0,@_MODE
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@(_plyr1+PLY_CAR)
-    // asm:         LDP     @FASTSTKI		;GET PAGE OF STORED ADDRESS
-    // asm:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
-    // asm: 	LDI	1,AR2
-    // asm: 	CALL	WAVE
-    // asm: 	BR	COLD_ENTER		;RESET SYSTEM RUNNING
-_startX:
-    // asm: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_start", 0, 0);
     UNIMPL();
 }
@@ -2669,68 +2681,6 @@ TOSLP2:
     // asm: 	DEC	R0
     // asm: 	STI	R0,@_countdown
     // asm: 	LDI	15,AR6			;wait at least 15 frames to continue
-CANWT:
-    // asm: 	LDI	@miniidle,R0
-    // asm: 	INC	R0
-    // asm: 	CMPI	25,R0
-    // asm: 	LDIGE	0,R0
-    // asm: 	STI	R0,@miniidle
-    // asm: 	SLEEP	1
-    // asm: 	LDI	@_countdown,R0
-    // asm: 	BNZ	INSMORE_LP
-    // asm: 	CLRI	AR6
-    // asm: 	BU	RETURNTOPLYR
-CHECKHIT:
-    // asm: 	LDI	@START_HIT,R0
-    // asm: 	BZ	TOSLP
-    // 	;Secret Button Combo!!
-    // 	;
-    // 	;if the plyr holds all the view buttons and radio as he
-    // 	;hits the start button, he gets to CRUISE the USA
-    // 	;-ELP August 11,1994
-    // 	;
-    // asm: 	LDI	@SWITCHBUTS,R0
-    // asm: 	LDIL	(SW_RADIO|SW_VIEW0|SW_VIEW1|SW_VIEW2),R1
-    // asm: 	AND	R1,R0
-    // asm: 	CMPI	R1,R0
-    // asm: 	BNE	NOSECRET_CRUISE
-    // asm: 	LDI	RM_USA,R0
-    // asm: 	STI	R0,@RACE_MODE
-NOSECRET_CRUISE:
-    // asm: 	LDI	0,R2
-    // asm: 	LDI	AUD_BCREDITS,AR2
-    // asm: 	CALL	AUDIT_WRITE
-    // asm: 	READAUD	AUD_CREDITS
-    // asm: 	CALL	GET_CREDITS_TO_CONTINUE
-    // asm: 	SUBI	R1,R0
-    // ;	DEC	R0
-    // asm: 	LDILT	0,R0
-    // asm: 	LDI	R0,R2
-    // asm: 	SETAUD	AUD_CREDITS
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	ANDN	MMODE,R0
-    // asm: 	OR	MGAME,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@STOPWATCH_CNTL
-    // asm: 	LDI	60,R0
-    // asm: 	STI	R0,@_countdown
-    // asm: 	LDI	1,AR6
-    // asm: 	LDI	@BUTTON_STATUS,R0
-    // asm: 	ANDN	BUT_START,R0
-    // asm: 	STI	R0,@BUTTON_STATUS
-    // asm: 	INCAUD	AUD_NUM_BUYINS
-RETURNTOPLYR:
-    // asm: 	LDI	@SAVEDMODE,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	LDI	034h,R0
-    // asm: 	LDI	-1,R1
-    // asm: 	CALL	PRC_KILLALL
-    // asm: 	CALL	TEXT_INIT
-    // asm: 	CALL	RESUME_TUNE_NT
-    // asm: 	CLRF	R0
-    // asm: 	STPF	R0,@GAME_TIMER
-    // asm: 	RETP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INSMORE", 0, 0);
     UNIMPL();
 }

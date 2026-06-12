@@ -35,15 +35,24 @@ int SNDEND;
 // *----------------------------------------------------------------------------
 // *STATION TABLE
 // *
-/* asm: STATION_LIST	.word	MUNSTER_SURF	;0 */
-/* asm: 	.word	SHUFFLE_DRIV */
-/* asm: 	.word	DISCODUCK */
-/* asm: 	.word	SPAGETTI */
-/* asm: 	.word	VENTURE */
-/* asm: 	.word	STRAIGHT_2_4 */
-/* asm: 	.word	DISCODUCK */
-/* asm: 	.word	BOOGIE */
-int STATION_LIST[] = { MUNSTER_SURF, SHUFFLE_DRIV, DISCODUCK, SPAGETTI, VENTURE, STRAIGHT_2_4, DISCODUCK, BOOGIE };
+/* asm: STATION_LIST	STATION_LIST	.word	MUNSTER_SURF	;0 */
+/* asm: 	.word	SHUFFLE_DRIV	;1 */
+/* asm: 	.word	DISCODUCK	;2 */
+/* asm: 	.word	SPAGETTI	;3 */
+/* asm: 	.word	VENTURE		;4 */
+/* asm: 	.word	STRAIGHT_2_4	;5 */
+/* asm: 	.word	DISCODUCK	;6 */
+/* asm: 	.word	BOOGIE		;7 */
+int STATION_LIST[] = {
+    MUNSTER_SURF, // 0
+    SHUFFLE_DRIV, // 1
+    DISCODUCK, // 2
+    SPAGETTI, // 3
+    VENTURE, // 4
+    STRAIGHT_2_4, // 5
+    DISCODUCK, // 6
+    BOOGIE, // 7
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: STATION_TIMEOUT	.bss	STATION_TIMEOUT,1 */

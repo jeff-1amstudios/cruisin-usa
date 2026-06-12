@@ -95,6 +95,79 @@ int SAVED_PLY2CAR;
 // *	  AR2 should be incremented to the next block
 // *
 // *
+/* asm: DECODE_BLOCK	DECODE_BLOCK */
+/* asm: 	.word	DECODE_NULL */
+/* asm: 	.word	DECODE_MODE		;CB_MODE */
+/* asm: 	.word	DECODE_TIMECODE		;CB_TIMECODE */
+/* asm: 	.word	DECODE_RACENUM		;CB_RACENUM */
+/* asm: 	.word	DECODE_VEHICLE		;CHOSEN CAR IDENTITY CODE */
+/* asm: 	.word	DECODE_START_GAME */
+/* asm: 	.word	DECODE_END_GAME */
+/* asm: 	.word	DECODE_CAR_UPDATE	;UPDATE DATA BLOCK FOR CAR */
+/* asm: 	.word	DECODE_END_GAME */
+/* asm: 	.word	DECODE_LINKEDT */
+/* asm: 	.word	DECODE_LINKEDF */
+/* asm: 	.word	DECODE_LINKCANCELLED */
+/* asm: 	.word	DECODE_RACER_UPDATE */
+/* asm: 	.word	DECODE_RACER_XSFER */
+/* asm: 	.word	DECODE_RACER_KILL */
+/* asm: 	.word	DECODE_RHO_CREATE */
+/* asm: 	.word	DECODE_RHO_KILL */
+/* asm: 	.word	DECODE_RHO_XSFER */
+/* asm: 	.word	DECODE_RHO_UPDATE */
+/* asm: 	.word	DECODE_FLY_KILL */
+/* asm: 	.word	DECODE_FLY_XSFER */
+/* asm: 	.word	DECODE_FLY_UPDATE */
+/* asm: 	.word	DECODE_WAVEFL_READY */
+/* asm: 	.word	DECODE_WAVEFL_SET */
+/* asm: 	.word	DECODE_WAVEFL_GO */
+/* asm: 	.word	DECODE_OM_TRACK */
+/* asm: 	.word	DECODE_BSYNC0 */
+/* asm: 	.word	DECODE_BSYNC1 */
+/* asm: 	.word	DECODE_BSYNC2 */
+/* asm: 	.word	DECODE_BSYNC3 */
+/* asm: 	.word	DECODE_CHANGE_MUSIC */
+/* asm: 	.word	DECODE_COINDROP */
+/* asm: 	.word	DECODE_DIAGNOSTIC */
+/* asm: 	.word	DECODE_ATTRSND */
+/* asm: 	.word	-1 */
+int DECODE_BLOCK[] = {
+    DECODE_NULL,
+    DECODE_MODE, // CB_MODE
+    DECODE_TIMECODE, // CB_TIMECODE
+    DECODE_RACENUM, // CB_RACENUM
+    DECODE_VEHICLE, // CHOSEN CAR IDENTITY CODE
+    DECODE_START_GAME,
+    DECODE_END_GAME,
+    DECODE_CAR_UPDATE, // UPDATE DATA BLOCK FOR CAR
+    DECODE_END_GAME,
+    DECODE_LINKEDT,
+    DECODE_LINKEDF,
+    DECODE_LINKCANCELLED,
+    DECODE_RACER_UPDATE,
+    DECODE_RACER_XSFER,
+    DECODE_RACER_KILL,
+    DECODE_RHO_CREATE,
+    DECODE_RHO_KILL,
+    DECODE_RHO_XSFER,
+    DECODE_RHO_UPDATE,
+    DECODE_FLY_KILL,
+    DECODE_FLY_XSFER,
+    DECODE_FLY_UPDATE,
+    DECODE_WAVEFL_READY,
+    DECODE_WAVEFL_SET,
+    DECODE_WAVEFL_GO,
+    DECODE_OM_TRACK,
+    DECODE_BSYNC0,
+    DECODE_BSYNC1,
+    DECODE_BSYNC2,
+    DECODE_BSYNC3,
+    DECODE_CHANGE_MUSIC,
+    DECODE_COINDROP,
+    DECODE_DIAGNOSTIC,
+    DECODE_ATTRSND,
+    -1,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------

@@ -57,15 +57,32 @@ int HELI_ABORT;
 #define CRADZ OUSR1
 #define MAX_SPEED 667
 // *----------------------------------------------------------------------------
-// *----------------------------------------------------------------------------
-// *---------------------------------------------------------------------------
-// *
-// *go straight for the plyrs car
-// *
-// *(already close by)
-// *branched to from oncoming buzz
-// *
-// *
+/* asm: CHOPPERDYNA	CHOPPERDYNA */
+/* asm: 	.word	1		;#OF DYNAS-1 */
+/* asm: 	.float	0,-206,14	;blades */
+/* asm: 	.word	3		;VERTS-1 */
+/* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	.float	0,0,0		;main body */
+/* asm: 	.word	94		;VERTS-1 */
+/* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	*---------------------------------------------------------------------------- */
+/* asm: 	*--------------------------------------------------------------------------- */
+/* asm: 	* */
+/* asm: 	*go straight for the plyrs car */
+/* asm: 	* */
+/* asm: 	*(already close by) */
+/* asm: 	*branched to from oncoming buzz */
+/* asm: 	* */
+/* asm: 	* */
+int CHOPPERDYNA[] = {
+    1, // #OF DYNAS-1
+    0, -206, 14, // blades
+    3, // VERTS-1
+    1, // DYNAFLAG
+    0, 0, 0, // main body
+    94, // VERTS-1
+    1, // DYNAFLAG
+};
 // *----------------------------------------------------------------------------
 
 void DIRECT_ATTACK(void)

@@ -39,6 +39,41 @@
 #define SIGT_PTRUCKG 6
 #define SIGT_JEEP 7
 #define SIGMA_LIST_LEN 16
+/* asm: SIGMA_LIST	SIGMA_LIST */
+/* asm: 	.word	GTRUCK_MOD,0 */
+/* asm: 	.word	CBUS_MOD,SS_LONG */
+/* asm: 	.word	COPCAR_MOD,SS_COPCAR */
+/* asm: 	.word	MUSTANG_MOD,0 */
+/* asm: 	.word	MUSCLE_MOD,0 */
+/* asm: 	.word	CARAVAN_MOD,0 */
+/* asm: 	.word	SBUS_MOD,SS_LONG */
+/* asm: 	.word	PTRUCKG_MOD,0 */
+/* asm: 	.word	JEEP_MOD,0 */
+/* asm: 	.word	GTRUCK_MOD,0 */
+/* asm: 	.word	COPCAR_MOD,SS_COPCAR */
+/* asm: 	.word	MUSTANG_MOD,0 */
+/* asm: 	.word	MUSCLE_MOD,0 */
+/* asm: 	.word	CARAVAN_MOD,0 */
+/* asm: 	.word	PTRUCKG_MOD,0 */
+/* asm: 	.word	JEEP_MOD,0 */
+int SIGMA_LIST[] = {
+    GTRUCK_MOD, 0,
+    CBUS_MOD, SS_LONG,
+    COPCAR_MOD, SS_COPCAR,
+    MUSTANG_MOD, 0,
+    MUSCLE_MOD, 0,
+    CARAVAN_MOD, 0,
+    SBUS_MOD, SS_LONG,
+    PTRUCKG_MOD, 0,
+    JEEP_MOD, 0,
+    GTRUCK_MOD, 0,
+    COPCAR_MOD, SS_COPCAR,
+    MUSTANG_MOD, 0,
+    MUSCLE_MOD, 0,
+    CARAVAN_MOD, 0,
+    PTRUCKG_MOD, 0,
+    JEEP_MOD, 0,
+};
 #define SIGMA_PSYCHO 1
 // *----------------------------------------------------------------------------
 // *SIGMA IS A BIG FAT PIG THAT STARTS UP AHEAD OF THE PLAYER

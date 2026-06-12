@@ -63,7 +63,7 @@ int COINOFF;
 int CUSTOM_COINTAB[COIN_ENTRY_SIZE];
 /* asm: CUSTOM_COINSTR	.bss	CUSTOM_COINSTR,10 */
 int CUSTOM_COINSTR[10];
-/* asm: bufferi	.word	buffer */
+/* asm: bufferi	bufferi	.word	buffer */
 #define bufferi buffer
 /* asm: buffer	.bss	buffer,2 */
 int buffer[2];
@@ -73,11 +73,11 @@ const char *CTC_STR = " TO CONTINUE";
 int FCB;
 /* asm: PCB	.bss	PCB,1 */
 int PCB;
-/* asm: CREDITBUFFI	.word	CREDITBUFFER */
+/* asm: CREDITBUFFI	CREDITBUFFI	.word	CREDITBUFFER */
 #define CREDITBUFFI CREDITBUFFER
 /* asm: CREDITBUFFER	.bss	CREDITBUFFER,8 */
 int CREDITBUFFER[8];
-/* asm: TOSTARTBUFFI	.word	TOSTARTBUFFER */
+/* asm: TOSTARTBUFFI	TOSTARTBUFFI	.word	TOSTARTBUFFER */
 #define TOSTARTBUFFI TOSTARTBUFFER
 /* asm: TOSTARTBUFFER	.bss	TOSTARTBUFFER,8 */
 int TOSTARTBUFFER[8];
@@ -86,7 +86,7 @@ const char *SPC = " ";
 const char *DBLSPC = "  ";
 const char *CW = "CREDITS";
 const char *CWS = "CREDIT";
-/* asm: SCI	.word	SCS	;CREDITS TO START (START CREDIT) */
+/* asm: SCI	SCI	.word	SCS	;CREDITS TO START (START CREDIT) */
 #define SCI SCS
 /* asm: SCS	.bss	SCS,1 */
 int SCS;

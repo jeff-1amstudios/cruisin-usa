@@ -52,14 +52,14 @@ const char *CRUISE3 = "IN THE WHITE HOUSE HOT TUB";
 // *
 // *
 // *
-/* asm: LLG1	.word	L4A */
-int LLG1 = (int)(L4A);
-/* asm: LLG2	.word	L5A */
-int LLG2 = (int)(L5A);
-/* asm: LLG3	.word	L5B */
-int LLG3 = (int)(L5B);
-/* asm: L88	.word	IBOIBOJ */
-int L88 = (int)(IBOIBOJ);
+/* asm: LLG1	LLG1	.word	L4A */
+int LLG1 = L4A;
+/* asm: LLG2	LLG2	.word	L5A */
+int LLG2 = L5A;
+/* asm: LLG3	LLG3	.word	L5B */
+int LLG3 = L5B;
+/* asm: L88	L88	.word	IBOIBOJ */
+int L88 = IBOIBOJ;
 const char *L4A = "MOTION RECALIBRATION";
 const char *L5A = "REMAIN SEATED";
 const char *L5B = "DO NOT TOUCH MATS";
@@ -140,12 +140,13 @@ int IBOIBOJ[2];
 // ;	BNE	NBIRAU
 // ;	BU	NOHID1
 // ;NBIRAU
-// 	;Translate race index into an actual
-// 	;useable value.
-// 	;
-// 	;
-/* asm: HIDDEN_ON	.bss	HIDDEN_ON,1 */
-int HIDDEN_ON;
+/* asm: NOTUSA_RACE	NOTUSA_RACE
+	;Translate race index into an actual
+	;useable value.
+	;
+	;
+	.bss	HIDDEN_ON,1 */
+int NOTUSA_RACE[HIDDEN_ON];
 // 	;this must happen before translation
 // 	;
 // *----------------------------------------------------------------------------
@@ -158,18 +159,53 @@ int TSEL_THEONE;
 // *----------------------------------------------------------------------------
 // *
 // *
-/* asm: ANIMATE_MAP_TAB	.word	mhop1,mhop2,mhop3,mhop4,-1 */
-int ANIMATE_MAP_TAB[] = { mhop1, mhop2, mhop3, mhop4, -1 };
+/* asm: ANIMATE_MAP_TAB	ANIMATE_MAP_TAB	.word	mhop1,mhop2,mhop3,mhop4,-1 */
+int ANIMATE_MAP_TAB[] = {
+    mhop1, mhop2, mhop3, mhop4, -1,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: TURNANI	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
-int TURNANI[] = { whel1, whel2, whel3, whel4, whel3, whel2, -1 };
+/* asm: TURNANI	TURNANI	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
+int TURNANI[] = {
+    whel1, whel2, whel3, whel4, whel3, whel2, -1,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 #define TRACK_SELECTION_LIST_LEN 11
-// ;	.word	RACE_DC
-// 	;hidden races
-// *----------------------------------------------------------------------------
+/* asm: TRACK_SELECTION_LIST	TRACK_SELECTION_LIST */
+/* asm: 	.word	RACE_AZ */
+/* asm: 	.word	RACE_US101 */
+/* asm: 	.word	RACE_LA */
+/* asm: 	.word	RACE_IOWA */
+/* asm: 	.word	RACE_DV */
+/* asm: 	.word	RACE_USA */
+/* asm: 	;	.word	RACE_DC */
+/* asm: 	.word	RACE_BH */
+/* asm: 	.word	RACE_APPL */
+/* asm: 	.word	RACE_RW */
+/* asm: 	.word	RACE_GC */
+/* asm: 	.word	RACE_CH */
+/* asm: 	;hidden races */
+/* asm: 	.word	RACE_GG */
+/* asm: 	.word	RACE_IN */
+/* asm: 	.word	RACE_SF */
+/* asm: 	*---------------------------------------------------------------------------- */
+int TRACK_SELECTION_LIST[] = {
+    RACE_AZ,
+    RACE_US101,
+    RACE_LA,
+    RACE_IOWA,
+    RACE_DV,
+    RACE_USA,
+    RACE_BH,
+    RACE_APPL,
+    RACE_RW,
+    RACE_GC,
+    RACE_CH,
+    RACE_GG,
+    RACE_IN,
+    RACE_SF,
+};
 // *----------------------------------------------------------------------------
 /* asm: BOILEROBJ	.bss	BOILEROBJ,1 */
 int BOILEROBJ;

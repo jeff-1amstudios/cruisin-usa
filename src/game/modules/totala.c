@@ -17,7 +17,7 @@
 // *ALL RIGHTS RESERVED
 // *
 #define NOFIFO 0
-/* asm: AIVI	.word	_AIVI */
+/* asm: AIVI	AIVI	.word	_AIVI */
 #define AIVI _AIVI
 /* asm: _ACNTL	.bss	_ACNTL,1 */
 int _ACNTL;

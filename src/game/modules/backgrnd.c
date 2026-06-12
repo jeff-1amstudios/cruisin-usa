@@ -89,6 +89,10 @@ int TYCO_NTL_IDX;
 // *	3)	WHEN OLD SECTION IS DELETED
 // *
 // *
+// 	;DEBUGGING CHECK TO VERIFY THAT WE NEVER EXCEED
+// 	;THE AMOUNT OF DGROUPs WE CAN HANDLE
+// 	;
+#endif
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *ACTIVATE A TYCO GROUP (ROAD PIECES ARE LINKED, ETC.)
@@ -98,8 +102,8 @@ int TYCO_NTL_IDX;
 // *
 // *
 // *
-/* asm: NEWSUBLIST_TOP	.word	NEWSUBLIST_TOPB */
-int NEWSUBLIST_TOP = (int)(NEWSUBLIST_TOPB);
+/* asm: NEWSUBLIST_TOP	NEWSUBLIST_TOP	.word	NEWSUBLIST_TOPB */
+int NEWSUBLIST_TOP = NEWSUBLIST_TOPB;
 /* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
 int NEWSUBLIST_TOPB;
 /* asm: GROUP_RADY	.bss	GROUP_RADY,1 */
@@ -110,8 +114,8 @@ int TYCOFLAG;
 int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
 int SECRADY;
-/* asm: LVAL	.word	151720 */
-int LVAL = (int)(151720);
+/* asm: LVAL	LVAL	.word	151720 */
+int LVAL = 151720;
 // *CORNFLAKE END CHECK
 // 	;---->	BZD	REG_LD
 // 					;INTERNAL LINK (FOR DEALLOCATION)
@@ -139,30 +143,73 @@ int LVAL = (int)(151720);
 // 	;*
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
-int OVERCARLIST[] = { dcbus, dgtruck, dsbus, dcbus };
-/* asm: SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
+/* asm: OVERCARLIST	OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
+int OVERCARLIST[] = {
+    dcbus, dgtruck, dsbus, dcbus,
+};
+/* asm: SMOKE_ANI	SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
 /* asm: 	.word	-1 */
-int SMOKE_ANI[] = { smoa, smob, smoc, smod, smoe, smof, -1 };
+int SMOKE_ANI[] = {
+    smoa, smob, smoc, smod, smoe, smof,
+    -1,
+};
 // ;eug1,eug2,eug3,eug4,eug5,eug6
+/* asm: CAR_FIRE_ANI	CAR_FIRE_ANI */
+/* asm: 	.word	rdflm1,rdflm2,rdflm3,rdflm4,rdflm5,rdflm6 */
+/* asm: 	.word	rdflm7,rdflm8,rdflm9,rdflm10,rdflm11,rdflm12 */
+/* asm: 	.word	-1 */
+/* asm: 	*---------------------------------------------------------------------------- */
+/* asm: 	*---------------------------------------------------------------------------- */
+int CAR_FIRE_ANI[] = {
+    rdflm1, rdflm2, rdflm3, rdflm4, rdflm5, rdflm6,
+    rdflm7, rdflm8, rdflm9, rdflm10, rdflm11, rdflm12,
+    -1,
+};
+/* asm: DC_MINIFOUNTAIN_ANI	DC_MINIFOUNTAIN_ANI */
+/* asm: 	.word	aft1,aft2,aft3,aft4,aft5,aft6,-1 */
+int DC_MINIFOUNTAIN_ANI[] = {
+    aft1, aft2, aft3, aft4, aft5, aft6, -1,
+};
+/* asm: DC_FOUNTAIN_ANI	DC_FOUNTAIN_ANI */
+/* asm: 	.word	ft2,ft3,ft4,ft5,ft6,-1 */
+int DC_FOUNTAIN_ANI[] = {
+    ft2, ft3, ft4, ft5, ft6, -1,
+};
+// *----------------------------------------------------------------------------
+/* asm: WATERFALL_ANI	WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
+int WATERFALL_ANI[] = {
+    w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, -1,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-// *----------------------------------------------------------------------------
-/* asm: WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
-int WATERFALL_ANI[] = { w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, -1 };
-// *----------------------------------------------------------------------------
-// *----------------------------------------------------------------------------
-/* asm: FLAGANI	.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
+/* asm: FLAGANI	FLAGANI	.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
 /* asm: 	.word	bflag6,bflag7,bflag9,bflag10,-1 */
-int FLAGANI[] = { bflag1, bflag2, bflag3, bflag4, bflag5, bflag6, bflag7, bflag9, bflag10, -1 };
-/* asm: FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
+int FLAGANI[] = {
+    bflag1, bflag2, bflag3, bflag4, bflag5,
+    bflag6, bflag7, bflag9, bflag10, -1,
+};
+/* asm: FLAGANITALL	FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
 /* asm: 	.word	aflag6,aflag7,aflag9,aflag10,-1 */
-int FLAGANITALL[] = { aflag1, aflag2, aflag3, aflag4, aflag5, aflag6, aflag7, aflag9, aflag10, -1 };
-/* asm: RUT_ANIS	.word	rut,rut2,rut3,-1 */
-int RUT_ANIS[] = { rut, rut2, rut3, -1 };
-/* asm: HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
-int HUNGH_ANIS[] = { hungh1, hungh2, hungh3, hungh4, hungh5, hungh6, hungh7, -1 };
+int FLAGANITALL[] = {
+    aflag1, aflag2, aflag3, aflag4, aflag5,
+    aflag6, aflag7, aflag9, aflag10, -1,
+};
+/* asm: RUT_ANIS	RUT_ANIS	.word	rut,rut2,rut3,-1 */
+int RUT_ANIS[] = {
+    rut, rut2, rut3, -1,
+};
+/* asm: HUNGH_ANIS	HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
+int HUNGH_ANIS[] = {
+    hungh1, hungh2, hungh3, hungh4, hungh5, hungh6, hungh7, -1,
+};
 // *----------------------------------------------------------------------------
+/* asm: BABE_PALIST	BABE_PALIST */
+/* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
+/* asm: 	.word	ungh1_yellow,lift_p,ungh1_skin,bvwall_p */
+int BABE_PALIST[] = {
+    ungh1_blue, logo_p, ungh1_green, nintendo_p, ungh1_silver, map1_p,
+    ungh1_yellow, lift_p, ungh1_skin, bvwall_p,
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -219,7 +266,32 @@ int SINGLE_SECTION_TEMPPTR;
 /* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
 /* asm: 	.word	0	;END OF TABLE ID */
 /* asm: 	*---------------------------------------------------------------------------- */
-int ROUTINE_TAB[] = { 0x40A, FLAGWAVE, 0x460, ROAD_DEBRIS_CREATE, 0x461, ROAD_DEBRIS_CREATE_55GAL, 0x462, ROAD_DEBRIS_CREATE_55GAL, 0x463, ROAD_DEBRIS_CREATE_55GAL, 0x465, FLAGWAVE, 0x466, FLAGWAVE_TALL, 0x467, WATERFALL, 0x469, OVERCAR, 0x470, RRSTART_ENGINE, 0x471, RRSTART_BOXCAR, 0x472, RRSTART_BOXCAR, 0x473, RRSTART_BOXCAR, 0x474, RRSTART_BOXCAR, 0x475, RRSTART_BOXCAR, 0x476, RRSTART_BOXCAR, 0x481, SMOKE_STACK, 0x482, CAR_FIRE, 0x498, OHARE_PLANE, 0x741, RUT_ANI, 0x742, HUNGH_ANI, 0x4A1, DC_FOUNTAIN, 0x4A2, DC_MINIFOUNTAIN, 0 };
+int ROUTINE_TAB[] = {
+    0x40A, FLAGWAVE,
+    0x460, ROAD_DEBRIS_CREATE,
+    0x461, ROAD_DEBRIS_CREATE_55GAL,
+    0x462, ROAD_DEBRIS_CREATE_55GAL, // actually TOXIC
+    0x463, ROAD_DEBRIS_CREATE_55GAL, // actually CONE
+    0x465, FLAGWAVE, // short flag
+    0x466, FLAGWAVE_TALL, // tall flag
+    0x467, WATERFALL,
+    0x469, OVERCAR, // LA & CHICAGO, FREEWAY OVERPASS CAR
+    0x470, RRSTART_ENGINE,
+    0x471, RRSTART_BOXCAR,
+    0x472, RRSTART_BOXCAR,
+    0x473, RRSTART_BOXCAR,
+    0x474, RRSTART_BOXCAR,
+    0x475, RRSTART_BOXCAR,
+    0x476, RRSTART_BOXCAR,
+    0x481, SMOKE_STACK,
+    0x482, CAR_FIRE,
+    0x498, OHARE_PLANE, // CHICAGO AIRPLANE
+    0x741, RUT_ANI,
+    0x742, HUNGH_ANI,
+    0x4A1, DC_FOUNTAIN,
+    0x4A2, DC_MINIFOUNTAIN,
+    0, // END OF TABLE ID
+};
 
 void FIND_STARTING_VALUES(void)
 {
@@ -557,18 +629,6 @@ SHIFT1:
 LL45:
     // asm: STI	R0,*AR0++
     // asm: 	DECM	@DGROUP_COUNT
-NODEACT:
-#if DEBUG
-    // 	;DEBUGGING CHECK TO VERIFY THAT WE NEVER EXCEED
-    // 	;THE AMOUNT OF DGROUPs WE CAN HANDLE
-    // 	;
-    // asm: 	LDI	@DGROUP_COUNT,R0
-    // asm: 	SLOCKON	LE,"BACKGRND\LBACK_WATCH ERRONEOUS DGROUP_COUNT LE"
-    // asm: 	CMPI	MAX_DGROUPS,R0
-    // asm: 	SLOCKON	GE,"BACKGRND\LBACK_WATCH ERRONEOUS DGROUP_COUNT GE"
-#endif
-    // asm: 	SLEEP	3
-    // asm: 	B	BGD_WATCHER
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_WATCHER", 0, 0);
     UNIMPL();
 }

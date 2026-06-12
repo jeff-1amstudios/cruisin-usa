@@ -34,17 +34,27 @@ const char *BABA2 = "THE UNITED STATES";
 // *JSRPed from BONUS SCREEN
 // *
 // *----------------------------------------------------------------------------
-/* asm: ANI_HOTTUB	.word	htub,htub1,htub2,htub3,htub4,htub5,-1 */
-int ANI_HOTTUB[] = { htub, htub1, htub2, htub3, htub4, htub5, -1 };
-/* asm: HILLANI	.word	hilly1,hilly2,hilly3,hilly4,hilly5,hilly6,-1 */
-int HILLANI[] = { hilly1, hilly2, hilly3, hilly4, hilly5, hilly6, -1 };
-/* asm: GIRLANI	.word	girl1,girl2,girl3,girl4,girl5,girl6,-1 */
-int GIRLANI[] = { girl1, girl2, girl3, girl4, girl5, girl6, -1 };
+/* asm: ANI_HOTTUB	ANI_HOTTUB	.word	htub,htub1,htub2,htub3,htub4,htub5,-1 */
+int ANI_HOTTUB[] = {
+    htub, htub1, htub2, htub3, htub4, htub5, -1,
+};
+/* asm: HILLANI	HILLANI	.word	hilly1,hilly2,hilly3,hilly4,hilly5,hilly6,-1 */
+int HILLANI[] = {
+    hilly1, hilly2, hilly3, hilly4, hilly5, hilly6, -1,
+};
+/* asm: GIRLANI	GIRLANI	.word	girl1,girl2,girl3,girl4,girl5,girl6,-1 */
+int GIRLANI[] = {
+    girl1, girl2, girl3, girl4, girl5, girl6, -1,
+};
 // ;hott1,hott2,hott3,hott4,hott5,hott6,-1
-/* asm: ANI_RADAR	.word	rad1,rad2,rad3,rad4,rad5,rad6,rad7,rad8,rad9,-1 */
-int ANI_RADAR[] = { rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9, -1 };
-/* asm: ANI_STAG	.word	stagent1,stagent2,stagent3,5,stagent2,-1 */
-int ANI_STAG[] = { stagent1, stagent2, stagent3, 5, stagent2, -1 };
+/* asm: ANI_RADAR	ANI_RADAR	.word	rad1,rad2,rad3,rad4,rad5,rad6,rad7,rad8,rad9,-1 */
+int ANI_RADAR[] = {
+    rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9, -1,
+};
+/* asm: ANI_STAG	ANI_STAG	.word	stagent1,stagent2,stagent3,5,stagent2,-1 */
+int ANI_STAG[] = {
+    stagent1, stagent2, stagent3, 5, stagent2, -1,
+};
 // *----------------------------------------------------------------------------
 /* asm: PC1	SPTR	"CELEBRITY IMPERSONATION" */
 const char *PC1 = "CELEBRITY IMPERSONATION";
@@ -53,6 +63,48 @@ const char *PC2 = "POLITICAL CARTOON";
 // *----------------------------------------------------------------------------
 #define BABE_ASTRT PDATA
 // *----------------------------------------------------------------------------
+/* asm: BABE_TROPHY_SCRIPT	BABE_TROPHY_SCRIPT */
+/* asm: 	.word	here1 */
+/* asm: 	.word	here2 */
+/* asm: 	.word	here3 */
+/* asm: 	.word	here4 */
+/* asm: 	.word	here5 */
+/* asm: 	.word	here6 */
+/* asm: 	.word	-1 */
+int BABE_TROPHY_SCRIPT[] = {
+    here1,
+    here2,
+    here3,
+    here4,
+    here5,
+    here6,
+    -1,
+};
+/* asm: BABE_FLAG_SCRIPT	BABE_FLAG_SCRIPT */
+/* asm: 	.word	flag1 */
+/* asm: 	.word	flag2 */
+/* asm: 	.word	flag3 */
+/* asm: 	.word	flag4 */
+/* asm: 	.word	flag5 */
+/* asm: 	.word	flag6 */
+/* asm: 	.word	flag7 */
+/* asm: 	.word	-1 */
+/* asm: 	*---------------------------------------------------------------------------- */
+/* asm: 	* */
+/* asm: 	* */
+/* asm: 	* */
+/* asm: 	* */
+/* asm: 	* */
+int BABE_FLAG_SCRIPT[] = {
+    flag1,
+    flag2,
+    flag3,
+    flag4,
+    flag5,
+    flag6,
+    flag7,
+    -1,
+};
 // *----------------------------------------------------------------------------
 
 void HOTTUB_SCENE(void)
