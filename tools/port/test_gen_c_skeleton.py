@@ -6,13 +6,19 @@ from pathlib import Path
 
 from gen_c_skeleton import (
     DefineEntry,
+    LabelEntry,
     StorageVariable,
+    collect_existing_macro_names,
+    collect_source_label_names,
     collect_defined_data_symbols,
+    collect_module_symbol_table,
     collect_referenced_define_symbols,
     collect_referenced_data_symbols,
     parse_discovered_defines_file,
-    render_storage_header,
+    parse_type_overrides_file,
     render_discovered_defines_header,
+    render_discovered_labels_header,
+    render_storage_header,
     render_module,
 )
 
@@ -56,7 +62,7 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("int _SEChead2head[2] = {\n    0x0C15000,\n    0x0BEFA00,\n};", rendered)
+        self.assertIn("int _SEChead2head[] = {\n    0x0C15000,\n    0x0BEFA00,\n};", rendered)
         self.assertNotIn("void _SEChead2head(void)", rendered)
 
     def test_single_symbol_word_renders_as_define(self) -> None:
@@ -118,9 +124,9 @@ LANES4\t.float\t-1728.0,-576.0,576.0,1728.0
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("float *LANEP[2] = {\n    LANES, LANES4,\n};", rendered)
-        self.assertIn("float LANES[4] = {\n    -576.0f, -576.0f, 576.0f, 576.0f,\n};", rendered)
-        self.assertIn("float LANES4[4] = {\n    -1728.0f, -576.0f, 576.0f, 1728.0f,\n};", rendered)
+        self.assertIn("float *LANEP[] = {\n    LANES, LANES4,\n};", rendered)
+        self.assertIn("float LANES[] = {\n    -576.0f, -576.0f, 576.0f, 576.0f,\n};", rendered)
+        self.assertIn("float LANES4[] = {\n    -1728.0f, -576.0f, 576.0f, 1728.0f,\n};", rendered)
 
     def test_collects_skipped_data_symbol_references(self) -> None:
         asm_lines = [
@@ -136,6 +142,24 @@ LANES4\t.float\t-1728.0,-576.0,576.0,1728.0
 
         self.assertEqual(collect_defined_data_symbols(asm_lines), set())
         self.assertEqual(collect_referenced_data_symbols(asm_lines, label_types), {"_SECshared"})
+
+    def test_branch_target_label_is_not_misclassified_as_standalone_data(self) -> None:
+        asm_source = """\tBZ\tCONTINUE
+CONTINUE
+
+\t.bss\tWAS_HEAD2HEAD_ON,1
+"""
+
+        asm_lines = asm_source.splitlines()
+        self.assertEqual(collect_defined_data_symbols(asm_lines), {"WAS_HEAD2HEAD_ON"})
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertNotIn("int CONTINUE[WAS_HEAD2HEAD_ON];", rendered)
+        self.assertIn("int WAS_HEAD2HEAD_ON;", rendered)
 
     def test_parse_discovered_defines_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -164,6 +188,25 @@ LANES4\t.float\t-1728.0,-576.0,576.0,1728.0
 
         self.assertIn('#include "discovered_defines.h"', rendered)
         self.assertNotIn("#define bottom_gtmp_p", rendered)
+
+    def test_render_module_includes_discovered_labels_header_when_needed(self) -> None:
+        asm_source = """SPIN_CARTAB\t.word\tmissle,hotrod\n"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "ATTRACTA.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(
+                src_path,
+                {"missle": 0x00C28DF4, "hotrod": 0x00C28A00},
+                {},
+                None,
+                False,
+                None,
+                True,
+            )
+
+        self.assertIn('#include "discovered_labels.h"', rendered)
+        self.assertNotIn("#define missle", rendered)
 
     def test_label_followed_by_if_stays_function_not_top_level_data(self) -> None:
         asm_source = """VERIFY_CODE_INTEGRITY:\n\t.if\tDEBUG\n\tBNE\t$\n\t.endif\n\tRETS\n"""
@@ -235,11 +278,82 @@ AUDIT_DISPLAY:\tRETS
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("int CRT_REG_SETUP_STR[2] = {", rendered)
+        self.assertNotIn("int CRT_REG_SETUP_STR[2] = {", rendered)
+        self.assertIn("int CRT_REG_SETUP_STR[] = {", rendered)
         self.assertIn("399|CRT_SETUP_ICSYNC, // CRT_SETUP", rendered)
         self.assertIn("0x01ff, // CRT_HADDRINC", rendered)
         self.assertNotIn("/* asm: \t;before syncing */", rendered)
         self.assertNotIn("/* asm: \t;\t.word\t400|CRT_SETUP_ICSYNC\t;CRT_SETUP */", rendered)
+
+    def test_parse_type_overrides_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            overrides_path = Path(tmpdir) / "type-overrides.txt"
+            overrides_path.write_text("# comment\n-PB1\nBONUS8()\nvoid *SWTAB;\nunsigned short FLAGS[16];\n")
+
+            parsed = parse_type_overrides_file(overrides_path)
+
+        self.assertTrue(parsed["PB1"].omit)
+        self.assertTrue(parsed["BONUS8"].force_function)
+        self.assertEqual(parsed["SWTAB"].c_type, "void *")
+        self.assertIsNone(parsed["SWTAB"].array_expr)
+        self.assertEqual(parsed["FLAGS"].c_type, "unsigned short")
+        self.assertEqual(parsed["FLAGS"].array_expr, "16")
+
+    def test_omit_override_suppresses_variable_generation(self) -> None:
+        asm_source = """PB1\t.usect\tpbsss,1
+PBSS_PTR\t.word\tPB1
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "CUSA.ASM"
+            src_path.write_text(asm_source)
+            overrides_path = Path(tmpdir) / "type-overrides.txt"
+            overrides_path.write_text("-PB1\n")
+            overrides = parse_type_overrides_file(overrides_path)
+            rendered = render_module(src_path, {}, {}, None, False, overrides)
+            symbol_table = collect_module_symbol_table(src_path, {}, overrides)
+
+        self.assertNotIn("PB1", symbol_table)
+        self.assertNotIn("int PB1", rendered)
+        self.assertIn("int PBSS_PTR = PB1;", rendered)
+
+    def test_type_override_changes_generated_variable_type(self) -> None:
+        asm_source = """SWTAB\t.word\tCOIN1,COIN2
+COIN1:\tRETS
+COIN2:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "CUSA.ASM"
+            src_path.write_text(asm_source)
+            overrides_path = Path(tmpdir) / "type-overrides.txt"
+            overrides_path.write_text("void *SWTAB;\n")
+            overrides = parse_type_overrides_file(overrides_path)
+            rendered = render_module(src_path, {}, {}, None, False, overrides)
+            symbol_table = collect_module_symbol_table(src_path, {}, overrides)
+
+        self.assertIn("void *SWTAB[] = {\n    COIN1, COIN2,\n};", rendered)
+        self.assertEqual(symbol_table["SWTAB"].c_type, "void *")
+        self.assertEqual(symbol_table["SWTAB"].array_expr, "2")
+
+    def test_function_override_emits_function_pointer_table_and_prototypes(self) -> None:
+        asm_source = """BONUS_TABLE\t.word\tBONUS8
+
+BONUS8\tLDI\t8,R1
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            overrides_path = Path(tmpdir) / "type-overrides.txt"
+            overrides_path.write_text("BONUS8()\n")
+            overrides = parse_type_overrides_file(overrides_path)
+            rendered = render_module(src_path, {}, {}, None, False, overrides)
+
+        self.assertIn("void BONUS8(void);", rendered)
+        self.assertIn("void (*BONUS_TABLE)(void) = BONUS8;", rendered)
+        self.assertIn("void BONUS8(void)", rendered)
 
     def test_render_discovered_defines_header_uses_decimal_values(self) -> None:
         rendered = render_discovered_defines_header([
@@ -259,6 +373,15 @@ AUDIT_DISPLAY:\tRETS
         self.assertIn("#define sky1_I 854", rendered)
         self.assertIn("#define sky2_I 1110", rendered)
 
+    def test_render_discovered_labels_header_uses_hex_addresses(self) -> None:
+        rendered = render_discovered_labels_header([
+            LabelEntry(name="missle", addr=0x00C28DF4),
+            LabelEntry(name="misslem", addr=0x00C29323),
+        ])
+
+        self.assertIn("#define missle 0x00C28DF4", rendered)
+        self.assertIn("#define misslem 0x00C29323", rendered)
+
     def test_collect_referenced_define_symbols(self) -> None:
         asm_lines = [
             "\tLDI\tbottom_gtmp_p,R0",
@@ -269,6 +392,35 @@ AUDIT_DISPLAY:\tRETS
         refs = collect_referenced_define_symbols(asm_lines, {"bottom_gtmp_p", "cam_left_stop"})
 
         self.assertEqual(refs, {"bottom_gtmp_p", "cam_left_stop"})
+
+    def test_collect_existing_macro_names(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            include_dir = Path(tmpdir)
+            (include_dir / "one.h").write_text("#define ATOD_R 0x0993000\n#define NULL ((void*)0)\n")
+            (include_dir / "two.h").write_text(" # define SCREEN0 0x0900000\n")
+            (include_dir / "discovered_labels.h").write_text("#define missle 0x00C28DF4\n")
+
+            macros = collect_existing_macro_names(include_dir)
+
+        self.assertIn("ATOD_R", macros)
+        self.assertIn("NULL", macros)
+        self.assertIn("SCREEN0", macros)
+        self.assertNotIn("missle", macros)
+
+    def test_collect_source_label_names_includes_bare_source_labels(self) -> None:
+        asm_lines = [
+            "ADJUSTMENT_MENU",
+            '\tMENUENTRY\t"STANDARD PRICING",RUN_STANDARD_PRICING',
+            "RUN_ADJUSTMENT_MENU:",
+            "\tLDL\tADJUSTMENT_MENU,AR5",
+            "\t.bss\tWAS_HEAD2HEAD_ON,1",
+        ]
+
+        labels = collect_source_label_names(asm_lines)
+
+        self.assertIn("ADJUSTMENT_MENU", labels)
+        self.assertIn("RUN_ADJUSTMENT_MENU", labels)
+        self.assertIn("WAS_HEAD2HEAD_ON", labels)
 
     def test_render_storage_header_omits_address_comments(self) -> None:
         rendered = render_storage_header(

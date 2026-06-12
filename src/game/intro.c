@@ -19,10 +19,92 @@
 #include "racer.h"
 #include "intro.h"
 #include "discovered_defines.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/INTRO.ASM
  */
+
+void HEAD2HEAD_LOGO_WAIT(void);
+void HEAD2HEAD_LOGO(void);
+void KABOSHP(void);
+void TKABOSH(void);
+void JINMSG(void);
+void THROBIT(void);
+void WAIT_FOR_CHALLENGER(void);
+void NOWORRY(void);
+void WFCLPXXX(void);
+void CHECK_ENDBONUS(void);
+void CEBT(void);
+void WAIT_FOR_ENDBONUS(void);
+void ISGAME5(void);
+void NOJHASD(void);
+void ISSUE_STARTGAME_TSEL(void);
+void ISSUE_STARTGAME(void);
+void NOGAME(void);
+void PLYR_INTRO(void);
+void CONTINUE(void);
+void WFSNP(void);
+void CHOOSE_NEXT_RACE(void);
+void LOAD_NEW_SELECTION(void);
+void WATCH_PLYRS_CAR(void);
+void INIT_GAMELEG(void);
+void CHOOSECAR(void);
+void KIBO(void);
+void NLD(void);
+void NOHIDE(void);
+void THE_CAR_CHOICE_PROC(void);
+void RAISE_DOOR(void);
+void ZOOMTOCAR(void);
+void DOALL1(void);
+void IBODONE(void);
+void GETTHECARS(void);
+void SHOW_CAR_STATISTICS(void);
+void CLEANUP_DIMCAR_PALS(void);
+void GETTHECAR(void);
+void ROUNDER(void);
+void AFFECT_THE_CARS(void);
+void HIDDEN_VEHICLES(void);
+void RESET_ORIGINAL(void);
+void AFFECTED_CAR(void);
+void DOALL(void);
+void CAR_DIMMER(void);
+void LIGHT_INIT(void);
+void LIGHT_OFF(void);
+void LIGHT_ON(void);
+void INIT_PEDALCHK(void);
+void GETCHOICE(void);
+void PEDALCHK(void);
+void PEDALTRUE(void);
+void WAVEFLAG(void);
+void NXTSTAT(void);
+void JDJFF(void);
+void NANAD(void);
+void RACESEL_TIMER(void);
+void WAITINTROTIMER(void);
+void INTROTIMER(void);
+void DIAL_ROUT(void);
+void ENDPLAYER(void);
+void GAME_AVAILABLEP(void);
+void GA_FALSE(void);
+void _start(void);
+void _startX(void);
+void ULTRA_PROC(void);
+void ULTRA_LOGO(void);
+void LOGO_SMALL(void);
+void SET_ATTR(void);
+void _debug(void);
+void _timeout(void);
+void TROI(void);
+void INSMORE(void);
+void CHECKHIT(void);
+void COIN_CNTDOWN(void);
+void LOAD_SHARED(void);
+void TRAFFIC_LIGHT(void);
+void NSSD(void);
+void CPOINT_LIGHT(void);
+void SDASDFA(void);
+void SHOW_RACE_NAME(void);
 
 /* asm: START_HIT	.bss	START_HIT,1 */
 int START_HIT;
@@ -52,9 +134,16 @@ const char *WFCHAL2 = "FOR CHALLENGER";
 const char *WFCHAL3 = "HOLD RADIO OR VIEW3 TO CANCEL";
 /* asm: FRAMELAG	.bss	FRAMELAG,1 */
 int FRAMELAG;
-/* asm: NTINLK	NTINLK
-	.bss	NOASK_LINK,1 */
-int NTINLK[NOASK_LINK];
+/* asm: BONUS_WAITFLAG	pbss	BONUS_WAITFLAG,1 */
+int BONUS_WAITFLAG;
+/* asm: OM_BONUS_WAITFLAG	pbss	OM_BONUS_WAITFLAG,1 */
+int OM_BONUS_WAITFLAG;
+/* asm: NOASK_LINK	.bss	NOASK_LINK,1 */
+int NOASK_LINK;
+/* asm: DCALL	.bss	DCALL,1 */
+int DCALL;
+/* asm: START_NOW_P	.bss	START_NOW_P,1 */
+int START_NOW_P;
 #define PLYPOS2YL (-400)
 #define PLYPOS2ZL 2200
 /* *----------------------------------------------------------------------------
@@ -79,7 +168,7 @@ const char *CCT = "CHOOSE CAR";
 /* asm: 	.float	PI */
 /* asm: 	.word	0484h */
 /* asm: 	.word	-1 */
-int CCTAB[25] = {
+int CCTAB[] = {
     -1384, -164, -4708, cvettem,
     PI,
     0x0481,
@@ -111,7 +200,7 @@ int CHOOSENCAR;
 /* asm: 	.word	L_LEG12_BEGIN+1 */
 /* asm: 	.word	L_LEG13_BEGIN+1 */
 /* asm: 	.word	L_LEG14_BEGIN+1 */
-int RACE_STARTING_POINTS[14] = {
+int RACE_STARTING_POINTS[] = {
     0,
     L_LEG2_BEGIN+1,
     L_LEG3_BEGIN+1,
@@ -131,7 +220,7 @@ int RACE_STARTING_POINTS[14] = {
 /* asm: 	.float	-448 */
 /* asm: 	.float	464 */
 /* asm: 	.float	1424 */
-float XOFFSET[4] = {
+float XOFFSET[] = {
     -1384.0f,
     -448.0f,
     464.0f,
@@ -154,7 +243,7 @@ int CAR_ARRAY[4];
 *
  */
 /* asm: SCS_TAB	.float	10,70,170,230 */
-float SCS_TAB[4] = {
+float SCS_TAB[] = {
     10.0f, 70.0f, 170.0f, 230.0f,
 };
 /* asm: CAR1PAL	.bss	CAR1PAL,129 */
@@ -166,11 +255,11 @@ int CAR3PAL[129];
 /* asm: CAR4PAL	.bss	CAR4PAL,129 */
 int CAR4PAL[129];
 /* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
-int *CARPAL_TABLE[4] = {
+int *CARPAL_TABLE[] = {
     CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL,
 };
 /* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
-int CARSRCPAL_TAB[4] = {
+int CARSRCPAL_TAB[] = {
     cvette_p, hotrod_p, missle_p, testor_p,
 };
 /* *----------------------------------------------------------------------------
@@ -211,7 +300,7 @@ int CARSRCPAL_TAB[4] = {
 /* asm: IS_HIDDEN	.bss	IS_HIDDEN,1 */
 int IS_HIDDEN;
 /* asm: HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
-int HIDDEN_TABLE[4] = {
+int HIDDEN_TABLE[] = {
     jeepm, sbuspm, copcar, gtruck,
 };
 /* asm: SPINCURR	.bss	SPINCURR,1 */
@@ -222,12 +311,12 @@ const char *T_GO = "GO";
 const char *T_CHALLENG = "CHALLENGE RACE";
 /* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
 /* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
-int TLIST[6] = {
+int TLIST[] = {
     T_READY, CHICK_READY, SEND_WAVEFL_READY,
     T_SET, CHICK_SET, SEND_WAVEFL_SET,
 };
 /* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
-int TLGO[3] = {
+int TLGO[] = {
     T_GO, CHICK_GO, SEND_WAVEFL_GO,
 };
 /* asm: BABE_CONTROL	.bss	BABE_CONTROL,1 */
@@ -250,30 +339,20 @@ int LASTCHOICE;
  */
 /* asm: _timer	.bss	_timer,1 */
 int _timer;
-/* *----------------------------------------------------------------------------
-*INSERT COINS ROUTINES
-*
-*	INSMORE		JSRPed FROM PLYR.ASM
-*	COIN_CNTDOWN	CREATED, KILLED
-*
- */
-/* asm: TROI	SPTR	"INSERT COINS" */
-const char *TROI = "INSERT COINS";
 /* asm: ICCI	SPTR	"TO CONTINUE" */
 const char *ICCI = "TO CONTINUE";
 /* asm: PSCI	SPTR	"PRESS START" */
 const char *PSCI = "PRESS START";
 /* asm: SAVEDMODE	.bss	SAVEDMODE,1 */
 int SAVEDMODE;
-/* asm: CANWT	CANWT
-	.bss	miniidle,1 */
-int CANWT[miniidle];
+/* asm: miniidle	.bss	miniidle,1 */
+int miniidle;
 /* *----------------------------------------------------------------------------
  */
 /* asm: DIRTY_SHARED	.bss	DIRTY_SHARED,1 */
 int DIRTY_SHARED;
 /* asm: TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
-int TRAFFIC_LL[7] = {
+int TRAFFIC_LL[] = {
     light_yellowon, 10, light_redon, 32, light_greenon, 32, -1,
 };
 /* *----------------------------------------------------------------------------
@@ -455,10 +534,15 @@ void KABOSHP(void)
 FKABOSH:
     // asm: 	CLRC
     // asm: 	RETS
-TKABOSH:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KABOSHP", 0, 0);
+    UNIMPL();
+}
+
+void TKABOSH(void)
+{
     // asm: 	SETC
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "KABOSHP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TKABOSH", 0, 0);
     UNIMPL();
 }
 
@@ -562,7 +646,12 @@ WFCLP:
     // asm: 	STI	R0,@COINDROP
     // asm: 	LDI	20,R1
     // asm: 	BU	JJFHF
-NOWORRY:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_FOR_CHALLENGER", 0, 0);
+    UNIMPL();
+}
+
+void NOWORRY(void)
+{
     // asm: 	LDI	@_countdown,R1
     // asm: 	LDI	@OM_MODE,R0
     // asm: 	AND	MMODE,R0
@@ -644,7 +733,12 @@ JJFJFJ:
 NOMSG123:
     // asm: 	SLEEP	1
     // asm: 	BU	WFCLP
-WFCLPXXX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOWORRY", 0, 0);
+    UNIMPL();
+}
+
+void WFCLPXXX(void)
+{
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@MY_LINKWAIT
     // asm: 	STI	R0,@HEAD2HEAD_ON
@@ -665,7 +759,7 @@ WAITX:
     // asm: 	LDI	5,R0			;so player doesn't puke (see near call)
     // asm: 	STI	R0,@_countdown
     // asm: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_FOR_CHALLENGER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WFCLPXXX", 0, 0);
     UNIMPL();
 }
 
@@ -695,10 +789,15 @@ void CHECK_ENDBONUS(void)
     // asm: 	BEQ	CEBT
     // asm: 	CLRC
     // asm: 	RETS
-CEBT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_ENDBONUS", 0, 0);
+    UNIMPL();
+}
+
+void CEBT(void)
+{
     // asm: 	SETC
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_ENDBONUS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CEBT", 0, 0);
     UNIMPL();
 }
 
@@ -788,7 +887,12 @@ WAIT_FOR_ENDBONUS_LP:
     // asm: 	BC	ISGAME5
     // asm: 	SLEEP	1
     // asm: 	BU	WAIT_FOR_ENDBONUS_LP
-ISGAME5:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_FOR_ENDBONUS", 0, 0);
+    UNIMPL();
+}
+
+void ISGAME5(void)
+{
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@BONUS_WAITFLAG
     // asm: 	SLEEP	2
@@ -806,13 +910,18 @@ ISGAME5:
     // asm: 	LDL	H2HPAL3,AR2
     // asm: 	CALL	PAL_DELETE_RAW
     // asm: 	BU	IURENDFL
-NOJHASD:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISGAME5", 0, 0);
+    UNIMPL();
+}
+
+void NOJHASD(void)
+{
     // asm: 	LDI	@BOILEROBJ,AR2
     // asm: 	CMPI	0,AR2
     // asm: 	CALLNE	OBJ_DELETE
 IURENDFL:
     // asm: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_FOR_ENDBONUS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOJHASD", 0, 0);
     UNIMPL();
 }
 
@@ -937,7 +1046,23 @@ WTFORRETVAL:
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@OM_LINKWAIT
     // asm: 	STI	R0,@MY_LINKWAIT
+NTINLK:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ISSUE_STARTGAME", 0, 0);
+    UNIMPL();
+}
+
+void NOGAME(void)
+{
+    // *ELP CHANGE
+    // asm: 	CALL	SEND_LINKCANCELLED
+    // asm: 	SLEEP	1
+    // *ELP END CHANGE
+    // asm: 	CALL	CLEAR_LINK
+    // asm: 	LDI	1,R0
+    // asm: 	STI	R0,@NOASK_LINK
+    // asm: 	CALL	SETONE
+    // asm: 	RETP
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOGAME", 0, 0);
     UNIMPL();
 }
 
@@ -984,7 +1109,12 @@ CNR_ENTER:
     // asm: 	BZ	CONTINUE
     // asm: 	SLEEP	1
     // asm: 	BU	CNR_ENTER
-CONTINUE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_INTRO", 0, 0);
+    UNIMPL();
+}
+
+void CONTINUE(void)
+{
     // asm: 	SOND1	START_THEME
     // asm: 	LDI	BUT_START,R0		;BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
     // asm: 	STI	R0,@BUTTON_STATUS
@@ -1007,15 +1137,12 @@ CONTINUE:
     // asm: 	CALL	INIT_PEDALCHK
     // asm: 	CALL	OBJ_INIT
     // asm: 	CALL	TEXT_INIT
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@DCALL
-    // asm: 	JSRP	CHOOSE_TRANSMISSION
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@DCALL
-    // asm: 	JSRP	CHOOSECAR
-    // asm: 	LDI	BUT_VIEW2,R0			;BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
-    // asm: 	STI	R0,@BUTTON_STATUS
-WFSNP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CONTINUE", 0, 0);
+    UNIMPL();
+}
+
+void WFSNP(void)
+{
     // asm: SLEEP	1
     // asm: 	LDI	@START_NOW_P,R0
     // asm: 	BZ	WFSNP
@@ -1062,7 +1189,7 @@ ALL_JOINUP:
     // asm: 	LDF	1.0,R0
     // asm: 	STF	R0,@WHEELPWR
     // asm: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_INTRO", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WFSNP", 0, 0);
     UNIMPL();
 }
 
@@ -1260,10 +1387,108 @@ JT75:
     // asm: 	BNZ	KIBO
     // asm: 	SLEEP	1
     // asm: 	BU	JT75
-KIBO:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOOSECAR", 0, 0);
+    UNIMPL();
+}
+
+void KIBO(void)
+{
     // asm: 	LDL	crace_PALETTES,AR2
     // asm: 	CALL	dealloc_section
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOOSECAR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KIBO", 0, 0);
+    UNIMPL();
+}
+
+void NLD(void)
+{
+    // asm: LDI	R0,AR0
+    // asm: 	LDF	*+AR0(OPOSX),R0
+    // asm: 	ADDF	R6,R0
+    // asm: 	STF	R0,*+AR0(OPOSX)
+    // asm: 	LDF	*+AR0(OPOSZ),R0
+    // asm: 	ADDF	R7,R0
+    // asm: 	STF	R0,*+AR0(OPOSZ)
+    // asm: 	LDI	*+AR0(OLINK2),R0
+    // asm: 	BNZ	NLD
+    // asm: 	LDI	@CAMERAPOSI,AR2
+    // asm: 	LDF	*+AR2(X),R0
+    // asm: 	ADDF	R6,R0
+    // asm: 	STF	R0,*+AR2(X)
+    // asm: 	LDF	*+AR2(Z),R0
+    // asm: 	ADDF	R7,R0
+    // asm: 	STF	R0,*+AR2(Z)
+    // asm: 	LDL	CAR_ARRAY,AR3
+    // asm: 	LDI	3,AR5
+LNNN:
+    // asm: LDI	*AR3++,AR0
+    // asm: 	LDF	*+AR0(OPOSX),R0
+    // asm: 	ADDF	R6,R0
+    // asm: 	STF	R0,*+AR0(OPOSX)
+    // asm: 	LDF	*+AR0(OPOSZ),R0
+    // asm: 	ADDF	R7,R0
+    // asm: 	STF	R0,*+AR0(OPOSZ)
+    // asm: 	DBU	AR5,LNNN
+    // asm: 	LDI	@_MODE,R0
+    // asm: 	ANDN	MGO,R0
+    // asm: 	STI	R0,@_MODE
+    // asm: 	LDI	5,R0		;WAVEFLAG routine properly sets this
+    // asm: 	STI	R0,@_countdown	;we just need to set so PLYR doesnt puke
+    // asm: 	LDI	100h,R0		;FULL START INDEX
+    // asm: 	STI	R0,@RACER_GRID_START
+    // asm: 	CALL	TEXT_INIT			;ELIMINATE THE 'CHOOSE CAR' TEXT
+    // asm: 	LDI	@CHOSEN_VEHICLE,R0
+    // asm: 	LDI	@IS_HIDDEN,R1
+    // asm: 	CMPI	-1,R1
+    // asm: 	BEQ	NOHIDE
+    // asm: 	PUSH	R0
+    // asm: 	LDI	@CHOSEN_VEHICLE,AR2
+    // asm: 	CMPI	5,AR2
+    // asm: 	LDIEQ	1,AR2
+    // asm: 	CMPI	6,AR2
+    // asm: 	LDIEQ	2,AR2
+    // asm: 	CMPI	7,AR2
+    // asm: 	LDIEQ	3,AR2
+    // asm: 	ADDI	AUD_CAR_SELECTION+4,AR2
+    // asm: 	CALL	AUDIT_INC
+    // asm: 	POP	R0
+    // asm: 	ADDI	4,R0
+    // asm: 	BU	TMP886
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NLD", 0, 0);
+    UNIMPL();
+}
+
+void NOHIDE(void)
+{
+    // asm: 	PUSH	R0
+    // asm: 	LDI	@CHOSEN_VEHICLE,AR2
+    // asm: 	ADDI	AUD_CAR_SELECTION,AR2
+    // asm: 	CALL	AUDIT_INC
+    // asm: 	POP	R0
+TMP886:
+    // asm: STI	R0,@CHOOSENCAR
+    // asm: 	LDI	UTIL_C|CHOOSECAR_T,R0
+    // asm: 	LDI	-1,R1
+    // asm: 	CALL	PRC_KILLALL
+    // asm: 	LDI	@DIPRAM,R0
+    // asm: 	TSTB	DIP_COMMP,R0
+    // asm: 	BNZ	JAJAKKA
+    // asm: 	JSRP	WAIT_FOR_CHALLENGER
+JAJAKKA:
+    // asm: 	CALL	INIT_GAMELEG
+    // asm: 	CREATE	DROPTHEWHEEL,UTIL_C|CHOOSECAR_T
+    // asm: 	CREATE	DROPTHECYCLE,UTIL_C|CHOOSECAR_T
+    // asm: 	CREATE	DROPTHETURN,UTIL_C|CHOOSECAR_T
+    // asm: 	CREATE	RAISE_DOOR,UTIL_C|CHOOSECAR_T	;in 50
+    // 		;(BECOMES PLYR PROC)
+    // asm: 	CREATE	ZOOMTOCAR,UTIL_C|CHOOSECAR_T	;in 25 (TRANS.ASM)
+    // asm: 	SLEEP	70
+    // asm: 	SLEEP	1
+    // asm: 	LDI	UTIL_C|CHOOSECAR_T,R0
+    // asm: 	LDI	-1,R1
+    // asm: 	CALL	PRC_KILLALL
+    // asm: 	CALL	CLEANUP_DIMCAR_PALS
+    // asm: 	RETP
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOHIDE", 0, 0);
     UNIMPL();
 }
 
@@ -1411,7 +1636,12 @@ void ZOOMTOCAR(void)
     // asm: 	MPYF	0.10,R0
     // asm: 	ADDF	R0,R2
     // asm: 	BU	IBO45A
-DOALL1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMTOCAR", 0, 0);
+    UNIMPL();
+}
+
+void DOALL1(void)
+{
     // asm: ADDF	R0,R2
 IBO45A:
     // asm: STF	R2,*+AR4(ORADY)
@@ -1549,7 +1779,12 @@ BABADUY:
     // asm: 	CALL	WATCH_PLYRS_CAR
     // asm: 	SLEEP	1
     // asm: 	BU	MOVELOOP
-IBODONE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOALL1", 0, 0);
+    UNIMPL();
+}
+
+void IBODONE(void)
+{
     // asm: 	LDI	@DIPRAM,R3
     // asm: 	TSTB	DIP_COMMP,R3
     // asm: 	BNZ	BABADUY4
@@ -1567,7 +1802,7 @@ BABADUY4:
     // asm: 	LDI	MGAME|MINFIN|MWATER,R0	;NOT MGO NOT MHUD
     // asm: 	STI	R0,@_MODE
     // asm: 	BU	PLYR_INTRO_ENTER
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMTOCAR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "IBODONE", 0, 0);
     UNIMPL();
 }
 
@@ -2025,7 +2260,12 @@ void AFFECTED_CAR(void)
     // asm: 	MPYF	0.10,R0
     // asm: 	ADDF	R0,R2
     // asm: 	BU	IBO45
-DOALL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "AFFECTED_CAR", 0, 0);
+    UNIMPL();
+}
+
+void DOALL(void)
+{
     // asm: ADDF	R0,R2
     // asm: 	LDI	@CHOSEN_VEHICLE,R1
     // asm: 	STI	R1,@SPINCURR
@@ -2046,7 +2286,7 @@ IBOIBO:
     // asm: 	CALL	FIND_YMATRIX
 N12:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AFFECTED_CAR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOALL", 0, 0);
     UNIMPL();
 }
 
@@ -2243,10 +2483,15 @@ SKIPKEY:
     // asm: PEDALFALSE
     // asm: 	CLRC
     // asm: 	RETS
-PEDALTRUE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PEDALCHK", 0, 0);
+    UNIMPL();
+}
+
+void PEDALTRUE(void)
+{
     // asm: 	SETC
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PEDALCHK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PEDALTRUE", 0, 0);
     UNIMPL();
 }
 
@@ -2314,11 +2559,21 @@ JFF:
     // asm: 	BLT	NXTSTAT
     // asm: 	SLEEP	1
     // asm: 	BU	JFF
-NXTSTAT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVEFLAG", 0, 0);
+    UNIMPL();
+}
+
+void NXTSTAT(void)
+{
     // asm: LDI	@H2H_FLAGSTATE,R0
     // asm: 	STI	R0,@CURR_FLAGSTATE
     // asm: 	BU	KKLFF
-JDJFF:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NXTSTAT", 0, 0);
+    UNIMPL();
+}
+
+void JDJFF(void)
+{
     // asm: 	SLEEP	20
 KKLFF:
     // asm: 	LDI	*AR6++,AR2
@@ -2382,7 +2637,33 @@ BABAD666:
     // asm: 	LDL	0FF80h,R1
     // asm: 	AND	R1,R2
     // asm: 	BZ	NANAD
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVEFLAG", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JDJFF", 0, 0);
+    UNIMPL();
+}
+
+void NANAD(void)
+{
+    // asm: 	LDI	SM_GO,R0
+    // asm: 	STI	R0,@SUSPEND_MODE
+    // asm: 	SONDFX	PEELOUT
+    // asm: 	READAUD	ADJ_TIME_TO_START
+    // asm: 	MPYI	5,R0
+    // asm: 	ADDI	60,R0
+    // asm: 	STI	R0,@_countdown
+    // asm: 	LDI	@HEAD2HEAD_ON,R0
+    // asm: 	BZ	NOTHHHH
+    // asm: 	LDI	@OM_RACE_MODE,R0
+    // asm: 	CMPI	RM_USA,R0
+    // asm: 	BNE	NOTHHHH
+    // asm: 	LDI	RM_USA,R0
+    // asm: 	STI	R0,@RACE_MODE
+NOTHHHH:
+    // asm: 	LDI	@_MODE,R0	   	;MAKE SURE MODE IS IN GAME
+    // asm: 	AND	MMODE,R0
+    // asm: 	CMPI	MATTR,R0
+    // asm: 	CALLNE	RESUME_TUNE_NT
+    // asm:  	DIE
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NANAD", 0, 0);
     UNIMPL();
 }
 
@@ -2532,12 +2813,17 @@ GA_TRUE:
     // asm: 	POP	AR2
     // asm: 	POP	R2
     // asm: 	RETS
-GA_FALSE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GAME_AVAILABLEP", 0, 0);
+    UNIMPL();
+}
+
+void GA_FALSE(void)
+{
     // asm: 	CLRC
     // asm: 	POP	AR2
     // asm: 	POP	R2
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GAME_AVAILABLEP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GA_FALSE", 0, 0);
     UNIMPL();
 }
 
@@ -2622,9 +2908,14 @@ CYCLEOUT:
     // asm: 	LDI	1,AR2
     // asm: 	CALL	WAVE
     // asm: 	BR	COLD_ENTER		;RESET SYSTEM RUNNING
-_startX:
-    // asm: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_start", 0, 0);
+    UNIMPL();
+}
+
+void _startX(void)
+{
+    // asm: 	DIE
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_startX", 0, 0);
     UNIMPL();
 }
 
@@ -2780,6 +3071,20 @@ void _timeout(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*INSERT COINS ROUTINES
+*
+*	INSMORE		JSRPed FROM PLYR.ASM
+*	COIN_CNTDOWN	CREATED, KILLED
+*
+ */
+void TROI(void)
+{
+    // asm: SPTR	"INSERT COINS"
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TROI", 0, 0);
+    UNIMPL();
+}
+
 void INSMORE(void)
 {
     // asm: 	LDI	@_MODE,R0
@@ -2905,7 +3210,64 @@ TOSLP2:
     // asm: 	DEC	R0
     // asm: 	STI	R0,@_countdown
     // asm: 	LDI	15,AR6			;wait at least 15 frames to continue
+CANWT:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INSMORE", 0, 0);
+    UNIMPL();
+}
+
+void CHECKHIT(void)
+{
+    // asm: 	LDI	@START_HIT,R0
+    // asm: 	BZ	TOSLP
+    // 	;Secret Button Combo!!
+    // 	;
+    // 	;if the plyr holds all the view buttons and radio as he
+    // 	;hits the start button, he gets to CRUISE the USA
+    // 	;-ELP August 11,1994
+    // 	;
+    // asm: 	LDI	@SWITCHBUTS,R0
+    // asm: 	LDIL	(SW_RADIO|SW_VIEW0|SW_VIEW1|SW_VIEW2),R1
+    // asm: 	AND	R1,R0
+    // asm: 	CMPI	R1,R0
+    // asm: 	BNE	NOSECRET_CRUISE
+    // asm: 	LDI	RM_USA,R0
+    // asm: 	STI	R0,@RACE_MODE
+NOSECRET_CRUISE:
+    // asm: 	LDI	0,R2
+    // asm: 	LDI	AUD_BCREDITS,AR2
+    // asm: 	CALL	AUDIT_WRITE
+    // asm: 	READAUD	AUD_CREDITS
+    // asm: 	CALL	GET_CREDITS_TO_CONTINUE
+    // asm: 	SUBI	R1,R0
+    // ;	DEC	R0
+    // asm: 	LDILT	0,R0
+    // asm: 	LDI	R0,R2
+    // asm: 	SETAUD	AUD_CREDITS
+    // asm: 	LDI	@_MODE,R0
+    // asm: 	ANDN	MMODE,R0
+    // asm: 	OR	MGAME,R0
+    // asm: 	STI	R0,@_MODE
+    // asm: 	LDI	1,R0
+    // asm: 	STI	R0,@STOPWATCH_CNTL
+    // asm: 	LDI	60,R0
+    // asm: 	STI	R0,@_countdown
+    // asm: 	LDI	1,AR6
+    // asm: 	LDI	@BUTTON_STATUS,R0
+    // asm: 	ANDN	BUT_START,R0
+    // asm: 	STI	R0,@BUTTON_STATUS
+    // asm: 	INCAUD	AUD_NUM_BUYINS
+RETURNTOPLYR:
+    // asm: 	LDI	@SAVEDMODE,R0
+    // asm: 	STI	R0,@_MODE
+    // asm: 	LDI	034h,R0
+    // asm: 	LDI	-1,R1
+    // asm: 	CALL	PRC_KILLALL
+    // asm: 	CALL	TEXT_INIT
+    // asm: 	CALL	RESUME_TUNE_NT
+    // asm: 	CLRF	R0
+    // asm: 	STPF	R0,@GAME_TIMER
+    // asm: 	RETP
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKHIT", 0, 0);
     UNIMPL();
 }
 
@@ -2965,7 +3327,12 @@ TLT_LP:
     // asm: 	CALL	PAL_FIND
     // asm: 	BNC	NSSD
     // asm: 	BR	SUICIDE
-NSSD:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAFFIC_LIGHT", 0, 0);
+    UNIMPL();
+}
+
+void NSSD(void)
+{
     // asm: 	LDI	*AR5++,AR2
     // asm: 	CMPI	-1,AR2
     // asm: 	BNE	CCC
@@ -2978,7 +3345,7 @@ CCC:
     // asm: 	LDI	*AR5++,AR2
     // asm: 	CALL	SLEEP
     // asm: 	BU	TLT_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAFFIC_LIGHT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NSSD", 0, 0);
     UNIMPL();
 }
 
@@ -2992,7 +3359,12 @@ void CPOINT_LIGHT(void)
     // asm: 	CALL	PAL_FIND
     // asm: 	BNC	SDASDFA
     // asm: 	BR	SUICIDE
-SDASDFA:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CPOINT_LIGHT", 0, 0);
+    UNIMPL();
+}
+
+void SDASDFA(void)
+{
     // asm: 	LDI	R0,AR6
 CPL_LP:
     // asm: 	LDI	AR4,AR2
@@ -3007,7 +3379,7 @@ CNT:
     // asm: 	LDI	*AR4++,AR2
     // asm: 	CALL	SLEEP
     // asm: 	B	CPL_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CPOINT_LIGHT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SDASDFA", 0, 0);
     UNIMPL();
 }
 

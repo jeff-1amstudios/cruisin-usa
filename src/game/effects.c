@@ -12,6 +12,14 @@
  * Source module: asm/EFFECTS.ASM
  */
 
+void SCREENWIPE_OPEN(void);
+void SCREENWIPE_CLOSE(void);
+void SCREENWIPE_OPEN_PRC_FAST(void);
+void SCREENWIPE_OPEN_PRC(void);
+void SCREENWIPE_CLOSE_PRC(void);
+void GET_EFFECTS_OBJS(void);
+void MEMCPY(void);
+
 /* asm: MONKEYOBJRVI	.word	mnkrv */
 #define MONKEYOBJRVI mnkrv
 /* asm: MONKEYOBJLVI	.word	mnklv */

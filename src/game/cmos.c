@@ -11,6 +11,41 @@
  * Source module: asm/CMOS.ASM
  */
 
+void CMOS_ON_C(void);
+void CMOS_OFF_C(void);
+void CMOS_WPON_C(void);
+void CMOS_WPOFF_C(void);
+void VALIDATE_CMOS(void);
+void RESET_BOOKKEEPING(void);
+void VERIFY_ADJUSTMENTS_ACCURACY(void);
+void RESET_ADJUSTMENTS(void);
+void CHECKSUMGEN_ADJ(void);
+void AUDIT_INC(void);
+void AUDIT_ADD(void);
+void ADJUSTMENT_READ(void);
+void AUDIT_READ(void);
+void ADJUSTMENT_WRITE(void);
+void AUDIT_WRITE(void);
+void AUDIT_WRITE_ADJ(void);
+void _rd_cw(void);
+void _wr_cw(void);
+void _rd_cwR(void);
+void _wr_cwR(void);
+void DEFAULT_TABLE(void);
+void DEFAULT_TABLE_TOTAL(void);
+void INIT_LASTHS_TABLE(void);
+void UPDATE_LASTHS(void);
+void CHECK_LASTHS(void);
+void INIT_HSTD_TABLES(void);
+void VALIDATE_HSTD_TABLES(void);
+void GET_TABLE_ADDR(void);
+void TABLE_ENTRY_WRITE(void);
+void TABLE_ENTRY_WRITE0(void);
+void TABLE_ENTRY_READ(void);
+void CHECK_RACE_TABLE(void);
+void INSERT_HERE(void);
+void INSERT_TABLE_ENTRY(void);
+
 /* *----------------------------------------------------------------------------
  */
 /* *----------------------------------------------------------------------------
@@ -896,10 +931,15 @@ NXTENT:
     // asm: 	BLT	NXTENT
     // asm: 	LDI	-1,R0
     // asm: 	RETS
-INSERT_HERE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_RACE_TABLE", 0, 0);
+    UNIMPL();
+}
+
+void INSERT_HERE(void)
+{
     // asm: 	LDI	R5,R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_RACE_TABLE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_HERE", 0, 0);
     UNIMPL();
 }
 

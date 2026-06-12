@@ -10,6 +10,12 @@
  * Source module: asm/TOTALA.ASM
  */
 
+void _rdma(void);
+void _stuff_fpga(void);
+void BLTMOD2D_NOPAL(void);
+void BLTMOD2D(void);
+void BLTMOD2D_DS(void);
+
 #define NOFIFO 0
 /* asm: AIVI	.word	_AIVI */
 #define AIVI _AIVI

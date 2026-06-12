@@ -14,15 +14,11 @@ if(NOT SDL2_FOUND)
   pkg_check_modules(SDL2 REQUIRED sdl2)
 endif()
 
-add_executable(crusn
-  src/core/cpu.c
-  src/core/machine.c
-  src/core/memory.c
-  src/core/trace.c
-  src/platform/sdl_video.c
-  src/game/cusa.c
-  src/platform/sdl_main.c
+file(GLOB_RECURSE CRUSN_SOURCES CONFIGURE_DEPENDS
+  src/*.c
 )
+
+add_executable(crusn ${CRUSN_SOURCES})
 
 target_include_directories(crusn PRIVATE src src/core src/platform src/game)
 

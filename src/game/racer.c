@@ -16,10 +16,63 @@
 #include "racer.h"
 #include "comm.h"
 #include "racer_defs.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/RACER.ASM
  */
+
+void DIFF_CHANGE(void);
+void GETDIFF(void);
+void RACER_DRONE(void);
+void NOTLINKED(void);
+void RACE_ON(void);
+void ONTRACK(void);
+void RACE_FIN(void);
+void RACEDONE(void);
+void CKPCOL(void);
+void HI_STEALTH(void);
+void HI_ST_END(void);
+void LO_STEALTH(void);
+void REENTER(void);
+void CKTRANSLO(void);
+void CKTRANSHI(void);
+void CKRANGE(void);
+void CKRFAIL(void);
+void COMPTRAK(void);
+void DECODE_RACER_XSFER(void);
+void LINKREC1(void);
+void LINKRECX(void);
+void ACTIVE_XSFER(void);
+void GETPOWER(void);
+void PDIST(void);
+void PDIST1A(void);
+void GETSTSPD(void);
+void FIND_DYNA(void);
+void FIND_MAP(void);
+void CKAHEAD(void);
+void CARSCAN(void);
+void PLSCAN(void);
+void OBSTABINIT(void);
+void OI1(void);
+void OI2(void);
+void OI4(void);
+void GETRDOFFSET(void);
+void FOUNDR(void);
+void FOUNDL(void);
+void FAIL(void);
+void CARCHEK(void);
+void SIDECKX(void);
+void CARCHKX(void);
+void GETPV(void);
+void GETWIDTH(void);
+void RPASS(void);
+void RPASS1(void);
+void RPASS2(void);
+void SPOS_INIT(void);
+void OFFANDDONE(void);
+void WRECKST(void);
+void WRECK(void);
 
 /* asm: RACER_DRONE_INITTABI	.word	RACER_DRONE_INITTAB */
 #define RACER_DRONE_INITTABI RACER_DRONE_INITTAB
@@ -58,7 +111,7 @@ int GMAX = 100000;
 /* asm: 	.float	-0.02 		;IND */
 /* asm: 	.float	-0.02 		;APP */
 /* asm: 	.float	0 		;DC */
-int DIFFTAB[14] = {
+int DIFFTAB[] = {
     0, // GG
     -0.03, // SF
     -0.02, // 101
@@ -80,6 +133,8 @@ int DIFFTAB[14] = {
  */
 /* asm: ROADOBSTAB	.BSS	ROADOBSTAB,50 */
 int ROADOBSTAB[50];
+/* asm: PLYRCLOSE	.BSS	PLYRCLOSE,1 */
+int PLYRCLOSE;
 /* *----------------------------------------------------------------------------
  */
 /* asm: WACKER	.word	3D20AH */
@@ -203,7 +258,12 @@ void RACER_DRONE(void)
     // asm: 	BN	$
 #endif
     // asm: 	BR	COMM_DRONE
-NOTLINKED:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RACER_DRONE", 0, 0);
+    UNIMPL();
+}
+
+void NOTLINKED(void)
+{
     // asm: 	LDI	*+AR0(RD_MODEL),R0
 JJKK:
     // asm: STI	R0,*+AR7(DELTA_MODEL)
@@ -320,7 +380,12 @@ RACER_LP:
     // asm: 	CALL	GETTRAK
     // asm: 	CALL	DRONESTOP
     // asm: 	B	RACER_SLP
-RACE_ON:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTLINKED", 0, 0);
+    UNIMPL();
+}
+
+void RACE_ON(void)
+{
     // asm: 	LDI	*+AR5(CARTRAK),AR0		;CHECK FOR FINISH LINE
     // asm: 	LDI	*+AR0(OUSR1),R0
     // asm: 	LSH	-8,R0
@@ -374,7 +439,12 @@ NUTRACK:
     // asm: 	B	CKSTEALTH			;CHECK NEW SECTION
     // *R2=DIST TO TPIECE SQUARED
     // *AR2=TRACKING PIECE
-ONTRACK:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RACE_ON", 0, 0);
+    UNIMPL();
+}
+
+void ONTRACK(void)
+{
     // asm: 	CALL	SQRT		      	;GET ACTUAL DISTANCE
     // asm: 	LDF	*+AR5(CARSPEED),R1
     // asm: 	LDFLE	30,R1			;if 0 or less assume 30 mph
@@ -475,7 +545,12 @@ RACER_SLP:
     // *
     // *CHECK RACE FINISH
     // *
-    // asm: RACE_FIN
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ONTRACK", 0, 0);
+    UNIMPL();
+}
+
+void RACE_FIN(void)
+{
     // asm: 	LDF	*+AR7(FINISHDIST),R0
     // asm: 	BNZ	RACFIN1
     // asm: 	LDF	0.7,R0
@@ -496,7 +571,12 @@ RACFIN1:
     // asm: 	STF	R0,*+AR7(FINISHDIST)
     // asm: 	BLT	RACEDONE
     // asm:    	RETS
-RACEDONE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RACE_FIN", 0, 0);
+    UNIMPL();
+}
+
+void RACEDONE(void)
+{
     // asm: 	LDI	*+AR7(STEALTHMODE),R0		;CHECK STEALTH
     // asm: 	BZ	RD0
     // asm:    	LDF	*+AR5(CARSPEED),R0
@@ -534,7 +614,12 @@ RDL:
     // *CHECK PLAYER COLLISION
     // *AR4=DRONE CAR
     // *
-    // asm: CKPCOL
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RACEDONE", 0, 0);
+    UNIMPL();
+}
+
+void CKPCOL(void)
+{
     // asm: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
     // asm: 	LDI	*+AR2(OCARBLK),AR3
     // asm: 	CALL	CKAHEAD
@@ -560,7 +645,12 @@ CKPX:
     // *
     // *ENTER DISTANT STEALTH MODE
     // *
-HI_STEALTH:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKPCOL", 0, 0);
+    UNIMPL();
+}
+
+void HI_STEALTH(void)
+{
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,*+AR7(STEALTHMODE)		;HI STEALTH FLAG
     // asm: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GRAB THE LAST KNOWN VALID OID
@@ -587,7 +677,12 @@ HI_STLP:
     // asm: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
     // asm: 	SLEEP	1
     // asm: 	B	HI_STLP
-HI_ST_END:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HI_STEALTH", 0, 0);
+    UNIMPL();
+}
+
+void HI_ST_END(void)
+{
     // asm: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
     // ;	SLEEP	10
@@ -596,7 +691,12 @@ HI_ST_END:
     // *
     // *ENTER CLOSE STEALTH MODE
     // *
-LO_STEALTH:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HI_ST_END", 0, 0);
+    UNIMPL();
+}
+
+void LO_STEALTH(void)
+{
     // asm: 	LDI	-1,R0
     // asm: 	STI	R0,*+AR7(STEALTHMODE)		;LO STEALTH FLAG
     // asm: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GET POINTER TO STEALTH MAP
@@ -624,7 +724,12 @@ LO_STLP:
     // *REENTER REGULAR SYSTEM
     // *R2=OID OF SECTION BEING TRACKED
     // *
-REENTER:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LO_STEALTH", 0, 0);
+    UNIMPL();
+}
+
+void REENTER(void)
+{
     // asm: 	LDI	0,R0
     // asm: 	STI	R0,*+AR7(STEALTHMODE)	;NO STEALTH INIT
     // asm: 	LDI	*+AR4(OFLAGS),R0
@@ -653,7 +758,12 @@ REENTER:
     // *
     // *CHECK TRANSFER TO OTHER MACHINE ON LINK
     // *LO STEALTH CASE
-    // asm: CKTRANSLO
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "REENTER", 0, 0);
+    UNIMPL();
+}
+
+void CKTRANSLO(void)
+{
     // asm: 	CALL	COMPTRAK
     // asm: 	BLE	CKTLX
     // asm: 	CALL	CKRANGE
@@ -661,7 +771,12 @@ REENTER:
 CKTLX:
     // asm: 	RETS
     // *HI STEALTH CASE
-    // asm: CKTRANSHI
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKTRANSLO", 0, 0);
+    UNIMPL();
+}
+
+void CKTRANSHI(void)
+{
     // asm: 	CALL	COMPTRAK
     // asm: 	BGE	CKTHX
     // asm: 	CALL	CKRANGE
@@ -671,7 +786,12 @@ CKTHX:
     // *
     // *CHECK IF CAR TRACK ID IS IN OTHER PLAYERS RANGE
     // *RETURNS EQ =IN RANGE, NE=OUT OF RANGE
-    // asm: CKRANGE
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKTRANSHI", 0, 0);
+    UNIMPL();
+}
+
+void CKRANGE(void)
+{
     // asm: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
     // asm: 	CMPI	@OM_TRACK_LO,R2
     // asm: 	BLT	CKRFAIL
@@ -679,7 +799,12 @@ CKTHX:
     // asm: 	BGT	CKRFAIL
     // asm: 	LDI	0,R0
     // asm: 	RETS
-CKRFAIL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKRANGE", 0, 0);
+    UNIMPL();
+}
+
+void CKRFAIL(void)
+{
     // asm: 	LDI	1,R0
     // asm: 	RETS
     // *
@@ -688,7 +813,12 @@ CKRFAIL:
     // *R0=OTHER PLAYER TRACK ID, R1= OUR TRACK ID
     // *DESTROYS AR0,AR1
     // *
-    // asm: COMPTRAK
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKRFAIL", 0, 0);
+    UNIMPL();
+}
+
+void COMPTRAK(void)
+{
     // asm: 	LDI	@PLY2CAR,AR0
     // asm: 	LDI	*+AR0(OCARBLK),AR1
     // asm: 	LDI	*+AR1(CARTRACK_ID),R0
@@ -721,7 +851,7 @@ SEND_RACER_XSFER:
     // *AR7=PROCESS
     // *
     // *NOTE SHOULD ADD IN FUTURE: CAR_SPIN,CARSPRAD,CARGEAR,CARRPM,CARSKID
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RACER_DRONE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMPTRAK", 0, 0);
     UNIMPL();
 }
 
@@ -763,7 +893,12 @@ void DECODE_RACER_XSFER(void)
     // asm: 	BGT	LINKREC1
     // asm: 	LDI	@HI_STEALTHI,R2
     // asm: 	B	LINKREC3
-LINKREC1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_XSFER", 0, 0);
+    UNIMPL();
+}
+
+void LINKREC1(void)
+{
     // asm: 	LDI	@DYNALIST_TRUEBEGIN,AR0		;GET CLOSEST ROAD ID
     // asm: 	LDI	*+AR0(OLINK4),AR0
     // asm: 	LDI	*+AR0(OLINK4),AR0
@@ -775,9 +910,14 @@ LINKREC1:
 LINKREC3:
     // asm: 	STI	R2,*+AR7(PWAKE)			;CHANGE WAKE-UP ADDR
     // asm: 	RETS
-LINKRECX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LINKREC1", 0, 0);
+    UNIMPL();
+}
+
+void LINKRECX(void)
+{
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_XSFER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LINKRECX", 0, 0);
     UNIMPL();
 }
 
@@ -853,7 +993,12 @@ STLUP1:
     // *
     // *GET RACER POWER
     // *
-    // asm: GETPOWER
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ACTIVE_XSFER", 0, 0);
+    UNIMPL();
+}
+
+void GETPOWER(void)
+{
     // asm: 	PUSH	AR2
     // asm: 	LDI	*+AR7(CATCHTIME),R0 	;CHECK IF TIME FOR POWER CHANGE
     // asm: 	DEC	R0
@@ -878,7 +1023,12 @@ STLUP1:
     // asm: 	LDI	R3,R1
     // asm: 	LDI	0,R2
     // asm: 	B	PDIST1
-PDIST:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPOWER", 0, 0);
+    UNIMPL();
+}
+
+void PDIST(void)
+{
     // asm: 	LDI	*+AR0(OCARBLK),AR1
     // asm: 	LDI	*+AR1(CARTRAK),AR2
     // asm: 	LDI	*+AR2(OUSR1),R2
@@ -898,7 +1048,12 @@ PDIST1:
     // asm: 	CMPF	0.1,R0
     // asm: 	LDFLT	0.1,R0			;MINIMUM IF AHEAD
     // asm: 	B	PDIST1B
-PDIST1A:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PDIST", 0, 0);
+    UNIMPL();
+}
+
+void PDIST1A(void)
+{
     // asm: 	CMPF	0.2,R0
     // asm: 	LDFLT	0.2,R0			;MINIMUM IF BEHIND
 PDIST1B:
@@ -934,7 +1089,7 @@ POWERX:
     // asm: 	STF	R0,*+AR7(DELTA_THROTTLE)
     // asm: 	POP	AR2
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ACTIVE_XSFER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PDIST1A", 0, 0);
     UNIMPL();
 }
 
@@ -1191,7 +1346,12 @@ void OBSTABINIT(void)
 OILP00:
     // asm: STI	R0,*AR0++
     // asm: 	RETS
-OI1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBSTABINIT", 0, 0);
+    UNIMPL();
+}
+
+void OI1(void)
+{
     // asm: 	LDI	*+AR7(DELTA_INIT),R1	;CHECK STARTING POSITION
     // asm: 	CMPI	3,R1
     // asm: 	BLT	OI10
@@ -1204,7 +1364,12 @@ OI10:
 OILP0:
     // asm: STI	R0,*AR0++
     // asm: 	RETS
-OI2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OI1", 0, 0);
+    UNIMPL();
+}
+
+void OI2(void)
+{
     // asm: 	STI	R0,*+AR0(36)
     // asm: 	STI	R0,*+AR0(37)		;EL TRACK PILLAR BLOCKOUT
     // asm: 	STI	R0,*+AR0(38)
@@ -1217,7 +1382,12 @@ OI2:
     // asm: 	STI	R0,*+AR0(13)
     // asm: 	RETS
     // *END CHICAGO KLUDGE
-OI4:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OI2", 0, 0);
+    UNIMPL();
+}
+
+void OI4(void)
+{
     // asm: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm: 	CALL	GET_LANES	 	;GET # OF LANES
     // asm: 	LDI	R0,R0
@@ -1231,7 +1401,7 @@ OILP:
     // asm: STI	R0,*AR0++
 OIX:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBSTABINIT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OI4", 0, 0);
     UNIMPL();
 }
 
@@ -1310,7 +1480,12 @@ SR0:
     // asm: 	SUBI	1,R2
     // asm: 	BNZ	SR0
     // asm:       	B 	LEFTSCAN	;FOUND NOTHING
-FOUNDR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETRDOFFSET", 0, 0);
+    UNIMPL();
+}
+
+void FOUNDR(void)
+{
     // asm: 	SUBI	4,AR0		;GET CENTER INDEX
     // asm: 	LDI	AR0,R6		;SAVE VALUE
     // *WE HAVE AN OBSTACLE
@@ -1345,7 +1520,12 @@ SL0:
     // *FOUND A GAP ON THE LEFT
     // *AR0 HAS GAP
     // *
-FOUNDL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FOUNDR", 0, 0);
+    UNIMPL();
+}
+
+void FOUNDL(void)
+{
     // asm: 	ADDI	4,AR0
     // asm: 	LDI	AR0,R7
     // *
@@ -1376,12 +1556,17 @@ DONE:
     // asm: 	MPYF	100,R0	    		;NEW OFFSET
     // asm: ROXX
     // asm: 	RETS
-FAIL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FOUNDL", 0, 0);
+    UNIMPL();
+}
+
+void FAIL(void)
+{
     // asm: 	NOP
     // asm: OK					;CURRENT OFFSET IS O.K.
     // asm: 	LDF	*+AR7(ROADOFFSET),R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETRDOFFSET", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FAIL", 0, 0);
     UNIMPL();
 }
 
@@ -1418,7 +1603,12 @@ void CARCHEK(void)
     // asm: 	LDF	10,R0
     // asm: 	PUSHF	R0
     // asm: 	B	GOTONE
-SIDECKX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARCHEK", 0, 0);
+    UNIMPL();
+}
+
+void SIDECKX(void)
+{
     // asm: 	CALL	SQRT
     // asm: 	LDF	R0,R5
     // *GET DISTANCE T+1
@@ -1502,10 +1692,15 @@ LOADLP:
 LOADLPX:
     // asm: 	LDI	IR1,R0			;RETURN TIME DUDES
     // asm: 	RETS
-CARCHKX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIDECKX", 0, 0);
+    UNIMPL();
+}
+
+void CARCHKX(void)
+{
     // asm: 	LDI	800H,R0		;FOUND NO CLOSING TIME
     // asm:        	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARCHEK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARCHKX", 0, 0);
     UNIMPL();
 }
 
@@ -1593,7 +1788,12 @@ void RPASS(void)
     // asm: 	LDIN	0,R0
     // asm: 	STI	R0,*+AR7(PASSCNT)
     // asm: 	RETS
-RPASS1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RPASS", 0, 0);
+    UNIMPL();
+}
+
+void RPASS1(void)
+{
     // asm: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
     // asm: 	LDI	*+AR2(OCARBLK),AR3
     // asm: 	LDF	*+AR5(CARSPEED),R3	;SPEED GREATER?
@@ -1611,7 +1811,12 @@ RPASS1:
     // asm: 	CMPI	3000,R0
     // asm: 	BGT	RPASSX
     // asm: 	B	RPASS3
-RPASS2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RPASS1", 0, 0);
+    UNIMPL();
+}
+
+void RPASS2(void)
+{
     // asm: 	LDI	*+AR4(ODIST),R0
     // asm: 	CMPI	1500,R0
     // asm: 	BLT	RPASSX
@@ -1642,7 +1847,7 @@ RPASS4:
     // asm: 	STI	R0,*+AR7(PASSCNT)
 RPASSX:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RPASS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RPASS2", 0, 0);
     UNIMPL();
 }
 
@@ -1703,7 +1908,12 @@ LOOP56A:
     // asm: 	BGT	LOOP56
     // asm: 	LDI	*+AR2(OLINK4),AR2
     // asm: 	BU	LOOP56A
-OFFANDDONE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPOS_INIT", 0, 0);
+    UNIMPL();
+}
+
+void OFFANDDONE(void)
+{
     // asm: 	STI	AR2,*+AR7(DELTA_TPIECE)
 L874:
     // asm: LDI	*+AR2(OUSR1),R0
@@ -1732,7 +1942,7 @@ L874:
     // asm: 	POP	AR6
     // asm: 	POP	AR5
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPOS_INIT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OFFANDDONE", 0, 0);
     UNIMPL();
 }
 

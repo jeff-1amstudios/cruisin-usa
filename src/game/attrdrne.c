@@ -17,10 +17,63 @@
 #include "delta.h"
 #include "attrdrne.h"
 #include "discovered_defines.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/ATTRDRNE.ASM
  */
+
+void ATTRACT_DELTA(void);
+void aDELTA_LOOP(void);
+void LOGO_PROC(void);
+void GET_LIST_ADDR(void);
+void INIT_STARTING(void);
+void INIT_WATCH(void);
+void INIW2(void);
+void INIT_REVERS_CUP(void);
+void INIT_CATCHUP(void);
+void INIT_LEAD(void);
+void INITROAD_VIEW(void);
+void OK_FOUNDIT(void);
+void WATCH_VIEW(void);
+void REV_ROAD_VIEW(void);
+void ROAD_VIEW(void);
+void LEAD_VIEW(void);
+void MOVE_ROAD_CAMERA(void);
+void USE_SLOPE(void);
+void NEXT_ROAD(void);
+void fcrx(void);
+void GETCAMDIR(void);
+void SET_LANE(void);
+void INIT_LANE(void);
+void DO_LANE_POS(void);
+void GET_ROAD_RADY(void);
+void FIND_RACER(void);
+void FR2B(void);
+void FRX(void);
+void FIND_CLOSEST_RACER(void);
+void FCRX(void);
+void FIND_TRACK(void);
+void GET_MAP_CARBLK(void);
+void FIND_MAP(void);
+void INITVIEW1_VIEW(void);
+void CUT_TO_VIEW2(void);
+void INITVIEW2_VIEW(void);
+void INITVIEW3_VIEW(void);
+void FACE_FRONT(void);
+void SECOND_PERSON(void);
+void FFX1(void);
+void SMOOTH_VECTOR(void);
+void SERIOUSLY_NORMALIZE(void);
+void SET_SMOOTH_VIEW(void);
+void ZOOM_CAMERA(void);
+void ZOOM1(void);
+void UPDATE_CAMERA(void);
+void SMOOTH_MATRIX(void);
+void CAMERA_HORIZON_PROJECTION(void);
+void INIT_ATTR_LEG(void);
+void ATTR_INIT_GAMELEG(void);
+void LOAD_ATTR_LEG(void);
 
 /* asm: ATTRWAVE	pbss	ATTRWAVE,1 */
 int ATTRWAVE;
@@ -67,7 +120,7 @@ int ATTRWAVE;
 /* asm: 	.word	BEVHILL_LIST */
 /* asm: 	.word	GCANYON_LIST */
 /* asm: 	.word	CHICAGO_LIST */
-int *VIEWLIST[8] = {
+int *VIEWLIST[] = {
     GGPARK_LIST,
     BEVHILL_LIST,
     GCANYON_LIST,
@@ -85,7 +138,7 @@ int *VIEWLIST[8] = {
 /* asm: 	.word	INITVIEW1_VIEW,17FBh,SMOOTH_VIEW */
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
-int GGPARK_LIST[21] = {
+int GGPARK_LIST[] = {
     INIT_STARTING, 70, ROAD_VIEW,
     INIT_LEAD, 80, LEAD_VIEW,
     INIT_WATCH, 0x1214, 240, WATCH_VIEW,
@@ -100,7 +153,7 @@ int GGPARK_LIST[21] = {
 /* asm: 	.word	INITVIEW1_VIEW,14DF3h,SMOOTH_VIEW */
 /* asm: 	.word	INIT_STARTING,100,ROAD_VIEW */
 /* asm: 	.word	0,0 */
-int BEVHILL_LIST[14] = {
+int BEVHILL_LIST[] = {
     INIT_STARTING, 80, ROAD_VIEW,
     CUT_TO_VIEW2, 0x14AFB, SMOOTH_VIEW,
     INITVIEW1_VIEW, 0x14DF3, SMOOTH_VIEW,
@@ -115,7 +168,7 @@ int BEVHILL_LIST[14] = {
 /* asm: 	.word	INIT_WATCH,2EF00h,240,WATCH_VIEW */
 /* asm: 	.word	CUT_TO_VIEW2,30000h,SMOOTH_VIEW */
 /* asm: 	.word	0,0 */
-int GCANYON_LIST[22] = {
+int GCANYON_LIST[] = {
     INIT_STARTING, 70, ROAD_VIEW,
     INIT_WATCH, 0x2E20A, 220, WATCH_VIEW,
     CUT_TO_VIEW2, 0x2E800, SMOOTH_VIEW,
@@ -132,7 +185,7 @@ int GCANYON_LIST[22] = {
 /* asm: 	.word	INIT_WATCH,3C5F5h,240,WATCH_VIEW */
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
-int CHICAGO_LIST[21] = {
+int CHICAGO_LIST[] = {
     INIT_STARTING, 80, ROAD_VIEW,
     INIT_REVERS_CUP, 60, REV_ROAD_VIEW,
     CUT_TO_VIEW2, 0x3AA0E, SMOOTH_VIEW,
@@ -154,7 +207,7 @@ float ZOOMACCEL = 0.006f;
 /* asm: 	.word	L_LEG5_BEGIN+1,4 */
 /* asm: 	.word	L_LEG9_BEGIN+1,8 */
 /* asm: 	.word	L_LEG11_BEGIN+1,10 */
-int ATTR_WAVETAB[16] = {
+int ATTR_WAVETAB[] = {
     0, 0,
     L_LEG5_BEGIN+1, 4,
     L_LEG9_BEGIN+1, 8,
@@ -199,7 +252,12 @@ void ATTRACT_DELTA(void)
     // asm: 	STI	R0,*+AR7(CUT_PAN)
     // asm: 	CALL	GET_LIST_ADDR
     // asm: 	BR	DELTA_LOOP_ENTRY
-aDELTA_LOOP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ATTRACT_DELTA", 0, 0);
+    UNIMPL();
+}
+
+void aDELTA_LOOP(void)
+{
     // asm: 	LDI	*AR6,AR0
     // asm: 	CALLU	AR0
 ADELTA2:
@@ -232,7 +290,7 @@ NO_OBJINS:
     // asm: 	CALLU	AR0
     // asm: 	LDI	*AR6++,AR5
     // asm: 	B	ADELTA2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ATTRACT_DELTA", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "aDELTA_LOOP", 0, 0);
     UNIMPL();
 }
 
@@ -364,7 +422,12 @@ INIW1:
     // asm: 	BNE	INIW2
     // asm: 	SUBI	4,AR4
     // asm: 	BR	INIW1
-INIW2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_WATCH", 0, 0);
+    UNIMPL();
+}
+
+void INIW2(void)
+{
     // asm: 	PUSH	AR4
     // asm: 	LDI	4,R2
     // asm: 	CALL	FIND_RACER
@@ -415,7 +478,7 @@ INIW2:
     // asm: 	CALL	RESCAN			;This hoses all RX registers
     // asm: 	POPF	R6
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_WATCH", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIW2", 0, 0);
     UNIMPL();
 }
 
@@ -521,7 +584,12 @@ TRY_AGAIN:
     // asm: 	BNE	OK_FOUNDIT
     // asm: 	ADDI	*+AR7(CAMERA_XYZR),AR4
     // asm: 	BR	TRY_AGAIN
-OK_FOUNDIT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INITROAD_VIEW", 0, 0);
+    UNIMPL();
+}
+
+void OK_FOUNDIT(void)
+{
     // asm: 	CALL	GET_ROAD_RADY
     // asm: 	STF	R0,*+AR7(NEW_RADY)
     // asm: 	FLOAT	*+AR4(X),R0
@@ -533,7 +601,7 @@ OK_FOUNDIT:
     // asm: 	FLOAT	*+AR4(Z),R0
     // asm: 	STF	R0,*+AR7(NEW_POSZ)
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INITROAD_VIEW", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OK_FOUNDIT", 0, 0);
     UNIMPL();
 }
 
@@ -707,7 +775,12 @@ MRC1:
     // asm: 	ADDF	*+AR7(NEW_POSY),R0
     // asm: 	STF	R0,*+AR7(NEW_POSY)
     // asm: 	BR	NO_SLOPE
-USE_SLOPE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVE_ROAD_CAMERA", 0, 0);
+    UNIMPL();
+}
+
+void USE_SLOPE(void)
+{
     // ;This code should really never get used
     // asm: 	LDI	AR4,AR2
     // asm: 	ADDI	4,AR2
@@ -748,7 +821,7 @@ NO_SLOPE:
     // asm: 	CALL	NEXT_ROAD
 MRCX:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVE_ROAD_CAMERA", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "USE_SLOPE", 0, 0);
     UNIMPL();
 }
 
@@ -783,9 +856,14 @@ void NEXT_ROAD(void)
     // ;	.endif
     // asm: 	DEC	AR5			;AR5 is the number of road segments before swithching
     // asm: 	BR	NEXT_ROAD		;See if the road segment beyond is even closer
-fcrx:
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXT_ROAD", 0, 0);
+    UNIMPL();
+}
+
+void fcrx(void)
+{
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "fcrx", 0, 0);
     UNIMPL();
 }
 
@@ -985,11 +1063,21 @@ FR2A:
     // asm: 	CMPI	*+AR3(IR1),AR0		;IF THIS CAR IS ALLREADY ON LIST, Then Get NEXT
     // asm: 	BEQ	FR1
     // asm: 	BR	FR2A
-FR2B:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_RACER", 0, 0);
+    UNIMPL();
+}
+
+void FR2B(void)
+{
     // asm: 	LDI	AR4,R4
     // asm: 	LDI	AR0,AR1			;Set the pointer to the cars obj
     // asm: 	BU	FR1
-FRX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FR2B", 0, 0);
+    UNIMPL();
+}
+
+void FRX(void)
+{
     // asm: 	STI	AR1,*+AR3(IR0)
     // asm: 	ADDI	1,IR0
     // asm: 	LDI	R4,R3
@@ -1001,7 +1089,7 @@ FRX:
 FRXX:
     // asm: 	LDI	AR1,AR4
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_RACER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FRX", 0, 0);
     UNIMPL();
 }
 
@@ -1047,10 +1135,15 @@ FCR1:
     // asm: 	LDFGT	R0,R5
     // asm: 	LDIGT	AR0,AR1
     // asm: 	BU	FCR1
-FCRX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_CLOSEST_RACER", 0, 0);
+    UNIMPL();
+}
+
+void FCRX(void)
+{
     // asm: 	LDF	R5,R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_CLOSEST_RACER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FCRX", 0, 0);
     UNIMPL();
 }
 
@@ -1213,7 +1306,12 @@ void FACE_FRONT(void)
     // asm: 	LDI	1,R0			;Don't smooth while spinning
     // asm: 	STI	R0,*+AR7(CUT_PAN)
     // asm: 	BR	FFX
-SECOND_PERSON:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FACE_FRONT", 0, 0);
+    UNIMPL();
+}
+
+void SECOND_PERSON(void)
+{
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,@CAMVIEW
     // asm: 	LDI	*+AR5(CAR_SPIN),R0	;SPINNING?
@@ -1225,7 +1323,12 @@ SECOND_PERSON:
     // asm: 	BNE	FFX1
     // asm: 	NEGF	*+AR5(CARYROT),R0	;If stopped don't use the velocity
     // asm: 	BR	FFX2
-FFX1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SECOND_PERSON", 0, 0);
+    UNIMPL();
+}
+
+void FFX1(void)
+{
     // asm: 	CALL	ARCTANF
 FFX2:
     // asm: 	CALL	NORM_VECTOR
@@ -1255,7 +1358,7 @@ FFX3:
 FFX:
     // asm: 	POP	AR5
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FACE_FRONT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FFX1", 0, 0);
     UNIMPL();
 }
 
@@ -1400,7 +1503,12 @@ ZOOMLP:
     // asm: 	LDI	AR4,AR2		;IN first person
     // asm: 	CALL	OBJ_PULL
     // asm: 	BR	ZOOMX
-ZOOM1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOM_CAMERA", 0, 0);
+    UNIMPL();
+}
+
+void ZOOM1(void)
+{
     // asm: 	ABSF	*+AR7(CAMERA_XYZR+2),R0
     // asm: 	CMPF	100,R0
     // asm: 	BLT	ZOOMX
@@ -1413,7 +1521,7 @@ ZOOM1:
     // asm: 	STI	R0,*+AR7(CUT_PAN)
 ZOOMX:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOM_CAMERA", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOM1", 0, 0);
     UNIMPL();
 }
 
@@ -1451,7 +1559,12 @@ void UPDATE_CAMERA(void)
 loopA:
     // asm: STF	R1,*AR0++
     // asm: 	BR	UPCAMX
-SMOOTH_MATRIX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "UPDATE_CAMERA", 0, 0);
+    UNIMPL();
+}
+
+void SMOOTH_MATRIX(void)
+{
     // asm: 	LDI	8,RC
     // asm: 	RPTB	loop
     // asm: 	LDF	*AR0,R0
@@ -1505,7 +1618,7 @@ UPCAMX:
     // ;no_movment
     // ;	RETS
     // ;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "UPDATE_CAMERA", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOOTH_MATRIX", 0, 0);
     UNIMPL();
 }
 

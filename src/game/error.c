@@ -19,6 +19,13 @@
  * Source module: asm/ERROR.ASM
  */
 
+void ERROR_LOG(void);
+void ERROR_LOG_DISPLAY(void);
+void ONE_LOG(void);
+void LLPPT(void);
+void NOCLEAR(void);
+void NOT_NEXT_PAGE(void);
+
 /* *STRUCT ERROR
  */
 #define ERR_PROC_ID 0
@@ -217,5 +224,88 @@ BIGLOOP:
     // asm: 	LDI	DEFAULT_COLOR,RC
     // asm: 	CALL	_outtextxyc
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ERROR_LOG_DISPLAY", 0, 0);
+    UNIMPL();
+}
+
+void ONE_LOG(void)
+{
+    // asm: 	CALL	_rd_cw
+    // asm: 	LDI	R0,R2
+    // asm: 	PUSH	AR2
+    // asm: 	LDI	@OBJSTRI,AR2
+    // asm: 	CALL	HEX2ASC
+    // asm: 	LDI	R6,R2
+    // asm: 	LDI	R7,R3
+    // asm: 	LDI	@OBJSTRI,AR2
+    // asm: 	LDI	DEFAULT_COLOR,RC
+    // asm: 	CALL	_outtextxyc
+    // asm: 	POP	AR2
+    // asm: 	ADDI	70,R6
+    // asm: 	CMPI	450,R6
+    // asm: 	BLT	ION
+    // asm: 	LDI	10,R6
+    // asm: 	ADDI	10,R7
+ION:
+    // asm: DBU	AR5,ONE_LOG
+    // asm: 	LDI	10,R6
+    // asm: 	ADDI	20,R7
+    // asm: 	INC	AR6
+    // asm: 	DEC	R4
+    // asm: 	BLT	LLPPT
+    // asm: 	BU	BIGLOOP
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ONE_LOG", 0, 0);
+    UNIMPL();
+}
+
+void LLPPT(void)
+{
+    // asm: 	CALL	WAIT_FOR_VBLANK
+    // asm: 	LDI	@_newbut,R1		;debounce
+    // asm: 	TSTB	SW_DIAG,R1		;start to return to main
+    // asm: 	BZ	BOOKX
+    // asm: 	RS	16,R1
+    // asm: 	LDI	R1,R0
+    // asm: 	AND	SW_VIEW1_H|SW_VIEW0_H|SW_VIEW2_H,R0
+    // ;	CMPI	SW_VIEW1_H|SW_VIEW0_H|SW_VIEW2_H,R0
+    // asm: 	BNE	NOCLEAR
+    // asm: 	CLRI	R2
+    // asm: 	SETAUD	AUD_LOG_COUNT
+    // asm: 	CALL	WAIT_FOR_VBLANK
+    // asm: 	CALL	WAIT_FOR_VBLANK
+    // asm: 	CALL	WAIT_FOR_VBLANK
+    // asm: 	BU	ERROR_LOG_DISPLAY
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LLPPT", 0, 0);
+    UNIMPL();
+}
+
+void NOCLEAR(void)
+{
+    // asm: 	TSTB	SW_VIEW2_H,R1
+    // asm: 	BNZ	NOT_NEXT_PAGE
+    // asm: 	PUSH	AR2
+    // asm: 	READAUD	AUD_LOG_COUNT
+    // asm: 	POP	AR2
+    // asm: 	CMPI	R0,AR6
+    // asm: 	BGE	ERRLOG_D
+    // asm: 	BU	NEXT_PAGE
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOCLEAR", 0, 0);
+    UNIMPL();
+}
+
+void NOT_NEXT_PAGE(void)
+{
+    // asm: 	TSTB	SW_VIEW0_H,R1
+    // asm: 	BZ	BOOKX2
+    // asm: 	BU	LLPPT
+    // asm: BOOKX2	LDI	@_newbut,R1		;debounce
+    // asm: 	RS	16,R1
+    // asm: 	TSTB	SW_VIEW0_H,R1		;start to return to main
+    // asm: 	BNZ	BOOKX2
+    // asm: 	RETS
+    // asm: BOOKX	NOT	@_newbut,R0
+    // asm: 	AND	SW_DIAG,R0
+    // asm: 	BNZ	BOOKX
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_NEXT_PAGE", 0, 0);
     UNIMPL();
 }

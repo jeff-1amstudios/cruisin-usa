@@ -9,10 +9,43 @@
 #include "texttab.h"
 #include "text_defs.h"
 #include "discovered_defines.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/TEXT.ASM
  */
+
+void TEXT_INIT(void);
+void TEXT_ADDDS(void);
+void TEXT_ADD1(void);
+void TEXT_ADD(void);
+void SETSMDIGITFONT(void);
+void SETSMDIGITFONTDS(void);
+void SETLGDIGITFONT(void);
+void SETLGDIGITFONTDS(void);
+void SETN43FONT(void);
+void SETN43FONTDS(void);
+void SET40FONT(void);
+void SET40FONTDS(void);
+void SET12FONT(void);
+void SET12FONTDS(void);
+void SET18FONT(void);
+void SET18FONTDS(void);
+void SETFIXEDFONT(void);
+void SETFIXEDFONTDS(void);
+void STRLEN(void);
+void TEXT_OUTPUT(void);
+void NO_CENTER(void);
+void IBO1(void);
+void OUCX(void);
+void NODELETE(void);
+void STRCPY(void);
+void STRCAT(void);
+void FIXEDFONT(void);
+void HIGHLIGHTN(void);
+void NO_CENTERa(void);
+void ALLREG(void);
+void oucXa(void);
 
 /* asm: TEXT_LIST	hibss	TEXT_LIST,NUM_TEXTS*TEXT_SIZ */
 int TEXT_LIST[NUM_TEXTS*TEXT_SIZ];
@@ -487,7 +520,12 @@ TEXTLP:
     // asm: 	RS	1,R0
     // asm: 	SUBI	R0,R2
     // asm: 	B	TEXT_RET
-NO_CENTER:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_OUTPUT", 0, 0);
+    UNIMPL();
+}
+
+void NO_CENTER(void)
+{
     // asm: 	TSTB	TXT_RIGHT,R0
     // asm: 	BZ	NO_RIGHT
     // asm: 	CALL	STRLEN
@@ -520,7 +558,12 @@ REGLP:
     // asm: 	AND	0FFh,R0
     // asm: 	OR	NZR|ZS|TM,R0
     // asm: 	BU	IBO2
-IBO1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_CENTER", 0, 0);
+    UNIMPL();
+}
+
+void IBO1(void)
+{
     // asm: LDI	TM|ZS,R0
 IBO2:
     // asm: 	STI	R0,@_ACNTL
@@ -572,7 +615,12 @@ IBO2:
 NXTCHAR:
     // asm: 	ADDI	R7,R2			;to next X position
     // asm: 	BU	OLP
-OUCX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "IBO1", 0, 0);
+    UNIMPL();
+}
+
+void OUCX(void)
+{
     // asm: 	LDI	@TEXT_FREEZE,R0
     // asm: 	BNZ	ISFROZEN
     // asm: 	LDF	*+AR4(TEXT_POSX),R0
@@ -610,7 +658,12 @@ DELLP:
     // asm: 	LDI	R7,R0
     // asm: 	BNZ	TEXTLP
     // asm: 	B	TXTOUT
-NODELETE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OUCX", 0, 0);
+    UNIMPL();
+}
+
+void NODELETE(void)
+{
     // asm: 	STI	R0,*+AR4(TEXT_TIKS)
 NXTGRP:
     // asm: 	LDI	*AR4,R0
@@ -622,7 +675,7 @@ TXTOUT:
     // asm: 	POP	AR5
     // asm: 	POP	AR4
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_OUTPUT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NODELETE", 0, 0);
     UNIMPL();
 }
 
@@ -831,7 +884,12 @@ void HIGHLIGHTN(void)
     // asm: 	RS	1,R0
     // asm: 	SUBI	R0,R2
     // asm: 	B	text_reta
-NO_CENTERa:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIGHLIGHTN", 0, 0);
+    UNIMPL();
+}
+
+void NO_CENTERa(void)
+{
     // asm: 	TSTB	TXT_RIGHT,R0
     // asm: 	BZ	NO_RIGHTa
     // asm: 	CALL	STRLEN
@@ -873,7 +931,12 @@ REGLPa:
     // asm: 	ASH	-16,R0
     // asm: 	ADDI	R0,R7
     // asm: 	BU	NXTCHARa
-ALLREG:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_CENTERa", 0, 0);
+    UNIMPL();
+}
+
+void ALLREG(void)
+{
     // 	;NOW PLOT OUT THE CHARACTER
     // asm:  	LDI	*+AR4(TEXT_COLOR),R0
     // asm: 	AND	0FFh,R0
@@ -933,9 +996,14 @@ IBO1a:
 NXTCHARa:
     // asm: 	ADDI	R7,R2			;to next X position
     // asm: 	BU	OLPa
-oucXa:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLREG", 0, 0);
+    UNIMPL();
+}
+
+void oucXa(void)
+{
     // asm: 	CALL	POPALL
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIGHLIGHTN", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "oucXa", 0, 0);
     UNIMPL();
 }

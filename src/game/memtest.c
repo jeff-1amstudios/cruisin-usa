@@ -15,6 +15,28 @@
  * Source module: asm/MEMTEST.ASM
  */
 
+void TESTING_CHIPS(void);
+void TEST_STATIC_CHIPS(void);
+void GET_AR4_DIGITS(void);
+void R1R2ZER(void);
+void BLINK_AND_CONTINUE(void);
+void IS_STATIC_ERROR(void);
+void LLED_ON(void);
+void LLED_OFF(void);
+void BLINK_DIGITS(void);
+void TEST_CHIPS(void);
+void CHECK_AS_RAM(void);
+void PLOT_OUTLINE_OF_CHIPS(void);
+void CMOS_CHIP_DISPLAY(void);
+void CMOS_CHIP_TEST(void);
+void CM_ISERROR(void);
+void TEST_BASICS(void);
+void RAMTEST(void);
+void RAMTEST_REAL(void);
+void RAMTEST_END(void);
+void COPY_RAMTEST(void);
+void GENERATE_CHECKSUM(void);
+
 /* *----------------------------------------------------------------------------
  */
 /* asm: RANDI	.word	5A5A5A5Ah */
@@ -22,163 +44,163 @@ int RANDI = 0x5A5A5A5A;
 /* ;EPROM
  */
 /* asm: RTU26	.word	0E00000h,080000h,0000000FFh,0,CHKSUME00 */
-int RTU26[5] = {
+int RTU26[] = {
     0x0E00000, 0x080000, 0x0000000FF, 0, CHKSUME00,
 };
 /* asm: RTU22	.word	0D80000h,080000h,0000000FFh,0,CHKSUMD80 */
-int RTU22[5] = {
+int RTU22[] = {
     0x0D80000, 0x080000, 0x0000000FF, 0, CHKSUMD80,
 };
 /* asm: RTU18	.word	0D00000h,080000h,0000000FFh,0,CHKSUMD00 */
-int RTU18[5] = {
+int RTU18[] = {
     0x0D00000, 0x080000, 0x0000000FF, 0, CHKSUMD00,
 };
 /* asm: RTU14	.word	0C80000h,080000h,0000000FFh,0,CHKSUMC80 */
-int RTU14[5] = {
+int RTU14[] = {
     0x0C80000, 0x080000, 0x0000000FF, 0, CHKSUMC80,
 };
 /* asm: RTU10	.word	0C00000h,080000h,0000000FFh,0,CHKSUMC00 */
-int RTU10[5] = {
+int RTU10[] = {
     0x0C00000, 0x080000, 0x0000000FF, 0, CHKSUMC00,
 };
 /* asm: RTU27	.word	0E00000h,080000h,00000FF00h,-8,CHKSUME01 */
-int RTU27[5] = {
+int RTU27[] = {
     0x0E00000, 0x080000, 0x00000FF00, -8, CHKSUME01,
 };
 /* asm: RTU23	.word	0D80000h,080000h,00000FF00h,-8,CHKSUMD81 */
-int RTU23[5] = {
+int RTU23[] = {
     0x0D80000, 0x080000, 0x00000FF00, -8, CHKSUMD81,
 };
 /* asm: RTU19	.word	0D00000h,080000h,00000FF00h,-8,CHKSUMD01 */
-int RTU19[5] = {
+int RTU19[] = {
     0x0D00000, 0x080000, 0x00000FF00, -8, CHKSUMD01,
 };
 /* asm: RTU15	.word	0C80000h,080000h,00000FF00h,-8,CHKSUMC81 */
-int RTU15[5] = {
+int RTU15[] = {
     0x0C80000, 0x080000, 0x00000FF00, -8, CHKSUMC81,
 };
 /* asm: RTU11	.word	0C00000h,080000h,00000FF00h,-8,CHKSUMC01 */
-int RTU11[5] = {
+int RTU11[] = {
     0x0C00000, 0x080000, 0x00000FF00, -8, CHKSUMC01,
 };
 /* asm: RTU28	.word	0E00000h,080000h,000FF0000h,-16,CHKSUME02 */
-int RTU28[5] = {
+int RTU28[] = {
     0x0E00000, 0x080000, 0x000FF0000, -16, CHKSUME02,
 };
 /* asm: RTU24	.word	0D80000h,080000h,000FF0000h,-16,CHKSUMD82 */
-int RTU24[5] = {
+int RTU24[] = {
     0x0D80000, 0x080000, 0x000FF0000, -16, CHKSUMD82,
 };
 /* asm: RTU20	.word	0D00000h,080000h,000FF0000h,-16,CHKSUMD02 */
-int RTU20[5] = {
+int RTU20[] = {
     0x0D00000, 0x080000, 0x000FF0000, -16, CHKSUMD02,
 };
 /* asm: RTU16	.word	0C80000h,080000h,000FF0000h,-16,CHKSUMC82 */
-int RTU16[5] = {
+int RTU16[] = {
     0x0C80000, 0x080000, 0x000FF0000, -16, CHKSUMC82,
 };
 /* asm: RTU12	.word	0C00000h,080000h,000FF0000h,-16,CHKSUMC02 */
-int RTU12[5] = {
+int RTU12[] = {
     0x0C00000, 0x080000, 0x000FF0000, -16, CHKSUMC02,
 };
 /* asm: RTU29	.word	0E00000h,080000h,0FF000000h,-24,CHKSUME03 */
-int RTU29[5] = {
+int RTU29[] = {
     0x0E00000, 0x080000, 0x0FF000000, -24, CHKSUME03,
 };
 /* asm: RTU25	.word	0D80000h,080000h,0FF000000h,-24,CHKSUMD83 */
-int RTU25[5] = {
+int RTU25[] = {
     0x0D80000, 0x080000, 0x0FF000000, -24, CHKSUMD83,
 };
 /* asm: RTU21	.word	0D00000h,080000h,0FF000000h,-24,CHKSUMD03 */
-int RTU21[5] = {
+int RTU21[] = {
     0x0D00000, 0x080000, 0x0FF000000, -24, CHKSUMD03,
 };
 /* asm: RTU17	.word	0C80000h,080000h,0FF000000h,-24,CHKSUMC83 */
-int RTU17[5] = {
+int RTU17[] = {
     0x0C80000, 0x080000, 0x0FF000000, -24, CHKSUMC83,
 };
 /* asm: RTU13	.word	0C00000h,080000h,0FF000000h,-24,CHKSUMC03 */
-int RTU13[5] = {
+int RTU13[] = {
     0x0C00000, 0x080000, 0x0FF000000, -24, CHKSUMC03,
 };
 /* ;WAVE RAM
  */
 /* asm: RTU72	.word	0A00000h,080000h,00000000Fh,1,1000h,2 */
-int RTU72[6] = {
+int RTU72[] = {
     0x0A00000, 0x080000, 0x00000000F, 1, 0x1000, 2,
 };
 /* asm: RTU69	.word	0A00000h,080000h,0000000F0h,1,1000h,2 */
-int RTU69[6] = {
+int RTU69[] = {
     0x0A00000, 0x080000, 0x0000000F0, 1, 0x1000, 2,
 };
 /* asm: RTU70	.word	0A00000h,080000h,000000F00h,1,1000h,2 */
-int RTU70[6] = {
+int RTU70[] = {
     0x0A00000, 0x080000, 0x000000F00, 1, 0x1000, 2,
 };
 /* asm: RTU71	.word	0A00000h,080000h,00000F000h,1,1000h,2 */
-int RTU71[6] = {
+int RTU71[] = {
     0x0A00000, 0x080000, 0x00000F000, 1, 0x1000, 2,
 };
 /* asm: RTU76	.word	0A00001h,080000h,00000000Fh,1,1000h,2 */
-int RTU76[6] = {
+int RTU76[] = {
     0x0A00001, 0x080000, 0x00000000F, 1, 0x1000, 2,
 };
 /* asm: RTU73	.word	0A00001h,080000h,0000000F0h,1,1000h,2 */
-int RTU73[6] = {
+int RTU73[] = {
     0x0A00001, 0x080000, 0x0000000F0, 1, 0x1000, 2,
 };
 /* asm: RTU74	.word	0A00001h,080000h,000000F00h,1,1000h,2 */
-int RTU74[6] = {
+int RTU74[] = {
     0x0A00001, 0x080000, 0x000000F00, 1, 0x1000, 2,
 };
 /* asm: RTU75	.word	0A00001h,080000h,00000F000h,1,1000h,2 */
-int RTU75[6] = {
+int RTU75[] = {
     0x0A00001, 0x080000, 0x00000F000, 1, 0x1000, 2,
 };
 /* ;COLOR RAM
  */
 /* asm: RTU85	.word	09E0000h,08000h,000FF00h,1,SOFT_WS,1 */
-int RTU85[6] = {
+int RTU85[] = {
     0x09E0000, 0x08000, 0x000FF00, 1, SOFT_WS, 1,
 };
 /* asm: RTU87	.word	09E0000h,08000h,00000FFh,1,SOFT_WS,1 */
-int RTU87[6] = {
+int RTU87[] = {
     0x09E0000, 0x08000, 0x00000FF, 1, SOFT_WS, 1,
 };
 /* ;VIDEO RAM
  */
 /* asm: RTU102	.word	0900000h,020000h,0000000FFh,1,1000h,2 */
-int RTU102[6] = {
+int RTU102[] = {
     0x0900000, 0x020000, 0x0000000FF, 1, 0x1000, 2,
 };
 /* asm: RTU95	.word	0900000h,020000h,00000FF00h,1,1000h,2 */
-int RTU95[6] = {
+int RTU95[] = {
     0x0900000, 0x020000, 0x00000FF00, 1, 0x1000, 2,
 };
 /* asm: RTU94	.word	0900001h,020000h,0000000FFh,1,1000h,2 */
-int RTU94[6] = {
+int RTU94[] = {
     0x0900001, 0x020000, 0x0000000FF, 1, 0x1000, 2,
 };
 /* asm: RTU101	.word	0900001h,020000h,00000FF00h,1,1000h,2 */
-int RTU101[6] = {
+int RTU101[] = {
     0x0900001, 0x020000, 0x00000FF00, 1, 0x1000, 2,
 };
 /* ;FAST RAM
  */
 /* asm: RTU57	.word	0400000h,020000h,00000FF00h,1,SOFT_WS,1 */
-int RTU57[6] = {
+int RTU57[] = {
     0x0400000, 0x020000, 0x00000FF00, 1, SOFT_WS, 1,
 };
 /* asm: RTU56	.word	0400000h,020000h,0000000FFh,1,SOFT_WS,1 */
-int RTU56[6] = {
+int RTU56[] = {
     0x0400000, 0x020000, 0x0000000FF, 1, SOFT_WS, 1,
 };
 /* asm: RTU60	.word	0400000h,020000h,0FF000000h,1,SOFT_WS,1 */
-int RTU60[6] = {
+int RTU60[] = {
     0x0400000, 0x020000, 0x0FF000000, 1, SOFT_WS, 1,
 };
 /* asm: RTU59	.word	0400000h,020000h,000FF0000h,1,SOFT_WS,1 */
-int RTU59[6] = {
+int RTU59[] = {
     0x0400000, 0x020000, 0x000FF0000, 1, SOFT_WS, 1,
 };
 #define ISRAM 0
@@ -374,6 +396,43 @@ int CCHKSUMD83 = ~CHECKSUM_D83;
 int CCHKSUME03 = ~CHECKSUM_E03;
 #endif
 
+void TESTING_CHIPS(void)
+{
+    // asm: 	CHIPMAC	RTU26,240,60, 290,80, "U26",ISROM	;BIG EPROM WORLD
+    // asm: 	CHIPMAC	RTU22,240,85, 290,105,"U22",ISROM
+    // asm: 	CHIPMAC	RTU18,240,110,290,130,"U18",ISROM
+    // asm: 	CHIPMAC	RTU14,240,135,290,155,"U14",ISROM
+    // asm: 	CHIPMAC	RTU10,240,160,290,180,"U10",ISROM
+    // asm: 	CHIPMAC	RTU27,300,60, 350,80, "U27",ISROM	;E0
+    // asm: 	CHIPMAC	RTU23,300,85, 350,105,"U23",ISROM	;D8
+    // asm: 	CHIPMAC	RTU19,300,110,350,130,"U19",ISROM	;D0
+    // asm: 	CHIPMAC	RTU15,300,135,350,155,"U15",ISROM	;C8
+    // asm: 	CHIPMAC	RTU11,300,160,350,180,"U11",ISROM	;C0
+    // asm: 	CHIPMAC	RTU28,360,60, 410,80, "U28",ISROM
+    // asm: 	CHIPMAC	RTU24,360,85, 410,105,"U24",ISROM
+    // asm: 	CHIPMAC	RTU20,360,110,410,130,"U20",ISROM
+    // asm: 	CHIPMAC	RTU16,360,135,410,155,"U16",ISROM
+    // asm: 	CHIPMAC	RTU12,360,160,410,180,"U12",ISROM
+    // asm: 	CHIPMAC	RTU29,420,60, 470,80, "U29",ISROM
+    // asm: 	CHIPMAC	RTU25,420,85, 470,105,"U25",ISROM
+    // asm: 	CHIPMAC	RTU21,420,110,470,130,"U21",ISROM
+    // asm: 	CHIPMAC	RTU17,420,135,470,155,"U17",ISROM
+    // asm: 	CHIPMAC	RTU13,420,160,470,180,"U13",ISROM
+    // asm: 	CHIPMC	RTU69,360,220,40,14,"U69",ISRAM
+    // asm: 	CHIPMC	RTU70,360,240,40,14,"U70",ISRAM
+    // asm: 	CHIPMC	RTU71,360,260,40,14,"U71",ISRAM
+    // asm: 	CHIPMC	RTU72,360,280,40,14,"U72",ISRAM		;WAVE RAM
+    // asm: 	CHIPMC	RTU73,410,220,40,14,"U73",ISRAM
+    // asm: 	CHIPMC	RTU74,410,240,40,14,"U74",ISRAM
+    // asm: 	CHIPMC	RTU75,410,260,40,14,"U75",ISRAM
+    // asm: 	CHIPMC	RTU76,410,280,40,14,"U76",ISRAM		;WAVE RAM
+    // asm: RTU31	;nothing...
+    // asm: CMOS_CHIP
+    // asm: 	CHIPMC	RTU31,130,120,40,18,"U31",ISROM		;CMOS CHIP
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TESTING_CHIPS", 0, 0);
+    UNIMPL();
+}
+
 void TEST_STATIC_CHIPS(void)
 {
     // asm: 	DINT
@@ -433,13 +492,18 @@ void GET_AR4_DIGITS(void)
     // asm: 	BEQ	R3ZERO
     // asm: 	SUBI	'0',R3
     // asm: 	BU	NZERO
-R1R2ZER:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_AR4_DIGITS", 0, 0);
+    UNIMPL();
+}
+
+void R1R2ZER(void)
+{
     // asm: CLRI	R2
 R3ZERO:
     // asm: CLRI	R3
 NZERO:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_AR4_DIGITS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "R1R2ZER", 0, 0);
     UNIMPL();
 }
 
@@ -626,7 +690,12 @@ TESTLP1:
     // ;	CALLEQ	BLINK_AND_CONTINUE
     // 	;CHECKSUM PART
     // asm: 	BU	DN_CHK
-CHECK_AS_RAM:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEST_CHIPS", 0, 0);
+    UNIMPL();
+}
+
+void CHECK_AS_RAM(void)
+{
     // asm: 	LDI	*+AR4(CTT_TESTTAB),AR0
     // asm: 	CMPI	-1,AR0
     // asm: 	BEQ	TEST_CHIPSX
@@ -675,7 +744,7 @@ DN_CHK:
 TEST_CHIPSX:
     // asm: 	CALL	CMOS_CHIP_TEST
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEST_CHIPS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_AS_RAM", 0, 0);
     UNIMPL();
 }
 
@@ -790,7 +859,12 @@ RND2:
     // 	;NO ERROR
     // asm: 	LDI	COL_GREEN,RS
     // asm: 	BU	KKJJ
-CM_ISERROR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CMOS_CHIP_TEST", 0, 0);
+    UNIMPL();
+}
+
+void CM_ISERROR(void)
+{
     // asm: 	CMOS_WP_ON
     // asm: 	LDI	COL_RED,RS
 KKJJ:
@@ -828,7 +902,7 @@ KKJJ:
     // asm: 	POP	R0
     // asm: 	POP	AR4
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CMOS_CHIP_TEST", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CM_ISERROR", 0, 0);
     UNIMPL();
 }
 

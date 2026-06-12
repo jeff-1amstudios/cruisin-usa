@@ -18,6 +18,12 @@
  * Source module: asm/ROADBLCK.ASM
  */
 
+void INIT_RDDEBRIS(void);
+void ADD_RDDEBRIS(void);
+void FREE_RDDEBRIS(void);
+void DEBRIS_SORT(void);
+void DBINSLP(void);
+
 /* asm: ROAD_DEBRIS	.bss	ROAD_DEBRIS,1 */
 int ROAD_DEBRIS;
 /* *----------------------------------------------------------------------------
@@ -150,7 +156,12 @@ DSORTNXT:
     // asm: 	NOP
     // 	;---->	BNZD	IDB1		;GO LOOP...
     // asm: 	B	IDBX			;WERE DONE, NULL LIST
-DBINSLP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBRIS_SORT", 0, 0);
+    UNIMPL();
+}
+
+void DBINSLP(void)
+{
     // asm: 	LDI	*+AR4(OUSR1),R0		;DO WE HAVE A LINK
     // asm: 	LDI	R0,AR5
     // asm: 	BZ	GETRK0			;NO, GET A NEW ONE
@@ -217,6 +228,6 @@ IDB1:
     // 	;---->	BNED	DBINSLP
 IDBX:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBRIS_SORT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DBINSLP", 0, 0);
     UNIMPL();
 }

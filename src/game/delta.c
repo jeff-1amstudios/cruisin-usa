@@ -19,6 +19,10 @@
  * Source module: asm/DELTA.ASM
  */
 
+void DELTA_OINIT(void);
+void DDYNA_INIT(void);
+void DRONE_DANI_PROC(void);
+
 /* *----------------------------------------------------------------------------
 *DRONE DYNA ANIMATION PROCESS
 *

@@ -21,6 +21,26 @@
  * Source module: asm/COMM.ASM
  */
 
+void COMM_INIT(void);
+void COMM_ENABLE_INT2(void);
+void COMM_MASTER_SEND_SYNC(void);
+void SETONE(void);
+void CLRONE(void);
+void COMM_ROUTINE(void);
+void COMM_HOLDFORA2D(void);
+void COMM_MASTER(void);
+void CM1(void);
+void CM2(void);
+void CM3(void);
+void COMM_MASTER_ERROR(void);
+void COMM_IRQ(void);
+void COMM_SLAVE(void);
+void CS1(void);
+void CS2(void);
+void CS3(void);
+void CSERROR1(void);
+void COMM_SLAVE_ERROR(void);
+
 #define TIME_DELAY 18
 /* asm: COMM_MASTER_ERROR_CNT	fbss	COMM_MASTER_ERROR_CNT,1 */
 int COMM_MASTER_ERROR_CNT;
@@ -189,7 +209,12 @@ void COMM_ROUTINE(void)
     // asm: 	LDI	@DIPRAM,R0		;CHECK FOR COMMUNICATIONS
     // asm: 	TSTB	DIP_COMMP,R0
     // asm: 	RETSNZ				;NO
-COMM_HOLDFORA2D:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_ROUTINE", 0, 0);
+    UNIMPL();
+}
+
+void COMM_HOLDFORA2D(void)
+{
     // asm: 	LDI	@RDPOT,R1
     // asm: 	CMPI	3,R1
     // asm: 	BNZ	COMM_HOLDFORA2D
@@ -200,7 +225,7 @@ COMM_HOLDFORA2D:
     // *
     // *MASTER MUST ALWAYS 0 <- C_IRQE
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_ROUTINE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_HOLDFORA2D", 0, 0);
     UNIMPL();
 }
 
@@ -212,7 +237,12 @@ void COMM_MASTER(void)
     // asm: 	LDI	@ONEFLAG,R0
     // asm: 	BZ	CM1
     // asm: 	RETS		      		;WE'RE IN ONE PLAYER, EXIT
-CM1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_MASTER", 0, 0);
+    UNIMPL();
+}
+
+void CM1(void)
+{
     // asm: 	LDI	@SEND_BUFFER_A_LEN,R6	;16 bits
     // asm: 	LDI	@SEND_BUFFER_AI,AR2
     // asm: 	CMPI	0,R6
@@ -243,13 +273,23 @@ WTLPMI:
     // asm: 	STI	R0,@TRANSMISSION_ACTIVE
     // asm: 	STI	R0,@TRANSMISSION_DEAD
     // asm: 	RETS
-CM2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CM1", 0, 0);
+    UNIMPL();
+}
+
+void CM2(void)
+{
     // asm: 	TSTB	C_C0,R0	      		;WAIT FOR SLAVE READY SIGNAL
     // asm: 	BNZ	CM3			;GOT IT...
     // asm: 	CMPI	@INFRAMES,R3		;WAITING TOO LONG?
     // asm: 	BGT	WTLPMI			;NO, KEEP LOOPING
     // asm: 	B	CMERRORDEAD		;YES, ITS DEAD...
-CM3:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CM2", 0, 0);
+    UNIMPL();
+}
+
+void CM3(void)
+{
     // asm: 	LDI	0,R0
     // asm: 	STI	R0,@TRANSMISSION_DEAD
     // asm: 	LDI	1,R0
@@ -554,7 +594,12 @@ CMERRORDEAD:
     // asm: 		LDI	1,R0		      	;YES OTHER GAME IS DEAD, LEAVE...
     // asm: 		STI	R0,@TRANSMISSION_DEAD
     // asm: 		B	COMM_MASTER_ERROR	;WENT DEAD...
-COMM_MASTER_ERROR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CM3", 0, 0);
+    UNIMPL();
+}
+
+void COMM_MASTER_ERROR(void)
+{
     // asm: 	LDP	@COMM_MASTER_TRANSES
     // asm: 	INCM	@COMM_MASTER_ERROR_CNT
     // asm: 	SETDP
@@ -564,7 +609,7 @@ COMM_MASTER_ERROR:
     // ;	LS	16,R0
     // ;	STI	R0,*AR5
     // asm: 	B	COMM_MASTER_ERR_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_MASTER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_MASTER_ERROR", 0, 0);
     UNIMPL();
 }
 
@@ -660,7 +705,12 @@ void COMM_SLAVE(void)
     // asm: 	LDI	@ONEFLAG,R0
     // asm: 	BZ	CS1
     // asm: 	RETS				;WE'RE IN ONE PLAYER, EXIT
-CS1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_SLAVE", 0, 0);
+    UNIMPL();
+}
+
+void CS1(void)
+{
     // asm: 	TSTB	*AR5,R5
     // asm: 	BZ	CS2			;C2=1, MASTER IN ONE PLAYER, EXIT
     // asm: 	LDI	0,R0
@@ -668,7 +718,12 @@ CS1:
     // asm: 	STI	R0,@TRANSMISSION_ACTIVE
     // asm: 	RETS
     // *SYNC UP
-CS2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CS1", 0, 0);
+    UNIMPL();
+}
+
+void CS2(void)
+{
     // asm: 	LDI	120,R3			;WAIT 120 FRAMES IF NOT DEAD
     // asm: 	LDI	@TRANSMISSION_DEAD,R0 	;GET TIMEOUT VALUES
     // asm: 	BZ	CS20
@@ -700,7 +755,12 @@ WTLPI:
     // asm: 	BZ	CS3			;NO
     // asm: 	RETS				;YES, LEAVE
     // *END SYNC
-CS3:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CS2", 0, 0);
+    UNIMPL();
+}
+
+void CS3(void)
+{
     // asm: 	DINT
     // *SET DATA CONTROL TO RECEIVE		;CM_A 1
     // asm: 	LDI	C_RCV,R0
@@ -966,7 +1026,12 @@ COMM_SLAVE_ERR_X:
     // asm: 	STI	R0,@COMMFLAG		;COMMUNICATIONS IS OVER
     // asm: 	EINT
     // asm: 	RETS
-CSERROR1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CS3", 0, 0);
+    UNIMPL();
+}
+
+void CSERROR1(void)
+{
     // asm: B COMM_SLAVE_ERROR ;LENGTH TIMEOUT
 CSERROR2:
     // asm: B COMM_SLAVE_ERROR ;LENGTH TIMEOUT
@@ -990,13 +1055,18 @@ CSERRORDEAD:
     // asm: 		LDI	1,R0		      	;YES OTHER GAME IS DEAD, LEAVE...
     // asm: 		STI	R0,@TRANSMISSION_DEAD
     // asm: 		B	COMM_SLAVE_ERROR	;WENT DEAD...
-COMM_SLAVE_ERROR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CSERROR1", 0, 0);
+    UNIMPL();
+}
+
+void COMM_SLAVE_ERROR(void)
+{
     // asm: 	LDP	@COMM_SLAVE_ERROR_CNT
     // asm: 	INCM	@COMM_SLAVE_ERROR_CNT
     // asm: 	SETDP
     // asm: 	LDI	0,R0
     // asm: 	STI	R0,@RBUFF_LEN	   	;RECEIVE BUFFER CLEARED	ON ERROR
     // asm: 	BU	COMM_SLAVE_ERR_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_SLAVE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_SLAVE_ERROR", 0, 0);
     UNIMPL();
 }

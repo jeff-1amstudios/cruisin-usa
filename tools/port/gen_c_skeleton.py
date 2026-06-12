@@ -42,6 +42,7 @@ STANDALONE_DATA_DIRECTIVE_RE = re.compile(
     r"^\s*(\.word|\.float|\.string|\.bss|\.usect|fbss|pbss|hibss|lobss|phibss)\b(.*)$",
     re.IGNORECASE,
 )
+CPP_DEFINE_RE = re.compile(r"^\s*#\s*define\s+([_A-Za-z][_A-Za-z0-9]*)\b")
 
 CONTROL_KEYWORDS = {
     ".if",
@@ -154,6 +155,12 @@ class DefineEntry:
 
 
 @dataclass
+class LabelEntry:
+    name: str
+    addr: int
+
+
+@dataclass
 class StringVariable:
     name: str
     c_string: str
@@ -192,6 +199,15 @@ class SymbolInfo:
     c_type: str = ""
     array_expr: str | None = None
     expr: str | None = None
+
+
+@dataclass
+class TypeOverride:
+    name: str
+    c_type: str
+    array_expr: str | None = None
+    omit: bool = False
+    force_function: bool = False
 
 
 def sanitize_identifier(name: str) -> str:
@@ -289,6 +305,72 @@ def parse_discovered_defines_file(defines_path: Path) -> dict[str, DefineEntry]:
     return out
 
 
+def parse_type_overrides_file(overrides_path: Path) -> dict[str, TypeOverride]:
+    out: dict[str, TypeOverride] = {}
+    if not overrides_path.exists():
+        return out
+    for raw in overrides_path.read_text(errors="ignore").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or line.startswith("//"):
+            continue
+        if line.startswith("-"):
+            name = line[1:].strip()
+            if re.fullmatch(r"[_A-Za-z.$?@][_A-Za-z0-9.$?@]*", name):
+                out[name] = TypeOverride(name=name, c_type="", omit=True)
+            continue
+        function_match = re.fullmatch(r"(?P<name>[_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\(\)", line)
+        if function_match:
+            name = function_match.group("name")
+            out[name] = TypeOverride(name=name, c_type="", force_function=True)
+            continue
+        if line.endswith(";"):
+            line = line[:-1].rstrip()
+        match = re.match(
+            r"^(?P<prefix>.*?)(?P<name>[_A-Za-z.$?@][_A-Za-z0-9.$?@]*)(?:\[(?P<array>[^\]]*)\])?$",
+            line,
+        )
+        if not match:
+            continue
+        c_type = match.group("prefix").strip()
+        name = match.group("name")
+        if not c_type:
+            continue
+        if not re.search(r"[A-Za-z_]", c_type):
+            continue
+        if re.search(r"[^A-Za-z0-9_\s*]", c_type):
+            continue
+        array_expr = match.group("array")
+        out[name] = TypeOverride(name=name, c_type=c_type, array_expr=array_expr.strip() if array_expr is not None else None)
+    return out
+
+
+def is_omitted_symbol(name: str, type_overrides: dict[str, TypeOverride] | None) -> bool:
+    if type_overrides is None:
+        return False
+    override = type_overrides.get(name)
+    return bool(override is not None and override.omit)
+
+
+def apply_type_override(symbol: SymbolInfo, type_overrides: dict[str, TypeOverride] | None) -> SymbolInfo:
+    if type_overrides is None:
+        return symbol
+    override = type_overrides.get(symbol.name)
+    if override is None or override.omit:
+        return symbol
+    if override.force_function:
+        return SymbolInfo(name=symbol.name, kind="function", module=symbol.module)
+    if symbol.kind != "variable":
+        return symbol
+    return SymbolInfo(
+        name=symbol.name,
+        kind=symbol.kind,
+        module=symbol.module,
+        c_type=override.c_type,
+        array_expr=symbol.array_expr if override.array_expr is None else override.array_expr,
+        expr=symbol.expr,
+    )
+
+
 def lookup_address_map_symbol(address_map: dict[str, int], name: str, module: str) -> int | None:
     if name in address_map:
         return address_map[name]
@@ -310,17 +392,34 @@ def parse_storage_size(rest: str) -> str:
 def variable_declaration(name: str, c_type: str, array_expr: str | None = None, is_extern: bool = False) -> str:
     ident = sanitize_identifier(name)
     prefix = "extern " if is_extern else ""
+    if "(*)" in c_type:
+        if array_expr is None or array_expr.strip() in {"", "0", "1"}:
+            return f"{prefix}{c_type.replace('(*)', f'(*{ident})')};"
+        return f"{prefix}{c_type.replace('(*)', f'(*{ident}[{array_expr.strip()}])')};"
     sep = "" if c_type.endswith("*") else " "
     if array_expr is None or array_expr.strip() in {"", "0", "1"}:
         return f"{prefix}{c_type}{sep}{ident};"
     return f"{prefix}{c_type}{sep}{ident}[{array_expr.strip()}];"
 
 
-def variable_definition_prefix(name: str, c_type: str, array_expr: str | None = None) -> str:
+def variable_definition_prefix(
+    name: str,
+    c_type: str,
+    array_expr: str | None = None,
+    omit_array_size: bool = False,
+) -> str:
     ident = sanitize_identifier(name)
+    if "(*)" in c_type:
+        if array_expr is None or array_expr.strip() in {"", "0", "1"}:
+            return c_type.replace("(*)", f"(*{ident})")
+        if omit_array_size:
+            return c_type.replace("(*)", f"(*{ident}[])")
+        return c_type.replace("(*)", f"(*{ident}[{array_expr.strip()}])")
     sep = "" if c_type.endswith("*") else " "
     if array_expr is None or array_expr.strip() in {"", "0", "1"}:
         return f"{c_type}{sep}{ident}"
+    if omit_array_size:
+        return f"{c_type}{sep}{ident}[]"
     return f"{c_type}{sep}{ident}[{array_expr.strip()}]"
 
 
@@ -348,7 +447,11 @@ def strip_macro_definition_blocks(lines: list[str]) -> list[str]:
     return out
 
 
-def collect_module_storage_defines(src_path: Path, address_map: dict[str, int]) -> list[StorageVariable]:
+def collect_module_storage_defines(
+    src_path: Path,
+    address_map: dict[str, int],
+    type_overrides: dict[str, TypeOverride] | None = None,
+) -> list[StorageVariable]:
     lines = strip_macro_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     module = src_path.stem.upper()
     out: list[StorageVariable] = []
@@ -359,6 +462,8 @@ def collect_module_storage_defines(src_path: Path, address_map: dict[str, int]) 
         if not storage_match:
             continue
         _directive, storage_name, rest = storage_match.groups()
+        if is_omitted_symbol(storage_name, type_overrides):
+            continue
         if storage_name in seen:
             continue
         storage_addr = lookup_address_map_symbol(address_map, storage_name, module)
@@ -575,12 +680,85 @@ def parse_numeric_data_line(raw: str, label_name: str | None = None) -> tuple[li
 
 
 def is_top_level_data_line(raw: str) -> bool:
+    code, _comment = split_comment(raw)
+    if STANDALONE_STORAGE_FULL_RE.match(code):
+        return True
     if not is_flush_left(raw):
         return False
     if DATA_LABEL_RE.match(raw):
         return True
     if parse_sptr_label(raw) is not None:
         return True
+    return False
+
+
+def previous_significant_index(lines: list[str], start_idx: int) -> int | None:
+    idx = start_idx - 1
+    while idx >= 0:
+        if not is_comment_or_blank(lines[idx]):
+            return idx
+        idx -= 1
+    return None
+
+
+def next_significant_index(lines: list[str], start_idx: int) -> int | None:
+    idx = start_idx
+    while idx < len(lines):
+        if not is_comment_or_blank(lines[idx]):
+            return idx
+        idx += 1
+    return None
+
+
+def line_ends_function(raw: str) -> bool:
+    is_instr, code = classify_instruction_text(raw)
+    if not is_instr:
+        return False
+    mnemonic = code.split(None, 1)[0].upper()
+    return mnemonic in FUNCTION_END_MNEMONICS
+
+
+def line_is_data_context(raw: str) -> bool:
+    code, _comment = split_comment(raw)
+    stripped = code.strip()
+    if not stripped:
+        return False
+    if parse_sptr_label(raw) is not None:
+        return True
+    if STANDALONE_STORAGE_RE.match(stripped):
+        return True
+    if DATA_LABEL_RE.match(raw):
+        return True
+    if parse_numeric_directive(stripped) is not None:
+        return True
+    if stripped.lower().startswith("romdata"):
+        return True
+    return False
+
+
+def bare_label_has_code_body(lines: list[str], start_idx: int) -> bool:
+    probe_idx = start_idx + 1
+    while probe_idx < len(lines):
+        probe_raw = lines[probe_idx]
+        if is_comment_or_blank(probe_raw):
+            probe_idx += 1
+            continue
+        if is_top_level_data_line(probe_raw):
+            return False
+        label_match = LABEL_RE.match(probe_raw)
+        if label_match:
+            is_instr, _code = classify_instruction_text(label_match.group(2))
+            return is_instr
+        inline_label_match = INLINE_LABEL_RE.match(probe_raw)
+        if inline_label_match and is_flush_left(probe_raw) and not looks_like_instruction_token(inline_label_match.group(1)):
+            is_instr, _code = classify_instruction_text(f"{inline_label_match.group(2)}{inline_label_match.group(3)}")
+            return is_instr
+        bare_label_match = BARE_LABEL_RE.match(probe_raw)
+        if bare_label_match and is_flush_left(probe_raw) and not looks_like_instruction_token(bare_label_match.group(1)):
+            probe_idx += 1
+            continue
+        is_instr, _code = classify_instruction_text(probe_raw)
+        return is_instr
     return False
 
 
@@ -662,7 +840,13 @@ def collect_branch_targets(lines: list[str]) -> set[str]:
     return targets
 
 
-def collect_top_level_functions(lines: list[str], branch_targets: set[str]) -> list[FunctionBlock]:
+def collect_top_level_functions(
+    lines: list[str],
+    branch_targets: set[str],
+    force_function_names: set[str] | None = None,
+) -> list[FunctionBlock]:
+    if force_function_names is None:
+        force_function_names = set()
     functions: list[FunctionBlock] = []
     current: FunctionBlock | None = None
     seen_separator = False
@@ -673,7 +857,7 @@ def collect_top_level_functions(lines: list[str], branch_targets: set[str]) -> l
             current = None
             continue
 
-        standalone_data, _next_idx = collect_standalone_labeled_data(lines, idx)
+        standalone_data, _next_idx = collect_standalone_labeled_data(lines, idx, branch_targets)
         if standalone_data is not None:
             current = None
             seen_separator = False
@@ -684,7 +868,9 @@ def collect_top_level_functions(lines: list[str], branch_targets: set[str]) -> l
             label = label_match.group(1)
             start_new = False
 
-            if current is None:
+            if label in force_function_names:
+                start_new = True
+            elif current is None:
                 start_new = True
             elif seen_separator:
                 start_new = True
@@ -713,6 +899,28 @@ def collect_top_level_functions(lines: list[str], branch_targets: set[str]) -> l
         inline_label_match = INLINE_LABEL_RE.match(raw)
         if inline_label_match:
             label = inline_label_match.group(1)
+            if is_flush_left(raw) and label in force_function_names:
+                current = FunctionBlock(name=label, start_index=idx, end_index=idx)
+                current.labels.add(label)
+                current.lines.append(f"{label}: {inline_label_match.group(2)}{inline_label_match.group(3)}")
+                current.end_index = idx
+                functions.append(current)
+                seen_separator = False
+                continue
+            if is_flush_left(raw) and not looks_like_instruction_token(label):
+                prev_idx = previous_significant_index(lines, idx)
+                prev_raw = lines[prev_idx] if prev_idx is not None else ""
+                prev_ends = prev_idx is None or seen_separator or line_ends_function(prev_raw)
+                prev_is_data = prev_idx is not None and line_is_data_context(prev_raw)
+                is_instr, _code = classify_instruction_text(f"{inline_label_match.group(2)}{inline_label_match.group(3)}")
+                if is_instr and (prev_ends or (current is None and not prev_is_data)):
+                    current = FunctionBlock(name=label, start_index=idx, end_index=idx)
+                    current.labels.add(label)
+                    current.lines.append(f"{label}: {inline_label_match.group(2)}{inline_label_match.group(3)}")
+                    current.end_index = idx
+                    functions.append(current)
+                    seen_separator = False
+                    continue
             if is_flush_left(raw) and not looks_like_instruction_token(label) and label in branch_targets and current is not None:
                 current.labels.add(label)
                 current.lines.append(f"{label}: {inline_label_match.group(2)}{inline_label_match.group(3)}")
@@ -722,6 +930,29 @@ def collect_top_level_functions(lines: list[str], branch_targets: set[str]) -> l
         bare_label_match = BARE_LABEL_RE.match(raw)
         if bare_label_match:
             label = bare_label_match.group(1)
+            if is_flush_left(raw) and label in force_function_names:
+                current = FunctionBlock(name=label, start_index=idx, end_index=idx)
+                current.labels.add(label)
+                current.lines.append(f"{label}:")
+                current.end_index = idx
+                functions.append(current)
+                seen_separator = False
+                continue
+            if is_flush_left(raw) and not looks_like_instruction_token(label) and bare_label_has_code_body(lines, idx):
+                prev_idx = previous_significant_index(lines, idx)
+                prev_raw = lines[prev_idx] if prev_idx is not None else ""
+                prev_ends = prev_idx is None or seen_separator or line_ends_function(prev_raw)
+                prev_is_data = prev_idx is not None and line_is_data_context(prev_raw)
+                if prev_ends or (current is None and not prev_is_data):
+                    if current is None or prev_ends:
+                        current = FunctionBlock(name=label, start_index=idx, end_index=idx)
+                        functions.append(current)
+                    if current is not None:
+                        current.labels.add(label)
+                        current.lines.append(f"{label}:")
+                        current.end_index = idx
+                        seen_separator = False
+                        continue
             if is_flush_left(raw) and label in branch_targets and current is not None:
                 current.labels.add(label)
                 current.lines.append(f"{label}:")
@@ -860,12 +1091,22 @@ def infer_word_symbol(var: WordVariable, module: str, symbol_table: dict[str, Sy
             return SymbolInfo(name=var.name, kind="define", module=module, expr=rendered_value)
         if symbol_table is not None:
             target = symbol_table.get(value)
+            if target is not None and target.kind == "function":
+                return SymbolInfo(name=var.name, kind="variable", module=module, c_type="void (*)(void)")
             if target is not None and target.kind == "variable" and target.c_type:
                 return SymbolInfo(name=var.name, kind="variable", module=module, c_type=f"{target.c_type} *")
         return SymbolInfo(name=var.name, kind="variable", module=module, c_type="int")
 
     if symbol_table is not None and all(parse_int_token(value) is None for value in var.values):
         targets = [symbol_table.get(value) for value in var.values]
+        if all(target is not None and target.kind == "function" for target in targets):
+            return SymbolInfo(
+                name=var.name,
+                kind="variable",
+                module=module,
+                c_type="void (*)(void)",
+                array_expr=str(len(var.values)),
+            )
         if all(target is not None and target.kind == "variable" and target.c_type for target in targets):
             c_types = {target.c_type for target in targets if target is not None}
             if len(c_types) == 1:
@@ -901,7 +1142,21 @@ def infer_storage_symbol(name: str, size_expr: str, module: str) -> SymbolInfo:
 
 def render_numeric_variable(var: NumericVariable, symbol_table: dict[str, SymbolInfo] | None = None) -> list[str]:
     out: list[str] = []
-    symbol = infer_numeric_symbol(var, "", symbol_table)
+    inferred_symbol = infer_numeric_symbol(var, "", symbol_table)
+    existing_symbol = symbol_table.get(var.name) if symbol_table is not None else None
+    if existing_symbol is None:
+        symbol = inferred_symbol
+    elif existing_symbol.kind == "define" or inferred_symbol.kind == "define":
+        symbol = existing_symbol if existing_symbol.kind == "define" else inferred_symbol
+    else:
+        symbol = SymbolInfo(
+            name=existing_symbol.name,
+            kind=existing_symbol.kind,
+            module=existing_symbol.module,
+            c_type=inferred_symbol.c_type if existing_symbol.c_type == "int" and inferred_symbol.c_type != "int" else existing_symbol.c_type,
+            array_expr=existing_symbol.array_expr if existing_symbol.array_expr is not None else inferred_symbol.array_expr,
+            expr=existing_symbol.expr,
+        )
     if symbol.kind == "define" and symbol.expr is not None and symbol.expr == var.name[:-1] and var.name.endswith("I"):
         return out
     if var.asm_lines:
@@ -933,7 +1188,7 @@ def render_numeric_variable(var: NumericVariable, symbol_table: dict[str, Symbol
                 else:
                     structured_rows.append(f"    {rendered_values},")
         if structured_rows:
-            prefix = variable_definition_prefix(var.name, symbol.c_type, symbol.array_expr)
+            prefix = variable_definition_prefix(var.name, symbol.c_type, symbol.array_expr, omit_array_size=True)
             out.append(f"{prefix} = {{")
             out.extend(structured_rows)
             out.append("};")
@@ -942,7 +1197,7 @@ def render_numeric_variable(var: NumericVariable, symbol_table: dict[str, Symbol
                 values = ", ".join(format_float_expr(value) for value in var.values)
             else:
                 values = ", ".join(convert_expr(value) for value in var.values)
-            prefix = variable_definition_prefix(var.name, symbol.c_type, symbol.array_expr)
+            prefix = variable_definition_prefix(var.name, symbol.c_type, symbol.array_expr, omit_array_size=True)
             out.append(f"{prefix} = {{ {values} }};")
     return out
 
@@ -983,6 +1238,24 @@ def render_discovered_defines_header(defines: list[DefineEntry]) -> str:
     return "\n".join(out)
 
 
+def render_discovered_labels_header(labels: list[LabelEntry]) -> str:
+    out = [
+        "#ifndef DISCOVERED_LABELS_H",
+        "#define DISCOVERED_LABELS_H",
+        "",
+        "/* Generated from tools/ida/address.map. */",
+        "",
+    ]
+    for entry in labels:
+        out.append(f"#define {entry.name} 0x{entry.addr:08X}")
+    out.extend([
+        "",
+        "#endif /* DISCOVERED_LABELS_H */",
+        "",
+    ])
+    return "\n".join(out)
+
+
 def render_string_variable(var: StringVariable) -> list[str]:
     return [f"{variable_definition_prefix(var.name, 'const char *')} = {var.c_string};"]
 
@@ -1006,7 +1279,24 @@ def filter_renderable_asm_lines(lines: list[str]) -> list[str]:
     return [line for line in lines if line.strip() and not is_comment_line(line)]
 
 
-def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[StandaloneLabeledData | None, int]:
+def render_local_function_prototypes(functions: list[FunctionBlock]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for fn in functions:
+        if fn.name in seen:
+            continue
+        out.append(f"void {sanitize_identifier(fn.name)}(void);")
+        seen.add(fn.name)
+    return out
+
+
+def collect_standalone_labeled_data(
+    lines: list[str],
+    start_idx: int,
+    branch_targets: set[str] | None = None,
+) -> tuple[StandaloneLabeledData | None, int]:
+    if branch_targets is None:
+        branch_targets = set()
     raw = lines[start_idx]
     label_match = LABEL_RE.match(raw)
     if label_match:
@@ -1020,6 +1310,8 @@ def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[S
         if not bare_label_match or not is_flush_left(raw):
             return None, start_idx
         label = bare_label_match.group(1)
+        if label in branch_targets:
+            return None, start_idx
         if looks_like_instruction_token(label):
             probe_idx = start_idx + 1
             next_data_like = False
@@ -1090,12 +1382,44 @@ def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[S
     return None, start_idx
 
 
+def collect_source_label_names(lines: list[str]) -> set[str]:
+    labels: set[str] = set()
+    for raw in lines:
+        code, _comment = split_comment(raw)
+        if not code.strip():
+            continue
+        storage_label_match = STANDALONE_STORAGE_LABEL_RE.match(code)
+        if storage_label_match:
+            labels.add(storage_label_match.group(1))
+            continue
+        label_match = LABEL_RE.match(code)
+        if label_match:
+            labels.add(label_match.group(1))
+            continue
+        if not is_flush_left(raw):
+            continue
+        bare_label_match = BARE_LABEL_RE.match(code)
+        if bare_label_match:
+            labels.add(bare_label_match.group(1))
+            continue
+        data_match = DATA_LABEL_RE.match(code)
+        if data_match:
+            labels.add(data_match.group(1))
+            continue
+        inline_label_match = INLINE_LABEL_RE.match(code)
+        if inline_label_match and not looks_like_instruction_token(inline_label_match.group(1)):
+            labels.add(inline_label_match.group(1))
+    return labels
+
+
 def render_top_level_items(
     lines: list[str],
     functions: list[FunctionBlock],
+    branch_targets: set[str],
     address_map: dict[str, int],
     module: str,
     symbol_table: dict[str, SymbolInfo] | None = None,
+    type_overrides: dict[str, TypeOverride] | None = None,
     strip_asm_comment_markers: bool = False,
     emit_set_asm_comments: bool = False,
     emit_set_defines: bool = True,
@@ -1165,13 +1489,21 @@ def render_top_level_items(
         storage_match = STANDALONE_STORAGE_FULL_RE.match(code)
         if storage_match:
             directive, label, rest = storage_match.groups()
+            if is_omitted_symbol(label, type_overrides):
+                pending_comment_lines = []
+                idx += 1
+                continue
             flush_pending_comments()
             out.extend(render_storage_variable(label, parse_storage_size(rest), f"{directive}\t{label}{rest}"))
             idx += 1
             continue
 
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets)
         if standalone_data is not None:
+            if is_omitted_symbol(standalone_data.name, type_overrides):
+                pending_comment_lines = []
+                idx = next_idx
+                continue
             flush_pending_comments()
             directive_lower = standalone_data.directive.lower()
             if directive_lower in {".word", ".intdata", ".float"}:
@@ -1247,6 +1579,10 @@ def render_top_level_items(
             continue
 
         label, directive, rest = data_match.groups()
+        if is_omitted_symbol(label, type_overrides):
+            pending_comment_lines = []
+            idx += 1
+            continue
         directive_lower = directive.lower()
         if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
             flush_pending_comments()
@@ -1378,26 +1714,37 @@ def render_module(
     owner_headers: dict[str, str],
     own_header: str | None,
     discovered_header_needed: bool = False,
+    type_overrides: dict[str, TypeOverride] | None = None,
+    discovered_labels_needed: bool = False,
 ) -> str:
     lines = strip_macro_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     is_equ_source = src_path.suffix.upper() == ".EQU"
+    force_function_names = {
+        name
+        for name, override in (type_overrides or {}).items()
+        if override.force_function
+    }
     headers = parse_include_headers(lines)
     if own_header is not None:
         headers.append(own_header)
     if discovered_header_needed:
         headers.append("discovered_defines.h")
+    if discovered_labels_needed:
+        headers.append("discovered_labels.h")
     headers.extend(sorted(collect_word_symbol_dependencies(lines, owner_headers, src_path.stem.upper())))
     headers = list(dict.fromkeys(headers))
     branch_targets = collect_branch_targets(lines)
-    functions = collect_top_level_functions(lines, branch_targets)
+    functions = collect_top_level_functions(lines, branch_targets, force_function_names)
     attach_leading_context(lines, functions)
-    symbol_table = collect_module_symbol_table(src_path, address_map)
+    symbol_table = collect_module_symbol_table(src_path, address_map, type_overrides)
     top_level_items = render_top_level_items(
         lines,
         functions,
+        branch_targets,
         address_map,
         src_path.stem.upper(),
         symbol_table,
+        type_overrides,
         strip_asm_comment_markers=is_equ_source,
         emit_set_asm_comments=is_equ_source,
         emit_set_defines=not is_equ_source,
@@ -1412,6 +1759,10 @@ def render_module(
     out.append("/*")
     out.append(f" * Source module: asm/{src_path.name}")
     out.append(" */")
+    local_prototypes = render_local_function_prototypes(functions)
+    if local_prototypes:
+        out.append("")
+        out.extend(local_prototypes)
     out.append("")
 
     if top_level_items:
@@ -1477,6 +1828,7 @@ def extract_reference_text(raw: str) -> str:
 
 def collect_defined_data_symbols(lines: list[str]) -> set[str]:
     defined: set[str] = set()
+    branch_targets = collect_branch_targets(lines)
     idx = 0
     while idx < len(lines):
         raw = lines[idx]
@@ -1494,7 +1846,7 @@ def collect_defined_data_symbols(lines: list[str]) -> set[str]:
             defined.add(data_match.group(1))
             idx += 1
             continue
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets)
         if standalone_data is not None:
             defined.add(standalone_data.name)
             idx = next_idx
@@ -1567,13 +1919,22 @@ def collect_referenced_define_symbols(lines: list[str], define_names: set[str]) 
     return refs
 
 
-def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> dict[str, SymbolInfo]:
+def collect_module_symbol_table(
+    src_path: Path,
+    address_map: dict[str, int],
+    type_overrides: dict[str, TypeOverride] | None = None,
+) -> dict[str, SymbolInfo]:
     lines = strip_macro_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     module = src_path.stem.upper()
     symbol_table: dict[str, SymbolInfo] = {}
+    force_function_names = {
+        name
+        for name, override in (type_overrides or {}).items()
+        if override.force_function
+    }
 
     branch_targets = collect_branch_targets(lines)
-    functions = collect_top_level_functions(lines, branch_targets)
+    functions = collect_top_level_functions(lines, branch_targets, force_function_names)
     attach_leading_context(lines, functions)
     for fn in functions:
         symbol_table.setdefault(fn.name, SymbolInfo(name=fn.name, kind="function", module=module))
@@ -1595,12 +1956,21 @@ def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> 
         storage_match = STANDALONE_STORAGE_FULL_RE.match(code)
         if storage_match:
             directive, label, rest = storage_match.groups()
-            symbol_table.setdefault(label, infer_storage_symbol(label, parse_storage_size(rest), module))
+            if is_omitted_symbol(label, type_overrides):
+                idx += 1
+                continue
+            symbol_table.setdefault(
+                label,
+                apply_type_override(infer_storage_symbol(label, parse_storage_size(rest), module), type_overrides),
+            )
             idx += 1
             continue
 
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets)
         if standalone_data is not None:
+            if is_omitted_symbol(standalone_data.name, type_overrides):
+                idx = next_idx
+                continue
             directive_lower = standalone_data.directive.lower()
             if directive_lower in {".word", ".intdata", ".float"}:
                 values: list[str] = []
@@ -1619,25 +1989,34 @@ def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> 
                     values = ["0"]
                 symbol_table.setdefault(
                     standalone_data.name,
-                    infer_numeric_symbol(
-                        NumericVariable(
-                            name=standalone_data.name,
-                            directive=directive_lower,
-                            values=values,
-                            asm_lines=filter_renderable_asm_lines(standalone_data.asm_lines),
+                    apply_type_override(
+                        infer_numeric_symbol(
+                            NumericVariable(
+                                name=standalone_data.name,
+                                directive=directive_lower,
+                                values=values,
+                                asm_lines=filter_renderable_asm_lines(standalone_data.asm_lines),
+                            ),
+                            module,
+                            symbol_table,
                         ),
-                        module,
-                        symbol_table,
+                        type_overrides,
                     ),
                 )
             elif directive_lower == ".string":
                 c_string = parse_simple_string_operand(standalone_data.rest)
                 if c_string is not None:
-                    symbol_table.setdefault(standalone_data.name, infer_string_symbol(standalone_data.name, module))
+                    symbol_table.setdefault(
+                        standalone_data.name,
+                        apply_type_override(infer_string_symbol(standalone_data.name, module), type_overrides),
+                    )
             elif directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
                 symbol_table.setdefault(
                     standalone_data.name,
-                    infer_storage_symbol(standalone_data.name, parse_storage_size(standalone_data.rest), module),
+                    apply_type_override(
+                        infer_storage_symbol(standalone_data.name, parse_storage_size(standalone_data.rest), module),
+                        type_overrides,
+                    ),
                 )
             idx = next_idx
             continue
@@ -1649,7 +2028,10 @@ def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> 
         sptr_match = parse_sptr_label(raw)
         if sptr_match is not None:
             label, _c_string = sptr_match
-            symbol_table.setdefault(label, infer_string_symbol(label, module))
+            if is_omitted_symbol(label, type_overrides):
+                idx += 1
+                continue
+            symbol_table.setdefault(label, apply_type_override(infer_string_symbol(label, module), type_overrides))
             idx += 1
             continue
 
@@ -1659,15 +2041,21 @@ def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> 
             continue
 
         label, directive, rest = data_match.groups()
+        if is_omitted_symbol(label, type_overrides):
+            idx += 1
+            continue
         directive_lower = directive.lower()
         if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
-            symbol_table.setdefault(label, infer_storage_symbol(label, parse_storage_size(rest), module))
+            symbol_table.setdefault(
+                label,
+                apply_type_override(infer_storage_symbol(label, parse_storage_size(rest), module), type_overrides),
+            )
             idx += 1
             continue
         if directive_lower == ".string":
             c_string = parse_simple_string_operand(rest)
             if c_string is not None:
-                symbol_table.setdefault(label, infer_string_symbol(label, module))
+                symbol_table.setdefault(label, apply_type_override(infer_string_symbol(label, module), type_overrides))
             idx += 1
             continue
         if directive_lower == ".word":
@@ -1695,7 +2083,10 @@ def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> 
                 values = ["0"]
             symbol_table.setdefault(
                 label,
-                infer_word_symbol(WordVariable(name=label, values=values, asm_lines=asm_lines), module, symbol_table),
+                apply_type_override(
+                    infer_word_symbol(WordVariable(name=label, values=values, asm_lines=asm_lines), module, symbol_table),
+                    type_overrides,
+                ),
             )
             idx = next_idx
             continue
@@ -1724,10 +2115,13 @@ def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> 
                 values = ["0"]
             symbol_table.setdefault(
                 label,
-                infer_numeric_symbol(
-                    NumericVariable(name=label, directive=".float", values=values, asm_lines=asm_lines),
-                    module,
-                    symbol_table,
+                apply_type_override(
+                    infer_numeric_symbol(
+                        NumericVariable(name=label, directive=".float", values=values, asm_lines=asm_lines),
+                        module,
+                        symbol_table,
+                    ),
+                    type_overrides,
                 ),
             )
             idx = next_idx
@@ -1735,7 +2129,24 @@ def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> 
 
         idx += 1
 
+    for name in force_function_names:
+        symbol_table.setdefault(name, SymbolInfo(name=name, kind="function", module=module))
+
     return symbol_table
+
+
+def collect_existing_macro_names(include_dir: Path) -> set[str]:
+    names: set[str] = set()
+    if not include_dir.exists():
+        return names
+    for header_path in sorted(include_dir.glob("*.h")):
+        if header_path.name == "discovered_labels.h":
+            continue
+        for raw in header_path.read_text(errors="ignore").splitlines():
+            match = CPP_DEFINE_RE.match(raw)
+            if match:
+                names.add(match.group(1))
+    return names
 
 
 def main() -> int:
@@ -1745,6 +2156,7 @@ def main() -> int:
     include_dir = root / "src" / "game"
     address_map = parse_address_map(root / "tools" / "ida" / "address.map")
     define_entries = parse_discovered_defines_file(root / "tools" / "ida" / "discovered_defines.txt")
+    type_overrides = parse_type_overrides_file(root / "tools" / "port" / "type-overrides.txt")
     label_types = parse_romlst_label_types(root / "tools" / "ida" / "log" / "romlst_labels.tsv")
     out_dir.mkdir(parents=True, exist_ok=True)
     include_dir.mkdir(parents=True, exist_ok=True)
@@ -1757,12 +2169,27 @@ def main() -> int:
     discovered_define_names = {entry.name for entry in discovered_define_entries}
     if discovered_define_entries:
         (include_dir / "discovered_defines.h").write_text(render_discovered_defines_header(discovered_define_entries))
+    global_source_symbols: set[str] = set()
+    source_label_names: set[str] = set()
+    for src_path in sorted(asm_dir.glob("*.ASM")):
+        lines = src_path.read_text(errors="ignore").splitlines()
+        global_source_symbols.update(collect_module_symbol_table(src_path, address_map, type_overrides))
+        source_label_names.update(collect_source_label_names(lines))
+    existing_macro_names = collect_existing_macro_names(include_dir)
+    blocked_discovered_label_names = (
+        global_source_symbols
+        | source_label_names
+        | existing_macro_names
+        | discovered_define_names
+        | {"NULL"}
+    )
 
     storage_defines_by_module: dict[str, list[StorageVariable]] = {}
     owner_headers: dict[str, str] = {}
     skipped_data_symbols: set[str] = set()
+    discovered_label_names: set[str] = set()
     for src_path in sorted(asm_dir.glob("*.ASM")):
-        defines = collect_module_storage_defines(src_path, address_map)
+        defines = collect_module_storage_defines(src_path, address_map, type_overrides)
         if not defines:
             continue
         storage_defines_by_module[src_path.stem.upper()] = defines
@@ -1773,17 +2200,40 @@ def main() -> int:
 
     for src_path in sorted(asm_dir.glob("*.ASM")):
         lines = src_path.read_text(errors="ignore").splitlines()
-        skipped_data_symbols.update(
-            collect_referenced_data_symbols(lines, label_types) - collect_defined_data_symbols(lines)
-        )
+        missing_data_symbols = collect_referenced_data_symbols(lines, label_types) - collect_defined_data_symbols(lines)
+        skipped_data_symbols.update(missing_data_symbols)
+        mapped_missing_data_symbols = {
+            name
+            for name in missing_data_symbols
+            if name in address_map and name not in blocked_discovered_label_names
+        }
+        discovered_label_names.update(mapped_missing_data_symbols)
         discovered_header_needed = bool(collect_referenced_define_symbols(lines, discovered_define_names))
+        discovered_labels_needed = bool(mapped_missing_data_symbols)
         out_path = out_dir / (src_path.stem.lower() + ".c")
         own_header = owner_headers.get(next(iter([d.name for d in storage_defines_by_module.get(src_path.stem.upper(), [])]), ""), None)
         if src_path.stem.upper() in storage_defines_by_module:
             own_header = storage_header_name(src_path.stem, include_dir)
         else:
             own_header = None
-        out_path.write_text(render_module(src_path, address_map, owner_headers, own_header, discovered_header_needed))
+        out_path.write_text(
+            render_module(
+                src_path,
+                address_map,
+                owner_headers,
+                own_header,
+                discovered_header_needed,
+                type_overrides,
+                discovered_labels_needed,
+            )
+        )
+
+    discovered_label_entries = [
+        LabelEntry(name=name, addr=address_map[name])
+        for name in sorted(discovered_label_names, key=str.upper)
+    ]
+    if discovered_label_entries:
+        (include_dir / "discovered_labels.h").write_text(render_discovered_labels_header(discovered_label_entries))
 
     skipped_log = log_dir / "skipped_data_symbols.txt"
     skipped_rows = sorted(skipped_data_symbols)

@@ -14,10 +14,26 @@
 #include "h2hobj.h"
 #include "map.h"
 #include "discovered_defines.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/MAP.ASM
  */
+
+void UNFOLDMAP(void);
+void UNFOLDMAP_NOPAL(void);
+void FOLDMAP(void);
+void CLEAR_MAP_PALS(void);
+void MAPPAL_ILLUM_INIT(void);
+void MAP_ILLUM_COMPUTE(void);
+void MAPPAL_ILLUM(void);
+void TIME2STR(void);
+void CVTTIME(void);
+void RADAR_PLOT(void);
+void GL14(void);
+void ISBEHIND(void);
+void NOTTHEOPLYR(void);
+void RADAR_X(void);
 
 /* *----------------------------------------------------------------------------
 *
@@ -1157,7 +1173,12 @@ RADAR_LP:
     // asm: 	LDI	00D38h,R0
     // asm: 	STI	R0,@_AIVI+3
     // asm: 	BU	GL15
-GL14:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADAR_PLOT", 0, 0);
+    UNIMPL();
+}
+
+void GL14(void)
+{
     // asm: LDL	h2p2b_I,R0
     // asm: 	STI	R0,@_ADDRL
     // asm: 	LDI	@_ARPS+(0*3)+1,R0
@@ -1213,7 +1234,12 @@ GL15:
     // asm: 	STI	R0,@_ARPS+(0*3)+1
     // asm: 	STI	R0,@_ARPS+(1*3)+1
     // asm: 	BU	DADA4
-ISBEHIND:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GL14", 0, 0);
+    UNIMPL();
+}
+
+void ISBEHIND(void)
+{
     // ;	LDI	RADAR_XCNTR,R0
     // ;	ADDI	9,R0
     // ;	STI	R0,@_ARPS+(1*3)
@@ -1233,7 +1259,12 @@ DADA4:
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@_ACMAP
     // asm: 	BU	RADAR_LP
-NOTTHEOPLYR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISBEHIND", 0, 0);
+    UNIMPL();
+}
+
+void NOTTHEOPLYR(void)
+{
     // asm: 	CMPI	RADAR_XMIN,R0
     // asm: 	BLT	RADAR_LP
     // asm: 	CMPI	RADAR_XMAX,R0
@@ -1260,7 +1291,12 @@ NOTTHEOPLYR:
     // asm: 	STI	R0,@(_ARPS+(2*3)+1)
     // asm: 	CALL	_stuff_fpga
     // asm: 	BU	RADAR_LP
-RADAR_X:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTTHEOPLYR", 0, 0);
+    UNIMPL();
+}
+
+void RADAR_X(void)
+{
     // asm: 	LDI	CC|1,R0
     // asm: 	STI	R0,@_ACNTL
     // asm: 	LDI	RADAR_XCNTR-2,R0
@@ -1292,6 +1328,6 @@ RADAR_X:
     // asm: 	STI	R0,@THIS_MACHINE_AHEAD
 NODOAP:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADAR_PLOT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADAR_X", 0, 0);
     UNIMPL();
 }

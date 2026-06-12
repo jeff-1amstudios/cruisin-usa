@@ -13,10 +13,33 @@
 #include "objects.h"
 #include "text.h"
 #include "heads.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/HEADS.ASM
  */
+
+void TEXTDELER(void);
+void TXTXX(void);
+void VANITY_HEADS(void);
+void VHIX(void);
+void VOSLP(void);
+void SET18FONTDS_WHITE(void);
+void VANITY(void);
+void VANITY_SUB(void);
+void JJDDA(void);
+void NOT10(void);
+void NOTSPEC8(void);
+void NOTSPEC7(void);
+void NOTSPEC4(void);
+void NOTSPEC99(void);
+void ADAMSTOPRIBYL(void);
+void NOT0(void);
+void TWO(void);
+void WTD55(void);
+void GETT(void);
+void CENTEREM(void);
+void RIGHTEM(void);
 
 #define HEADTYPE 0x88D0
 /* asm: HEADS	.word	jeno */
@@ -31,7 +54,7 @@
 /* asm: 	.word	ken */
 /* asm: 	.word	eric */
 /* asm: 	.word	-1 */
-int HEADS[12] = {
+int HEADS[] = {
     jeno,
     marc,
     pet,
@@ -87,10 +110,15 @@ DELLP:
     // asm: 	LDI	R7,R0
     // asm: 	BZ	TXTXX
     // asm: 	BU	TTEST
-TXTXX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTDELER", 0, 0);
+    UNIMPL();
+}
+
+void TXTXX(void)
+{
     // asm: 	SLEEP	1
     // asm: 	BU	TEXTDELER
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTDELER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TXTXX", 0, 0);
     UNIMPL();
 }
 
@@ -145,7 +173,12 @@ VANHDLP:
     // asm: 	CALL	OBJ_INSERT
     // asm: 	SUBF	0.571,R6
     // asm: 	B	VANHDLP
-VHIX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_HEADS", 0, 0);
+    UNIMPL();
+}
+
+void VHIX(void)
+{
     // ;	DIE
 VANITY_HEADS_LP:
     // asm: 	LDI	@OACTIVEI,AR0
@@ -165,10 +198,15 @@ VOLP:
     // asm: 	MPYF	130,R0
     // asm: 	STF	R0,*+AR0(OPOSY)
     // asm: 	BU	VOLP
-VOSLP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "VHIX", 0, 0);
+    UNIMPL();
+}
+
+void VOSLP(void)
+{
     // asm: SLEEP	1
     // asm: 	BU	VANITY_HEADS_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_HEADS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "VOSLP", 0, 0);
     UNIMPL();
 }
 
@@ -234,7 +272,12 @@ KKPD:
     // asm: 	SLEEP	1
     // asm: 	SUBF	1,R6
     // asm: 	BU	KKPD
-JJDDA:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_SUB", 0, 0);
+    UNIMPL();
+}
+
+void JJDDA(void)
+{
     // asm: 	LDI	*AR4++,R7	;number of entries
     // asm: 	CMPI	10,R7
     // asm: 	BNE	NOT10
@@ -243,7 +286,12 @@ JJDDA:
     // asm: 	LDF	10,R0
     // asm: 	STF	R0,@YINCREMENT
     // asm: 	BU	KKPD
-NOT10:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JJDDA", 0, 0);
+    UNIMPL();
+}
+
+void NOT10(void)
+{
     // asm: 	CMPI	8,R7
     // asm: 	BNE	NOTSPEC8
     // asm: 	FLOAT	*AR4++,R2
@@ -251,7 +299,12 @@ NOT10:
     // asm: 	LDI	*AR4++,AR2
     // asm: 	CALL	GETT
     // asm: 	BU	DTLP2
-NOTSPEC8:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT10", 0, 0);
+    UNIMPL();
+}
+
+void NOTSPEC8(void)
+{
     // asm: 	CMPI	7,R7
     // asm: 	BNE	NOTSPEC7
     // asm: 	FLOAT	*AR4++,R2
@@ -260,7 +313,12 @@ NOTSPEC8:
     // asm: 	CALL	GETT
     // asm: 	CALL	RIGHTEM
     // asm: 	BU	DTLP2
-NOTSPEC7:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTSPEC8", 0, 0);
+    UNIMPL();
+}
+
+void NOTSPEC7(void)
+{
     // asm: 	CMPI	4,R7
     // asm: 	BNE	NOTSPEC4
     // asm: 	LDI	1,R0
@@ -269,7 +327,12 @@ NOTSPEC7:
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@TEXT_FREEZE
     // asm: 	BU	KKPD
-NOTSPEC4:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTSPEC7", 0, 0);
+    UNIMPL();
+}
+
+void NOTSPEC4(void)
+{
     // asm: 	CMPI	99,R7
     // asm: 	BNE	NOTSPEC99
     // asm: 	FLOAT	*AR4++,R2
@@ -301,7 +364,12 @@ KRIS:
     // asm: 	ADDF	R1,R0
     // asm: 	STF	R0,*+AR5(TEXT_POSX)
     // asm: 	BU	KRIS
-NOTSPEC99:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTSPEC4", 0, 0);
+    UNIMPL();
+}
+
+void NOTSPEC99(void)
+{
     // asm: 	CMPI	3,R7
     // asm: 	BNE	NOTSPEC3
     // asm: 	FLOAT	*AR4++,R2
@@ -317,7 +385,7 @@ NOTSPEC99:
     // asm: 	POP	AR5
     // asm: 	POP	AR4
     // asm: 	BU	DTLP2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_SUB", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTSPEC99", 0, 0);
     UNIMPL();
 }
 
@@ -338,7 +406,12 @@ NOTSPEC3:
     // asm: 	CMPI	0,R7
     // asm: 	BNE	NOT0
     // asm: 	BU	DTLP2
-NOT0:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADAMSTOPRIBYL", 0, 0);
+    UNIMPL();
+}
+
+void NOT0(void)
+{
     // asm: 	CMPI	2,R7
     // asm: 	BEQ	TWO
     // 	;ONE
@@ -348,7 +421,12 @@ NOT0:
     // asm: 	CALL	GETT
     // asm: 	CALL	CENTEREM
     // asm: 	BU	DTLP2
-TWO:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT0", 0, 0);
+    UNIMPL();
+}
+
+void TWO(void)
+{
     // asm: 	FLOAT	*AR4++,R2
     // asm: 	LDF	R6,R3
     // asm: 	LDI	*AR4++,AR2
@@ -359,12 +437,17 @@ TWO:
     // asm: 	CALL	GETT
     // asm: 	CALL	RIGHTEM
     // asm: 	BU	DTLP2
-WTD55:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TWO", 0, 0);
+    UNIMPL();
+}
+
+void WTD55(void)
+{
     // asm: 	LDI	HEADTYPE,R0
     // asm: 	LDI	-1,R1
     // asm: 	CALL	PRC_KILLALL
     // asm: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADAMSTOPRIBYL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WTD55", 0, 0);
     UNIMPL();
 }
 

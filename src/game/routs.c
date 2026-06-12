@@ -5,6 +5,18 @@
  * Source module: asm/ROUTS.ASM
  */
 
+void DIV_F(void);
+void DIV_I(void);
+void zero(void);
+void DIV_U30(void);
+void zerob(void);
+void INV_F30(void);
+void MOD_I30(void);
+void MOD_U30(void);
+void onec(void);
+void zeroc(void);
+void SQRT(void);
+
 /* *----------------------------------------------------------------------------
 *DIVF	Floating point divide function
 *
@@ -172,10 +184,15 @@ div_32:
     // asm: 	POP	SIGN		;restore sign
     // asm: 	B	return		;return
     // 	;***Return zero.
-zero:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_I", 0, 0);
+    UNIMPL();
+}
+
+void zero(void)
+{
     // asm: 	LDI	0,R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_I", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "zero", 0, 0);
     UNIMPL();
 }
 
@@ -279,10 +296,15 @@ one:
     // 	;
     // 	; Return zero.
     // 	;
-zerob:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_U30", 0, 0);
+    UNIMPL();
+}
+
+void zerob(void)
+{
     // asm: LDI	0,R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_U30", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "zerob", 0, 0);
     UNIMPL();
 }
 
@@ -531,16 +553,26 @@ mod_32c:
     // 	;
     // 	; Return (dividend - divisor).
     // 	;
-onec:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOD_U30", 0, 0);
+    UNIMPL();
+}
+
+void onec(void)
+{
     // asm: SUBI	R1,R0
     // asm: 	RETS
     // 	;
     // 	; Return dividend.
     // 	;
-zeroc:
-    // asm: CMPI	0,R0
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "onec", 0, 0);
+    UNIMPL();
+}
+
+void zeroc(void)
+{
+    // asm: CMPI	0,R0		;set status from result
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOD_U30", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "zeroc", 0, 0);
     UNIMPL();
 }
 

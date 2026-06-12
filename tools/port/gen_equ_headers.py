@@ -8,7 +8,13 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from gen_c_skeleton import SymbolInfo, collect_module_symbol_table, sanitize_identifier, variable_declaration
+from gen_c_skeleton import (
+    SymbolInfo,
+    collect_module_symbol_table,
+    parse_type_overrides_file,
+    sanitize_identifier,
+    variable_declaration,
+)
 
 
 SET_RE = re.compile(r"^\s*([A-Za-z_.$?@][A-Za-z0-9_.$?@]*)\s*\.set\s*(.*?)\s*$", re.IGNORECASE)
@@ -261,9 +267,10 @@ def render_globl_symbol(symbol: SymbolInfo | None, name: str, sizeless_extern_ar
 
 def build_global_symbol_table(root: Path) -> dict[str, SymbolInfo]:
     asm_dir = root / "asm"
+    type_overrides = parse_type_overrides_file(root / "tools" / "port" / "type-overrides.txt")
     symbol_table: dict[str, SymbolInfo] = {}
     for src_path in sorted(asm_dir.glob("*.ASM")):
-        for name, symbol in collect_module_symbol_table(src_path, {}).items():
+        for name, symbol in collect_module_symbol_table(src_path, {}, type_overrides).items():
             symbol_table.setdefault(name, symbol)
     return symbol_table
 

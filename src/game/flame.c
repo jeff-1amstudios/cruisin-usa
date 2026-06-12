@@ -12,10 +12,19 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/FLAME.ASM
  */
+
+void FLAME_PRC(void);
+void FLANX1(void);
+void animate_child(void);
+void FLAMESORT(void);
+void GETCARBODY(void);
+void FOUND_BODY(void);
+void FIND_NEXT_OBJ(void);
 
 /* asm: FLAME_POS */
 /* asm: 	.word	180,87,-450		;Vette */
@@ -25,7 +34,7 @@
 /* asm: 	.word	180,87,-450		;JEEP */
 /* asm: 	.word	190,87,-650		;SBUSP */
 /* asm: 	.word	160,155,-500		;COPCAR */
-int FLAME_POS[21] = {
+int FLAME_POS[] = {
     180, 87, -450, // Vette
     130, 105, -586, // Coope
     140, 107, -460, // Missle
@@ -37,7 +46,7 @@ int FLAME_POS[21] = {
 /* asm: FLAMEANI */
 /* asm: 	.word	sparc1,sparc3,sparc5,sparc7,sparc9,sparc7 */
 /* asm: 	.word	sparc5,sparc3,sparc1,-1 */
-int FLAMEANI[10] = {
+int FLAMEANI[] = {
     sparc1, sparc3, sparc5, sparc7, sparc9, sparc7,
     sparc5, sparc3, sparc1, -1,
 };
@@ -128,10 +137,15 @@ FLAME_ANIX:
     // asm: 	LDI	AR0,AR2
     // asm: 	CALL	OBJ_DELETE
     // asm: 	BR	FLAME_ANIX
-FLANX1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAME_PRC", 0, 0);
+    UNIMPL();
+}
+
+void FLANX1(void)
+{
 FLAME_DIE:
     // asm: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAME_PRC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLANX1", 0, 0);
     UNIMPL();
 }
 
@@ -225,10 +239,15 @@ FBLOOP:
     // asm: 	BZ	FOUND_BODY		;0 = car body
     // asm: 	LDI	*AR0,R0
     // asm: 	BR	FBLOOP
-FOUND_BODY:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCARBODY", 0, 0);
+    UNIMPL();
+}
+
+void FOUND_BODY(void)
+{
     // asm: 	ADDI	DYNAMATRIX,AR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCARBODY", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FOUND_BODY", 0, 0);
     UNIMPL();
 }
 

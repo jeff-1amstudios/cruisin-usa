@@ -14,6 +14,13 @@
  * Source module: asm/INFIN.ASM
  */
 
+void FIND_HIGHEST_ROADY(void);
+void INFINITY(void);
+void II(void);
+void NOCLIPPING(void);
+void TRANS_PTS(void);
+void WATER_INFINITY(void);
+
 /* asm: CAMRADY	.bss	CAMRADY,1 */
 int CAMRADY;
 /* *----------------------------------------------------------------------------
@@ -99,7 +106,7 @@ float INFVAL = 80000.0f;
 /* asm: 	.float	700,-1250,0 */
 /* asm: 	.float	1700,-253,0 */
 /* asm: 	.float	1700,-1250,0 */
-int INFINPOINTS[102] = {
+int INFINPOINTS[] = {
     -1280, 0, 0,
     -1280, -255, 0,
     -1024, 0, 0,
@@ -139,7 +146,7 @@ int INFINPOINTS[102] = {
 #define INFIN_POLYGONSI BLUESKY
 /* asm: BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
 /* asm: 	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
-int BLUESKY[24] = {
+int BLUESKY[] = {
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
 };
@@ -185,7 +192,7 @@ int INFIN_CORRECT;
 /* asm: 	.float	1536,0,0 */
 /* asm: 	.float	1792,128,0 */
 /* asm: 	.float	1792,0,0 */
-float WATERPOS[78] = {
+float WATERPOS[] = {
     -1280.0f, 128.0f, 0.0f,
     -1280.0f, 0.0f, 0.0f,
     -1024.0f, 128.0f, 0.0f,
@@ -460,7 +467,12 @@ LOOP:
 II33:
     // asm: CLRF	R0
     // asm: 	BU	III44
-II:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INFINITY", 0, 0);
+    UNIMPL();
+}
+
+void II(void)
+{
     // asm: CALL	DIV_F
 III44:
     // asm: FIX	R0,R4
@@ -517,7 +529,12 @@ III44:
     // *
     // *
     // *
-NOCLIPPING:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "II", 0, 0);
+    UNIMPL();
+}
+
+void NOCLIPPING(void)
+{
     // 	;DUMP X
     // asm: 	FIX	*AR6,R0
     // asm: 	STI	R0,*AR5				;ARPS[0][0]
@@ -605,7 +622,7 @@ LOOP1:
     // asm: 	TSTB	MWATER,R0
     // asm: 	CALLNZ	WATER_INFINITY
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INFINITY", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOCLIPPING", 0, 0);
     UNIMPL();
 }
 

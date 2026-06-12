@@ -13,10 +13,45 @@
 #include "comm.h"
 #include "snd.h"
 #include "discovered_defines.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/SND.ASM
  */
+
+void RADIO_SHOW(void);
+void KILLME(void);
+void RADIO_BUT(void);
+void RBMGAME(void);
+void SET_STATION(void);
+void CHANGE_STATION(void);
+void SET_TUNE_LINKED(void);
+void SET_TUNE(void);
+void RESUME_TUNE(void);
+void RESUME_TUNE_NT(void);
+void SET_MASTER_VOL(void);
+void SET_TRACK_VOL(void);
+void RESET_SNDBRD(void);
+void SILENT(void);
+void CLRSNDDB(void);
+void GETPRI(void);
+void VOLSNDFX(void);
+void ONESNDFX(void);
+void NOSOUND_FX(void);
+void KILLSNDFX(void);
+void KILSFX1(void);
+void KILSFX2(void);
+void PLYR_ENGINE(void);
+void HARDSND(void);
+void ONESND(void);
+void SENDSND(void);
+void NIRM(void);
+void RESETMUNGE(void);
+void NOT_F1(void);
+void NOT_F4(void);
+void SND_RESET_QUIET(void);
+void SNDPROC(void);
+void SNDUPD(void);
 
 /* asm: IN_RESET_MODE	fbss	IN_RESET_MODE,1 */
 int IN_RESET_MODE;
@@ -38,7 +73,7 @@ int SNDEND;
 /* asm: 	.word	STRAIGHT_2_4	;5 */
 /* asm: 	.word	DISCODUCK	;6 */
 /* asm: 	.word	BOOGIE		;7 */
-int STATION_LIST[8] = {
+int STATION_LIST[] = {
     MUNSTER_SURF, // 0
     SHUFFLE_DRIV, // 1
     DISCODUCK, // 2
@@ -58,6 +93,8 @@ int STATION_TIMEOUT;
 int RS_X;
 /* asm: TUNE_IDX	.bss	TUNE_IDX,1 */
 int TUNE_IDX;
+/* asm: DO_NOT_REENABLE_INT	.bss	DO_NOT_REENABLE_INT,1 */
+int DO_NOT_REENABLE_INT;
 /* *----------------------------------------------------------------------------
 *CLEAR THE SOUND DATA BASE
 *
@@ -105,11 +142,16 @@ void RADIO_SHOW(void)
     // asm: 	STI	R0,@STATION_TIMEOUT
     // asm: 	BLE	SUICIDE
     // asm: 	BU	RADIO_SHOW
-KILLME:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_SHOW", 0, 0);
+    UNIMPL();
+}
+
+void KILLME(void)
+{
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@STATION_TIMEOUT
     // asm: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_SHOW", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KILLME", 0, 0);
     UNIMPL();
 }
 
@@ -123,10 +165,15 @@ void RADIO_BUT(void)
     // ;	BNE	SUICIDE
     // asm: 	BEQ	RBMGAME
     // asm: 	BR	RBMATTR_CHECK	;This code is in hstdp.asm
-RBMGAME:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_BUT", 0, 0);
+    UNIMPL();
+}
+
+void RBMGAME(void)
+{
     // asm: 	CALL	CHANGE_STATION
     // asm: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_BUT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RBMGAME", 0, 0);
     UNIMPL();
 }
 
@@ -522,10 +569,15 @@ L88:
     // asm: 	POP	R2
     // asm: 	POP	R1
     // asm: 	RETS
-NOSOUND_FX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ONESNDFX", 0, 0);
+    UNIMPL();
+}
+
+void NOSOUND_FX(void)
+{
     // asm: 	CLRC
     // asm: 	BU	L88
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ONESNDFX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOSOUND_FX", 0, 0);
     UNIMPL();
 }
 
@@ -549,18 +601,28 @@ void KILLSNDFX(void)
     // asm: 	BNE	KILSFX1
     // asm: 	SOND1	KILLCHAN1
     // asm: 	B	KILSFX3
-KILSFX1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KILLSNDFX", 0, 0);
+    UNIMPL();
+}
+
+void KILSFX1(void)
+{
     // asm: 	CMPI	@SNDSTR+2*(SND_SIZ)+SND_IDX,AR2
     // asm: 	BNE	KILSFX2
     // asm: 	SOND1	KILLCHAN2
     // asm: 	SETC
     // asm: 	B	KILSFX3
-KILSFX2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KILSFX1", 0, 0);
+    UNIMPL();
+}
+
+void KILSFX2(void)
+{
     // asm: 	CLRC
 KILSFX3:
     // asm: 	POP	AR2
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "KILLSNDFX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KILSFX2", 0, 0);
     UNIMPL();
 }
 
@@ -686,7 +748,12 @@ void SENDSND(void)
     // asm: 	CMPI	0,R0
     // asm: 	BEQ	NIRM
     // asm: 	RETS
-NIRM:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SENDSND", 0, 0);
+    UNIMPL();
+}
+
+void NIRM(void)
+{
     // asm: 	PUSH	AR3
     // asm: 	LDL	9A0000h,AR3	;SND2
     // asm: 	PUSHM	R0,R1
@@ -728,7 +795,7 @@ NIRM:
     // asm: 	POPM	R1,R0
     // asm: 	POP	AR3
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SENDSND", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NIRM", 0, 0);
     UNIMPL();
 }
 
@@ -820,7 +887,12 @@ void RESETMUNGE(void)
     // asm: 	RPTS	50
     // asm: 	NOP
     // asm: 	BU	RESETMUNGE_X
-NOT_F1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RESETMUNGE", 0, 0);
+    UNIMPL();
+}
+
+void NOT_F1(void)
+{
     // asm: NOT_F2
     // asm: 	CMPI	4,R0
     // asm: 	BNE	NOT_F4
@@ -837,7 +909,12 @@ NOT_F1:
     // asm: 	NOP
     // asm: 	STI	R0,@SOUND
     // asm: 	BU	RESETMUNGE_X
-NOT_F4:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_F1", 0, 0);
+    UNIMPL();
+}
+
+void NOT_F4(void)
+{
     // asm: 	CMPI	6,R0
     // asm: 	BNE	NOT_F6
     // asm: 	CLRI	R0
@@ -853,7 +930,7 @@ RESETMUNGE_X:
     // asm: 	SETDP
     // asm: 	CALL	ENABLEGIE
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RESETMUNGE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_F4", 0, 0);
     UNIMPL();
 }
 

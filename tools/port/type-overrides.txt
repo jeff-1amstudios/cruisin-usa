@@ -1,0 +1,26 @@
+# Optional C type overrides for the skeleton generator.
+# Format: C declaration without an initializer.
+# Examples:
+# void *SWTAB;
+# unsigned short FLAGS[16];
+
+void *SWTAB;
+BONUS1()
+BONUS2()
+BONUS3()
+BONUS4()
+BONUS5()
+BONUS6()
+BONUS7()
+BONUS8()
+BONUS9()
+BONUS10()
+BONUS11()
+BONUS12()
+BONUS13()
+BONUS14()
+-PB1
+-PB2
+-PBSS_PTR
+-PBSS_BSSEND
+-RAM_PTR

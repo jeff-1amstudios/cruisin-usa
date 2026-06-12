@@ -10,10 +10,21 @@
 #include "vunit.h"
 #include "cmos.h"
 #include "sndtab.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/ATTRACTA.ASM
  */
+
+void _MIDWAYSPIN(void);
+void MSLP_CHECK(void);
+void MSLP4(void);
+void MIDWAYSPINENTER(void);
+void SPIN_CAR(void);
+void TEXTTOGET(void);
+void NXTWT(void);
+void TXTLPB(void);
+void DEMOTHANKS(void);
 
 #define NOVANITY 1
 /* *----------------------------------------------------------------------------
@@ -23,7 +34,7 @@
 #define CREATED_DCS (PDATA+1)
 #define DECOMP_COUNT (PDATA+1)
 /* asm: SPIN_CARTAB	.word	missle,hotrod,testor,cvette */
-int SPIN_CARTAB[4] = {
+int SPIN_CARTAB[] = {
     missle, hotrod, testor, cvette,
 };
 const char *DT1 = "THANK YOU FOR PLAYING";
@@ -33,7 +44,7 @@ const char *DT3 = "SNEAK PREVIEW";
 /* asm: 	.word	140,DT1 */
 /* asm: 	.word	180,DT2 */
 /* asm: 	.word	220,DT3 */
-int DEMOTHANKS_LIST[6] = {
+int DEMOTHANKS_LIST[] = {
     140, DT1,
     180, DT2,
     220, DT3,
@@ -133,7 +144,12 @@ MSLP1:
     // asm: 	SLEEP	1
     // asm: 	CALL	MSLP_CHECK
     // asm: 	BR	MSLP1
-    // asm: MSLP_CHECK
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_MIDWAYSPIN", 0, 0);
+    UNIMPL();
+}
+
+void MSLP_CHECK(void)
+{
     // asm: 	SUBI	@NFRAMES,AR6
     // asm: 	LDI	@DECOMP_ACTIVE,R0
     // asm: 	CMPI	0,R0
@@ -146,7 +162,12 @@ MSLP1:
 MSLP3:
     // asm: 	RETS
     // ;	BR	MSLP1
-MSLP4:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MSLP_CHECK", 0, 0);
+    UNIMPL();
+}
+
+void MSLP4(void)
+{
     // asm: 	CMPI	0,AR6
     // asm: 	RETSGT
     // ;	BGT	MSLP1
@@ -155,7 +176,7 @@ MSLP4:
     // asm: 	STI	R0,@LOADED
     // asm: 	POP	BK		;POP return address
     // asm: 	BR	CYCLE_ATTR
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_MIDWAYSPIN", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MSLP4", 0, 0);
     UNIMPL();
 }
 
@@ -300,7 +321,12 @@ TXTLP:
     // asm: 	LDI	R0,AR0
     // asm: 	STF	R1,*+AR0(TEXT_VELX)
     // asm: 	BR	TXTLP
-NXTWT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTTOGET", 0, 0);
+    UNIMPL();
+}
+
+void NXTWT(void)
+{
     // asm: 	SLEEP	460
     // asm: 	LDI	@TEXT_ACTIVEI,AR0
     // asm: 	LDF	-6,R1
@@ -308,11 +334,16 @@ TXTLPA:
     // asm: LDI	*AR0,R0
     // asm: 	BNZ	TXTLPB
     // asm: 	BR	SUICIDE
-TXTLPB:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NXTWT", 0, 0);
+    UNIMPL();
+}
+
+void TXTLPB(void)
+{
     // asm: 	LDI	R0,AR0
     // asm: 	STF	R1,*+AR0(TEXT_VELY)
     // asm: 	BR	TXTLPA
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTTOGET", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TXTLPB", 0, 0);
     UNIMPL();
 }
 

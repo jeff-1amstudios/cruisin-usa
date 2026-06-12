@@ -22,6 +22,10 @@
  * Source module: asm/COMMDRNE.ASM
  */
 
+void COMM_DRONE(void);
+void COMM_DRONE_PTR_SORT(void);
+void OM_DRONE(void);
+
 /* *----------------------------------------------------------------------------
 *Startup Position Table
 *
@@ -56,7 +60,7 @@
 /* asm: 	.float	-3157144,-9607,-4101204		;CH */
 /* asm: 	.float	-3515279,-3107,-3574450		;IN */
 /* asm: 	.float	-2353891,-16335,-2928112	;APPAL */
-float STARTUP_POS_TABLE[78] = {
+float STARTUP_POS_TABLE[] = {
     576.0f, -180.0f, 3287.0f, // GG
     -1928700.0f, 4654.0f, 584166.0f, // SF
     -2611877.0f, 14000.0f, -628750.0f, // H280

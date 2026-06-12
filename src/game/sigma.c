@@ -18,6 +18,15 @@
  * Source module: asm/SIGMA.ASM
  */
 
+void SIGMA_DRONE(void);
+void GOAHEAD(void);
+void DONTWORRY(void);
+void NOSL2DIE(void);
+void THIS_PIECE(void);
+void NOTPRECOL(void);
+void BREAKDOWN(void);
+void SIGMA_DIE(void);
+
 /* *SIGMA_STARTUP STRUCT
  */
 #define SS_MODEL 0
@@ -52,7 +61,7 @@
 /* asm: 	.word	CARAVAN_MOD,0 */
 /* asm: 	.word	PTRUCKG_MOD,0 */
 /* asm: 	.word	JEEP_MOD,0 */
-int SIGMA_LIST[32] = {
+int SIGMA_LIST[] = {
     GTRUCK_MOD, 0,
     CBUS_MOD, SS_LONG,
     COPCAR_MOD, SS_COPCAR,
@@ -87,7 +96,12 @@ void SIGMA_DRONE(void)
     // asm: 	BNZ	GOAHEAD
     // asm: 	SLEEP	1
     // asm: 	BU	SIGMA_DRONE
-GOAHEAD:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DRONE", 0, 0);
+    UNIMPL();
+}
+
+void GOAHEAD(void)
+{
     // asm: 	LDI	SIGMA_LIST_LEN,AR2
     // asm: 	CALL	RANDU0
     // asm: 	CMPI	SIGT_COPCAR,R0		;ONLY 1 COPCAR ACTIVE AT A TIME
@@ -112,7 +126,12 @@ NOT_COP:
     // asm: 	BZ	DONTWORRY
     // asm: 	LDI	SIGT_GTRUCK,R0
     // asm: 	BU	WORIT
-DONTWORRY:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GOAHEAD", 0, 0);
+    UNIMPL();
+}
+
+void DONTWORRY(void)
+{
     // asm: 	STI	AR2,*+AR7(DELTA_MODEL)
     // asm: 	MPYI	VEHTAB_SIZE,AR2
     // asm: 	ADDI	@VEHICLE_TABLEI,AR2
@@ -236,7 +255,12 @@ NOTPSYCHO_LP:
     // asm: 	LDI	*+AR7(SIGMA_ONCE),R0
     // asm: 	BZ	NOSL2DIE2
     // asm: 	BU	BREAKDOWN
-    // asm: NOSL2DIE
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DONTWORRY", 0, 0);
+    UNIMPL();
+}
+
+void NOSL2DIE(void)
+{
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,*+AR7(SIGMA_ONCE)
 NOSL2DIE2:
@@ -323,7 +347,12 @@ CHECK_DIST:
 #endif
     // asm: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
     // asm: 	BU	CHECK_DIST
-THIS_PIECE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOSL2DIE", 0, 0);
+    UNIMPL();
+}
+
+void THIS_PIECE(void)
+{
     // asm: 	LDF	*+AR5(CARSPEED),R1
     // asm: 	LDFLE	30,R1			;if 0 or less assume 30 mph
     // asm: 	FLOATP	@NFRAMES,R2
@@ -358,7 +387,12 @@ NODIV:
     // asm: 	MPYF	0.01,R2
     // asm: 	STF	R2,*+AR5(CARTHROTTLE)
     // asm: 	BU	L99
-NOTPRECOL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "THIS_PIECE", 0, 0);
+    UNIMPL();
+}
+
+void NOTPRECOL(void)
+{
     // 	;set throttle
     // asm: 	LDF	*+AR7(DELTA_THROTTLE),R2
     // asm: 	MPYF	1.01,R2
@@ -379,7 +413,7 @@ L99:
 SIGMASLP:
     // asm: 	SLEEP	1
     // asm: 	B	SIGMA_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DRONE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTPRECOL", 0, 0);
     UNIMPL();
 }
 

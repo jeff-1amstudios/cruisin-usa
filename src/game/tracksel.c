@@ -16,10 +16,58 @@
 #include "error.h"
 #include "comm.h"
 #include "tracksel.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/TRACKSEL.ASM
  */
+
+void TRACK_SELECTION(void);
+void MOTION_SCREWED(void);
+void LLKJ(void);
+void JAJAD(void);
+void NOT1ST(void);
+void NOWAY(void);
+void JJKKA(void);
+void NO_HID1(void);
+void CLEANUP_TRACKSEL_PALS(void);
+void RESTORE_HIDDEN(void);
+void HIDDEN_TRACKS(void);
+void NHT1(void);
+void NHT2(void);
+void NHT3(void);
+void GET_RACE_IDX(void);
+void R55(void);
+void R56(void);
+void NH(void);
+void ZOOMINP(void);
+void ZOOMIN_TSEL(void);
+void JJDD(void);
+void HGF(void);
+void ZIX(void);
+void FIX_TRACK_SCREEN(void);
+void NSC(void);
+void NTRM1(void);
+void NWHEL1(void);
+void NBC(void);
+void NAS(void);
+void NN77(void);
+void NN88(void);
+void FTSLX(void);
+void TSEL_ZOOMOUTP(void);
+void JJKKD(void);
+void CENTER_THEONE(void);
+void CENTER_SUB1(void);
+void K89(void);
+void TSEL_ZOOMOUT(void);
+void JJKK(void);
+void ALLDN(void);
+void ANIMATE_MAP(void);
+void TRACK_SEL_CURSOR(void);
+void GET_TURNOBJ(void);
+void BOILERPLATE_INIT(void);
+void BOILERPLATE(void);
+void BOILERPLATE_DELETE(void);
 
 /* asm: TURNOBJ	.bss	TURNOBJ,1 */
 int TURNOBJ;
@@ -55,17 +103,8 @@ const char *L5A = "REMAIN SEATED";
 const char *L5B = "DO NOT TOUCH MATS";
 /* asm: IBOIBOJ	.bss	IBOIBOJ,2 */
 int IBOIBOJ[2];
-#if CDEBUG
-#endif
-#if DEBUG
-#endif
-/* asm: NOTUSA_RACE	NOTUSA_RACE
-	;Translate race index into an actual
-	;useable value.
-	;
-	;
-	.bss	HIDDEN_ON,1 */
-int NOTUSA_RACE[HIDDEN_ON];
+/* asm: HIDDEN_ON	.bss	HIDDEN_ON,1 */
+int HIDDEN_ON;
 /* *----------------------------------------------------------------------------
  */
 /* asm: TSEL_HEAD	.bss	TSEL_HEAD,1 */
@@ -77,13 +116,13 @@ int TSEL_THEONE;
 *
  */
 /* asm: ANIMATE_MAP_TAB	.word	mhop1,mhop2,mhop3,mhop4,-1 */
-int ANIMATE_MAP_TAB[5] = {
+int ANIMATE_MAP_TAB[] = {
     mhop1, mhop2, mhop3, mhop4, -1,
 };
 /* *----------------------------------------------------------------------------
  */
 /* asm: TURNANI	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
-int TURNANI[7] = {
+int TURNANI[] = {
     whel1, whel2, whel3, whel4, whel3, whel2, -1,
 };
 /* *----------------------------------------------------------------------------
@@ -106,7 +145,7 @@ int TURNANI[7] = {
 /* asm: 	.word	RACE_GG */
 /* asm: 	.word	RACE_IN */
 /* asm: 	.word	RACE_SF */
-int TRACK_SELECTION_LIST[14] = {
+int TRACK_SELECTION_LIST[] = {
     RACE_AZ,
     RACE_US101,
     RACE_LA,
@@ -209,6 +248,342 @@ void MOTION_SCREWED(void)
     UNIMPL();
 }
 
+void LLKJ(void)
+{
+    // asm: 	LDI	@LLG1,AR2
+    // asm: 	FLOAT	256,R2
+    // asm: 	FLOAT	50,R3
+    // asm: 	LDI	60,RC
+    // asm: 	CALL	TEXT_ADDDS
+    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    // asm: 	CALL	SET40FONTDS
+    // asm: 	LDI	@LLG2,AR2
+    // asm: 	FLOAT	256,R2
+    // asm: 	FLOAT	120,R3
+    // asm: 	LDI	60,RC
+    // asm: 	CALL	TEXT_ADDDS
+    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    // asm: 	CALL	SET40FONTDS
+    // asm: 	LDI	@LLG3,AR2
+    // asm: 	FLOAT	256,R2
+    // asm: 	FLOAT	190,R3
+    // asm: 	LDI	60,RC
+    // asm: 	CALL	TEXT_ADDDS
+    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    // asm: 	CALL	SET40FONTDS
+    // asm: 	LDI	AR5,R2
+    // asm: 	LDI	@L88,AR2
+    // asm: 	CALL	_itoa
+    // asm: 	LDI	@L88,AR2
+    // asm: 	FLOAT	256,R2
+    // asm: 	FLOAT	260,R3
+    // asm: 	LDI	60,RC
+    // asm: 	CALL	TEXT_ADDDS
+    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    // asm: 	CALL	SETN43FONTDS
+    // asm: 	SONDFX	BASICBEEPH
+    // asm: 	SLEEP	60
+    // asm: 	DBU	AR5,LLKJ
+    // asm: 	SLEEP	70
+    // asm: 	BU	DIAG_RETURN
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LLKJ", 0, 0);
+    UNIMPL();
+}
+
+void JAJAD(void)
+{
+    // 	;******
+    // 	;******
+    // 	;******  NORMAL GAME MODE...
+    // 	;******
+    // 	;******
+    // asm: 	LDI	@FIRST_RACE,R0
+    // asm: 	BNZ	NOBUYIN77
+    // asm: 	LDI	@DID_TIMED_OUT,R0		;IF TIMED OUT THEN YOU MAY NOT GET A FREE RACE
+    // asm: 	BNZ	NOT1ST
+    // asm: 	LDI	@POSITION,R0
+    // asm: 	CMPI	1,R0
+    // asm: 	BNE	NOT1ST
+    // asm: 	READAUD	ADJ_FREEGAME
+    // asm: 	CMPI	0,R0
+    // asm: 	BEQ	NOT1ST
+    // asm: 	LDI	@BONUS_WAVE,AR2
+    // asm: 	DEC	AR2
+    // asm: 	ADDI	AUD_WIN_GGATE,AR2
+    // asm: 	CALL	AUDIT_INC
+    // asm: 	INCAUD	AUD_GAMES_CONTINUES
+    // asm: 	INCAUD	AUD_TOTAL_FREEGAMES
+    // asm: 	CALL	HSTDEC
+    // asm: 	BU	TOJOIN
+    // 	;Has the player made Pole Position?  (1)
+    // 	;T-> Branch over this Coin Grab
+    // 	;F-> Get more coin to continue
+    // 	;
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JAJAD", 0, 0);
+    UNIMPL();
+}
+
+void NOT1ST(void)
+{
+    // asm: 	CALL	BOILERPLATE
+    // asm: 	JSRP	INSMORE
+    // asm: 	CALL	BOILERPLATE_DELETE
+    // asm: 	CMPI	1,AR6
+    // asm: 	BNE	ENDPLAYER
+    // asm: 	INCAUD	AUD_GAMES_CONTINUES
+    // asm: 	CALL	HSTDEC
+TOJOIN:
+    // asm: 	JSRP	ISSUE_STARTGAME_TSEL
+NOBUYIN77:
+    // asm: 	LDI	@_MODE,R0
+    // asm: 	ANDN	MBRIDGE|MINTUNNEL|MHUD|MWATER|MINFIN|MHS|MSLINE|MMODE,R0
+    // asm: 	OR	MINTRO|MGO,R0
+    // asm: 	STI	R0,@_MODE
+    // asm: 	LDI	12,R0
+    // asm: 	STI	R0,@_countdown
+    // asm: 	CALL	INIT_PEDALCHK
+    // asm: 	CLRI	R0
+    // asm: 	STI	R0,@START_HIT
+    // asm: 	LDI	@HEAD2HEAD_ON,R0
+    // asm: 	BZ	PRAPA
+    // asm: 	LDI	@OM_CHOSEN_RACE,R0
+    // asm: 	CMPI	-1,R0
+    // asm: 	BNE	PRAJHFS
+PRAPA:
+    // asm: 	LDI	8,AR5
+    // asm: BABO
+    // asm: 	CALL	GET_RACE_IDX
+    // asm: 	CALL	TRACK_SEL_CURSOR
+    // asm: 	SLEEP	1
+    // asm: 	DBU	AR5,BABO
+PRAJHFS:
+    // asm: 	CLRI	R0
+    // asm: 	STI	R0,@START_HIT
+    // 	;*************************************************************
+    // 	;*************************************************************
+    // 	;SELECT TRACK MAIN LOOP
+    // 	;*************************************************************
+    // 	;*************************************************************
+TRACK_SEL_LP:
+    // 	;are we linked?
+    // asm: 	LDI	@HEAD2HEAD_ON,R0
+    // asm: 	BZ	NOWAY
+    // 	;has the other player chosen a game
+    // 	;
+    // asm: 	LDI	@OM_CHOSEN_RACE,R0
+    // asm: 	CMPI	-1,R0
+    // asm: 	BEQ	NOWAY
+    // asm: 	LDI	@OM_HIDDEN_ON,R1
+    // asm: 	STI	R1,*+AR7(LAST_HIDDEN_TRACK)
+    // asm: 	STI	R0,@CHOSEN_RACE
+    // asm: 	LDI	@OM_RACE_MODE,R0
+    // asm: 	STI	R0,@RACE_MODE
+    // asm: 	BU	TSLPX
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT1ST", 0, 0);
+    UNIMPL();
+}
+
+void NOWAY(void)
+{
+    // asm: 	LDI	@START_HIT,R0
+    // asm: 	BNZ	TSLPX
+    // asm: 	CALL	HIDDEN_TRACKS
+    // asm: 	CALL	GET_RACE_IDX
+    // asm: 	CALL	TRACK_SEL_CURSOR
+    // 	;-------time remaining
+    // 	;
+    // asm: 	LDL	time,AR2
+    // asm: 	LDI	242,R2			;R2	POS X
+    // asm: 	LDI	240,R3			;R3	POS Y
+    // asm: 	LDI	TM|ZS,R4
+    // asm: 	CALL	BLTMOD2D
+    // asm: 	LDI	@CRUISE,AR2
+    // asm: 	FLOAT	256,R2
+    // asm: 	FLOAT	30,R3
+    // asm: 	LDI	1,RC
+    // asm: 	CALL	TEXT_ADDDS
+    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    // 	;HEAD2HEAD
+    // 	;
+    // 	;are we in linked game?
+    // 	;	F -> continue
+    // 	;has the other machine chosen the game?
+    // 	;	T->  accept the game
+    // 	;
+    // asm: 	CALL	PEDALCHK
+    // asm: 	BC	TSLPX
+    // asm: 	CALL	RACESEL_TIMER
+    // asm: 	SLEEP	1
+    // asm: 	LDI	@_countdown,R0
+    // asm: 	BGT	TRACK_SEL_LP
+TSLPX:
+    // 	;HEAD2HEAD
+    // 	;
+    // 	;NOW TELL OTHER MACHINE:
+    // 	;
+    // 	;	that we are finished with selecting the race
+    // 	;	if we are subordinate dont???
+    // 	;
+    // 	;
+    // asm: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
+    // asm: 	STI	R0,@HIDDEN_ON
+    // asm: 	CALL	SEND_RACENUM
+    // 	;IF we are a slave, then we must wait
+    // 	;for master to tell us what we chose
+    // asm: 	LDI	@HEAD2HEAD_ON,R0
+    // asm: 	BZ	NOTYETLNKD
+    // asm: 	LDI	@DIPRAM,R0
+    // asm: 	TSTB	CMDP_MASTER,R0
+    // asm: 	BZ	NOTYETLNKD	;actually: is master therefore IGNORE
+    // asm: 	LDI	20,AR5
+FEEDBACKLP:
+    // asm: 	SLEEP	1
+    // asm: 	DEC	AR5
+    // asm: 	CMPI	0,AR5
+#if CDEBUG
+    // asm: 	BEQ	$
+#endif
+    // asm: 	BEQ	NOTYETLNKD
+    // asm: 	LDI	@OM_CHOSEN_RACE,R0
+    // asm: 	CMPI	-1,R0
+    // asm: 	BEQ	FEEDBACKLP
+    // asm: 	LDI	@OM_HIDDEN_ON,R1
+    // asm: 	STI	R1,*+AR7(LAST_HIDDEN_TRACK)
+    // asm: 	LDI	@OM_CHOSEN_RACE,R0
+    // asm: 	STI	R0,@CHOSEN_RACE
+    // asm: 	LDI	@OM_RACE_MODE,R0
+    // asm: 	STI	R0,@RACE_MODE
+NOTYETLNKD:
+    // 	;THIS IS NOW MEANINGLESS
+    // 	;CLEAR THIS FOR FUTURE USE
+    // 	;
+    // asm: 	CLRI	R0
+    // asm: 	STI	R0,@OM_HIDDEN_ON
+    // 	;\\\  \\\  \\\  \\\  \\\  \\\
+    // 	;    \\\  \\\  \\\  \\\  \\\  \\\
+    // asm: 	SONDFX	TRANS
+    // ;	;HEAD2HEAD
+    // ;	;
+    // ;	;NOW TELL OTHER MACHINE:
+    // ;	;
+    // ;	;	that we are finished with selecting the race
+    // ;	;	if we are subordinate dont???
+    // ;	;
+    // ;	;
+    // ;	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
+    // ;	STI	R0,@HIDDEN_ON
+    // ;	CALL	SEND_RACENUM
+    // 	;delete cursor
+    // 	;
+    // asm: 	LDI	*+AR7(SMALL_CURSOR),AR4
+    // asm: 	LDI	*+AR4(OLINK2),AR5
+    // asm: 	LDI	@TSEL_HEAD,R0
+    // asm: 	BU	LKGGA
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOWAY", 0, 0);
+    UNIMPL();
+}
+
+void JJKKA(void)
+{
+    // asm: LDI	*+AR0(OLINK2),R0
+#if DEBUG
+    // asm: 	BZ	$
+#endif
+    // asm: 	BZ	ALLDNA
+LKGGA:
+    // asm: LDI	R0,AR0
+    // asm: 	CMPI	*+AR0(OLINK2),AR4
+    // asm: 	BNE	JJKKA
+    // asm: 	STI	AR5,*+AR0(OLINK2)
+ALLDNA:
+    // asm: 	LDI	*+AR7(SMALL_CURSOR),AR2
+    // asm: 	CALL	OBJ_DELETE
+    // 	;********************************************************************
+    // 	;WAIT FOR DUAL PLAYER GAME HERE
+    // 	;except with the first game
+    // 	;
+    // 	;********************************************************************
+    // 	;
+    // asm: 	LDI	@FIRST_RACE,R0
+    // asm: 	BNZ	KAKAF
+    // asm: 	JSRP	WAIT_FOR_CHALLENGER
+KAKAF:
+    // 	;
+    // 	;********************************************************************
+    // 	;********************************************************************
+    // 	;OM race mode == RM_SINGLE <=>
+    // 	;	not racing across the USA already
+    // 	;else
+    // 	;	we have bought into an ongoing
+    // 	;	race game
+    // asm: 	LDI	@RACE_MODE,R0
+    // asm: 	CMPI	RM_USA,R0
+    // asm: 	BEQ	BOUGHRAU
+    // ;	BNE	NBIRAU
+    // ;	BU	NOHID1
+    // ;NBIRAU
+    // asm: 	LDI	@CHOSEN_RACE,R0
+    // asm: 	CMPI	5,R0
+    // asm: 	LDIEQ	RM_USA,R1
+    // asm: 	LDINE	RM_SINGLE,R1
+    // asm: 	STI	R1,@RACE_MODE
+    // asm: 	CMPI	RM_USA,R1
+    // asm: 	BNE	NOTUSA_RACE
+    // asm: 	INCAUD	AUD_START_GGATE
+    // asm: 	INCAUD	AUD_FS_USA
+    // asm: 	LDI	0,AR2
+    // asm: 	BU	JJ2
+NOTUSA_RACE:
+    // 	;Translate race index into an actual
+    // 	;useable value.
+    // 	;
+    // 	;
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JJKKA", 0, 0);
+    UNIMPL();
+}
+
+void NO_HID1(void)
+{
+    // 	;this must happen before translation
+    // 	;
+    // asm: 	LDI	@CHOSEN_RACE,AR2
+    // asm: 	STI	AR2,@RAW_CHOOSENTRK
+    // asm: 	ADDI	AUD_FS_AZ,AR2
+    // asm: 	CALL	AUDIT_INC
+    // asm: 	LDI	@CHOSEN_RACE,AR2
+    // asm: 	MPYI	TS_SIZE,AR2
+    // asm: 	ADDI	@TRACK_SELECTION_LISTI,AR2
+    // asm: 	LDI	*AR2,AR2
+JJ2:
+    // asm: STI	AR2,@CHOSEN_RACE
+BOUGHRAU:
+    // asm: 	JSRP	TSEL_ZOOMOUTP
+    // asm: 	CLRI	R0
+    // asm: 	STI	R0,@NOAERASE
+    // asm: 	CALL	OBJ_INIT
+    // asm: 	SLEEP	2
+    // asm: 	CALL	CLEANUP_TRACKSEL_PALS
+    // asm: 	CALL	CLEANUP_PALS
+    // asm: 	LDI	@CHOSEN_RACE,AR0
+    // asm: 	ADDI	@RACE_STARTING_POINTSI,AR0
+    // asm: 	LDI	*AR0,R0
+    // asm: 	STI	R0,@STARTSECTION
+    // asm: 	CALL	FIND_STARTING_VALUES
+    // asm: 	LDI	UTIL_C|CHOOSERACE_T,R0
+    // asm: 	LDI	-1,R1
+    // asm: 	CALL	PRC_KILLALL
+    // asm: 	LDI	@CHOSEN_RACE,R0
+    // asm: 	STI	R0,@BONUS_WAVE		;Set bonus wave 'cause noby else does until you finish a wave
+    // asm: 	RETP
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_HID1", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
  */
 void CLEANUP_TRACKSEL_PALS(void)
@@ -272,7 +647,12 @@ void HIDDEN_TRACKS(void)
     // asm: 	LDL	mpcesy,R0
     // asm: 	STI	R0,*+AR0(OROMDATA)
     // asm: 	BU	HIDDTX
-NHT1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIDDEN_TRACKS", 0, 0);
+    UNIMPL();
+}
+
+void NHT1(void)
+{
     // asm: CMPI	SW_VIEW0_H|SW_VIEW2_H,R0
     // asm: 	BNE	NHT2
     // asm: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
@@ -292,7 +672,12 @@ NHT1:
     // asm: 	LDL	mpcmed,R0
     // asm: 	STI	R0,*+AR0(OROMDATA)
     // asm: 	BU	HIDDTX
-NHT2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NHT1", 0, 0);
+    UNIMPL();
+}
+
+void NHT2(void)
+{
     // asm: CMPI	SW_VIEW1_H|SW_VIEW2_H,R0
     // asm: 	BNE	NHT3
     // asm: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
@@ -314,7 +699,12 @@ NHT2:
     // asm: 	LDL	mpcexp,R0
     // asm: 	STI	R0,*+AR0(OROMDATA)
     // asm: 	BU	HIDDTX
-NHT3:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NHT2", 0, 0);
+    UNIMPL();
+}
+
+void NHT3(void)
+{
     // asm: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
     // asm: 	CMPI	-1,R0
     // asm: 	BEQ	HIDDTX
@@ -323,7 +713,7 @@ NHT3:
     // asm: 	STI	R0,*+AR7(LAST_HIDDEN_TRACK)
 HIDDTX:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIDDEN_TRACKS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NHT3", 0, 0);
     UNIMPL();
 }
 
@@ -356,14 +746,24 @@ NSND:
     // asm: 	LDIEQ	11,AR3
     // asm: 	BNE	NH
     // asm: 	BU	R66
-R55:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_RACE_IDX", 0, 0);
+    UNIMPL();
+}
+
+void R55(void)
+{
     // asm: 	CMPI	6,R0
     // asm: 	BNE	R56
     // asm: 	CMPI	2,R1
     // asm: 	LDIEQ	12,AR3
     // asm: 	BNE	NH
     // asm: 	BU	R66
-R56:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "R55", 0, 0);
+    UNIMPL();
+}
+
+void R56(void)
+{
     // asm: 	CMPI	9,R0
     // asm: 	BNE	NH
     // asm: 	CMPI	3,R1
@@ -373,7 +773,12 @@ R66:
     // asm: 	LDI	@CHOSEN_RACE,R0
     // asm: 	LDI	R0,AR2
     // asm: 	BU	KK88
-NH:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "R56", 0, 0);
+    UNIMPL();
+}
+
+void NH(void)
+{
     // asm: 	LDI	@CHOSEN_RACE,AR2
     // asm: 	LDI	AR2,AR3
 KK88:
@@ -417,7 +822,7 @@ KK88:
     // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
 NOTTHEWH:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_RACE_IDX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NH", 0, 0);
     UNIMPL();
 }
 
@@ -459,7 +864,12 @@ ZISL:
     // asm: 	ADDF	*+AR0(OPOSZ),R0
     // asm: 	STF	R0,*+AR0(OPOSZ)
     // asm: 	BU	HGF
-JJDD:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMIN_TSEL", 0, 0);
+    UNIMPL();
+}
+
+void JJDD(void)
+{
     // asm: 	LDF	*+AR0(OVELZ),R0
     // asm: 	STF	R0,*+AR0(OPOSZ)
     // asm: 	CLRF	R2
@@ -468,7 +878,12 @@ JJDD:
     // asm: 	ADDI	OMATRIX,AR2
     // asm: 	CALL	FIND_ZMATRIX
     // asm: 	BU	HHFFD
-HGF:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JJDD", 0, 0);
+    UNIMPL();
+}
+
+void HGF(void)
+{
     // asm: 	LDF	*+AR0(ORADZ),R2
     // asm: 	MPYF	0.65,R2
     // asm: 	STF	R2,*+AR0(ORADZ)
@@ -477,9 +892,14 @@ HGF:
     // asm: 	CALL	FIND_ZMATRIX
 HHFFD:
     // asm: 	BU	ZISL
-ZIX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HGF", 0, 0);
+    UNIMPL();
+}
+
+void ZIX(void)
+{
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMIN_TSEL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZIX", 0, 0);
     UNIMPL();
 }
 
@@ -525,7 +945,12 @@ FTSL:
     // asm: 	LDIEQ	AR0,R6
     // asm: 	STI	AR5,*+AR0(OLINK2)
     // asm: 	BU	FTSL
-NSC:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIX_TRACK_SCREEN", 0, 0);
+    UNIMPL();
+}
+
+void NSC(void)
+{
     // asm: 	CMPI	8A1h,R0
     // asm: 	BNE	NTRM1
     // asm: 	LDI	AR0,AR4
@@ -535,7 +960,12 @@ NSC:
     // asm: 	LDIEQ	AR0,R6
     // asm: 	STI	AR5,*+AR0(OLINK2)
     // asm: 	BU	FTSL
-NTRM1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NSC", 0, 0);
+    UNIMPL();
+}
+
+void NTRM1(void)
+{
     // asm: 	CMPI	8A2h,R0
     // asm: 	BNE	NWHEL1
     // asm: 	LDI	AR0,AR4
@@ -545,7 +975,12 @@ NTRM1:
     // asm: 	LDIEQ	AR0,R6
     // asm: 	STI	AR5,*+AR0(OLINK2)
     // asm: 	BU	FTSL
-NWHEL1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTRM1", 0, 0);
+    UNIMPL();
+}
+
+void NWHEL1(void)
+{
     // asm: 	CMPI	0410h,R0
     // asm: 	BNE	NBC
     // asm: 	STI	AR0,*+AR7(BIG_CURSOR)
@@ -557,7 +992,12 @@ NWHEL1:
     // asm: 	LDIEQ	AR0,R6
     // asm: 	STI	AR5,*+AR0(OLINK2)
     // asm: 	BU	FTSL
-NBC:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NWHEL1", 0, 0);
+    UNIMPL();
+}
+
+void NBC(void)
+{
     // asm: 	CMPI	0405h,R0
     // asm: 	BNE	NAS
     // asm: 	PUSH	AR0
@@ -568,27 +1008,47 @@ NBC:
     // asm: 	LDIEQ	AR0,R6
     // asm: 	STI	AR5,*+AR0(OLINK2)
     // asm: 	BU	FTSL
-NAS:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NBC", 0, 0);
+    UNIMPL();
+}
+
+void NAS(void)
+{
     // asm: 	CMPI	40Eh,R0
     // asm: 	BNE	NN77
     // asm: 	LDI	AR0,AR2
     // asm: 	CALL	OBJ_DELETE
     // asm: 	BU	FTSL
-NN77:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NAS", 0, 0);
+    UNIMPL();
+}
+
+void NN77(void)
+{
     // asm: 	CMPI	40Fh,R0
     // asm: 	BNE	NN88
     // asm: 	LDI	AR0,AR2
     // asm: 	CALL	OBJ_DELETE
     // asm: 	BU	FTSL
-NN88:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NN77", 0, 0);
+    UNIMPL();
+}
+
+void NN88(void)
+{
     // asm: 	CMPI	-1,R6
     // asm: 	LDIEQ	AR0,R6
     // asm: 	STI	AR5,*+AR0(OLINK2)
     // asm: 	BU	FTSL
-FTSLX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NN88", 0, 0);
+    UNIMPL();
+}
+
+void FTSLX(void)
+{
     // asm: 	STI	R6,@TSEL_HEAD
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIX_TRACK_SCREEN", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FTSLX", 0, 0);
     UNIMPL();
 }
 
@@ -600,7 +1060,12 @@ void TSEL_ZOOMOUTP(void)
     // asm: 	BNE	JJKKD
     // asm: 	LDI	5,AR2
     // asm: 	BU	LLGF
-JJKKD:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TSEL_ZOOMOUTP", 0, 0);
+    UNIMPL();
+}
+
+void JJKKD(void)
+{
     // asm: LDI	@RAW_CHOOSENTRK,AR2
 LLGF:
     // asm: LDI	AR2,AR3
@@ -614,7 +1079,7 @@ TSLLP:
     // asm: 	SLEEP	1
     // asm: 	DBU	AR5,TSLLP
     // asm: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TSEL_ZOOMOUTP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JJKKD", 0, 0);
     UNIMPL();
 }
 
@@ -663,7 +1128,12 @@ void CENTER_SUB1(void)
     // asm: 	BNE	K89
     // asm: 	LDI	14,AR2
     // asm: 	BU	K99
-K89:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CENTER_SUB1", 0, 0);
+    UNIMPL();
+}
+
+void K89(void)
+{
     // asm: LDI	@CHOSEN_RACE,AR2
 K99:
     // asm: ADDI	@LEG_NAMESI,AR2
@@ -673,7 +1143,7 @@ K99:
     // asm: 	CALL	SET12FONT
     // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CENTER_SUB1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "K89", 0, 0);
     UNIMPL();
 }
 
@@ -683,7 +1153,12 @@ void TSEL_ZOOMOUT(void)
 {
     // asm: 	LDI	@TSEL_HEAD,R0
     // asm: 	BU	LKGG
-JJKK:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TSEL_ZOOMOUT", 0, 0);
+    UNIMPL();
+}
+
+void JJKK(void)
+{
     // asm: LDI	*+AR0(OLINK2),R0
     // asm: 	BZ	ALLDN
 LKGG:
@@ -705,9 +1180,14 @@ LKGG:
     // asm: 	ADDF	*+AR0(OPOSZ),R0
     // asm: 	STF	R0,*+AR0(OPOSZ)
     // asm: 	BU	JJKK
-ALLDN:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JJKK", 0, 0);
+    UNIMPL();
+}
+
+void ALLDN(void)
+{
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TSEL_ZOOMOUT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLDN", 0, 0);
     UNIMPL();
 }
 

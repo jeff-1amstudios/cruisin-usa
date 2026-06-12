@@ -15,10 +15,53 @@
 #include "delta.h"
 #include "trans.h"
 #include "discovered_defines.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/TRANS.ASM
  */
+
+void CHOOSE_TRANSMISSION(void);
+void OPEN_DOOR_PROC(void);
+void WHEEL_FROM_BELOW(void);
+void CENTERTHEONE(void);
+void DROPTHETURN(void);
+void DROPTHECYCLE(void);
+void DROPTHEWHEEL(void);
+void DROPTHEOTHER(void);
+void SIDE_DOOR(void);
+void NTLTS(void);
+void DOLSX(void);
+void DOORLISTI(void);
+void DOOR_OPENING(void);
+void NOTLEFT(void);
+void DOLX(void);
+void SNAPCURSOR(void);
+void WHEEL_ROUT(void);
+void ISL(void);
+void DOOR_ELEMENT_DELETE_ALL(void);
+void DEDX(void);
+void DOOR_ELEMENT_DELETE(void);
+void TRANSCHOICE(void);
+void GET_UNIT_WHEEL(void);
+void TILE_PIECES(void);
+void FIX_TRANSMISSION_SCREEN(void);
+void NOTFRNT(void);
+void NOT366(void);
+void NOTCURSOR(void);
+void NOTLEN(void);
+void NOTREN(void);
+void NOTMAN(void);
+void NOTAUTO(void);
+void NOTPTCYC(void);
+void NOTWHELTOSEL(void);
+void FTSLX(void);
+void MOVE_PUSH_BOX(void);
+void TURNTO_SELECT(void);
+void CYCLE_PUSH(void);
+void ADD_TO_DOOR_LIST(void);
+void ENGINE_COLOR_INIT(void);
+void ENGINE_COLOR(void);
 
 /* asm: EPALR	.word	EPALRR */
 int *EPALR = EPALRR;
@@ -41,6 +84,11 @@ int EPALRL[129];
  */
 /* asm: DOORTHETA	.bss	DOORTHETA,1 */
 int DOORTHETA;
+/* asm: DOORLIST	.bss	DOORLIST,1 */
+int DOORLIST;
+/* *
+*
+ */
 /* asm: DO_LPPX	.float	-256 */
 float DO_LPPX = -256.0f;
 /* asm: DO_PPZ	.float	368 */
@@ -92,13 +140,13 @@ int TRANS_HEAD;
 /* *----------------------------------------------------------------------------
  */
 /* asm: TRNTAB	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
-int TRNTAB[7] = {
+int TRNTAB[] = {
     whel1, whel2, whel3, whel4, whel3, whel2, -1,
 };
 /* *----------------------------------------------------------------------------
  */
 /* asm: CYCTAB	.word	trm3,trm2,trm1,trm2,trm3,trm4,-1 */
-int CYCTAB[7] = {
+int CYCTAB[] = {
     trm3, trm2, trm1, trm2, trm3, trm4, -1,
 };
 
@@ -458,21 +506,29 @@ DOLS:
     // asm: 	ADDF	15,R0
     // asm: 	STF	R0,*+AR4(OPOSX)
     // asm: 	BU	DOLS
-NTLTS:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIDE_DOOR", 0, 0);
+    UNIMPL();
+}
+
+void NTLTS(void)
+{
     // asm: 	LDF	*+AR4(OPOSX),R0
     // asm: 	SUBF	15,R0
     // asm: 	STF	R0,*+AR4(OPOSX)
     // asm: 	BU	DOLS
-DOLSX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTLTS", 0, 0);
+    UNIMPL();
+}
+
+void DOLSX(void)
+{
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIDE_DOOR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOLSX", 0, 0);
     UNIMPL();
 }
 
 void DOORLISTI(void)
 {
-    // *
-    // *
     /* no executable asm lines detected */
     UNIMPL();
 }
@@ -519,7 +575,12 @@ DOL:
     // asm: 	ADDI	OMATRIX,AR2
     // asm: 	CALL	CPYMAT
     // asm: 	BU	KJL
-NOTLEFT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOOR_OPENING", 0, 0);
+    UNIMPL();
+}
+
+void NOTLEFT(void)
+{
     // asm: 	LDF	*+AR4(OVELX),R0
     // asm: 	SUBF	@DO_RPPX,R0
     // asm: 	STF	R0,*+AR2(X)
@@ -541,9 +602,14 @@ NOTLEFT:
     // asm: 	CALL	CPYMAT
 KJL:
     // asm: 	BU	DOL
-DOLX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTLEFT", 0, 0);
+    UNIMPL();
+}
+
+void DOLX(void)
+{
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOOR_OPENING", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOLX", 0, 0);
     UNIMPL();
 }
 
@@ -584,7 +650,12 @@ ISR:
     // asm: 	LDI	MANUAL_TRANSMISSION,R0
     // asm: 	STI	R0,@CHOSEN_TRANSMISSION
     // asm: 	BU	ISDN2
-ISL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WHEEL_ROUT", 0, 0);
+    UNIMPL();
+}
+
+void ISL(void)
+{
     // asm: 	CMPF	0.45,R0
     // asm: 	BLT	ISLT
     // asm: 	CMPI	MANUAL_TRANSMISSION,R1
@@ -621,7 +692,7 @@ ISDN2:
     // asm: 	CALL	ONESNDFX
 NUTHIN:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WHEEL_ROUT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISL", 0, 0);
     UNIMPL();
 }
 
@@ -638,11 +709,16 @@ DEDL:
     // asm: 	LDI	AR0,AR2
     // asm: 	CALL	OBJ_DELETE
     // asm: 	BU	DEDL
-DEDX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOOR_ELEMENT_DELETE_ALL", 0, 0);
+    UNIMPL();
+}
+
+void DEDX(void)
+{
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@DOORLIST
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOOR_ELEMENT_DELETE_ALL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEDX", 0, 0);
     UNIMPL();
 }
 
@@ -793,7 +869,12 @@ FTSL:
     // asm: 	CALL	OBJ_INSERTP
     // asm: 	CALL	ADD_TO_DOOR_LIST
     // asm: 	BU	FTSL
-NOTFRNT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIX_TRANSMISSION_SCREEN", 0, 0);
+    UNIMPL();
+}
+
+void NOTFRNT(void)
+{
     // asm: 	CMPI	15h,R0	;THE WHEEL?
     // asm: 	BNE	NOT366
     // asm: 	STI	AR0,@CT_WHEEL
@@ -813,7 +894,12 @@ NOTFRNT:
     // asm: 	ADDF	*+AR0(OPOSY),R0
     // asm: 	STF	R0,*+AR0(OPOSY)
     // asm: 	BU	FTSL
-NOT366:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTFRNT", 0, 0);
+    UNIMPL();
+}
+
+void NOT366(void)
+{
     // asm: 	CMPI	14h,R0	;CURSOR?
     // asm: 	BNE	NOTCURSOR
     // asm: 	STI	AR0,@CT_CURSOR
@@ -822,19 +908,34 @@ NOT366:
     // asm: 	CALL	OBJ_INSERTP
     // asm: 	CALL	ADD_TO_DOOR_LIST
     // asm: 	BU	FTSL
-NOTCURSOR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT366", 0, 0);
+    UNIMPL();
+}
+
+void NOTCURSOR(void)
+{
     // asm: 	CMPI	10h,R0	;LEFT ENGINE
     // asm: 	BNE	NOTLEN
     // asm: 	STI	AR0,@CT_LENG
     // asm: 	CALL	ADD_TO_DOOR_LIST
     // asm: 	BU	FTSL
-NOTLEN:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTCURSOR", 0, 0);
+    UNIMPL();
+}
+
+void NOTLEN(void)
+{
     // asm: 	CMPI	11h,R0	;RIGHT ENGINE
     // asm: 	BNE	NOTREN
     // asm: 	STI	AR0,@CT_RENG
     // asm: 	CALL	ADD_TO_DOOR_LIST
     // asm: 	BU	FTSL
-NOTREN:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTLEN", 0, 0);
+    UNIMPL();
+}
+
+void NOTREN(void)
+{
     // asm: 	CMPI	12h,R0	;AUTO BOX (LEFT)
     // asm: 	BNE	NOTMAN
     // asm: 	STI	AR0,@CT_MAN
@@ -865,7 +966,12 @@ NOTREN:
     // asm: 	STF	R0,*+AR0(OPOSX)
     // asm: 	CALL	ADD_TO_DOOR_LIST
     // asm: 	BU	FTSL
-NOTMAN:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTREN", 0, 0);
+    UNIMPL();
+}
+
+void NOTMAN(void)
+{
     // asm: 	CMPI	13h,R0	;MANUAL BOX (RIGHT)
     // asm: 	BNE	NOTAUTO
     // asm: 	STI	AR0,@CT_AUTO
@@ -896,7 +1002,12 @@ NOTMAN:
     // asm: 	STF	R0,*+AR0(OPOSX)
     // asm: 	CALL	ADD_TO_DOOR_LIST
     // asm: 	BU	FTSL
-NOTAUTO:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTMAN", 0, 0);
+    UNIMPL();
+}
+
+void NOTAUTO(void)
+{
     // asm: 	CMPI	16h,R0	;PUSH TO CYCLE?
     // asm: 	BNE	NOTPTCYC
     // asm: 	STI	AR0,@CT_PUSHTOCYCLE
@@ -918,7 +1029,12 @@ NOTAUTO:
     // asm: 	LDI	AR0,AR4
     // asm: 	CREATE	CYCLE_PUSH,UTIL_C|CHOOSECAR_T
     // asm: 	BU	FTSL
-NOTPTCYC:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTAUTO", 0, 0);
+    UNIMPL();
+}
+
+void NOTPTCYC(void)
+{
     // asm: 	CMPI	17h,R0	;PUSH TO CYCLE?
     // asm: 	BNE	NOTWHELTOSEL
     // asm: 	STI	AR0,@CT_TURNTOSEL
@@ -940,13 +1056,23 @@ NOTPTCYC:
     // asm: 	LDI	AR0,AR4
     // asm: 	CREATE	TURNTO_SELECT,UTIL_C|CHOOSECAR_T
     // asm: 	BU	FTSL
-NOTWHELTOSEL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTPTCYC", 0, 0);
+    UNIMPL();
+}
+
+void NOTWHELTOSEL(void)
+{
     // asm: 	CALL	ADD_TO_DOOR_LIST
     // asm: 	BU	FTSL
-FTSLX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTWHELTOSEL", 0, 0);
+    UNIMPL();
+}
+
+void FTSLX(void)
+{
     // asm: 	STI	R6,@TRANS_HEAD
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIX_TRANSMISSION_SCREEN", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FTSLX", 0, 0);
     UNIMPL();
 }
 

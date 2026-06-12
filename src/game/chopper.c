@@ -19,6 +19,28 @@
  * Source module: asm/CHOPPER.ASM
  */
 
+void DIRECT_ATTACK(void);
+void THIS_PIECE28(void);
+void ONCOMMING_BUZZ(void);
+void THIS_PIECE2(void);
+void CHOPPER(void);
+void DOTHEMOVE(void);
+void FORWARD_BUZZ(void);
+void THIS_PIECE(void);
+void ISBEND(void);
+void LITTLE(void);
+void FLYAWAY(void);
+void KKII(void);
+void CHOPPER_DIE(void);
+void FIND_YX_MATRIX(void);
+void SETDYNAOBJ(void);
+void CHOPPERANI(void);
+void FSL_MOVE(void);
+void HELI_SND(void);
+void NOT_T1(void);
+void NOT_T2(void);
+void GET_CLOSEST_TRAK(void);
+
 /* asm: HELI_ABORT	.bss	HELI_ABORT,1 */
 int HELI_ABORT;
 /* *LOCALS  (AFTER DELTA EQUATES)
@@ -58,7 +80,7 @@ int HELI_ABORT;
 /* asm: 	.float	0,0,0		;main body */
 /* asm: 	.word	94		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
-int CHOPPERDYNA[11] = {
+int CHOPPERDYNA[] = {
     1, // #OF DYNAS-1
     0, -206, 14, // blades
     3, // VERTS-1
@@ -117,7 +139,12 @@ CHECK_DIST28:
     // asm: 	LDI	*+AR0(OUSR1),R0
     // asm: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
     // asm: 	BU	CHECK_DIST28
-THIS_PIECE28:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIRECT_ATTACK", 0, 0);
+    UNIMPL();
+}
+
+void THIS_PIECE28(void)
+{
     // asm: 	FLOATP	@NFRAMES,R1
     // asm: 	MPYF	*+AR7(CD_TSPEED),R1
     // asm: 	LDFLE	30,R1			;if 0 or less assume 30 voxel per frame
@@ -171,7 +198,7 @@ LLK28:
     // asm: 	CALL	FSL_MOVE
     // asm: 	SLEEP	1
     // asm: 	BU	DIRECT_ATTACK
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIRECT_ATTACK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "THIS_PIECE28", 0, 0);
     UNIMPL();
 }
 
@@ -256,7 +283,12 @@ CHECK_DIST2:
     // asm: 	LDI	*+AR0(OUSR1),R0
     // asm: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
     // asm: 	BU	CHECK_DIST2
-THIS_PIECE2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ONCOMMING_BUZZ", 0, 0);
+    UNIMPL();
+}
+
+void THIS_PIECE2(void)
+{
     // asm: 	FLOATP	@NFRAMES,R1
     // asm: 	MPYF	*+AR7(CD_TSPEED),R1
     // asm: 	LDFLE	30,R1			;if 0 or less assume 30 voxel per frame
@@ -310,7 +342,7 @@ LLK2:
     // asm: 	CALL	FSL_MOVE
     // asm: 	SLEEP	1
     // asm: 	BU	ONBUZZ_L
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ONCOMMING_BUZZ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "THIS_PIECE2", 0, 0);
     UNIMPL();
 }
 
@@ -386,14 +418,19 @@ CHOPPER_PASS:
     // asm: 	BGT	DOTHEMOVE
     // asm: 	STI	R0,*+AR7(CD_PASS_COUNT)
     // asm: 	BU	ONCOMMING_BUZZ
-DOTHEMOVE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOPPER", 0, 0);
+    UNIMPL();
+}
+
+void DOTHEMOVE(void)
+{
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,*+AR7(CD_LASTPASS)
     // asm: 	RANDN	2
     // asm: 	STI	R0,*+AR7(CD_DOATTACK)
     // asm: 	LDI	R0,R0
     // asm: 	BNZ	ONCOMMING_BUZZ
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOPPER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOTHEMOVE", 0, 0);
     UNIMPL();
 }
 
@@ -491,7 +528,12 @@ CHECK_DIST:
     // asm: 	LDI	*+AR0(OUSR1),R0
     // asm: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
     // asm: 	BU	CHECK_DIST
-THIS_PIECE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FORWARD_BUZZ", 0, 0);
+    UNIMPL();
+}
+
+void THIS_PIECE(void)
+{
     // asm: 	FLOAT	@NFRAMES,R1
     // asm: 	MPYF	*+AR7(CD_TSPEED),R1
     // asm: 	LDFLE	30,R1			;if 0 or less assume 30 voxel per frame
@@ -578,7 +620,12 @@ NODIV2:
     // asm: 	LDFGT	R2,R0
     // asm: 	STF	R0,*+AR7(CD_SPEED)
     // asm: 	BU	L88
-ISBEND:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "THIS_PIECE", 0, 0);
+    UNIMPL();
+}
+
+void ISBEND(void)
+{
     // asm: 	CLRI	R0
     // asm: 	STI	R0,*+AR7(CD_AHEADP)
     // asm: 	LDF	*+AR7(DELTA_PLYRDIST),R1
@@ -592,7 +639,12 @@ ISBEND:
     // asm: 	LDFLT	R1,R0
     // asm: 	STF	R0,*+AR7(CD_SPEED)
     // asm: 	BU	L88
-LITTLE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISBEND", 0, 0);
+    UNIMPL();
+}
+
+void LITTLE(void)
+{
     // asm: 	LDF	*+AR7(CD_SPEED),R2
     // asm: 	MPYF	1.1,R2
     // asm: 	LDF	*+AR1(CARSPEED),R0
@@ -636,7 +688,7 @@ NO_BOMBS:
 CHOPPER_SLP:
     // asm: 	SLEEP	1
     // asm: 	B	CHOPPER_L
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FORWARD_BUZZ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LITTLE", 0, 0);
     UNIMPL();
 }
 
@@ -653,7 +705,12 @@ void FLYAWAY(void)
     // asm: 	BLT	KKII
     // asm: 	ADDF	0.01,R0
     // asm: 	BU	KKUU
-KKII:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYAWAY", 0, 0);
+    UNIMPL();
+}
+
+void KKII(void)
+{
     // asm: SUBF	0.01,R0
 KKUU:
     // asm: STF	R0,*+AR7(CD_FLYTDIR)
@@ -679,7 +736,7 @@ KKUU:
     // asm: 	SLEEP	1
     // asm: 	DBU	AR5,FLYAWAY_LP
     // asm: 	BU	CHOPPER_PASS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYAWAY", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KKII", 0, 0);
     UNIMPL();
 }
 
@@ -944,7 +1001,12 @@ IS_T1:
     // asm: 	LDI	1,R0
     // asm: 	CALL	SET_TRACK_VOL
     // asm: 	BU	HEND
-NOT_T1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HELI_SND", 0, 0);
+    UNIMPL();
+}
+
+void NOT_T1(void)
+{
     // asm: CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm: 	BNE	NOT_T2
 IS_T2:
@@ -962,10 +1024,15 @@ IS_T2:
     // asm: 	LDI	2,R0
     // asm: 	CALL	SET_TRACK_VOL
     // asm: 	BU	HEND
-NOT_T2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_T1", 0, 0);
+    UNIMPL();
+}
+
+void NOT_T2(void)
+{
 HEND:
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HELI_SND", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_T2", 0, 0);
     UNIMPL();
 }
 

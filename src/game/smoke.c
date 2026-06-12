@@ -10,22 +10,52 @@
 #include "pall.h"
 #include "objects.h"
 #include "smoke.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/SMOKE.ASM
  */
 
+void SMOKE_PROC(void);
+void SMOKE_PUFFLP(void);
+void SMOKE_DONE(void);
+void SMOKEX(void);
+void CREATE_SMOKE_OBJ(void);
+void NO_SMOKE(void);
+void GET_OTHER_REAR(void);
+void GET_REAR(void);
+void FOUND_REAR(void);
+void INIT_SMOKE(void);
+void SORT_SMOKE(void);
+void UNLINK(void);
+void SSLOOPEND(void);
+void SORT_SMOKEX(void);
+void INIT_SPARK(void);
+void REPLICATE_SPARK(void);
+void SPARK_PROC(void);
+void SPARK_DIE(void);
+void INIT_COLLA_OBJS(void);
+void INIT_SPARK_KILL(void);
+void WALL_SPARK(void);
+void LEFT_SIDE(void);
+void IMPACT_SPARK(void);
+void ROAD_IMPACT_SPARK(void);
+void SKID_SPARK(void);
+void TOO_MANY_SPARKS(void);
+void TMSXCC(void);
+void OBJ_MOVE(void);
+
 /* asm: TIRE_SMOKE_COUNT	.bss	TIRE_SMOKE_COUNT,1 */
 int TIRE_SMOKE_COUNT;
 /* asm: SMOKEANI */
 /* asm: 	.word	bnout2,bnout4,bnout6,bnout8,bnout10,bnout12,bnout14,bnout16,-1 */
-int SMOKEANI[9] = {
+int SMOKEANI[] = {
     bnout2, bnout4, bnout6, bnout8, bnout10, bnout12, bnout14, bnout16, -1,
 };
 /* asm: SMOKE2ANI */
 /* asm: 	.word	bnout1,bnout2,bnout3,bnout4,bnout5,bnout6,bnout7,bnout8,bnout9,bnout10 */
 /* asm: 	.word	bnout11,bnout12,bnout14,bnout15,bnout16,-1 */
-int SMOKE2ANI[16] = {
+int SMOKE2ANI[] = {
     bnout1, bnout2, bnout3, bnout4, bnout5, bnout6, bnout7, bnout8, bnout9, bnout10,
     bnout11, bnout12, bnout14, bnout15, bnout16, -1,
 };
@@ -40,7 +70,7 @@ int SMOKE2ANI[16] = {
 #define SMOKE_OBJS (PDATA+2)
 /* asm: SPARKANI */
 /* asm: 	.word	x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,-1 */
-int SPARKANI[11] = {
+int SPARKANI[] = {
     x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, -1,
 };
 /* *----------------------------------------------------------------------------
@@ -71,7 +101,12 @@ void SMOKE_PROC(void)
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,@TIRE_SMOKE_COUNT
     // asm: 	BR	SMOKELP_ENTRY
-SMOKE_PUFFLP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_PROC", 0, 0);
+    UNIMPL();
+}
+
+void SMOKE_PUFFLP(void)
+{
     // asm: 	LDI	0,R6
     // asm: 	LDI	0,R5
     // asm: 	LDI	SMOKE_OBJS,IR0
@@ -137,7 +172,12 @@ KLUDGE_MO:
     // asm: 	SUBF	1.0,R7
     // asm: 	SLEEP	1
     // asm: 	BR	SMOKE_PUFFLP
-SMOKE_DONE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_PUFFLP", 0, 0);
+    UNIMPL();
+}
+
+void SMOKE_DONE(void)
+{
     // asm: 	LDI	AR0,AR2
     // asm: 	PUSH	IR0
     // asm: 	CALL	OBJ_DELETE
@@ -145,12 +185,17 @@ SMOKE_DONE:
     // asm: 	LDI	0,R0
     // asm: 	STI	R0,*+AR7(IR0)		;make null on list
     // asm: 	BR	SMPUFFLP1
-SMOKEX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_DONE", 0, 0);
+    UNIMPL();
+}
+
+void SMOKEX(void)
+{
     // asm: 	LDI	0,R0
     // asm: 	STI	R0,@TIRE_SMOKE_COUNT
 SMOKE_DIE:
     // asm: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_PROC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKEX", 0, 0);
     UNIMPL();
 }
 
@@ -206,10 +251,15 @@ DO_SMOKE:
     // asm: 	CALL	INIT_SMOKE
 CSOX:
     // asm: 	RETS
-NO_SMOKE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CREATE_SMOKE_OBJ", 0, 0);
+    UNIMPL();
+}
+
+void NO_SMOKE(void)
+{
     // asm: 	SETC
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CREATE_SMOKE_OBJ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_SMOKE", 0, 0);
     UNIMPL();
 }
 
@@ -232,9 +282,14 @@ FBLOOP:
     // asm: 	BZ	FOUND_REAR		;1 = rear tire
     // asm: 	LDI	*AR2,R0
     // asm: 	BR	FBLOOP
-FOUND_REAR:
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_REAR", 0, 0);
+    UNIMPL();
+}
+
+void FOUND_REAR(void)
+{
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FOUND_REAR", 0, 0);
     UNIMPL();
 }
 
@@ -322,7 +377,12 @@ SSLOOP:
 #endif
     // asm: 	STI	R0,@OACTIVE
     // asm: 	BR	LINK
-UNLINK:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SORT_SMOKE", 0, 0);
+    UNIMPL();
+}
+
+void UNLINK(void)
+{
     // asm: 	LDI	*AR4,R0
     // asm: 	STI	R0,*AR2
 LINK:
@@ -332,13 +392,23 @@ LINK:
     // asm: 	LDI	AR4,AR5
     // asm: 	LDI	R0,AR4
     // asm: 	BR	SSLOOP
-SSLOOPEND:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "UNLINK", 0, 0);
+    UNIMPL();
+}
+
+void SSLOOPEND(void)
+{
     // asm: 	LDI	AR4,AR2		;AR2 = last object for unlinking
     // asm: 	LDI	*AR4,AR4
     // asm: 	BR	SSLOOP
-SORT_SMOKEX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SSLOOPEND", 0, 0);
+    UNIMPL();
+}
+
+void SORT_SMOKEX(void)
+{
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SORT_SMOKE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SORT_SMOKEX", 0, 0);
     UNIMPL();
 }
 
@@ -570,7 +640,12 @@ NEXT_SPARK:
     // asm: 	LDF	0,R7
 KLUDGE_MOFO:
     // asm: 	BR	SSANI_LOOP
-SPARK_DIE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPARK_PROC", 0, 0);
+    UNIMPL();
+}
+
+void SPARK_DIE(void)
+{
     // asm: 	DIE
 SPARK_ANIX:
     // asm: 	LDI	R5,IR0
@@ -587,7 +662,7 @@ SPARK_ANIX:
     // asm: 	CALL	OBJ_DELETE
 NO_OBJ:
     // asm: 	BR	NEXT_SPARK
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPARK_PROC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPARK_DIE", 0, 0);
     UNIMPL();
 }
 
@@ -653,12 +728,17 @@ ICO_LOOPX:
     // asm: 	BEQ	INIT_SPARK_KILL
     // asm: 	STI	R5,*+AR7(NUM_SPARKS)
     // asm: 	RETS
-INIT_SPARK_KILL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_COLLA_OBJS", 0, 0);
+    UNIMPL();
+}
+
+void INIT_SPARK_KILL(void)
+{
     // asm: 	LDI	AR7,AR2
     // asm: 	LDI	0,AR7		;Stupid thing thinks I'm commiting suicide!
     // asm: 	CALL	PRC_KILL
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_COLLA_OBJS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_SPARK_KILL", 0, 0);
     UNIMPL();
 }
 
@@ -713,7 +793,12 @@ FACINGFRONT:
     // asm: 	LDFGT	*+AR5(CARZMINUS),R0	;BACK
     // asm: 	LDFLE	*+AR5(CARZPLUS),R0	;FRONT
     // asm: 	BR	WALLS1
-LEFT_SIDE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WALL_SPARK", 0, 0);
+    UNIMPL();
+}
+
+void LEFT_SIDE(void)
+{
     // asm: 	LDF	*+AR5(CARXMINUS),R1
     // asm: 	CMPF	0,R2
     // asm: 	LDFGT	*+AR5(CARZPLUS),R0	;FRONT
@@ -735,7 +820,7 @@ WALLS1:
 WALL_SPARKX:
     // asm: 	CALL	POPALL
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WALL_SPARK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEFT_SIDE", 0, 0);
     UNIMPL();
 }
 
@@ -884,10 +969,15 @@ TMSLPE:
     // asm: 	BLT	TMSXCC
     // asm: 	SETC
     // asm: 	RETS
-TMSXCC:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TOO_MANY_SPARKS", 0, 0);
+    UNIMPL();
+}
+
+void TMSXCC(void)
+{
     // asm: 	CLRC
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TOO_MANY_SPARKS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TMSXCC", 0, 0);
     UNIMPL();
 }
 

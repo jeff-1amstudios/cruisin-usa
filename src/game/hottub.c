@@ -13,37 +13,71 @@
 #include "objects.h"
 #include "text.h"
 #include "hottub.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/HOTTUB.ASM
  */
 
+void HOTTUB_SCENE(void);
+void HOTTUB_LPB(void);
+void HOTTUB_WATERVOL(void);
+void NBIBO(void);
+void NDOO(void);
+void PREZSPEAK(void);
+void START_ANIMATIONS(void);
+void HHTT(void);
+void NTT1(void);
+void NTT1A(void);
+void NTT1B(void);
+void NTT2(void);
+void ODCX(void);
+void HT_HUNGH(void);
+void HT_RUT(void);
+void HT_HILLY(void);
+void HT_GIRL(void);
+void HT_HOTTUB(void);
+void HT_RADAR(void);
+void HT_STAGENT(void);
+void AGENTANI_PROC(void);
+void JKG(void);
+void PC1(void);
+void POLITICAL_CARTOON_NOTICE(void);
+void POLTXT(void);
+void CROWD_IT(void);
+void BABE_TROPHY(void);
+void BABE_IBO(void);
+void BABE_ANI(void);
+void BABE_WAVEFLAG(void);
+
 /* asm: BABA1	SPTR	"THE PRESIDENT OF" */
 const char *BABA1 = "THE PRESIDENT OF";
 /* asm: BABA2	SPTR	"THE UNITED STATES" */
 const char *BABA2 = "THE UNITED STATES";
+/* asm: PRES	.bss	PRES,1 */
+int PRES;
 /* asm: ANI_HOTTUB	.word	htub,htub1,htub2,htub3,htub4,htub5,-1 */
-int ANI_HOTTUB[7] = {
+int ANI_HOTTUB[] = {
     htub, htub1, htub2, htub3, htub4, htub5, -1,
 };
 /* asm: HILLANI	.word	hilly1,hilly2,hilly3,hilly4,hilly5,hilly6,-1 */
-int HILLANI[7] = {
+int HILLANI[] = {
     hilly1, hilly2, hilly3, hilly4, hilly5, hilly6, -1,
 };
 /* asm: GIRLANI	.word	girl1,girl2,girl3,girl4,girl5,girl6,-1 */
-int GIRLANI[7] = {
+int GIRLANI[] = {
     girl1, girl2, girl3, girl4, girl5, girl6, -1,
 };
 /* asm: ANI_RADAR	.word	rad1,rad2,rad3,rad4,rad5,rad6,rad7,rad8,rad9,-1 */
-int ANI_RADAR[10] = {
+int ANI_RADAR[] = {
     rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9, -1,
 };
 /* asm: ANI_STAG	.word	stagent1,stagent2,stagent3,5,stagent2,-1 */
-int ANI_STAG[6] = {
+int ANI_STAG[] = {
     stagent1, stagent2, stagent3, 5, stagent2, -1,
 };
-/* asm: PC1	SPTR	"CELEBRITY IMPERSONATION" */
-const char *PC1 = "CELEBRITY IMPERSONATION";
+/* asm: WATCHOBJ	.bss	WATCHOBJ,1 */
+int WATCHOBJ;
 /* asm: PC2	SPTR	"POLITICAL CARTOON" */
 const char *PC2 = "POLITICAL CARTOON";
 #define BABE_ASTRT PDATA
@@ -55,7 +89,7 @@ const char *PC2 = "POLITICAL CARTOON";
 /* asm: 	.word	here5 */
 /* asm: 	.word	here6 */
 /* asm: 	.word	-1 */
-int BABE_TROPHY_SCRIPT[7] = {
+int BABE_TROPHY_SCRIPT[] = {
     here1,
     here2,
     here3,
@@ -73,7 +107,7 @@ int BABE_TROPHY_SCRIPT[7] = {
 /* asm: 	.word	flag6 */
 /* asm: 	.word	flag7 */
 /* asm: 	.word	-1 */
-int BABE_FLAG_SCRIPT[8] = {
+int BABE_FLAG_SCRIPT[] = {
     flag1,
     flag2,
     flag3,
@@ -144,45 +178,14 @@ void HOTTUB_SCENE(void)
     // asm: 	LDI	-30,R3
     // asm: 	LDI	368,RC
     // asm: 	CALL	OBJ_QMAKE
-    // asm: 	ORM	O_NOUNIV|O_POSTER|O_NOUROT,*+AR0(OFLAGS)
-    // asm: 	LDI	AR0,AR2
-    // asm: 	STI	AR2,@PRES
-    // asm: 	CALL	OBJ_INSERTP
-    // asm: 	LDI	@BABA1,AR2
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	270,R3
-    // asm: 	LDI	46,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-    // asm: 	LDI	@BABA2,AR2
-    // asm: 	FLOAT	256,R2
-    // asm: 	FLOAT	300,R3
-    // asm: 	LDI	46,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-    // asm: 	CREATE	POLITICAL_CARTOON_NOTICE,1234h
-    // asm: 	SLEEP	15
-    // asm: 	CALL	SCREENWIPE_OPEN
-    // asm: 	LDL	whitehse_grp,AR2
-    // asm: 	CALL	LOAD_SINGLE_SECTION
-    // asm: 	CALL	START_ANIMATIONS
-    // asm: 	CREATE	HOTTUB_WATERVOL,1235h
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	OR	MINFIN|MWATER,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	SLEEP	5
-    // asm: 	CREATE	PREZSPEAK,1234h
-    // asm: 	SLEEP	25
-    // asm: 	LDI	@PRES,AR2
-    // asm: 	CALL	OBJ_DELETE
-    // asm: 	SLEEP	30
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@NOAERASE
-    // asm: 	LDI	180,AR5
-    // ;	LDI	210,AR5
-    // asm: HOTTUB_LPB
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HOTTUB_SCENE", 0, 0);
+    UNIMPL();
+}
+
+/* ;	LDI	210,AR5
+ */
+void HOTTUB_LPB(void)
+{
     // asm: 	LDI	@CAMERAPOSI,AR6
     // asm: 	LDF	*+AR6(Z),R0
     // asm: 	FLOAT	-1500,R1
@@ -255,7 +258,7 @@ HOTTT:
     // ;	LDL	finale_PALETTES,AR2
     // ;	CALL	dealloc_section
     // asm: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HOTTUB_SCENE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HOTTUB_LPB", 0, 0);
     UNIMPL();
 }
 
@@ -281,10 +284,20 @@ void HOTTUB_WATERVOL(void)
     // asm: 	BGT	NDOO
     // asm: 	LDI	205,R2
     // asm: 	BU	BIBO
-NBIBO:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HOTTUB_WATERVOL", 0, 0);
+    UNIMPL();
+}
+
+void NBIBO(void)
+{
     // asm: LDI	10,R2
     // asm: 	BU	BIBO
-NDOO:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NBIBO", 0, 0);
+    UNIMPL();
+}
+
+void NDOO(void)
+{
     // asm: 	FLOAT	12000,R2
     // asm: 	CMPF	R2,R0
     // asm: 	BGT	NBIBO
@@ -299,7 +312,7 @@ NDOO:
     // asm: 	CALL	AMBIENCE_SOUND
     // asm: 	SLEEP	1
     // asm: 	BU	HOTTUB_WATERVOL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HOTTUB_WATERVOL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NDOO", 0, 0);
     UNIMPL();
 }
 
@@ -349,34 +362,64 @@ ODCL2:
     // asm: 	BNE	HHTT
     // asm: 	CALL	HT_HUNGH
     // asm: 	BU	ODC
-HHTT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "START_ANIMATIONS", 0, 0);
+    UNIMPL();
+}
+
+void HHTT(void)
+{
     // asm: 	CMPI	621h,R2
     // asm: 	BNE	NTT1
     // asm: 	CALL	HT_HOTTUB
     // asm: 	BU	ODC
-NTT1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HHTT", 0, 0);
+    UNIMPL();
+}
+
+void NTT1(void)
+{
     // asm: 	CMPI	622h,R2
     // asm: 	BNE	NTT1A
     // asm: 	CALL	HT_HILLY
     // asm: 	BU	ODC
-NTT1A:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTT1", 0, 0);
+    UNIMPL();
+}
+
+void NTT1A(void)
+{
     // asm: 	CMPI	623h,R2
     // asm: 	BNE	NTT1B
     // asm: 	CALL	HT_GIRL
     // asm: 	BU	ODC
-NTT1B:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTT1A", 0, 0);
+    UNIMPL();
+}
+
+void NTT1B(void)
+{
     // asm: 	CMPI	615h,R2
     // asm: 	BNE	NTT2
     // asm: 	CALL	HT_RADAR
     // asm: 	BU	ODC
-NTT2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTT1B", 0, 0);
+    UNIMPL();
+}
+
+void NTT2(void)
+{
     // asm: CMPI	616h,R2
     // asm: 	BNE	ODC
     // asm: 	CALL	HT_STAGENT
     // asm: 	BU	ODC
-ODCX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTT2", 0, 0);
+    UNIMPL();
+}
+
+void ODCX(void)
+{
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "START_ANIMATIONS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ODCX", 0, 0);
     UNIMPL();
 }
 
@@ -502,7 +545,12 @@ AGENTANI_LP:
     // asm: 	BNE	JKG
     // asm: 	SLEEP	12
     // asm: 	BU	AGENTANI_LP
-JKG:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "AGENTANI_PROC", 0, 0);
+    UNIMPL();
+}
+
+void JKG(void)
+{
     // asm: STI	R0,*+AR4(OROMDATA)
     // asm: 	LDI	15,R4
 PPDDA:
@@ -510,7 +558,14 @@ PPDDA:
     // asm: 	SUBI	@NFRAMES,R4
     // asm: 	BLE	AGENTANI_LP
     // asm: 	BU	PPDDA
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AGENTANI_PROC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JKG", 0, 0);
+    UNIMPL();
+}
+
+void PC1(void)
+{
+    // asm: SPTR	"CELEBRITY IMPERSONATION"
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PC1", 0, 0);
     UNIMPL();
 }
 

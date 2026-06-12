@@ -21,6 +21,39 @@
  * Source module: asm/OVERLAY.ASM
  */
 
+void SECTION_ROUTINE(void);
+void OVERLOCK(void);
+void CHECKPOINT_HIT_R(void);
+void CHECKPOINT_HIT(void);
+void WATERON(void);
+void WATEROFF(void);
+void HELISTART(void);
+void HELIEND(void);
+void RAILPRIME(void);
+void RR_UNFREEZE(void);
+void BRIDGE_OFF(void);
+void BRIDGE_ON(void);
+void BOFFNC(void);
+void TUNNEL_ON(void);
+void TUNNEL_OFF(void);
+void START_SANFRAN(void);
+void BEACHON(void);
+void REDWOOD_START(void);
+void LOOK_SANFRANCISCO(void);
+void LOOK_REDWOOD(void);
+void LOOK_MIDWEST(void);
+void LOOK_MTRUSHMORE(void);
+void LOOK_DEATHVALLEY(void);
+void LOOK_GCANYON(void);
+void LOOK_HOLLYWOOD(void);
+void CHANGE_TUNE(void);
+void SET_BGNDCOL2BROWN(void);
+void TURNOFF_INFINITY(void);
+void TURNON_INFINITY(void);
+void TOWER_PAL_LD(void);
+void TOWER_PAL_RESTORE(void);
+void END_OF_GAME(void);
+
 /* *----------------------------------------------------------------------------
  */
 /* asm: ROUTINE_TABLE:					;routine */
@@ -70,7 +103,7 @@
 /* asm: 	.word	BONUS12				;43 */
 /* asm: 	.word	BONUS13				;44 */
 /* asm: 	.word	BONUS14				;45 */
-int ROUTINE_TABLE[46] = {
+int ROUTINE_TABLE[] = {
     0, // 0 none leave blank
     CHECKPOINT_HIT, // 1
     WATERON, // 2

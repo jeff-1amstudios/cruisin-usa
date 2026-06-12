@@ -17,6 +17,17 @@
  * Source module: asm/AUDITS.ASM
  */
 
+void COMPUTE_FREEGAMES_PRCNT(void);
+void COMPUTE_GAMETIME(void);
+void AUDIT_LIST(void);
+void AUDIT_DISPLAY(void);
+void NOCALL(void);
+void LLRR(void);
+void NOLOG(void);
+void FFB2(void);
+void KKLL5(void);
+void KKL(void);
+
 #define AUD_ROUTINE 0x5A
 #define AUD_ROUTINEH 0x5A0000
 /* *----------------------------------------------------------------------------
@@ -66,7 +77,12 @@ void COMPUTE_GAMETIME(void)
     // asm: 	READAUD	AUD_GAMEON_TIME
     // asm: 	CALL	DIV_I30
     // asm: 	RETS
-    // asm: AUDIT_LIST
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMPUTE_GAMETIME", 0, 0);
+    UNIMPL();
+}
+
+void AUDIT_LIST(void)
+{
     // asm: 	AUDENT	AUD_COIN1,"LEFT COIN"
     // asm: 	AUDENT	AUD_COIN2,"RIGHT COIN"
     // asm: 	AUDENT	AUD_COIN3,"THIRD COIN"
@@ -165,7 +181,7 @@ void COMPUTE_GAMETIME(void)
     // asm: 	AUDENT	AUD_WIN_DC,"DC WINS"
     // asm: 	AUDENT_PAGE
     // 	;-------
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMPUTE_GAMETIME", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_LIST", 0, 0);
     UNIMPL();
 }
 
@@ -202,7 +218,12 @@ LLTT:
     // asm: 	LDI	*AR5++,R0
     // asm: 	CALLU	R0
     // asm: 	BU	J22AB
-NOCALL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_DISPLAY", 0, 0);
+    UNIMPL();
+}
+
+void NOCALL(void)
+{
     // asm: CALL	AUDIT_READ
 J22AB:
     // asm: LDI	R0,R2
@@ -221,7 +242,12 @@ J22AB:
 JJTTA:
     // asm: ADDI	10,R5
     // asm: 	BU	LLTT
-LLRR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOCALL", 0, 0);
+    UNIMPL();
+}
+
+void LLRR(void)
+{
     // asm: 	LDI	0,R0
     // asm: 	STI	R0,@OLDDIP
 WL2A:
@@ -260,7 +286,12 @@ NODIPPLOT:
     // asm: 	BZ	NOLOG
     // asm: 	CALL	ERROR_LOG_DISPLAY
     // asm: 	BU	AUDIT_DISPLAY
-NOLOG:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LLRR", 0, 0);
+    UNIMPL();
+}
+
+void NOLOG(void)
+{
     // asm: 	TSTB	SW_VOLPLUS,R0
     // asm: 	BZ	DBNCE
     // ;	BZ	LYTL			;NEXT PAGE
@@ -272,7 +303,12 @@ DBNCE:
     // asm: 	AND	SW_VOLPLUS|SW_VOLMINUS,R1
     // asm: 	BNZ	DBNCE
     // asm: 	BU	LYTL
-FFB2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOLOG", 0, 0);
+    UNIMPL();
+}
+
+void FFB2(void)
+{
     // asm: TSTB	SW_VIEW2_H,R1		;view2 to display next audit page
     // asm: 	BNZ	KKLL5
 RB44:
@@ -281,12 +317,22 @@ RB44:
     // asm: 	TSTB	SW_VIEW2_H,R1		;view2 to display next audit page
     // asm: 	BZ	RB44
     // asm: 	BU	LYTL			;NEXT PAGE
-KKLL5:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FFB2", 0, 0);
+    UNIMPL();
+}
+
+void KKLL5(void)
+{
     // asm: 	LDI	@SOFT_AUDIT,R0
     // asm: 	BZ	KKL
     // asm: 	TSTB	SW_VIEW1_H,R1		;VIEW1 TO EXIT TO GAME (IN SECRET MODE)
     // asm: 	RETSZ
-KKL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KKLL5", 0, 0);
+    UNIMPL();
+}
+
+void KKL(void)
+{
     // asm: 	BU	WL2A
 BOOKX:
 WL266:
@@ -294,6 +340,6 @@ WL266:
     // asm: 	AND	SW_DIAG,R0
     // asm: 	BNZ	WL266
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_DISPLAY", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KKL", 0, 0);
     UNIMPL();
 }

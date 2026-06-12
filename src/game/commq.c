@@ -20,6 +20,74 @@
  * Source module: asm/COMMQ.ASM
  */
 
+void CLEAR_LINK(void);
+void DECODE_BUFFER(void);
+void DECODE_LP(void);
+void COMMQ_PACKET_INIT(void);
+void COMMQ_READY_TO_SEND(void);
+void MESSAGE_ADD(void);
+void MESSAGE_ADD_SB(void);
+void SEND_WAVEFL_READY(void);
+void SEND_WAVEFL_SET(void);
+void SEND_WAVEFL_GO(void);
+void DECODE_WAVEFL_READY(void);
+void DECODE_WAVEFL_SET(void);
+void DECODE_WAVEFL_GO(void);
+void SEND_LINKEDT(void);
+void SEND_LINKEDF(void);
+void DECODE_LINKEDT(void);
+void DECODE_LINKEDF(void);
+void DECODE_MODE(void);
+void DC_M_NOP(void);
+void DWAI(void);
+void SEND_CHECKPOINT(void);
+void SEND_FINISH(void);
+void SEND_MODE(void);
+void DECODE_LINKCANCELLED(void);
+void SEND_LINKCANCELLED(void);
+void SEND_START_GAME(void);
+void DECODE_START_GAME(void);
+void SEND_END_GAME(void);
+void DECODE_END_GAME(void);
+void SEND_TIMECODE(void);
+void SEND_RACENUM(void);
+void DECODE_RACENUM(void);
+void DECODE_VEHICLE(void);
+void SEND_VEHICLE(void);
+void DECODE_TIMECODE(void);
+void SEND_RHO_POS(void);
+void SEND_RACER_POS(void);
+void SEND_PLAYERS_POS(void);
+void SEND_RHO_CREATE(void);
+void FIND_DRONE(void);
+void FDL(void);
+void DECODE_FLY_UPDATE(void);
+void DECODE_RHO_UPDATE(void);
+void DECODE_RACER_UPDATE(void);
+void DECODE_CAR_UPDATE(void);
+void DECCARX(void);
+void DECODE_RHO_CREATE(void);
+void DCRHOX(void);
+void DECODE_RACER_KILL(void);
+void DCRKX(void);
+void DECODE_OM_TRACK(void);
+void SEND_BSYNC0(void);
+void SEND_BSYNC1(void);
+void SEND_BSYNC2(void);
+void SEND_BSYNC3(void);
+void DECODE_BSYNC0(void);
+void DECODE_BSYNC1(void);
+void DECODE_BSYNC2(void);
+void DECODE_BSYNC3(void);
+void DECODE_CHANGE_MUSIC(void);
+void SEND_CHANGE_MUSIC(void);
+void DECODE_COINDROP(void);
+void SEND_COINDROP(void);
+void DECODE_DIAGNOSTIC(void);
+void SEND_DIAGNOSTIC(void);
+void DECODE_ATTRSND(void);
+void SEND_ATTRSND(void);
+
 /* asm: IGNORE_UPDATES	.bss	IGNORE_UPDATES,1 */
 int IGNORE_UPDATES;
 /* asm: COMMQ_TMP_BUFF	fbss	COMMQ_TMP_BUFF,80 */
@@ -130,7 +198,7 @@ int SAVED_PLY2CAR;
 /* asm: 	.word	DECODE_DIAGNOSTIC */
 /* asm: 	.word	DECODE_ATTRSND */
 /* asm: 	.word	-1 */
-int DECODE_BLOCK[35] = {
+int DECODE_BLOCK[] = {
     DECODE_NULL,
     DECODE_MODE, // CB_MODE
     DECODE_TIMECODE, // CB_TIMECODE
@@ -222,7 +290,12 @@ void DECODE_BUFFER(void)
     // asm: 	LS	1,AR6
     // asm: 	ADDI	AR2,AR6
     // asm: 	B	DECLPX
-DECODE_LP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BUFFER", 0, 0);
+    UNIMPL();
+}
+
+void DECODE_LP(void)
+{
     // asm: 	LDI	*AR2++,AR0		;GET THE BLOCK ID
     // asm: 	LS	8,AR0
     // asm: 	RS	24,AR0			;SHIFT OFF THE CRAP
@@ -241,7 +314,7 @@ ISDONE:
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@RBUFF_LEN
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BUFFER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_LP", 0, 0);
     UNIMPL();
 }
 
@@ -546,7 +619,12 @@ void DECODE_MODE(void)
     // asm: 	STI	R0,@OM_CHOSEN_RACE
     // asm: 	STI	R0,@OM_VEHICLE
     // asm: 	BU	DCMX
-DC_M_NOP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_MODE", 0, 0);
+    UNIMPL();
+}
+
+void DC_M_NOP(void)
+{
     // asm: 	LDI	@OM_STATE,R0
     // asm: 	TSTB	OMS_FINISHLINE,R0
     // asm: 	BZ	DWAI
@@ -560,7 +638,12 @@ DC_M_NOP:
     // asm: 	CLRI	R1
     // asm: 	STI	R1,@_countdown
     // asm: 	BU	DCMX
-DWAI:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DC_M_NOP", 0, 0);
+    UNIMPL();
+}
+
+void DWAI(void)
+{
     // asm: 	LDI	@OM_MODE,R0
     // asm: 	AND	MMODE,R0
     // asm: 	CMPI	MGAME,R0	;OM in game?
@@ -583,7 +666,7 @@ DCMX:
     // asm: 	POP	R1
     // asm: 	POP	R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_MODE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DWAI", 0, 0);
     UNIMPL();
 }
 
@@ -1035,7 +1118,12 @@ void FIND_DRONE(void)
     // asm: 	LSH	R2,*AR2++,R1   		;GET CAR #
     // asm: 	LDI	@CAR_LIST,R0	 	;GET LIST
     // asm: 	B	FD1
-FDL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_DRONE", 0, 0);
+    UNIMPL();
+}
+
+void FDL(void)
+{
     // asm: 	LDI	*+AR0(OCARBLK),AR1	;GET CAR BLOCK
     // asm: 	CMPI	*+AR1(CARNUM),R1   	;IS THIS THE CAR
     // asm: 	RETSZ				;WE FOUND IT
@@ -1051,7 +1139,7 @@ FD1:
     // *
     // *DECODE RHO CAR UPDATE
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_DRONE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FDL", 0, 0);
     UNIMPL();
 }
 
@@ -1210,11 +1298,16 @@ GETMAT:
     // asm: 	STI	R0,*+AR1(CARTRACK_ID)
     // ;	ADDI	1,AR2	 		;PADDING
     // asm: 	RETS
-DECCARX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_CAR_UPDATE", 0, 0);
+    UNIMPL();
+}
+
+void DECCARX(void)
+{
     // ;	ADDI	46,AR2	 		;BLOW IT OFF
     // asm: 	ADDI	45,AR2	 		;BLOW IT OFF
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_CAR_UPDATE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECCARX", 0, 0);
     UNIMPL();
 }
 
@@ -1235,13 +1328,18 @@ void DECODE_RHO_CREATE(void)
     // asm: 	POP	AR2
     // asm: 	POP	AR6
     // asm: 	RETS
-DCRHOX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_CREATE", 0, 0);
+    UNIMPL();
+}
+
+void DCRHOX(void)
+{
     // asm: 	ADDI	3,AR2
     // asm: 	RETS
     // *
     // *KILL OFF RACER
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_CREATE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DCRHOX", 0, 0);
     UNIMPL();
 }
 
@@ -1261,11 +1359,21 @@ void DECODE_RACER_KILL(void)
     // *KILL OFF OBJECT, PROCESS, ANIMATION PROCESS
 DECRKX:
     // asm: 	RETS
-DCRKX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_KILL", 0, 0);
+    UNIMPL();
+}
+
+void DCRKX(void)
+{
     // asm: 	INC	AR2
     // asm: 	RETS
     // *DECODE TRACK RANGE OTHER MACHINE
-    // asm: DECODE_OM_TRACK
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DCRKX", 0, 0);
+    UNIMPL();
+}
+
+void DECODE_OM_TRACK(void)
+{
     // asm: 	LDI	-16,R2
     // asm: 	LDI	-8,R3
     // asm: 	LSH	R2,*AR2++,R0		;GET ROAD SECTION ID
@@ -1305,7 +1413,7 @@ DCRKX:
     // asm: 	LDI	7-1,RC
     // asm: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm: 	BR	MESSAGE_ADD
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_KILL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_OM_TRACK", 0, 0);
     UNIMPL();
 }
 

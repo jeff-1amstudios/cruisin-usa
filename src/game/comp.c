@@ -15,6 +15,21 @@
  * Source module: asm/COMP.ASM
  */
 
+void INPUT_BITS(void);
+void MULTIWORD(void);
+void PUTC(void);
+void DECOMPRESS(void);
+void DECOMPRESS_TOPLP(void);
+void CONT(void);
+void DECOMPRESS_PROC(void);
+void NOBUMP(void);
+void SAVE_DECOMP_REGS(void);
+void RESTORE_DECOMP_REGS(void);
+void BOOT_PACIFY_SCREEN(void);
+void LOAD_SECTION_REQ(void);
+void NOWTLD(void);
+void REQWAIT(void);
+
 /* asm: PADDING	.bss	PADDING,50 */
 int PADDING[50];
 /* asm: DECOMP_ACTIVE	.bss	DECOMP_ACTIVE,1 */
@@ -95,7 +110,12 @@ void INPUT_BITS(void)
     // asm: 	LSH	R1,R0
     // asm: 	ADDI	CURRENT_CODE_BITS,BIT_ADDR
     // asm: 	RETS
-    // asm: MULTIWORD
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INPUT_BITS", 0, 0);
+    UNIMPL();
+}
+
+void MULTIWORD(void)
+{
     // asm: 	LDI	*AR0++,R1
     // asm: 	LSH	BIT_ADDR,R1		;left justify
     // asm: 	LDI	32,R0
@@ -111,7 +131,7 @@ void INPUT_BITS(void)
     // asm: 	LSH	R2,R1
     // asm: 	OR	R1,R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INPUT_BITS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MULTIWORD", 0, 0);
     UNIMPL();
 }
 
@@ -240,7 +260,12 @@ void DECOMPRESS(void)
 NOHARDLOAD:
     // asm: 	CALL	POPALL
     // asm: 	RETS
-DECOMPRESS_TOPLP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS", 0, 0);
+    UNIMPL();
+}
+
+void DECOMPRESS_TOPLP(void)
+{
     // ;	LDI	@FLUSH_COUNT,R0
     // ;	INC	R0
     // ;	STPI	R0,@FLUSH_COUNT
@@ -258,12 +283,17 @@ DECOMPRESS_TOPLP:
     // asm: 	LDI	@BOOT_PACIFY_SCREEN_P,R0
     // asm: 	CALLNZ	BOOT_PACIFY_SCREEN
     // asm: 	BU	DECOMPRESS_TOPLP3
-CONT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS_TOPLP", 0, 0);
+    UNIMPL();
+}
+
+void CONT(void)
+{
     // asm: 	CALL	SAVE_DECOMP_REGS
     // asm: 	CALL	POPALL
     // ;	CALL	ENABLEGIE
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CONT", 0, 0);
     UNIMPL();
 }
 
@@ -320,7 +350,12 @@ DECOMPRESSLP:
     // asm: 	BNE	NOBUMP
     // asm: 	INC	CURRENT_CODE_BITS
     // asm: 	BU	DECOMPRESSLP
-NOBUMP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS_PROC", 0, 0);
+    UNIMPL();
+}
+
+void NOBUMP(void)
+{
     // asm: 	CMPI	NEXT_CODE,new_code
     // asm: 	BLTD	NODS
     // asm: 	LDP	@DECODE_STACKI
@@ -370,7 +405,7 @@ DECOMPRESSX:
     // asm: 	STPI	R0,@HARD_SECTION_LOAD
     // asm: 	CALL	POPALL
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS_PROC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOBUMP", 0, 0);
     UNIMPL();
 }
 
@@ -498,7 +533,12 @@ void LOAD_SECTION_REQ(void)
     // asm: 	POP	AR0
     // asm: 	POP	R2
     // asm: 	BU	NOLOAD
-NOWTLD:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SECTION_REQ", 0, 0);
+    UNIMPL();
+}
+
+void NOWTLD(void)
+{
     // ;	LDI	@LASTLOAD,AR0
     // ;	CMPI	AR0,AR2
     // ;	BEQ	NOLOAD
@@ -510,7 +550,7 @@ NOLOAD:
     // asm: 	POP	AR5
     // asm: 	POP	AR4
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SECTION_REQ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOWTLD", 0, 0);
     UNIMPL();
 }
 

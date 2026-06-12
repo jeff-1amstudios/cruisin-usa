@@ -8,6 +8,13 @@
  * Source module: asm/TEXTTAB.ASM
  */
 
+void FONTDIGLG(void);
+void FONTDIGSM(void);
+void FONTN43TAB(void);
+void FONT40_TAB(void);
+void FONT18_TAB(void);
+void OGSMFONT_TAB(void);
+
 /* 	;size = 22
  */
 /* asm: FONT40TABI	.word	FONT40_TAB-(17*FONTENT_SIZE) */

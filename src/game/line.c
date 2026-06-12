@@ -5,6 +5,11 @@
  * Source module: asm/LINE.ASM
  */
 
+void _rectangle(void);
+void EPI0_1(void);
+void _line(void);
+void EPI0_2(void);
+
 #define FP AR3
 
 /* ******************************************************

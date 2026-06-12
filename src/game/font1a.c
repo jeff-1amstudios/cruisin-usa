@@ -10,11 +10,33 @@
  * Source module: asm/FONT1A.ASM
  */
 
+void ENABLEGIE(void);
+void _ftoa(void);
+void _itoaLZ(void);
+void _itoa(void);
+void ISZERO2(void);
+void HEX2ASC(void);
+void DDJ(void);
+void ISZEROH(void);
+void _fill(void);
+void _outtextxyc(void);
+void oucX(void);
+void _pixel(void);
+
 /* *----------------------------------------------------------------------------
  */
 const char *POINT = ".";
 /* asm: ftoa_tmp	.bss	ftoa_tmp,2 */
 int ftoa_tmp[2];
+
+/* *----------------------------------------------------------------------------
+ */
+void ENABLEGIE(void)
+{
+    // asm: RETI
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE", 0, 0);
+    UNIMPL();
+}
 
 void _ftoa(void)
 {
@@ -160,7 +182,12 @@ itoaX:
     // asm: 	POP	R1
     // asm: 	POP	R0
     // asm: 	RETS
-ISZERO2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoa", 0, 0);
+    UNIMPL();
+}
+
+void ISZERO2(void)
+{
     // asm: 	BUD	itoaX
     // asm: 	LDI	03030h,R0			;case when number is zero
     // asm: 	STI	R0,*AR2
@@ -172,7 +199,7 @@ ISZERO:
     // asm: 	STI	R0,*AR2
     // asm: 	LDI	8,R0
     // 	;---->	BUD	itoaX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoa", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISZERO2", 0, 0);
     UNIMPL();
 }
 
@@ -209,7 +236,12 @@ htoa1:
     // asm: 	BLT	DDJ
     // asm: 	ADDI	'A'-10,R0
     // asm: 	BU	JJK
-DDJ:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HEX2ASC", 0, 0);
+    UNIMPL();
+}
+
+void DDJ(void)
+{
     // asm: ADDI	30h,R0
 JJK:
     // asm: PUSH	R0
@@ -248,12 +280,17 @@ htoaX:
     // asm: 	POP	R1
     // asm: 	POP	R0
     // asm: 	RETS
-ISZEROH:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DDJ", 0, 0);
+    UNIMPL();
+}
+
+void ISZEROH(void)
+{
     // asm: 	BUD	htoaX
     // asm: 	LDI	030h,R0			;case when number is zero
     // asm: 	STI	R0,*AR2
     // asm: 	LDI	8,R0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HEX2ASC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISZEROH", 0, 0);
     UNIMPL();
 }
 
@@ -360,11 +397,16 @@ NPLOT:
 NXTCHAR:
     // asm: ADDI	8,R2			;to next X position
     // asm: 	BU	OLP
-oucX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_outtextxyc", 0, 0);
+    UNIMPL();
+}
+
+void oucX(void)
+{
     // asm: 	POP	R5
     // asm: 	POP	R4
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_outtextxyc", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "oucX", 0, 0);
     UNIMPL();
 }
 

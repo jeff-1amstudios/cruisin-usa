@@ -21,6 +21,57 @@
  * Source module: asm/UTIL.ASM
  */
 
+void TVBP(void);
+void TVBPX(void);
+void TVPATCH(void);
+void SETPAGE0(void);
+void SETPAGE1(void);
+void FASTCLR0(void);
+void FASTCLR1(void);
+void CLRSCRN(void);
+void CLRSCRN1(void);
+void CLRSCRN0(void);
+void CLR255(void);
+void CLR511(void);
+void SCRNFIL(void);
+void SCREEN_FILL(void);
+void CLRCRAM(void);
+void RANDOM(void);
+void FRAND(void);
+void SFRAND(void);
+void RANDU0(void);
+void RANDU(void);
+void SRAND(void);
+void RANDPER(void);
+void INIT_LINKED_LIST(void);
+void GET_LLIST(void);
+void GETLL_ERR(void);
+void ALLOC_LLIST(void);
+void ALLOCLIST_ISERROR(void);
+void FREE_LLIST(void);
+void DEL_LLIST(void);
+void VEHICLE_ANI_INIT(void);
+void CARPROC(void);
+void NCS(void);
+void CARRWHL(void);
+void CARBODY(void);
+void LEAN(void);
+void DYNAOBJ_INIT(void);
+void GETDYNA(void);
+void GETDYNA_ERR(void);
+void DELDYNA(void);
+void CARB_INIT(void);
+void GETCAR(void);
+void GETCAR_ERR(void);
+void DELCAR(void);
+void SCAN_OBJECTS(void);
+void PUSHALL(void);
+void POPALL(void);
+void DISTANCE_2D(void);
+void OVELADD(void);
+void OVELNADD(void);
+void FORWARD(void);
+
 /* asm: RAND	pbss	RAND,1 */
 int RAND;
 /* asm: CRTCTLRAM	.bss	CRTCTLRAM,1 */
@@ -571,10 +622,15 @@ GETLL_X:
     // asm: 	POP	AR1
     // asm: 	POP	R1
     // asm: 	RETS
-GETLL_ERR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LLIST", 0, 0);
+    UNIMPL();
+}
+
+void GETLL_ERR(void)
+{
     // asm: 	CLRC
     // asm: 	BU	GETLL_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LLIST", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETLL_ERR", 0, 0);
     UNIMPL();
 }
 
@@ -602,10 +658,15 @@ void ALLOC_LLIST(void)
 ALLOCLIST_X:
     // asm: 	POP	R0
     // asm: 	RETS
-ALLOCLIST_ISERROR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOC_LLIST", 0, 0);
+    UNIMPL();
+}
+
+void ALLOCLIST_ISERROR(void)
+{
     // asm: 	CLRC
     // asm: 	BU	ALLOCLIST_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOC_LLIST", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOCLIST_ISERROR", 0, 0);
     UNIMPL();
 }
 
@@ -764,7 +825,12 @@ CARPROCL:
     // asm: 	BNE	NCS
     // asm: 	LDF	*+AR5(CARSPEED),R7	;UPDATE OLD SPEED TO AVOID JERK
     // asm: 	B	CARSLP
-NCS:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARPROC", 0, 0);
+    UNIMPL();
+}
+
+void NCS(void)
+{
     // asm: 	LDI	*+AR4(ODIST),R0
     // asm: 	CMPI	20000,R0		;FAR OFF JUST SLEEP
     // asm: 	BGT	CARSLP
@@ -806,7 +872,12 @@ CDTOP:
     // asm: 	NOP	*AR6--(9)
     // asm: 	B	CDLP
     // *STUFF REAR WHEEL
-CARRWHL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NCS", 0, 0);
+    UNIMPL();
+}
+
+void CARRWHL(void)
+{
     // asm: 	LDF	*AR3++,R0
     // asm: 	RPTS	7
     // asm: 	LDF	*AR3++,R0
@@ -819,13 +890,18 @@ CDLP:
     // asm: 	B	CARSLP
     // *HANDLE BODY
     // *BODY MUST BE LAST
-CARBODY:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARRWHL", 0, 0);
+    UNIMPL();
+}
+
+void CARBODY(void)
+{
     // asm: 	CALL	LEAN
     // asm: 	LDI	1,AR2
 CARSLP:
     // asm: 	CALL	SLEEP
     // asm: 	B 	CARPROCL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARPROC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARBODY", 0, 0);
     UNIMPL();
 }
 
@@ -975,10 +1051,15 @@ void GETDYNA(void)
 GETDYNA_X:
     // asm: 	POP	R0
     // asm: 	RETS
-GETDYNA_ERR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDYNA", 0, 0);
+    UNIMPL();
+}
+
+void GETDYNA_ERR(void)
+{
     // asm: 	CLRC
     // asm: 	B	GETDYNA_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDYNA", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDYNA_ERR", 0, 0);
     UNIMPL();
 }
 
@@ -1050,10 +1131,15 @@ void GETCAR(void)
 GETCAR_X:
     // asm: 	POP	R0
     // asm: 	RETS
-GETCAR_ERR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAR", 0, 0);
+    UNIMPL();
+}
+
+void GETCAR_ERR(void)
+{
     // asm: 	CLRC
     // asm: 	B	GETCAR_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAR_ERR", 0, 0);
     UNIMPL();
 }
 

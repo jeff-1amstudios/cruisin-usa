@@ -18,11 +18,59 @@
 #include "comm.h"
 #include "checksum.h"
 #include "cusa.h"
+#include "discovered_labels.h"
 #include "bssstart.h"
 
 /*
  * Source module: asm/CUSA.ASM
  */
+
+void _c_int00(void);
+void DIAG_RETURN(void);
+void MAINLOOP(void);
+void COLD_ENTER(void);
+void ENABLEGIE(void);
+void INT0(void);
+void REGIT(void);
+void PAGE1(void);
+void NOTINGAME(void);
+void READIO(void);
+void VOL_MINUS(void);
+void VOL_PLUS(void);
+void DIAG_TOGGLE(void);
+void ATODINT(void);
+void SWDISP(void);
+void CHECKDIAG(void);
+void CLR_PBSS(void);
+void CLR_RAM(void);
+void CLEAR_ONCHIPRAM(void);
+void BUTTONS(void);
+void JUSTGOON(void);
+void KKDAK(void);
+void WAIT_FOR_VBLANK(void);
+void CRT_REG_SETUP(void);
+void ERROR_TRAP(void);
+void FIFO_RESET(void);
+void TIMER_RESET(void);
+void TIMER_READ(void);
+void TIMERESET(void);
+void TIMEL1(void);
+void TIMEREC(void);
+void MESSAGE1(void);
+void DODOIBO(void);
+void MSG1(void);
+void MSG2(void);
+void MSG3(void);
+void CHECK_STATE(void);
+void NEXTSTATE(void);
+void DODIAG(void);
+void DASHLIGHT(void);
+void CMOS_ERROR(void);
+void VERSION_UPDATE(void);
+void FAKEDIAG(void);
+void FEED_WATCHDOG(void);
+void FEED_WATCHDOG_HARD(void);
+void VERIFY_CODE_INTEGRITY(void);
 
 #define MEMTESTS 1
 #define TIKS_PER_SECOND 57
@@ -109,6 +157,16 @@ int NOSWAP;
 int DISPLAY_PAGE;
 /* asm: MPROC_TIK	fbss	MPROC_TIK,1 */
 int MPROC_TIK;
+/* asm: WDHIT	fbss	WDHIT,1 */
+int WDHIT;
+#if MEMTESTS
+#endif
+#if DEBUG
+#endif
+#if MEMTESTS
+#endif
+#if MEMTESTS == 0
+#endif
 /* asm: FLOAT_TIK	.float	0.000292397	;(1/60)/57 of a minute */
 float FLOAT_TIK = 0.000292397f;
 /* *----------------------------------------------------------------------------
@@ -161,7 +219,7 @@ int DIPRAM;
 /* asm: 	.word	0		;20000000 */
 /* asm: 	.word	0		;40000000 */
 /* asm: 	.word	0		;80000000 */
-int SWTAB[32] = {
+void *SWTAB[] = {
     COIN1, // 00000001 SW_COIN1	(COIN.ASM)
     COIN2, // 00000002 SW_COIN2 	(COIN.ASM)
     _start, // 00000004 START		(INTRO.ASM)
@@ -195,23 +253,6 @@ int SWTAB[32] = {
     0, // 40000000
     0, // 80000000
 };
-/* asm: PB1	.usect	pbsss,1 */
-int PB1[pbsss];
-/* asm: PB2	.usect	pbsse,1 */
-int PB2[pbsse];
-/* asm: PBSS_PTR	.word	PB1 */
-int *PBSS_PTR = PB1;
-/* asm: PBSS_BSSEND	.word	PB2 */
-int *PBSS_BSSEND = PB2;
-/* *----------------------------------------------------------------------------
-*CLR RAM  (SLOW RAM)
-*make sure this is *NOT* done after C initializations
-*make sure nothing exists on the stack yet
-*
-*
- */
-/* asm: RAM_PTR	.word	BSSSTART */
-int RAM_PTR = BSSSTART;
 /* ;RAM_BSSEND	.word	01F7FFh
  */
 /* asm: RAM_BSSEND	.word	01EFFFh		;save protected hi bss ram */
@@ -242,7 +283,7 @@ int OLD_BUTTON_STATUS;
 /* asm: 	.word	0194h		;CRT_SYNCEND */
 /* asm: 	.word	01afh		;CRT_VBLK */
 /* asm: 	.word	01b0h		;CRT_VTTL */
-int CRT_REG_SETUP_STR[12] = {
+int CRT_REG_SETUP_STR[] = {
     399|CRT_SETUP_ICSYNC, // CRT_SETUP
     0x01ff, // CRT_HADDRINC
     0x01fe, // CRT_HBLKSTART
@@ -300,7 +341,7 @@ const char *TPALNI = "U38 LINK PAL NOT INSTALLED";
 /* asm: 	.word	SW_VIEW0|SW_VIEW1 */
 /* asm: 	.word	SW_VIEW0 */
 /* asm: 	.word	SW_VIEW0|SW_RADIO */
-int STATE_TABLE[7] = {
+int STATE_TABLE[] = {
     SW_VIEW0|SW_VIEW2,
     SW_VIEW2,
     SW_VIEW1|SW_VIEW2,
@@ -328,7 +369,7 @@ int BUTTON_TIK;
 /* asm: BUTTONI	.word	BUTTII */
 #define BUTTONI BUTTII
 /* asm: BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
-int BUTTII[4] = {
+int BUTTII[] = {
     BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2,
 };
 /* *----------------------------------------------------------------------------
@@ -363,101 +404,12 @@ void _c_int00(void)
     // 	;
     // 	;CHECK TO SEE IF THIS IS A WATCHDOG
     // 	;
-    // 	;POWERUP IGNORE GLITCH FIX
-    // asm: 	LDP	@991050h 		;DOG TEST
-    // asm: 	LDI	@991050h,R0
-    // asm: 	LDP	@WDHIT
-    // asm: 	STI	R0,@WDHIT		;SAVE YOUR DOGGIE
-    // asm: 	LDP	@SYSCNTLR
-    // asm: 	LDI	SYSCNTL_INIT,R0		;INIT SYSCNTL
-    // asm: 	STI	R0,@SYSCNTLR
-    // asm: 	LDP	@DMA_SETUP
-    // asm: 	LDI	DMA_SETUP_INIT,R0	;INIT DMA
-    // asm: 	STI	R0,@DMA_SETUP
-    // asm: 	LDP	@FIFO_SIZE
-    // asm: 	LDI	270,R0			;INIT FIFO SIZE
-    // asm: 	STI	R0,@FIFO_SIZE
-    // asm: 	CALL	CRT_REG_SETUP		;INIT CRT
-    // asm: 	SETDP
-#if MEMTESTS
-    // asm: 	CALL	TEST_STATIC_CHIPS	;TEST THE INSTALLABLE CHIPS
-#endif
-#if DEBUG
-    // 	;
-    // 	;COPY THE 'ROM' into the 'ROM'
-    // 	;
-    // 	;*this only works in RAM
-    // 	;and, if used in ROM will cause a lockup
-    // 	;
-    // asm: 	LDI	40h,AR1			;SOURCE ADDRESS
-    // asm: 	LDI	0C000h,AR2		;DESINATION ADDRESS
-    // asm: 	LS	8,AR2
-    // asm: 	ADDI	40h,AR2
-    // asm: 	LDI	1000h,RC		;COPY THE PROGRAM INTO
-    // asm: 	LS	4,RC			;FAST RAM
-    // asm: 	SUBI	41h,RC
-    // asm: 	RPTB	LD_DBG1
-    // asm: 	LDI	*AR1++,R0
-    // asm: LD_DBG1	STI	R0,*AR2++
-#endif
-    // asm: 	LDI	0,AR1			;SOURCE ADDRESS
-    // asm: 	LDI	4000h,AR2		;DESINATION ADDRESS
-    // asm: 	LS	8,AR2
-    // asm: 	LDI	1000h,RC		;COPY THE PROGRAM INTO
-    // asm: 	LS	4,RC			;FAST RAM
-    // asm: 	RPTB	LD_RAM
-    // asm: 	LDI	*AR1++,R0
-    // asm: LD_RAM	STI	R0,*AR2++
-    // asm: 	NOP
-    // asm: 	NOP				;DELAY FOR PIPELINE
-    // asm: 	NOP
-    // asm: 	LDI	22h,IOF
-    // asm: 	NOP
-    // asm: 	NOP				;DELAY FOR PIPELINE
-    // asm: 	NOP
-    // asm: 	SOFTWTM	R0		    	;SET WAIT STATES
-    // asm: 	CLRI	R0
-    // asm: 	LDP	@COMMINTM
-    // asm: 	STI	R0,@COMMINTM
-    // asm: 	SETDP
-#if MEMTESTS
-    // asm: 	CALL	TEST_CHIPS		;TEST THE INSTALLABLE CHIPS
-#endif
-    // asm: 	SOFTWTM	R0		    	;SET WAIT STATES
-    // asm: 	DINT
-    // asm:         LDP	@FASTSTKI
-    // asm:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
-#if MEMTESTS == 0
-    // 	;For RAM (development) version, we must copy the
-    // 	;program into what would be the ROM
-    // 	;
-    // asm: 	LDI	@SYSCNTL,R0
-    // asm: 	ANDN	10h,R0
-    // asm: 	STI	R0,@SYSCNTL
-    // asm: 	LDP	@SYSCNTLR
-    // asm: 	STI	R0,@SYSCNTLR
-    // asm: 	SETDP
-    // asm: 	LDI	040h,AR1		;SOURCE ADDRESS
-    // asm: 	LDI	0C000h,AR2		;DESINATION ADDRESS
-    // asm: 	LS	8,AR2
-    // asm: 	ADDI	040h,AR2
-    // asm: 	LDI	1000h,RC		;COPY THE PROGRAM INTO
-    // asm: 	LS	4,RC			;FAST RAM
-    // asm: 	SUBI	41h,RC
-    // asm: 	RPTB	LD_RAM3
-    // asm: 	LDI	*AR1++,R0
-    // asm: LD_RAM3	STI	R0,*AR2++
-    // asm: 	LDI	@SYSCNTL,R0
-    // asm: 	OR	10h,R0
-    // asm: 	STI	R0,@SYSCNTL
-    // asm: 	LDP	@SYSCNTLR
-    // asm: 	STI	R0,@SYSCNTLR
-    // asm: 	SETDP
-#endif
-    // asm: 	CLRI	R2
-    // asm: 	SETAUD	ADJ_OUTOFDIAG
-    // asm:       	BU	DR1 			;SKIP DOGGIE
-DIAG_RETURN:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_c_int00", 0, 0);
+    UNIMPL();
+}
+
+void DIAG_RETURN(void)
+{
     // asm: 	LDI	8,R0	      		;PREVENT FALSE DOGGIE
     // asm: 	LDP	@WDHIT
     // asm: 	STI	R0,@WDHIT		;SAVE YOUR DOGGIE
@@ -599,7 +551,7 @@ NODO1:
     // asm: 	STI	R0,@ERRORN
     // asm: 	CALL	TIMERESET
     // asm: 	CALL	COMMQ_PACKET_INIT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_c_int00", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_RETURN", 0, 0);
     UNIMPL();
 }
 
@@ -815,7 +767,12 @@ void INT0(void)
     // asm: 	BLE	REGIT
     // asm: 	ERRON	U,EC_WATCHDOG2
     // asm: 	BU	_c_int00
-REGIT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", 0, 0);
+    UNIMPL();
+}
+
+void REGIT(void)
+{
     // asm: LDP	@MPROC_TIK
     // asm: 	STI	R0,@MPROC_TIK
     // asm: 	SETDP
@@ -838,7 +795,12 @@ NTEST:
     // asm: 	CALL	SETPAGE1
     // asm: 	CALL	FASTCLR0
     // asm: 	B	DN_PAGE
-PAGE1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "REGIT", 0, 0);
+    UNIMPL();
+}
+
+void PAGE1(void)
+{
     // asm: CALL	SETPAGE0
     // asm: 	CALL	FASTCLR1
 DN_PAGE:
@@ -878,7 +840,63 @@ JJ88:
     // asm: 	SUBI	1,R0
     // asm: 	STI	R0,@_countdown
 NOTASEC:
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAGE1", 0, 0);
+    UNIMPL();
+}
+
+void NOTINGAME(void)
+{
+    // asm: 	INCM	@INFRAMES		;increment number of frames passed since last screen switch
+    // asm: 	INCMF	@IFRAMES
+    // asm: 	CALL	NUWHEEL			;motorized wheel
+    // asm: 	CALL	SNDPROC			;sound processor
+    // asm: 	CALL	READIO			;read the switches
+    // asm: 	CALL	RANDOM			;randomize further...
+    // asm: 	CALL	BUTTONS			;lighted buttons routine
+    // asm: 	CALL	COIN_COUNTER		;coin counter routine
+    // asm: 	CALL	CHECK_STATE
+    // asm: 	CALL	LATCH_ERROR		;motion error
+    // asm: 	ANDN	INT0_M,IF		;set 60Hz IRQ no longer pending
+    // asm: 	POP	AR7
+    // asm: 	POP	AR6
+    // asm: 	POP	AR5
+    // asm: 	POP	AR4
+    // asm: 	POP	AR3
+    // asm: 	POP	AR2
+    // asm: 	POP	AR1
+    // asm: 	POP	AR0
+    // asm: 	POP	IR1
+    // asm: 	POP	IR0
+    // asm: 	POP	BK
+    // asm: 	POP	RE
+    // asm: 	POP	RS
+    // asm: 	POP	RC
+    // asm: 	POPF	R7
+    // asm: 	POPF	R6
+    // asm: 	POPF	R5
+    // asm: 	POPF	R4
+    // asm: 	POPF	R3
+    // asm: 	POPF	R2
+    // asm: 	POPF	R1
+    // asm: 	POPF	R0
+    // asm: 	POP	R7
+    // asm: 	POP	R6
+    // asm: 	POP	R5
+    // asm: 	POP	R4
+    // asm: 	POP	R3
+    // asm: 	POP	R2
+    // asm: 	POP	R1
+    // asm: 	POP	R0
+    // asm: 	LDP	@CPU_WS
+    // asm: 	STI	R0,@CPU_WS
+    // asm: 	POP	R0
+    // asm: 	LDI	INT1_M|INT3_M|INT0_M,IE
+    // asm: 	LDP	@COMMINTM
+    // asm: 	OR	@COMMINTM,IE
+    // asm: 	POP	DP
+    // asm: 	POP	ST
+    // asm: 	RETI
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTINGAME", 0, 0);
     UNIMPL();
 }
 
@@ -1314,7 +1332,12 @@ void BUTTONS(void)
     // asm: 	OR	BUT_START,R0
     // asm: 	STI	R0,@BUTTON_STATUS
     // asm: 	BU	BUT3
-JUSTGOON:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BUTTONS", 0, 0);
+    UNIMPL();
+}
+
+void JUSTGOON(void)
+{
     // asm: 	READAUD	AUD_CREDITS
     // asm: 	CMPI	0,R0
     // asm: 	BLE	DASHLIGHT
@@ -1363,7 +1386,12 @@ BUTLITE:
     // asm: 	AND	0FFh,R0
     // asm: 	ANDN	BUT_FRONT,R0
     // asm: 	BU	FDDDA
-KKDAK:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JUSTGOON", 0, 0);
+    UNIMPL();
+}
+
+void KKDAK(void)
+{
     // asm: AND	0FFh,R0
     // asm: 	OR	BUT_FRONT,R0
 FDDDA:
@@ -1424,7 +1452,7 @@ DGBT:
     // asm: 	RPTS	SPACER
     // asm: 	NOP
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BUTTONS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KKDAK", 0, 0);
     UNIMPL();
 }
 
@@ -1567,7 +1595,12 @@ TIMELP:
     // asm: STF	R1,*+AR0(31)
     // asm: 	POP	DP
     // asm: 	RETS
-TIMEL1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMERESET", 0, 0);
+    UNIMPL();
+}
+
+void TIMEL1(void)
+{
     // asm: 	LDI	0,R0
     // asm: 	STI	R0,@TIMECLR
     // asm: 	LDF	0,R0
@@ -1577,7 +1610,7 @@ TIMEL1:
     // asm: 	STF	R0,*AR0++
     // asm: 	POP	DP
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMERESET", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMEL1", 0, 0);
     UNIMPL();
 }
 
@@ -1639,7 +1672,12 @@ void MESSAGE1(void)
     // asm: 	BZ	DODOIBO
     // asm: 	LDI	@LINKDISABLED,AR2
     // asm: 	BU	HJSADF
-DODOIBO:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MESSAGE1", 0, 0);
+    UNIMPL();
+}
+
+void DODOIBO(void)
+{
     // asm: TSTB	CMDP_MASTER,R0
     // asm: 	LDIZ	@IAMMASTER,AR2
     // asm: 	LDINZ	@IAMSLAVE,AR2
@@ -1650,7 +1688,7 @@ HJSADF:
     // 	;test if link pal is installed
     // 	;
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MESSAGE1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DODOIBO", 0, 0);
     UNIMPL();
 }
 
@@ -1717,7 +1755,12 @@ void CHECK_STATE(void)
     // asm: 	BLT	ABORT_STATE
     // asm: 	STI	R0,@STATE_TIK
     // asm: 	RETS
-NEXTSTATE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_STATE", 0, 0);
+    UNIMPL();
+}
+
+void NEXTSTATE(void)
+{
     // asm: 	LDI	@STATE_NUM,R0
     // asm: 	INC	R0
     // asm: 	CMPI	NUM_STATES,R0
@@ -1726,7 +1769,12 @@ NEXTSTATE:
     // asm: 	LDI	120,R0
     // asm: 	STI	R0,@STATE_TIK
     // asm: 	RETS
-DODIAG:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXTSTATE", 0, 0);
+    UNIMPL();
+}
+
+void DODIAG(void)
+{
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@STATE_NUM
     // asm: 	STI	R0,@STATE_TIK
@@ -1739,7 +1787,7 @@ ABORT_STATE:
     // asm: 	STI	R0,@STATE_NUM
     // asm: 	STI	R0,@STATE_TIK
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_STATE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DODIAG", 0, 0);
     UNIMPL();
 }
 

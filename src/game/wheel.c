@@ -9,6 +9,14 @@
  * Source module: asm/WHEEL.ASM
  */
 
+void NUWHEEL(void);
+void NUWHL1(void);
+void NBON(void);
+void NIC(void);
+void NUWHL2(void);
+void NUWHL3(void);
+void TOWHEEL(void);
+
 #define WHEEL_KILL 0
 #define WHEEL 0x0995000
 /* asm: POSE	.bss	POSE,1 */
@@ -52,35 +60,60 @@ void NUWHEEL(void)
     // asm: 	LDF	@WHEELPWR,R3
     // asm: 	LDF	126,R2
     // asm: 	B	NUWHL
-NUWHL1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHEEL", 0, 0);
+    UNIMPL();
+}
+
+void NUWHL1(void)
+{
     // asm: 	CMPI	MBONUS,R0
     // asm: 	BNE	NBON
     // asm: 	LDF	2,R1
     // ;	LDF	64,R2
     // ;	LDF	2,R3
     // asm: 	B	NUWHL
-NBON:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHL1", 0, 0);
+    UNIMPL();
+}
+
+void NBON(void)
+{
     // asm: 	CMPI	MINSERT_COINS,R0
     // asm: 	BNE	NIC
     // asm: 	LDF	0,R1		;2
     // ;	LDF	64,R2
     // ;	LDF	2,R3
     // asm: 	B	NUWHL
-NIC:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NBON", 0, 0);
+    UNIMPL();
+}
+
+void NIC(void)
+{
     // asm: 	CMPI	MINTRO,R0		;INTRO
     // asm: 	BNE	NUWHL2
     // asm: 	LDF	0.5,R1
     // ;	LDF	64,R2
     // ;	LDF	0.5,R3
     // asm: 	B	NUWHL
-NUWHL2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NIC", 0, 0);
+    UNIMPL();
+}
+
+void NUWHL2(void)
+{
     // asm: 	CMPI	MINIT,R0		;INITIAL ENTRY
     // asm: 	BNE	NUWHL3
     // asm: 	LDF	0.75,R1
     // ;	LDF	64,R2
     // ;	LDF	0.75,R3
     // asm: 	BU	NUWHL
-NUWHL3:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHL2", 0, 0);
+    UNIMPL();
+}
+
+void NUWHL3(void)
+{
     // asm: 	CMPI	MDIAG,R0
     // asm: 	BNE	NUWHL
     // asm: 	CLRF	R3
@@ -119,7 +152,7 @@ NUWHL:
     // asm: 	AND	0FFH,R0
     // asm: 	CALL	TOWHEEL
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHEEL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHL3", 0, 0);
     UNIMPL();
 }
 

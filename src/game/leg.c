@@ -6,10 +6,24 @@
 #include "globals.h"
 #include "objects.h"
 #include "leg.h"
+#include "discovered_labels.h"
 
 /*
  * Source module: asm/LEG.ASM
  */
+
+void LEG_INIT(void);
+void ELEMENT_INIT(void);
+void ELEMENT_GET(void);
+void ELEMENT_ADD(void);
+void QT(void);
+void ELEMENT_DUMP_INTO_LEGMAP(void);
+void ENDIT(void);
+void LEG_GENERATE_MAP(void);
+void DNFND(void);
+void LEG_ADD_GROUP(void);
+void NOTREVERSED(void);
+void GENERATE_LINEAR_DISTANCE(void);
 
 #define USEFIXED 1
 #define USEEXTENDED 0
@@ -34,6 +48,9 @@ int LEG_SSLL[MINILL_SIZE*(LEG_SIZE+1)];
 int LEGFREE;
 /* asm: LEGLL	.bss	LEGLL,1 */
 int LEGLL;
+/* asm: DBG_LEGCNT	.bss	DBG_LEGCNT,1 */
+int DBG_LEGCNT;
+#endif
 /* asm: LEG_FLAG	.bss	LEG_FLAG,1 */
 int LEG_FLAG;
 /* asm: LEG_RADY	.bss	LEG_RADY,1 */
@@ -80,10 +97,6 @@ void ELEMENT_INIT(void)
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@LEGLL
 #if DEBUG
-    // asm: 	STI	R0,@DBG_LEGCNT
-#endif
-    // asm: 	POP	R0
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_INIT", 0, 0);
     UNIMPL();
 }
@@ -126,11 +139,16 @@ R65:
     // asm: 	BLT	QT
     // asm: 	LDI	AR1,AR0
     // asm: 	BU	R65
-QT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_ADD", 0, 0);
+    UNIMPL();
+}
+
+void QT(void)
+{
     // asm: 	STI	AR1,*AR3
     // asm: 	STI	AR3,*AR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_ADD", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "QT", 0, 0);
     UNIMPL();
 }
 
@@ -158,12 +176,17 @@ EDILL:
 K99:
     // asm: STI	R0,*AR3++
     // asm: 	BU	EDILL
-ENDIT:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_DUMP_INTO_LEGMAP", 0, 0);
+    UNIMPL();
+}
+
+void ENDIT(void)
+{
     // asm: 	POP	AR1
     // asm: 	POP	AR0
     // asm: 	POP	R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_DUMP_INTO_LEGMAP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENDIT", 0, 0);
     UNIMPL();
 }
 
@@ -207,7 +230,12 @@ CNTA:
 CNTNA:
     // asm: 	INC	AR4			;INCREMENT INDEX
     // asm: 	BU	LPP
-DNFND:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_GENERATE_MAP", 0, 0);
+    UNIMPL();
+}
+
+void DNFND(void)
+{
     // asm: 	LDI	@LEG_MAPI,AR3
     // *
     // *LOAD TYCO ENTRIES UNTIL LAST LEG IS FOUND
@@ -269,7 +297,7 @@ CNTNB2:
     // *AND RETURN TO GAME...
     // *
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_GENERATE_MAP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DNFND", 0, 0);
     UNIMPL();
 }
 
@@ -358,7 +386,12 @@ ISOVER:
     // asm: 	ADDF	*+AR7(TB_POSZ),R1
     // asm: 	STF	R1,*+AR3(LEG_POSZ)
     // asm: 	BU	JOIN_UP
-NOTREVERSED:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_ADD_GROUP", 0, 0);
+    UNIMPL();
+}
+
+void NOTREVERSED(void)
+{
     // asm: 	LDI	@MATRIXAI,R2
     // asm: 	LDI	AR3,AR2
     // asm: 	ADDI	LEG_POSX,AR2
@@ -434,7 +467,7 @@ NOTDYNAROAD:
     // asm: 	POP	R4
     // asm: 	CALL	ELEMENT_DUMP_INTO_LEGMAP
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_ADD_GROUP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTREVERSED", 0, 0);
     UNIMPL();
 }
 

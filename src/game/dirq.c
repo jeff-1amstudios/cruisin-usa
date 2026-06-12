@@ -19,6 +19,36 @@
  * Source module: asm/DIRQ.ASM
  */
 
+void DIRQ(void);
+void NEXTOBJ(void);
+void CHECKTHEREG(void);
+void REGULAR(void);
+void VECTOR_TRANSFORMATION(void);
+void TRANS2D(void);
+void SELF_ORIENTING2(void);
+void VECTOR_TRANSFORMATION2(void);
+void DYNAMIC_OBJECT(void);
+void NOSHAD(void);
+void PLOTPOLY(void);
+void PLOTPOLY0(void);
+void POLYLP(void);
+void CLIPIT(void);
+void CLIPCK(void);
+void CLIP(void);
+void CLIPX(void);
+void PLTPOLY(void);
+void PLTLP1(void);
+void PLOT1PAL(void);
+void POLYLP_1(void);
+void CLIPIT_1(void);
+void PLT1PAL(void);
+void PLTLP1_2(void);
+void PLTG1PAL(void);
+void PLTGLP1_2(void);
+void PLOTILLUM(void);
+void ZCLIP(void);
+void ZCLIP1(void);
+
 /* *----------------------------------------------------------------------------
  */
 #define POSTERCLIP 300
@@ -339,7 +369,12 @@ ROT3D:
     // asm: 	LDI	AR0,AR5
     // asm: 	ADDI	OMATRIX,AR5
     // asm: 	BU	VT
-CHECKTHEREG:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXTOBJ", 0, 0);
+    UNIMPL();
+}
+
+void CHECKTHEREG(void)
+{
     // *O_POSTER
     // *A poster matrix is oriented by the X/Z in the universe, but is not
     // *rotated by Y.  Simply put:  a poster is an object in the universe
@@ -354,7 +389,12 @@ CHECKTHEREG:
     // asm: 	NOP
     // 	;---> BLED VT
     // asm: 	B	DISPLAY
-REGULAR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKTHEREG", 0, 0);
+    UNIMPL();
+}
+
+void REGULAR(void)
+{
     // asm: 	LDI	@transmatrixI,AR3
     // asm: 	TSTB	O_NOROT,R6		;if this object is not self-orienting
     // asm: 	BZD	SELF_ORIENTING		;we can save on computations by skipping the concat
@@ -410,7 +450,7 @@ INLP1:
     // 	;***
     // 	;***	VECTOR ROTATION/TRANSLATION
     // 	;***
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXTOBJ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "REGULAR", 0, 0);
     UNIMPL();
 }
 
@@ -441,8 +481,7 @@ VT:
     // asm: 	FLOAT	SCREENHY,R7		;screen half x
     // asm: 	LDF	*-AR6(1),R4		;GET X TRANS
     // asm: 	LDF	*AR6,R5			;GET Y TRANS
-    // 	;---->BR 	VTL
-    // asm: 	BR 	VTL				; jeff added to match I450 rom
+    // asm: 	BR 	VTL				; jeff edited to match I450 rom
 VTL:
     // asm: 	RPTB	EOVCTR
     // 	;;MATRIX MULTIPLY 1x3 * 3x3 -> blowspace
@@ -603,7 +642,7 @@ VT2:
     // asm: 	FLOAT	SCREENHX,R6		;screen half x
     // asm: 	LDI	3,IR0
     // asm: 	LDI	-16,BK
-    // asm: 	BR 	VTL2
+    // asm: 	BR 	VTL2				; jeff edited to match I450 rom
 VTL2:
     // asm: 	RPTB	EOVCTR2
     // asm: 	LDI	*AR1++,R3
@@ -765,8 +804,7 @@ DYNLP1:
     // asm: 	LDF	*-AR7(1),R4		;GET X TRANS
     // asm: 	LDF	*AR7,R5			;GET Y TRANS
     // asm: 	LDI	*+AR0(DYNANVERTS),RC	;number of vertices to process -1
-    // 	;------>BD	DYNALP
-    // asm: 	BU	DYNALP			; added by jeff to match i450 rom
+    // asm: 	BU	DYNALP			; jeff edited to match I450 rom
     // 	;;MATRIX MULTIPLY 1x3 * 3x3 -> blowspace
     // 	;AR0	object ptr		PRELOADED *SAVE*
     // 	;AR1	rom ptr			PRELOADED *INC*
@@ -934,7 +972,12 @@ EOSVCTR:
     // asm: 	LDI	@transmatrixI,AR5	;RESTORE MATRIX POINTER
     // asm: 	BU	DYNALPX
     // *NO SHADOW KLUDGE
-NOSHAD:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DYNAMIC_OBJECT", 0, 0);
+    UNIMPL();
+}
+
+void NOSHAD(void)
+{
     // asm: 	LDF	0,R0
     // asm: 	FLOAT	-1000,R0
     // asm: 	LDI	3,RC
@@ -943,7 +986,7 @@ NOSHAD:
     // asm: 	STF	R0,*AR3++    		;STORE NULL X,Y,Z
     // asm: 	LDI	@transmatrixI,AR5	;RESTORE MATRIX POINTER
     // asm: 	BU	DYNALPX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DYNAMIC_OBJECT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOSHAD", 0, 0);
     UNIMPL();
 }
 
@@ -986,6 +1029,136 @@ void PLOTPOLY(void)
     // asm: 	ADDI	1,IR1
     // 	;---->BNZD	PLOTILLUM	;BR-> if it is a one palette object
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTPOLY", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+ */
+void PLOTPOLY0(void)
+{
+    // asm: 	CMPI	1000,R0
+    // asm: 	BGTD	PLTPOLY			;YES, NO CLIP LOOP
+    // asm: 	LDI	@_PALLISTI,BK
+    // asm: 	LDI	0FFH,R7			;GET MASK
+    // asm: 	LDI	-16,R6			;SHIFT COUNT
+    // 	;---->BGTD	PLTPOLY		;YES, NO CLIP LOOP
+    // asm: 	PUSH 	AR0
+    // asm: 	LDI	@CLIPRAMI,AR0
+    // asm:  	LDI	RC,AR6			;GET POLY COUNT
+    // asm: 	BUD	PLOTPOLYLP
+    // asm: 	LDP	@FIFO_STATUS
+    // asm: 	LDI	FIFO_ADDR>>16,AR7
+    // asm: 	LSH	16,AR7
+    // asm: 	BU	PLTPOLYLP		; jeff edited to match I450 rom
+PLOTPOLYLP:
+    // *GET EXTERNAL VERTEX INDICIES
+    // asm: 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
+    // asm: 	AND	R7,R3,AR4
+    // asm: PLOTPOLYLP1
+    // asm: 	ADDI	1,IR1
+    // asm: 	MPYI	3,AR4			;V1
+    // asm: 	LSH	-8,R3
+    // asm: 	AND	R7,R3,AR5
+    // asm: 	MPYI	3,AR5			;V2
+    // asm: 	LSH	-8,R3
+    // asm: 	AND	R7,R3,AR2
+    // asm: 	MPYI	3,AR2			;V3
+    // asm: 	LSH	-8,R3
+    // asm: 	AND	R7,R3,AR3
+    // asm: 	MPYI	3,AR3			;V4
+    // *CHECK ALL Z'S <=0
+    // asm: 	LDF	*+AR4(IR1),R0
+    // asm: 	BGED	INBNDS
+    // asm: 	AND	*+AR5(IR1),*+AR2(IR1),R0
+    // asm: 	AND	*+AR3(IR1),R0
+    // asm: 	SUBI	1,IR1
+    // 	;------->BGED	INBNDS
+    // asm: 	LSH	8,R0
+    // asm: 	BND	POLYLP
+    // asm: 	NOP
+    // *CHECK FIFO FULL
+INBNDS:
+    // asm: 	LDI	@FIFO_STATUS,R0
+    // asm: 	AND	FIFO_STATUS_MAX_FLAG,R0
+    // 	;---->BND	POLYLP_1
+    // asm: 	BNZD	INBNDS
+    // *CHECK HIDDEN SURFACE REMOVAL
+    // asm: 	SUBF	*+AR4(IR0),*+AR5(IR0),R1	;dx = ax - bx
+    // asm: 	SUBF	*+AR4(IR1),*+AR5(IR1),R3	;dy = ay - by
+    // asm: 	SUBF	*+AR5(IR0),*+AR2(IR0),R0	;ex = cx - bx
+    // 	;------->BNZD	INBNDS
+    // asm: 	MPYF	R3,R0				;ex = dy * ex
+    // asm: 	MPYF	R2,R1				;ey = dx * ey
+    // asm: 	SUBF	R1,R0				;ey = ey - ex
+    // asm: 	BGTD	POLYLP				;if back facing DONT PLOT
+    // *GLITCH FIX
+    // asm: 	SUBF	*+AR2(IR1),*+AR3(IR1),R0
+    // asm: 	MPYF	R3,R0
+    // asm: 	CMPI	AR2,AR3
+    // 	;------>BGTD	POLYLP			;if back facing DONT PLOT
+    // asm: 	BZD	LOF1X
+    // asm: 	MPYF	R3,R2
+    // asm: 	OR	R2,R0
+    // asm: 	LDF	R0,R0
+    // asm: 	BGT	POLYLP
+LOF1X:
+    // *AR4,AR5,AR2,AR3 = FOUR VERTICES
+    // *IR1=PALETTE
+    // *
+    // asm: 	CALL	CLIPCK
+    // asm: 	BNZD	CLIPIT			;GO CLIP IT DUDES
+    // asm: 	LDI	*AR1++(2),R2		;get control word/palette
+    // asm: 	LSH	R6,R2,R0		;SHIFT 16 TO RIGHT
+    // asm: 	ADDI	R0,BK,AR4
+    // 	;------->BNZD	CLIPIT	  	;YES SPLIT IT UP...
+    // asm: 	LSH	R6,*AR4,R0		;PALETTE->R0
+    // asm:  	LSH	8,R0			;not a good way to do this fix l8r -7/14/93
+    // *NO CLIP, BLOW IT OUT
+    // asm: BLOWOUT
+    // asm: 	RPTS	7
+    // asm: 	LDI	*AR0++,R0
+    // asm: 	NOP	*AR0--(8)		;READJUST INDEX DUDES...
+    // asm: 	LDI	*AR1++,R0		;2 AIV packed format Y2:X2:Y1:X1
+    // asm: 	STI	R0,*AR7
+    // asm: 	LSH	-16,R0
+    // asm: 	LDI	*AR1++,R0		;GET Y4:X4:Y3:X3
+    // asm: 	STI	R0,*AR7
+    // asm: 	LSH	-16,R0
+    // asm: 	DBUD	AR6,PLOTPOLYLP
+    // asm: 	LDI	*AR1++,R0
+    // asm: 	STI	R0,*AR7			;STORE THE ADDR
+    // asm: 	LDI	@FIFO_INC,R0
+    // ;	LDI	*AR7,R0		 	;FIFO_INC
+    // 	;----> DBUD AR6,PLOTPOLYLP
+    // asm: 	POP	AR0			;RESTORE OBJECT POINTER
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTPOLY0", 0, 0);
+    UNIMPL();
+}
+
+void POLYLP(void)
+{
+    // asm: 	DBUD	AR6,PLOTPOLYLP1
+    // asm: 	LDI	*++AR1(6),R3		;read internal vertices (v4|v3|v2|v1)
+    // asm: 	SUBI	1,AR1
+    // asm: 	AND	R7,R3,AR4
+    // 	;----> DBUD AR6,PLOTPOLYLP1
+    // asm: 	POP	AR0
+    // asm: 	RETS
+    // *CLIP IT
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "POLYLP", 0, 0);
+    UNIMPL();
+}
+
+void CLIPIT(void)
+{
+    // asm: 	LSH	R6,*AR4,R0		;PALETTE->R0
+    // asm:  	LSH	8,R0			;not a good way to do this fix l8r -7/14/93
+    // asm: 	CALL 	CLIP
+    // asm: 	DBU	AR6,PLOTPOLYLP
+    // asm: 	POP	AR0
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIPIT", 0, 0);
     UNIMPL();
 }
 
@@ -1427,7 +1600,12 @@ BUSTUP0:
     // ;	CMPI	0DH,R1
     // ;	BNE	$
     // asm: 	B	CLIPOP
-CLIPX:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIP", 0, 0);
+    UNIMPL();
+}
+
+void CLIPX(void)
+{
     // asm: 	NOP	*AR0--(16)		;RESTORE AR0
     // asm: 	ADDI	3,AR1			;SKIP THE INTERNAL VERTS AND TM CRAP
 CLIPDONE:
@@ -1442,7 +1620,7 @@ CLIPDONE:
     // asm: 	POP	IR1
     // asm: 	POP	IR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIPX", 0, 0);
     UNIMPL();
 }
 
@@ -1463,8 +1641,7 @@ void PLTPOLY(void)
     // asm: 	LDP	@FIFO_STATUS
     // asm: 	LDI	FIFO_ADDR>>16,AR7
     // asm: 	LSH	16,AR7
-    // 	;------->BD	PLTPOLYLP
-    // asm: 	BU PLTPOLYLP 		; added by jeff to match i450 rom
+    // asm: 	BU	PLTPOLYLP		; jeff edited to match I450 rom
 PLTPOLYLP:
     // asm: 	RPTB	PLTPOLL
     // asm: 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
@@ -1523,7 +1700,12 @@ PLTWT:
     // asm: 	LDI	@FIFO_INC,R0
     // ;	POP	AR0
     // asm: 	RETS
-PLTLP1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLTPOLY", 0, 0);
+    UNIMPL();
+}
+
+void PLTLP1(void)
+{
     // asm: 	SUBI	1,RC
     // asm: 	LDI	RC,R0
     // asm: 	BNND	PLTPOLYLP1
@@ -1534,7 +1716,7 @@ PLTLP1:
     // asm: PLTXX
     // ;	POP	AR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLTPOLY", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLTLP1", 0, 0);
     UNIMPL();
 }
 
@@ -1564,8 +1746,7 @@ void PLOT1PAL(void)
     // asm: 	LDP	@FIFO_STATUS
     // asm: 	LDI	FIFO_ADDR>>16,AR7
     // asm: 	LSH	16,AR7
-    // 	;------->BD	PLTPOLYLP_1
-    // asm: 	BU	PLTPOLYLP_1				; added by jeff to match i450 rom
+    // asm: 	BU	PLTPOLYLP_1		; jeff edited to match I450 rom
 PLOTPOLYLP_1:
     // *GET EXTERNAL VERTEX INDICIES
     // asm: 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
@@ -1649,7 +1830,12 @@ LOF2X:
     // 	;----> DBUD AR6,PLOTPOLYLP_1
     // asm: 	POP	AR0			;RESTORE OBJECT POINTER
     // asm: 	RETS
-POLYLP_1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOT1PAL", 0, 0);
+    UNIMPL();
+}
+
+void POLYLP_1(void)
+{
     // asm: 	DBUD	AR6,PLOTPOLYLP1_1
     // asm: 	LDI	*++AR1(6),R3		;read internal vertices (v4|v3|v2|v1)
     // asm: 	SUBI	1,AR1
@@ -1658,12 +1844,17 @@ POLYLP_1:
     // asm: 	POP	AR0
     // asm: 	RETS
     // *CLIP IT
-CLIPIT_1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "POLYLP_1", 0, 0);
+    UNIMPL();
+}
+
+void CLIPIT_1(void)
+{
     // asm: 	CALL 	CLIP
     // asm: 	DBU	AR6,PLOTPOLYLP_1
     // asm: 	POP	AR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOT1PAL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIPIT_1", 0, 0);
     UNIMPL();
 }
 
@@ -1698,8 +1889,7 @@ PLT1PAL1:
     // asm: 	LDP	@FIFO_STATUS
     // asm: 	LDI	FIFO_ADDR>>16,AR7
     // asm: 	LSH	16,AR7
-    // 	;------->BD	PLTPOLYLP_2
-    // asm: 	BU	PLTPOLYLP_2			; added by jeff to match i450 rom
+    // asm: 	BU	PLTPOLYLP_2		; jeff edited to match I450 rom
 PLTPOLYLP_2:
     // asm: 	RPTB	PLTPOLL_2
     // asm: 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
@@ -1756,7 +1946,12 @@ PLTWT_2:
     // asm: PLTPOLL_2
     // asm: 	LDI	@FIFO_INC,R0
     // asm: 	RETS
-PLTLP1_2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLT1PAL", 0, 0);
+    UNIMPL();
+}
+
+void PLTLP1_2(void)
+{
     // asm: 	SUBI	1,RC
     // asm: 	LDI	RC,R0
     // asm: 	BNND	PLTPOLYLP1_2
@@ -1768,13 +1963,17 @@ PLTLP1_2:
     // *****************************
     // *PLOT A DISTANT 1 PALETTE POLYGON GLITCH FIX
     // *
-PLTG1PAL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLTLP1_2", 0, 0);
+    UNIMPL();
+}
+
+void PLTG1PAL(void)
+{
     // asm: 	BUD	PLTGPOLYLP_2
     // asm: 	LDP	@FIFO_STATUS
     // asm: 	LDI	FIFO_ADDR>>16,AR7
     // asm: 	LSH	16,AR7
-    // 	;------->BD	PLTGPOLYLP_2
-    // asm: 	BU	PLTGPOLYLP_2			; added by jeff to match i450 rom
+    // asm: 	BU	PLTGPOLYLP_2		; jeff edited to match I450 rom
 PLTGPOLYLP_2:
     // asm: 	RPTB	PLTGPOLL_2
     // asm: 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
@@ -1839,7 +2038,12 @@ LOF4X:
     // asm: PLTGPOLL_2
     // asm: 	LDI	@FIFO_INC,R0
     // asm: 	RETS
-PLTGLP1_2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLTG1PAL", 0, 0);
+    UNIMPL();
+}
+
+void PLTGLP1_2(void)
+{
     // asm: 	SUBI	1,RC
     // asm: 	LDI	RC,R0
     // asm: 	BNND	PLTGPOLYLP1_2
@@ -1848,7 +2052,7 @@ PLTGLP1_2:
     // asm: 	AND	R7,R3,AR4
     // 	;----> BNND PLTGPOLYLP1_2
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLT1PAL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLTGLP1_2", 0, 0);
     UNIMPL();
 }
 
@@ -1970,16 +2174,26 @@ LP1:
     // asm: 	DBU	AR6,ILLUM_PLOTPOLYLP
     // asm: 	POP	AR0
     // asm: 	RETS
-ZCLIP:
-    // asm: 	ADDI	5,AR1
-    // asm: 	DBU	AR6,ILLUM_PLOTPOLYLP
-    // asm: 	POP	AR0
-    // asm: 	RETS
-    // asm: ZCLIP1
-    // asm: 	ADDI	5,AR1
-    // asm: 	DBU	AR6,ILLUM_PLOTPOLYLP
-    // asm: 	POP	AR0
-    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTILLUM", 0, 0);
+    UNIMPL();
+}
+
+void ZCLIP(void)
+{
+    // asm: 	ADDI	5,AR1
+    // asm: 	DBU	AR6,ILLUM_PLOTPOLYLP
+    // asm: 	POP	AR0
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZCLIP", 0, 0);
+    UNIMPL();
+}
+
+void ZCLIP1(void)
+{
+    // asm: 	ADDI	5,AR1
+    // asm: 	DBU	AR6,ILLUM_PLOTPOLYLP
+    // asm: 	POP	AR0
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZCLIP1", 0, 0);
     UNIMPL();
 }

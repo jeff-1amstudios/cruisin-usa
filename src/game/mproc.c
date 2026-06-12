@@ -11,6 +11,22 @@
  * Source module: asm/MPROC.ASM
  */
 
+void PRC_DEBUG_CHECK(void);
+void PRC_CREATE(void);
+void GETPROC0(void);
+void PRC_CREATE_CHILD(void);
+void PRC_DISPATCH(void);
+void PRC_SLEEP(void);
+void PRC_SUICIDE(void);
+void PRC_KILL(void);
+void PRC_KILLALL(void);
+void PRC_EXISTP(void);
+void PRC_INIT(void);
+void PRC_XFER(void);
+void PRC_FINDNEXT(void);
+void PRC_FIND(void);
+void PRC_FOLLOW(void);
+
 #if DEBUG
 /* asm: NUM_PROCS_ACTIVE	.bss	NUM_PROCS_ACTIVE,1 */
 int NUM_PROCS_ACTIVE;
@@ -73,7 +89,12 @@ void PRC_CREATE(void)
     // asm: 	ERRON	U,EC_PROC|ET_ALLOC	;OUT OF PROCESSES ERROR
     // asm: 	SETC
     // asm: 	B	GETPROCX
-GETPROC0:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_CREATE", 0, 0);
+    UNIMPL();
+}
+
+void GETPROC0(void)
+{
     // asm: 	LDI	R0,AR0
     // asm: 	LDI	*AR0,R0
     // asm: 	STI	R0,@PFREE		;AND UPDATE FREE LIST
@@ -107,7 +128,7 @@ GETPROC0:
 GETPROCX:
     // asm: 	POP	R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_CREATE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPROC0", 0, 0);
     UNIMPL();
 }
 

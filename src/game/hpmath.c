@@ -5,6 +5,11 @@
  * Source module: asm/HPMATH.ASM
  */
 
+void _HPsin(void);
+void EPI0_1(void);
+void _HPcos(void);
+void EPI0_2(void);
+
 #define FP AR3
 /* asm: CONST: */
 /* asm: 	.float	3.1830988618379067154e-1;0 */
@@ -14,7 +19,7 @@
 /* asm: 	.float	8.333025139e-3   ;4 */
 /* asm: 	.float	-1.666665668e-1  ;5 */
 /* asm: 	.float	1.57079632679489661923;6 */
-float CONST[7] = {
+float CONST[] = {
     3.1830988618379067154e-1f, // 0
     9.67653589793e-4f, // 1
     2.601903036e-6f, // 2

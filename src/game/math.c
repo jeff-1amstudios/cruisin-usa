@@ -19,6 +19,36 @@
  * Source module: asm/MATH.ASM
  */
 
+void _COSI(void);
+void _SINE(void);
+void ALLOK(void);
+void NORMITS(void);
+void NORMIT(void);
+void ARCTANF(void);
+void FIND_MATRIX(void);
+void FIND_XMATRIX(void);
+void FIND_YMATRIX(void);
+void _find_Ymatrix(void);
+void HPFIND_YMATRIX(void);
+void FIND_ZMATRIX(void);
+void INITMAT(void);
+void VECTLEN(void);
+void CPYMAT(void);
+void CPYIMAT(void);
+void CLR_VECTORA(void);
+void MATRIX_MUL(void);
+void NORMALIZE(void);
+void NORMAT(void);
+void GEN_NORMAL(void);
+void CONCATMATV(void);
+void CONCAT201(void);
+void CONCATMAT(void);
+void GETTHETADIFF(void);
+void ISNEG(void);
+void DIST_PT2LINE(void);
+void GETLINE_EQ_2D(void);
+void SCALE_MATRIX(void);
+
 /* asm: SINTABLE	;257 entries */
 /* asm: 	.float	0.000000,0.006136,0.012272,0.018407,0.024541,0.030675,0.036807,0.042938 */
 /* asm: 	.float	0.049068,0.055195,0.061321,0.067444,0.073565,0.079682,0.085797,0.091909 */
@@ -53,7 +83,7 @@
 /* asm: 	.float	0.995185,0.995768,0.996313,0.996821,0.997291,0.997723,0.998118,0.998476 */
 /* asm: 	.float	0.998796,0.999078,0.999322,0.999529,0.999699,0.999831,0.999925,0.999981 */
 /* asm: 	.float	1.0 */
-float SINTABLE[257] = {
+float SINTABLE[] = {
     0.000000f, 0.006136f, 0.012272f, 0.018407f, 0.024541f, 0.030675f, 0.036807f, 0.042938f,
     0.049068f, 0.055195f, 0.061321f, 0.067444f, 0.073565f, 0.079682f, 0.085797f, 0.091909f,
     0.098017f, 0.104122f, 0.110222f, 0.116319f, 0.122411f, 0.128498f, 0.134581f, 0.140658f,
@@ -123,7 +153,7 @@ int *OFFTABV = ATOFFTAB;
 /* asm: 	.float	3.1416 */
 /* asm: 	.float	-1		;225-270 */
 /* asm: 	.float	4.7123 */
-int ATOFFTAB[16] = {
+int ATOFFTAB[] = {
     1, // 0-45
     0,
     -1, // 45-90
@@ -161,7 +191,7 @@ int ATOFFTAB[16] = {
 /* asm: 	.float	0.718830,0.723238,0.727611,0.731951,0.736257,0.740530,0.744770 */
 /* asm: 	.float	0.748977,0.753151,0.757293,0.761403,0.765480,0.769526,0.773541 */
 /* asm: 	.float	0.777524,0.781477,0.785398 */
-float ATTAB[129] = {
+float ATTAB[] = {
     0.000000f, 0.007812f, 0.015624f, 0.023433f, 0.031240f, 0.039043f, 0.046841f,
     0.054633f, 0.062419f, 0.070197f, 0.077967f, 0.085727f, 0.093477f, 0.101215f,
     0.108942f, 0.116655f, 0.124355f, 0.132040f, 0.139709f, 0.147361f, 0.154997f,
@@ -237,7 +267,12 @@ PERFECT2:
     // asm: 	NEGF	*AR0,R0
     // asm: 	POP	AR0
     // asm: 	RETS
-ALLOK:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_SINE", 0, 0);
+    UNIMPL();
+}
+
+void ALLOK(void)
+{
     // asm: 	CMPI	256,R0
     // asm: 	BLT	PERFECT
     // asm: 	SUBI	512,R0
@@ -248,7 +283,7 @@ PERFECT:
     // asm: 	LDF	*AR0,R0
     // asm: 	POP	AR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_SINE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOK", 0, 0);
     UNIMPL();
 }
 
@@ -1018,12 +1053,17 @@ void GETTHETADIFF(void)
     // asm: 	SUBF	@TWOPII,R0
     // asm: 	POPF	R1
     // asm: 	RETS
-ISNEG:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETTHETADIFF", 0, 0);
+    UNIMPL();
+}
+
+void ISNEG(void)
+{
     // asm: ADDF	@TWOPII,R0
 NONEG:
     // asm: POPF	R1
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETTHETADIFF", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISNEG", 0, 0);
     UNIMPL();
 }
 
