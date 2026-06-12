@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import argparse
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from gen_c_skeleton import SymbolInfo, collect_module_symbol_table, sanitize_identifier, variable_declaration
@@ -22,6 +22,12 @@ class SetEntry:
     expr: str
     comment: str
     asm_line: str
+
+
+@dataclass
+class RenderBlock:
+    kind: str
+    lines: list[str] = field(default_factory=list)
 
 
 def split_comment(line: str) -> tuple[str, str]:
@@ -87,6 +93,19 @@ def normalize_emitted_lines(lines: list[str]) -> list[str]:
     return normalized
 
 
+def join_render_blocks(blocks: list[RenderBlock]) -> list[str]:
+    out: list[str] = []
+    first = True
+    for block in blocks:
+        if not block.lines:
+            continue
+        if not first:
+            out.append("")
+        out.extend(block.lines)
+        first = False
+    return out
+
+
 def parse_equ_file(path: Path) -> tuple[list[str], list[str], list[SetEntry]]:
     banner_comments: list[str] = []
     globls: list[str] = []
@@ -143,38 +162,51 @@ def render_header(
         for line in banner_comments:
             out.append(f"// {line}")
 
-    rendered_body: list[str] = []
+    define_blocks: list[RenderBlock] = []
+    extern_blocks: list[RenderBlock] = []
+    function_blocks: list[RenderBlock] = []
     emitted_sets: dict[str, str] = {}
     emitted_globls: set[str] = set()
     in_banner = True
     set_index = 0
+    pending_comments: list[str] = []
     if symbol_table is None:
         symbol_table = {}
     for raw in src_path.read_text(errors="ignore").splitlines():
         stripped = raw.strip()
         if not stripped:
-            if not in_banner:
-                rendered_body.append("")
+            if not in_banner and pending_comments:
+                pending_comments.append("")
             continue
         if stripped.startswith("*") or stripped.startswith(";"):
             if in_banner:
                 continue
             comment_body = stripped[1:].strip()
-            rendered_body.append(f"// {comment_body}")
+            pending_comments.append(f"// {comment_body}")
             continue
 
         in_banner = False
         code, _comment = split_comment(raw)
         globl_match = GLOBL_RE.match(code)
         if globl_match:
-            rendered_body.append(f"// asm: {raw.rstrip()}")
+            comment_lines = [*pending_comments, f"// asm: {raw.rstrip()}"]
+            pending_comments = []
             names = [part.strip() for part in globl_match.group(1).split(",") if part.strip()]
+            rendered_any = False
             for name in names:
                 if name in emitted_globls:
                     continue
-                rendered = render_globl_symbol(symbol_table.get(name), name)
+                rendered = render_globl_symbol(symbol_table.get(name), name, src_path.stem.upper() == "GLOBALS")
                 if rendered is not None:
-                    rendered_body.append(rendered)
+                    block = RenderBlock(kind="function" if rendered.startswith("void ") else "extern")
+                    if not rendered_any:
+                        block.lines.extend(comment_lines)
+                        rendered_any = True
+                    block.lines.append(rendered)
+                    if block.kind == "function":
+                        function_blocks.append(block)
+                    else:
+                        extern_blocks.append(block)
                     emitted_globls.add(name)
             continue
 
@@ -187,16 +219,20 @@ def render_header(
         prior_expr = emitted_sets.get(entry.name)
         if prior_expr == entry.expr:
             continue
+        block = RenderBlock(kind="define", lines=[*pending_comments])
+        pending_comments = []
         if prior_expr is not None:
-            rendered_body.append(f"#undef {entry.name}")
-        rendered_body.append(f"// asm: {entry.asm_line}")
+            block.lines.append(f"#undef {entry.name}")
+        block.lines.append(f"// asm: {entry.asm_line}")
         expr = f"({entry.expr})" if needs_parens(entry.expr) else entry.expr
         line = f"#define {entry.name} {expr}"
         if entry.comment:
             line += f" //{entry.comment}"
-        rendered_body.append(line)
+        block.lines.append(line)
+        define_blocks.append(block)
         emitted_sets[entry.name] = entry.expr
 
+    rendered_body = join_render_blocks(define_blocks + extern_blocks + function_blocks)
     if rendered_body:
         out.append("")
         out.extend(normalize_emitted_lines(rendered_body))
@@ -207,12 +243,18 @@ def render_header(
     return "\n".join(out)
 
 
-def render_globl_symbol(symbol: SymbolInfo | None, name: str) -> str | None:
+def render_globl_symbol(symbol: SymbolInfo | None, name: str, sizeless_extern_arrays: bool = False) -> str | None:
+    if sizeless_extern_arrays and name == "NULL":
+        return None
     if symbol is None:
         return None
     if symbol.kind == "function":
         return f"void {sanitize_identifier(name)}(void);"
     if symbol.kind == "variable":
+        if sizeless_extern_arrays and symbol.array_expr is not None:
+            ident = sanitize_identifier(symbol.name)
+            sep = "" if symbol.c_type.endswith("*") else " "
+            return f"extern {symbol.c_type}{sep}{ident}[];"
         return variable_declaration(symbol.name, symbol.c_type, symbol.array_expr, is_extern=True)
     return None
 
@@ -233,7 +275,7 @@ def main() -> int:
 
     root = Path(__file__).resolve().parents[2]
     asm_dir = root / "asm"
-    out_dir = root / "src" / "game" / "include"
+    out_dir = root / "src" / "game"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     generated: list[Path] = []

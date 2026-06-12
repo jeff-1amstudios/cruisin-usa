@@ -14,6 +14,11 @@ SET_RE = re.compile(r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s*\.set\s*(.*?)\s*$",
 IF_RE = re.compile(r"^\s*\.if\s+(.*?)\s*$", re.IGNORECASE)
 ELSE_RE = re.compile(r"^\s*\.else\s*$", re.IGNORECASE)
 ENDIF_RE = re.compile(r"^\s*\.endif\s*$", re.IGNORECASE)
+MACRO_START_RE = re.compile(
+    r"^\s*(?:[_A-Za-z.$?@][_A-Za-z0-9.$?@]*\s+)?\.macro\b",
+    re.IGNORECASE,
+)
+MACRO_END_RE = re.compile(r"^\s*\.endm\b", re.IGNORECASE)
 LABEL_RE = re.compile(r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s*:(.*)$")
 DATA_LABEL_RE = re.compile(r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s+((?:\.\w+)|EQU|equ|fbss|pbss|hibss)\b(.*)$")
 INLINE_LABEL_RE = re.compile(r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s+([A-Za-z.][A-Za-z0-9.]*)\b(.*)$")
@@ -33,6 +38,10 @@ STANDALONE_STORAGE_LABEL_RE = re.compile(
     re.IGNORECASE,
 )
 NUMERIC_WORD_RE = re.compile(r"^(?:0x[0-9A-Fa-f]+|[0-9]+|[0-9A-Fa-f]+[Hh])$")
+STANDALONE_DATA_DIRECTIVE_RE = re.compile(
+    r"^\s*(\.word|\.float|\.string|\.bss|\.usect|fbss|pbss|hibss|lobss|phibss)\b(.*)$",
+    re.IGNORECASE,
+)
 
 CONTROL_KEYWORDS = {
     ".if",
@@ -322,8 +331,25 @@ def storage_declaration(name: str, size_expr: str, is_extern: bool = False) -> s
     return variable_declaration(name, "int", expr, is_extern=is_extern)
 
 
+def strip_macro_definition_blocks(lines: list[str]) -> list[str]:
+    out: list[str] = []
+    macro_depth = 0
+    for raw in lines:
+        if MACRO_START_RE.match(raw):
+            macro_depth += 1
+            continue
+        if MACRO_END_RE.match(raw):
+            if macro_depth > 0:
+                macro_depth -= 1
+            continue
+        if macro_depth > 0:
+            continue
+        out.append(raw)
+    return out
+
+
 def collect_module_storage_defines(src_path: Path, address_map: dict[str, int]) -> list[StorageVariable]:
-    lines = src_path.read_text(errors="ignore").splitlines()
+    lines = strip_macro_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     module = src_path.stem.upper()
     out: list[StorageVariable] = []
     seen: set[str] = set()
@@ -475,6 +501,10 @@ def is_context_line(raw: str) -> bool:
     if render_asm_comment(raw) is not None:
         return True
     return False
+
+
+def is_comment_line(raw: str) -> bool:
+    return render_asm_comment(raw) is not None
 
 
 def needs_parens(expr: str) -> bool:
@@ -708,15 +738,15 @@ def collect_top_level_functions(lines: list[str], branch_targets: set[str]) -> l
 
 
 def attach_leading_context(lines: list[str], functions: list[FunctionBlock]) -> None:
-    for i in range(1, len(functions)):
+    for i in range(len(functions)):
         fn = functions[i]
-        prev_end = functions[i - 1].end_index
+        prev_end = functions[i - 1].end_index if i > 0 else -1
         start = fn.start_index
         if start <= 0:
             continue
 
         j = start - 1
-        while j > prev_end and is_context_line(lines[j]):
+        while j > prev_end and is_comment_line(lines[j]):
             j -= 1
         new_start = j + 1
         if new_start >= start:
@@ -726,15 +756,34 @@ def attach_leading_context(lines: list[str], functions: list[FunctionBlock]) -> 
         fn.lines = [line.rstrip() for line in lines[new_start:start]] + fn.lines
 
 
+def split_leading_comment_lines(lines: list[str]) -> tuple[list[str], list[str]]:
+    idx = 0
+    while idx < len(lines) and is_comment_line(lines[idx]):
+        idx += 1
+    return lines[:idx], lines[idx:]
+
+
+def render_leading_comment_block(lines: list[str]) -> list[str]:
+    if not lines:
+        return []
+    out = [f"/* {lines[0].rstrip()}"]
+    for raw in lines[1:]:
+        out.append(raw.rstrip())
+    out.append(" */")
+    return out
+
+
 def render_function(fn: FunctionBlock) -> list[str]:
     out: list[str] = []
+    leading_comment_lines, body_lines = split_leading_comment_lines(fn.lines)
+    out.extend(render_leading_comment_block(leading_comment_lines))
     fn_ident = sanitize_identifier(fn.name)
     out.append(f"void {fn_ident}(void)")
     out.append("{")
 
     emitted_any = False
     first_label_emitted = False
-    for raw in fn.lines:
+    for raw in body_lines:
         asm_comment = render_asm_comment(raw)
         if asm_comment is not None:
             out.append(f"    {asm_comment}")
@@ -953,6 +1002,10 @@ def render_storage_variable(name: str, size_expr: str, asm_line: str) -> list[st
     ]
 
 
+def filter_renderable_asm_lines(lines: list[str]) -> list[str]:
+    return [line for line in lines if line.strip() and not is_comment_line(line)]
+
+
 def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[StandaloneLabeledData | None, int]:
     raw = lines[start_idx]
     label_match = LABEL_RE.match(raw)
@@ -1022,10 +1075,7 @@ def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[S
                 mixed_numeric_directives = True
             next_idx += 1
             continue
-        directive_match = re.match(
-            r"^\s*((?:\.\w+)|EQU|equ|fbss|pbss|hibss|lobss|phibss)\b(.*)$",
-            stripped,
-        )
+        directive_match = STANDALONE_DATA_DIRECTIVE_RE.match(stripped)
         if directive_match is None:
             break
         directive, directive_rest = directive_match.groups()
@@ -1050,6 +1100,12 @@ def render_top_level_items(
     emit_set_asm_comments: bool = False,
     emit_set_defines: bool = True,
 ) -> list[str]:
+    def flush_pending_comments() -> None:
+        nonlocal pending_comment_lines
+        if pending_comment_lines:
+            out.extend(render_leading_comment_block(pending_comment_lines))
+            pending_comment_lines = []
+
     function_line_indexes: set[int] = set()
     for fn in functions:
         if fn.start_index < 0 or fn.end_index < 0:
@@ -1058,21 +1114,34 @@ def render_top_level_items(
 
     out: list[str] = []
     emitted_sets: set[str] = set()
+    pending_comment_lines: list[str] = []
     idx = 0
     while idx < len(lines):
         raw = lines[idx]
         if idx in function_line_indexes:
+            pending_comment_lines = []
+            idx += 1
+            continue
+
+        if not raw.strip():
+            pending_comment_lines = []
             idx += 1
             continue
 
         asm_comment = render_asm_comment(raw, strip_asm_comment_markers=strip_asm_comment_markers)
-        if asm_comment is not None:
+        if asm_comment is not None and strip_asm_comment_markers:
             out.append(asm_comment)
+            idx += 1
+            continue
+
+        if render_asm_comment(raw) is not None:
+            pending_comment_lines.append(raw.rstrip())
             idx += 1
             continue
 
         conditional = render_conditional_line(raw)
         if conditional is not None:
+            flush_pending_comments()
             out.append(conditional)
             idx += 1
             continue
@@ -1082,6 +1151,7 @@ def render_top_level_items(
         if set_match:
             name, expr = set_match.groups()
             define_entry = SetDefine(name=name, expr=convert_expr(expr), comment=comment)
+            flush_pending_comments()
             if emit_set_asm_comments:
                 out.append(f"// asm: {raw.rstrip()}")
             if emit_set_defines:
@@ -1095,12 +1165,14 @@ def render_top_level_items(
         storage_match = STANDALONE_STORAGE_FULL_RE.match(code)
         if storage_match:
             directive, label, rest = storage_match.groups()
+            flush_pending_comments()
             out.extend(render_storage_variable(label, parse_storage_size(rest), f"{directive}\t{label}{rest}"))
             idx += 1
             continue
 
         standalone_data, next_idx = collect_standalone_labeled_data(lines, idx)
         if standalone_data is not None:
+            flush_pending_comments()
             directive_lower = standalone_data.directive.lower()
             if directive_lower in {".word", ".intdata", ".float"}:
                 values: list[str] = []
@@ -1135,7 +1207,7 @@ def render_top_level_items(
                             name=standalone_data.name,
                             directive=directive_lower,
                             values=values,
-                            asm_lines=[line for line in standalone_data.asm_lines if line.strip()],
+                            asm_lines=filter_renderable_asm_lines(standalone_data.asm_lines),
                         ),
                         symbol_table,
                     )
@@ -1156,35 +1228,41 @@ def render_top_level_items(
             continue
 
         if not is_flush_left(raw):
+            pending_comment_lines = []
             idx += 1
             continue
 
         sptr_match = parse_sptr_label(raw)
         if sptr_match is not None:
             label, c_string = sptr_match
+            flush_pending_comments()
             out.extend(render_sptr_variable(label, c_string, raw))
             idx += 1
             continue
 
         data_match = DATA_LABEL_RE.match(raw)
         if not data_match:
+            pending_comment_lines = []
             idx += 1
             continue
 
         label, directive, rest = data_match.groups()
         directive_lower = directive.lower()
         if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
+            flush_pending_comments()
             out.extend(render_storage_variable(label, parse_storage_size(rest), f"{directive}{rest}"))
             idx += 1
             continue
         if directive_lower == ".string":
             c_string = parse_simple_string_operand(rest)
             if c_string is not None:
+                flush_pending_comments()
                 out.extend(render_string_variable(StringVariable(name=label, c_string=c_string)))
             idx += 1
             continue
 
         if directive_lower == ".word":
+            flush_pending_comments()
             asm_lines = [f"{label}\t.word{rest}"]
             values: list[str] = []
             first_row = parse_numeric_data_line(asm_lines[0], label)
@@ -1244,6 +1322,7 @@ def render_top_level_items(
             continue
 
         if directive_lower == ".float":
+            flush_pending_comments()
             asm_lines = [f"{label}\t.float{rest}"]
             values: list[str] = []
             first_row = parse_numeric_data_line(asm_lines[0], label)
@@ -1285,6 +1364,7 @@ def render_top_level_items(
             idx = next_idx
             continue
 
+        pending_comment_lines = []
         idx += 1
 
     while out and out[-1] == "":
@@ -1299,7 +1379,7 @@ def render_module(
     own_header: str | None,
     discovered_header_needed: bool = False,
 ) -> str:
-    lines = src_path.read_text(errors="ignore").splitlines()
+    lines = strip_macro_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     is_equ_source = src_path.suffix.upper() == ".EQU"
     headers = parse_include_headers(lines)
     if own_header is not None:
@@ -1324,10 +1404,10 @@ def render_module(
     )
 
     out: list[str] = []
-    out.append('#include "../../core/cpu.h"')
-    out.append('#include "../../core/machine.h"')
+    out.append('#include "../core/cpu.h"')
+    out.append('#include "../core/machine.h"')
     for header in headers:
-        out.append(f'#include "../include/{header}"')
+        out.append(f'#include "{header}"')
     out.append("")
     out.append("/*")
     out.append(f" * Source module: asm/{src_path.name}")
@@ -1488,7 +1568,7 @@ def collect_referenced_define_symbols(lines: list[str], define_names: set[str]) 
 
 
 def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> dict[str, SymbolInfo]:
-    lines = src_path.read_text(errors="ignore").splitlines()
+    lines = strip_macro_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     module = src_path.stem.upper()
     symbol_table: dict[str, SymbolInfo] = {}
 
@@ -1544,7 +1624,7 @@ def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> 
                             name=standalone_data.name,
                             directive=directive_lower,
                             values=values,
-                            asm_lines=[line for line in standalone_data.asm_lines if line.strip()],
+                            asm_lines=filter_renderable_asm_lines(standalone_data.asm_lines),
                         ),
                         module,
                         symbol_table,
@@ -1661,8 +1741,8 @@ def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> 
 def main() -> int:
     root = Path(__file__).resolve().parents[2]
     asm_dir = root / "asm"
-    out_dir = root / "src" / "game" / "modules"
-    include_dir = root / "src" / "game" / "include"
+    out_dir = root / "src" / "game"
+    include_dir = root / "src" / "game"
     address_map = parse_address_map(root / "tools" / "ida" / "address.map")
     define_entries = parse_discovered_defines_file(root / "tools" / "ida" / "discovered_defines.txt")
     label_types = parse_romlst_label_types(root / "tools" / "ida" / "log" / "romlst_labels.tsv")

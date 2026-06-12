@@ -20,11 +20,11 @@ add_executable(crusn
   src/core/memory.c
   src/core/trace.c
   src/platform/sdl_video.c
-  src/game/modules/cusa.c
+  src/game/cusa.c
   src/platform/sdl_main.c
 )
 
-target_include_directories(crusn PRIVATE src src/core src/platform src/game/include)
+target_include_directories(crusn PRIVATE src src/core src/platform src/game)
 
 if(TARGET SDL2::SDL2)
   target_link_libraries(crusn PRIVATE SDL2::SDL2)

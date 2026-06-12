@@ -1,0 +1,85 @@
+#ifndef DISCOVERED_DEFINES_H
+#define DISCOVERED_DEFINES_H
+
+/* Generated from tools/ida/discovered_defines.txt. */
+
+#define adblud1_p 180
+#define bottom2_gtmp_p 1
+#define bottom3_gtmp_p 251
+#define bottom_gtmp_p 0
+#define btomwt_gtmp_p 253
+#define bvwall_p 108
+#define caravan_p 24
+#define cbus_p 26
+#define checks_p 46
+#define copcar_p 21
+#define cvette_p 15
+#define dnums_I 12171
+#define fixedfnt 12199
+#define font18_I 12379
+#define ftruck_p 28
+#define gtruck_p 22
+#define hotrod_p 18
+#define jeep_p 19
+#define lgnum43_I 12415
+#define lift_p 60
+#define light_greenon 7946
+#define light_p 95
+#define light_redon 7936
+#define light_yellowon 7941
+#define logo_p 40
+#define L_LEG10_BEGIN 828
+#define L_LEG10_END 924
+#define L_LEG11_BEGIN 930
+#define L_LEG11_END 1030
+#define L_LEG12_BEGIN 1033
+#define L_LEG12_END 1117
+#define L_LEG13_BEGIN 1124
+#define L_LEG13_END 1230
+#define L_LEG14_BEGIN 1237
+#define L_LEG14_END 1303
+#define L_LEG1_END 87
+#define L_LEG2_BEGIN 92
+#define L_LEG2_END 158
+#define L_LEG3_BEGIN 161
+#define L_LEG3_END 204
+#define L_LEG4_BEGIN 206
+#define L_LEG4_END 316
+#define L_LEG5_BEGIN 318
+#define L_LEG5_END 415
+#define L_LEG6_BEGIN 418
+#define L_LEG6_END 509
+#define L_LEG7_BEGIN 515
+#define L_LEG7_END 603
+#define L_LEG8_BEGIN 613
+#define L_LEG8_END 720
+#define L_LEG9_BEGIN 725
+#define L_LEG9_END 824
+#define map1_p 34
+#define midwgras_gtmp_p 250
+#define missle_p 17
+#define muscle_p 23
+#define nintendo_p 41
+#define ommdfont_I 12239
+#define osg10fnt_I 12213
+#define osg10fnt_p 66
+#define ptruckg_p 20
+#define rpm_p 64
+#define sbus_p 27
+#define shldr2_gtmp_p 2
+#define sky1_I 854
+#define sky1_p 5
+#define sky2_I 1110
+#define sky3_I 1366
+#define sky4_I 1622
+#define sky5_I 1878
+#define sky6_I 2134
+#define SNDTAB 34608
+#define testor_p 16
+#define tower_p 76
+#define trmeng1_p 221
+#define wtra_p 49
+#define _PALLIST 60028
+#define _PALROM 41008
+
+#endif /* DISCOVERED_DEFINES_H */

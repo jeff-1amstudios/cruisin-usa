@@ -40,15 +40,13 @@ src/
     sdl_audio.c
     input.c
   game/
-    modules/
-      attracta.c
-      attrdrne.c
-      ...
-    include/
-      globals.h
-      sys.h
-      obj.h
-      ...
+    attracta.c
+    attrdrne.c
+    ...
+    globals.h
+    sys.h
+    obj.h
+    ...
   tools/
     generated/
       module_index.json
@@ -65,8 +63,8 @@ tools/
 Notes:
 
 - Move original `.ASM`, `.EQU`, and `.INC` files into `asm/`.
-- Keep generated C output in its final destination under `src/game/modules/`.
-- Keep generated headers in `src/game/include/`.
+- Keep generated C output in its final destination under `src/game/`.
+- Keep generated headers in `src/game/`.
 - Keep generator metadata out of the source tree so regeneration does not force source layout changes.
 
 ## Translation Format
@@ -113,7 +111,7 @@ Do not generate pretty C first. Generate traceable C first.
 
 ### `.EQU` files
 
-Convert `.EQU` files into generated headers under `src/game/include/`.
+Convert `.EQU` files into generated headers under `src/game/`.
 
 Rules:
 
@@ -328,7 +326,7 @@ Do not try to use one build configuration for both goals.
 
 1. `tools/port/sync_module_layout.py`
    - moves/validates source layout
-   - maps `asm/*.ASM` to `src/game/modules/*.c`
+   - maps `asm/*.ASM` to `src/game/*.c`
 
 2. `tools/port/gen_equ_headers.py`
    - converts `.EQU` and suitable `.INC` files to headers

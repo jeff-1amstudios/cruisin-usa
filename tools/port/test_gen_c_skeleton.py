@@ -162,8 +162,84 @@ LANES4\t.float\t-1728.0,-576.0,576.0,1728.0
                 True,
             )
 
-        self.assertIn('#include "../include/discovered_defines.h"', rendered)
+        self.assertIn('#include "discovered_defines.h"', rendered)
         self.assertNotIn("#define bottom_gtmp_p", rendered)
+
+    def test_label_followed_by_if_stays_function_not_top_level_data(self) -> None:
+        asm_source = """VERIFY_CODE_INTEGRITY:\n\t.if\tDEBUG\n\tBNE\t$\n\t.endif\n\tRETS\n"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "CUSA.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void VERIFY_CODE_INTEGRITY(void)", rendered)
+        self.assertIn("#if DEBUG", rendered)
+        self.assertIn("    // asm: \tBNE\t$", rendered)
+        self.assertNotIn("\n#endif\n#endif\n", rendered)
+
+    def test_macro_definition_body_is_ignored(self) -> None:
+        asm_source = """AUDENT\t.MACRO\tAUDITI,ATEXT
+\t.word\t:AUDITI:,l?
+\t.sect\t"THEDATA"
+l?\t.string\t":ATEXT:",0
+\t.text
+\t.ENDM
+
+OLDDIP\t.bss\tOLDDIP,1
+AUDIT_DISPLAY:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "AUDITS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("OLDDIP", rendered)
+        self.assertIn("void AUDIT_DISPLAY(void)", rendered)
+        self.assertNotIn('const char *l_ = ":ATEXT:";', rendered)
+        self.assertNotIn("void _word(void)", rendered)
+
+    def test_first_function_claims_immediately_adjacent_comments_only(self) -> None:
+        asm_source = """*COMMENT A\n*COMMENT B\nFIRST:\tRETS\n\n*COMMENT C\n\nSECOND:\tRETS\n"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "TEST.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("/* *COMMENT A\n*COMMENT B\n */\nvoid FIRST(void)", rendered)
+        self.assertNotIn("/* *COMMENT C\n */\nvoid SECOND(void)", rendered)
+
+    def test_top_level_data_claims_immediately_adjacent_comments_only(self) -> None:
+        asm_source = """*----------------------------------------------------------------------------\n*DYNAMIC fLEX OBJECTS\nNEW_GROUPI\t.word\tNEW_GROUP\n\t.bss\tNEW_GROUP,1\n\n*ORPHAN\n\nOTHER\t.word\t1\n"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "OBJ.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("/* *----------------------------------------------------------------------------\n*DYNAMIC fLEX OBJECTS\n */\n/* asm: NEW_GROUP\t.bss\tNEW_GROUP,1 */", rendered)
+        self.assertNotIn("/* *ORPHAN\n */\n/* asm: OTHER\t.word\t1 */", rendered)
+
+    def test_standalone_word_data_omits_comment_only_lines_from_asm_preamble(self) -> None:
+        asm_source = """CRT_REG_SETUP_STR
+\t.word\t399|CRT_SETUP_ICSYNC\t;CRT_SETUP
+\t.word\t01ffh\t\t;CRT_HADDRINC
+;before syncing
+;\t.word\t400|CRT_SETUP_ICSYNC\t;CRT_SETUP
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "CUSA.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("int CRT_REG_SETUP_STR[2] = {", rendered)
+        self.assertIn("399|CRT_SETUP_ICSYNC, // CRT_SETUP", rendered)
+        self.assertIn("0x01ff, // CRT_HADDRINC", rendered)
+        self.assertNotIn("/* asm: \t;before syncing */", rendered)
+        self.assertNotIn("/* asm: \t;\t.word\t400|CRT_SETUP_ICSYNC\t;CRT_SETUP */", rendered)
 
     def test_render_discovered_defines_header_uses_decimal_values(self) -> None:
         rendered = render_discovered_defines_header([

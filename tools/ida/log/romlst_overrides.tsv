@@ -1,0 +1,3 @@
+label	module	old_address	old_origin	new_address	new_origin
+CONGRAT_SPEECH	BONUS	0x80000100	word_block	0x00003CC0	word_block
+DEFAULT_TABLE_TOTAL	CMOS	0x00001C00	gap	0x00009A8E	word_block
