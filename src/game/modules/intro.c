@@ -59,6 +59,10 @@ int H2H_FLAGSTATE;
 // *
 // *
 const char *JINOW = "JOIN IN NOW";
+/* asm: l?	.float	:VAL: */
+float l_ = :VAL:;
+/* asm: l?	.float	:VAL: */
+float l_ = :VAL:;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -96,7 +100,7 @@ const char *CCT = "CHOOSE CAR";
 /* asm: 	.float	PI */
 /* asm: 	.word	0484h */
 /* asm: 	.word	-1 */
-int CCTAB[] = {
+int CCTAB[25] = {
     -1384, -164, -4708, cvettem,
     PI,
     0x0481,
@@ -128,7 +132,7 @@ int CHOOSENCAR;
 /* asm: 	.word	L_LEG12_BEGIN+1 */
 /* asm: 	.word	L_LEG13_BEGIN+1 */
 /* asm: 	.word	L_LEG14_BEGIN+1 */
-int RACE_STARTING_POINTS[] = {
+int RACE_STARTING_POINTS[14] = {
     0,
     L_LEG2_BEGIN+1,
     L_LEG3_BEGIN+1,
@@ -143,6 +147,16 @@ int RACE_STARTING_POINTS[] = {
     L_LEG12_BEGIN+1,
     L_LEG13_BEGIN+1,
     L_LEG14_BEGIN+1,
+};
+/* asm: XOFFSET	.float	-1384 */
+/* asm: 	.float	-448 */
+/* asm: 	.float	464 */
+/* asm: 	.float	1424 */
+float XOFFSET[4] = {
+    -1384.0f,
+    -448.0f,
+    464.0f,
+    1424.0f,
 };
 #define LANESIZE 1152
 // 	;if a slave then ALWAYS appear on right side
@@ -203,6 +217,10 @@ int CAR_ARRAY[4];
 // *USES
 // *	AR4,AR5,AR6,R4,R5
 // *
+/* asm: SCS_TAB	.float	10,70,170,230 */
+float SCS_TAB[4] = {
+    10.0f, 70.0f, 170.0f, 230.0f,
+};
 // *----------------------------------------------------------------------------
 /* asm: CAR1PAL	.bss	CAR1PAL,129 */
 int CAR1PAL[129];
@@ -213,11 +231,11 @@ int CAR3PAL[129];
 /* asm: CAR4PAL	.bss	CAR4PAL,129 */
 int CAR4PAL[129];
 /* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
-int CARPAL_TABLE[] = {
+int *CARPAL_TABLE[4] = {
     CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL,
 };
 /* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
-int CARSRCPAL_TAB[] = {
+int CARSRCPAL_TAB[4] = {
     cvette_p, hotrod_p, missle_p, testor_p,
 };
 // *----------------------------------------------------------------------------
@@ -257,7 +275,7 @@ int CARSRCPAL_TAB[] = {
 /* asm: IS_HIDDEN	.bss	IS_HIDDEN,1 */
 int IS_HIDDEN;
 /* asm: HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
-int HIDDEN_TABLE[] = {
+int HIDDEN_TABLE[4] = {
     jeepm, sbuspm, copcar, gtruck,
 };
 // *----------------------------------------------------------------------------
@@ -272,12 +290,12 @@ const char *T_GO = "GO";
 const char *T_CHALLENG = "CHALLENGE RACE";
 /* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
 /* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
-int TLIST[] = {
+int TLIST[6] = {
     T_READY, CHICK_READY, SEND_WAVEFL_READY,
     T_SET, CHICK_SET, SEND_WAVEFL_SET,
 };
 /* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
-int TLGO[] = {
+int TLGO[3] = {
     T_GO, CHICK_GO, SEND_WAVEFL_GO,
 };
 /* asm: BABE_CONTROL	.bss	BABE_CONTROL,1 */
@@ -338,7 +356,7 @@ int DIRTY_SHARED;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
-int TRAFFIC_LL[] = {
+int TRAFFIC_LL[7] = {
     light_yellowon, 10, light_redon, 32, light_greenon, 32, -1,
 };
 // *----------------------------------------------------------------------------

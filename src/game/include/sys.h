@@ -22,6 +22,11 @@
 // asm: RM_SINGLE	.set	2
 #define RM_SINGLE 2
 
+// asm: 	.globl	RACE_MODE
+extern int RACE_MODE;
+// asm: 	.globl	FIRST_RACE
+extern int FIRST_RACE;
+
 // I put this here because this ASSEMBLER DOES NOT RESOLVE
 // THE SCOPE OF GLOBALS, it simply ASSUMES that all globals are not constants
 // asm: COIN_ENTRY_SIZE	.set	11
@@ -346,6 +351,8 @@
 // ENDSTRUCT
 // asm: LEG_SIZE	.set	4	;SI
 #define LEG_SIZE 4 //SI
+// asm: 	.globl	LEG_MAP	;RAM SPACE
+extern int LEG_MAP[MAX_LEG_ELEMENTS*LEG_SIZE];
 // asm: MAX_LEG_ELEMENTS	.set	1600
 #define MAX_LEG_ELEMENTS 1600
 

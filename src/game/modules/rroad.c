@@ -33,6 +33,8 @@ int COLL_POS[3];
 int THE_TRAIN_SPEED;
 /* asm: KILL_TRAIN	.bss	KILL_TRAIN,1 */
 int KILL_TRAIN;
+/* asm: COLL_DIST	.float	117465.0	;distance to collision from engine start */
+float COLL_DIST = 117465.0f;
 #define TRAIN_SPEED 240
 #define TRAIN_SPEED_MIN 170
 #define TRAIN_SPEED_MAX 280

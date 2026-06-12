@@ -151,6 +151,14 @@ class StringVariable:
 
 
 @dataclass
+class NumericVariable:
+    name: str
+    directive: str
+    values: list[str]
+    asm_lines: list[str]
+
+
+@dataclass
 class StorageVariable:
     name: str
     addr: int
@@ -165,6 +173,16 @@ class StandaloneLabeledData:
     directive: str
     rest: str
     asm_lines: list[str]
+
+
+@dataclass
+class SymbolInfo:
+    name: str
+    kind: str
+    module: str
+    c_type: str = ""
+    array_expr: str | None = None
+    expr: str | None = None
 
 
 def sanitize_identifier(name: str) -> str:
@@ -280,13 +298,28 @@ def parse_storage_size(rest: str) -> str:
     return parts[0] if parts else "1"
 
 
-def storage_declaration(name: str, size_expr: str, is_extern: bool = False) -> str:
+def variable_declaration(name: str, c_type: str, array_expr: str | None = None, is_extern: bool = False) -> str:
     ident = sanitize_identifier(name)
-    expr = convert_expr(size_expr).strip()
     prefix = "extern " if is_extern else ""
+    sep = "" if c_type.endswith("*") else " "
+    if array_expr is None or array_expr.strip() in {"", "0", "1"}:
+        return f"{prefix}{c_type}{sep}{ident};"
+    return f"{prefix}{c_type}{sep}{ident}[{array_expr.strip()}];"
+
+
+def variable_definition_prefix(name: str, c_type: str, array_expr: str | None = None) -> str:
+    ident = sanitize_identifier(name)
+    sep = "" if c_type.endswith("*") else " "
+    if array_expr is None or array_expr.strip() in {"", "0", "1"}:
+        return f"{c_type}{sep}{ident}"
+    return f"{c_type}{sep}{ident}[{array_expr.strip()}]"
+
+
+def storage_declaration(name: str, size_expr: str, is_extern: bool = False) -> str:
+    expr = convert_expr(size_expr).strip()
     if expr in {"", "0", "1"}:
-        return f"{prefix}int {ident};"
-    return f"{prefix}int {ident}[{expr}];"
+        return variable_declaration(name, "int", None, is_extern=is_extern)
+    return variable_declaration(name, "int", expr, is_extern=is_extern)
 
 
 def collect_module_storage_defines(src_path: Path, address_map: dict[str, int]) -> list[StorageVariable]:
@@ -396,6 +429,18 @@ def convert_expr(expr: str) -> str:
     expr = re.sub(r"(?<![<>!=])=(?!=)", "==", expr)
     expr = re.sub(r"\s+", " ", expr)
     return expr
+
+
+def format_float_expr(expr: str) -> str:
+    rendered = convert_expr(expr)
+    parsed = parse_int_token(rendered)
+    if parsed is not None:
+        return f"{parsed}.0f"
+    if rendered.lower().endswith("f"):
+        return rendered
+    if re.search(r"[.eE]", rendered):
+        return rendered if rendered.lower().endswith("f") else f"{rendered}f"
+    return rendered
 
 
 def render_conditional_line(raw: str) -> str | None:
@@ -756,22 +801,71 @@ def render_function(fn: FunctionBlock) -> list[str]:
     return out
 
 
-def render_word_variable(var: WordVariable) -> list[str]:
+def infer_word_symbol(var: WordVariable, module: str, symbol_table: dict[str, SymbolInfo] | None = None) -> SymbolInfo:
+    if len(var.values) == 1:
+        value = var.values[0].strip()
+        rendered_value = convert_expr(value)
+        if var.name.lower().endswith("i") and BRANCH_TARGET_RE.fullmatch(value) and parse_int_token(value) is None:
+            return SymbolInfo(name=var.name, kind="define", module=module, expr=rendered_value)
+        if var.name.endswith("I") and value == var.name[:-1]:
+            return SymbolInfo(name=var.name, kind="define", module=module, expr=rendered_value)
+        if symbol_table is not None:
+            target = symbol_table.get(value)
+            if target is not None and target.kind == "variable" and target.c_type:
+                return SymbolInfo(name=var.name, kind="variable", module=module, c_type=f"{target.c_type} *")
+        return SymbolInfo(name=var.name, kind="variable", module=module, c_type="int")
+
+    if symbol_table is not None and all(parse_int_token(value) is None for value in var.values):
+        targets = [symbol_table.get(value) for value in var.values]
+        if all(target is not None and target.kind == "variable" and target.c_type for target in targets):
+            c_types = {target.c_type for target in targets if target is not None}
+            if len(c_types) == 1:
+                return SymbolInfo(
+                    name=var.name,
+                    kind="variable",
+                    module=module,
+                    c_type=f"{next(iter(c_types))} *",
+                    array_expr=str(len(var.values)),
+                )
+
+    return SymbolInfo(name=var.name, kind="variable", module=module, c_type="int", array_expr=str(len(var.values)))
+
+
+def infer_numeric_symbol(var: NumericVariable, module: str, symbol_table: dict[str, SymbolInfo] | None = None) -> SymbolInfo:
+    if var.directive == ".float":
+        return SymbolInfo(name=var.name, kind="variable", module=module, c_type="float", array_expr=str(len(var.values)))
+    if var.directive in {".word", ".intdata"}:
+        return infer_word_symbol(WordVariable(name=var.name, values=var.values, asm_lines=var.asm_lines), module, symbol_table)
+    return SymbolInfo(name=var.name, kind="variable", module=module, c_type="int", array_expr=str(len(var.values)))
+
+
+def infer_string_symbol(name: str, module: str) -> SymbolInfo:
+    return SymbolInfo(name=name, kind="variable", module=module, c_type="const char *")
+
+
+def infer_storage_symbol(name: str, size_expr: str, module: str) -> SymbolInfo:
+    expr = convert_expr(size_expr).strip()
+    if expr in {"", "0", "1"}:
+        return SymbolInfo(name=name, kind="variable", module=module, c_type="int")
+    return SymbolInfo(name=name, kind="variable", module=module, c_type="int", array_expr=expr)
+
+
+def render_numeric_variable(var: NumericVariable, symbol_table: dict[str, SymbolInfo] | None = None) -> list[str]:
     out: list[str] = []
-    if len(var.values) == 1 and var.name.endswith("I") and var.values[0] == var.name[:-1]:
+    symbol = infer_numeric_symbol(var, "", symbol_table)
+    if symbol.kind == "define" and symbol.expr is not None and symbol.expr == var.name[:-1] and var.name.endswith("I"):
         return out
     if var.asm_lines:
         out.append(f"/* asm: {var.asm_lines[0].strip()} */")
         for extra_line in var.asm_lines[1:]:
             out.append(f"/* asm: \t{extra_line.strip()} */")
     ident = sanitize_identifier(var.name)
-    if len(var.values) == 1:
+    if symbol.kind == "define" and symbol.expr is not None:
+        out.append(f"#define {ident} {symbol.expr}")
+    elif len(var.values) == 1:
         value = var.values[0].strip()
-        rendered_value = convert_expr(value)
-        if var.name.lower().endswith("i") and BRANCH_TARGET_RE.fullmatch(value) and parse_int_token(value) is None:
-            out.append(f"#define {ident} {rendered_value}")
-        else:
-            out.append(f"int {ident} = {rendered_value};")
+        rendered_value = format_float_expr(value) if var.directive == ".float" else convert_expr(value)
+        out.append(f"{variable_definition_prefix(var.name, symbol.c_type)} = {rendered_value};")
     else:
         structured_rows: list[str] = []
         if var.asm_lines:
@@ -780,20 +874,35 @@ def render_word_variable(var: WordVariable) -> list[str]:
                 if parsed_row is None:
                     continue
                 row_values, asm_comment = parsed_row
-                rendered_values = ", ".join(convert_expr(value) for value in row_values)
+                if var.directive == ".float":
+                    rendered_values = ", ".join(format_float_expr(value) for value in row_values)
+                else:
+                    rendered_values = ", ".join(convert_expr(value) for value in row_values)
                 comment_text = asm_comment[1:].strip() if asm_comment.startswith(";") else asm_comment.strip()
                 if comment_text:
                     structured_rows.append(f"    {rendered_values}, // {comment_text}")
                 else:
                     structured_rows.append(f"    {rendered_values},")
         if structured_rows:
-            out.append(f"int {ident}[] = {{")
+            prefix = variable_definition_prefix(var.name, symbol.c_type, symbol.array_expr)
+            out.append(f"{prefix} = {{")
             out.extend(structured_rows)
             out.append("};")
         else:
-            values = ", ".join(convert_expr(value) for value in var.values)
-            out.append(f"int {ident}[] = {{ {values} }};")
+            if var.directive == ".float":
+                values = ", ".join(format_float_expr(value) for value in var.values)
+            else:
+                values = ", ".join(convert_expr(value) for value in var.values)
+            prefix = variable_definition_prefix(var.name, symbol.c_type, symbol.array_expr)
+            out.append(f"{prefix} = {{ {values} }};")
     return out
+
+
+def render_word_variable(var: WordVariable, symbol_table: dict[str, SymbolInfo] | None = None) -> list[str]:
+    return render_numeric_variable(
+        NumericVariable(name=var.name, directive=".word", values=var.values, asm_lines=var.asm_lines),
+        symbol_table,
+    )
 
 
 def render_set_define(entry: SetDefine) -> list[str]:
@@ -826,8 +935,7 @@ def render_discovered_defines_header(defines: list[DefineEntry]) -> str:
 
 
 def render_string_variable(var: StringVariable) -> list[str]:
-    ident = sanitize_identifier(var.name)
-    return [f"const char *{ident} = {var.c_string};"]
+    return [f"{variable_definition_prefix(var.name, 'const char *')} = {var.c_string};"]
 
 
 def render_sptr_variable(name: str, c_string: str, asm_line: str) -> list[str]:
@@ -884,6 +992,8 @@ def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[S
     next_idx = start_idx + 1
     numeric_values: list[str] = []
     saw_numeric_directive = False
+    numeric_directive_name: str | None = None
+    mixed_numeric_directives = False
     while next_idx < len(lines):
         next_raw = lines[next_idx]
         if is_comment_or_blank(next_raw):
@@ -902,10 +1012,14 @@ def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[S
             continue
         numeric_directive = parse_numeric_directive(stripped)
         if numeric_directive is not None:
-            _directive, values = numeric_directive
+            directive_name, values = numeric_directive
             asm_lines.append(next_raw.rstrip())
             numeric_values.extend(values)
             saw_numeric_directive = True
+            if numeric_directive_name is None:
+                numeric_directive_name = directive_name
+            elif numeric_directive_name != directive_name:
+                mixed_numeric_directives = True
             next_idx += 1
             continue
         directive_match = re.match(
@@ -916,11 +1030,13 @@ def collect_standalone_labeled_data(lines: list[str], start_idx: int) -> tuple[S
             break
         directive, directive_rest = directive_match.groups()
         if saw_numeric_directive:
-            return StandaloneLabeledData(label, ".intdata", ",".join(numeric_values), asm_lines), next_idx
+            normalized = ".intdata" if mixed_numeric_directives or numeric_directive_name is None else numeric_directive_name
+            return StandaloneLabeledData(label, normalized, ",".join(numeric_values), asm_lines), next_idx
         asm_lines.append(next_raw.rstrip())
         return StandaloneLabeledData(label, directive, directive_rest, asm_lines), next_idx + 1
     if saw_numeric_directive:
-        return StandaloneLabeledData(label, ".intdata", ",".join(numeric_values), asm_lines), next_idx
+        normalized = ".intdata" if mixed_numeric_directives or numeric_directive_name is None else numeric_directive_name
+        return StandaloneLabeledData(label, normalized, ",".join(numeric_values), asm_lines), next_idx
     return None, start_idx
 
 
@@ -929,8 +1045,10 @@ def render_top_level_items(
     functions: list[FunctionBlock],
     address_map: dict[str, int],
     module: str,
+    symbol_table: dict[str, SymbolInfo] | None = None,
     strip_asm_comment_markers: bool = False,
     emit_set_asm_comments: bool = False,
+    emit_set_defines: bool = True,
 ) -> list[str]:
     function_line_indexes: set[int] = set()
     for fn in functions:
@@ -966,10 +1084,11 @@ def render_top_level_items(
             define_entry = SetDefine(name=name, expr=convert_expr(expr), comment=comment)
             if emit_set_asm_comments:
                 out.append(f"// asm: {raw.rstrip()}")
-            if name in emitted_sets:
-                out.append(f"#undef {name}")
-            out.extend(render_set_define(define_entry))
-            emitted_sets.add(name)
+            if emit_set_defines:
+                if name in emitted_sets:
+                    out.append(f"#undef {name}")
+                out.extend(render_set_define(define_entry))
+                emitted_sets.add(name)
             idx += 1
             continue
 
@@ -983,9 +1102,9 @@ def render_top_level_items(
         standalone_data, next_idx = collect_standalone_labeled_data(lines, idx)
         if standalone_data is not None:
             directive_lower = standalone_data.directive.lower()
-            if directive_lower in {".word", ".intdata"}:
+            if directive_lower in {".word", ".intdata", ".float"}:
                 values: list[str] = []
-                if directive_lower == ".intdata":
+                if directive_lower in {".intdata", ".float"}:
                     values = [part.strip() for part in standalone_data.rest.split(",") if part.strip()]
                 else:
                     for asm_line in standalone_data.asm_lines[1:]:
@@ -1011,12 +1130,14 @@ def render_top_level_items(
                         idx = next_idx
                         continue
                 out.extend(
-                    render_word_variable(
-                        WordVariable(
+                    render_numeric_variable(
+                        NumericVariable(
                             name=standalone_data.name,
+                            directive=directive_lower,
                             values=values,
                             asm_lines=[line for line in standalone_data.asm_lines if line.strip()],
-                        )
+                        ),
+                        symbol_table,
                     )
                 )
             elif directive_lower == ".string":
@@ -1115,7 +1236,50 @@ def render_top_level_items(
                     resolved_values[value] = addr
             out.extend(
                 render_word_variable(
-                    WordVariable(name=label, values=values, asm_lines=asm_lines, resolved_values=resolved_values)
+                    WordVariable(name=label, values=values, asm_lines=asm_lines, resolved_values=resolved_values),
+                    symbol_table,
+                )
+            )
+            idx = next_idx
+            continue
+
+        if directive_lower == ".float":
+            asm_lines = [f"{label}\t.float{rest}"]
+            values: list[str] = []
+            first_row = parse_numeric_data_line(asm_lines[0], label)
+            if first_row is not None:
+                row_values, _comment = first_row
+                values.extend(row_values)
+
+            next_idx = idx + 1
+            while next_idx < len(lines):
+                next_raw = lines[next_idx]
+                if next_idx in function_line_indexes:
+                    break
+                if is_comment_or_blank(next_raw):
+                    break
+                if is_flush_left(next_raw):
+                    break
+
+                next_code, _next_comment = split_comment(next_raw)
+                next_stripped = next_code.strip()
+                if not next_stripped:
+                    break
+                parsed_row = parse_numeric_data_line(next_raw)
+                if parsed_row is not None:
+                    asm_lines.append(next_raw.rstrip())
+                    row_values, _comment = parsed_row
+                    values.extend(row_values)
+                    next_idx += 1
+                    continue
+                break
+
+            if not values:
+                values = ["0"]
+            out.extend(
+                render_numeric_variable(
+                    NumericVariable(name=label, directive=".float", values=values, asm_lines=asm_lines),
+                    symbol_table,
                 )
             )
             idx = next_idx
@@ -1147,13 +1311,16 @@ def render_module(
     branch_targets = collect_branch_targets(lines)
     functions = collect_top_level_functions(lines, branch_targets)
     attach_leading_context(lines, functions)
+    symbol_table = collect_module_symbol_table(src_path, address_map)
     top_level_items = render_top_level_items(
         lines,
         functions,
         address_map,
         src_path.stem.upper(),
+        symbol_table,
         strip_asm_comment_markers=is_equ_source,
         emit_set_asm_comments=is_equ_source,
+        emit_set_defines=not is_equ_source,
     )
 
     out: list[str] = []
@@ -1318,6 +1485,177 @@ def collect_referenced_define_symbols(lines: list[str], define_names: set[str]) 
             if tok in define_names:
                 refs.add(tok)
     return refs
+
+
+def collect_module_symbol_table(src_path: Path, address_map: dict[str, int]) -> dict[str, SymbolInfo]:
+    lines = src_path.read_text(errors="ignore").splitlines()
+    module = src_path.stem.upper()
+    symbol_table: dict[str, SymbolInfo] = {}
+
+    branch_targets = collect_branch_targets(lines)
+    functions = collect_top_level_functions(lines, branch_targets)
+    attach_leading_context(lines, functions)
+    for fn in functions:
+        symbol_table.setdefault(fn.name, SymbolInfo(name=fn.name, kind="function", module=module))
+
+    function_line_indexes: set[int] = set()
+    for fn in functions:
+        if fn.start_index < 0 or fn.end_index < 0:
+            continue
+        function_line_indexes.update(range(fn.start_index, fn.end_index + 1))
+
+    idx = 0
+    while idx < len(lines):
+        raw = lines[idx]
+        if idx in function_line_indexes:
+            idx += 1
+            continue
+
+        code, _comment = split_comment(raw)
+        storage_match = STANDALONE_STORAGE_FULL_RE.match(code)
+        if storage_match:
+            directive, label, rest = storage_match.groups()
+            symbol_table.setdefault(label, infer_storage_symbol(label, parse_storage_size(rest), module))
+            idx += 1
+            continue
+
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx)
+        if standalone_data is not None:
+            directive_lower = standalone_data.directive.lower()
+            if directive_lower in {".word", ".intdata", ".float"}:
+                values: list[str] = []
+                if directive_lower in {".intdata", ".float"}:
+                    values = [part.strip() for part in standalone_data.rest.split(",") if part.strip()]
+                else:
+                    for asm_line in standalone_data.asm_lines[1:]:
+                        asm_code, _asm_comment = split_comment(asm_line)
+                        stripped = asm_code.strip()
+                        if not stripped.lower().startswith(".word"):
+                            continue
+                        operands = stripped[5:].strip()
+                        if operands:
+                            values.extend(part.strip() for part in operands.split(",") if part.strip())
+                if not values:
+                    values = ["0"]
+                symbol_table.setdefault(
+                    standalone_data.name,
+                    infer_numeric_symbol(
+                        NumericVariable(
+                            name=standalone_data.name,
+                            directive=directive_lower,
+                            values=values,
+                            asm_lines=[line for line in standalone_data.asm_lines if line.strip()],
+                        ),
+                        module,
+                        symbol_table,
+                    ),
+                )
+            elif directive_lower == ".string":
+                c_string = parse_simple_string_operand(standalone_data.rest)
+                if c_string is not None:
+                    symbol_table.setdefault(standalone_data.name, infer_string_symbol(standalone_data.name, module))
+            elif directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
+                symbol_table.setdefault(
+                    standalone_data.name,
+                    infer_storage_symbol(standalone_data.name, parse_storage_size(standalone_data.rest), module),
+                )
+            idx = next_idx
+            continue
+
+        if not is_flush_left(raw):
+            idx += 1
+            continue
+
+        sptr_match = parse_sptr_label(raw)
+        if sptr_match is not None:
+            label, _c_string = sptr_match
+            symbol_table.setdefault(label, infer_string_symbol(label, module))
+            idx += 1
+            continue
+
+        data_match = DATA_LABEL_RE.match(raw)
+        if not data_match:
+            idx += 1
+            continue
+
+        label, directive, rest = data_match.groups()
+        directive_lower = directive.lower()
+        if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
+            symbol_table.setdefault(label, infer_storage_symbol(label, parse_storage_size(rest), module))
+            idx += 1
+            continue
+        if directive_lower == ".string":
+            c_string = parse_simple_string_operand(rest)
+            if c_string is not None:
+                symbol_table.setdefault(label, infer_string_symbol(label, module))
+            idx += 1
+            continue
+        if directive_lower == ".word":
+            asm_lines = [f"{label}\t.word{rest}"]
+            values: list[str] = []
+            first_row = parse_numeric_data_line(asm_lines[0], label)
+            if first_row is not None:
+                row_values, _row_comment = first_row
+                values.extend(row_values)
+
+            next_idx = idx + 1
+            while next_idx < len(lines):
+                next_raw = lines[next_idx]
+                if next_idx in function_line_indexes or is_comment_or_blank(next_raw) or is_flush_left(next_raw):
+                    break
+                parsed_row = parse_numeric_data_line(next_raw)
+                if parsed_row is None:
+                    break
+                asm_lines.append(next_raw.rstrip())
+                row_values, _row_comment = parsed_row
+                values.extend(row_values)
+                next_idx += 1
+
+            if not values:
+                values = ["0"]
+            symbol_table.setdefault(
+                label,
+                infer_word_symbol(WordVariable(name=label, values=values, asm_lines=asm_lines), module, symbol_table),
+            )
+            idx = next_idx
+            continue
+        if directive_lower == ".float":
+            asm_lines = [f"{label}\t.float{rest}"]
+            values: list[str] = []
+            first_row = parse_numeric_data_line(asm_lines[0], label)
+            if first_row is not None:
+                row_values, _row_comment = first_row
+                values.extend(row_values)
+
+            next_idx = idx + 1
+            while next_idx < len(lines):
+                next_raw = lines[next_idx]
+                if next_idx in function_line_indexes or is_comment_or_blank(next_raw) or is_flush_left(next_raw):
+                    break
+                parsed_row = parse_numeric_data_line(next_raw)
+                if parsed_row is None:
+                    break
+                asm_lines.append(next_raw.rstrip())
+                row_values, _row_comment = parsed_row
+                values.extend(row_values)
+                next_idx += 1
+
+            if not values:
+                values = ["0"]
+            symbol_table.setdefault(
+                label,
+                infer_numeric_symbol(
+                    NumericVariable(name=label, directive=".float", values=values, asm_lines=asm_lines),
+                    module,
+                    symbol_table,
+                ),
+            )
+            idx = next_idx
+            continue
+
+        idx += 1
+
+    return symbol_table
 
 
 def main() -> int:

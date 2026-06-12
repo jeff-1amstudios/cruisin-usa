@@ -76,7 +76,7 @@ int GMAX = 100000;
 /* asm: 	*		this drone is possibly a linked drone */
 /* asm: 	*	end if */
 /* asm: 	* */
-int DIFFTAB[] = {
+int DIFFTAB[14] = {
     0, // GG
     -0.03, // SF
     -0.02, // 101

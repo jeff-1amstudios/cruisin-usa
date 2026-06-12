@@ -67,4 +67,8 @@
 // asm: TMR_SUSPEND	.set	0
 #define TMR_SUSPEND 0
 
+// asm: 	.globl	TIMER_RESET,TIMER_READ
+void TIMER_RESET(void);
+void TIMER_READ(void);
+
 #endif /* C30_H */

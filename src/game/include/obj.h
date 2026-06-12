@@ -10,7 +10,73 @@
 // 
 // ROUTINES
 
+// asm: 	.globl	ZSORTWT,RESCAN
+void ZSORTWT(void);
+void RESCAN(void);
+// asm: 	.globl	OSCAN,ISCAN
+void OSCAN(void);
+void ISCAN(void);
+// asm: 	.globl	QMAKEOBJ
+// asm: 	.globl	ZSORTPRIOR
+void ZSORTPRIOR(void);
+// asm: 	.globl	OBJ_FREE_PROC
+void OBJ_FREE_PROC(void);
+// asm: 	.globl	OBJ_FREE_DRIVE
+void OBJ_FREE_DRIVE(void);
+// asm: 	.globl	OBJ_FREE_GROUND
+void OBJ_FREE_GROUND(void);
+// asm: 	.globl	OBJ_FREE_SIGN
+void OBJ_FREE_SIGN(void);
+// asm: 	.globl	OBJ_INIT
+void OBJ_INIT(void);
+// asm: 	.globl	OBJ_GET
+void OBJ_GET(void);
+// asm: 	.globl	OBJ_GETE
+void OBJ_GETE(void);
+// asm: 	.globl	OBJ_INSERT
+void OBJ_INSERT(void);
+// asm: 	.globl	OBJ_INSERTP
+void OBJ_INSERTP(void);
+// asm: 	.globl	OBJ_INSERTHP
+void OBJ_INSERTHP(void);
+// asm: 	.globl	OBJ_INSERTLP
+void OBJ_INSERTLP(void);
+// asm: 	.globl	OBJ_FIND_FIRST
+void OBJ_FIND_FIRST(void);
+// asm: 	.globl	OBJ_FIND_FIRST_PRIORITY
+void OBJ_FIND_FIRST_PRIORITY(void);
+// asm: 	.globl	OBJ_DELETE
+void OBJ_DELETE(void);
+// asm: 	.globl	OBJ_DELETE_CLASS
+void OBJ_DELETE_CLASS(void);
+// asm: 	.globl	OBJ_PULL
+void OBJ_PULL(void);
+// asm: 	.globl	OBJ_FREE
+void OBJ_FREE(void);
+// asm: 	.globl	OBJ_MAKE
+void OBJ_MAKE(void);
+// asm: 	.globl	OBJ_QMAKE
+void OBJ_QMAKE(void);
+
 // DATA STRUCTURES
+// asm: 	.globl	OACTIVE,OFREE,IDLE_LIST,OACTIVE_PRIORITY,OLOW_PRIORITY
+extern int OACTIVE;
+extern int OFREE;
+extern int IDLE_LIST;
+extern int OACTIVE_PRIORITY;
+extern int OLOW_PRIORITY;
+// asm: 	.globl	DRIVE_LIST,_CAR_LIST,BUILD_LIST,SIGN_LIST
+extern int DRIVE_LIST;
+extern int SIGN_LIST;
+// asm: 	.globl	OACTIVECNT,OFREECNT,OMAX_OBJECTS
+extern int OACTIVECNT;
+extern int OFREECNT;
+extern int OMAX_OBJECTS;
+// asm: 	.globl	OLOW_PRIORITY,OHIGH_PRIORITY
+extern int OHIGH_PRIORITY;
+// asm: 	.globl	OFREEI
+// asm: 	.globl	OBJSTR,OBJSTRI
+extern int OBJSTR[OBJSIZ*NUM_OBJECTS];
 
 // asm: NUM_OBJECTS	.set	1100
 #define NUM_OBJECTS 1100

@@ -141,7 +141,7 @@ int MOTION_RCV_TIKS;
 /* asm: 	.word	MOTOROFF11 */
 /* asm: 	.word	MOTOROFF12 */
 /* asm: 	.word	0 */
-int MOTOFF_PROG[] = {
+int MOTOFF_PROG[13] = {
     MOTOROFF1,
     MOTOROFF2,
     MOTOROFF3,
@@ -157,9 +157,9 @@ int MOTOFF_PROG[] = {
     0,
 };
 /* asm: BABAID	.word	JJG */
-int BABAID = JJG;
+int *BABAID = JJG;
 /* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
-int JJG[] = {
+const char * *JJG[8] = {
     MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7,
 };
 const char *MM0 = "UNKNOWN ERROR";
@@ -305,7 +305,7 @@ int LAST_YR;
 /* asm: 	;	.word	0 */
 /* asm: 	; */
 /* asm: 	*---------------------------------------------------------------------------- */
-int THEPROGL[] = {
+int THEPROGL[86] = {
     EDIT, T5, T6, T7, T8, T9,
     T10, T11, T12, T13, T14, T15, T16, T17, T18, T19,
     T20, T21, T22, T23, T24, T25, T26, T27, T28, T29,
@@ -346,11 +346,11 @@ int CME_MASK = 0x0FF80;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: LLG6X	.word	L4ABX */
-int LLG6X = L4ABX;
+const char * *LLG6X = L4ABX;
 /* asm: LLG6Y	.word	L4ABY */
-int LLG6Y = L4ABY;
+const char * *LLG6Y = L4ABY;
 /* asm: LLG6Z	.word	L4ABZ */
-int LLG6Z = L4ABZ;
+const char * *LLG6Z = L4ABZ;
 const char *L4ABX = "X ENCODER FAILURE";
 const char *L4ABY = "Y ENCODER FAILURE";
 const char *L4ABZ = "Z ENCODER FAILURE";

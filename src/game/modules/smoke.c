@@ -25,13 +25,13 @@
 int TIRE_SMOKE_COUNT;
 /* asm: SMOKEANI */
 /* asm: 	.word	bnout2,bnout4,bnout6,bnout8,bnout10,bnout12,bnout14,bnout16,-1 */
-int SMOKEANI[] = {
+int SMOKEANI[9] = {
     bnout2, bnout4, bnout6, bnout8, bnout10, bnout12, bnout14, bnout16, -1,
 };
 /* asm: SMOKE2ANI */
 /* asm: 	.word	bnout1,bnout2,bnout3,bnout4,bnout5,bnout6,bnout7,bnout8,bnout9,bnout10 */
 /* asm: 	.word	bnout11,bnout12,bnout14,bnout15,bnout16,-1 */
-int SMOKE2ANI[] = {
+int SMOKE2ANI[16] = {
     bnout1, bnout2, bnout3, bnout4, bnout5, bnout6, bnout7, bnout8, bnout9, bnout10,
     bnout11, bnout12, bnout14, bnout15, bnout16, -1,
 };
@@ -51,7 +51,7 @@ int SMOKE2ANI[] = {
 /* asm: 	;	.word	sparc10,sparc10,sparc11,sparc11,sparc12,sparc12,-1 */
 /* asm: 	.word	x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,-1 */
 /* asm: 	;	.word	x2,x4,x6,x8,x10,-1 */
-int SPARKANI[] = {
+int SPARKANI[11] = {
     x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, -1,
 };
 // *----------------------------------------------------------------------------

@@ -58,6 +58,8 @@ int ROAD_DEBRIS;
 // *	AR4	PULL LIST HEADER
 // *
 // *
+/* asm: MAXDIST	.float	9999999999.0  		;A VERY LARGE NUMBER */
+float MAXDIST = 9999999999.0f;
 // *----------------------------------------------------------------------------
 
 void INIT_RDDEBRIS(void)

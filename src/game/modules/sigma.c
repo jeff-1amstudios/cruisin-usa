@@ -58,7 +58,7 @@
 /* asm: 	.word	CARAVAN_MOD,0 */
 /* asm: 	.word	PTRUCKG_MOD,0 */
 /* asm: 	.word	JEEP_MOD,0 */
-int SIGMA_LIST[] = {
+int SIGMA_LIST[32] = {
     GTRUCK_MOD, 0,
     CBUS_MOD, SS_LONG,
     COPCAR_MOD, SS_COPCAR,

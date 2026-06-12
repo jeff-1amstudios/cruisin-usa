@@ -183,8 +183,59 @@
 #define COMM_Q_READY 0x45B //LOGICAL == "I HAVE SOMETHING READY TO SEND"
 
 // ***	COMM.ASM
+// asm: 	.globl	 RECEIVE_BUFFERI
+// asm: 	.globl	 COMMQ_TMP_BUFFI
+
+// asm: 	.globl	 COMMQ_TMP_BUFF
+extern int COMMQ_TMP_BUFF[80];
+// asm: 	.globl	 SEND_BUFFER_A
+extern int SEND_BUFFER_A[COMM_BUFFER_SIZE];
+// asm: 	.globl	 SEND_BUFFER_B
+// asm: 	.globl	 RECEIVE_BUFFER
+extern int RECEIVE_BUFFER[COMM_BUFFER_SIZE];
+// asm: 	.globl	 RECEIVE_BUFFER_SIZE
+// asm: 	.globl	 SEND_BUFFER_SIZE
+// asm: 	.globl	 CURR_RCV_BUFFER
+// asm: 	.globl	 COMMQ_STATUS
+
+// asm: 	.globl	 SBUFF_PTR,SBUFF_PTR_STRT
+// asm: 	.globl	 SBUFF_LEN
+// asm: 	.globl	 RBUFF_PTR
+// asm: 	.globl	 RBUFF_LEN
+extern int RBUFF_LEN;
 
 // ***	COMMQ.ASM
+// asm: 	.globl	 SEND_CHANGE_MUSIC
+void SEND_CHANGE_MUSIC(void);
+// asm: 	.globl	 COMMQ_INIT_F
+// asm: 	.globl	 COMMQ_INIT
+// asm: 	.globl	 COMMQ_FREEZE
+// asm: 	.globl	 COMMQ_READY
+// asm: 	.globl	 MESSAGE_ADD,MESSAGE_ADD_SB
+void MESSAGE_ADD(void);
+void MESSAGE_ADD_SB(void);
+// asm: 	.globl	 DECODE_BUFFER,DECODE_BUFFER_SLAVE
+void DECODE_BUFFER(void);
+// asm: 	.globl	 SEND_TIMECODE
+void SEND_TIMECODE(void);
+// asm: 	.globl	 SEND_MODE,OM_MODE
+void SEND_MODE(void);
+extern int OM_MODE;
+// asm: 	.globl	 SEND_RACENUM,OM_CHOSEN_RACE
+void SEND_RACENUM(void);
+extern int OM_CHOSEN_RACE;
+// asm: 	.globl	 SEND_PLAYERS_POS
+void SEND_PLAYERS_POS(void);
+// asm: 	.globl	 OM_POS
+// asm: 	.globl	 SEND_OM_TRACK
+// asm: 	.globl	 SEND_BSYNC0
+void SEND_BSYNC0(void);
+// asm: 	.globl	 SEND_BSYNC1
+void SEND_BSYNC1(void);
+// asm: 	.globl	 SEND_BSYNC2
+void SEND_BSYNC2(void);
+// asm: 	.globl	 SEND_BSYNC3
+void SEND_BSYNC3(void);
 
 // 
 // OM_STATE

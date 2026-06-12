@@ -44,7 +44,7 @@ int SNDEND;
 /* asm: 	.word	STRAIGHT_2_4	;5 */
 /* asm: 	.word	DISCODUCK	;6 */
 /* asm: 	.word	BOOGIE		;7 */
-int STATION_LIST[] = {
+int STATION_LIST[8] = {
     MUNSTER_SURF, // 0
     SHUFFLE_DRIV, // 1
     DISCODUCK, // 2

@@ -51,10 +51,20 @@ int VAR_ROAD_KFACTOR;
 // *
 /* asm: AMOUNT_CLIPPED	.bss	AMOUNT_CLIPPED,1 */
 int AMOUNT_CLIPPED;
+/* asm: FORMULA	.float	-244.4619926	;(6*256)/2PI  (convert radians to length of infinity plane) */
+float FORMULA = -244.4619926f;
+/* asm: LOWVAL	.float	-1536 */
+float LOWVAL = -1536.0f;
+/* asm: HIGHVAL	.float	1536 */
+float HIGHVAL = 1536.0f;
 /* asm: LOIVAL	.word	-768 */
 int LOIVAL = -768;
 /* asm: HIGHIVAL	.word	1536 */
 int HIGHIVAL = 1536;
+/* asm: INFPROJ	.float	0.0064 */
+float INFPROJ = 0.0064f;
+/* asm: INFVAL	.float  80000 */
+float INFVAL = 80000.0f;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: INFINITY_POINTS	.word	INFINPOINTS */
@@ -94,7 +104,7 @@ int HIGHIVAL = 1536;
 /* asm: 	.float	700,-1250,0 */
 /* asm: 	.float	1700,-253,0 */
 /* asm: 	.float	1700,-1250,0 */
-int INFINPOINTS[] = {
+int INFINPOINTS[102] = {
     -1280, 0, 0,
     -1280, -255, 0,
     -1024, 0, 0,
@@ -134,7 +144,7 @@ int INFINPOINTS[] = {
 #define INFIN_POLYGONSI BLUESKY
 /* asm: BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
 /* asm: 	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
-int BLUESKY[] = {
+int BLUESKY[24] = {
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
 };
@@ -181,33 +191,33 @@ int INFIN_CORRECT;
 /* asm: 	.float	1792,128,0 */
 /* asm: 	.float	1792,0,0 */
 /* asm: 	*---------------------------------------------------------------------------- */
-int WATERPOS[] = {
-    -1280, 128, 0,
-    -1280, 0, 0,
-    -1024, 128, 0,
-    -1024, 0, 0,
-    -768, 128, 0,
-    -768, 0, 0,
-    -512, 128, 0,
-    -512, 0, 0,
-    -256, 128, 0,
-    -256, 0, 0,
-    0, 128, 0,
-    0, 0, 0,
-    256, 128, 0,
-    256, 0, 0,
-    512, 128, 0,
-    512, 0, 0,
-    768, 128, 0,
-    768, 0, 0,
-    1024, 128, 0,
-    1024, 0, 0,
-    1280, 128, 0,
-    1280, 0, 0,
-    1536, 128, 0,
-    1536, 0, 0,
-    1792, 128, 0,
-    1792, 0, 0,
+float WATERPOS[78] = {
+    -1280.0f, 128.0f, 0.0f,
+    -1280.0f, 0.0f, 0.0f,
+    -1024.0f, 128.0f, 0.0f,
+    -1024.0f, 0.0f, 0.0f,
+    -768.0f, 128.0f, 0.0f,
+    -768.0f, 0.0f, 0.0f,
+    -512.0f, 128.0f, 0.0f,
+    -512.0f, 0.0f, 0.0f,
+    -256.0f, 128.0f, 0.0f,
+    -256.0f, 0.0f, 0.0f,
+    0.0f, 128.0f, 0.0f,
+    0.0f, 0.0f, 0.0f,
+    256.0f, 128.0f, 0.0f,
+    256.0f, 0.0f, 0.0f,
+    512.0f, 128.0f, 0.0f,
+    512.0f, 0.0f, 0.0f,
+    768.0f, 128.0f, 0.0f,
+    768.0f, 0.0f, 0.0f,
+    1024.0f, 128.0f, 0.0f,
+    1024.0f, 0.0f, 0.0f,
+    1280.0f, 128.0f, 0.0f,
+    1280.0f, 0.0f, 0.0f,
+    1536.0f, 128.0f, 0.0f,
+    1536.0f, 0.0f, 0.0f,
+    1792.0f, 128.0f, 0.0f,
+    1792.0f, 0.0f, 0.0f,
 };
 
 void FIND_HIGHEST_ROADY(void)

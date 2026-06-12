@@ -39,7 +39,7 @@
 /* asm: 	.word	ken */
 /* asm: 	.word	eric */
 /* asm: 	.word	-1 */
-int HEADS[] = {
+int HEADS[12] = {
     jeno,
     marc,
     pet,

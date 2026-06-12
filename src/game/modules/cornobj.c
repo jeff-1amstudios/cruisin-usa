@@ -27,7 +27,7 @@
 /* asm: 	;	.globl	corn_PALETTES */
 /* asm: 	;corn_PALETTES: */
 /* asm: 	;	.word	0,0 */
-int _SECcorn[] = {
+int _SECcorn[2] = {
     0x0C16800, // Src (Compressed) Addr
     0x0BE9600, // Dest Addr
 };

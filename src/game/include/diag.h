@@ -78,6 +78,9 @@
 // ;;	BNZ	WL2?
 // .ENDM
 
+// asm: 	.globl	MAKE_WINDOW
+void MAKE_WINDOW(void);
+// asm: 	.globl	MAKE_WINDOW
 // LDI	COL_LGREY,RS
 // CALL	_fill
 // 
@@ -109,6 +112,8 @@
 // LDI	COL_DGREY,RS
 // CALL	_line
 
+// asm: 	.globl	MAKE_IWINDOW
+void MAKE_IWINDOW(void);
 // LDI	COL_LGREY,RS
 // CALL	_fill
 // 

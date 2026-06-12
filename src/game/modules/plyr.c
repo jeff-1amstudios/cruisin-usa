@@ -105,6 +105,16 @@ int PMSAV[9];
 /* asm: ZOOMI	.word	ZOOMRAM */
 #define ZOOMI ZOOMRAM
 #define GRAVITY 1.20
+/* asm: ROADFRICI	.float	0.0028 */
+float ROADFRICI = 0.0028f;
+/* asm: OFRDFRICI	.float	0.010 */
+float OFRDFRICI = 0.010f;
+/* asm: BRAKFRICI	.float	0.020 */
+float BRAKFRICI = 0.020f;
+/* asm: SKIDFRICI	.float	0.003 */
+float SKIDFRICI = 0.003f;
+/* asm: SPINFRICI	.float	0.015	;SPINOUT FRICTION */
+float SPINFRICI = 0.015f;
 // *RPM MAX
 #define NUM_RPMS 47
 #define NUM_RPM 47.0
@@ -119,7 +129,7 @@ int PMSAV[9];
 /* asm: CARPARAMTAB: */
 /* asm: 	*#0 MUSCLE CAR */
 /* asm: 	.float	0.91,0.60,0.0028,0.010		;ALL AROUND */
-int CARPARAMTAB[] = {
+int CARPARAMTAB[4] = {
     0.91, 0.60, 0.0028, 0.010, // ALL AROUND
 };
 /* asm: CARPARAMTAB1 */
@@ -138,7 +148,7 @@ int CARPARAMTAB[] = {
 /* asm: 	.float	0.91,0.65,0.0028,0.0050 */
 /* asm: 	*#7 gtruck */
 /* asm: 	.float	0.89,0.50,0.0028,0.010 */
-int CARPARAMTAB1[] = {
+int CARPARAMTAB1[28] = {
     0.98, 0.50, 0.0032, 0.0042, // ACCEL
     0.88, 0.70, 0.0026, 0.010, // TOP SPEED
     0.89, 0.50, 0.0028, 0.010, // HANDLING
@@ -185,9 +195,21 @@ int CARPARAMTAB1[] = {
 // *JARV CHANGE  February 7,1995
 // ;	ADDF	0.10,R0		;MAXIMUM VALUE
 // *JARV END CHANGE
+/* asm: CATCHUP	.float	0.0001 */
+float CATCHUP = 0.0001f;
+/* asm: AHEAD	.float	-0.0008 */
+float AHEAD = -0.0008f;
+/* asm: DISTCON	.float	0.000001 */
+float DISTCON = 0.000001f;
+/* asm: SPDCON	.float	0.00333 */
+float SPDCON = 0.00333f;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *GEAR RATIO TABLE
+/* asm: GEARTAB	.float	0.0,0.60,0.35,0.21,0.15 */
+float GEARTAB[5] = {
+    0.0f, 0.60f, 0.35f, 0.21f, 0.15f,
+};
 /* asm: ENGVOL	.BSS	ENGVOL,1 */
 int ENGVOL;
 // *----------------------------------------------------------------------------
@@ -197,7 +219,7 @@ int ENGVOL;
 #define GEARACTABI GEARACTAB
 /* asm: GEARACTAB */
 /* asm: 	.float	0.0,1.7,1.5,1.4,1.2  		;POWER FACTOR GEAR(0-4) */
-int GEARACTAB[] = {
+int GEARACTAB[5] = {
     0.0, 1.7, 1.5, 1.4, 1.2, // POWER FACTOR GEAR(0-4)
 };
 /* asm: ENGACTABI	.word	ENGACTAB */
@@ -208,14 +230,20 @@ int GEARACTAB[] = {
 /* asm: 	.float	1.00,1.00,1.00,1.00,0.90	;3000,3300,3600,3900,4200 */
 /* asm: 	.float	0.80,0.40,0.20,0.00,0.00	;4500,4800,5100,5400,5700 */
 /* asm: 	*ENGINE FRICTION */
-int ENGACTAB[] = {
+int ENGACTAB[20] = {
     1.20, 1.20, 0.50, 0.60, 0.70, // 0000,0300,0600,0900,1200
     0.80, 0.90, 1.00, 1.00, 1.00, // 1500,1800,2100,2400,2700
     1.00, 1.00, 1.00, 1.00, 0.90, // 3000,3300,3600,3900,4200
     0.80, 0.40, 0.20, 0.00, 0.00, // 4500,4800,5100,5400,5700
 };
+/* asm: ENGFR	.float	0.000,0.005,0.003,0.001,0.000  	;GEAR(0-4) ENGINE FRICTION */
+float ENGFR[5] = {
+    0.000f, 0.005f, 0.003f, 0.001f, 0.000f, // GEAR(0-4) ENGINE FRICTION
+};
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: STEERI	.float	-0.0013 */
+float STEERI = -0.0013f;
 // *----------------------------------------------------------------------------
 // *CHECK IF DRIVING BACKWARDS
 // *PARAMETERS
@@ -230,25 +258,25 @@ int WHLOLD;
 // *SOUND TABLES
 // *PLAYER COLLISION SOUND TABLE
 /* asm: SCOLLTAB	.word	SCOLLA,SCOLLB,SCOLLC */
-int SCOLLTAB[] = {
+int SCOLLTAB[3] = {
     SCOLLA, SCOLLB, SCOLLC,
 };
 // *WALL HIT SOUND TABLE
 /* asm: WALLHITAB	.word	WALLHITA,WALLHITB,WALLHITC */
-int WALLHITAB[] = {
+int WALLHITAB[3] = {
     WALLHITA, WALLHITB, WALLHITC,
 };
 // *SKID SOUND TABLE
 /* asm: SKIDTAB	.word	SKIDB,SKIDC */
-int SKIDTAB[] = {
+int SKIDTAB[2] = {
     SKIDB, SKIDC,
 };
 /* asm: PLAIRSND	.word 	RH_BABEWHOA,GL_WOOLAUGH,CHICKSCREAM */
-int PLAIRSND[] = {
+int PLAIRSND[3] = {
     RH_BABEWHOA, GL_WOOLAUGH, CHICKSCREAM,
 };
 /* asm: REVSNDTAB	.word	SINGLEREV5,SINGLEREV6 */
-int REVSNDTAB[] = {
+int REVSNDTAB[2] = {
     SINGLEREV5, SINGLEREV6,
 };
 // *----------------------------------------------------------------------------

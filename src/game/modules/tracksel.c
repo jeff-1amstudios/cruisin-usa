@@ -53,13 +53,13 @@ const char *CRUISE3 = "IN THE WHITE HOUSE HOT TUB";
 // *
 // *
 /* asm: LLG1	.word	L4A */
-int LLG1 = L4A;
+const char * *LLG1 = L4A;
 /* asm: LLG2	.word	L5A */
-int LLG2 = L5A;
+const char * *LLG2 = L5A;
 /* asm: LLG3	.word	L5B */
-int LLG3 = L5B;
+const char * *LLG3 = L5B;
 /* asm: L88	.word	IBOIBOJ */
-int L88 = IBOIBOJ;
+int *L88 = IBOIBOJ;
 const char *L4A = "MOTION RECALIBRATION";
 const char *L5A = "REMAIN SEATED";
 const char *L5B = "DO NOT TOUCH MATS";
@@ -160,13 +160,13 @@ int TSEL_THEONE;
 // *
 // *
 /* asm: ANIMATE_MAP_TAB	.word	mhop1,mhop2,mhop3,mhop4,-1 */
-int ANIMATE_MAP_TAB[] = {
+int ANIMATE_MAP_TAB[5] = {
     mhop1, mhop2, mhop3, mhop4, -1,
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: TURNANI	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
-int TURNANI[] = {
+int TURNANI[7] = {
     whel1, whel2, whel3, whel4, whel3, whel2, -1,
 };
 // *----------------------------------------------------------------------------
@@ -192,7 +192,7 @@ int TURNANI[] = {
 /* asm: 	.word	RACE_IN */
 /* asm: 	.word	RACE_SF */
 /* asm: 	*---------------------------------------------------------------------------- */
-int TRACK_SELECTION_LIST[] = {
+int TRACK_SELECTION_LIST[14] = {
     RACE_AZ,
     RACE_US101,
     RACE_LA,

@@ -54,7 +54,7 @@ int OFFROADBUFF[2];
 /* asm: MOVEIN_OFFSET	.bss	MOVEIN_OFFSET,1 */
 int MOVEIN_OFFSET;
 /* asm: SAFETS	.word	MSAF,BSAF,OSAF,MSSM */
-int SAFETS[] = {
+const char * *SAFETS[4] = {
     MSAF, BSAF, OSAF, MSSM,
 };
 const char *MSAF = "SAFETY MAT ACTIVATED";
@@ -75,7 +75,7 @@ const char *MSSM = "MOTION STOP BUTTON HIT";
 /* asm: GEARI	.word	GEARS */
 #define GEARI GEARS
 /* asm: GEARS	.word	GEARN,GEAR1,GEAR2,GEAR3,GEAR4 */
-int GEARS[] = {
+const char * *GEARS[5] = {
     GEARN, GEAR1, GEAR2, GEAR3, GEAR4,
 };
 const char *GEAR1 = "1";
@@ -118,7 +118,7 @@ int LASTSEC;
 /* asm: 	.word	scred8,dth,0 */
 /* asm: 	.word	scred9,dth,0 */
 /* asm: 	.word	scred10,dth,-20 */
-int POS_TABLE[] = {
+int POS_TABLE[30] = {
     scred1, dst, 7,
     scred2, dnd, 0,
     scred3, drd, 0,
@@ -151,7 +151,7 @@ int TACHOMETER_PAL[32];
 /* asm: 	.word	0 */
 /* asm: 	.word	0 */
 /* asm: 	.word	0 */
-int GEARPAL[] = {
+int GEARPAL[4] = {
     0,
     0,
     0,

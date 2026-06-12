@@ -74,7 +74,7 @@ int HELI_ABORT;
 /* asm: 	*branched to from oncoming buzz */
 /* asm: 	* */
 /* asm: 	* */
-int CHOPPERDYNA[] = {
+int CHOPPERDYNA[11] = {
     1, // #OF DYNAS-1
     0, -206, 14, // blades
     3, // VERTS-1

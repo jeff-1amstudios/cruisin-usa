@@ -8,6 +8,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from gen_c_skeleton import SymbolInfo, collect_module_symbol_table, sanitize_identifier, variable_declaration
+
 
 SET_RE = re.compile(r"^\s*([A-Za-z_.$?@][A-Za-z0-9_.$?@]*)\s*\.set\s*(.*?)\s*$", re.IGNORECASE)
 GLOBL_RE = re.compile(r"^\s*\.globl\s+(.*?)\s*$", re.IGNORECASE)
@@ -123,7 +125,13 @@ def parse_equ_file(path: Path) -> tuple[list[str], list[str], list[SetEntry]]:
     return normalize_banner_comments(banner_comments), globls, sets
 
 
-def render_header(src_path: Path, banner_comments: list[str], globls: list[str], sets: list[SetEntry]) -> str:
+def render_header(
+    src_path: Path,
+    banner_comments: list[str],
+    globls: list[str],
+    sets: list[SetEntry],
+    symbol_table: dict[str, SymbolInfo] | None = None,
+) -> str:
     guard = f"{sanitize_guard_stem(src_path.stem)}_H"
     out: list[str] = []
     out.append(f"#ifndef {guard}")
@@ -135,55 +143,87 @@ def render_header(src_path: Path, banner_comments: list[str], globls: list[str],
         for line in banner_comments:
             out.append(f"// {line}")
 
-    if sets:
-        out.append("")
-        rendered_body: list[str] = []
-        emitted: dict[str, str] = {}
-        in_banner = True
-        set_index = 0
-        for raw in src_path.read_text(errors="ignore").splitlines():
-            stripped = raw.strip()
-            if not stripped:
-                if not in_banner:
-                    rendered_body.append("")
+    rendered_body: list[str] = []
+    emitted_sets: dict[str, str] = {}
+    emitted_globls: set[str] = set()
+    in_banner = True
+    set_index = 0
+    if symbol_table is None:
+        symbol_table = {}
+    for raw in src_path.read_text(errors="ignore").splitlines():
+        stripped = raw.strip()
+        if not stripped:
+            if not in_banner:
+                rendered_body.append("")
+            continue
+        if stripped.startswith("*") or stripped.startswith(";"):
+            if in_banner:
                 continue
-            if stripped.startswith("*") or stripped.startswith(";"):
-                if in_banner:
+            comment_body = stripped[1:].strip()
+            rendered_body.append(f"// {comment_body}")
+            continue
+
+        in_banner = False
+        code, _comment = split_comment(raw)
+        globl_match = GLOBL_RE.match(code)
+        if globl_match:
+            rendered_body.append(f"// asm: {raw.rstrip()}")
+            names = [part.strip() for part in globl_match.group(1).split(",") if part.strip()]
+            for name in names:
+                if name in emitted_globls:
                     continue
-                comment_body = stripped[1:].strip()
-                rendered_body.append(f"// {comment_body}")
-                continue
+                rendered = render_globl_symbol(symbol_table.get(name), name)
+                if rendered is not None:
+                    rendered_body.append(rendered)
+                    emitted_globls.add(name)
+            continue
 
-            in_banner = False
-            code, _comment = split_comment(raw)
-            if GLOBL_RE.match(code):
-                continue
+        set_match = SET_RE.match(code)
+        if not set_match:
+            continue
 
-            set_match = SET_RE.match(code)
-            if not set_match:
-                continue
+        entry = sets[set_index]
+        set_index += 1
+        prior_expr = emitted_sets.get(entry.name)
+        if prior_expr == entry.expr:
+            continue
+        if prior_expr is not None:
+            rendered_body.append(f"#undef {entry.name}")
+        rendered_body.append(f"// asm: {entry.asm_line}")
+        expr = f"({entry.expr})" if needs_parens(entry.expr) else entry.expr
+        line = f"#define {entry.name} {expr}"
+        if entry.comment:
+            line += f" //{entry.comment}"
+        rendered_body.append(line)
+        emitted_sets[entry.name] = entry.expr
 
-            entry = sets[set_index]
-            set_index += 1
-            prior_expr = emitted.get(entry.name)
-            if prior_expr == entry.expr:
-                continue
-            if prior_expr is not None:
-                rendered_body.append(f"#undef {entry.name}")
-            rendered_body.append(f"// asm: {entry.asm_line}")
-            expr = f"({entry.expr})" if needs_parens(entry.expr) else entry.expr
-            line = f"#define {entry.name} {expr}"
-            if entry.comment:
-                line += f" //{entry.comment}"
-            rendered_body.append(line)
-            emitted[entry.name] = entry.expr
-
+    if rendered_body:
+        out.append("")
         out.extend(normalize_emitted_lines(rendered_body))
 
     out.append("")
     out.append(f"#endif /* {guard} */")
     out.append("")
     return "\n".join(out)
+
+
+def render_globl_symbol(symbol: SymbolInfo | None, name: str) -> str | None:
+    if symbol is None:
+        return None
+    if symbol.kind == "function":
+        return f"void {sanitize_identifier(name)}(void);"
+    if symbol.kind == "variable":
+        return variable_declaration(symbol.name, symbol.c_type, symbol.array_expr, is_extern=True)
+    return None
+
+
+def build_global_symbol_table(root: Path) -> dict[str, SymbolInfo]:
+    asm_dir = root / "asm"
+    symbol_table: dict[str, SymbolInfo] = {}
+    for src_path in sorted(asm_dir.glob("*.ASM")):
+        for name, symbol in collect_module_symbol_table(src_path, {}).items():
+            symbol_table.setdefault(name, symbol)
+    return symbol_table
 
 
 def main() -> int:
@@ -198,12 +238,13 @@ def main() -> int:
 
     generated: list[Path] = []
     pending: dict[Path, str] = {}
+    symbol_table = build_global_symbol_table(root)
 
     for src_path in sorted(asm_dir.glob("*.EQU")):
         banner_comments, globls, sets = parse_equ_file(src_path)
         out_name = sanitize_include_name(src_path)
         out_path = out_dir / out_name
-        pending[out_path] = render_header(src_path, banner_comments, globls, sets)
+        pending[out_path] = render_header(src_path, banner_comments, globls, sets, symbol_table)
         generated.append(out_path)
 
     if args.check:

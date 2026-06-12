@@ -56,7 +56,7 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("int _SEChead2head[] = {\n    0x0C15000,\n    0x0BEFA00,\n};", rendered)
+        self.assertIn("int _SEChead2head[2] = {\n    0x0C15000,\n    0x0BEFA00,\n};", rendered)
         self.assertNotIn("void _SEChead2head(void)", rendered)
 
     def test_single_symbol_word_renders_as_define(self) -> None:
@@ -106,6 +106,21 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
         self.assertIn("/* asm: INFINITY_POINTS\t.word\tINFINPOINTS */", rendered)
         self.assertIn("#define INFINITY_POINTS INFINPOINTS", rendered)
         self.assertNotIn("int INFINITY_POINTS = INFINPOINTS;", rendered)
+
+    def test_float_data_and_word_pointer_table_render_with_float_types(self) -> None:
+        asm_source = """LANEP\t.word\tLANES,LANES4
+LANES\t.float\t-576.0,-576.0,576.0,576.0
+LANES4\t.float\t-1728.0,-576.0,576.0,1728.0
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "DRONES.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("float *LANEP[2] = {\n    LANES, LANES4,\n};", rendered)
+        self.assertIn("float LANES[4] = {\n    -576.0f, -576.0f, 576.0f, 576.0f,\n};", rendered)
+        self.assertIn("float LANES4[4] = {\n    -1728.0f, -576.0f, 576.0f, 1728.0f,\n};", rendered)
 
     def test_collects_skipped_data_symbol_references(self) -> None:
         asm_lines = [
@@ -197,7 +212,7 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
         self.assertIn("extern int heads_count;", rendered)
         self.assertNotIn("// addr:", rendered)
 
-    def test_equ_file_renders_comment_header_and_set_defines(self) -> None:
+    def test_equ_file_renders_comment_header_without_set_defines(self) -> None:
         asm_source = """*DELTA.EQU
 *
 *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
@@ -217,9 +232,9 @@ MAX_DRONES\t.set\t11\t;MAXIMUM DRONES IN UNIVERSE
         self.assertIn("// COPYRIGHT (C) 1994 BY  TV GAMES, INC.", rendered)
         self.assertIn("// ALL RIGHTS RESERVED", rendered)
         self.assertIn("// asm: DELTA_SAFETYWIDTH\t.set\t850", rendered)
-        self.assertIn("#define DELTA_SAFETYWIDTH 850", rendered)
         self.assertIn("// asm: MAX_DRONES\t.set\t11\t;MAXIMUM DRONES IN UNIVERSE", rendered)
-        self.assertIn("#define MAX_DRONES 11 //MAXIMUM DRONES IN UNIVERSE", rendered)
+        self.assertNotIn("#define DELTA_SAFETYWIDTH 850", rendered)
+        self.assertNotIn("#define MAX_DRONES 11 //MAXIMUM DRONES IN UNIVERSE", rendered)
         self.assertNotIn("void delta(void)", rendered)
 
 

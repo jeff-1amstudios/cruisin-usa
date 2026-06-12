@@ -49,6 +49,8 @@
 // num_sections	.set	1
 // asm: head2head           	.set	0AF7D00h	;7940
 #define head2head 0x0AF7D00 //7940
+// asm: 	.globl	_SEChead2head
+extern int _SEChead2head[2];
 // .globl	head2head_PALETTES
 
 // asm: H2HPAL1	.set	0C14000h

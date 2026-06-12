@@ -22,6 +22,9 @@
 
 // num_sections	.set	1
 // corn                	.set	0AF4B00h	;1DC0
+// asm: 	.globl	_SECcorn
+extern int _SECcorn[2];
+// asm: 	.globl	corn_PALETTES
 
 // asm: CORNPAL	.set	0C14400h
 #define CORNPAL 0x0C14400

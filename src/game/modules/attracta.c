@@ -33,7 +33,7 @@
 // *
 // *----------------------------------------------------------------------------
 /* asm: SPIN_CARTAB	.word	missle,hotrod,testor,cvette */
-int SPIN_CARTAB[] = {
+int SPIN_CARTAB[4] = {
     missle, hotrod, testor, cvette,
 };
 // *----------------------------------------------------------------------------
@@ -45,7 +45,7 @@ const char *DT3 = "SNEAK PREVIEW";
 /* asm: 	.word	140,DT1 */
 /* asm: 	.word	180,DT2 */
 /* asm: 	.word	220,DT3 */
-int DEMOTHANKS_LIST[] = {
+int DEMOTHANKS_LIST[6] = {
     140, DT1,
     180, DT2,
     220, DT3,

@@ -51,7 +51,7 @@ int LOADED;
 /* asm: 	.word	RACELEG	;-3 */
 /* asm: 	.word	MIDSPIN	;-2 */
 /* asm: 	.word	HIGH_SCORE	;-1 */
-int _ATTR_WAVETABI[] = {
+int _ATTR_WAVETABI[8] = {
     _ATTR_WAVETAB, // NOTE THE VALUES ARE NEGATVIE
     HEAD2HEAD_WAIT,
     CREDITS, // MUST BE -6
@@ -95,7 +95,7 @@ int ILLUM_PAL = 16;
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	*---------------------------------------------------------------------------- */
 /* asm: 	*---------------------------------------------------------------------------- */
-int COPCARTAB[] = {
+int COPCARTAB[31] = {
     5, // #OF DYNAS-1
     0, 101, 0, // SHADOW
     3, // VERTS-1
@@ -136,7 +136,7 @@ int COPCARTAB[] = {
 /* asm: 	.float	0,0,0	 	;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	131		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
-int HOTRODTAB[] = {
+int HOTRODTAB[31] = {
     5, // #OF DYNAS-1
     0, 117, 0, // SHADOW
     3, // VERTS-1
@@ -180,7 +180,7 @@ int HOTRODTAB[] = {
 /* asm: 	* */
 /* asm: 	*JEEP DYNAMIC OBJECT SETUP */
 /* asm: 	* */
-int TESTORTAB[] = {
+int TESTORTAB[31] = {
     5, // #OF DYNAS-1
     0, 62, 0, // SHADOW
     3, // VERTS-1
@@ -224,7 +224,7 @@ int TESTORTAB[] = {
 /* asm: 	* */
 /* asm: 	*CVETT DYNAMIC OBJECT SETUP */
 /* asm: 	* */
-int JEEPTAB[] = {
+int JEEPTAB[31] = {
     5, // #OF DYNAS-1
     0, 119, 0, // SHADOW
     3, // VERTS-1
@@ -268,7 +268,7 @@ int JEEPTAB[] = {
 /* asm: 	* */
 /* asm: 	*GTRUCKP DYNAMIC OBJECT SETUP */
 /* asm: 	* */
-int VETTTAB[] = {
+int VETTTAB[31] = {
     5, // #OF DYNAS-1
     0, -164, 0, // SHADOW
     3, // VERTS-1
@@ -312,7 +312,7 @@ int VETTTAB[] = {
 /* asm: 	* */
 /* asm: 	*MISSILE DYNAMIC OBJECT SETUP */
 /* asm: 	* */
-int GTRUCKTABP[] = {
+int GTRUCKTABP[31] = {
     5, // #OF DYNAS-1
     0, -117, 0, // SHADOW
     3, // VERTS-1
@@ -356,7 +356,7 @@ int GTRUCKTABP[] = {
 /* asm: 	* */
 /* asm: 	*PLAYERS SCHOOL BUS */
 /* asm: 	* */
-int MISSILE_TAB[] = {
+int MISSILE_TAB[31] = {
     5, // #OF DYNAS-1
     0, -117, 0, // SHADOW
     3, // VERTS-1
@@ -398,7 +398,7 @@ int MISSILE_TAB[] = {
 /* asm: 	.word	91		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	*---------------------------------------------------------------------------- */
-int PSBUSTAB[] = {
+int PSBUSTAB[31] = {
     5, // #OF DYNAS-1
     0, -127, 0, // SHADOW
     3, // VERTS-1
@@ -557,7 +557,7 @@ int PSBUSTAB[] = {
 /* asm: 	.word	TRUCKPASS,0 */
 /* asm: 	.word	NOPAL */
 /* asm: 	.word	0 */
-int VEHICLE_TABLE[] = {
+int VEHICLE_TABLE[198] = {
     cvette, cvette_p, VETTTAB, 0, 0,
     1,
     1.0,
@@ -677,7 +677,7 @@ int VEHICLE_TABLE[] = {
 /* asm: 	.word	8,-252,211,671 */
 /* asm: 	.word	8,-254,211,-422 */
 /* asm: 	.word	8,-254,211,-704 */
-int DDYNA_GTRUCK[] = {
+int DDYNA_GTRUCK[14] = {
     3, 154,
     8, -252, 211, 671,
     8, -254, 211, -422,
@@ -687,7 +687,7 @@ int DDYNA_GTRUCK[] = {
 /* asm: 	.word	2,92 */
 /* asm: 	.word	8,-291,210,624 */
 /* asm: 	.word	8,-293,210,-605 */
-int DDYNA_FTRUCK[] = {
+int DDYNA_FTRUCK[10] = {
     2, 92,
     8, -291, 210, 624,
     8, -293, 210, -605,
@@ -698,7 +698,7 @@ int DDYNA_FTRUCK[] = {
 /* asm: 	.word	8,-291,261,-843 */
 /* asm: 	.word	8,-294,261,-582 */
 /* asm: 	.word	8,-294,261,914 */
-int DDYNA_CBUS[] = {
+int DDYNA_CBUS[14] = {
     3, 144,
     8, -291, 261, -843,
     8, -294, 261, -582,
@@ -708,7 +708,7 @@ int DDYNA_CBUS[] = {
 /* asm: 	.word	2,135 */
 /* asm: 	.word	8,0,97,369 */
 /* asm: 	.word	8,0,97,-296 */
-int DDYNA_COPCAR[] = {
+int DDYNA_COPCAR[10] = {
     2, 135,
     8, 0, 97, 369,
     8, 0, 97, -296,
@@ -717,7 +717,7 @@ int DDYNA_COPCAR[] = {
 /* asm: 	.word	2,148 */
 /* asm: 	.word	8,244,108,441 */
 /* asm: 	.word	8,237,108,-277 */
-int DDYNA_MUSCLE[] = {
+int DDYNA_MUSCLE[10] = {
     2, 148,
     8, 244, 108, 441,
     8, 237, 108, -277,
@@ -726,7 +726,7 @@ int DDYNA_MUSCLE[] = {
 /* asm: 	.word	2,105 */
 /* asm: 	.word	8,-263,156,466 */
 /* asm: 	.word	8,263,156,-435 */
-int DDYNA_CARAVAN[] = {
+int DDYNA_CARAVAN[10] = {
     2, 105,
     8, -263, 156, 466,
     8, 263, 156, -435,
@@ -735,7 +735,7 @@ int DDYNA_CARAVAN[] = {
 /* asm: 	.word	2,152 */
 /* asm: 	.word	8,316,242,830 */
 /* asm: 	.word	8,315,242,-378 */
-int DDYNA_SBUS[] = {
+int DDYNA_SBUS[10] = {
     2, 152,
     8, 316, 242, 830,
     8, 315, 242, -378,
@@ -744,7 +744,7 @@ int DDYNA_SBUS[] = {
 /* asm: 	.word	2,169 */
 /* asm: 	.word	8,197,107,323 */
 /* asm: 	.word	8,196,107,-270 */
-int DDYNA_PTRUCKG[] = {
+int DDYNA_PTRUCKG[10] = {
     2, 169,
     8, 197, 107, 323,
     8, 196, 107, -270,
@@ -753,7 +753,7 @@ int DDYNA_PTRUCKG[] = {
 /* asm: 	.word	2,173 */
 /* asm: 	.word	8,234,93,407 */
 /* asm: 	.word	8,233,93,-348 */
-int DDYNA_MUSTANG[] = {
+int DDYNA_MUSTANG[10] = {
     2, 173,
     8, 234, 93, 407,
     8, 233, 93, -348,
@@ -772,41 +772,41 @@ int DDYNA_MUSTANG[] = {
 /* asm: 	;TESTORPAL	.word	3,testor_blue,testor_grape,testor_gold */
 int NOPAL = 0;
 /* asm: TESTORPAL	.word	2,testor_blue,testor_grape */
-int TESTORPAL[] = {
+int TESTORPAL[3] = {
     2, testor_blue, testor_grape,
 };
 /* asm: BULLETPAL	.word	3,missle_yellow,missle_red,missle_blue */
-int BULLETPAL[] = {
+int BULLETPAL[4] = {
     3, missle_yellow, missle_red, missle_blue,
 };
 // ;HOTRODPAL	.word	3,hotrod_yellow,hotrod_brtblue,hotrod_maroon
 /* asm: HOTRODPAL	.word	2,hotrod_yellow,hotrod_brtblue */
-int HOTRODPAL[] = {
+int HOTRODPAL[3] = {
     2, hotrod_yellow, hotrod_brtblue,
 };
 /* asm: CVETTEPAL	.word	3,cvette_blue,cvette_red,cvette_purple */
-int CVETTEPAL[] = {
+int CVETTEPAL[4] = {
     3, cvette_blue, cvette_red, cvette_purple,
 };
 /* asm: JEEPPAL	.word	2,jeep_red,jeep_yellow */
-int JEEPPAL[] = {
+int JEEPPAL[3] = {
     2, jeep_red, jeep_yellow,
 };
 // ;GTRUCKPAL	.word	2,gtruck_yellow,gtruck_bluep
 /* asm: GTRUCKPAL	.word	1,gtruck_bluep */
-int GTRUCKPAL[] = {
+int GTRUCKPAL[2] = {
     1, gtruck_bluep,
 };
 /* asm: CARAVANPAL	.word	2,caravan_redyelo,caravan_yelogrey */
-int CARAVANPAL[] = {
+int CARAVANPAL[3] = {
     2, caravan_redyelo, caravan_yelogrey,
 };
 /* asm: MUSCLEPAL	.word	2,muscle_yellow,muscle_green */
-int MUSCLEPAL[] = {
+int MUSCLEPAL[3] = {
     2, muscle_yellow, muscle_green,
 };
 /* asm: PTRUCKGPAL	.word	2,ptruckg_purple,ptruckg_yellr */
-int PTRUCKGPAL[] = {
+int PTRUCKGPAL[3] = {
     2, ptruckg_purple, ptruckg_yellr,
 };
 // *----------------------------------------------------------------------------
@@ -831,7 +831,7 @@ int PTRUCKGPAL[] = {
 /* asm: 	.word	(031CEh<<16)|031CEh,(02DADh<<16)|031CEh,(031CEh<<16)|031CEh,(031CEh<<16)|035EFh,(035EFh<<16)|031CEh,(031CEh<<16)|035EFh,(03A10h<<16)|035EFh,(02DADh<<16)|03E31h,(035EFh<<16)|03E31h */
 /* asm: 	.word	(03E31h<<16)|04252h,(04673h<<16)|04A94h */
 /* asm: 	*---------------------------------------------------------------------------- */
-int tower_bgrey[] = {
+int tower_bgrey[129] = {
     0x080000000|256,
     (0x00<<16)|0x021, (0x042<<16)|0x0463, (0x0463<<16)|0x0884, (0x0884<<16)|0x0884, (0x0884<<16)|0x0CA5, (0x0CA5<<16)|0x0CA5, (0x0CA5<<16)|0x0CA5, (0x0CA5<<16)|0x0CA5, (0x0CA5<<16)|0x0CA5,
     (0x0CA5<<16)|0x0CA5, (0x0CA5<<16)|0x010C6, (0x010C6<<16)|0x0CA5, (0x0CA5<<16)|0x010C6, (0x0CA5<<16)|0x010C6, (0x010C6<<16)|0x010C6, (0x010C6<<16)|0x010C6, (0x010C6<<16)|0x010C6, (0x010C6<<16)|0x010C6,

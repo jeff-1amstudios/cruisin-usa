@@ -77,7 +77,17 @@ int TYCO_TRACK;
 int TYCO_TRACK_NTL;
 /* asm: TYCO_NTL_IDX	.bss	TYCO_NTL_IDX,1 */
 int TYCO_NTL_IDX;
+/* asm: ATTRACT_ACTIVATE_DIST	.float	15000 */
+float ATTRACT_ACTIVATE_DIST = 15000.0f;
+/* asm: ACTIVATE_DIST	.float	5000	;to activate */
+float ACTIVATE_DIST = 5000.0f;
+/* asm: DACT_DIST	.float	80000	;dynamic activate distance */
+float DACT_DIST = 80000.0f;
+/* asm: DDACT_DIST	.float	15000	;dynamic activate distance (+ radius) */
+float DDACT_DIST = 15000.0f;
 // ;ATTR_DDACT_DIST		.float	35000	;dynamic deactivate distance (+ radius)
+/* asm: ATTR_DDACT_DIST	.float	45000	;dynamic deactivate distance (+ radius) */
+float ATTR_DDACT_DIST = 45000.0f;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -103,7 +113,7 @@ int TYCO_NTL_IDX;
 // *
 // *
 /* asm: NEWSUBLIST_TOP	.word	NEWSUBLIST_TOPB */
-int NEWSUBLIST_TOP = NEWSUBLIST_TOPB;
+int *NEWSUBLIST_TOP = NEWSUBLIST_TOPB;
 /* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
 int NEWSUBLIST_TOPB;
 /* asm: GROUP_RADY	.bss	GROUP_RADY,1 */
@@ -144,12 +154,12 @@ int LVAL = 151720;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
-int OVERCARLIST[] = {
+int OVERCARLIST[4] = {
     dcbus, dgtruck, dsbus, dcbus,
 };
 /* asm: SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
 /* asm: 	.word	-1 */
-int SMOKE_ANI[] = {
+int SMOKE_ANI[7] = {
     smoa, smob, smoc, smod, smoe, smof,
     -1,
 };
@@ -162,7 +172,7 @@ int SMOKE_ANI[] = {
 /* asm: 	.word	-1 */
 /* asm: 	*---------------------------------------------------------------------------- */
 /* asm: 	*---------------------------------------------------------------------------- */
-int CAR_FIRE_ANI[] = {
+int CAR_FIRE_ANI[13] = {
     rdflm1, rdflm2, rdflm3, rdflm4, rdflm5, rdflm6,
     rdflm7, rdflm8, rdflm9, rdflm10, rdflm11, rdflm12,
     -1,
@@ -171,48 +181,48 @@ int CAR_FIRE_ANI[] = {
 #define DC_MINIFOUNTAIN_ANII DC_MINIFOUNTAIN_ANI
 /* asm: DC_MINIFOUNTAIN_ANI */
 /* asm: 	.word	aft1,aft2,aft3,aft4,aft5,aft6,-1 */
-int DC_MINIFOUNTAIN_ANI[] = {
+int DC_MINIFOUNTAIN_ANI[7] = {
     aft1, aft2, aft3, aft4, aft5, aft6, -1,
 };
 /* asm: DC_FOUNTAIN_ANII	.word	DC_FOUNTAIN_ANI */
 #define DC_FOUNTAIN_ANII DC_FOUNTAIN_ANI
 /* asm: DC_FOUNTAIN_ANI */
 /* asm: 	.word	ft2,ft3,ft4,ft5,ft6,-1 */
-int DC_FOUNTAIN_ANI[] = {
+int DC_FOUNTAIN_ANI[6] = {
     ft2, ft3, ft4, ft5, ft6, -1,
 };
 // *----------------------------------------------------------------------------
 /* asm: WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
-int WATERFALL_ANI[] = {
+int WATERFALL_ANI[11] = {
     w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, -1,
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: FLAGANI	.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
 /* asm: 	.word	bflag6,bflag7,bflag9,bflag10,-1 */
-int FLAGANI[] = {
+int FLAGANI[10] = {
     bflag1, bflag2, bflag3, bflag4, bflag5,
     bflag6, bflag7, bflag9, bflag10, -1,
 };
 /* asm: FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
 /* asm: 	.word	aflag6,aflag7,aflag9,aflag10,-1 */
-int FLAGANITALL[] = {
+int FLAGANITALL[10] = {
     aflag1, aflag2, aflag3, aflag4, aflag5,
     aflag6, aflag7, aflag9, aflag10, -1,
 };
 /* asm: RUT_ANIS	.word	rut,rut2,rut3,-1 */
-int RUT_ANIS[] = {
+int RUT_ANIS[4] = {
     rut, rut2, rut3, -1,
 };
 /* asm: HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
-int HUNGH_ANIS[] = {
+int HUNGH_ANIS[8] = {
     hungh1, hungh2, hungh3, hungh4, hungh5, hungh6, hungh7, -1,
 };
 // *----------------------------------------------------------------------------
 /* asm: BABE_PALIST */
 /* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
 /* asm: 	.word	ungh1_yellow,lift_p,ungh1_skin,bvwall_p */
-int BABE_PALIST[] = {
+int BABE_PALIST[10] = {
     ungh1_blue, logo_p, ungh1_green, nintendo_p, ungh1_silver, map1_p,
     ungh1_yellow, lift_p, ungh1_skin, bvwall_p,
 };
@@ -272,7 +282,7 @@ int SINGLE_SECTION_TEMPPTR;
 /* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
 /* asm: 	.word	0	;END OF TABLE ID */
 /* asm: 	*---------------------------------------------------------------------------- */
-int ROUTINE_TAB[] = {
+int ROUTINE_TAB[47] = {
     0x40A, FLAGWAVE,
     0x460, ROAD_DEBRIS_CREATE,
     0x461, ROAD_DEBRIS_CREATE_55GAL,

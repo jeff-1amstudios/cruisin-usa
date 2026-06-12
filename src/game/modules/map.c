@@ -43,6 +43,10 @@
 #define M2STD (-0.052359877) //-HALFPI/30
 #define M3STD 0.052359877 //HALFPI/30
 #define M4STD (-0.052359877) //-HALFPI/30
+/* asm: M3STDI	.float	M1STD */
+float M3STDI = M1STD;
+/* asm: M4STDI	.float	M2STD */
+float M4STDI = M2STD;
 // 	;PROCESS DATA DEFINEs
 #define MAP1OBJ (PDATA+0)
 #define MAP2OBJ (PDATA+1)
@@ -87,6 +91,8 @@
 // ;	RETS
 // ;*----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
+/* asm: FORMULA1	.float	0.318309886 */
+float FORMULA1 = 0.318309886f;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: MAPPAL13	.bss	MAPPAL13,1 */
@@ -119,6 +125,12 @@ int tmp_buffer[2];
 // *	R1	(INT) SECONDS
 // *	R2	(INT) MINUTES
 // *
+/* asm: MINFACT	.float	0.000303030303		;1/(55*60) */
+float MINFACT = 0.000303030303f;
+/* asm: SECFACT	.float	0.018181818		;1/55 */
+float SECFACT = 0.018181818f;
+/* asm: HUNFACT	.float	1.818181818		;100/55 */
+float HUNFACT = 1.818181818f;
 // *----------------------------------------------------------------------------
 #define RADAR_XMIN 460
 #define RADAR_XMAX 500

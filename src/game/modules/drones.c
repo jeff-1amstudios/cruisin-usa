@@ -50,8 +50,16 @@ int MIN_TRACK_TIME;
 /* asm: PSYCHO_RHO	.bss	PSYCHO_RHO,1 */
 int PSYCHO_RHO;
 /* asm: LANEP	.word	LANES,LANES4 */
-int LANEP[] = {
+float *LANEP[2] = {
     LANES, LANES4,
+};
+/* asm: LANES	.float	-576.0,-576.0,576.0,576.0	;TWO & 2/2 LANE */
+float LANES[4] = {
+    -576.0f, -576.0f, 576.0f, 576.0f, // TWO & 2/2 LANE
+};
+/* asm: LANES4	.float	-1728.0,-576.0,576.0,1728.0	;TWO & 2/2 LANE */
+float LANES4[4] = {
+    -1728.0f, -576.0f, 576.0f, 1728.0f, // TWO & 2/2 LANE
 };
 // *----------------------------------------------------------------------------
 /* asm: ONCSCREEN_CARS	.bss	ONCSCREEN_CARS,1 */
@@ -92,7 +100,7 @@ int DRONENUM;
 /* asm: 	;	.word	blast6,blast7,blast8,blast9,blast10,-1 */
 /* asm: 	.word	dexplo1,dexplo2,dexplo3,dexplo4,dexplo5 */
 /* asm: 	.word	dexplo6,dexplo7,dexplo8,dexplo9,dexplo10,dexplo11,-1 */
-int EXP_ANI[] = {
+int EXP_ANI[12] = {
     dexplo1, dexplo2, dexplo3, dexplo4, dexplo5,
     dexplo6, dexplo7, dexplo8, dexplo9, dexplo10, dexplo11, -1,
 };
@@ -127,7 +135,7 @@ int SMOKE_COUNT;
 /* asm: 	.word	bnout9,1 */
 /* asm: 	.float	45 */
 /* asm: 	.word	-1 */
-int SMOKE_ANI[] = {
+int SMOKE_ANI[28] = {
     bnout1, 1,
     10,
     bnout2, 2,
@@ -158,31 +166,31 @@ int SMOKE_ANI[] = {
 int COCONUT_COUNT;
 // *----------------------------------------------------------------------------
 /* asm: MODELTAB	.word	cvettem,hotrodm,missle,testorm */
-int MODELTAB[] = {
+int MODELTAB[4] = {
     cvettem, hotrodm, missle, testorm,
 };
 /* asm: TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
-int TEXTTABS[] = {
+int *TEXTTABS[4] = {
     VETETXT, RODRTXT, BULLTXT, FERRTXT,
 };
 /* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
-int TITLES[] = {
+const char * *TITLES[5] = {
     HRT12, HRT13, HRT14, HRT15, HRT16,
 };
 /* asm: VETETXT	.word	HRS11,HRS12,HRS13,HRS14,HRS15,HRS16 */
-int VETETXT[] = {
+const char * *VETETXT[6] = {
     HRS11, HRS12, HRS13, HRS14, HRS15, HRS16,
 };
 /* asm: RODRTXT	.word	HRS21,HRS22,HRS23,HRS24,HRS25,HRS26 */
-int RODRTXT[] = {
+const char * *RODRTXT[6] = {
     HRS21, HRS22, HRS23, HRS24, HRS25, HRS26,
 };
 /* asm: BULLTXT	.word	HRS31,HRS32,HRS33,HRS34,HRS35,HRS36 */
-int BULLTXT[] = {
+const char * *BULLTXT[6] = {
     HRS31, HRS32, HRS33, HRS34, HRS35, HRS36,
 };
 /* asm: FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
-int FERRTXT[] = {
+const char * *FERRTXT[6] = {
     HRS41, HRS42, HRS43, HRS44, HRS45, HRS46,
 };
 const char *HRT12 = "TOP SPEED:";
@@ -190,6 +198,10 @@ const char *HRT13 = "SKIDPAD:";
 const char *HRT14 = "AERO COEFF:";
 const char *HRT15 = "0?60 MPH:";
 const char *HRT16 = "POWER:";
+/* asm: TABING	.float	60,220,220,220,220,220 */
+float TABING[6] = {
+    60.0f, 220.0f, 220.0f, 220.0f, 220.0f, 220.0f,
+};
 const char *HRS11 = "63 MUSCLE CAR";
 const char *HRS12 = "145 MPH@233 KPH";
 const char *HRS13 = "0=89 G";

@@ -103,7 +103,7 @@ int _onebut;
 /* asm: 	.word	SW_VOLMINUS,315,330 */
 /* asm: 	.word	SW_COINSRV,335,330 */
 /* asm: 	.word	-1 */
-int SWITCHES_DIAG[] = {
+int SWITCHES_DIAG[40] = {
     SW_VIEW0, 180, 130,
     SW_VIEW1, 200, 130,
     SW_VIEW2, 220, 130,
@@ -149,9 +149,9 @@ int LASTDIPPLOT;
 /* asm: DIPTMP	.bss	DIPTMP,2 */
 int DIPTMP[2];
 /* asm: ISON	.word	ONTEXT */
-int ISON = ONTEXT;
+const char * *ISON = ONTEXT;
 /* asm: ISOFF	.word	OFFTEXT */
-int ISOFF = OFFTEXT;
+const char * *ISOFF = OFFTEXT;
 const char *ONTEXT = "ON";
 const char *OFFTEXT = "OFF";
 const char *DNSUP = "UPRIGHT";
@@ -227,7 +227,7 @@ const char *AMT = "ADJUSTMENT MENU";
 /* asm: 	.word	ADJ_MAX_CREDITS,PRINT_NUMBER */
 /* asm: 	.word	ADJ_STEERING_SENSITIVITY,PRINT_NUMBER */
 /* asm: 	.word	0,0 */
-int ADJTAB[] = {
+int ADJTAB[36] = {
     ADJ_COINMODE, PRINT_COINMODE,
     ADJ_STANDARD_PRICING, PRINT_CUSTOM_SELECTED,
     ADJ_FREE_PLAY, PRINT_ONOFF,
@@ -290,7 +290,7 @@ const char *AMODES = "ATTRACT MODE SOUNDS";
 /* asm: 	.word	MSGC_USA11,PRICE_YES_NO */
 /* asm: 	.word	MSGC_USA12,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int USA_MENU[] = {
+int USA_MENU[26] = {
     MSGC_USA1, PRICE_YES_NO,
     MSGC_USA2, PRICE_YES_NO,
     MSGC_USA3, PRICE_YES_NO,
@@ -316,7 +316,7 @@ int USA_MENU[] = {
 /* asm: 	.word	MSGC_GERMAN7,PRICE_YES_NO */
 /* asm: 	.word	MSGC_GERMAN8,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int GERMAN_MENU[] = {
+int GERMAN_MENU[18] = {
     MSGC_GERMAN1, PRICE_YES_NO,
     MSGC_GERMAN2, PRICE_YES_NO,
     MSGC_GERMAN3, PRICE_YES_NO,
@@ -341,7 +341,7 @@ int GERMAN_MENU[] = {
 /* asm: 	.word	MSGC_FRENCH10,PRICE_YES_NO */
 /* asm: 	.word	MSGC_FRENCH11,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int FRENCH_MENU[] = {
+int FRENCH_MENU[24] = {
     MSGC_FRENCH1, PRICE_YES_NO,
     MSGC_FRENCH2, PRICE_YES_NO,
     MSGC_FRENCH3, PRICE_YES_NO,
@@ -361,7 +361,7 @@ int FRENCH_MENU[] = {
 /* asm: 	.word	MSGC_CANADA2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_CANADA3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int CANADA_MENU[] = {
+int CANADA_MENU[8] = {
     MSGC_CANADA1, PRICE_YES_NO,
     MSGC_CANADA2, PRICE_YES_NO,
     MSGC_CANADA3, PRICE_YES_NO,
@@ -373,7 +373,7 @@ int CANADA_MENU[] = {
 /* asm: 	.word	MSGC_SWISS2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_SWISS3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int SWISS_MENU[] = {
+int SWISS_MENU[8] = {
     MSGC_SWISS1, PRICE_YES_NO,
     MSGC_SWISS2, PRICE_YES_NO,
     MSGC_SWISS3, PRICE_YES_NO,
@@ -385,7 +385,7 @@ int SWISS_MENU[] = {
 /* asm: 	.word	MSGC_ITALY2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_ITALY3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int ITALY_MENU[] = {
+int ITALY_MENU[8] = {
     MSGC_ITALY1, PRICE_YES_NO,
     MSGC_ITALY2, PRICE_YES_NO,
     MSGC_ITALY3, PRICE_YES_NO,
@@ -397,7 +397,7 @@ int ITALY_MENU[] = {
 /* asm: 	.word	MSGC_UK2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_UK3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int UK_MENU[] = {
+int UK_MENU[8] = {
     MSGC_UK1, PRICE_YES_NO,
     MSGC_UK2, PRICE_YES_NO,
     MSGC_UK3, PRICE_YES_NO,
@@ -412,7 +412,7 @@ int UK_MENU[] = {
 /* asm: 	.word	MSGC_SPAIN5,PRICE_YES_NO */
 /* asm: 	.word	MSGC_SPAIN6,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int SPAIN_MENU[] = {
+int SPAIN_MENU[14] = {
     MSGC_SPAIN1, PRICE_YES_NO,
     MSGC_SPAIN2, PRICE_YES_NO,
     MSGC_SPAIN3, PRICE_YES_NO,
@@ -428,7 +428,7 @@ int SPAIN_MENU[] = {
 /* asm: 	.word	MSGC_AUSTRALIA3,PRICE_YES_NO */
 /* asm: 	.word	MSGC_AUSTRALIA4,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int AUSTRALIA_MENU[] = {
+int AUSTRALIA_MENU[10] = {
     MSGC_AUSTRALIA1, PRICE_YES_NO,
     MSGC_AUSTRALIA2, PRICE_YES_NO,
     MSGC_AUSTRALIA3, PRICE_YES_NO,
@@ -441,7 +441,7 @@ int AUSTRALIA_MENU[] = {
 /* asm: 	.word	MSGC_JAPAN2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_JAPAN3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int JAPAN_MENU[] = {
+int JAPAN_MENU[8] = {
     MSGC_JAPAN1, PRICE_YES_NO,
     MSGC_JAPAN2, PRICE_YES_NO,
     MSGC_JAPAN3, PRICE_YES_NO,
@@ -453,7 +453,7 @@ int JAPAN_MENU[] = {
 /* asm: 	.word	MSGC_TAIWAN2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_TAIWAN3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int TAIWAN_MENU[] = {
+int TAIWAN_MENU[8] = {
     MSGC_TAIWAN1, PRICE_YES_NO,
     MSGC_TAIWAN2, PRICE_YES_NO,
     MSGC_TAIWAN3, PRICE_YES_NO,
@@ -466,7 +466,7 @@ int TAIWAN_MENU[] = {
 /* asm: 	.word	MSGC_AUSTRIA3,PRICE_YES_NO */
 /* asm: 	.word	MSGC_AUSTRIA4,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int AUSTRIA_MENU[] = {
+int AUSTRIA_MENU[10] = {
     MSGC_AUSTRIA1, PRICE_YES_NO,
     MSGC_AUSTRIA2, PRICE_YES_NO,
     MSGC_AUSTRIA3, PRICE_YES_NO,
@@ -479,7 +479,7 @@ int AUSTRIA_MENU[] = {
 /* asm: 	.word	MSGC_BELGIUM2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_BELGIUM3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int BELGIUM_MENU[] = {
+int BELGIUM_MENU[8] = {
     MSGC_BELGIUM1, PRICE_YES_NO,
     MSGC_BELGIUM2, PRICE_YES_NO,
     MSGC_BELGIUM3, PRICE_YES_NO,
@@ -495,7 +495,7 @@ int BELGIUM_MENU[] = {
 /* asm: 	.word	MSGC_DENMARK1,PRICE_YES_NO */
 /* asm: 	.word	MSGC_HUNGARY1,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int OTHER_MENU[] = {
+int OTHER_MENU[16] = {
     MSGC_SWEDEN1, PRICE_YES_NO,
     MSGC_FINLAND1, PRICE_YES_NO,
     MSGC_NETHERLAND1, PRICE_YES_NO,
@@ -516,7 +516,7 @@ int OTHER_MENU[] = {
 /* asm: 	.word	MSGC_GENERAL7,PRICE_YES_NO */
 /* asm: 	.word	MSGC_GENERAL8,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
-int GENERAL_MENU[] = {
+int GENERAL_MENU[18] = {
     MSGC_GENERAL1, PRICE_YES_NO,
     MSGC_GENERAL2, PRICE_YES_NO,
     MSGC_GENERAL3, PRICE_YES_NO,
@@ -544,7 +544,7 @@ const char *ETMAIN = "EXIT TO MAIN";
 /* asm: 	.word	BELGIUM_MENU,BELGIUM_MENU_LEN */
 /* asm: 	.word	OTHER_MENU,OTHER_MENU_LEN */
 /* asm: 	.word	GENERAL_MENU,GENERAL_MENU_LEN */
-int COUNTRY_MENUTAB[] = {
+int COUNTRY_MENUTAB[30] = {
     USA_MENU, USA_MENU_LEN,
     GERMAN_MENU, GERMAN_MENU_LEN,
     FRENCH_MENU, FRENCH_MENU_LEN,
@@ -578,7 +578,7 @@ const char *sct = "CALIBRATE CONTROLS";
 /* asm: INCIDENT	.word	CARPASS,TRUCKPASS */
 /* asm: 	.word	SCOLLA,TKEY */
 /* asm: 	.word	BOTTOMOUT,VIEW2IN */
-int INCIDENT[] = {
+int INCIDENT[6] = {
     CARPASS, TRUCKPASS,
     SCOLLA, TKEY,
     BOTTOMOUT, VIEW2IN,
@@ -770,7 +770,7 @@ const char *CPS = "CUSTOM PRICING SELECTED";
 // *----------------------------------------------------------------------------
 /* asm: CMESSAGE_TAB */
 /* asm: 	.word	CPCS,CPCS,CPCS,CPCS,CUPC,CTSS,CTCS,CCTS,CCTC,CTPC,CTPC,CTPC,CTPC */
-int CMESSAGE_TAB[] = {
+const char * *CMESSAGE_TAB[13] = {
     CPCS, CPCS, CPCS, CPCS, CUPC, CTSS, CTCS, CCTS, CCTC, CTPC, CTPC, CTPC, CTPC,
 };
 const char *CPCS = "UNITS PER COIN";
@@ -797,7 +797,7 @@ const char *CTPC = "COUNTER TICKS PER COIN";
 /* asm: 	.word	ADJ_SHOW_FRAC,PRINT_YN */
 /* asm: 	.word	ADJ_STANDARD_PRICING,PRINT_YN_INV */
 /* asm: 	.word	0,0 */
-int PSTAB[] = {
+int PSTAB[32] = {
     ADJ_COIN1_UNITS, PRINT_NUMBER,
     ADJ_COIN2_UNITS, PRINT_NUMBER,
     ADJ_COIN3_UNITS, PRINT_NUMBER,

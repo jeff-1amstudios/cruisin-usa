@@ -22,6 +22,20 @@
 // RACE_TABLE
 // } * NUM_RACES
 
+// asm: 	.globl	CHECK_RACE_TABLE,INSERT_TABLE_ENTRY
+void CHECK_RACE_TABLE(void);
+void INSERT_TABLE_ENTRY(void);
+// asm: 	.globl	TABLE_ENTRY_READ,GET_TABLE_ADDR
+void TABLE_ENTRY_READ(void);
+void GET_TABLE_ADDR(void);
+// asm: 	.globl	INIT_LASTHS_TABLE,CHECK_LASTHS
+void INIT_LASTHS_TABLE(void);
+void CHECK_LASTHS(void);
+// asm: 	.globl	VALIDATE_HSTD_TABLES
+void VALIDATE_HSTD_TABLES(void);
+// asm: 	.globl	INIT_HSTD_TABLES
+void INIT_HSTD_TABLES(void);
+
 // ----------------------------------------------------------------------------
 // HSTD ENTRY INFORMATION
 // 
@@ -462,12 +476,70 @@
 // ----------------------------------------------------------------------------
 
 // EDIAG.ASM
+// asm: 	.globl	FRAMTEST,SRAMTEST,CRAMTEST,BITMAPTEST
+// asm: 	.globl	CHECK_RAM
 
 // CMOS.ASM
+// asm: 	.globl	CMOSI
+// asm: 	.globl	HSTD_PAGEI
+// asm: 	.globl	ALL_TIME_HSTDI
+// asm: 	.globl	DAILY_HSTDI
+// asm: 	.globl	HSTD_DEFAULTI
+// asm: 	.globl	DAILY_DEFAULTI
+
+// asm: 	.globl	ADJUSTMENT_READ
+void ADJUSTMENT_READ(void);
+// asm: 	.globl	ADJUSTMENT_WRITE
+void ADJUSTMENT_WRITE(void);
+// asm: 	.globl	AUDIT_INC
+void AUDIT_INC(void);
+// asm: 	.globl	AUDIT_ADD
+void AUDIT_ADD(void);
+// asm: 	.globl	AUDIT_READ
+void AUDIT_READ(void);
+// asm: 	.globl	AUDIT_WRITE
+// asm: 	.globl	GEN_CMOS_CHKSUM
+// asm: 	.globl	CHECK_CMOS
+// asm: 	.globl	CHKSUM_CMOS
+// asm: 	.globl	RESET_CMOS
+// asm: 	.globl	CLR_CMOS
+// asm: 	.globl	_wr_cw,_rd_cw
+void _wr_cw(void);
+void _rd_cw(void);
+// asm: 	.globl	_wr_cwR,_rd_cwR
+void _wr_cwR(void);
+void _rd_cwR(void);
+
+// asm: 	.globl	VALIDATE_CMOS
+void VALIDATE_CMOS(void);
+// asm: 	.globl	CHECKSUM_PAGE
+// asm: 	.globl	GEN_CHECKSUM511
+// asm: 	.globl	SET_CHECKSUM
+// asm: 	.globl	RESET_BOOKKEEPING
+void RESET_BOOKKEEPING(void);
+// asm: 	.globl	RESET_ADJUSTMENTS
+void RESET_ADJUSTMENTS(void);
 
 // DIAG.ASM
+// asm: 	.globl	ENTER_DIAG
+void ENTER_DIAG(void);
 
 // HSTD.ASM
+// asm: 	.globl	BUMP_ALLTIME,BUMP_DAILY
+// asm: 	.globl	CHECK_ALLTIME,CHECK_DAILY
+// asm: 	.globl	CHECK_TABLE
+// asm: 	.globl	_HSTD_DISP
+// asm: 	.globl	_hstd_alltime
+// asm: 	.globl	RESET_ALL_TIME_CMOS
+// asm: 	.globl	RESET_DAILY_CMOS
+// asm: 	.globl	HSTD_DEFAULT
+// asm: 	.globl	DAILY_DEFAULT
+
+// asm: 	.globl	CMOS_ON_C,CMOS_OFF_C,CMOS_WPON_C,CMOS_WPOFF_C
+void CMOS_ON_C(void);
+void CMOS_OFF_C(void);
+void CMOS_WPON_C(void);
+void CMOS_WPOFF_C(void);
 
 // ----------------------------------------------------------------------------
 // CMOS STRUCTURES

@@ -287,6 +287,7 @@
 // SYSTEM CONTROL FLAGS
 // asm: SYSCNTLR	.set	0994000h	;this is the REAL LOCATION (8 bits only)
 #define SYSCNTLR 0x0994000 //this is the REAL LOCATION (8 bits only)
+// asm: 		.globl	_SYSCNTL	;this is the SHADOW LOCATION
 // asm: LED_OFF		.set	0000080h	;turn led off
 #define LED_OFF 0x0000080 //turn led off
 
@@ -401,6 +402,8 @@
 #define SW_VIEW3_H 0x0080
 // ----------------------------------------------------------------------------
 
+// asm: 	.globl	DIPRAM
+extern int DIPRAM;
 // ----------------------------------------------------------------------------
 // DIP SWITCH SETTINGS
 // SW 1 (RESET)

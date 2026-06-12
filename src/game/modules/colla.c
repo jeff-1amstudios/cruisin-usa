@@ -86,7 +86,7 @@ int BOXSCRAM[50];
 // *SPIN THE DUDE
 // *SHAKE THE TREE
 /* asm: SAGETAB	.word	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
-int SAGETAB[] = {
+int SAGETAB[5] = {
     SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND,
 };
 // *----------------------------------------------------------------------------
@@ -130,12 +130,12 @@ int SAGETAB[] = {
 #define CBUSI cbus
 /* asm: DETHTAB1	.word	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
 /* asm: 	.WORD	NDETHSCREAM1,NDETHSCREAM3,NDETHSCREAM4,NDETHSCREAM7 */
-int DETHTAB1[] = {
+int DETHTAB1[8] = {
     MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3,
     NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7,
 };
 /* asm: DETHTAB2	.word	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
-int DETHTAB2[] = {
+int DETHTAB2[4] = {
     MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2,
 };
 // *
@@ -186,11 +186,11 @@ int PLYRBEHIND;
 // *
 // * DRONE VS. DRONE
 /* asm: SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
-int SCUPDTAB[] = {
+int SCUPDTAB[4] = {
     SCOLLF, SCOLLF, SCOLLG, SCOLLH,
 };
 /* asm: SCTAB	.word	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
-int SCTAB[] = {
+int SCTAB[5] = {
     SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE,
 };
 // *----------------------------------------------------------------------------
@@ -216,7 +216,7 @@ int SCTAB[] = {
 /* asm: 	.WORD	VCTO1+(3*1),VCTO1+(3*3),VCTO1+(3*7)	;RSIDE */
 /* asm: 	.WORD	VCTO1+(3*7),VCTO1+(3*6),VCTO1+(3*4)	;BACK */
 /* asm: 	* LINE EQUATION TABLE PTS 2-6-7-3 */
-int EQTAB[] = {
+int EQTAB[36] = {
     VCTO+(3*0), VCTO+(3*2), VCTO+(3*3), // FRONT
     VCTO+(3*0), VCTO+(3*4), VCTO+(3*6), // LSIDE
     VCTO+(3*0), VCTO+(3*1), VCTO+(3*5), // BOTTOM
@@ -235,7 +235,7 @@ int EQTAB[] = {
 /* asm: LEQTAB */
 /* asm: 	.WORD	VCTO+(3*2)+1,VCTO+(3*6)+1,VCTO+(3*7)+1 */
 /* asm: 	.WORD	VCTO+(3*3)+1,VCTO+(3*2)+1 */
-int LEQTAB[] = {
+int LEQTAB[5] = {
     VCTO+(3*2)+1, VCTO+(3*6)+1, VCTO+(3*7)+1,
     VCTO+(3*3)+1, VCTO+(3*2)+1,
 };

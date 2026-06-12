@@ -86,6 +86,10 @@ int transvectorYI = TRANSVECTOR+1;
 #define tmpmatI TMPMAT
 /* asm: tmpmatY	.word	TMPMAT+1 */
 int tmpmatY = TMPMAT+1;
+/* asm: SCRNHXI	.float	SCRNHX */
+float SCRNHXI = SCRNHX;
+/* asm: SCRNHYI	.float	SCRNHY */
+float SCRNHYI = SCRNHY;
 /* asm: HIGH_CLIP_LEV8	.word	80000		;MATHEMATICAL LIMIT */
 int HIGH_CLIP_LEV8 = 80000;
 /* asm: MATRIXAI	.word	_MATRIXA */

@@ -29,7 +29,7 @@
 /* asm: 	.word	180,87,-450		;JEEP */
 /* asm: 	.word	190,87,-650		;SBUSP */
 /* asm: 	.word	160,155,-500		;COPCAR */
-int FLAME_POS[] = {
+int FLAME_POS[21] = {
     180, 87, -450, // Vette
     130, 105, -586, // Coope
     140, 107, -460, // Missle
@@ -41,7 +41,7 @@ int FLAME_POS[] = {
 /* asm: FLAMEANI */
 /* asm: 	.word	sparc1,sparc3,sparc5,sparc7,sparc9,sparc7 */
 /* asm: 	.word	sparc5,sparc3,sparc1,-1 */
-int FLAMEANI[] = {
+int FLAMEANI[10] = {
     sparc1, sparc3, sparc5, sparc7, sparc9, sparc7,
     sparc5, sparc3, sparc1, -1,
 };

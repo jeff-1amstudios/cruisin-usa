@@ -10,7 +10,57 @@
 // 
 // ROUTINES
 
+// asm: 	.globl	TEXT_INIT
+void TEXT_INIT(void);
+// asm: 	.globl	TEXT_ADDDS
+void TEXT_ADDDS(void);
+// asm: 	.globl	TEXT_ADD1
+void TEXT_ADD1(void);
+// asm: 	.globl	TEXT_ADD
+void TEXT_ADD(void);
+// asm: 	.globl	TEXT_OUTPUT
+void TEXT_OUTPUT(void);
+// asm: 	.globl	STRCPY
+void STRCPY(void);
+// asm: 	.globl	STRCAT
+void STRCAT(void);
+
+// asm: 	.globl	SETFIXEDFONTDS,SETFIXEDFONT
+void SETFIXEDFONTDS(void);
+void SETFIXEDFONT(void);
+// asm: 	.globl	SETFIXEDFONT15DS
+// asm: 	.globl	SET18FONT,SET18FONTDS
+void SET18FONT(void);
+void SET18FONTDS(void);
+// asm: 	.globl	SET40FONT,SET40FONTDS
+void SET40FONT(void);
+void SET40FONTDS(void);
+// asm: 	.globl	SET12FONT,SET12FONTDS
+void SET12FONT(void);
+void SET12FONTDS(void);
+// asm: 	.globl	SETN43FONT,SETN43FONTDS
+void SETN43FONT(void);
+void SETN43FONTDS(void);
+// asm: 	.globl	SETLGDIGITFONT,SETLGDIGITFONTDS
+void SETLGDIGITFONT(void);
+void SETLGDIGITFONTDS(void);
+// asm: 	.globl	SETSMDIGITFONT,SETSMDIGITFONTDS
+void SETSMDIGITFONT(void);
+void SETSMDIGITFONTDS(void);
+
 // DATA STRUCTURES
+// asm: 	.globl	TEXT_ACTIVEI
+// asm: 	.globl	TEXT_FREE_COUNT
+extern int TEXT_FREE_COUNT;
+// asm: 	.globl	TEXT_ACTIVEI
+
+// asm: 	.globl	HIGHLIGHTN
+void HIGHLIGHTN(void);
+// asm: 	.globl	STRCAT,STRCPY
+
+// asm: 	.globl	TEXT_FREEI
+// asm: 	.globl	TEXT_FREEZE
+extern int TEXT_FREEZE;
 
 // STRUCT FONTENTRY
 // asm: FONTENT_PRE	.set	0	;preceding pixel spaces (low 16 bits)

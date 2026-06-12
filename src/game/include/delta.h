@@ -27,19 +27,84 @@
 // asm: MAX_DRONES	.set	11	;MAXIMUM DRONES IN UNIVERSE
 #define MAX_DRONES 11 //MAXIMUM DRONES IN UNIVERSE
 
+// asm: 	.globl	SUSPEND_MODE
+extern int SUSPEND_MODE;
+
 // ***	DELTA.ASM
+// asm: 	.globl	 RACER_PTRI,RACER_PTR
+extern int RACER_PTR[10];
+// asm: 	.globl	 DELTA_OINIT
+void DELTA_OINIT(void);
+// asm: 	.globl	 GET_TRACK_POS
+void GET_TRACK_POS(void);
+// asm: 	.globl	 GET_TRACK_POS_RVS
+void GET_TRACK_POS_RVS(void);
+// asm: 	.globl	 GET_TRACK_POS_RVS_XLANE
+void GET_TRACK_POS_RVS_XLANE(void);
+// asm: 	.globl	 DELTA_GET_TRACK_POS
+void DELTA_GET_TRACK_POS(void);
+// asm: 	.globl	 DELTA_SUB_FUNCTION
+void DELTA_SUB_FUNCTION(void);
+
+// asm: 	.globl	 LANEPI,LANEP,LANESI,LANES,LANES4
+extern int LANEP[2];
+extern float LANES[4];
+extern float LANES4[4];
+
+// asm: 	.globl	 LANESI,LANES
+// asm: 	.globl	 LANE2MLT,LANE4MLT
+// asm: 	.globl	 VEHICLESI,VEHICLES
 
 // ***	SIGMA.ASM
+// asm: 	.globl	 SIGMA_DRONE
+void SIGMA_DRONE(void);
 
 // ***	RHO.ASM
+// asm: 	.globl	 RHO_DRONE
+void RHO_DRONE(void);
+// asm: 	.globl	 RHO_DIE		;generalized drone die routine
+void RHO_DIE(void);
 
 // ***	CHOPPER.ASM
+// asm: 	.globl	 CHOPPER
+void CHOPPER(void);
 
 // ***	COPCAR.ASM
+// asm: 	.globl	 AHEAD_OF_PLAYER_P
+void AHEAD_OF_PLAYER_P(void);
 
 // ***	DRONES.ASM
+// asm: 	.globl	 REGISTER_RACER
+// asm: 	.globl	 SET_DRONE_PAL
+void SET_DRONE_PAL(void);
+// asm: 	.globl	 TRAFFIC,GET_LANES,DIST_TO_PLYR
+void GET_LANES(void);
+void DIST_TO_PLYR(void);
+// asm: 	.globl	 INIT_TRACKING_PIECE,GET_TRACK_POS_RVS,GET_TRACK_POS,GET_TRACK_POS_RVS_XLANE
+void INIT_TRACKING_PIECE(void);
 // .globl	 GET_STEALTH_POS
+// asm: 	.globl	 SUB_FUNCTION_RVS,SUB_FUNCTION,SUB_FUNCTION_RVS_XLANE
+void SUB_FUNCTION_RVS(void);
+void SUB_FUNCTION(void);
+void SUB_FUNCTION_RVS_XLANE(void);
+// asm: 	.globl	 SUB_FUNCTION_XLANE
+void SUB_FUNCTION_XLANE(void);
 // .globl	 FIND_MAPENTRY
+// asm: 	.globl	 INIT_DRONES,ADD_DRONE,FREE_DRONE
+void INIT_DRONES(void);
+void ADD_DRONE(void);
+void FREE_DRONE(void);
+// asm: 	.globl	 PTS,FIND_PLYR_RANK
+// asm: 	.globl	 PRECOLLIDE_PLYR
+void PRECOLLIDE_PLYR(void);
+// asm: 	.globl	 DRONE_RIDE_RIGHT
+void DRONE_RIDE_RIGHT(void);
+// asm: 	.globl	 AVOID_CAR_OBSTACLES
+
+// asm: 	.globl	 ROAD_MAPI		;TYCO.ASM
+
+// asm: 	.globl	 RACER_GRID_START	;Starting Index
+extern int RACER_GRID_START;
 
 // STRUCT REGRAC
 // asm: REGRAC_POSITION	.set	0	;UD	THIS IS COMPUTED
@@ -55,6 +120,8 @@
 #define REGRAC_SIZE 4 //SIZ
 // asm: NUM_RACERS	.set	8
 #define NUM_RACERS 8
+
+// asm: 	.globl	REGISTER	;(DRONES.ASM)
 
 // SUSPEND_MODE
 // 

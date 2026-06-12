@@ -27,9 +27,9 @@
 // *ALL RIGHTS RESERVED
 // *
 /* asm: EPALR	.word	EPALRR */
-int EPALR = EPALRR;
+int *EPALR = EPALRR;
 /* asm: EPALL	.word	EPALRL */
-int EPALL = EPALRL;
+int *EPALL = EPALRL;
 /* asm: EPALRR	.bss	EPALRR,129 */
 int EPALRR[129];
 /* asm: EPALRL	.bss	EPALRL,129 */
@@ -53,6 +53,12 @@ int EPALRL[129];
 // *
 /* asm: DOORTHETA	.bss	DOORTHETA,1 */
 int DOORTHETA;
+/* asm: DO_LPPX	.float	-256 */
+float DO_LPPX = -256.0f;
+/* asm: DO_PPZ	.float	368 */
+float DO_PPZ = 368.0f;
+/* asm: DO_RPPX	.float	256 */
+float DO_RPPX = 256.0f;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *
@@ -98,13 +104,13 @@ int TRANS_HEAD;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: TRNTAB	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
-int TRNTAB[] = {
+int TRNTAB[7] = {
     whel1, whel2, whel3, whel4, whel3, whel2, -1,
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: CYCTAB	.word	trm3,trm2,trm1,trm2,trm3,trm4,-1 */
-int CYCTAB[] = {
+int CYCTAB[7] = {
     trm3, trm2, trm1, trm2, trm3, trm4, -1,
 };
 // *----------------------------------------------------------------------------

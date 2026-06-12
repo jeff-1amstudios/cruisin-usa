@@ -142,6 +142,8 @@ int DISPLAY_PAGE;
 /* asm: MPROC_TIK	fbss	MPROC_TIK,1 */
 int MPROC_TIK;
 // *----------------------------------------------------------------------------
+/* asm: FLOAT_TIK	.float	0.000292397	;(1/60)/57 of a minute */
+float FLOAT_TIK = 0.000292397f;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *READ IO  SWITCHES AND POTS
@@ -194,7 +196,7 @@ int DIPRAM;
 /* asm: 	.word	0		;80000000 */
 /* asm: 	*---------------------------------------------------------------------------- */
 /* asm: 	*---------------------------------------------------------------------------- */
-int SWTAB[] = {
+int SWTAB[32] = {
     COIN1, // 00000001 SW_COIN1	(COIN.ASM)
     COIN2, // 00000002 SW_COIN2 	(COIN.ASM)
     _start, // 00000004 START		(INTRO.ASM)
@@ -234,9 +236,9 @@ int PB1[pbsss];
 /* asm: PB2	.usect	pbsse,1 */
 int PB2[pbsse];
 /* asm: PBSS_PTR	.word	PB1 */
-int PBSS_PTR = PB1;
+int *PBSS_PTR = PB1;
 /* asm: PBSS_BSSEND	.word	PB2 */
-int PBSS_BSSEND = PB2;
+int *PBSS_BSSEND = PB2;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *CLR RAM  (SLOW RAM)
@@ -288,7 +290,7 @@ int OLD_BUTTON_STATUS;
 /* asm: 	;	.word	0195h		;CRT_SYNCEND */
 /* asm: 	;	.word	01b0h		;CRT_VBLK */
 /* asm: 	;	.word	01b0h		;CRT_VTTL */
-int CRT_REG_SETUP_STR[] = {
+int CRT_REG_SETUP_STR[12] = {
     399|CRT_SETUP_ICSYNC, // CRT_SETUP
     0x01ff, // CRT_HADDRINC
     0x01fe, // CRT_HBLKSTART
@@ -353,7 +355,7 @@ const char *TPALNI = "U38 LINK PAL NOT INSTALLED";
 /* asm: 	.word	SW_VIEW0|SW_VIEW1 */
 /* asm: 	.word	SW_VIEW0 */
 /* asm: 	.word	SW_VIEW0|SW_RADIO */
-int STATE_TABLE[] = {
+int STATE_TABLE[7] = {
     SW_VIEW0|SW_VIEW2,
     SW_VIEW2,
     SW_VIEW1|SW_VIEW2,
@@ -379,7 +381,7 @@ int BUTTON_TIK;
 /* asm: BUTTONI	.word	BUTTII */
 #define BUTTONI BUTTII
 /* asm: BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
-int BUTTII[] = {
+int BUTTII[4] = {
     BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2,
 };
 // *----------------------------------------------------------------------------

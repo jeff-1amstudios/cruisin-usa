@@ -82,7 +82,7 @@ int ATTRWAVE;
 /* asm: 	.word	BEVHILL_LIST */
 /* asm: 	.word	GCANYON_LIST */
 /* asm: 	.word	CHICAGO_LIST */
-int VIEWLIST[] = {
+int *VIEWLIST[8] = {
     GGPARK_LIST,
     BEVHILL_LIST,
     GCANYON_LIST,
@@ -101,7 +101,7 @@ int VIEWLIST[] = {
 /* asm: 	.word	INITVIEW1_VIEW,17FBh,SMOOTH_VIEW */
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
-int GGPARK_LIST[] = {
+int GGPARK_LIST[21] = {
     INIT_STARTING, 70, ROAD_VIEW,
     INIT_LEAD, 80, LEAD_VIEW,
     INIT_WATCH, 0x1214, 240, WATCH_VIEW,
@@ -117,7 +117,7 @@ int GGPARK_LIST[] = {
 /* asm: 	.word	INITVIEW1_VIEW,14DF3h,SMOOTH_VIEW */
 /* asm: 	.word	INIT_STARTING,100,ROAD_VIEW */
 /* asm: 	.word	0,0 */
-int BEVHILL_LIST[] = {
+int BEVHILL_LIST[14] = {
     INIT_STARTING, 80, ROAD_VIEW,
     CUT_TO_VIEW2, 0x14AFB, SMOOTH_VIEW,
     INITVIEW1_VIEW, 0x14DF3, SMOOTH_VIEW,
@@ -133,7 +133,7 @@ int BEVHILL_LIST[] = {
 /* asm: 	.word	INIT_WATCH,2EF00h,240,WATCH_VIEW */
 /* asm: 	.word	CUT_TO_VIEW2,30000h,SMOOTH_VIEW */
 /* asm: 	.word	0,0 */
-int GCANYON_LIST[] = {
+int GCANYON_LIST[22] = {
     INIT_STARTING, 70, ROAD_VIEW,
     INIT_WATCH, 0x2E20A, 220, WATCH_VIEW,
     CUT_TO_VIEW2, 0x2E800, SMOOTH_VIEW,
@@ -151,7 +151,7 @@ int GCANYON_LIST[] = {
 /* asm: 	.word	INIT_WATCH,3C5F5h,240,WATCH_VIEW */
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
-int CHICAGO_LIST[] = {
+int CHICAGO_LIST[21] = {
     INIT_STARTING, 80, ROAD_VIEW,
     INIT_REVERS_CUP, 60, REV_ROAD_VIEW,
     CUT_TO_VIEW2, 0x3AA0E, SMOOTH_VIEW,
@@ -161,7 +161,11 @@ int CHICAGO_LIST[] = {
     0, 0,
 };
 // *----------------------------------------------------------------------------
+/* asm: ACCEL_RATE	.float	0.000002 */
+float ACCEL_RATE = 0.000002f;
 // *----------------------------------------------------------------------------
+/* asm: ZOOMACCEL	.float	0.006 */
+float ZOOMACCEL = 0.006f;
 /* asm: ATTR_WAVETAB */
 /* asm: 	.word	0,0 */
 /* asm: 	.word	L_LEG5_BEGIN+1,4 */
@@ -171,7 +175,7 @@ int CHICAGO_LIST[] = {
 /* asm: 	.word	L_LEG5_BEGIN+1,4 */
 /* asm: 	.word	L_LEG9_BEGIN+1,8 */
 /* asm: 	.word	L_LEG11_BEGIN+1,10 */
-int ATTR_WAVETAB[] = {
+int ATTR_WAVETAB[16] = {
     0, 0,
     L_LEG5_BEGIN+1, 4,
     L_LEG9_BEGIN+1, 8,

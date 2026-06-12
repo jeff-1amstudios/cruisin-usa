@@ -8,6 +8,11 @@
 // COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // ALL RIGHTS RESERVED
 
+// asm: 	.globl	ERROR_LOG
+void ERROR_LOG(void);
+// asm: 	.globl	ERROR_LOG_DISPLAY
+void ERROR_LOG_DISPLAY(void);
+
 // ERROR CODE IDS
 // 
 // ID = 	xxxxCCTS

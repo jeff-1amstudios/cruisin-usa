@@ -88,7 +88,7 @@
 /* asm: 	.word	BONUS12				;43 */
 /* asm: 	.word	BONUS13				;44 */
 /* asm: 	.word	BONUS14				;45 */
-int ROUTINE_TABLE[] = {
+int ROUTINE_TABLE[46] = {
     0, // 0 none leave blank
     CHECKPOINT_HIT, // 1
     WATERON, // 2

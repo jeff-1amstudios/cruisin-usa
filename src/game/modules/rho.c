@@ -32,7 +32,7 @@
 #define B4HIT_SIZE 6
 /* asm: B4HIT_TABLE	.word	RH_GOFORIT,RH_TAKEHIM,RH_BABESCREAM1 */
 /* asm: 	.word	RH_BABEWHOA,RH_HURRYUP,RH_GONNACRASH */
-int B4HIT_TABLE[] = {
+int B4HIT_TABLE[6] = {
     RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1,
     RH_BABEWHOA, RH_HURRYUP, RH_GONNACRASH,
 };
@@ -89,7 +89,7 @@ int NOLONG_VEHICLES;
 /* asm: 	*but in general plays a straight game as an */
 /* asm: 	*oncomer. */
 /* asm: 	* */
-int RHO_TABLE[] = {
+int RHO_TABLE[51] = {
     GTRUCK_MOD, 0, DIESEL_DOPPLER,
     FTRUCK_MOD, RF_LONG, TRUCKHORN_BLAST,
     CBUS_MOD, RF_LONG, BUSDOPL,

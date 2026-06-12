@@ -133,7 +133,7 @@ int SAVED_PLY2CAR;
 /* asm: 	.word	DECODE_DIAGNOSTIC */
 /* asm: 	.word	DECODE_ATTRSND */
 /* asm: 	.word	-1 */
-int DECODE_BLOCK[] = {
+int DECODE_BLOCK[35] = {
     DECODE_NULL,
     DECODE_MODE, // CB_MODE
     DECODE_TIMECODE, // CB_TIMECODE
@@ -180,6 +180,10 @@ int DECODE_BLOCK[] = {
 // *
 // *----------------------------------------------------------------------------
 // *MATRIX DECODE CONSTANT
+/* asm: MATCON	.float	0.00003125		;1/32000 */
+float MATCON = 0.00003125f;
+/* asm: RADCON	.float	0.001			;1/1000 */
+float RADCON = 0.001f;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
