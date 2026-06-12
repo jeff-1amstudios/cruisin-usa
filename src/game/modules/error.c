@@ -33,10 +33,10 @@
 #define ERR_AR0 4
 #define ERR_AR1 5
 #define ERR_AR2 6
-#define ERR_AR3 7
+#define ERR_AR3 7 //USING AS *+AR2(OID)
 #define ERR_AR4 8
-#define ERR_AR5 9
-#define ERR_AR6 10
+#define ERR_AR5 9 //USING AS _MODE
+#define ERR_AR6 10 //USING AS *+AR2(PID)
 #define ERR_AR7 11
 #define ERR_AR4_OID 12
 #define ERR_RACENUM 13

@@ -41,7 +41,7 @@
 // *
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: ROUTINE_TABLE	ROUTINE_TABLE:					;routine */
+/* asm: ROUTINE_TABLE:					;routine */
 /* asm: 	.word	0				;0 none leave blank */
 /* asm: 	.word	CHECKPOINT_HIT			;1 */
 /* asm: 	.word	WATERON				;2 */

@@ -26,11 +26,11 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-#define RHO_WEAVER 1
+#define RHO_WEAVER 1 //DRUNK ONCOMER
 // *
 // *YELL B4 HIT TO PLAYER
 #define B4HIT_SIZE 6
-/* asm: B4HIT_TABLE	B4HIT_TABLE	.word	RH_GOFORIT,RH_TAKEHIM,RH_BABESCREAM1 */
+/* asm: B4HIT_TABLE	.word	RH_GOFORIT,RH_TAKEHIM,RH_BABESCREAM1 */
 /* asm: 	.word	RH_BABEWHOA,RH_HURRYUP,RH_GONNACRASH */
 int B4HIT_TABLE[] = {
     RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1,
@@ -39,8 +39,8 @@ int B4HIT_TABLE[] = {
 // *RHO FLAGS (RF_)
 // *
 // *
-#define RF_WEAVER 0x001
-#define RF_LONG 0x002
+#define RF_WEAVER 0x001 //may this become a weaver (SUICIDE)
+#define RF_LONG 0x002 //Eugenes system can't handle long vehicles under circumstances
 #define RT_VEHIDX 0
 #define RT_FLAG 1
 #define RT_ONSCREAM 2
@@ -54,7 +54,7 @@ int NOLONG_VEHICLES;
 // *
 // ;	.word	SBUS_MOD,RF_LONG,BUSDOPL
 #define RHO_TABLE_LENGTH 17
-/* asm: RHO_TABLE	RHO_TABLE: */
+/* asm: RHO_TABLE: */
 /* asm: 	.word	GTRUCK_MOD,0,DIESEL_DOPPLER */
 /* asm: 	.word	FTRUCK_MOD,RF_LONG,TRUCKHORN_BLAST */
 /* asm: 	.word	CBUS_MOD,RF_LONG,BUSDOPL */

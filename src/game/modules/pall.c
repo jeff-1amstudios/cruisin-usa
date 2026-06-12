@@ -9,6 +9,7 @@
 #include "../include/error.h"
 #include "../include/globals.h"
 #include "../include/pall_defs.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/PALL.ASM
@@ -34,9 +35,9 @@ int PTTRAM[PALNUM*3];
 int NUM_FIXED;
 // *----------------------------------------------------------------------------
 // *INDEX STORAGE
-/* asm: PALROMI	PALROMI	.word	_PALROM		;INDEXED PALETTES SOURCE ADDR LIST */
+/* asm: PALROMI	.word	_PALROM		;INDEXED PALETTES SOURCE ADDR LIST */
 #define PALROMI _PALROM
-/* asm: PALLISTI	PALLISTI	.word	_PALLIST	;CROSS-REFERENCE LIST */
+/* asm: PALLISTI	.word	_PALLIST	;CROSS-REFERENCE LIST */
 #define PALLISTI _PALLIST
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -53,9 +54,9 @@ int NUM_FIXED;
 // *
 /* asm: PALSXFER	.bss	PALSXFER,1 */
 int PALSXFER;
-/* asm: COLRAML	COLRAML	.word	COLORAM */
+/* asm: COLRAML	.word	COLORAM */
 int COLRAML = COLORAM;
-/* asm: COLRAMH	COLRAMH	.word	COLORAM+7FFFh */
+/* asm: COLRAMH	.word	COLORAM+7FFFh */
 int COLRAMH = COLORAM+0x7FFF;
 #endif
 // ;	STI	R1,*AR0++	;CLEAR OUT COUNT
@@ -65,11 +66,11 @@ int COLRAMH = COLORAM+0x7FFF;
 #endif
 // *----------------------------------------------------------------------------
 // *STRUCT PALXFER
-#define PALX_LINK 0
-#define PALX_SADDR 1
-#define PALX_DADDR 2
-#define PALX_COUNT 3
-#define PALX_SIZE 4
+#define PALX_LINK 0 //UH
+#define PALX_SADDR 1 //UH
+#define PALX_DADDR 2 //UH
+#define PALX_COUNT 3 //UH
+#define PALX_SIZE 4 //SIZ
 // *ENDSTRUCT
 #define NXFER_PALS 128
 /* asm: PALXFER_ACTIVE	.bss	PALXFER_ACTIVE,1 */

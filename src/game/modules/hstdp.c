@@ -24,24 +24,24 @@
 // *COPYRIGHT (C) 1994  BY TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-#define FLASH_ON 1
+#define FLASH_ON 1 //TURN THIS OFF TO LOOSE FLASHING
 // ;These are for the license plate and pressing of the plate
-#define PRESS_DIAM 271
+#define PRESS_DIAM 271 //NOTE: The plate is on the bottom surface
 #define PRESS_RADX 1.5708
 #define ROLLER_ZOFF 620
 #define PRESS_STARTZ (-1300)
-#define PRESS_LASTZ (-2100)
+#define PRESS_LASTZ (-2100) //-1900
 #define PRESS_TRAVELZ (PRESS_LASTZ-PRESS_STARTZ)
 // ;PRESS_STARTY	.set	-30
 #define PRESS_STARTY (-45)
 #define PRESS_LASTY (-100)
 #define PRESS_TRAVELY (PRESS_LASTY-PRESS_STARTY)
 #define HIGH_SCORE_GROUP 0x200
-/* asm: NUMTAB	NUMTAB	.word	dzero,done,dtwo,dthree,dfour,dfive,dsix,dseven,deight,dnine */
+/* asm: NUMTAB	.word	dzero,done,dtwo,dthree,dfour,dfive,dsix,dseven,deight,dnine */
 int NUMTAB[] = {
     dzero, done, dtwo, dthree, dfour, dfive, dsix, dseven, deight, dnine,
 };
-/* asm: THREED_LETTERS	THREED_LETTERS	.word	ma,mb,mc,md,me,mf,mg,mh,mi,mj,mk,ml,mm,mn,mo,mp,mq,mr */
+/* asm: THREED_LETTERS	.word	ma,mb,mc,md,me,mf,mg,mh,mi,mj,mk,ml,mm,mn,mo,mp,mq,mr */
 /* asm: 	.word	ms,mt,mu,mv,mw,mx,my,mz */
 int THREED_LETTERS[] = {
     ma, mb, mc, md, me, mf, mg, mh, mi, mj, mk, ml, mm, mn, mo, mp, mq, mr,
@@ -49,7 +49,7 @@ int THREED_LETTERS[] = {
 };
 #define THREED_END ($-THREED_LETTERS)
 #define RUB ('Z'-'A'+1)
-/* asm: PLATE_LETTERS	PLATE_LETTERS	.word	pa,pb,pc,pd,pe,pf,pg,ph,pi,pj,pk,pl,pm,pn,po,pp,pq,pr */
+/* asm: PLATE_LETTERS	.word	pa,pb,pc,pd,pe,pf,pg,ph,pi,pj,pk,pl,pm,pn,po,pp,pq,pr */
 /* asm: 	.word	ps,pt,pu,pv,pw,px,py,pz,arrow,p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,pend */
 int PLATE_LETTERS[] = {
     pa, pb, pc, pd, pe, pf, pg, ph, pi, pj, pk, pl, pm, pn, po, pp, pq, pr,
@@ -65,28 +65,28 @@ const char *EIP = "ENTER INITIALS";
 #define medp_pal (PDATA+7)
 #define lightp_pal (PDATA+8)
 #define lightp1_pal (PDATA+9)
-#define INIT0 PDATA
-#define INIT1 (PDATA+1)
-#define INIT2 (PDATA+2)
-#define STRFREE (PDATA+3)
-#define STRSTRT (PDATA+4)
-#define PEDTRIG (PDATA+5)
+#define INIT0 PDATA //ptr to obj 0 (1st char)
+#define INIT1 (PDATA+1) //1
+#define INIT2 (PDATA+2) //2
+#define STRFREE (PDATA+3) //steering wheel amount of free spin
+#define STRSTRT (PDATA+4) //steering wheel minimum
+#define PEDTRIG (PDATA+5) //middle of pedal (pedal trigger)
 #define OLDPOT0 (PDATA+6)
-#define FLASH_PROC (PDATA+6)
-#define INITI0 (PDATA+7)
-#define INITI1 (PDATA+8)
-#define INITI2 (PDATA+9)
+#define FLASH_PROC (PDATA+6) //Not used at the same time as OLDPOT0
+#define INITI0 (PDATA+7) //initial index
+#define INITI1 (PDATA+8) //initial index
+#define INITI2 (PDATA+9) //initial index
 #define PLATEOBJ (PDATA+10)
 #define PRESSOBJ (PDATA+11)
 #define BPRESSOBJ (PDATA+12)
 #define SCROLLBOBJ (PDATA+13)
-#define FRAMEOBJ (PDATA+14)
+#define FRAMEOBJ (PDATA+14) //No longer used
 #define MISPLATEOBJ (PDATA+15)
 #define HSPOINTER (PDATA+16)
 #define PLACE (PDATA+17)
 #define WHITE_PAL (PDATA+18)
 #define ARMSOBJ (PDATA+19)
-#define TEMP_STR (PDATA+20)
+#define TEMP_STR (PDATA+20) //10 long
 #define CAMX (PDATA+30)
 #define CAMY (PDATA+31)
 #define CAMZ (PDATA+32)
@@ -103,10 +103,10 @@ const char *EIP = "ENTER INITIALS";
 // *	This routine is branched to from within a proccess
 // *	It will stamp the letters on the plate then put the plate onto the wall
 // *
-#define PRESS_FRAMES 60
+#define PRESS_FRAMES 60 //120
 #define PLACE_FRAMES 40
-#define ROLLER_TRAVEL 12.7117
-#define ARM_FRAMES 10
+#define ROLLER_TRAVEL 12.7117 //2*PI = 1 revolution PI = 3.14
+#define ARM_FRAMES 10 //20
 #define ARM_START 0
 #define ARM_BOTTOM (ARM_START+240)
 #define ARM_TRAVEL (ARM_BOTTOM-ARM_START)
@@ -185,7 +185,7 @@ const char *EIP = "ENTER INITIALS";
 // * This positions the bar of letters during the Name Entry
 // *
 // *
-/* asm: SCROLLBTAB	SCROLLBTAB	;	A    B	  C   D	  E   F	  G   H	  I   J	  K   L	  M   N	  O */
+/* asm: SCROLLBTAB	;	A    B	  C   D	  E   F	  G   H	  I   J	  K   L	  M   N	  O */
 /* asm: 	.word	1057,1010,960,911,855,803,753,696,648,598,546,494,426,367,307 */
 /* asm: 	;       P   Q   R   S  T  U   V    W    X    Y    Z	RUB 0    1    2 */
 /* asm: 	.word	252,193,138,82,24,-35,-97,-161,-230,-292,-347,-401,-465,-517,-573 */
@@ -227,7 +227,7 @@ int SCROLLBTAB[] = {
 // *	AR5	= PLACE
 // *
 // *
-/* asm: LONGEST_TIME	LONGEST_TIME	.word	198000 */
+/* asm: LONGEST_TIME	.word	198000 */
 int LONGEST_TIME = 198000;
 // *----------------------------------------------------------------------------
 // *	PARAMETERS	AR0 = POINTER TO PLATE that owns this
@@ -259,12 +259,12 @@ int LONGEST_TIME = 198000;
 #define HS_ENDY (-210)
 #define HS_YDIFF ((HS_ENDY-HS_STARTY)/HS_ZOOM)
 #define HS_STARTZ (-4200)
-#define HS_ENDZ (-1960)
+#define HS_ENDZ (-1960) //-800
 #define HS_ZDIFF ((HS_ENDZ-HS_STARTZ)/HS_ZOOM)
 // *----------------------------------------------------------------------------
 // *PROC
 // *R4 = race number
-/* asm: FLASH_PALS	FLASH_PALS */
+/* asm: FLASH_PALS */
 /* asm: 	.word	plate_medp,plate_lightp,plate_lightp1,plate_lightp,-1 */
 int FLASH_PALS[] = {
     plate_medp, plate_lightp, plate_lightp1, plate_lightp, -1,
@@ -274,7 +274,7 @@ int FLASH_PALS[] = {
 // *REMOVES the objects in the list of ID's
 // *NOTE if the value of the ID is > FF it will eliminate the range (inclusive)
 // *
-/* asm: DELIST	DELIST	.word	808Bh,0104h,3057h,0 */
+/* asm: DELIST	.word	808Bh,0104h,3057h,0 */
 int DELIST[] = {
     0x808B, 0x0104, 0x3057, 0,
 };

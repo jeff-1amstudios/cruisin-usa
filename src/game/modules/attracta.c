@@ -24,15 +24,15 @@
 // *
 #define NOVANITY 1
 // *----------------------------------------------------------------------------
-#define startthey 4.18894205
-#define startthez 0.087266462
+#define startthey 4.18894205 //-deg(10)
+#define startthez 0.087266462 //deg(5)
 #define CREATED_DCS (PDATA+1)
 #define DECOMP_COUNT (PDATA+1)
 // *----------------------------------------------------------------------------
 // *AR6 is set by the creator of this routine. 0= play dcs logo sound 1=don't play
 // *
 // *----------------------------------------------------------------------------
-/* asm: SPIN_CARTAB	SPIN_CARTAB	.word	missle,hotrod,testor,cvette */
+/* asm: SPIN_CARTAB	.word	missle,hotrod,testor,cvette */
 int SPIN_CARTAB[] = {
     missle, hotrod, testor, cvette,
 };
@@ -41,7 +41,7 @@ int SPIN_CARTAB[] = {
 const char *DT1 = "THANK YOU FOR PLAYING";
 const char *DT2 = "CRUISIN USA";
 const char *DT3 = "SNEAK PREVIEW";
-/* asm: DEMOTHANKS_LIST	DEMOTHANKS_LIST */
+/* asm: DEMOTHANKS_LIST */
 /* asm: 	.word	140,DT1 */
 /* asm: 	.word	180,DT2 */
 /* asm: 	.word	220,DT3 */

@@ -157,7 +157,9 @@ int DIPRAM;
 // *----------------------------------------------------------------------------
 // *SWITCH ROUTINE TABLE
 // *0 = NO PROCESS TO CREATE
-/* asm: SWTAB	SWTAB */
+/* asm: SWTABI	.word	SWTAB */
+#define SWTABI SWTAB
+/* asm: SWTAB */
 /* asm: 	.word	COIN1  		;00000001 SW_COIN1	(COIN.ASM) */
 /* asm: 	.word	COIN2		;00000002 SW_COIN2 	(COIN.ASM) */
 /* asm: 	.word	_start		;00000004 START		(INTRO.ASM) */
@@ -231,9 +233,9 @@ int SWTAB[] = {
 int PB1[pbsss];
 /* asm: PB2	.usect	pbsse,1 */
 int PB2[pbsse];
-/* asm: PBSS_PTR	PBSS_PTR	.word	PB1 */
+/* asm: PBSS_PTR	.word	PB1 */
 int PBSS_PTR = PB1;
-/* asm: PBSS_BSSEND	PBSS_BSSEND	.word	PB2 */
+/* asm: PBSS_BSSEND	.word	PB2 */
 int PBSS_BSSEND = PB2;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -242,10 +244,10 @@ int PBSS_BSSEND = PB2;
 // *make sure nothing exists on the stack yet
 // *
 // *
-/* asm: RAM_PTR	RAM_PTR	.word	BSSSTART */
+/* asm: RAM_PTR	.word	BSSSTART */
 int RAM_PTR = BSSSTART;
 // ;RAM_BSSEND	.word	01F7FFh
-/* asm: RAM_BSSEND	RAM_BSSEND	.word	01EFFFh		;save protected hi bss ram */
+/* asm: RAM_BSSEND	.word	01EFFFh		;save protected hi bss ram */
 int RAM_BSSEND = 0x01EFFF;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -260,7 +262,7 @@ int BUTTON_STATUS;
 int OLD_BUTTON_STATUS;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: CRT_REG_SETUP_STR	CRT_REG_SETUP_STR */
+/* asm: CRT_REG_SETUP_STR */
 /* asm: 	.word	399|CRT_SETUP_ICSYNC	;CRT_SETUP */
 /* asm: 	.word	01ffh		;CRT_HADDRINC */
 /* asm: 	.word	01feh		;CRT_HBLKSTART */
@@ -323,7 +325,7 @@ int TIMEX;
 int TIMECLR;
 /* asm: TIMERAM	.bss	TIMERAM,50 */
 int TIMERAM[50];
-#define COMMPAL 0x0990000
+#define COMMPAL 0x0990000 //COMMUNICATIONS PAL
 // 	;
 // 	;
 /* asm: MSG_CNT	.bss	MSG_CNT,1 */
@@ -344,7 +346,7 @@ const char *TPALNI = "U38 LINK PAL NOT INSTALLED";
 // *
 // *
 #define NUM_STATES 7
-/* asm: STATE_TABLE	STATE_TABLE	.word	SW_VIEW0|SW_VIEW2 */
+/* asm: STATE_TABLE	.word	SW_VIEW0|SW_VIEW2 */
 /* asm: 	.word	SW_VIEW2 */
 /* asm: 	.word	SW_VIEW1|SW_VIEW2 */
 /* asm: 	.word	SW_VIEW1 */
@@ -361,7 +363,7 @@ int STATE_TABLE[] = {
     SW_VIEW0|SW_RADIO,
 };
 // *
-/* asm: STATE_MASK	STATE_MASK	.word	SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO */
+/* asm: STATE_MASK	.word	SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO */
 int STATE_MASK = SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO;
 // *
 /* asm: STATE_NUM	.bss	STATE_NUM,1 */
@@ -374,9 +376,9 @@ int BUTTON_IBO;
 /* asm: BUTTON_TIK	.bss	BUTTON_TIK,1 */
 int BUTTON_TIK;
 // *----------------------------------------------------------------------------
-/* asm: BUTTONI	BUTTONI	.word	BUTTII */
+/* asm: BUTTONI	.word	BUTTII */
 #define BUTTONI BUTTII
-/* asm: BUTTII	BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
+/* asm: BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
 int BUTTII[] = {
     BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2,
 };

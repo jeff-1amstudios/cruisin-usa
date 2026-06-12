@@ -311,9 +311,12 @@ def write_discovered_defines_file(
     defines: Dict[str, int],
     *,
     discovered_modules: Dict[str, str],
+    excluded_symbol_keys: Set[str],
 ) -> int:
     lines: List[str] = []
     for name, value in sorted(defines.items(), key=lambda item: item[0].upper()):
+        if symbol_key(name) in excluded_symbol_keys:
+            continue
         lines.append(f"{name}\t{format_discovered_define_value(value)}\t{discovered_modules.get(name, '')}")
     defines_path.write_text("\n".join(lines) + ("\n" if lines else ""))
     return len(lines)
@@ -538,6 +541,26 @@ def maybe_discovered_define(source_tok: str, rom_tok: str) -> Optional[Tuple[str
     if value is None:
         return None
     return source_name, value
+
+
+def maybe_discovered_word_define(source_tok: str, value: int) -> Optional[Tuple[str, int]]:
+    """Infer ``name = value`` bindings from dereferenced low-valued ``.word`` cells."""
+    raw_source = source_tok.strip().strip(",")
+    if not raw_source or raw_source[0] in "@*#+-":
+        return None
+    if "(" in raw_source or ")" in raw_source:
+        return None
+    if not LABEL_TOKEN_RE.match(raw_source):
+        return None
+    if is_pseudo_local_label(raw_source) or raw_source.endswith("?"):
+        return None
+    if REGISTER_RE.match(raw_source.upper()):
+        return None
+    if parse_int_token(raw_source) is not None:
+        return None
+    if 0x00C00000 <= value <= 0x00CFFFFF:
+        return None
+    return raw_source, value
 
 
 def parse_rom_operand_addr(tok: str) -> Optional[int]:
@@ -1485,6 +1508,32 @@ def parse_source_label_lines(root: pathlib.Path) -> Dict[Tuple[str, str], Tuple[
     return out
 
 
+def parse_source_storage_symbols(root: pathlib.Path) -> Set[str]:
+    """Return symbols introduced by storage directives without leading labels."""
+    out: Set[str] = set()
+    symbols = ccm.parse_set_symbols(root)
+    storage_ops = {".BSS", ".USECT", "FBSS", "PBSS", "HIBSS", "LOBSS", "PHIBSS"}
+    for p in ccm.iter_source_files(root, (".ASM",)):
+        for _lineno, raw in iter_active_raw_with_lineno(p.read_text(errors="ignore").splitlines(), 1, symbols):
+            code = ccm.strip_comment(raw)
+            lbl, rest = ccm.split_optional_label(code)
+            if lbl is not None and rest:
+                code = "\t" + rest
+            op_idx, toks = ccm.split_label_and_tokens(code)
+            if not toks or op_idx >= len(toks):
+                continue
+            op = toks[op_idx].upper()
+            if op not in storage_ops or op_idx + 1 >= len(toks):
+                continue
+            name = toks[op_idx + 1].strip().strip(",")
+            if not LABEL_TOKEN_RE.match(name):
+                continue
+            if is_pseudo_local_label(name) or name.endswith("?"):
+                continue
+            out.add(symbol_key(name))
+    return out
+
+
 def should_preserve_existing_word_block_row(
     rows: Dict[Tuple[str, str], Tuple[str, str, str, str, str, str, str, str]],
     source_label_lines: Dict[Tuple[str, str], Tuple[str, int]],
@@ -2020,8 +2069,10 @@ def main() -> None:
     source_labels_ordered = source_code_label_order(root, symbols, macros)
     source_call_target_keys = collect_source_call_target_keys(root, symbols)
     source_label_lines = parse_source_label_lines(root)
+    source_storage_symbol_names = parse_source_storage_symbols(root)
     source_defined_symbol_names: Set[str] = {symbol_key(name) for name, _mod in source_label_lines.keys()}
     source_defined_symbol_names.update(symbol_key(name) for name in source_defined_names)
+    source_defined_symbol_names.update(source_storage_symbol_names)
 
     module_anchor_candidates: Dict[str, Anchor] = {}
     for mod, src_fn, _line in source_labels_ordered:
@@ -2613,6 +2664,12 @@ def main() -> None:
                                 include_word_refs=source_symbol_starts_word_block_cached(lbl, mod),
                             )
                         continue
+                    discovered = maybe_discovered_word_define(lbl, target_ea)
+                    if discovered is not None:
+                        define_name, define_value = discovered
+                        if symbol_key(define_name) not in source_defined_symbol_names:
+                            discovered_defines.setdefault(define_name, define_value)
+                            discovered_first_modules.setdefault(define_name, mod)
                     if not has_inline_alias:
                         continue
                     add_row(lbl, mod, "data", target_ea, origin="gap")
@@ -2657,6 +2714,12 @@ def main() -> None:
                         include_word_refs=source_symbol_starts_word_block_cached(child_lbl, child_mod),
                     )
                     continue
+                discovered = maybe_discovered_word_define(child_lbl, target_ea)
+                if discovered is not None:
+                    define_name, define_value = discovered
+                    if symbol_key(define_name) not in source_defined_symbol_names:
+                        discovered_defines.setdefault(define_name, define_value)
+                        discovered_first_modules.setdefault(define_name, child_mod)
                 if not child_has_inline_alias:
                     continue
                 add_row(child_lbl, child_mod, "data", target_ea, overwrite=True, origin="word_block")
@@ -2704,6 +2767,7 @@ def main() -> None:
         discovered_defines_out,
         discovered_defines,
         discovered_modules=discovered_first_modules,
+        excluded_symbol_keys=source_defined_symbol_names,
     )
 
     with outp.open("w", newline="") as f:

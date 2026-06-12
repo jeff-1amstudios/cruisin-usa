@@ -26,6 +26,8 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
+/* asm: RACER_DRONE_INITTABI	.word	RACER_DRONE_INITTAB */
+#define RACER_DRONE_INITTABI RACER_DRONE_INITTAB
 /* asm: FINISHNUM	.bss	FINISHNUM,1 */
 int FINISHNUM;
 /* asm: RACER_PTR	.bss	RACER_PTR,10 */
@@ -41,9 +43,11 @@ int OM_TRACK_HI;
 // *
 // *MODIFIES : ADJ_DIFFICULTY,ADJ_DIFF_LOCAL (CMOS)
 // *
-/* asm: GMAX	GMAX	.word	100000 */
+/* asm: GMAX	.word	100000 */
 int GMAX = 100000;
-/* asm: DIFFTAB	DIFFTAB */
+/* asm: DIFFTABI	.word	DIFFTAB */
+#define DIFFTABI DIFFTAB
+/* asm: DIFFTAB */
 /* asm: 	.float	0 		;GG */
 /* asm: 	.float	-0.03 		;SF */
 /* asm: 	.float	-0.02 		;101 */
@@ -110,9 +114,9 @@ int DIFFTAB[] = {
 int ROADOBSTAB[50];
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: WACKER	WACKER	.word	3D20AH */
+/* asm: WACKER	.word	3D20AH */
 int WACKER = 0x3D20A;
-/* asm: LAKEL	LAKEL	.word	3EF0CH */
+/* asm: LAKEL	.word	3EF0CH */
 int LAKEL = 0x3EF0C;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------

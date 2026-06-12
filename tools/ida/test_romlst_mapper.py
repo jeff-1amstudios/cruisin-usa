@@ -17,6 +17,7 @@ from ida.walk_source_and_rom import (
     collect_literal_macro_refs,
     iter_expanded_lines,
     maybe_discovered_define,
+    maybe_discovered_word_define,
     normalize_word_rom_read_ea,
     parse_src_ops,
     parse_rom_ops_from_addr,
@@ -27,6 +28,7 @@ from ida.walk_source_and_rom import (
     parse_symbol_modules,
     parse_vunit_hardware_symbols,
     parse_source_label_lines,
+    parse_source_storage_symbols,
     source_rom_data_words_between,
     source_symbol_starts_word_block,
     source_set_symbol_addr,
@@ -214,6 +216,13 @@ def main() -> None:
     assert maybe_discovered_define('@FASTSTKI', '#0') is None
     assert maybe_discovered_define('*FASTSTKI', '#0') is None
     assert maybe_discovered_define('R0', '#0') is None
+    assert maybe_discovered_word_define('cvette_p', 15) == ('cvette_p', 15)
+    assert maybe_discovered_word_define('hotrod_p', 18) == ('hotrod_p', 18)
+    assert maybe_discovered_word_define('VETTTAB', 0x00C11643) is None
+    menuentry_toks = ccm.parse_line_tokens('MENUENTRY "SPEED IN MPH OR KPH",MILES_OR_KILO')
+    assert menuentry_toks == ['MENUENTRY', '"SPEED IN MPH OR KPH"', 'MILES_OR_KILO'], (
+        f'MENUENTRY tokenization should preserve quoted strings, got {menuentry_toks!r}'
+    )
     assert parse_rom_operand_addr('sub_64') == 0x64
     assert parse_rom_operand_addr('loc_106') == 0x106
     assert parse_rom_operand_addr('byte_40') == 0x40
@@ -225,9 +234,11 @@ def main() -> None:
     assert canonical_module_for_label('startup0_ptr_0000B0C5', 'CUSA', set(), symbols) == 'CUSA'
 
     active_label_lines = parse_source_label_lines(ROOT)
+    storage_symbols = parse_source_storage_symbols(ROOT)
     assert active_label_lines[('VERSION_STAMP', 'CUSA')][1] == 81, (
         f'active VERSION_STAMP line expected 81, got {active_label_lines[("VERSION_STAMP", "CUSA")]!r}'
     )
+    assert 'BIGBUFFER' in storage_symbols, 'BIGBUFFER .bss declaration should count as source-defined'
 
     # 11) VUNIT.EQU hardware/window addresses are exportable only in the
     #     high MMIO/window range at 0x00600000 and above.
@@ -352,6 +363,19 @@ def main() -> None:
     assert ('COUNTRY_MENUTAB', 'DIAG', 0x00000BDB, True) in diag_gap_rows, (
         f'DIAG gap rows should emit COUNTRY_MENUTAB from COUNTRY_MENUTABI cell, got {diag_gap_rows!r}'
     )
+
+    intro_lines = find_source_module('INTRO').read_text(errors='ignore').splitlines()
+    carsrcpal_rows = collect_word_block_symbol_rows(
+        intro_lines, 2044, 0x00C10DBC, 'INTRO', symbols, symbol_modules, globals_set, ROOT / 'roms' / 'crusnusa45_maindata_interleaved_bswap32.bin'
+    )
+    assert ('cvette_p', 'INTRO', 0x00C10DBC) in carsrcpal_rows, f'cvette_p row missing: {carsrcpal_rows!r}'
+    assert ('hotrod_p', 'INTRO', 0x00C10DBD) in carsrcpal_rows, f'hotrod_p row missing: {carsrcpal_rows!r}'
+    cvette_p_value = read_rom_word(normalize_word_rom_read_ea(0x00C10DBC))
+    hotrod_p_value = read_rom_word(normalize_word_rom_read_ea(0x00C10DBD))
+    assert cvette_p_value == 15, f'cvette_p expected 15, got {cvette_p_value!r}'
+    assert hotrod_p_value == 18, f'hotrod_p expected 18, got {hotrod_p_value!r}'
+    assert maybe_discovered_word_define('cvette_p', cvette_p_value) == ('cvette_p', 15)
+    assert maybe_discovered_word_define('hotrod_p', hotrod_p_value) == ('hotrod_p', 18)
 
     assert source_symbol_starts_word_block(ROOT, 'scroll_whiteI', 'HSTDP', active_label_lines, {}, symbols)
     assert source_symbol_starts_word_block(ROOT, 'FLASH_PALSI', 'HSTDP', active_label_lines, {}, symbols)

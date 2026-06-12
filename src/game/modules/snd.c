@@ -12,6 +12,7 @@
 #include "../include/objects.h"
 #include "../include/comm.h"
 #include "../include/snd.h"
+#include "../include/discovered_defines.h"
 
 /*
  * Source module: asm/SND.ASM
@@ -35,7 +36,7 @@ int SNDEND;
 // *----------------------------------------------------------------------------
 // *STATION TABLE
 // *
-/* asm: STATION_LIST	STATION_LIST	.word	MUNSTER_SURF	;0 */
+/* asm: STATION_LIST	.word	MUNSTER_SURF	;0 */
 /* asm: 	.word	SHUFFLE_DRIV	;1 */
 /* asm: 	.word	DISCODUCK	;2 */
 /* asm: 	.word	SPAGETTI	;3 */
@@ -53,6 +54,8 @@ int STATION_LIST[] = {
     DISCODUCK, // 6
     BOOGIE, // 7
 };
+/* asm: STATION_TEXTI	.word	STATION_TEXT */
+#define STATION_TEXTI STATION_TEXT
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 /* asm: STATION_TIMEOUT	.bss	STATION_TIMEOUT,1 */
@@ -94,7 +97,7 @@ int TUNE_IDX;
 // *	Alter .set SPACER to a larger number if there is a problem.
 // *
 // *
-#define SPACER 30
+#define SPACER 30 //# OF NOPs BETWEEN WRITES
 // *----------------------------------------------------------------------------
 
 void RADIO_SHOW(void)

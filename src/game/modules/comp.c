@@ -77,10 +77,10 @@ int PACIFY_COUNT;
 // *
 // *
 // *STRUCT	dictionary
-#define PARENT_CODE 0
-#define CODE_VALUE 0
-#define CHARACTER TABLE_SIZE
-#define DICT_SIZ 2
+#define PARENT_CODE 0 //UH	LOWER HALF
+#define CODE_VALUE 0 //UH	UPPER HALF
+#define CHARACTER TABLE_SIZE //UH	LOWER 8 (bitchen jive techn.)
+#define DICT_SIZ 2 //SIZ
 // *ENDSTRUCT
 /* asm: DICT	hibss	DICT,TABLE_SIZE*DICT_SIZ */
 int DICT[TABLE_SIZE*DICT_SIZ];
@@ -99,14 +99,14 @@ int LINEBUFFER[64];
 // *
 // *
 // *----------------------------------------------------------------------------
-/* asm: SAVESPCI	SAVESPCI	.word	SAVESPC+1 */
+/* asm: SAVESPCI	.word	SAVESPC+1 */
 int SAVESPCI = SAVESPC+1;
 /* asm: SAVESPC	.bss	SAVESPC,25 */
 int SAVESPC[25];
 // *----------------------------------------------------------------------------
-#define MIN_X 240
+#define MIN_X 240 //if this changes modify CUSA.ASM
 #define MAX_X 300
-/* asm: BOOT_PACIFY_SCREEN_P	BOOT_PACIFY_SCREEN_P	.word	1 */
+/* asm: BOOT_PACIFY_SCREEN_P	.word	1 */
 int BOOT_PACIFY_SCREEN_P = 1;
 /* asm: PREVX	.bss	PREVX,1 */
 int PREVX;

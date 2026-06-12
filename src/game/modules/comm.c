@@ -51,7 +51,7 @@ int TRANSMISSION_DEAD;
 // *----------------------------------------------------------------------------
 // *COMMUNICATIONS LINK
 // *
-#define COMMPAL 0x0990000
+#define COMMPAL 0x0990000 //COMMUNICATIONS PAL
 // *----------------------------------------------------------------------------
 
 void COMM_INIT(void)

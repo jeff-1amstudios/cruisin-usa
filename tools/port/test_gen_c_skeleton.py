@@ -56,7 +56,7 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("int _SEChead2head[] = { 0x0C15000, 0x0BEFA00 };", rendered)
+        self.assertIn("int _SEChead2head[] = {\n    0x0C15000,\n    0x0BEFA00,\n};", rendered)
         self.assertNotIn("void _SEChead2head(void)", rendered)
 
     def test_single_symbol_word_renders_as_define(self) -> None:
@@ -92,8 +92,20 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
             rendered = render_module(src_path, {}, {}, None)
 
         self.assertIn("/* asm: CREDITBUFF\t.word\tCREDITBUFFER */", rendered)
-        self.assertIn("int CREDITBUFF = (int)(CREDITBUFFER);", rendered)
+        self.assertIn("int CREDITBUFF = CREDITBUFFER;", rendered)
         self.assertNotIn("#define CREDITBUFF CREDITBUFFER", rendered)
+
+    def test_single_symbol_word_pointing_at_following_label_renders_as_define(self) -> None:
+        asm_source = """INFINITY_POINTS\t.word\tINFINPOINTS\nINFINPOINTS\n\t.float\t-1280,0,0\n"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "INFIN.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("/* asm: INFINITY_POINTS\t.word\tINFINPOINTS */", rendered)
+        self.assertIn("#define INFINITY_POINTS INFINPOINTS", rendered)
+        self.assertNotIn("int INFINITY_POINTS = INFINPOINTS;", rendered)
 
     def test_collects_skipped_data_symbol_references(self) -> None:
         asm_lines = [
@@ -147,6 +159,15 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
         self.assertIn("#define bottom_gtmp_p 0", rendered)
         self.assertIn("#define cam_left_stop (-4700)", rendered)
 
+    def test_render_discovered_defines_header_keeps_uppercase_i_suffix_names(self) -> None:
+        rendered = render_discovered_defines_header([
+            DefineEntry(name="sky1_I", expr="854", module="INFIN"),
+            DefineEntry(name="sky2_I", expr="1110", module="INFIN"),
+        ])
+
+        self.assertIn("#define sky1_I 854", rendered)
+        self.assertIn("#define sky2_I 1110", rendered)
+
     def test_collect_referenced_define_symbols(self) -> None:
         asm_lines = [
             "\tLDI\tbottom_gtmp_p,R0",
@@ -175,6 +196,31 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
         self.assertIn("// asm: .bss heads_count,1", rendered)
         self.assertIn("extern int heads_count;", rendered)
         self.assertNotIn("// addr:", rendered)
+
+    def test_equ_file_renders_comment_header_and_set_defines(self) -> None:
+        asm_source = """*DELTA.EQU
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+
+DELTA_SAFETYWIDTH\t.set\t850
+MAX_DRONES\t.set\t11\t;MAXIMUM DRONES IN UNIVERSE
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "DELTA.EQU"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("// DELTA.EQU", rendered)
+        self.assertIn("// ", rendered)
+        self.assertIn("// COPYRIGHT (C) 1994 BY  TV GAMES, INC.", rendered)
+        self.assertIn("// ALL RIGHTS RESERVED", rendered)
+        self.assertIn("// asm: DELTA_SAFETYWIDTH\t.set\t850", rendered)
+        self.assertIn("#define DELTA_SAFETYWIDTH 850", rendered)
+        self.assertIn("// asm: MAX_DRONES\t.set\t11\t;MAXIMUM DRONES IN UNIVERSE", rendered)
+        self.assertIn("#define MAX_DRONES 11 //MAXIMUM DRONES IN UNIVERSE", rendered)
+        self.assertNotIn("void delta(void)", rendered)
 
 
 if __name__ == "__main__":

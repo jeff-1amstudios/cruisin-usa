@@ -34,7 +34,7 @@
 // *39 words per plyr (13*3)
 // *
 // *
-/* asm: STARTUP_POS_TABLE	STARTUP_POS_TABLE:	;PLYR1  (on PLYR2) */
+/* asm: STARTUP_POS_TABLE:	;PLYR1  (on PLYR2) */
 /* asm: 	.float	576,-180,3287			;GG */
 /* asm: 	.float	-1928700,4654,584166		;SF */
 /* asm: 	.float	-2611877,14000,-628750		;H280 */

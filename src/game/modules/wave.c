@@ -43,7 +43,7 @@ int LOADED;
 // *		<  0 -> ATTRACT MODE N
 // *		>= 0 -> REGULAR GAME
 // *
-/* asm: _ATTR_WAVETABI	_ATTR_WAVETABI	.word	_ATTR_WAVETAB	;NOTE THE VALUES ARE NEGATVIE */
+/* asm: _ATTR_WAVETABI	.word	_ATTR_WAVETAB	;NOTE THE VALUES ARE NEGATVIE */
 /* asm: 	.word	HEAD2HEAD_WAIT */
 /* asm: 	.word	CREDITS		;MUST BE -6 */
 /* asm: 	.word	THANKS		;MUST BE -5 */
@@ -63,17 +63,17 @@ int _ATTR_WAVETABI[] = {
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: FIXEDPAL	FIXEDPAL: */
+/* asm: FIXEDPAL: */
 /* asm: 	.word	14 */
 int FIXEDPAL = 14;
 // 					;F  -cycling color
-/* asm: ILLUM_PAL	ILLUM_PAL: */
+/* asm: ILLUM_PAL: */
 /* asm: 	.word	16 */
 int ILLUM_PAL = 16;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: COPCARTAB	COPCARTAB	;PLAYERS VERSION!!! */
+/* asm: COPCARTAB	;PLAYERS VERSION!!! */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,101,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
@@ -116,7 +116,7 @@ int COPCARTAB[] = {
     72-1, // VERTS-1
     0, // DYNAFLAG
 };
-/* asm: HOTRODTAB	HOTRODTAB */
+/* asm: HOTRODTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,117,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
@@ -157,7 +157,7 @@ int HOTRODTAB[] = {
     131, // VERTS-1
     0, // DYNAFLAG
 };
-/* asm: TESTORTAB	TESTORTAB */
+/* asm: TESTORTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,62,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
@@ -201,7 +201,7 @@ int TESTORTAB[] = {
     59, // VERTS-1
     0, // DYNAFLAG
 };
-/* asm: JEEPTAB	JEEPTAB */
+/* asm: JEEPTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,119,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
@@ -245,7 +245,7 @@ int JEEPTAB[] = {
     62, // VERTS-1
     0, // DYNAFLAG
 };
-/* asm: VETTTAB	VETTTAB */
+/* asm: VETTTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,-164,0	;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
@@ -289,7 +289,7 @@ int VETTTAB[] = {
     114, // VERTS-1
     0, // DYNAFLAG
 };
-/* asm: GTRUCKTABP	GTRUCKTABP */
+/* asm: GTRUCKTABP */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,-117,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
@@ -333,7 +333,7 @@ int GTRUCKTABP[] = {
     131, // VERTS-1
     0, // DYNAFLAG
 };
-/* asm: MISSILE_TAB	MISSILE_TAB */
+/* asm: MISSILE_TAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,-117,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
@@ -377,7 +377,7 @@ int MISSILE_TAB[] = {
     131, // VERTS-1
     0, // DYNAFLAG
 };
-/* asm: PSBUSTAB	PSBUSTAB */
+/* asm: PSBUSTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,-127,0	;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
@@ -430,7 +430,7 @@ int PSBUSTAB[] = {
 // *	.word	drone_dyna_table
 // *
 // *
-/* asm: VEHICLE_TABLE	VEHICLE_TABLE: */
+/* asm: VEHICLE_TABLE: */
 /* asm: 	;#0 */
 /* asm: 	.word	cvette,cvette_p,VETTTAB,0,0 */
 /* asm: 	.word	1 */
@@ -672,7 +672,7 @@ int VEHICLE_TABLE[] = {
 // *	vertices, xcenter,ycenter,zcenter
 // *	} * number of axels
 // *
-/* asm: DDYNA_GTRUCK	DDYNA_GTRUCK */
+/* asm: DDYNA_GTRUCK */
 /* asm: 	.word	3,154 */
 /* asm: 	.word	8,-252,211,671 */
 /* asm: 	.word	8,-254,211,-422 */
@@ -683,7 +683,7 @@ int DDYNA_GTRUCK[] = {
     8, -254, 211, -422,
     8, -254, 211, -704,
 };
-/* asm: DDYNA_FTRUCK	DDYNA_FTRUCK */
+/* asm: DDYNA_FTRUCK */
 /* asm: 	.word	2,92 */
 /* asm: 	.word	8,-291,210,624 */
 /* asm: 	.word	8,-293,210,-605 */
@@ -692,7 +692,7 @@ int DDYNA_FTRUCK[] = {
     8, -291, 210, 624,
     8, -293, 210, -605,
 };
-/* asm: DDYNA_CBUS	DDYNA_CBUS */
+/* asm: DDYNA_CBUS */
 /* asm: 	;	.word	3,120 */
 /* asm: 	.word	3,144 */
 /* asm: 	.word	8,-291,261,-843 */
@@ -704,7 +704,7 @@ int DDYNA_CBUS[] = {
     8, -294, 261, -582,
     8, -294, 261, 914,
 };
-/* asm: DDYNA_COPCAR	DDYNA_COPCAR */
+/* asm: DDYNA_COPCAR */
 /* asm: 	.word	2,135 */
 /* asm: 	.word	8,0,97,369 */
 /* asm: 	.word	8,0,97,-296 */
@@ -713,7 +713,7 @@ int DDYNA_COPCAR[] = {
     8, 0, 97, 369,
     8, 0, 97, -296,
 };
-/* asm: DDYNA_MUSCLE	DDYNA_MUSCLE */
+/* asm: DDYNA_MUSCLE */
 /* asm: 	.word	2,148 */
 /* asm: 	.word	8,244,108,441 */
 /* asm: 	.word	8,237,108,-277 */
@@ -722,7 +722,7 @@ int DDYNA_MUSCLE[] = {
     8, 244, 108, 441,
     8, 237, 108, -277,
 };
-/* asm: DDYNA_CARAVAN	DDYNA_CARAVAN */
+/* asm: DDYNA_CARAVAN */
 /* asm: 	.word	2,105 */
 /* asm: 	.word	8,-263,156,466 */
 /* asm: 	.word	8,263,156,-435 */
@@ -731,7 +731,7 @@ int DDYNA_CARAVAN[] = {
     8, -263, 156, 466,
     8, 263, 156, -435,
 };
-/* asm: DDYNA_SBUS	DDYNA_SBUS */
+/* asm: DDYNA_SBUS */
 /* asm: 	.word	2,152 */
 /* asm: 	.word	8,316,242,830 */
 /* asm: 	.word	8,315,242,-378 */
@@ -740,7 +740,7 @@ int DDYNA_SBUS[] = {
     8, 316, 242, 830,
     8, 315, 242, -378,
 };
-/* asm: DDYNA_PTRUCKG	DDYNA_PTRUCKG */
+/* asm: DDYNA_PTRUCKG */
 /* asm: 	.word	2,169 */
 /* asm: 	.word	8,197,107,323 */
 /* asm: 	.word	8,196,107,-270 */
@@ -749,7 +749,7 @@ int DDYNA_PTRUCKG[] = {
     8, 197, 107, 323,
     8, 196, 107, -270,
 };
-/* asm: DDYNA_MUSTANG	DDYNA_MUSTANG */
+/* asm: DDYNA_MUSTANG */
 /* asm: 	.word	2,173 */
 /* asm: 	.word	8,234,93,407 */
 /* asm: 	.word	8,233,93,-348 */
@@ -767,45 +767,45 @@ int DDYNA_MUSTANG[] = {
 // *	.word	pal_ptr
 // *	} * length
 // *
-/* asm: NOPAL	NOPAL */
+/* asm: NOPAL */
 /* asm: 	.word	0 */
 /* asm: 	;TESTORPAL	.word	3,testor_blue,testor_grape,testor_gold */
 int NOPAL = 0;
-/* asm: TESTORPAL	TESTORPAL	.word	2,testor_blue,testor_grape */
+/* asm: TESTORPAL	.word	2,testor_blue,testor_grape */
 int TESTORPAL[] = {
     2, testor_blue, testor_grape,
 };
-/* asm: BULLETPAL	BULLETPAL	.word	3,missle_yellow,missle_red,missle_blue */
+/* asm: BULLETPAL	.word	3,missle_yellow,missle_red,missle_blue */
 int BULLETPAL[] = {
     3, missle_yellow, missle_red, missle_blue,
 };
 // ;HOTRODPAL	.word	3,hotrod_yellow,hotrod_brtblue,hotrod_maroon
-/* asm: HOTRODPAL	HOTRODPAL	.word	2,hotrod_yellow,hotrod_brtblue */
+/* asm: HOTRODPAL	.word	2,hotrod_yellow,hotrod_brtblue */
 int HOTRODPAL[] = {
     2, hotrod_yellow, hotrod_brtblue,
 };
-/* asm: CVETTEPAL	CVETTEPAL	.word	3,cvette_blue,cvette_red,cvette_purple */
+/* asm: CVETTEPAL	.word	3,cvette_blue,cvette_red,cvette_purple */
 int CVETTEPAL[] = {
     3, cvette_blue, cvette_red, cvette_purple,
 };
-/* asm: JEEPPAL	JEEPPAL	.word	2,jeep_red,jeep_yellow */
+/* asm: JEEPPAL	.word	2,jeep_red,jeep_yellow */
 int JEEPPAL[] = {
     2, jeep_red, jeep_yellow,
 };
 // ;GTRUCKPAL	.word	2,gtruck_yellow,gtruck_bluep
-/* asm: GTRUCKPAL	GTRUCKPAL	.word	1,gtruck_bluep */
+/* asm: GTRUCKPAL	.word	1,gtruck_bluep */
 int GTRUCKPAL[] = {
     1, gtruck_bluep,
 };
-/* asm: CARAVANPAL	CARAVANPAL	.word	2,caravan_redyelo,caravan_yelogrey */
+/* asm: CARAVANPAL	.word	2,caravan_redyelo,caravan_yelogrey */
 int CARAVANPAL[] = {
     2, caravan_redyelo, caravan_yelogrey,
 };
-/* asm: MUSCLEPAL	MUSCLEPAL	.word	2,muscle_yellow,muscle_green */
+/* asm: MUSCLEPAL	.word	2,muscle_yellow,muscle_green */
 int MUSCLEPAL[] = {
     2, muscle_yellow, muscle_green,
 };
-/* asm: PTRUCKGPAL	PTRUCKGPAL	.word	2,ptruckg_purple,ptruckg_yellr */
+/* asm: PTRUCKGPAL	.word	2,ptruckg_purple,ptruckg_yellr */
 int PTRUCKGPAL[] = {
     2, ptruckg_purple, ptruckg_yellr,
 };
@@ -813,7 +813,7 @@ int PTRUCKGPAL[] = {
 // *----------------------------------------------------------------------------
 // *OVERWRITTEN ON TOWER PALETTE, AND RESTORED IN GGATE PARK
 // *
-/* asm: tower_bgrey	tower_bgrey: */
+/* asm: tower_bgrey: */
 /* asm: 	.word	080000000h|256 */
 /* asm: 	.word	(00h<<16)|021h,(042h<<16)|0463h,(0463h<<16)|0884h,(0884h<<16)|0884h,(0884h<<16)|0CA5h,(0CA5h<<16)|0CA5h,(0CA5h<<16)|0CA5h,(0CA5h<<16)|0CA5h,(0CA5h<<16)|0CA5h */
 /* asm: 	.word	(0CA5h<<16)|0CA5h,(0CA5h<<16)|010C6h,(010C6h<<16)|0CA5h,(0CA5h<<16)|010C6h,(0CA5h<<16)|010C6h,(010C6h<<16)|010C6h,(010C6h<<16)|010C6h,(010C6h<<16)|010C6h,(010C6h<<16)|010C6h */

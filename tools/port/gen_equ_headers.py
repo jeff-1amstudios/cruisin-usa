@@ -19,6 +19,7 @@ class SetEntry:
     name: str
     expr: str
     comment: str
+    asm_line: str
 
 
 def split_comment(line: str) -> tuple[str, str]:
@@ -52,23 +53,60 @@ def sanitize_include_name(path: Path) -> str:
     return path.stem.lower() + ".h"
 
 
+def normalize_banner_comments(lines: list[str]) -> list[str]:
+    normalized: list[str] = []
+    pending_blank = False
+    started = False
+    for line in lines:
+        if not line:
+            if started:
+                pending_blank = True
+            continue
+        if pending_blank and normalized:
+            normalized.append("")
+        normalized.append(line)
+        pending_blank = False
+        started = True
+    return normalized
+
+
+def normalize_emitted_lines(lines: list[str]) -> list[str]:
+    normalized: list[str] = []
+    blank_pending = False
+    for line in lines:
+        if line == "":
+            if normalized:
+                blank_pending = True
+            continue
+        if blank_pending and normalized:
+            normalized.append("")
+        normalized.append(line)
+        blank_pending = False
+    return normalized
+
+
 def parse_equ_file(path: Path) -> tuple[list[str], list[str], list[SetEntry]]:
     banner_comments: list[str] = []
     globls: list[str] = []
     sets: list[SetEntry] = []
+    in_banner = True
 
     for raw in path.read_text(errors="ignore").splitlines():
         stripped = raw.strip()
         if not stripped:
-            banner_comments.append("")
+            if in_banner:
+                banner_comments.append("")
             continue
         if stripped.startswith("*"):
-            banner_comments.append(stripped[1:].strip())
+            if in_banner:
+                banner_comments.append(stripped[1:].strip())
             continue
         if stripped.startswith(";"):
-            banner_comments.append(stripped[1:].strip())
+            if in_banner:
+                banner_comments.append(stripped[1:].strip())
             continue
 
+        in_banner = False
         code, comment = split_comment(raw)
         match = GLOBL_RE.match(code)
         if match:
@@ -79,10 +117,10 @@ def parse_equ_file(path: Path) -> tuple[list[str], list[str], list[SetEntry]]:
         match = SET_RE.match(code)
         if match:
             name, expr = match.groups()
-            sets.append(SetEntry(name=name, expr=convert_expr(expr), comment=comment))
+            sets.append(SetEntry(name=name, expr=convert_expr(expr), comment=comment, asm_line=raw.rstrip()))
             continue
 
-    return banner_comments, globls, sets
+    return normalize_banner_comments(banner_comments), globls, sets
 
 
 def render_header(src_path: Path, banner_comments: list[str], globls: list[str], sets: list[SetEntry]) -> str:
@@ -92,38 +130,55 @@ def render_header(src_path: Path, banner_comments: list[str], globls: list[str],
     out.append(f"#define {guard}")
     out.append("")
     out.append(f"/* Generated from asm/{src_path.name}. */")
-
-    cleaned_banner = [line for line in banner_comments if line]
-    if cleaned_banner:
-        out.append("/*")
-        for line in cleaned_banner[:8]:
-            out.append(f" * {line}")
-        if len(cleaned_banner) > 8:
-            out.append(" * ...")
-        out.append(" */")
-
-    if globls:
+    if banner_comments:
         out.append("")
-        out.append("/* Original .globl symbols in this module:")
-        for name in globls:
-            out.append(f" *   {name}")
-        out.append(" */")
+        for line in banner_comments:
+            out.append(f"// {line}")
 
     if sets:
         out.append("")
+        rendered_body: list[str] = []
         emitted: dict[str, str] = {}
-        for entry in sets:
+        in_banner = True
+        set_index = 0
+        for raw in src_path.read_text(errors="ignore").splitlines():
+            stripped = raw.strip()
+            if not stripped:
+                if not in_banner:
+                    rendered_body.append("")
+                continue
+            if stripped.startswith("*") or stripped.startswith(";"):
+                if in_banner:
+                    continue
+                comment_body = stripped[1:].strip()
+                rendered_body.append(f"// {comment_body}")
+                continue
+
+            in_banner = False
+            code, _comment = split_comment(raw)
+            if GLOBL_RE.match(code):
+                continue
+
+            set_match = SET_RE.match(code)
+            if not set_match:
+                continue
+
+            entry = sets[set_index]
+            set_index += 1
             prior_expr = emitted.get(entry.name)
             if prior_expr == entry.expr:
                 continue
             if prior_expr is not None:
-                out.append(f"#undef {entry.name}")
+                rendered_body.append(f"#undef {entry.name}")
+            rendered_body.append(f"// asm: {entry.asm_line}")
             expr = f"({entry.expr})" if needs_parens(entry.expr) else entry.expr
             line = f"#define {entry.name} {expr}"
             if entry.comment:
-                line += f" /* {entry.comment} */"
-            out.append(line)
+                line += f" //{entry.comment}"
+            rendered_body.append(line)
             emitted[entry.name] = entry.expr
+
+        out.extend(normalize_emitted_lines(rendered_body))
 
     out.append("")
     out.append(f"#endif /* {guard} */")
@@ -159,13 +214,6 @@ def main() -> int:
                 print(f"out of date: {out_path.relative_to(root)}")
                 failed = True
         return 1 if failed else 0
-
-    expected_names = {path.name for path in pending}
-    for existing in out_dir.glob("*.h"):
-        if existing.name == "types.h":
-            continue
-        if existing.name not in expected_names:
-            existing.unlink()
 
     for out_path, content in pending.items():
         out_path.write_text(content)

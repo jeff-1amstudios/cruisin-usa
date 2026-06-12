@@ -35,22 +35,22 @@ int ATTRWAVE;
 // *
 #define CUT_PAN (PDATA+1)
 #define ZOOMVEL (PDATA+2)
-#define CAMERA_XYZR (PDATA+3)
-#define NEWCAMERA_XYZR (PDATA+7)
+#define CAMERA_XYZR (PDATA+3) //4 long
+#define NEWCAMERA_XYZR (PDATA+7) //4 long
 #define NEW_POSX (PDATA+11)
 #define NEW_POSY (PDATA+12)
 #define NEW_POSZ (PDATA+13)
 #define NEW_RADX (PDATA+14)
 #define NEW_RADY (PDATA+15)
 #define NEW_RADZ (PDATA+16)
-#define NEW_MATRIX (PDATA+17)
+#define NEW_MATRIX (PDATA+17) //9 long
 #define CAMERA_VIEW (PDATA+26)
 #define CAMERA_VEL (PDATA+27)
 #define CAROBJ (PDATA+28)
 #define CARDIS (PDATA+29)
 #define CAMERA_ACCEL (PDATA+30)
 #define CAMERA_INFIN (PDATA+31)
-#define TEMP_DATA (PDATA+32)
+#define TEMP_DATA (PDATA+32) //10 long
 #define LIST_NUM (PDATA+42)
 #define CAMERA_LANE (PDATA+43)
 #define OBJINS (PDATA+44)
@@ -71,9 +71,9 @@ int ATTRWAVE;
 #define LOGO_ENDZ 368
 #define LOGO_FLYIN_FRAMES 125
 #define LOGO_WHOOSH_FRAMES 462
-#define LOGO_SPINZ 18.85
+#define LOGO_SPINZ 18.85 //3 revolutions
 // *----------------------------------------------------------------------------
-/* asm: VIEWLIST	VIEWLIST */
+/* asm: VIEWLIST */
 /* asm: 	.word	GGPARK_LIST */
 /* asm: 	.word	BEVHILL_LIST */
 /* asm: 	.word	GCANYON_LIST */
@@ -92,7 +92,7 @@ int VIEWLIST[] = {
     GCANYON_LIST,
     CHICAGO_LIST,
 };
-/* asm: GGPARK_LIST	GGPARK_LIST */
+/* asm: GGPARK_LIST */
 /* asm: 	*THE first call is to intialize */
 /* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
@@ -110,7 +110,7 @@ int GGPARK_LIST[] = {
     INIT_LEAD, 80, LEAD_VIEW,
     0, 0,
 };
-/* asm: BEVHILL_LIST	BEVHILL_LIST */
+/* asm: BEVHILL_LIST */
 /* asm: 	*THE first call is to intialize */
 /* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
 /* asm: 	.word	CUT_TO_VIEW2,14AFBh,SMOOTH_VIEW */
@@ -124,7 +124,7 @@ int BEVHILL_LIST[] = {
     INIT_STARTING, 100, ROAD_VIEW,
     0, 0,
 };
-/* asm: GCANYON_LIST	GCANYON_LIST */
+/* asm: GCANYON_LIST */
 /* asm: 	*THE first call is to intialize */
 /* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
 /* asm: 	.word	INIT_WATCH,2E20Ah,220,WATCH_VIEW */
@@ -142,7 +142,7 @@ int GCANYON_LIST[] = {
     CUT_TO_VIEW2, 0x30000, SMOOTH_VIEW,
     0, 0,
 };
-/* asm: CHICAGO_LIST	CHICAGO_LIST */
+/* asm: CHICAGO_LIST */
 /* asm: 	*THE first call is to intialize */
 /* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
 /* asm: 	.word	INIT_REVERS_CUP,60,REV_ROAD_VIEW */
@@ -162,7 +162,7 @@ int CHICAGO_LIST[] = {
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: ATTR_WAVETAB	ATTR_WAVETAB */
+/* asm: ATTR_WAVETAB */
 /* asm: 	.word	0,0 */
 /* asm: 	.word	L_LEG5_BEGIN+1,4 */
 /* asm: 	.word	L_LEG9_BEGIN+1,8 */

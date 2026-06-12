@@ -82,7 +82,7 @@ int NTINLK[NOASK_LINK];
 const char *CCT = "CHOOSE CAR";
 // 	;all Y's were 0
 // 	;
-/* asm: CCTAB	CCTAB */
+/* asm: CCTAB */
 /* asm: 	.word	-1384,-164,-4708,cvettem */
 /* asm: 	.float	PI */
 /* asm: 	.word	0481h */
@@ -113,7 +113,7 @@ int CCTAB[] = {
 };
 /* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
 int CHOOSENCAR;
-/* asm: RACE_STARTING_POINTS	RACE_STARTING_POINTS */
+/* asm: RACE_STARTING_POINTS */
 /* asm: 	.word	0 */
 /* asm: 	.word	L_LEG2_BEGIN+1 */
 /* asm: 	.word	L_LEG3_BEGIN+1 */
@@ -212,11 +212,11 @@ int CAR2PAL[129];
 int CAR3PAL[129];
 /* asm: CAR4PAL	.bss	CAR4PAL,129 */
 int CAR4PAL[129];
-/* asm: CARPAL_TABLE	CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
+/* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
 int CARPAL_TABLE[] = {
     CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL,
 };
-/* asm: CARSRCPAL_TAB	CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
+/* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
 int CARSRCPAL_TAB[] = {
     cvette_p, hotrod_p, missle_p, testor_p,
 };
@@ -226,8 +226,8 @@ int CARSRCPAL_TAB[] = {
 // *
 // *
 // 	;THE CAR
-#define RNDR_C1_DYH (PDATA+1)
-#define RNDR_C1_SYH (PDATA+2)
+#define RNDR_C1_DYH (PDATA+1) //desired Y height
+#define RNDR_C1_SYH (PDATA+2) //starting y height
 #define RNDR_C2_DYH (PDATA+3)
 #define RNDR_C2_SYH (PDATA+4)
 #define RNDR_C3_DYH (PDATA+5)
@@ -235,8 +235,8 @@ int CARSRCPAL_TAB[] = {
 #define RNDR_C4_DYH (PDATA+7)
 #define RNDR_C4_SYH (PDATA+8)
 // 	;THE LIFT
-#define RNDR_L1_DYH (PDATA+9)
-#define RNDR_L1_SYH (PDATA+10)
+#define RNDR_L1_DYH (PDATA+9) //desired Y height
+#define RNDR_L1_SYH (PDATA+10) //starting y height
 #define RNDR_L2_DYH (PDATA+11)
 #define RNDR_L2_SYH (PDATA+12)
 #define RNDR_L3_DYH (PDATA+13)
@@ -256,7 +256,7 @@ int CARSRCPAL_TAB[] = {
 // *
 /* asm: IS_HIDDEN	.bss	IS_HIDDEN,1 */
 int IS_HIDDEN;
-/* asm: HIDDEN_TABLE	HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
+/* asm: HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
 int HIDDEN_TABLE[] = {
     jeepm, sbuspm, copcar, gtruck,
 };
@@ -270,13 +270,13 @@ const char *T_READY = "READY";
 const char *T_SET = "SET";
 const char *T_GO = "GO";
 const char *T_CHALLENG = "CHALLENGE RACE";
-/* asm: TLIST	TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
+/* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
 /* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
 int TLIST[] = {
     T_READY, CHICK_READY, SEND_WAVEFL_READY,
     T_SET, CHICK_SET, SEND_WAVEFL_SET,
 };
-/* asm: TLGO	TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
+/* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
 int TLGO[] = {
     T_GO, CHICK_GO, SEND_WAVEFL_GO,
 };
@@ -337,13 +337,13 @@ int CANWT[miniidle];
 int DIRTY_SHARED;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: TRAFFIC_LL	TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
+/* asm: TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
 int TRAFFIC_LL[] = {
     light_yellowon, 10, light_redon, 32, light_greenon, 32, -1,
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: RGBTAB_CP	RGBTAB_CP */
+/* asm: RGBTAB_CP */
 /* asm: 	.word	4 */
 int RGBTAB_CP = 4;
 // *----------------------------------------------------------------------------

@@ -93,16 +93,16 @@ int CHEAT;
 #define PLYPOS3Y (-700)
 #endif
 // ;PLYPOS3Y	.set	-2700	;good heli height
-#define ZOOMRATIO 0.05
+#define ZOOMRATIO 0.05 //1/ZOOMTIME FOR VIEW CHANGE
 // *SWITCH BIT VALUES
-#define SHIFT 4
-#define BRAKE 1
+#define SHIFT 4 //LO-HI SHIFT LEVER
+#define BRAKE 1 //BRAKE PEDAL
 // *RAM VARIABLES
 /* asm: PLMSAV	.bss	PLMSAV,15 */
 int PLMSAV[15];
 /* asm: PMSAV	.bss	PMSAV,9 */
 int PMSAV[9];
-/* asm: ZOOMI	ZOOMI	.word	ZOOMRAM */
+/* asm: ZOOMI	.word	ZOOMRAM */
 #define ZOOMI ZOOMRAM
 #define GRAVITY 1.20
 // *RPM MAX
@@ -116,13 +116,13 @@ int PMSAV[9];
 // *
 // *STDARD .float	0.82,1.00,0.0028,0.010
 // *NEWSTD	.float	0.82,0.90,0.0028,0.0060
-/* asm: CARPARAMTAB	CARPARAMTAB: */
+/* asm: CARPARAMTAB: */
 /* asm: 	*#0 MUSCLE CAR */
 /* asm: 	.float	0.91,0.60,0.0028,0.010		;ALL AROUND */
 int CARPARAMTAB[] = {
     0.91, 0.60, 0.0028, 0.010, // ALL AROUND
 };
-/* asm: CARPARAMTAB1	CARPARAMTAB1 */
+/* asm: CARPARAMTAB1 */
 /* asm: 	*#1 XXX */
 /* asm: 	.float	0.98,0.50,0.0032,0.0042		;ACCEL */
 /* asm: 	*#2 MISSILE */
@@ -147,7 +147,7 @@ int CARPARAMTAB1[] = {
     0.91, 0.65, 0.0028, 0.0050,
     0.89, 0.50, 0.0028, 0.010,
 };
-#define CARPARAMTABL (CARPARAMTAB1-CARPARAMTAB)
+#define CARPARAMTABL (CARPARAMTAB1-CARPARAMTAB) //LENGTH OF ENTRY
 // *----------------------------------------------------------------------------
 // *GET CAR PARAMETERS FOR PLAYER
 // *PARAMETERS
@@ -171,11 +171,11 @@ int CARPARAMTAB1[] = {
 // *CAMERA INIT
 // ;	LDF	1.0,R0			;INIT DRAFT VALUE
 // ;	STF	R0,@PLDRAFTVAL
-/* asm: VIEW0I	VIEW0I	.word	_VIEW0 */
+/* asm: VIEW0I	.word	_VIEW0 */
 #define VIEW0I _VIEW0
-/* asm: VIEW1I	VIEW1I	.word	_VIEW1 */
+/* asm: VIEW1I	.word	_VIEW1 */
 #define VIEW1I _VIEW1
-/* asm: VIEW2I	VIEW2I	.word	_VIEW2 */
+/* asm: VIEW2I	.word	_VIEW2 */
 #define VIEW2I _VIEW2
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
@@ -193,12 +193,16 @@ int ENGVOL;
 // *----------------------------------------------------------------------------
 // *ENGINE ACCEL MULTIPLIER TABLE
 // *
-/* asm: GEARACTAB	GEARACTAB */
+/* asm: GEARACTABI	.word	GEARACTAB */
+#define GEARACTABI GEARACTAB
+/* asm: GEARACTAB */
 /* asm: 	.float	0.0,1.7,1.5,1.4,1.2  		;POWER FACTOR GEAR(0-4) */
 int GEARACTAB[] = {
     0.0, 1.7, 1.5, 1.4, 1.2, // POWER FACTOR GEAR(0-4)
 };
-/* asm: ENGACTAB	ENGACTAB */
+/* asm: ENGACTABI	.word	ENGACTAB */
+#define ENGACTABI ENGACTAB
+/* asm: ENGACTAB */
 /* asm: 	.float	1.20,1.20,0.50,0.60,0.70	;0000,0300,0600,0900,1200 */
 /* asm: 	.float	0.80,0.90,1.00,1.00,1.00	;1500,1800,2100,2400,2700 */
 /* asm: 	.float	1.00,1.00,1.00,1.00,0.90	;3000,3300,3600,3900,4200 */
@@ -225,25 +229,25 @@ int WHLOLD;
 // *----------------------------------------------------------------------------
 // *SOUND TABLES
 // *PLAYER COLLISION SOUND TABLE
-/* asm: SCOLLTAB	SCOLLTAB	.word	SCOLLA,SCOLLB,SCOLLC */
+/* asm: SCOLLTAB	.word	SCOLLA,SCOLLB,SCOLLC */
 int SCOLLTAB[] = {
     SCOLLA, SCOLLB, SCOLLC,
 };
 // *WALL HIT SOUND TABLE
-/* asm: WALLHITAB	WALLHITAB	.word	WALLHITA,WALLHITB,WALLHITC */
+/* asm: WALLHITAB	.word	WALLHITA,WALLHITB,WALLHITC */
 int WALLHITAB[] = {
     WALLHITA, WALLHITB, WALLHITC,
 };
 // *SKID SOUND TABLE
-/* asm: SKIDTAB	SKIDTAB	.word	SKIDB,SKIDC */
+/* asm: SKIDTAB	.word	SKIDB,SKIDC */
 int SKIDTAB[] = {
     SKIDB, SKIDC,
 };
-/* asm: PLAIRSND	PLAIRSND	.word 	RH_BABEWHOA,GL_WOOLAUGH,CHICKSCREAM */
+/* asm: PLAIRSND	.word 	RH_BABEWHOA,GL_WOOLAUGH,CHICKSCREAM */
 int PLAIRSND[] = {
     RH_BABEWHOA, GL_WOOLAUGH, CHICKSCREAM,
 };
-/* asm: REVSNDTAB	REVSNDTAB	.word	SINGLEREV5,SINGLEREV6 */
+/* asm: REVSNDTAB	.word	SINGLEREV5,SINGLEREV6 */
 int REVSNDTAB[] = {
     SINGLEREV5, SINGLEREV6,
 };

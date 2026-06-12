@@ -26,9 +26,9 @@
 // *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-/* asm: EPALR	EPALR	.word	EPALRR */
+/* asm: EPALR	.word	EPALRR */
 int EPALR = EPALRR;
-/* asm: EPALL	EPALL	.word	EPALRL */
+/* asm: EPALL	.word	EPALRL */
 int EPALL = EPALRL;
 /* asm: EPALRR	.bss	EPALRR,129 */
 int EPALRR[129];
@@ -97,13 +97,13 @@ int CT_TURNTOSEL;
 int TRANS_HEAD;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: TRNTAB	TRNTAB	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
+/* asm: TRNTAB	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
 int TRNTAB[] = {
     whel1, whel2, whel3, whel4, whel3, whel2, -1,
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: CYCTAB	CYCTAB	.word	trm3,trm2,trm1,trm2,trm3,trm4,-1 */
+/* asm: CYCTAB	.word	trm3,trm2,trm1,trm2,trm3,trm4,-1 */
 int CYCTAB[] = {
     trm3, trm2, trm1, trm2, trm3, trm4, -1,
 };

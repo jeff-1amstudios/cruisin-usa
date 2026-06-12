@@ -2,22 +2,32 @@
 #define MACS_H
 
 /* Generated from asm/MACS.EQU. */
-/*
- * MACS.EQU
- * COPYRIGHT (C) 1994  BY TV GAMES, INC.
- * ALL RIGHTS RESERVED
- * HIGH LEVEL MACROS
- * IFI	IF integer
- * IFF	IF float
- * IFRI	IF registers integer
- * IFRF	IF registers float
- * ...
- */
 
-/* Original .globl symbols in this module:
- *   :VARIABLE:I
- */
+// MACS.EQU
+// 
+// COPYRIGHT (C) 1994  BY TV GAMES, INC.
+// ALL RIGHTS RESERVED
 
-#define DP_MACROS 0 /* 1 = ACTIVATE */
+// asm: DP_MACROS	.set	0	;1 = ACTIVATE
+#define DP_MACROS 0 //1 = ACTIVATE
+
+// 
+// HIGH LEVEL MACROS
+// 
+// IFI	IF integer
+// IFF	IF float
+// 
+// IFRI	IF registers integer
+// IFRF	IF registers float
+// 
+
+// ----------------------------------------------------------------------------
+
+// 
+// SYMBOLIC LOCKON
+// 
+
+// 
+// 
 
 #endif /* MACS_H */

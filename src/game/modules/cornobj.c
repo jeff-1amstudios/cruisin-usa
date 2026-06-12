@@ -21,7 +21,7 @@
 // ;ROAD_MAPI:	.word	00h
 // ;
 // 	;SECTION DATA
-/* asm: _SECcorn	_SECcorn:		;(15779 lines, 98.62%) */
+/* asm: _SECcorn:		;(15779 lines, 98.62%) */
 /* asm: 	.word	0C16800h	;Src (Compressed) Addr */
 /* asm: 	.word	0BE9600h	;Dest Addr */
 /* asm: 	;	.globl	corn_PALETTES */

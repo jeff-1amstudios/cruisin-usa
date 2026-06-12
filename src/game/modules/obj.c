@@ -50,11 +50,11 @@ int COMM_DRONE_PTR;
 /* asm: PLYRTEMP	.BSS	PLYRTEMP,1 */
 int PLYRTEMP;
 // *----------------------------------------------------------------------------
-/* asm: ACTIVEHI1	ACTIVEHI1	.word	75000		;HI LIMIT FOR INACTIVE-ACTIVE */
+/* asm: ACTIVEHI1	.word	75000		;HI LIMIT FOR INACTIVE-ACTIVE */
 int ACTIVEHI1 = 75000;
-/* asm: ACTIVEHI	ACTIVEHI	.word	80000		;HI LIMIT FOR ACTIVE-INACTIVE */
+/* asm: ACTIVEHI	.word	80000		;HI LIMIT FOR ACTIVE-INACTIVE */
 int ACTIVEHI = 80000;
-#define ACTIVELO (-5000)
+#define ACTIVELO (-5000) //LO LIMIT INACTIVE OBJECT LIST
 // *----------------------------------------------------------------------------
 
 void OBJ_INIT(void)

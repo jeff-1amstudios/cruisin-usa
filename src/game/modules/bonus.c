@@ -41,7 +41,7 @@ int FINISH_LINE;
 /* asm: DO_FOLDFLAG	.bss	DO_FOLDFLAG,1 */
 int DO_FOLDFLAG;
 #define NUM_LEGS 14
-/* asm: LEG_NAMES	LEG_NAMES	.word	LEG1,LEG2,LEG3,LEG4,LEG5,LEG6,LEG7,LEG8 */
+/* asm: LEG_NAMES	.word	LEG1,LEG2,LEG3,LEG4,LEG5,LEG6,LEG7,LEG8 */
 /* asm: 	.word	LEG9,LEG10,LEG11,LEG12,LEG13,LEG14,LEG_USA */
 int LEG_NAMES[] = {
     LEG1, LEG2, LEG3, LEG4, LEG5, LEG6, LEG7, LEG8,
@@ -70,22 +70,22 @@ const char *EXPIRED = "EXPIRED";
 // *
 // *
 // *STRUCT	tagGAMETRAK
-#define GT_ETIME 0
-#define GT_POS 1
-#define GT_MAXMPH 2
-#define GT_COLLS 3
-#define GT_SIZE 4
+#define GT_ETIME 0 //TC	ELAPSED TIME (TIME CODED)
+#define GT_POS 1 //UD	POSITION
+#define GT_MAXMPH 2 //UD	MAX MPH
+#define GT_COLLS 3 //UD	NUMBER OF COLLISIONS
+#define GT_SIZE 4 //SIZ
 // *ENDSTRUCT
 /* asm: GAMETRAK	.bss	GAMETRAK,NUM_LEGS*GT_SIZE */
 int GAMETRAK[NUM_LEGS*GT_SIZE];
 /* asm: ETIME	.bss	ETIME,1 */
 int ETIME;
 // ;etime,#,maxmph
-/* asm: BUFFERSI	BUFFERSI	.word	BIGBUFFER */
+/* asm: BUFFERSI	.word	BIGBUFFER */
 #define BUFFERSI BIGBUFFER
 /* asm: BIGBUFFER	.bss	BIGBUFFER,(4+1+2+2)*NUM_LEGS */
 int BIGBUFFER[(4+1+2+2)*NUM_LEGS];
-/* asm: BONUS_POSTLAUNCH	BONUS_POSTLAUNCH */
+/* asm: BONUS_POSTLAUNCH */
 /* asm: 	.word	BONUS_GGATE,BONUS_SANFRAN,BONUSNULL,BONUSNULL */
 /* asm: 	.word	BONUS_BEVHILLS,BONUSNULL,BONUSNULL */
 /* asm: 	.word	BONUSNULL,BONUSNULL,BONUSNULL */
@@ -100,7 +100,7 @@ int BONUS_POSTLAUNCH[] = {
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: BONUS_TABLE	BONUS_TABLE	.word	BONUS1,BONUS2,BONUS3,BONUS4,BONUS5 */
+/* asm: BONUS_TABLE	.word	BONUS1,BONUS2,BONUS3,BONUS4,BONUS5 */
 /* asm: 	.word	BONUS6,BONUS7,BONUS8,BONUS9,BONUS10 */
 /* asm: 	.word	BONUS11,BONUS12,BONUS13,BONUS14 */
 int BONUS_TABLE[] = {
@@ -206,7 +206,7 @@ const char *LNLS = "NEXT RACE:";
 // *	R4	INDEX
 // *
 // *
-/* asm: FLAG_POS_TABLE	FLAG_POS_TABLE */
+/* asm: FLAG_POS_TABLE */
 /* asm: 	.word	 36,133	;GGpark */
 /* asm: 	.word	 39,147	;Sanfran */
 /* asm: 	.word	 40,156	;I101 */

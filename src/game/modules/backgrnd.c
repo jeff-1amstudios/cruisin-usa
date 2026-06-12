@@ -102,7 +102,7 @@ int TYCO_NTL_IDX;
 // *
 // *
 // *
-/* asm: NEWSUBLIST_TOP	NEWSUBLIST_TOP	.word	NEWSUBLIST_TOPB */
+/* asm: NEWSUBLIST_TOP	.word	NEWSUBLIST_TOPB */
 int NEWSUBLIST_TOP = NEWSUBLIST_TOPB;
 /* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
 int NEWSUBLIST_TOPB;
@@ -114,7 +114,7 @@ int TYCOFLAG;
 int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
 int SECRADY;
-/* asm: LVAL	LVAL	.word	151720 */
+/* asm: LVAL	.word	151720 */
 int LVAL = 151720;
 // *CORNFLAKE END CHECK
 // 	;---->	BZD	REG_LD
@@ -143,18 +143,20 @@ int LVAL = 151720;
 // 	;*
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: OVERCARLIST	OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
+/* asm: OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
 int OVERCARLIST[] = {
     dcbus, dgtruck, dsbus, dcbus,
 };
-/* asm: SMOKE_ANI	SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
+/* asm: SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
 /* asm: 	.word	-1 */
 int SMOKE_ANI[] = {
     smoa, smob, smoc, smod, smoe, smof,
     -1,
 };
 // ;eug1,eug2,eug3,eug4,eug5,eug6
-/* asm: CAR_FIRE_ANI	CAR_FIRE_ANI */
+/* asm: CAR_FIRE_ANII	.word	CAR_FIRE_ANI */
+#define CAR_FIRE_ANII CAR_FIRE_ANI
+/* asm: CAR_FIRE_ANI */
 /* asm: 	.word	rdflm1,rdflm2,rdflm3,rdflm4,rdflm5,rdflm6 */
 /* asm: 	.word	rdflm7,rdflm8,rdflm9,rdflm10,rdflm11,rdflm12 */
 /* asm: 	.word	-1 */
@@ -165,45 +167,49 @@ int CAR_FIRE_ANI[] = {
     rdflm7, rdflm8, rdflm9, rdflm10, rdflm11, rdflm12,
     -1,
 };
-/* asm: DC_MINIFOUNTAIN_ANI	DC_MINIFOUNTAIN_ANI */
+/* asm: DC_MINIFOUNTAIN_ANII	.word	DC_MINIFOUNTAIN_ANI */
+#define DC_MINIFOUNTAIN_ANII DC_MINIFOUNTAIN_ANI
+/* asm: DC_MINIFOUNTAIN_ANI */
 /* asm: 	.word	aft1,aft2,aft3,aft4,aft5,aft6,-1 */
 int DC_MINIFOUNTAIN_ANI[] = {
     aft1, aft2, aft3, aft4, aft5, aft6, -1,
 };
-/* asm: DC_FOUNTAIN_ANI	DC_FOUNTAIN_ANI */
+/* asm: DC_FOUNTAIN_ANII	.word	DC_FOUNTAIN_ANI */
+#define DC_FOUNTAIN_ANII DC_FOUNTAIN_ANI
+/* asm: DC_FOUNTAIN_ANI */
 /* asm: 	.word	ft2,ft3,ft4,ft5,ft6,-1 */
 int DC_FOUNTAIN_ANI[] = {
     ft2, ft3, ft4, ft5, ft6, -1,
 };
 // *----------------------------------------------------------------------------
-/* asm: WATERFALL_ANI	WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
+/* asm: WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
 int WATERFALL_ANI[] = {
     w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, -1,
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: FLAGANI	FLAGANI	.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
+/* asm: FLAGANI	.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
 /* asm: 	.word	bflag6,bflag7,bflag9,bflag10,-1 */
 int FLAGANI[] = {
     bflag1, bflag2, bflag3, bflag4, bflag5,
     bflag6, bflag7, bflag9, bflag10, -1,
 };
-/* asm: FLAGANITALL	FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
+/* asm: FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
 /* asm: 	.word	aflag6,aflag7,aflag9,aflag10,-1 */
 int FLAGANITALL[] = {
     aflag1, aflag2, aflag3, aflag4, aflag5,
     aflag6, aflag7, aflag9, aflag10, -1,
 };
-/* asm: RUT_ANIS	RUT_ANIS	.word	rut,rut2,rut3,-1 */
+/* asm: RUT_ANIS	.word	rut,rut2,rut3,-1 */
 int RUT_ANIS[] = {
     rut, rut2, rut3, -1,
 };
-/* asm: HUNGH_ANIS	HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
+/* asm: HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
 int HUNGH_ANIS[] = {
     hungh1, hungh2, hungh3, hungh4, hungh5, hungh6, hungh7, -1,
 };
 // *----------------------------------------------------------------------------
-/* asm: BABE_PALIST	BABE_PALIST */
+/* asm: BABE_PALIST */
 /* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
 /* asm: 	.word	ungh1_yellow,lift_p,ungh1_skin,bvwall_p */
 int BABE_PALIST[] = {
@@ -231,7 +237,7 @@ int SINGLE_SECTION_TEMPPTR;
 // *----------------------------------------------------------------------------
 // *USE ACTUAL ID (0FFFh)
 // *
-/* asm: ROUTINE_TAB	ROUTINE_TAB: */
+/* asm: ROUTINE_TAB: */
 /* asm: 	.word	40Ah,FLAGWAVE */
 /* asm: 	.word	460h,ROAD_DEBRIS_CREATE */
 /* asm: 	.word	461h,ROAD_DEBRIS_CREATE_55GAL */

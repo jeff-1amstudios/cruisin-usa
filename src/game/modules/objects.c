@@ -21,7 +21,7 @@
 // ;ROAD_MAPI:	.word	00h
 // ;
 // 	;SECTION DATA
-/* asm: _SEChead2head	_SEChead2head:		;(16345 lines, 102.16%) */
+/* asm: _SEChead2head:		;(16345 lines, 102.16%) */
 /* asm: 	.word	0C15000h	;Src (Compressed) Addr */
 /* asm: 	.word	0BEFA00h	;Dest Addr */
 /* asm: 	;	.globl	head2head_PALETTES */

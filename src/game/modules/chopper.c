@@ -33,31 +33,31 @@ int HELI_ABORT;
 // *LOCALS  (AFTER DELTA EQUATES)
 #define CD_ANIPROC (PDATA+18)
 #define CD_MODE (PDATA+19)
-#define CD_ACC (PDATA+20)
-#define CD_SPEED (PDATA+21)
-#define CD_BOMBTIK (PDATA+22)
-#define CD_TSPEED (PDATA+23)
-#define CD_TSPEED_OLD (PDATA+24)
-#define CD_FLYTDIR (PDATA+25)
-#define CD_DHEIGHT (PDATA+26)
-#define CD_ODHEIGHT (PDATA+27)
-#define CD_CLOSEROAD (PDATA+28)
-#define CD_AHEADP (PDATA+29)
+#define CD_ACC (PDATA+20) //acceleration
+#define CD_SPEED (PDATA+21) //current speed
+#define CD_BOMBTIK (PDATA+22) //bomb pause
+#define CD_TSPEED (PDATA+23) //true speed (x/y/z)
+#define CD_TSPEED_OLD (PDATA+24) //old true speed (x/y/z)
+#define CD_FLYTDIR (PDATA+25) //breakaway theta
+#define CD_DHEIGHT (PDATA+26) //FL desired height value
+#define CD_ODHEIGHT (PDATA+27) //FL old desired height value
+#define CD_CLOSEROAD (PDATA+28) //UD closest road object
+#define CD_AHEADP (PDATA+29) //UD	flag ahead of player?
 #define CD_PASS_COUNT (PDATA+30)
 #define CD_BOMB_COUNT (PDATA+31)
 #define CD_MAX_PASSES (PDATA+32)
 #define CD_MAX_BOMBS (PDATA+33)
-#define CD_LASTPASS (PDATA+34)
-#define CD_DOATTACK (PDATA+35)
+#define CD_LASTPASS (PDATA+34) //P
+#define CD_DOATTACK (PDATA+35) //P
 // *NO MORE UNLESS NOT JSRPing
 // *CHOPPER MODE
-#define CM_CU 1
-#define CM_DB 2
-#define CM_FA 3
+#define CM_CU 1 //CATCH UP
+#define CM_DB 2 //DROP BOMBS
+#define CM_FA 3 //FLY AWAY
 #define CRADZ OUSR1
-#define MAX_SPEED 667
+#define MAX_SPEED 667 //about 180 mph
 // *----------------------------------------------------------------------------
-/* asm: CHOPPERDYNA	CHOPPERDYNA */
+/* asm: CHOPPERDYNA */
 /* asm: 	.word	1		;#OF DYNAS-1 */
 /* asm: 	.float	0,-206,14	;blades */
 /* asm: 	.word	3		;VERTS-1 */

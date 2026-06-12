@@ -293,7 +293,30 @@ def parse_line_tokens(code: str) -> List[str]:
     s = code.strip()
     if not s:
         return []
-    return [normalize_token(t) for t in re.split(r"[\s,]+", s) if normalize_token(t)]
+    out: List[str] = []
+    cur: List[str] = []
+    quote = ""
+    for ch in s:
+        if quote:
+            cur.append(ch)
+            if ch == quote:
+                quote = ""
+            continue
+        if ch in {"'", '"'}:
+            quote = ch
+            cur.append(ch)
+            continue
+        if ch.isspace() or ch == ",":
+            tok = normalize_token("".join(cur))
+            if tok:
+                out.append(tok)
+            cur = []
+            continue
+        cur.append(ch)
+    tok = normalize_token("".join(cur))
+    if tok:
+        out.append(tok)
+    return out
 
 
 def split_label_and_tokens(code: str) -> Tuple[int, List[str]]:

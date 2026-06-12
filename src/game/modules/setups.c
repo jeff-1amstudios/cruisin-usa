@@ -27,7 +27,7 @@
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: FULLSETUP_TABLE	FULLSETUP_TABLE: */
+/* asm: FULLSETUP_TABLE: */
 /* asm: 	.word	FULLSETUP_GGPARK */
 /* asm: 	.word	FULLSETUP_SANFRAN,FULLSETUP_H280,FULLSETUP_REDWOOD */
 /* asm: 	.word	FULLSETUP_BEVERLY,FULLSETUP_LAFREEWAY,FULLSETUP_DEATHVALLEY */
@@ -42,7 +42,7 @@ int FULLSETUP_TABLE[] = {
     FULLSETUP_CHICAGO, FULLSETUP_INDIANA, FULLSETUP_APPALACHIA,
     FULLSETUP_WASHINGTONDC,
 };
-/* asm: LOADSECTION_TABLE	LOADSECTION_TABLE */
+/* asm: LOADSECTION_TABLE */
 /* asm: 	.word	LOADGGPARK,LOADSANFRAN,LOADALLH280,LOADREDWOOD,LOADBEVERLY,LOADLAFREEWAY */
 /* asm: 	.word	LOADDEATHVALLEY,LOADARIZONA,LOADGCANYON,LOADIOWA,LOADCHICAGO */
 /* asm: 	.word	LOADINDIANA,LOADAPPALACHIA,LOADWASHINGTONDC */

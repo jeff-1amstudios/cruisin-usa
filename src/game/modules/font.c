@@ -13,7 +13,7 @@
 // *
 // *SLOW ROM
 // *
-/* asm: _font1	_font1 */
+/* asm: _font1 */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0111000b */
 /* asm: 	.word	1110000b */

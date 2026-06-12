@@ -49,13 +49,13 @@
 // *these parameters would be encoded into AR2 when calling SCREEN_WIPE
 // *and from there it would be moved to AR6, and checked each tik.
 // *
-/* asm: MONKEYOBJRVI	MONKEYOBJRVI	.word	mnkrv */
+/* asm: MONKEYOBJRVI	.word	mnkrv */
 #define MONKEYOBJRVI mnkrv
-/* asm: MONKEYOBJLVI	MONKEYOBJLVI	.word	mnklv */
+/* asm: MONKEYOBJLVI	.word	mnklv */
 #define MONKEYOBJLVI mnklv
-/* asm: MONKEYOBJUHI	MONKEYOBJUHI	.word	mnkuh */
+/* asm: MONKEYOBJUHI	.word	mnkuh */
 #define MONKEYOBJUHI mnkuh
-/* asm: MONKEYOBJLHI	MONKEYOBJLHI	.word	mnklh */
+/* asm: MONKEYOBJLHI	.word	mnklh */
 #define MONKEYOBJLHI mnklh
 /* asm: SCREENWIPE_DONE	.bss	SCREENWIPE_DONE,1 */
 int SCREENWIPE_DONE;

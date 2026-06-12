@@ -30,24 +30,24 @@ int TEXT_ACTIVE;
 int TEXT_FREE_COUNT;
 /* asm: TEXT_FREEZE	.bss	TEXT_FREEZE,1 */
 int TEXT_FREEZE;
-/* asm: FIXEDFONT_A	FIXEDFONT_A	.word	fixedfnt */
+/* asm: FIXEDFONT_A	.word	fixedfnt */
 int FIXEDFONT_A = fixedfnt;
-/* asm: TEXTTABLEFIXEDI	TEXTTABLEFIXEDI	.word	FIXEDFONT */
+/* asm: TEXTTABLEFIXEDI	.word	FIXEDFONT */
 #define TEXTTABLEFIXEDI FIXEDFONT
-/* asm: FONTDIGITSM_A	FONTDIGITSM_A	.word	dnums_I */
+/* asm: FONTDIGITSM_A	.word	dnums_I */
 int FONTDIGITSM_A = dnums_I;
-/* asm: FONT18_A	FONT18_A	.word	font18_I */
+/* asm: FONT18_A	.word	font18_I */
 int FONT18_A = font18_I;
-/* asm: TEXTTABLEFONT18	TEXTTABLEFONT18	.word	FONT18_TAB */
+/* asm: TEXTTABLEFONT18	.word	FONT18_TAB */
 int TEXTTABLEFONT18 = FONT18_TAB;
-/* asm: FONT40_A	FONT40_A	.word	ommdfont_I */
+/* asm: FONT40_A	.word	ommdfont_I */
 int FONT40_A = ommdfont_I;
-/* asm: FONT10_A	FONT10_A	.word	osg10fnt_I */
+/* asm: FONT10_A	.word	osg10fnt_I */
 int FONT10_A = osg10fnt_I;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: FONTN43_A	FONTN43_A	.word	lgnum43_I */
+/* asm: FONTN43_A	.word	lgnum43_I */
 int FONTN43_A = lgnum43_I;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------

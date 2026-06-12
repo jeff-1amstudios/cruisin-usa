@@ -95,7 +95,9 @@ int SAVED_PLY2CAR;
 // *	  AR2 should be incremented to the next block
 // *
 // *
-/* asm: DECODE_BLOCK	DECODE_BLOCK */
+/* asm: DECODE_BLOCKI	.word	DECODE_BLOCK */
+#define DECODE_BLOCKI DECODE_BLOCK
+/* asm: DECODE_BLOCK */
 /* asm: 	.word	DECODE_NULL */
 /* asm: 	.word	DECODE_MODE		;CB_MODE */
 /* asm: 	.word	DECODE_TIMECODE		;CB_TIMECODE */

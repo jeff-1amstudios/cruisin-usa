@@ -127,7 +127,7 @@ int MOTION_RCV_TIKS;
 // ;MOTOROFF4	.string	"ST XYZ;MO",13,0
 // ;MOTOROFF4	.string	0
 // ;
-/* asm: MOTOFF_PROG	MOTOFF_PROG */
+/* asm: MOTOFF_PROG */
 /* asm: 	.word	MOTOROFF1 */
 /* asm: 	.word	MOTOROFF2 */
 /* asm: 	.word	MOTOROFF3 */
@@ -156,9 +156,9 @@ int MOTOFF_PROG[] = {
     MOTOROFF12,
     0,
 };
-/* asm: BABAID	BABAID	.word	JJG */
+/* asm: BABAID	.word	JJG */
 int BABAID = JJG;
-/* asm: JJG	JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
+/* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
 int JJG[] = {
     MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7,
 };
@@ -271,7 +271,7 @@ int LAST_YR;
 // ;	PUSHFL	R4
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: THEPROGL	THEPROGL */
+/* asm: THEPROGL */
 /* asm: 	.word	EDIT,T5,T6,T7,T8,T9 */
 /* asm: 	.word	T10,T11,T12,T13,T14,T15,T16,T17,T18,T19 */
 /* asm: 	.word	T20,T21,T22,T23,T24,T25,T26,T27,T28,T29 */
@@ -341,15 +341,15 @@ int THEPROGL[] = {
 // *	NC	IF NOT ERROR
 // *
 // *
-/* asm: CME_MASK	CME_MASK	.word	0FF80h */
+/* asm: CME_MASK	.word	0FF80h */
 int CME_MASK = 0x0FF80;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: LLG6X	LLG6X	.word	L4ABX */
+/* asm: LLG6X	.word	L4ABX */
 int LLG6X = L4ABX;
-/* asm: LLG6Y	LLG6Y	.word	L4ABY */
+/* asm: LLG6Y	.word	L4ABY */
 int LLG6Y = L4ABY;
-/* asm: LLG6Z	LLG6Z	.word	L4ABZ */
+/* asm: LLG6Z	.word	L4ABZ */
 int LLG6Z = L4ABZ;
 const char *L4ABX = "X ENCODER FAILURE";
 const char *L4ABY = "Y ENCODER FAILURE";

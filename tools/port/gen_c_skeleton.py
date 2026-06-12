@@ -134,6 +134,7 @@ class SetDefine:
     name: str
     expr: str
     origin: str = "set"
+    comment: str = ""
 
 
 @dataclass
@@ -408,11 +409,17 @@ def render_conditional_line(raw: str) -> str | None:
     return None
 
 
-def render_asm_comment(raw: str) -> str | None:
+def render_asm_comment(raw: str, strip_asm_comment_markers: bool = False) -> str | None:
     stripped = raw.rstrip()
     if not stripped:
         return None
-    if stripped.lstrip().startswith("*") or stripped.lstrip().startswith(";"):
+    lstripped = stripped.lstrip()
+    if lstripped.startswith("*") or lstripped.startswith(";"):
+        if strip_asm_comment_markers:
+            comment_body = lstripped[1:]
+            if comment_body.startswith(" "):
+                comment_body = comment_body[1:]
+            return f"// {comment_body}"
         return f"// {stripped}"
     return None
 
@@ -754,7 +761,7 @@ def render_word_variable(var: WordVariable) -> list[str]:
     if len(var.values) == 1 and var.name.endswith("I") and var.values[0] == var.name[:-1]:
         return out
     if var.asm_lines:
-        out.append(f"/* asm: {var.name}\t{var.asm_lines[0].strip()} */")
+        out.append(f"/* asm: {var.asm_lines[0].strip()} */")
         for extra_line in var.asm_lines[1:]:
             out.append(f"/* asm: \t{extra_line.strip()} */")
     ident = sanitize_identifier(var.name)
@@ -791,7 +798,13 @@ def render_word_variable(var: WordVariable) -> list[str]:
 
 def render_set_define(entry: SetDefine) -> list[str]:
     expr = f"({entry.expr})" if needs_parens(entry.expr) else entry.expr
-    return [f"#define {entry.name} {expr}"]
+    rendered = f"#define {entry.name} {expr}"
+    comment = entry.comment.strip()
+    if comment:
+        if comment.startswith(";"):
+            comment = comment[1:].lstrip()
+        rendered += f" //{comment}"
+    return [rendered]
 
 
 def render_discovered_defines_header(defines: list[DefineEntry]) -> str:
@@ -916,6 +929,8 @@ def render_top_level_items(
     functions: list[FunctionBlock],
     address_map: dict[str, int],
     module: str,
+    strip_asm_comment_markers: bool = False,
+    emit_set_asm_comments: bool = False,
 ) -> list[str]:
     function_line_indexes: set[int] = set()
     for fn in functions:
@@ -932,7 +947,7 @@ def render_top_level_items(
             idx += 1
             continue
 
-        asm_comment = render_asm_comment(raw)
+        asm_comment = render_asm_comment(raw, strip_asm_comment_markers=strip_asm_comment_markers)
         if asm_comment is not None:
             out.append(asm_comment)
             idx += 1
@@ -944,11 +959,13 @@ def render_top_level_items(
             idx += 1
             continue
 
-        code, _comment = split_comment(raw)
+        code, comment = split_comment(raw)
         set_match = SET_RE.match(code)
         if set_match:
             name, expr = set_match.groups()
-            define_entry = SetDefine(name=name, expr=convert_expr(expr))
+            define_entry = SetDefine(name=name, expr=convert_expr(expr), comment=comment)
+            if emit_set_asm_comments:
+                out.append(f"// asm: {raw.rstrip()}")
             if name in emitted_sets:
                 out.append(f"#undef {name}")
             out.extend(render_set_define(define_entry))
@@ -981,6 +998,18 @@ def render_top_level_items(
                             values.extend(part.strip() for part in operands.split(",") if part.strip())
                 if not values:
                     values = ["0"]
+                if (
+                    len(values) == 1
+                    and next_idx < len(lines)
+                    and is_flush_left(lines[next_idx])
+                ):
+                    next_code, _next_comment = split_comment(lines[next_idx])
+                    next_label_match = BARE_LABEL_RE.match(next_code)
+                    if next_label_match and next_label_match.group(1) == values[0]:
+                        out.append(f"/* asm: {standalone_data.asm_lines[0].strip()} */")
+                        out.append(f"#define {sanitize_identifier(standalone_data.name)} {convert_expr(values[0])}")
+                        idx = next_idx
+                        continue
                 out.extend(
                     render_word_variable(
                         WordVariable(
@@ -1067,6 +1096,18 @@ def render_top_level_items(
 
             if not values:
                 values = ["0"]
+            if (
+                len(values) == 1
+                and next_idx < len(lines)
+                and is_flush_left(lines[next_idx])
+            ):
+                next_code, _next_comment = split_comment(lines[next_idx])
+                next_label_match = BARE_LABEL_RE.match(next_code)
+                if next_label_match and next_label_match.group(1) == values[0]:
+                    out.append(f"/* asm: {asm_lines[0].strip()} */")
+                    out.append(f"#define {sanitize_identifier(label)} {convert_expr(values[0])}")
+                    idx = next_idx
+                    continue
             resolved_values = {}
             for value in values:
                 addr = lookup_address_map_symbol(address_map, value, module)
@@ -1095,6 +1136,7 @@ def render_module(
     discovered_header_needed: bool = False,
 ) -> str:
     lines = src_path.read_text(errors="ignore").splitlines()
+    is_equ_source = src_path.suffix.upper() == ".EQU"
     headers = parse_include_headers(lines)
     if own_header is not None:
         headers.append(own_header)
@@ -1110,6 +1152,8 @@ def render_module(
         functions,
         address_map,
         src_path.stem.upper(),
+        strip_asm_comment_markers=is_equ_source,
+        emit_set_asm_comments=is_equ_source,
     )
 
     out: list[str] = []
@@ -1138,7 +1182,7 @@ def render_module(
         out.append("")
         rendered_count += 1
 
-    if rendered_count == 0:
+    if rendered_count == 0 and not (is_equ_source and top_level_items):
         fallback = sanitize_identifier(src_path.stem.lower())
         out.append(f"void {fallback}(void)")
         out.append("{")

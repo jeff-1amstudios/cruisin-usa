@@ -32,7 +32,7 @@ int CAMRADY;
 // *only that value must be projected in Y.
 // *
 // *
-#define HIGH_CLIP_LEVEL ((5000-1))
+#define HIGH_CLIP_LEVEL ((5000-1)) //ACTUAL # OF ENTRIES
 /* asm: HIGHEST_ROADY	.bss	HIGHEST_ROADY,1 */
 int HIGHEST_ROADY;
 /* asm: HIGHEST_ROADY_X	.bss	HIGHEST_ROADY_X,1 */
@@ -51,15 +51,15 @@ int VAR_ROAD_KFACTOR;
 // *
 /* asm: AMOUNT_CLIPPED	.bss	AMOUNT_CLIPPED,1 */
 int AMOUNT_CLIPPED;
-/* asm: LOIVAL	LOIVAL	.word	-768 */
+/* asm: LOIVAL	.word	-768 */
 int LOIVAL = -768;
-/* asm: HIGHIVAL	HIGHIVAL	.word	1536 */
+/* asm: HIGHIVAL	.word	1536 */
 int HIGHIVAL = 1536;
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: INFINITY_POINTS	INFINITY_POINTS	.word	INFINPOINTS */
-int INFINITY_POINTS = INFINPOINTS;
-/* asm: INFINPOINTS	INFINPOINTS */
+/* asm: INFINITY_POINTS	.word	INFINPOINTS */
+#define INFINITY_POINTS INFINPOINTS
+/* asm: INFINPOINTS */
 /* asm: 	.float	-1280,0,0 */
 /* asm: 	.float	-1280,-255,0 */
 /* asm: 	.float	-1024,0,0 */
@@ -130,9 +130,9 @@ int INFINPOINTS[] = {
     1700, -253, 0,
     1700, -1250, 0,
 };
-/* asm: INFIN_POLYGONSI	INFIN_POLYGONSI	.word	BLUESKY */
+/* asm: INFIN_POLYGONSI	.word	BLUESKY */
 #define INFIN_POLYGONSI BLUESKY
-/* asm: BLUESKY	BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
+/* asm: BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
 /* asm: 	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
 int BLUESKY[] = {
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
@@ -151,7 +151,9 @@ int BLUESKY[] = {
 // *
 /* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
 int INFIN_CORRECT;
-/* asm: WATERPOS	WATERPOS */
+/* asm: WATERPOSI	.word	WATERPOS */
+#define WATERPOSI WATERPOS
+/* asm: WATERPOS */
 /* asm: 	.float	-1280,128,0 */
 /* asm: 	.float	-1280,0,0 */
 /* asm: 	.float	-1024,128,0 */

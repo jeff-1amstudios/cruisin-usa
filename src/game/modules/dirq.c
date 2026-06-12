@@ -10,6 +10,7 @@
 #include "../include/sysid.h"
 #include "../include/globals.h"
 #include "../include/dirq_defs.h"
+#include "../include/discovered_defines.h"
 #include "../include/backgrnd.h"
 #include "../include/obj_defs.h"
 #include "../include/totala.h"
@@ -62,46 +63,46 @@
 // *----------------------------------------------------------------------------
 #define POSTERCLIP 300
 #define LOW_CLIP_LEVEL 100
-#define HIGH_CLIP_LEVEL ((5000-1))
-/* asm: CAMERAPOSI	CAMERAPOSI	.word	_CAMERAPOS */
+#define HIGH_CLIP_LEVEL ((5000-1)) //ACTUAL # OF ENTRIES
+/* asm: CAMERAPOSI	.word	_CAMERAPOS */
 #define CAMERAPOSI _CAMERAPOS
-/* asm: CAMERARADI	CAMERARADI	.word	_CAMERARAD */
+/* asm: CAMERARADI	.word	_CAMERARAD */
 #define CAMERARADI _CAMERARAD
-/* asm: CAMERAMATRIXI	CAMERAMATRIXI	.word	_CAMERAMATRIX */
+/* asm: CAMERAMATRIXI	.word	_CAMERAMATRIX */
 #define CAMERAMATRIXI _CAMERAMATRIX
-/* asm: ASHADOW	ASHADOW	.word	_ACNTL		;HEADS UP THE FIFO MIRROR */
+/* asm: ASHADOW	.word	_ACNTL		;HEADS UP THE FIFO MIRROR */
 int ASHADOW = _ACNTL;
-/* asm: LIGHTIY	LIGHTIY	.word	_LIGHT+1 */
+/* asm: LIGHTIY	.word	_LIGHT+1 */
 int LIGHTIY = _LIGHT+1;
-/* asm: transmatrixI	transmatrixI	.word	ROTATION_MATRIX */
+/* asm: transmatrixI	.word	ROTATION_MATRIX */
 #define transmatrixI ROTATION_MATRIX
-/* asm: transvectorYI	transvectorYI	.word	TRANSVECTOR+1 */
+/* asm: transvectorYI	.word	TRANSVECTOR+1 */
 int transvectorYI = TRANSVECTOR+1;
-/* asm: POSTERMATI	POSTERMATI	.word	POSTERMATRIX */
+/* asm: POSTERMATI	.word	POSTERMATRIX */
 #define POSTERMATI POSTERMATRIX
-/* asm: POSTERMAT2DI	POSTERMAT2DI	.word	POSTERMATRIX2D */
+/* asm: POSTERMAT2DI	.word	POSTERMATRIX2D */
 #define POSTERMAT2DI POSTERMATRIX2D
-/* asm: tmpmatI	tmpmatI	.word	TMPMAT */
+/* asm: tmpmatI	.word	TMPMAT */
 #define tmpmatI TMPMAT
-/* asm: tmpmatY	tmpmatY	.word	TMPMAT+1 */
+/* asm: tmpmatY	.word	TMPMAT+1 */
 int tmpmatY = TMPMAT+1;
-/* asm: HIGH_CLIP_LEV8	HIGH_CLIP_LEV8	.word	80000		;MATHEMATICAL LIMIT */
+/* asm: HIGH_CLIP_LEV8	.word	80000		;MATHEMATICAL LIMIT */
 int HIGH_CLIP_LEV8 = 80000;
-/* asm: MATRIXAI	MATRIXAI	.word	_MATRIXA */
+/* asm: MATRIXAI	.word	_MATRIXA */
 #define MATRIXAI _MATRIXA
-/* asm: MATRIXBI	MATRIXBI	.word	_MATRIXB */
+/* asm: MATRIXBI	.word	_MATRIXB */
 #define MATRIXBI _MATRIXB
-/* asm: MATRIXCI	MATRIXCI	.word	_MATRIXC */
+/* asm: MATRIXCI	.word	_MATRIXC */
 #define MATRIXCI _MATRIXC
-/* asm: VECTORAI	VECTORAI	.word	_VECTORA */
+/* asm: VECTORAI	.word	_VECTORA */
 #define VECTORAI _VECTORA
-/* asm: VECTORBI	VECTORBI	.word	_VECTORB */
+/* asm: VECTORBI	.word	_VECTORB */
 #define VECTORBI _VECTORB
-/* asm: VECTORCI	VECTORCI	.word	_VECTORC */
+/* asm: VECTORCI	.word	_VECTORC */
 #define VECTORCI _VECTORC
-/* asm: VECTORDI	VECTORDI	.word	_VECTORD */
+/* asm: VECTORDI	.word	_VECTORD */
 #define VECTORDI _VECTORD
-/* asm: VECTORAYI	VECTORAYI	.word	_VECTORA+1 */
+/* asm: VECTORAYI	.word	_VECTORA+1 */
 int VECTORAYI = _VECTORA+1;
 /* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */
 int POSTERMATRIX2D[4];

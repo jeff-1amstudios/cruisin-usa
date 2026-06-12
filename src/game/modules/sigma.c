@@ -39,7 +39,9 @@
 #define SIGT_PTRUCKG 6
 #define SIGT_JEEP 7
 #define SIGMA_LIST_LEN 16
-/* asm: SIGMA_LIST	SIGMA_LIST */
+/* asm: SIGMA_LISTI	.word	SIGMA_LIST */
+#define SIGMA_LISTI SIGMA_LIST
+/* asm: SIGMA_LIST */
 /* asm: 	.word	GTRUCK_MOD,0 */
 /* asm: 	.word	CBUS_MOD,SS_LONG */
 /* asm: 	.word	COPCAR_MOD,SS_COPCAR */

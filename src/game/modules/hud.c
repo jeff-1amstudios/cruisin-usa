@@ -27,7 +27,7 @@
 // *COPYRIGHT (C) 1994  BY TV GAMES, INC.
 // *ALL RIGHTS RESERVED
 // *
-#define SECTION_COUNTER 0
+#define SECTION_COUNTER 0 //1 = TURN ON UL CRNR
 /* asm: COUNTDOWN_BUF	.bss	COUNTDOWN_BUF,2 */
 int COUNTDOWN_BUF[2];
 /* asm: MPH_BUFFER	.bss	MPH_BUFFER,2 */
@@ -42,7 +42,7 @@ int SCORE;
 int POSITION;
 /* asm: MAXMPH_COUNT	.bss	MAXMPH_COUNT,1 */
 int MAXMPH_COUNT;
-/* asm: STOPBUFFI	STOPBUFFI	.word	STOPBUFFER */
+/* asm: STOPBUFFI	.word	STOPBUFFER */
 #define STOPBUFFI STOPBUFFER
 /* asm: STOPBUFFER	.bss	STOPBUFFER,4 */
 int STOPBUFFER[4];
@@ -53,7 +53,7 @@ int OFFROADBUFF[2];
 // *----------------------------------------------------------------------------
 /* asm: MOVEIN_OFFSET	.bss	MOVEIN_OFFSET,1 */
 int MOVEIN_OFFSET;
-/* asm: SAFETS	SAFETS	.word	MSAF,BSAF,OSAF,MSSM */
+/* asm: SAFETS	.word	MSAF,BSAF,OSAF,MSSM */
 int SAFETS[] = {
     MSAF, BSAF, OSAF, MSSM,
 };
@@ -72,9 +72,9 @@ const char *MSSM = "MOTION STOP BUTTON HIT";
 // 	;show gear digit
 // 	;
 // 	;
-/* asm: GEARI	GEARI	.word	GEARS */
+/* asm: GEARI	.word	GEARS */
 #define GEARI GEARS
-/* asm: GEARS	GEARS	.word	GEARN,GEAR1,GEAR2,GEAR3,GEAR4 */
+/* asm: GEARS	.word	GEARN,GEAR1,GEAR2,GEAR3,GEAR4 */
 int GEARS[] = {
     GEARN, GEAR1, GEAR2, GEAR3, GEAR4,
 };
@@ -105,7 +105,9 @@ int LASTSEC;
 // 	;-------POSITION
 // 	;(PLAYERS RANK)
 // 	;
-/* asm: POS_TABLE	POS_TABLE */
+/* asm: POS_TABLEI	.word	POS_TABLE */
+#define POS_TABLEI POS_TABLE
+/* asm: POS_TABLE */
 /* asm: 	.word	scred1,dst,7 */
 /* asm: 	.word	scred2,dnd,0 */
 /* asm: 	.word	scred3,drd,0 */
@@ -144,7 +146,7 @@ int SECIDX[2];
 // *----------------------------------------------------------------------------
 /* asm: TACHOMETER_PAL	.bss	TACHOMETER_PAL,32 */
 int TACHOMETER_PAL[32];
-/* asm: GEARPAL	GEARPAL */
+/* asm: GEARPAL */
 /* asm: 	.word	0 */
 /* asm: 	.word	0 */
 /* asm: 	.word	0 */

@@ -52,13 +52,13 @@ const char *CRUISE3 = "IN THE WHITE HOUSE HOT TUB";
 // *
 // *
 // *
-/* asm: LLG1	LLG1	.word	L4A */
+/* asm: LLG1	.word	L4A */
 int LLG1 = L4A;
-/* asm: LLG2	LLG2	.word	L5A */
+/* asm: LLG2	.word	L5A */
 int LLG2 = L5A;
-/* asm: LLG3	LLG3	.word	L5B */
+/* asm: LLG3	.word	L5B */
 int LLG3 = L5B;
-/* asm: L88	L88	.word	IBOIBOJ */
+/* asm: L88	.word	IBOIBOJ */
 int L88 = IBOIBOJ;
 const char *L4A = "MOTION RECALIBRATION";
 const char *L5A = "REMAIN SEATED";
@@ -159,20 +159,22 @@ int TSEL_THEONE;
 // *----------------------------------------------------------------------------
 // *
 // *
-/* asm: ANIMATE_MAP_TAB	ANIMATE_MAP_TAB	.word	mhop1,mhop2,mhop3,mhop4,-1 */
+/* asm: ANIMATE_MAP_TAB	.word	mhop1,mhop2,mhop3,mhop4,-1 */
 int ANIMATE_MAP_TAB[] = {
     mhop1, mhop2, mhop3, mhop4, -1,
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
-/* asm: TURNANI	TURNANI	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
+/* asm: TURNANI	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
 int TURNANI[] = {
     whel1, whel2, whel3, whel4, whel3, whel2, -1,
 };
 // *----------------------------------------------------------------------------
 // *----------------------------------------------------------------------------
 #define TRACK_SELECTION_LIST_LEN 11
-/* asm: TRACK_SELECTION_LIST	TRACK_SELECTION_LIST */
+/* asm: TRACK_SELECTION_LISTI	.word	TRACK_SELECTION_LIST */
+#define TRACK_SELECTION_LISTI TRACK_SELECTION_LIST
+/* asm: TRACK_SELECTION_LIST */
 /* asm: 	.word	RACE_AZ */
 /* asm: 	.word	RACE_US101 */
 /* asm: 	.word	RACE_LA */
