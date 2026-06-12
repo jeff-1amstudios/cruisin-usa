@@ -9,7 +9,7 @@
 *
 *	Eric L Pribyl
 *	Eugene P. Jarvis
-*
+*	
 *	1.0	JUL 91	ELP	Original version	May 30, 1991
 *	2.00    NOV 91  EPJ     HEAVY OPTIMIZATIONS
 *	2.01	DEC 91  ELP	PComp support
@@ -258,9 +258,9 @@ NOBREAK_CONTINUE
 	LDF	*AR3++,R5		;
 
 TRU_UNIV
-	SUBF	*AR6++,*AR3++,R3	;*trans++ = *tp++ - *up++
-	SUBF	*AR6++,*AR3++,R4	;*trans++ = *tp++ - *up++
-	SUBF	*AR6++,*AR3++,R5	;*trans++ = *tp++ - *up++
+	SUBF	*AR6++,*AR3++,R3	;*trans++ = *tp++ - *up++ 
+	SUBF	*AR6++,*AR3++,R4	;*trans++ = *tp++ - *up++ 
+	SUBF	*AR6++,*AR3++,R5	;*trans++ = *tp++ - *up++ 
 
 TRANS_RET
 
@@ -329,7 +329,7 @@ TRIVIAL_REJECTION:
 
 	TSTB	O_DEGRADE,R6		;does this have a degrade model?
 	BZD	NO_DEGRADE
-	STF	R2,*+AR6(1)		;(TRANSVECTOR.z) R2 = Z value of object
+	STF	R2,*+AR6(1)		;(TRANSVECTOR.z) R2 = Z value of object	
 	FIX	R2			;convert Z distance to integer
 	STI	R2,*+AR0(ODIST)
 	;---->BZ NO_DEGRADE
@@ -368,7 +368,7 @@ NO_DEGRADE
 	FLOAT	R4			;RADIUS must be positive
 	LDF	*AR3,R1			;get the inverse Z factor
 	MPYF	R1,R4			;project RADIUS for distance
-
+	
 	MPYF	*AR6,R1,R3		;project Y position
 	ADDF	R4,R3,R2
 	ADDF	@SCRNHYI,R2
@@ -455,7 +455,7 @@ CHECKTHEREG
 
 	FLOAT	POSTERCLIP,R0
 	CMPF	*+AR6(1),R0		;CHECK IF TOO CLOSE
-
+	
 	BLED	VT		 	;CLIP OUT POSTERS IF TOO CLOSE
 	NOP
 	LDI	@POSTERMATI,AR5
@@ -487,7 +487,7 @@ REGULAR
 	NOP
 	;---->BU VT
 
-*in this case identity rotation means that it CAN be self rotating, that is
+*in this case identity rotation means that it CAN be self rotating, that is 
 *entirely dependant on the matrix of the object
 IDENTITY_ROTATION
 	LDI	AR0,AR5
@@ -579,8 +579,7 @@ VT
 	LDF	*-AR6(1),R4		;GET X TRANS
 	LDF	*AR6,R5			;GET Y TRANS
 	;---->BR 	VTL
-	BR 	VTL				; jeff added to match I450 rom
-	.align
+	.align 
 VTL
 	RPTB	EOVCTR
 
@@ -588,11 +587,11 @@ VTL
 	;AR0	object ptr		PRELOADED *SAVE*
 	;AR1	rom ptr			PRELOADED *INC*
 	;AR2	inverse table
-	;AR3	BLOWLIST ptr
+	;AR3	BLOWLIST ptr	
 	;AR4	TEMP VERTEX STORE
 	;AR5	rotation matrix ptr	PRELOADED *SAVE*
 	;AR6	translation vector	PRELOADED *SAVE*
-	;AR7
+	;AR7	
 
 	;R0,R1  TEMP
 	;R2	y element/tmp value
@@ -615,7 +614,7 @@ VTL
 	ASH	BK,R3,R2    		;BK=16
 	LS	16,R3
 	ASH	BK,R3
-	FLOAT	R3			; x element
+	FLOAT	R3			; x element			
 	FLOAT	R2			; y element
 	STF	R3,*-AR4(1)		;store secondary access A
 	FLOAT	*AR1++,R0		;C	get z element of source 1
@@ -663,7 +662,7 @@ VTL
 	LDILT	-80,IR1
 
 	ADDF	R4,R1			;ADD X TRANSLATION
-	ADDF	R5,R3			;add Y translation
+	ADDF	R5,R3			;add Y translation 
 
 	MPYF	*+AR2(IR1),R1,R0    	;x = (x * inverse [z])
 	ADDF	R6,R0			;    + SCRNHX 	       ;(screen half x)
@@ -708,7 +707,7 @@ TRANS2D:
 
 	FLOAT	POSTERCLIP,R0
 	CMPF	*+AR6(1),R0		;CHECK IF TOO CLOSE
-
+	
 	BLED	VT2		 	;CLIP OUT POSTERS IF TOO CLOSE
 	NOP
 	LDI	@POSTERMAT2DI,AR5
@@ -726,7 +725,7 @@ REGULAR1
 *We generate a 2D matrix (packed) via two psuedo-2d matrices
 *
 *A x C	   J x L    AJ+GL  CJ+IL
-*x x x	*  x x x  =
+*x x x	*  x x x  = 
 *G x I     P x R    AP+GR  CP+IR
 *
 *		1 offset
@@ -780,8 +779,8 @@ VT2
 	FLOAT	SCREENHX,R6		;screen half x
 	LDI	3,IR0
 	LDI	-16,BK
-	BR 	VTL2
-	.align
+	;---->BR 	VTL2
+	.align 
 VTL2
 	RPTB	EOVCTR2
 
@@ -858,7 +857,7 @@ DYNAMIC_OBJECT:
 	;---->BZD	VECTORTRANSFULL
 
 	BEQ	VECTORTRANSFULL
-
+	
 ;NOTDEGRADEPOSS
 
 
@@ -912,15 +911,15 @@ DYNALOOP
 	LDI	*+AR0(DYNAFLAG),R0
 
 
-	BND	DYNASHD			;GO DO A SHADOW...
+	BND	DYNASHD			;GO DO A SHADOW...	
 
 DYNREG
 	LDI	@tmpmatI,AR4		;trans = object_pos + univ_pos
 	LDI	@transmatrixI,AR5	;somewhat dedicated for matrix pointer
-	LDF	*+AR0(DYNATRANSX),R2
-	;------>BND	DYNASHD		;GO DO A SHADOW...
-	LDF	*+AR0(DYNATRANSY),R3
-	LDF	*+AR0(DYNATRANSZ),R4
+	LDF	*+AR0(DYNATRANSX),R2	
+	;------>BND	DYNASHD		;GO DO A SHADOW...	
+	LDF	*+AR0(DYNATRANSY),R3	
+	LDF	*+AR0(DYNATRANSZ),R4	
 
 *
 *ROTATE TRANSLATION VECTOR BY OBJ-UNIV MATRIX AND ADD TO OBJECT TRANSLATION
@@ -949,7 +948,7 @@ DYNREG
 	MPYF	*AR5++,*+AR4(1),R1
   ||	ADDF	R1,R2,R2
 	ADDF	R1,R2
-	STF	R2,*+AR7(1)		;(TRANSVECTOR.z) R2 = Z value of object
+	STF	R2,*+AR7(1)		;(TRANSVECTOR.z) R2 = Z value of object	
 	SUBI	9,AR5	       		;RESTORE AR5 OBJ-UNIV MAT
 
 *CONCAT UNIV*OBJ MATRIX WITH DYNAMIC MATRIX
@@ -1009,17 +1008,16 @@ DYNLP1	NOP	*--AR4(3)
 	LDF	*AR7,R5			;GET Y TRANS
 	LDI	*+AR0(DYNANVERTS),RC	;number of vertices to process -1
 	;------>BD	DYNALP
-	BU	DYNALP			; added by jeff to match i450 rom
 
 	;;MATRIX MULTIPLY 1x3 * 3x3 -> blowspace
 	;AR0	object ptr		PRELOADED *SAVE*
 	;AR1	rom ptr			PRELOADED *INC*
 	;AR2	inverse table
-	;AR3	BLOWLIST ptr
+	;AR3	BLOWLIST ptr	
 	;AR4	TEMP VERTEX STORE
 	;AR5	rotation matrix ptr	PRELOADED *SAVE*
 	;AR6	translation vector	PRELOADED *SAVE*
-	;AR7
+	;AR7	
 
 	;R0,R1  TEMP
 	;R2	y element/tmp value
@@ -1100,7 +1098,7 @@ DYNALP
 	LDILT	-80,IR1
 
 	ADDF	R4,R1			;ADD X TRANSLATION
-	ADDF	R5,R3			;add Y translation
+	ADDF	R5,R3			;add Y translation 
 
 	MPYF	*+AR2(IR1),R1,R0    	;x = (x * inverse [z])
 
@@ -1150,11 +1148,11 @@ DYNALPX
 	;R6	screen half x
 	;R7	screen half y
 
-DYNASHD
+DYNASHD		
 	LDI	@CAMERAMATRIXI,AR5	;CAMERA ROTATION MATRIX
 	LDI	@INVTABI,R5		;inverse table dedicated ptr
 
-*FIND CAR STRUCT IN PROCESS
+*FIND CAR STRUCT IN PROCESS	
 	LDI	*+AR0(DYNAPARENT),AR4	;GET POINTER TO PARENT
 	LDI	*+AR4(OCARBLK),AR4
 	ADDI	CARVSIZ,AR4
@@ -1168,7 +1166,7 @@ DYNASHD
 
 *IF NOT AIRBORNE DO REGULAR
 
-	LDI	*+AR4(CAR_AIRF-CARVSIZ),R0
+	LDI	*+AR4(CAR_AIRF-CARVSIZ),R0	
 	OR	*+AR4(CAR_AIRB-CARVSIZ),R0
 	BZ	DYNREG
 
@@ -1203,7 +1201,7 @@ DYNASHD
 	LDF	*AR4++,R2		;GET Z COORD OF CAR POINT
  ||	STF	R4,*AR7			;STORE Y
 	SUBF	*+AR2(2),R2		;GET RELATIVE TO CAMERA
-
+	
 
 *RETURN TO DYNAMIC OBJECT LOOP WITH REG INTACT
 
@@ -1233,7 +1231,7 @@ DYNASHD
 	ADDF	R1,R2			;AJ+BK+CL
 ;	ADDF	*+AR6(1),R2		;add in translation into [AJ+BK+CL]
 
-	STF	R2,*AR3--(2)		;(TRANSVECTOR.z) R2 = Z value of object
+	STF	R2,*AR3--(2)		;(TRANSVECTOR.z) R2 = Z value of object	
 	FIX	R2,R0			;find z distance for inverse lookup
 
 ;	LDILT	0,R0			;it will always be positive
@@ -1340,8 +1338,7 @@ PLOTPOLY0
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
 	;------->BD	PLTPOLYLP
-	BU PLTPOLYLP		; added by jeff to match i450 rom
-	.align
+	.align 
 PLOTPOLYLP
 
 *GET EXTERNAL VERTEX INDICIES
@@ -1361,7 +1358,7 @@ PLOTPOLYLP1
 	AND	R7,R3,AR2
 	MPYI	3,AR2			;V3
 
-	LSH	-8,R3
+	LSH	-8,R3			
 	AND	R7,R3,AR3
 	MPYI	3,AR3			;V4
 
@@ -1596,7 +1593,7 @@ CLIP:
 
 
 *CHECK TRIVIAL REJECTION
-*X ALL NEGATIVE CASE
+*X ALL NEGATIVE CASE	
 *
 	AND	*AR0,*+AR0(IR0),R0
 	AND	*+AR0(4),R0
@@ -1615,7 +1612,7 @@ CLIP:
 	AND	R3,R2
 	SUBI	*+AR0(6),R1
 	AND	R1,R2
-	BND	CLIPX			;ALL X >511 REJECT
+	BND	CLIPX			;ALL X >511 REJECT		
 
 *Y ALL POSTIVE CASE
 
@@ -1638,7 +1635,7 @@ CLIP:
 	AND	*+AR0(7),R0
 	;------->BND	CLIPX	    	;ALL X >511 REJECT
 	BN	CLIPX			;ALL Y >511 REJECT
-*
+*	
 *COMPUTE YOUR INTERNAL VERTICES
 *AR0-POINTER TO POLY STACK
 *AR1=ROM POINTER
@@ -1696,7 +1693,7 @@ CLIP:
 *	AR3 	PALETTE
 *	R4      FLAGS
 *	R5	TEXTURE MAP ADDR
-CLIPOP
+CLIPOP	
 	NOP	*AR0--(16)		;POP OFF OLD ENTRY
 ;	LDI	AR0,R1
 ;	AND	0FH,R1
@@ -1728,7 +1725,7 @@ CLIP0
 *
 *CHECK TRIVIAL REJECTION
 *
-*X ALL NEGATIVE CASE
+*X ALL NEGATIVE CASE	
 *
 	AND	*AR0,*+AR0(IR0),R0
 	AND	*+AR0(4),R0
@@ -1748,7 +1745,7 @@ CLIP0
 	AND	R3,R2
 	SUBI	*+AR0(6),R1
 	AND	R1,R2
-	BND	CLIPOP			;ALL X >511 REJECT
+	BND	CLIPOP			;ALL X >511 REJECT		
 
 *Y ALL POSTIVE CASE
 
@@ -1798,7 +1795,7 @@ CLCKLP	LDIGT	*+AR0(1),R3
 	CMPI	2047,R0
 	BGTD	BUSTUP
 
-	NOP	*AR0--(6)  		;RESET VERTEX INDEX
+	NOP	*AR0--(6)  		;RESET VERTEX INDEX 
 	SUBI	R3,R2
 	CMPI	2047,R2
 	;------->BGTD	BUSTUP
@@ -1822,28 +1819,28 @@ PCWT
  	STI	R0,*AR7
 
 	LDI	*AR0++(IR0),R0	 	;GET YX INTERNAL 1
- ||	LDI	*+AR0(1),R1
+ ||	LDI	*+AR0(1),R1	
 
 	LSH	8,R1
 	ADDI	R1,R0
  	STI	R0,*AR7
 
 	LDI	*AR0++(IR0),R0		;GET YX INTERNAL 2
- ||	LDI	*+AR0(1),R1
+ ||	LDI	*+AR0(1),R1	
 
 	LSH	8,R1
 	ADDI	R1,R0
  	STI	R0,*AR7
 
 	LDI	*AR0++(IR0),R0	  	;GET YX INTERNAL 3
- ||	LDI	*+AR0(1),R1
+ ||	LDI	*+AR0(1),R1	
 
 	LSH	8,R1
 	ADDI	R1,R0
  	STI	R0,*AR7
 
 	LDI	*AR0++(IR0),R0	  	;GET YX INTERNAL 4
- ||	LDI	*+AR0(1),R1
+ ||	LDI	*+AR0(1),R1	
 
 	LSH	8,R1
 	ADDI	R1,R0
@@ -1887,7 +1884,7 @@ BUSTUP
 *COMPUTE YOUR EXTERNAL VERTICES
 
 BUSTUP0
-	LDI	AR0,AR2
+	LDI	AR0,AR2	
 
 	LDI	*+AR0(IR0),R0		;X2
  ||	LDI	*+AR0(IR1),R1		;Y2
@@ -1907,66 +1904,66 @@ BUSTUP0
 	LDI	*+AR0(7),R0		;Y4
 	STI	R0,*+AR2(37H)
 
-	ADDI	*AR0++,*+AR0(IR0),R0
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;X1+X2/2=X5
-	STI	R0,*+AR2(42H)
-	STI	R0,*+AR2(10H)
-
-	ADDI	*AR0++,*+AR0(IR0),R0
+	STI	R0,*+AR2(42H)	     	
+	STI	R0,*+AR2(10H)	     	
+	
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;Y1+Y2/2=Y5
-	STI	R0,*+AR2(43H)
-	STI	R0,*+AR2(11H)
+	STI	R0,*+AR2(43H)	     	
+	STI	R0,*+AR2(11H)	     	
 
-	ADDI	*AR0++,*+AR0(IR0),R0
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0		       	;X2+X3/2=X6
-	STI	R0,*+AR2(14H)
-	STI	R0,*+AR2(22H)
-
-	ADDI	*AR0++,*+AR0(IR0),R0
+	STI	R0,*+AR2(14H)	     	
+	STI	R0,*+AR2(22H)	     	
+	
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;Y2+Y3/2=Y6
-	STI	R0,*+AR2(15H)
-	STI	R0,*+AR2(23H)
+	STI	R0,*+AR2(15H)	     	
+	STI	R0,*+AR2(23H)	     	
 
-	ADDI	*AR0++,*+AR0(IR0),R0
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;X3+X4/2=X7
-	STI	R0,*+AR2(26H)
-	STI	R0,*+AR2(34H)
+	STI	R0,*+AR2(26H)	     	
+	STI	R0,*+AR2(34H)	     	
 
-	ADDI	*AR0++,*+AR0(IR0),R0
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;Y3+Y4/2=Y7
-	STI	R0,*+AR2(27H)
-	STI	R0,*+AR2(35H)
+	STI	R0,*+AR2(27H)	     	
+	STI	R0,*+AR2(35H)	     	
 
 	LDI	*--AR0(6),R0
 	ADDI	*+AR0(6),R0
 	ASH	-1,R0			;X1+X4/2=X8
-	STI	R0,*+AR2(46H)
-	STI	R0,*+AR2(30H)
-
+	STI	R0,*+AR2(46H)	     	
+	STI	R0,*+AR2(30H)	     	
+	
 	LDI	*+AR0(1),R0
 	ADDI	*+AR0(7),R0
 	ASH	-1,R0			;Y1+Y4/2=Y8
-	STI	R0,*+AR2(47H)
-	STI	R0,*+AR2(31H)
+	STI	R0,*+AR2(47H)	     	
+	STI	R0,*+AR2(31H)	     	
 
-	ADDI	*AR0,*+AR0(IR0),R0
+	ADDI	*AR0,*+AR0(IR0),R0    	
 	ADDI	*+AR0(4),R0
 	ADDI	*+AR0(6),R0
 	ASH	-2,R0			;X1+X2+X3+X4/4=X9
-	STI	R0,*+AR2(44H)
-	STI	R0,*+AR2(16H)
-	STI	R0,*+AR2(20H)
-	STI	R0,*+AR2(32H)
+	STI	R0,*+AR2(44H)	     	
+	STI	R0,*+AR2(16H)	     	
+	STI	R0,*+AR2(20H)	     	
+	STI	R0,*+AR2(32H)	     	
 
 	LDI	*+AR0(1),R0
 	ADDI	*+AR0(3),R0
 	ADDI	*+AR0(5),R0
 	ADDI	*+AR0(7),R0
 	ASH	-2,R0			;Y1+Y2+Y3+Y4/4=Y9
-	STI	R0,*+AR2(45H)
-	STI	R0,*+AR2(17H)
-	STI	R0,*+AR2(21H)
-	STI	R0,*+AR2(33H)
+	STI	R0,*+AR2(45H)	     	
+	STI	R0,*+AR2(17H)	     	
+	STI	R0,*+AR2(21H)	     	
+	STI	R0,*+AR2(33H)	     	
 
 *COMPUTE YOUR INTERNAL VERTICES
 
@@ -1996,72 +1993,72 @@ BUSTUP0
 	LDI	*+AR0(7),R0		;Y4
 	STI	R0,*+AR2(3FH)
 
-	ADDI	*AR0++,*+AR0(IR0),R0
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;X1+X2/2=X5
-	STI	R0,*+AR2(4AH)
-	STI	R0,*+AR2(18H)
-
-	ADDI	*AR0++,*+AR0(IR0),R0
+	STI	R0,*+AR2(4AH)	     	
+	STI	R0,*+AR2(18H)	     	
+	
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;Y1+Y2/2=Y5
-	STI	R0,*+AR2(4BH)
-	STI	R0,*+AR2(19H)
+	STI	R0,*+AR2(4BH)	     	
+	STI	R0,*+AR2(19H)	     	
 
-	ADDI	*AR0++,*+AR0(IR0),R0
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0		       	;X2+X3/2=X6
-	STI	R0,*+AR2(1CH)
-	STI	R0,*+AR2(2AH)
-
-	ADDI	*AR0++,*+AR0(IR0),R0
+	STI	R0,*+AR2(1CH)	     	
+	STI	R0,*+AR2(2AH)	     	
+	
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;Y2+Y3/2=Y6
-	STI	R0,*+AR2(1DH)
-	STI	R0,*+AR2(2BH)
+	STI	R0,*+AR2(1DH)	     	
+	STI	R0,*+AR2(2BH)	     	
 
-	ADDI	*AR0++,*+AR0(IR0),R0
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;X3+X4/2=X7
-	STI	R0,*+AR2(2EH)
-	STI	R0,*+AR2(3CH)
+	STI	R0,*+AR2(2EH)	     	
+	STI	R0,*+AR2(3CH)	     	
 
-	ADDI	*AR0++,*+AR0(IR0),R0
+	ADDI	*AR0++,*+AR0(IR0),R0    	
 	ASH	-1,R0			;Y3+Y4/2=Y7
-	STI	R0,*+AR2(2FH)
-	STI	R0,*+AR2(3DH)
+	STI	R0,*+AR2(2FH)	     	
+	STI	R0,*+AR2(3DH)	     	
 
 	LDI	*--AR0(6),R0
 	ADDI	*+AR0(6),R0
 	ASH	-1,R0			;X1+X4/2=X8
-	STI	R0,*+AR2(4EH)
-	STI	R0,*+AR2(38H)
-
+	STI	R0,*+AR2(4EH)	     	
+	STI	R0,*+AR2(38H)	     	
+	
 	LDI	*+AR0(1),R0
 	ADDI	*+AR0(7),R0
 	ASH	-1,R0			;Y1+Y4/2=Y8
-	STI	R0,*+AR2(4FH)
-	STI	R0,*+AR2(39H)
+	STI	R0,*+AR2(4FH)	     	
+	STI	R0,*+AR2(39H)	     	
 
-	ADDI	*AR0,*+AR0(IR0),R0
+	ADDI	*AR0,*+AR0(IR0),R0    	
 	ADDI	*+AR0(4),R0
 	ADDI	*+AR0(6),R0
 	ASH	-2,R0			;X1+X2+X3+X4/4=X9
-	STI	R0,*+AR2(4CH)
-	STI	R0,*+AR2(1EH)
-	STI	R0,*+AR2(28H)
-	STI	R0,*+AR2(3AH)
+	STI	R0,*+AR2(4CH)	     	
+	STI	R0,*+AR2(1EH)	     	
+	STI	R0,*+AR2(28H)	     	
+	STI	R0,*+AR2(3AH)	     	
 
 	LDI	*+AR0(1),R0
 	ADDI	*+AR0(3),R0
 	ADDI	*+AR0(5),R0
 	ADDI	*+AR0(7),R0
 	ASH	-2,R0			;Y1+Y2+Y3+Y4/4=Y9
-	STI	R0,*+AR2(4DH)
-	STI	R0,*+AR2(1FH)
-	STI	R0,*+AR2(29H)
-	STI	R0,*+AR2(3BH)
+	STI	R0,*+AR2(4DH)	     	
+	STI	R0,*+AR2(1FH)	     	
+	STI	R0,*+AR2(29H)	     	
+	STI	R0,*+AR2(3BH)	     	
 
 *TRANSFER LAST ENTRY INTO FIRST ONE
-
+	
 	NOP	*AR2++(42H)
 	NOP	*AR0--(6)		;POINT TO X2,Y2
-
+	
 	LDI	*AR2++,R0		;GET FIRST
 
 	RPTS	12
@@ -2116,9 +2113,8 @@ PLTPOLY:
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
 	;------->BD	PLTPOLYLP
-	BU PLTPOLYLP 		; added by jeff to match i450 rom
 
-	.align
+	.align 
 PLTPOLYLP
 	RPTB	PLTPOLL
 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
@@ -2165,7 +2161,7 @@ PLTWT
 	LSH	R6,R2,R0		;SHIFT 16 TO RIGHT
 	MPYI	R1,R3,AR3		;GET LAST VERTEX  V4
 	ADDI	R0,BK,AR6
-
+	
 	LSH	R6,*AR6,R0		;PALETTE->R0
  ||	STI	R2,*AR7
 
@@ -2212,7 +2208,7 @@ PLTPOLL
 ;	POP	AR0
 	RETS
 
-PLTLP1
+PLTLP1	
 	SUBI	1,RC
 	LDI	RC,R0
 	BNND	PLTPOLYLP1
@@ -2258,9 +2254,8 @@ PLOT1PAL:
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
 	;------->BD	PLTPOLYLP_1
-	BU	PLTPOLYLP_1				; added by jeff to match i450 rom
 
-	.align
+	.align 
 PLOTPOLYLP_1
 
 *GET EXTERNAL VERTEX INDICIES
@@ -2280,7 +2275,7 @@ PLOTPOLYLP1_1
 	AND	R7,R3,AR2
 	MPYI	3,AR2			;V3
 
-	LSH	-8,R3
+	LSH	-8,R3			
 	AND	R7,R3,AR3
 	MPYI	3,AR3			;V4
 
@@ -2424,7 +2419,7 @@ PLT1PAL:
 	BLTD	PLT1PAL1
 	LDI	0FFH,R7			;GET MASK
 	LDI	*+AR0(OPAL),R6
-	LDI	*+AR0(ODIST),R0
+	LDI	*+AR0(ODIST),R0		
 	;------>BLTD	PLT1PAL1
 
 	CMPI	DEGRADE_DIST,R0		;CHECK IF DISTANT
@@ -2447,9 +2442,8 @@ PLT1PAL1
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
 	;------->BD	PLTPOLYLP_2
-	BU	PLTPOLYLP_2			; added by jeff to match i450 rom
 
-	.align
+	.align 
 PLTPOLYLP_2
 	RPTB	PLTPOLL_2
 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
@@ -2496,7 +2490,7 @@ PLTWT_2
 	LDI	R2,R0			;SHIFT 16 TO RIGHT
 	RS	16,R0
 	MPYI	R1,R3,AR3		;GET LAST VERTEX  V4
-
+	
 	STI	R2,*AR7
 
 
@@ -2559,9 +2553,8 @@ PLTG1PAL
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
 	;------->BD	PLTGPOLYLP_2
-	BU	PLTGPOLYLP_2			; added by jeff to match i450 rom
 
-	.align
+	.align 
 PLTGPOLYLP_2
 	RPTB	PLTGPOLL_2
 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
@@ -2622,7 +2615,7 @@ LOF4X
 
 	LDI	R2,R0			;SHIFT 16 TO RIGHT
 	RS	16,R0
-
+	
 	STI	R2,*AR7
 
 	FIX	*+AR4(IR0),R0		;READ X1
