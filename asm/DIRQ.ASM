@@ -578,7 +578,7 @@ VT
 	FLOAT	SCREENHY,R7		;screen half x
 	LDF	*-AR6(1),R4		;GET X TRANS
 	LDF	*AR6,R5			;GET Y TRANS
-	;---->BR 	VTL
+	BR 	VTL				; jeff edited to match I450 rom
 	.align 
 VTL
 	RPTB	EOVCTR
@@ -779,7 +779,7 @@ VT2
 	FLOAT	SCREENHX,R6		;screen half x
 	LDI	3,IR0
 	LDI	-16,BK
-	;---->BR 	VTL2
+	BR 	VTL2				; jeff edited to match I450 rom
 	.align 
 VTL2
 	RPTB	EOVCTR2
@@ -1007,7 +1007,7 @@ DYNLP1	NOP	*--AR4(3)
 	LDF	*-AR7(1),R4		;GET X TRANS
 	LDF	*AR7,R5			;GET Y TRANS
 	LDI	*+AR0(DYNANVERTS),RC	;number of vertices to process -1
-	;------>BD	DYNALP
+	BU	DYNALP			; jeff edited to match I450 rom
 
 	;;MATRIX MULTIPLY 1x3 * 3x3 -> blowspace
 	;AR0	object ptr		PRELOADED *SAVE*
@@ -1337,7 +1337,7 @@ PLOTPOLY0
 	LDP	@FIFO_STATUS
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
-	;------->BD	PLTPOLYLP
+	BU	PLTPOLYLP		; jeff edited to match I450 rom
 	.align 
 PLOTPOLYLP
 
@@ -2112,7 +2112,7 @@ PLTPOLY:
 	LDP	@FIFO_STATUS
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
-	;------->BD	PLTPOLYLP
+	BU	PLTPOLYLP		; jeff edited to match I450 rom
 
 	.align 
 PLTPOLYLP
@@ -2253,7 +2253,7 @@ PLOT1PAL:
 	LDP	@FIFO_STATUS
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
-	;------->BD	PLTPOLYLP_1
+	BU	PLTPOLYLP_1		; jeff edited to match I450 rom
 
 	.align 
 PLOTPOLYLP_1
@@ -2441,7 +2441,7 @@ PLT1PAL1
 	LDP	@FIFO_STATUS
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
-	;------->BD	PLTPOLYLP_2
+	BU	PLTPOLYLP_2		; jeff edited to match I450 rom
 
 	.align 
 PLTPOLYLP_2
@@ -2552,7 +2552,7 @@ PLTG1PAL
 	LDP	@FIFO_STATUS
 	LDI	FIFO_ADDR>>16,AR7
 	LSH	16,AR7
-	;------->BD	PLTGPOLYLP_2
+	BU	PLTGPOLYLP_2		; jeff edited to match I450 rom
 
 	.align 
 PLTGPOLYLP_2
