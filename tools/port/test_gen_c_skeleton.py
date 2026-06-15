@@ -187,7 +187,7 @@ LANES4\t.float\t-1728.0,-576.0,576.0,1728.0
         self.assertIn("float LANES[] = {\n    -576.0f, -576.0f, 576.0f, 576.0f,\n};", rendered)
         self.assertIn("float LANES4[] = {\n    -1728.0f, -576.0f, 576.0f, 1728.0f,\n};", rendered)
 
-    def test_string_label_table_stays_const_char_pointer_array(self) -> None:
+    def test_string_label_table_collapses_unreferenced_children_to_literals(self) -> None:
         asm_source = """LEG_NAMES\t.word\tLEG1,LEG2
 LEG1\t.string\t"GOLDEN GATE PARK",0
 LEG2\t.string\t"SAN FRANCISCO",0
@@ -198,8 +198,26 @@ LEG2\t.string\t"SAN FRANCISCO",0
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("const char *LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
+        self.assertIn('const char *LEG_NAMES[] = { "GOLDEN GATE PARK", "SAN FRANCISCO" };', rendered)
         self.assertNotIn("const char * *LEG_NAMES[]", rendered)
+        self.assertNotIn('const char *LEG1 = "GOLDEN GATE PARK";', rendered)
+        self.assertNotIn('const char *LEG2 = "SAN FRANCISCO";', rendered)
+
+    def test_string_label_table_keeps_children_when_directly_referenced(self) -> None:
+        asm_source = """LEG_NAMES\t.word\tLEG1,LEG2
+\tTEXTIT\tLEG1,1,100
+LEG1\t.string\t"GOLDEN GATE PARK",0
+LEG2\t.string\t"SAN FRANCISCO",0
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("const char *LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
+        self.assertIn('const char *LEG1 = "GOLDEN GATE PARK";', rendered)
+        self.assertIn('const char *LEG2 = "SAN FRANCISCO";', rendered)
 
     def test_collects_skipped_data_symbol_references(self) -> None:
         asm_lines = [
@@ -371,6 +389,102 @@ AFTER\t.set\t2
         self.assertIn("/* *COMMENT A\n*COMMENT B\n */\nvoid FIRST(void)", rendered)
         self.assertNotIn("/* *COMMENT C\n */\nvoid SECOND(void)", rendered)
 
+    def test_same_entry_labels_render_as_alias_macros_and_one_function(self) -> None:
+        asm_source = """*ALLOCATE PALETTES FOR A SECTION
+SECTION_PALETTE_ALLOC:
+alloc_section:
+HARDalloc_section:\tLDI\t*AR2++,AR6
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "HUD.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+            symbol_table = collect_module_symbol_table(src_path, {}, None)
+
+        self.assertIn("#define SECTION_PALETTE_ALLOC HARDalloc_section", rendered)
+        self.assertIn("#define alloc_section HARDalloc_section", rendered)
+        self.assertIn("void HARDalloc_section(void)", rendered)
+        self.assertNotIn("void SECTION_PALETTE_ALLOC(void)\n{", rendered)
+        self.assertNotIn("void alloc_section(void)\n{", rendered)
+        self.assertIn("/* *ALLOCATE PALETTES FOR A SECTION\n */\nvoid HARDalloc_section(void)", rendered)
+        self.assertEqual(symbol_table["HARDalloc_section"].kind, "function")
+        self.assertEqual(symbol_table["alloc_section"].kind, "define")
+        self.assertEqual(symbol_table["alloc_section"].expr, "HARDalloc_section")
+        self.assertEqual(symbol_table["SECTION_PALETTE_ALLOC"].kind, "define")
+        self.assertEqual(symbol_table["SECTION_PALETTE_ALLOC"].expr, "HARDalloc_section")
+
+    def test_bare_labels_do_not_start_functions_or_aliases(self) -> None:
+        asm_source = """ENTRY0
+ENTRY1:\tLDI\t1,R0
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "TEST.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+            symbol_table = collect_module_symbol_table(src_path, {}, None)
+
+        self.assertNotIn("#define ENTRY0 ENTRY1", rendered)
+        self.assertNotIn("void ENTRY0(void)", rendered)
+        self.assertIn("void ENTRY1(void)", rendered)
+        self.assertNotIn("ENTRY0", symbol_table)
+        self.assertEqual(symbol_table["ENTRY1"].kind, "function")
+
+    def test_branch_target_colon_label_after_return_starts_new_function(self) -> None:
+        asm_source = """FIRST:\tRETS
+SECOND:\tRETS
+THIRD:\tB\tSECOND
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "TEST.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void FIRST(void)", rendered)
+        self.assertIn("void SECOND(void)", rendered)
+        self.assertIn("void THIRD(void)", rendered)
+
+    def test_colon_word_label_renders_as_data_not_function(self) -> None:
+        asm_source = """TABLE:\t.word\tONE,TWO
+ONE:\t.string\t\"ONE\",0
+TWO:\t.string\t\"TWO\",0
+FUNC:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "TEST.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn('const char *TABLE[] = {\n    ONE, TWO,\n};', rendered)
+        self.assertNotIn("void TABLE(void)", rendered)
+        self.assertIn("void FUNC(void)", rendered)
+
+    def test_colon_entry_aliases_survive_interleaved_comments(self) -> None:
+        asm_source = """SEND0:
+;\tcommented body
+SEND1:
+;\tcommented body
+SEND2:\tLDI\t1,R0
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "TEST.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+            symbol_table = collect_module_symbol_table(src_path, {}, None)
+
+        self.assertIn("#define SEND0 SEND2", rendered)
+        self.assertIn("#define SEND1 SEND2", rendered)
+        self.assertIn("void SEND2(void)", rendered)
+        self.assertEqual(symbol_table["SEND0"].expr, "SEND2")
+        self.assertEqual(symbol_table["SEND1"].expr, "SEND2")
+
     def test_top_level_data_claims_immediately_adjacent_comments_only(self) -> None:
         asm_source = """*----------------------------------------------------------------------------\n*DYNAMIC fLEX OBJECTS\nNEW_GROUPI\t.word\tNEW_GROUP\n\t.bss\tNEW_GROUP,1\n\n*ORPHAN\n\nOTHER\t.word\t1\n"""
 
@@ -498,6 +612,23 @@ BONUS8\tLDI\t8,R1
 
         self.assertIn("#define missle 0x00C28DF4", rendered)
         self.assertIn("#define misslem 0x00C29323", rendered)
+
+    def test_render_header_emits_function_alias_macro_for_globl(self) -> None:
+        asm_source = """SECTION_PALETTE_ALLOC:\nalloc_section:\nHARDalloc_section:\tRETS\n"""
+        equ_source = """.globl SECTION_PALETTE_ALLOC\n.globl alloc_section\n.globl HARDalloc_section\n"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            asm_path = Path(tmpdir) / "HUD.ASM"
+            equ_path = Path(tmpdir) / "GLOBALS.EQU"
+            asm_path.write_text(asm_source)
+            equ_path.write_text(equ_source)
+            banner_comments, globls, sets = parse_equ_file(equ_path)
+            symbol_table = collect_module_symbol_table(asm_path, {}, None)
+            rendered = render_header(equ_path, banner_comments, globls, sets, symbol_table)
+
+        self.assertIn("void HARDalloc_section(void);", rendered)
+        self.assertIn("#define alloc_section HARDalloc_section", rendered)
+        self.assertIn("#define SECTION_PALETTE_ALLOC HARDalloc_section", rendered)
 
     def test_collect_referenced_define_symbols(self) -> None:
         asm_lines = [
