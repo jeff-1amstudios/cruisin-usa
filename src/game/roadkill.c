@@ -25,7 +25,6 @@ void CHECK_COLLISION(void);
 void CHECK_OFFSET(void);
 void ROADKILL_FLYERP(void);
 void ROADKILL_HIT(void);
-void PKQ(void);
 void ROADKILL_SETKILL(void);
 void OBJ_MOVE_GROUND(void);
 void GET_ROADKILL_TRACK(void);
@@ -351,18 +350,13 @@ DO_PLYR:
     // ;	LDI	0,R1
     // ;	CALL	SET_TRACK_VOL
     // asm 000069BC: 	BU	PKQ
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL_HIT", 0, 0);
-    UNIMPL();
-}
-
-void PKQ(void)
-{
+PKQ:
     // asm 000069BD: POP	AR4
     // asm 000069BE: 	POP	AR2
     // asm 000069BF: 	POP	AR1
     // asm 000069C0: 	POP	R0
     // asm 000069C1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PKQ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL_HIT", 0, 0);
     UNIMPL();
 }
 

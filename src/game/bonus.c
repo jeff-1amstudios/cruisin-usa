@@ -46,7 +46,6 @@ void DISPLAY_H2H_WINNER(void);
 void OBJ_DELETE_HIGH_PRIORITY(void);
 void BONUS_SCREEN(void);
 void BONSCRN2(void);
-void ISREC(void);
 void CLINTON_SHOW(void);
 void BLINK_FREEBE(void);
 void BACKUP_CAMERA(void);
@@ -58,18 +57,14 @@ void SHOWNEXTLEG_PROC(void);
 void PLACE_FLAG(void);
 void PLACE_FLAG_PROC(void);
 void BONS_MAXMPH(void);
-void ISMPHT(void);
 void BONS_RECORDTIME(void);
 void BONS_HOTTIME_REC(void);
 void BONS_HOTTIME(void);
 void TEXTTOG(void);
-void ISOFF(void);
 void BONS_ETIME(void);
-void DOREG3(void);
 void BONS_POSITION(void);
 void KILL_THEM(void);
 void FIND_AND_REACTIVATE(void);
-void NOTRUT(void);
 void KILL_THE_REANIMATORS(void);
 
 /* asm: MAXMPH	.bss	MAXMPH,1 */
@@ -122,9 +117,6 @@ void (*BONUS_TABLE[])(void) = {
     BONUS6, BONUS7, BONUS8, BONUS9, BONUS10,
     BONUS11, BONUS12, BONUS13, BONUS14,
 };
-const char *BHDDFAS = "WINNER";
-/* asm: UNFOLDFLAG	.bss	UNFOLDFLAG,1 */
-int UNFOLDFLAG;
 /* *----------------------------------------------------------------------------
 *
  */
@@ -132,8 +124,6 @@ int UNFOLDFLAG;
 int SAVED_COUNTDOWN;
 /* asm: SPEEDHIT	.bss	SPEEDHIT,1 */
 int SPEEDHIT;
-/* asm: WAS_HEAD2HEAD_ON	.bss	WAS_HEAD2HEAD_ON,1 */
-int WAS_HEAD2HEAD_ON;
 /* asm: DID_TIMED_OUT	.bss	DID_TIMED_OUT,1 */
 int DID_TIMED_OUT;
 const char *FRA1 = "FIRST PLACE";
@@ -469,6 +459,50 @@ void DISPLAY_H2H_WINNER(void)
     // asm 000039F6: 	CALL	PAL_FIND_RAW
     // asm 000039F7: 	STI	R0,*+AR0(OPAL)
     // asm 000039F8: 	STI	AR0,*+AR7(PDATA+1)	;yellow (bottom)
+    // asm 00003A00: DHHW_LP
+    // asm: 	LDI	@UNFOLDFLAG,R0
+    // asm: 	BNZ	DODIEXXX
+    // asm: 	CALL	JSUB
+    // asm: 	SLEEP	10
+    // asm 00003A00: 	CALL	JSUB
+    // asm 00003A02: 	SLEEP	5
+    // asm: 	FLOAT	-5000,R6
+    // asm 00003A03: 	LDI	*+AR7(PDATA),AR2
+    // asm: 	LDF	*+AR2(OPOSZ),R0
+    // asm 00003A05: 	ADDF	R6,R0
+    // asm: 	STF	R0,*+AR2(OPOSZ)
+    // asm 00003A06: 	LDI	*+AR7(PDATA+1),AR2
+    // asm 00003A08: 	LDF	*+AR2(OPOSZ),R0
+    // asm 00003A09: 	ADDF	R6,R0
+    // asm 00003A0A: 	STF	R0,*+AR2(OPOSZ)
+    // asm 00003A0C: 	LDI	*+AR7(PDATA+2),AR2
+    // asm: 	LDF	*+AR2(OPOSZ),R0
+    // asm 00003A0D: 	ADDF	R6,R0
+    // asm 00003A0E: 	STF	R0,*+AR2(OPOSZ)
+    // asm 00003A0F: 	SLEEP	5
+    // asm: 	FLOAT	5000,R6
+    // asm 00003A11: 	LDI	*+AR7(PDATA),AR2
+    // asm 00003A12: 	LDF	*+AR2(OPOSZ),R0
+    // asm 00003A13: 	ADDF	R6,R0
+    // asm 00003A14: 	STF	R0,*+AR2(OPOSZ)
+    // asm: 	LDI	*+AR7(PDATA+1),AR2
+    // asm 00003A17: 	LDF	*+AR2(OPOSZ),R0
+    // asm 00003A18: 	ADDF	R6,R0
+    // asm 00003A19: 	STF	R0,*+AR2(OPOSZ)
+    // asm 00003A1B: 	LDI	*+AR7(PDATA+2),AR2
+    // asm: 	LDF	*+AR2(OPOSZ),R0
+    // asm 00003A1C: 	ADDF	R6,R0
+    // asm 00003A1D: 	STF	R0,*+AR2(OPOSZ)
+    // asm 00003A1F: 	DBU	AR5,DHHW_LP
+DODIEXXX:
+    // asm 00003A22: 	LDI	*+AR7(PDATA),AR2
+    // asm 00003A23: 	CALL	OBJ_DELETE_HIGH_PRIORITY
+    // asm: 	LDI	*+AR7(PDATA+1),AR2
+    // asm 00003A24: 	CALL	OBJ_DELETE_HIGH_PRIORITY
+    // asm: 	LDI	*+AR7(PDATA+2),AR2
+    // asm: 	CALL	OBJ_DELETE_HIGH_PRIORITY
+DODIE:
+    // asm 00003A26: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_H2H_WINNER", 0, 0);
     UNIMPL();
 }
@@ -572,12 +606,52 @@ CNR_ENTER:
     // asm: 	SLEEP	1
     // asm: 	BU	CNR_ENTER
 CONTINUE:
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONSCRN2", 0, 0);
-    UNIMPL();
-}
-
-void ISREC(void)
-{
+    // asm 00003A72: 	LDI	@HEAD2HEAD_ON,R0
+    // asm 00003A73: 	STI	R0,@WAS_HEAD2HEAD_ON
+    // asm 00003A76: 	CALL	CLEAR_LINK	;WE ARE NOW *NOT* LINKED
+    // asm: 	SOND1	MAPTUNE
+    // asm 00003A77: 	LDI	@DID_TIMED_OUT,R0
+    // asm 00003A78: 	BZ	PAPAPA44
+    // asm 00003A79: 	LDI	@POSITION,R0
+    // asm 00003A7A: 	CMPI	1,R0
+    // asm: 	BNE	COOLRET
+    // asm: 	LDI	@WAS_HEAD2HEAD_ON,R0
+    // asm 00003A7C: 	BZ	COOLRET
+    // asm: 	LDI	2,R0
+    // asm 00003A7E: 	STI	R0,@POSITION
+    // asm 00003A7F: 	BU	COOLRET
+PAPAPA44:
+    // asm 00003A81: 	CREATE	BACKUP_CAMERA,UTIL_C|BONUS_SCREEN_T
+    // asm: 	SONDFX	CROWD1
+    // ;	LDI	@DID_TIMED_OUT,R0
+    // ;	B
+    // asm 00003A85: 	SONDFX	CROWDROAR
+    // asm: 	SOND1	CHICKCHEER		;CHAN3
+    // asm 00003A86: JJDDHH
+    // asm: 	LDI	@POSITION,R0
+    // asm: 	CMPI	1,R0
+    // asm 00003A8B: 	BNE	COOLRET
+    // asm: 	CREATEC	FREE_RACE_ANNOUNCE,UTIL_C
+    // asm: 	JSRP	BABE_TROPHY
+COOLRET:
+    // 	;LAME TEXT EFFECTS
+    // 	;
+    // 	;
+    // asm 00003A95: 	LDI	AR7,AR5
+    // asm: 	CREATE	BONS_MAXMPH,UTIL_C|TEXTP_T
+    // asm: 	CREATE	BONS_ETIME,UTIL_C|TEXTP_T
+    // asm: 	CREATE	BONS_POSITION,UTIL_C|TEXTP_T
+    // asm: 	CREATE	BONS_RECORDTIME,UTIL_C|TEXTP_T
+    // asm: 	CREATE	DISPLAY_H2H_WINNER,UTIL_C|TEXTP_T|3
+    // asm 00003A9B: 	LDI	@DID_TIMED_OUT,R0
+    // asm 00003A9C: 	BNZ	NODOHOTTIME
+    // asm 00003AA2: 	CALL	INTO_TABLE_P
+    // asm 00003AA5: 	BNC	NODOHOTTIME
+    // asm 00003AA8: 	CMPI	0,R0
+    // asm: 	BNE	ISREC
+    // asm 00003AAB: 	CREATE	BONS_HOTTIME_REC,UTIL_C|TEXTP_T
+    // asm 00003AAC: 	BU	NODOHOTTIME
+ISREC:
     // asm 00003AAD: CREATE	BONS_HOTTIME,UTIL_C|TEXTP_T
 NODOHOTTIME:
     // 	;insert show best times here!
@@ -886,7 +960,7 @@ FINFIN:
     // asm 00003BD1: 	STI	R0,@DID_TIMED_OUT
     // asm 00003BD3: 	CALL	INIT_GAMELEG
     // asm: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISREC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONSCRN2", 0, 0);
     UNIMPL();
 }
 
@@ -1442,12 +1516,7 @@ void BONS_MAXMPH(void)
     // asm 00003DF2: 	LDF	@MAXMPH,R0
     // asm: 	MPYF	1.6666,R0
     // asm: 	BU	KJL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_MAXMPH", 0, 0);
-    UNIMPL();
-}
-
-void ISMPHT(void)
-{
+ISMPHT:
     // asm 00003DF5: LDF	@MAXMPH,R0
 KJL:
     // asm 00003DF6: LDF	@MAXMPH_COUNT,R1
@@ -1551,7 +1620,7 @@ KKL:
     // asm 00003E56: 	SLEEP	1
     // asm 00003E57: 	DBU	AR5,BML2
     // asm 00003E59: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISMPHT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_MAXMPH", 0, 0);
     UNIMPL();
 }
 
@@ -1714,18 +1783,13 @@ void TEXTTOG(void)
 GAGA:
     // asm 00003EDF: 	LDL	NULLSTR5,R0
     // asm: 	BU	IBOIBO
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTTOG", 0, 0);
-    UNIMPL();
-}
-
-void ISOFF(void)
-{
+ISOFF:
     // asm 00003EE0: LDI	*+AR7(PDATA),R0
 IBOIBO:
     // asm 00003EE1: STI	R0,*+AR4(TEXT_PTR)
     // asm 00003EE2: 	STI	R0,*+AR5(TEXT_PTR)
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISOFF", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTTOG", 0, 0);
     UNIMPL();
 }
 
@@ -1752,12 +1816,7 @@ void BONS_ETIME(void)
     // asm 00003EF8: 	STI	R0,@ETIME
     // asm: 	LDL	EXPIRED,AR2
     // asm 00003EF9: 	BU	LREG3
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_ETIME", 0, 0);
-    UNIMPL();
-}
-
-void DOREG3(void)
-{
+DOREG3:
     // asm 00003EFB: LDI	@STOPWATCH,R0
     // asm 00003EFB: 	STI	R0,@ETIME
     // asm 00003EFC: 	LDI	AR7,AR2
@@ -1778,7 +1837,7 @@ LREG3:
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@STOPWATCH
     // asm 00003F0B: 	BU	ENTER_HERE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOREG3", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_ETIME", 0, 0);
     UNIMPL();
 }
 
@@ -1896,12 +1955,7 @@ FARLP:
     // asm 00003F65: 	LDI	AR0,AR4
     // asm 00003F66: 	CALL	RUT_ANI
     // asm 00003F67: 	BU	FARLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_AND_REACTIVATE", 0, 0);
-    UNIMPL();
-}
-
-void NOTRUT(void)
-{
+NOTRUT:
     // asm 00003F69: CMPI	RDDEBRIS_C|TSC_IGNORE|TSC_BABE_S,R0
     // asm: 	BNE	FARLP
     // asm 00003F6A: 	LDI	AR0,AR4
@@ -1911,7 +1965,7 @@ FARX:
     // asm: 	POP	AR4
     // asm: 	POP	AR0
     // asm 00003F70: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTRUT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_AND_REACTIVATE", 0, 0);
     UNIMPL();
 }
 

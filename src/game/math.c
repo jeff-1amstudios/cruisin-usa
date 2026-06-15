@@ -43,7 +43,6 @@ void CONCATMATV(void);
 void CONCAT201(void);
 void CONCATMAT(void);
 void GETTHETADIFF(void);
-void ISNEG(void);
 void DIST_PT2LINE(void);
 void GETLINE_EQ_2D(void);
 void SCALE_MATRIX(void);
@@ -1041,17 +1040,12 @@ void GETTHETADIFF(void)
     // asm 000096FC: 	SUBF	@TWOPII,R0
     // asm 000096FD: 	POPF	R1
     // asm 000096FE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETTHETADIFF", 0, 0);
-    UNIMPL();
-}
-
-void ISNEG(void)
-{
+ISNEG:
     // asm 000096FF: ADDF	@TWOPII,R0
 NONEG:
     // asm 00009700: POPF	R1
     // asm 00009701: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISNEG", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETTHETADIFF", 0, 0);
     UNIMPL();
 }
 

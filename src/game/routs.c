@@ -10,12 +10,9 @@ void DIV_F30(void);
 #define DIV_I DIV_I30
 void DIV_I30(void);
 void DIV_U30(void);
-void zerob(void);
 void INV_F30(void);
 void MOD_I30(void);
 void MOD_U30(void);
-void onec(void);
-void zeroc(void);
 void SQRT(void);
 
 /* *----------------------------------------------------------------------------
@@ -290,15 +287,10 @@ one:
     // 	;
     // 	; Return zero.
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_U30", 0, 0);
-    UNIMPL();
-}
-
-void zerob(void)
-{
+zerob:
     // asm 0000A5AE: LDI	0,R0
     // asm 0000A5AF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "zerob", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_U30", 0, 0);
     UNIMPL();
 }
 
@@ -547,26 +539,16 @@ mod_32c:
     // 	;
     // 	; Return (dividend - divisor).
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOD_U30", 0, 0);
-    UNIMPL();
-}
-
-void onec(void)
-{
+onec:
     // asm 0000A618: SUBI	R1,R0
     // asm 0000A619: 	RETS
     // 	;
     // 	; Return dividend.
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "onec", 0, 0);
-    UNIMPL();
-}
-
-void zeroc(void)
-{
+zeroc:
     // asm 0000A61A: CMPI	0,R0
     // asm 0000A61B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "zeroc", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOD_U30", 0, 0);
     UNIMPL();
 }
 

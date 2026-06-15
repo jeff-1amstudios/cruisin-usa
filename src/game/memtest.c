@@ -17,7 +17,6 @@
 
 void TEST_STATIC_CHIPS(void);
 void GET_AR4_DIGITS(void);
-void R1R2ZER(void);
 void BLINK_AND_CONTINUE(void);
 void IS_STATIC_ERROR(void);
 void LLED_ON(void);
@@ -260,7 +259,6 @@ int CMOS_CHIP;
  */
 /* asm: BASICS_RAM	fbss	BASICS_RAM,10 */
 int BASICS_RAM[10];
-const char *MEMTST1 = "CRUISN USA (TM)";
 #if CHECKSUM_GEN
 /* asm: CHKSUMC00	.word	-1 */
 int CHKSUMC00 = -1;
@@ -484,18 +482,13 @@ void GET_AR4_DIGITS(void)
     // asm: 	BEQ	R3ZERO
     // asm: 	SUBI	'0',R3
     // asm: 	BU	NZERO
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_AR4_DIGITS", 0, 0);
-    UNIMPL();
-}
-
-void R1R2ZER(void)
-{
+R1R2ZER:
     // asm 00006322: CLRI	R2
 R3ZERO:
     // asm 00006322: CLRI	R3
 NZERO:
     // asm 00006324: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "R1R2ZER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_AR4_DIGITS", 0, 0);
     UNIMPL();
 }
 
@@ -934,6 +927,74 @@ void TEST_BASICS(void)
     // asm 0000648F: 	LINE	220,360,490,360,COL_WHITE
     // asm: 	POP	DP
     // asm: 	CALL	PLOT_OUTLINE_OF_CHIPS
+    // asm 00006494: 	LDI	COL_VDGREY,RC
+    // asm 00006495: 	TEXTIT	MEMTST1,50,20
+    // asm 0000649B: 	TEXTIT	DATE_STAMP,50,30
+    // asm 000064A1: 	TEXTIT	VERSION_STAMP,270,30
+    // asm 000064AD: 	LDL	BASICS_RAM,AR5
+    // asm 000064B3: 	LDI	9,AR6
+    // asm 000064B9: 	LDL	CHIPTEST_TABLE,AR4
+    // asm 000064C5: TSTBL2
+    // asm 000064CB: 	LDI	*AR5++,R0		;SAVE RESULTS
+    // asm 000064D1: 	LDIZ	COL_GREEN,RS
+    // asm 000064D7: 	LDINZ	COL_RED,RS
+    // asm 000064DE: 	LDI	*+AR4(CTT_MINX),AR2
+    // asm: 	INC	AR2
+    // asm: 	LDI	*+AR4(CTT_MINY),R2
+    // asm: 	INC	R2
+    // asm: 	LDI	*+AR4(CTT_MAXX),R3
+    // asm: 	DEC	R3
+    // asm 000064DF: 	LDI	*+AR4(CTT_MAXY),RC
+    // asm 000064E0: 	DEC	RC
+    // asm 000064E4: 	CALL	_fill
+    // asm: 	LDI	*+AR4(CTT_U),AR2
+    // asm: 	LDI	*+AR4(CTT_MAXX),R2
+    // asm 000064EC: 	LDI	*+AR4(CTT_MAXY),R3
+    // asm 000064ED: 	SUBI	*+AR4(CTT_MINX),R2
+    // asm 000064EE: 	SUBI	*+AR4(CTT_MINY),R3
+    // asm: 	RS	1,R2
+    // asm: 	RS	1,R3
+    // asm 000064EF: 	ADDI	*+AR4(CTT_MINX),R2
+    // asm 000064F0: 	ADDI	*+AR4(CTT_MINY),R3
+    // asm 000064F1: 	SUBI	15,R2
+    // asm: 	SUBI	4,R3
+    // asm: 	LDI	COL_BLACK,RC
+    // asm 000064F2: 	CALL	_outtextxyc
+    // asm 000064F4: 	LDI	*++AR4(CTT_SIZE),R0
+    // asm 000064F5: 	DBU	AR6,TSTBL2
+    // 	;Static *MUST* be working to get this far,
+    // 	;so mark them ALL as cool
+    // 	;
+    // asm: 	LDI	3,AR6
+    // asm 000064FB: 	LDL	STATIC_TABLE,AR4
+    // asm 000064FC: TSTBL2C
+    // asm 000064FD: 	LDI	COL_GREEN,RS
+    // asm 000064FE: 	LDI	*+AR4(CTT_MINX),AR2
+    // asm 000064FF: 	INC	AR2
+    // asm 00006500: 	LDI	*+AR4(CTT_MINY),R2
+    // asm 00006501: 	INC	R2
+    // asm 00006502: 	LDI	*+AR4(CTT_MAXX),R3
+    // asm 00006503: 	DEC	R3
+    // asm 00006504: 	LDI	*+AR4(CTT_MAXY),RC
+    // asm 00006505: 	DEC	RC
+    // asm 00006506: 	CALL	_fill
+    // asm: 	LDI	*+AR4(CTT_U),AR2
+    // asm 00006508: 	LDI	*+AR4(CTT_MAXX),R2
+    // asm 00006509: 	LDI	*+AR4(CTT_MAXY),R3
+    // asm: 	SUBI	*+AR4(CTT_MINX),R2
+    // asm: 	SUBI	*+AR4(CTT_MINY),R3
+    // asm: 	RS	1,R2
+    // asm: 	RS	1,R3
+    // asm: 	ADDI	*+AR4(CTT_MINX),R2
+    // asm 0000650A: 	ADDI	*+AR4(CTT_MINY),R3
+    // asm 0000650B: 	SUBI	15,R2
+    // asm: 	SUBI	4,R3
+    // asm 0000650C: 	LDI	COL_BLACK,RC
+    // asm 0000650D: 	CALL	_outtextxyc
+    // asm 0000650E: 	LDI	*++AR4(CTT_SIZE),R0
+    // asm 0000650F: 	DBU	AR6,TSTBL2C
+    // asm 00006511: 	CALL	CMOS_CHIP_TEST
+    // asm 00006512: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEST_BASICS", 0, 0);
     UNIMPL();
 }

@@ -21,12 +21,9 @@
 
 void TEXTDELER(void);
 void VANITY_HEADS(void);
-void VOSLP(void);
 void SET18FONTDS_WHITE(void);
 void VANITY(void);
 void VANITY_SUB(void);
-void KRIS(void);
-void ADAMSTOPRIBYL(void);
 void GETT(void);
 void CENTEREM(void);
 void RIGHTEM(void);
@@ -60,8 +57,6 @@ int HEADS[] = {
 };
 /* asm: YINCREMENT	.bss	YINCREMENT,1 */
 int YINCREMENT;
-/* asm: CHISPRIB	SPTR	"CHRISTINE PRIBYL" */
-const char *CHISPRIB = "CHRISTINE PRIBYL";
 /* asm: FONTUSED	.bss	FONTUSED,1 */
 int FONTUSED;
 
@@ -178,15 +173,10 @@ VOLP:
     // asm 0000A209: 	MPYF	130,R0
     // asm 0000A20A: 	STF	R0,*+AR0(OPOSY)
     // asm 0000A20B: 	BU	VOLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_HEADS", 0, 0);
-    UNIMPL();
-}
-
-void VOSLP(void)
-{
+VOSLP:
     // asm 0000A20C: SLEEP	1
     // asm 0000A20E: 	BU	VANITY_HEADS_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VOSLP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_HEADS", 0, 0);
     UNIMPL();
 }
 
@@ -304,12 +294,7 @@ NOTSPEC4:
     // asm 0000A274: 	POP	AR5
     // asm 0000A275: 	POP	AR4
     // asm 0000A276: 	BU	DTLP2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_SUB", 0, 0);
-    UNIMPL();
-}
-
-void KRIS(void)
-{
+KRIS:
     // asm 0000A277: SLEEP	1
     // asm 0000A279: 	LDF	*+AR4(TEXT_POSX),R0
     // asm 0000A27A: 	FLOAT	259,R1
@@ -340,12 +325,9 @@ NOTSPEC99:
     // asm 0000A294: 	POP	AR5
     // asm 0000A295: 	POP	AR4
     // asm 0000A296: 	BU	DTLP2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "KRIS", 0, 0);
-    UNIMPL();
-}
-
-void ADAMSTOPRIBYL(void)
-{
+CHISPRIB:
+    // asm 0000A298: SPTR	"CHRISTINE PRIBYL"
+ADAMSTOPRIBYL:
     // asm 0000A298: 	SLEEP	1
     // asm 0000A29A: 	LDF	*+AR4(TEXT_POSY),R0
     // asm 0000A29B: 	FLOAT	250,R1
@@ -387,7 +369,7 @@ WTD55:
     // asm 0000A2BA: 	LDI	-1,R1
     // asm 0000A2BB: 	CALL	PRC_KILLALL
     // asm 0000A2BC: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADAMSTOPRIBYL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_SUB", 0, 0);
     UNIMPL();
 }
 

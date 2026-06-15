@@ -84,12 +84,6 @@ int SCRSIZI = 0x3FFFF;
 /* *----------------------------------------------------------------------------
  */
 #endif
-/* asm: PAGEWORD	.word	0 */
-int PAGEWORD = 0;
-/* asm: FILSIZI	.word	3FFFFH */
-int FILSIZI = 0x3FFFF;
-/* asm: FILWORD	.word	93093H */
-int FILWORD = 0x93093;
 /* *----------------------------------------------------------------------------
 *CAR PROCESS
 *
@@ -193,6 +187,16 @@ void SETPAGE1(void)
     // asm 00008E8A: 	SETDP
     // asm 00008E8B: 	RETS
     // ;	.if	DEBUG
+P1:
+    // asm 00008E8D: 	LDI	@SCREEN1I,R0		;set active screen to 1 (writeable)
+    // asm 00008E8E: 	STI	R0,@ACTIVE_SCREEN
+    // asm 00008E8F: 	LDP	@DMA_SETUP
+    // asm 00008E90: 	LDI	@DMA_SETUP,R0
+    // asm 00008E91: 	OR	DMA_VIDEO_PAG_DISPLAYED+DMA_DMA_WRITE_PAGE,R0
+    // asm 00008E92: 	STI	R0,@DMA_SETUP
+    // asm 00008E93: 	SETDP
+    // asm 00008E94: 	RETS
+    // ;	.endif
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETPAGE1", 0, 0);
     UNIMPL();
 }
@@ -585,6 +589,25 @@ void GET_LLIST(void)
     // asm 00008F29: 	PUSH	R1
     // asm 00008F2A: 	PUSH	AR1
     // asm 00008F2B: 	LDI	*AR2,R0
+    // asm: 	SLOCKON	Z,"GET_LLIST  out of elements"
+    // asm 00008F2C: 	BZ	GETLL_ERR
+    // asm 00008F2D: 	LDI	R0,AR0
+    // asm 00008F2E: 	LDI	*AR0,AR0
+    // asm 00008F2F: 	STI	AR0,*AR2		;and update free list
+    // 	;insert into the active list
+    // asm 00008F30: 	LDI	R2,AR1			;get ptr to active
+    // asm 00008F31: 	LDI	R0,AR0			;get ptr to element
+    // asm 00008F32: 	LDI	*AR1,R1			;get 1st element in active
+    // asm 00008F33: 	STI	R1,*AR0			;link element into element
+    // asm 00008F34: 	STI	AR0,*AR1		;store element into active
+    // asm 00008F35: 	SETC
+GETLL_X:
+    // asm 00008F36: 	POP	AR1
+    // asm 00008F37: 	POP	R1
+    // asm 00008F38: 	RETS
+GETLL_ERR:
+    // asm 00008F39: 	CLRC
+    // asm 00008F3A: 	BU	GETLL_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LLIST", 0, 0);
     UNIMPL();
 }
@@ -603,6 +626,19 @@ void ALLOC_LLIST(void)
 {
     // asm 00008F3B: 	PUSH	R0
     // asm 00008F3C: 	LDI	*AR2,R0
+    // asm: 	SLOCKON	Z,"_allocllist  out of elements"
+    // asm 00008F3D: 	BZ	ALLOCLIST_ISERROR
+    // asm 00008F3E: 	LDI	R0,AR0
+    // asm 00008F3F: 	LDI	*AR0,AR0
+    // asm 00008F40: 	STI	AR0,*AR2		;and update free list
+    // asm 00008F41: 	LDI	R0,AR0
+    // asm 00008F42: 	SETC
+ALLOCLIST_X:
+    // asm 00008F43: 	POP	R0
+    // asm 00008F44: 	RETS
+ALLOCLIST_ISERROR:
+    // asm 00008F45: 	CLRC
+    // asm 00008F46: 	BU	ALLOCLIST_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOC_LLIST", 0, 0);
     UNIMPL();
 }
@@ -653,6 +689,22 @@ void DEL_LLIST(void)
 DELLP:
     // asm 00008F56: LDI	R1,AR1
     // asm 00008F57: 	LDI	*AR1,R1
+    // asm: 	SLOCKON	Z,"DEL_LLIST  end of list found"
+    // asm 00008F58: 	BZ	DEL_LLX
+    // asm 00008F59: 	CMPI	R1,AR2
+    // asm 00008F5A: 	BNE	DELLP
+    // asm 00008F5B: 	LDI	*AR2,R1
+    // asm 00008F5C: 	STI	R1,*AR1			;LINK AROUND
+    // asm 00008F5D: 	LDI	R3,AR1			;get free list pointer
+    // asm 00008F5E: 	LDI	*AR1,R1
+    // asm 00008F5F: 	STI	R1,*AR2
+    // asm 00008F60: 	STI	AR2,*AR1
+DEL_LLX:
+    // asm 00008F61: 	POP	AR1
+    // asm 00008F62: 	POP	AR0
+    // asm 00008F63: 	POP	R1
+    // asm 00008F64: 	POP	R0
+    // asm 00008F65: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEL_LLIST", 0, 0);
     UNIMPL();
 }
@@ -770,6 +822,43 @@ NCS:
     // asm 00008FB8: 	CALL	CONCAT201    		;CONCAT YOUR MATRICES INTO DYNOBJ
     // *STUFF YOUR DYNAMIC MATRICES
     // asm 00008FB9: 	LDI	*+AR4(ODYNALIST),R0
+    // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
+CDTOP:
+    // asm 00008FBA: 	LDI	R0,AR0
+    // asm 00008FBB: 	LDI	*+AR0(DYNAFLAG),R0
+    // asm 00008FBC: 	BN	CDLP			;SHADOW...CONTINUE
+    // asm 00008FBD: 	BZ	CARBODY			;HANDLE BODY
+    // asm 00008FBE: 	LDI	AR0,AR2
+    // asm 00008FBF: 	ADDI	DYNAMATRIX,AR2
+    // asm 00008FC0: 	CMPI	1,R0
+    // asm 00008FC1: 	BZ	CARRWHL			;REAR WHEEL
+    // *STUFF FRONT WHEEL
+    // asm 00008FC2: 	LDF	*AR6++,R0
+    // asm 00008FC3: 	RPTS	7
+    // asm 00008FC4: 	LDF	*AR6++,R0
+    // asm 00008FC5:  	STF	R0,*AR2++
+    // asm 00008FC6: 	NOP	*AR6--(9)
+    // asm 00008FC7: 	B	CDLP
+    // *STUFF REAR WHEEL
+CARRWHL:
+    // asm 00008FC8: 	LDF	*AR3++,R0
+    // asm 00008FC9: 	RPTS	7
+    // asm 00008FCA: 	LDF	*AR3++,R0
+    // asm 00008FCB:  	STF	R0,*AR2++
+    // asm 00008FCC: 	NOP	*AR3--(9)
+CDLP:
+    // asm 00008FCD: 	LDI	*AR0,R0
+    // asm 00008FCE: 	BNZ	CDTOP
+    // asm 00008FCF: 	LDI	3,AR2	  		;SLEEP TIME
+    // asm 00008FD0: 	B	CARSLP
+    // *HANDLE BODY
+    // *BODY MUST BE LAST
+CARBODY:
+    // asm 00008FD1: 	CALL	LEAN
+    // asm 00008FD2: 	LDI	1,AR2
+CARSLP:
+    // asm 00008FD3: 	CALL	SLEEP
+    // asm 00008FD4: 	B 	CARPROCL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARPROC", 0, 0);
     UNIMPL();
 }
@@ -907,6 +996,22 @@ void GETDYNA(void)
     // ;	LDP	@DYNAFREE
     // asm 0000902A: 	LDI	@DYNAFREE,R0
     // asm 0000902B: 	LDI	R0,AR0
+    // asm: 	SLOCKON	Z,"UTIL\GETDYNA   out of dynamic objects"
+    // asm 0000902C: 	BZ	GETDYNA_ERR
+    // asm 0000902D: 	LDI	*AR0,R0
+    // asm 0000902E: 	STI	R0,@DYNAFREE
+    // asm 0000902F: 	ADDI	DYNAMATRIX,AR0		;INIT YOUR MATRIX FOLKS
+    // asm 00009030: 	CALL	INITMAT
+    // asm 00009031: 	SUBI	DYNAMATRIX,AR0
+    // asm 00009032: 	CLRI	R0
+    // asm 00009033: 	STI	R0,*+AR0(DYNAFLAG)
+    // asm 00009034: 	SETC
+GETDYNA_X:
+    // asm 00009035: 	POP	R0
+    // asm 00009036: 	RETS
+GETDYNA_ERR:
+    // asm 00009037: 	CLRC
+    // asm 00009038: 	B	GETDYNA_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDYNA", 0, 0);
     UNIMPL();
 }
@@ -970,6 +1075,18 @@ void GETCAR(void)
     // ;	LDP	@CARFREE
     // asm 0000904D: 	LDI	@CARFREE,AR0
     // asm 0000904E: 	CMPI	0,AR0
+    // asm: 	SLOCKON	Z,"UTIL\GETCAR   out of cars"
+    // asm 0000904F: 	BZ	GETCAR_ERR
+    // asm 00009050: 	LDI	*AR0,R0
+    // asm 00009051: 	STI	R0,@CARFREE
+    // asm 00009052: 	INCM	@CAR_COUNT
+    // asm 00009055: 	SETC
+GETCAR_X:
+    // asm 00009056: 	POP	R0
+    // asm 00009057: 	RETS
+GETCAR_ERR:
+    // asm 00009058: 	CLRC
+    // asm 00009059: 	B	GETCAR_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAR", 0, 0);
     UNIMPL();
 }
@@ -991,6 +1108,10 @@ void DELCAR(void)
     // ;	LDP	@CAR_COUNT
     // asm 0000905E: 	LDI	@CAR_COUNT,R0
     // asm 0000905F: 	DEC	R0
+    // asm: 	SLOCKON	LT,"UTIL\DELCAR   erroneous CAR_COUNT"
+    // asm 00009060: 	STI	R0,@CAR_COUNT
+    // asm 00009061: 	POP	R0
+    // asm 00009062: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DELCAR", 0, 0);
     UNIMPL();
 }

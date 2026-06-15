@@ -25,7 +25,6 @@
  */
 
 void WAVE(void);
-void HEAD2HEADWATCH(void);
 void HEAD2HEAD_WAIT(void);
 void HIGH_SCORE(void);
 void MIDSPIN(void);
@@ -33,7 +32,6 @@ void MIDSPINHS(void);
 void RACELEG(void);
 #define HIGH_SCORE_INI THANKS
 void THANKS(void);
-void CREDITS(void);
 void LOAD_HIGH_SCORE(void);
 void BEGIN_GAME(void);
 void INIT_SYSTEM(void);
@@ -48,24 +46,6 @@ int ATTR_MODEL;
 int _ATTR_MODE;
 /* asm: LOADED	pbss	LOADED,1 */
 int LOADED;
-/* asm: _ATTR_WAVETABI	.word	_ATTR_WAVETAB	;NOTE THE VALUES ARE NEGATVIE */
-/* asm: 	.word	HEAD2HEAD_WAIT */
-/* asm: 	.word	CREDITS		;MUST BE -6 */
-/* asm: 	.word	THANKS		;MUST BE -5 */
-/* asm: 	.word	MIDSPINHS ;-4 */
-/* asm: 	.word	RACELEG	;-3 */
-/* asm: 	.word	MIDSPIN	;-2 */
-/* asm: 	.word	HIGH_SCORE	;-1 */
-int _ATTR_WAVETABI[] = {
-    _ATTR_WAVETAB, // NOTE THE VALUES ARE NEGATVIE
-    HEAD2HEAD_WAIT,
-    CREDITS, // MUST BE -6
-    THANKS, // MUST BE -5
-    MIDSPINHS, // -4
-    RACELEG, // -3
-    MIDSPIN, // -2
-    HIGH_SCORE, // -1
-};
 /* *----------------------------------------------------------------------------
  */
 /* asm: FIXEDPAL: */
@@ -534,12 +514,8 @@ void WAVE(void)
     // asm 0000935C: 	LDI	*AR0,R0
     // asm 0000935D: 	CALLU	R0
     // asm 0000935E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVE", 0, 0);
-    UNIMPL();
-}
-
-void HEAD2HEADWATCH(void)
-{
+    // asm 00009367: _ATTR_WAVETAB
+HEAD2HEADWATCH:
     // asm 00009367: 	SLEEP	1
     // asm 00009369: 	LDI	@OM_MODE,R0
     // asm 0000936A: 	AND	MMODE,R0
@@ -555,7 +531,7 @@ ISTRUE:
     // asm 00009373: LDI	-7,R0
     // asm 00009374: 	STI	R0,@_ATTR_MODE
     // asm 00009375: 	BR	SET_ATTR
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HEAD2HEADWATCH", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVE", 0, 0);
     UNIMPL();
 }
 
@@ -651,17 +627,12 @@ void THANKS(void)
     // asm 000093BB: 	CALL	LOAD_HIGH_SCORE
     // asm 000093BC: 	BU	HIGH_SCORE
     // 	;these are not cycled, they are special routines
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "THANKS", 0, 0);
-    UNIMPL();
-}
-
-void CREDITS(void)
-{
+CREDITS:
     // asm 000093BD: 	CREATE	VANITY,UTIL_C
     // asm 000093C0: 	LDI	-1,R0
     // asm 000093C1: 	STI	R0,@_ATTR_MODE
     // asm 000093C2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CREDITS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "THANKS", 0, 0);
     UNIMPL();
 }
 

@@ -138,8 +138,6 @@ int PLATE_LETTERS[] = {
 #define CAMZ (PDATA+32)
 #define RACE_NUMBER (PDATA+33)
 #define GREY_PAL (PDATA+34)
-/* asm: PEDHIT	.bss	PEDHIT,1 */
-int PEDHIT;
 /* *----------------------------------------------------------------------------
 *	This routine is branched to from within a proccess
 *	It will stamp the letters on the plate then put the plate onto the wall
@@ -155,13 +153,6 @@ int PEDHIT;
 #define STAMP_FRAMES 4
 #define STAMP_SHAKE 7
 #define ARMS2 0x8A
-#define CAM_RADX (-0.393)
-#define ROT_FRAMES 40
-#define left_stop (-5000)
-#define cam_left_stop (-4700)
-#define zoomin_stop (-1300)
-#define zoomout_stop (-2100)
-#define PLACE_ENDRADX 4.71239
 /* *----------------------------------------------------------------------------
  */
 #define FRAME 0x85
@@ -391,6 +382,8 @@ MSLPX:
     // asm 00003231: 	STI	R1,*+AR7(PEDTRIG)
     // asm 00003232: 	LDI	0,AR6			;Set debounce counter to 0
     // ;	BR	PEDALWT
+    // asm 00003233: 	LDI	1,R0
+    // asm 00003234: 	STI	R0,@PEDHIT		;not touched
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_INITIALS", 0, 0);
     UNIMPL();
 }
@@ -920,6 +913,360 @@ PR2:
 PR2A:
     // ;Rotate the camera up
     // asm 00003424: 	SONDFX	DOPEN
+    // asm 00003426: 	LDP	@_CAMERAPOS
+    // asm 00003427: 	LDF	@_CAMERAPOS,R0
+    // asm 00003428: 	LDF	@_CAMERAPOS+Y,R1
+    // asm 00003429: 	LDF	@_CAMERAPOS+Z,R2
+    // asm 0000342A: 	SETDP
+    // asm 0000342B: 	STF	R0,*+AR7(CAMX)
+    // asm 0000342C: 	STF	R1,*+AR7(CAMY)
+    // asm 0000342D: 	STF	R2,*+AR7(CAMZ)
+    // asm 0000342E: 	LDI	ROT_FRAMES-1,AR6
+    // asm 0000342F: PR2AA
+    // *ELP CHANGE
+    // asm 0000342F: 	LDI	@START_HIT,R0
+    // asm 00003430: 	BNZ	PR2A1
+    // *ELP END CHANGE
+    // asm 00003431: 	LDI	*+AR7(PRESSOBJ),AR0
+    // asm 00003432: 	FLOAT	-50,R0
+    // asm 00003433: 	LDF	*+AR0(OPOSY),R2
+    // asm 00003434: 	ADDF	R0,R2
+    // asm 00003435: 	STF	R2,*+AR0(OPOSY)
+    // asm 00003436: 	LDI	*+AR7(ARMSOBJ),AR0
+    // asm 00003437: 	LDF	*+AR0(OPOSY),R2
+    // asm 00003438: 	ADDF	R0,R2
+    // asm 00003439: 	STF	R2,*+AR0(OPOSY)
+    // asm 0000343A: 	LDI	*+AR7(BPRESSOBJ),AR0
+    // asm 0000343B: 	LDF	*+AR0(OPOSY),R2
+    // asm 0000343C: 	ADDF	R0,R2
+    // asm 0000343D: 	STF	R2,*+AR0(OPOSY)
+    // asm 0000343E: 	LDI	ARMS2,R1
+    // asm 0000343F: 	CALL	OBJ_FIND
+    // asm 00003440: 	LDF	*+AR0(OPOSY),R2
+    // asm 00003441: 	ADDF	R0,R2
+    // asm 00003442: 	STF	R2,*+AR0(OPOSY)
+    // asm 00003443: 	CALL	OBJ_FIND_NEXT
+    // asm 00003444: 	LDF	*+AR0(OPOSY),R2
+    // asm 00003445: 	ADDF	R0,R2
+    // asm 00003446: 	STF	R2,*+AR0(OPOSY)
+    // asm 00003447: 	FLOAT	ROT_FRAMES,R1		;Pan camera to correct y
+    // asm 00003448: 	LDF	CAM_RADX,R0
+    // asm 00003449: 	CALL	DIV_F
+    // asm 0000344A: 	LDP	@_CAMERARAD
+    // asm 0000344B: 	LDF	@_CAMERARAD,R2
+    // asm 0000344C: 	ADDF	R0,R2
+    // asm 0000344D: 	STF	R2,@_CAMERARAD
+    // asm 0000344E: 	SETDP
+    // asm 0000344F: 	LDI	@CAMERAMATRIXI,AR2
+    // asm 00003450: 	CALL	FIND_XMATRIX
+    // asm 00003451: 	NEGF	R2
+    // asm 00003452: 	LDI	@MATRIXAI,AR2
+    // asm 00003453: 	CALL	FIND_XMATRIX
+    // asm 00003454: 	LDI	@MATRIXAI,R2
+    // asm 00003455: 	LDI	AR7,AR2
+    // asm 00003456: 	ADDI	CAMX,AR2
+    // asm 00003457: 	LDI	@CAMERAPOSI,R3
+    // asm 00003458: 	CALL	MATRIX_MUL
+    // asm 00003459: 	SLEEP	1
+    // asm 0000345B: 	DBU	AR6,PR2AA
+    // ;Scroll plate left,pan camera left with th plate;ZOOM IN;ZOOM OUT
+    // asm 0000345C: 	SONDFX	GOPEN
+    // asm 0000345E: 	LDF	0.00,R6			;AR5 is speed of rotation
+PR2A1:
+    // *ELP CHANGE
+    // asm 0000345F: 	LDI	@START_HIT,R0
+    // asm 00003460: 	BNZ	PR2A3
+    // *ELP END CHANGE
+    // asm 00003461: 	LDF	R6,R0
+    // *ELP CHANGE
+    // 	;ADDF	0.02,R6	 		;ACCELERATE
+    // asm 00003462: 	ADDF	0.04,R6	 		;ACCELERATE
+    // *ELP END CHANGE
+    // ;	ADDF	0.01,R6	 		;ACCELERATE
+    // asm 00003463: 	CALL	SPIN_ROLLERS
+    // asm 00003464: 	LDI	*+AR7(PLATEOBJ),AR0
+    // asm 00003465: 	LDF	*+AR0(OPOSX),R0
+    // asm 00003466: 	SUBF	*+AR7(CAMX),R0
+    // *ELP CHANGE
+    // 	;MPYF	0.20,R0
+    // asm 00003467: 	MPYF	0.40,R0
+    // *ELP END CHANGE
+    // asm 00003468: 	ADDF	*+AR7(CAMX),R0
+    // asm 00003469: 	FLOAT	cam_left_stop,R1
+    // asm 0000346A: 	CMPF	R1,R0
+    // asm 0000346B: 	LDFLT	R1,R0
+    // asm 0000346C: 	STF	R0,*+AR7(CAMX)
+    // asm 0000346D: 	LDF	R0,R3
+    // asm 0000346E: 	FLOAT	zoomin_stop,R4
+    // asm 0000346F: 	FLOAT	zoomout_stop,R5
+    // asm 00003470: 	FLOAT	-2500,R2		;Accelerating or decelerating?
+    // asm 00003471: 	CMPF	R2,R3			;R3 set above to = PLATE OPOSX
+    // asm 00003472: 	LDFGE	R4,R0			;Accelerating
+    // asm 00003473: 	LDFLT	R5,R0			;Deccelerating
+    // asm 00003474: 	SUBF	*+AR7(CAMZ),R0
+    // *ELP CHANGE
+    // 	;MPYF	0.1,R0
+    // asm 00003475: 	MPYF	0.2,R0
+    // *ELP END CHANGE
+    // ;	MPYF	0.05,R0
+    // asm 00003476: 	ADDF	*+AR7(CAMZ),R0
+    // asm 00003477: 	CMPF	R4,R0			;Range check the zpos
+    // asm 00003478: 	LDFGT	R4,R0			;to large
+    // asm 00003479: 	CMPF	R5,R0
+    // asm 0000347A: 	LDFLT	R5,R0			;to small
+    // asm 0000347B: 	STF	R0,*+AR7(CAMZ)
+    // asm 0000347C: 	LDP	@_CAMERARAD
+    // asm 0000347D: 	LDF	@_CAMERARAD,R2
+    // asm 0000347E: 	SETDP
+    // asm 0000347F: 	NEGF	R2
+    // asm 00003480: 	LDI	@MATRIXAI,AR2
+    // asm 00003481: 	CALL	FIND_XMATRIX
+    // asm 00003482: 	LDI	@MATRIXAI,R2
+    // asm 00003483: 	LDI	AR7,AR2
+    // asm 00003484: 	ADDI	CAMX,AR2
+    // asm 00003485: 	LDI	@CAMERAPOSI,R3
+    // asm 00003486: 	CALL	MATRIX_MUL
+    // asm 00003487: 	CALL	ADJUST_ROLLERS
+    // asm 00003488: 	SLEEP	1
+    // asm 0000348A: 	LDI	*+AR7(PLATEOBJ),AR0
+    // asm 0000348B: 	LDF	*+AR0(OPOSX),R0
+    // asm 0000348C: 	FLOAT	-2500,R1
+    // asm 0000348D: 	CMPF	R1,R0
+    // asm 0000348E: 	BGE	PR2A2
+    // *ELP CHANGE
+    // asm 0000348F: 	ADDF	-0.08,R6	 		;DEACCELERATE (MUST BE TWICE ACCELERATE)
+    // *ELP END CHANGE
+    // asm 00003490: 	CMPF	0.02,R6
+    // asm 00003491: 	LDFN	0.02,R6
+    // ;	ADDF	-0.02,R6	 		;DEACCELERATE (MUST BE TWICE ACCELERATE)
+    // ;	CMPF	0.01,R6
+    // ;	LDFN	0.01,R6
+PR2A2:
+    // asm 00003492: 	LDI	*+AR7(PLATEOBJ),AR0
+    // asm 00003493: 	LDF	*+AR0(OPOSX),R0
+    // asm 00003494: 	FLOAT	left_stop,R1
+    // asm 00003495: 	CMPF	R1,R0
+    // asm 00003496: 	BGE	PR2A1
+    // ;Flip the plate up on end 90deg
+PR2A3:
+    // *ELP CHANGE
+    // asm 00003497: 	LDI	@START_HIT,R0
+    // asm 00003498: 	BNZ	PR3B
+    // *ELP END CHANGE
+    // asm 00003499: 	LDI	*+AR7(PLATEOBJ),AR2
+    // asm 0000349A: 	LDF	0.15708,R2
+    // asm 0000349B: 	ADDF	*+AR2(ORADX),R2
+    // asm 0000349C: 	CMPF	HALFPI,R2
+    // asm 0000349D: 	LDFGT	HALFPI,R2
+    // asm 0000349E: 	STF	R2,*+AR2(ORADX)
+    // asm 0000349F: 	ADDI	OMATRIX,AR2
+    // asm 000034A0: 	CALL	FIND_XMATRIX
+    // asm 000034A1: 	LDI	*+AR7(PLATEOBJ),AR2	;Setup the offset for the bottom of the plate
+    // asm 000034A2: 	LDF	0,R0
+    // asm 000034A3: 	STF	R0,*+AR2(OVELX)
+    // asm 000034A4: 	STF	R0,*+AR2(OVELY)
+    // asm 000034A5: 	FLOAT	-156,R0
+    // asm 000034A6: 	STF	R0,*+AR2(OVELZ)
+    // asm 000034A7: 	LDI	*+AR7(PLATEOBJ),R2
+    // asm 000034A8: 	ADDI	OMATRIX,R2
+    // asm 000034A9: 	ADDI	OVELX,AR2
+    // asm 000034AA: 	LDI	AR2,R3
+    // asm 000034AB: 	CALL	MATRIX_MUL
+    // asm 000034AC: 	LDI	*+AR7(PLATEOBJ),AR0
+    // asm 000034AD: 	FLOAT	PLATE_ZOFF,R0
+    // asm 000034AE: 	ADDF	*+AR0(OVELZ),R0
+    // asm 000034AF: 	STF	R0,*+AR0(OPOSZ)
+    // asm 000034B0: 	FLOAT	610,R0
+    // asm 000034B1: 	ADDF	*+AR0(OVELY),R0
+    // asm 000034B2: 	STF	R0,*+AR0(OPOSY)
+    // asm 000034B3: 	LDF	0,R0			;No x movement
+    // asm 000034B4: 	CALL	MOVE_PLAYERS_LETTERS
+    // asm 000034B5: 	SLEEP	1
+    // asm 000034B7: 	LDI	*+AR7(PLATEOBJ),AR0
+    // asm 000034B8: 	LDF	*+AR0(ORADX),R2
+    // asm 000034B9: 	CMPF	HALFPI,R2
+    // asm 000034BA: 	BNE	PR2A3
+    // ;Put the plate onto the wall
+    // asm 000034BB: 	SONDFX	WIPE4
+    // ;	FLOAT	PRESS_LASTY,R0
+    // ;	STF	R0,*+AR7(CAMY)
+    // ;	FLOAT	PRESS_LASTZ,R0
+    // ;	STF	R0,*+AR7(CAMZ)
+    // asm 000034BD: 	LDI	PLACE_FRAMES-1,AR5
+    // asm 000034BE: PR3
+    // asm 000034BE: 	FLOAT	PLACE_FRAMES,R1
+    // asm 000034BF: 	LDF	PLACE_ENDRADX,R0
+    // asm 000034C0: 	SUBF	HALFPI,R0		;Allready rotated 90deg
+    // asm 000034C1: 	CALL	DIV_F
+    // asm 000034C2: 	LDI	*+AR7(PLATEOBJ),AR2
+    // asm 000034C3: 	ADDF	*+AR2(ORADX),R0
+    // asm 000034C4: 	CMPF	PLACE_ENDRADX,R0
+    // asm 000034C5: 	LDFGT	PLACE_ENDRADX,R0
+    // asm 000034C6: 	STF	R0,*+AR2(ORADX)
+    // asm 000034C7: 	LDF	R0,R2
+    // asm 000034C8: 	ADDI	OMATRIX,AR2
+    // asm 000034C9: 	CALL	FIND_XMATRIX
+    // asm 000034CA: 	LDI	*+AR7(MISPLATEOBJ),AR2
+    // asm 000034CB: 	LDI	*+AR7(PLATEOBJ),AR0
+    // asm 000034CC: 	LDF	*+AR2(OPOSY),R0
+    // asm 000034CD: 	SUBF	*+AR0(OPOSY),R0
+    // asm 000034CE: 	FLOAT	AR5,R1
+    // asm 000034CF: 	CALL	DIV_F
+    // asm 000034D0: 	LDF	R0,R2
+    // asm 000034D1: 	ADDF	*+AR0(OPOSY),R0
+    // asm 000034D2: 	STF	R0,*+AR0(OPOSY)
+    // asm 000034D3: 	CMPF	*+AR7(CAMY),R0
+    // asm 000034D4: 	BGT	PR3A			;Don't move the camera until the plate is above center
+    // asm 000034D5: 	SUBF	*+AR7(CAMY),R0
+    // asm 000034D6: 	MPYF	0.20,R0
+    // asm 000034D7: 	ADDF	*+AR7(CAMY),R0
+    // asm 000034D8: 	FLOAT	-2150,R1
+    // asm 000034D9: 	CMPF	R1,R0
+    // asm 000034DA: 	LDFLT	R1,R0
+    // asm 000034DB: 	STF	R0,*+AR7(CAMY)
+PR3A:
+    // asm 000034DC: 	LDF	*+AR2(OPOSZ),R0
+    // asm 000034DD: 	SUBF	*+AR0(OPOSZ),R0
+    // asm 000034DE: 	FLOAT	AR5,R1
+    // asm 000034DF: 	CALL	DIV_F
+    // asm 000034E0: 	LDF	R0,R2
+    // asm 000034E1: 	ADDF	*+AR0(OPOSZ),R0
+    // asm 000034E2: 	STF	R0,*+AR0(OPOSZ)
+    // asm 000034E3: 	LDF	*+AR2(OPOSX),R0
+    // asm 000034E4: 	SUBF	*+AR0(OPOSX),R0
+    // asm 000034E5: 	FLOAT	AR5,R1
+    // asm 000034E6: 	CALL	DIV_F
+    // asm 000034E7: 	LDF	R0,R2
+    // asm 000034E8: 	ADDF	*+AR0(OPOSX),R0
+    // asm 000034E9: 	STF	R0,*+AR0(OPOSX)
+    // asm 000034EA: 	LDI	*+AR7(PLATEOBJ),AR0
+    // asm 000034EB: 	LDF	R2,R0
+    // asm 000034EC: 	NEGF	R0
+    // asm 000034ED: 	CALL	MOVE_PLAYERS_LETTERS
+    // asm 000034EE: 	FLOAT	ROT_FRAMES,R1		;Pan camera to correct y
+    // asm 000034EF: 	LDF	-CAM_RADX,R0
+    // asm 000034F0: 	CALL	DIV_F
+    // asm 000034F1: 	LDP	@_CAMERARAD
+    // asm 000034F2: 	LDF	@_CAMERARAD,R2
+    // asm 000034F3: 	ADDF	R0,R2
+    // asm 000034F4: 	CMPF	-0.01,R2
+    // asm 000034F5: 	LDFGT	0,R2
+    // asm 000034F6: 	STF	R2,@_CAMERARAD
+    // asm 000034F7: 	SETDP
+    // asm 000034F8: 	LDI	@CAMERAMATRIXI,AR2
+    // asm 000034F9: 	CALL	FIND_XMATRIX
+    // asm 000034FA: 	NEGF	R2
+    // asm 000034FB: 	LDI	@MATRIXAI,AR2
+    // asm 000034FC: 	CALL	FIND_XMATRIX
+    // asm 000034FD: 	LDI	@MATRIXAI,R2
+    // asm 000034FE: 	LDI	AR7,AR2
+    // asm 000034FF: 	ADDI	CAMX,AR2
+    // asm 00003500: 	LDI	@CAMERAPOSI,R3
+    // asm 00003501: 	CALL	MATRIX_MUL
+    // asm 00003502: 	SLEEP	1
+    // asm 00003504: 	DBU	AR5,PR3
+    // ;Now fly the bolts in
+    // asm 00003505: 	LDI	*+AR7(PLACE),R4	;Calculate the first bolts object number
+    // asm 00003506: 	MPYI	4,R4
+    // asm 00003507: 	ADDI	FIRST_BOLT,R4
+    // asm 00003508: 	LDI	3,AR5
+PR3B:
+    // *ELP CHANGE
+    // asm 00003509: 	LDI	@START_HIT,R0
+    // asm 0000350A: 	BNZ	PR3BA
+    // *ELP END CHANGE
+    // asm 0000350B: 	LDI	R4,R1
+    // asm 0000350C: 	CALL	OBJ_FIND
+    // asm 0000350D: 	BC	PR3BA
+    // asm 0000350E: 	LDI	AR0,AR4
+    // asm 0000350F: 	CREATE	FLY_BOLT,UTIL_C
+    // *ELP CHANGE
+    // 	;SLEEP	15
+    // asm 00003512: 	SLEEP	6
+    // *ELP END CHANGE
+    // asm 00003514: 	ADDI	1,R4
+    // asm 00003515: 	DBU	AR5,PR3B
+PR3BA:
+    // *ELP CHANGE
+    // asm 00003516: 	LDI	@START_HIT,R0
+    // asm 00003517: 	BNZ	PR5A
+    // *ELP END CHANGE
+    // ;If not in top 5 skip the pan up
+    // asm 00003518: 	LDI	*+AR7(PLACE),R0
+    // asm 00003519: 	CMPI	4,R0
+    // asm 0000351A: 	BGT	PR5A
+    // ;Continue to pan the camera to the top of the highscore table
+PR4A:
+    // *ELP CHANGE
+    // asm 0000351B: 	LDI	@START_HIT,R0
+    // asm 0000351C: 	BNZ	PR5A
+    // *ELP END CHANGE
+    // asm 0000351D: 	SLEEP	1
+    // asm 0000351F: 	LDP	@_CAMERAPOS+Y
+    // asm 00003520: 	LDF	@_CAMERAPOS+Y,R0
+    // asm 00003521: 	ADDF	-20,R0
+    // asm 00003522: 	FLOAT	-2150,R1
+    // asm 00003523: 	CMPF	R1,R0
+    // asm 00003524: 	LDFLT	R1,R0
+    // asm 00003525: 	STF	R0,@_CAMERAPOS+Y
+    // asm 00003526: 	SETDP
+    // asm 00003527: 	CMPF	R1,R0
+    // asm 00003528: 	BNE	PR4A
+PR5A:
+    // asm 00003529: 	LDL	plate_darkp,AR2
+    // asm 0000352A: 	CALL	PAL_ALLOC_RAW
+    // asm 0000352B: 	STI	R0,*+AR7(darkp_pal)
+    // asm 0000352C: 	LDL	plate_medp,AR2
+    // asm 0000352D: 	CALL	PAL_ALLOC_RAW
+    // asm 0000352E: 	STI	R0,*+AR7(medp_pal)
+    // asm 0000352F: 	LDL	plate_lightp,AR2
+    // asm 00003530: 	CALL	PAL_ALLOC_RAW
+    // asm 00003531: 	STI	R0,*+AR7(lightp_pal)
+    // asm 00003532: 	LDL	plate_lightp1,AR2
+    // asm 00003533: 	CALL	PAL_ALLOC_RAW
+    // asm 00003534: 	STI	R0,*+AR7(lightp1_pal)
+    // *ELP CHANGE
+    // asm 00003535: 	LDI	@START_HIT,R0
+    // asm 00003536: 	BNZ	PRESSCODEX2
+    // *ELP END CHANGE
+    // asm 00003537: 	LDI	*+AR7(RACE_NUMBER),R4
+    // asm 00003538: 	CREATEC	FLASH_LETTERS_PROC,UTIL_C
+    // asm 0000353B: 	STI	AR0,*+AR7(FLASH_PROC)
+    // asm 0000353C: PRESS_CODEX
+    // ;	SLEEP	60
+    // *ELP CHANGE
+    // 	;SLEEP	90
+    // asm 0000353C: 	SLEEP	30
+    // *ELP END CHANGE
+    // asm 0000353E: 	SOND1	CLOSING
+PRESSCODEX2:
+    // *ELP CHANGE
+    // 	;CREATE	UNFOLDMAP_NOPAL,UTIL_C
+    // asm 00003540: 	CREATE	UNFOLDMAP,UTIL_C
+    // 	;SLEEP	40
+    // asm 00003543: 	SLEEP	20
+    // *ELP END CHANGE
+    // asm 00003545: 	LDI	*+AR7(FLASH_PROC),AR2
+    // asm 00003546: 	CALL	PRC_KILL
+    // asm 00003547: 	LDL	press_PALETTES,AR2
+    // asm 00003548: 	CALL	dealloc_section
+    // asm 00003549: 	LDI	*+AR7(GREY_PAL),AR2
+    // asm 0000354A: 	CALL	PAL_DELETE_RAW
+    // asm 0000354B: 	LDI	*+AR7(WHITE_PAL),AR2
+    // asm 0000354C: 	CALL	PAL_DELETE_RAW
+    // asm 0000354D: 	LDI	*+AR7(darkp_pal),AR2
+    // asm 0000354E: 	CALL	PAL_DELETE_RAW
+    // asm 0000354F: 	LDI	*+AR7(medp_pal),AR2
+    // asm 00003550: 	CALL	PAL_DELETE_RAW
+    // asm 00003551: 	LDI	*+AR7(lightp_pal),AR2
+    // asm 00003552: 	CALL	PAL_DELETE_RAW
+    // asm 00003553: 	LDI	*+AR7(lightp1_pal),AR2
+    // asm 00003554: 	CALL	PAL_DELETE_RAW
+    // asm 00003555: 	LDI	@_MODE,R0
+    // asm 00003556: 	ANDN	MMODE|MINFIN|MHS,R0
+    // asm 00003557: 	OR	MBONUS,R0
+    // asm 00003558: 	STI	R0,@_MODE
+    // asm 00003559: 	RETP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRESS_CODE_ENTRY", 0, 0);
     UNIMPL();
 }

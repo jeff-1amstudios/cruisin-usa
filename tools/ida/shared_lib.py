@@ -581,9 +581,16 @@ def macro_emits_executable(
     macro = macros[name]
     expander = MacroExpander(macros, symbols)
     expanded = expander.expand(name, ["0"] * len(macro.params))
-    for ln in iter_active_lines(expanded, symbols):
+    for ln in expanded:
         code = strip_comment(ln)
         if not code.strip():
+            continue
+        stripped = code.strip()
+        if re.match(r"^\.if\b", stripped, re.IGNORECASE):
+            continue
+        if re.match(r"^\.else\b", stripped, re.IGNORECASE):
+            continue
+        if re.match(r"^\.endif\b", stripped, re.IGNORECASE):
             continue
         lbl, rest = split_optional_label(code)
         if lbl is not None:

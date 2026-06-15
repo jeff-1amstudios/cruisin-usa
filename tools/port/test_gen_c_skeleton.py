@@ -280,6 +280,118 @@ NEXTFUNC:\tRETS
         compute_section = rendered.split("void COMPUTE_GAMETIME(void)", 1)[1].split("void NEXTFUNC(void)", 1)[0]
         self.assertNotIn("AUDIT_LIST", compute_section)
 
+    def test_bare_inline_branch_label_does_not_start_function(self) -> None:
+        asm_source = """AUDIT_DISPLAY:\tCALL\tSETUP_DIAG_SCREEN
+\tBNE\tNOCALL
+\tLDI\t*AR5++,R0
+\tCALLU\tR0
+\tBU\tJ22AB
+
+NOCALL\tCALL\tAUDIT_READ
+J22AB\tLDI\tR0,R2
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "AUDITS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void AUDIT_DISPLAY(void)", rendered)
+        self.assertNotIn("void NOCALL(void)", rendered)
+        audit_section = rendered.split("void AUDIT_DISPLAY(void)", 1)[1]
+        self.assertIn("NOCALL:", audit_section)
+        self.assertIn("J22AB:", audit_section)
+
+    def test_conditional_executable_macro_does_not_truncate_function(self) -> None:
+        asm_source = """DEBUG\t.set\t0
+SLOCKON .MACRO UCASE,UTEXT
+\t.if\tDEBUG
+\tB:UCASE:\t$
+\t.endif
+\t.ENDM
+
+BGD_WATCHER:\tLDI\t@DGROUP_COUNT,RC
+\tSUBI\t2,RC
+\tSLOCKON\tLT,\"BACKGRND\\\\LBACK_WATCH ERROR\"
+\tBLT\tSHIFT1
+SHIFT1:\tDECM\t@DGROUP_COUNT
+\tRETS
+
+NEXTFUNC:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BACKGRND.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void BGD_WATCHER(void)", rendered)
+        self.assertIn('    // asm: \tSLOCKON\tLT,"BACKGRND\\\\LBACK_WATCH ERROR"', rendered)
+        self.assertIn("SHIFT1:", rendered)
+        self.assertIn("void NEXTFUNC(void)", rendered)
+        watcher_section = rendered.split("void BGD_WATCHER(void)\n{", 1)[1].split("\nvoid NEXTFUNC(void)\n{", 1)[0]
+        self.assertIn("    // asm: \tBLT\tSHIFT1", watcher_section)
+        self.assertIn("SHIFT1:", watcher_section)
+
+    def test_orphan_top_level_instruction_raises(self) -> None:
+        asm_source = """FUNC:\tRETS
+
+BROKEN_TABLE
+\t.word\t1
+\tBLT\tSHIFT1
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BROKEN.ASM"
+            src_path.write_text(asm_source)
+            with self.assertRaisesRegex(ValueError, r"unexpected top-level code at line 5"):
+                render_module(src_path, {}, {}, None)
+
+    def test_function_local_data_island_stays_inside_function(self) -> None:
+        asm_source = """BGD_ACTIVATE_TYCOGROUP:\tLDI\t32600,RC
+\t.data
+LVAL\t.word\t151720
+\t.text
+\tADDI\t@LVAL,RC
+\tRETS
+
+NEXTFUNC:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BACKGRND.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void BGD_ACTIVATE_TYCOGROUP(void)", rendered)
+        section = rendered.split("void BGD_ACTIVATE_TYCOGROUP(void)\n{", 1)[1].split("\nvoid NEXTFUNC(void)\n{", 1)[0]
+        self.assertIn("    // asm: \tADDI\t@LVAL,RC", section)
+        self.assertNotIn("int LVAL", rendered)
+
+    def test_branch_target_after_local_data_keeps_function_open(self) -> None:
+        asm_source = """SETPAGE1:\tLDI\t@PAGEWORD,R0
+\tBNE\tP1
+\tRETS
+PAGEWORD\t.word\t0
+P1
+\tLDI\t@SCREEN1I,R0
+\tRETS
+
+NEXTFUNC:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "UTIL.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void SETPAGE1(void)", rendered)
+        section = rendered.split("void SETPAGE1(void)\n{", 1)[1].split("\nvoid NEXTFUNC(void)\n{", 1)[0]
+        self.assertIn("P1:", section)
+        self.assertIn("    // asm: \tLDI\t@SCREEN1I,R0", section)
+        self.assertNotIn("int PAGEWORD", rendered)
+
     def test_parse_discovered_defines_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             defines_path = Path(tmpdir) / "discovered_defines.txt"

@@ -27,7 +27,6 @@ void RAMPDOWNTRAINSND(void);
 void RAMPDOWNTRAINSND_PROC(void);
 void FLYTRAIN(void);
 void FLYTRAINP(void);
-void RROAD_DIE(void);
 void DEADCARA(void);
 void GETFLYMAT_TRAIN(void);
 
@@ -575,12 +574,7 @@ FLYCARWTA:
     // asm 00009CE4: 	B	FLYCARSTOPA		;GO ROCK AND ROLL
     // *CLEAN UP THE MESS...
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYTRAINP", 0, 0);
-    UNIMPL();
-}
-
-void RROAD_DIE(void)
-{
+RROAD_DIE:
     // asm 00009CE5: 	CALL	FREE_DRONE
     // asm 00009CE6: 	LDI	1,R0
     // asm 00009CE7: 	LS	O_PROC_B,R0
@@ -592,7 +586,7 @@ void RROAD_DIE(void)
     // asm 00009CED: 	LDI	AR5,AR2
     // asm 00009CEE: 	CALL	DELCAR
     // asm 00009CEF: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RROAD_DIE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYTRAINP", 0, 0);
     UNIMPL();
 }
 

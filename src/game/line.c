@@ -8,11 +8,6 @@
 void _rectangle(void);
 void EPI0_1(void);
 void _line(void);
-void L10(void);
-void L14(void);
-void L22(void);
-void L26(void);
-void L32(void);
 void EPI0_2(void);
 
 #define FP AR3
@@ -156,12 +151,7 @@ L44:
     // asm 0000AC8D: 	ADDI	1,R4
     // ***	BGE	L44	;BRANCH OCCURS
     // asm 0000AC8E: 	B	L38
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_line", 0, 0);
-    UNIMPL();
-}
-
-void L10(void)
-{
+L10:
     // asm 0000AC8F: 	LDI	*+FP(3),R4
     // asm 0000AC90: 	CMPI	RC,R4
     // asm 0000AC91: 	BGT	L38
@@ -178,12 +168,7 @@ L43:
     // asm 0000AC9B: 	ADDI	1,R4
     // ***	BGE	L43	;BRANCH OCCURS
     // asm 0000AC9C: 	B	L38
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "L10", 0, 0);
-    UNIMPL();
-}
-
-void L14(void)
-{
+L14:
     // asm 0000AC9D: 	CMPI	*+FP(2),RS
     // asm 0000AC9E: 	BLT	L16
     // asm 0000AC9F: 	LDF	R3,R0
@@ -227,12 +212,7 @@ L42:
     // asm 0000ACC1: 	ADDI	1,R4
     // ***	BGE	L42	;BRANCH OCCURS
     // asm 0000ACC2: 	B	L38
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "L14", 0, 0);
-    UNIMPL();
-}
-
-void L22(void)
-{
+L22:
     // asm 0000ACC3: 	LDI	*+FP(2),R4
     // asm 0000ACC4: 	CMPI	RS,R4
     // asm 0000ACC5: 	BGT	L38
@@ -249,12 +229,7 @@ L41:
     // asm 0000ACCF: 	ADDI	1,R4
     // ***	BGE	L41	;BRANCH OCCURS
     // asm 0000ACD0: 	B	L38
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "L22", 0, 0);
-    UNIMPL();
-}
-
-void L26(void)
-{
+L26:
     // asm 0000ACD1: 	CMPI	*+FP(2),RS
     // asm 0000ACD2: 	BGE	L28
     // asm 0000ACD3: 	LDI	*+FP(2),R2
@@ -274,12 +249,7 @@ L40:
     // asm 0000ACDF: 	SUBI	1,R5
     // asm 0000ACE0: 	BGE	L40
     // asm 0000ACE1: 	B	L38
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "L26", 0, 0);
-    UNIMPL();
-}
-
-void L32(void)
-{
+L32:
     // asm 0000ACE2: 	CMPI	RC,R2
     // asm 0000ACE3: 	BLE	L34
     // asm 0000ACE4: 	STI	RC,*+FP(3)
@@ -299,7 +269,7 @@ L39:
     // asm 0000ACF0: 	BGE	L39
 L38:
     // asm 0000ACF1:  POP DP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "L32", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_line", 0, 0);
     UNIMPL();
 }
 

@@ -19,8 +19,6 @@
  */
 
 void INITIALIZATION_MOTION_CHECK(void);
-void JAJA66(void);
-void LLLLT(void);
 void SEND_MOTOR_OFF(void);
 void SEND_MOTOR_OFF_NO_RESET(void);
 void INIT_MOTION_ERROROUT(void);
@@ -96,27 +94,6 @@ int *BABAID = JJG;
 /* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
 const char *JJG[] = { "UNKNOWN ERROR", "MAT NOT PLUGGED IN", "MAT STEPPED ON", "SAFETY BEAM PATH BROKEN", "SAFETY BEAM DETECTOR NOT RECEIVING", "SAFETY BEAM LIGHT NOT EMITTING", "FAIL SAFE SWITCH ENGAGED", "FAIL SAFE SWITCH NOT CONNECT PROPERLY" };
 const char *bbd = "MOTION BURNIN";
-/* asm: ABORT_QUERY	.bss	ABORT_QUERY,1 */
-int ABORT_QUERY;
-#define MOTION_ERROR_TIKS ((57*5))
-/* asm: WAITTIK	.bss	WAITTIK,1 */
-int WAITTIK;
-/* asm: MOTION_SAFETY_ON	.bss	MOTION_SAFETY_ON,1 */
-int MOTION_SAFETY_ON;
-/* asm: MOTION_SAFETY_TYPE	.bss	MOTION_SAFETY_TYPE,1 */
-int MOTION_SAFETY_TYPE;
-const char *MSSM = "MOTION STOP BUTTON HIT";
-/* asm: JAJA555	JAJA555
-	.bss	sPOTVALUE,15 */
-int JAJA555[sPOTVALUE];
-/* asm: MOTION_CMDSTR	.bss	MOTION_CMDSTR,80 */
-int MOTION_CMDSTR[80];
-/* asm: LAST_ZF	.bss	LAST_ZF,1 */
-int LAST_ZF;
-/* asm: LAST_XL	.bss	LAST_XL,1 */
-int LAST_XL;
-/* asm: LAST_YR	.bss	LAST_YR,1 */
-int LAST_YR;
 /* asm: THEPROGL */
 /* asm: 	.word	EDIT,T5,T6,T7,T8,T9 */
 /* asm: 	.word	T10,T11,T12,T13,T14,T15,T16,T17,T18,T19 */
@@ -163,12 +140,6 @@ int THEPROGL[] = {
 int CME_MASK = 0x0FF80;
 /* asm: LATCHED_ERROR	.bss	LATCHED_ERROR,1 */
 int LATCHED_ERROR;
-/* asm: LLG6X	.word	L4ABX */
-const char *LLG6X = L4ABX;
-/* asm: LLG6Y	.word	L4ABY */
-const char *LLG6Y = L4ABY;
-/* asm: LLG6Z	.word	L4ABZ */
-const char *LLG6Z = L4ABZ;
 /* asm: GALIL_STATUS_X	.bss	GALIL_STATUS_X,1 */
 int GALIL_STATUS_X;
 /* asm: GALIL_STATUS_Y	.bss	GALIL_STATUS_Y,1 */
@@ -207,13 +178,31 @@ void INITIALIZATION_MOTION_CHECK(void)
     // asm 00004552: 	BNE	INIT_MOTION_ERROROUT
     // ;send it UP, for .5 inch  (1000)
     // ;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INITIALIZATION_MOTION_CHECK", 0, 0);
-    UNIMPL();
-}
-
-void JAJA66(void)
-{
-    // asm 0000456A: LDL	MINIT9,AR2
+    // 	;test limit switches if not found in 3 seconds shutdown
+    // 	;motion
+    // 	;
+    // 	;
+    // asm 00004553: 	LDI	1,RC
+    // asm 00004554: 	TEXTITT	"TESTING UPPER LIMITS",50,260
+    // asm 00004558:         LDL     MINIT10,AR2		;send init strings first
+    // asm 00004559:         CALL    SEND_CMD
+    // asm 0000455A:         CALL    WAIT_ACK
+    // asm 0000455B:         LDL     MINIT11,AR2
+    // asm 0000455C:         CALL    SEND_CMD
+    // asm 0000455D:         CALL    WAIT_ACK
+    // asm 0000455E:         LDL     MINIT12,AR2
+    // asm 0000455F:         CALL    SEND_CMD
+    // asm 00004560:         CALL    WAIT_ACK
+    // asm 00004561:         LDL     MINIT13,AR2
+    // asm 00004562:         CALL    SEND_CMD
+    // asm 00004563:         CALL    WAIT_ACK
+    // asm 00004564: 	READAUD	ADJ_OUTOFDIAG
+    // asm 00004566: 	CMPI	1,R0
+    // asm 00004567: 	BNE	JAJA66
+    // asm 00004568: 	LDL	MINIT9DIAG,AR2
+    // asm 00004569: 	BU	JAJA887
+JAJA66:
+    // asm 0000456A: LDL	MINIT9,AR2	;lift off the failsafes (PR 4000,4000,4000)
 JAJA887:
     // asm 0000456B: CALL    SEND_CMD
     // asm 0000456C:         CALL    WAIT_ACK
@@ -323,12 +312,13 @@ GOT_ALL_UPPERS:
     // 	;
     // 	;---> BR if FAILSAFES STILL ON
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "JAJA66", 0, 0);
-    UNIMPL();
-}
-
-void LLLLT(void)
-{
+    // asm 000045C4: 	LDI	1,RC
+    // asm 000045C5: 	TEXTITT	"LOWER LIMIT TEST",250,260
+    // asm 000045C9: 	LDL	MINIT1L,AR2	;send it up
+    // asm 000045CA:         CALL    SEND_CMD
+    // asm 000045CB:         CALL    WAIT_ACK
+    // asm 000045CC: 	LDI	10,AR3
+LLLLT:
     // asm 000045CD: CALL	WAIT_FOR_VBLANK
     // asm 000045CE: 	DBU	AR3,LLLLT
     // 	;
@@ -426,7 +416,7 @@ LLLTA:
     // asm 00004616: 	LDI	1,RC
     // asm 00004617: 	TEXTITT	"MOTION SYSTEM OK",300,240
     // asm 0000461B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LLLLT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INITIALIZATION_MOTION_CHECK", 0, 0);
     UNIMPL();
 }
 
@@ -764,6 +754,239 @@ void PLMOTION(void)
     // asm 00004746: 	CALL	SEND_CMD
     // asm 00004747: 	CALL	WAIT_ACK
 NOCHECK:
+    // 	;
+    // 	;MOTION SAFETY CODE
+    // 	;
+    // asm 00004748: 	LDI	@WAITTIK,R0			;is counter in a previous 5 second wait?
+    // asm 00004749: 	BZ	NO_PREVMOTION_ERRORS		;br -> NO, continue error checking
+    // asm 0000474A: 	LDI	1,R1
+    // asm 0000474B: 	STI	R1,@MOTION_SAFETY_ON
+    // asm 0000474C: 	CLRI	AR2
+    // asm 0000474D: 	LDP	@991030h
+    // asm 0000474E: 	LDI	@991030h,R2
+    // asm 0000474F: 	LDI	*AR2,AR2
+    // asm 00004750: 	SETDP
+    // asm 00004751: 	LDL	0FF80h,R1
+    // asm 00004752: 	AND	R1,R2
+    // asm 00004753: 	BZ	NO_NEW_MOTION_ERRORS
+    // asm 00004754: 	LDI	MOTION_ERROR_TIKS,R1
+    // asm 00004755: 	STI	R1,@WAITTIK
+    // asm 00004756: 	RETS
+NO_NEW_MOTION_ERRORS:
+    // asm 00004757: 	SUBI	@NFRAMES,R0
+    // asm 00004758: 	LDILT	0,R0
+    // asm 00004759: 	STI	R0,@WAITTIK
+    // asm 0000475A: 	CMPI	0,R0
+    // asm 0000475B: 	RETSGT
+    // 	;here is where we want to test to see if we are done with the error
+    // 	;and how we are to recover
+    // asm 0000475C: 	CALL	ABORT_RESET_GALIL		;recover latch from mark
+    // asm 0000475D: 	CLRI	AR2
+    // asm 0000475E: 	LDP	@991030h	;IF we have a motion error after
+    // asm 0000475F: 	LDI	@991030h,R0	;we attempted to reset, THEN
+    // asm 00004760: 	LDI	*AR2,AR2
+    // asm 00004761: 	SETDP			;try again next frame
+    // asm 00004762: 	LDL	0FF80h,R1	;
+    // asm 00004763: 	AND	R1,R0		;
+    // asm 00004764: 	RETSNZ			;
+    // ;	CALL	MOTION_DLPROG
+    // asm 00004765: RESETMOTIONANYWAY
+    // asm 00004765: 	LDL	XQ,AR2				;tell galil to continue executing program
+    // asm 00004766: 	CALL	SEND_CMD
+    // asm 00004767: 	CALL	WAIT_ACK
+    // asm 00004768: 	CLRI	R0
+    // asm 00004769: 	STI	R0,@MOTION_SAFETY_ON
+    // ;	LDI	300,R0
+    // ;	STI	R0,@MOTION_RCV_TIKS
+    // asm 0000476A: 	RETS
+NO_PREVMOTION_ERRORS:
+    // ;	LDI	@LATCHED_ERROR,R0
+    // ;	BZ	NONELAT
+    // ;
+    // ;	CALL	CLEAR_LATCH_ERROR
+    // ;	CALL	ABORT_RESET_GALIL		;recover latch from mark
+    // ;	CALL	MOTION_DLPROG
+    // ;
+    // ;	BU	RESETMOTIONANYWAY
+    // ;NONELAT
+    // 	;IF galil is NOT responding
+    // 	;attempt to reset serious
+    // 	;
+    // asm 0000476B: 	LDI	@MOTION_RCV_TIKS,R0
+    // asm 0000476C: 	BGT	NOTTLRST
+    // asm 0000476D: 	LDI	1,R2
+    // asm 0000476E: 	SETAUD	AUD_RESET_TOTALLY
+    // asm 00004770: 	LDI	0,R2
+    // asm 00004771: 	SETAUD	ADJ_MOTION_PRESENT
+    // asm 00004773: 	RETS
+    // ;
+    // ;	CALL    RESET_GALIL
+    // ;	CALL    WAIT_ACK_REAL
+    // ;
+    // ;
+    // ;	LDS	"JG -26000,-2,AR2
+    // ;	CALL    SEND_CMD
+    // ;	CALL    WAIT_ACK
+    // ;
+    // ;	CALL	CHECK_MOTION_PRESENT
+    // ;	BEQ	KKGK
+    // ;
+    // ;	LDI	1,R2
+    // ;	SETAUD	ADJ_MOTION_PRESENT
+    // asm 00004774: 	RETS
+    // asm 00004775: KKGK
+    // asm 00004775: 	LDL     PP1,AR2
+    // asm 00004776: 	CALL    SEND_CMD
+    // asm 00004777: 	CALL    WAIT_ACK
+    // asm 00004778: 	LDL     PP2,AR2
+    // asm 00004779: 	CALL    SEND_CMD
+    // asm 0000477A: 	CALL    WAIT_ACK
+    // asm 0000477B: 	LDL     PP3,AR2
+    // asm 0000477C: 	CALL    SEND_CMD
+    // asm 0000477D: 	CALL    WAIT_ACK
+    // asm 0000477E: 	LDL     PP4,AR2
+    // asm 0000477F: 	CALL    SEND_CMD
+    // asm 00004780: 	CALL    WAIT_ACK
+    // 	;
+    // 	;dl the program.
+    // 	;
+    // asm 00004781: 	CALL	CLEAR_LATCH_ERROR
+    // asm 00004782: 	CALL	MOTION_DLPROG
+    // asm 00004783: 	LDI	300,R0
+    // asm 00004784: 	STI	R0,@MOTION_RCV_TIKS
+NOTTLRST:
+    // asm 00004785: 	CLRI	AR2
+    // asm 00004786: 	LDP	@991030h
+    // asm 00004787: 	LDI	@991030h,R0
+    // asm 00004788: 	LDI	*AR2,AR2
+    // asm 00004789: 	SETDP
+    // asm 0000478A: 	LDL	0FF80h,R1
+    // asm 0000478B: 	AND	R1,R0
+    // asm 0000478C: 	BZ	NO_MOTION_ERRORS
+    // 	;we do have an error
+    // 	;
+    // asm 0000478D: 	LDI	MOTION_ERROR_TIKS,R1
+    // asm 0000478E: 	STI	R1,@WAITTIK
+    // asm 0000478F: 	LDI	1,R1
+    // asm 00004790: 	STI	R1,@MOTION_SAFETY_ON
+    // asm 00004791: 	LDI	R0,R2
+    // asm 00004792: 	RS	12,R2
+    // asm 00004793: 	AND	0Fh,R2
+    // asm 00004794: 	LDI	0,R3	;assume its a mat
+    // asm 00004795: 	CMPI	3,R2
+    // asm 00004796: 	LDIEQ	1,R3
+    // asm 00004797: 	CMPI	4,R2
+    // asm 00004798: 	LDIEQ	1,R3
+    // asm 00004799: 	CMPI	5,R2
+    // asm 0000479A: 	LDIEQ	1,R3
+    // asm 0000479B: 	CMPI	6,R2
+    // asm 0000479C: 	LDIEQ	2,R3
+    // asm 0000479D: 	CMPI	7,R2
+    // asm 0000479E: 	LDIEQ	2,R3
+    // asm 0000479F: 	STI	R3,@MOTION_SAFETY_TYPE
+    // asm 000047A0: 	LDI	R0,R1
+    // asm 000047A1: 	RS	16,R1
+    // asm 000047A2: 	RETSC					;BOARD NOT PLUGGED IN OR PAL NOT INSTALLED -> DONT DO ANYTHING
+    // asm 000047A3: 	TSTB	080h,R0				;MOTION STOP IF HELD DOWN -> DONT DO ANYTHING
+    // asm 000047A4: 	BZ	NOTTHIS
+    // asm 000047A5: 	LDI	3,R0
+    // asm 000047A6: 	STI	R0,@MOTION_SAFETY_TYPE
+    // asm 000047A7: 	LDI	1,R0
+    // asm 000047A8: 	STI	R0,@MOTION_STOP_HIT
+    // asm 000047A9: 	LDL	MSSM,AR2
+    // asm 000047AA: 	FLOAT	256,R2
+    // asm 000047AB: 	FLOAT	310,R3
+    // asm 000047AC: 	LDI	57*3,RC
+    // asm 000047AD: 	CALL	TEXT_ADDDS
+    // asm 000047AE: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    // asm 000047B1: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    // asm 000047B4: 	RETS
+NOTTHIS:
+    // asm 000047B5: KDS
+NO_MOTION_ERRORS:
+    // asm 000047B5: 	LDI	@MOTION_NOT_ON,R0
+    // asm 000047B6: 	RETSNZ
+    // asm 000047B7: 	CALL	CHECK_MOTION_PRESENT
+    // asm 000047B8: 	RETSNE
+    // asm 000047B9: 	LDF	*+AR5(RF_PY),R5
+    // asm 000047BA: 	ADDF	*+AR5(LF_PY),R5
+    // asm 000047BB: 	ADDF	*+AR5(LR_PY),R5
+    // asm 000047BC: 	ADDF	*+AR5(RR_PY),R5
+    // asm 000047BD: 	MPYF	0.25,R5
+    // *FIND AVERAGE Y POSITION = R5
+    // asm 000047BE: 	LDF	*+AR5(RF_PY),R2
+    // asm 000047BF: 	ADDF	*+AR5(LF_PY),R2
+    // asm 000047C0: 	MPYF	0.5,R2
+    // asm 000047C1: 	LDF	*+AR5(LR_PY),R3
+    // asm 000047C2: 	LDF	*+AR5(RR_PY),R4
+    // *GET Y HEIGHT DELTA TO CENTER
+    // asm 000047C3: 	SUBRF	R5,R2		;Z (FRONT) AXIS DELTA
+    // asm 000047C4: 	SUBRF	R5,R3		;X (LREAR) AXIS DELTA
+    // asm 000047C5: 	SUBRF	R5,R4		;Y (RREAR) AXIS DELTA
+    // asm 000047C6: 	FLOAT	150,R0		;DIVIDE BY RADIUS FOR PROPORTIONALITY
+    // asm 000047C7: 	CALL	INV_F30
+    // *COMPUTE EQUATION M=2X-X*X/150
+    // asm 000047C8: 	LDF	2,R1
+    // asm 000047C9: 	MPYF	R1,R2,R5   	;2*Z
+    // asm 000047CA: 	MPYF	R2,R2
+    // asm 000047CB: 	MPYF	R0,R2
+    // asm 000047CC: 	SUBF	R2,R5,R2
+    // asm 000047CD: 	MPYF	R0,R2
+    // asm 000047CE: 	MPYF	R1,R3,R5   	;2*X
+    // asm 000047CF: 	MPYF	R3,R3
+    // asm 000047D0: 	MPYF	R0,R3
+    // asm 000047D1: 	SUBF	R3,R5,R3
+    // asm 000047D2: 	MPYF	R0,R3
+    // asm 000047D3: 	MPYF	R1,R4,R5   	;2*Y
+    // asm 000047D4: 	MPYF	R4,R4
+    // asm 000047D5: 	MPYF	R0,R4
+    // asm 000047D6: 	SUBF	R4,R5,R4
+    // asm 000047D7: 	MPYF	R0,R4
+    // ;	MPYF	R0,R2
+    // ;	MPYF	R0,R3
+    // ;	MPYF	R0,R4
+    // ;
+    // asm 000047D8: 	CMPF	0.9,R2		;RESTRICT RANGE TO -0.9->0.9
+    // asm 000047D9: 	LDFGT	0.9,R2
+    // asm 000047DA: 	CMPF	-0.9,R2
+    // asm 000047DB: 	LDFLT	-0.9,R2
+    // asm 000047DC: 	CMPF	0.9,R3		;RESTRICT RANGE TO -0.9->0.9
+    // asm 000047DD: 	LDFGT	0.9,R3
+    // asm 000047DE: 	CMPF	-0.9,R3
+    // asm 000047DF: 	LDFLT	-0.9,R3
+    // asm 000047E0: 	CMPF	0.9,R4		;RESTRICT RANGE TO -0.9->0.9
+    // asm 000047E1: 	LDFGT	0.9,R4
+    // asm 000047E2: 	CMPF	-0.9,R4
+    // asm 000047E3: 	LDFLT	-0.9,R4
+    // *GET LEAN ANGLES 20% OF MOTION (10% OF MOTION RESERVED)
+    // *FRONT-BACK (XLEAN)
+    // asm 000047E4: 	LDF	*+AR5(CARXLEAN),R1		;RADIAN LEAN -0.1->0.1
+    // asm 000047E5: 	MPYF	6,R1
+    // asm 000047E6: 	ADDF	R1,R3
+    // asm 000047E7: 	ADDF	R1,R4
+    // asm 000047E8: 	SUBF	R1,R2
+    // *LEFT-RIGHT (ZLEAN)
+    // asm 000047E9: 	LDF	*+AR5(CARZLEAN),R1    	;RADIAN LEAN -0.1->0.1
+    // asm 000047EA: 	MPYF	6,R1
+    // asm 000047EB: 	ADDF	R1,R4
+    // asm 000047EC: 	SUBF	R1,R3
+    // *LIMIT MOTION +-1.0
+    // asm 000047ED: 	CMPF	1.0,R2
+    // asm 000047EE: 	LDFGT	1.0,R2
+    // asm 000047EF: 	CMPF	1.0,R3
+    // asm 000047F0: 	LDFGT	1.0,R3
+    // asm 000047F1: 	CMPF	1.0,R4
+    // asm 000047F2: 	LDFGT	1.0,R4
+    // asm 000047F3: 	CMPF	-1.0,R2
+    // asm 000047F4: 	LDFLT	-1.0,R2
+    // asm 000047F5: 	CMPF	-1.0,R3
+    // asm 000047F6: 	LDFLT	-1.0,R3
+    // asm 000047F7: 	CMPF	-1.0,R4
+    // asm 000047F8: 	LDFLT	-1.0,R4
+    // *SEND STUFF TO MOTION PLATFORM
+    // *R2=Z FRONT		-1.0->1.0
+    // *R3=X LFT REAR		-1.0->1.0
+    // *R4=Y RT REAR		-1.0->1.0
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLMOTION", 0, 0);
     UNIMPL();
 }
@@ -784,6 +1007,77 @@ void MOTION_SCALE_ENTER(void)
     // asm 00004801: 	FIX	R2
     // asm 00004802: 	FIX	R3
     // asm 00004803: 	FIX	R4
+    // asm 00004804: JAJA555
+    // asm 00004804: 	PUSH	R3
+    // asm 00004805: 	PUSH	R4
+    // ;	PUSHFL	R3
+    // ;	PUSHFL	R4
+    // asm 00004806: 	LDI	@LAST_ZF,R1
+    // asm 00004807: 	SUBI	R2,R1
+    // asm 00004808: 	ABSI	R1
+    // asm 00004809: 	CMPI	MIN_MOVE_DIST,R1
+    // asm 0000480A: 	BLT	N76
+    // asm 0000480B: 	STI	R2,@LAST_ZF
+    // asm 0000480C: 	LDL	sPOTVALUE,AR2
+    // asm 0000480D: 	CALL	_itoa
+    // asm 0000480E: 	LDL	PZC1,AR0
+    // asm 0000480F: 	LDL	MOTION_CMDSTR,AR1
+    // asm 00004810: 	CALL	STRCPY
+    // asm 00004811: 	LDL	MOTION_CMDSTR,AR0
+    // asm 00004812: 	LDL	sPOTVALUE,AR1
+    // asm 00004813: 	CALL	STRCAT
+    // asm 00004814: 	LDL	MOTION_CMDSTR,AR0
+    // asm 00004815: 	LDL	PZC2,AR1
+    // asm 00004816: 	CALL	STRCAT
+    // asm 00004817: 	LDI	AR0,AR2
+    // asm 00004818:         CALL    SEND_CMD
+    // asm 00004819:         CALL    WAIT_ACK
+N76:
+    // asm 0000481A: 	POP	R2		;RT REAR (Y)
+    // asm 0000481B: 	LDI	@LAST_YR,R1
+    // asm 0000481C: 	SUBI	R2,R1
+    // asm 0000481D: 	ABSI	R1
+    // asm 0000481E: 	CMPI	MIN_MOVE_DIST,R1
+    // asm 0000481F: 	BLT	N77
+    // asm 00004820: 	STI	R0,@LAST_YR
+    // asm 00004821: 	LDL	sPOTVALUE,AR2
+    // asm 00004822: 	CALL	_itoa
+    // asm 00004823: 	LDL	PYC1,AR0
+    // asm 00004824: 	LDL	MOTION_CMDSTR,AR1
+    // asm 00004825: 	CALL	STRCPY
+    // asm 00004826: 	LDL	MOTION_CMDSTR,AR0
+    // asm 00004827: 	LDL	sPOTVALUE,AR1
+    // asm 00004828: 	CALL	STRCAT
+    // asm 00004829: 	LDL	MOTION_CMDSTR,AR0
+    // asm 0000482A: 	LDL	PYC2,AR1
+    // asm 0000482B: 	CALL	STRCAT
+    // asm 0000482C: 	LDI	AR0,AR2
+    // asm 0000482D:         CALL    SEND_CMD
+    // asm 0000482E:         CALL    WAIT_ACK
+N77:
+    // asm 0000482F: 	POP	R2		;LT REAR (X)
+    // asm 00004830: 	LDI	@LAST_XL,R1
+    // asm 00004831: 	SUBI	R2,R1
+    // asm 00004832: 	ABSI	R1
+    // asm 00004833: 	CMPI	MIN_MOVE_DIST,R1
+    // asm 00004834: 	BLT	N78
+    // asm 00004835: 	STI	R0,@LAST_XL
+    // asm 00004836: 	LDL	sPOTVALUE,AR2
+    // asm 00004837: 	CALL	_itoa
+    // asm 00004838: 	LDL	PXC1,AR0
+    // asm 00004839: 	LDL	MOTION_CMDSTR,AR1
+    // asm 0000483A: 	CALL	STRCPY
+    // asm 0000483B: 	LDL	MOTION_CMDSTR,AR0
+    // asm 0000483C: 	LDL	sPOTVALUE,AR1
+    // asm 0000483D: 	CALL	STRCAT
+    // asm 0000483E: 	LDL	MOTION_CMDSTR,AR0
+    // asm 0000483F: 	LDL	PXC2,AR1
+    // asm 00004840: 	CALL	STRCAT
+    // asm 00004841: 	LDI	AR0,AR2
+    // asm 00004842:         CALL    SEND_CMD
+    // asm 00004843:         CALL    WAIT_ACK
+N78:
+    // asm 00004844: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_SCALE_ENTER", 0, 0);
     UNIMPL();
 }
@@ -1265,6 +1559,48 @@ NOTQQERRORY:
     // asm 00004A1A: 	BNE	NOTQQERRORZ		;
     // asm 00004A1B: 	LDI	@LLG6Z,AR2
     // asm 00004A1C: 	BU	SHOWENCODER
+SHOWENCODER:
+    // asm 00004A1D: 	FLOAT	256,R2
+    // asm 00004A1E: 	FLOAT	110,R3
+    // asm 00004A1F: 	LDI	60,RC
+    // asm 00004A20: 	CALL	TEXT_ADDDS
+    // asm 00004A21: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    // asm 00004A24: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    // asm 00004A27: 	CALL	SET40FONTDS
+    // asm 00004A28: 	CLRI	R2
+    // asm 00004A29: 	SETAUD	ADJ_MOTION_PRESENT
+    // ;
+    // ; galil program will take care of this - ml
+    // ;
+    // ;	;send shutdown commands
+    // ;	LDL	MOTOROFF,AR2
+    // ;	CALL	SEND_CMD
+    // ;	RETS
+    // asm 00004A2B: 	RETS
+NOTQQERRORZ:
+    // asm 00004A2C: NOTQQERROR
+    // asm 00004A2C: 	CMPI	'X',R1
+    // asm 00004A2D: 	BNE	GS1
+    // asm 00004A2E: 	CALL	G_HEX
+    // asm 00004A2F: 	BNC	GSX
+    // asm 00004A30: 	STI	R1,@GALIL_STATUS_X
+    // asm 00004A31: 	B	GS0
+GS1:
+    // asm 00004A32: 	CMPI	'Y',R1
+    // asm 00004A33: 	BNE	GS2
+    // asm 00004A34: 	CALL	G_HEX
+    // asm 00004A35: 	BNC	GSX
+    // asm 00004A36: 	STI	R1,@GALIL_STATUS_Y
+    // asm 00004A37: 	B	GS0
+GS2:
+    // asm 00004A38: 	CMPI	'Z',R1
+    // asm 00004A39: 	BNE	GS0
+    // asm 00004A3A: 	CALL	G_HEX
+    // asm 00004A3B: 	BNC	GSX
+    // asm 00004A3C: 	STI	R1,@GALIL_STATUS_Z
+    // asm 00004A3D: 	B	GS0
+GSX:
+    // asm 00004A3E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "G_STRING", 0, 0);
     UNIMPL();
 }

@@ -24,14 +24,12 @@ void ONCOMMING_BUZZ(void);
 void CHOPPER(void);
 void FORWARD_BUZZ(void);
 void FLYAWAY(void);
-void KKII(void);
 void CHOPPER_DIE(void);
 void FIND_YX_MATRIX(void);
 void SETDYNAOBJ(void);
 void CHOPPERANI(void);
 void FSL_MOVE(void);
 void HELI_SND(void);
-void NOT_T1(void);
 void GET_CLOSEST_TRAK(void);
 
 /* asm: HELI_ABORT	.bss	HELI_ABORT,1 */
@@ -668,12 +666,7 @@ void FLYAWAY(void)
     // asm 00007E47: 	BLT	KKII
     // asm 00007E48: 	ADDF	0.01,R0
     // asm 00007E49: 	BU	KKUU
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYAWAY", 0, 0);
-    UNIMPL();
-}
-
-void KKII(void)
-{
+KKII:
     // asm 00007E4A: SUBF	0.01,R0
 KKUU:
     // asm 00007E4B: STF	R0,*+AR7(CD_FLYTDIR)
@@ -699,7 +692,7 @@ KKUU:
     // asm 00007E5E: 	SLEEP	1
     // asm 00007E60: 	DBU	AR5,FLYAWAY_LP
     // asm 00007E61: 	BU	CHOPPER_PASS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "KKII", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYAWAY", 0, 0);
     UNIMPL();
 }
 
@@ -963,13 +956,8 @@ IS_T1:
     // asm 00007F10: 	LDI	1,R0
     // asm 00007F11: 	CALL	SET_TRACK_VOL
     // asm 00007F12: 	BU	HEND
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HELI_SND", 0, 0);
-    UNIMPL();
-}
-
-void NOT_T1(void)
-{
-    // asm 00007F13: CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2
+NOT_T1:
+    // asm 00007F13: CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 00007F14: 	BNE	NOT_T2
 IS_T2:
     // asm 00007F15: 	LDF	*+AR7(DELTA_PLYRDIST),R0
@@ -989,7 +977,7 @@ IS_T2:
 NOT_T2:
 HEND:
     // asm 00007F21: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_T1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HELI_SND", 0, 0);
     UNIMPL();
 }
 

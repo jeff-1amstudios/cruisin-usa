@@ -15,7 +15,6 @@ void _ftoa(void);
 void _itoaLZ(void);
 void _itoa(void);
 void HEX2ASC(void);
-void DDJ(void);
 void _fill(void);
 void _outtextxyc(void);
 void _pixel(void);
@@ -228,12 +227,7 @@ htoa1:
     // asm 0000A7E7: 	BLT	DDJ
     // asm 0000A7E8: 	ADDI	'A'-10,R0
     // asm 0000A7E9: 	BU	JJK
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HEX2ASC", 0, 0);
-    UNIMPL();
-}
-
-void DDJ(void)
-{
+DDJ:
     // asm 0000A7EA: ADDI	30h,R0
 JJK:
     // asm 0000A7EB: PUSH	R0
@@ -277,7 +271,7 @@ ISZEROH:
     // asm 0000A80D: 	LDI	030h,R0			;case when number is zero
     // asm 0000A80E: 	STI	R0,*AR2
     // asm 0000A80F: 	LDI	8,R0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DDJ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HEX2ASC", 0, 0);
     UNIMPL();
 }
 

@@ -225,6 +225,16 @@ FLMSORTX:
 void GETCARBODY(void)
 {
     // asm 0000AE4F: 	LDI	*+AR2(ODYNALIST),R0
+    // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
+FBLOOP:
+    // asm 0000AE50: 	LDI	R0,AR0
+    // asm 0000AE51: 	LDI	*+AR0(DYNAFLAG),R1
+    // asm 0000AE52: 	BZ	FOUND_BODY		;0 = car body
+    // asm 0000AE53: 	LDI	*AR0,R0
+    // asm 0000AE54: 	BR	FBLOOP
+FOUND_BODY:
+    // asm 0000AE55: 	ADDI	DYNAMATRIX,AR0
+    // asm 0000AE56: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCARBODY", 0, 0);
     UNIMPL();
 }

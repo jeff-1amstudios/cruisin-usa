@@ -17,7 +17,6 @@
 
 void PAL_INIT(void);
 void PAL_XFER(void);
-void PACBLK(void);
 void PAL_OVERWRITE(void);
 void PAL_FIND(void);
 void PAL_FIND_RAW(void);
@@ -56,17 +55,6 @@ int NUM_FIXED;
  */
 /* asm: PALSXFER	.bss	PALSXFER,1 */
 int PALSXFER;
-#endif
-/* ;	LDI	*AR0++,AR1		;GET SOURCE
-;	LDI	*AR0++,AR2		;GET DESTINATION
- */
-#if DEBUG
-/* asm: COLRAML	.word	COLORAM */
-int COLRAML = COLORAM;
-/* asm: COLRAMH	.word	COLORAM+7FFFh */
-int COLRAMH = COLORAM+0x7FFF;
-#endif
-#endif
 #define NXFER_PALS 128
 /* asm: PALXFER_ACTIVE	.bss	PALXFER_ACTIVE,1 */
 int PALXFER_ACTIVE;
@@ -146,12 +134,26 @@ I889:
     // asm 00009ED5: 	RS	2,R0		;divide by 2
 #if DEBUG
     // asm: 	CMPI	256,R0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_XFER", 0, 0);
-    UNIMPL();
-}
-
-void PACBLK(void)
-{
+    // asm: 	SLOCKON	GT,"PALL\PALTRANS  more than 256 entries?"
+#endif
+    // ;	STI	R1,*AR0++		;CLEAR OUT COUNT
+    // asm 00009ED6: 	LDI	*+AR0(PALX_SADDR),AR1	;GET SOURCE
+    // asm 00009ED7: 	LDI	*+AR0(PALX_DADDR),AR2	;GET DESTINATION
+    // ;	LDI	*AR0++,AR1		;GET SOURCE
+    // ;	LDI	*AR0++,AR2		;GET DESTINATION
+#if DEBUG
+    // asm: 	CMPI	@COLRAML,AR2
+    // asm: 	SLOCKON	LT,"PALL\PALTRANS SETUP XFER OUT OF CRAM LT"
+    // asm: 	CMPI	@COLRAMH,AR2
+    // asm: 	SLOCKON	GT,"PALL\PALTRANS SETUP XFER OUT OF CRAM GT"
+#endif
+    // asm 00009ED8: 	SUBI	1,R0		;DEC COUNT BY 1
+    // asm 00009ED9: 	LDI	R0,RC
+    // asm 00009EDA: 	RPTB	PACBLK
+    // asm 00009EDB: 	LDI	*AR1++,R2
+    // asm 00009EDC: 	STI	R2,*AR2++	;FIRST COLOR
+    // asm 00009EDD: 	RS	16,R2
+PACBLK:
     // asm 00009EDE: STI	R2,*AR2++
     // asm 00009EDF: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
 NOT_PACKED_PAL:
@@ -162,7 +164,24 @@ NOT_PACKED_PAL:
     // ;	LDI	*AR0++,AR2	;GET DESTINATION
 #if DEBUG
     // asm: 	CMPI	@COLRAML,AR2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PACBLK", 0, 0);
+    // asm: 	SLOCKON	LT,"PALL\PALTRANS SETUP XFER OUT OF CRAM LT 2"
+    // asm: 	CMPI	@COLRAMH,AR2
+    // asm: 	SLOCKON	GT,"PALL\PALTRANS SETUP XFER OUT OF CRAM GT 2"
+#endif
+    // asm 00009EE2: 	SUBI	2,R0		;DEC COUNT BY 1
+    // asm 00009EE3: 	BNN	REGDOIT
+    // asm 00009EE4: 	LDI	*AR1++,R2	;single case
+    // asm 00009EE5: 	STI	R2,*AR2++
+    // asm 00009EE6: 	B	PALTR0
+REGDOIT:
+    // asm 00009EE7: 	LDI	*AR1++,R2
+    // asm 00009EE8: 	RPTS	R0
+    // asm 00009EE9: 	LDI	*AR1++,R2
+    // asm 00009EEA: 	STI	R2,*AR2++
+    // asm 00009EEB: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
+PALTRX:
+    // asm 00009EEC: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_XFER", 0, 0);
     UNIMPL();
 }
 
@@ -179,6 +198,17 @@ void PAL_OVERWRITE(void)
 {
     // asm 00009EED: 	LDI	R0,AR2
     // asm 00009EEE: 	CALL	PAL_FIND
+    // asm: 	SLOCKON	C,"PALL\PAL_OVERWRITE  FINDPAL FAILURE"
+    // asm 00009EEF: 	RETSC
+    // asm 00009EF0: 	LDP	@PALROMI
+    // asm 00009EF1: 	LDI	R1,AR2
+    // asm 00009EF2: 	ADDI	@PALROMI,AR2
+    // asm 00009EF3: 	LDI	*AR2,AR2
+    // 	;SETUP TRANSFER
+    // asm 00009EF4: 	LDI	*AR2++,R3	;GET COUNT
+    // asm 00009EF5: 	LDI	R0,R2		;GET DESTINATION
+    // asm 00009EF6: 	CALL	PAL_SET
+    // asm 00009EF7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_OVERWRITE", 0, 0);
     UNIMPL();
 }

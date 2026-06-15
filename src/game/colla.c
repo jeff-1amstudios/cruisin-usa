@@ -48,8 +48,6 @@ void DRONEPTL(void);
 void COLPOINT(void);
 void COLSGCK(void);
 void HARDCOL(void);
-void ROADKILL(void);
-void FLYCOLL(void);
 void RUNOVER(void);
 void FLYCOLLP(void);
 void DEBSCAN(void);
@@ -1358,12 +1356,7 @@ HARDCOL3:
     // *	AR0	POINTS TO CAR OBJECT
     // *	AR1	POINTS TO ROADKILL OBJECT HIT
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDCOL", 0, 0);
-    UNIMPL();
-}
-
-void ROADKILL(void)
-{
+ROADKILL:
     // asm 000022AC: 	LDI	1,R0
     // asm 000022AD: 	STI	R0,*+AR1(OCARBLK)
     // asm 000022AE: 	CALL	ROADKILL_HIT		;MAKE A SOUND
@@ -1374,12 +1367,7 @@ void ROADKILL(void)
     // *FLYING OBJECT
     // *	AR0	POINTS TO CAR OBJECT
     // *	AR1	POINTS TO OBJECT HIT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL", 0, 0);
-    UNIMPL();
-}
-
-void FLYCOLL(void)
-{
+FLYCOLL:
     // asm 000022B2: 	LDF	*+AR0(OPOSY),R0		;MAKE SURE HEIGHT IS CLOSE
     // asm 000022B3: 	SUBF	*+AR1(OPOSY),R0
     // asm 000022B4: 	ABSF	R0
@@ -1456,7 +1444,7 @@ FLYCOLL1:
     // asm 000022F7: 	LDIEQ	DRMBNCE,AR2
     // asm 000022F8: 	LDINE	DSIGNSND,AR2
     // asm 000022F9: 	B	COLSGCX0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCOLL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDCOL", 0, 0);
     UNIMPL();
 }
 

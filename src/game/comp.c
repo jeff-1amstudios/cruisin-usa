@@ -17,7 +17,6 @@
 
 void INPUT_BITS(void);
 void PUTC(void);
-void WVWRLP2(void);
 void DECOMPRESS(void);
 void DECOMPRESS_PROC(void);
 void SAVE_DECOMP_REGS(void);
@@ -56,7 +55,6 @@ int DECODE_STACK[TABLE_SIZE];
 int NEXT_BUMP_CODE;
 /* asm: LINEBUFFER	lobss	LINEBUFFER,64 */
 int LINEBUFFER[64];
-#endif
 /* asm: SAVESPCI	.word	SAVESPC+1 */
 int SAVESPCI = SAVESPC+1;
 /* asm: SAVESPC	.bss	SAVESPC,25 */
@@ -150,12 +148,45 @@ void PUTC(void)
     // asm: 	LDI	0A0h,AR2
     // asm: 	LS	16,AR2
     // asm: 	CMPI	AR2,AR1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PUTC", 0, 0);
-    UNIMPL();
-}
-
-void WVWRLP2(void)
-{
+    // asm: 	SLOCKON	LT,"COMP\PUTC   ATTEMPT UNDER WRITE OF WAVERAM"
+    // asm: 	LDI	0BFh,AR2
+    // asm: 	LS	16,AR2
+    // asm: 	CMPI	AR2,AR1
+    // asm: 	SLOCKON	GT,"COMP\PUTC  ATTEMPT OVER WRITE OF WAVERAM"
+#endif
+    // 	;PACIFY
+    // asm: 	LDI	@PACIFY_COUNT,R0
+    // asm: 	ADDI	64,R0
+    // asm: 	STI	R0,@PACIFY_COUNT
+    // 	;
+    // asm 0000A2FC: 	CLRI	bufcnt
+    // asm 0000A2FD: 	PUSH	AR4
+    // asm 0000A2FE: 	LDI	@LINEBUFFERI,AR4
+    // asm: 	CLRI	AR2			;for dummy read
+    // asm: 	PUSH	ST			;this push must be here
+    // asm 0000A2FF: 	PUSH	RC
+    // asm 0000A300: 	PUSH	RE
+    // asm 0000A301: 	PUSH	RS
+    // asm 0000A302: 	PUSH	R7
+    // asm 0000A303: 	PUSH	IE
+    // asm 0000A304: 	LDP	@COMMINTM
+    // asm 0000A305: 	LDI	@COMMINTM,IE
+    // asm 0000A306: 	SETDP
+    // ;	PUSH	IE			;disable interrupts
+    // ;	LDI	0,IE			;watch for pipeline conflicts
+    // asm 0000A309: 	LDI	HARD_WS,R0
+    // asm 0000A30A: 	LDI	SOFT_WS,R1
+    // ;	AND	0DFFFh,ST		;turn off GIE.
+    // ;	POP	IE
+    // asm 0000A30C: 	LDP	@CPU_WS
+    // asm 0000A30D: 	STI	R0,@CPU_WS		;set hard wait states
+    // asm: 	LDI	63,RC
+    // asm: 	LDI	-16,R7
+    // asm: 	RPTB	WVWRLP2
+    // asm 0000A30E: 	LDI	*AR4,R2			;read from the buffer
+    // asm 0000A30F:     	STI	R2,*AR1++		;write to wave ram
+    // asm:  	LSH	R7,*AR4++,R2		;read/shift right
+WVWRLP2:
     // asm 0000A310: STI	R2,*AR1++
     // asm 0000A313: 	LDI	*AR4,R2			;DUMMY READ TO CLEAR THE LINE
     // asm 0000A314: 	STI	R1,@CPU_WS		;set soft wait states
@@ -171,7 +202,7 @@ void WVWRLP2(void)
     // asm 0000A31D: 	CLRI	PUTC_BUF
     // asm 0000A31E: 	CLRI	PUTC_SH
     // 	;---->	BUD	ENABLEGIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WVWRLP2", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PUTC", 0, 0);
     UNIMPL();
 }
 

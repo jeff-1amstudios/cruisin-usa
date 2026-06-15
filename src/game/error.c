@@ -21,7 +21,6 @@
 
 void ERROR_LOG(void);
 void ERROR_LOG_DISPLAY(void);
-void ION(void);
 
 #define ERR_SIZE 16
 #define MAX_LOGS 30
@@ -36,7 +35,6 @@ void ION(void);
 #define PSS_DP 8
 #define PSS_SP 9
 #define PSS_R0 10
-const char *TIBO = "LOG";
 
 /* *----------------------------------------------------------------------------
  */
@@ -200,12 +198,35 @@ NEXT_PAGE:
     // asm: 	LDI	@OBJSTRI,AR2
     // asm 0000ABDA: 	LDI	DEFAULT_COLOR,RC
     // asm 0000ABDB: 	CALL	_outtextxyc
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ERROR_LOG_DISPLAY", 0, 0);
-    UNIMPL();
-}
-
-void ION(void)
-{
+    // asm 0000ABDE: 	LDI	100,R2
+    // asm: 	LDI	R7,R3
+    // asm: 	SUBI	10,R3
+    // asm 0000ABDF: 	LDL	TIBO,AR2
+    // asm 0000ABE0: 	LDI	DEFAULT_COLOR,RC
+    // asm 0000ABE1: 	CALL	_outtextxyc
+    // asm 0000ABE3: 	POP	AR2
+    // 	;R6  X Position
+    // 	;R7  Y Height
+    // 	;
+    // asm: 	LDI	ERR_SIZE-1,AR5
+    // asm 0000ABE9: ONE_LOG
+    // asm: 	CALL	_rd_cw
+    // asm 0000ABE9: 	LDI	R0,R2
+    // asm 0000ABEB: 	PUSH	AR2
+    // asm 0000ABEE: 	LDI	@OBJSTRI,AR2
+    // asm: 	CALL	HEX2ASC
+    // asm: 	LDI	R6,R2
+    // asm: 	LDI	R7,R3
+    // asm: 	LDI	@OBJSTRI,AR2
+    // asm: 	LDI	DEFAULT_COLOR,RC
+    // asm: 	CALL	_outtextxyc
+    // asm: 	POP	AR2
+    // asm 0000ABF0: 	ADDI	70,R6
+    // asm: 	CMPI	450,R6
+    // asm 0000ABF1: 	BLT	ION
+    // asm 0000ABF2: 	LDI	10,R6
+    // asm: 	ADDI	10,R7
+ION:
     // asm 0000ABF3: DBU	AR5,ONE_LOG
     // asm: 	LDI	10,R6
     // asm 0000ABF4: 	ADDI	20,R7
@@ -251,6 +272,6 @@ NOT_NEXT_PAGE:
     // asm 0000AC1E: 	AND	SW_DIAG,R0
     // asm: 	BNZ	BOOKX
     // asm 0000AC1F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ION", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ERROR_LOG_DISPLAY", 0, 0);
     UNIMPL();
 }

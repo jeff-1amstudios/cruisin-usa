@@ -64,7 +64,6 @@ void INSERT_MORE_COINS(void);
 void FLASH_INSERTCOINSM(void);
 void PRINT_TOCONT(void);
 void COIN_COUNTER(void);
-void MOTIONDIS(void);
 void MOTION_VALID(void);
 
 /* asm: COINOFF	.bss	COINOFF,1 */
@@ -130,6 +129,10 @@ int COIN_COUNTER2;
 int COUNTER_IDX;
 /* asm: COUNTER_MODE	.bss	COUNTER_MODE,1 */
 int COUNTER_MODE;
+/* *----------------------------------------------------------------------------
+ */
+/* asm: MOTIONDIS	SPTR	"MOTION OFF" */
+const char *MOTIONDIS = "MOTION OFF";
 
 /* *----------------------------------------------------------------------------
 *THESE ROUTINES MUST PRESERVE R3
@@ -1323,15 +1326,6 @@ CLEARIT:
     // asm 00007656: 	SETDP
     // asm 00007657: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN_COUNTER", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
- */
-void MOTIONDIS(void)
-{
-    // asm: SPTR	"MOTION OFF"
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTIONDIS", 0, 0);
     UNIMPL();
 }
 

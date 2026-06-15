@@ -35,7 +35,6 @@ void SETFIXEDFONT(void);
 void SETFIXEDFONTDS(void);
 void STRLEN(void);
 void TEXT_OUTPUT(void);
-void IBO1(void);
 void STRCPY(void);
 void STRCAT(void);
 void HIGHLIGHTN(void);
@@ -597,12 +596,7 @@ REGLP:
     // asm 00007A9F: 	AND	0FFh,R0
     // asm 00007AA0: 	OR	NZR|ZS|TM,R0
     // asm 00007AA1: 	BU	IBO2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_OUTPUT", 0, 0);
-    UNIMPL();
-}
-
-void IBO1(void)
-{
+IBO1:
     // asm 00007AA2: LDI	TM|ZS,R0
 IBO2:
     // asm 00007AA3: 	STI	R0,@_ACNTL
@@ -704,7 +698,7 @@ TXTOUT:
     // asm 00007AF9: 	POP	AR5
     // asm 00007AFA: 	POP	AR4
     // asm 00007AFB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "IBO1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_OUTPUT", 0, 0);
     UNIMPL();
 }
 

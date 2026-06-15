@@ -26,13 +26,10 @@
  */
 
 void _c_int00(void);
-void DIAG_RETURN(void);
 void MAINLOOP(void);
 void COLD_ENTER(void);
 void ENABLEGIE(void);
 void INT0(void);
-void REGIT(void);
-void PAGE1(void);
 void READIO(void);
 void VOL_MINUS(void);
 void VOL_PLUS(void);
@@ -44,7 +41,6 @@ void CLR_PBSS(void);
 void CLR_RAM(void);
 void CLEAR_ONCHIPRAM(void);
 void BUTTONS(void);
-void KKDAK(void);
 void DIAG_BUTTONS(void);
 void WAIT_FOR_VBLANK(void);
 void CRT_REG_SETUP(void);
@@ -55,12 +51,10 @@ void TIMER_READ(void);
 void TIMERESET(void);
 void TIMEREC(void);
 void MESSAGE1(void);
-void DODOIBO(void);
 void MSG1(void);
 void MSG2(void);
 void MSG3(void);
 void CHECK_STATE(void);
-void ABORT_STATE(void);
 void DASHLIGHT(void);
 void CMOS_ERROR(void);
 void VERSION_UPDATE(void);
@@ -154,18 +148,6 @@ int NOSWAP;
 int DISPLAY_PAGE;
 /* asm: MPROC_TIK	fbss	MPROC_TIK,1 */
 int MPROC_TIK;
-/* asm: WDHIT	fbss	WDHIT,1 */
-int WDHIT;
-#if MEMTESTS
-#endif
-#if DEBUG
-#endif
-#if MEMTESTS
-#endif
-#if MEMTESTS == 0
-#endif
-/* asm: FLOAT_TIK	.float	0.000292397	;(1/60)/57 of a minute */
-float FLOAT_TIK = 0.000292397f;
 /* *----------------------------------------------------------------------------
 *READ IO  SWITCHES AND POTS
 *
@@ -298,8 +280,6 @@ int CRT_REG_SETUP_STR[] = {
     0x01af, // CRT_VBLK
     0x01b0, // CRT_VTTL
 };
-#if DEBUG
-#endif
 /* *----------------------------------------------------------------------------
  */
 #if STATISTICS
@@ -318,7 +298,6 @@ int TIMEX;
 int TIMECLR;
 /* asm: TIMERAM	.bss	TIMERAM,50 */
 int TIMERAM[50];
-#define COMMPAL 0x0990000 //COMMUNICATIONS PAL
 /* asm: MSG_CNT	.bss	MSG_CNT,1 */
 int MSG_CNT;
 /* asm: LINKDISABLED	SPTR	"LINK DISABLED BY U97  DIP6 OFF" */
@@ -407,12 +386,101 @@ void _c_int00(void)
     // 	;
     // 	;CHECK TO SEE IF THIS IS A WATCHDOG
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_c_int00", 0, 0);
-    UNIMPL();
-}
-
-void DIAG_RETURN(void)
-{
+    // 	;POWERUP IGNORE GLITCH FIX
+    // asm 00004B01: 	LDP	@991050h 		;DOG TEST
+    // asm 00004B02: 	LDI	@991050h,R0
+    // asm 00004B03: 	LDP	@WDHIT
+    // asm 00004B04: 	STI	R0,@WDHIT		;SAVE YOUR DOGGIE
+    // asm 00004B05: 	LDP	@SYSCNTLR
+    // asm 00004B06: 	LDI	SYSCNTL_INIT,R0		;INIT SYSCNTL
+    // asm 00004B07: 	STI	R0,@SYSCNTLR
+    // asm 00004B08: 	LDP	@DMA_SETUP
+    // asm 00004B09: 	LDI	DMA_SETUP_INIT,R0	;INIT DMA
+    // asm 00004B0A: 	STI	R0,@DMA_SETUP
+    // asm 00004B0B: 	LDP	@FIFO_SIZE
+    // asm 00004B0C: 	LDI	270,R0			;INIT FIFO SIZE
+    // asm 00004B0D: 	STI	R0,@FIFO_SIZE
+    // asm 00004B0E: 	CALL	CRT_REG_SETUP		;INIT CRT
+    // asm 00004B0F: 	SETDP
+#if MEMTESTS
+    // asm 00004B10: 	CALL	TEST_STATIC_CHIPS	;TEST THE INSTALLABLE CHIPS
+#endif
+#if DEBUG
+    // 	;
+    // 	;COPY THE 'ROM' into the 'ROM'
+    // 	;
+    // 	;*this only works in RAM
+    // 	;and, if used in ROM will cause a lockup
+    // 	;
+    // asm: 	LDI	40h,AR1			;SOURCE ADDRESS
+    // asm: 	LDI	0C000h,AR2		;DESINATION ADDRESS
+    // asm: 	LS	8,AR2
+    // asm: 	ADDI	40h,AR2
+    // asm: 	LDI	1000h,RC		;COPY THE PROGRAM INTO
+    // asm: 	LS	4,RC			;FAST RAM
+    // asm: 	SUBI	41h,RC
+    // asm: 	RPTB	LD_DBG1
+    // asm: 	LDI	*AR1++,R0
+    // asm 00004B11: LD_DBG1	STI	R0,*AR2++
+#endif
+    // asm 00004B11: 	LDI	0,AR1			;SOURCE ADDRESS
+    // asm 00004B12: 	LDI	4000h,AR2		;DESINATION ADDRESS
+    // asm 00004B13: 	LS	8,AR2
+    // asm 00004B14: 	LDI	1000h,RC		;COPY THE PROGRAM INTO
+    // asm 00004B15: 	LS	4,RC			;FAST RAM
+    // asm 00004B16: 	RPTB	LD_RAM
+    // asm 00004B17: 	LDI	*AR1++,R0
+    // asm 00004B18: LD_RAM	STI	R0,*AR2++
+    // asm 00004B19: 	NOP
+    // asm 00004B1A: 	NOP				;DELAY FOR PIPELINE
+    // asm 00004B1B: 	NOP
+    // asm 00004B1C: 	LDI	22h,IOF
+    // asm 00004B1D: 	NOP
+    // asm 00004B1E: 	NOP				;DELAY FOR PIPELINE
+    // asm 00004B1F: 	NOP
+    // asm 00004B20: 	SOFTWTM	R0		    	;SET WAIT STATES
+    // asm 00004B24: 	CLRI	R0
+    // asm 00004B25: 	LDP	@COMMINTM
+    // asm 00004B26: 	STI	R0,@COMMINTM
+    // asm 00004B27: 	SETDP
+#if MEMTESTS
+    // asm 00004B28: 	CALL	TEST_CHIPS		;TEST THE INSTALLABLE CHIPS
+#endif
+    // asm 00004B29: 	SOFTWTM	R0		    	;SET WAIT STATES
+    // asm 00004B2D: 	DINT
+    // asm 00004B33:         LDP	@FASTSTKI
+    // asm 00004B34:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
+#if MEMTESTS == 0
+    // 	;For RAM (development) version, we must copy the
+    // 	;program into what would be the ROM
+    // 	;
+    // asm: 	LDI	@SYSCNTL,R0
+    // asm: 	ANDN	10h,R0
+    // asm: 	STI	R0,@SYSCNTL
+    // asm: 	LDP	@SYSCNTLR
+    // asm: 	STI	R0,@SYSCNTLR
+    // asm: 	SETDP
+    // asm: 	LDI	040h,AR1		;SOURCE ADDRESS
+    // asm: 	LDI	0C000h,AR2		;DESINATION ADDRESS
+    // asm: 	LS	8,AR2
+    // asm: 	ADDI	040h,AR2
+    // asm: 	LDI	1000h,RC		;COPY THE PROGRAM INTO
+    // asm: 	LS	4,RC			;FAST RAM
+    // asm: 	SUBI	41h,RC
+    // asm: 	RPTB	LD_RAM3
+    // asm: 	LDI	*AR1++,R0
+    // asm 00004B35: LD_RAM3	STI	R0,*AR2++
+    // asm: 	LDI	@SYSCNTL,R0
+    // asm: 	OR	10h,R0
+    // asm: 	STI	R0,@SYSCNTL
+    // asm: 	LDP	@SYSCNTLR
+    // asm: 	STI	R0,@SYSCNTLR
+    // asm: 	SETDP
+#endif
+    // asm 00004B35: 	CLRI	R2
+    // asm 00004B36: 	SETAUD	ADJ_OUTOFDIAG
+    // asm 00004B38:       	BU	DR1 			;SKIP DOGGIE
+DIAG_RETURN:
     // asm 00004B39: 	LDI	8,R0	      		;PREVENT FALSE DOGGIE
     // asm 00004B3A: 	LDP	@WDHIT
     // asm 00004B3B: 	STI	R0,@WDHIT		;SAVE YOUR DOGGIE
@@ -554,7 +622,7 @@ NODO1:
     // asm 00004BCE: 	STI	R0,@ERRORN
     // asm 00004BCF: 	CALL	TIMERESET
     // asm 00004BD0: 	CALL	COMMQ_PACKET_INIT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_RETURN", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_c_int00", 0, 0);
     UNIMPL();
 }
 
@@ -770,12 +838,7 @@ void INT0(void)
     // asm 00004C7F: 	BLE	REGIT
     // asm 00004C80: 	ERRON	U,EC_WATCHDOG2
     // asm 00004C88: 	BU	_c_int00
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", 0, 0);
-    UNIMPL();
-}
-
-void REGIT(void)
-{
+REGIT:
     // asm 00004C89: LDP	@MPROC_TIK
     // asm 00004C8A: 	STI	R0,@MPROC_TIK
     // asm 00004C8B: 	SETDP
@@ -798,12 +861,7 @@ NTEST:
     // asm 00004C9B: 	CALL	SETPAGE1
     // asm 00004C9C: 	CALL	FASTCLR0
     // asm 00004C9D: 	B	DN_PAGE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "REGIT", 0, 0);
-    UNIMPL();
-}
-
-void PAGE1(void)
-{
+PAGE1:
     // asm 00004C9E: CALL	SETPAGE0
     // asm 00004C9F: 	CALL	FASTCLR1
 DN_PAGE:
@@ -843,7 +901,61 @@ JJ88:
     // asm 00004CC4: 	SUBI	1,R0
     // asm 00004CC5: 	STI	R0,@_countdown
 NOTASEC:
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAGE1", 0, 0);
+    // asm 00004CC6: 	LDF	@FLOAT_TIK,R0
+    // asm 00004CC7: 	ADDF	@GAME_TIMER,R0
+    // asm 00004CC8: 	STF	R0,@GAME_TIMER
+    // asm 00004CC9: NOTINGAME
+    // asm 00004CC9: 	INCM	@INFRAMES		;increment number of frames passed since last screen switch
+    // asm 00004CCC: 	INCMF	@IFRAMES
+    // asm 00004CCF: 	CALL	NUWHEEL			;motorized wheel
+    // asm 00004CD0: 	CALL	SNDPROC			;sound processor
+    // asm 00004CD1: 	CALL	READIO			;read the switches
+    // asm 00004CD2: 	CALL	RANDOM			;randomize further...
+    // asm 00004CD3: 	CALL	BUTTONS			;lighted buttons routine
+    // asm 00004CD4: 	CALL	COIN_COUNTER		;coin counter routine
+    // asm 00004CD5: 	CALL	CHECK_STATE
+    // asm 00004CD6: 	CALL	LATCH_ERROR		;motion error
+    // asm 00004CD7: 	ANDN	INT0_M,IF		;set 60Hz IRQ no longer pending
+    // asm 00004CD8: 	POP	AR7
+    // asm 00004CD9: 	POP	AR6
+    // asm 00004CDA: 	POP	AR5
+    // asm 00004CDB: 	POP	AR4
+    // asm 00004CDC: 	POP	AR3
+    // asm 00004CDD: 	POP	AR2
+    // asm 00004CDE: 	POP	AR1
+    // asm 00004CDF: 	POP	AR0
+    // asm 00004CE0: 	POP	IR1
+    // asm 00004CE1: 	POP	IR0
+    // asm 00004CE2: 	POP	BK
+    // asm 00004CE3: 	POP	RE
+    // asm 00004CE4: 	POP	RS
+    // asm 00004CE5: 	POP	RC
+    // asm 00004CE6: 	POPF	R7
+    // asm 00004CE7: 	POPF	R6
+    // asm 00004CE8: 	POPF	R5
+    // asm 00004CE9: 	POPF	R4
+    // asm 00004CEA: 	POPF	R3
+    // asm 00004CEB: 	POPF	R2
+    // asm 00004CEC: 	POPF	R1
+    // asm 00004CED: 	POPF	R0
+    // asm 00004CEE: 	POP	R7
+    // asm 00004CEF: 	POP	R6
+    // asm 00004CF0: 	POP	R5
+    // asm 00004CF1: 	POP	R4
+    // asm 00004CF2: 	POP	R3
+    // asm 00004CF3: 	POP	R2
+    // asm 00004CF4: 	POP	R1
+    // asm 00004CF5: 	POP	R0
+    // asm 00004CF6: 	LDP	@CPU_WS
+    // asm 00004CF7: 	STI	R0,@CPU_WS
+    // asm 00004CF8: 	POP	R0
+    // asm 00004CF9: 	LDI	INT1_M|INT3_M|INT0_M,IE
+    // asm 00004CFA: 	LDP	@COMMINTM
+    // asm 00004CFB: 	OR	@COMMINTM,IE
+    // asm 00004CFC: 	POP	DP
+    // asm 00004CFD: 	POP	ST
+    // asm 00004CFE: 	RETI
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", 0, 0);
     UNIMPL();
 }
 
@@ -1328,12 +1440,7 @@ PAPAFFD:
     // asm 00004E9A: 	AND	0FFh,R0
     // asm 00004E9B: 	ANDN	BUT_FRONT,R0
     // asm 00004E9C: 	BU	FDDDA
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BUTTONS", 0, 0);
-    UNIMPL();
-}
-
-void KKDAK(void)
-{
+KKDAK:
     // asm 00004E9D: AND	0FFh,R0
     // asm 00004E9E: 	OR	BUT_FRONT,R0
 FDDDA:
@@ -1350,7 +1457,7 @@ FDDDA:
     // asm 00004EA9: 	RPTS	SPACER
     // asm 00004EAA: 	NOP
     // asm 00004EAB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "KKDAK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BUTTONS", 0, 0);
     UNIMPL();
 }
 
@@ -1446,6 +1553,11 @@ void ERROR_TRAP(void)
     // asm 00004EF0: 	NOP
     // asm 00004EF1: 	NOP
     // asm 00004EF2: 	NOP
+    // asm: 	SLOCKON	U,"ERROR_TRAP INT"
+#if DEBUG
+    // asm: 	BU	$
+#endif
+    // asm 00004EF3: 	RETI
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ERROR_TRAP", 0, 0);
     UNIMPL();
 }
@@ -1609,12 +1721,7 @@ void MESSAGE1(void)
     // asm 00004F7D: 	BZ	DODOIBO
     // asm 00004F7E: 	LDI	@LINKDISABLED,AR2
     // asm 00004F7F: 	BU	HJSADF
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MESSAGE1", 0, 0);
-    UNIMPL();
-}
-
-void DODOIBO(void)
-{
+DODOIBO:
     // asm 00004F80: TSTB	CMDP_MASTER,R0
     // asm 00004F81: 	LDIZ	@IAMMASTER,AR2
     // asm 00004F82: 	LDINZ	@IAMSLAVE,AR2
@@ -1625,7 +1732,31 @@ HJSADF:
     // 	;test if link pal is installed
     // 	;
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DODOIBO", 0, 0);
+    // asm 00004F86: 	CLRI	AR0
+    // asm 00004F87: 	LDP	@COMMPAL
+    // asm 00004F88: 	LDI	@COMMPAL,R0
+    // asm 00004F89: 	LDI	*AR0,R1
+    // asm 00004F8A: 	SETDP
+    // asm 00004F8B: 	AND	0FH,R0
+    // asm 00004F8C: 	CMPI	4,R0			;BAD PAL ?
+    // asm 00004F8D: 	LDIZ	@TPALI,AR2
+    // asm 00004F8E: 	LDINZ	@TPALNI,AR2
+    // asm 00004F8F: 	LDI	40,R2
+    // asm 00004F90: 	LDI	170,R3
+    // asm 00004F91: 	LDI	1,RC
+    // asm 00004F92: 	CALL	_outtextxyc
+    // 	;
+    // 	;
+    // asm 00004F93: 	LDI	239,AR2
+    // asm 00004F94: 	LDI	110,R2
+    // asm 00004F95: 	LDI	301,R3
+    // asm 00004F96: 	LDI	117,RC
+    // asm 00004F97: 	LDI	11,RS
+    // asm 00004F98: 	CALL	_rectangle
+    // asm 00004F99: 	LDI	11,RC
+    // asm 00004F9A: 	TEXTIT	M1,1,190
+    // asm 00004F9E: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MESSAGE1", 0, 0);
     UNIMPL();
 }
 
@@ -1709,17 +1840,12 @@ DODIAG:
     // *
     // *
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_STATE", 0, 0);
-    UNIMPL();
-}
-
-void ABORT_STATE(void)
-{
+ABORT_STATE:
     // asm 00004FF8: 	CLRI	R0
     // asm 00004FF9: 	STI	R0,@STATE_NUM
     // asm 00004FFA: 	STI	R0,@STATE_TIK
     // asm 00004FFB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ABORT_STATE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_STATE", 0, 0);
     UNIMPL();
 }
 

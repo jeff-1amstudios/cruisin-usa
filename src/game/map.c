@@ -30,7 +30,6 @@ void MAPPAL_ILLUM(void);
 void TIME2STR(void);
 void CVTTIME(void);
 void RADAR_PLOT(void);
-void GL14(void);
 
 /* *----------------------------------------------------------------------------
 *
@@ -1169,12 +1168,7 @@ RADAR_LP:
     // asm 0000617E: 	LDI	00D38h,R0
     // asm 0000617F: 	STI	R0,@_AIVI+3
     // asm 00006180: 	BU	GL15
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADAR_PLOT", 0, 0);
-    UNIMPL();
-}
-
-void GL14(void)
-{
+GL14:
     // asm 00006181: LDL	h2p2b_I,R0
     // asm 00006182: 	STI	R0,@_ADDRL
     // asm 00006183: 	LDI	@_ARPS+(0*3)+1,R0
@@ -1309,6 +1303,6 @@ RADAR_X:
     // asm 000061EA: 	STI	R0,@THIS_MACHINE_AHEAD
 NODOAP:
     // asm 000061EB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GL14", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADAR_PLOT", 0, 0);
     UNIMPL();
 }

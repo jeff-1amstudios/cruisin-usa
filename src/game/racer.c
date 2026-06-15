@@ -28,7 +28,6 @@ void RACER_DRONE(void);
 void RACE_FIN(void);
 void CKPCOL(void);
 void HI_STEALTH(void);
-void LO_STEALTH(void);
 void CKTRANSLO(void);
 void CKTRANSHI(void);
 void CKRANGE(void);
@@ -36,7 +35,6 @@ void COMPTRAK(void);
 void SEND_RACER_XSFER(void);
 void DECODE_RACER_XSFER(void);
 void ACTIVE_XSFER(void);
-void STEALTH_UPDATE(void);
 void GETPOWER(void);
 void GETSTSPD(void);
 void FIND_DYNA(void);
@@ -658,12 +656,7 @@ HI_ST_END:
     // *
     // *ENTER CLOSE STEALTH MODE
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HI_STEALTH", 0, 0);
-    UNIMPL();
-}
-
-void LO_STEALTH(void)
-{
+LO_STEALTH:
     // asm 0000524A: 	LDI	-1,R0
     // asm 0000524B: 	STI	R0,*+AR7(STEALTHMODE)		;LO STEALTH FLAG
     // asm 0000524C: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GET POINTER TO STEALTH MAP
@@ -720,7 +713,7 @@ REENTER:
     // *
     // *CHECK TRANSFER TO OTHER MACHINE ON LINK
     // *LO STEALTH CASE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LO_STEALTH", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HI_STEALTH", 0, 0);
     UNIMPL();
 }
 
@@ -895,12 +888,7 @@ void ACTIVE_XSFER(void)
     // *UPDATE STEALTH POSITION
     // *LINEAR TRACK TO NEXT TRACK SEGMENT
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ACTIVE_XSFER", 0, 0);
-    UNIMPL();
-}
-
-void STEALTH_UPDATE(void)
-{
+STEALTH_UPDATE:
     // asm 000052DD: 	LDI	*+AR7(DELTA_SPTR),AR0  		;STEP TO NEXT PIECE?
     // asm 000052DE: 	FLOAT  	*+AR0(X),R2
     // asm 000052DF: 	SUBF	*+AR4(OPOSX),R2
@@ -950,7 +938,7 @@ void STEALTH_UPDATE(void)
     // *
     // *GET RACER POWER
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "STEALTH_UPDATE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ACTIVE_XSFER", 0, 0);
     UNIMPL();
 }
 

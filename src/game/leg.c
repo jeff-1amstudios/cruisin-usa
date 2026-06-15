@@ -44,9 +44,6 @@ int LEG_SSLL[MINILL_SIZE*(LEG_SIZE+1)];
 int LEGFREE;
 /* asm: LEGLL	.bss	LEGLL,1 */
 int LEGLL;
-/* asm: DBG_LEGCNT	.bss	DBG_LEGCNT,1 */
-int DBG_LEGCNT;
-#endif
 /* asm: LEG_FLAG	.bss	LEG_FLAG,1 */
 int LEG_FLAG;
 /* asm: LEG_RADY	.bss	LEG_RADY,1 */
@@ -93,6 +90,10 @@ void ELEMENT_INIT(void)
     // asm: 	CLRI	R0
     // asm 0000AA69: 	STI	R0,@LEGLL
 #if DEBUG
+    // asm: 	STI	R0,@DBG_LEGCNT
+#endif
+    // asm 0000AA6D: 	POP	R0
+    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_INIT", 0, 0);
     UNIMPL();
 }

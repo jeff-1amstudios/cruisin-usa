@@ -95,10 +95,6 @@ int DD_VAR;
 int DD_MAX_DRONES;
 /* asm: DRONENUM	.bss	DRONENUM,1 */
 int DRONENUM;
-#endif
-#endif
-#if DEBUG
-#endif
 /* *----------------------------------------------------------------------------
  */
 /* asm: EXP_ANI */
@@ -672,6 +668,12 @@ LPP:
     // asm 00006701: 	LDI	AR0,AR2
 #if DEBUG
     // asm: 	CMPI	0,AR2
+    // asm: 	SLOCKON	EQ,"DRONES\INIT_TRACKING_PIECE .."
+#endif
+    // asm 00006702: 	STI	AR2,*+AR7(DELTA_TPIECE)
+    // asm 00006703: 	POP	AR1
+    // asm 00006704: 	POP	AR0
+    // asm 00006705: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_TRACKING_PIECE", 0, 0);
     UNIMPL();
 }
@@ -742,6 +744,22 @@ void GET_TRACK_POS(void)
 TRKP2:
 #if DEBUG
     // asm: 	LDI	*+AR2(OUSR1),R1
+    // asm: 	SLOCKON	LT,"DRONES\GET_TRACK_POS  probably tracking a deleted object"
+#endif
+    // asm 00006725: 	LDF	*+AR2(OPOSX),R2		;X
+    // asm 00006726: 	SUBF	*+AR4(OPOSX),R2
+    // asm 00006727: 	LDF	*+AR2(OPOSZ),R1		;Z
+    // asm 00006728: 	SUBF	*+AR4(OPOSZ),R1
+    // asm 00006729: 	MPYF	R2,R2
+    // asm 0000672A: 	MPYF	R1,R1
+    // asm 0000672B: 	ADDF	R1,R2
+    // asm 0000672C: 	CALL	SQRT
+    // 	;R0 now has distance to next check
+    // asm 0000672D: DISTANCE_OK
+    // asm 0000672D: 	POP	AR2
+    // asm 0000672E: 	POPFL	R2
+    // asm 00006730: 	POPFL	R1
+    // asm 00006732: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TRACK_POS", 0, 0);
     UNIMPL();
 }
@@ -777,6 +795,8 @@ void SUB_FUNCTION_RVS(void)
     // asm 00006734: 	PUSHFL	R0
     // asm 00006736: 	PUSHFL	R3
     // asm 00006738: 	LDI	*+AR2(OBLINK4),R0
+    // asm: 	SLOCKON	Z,"DRONES\SUB_FUNCTION_RVS  OBLINK4 to NULL"
+    // asm 00006739: 	BU	SF_ENTER2
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SUB_FUNCTION_RVS", 0, 0);
     UNIMPL();
 }
@@ -787,6 +807,44 @@ void SUB_FUNCTION(void)
     // asm 0000673B: 	PUSHFL	R0
     // asm 0000673D: 	PUSHFL	R3
     // asm 0000673F: 	LDI	*+AR2(OLINK4),R0
+    // asm: 	SLOCKON	Z,"DRONES\SUB_FUNCTION  OLINK4 to NULL"
+SF_ENTER2:
+    // asm 00006740: 	LDI	R0,AR0
+    // asm 00006741: 	LDF	*+AR0(OPOSX),R2
+    // asm 00006742: 	SUBF	*+AR2(OPOSX),R2
+    // asm 00006743: 	LDF	*+AR0(OPOSZ),R3
+    // asm 00006744: 	SUBF	*+AR2(OPOSZ),R3
+    // asm 00006745: 	CALL	ARCTANF
+    // asm 00006746: 	SUBF	HALFPI,R0
+    // asm 00006747: 	LDF	R0,R2				;FIND THETA
+    // asm 00006748: 	PUSHF	R2
+    // asm 00006749: 	CALL	GET_LANES
+    // asm 0000674A: 	PUSH	AR2
+    // asm 0000674B: 	LDI	@MATRIXAI,AR2
+    // asm 0000674C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
+    // asm 0000674D: 	LDI	*+AR7(DELTA_STATUS),AR0
+    // asm 0000674E: 	AND	DELTA_STATUS_LANE,AR0
+    // ;	LDPI	@LANEPI,AR1
+    // asm 0000674F: 	LDI	@LANEPI,AR1
+    // asm 00006750: 	ADDI	R0,AR1		;4 or 2 lane map?
+    // asm 00006751: 	LDI	*AR1,R0
+    // asm 00006752: 	ADDI	R0,AR0		;which lane?
+    // asm 00006753: 	LDF	*AR0,R0
+DELTA_JOININ:
+    // asm 00006754: 	LDI	@VECTORAI,AR2
+    // asm 00006755: 	STF	R0,*+AR2(X)
+    // asm 00006756: 	CLRF	R0
+    // asm 00006757: 	STF	R0,*+AR2(Y)
+    // asm 00006758: 	STF	R0,*+AR2(Z)
+    // asm 00006759: 	LDI	AR2,R3
+    // asm 0000675A: 	LDI	@MATRIXAI,R2
+    // asm 0000675B: 	CALL	MATRIX_MUL			;COMPUTE THE LANE OFFSET IN VECTORA
+    // asm 0000675C: 	POP	AR2
+    // asm 0000675D: 	POPF	R2
+    // asm 0000675E: 	POPFL	R3
+    // asm 00006760: 	POPFL	R0
+    // asm 00006762: 	POP	AR0
+    // asm 00006763: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SUB_FUNCTION", 0, 0);
     UNIMPL();
 }
@@ -808,6 +866,22 @@ void DELTA_SUB_FUNCTION(void)
     // asm 0000676C: 	PUSHFL	R0
     // asm 0000676E: 	PUSHFL	R3
     // asm 00006770: 	LDI	*+AR2(OLINK4),R0
+    // asm: 	SLOCKON	Z,"DRONES\DELTA_SUB_FUNCTION  OLINK4 to NULL"
+SFENTER66:
+    // asm 00006771: 	LDI	R0,AR0
+    // asm 00006772: 	LDF	*+AR0(OPOSX),R2
+    // asm 00006773: 	SUBF	*+AR2(OPOSX),R2
+    // asm 00006774: 	LDF	*+AR0(OPOSZ),R3
+    // asm 00006775: 	SUBF	*+AR2(OPOSZ),R3
+    // asm 00006776: 	CALL	ARCTANF
+    // asm 00006777: 	SUBF	HALFPI,R0
+    // asm 00006778: 	LDF	R0,R2				;FIND THETA
+    // asm 00006779: 	PUSHF	R2
+    // asm 0000677A: 	PUSH	AR2
+    // asm 0000677B: 	LDI	@MATRIXAI,AR2
+    // asm 0000677C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
+    // asm 0000677D: 	LDF	*+AR7(DELTA_XLANE),R0
+    // asm 0000677E: 	BU	DELTA_JOININ
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DELTA_SUB_FUNCTION", 0, 0);
     UNIMPL();
 }
@@ -874,6 +948,22 @@ void FREE_DRONE(void)
 FREELP:
     // asm 0000679B: LDI	R0,AR1
     // asm 0000679C: 	LDI	*+AR1(OLINK3),R0
+    // asm: 	SLOCKON	Z,"DRONES\FREE_DRONE  end of list found"
+    // asm 0000679D: 	BZ	FREEDR_X
+    // asm 0000679E: 	CMPI	R0,AR4
+    // asm 0000679F: 	BNE	FREELP
+    // asm 000067A0: 	LDI	*+AR4(OLINK3),R0
+    // asm 000067A1: 	STI	R0,*+AR1(OLINK3)	;LINK AROUND
+    // asm 000067A2: 	DECM	@DRONE_COUNT
+#if DEBUG
+    // asm: 	CMPI	0,R0
+    // asm: 	SLOCKON	LT,"DRONES\FREE_DRONE  DRONE_COUNT INVALID"
+#endif
+FREEDR_X:
+    // asm 000067A5: 	POP	AR3
+    // asm 000067A6: 	POP	AR1
+    // asm 000067A7: 	POP	R0
+    // asm 000067A8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FREE_DRONE", 0, 0);
     UNIMPL();
 }

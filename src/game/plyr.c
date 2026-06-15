@@ -28,7 +28,6 @@ void BONUS_WAIT_LOOP(void);
 void PLYR_CAR_INIT(void);
 void PLYR_INTRO_ENTER(void);
 void _PLYR(void);
-void L883(void);
 void CAMCHKL(void);
 void CAMCHKR(void);
 void CAMCHKLR(void);
@@ -74,12 +73,9 @@ void GETRDCAR(void);
 void ROADIR(void);
 void GETRDIR(void);
 void PLYRWHL(void);
-void PWHLX(void);
 void PLYR_SNDS(void);
-void TUNOFF(void);
 void MKFXSND(void);
 void MKVFXSND(void);
-void MKVFX1(void);
 void RANDSND(void);
 void RANDVSND(void);
 void DRONESND(void);
@@ -204,13 +200,6 @@ int CARPARAMTAB1[] = {
     0.89, 0.50, 0.0028, 0.010,
 };
 #define CARPARAMTABL (CARPARAMTAB1-CARPARAMTAB) //LENGTH OF ENTRY
-#define LANESIZE 1152
-/* asm: VIEW0I	.word	_VIEW0 */
-#define VIEW0I _VIEW0
-/* asm: VIEW1I	.word	_VIEW1 */
-#define VIEW1I _VIEW1
-/* asm: VIEW2I	.word	_VIEW2 */
-#define VIEW2I _VIEW2
 /* asm: CATCHUP	.float	0.0001 */
 float CATCHUP = 0.0001f;
 /* asm: AHEAD	.float	-0.0008 */
@@ -629,12 +618,74 @@ PLYR_ENTER:
     // 	;
     // 	;if vehicle is a slave, then offset into lane #2
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_PLYR", 0, 0);
-    UNIMPL();
-}
-
-void L883(void)
-{
+    // 	;if a slave then ALWAYS appear on right side
+    // 	;
+    // 	;
+    // asm 00002A17: 	LDI	@DIPRAM,R1
+    // asm 00002A18: 	TSTB	DIP_COMMP,R1
+    // asm 00002A19: 	BNZ	BABA
+    // asm 00002A1A: 	TSTB	CMDP_MASTER,R1
+    // asm 00002A1B: 	BZ	BABA
+    // asm 00002A1C: 	FLOAT	LANESIZE,R1
+    // asm 00002A1D: 	ADDF	R1,R0
+    // asm 00002A1E: BABA
+    // asm 00002A1E: 	STF	R0,*+AR2(X)
+    // asm 00002A1F: 	LDI	AR2,R3
+    // asm 00002A20: 	CALL	MATRIX_MUL
+    // asm 00002A21: 	LDI	R3,AR2
+    // asm 00002A22: 	LDF	*+AR4(OPOSX),R0
+    // asm 00002A23: 	ADDF	*+AR2(X),R0
+    // asm 00002A24: 	STF	R0,*+AR4(OPOSX)
+    // asm 00002A25: 	LDF	*+AR4(OPOSY),R0
+    // asm 00002A26: 	ADDF	*+AR2(Y),R0
+    // asm 00002A27: 	STF	R0,*+AR4(OPOSY)
+    // asm 00002A28: 	LDF	*+AR4(OPOSZ),R0
+    // asm 00002A29: 	ADDF	*+AR2(Z),R0
+    // asm 00002A2A: 	STF	R0,*+AR4(OPOSZ)
+    // *SET CAMERA POSITION
+    // asm 00002A2B: 	LDI	@CAMERAMATRIXI,AR2
+    // asm 00002A2C: 	LDI	AR2,R2
+    // asm 00002A2D: 	CALL	CLR_VECTORA
+    // asm 00002A2E: 	FLOAT	-20*FEET,R0
+    // asm 00002A2F: 	STF	R0,*+AR2(Y)
+    // asm 00002A30: 	FLOAT	(-20*FEET),R0
+    // asm 00002A31: 	STF	R0,*+AR2(Z)
+    // asm 00002A32: 	LDI	AR2,R3
+    // asm 00002A33: 	CALL	MATRIX_MUL
+    // asm 00002A34: 	LDI	@CAMERAPOSI,AR3		;INIT CAMERA POSITION
+    // asm 00002A35: 	LDF	*+AR4(OPOSX),R0
+    // asm 00002A36: 	ADDF	*+AR2(X),R0
+    // asm 00002A37: 	STF	R0,*+AR3(X)		;CAMERA X
+    // asm 00002A38: 	LDF	*+AR4(OPOSY),R0
+    // asm 00002A39: 	ADDF	*+AR2(Y),R0
+    // asm 00002A3A: 	STF	R0,*+AR3(Y)		;CAMERA Y
+    // asm 00002A3B: 	LDF	*+AR4(OPOSZ),R0
+    // asm 00002A3C: 	ADDF	*+AR2(Z),R0
+    // asm 00002A3D: 	STF	R0,*+AR3(Z)		;CAMERA Z
+    // asm 00002A3E: 	CALL	RESCAN	     		;RESET ACTIVE OBJECT LIST
+    // *CAMERA INIT
+PLYR_INTRO_JOIN:
+    // ;	LDF	1.0,R0			;INIT DRAFT VALUE
+    // ;	STF	R0,@PLDRAFTVAL
+    // asm 00002A3F: 	LDF	0,R0	 		;INITIALIZE PLAYER ZOOM POSITION
+    // asm 00002A40:    	STF	R0,@ZOOMDD
+    // asm 00002A41:    	STF	R0,@ZOOMHD
+    // asm 00002A42: 	FLOAT	PLYPOS2Y,R0
+    // asm 00002A43: 	STF	R0,@ZOOMH
+    // asm 00002A44: 	STF	R0,@ZOOMHG
+    // asm 00002A45: 	FLOAT	PLYPOS2Z,R0
+    // asm 00002A46: 	STF	R0,@ZOOMD
+    // asm 00002A47: 	STF	R0,@ZOOMDG
+    // asm 00002A48: 	LDI	@VIEW1I,AR2
+    // asm 00002A49: 	LDI	@CAMVIEW,R0
+    // asm 00002A4A: 	LDIEQ	@VIEW0I,AR2
+    // asm 00002A4B: 	LDI	1,R1
+    // asm 00002A4C: 	STI	R1,@CAMVIEW		;INIT CAMERA VIEW TO 3RD PERSON
+    // asm 00002A4D: 	CMPI	2,R0
+    // asm 00002A4E: 	LDIEQ	@VIEW2I,AR2
+    // asm 00002A4F: 	LDI	UTIL_C,R2  		;RESTORE OLD VIEW
+    // asm 00002A50: 	CALL	PRC_CREATE
+L883:
     // asm 00002A51: LDI	0,R0
     // asm 00002A52: 	STPI	R0,@BRAKEON
     // asm 00002A53: 	STI	R0,@WRECKFLG		;WRECK OFF
@@ -973,7 +1024,7 @@ PLYS1:
     // asm 00002B5E: NOPLINK
     // asm 00002B5E: 	SLEEP	1
     // asm 00002B60: 	B	PLYRLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "L883", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_PLYR", 0, 0);
     UNIMPL();
 }
 
@@ -2853,12 +2904,7 @@ PWHL1:
     // asm 0000306A: 	ADDF	R0,R4			;NEW STERRING CENTER FOR FEEDBACK
     // asm 0000306B: 	LDI	4,R3			;NEW TIMER VALUE
     // asm 0000306C: 	B	PWHLX0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRWHL", 0, 0);
-    UNIMPL();
-}
-
-void PWHLX(void)
-{
+PWHLX:
     // asm 0000306D: SUBI	1,R3
     // asm 0000306E: 	LDILT	0,R3
     // asm 0000306F: 	BGT	PWHLXX			;When timer reaches -1, Set WHEELPOS = STEERCT
@@ -2889,7 +2935,7 @@ PWHLXX:
     // asm 00003083: 	STF	R0,@WHEELPOS
 WHLOFFX:
     // asm 00003084: RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PWHLX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRWHL", 0, 0);
     UNIMPL();
 }
 
@@ -3075,12 +3121,7 @@ SPUTSNDX:
     // asm 00003127: 	LDI	TUNSND,AR2
     // asm 00003128: 	CALL	MKVFXSND
     // asm 00003129: 	B	TUNSNDX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_SNDS", 0, 0);
-    UNIMPL();
-}
-
-void TUNOFF(void)
-{
+TUNOFF:
     // asm 0000312A: LDI	TUNSND,AR2
     // asm 0000312B: 	CALL	KILLSNDFX
 TUNSNDX:
@@ -3111,7 +3152,7 @@ NOGRAV:
 GRAVX:
     // asm 00003142: PLSNDX
     // asm 00003142: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TUNOFF", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_SNDS", 0, 0);
     UNIMPL();
 }
 
@@ -3149,12 +3190,7 @@ void MKVFXSND(void)
     // asm 0000314E: 	RETSLE
     // asm 0000314F: 	LDI	1,R0	  	;TRACK #
     // asm 00003150: 	B	SET_TRACK_VOL	;R0=TRACK#,R1=VOL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MKVFXSND", 0, 0);
-    UNIMPL();
-}
-
-void MKVFX1(void)
-{
+MKVFX1:
     // asm 00003151: 	CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 00003152: 	BNZ	VOLSNDFX		     	;DO NEW SOUND DUDES
     // asm 00003153: 	SUBI	@SNDSTR+(2*SND_SIZ)+SND_VOL,R0	;CHECK TRACK2 VOLUME
@@ -3163,7 +3199,7 @@ void MKVFX1(void)
     // asm 00003156: 	RETSLE
     // asm 00003157: 	LDI	2,R0	  	;TRACK #
     // asm 00003158: 	B	SET_TRACK_VOL	;R0=TRACK#,R1=VOL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MKVFX1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MKVFXSND", 0, 0);
     UNIMPL();
 }
 

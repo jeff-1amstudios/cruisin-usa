@@ -92,10 +92,6 @@ FUNCTION_END_MNEMONICS = {
     "RETSP",
     "RETSD",
     "RET",
-    "B",
-    "BU",
-    "BR",
-    "DB",
 }
 
 INSTRUCTION_PREFIXES = (
@@ -255,6 +251,7 @@ def source_root_for_path(src_path: Path) -> Path:
 def collect_data_only_macro_names(root: Path) -> frozenset[str]:
     macros = ccm.parse_macros(root)
     symbols = ccm.parse_set_symbols(root)
+    symbols["DEBUG"] = 0
     cache: dict[str, bool] = {}
     out: set[str] = set()
     for name in macros:
@@ -841,6 +838,84 @@ def line_is_data_context(raw: str) -> bool:
     return False
 
 
+def top_level_data_belongs_to_current_function(
+    lines: list[str],
+    start_idx: int,
+    branch_targets: set[str] | None = None,
+) -> bool:
+    if branch_targets is None:
+        branch_targets = set()
+    prev_exec_idx: int | None = None
+
+    scan_idx = start_idx - 1
+    while scan_idx >= 0:
+        scan_raw = lines[scan_idx]
+        if is_comment_or_blank(scan_raw):
+            scan_idx -= 1
+            continue
+        scan_code, _scan_comment = split_comment(scan_raw)
+        scan_stripped = scan_code.strip()
+        if scan_stripped.lower().startswith((".data", ".text", ".bss", ".usect", ".sect", "romdata", ".globl", ".line", ".sym", ".if", ".else", ".endif")):
+            scan_idx -= 1
+            continue
+        if parse_numeric_directive(scan_stripped) is not None:
+            scan_idx -= 1
+            continue
+        if is_top_level_data_line(scan_raw):
+            scan_idx -= 1
+            continue
+        if instruction_text_for_top_level_line(scan_raw) is not None:
+            prev_exec_idx = scan_idx
+            break
+        scan_idx -= 1
+
+    prev_exec_ends = prev_exec_idx is not None and line_ends_function(lines[prev_exec_idx])
+    saw_branch_target_label = False
+
+    scan_idx = start_idx + 1
+    while scan_idx < len(lines):
+        scan_raw = lines[scan_idx]
+        if is_comment_or_blank(scan_raw):
+            scan_idx += 1
+            continue
+        scan_code, _scan_comment = split_comment(scan_raw)
+        scan_stripped = scan_code.strip()
+        if scan_stripped.lower().startswith((".data", ".text", ".bss", ".usect", ".sect", "romdata", ".globl", ".line", ".sym", ".if", ".else", ".endif")):
+            scan_idx += 1
+            continue
+        if parse_numeric_directive(scan_stripped) is not None:
+            scan_idx += 1
+            continue
+        if is_top_level_data_line(scan_raw):
+            scan_idx += 1
+            continue
+        label_match = LABEL_RE.match(scan_raw)
+        if label_match:
+            if label_match.group(1) in branch_targets:
+                saw_branch_target_label = True
+                scan_idx += 1
+                continue
+            return not prev_exec_ends and instruction_text_for_top_level_line(scan_raw) is not None
+        inline_label_match = INLINE_LABEL_RE.match(scan_raw)
+        if inline_label_match and is_flush_left(scan_raw) and not looks_like_instruction_token(inline_label_match.group(1)):
+            if inline_label_match.group(1) in branch_targets:
+                saw_branch_target_label = True
+                scan_idx += 1
+                continue
+            return not prev_exec_ends and instruction_text_for_top_level_line(scan_raw) is not None
+        bare_label_match = BARE_LABEL_RE.match(scan_code)
+        if bare_label_match and is_flush_left(scan_raw) and not looks_like_instruction_token(bare_label_match.group(1)):
+            if bare_label_match.group(1) in branch_targets:
+                saw_branch_target_label = True
+            scan_idx += 1
+            continue
+        if instruction_text_for_top_level_line(scan_raw) is not None:
+            return saw_branch_target_label or not prev_exec_ends
+        return False
+
+    return False
+
+
 def bare_label_has_code_body(lines: list[str], start_idx: int) -> bool:
     probe_idx = start_idx + 1
     while probe_idx < len(lines):
@@ -897,7 +972,8 @@ def colon_label_has_code_body(
             probe_idx += 1
             continue
         if line_starts_data_only_macro(probe_raw, data_only_macros):
-            return False
+            probe_idx += 1
+            continue
         probe_code, _probe_comment = split_comment(probe_raw)
         probe_stripped = probe_code.strip()
         if probe_stripped.lower().startswith((".globl", ".line", ".sym", ".func", ".endfunc", ".text", ".data", ".bss", ".sect", "romdata")):
@@ -1057,6 +1133,15 @@ def collect_top_level_functions(
 
         standalone_data, _next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
         if standalone_data is not None:
+            if current is not None and (
+                not function_has_executable_lines(current)
+                or top_level_data_belongs_to_current_function(lines, idx, branch_targets)
+            ):
+                current.lines.append(raw.rstrip())
+                current.raw_lines.append(raw.rstrip())
+                current.line_numbers.append(idx + 1)
+                current.end_index = idx
+                continue
             current = None
             seen_separator = False
             continue
@@ -1103,6 +1188,15 @@ def collect_top_level_functions(
             continue
 
         if current is not None and is_top_level_data_line(raw, data_only_macros):
+            if (
+                not function_has_executable_lines(current)
+                or top_level_data_belongs_to_current_function(lines, idx, branch_targets)
+            ):
+                current.lines.append(raw.rstrip())
+                current.raw_lines.append(raw.rstrip())
+                current.line_numbers.append(idx + 1)
+                current.end_index = idx
+                continue
             current = None
             seen_separator = False
             continue
@@ -1120,22 +1214,6 @@ def collect_top_level_functions(
                 functions.append(current)
                 seen_separator = False
                 continue
-            if is_flush_left(raw) and not looks_like_instruction_token(label):
-                prev_idx = previous_significant_index(lines, idx)
-                prev_raw = lines[prev_idx] if prev_idx is not None else ""
-                prev_ends = prev_idx is None or seen_separator or line_ends_function(prev_raw)
-                prev_is_data = prev_idx is not None and line_is_data_context(prev_raw)
-                is_instr, _code = classify_instruction_text(f"{inline_label_match.group(2)}{inline_label_match.group(3)}")
-                if is_instr and (prev_ends or (current is None and not prev_is_data)):
-                    current = FunctionBlock(name=label, start_index=idx, end_index=idx)
-                    current.labels.add(label)
-                    current.lines.append(f"{label}: {inline_label_match.group(2)}{inline_label_match.group(3)}")
-                    current.raw_lines.append(raw.rstrip())
-                    current.line_numbers.append(idx + 1)
-                    current.end_index = idx
-                    functions.append(current)
-                    seen_separator = False
-                    continue
             if is_flush_left(raw) and not looks_like_instruction_token(label) and label in branch_targets and current is not None:
                 current.labels.add(label)
                 current.lines.append(f"{label}: {inline_label_match.group(2)}{inline_label_match.group(3)}")
@@ -1798,6 +1876,38 @@ def collect_source_label_names(lines: list[str]) -> set[str]:
     return labels
 
 
+def instruction_text_for_top_level_line(raw: str) -> str | None:
+    code, _comment = split_comment(raw)
+    stripped = code.strip()
+    if not stripped:
+        return None
+    if STANDALONE_STORAGE_FULL_RE.match(code):
+        return None
+    if parse_sptr_label(raw) is not None:
+        return None
+    if DATA_LABEL_RE.match(raw):
+        return None
+    if parse_numeric_directive(stripped) is not None:
+        return None
+
+    label_match = LABEL_RE.match(raw)
+    if label_match:
+        is_instr, code = classify_instruction_text(label_match.group(2))
+        return code if is_instr else None
+
+    inline_label_match = INLINE_LABEL_RE.match(raw)
+    if inline_label_match and is_flush_left(raw) and not looks_like_instruction_token(inline_label_match.group(1)):
+        is_instr, code = classify_instruction_text(f"{inline_label_match.group(2)}{inline_label_match.group(3)}")
+        return code if is_instr else None
+
+    bare_label_match = BARE_LABEL_RE.match(code)
+    if bare_label_match and is_flush_left(raw) and not looks_like_instruction_token(bare_label_match.group(1)):
+        return None
+
+    is_instr, code = classify_instruction_text(raw)
+    return code if is_instr else None
+
+
 def render_top_level_items(
     lines: list[str],
     functions: list[FunctionBlock],
@@ -1833,10 +1943,14 @@ def render_top_level_items(
     out: list[str] = []
     emitted_sets: set[str] = set()
     pending_comment_lines: list[str] = []
+    seen_function_lines = False
+    saw_top_level_data_after_function = False
     idx = 0
     while idx < len(lines):
         raw = lines[idx]
         if idx in function_line_indexes:
+            seen_function_lines = True
+            saw_top_level_data_after_function = False
             pending_comment_lines = []
             idx += 1
             continue
@@ -1884,17 +1998,23 @@ def render_top_level_items(
         if storage_match:
             directive, label, rest = storage_match.groups()
             if is_omitted_symbol(label, type_overrides):
+                if seen_function_lines:
+                    saw_top_level_data_after_function = True
                 pending_comment_lines = []
                 idx += 1
                 continue
             flush_pending_comments()
             out.extend(render_storage_variable(label, parse_storage_size(rest), f"{directive}\t{label}{rest}"))
+            if seen_function_lines:
+                saw_top_level_data_after_function = True
             idx += 1
             continue
 
         standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
         if standalone_data is not None:
             if is_omitted_symbol(standalone_data.name, type_overrides):
+                if seen_function_lines:
+                    saw_top_level_data_after_function = True
                 pending_comment_lines = []
                 idx = next_idx
                 continue
@@ -1957,8 +2077,21 @@ def render_top_level_items(
                         "\n".join(line for line in standalone_data.asm_lines if line.strip()),
                     )
                 )
+            if seen_function_lines:
+                saw_top_level_data_after_function = True
             idx = next_idx
             continue
+
+        top_level_instruction = instruction_text_for_top_level_line(raw)
+        if (
+            saw_top_level_data_after_function
+            and not is_flush_left(raw)
+            and not line_starts_data_only_macro(raw, data_only_macros)
+            and top_level_instruction is not None
+        ):
+            raise ValueError(
+                f"unexpected top-level code at line {idx + 1}: {raw.rstrip()}"
+            )
 
         if not is_flush_left(raw):
             pending_comment_lines = []
@@ -1970,6 +2103,8 @@ def render_top_level_items(
             label, c_string = sptr_match
             flush_pending_comments()
             out.extend(render_sptr_variable(label, c_string, raw))
+            if seen_function_lines:
+                saw_top_level_data_after_function = True
             idx += 1
             continue
 
@@ -1981,6 +2116,8 @@ def render_top_level_items(
 
         label, directive, rest = data_match.groups()
         if is_omitted_symbol(label, type_overrides):
+            if seen_function_lines:
+                saw_top_level_data_after_function = True
             pending_comment_lines = []
             idx += 1
             continue
@@ -1988,6 +2125,8 @@ def render_top_level_items(
         if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
             flush_pending_comments()
             out.extend(render_storage_variable(label, parse_storage_size(rest), f"{directive}{rest}"))
+            if seen_function_lines:
+                saw_top_level_data_after_function = True
             idx += 1
             continue
         if directive_lower == ".string":
@@ -1995,6 +2134,8 @@ def render_top_level_items(
             if c_string is not None and label not in skipped_string_labels:
                 flush_pending_comments()
                 out.extend(render_string_variable(StringVariable(name=label, c_string=c_string)))
+            if seen_function_lines:
+                saw_top_level_data_after_function = True
             idx += 1
             continue
 
@@ -2042,6 +2183,8 @@ def render_top_level_items(
                 if next_label_match and next_label_match.group(1) == values[0]:
                     out.append(f"/* asm: {asm_lines[0].strip()} */")
                     out.append(f"#define {sanitize_identifier(label)} {convert_expr(values[0])}")
+                    if seen_function_lines:
+                        saw_top_level_data_after_function = True
                     idx = next_idx
                     continue
             out.extend(
@@ -2056,6 +2199,8 @@ def render_top_level_items(
                     symbol_table,
                 )
             )
+            if seen_function_lines:
+                saw_top_level_data_after_function = True
             idx = next_idx
             continue
 
@@ -2099,8 +2244,16 @@ def render_top_level_items(
                     symbol_table,
                 )
             )
+            if seen_function_lines:
+                saw_top_level_data_after_function = True
             idx = next_idx
             continue
+
+        top_level_instruction = instruction_text_for_top_level_line(raw)
+        if saw_top_level_data_after_function and top_level_instruction is not None:
+            raise ValueError(
+                f"unexpected top-level code at line {idx + 1}: {raw.rstrip()}"
+            )
 
         pending_comment_lines = []
         idx += 1

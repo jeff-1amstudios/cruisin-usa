@@ -31,7 +31,6 @@ void COMM_MASTER(void);
 void COMM_IRQ(void);
 void DO_SLAVE_SYNC(void);
 void COMM_SLAVE(void);
-void CSERROR1(void);
 
 #define TIME_DELAY 18
 /* asm: COMM_MASTER_ERROR_CNT	fbss	COMM_MASTER_ERROR_CNT,1 */
@@ -983,13 +982,8 @@ COMM_SLAVE_ERR_X:
     // asm 000081FA: 	STI	R0,@COMMFLAG		;COMMUNICATIONS IS OVER
     // asm 000081FB: 	EINT
     // asm 000081FC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_SLAVE", 0, 0);
-    UNIMPL();
-}
-
-void CSERROR1(void)
-{
-    // asm 000081FD: B COMM_SLAVE_ERROR
+CSERROR1:
+    // asm 000081FD: B COMM_SLAVE_ERROR ;LENGTH TIMEOUT
 CSERROR2:
     // asm 000081FE: B COMM_SLAVE_ERROR ;LENGTH TIMEOUT
 CSERROR3:
@@ -1019,6 +1013,6 @@ COMM_SLAVE_ERROR:
     // asm 0000820F: 	LDI	0,R0
     // asm 00008210: 	STI	R0,@RBUFF_LEN	   	;RECEIVE BUFFER CLEARED	ON ERROR
     // asm 00008211: 	BU	COMM_SLAVE_ERR_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CSERROR1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_SLAVE", 0, 0);
     UNIMPL();
 }

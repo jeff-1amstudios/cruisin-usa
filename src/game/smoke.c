@@ -242,6 +242,16 @@ void GET_OTHER_REAR(void)
 void GET_REAR(void)
 {
     // asm 0000853C: 	LDI	*+AR2(ODYNALIST),R0
+    // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
+FBLOOP:
+    // asm 0000853D: 	LDI	R0,AR2
+    // asm 0000853E: 	LDI	*+AR2(DYNAFLAG),R1
+    // asm 0000853F: 	CMPI	1,R1
+    // asm 00008540: 	BZ	FOUND_REAR		;1 = rear tire
+    // asm 00008541: 	LDI	*AR2,R0
+    // asm 00008542: 	BR	FBLOOP
+FOUND_REAR:
+    // asm 00008543: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_REAR", 0, 0);
     UNIMPL();
 }
