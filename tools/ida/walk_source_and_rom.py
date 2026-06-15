@@ -2038,6 +2038,7 @@ def main() -> None:
     word_rom = root / "roms" / "crusnusa45_maindata_interleaved_bswap32.bin"
     outp = log_dir / "romlst_labels.tsv"
     unp = log_dir / "romlst_unresolved.tsv"
+    instout = log_dir / "romlst_instruction_addresses.tsv"
     py_out = here / "ida_label_import.py"
     run_log = log_dir / "romlst_run_log.tsv"
     canonical_map = here / "address.map"
@@ -2866,6 +2867,12 @@ def main() -> None:
         for mod, total, covered_n, uncovered_n, pct, uncovered_ranges, ranges_s, walk_complete in cov_rows:
             w.writerow([mod, total, covered_n, uncovered_n, f"{pct:.2f}", walk_complete, uncovered_ranges, ranges_s])
 
+    with instout.open("w", newline="") as f:
+        w = csv.writer(f, delimiter="\t")
+        w.writerow(["module", "source_line", "address"])
+        for (mod, line), ea in sorted(module_line_rom_ea.items(), key=lambda item: (item[0][0], item[0][1])):
+            w.writerow([mod, line, f"{ea:08X}"])
+
     # Always emit DP anchors beside labels output.
     dpout = outp.with_name(outp.stem.replace("_labels", "_dp0") + outp.suffix)
     with dpout.open("w", newline="") as f:
@@ -2887,6 +2894,7 @@ def main() -> None:
     print(f"wrote {unp}")
     print(f"wrote {ovp}")
     print(f"wrote {cov_out}")
+    print(f"wrote {instout}")
     print(f"wrote {dpout}")
     print(f"wrote {cmout}")
     print(f"wrote {discovered_defines_out}")

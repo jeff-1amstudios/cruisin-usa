@@ -71,11 +71,11 @@ void COMPUTE_FREEGAMES_PRCNT(void)
 void COMPUTE_GAMETIME(void)
 {
     // asm: 	READAUD	AUD_GAMES_CONTINUES
-    // asm: 	LDI	R0,R1
+    // asm 00001421: 	LDI	R0,R1
     // asm: 	READAUD	AUD_GAMES_START
-    // asm: 	ADDI	R0,R1
+    // asm 00001423: 	ADDI	R0,R1
     // asm: 	READAUD	AUD_GAMEON_TIME
-    // asm: 	CALL	DIV_I30
+    // asm 00001425: 	CALL	DIV_I30
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMPUTE_GAMETIME", 0, 0);
     UNIMPL();
@@ -89,13 +89,13 @@ void AUDIT_LIST(void)
     // asm: 	AUDENT	AUD_COIN4,"FOURTH COIN"
     // asm: 	AUDENT	AUD_SERVICE_CREDITS,"SERVICE CREDITS"
     // asm: 	AUDENT_SPACER
-    // asm: 	AUDENT	AUD_GAMES_START,"TOTAL STARTS"
-    // asm: 	AUDENT	AUD_GAMES_CONTINUES,"TOTAL CONTINUES"
-    // asm: 	AUDENT	AUD_H2HGAMES,"HEAD 2 HEAD GAMES"
-    // asm: 	AUDENT	AUD_TOTAL_FREEGAMES,"FREE RACES"
-    // asm: 	AUDENT	AUD_GAMES_EXPIRED,"EXPIRED RACES"
+    // asm 00001426: 	AUDENT	AUD_GAMES_START,"TOTAL STARTS"
+    // asm 00001428: 	AUDENT	AUD_GAMES_CONTINUES,"TOTAL CONTINUES"
+    // asm 00001429: 	AUDENT	AUD_H2HGAMES,"HEAD 2 HEAD GAMES"
+    // asm 0000142B: 	AUDENT	AUD_TOTAL_FREEGAMES,"FREE RACES"
+    // asm 0000142C: 	AUDENT	AUD_GAMES_EXPIRED,"EXPIRED RACES"
     // asm: 	AUDENTR	AUD_GAMEON_TIME,"FREE RACE PERCENTAGE",COMPUTE_FREEGAMES_PRCNT
-    // asm: 	AUDENT_SPACER
+    // asm 0000142E: 	AUDENT_SPACER
     // ;	AUDENT	ADJ_DIFFICULTY,"DIFFICULTY"
     // ;	AUDENT	ADJ_FIRST_PLACE_PERCENT,"1ST PLACE AUTO PERCENT"
     // asm: 	AUDENT	AUD_POWERON_TIME,"POWER ON TIME SECS"
@@ -197,69 +197,69 @@ void AUDIT_DISPLAY(void)
     // asm: 	TEXTITT	"DIP SWITCH BANK 2 SELECTS COIN MODE",50,340
     // asm: 	CALL	TOEXIT
 KKLL:
-    // asm: IWINFR	10,40,400,220
+    // asm 000014D0: IWINFR	10,40,400,220
     // asm: 	LDL	AUDIT_LIST,AR5
 LYTL:
     // asm: 	FILL	12,42,398,218,COL_LGREY
-    // asm: 	LDI	50,R5
-    // asm: 	LDI	DEFAULT_COLOR,RC
+    // asm 000014D1: 	LDI	50,R5
+    // asm 000014D2: 	LDI	DEFAULT_COLOR,RC
 LLTT:
-    // asm: LDI	*AR5++,AR2
+    // asm 000014D3: LDI	*AR5++,AR2
     // asm: 	CMPI	-1,AR2
-    // asm: 	BEQ	LLRR
-    // asm: 	CMPI	-2,AR2
+    // asm 000014D7: 	BEQ	LLRR
+    // asm 000014D8: 	CMPI	-2,AR2
     // asm: 	BEQ	KKLL
-    // asm: 	CMPI	-3,AR2
-    // asm: 	BEQ	JJTTA
-    // asm: 	LDI	AR2,R0
+    // asm 000014D9: 	CMPI	-3,AR2
+    // asm 000014DA: 	BEQ	JJTTA
+    // asm 000014DF: 	LDI	AR2,R0
     // asm: 	RS	16,R0
     // asm: 	CMPI	AUD_ROUTINE,R0
-    // asm: 	BNE	NOCALL
+    // asm 000014F7: 	BNE	NOCALL
     // asm: 	LDI	*AR5++,R0
-    // asm: 	CALLU	R0
-    // asm: 	BU	J22AB
+    // asm 000014F8: 	CALLU	R0
+    // asm 000014FE: 	BU	J22AB
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_DISPLAY", 0, 0);
     UNIMPL();
 }
 
 void NOCALL(void)
 {
-    // asm: CALL	AUDIT_READ
+    // asm 000014FF: CALL	AUDIT_READ
 J22AB:
-    // asm: LDI	R0,R2
-    // asm: 	LDI	@bufferI,AR2
-    // asm: 	CALL	_itoa
-    // asm: J22A
-    // asm: 	LDI	R5,R3
+    // asm 00001501: LDI	R0,R2
+    // asm 00001502: 	LDI	@bufferI,AR2
+    // asm 00001503: 	CALL	_itoa
+    // asm 00001504: J22A
+    // asm 00001506: 	LDI	R5,R3
     // asm: 	LDI	250,R2
     // asm: 	LDI	DEFAULT_COLOR,RC
-    // asm: 	CALL	_outtextxyc
-    // asm: 	LDI	*AR5++,AR2
-    // asm: 	LDI	R5,R3
-    // asm: 	LDI	20,R2
-    // asm: 	LDI	DEFAULT_COLOR,RC
-    // asm: 	CALL	_outtextxyc
+    // asm 00001507: 	CALL	_outtextxyc
+    // asm 00001509: 	LDI	*AR5++,AR2
+    // asm 0000150A: 	LDI	R5,R3
+    // asm 0000150B: 	LDI	20,R2
+    // asm 0000150C: 	LDI	DEFAULT_COLOR,RC
+    // asm 0000150D: 	CALL	_outtextxyc
 JJTTA:
-    // asm: ADDI	10,R5
-    // asm: 	BU	LLTT
+    // asm 0000150E: ADDI	10,R5
+    // asm 0000150E: 	BU	LLTT
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NOCALL", 0, 0);
     UNIMPL();
 }
 
 void LLRR(void)
 {
-    // asm: 	LDI	0,R0
+    // asm 00001511: 	LDI	0,R0
     // asm: 	STI	R0,@OLDDIP
 WL2A:
-    // asm: 	LDI	@DIPRAM,R0
-    // asm: 	LDI	@OLDDIP,R1
-    // asm: 	CMPI	R0,R1
+    // asm 00001513: 	LDI	@DIPRAM,R0
+    // asm 00001514: 	LDI	@OLDDIP,R1
+    // asm 00001515: 	CMPI	R0,R1
     // asm: 	BEQ	NODIPPLOT
-    // asm: 	STI	R0,@OLDDIP
-    // asm: 	LDI	50,AR2
-    // asm: 	LDI	240,R2
-    // asm: 	LDI	300,R3
-    // asm: 	LDI	249,RC
+    // asm 00001517: 	STI	R0,@OLDDIP
+    // asm 00001519: 	LDI	50,AR2
+    // asm 0000151A: 	LDI	240,R2
+    // asm 0000151B: 	LDI	300,R3
+    // asm 0000151C: 	LDI	249,RC
     // asm: 	LDI	0,RS
     // asm: 	CALL	_fill
     // ;	LDI	@SOFT_AUDIT,R0
@@ -275,7 +275,7 @@ WL2A:
     // ;
     // ;KKL7
 NODIPPLOT:
-    // asm: 	LDI	@_newbut,R0	;old system method
+    // asm 00001527: 	LDI	@_newbut,R0	;old system method
     // asm: 	LDI	@_newbut,R1		;debounce
     // asm: 	TSTB	SW_DIAG,R1		;start to return to main
     // asm: 	BZ	BOOKX
@@ -293,53 +293,53 @@ NODIPPLOT:
 void NOLOG(void)
 {
     // asm: 	TSTB	SW_VOLPLUS,R0
-    // asm: 	BZ	DBNCE
+    // asm 0000152A: 	BZ	DBNCE
     // ;	BZ	LYTL			;NEXT PAGE
     // asm: 	TSTB	SW_VOLMINUS,R0
-    // asm: 	BNZ	FFB2
+    // asm 0000152B: 	BNZ	FFB2
     // ;	BZ	LYTL			;NEXT PAGE
 DBNCE:
-    // asm: NOT	@_newbut,R1		;debounce
-    // asm: 	AND	SW_VOLPLUS|SW_VOLMINUS,R1
-    // asm: 	BNZ	DBNCE
-    // asm: 	BU	LYTL
+    // asm 0000152E: NOT	@_newbut,R1		;debounce
+    // asm 0000152E: 	AND	SW_VOLPLUS|SW_VOLMINUS,R1
+    // asm 0000152F: 	BNZ	DBNCE
+    // asm 00001530: 	BU	LYTL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NOLOG", 0, 0);
     UNIMPL();
 }
 
 void FFB2(void)
 {
-    // asm: TSTB	SW_VIEW2_H,R1		;view2 to display next audit page
-    // asm: 	BNZ	KKLL5
+    // asm 00001531: TSTB	SW_VIEW2_H,R1		;view2 to display next audit page
+    // asm 00001532: 	BNZ	KKLL5
 RB44:
-    // asm: LDI	@_newbut,R1		;debounce
+    // asm 00001534: LDI	@_newbut,R1		;debounce
     // asm: 	RS	16,R1
     // asm: 	TSTB	SW_VIEW2_H,R1		;view2 to display next audit page
-    // asm: 	BZ	RB44
-    // asm: 	BU	LYTL			;NEXT PAGE
+    // asm 00001535: 	BZ	RB44
+    // asm 00001536: 	BU	LYTL			;NEXT PAGE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FFB2", 0, 0);
     UNIMPL();
 }
 
 void KKLL5(void)
 {
-    // asm: 	LDI	@SOFT_AUDIT,R0
+    // asm 00001538: 	LDI	@SOFT_AUDIT,R0
     // asm: 	BZ	KKL
     // asm: 	TSTB	SW_VIEW1_H,R1		;VIEW1 TO EXIT TO GAME (IN SECRET MODE)
-    // asm: 	RETSZ
+    // asm 00001539: 	RETSZ
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KKLL5", 0, 0);
     UNIMPL();
 }
 
 void KKL(void)
 {
-    // asm: 	BU	WL2A
+    // asm 0000153B: 	BU	WL2A
 BOOKX:
 WL266:
     // asm: 	NOT	@_newbut,R0
-    // asm: 	AND	SW_DIAG,R0
-    // asm: 	BNZ	WL266
-    // asm: 	RETS
+    // asm 0000153F: 	AND	SW_DIAG,R0
+    // asm 00001540: 	BNZ	WL266
+    // asm 00001541: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KKL", 0, 0);
     UNIMPL();
 }

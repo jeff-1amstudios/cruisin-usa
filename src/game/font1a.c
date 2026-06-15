@@ -33,38 +33,38 @@ int ftoa_tmp[2];
  */
 void ENABLEGIE(void)
 {
-    // asm: RETI
+    // asm 0000A75C: RETI
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE", 0, 0);
     UNIMPL();
 }
 
 void _ftoa(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR2
-    // asm: 	PUSHFL	R2
-    // asm: 	FIX	R2
-    // asm: 	CALL	_itoa
-    // asm: 	LDL	POINT,AR1
-    // asm: 	LDI	AR2,AR0
-    // asm: 	CALL	STRCAT
-    // asm: 	POPFL	R2
-    // asm: 	LDL	ftoa_tmp,AR2
-    // asm: 	FIX	R2,R0
-    // asm: 	FLOAT	R0
-    // asm: 	SUBF	R0,R2
-    // asm: 	FIX	R2
-    // asm: 	MPYI	100,R2
-    // asm: 	CALL	_itoa
-    // asm: 	LDI	AR2,AR1
-    // asm: 	POP	AR0
-    // asm: 	CALL	STRCAT
-    // asm: 	POP	AR2
-    // asm: 	POP	R2
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 0000A75E: 	PUSH	R0
+    // asm 0000A75F: 	PUSH	R2
+    // asm 0000A760: 	PUSH	AR2
+    // asm 0000A761: 	PUSH	AR2
+    // asm 0000A762: 	PUSHFL	R2
+    // asm 0000A764: 	FIX	R2
+    // asm 0000A765: 	CALL	_itoa
+    // asm 0000A766: 	LDL	POINT,AR1
+    // asm 0000A767: 	LDI	AR2,AR0
+    // asm 0000A768: 	CALL	STRCAT
+    // asm 0000A769: 	POPFL	R2
+    // asm 0000A76B: 	LDL	ftoa_tmp,AR2
+    // asm 0000A76C: 	FIX	R2,R0
+    // asm 0000A76D: 	FLOAT	R0
+    // asm 0000A76E: 	SUBF	R0,R2
+    // asm 0000A76F: 	FIX	R2
+    // asm 0000A770: 	MPYI	100,R2
+    // asm 0000A771: 	CALL	_itoa
+    // asm 0000A772: 	LDI	AR2,AR1
+    // asm 0000A773: 	POP	AR0
+    // asm 0000A774: 	CALL	STRCAT
+    // asm 0000A775: 	POP	AR2
+    // asm 0000A776: 	POP	R2
+    // asm 0000A777: 	POP	R0
+    // asm 0000A778: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_ftoa", 0, 0);
     UNIMPL();
 }
@@ -84,120 +84,120 @@ void _ftoa(void)
  */
 void _itoaLZ(void)
 {
-    // asm: 	PUSH	R0			;this entry includes a leading zero
-    // asm: 	PUSH	R1			;if the value is 9 or less
-    // asm: 	PUSH	R2			;
-    // asm: 	PUSH	R3			;
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR1
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR7
-    // asm: 	PUSH	R6
-    // asm: 	PUSH	R7
-    // asm: 	CLRI	R7			;flag if negative
-    // asm: 	CMPI	0,R2
-    // asm: 	BZD	ISZERO2
-    // asm: 	LDILT	1,R7
-    // asm: 	ABSI	R2
-    // asm: 	CLRI	R3
-    // asm: 	CMPI	9,R2
-    // asm: 	BGT	itoa1
-    // asm: 	LDI	1,AR7
-    // asm: 	BU	itoa1
+    // asm 0000A779: 	PUSH	R0			;this entry includes a leading zero
+    // asm 0000A77A: 	PUSH	R1			;if the value is 9 or less
+    // asm 0000A77B: 	PUSH	R2			;
+    // asm 0000A77C: 	PUSH	R3			;
+    // asm 0000A77D: 	PUSH	AR0
+    // asm 0000A77E: 	PUSH	AR1
+    // asm 0000A77F: 	PUSH	AR2
+    // asm 0000A780: 	PUSH	AR7
+    // asm 0000A781: 	PUSH	R6
+    // asm 0000A782: 	PUSH	R7
+    // asm 0000A783: 	CLRI	R7			;flag if negative
+    // asm 0000A784: 	CMPI	0,R2
+    // asm 0000A785: 	BZD	ISZERO2
+    // asm 0000A786: 	LDILT	1,R7
+    // asm 0000A787: 	ABSI	R2
+    // asm 0000A788: 	CLRI	R3
+    // asm 0000A789: 	CMPI	9,R2
+    // asm 0000A78A: 	BGT	itoa1
+    // asm 0000A78B: 	LDI	1,AR7
+    // asm 0000A78C: 	BU	itoa1
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoaLZ", 0, 0);
     UNIMPL();
 }
 
 void _itoa(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR1
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR7
-    // asm: 	PUSH	R6
-    // asm: 	PUSH	R7
-    // asm: 	CLRI	R7			;flag if negative
-    // asm: 	CMPI	0,R2
-    // asm: 	BZD	ISZERO
-    // asm: 	LDILT	1,R7
-    // asm: 	CLRI	AR7
-    // asm: 	ABSI	R2
-    // asm: 	CLRI	R3
+    // asm 0000A78D: 	PUSH	R0
+    // asm 0000A78E: 	PUSH	R1
+    // asm 0000A78F: 	PUSH	R2
+    // asm 0000A790: 	PUSH	R3
+    // asm 0000A791: 	PUSH	AR0
+    // asm 0000A792: 	PUSH	AR1
+    // asm 0000A793: 	PUSH	AR2
+    // asm 0000A794: 	PUSH	AR7
+    // asm 0000A795: 	PUSH	R6
+    // asm 0000A796: 	PUSH	R7
+    // asm 0000A797: 	CLRI	R7			;flag if negative
+    // asm 0000A798: 	CMPI	0,R2
+    // asm 0000A799: 	BZD	ISZERO
+    // asm 0000A79A: 	LDILT	1,R7
+    // asm 0000A79B: 	CLRI	AR7
+    // asm 0000A79C: 	ABSI	R2
+    // asm 0000A79D: 	CLRI	R3
 itoa1:
-    // asm: LDI	10,R1			;this loop generates the ASCII
-    // asm: 	LDI	R2,R0			;pieces and pushes them on the stack
-    // asm: 	CALL	MOD_I30
-    // asm: 	OR	30h,R0
-    // asm: 	PUSH	R0
-    // asm: 	INC	R3
-    // asm: 	LDI	10,R1
-    // asm: 	LDI	R2,R0
-    // asm: 	CALL	DIV_I30
-    // asm: 	LDI	R0,R2
-    // asm: 	BGT	itoa1
-    // asm: 	CMPI	1,AR7
-    // asm: 	BNE	NOLEADINGZERO
-    // asm: 	LDI	30h,R0
-    // asm: 	PUSH	R0
-    // asm: 	INC	R3
+    // asm 0000A79E: LDI	10,R1			;this loop generates the ASCII
+    // asm 0000A79F: 	LDI	R2,R0			;pieces and pushes them on the stack
+    // asm 0000A7A0: 	CALL	MOD_I30
+    // asm 0000A7A1: 	OR	30h,R0
+    // asm 0000A7A2: 	PUSH	R0
+    // asm 0000A7A3: 	INC	R3
+    // asm 0000A7A4: 	LDI	10,R1
+    // asm 0000A7A5: 	LDI	R2,R0
+    // asm 0000A7A6: 	CALL	DIV_I30
+    // asm 0000A7A7: 	LDI	R0,R2
+    // asm 0000A7A8: 	BGT	itoa1
+    // asm 0000A7A9: 	CMPI	1,AR7
+    // asm 0000A7AA: 	BNE	NOLEADINGZERO
+    // asm 0000A7AB: 	LDI	30h,R0
+    // asm 0000A7AC: 	PUSH	R0
+    // asm 0000A7AD: 	INC	R3
 NOLEADINGZERO:
-    // asm: 	CLRI	R6			;this loop pops the ASCII pieces off
-    // asm: 	CLRI	R1			;the stack and packs them into the
-    // asm: 	CMPI	0,R7			;destination space
-    // asm: 	BEQ	NOTNEG			;check sign flag
-    // asm: 	LDI	MINUS_CHAR,R1
-    // asm: 	ADDI	8,R6
+    // asm 0000A7AE: 	CLRI	R6			;this loop pops the ASCII pieces off
+    // asm 0000A7AF: 	CLRI	R1			;the stack and packs them into the
+    // asm 0000A7B0: 	CMPI	0,R7			;destination space
+    // asm 0000A7B1: 	BEQ	NOTNEG			;check sign flag
+    // asm 0000A7B2: 	LDI	MINUS_CHAR,R1
+    // asm 0000A7B3: 	ADDI	8,R6
 NOTNEG:
 LOOP2:
-    // asm: POP	R0
-    // asm: 	LSH	R6,R0
-    // asm: 	OR	R0,R1
-    // asm: 	ADDI	8,R6
-    // asm: 	CMPI	32,R6
-    // asm: 	BLT	DALOP
-    // asm: 	STI	R1,*AR2++
-    // asm: 	CLRI	R1
-    // asm: 	CLRI	R6
+    // asm 0000A7B4: POP	R0
+    // asm 0000A7B5: 	LSH	R6,R0
+    // asm 0000A7B6: 	OR	R0,R1
+    // asm 0000A7B7: 	ADDI	8,R6
+    // asm 0000A7B8: 	CMPI	32,R6
+    // asm 0000A7B9: 	BLT	DALOP
+    // asm 0000A7BA: 	STI	R1,*AR2++
+    // asm 0000A7BB: 	CLRI	R1
+    // asm 0000A7BC: 	CLRI	R6
 DALOP:
-    // asm: DEC	R3
-    // asm: 	BGT	LOOP2
-    // asm: 	LDI	0,R0			;NULL terminator
-    // asm: 	LSH	R6,R0
-    // asm: 	OR	R0,R1
-    // asm: 	STI	R1,*AR2
-    // asm: 	LDI	R6,R0
+    // asm 0000A7BD: DEC	R3
+    // asm 0000A7BE: 	BGT	LOOP2
+    // asm 0000A7BF: 	LDI	0,R0			;NULL terminator
+    // asm 0000A7C0: 	LSH	R6,R0
+    // asm 0000A7C1: 	OR	R0,R1
+    // asm 0000A7C2: 	STI	R1,*AR2
+    // asm 0000A7C3: 	LDI	R6,R0
 itoaX:
-    // asm: 	POP	R7
-    // asm: 	POP	R6
-    // asm: 	POP	AR7
-    // asm: 	POP	AR2
-    // asm: 	POP	AR1
-    // asm: 	POP	AR0
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 0000A7C4: 	POP	R7
+    // asm 0000A7C5: 	POP	R6
+    // asm 0000A7C6: 	POP	AR7
+    // asm 0000A7C7: 	POP	AR2
+    // asm 0000A7C8: 	POP	AR1
+    // asm 0000A7C9: 	POP	AR0
+    // asm 0000A7CA: 	POP	R3
+    // asm 0000A7CB: 	POP	R2
+    // asm 0000A7CC: 	POP	R1
+    // asm 0000A7CD: 	POP	R0
+    // asm 0000A7CE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoa", 0, 0);
     UNIMPL();
 }
 
 void ISZERO2(void)
 {
-    // asm: 	BUD	itoaX
-    // asm: 	LDI	03030h,R0			;case when number is zero
-    // asm: 	STI	R0,*AR2
-    // asm: 	LDI	16,R0
+    // asm 0000A7CF: 	BUD	itoaX
+    // asm 0000A7D0: 	LDI	03030h,R0			;case when number is zero
+    // asm 0000A7D1: 	STI	R0,*AR2
+    // asm 0000A7D2: 	LDI	16,R0
     // 	;---->	BUD	itoaX
 ISZERO:
-    // asm: 	BUD	itoaX
-    // asm: 	LDI	030h,R0			;case when number is zero
-    // asm: 	STI	R0,*AR2
-    // asm: 	LDI	8,R0
+    // asm 0000A7D3: 	BUD	itoaX
+    // asm 0000A7D4: 	LDI	030h,R0			;case when number is zero
+    // asm 0000A7D5: 	STI	R0,*AR2
+    // asm 0000A7D6: 	LDI	8,R0
     // 	;---->	BUD	itoaX
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ISZERO2", 0, 0);
     UNIMPL();
@@ -214,82 +214,82 @@ ISZERO:
  */
 void HEX2ASC(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR1
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR7
-    // asm: 	PUSH	R6
-    // asm: 	PUSH	R7
-    // asm: 	CMPI	0,R2
-    // asm: 	BZD	ISZEROH
+    // asm 0000A7D7: 	PUSH	R0
+    // asm 0000A7D8: 	PUSH	R1
+    // asm 0000A7D9: 	PUSH	R2
+    // asm 0000A7DA: 	PUSH	R3
+    // asm 0000A7DB: 	PUSH	AR0
+    // asm 0000A7DC: 	PUSH	AR1
+    // asm 0000A7DD: 	PUSH	AR2
+    // asm 0000A7DE: 	PUSH	AR7
+    // asm 0000A7DF: 	PUSH	R6
+    // asm 0000A7E0: 	PUSH	R7
+    // asm 0000A7E1: 	CMPI	0,R2
+    // asm 0000A7E2: 	BZD	ISZEROH
     // ;	LS	16,R2
     // ;	RS	16,R2
-    // asm: 	CLRI	R3
+    // asm 0000A7E3: 	CLRI	R3
 htoa1:
-    // asm: 	LDI	R2,R0
-    // asm: 	AND	0Fh,R0
-    // asm: 	CMPI	10,R0
-    // asm: 	BLT	DDJ
-    // asm: 	ADDI	'A'-10,R0
-    // asm: 	BU	JJK
+    // asm 0000A7E4: 	LDI	R2,R0
+    // asm 0000A7E5: 	AND	0Fh,R0
+    // asm 0000A7E6: 	CMPI	10,R0
+    // asm 0000A7E7: 	BLT	DDJ
+    // asm 0000A7E8: 	ADDI	'A'-10,R0
+    // asm 0000A7E9: 	BU	JJK
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HEX2ASC", 0, 0);
     UNIMPL();
 }
 
 void DDJ(void)
 {
-    // asm: ADDI	30h,R0
+    // asm 0000A7EA: ADDI	30h,R0
 JJK:
-    // asm: PUSH	R0
-    // asm: 	INC	R3
-    // asm: 	RS	4,R2
-    // asm: 	BGT	htoa1
-    // asm: 	CLRI	R6			;this loop pops the ASCII pieces off
-    // asm: 	CLRI	R1			;the stack and packs them into the
+    // asm 0000A7EB: PUSH	R0
+    // asm 0000A7EC: 	INC	R3
+    // asm 0000A7ED: 	RS	4,R2
+    // asm 0000A7EE: 	BGT	htoa1
+    // asm 0000A7EF: 	CLRI	R6			;this loop pops the ASCII pieces off
+    // asm 0000A7F0: 	CLRI	R1			;the stack and packs them into the
 LOOP2H:
-    // asm: POP	R0
-    // asm: 	LSH	R6,R0
-    // asm: 	OR	R0,R1
-    // asm: 	ADDI	8,R6
-    // asm: 	CMPI	32,R6
-    // asm: 	BLT	HDALOP
-    // asm: 	STI	R1,*AR2++
-    // asm: 	CLRI	R1
-    // asm: 	CLRI	R6
+    // asm 0000A7F1: POP	R0
+    // asm 0000A7F2: 	LSH	R6,R0
+    // asm 0000A7F3: 	OR	R0,R1
+    // asm 0000A7F4: 	ADDI	8,R6
+    // asm 0000A7F5: 	CMPI	32,R6
+    // asm 0000A7F6: 	BLT	HDALOP
+    // asm 0000A7F7: 	STI	R1,*AR2++
+    // asm 0000A7F8: 	CLRI	R1
+    // asm 0000A7F9: 	CLRI	R6
 HDALOP:
-    // asm: DEC	R3
-    // asm: 	BGT	LOOP2H
-    // asm: 	LDI	0,R0			;NULL terminator
-    // asm: 	LSH	R6,R0
-    // asm: 	OR	R0,R1
-    // asm: 	STI	R1,*AR2
-    // asm: 	LDI	R6,R0
+    // asm 0000A7FA: DEC	R3
+    // asm 0000A7FB: 	BGT	LOOP2H
+    // asm 0000A7FC: 	LDI	0,R0			;NULL terminator
+    // asm 0000A7FD: 	LSH	R6,R0
+    // asm 0000A7FE: 	OR	R0,R1
+    // asm 0000A7FF: 	STI	R1,*AR2
+    // asm 0000A800: 	LDI	R6,R0
 htoaX:
-    // asm: 	POP	R7
-    // asm: 	POP	R6
-    // asm: 	POP	AR7
-    // asm: 	POP	AR2
-    // asm: 	POP	AR1
-    // asm: 	POP	AR0
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 0000A801: 	POP	R7
+    // asm 0000A802: 	POP	R6
+    // asm 0000A803: 	POP	AR7
+    // asm 0000A804: 	POP	AR2
+    // asm 0000A805: 	POP	AR1
+    // asm 0000A806: 	POP	AR0
+    // asm 0000A807: 	POP	R3
+    // asm 0000A808: 	POP	R2
+    // asm 0000A809: 	POP	R1
+    // asm 0000A80A: 	POP	R0
+    // asm 0000A80B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DDJ", 0, 0);
     UNIMPL();
 }
 
 void ISZEROH(void)
 {
-    // asm: 	BUD	htoaX
-    // asm: 	LDI	030h,R0			;case when number is zero
-    // asm: 	STI	R0,*AR2
-    // asm: 	LDI	8,R0
+    // asm 0000A80C: 	BUD	htoaX
+    // asm 0000A80D: 	LDI	030h,R0			;case when number is zero
+    // asm 0000A80E: 	STI	R0,*AR2
+    // asm 0000A80F: 	LDI	8,R0
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ISZEROH", 0, 0);
     UNIMPL();
 }
@@ -308,22 +308,22 @@ void ISZEROH(void)
  */
 void _fill(void)
 {
-    // asm: 	PUSH	AR2
+    // asm 0000A810: 	PUSH	AR2
 FILLLP1:
-    // asm: 	PUSH	R3
-    // asm: 	LDI	RS,R3
-    // asm: 	CALL	_pixel
-    // asm: 	POP	R3
-    // asm: 	INC	AR2
-    // asm: 	CMPI	AR2,R3
-    // asm: 	BGE	FILLLP1
-    // asm: 	POP	AR2
-    // asm: 	PUSH	AR2
-    // asm: 	INC	R2
-    // asm: 	CMPI	R2,RC
-    // asm: 	BGE	FILLLP1
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 0000A811: 	PUSH	R3
+    // asm 0000A812: 	LDI	RS,R3
+    // asm 0000A813: 	CALL	_pixel
+    // asm 0000A814: 	POP	R3
+    // asm 0000A815: 	INC	AR2
+    // asm 0000A816: 	CMPI	AR2,R3
+    // asm 0000A817: 	BGE	FILLLP1
+    // asm 0000A818: 	POP	AR2
+    // asm 0000A819: 	PUSH	AR2
+    // asm 0000A81A: 	INC	R2
+    // asm 0000A81B: 	CMPI	R2,RC
+    // asm 0000A81C: 	BGE	FILLLP1
+    // asm 0000A81D: 	POP	AR2
+    // asm 0000A81E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_fill", 0, 0);
     UNIMPL();
 }
@@ -345,67 +345,67 @@ FILLLP1:
  */
 void _outtextxyc(void)
 {
-    // asm: 	PUSH	R4
-    // asm: 	PUSH	R5
-    // asm: 	LDI	3,RS
-    // asm: 	CLRI	RS
+    // asm 0000A81F: 	PUSH	R4
+    // asm 0000A820: 	PUSH	R5
+    // asm 0000A821: 	LDI	3,RS
+    // asm 0000A822: 	CLRI	RS
 OLP:
-    // asm: CMPI	-32,RS
-    // asm: 	BNE	REGLP
-    // asm: 	CLRI	RS
-    // asm: 	NOP	*AR2++
+    // asm 0000A823: CMPI	-32,RS
+    // asm 0000A824: 	BNE	REGLP
+    // asm 0000A825: 	CLRI	RS
+    // asm 0000A826: 	NOP	*AR2++
 REGLP:
-    // asm: 	LDI	*AR2,AR0
-    // asm: 	LSH	RS,AR0
-    // asm: 	SUBI	8,RS
-    // asm: 	AND	0FFh,AR0
-    // asm: 	CMPI	0,AR0
-    // asm: 	BZ	oucX
-    // asm: 	CMPI	' ',AR0
-    // asm: 	BEQ	NXTCHAR
-    // asm: 	SUBI	'(',AR0			;the start of the font
+    // asm 0000A827: 	LDI	*AR2,AR0
+    // asm 0000A828: 	LSH	RS,AR0
+    // asm 0000A829: 	SUBI	8,RS
+    // asm 0000A82A: 	AND	0FFh,AR0
+    // asm 0000A82B: 	CMPI	0,AR0
+    // asm 0000A82C: 	BZ	oucX
+    // asm 0000A82D: 	CMPI	' ',AR0
+    // asm 0000A82E: 	BEQ	NXTCHAR
+    // asm 0000A82F: 	SUBI	'(',AR0			;the start of the font
     // 	;NOW PLOT OT THE CHARACTER
-    // asm: 	MPYI	7,AR0			;index to character
-    // asm: 	ADDI	@_font1I,AR0		;pointing to font data
-    // asm: 	LDI	7,R5			;Y count
+    // asm 0000A830: 	MPYI	7,AR0			;index to character
+    // asm 0000A831: 	ADDI	@_font1I,AR0		;pointing to font data
+    // asm 0000A832: 	LDI	7,R5			;Y count
 OUTRLP:
-    // asm: 	LDI	*AR0++,R1
-    // asm: 	LS	24,R1
-    // asm: 	LDI	8,R4
+    // asm 0000A833: 	LDI	*AR0++,R1
+    // asm 0000A834: 	LS	24,R1
+    // asm 0000A835: 	LDI	8,R4
 LOOP1:
-    // asm: ASH	1,R1
-    // asm: 	BNC	NPLOT
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	LDI	R2,AR2
-    // asm: 	LDI	R3,R2
-    // asm: 	LDI	RC,R3
-    // asm: 	CALL	_pixel
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	AR2
+    // asm 0000A836: ASH	1,R1
+    // asm 0000A837: 	BNC	NPLOT
+    // asm 0000A838: 	PUSH	AR2
+    // asm 0000A839: 	PUSH	R2
+    // asm 0000A83A: 	PUSH	R3
+    // asm 0000A83B: 	LDI	R2,AR2
+    // asm 0000A83C: 	LDI	R3,R2
+    // asm 0000A83D: 	LDI	RC,R3
+    // asm 0000A83E: 	CALL	_pixel
+    // asm 0000A83F: 	POP	R3
+    // asm 0000A840: 	POP	R2
+    // asm 0000A841: 	POP	AR2
 NPLOT:
-    // asm: INC	R2			;advance to next pixel
-    // asm: 	DEC	R4
-    // asm: 	BGT	LOOP1
-    // asm: 	SUBI	8,R2			;reset X position
-    // asm: 	INC	R3			;increment Y position
-    // asm: 	DEC	R5
-    // asm: 	BGT	OUTRLP
-    // asm: 	SUBI	7,R3			;reset Y position
+    // asm 0000A842: INC	R2			;advance to next pixel
+    // asm 0000A843: 	DEC	R4
+    // asm 0000A844: 	BGT	LOOP1
+    // asm 0000A845: 	SUBI	8,R2			;reset X position
+    // asm 0000A846: 	INC	R3			;increment Y position
+    // asm 0000A847: 	DEC	R5
+    // asm 0000A848: 	BGT	OUTRLP
+    // asm 0000A849: 	SUBI	7,R3			;reset Y position
 NXTCHAR:
-    // asm: ADDI	8,R2			;to next X position
-    // asm: 	BU	OLP
+    // asm 0000A84A: ADDI	8,R2			;to next X position
+    // asm 0000A84B: 	BU	OLP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_outtextxyc", 0, 0);
     UNIMPL();
 }
 
 void oucX(void)
 {
-    // asm: 	POP	R5
-    // asm: 	POP	R4
-    // asm: 	RETS
+    // asm 0000A84C: 	POP	R5
+    // asm 0000A84D: 	POP	R4
+    // asm 0000A84E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "oucX", 0, 0);
     UNIMPL();
 }
@@ -430,34 +430,34 @@ void oucX(void)
  */
 void _pixel(void)
 {
-    // asm: 	PUSH	AR1
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	IE
-    // asm: 	LDP	@COMMINTM
-    // asm: 	LDI	@COMMINTM,IE
-    // asm: 	SETDP
-    // asm: 	LDP	@CPU_WS
-    // asm: 	LDI	HARD_WS,AR1
-    // asm: 	AND	0DFFFh,ST		;turn off GIE.
-    // asm: 	POP	IE
-    // asm: 	STI	AR1,@CPU_WS		;SET WAITSTATE MODE
-    // asm: 	SETDP
-    // asm: 	LDI	0,AR1			;DUMMY READ ADDR
-    // asm: 	LSH	9,R2
-    // asm: 	ADDI	@ACTIVE_SCREEN,AR2	;GET CURRENT SCREEN PAGE
-    // asm: 	ADDI	R2,AR2
-    // asm: 	LDP	@CPU_WS
-    // asm: 	STI	R3,*AR2			;store to screen
-    // asm: 	LDI	*AR1,R2			;DUMMY READ
-    // asm: 	LDI	SOFT_WS,R2
-    // asm: 	STI	R2,@CPU_WS
-    // asm: 	SETDP
-    // asm: 	CALL	ENABLEGIE
-    // asm: 	POP	R2
-    // asm: 	POP	AR2
-    // asm: 	POP	AR1
-    // asm: 	RETS
+    // asm 0000A84F: 	PUSH	AR1
+    // asm 0000A850: 	PUSH	AR2
+    // asm 0000A851: 	PUSH	R2
+    // asm 0000A852: 	PUSH	IE
+    // asm 0000A853: 	LDP	@COMMINTM
+    // asm 0000A854: 	LDI	@COMMINTM,IE
+    // asm 0000A855: 	SETDP
+    // asm 0000A856: 	LDP	@CPU_WS
+    // asm 0000A857: 	LDI	HARD_WS,AR1
+    // asm 0000A858: 	AND	0DFFFh,ST		;turn off GIE.
+    // asm 0000A859: 	POP	IE
+    // asm 0000A85A: 	STI	AR1,@CPU_WS		;SET WAITSTATE MODE
+    // asm 0000A85B: 	SETDP
+    // asm 0000A85C: 	LDI	0,AR1			;DUMMY READ ADDR
+    // asm 0000A85D: 	LSH	9,R2
+    // asm 0000A85E: 	ADDI	@ACTIVE_SCREEN,AR2	;GET CURRENT SCREEN PAGE
+    // asm 0000A85F: 	ADDI	R2,AR2
+    // asm 0000A860: 	LDP	@CPU_WS
+    // asm 0000A861: 	STI	R3,*AR2			;store to screen
+    // asm 0000A862: 	LDI	*AR1,R2			;DUMMY READ
+    // asm 0000A863: 	LDI	SOFT_WS,R2
+    // asm 0000A864: 	STI	R2,@CPU_WS
+    // asm 0000A865: 	SETDP
+    // asm 0000A866: 	CALL	ENABLEGIE
+    // asm 0000A867: 	POP	R2
+    // asm 0000A868: 	POP	AR2
+    // asm 0000A869: 	POP	AR1
+    // asm 0000A86A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_pixel", 0, 0);
     UNIMPL();
 }

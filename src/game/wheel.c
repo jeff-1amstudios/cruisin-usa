@@ -46,112 +46,112 @@ int DAMPPWR;
  */
 void NUWHEEL(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	AND	MMODE,R0
-    // asm: 	LDF	0,R1	   		;DEFAULT POSITION POWER MULTIPLIER
-    // asm: 	LDF	126,R2	   		;DEFAULT MAX POWER
-    // asm: 	LDF	2.5,R3	   		;DEFAULT DAMP POWER MULTIPLIER
+    // asm 0000AFF2: 	LDI	@_MODE,R0
+    // asm 0000AFF3: 	AND	MMODE,R0
+    // asm 0000AFF4: 	LDF	0,R1	   		;DEFAULT POSITION POWER MULTIPLIER
+    // asm 0000AFF5: 	LDF	126,R2	   		;DEFAULT MAX POWER
+    // asm 0000AFF6: 	LDF	2.5,R3	   		;DEFAULT DAMP POWER MULTIPLIER
     // ;	LDF	0,R1	   		;DEFAULT POSITION POWER MULTIPLIER
     // ;	LDF	126,R2	   		;DEFAULT MAX POWER
     // ;	LDF	2.5,R3	   		;DEFAULT DAMP POWER MULTIPLIER
-    // asm: 	CMPI	MGAME,R0		;GAME
-    // asm: 	BNE	NUWHL1
-    // asm: 	LDF	@WHEELPWR,R1
-    // asm: 	LDF	@WHEELPWR,R3
-    // asm: 	LDF	126,R2
-    // asm: 	B	NUWHL
+    // asm 0000AFF7: 	CMPI	MGAME,R0		;GAME
+    // asm 0000AFF8: 	BNE	NUWHL1
+    // asm 0000AFF9: 	LDF	@WHEELPWR,R1
+    // asm 0000AFFA: 	LDF	@WHEELPWR,R3
+    // asm 0000AFFB: 	LDF	126,R2
+    // asm 0000AFFC: 	B	NUWHL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHEEL", 0, 0);
     UNIMPL();
 }
 
 void NUWHL1(void)
 {
-    // asm: 	CMPI	MBONUS,R0
-    // asm: 	BNE	NBON
-    // asm: 	LDF	2,R1
+    // asm 0000AFFD: 	CMPI	MBONUS,R0
+    // asm 0000AFFE: 	BNE	NBON
+    // asm 0000AFFF: 	LDF	2,R1
     // ;	LDF	64,R2
     // ;	LDF	2,R3
-    // asm: 	B	NUWHL
+    // asm 0000B000: 	B	NUWHL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHL1", 0, 0);
     UNIMPL();
 }
 
 void NBON(void)
 {
-    // asm: 	CMPI	MINSERT_COINS,R0
-    // asm: 	BNE	NIC
-    // asm: 	LDF	0,R1		;2
+    // asm 0000B001: 	CMPI	MINSERT_COINS,R0
+    // asm 0000B002: 	BNE	NIC
+    // asm 0000B003: 	LDF	0,R1		;2
     // ;	LDF	64,R2
     // ;	LDF	2,R3
-    // asm: 	B	NUWHL
+    // asm 0000B004: 	B	NUWHL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NBON", 0, 0);
     UNIMPL();
 }
 
 void NIC(void)
 {
-    // asm: 	CMPI	MINTRO,R0		;INTRO
-    // asm: 	BNE	NUWHL2
-    // asm: 	LDF	0.5,R1
+    // asm 0000B005: 	CMPI	MINTRO,R0		;INTRO
+    // asm 0000B006: 	BNE	NUWHL2
+    // asm 0000B007: 	LDF	0.5,R1
     // ;	LDF	64,R2
     // ;	LDF	0.5,R3
-    // asm: 	B	NUWHL
+    // asm 0000B008: 	B	NUWHL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NIC", 0, 0);
     UNIMPL();
 }
 
 void NUWHL2(void)
 {
-    // asm: 	CMPI	MINIT,R0		;INITIAL ENTRY
-    // asm: 	BNE	NUWHL3
-    // asm: 	LDF	0.75,R1
+    // asm 0000B009: 	CMPI	MINIT,R0		;INITIAL ENTRY
+    // asm 0000B00A: 	BNE	NUWHL3
+    // asm 0000B00B: 	LDF	0.75,R1
     // ;	LDF	64,R2
     // ;	LDF	0.75,R3
-    // asm: 	BU	NUWHL
+    // asm 0000B00C: 	BU	NUWHL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHL2", 0, 0);
     UNIMPL();
 }
 
 void NUWHL3(void)
 {
-    // asm: 	CMPI	MDIAG,R0
-    // asm: 	BNE	NUWHL
-    // asm: 	CLRF	R3
+    // asm 0000B00D: 	CMPI	MDIAG,R0
+    // asm 0000B00E: 	BNE	NUWHL
+    // asm 0000B00F: 	CLRF	R3
     // ;	BU	NUWHL
 NUWHL:
-    // asm: 	STF	R1,@WHEELPWR
-    // asm: 	STF	R2,@WHEELMAX
-    // asm: 	STF	R3,@DAMPPWR
-    // asm: 	LDF	@WHEELPOS,R0
-    // asm: 	FLOAT	@_pot0,R1
-    // asm: 	SUBF	R1,R0
-    // asm: 	LDF	@lpot0,R2
-    // asm: 	STF	R1,@lpot0
-    // asm: 	SUBF	R2,R1,R2		;curr - prev  (velocity)
-    // asm: 	CMPF	-22,R2			;LIMIT VELOCITY
-    // asm: 	LDFLT	-22,R2
-    // asm: 	CMPF	22,R2
-    // asm: 	LDFGT	22,R2
-    // asm: 	LDF	@WHEELVEL,R1
-    // asm: 	MPYF	0.55,R1
-    // asm: 	MPYF	0.45,R2
-    // asm: 	ADDF	R1,R2
-    // asm: 	STF	R2,@WHEELVEL		;SAVE VELOCITY AVERAGE
-    // asm: 	MPYF	2.2,R2
-    // asm: 	MPYF	@DAMPPWR,R2
-    // asm: 	MPYF	@WHEELPWR,R0
-    // asm: 	SUBF	R2,R0			;ADD TO POSITION
-    // asm: 	LDF	@WHEELMAX,R1	  	;MAX OUTPUT LEVEL
-    // asm: 	CMPF	R1,R0
-    // asm: 	LDFGT	R1,R0
-    // asm: 	NEGF	R1
-    // asm: 	CMPF	R1,R0
-    // asm: 	LDFLT	R1,R0
-    // asm: 	STF	R0,@WHEELOUT		;SAVE OUTPUT NUMBER
-    // asm: 	FIX	R0
-    // asm: 	AND	0FFH,R0
-    // asm: 	CALL	TOWHEEL
-    // asm: 	RETS
+    // asm 0000B010: 	STF	R1,@WHEELPWR
+    // asm 0000B011: 	STF	R2,@WHEELMAX
+    // asm 0000B012: 	STF	R3,@DAMPPWR
+    // asm 0000B013: 	LDF	@WHEELPOS,R0
+    // asm 0000B014: 	FLOAT	@_pot0,R1
+    // asm 0000B015: 	SUBF	R1,R0
+    // asm 0000B016: 	LDF	@lpot0,R2
+    // asm 0000B017: 	STF	R1,@lpot0
+    // asm 0000B018: 	SUBF	R2,R1,R2		;curr - prev  (velocity)
+    // asm 0000B019: 	CMPF	-22,R2			;LIMIT VELOCITY
+    // asm 0000B01A: 	LDFLT	-22,R2
+    // asm 0000B01B: 	CMPF	22,R2
+    // asm 0000B01C: 	LDFGT	22,R2
+    // asm 0000B01D: 	LDF	@WHEELVEL,R1
+    // asm 0000B01E: 	MPYF	0.55,R1
+    // asm 0000B01F: 	MPYF	0.45,R2
+    // asm 0000B020: 	ADDF	R1,R2
+    // asm 0000B021: 	STF	R2,@WHEELVEL		;SAVE VELOCITY AVERAGE
+    // asm 0000B022: 	MPYF	2.2,R2
+    // asm 0000B023: 	MPYF	@DAMPPWR,R2
+    // asm 0000B024: 	MPYF	@WHEELPWR,R0
+    // asm 0000B025: 	SUBF	R2,R0			;ADD TO POSITION
+    // asm 0000B026: 	LDF	@WHEELMAX,R1	  	;MAX OUTPUT LEVEL
+    // asm 0000B027: 	CMPF	R1,R0
+    // asm 0000B028: 	LDFGT	R1,R0
+    // asm 0000B029: 	NEGF	R1
+    // asm 0000B02A: 	CMPF	R1,R0
+    // asm 0000B02B: 	LDFLT	R1,R0
+    // asm 0000B02C: 	STF	R0,@WHEELOUT		;SAVE OUTPUT NUMBER
+    // asm 0000B02D: 	FIX	R0
+    // asm 0000B02E: 	AND	0FFH,R0
+    // asm 0000B02F: 	CALL	TOWHEEL
+    // asm 0000B030: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHL3", 0, 0);
     UNIMPL();
 }
@@ -167,30 +167,30 @@ NUWHL:
  */
 void TOWHEEL(void)
 {
-    // asm: 	PUSH	DP
-    // asm: 	PUSHM	R0,R1
-    // asm: 	PUSH	R0
-    // asm: 	LDP	@WHEEL
-    // asm: 	LDI	0FF04h,R0		;SET ADDRESS TO 4
-    // asm: 	LDI	0F704h,R1
-    // asm: 	STI	R0,@WHEEL
-    // asm: 	STI	R1,@WHEEL
-    // asm: 	STI	R0,@WHEEL
-    // asm: 	POP	R0
-    // asm: 	LDI	R0,R1
-    // asm: 	OR	0FF00h,R0
-    // asm: 	STI	R0,@WHEEL
-    // asm: 	OR	0FB00h,R1
-    // asm: 	NOP
-    // asm: 	NOP
-    // asm: 	STI	R1,@WHEEL
-    // asm: 	POP	R1
-    // asm: 	NOP
-    // asm: 	NOP
-    // asm: 	STI	R0,@WHEEL
-    // asm: 	POP	R0
-    // asm: 	POP	DP
-    // asm: 	RETS
+    // asm 0000B031: 	PUSH	DP
+    // asm 0000B032: 	PUSHM	R0,R1
+    // asm 0000B034: 	PUSH	R0
+    // asm 0000B035: 	LDP	@WHEEL
+    // asm 0000B036: 	LDI	0FF04h,R0		;SET ADDRESS TO 4
+    // asm 0000B037: 	LDI	0F704h,R1
+    // asm 0000B038: 	STI	R0,@WHEEL
+    // asm 0000B039: 	STI	R1,@WHEEL
+    // asm 0000B03A: 	STI	R0,@WHEEL
+    // asm 0000B03B: 	POP	R0
+    // asm 0000B03C: 	LDI	R0,R1
+    // asm 0000B03D: 	OR	0FF00h,R0
+    // asm 0000B03E: 	STI	R0,@WHEEL
+    // asm 0000B03F: 	OR	0FB00h,R1
+    // asm 0000B040: 	NOP
+    // asm 0000B041: 	NOP
+    // asm 0000B042: 	STI	R1,@WHEEL
+    // asm 0000B043: 	POP	R1
+    // asm 0000B044: 	NOP
+    // asm 0000B045: 	NOP
+    // asm 0000B046: 	STI	R0,@WHEEL
+    // asm 0000B047: 	POP	R0
+    // asm 0000B048: 	POP	DP
+    // asm 0000B049: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TOWHEEL", 0, 0);
     UNIMPL();
 }

@@ -35,10 +35,10 @@ int SCREENWIPE_DONE;
  */
 void SCREENWIPE_OPEN(void)
 {
-    // asm: 	CLRI	R0
-    // asm: 	STPI	R0,@SCREENWIPE_DONE
-    // asm: 	CREATEC	SCREENWIPE_OPEN_PRC,UTIL_C|MONKEY_T
-    // asm: 	RETS
+    // asm 0000B09F: 	CLRI	R0
+    // asm 0000B0A0: 	STPI	R0,@SCREENWIPE_DONE
+    // asm 0000B0A1: 	CREATEC	SCREENWIPE_OPEN_PRC,UTIL_C|MONKEY_T
+    // asm 0000B0A4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCREENWIPE_OPEN", 0, 0);
     UNIMPL();
 }
@@ -47,10 +47,10 @@ void SCREENWIPE_OPEN(void)
  */
 void SCREENWIPE_CLOSE(void)
 {
-    // asm: 	CLRI	R0
-    // asm: 	STPI	R0,@SCREENWIPE_DONE
-    // asm: 	CREATE	SCREENWIPE_CLOSE_PRC,UTIL_C|MONKEY_T
-    // asm: 	RETS
+    // asm 0000B0A5: 	CLRI	R0
+    // asm 0000B0A6: 	STPI	R0,@SCREENWIPE_DONE
+    // asm 0000B0A7: 	CREATE	SCREENWIPE_CLOSE_PRC,UTIL_C|MONKEY_T
+    // asm 0000B0AA: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCREENWIPE_CLOSE", 0, 0);
     UNIMPL();
 }
@@ -59,7 +59,7 @@ void SCREENWIPE_CLOSE(void)
  */
 void SCREENWIPE_OPEN_PRC_FAST(void)
 {
-    // asm: 	LONGROUT
+    // asm 0000B0AB: 	LONGROUT
     // asm: 	LDF	1.9,R0
     // asm: 	BR	L55
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCREENWIPE_OPEN_PRC_FAST", 0, 0);
@@ -68,7 +68,7 @@ void SCREENWIPE_OPEN_PRC_FAST(void)
 
 void SCREENWIPE_OPEN_PRC(void)
 {
-    // asm: 	LONGROUT
+    // asm 0000B0AC: 	LONGROUT
     // asm: 	LDF	1.1,R0
 L55:
     // asm: STF	R0,*+AR7(PDATA+7)
@@ -166,7 +166,7 @@ L55:
  */
 void SCREENWIPE_CLOSE_PRC(void)
 {
-    // asm: 	LONGROUT
+    // asm 0000B0AD: 	LONGROUT
     // asm: 	CALL	GET_EFFECTS_OBJS
     // asm: 	LDI	100,AR5
     // asm: 	LDF	12.8,R6
@@ -245,7 +245,7 @@ void SCREENWIPE_CLOSE_PRC(void)
  */
 void GET_EFFECTS_OBJS(void)
 {
-    // asm: 	LONGROUT
+    // asm 0000B0AE: 	LONGROUT
     // asm: 	LDI	@MONKEYOBJRVI,AR1
     // asm: 	CALL	OBJ_GET
     // asm: 	LDI	AR0,AR4
@@ -331,7 +331,7 @@ void GET_EFFECTS_OBJS(void)
  */
 void MEMCPY(void)
 {
-    // asm: 	LONGROUT
+    // asm 0000B0AF: 	LONGROUT
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR1
     // asm: 	PUSH	R0

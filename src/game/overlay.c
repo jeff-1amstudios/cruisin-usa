@@ -175,12 +175,12 @@ int REAL_CHECKPOINTS;
  */
 void SECTION_ROUTINE(void)
 {
-    // asm: 	CMPI	0,AR0
-    // asm: 	RETSEQ
-    // asm: 	ADDI	@ROUTINE_TABLEI,AR0
-    // asm: 	LDI	*AR0,AR0
-    // asm: 	CALLU	AR0
-    // asm: 	RETS
+    // asm 0000ACFA: 	CMPI	0,AR0
+    // asm 0000ACFB: 	RETSEQ
+    // asm 0000ACFC: 	ADDI	@ROUTINE_TABLEI,AR0
+    // asm 0000ACFD: 	LDI	*AR0,AR0
+    // asm 0000ACFE: 	CALLU	AR0
+    // asm 0000ACFF: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SECTION_ROUTINE", 0, 0);
     UNIMPL();
 }
@@ -190,42 +190,42 @@ void OVERLOCK(void)
 #if DEBUG
     // asm: 	BU	$
 #endif
-    // asm: 	RETS
+    // asm 0000AD2F: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OVERLOCK", 0, 0);
     UNIMPL();
 }
 
 void CHECKPOINT_HIT_R(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	AR2
-    // asm: 	BU	JJGH
+    // asm 0000AD30: 	PUSH	R0
+    // asm 0000AD31: 	PUSH	AR2
+    // asm 0000AD32: 	BU	JJGH
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKPOINT_HIT_R", 0, 0);
     UNIMPL();
 }
 
 void CHECKPOINT_HIT(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	AR2
-    // asm: 	INCM	@REAL_CHECKPOINTS
-    // asm: 	CMPI	@CHECKPOINT_NUM,R0
-    // asm: 	BLE	CPHX
+    // asm 0000AD33: 	PUSH	R0
+    // asm 0000AD34: 	PUSH	AR2
+    // asm 0000AD35: 	INCM	@REAL_CHECKPOINTS
+    // asm 0000AD38: 	CMPI	@CHECKPOINT_NUM,R0
+    // asm 0000AD39: 	BLE	CPHX
 JJGH:
-    // asm: 	CALL	SEND_CHECKPOINT		;not really send, but setup variables
-    // asm: 	INCM	@CHECKPOINT_NUM
-    // asm: 	LDI	@_countdown,R0
-    // asm: 	ADDI	@CHECKPOINT_TIME_BONUS,R0
-    // asm: 	STI	R0,@_countdown
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	AND	MMODE,R0
-    // asm: 	CMPI	MGAME,R0
-    // asm: 	BNE	CPHX
-    // asm: 	SONDFX	CHECKPT
+    // asm 0000AD3A: 	CALL	SEND_CHECKPOINT		;not really send, but setup variables
+    // asm 0000AD3B: 	INCM	@CHECKPOINT_NUM
+    // asm 0000AD3E: 	LDI	@_countdown,R0
+    // asm 0000AD3F: 	ADDI	@CHECKPOINT_TIME_BONUS,R0
+    // asm 0000AD40: 	STI	R0,@_countdown
+    // asm 0000AD41: 	LDI	@_MODE,R0
+    // asm 0000AD42: 	AND	MMODE,R0
+    // asm 0000AD43: 	CMPI	MGAME,R0
+    // asm 0000AD44: 	BNE	CPHX
+    // asm 0000AD45: 	SONDFX	CHECKPT
 CPHX:
-    // asm: 	POP	AR2
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 0000AD47: 	POP	AR2
+    // asm 0000AD48: 	POP	R0
+    // asm 0000AD49: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKPOINT_HIT", 0, 0);
     UNIMPL();
 }
@@ -234,10 +234,10 @@ CPHX:
  */
 void WATERON(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	OR	MWATER,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	RETS
+    // asm 0000AD4A: 	LDI	@_MODE,R0
+    // asm 0000AD4B: 	OR	MWATER,R0
+    // asm 0000AD4C: 	STI	R0,@_MODE
+    // asm 0000AD4D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WATERON", 0, 0);
     UNIMPL();
 }
@@ -246,10 +246,10 @@ void WATERON(void)
  */
 void WATEROFF(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	ANDN	MWATER,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	RETS
+    // asm 0000AD4E: 	LDI	@_MODE,R0
+    // asm 0000AD4F: 	ANDN	MWATER,R0
+    // asm 0000AD50: 	STI	R0,@_MODE
+    // asm 0000AD51: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WATEROFF", 0, 0);
     UNIMPL();
 }
@@ -258,19 +258,19 @@ void WATEROFF(void)
  */
 void HELISTART(void)
 {
-    // asm: 	CREATE	CHOPPER,DRONE_C|VEHICLE_T|DRNE_SIGMA
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@HELI_ABORT
-    // asm: 	RETS
+    // asm 0000AD52: 	CREATE	CHOPPER,DRONE_C|VEHICLE_T|DRNE_SIGMA
+    // asm 0000AD55: 	CLRI	R0
+    // asm 0000AD56: 	STI	R0,@HELI_ABORT
+    // asm 0000AD57: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HELISTART", 0, 0);
     UNIMPL();
 }
 
 void HELIEND(void)
 {
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@HELI_ABORT
-    // asm: 	RETS
+    // asm 0000AD58: 	LDI	1,R0
+    // asm 0000AD59: 	STI	R0,@HELI_ABORT
+    // asm 0000AD5A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HELIEND", 0, 0);
     UNIMPL();
 }
@@ -279,19 +279,19 @@ void HELIEND(void)
  */
 void RAILPRIME(void)
 {
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@DD_MAX_DRONES
-    // asm: 	STI	R0,@FREEZE_IT
-    // asm: 	RETS
+    // asm 0000AD5B: 	CLRI	R0
+    // asm 0000AD5C: 	STI	R0,@DD_MAX_DRONES
+    // asm 0000AD5D: 	STI	R0,@FREEZE_IT
+    // asm 0000AD5E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RAILPRIME", 0, 0);
     UNIMPL();
 }
 
 void RR_UNFREEZE(void)
 {
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@FREEZE_IT
-    // asm: 	RETS
+    // asm 0000AD5F: 	LDI	1,R0
+    // asm 0000AD60: 	STI	R0,@FREEZE_IT
+    // asm 0000AD61: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RR_UNFREEZE", 0, 0);
     UNIMPL();
 }
@@ -300,20 +300,20 @@ void RR_UNFREEZE(void)
  */
 void BRIDGE_OFF(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	ANDN	MBRIDGE,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	RETS
+    // asm 0000AD62: 	LDI	@_MODE,R0
+    // asm 0000AD63: 	ANDN	MBRIDGE,R0
+    // asm 0000AD64: 	STI	R0,@_MODE
+    // asm 0000AD65: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BRIDGE_OFF", 0, 0);
     UNIMPL();
 }
 
 void BRIDGE_ON(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	OR	MBRIDGE,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	RETS
+    // asm 0000AD66: 	LDI	@_MODE,R0
+    // asm 0000AD67: 	OR	MBRIDGE,R0
+    // asm 0000AD68: 	STI	R0,@_MODE
+    // asm 0000AD69: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BRIDGE_ON", 0, 0);
     UNIMPL();
 }
@@ -322,8 +322,8 @@ void BRIDGE_ON(void)
  */
 void BOFFNC(void)
 {
-    // asm: 	CALL	BRIDGE_OFF
-    // asm: 	RETS
+    // asm 0000AD6A: 	CALL	BRIDGE_OFF
+    // asm 0000AD6B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BOFFNC", 0, 0);
     UNIMPL();
 }
@@ -332,10 +332,10 @@ void BOFFNC(void)
  */
 void TUNNEL_ON(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	OR	MINTUNNEL,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	RETS
+    // asm 0000AD6C: 	LDI	@_MODE,R0
+    // asm 0000AD6D: 	OR	MINTUNNEL,R0
+    // asm 0000AD6E: 	STI	R0,@_MODE
+    // asm 0000AD6F: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TUNNEL_ON", 0, 0);
     UNIMPL();
 }
@@ -344,10 +344,10 @@ void TUNNEL_ON(void)
  */
 void TUNNEL_OFF(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	ANDN	MINTUNNEL,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	RETS
+    // asm 0000AD70: 	LDI	@_MODE,R0
+    // asm 0000AD71: 	ANDN	MINTUNNEL,R0
+    // asm 0000AD72: 	STI	R0,@_MODE
+    // asm 0000AD73: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TUNNEL_OFF", 0, 0);
     UNIMPL();
 }
@@ -356,7 +356,7 @@ void TUNNEL_OFF(void)
  */
 void START_SANFRAN(void)
 {
-    // asm: 	RETS
+    // asm 0000AD74: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "START_SANFRAN", 0, 0);
     UNIMPL();
 }
@@ -365,16 +365,16 @@ void START_SANFRAN(void)
  */
 void BEACHON(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	OR	MWATER,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	LDI	MAX_DRONES,R0
-    // asm: 	STI	R0,@DD_MAX_DRONES
-    // asm: 	LDI	60,R0
-    // asm: 	STI	R0,@DD_SLP
-    // asm: 	LDI	100,R0
-    // asm: 	STI	R0,@DD_VAR
-    // asm: 	RETS
+    // asm 0000AD75: 	LDI	@_MODE,R0
+    // asm 0000AD76: 	OR	MWATER,R0
+    // asm 0000AD77: 	STI	R0,@_MODE
+    // asm 0000AD78: 	LDI	MAX_DRONES,R0
+    // asm 0000AD79: 	STI	R0,@DD_MAX_DRONES
+    // asm 0000AD7A: 	LDI	60,R0
+    // asm 0000AD7B: 	STI	R0,@DD_SLP
+    // asm 0000AD7C: 	LDI	100,R0
+    // asm 0000AD7D: 	STI	R0,@DD_VAR
+    // asm 0000AD7E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BEACHON", 0, 0);
     UNIMPL();
 }
@@ -383,17 +383,17 @@ void BEACHON(void)
  */
 void REDWOOD_START(void)
 {
-    // asm: 	LDF	10,R0
-    // asm: 	STF	R0,@VAR_ROAD_KFACTOR			;pixels UNDER (overshoot)
-    // asm: 	FLOAT	75,R0	;75
-    // asm: 	STF	R0,@INFIN_CORRECT
-    // asm: 	LDI	4,R0
-    // asm: 	STI	R0,@DD_MAX_DRONES
-    // asm: 	LDI	120,R0
-    // asm: 	STI	R0,@DD_SLP
-    // asm: 	LDI	120,R0
-    // asm: 	STI	R0,@DD_VAR
-    // asm: 	RETS
+    // asm 0000AD7F: 	LDF	10,R0
+    // asm 0000AD80: 	STF	R0,@VAR_ROAD_KFACTOR			;pixels UNDER (overshoot)
+    // asm 0000AD81: 	FLOAT	75,R0	;75
+    // asm 0000AD82: 	STF	R0,@INFIN_CORRECT
+    // asm 0000AD83: 	LDI	4,R0
+    // asm 0000AD84: 	STI	R0,@DD_MAX_DRONES
+    // asm 0000AD85: 	LDI	120,R0
+    // asm 0000AD86: 	STI	R0,@DD_SLP
+    // asm 0000AD87: 	LDI	120,R0
+    // asm 0000AD88: 	STI	R0,@DD_VAR
+    // asm 0000AD89: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "REDWOOD_START", 0, 0);
     UNIMPL();
 }
@@ -402,56 +402,56 @@ void REDWOOD_START(void)
  */
 void LOOK_SANFRANCISCO(void)
 {
-    // asm: 	SONDFX	ER_SANFRANCISCO
-    // asm: 	RETS
+    // asm 0000AD8A: 	SONDFX	ER_SANFRANCISCO
+    // asm 0000AD8C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_SANFRANCISCO", 0, 0);
     UNIMPL();
 }
 
 void LOOK_REDWOOD(void)
 {
-    // asm: 	SONDFX	ER_REDWOOD
-    // asm: 	RETS
+    // asm 0000AD8D: 	SONDFX	ER_REDWOOD
+    // asm 0000AD8F: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_REDWOOD", 0, 0);
     UNIMPL();
 }
 
 void LOOK_MIDWEST(void)
 {
-    // asm: 	SONDFX	ER_MIDWEST
-    // asm: 	RETS
+    // asm 0000AD90: 	SONDFX	ER_MIDWEST
+    // asm 0000AD92: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_MIDWEST", 0, 0);
     UNIMPL();
 }
 
 void LOOK_MTRUSHMORE(void)
 {
-    // asm: 	SONDFX	ER_MTRUSHMORE
-    // asm: 	RETS
+    // asm 0000AD93: 	SONDFX	ER_MTRUSHMORE
+    // asm 0000AD95: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_MTRUSHMORE", 0, 0);
     UNIMPL();
 }
 
 void LOOK_DEATHVALLEY(void)
 {
-    // asm: 	SONDFX	ER_DEATHVALLEY
-    // asm: 	RETS
+    // asm 0000AD96: 	SONDFX	ER_DEATHVALLEY
+    // asm 0000AD98: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_DEATHVALLEY", 0, 0);
     UNIMPL();
 }
 
 void LOOK_GCANYON(void)
 {
-    // asm: 	SONDFX	ER_GRANDCANYON
-    // asm: 	RETS
+    // asm 0000AD99: 	SONDFX	ER_GRANDCANYON
+    // asm 0000AD9B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_GCANYON", 0, 0);
     UNIMPL();
 }
 
 void LOOK_HOLLYWOOD(void)
 {
-    // asm: 	SONDFX	ER_HOLLYWOOD
-    // asm: 	RETS
+    // asm 0000AD9C: 	SONDFX	ER_HOLLYWOOD
+    // asm 0000AD9E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_HOLLYWOOD", 0, 0);
     UNIMPL();
 }
@@ -460,8 +460,8 @@ void LOOK_HOLLYWOOD(void)
  */
 void CHANGE_TUNE(void)
 {
-    // asm: 	CALL	CHANGE_STATION
-    // asm: 	RETS
+    // asm 0000AD9F: 	CALL	CHANGE_STATION
+    // asm 0000ADA0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHANGE_TUNE", 0, 0);
     UNIMPL();
 }
@@ -470,32 +470,32 @@ void CHANGE_TUNE(void)
  */
 void SET_BGNDCOL2BROWN(void)
 {
-    // asm: 	CALL	CHECKPOINT_HIT
-    // asm: 	LDIL	0984900h,R0		;want blue sky
-    // asm: 	STI	R0,@BGNDCOLA
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@NOAERASE
-    // asm: 	RETS
+    // asm 0000ADA1: 	CALL	CHECKPOINT_HIT
+    // asm 0000ADA2: 	LDIL	0984900h,R0		;want blue sky
+    // asm 0000ADA5: 	STI	R0,@BGNDCOLA
+    // asm 0000ADA6: 	LDI	1,R0
+    // asm 0000ADA7: 	STI	R0,@NOAERASE
+    // asm 0000ADA8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_BGNDCOL2BROWN", 0, 0);
     UNIMPL();
 }
 
 void TURNOFF_INFINITY(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	ANDN	MINFIN,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	RETS
+    // asm 0000ADA9: 	LDI	@_MODE,R0
+    // asm 0000ADAA: 	ANDN	MINFIN,R0
+    // asm 0000ADAB: 	STI	R0,@_MODE
+    // asm 0000ADAC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TURNOFF_INFINITY", 0, 0);
     UNIMPL();
 }
 
 void TURNON_INFINITY(void)
 {
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	OR	MINFIN,R0
-    // asm: 	STI	R0,@_MODE
-    // asm: 	RETS
+    // asm 0000ADAD: 	LDI	@_MODE,R0
+    // asm 0000ADAE: 	OR	MINFIN,R0
+    // asm 0000ADAF: 	STI	R0,@_MODE
+    // asm 0000ADB0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TURNON_INFINITY", 0, 0);
     UNIMPL();
 }
@@ -506,29 +506,29 @@ void TOWER_PAL_LD(void)
 {
     // 	;find the pal which tower is in
     // 	;do a palset with the new palette
-    // asm: 	LDI	tower_p,AR2
-    // asm: 	CALL	PAL_FIND
-    // asm: 	LDL	tower_bgrey,AR2
-    // asm: 	LDI	R0,R2
-    // asm: 	LDI	*AR2++,R3		;GET COUNT
-    // asm: 	CALL	PAL_SET
-    // asm: 	RETS
+    // asm 0000ADB1: 	LDI	tower_p,AR2
+    // asm 0000ADB2: 	CALL	PAL_FIND
+    // asm 0000ADB3: 	LDL	tower_bgrey,AR2
+    // asm 0000ADB4: 	LDI	R0,R2
+    // asm 0000ADB5: 	LDI	*AR2++,R3		;GET COUNT
+    // asm 0000ADB6: 	CALL	PAL_SET
+    // asm 0000ADB7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TOWER_PAL_LD", 0, 0);
     UNIMPL();
 }
 
 void TOWER_PAL_RESTORE(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	R2
+    // asm 0000ADB8: 	PUSH	AR2
+    // asm 0000ADB9: 	PUSH	R2
     // 	;not so much a restore as a validate it is set
     // 	;
-    // asm: 	LDI	tower_p,R0		;ONE TO OVERWRITE
-    // asm: 	LDI	R0,R1			;WHAT TO OVERWRITE IT WITH
-    // asm: 	CALL	PAL_OVERWRITE
-    // asm: 	POP	R2
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 0000ADBA: 	LDI	tower_p,R0		;ONE TO OVERWRITE
+    // asm 0000ADBB: 	LDI	R0,R1			;WHAT TO OVERWRITE IT WITH
+    // asm 0000ADBC: 	CALL	PAL_OVERWRITE
+    // asm 0000ADBD: 	POP	R2
+    // asm 0000ADBE: 	POP	AR2
+    // asm 0000ADBF: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TOWER_PAL_RESTORE", 0, 0);
     UNIMPL();
 }
@@ -537,9 +537,9 @@ void TOWER_PAL_RESTORE(void)
  */
 void END_OF_GAME(void)
 {
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@END_OF_GAMEP
-    // asm: 	RETS
+    // asm 0000ADC0: 	LDI	1,R0
+    // asm 0000ADC1: 	STI	R0,@END_OF_GAMEP
+    // asm 0000ADC2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "END_OF_GAME", 0, 0);
     UNIMPL();
 }

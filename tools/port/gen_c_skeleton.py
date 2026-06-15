@@ -19,6 +19,8 @@ MACRO_START_RE = re.compile(
     re.IGNORECASE,
 )
 MACRO_END_RE = re.compile(r"^\s*\.endm\b", re.IGNORECASE)
+STRUCT_START_RE = re.compile(r"^\s*\*+\s*STRUCT\b", re.IGNORECASE)
+STRUCT_END_RE = re.compile(r"^\s*\*+\s*ENDSTRUCT\b", re.IGNORECASE)
 LABEL_RE = re.compile(r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s*:(.*)$")
 DATA_LABEL_RE = re.compile(r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s+((?:\.\w+)|EQU|equ|fbss|pbss|hibss)\b(.*)$")
 INLINE_LABEL_RE = re.compile(r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s+([A-Za-z.][A-Za-z0-9.]*)\b(.*)$")
@@ -126,6 +128,7 @@ INSTRUCTION_PREFIXES = (
 class FunctionBlock:
     name: str
     lines: list[str] = field(default_factory=list)
+    line_numbers: list[int] = field(default_factory=list)
     labels: set[str] = field(default_factory=set)
     start_index: int = -1
     end_index: int = -1
@@ -305,6 +308,26 @@ def parse_discovered_defines_file(defines_path: Path) -> dict[str, DefineEntry]:
     return out
 
 
+def parse_instruction_addresses_file(addresses_path: Path) -> dict[str, dict[int, int]]:
+    out: dict[str, dict[int, int]] = {}
+    if not addresses_path.exists():
+        return out
+    for raw in addresses_path.read_text(errors="ignore").splitlines():
+        if not raw.strip():
+            continue
+        parts = raw.split("\t")
+        if len(parts) < 3 or parts[0].strip().lower() == "module":
+            continue
+        module = parts[0].strip().upper()
+        try:
+            line_no = int(parts[1].strip(), 10)
+            address = int(parts[2].strip(), 16)
+        except ValueError:
+            continue
+        out.setdefault(module, {})[line_no] = address
+    return out
+
+
 def parse_type_overrides_file(overrides_path: Path) -> dict[str, TypeOverride]:
     out: dict[str, TypeOverride] = {}
     if not overrides_path.exists():
@@ -447,12 +470,33 @@ def strip_macro_definition_blocks(lines: list[str]) -> list[str]:
     return out
 
 
+def strip_struct_definition_blocks(lines: list[str]) -> list[str]:
+    out: list[str] = []
+    struct_depth = 0
+    for raw in lines:
+        if STRUCT_START_RE.match(raw):
+            struct_depth += 1
+            continue
+        if STRUCT_END_RE.match(raw):
+            if struct_depth > 0:
+                struct_depth -= 1
+            continue
+        if struct_depth > 0:
+            continue
+        out.append(raw)
+    return out
+
+
+def strip_noncode_definition_blocks(lines: list[str]) -> list[str]:
+    return strip_struct_definition_blocks(strip_macro_definition_blocks(lines))
+
+
 def collect_module_storage_defines(
     src_path: Path,
     address_map: dict[str, int],
     type_overrides: dict[str, TypeOverride] | None = None,
 ) -> list[StorageVariable]:
-    lines = strip_macro_definition_blocks(src_path.read_text(errors="ignore").splitlines())
+    lines = strip_noncode_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     module = src_path.stem.upper()
     out: list[StorageVariable] = []
     seen: set[str] = set()
@@ -888,6 +932,7 @@ def collect_top_level_functions(
 
             current.labels.add(label)
             current.lines.append(raw.rstrip())
+            current.line_numbers.append(idx + 1)
             current.end_index = idx
             continue
 
@@ -903,6 +948,7 @@ def collect_top_level_functions(
                 current = FunctionBlock(name=label, start_index=idx, end_index=idx)
                 current.labels.add(label)
                 current.lines.append(f"{label}: {inline_label_match.group(2)}{inline_label_match.group(3)}")
+                current.line_numbers.append(idx + 1)
                 current.end_index = idx
                 functions.append(current)
                 seen_separator = False
@@ -917,6 +963,7 @@ def collect_top_level_functions(
                     current = FunctionBlock(name=label, start_index=idx, end_index=idx)
                     current.labels.add(label)
                     current.lines.append(f"{label}: {inline_label_match.group(2)}{inline_label_match.group(3)}")
+                    current.line_numbers.append(idx + 1)
                     current.end_index = idx
                     functions.append(current)
                     seen_separator = False
@@ -924,6 +971,7 @@ def collect_top_level_functions(
             if is_flush_left(raw) and not looks_like_instruction_token(label) and label in branch_targets and current is not None:
                 current.labels.add(label)
                 current.lines.append(f"{label}: {inline_label_match.group(2)}{inline_label_match.group(3)}")
+                current.line_numbers.append(idx + 1)
                 current.end_index = idx
                 continue
 
@@ -934,6 +982,7 @@ def collect_top_level_functions(
                 current = FunctionBlock(name=label, start_index=idx, end_index=idx)
                 current.labels.add(label)
                 current.lines.append(f"{label}:")
+                current.line_numbers.append(idx + 1)
                 current.end_index = idx
                 functions.append(current)
                 seen_separator = False
@@ -950,17 +999,20 @@ def collect_top_level_functions(
                     if current is not None:
                         current.labels.add(label)
                         current.lines.append(f"{label}:")
+                        current.line_numbers.append(idx + 1)
                         current.end_index = idx
                         seen_separator = False
                         continue
             if is_flush_left(raw) and label in branch_targets and current is not None:
                 current.labels.add(label)
                 current.lines.append(f"{label}:")
+                current.line_numbers.append(idx + 1)
                 current.end_index = idx
                 continue
 
         if current is not None:
             current.lines.append(raw.rstrip())
+            current.line_numbers.append(idx + 1)
             current.end_index = idx
         else:
             seen_separator = False
@@ -985,6 +1037,7 @@ def attach_leading_context(lines: list[str], functions: list[FunctionBlock]) -> 
 
         fn.start_index = new_start
         fn.lines = [line.rstrip() for line in lines[new_start:start]] + fn.lines
+        fn.line_numbers = list(range(new_start + 1, start + 1)) + fn.line_numbers
 
 
 def split_leading_comment_lines(lines: list[str]) -> tuple[list[str], list[str]]:
@@ -1004,18 +1057,54 @@ def render_leading_comment_block(lines: list[str]) -> list[str]:
     return out
 
 
-def render_function(fn: FunctionBlock) -> list[str]:
+def render_function_asm_comment(raw: str, address: int | None) -> str | None:
+    asm_comment = render_asm_comment(raw)
+    if asm_comment is None:
+        return None
+    if address is None:
+        return asm_comment
+    prefix = "// asm: "
+    if asm_comment.startswith(prefix):
+        return f"// asm {address:08X}: {asm_comment[len(prefix):]}"
+    return asm_comment
+
+
+def lookup_instruction_address_for_line(
+    raw: str,
+    line_no: int,
+    body_line_numbers: list[int],
+    instruction_addresses: dict[int, int] | None,
+) -> int | None:
+    if instruction_addresses is None:
+        return None
+    direct = instruction_addresses.get(line_no)
+    if direct is not None:
+        return direct
+    if not is_flush_left(raw):
+        return None
+    for candidate in body_line_numbers:
+        if candidate <= line_no:
+            continue
+        mapped = instruction_addresses.get(candidate)
+        if mapped is not None:
+            return mapped
+    return None
+
+
+def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | None = None) -> list[str]:
     out: list[str] = []
     leading_comment_lines, body_lines = split_leading_comment_lines(fn.lines)
     out.extend(render_leading_comment_block(leading_comment_lines))
+    body_line_numbers = fn.line_numbers[len(leading_comment_lines):]
     fn_ident = sanitize_identifier(fn.name)
     out.append(f"void {fn_ident}(void)")
     out.append("{")
 
     emitted_any = False
     first_label_emitted = False
-    for raw in body_lines:
-        asm_comment = render_asm_comment(raw)
+    for raw, line_no in zip(body_lines, body_line_numbers):
+        line_address = lookup_instruction_address_for_line(raw, line_no, body_line_numbers, instruction_addresses)
+        asm_comment = render_function_asm_comment(raw, line_address)
         if asm_comment is not None:
             out.append(f"    {asm_comment}")
             continue
@@ -1036,7 +1125,10 @@ def render_function(fn: FunctionBlock) -> list[str]:
             rest = label_match.group(2)
             is_instr, code = classify_instruction_text(rest)
             if is_instr:
-                out.append(f"    // asm: {rest.lstrip().rstrip()}")
+                if line_address is None:
+                    out.append(f"    // asm: {rest.lstrip().rstrip()}")
+                else:
+                    out.append(f"    // asm {line_address:08X}: {rest.lstrip().rstrip()}")
                 emitted_any = True
             continue
 
@@ -1052,7 +1144,10 @@ def render_function(fn: FunctionBlock) -> list[str]:
                 else:
                     out.append(f"{label_ident}:")
                     first_label_emitted = True
-                out.append(f"    // asm: {code}")
+                if line_address is None:
+                    out.append(f"    // asm: {code}")
+                else:
+                    out.append(f"    // asm {line_address:08X}: {code}")
                 emitted_any = True
                 continue
 
@@ -1069,7 +1164,10 @@ def render_function(fn: FunctionBlock) -> list[str]:
         is_instr, code = classify_instruction_text(raw)
         if not is_instr:
             continue
-        out.append(f"    // asm: {raw.rstrip()}")
+        if line_address is None:
+            out.append(f"    // asm: {raw.rstrip()}")
+        else:
+            out.append(f"    // asm {line_address:08X}: {raw.rstrip()}")
         emitted_any = True
 
     if emitted_any:
@@ -1094,6 +1192,8 @@ def infer_word_symbol(var: WordVariable, module: str, symbol_table: dict[str, Sy
             if target is not None and target.kind == "function":
                 return SymbolInfo(name=var.name, kind="variable", module=module, c_type="void (*)(void)")
             if target is not None and target.kind == "variable" and target.c_type:
+                if target.c_type == "const char *":
+                    return SymbolInfo(name=var.name, kind="variable", module=module, c_type="const char *")
                 return SymbolInfo(name=var.name, kind="variable", module=module, c_type=f"{target.c_type} *")
         return SymbolInfo(name=var.name, kind="variable", module=module, c_type="int")
 
@@ -1110,11 +1210,20 @@ def infer_word_symbol(var: WordVariable, module: str, symbol_table: dict[str, Sy
         if all(target is not None and target.kind == "variable" and target.c_type for target in targets):
             c_types = {target.c_type for target in targets if target is not None}
             if len(c_types) == 1:
+                only_type = next(iter(c_types))
+                if only_type == "const char *":
+                    return SymbolInfo(
+                        name=var.name,
+                        kind="variable",
+                        module=module,
+                        c_type="const char *",
+                        array_expr=str(len(var.values)),
+                    )
                 return SymbolInfo(
                     name=var.name,
                     kind="variable",
                     module=module,
-                    c_type=f"{next(iter(c_types))} *",
+                    c_type=f"{only_type} *",
                     array_expr=str(len(var.values)),
                 )
 
@@ -1716,8 +1825,9 @@ def render_module(
     discovered_header_needed: bool = False,
     type_overrides: dict[str, TypeOverride] | None = None,
     discovered_labels_needed: bool = False,
+    instruction_addresses: dict[int, int] | None = None,
 ) -> str:
-    lines = strip_macro_definition_blocks(src_path.read_text(errors="ignore").splitlines())
+    lines = strip_noncode_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     is_equ_source = src_path.suffix.upper() == ".EQU"
     force_function_names = {
         name
@@ -1776,7 +1886,7 @@ def render_module(
         if ident in seen_names:
             continue
         seen_names.add(ident)
-        out.extend(render_function(fn))
+        out.extend(render_function(fn, instruction_addresses))
         out.append("")
         rendered_count += 1
 
@@ -1924,7 +2034,7 @@ def collect_module_symbol_table(
     address_map: dict[str, int],
     type_overrides: dict[str, TypeOverride] | None = None,
 ) -> dict[str, SymbolInfo]:
-    lines = strip_macro_definition_blocks(src_path.read_text(errors="ignore").splitlines())
+    lines = strip_noncode_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     module = src_path.stem.upper()
     symbol_table: dict[str, SymbolInfo] = {}
     force_function_names = {
@@ -2156,6 +2266,9 @@ def main() -> int:
     include_dir = root / "src" / "game"
     address_map = parse_address_map(root / "tools" / "ida" / "address.map")
     define_entries = parse_discovered_defines_file(root / "tools" / "ida" / "discovered_defines.txt")
+    instruction_addresses_by_module = parse_instruction_addresses_file(
+        root / "tools" / "ida" / "log" / "romlst_instruction_addresses.tsv"
+    )
     type_overrides = parse_type_overrides_file(root / "tools" / "port" / "type-overrides.txt")
     label_types = parse_romlst_label_types(root / "tools" / "ida" / "log" / "romlst_labels.tsv")
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -2225,6 +2338,7 @@ def main() -> int:
                 discovered_header_needed,
                 type_overrides,
                 discovered_labels_needed,
+                instruction_addresses_by_module.get(src_path.stem.upper()),
             )
         )
 

@@ -59,84 +59,84 @@ int FLAMEANI[] = {
 
 void FLAME_PRC(void)
 {
-    // asm: 	LDI	PLYR_C|PLYR_FLAMES_S,AR2
-    // asm: 	CALL	OBJ_FIND_FIRST
-    // asm: 	BC	FLAME_DIE		;Only one set of flames at a time
-    // asm: 	LDI	PLYR_C,AR2
-    // asm: 	CALL	OBJ_FIND_FIRST
-    // asm: 	BNC	FLAME_DIE		;IF there is no player object then bail.
-    // asm: 	LDI	AR0,AR6
-    // asm: 	LDI	*+AR0(OCARBLK),AR1
-    // asm: 	LDI	*+AR1(CAR_SPIN),R0
-    // asm: 	BNZ	FLAME_DIE			;YES, the no flames
-    // asm: 	LDI	AR0,AR2
-    // asm: 	CALL	GETCARBODY
-    // asm: 	STI	AR0,*+AR7(CARBODY_MATRIX)
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*+AR7(FRAME_ON)	;Reset animation counter
-    // asm: 	CALL	OBJ_GET
-    // asm: 	BC	FLAME_DIE
-    // asm: 	LDI	AR0,AR4			;Left flame
+    // asm 0000ADC3: 	LDI	PLYR_C|PLYR_FLAMES_S,AR2
+    // asm 0000ADC4: 	CALL	OBJ_FIND_FIRST
+    // asm 0000ADC5: 	BC	FLAME_DIE		;Only one set of flames at a time
+    // asm 0000ADC6: 	LDI	PLYR_C,AR2
+    // asm 0000ADC7: 	CALL	OBJ_FIND_FIRST
+    // asm 0000ADC8: 	BNC	FLAME_DIE		;IF there is no player object then bail.
+    // asm 0000ADC9: 	LDI	AR0,AR6
+    // asm 0000ADCA: 	LDI	*+AR0(OCARBLK),AR1
+    // asm 0000ADCB: 	LDI	*+AR1(CAR_SPIN),R0
+    // asm 0000ADCC: 	BNZ	FLAME_DIE			;YES, the no flames
+    // asm 0000ADCD: 	LDI	AR0,AR2
+    // asm 0000ADCE: 	CALL	GETCARBODY
+    // asm 0000ADCF: 	STI	AR0,*+AR7(CARBODY_MATRIX)
+    // asm 0000ADD0: 	LDI	0,R0
+    // asm 0000ADD1: 	STI	R0,*+AR7(FRAME_ON)	;Reset animation counter
+    // asm 0000ADD2: 	CALL	OBJ_GET
+    // asm 0000ADD3: 	BC	FLAME_DIE
+    // asm 0000ADD4: 	LDI	AR0,AR4			;Left flame
     // ;	LDI	@CHOSEN_VEHICLE,R0
-    // asm: 	LDI	@CHOOSENCAR,R0
-    // asm: 	MPYI	3,R0
-    // asm: 	ADDI	@FLAME_POSI,R0
-    // asm: 	LDI	R0,AR0
-    // asm: 	FLOAT	*+AR0(X),R1
-    // asm: 	FLOAT	*+AR0(Y),R2
-    // asm: 	FLOAT	*+AR0(Z),R3
-    // asm: 	STF	R1,*+AR4(OVELX)
-    // asm: 	STF	R2,*+AR4(OVELY)
-    // asm: 	STF	R3,*+AR4(OVELZ)
-    // asm: 	LDI	PLYR_C|PLYR_FLAMES_S,R0
-    // asm: 	STI	R0,*+AR4(OID)
-    // asm: 	CALL	OBJ_GET
-    // asm: 	BC	FLAME_DIE
-    // asm: 	LDI	AR0,AR5			;Right frame
-    // asm: 	LDF	PI,R0
-    // asm: 	STF	R0,*+AR5(ORADY)
-    // asm: 	FLOAT	180,R0
-    // asm: 	NEGF	R1			;opposite side
-    // asm: 	STF	R1,*+AR5(OVELX)
-    // asm: 	STF	R2,*+AR5(OVELY)
-    // asm: 	STF	R3,*+AR5(OVELZ)
-    // asm: 	LDI	PLYR_C|PLYR_FLAMES_S,R0
-    // asm: 	STI	R0,*+AR5(OID)
-    // asm: 	LDI	AR4,AR2
-    // asm: 	CALL	OBJ_INSERT
-    // asm: 	LDI	AR5,AR2
-    // asm: 	CALL	OBJ_INSERT
-    // asm: 	LDI	9-1,R5
+    // asm 0000ADD5: 	LDI	@CHOOSENCAR,R0
+    // asm 0000ADD6: 	MPYI	3,R0
+    // asm 0000ADD7: 	ADDI	@FLAME_POSI,R0
+    // asm 0000ADD8: 	LDI	R0,AR0
+    // asm 0000ADD9: 	FLOAT	*+AR0(X),R1
+    // asm 0000ADDA: 	FLOAT	*+AR0(Y),R2
+    // asm 0000ADDB: 	FLOAT	*+AR0(Z),R3
+    // asm 0000ADDC: 	STF	R1,*+AR4(OVELX)
+    // asm 0000ADDD: 	STF	R2,*+AR4(OVELY)
+    // asm 0000ADDE: 	STF	R3,*+AR4(OVELZ)
+    // asm 0000ADDF: 	LDI	PLYR_C|PLYR_FLAMES_S,R0
+    // asm 0000ADE0: 	STI	R0,*+AR4(OID)
+    // asm 0000ADE1: 	CALL	OBJ_GET
+    // asm 0000ADE2: 	BC	FLAME_DIE
+    // asm 0000ADE3: 	LDI	AR0,AR5			;Right frame
+    // asm 0000ADE4: 	LDF	PI,R0
+    // asm 0000ADE5: 	STF	R0,*+AR5(ORADY)
+    // asm 0000ADE6: 	FLOAT	180,R0
+    // asm 0000ADE7: 	NEGF	R1			;opposite side
+    // asm 0000ADE8: 	STF	R1,*+AR5(OVELX)
+    // asm 0000ADE9: 	STF	R2,*+AR5(OVELY)
+    // asm 0000ADEA: 	STF	R3,*+AR5(OVELZ)
+    // asm 0000ADEB: 	LDI	PLYR_C|PLYR_FLAMES_S,R0
+    // asm 0000ADEC: 	STI	R0,*+AR5(OID)
+    // asm 0000ADED: 	LDI	AR4,AR2
+    // asm 0000ADEE: 	CALL	OBJ_INSERT
+    // asm 0000ADEF: 	LDI	AR5,AR2
+    // asm 0000ADF0: 	CALL	OBJ_INSERT
+    // asm 0000ADF1: 	LDI	9-1,R5
 FLAME_ANI_LOOP:
-    // asm: 	LDI	*+AR6(OCARBLK),AR1
-    // asm: 	LDI	*+AR1(CAR_SPIN),R0
-    // asm: 	BNZ	FLAME_ANIX			;YES, the kill the flames
-    // asm: 	LDI	*+AR7(CARBODY_MATRIX),AR2
-    // asm: 	LDI	AR6,R2
-    // asm: 	ADDI	OMATRIX,R2
-    // asm: 	LDI	@MATRIXAI,R3
-    // asm: 	CALL	CONCATMATV
-    // asm: 	LDI	@MATRIXAI,AR3
-    // asm: 	LDI	AR4,AR0
-    // asm: 	LDI	*+AR7(FRAME_ON),IR0
-    // asm: 	LDI	@FLAMEANII,AR1
-    // asm: 	CALL	animate_child
-    // asm: 	LDI	@MATRIXAI,AR3
-    // asm: 	LDI	*+AR7(FRAME_ON),IR0
-    // asm: 	LDI	@FLAMEANII,AR1
-    // asm: 	LDI	AR5,AR0
-    // asm: 	CALL	animate_child
-    // asm: 	STI	R0,*+AR7(FRAME_ON)
-    // asm: 	SLEEP	1
-    // asm: 	SUBI	1,R5
-    // asm: 	BP	FLAME_ANI_LOOP
+    // asm 0000ADF2: 	LDI	*+AR6(OCARBLK),AR1
+    // asm 0000ADF3: 	LDI	*+AR1(CAR_SPIN),R0
+    // asm 0000ADF4: 	BNZ	FLAME_ANIX			;YES, the kill the flames
+    // asm 0000ADF5: 	LDI	*+AR7(CARBODY_MATRIX),AR2
+    // asm 0000ADF6: 	LDI	AR6,R2
+    // asm 0000ADF7: 	ADDI	OMATRIX,R2
+    // asm 0000ADF8: 	LDI	@MATRIXAI,R3
+    // asm 0000ADF9: 	CALL	CONCATMATV
+    // asm 0000ADFA: 	LDI	@MATRIXAI,AR3
+    // asm 0000ADFB: 	LDI	AR4,AR0
+    // asm 0000ADFC: 	LDI	*+AR7(FRAME_ON),IR0
+    // asm 0000ADFD: 	LDI	@FLAMEANII,AR1
+    // asm 0000ADFE: 	CALL	animate_child
+    // asm 0000ADFF: 	LDI	@MATRIXAI,AR3
+    // asm 0000AE00: 	LDI	*+AR7(FRAME_ON),IR0
+    // asm 0000AE01: 	LDI	@FLAMEANII,AR1
+    // asm 0000AE02: 	LDI	AR5,AR0
+    // asm 0000AE03: 	CALL	animate_child
+    // asm 0000AE04: 	STI	R0,*+AR7(FRAME_ON)
+    // asm 0000AE05: 	SLEEP	1
+    // asm 0000AE07: 	SUBI	1,R5
+    // asm 0000AE08: 	BP	FLAME_ANI_LOOP
 FLAME_ANIX:
-    // asm: 	LDI	PLYR_C|PLYR_FLAMES_S,AR2
-    // asm: 	CALL	OBJ_FIND_FIRST
-    // asm: 	BNC	FLANX1
-    // asm: 	LDI	AR0,AR2
-    // asm: 	CALL	OBJ_DELETE
-    // asm: 	BR	FLAME_ANIX
+    // asm 0000AE09: 	LDI	PLYR_C|PLYR_FLAMES_S,AR2
+    // asm 0000AE0A: 	CALL	OBJ_FIND_FIRST
+    // asm 0000AE0B: 	BNC	FLANX1
+    // asm 0000AE0C: 	LDI	AR0,AR2
+    // asm 0000AE0D: 	CALL	OBJ_DELETE
+    // asm 0000AE0E: 	BR	FLAME_ANIX
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAME_PRC", 0, 0);
     UNIMPL();
 }
@@ -144,7 +144,7 @@ FLAME_ANIX:
 void FLANX1(void)
 {
 FLAME_DIE:
-    // asm: 	DIE
+    // asm 0000AE0F: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLANX1", 0, 0);
     UNIMPL();
 }
@@ -153,128 +153,128 @@ void animate_child(void)
 {
     // ;Set the Frame
 set_frame:
-    // asm: 	LDI	*+AR1(IR0),R1
-    // asm: 	LDIN	0,IR0
-    // asm: 	BN	set_frame
-    // asm: 	ADDI	1,IR0
-    // asm: 	STI	R1,*+AR0(OROMDATA)
-    // asm: 	PUSH	IR0
+    // asm 0000AE10: 	LDI	*+AR1(IR0),R1
+    // asm 0000AE11: 	LDIN	0,IR0
+    // asm 0000AE12: 	BN	set_frame
+    // asm 0000AE13: 	ADDI	1,IR0
+    // asm 0000AE14: 	STI	R1,*+AR0(OROMDATA)
+    // asm 0000AE15: 	PUSH	IR0
     // ;Set the position reletive to the parent object.
-    // asm: 	LDI	AR3,R2
-    // asm: 	LDI	AR0,AR2
-    // asm: 	ADDI	OMATRIX,AR2
-    // asm: 	CALL	CPYMAT
-    // asm: 	LDI	AR0,AR2		;rotate the position reletive to parent
-    // asm: 	ADDI	OVELX,AR2
-    // asm: 	LDI	AR0,R2			;Source 3X3
-    // asm: 	ADDI	OMATRIX,R2
-    // asm: 	LDI	AR0,R3			;Dest 1X3
-    // asm: 	ADDI	OPOSX,R3
-    // asm: 	CALL	MATRIX_MUL
-    // asm: 	LDF	*+AR6(OPOSX),R2		;Set the position
-    // asm: 	ADDF	*+AR0(OPOSX),R2
-    // asm: 	STF	R2,*+AR0(OPOSX)
-    // asm: 	LDF	*+AR6(OPOSY),R2
-    // asm: 	ADDF	*+AR0(OPOSY),R2
-    // asm: 	STF	R2,*+AR0(OPOSY)
-    // asm: 	LDF	*+AR6(OPOSZ),R2
-    // asm: 	ADDF	*+AR0(OPOSZ),R2
-    // asm: 	STF	R2,*+AR0(OPOSZ)
-    // asm: 	LDI	@MATRIXBI,AR2
-    // asm: 	LDI	AR0,R2
-    // asm: 	ADDI	ORADX,R2
-    // asm: 	CALL	FIND_MATRIX
-    // asm: 	LDI	AR3,AR2
-    // asm: 	LDI	@MATRIXBI,R2
-    // asm: 	LDI	AR0,R3
-    // asm: 	ADDI	OMATRIX,R3
-    // asm: 	CALL	CONCATMATV
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 0000AE16: 	LDI	AR3,R2
+    // asm 0000AE17: 	LDI	AR0,AR2
+    // asm 0000AE18: 	ADDI	OMATRIX,AR2
+    // asm 0000AE19: 	CALL	CPYMAT
+    // asm 0000AE1A: 	LDI	AR0,AR2		;rotate the position reletive to parent
+    // asm 0000AE1B: 	ADDI	OVELX,AR2
+    // asm 0000AE1C: 	LDI	AR0,R2			;Source 3X3
+    // asm 0000AE1D: 	ADDI	OMATRIX,R2
+    // asm 0000AE1E: 	LDI	AR0,R3			;Dest 1X3
+    // asm 0000AE1F: 	ADDI	OPOSX,R3
+    // asm 0000AE20: 	CALL	MATRIX_MUL
+    // asm 0000AE21: 	LDF	*+AR6(OPOSX),R2		;Set the position
+    // asm 0000AE22: 	ADDF	*+AR0(OPOSX),R2
+    // asm 0000AE23: 	STF	R2,*+AR0(OPOSX)
+    // asm 0000AE24: 	LDF	*+AR6(OPOSY),R2
+    // asm 0000AE25: 	ADDF	*+AR0(OPOSY),R2
+    // asm 0000AE26: 	STF	R2,*+AR0(OPOSY)
+    // asm 0000AE27: 	LDF	*+AR6(OPOSZ),R2
+    // asm 0000AE28: 	ADDF	*+AR0(OPOSZ),R2
+    // asm 0000AE29: 	STF	R2,*+AR0(OPOSZ)
+    // asm 0000AE2A: 	LDI	@MATRIXBI,AR2
+    // asm 0000AE2B: 	LDI	AR0,R2
+    // asm 0000AE2C: 	ADDI	ORADX,R2
+    // asm 0000AE2D: 	CALL	FIND_MATRIX
+    // asm 0000AE2E: 	LDI	AR3,AR2
+    // asm 0000AE2F: 	LDI	@MATRIXBI,R2
+    // asm 0000AE30: 	LDI	AR0,R3
+    // asm 0000AE31: 	ADDI	OMATRIX,R3
+    // asm 0000AE32: 	CALL	CONCATMATV
+    // asm 0000AE33: 	POP	R0
+    // asm 0000AE34: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "animate_child", 0, 0);
     UNIMPL();
 }
 
 void FLAMESORT(void)
 {
-    // asm: 	LDI	@OACTIVE,AR0
-    // asm: 	CMPI	0,AR0
-    // asm: 	BEQ	FLMSORTX		;NO LIST... NO GO
-    // asm: FLMSORT_LOOP
-    // asm: 	LDI	PLYR_C|PLYR_FLAMES_S,R1
-    // asm: 	CALL	FIND_NEXT_OBJ
-    // asm: 	BC	FLMSORTX
-    // asm: 	LDI	AR0,AR4
-    // asm: 	CALL	FIND_NEXT_OBJ
-    // asm: 	BC	FLMSORTX
-    // asm: 	LDI	AR0,AR5
-    // asm: 	LDI	*+AR4(OFLAGS),R0	;SAVE the flages
-    // asm: 	LDI	*+AR5(OFLAGS),R1	;SAVE the flages
-    // asm: 	LDI	AR4,AR2
-    // asm: 	CALL	OBJ_PULL
-    // asm: 	LDI	AR5,AR2
-    // asm: 	CALL	OBJ_PULL
-    // asm: 	STI	R0,*+AR4(OFLAGS)	;RESTORE the flags
-    // asm: 	STI	R1,*+AR5(OFLAGS)	;RESTORE the flags
-    // asm: 	LDI	PLYR_C,AR2
-    // asm: 	CALL	OBJ_FIND_FIRST
-    // asm: 	BNC	FLMSORTX		;NO PLAYER?
-    // asm: 	STI	AR5,*AR4		;Link flame2 to flame1
-    // asm: 	LDI	*AR0,R0			;Get link to next object
-    // asm: 	STI	AR4,*AR0		;link the flames to the players object
-    // asm: 	STI	R0,*AR5			;link back in the object behind the player
+    // asm 0000AE35: 	LDI	@OACTIVE,AR0
+    // asm 0000AE36: 	CMPI	0,AR0
+    // asm 0000AE37: 	BEQ	FLMSORTX		;NO LIST... NO GO
+    // asm 0000AE38: FLMSORT_LOOP
+    // asm 0000AE38: 	LDI	PLYR_C|PLYR_FLAMES_S,R1
+    // asm 0000AE39: 	CALL	FIND_NEXT_OBJ
+    // asm 0000AE3A: 	BC	FLMSORTX
+    // asm 0000AE3B: 	LDI	AR0,AR4
+    // asm 0000AE3C: 	CALL	FIND_NEXT_OBJ
+    // asm 0000AE3D: 	BC	FLMSORTX
+    // asm 0000AE3E: 	LDI	AR0,AR5
+    // asm 0000AE3F: 	LDI	*+AR4(OFLAGS),R0	;SAVE the flages
+    // asm 0000AE40: 	LDI	*+AR5(OFLAGS),R1	;SAVE the flages
+    // asm 0000AE41: 	LDI	AR4,AR2
+    // asm 0000AE42: 	CALL	OBJ_PULL
+    // asm 0000AE43: 	LDI	AR5,AR2
+    // asm 0000AE44: 	CALL	OBJ_PULL
+    // asm 0000AE45: 	STI	R0,*+AR4(OFLAGS)	;RESTORE the flags
+    // asm 0000AE46: 	STI	R1,*+AR5(OFLAGS)	;RESTORE the flags
+    // asm 0000AE47: 	LDI	PLYR_C,AR2
+    // asm 0000AE48: 	CALL	OBJ_FIND_FIRST
+    // asm 0000AE49: 	BNC	FLMSORTX		;NO PLAYER?
+    // asm 0000AE4A: 	STI	AR5,*AR4		;Link flame2 to flame1
+    // asm 0000AE4B: 	LDI	*AR0,R0			;Get link to next object
+    // asm 0000AE4C: 	STI	AR4,*AR0		;link the flames to the players object
+    // asm 0000AE4D: 	STI	R0,*AR5			;link back in the object behind the player
 FLMSORTX:
-    // asm: 	RETS
+    // asm 0000AE4E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAMESORT", 0, 0);
     UNIMPL();
 }
 
 void GETCARBODY(void)
 {
-    // asm: 	LDI	*+AR2(ODYNALIST),R0
+    // asm 0000AE4F: 	LDI	*+AR2(ODYNALIST),R0
     // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
 FBLOOP:
-    // asm: 	LDI	R0,AR0
-    // asm: 	LDI	*+AR0(DYNAFLAG),R1
-    // asm: 	BZ	FOUND_BODY		;0 = car body
-    // asm: 	LDI	*AR0,R0
-    // asm: 	BR	FBLOOP
+    // asm 0000AE50: 	LDI	R0,AR0
+    // asm 0000AE51: 	LDI	*+AR0(DYNAFLAG),R1
+    // asm 0000AE52: 	BZ	FOUND_BODY		;0 = car body
+    // asm 0000AE53: 	LDI	*AR0,R0
+    // asm 0000AE54: 	BR	FBLOOP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCARBODY", 0, 0);
     UNIMPL();
 }
 
 void FOUND_BODY(void)
 {
-    // asm: 	ADDI	DYNAMATRIX,AR0
-    // asm: 	RETS
+    // asm 0000AE55: 	ADDI	DYNAMATRIX,AR0
+    // asm 0000AE56: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FOUND_BODY", 0, 0);
     UNIMPL();
 }
 
 void FIND_NEXT_OBJ(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	PUSH	AR5
-    // asm: 	LDI	*AR0,AR5
+    // asm 0000AE57: 	PUSH	R0
+    // asm 0000AE58: 	PUSHF	R0
+    // asm 0000AE59: 	PUSH	AR5
+    // asm 0000AE5A: 	LDI	*AR0,AR5
 OFN:
-    // asm: LDI	AR5,R0
-    // asm: 	LDI	R0,AR0
-    // asm: 	BZ	OFNX		;NONE FOUND. This routine is passive
-    // asm: 	LDI	*AR0,AR5
-    // asm: 	LDI	*+AR0(OID),R0
-    // asm: 	CMPI	R1,R0
-    // asm: 	BNE	OFN
+    // asm 0000AE5B: LDI	AR5,R0
+    // asm 0000AE5C: 	LDI	R0,AR0
+    // asm 0000AE5D: 	BZ	OFNX		;NONE FOUND. This routine is passive
+    // asm 0000AE5E: 	LDI	*AR0,AR5
+    // asm 0000AE5F: 	LDI	*+AR0(OID),R0
+    // asm 0000AE60: 	CMPI	R1,R0
+    // asm 0000AE61: 	BNE	OFN
 OFNX:
-    // asm: 	CLRC
-    // asm: 	CMPI	0,AR0
-    // asm: 	BNE	OFNX1
-    // asm: 	SETC
+    // asm 0000AE62: 	CLRC
+    // asm 0000AE63: 	CMPI	0,AR0
+    // asm 0000AE64: 	BNE	OFNX1
+    // asm 0000AE65: 	SETC
 OFNX1:
-    // asm: 	POP	AR5
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 0000AE66: 	POP	AR5
+    // asm 0000AE67: 	POPF	R0
+    // asm 0000AE68: 	POP	R0
+    // asm 0000AE69: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_NEXT_OBJ", 0, 0);
     UNIMPL();
 }

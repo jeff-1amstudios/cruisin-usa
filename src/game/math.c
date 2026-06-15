@@ -227,9 +227,9 @@ int LOCTEMPER_MAT2[12];
  */
 void _COSI(void)
 {
-    // asm: 	LDF	R2,R0
-    // asm: 	ADDF	@HALFPII,R0	;offset for COS
-    // asm: 	B	SINE0
+    // asm 0000952D: 	LDF	R2,R0
+    // asm 0000952E: 	ADDF	@HALFPII,R0	;offset for COS
+    // asm 0000952F: 	B	SINE0
     // *
     // *SINE FUNCTION
     // *
@@ -243,46 +243,46 @@ void _COSI(void)
 
 void _SINE(void)
 {
-    // asm: 	LDF	R2,R0
+    // asm 00009530: 	LDF	R2,R0
 SINE0:
-    // asm: PUSH	AR0
-    // asm: 	BGE	NOTNEG
-    // asm: 	NEGF	R0		;fix negative case
-    // asm: 	ADDF	@PII,R0
+    // asm 00009531: PUSH	AR0
+    // asm 00009532: 	BGE	NOTNEG
+    // asm 00009533: 	NEGF	R0		;fix negative case
+    // asm 00009534: 	ADDF	@PII,R0
 NOTNEG:
-    // asm: MPYF	@FORMULA,R0
-    // asm: 	ADDF	0.5,R0		;ROUND THE SUCKER
-    // asm: 	FIX	R0		;get a raw index
-    // asm: 	AND	3FFh,R0
-    // asm: 	CMPI	512,R0
-    // asm: 	BLT	ALLOK
-    // asm: 	SUBI	512,R0
-    // asm: 	CMPI	256,R0
-    // asm: 	BLT	PERFECT2
-    // asm: 	SUBI	512,R0
-    // asm: 	NEGI	R0,R0
+    // asm 00009535: MPYF	@FORMULA,R0
+    // asm 00009536: 	ADDF	0.5,R0		;ROUND THE SUCKER
+    // asm 00009537: 	FIX	R0		;get a raw index
+    // asm 00009538: 	AND	3FFh,R0
+    // asm 00009539: 	CMPI	512,R0
+    // asm 0000953A: 	BLT	ALLOK
+    // asm 0000953B: 	SUBI	512,R0
+    // asm 0000953C: 	CMPI	256,R0
+    // asm 0000953D: 	BLT	PERFECT2
+    // asm 0000953E: 	SUBI	512,R0
+    // asm 0000953F: 	NEGI	R0,R0
 PERFECT2:
-    // asm: 	ADDI	@SINTABLEI,R0
-    // asm: 	LDI	R0,AR0
-    // asm: 	NEGF	*AR0,R0
-    // asm: 	POP	AR0
-    // asm: 	RETS
+    // asm 00009540: 	ADDI	@SINTABLEI,R0
+    // asm 00009541: 	LDI	R0,AR0
+    // asm 00009542: 	NEGF	*AR0,R0
+    // asm 00009543: 	POP	AR0
+    // asm 00009544: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_SINE", 0, 0);
     UNIMPL();
 }
 
 void ALLOK(void)
 {
-    // asm: 	CMPI	256,R0
-    // asm: 	BLT	PERFECT
-    // asm: 	SUBI	512,R0
-    // asm: 	NEGI	R0,R0
+    // asm 00009545: 	CMPI	256,R0
+    // asm 00009546: 	BLT	PERFECT
+    // asm 00009547: 	SUBI	512,R0
+    // asm 00009548: 	NEGI	R0,R0
 PERFECT:
-    // asm: ADDI	@SINTABLEI,R0
-    // asm: 	LDI	R0,AR0
-    // asm: 	LDF	*AR0,R0
-    // asm: 	POP	AR0
-    // asm: 	RETS
+    // asm 00009549: ADDI	@SINTABLEI,R0
+    // asm 0000954A: 	LDI	R0,AR0
+    // asm 0000954B: 	LDF	*AR0,R0
+    // asm 0000954C: 	POP	AR0
+    // asm 0000954D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOK", 0, 0);
     UNIMPL();
 }
@@ -297,18 +297,18 @@ PERFECT:
  */
 void NORMITS(void)
 {
-    // asm: 	MPYF	@RADFORM,R2
-    // asm: 	FIX	R2
-    // asm: 	LS	16,R2
-    // asm: 	RS	16,R2
-    // asm: 	CMPI	7FFFH,R2
-    // asm: 	BLT	NMS1
-    // asm: 	ADDI	8000H,R2
-    // asm: 	ADDI	8000H,R2
+    // asm 00009556: 	MPYF	@RADFORM,R2
+    // asm 00009557: 	FIX	R2
+    // asm 00009558: 	LS	16,R2
+    // asm 00009559: 	RS	16,R2
+    // asm 0000955A: 	CMPI	7FFFH,R2
+    // asm 0000955B: 	BLT	NMS1
+    // asm 0000955C: 	ADDI	8000H,R2
+    // asm 0000955D: 	ADDI	8000H,R2
 NMS1:
-    // asm: 	FLOAT	R2
-    // asm: 	MPYF	@RADFORMI,R2
-    // asm: 	RETS
+    // asm 0000955E: 	FLOAT	R2
+    // asm 0000955F: 	MPYF	@RADFORMI,R2
+    // asm 00009560: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NORMITS", 0, 0);
     UNIMPL();
 }
@@ -322,14 +322,14 @@ NMS1:
  */
 void NORMIT(void)
 {
-    // asm: 	MPYF	@RADFORM,R2
-    // asm: 	FIX	R2
-    // asm: 	LS	16,R2
-    // asm: 	RS	16,R2
-    // asm: 	FLOAT	R2
-    // asm: 	MPYF	@RADFORMI,R2
-    // asm: NORMCHKL
-    // asm: 	RETS
+    // asm 00009561: 	MPYF	@RADFORM,R2
+    // asm 00009562: 	FIX	R2
+    // asm 00009563: 	LS	16,R2
+    // asm 00009564: 	RS	16,R2
+    // asm 00009565: 	FLOAT	R2
+    // asm 00009566: 	MPYF	@RADFORMI,R2
+    // asm 00009567: NORMCHKL
+    // asm 00009567: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NORMIT", 0, 0);
     UNIMPL();
 }
@@ -347,50 +347,50 @@ void NORMIT(void)
  */
 void ARCTANF(void)
 {
-    // asm: _arctanf
-    // asm: 	PUSH	R1
-    // asm: 	PUSHF	R1
-    // asm: 	PUSH	R4
-    // asm: 	PUSH	AR0
+    // asm 00009568: _arctanf
+    // asm 00009568: 	PUSH	R1
+    // asm 00009569: 	PUSHF	R1
+    // asm 0000956A: 	PUSH	R4
+    // asm 0000956B: 	PUSH	AR0
     // 	;GET QUADRANT
-    // asm: 	LDI	0,R1
-    // asm: 	LDF	R2,R2
-    // asm: 	LDIN	2,R1		;GET SIGN BITS
-    // asm: 	LDI	0,R4
-    // asm: 	LDF	R3,R3
-    // asm: 	LDIN	4,R4
-    // asm: 	ADDI	R1,R4
+    // asm 0000956C: 	LDI	0,R1
+    // asm 0000956D: 	LDF	R2,R2
+    // asm 0000956E: 	LDIN	2,R1		;GET SIGN BITS
+    // asm 0000956F: 	LDI	0,R4
+    // asm 00009570: 	LDF	R3,R3
+    // asm 00009571: 	LDIN	4,R4
+    // asm 00009572: 	ADDI	R1,R4
     // 	;CHECK Y>X
-    // asm: 	ABSF	R2,R0
-    // asm: 	ABSF	R3,R1
-    // asm: 	CMPF	R0,R1
-    // asm: 	BLT	ATF0
-    // asm: 	BD	AT1
-    // asm: 	LDF	R2,R0
-    // asm: 	LDF	R3,R1
-    // asm: 	ADDI 	1,R4 		;R4 = OCTANT
+    // asm 00009573: 	ABSF	R2,R0
+    // asm 00009574: 	ABSF	R3,R1
+    // asm 00009575: 	CMPF	R0,R1
+    // asm 00009576: 	BLT	ATF0
+    // asm 00009577: 	BD	AT1
+    // asm 00009578: 	LDF	R2,R0
+    // asm 00009579: 	LDF	R3,R1
+    // asm 0000957A: 	ADDI 	1,R4 		;R4 = OCTANT
     // 	;---->BD	AT1
 ATF0:
-    // asm: 	LDF	R2,R1
-    // asm: 	LDF	R3,R0
+    // asm 0000957B: 	LDF	R2,R1
+    // asm 0000957C: 	LDF	R3,R0
 AT1:
-    // asm: 	CALL	DIV_F
-    // asm: 	ABSF	R0
-    // asm: 	LDF	128.0,R1
-    // asm: 	MPYF	R1,R0
-    // asm: 	FIX	R0,AR0
-    // asm: 	ADDI	@ATTABV,AR0
-    // asm: 	LDF	*AR0,R0
-    // asm: 	LSH	1,R4
-    // asm: 	LDI	@OFFTABV,AR0
-    // asm: 	ADDI	R4,AR0
-    // asm: 	MPYF	*AR0++,R0
-    // asm: 	ADDF	*AR0,R0
-    // asm: 	POP	AR0
-    // asm: 	POP	R4
-    // asm:       	POPF	R1
-    // asm:       	POP	R1
-    // asm: 	RETS
+    // asm 0000957D: 	CALL	DIV_F
+    // asm 0000957E: 	ABSF	R0
+    // asm 0000957F: 	LDF	128.0,R1
+    // asm 00009580: 	MPYF	R1,R0
+    // asm 00009581: 	FIX	R0,AR0
+    // asm 00009582: 	ADDI	@ATTABV,AR0
+    // asm 00009583: 	LDF	*AR0,R0
+    // asm 00009584: 	LSH	1,R4
+    // asm 00009585: 	LDI	@OFFTABV,AR0
+    // asm 00009586: 	ADDI	R4,AR0
+    // asm 00009587: 	MPYF	*AR0++,R0
+    // asm 00009588: 	ADDF	*AR0,R0
+    // asm 00009589: 	POP	AR0
+    // asm 0000958A: 	POP	R4
+    // asm 0000958B:       	POPF	R1
+    // asm 0000958C:       	POP	R1
+    // asm 0000958D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ARCTANF", 0, 0);
     UNIMPL();
 }
@@ -405,60 +405,60 @@ AT1:
  */
 void FIND_MATRIX(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSHF	R0
-    // asm: 	PUSHF	R1
-    // asm: 	PUSHF	R2
-    // asm: 	PUSH	AR1
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR3
+    // asm 00009591: 	PUSH	R0
+    // asm 00009592: 	PUSH	R1
+    // asm 00009593: 	PUSH	R2
+    // asm 00009594: 	PUSHF	R0
+    // asm 00009595: 	PUSHF	R1
+    // asm 00009596: 	PUSHF	R2
+    // asm 00009597: 	PUSH	AR1
+    // asm 00009598: 	PUSH	AR2
+    // asm 00009599: 	PUSH	AR3
     // 	;GET SINES AND COSINES
-    // asm: 	LDI	@LOCTEMPER_MAT2I,AR1
-    // asm: 	LDI	R2,AR3
-    // asm: 	LDI	2,RC
-    // asm: 	RPTB	FM1
-    // asm: 	LDF	*AR3++,R2
-    // asm: 	CALL	_SINE
-    // asm: 	STF	R0,*+AR1(3)
-    // asm: 	CALL	_COSI
+    // asm 0000959A: 	LDI	@LOCTEMPER_MAT2I,AR1
+    // asm 0000959B: 	LDI	R2,AR3
+    // asm 0000959C: 	LDI	2,RC
+    // asm 0000959D: 	RPTB	FM1
+    // asm 0000959E: 	LDF	*AR3++,R2
+    // asm 0000959F: 	CALL	_SINE
+    // asm 000095A0: 	STF	R0,*+AR1(3)
+    // asm 000095A1: 	CALL	_COSI
 FM1:
-    // asm: STF	R0,*AR1++
-    // asm: 	NOP	*--AR1(2)			;CENTER COSINE INDEX
-    // asm: 	LDI	AR1,AR3
-    // asm: 	ADDI	3,AR3				;CENTER SINE INDEX
-    // asm: 	MPYF	*+AR1(1),*+AR1(0),R0		;CZ*CY
-    // asm: 	STF	R0,*AR2++		 	;A(0,0)=CZ*CY
-    // asm: 	MPYF	*+AR3(1),*+AR1(0),R0		;SZ*CY
-    // asm: 	NEGF	*+AR3(0),R2			;-SY
-    // asm: 	MPYF	*-AR3(1),*+AR3(0),R0		;SX*SY
-    // asm: 	MPYF	*+AR1(1),R0,R1			;SX*SY*CZ
-    // asm: 	MPYF	*-AR1(1),*+AR3(1),R2		;CX*SZ
-    // asm: 	SUBF	R2,R1
-    // asm: 	MPYF	*+AR3(1),R0,R0			;SZ*(SX*SY)
-    // asm: 	MPYF	*-AR1(1),*+AR1(1),R1		;CX*CZ
-    // asm: 	ADDF	R1,R0
-    // asm: 	STF	R0,*AR2++			;A(1,1)= SX*SY*SZ+CX*CZ
-    // asm: 	MPYF	*-AR3(1),*+AR1(0),R0
-    // asm: 	MPYF	*+AR3(0),R1,R1			;SY*(CX*CZ)
-    // asm: 	MPYF	*-AR3(1),*+AR3(1),R0		;SX*SZ
-    // asm: 	ADDF	R1,R0
-    // asm: 	MPYF	*+AR3(0),R2,R2
-    // asm: 	MPYF	*-AR3(1),*+AR1(1),R0
-    // asm: 	MPYF	*-AR1(1),*+AR1(0),R1		;CX*CY
-    // asm: 	STF	R2,*AR2++			;A(2,1)= CX*SY*SZ-SX*CZ
-    // asm: 	STF	R1,*AR2--(8)			;A(2,2)= CX*CY
-    // asm: 	POP	AR3
-    // asm: 	POP	AR2
-    // asm: 	POP	AR1
-    // asm: 	POPF	R3
-    // asm: 	POPF	R2
-    // asm: 	POPF	R1
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	RETS
+    // asm 000095A2: STF	R0,*AR1++
+    // asm 000095A3: 	NOP	*--AR1(2)			;CENTER COSINE INDEX
+    // asm 000095A4: 	LDI	AR1,AR3
+    // asm 000095A5: 	ADDI	3,AR3				;CENTER SINE INDEX
+    // asm 000095A6: 	MPYF	*+AR1(1),*+AR1(0),R0		;CZ*CY
+    // asm 000095A7: 	STF	R0,*AR2++		 	;A(0,0)=CZ*CY
+    // asm 000095A8: 	MPYF	*+AR3(1),*+AR1(0),R0		;SZ*CY
+    // asm 000095A9: 	NEGF	*+AR3(0),R2			;-SY
+    // asm 000095AA: 	MPYF	*-AR3(1),*+AR3(0),R0		;SX*SY
+    // asm 000095AB: 	MPYF	*+AR1(1),R0,R1			;SX*SY*CZ
+    // asm 000095AC: 	MPYF	*-AR1(1),*+AR3(1),R2		;CX*SZ
+    // asm 000095AD: 	SUBF	R2,R1
+    // asm 000095AE: 	MPYF	*+AR3(1),R0,R0			;SZ*(SX*SY)
+    // asm 000095AF: 	MPYF	*-AR1(1),*+AR1(1),R1		;CX*CZ
+    // asm 000095B0: 	ADDF	R1,R0
+    // asm 000095B1: 	STF	R0,*AR2++			;A(1,1)= SX*SY*SZ+CX*CZ
+    // asm 000095B2: 	MPYF	*-AR3(1),*+AR1(0),R0
+    // asm 000095B3: 	MPYF	*+AR3(0),R1,R1			;SY*(CX*CZ)
+    // asm 000095B4: 	MPYF	*-AR3(1),*+AR3(1),R0		;SX*SZ
+    // asm 000095B5: 	ADDF	R1,R0
+    // asm 000095B6: 	MPYF	*+AR3(0),R2,R2
+    // asm 000095B7: 	MPYF	*-AR3(1),*+AR1(1),R0
+    // asm 000095B8: 	MPYF	*-AR1(1),*+AR1(0),R1		;CX*CY
+    // asm 000095B9: 	STF	R2,*AR2++			;A(2,1)= CX*SY*SZ-SX*CZ
+    // asm 000095BA: 	STF	R1,*AR2--(8)			;A(2,2)= CX*CY
+    // asm 000095BB: 	POP	AR3
+    // asm 000095BC: 	POP	AR2
+    // asm 000095BD: 	POP	AR1
+    // asm 000095BE: 	POPF	R3
+    // asm 000095BF: 	POPF	R2
+    // asm 000095C0: 	POPF	R1
+    // asm 000095C1: 	POP	R3
+    // asm 000095C2: 	POP	R2
+    // asm 000095C3: 	POP	R1
+    // asm 000095C4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_MATRIX", 0, 0);
     UNIMPL();
 }
@@ -475,25 +475,25 @@ FM1:
  */
 void FIND_XMATRIX(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	CALL	_COSI
-    // asm: 	STF	R0,*+AR2(A11)
-    // asm: 	STF	R0,*+AR2(A22)
-    // asm: 	CALL	_SINE
-    // asm: 	STF	R0,*+AR2(A12)
-    // asm: 	NEGF	R0
-    // asm: 	STF	R0,*+AR2(A21)
-    // asm: 	LDF	1,R0
-    // asm: 	STF	R0,*+AR2(A00)
-    // asm: 	CLRF	R0
-    // asm: 	STF	R0,*+AR2(A01)
-    // asm: 	STF	R0,*+AR2(A02)
-    // asm: 	STF	R0,*+AR2(A10)
-    // asm: 	STF	R0,*+AR2(A20)
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 000095C5: 	PUSH	R0
+    // asm 000095C6: 	PUSHF	R0
+    // asm 000095C7: 	CALL	_COSI
+    // asm 000095C8: 	STF	R0,*+AR2(A11)
+    // asm 000095C9: 	STF	R0,*+AR2(A22)
+    // asm 000095CA: 	CALL	_SINE
+    // asm 000095CB: 	STF	R0,*+AR2(A12)
+    // asm 000095CC: 	NEGF	R0
+    // asm 000095CD: 	STF	R0,*+AR2(A21)
+    // asm 000095CE: 	LDF	1,R0
+    // asm 000095CF: 	STF	R0,*+AR2(A00)
+    // asm 000095D0: 	CLRF	R0
+    // asm 000095D1: 	STF	R0,*+AR2(A01)
+    // asm 000095D2: 	STF	R0,*+AR2(A02)
+    // asm 000095D3: 	STF	R0,*+AR2(A10)
+    // asm 000095D4: 	STF	R0,*+AR2(A20)
+    // asm 000095D5: 	POPF	R0
+    // asm 000095D6: 	POP	R0
+    // asm 000095D7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_XMATRIX", 0, 0);
     UNIMPL();
 }
@@ -516,25 +516,25 @@ void FIND_YMATRIX(void)
 
 void _find_Ymatrix(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	CALL	_COSI
-    // asm: 	STF	R0,*+AR2(A00)
-    // asm: 	STF	R0,*+AR2(A22)
-    // asm: 	CALL	_SINE
-    // asm: 	STF	R0,*+AR2(A20)
-    // asm: 	NEGF	R0
-    // asm: 	STF	R0,*+AR2(A02)
-    // asm: 	LDF	1,R0
-    // asm: 	STF	R0,*+AR2(A11)
-    // asm: 	CLRF	R0
-    // asm: 	STF	R0,*+AR2(A01)
-    // asm: 	STF	R0,*+AR2(A10)
-    // asm: 	STF	R0,*+AR2(A12)
-    // asm: 	STF	R0,*+AR2(A21)
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 000095D8: 	PUSH	R0
+    // asm 000095D9: 	PUSHF	R0
+    // asm 000095DA: 	CALL	_COSI
+    // asm 000095DB: 	STF	R0,*+AR2(A00)
+    // asm 000095DC: 	STF	R0,*+AR2(A22)
+    // asm 000095DD: 	CALL	_SINE
+    // asm 000095DE: 	STF	R0,*+AR2(A20)
+    // asm 000095DF: 	NEGF	R0
+    // asm 000095E0: 	STF	R0,*+AR2(A02)
+    // asm 000095E1: 	LDF	1,R0
+    // asm 000095E2: 	STF	R0,*+AR2(A11)
+    // asm 000095E3: 	CLRF	R0
+    // asm 000095E4: 	STF	R0,*+AR2(A01)
+    // asm 000095E5: 	STF	R0,*+AR2(A10)
+    // asm 000095E6: 	STF	R0,*+AR2(A12)
+    // asm 000095E7: 	STF	R0,*+AR2(A21)
+    // asm 000095E8: 	POPF	R0
+    // asm 000095E9: 	POP	R0
+    // asm 000095EA: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_find_Ymatrix", 0, 0);
     UNIMPL();
 }
@@ -551,45 +551,45 @@ void _find_Ymatrix(void)
  */
 void HPFIND_YMATRIX(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSHF	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSHF	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSHF	R3
-    // asm: 	PUSH	R4
-    // asm: 	PUSHF	R4
-    // asm: 	PUSH	R2
-    // asm: 	PUSHF	R2
-    // asm: 	CALL	_HPcos
-    // asm: 	STF	R0,*+AR2(A00)
-    // asm: 	STF	R0,*+AR2(A22)
-    // asm: 	POPF	R2
-    // asm: 	POP	R2
-    // asm: 	CALL	_HPsin
-    // asm: 	STF	R0,*+AR2(A20)
-    // asm: 	NEGF	R0
-    // asm: 	STF	R0,*+AR2(A02)
-    // asm: 	LDF	1,R0
-    // asm: 	STF	R0,*+AR2(A11)
-    // asm: 	CLRF	R0
-    // asm: 	STF	R0,*+AR2(A01)
-    // asm: 	STF	R0,*+AR2(A10)
-    // asm: 	STF	R0,*+AR2(A12)
-    // asm: 	STF	R0,*+AR2(A21)
-    // asm: 	POPF	R4
-    // asm: 	POP	R4
-    // asm: 	POPF	R3
-    // asm: 	POP	R3
-    // asm: 	POPF	R2
-    // asm: 	POP	R2
-    // asm: 	POPF	R1
-    // asm: 	POP	R1
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 000095EB: 	PUSH	R0
+    // asm 000095EC: 	PUSHF	R0
+    // asm 000095ED: 	PUSH	R1
+    // asm 000095EE: 	PUSHF	R1
+    // asm 000095EF: 	PUSH	R2
+    // asm 000095F0: 	PUSHF	R2
+    // asm 000095F1: 	PUSH	R3
+    // asm 000095F2: 	PUSHF	R3
+    // asm 000095F3: 	PUSH	R4
+    // asm 000095F4: 	PUSHF	R4
+    // asm 000095F5: 	PUSH	R2
+    // asm 000095F6: 	PUSHF	R2
+    // asm 000095F7: 	CALL	_HPcos
+    // asm 000095F8: 	STF	R0,*+AR2(A00)
+    // asm 000095F9: 	STF	R0,*+AR2(A22)
+    // asm 000095FA: 	POPF	R2
+    // asm 000095FB: 	POP	R2
+    // asm 000095FC: 	CALL	_HPsin
+    // asm 000095FD: 	STF	R0,*+AR2(A20)
+    // asm 000095FE: 	NEGF	R0
+    // asm 000095FF: 	STF	R0,*+AR2(A02)
+    // asm 00009600: 	LDF	1,R0
+    // asm 00009601: 	STF	R0,*+AR2(A11)
+    // asm 00009602: 	CLRF	R0
+    // asm 00009603: 	STF	R0,*+AR2(A01)
+    // asm 00009604: 	STF	R0,*+AR2(A10)
+    // asm 00009605: 	STF	R0,*+AR2(A12)
+    // asm 00009606: 	STF	R0,*+AR2(A21)
+    // asm 00009607: 	POPF	R4
+    // asm 00009608: 	POP	R4
+    // asm 00009609: 	POPF	R3
+    // asm 0000960A: 	POP	R3
+    // asm 0000960B: 	POPF	R2
+    // asm 0000960C: 	POP	R2
+    // asm 0000960D: 	POPF	R1
+    // asm 0000960E: 	POP	R1
+    // asm 0000960F: 	POPF	R0
+    // asm 00009610: 	POP	R0
+    // asm 00009611: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HPFIND_YMATRIX", 0, 0);
     UNIMPL();
 }
@@ -606,25 +606,25 @@ void HPFIND_YMATRIX(void)
  */
 void FIND_ZMATRIX(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	CALL	_COSI
-    // asm: 	STF	R0,*+AR2(A00)
-    // asm: 	STF	R0,*+AR2(A11)
-    // asm: 	CALL	_SINE
-    // asm: 	STF	R0,*+AR2(A01)
-    // asm: 	NEGF	R0
-    // asm: 	STF	R0,*+AR2(A10)
-    // asm: 	LDF	1,R0
-    // asm: 	STF	R0,*+AR2(A22)
-    // asm: 	CLRF	R0
-    // asm: 	STF	R0,*+AR2(A02)
-    // asm: 	STF	R0,*+AR2(A12)
-    // asm: 	STF	R0,*+AR2(A20)
-    // asm: 	STF	R0,*+AR2(A21)
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00009612: 	PUSH	R0
+    // asm 00009613: 	PUSHF	R0
+    // asm 00009614: 	CALL	_COSI
+    // asm 00009615: 	STF	R0,*+AR2(A00)
+    // asm 00009616: 	STF	R0,*+AR2(A11)
+    // asm 00009617: 	CALL	_SINE
+    // asm 00009618: 	STF	R0,*+AR2(A01)
+    // asm 00009619: 	NEGF	R0
+    // asm 0000961A: 	STF	R0,*+AR2(A10)
+    // asm 0000961B: 	LDF	1,R0
+    // asm 0000961C: 	STF	R0,*+AR2(A22)
+    // asm 0000961D: 	CLRF	R0
+    // asm 0000961E: 	STF	R0,*+AR2(A02)
+    // asm 0000961F: 	STF	R0,*+AR2(A12)
+    // asm 00009620: 	STF	R0,*+AR2(A20)
+    // asm 00009621: 	STF	R0,*+AR2(A21)
+    // asm 00009622: 	POPF	R0
+    // asm 00009623: 	POP	R0
+    // asm 00009624: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_ZMATRIX", 0, 0);
     UNIMPL();
 }
@@ -638,23 +638,23 @@ void FIND_ZMATRIX(void)
  */
 void INITMAT(void)
 {
-    // asm: 	POP	BK			;RETURN ADDRESS
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	LDF	1.0,R0
-    // asm: 	STF	R0,*AR0
-    // asm: 	STF	R0,*+AR0(4)
-    // asm: 	STF	R0,*+AR0(8)
-    // asm: 	LDF	0,R0
-    // asm: 	STF	R0,*+AR0(1)
-    // asm: 	STF	R0,*+AR0(2)
-    // asm: 	STF	R0,*+AR0(3)
-    // asm: 	STF	R0,*+AR0(5)
-    // asm: 	STF	R0,*+AR0(6)
-    // asm: 	BUD	BK
-    // asm: 	STF	R0,*+AR0(7)
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
+    // asm 00009625: 	POP	BK			;RETURN ADDRESS
+    // asm 00009626: 	PUSH	R0
+    // asm 00009627: 	PUSHF	R0
+    // asm 00009628: 	LDF	1.0,R0
+    // asm 00009629: 	STF	R0,*AR0
+    // asm 0000962A: 	STF	R0,*+AR0(4)
+    // asm 0000962B: 	STF	R0,*+AR0(8)
+    // asm 0000962C: 	LDF	0,R0
+    // asm 0000962D: 	STF	R0,*+AR0(1)
+    // asm 0000962E: 	STF	R0,*+AR0(2)
+    // asm 0000962F: 	STF	R0,*+AR0(3)
+    // asm 00009630: 	STF	R0,*+AR0(5)
+    // asm 00009631: 	STF	R0,*+AR0(6)
+    // asm 00009632: 	BUD	BK
+    // asm 00009633: 	STF	R0,*+AR0(7)
+    // asm 00009634: 	POPF	R0
+    // asm 00009635: 	POP	R0
     // 	;---->	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INITMAT", 0, 0);
     UNIMPL();
@@ -673,15 +673,15 @@ void INITMAT(void)
  */
 void VECTLEN(void)
 {
-    // asm: 	LDF	*AR2++,R2
-    // asm: 	MPYF	R2,R2
-    // asm: 	LDF	*AR2++,R1
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R1,R2
-    // asm: 	BUD	SQRT		;fall into SQRT
-    // asm: 	LDF	*AR2--(2),R1
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R1,R2
+    // asm 00009636: 	LDF	*AR2++,R2
+    // asm 00009637: 	MPYF	R2,R2
+    // asm 00009638: 	LDF	*AR2++,R1
+    // asm 00009639: 	MPYF	R1,R1
+    // asm 0000963A: 	ADDF	R1,R2
+    // asm 0000963B: 	BUD	SQRT		;fall into SQRT
+    // asm 0000963C: 	LDF	*AR2--(2),R1
+    // asm 0000963D: 	MPYF	R1,R1
+    // asm 0000963E: 	ADDF	R1,R2
     // 	;---->BU NOW INTO SQRT routine
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VECTLEN", 0, 0);
     UNIMPL();
@@ -697,18 +697,18 @@ void VECTLEN(void)
  */
 void CPYMAT(void)
 {
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	LDI	R2,AR0
-    // asm: 	LDF	*AR0++,R0
-    // asm: 	RPTS	7
-    // asm: 	LDF	*AR0++,R0
-    // asm: 	STF	R0,*AR2--(8)
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
-    // asm: 	POP	AR0
-    // asm: 	RETS
+    // asm 0000963F: 	PUSH	AR0
+    // asm 00009640: 	PUSH	R0
+    // asm 00009641: 	PUSHF	R0
+    // asm 00009642: 	LDI	R2,AR0
+    // asm 00009643: 	LDF	*AR0++,R0
+    // asm 00009644: 	RPTS	7
+    // asm 00009645: 	LDF	*AR0++,R0
+    // asm 00009646: 	STF	R0,*AR2--(8)
+    // asm 00009647: 	POPF	R0
+    // asm 00009648: 	POP	R0
+    // asm 00009649: 	POP	AR0
+    // asm 0000964A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CPYMAT", 0, 0);
     UNIMPL();
 }
@@ -727,29 +727,29 @@ void CPYMAT(void)
  */
 void CPYIMAT(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	PUSH	AR0
-    // asm: 	LDI	R2,AR0
-    // asm: 	LDF	*AR0++(2),R0   	;0->0
-    // asm: 	LDF	*+AR0(1),R0	;3->1
-    // asm: 	STF	R0,*AR2++
-    // asm: 	LDF	*+AR0(4),R0	;6->2
-    // asm: 	LDF	*-AR0(1),R0	;1->3
-    // asm: 	STF	R0,*AR2++
-    // asm: 	LDF	*+AR0(2),R0	;4->4
-    // asm: 	STF	R0,*AR2++
-    // asm: 	LDF	*+AR0(5),R0	;7->5
-    // asm: 	LDF	*+AR0(0),R0	;2->6
-    // asm: 	STF	R0,*AR2++
-    // asm: 	LDF	*+AR0(3),R0	;5->7
-    // asm: 	STF	R0,*AR2++
-    // asm: 	LDF	*+AR0(6),R0	;8->8
-    // asm: 	STF	R0,*AR2--(8)
-    // asm: 	POP	AR0
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 0000964B: 	PUSH	R0
+    // asm 0000964C: 	PUSHF	R0
+    // asm 0000964D: 	PUSH	AR0
+    // asm 0000964E: 	LDI	R2,AR0
+    // asm 0000964F: 	LDF	*AR0++(2),R0   	;0->0
+    // asm 00009650: 	LDF	*+AR0(1),R0	;3->1
+    // asm 00009651: 	STF	R0,*AR2++
+    // asm 00009652: 	LDF	*+AR0(4),R0	;6->2
+    // asm 00009653: 	LDF	*-AR0(1),R0	;1->3
+    // asm 00009654: 	STF	R0,*AR2++
+    // asm 00009655: 	LDF	*+AR0(2),R0	;4->4
+    // asm 00009656: 	STF	R0,*AR2++
+    // asm 00009657: 	LDF	*+AR0(5),R0	;7->5
+    // asm 00009658: 	LDF	*+AR0(0),R0	;2->6
+    // asm 00009659: 	STF	R0,*AR2++
+    // asm 0000965A: 	LDF	*+AR0(3),R0	;5->7
+    // asm 0000965B: 	STF	R0,*AR2++
+    // asm 0000965C: 	LDF	*+AR0(6),R0	;8->8
+    // asm 0000965D: 	STF	R0,*AR2--(8)
+    // asm 0000965E: 	POP	AR0
+    // asm 0000965F: 	POPF	R0
+    // asm 00009660: 	POP	R0
+    // asm 00009661: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CPYIMAT", 0, 0);
     UNIMPL();
 }
@@ -760,16 +760,16 @@ void CPYIMAT(void)
  */
 void CLR_VECTORA(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	LDI	@VECTORAI,AR2
-    // asm: 	CLRF	R0
-    // asm: 	STF	R0,*AR2
-    // asm: 	STF	R0,*+AR2(1)
-    // asm: 	STF	R0,*+AR2(2)
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00009662: 	PUSH	R0
+    // asm 00009663: 	PUSHF	R0
+    // asm 00009664: 	LDI	@VECTORAI,AR2
+    // asm 00009665: 	CLRF	R0
+    // asm 00009666: 	STF	R0,*AR2
+    // asm 00009667: 	STF	R0,*+AR2(1)
+    // asm 00009668: 	STF	R0,*+AR2(2)
+    // asm 00009669: 	POPF	R0
+    // asm 0000966A: 	POP	R0
+    // asm 0000966B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLR_VECTORA", 0, 0);
     UNIMPL();
 }
@@ -789,35 +789,35 @@ void CLR_VECTORA(void)
  */
 void MATRIX_MUL(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSHF	R0
-    // asm: 	PUSH	AR1
-    // asm: 	LDI	R2,AR1	    		;AR1 IS 3X3 MATRIX
-    // asm: 	PUSH	R2
-    // asm: 	PUSHF	R2
-    // asm: 	MPYF	*AR2++,*AR1++,R0
-    // asm: 	MPYF	*AR2,*AR1++,R2
-    // asm: 	MPYF	*+AR2(1),*AR1++,R0
-    // asm: 	MPYF	*-AR2(1),*AR1++,R0
-    // asm: 	PUSHF	R2
-    // asm: 	MPYF	*AR2,*AR1++,R2
-    // asm: 	MPYF	*+AR2(1),*AR1++,R0
-    // asm: 	MPYF	*-AR2(1),*AR1++,R0
-    // asm: 	PUSHF	R2
-    // asm: 	MPYF	*+AR2(1),*+AR1(1),R2
-    // asm: 	MPYF	*AR2--(1),*AR1,R0
-    // asm: 	LDI	R3,AR1
-    // asm: 	ADDF	R2,R0
-    // asm: 	POPF	R2
-    // asm: 	STF	R0,*+AR1(2)
-    // asm: 	POPF	R0
-    // asm: 	STF	R0,*AR1
-    // asm: 	POPF	R2
-    // asm: 	POP	R2
-    // asm: 	POP	AR1
-    // asm: 	POPF	R0
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 0000966C: 	PUSH	R0
+    // asm 0000966D: 	PUSHF	R0
+    // asm 0000966E: 	PUSH	AR1
+    // asm 0000966F: 	LDI	R2,AR1	    		;AR1 IS 3X3 MATRIX
+    // asm 00009670: 	PUSH	R2
+    // asm 00009671: 	PUSHF	R2
+    // asm 00009672: 	MPYF	*AR2++,*AR1++,R0
+    // asm 00009673: 	MPYF	*AR2,*AR1++,R2
+    // asm 00009674: 	MPYF	*+AR2(1),*AR1++,R0
+    // asm 00009675: 	MPYF	*-AR2(1),*AR1++,R0
+    // asm 00009676: 	PUSHF	R2
+    // asm 00009677: 	MPYF	*AR2,*AR1++,R2
+    // asm 00009678: 	MPYF	*+AR2(1),*AR1++,R0
+    // asm 00009679: 	MPYF	*-AR2(1),*AR1++,R0
+    // asm 0000967A: 	PUSHF	R2
+    // asm 0000967B: 	MPYF	*+AR2(1),*+AR1(1),R2
+    // asm 0000967C: 	MPYF	*AR2--(1),*AR1,R0
+    // asm 0000967D: 	LDI	R3,AR1
+    // asm 0000967E: 	ADDF	R2,R0
+    // asm 0000967F: 	POPF	R2
+    // asm 00009680: 	STF	R0,*+AR1(2)
+    // asm 00009681: 	POPF	R0
+    // asm 00009682: 	STF	R0,*AR1
+    // asm 00009683: 	POPF	R2
+    // asm 00009684: 	POP	R2
+    // asm 00009685: 	POP	AR1
+    // asm 00009686: 	POPF	R0
+    // asm 00009687: 	POP	R0
+    // asm 00009688: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MATRIX_MUL", 0, 0);
     UNIMPL();
 }
@@ -827,23 +827,23 @@ void MATRIX_MUL(void)
  */
 void NORMALIZE(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSHF	R0
-    // asm: 	PUSHF	R1
-    // asm: 	CALL	VECTLEN
-    // asm: 	CALL	INV_F30
-    // asm: 	MPYF	*AR2,R0,R1
-    // asm: 	STF	R1,*AR2++
-    // asm: 	MPYF	*AR2,R0,R1
-    // asm: 	STF	R1,*AR2++
-    // asm: 	MPYF	*AR2,R0,R1
-    // asm: 	STF	R1,*AR2--(2)
-    // asm: 	POPF	R1
-    // asm: 	POPF	R0
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00009689: 	PUSH	R0
+    // asm 0000968A: 	PUSH	R1
+    // asm 0000968B: 	PUSHF	R0
+    // asm 0000968C: 	PUSHF	R1
+    // asm 0000968D: 	CALL	VECTLEN
+    // asm 0000968E: 	CALL	INV_F30
+    // asm 0000968F: 	MPYF	*AR2,R0,R1
+    // asm 00009690: 	STF	R1,*AR2++
+    // asm 00009691: 	MPYF	*AR2,R0,R1
+    // asm 00009692: 	STF	R1,*AR2++
+    // asm 00009693: 	MPYF	*AR2,R0,R1
+    // asm 00009694: 	STF	R1,*AR2--(2)
+    // asm 00009695: 	POPF	R1
+    // asm 00009696: 	POPF	R0
+    // asm 00009697: 	POP	R1
+    // asm 00009698: 	POP	R0
+    // asm 00009699: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NORMALIZE", 0, 0);
     UNIMPL();
 }
@@ -860,35 +860,35 @@ void NORMALIZE(void)
 void NORMAT(void)
 {
     // 	;NORMALIZE ROWS
-    // asm: 	LDI	2,RC
-    // asm: 	RPTB	NORMROW
+    // asm 0000969A: 	LDI	2,RC
+    // asm 0000969B: 	RPTB	NORMROW
     // 	;GET LENGTH
-    // asm: 	LDF	*AR2++(3),R2
-    // asm: 	MPYF	R2,R2
-    // asm: 	LDF	*AR2++(3),R1
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R1,R2
-    // asm: 	LDF	*AR2--(6),R1
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R1,R2
-    // asm: 	CALL	SQRT	 	;sqrt(R2)-->R0
-    // asm: 	CALL	INV_F30		;INV(R0)-->R0
-    // asm: 	MPYF	*AR2,R0,R1
-    // asm: 	STF	R1,*AR2++(3)
-    // asm: 	MPYF	*AR2,R0,R1
-    // asm: 	STF	R1,*AR2++(3)
-    // asm: 	MPYF	*AR2,R0,R1
+    // asm 0000969C: 	LDF	*AR2++(3),R2
+    // asm 0000969D: 	MPYF	R2,R2
+    // asm 0000969E: 	LDF	*AR2++(3),R1
+    // asm 0000969F: 	MPYF	R1,R1
+    // asm 000096A0: 	ADDF	R1,R2
+    // asm 000096A1: 	LDF	*AR2--(6),R1
+    // asm 000096A2: 	MPYF	R1,R1
+    // asm 000096A3: 	ADDF	R1,R2
+    // asm 000096A4: 	CALL	SQRT	 	;sqrt(R2)-->R0
+    // asm 000096A5: 	CALL	INV_F30		;INV(R0)-->R0
+    // asm 000096A6: 	MPYF	*AR2,R0,R1
+    // asm 000096A7: 	STF	R1,*AR2++(3)
+    // asm 000096A8: 	MPYF	*AR2,R0,R1
+    // asm 000096A9: 	STF	R1,*AR2++(3)
+    // asm 000096AA: 	MPYF	*AR2,R0,R1
 NORMROW:
-    // asm: STF	R1,*AR2--(5)
-    // asm: 	NOP	*AR2--(3)	;RESTORE AR2 MATRIX POINTER
+    // asm 000096AB: STF	R1,*AR2--(5)
+    // asm 000096AC: 	NOP	*AR2--(3)	;RESTORE AR2 MATRIX POINTER
     // 	;NORMALIZE COLUMNS
-    // asm: 	CALL	NORMALIZE
-    // asm: 	NOP	*AR2++(3)
-    // asm: 	CALL	NORMALIZE
-    // asm: 	NOP	*AR2++(3)
-    // asm: 	CALL	NORMALIZE
-    // asm: 	NOP	*AR2--(6)	;RESTORE AR2
-    // asm: 	RETS
+    // asm 000096AD: 	CALL	NORMALIZE
+    // asm 000096AE: 	NOP	*AR2++(3)
+    // asm 000096AF: 	CALL	NORMALIZE
+    // asm 000096B0: 	NOP	*AR2++(3)
+    // asm 000096B1: 	CALL	NORMALIZE
+    // asm 000096B2: 	NOP	*AR2--(6)	;RESTORE AR2
+    // asm 000096B3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NORMAT", 0, 0);
     UNIMPL();
 }
@@ -906,31 +906,31 @@ NORMROW:
  */
 void GEN_NORMAL(void)
 {
-    // asm: 	PUSH	AR0
-    // asm: 	LDI	*+AR2(1),AR0		;B
-    // asm: 	LDI	*+AR2(2),R3		;C
-    // asm: 	LDI	*AR2,AR2		;A
-    // asm: 	SUBF	*AR0++,*AR2++,R0	;D
-    // asm: 	SUBF	*AR0,*AR2++,R1
-    // asm: 	SUBF	*+AR0(1),*AR2++,R2
-    // asm: 	LDI	R3,AR2			;C
-    // asm: 	SUBF	*-AR0(1),*AR2++,R3	;E
-    // asm: 	SUBF	*AR0,*AR2++,R4
-    // asm: 	SUBF	*+AR0(1),*AR2++,R5
-    // asm: 	POP	AR0
-    // asm: 	MPYF	R1,R5,R6		;dy*ez
-    // asm: 	MPYF	R2,R4,R7		;dz*ey
-    // asm: 	SUBF	R7,R6
-    // asm: 	STF	R6,*AR0
-    // asm: 	MPYF	R2,R3,R6		;dz*ex
-    // asm: 	MPYF	R0,R5,R7		;dx*ez
-    // asm: 	SUBF	R7,R6
-    // asm: 	STF	R6,*+AR0(1)
-    // asm: 	MPYF	R0,R4,R6
-    // asm: 	MPYF	R1,R3,R7
-    // asm: 	SUBF	R7,R6
-    // asm: 	STF	R6,*+AR0(2)
-    // asm: 	RETS
+    // asm 000096B4: 	PUSH	AR0
+    // asm 000096B5: 	LDI	*+AR2(1),AR0		;B
+    // asm 000096B6: 	LDI	*+AR2(2),R3		;C
+    // asm 000096B7: 	LDI	*AR2,AR2		;A
+    // asm 000096B8: 	SUBF	*AR0++,*AR2++,R0	;D
+    // asm 000096B9: 	SUBF	*AR0,*AR2++,R1
+    // asm 000096BA: 	SUBF	*+AR0(1),*AR2++,R2
+    // asm 000096BB: 	LDI	R3,AR2			;C
+    // asm 000096BC: 	SUBF	*-AR0(1),*AR2++,R3	;E
+    // asm 000096BD: 	SUBF	*AR0,*AR2++,R4
+    // asm 000096BE: 	SUBF	*+AR0(1),*AR2++,R5
+    // asm 000096BF: 	POP	AR0
+    // asm 000096C0: 	MPYF	R1,R5,R6		;dy*ez
+    // asm 000096C1: 	MPYF	R2,R4,R7		;dz*ey
+    // asm 000096C2: 	SUBF	R7,R6
+    // asm 000096C3: 	STF	R6,*AR0
+    // asm 000096C4: 	MPYF	R2,R3,R6		;dz*ex
+    // asm 000096C5: 	MPYF	R0,R5,R7		;dx*ez
+    // asm 000096C6: 	SUBF	R7,R6
+    // asm 000096C7: 	STF	R6,*+AR0(1)
+    // asm 000096C8: 	MPYF	R0,R4,R6
+    // asm 000096C9: 	MPYF	R1,R3,R7
+    // asm 000096CA: 	SUBF	R7,R6
+    // asm 000096CB: 	STF	R6,*+AR0(2)
+    // asm 000096CC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GEN_NORMAL", 0, 0);
     UNIMPL();
 }
@@ -956,35 +956,35 @@ void GEN_NORMAL(void)
  */
 void CONCATMATV(void)
 {
-    // asm: 	LDI	R2,AR0
-    // asm: 	LDI	R3,AR1
+    // asm 000096CD: 	LDI	R2,AR0
+    // asm 000096CE: 	LDI	R3,AR1
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CONCATMATV", 0, 0);
     UNIMPL();
 }
 
 void CONCAT201(void)
 {
-    // asm: 	LDI	5,IR1
-    // asm: 	LDI	3,IR0
-    // asm: 	LDI	2,RC
-    // asm: 	RPTB	INLP2
+    // asm 000096CF: 	LDI	5,IR1
+    // asm 000096D0: 	LDI	3,IR0
+    // asm 000096D1: 	LDI	2,RC
+    // asm 000096D2: 	RPTB	INLP2
     // *LOOP THREE TIMES
-    // asm: 	MPYF3	*AR0++,*AR2++(IR0),R0
-    // asm: 	MPYF3	*AR0,*AR2++(IR0),R1
-    // asm: 	MPYF3	*+AR0(1),*AR2--(IR1),R1
-    // asm: 	MPYF3	*-AR0(1),*AR2++(IR0),R0
-    // asm: 	MPYF3	*AR0,*AR2++(IR0),R1
-    // asm: 	STF	R2,*AR1++(1)			;store MATij
-    // asm: 	MPYF3	*+AR0(1),*AR2--(IR1),R1
-    // asm: 	MPYF3	*-AR0(1),*AR2++(IR0),R0
-    // asm: 	MPYF3	*AR0++,*AR2++(IR0),R1
-    // asm: 	STF	R2,*AR1++(1)			;store MATij
-    // asm: 	MPYF3	*AR0++,*AR2--(IR1),R1
-    // asm: 	ADDF	R1,R2
-    // asm: 	STF	R2,*AR1++(1)			;store MATij
+    // asm 000096D3: 	MPYF3	*AR0++,*AR2++(IR0),R0
+    // asm 000096D4: 	MPYF3	*AR0,*AR2++(IR0),R1
+    // asm 000096D5: 	MPYF3	*+AR0(1),*AR2--(IR1),R1
+    // asm 000096D6: 	MPYF3	*-AR0(1),*AR2++(IR0),R0
+    // asm 000096D7: 	MPYF3	*AR0,*AR2++(IR0),R1
+    // asm 000096D8: 	STF	R2,*AR1++(1)			;store MATij
+    // asm 000096D9: 	MPYF3	*+AR0(1),*AR2--(IR1),R1
+    // asm 000096DA: 	MPYF3	*-AR0(1),*AR2++(IR0),R0
+    // asm 000096DB: 	MPYF3	*AR0++,*AR2++(IR0),R1
+    // asm 000096DC: 	STF	R2,*AR1++(1)			;store MATij
+    // asm 000096DD: 	MPYF3	*AR0++,*AR2--(IR1),R1
+    // asm 000096DE: 	ADDF	R1,R2
+    // asm 000096DF: 	STF	R2,*AR1++(1)			;store MATij
 INLP2:
-    // asm: SUBI	3,AR2
-    // asm: 	RETS
+    // asm 000096E0: SUBI	3,AR2
+    // asm 000096E1: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CONCAT201", 0, 0);
     UNIMPL();
 }
@@ -1007,25 +1007,25 @@ INLP2:
  */
 void CONCATMAT(void)
 {
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR1
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	R3
-    // asm: 	LDI	@LOCTEMPER_MATI,R3	;from DIRQ
-    // asm: 	CALL	CONCATMATV
-    // asm: 	POP	AR2
-    // asm: 	LDI	@LOCTEMPER_MATI,R2
-    // asm: 	CALL	CPYMAT
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	POP	AR1
-    // asm: 	POP	AR0
-    // asm: 	RETS
+    // asm 000096E2: 	PUSH	AR0
+    // asm 000096E3: 	PUSH	AR1
+    // asm 000096E4: 	PUSH	AR0
+    // asm 000096E5: 	PUSH	R1
+    // asm 000096E6: 	PUSH	R2
+    // asm 000096E7: 	PUSH	R3
+    // asm 000096E8: 	PUSH	R3
+    // asm 000096E9: 	LDI	@LOCTEMPER_MATI,R3	;from DIRQ
+    // asm 000096EA: 	CALL	CONCATMATV
+    // asm 000096EB: 	POP	AR2
+    // asm 000096EC: 	LDI	@LOCTEMPER_MATI,R2
+    // asm 000096ED: 	CALL	CPYMAT
+    // asm 000096EE: 	POP	R3
+    // asm 000096EF: 	POP	R2
+    // asm 000096F0: 	POP	R1
+    // asm 000096F1: 	POP	R0
+    // asm 000096F2: 	POP	AR1
+    // asm 000096F3: 	POP	AR0
+    // asm 000096F4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CONCATMAT", 0, 0);
     UNIMPL();
 }
@@ -1043,26 +1043,26 @@ void CONCATMAT(void)
  */
 void GETTHETADIFF(void)
 {
-    // asm: 	PUSHF	R1
-    // asm: 	SUBF	R2,R0
-    // asm: 	ABSF	R0,R1
-    // asm: 	CMPF	@PII,R1
-    // asm: 	BLT	NONEG
-    // asm: 	LDF	R0,R0
-    // asm: 	BN	ISNEG
-    // asm: 	SUBF	@TWOPII,R0
-    // asm: 	POPF	R1
-    // asm: 	RETS
+    // asm 000096F5: 	PUSHF	R1
+    // asm 000096F6: 	SUBF	R2,R0
+    // asm 000096F7: 	ABSF	R0,R1
+    // asm 000096F8: 	CMPF	@PII,R1
+    // asm 000096F9: 	BLT	NONEG
+    // asm 000096FA: 	LDF	R0,R0
+    // asm 000096FB: 	BN	ISNEG
+    // asm 000096FC: 	SUBF	@TWOPII,R0
+    // asm 000096FD: 	POPF	R1
+    // asm 000096FE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETTHETADIFF", 0, 0);
     UNIMPL();
 }
 
 void ISNEG(void)
 {
-    // asm: ADDF	@TWOPII,R0
+    // asm 000096FF: ADDF	@TWOPII,R0
 NONEG:
-    // asm: POPF	R1
-    // asm: 	RETS
+    // asm 00009700: POPF	R1
+    // asm 00009701: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ISNEG", 0, 0);
     UNIMPL();
 }
@@ -1092,27 +1092,27 @@ NONEG:
  */
 void DIST_PT2LINE(void)
 {
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSHF	R1
-    // asm: 	PUSHF	R2
-    // asm: 	MPYF	*+AR1(X),*+AR0(A),R0
-    // asm: 	MPYF	*+AR1(Y),*+AR0(B),R1
-    // asm: 	ADDF	R0,R1
-    // asm: 	ADDF	*+AR0(C),R1
-    // asm: 	MPYF	*+AR0(A),*+AR0(A),R0
-    // asm: 	MPYF	*+AR0(B),*+AR0(B),R2
-    // asm: 	ADDF	R0,R2
-    // asm: 	CALL	SQRT
-    // asm: 	LDF	R0,R2
-    // asm: 	LDF	R1,R0
-    // asm: 	LDF	R2,R1
-    // asm: 	CALL	DIV_F
-    // asm: 	POPF	R2
-    // asm: 	POPF	R1
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	RETS
+    // asm 00009702: 	PUSH	R1
+    // asm 00009703: 	PUSH	R2
+    // asm 00009704: 	PUSHF	R1
+    // asm 00009705: 	PUSHF	R2
+    // asm 00009706: 	MPYF	*+AR1(X),*+AR0(A),R0
+    // asm 00009707: 	MPYF	*+AR1(Y),*+AR0(B),R1
+    // asm 00009708: 	ADDF	R0,R1
+    // asm 00009709: 	ADDF	*+AR0(C),R1
+    // asm 0000970A: 	MPYF	*+AR0(A),*+AR0(A),R0
+    // asm 0000970B: 	MPYF	*+AR0(B),*+AR0(B),R2
+    // asm 0000970C: 	ADDF	R0,R2
+    // asm 0000970D: 	CALL	SQRT
+    // asm 0000970E: 	LDF	R0,R2
+    // asm 0000970F: 	LDF	R1,R0
+    // asm 00009710: 	LDF	R2,R1
+    // asm 00009711: 	CALL	DIV_F
+    // asm 00009712: 	POPF	R2
+    // asm 00009713: 	POPF	R1
+    // asm 00009714: 	POP	R2
+    // asm 00009715: 	POP	R1
+    // asm 00009716: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIST_PT2LINE", 0, 0);
     UNIMPL();
 }
@@ -1133,32 +1133,32 @@ void DIST_PT2LINE(void)
  */
 void GETLINE_EQ_2D(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSHF	R0
-    // asm: 	PUSHF	R1
-    // asm: 	PUSHF	R2
-    // asm: 	PUSHF	R3
-    // asm: 	SUBF	*+AR1(X),*+AR0(X),R0
-    // asm: 	SUBF	*+AR1(Y),*+AR0(Y),R1
-    // asm: 	MPYF	R0,*+AR1(X),R2
-    // asm: 	MPYF	R1,*+AR1(Y),R3
-    // asm: 	ADDF	R3,R2
-    // asm: 	NEGF	R2
-    // asm: 	STF	R0,*+AR2(A)
-    // asm: 	STF	R1,*+AR2(B)
-    // asm: 	STF	R2,*+AR2(C)
-    // asm: 	POPF	R3
-    // asm: 	POPF	R2
-    // asm: 	POPF	R1
-    // asm: 	POPF	R0
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00009717: 	PUSH	R0
+    // asm 00009718: 	PUSH	R1
+    // asm 00009719: 	PUSH	R2
+    // asm 0000971A: 	PUSH	R3
+    // asm 0000971B: 	PUSHF	R0
+    // asm 0000971C: 	PUSHF	R1
+    // asm 0000971D: 	PUSHF	R2
+    // asm 0000971E: 	PUSHF	R3
+    // asm 0000971F: 	SUBF	*+AR1(X),*+AR0(X),R0
+    // asm 00009720: 	SUBF	*+AR1(Y),*+AR0(Y),R1
+    // asm 00009721: 	MPYF	R0,*+AR1(X),R2
+    // asm 00009722: 	MPYF	R1,*+AR1(Y),R3
+    // asm 00009723: 	ADDF	R3,R2
+    // asm 00009724: 	NEGF	R2
+    // asm 00009725: 	STF	R0,*+AR2(A)
+    // asm 00009726: 	STF	R1,*+AR2(B)
+    // asm 00009727: 	STF	R2,*+AR2(C)
+    // asm 00009728: 	POPF	R3
+    // asm 00009729: 	POPF	R2
+    // asm 0000972A: 	POPF	R1
+    // asm 0000972B: 	POPF	R0
+    // asm 0000972C: 	POP	R3
+    // asm 0000972D: 	POP	R2
+    // asm 0000972E: 	POP	R1
+    // asm 0000972F: 	POP	R0
+    // asm 00009730: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETLINE_EQ_2D", 0, 0);
     UNIMPL();
 }
@@ -1193,38 +1193,38 @@ void GETLINE_EQ_2D(void)
  */
 void SCALE_MATRIX(void)
 {
-    // asm: 	PUSH	R3
-    // asm: 	PUSHF	R3
-    // asm: 	LDF	*+AR2(A00),R3
-    // asm: 	MPYF	R2,R3
-    // asm: 	STF	R3,*+AR2(A00)
-    // asm: 	LDF	*+AR2(A01),R3
-    // asm: 	MPYF	R2,R3
-    // asm: 	STF	R3,*+AR2(A01)
-    // asm: 	LDF	*+AR2(A02),R3
-    // asm: 	MPYF	R2,R3
-    // asm: 	STF	R3,*+AR2(A02)
-    // asm: 	LDF	*+AR2(A10),R3
-    // asm: 	MPYF	R2,R3
-    // asm: 	STF	R3,*+AR2(A10)
-    // asm: 	LDF	*+AR2(A11),R3
-    // asm: 	MPYF	R2,R3
-    // asm: 	STF	R3,*+AR2(A11)
-    // asm: 	LDF	*+AR2(A12),R3
-    // asm: 	MPYF	R2,R3
-    // asm: 	STF	R3,*+AR2(A12)
-    // asm: 	LDF	*+AR2(A20),R3
-    // asm: 	MPYF	R2,R3
-    // asm: 	STF	R3,*+AR2(A20)
-    // asm: 	LDF	*+AR2(A21),R3
-    // asm: 	MPYF	R2,R3
-    // asm: 	STF	R3,*+AR2(A21)
-    // asm: 	LDF	*+AR2(A22),R3
-    // asm: 	MPYF	R2,R3
-    // asm: 	STF	R3,*+AR2(A22)
-    // asm: 	POPF	R3
-    // asm: 	POP	R3
-    // asm: 	RETS
+    // asm 00009731: 	PUSH	R3
+    // asm 00009732: 	PUSHF	R3
+    // asm 00009733: 	LDF	*+AR2(A00),R3
+    // asm 00009734: 	MPYF	R2,R3
+    // asm 00009735: 	STF	R3,*+AR2(A00)
+    // asm 00009736: 	LDF	*+AR2(A01),R3
+    // asm 00009737: 	MPYF	R2,R3
+    // asm 00009738: 	STF	R3,*+AR2(A01)
+    // asm 00009739: 	LDF	*+AR2(A02),R3
+    // asm 0000973A: 	MPYF	R2,R3
+    // asm 0000973B: 	STF	R3,*+AR2(A02)
+    // asm 0000973C: 	LDF	*+AR2(A10),R3
+    // asm 0000973D: 	MPYF	R2,R3
+    // asm 0000973E: 	STF	R3,*+AR2(A10)
+    // asm 0000973F: 	LDF	*+AR2(A11),R3
+    // asm 00009740: 	MPYF	R2,R3
+    // asm 00009741: 	STF	R3,*+AR2(A11)
+    // asm 00009742: 	LDF	*+AR2(A12),R3
+    // asm 00009743: 	MPYF	R2,R3
+    // asm 00009744: 	STF	R3,*+AR2(A12)
+    // asm 00009745: 	LDF	*+AR2(A20),R3
+    // asm 00009746: 	MPYF	R2,R3
+    // asm 00009747: 	STF	R3,*+AR2(A20)
+    // asm 00009748: 	LDF	*+AR2(A21),R3
+    // asm 00009749: 	MPYF	R2,R3
+    // asm 0000974A: 	STF	R3,*+AR2(A21)
+    // asm 0000974B: 	LDF	*+AR2(A22),R3
+    // asm 0000974C: 	MPYF	R2,R3
+    // asm 0000974D: 	STF	R3,*+AR2(A22)
+    // asm 0000974E: 	POPF	R3
+    // asm 0000974F: 	POP	R3
+    // asm 00009750: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCALE_MATRIX", 0, 0);
     UNIMPL();
 }

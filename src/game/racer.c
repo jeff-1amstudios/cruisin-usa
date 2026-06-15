@@ -158,16 +158,16 @@ int CARTMP1;
 
 void DIFF_CHANGE(void)
 {
-    // asm: 	CMPI	1,R0
-    // asm: 	LDFZ	0.07,R1
-    // asm: 	LDFNZ	-0.035,R1
-    // asm: 	ADDF	@GAMEDIFF,R1
-    // asm: 	CMPF	1.25,R1
-    // asm: 	LDFGT	1.25,R1
-    // asm: 	CMPF	0.8,R1
-    // asm: 	LDFLT	0.8,R1
-    // asm: 	STF	R1,@GAMEDIFF
-    // asm: 	RETS
+    // asm 000050B5: 	CMPI	1,R0
+    // asm 000050B6: 	LDFZ	0.07,R1
+    // asm 000050B7: 	LDFNZ	-0.035,R1
+    // asm 000050B8: 	ADDF	@GAMEDIFF,R1
+    // asm 000050B9: 	CMPF	1.25,R1
+    // asm 000050BA: 	LDFGT	1.25,R1
+    // asm 000050BB: 	CMPF	0.8,R1
+    // asm 000050BC: 	LDFLT	0.8,R1
+    // asm 000050BD: 	STF	R1,@GAMEDIFF
+    // asm 000050BE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIFF_CHANGE", 0, 0);
     UNIMPL();
 }
@@ -179,44 +179,44 @@ void DIFF_CHANGE(void)
 void GETDIFF(void)
 {
     // *GET DIFFICULTY	ADJUST
-    // asm: 	LDI	ADJ_DIFFICULTY,AR2		;GET DIFFICULTY	ADJUST
-    // asm: 	CALL	ADJUSTMENT_READ			;100000=1.0
-    // asm: 	FLOAT	R0
-    // asm: 	MPYF	0.04,R0
-    // asm: 	ADDF	0.80,R0	      			;GLOBAL DIFF 0.80-1.16
+    // asm 000050BF: 	LDI	ADJ_DIFFICULTY,AR2		;GET DIFFICULTY	ADJUST
+    // asm 000050C0: 	CALL	ADJUSTMENT_READ			;100000=1.0
+    // asm 000050C1: 	FLOAT	R0
+    // asm 000050C2: 	MPYF	0.04,R0
+    // asm 000050C3: 	ADDF	0.80,R0	      			;GLOBAL DIFF 0.80-1.16
     // *GET GAME DIFFICULTY
-    // asm: 	LDI	@HEAD2HEAD_ON,R1
-    // asm: 	LDFZ	@GAMEDIFF,R1
-    // asm: 	BZ	GD1
-    // asm: 	LDF	@OM_DIFF,R1
-    // asm: 	CMPF	1.16,R1
-    // asm: 	LDFGT	1.16,R1
-    // asm: 	CMPF	0.8,R1
-    // asm: 	LDFLT	0.8,R1
-    // asm: 	ADDF	@GAMEDIFF,R1
-    // asm: 	MPYF	0.5,R1
+    // asm 000050C4: 	LDI	@HEAD2HEAD_ON,R1
+    // asm 000050C5: 	LDFZ	@GAMEDIFF,R1
+    // asm 000050C6: 	BZ	GD1
+    // asm 000050C7: 	LDF	@OM_DIFF,R1
+    // asm 000050C8: 	CMPF	1.16,R1
+    // asm 000050C9: 	LDFGT	1.16,R1
+    // asm 000050CA: 	CMPF	0.8,R1
+    // asm 000050CB: 	LDFLT	0.8,R1
+    // asm 000050CC: 	ADDF	@GAMEDIFF,R1
+    // asm 000050CD: 	MPYF	0.5,R1
 GD1:
-    // asm: 	CMPF	1.16,R1
-    // asm: 	LDFGT	1.16,R1
-    // asm: 	CMPF	0.8,R1
-    // asm: 	LDFLT	0.8,R1
-    // asm: 	SUBF	1.0,R1
+    // asm 000050CE: 	CMPF	1.16,R1
+    // asm 000050CF: 	LDFGT	1.16,R1
+    // asm 000050D0: 	CMPF	0.8,R1
+    // asm 000050D1: 	LDFLT	0.8,R1
+    // asm 000050D2: 	SUBF	1.0,R1
     // *GET TRACK DIFFICULTY
     // *GET CURRENT RACE
-    // asm: 	LDI	@BONUS_WAVE,AR2
-    // asm: 	CMPI	0,AR2
-    // asm: 	LDILT	0,AR2
-    // asm: 	CMPI	13,AR2
-    // asm: 	LDIGT	13,AR2
-    // asm: 	ADDI	@DIFFTABI,AR2
-    // asm: 	LDF	*AR2,R2
-    // asm: 	ADDF	R1,R0
-    // asm: 	ADDF	R2,R0
-    // asm: 	CMPF	0.75,R0
-    // asm: 	LDFLT	0.75,R0
-    // asm: 	CMPF	1.25,R0
-    // asm: 	LDFGT	1.25,R0				;ABSOLUTE MAX/MINS
-    // asm: 	RETS
+    // asm 000050D3: 	LDI	@BONUS_WAVE,AR2
+    // asm 000050D4: 	CMPI	0,AR2
+    // asm 000050D5: 	LDILT	0,AR2
+    // asm 000050D6: 	CMPI	13,AR2
+    // asm 000050D7: 	LDIGT	13,AR2
+    // asm 000050D8: 	ADDI	@DIFFTABI,AR2
+    // asm 000050D9: 	LDF	*AR2,R2
+    // asm 000050DA: 	ADDF	R1,R0
+    // asm 000050DB: 	ADDF	R2,R0
+    // asm 000050DC: 	CMPF	0.75,R0
+    // asm 000050DD: 	LDFLT	0.75,R0
+    // asm 000050DE: 	CMPF	1.25,R0
+    // asm 000050DF: 	LDFGT	1.25,R0				;ABSOLUTE MAX/MINS
+    // asm 000050E0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDIFF", 0, 0);
     UNIMPL();
 }
@@ -238,205 +238,205 @@ GD1:
  */
 void RACER_DRONE(void)
 {
-    // asm: 	LDF	0,R0
-    // asm: 	STF	R0,*+AR7(FINISHDIST)
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,@FINISHNUM		;INITIALIZE FINISH COUNT
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*+AR7(PASSCNT) 	;INITIALIZE PASSING SOUND INHIBIT
-    // asm: 	STI	R4,*+AR7(DELTA_INIT)
-    // asm: 	LDI	R4,AR0
-    // asm: 	MPYI	RD_SIZE,AR0
-    // asm: 	ADDI	@RACER_DRONE_INITTABI,AR0
-    // asm: 	STI	AR0,*+AR7(INITINDEX)
-    // asm: 	CMPI	8,R4
-    // asm: 	BLT	NOTLINKED
-    // asm: 	LDI	@HEAD2HEAD_ON,R0
-    // asm: 	BZ	NOTLINKED
-    // asm: 	LDI	@OM_VEHICLE,R0
+    // asm 000050F0: 	LDF	0,R0
+    // asm 000050F1: 	STF	R0,*+AR7(FINISHDIST)
+    // asm 000050F2: 	LDI	0,R0
+    // asm 000050F3: 	STI	R0,@FINISHNUM		;INITIALIZE FINISH COUNT
+    // asm 000050F4: 	LDI	0,R0
+    // asm 000050F5: 	STI	R0,*+AR7(PASSCNT) 	;INITIALIZE PASSING SOUND INHIBIT
+    // asm 000050F6: 	STI	R4,*+AR7(DELTA_INIT)
+    // asm 000050F7: 	LDI	R4,AR0
+    // asm 000050F8: 	MPYI	RD_SIZE,AR0
+    // asm 000050F9: 	ADDI	@RACER_DRONE_INITTABI,AR0
+    // asm 000050FA: 	STI	AR0,*+AR7(INITINDEX)
+    // asm 000050FB: 	CMPI	8,R4
+    // asm 000050FC: 	BLT	NOTLINKED
+    // asm 000050FD: 	LDI	@HEAD2HEAD_ON,R0
+    // asm 000050FE: 	BZ	NOTLINKED
+    // asm 000050FF: 	LDI	@OM_VEHICLE,R0
 #if CDEBUG
     // asm: 	BN	$
 #endif
-    // asm: 	BR	COMM_DRONE
+    // asm 00005100: 	BR	COMM_DRONE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RACER_DRONE", 0, 0);
     UNIMPL();
 }
 
 void NOTLINKED(void)
 {
-    // asm: 	LDI	*+AR0(RD_MODEL),R0
+    // asm 00005101: 	LDI	*+AR0(RD_MODEL),R0
 JJKK:
-    // asm: STI	R0,*+AR7(DELTA_MODEL)
-    // asm: 	LDI	R0,AR2
-    // asm: 	LDI	R0,AR5
-    // asm: 	MPYI	VEHTAB_SIZE,AR2
-    // asm: 	ADDI	@VEHICLE_TABLEI,AR2
-    // asm: 	LDI	*+AR2(VEHTAB_MODEL),AR2
-    // asm: 	CALL	OBJ_GETE
-    // asm: 	BC	SUICIDE
-    // asm: 	LDI	AR0,AR4
+    // asm 00005102: STI	R0,*+AR7(DELTA_MODEL)
+    // asm 00005103: 	LDI	R0,AR2
+    // asm 00005104: 	LDI	R0,AR5
+    // asm 00005105: 	MPYI	VEHTAB_SIZE,AR2
+    // asm 00005106: 	ADDI	@VEHICLE_TABLEI,AR2
+    // asm 00005107: 	LDI	*+AR2(VEHTAB_MODEL),AR2
+    // asm 00005108: 	CALL	OBJ_GETE
+    // asm 00005109: 	BC	SUICIDE
+    // asm 0000510A: 	LDI	AR0,AR4
     // *STORE THE POINTER TO THE OBJECT
     // 	;
-    // asm: 	LDI	R4,AR1
-    // asm: 	ADDI	@RACER_PTRI,AR1
-    // asm: 	STI	AR4,*AR1
-    // asm: 	LDI	AR5,AR2
-    // asm: 	CALL	VEHICLE_ANI_INIT
-    // asm: 	CALL	DELTA_OINIT
+    // asm 0000510B: 	LDI	R4,AR1
+    // asm 0000510C: 	ADDI	@RACER_PTRI,AR1
+    // asm 0000510D: 	STI	AR4,*AR1
+    // asm 0000510E: 	LDI	AR5,AR2
+    // asm 0000510F: 	CALL	VEHICLE_ANI_INIT
+    // asm 00005110: 	CALL	DELTA_OINIT
     // *SET PROPER PALETTE
-    // asm: 	LDI	*+AR7(INITINDEX),AR0
-    // asm: 	LDI	*+AR0(RD_PALETTE),R0
-    // asm: 	BZ	NOOTHERPAL
-    // asm: 	LDI	R0,AR2
-    // asm: 	CALL	PAL_FIND_RAW
-    // asm: 	STI	R0,*+AR4(OPAL)
-    // asm: 	ORM	O_1PAL,*+AR4(OFLAGS)
+    // asm 00005111: 	LDI	*+AR7(INITINDEX),AR0
+    // asm 00005112: 	LDI	*+AR0(RD_PALETTE),R0
+    // asm 00005113: 	BZ	NOOTHERPAL
+    // asm 00005114: 	LDI	R0,AR2
+    // asm 00005115: 	CALL	PAL_FIND_RAW
+    // asm 00005116: 	STI	R0,*+AR4(OPAL)
+    // asm 00005117: 	ORM	O_1PAL,*+AR4(OFLAGS)
 NOOTHERPAL:
-    // asm: 	LDF	*+AR5(CARRDFR),R0
-    // asm: 	MPYF	1.5,R0			;OFFROAD = 1.5X ONROAD
-    // asm: 	STF	R0,*+AR5(CAROFRDFR)
-    // asm: 	LDI	*+AR7(INITINDEX),AR0
-    // asm: 	LDF	*+AR0(RD_XLANE),R0
-    // asm: 	STF	R0,*+AR7(DELTA_XLANE)
-    // asm: 	STF	R0,*+AR7(ROADOFFSET)
-    // asm: 	LDI	2,R2		  	;SET LANE STATUS
-    // asm: 	FLOAT	600,R1
-    // asm: 	CMPF	R1,R0
-    // asm: 	LDIGT	3,R2
-    // asm: 	STI	R2,*+AR7(DELTA_STATUS)
-    // asm: 	LDI	@_MODE,R1
-    // asm: 	AND	MMODE,R1
-    // asm: 	CMPI	MATTR,R1
-    // asm: 	LDFZ	1.0,R0	   		;FOR ATTRACT ALWAYS 1 DIFFICULTY
-    // asm: 	CALLNZ	GETDIFF
-    // asm: 	MPYF	*+AR0(RD_MAXACCEL),R0
-    // asm: 	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
-    // asm: 	LDF	*+AR0(RD_REL),R0
-    // asm: 	STF	R0,*+AR7(RELATIVITY)	;SET RELATIVITY COEFFICIENT
+    // asm 0000511A: 	LDF	*+AR5(CARRDFR),R0
+    // asm 0000511B: 	MPYF	1.5,R0			;OFFROAD = 1.5X ONROAD
+    // asm 0000511C: 	STF	R0,*+AR5(CAROFRDFR)
+    // asm 0000511D: 	LDI	*+AR7(INITINDEX),AR0
+    // asm 0000511E: 	LDF	*+AR0(RD_XLANE),R0
+    // asm 0000511F: 	STF	R0,*+AR7(DELTA_XLANE)
+    // asm 00005120: 	STF	R0,*+AR7(ROADOFFSET)
+    // asm 00005121: 	LDI	2,R2		  	;SET LANE STATUS
+    // asm 00005122: 	FLOAT	600,R1
+    // asm 00005123: 	CMPF	R1,R0
+    // asm 00005124: 	LDIGT	3,R2
+    // asm 00005125: 	STI	R2,*+AR7(DELTA_STATUS)
+    // asm 00005126: 	LDI	@_MODE,R1
+    // asm 00005127: 	AND	MMODE,R1
+    // asm 00005128: 	CMPI	MATTR,R1
+    // asm 00005129: 	LDFZ	1.0,R0	   		;FOR ATTRACT ALWAYS 1 DIFFICULTY
+    // asm 0000512A: 	CALLNZ	GETDIFF
+    // asm 0000512B: 	MPYF	*+AR0(RD_MAXACCEL),R0
+    // asm 0000512C: 	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
+    // asm 0000512D: 	LDF	*+AR0(RD_REL),R0
+    // asm 0000512E: 	STF	R0,*+AR7(RELATIVITY)	;SET RELATIVITY COEFFICIENT
     // *
     // *INIT POSITION N ROAD PIECES FROM BEGINNING
     // *
-    // asm: 	LDI	@DYNALIST_TRUEBEGIN,AR2
-    // asm: 	LDI	*+AR2(OUSR1),R0
-    // asm: 	ANDN	0FFh,R0
-    // asm: 	LDI	*+AR2(OLINK4),AR2	;SKIP FIRST GROUP
-    // asm: 	LDI	*+AR0(RD_POSITION),AR3	;NUMBER OF PIECES AHEAD
-    // asm: 	CALL	SPOS_INIT		;INIT STARTING POSITION
+    // asm 0000512F: 	LDI	@DYNALIST_TRUEBEGIN,AR2
+    // asm 00005130: 	LDI	*+AR2(OUSR1),R0
+    // asm 00005131: 	ANDN	0FFh,R0
+    // asm 00005132: 	LDI	*+AR2(OLINK4),AR2	;SKIP FIRST GROUP
+    // asm 00005133: 	LDI	*+AR0(RD_POSITION),AR3	;NUMBER OF PIECES AHEAD
+    // asm 00005134: 	CALL	SPOS_INIT		;INIT STARTING POSITION
     // 	;initialize Ytheta to the intentional direction
-    // asm: 	STF	R2,*+AR4(ORADY)
-    // asm: 	STF	R2,*+AR5(CARYROT)
-    // asm: 	STF	R2,*+AR5(CARVROT)
-    // asm: 	LDI	AR4,AR2
-    // asm: 	ADDI	OMATRIX,AR2
-    // asm: 	CALL	FIND_YMATRIX
-    // asm: 	LDI	DRONE_C|VEHICLE_T|DRNE_RACER,R0
-    // asm: 	STI	R0,*+AR4(OID)
-    // asm: 	STI	R0,*+AR5(CAR_ID)
-    // asm: 	STI	R0,*+AR7(PID)
+    // asm 00005135: 	STF	R2,*+AR4(ORADY)
+    // asm 00005136: 	STF	R2,*+AR5(CARYROT)
+    // asm 00005137: 	STF	R2,*+AR5(CARVROT)
+    // asm 00005138: 	LDI	AR4,AR2
+    // asm 00005139: 	ADDI	OMATRIX,AR2
+    // asm 0000513A: 	CALL	FIND_YMATRIX
+    // asm 0000513B: 	LDI	DRONE_C|VEHICLE_T|DRNE_RACER,R0
+    // asm 0000513C: 	STI	R0,*+AR4(OID)
+    // asm 0000513D: 	STI	R0,*+AR5(CAR_ID)
+    // asm 0000513E: 	STI	R0,*+AR7(PID)
     // *INIT THROTTLE AND BRAKE
-    // asm: 	CLRF	R0
-    // asm: 	STF	R0,*+AR5(CARBRAKE)
-    // asm: 	LDF	0.44,R0
-    // asm: 	STF	R0,*+AR5(CARTRACTION)
-    // asm: 	LDF	1.0,R0
-    // asm: 	STF	R0,*+AR7(DELTA_THROTTLE)
-    // asm: 	STF	R0,*+AR7(POWERSURGE)
-    // asm: 	LDF	0.05,R0
-    // asm: 	CALL	FRAND
-    // asm: 	ADDF	1.20,R0
-    // asm: 	STF	R0,*+AR7(POWERCATCH)	;BLAST FROM START RANDOM TIME
-    // asm: 	LDI	120,R0	   		;WAIT A LITTLE BEFORE UPDATE
-    // asm: 	STI	R0,*+AR7(SURGETIME)
-    // asm: 	STI	R0,*+AR7(CATCHTIME)
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*+AR7(STEALTHMODE)	;NO STEALTH INIT
-    // asm: 	LDI	AR4,AR2
-    // asm: 	CALL	OBJ_PULL
-    // asm: 	CALL	OBJ_INSERT
+    // asm 0000513F: 	CLRF	R0
+    // asm 00005140: 	STF	R0,*+AR5(CARBRAKE)
+    // asm 00005141: 	LDF	0.44,R0
+    // asm 00005142: 	STF	R0,*+AR5(CARTRACTION)
+    // asm 00005143: 	LDF	1.0,R0
+    // asm 00005144: 	STF	R0,*+AR7(DELTA_THROTTLE)
+    // asm 00005145: 	STF	R0,*+AR7(POWERSURGE)
+    // asm 00005146: 	LDF	0.05,R0
+    // asm 00005147: 	CALL	FRAND
+    // asm 00005148: 	ADDF	1.20,R0
+    // asm 00005149: 	STF	R0,*+AR7(POWERCATCH)	;BLAST FROM START RANDOM TIME
+    // asm 0000514A: 	LDI	120,R0	   		;WAIT A LITTLE BEFORE UPDATE
+    // asm 0000514B: 	STI	R0,*+AR7(SURGETIME)
+    // asm 0000514C: 	STI	R0,*+AR7(CATCHTIME)
+    // asm 0000514D: 	LDI	0,R0
+    // asm 0000514E: 	STI	R0,*+AR7(STEALTHMODE)	;NO STEALTH INIT
+    // asm 0000514F: 	LDI	AR4,AR2
+    // asm 00005150: 	CALL	OBJ_PULL
+    // asm 00005151: 	CALL	OBJ_INSERT
     // ;	LDF	0.42,R0
     // ;	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
     // *******************
-    // asm: 	LDI	*+AR7(DELTA_INIT),R2	;GET CAR #
-    // asm: 	STI	R2,*+AR5(CARNUM)	;SAVE IN CAR STRUCTURE
-    // asm: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
-    // asm: 	BZ	NOTLINKED3		;NO...
-    // asm: 	LDI	@DIPRAM,R1     		;MASTER?
-    // asm: 	TSTB	CMDP_MASTER,R1
-    // asm: 	LDIZ	1,R0			;YES, MASTER
-    // asm: 	LDINZ	0,R0			;SLAVE
-    // asm: 	LSH	-1,R2
-    // asm: 	AND	1,R2			;MASK FOR ODD/EVEN BIT
-    // asm: 	XOR	R2,R0			;ODDS-MASTER, EVEN-SLAVE
-    // asm: 	STI	R0,*+AR5(CAR_OM)
-    // asm: 	BNZ	OM_DRONE		;OTHER MACHINE CONTROL
+    // asm 00005152: 	LDI	*+AR7(DELTA_INIT),R2	;GET CAR #
+    // asm 00005153: 	STI	R2,*+AR5(CARNUM)	;SAVE IN CAR STRUCTURE
+    // asm 00005154: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
+    // asm 00005155: 	BZ	NOTLINKED3		;NO...
+    // asm 00005156: 	LDI	@DIPRAM,R1     		;MASTER?
+    // asm 00005157: 	TSTB	CMDP_MASTER,R1
+    // asm 00005158: 	LDIZ	1,R0			;YES, MASTER
+    // asm 00005159: 	LDINZ	0,R0			;SLAVE
+    // asm 0000515A: 	LSH	-1,R2
+    // asm 0000515B: 	AND	1,R2			;MASK FOR ODD/EVEN BIT
+    // asm 0000515C: 	XOR	R2,R0			;ODDS-MASTER, EVEN-SLAVE
+    // asm 0000515D: 	STI	R0,*+AR5(CAR_OM)
+    // asm 0000515E: 	BNZ	OM_DRONE		;OTHER MACHINE CONTROL
 NOTLINKED3:
     // *
     // *RACING DRONE LOOP (ONTRACK)
     // *
 RACER_LP:
-    // asm: 	LDI	@SUSPEND_MODE,R0
-    // asm: 	CMPI	SM_HALT,R0
-    // asm: 	BNE	RACE_ON
-    // asm: 	CALL	GETTRAK
-    // asm: 	CALL	DRONESTOP
-    // asm: 	B	RACER_SLP
+    // asm 0000515F: 	LDI	@SUSPEND_MODE,R0
+    // asm 00005160: 	CMPI	SM_HALT,R0
+    // asm 00005161: 	BNE	RACE_ON
+    // asm 00005162: 	CALL	GETTRAK
+    // asm 00005163: 	CALL	DRONESTOP
+    // asm 00005164: 	B	RACER_SLP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTLINKED", 0, 0);
     UNIMPL();
 }
 
 void RACE_ON(void)
 {
-    // asm: 	LDI	*+AR5(CARTRAK),AR0		;CHECK FOR FINISH LINE
-    // asm: 	LDI	*+AR0(OUSR1),R0
-    // asm: 	LSH	-8,R0
-    // asm: 	CMPI	@FINISH_ID,R0
-    // asm: 	CALLGE	RACE_FIN
-    // asm: 	CALL	RPASS	 			;CHECK FOR PASSING SOUND
+    // asm 00005165: 	LDI	*+AR5(CARTRAK),AR0		;CHECK FOR FINISH LINE
+    // asm 00005166: 	LDI	*+AR0(OUSR1),R0
+    // asm 00005167: 	LSH	-8,R0
+    // asm 00005168: 	CMPI	@FINISH_ID,R0
+    // asm 00005169: 	CALLGE	RACE_FIN
+    // asm 0000516A: 	CALL	RPASS	 			;CHECK FOR PASSING SOUND
     // *CHECK IF WE ARE ON THE TRACK
 CKSTEALTH:
-    // asm: 	LDI	@DYNALIST_TRUEBEGIN,AR2		;GET CLOSEST ROAD ID
-    // asm: 	LDI	*+AR2(OLINK4),AR2		;LINK A COUPLE AHEAD
-    // asm: 	LDI	*+AR2(OLINK4),AR2
-    // asm: 	LDI	*+AR2(OUSR1),R0
-    // asm: 	LDI	@DYNALIST_END,AR2		;GET FURTHEST ROAD ID
-    // asm: 	LDI	*+AR2(OUSR1),R1
-    // asm: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
-    // asm: 	CMPI	R0,R2
-    // asm: 	BLT	LO_STEALTH
-    // asm: 	CMPI	R1,R2				;LAST REAL SEGMENT
-    // asm: 	BGE	HI_STEALTH
+    // asm 0000516B: 	LDI	@DYNALIST_TRUEBEGIN,AR2		;GET CLOSEST ROAD ID
+    // asm 0000516C: 	LDI	*+AR2(OLINK4),AR2		;LINK A COUPLE AHEAD
+    // asm 0000516D: 	LDI	*+AR2(OLINK4),AR2
+    // asm 0000516E: 	LDI	*+AR2(OUSR1),R0
+    // asm 0000516F: 	LDI	@DYNALIST_END,AR2		;GET FURTHEST ROAD ID
+    // asm 00005170: 	LDI	*+AR2(OUSR1),R1
+    // asm 00005171: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
+    // asm 00005172: 	CMPI	R0,R2
+    // asm 00005173: 	BLT	LO_STEALTH
+    // asm 00005174: 	CMPI	R1,R2				;LAST REAL SEGMENT
+    // asm 00005175: 	BGE	HI_STEALTH
     // *CHECK DISTANCE TO TRACKING PIECE
-    // asm: 	LDI	*+AR7(DELTA_TPIECE),AR2		;Get tracking piece
-    // asm: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R2	;DELTA X
-    // asm: 	LDF	*+AR2(OPOSZ),R1			;DELTA Z
-    // asm: 	SUBF	*+AR4(OPOSZ),R1
-    // asm: 	MPYF	R2,R2
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R1,R2
-    // asm: 	FLOAT	5000,R1				;TO THE NEXT ROADPIECE
-    // asm: 	MPYF	R1,R1
-    // asm: 	CMPF	R1,R2				;DISTANCE LT 5000 ?
-    // asm: 	BLT	NUTRACK				;NO...KEEP ON TRUCKIN'
-    // asm: 	LDI	*+AR2(OLINK4),R0		;Get link to NEXT piece
-    // asm: 	BZ	ONTRACK				;OUT IN THE DISTANCE
-    // asm: 	LDI	R0,AR0
-    // asm: 	SUBF	*+AR4(OPOSX),*+AR0(OPOSX),R1	;DELTA X
-    // asm: 	LDF	*+AR0(OPOSZ),R0			;DELTA Z
-    // asm: 	SUBF	*+AR4(OPOSZ),R0
-    // asm: 	MPYF	R0,R0
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R0,R1
-    // asm: 	CMPF	R2,R1	       			;DIST TRACK CLOSER?
-    // asm: 	BGT	ONTRACK				;NO, WERE ON TRACK
-    // asm: 	NOP
+    // asm 00005176: 	LDI	*+AR7(DELTA_TPIECE),AR2		;Get tracking piece
+    // asm 00005177: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R2	;DELTA X
+    // asm 00005178: 	LDF	*+AR2(OPOSZ),R1			;DELTA Z
+    // asm 00005179: 	SUBF	*+AR4(OPOSZ),R1
+    // asm 0000517A: 	MPYF	R2,R2
+    // asm 0000517B: 	MPYF	R1,R1
+    // asm 0000517C: 	ADDF	R1,R2
+    // asm 0000517D: 	FLOAT	5000,R1				;TO THE NEXT ROADPIECE
+    // asm 0000517E: 	MPYF	R1,R1
+    // asm 0000517F: 	CMPF	R1,R2				;DISTANCE LT 5000 ?
+    // asm 00005180: 	BLT	NUTRACK				;NO...KEEP ON TRUCKIN'
+    // asm 00005181: 	LDI	*+AR2(OLINK4),R0		;Get link to NEXT piece
+    // asm 00005182: 	BZ	ONTRACK				;OUT IN THE DISTANCE
+    // asm 00005183: 	LDI	R0,AR0
+    // asm 00005184: 	SUBF	*+AR4(OPOSX),*+AR0(OPOSX),R1	;DELTA X
+    // asm 00005185: 	LDF	*+AR0(OPOSZ),R0			;DELTA Z
+    // asm 00005186: 	SUBF	*+AR4(OPOSZ),R0
+    // asm 00005187: 	MPYF	R0,R0
+    // asm 00005188: 	MPYF	R1,R1
+    // asm 00005189: 	ADDF	R0,R1
+    // asm 0000518A: 	CMPF	R2,R1	       			;DIST TRACK CLOSER?
+    // asm 0000518B: 	BGT	ONTRACK				;NO, WERE ON TRACK
+    // asm 0000518C: 	NOP
 NUTRACK:
-    // asm: 	LDI	*+AR2(OLINK4),R0		;Get link to NEXT piece
-    // asm: 	BZ	HI_STEALTH
-    // asm: 	STI	R0,*+AR7(DELTA_TPIECE)		;save ptr
-    // asm: 	LDI	R0,AR0
-    // asm: 	LDI	*+AR0(OUSR1),R0			;read road ID
-    // asm: 	STI	R0,*+AR7(DELTA_LAST_OID)	;save road ID
-    // asm: 	B	CKSTEALTH			;CHECK NEW SECTION
+    // asm 0000518D: 	LDI	*+AR2(OLINK4),R0		;Get link to NEXT piece
+    // asm 0000518E: 	BZ	HI_STEALTH
+    // asm 0000518F: 	STI	R0,*+AR7(DELTA_TPIECE)		;save ptr
+    // asm 00005190: 	LDI	R0,AR0
+    // asm 00005191: 	LDI	*+AR0(OUSR1),R0			;read road ID
+    // asm 00005192: 	STI	R0,*+AR7(DELTA_LAST_OID)	;save road ID
+    // asm 00005193: 	B	CKSTEALTH			;CHECK NEW SECTION
     // *R2=DIST TO TPIECE SQUARED
     // *AR2=TRACKING PIECE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RACE_ON", 0, 0);
@@ -445,43 +445,43 @@ NUTRACK:
 
 void ONTRACK(void)
 {
-    // asm: 	CALL	SQRT		      	;GET ACTUAL DISTANCE
-    // asm: 	LDF	*+AR5(CARSPEED),R1
-    // asm: 	LDFLE	30,R1			;if 0 or less assume 30 mph
-    // asm: 	FLOATP	@NFRAMES,R2
-    // asm: 	MPYF	R2,R1
-    // asm: 	CALL	DIV_F			;R0/R1 (distance to piece/speed) -> # frames to achieve
-    // asm: 	PUSHF	R0
+    // asm 00005194: 	CALL	SQRT		      	;GET ACTUAL DISTANCE
+    // asm 00005195: 	LDF	*+AR5(CARSPEED),R1
+    // asm 00005196: 	LDFLE	30,R1			;if 0 or less assume 30 mph
+    // asm 00005197: 	FLOATP	@NFRAMES,R2
+    // asm 00005198: 	MPYF	R2,R1
+    // asm 00005199: 	CALL	DIV_F			;R0/R1 (distance to piece/speed) -> # frames to achieve
+    // asm 0000519A: 	PUSHF	R0
     // *GET TRACKING GOAL
-    // asm: 	CALL	CKPCOL			;CHECK PLAYER COLLISION
-    // asm: 	CALL	OBSTABINIT   		;CLEAR ROAD OBSTACLE MAP
-    // asm: 	CALL	CARSCAN
-    // asm: 	CALL	PLSCAN	      		;TEST TO SCAN PLAYER ON TRACK
-    // asm: 	CALL	GETRDOFFSET
-    // asm: 	STF	R0,*+AR7(ROADOFFSET)
+    // asm 0000519B: 	CALL	CKPCOL			;CHECK PLAYER COLLISION
+    // asm 0000519C: 	CALL	OBSTABINIT   		;CLEAR ROAD OBSTACLE MAP
+    // asm 0000519D: 	CALL	CARSCAN
+    // asm 0000519E: 	CALL	PLSCAN	      		;TEST TO SCAN PLAYER ON TRACK
+    // asm 0000519F: 	CALL	GETRDOFFSET
+    // asm 000051A0: 	STF	R0,*+AR7(ROADOFFSET)
     // *GET DIRECTION ANGLE FOR TRACKING PIECE
-    // asm: 	LDI	*+AR7(DELTA_TPIECE),AR2		;Get tracking piece
-    // asm: 	LDI	*+AR2(OLINK4),R0
-    // asm: 	BNZ	ROADTRAK1
-    // asm: 	LOCKUP
+    // asm 000051A1: 	LDI	*+AR7(DELTA_TPIECE),AR2		;Get tracking piece
+    // asm 000051A2: 	LDI	*+AR2(OLINK4),R0
+    // asm 000051A3: 	BNZ	ROADTRAK1
+    // asm 000051A4: 	LOCKUP
 ROADTRAK1:
-    // asm: 	LDI	R0,AR0
-    // asm: 	SUBF	*+AR2(OPOSX),*+AR0(OPOSX),R2
-    // asm: 	LDF	*+AR0(OPOSZ),R3
-    // asm: 	SUBF	*+AR2(OPOSZ),R3
-    // asm: 	CALL	ARCTANF
-    // asm: 	SUBF	HALFPI,R0
-    // asm: 	LDF	R0,R2		      	;FIND THETA
-    // asm: 	CALL	_SINE
-    // asm: 	LDF	R0,R1
-    // asm: 	CALL	_COSI
-    // asm: 	MPYF	*+AR7(ROADOFFSET),R0   	;X LANE OFFSET
-    // asm: 	MPYF	*+AR7(ROADOFFSET),R1	;Z LANE OFFSET
-    // asm: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R2
-    // asm: 	ADDF	R0,R2
-    // asm: 	LDF	*+AR2(OPOSZ),R3		;COMPUTE DELTA Z TO GOAL
-    // asm: 	SUBF	*+AR4(OPOSZ),R3
-    // asm: 	ADDF	R1,R3
+    // asm 000051A6: 	LDI	R0,AR0
+    // asm 000051A7: 	SUBF	*+AR2(OPOSX),*+AR0(OPOSX),R2
+    // asm 000051A8: 	LDF	*+AR0(OPOSZ),R3
+    // asm 000051A9: 	SUBF	*+AR2(OPOSZ),R3
+    // asm 000051AA: 	CALL	ARCTANF
+    // asm 000051AB: 	SUBF	HALFPI,R0
+    // asm 000051AC: 	LDF	R0,R2		      	;FIND THETA
+    // asm 000051AD: 	CALL	_SINE
+    // asm 000051AE: 	LDF	R0,R1
+    // asm 000051AF: 	CALL	_COSI
+    // asm 000051B0: 	MPYF	*+AR7(ROADOFFSET),R0   	;X LANE OFFSET
+    // asm 000051B1: 	MPYF	*+AR7(ROADOFFSET),R1	;Z LANE OFFSET
+    // asm 000051B2: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R2
+    // asm 000051B3: 	ADDF	R0,R2
+    // asm 000051B4: 	LDF	*+AR2(OPOSZ),R3		;COMPUTE DELTA Z TO GOAL
+    // asm 000051B5: 	SUBF	*+AR4(OPOSZ),R3
+    // asm 000051B6: 	ADDF	R1,R3
     // 	;POSITION TRACKING
     // 	;
     // 	;Set steering, trottle, gear, and brake
@@ -489,59 +489,59 @@ ROADTRAK1:
     // 	;find the theta delta to this position
     // 	;
     // *GET XZ ANGLE TO GOAL
-    // asm: 	CALL	ARCTANF
-    // asm: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
-    // asm:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
-    // asm: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
-    // asm: 	POPF	R1   			;GET TIME
-    // asm: 	FIX	R1
-    // asm:  	FLOAT	R1
-    // asm: 	SUBF	1,R1			;DBG
-    // asm: 	BZ	NODIV
-    // asm: 	CALL	DIV_F			;-> R0
+    // asm 000051B7: 	CALL	ARCTANF
+    // asm 000051B8: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
+    // asm 000051B9:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
+    // asm 000051BA: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
+    // asm 000051BB: 	POPF	R1   			;GET TIME
+    // asm 000051BC: 	FIX	R1
+    // asm 000051BD:  	FLOAT	R1
+    // asm 000051BE: 	SUBF	1,R1			;DBG
+    // asm 000051BF: 	BZ	NODIV
+    // asm 000051C0: 	CALL	DIV_F			;-> R0
 NODIV:
     // *THROTTLE ONLY IF RACE IS ON
-    // asm: 	PUSHF	R0
-    // asm: 	CALL	GETPOWER			;UPDATE POWER STUFF
-    // asm: 	LDF	*+AR7(DELTA_THROTTLE),R0	;HAS THE RACE BEGUN?
-    // asm: 	LDI	@_MODE,R1
-    // asm: 	TSTB	MGO,R1
-    // asm: 	LDFZ	0,R0				;N -> THROTTLE = 0
-    // asm: 	STF	R0,*+AR5(CARTHROTTLE)
-    // asm: 	POPF	R0
-    // asm: 	MPYF	2.5,R0				;OVERSTEERing EFFECT
-    // asm: 	CMPF	0.09,R0
-    // asm: 	LDFGT	0.09,R0
-    // asm: 	CMPF	-0.09,R0
-    // asm: 	LDFLT	-0.09,R0
-    // asm: 	PUSHF	R0				;save steering value
-    // asm: 	FLOAT	@NFRAMES,R1
-    // asm: 	MPYF	*+AR5(CARSPEED),R1
-    // asm: 	BZD	NOTURN
-    // asm: 	LDFZ	0,R0
-    // asm: 	MPYF	0.416,R1
-    // asm: 	MPYF	@STEERI,R1
+    // asm 000051C1: 	PUSHF	R0
+    // asm 000051C2: 	CALL	GETPOWER			;UPDATE POWER STUFF
+    // asm 000051C3: 	LDF	*+AR7(DELTA_THROTTLE),R0	;HAS THE RACE BEGUN?
+    // asm 000051C4: 	LDI	@_MODE,R1
+    // asm 000051C5: 	TSTB	MGO,R1
+    // asm 000051C6: 	LDFZ	0,R0				;N -> THROTTLE = 0
+    // asm 000051C7: 	STF	R0,*+AR5(CARTHROTTLE)
+    // asm 000051C8: 	POPF	R0
+    // asm 000051C9: 	MPYF	2.5,R0				;OVERSTEERing EFFECT
+    // asm 000051CA: 	CMPF	0.09,R0
+    // asm 000051CB: 	LDFGT	0.09,R0
+    // asm 000051CC: 	CMPF	-0.09,R0
+    // asm 000051CD: 	LDFLT	-0.09,R0
+    // asm 000051CE: 	PUSHF	R0				;save steering value
+    // asm 000051CF: 	FLOAT	@NFRAMES,R1
+    // asm 000051D0: 	MPYF	*+AR5(CARSPEED),R1
+    // asm 000051D1: 	BZD	NOTURN
+    // asm 000051D2: 	LDFZ	0,R0
+    // asm 000051D3: 	MPYF	0.416,R1
+    // asm 000051D4: 	MPYF	@STEERI,R1
     // 	;---->	BZD	NOTURN
-    // asm: 	CALL	DIV_F
-    // asm: 	CMPF	-0.3,R0 		;LIMIT CHECK
-    // asm: 	LDFLT	-0.3,R0
-    // asm: 	CMPF	0.3,R0 			;LIMIT CHECK
-    // asm: 	LDFGT	0.3,R0
+    // asm 000051D5: 	CALL	DIV_F
+    // asm 000051D6: 	CMPF	-0.3,R0 		;LIMIT CHECK
+    // asm 000051D7: 	LDFLT	-0.3,R0
+    // asm 000051D8: 	CMPF	0.3,R0 			;LIMIT CHECK
+    // asm 000051D9: 	LDFGT	0.3,R0
 NOTURN:
-    // asm: 	STF	R0,*+AR5(CARTURN)
-    // asm: 	CALL	DRONE_RIDE_RIGHT		;FIND DISTANCE TO CENTER OF ROAD
-    // asm: 	STF	R0,*+AR5(CARDIST2CNTR)
-    // asm: 	CALL	GETTRAK
-    // asm: 	POPF	R2
-    // asm: 	CALL	DRONEGO
-    // asm: 	NEGF	*+AR5(CARTURN),R0		;FIX CARTURN SIGN
-    // asm: 	STF	R0,*+AR5(CARTURN)
+    // asm 000051DA: 	STF	R0,*+AR5(CARTURN)
+    // asm 000051DB: 	CALL	DRONE_RIDE_RIGHT		;FIND DISTANCE TO CENTER OF ROAD
+    // asm 000051DC: 	STF	R0,*+AR5(CARDIST2CNTR)
+    // asm 000051DD: 	CALL	GETTRAK
+    // asm 000051DE: 	POPF	R2
+    // asm 000051DF: 	CALL	DRONEGO
+    // asm 000051E0: 	NEGF	*+AR5(CARTURN),R0		;FIX CARTURN SIGN
+    // asm 000051E1: 	STF	R0,*+AR5(CARTURN)
 RACER_SLP:
-    // asm: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
-    // asm: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
-    // asm: NOTLINKED4
-    // asm: 	SLEEP	1
-    // asm: 	B	RACER_LP
+    // asm 000051E2: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
+    // asm 000051E3: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
+    // asm 000051E4: NOTLINKED4
+    // asm 000051E4: 	SLEEP	1
+    // asm 000051E6: 	B	RACER_LP
     // *
     // *CHECK RACE FINISH
     // *
@@ -551,65 +551,65 @@ RACER_SLP:
 
 void RACE_FIN(void)
 {
-    // asm: 	LDF	*+AR7(FINISHDIST),R0
-    // asm: 	BNZ	RACFIN1
-    // asm: 	LDF	0.7,R0
-    // asm: 	CALL	SFRAND
-    // asm: 	STF	R0,*+AR7(FINISHROT)
-    // asm: 	LDI	@FINISHNUM,R0
-    // asm: 	ADDI	1,R0
-    // asm: 	STI	R0,@FINISHNUM
-    // asm: 	SUBRI	10,R0
-    // asm: 	MPYI	2800,R0
-    // asm: 	ADDI	3500,R0
-    // asm: 	FLOAT	R0
+    // asm 000051E7: 	LDF	*+AR7(FINISHDIST),R0
+    // asm 000051E8: 	BNZ	RACFIN1
+    // asm 000051E9: 	LDF	0.7,R0
+    // asm 000051EA: 	CALL	SFRAND
+    // asm 000051EB: 	STF	R0,*+AR7(FINISHROT)
+    // asm 000051EC: 	LDI	@FINISHNUM,R0
+    // asm 000051ED: 	ADDI	1,R0
+    // asm 000051EE: 	STI	R0,@FINISHNUM
+    // asm 000051EF: 	SUBRI	10,R0
+    // asm 000051F0: 	MPYI	2800,R0
+    // asm 000051F1: 	ADDI	3500,R0
+    // asm 000051F2: 	FLOAT	R0
 RACFIN1:
-    // asm: 	LDF	*+AR5(CARSPEED),R2
-    // asm: 	FLOAT	@NFRAMES,R1
-    // asm: 	MPYF	R1,R2
-    // asm: 	SUBF	R2,R0
-    // asm: 	STF	R0,*+AR7(FINISHDIST)
-    // asm: 	BLT	RACEDONE
-    // asm:    	RETS
+    // asm 000051F3: 	LDF	*+AR5(CARSPEED),R2
+    // asm 000051F4: 	FLOAT	@NFRAMES,R1
+    // asm 000051F5: 	MPYF	R1,R2
+    // asm 000051F6: 	SUBF	R2,R0
+    // asm 000051F7: 	STF	R0,*+AR7(FINISHDIST)
+    // asm 000051F8: 	BLT	RACEDONE
+    // asm 000051F9:    	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RACE_FIN", 0, 0);
     UNIMPL();
 }
 
 void RACEDONE(void)
 {
-    // asm: 	LDI	*+AR7(STEALTHMODE),R0		;CHECK STEALTH
-    // asm: 	BZ	RD0
-    // asm:    	LDF	*+AR5(CARSPEED),R0
-    // asm: 	BZ	RD0
-    // asm: 	FLOAT	300,R0	      			;ONE TIME RANDOM ADD
-    // asm: 	CALL 	SFRAND
-    // asm: 	ADDF	*+AR4(OPOSX),R0
-    // asm: 	STF	R0,*+AR4(OPOSX)
-    // asm: 	FLOAT	300,R0
-    // asm: 	CALL 	SFRAND
-    // asm: 	ADDF	*+AR4(OPOSZ),R0
-    // asm: 	STF	R0,*+AR4(OPOSZ)
+    // asm 000051FA: 	LDI	*+AR7(STEALTHMODE),R0		;CHECK STEALTH
+    // asm 000051FB: 	BZ	RD0
+    // asm 000051FC:    	LDF	*+AR5(CARSPEED),R0
+    // asm 000051FD: 	BZ	RD0
+    // asm 000051FE: 	FLOAT	300,R0	      			;ONE TIME RANDOM ADD
+    // asm 000051FF: 	CALL 	SFRAND
+    // asm 00005200: 	ADDF	*+AR4(OPOSX),R0
+    // asm 00005201: 	STF	R0,*+AR4(OPOSX)
+    // asm 00005202: 	FLOAT	300,R0
+    // asm 00005203: 	CALL 	SFRAND
+    // asm 00005204: 	ADDF	*+AR4(OPOSZ),R0
+    // asm 00005205: 	STF	R0,*+AR4(OPOSZ)
 RD0:
-    // asm: 	LDF	0,R0
-    // asm: 	STF	R0,*+AR5(CARSPEED)
-    // asm: 	STF	R0,*+AR5(CARMAXACCEL)
-    // asm: 	LDI	*+AR7(STEALTHMODE),R0		;CHECK STEALTH
-    // asm: 	RETSNZ					;YES, KEEP WAITING
-    // asm: 	POP	R0				;CAN CALL
-    // asm: 	LDI	*+AR4(OFLAGS),R0
-    // asm: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
-    // asm: 	STI	R0,*+AR4(OFLAGS)
+    // asm 00005206: 	LDF	0,R0
+    // asm 00005207: 	STF	R0,*+AR5(CARSPEED)
+    // asm 00005208: 	STF	R0,*+AR5(CARMAXACCEL)
+    // asm 00005209: 	LDI	*+AR7(STEALTHMODE),R0		;CHECK STEALTH
+    // asm 0000520A: 	RETSNZ					;YES, KEEP WAITING
+    // asm 0000520B: 	POP	R0				;CAN CALL
+    // asm 0000520C: 	LDI	*+AR4(OFLAGS),R0
+    // asm 0000520D: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
+    // asm 0000520E: 	STI	R0,*+AR4(OFLAGS)
 RDL:
-    // asm: 	CALL	GETTRAK
-    // asm: 	CALL	ROADIR
-    // asm: 	ADDF	*+AR7(FINISHROT),R0
-    // asm: 	STF	R0,*+AR5(CARYROT)
-    // asm: 	CALL	DRONESTOP
-    // asm: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
-    // asm: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
-    // asm: 	SLEEP	1    			;JUST HANG THERE
+    // asm 0000520F: 	CALL	GETTRAK
+    // asm 00005210: 	CALL	ROADIR
+    // asm 00005211: 	ADDF	*+AR7(FINISHROT),R0
+    // asm 00005212: 	STF	R0,*+AR5(CARYROT)
+    // asm 00005213: 	CALL	DRONESTOP
+    // asm 00005214: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
+    // asm 00005215: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
+    // asm 00005216: 	SLEEP	1    			;JUST HANG THERE
     // ;	SLEEP	10    			;JUST HANG THERE
-    // asm: 	B	RDL
+    // asm 00005218: 	B	RDL
     // *
     // *CHECK PLAYER COLLISION
     // *AR4=DRONE CAR
@@ -620,28 +620,28 @@ RDL:
 
 void CKPCOL(void)
 {
-    // asm: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
-    // asm: 	LDI	*+AR2(OCARBLK),AR3
-    // asm: 	CALL	CKAHEAD
-    // asm: 	BN	CKPX 		;CAR BEHIND, IGNORE
+    // asm 00005219: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
+    // asm 0000521A: 	LDI	*+AR2(OCARBLK),AR3
+    // asm 0000521B: 	CALL	CKAHEAD
+    // asm 0000521C: 	BN	CKPX 		;CAR BEHIND, IGNORE
     // *GET CURRENT DISTANCE
-    // asm: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R6
-    // asm: 	LDF	*+AR2(OPOSZ),R7
-    // asm: 	SUBF	*+AR4(OPOSZ),R7
-    // asm: 	MPYF	R6,R6,R1
-    // asm: 	MPYF	R7,R7,R2
-    // asm: 	ADDF	R1,R2			;distance^2
-    // asm: 	FLOAT	3000,R0
-    // asm: 	MPYF	R0,R0
-    // asm: 	CMPF	R2,R0
-    // asm: 	BLT	CARCHKX			;TOO FAR AWAY
-    // asm: 	LDF	*+AR5(CARSPEED),R0
-    // asm: 	SUBF	*+AR3(CARSPEED),R0
-    // asm: 	CMPF	30,R0
-    // asm: 	BLT	CKPX
-    // asm: 	NOP
+    // asm 0000521D: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R6
+    // asm 0000521E: 	LDF	*+AR2(OPOSZ),R7
+    // asm 0000521F: 	SUBF	*+AR4(OPOSZ),R7
+    // asm 00005220: 	MPYF	R6,R6,R1
+    // asm 00005221: 	MPYF	R7,R7,R2
+    // asm 00005222: 	ADDF	R1,R2			;distance^2
+    // asm 00005223: 	FLOAT	3000,R0
+    // asm 00005224: 	MPYF	R0,R0
+    // asm 00005225: 	CMPF	R2,R0
+    // asm 00005226: 	BLT	CARCHKX			;TOO FAR AWAY
+    // asm 00005227: 	LDF	*+AR5(CARSPEED),R0
+    // asm 00005228: 	SUBF	*+AR3(CARSPEED),R0
+    // asm 00005229: 	CMPF	30,R0
+    // asm 0000522A: 	BLT	CKPX
+    // asm 0000522B: 	NOP
 CKPX:
-    // asm: 	RETS
+    // asm 0000522C: 	RETS
     // *
     // *ENTER DISTANT STEALTH MODE
     // *
@@ -651,43 +651,43 @@ CKPX:
 
 void HI_STEALTH(void)
 {
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,*+AR7(STEALTHMODE)		;HI STEALTH FLAG
-    // asm: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GRAB THE LAST KNOWN VALID OID
-    // asm: 	CALL	FIND_MAP			;*+AR7(DELTA_SPTR),*+AR7(DELTA_LAST_OID)
-    // asm: 	LDI	*+AR4(OFLAGS),R0
-    // asm: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
-    // asm: 	STI	R0,*+AR4(OFLAGS)
+    // asm 0000522D: 	LDI	1,R0
+    // asm 0000522E: 	STI	R0,*+AR7(STEALTHMODE)		;HI STEALTH FLAG
+    // asm 0000522F: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GRAB THE LAST KNOWN VALID OID
+    // asm 00005230: 	CALL	FIND_MAP			;*+AR7(DELTA_SPTR),*+AR7(DELTA_LAST_OID)
+    // asm 00005231: 	LDI	*+AR4(OFLAGS),R0
+    // asm 00005232: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
+    // asm 00005233: 	STI	R0,*+AR4(OFLAGS)
 HI_STLP:
     // *CHECK FINISH LINE
-    // asm: 	LDI	*+AR7(DELTA_LAST_OID),R0	;CHECK TO SEE IF IT IS IN THE RANGE
-    // asm: 	LSH	-8,R0
-    // asm: 	CMPI	@FINISH_ID,R0
-    // asm: 	CALLGE	RACE_FIN
+    // asm 00005234: 	LDI	*+AR7(DELTA_LAST_OID),R0	;CHECK TO SEE IF IT IS IN THE RANGE
+    // asm 00005235: 	LSH	-8,R0
+    // asm 00005236: 	CMPI	@FINISH_ID,R0
+    // asm 00005237: 	CALLGE	RACE_FIN
     // *CHECK IF CURRENT SECTION ON TRACK LIST
-    // asm: 	LDI	@DYNALIST_END,AR2		;GET FURTHEST ROAD ID
-    // asm: 	LDI	*+AR2(OUSR1),R1
-    // asm: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
-    // asm: 	CMPI	R1,R2
-    // asm: 	BLT	REENTER				;WERE OFF ACTIVE TRACK
-    // asm: 	LDI	@HEAD2HEAD_ON,R0
-    // asm: 	CALLNZ	CKTRANSHI
-    // asm: 	CALL	STEALTH_UPDATE
-    // asm: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
-    // asm: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
-    // asm: 	SLEEP	1
-    // asm: 	B	HI_STLP
+    // asm 00005238: 	LDI	@DYNALIST_END,AR2		;GET FURTHEST ROAD ID
+    // asm 00005239: 	LDI	*+AR2(OUSR1),R1
+    // asm 0000523A: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
+    // asm 0000523B: 	CMPI	R1,R2
+    // asm 0000523C: 	BLT	REENTER				;WERE OFF ACTIVE TRACK
+    // asm 0000523D: 	LDI	@HEAD2HEAD_ON,R0
+    // asm 0000523E: 	CALLNZ	CKTRANSHI
+    // asm 0000523F: 	CALL	STEALTH_UPDATE
+    // asm 00005240: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
+    // asm 00005241: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
+    // asm 00005242: 	SLEEP	1
+    // asm 00005244: 	B	HI_STLP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HI_STEALTH", 0, 0);
     UNIMPL();
 }
 
 void HI_ST_END(void)
 {
-    // asm: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
-    // asm: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
+    // asm 00005245: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
+    // asm 00005246: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
     // ;	SLEEP	10
-    // asm: 	SLEEP	1
-    // asm: 	B	HI_ST_END
+    // asm 00005247: 	SLEEP	1
+    // asm 00005249: 	B	HI_ST_END
     // *
     // *ENTER CLOSE STEALTH MODE
     // *
@@ -697,29 +697,29 @@ void HI_ST_END(void)
 
 void LO_STEALTH(void)
 {
-    // asm: 	LDI	-1,R0
-    // asm: 	STI	R0,*+AR7(STEALTHMODE)		;LO STEALTH FLAG
-    // asm: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GET POINTER TO STEALTH MAP
-    // asm: 	CALL	FIND_MAP			;
-    // asm: 	LDI	*+AR4(OFLAGS),R0
-    // asm: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
-    // asm: 	STI	R0,*+AR4(OFLAGS)
+    // asm 0000524A: 	LDI	-1,R0
+    // asm 0000524B: 	STI	R0,*+AR7(STEALTHMODE)		;LO STEALTH FLAG
+    // asm 0000524C: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GET POINTER TO STEALTH MAP
+    // asm 0000524D: 	CALL	FIND_MAP			;
+    // asm 0000524E: 	LDI	*+AR4(OFLAGS),R0
+    // asm 0000524F: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
+    // asm 00005250: 	STI	R0,*+AR4(OFLAGS)
 LO_STLP:
-    // asm: 	LDI	@DYNALIST_TRUEBEGIN,AR2		;GET CLOSEST ROAD ID
-    // asm: 	LDI	*+AR2(OLINK4),AR2
-    // asm: 	LDI	*+AR2(OLINK4),AR2
-    // asm: 	LDI	*+AR2(OLINK4),AR2
-    // asm: 	LDI	*+AR2(OUSR1),R0
-    // asm: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
-    // asm: 	CMPI	R0,R2
-    // asm: 	BGT	REENTER				;REENTER THE SYSTEM DUDES...
-    // asm: 	LDI	@HEAD2HEAD_ON,R0
-    // asm: 	CALLNZ	CKTRANSLO
-    // asm: 	CALL	STEALTH_UPDATE
-    // asm: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
-    // asm: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
-    // asm: 	SLEEP	1
-    // asm: 	B	LO_STLP
+    // asm 00005251: 	LDI	@DYNALIST_TRUEBEGIN,AR2		;GET CLOSEST ROAD ID
+    // asm 00005252: 	LDI	*+AR2(OLINK4),AR2
+    // asm 00005253: 	LDI	*+AR2(OLINK4),AR2
+    // asm 00005254: 	LDI	*+AR2(OLINK4),AR2
+    // asm 00005255: 	LDI	*+AR2(OUSR1),R0
+    // asm 00005256: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
+    // asm 00005257: 	CMPI	R0,R2
+    // asm 00005258: 	BGT	REENTER				;REENTER THE SYSTEM DUDES...
+    // asm 00005259: 	LDI	@HEAD2HEAD_ON,R0
+    // asm 0000525A: 	CALLNZ	CKTRANSLO
+    // asm 0000525B: 	CALL	STEALTH_UPDATE
+    // asm 0000525C: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
+    // asm 0000525D: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
+    // asm 0000525E: 	SLEEP	1
+    // asm 00005260: 	B	LO_STLP
     // *
     // *REENTER REGULAR SYSTEM
     // *R2=OID OF SECTION BEING TRACKED
@@ -730,31 +730,31 @@ LO_STLP:
 
 void REENTER(void)
 {
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*+AR7(STEALTHMODE)	;NO STEALTH INIT
-    // asm: 	LDI	*+AR4(OFLAGS),R0
-    // asm: 	ANDN	O_NOCOLL,R0		;CLEAR NON-COLLIDE FLAG
-    // asm: 	STI	R0,*+AR4(OFLAGS)
-    // asm: 	CALL	FIND_DYNA		;GET TRACKING PIECE POINTER
-    // asm: 	STI	AR2,*+AR7(DELTA_TPIECE)
-    // asm: 	CALL	GETTRAK	      		;GET CLOSEST ROAD SECT ->AR0
-    // asm: 	CALL	ROADIR			;GET RADIANS FOR ORIENTATION
-    // asm: 	LDF	R0,R2
-    // asm: 	STF	R2,*+AR4(ORADY)
-    // asm: 	STF	R2,*+AR5(CARYROT)
-    // asm: 	STF	R2,*+AR5(CARVROT)
-    // asm: 	LDF	0,R0
-    // asm: 	STF	R0,*+AR5(CARDROT)	;CLEAN UP REENTRY
-    // asm: 	STF	R0,*+AR5(CARSPRAD)
-    // asm: 	STF	R0,*+AR5(CARSKID)
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*+AR5(CAR_SPIN)
-    // asm: 	LDI	AR4,AR2	  		;GET NEW MATRIX
-    // asm: 	ADDI	OMATRIX,AR2
-    // asm: 	CALL	FIND_YMATRIX
-    // asm: 	FLOAT	1000,R0			;PUT DUDE DOWN INTO ROAD
-    // asm: 	ADDF	*+AR4(OPOSY),R0
-    // asm: 	B	RACER_LP
+    // asm 00005261: 	LDI	0,R0
+    // asm 00005262: 	STI	R0,*+AR7(STEALTHMODE)	;NO STEALTH INIT
+    // asm 00005263: 	LDI	*+AR4(OFLAGS),R0
+    // asm 00005264: 	ANDN	O_NOCOLL,R0		;CLEAR NON-COLLIDE FLAG
+    // asm 00005265: 	STI	R0,*+AR4(OFLAGS)
+    // asm 00005266: 	CALL	FIND_DYNA		;GET TRACKING PIECE POINTER
+    // asm 00005267: 	STI	AR2,*+AR7(DELTA_TPIECE)
+    // asm 00005268: 	CALL	GETTRAK	      		;GET CLOSEST ROAD SECT ->AR0
+    // asm 00005269: 	CALL	ROADIR			;GET RADIANS FOR ORIENTATION
+    // asm 0000526A: 	LDF	R0,R2
+    // asm 0000526B: 	STF	R2,*+AR4(ORADY)
+    // asm 0000526C: 	STF	R2,*+AR5(CARYROT)
+    // asm 0000526D: 	STF	R2,*+AR5(CARVROT)
+    // asm 0000526E: 	LDF	0,R0
+    // asm 0000526F: 	STF	R0,*+AR5(CARDROT)	;CLEAN UP REENTRY
+    // asm 00005270: 	STF	R0,*+AR5(CARSPRAD)
+    // asm 00005271: 	STF	R0,*+AR5(CARSKID)
+    // asm 00005272: 	LDI	0,R0
+    // asm 00005273: 	STI	R0,*+AR5(CAR_SPIN)
+    // asm 00005274: 	LDI	AR4,AR2	  		;GET NEW MATRIX
+    // asm 00005275: 	ADDI	OMATRIX,AR2
+    // asm 00005276: 	CALL	FIND_YMATRIX
+    // asm 00005277: 	FLOAT	1000,R0			;PUT DUDE DOWN INTO ROAD
+    // asm 00005278: 	ADDF	*+AR4(OPOSY),R0
+    // asm 00005279: 	B	RACER_LP
     // *
     // *CHECK TRANSFER TO OTHER MACHINE ON LINK
     // *LO STEALTH CASE
@@ -764,12 +764,12 @@ void REENTER(void)
 
 void CKTRANSLO(void)
 {
-    // asm: 	CALL	COMPTRAK
-    // asm: 	BLE	CKTLX
-    // asm: 	CALL	CKRANGE
-    // asm: 	BZ	SEND_RACER_XSFER
+    // asm 0000527A: 	CALL	COMPTRAK
+    // asm 0000527B: 	BLE	CKTLX
+    // asm 0000527C: 	CALL	CKRANGE
+    // asm 0000527D: 	BZ	SEND_RACER_XSFER
 CKTLX:
-    // asm: 	RETS
+    // asm 0000527E: 	RETS
     // *HI STEALTH CASE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CKTRANSLO", 0, 0);
     UNIMPL();
@@ -777,12 +777,12 @@ CKTLX:
 
 void CKTRANSHI(void)
 {
-    // asm: 	CALL	COMPTRAK
-    // asm: 	BGE	CKTHX
-    // asm: 	CALL	CKRANGE
-    // asm: 	BZ	SEND_RACER_XSFER
+    // asm 0000527F: 	CALL	COMPTRAK
+    // asm 00005280: 	BGE	CKTHX
+    // asm 00005281: 	CALL	CKRANGE
+    // asm 00005282: 	BZ	SEND_RACER_XSFER
 CKTHX:
-    // asm: 	RETS
+    // asm 00005283: 	RETS
     // *
     // *CHECK IF CAR TRACK ID IS IN OTHER PLAYERS RANGE
     // *RETURNS EQ =IN RANGE, NE=OUT OF RANGE
@@ -792,21 +792,21 @@ CKTHX:
 
 void CKRANGE(void)
 {
-    // asm: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
-    // asm: 	CMPI	@OM_TRACK_LO,R2
-    // asm: 	BLT	CKRFAIL
-    // asm: 	CMPI	@OM_TRACK_HI,R2
-    // asm: 	BGT	CKRFAIL
-    // asm: 	LDI	0,R0
-    // asm: 	RETS
+    // asm 00005284: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
+    // asm 00005285: 	CMPI	@OM_TRACK_LO,R2
+    // asm 00005286: 	BLT	CKRFAIL
+    // asm 00005287: 	CMPI	@OM_TRACK_HI,R2
+    // asm 00005288: 	BGT	CKRFAIL
+    // asm 00005289: 	LDI	0,R0
+    // asm 0000528A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CKRANGE", 0, 0);
     UNIMPL();
 }
 
 void CKRFAIL(void)
 {
-    // asm: 	LDI	1,R0
-    // asm: 	RETS
+    // asm 0000528B: 	LDI	1,R0
+    // asm 0000528C: 	RETS
     // *
     // *COMPARE TO PLAYERS RANK
     // *RETURNS:GT IF WE'RE AHEAD OF OTHER PLAYER
@@ -819,13 +819,13 @@ void CKRFAIL(void)
 
 void COMPTRAK(void)
 {
-    // asm: 	LDI	@PLY2CAR,AR0
-    // asm: 	LDI	*+AR0(OCARBLK),AR1
-    // asm: 	LDI	*+AR1(CARTRACK_ID),R0
-    // asm: 	LDI	@PLYCBLK,AR1
-    // asm: 	LDI	*+AR1(CARTRACK_ID),R1
-    // asm: 	CMPI	R0,R1
-    // asm: 	RETS
+    // asm 0000528D: 	LDI	@PLY2CAR,AR0
+    // asm 0000528E: 	LDI	*+AR0(OCARBLK),AR1
+    // asm 0000528F: 	LDI	*+AR1(CARTRACK_ID),R0
+    // asm 00005290: 	LDI	@PLYCBLK,AR1
+    // asm 00005291: 	LDI	*+AR1(CARTRACK_ID),R1
+    // asm 00005292: 	CMPI	R0,R1
+    // asm 00005293: 	RETS
     // *
     // *TRANSFER CAR TO OTHER MACHINE
     // *AR4=CAR
@@ -833,17 +833,17 @@ void COMPTRAK(void)
     // *AR7=PROCESS
     // *
 SEND_RACER_XSFER:
-    // asm: 	LDI	CB_RACER_XSFER,R0 	;MESSAGE HEADER
+    // asm 00005294: 	LDI	CB_RACER_XSFER,R0 	;MESSAGE HEADER
     // *SEND MESSAGE HEADER
-    // asm: 	LDI	@COMMQ_TMP_BUFFI,AR2
-    // asm: 	STI	R0,*AR2
+    // asm 00005295: 	LDI	@COMMQ_TMP_BUFFI,AR2
+    // asm 00005296: 	STI	R0,*AR2
     // *SEND CAR ID #
-    // asm: 	LDI	*+AR7(DELTA_INIT),R0
-    // asm: 	STI	R0,*+AR2(1)
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	MESSAGE_ADD
-    // asm: 	POP	R0			;CLEAN OFF STACK
-    // asm: 	B 	OM_DRONE  		;NOW CONTROLLED BY OTHER MACHINE
+    // asm 00005297: 	LDI	*+AR7(DELTA_INIT),R0
+    // asm 00005298: 	STI	R0,*+AR2(1)
+    // asm 00005299: 	LDI	1,RC
+    // asm 0000529A: 	CALL	MESSAGE_ADD
+    // asm 0000529B: 	POP	R0			;CLEAN OFF STACK
+    // asm 0000529C: 	B 	OM_DRONE  		;NOW CONTROLLED BY OTHER MACHINE
     // *
     // *GET A CAR FROM OTHER MACHINE
     // *AR4=CAR
@@ -857,139 +857,139 @@ SEND_RACER_XSFER:
 
 void DECODE_RACER_XSFER(void)
 {
-    // asm: 	LDI	*AR2++,R0
-    // asm: 	LDI	@IGNORE_UPDATES,R1
-    // asm: 	RETSNZ
-    // asm: 	LSH	-16,R0  		;GET CAR #
-    // asm: 	BLT	LINKRECX
-    // asm: 	CMPI	7,R0
-    // asm: 	BGT	LINKRECX		;RANGE CHECK
-    // asm: 	ADDI	@RACER_PTRI,R0
-    // asm: 	LDI	R0,AR4
-    // asm: 	LDI	*AR4,R0		 	;GET POINTER
-    // asm: 	BZ	LINKRECX
-    // asm: 	LDI	R0,AR4
-    // asm: 	LDI	*+AR4(OPLINK),AR7
+    // asm 0000529D: 	LDI	*AR2++,R0
+    // asm 0000529E: 	LDI	@IGNORE_UPDATES,R1
+    // asm 0000529F: 	RETSNZ
+    // asm 000052A0: 	LSH	-16,R0  		;GET CAR #
+    // asm 000052A1: 	BLT	LINKRECX
+    // asm 000052A2: 	CMPI	7,R0
+    // asm 000052A3: 	BGT	LINKRECX		;RANGE CHECK
+    // asm 000052A4: 	ADDI	@RACER_PTRI,R0
+    // asm 000052A5: 	LDI	R0,AR4
+    // asm 000052A6: 	LDI	*AR4,R0		 	;GET POINTER
+    // asm 000052A7: 	BZ	LINKRECX
+    // asm 000052A8: 	LDI	R0,AR4
+    // asm 000052A9: 	LDI	*+AR4(OPLINK),AR7
     // *INITIALIZE SHIT
-    // asm: 	LDF	1.0,R0
-    // asm: 	STF	R0,*+AR7(DELTA_THROTTLE)
-    // asm: 	STF	R0,*+AR7(POWERSURGE)
-    // asm: 	STF	R0,*+AR7(POWERCATCH)	;BLAST FROM START RANDOM TIME
-    // asm: 	LDI	75,R0	   		;WAIT A LITTLE BEFORE UPDATE
-    // asm: 	STI	R0,*+AR7(SURGETIME)
-    // asm: 	LDI	27,R0	   		;WAIT A LITTLE BEFORE UPDATE
-    // asm: 	STI	R0,*+AR7(CATCHTIME)
-    // asm: 	LDI	*+AR4(OCARBLK),AR5
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,*+AR7(STEALTHMODE)  	;SET STEALTH INIT
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*+AR5(CAR_OM)	;CAR BELONGS TO ME NOW!!!
+    // asm 000052AA: 	LDF	1.0,R0
+    // asm 000052AB: 	STF	R0,*+AR7(DELTA_THROTTLE)
+    // asm 000052AC: 	STF	R0,*+AR7(POWERSURGE)
+    // asm 000052AD: 	STF	R0,*+AR7(POWERCATCH)	;BLAST FROM START RANDOM TIME
+    // asm 000052AE: 	LDI	75,R0	   		;WAIT A LITTLE BEFORE UPDATE
+    // asm 000052AF: 	STI	R0,*+AR7(SURGETIME)
+    // asm 000052B0: 	LDI	27,R0	   		;WAIT A LITTLE BEFORE UPDATE
+    // asm 000052B1: 	STI	R0,*+AR7(CATCHTIME)
+    // asm 000052B2: 	LDI	*+AR4(OCARBLK),AR5
+    // asm 000052B3: 	LDI	1,R0
+    // asm 000052B4: 	STI	R0,*+AR7(STEALTHMODE)  	;SET STEALTH INIT
+    // asm 000052B5: 	LDI	0,R0
+    // asm 000052B6: 	STI	R0,*+AR5(CAR_OM)	;CAR BELONGS TO ME NOW!!!
     // *CHECK FOR HI OR LO STEALTH ENTRY
-    // asm: 	LDI	*+AR5(CARTRACK_ID),R1		;GET TRACK ID
-    // asm: 	STI	R1,*+AR7(DELTA_LAST_OID)
-    // asm: 	LDI	@DYNALIST_END,AR0		;GET FURTHEST ROAD ID
-    // asm: 	LDI	*+AR0(OUSR1),R0
-    // asm: 	CMPI	R1,R0
-    // asm: 	BGT	LINKREC1
-    // asm: 	LDI	@HI_STEALTHI,R2
-    // asm: 	B	LINKREC3
+    // asm 000052B7: 	LDI	*+AR5(CARTRACK_ID),R1		;GET TRACK ID
+    // asm 000052B8: 	STI	R1,*+AR7(DELTA_LAST_OID)
+    // asm 000052B9: 	LDI	@DYNALIST_END,AR0		;GET FURTHEST ROAD ID
+    // asm 000052BA: 	LDI	*+AR0(OUSR1),R0
+    // asm 000052BB: 	CMPI	R1,R0
+    // asm 000052BC: 	BGT	LINKREC1
+    // asm 000052BD: 	LDI	@HI_STEALTHI,R2
+    // asm 000052BE: 	B	LINKREC3
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_XSFER", 0, 0);
     UNIMPL();
 }
 
 void LINKREC1(void)
 {
-    // asm: 	LDI	@DYNALIST_TRUEBEGIN,AR0		;GET CLOSEST ROAD ID
-    // asm: 	LDI	*+AR0(OLINK4),AR0
-    // asm: 	LDI	*+AR0(OLINK4),AR0
-    // asm: 	LDI	*+AR0(OLINK4),AR0
-    // asm: 	LDI	*+AR0(OUSR1),R0
-    // asm: 	CMPI	R1,R0
-    // asm: 	LDILT	@ACTIVE_XSFERI,R2
-    // asm: 	LDIGE	@LO_STEALTHI,R2
+    // asm 000052BF: 	LDI	@DYNALIST_TRUEBEGIN,AR0		;GET CLOSEST ROAD ID
+    // asm 000052C0: 	LDI	*+AR0(OLINK4),AR0
+    // asm 000052C1: 	LDI	*+AR0(OLINK4),AR0
+    // asm 000052C2: 	LDI	*+AR0(OLINK4),AR0
+    // asm 000052C3: 	LDI	*+AR0(OUSR1),R0
+    // asm 000052C4: 	CMPI	R1,R0
+    // asm 000052C5: 	LDILT	@ACTIVE_XSFERI,R2
+    // asm 000052C6: 	LDIGE	@LO_STEALTHI,R2
 LINKREC3:
-    // asm: 	STI	R2,*+AR7(PWAKE)			;CHANGE WAKE-UP ADDR
-    // asm: 	RETS
+    // asm 000052C7: 	STI	R2,*+AR7(PWAKE)			;CHANGE WAKE-UP ADDR
+    // asm 000052C8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LINKREC1", 0, 0);
     UNIMPL();
 }
 
 void LINKRECX(void)
 {
-    // asm: 	RETS
+    // asm 000052C9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LINKRECX", 0, 0);
     UNIMPL();
 }
 
 void ACTIVE_XSFER(void)
 {
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*+AR7(STEALTHMODE)		;NO STEALTH INIT
-    // asm: 	LDI	*+AR4(OFLAGS),R0
-    // asm: 	ANDN	O_NOCOLL,R0			;CLEAR NON-COLLIDE FLAG
-    // asm: 	STI	R0,*+AR4(OFLAGS)
-    // asm: 	LDI	*+AR5(CARTRACK_ID),R2		;GET TRACK ID
-    // asm: 	STI	R2,*+AR7(DELTA_LAST_OID)	;CHECK TO SEE IF IT IS IN THE RANGE
-    // asm: 	CALL	FIND_DYNA			;GET TRACKING PIECE POINTER
-    // asm: 	STI	AR2,*+AR7(DELTA_TPIECE)
-    // asm: 	LDF	0,R0
-    // asm: 	STF	R0,*+AR5(CARDROT)	;CLEAN UP REENTRY
-    // asm: 	STF	R0,*+AR5(CARSPRAD)
-    // asm: 	STF	R0,*+AR5(CARSKID)
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*+AR5(CAR_SPIN)
-    // asm: 	B	RACER_LP
+    // asm 000052CD: 	LDI	0,R0
+    // asm 000052CE: 	STI	R0,*+AR7(STEALTHMODE)		;NO STEALTH INIT
+    // asm 000052CF: 	LDI	*+AR4(OFLAGS),R0
+    // asm 000052D0: 	ANDN	O_NOCOLL,R0			;CLEAR NON-COLLIDE FLAG
+    // asm 000052D1: 	STI	R0,*+AR4(OFLAGS)
+    // asm 000052D2: 	LDI	*+AR5(CARTRACK_ID),R2		;GET TRACK ID
+    // asm 000052D3: 	STI	R2,*+AR7(DELTA_LAST_OID)	;CHECK TO SEE IF IT IS IN THE RANGE
+    // asm 000052D4: 	CALL	FIND_DYNA			;GET TRACKING PIECE POINTER
+    // asm 000052D5: 	STI	AR2,*+AR7(DELTA_TPIECE)
+    // asm 000052D6: 	LDF	0,R0
+    // asm 000052D7: 	STF	R0,*+AR5(CARDROT)	;CLEAN UP REENTRY
+    // asm 000052D8: 	STF	R0,*+AR5(CARSPRAD)
+    // asm 000052D9: 	STF	R0,*+AR5(CARSKID)
+    // asm 000052DA: 	LDI	0,R0
+    // asm 000052DB: 	STI	R0,*+AR5(CAR_SPIN)
+    // asm 000052DC: 	B	RACER_LP
     // *
     // *UPDATE STEALTH POSITION
     // *LINEAR TRACK TO NEXT TRACK SEGMENT
     // *
 STEALTH_UPDATE:
-    // asm: 	LDI	*+AR7(DELTA_SPTR),AR0  		;STEP TO NEXT PIECE?
-    // asm: 	FLOAT  	*+AR0(X),R2
-    // asm: 	SUBF	*+AR4(OPOSX),R2
-    // asm: 	FLOAT  	*+AR0(Z),R3
-    // asm: 	SUBF	*+AR4(OPOSZ),R3
-    // asm: 	MPYF	R2,R2,R0
-    // asm: 	MPYF	R3,R3,R1
-    // asm: 	ADDF	R1,R0
-    // asm: 	FLOAT	5000,R1				;TO THE NEXT PIECE
-    // asm: 	MPYF	R1,R1
-    // asm: 	CMPF	R1,R0
-    // asm: 	BGT	STLUP1
-    // asm: 	ADDI	4,AR0
-    // asm: 	STI	AR0,*+AR7(DELTA_SPTR)
-    // asm: 	LDI	*+AR0(3),R0
-    // asm: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
-    // asm: 	CMPI	-1,R0				;CHECK END OF THE LINE
-    // asm:       	BNZ	STEALTH_UPDATE
-    // asm: 	POP	R0				;END OF LINE JUST SLEEP
-    // asm: 	B	HI_ST_END
+    // asm 000052DD: 	LDI	*+AR7(DELTA_SPTR),AR0  		;STEP TO NEXT PIECE?
+    // asm 000052DE: 	FLOAT  	*+AR0(X),R2
+    // asm 000052DF: 	SUBF	*+AR4(OPOSX),R2
+    // asm 000052E0: 	FLOAT  	*+AR0(Z),R3
+    // asm 000052E1: 	SUBF	*+AR4(OPOSZ),R3
+    // asm 000052E2: 	MPYF	R2,R2,R0
+    // asm 000052E3: 	MPYF	R3,R3,R1
+    // asm 000052E4: 	ADDF	R1,R0
+    // asm 000052E5: 	FLOAT	5000,R1				;TO THE NEXT PIECE
+    // asm 000052E6: 	MPYF	R1,R1
+    // asm 000052E7: 	CMPF	R1,R0
+    // asm 000052E8: 	BGT	STLUP1
+    // asm 000052E9: 	ADDI	4,AR0
+    // asm 000052EA: 	STI	AR0,*+AR7(DELTA_SPTR)
+    // asm 000052EB: 	LDI	*+AR0(3),R0
+    // asm 000052EC: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
+    // asm 000052ED: 	CMPI	-1,R0				;CHECK END OF THE LINE
+    // asm 000052EE:       	BNZ	STEALTH_UPDATE
+    // asm 000052EF: 	POP	R0				;END OF LINE JUST SLEEP
+    // asm 000052F0: 	B	HI_ST_END
 STLUP1:
-    // asm: 	FLOAT	*+AR0(Y),R0	       		;GET Y POSITION SET
+    // asm 000052F1: 	FLOAT	*+AR0(Y),R0	       		;GET Y POSITION SET
     // ;	LDF	*+AR0(Y),R0	       		;GET Y POSITION SET
-    // asm: 	FLOAT	250,R1
-    // asm: 	SUBF	R1,R0
-    // asm: 	STF	R0,*+AR4(OPOSY)			;ADJUST YOUR Y
-    // asm: 	LDI	@VECTORAI,AR2 			;GET DIRECTIONAL VELOCITY
-    // asm: 	STF	R2,*AR2	  			;DELTA X
-    // asm: 	LDF	0,R0				;DELTA Y
-    // asm: 	STF	R0,*+AR2(1)
-    // asm: 	STF	R3,*+AR2(2)			;DELTA Z
-    // asm: 	CALL	NORMALIZE
-    // asm: 	CALL	GETRPM
-    // asm: 	CALL	GETAUTO
-    // asm: 	STI	R0,*+AR5(CARGEAR)	 	;DO THE GEAR
-    // asm: 	LDI	*+AR7(DELTA_SPTR),R0  		;STEP TO NEXT PIECE?
-    // asm: 	STI	R0,*+AR5(CARTRAK)		;PUT THIS INTO CARTRAK FOR NOW
-    // asm: 	CALL	GETPOWER			;UPDATE POWER STUFF
-    // asm: 	CALL	GETSTSPD			;GET STEALTH SPEED
-    // asm: 	MPYF	*AR2,R5,R0		 	;X DELTA
-    // asm: 	ADDF	*+AR4(OPOSX),R0
-    // asm: 	STF	R0,*+AR4(OPOSX)
-    // asm: 	MPYF	*+AR2(2),R5			;Z DELTA
-    // asm: 	ADDF	*+AR4(OPOSZ),R5
-    // asm: 	STF	R5,*+AR4(OPOSZ)
-    // asm: 	RETS
+    // asm 000052F2: 	FLOAT	250,R1
+    // asm 000052F3: 	SUBF	R1,R0
+    // asm 000052F4: 	STF	R0,*+AR4(OPOSY)			;ADJUST YOUR Y
+    // asm 000052F5: 	LDI	@VECTORAI,AR2 			;GET DIRECTIONAL VELOCITY
+    // asm 000052F6: 	STF	R2,*AR2	  			;DELTA X
+    // asm 000052F7: 	LDF	0,R0				;DELTA Y
+    // asm 000052F8: 	STF	R0,*+AR2(1)
+    // asm 000052F9: 	STF	R3,*+AR2(2)			;DELTA Z
+    // asm 000052FA: 	CALL	NORMALIZE
+    // asm 000052FB: 	CALL	GETRPM
+    // asm 000052FC: 	CALL	GETAUTO
+    // asm 000052FD: 	STI	R0,*+AR5(CARGEAR)	 	;DO THE GEAR
+    // asm 000052FE: 	LDI	*+AR7(DELTA_SPTR),R0  		;STEP TO NEXT PIECE?
+    // asm 000052FF: 	STI	R0,*+AR5(CARTRAK)		;PUT THIS INTO CARTRAK FOR NOW
+    // asm 00005300: 	CALL	GETPOWER			;UPDATE POWER STUFF
+    // asm 00005301: 	CALL	GETSTSPD			;GET STEALTH SPEED
+    // asm 00005302: 	MPYF	*AR2,R5,R0		 	;X DELTA
+    // asm 00005303: 	ADDF	*+AR4(OPOSX),R0
+    // asm 00005304: 	STF	R0,*+AR4(OPOSX)
+    // asm 00005305: 	MPYF	*+AR2(2),R5			;Z DELTA
+    // asm 00005306: 	ADDF	*+AR4(OPOSZ),R5
+    // asm 00005307: 	STF	R5,*+AR4(OPOSZ)
+    // asm 00005308: 	RETS
     // *
     // *GET RACER POWER
     // *
@@ -999,96 +999,96 @@ STLUP1:
 
 void GETPOWER(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	LDI	*+AR7(CATCHTIME),R0 	;CHECK IF TIME FOR POWER CHANGE
-    // asm: 	DEC	R0
-    // asm: 	STI	R0,*+AR7(CATCHTIME)
-    // asm: 	BNN	GETSURGE		;NOPE
+    // asm 00005309: 	PUSH	AR2
+    // asm 0000530A: 	LDI	*+AR7(CATCHTIME),R0 	;CHECK IF TIME FOR POWER CHANGE
+    // asm 0000530B: 	DEC	R0
+    // asm 0000530C: 	STI	R0,*+AR7(CATCHTIME)
+    // asm 0000530D: 	BNN	GETSURGE		;NOPE
     // *GET NEW UPDATE TIMER
-    // asm: 	LDI	35,AR2
-    // asm: 	CALL	RANDU
-    // asm: 	ADDI	10,R0
-    // asm: 	STI	R0,*+AR7(CATCHTIME)
+    // asm 0000530E: 	LDI	35,AR2
+    // asm 0000530F: 	CALL	RANDU
+    // asm 00005310: 	ADDI	10,R0
+    // asm 00005311: 	STI	R0,*+AR7(CATCHTIME)
     // *GET DISTANCE TO PLAYER
-    // asm: 	LDI	@PLYCAR,AR0
-    // asm: 	SUBF	*+AR4(OPOSX),*+AR0(OPOSX),R1
-    // asm: 	LDF	*+AR0(OPOSZ),R2
-    // asm: 	SUBF	*+AR4(OPOSZ),R2
-    // asm: 	MPYF	R1,R1
-    // asm: 	MPYF	R2,R2
-    // asm: 	ADDF	R1,R2
-    // asm: 	CALL	SQRT
-    // asm: 	LDI	*+AR7(STEALTHMODE),R3		;HI,LO OR NO STEALTH?
-    // asm: 	BZ	PDIST
-    // asm: 	LDI	R3,R1
-    // asm: 	LDI	0,R2
-    // asm: 	B	PDIST1
+    // asm 00005312: 	LDI	@PLYCAR,AR0
+    // asm 00005313: 	SUBF	*+AR4(OPOSX),*+AR0(OPOSX),R1
+    // asm 00005314: 	LDF	*+AR0(OPOSZ),R2
+    // asm 00005315: 	SUBF	*+AR4(OPOSZ),R2
+    // asm 00005316: 	MPYF	R1,R1
+    // asm 00005317: 	MPYF	R2,R2
+    // asm 00005318: 	ADDF	R1,R2
+    // asm 00005319: 	CALL	SQRT
+    // asm 0000531A: 	LDI	*+AR7(STEALTHMODE),R3		;HI,LO OR NO STEALTH?
+    // asm 0000531B: 	BZ	PDIST
+    // asm 0000531C: 	LDI	R3,R1
+    // asm 0000531D: 	LDI	0,R2
+    // asm 0000531E: 	B	PDIST1
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPOWER", 0, 0);
     UNIMPL();
 }
 
 void PDIST(void)
 {
-    // asm: 	LDI	*+AR0(OCARBLK),AR1
-    // asm: 	LDI	*+AR1(CARTRAK),AR2
-    // asm: 	LDI	*+AR2(OUSR1),R2
-    // asm: 	LDI	*+AR5(CARTRAK),AR3
-    // asm: 	LDI	*+AR3(OUSR1),R1
+    // asm 0000531F: 	LDI	*+AR0(OCARBLK),AR1
+    // asm 00005320: 	LDI	*+AR1(CARTRAK),AR2
+    // asm 00005321: 	LDI	*+AR2(OUSR1),R2
+    // asm 00005322: 	LDI	*+AR5(CARTRAK),AR3
+    // asm 00005323: 	LDI	*+AR3(OUSR1),R1
 PDIST1:
-    // asm: 	MPYF	0.01,R0
-    // asm: 	MPYF	0.01,R0
-    // asm: 	MPYF	0.07,R0
-    // asm: 	CMPF	0.4,R0			;MAX OUT AT +-60%
-    // asm: 	LDFGT	0.4,R0
-    // asm: 	LDF	1.0,R3			;SIGN
-    // asm: 	CMPI	R2,R1
-    // asm: 	LDFZ	0,R3			;EVEN RACE
-    // asm: 	LDFGT	-1.0,R3
-    // asm: 	BLE	PDIST1A
-    // asm: 	CMPF	0.1,R0
-    // asm: 	LDFLT	0.1,R0			;MINIMUM IF AHEAD
-    // asm: 	B	PDIST1B
+    // asm 00005324: 	MPYF	0.01,R0
+    // asm 00005325: 	MPYF	0.01,R0
+    // asm 00005326: 	MPYF	0.07,R0
+    // asm 00005327: 	CMPF	0.4,R0			;MAX OUT AT +-60%
+    // asm 00005328: 	LDFGT	0.4,R0
+    // asm 00005329: 	LDF	1.0,R3			;SIGN
+    // asm 0000532A: 	CMPI	R2,R1
+    // asm 0000532B: 	LDFZ	0,R3			;EVEN RACE
+    // asm 0000532C: 	LDFGT	-1.0,R3
+    // asm 0000532D: 	BLE	PDIST1A
+    // asm 0000532E: 	CMPF	0.1,R0
+    // asm 0000532F: 	LDFLT	0.1,R0			;MINIMUM IF AHEAD
+    // asm 00005330: 	B	PDIST1B
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PDIST", 0, 0);
     UNIMPL();
 }
 
 void PDIST1A(void)
 {
-    // asm: 	CMPF	0.2,R0
-    // asm: 	LDFLT	0.2,R0			;MINIMUM IF BEHIND
+    // asm 00005331: 	CMPF	0.2,R0
+    // asm 00005332: 	LDFLT	0.2,R0			;MINIMUM IF BEHIND
 PDIST1B:
-    // asm: 	MPYF	R3,R0,R3		;DO THE SIGN
-    // asm: 	FLOAT	@PLYRFIRST,R0	  	;TIME IN FIRST
-    // asm: 	BZ	PDIST2
-    // asm: 	MPYF	0.01,R0
-    // asm: 	MPYF	0.15,R0
-    // asm: 	CALL	FRAND
-    // asm: 	CMPF	0.15,R0
-    // asm: 	LDFGT	0.15,R0			;BOOST FOR LONG TIME FIRST
-    // asm:        	ADDF	R0,R3			;A LITTLE BOOST IF PLAYER = #1
+    // asm 00005333: 	MPYF	R3,R0,R3		;DO THE SIGN
+    // asm 00005334: 	FLOAT	@PLYRFIRST,R0	  	;TIME IN FIRST
+    // asm 00005335: 	BZ	PDIST2
+    // asm 00005336: 	MPYF	0.01,R0
+    // asm 00005337: 	MPYF	0.15,R0
+    // asm 00005338: 	CALL	FRAND
+    // asm 00005339: 	CMPF	0.15,R0
+    // asm 0000533A: 	LDFGT	0.15,R0			;BOOST FOR LONG TIME FIRST
+    // asm 0000533B:        	ADDF	R0,R3			;A LITTLE BOOST IF PLAYER = #1
 PDIST2:
-    // asm: 	MPYF	*+AR7(RELATIVITY),R3	;ADJUST FOR RELATIVITY
-    // asm: 	ADDF	1.0,R3
-    // asm: 	STF	R3,*+AR7(POWERCATCH)
+    // asm 0000533C: 	MPYF	*+AR7(RELATIVITY),R3	;ADJUST FOR RELATIVITY
+    // asm 0000533D: 	ADDF	1.0,R3
+    // asm 0000533E: 	STF	R3,*+AR7(POWERCATCH)
 GETSURGE:
-    // asm: 	LDI	*+AR7(SURGETIME),R0 	;CHECK IF TIME FOR POWER CHANGE
-    // asm: 	DEC	R0
-    // asm: 	STI	R0,*+AR7(SURGETIME)
-    // asm: 	BNN	POWERX
-    // asm: 	LDI 	90,AR2			;GET NEW TIME
-    // asm: 	CALL	RANDU
-    // asm: 	ADDI	30,AR2
-    // asm: 	STI	R0,*+AR7(SURGETIME)
-    // asm: 	LDF	0.12,R0	       		;GET NEW POWERSURGE
-    // asm: 	CALL	SFRAND
-    // asm: 	ADDF	1.0,R0
-    // asm: 	STF	R0,*+AR7(POWERSURGE)
+    // asm 0000533F: 	LDI	*+AR7(SURGETIME),R0 	;CHECK IF TIME FOR POWER CHANGE
+    // asm 00005340: 	DEC	R0
+    // asm 00005341: 	STI	R0,*+AR7(SURGETIME)
+    // asm 00005342: 	BNN	POWERX
+    // asm 00005343: 	LDI 	90,AR2			;GET NEW TIME
+    // asm 00005344: 	CALL	RANDU
+    // asm 00005345: 	ADDI	30,AR2
+    // asm 00005346: 	STI	R0,*+AR7(SURGETIME)
+    // asm 00005347: 	LDF	0.12,R0	       		;GET NEW POWERSURGE
+    // asm 00005348: 	CALL	SFRAND
+    // asm 00005349: 	ADDF	1.0,R0
+    // asm 0000534A: 	STF	R0,*+AR7(POWERSURGE)
 POWERX:
-    // asm: 	LDF	*+AR7(POWERSURGE),R0
-    // asm: 	MPYF	*+AR7(POWERCATCH),R0
-    // asm: 	STF	R0,*+AR7(DELTA_THROTTLE)
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 0000534B: 	LDF	*+AR7(POWERSURGE),R0
+    // asm 0000534C: 	MPYF	*+AR7(POWERCATCH),R0
+    // asm 0000534D: 	STF	R0,*+AR7(DELTA_THROTTLE)
+    // asm 0000534E: 	POP	AR2
+    // asm 0000534F: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PDIST1A", 0, 0);
     UNIMPL();
 }
@@ -1107,71 +1107,71 @@ POWERX:
 void GETSTSPD(void)
 {
     // *GET ENGINE ACCEL
-    // asm: 	LDF	*+AR7(DELTA_THROTTLE),R0	;HAS THE RACE BEGUN?
-    // asm: 	LDI	@_MODE,R1
-    // asm: 	TSTB	MGO,R1
-    // asm: 	LDFZ	0,R0				;N -> THROTTLE = 0
-    // asm: 	STF	R0,*+AR5(CARTHROTTLE)
-    // asm: 	MPYF	*+AR5(CARMAXACCEL),R0
-    // asm: 	LDF	*+AR5(CARRPM),R1
-    // asm: 	MPYF	0.333,R1
-    // asm: 	FIX	R1,IR0		   	;GET TABLE INDEX
-    // asm: 	CMPI	18,IR0
-    // asm: 	LDIGT	18,IR0			;KEEP INDEX IN RANGE
-    // asm: 	LDI	@ENGACTABI,AR0
-    // asm: 	LDF	*+AR0(IR0),R2		;GET LO POWER FACTOR FOR GEAR
-    // asm: 	ADDI	1,IR0
-    // asm: 	LDF	*+AR0(IR0),R3		;GET HI POWER FACTOR FOR GEAR
-    // asm: 	FLOAT	IR0,R4
-    // asm: 	SUBF	R1,R4,R1
-    // asm: 	LDFLT	0,R1  			;KEEP FACTOR IN BOUNDS
-    // asm: 	CMPF	1.0,R1
-    // asm: 	LDFGT	1.0,R1
-    // asm: 	MPYF	R1,R2			;INTERPOLATE !!!
-    // asm: 	SUBRF	1.0,R1
-    // asm: 	MPYF	R1,R3
-    // asm: 	ADDF	R2,R3,R1
-    // asm: 	LDI	*+AR5(CARGEAR),IR0	;GEAR MULTIPLIER
-    // asm: 	LDI	@GEARACTABI,AR0
-    // asm: 	MPYF	*+AR0(IR0),R1
-    // asm: 	MPYF	0.97,R1			;3% POWER LOSS AUTO
-    // asm: 	MPYF	R1,R0
+    // asm 00005350: 	LDF	*+AR7(DELTA_THROTTLE),R0	;HAS THE RACE BEGUN?
+    // asm 00005351: 	LDI	@_MODE,R1
+    // asm 00005352: 	TSTB	MGO,R1
+    // asm 00005353: 	LDFZ	0,R0				;N -> THROTTLE = 0
+    // asm 00005354: 	STF	R0,*+AR5(CARTHROTTLE)
+    // asm 00005355: 	MPYF	*+AR5(CARMAXACCEL),R0
+    // asm 00005356: 	LDF	*+AR5(CARRPM),R1
+    // asm 00005357: 	MPYF	0.333,R1
+    // asm 00005358: 	FIX	R1,IR0		   	;GET TABLE INDEX
+    // asm 00005359: 	CMPI	18,IR0
+    // asm 0000535A: 	LDIGT	18,IR0			;KEEP INDEX IN RANGE
+    // asm 0000535B: 	LDI	@ENGACTABI,AR0
+    // asm 0000535C: 	LDF	*+AR0(IR0),R2		;GET LO POWER FACTOR FOR GEAR
+    // asm 0000535D: 	ADDI	1,IR0
+    // asm 0000535E: 	LDF	*+AR0(IR0),R3		;GET HI POWER FACTOR FOR GEAR
+    // asm 0000535F: 	FLOAT	IR0,R4
+    // asm 00005360: 	SUBF	R1,R4,R1
+    // asm 00005361: 	LDFLT	0,R1  			;KEEP FACTOR IN BOUNDS
+    // asm 00005362: 	CMPF	1.0,R1
+    // asm 00005363: 	LDFGT	1.0,R1
+    // asm 00005364: 	MPYF	R1,R2			;INTERPOLATE !!!
+    // asm 00005365: 	SUBRF	1.0,R1
+    // asm 00005366: 	MPYF	R1,R3
+    // asm 00005367: 	ADDF	R2,R3,R1
+    // asm 00005368: 	LDI	*+AR5(CARGEAR),IR0	;GEAR MULTIPLIER
+    // asm 00005369: 	LDI	@GEARACTABI,AR0
+    // asm 0000536A: 	MPYF	*+AR0(IR0),R1
+    // asm 0000536B: 	MPYF	0.97,R1			;3% POWER LOSS AUTO
+    // asm 0000536C: 	MPYF	R1,R0
     // *GET TOTAL FRICTION
     // *GET ROAD FRICTION
-    // asm: 	LDF	*+AR5(CARRDFR),R3    	;GET ROAD FRICTION
+    // asm 0000536D: 	LDF	*+AR5(CARRDFR),R3    	;GET ROAD FRICTION
     // *GET ENGINE FRICTION
-    // asm: 	LDI	*+AR5(CARGEAR),IR0
-    // asm: 	LDI	@ENGFRI,AR0
-    // asm: 	LDF	*+AR0(IR0),R4
-    // asm: 	LDF	*+AR5(CARRPM),R5	;MORE REVS MORE FRICTION
-    // asm: 	SUBF	42,R5			;HEAVY FRICTION ABOVE 3900
-    // asm: 	LDFLT	0,R5
-    // asm: 	MPYF	0.04,R5
-    // asm: 	ADDF	1.0,R5			;APPROX RANGE 1-2
-    // asm: 	MPYF	R4,R5
-    // asm: GETSP22
-    // asm: 	ADDF	R5,R3
+    // asm 0000536E: 	LDI	*+AR5(CARGEAR),IR0
+    // asm 0000536F: 	LDI	@ENGFRI,AR0
+    // asm 00005370: 	LDF	*+AR0(IR0),R4
+    // asm 00005371: 	LDF	*+AR5(CARRPM),R5	;MORE REVS MORE FRICTION
+    // asm 00005372: 	SUBF	42,R5			;HEAVY FRICTION ABOVE 3900
+    // asm 00005373: 	LDFLT	0,R5
+    // asm 00005374: 	MPYF	0.04,R5
+    // asm 00005375: 	ADDF	1.0,R5			;APPROX RANGE 1-2
+    // asm 00005376: 	MPYF	R4,R5
+    // asm 00005377: GETSP22
+    // asm 00005377: 	ADDF	R5,R3
     // *CALC NEW SPEED
-    // asm: GETSPD2
-    // asm: 	LDF	0,R5
-    // asm: 	LDF	*+AR5(CARSPEED),R1
-    // asm: 	LDPI	@NFRAMES,RC
-    // asm: 	SUBI	1,RC
+    // asm 00005378: GETSPD2
+    // asm 00005378: 	LDF	0,R5
+    // asm 00005379: 	LDF	*+AR5(CARSPEED),R1
+    // asm 0000537A: 	LDPI	@NFRAMES,RC
+    // asm 0000537B: 	SUBI	1,RC
     // *R0=ACCEL
     // *R1=SPEED
     // *R3=TOTAL FRICTION
     // *R5=DISTANCE
     // *R7=ENGINE FRICTION
-    // asm: 	RPTB	GSL0
-    // asm: 	MPYF 	R1,R3,R4	     	;BRAKE/ROAD/ENGINE FRICTION
-    // asm: 	SUBF	R4,R1			;SUBTRACT FRICTION
-    // asm: 	ADDF	R0,R1			;ADD ACCEL
+    // asm 0000537C: 	RPTB	GSL0
+    // asm 0000537D: 	MPYF 	R1,R3,R4	     	;BRAKE/ROAD/ENGINE FRICTION
+    // asm 0000537E: 	SUBF	R4,R1			;SUBTRACT FRICTION
+    // asm 0000537F: 	ADDF	R0,R1			;ADD ACCEL
 GSL0:
-    // asm: ADDF	R1,R5
-    // asm: 	MPYF	1.5,R5			;SPEEDFUDGE
-    // asm: 	STF	R5,*+AR5(CARDIST)	;SAVE YOUR DISTANCE
-    // asm: 	STF	R1,*+AR5(CARSPEED)	;NEW SPEED
-    // asm: 	RETS
+    // asm 00005380: ADDF	R1,R5
+    // asm 00005381: 	MPYF	1.5,R5			;SPEEDFUDGE
+    // asm 00005382: 	STF	R5,*+AR5(CARDIST)	;SAVE YOUR DISTANCE
+    // asm 00005383: 	STF	R1,*+AR5(CARSPEED)	;NEW SPEED
+    // asm 00005384: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSTSPD", 0, 0);
     UNIMPL();
 }
@@ -1187,19 +1187,19 @@ GSL0:
  */
 void FIND_DYNA(void)
 {
-    // asm: 	LDI	@DYNALIST_TRUEBEGIN,AR2
+    // asm 00005385: 	LDI	@DYNALIST_TRUEBEGIN,AR2
 FDL:
-    // asm: 	LDI	*+AR2(OUSR1),R0
-    // asm: 	CMPI	R0,R2
-    // asm: 	BZ	FDLX
-    // asm: 	LDI	*+AR2(OLINK4),AR2
-    // asm: 	CMPI	0,AR2			;CHECK END OF THE LINE
-    // asm: 	BNZ	FDL
-    // asm: 	LOCKUP				;ERROR COULDN'T FIND THE SUCKER
-    // asm: 	POP	R0
-    // asm: 	DIE
+    // asm 00005386: 	LDI	*+AR2(OUSR1),R0
+    // asm 00005387: 	CMPI	R0,R2
+    // asm 00005388: 	BZ	FDLX
+    // asm 00005389: 	LDI	*+AR2(OLINK4),AR2
+    // asm 0000538A: 	CMPI	0,AR2			;CHECK END OF THE LINE
+    // asm 0000538B: 	BNZ	FDL
+    // asm 0000538C: 	LOCKUP				;ERROR COULDN'T FIND THE SUCKER
+    // asm 0000538E: 	POP	R0
+    // asm 0000538F: 	DIE
 FDLX:
-    // asm: 	RETS
+    // asm 00005390: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_DYNA", 0, 0);
     UNIMPL();
 }
@@ -1222,46 +1222,46 @@ FDLX:
  */
 void FIND_MAP(void)
 {
-    // asm: 	LDI	@LEG_MAPI,AR0
-    // asm: 	ADDI	3,AR0				;OFFSET TO ID
+    // asm 00005391: 	LDI	@LEG_MAPI,AR0
+    // asm 00005392: 	ADDI	3,AR0				;OFFSET TO ID
 FIND_LP:
-    // asm: 	LDI	*AR0++(4),R0
-    // asm: 	CMPI	R2,R0
-    // asm: 	BLT	FIND_LP
-    // asm: FINDX
-    // asm: 	SUBI	7,AR0
-    // asm: 	STI	AR0,*+AR7(DELTA_SPTR)
-    // asm: 	STI	R0,*+AR7(DELTA_LAST_OID)	;save road id
-    // asm: 	RETS
+    // asm 00005393: 	LDI	*AR0++(4),R0
+    // asm 00005394: 	CMPI	R2,R0
+    // asm 00005395: 	BLT	FIND_LP
+    // asm 00005396: FINDX
+    // asm 00005396: 	SUBI	7,AR0
+    // asm 00005397: 	STI	AR0,*+AR7(DELTA_SPTR)
+    // asm 00005398: 	STI	R0,*+AR7(DELTA_LAST_OID)	;save road id
+    // asm 00005399: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_MAP", 0, 0);
     UNIMPL();
 }
 
 void CKAHEAD(void)
 {
-    // asm: 	LDI	*+AR3(CARTRAK),AR0
-    // asm: 	LDI	*+AR0(OUSR1),R0
-    // asm: 	LDI	*+AR5(CARTRAK),AR0
-    // asm: 	CMPI	*+AR0(OUSR1),R0
-    // asm: 	RETSNZ				;RETURN VALUE IF NOT THE SAME
-    // asm: 	LDI	*+AR0(OLINK4),R0	;GET NEXT ROAD OBJECT
-    // asm: 	LDINZ	R0,AR0			;HANDLE END OF LIST PROBLEM
-    // asm: 	LDI	*+AR0(OLINK4),R0	;GET NEXT ROAD OBJECT
-    // asm: 	LDINZ	R0,AR0			;HANDLE END OF LIST
-    // asm: 	SUBF	*+AR4(OPOSX),*+AR0(OPOSX),R0
-    // asm: 	MPYF	R0,R0
-    // asm: 	LDF	*+AR0(OPOSZ),R1
-    // asm: 	SUBF	*+AR4(OPOSZ),R1
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R1,R0
-    // asm: 	SUBF	*+AR2(OPOSX),*+AR0(OPOSX),R2
-    // asm: 	MPYF	R2,R2
-    // asm: 	LDF	*+AR0(OPOSZ),R1
-    // asm: 	SUBF	*+AR2(OPOSZ),R1
-    // asm: 	MPYF	R1,R1
-    // asm: 	ADDF	R2,R1
-    // asm: 	CMPF	R1,R0			;WHO IS CLOSER?
-    // asm: 	RETS
+    // asm 0000539A: 	LDI	*+AR3(CARTRAK),AR0
+    // asm 0000539B: 	LDI	*+AR0(OUSR1),R0
+    // asm 0000539C: 	LDI	*+AR5(CARTRAK),AR0
+    // asm 0000539D: 	CMPI	*+AR0(OUSR1),R0
+    // asm 0000539E: 	RETSNZ				;RETURN VALUE IF NOT THE SAME
+    // asm 0000539F: 	LDI	*+AR0(OLINK4),R0	;GET NEXT ROAD OBJECT
+    // asm 000053A0: 	LDINZ	R0,AR0			;HANDLE END OF LIST PROBLEM
+    // asm 000053A1: 	LDI	*+AR0(OLINK4),R0	;GET NEXT ROAD OBJECT
+    // asm 000053A2: 	LDINZ	R0,AR0			;HANDLE END OF LIST
+    // asm 000053A3: 	SUBF	*+AR4(OPOSX),*+AR0(OPOSX),R0
+    // asm 000053A4: 	MPYF	R0,R0
+    // asm 000053A5: 	LDF	*+AR0(OPOSZ),R1
+    // asm 000053A6: 	SUBF	*+AR4(OPOSZ),R1
+    // asm 000053A7: 	MPYF	R1,R1
+    // asm 000053A8: 	ADDF	R1,R0
+    // asm 000053A9: 	SUBF	*+AR2(OPOSX),*+AR0(OPOSX),R2
+    // asm 000053AA: 	MPYF	R2,R2
+    // asm 000053AB: 	LDF	*+AR0(OPOSZ),R1
+    // asm 000053AC: 	SUBF	*+AR2(OPOSZ),R1
+    // asm 000053AD: 	MPYF	R1,R1
+    // asm 000053AE: 	ADDF	R2,R1
+    // asm 000053AF: 	CMPF	R1,R0			;WHO IS CLOSER?
+    // asm 000053B0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CKAHEAD", 0, 0);
     UNIMPL();
 }
@@ -1279,22 +1279,22 @@ void CKAHEAD(void)
  */
 void CARSCAN(void)
 {
-    // asm: 	LDI	@CAR_LIST,R0
-    // asm: 	BZ	OBSCX
+    // asm 000053B2: 	LDI	@CAR_LIST,R0
+    // asm 000053B3: 	BZ	OBSCX
 OBSCL:
-    // asm: 	LDI	R0,AR2
-    // asm: 	CMPI	AR2,AR4
-    // asm: 	BZ	OBSCLP			;BR -> DONT COMPARE AGAINST OURSELF
-    // asm: 	LDI	*+AR2(OFLAGS),R0	;STEALTH MODE?
-    // asm: 	TSTB	O_NOCOLL,R0		;check non-collide flag
-    // asm: 	BNZ	OBSCLP		    	;YES, DONT BOTHER
-    // asm: 	LDI	2000H,R0
-    // asm: 	CALL	CARCHEK
+    // asm 000053B4: 	LDI	R0,AR2
+    // asm 000053B5: 	CMPI	AR2,AR4
+    // asm 000053B6: 	BZ	OBSCLP			;BR -> DONT COMPARE AGAINST OURSELF
+    // asm 000053B7: 	LDI	*+AR2(OFLAGS),R0	;STEALTH MODE?
+    // asm 000053B8: 	TSTB	O_NOCOLL,R0		;check non-collide flag
+    // asm 000053B9: 	BNZ	OBSCLP		    	;YES, DONT BOTHER
+    // asm 000053BA: 	LDI	2000H,R0
+    // asm 000053BB: 	CALL	CARCHEK
 OBSCLP:
-    // asm: 	LDI	*+AR2(OLINK3),R0
-    // asm: 	BNZ	OBSCL
+    // asm 000053BC: 	LDI	*+AR2(OLINK3),R0
+    // asm 000053BD: 	BNZ	OBSCL
 OBSCX:
-    // asm: 	RETS
+    // asm 000053BE: 	RETS
     // *GO FOR OPEN PATH
     // *IF NO OPENING BRAKE ONLY FOR IMMINENT COLLISION 10 FRAMES OR LESS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARSCAN", 0, 0);
@@ -1303,12 +1303,12 @@ OBSCX:
 
 void PLSCAN(void)
 {
-    // asm: 	LDPI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
-    // asm: 	LDI	*+AR2(OCARBLK),AR3
-    // asm: 	LDI	4000H,R0
-    // asm: 	CALL	CARCHEK
-    // asm: 	STI	R0,@PLYRCLOSE
-    // asm: 	RETS
+    // asm 000053BF: 	LDPI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
+    // asm 000053C0: 	LDI	*+AR2(OCARBLK),AR3
+    // asm 000053C1: 	LDI	4000H,R0
+    // asm 000053C2: 	CALL	CARCHEK
+    // asm 000053C3: 	STI	R0,@PLYRCLOSE
+    // asm 000053C4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLSCAN", 0, 0);
     UNIMPL();
 }
@@ -1319,68 +1319,68 @@ void PLSCAN(void)
  */
 void OBSTABINIT(void)
 {
-    // asm: 	LDI	0,R0
-    // asm: 	LDI	@ROADOBSTABI,AR0
-    // asm: 	RPTS	49
-    // asm: 	STI	R0,*AR0++		;CLEAR OUT THE TABLE
+    // asm 000053C7: 	LDI	0,R0
+    // asm 000053C8: 	LDI	@ROADOBSTABI,AR0
+    // asm 000053C9: 	RPTS	49
+    // asm 000053CA: 	STI	R0,*AR0++		;CLEAR OUT THE TABLE
     // *CHICAGO KLUDGE
     // *GET CURRENT RACE
-    // asm: 	LDI	@BONUS_WAVE,R0
-    // asm: 	CMPI	10,R0
-    // asm: 	BNE	OI4			;NOT CHICAGO
-    // asm: 	LDI	1000H,R0	  	;BLOCK OUT LANES 2 LANE CASE
-    // asm: 	LDI	@ROADOBSTABI,AR0
-    // asm: 	LDI	*+AR7(DELTA_TPIECE),AR2
-    // asm: 	LDI	*+AR2(OUSR1),R1
-    // asm: 	CMPI	@WACKER,R1
-    // asm: 	BLT	OIX			;STRAIGHT 4 LANE
-    // asm: 	CMPI	@LAKEL,R1
-    // asm: 	BGT	OI1
-    // asm: 	LDI	*+AR7(DELTA_INIT),R1	;CHECK STARTING POSITION
-    // asm: 	LSH	-1,R1
-    // asm: 	LDIC	0,R1			;BLOCKOUT ONE SIDE
-    // asm: 	LDINC	23,R1
-    // asm: 	ADDI	R1,AR0
-    // asm: 	LDI	26,RC
-    // asm: 	RPTB	OILP00
+    // asm 000053CB: 	LDI	@BONUS_WAVE,R0
+    // asm 000053CC: 	CMPI	10,R0
+    // asm 000053CD: 	BNE	OI4			;NOT CHICAGO
+    // asm 000053CE: 	LDI	1000H,R0	  	;BLOCK OUT LANES 2 LANE CASE
+    // asm 000053CF: 	LDI	@ROADOBSTABI,AR0
+    // asm 000053D0: 	LDI	*+AR7(DELTA_TPIECE),AR2
+    // asm 000053D1: 	LDI	*+AR2(OUSR1),R1
+    // asm 000053D2: 	CMPI	@WACKER,R1
+    // asm 000053D3: 	BLT	OIX			;STRAIGHT 4 LANE
+    // asm 000053D4: 	CMPI	@LAKEL,R1
+    // asm 000053D5: 	BGT	OI1
+    // asm 000053D6: 	LDI	*+AR7(DELTA_INIT),R1	;CHECK STARTING POSITION
+    // asm 000053D7: 	LSH	-1,R1
+    // asm 000053D8: 	LDIC	0,R1			;BLOCKOUT ONE SIDE
+    // asm 000053D9: 	LDINC	23,R1
+    // asm 000053DA: 	ADDI	R1,AR0
+    // asm 000053DB: 	LDI	26,RC
+    // asm 000053DC: 	RPTB	OILP00
 OILP00:
-    // asm: STI	R0,*AR0++
-    // asm: 	RETS
+    // asm 000053DD: STI	R0,*AR0++
+    // asm 000053DE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OBSTABINIT", 0, 0);
     UNIMPL();
 }
 
 void OI1(void)
 {
-    // asm: 	LDI	*+AR7(DELTA_INIT),R1	;CHECK STARTING POSITION
-    // asm: 	CMPI	3,R1
-    // asm: 	BLT	OI10
-    // asm: 	LSH	-1,R1
-    // asm: 	BC	OI2
+    // asm 000053DF: 	LDI	*+AR7(DELTA_INIT),R1	;CHECK STARTING POSITION
+    // asm 000053E0: 	CMPI	3,R1
+    // asm 000053E1: 	BLT	OI10
+    // asm 000053E2: 	LSH	-1,R1
+    // asm 000053E3: 	BC	OI2
 OI10:
-    // asm: 	LDI	13,RC
-    // asm: 	RPTB	OILP0
-    // asm: 	STI	R0,*+AR0(36)		;BLOCK OUT BOTH ENDS
+    // asm 000053E4: 	LDI	13,RC
+    // asm 000053E5: 	RPTB	OILP0
+    // asm 000053E6: 	STI	R0,*+AR0(36)		;BLOCK OUT BOTH ENDS
 OILP0:
-    // asm: STI	R0,*AR0++
-    // asm: 	RETS
+    // asm 000053E7: STI	R0,*AR0++
+    // asm 000053E8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OI1", 0, 0);
     UNIMPL();
 }
 
 void OI2(void)
 {
-    // asm: 	STI	R0,*+AR0(36)
-    // asm: 	STI	R0,*+AR0(37)		;EL TRACK PILLAR BLOCKOUT
-    // asm: 	STI	R0,*+AR0(38)
-    // asm:  	STI	R0,*+AR0(39)
-    // asm: 	STI	R0,*+AR0(40)
-    // asm: 	STI	R0,*+AR0(09)
-    // asm: 	STI	R0,*+AR0(10)
-    // asm: 	STI	R0,*+AR0(11)
-    // asm: 	STI	R0,*+AR0(12)
-    // asm: 	STI	R0,*+AR0(13)
-    // asm: 	RETS
+    // asm 000053E9: 	STI	R0,*+AR0(36)
+    // asm 000053EA: 	STI	R0,*+AR0(37)		;EL TRACK PILLAR BLOCKOUT
+    // asm 000053EB: 	STI	R0,*+AR0(38)
+    // asm 000053EC:  	STI	R0,*+AR0(39)
+    // asm 000053ED: 	STI	R0,*+AR0(40)
+    // asm 000053EE: 	STI	R0,*+AR0(09)
+    // asm 000053EF: 	STI	R0,*+AR0(10)
+    // asm 000053F0: 	STI	R0,*+AR0(11)
+    // asm 000053F1: 	STI	R0,*+AR0(12)
+    // asm 000053F2: 	STI	R0,*+AR0(13)
+    // asm 000053F3: 	RETS
     // *END CHICAGO KLUDGE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OI2", 0, 0);
     UNIMPL();
@@ -1388,19 +1388,19 @@ void OI2(void)
 
 void OI4(void)
 {
-    // asm: 	LDI	*+AR7(DELTA_TPIECE),AR2
-    // asm: 	CALL	GET_LANES	 	;GET # OF LANES
-    // asm: 	LDI	R0,R0
-    // asm: 	BNZ	OIX			;FOUR LANE CASE
-    // asm: 	LDI	1000H,R0	  	;BLOCK OUT LANES 2 LANE CASE
-    // asm: 	LDI	@ROADOBSTABI,AR0
-    // asm: 	LDI	11,RC
-    // asm: 	RPTB	OILP
-    // asm: 	STI	R0,*+AR0(38)		;BLOCK OUT BOTH ENDS
+    // asm 000053F4: 	LDI	*+AR7(DELTA_TPIECE),AR2
+    // asm 000053F5: 	CALL	GET_LANES	 	;GET # OF LANES
+    // asm 000053F6: 	LDI	R0,R0
+    // asm 000053F7: 	BNZ	OIX			;FOUR LANE CASE
+    // asm 000053F8: 	LDI	1000H,R0	  	;BLOCK OUT LANES 2 LANE CASE
+    // asm 000053F9: 	LDI	@ROADOBSTABI,AR0
+    // asm 000053FA: 	LDI	11,RC
+    // asm 000053FB: 	RPTB	OILP
+    // asm 000053FC: 	STI	R0,*+AR0(38)		;BLOCK OUT BOTH ENDS
 OILP:
-    // asm: STI	R0,*AR0++
+    // asm 000053FD: STI	R0,*AR0++
 OIX:
-    // asm: 	RETS
+    // asm 000053FE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OI4", 0, 0);
     UNIMPL();
 }
@@ -1419,103 +1419,103 @@ OIX:
  */
 void GETRDOFFSET(void)
 {
-    // asm: 	LDI	0,R6		;LFT SCAN INIT
-    // asm: 	LDI	0,R7		;RT SCAN INIT
-    // asm: 	NEGF	*+AR5(CARDIST2CNTR),R0
-    // asm: 	MPYF	0.01,R0		;DIVIDE BY 100
-    // asm: 	FIX	R0
-    // asm: 	ADDI	21,R0	     	;LEFT EDGE OF ZONE
-    // asm: 	CMPI	41,R0		;MIN AND MAXES
-    // asm: 	LDIGT	41,R0
-    // asm: 	CMPI	0,R0		;MIN AND MAXES
-    // asm: 	LDILT	0,R0
-    // asm: 	LDI	@ROADOBSTABI,AR0
-    // asm: 	ADDI	R0,AR0
+    // asm 000053FF: 	LDI	0,R6		;LFT SCAN INIT
+    // asm 00005400: 	LDI	0,R7		;RT SCAN INIT
+    // asm 00005401: 	NEGF	*+AR5(CARDIST2CNTR),R0
+    // asm 00005402: 	MPYF	0.01,R0		;DIVIDE BY 100
+    // asm 00005403: 	FIX	R0
+    // asm 00005404: 	ADDI	21,R0	     	;LEFT EDGE OF ZONE
+    // asm 00005405: 	CMPI	41,R0		;MIN AND MAXES
+    // asm 00005406: 	LDIGT	41,R0
+    // asm 00005407: 	CMPI	0,R0		;MIN AND MAXES
+    // asm 00005408: 	LDILT	0,R0
+    // asm 00005409: 	LDI	@ROADOBSTABI,AR0
+    // asm 0000540A: 	ADDI	R0,AR0
     // *CHECK CURRENT GAP
-    // asm: 	LDI	*AR0++,R1
-    // asm: 	RPTS	6
-    // asm: 	OR	*AR0++,R1
-    // asm: 	BZ	OK			;WERE O.K.
+    // asm 0000540B: 	LDI	*AR0++,R1
+    // asm 0000540C: 	RPTS	6
+    // asm 0000540D: 	OR	*AR0++,R1
+    // asm 0000540E: 	BZ	OK			;WERE O.K.
     // *CHECK FOR PLAYER
-    // asm: 	CMPI	4000H,R1  		;PLAYER PRESENT?
-    // asm: 	BLT	S000			;NO
-    // asm: 	AND	0FFFH,R1       		;BRAKE IF REAL CLOSE...
-    // asm: 	CMPI	20,R1
-    // asm: 	BGT	S00			;NOT REAL CLOSE
+    // asm 0000540F: 	CMPI	4000H,R1  		;PLAYER PRESENT?
+    // asm 00005410: 	BLT	S000			;NO
+    // asm 00005411: 	AND	0FFFH,R1       		;BRAKE IF REAL CLOSE...
+    // asm 00005412: 	CMPI	20,R1
+    // asm 00005413: 	BGT	S00			;NOT REAL CLOSE
     // ;Check for COPCAR
-    // asm: 	LDI	*+AR5(CAR_ID),R2
-    // asm: 	CMPI	DRONE_C|VEHICLE_T|DRNE_COPCAR,R2
-    // asm: 	BEQ	S000			;COPCARS DON'T SLOW DOWN FOR THE PLAYER
-    // asm: 	LDI	@PLYCBLK,AR2		;GET PLAYER CAR OBJECT
-    // asm: 	LDF	*+AR2(CARSPEED),R2	;PLAYER SPEED
-    // asm: 	SUBF	*+AR5(CARSPEED),R2
-    // asm: 	CMPF	10,R2
-    // asm: 	BGT	S000			;DONT BRAKE, PLAYER SPEED GREATER
-    // asm: 	FLOAT	R1
-    // asm: 	MPYF	0.01,R1			;BRAKE FACTOR CALC
-    // asm: 	ADDF	0.80,R1
-    // asm: 	MPYF	*+AR5(CARSPEED),R1
-    // asm: 	STF	R1,*+AR5(CARSPEED)	;CUT SPEED
+    // asm 00005414: 	LDI	*+AR5(CAR_ID),R2
+    // asm 00005415: 	CMPI	DRONE_C|VEHICLE_T|DRNE_COPCAR,R2
+    // asm 00005416: 	BEQ	S000			;COPCARS DON'T SLOW DOWN FOR THE PLAYER
+    // asm 00005417: 	LDI	@PLYCBLK,AR2		;GET PLAYER CAR OBJECT
+    // asm 00005418: 	LDF	*+AR2(CARSPEED),R2	;PLAYER SPEED
+    // asm 00005419: 	SUBF	*+AR5(CARSPEED),R2
+    // asm 0000541A: 	CMPF	10,R2
+    // asm 0000541B: 	BGT	S000			;DONT BRAKE, PLAYER SPEED GREATER
+    // asm 0000541C: 	FLOAT	R1
+    // asm 0000541D: 	MPYF	0.01,R1			;BRAKE FACTOR CALC
+    // asm 0000541E: 	ADDF	0.80,R1
+    // asm 0000541F: 	MPYF	*+AR5(CARSPEED),R1
+    // asm 00005420: 	STF	R1,*+AR5(CARSPEED)	;CUT SPEED
 S00:
 S000:
     // *WE HAVE AN OBSTACLE
     // *SCAN RIGHT 0--->49
     // *ADJUST COUNT FOR END
-    // asm: 	LDI	R0,R3
-    // asm: 	LDI	30,R2		;SEARCH 20 SPACES RIGHT
-    // asm: 	ADDI	R2,R3
-    // asm: 	SUBI	49,R3
-    // asm: 	BLE	SR00
-    // asm: 	SUBI	R3,R2		;DECREASE COUNT TO AVOID OVERSCAN
+    // asm 00005421: 	LDI	R0,R3
+    // asm 00005422: 	LDI	30,R2		;SEARCH 20 SPACES RIGHT
+    // asm 00005423: 	ADDI	R2,R3
+    // asm 00005424: 	SUBI	49,R3
+    // asm 00005425: 	BLE	SR00
+    // asm 00005426: 	SUBI	R3,R2		;DECREASE COUNT TO AVOID OVERSCAN
 SR00:
-    // asm: 	LDI	@ROADOBSTABI,AR0
-    // asm: 	ADDI	R0,AR0
-    // asm: 	LDI	0,R1		;SEQUENCE COUNT
+    // asm 00005427: 	LDI	@ROADOBSTABI,AR0
+    // asm 00005428: 	ADDI	R0,AR0
+    // asm 00005429: 	LDI	0,R1		;SEQUENCE COUNT
 SR0:
-    // asm: 	LDI	*AR0++,R0
-    // asm: 	LDINZ	0,R1 		;NON ZERO RESET COUNT
-    // asm: 	ADDI	1,R1
-    // asm: 	CMPI	8,R1
-    // asm: 	BGT	FOUNDR	 	;FOUND A GAP
-    // asm: 	SUBI	1,R2
-    // asm: 	BNZ	SR0
-    // asm:       	B 	LEFTSCAN	;FOUND NOTHING
+    // asm 0000542A: 	LDI	*AR0++,R0
+    // asm 0000542B: 	LDINZ	0,R1 		;NON ZERO RESET COUNT
+    // asm 0000542C: 	ADDI	1,R1
+    // asm 0000542D: 	CMPI	8,R1
+    // asm 0000542E: 	BGT	FOUNDR	 	;FOUND A GAP
+    // asm 0000542F: 	SUBI	1,R2
+    // asm 00005430: 	BNZ	SR0
+    // asm 00005431:       	B 	LEFTSCAN	;FOUND NOTHING
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETRDOFFSET", 0, 0);
     UNIMPL();
 }
 
 void FOUNDR(void)
 {
-    // asm: 	SUBI	4,AR0		;GET CENTER INDEX
-    // asm: 	LDI	AR0,R6		;SAVE VALUE
+    // asm 00005432: 	SUBI	4,AR0		;GET CENTER INDEX
+    // asm 00005433: 	LDI	AR0,R6		;SAVE VALUE
     // *WE HAVE AN OBSTACLE
     // *SCAN LEFT 49--->0
 LEFTSCAN:
-    // asm: 	NEGF	*+AR5(CARDIST2CNTR),R0
-    // asm: 	MPYF	0.01,R0		;DIVIDE BY 100
-    // asm: 	FIX	R0
-    // asm: 	ADDI	29,R0	     	;RT EDGE OF ZONE
-    // asm: 	CMPI	49,R0		;MIN AND MAXES
-    // asm: 	LDIGT	49,R0
-    // asm: 	CMPI	7,R0		;MIN AND MAXES
-    // asm: 	BLT	DONE		;NOT ENOUGH ROOM ON THE LEFT
-    // asm: 	LDI	@ROADOBSTABI,AR0
-    // asm: 	ADDI	R0,AR0
-    // asm: 	LDI	30,R2		;COUNT
-    // asm: 	SUBI	R2,R0
-    // asm: 	BGT	SL00
-    // asm: 	ADDI	R0,R2		;DECREASE COUNT TO AVOID OVERSCAN
+    // asm 00005434: 	NEGF	*+AR5(CARDIST2CNTR),R0
+    // asm 00005435: 	MPYF	0.01,R0		;DIVIDE BY 100
+    // asm 00005436: 	FIX	R0
+    // asm 00005437: 	ADDI	29,R0	     	;RT EDGE OF ZONE
+    // asm 00005438: 	CMPI	49,R0		;MIN AND MAXES
+    // asm 00005439: 	LDIGT	49,R0
+    // asm 0000543A: 	CMPI	7,R0		;MIN AND MAXES
+    // asm 0000543B: 	BLT	DONE		;NOT ENOUGH ROOM ON THE LEFT
+    // asm 0000543C: 	LDI	@ROADOBSTABI,AR0
+    // asm 0000543D: 	ADDI	R0,AR0
+    // asm 0000543E: 	LDI	30,R2		;COUNT
+    // asm 0000543F: 	SUBI	R2,R0
+    // asm 00005440: 	BGT	SL00
+    // asm 00005441: 	ADDI	R0,R2		;DECREASE COUNT TO AVOID OVERSCAN
 SL00:
-    // asm: 	LDI	0,R1		;SEQUENCE COUNT
+    // asm 00005442: 	LDI	0,R1		;SEQUENCE COUNT
 SL0:
-    // asm: 	LDI	*AR0--,R0
-    // asm: 	LDINZ	0,R1 		;NON ZERO RESET COUNT
-    // asm: 	ADDI	1,R1
-    // asm: 	CMPI	8,R1
-    // asm: 	BGT	FOUNDL	 	;FOUND A GAP
-    // asm: 	SUBI	1,R2
-    // asm: 	BNZ	SL0
-    // asm: 	B 	DONE
+    // asm 00005443: 	LDI	*AR0--,R0
+    // asm 00005444: 	LDINZ	0,R1 		;NON ZERO RESET COUNT
+    // asm 00005445: 	ADDI	1,R1
+    // asm 00005446: 	CMPI	8,R1
+    // asm 00005447: 	BGT	FOUNDL	 	;FOUND A GAP
+    // asm 00005448: 	SUBI	1,R2
+    // asm 00005449: 	BNZ	SL0
+    // asm 0000544A: 	B 	DONE
     // *
     // *FOUND A GAP ON THE LEFT
     // *AR0 HAS GAP
@@ -1526,180 +1526,180 @@ SL0:
 
 void FOUNDL(void)
 {
-    // asm: 	ADDI	4,AR0
-    // asm: 	LDI	AR0,R7
+    // asm 0000544B: 	ADDI	4,AR0
+    // asm 0000544C: 	LDI	AR0,R7
     // *
     // *FOUND A GAP
     // *R6=LEFT GAP, R7=RIGHT GAP
     // *
 DONE:
-    // asm: 	ADDI	R6,R7,R0
-    // asm: 	BZ	FAIL			;NO GAP FOUND, GO WITH OLDIE
-    // asm: 	LDI	R6,R6			;CHECK LFT FAIL
-    // asm: 	LDIZ	R7,R6
-    // asm: 	LDI	R7,R7			;CHECK RT FAIL
-    // asm: 	LDIZ	R6,R7
-    // asm: 	SUBI	@ROADOBSTABI,R6		;FIND CLOSEST DIRECTION
-    // asm: 	SUBI	@ROADOBSTABI,R7
-    // asm: 	LDF	*+AR7(ROADOFFSET),R0
-    // asm: 	MPYF	0.01,R0			;DIVIDE BY 100
-    // asm: 	FIX	R0
-    // asm: 	SUBI	R6,R0,R2		;FIND CLOSEST RT OR LFT
-    // asm: 	SUBI	R7,R0,R3
-    // asm: 	ABSI	R2
-    // asm: 	ABSI	R3
-    // asm: 	CMPI	R2,R3
-    // asm: 	LDILT	R7,R0
-    // asm: 	LDIGE	R6,R0
-    // asm: 	SUBI	25,R0
-    // asm: 	FLOAT	R0
-    // asm: 	MPYF	100,R0	    		;NEW OFFSET
-    // asm: ROXX
-    // asm: 	RETS
+    // asm 0000544D: 	ADDI	R6,R7,R0
+    // asm 0000544E: 	BZ	FAIL			;NO GAP FOUND, GO WITH OLDIE
+    // asm 0000544F: 	LDI	R6,R6			;CHECK LFT FAIL
+    // asm 00005450: 	LDIZ	R7,R6
+    // asm 00005451: 	LDI	R7,R7			;CHECK RT FAIL
+    // asm 00005452: 	LDIZ	R6,R7
+    // asm 00005453: 	SUBI	@ROADOBSTABI,R6		;FIND CLOSEST DIRECTION
+    // asm 00005454: 	SUBI	@ROADOBSTABI,R7
+    // asm 00005455: 	LDF	*+AR7(ROADOFFSET),R0
+    // asm 00005456: 	MPYF	0.01,R0			;DIVIDE BY 100
+    // asm 00005457: 	FIX	R0
+    // asm 00005458: 	SUBI	R6,R0,R2		;FIND CLOSEST RT OR LFT
+    // asm 00005459: 	SUBI	R7,R0,R3
+    // asm 0000545A: 	ABSI	R2
+    // asm 0000545B: 	ABSI	R3
+    // asm 0000545C: 	CMPI	R2,R3
+    // asm 0000545D: 	LDILT	R7,R0
+    // asm 0000545E: 	LDIGE	R6,R0
+    // asm 0000545F: 	SUBI	25,R0
+    // asm 00005460: 	FLOAT	R0
+    // asm 00005461: 	MPYF	100,R0	    		;NEW OFFSET
+    // asm 00005462: ROXX
+    // asm 00005462: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FOUNDL", 0, 0);
     UNIMPL();
 }
 
 void FAIL(void)
 {
-    // asm: 	NOP
-    // asm: OK					;CURRENT OFFSET IS O.K.
-    // asm: 	LDF	*+AR7(ROADOFFSET),R0
-    // asm: 	RETS
+    // asm 00005463: 	NOP
+    // asm 00005464: OK					;CURRENT OFFSET IS O.K.
+    // asm 00005464: 	LDF	*+AR7(ROADOFFSET),R0
+    // asm 00005465: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FAIL", 0, 0);
     UNIMPL();
 }
 
 void CARCHEK(void)
 {
-    // asm: 	STI	R0,@CARTMP1   		;SAVE CAR CODE
-    // asm: 	LDI	*+AR2(OCARBLK),AR3
-    // asm: 	CALL	CKAHEAD
-    // asm: 	BN	CARCHKX 		;CAR BEHIND, IGNORE
+    // asm 00005466: 	STI	R0,@CARTMP1   		;SAVE CAR CODE
+    // asm 00005467: 	LDI	*+AR2(OCARBLK),AR3
+    // asm 00005468: 	CALL	CKAHEAD
+    // asm 00005469: 	BN	CARCHKX 		;CAR BEHIND, IGNORE
     // *GET CURRENT DISTANCE
-    // asm: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R6
-    // asm: 	LDF	*+AR2(OPOSZ),R7
-    // asm: 	SUBF	*+AR4(OPOSZ),R7
-    // asm: 	MPYF	R6,R6,R1
-    // asm: 	MPYF	R7,R7,R2
-    // asm: 	ADDF	R1,R2			;distance^2
-    // asm: 	FLOAT	30000,R0
-    // asm: 	MPYF	R0,R0
-    // asm: 	CMPF	R2,R0
-    // asm: 	BLT	CARCHKX			;TOO FAR AWAY
+    // asm 0000546A: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R6
+    // asm 0000546B: 	LDF	*+AR2(OPOSZ),R7
+    // asm 0000546C: 	SUBF	*+AR4(OPOSZ),R7
+    // asm 0000546D: 	MPYF	R6,R6,R1
+    // asm 0000546E: 	MPYF	R7,R7,R2
+    // asm 0000546F: 	ADDF	R1,R2			;distance^2
+    // asm 00005470: 	FLOAT	30000,R0
+    // asm 00005471: 	MPYF	R0,R0
+    // asm 00005472: 	CMPF	R2,R0
+    // asm 00005473: 	BLT	CARCHKX			;TOO FAR AWAY
     // *CHECK IF CAR BLOCKING THE SIDE
-    // asm: 	LDF	*+AR3(CARZPLUS),R1
-    // asm: 	ADDF	*+AR5(CARZPLUS),R1
-    // asm: 	ADDF	200,R1			;LEAVE A LITTLE ROOM
-    // asm: 	MPYF	R1,R1			;GET 1/2 Z1+Z2 SQUARED
-    // asm: 	CMPF	R1,R2			;CLOSE ENOUGH ?
-    // asm: 	BGT	SIDECKX			;NO...
-    // asm: 	LDF     *+AR5(CARDIST2CNTR),R1
-    // asm: 	SUBF	*+AR3(CARDIST2CNTR),R1
-    // asm: 	ABSF	R1
-    // asm: 	FLOAT	400,R3
-    // asm: 	CMPF	R3,R1
-    // asm: 	BLT	SIDECKX			;OFFSET TOO CLOSE
-    // asm: 	LDF	10,R0
-    // asm: 	PUSHF	R0
-    // asm: 	B	GOTONE
+    // asm 00005474: 	LDF	*+AR3(CARZPLUS),R1
+    // asm 00005475: 	ADDF	*+AR5(CARZPLUS),R1
+    // asm 00005476: 	ADDF	200,R1			;LEAVE A LITTLE ROOM
+    // asm 00005477: 	MPYF	R1,R1			;GET 1/2 Z1+Z2 SQUARED
+    // asm 00005478: 	CMPF	R1,R2			;CLOSE ENOUGH ?
+    // asm 00005479: 	BGT	SIDECKX			;NO...
+    // asm 0000547A: 	LDF     *+AR5(CARDIST2CNTR),R1
+    // asm 0000547B: 	SUBF	*+AR3(CARDIST2CNTR),R1
+    // asm 0000547C: 	ABSF	R1
+    // asm 0000547D: 	FLOAT	400,R3
+    // asm 0000547E: 	CMPF	R3,R1
+    // asm 0000547F: 	BLT	SIDECKX			;OFFSET TOO CLOSE
+    // asm 00005480: 	LDF	10,R0
+    // asm 00005481: 	PUSHF	R0
+    // asm 00005482: 	B	GOTONE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARCHEK", 0, 0);
     UNIMPL();
 }
 
 void SIDECKX(void)
 {
-    // asm: 	CALL	SQRT
-    // asm: 	LDF	R0,R5
+    // asm 00005483: 	CALL	SQRT
+    // asm 00005484: 	LDF	R0,R5
     // *GET DISTANCE T+1
     // *CAR 0 T+1
-    // asm: 	LDF	*+AR5(CARSPEED),R1
-    // asm: 	LDF	*+AR5(CARVROT),R2
-    // asm: 	CALL	_SINE
-    // asm: 	NEGF	R0
-    // asm: 	MPYF	R0,R1,R3
-    // asm: 	CALL	_COSI
-    // asm: 	MPYF	R0,R1,R4
-    // asm: 	SUBF	R3,R6
-    // asm: 	SUBF	R4,R7
+    // asm 00005485: 	LDF	*+AR5(CARSPEED),R1
+    // asm 00005486: 	LDF	*+AR5(CARVROT),R2
+    // asm 00005487: 	CALL	_SINE
+    // asm 00005488: 	NEGF	R0
+    // asm 00005489: 	MPYF	R0,R1,R3
+    // asm 0000548A: 	CALL	_COSI
+    // asm 0000548B: 	MPYF	R0,R1,R4
+    // asm 0000548C: 	SUBF	R3,R6
+    // asm 0000548D: 	SUBF	R4,R7
     // *CAR 1 T+1
-    // asm: 	LDF	*+AR3(CARSPEED),R1
-    // asm: 	LDF	*+AR3(CARVROT),R2
-    // asm: 	CALL	_SINE
-    // asm: 	NEGF	R0
-    // asm: 	MPYF	R0,R1,R3
-    // asm: 	CALL	_COSI
-    // asm: 	MPYF	R0,R1,R4
-    // asm: 	ADDF	R3,R6
-    // asm: 	ADDF	R4,R7
-    // asm: 	MPYF	R6,R6,R1
-    // asm: 	MPYF	R7,R7,R2
-    // asm: 	ADDF	R1,R2			;distance^2
-    // asm: 	CALL	SQRT			;DISTANCE T+1
-    // asm: 	SUBF	R5,R0
-    // asm: 	BGE	CARCHKX			;MOVING APART
+    // asm 0000548E: 	LDF	*+AR3(CARSPEED),R1
+    // asm 0000548F: 	LDF	*+AR3(CARVROT),R2
+    // asm 00005490: 	CALL	_SINE
+    // asm 00005491: 	NEGF	R0
+    // asm 00005492: 	MPYF	R0,R1,R3
+    // asm 00005493: 	CALL	_COSI
+    // asm 00005494: 	MPYF	R0,R1,R4
+    // asm 00005495: 	ADDF	R3,R6
+    // asm 00005496: 	ADDF	R4,R7
+    // asm 00005497: 	MPYF	R6,R6,R1
+    // asm 00005498: 	MPYF	R7,R7,R2
+    // asm 00005499: 	ADDF	R1,R2			;distance^2
+    // asm 0000549A: 	CALL	SQRT			;DISTANCE T+1
+    // asm 0000549B: 	SUBF	R5,R0
+    // asm 0000549C: 	BGE	CARCHKX			;MOVING APART
     // *FIND CLOSING RATE
-    // asm: 	ABSF	R0,R1
-    // asm:  	MPYF	1.5,R1			;VELOCITY FUDGE FACTOR
-    // asm: 	ABSF	R6    			;ADJUST DELTA X FOR CAR	THICKNESS
-    // asm: 	FLOAT	400,R0
-    // asm: 	SUBF	R0,R6
-    // asm: 	LDFLT	0,R6
-    // asm: 	ABSF	R7    			;ADJUST DELTA Z FOR CAR THICKNESS
-    // asm: 	FLOAT	1000,R0
-    // asm: 	SUBF	R0,R7
-    // asm: 	LDFLT	0,R7
-    // asm: 	MPYF	R6,R6,R0
-    // asm: 	MPYF	R7,R7,R2
-    // asm: 	ADDF	R0,R2			;distance^2
-    // asm: 	CALL	SQRT			;DISTANCE T+1
-    // asm: 	CALL	DIV_F			;CLOSING FRAMES
-    // asm: 	CMPF	200,R0
-    // asm: 	BGT	CARCHKX			;TOO FAR AWAY
-    // asm: 	PUSHF	R0
+    // asm 0000549D: 	ABSF	R0,R1
+    // asm 0000549E:  	MPYF	1.5,R1			;VELOCITY FUDGE FACTOR
+    // asm 0000549F: 	ABSF	R6    			;ADJUST DELTA X FOR CAR	THICKNESS
+    // asm 000054A0: 	FLOAT	400,R0
+    // asm 000054A1: 	SUBF	R0,R6
+    // asm 000054A2: 	LDFLT	0,R6
+    // asm 000054A3: 	ABSF	R7    			;ADJUST DELTA Z FOR CAR THICKNESS
+    // asm 000054A4: 	FLOAT	1000,R0
+    // asm 000054A5: 	SUBF	R0,R7
+    // asm 000054A6: 	LDFLT	0,R7
+    // asm 000054A7: 	MPYF	R6,R6,R0
+    // asm 000054A8: 	MPYF	R7,R7,R2
+    // asm 000054A9: 	ADDF	R0,R2			;distance^2
+    // asm 000054AA: 	CALL	SQRT			;DISTANCE T+1
+    // asm 000054AB: 	CALL	DIV_F			;CLOSING FRAMES
+    // asm 000054AC: 	CMPF	200,R0
+    // asm 000054AD: 	BGT	CARCHKX			;TOO FAR AWAY
+    // asm 000054AE: 	PUSHF	R0
     // *GOT A LIVE ONE
     // *BLANK OUT TABLE SPACE
 GOTONE:
-    // asm: 	CALL	GETPV 			;GET PERPENDICULAR VELOCITY
-    // asm: 	POPF	R1
-    // asm: 	MPYF	R1,R0,R2		;PROJECTED OFFSET
-    // asm: 	FIX	R1,IR1			;SAVE TIME
-    // asm: 	SUBF	*+AR3(CARDIST2CNTR),R2
-    // asm: 	MPYF	0.01,R2
-    // asm: 	FIX	R2,IR0
-    // asm: 	ADDI	25,IR0			;ADJUST FOR ROAD CENTER (25), CAR THICKNESS (4)
-    // asm: 	CALL	GETWIDTH		;GET CAR WIDTH
-    // asm: 	MPYF	0.01,R0
-    // asm: 	ABSF	R0
-    // asm: 	CMPF	20,R0
-    // asm: 	LDFGT	20,R0
-    // asm: 	FIX	R0,R0
-    // asm: 	ADDI	3,R0
-    // asm: 	LDI	R0,RC			;WIDTH COUNT
-    // asm: 	LSH	-1,R0			;DIVIDE BY 2
-    // asm: 	SUBI	R0,IR0			;CENTER UP CAR AREA
-    // asm: 	LDI	@ROADOBSTABI,AR0
-    // asm: 	LDI	@CARTMP1,R1		;GET CODE TO STORE
-    // asm: 	ADDI	IR1,R1			;ADD IN THE TIME
-    // asm: 	RPTB	LOADLP
-    // asm: 	CMPI	0,IR0
-    // asm: 	BLT	LOADLP
-    // asm: 	CMPI	49,IR0
-    // asm: 	BGT	LOADLPX
-    // asm: 	STI	R1,*+AR0(IR0)  		;PUT IN ENTRY IN TABLE
+    // asm 000054AF: 	CALL	GETPV 			;GET PERPENDICULAR VELOCITY
+    // asm 000054B0: 	POPF	R1
+    // asm 000054B1: 	MPYF	R1,R0,R2		;PROJECTED OFFSET
+    // asm 000054B2: 	FIX	R1,IR1			;SAVE TIME
+    // asm 000054B3: 	SUBF	*+AR3(CARDIST2CNTR),R2
+    // asm 000054B4: 	MPYF	0.01,R2
+    // asm 000054B5: 	FIX	R2,IR0
+    // asm 000054B6: 	ADDI	25,IR0			;ADJUST FOR ROAD CENTER (25), CAR THICKNESS (4)
+    // asm 000054B7: 	CALL	GETWIDTH		;GET CAR WIDTH
+    // asm 000054B8: 	MPYF	0.01,R0
+    // asm 000054B9: 	ABSF	R0
+    // asm 000054BA: 	CMPF	20,R0
+    // asm 000054BB: 	LDFGT	20,R0
+    // asm 000054BC: 	FIX	R0,R0
+    // asm 000054BD: 	ADDI	3,R0
+    // asm 000054BE: 	LDI	R0,RC			;WIDTH COUNT
+    // asm 000054BF: 	LSH	-1,R0			;DIVIDE BY 2
+    // asm 000054C0: 	SUBI	R0,IR0			;CENTER UP CAR AREA
+    // asm 000054C1: 	LDI	@ROADOBSTABI,AR0
+    // asm 000054C2: 	LDI	@CARTMP1,R1		;GET CODE TO STORE
+    // asm 000054C3: 	ADDI	IR1,R1			;ADD IN THE TIME
+    // asm 000054C4: 	RPTB	LOADLP
+    // asm 000054C5: 	CMPI	0,IR0
+    // asm 000054C6: 	BLT	LOADLP
+    // asm 000054C7: 	CMPI	49,IR0
+    // asm 000054C8: 	BGT	LOADLPX
+    // asm 000054C9: 	STI	R1,*+AR0(IR0)  		;PUT IN ENTRY IN TABLE
 LOADLP:
-    // asm: ADDI	1,IR0
+    // asm 000054CA: ADDI	1,IR0
 LOADLPX:
-    // asm: 	LDI	IR1,R0			;RETURN TIME DUDES
-    // asm: 	RETS
+    // asm 000054CB: 	LDI	IR1,R0			;RETURN TIME DUDES
+    // asm 000054CC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SIDECKX", 0, 0);
     UNIMPL();
 }
 
 void CARCHKX(void)
 {
-    // asm: 	LDI	800H,R0		;FOUND NO CLOSING TIME
-    // asm:        	RETS
+    // asm 000054CD: 	LDI	800H,R0		;FOUND NO CLOSING TIME
+    // asm 000054CE:        	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARCHKX", 0, 0);
     UNIMPL();
 }
@@ -1718,17 +1718,17 @@ void CARCHKX(void)
  */
 void GETPV(void)
 {
-    // asm: 	LDI	*+AR2(OCARBLK),AR3
-    // asm: 	PUSH	AR2
-    // asm: 	LDI	*+AR3(CARTRAK),AR2
-    // asm: 	CALL	GETRDIR	 		;R0= RADIANS
-    // asm: 	SUBF	*+AR3(CARVROT),R0
-    // asm: 	LDF	R0,R2
-    // asm: 	CALL	_SINE
-    // asm: 	MPYF	*+AR3(CARSPEED),R0
-    // asm: 	MPYF	1.5,R0
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 000054CF: 	LDI	*+AR2(OCARBLK),AR3
+    // asm 000054D0: 	PUSH	AR2
+    // asm 000054D1: 	LDI	*+AR3(CARTRAK),AR2
+    // asm 000054D2: 	CALL	GETRDIR	 		;R0= RADIANS
+    // asm 000054D3: 	SUBF	*+AR3(CARVROT),R0
+    // asm 000054D4: 	LDF	R0,R2
+    // asm 000054D5: 	CALL	_SINE
+    // asm 000054D6: 	MPYF	*+AR3(CARSPEED),R0
+    // asm 000054D7: 	MPYF	1.5,R0
+    // asm 000054D8: 	POP	AR2
+    // asm 000054D9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPV", 0, 0);
     UNIMPL();
 }
@@ -1746,28 +1746,28 @@ void GETPV(void)
  */
 void GETWIDTH(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	LDI	*+AR3(CARTRAK),AR2
-    // asm: 	CALL	GETRDIR	 		;R0= RADIANS
-    // asm: 	POP	AR2
-    // asm: 	SUBF	*+AR3(CARVROT),R0
-    // asm: 	LDF	R0,R2
-    // asm: 	CALL	_SINE
-    // asm: 	LDF	R0,R1
-    // asm: 	CALL	_COSI
-    // asm: 	LDF	*+AR3(CARXPLUS),R2
-    // asm: 	SUBF	*+AR3(CARXMINUS),R2
-    // asm: 	LDF	*+AR3(CARZPLUS),R3
-    // asm: 	SUBF	*+AR3(CARZMINUS),R3
-    // asm: 	ABSF	R0
-    // asm: 	ABSF	R1
-    // asm: 	MPYF	R0,R2,R4	     	;COS*X+SIN*Z WIDTH TERMS
-    // asm: 	MPYF	R1,R3,R5
-    // asm: 	MPYF	R1,R2,R2		;SIN*X+COS*Z HEIGHT TERMS
-    // asm: 	MPYF	R0,R3,R3
-    // asm: 	ADDF	R4,R5,R0 		;WIDTH
-    // asm: 	ADDF	R2,R3,R1		;HEIGHT
-    // asm: 	RETS
+    // asm 000054DA: 	PUSH	AR2
+    // asm 000054DB: 	LDI	*+AR3(CARTRAK),AR2
+    // asm 000054DC: 	CALL	GETRDIR	 		;R0= RADIANS
+    // asm 000054DD: 	POP	AR2
+    // asm 000054DE: 	SUBF	*+AR3(CARVROT),R0
+    // asm 000054DF: 	LDF	R0,R2
+    // asm 000054E0: 	CALL	_SINE
+    // asm 000054E1: 	LDF	R0,R1
+    // asm 000054E2: 	CALL	_COSI
+    // asm 000054E3: 	LDF	*+AR3(CARXPLUS),R2
+    // asm 000054E4: 	SUBF	*+AR3(CARXMINUS),R2
+    // asm 000054E5: 	LDF	*+AR3(CARZPLUS),R3
+    // asm 000054E6: 	SUBF	*+AR3(CARZMINUS),R3
+    // asm 000054E7: 	ABSF	R0
+    // asm 000054E8: 	ABSF	R1
+    // asm 000054E9: 	MPYF	R0,R2,R4	     	;COS*X+SIN*Z WIDTH TERMS
+    // asm 000054EA: 	MPYF	R1,R3,R5
+    // asm 000054EB: 	MPYF	R1,R2,R2		;SIN*X+COS*Z HEIGHT TERMS
+    // asm 000054EC: 	MPYF	R0,R3,R3
+    // asm 000054ED: 	ADDF	R4,R5,R0 		;WIDTH
+    // asm 000054EE: 	ADDF	R2,R3,R1		;HEIGHT
+    // asm 000054EF: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETWIDTH", 0, 0);
     UNIMPL();
 }
@@ -1782,71 +1782,71 @@ void GETWIDTH(void)
  */
 void RPASS(void)
 {
-    // asm: 	LDI	*+AR7(PASSCNT),R0      	;INHIBIT PASSING SOUND?
-    // asm: 	BZ	RPASS1
-    // asm: 	SUBI	1,R0
-    // asm: 	LDIN	0,R0
-    // asm: 	STI	R0,*+AR7(PASSCNT)
-    // asm: 	RETS
+    // asm 000054F0: 	LDI	*+AR7(PASSCNT),R0      	;INHIBIT PASSING SOUND?
+    // asm 000054F1: 	BZ	RPASS1
+    // asm 000054F2: 	SUBI	1,R0
+    // asm 000054F3: 	LDIN	0,R0
+    // asm 000054F4: 	STI	R0,*+AR7(PASSCNT)
+    // asm 000054F5: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RPASS", 0, 0);
     UNIMPL();
 }
 
 void RPASS1(void)
 {
-    // asm: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
-    // asm: 	LDI	*+AR2(OCARBLK),AR3
-    // asm: 	LDF	*+AR5(CARSPEED),R3	;SPEED GREATER?
-    // asm: 	SUBF	*+AR3(CARSPEED),R3
-    // asm: 	CMPF	40,R3
-    // asm: 	BGT	RPASS2
-    // asm: 	ABSF	R3
-    // asm: 	CMPF	20,R3
-    // asm: 	BLT	RPASSX
-    // asm: 	CMPF	60,R3
-    // asm: 	LDFGT	60,R3
-    // asm: 	LDI	*+AR4(ODIST),R0
-    // asm: 	CMPI	0,R0
-    // asm: 	BLT	RPASSX
-    // asm: 	CMPI	3000,R0
-    // asm: 	BGT	RPASSX
-    // asm: 	B	RPASS3
+    // asm 000054F6: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
+    // asm 000054F7: 	LDI	*+AR2(OCARBLK),AR3
+    // asm 000054F8: 	LDF	*+AR5(CARSPEED),R3	;SPEED GREATER?
+    // asm 000054F9: 	SUBF	*+AR3(CARSPEED),R3
+    // asm 000054FA: 	CMPF	40,R3
+    // asm 000054FB: 	BGT	RPASS2
+    // asm 000054FC: 	ABSF	R3
+    // asm 000054FD: 	CMPF	20,R3
+    // asm 000054FE: 	BLT	RPASSX
+    // asm 000054FF: 	CMPF	60,R3
+    // asm 00005500: 	LDFGT	60,R3
+    // asm 00005501: 	LDI	*+AR4(ODIST),R0
+    // asm 00005502: 	CMPI	0,R0
+    // asm 00005503: 	BLT	RPASSX
+    // asm 00005504: 	CMPI	3000,R0
+    // asm 00005505: 	BGT	RPASSX
+    // asm 00005506: 	B	RPASS3
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RPASS1", 0, 0);
     UNIMPL();
 }
 
 void RPASS2(void)
 {
-    // asm: 	LDI	*+AR4(ODIST),R0
-    // asm: 	CMPI	1500,R0
-    // asm: 	BLT	RPASSX
-    // asm: 	CMPI	5000,R0
-    // asm: 	BGT	RPASSX
+    // asm 00005507: 	LDI	*+AR4(ODIST),R0
+    // asm 00005508: 	CMPI	1500,R0
+    // asm 00005509: 	BLT	RPASSX
+    // asm 0000550A: 	CMPI	5000,R0
+    // asm 0000550B: 	BGT	RPASSX
 RPASS3:
-    // asm: 	LDF	*+AR5(CARDIST2CNTR),R0
-    // asm: 	SUBF	*+AR3(CARDIST2CNTR),R0
-    // asm: 	ABSF	R0,R1
-    // asm: 	FLOAT	4000,R0
-    // asm: 	CALL	DIV_F
-    // asm: 	CMPF	1.0,R0
-    // asm: 	LDFGT	1.0,R0
-    // asm: 	FLOAT	255,R1
-    // asm: 	MPYF	R1,R0			;VOLUME FACTOR
-    // asm: 	FIX	R0
-    // asm: 	LDI	SMCARPASS,AR2		;DIFFERENT SOUND DIFF VEL
-    // asm: 	CMPF	40,R3
-    // asm: 	LDIGT	FCARPASS,AR2
-    // asm: 	CMPF	60,R3
-    // asm: 	BLT	RPASS4
-    // asm: 	FIX	R3
-    // asm: 	LSH	-1,R3
-    // asm: 	LDIC	SPCARPASS,AR2
+    // asm 0000550C: 	LDF	*+AR5(CARDIST2CNTR),R0
+    // asm 0000550D: 	SUBF	*+AR3(CARDIST2CNTR),R0
+    // asm 0000550E: 	ABSF	R0,R1
+    // asm 0000550F: 	FLOAT	4000,R0
+    // asm 00005510: 	CALL	DIV_F
+    // asm 00005511: 	CMPF	1.0,R0
+    // asm 00005512: 	LDFGT	1.0,R0
+    // asm 00005513: 	FLOAT	255,R1
+    // asm 00005514: 	MPYF	R1,R0			;VOLUME FACTOR
+    // asm 00005515: 	FIX	R0
+    // asm 00005516: 	LDI	SMCARPASS,AR2		;DIFFERENT SOUND DIFF VEL
+    // asm 00005517: 	CMPF	40,R3
+    // asm 00005518: 	LDIGT	FCARPASS,AR2
+    // asm 00005519: 	CMPF	60,R3
+    // asm 0000551A: 	BLT	RPASS4
+    // asm 0000551B: 	FIX	R3
+    // asm 0000551C: 	LSH	-1,R3
+    // asm 0000551D: 	LDIC	SPCARPASS,AR2
 RPASS4:
-    // asm: 	CALL	VOLSNDFX
-    // asm: 	LDI	40,R0
-    // asm: 	STI	R0,*+AR7(PASSCNT)
+    // asm 0000551E: 	CALL	VOLSNDFX
+    // asm 0000551F: 	LDI	40,R0
+    // asm 00005520: 	STI	R0,*+AR7(PASSCNT)
 RPASSX:
-    // asm: 	RETS
+    // asm 00005521: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RPASS2", 0, 0);
     UNIMPL();
 }
@@ -1865,83 +1865,83 @@ RPASSX:
  */
 void SPOS_INIT(void)
 {
-    // asm: 	PUSH	AR5
-    // asm: 	PUSH	AR6
-    // asm: 	LDI	@VECTORBI,AR5
-    // asm: 	LDF	*+AR2(OPOSX),R0
-    // asm: 	STF	R0,*+AR5(X)
-    // asm: 	LDF	*+AR2(OPOSY),R0
-    // asm: 	STF	R0,*+AR5(Y)
-    // asm: 	LDF	*+AR2(OPOSZ),R0
-    // asm: 	STF	R0,*+AR5(Z)
-    // asm: 	LDI	*+AR2(OLINK4),AR2	;GET *NEXT* PIECE
+    // asm 00005522: 	PUSH	AR5
+    // asm 00005523: 	PUSH	AR6
+    // asm 00005524: 	LDI	@VECTORBI,AR5
+    // asm 00005525: 	LDF	*+AR2(OPOSX),R0
+    // asm 00005526: 	STF	R0,*+AR5(X)
+    // asm 00005527: 	LDF	*+AR2(OPOSY),R0
+    // asm 00005528: 	STF	R0,*+AR5(Y)
+    // asm 00005529: 	LDF	*+AR2(OPOSZ),R0
+    // asm 0000552A: 	STF	R0,*+AR5(Z)
+    // asm 0000552B: 	LDI	*+AR2(OLINK4),AR2	;GET *NEXT* PIECE
 LOOP56:
-    // asm: 	LDF	*+AR2(OPOSX),R2
-    // asm: 	SUBF	*+AR5(X),R2
-    // asm: 	LDF	*+AR2(OPOSZ),R3
-    // asm: 	SUBF	*+AR5(Z),R3
-    // asm: 	CALL	ARCTANF
-    // asm: 	SUBF	HALFPI,R0
-    // asm: 	LDF	R0,R2			;THIS IS INITIAL FACING
-    // asm: 	CMPI	0,AR3
-    // asm: 	BEQ	OFFANDDONE
-    // asm: 	FLOAT	5500,R0
-    // asm: 	CALL	DISTANCE_2D
-    // asm: 	ADDF	*+AR5(X),R0
-    // asm: 	STF	R0,*+AR5(X)
-    // asm: 	ADDF	*+AR5(Z),R1
-    // asm: 	STF	R1,*+AR5(Z)
-    // asm: 	DEC	AR3
-    // asm: 	CMPI	0,AR3
-    // asm: 	BLE	OFFANDDONE
+    // asm 0000552C: 	LDF	*+AR2(OPOSX),R2
+    // asm 0000552D: 	SUBF	*+AR5(X),R2
+    // asm 0000552E: 	LDF	*+AR2(OPOSZ),R3
+    // asm 0000552F: 	SUBF	*+AR5(Z),R3
+    // asm 00005530: 	CALL	ARCTANF
+    // asm 00005531: 	SUBF	HALFPI,R0
+    // asm 00005532: 	LDF	R0,R2			;THIS IS INITIAL FACING
+    // asm 00005533: 	CMPI	0,AR3
+    // asm 00005534: 	BEQ	OFFANDDONE
+    // asm 00005535: 	FLOAT	5500,R0
+    // asm 00005536: 	CALL	DISTANCE_2D
+    // asm 00005537: 	ADDF	*+AR5(X),R0
+    // asm 00005538: 	STF	R0,*+AR5(X)
+    // asm 00005539: 	ADDF	*+AR5(Z),R1
+    // asm 0000553A: 	STF	R1,*+AR5(Z)
+    // asm 0000553B: 	DEC	AR3
+    // asm 0000553C: 	CMPI	0,AR3
+    // asm 0000553D: 	BLE	OFFANDDONE
 LOOP56A:
-    // asm: 	LDF	*+AR2(OPOSX),R0
-    // asm: 	SUBF	*+AR5(X),R0
-    // asm: 	MPYF	R0,R0
-    // asm: 	LDF	*+AR2(OPOSZ),R2
-    // asm: 	SUBF	*+AR5(Z),R2
-    // asm: 	MPYF	R2,R2
-    // asm: 	ADDF	R0,R2
-    // asm: 	CALL	SQRT
-    // asm: 	FLOAT	5000,R1
-    // asm: 	CMPF	R1,R0
-    // asm: 	BGT	LOOP56
-    // asm: 	LDI	*+AR2(OLINK4),AR2
-    // asm: 	BU	LOOP56A
+    // asm 0000553E: 	LDF	*+AR2(OPOSX),R0
+    // asm 0000553F: 	SUBF	*+AR5(X),R0
+    // asm 00005540: 	MPYF	R0,R0
+    // asm 00005541: 	LDF	*+AR2(OPOSZ),R2
+    // asm 00005542: 	SUBF	*+AR5(Z),R2
+    // asm 00005543: 	MPYF	R2,R2
+    // asm 00005544: 	ADDF	R0,R2
+    // asm 00005545: 	CALL	SQRT
+    // asm 00005546: 	FLOAT	5000,R1
+    // asm 00005547: 	CMPF	R1,R0
+    // asm 00005548: 	BGT	LOOP56
+    // asm 00005549: 	LDI	*+AR2(OLINK4),AR2
+    // asm 0000554A: 	BU	LOOP56A
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SPOS_INIT", 0, 0);
     UNIMPL();
 }
 
 void OFFANDDONE(void)
 {
-    // asm: 	STI	AR2,*+AR7(DELTA_TPIECE)
+    // asm 0000554B: 	STI	AR2,*+AR7(DELTA_TPIECE)
 L874:
-    // asm: LDI	*+AR2(OUSR1),R0
-    // asm: 	STI	R0,*+AR7(DELTA_LAST_OID)
-    // asm: 	PUSHFL	R2
-    // asm: 	LDI	@MATRIXAI,AR2
-    // asm: 	CALL	FIND_YMATRIX
-    // asm: 	CALL	CLR_VECTORA
-    // asm: 	LDF	*+AR7(DELTA_XLANE),R0
-    // asm: 	STF	R0,*+AR2(X)
-    // asm: 	LDI	@MATRIXAI,R2
-    // asm: 	LDI	AR2,R3
-    // asm: 	CALL	MATRIX_MUL
-    // asm: 	LDI	@VECTORAI,AR0
-    // asm: 	LDF	*+AR5(X),R0
-    // asm: 	ADDF	*+AR0(X),R0
-    // asm: 	STF	R0,*+AR4(OPOSX)
-    // asm: 	LDF	*+AR5(Y),R0
-    // asm: 	SUBF	*+AR5(CARWHLTAB+1),R0
-    // asm: 	ADDF	*+AR0(Y),R0
-    // asm: 	STF	R0,*+AR4(OPOSY)
-    // asm: 	LDF	*+AR5(Z),R0
-    // asm: 	ADDF	*+AR0(Z),R0
-    // asm: 	STF	R0,*+AR4(OPOSZ)
-    // asm: 	POPFL	R2
-    // asm: 	POP	AR6
-    // asm: 	POP	AR5
-    // asm: 	RETS
+    // asm 0000554C: LDI	*+AR2(OUSR1),R0
+    // asm 0000554D: 	STI	R0,*+AR7(DELTA_LAST_OID)
+    // asm 0000554E: 	PUSHFL	R2
+    // asm 00005550: 	LDI	@MATRIXAI,AR2
+    // asm 00005551: 	CALL	FIND_YMATRIX
+    // asm 00005552: 	CALL	CLR_VECTORA
+    // asm 00005553: 	LDF	*+AR7(DELTA_XLANE),R0
+    // asm 00005554: 	STF	R0,*+AR2(X)
+    // asm 00005555: 	LDI	@MATRIXAI,R2
+    // asm 00005556: 	LDI	AR2,R3
+    // asm 00005557: 	CALL	MATRIX_MUL
+    // asm 00005558: 	LDI	@VECTORAI,AR0
+    // asm 00005559: 	LDF	*+AR5(X),R0
+    // asm 0000555A: 	ADDF	*+AR0(X),R0
+    // asm 0000555B: 	STF	R0,*+AR4(OPOSX)
+    // asm 0000555C: 	LDF	*+AR5(Y),R0
+    // asm 0000555D: 	SUBF	*+AR5(CARWHLTAB+1),R0
+    // asm 0000555E: 	ADDF	*+AR0(Y),R0
+    // asm 0000555F: 	STF	R0,*+AR4(OPOSY)
+    // asm 00005560: 	LDF	*+AR5(Z),R0
+    // asm 00005561: 	ADDF	*+AR0(Z),R0
+    // asm 00005562: 	STF	R0,*+AR4(OPOSZ)
+    // asm 00005563: 	POPFL	R2
+    // asm 00005565: 	POP	AR6
+    // asm 00005566: 	POP	AR5
+    // asm 00005567: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OFFANDDONE", 0, 0);
     UNIMPL();
 }
@@ -1957,110 +1957,110 @@ L874:
  */
 void WRECKST(void)
 {
-    // asm: 	PUSH	AR4
-    // asm: 	PUSH	AR5
-    // asm: 	PUSH	AR7
-    // asm: 	LDI	@PLYCAR,AR4
-    // asm: 	LDI	@PLYCBLK,AR5
-    // asm: 	LDI	@PLYPROC,AR7
-    // asm: 	LDI	@CAMVIEW,R0
-    // asm: 	STI	R0,*+AR7(PDATA+21)	;SAVE OLD VIEW...
-    // asm: 	BNZ	WRKST1
-    // asm: 	LDI	@VIEW2I,AR2
-    // asm: 	LDI	UTIL_C,R2
-    // asm: 	CALL	PRC_CREATE		   	;SETUP VIEW 1 IF FIRST PERSON
+    // asm 00005568: 	PUSH	AR4
+    // asm 00005569: 	PUSH	AR5
+    // asm 0000556A: 	PUSH	AR7
+    // asm 0000556B: 	LDI	@PLYCAR,AR4
+    // asm 0000556C: 	LDI	@PLYCBLK,AR5
+    // asm 0000556D: 	LDI	@PLYPROC,AR7
+    // asm 0000556E: 	LDI	@CAMVIEW,R0
+    // asm 0000556F: 	STI	R0,*+AR7(PDATA+21)	;SAVE OLD VIEW...
+    // asm 00005570: 	BNZ	WRKST1
+    // asm 00005571: 	LDI	@VIEW2I,AR2
+    // asm 00005572: 	LDI	UTIL_C,R2
+    // asm 00005573: 	CALL	PRC_CREATE		   	;SETUP VIEW 1 IF FIRST PERSON
 WRKST1:
-    // asm: 	LDF	*+AR5(CT_PRDYD),R0 	;DELTA Y TO ROAD
-    // asm: 	ADDF	*+AR4(OPOSY),R0		;ADD Y POSTION OF CAR
-    // asm: 	STF	R0,*+AR7(PDATA+20)	;ABSOLUTE Y OF ROAD
+    // asm 00005574: 	LDF	*+AR5(CT_PRDYD),R0 	;DELTA Y TO ROAD
+    // asm 00005575: 	ADDF	*+AR4(OPOSY),R0		;ADD Y POSTION OF CAR
+    // asm 00005576: 	STF	R0,*+AR7(PDATA+20)	;ABSOLUTE Y OF ROAD
     // *GET YOUR RADIANS
-    // asm: 	LDF	0.104,R0
-    // asm: 	STF	R0,*+AR7(PDATA)	  	;X RADIANS
-    // asm: 	LDF	0.104,R0
-    // asm: 	STF	R0,*+AR7(PDATA+1)	;Y RADIANS
-    // asm: 	LDF	0,R0
-    // asm: 	STF	R0,*+AR7(PDATA+2)	;Z RADIANS
-    // asm: 	LDF	0,R0
-    // asm: 	STF	R0,*+AR7(PDATA+3)	;X RADIAN TOTAL
-    // asm: 	STF	R0,*+AR7(PDATA+5)  	;Z RADIAN TOTAL
-    // asm: 	LDF	*+AR5(CARYROT),R0	;GET CAR Y ROT
-    // asm: 	STF	R0,*+AR7(PDATA+4)
-    // asm: 	LDF	-60,R0
-    // asm: 	STF	R0,*+AR4(OVELY)		;STUFF VERTICAL VELOCITY
-    // asm: 	LDI	1,R0	    		;SET WRECK FLAG
-    // asm: 	STI	R0,@WRECKFLG
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*+AR5(CARSHAD)	;TURN OFF SHADOW
-    // asm: 	POP	AR7
-    // asm: 	POP	AR5
-    // asm: 	POP	AR4
-    // asm: 	RETS
+    // asm 00005577: 	LDF	0.104,R0
+    // asm 00005578: 	STF	R0,*+AR7(PDATA)	  	;X RADIANS
+    // asm 00005579: 	LDF	0.104,R0
+    // asm 0000557A: 	STF	R0,*+AR7(PDATA+1)	;Y RADIANS
+    // asm 0000557B: 	LDF	0,R0
+    // asm 0000557C: 	STF	R0,*+AR7(PDATA+2)	;Z RADIANS
+    // asm 0000557D: 	LDF	0,R0
+    // asm 0000557E: 	STF	R0,*+AR7(PDATA+3)	;X RADIAN TOTAL
+    // asm 0000557F: 	STF	R0,*+AR7(PDATA+5)  	;Z RADIAN TOTAL
+    // asm 00005580: 	LDF	*+AR5(CARYROT),R0	;GET CAR Y ROT
+    // asm 00005581: 	STF	R0,*+AR7(PDATA+4)
+    // asm 00005582: 	LDF	-60,R0
+    // asm 00005583: 	STF	R0,*+AR4(OVELY)		;STUFF VERTICAL VELOCITY
+    // asm 00005584: 	LDI	1,R0	    		;SET WRECK FLAG
+    // asm 00005585: 	STI	R0,@WRECKFLG
+    // asm 00005586: 	LDI	0,R0
+    // asm 00005587: 	STI	R0,*+AR5(CARSHAD)	;TURN OFF SHADOW
+    // asm 00005588: 	POP	AR7
+    // asm 00005589: 	POP	AR5
+    // asm 0000558A: 	POP	AR4
+    // asm 0000558B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WRECKST", 0, 0);
     UNIMPL();
 }
 
 void WRECK(void)
 {
-    // asm: 	CALL	GETTRAK			;KEEP UPDATING YOUR TRACKER
-    // asm: 	FLOAT	@NFRAMES,R1	 	;ADJUST MATRIX FOR FRAME COUNT
-    // asm: 	LDF	*+AR7(PDATA),R0		;ACCUMULATE X RADIANS
-    // asm: 	MPYF	R1,R0
-    // asm: 	ADDF	*+AR7(PDATA+3),R0
-    // asm: 	STF	R0,*+AR7(PDATA+3)
-    // asm: 	LDF	*+AR7(PDATA+1),R0      	;ACCUMULATE Y RADIANS
-    // asm: 	MPYF	R1,R0
-    // asm: 	ADDF	*+AR7(PDATA+4),R0
-    // asm: 	STF	R0,*+AR7(PDATA+4)
-    // asm: 	LDF	*+AR7(PDATA+2),R0 	;ACCUMULATE Z RADIANS
-    // asm: 	MPYF	R1,R0
-    // asm: 	ADDF	*+AR7(PDATA+5),R0
-    // asm: 	STF	R0,*+AR7(PDATA+5)
-    // asm: 	CALL	GETFLYMAT		;COMPUTE MATRICES
+    // asm 0000558C: 	CALL	GETTRAK			;KEEP UPDATING YOUR TRACKER
+    // asm 0000558D: 	FLOAT	@NFRAMES,R1	 	;ADJUST MATRIX FOR FRAME COUNT
+    // asm 0000558E: 	LDF	*+AR7(PDATA),R0		;ACCUMULATE X RADIANS
+    // asm 0000558F: 	MPYF	R1,R0
+    // asm 00005590: 	ADDF	*+AR7(PDATA+3),R0
+    // asm 00005591: 	STF	R0,*+AR7(PDATA+3)
+    // asm 00005592: 	LDF	*+AR7(PDATA+1),R0      	;ACCUMULATE Y RADIANS
+    // asm 00005593: 	MPYF	R1,R0
+    // asm 00005594: 	ADDF	*+AR7(PDATA+4),R0
+    // asm 00005595: 	STF	R0,*+AR7(PDATA+4)
+    // asm 00005596: 	LDF	*+AR7(PDATA+2),R0 	;ACCUMULATE Z RADIANS
+    // asm 00005597: 	MPYF	R1,R0
+    // asm 00005598: 	ADDF	*+AR7(PDATA+5),R0
+    // asm 00005599: 	STF	R0,*+AR7(PDATA+5)
+    // asm 0000559A: 	CALL	GETFLYMAT		;COMPUTE MATRICES
     // *CONVERT CARVROT,CARSPEED TO OVELX, OVELZ
-    // asm: 	LDF	*+AR5(CARVROT),R2
-    // asm: 	ADDF	1.57,R2		   	;CORRECT FOR 90 DEGREE ERROR
-    // asm: 	CALL	_SINE
-    // asm: 	LDF	*+AR5(CARSPEED),R3
-    // asm: 	MPYF	R3,R0
-    // asm: 	STF	R0,*+AR4(OVELZ)	  	;CONVERT TO CARVROT, CARSPEED TO XZVEL
-    // asm: 	CALL	_COSI
-    // asm: 	MPYF	R3,R0
-    // asm: 	STF	R0,*+AR4(OVELX)
-    // asm: 	CALL	OVELNADD		;UPDATE VELOCITIES
-    // asm: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
-    // asm: 	CALL	ROADSCAN		;CHECK WHEEL HITS
-    // asm: 	LDI	*+AR4(OCARBLK),AR5	;GET CAR DATA AREA
+    // asm 0000559B: 	LDF	*+AR5(CARVROT),R2
+    // asm 0000559C: 	ADDF	1.57,R2		   	;CORRECT FOR 90 DEGREE ERROR
+    // asm 0000559D: 	CALL	_SINE
+    // asm 0000559E: 	LDF	*+AR5(CARSPEED),R3
+    // asm 0000559F: 	MPYF	R3,R0
+    // asm 000055A0: 	STF	R0,*+AR4(OVELZ)	  	;CONVERT TO CARVROT, CARSPEED TO XZVEL
+    // asm 000055A1: 	CALL	_COSI
+    // asm 000055A2: 	MPYF	R3,R0
+    // asm 000055A3: 	STF	R0,*+AR4(OVELX)
+    // asm 000055A4: 	CALL	OVELNADD		;UPDATE VELOCITIES
+    // asm 000055A5: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
+    // asm 000055A6: 	CALL	ROADSCAN		;CHECK WHEEL HITS
+    // asm 000055A7: 	LDI	*+AR4(OCARBLK),AR5	;GET CAR DATA AREA
     // *KEEP Y ABOVE THE ROAD
-    // asm: 	LDI	*+AR5(CT_PCOL),R0
-    // asm: 	BZ	WRECK1
-    // asm: 	LDF	*+AR5(CT_PRDYD),R0	;DELTA Y TO ROAD
-    // asm: 	ADDF	*+AR4(OPOSY),R0		;ADD Y POSTION OF CAR
-    // asm: 	LDF	R0,R1
-    // asm: 	SUBF	*+AR7(PDATA+20),R0
-    // asm: 	ADDF	*+AR4(OPOSY),R0
-    // asm: 	STF	R0,*+AR4(OPOSY)
-    // asm: 	STF	R1,*+AR7(PDATA+20)	;SAVE NEW BASE LINE
+    // asm 000055A8: 	LDI	*+AR5(CT_PCOL),R0
+    // asm 000055A9: 	BZ	WRECK1
+    // asm 000055AA: 	LDF	*+AR5(CT_PRDYD),R0	;DELTA Y TO ROAD
+    // asm 000055AB: 	ADDF	*+AR4(OPOSY),R0		;ADD Y POSTION OF CAR
+    // asm 000055AC: 	LDF	R0,R1
+    // asm 000055AD: 	SUBF	*+AR7(PDATA+20),R0
+    // asm 000055AE: 	ADDF	*+AR4(OPOSY),R0
+    // asm 000055AF: 	STF	R0,*+AR4(OPOSY)
+    // asm 000055B0: 	STF	R1,*+AR7(PDATA+20)	;SAVE NEW BASE LINE
     // *CHECK FOR THE END
 WRECK1:
-    // asm: 	FLOAT	@NFRAMES,R2
-    // asm: 	MPYF	2,R2			;FRAME ADJUSTED GRAVITY
-    // asm: 	ADDF	*+AR4(OVELY),R2
-    // asm: 	STF	R2,*+AR4(OVELY)
-    // asm: 	CMPF	60,R2
-    // asm: 	RETSLT				;NOT OVER YET
+    // asm 000055B1: 	FLOAT	@NFRAMES,R2
+    // asm 000055B2: 	MPYF	2,R2			;FRAME ADJUSTED GRAVITY
+    // asm 000055B3: 	ADDF	*+AR4(OVELY),R2
+    // asm 000055B4: 	STF	R2,*+AR4(OVELY)
+    // asm 000055B5: 	CMPF	60,R2
+    // asm 000055B6: 	RETSLT				;NOT OVER YET
     // *END IT ALL
-    // asm: 	LDI	0,R0			;END IT ALL
-    // asm: 	STI	R0,@WRECKFLG
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,*+AR5(CARSHAD)	;TURN ON SHADOW
-    // asm: 	SONDFX	BOTTOMOUT		;BOTTOM OUT SOUND
-    // asm: 	LDI	*+AR7(PDATA+21),R0	;RETURN TO FIRST PERSON?
-    // asm: 	BNZ	WRECKSLP
-    // asm: 	LDI	@VIEW0I,AR2
-    // asm: 	LDI	UTIL_C,R2
-    // asm: 	CALL	PRC_CREATE		   	;RETURN TO 1ST PERSON
+    // asm 000055B7: 	LDI	0,R0			;END IT ALL
+    // asm 000055B8: 	STI	R0,@WRECKFLG
+    // asm 000055B9: 	LDI	1,R0
+    // asm 000055BA: 	STI	R0,*+AR5(CARSHAD)	;TURN ON SHADOW
+    // asm 000055BB: 	SONDFX	BOTTOMOUT		;BOTTOM OUT SOUND
+    // asm 000055BD: 	LDI	*+AR7(PDATA+21),R0	;RETURN TO FIRST PERSON?
+    // asm 000055BE: 	BNZ	WRECKSLP
+    // asm 000055BF: 	LDI	@VIEW0I,AR2
+    // asm 000055C0: 	LDI	UTIL_C,R2
+    // asm 000055C1: 	CALL	PRC_CREATE		   	;RETURN TO 1ST PERSON
 WRECKSLP:
-    // asm: 	RETS
+    // asm 000055C2: 	RETS
     // *
     // *PLAYER DRAFT CHECK
     // *AR4=PLAYER OBJECT

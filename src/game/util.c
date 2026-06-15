@@ -172,18 +172,18 @@ void TVPATCH(void)
 void SETPAGE0(void)
 {
     // ;	.if	DEBUG
-    // asm: 	LDI	@PAGEWORD,R0
-    // asm: 	BNE	P1
+    // asm 00008E76: 	LDI	@PAGEWORD,R0
+    // asm 00008E77: 	BNE	P1
     // ;	.endif
-    // asm: 	LDI	@SCREEN1I,R0		;set active screen to 1 (writeable)
-    // asm: 	STI	R0,@ACTIVE_SCREEN
-    // asm: 	LDP	@DMA_SETUP
-    // asm: 	LDI	@DMA_SETUP,R0
-    // asm: 	ANDN	DMA_VIDEO_PAG_DISPLAYED,R0
-    // asm: 	OR	DMA_DMA_WRITE_PAGE,R0
-    // asm: 	STI	R0,@DMA_SETUP
-    // asm: 	SETDP
-    // asm: 	RETS
+    // asm 00008E78: 	LDI	@SCREEN1I,R0		;set active screen to 1 (writeable)
+    // asm 00008E79: 	STI	R0,@ACTIVE_SCREEN
+    // asm 00008E7A: 	LDP	@DMA_SETUP
+    // asm 00008E7B: 	LDI	@DMA_SETUP,R0
+    // asm 00008E7C: 	ANDN	DMA_VIDEO_PAG_DISPLAYED,R0
+    // asm 00008E7D: 	OR	DMA_DMA_WRITE_PAGE,R0
+    // asm 00008E7E: 	STI	R0,@DMA_SETUP
+    // asm 00008E7F: 	SETDP
+    // asm 00008E80: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETPAGE0", 0, 0);
     UNIMPL();
 }
@@ -195,18 +195,18 @@ void SETPAGE0(void)
 void SETPAGE1(void)
 {
     // ;	.if	DEBUG
-    // asm: 	LDI	@PAGEWORD,R0
-    // asm: 	BNE	P1
+    // asm 00008E81: 	LDI	@PAGEWORD,R0
+    // asm 00008E82: 	BNE	P1
     // ;	.endif
-    // asm: 	LDI	@SCREEN0I,R0		;set active screen to 1 (writeable)
-    // asm: 	STI	R0,@ACTIVE_SCREEN
-    // asm: 	LDP	@DMA_SETUP
-    // asm: 	LDI	@DMA_SETUP,R0
-    // asm: 	OR	DMA_VIDEO_PAG_DISPLAYED,R0
-    // asm: 	ANDN	DMA_DMA_WRITE_PAGE,R0
-    // asm: 	STI	R0,@DMA_SETUP
-    // asm: 	SETDP
-    // asm: 	RETS
+    // asm 00008E83: 	LDI	@SCREEN0I,R0		;set active screen to 1 (writeable)
+    // asm 00008E84: 	STI	R0,@ACTIVE_SCREEN
+    // asm 00008E85: 	LDP	@DMA_SETUP
+    // asm 00008E86: 	LDI	@DMA_SETUP,R0
+    // asm 00008E87: 	OR	DMA_VIDEO_PAG_DISPLAYED,R0
+    // asm 00008E88: 	ANDN	DMA_DMA_WRITE_PAGE,R0
+    // asm 00008E89: 	STI	R0,@DMA_SETUP
+    // asm 00008E8A: 	SETDP
+    // asm 00008E8B: 	RETS
     // ;	.if	DEBUG
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETPAGE1", 0, 0);
     UNIMPL();
@@ -227,18 +227,18 @@ void FASTCLR0(void)
 
 void FASTCLR1(void)
 {
-    // asm: 	LDI	@NOAERASE,R0
-    // asm: 	RETSNZ
-    // asm: 	LDI	0,AR2		;X
-    // asm: 	STI	AR2,@_ACNTL
-    // asm: 	LDI	0,R2		;Y
-    // asm: 	LDI	511,R3		;X2
-    // asm: 	LDI	399,RC		;Y2
-    // asm: 	LDI	0,RS		;PAL
-    // asm: 	LDI	0A0h,RE		;ADDR
-    // asm: 	RS	16,RE
-    // asm: 	CALL	_rdma
-    // asm: 	RETS
+    // asm 00008E95: 	LDI	@NOAERASE,R0
+    // asm 00008E96: 	RETSNZ
+    // asm 00008E97: 	LDI	0,AR2		;X
+    // asm 00008E98: 	STI	AR2,@_ACNTL
+    // asm 00008E99: 	LDI	0,R2		;Y
+    // asm 00008E9A: 	LDI	511,R3		;X2
+    // asm 00008E9B: 	LDI	399,RC		;Y2
+    // asm 00008E9C: 	LDI	0,RS		;PAL
+    // asm 00008E9D: 	LDI	0A0h,RE		;ADDR
+    // asm 00008E9E: 	RS	16,RE
+    // asm 00008E9F: 	CALL	_rdma
+    // asm 00008EA0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FASTCLR1", 0, 0);
     UNIMPL();
 }
@@ -249,34 +249,34 @@ void FASTCLR1(void)
  */
 void CLRSCRN(void)
 {
-    // asm: 	CALL	CLRSCRN0
+    // asm 00008EA1: 	CALL	CLRSCRN0
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLRSCRN", 0, 0);
     UNIMPL();
 }
 
 void CLRSCRN1(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	LDI	@SCREEN1I,AR2
-    // asm: 	B	CLRSC00
+    // asm 00008EA2: 	PUSH	AR2
+    // asm 00008EA3: 	LDI	@SCREEN1I,AR2
+    // asm 00008EA4: 	B	CLRSC00
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLRSCRN1", 0, 0);
     UNIMPL();
 }
 
 void CLRSCRN0(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	LDI	@SCREEN0I,AR2
-    // asm: CLRSC00	PUSH	R3
-    // asm: 	LDI	@SCRSIZI,R3
+    // asm 00008EA5: 	PUSH	AR2
+    // asm 00008EA6: 	LDI	@SCREEN0I,AR2
+    // asm 00008EA7: CLRSC00	PUSH	R3
+    // asm 00008EA8: 	LDI	@SCRSIZI,R3
 CLRSC01:
-    // asm: 	PUSH	R2
-    // asm: 	LDI	0,R2
-    // asm: 	CALL	SCREEN_FILL
-    // asm: 	POP	R2
-    // asm: 	POP	R3
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 00008EA9: 	PUSH	R2
+    // asm 00008EAA: 	LDI	0,R2
+    // asm 00008EAB: 	CALL	SCREEN_FILL
+    // asm 00008EAC: 	POP	R2
+    // asm 00008EAD: 	POP	R3
+    // asm 00008EAE: 	POP	AR2
+    // asm 00008EAF: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLRSCRN0", 0, 0);
     UNIMPL();
 }
@@ -287,11 +287,11 @@ CLRSC01:
  */
 void CLR255(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	R3
-    // asm: 	LDI	@LINE255I,AR2
-    // asm: 	LDI	1023,R3		;ONE ROW ONLY
-    // asm: 	B	CLRSC01
+    // asm 00008EB0: 	PUSH	AR2
+    // asm 00008EB1: 	PUSH	R3
+    // asm 00008EB2: 	LDI	@LINE255I,AR2
+    // asm 00008EB3: 	LDI	1023,R3		;ONE ROW ONLY
+    // asm 00008EB4: 	B	CLRSC01
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLR255", 0, 0);
     UNIMPL();
 }
@@ -302,11 +302,11 @@ void CLR255(void)
  */
 void CLR511(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	R3
-    // asm: 	LDI	@LINE511I,AR2
-    // asm: 	LDI	1023,R3		;ONE ROW ONLY
-    // asm: 	B	CLRSC01
+    // asm 00008EB5: 	PUSH	AR2
+    // asm 00008EB6: 	PUSH	R3
+    // asm 00008EB7: 	LDI	@LINE511I,AR2
+    // asm 00008EB8: 	LDI	1023,R3		;ONE ROW ONLY
+    // asm 00008EB9: 	B	CLRSC01
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLR511", 0, 0);
     UNIMPL();
 }
@@ -316,10 +316,10 @@ void CLR511(void)
  */
 void SCRNFIL(void)
 {
-    // asm: 	LDI	@SCREEN0I,AR2
-    // asm: 	LDI	@FILSIZI,R3
-    // asm: 	LDI	@FILWORD,R2	;fill it with some crud
-    // asm: 	B	SCREEN_FILL
+    // asm 00008EBA: 	LDI	@SCREEN0I,AR2
+    // asm 00008EBB: 	LDI	@FILSIZI,R3
+    // asm 00008EBC: 	LDI	@FILWORD,R2	;fill it with some crud
+    // asm 00008EBD: 	B	SCREEN_FILL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCRNFIL", 0, 0);
     UNIMPL();
 }
@@ -335,31 +335,31 @@ void SCRNFIL(void)
  */
 void SCREEN_FILL(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	AR1
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	IE
-    // asm: 	LDP	@COMMINTM
-    // asm: 	LDI	@COMMINTM,IE
-    // asm: 	SETDP
-    // asm: 	PUSH	DP
-    // asm: 	LDP	@CPU_WS
-    // asm: 	LDI	0,AR1
-    // asm: 	LDI	R3,RC
-    // asm: 	LDI	HARD_WS,R0
-    // asm: 	STI	R0,@CPU_WS
-    // asm: 	RPTB	CLRSCL
-    // asm: 	STI	R2,*AR2++
-    // asm: CLRSCL	LDI	*AR1,R0		;DUMMY READ FOR WAIT STATE SHIT
-    // asm: 	LDP	@CPU_WS
-    // asm: 	LDI	SOFT_WS,R0
-    // asm: 	STI	R0,@CPU_WS
-    // asm: 	POP	DP
-    // asm: 	POP	IE
-    // asm: 	POP	AR2
-    // asm: 	POP	AR1
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00008EC0: 	PUSH	R0
+    // asm 00008EC1: 	PUSH	AR1
+    // asm 00008EC2: 	PUSH	AR2
+    // asm 00008EC3: 	PUSH	IE
+    // asm 00008EC4: 	LDP	@COMMINTM
+    // asm 00008EC5: 	LDI	@COMMINTM,IE
+    // asm 00008EC6: 	SETDP
+    // asm 00008EC7: 	PUSH	DP
+    // asm 00008EC8: 	LDP	@CPU_WS
+    // asm 00008EC9: 	LDI	0,AR1
+    // asm 00008ECA: 	LDI	R3,RC
+    // asm 00008ECB: 	LDI	HARD_WS,R0
+    // asm 00008ECC: 	STI	R0,@CPU_WS
+    // asm 00008ECD: 	RPTB	CLRSCL
+    // asm 00008ECE: 	STI	R2,*AR2++
+    // asm 00008ECF: CLRSCL	LDI	*AR1,R0		;DUMMY READ FOR WAIT STATE SHIT
+    // asm 00008ED0: 	LDP	@CPU_WS
+    // asm 00008ED1: 	LDI	SOFT_WS,R0
+    // asm 00008ED2: 	STI	R0,@CPU_WS
+    // asm 00008ED3: 	POP	DP
+    // asm 00008ED4: 	POP	IE
+    // asm 00008ED5: 	POP	AR2
+    // asm 00008ED6: 	POP	AR1
+    // asm 00008ED7: 	POP	R0
+    // asm 00008ED8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCREEN_FILL", 0, 0);
     UNIMPL();
 }
@@ -370,12 +370,12 @@ void SCREEN_FILL(void)
  */
 void CLRCRAM(void)
 {
-    // asm: 	LDI	COLORAM>>16,AR0
-    // asm: 	LSH	16,AR0
-    // asm: 	LDI	0,R1
-    // asm: 	RPTS	07FFFH
-    // asm: 	STI	R1,*AR0++
-    // asm: 	RETS
+    // asm 00008ED9: 	LDI	COLORAM>>16,AR0
+    // asm 00008EDA: 	LSH	16,AR0
+    // asm 00008EDB: 	LDI	0,R1
+    // asm 00008EDC: 	RPTS	07FFFH
+    // asm 00008EDD: 	STI	R1,*AR0++
+    // asm 00008EDE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLRCRAM", 0, 0);
     UNIMPL();
 }
@@ -390,18 +390,18 @@ void CLRCRAM(void)
  */
 void RANDOM(void)
 {
-    // asm: 	PUSH	R1
-    // asm: 	LDI	@RAND,R0
-    // asm: 	LDI	R0,R1
-    // asm: 	LSH	1,R0
-    // asm: 	XOR	R0,R1
-    // asm: 	BNN	RND2
-    // asm: 	OR	1,R0
+    // asm 00008EDF: 	PUSH	R1
+    // asm 00008EE0: 	LDI	@RAND,R0
+    // asm 00008EE1: 	LDI	R0,R1
+    // asm 00008EE2: 	LSH	1,R0
+    // asm 00008EE3: 	XOR	R0,R1
+    // asm 00008EE4: 	BNN	RND2
+    // asm 00008EE5: 	OR	1,R0
 RND2:
-    // asm: POP	R1
-    // asm: 	MPYI	794Fh,R0
-    // asm: 	STI	R0,@RAND
-    // asm: 	RETS
+    // asm 00008EE6: POP	R1
+    // asm 00008EE7: 	MPYI	794Fh,R0
+    // asm 00008EE8: 	STI	R0,@RAND
+    // asm 00008EE9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDOM", 0, 0);
     UNIMPL();
 }
@@ -417,19 +417,19 @@ RND2:
  */
 void FRAND(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	PUSHFL	R1
-    // asm: 	PUSHF	R0
-    // asm: 	LDI	10000,AR2
-    // asm: 	CALL	RANDU0
-    // asm: 	FLOAT	R0
-    // asm: 	MPYF	0.01,R0
-    // asm: 	MPYF	0.01,R0
-    // asm: 	POPF	R1
-    // asm: 	MPYF	R1,R0
-    // asm: 	POPFL	R1
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 00008EEA: 	PUSH	AR2
+    // asm 00008EEB: 	PUSHFL	R1
+    // asm 00008EED: 	PUSHF	R0
+    // asm 00008EEE: 	LDI	10000,AR2
+    // asm 00008EEF: 	CALL	RANDU0
+    // asm 00008EF0: 	FLOAT	R0
+    // asm 00008EF1: 	MPYF	0.01,R0
+    // asm 00008EF2: 	MPYF	0.01,R0
+    // asm 00008EF3: 	POPF	R1
+    // asm 00008EF4: 	MPYF	R1,R0
+    // asm 00008EF5: 	POPFL	R1
+    // asm 00008EF7: 	POP	AR2
+    // asm 00008EF8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FRAND", 0, 0);
     UNIMPL();
 }
@@ -445,16 +445,16 @@ void FRAND(void)
  */
 void SFRAND(void)
 {
-    // asm: 	PUSH	R1
-    // asm: 	PUSHF	R1
-    // asm: 	PUSHF	R0
-    // asm: 	MPYF	2,R0
-    // asm: 	CALL	FRAND
-    // asm: 	POPF	R1
-    // asm: 	SUBF	R1,R0
-    // asm: 	POPF	R1
-    // asm: 	POP	R1
-    // asm: 	RETS
+    // asm 00008EF9: 	PUSH	R1
+    // asm 00008EFA: 	PUSHF	R1
+    // asm 00008EFB: 	PUSHF	R0
+    // asm 00008EFC: 	MPYF	2,R0
+    // asm 00008EFD: 	CALL	FRAND
+    // asm 00008EFE: 	POPF	R1
+    // asm 00008EFF: 	SUBF	R1,R0
+    // asm 00008F00: 	POPF	R1
+    // asm 00008F01: 	POP	R1
+    // asm 00008F02: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SFRAND", 0, 0);
     UNIMPL();
 }
@@ -470,11 +470,11 @@ void SFRAND(void)
  */
 void RANDU0(void)
 {
-    // asm: 	CALL	RANDOM
-    // asm: 	LSH	-16,R0
-    // asm: 	MPYI	AR2,R0
-    // asm: 	LSH	-16,R0
-    // asm: 	RETS
+    // asm 00008F03: 	CALL	RANDOM
+    // asm 00008F04: 	LSH	-16,R0
+    // asm 00008F05: 	MPYI	AR2,R0
+    // asm 00008F06: 	LSH	-16,R0
+    // asm 00008F07: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDU0", 0, 0);
     UNIMPL();
 }
@@ -489,9 +489,9 @@ void RANDU0(void)
  */
 void RANDU(void)
 {
-    // asm: 	CALL	RANDU0
-    // asm: 	ADDI	1,R0
-    // asm: 	RETS
+    // asm 00008F08: 	CALL	RANDU0
+    // asm 00008F09: 	ADDI	1,R0
+    // asm 00008F0A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDU", 0, 0);
     UNIMPL();
 }
@@ -507,12 +507,12 @@ void RANDU(void)
  */
 void SRAND(void)
 {
-    // asm: 	LSH	1,AR2
-    // asm: 	ADDI	1,AR2
-    // asm: 	CALL	RANDU0
-    // asm: 	LSH	-1,AR2
-    // asm: 	SUBI	AR2,R0
-    // asm: 	RETS
+    // asm 00008F0B: 	LSH	1,AR2
+    // asm 00008F0C: 	ADDI	1,AR2
+    // asm 00008F0D: 	CALL	RANDU0
+    // asm 00008F0E: 	LSH	-1,AR2
+    // asm 00008F0F: 	SUBI	AR2,R0
+    // asm 00008F10: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SRAND", 0, 0);
     UNIMPL();
 }
@@ -530,15 +530,15 @@ void SRAND(void)
  */
 void RANDPER(void)
 {
-    // asm: 	CALL	RANDOM
-    // asm: 	LSH	-16,R0
-    // asm: 	MPYI	1000,R0
-    // asm: 	LSH	-16,R0
-    // asm: 	CMPI	AR2,R0
-    // asm: 	BC	RANDPX
-    // asm: 	LDI	0,R0
+    // asm 00008F11: 	CALL	RANDOM
+    // asm 00008F12: 	LSH	-16,R0
+    // asm 00008F13: 	MPYI	1000,R0
+    // asm 00008F14: 	LSH	-16,R0
+    // asm 00008F15: 	CMPI	AR2,R0
+    // asm 00008F16: 	BC	RANDPX
+    // asm 00008F17: 	LDI	0,R0
 RANDPX:
-    // asm: 	RETS
+    // asm 00008F18: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDPER", 0, 0);
     UNIMPL();
 }
@@ -562,23 +562,23 @@ RANDPX:
  */
 void INIT_LINKED_LIST(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	AR0
-    // asm: 	LDI	R3,AR0		;ZERO ACTIVE POINTER
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*AR0
-    // asm: 	LDI	R2,AR0	 	;GET FREE POINTER
-    // asm: 	LDI	RS,R0		;SAVE THE SIZE
-    // asm: 	RPTB	INIT_LL
-    // asm: 	STI	AR2,*AR0
-    // asm: 	LDI	AR2,AR0
+    // asm 00008F19: 	PUSH	R0
+    // asm 00008F1A: 	PUSH	AR0
+    // asm 00008F1B: 	LDI	R3,AR0		;ZERO ACTIVE POINTER
+    // asm 00008F1C: 	LDI	0,R0
+    // asm 00008F1D: 	STI	R0,*AR0
+    // asm 00008F1E: 	LDI	R2,AR0	 	;GET FREE POINTER
+    // asm 00008F1F: 	LDI	RS,R0		;SAVE THE SIZE
+    // asm 00008F20: 	RPTB	INIT_LL
+    // asm 00008F21: 	STI	AR2,*AR0
+    // asm 00008F22: 	LDI	AR2,AR0
 INIT_LL:
-    // asm: ADDI	R0,AR2
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*AR0
-    // asm: 	POP	AR0
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00008F23: ADDI	R0,AR2
+    // asm 00008F24: 	LDI	0,R0
+    // asm 00008F25: 	STI	R0,*AR0
+    // asm 00008F26: 	POP	AR0
+    // asm 00008F27: 	POP	R0
+    // asm 00008F28: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_LINKED_LIST", 0, 0);
     UNIMPL();
 }
@@ -603,33 +603,33 @@ INIT_LL:
  */
 void GET_LLIST(void)
 {
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	AR1
-    // asm: 	LDI	*AR2,R0
+    // asm 00008F29: 	PUSH	R1
+    // asm 00008F2A: 	PUSH	AR1
+    // asm 00008F2B: 	LDI	*AR2,R0
     // asm: 	SLOCKON	Z,"GET_LLIST  out of elements"
-    // asm: 	BZ	GETLL_ERR
-    // asm: 	LDI	R0,AR0
-    // asm: 	LDI	*AR0,AR0
-    // asm: 	STI	AR0,*AR2		;and update free list
+    // asm 00008F2C: 	BZ	GETLL_ERR
+    // asm 00008F2D: 	LDI	R0,AR0
+    // asm 00008F2E: 	LDI	*AR0,AR0
+    // asm 00008F2F: 	STI	AR0,*AR2		;and update free list
     // 	;insert into the active list
-    // asm: 	LDI	R2,AR1			;get ptr to active
-    // asm: 	LDI	R0,AR0			;get ptr to element
-    // asm: 	LDI	*AR1,R1			;get 1st element in active
-    // asm: 	STI	R1,*AR0			;link element into element
-    // asm: 	STI	AR0,*AR1		;store element into active
-    // asm: 	SETC
+    // asm 00008F30: 	LDI	R2,AR1			;get ptr to active
+    // asm 00008F31: 	LDI	R0,AR0			;get ptr to element
+    // asm 00008F32: 	LDI	*AR1,R1			;get 1st element in active
+    // asm 00008F33: 	STI	R1,*AR0			;link element into element
+    // asm 00008F34: 	STI	AR0,*AR1		;store element into active
+    // asm 00008F35: 	SETC
 GETLL_X:
-    // asm: 	POP	AR1
-    // asm: 	POP	R1
-    // asm: 	RETS
+    // asm 00008F36: 	POP	AR1
+    // asm 00008F37: 	POP	R1
+    // asm 00008F38: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LLIST", 0, 0);
     UNIMPL();
 }
 
 void GETLL_ERR(void)
 {
-    // asm: 	CLRC
-    // asm: 	BU	GETLL_X
+    // asm 00008F39: 	CLRC
+    // asm 00008F3A: 	BU	GETLL_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETLL_ERR", 0, 0);
     UNIMPL();
 }
@@ -646,26 +646,26 @@ void GETLL_ERR(void)
  */
 void ALLOC_LLIST(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	LDI	*AR2,R0
+    // asm 00008F3B: 	PUSH	R0
+    // asm 00008F3C: 	LDI	*AR2,R0
     // asm: 	SLOCKON	Z,"_allocllist  out of elements"
-    // asm: 	BZ	ALLOCLIST_ISERROR
-    // asm: 	LDI	R0,AR0
-    // asm: 	LDI	*AR0,AR0
-    // asm: 	STI	AR0,*AR2		;and update free list
-    // asm: 	LDI	R0,AR0
-    // asm: 	SETC
+    // asm 00008F3D: 	BZ	ALLOCLIST_ISERROR
+    // asm 00008F3E: 	LDI	R0,AR0
+    // asm 00008F3F: 	LDI	*AR0,AR0
+    // asm 00008F40: 	STI	AR0,*AR2		;and update free list
+    // asm 00008F41: 	LDI	R0,AR0
+    // asm 00008F42: 	SETC
 ALLOCLIST_X:
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00008F43: 	POP	R0
+    // asm 00008F44: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOC_LLIST", 0, 0);
     UNIMPL();
 }
 
 void ALLOCLIST_ISERROR(void)
 {
-    // asm: 	CLRC
-    // asm: 	BU	ALLOCLIST_X
+    // asm 00008F45: 	CLRC
+    // asm 00008F46: 	BU	ALLOCLIST_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOCLIST_ISERROR", 0, 0);
     UNIMPL();
 }
@@ -682,16 +682,16 @@ void ALLOCLIST_ISERROR(void)
  */
 void FREE_LLIST(void)
 {
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	AR0
-    // asm: 	LDI	R2,AR0		;free
-    // asm: 	LDI	*AR0,R2
-    // asm: 	STI	R2,*AR2
-    // asm: 	STI	AR2,*AR0
-    // asm: 	LDI	AR0,R2
-    // asm: 	POP	AR0
-    // asm: 	POP	R2
-    // asm: 	RETS
+    // asm 00008F47: 	PUSH	R2
+    // asm 00008F48: 	PUSH	AR0
+    // asm 00008F49: 	LDI	R2,AR0		;free
+    // asm 00008F4A: 	LDI	*AR0,R2
+    // asm 00008F4B: 	STI	R2,*AR2
+    // asm 00008F4C: 	STI	AR2,*AR0
+    // asm 00008F4D: 	LDI	AR0,R2
+    // asm 00008F4E: 	POP	AR0
+    // asm 00008F4F: 	POP	R2
+    // asm 00008F50: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FREE_LLIST", 0, 0);
     UNIMPL();
 }
@@ -708,30 +708,30 @@ void FREE_LLIST(void)
  */
 void DEL_LLIST(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR1
-    // asm: 	LDI	R2,R1
+    // asm 00008F51: 	PUSH	R0
+    // asm 00008F52: 	PUSH	R1
+    // asm 00008F53: 	PUSH	AR0
+    // asm 00008F54: 	PUSH	AR1
+    // asm 00008F55: 	LDI	R2,R1
 DELLP:
-    // asm: LDI	R1,AR1
-    // asm: 	LDI	*AR1,R1
+    // asm 00008F56: LDI	R1,AR1
+    // asm 00008F57: 	LDI	*AR1,R1
     // asm: 	SLOCKON	Z,"DEL_LLIST  end of list found"
-    // asm: 	BZ	DEL_LLX
-    // asm: 	CMPI	R1,AR2
-    // asm: 	BNE	DELLP
-    // asm: 	LDI	*AR2,R1
-    // asm: 	STI	R1,*AR1			;LINK AROUND
-    // asm: 	LDI	R3,AR1			;get free list pointer
-    // asm: 	LDI	*AR1,R1
-    // asm: 	STI	R1,*AR2
-    // asm: 	STI	AR2,*AR1
+    // asm 00008F58: 	BZ	DEL_LLX
+    // asm 00008F59: 	CMPI	R1,AR2
+    // asm 00008F5A: 	BNE	DELLP
+    // asm 00008F5B: 	LDI	*AR2,R1
+    // asm 00008F5C: 	STI	R1,*AR1			;LINK AROUND
+    // asm 00008F5D: 	LDI	R3,AR1			;get free list pointer
+    // asm 00008F5E: 	LDI	*AR1,R1
+    // asm 00008F5F: 	STI	R1,*AR2
+    // asm 00008F60: 	STI	AR2,*AR1
 DEL_LLX:
-    // asm: 	POP	AR1
-    // asm: 	POP	AR0
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00008F61: 	POP	AR1
+    // asm 00008F62: 	POP	AR0
+    // asm 00008F63: 	POP	R1
+    // asm 00008F64: 	POP	R0
+    // asm 00008F65: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEL_LLIST", 0, 0);
     UNIMPL();
 }
@@ -750,127 +750,127 @@ DEL_LLX:
  */
 void VEHICLE_ANI_INIT(void)
 {
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR3
-    // asm: 	MPYI	VEHTAB_SIZE,AR2
-    // asm: 	ADDI	@VEHICLE_TABLEI,AR2
-    // asm: 	LDI	*+AR2(VEHTAB_ANI),AR2
-    // asm: 	CMPI	0,AR2			;COULD BE A NULL ENTRY (NO ANIMATION)
-    // asm: 	BEQ	VANIX
-    // asm: 	LDI	O_DYNAMIC,R0	 	;MAKE PARENT OBJECT DYNAMIC
-    // asm: 	OR	*+AR4(OFLAGS),R0
-    // asm: 	STI	R0,*+AR4(OFLAGS)
+    // asm 00008F66: 	PUSH	AR0
+    // asm 00008F67: 	PUSH	AR3
+    // asm 00008F68: 	MPYI	VEHTAB_SIZE,AR2
+    // asm 00008F69: 	ADDI	@VEHICLE_TABLEI,AR2
+    // asm 00008F6A: 	LDI	*+AR2(VEHTAB_ANI),AR2
+    // asm 00008F6B: 	CMPI	0,AR2			;COULD BE A NULL ENTRY (NO ANIMATION)
+    // asm 00008F6C: 	BEQ	VANIX
+    // asm 00008F6D: 	LDI	O_DYNAMIC,R0	 	;MAKE PARENT OBJECT DYNAMIC
+    // asm 00008F6E: 	OR	*+AR4(OFLAGS),R0
+    // asm 00008F6F: 	STI	R0,*+AR4(OFLAGS)
     // *INITIALIZE CENTERXYZ,TRANSXYZ,VERTS
-    // asm: 	LDI	AR4,AR3
-    // asm: 	ADDI	ODYNALIST,AR3
-    // asm: 	LDI	*AR2++,RC		;GET DYNAMIC OBJECT COUNT
-    // asm: 	RPTB	WHEELLP
-    // asm:  	CALL	GETDYNA	     		;LINK HIM INTO LIST
-    // asm: 	STI	AR0,*AR3
-    // asm: 	LDF	*AR2++,R0
-    // asm: 	STF	R0,*+AR0(DYNACENTERX)
-    // asm: 	STF	R0,*+AR0(DYNATRANSX)
-    // asm: 	LDF	*AR2++,R0
-    // asm: 	STF	R0,*+AR0(DYNACENTERY)
-    // asm: 	STF	R0,*+AR0(DYNATRANSY)
-    // asm: 	LDF	*AR2++,R0
-    // asm: 	STF	R0,*+AR0(DYNACENTERZ)
-    // asm: 	STF	R0,*+AR0(DYNATRANSZ)
-    // asm: 	LDI	*AR2++,R0
-    // asm: 	STI	R0,*+AR0(DYNANVERTS)
-    // asm: 	LDI	*AR2++,R0
-    // asm: 	STI	R0,*+AR0(DYNAFLAG)
-    // asm: 	STI	AR4,*+AR0(DYNAPARENT)
+    // asm 00008F70: 	LDI	AR4,AR3
+    // asm 00008F71: 	ADDI	ODYNALIST,AR3
+    // asm 00008F72: 	LDI	*AR2++,RC		;GET DYNAMIC OBJECT COUNT
+    // asm 00008F73: 	RPTB	WHEELLP
+    // asm 00008F74:  	CALL	GETDYNA	     		;LINK HIM INTO LIST
+    // asm 00008F75: 	STI	AR0,*AR3
+    // asm 00008F76: 	LDF	*AR2++,R0
+    // asm 00008F77: 	STF	R0,*+AR0(DYNACENTERX)
+    // asm 00008F78: 	STF	R0,*+AR0(DYNATRANSX)
+    // asm 00008F79: 	LDF	*AR2++,R0
+    // asm 00008F7A: 	STF	R0,*+AR0(DYNACENTERY)
+    // asm 00008F7B: 	STF	R0,*+AR0(DYNATRANSY)
+    // asm 00008F7C: 	LDF	*AR2++,R0
+    // asm 00008F7D: 	STF	R0,*+AR0(DYNACENTERZ)
+    // asm 00008F7E: 	STF	R0,*+AR0(DYNATRANSZ)
+    // asm 00008F7F: 	LDI	*AR2++,R0
+    // asm 00008F80: 	STI	R0,*+AR0(DYNANVERTS)
+    // asm 00008F81: 	LDI	*AR2++,R0
+    // asm 00008F82: 	STI	R0,*+AR0(DYNAFLAG)
+    // asm 00008F83: 	STI	AR4,*+AR0(DYNAPARENT)
 WHEELLP:
-    // asm: LDI	AR0,AR3
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*AR3			;LAST LINK IS ZERO, DUDES
+    // asm 00008F84: LDI	AR0,AR3
+    // asm 00008F85: 	LDI	0,R0
+    // asm 00008F86: 	STI	R0,*AR3			;LAST LINK IS ZERO, DUDES
     // *GET A CAR PROCESS
-    // asm: 	LDI	*AR2++,R0		;GET PROCESS POINTER
-    // asm: 	LDI	@CARPROCI,AR2
-    // asm: 	LDI	DRONE_C|ANI_T,R2	;PID
-    // asm: 	CALL	PRC_CREATE_CHILD
-    // asm: 	STI	AR0,*+AR4(ORADZ)	;DOUBLING AS A PROC PTR
+    // asm 00008F87: 	LDI	*AR2++,R0		;GET PROCESS POINTER
+    // asm 00008F88: 	LDI	@CARPROCI,AR2
+    // asm 00008F89: 	LDI	DRONE_C|ANI_T,R2	;PID
+    // asm 00008F8A: 	CALL	PRC_CREATE_CHILD
+    // asm 00008F8B: 	STI	AR0,*+AR4(ORADZ)	;DOUBLING AS A PROC PTR
 VANIX:
-    // asm: 	POP	AR3
-    // asm: 	POP	AR0
-    // asm: 	RETS
+    // asm 00008F8C: 	POP	AR3
+    // asm 00008F8D: 	POP	AR0
+    // asm 00008F8E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VEHICLE_ANI_INIT", 0, 0);
     UNIMPL();
 }
 
 void CARPROC(void)
 {
-    // asm: 	LDI	*+AR4(OCARBLK),AR5
-    // asm: 	LDF	0,R6	 		;INIT SPIN RADIANS
-    // asm: 	LDF	*+AR5(CARSPEED),R0	;INIT SPEED
-    // asm: 	LDF	R0,R7
-    // asm: 	LDF	*+AR4(ORADY),R0
-    // asm: 	STF	R0,*+AR7(PDATA)		;INIT OLD ORADY
-    // asm: 	CLRF	R5			;INITIALIZE BODY Z RADIANS
-    // asm: 	STF	R5,*+AR7(PDATA+1)	;SAVE Z RADIANS
-    // asm: 	LDF	0,R0			;INITIALIZE WHEEL X RADIANS
-    // asm: 	STF	R0,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
+    // asm 00008F90: 	LDI	*+AR4(OCARBLK),AR5
+    // asm 00008F91: 	LDF	0,R6	 		;INIT SPIN RADIANS
+    // asm 00008F92: 	LDF	*+AR5(CARSPEED),R0	;INIT SPEED
+    // asm 00008F93: 	LDF	R0,R7
+    // asm 00008F94: 	LDF	*+AR4(ORADY),R0
+    // asm 00008F95: 	STF	R0,*+AR7(PDATA)		;INIT OLD ORADY
+    // asm 00008F96: 	CLRF	R5			;INITIALIZE BODY Z RADIANS
+    // asm 00008F97: 	STF	R5,*+AR7(PDATA+1)	;SAVE Z RADIANS
+    // asm 00008F98: 	LDF	0,R0			;INITIALIZE WHEEL X RADIANS
+    // asm 00008F99: 	STF	R0,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
 CARPROCL:
-    // asm: 	LDI	3,AR2	  		;SLEEP TIME
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	AND	MMODE,R0
-    // asm: 	CMPI	MINTRO,R0
-    // asm: 	BEQ	NCS
-    // asm: 	LDI	@_MODE,R2		;ARE WE AT STARTING LINE?
-    // asm: 	TSTB	MSLINE,R2
-    // asm: 	BNZ	NCS
-    // asm: 	LDI	@SUSPEND_MODE,R0
-    // asm: 	CMPI	SM_HALT,R0
-    // asm: 	BNE	NCS
-    // asm: 	LDF	*+AR5(CARSPEED),R7	;UPDATE OLD SPEED TO AVOID JERK
-    // asm: 	B	CARSLP
+    // asm 00008F9A: 	LDI	3,AR2	  		;SLEEP TIME
+    // asm 00008F9B: 	LDI	@_MODE,R0
+    // asm 00008F9C: 	AND	MMODE,R0
+    // asm 00008F9D: 	CMPI	MINTRO,R0
+    // asm 00008F9E: 	BEQ	NCS
+    // asm 00008F9F: 	LDI	@_MODE,R2		;ARE WE AT STARTING LINE?
+    // asm 00008FA0: 	TSTB	MSLINE,R2
+    // asm 00008FA1: 	BNZ	NCS
+    // asm 00008FA2: 	LDI	@SUSPEND_MODE,R0
+    // asm 00008FA3: 	CMPI	SM_HALT,R0
+    // asm 00008FA4: 	BNE	NCS
+    // asm 00008FA5: 	LDF	*+AR5(CARSPEED),R7	;UPDATE OLD SPEED TO AVOID JERK
+    // asm 00008FA6: 	B	CARSLP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARPROC", 0, 0);
     UNIMPL();
 }
 
 void NCS(void)
 {
-    // asm: 	LDI	*+AR4(ODIST),R0
-    // asm: 	CMPI	20000,R0		;FAR OFF JUST SLEEP
-    // asm: 	BGT	CARSLP
+    // asm 00008FA7: 	LDI	*+AR4(ODIST),R0
+    // asm 00008FA8: 	CMPI	20000,R0		;FAR OFF JUST SLEEP
+    // asm 00008FA9: 	BGT	CARSLP
     // *GET FRONT WHEEL STEER MATRIX
-    // asm: 	LDF	*+AR5(CARTURN),R2
-    // asm: 	MPYF	1.5,R2			;BOOST TURN A LITTLE
-    // asm: 	LDI	@MATRIXAI,AR2
-    // asm: 	CALL	FIND_YMATRIX
-    // asm: 	LDI	AR2,AR0
+    // asm 00008FAA: 	LDF	*+AR5(CARTURN),R2
+    // asm 00008FAB: 	MPYF	1.5,R2			;BOOST TURN A LITTLE
+    // asm 00008FAC: 	LDI	@MATRIXAI,AR2
+    // asm 00008FAD: 	CALL	FIND_YMATRIX
+    // asm 00008FAE: 	LDI	AR2,AR0
     // *GET WHEEL SPIN MATRIX
-    // asm: 	LDF	*+AR5(CARSPEED),R2
-    // asm: 	MPYF	0.02,R2   		;FUDGE FACTOR
-    // asm: 	ADDF	*+AR7(PDATA+2),R2
-    // asm: 	STF	R2,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
-    // asm: 	LDI	@MATRIXBI,AR2		;GET X SPIN IN MATRIXB
-    // asm: 	CALL	FIND_XMATRIX
+    // asm 00008FAF: 	LDF	*+AR5(CARSPEED),R2
+    // asm 00008FB0: 	MPYF	0.02,R2   		;FUDGE FACTOR
+    // asm 00008FB1: 	ADDF	*+AR7(PDATA+2),R2
+    // asm 00008FB2: 	STF	R2,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
+    // asm 00008FB3: 	LDI	@MATRIXBI,AR2		;GET X SPIN IN MATRIXB
+    // asm 00008FB4: 	CALL	FIND_XMATRIX
     // *CONCAT FOR FRONT WHEELS
-    // asm: 	LDI	@MATRIXCI,AR1		;A X B = C
-    // asm: 	LDI	AR1,AR6			;SAVE FRONT WHEEL MATRIX PTR
-    // asm: 	LDI	AR2,AR3			;SAVE REAR WHEEL MATRIX PTR
-    // asm: 	CALL	CONCAT201    		;CONCAT YOUR MATRICES INTO DYNOBJ
+    // asm 00008FB5: 	LDI	@MATRIXCI,AR1		;A X B = C
+    // asm 00008FB6: 	LDI	AR1,AR6			;SAVE FRONT WHEEL MATRIX PTR
+    // asm 00008FB7: 	LDI	AR2,AR3			;SAVE REAR WHEEL MATRIX PTR
+    // asm 00008FB8: 	CALL	CONCAT201    		;CONCAT YOUR MATRICES INTO DYNOBJ
     // *STUFF YOUR DYNAMIC MATRICES
-    // asm: 	LDI	*+AR4(ODYNALIST),R0
+    // asm 00008FB9: 	LDI	*+AR4(ODYNALIST),R0
     // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
 CDTOP:
-    // asm: 	LDI	R0,AR0
-    // asm: 	LDI	*+AR0(DYNAFLAG),R0
-    // asm: 	BN	CDLP			;SHADOW...CONTINUE
-    // asm: 	BZ	CARBODY			;HANDLE BODY
-    // asm: 	LDI	AR0,AR2
-    // asm: 	ADDI	DYNAMATRIX,AR2
-    // asm: 	CMPI	1,R0
-    // asm: 	BZ	CARRWHL			;REAR WHEEL
+    // asm 00008FBA: 	LDI	R0,AR0
+    // asm 00008FBB: 	LDI	*+AR0(DYNAFLAG),R0
+    // asm 00008FBC: 	BN	CDLP			;SHADOW...CONTINUE
+    // asm 00008FBD: 	BZ	CARBODY			;HANDLE BODY
+    // asm 00008FBE: 	LDI	AR0,AR2
+    // asm 00008FBF: 	ADDI	DYNAMATRIX,AR2
+    // asm 00008FC0: 	CMPI	1,R0
+    // asm 00008FC1: 	BZ	CARRWHL			;REAR WHEEL
     // *STUFF FRONT WHEEL
-    // asm: 	LDF	*AR6++,R0
-    // asm: 	RPTS	7
-    // asm: 	LDF	*AR6++,R0
-    // asm:  	STF	R0,*AR2++
-    // asm: 	NOP	*AR6--(9)
-    // asm: 	B	CDLP
+    // asm 00008FC2: 	LDF	*AR6++,R0
+    // asm 00008FC3: 	RPTS	7
+    // asm 00008FC4: 	LDF	*AR6++,R0
+    // asm 00008FC5:  	STF	R0,*AR2++
+    // asm 00008FC6: 	NOP	*AR6--(9)
+    // asm 00008FC7: 	B	CDLP
     // *STUFF REAR WHEEL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NCS", 0, 0);
     UNIMPL();
@@ -878,16 +878,16 @@ CDTOP:
 
 void CARRWHL(void)
 {
-    // asm: 	LDF	*AR3++,R0
-    // asm: 	RPTS	7
-    // asm: 	LDF	*AR3++,R0
-    // asm:  	STF	R0,*AR2++
-    // asm: 	NOP	*AR3--(9)
+    // asm 00008FC8: 	LDF	*AR3++,R0
+    // asm 00008FC9: 	RPTS	7
+    // asm 00008FCA: 	LDF	*AR3++,R0
+    // asm 00008FCB:  	STF	R0,*AR2++
+    // asm 00008FCC: 	NOP	*AR3--(9)
 CDLP:
-    // asm: 	LDI	*AR0,R0
-    // asm: 	BNZ	CDTOP
-    // asm: 	LDI	3,AR2	  		;SLEEP TIME
-    // asm: 	B	CARSLP
+    // asm 00008FCD: 	LDI	*AR0,R0
+    // asm 00008FCE: 	BNZ	CDTOP
+    // asm 00008FCF: 	LDI	3,AR2	  		;SLEEP TIME
+    // asm 00008FD0: 	B	CARSLP
     // *HANDLE BODY
     // *BODY MUST BE LAST
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARRWHL", 0, 0);
@@ -896,11 +896,11 @@ CDLP:
 
 void CARBODY(void)
 {
-    // asm: 	CALL	LEAN
-    // asm: 	LDI	1,AR2
+    // asm 00008FD1: 	CALL	LEAN
+    // asm 00008FD2: 	LDI	1,AR2
 CARSLP:
-    // asm: 	CALL	SLEEP
-    // asm: 	B 	CARPROCL
+    // asm 00008FD3: 	CALL	SLEEP
+    // asm 00008FD4: 	B 	CARPROCL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARBODY", 0, 0);
     UNIMPL();
 }
@@ -923,74 +923,74 @@ CARSLP:
  */
 void LEAN(void)
 {
-    // asm: 	LDI	AR0,AR1
-    // asm: 	ADDI	DYNAMATRIX,AR1
+    // asm 00008FD6: 	LDI	AR0,AR1
+    // asm 00008FD7: 	ADDI	DYNAMATRIX,AR1
     // 	;GET X LEAN (BRAKE/ACCEL)
     // 	;
-    // asm: 	LDF	R7,R0
-    // asm: 	LDF	*+AR5(CARSPEED),R7	;GET NEW SPEED
-    // asm: 	SUBF	R0,R7,R0
-    // asm: 	MPYF	0.06,R0			;CONVERT TO RADIANS
-    // asm: 	ADDF	R0,R6
-    // asm: 	MPYF	0.25,R6
-    // asm: 	NEGF	R6,R2
-    // asm: 	LDI	*+AR5(CAR_AIRF),R0
-    // asm: 	OR	*+AR5(CAR_AIRB),R0
-    // asm: 	LDFNZ	0,R2 			;ZERO OUT WHEN IN AIR FOLKS
-    // asm: 	LDF	R2,R2			;AMPLIFY ACCELERATION ONLY
-    // asm: 	LDFGT	1,R1
-    // asm: 	LDFLT	2,R1
-    // asm: 	MPYF	R1,R2
-    // asm: 	LDF	*+AR5(CARRPM),R0      	;REV FACTOR
-    // asm: 	MPYF	0.01,R0
-    // asm: 	MPYF	-0.05,R0
-    // asm: 	ADDF	R0,R2
-    // asm: 	CMPF	0.1,R2			;LIMIT CHECK
-    // asm: 	LDFGT	0.1,R2
-    // asm: 	CMPF	-0.1,R2
-    // asm: 	LDFLT	-0.1,R2
-    // asm: 	STF	R2,*+AR5(CARXLEAN)
-    // asm: 	LDI	@MATRIXBI,AR2
-    // asm: 	CALL	FIND_XMATRIX
-    // asm: 	LDI	AR2,AR0			;SAVE MATRIX PTR
+    // asm 00008FD8: 	LDF	R7,R0
+    // asm 00008FD9: 	LDF	*+AR5(CARSPEED),R7	;GET NEW SPEED
+    // asm 00008FDA: 	SUBF	R0,R7,R0
+    // asm 00008FDB: 	MPYF	0.06,R0			;CONVERT TO RADIANS
+    // asm 00008FDC: 	ADDF	R0,R6
+    // asm 00008FDD: 	MPYF	0.25,R6
+    // asm 00008FDE: 	NEGF	R6,R2
+    // asm 00008FDF: 	LDI	*+AR5(CAR_AIRF),R0
+    // asm 00008FE0: 	OR	*+AR5(CAR_AIRB),R0
+    // asm 00008FE1: 	LDFNZ	0,R2 			;ZERO OUT WHEN IN AIR FOLKS
+    // asm 00008FE2: 	LDF	R2,R2			;AMPLIFY ACCELERATION ONLY
+    // asm 00008FE3: 	LDFGT	1,R1
+    // asm 00008FE4: 	LDFLT	2,R1
+    // asm 00008FE5: 	MPYF	R1,R2
+    // asm 00008FE6: 	LDF	*+AR5(CARRPM),R0      	;REV FACTOR
+    // asm 00008FE7: 	MPYF	0.01,R0
+    // asm 00008FE8: 	MPYF	-0.05,R0
+    // asm 00008FE9: 	ADDF	R0,R2
+    // asm 00008FEA: 	CMPF	0.1,R2			;LIMIT CHECK
+    // asm 00008FEB: 	LDFGT	0.1,R2
+    // asm 00008FEC: 	CMPF	-0.1,R2
+    // asm 00008FED: 	LDFLT	-0.1,R2
+    // asm 00008FEE: 	STF	R2,*+AR5(CARXLEAN)
+    // asm 00008FEF: 	LDI	@MATRIXBI,AR2
+    // asm 00008FF0: 	CALL	FIND_XMATRIX
+    // asm 00008FF1: 	LDI	AR2,AR0			;SAVE MATRIX PTR
     // 	;GET YOUR Z LEAN (CORNERING)
     // 	;
-    // asm: 	LDF	*+AR7(PDATA),R4		;OLD ORADY
-    // asm: 	LDF	*+AR7(PDATA+1),R5	;Z RADIANS
-    // asm: 	LDF	*+AR4(ORADY),R0
-    // asm: 	STF	R0,*+AR7(PDATA)		;SAVE NEW OLD ORADY
-    // asm: 	SUBF	R4,R0			;DELTA ORADY
-    // asm: 	LDF	0,R1
-    // asm: 	CMPF	3.14,R0
-    // asm: 	LDFGT	@NTWOPII,R1
-    // asm: 	CMPF	-3.14,R0
-    // asm: 	LDFLT	@TWOPII,R1
-    // asm: 	ADDI	R1,R0			;HANDLE RADIAN WRAPAROUND
-    // asm: 	MPYF	R7,R0			;MULTIPLY BY SPEED FACTOR
-    // asm: 	MPYF	0.06,R0			;CONVERT TO RADIANS
-    // asm: 	MPYF	0.1,R0			;CONVERT TO RADIANS
-    // asm: 	ADDF	R0,R5
-    // asm: 	MPYF	0.5,R5
-    // asm: 	STF	R5,*+AR7(PDATA+1)	;SAVE NEW Z RADIANS
-    // asm: 	NEGF	R5,R2
-    // asm: 	LDI	*+AR5(CAR_AIRF),R0
-    // asm: 	OR	*+AR5(CAR_AIRB),R0
-    // asm: 	LDFNZ	0,R2 			;ZERO OUT WHEN IN AIR FOLKS
-    // asm: 	CMPF	0.1,R2			;LIMIT CHECK
-    // asm: 	LDFGT	0.1,R2
-    // asm: 	CMPF	-0.1,R2
-    // asm: 	LDFLT	-0.1,R2
-    // asm: 	STF	R2,*+AR5(CARZLEAN)    	;SAVE IT
+    // asm 00008FF2: 	LDF	*+AR7(PDATA),R4		;OLD ORADY
+    // asm 00008FF3: 	LDF	*+AR7(PDATA+1),R5	;Z RADIANS
+    // asm 00008FF4: 	LDF	*+AR4(ORADY),R0
+    // asm 00008FF5: 	STF	R0,*+AR7(PDATA)		;SAVE NEW OLD ORADY
+    // asm 00008FF6: 	SUBF	R4,R0			;DELTA ORADY
+    // asm 00008FF7: 	LDF	0,R1
+    // asm 00008FF8: 	CMPF	3.14,R0
+    // asm 00008FF9: 	LDFGT	@NTWOPII,R1
+    // asm 00008FFA: 	CMPF	-3.14,R0
+    // asm 00008FFB: 	LDFLT	@TWOPII,R1
+    // asm 00008FFC: 	ADDI	R1,R0			;HANDLE RADIAN WRAPAROUND
+    // asm 00008FFD: 	MPYF	R7,R0			;MULTIPLY BY SPEED FACTOR
+    // asm 00008FFE: 	MPYF	0.06,R0			;CONVERT TO RADIANS
+    // asm 00008FFF: 	MPYF	0.1,R0			;CONVERT TO RADIANS
+    // asm 00009000: 	ADDF	R0,R5
+    // asm 00009001: 	MPYF	0.5,R5
+    // asm 00009002: 	STF	R5,*+AR7(PDATA+1)	;SAVE NEW Z RADIANS
+    // asm 00009003: 	NEGF	R5,R2
+    // asm 00009004: 	LDI	*+AR5(CAR_AIRF),R0
+    // asm 00009005: 	OR	*+AR5(CAR_AIRB),R0
+    // asm 00009006: 	LDFNZ	0,R2 			;ZERO OUT WHEN IN AIR FOLKS
+    // asm 00009007: 	CMPF	0.1,R2			;LIMIT CHECK
+    // asm 00009008: 	LDFGT	0.1,R2
+    // asm 00009009: 	CMPF	-0.1,R2
+    // asm 0000900A: 	LDFLT	-0.1,R2
+    // asm 0000900B: 	STF	R2,*+AR5(CARZLEAN)    	;SAVE IT
     // ;	MPYF	3,R2			;PUMP IT UP
-    // asm: 	MPYF	2.2,R2			;PUMP IT UP
-    // asm: 	CMPF	0.1,R2			;LIMIT CHECK
-    // asm: 	LDFGT	0.1,R2
-    // asm: 	CMPF	-0.1,R2
-    // asm: 	LDFLT	-0.1,R2
-    // asm: 	LDI	@MATRIXAI,AR2		;GET Z IN TEMP THING
-    // asm: 	CALL	FIND_ZMATRIX
-    // asm: 	CALL	CONCAT201    		;CONCAT YOUR MATRICES INTO DYNOBJ
-    // asm: 	RETS
+    // asm 0000900C: 	MPYF	2.2,R2			;PUMP IT UP
+    // asm 0000900D: 	CMPF	0.1,R2			;LIMIT CHECK
+    // asm 0000900E: 	LDFGT	0.1,R2
+    // asm 0000900F: 	CMPF	-0.1,R2
+    // asm 00009010: 	LDFLT	-0.1,R2
+    // asm 00009011: 	LDI	@MATRIXAI,AR2		;GET Z IN TEMP THING
+    // asm 00009012: 	CALL	FIND_ZMATRIX
+    // asm 00009013: 	CALL	CONCAT201    		;CONCAT YOUR MATRICES INTO DYNOBJ
+    // asm 00009014: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LEAN", 0, 0);
     UNIMPL();
 }
@@ -999,23 +999,23 @@ void LEAN(void)
  */
 void DYNAOBJ_INIT(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	RC
-    // asm: 	PUSH	RS
-    // asm: 	LDI	@DYNALISTI,AR2
-    // asm: 	LDI	@DYNAFREEI,R2
-    // asm: 	LDI	@NULLI,R3
-    // asm: 	LDI	NUM_DYNAS-1,RC
-    // asm: 	LDI	DYNASIZE,RS
-    // asm: 	CALL	INIT_LINKED_LIST
-    // asm: 	POP	RS
-    // asm: 	POP	RC
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 00009018: 	PUSH	AR2
+    // asm 00009019: 	PUSH	R2
+    // asm 0000901A: 	PUSH	R3
+    // asm 0000901B: 	PUSH	RC
+    // asm 0000901C: 	PUSH	RS
+    // asm 0000901D: 	LDI	@DYNALISTI,AR2
+    // asm 0000901E: 	LDI	@DYNAFREEI,R2
+    // asm 0000901F: 	LDI	@NULLI,R3
+    // asm 00009020: 	LDI	NUM_DYNAS-1,RC
+    // asm 00009021: 	LDI	DYNASIZE,RS
+    // asm 00009022: 	CALL	INIT_LINKED_LIST
+    // asm 00009023: 	POP	RS
+    // asm 00009024: 	POP	RC
+    // asm 00009025: 	POP	R3
+    // asm 00009026: 	POP	R2
+    // asm 00009027: 	POP	AR2
+    // asm 00009028: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DYNAOBJ_INIT", 0, 0);
     UNIMPL();
 }
@@ -1034,31 +1034,31 @@ void DYNAOBJ_INIT(void)
  */
 void GETDYNA(void)
 {
-    // asm: 	PUSH	R0
+    // asm 00009029: 	PUSH	R0
     // ;	LDP	@DYNAFREE
-    // asm: 	LDI	@DYNAFREE,R0
-    // asm: 	LDI	R0,AR0
+    // asm 0000902A: 	LDI	@DYNAFREE,R0
+    // asm 0000902B: 	LDI	R0,AR0
     // asm: 	SLOCKON	Z,"UTIL\GETDYNA   out of dynamic objects"
-    // asm: 	BZ	GETDYNA_ERR
-    // asm: 	LDI	*AR0,R0
-    // asm: 	STI	R0,@DYNAFREE
-    // asm: 	ADDI	DYNAMATRIX,AR0		;INIT YOUR MATRIX FOLKS
-    // asm: 	CALL	INITMAT
-    // asm: 	SUBI	DYNAMATRIX,AR0
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,*+AR0(DYNAFLAG)
-    // asm: 	SETC
+    // asm 0000902C: 	BZ	GETDYNA_ERR
+    // asm 0000902D: 	LDI	*AR0,R0
+    // asm 0000902E: 	STI	R0,@DYNAFREE
+    // asm 0000902F: 	ADDI	DYNAMATRIX,AR0		;INIT YOUR MATRIX FOLKS
+    // asm 00009030: 	CALL	INITMAT
+    // asm 00009031: 	SUBI	DYNAMATRIX,AR0
+    // asm 00009032: 	CLRI	R0
+    // asm 00009033: 	STI	R0,*+AR0(DYNAFLAG)
+    // asm 00009034: 	SETC
 GETDYNA_X:
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00009035: 	POP	R0
+    // asm 00009036: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDYNA", 0, 0);
     UNIMPL();
 }
 
 void GETDYNA_ERR(void)
 {
-    // asm: 	CLRC
-    // asm: 	B	GETDYNA_X
+    // asm 00009037: 	CLRC
+    // asm 00009038: 	B	GETDYNA_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDYNA_ERR", 0, 0);
     UNIMPL();
 }
@@ -1073,13 +1073,13 @@ void GETDYNA_ERR(void)
  */
 void DELDYNA(void)
 {
-    // asm: 	PUSH	R0
+    // asm 00009039: 	PUSH	R0
     // ;	LDP	@DYNAFREE
-    // asm: 	LDI	@DYNAFREE,R0
-    // asm: 	STI	R0,*AR2
-    // asm: 	STI	AR2,@DYNAFREE
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 0000903A: 	LDI	@DYNAFREE,R0
+    // asm 0000903B: 	STI	R0,*AR2
+    // asm 0000903C: 	STI	AR2,@DYNAFREE
+    // asm 0000903D: 	POP	R0
+    // asm 0000903E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DELDYNA", 0, 0);
     UNIMPL();
 }
@@ -1088,18 +1088,18 @@ void DELDYNA(void)
  */
 void CARB_INIT(void)
 {
-    // asm: 	LDI	@CARFREEI,AR0
-    // asm: 	LDI	@CARLISTI,AR1
-    // asm: 	LDI	NUM_CARS-1,RC
-    // asm: 	RPTB	CARINTL
-    // asm: 	STI	AR1,*AR0
-    // asm: 	LDI	AR1,AR0
+    // asm 00009041: 	LDI	@CARFREEI,AR0
+    // asm 00009042: 	LDI	@CARLISTI,AR1
+    // asm 00009043: 	LDI	NUM_CARS-1,RC
+    // asm 00009044: 	RPTB	CARINTL
+    // asm 00009045: 	STI	AR1,*AR0
+    // asm 00009046: 	LDI	AR1,AR0
 CARINTL:
-    // asm: ADDI	CARSIZ,AR1
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,*AR0
-    // asm: 	STPI	R0,@CAR_COUNT
-    // asm: 	RETS
+    // asm 00009047: ADDI	CARSIZ,AR1
+    // asm 00009048: 	LDI	0,R0
+    // asm 00009049: 	STI	R0,*AR0
+    // asm 0000904A: 	STPI	R0,@CAR_COUNT
+    // asm 0000904B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARB_INIT", 0, 0);
     UNIMPL();
 }
@@ -1118,27 +1118,27 @@ CARINTL:
  */
 void GETCAR(void)
 {
-    // asm: 	PUSH	R0
+    // asm 0000904C: 	PUSH	R0
     // ;	LDP	@CARFREE
-    // asm: 	LDI	@CARFREE,AR0
-    // asm: 	CMPI	0,AR0
+    // asm 0000904D: 	LDI	@CARFREE,AR0
+    // asm 0000904E: 	CMPI	0,AR0
     // asm: 	SLOCKON	Z,"UTIL\GETCAR   out of cars"
-    // asm: 	BZ	GETCAR_ERR
-    // asm: 	LDI	*AR0,R0
-    // asm: 	STI	R0,@CARFREE
-    // asm: 	INCM	@CAR_COUNT
-    // asm: 	SETC
+    // asm 0000904F: 	BZ	GETCAR_ERR
+    // asm 00009050: 	LDI	*AR0,R0
+    // asm 00009051: 	STI	R0,@CARFREE
+    // asm 00009052: 	INCM	@CAR_COUNT
+    // asm 00009055: 	SETC
 GETCAR_X:
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00009056: 	POP	R0
+    // asm 00009057: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAR", 0, 0);
     UNIMPL();
 }
 
 void GETCAR_ERR(void)
 {
-    // asm: 	CLRC
-    // asm: 	B	GETCAR_X
+    // asm 00009058: 	CLRC
+    // asm 00009059: 	B	GETCAR_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAR_ERR", 0, 0);
     UNIMPL();
 }
@@ -1152,18 +1152,18 @@ void GETCAR_ERR(void)
  */
 void DELCAR(void)
 {
-    // asm: 	PUSH	R0
+    // asm 0000905A: 	PUSH	R0
     // ;	LDP	@CARFREE
-    // asm: 	LDI	@CARFREE,R0
-    // asm: 	STI	R0,*AR2
-    // asm: 	STI	AR2,@CARFREE
+    // asm 0000905B: 	LDI	@CARFREE,R0
+    // asm 0000905C: 	STI	R0,*AR2
+    // asm 0000905D: 	STI	AR2,@CARFREE
     // ;	LDP	@CAR_COUNT
-    // asm: 	LDI	@CAR_COUNT,R0
-    // asm: 	DEC	R0
+    // asm 0000905E: 	LDI	@CAR_COUNT,R0
+    // asm 0000905F: 	DEC	R0
     // asm: 	SLOCKON	LT,"UTIL\DELCAR   erroneous CAR_COUNT"
-    // asm: 	STI	R0,@CAR_COUNT
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00009060: 	STI	R0,@CAR_COUNT
+    // asm 00009061: 	POP	R0
+    // asm 00009062: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DELCAR", 0, 0);
     UNIMPL();
 }
@@ -1172,11 +1172,11 @@ void DELCAR(void)
  */
 void SCAN_OBJECTS(void)
 {
-    // asm: 	CALL	ISCAN
-    // asm: 	SLEEP	1
-    // asm: 	CALL	OSCAN
-    // asm: 	SLEEP	1
-    // asm: 	B	SCAN_OBJECTS
+    // asm 00009063: 	CALL	ISCAN
+    // asm 00009064: 	SLEEP	1
+    // asm 00009066: 	CALL	OSCAN
+    // asm 00009067: 	SLEEP	1
+    // asm 00009069: 	B	SCAN_OBJECTS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCAN_OBJECTS", 0, 0);
     UNIMPL();
 }
@@ -1185,32 +1185,32 @@ void SCAN_OBJECTS(void)
  */
 void PUSHALL(void)
 {
-    // asm: 	POP	BK
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR1
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR3
-    // asm: 	PUSH	AR4
-    // asm: 	PUSH	AR5
-    // asm: 	PUSH	AR6
-    // asm: 	PUSH	AR7
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	R4
-    // asm: 	PUSH	R5
-    // asm: 	PUSH	R6
-    // asm: 	PUSH	R7
-    // asm: 	PUSHF	R0
-    // asm: 	PUSHF	R1
-    // asm: 	PUSHF	R2
-    // asm: 	PUSHF	R3
-    // asm: 	PUSHF	R4
-    // asm: 	PUSHF	R5
-    // asm: 	PUSHF	R6
-    // asm: 	PUSHF	R7
-    // asm: 	BU	BK
+    // asm 0000906A: 	POP	BK
+    // asm 0000906B: 	PUSH	AR0
+    // asm 0000906C: 	PUSH	AR1
+    // asm 0000906D: 	PUSH	AR2
+    // asm 0000906E: 	PUSH	AR3
+    // asm 0000906F: 	PUSH	AR4
+    // asm 00009070: 	PUSH	AR5
+    // asm 00009071: 	PUSH	AR6
+    // asm 00009072: 	PUSH	AR7
+    // asm 00009073: 	PUSH	R0
+    // asm 00009074: 	PUSH	R1
+    // asm 00009075: 	PUSH	R2
+    // asm 00009076: 	PUSH	R3
+    // asm 00009077: 	PUSH	R4
+    // asm 00009078: 	PUSH	R5
+    // asm 00009079: 	PUSH	R6
+    // asm 0000907A: 	PUSH	R7
+    // asm 0000907B: 	PUSHF	R0
+    // asm 0000907C: 	PUSHF	R1
+    // asm 0000907D: 	PUSHF	R2
+    // asm 0000907E: 	PUSHF	R3
+    // asm 0000907F: 	PUSHF	R4
+    // asm 00009080: 	PUSHF	R5
+    // asm 00009081: 	PUSHF	R6
+    // asm 00009082: 	PUSHF	R7
+    // asm 00009083: 	BU	BK
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PUSHALL", 0, 0);
     UNIMPL();
 }
@@ -1219,32 +1219,32 @@ void PUSHALL(void)
  */
 void POPALL(void)
 {
-    // asm: 	POP	BK
-    // asm: 	POPF	R7
-    // asm: 	POPF	R6
-    // asm: 	POPF	R5
-    // asm: 	POPF	R4
-    // asm: 	POPF	R3
-    // asm: 	POPF	R2
-    // asm: 	POPF	R1
-    // asm: 	POPF	R0
-    // asm: 	POP	R7
-    // asm: 	POP	R6
-    // asm: 	POP	R5
-    // asm: 	POP	R4
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	POP	AR7
-    // asm: 	POP	AR6
-    // asm: 	POP	AR5
-    // asm: 	POP	AR4
-    // asm: 	POP	AR3
-    // asm: 	POP	AR2
-    // asm: 	POP	AR1
-    // asm: 	POP	AR0
-    // asm: 	BU	BK
+    // asm 00009084: 	POP	BK
+    // asm 00009085: 	POPF	R7
+    // asm 00009086: 	POPF	R6
+    // asm 00009087: 	POPF	R5
+    // asm 00009088: 	POPF	R4
+    // asm 00009089: 	POPF	R3
+    // asm 0000908A: 	POPF	R2
+    // asm 0000908B: 	POPF	R1
+    // asm 0000908C: 	POPF	R0
+    // asm 0000908D: 	POP	R7
+    // asm 0000908E: 	POP	R6
+    // asm 0000908F: 	POP	R5
+    // asm 00009090: 	POP	R4
+    // asm 00009091: 	POP	R3
+    // asm 00009092: 	POP	R2
+    // asm 00009093: 	POP	R1
+    // asm 00009094: 	POP	R0
+    // asm 00009095: 	POP	AR7
+    // asm 00009096: 	POP	AR6
+    // asm 00009097: 	POP	AR5
+    // asm 00009098: 	POP	AR4
+    // asm 00009099: 	POP	AR3
+    // asm 0000909A: 	POP	AR2
+    // asm 0000909B: 	POP	AR1
+    // asm 0000909C: 	POP	AR0
+    // asm 0000909D: 	BU	BK
     TRACE_EVENT(&g_crusn_machine->trace, "function", "POPALL", 0, 0);
     UNIMPL();
 }
@@ -1264,15 +1264,15 @@ void POPALL(void)
  */
 void DISTANCE_2D(void)
 {
-    // asm: 	PUSHFL	R3
-    // asm: 	LDF	R0,R1
-    // asm: 	NEGF	R0,R3
-    // asm: 	CALL	_COSI
-    // asm: 	MPYF	R0,R1
-    // asm: 	CALL	_SINE
-    // asm: 	MPYF	R3,R0
-    // asm: 	POPFL	R3
-    // asm: 	RETS
+    // asm 0000909E: 	PUSHFL	R3
+    // asm 000090A0: 	LDF	R0,R1
+    // asm 000090A1: 	NEGF	R0,R3
+    // asm 000090A2: 	CALL	_COSI
+    // asm 000090A3: 	MPYF	R0,R1
+    // asm 000090A4: 	CALL	_SINE
+    // asm 000090A5: 	MPYF	R3,R0
+    // asm 000090A6: 	POPFL	R3
+    // asm 000090A8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISTANCE_2D", 0, 0);
     UNIMPL();
 }
@@ -1286,16 +1286,16 @@ void DISTANCE_2D(void)
  */
 void OVELADD(void)
 {
-    // asm: 	LDF	*+AR4(OVELX),R0
-    // asm: 	ADDF	*+AR4(OPOSX),R0
-    // asm: 	STF	R0,*+AR4(OPOSX)
-    // asm: 	LDF	*+AR4(OVELY),R0
-    // asm: 	ADDF	*+AR4(OPOSY),R0
-    // asm: 	STF	R0,*+AR4(OPOSY)
-    // asm: 	LDF	*+AR4(OVELZ),R0
-    // asm: 	ADDF	*+AR4(OPOSZ),R0
-    // asm: 	STF	R0,*+AR4(OPOSZ)
-    // asm: 	RETS
+    // asm 000090A9: 	LDF	*+AR4(OVELX),R0
+    // asm 000090AA: 	ADDF	*+AR4(OPOSX),R0
+    // asm 000090AB: 	STF	R0,*+AR4(OPOSX)
+    // asm 000090AC: 	LDF	*+AR4(OVELY),R0
+    // asm 000090AD: 	ADDF	*+AR4(OPOSY),R0
+    // asm 000090AE: 	STF	R0,*+AR4(OPOSY)
+    // asm 000090AF: 	LDF	*+AR4(OVELZ),R0
+    // asm 000090B0: 	ADDF	*+AR4(OPOSZ),R0
+    // asm 000090B1: 	STF	R0,*+AR4(OPOSZ)
+    // asm 000090B2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OVELADD", 0, 0);
     UNIMPL();
 }
@@ -1305,20 +1305,20 @@ void OVELADD(void)
  */
 void OVELNADD(void)
 {
-    // asm: 	FLOATP	@NFRAMES,R1
-    // asm: 	LDF	*+AR4(OVELX),R0
-    // asm: 	MPYF	R1,R0
-    // asm: 	ADDF	*+AR4(OPOSX),R0
-    // asm: 	STF	R0,*+AR4(OPOSX)
-    // asm: 	LDF	*+AR4(OVELY),R0
-    // asm: 	MPYF	R1,R0
-    // asm: 	ADDF	*+AR4(OPOSY),R0
-    // asm: 	STF	R0,*+AR4(OPOSY)
-    // asm: 	LDF	*+AR4(OVELZ),R0
-    // asm: 	MPYF	R1,R0
-    // asm: 	ADDF	*+AR4(OPOSZ),R0
-    // asm: 	STF	R0,*+AR4(OPOSZ)
-    // asm: 	RETS
+    // asm 000090B3: 	FLOATP	@NFRAMES,R1
+    // asm 000090B4: 	LDF	*+AR4(OVELX),R0
+    // asm 000090B5: 	MPYF	R1,R0
+    // asm 000090B6: 	ADDF	*+AR4(OPOSX),R0
+    // asm 000090B7: 	STF	R0,*+AR4(OPOSX)
+    // asm 000090B8: 	LDF	*+AR4(OVELY),R0
+    // asm 000090B9: 	MPYF	R1,R0
+    // asm 000090BA: 	ADDF	*+AR4(OPOSY),R0
+    // asm 000090BB: 	STF	R0,*+AR4(OPOSY)
+    // asm 000090BC: 	LDF	*+AR4(OVELZ),R0
+    // asm 000090BD: 	MPYF	R1,R0
+    // asm 000090BE: 	ADDF	*+AR4(OPOSZ),R0
+    // asm 000090BF: 	STF	R0,*+AR4(OPOSZ)
+    // asm 000090C0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OVELNADD", 0, 0);
     UNIMPL();
 }
@@ -1332,19 +1332,19 @@ void OVELNADD(void)
  */
 void FORWARD(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	LDF	0,R0
-    // asm: 	PUSHF	R0
-    // asm: 	PUSHF	R0
-    // asm: 	PUSHF	R2
-    // asm: 	LDI	AR2,R2
-    // asm: 	LDI	SP,AR2
-    // asm: 	SUBI	2,AR2
-    // asm: 	CALL	MATRIX_MUL
-    // asm: 	POPF	R2
-    // asm: 	SUBI	2,SP
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 000090C1: 	PUSH	AR2
+    // asm 000090C2: 	LDF	0,R0
+    // asm 000090C3: 	PUSHF	R0
+    // asm 000090C4: 	PUSHF	R0
+    // asm 000090C5: 	PUSHF	R2
+    // asm 000090C6: 	LDI	AR2,R2
+    // asm 000090C7: 	LDI	SP,AR2
+    // asm 000090C8: 	SUBI	2,AR2
+    // asm 000090C9: 	CALL	MATRIX_MUL
+    // asm 000090CA: 	POPF	R2
+    // asm 000090CB: 	SUBI	2,SP
+    // asm 000090CC: 	POP	AR2
+    // asm 000090CD: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FORWARD", 0, 0);
     UNIMPL();
 }

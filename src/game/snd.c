@@ -120,37 +120,37 @@ int DO_NOT_REENABLE_INT;
 
 void RADIO_SHOW(void)
 {
-    // asm: 	LDI	@TUNE_IDX,AR2
-    // asm: 	ADDI	@STATION_TEXTI,AR2
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	FLOAT	210,R2
-    // asm: 	FLOAT	370,R3
-    // asm: 	LDI	1,RC
-    // asm: 	CALL	TEXT_ADDDS
-    // asm: 	LDL	cdd,AR2
-    // asm: 	LDI	160,R2
-    // asm: 	LDI	360,R3
-    // asm: 	LDI	TM|ZS,R4
-    // asm: 	CALL	BLTMOD2D_DS
-    // asm: 	SLEEP	1
-    // asm: 	LDI	@_MODE,R0
-    // asm: 	AND	MMODE,R0
-    // asm: 	CMPI	MGAME,R0
-    // asm: 	BNE	KILLME
-    // asm: 	LDI	@STATION_TIMEOUT,R0
-    // asm: 	DEC	R0
-    // asm: 	STI	R0,@STATION_TIMEOUT
-    // asm: 	BLE	SUICIDE
-    // asm: 	BU	RADIO_SHOW
+    // asm 000090E1: 	LDI	@TUNE_IDX,AR2
+    // asm 000090E2: 	ADDI	@STATION_TEXTI,AR2
+    // asm 000090E3: 	LDI	*AR2,AR2
+    // asm 000090E4: 	FLOAT	210,R2
+    // asm 000090E5: 	FLOAT	370,R3
+    // asm 000090E6: 	LDI	1,RC
+    // asm 000090E7: 	CALL	TEXT_ADDDS
+    // asm 000090E8: 	LDL	cdd,AR2
+    // asm 000090E9: 	LDI	160,R2
+    // asm 000090EA: 	LDI	360,R3
+    // asm 000090EB: 	LDI	TM|ZS,R4
+    // asm 000090EC: 	CALL	BLTMOD2D_DS
+    // asm 000090ED: 	SLEEP	1
+    // asm 000090EF: 	LDI	@_MODE,R0
+    // asm 000090F0: 	AND	MMODE,R0
+    // asm 000090F1: 	CMPI	MGAME,R0
+    // asm 000090F2: 	BNE	KILLME
+    // asm 000090F3: 	LDI	@STATION_TIMEOUT,R0
+    // asm 000090F4: 	DEC	R0
+    // asm 000090F5: 	STI	R0,@STATION_TIMEOUT
+    // asm 000090F6: 	BLE	SUICIDE
+    // asm 000090F7: 	BU	RADIO_SHOW
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_SHOW", 0, 0);
     UNIMPL();
 }
 
 void KILLME(void)
 {
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@STATION_TIMEOUT
-    // asm: 	DIE
+    // asm 000090F8: 	CLRI	R0
+    // asm 000090F9: 	STI	R0,@STATION_TIMEOUT
+    // asm 000090FA: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILLME", 0, 0);
     UNIMPL();
 }
@@ -159,20 +159,20 @@ void KILLME(void)
  */
 void RADIO_BUT(void)
 {
-    // asm: 	LDPI	@_MODE,R0
-    // asm: 	AND	MMODE,R0
-    // asm: 	CMPI	MGAME,R0
+    // asm 000090FB: 	LDPI	@_MODE,R0
+    // asm 000090FC: 	AND	MMODE,R0
+    // asm 000090FD: 	CMPI	MGAME,R0
     // ;	BNE	SUICIDE
-    // asm: 	BEQ	RBMGAME
-    // asm: 	BR	RBMATTR_CHECK	;This code is in hstdp.asm
+    // asm 000090FE: 	BEQ	RBMGAME
+    // asm 000090FF: 	BR	RBMATTR_CHECK	;This code is in hstdp.asm
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_BUT", 0, 0);
     UNIMPL();
 }
 
 void RBMGAME(void)
 {
-    // asm: 	CALL	CHANGE_STATION
-    // asm: 	DIE
+    // asm 00009100: 	CALL	CHANGE_STATION
+    // asm 00009101: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RBMGAME", 0, 0);
     UNIMPL();
 }
@@ -190,9 +190,9 @@ void SET_STATION(void)
     // asm: 	CMPI	NUM_STATIONS,AR2
     // asm: 	BGE	$
 #endif
-    // asm: 	STI	AR2,@TUNE_IDX
-    // asm: 	CALL	RESUME_TUNE
-    // asm: 	RETS
+    // asm 00009102: 	STI	AR2,@TUNE_IDX
+    // asm 00009103: 	CALL	RESUME_TUNE
+    // asm 00009104: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_STATION", 0, 0);
     UNIMPL();
 }
@@ -204,15 +204,15 @@ void SET_STATION(void)
  */
 void CHANGE_STATION(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	LDI	@TUNE_IDX,R0
-    // asm: 	INC	R0
-    // asm: 	CMPI	8,R0
-    // asm: 	LDIGE	0,R0
-    // asm: 	STI	R0,@TUNE_IDX
-    // asm: 	CALL	RESUME_TUNE
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00009105: 	PUSH	R0
+    // asm 00009106: 	LDI	@TUNE_IDX,R0
+    // asm 00009107: 	INC	R0
+    // asm 00009108: 	CMPI	8,R0
+    // asm 00009109: 	LDIGE	0,R0
+    // asm 0000910A: 	STI	R0,@TUNE_IDX
+    // asm 0000910B: 	CALL	RESUME_TUNE
+    // asm 0000910C: 	POP	R0
+    // asm 0000910D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHANGE_STATION", 0, 0);
     UNIMPL();
 }
@@ -224,56 +224,56 @@ void CHANGE_STATION(void)
  */
 void SET_TUNE_LINKED(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR6
-    // asm: 	LDI	1,AR6
-    // asm: 	STI	AR2,@TUNE_IDX
-    // asm: 	BU	L987
+    // asm 0000910E: 	PUSH	AR2
+    // asm 0000910F: 	PUSH	AR6
+    // asm 00009110: 	LDI	1,AR6
+    // asm 00009111: 	STI	AR2,@TUNE_IDX
+    // asm 00009112: 	BU	L987
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_TUNE_LINKED", 0, 0);
     UNIMPL();
 }
 
 void SET_TUNE(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR6
-    // asm: 	CLRI	AR6
-    // asm: 	STI	AR2,@TUNE_IDX
-    // asm: 	BU	L987
+    // asm 00009113: 	PUSH	AR2
+    // asm 00009114: 	PUSH	AR6
+    // asm 00009115: 	CLRI	AR6
+    // asm 00009116: 	STI	AR2,@TUNE_IDX
+    // asm 00009117: 	BU	L987
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_TUNE", 0, 0);
     UNIMPL();
 }
 
 void RESUME_TUNE(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR6
-    // asm: 	CLRI	AR6
+    // asm 00009118: 	PUSH	AR2
+    // asm 00009119: 	PUSH	AR6
+    // asm 0000911A: 	CLRI	AR6
 L987:
-    // asm: 	CALL	RESUME_TUNE_NT
-    // asm: 	LDI	UTIL_C|RADIOPROC_T,R0
-    // asm: 	LDI	-1,R1
-    // asm: 	CALL	PRC_FIND
-    // asm: 	CMPI	0,AR0
-    // asm: 	BNE	ISTHERE
-    // asm: 	CREATE	RADIO_SHOW,UTIL_C|RADIOPROC_T
+    // asm 0000911B: 	CALL	RESUME_TUNE_NT
+    // asm 0000911C: 	LDI	UTIL_C|RADIOPROC_T,R0
+    // asm 0000911D: 	LDI	-1,R1
+    // asm 0000911E: 	CALL	PRC_FIND
+    // asm 0000911F: 	CMPI	0,AR0
+    // asm 00009120: 	BNE	ISTHERE
+    // asm 00009121: 	CREATE	RADIO_SHOW,UTIL_C|RADIOPROC_T
 ISTHERE:
-    // asm: 	LDI	40,R0
-    // asm: 	STI	R0,@STATION_TIMEOUT
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,@RS_X
+    // asm 00009124: 	LDI	40,R0
+    // asm 00009125: 	STI	R0,@STATION_TIMEOUT
+    // asm 00009126: 	LDI	0,R0
+    // asm 00009127: 	STI	R0,@RS_X
     // ;	LDI	0,R0
     // ;	LDI	150,R1
     // ;	CALL	SET_TRACK_VOL
-    // asm: 	CMPI	1,AR6
-    // asm: 	BEQ	NOOMUS
-    // asm: 	LDI	@HEAD2HEAD_ON,R0
-    // asm: 	BZ	NOOMUS
-    // asm: 	CALL	SEND_CHANGE_MUSIC
+    // asm 00009128: 	CMPI	1,AR6
+    // asm 00009129: 	BEQ	NOOMUS
+    // asm 0000912A: 	LDI	@HEAD2HEAD_ON,R0
+    // asm 0000912B: 	BZ	NOOMUS
+    // asm 0000912C: 	CALL	SEND_CHANGE_MUSIC
 NOOMUS:
-    // asm: 	POP	AR6
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 0000912D: 	POP	AR6
+    // asm 0000912E: 	POP	AR2
+    // asm 0000912F: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESUME_TUNE", 0, 0);
     UNIMPL();
 }
@@ -282,13 +282,13 @@ NOOMUS:
  */
 void RESUME_TUNE_NT(void)
 {
-    // asm: 	LDI	@TUNE_IDX,AR2
-    // asm: 	CMPI	8,AR2
-    // asm: 	LDIGT	0,AR2
-    // asm: 	ADDI	@STATION_LISTI,AR2
-    // asm: 	LDI	*AR2,AR2
-    // asm: 	CALL	ONESND
-    // asm: 	RETS
+    // asm 00009130: 	LDI	@TUNE_IDX,AR2
+    // asm 00009131: 	CMPI	8,AR2
+    // asm 00009132: 	LDIGT	0,AR2
+    // asm 00009133: 	ADDI	@STATION_LISTI,AR2
+    // asm 00009134: 	LDI	*AR2,AR2
+    // asm 00009135: 	CALL	ONESND
+    // asm 00009136: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESUME_TUNE_NT", 0, 0);
     UNIMPL();
 }
@@ -301,11 +301,11 @@ void RESUME_TUNE_NT(void)
  */
 void SET_MASTER_VOL(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	BUD	JI1
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	LDI	055AAh,R0
+    // asm 00009137: 	PUSH	AR2
+    // asm 00009138: 	BUD	JI1
+    // asm 00009139: 	PUSH	R0
+    // asm 0000913A: 	PUSH	R1
+    // asm 0000913B: 	LDI	055AAh,R0
     // 	;---->	BUD	JI1
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_MASTER_VOL", 0, 0);
     UNIMPL();
@@ -313,36 +313,36 @@ void SET_MASTER_VOL(void)
 
 void SET_TRACK_VOL(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	LDI	1,AR2
-    // asm: 	STI	AR2,@DO_NOT_REENABLE_INT
-    // asm: 	PUSH	AR0
-    // asm: 	LDI	R0,AR0
-    // asm: 	MPYI	SND_SIZ,AR0
-    // asm: 	ADDI	@SNDSTRI,AR0		;WE HAVE POINTER TO CHANNEL IN AR0
-    // asm: 	STI	R1,*+AR0(SND_VOL)
-    // asm: 	POP	AR0
-    // asm: 	ADDI	055ABh,R0
+    // asm 0000913C: 	PUSH	AR2
+    // asm 0000913D: 	PUSH	R0
+    // asm 0000913E: 	PUSH	R1
+    // asm 0000913F: 	LDI	1,AR2
+    // asm 00009140: 	STI	AR2,@DO_NOT_REENABLE_INT
+    // asm 00009141: 	PUSH	AR0
+    // asm 00009142: 	LDI	R0,AR0
+    // asm 00009143: 	MPYI	SND_SIZ,AR0
+    // asm 00009144: 	ADDI	@SNDSTRI,AR0		;WE HAVE POINTER TO CHANNEL IN AR0
+    // asm 00009145: 	STI	R1,*+AR0(SND_VOL)
+    // asm 00009146: 	POP	AR0
+    // asm 00009147: 	ADDI	055ABh,R0
 JI1:
-    // asm: 	LDI	1,AR2
-    // asm: 	STI	AR2,@DO_NOT_REENABLE_INT
-    // asm: 	LDI	R0,AR2
-    // asm: 	CALL	SENDSND
-    // asm: 	AND	0FFh,R1
-    // asm: 	CLRI	AR2
-    // asm: 	STI	AR2,@DO_NOT_REENABLE_INT
-    // asm: 	NOT	R1,R0
-    // asm: 	AND	0FFh,R0
-    // asm: 	LS	8,R1
-    // asm: 	OR	R0,R1
-    // asm: 	LDI	R1,AR2
-    // asm: 	CALL	SENDSND
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 00009148: 	LDI	1,AR2
+    // asm 00009149: 	STI	AR2,@DO_NOT_REENABLE_INT
+    // asm 0000914A: 	LDI	R0,AR2
+    // asm 0000914B: 	CALL	SENDSND
+    // asm 0000914C: 	AND	0FFh,R1
+    // asm 0000914D: 	CLRI	AR2
+    // asm 0000914E: 	STI	AR2,@DO_NOT_REENABLE_INT
+    // asm 0000914F: 	NOT	R1,R0
+    // asm 00009150: 	AND	0FFh,R0
+    // asm 00009151: 	LS	8,R1
+    // asm 00009152: 	OR	R0,R1
+    // asm 00009153: 	LDI	R1,AR2
+    // asm 00009154: 	CALL	SENDSND
+    // asm 00009155: 	POP	R1
+    // asm 00009156: 	POP	R0
+    // asm 00009157: 	POP	AR2
+    // asm 00009158: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_TRACK_VOL", 0, 0);
     UNIMPL();
 }
@@ -355,61 +355,61 @@ void RESET_SNDBRD(void)
     // 	;
     // 	;
     // 	;
-    // asm: 	LDI	@SYSCNTL,R0
-    // asm: 	LDI	R0,R1
-    // asm: 	ANDN	SND2_RESET,R0
-    // asm: 	STI	R0,@SYSCNTL
-    // asm: 	LDP	@SYSCNTLR
-    // asm: 	STI	R0,@SYSCNTLR
-    // asm: 	NOP
-    // asm: 	NOP
-    // asm: 	NOP
-    // asm: 	STI	R1,@SYSCNTLR
-    // asm: 	SETDP
-    // asm: 	STI	R1,@SYSCNTL
+    // asm 00009159: 	LDI	@SYSCNTL,R0
+    // asm 0000915A: 	LDI	R0,R1
+    // asm 0000915B: 	ANDN	SND2_RESET,R0
+    // asm 0000915C: 	STI	R0,@SYSCNTL
+    // asm 0000915D: 	LDP	@SYSCNTLR
+    // asm 0000915E: 	STI	R0,@SYSCNTLR
+    // asm 0000915F: 	NOP
+    // asm 00009160: 	NOP
+    // asm 00009161: 	NOP
+    // asm 00009162: 	STI	R1,@SYSCNTLR
+    // asm 00009163: 	SETDP
+    // asm 00009164: 	STI	R1,@SYSCNTL
     // 	;
-    // asm: 	PUSH	DP
-    // asm: 	LDP	@SOUND
-    // asm: 	LDI	0FF00h,R0
-    // asm: 	LDI	0F700h,R1
-    // asm: 	STPI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	LDI	0FF3Ch,R0
-    // asm: 	LDI	0FB3Ch,R1
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	LDI	500,RC
-    // asm: 	MPYI	1000,RC
-    // asm: 	RPTB	WAITIT
+    // asm 00009165: 	PUSH	DP
+    // asm 00009166: 	LDP	@SOUND
+    // asm 00009167: 	LDI	0FF00h,R0
+    // asm 00009168: 	LDI	0F700h,R1
+    // asm 00009169: 	STPI	R0,@SOUND
+    // asm 0000916A: 	RPTS	50
+    // asm 0000916B: 	NOP
+    // asm 0000916C: 	STI	R1,@SOUND
+    // asm 0000916D: 	RPTS	50
+    // asm 0000916E: 	NOP
+    // asm 0000916F: 	STI	R0,@SOUND
+    // asm 00009170: 	RPTS	50
+    // asm 00009171: 	NOP
+    // asm 00009172: 	LDI	0FF3Ch,R0
+    // asm 00009173: 	LDI	0FB3Ch,R1
+    // asm 00009174: 	STI	R0,@SOUND
+    // asm 00009175: 	RPTS	50
+    // asm 00009176: 	NOP
+    // asm 00009177: 	STI	R1,@SOUND
+    // asm 00009178: 	RPTS	50
+    // asm 00009179: 	NOP
+    // asm 0000917A: 	STI	R0,@SOUND
+    // asm 0000917B: 	RPTS	50
+    // asm 0000917C: 	NOP
+    // asm 0000917D: 	LDI	500,RC
+    // asm 0000917E: 	MPYI	1000,RC
+    // asm 0000917F: 	RPTB	WAITIT
 WAITIT:
-    // asm: NOP
-    // asm: 	LDI	0FF1Ch,R0
-    // asm: 	LDI	0FB1Ch,R1
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	POP	DP
-    // asm: 	BU	CLRSNDDB
+    // asm 00009180: NOP
+    // asm 00009181: 	LDI	0FF1Ch,R0
+    // asm 00009182: 	LDI	0FB1Ch,R1
+    // asm 00009183: 	STI	R0,@SOUND
+    // asm 00009184: 	RPTS	50
+    // asm 00009185: 	NOP
+    // asm 00009186: 	STI	R1,@SOUND
+    // asm 00009187: 	RPTS	50
+    // asm 00009188: 	NOP
+    // asm 00009189: 	STI	R0,@SOUND
+    // asm 0000918A: 	RPTS	50
+    // asm 0000918B: 	NOP
+    // asm 0000918C: 	POP	DP
+    // asm 0000918D: 	BU	CLRSNDDB
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESET_SNDBRD", 0, 0);
     UNIMPL();
 }
@@ -418,36 +418,36 @@ WAITIT:
  */
 void SILENT(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	CALL	CLRSNDDB
-    // asm: 	CLRI	AR2
-    // asm: 	CALL	SENDSND
-    // asm: 	LDI	1256,AR2
-    // asm: 	CALL	SENDSND
-    // asm: 	LDI	1,AR2
-    // asm: 	STI	AR2,@DO_NOT_REENABLE_INT
-    // asm: 	LDI	055CCh,AR2
-    // asm: 	CALL	SENDSND
-    // asm: 	LDI	0,AR2
-    // asm: 	STI	AR2,@DO_NOT_REENABLE_INT
-    // asm: 	CALL	SENDSND
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 0000918E: 	PUSH	AR2
+    // asm 0000918F: 	CALL	CLRSNDDB
+    // asm 00009190: 	CLRI	AR2
+    // asm 00009191: 	CALL	SENDSND
+    // asm 00009192: 	LDI	1256,AR2
+    // asm 00009193: 	CALL	SENDSND
+    // asm 00009194: 	LDI	1,AR2
+    // asm 00009195: 	STI	AR2,@DO_NOT_REENABLE_INT
+    // asm 00009196: 	LDI	055CCh,AR2
+    // asm 00009197: 	CALL	SENDSND
+    // asm 00009198: 	LDI	0,AR2
+    // asm 00009199: 	STI	AR2,@DO_NOT_REENABLE_INT
+    // asm 0000919A: 	CALL	SENDSND
+    // asm 0000919B: 	POP	AR2
+    // asm 0000919C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SILENT", 0, 0);
     UNIMPL();
 }
 
 void CLRSNDDB(void)
 {
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	R0
-    // asm: 	LDI	@SNDSTRI,AR0
-    // asm: 	CLRI	R0
-    // asm: 	RPTS	(SND_SIZ*NCHAN)-1
-    // asm: 	STI	R0,*AR0++
-    // asm: 	POP	R0
-    // asm: 	POP	AR0
-    // asm: 	RETS
+    // asm 0000919E: 	PUSH	AR0
+    // asm 0000919F: 	PUSH	R0
+    // asm 000091A0: 	LDI	@SNDSTRI,AR0
+    // asm 000091A1: 	CLRI	R0
+    // asm 000091A2: 	RPTS	(SND_SIZ*NCHAN)-1
+    // asm 000091A3: 	STI	R0,*AR0++
+    // asm 000091A4: 	POP	R0
+    // asm 000091A5: 	POP	AR0
+    // asm 000091A6: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLRSNDDB", 0, 0);
     UNIMPL();
 }
@@ -461,13 +461,13 @@ void CLRSNDDB(void)
  */
 void GETPRI(void)
 {
-    // asm: 	RS	8,AR0
-    // asm: 	AND	0Fh,AR0			;isolate channel
-    // asm: 	MPYI	SND_SIZ,AR0
-    // asm: 	ADDI	@SNDSTRI,AR0		;we have pointer to channel in AR0
-    // asm: 	LDI	*+AR0(SND_PRI),R0
-    // asm: 	AND	0FFh,R0			;extract priority of current sound
-    // asm: 	RETS
+    // asm 000091A7: 	RS	8,AR0
+    // asm 000091A8: 	AND	0Fh,AR0			;isolate channel
+    // asm 000091A9: 	MPYI	SND_SIZ,AR0
+    // asm 000091AA: 	ADDI	@SNDSTRI,AR0		;we have pointer to channel in AR0
+    // asm 000091AB: 	LDI	*+AR0(SND_PRI),R0
+    // asm 000091AC: 	AND	0FFh,R0			;extract priority of current sound
+    // asm 000091AD: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPRI", 0, 0);
     UNIMPL();
 }
@@ -482,8 +482,8 @@ void GETPRI(void)
  */
 void VOLSNDFX(void)
 {
-    // asm:  	AND	0FFH,R0		;KEEP IN RANGE
-    // asm: 	B	SNDFX
+    // asm 000091AE:  	AND	0FFH,R0		;KEEP IN RANGE
+    // asm 000091AF: 	B	SNDFX
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VOLSNDFX", 0, 0);
     UNIMPL();
 }
@@ -505,78 +505,78 @@ void VOLSNDFX(void)
  */
 void ONESNDFX(void)
 {
-    // asm: 	LDI	255,R0
+    // asm 000091B0: 	LDI	255,R0
     // *
     // *PARAMETERS
     // *	R0	SOUND VOLUME
     // *
 SNDFX:
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH 	R0			;SAVE VOLUME
-    // asm: 	LDI	@_MODE,R1
-    // asm: 	AND	MMODE,R1
-    // asm: 	CMPI	MATTR,R1
-    // asm: 	BEQ	SNDLDXFX		;IF attr DONT CALL SOUND FX
-    // asm: 	LDI	1,AR0
-    // asm: 	LDI	@SNDSTR+SND_SIZ+SND_PRI,R2
-    // asm: 	LDI	R2,R0
-    // asm: 	AND	0FFh,R2
-    // asm: 	LDI	@SNDSTR+SND_SIZ+SND_SIZ+SND_PRI,R3
-    // asm: 	LDI	R3,R1
-    // asm: 	AND	0FFh,R3
-    // asm: 	CMPI	R3,R2
-    // asm: 	LDIGT	R3,R2
-    // asm: 	LDIGT	R1,R0
-    // asm: 	LDIGT	2,AR0	  		;CHANNEL #, LOWEST PRIORITY
-    // asm: 	LDI	AR2,R3			;SAVE THE INDEX (IDENTITY)
-    // asm: 	ADDI	@SNDTABI,AR2		;INDEX OUT TO GET ACTUAL SCRIPT
-    // asm: 	LDI	*AR2,R1			;GET PRIORITY WORD
-    // asm: 	AND	0FFh,R1
-    // asm: 	CMPI	R2,R1
-    // asm: 	BLT	NOSOUND_FX
-    // asm: 	BGT	ONESNDFX2
-    // asm: 	TSTB	ENINT,R0
-    // asm: 	BNZ	NOSOUND_FX
+    // asm 000091B1: 	PUSH	R1
+    // asm 000091B2: 	PUSH	R2
+    // asm 000091B3: 	PUSH	R3
+    // asm 000091B4: 	PUSH	AR0
+    // asm 000091B5: 	PUSH 	R0			;SAVE VOLUME
+    // asm 000091B6: 	LDI	@_MODE,R1
+    // asm 000091B7: 	AND	MMODE,R1
+    // asm 000091B8: 	CMPI	MATTR,R1
+    // asm 000091B9: 	BEQ	SNDLDXFX		;IF attr DONT CALL SOUND FX
+    // asm 000091BA: 	LDI	1,AR0
+    // asm 000091BB: 	LDI	@SNDSTR+SND_SIZ+SND_PRI,R2
+    // asm 000091BC: 	LDI	R2,R0
+    // asm 000091BD: 	AND	0FFh,R2
+    // asm 000091BE: 	LDI	@SNDSTR+SND_SIZ+SND_SIZ+SND_PRI,R3
+    // asm 000091BF: 	LDI	R3,R1
+    // asm 000091C0: 	AND	0FFh,R3
+    // asm 000091C1: 	CMPI	R3,R2
+    // asm 000091C2: 	LDIGT	R3,R2
+    // asm 000091C3: 	LDIGT	R1,R0
+    // asm 000091C4: 	LDIGT	2,AR0	  		;CHANNEL #, LOWEST PRIORITY
+    // asm 000091C5: 	LDI	AR2,R3			;SAVE THE INDEX (IDENTITY)
+    // asm 000091C6: 	ADDI	@SNDTABI,AR2		;INDEX OUT TO GET ACTUAL SCRIPT
+    // asm 000091C7: 	LDI	*AR2,R1			;GET PRIORITY WORD
+    // asm 000091C8: 	AND	0FFh,R1
+    // asm 000091C9: 	CMPI	R2,R1
+    // asm 000091CA: 	BLT	NOSOUND_FX
+    // asm 000091CB: 	BGT	ONESNDFX2
+    // asm 000091CC: 	TSTB	ENINT,R0
+    // asm 000091CD: 	BNZ	NOSOUND_FX
 ONESNDFX2:
-    // asm: 	TSTB	NINT,R0
-    // asm: 	BNZ	NOSOUND_FX
-    // asm: 	LDI	AR0,R0
-    // asm: 	MPYI	SND_SIZ,AR0
-    // asm: 	ADDI	@SNDSTRI,AR0		;WE HAVE POINTER TO CHANNEL IN AR0
-    // asm: 	POP	R1			;GET VOLUME VALUE
-    // asm: 	CMPI	*+AR0(SND_VOL),R1
-    // asm: 	BEQ	NOVOL
-    // asm: 	CALL	SET_TRACK_VOL
+    // asm 000091CE: 	TSTB	NINT,R0
+    // asm 000091CF: 	BNZ	NOSOUND_FX
+    // asm 000091D0: 	LDI	AR0,R0
+    // asm 000091D1: 	MPYI	SND_SIZ,AR0
+    // asm 000091D2: 	ADDI	@SNDSTRI,AR0		;WE HAVE POINTER TO CHANNEL IN AR0
+    // asm 000091D3: 	POP	R1			;GET VOLUME VALUE
+    // asm 000091D4: 	CMPI	*+AR0(SND_VOL),R1
+    // asm 000091D5: 	BEQ	NOVOL
+    // asm 000091D6: 	CALL	SET_TRACK_VOL
 NOVOL:
-    // asm: 	LDI	1,R2			;R2  - # OF REPEATS
-    // asm: 	STI	R2,*+AR0(SND_REP)
-    // asm: 	STI	AR2,*+AR0(SND_ST)
-    // asm: 	STI	AR2,*+AR0(SND_ADDR)
-    // asm: 	STI	R3,*+AR0(SND_IDX)
-    // asm: 	SUBI	1,R0
-    // asm: 	STI	R0,*+AR0(SND_STATUS)	;INCREMENT SOUND BIT
-    // asm: 	CALL	SNDUPD			;GET THE SOUND GOING
-    // asm: 	PUSH	R0			;DUMMY PUSH
+    // asm 000091D7: 	LDI	1,R2			;R2  - # OF REPEATS
+    // asm 000091D8: 	STI	R2,*+AR0(SND_REP)
+    // asm 000091D9: 	STI	AR2,*+AR0(SND_ST)
+    // asm 000091DA: 	STI	AR2,*+AR0(SND_ADDR)
+    // asm 000091DB: 	STI	R3,*+AR0(SND_IDX)
+    // asm 000091DC: 	SUBI	1,R0
+    // asm 000091DD: 	STI	R0,*+AR0(SND_STATUS)	;INCREMENT SOUND BIT
+    // asm 000091DE: 	CALL	SNDUPD			;GET THE SOUND GOING
+    // asm 000091DF: 	PUSH	R0			;DUMMY PUSH
 SNDLDXFX:
-    // asm: 	SETC
+    // asm 000091E0: 	SETC
 L88:
-    // asm: POP	R0
-    // asm: 	POP	AR0
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	RETS
+    // asm 000091E1: POP	R0
+    // asm 000091E2: 	POP	AR0
+    // asm 000091E3: 	POP	R3
+    // asm 000091E4: 	POP	R2
+    // asm 000091E5: 	POP	R1
+    // asm 000091E6: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ONESNDFX", 0, 0);
     UNIMPL();
 }
 
 void NOSOUND_FX(void)
 {
-    // asm: 	CLRC
-    // asm: 	BU	L88
+    // asm 000091E7: 	CLRC
+    // asm 000091E8: 	BU	L88
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NOSOUND_FX", 0, 0);
     UNIMPL();
 }
@@ -596,32 +596,32 @@ void NOSOUND_FX(void)
  */
 void KILLSNDFX(void)
 {
-    // asm: 	PUSH	AR2
-    // asm: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2
-    // asm: 	BNE	KILSFX1
-    // asm: 	SOND1	KILLCHAN1
-    // asm: 	B	KILSFX3
+    // asm 000091E9: 	PUSH	AR2
+    // asm 000091EA: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2
+    // asm 000091EB: 	BNE	KILSFX1
+    // asm 000091EC: 	SOND1	KILLCHAN1
+    // asm 000091EE: 	B	KILSFX3
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILLSNDFX", 0, 0);
     UNIMPL();
 }
 
 void KILSFX1(void)
 {
-    // asm: 	CMPI	@SNDSTR+2*(SND_SIZ)+SND_IDX,AR2
-    // asm: 	BNE	KILSFX2
-    // asm: 	SOND1	KILLCHAN2
-    // asm: 	SETC
-    // asm: 	B	KILSFX3
+    // asm 000091EF: 	CMPI	@SNDSTR+2*(SND_SIZ)+SND_IDX,AR2
+    // asm 000091F0: 	BNE	KILSFX2
+    // asm 000091F1: 	SOND1	KILLCHAN2
+    // asm 000091F3: 	SETC
+    // asm 000091F4: 	B	KILSFX3
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILSFX1", 0, 0);
     UNIMPL();
 }
 
 void KILSFX2(void)
 {
-    // asm: 	CLRC
+    // asm 000091F5: 	CLRC
 KILSFX3:
-    // asm: 	POP	AR2
-    // asm: 	RETS
+    // asm 000091F6: 	POP	AR2
+    // asm 000091F7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILSFX2", 0, 0);
     UNIMPL();
 }
@@ -637,28 +637,28 @@ KILSFX3:
  */
 void PLYR_ENGINE(void)
 {
-    // asm: 	LS	8,R0
-    // asm: 	OR	R0,R1
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@DO_NOT_REENABLE_INT
-    // asm: 	LDI	055CCh,AR2
-    // asm: 	CALL	SENDSND
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@DO_NOT_REENABLE_INT
-    // asm: 	LDI	R1,AR2
-    // asm: 	B	SENDSND
+    // asm 000091F8: 	LS	8,R0
+    // asm 000091F9: 	OR	R0,R1
+    // asm 000091FA: 	LDI	1,R0
+    // asm 000091FB: 	STI	R0,@DO_NOT_REENABLE_INT
+    // asm 000091FC: 	LDI	055CCh,AR2
+    // asm 000091FD: 	CALL	SENDSND
+    // asm 000091FE: 	CLRI	R0
+    // asm 000091FF: 	STI	R0,@DO_NOT_REENABLE_INT
+    // asm 00009200: 	LDI	R1,AR2
+    // asm 00009201: 	B	SENDSND
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_ENGINE", 0, 0);
     UNIMPL();
 }
 
 void HARDSND(void)
 {
-    // asm: 	ADDI	@SNDTABI,AR2		;INDEX OUT TO GET ACTUAL SCRIPT
-    // asm: 	LDI	*+AR2(1),AR2
-    // asm: 	LS	16,AR2
-    // asm: 	RS	16,AR2
-    // asm: 	CALL	SENDSND
-    // asm: 	RETS
+    // asm 00009202: 	ADDI	@SNDTABI,AR2		;INDEX OUT TO GET ACTUAL SCRIPT
+    // asm 00009203: 	LDI	*+AR2(1),AR2
+    // asm 00009204: 	LS	16,AR2
+    // asm 00009205: 	RS	16,AR2
+    // asm 00009206: 	CALL	SENDSND
+    // asm 00009207: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDSND", 0, 0);
     UNIMPL();
 }
@@ -674,127 +674,127 @@ void HARDSND(void)
  */
 void ONESND(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	R4
-    // asm: 	PUSH	AR0
+    // asm 00009208: 	PUSH	R0
+    // asm 00009209: 	PUSH	R1
+    // asm 0000920A: 	PUSH	R2
+    // asm 0000920B: 	PUSH	R3
+    // asm 0000920C: 	PUSH	R4
+    // asm 0000920D: 	PUSH	AR0
 #if DEBUG
     // asm: 	CMPI	0,AR2
     // asm: 	BLT	$
     // asm: 	CMPI	KILLALLS,AR2
     // asm: 	BGT	$
 #endif
-    // asm: 	LDI	AR2,R4			;SAVE THE INDEX (IDENTITY)
-    // asm: 	ADDI	@SNDTABI,AR2		;INDEX OUT TO GET ACTUAL SCRIPT
-    // asm: 	LDI	*AR2,R0			;GET PRIORITY WORD
-    // asm: 	LDI	R0,AR0
-    // asm: 	RS	8,AR0
-    // asm: 	AND	0FH,AR0			;ISOLATE CHANNEL
+    // asm 0000920E: 	LDI	AR2,R4			;SAVE THE INDEX (IDENTITY)
+    // asm 0000920F: 	ADDI	@SNDTABI,AR2		;INDEX OUT TO GET ACTUAL SCRIPT
+    // asm 00009210: 	LDI	*AR2,R0			;GET PRIORITY WORD
+    // asm 00009211: 	LDI	R0,AR0
+    // asm 00009212: 	RS	8,AR0
+    // asm 00009213: 	AND	0FH,AR0			;ISOLATE CHANNEL
 #if DEBUG
     // asm: 	CMPI	3,AR0
     // asm: 	BGT	$
 #endif
-    // asm: 	MPYI	SND_SIZ,AR0
-    // asm: 	ADDI	@SNDSTRI,AR0		;WE HAVE POINTER TO CHANNEL IN AR0
-    // asm: 	LDI	*+AR0(SND_PRI),R1
-    // asm: 	TSTB	NINT,R1			;IS IT NON-INTERRUPTABLE?
-    // asm: 	BNZ	SNDLDX
-    // asm: 	LDI	R1,R2
-    // asm: 	AND	0FFH,R1			;EXTRACT PRIORITY OF CURRENT SOUND
-    // asm: 	LDI	R0,R3
-    // asm: 	AND	0FFH,R3			;EXTRACT PRIORITY OF OUR TEST
-    // asm: 	CMPI	R3,R1
-    // asm: 	BLT	SNDLD1			;BR->CURRENT SOUND IS MORE IMPORTANT
-    // asm: 	BNE	SNDLDX
-    // asm: 	TSTB	ENINT,R2		;CHECK INTERRUPTABLE BY EQUAL
-    // asm: 	BNE	SNDLDX			;NOPE
+    // asm 00009214: 	MPYI	SND_SIZ,AR0
+    // asm 00009215: 	ADDI	@SNDSTRI,AR0		;WE HAVE POINTER TO CHANNEL IN AR0
+    // asm 00009216: 	LDI	*+AR0(SND_PRI),R1
+    // asm 00009217: 	TSTB	NINT,R1			;IS IT NON-INTERRUPTABLE?
+    // asm 00009218: 	BNZ	SNDLDX
+    // asm 00009219: 	LDI	R1,R2
+    // asm 0000921A: 	AND	0FFH,R1			;EXTRACT PRIORITY OF CURRENT SOUND
+    // asm 0000921B: 	LDI	R0,R3
+    // asm 0000921C: 	AND	0FFH,R3			;EXTRACT PRIORITY OF OUR TEST
+    // asm 0000921D: 	CMPI	R3,R1
+    // asm 0000921E: 	BLT	SNDLD1			;BR->CURRENT SOUND IS MORE IMPORTANT
+    // asm 0000921F: 	BNE	SNDLDX
+    // asm 00009220: 	TSTB	ENINT,R2		;CHECK INTERRUPTABLE BY EQUAL
+    // asm 00009221: 	BNE	SNDLDX			;NOPE
 SNDLD1:
-    // asm: 	LDI	*+AR0(SND_VOL),R0
-    // asm: 	CMPI	255,R0
-    // asm: 	BEQ	NOTRESETVOL
-    // asm: 	LDI	*AR2,R0			;GET PRIORITY WORD
-    // asm: 	RS	8,R0
-    // asm: 	AND	0FH,R0			;ISOLATE CHANNEL
-    // asm: 	LDI	255,R1
-    // asm: 	CALL	SET_TRACK_VOL
+    // asm 00009222: 	LDI	*+AR0(SND_VOL),R0
+    // asm 00009223: 	CMPI	255,R0
+    // asm 00009224: 	BEQ	NOTRESETVOL
+    // asm 00009225: 	LDI	*AR2,R0			;GET PRIORITY WORD
+    // asm 00009226: 	RS	8,R0
+    // asm 00009227: 	AND	0FH,R0			;ISOLATE CHANNEL
+    // asm 00009228: 	LDI	255,R1
+    // asm 00009229: 	CALL	SET_TRACK_VOL
 NOTRESETVOL:
-    // asm: 	LDI	1,R2			;R2  - # OF REPEATS
-    // asm: 	STI	R2,*+AR0(SND_REP)
-    // asm: 	STI	AR2,*+AR0(SND_ST)
-    // asm: 	STI	AR2,*+AR0(SND_ADDR)
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,*+AR0(SND_STATUS)
-    // asm: 	STI	R4,*+AR0(SND_IDX)
-    // asm: 	CALL	SNDUPD			;GET THE SOUND GOING
+    // asm 0000922A: 	LDI	1,R2			;R2  - # OF REPEATS
+    // asm 0000922B: 	STI	R2,*+AR0(SND_REP)
+    // asm 0000922C: 	STI	AR2,*+AR0(SND_ST)
+    // asm 0000922D: 	STI	AR2,*+AR0(SND_ADDR)
+    // asm 0000922E: 	CLRI	R0
+    // asm 0000922F: 	STI	R0,*+AR0(SND_STATUS)
+    // asm 00009230: 	STI	R4,*+AR0(SND_IDX)
+    // asm 00009231: 	CALL	SNDUPD			;GET THE SOUND GOING
 SNDLDX:
-    // asm: 	POP	AR0
-    // asm: 	POP	R4
-    // asm: 	POP	R3
-    // asm: 	POP	R2
-    // asm: 	POP	R1
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 00009232: 	POP	AR0
+    // asm 00009233: 	POP	R4
+    // asm 00009234: 	POP	R3
+    // asm 00009235: 	POP	R2
+    // asm 00009236: 	POP	R1
+    // asm 00009237: 	POP	R0
+    // asm 00009238: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ONESND", 0, 0);
     UNIMPL();
 }
 
 void SENDSND(void)
 {
-    // asm: 	LDP	@IN_RESET_MODE
-    // asm: 	LDI	@IN_RESET_MODE,R0
-    // asm: 	SETDP
-    // asm: 	CMPI	0,R0
-    // asm: 	BEQ	NIRM
-    // asm: 	RETS
+    // asm 00009239: 	LDP	@IN_RESET_MODE
+    // asm 0000923A: 	LDI	@IN_RESET_MODE,R0
+    // asm 0000923B: 	SETDP
+    // asm 0000923C: 	CMPI	0,R0
+    // asm 0000923D: 	BEQ	NIRM
+    // asm 0000923E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SENDSND", 0, 0);
     UNIMPL();
 }
 
 void NIRM(void)
 {
-    // asm: 	PUSH	AR3
-    // asm: 	LDL	9A0000h,AR3	;SND2
-    // asm: 	PUSHM	R0,R1
-    // asm: 	DINT
-    // asm: 	LDP	@SOUND		;byte 1
-    // asm: 	LDI	AR2,R0
-    // asm: 	RS	8,R0
-    // asm: 	LDI	R0,R1
-    // asm: 	OR	0FD00h,R1
-    // asm: 	OR	0FF00h,R0
-    // asm: 	STI	R0,@SOUND
-    // asm: 	STI	R0,*AR3		;<-NEW SND2
-    // asm: 	RPTS	SPACER
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	SPACER
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	SPACER
-    // asm: 	NOP
-    // asm: 	AND	0FFh,AR2
-    // asm: 	LDI	AR2,R0
-    // asm: 	LDI	AR2,R1
-    // asm: 	OR	0FF00h,R0	;byte 0
-    // asm: 	OR	0FD00h,R1
-    // asm: 	STI	R0,@SOUND
-    // asm: 	STI	R0,*AR3		;<-NEW SND2
-    // asm: 	RPTS	SPACER
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	SPACER
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	SPACER
-    // asm: 	NOP
-    // asm: 	SETDP
-    // asm: 	LDI	@DO_NOT_REENABLE_INT,R0
-    // asm: 	CALLZ	ENABLEGIE
-    // asm: 	POPM	R1,R0
-    // asm: 	POP	AR3
-    // asm: 	RETS
+    // asm 0000923F: 	PUSH	AR3
+    // asm 00009240: 	LDL	9A0000h,AR3	;SND2
+    // asm 00009241: 	PUSHM	R0,R1
+    // asm 00009243: 	DINT
+    // asm 00009249: 	LDP	@SOUND		;byte 1
+    // asm 0000924A: 	LDI	AR2,R0
+    // asm 0000924B: 	RS	8,R0
+    // asm 0000924C: 	LDI	R0,R1
+    // asm 0000924D: 	OR	0FD00h,R1
+    // asm 0000924E: 	OR	0FF00h,R0
+    // asm 0000924F: 	STI	R0,@SOUND
+    // asm 00009250: 	STI	R0,*AR3		;<-NEW SND2
+    // asm 00009251: 	RPTS	SPACER
+    // asm 00009252: 	NOP
+    // asm 00009253: 	STI	R1,@SOUND
+    // asm 00009254: 	RPTS	SPACER
+    // asm 00009255: 	NOP
+    // asm 00009256: 	STI	R0,@SOUND
+    // asm 00009257: 	RPTS	SPACER
+    // asm 00009258: 	NOP
+    // asm 00009259: 	AND	0FFh,AR2
+    // asm 0000925A: 	LDI	AR2,R0
+    // asm 0000925B: 	LDI	AR2,R1
+    // asm 0000925C: 	OR	0FF00h,R0	;byte 0
+    // asm 0000925D: 	OR	0FD00h,R1
+    // asm 0000925E: 	STI	R0,@SOUND
+    // asm 0000925F: 	STI	R0,*AR3		;<-NEW SND2
+    // asm 00009260: 	RPTS	SPACER
+    // asm 00009261: 	NOP
+    // asm 00009262: 	STI	R1,@SOUND
+    // asm 00009263: 	RPTS	SPACER
+    // asm 00009264: 	NOP
+    // asm 00009265: 	STI	R0,@SOUND
+    // asm 00009266: 	RPTS	SPACER
+    // asm 00009267: 	NOP
+    // asm 00009268: 	SETDP
+    // asm 00009269: 	LDI	@DO_NOT_REENABLE_INT,R0
+    // asm 0000926A: 	CALLZ	ENABLEGIE
+    // asm 0000926B: 	POPM	R1,R0
+    // asm 0000926D: 	POP	AR3
+    // asm 0000926E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NIRM", 0, 0);
     UNIMPL();
 }
@@ -810,126 +810,126 @@ void NIRM(void)
  */
 void RESETMUNGE(void)
 {
-    // asm: 	DINT
-    // asm: 	LDP	@RESET_TIMER
-    // asm: 	LDI	@RESET_TIMER,R0
-    // asm: 	INC	R0
-    // asm: 	STI	R0,@RESET_TIMER
-    // asm: 	SETDP
-    // asm: 	CMPI	2,R0
-    // asm: 	BNE	NOT_F1
+    // asm 0000926F: 	DINT
+    // asm 00009275: 	LDP	@RESET_TIMER
+    // asm 00009276: 	LDI	@RESET_TIMER,R0
+    // asm 00009277: 	INC	R0
+    // asm 00009278: 	STI	R0,@RESET_TIMER
+    // asm 00009279: 	SETDP
+    // asm 0000927A: 	CMPI	2,R0
+    // asm 0000927B: 	BNE	NOT_F1
     // 	;first pass through
     // 	;new reset mumbo jumbo
     // 	;
     // 	;
-    // asm: 	LDI	@SYSCNTL,R0		;reset LOW for new board
-    // asm: 	LDI	R0,R1
-    // asm: 	ANDN	SND2_RESET,R0
-    // asm: 	STI	R0,@SYSCNTL
-    // asm: 	LDP	@SYSCNTLR
-    // asm: 	STI	R0,@SYSCNTLR
-    // asm: 	PUSH	R1
+    // asm 0000927C: 	LDI	@SYSCNTL,R0		;reset LOW for new board
+    // asm 0000927D: 	LDI	R0,R1
+    // asm 0000927E: 	ANDN	SND2_RESET,R0
+    // asm 0000927F: 	STI	R0,@SYSCNTL
+    // asm 00009280: 	LDP	@SYSCNTLR
+    // asm 00009281: 	STI	R0,@SYSCNTLR
+    // asm 00009282: 	PUSH	R1
     // 	;continued below
-    // asm: 	LDP	@SOUND
-    // asm: 	LDI	0FF00h,R0		;set wheel board addr
-    // asm: 	LDI	0F700h,R1
-    // asm: 	STPI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	LDI	0FF3Ch,R0		;set reset HI (old board)
-    // asm: 	LDI	0FB3Ch,R1
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	RPTS	2500			;wait for 100 milliseconds
-    // asm: 	NOP
+    // asm 00009283: 	LDP	@SOUND
+    // asm 00009284: 	LDI	0FF00h,R0		;set wheel board addr
+    // asm 00009285: 	LDI	0F700h,R1
+    // asm 00009286: 	STPI	R0,@SOUND
+    // asm 00009287: 	RPTS	50
+    // asm 00009288: 	NOP
+    // asm 00009289: 	STI	R1,@SOUND
+    // asm 0000928A: 	RPTS	50
+    // asm 0000928B: 	NOP
+    // asm 0000928C: 	STI	R0,@SOUND
+    // asm 0000928D: 	RPTS	50
+    // asm 0000928E: 	NOP
+    // asm 0000928F: 	LDI	0FF3Ch,R0		;set reset HI (old board)
+    // asm 00009290: 	LDI	0FB3Ch,R1
+    // asm 00009291: 	STI	R0,@SOUND
+    // asm 00009292: 	RPTS	50
+    // asm 00009293: 	NOP
+    // asm 00009294: 	STI	R1,@SOUND
+    // asm 00009295: 	RPTS	50
+    // asm 00009296: 	NOP
+    // asm 00009297: 	STI	R0,@SOUND
+    // asm 00009298: 	RPTS	50
+    // asm 00009299: 	NOP
+    // asm 0000929A: 	RPTS	2500			;wait for 100 milliseconds
+    // asm 0000929B: 	NOP
     // 	;new board from above
     // 	;
-    // asm: 	POP	R1			;set reset HIGH (new board)
-    // asm: 	LDP	@SYSCNTLR
-    // asm: 	STI	R1,@SYSCNTLR
-    // asm: 	SETDP
-    // asm: 	STI	R1,@SYSCNTL
+    // asm 0000929C: 	POP	R1			;set reset HIGH (new board)
+    // asm 0000929D: 	LDP	@SYSCNTLR
+    // asm 0000929E: 	STI	R1,@SYSCNTLR
+    // asm 0000929F: 	SETDP
+    // asm 000092A0: 	STI	R1,@SYSCNTL
     // 	;
-    // asm: 	LDP	@SOUND
-    // asm: 	LDI	0FF00h,R0		;set addr
-    // asm: 	LDI	0F700h,R1
-    // asm: 	STPI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	LDI	0FF1Ch,R0		;set reset LOW (old board)
-    // asm: 	LDI	0FB1Ch,R1
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	RPTS	50
-    // asm: 	NOP
-    // asm: 	BU	RESETMUNGE_X
+    // asm 000092A1: 	LDP	@SOUND
+    // asm 000092A2: 	LDI	0FF00h,R0		;set addr
+    // asm 000092A3: 	LDI	0F700h,R1
+    // asm 000092A4: 	STPI	R0,@SOUND
+    // asm 000092A5: 	RPTS	50
+    // asm 000092A6: 	NOP
+    // asm 000092A7: 	STI	R1,@SOUND
+    // asm 000092A8: 	RPTS	50
+    // asm 000092A9: 	NOP
+    // asm 000092AA: 	STI	R0,@SOUND
+    // asm 000092AB: 	RPTS	50
+    // asm 000092AC: 	NOP
+    // asm 000092AD: 	LDI	0FF1Ch,R0		;set reset LOW (old board)
+    // asm 000092AE: 	LDI	0FB1Ch,R1
+    // asm 000092AF: 	STI	R0,@SOUND
+    // asm 000092B0: 	RPTS	50
+    // asm 000092B1: 	NOP
+    // asm 000092B2: 	STI	R1,@SOUND
+    // asm 000092B3: 	RPTS	50
+    // asm 000092B4: 	NOP
+    // asm 000092B5: 	STI	R0,@SOUND
+    // asm 000092B6: 	RPTS	50
+    // asm 000092B7: 	NOP
+    // asm 000092B8: 	BU	RESETMUNGE_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESETMUNGE", 0, 0);
     UNIMPL();
 }
 
 void NOT_F1(void)
 {
-    // asm: NOT_F2
-    // asm: 	CMPI	4,R0
-    // asm: 	BNE	NOT_F4
-    // asm: 	LDL	9A0000h,AR2	;SND2
-    // asm: 	LDP	@SOUND		;byte 1
-    // asm: 	LDI	0FD00h,R1	;send dummy byte to abort BONGs
-    // asm: 	LDI	0FF00h,R0
-    // asm: 	STI	R0,@SOUND
-    // asm: 	STI	R0,*AR2		;<-NEW SND2
-    // asm: 	RPTS	SPACER
-    // asm: 	NOP
-    // asm: 	STI	R1,@SOUND
-    // asm: 	RPTS	SPACER
-    // asm: 	NOP
-    // asm: 	STI	R0,@SOUND
-    // asm: 	BU	RESETMUNGE_X
+    // asm 000092B9: NOT_F2
+    // asm 000092B9: 	CMPI	4,R0
+    // asm 000092BA: 	BNE	NOT_F4
+    // asm 000092BB: 	LDL	9A0000h,AR2	;SND2
+    // asm 000092BC: 	LDP	@SOUND		;byte 1
+    // asm 000092BD: 	LDI	0FD00h,R1	;send dummy byte to abort BONGs
+    // asm 000092BE: 	LDI	0FF00h,R0
+    // asm 000092BF: 	STI	R0,@SOUND
+    // asm 000092C0: 	STI	R0,*AR2		;<-NEW SND2
+    // asm 000092C1: 	RPTS	SPACER
+    // asm 000092C2: 	NOP
+    // asm 000092C3: 	STI	R1,@SOUND
+    // asm 000092C4: 	RPTS	SPACER
+    // asm 000092C5: 	NOP
+    // asm 000092C6: 	STI	R0,@SOUND
+    // asm 000092C7: 	BU	RESETMUNGE_X
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_F1", 0, 0);
     UNIMPL();
 }
 
 void NOT_F4(void)
 {
-    // asm: 	CMPI	6,R0
-    // asm: 	BNE	NOT_F6
-    // asm: 	CLRI	R0
-    // asm: 	LDP	@IN_RESET_MODE
-    // asm: 	STI	R0,@IN_RESET_MODE
-    // asm: 	SETDP
-    // asm: 	READADJ	ADJ_VOLUME
-    // asm: 	LDI	R0,R1
-    // asm: 	CALL	SET_MASTER_VOL
+    // asm 000092C8: 	CMPI	6,R0
+    // asm 000092C9: 	BNE	NOT_F6
+    // asm 000092CA: 	CLRI	R0
+    // asm 000092CB: 	LDP	@IN_RESET_MODE
+    // asm 000092CC: 	STI	R0,@IN_RESET_MODE
+    // asm 000092CD: 	SETDP
+    // asm 000092CE: 	READADJ	ADJ_VOLUME
+    // asm 000092D0: 	LDI	R0,R1
+    // asm 000092D1: 	CALL	SET_MASTER_VOL
     // 	;BU	RESETMUNGE_X
 NOT_F6:
 RESETMUNGE_X:
-    // asm: 	SETDP
-    // asm: 	CALL	ENABLEGIE
-    // asm: 	RETS
+    // asm 000092D2: 	SETDP
+    // asm 000092D3: 	CALL	ENABLEGIE
+    // asm 000092D4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_F4", 0, 0);
     UNIMPL();
 }
@@ -938,12 +938,12 @@ RESETMUNGE_X:
  */
 void SND_RESET_QUIET(void)
 {
-    // asm: 	LDP	@RESET_TIMER
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@RESET_TIMER
-    // asm: 	STI	R0,@IN_RESET_MODE
-    // asm: 	SETDP
-    // asm: 	RETS
+    // asm 000092D5: 	LDP	@RESET_TIMER
+    // asm 000092D6: 	LDI	1,R0
+    // asm 000092D7: 	STI	R0,@RESET_TIMER
+    // asm 000092D8: 	STI	R0,@IN_RESET_MODE
+    // asm 000092D9: 	SETDP
+    // asm 000092DA: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SND_RESET_QUIET", 0, 0);
     UNIMPL();
 }
@@ -954,28 +954,28 @@ void SND_RESET_QUIET(void)
  */
 void SNDPROC(void)
 {
-    // asm: 	LDP	@IN_RESET_MODE
-    // asm: 	LDI	@IN_RESET_MODE,R0
-    // asm: 	SETDP
-    // asm: 	CMPI	1,R0
-    // asm: 	BEQ	RESETMUNGE
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R4
-    // asm: 	LDI	@SNDSTRI,AR0
-    // asm: 	LDI	NCHAN-1,R4
+    // asm 000092DB: 	LDP	@IN_RESET_MODE
+    // asm 000092DC: 	LDI	@IN_RESET_MODE,R0
+    // asm 000092DD: 	SETDP
+    // asm 000092DE: 	CMPI	1,R0
+    // asm 000092DF: 	BEQ	RESETMUNGE
+    // asm 000092E0: 	PUSH	R0
+    // asm 000092E1: 	PUSH	R4
+    // asm 000092E2: 	LDI	@SNDSTRI,AR0
+    // asm 000092E3: 	LDI	NCHAN-1,R4
 SNDLP:
-    // asm: 	LDI	*+AR0(SND_TMR),R0
-    // asm: 	BEQ	SNDPLP
-    // asm: 	DEC	R0
-    // asm: 	STI	R0,*+AR0(SND_TMR)
-    // asm: 	CALLZ	SNDUPD			;on ZERO CALL UPDATE
+    // asm 000092E4: 	LDI	*+AR0(SND_TMR),R0
+    // asm 000092E5: 	BEQ	SNDPLP
+    // asm 000092E6: 	DEC	R0
+    // asm 000092E7: 	STI	R0,*+AR0(SND_TMR)
+    // asm 000092E8: 	CALLZ	SNDUPD			;on ZERO CALL UPDATE
 SNDPLP:
-    // asm: 	ADDI	SND_SIZ,AR0
-    // asm: 	DEC	R4
-    // asm: 	BGE	SNDLP
-    // asm: 	POP	R4
-    // asm: 	POP	R0
-    // asm: 	RETS
+    // asm 000092E9: 	ADDI	SND_SIZ,AR0
+    // asm 000092EA: 	DEC	R4
+    // asm 000092EB: 	BGE	SNDLP
+    // asm 000092EC: 	POP	R4
+    // asm 000092ED: 	POP	R0
+    // asm 000092EE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SNDPROC", 0, 0);
     UNIMPL();
 }
@@ -997,33 +997,33 @@ void SNDUPD(void)
     // ;call - a WORD is a terrible thing to waste.
     // ;	ELP July 1,1994
     // ;
-    // asm: 	PUSH	AR1
-    // asm: 	LDI	*+AR0(SND_ADDR),AR1
-    // asm: 	LDI	*AR1++,R0
-    // asm: 	BZ	SNDCLRE			;NULL entry let us quit
-    // asm: 	STI	R0,*+AR0(SND_PRI)
-    // asm: 	LDI	*AR1,R0
-    // asm: 	LDI	R0,AR2
-    // asm: 	AND	07FFFh,AR2
-    // asm: 	LDI	*+AR0(SND_STATUS),R0
-    // asm: 	BZ	JUSTGO
-    // asm: 	INC	AR2
+    // asm 000092EF: 	PUSH	AR1
+    // asm 000092F0: 	LDI	*+AR0(SND_ADDR),AR1
+    // asm 000092F1: 	LDI	*AR1++,R0
+    // asm 000092F2: 	BZ	SNDCLRE			;NULL entry let us quit
+    // asm 000092F3: 	STI	R0,*+AR0(SND_PRI)
+    // asm 000092F4: 	LDI	*AR1,R0
+    // asm 000092F5: 	LDI	R0,AR2
+    // asm 000092F6: 	AND	07FFFh,AR2
+    // asm 000092F7: 	LDI	*+AR0(SND_STATUS),R0
+    // asm 000092F8: 	BZ	JUSTGO
+    // asm 000092F9: 	INC	AR2
 JUSTGO:
-    // asm: 	CALL	SENDSND			;do the actually sending
-    // asm: 	LDI	*AR1++,R0		;EXTRACT TIMING DATA
-    // asm: 	RS	16,R0
-    // asm: 	STI	R0,*+AR0(SND_TMR)	;start countdown
-    // asm: 	STI	AR1,*+AR0(SND_ADDR)
-    // asm: 	CMPI	0,R0
-    // asm: 	BGT	SNDUPX
+    // asm 000092FA: 	CALL	SENDSND			;do the actually sending
+    // asm 000092FB: 	LDI	*AR1++,R0		;EXTRACT TIMING DATA
+    // asm 000092FC: 	RS	16,R0
+    // asm 000092FD: 	STI	R0,*+AR0(SND_TMR)	;start countdown
+    // asm 000092FE: 	STI	AR1,*+AR0(SND_ADDR)
+    // asm 000092FF: 	CMPI	0,R0
+    // asm 00009300: 	BGT	SNDUPX
 SNDCLRE:
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,*+AR0(SND_PRI)
-    // asm: 	STI	R0,*+AR0(SND_ST)
-    // asm: 	STI	R0,*+AR0(SND_STATUS)
+    // asm 00009301: 	CLRI	R0
+    // asm 00009302: 	STI	R0,*+AR0(SND_PRI)
+    // asm 00009303: 	STI	R0,*+AR0(SND_ST)
+    // asm 00009304: 	STI	R0,*+AR0(SND_STATUS)
 SNDUPX:
-    // asm: 	POP	AR1
-    // asm: 	RETS
+    // asm 00009305: 	POP	AR1
+    // asm 00009306: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SNDUPD", 0, 0);
     UNIMPL();
 }

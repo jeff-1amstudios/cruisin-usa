@@ -13,6 +13,7 @@ from gen_c_skeleton import (
     collect_module_symbol_table,
     parse_type_overrides_file,
     sanitize_identifier,
+    strip_struct_definition_blocks,
     variable_declaration,
 )
 
@@ -118,7 +119,7 @@ def parse_equ_file(path: Path) -> tuple[list[str], list[str], list[SetEntry]]:
     sets: list[SetEntry] = []
     in_banner = True
 
-    for raw in path.read_text(errors="ignore").splitlines():
+    for raw in strip_struct_definition_blocks(path.read_text(errors="ignore").splitlines()):
         stripped = raw.strip()
         if not stripped:
             if in_banner:
@@ -178,7 +179,7 @@ def render_header(
     pending_comments: list[str] = []
     if symbol_table is None:
         symbol_table = {}
-    for raw in src_path.read_text(errors="ignore").splitlines():
+    for raw in strip_struct_definition_blocks(src_path.read_text(errors="ignore").splitlines()):
         stripped = raw.strip()
         if not stripped:
             if not in_banner and pending_comments:

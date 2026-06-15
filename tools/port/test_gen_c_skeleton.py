@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gen_equ_headers import parse_equ_file, render_header
 from gen_c_skeleton import (
     DefineEntry,
     LabelEntry,
@@ -15,6 +16,7 @@ from gen_c_skeleton import (
     collect_referenced_define_symbols,
     collect_referenced_data_symbols,
     parse_discovered_defines_file,
+    parse_instruction_addresses_file,
     parse_type_overrides_file,
     render_discovered_defines_header,
     render_discovered_labels_header,
@@ -24,6 +26,16 @@ from gen_c_skeleton import (
 
 
 class GenCSkeletonTests(unittest.TestCase):
+    def test_parse_instruction_addresses_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            addresses_path = Path(tmpdir) / "romlst_instruction_addresses.tsv"
+            addresses_path.write_text("module\tsource_line\taddress\nCUSA\t12\t00004AE6\nCUSA\t13\t00004AE9\n")
+
+            parsed = parse_instruction_addresses_file(addresses_path)
+
+        self.assertEqual(parsed["CUSA"][12], 0x00004AE6)
+        self.assertEqual(parsed["CUSA"][13], 0x00004AE9)
+
     def test_sptr_labels_render_as_top_level_strings(self) -> None:
         asm_source = """MSG2:\tLDI\t11,RC
 \tTEXTIT\tM6,1,260
@@ -49,6 +61,53 @@ MSG3:\tLDI\t11,RC
         self.assertNotIn('LINKDISABLED:\n    // asm: SPTR\t"LINK DISABLED BY U97  DIP6 OFF"', rendered)
         self.assertNotIn('\nchar *LINKDISABLED = "LINK DISABLED BY U97  DIP6 OFF";', rendered)
         self.assertEqual(rendered.count("// asm: LDI\t11,RC"), 2)
+
+    def test_function_comments_include_instruction_addresses_when_available(self) -> None:
+        asm_source = """START:\tLDI\t11,RC
+\tTEXTIT\tM6,1,260
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "CUSA.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(
+                src_path,
+                {},
+                {},
+                None,
+                False,
+                None,
+                False,
+                {1: 0x00004AE6, 2: 0x00004AE9, 3: 0x00004AED},
+            )
+
+        self.assertIn("    // asm 00004AE6: LDI\t11,RC", rendered)
+        self.assertIn("    // asm 00004AE9: \tTEXTIT\tM6,1,260", rendered)
+        self.assertIn("    // asm 00004AED: \tRETS", rendered)
+        self.assertNotIn("    // asm: \tTEXTIT\tM6,1,260", rendered)
+
+    def test_label_only_function_line_uses_next_instruction_address(self) -> None:
+        asm_source = """START:\tLDI\t11,RC
+NEXTLBL
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "CUSA.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(
+                src_path,
+                {},
+                {},
+                None,
+                False,
+                None,
+                False,
+                {1: 0x00004AE6, 3: 0x00004AE9},
+            )
+
+        self.assertIn("    // asm 00004AE9: NEXTLBL", rendered)
 
     def test_standalone_label_word_renders_as_data(self) -> None:
         asm_source = """\
@@ -127,6 +186,20 @@ LANES4\t.float\t-1728.0,-576.0,576.0,1728.0
         self.assertIn("float *LANEP[] = {\n    LANES, LANES4,\n};", rendered)
         self.assertIn("float LANES[] = {\n    -576.0f, -576.0f, 576.0f, 576.0f,\n};", rendered)
         self.assertIn("float LANES4[] = {\n    -1728.0f, -576.0f, 576.0f, 1728.0f,\n};", rendered)
+
+    def test_string_label_table_stays_const_char_pointer_array(self) -> None:
+        asm_source = """LEG_NAMES\t.word\tLEG1,LEG2
+LEG1\t.string\t"GOLDEN GATE PARK",0
+LEG2\t.string\t"SAN FRANCISCO",0
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("const char *LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
+        self.assertNotIn("const char * *LEG_NAMES[]", rendered)
 
     def test_collects_skipped_data_symbol_references(self) -> None:
         asm_lines = [
@@ -242,6 +315,50 @@ AUDIT_DISPLAY:\tRETS
         self.assertIn("void AUDIT_DISPLAY(void)", rendered)
         self.assertNotIn('const char *l_ = ":ATEXT:";', rendered)
         self.assertNotIn("void _word(void)", rendered)
+
+    def test_struct_definition_body_is_ignored_in_module_render(self) -> None:
+        asm_source = """VISIBLE\t.set\t1
+*STRUCT\tTEST
+FIELD0\t.set\t0
+FIELD1\t.set\t1
+*ENDSTRUCT
+AFTER\t.set\t2
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "TEST.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("#define VISIBLE 1", rendered)
+        self.assertIn("#define AFTER 2", rendered)
+        self.assertNotIn("FIELD0", rendered)
+        self.assertNotIn("FIELD1", rendered)
+        self.assertNotIn("STRUCT\tTEST", rendered)
+
+    def test_struct_definition_body_is_ignored_in_equ_header_render(self) -> None:
+        equ_source = """*TEST.EQU
+VISIBLE\t.set\t1
+*STRUCT\tTEST
+FIELD0\t.set\t0
+FIELD1\t.set\t1
+*ENDSTRUCT
+AFTER\t.set\t2
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "TEST.EQU"
+            src_path.write_text(equ_source)
+            banner_comments, globls, sets = parse_equ_file(src_path)
+            rendered = render_header(src_path, banner_comments, globls, sets, {})
+
+        self.assertIn("// asm: VISIBLE\t.set\t1", rendered)
+        self.assertIn("#define VISIBLE 1", rendered)
+        self.assertIn("// asm: AFTER\t.set\t2", rendered)
+        self.assertIn("#define AFTER 2", rendered)
+        self.assertNotIn("FIELD0", rendered)
+        self.assertNotIn("FIELD1", rendered)
+        self.assertNotIn("STRUCT\tTEST", rendered)
 
     def test_first_function_claims_immediately_adjacent_comments_only(self) -> None:
         asm_source = """*COMMENT A\n*COMMENT B\nFIRST:\tRETS\n\n*COMMENT C\n\nSECOND:\tRETS\n"""
