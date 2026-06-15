@@ -14,13 +14,10 @@ void ENABLEGIE(void);
 void _ftoa(void);
 void _itoaLZ(void);
 void _itoa(void);
-void ISZERO2(void);
 void HEX2ASC(void);
 void DDJ(void);
-void ISZEROH(void);
 void _fill(void);
 void _outtextxyc(void);
-void oucX(void);
 void _pixel(void);
 
 /* *----------------------------------------------------------------------------
@@ -182,12 +179,7 @@ itoaX:
     // asm 0000A7CC: 	POP	R1
     // asm 0000A7CD: 	POP	R0
     // asm 0000A7CE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoa", 0, 0);
-    UNIMPL();
-}
-
-void ISZERO2(void)
-{
+ISZERO2:
     // asm 0000A7CF: 	BUD	itoaX
     // asm 0000A7D0: 	LDI	03030h,R0			;case when number is zero
     // asm 0000A7D1: 	STI	R0,*AR2
@@ -199,7 +191,7 @@ ISZERO:
     // asm 0000A7D5: 	STI	R0,*AR2
     // asm 0000A7D6: 	LDI	8,R0
     // 	;---->	BUD	itoaX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISZERO2", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoa", 0, 0);
     UNIMPL();
 }
 
@@ -280,17 +272,12 @@ htoaX:
     // asm 0000A809: 	POP	R1
     // asm 0000A80A: 	POP	R0
     // asm 0000A80B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DDJ", 0, 0);
-    UNIMPL();
-}
-
-void ISZEROH(void)
-{
+ISZEROH:
     // asm 0000A80C: 	BUD	htoaX
     // asm 0000A80D: 	LDI	030h,R0			;case when number is zero
     // asm 0000A80E: 	STI	R0,*AR2
     // asm 0000A80F: 	LDI	8,R0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISZEROH", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DDJ", 0, 0);
     UNIMPL();
 }
 
@@ -397,16 +384,11 @@ NPLOT:
 NXTCHAR:
     // asm 0000A84A: ADDI	8,R2			;to next X position
     // asm 0000A84B: 	BU	OLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_outtextxyc", 0, 0);
-    UNIMPL();
-}
-
-void oucX(void)
-{
+oucX:
     // asm 0000A84C: 	POP	R5
     // asm 0000A84D: 	POP	R4
     // asm 0000A84E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "oucX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_outtextxyc", 0, 0);
     UNIMPL();
 }
 

@@ -26,14 +26,9 @@ void MOVEIN_HUD_EQUIP(void);
 void M2L(void);
 void MOVEOUT_HUD_EQUIP(void);
 void HUD(void);
-void NOMOTIONMSGS(void);
-void NOTLOST(void);
-void ISAUTOTRNS(void);
-void ISMPHT(void);
-void NOINITBP(void);
 void ISMPH(void);
-void SECTION_PALETTE_ALLOC(void);
-void alloc_section(void);
+#define SECTION_PALETTE_ALLOC HARDalloc_section
+#define alloc_section HARDalloc_section
 void HARDalloc_section(void);
 void dealloc_section(void);
 void TACHOMETER_ANIMATE(void);
@@ -68,24 +63,11 @@ int OFFROADBUFF[2];
 /* asm: MOVEIN_OFFSET	.bss	MOVEIN_OFFSET,1 */
 int MOVEIN_OFFSET;
 /* asm: SAFETS	.word	MSAF,BSAF,OSAF,MSSM */
-const char *SAFETS[] = {
-    MSAF, BSAF, OSAF, MSSM,
-};
-const char *MSAF = "SAFETY MAT ACTIVATED";
-const char *BSAF = "SAFETY BEAM ACTIVATED";
-const char *OSAF = "FAIL SAFE SWITCH ACTIVATED";
-const char *MSSM = "MOTION STOP BUTTON HIT";
+const char *SAFETS[] = { "SAFETY MAT ACTIVATED", "SAFETY BEAM ACTIVATED", "FAIL SAFE SWITCH ACTIVATED", "MOTION STOP BUTTON HIT" };
 /* asm: GEARI	.word	GEARS */
 #define GEARI GEARS
 /* asm: GEARS	.word	GEARN,GEAR1,GEAR2,GEAR3,GEAR4 */
-const char *GEARS[] = {
-    GEARN, GEAR1, GEAR2, GEAR3, GEAR4,
-};
-const char *GEAR1 = "1";
-const char *GEAR2 = "2";
-const char *GEAR3 = "3";
-const char *GEAR4 = "4";
-const char *GEARN = ";";
+const char *GEARS[] = { ";", "1", "2", "3", "4" };
 /* asm: LASTSEC	.bss	LASTSEC,1 */
 int LASTSEC;
 /* asm: POS_TABLEI	.word	POS_TABLE */
@@ -124,16 +106,12 @@ int SECIDX[2];
 /* asm: TACHOMETER_PAL	.bss	TACHOMETER_PAL,32 */
 int TACHOMETER_PAL[32];
 /* asm: GEARPAL */
-/* asm: 	.word	0 */
-/* asm: 	.word	0 */
-/* asm: 	.word	0 */
-/* asm: 	.word	0 */
-int GEARPAL[] = {
-    0,
-    0,
-    0,
-    0,
-};
+/* asm: .word	0 */
+/* asm: .word	0 */
+/* asm: .word	0 */
+/* asm: .word	0 */
+/* asm: RGB	0,255,255 */
+int GEARPAL;
 
 void MOVEIN_HUD_EQUIP(void)
 {
@@ -205,177 +183,6 @@ void HUD(void)
     // asm 00009D32: 	LDI	@MOTION_SAFETY_ON,R0
     // asm 00009D33: 	BZ	BLAHBLAH
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HUD", 0, 0);
-    UNIMPL();
-}
-
-/* 	;
-	;
- */
-void NOMOTIONMSGS(void)
-{
-    // 	;-------OFF ROAD TIMER
-    // 	;
-    // 	;
-    // asm 00009D41: 	LDI	@_MODE,R0
-    // asm 00009D42: 	ANDN	MMODE,R0
-    // asm 00009D43: 	CMPI	MGAME,R0
-    // asm 00009D44: 	BNE	NOT_OFFROAD
-    // asm 00009D45: 	LDI	@OFFROAD_TMR,R2
-    // asm 00009D46: 	CMPI	10,R2
-    // asm 00009D47: 	BGE	NOT_OFFROAD
-    // asm 00009D48: 	CMPI	3,R2
-    // asm 00009D49: 	BGT	NOTLOST
-    // asm 00009D4A: 	LDL	YOURLOSTTXT,AR2
-    // asm 00009D4B: 	FLOAT	256,R2
-    // asm 00009D4C: 	FLOAT	5,R3
-    // asm 00009D4D: 	LDI	1,RC
-    // asm 00009D4E: 	CALL	TEXT_ADDDS
-    // asm 00009D4F: 	CALL	SET18FONTDS
-    // asm 00009D50: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm 00009D53: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-    // asm 00009D56: 	BU	OFJN
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOMOTIONMSGS", 0, 0);
-    UNIMPL();
-}
-
-void NOTLOST(void)
-{
-    // asm 00009D57: 	LDL	OFFROADTXT,AR2
-    // asm 00009D58: 	FLOAT	256,R2
-    // asm 00009D59: 	FLOAT	5,R3
-    // asm 00009D5A: 	LDI	1,RC
-    // asm 00009D5B: 	CALL	TEXT_ADDDS
-    // asm 00009D5C: 	CALL	SET18FONTDS
-    // asm 00009D5D: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm 00009D60: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-OFJN:
-    // asm 00009D63: 	LDI	@OFFROAD_TMR,R2
-    // asm 00009D64: 	LDL	OFFROADBUFF,AR2
-    // asm 00009D65: 	CALL	_itoa
-    // asm 00009D66: 	FLOAT	256,R2
-    // asm 00009D67: 	FLOAT	30,R3
-    // asm 00009D68: 	LDI	1,RC
-    // asm 00009D69: 	CALL	TEXT_ADDDS
-    // asm 00009D6A: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm 00009D6D: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-NOT_OFFROAD:
-    // 	;-------ELAPSED TIME,SPEED TEXT
-    // 	;
-    // 	;
-    // asm 00009D70: 	LDL	rpm,AR2
-    // asm 00009D71: 	LDI	420,R2			;R2	POS X
-    // asm 00009D72: 	ADDI	@MOVEIN_OFFSET,R2
-    // asm 00009D73: 	LDI	290,R3			;R3	POS Y
-    // asm 00009D74: 	LDI	TM|ZS,R4
-    // asm 00009D75: 	CALL	BLTMOD2D
-    // asm 00009D76: 	LDI	@CHOSEN_TRANSMISSION,R0
-    // asm 00009D77: 	CMPI	AUTO_TRANSMISSION,R0
-    // asm 00009D78: 	BEQ	ISAUTOTRNS
-    // asm 00009D79: 	LDL	rpmman,AR2
-    // asm 00009D7A: 	LDI	463,R2			;R2	POS X
-    // asm 00009D7B: 	ADDI	@MOVEIN_OFFSET,R2
-    // asm 00009D7C: 	LDI	380,R3			;R3	POS Y
-    // asm 00009D7D: 	LDI	TM|ZS,R4
-    // asm 00009D7E: 	CALL	BLTMOD2D
-    // asm 00009D7F: 	BU	DNDNL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTLOST", 0, 0);
-    UNIMPL();
-}
-
-void ISAUTOTRNS(void)
-{
-    // asm 00009D80: 	LDL	rpmauto,AR2
-    // asm 00009D81: 	LDI	470,R2			;R2	POS X
-    // asm 00009D82: 	ADDI	@MOVEIN_OFFSET,R2
-    // asm 00009D83: 	LDI	380,R3			;R3	POS Y
-    // asm 00009D84: 	LDI	TM|ZS,R4
-    // asm 00009D85: 	CALL	BLTMOD2D
-DNDNL:
-    // 	;show gear digit
-    // 	;
-    // 	;
-    // asm 00009D86: 	LDI	@PLYCBLK,AR0
-    // asm 00009D87: 	LDI	*+AR0(CARGEAR),AR2
-    // asm 00009D88: 	ADDI	@GEARI,AR2
-    // asm 00009D89: 	LDI	*AR2,AR2
-    // asm 00009D8A: 	FLOAT	458,R2			;R2	POS X
-    // asm 00009D8B: 	FLOAT	@MOVEIN_OFFSET,R0
-    // asm 00009D8C: 	ADDF	R0,R2
-    // asm 00009D8D: 	FLOAT	360,R3			;R3	POS Y
-    // asm 00009D8E: 	LDI	1,RC
-    // asm 00009D8F: 	CALL	TEXT_ADD
-    // asm 00009D90: 	CALL	SETSMDIGITFONT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISAUTOTRNS", 0, 0);
-    UNIMPL();
-}
-
-void ISMPHT(void)
-{
-    // asm 00009DA2: 	LDL	mphmph,AR2
-    // asm 00009DA3: 	LDI	50,R2			;R2	POS X
-    // asm 00009DA4: 	SUBI	@MOVEIN_OFFSET,R2
-    // asm 00009DA5: 	LDI	385,R3			;R3	POS Y
-    // asm 00009DA6: 	LDI	TM|ZS,R4
-    // asm 00009DA7: 	CALL	BLTMOD2D
-ISDNN:
-    // 	;-------time remaining
-    // 	;
-    // asm 00009DA8: 	LDL	time,AR2
-    // asm 00009DA9: 	LDI	242,R2			;R2	POS X
-    // asm 00009DAA: 	LDI	9,R3			;R3	POS Y
-    // asm 00009DAB: 	SUBI	@MOVEIN_OFFSET,R3
-    // asm 00009DAC: 	LDI	TM|ZS,R4
-    // asm 00009DAD: 	CALL	BLTMOD2D_DS
-    // 	;-------TIME (_countdown)
-    // 	;
-    // 	;
-    // asm 00009DAE: 	LDI	@_countdown,R2
-    // asm 00009DAF: 	LDI	@COUNTDOWN_BUFI,AR2
-    // asm 00009DB0: 	CALL	_itoa
-    // asm 00009DB1: 	FLOAT	256,R2
-    // asm 00009DB2: 	FLOAT	24,R3
-    // asm 00009DB3: 	FLOAT	@MOVEIN_OFFSET,R0
-    // asm 00009DB4: 	SUBF	R0,R3
-    // asm 00009DB5: 	LDI	1,RC
-    // asm 00009DB6: 	CALL	TEXT_ADD
-    // asm 00009DB7: 	CALL	SETN43FONT
-    // asm 00009DB8: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm 00009DBB: 	LDL	lgnum43_coolyelo,AR2
-    // asm 00009DBC: 	CALL	PAL_FIND_RAW
-    // asm 00009DBD: 	STI	R0,*+AR0(TEXT_PAL)
-    // 	;-------LAST 3/10 SECONDS OF TIME (_countdown)
-    // 	;
-    // 	;
-    // asm 00009DBE: 	LDI	@_MODE,R0
-    // asm 00009DBF: 	AND	MMODE,R0
-    // asm 00009DC0: 	CMPI	MGAME,R0
-    // asm 00009DC1: 	BNE	NBEEP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISMPHT", 0, 0);
-    UNIMPL();
-}
-
-void NOINITBP(void)
-{
-    // asm 00009DCD: 	LDI	@LASTSEC,R1
-    // asm 00009DCE: 	CMPI	R1,R0
-    // asm 00009DCF: 	BEQ	NBEEP
-    // asm 00009DD0: 	STI	R0,@LASTSEC
-    // asm 00009DD1: 	CMPI	3,R0
-    // asm 00009DD2: 	BGT	NBEEP
-    // asm 00009DD3: 	SOND1	BASICBEEPH
-NBEEP:
-    // 	;-------SPEED
-    // 	;
-    // 	;
-    // 	;PLOT SPEED
-    // asm 00009DD5: 	READAUD	ADJ_MPHORKPM
-    // asm 00009DD7: 	CMPI	0,R0
-    // asm 00009DD8: 	BEQ	ISMPH
-    // asm 00009DD9: 	FLOAT	@_MPH,R2
-    // asm 00009DDA: 	MPYF	1.6666,R2
-    // asm 00009DDB: 	FIX	R2
-    // asm 00009DDC: 	BU	ISKPH
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOINITBP", 0, 0);
     UNIMPL();
 }
 
@@ -454,18 +261,6 @@ ISKPH:
 *	AR2	PTR TO SECTION HEADER
 *
  */
-void SECTION_PALETTE_ALLOC(void)
-{
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
-void alloc_section(void)
-{
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
 void HARDalloc_section(void)
 {
     // asm 00009E21: 	LDI	*AR2++,AR6

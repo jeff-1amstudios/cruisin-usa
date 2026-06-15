@@ -4,9 +4,17 @@
 from __future__ import annotations
 
 import re
+import sys
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from typing import Iterable
+
+IDA_DIR = Path(__file__).resolve().parents[1] / "ida"
+if str(IDA_DIR) not in sys.path:
+    sys.path.append(str(IDA_DIR))
+
+import shared_lib as ccm
 
 
 INCLUDE_RE = re.compile(r"^\s*\.include\s+([A-Za-z0-9_.]+)\s*$", re.IGNORECASE)
@@ -231,6 +239,28 @@ def sanitize_identifier(name: str) -> str:
     if ident[0].isdigit():
         ident = "_" + ident
     return ident
+
+
+def source_root_for_path(src_path: Path) -> Path:
+    resolved = src_path.resolve()
+    for parent in (resolved.parent, *resolved.parents):
+        if (parent / "asm").is_dir():
+            return parent
+        if parent.name.upper() == "ASM":
+            return parent.parent
+    return resolved.parent
+
+
+@lru_cache(maxsize=32)
+def collect_data_only_macro_names(root: Path) -> frozenset[str]:
+    macros = ccm.parse_macros(root)
+    symbols = ccm.parse_set_symbols(root)
+    cache: dict[str, bool] = {}
+    out: set[str] = set()
+    for name in macros:
+        if not ccm.macro_emits_executable(name, macros, symbols, cache, set()):
+            out.add(name.upper())
+    return frozenset(out)
 
 
 def split_comment(line: str) -> tuple[str, str]:
@@ -736,9 +766,23 @@ def parse_numeric_data_line(raw: str, label_name: str | None = None) -> tuple[li
     return values, comment
 
 
-def is_top_level_data_line(raw: str) -> bool:
+def line_starts_data_only_macro(raw: str, data_only_macros: frozenset[str] | None) -> bool:
+    if not data_only_macros:
+        return False
+    code, _comment = split_comment(raw)
+    if not code.strip():
+        return False
+    op_idx, toks = ccm.split_label_and_tokens(code)
+    if not toks or op_idx >= len(toks):
+        return False
+    return toks[op_idx].upper() in data_only_macros
+
+
+def is_top_level_data_line(raw: str, data_only_macros: frozenset[str] | None = None) -> bool:
     code, _comment = split_comment(raw)
     if STANDALONE_STORAGE_FULL_RE.match(code):
+        return True
+    if line_starts_data_only_macro(raw, data_only_macros):
         return True
     if not is_flush_left(raw):
         return False
@@ -823,7 +867,11 @@ def bare_label_has_code_body(lines: list[str], start_idx: int) -> bool:
     return False
 
 
-def colon_label_has_code_body(lines: list[str], start_idx: int) -> bool:
+def colon_label_has_code_body(
+    lines: list[str],
+    start_idx: int,
+    data_only_macros: frozenset[str] | None = None,
+) -> bool:
     raw = lines[start_idx]
     label_match = LABEL_RE.match(raw)
     if label_match is None:
@@ -848,6 +896,8 @@ def colon_label_has_code_body(lines: list[str], start_idx: int) -> bool:
         if render_conditional_line(probe_raw) is not None:
             probe_idx += 1
             continue
+        if line_starts_data_only_macro(probe_raw, data_only_macros):
+            return False
         probe_code, _probe_comment = split_comment(probe_raw)
         probe_stripped = probe_code.strip()
         if probe_stripped.lower().startswith((".globl", ".line", ".sym", ".func", ".endfunc", ".text", ".data", ".bss", ".sect", "romdata")):
@@ -991,6 +1041,7 @@ def collect_top_level_functions(
     lines: list[str],
     branch_targets: set[str],
     force_function_names: set[str] | None = None,
+    data_only_macros: frozenset[str] | None = None,
 ) -> list[FunctionBlock]:
     if force_function_names is None:
         force_function_names = set()
@@ -1004,7 +1055,7 @@ def collect_top_level_functions(
             current = None
             continue
 
-        standalone_data, _next_idx = collect_standalone_labeled_data(lines, idx, branch_targets)
+        standalone_data, _next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
         if standalone_data is not None:
             current = None
             seen_separator = False
@@ -1013,7 +1064,7 @@ def collect_top_level_functions(
         label_match = LABEL_RE.match(raw)
         if label_match:
             label = label_match.group(1)
-            if not colon_label_has_code_body(lines, idx):
+            if not colon_label_has_code_body(lines, idx, data_only_macros):
                 current = None
                 seen_separator = False
                 continue
@@ -1051,7 +1102,7 @@ def collect_top_level_functions(
             current.end_index = idx
             continue
 
-        if current is not None and is_top_level_data_line(raw):
+        if current is not None and is_top_level_data_line(raw, data_only_macros):
             current = None
             seen_separator = False
             continue
@@ -1092,6 +1143,22 @@ def collect_top_level_functions(
                 current.line_numbers.append(idx + 1)
                 current.end_index = idx
                 continue
+
+        bare_label_match = BARE_LABEL_RE.match(raw)
+        if (
+            bare_label_match
+            and is_flush_left(raw)
+            and current is not None
+            and bare_label_match.group(1) in branch_targets
+            and not looks_like_instruction_token(bare_label_match.group(1))
+        ):
+            label = bare_label_match.group(1)
+            current.labels.add(label)
+            current.lines.append(raw.rstrip())
+            current.raw_lines.append(raw.rstrip())
+            current.line_numbers.append(idx + 1)
+            current.end_index = idx
+            continue
 
         if current is not None:
             current.lines.append(raw.rstrip())
@@ -1552,6 +1619,14 @@ def render_storage_variable(name: str, size_expr: str, asm_line: str) -> list[st
     ]
 
 
+def render_macro_data_placeholder(name: str, asm_lines: list[str]) -> list[str]:
+    out: list[str] = []
+    for asm_line in filter_renderable_asm_lines(asm_lines):
+        out.append(f"/* asm: {asm_line.strip()} */")
+    out.append(f"int {sanitize_identifier(name)};")
+    return out
+
+
 def filter_renderable_asm_lines(lines: list[str]) -> list[str]:
     return [line for line in lines if line.strip() and not is_comment_line(line)]
 
@@ -1578,6 +1653,7 @@ def collect_standalone_labeled_data(
     lines: list[str],
     start_idx: int,
     branch_targets: set[str] | None = None,
+    data_only_macros: frozenset[str] | None = None,
 ) -> tuple[StandaloneLabeledData | None, int]:
     if branch_targets is None:
         branch_targets = set()
@@ -1587,6 +1663,8 @@ def collect_standalone_labeled_data(
         label, rest = label_match.groups()
         rest_code, _rest_comment = split_comment(rest)
         if rest_code.strip():
+            if line_starts_data_only_macro(rest_code, data_only_macros):
+                return StandaloneLabeledData(label, ".macrodata", "", [raw.rstrip()]), start_idx + 1
             stripped = rest_code.strip()
             numeric_directive = parse_numeric_directive(stripped)
             if numeric_directive is not None:
@@ -1638,6 +1716,21 @@ def collect_standalone_labeled_data(
             asm_lines.append(next_raw.rstrip())
             next_idx += 1
             continue
+        if line_starts_data_only_macro(next_raw, data_only_macros):
+            asm_lines.append(next_raw.rstrip())
+            next_idx += 1
+            while next_idx < len(lines):
+                more_raw = lines[next_idx]
+                if is_comment_or_blank(more_raw):
+                    asm_lines.append(more_raw.rstrip())
+                    next_idx += 1
+                    continue
+                if line_starts_data_only_macro(more_raw, data_only_macros):
+                    asm_lines.append(more_raw.rstrip())
+                    next_idx += 1
+                    continue
+                break
+            return StandaloneLabeledData(label, ".macrodata", "", asm_lines), next_idx
         if is_flush_left(next_raw):
             if saw_numeric_directive:
                 return StandaloneLabeledData(label, ".intdata", ",".join(numeric_values), asm_lines), next_idx
@@ -1718,6 +1811,7 @@ def render_top_level_items(
     emit_set_defines: bool = True,
     collapsed_string_tables: dict[str, list[str]] | None = None,
     skipped_string_labels: set[str] | None = None,
+    data_only_macros: frozenset[str] | None = None,
 ) -> list[str]:
     if collapsed_string_tables is None:
         collapsed_string_tables = {}
@@ -1798,7 +1892,7 @@ def render_top_level_items(
             idx += 1
             continue
 
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
         if standalone_data is not None:
             if is_omitted_symbol(standalone_data.name, type_overrides):
                 pending_comment_lines = []
@@ -1853,6 +1947,8 @@ def render_top_level_items(
                 c_string = parse_simple_string_operand(standalone_data.rest)
                 if c_string is not None and standalone_data.name not in skipped_string_labels:
                     out.extend(render_string_variable(StringVariable(name=standalone_data.name, c_string=c_string)))
+            elif directive_lower == ".macrodata":
+                out.extend(render_macro_data_placeholder(standalone_data.name, standalone_data.asm_lines))
             elif directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
                 out.extend(
                     render_storage_variable(
@@ -2026,6 +2122,7 @@ def render_module(
 ) -> str:
     lines = strip_noncode_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     is_equ_source = src_path.suffix.upper() == ".EQU"
+    data_only_macros = collect_data_only_macro_names(source_root_for_path(src_path))
     force_function_names = {
         name
         for name, override in (type_overrides or {}).items()
@@ -2041,11 +2138,16 @@ def render_module(
     headers.extend(sorted(collect_word_symbol_dependencies(lines, owner_headers, src_path.stem.upper())))
     headers = list(dict.fromkeys(headers))
     branch_targets = collect_branch_targets(lines)
-    functions = collect_top_level_functions(lines, branch_targets, force_function_names)
+    functions = collect_top_level_functions(lines, branch_targets, force_function_names, data_only_macros)
     attach_leading_context(lines, functions)
     assign_function_aliases(functions)
     symbol_table = collect_module_symbol_table(src_path, address_map, type_overrides)
-    collapsed_string_tables, skipped_string_labels = collect_collapsible_string_tables(lines, branch_targets, symbol_table)
+    collapsed_string_tables, skipped_string_labels = collect_collapsible_string_tables(
+        lines,
+        branch_targets,
+        symbol_table,
+        data_only_macros,
+    )
     top_level_items = render_top_level_items(
         lines,
         functions,
@@ -2059,6 +2161,7 @@ def render_module(
         emit_set_defines=not is_equ_source,
         collapsed_string_tables=collapsed_string_tables,
         skipped_string_labels=skipped_string_labels,
+        data_only_macros=data_only_macros,
     )
 
     out: list[str] = []
@@ -2137,7 +2240,10 @@ def extract_reference_text(raw: str) -> str:
     return raw
 
 
-def collect_defined_data_symbols(lines: list[str]) -> set[str]:
+def collect_defined_data_symbols(
+    lines: list[str],
+    data_only_macros: frozenset[str] | None = None,
+) -> set[str]:
     defined: set[str] = set()
     branch_targets = collect_branch_targets(lines)
     idx = 0
@@ -2157,7 +2263,7 @@ def collect_defined_data_symbols(lines: list[str]) -> set[str]:
             defined.add(data_match.group(1))
             idx += 1
             continue
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
         if standalone_data is not None:
             defined.add(standalone_data.name)
             idx = next_idx
@@ -2302,6 +2408,7 @@ def collect_collapsible_string_tables(
     lines: list[str],
     branch_targets: set[str],
     symbol_table: dict[str, SymbolInfo],
+    data_only_macros: frozenset[str] | None = None,
 ) -> tuple[dict[str, list[str]], set[str]]:
     label_types = {
         name: ("data" if info.kind == "variable" else "code" if info.kind == "function" else "other")
@@ -2314,7 +2421,7 @@ def collect_collapsible_string_tables(
     idx = 0
     while idx < len(lines):
         raw = lines[idx]
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
         if standalone_data is not None:
             if standalone_data.directive.lower() == ".string":
                 c_string = parse_simple_string_operand(standalone_data.rest)
@@ -2393,6 +2500,7 @@ def collect_module_symbol_table(
 ) -> dict[str, SymbolInfo]:
     lines = strip_noncode_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     module = src_path.stem.upper()
+    data_only_macros = collect_data_only_macro_names(source_root_for_path(src_path))
     symbol_table: dict[str, SymbolInfo] = {}
     force_function_names = {
         name
@@ -2401,7 +2509,7 @@ def collect_module_symbol_table(
     }
 
     branch_targets = collect_branch_targets(lines)
-    functions = collect_top_level_functions(lines, branch_targets, force_function_names)
+    functions = collect_top_level_functions(lines, branch_targets, force_function_names, data_only_macros)
     attach_leading_context(lines, functions)
     assign_function_aliases(functions)
     for fn in functions:
@@ -2436,7 +2544,7 @@ def collect_module_symbol_table(
             idx += 1
             continue
 
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
         if standalone_data is not None:
             if is_omitted_symbol(standalone_data.name, type_overrides):
                 idx = next_idx
@@ -2480,6 +2588,11 @@ def collect_module_symbol_table(
                         standalone_data.name,
                         apply_type_override(infer_string_symbol(standalone_data.name, module), type_overrides),
                     )
+            elif directive_lower == ".macrodata":
+                symbol_table.setdefault(
+                    standalone_data.name,
+                    apply_type_override(SymbolInfo(name=standalone_data.name, kind="variable", module=module, c_type="int"), type_overrides),
+                )
             elif directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
                 symbol_table.setdefault(
                     standalone_data.name,
@@ -2673,7 +2786,11 @@ def main() -> int:
 
     for src_path in sorted(asm_dir.glob("*.ASM")):
         lines = src_path.read_text(errors="ignore").splitlines()
-        missing_data_symbols = collect_referenced_data_symbols(lines, label_types) - collect_defined_data_symbols(lines)
+        data_only_macros = collect_data_only_macro_names(source_root_for_path(src_path))
+        missing_data_symbols = collect_referenced_data_symbols(lines, label_types) - collect_defined_data_symbols(
+            lines,
+            data_only_macros,
+        )
         skipped_data_symbols.update(missing_data_symbols)
         mapped_missing_data_symbols = {
             name

@@ -157,7 +157,6 @@ L55:
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,@SCREENWIPE_DONE
     // asm: 	DIE
-    // asm: 	END_LONGROUT
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCREENWIPE_OPEN_PRC", 0, 0);
     UNIMPL();
 }
@@ -236,7 +235,6 @@ void SCREENWIPE_CLOSE_PRC(void)
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,@SCREENWIPE_DONE
     // asm: 	DIE
-    // asm: 	END_LONGROUT
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCREENWIPE_CLOSE_PRC", 0, 0);
     UNIMPL();
 }
@@ -315,7 +313,6 @@ void GET_EFFECTS_OBJS(void)
     // asm: 	LDF	*+AR4(OPOSZ),R0
     // asm: 	STF	R0,*+AR4(OUSR3)
     // asm: 	RETS
-    // asm: 	END_LONGROUT
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_EFFECTS_OBJS", 0, 0);
     UNIMPL();
 }
@@ -343,7 +340,6 @@ MEMCPYL:
     // asm: 	POP	AR1
     // asm: 	POP	AR0
     // asm: 	RETS
-    // asm: 	END_LONGROUT
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MEMCPY", 0, 0);
     UNIMPL();
 }

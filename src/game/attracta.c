@@ -18,12 +18,9 @@
 
 void _MIDWAYSPIN(void);
 void MSLP_CHECK(void);
-void MSLP4(void);
 void MIDWAYSPINENTER(void);
 void SPIN_CAR(void);
 void TEXTTOGET(void);
-void NXTWT(void);
-void TXTLPB(void);
 void DEMOTHANKS(void);
 
 #define NOVANITY 1
@@ -162,12 +159,7 @@ void MSLP_CHECK(void)
 MSLP3:
     // asm 0000A9BF: 	RETS
     // ;	BR	MSLP1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MSLP_CHECK", 0, 0);
-    UNIMPL();
-}
-
-void MSLP4(void)
-{
+MSLP4:
     // asm 0000A9C0: 	CMPI	0,AR6
     // asm 0000A9C1: 	RETSGT
     // ;	BGT	MSLP1
@@ -176,7 +168,7 @@ void MSLP4(void)
     // asm 0000A9C3: 	STI	R0,@LOADED
     // asm 0000A9C4: 	POP	BK		;POP return address
     // asm 0000A9C5: 	BR	CYCLE_ATTR
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MSLP4", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MSLP_CHECK", 0, 0);
     UNIMPL();
 }
 
@@ -321,12 +313,7 @@ TXTLP:
     // asm 0000AA3D: 	LDI	R0,AR0
     // asm 0000AA3E: 	STF	R1,*+AR0(TEXT_VELX)
     // asm 0000AA3F: 	BR	TXTLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTTOGET", 0, 0);
-    UNIMPL();
-}
-
-void NXTWT(void)
-{
+NXTWT:
     // asm 0000AA40: 	SLEEP	460
     // asm 0000AA42: 	LDI	@TEXT_ACTIVEI,AR0
     // asm 0000AA43: 	LDF	-6,R1
@@ -334,16 +321,11 @@ TXTLPA:
     // asm 0000AA44: LDI	*AR0,R0
     // asm 0000AA45: 	BNZ	TXTLPB
     // asm 0000AA46: 	BR	SUICIDE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NXTWT", 0, 0);
-    UNIMPL();
-}
-
-void TXTLPB(void)
-{
+TXTLPB:
     // asm 0000AA47: 	LDI	R0,AR0
     // asm 0000AA48: 	STF	R1,*+AR0(TEXT_VELY)
     // asm 0000AA49: 	BR	TXTLPA
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TXTLPB", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTTOGET", 0, 0);
     UNIMPL();
 }
 

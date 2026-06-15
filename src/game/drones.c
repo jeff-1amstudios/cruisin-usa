@@ -23,17 +23,13 @@
 
 void POSITION_FINDER(void);
 void FIND_PLAYERS_POSITION(void);
-void FPP1(void);
 void SIGMA_DISPATCHER(void);
 void DRONE_PTR_ADD(void);
 void DRONE_CLR(void);
 void RHO_DISPATCHER(void);
-void NKLD(void);
 void CK_LINK_DISP(void);
-void GODISP(void);
 void SET_DRONE_PAL(void);
 void GET_LANES(void);
-void GL_FND(void);
 void DIST_TO_PLYR(void);
 void INIT_TRACKING_PIECE(void);
 void GET_TRACK_POS_RVS_XLANE(void);
@@ -43,26 +39,18 @@ void GET_TRACK_POS(void);
 void SUB_FUNCTION_RVS(void);
 void SUB_FUNCTION(void);
 void SUB_FUNCTION_RVS_XLANE(void);
-void SUB_FUNCTION_XLANE(void);
+#define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
 void DELTA_SUB_FUNCTION(void);
 void INIT_DRONES(void);
 void ADD_DRONE(void);
 void FREE_DRONE(void);
 void EXP_PUFF(void);
-void EXP_DIE(void);
 void PRECOLLIDE_PLYR(void);
-void NOT_IMMINENT(void);
 void DRONE_RIDE_RIGHT(void);
 void PLYR_RIDE_RIGHT(void);
-void PRR_ONRITE(void);
 void SMOKE_PUFF(void);
-void SMOKE_DIE(void);
 void DROP_COCONUTS(void);
-void NOTINITIAL(void);
-void HOLDTOSLEEP(void);
-void DROPCOCOKILL(void);
 void AHEAD_OF_PLAYER_P(void);
-void AHEADOF(void);
 
 /* asm: DRONE_DISPATCH_P	.bss	DRONE_DISPATCH_P,1 */
 int DRONE_DISPATCH_P;
@@ -107,6 +95,10 @@ int DD_VAR;
 int DD_MAX_DRONES;
 /* asm: DRONENUM	.bss	DRONENUM,1 */
 int DRONENUM;
+#endif
+#endif
+#if DEBUG
+#endif
 /* *----------------------------------------------------------------------------
  */
 /* asm: EXP_ANI */
@@ -185,58 +177,19 @@ int *TEXTTABS[] = {
     VETETXT, RODRTXT, BULLTXT, FERRTXT,
 };
 /* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
-const char *TITLES[] = {
-    HRT12, HRT13, HRT14, HRT15, HRT16,
-};
+const char *TITLES[] = { "TOP SPEED:", "SKIDPAD:", "AERO COEFF:", "0?60 MPH:", "POWER:" };
 /* asm: VETETXT	.word	HRS11,HRS12,HRS13,HRS14,HRS15,HRS16 */
-const char *VETETXT[] = {
-    HRS11, HRS12, HRS13, HRS14, HRS15, HRS16,
-};
+const char *VETETXT[] = { "63 MUSCLE CAR", "145 MPH@233 KPH", "0=89 G", "0=39", "2=98 SEC=", "462HP  454 CID V8" };
 /* asm: RODRTXT	.word	HRS21,HRS22,HRS23,HRS24,HRS25,HRS26 */
-const char *RODRTXT[] = {
-    HRS21, HRS22, HRS23, HRS24, HRS25, HRS26,
-};
+const char *RODRTXT[] = { "LA BOMBA", "142 MPH@228 KPH", "0=98 G", "0=45", "2=51 SEC=", "580HP  SUPERCHARGED V12" };
 /* asm: BULLTXT	.word	HRS31,HRS32,HRS33,HRS34,HRS35,HRS36 */
-const char *BULLTXT[] = {
-    HRS31, HRS32, HRS33, HRS34, HRS35, HRS36,
-};
+const char *BULLTXT[] = { "DEVASTATOR VI", "147 MPH@236 KPH", "0=85 G", "0=25", "3=15 SEC=", "395HP  TWIN TURBO V6" };
 /* asm: FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
-const char *FERRTXT[] = {
-    HRS41, HRS42, HRS43, HRS44, HRS45, HRS46,
-};
-const char *HRT12 = "TOP SPEED:";
-const char *HRT13 = "SKIDPAD:";
-const char *HRT14 = "AERO COEFF:";
-const char *HRT15 = "0?60 MPH:";
-const char *HRT16 = "POWER:";
+const char *FERRTXT[] = { "ITALIA P69", "144 MPH@231 KPH", "1=01 G", "0=28", "2=88 SEC=", "472HP  V12 DOHC 48V" };
 /* asm: TABING	.float	60,220,220,220,220,220 */
 float TABING[] = {
     60.0f, 220.0f, 220.0f, 220.0f, 220.0f, 220.0f,
 };
-const char *HRS11 = "63 MUSCLE CAR";
-const char *HRS12 = "145 MPH@233 KPH";
-const char *HRS13 = "0=89 G";
-const char *HRS14 = "0=39";
-const char *HRS15 = "2=98 SEC=";
-const char *HRS16 = "462HP  454 CID V8";
-const char *HRS21 = "LA BOMBA";
-const char *HRS22 = "142 MPH@228 KPH";
-const char *HRS23 = "0=98 G";
-const char *HRS24 = "0=45";
-const char *HRS25 = "2=51 SEC=";
-const char *HRS26 = "580HP  SUPERCHARGED V12";
-const char *HRS31 = "DEVASTATOR VI";
-const char *HRS32 = "147 MPH@236 KPH";
-const char *HRS33 = "0=85 G";
-const char *HRS34 = "0=25";
-const char *HRS35 = "3=15 SEC=";
-const char *HRS36 = "395HP  TWIN TURBO V6";
-const char *HRS41 = "ITALIA P69";
-const char *HRS42 = "144 MPH@231 KPH";
-const char *HRS43 = "1=01 G";
-const char *HRS44 = "0=28";
-const char *HRS45 = "2=88 SEC=";
-const char *HRS46 = "472HP  V12 DOHC 48V";
 
 void POSITION_FINDER(void)
 {
@@ -317,12 +270,7 @@ NNEG:
     // asm 000065F1: 	POP	AR5
     // asm 000065F2: 	POP	AR4
     // asm 000065F3: 	B	FPP2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_PLAYERS_POSITION", 0, 0);
-    UNIMPL();
-}
-
-void FPP1(void)
-{
+FPP1:
     // asm 000065F4: 	LDI	*+AR0(OPLINK),AR2
     // asm 000065F5: 	LDI	*+AR2(STEALTHMODE),R0  	;0=ONSCRN,-1=BEHIND ST, 1=AHEAD STEALTH
     // asm 000065F6: 	BNE	NXTLP1
@@ -376,7 +324,7 @@ FPPX:
     // asm 00006615: 	STI	R7,@POSITION
     // asm 00006616: 	STI	R6,@ONCSCREEN_CARS
     // asm 00006617: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FPP1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_PLAYERS_POSITION", 0, 0);
     UNIMPL();
 }
 
@@ -522,19 +470,14 @@ RHOPSL:
     // asm 0000667A: 	BGT	BEGIN_RELEASING
     // asm 0000667B: 	SLEEP	1
     // asm 0000667D: 	BU	RHOPSL
-BEGIN_RELEASING:
+    // asm 0000667E: BEGIN_RELEASING
 RHO_DLP:
     // asm 0000667E: 	LDI	@POSITION,R0
     // asm 0000667F: 	CMPI	2,R0
     // asm 00006680: 	BGT	NKLD
     // asm 00006681: 	LDI	50,AR2
     // asm 00006682: 	BU	TF_DISP_S
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DISPATCHER", 0, 0);
-    UNIMPL();
-}
-
-void NKLD(void)
-{
+NKLD:
     // asm 00006683: 	LDI	@DD_VAR,AR2
     // asm 00006684: 	CALL	RANDU0
     // asm 00006685: 	ADDI	@DD_SLP,R0
@@ -576,7 +519,7 @@ DOITR:
     // asm 000066A6: 	BZ	RHO_DLP			;NOT DISPATCHING, BEHIND IN LINK
     // asm 000066A7: 	CREATE	RHO_DRONE,DRONE_C|VEHICLE_T|DRNE_RHO
     // asm 000066AA: 	BU	RHO_DLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NKLD", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DISPATCHER", 0, 0);
     UNIMPL();
 }
 
@@ -593,15 +536,10 @@ void CK_LINK_DISP(void)
 NOGO:
     // asm 000066B3: 	LDI	0,R0
     // asm 000066B4: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CK_LINK_DISP", 0, 0);
-    UNIMPL();
-}
-
-void GODISP(void)
-{
+GODISP:
     // asm 000066B5: 	LDI	1,R0
     // asm 000066B6: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GODISP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CK_LINK_DISP", 0, 0);
     UNIMPL();
 }
 
@@ -667,19 +605,14 @@ GL_LP:
     // asm 000066DE: 	POP	AR1
     // asm 000066DF: 	POP	AR0
     // asm 000066E0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LANES", 0, 0);
-    UNIMPL();
-}
-
-void GL_FND(void)
-{
+GL_FND:
     // asm 000066E1: 	LDI	*+AR1(DGRP_FLAG),R0
     // asm 000066E2: 	RS	7,R0
     // asm 000066E3: 	AND	1,R0
     // asm 000066E4: 	POP	AR1
     // asm 000066E5: 	POP	AR0
     // asm 000066E6: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GL_FND", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LANES", 0, 0);
     UNIMPL();
 }
 
@@ -739,12 +672,6 @@ LPP:
     // asm 00006701: 	LDI	AR0,AR2
 #if DEBUG
     // asm: 	CMPI	0,AR2
-    // asm: 	SLOCKON	EQ,"DRONES\INIT_TRACKING_PIECE .."
-#endif
-    // asm 00006702: 	STI	AR2,*+AR7(DELTA_TPIECE)
-    // asm 00006703: 	POP	AR1
-    // asm 00006704: 	POP	AR0
-    // asm 00006705: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_TRACKING_PIECE", 0, 0);
     UNIMPL();
 }
@@ -815,22 +742,6 @@ void GET_TRACK_POS(void)
 TRKP2:
 #if DEBUG
     // asm: 	LDI	*+AR2(OUSR1),R1
-    // asm: 	SLOCKON	LT,"DRONES\GET_TRACK_POS  probably tracking a deleted object"
-#endif
-    // asm 00006725: 	LDF	*+AR2(OPOSX),R2		;X
-    // asm 00006726: 	SUBF	*+AR4(OPOSX),R2
-    // asm 00006727: 	LDF	*+AR2(OPOSZ),R1		;Z
-    // asm 00006728: 	SUBF	*+AR4(OPOSZ),R1
-    // asm 00006729: 	MPYF	R2,R2
-    // asm 0000672A: 	MPYF	R1,R1
-    // asm 0000672B: 	ADDF	R1,R2
-    // asm 0000672C: 	CALL	SQRT
-    // 	;R0 now has distance to next check
-    // asm 0000672D: DISTANCE_OK
-    // asm 0000672D: 	POP	AR2
-    // asm 0000672E: 	POPFL	R2
-    // asm 00006730: 	POPFL	R1
-    // asm 00006732: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TRACK_POS", 0, 0);
     UNIMPL();
 }
@@ -866,8 +777,6 @@ void SUB_FUNCTION_RVS(void)
     // asm 00006734: 	PUSHFL	R0
     // asm 00006736: 	PUSHFL	R3
     // asm 00006738: 	LDI	*+AR2(OBLINK4),R0
-    // asm: 	SLOCKON	Z,"DRONES\SUB_FUNCTION_RVS  OBLINK4 to NULL"
-    // asm 00006739: 	BU	SF_ENTER2
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SUB_FUNCTION_RVS", 0, 0);
     UNIMPL();
 }
@@ -878,44 +787,6 @@ void SUB_FUNCTION(void)
     // asm 0000673B: 	PUSHFL	R0
     // asm 0000673D: 	PUSHFL	R3
     // asm 0000673F: 	LDI	*+AR2(OLINK4),R0
-    // asm: 	SLOCKON	Z,"DRONES\SUB_FUNCTION  OLINK4 to NULL"
-SF_ENTER2:
-    // asm 00006740: 	LDI	R0,AR0
-    // asm 00006741: 	LDF	*+AR0(OPOSX),R2
-    // asm 00006742: 	SUBF	*+AR2(OPOSX),R2
-    // asm 00006743: 	LDF	*+AR0(OPOSZ),R3
-    // asm 00006744: 	SUBF	*+AR2(OPOSZ),R3
-    // asm 00006745: 	CALL	ARCTANF
-    // asm 00006746: 	SUBF	HALFPI,R0
-    // asm 00006747: 	LDF	R0,R2				;FIND THETA
-    // asm 00006748: 	PUSHF	R2
-    // asm 00006749: 	CALL	GET_LANES
-    // asm 0000674A: 	PUSH	AR2
-    // asm 0000674B: 	LDI	@MATRIXAI,AR2
-    // asm 0000674C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
-    // asm 0000674D: 	LDI	*+AR7(DELTA_STATUS),AR0
-    // asm 0000674E: 	AND	DELTA_STATUS_LANE,AR0
-    // ;	LDPI	@LANEPI,AR1
-    // asm 0000674F: 	LDI	@LANEPI,AR1
-    // asm 00006750: 	ADDI	R0,AR1		;4 or 2 lane map?
-    // asm 00006751: 	LDI	*AR1,R0
-    // asm 00006752: 	ADDI	R0,AR0		;which lane?
-    // asm 00006753: 	LDF	*AR0,R0
-DELTA_JOININ:
-    // asm 00006754: 	LDI	@VECTORAI,AR2
-    // asm 00006755: 	STF	R0,*+AR2(X)
-    // asm 00006756: 	CLRF	R0
-    // asm 00006757: 	STF	R0,*+AR2(Y)
-    // asm 00006758: 	STF	R0,*+AR2(Z)
-    // asm 00006759: 	LDI	AR2,R3
-    // asm 0000675A: 	LDI	@MATRIXAI,R2
-    // asm 0000675B: 	CALL	MATRIX_MUL			;COMPUTE THE LANE OFFSET IN VECTORA
-    // asm 0000675C: 	POP	AR2
-    // asm 0000675D: 	POPF	R2
-    // asm 0000675E: 	POPFL	R3
-    // asm 00006760: 	POPFL	R0
-    // asm 00006762: 	POP	AR0
-    // asm 00006763: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SUB_FUNCTION", 0, 0);
     UNIMPL();
 }
@@ -931,34 +802,12 @@ void SUB_FUNCTION_RVS_XLANE(void)
     UNIMPL();
 }
 
-void SUB_FUNCTION_XLANE(void)
-{
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
 void DELTA_SUB_FUNCTION(void)
 {
     // asm 0000676B: 	PUSH	AR0
     // asm 0000676C: 	PUSHFL	R0
     // asm 0000676E: 	PUSHFL	R3
     // asm 00006770: 	LDI	*+AR2(OLINK4),R0
-    // asm: 	SLOCKON	Z,"DRONES\DELTA_SUB_FUNCTION  OLINK4 to NULL"
-SFENTER66:
-    // asm 00006771: 	LDI	R0,AR0
-    // asm 00006772: 	LDF	*+AR0(OPOSX),R2
-    // asm 00006773: 	SUBF	*+AR2(OPOSX),R2
-    // asm 00006774: 	LDF	*+AR0(OPOSZ),R3
-    // asm 00006775: 	SUBF	*+AR2(OPOSZ),R3
-    // asm 00006776: 	CALL	ARCTANF
-    // asm 00006777: 	SUBF	HALFPI,R0
-    // asm 00006778: 	LDF	R0,R2				;FIND THETA
-    // asm 00006779: 	PUSHF	R2
-    // asm 0000677A: 	PUSH	AR2
-    // asm 0000677B: 	LDI	@MATRIXAI,AR2
-    // asm 0000677C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
-    // asm 0000677D: 	LDF	*+AR7(DELTA_XLANE),R0
-    // asm 0000677E: 	BU	DELTA_JOININ
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DELTA_SUB_FUNCTION", 0, 0);
     UNIMPL();
 }
@@ -1025,22 +874,6 @@ void FREE_DRONE(void)
 FREELP:
     // asm 0000679B: LDI	R0,AR1
     // asm 0000679C: 	LDI	*+AR1(OLINK3),R0
-    // asm: 	SLOCKON	Z,"DRONES\FREE_DRONE  end of list found"
-    // asm 0000679D: 	BZ	FREEDR_X
-    // asm 0000679E: 	CMPI	R0,AR4
-    // asm 0000679F: 	BNE	FREELP
-    // asm 000067A0: 	LDI	*+AR4(OLINK3),R0
-    // asm 000067A1: 	STI	R0,*+AR1(OLINK3)	;LINK AROUND
-    // asm 000067A2: 	DECM	@DRONE_COUNT
-#if DEBUG
-    // asm: 	CMPI	0,R0
-    // asm: 	SLOCKON	LT,"DRONES\FREE_DRONE  DRONE_COUNT INVALID"
-#endif
-FREEDR_X:
-    // asm 000067A5: 	POP	AR3
-    // asm 000067A6: 	POP	AR1
-    // asm 000067A7: 	POP	R0
-    // asm 000067A8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FREE_DRONE", 0, 0);
     UNIMPL();
 }
@@ -1095,16 +928,11 @@ EXP_PUFFLP:
     // asm 000067D3: 	STF	R0,*+AR4(OPOSY)
     // asm 000067D4: 	SLEEP	1
     // asm 000067D6: 	BU	EXP_PUFFLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "EXP_PUFF", 0, 0);
-    UNIMPL();
-}
-
-void EXP_DIE(void)
-{
+EXP_DIE:
     // asm 000067D7: 	LDI	AR4,AR2
     // asm 000067D8: 	CALL	OBJ_DELETE
     // asm 000067D9: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "EXP_DIE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "EXP_PUFF", 0, 0);
     UNIMPL();
 }
 
@@ -1188,15 +1016,10 @@ void PRECOLLIDE_PLYR(void)
     // asm 0000680A: IS_IMMINENT
     // asm 0000680A: 	SETC
     // asm 0000680B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRECOLLIDE_PLYR", 0, 0);
-    UNIMPL();
-}
-
-void NOT_IMMINENT(void)
-{
+NOT_IMMINENT:
     // asm 0000680C: 	CLRC
     // asm 0000680D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_IMMINENT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRECOLLIDE_PLYR", 0, 0);
     UNIMPL();
 }
 
@@ -1288,12 +1111,7 @@ RIDE_RIGHT_JOININ:
     // asm 00006841: PRR_NONRITE
     // asm 00006841: 	CLRC
     // asm 00006842: 	BU	PRR_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_RIDE_RIGHT", 0, 0);
-    UNIMPL();
-}
-
-void PRR_ONRITE(void)
-{
+PRR_ONRITE:
     // asm 00006843: 	SETC
 PRR_X:
     // asm 00006844: 	POP	AR5
@@ -1304,7 +1122,7 @@ PRR_X:
     // asm 00006849: 	POPFL	R2
     // asm 0000684B: 	POP	R1
     // asm 0000684C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRR_ONRITE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_RIDE_RIGHT", 0, 0);
     UNIMPL();
 }
 
@@ -1361,12 +1179,7 @@ SMOKE_PUFFLP:
     // asm 0000687E: 	STF	R0,*+AR4(OPOSY)
     // asm 0000687F: 	CALL	SLEEP
     // asm 00006880: 	BU	SMOKE_PUFFLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_PUFF", 0, 0);
-    UNIMPL();
-}
-
-void SMOKE_DIE(void)
-{
+SMOKE_DIE:
     // asm 00006881: 	LDI	@SMOKE_COUNT,R0
     // asm 00006882: 	DEC	R0
 #if DEBUG
@@ -1376,7 +1189,7 @@ void SMOKE_DIE(void)
     // asm 00006884: 	LDI	AR4,AR2
     // asm 00006885: 	CALL	OBJ_DELETE
     // asm 00006886: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_DIE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_PUFF", 0, 0);
     UNIMPL();
 }
 
@@ -1472,12 +1285,7 @@ DROPLP:
     // asm 000068E3: 	SUBF	45,R0
     // asm 000068E4: 	STF	R0,*+AR4(OVELZ)
     // asm 000068E5: 	BU	LLKK
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DROP_COCONUTS", 0, 0);
-    UNIMPL();
-}
-
-void NOTINITIAL(void)
-{
+NOTINITIAL:
     // asm 000068E6: 	CMPI	3,R0
     // asm 000068E7: 	BEQ	HOLDTOSLEEP
     // asm 000068E8: 	LDF	*+AR4(OVELX),R0
@@ -1510,22 +1318,12 @@ NSND2:
 FRSL:
     // asm 00006902: 	SLEEP	1
     // asm 00006904: 	BU	DROPLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTINITIAL", 0, 0);
-    UNIMPL();
-}
-
-void HOLDTOSLEEP(void)
-{
+HOLDTOSLEEP:
     // asm 00006905: 	LDI	*+AR4(ODIST),R0
     // asm 00006906: 	BN	DROPCOCOKILL
     // asm 00006907: 	SLEEP	1
     // asm 00006909: 	B	HOLDTOSLEEP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HOLDTOSLEEP", 0, 0);
-    UNIMPL();
-}
-
-void DROPCOCOKILL(void)
-{
+DROPCOCOKILL:
     // asm 0000690A: 	LDI	@COCONUT_COUNT,R0
     // asm 0000690B: 	DEC	R0
 #if DEBUG
@@ -1535,7 +1333,7 @@ void DROPCOCOKILL(void)
     // asm 0000690D: 	LDI	AR4,AR2
     // asm 0000690E: 	CALL	OBJ_DELETE
     // asm 0000690F: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DROPCOCOKILL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DROP_COCONUTS", 0, 0);
     UNIMPL();
 }
 
@@ -1588,17 +1386,12 @@ ISBEHIND:
     // asm 0000693E: 	POP	AR1
     // asm 0000693F: 	POP	AR0
     // asm 00006940: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AHEAD_OF_PLAYER_P", 0, 0);
-    UNIMPL();
-}
-
-void AHEADOF(void)
-{
+AHEADOF:
     // asm 00006941: 	SETC
     // asm 00006942: 	POP	R0
     // asm 00006943: 	POP	AR1
     // asm 00006944: 	POP	AR0
     // asm 00006945: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AHEADOF", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "AHEAD_OF_PLAYER_P", 0, 0);
     UNIMPL();
 }

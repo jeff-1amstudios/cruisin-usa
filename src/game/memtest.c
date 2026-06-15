@@ -15,7 +15,6 @@
  * Source module: asm/MEMTEST.ASM
  */
 
-void TESTING_CHIPS(void);
 void TEST_STATIC_CHIPS(void);
 void GET_AR4_DIGITS(void);
 void R1R2ZER(void);
@@ -25,14 +24,13 @@ void LLED_ON(void);
 void LLED_OFF(void);
 void BLINK_DIGITS(void);
 void TEST_CHIPS(void);
-void CHECK_AS_RAM(void);
 void PLOT_OUTLINE_OF_CHIPS(void);
 void CMOS_CHIP_DISPLAY(void);
 void CMOS_CHIP_TEST(void);
-void CM_ISERROR(void);
 void TEST_BASICS(void);
 void RAMTEST(void);
 void RAMTEST_REAL(void);
+void RAMERR(void);
 void RAMTEST_END(void);
 void COPY_RAMTEST(void);
 void GENERATE_CHECKSUM(void);
@@ -209,6 +207,47 @@ int RTU59[] = {
  */
 /* asm: CHIPTEST_TABLEI	.word	CHIPTEST_TABLE */
 #define CHIPTEST_TABLEI CHIPTEST_TABLE
+/* asm: CHIPTEST_TABLE */
+/* asm: CHIPMC	RTU85,130,250,60,16,"U85",ISRAM		;COLOR RAM */
+/* asm: CHIPMC	RTU87,130,270,60,16,"U87",ISRAM */
+/* asm: CHIPMAC	RTU102,300,300,350,316,"U102",ISRAM	;VIDEO RAM */
+/* asm: CHIPMAC	RTU95,300,280,350,296,"U95",ISRAM */
+/* asm: CHIPMAC	RTU94,240,280,290,296,"U94",ISRAM */
+/* asm: CHIPMAC	RTU101,240,300,290,316,"U101",ISRAM */
+int CHIPTEST_TABLE;
+/* asm: TESTING_CHIPS */
+/* asm: CHIPMAC	RTU26,240,60, 290,80, "U26",ISROM	;BIG EPROM WORLD */
+/* asm: CHIPMAC	RTU22,240,85, 290,105,"U22",ISROM */
+/* asm: CHIPMAC	RTU18,240,110,290,130,"U18",ISROM */
+/* asm: CHIPMAC	RTU14,240,135,290,155,"U14",ISROM */
+/* asm: CHIPMAC	RTU10,240,160,290,180,"U10",ISROM */
+/* asm: CHIPMAC	RTU27,300,60, 350,80, "U27",ISROM	;E0 */
+/* asm: CHIPMAC	RTU23,300,85, 350,105,"U23",ISROM	;D8 */
+/* asm: CHIPMAC	RTU19,300,110,350,130,"U19",ISROM	;D0 */
+/* asm: CHIPMAC	RTU15,300,135,350,155,"U15",ISROM	;C8 */
+/* asm: CHIPMAC	RTU11,300,160,350,180,"U11",ISROM	;C0 */
+/* asm: CHIPMAC	RTU28,360,60, 410,80, "U28",ISROM */
+/* asm: CHIPMAC	RTU24,360,85, 410,105,"U24",ISROM */
+/* asm: CHIPMAC	RTU20,360,110,410,130,"U20",ISROM */
+/* asm: CHIPMAC	RTU16,360,135,410,155,"U16",ISROM */
+/* asm: CHIPMAC	RTU12,360,160,410,180,"U12",ISROM */
+/* asm: CHIPMAC	RTU29,420,60, 470,80, "U29",ISROM */
+/* asm: CHIPMAC	RTU25,420,85, 470,105,"U25",ISROM */
+/* asm: CHIPMAC	RTU21,420,110,470,130,"U21",ISROM */
+/* asm: CHIPMAC	RTU17,420,135,470,155,"U17",ISROM */
+/* asm: CHIPMAC	RTU13,420,160,470,180,"U13",ISROM */
+/* asm: CHIPMC	RTU69,360,220,40,14,"U69",ISRAM */
+/* asm: CHIPMC	RTU70,360,240,40,14,"U70",ISRAM */
+/* asm: CHIPMC	RTU71,360,260,40,14,"U71",ISRAM */
+/* asm: CHIPMC	RTU72,360,280,40,14,"U72",ISRAM		;WAVE RAM */
+/* asm: CHIPMC	RTU73,410,220,40,14,"U73",ISRAM */
+/* asm: CHIPMC	RTU74,410,240,40,14,"U74",ISRAM */
+/* asm: CHIPMC	RTU75,410,260,40,14,"U75",ISRAM */
+/* asm: CHIPMC	RTU76,410,280,40,14,"U76",ISRAM		;WAVE RAM */
+int TESTING_CHIPS;
+/* asm: CMOS_CHIP */
+/* asm: CHIPMC	RTU31,130,120,40,18,"U31",ISROM		;CMOS CHIP */
+int CMOS_CHIP;
 /* *----------------------------------------------------------------------------
 *FOR THE DISPLAY TO WORK WE MUST HAVE OPERATING PROPERLY:
 *	VIDEO RAM (8 CHIPS)
@@ -386,43 +425,6 @@ int CCHKSUMD83 = ~CHECKSUM_D83;
 int CCHKSUME03 = ~CHECKSUM_E03;
 #endif
 
-void TESTING_CHIPS(void)
-{
-    // asm: 	CHIPMAC	RTU26,240,60, 290,80, "U26",ISROM	;BIG EPROM WORLD
-    // asm: 	CHIPMAC	RTU22,240,85, 290,105,"U22",ISROM
-    // asm: 	CHIPMAC	RTU18,240,110,290,130,"U18",ISROM
-    // asm: 	CHIPMAC	RTU14,240,135,290,155,"U14",ISROM
-    // asm: 	CHIPMAC	RTU10,240,160,290,180,"U10",ISROM
-    // asm: 	CHIPMAC	RTU27,300,60, 350,80, "U27",ISROM	;E0
-    // asm: 	CHIPMAC	RTU23,300,85, 350,105,"U23",ISROM	;D8
-    // asm: 	CHIPMAC	RTU19,300,110,350,130,"U19",ISROM	;D0
-    // asm: 	CHIPMAC	RTU15,300,135,350,155,"U15",ISROM	;C8
-    // asm: 	CHIPMAC	RTU11,300,160,350,180,"U11",ISROM	;C0
-    // asm: 	CHIPMAC	RTU28,360,60, 410,80, "U28",ISROM
-    // asm: 	CHIPMAC	RTU24,360,85, 410,105,"U24",ISROM
-    // asm: 	CHIPMAC	RTU20,360,110,410,130,"U20",ISROM
-    // asm: 	CHIPMAC	RTU16,360,135,410,155,"U16",ISROM
-    // asm: 	CHIPMAC	RTU12,360,160,410,180,"U12",ISROM
-    // asm: 	CHIPMAC	RTU29,420,60, 470,80, "U29",ISROM
-    // asm: 	CHIPMAC	RTU25,420,85, 470,105,"U25",ISROM
-    // asm: 	CHIPMAC	RTU21,420,110,470,130,"U21",ISROM
-    // asm: 	CHIPMAC	RTU17,420,135,470,155,"U17",ISROM
-    // asm: 	CHIPMAC	RTU13,420,160,470,180,"U13",ISROM
-    // asm: 	CHIPMC	RTU69,360,220,40,14,"U69",ISRAM
-    // asm: 	CHIPMC	RTU70,360,240,40,14,"U70",ISRAM
-    // asm: 	CHIPMC	RTU71,360,260,40,14,"U71",ISRAM
-    // asm: 	CHIPMC	RTU72,360,280,40,14,"U72",ISRAM		;WAVE RAM
-    // asm: 	CHIPMC	RTU73,410,220,40,14,"U73",ISRAM
-    // asm: 	CHIPMC	RTU74,410,240,40,14,"U74",ISRAM
-    // asm: 	CHIPMC	RTU75,410,260,40,14,"U75",ISRAM
-    // asm: 	CHIPMC	RTU76,410,280,40,14,"U76",ISRAM		;WAVE RAM
-    // asm: RTU31	;nothing...
-    // asm: CMOS_CHIP
-    // asm: 	CHIPMC	RTU31,130,120,40,18,"U31",ISROM		;CMOS CHIP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TESTING_CHIPS", 0, 0);
-    UNIMPL();
-}
-
 void TEST_STATIC_CHIPS(void)
 {
     // asm: 	DINT
@@ -591,7 +593,7 @@ void BLINK_DIGITS(void)
     // asm 00006359: 	RPTS	RC
     // asm: 	NOP
     // asm: 	DBU	AR4,BDL1
-BDL1X:
+    // asm 0000635A: BDL1X
     // asm 0000635E: 	LDIL	35000000,RC
     // asm: 	RPTS	RC
     // asm 0000635F: 	NOP
@@ -609,7 +611,7 @@ BDL1X:
     // asm 0000636E: 	RPTS	RC
     // asm 0000636F: 	NOP
     // asm: 	DBU	AR4,BDL2
-BDL2X:
+    // asm 00006370: BDL2X
     // asm 00006373: 	LDIL	35000000,RC
     // asm 00006374: 	RPTS	RC
     // asm: 	NOP
@@ -626,7 +628,7 @@ BDL2X:
     // asm 00006380: 	RPTS	RC
     // asm 00006383: 	NOP
     // asm: 	DBU	AR4,BDL3
-BDL3X:
+    // asm 00006385: BDL3X
     // asm: 	LDIL	35000000,RC
     // asm 00006386: 	RPTS	RC
     // asm 00006389: 	NOP
@@ -680,12 +682,7 @@ TESTLP1:
     // ;	CALLEQ	BLINK_AND_CONTINUE
     // 	;CHECKSUM PART
     // asm 000063C4: 	BU	DN_CHK
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEST_CHIPS", 0, 0);
-    UNIMPL();
-}
-
-void CHECK_AS_RAM(void)
-{
+CHECK_AS_RAM:
     // asm 000063C6: 	LDI	*+AR4(CTT_TESTTAB),AR0
     // asm 000063C7: 	CMPI	-1,AR0
     // asm 000063C8: 	BEQ	TEST_CHIPSX
@@ -734,7 +731,7 @@ DN_CHK:
 TEST_CHIPSX:
     // asm 000063E9: 	CALL	CMOS_CHIP_TEST
     // asm 000063EB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_AS_RAM", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEST_CHIPS", 0, 0);
     UNIMPL();
 }
 
@@ -849,12 +846,7 @@ RND2:
     // 	;NO ERROR
     // asm: 	LDI	COL_GREEN,RS
     // asm 00006446: 	BU	KKJJ
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CMOS_CHIP_TEST", 0, 0);
-    UNIMPL();
-}
-
-void CM_ISERROR(void)
-{
+CM_ISERROR:
     // asm 00006448: 	CMOS_WP_ON
     // asm 00006449: 	LDI	COL_RED,RS
 KKJJ:
@@ -892,7 +884,7 @@ KKJJ:
     // asm 00006461: 	POP	R0
     // asm 00006462: 	POP	AR4
     // asm 00006463: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CM_ISERROR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CMOS_CHIP_TEST", 0, 0);
     UNIMPL();
 }
 
@@ -1060,10 +1052,15 @@ ENDING:
     // asm: 	POP	R6
     // asm 00006561: 	POP	DP
     // asm 00006562: 	RETS
-RAMERR:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RAMTEST_REAL", 0, 0);
+    UNIMPL();
+}
+
+void RAMERR(void)
+{
     // asm: 	LDI	1,R0		;IS BAD RAM
     // asm 00006564: 	BU	ENDING
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RAMTEST_REAL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RAMERR", 0, 0);
     UNIMPL();
 }
 

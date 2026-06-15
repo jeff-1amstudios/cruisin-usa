@@ -565,6 +565,53 @@ def extract_calls_from_lines(
     return out
 
 
+def macro_emits_executable(
+    macro_name: str,
+    macros: Dict[str, MacroDef],
+    symbols: Dict[str, int],
+    cache: Dict[str, bool],
+    active: Set[str],
+) -> bool:
+    name = macro_name.upper()
+    if name in cache:
+        return cache[name]
+    if name in active or name not in macros:
+        return False
+    active.add(name)
+    macro = macros[name]
+    expander = MacroExpander(macros, symbols)
+    expanded = expander.expand(name, ["0"] * len(macro.params))
+    for ln in iter_active_lines(expanded, symbols):
+        code = strip_comment(ln)
+        if not code.strip():
+            continue
+        lbl, rest = split_optional_label(code)
+        if lbl is not None:
+            if not rest:
+                continue
+            code = "\t" + rest
+        op_idx, toks = split_label_and_tokens(code)
+        if not toks or op_idx >= len(toks):
+            continue
+        op = toks[op_idx].upper()
+        if op in macros:
+            if macro_emits_executable(op, macros, symbols, cache, active):
+                cache[name] = True
+                active.remove(name)
+                return True
+            continue
+        if op.startswith(".") or op == "EQU":
+            continue
+        if op in {"FBSS", "PBSS", "HIBSS", "LOBSS", "PHIBSS", "ROMDATA", "FSECT", "PSECT", "HSECT", "DIAGTEXT"}:
+            continue
+        cache[name] = True
+        active.remove(name)
+        return True
+    active.remove(name)
+    cache[name] = False
+    return False
+
+
 def extract_mnemonics_from_lines(
     lines: List[str],
     macros: Dict[str, MacroDef],

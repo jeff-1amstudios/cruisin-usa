@@ -23,7 +23,7 @@ CMOSI	.word	CMOS		;start of CMOS
 *----------------------------------------------------------------------------
 *DECREMENT HIGH SCORE RESET COUNTER
 *
-HSTDEC
+HSTDEC:
 	READAUD	ADJ_ACTUALHSTDRESET
 	SUBI	1,R0
 	LDILT	0,R0

@@ -17,23 +17,13 @@
 
 void PAL_INIT(void);
 void PAL_XFER(void);
-void NOTCLR(void);
-void PALTR0(void);
 void PACBLK(void);
-void NOT_PACKED_PAL(void);
-void REGDOIT(void);
-void PALTRX(void);
 void PAL_OVERWRITE(void);
 void PAL_FIND(void);
-void FPLXEX(void);
 void PAL_FIND_RAW(void);
-void FOUNDRAW(void);
 void PAL_DELETE_RAW(void);
 void PAL_ALLOC(void);
-void GPL0(void);
-void GETPL(void);
 void PAL_ALLOC_RAW(void);
-void RAWPL(void);
 void PAL_SET(void);
 void PALXFER_INIT(void);
 void PALXFER_GET(void);
@@ -66,10 +56,16 @@ int NUM_FIXED;
  */
 /* asm: PALSXFER	.bss	PALSXFER,1 */
 int PALSXFER;
+#endif
+/* ;	LDI	*AR0++,AR1		;GET SOURCE
+;	LDI	*AR0++,AR2		;GET DESTINATION
+ */
+#if DEBUG
 /* asm: COLRAML	.word	COLORAM */
 int COLRAML = COLORAM;
 /* asm: COLRAMH	.word	COLORAM+7FFFh */
 int COLRAMH = COLORAM+0x7FFF;
+#endif
 #endif
 #define NXFER_PALS 128
 /* asm: PALXFER_ACTIVE	.bss	PALXFER_ACTIVE,1 */
@@ -128,20 +124,10 @@ void PAL_XFER(void)
     // 	;NONE LEFT TO TRANSFER
     // asm 00009EC6: 	STI	R0,@PALXFER_AVAILABLE_P
     // asm 00009EC7: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_XFER", 0, 0);
-    UNIMPL();
-}
-
-void NOTCLR(void)
-{
+NOTCLR:
     // asm 00009EC8: 	LDI	@PALXFER_ACTIVE,R0
     // asm 00009EC9: 	B	I889
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTCLR", 0, 0);
-    UNIMPL();
-}
-
-void PALTR0(void)
-{
+PALTR0:
     // asm 00009ECA: 	INC	R7
     // asm 00009ECB: 	CMPI	12,R7
     // asm 00009ECC: 	BGT	PALTRX
@@ -160,28 +146,15 @@ I889:
     // asm 00009ED5: 	RS	2,R0		;divide by 2
 #if DEBUG
     // asm: 	CMPI	256,R0
-    // asm: 	SLOCKON	GT,"PALL\PALTRANS  more than 256 entries?"
-#endif
-    // ;	STI	R1,*AR0++		;CLEAR OUT COUNT
-    // asm 00009ED6: 	LDI	*+AR0(PALX_SADDR),AR1	;GET SOURCE
-    // asm 00009ED7: 	LDI	*+AR0(PALX_DADDR),AR2	;GET DESTINATION
-    // ;	LDI	*AR0++,AR1		;GET SOURCE
-    // ;	LDI	*AR0++,AR2		;GET DESTINATION
-#if DEBUG
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PALTR0", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_XFER", 0, 0);
     UNIMPL();
 }
 
 void PACBLK(void)
 {
-    // asm 00009EDE: STI	R2,*AR2++	;SECOND COLOR
+    // asm 00009EDE: STI	R2,*AR2++
     // asm 00009EDF: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PACBLK", 0, 0);
-    UNIMPL();
-}
-
-void NOT_PACKED_PAL(void)
-{
+NOT_PACKED_PAL:
     // ;	STI	R1,*AR0++	;CLEAR OUT COUNT
     // asm 00009EE0: 	LDI	*+AR0(PALX_SADDR),AR1	;GET SOURCE
     // asm 00009EE1: 	LDI	*+AR0(PALX_DADDR),AR2	;GET DESTINATION
@@ -189,34 +162,7 @@ void NOT_PACKED_PAL(void)
     // ;	LDI	*AR0++,AR2	;GET DESTINATION
 #if DEBUG
     // asm: 	CMPI	@COLRAML,AR2
-    // asm: 	SLOCKON	LT,"PALL\PALTRANS SETUP XFER OUT OF CRAM LT 2"
-    // asm: 	CMPI	@COLRAMH,AR2
-    // asm: 	SLOCKON	GT,"PALL\PALTRANS SETUP XFER OUT OF CRAM GT 2"
-#endif
-    // asm 00009EE2: 	SUBI	2,R0		;DEC COUNT BY 1
-    // asm 00009EE3: 	BNN	REGDOIT
-    // asm 00009EE4: 	LDI	*AR1++,R2	;single case
-    // asm 00009EE5: 	STI	R2,*AR2++
-    // asm 00009EE6: 	B	PALTR0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_PACKED_PAL", 0, 0);
-    UNIMPL();
-}
-
-void REGDOIT(void)
-{
-    // asm 00009EE7: 	LDI	*AR1++,R2
-    // asm 00009EE8: 	RPTS	R0
-    // asm 00009EE9: 	LDI	*AR1++,R2
-    // asm 00009EEA: 	STI	R2,*AR2++
-    // asm 00009EEB: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "REGDOIT", 0, 0);
-    UNIMPL();
-}
-
-void PALTRX(void)
-{
-    // asm 00009EEC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PALTRX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PACBLK", 0, 0);
     UNIMPL();
 }
 
@@ -233,17 +179,6 @@ void PAL_OVERWRITE(void)
 {
     // asm 00009EED: 	LDI	R0,AR2
     // asm 00009EEE: 	CALL	PAL_FIND
-    // asm: 	SLOCKON	C,"PALL\PAL_OVERWRITE  FINDPAL FAILURE"
-    // asm 00009EEF: 	RETSC
-    // asm 00009EF0: 	LDP	@PALROMI
-    // asm 00009EF1: 	LDI	R1,AR2
-    // asm 00009EF2: 	ADDI	@PALROMI,AR2
-    // asm 00009EF3: 	LDI	*AR2,AR2
-    // 	;SETUP TRANSFER
-    // asm 00009EF4: 	LDI	*AR2++,R3	;GET COUNT
-    // asm 00009EF5: 	LDI	R0,R2		;GET DESTINATION
-    // asm 00009EF6: 	CALL	PAL_SET
-    // asm 00009EF7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_OVERWRITE", 0, 0);
     UNIMPL();
 }
@@ -272,18 +207,13 @@ void PAL_FIND(void)
     // asm 00009F01: FPLX
     // asm 00009F01: 	POP	AR2
     // asm 00009F02: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_FIND", 0, 0);
-    UNIMPL();
-}
-
-void FPLXEX(void)
-{
+FPLXEX:
     // ;edbg
     // ;	BU	$
     // asm 00009F03: 	SETC
     // asm 00009F04: 	POP	AR2
     // asm 00009F05: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FPLXEX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_FIND", 0, 0);
     UNIMPL();
 }
 
@@ -325,17 +255,12 @@ FINDRLP:
     // asm 00009F10: 	CLRC
     // asm 00009F11: 	POP	AR0
     // asm 00009F12: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_FIND_RAW", 0, 0);
-    UNIMPL();
-}
-
-void FOUNDRAW(void)
-{
+FOUNDRAW:
     // asm 00009F13: 	LSH	8,R0
     // asm 00009F14: 	SETC
     // asm 00009F15: 	POP	AR0
     // asm 00009F16: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FOUNDRAW", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_FIND_RAW", 0, 0);
     UNIMPL();
 }
 
@@ -397,12 +322,7 @@ void PAL_ALLOC(void)
     // asm 00009F2E: 	ADDI	1,R0		;YES, INCREMENT AND RETURN
     // asm 00009F2F: 	STI	R0,*AR1
     // asm 00009F30: 	B	GPLX		;RETURN...
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_ALLOC", 0, 0);
-    UNIMPL();
-}
-
-void GPL0(void)
-{
+GPL0:
     // 	;FIND A FREE ONE
     // asm 00009F31: 	LDP	@PALRAMI	 	;LOOK FOR FREE CELL
     // asm 00009F32: 	LDI	@PALRAMI,AR0
@@ -419,12 +339,7 @@ GPLP:
     // ;	BU	$
     // ;	.endif
     // asm 00009F40: 	B	GPLX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GPL0", 0, 0);
-    UNIMPL();
-}
-
-void GETPL(void)
-{
+GETPL:
     // asm 00009F41: 	LDI	AR2,R2
     // asm 00009F42: 	LDP	PALROMI
     // asm 00009F43: 	ADDI	@PALROMI,AR2
@@ -448,7 +363,7 @@ GPLX:
     // asm 00009F53: 	LSH	8,R0
     // asm 00009F54: 	POPM	AR2,AR0,AR1,R3,R2
     // asm 00009F59: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_ALLOC", 0, 0);
     UNIMPL();
 }
 
@@ -482,12 +397,7 @@ RPLP:
     // ;	BU	$
     // ;	.endif
     // asm 00009F6E: 	B	RAWPEX		;UNTIL WE COME UP WITH A BETTER IDEA
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_ALLOC_RAW", 0, 0);
-    UNIMPL();
-}
-
-void RAWPL(void)
-{
+RAWPL:
     // asm 00009F6F: 	LDI	-1,R2
     // asm 00009F70: 	STI	R2,*-AR0(1)	;MARK PALETTE AS TAKEN
     // asm 00009F71: 	SUBI	PALNUM-1,RC	;GET PALETTE CODE
@@ -511,7 +421,7 @@ RAWPEX:
     // asm 00009F80: 	LSH	8,R0
     // asm 00009F81: 	POPM	AR2,AR0,AR1,R3,R2
     // asm 00009F86: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RAWPL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_ALLOC_RAW", 0, 0);
     UNIMPL();
 }
 

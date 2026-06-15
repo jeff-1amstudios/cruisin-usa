@@ -19,11 +19,9 @@
  */
 
 void FLAME_PRC(void);
-void FLANX1(void);
 void animate_child(void);
 void FLAMESORT(void);
 void GETCARBODY(void);
-void FOUND_BODY(void);
 void FIND_NEXT_OBJ(void);
 
 /* asm: FLAME_POS */
@@ -137,22 +135,17 @@ FLAME_ANIX:
     // asm 0000AE0C: 	LDI	AR0,AR2
     // asm 0000AE0D: 	CALL	OBJ_DELETE
     // asm 0000AE0E: 	BR	FLAME_ANIX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAME_PRC", 0, 0);
-    UNIMPL();
-}
-
-void FLANX1(void)
-{
+FLANX1:
 FLAME_DIE:
     // asm 0000AE0F: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLANX1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAME_PRC", 0, 0);
     UNIMPL();
 }
 
 void animate_child(void)
 {
     // ;Set the Frame
-set_frame:
+    // asm 0000AE10: set_frame
     // asm 0000AE10: 	LDI	*+AR1(IR0),R1
     // asm 0000AE11: 	LDIN	0,IR0
     // asm 0000AE12: 	BN	set_frame
@@ -232,22 +225,7 @@ FLMSORTX:
 void GETCARBODY(void)
 {
     // asm 0000AE4F: 	LDI	*+AR2(ODYNALIST),R0
-    // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
-FBLOOP:
-    // asm 0000AE50: 	LDI	R0,AR0
-    // asm 0000AE51: 	LDI	*+AR0(DYNAFLAG),R1
-    // asm 0000AE52: 	BZ	FOUND_BODY		;0 = car body
-    // asm 0000AE53: 	LDI	*AR0,R0
-    // asm 0000AE54: 	BR	FBLOOP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCARBODY", 0, 0);
-    UNIMPL();
-}
-
-void FOUND_BODY(void)
-{
-    // asm 0000AE55: 	ADDI	DYNAMATRIX,AR0
-    // asm 0000AE56: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FOUND_BODY", 0, 0);
     UNIMPL();
 }
 

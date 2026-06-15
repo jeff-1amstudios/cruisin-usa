@@ -33,7 +33,6 @@ void ENABLEGIE(void);
 void INT0(void);
 void REGIT(void);
 void PAGE1(void);
-void NOTINGAME(void);
 void READIO(void);
 void VOL_MINUS(void);
 void VOL_PLUS(void);
@@ -45,8 +44,8 @@ void CLR_PBSS(void);
 void CLR_RAM(void);
 void CLEAR_ONCHIPRAM(void);
 void BUTTONS(void);
-void JUSTGOON(void);
 void KKDAK(void);
+void DIAG_BUTTONS(void);
 void WAIT_FOR_VBLANK(void);
 void CRT_REG_SETUP(void);
 void ERROR_TRAP(void);
@@ -54,7 +53,6 @@ void FIFO_RESET(void);
 void TIMER_RESET(void);
 void TIMER_READ(void);
 void TIMERESET(void);
-void TIMEL1(void);
 void TIMEREC(void);
 void MESSAGE1(void);
 void DODOIBO(void);
@@ -62,8 +60,7 @@ void MSG1(void);
 void MSG2(void);
 void MSG3(void);
 void CHECK_STATE(void);
-void NEXTSTATE(void);
-void DODIAG(void);
+void ABORT_STATE(void);
 void DASHLIGHT(void);
 void CMOS_ERROR(void);
 void VERSION_UPDATE(void);
@@ -270,6 +267,10 @@ int BUTTON_STATUS;
 int OLD_BUTTON_STATUS;
 /* *----------------------------------------------------------------------------
  */
+/* asm: CRT_REG_SETUP_STRI */
+/* asm: .word	CRT_REG_SETUP_STR */
+/* asm: romdata */
+int CRT_REG_SETUP_STRI;
 /* asm: CRT_REG_SETUP_STR */
 /* asm: 	.word	399|CRT_SETUP_ICSYNC	;CRT_SETUP */
 /* asm: 	.word	01ffh		;CRT_HADDRINC */
@@ -297,6 +298,8 @@ int CRT_REG_SETUP_STR[] = {
     0x01af, // CRT_VBLK
     0x01b0, // CRT_VTTL
 };
+#if DEBUG
+#endif
 /* *----------------------------------------------------------------------------
  */
 #if STATISTICS
@@ -518,7 +521,7 @@ DR1:
     // asm 00004BAA: 	AND	8,R0 			;CHECK B3
     // asm 00004BAB: 	BNZ	NOPEIT
     // asm 00004BAC: 	INCAUD	AUD_NUM_WATCHDOGS
-NOPEIT:
+    // asm 00004BAE: NOPEIT
     // asm 00004BAE: 	CLRI	R0
     // asm 00004BAF: 	STI	R0,@_newbut
     // asm 00004BB0: 	LDI	-1,AR2
@@ -841,62 +844,6 @@ JJ88:
     // asm 00004CC5: 	STI	R0,@_countdown
 NOTASEC:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PAGE1", 0, 0);
-    UNIMPL();
-}
-
-void NOTINGAME(void)
-{
-    // asm 00004CC9: 	INCM	@INFRAMES		;increment number of frames passed since last screen switch
-    // asm 00004CCC: 	INCMF	@IFRAMES
-    // asm 00004CCF: 	CALL	NUWHEEL			;motorized wheel
-    // asm 00004CD0: 	CALL	SNDPROC			;sound processor
-    // asm 00004CD1: 	CALL	READIO			;read the switches
-    // asm 00004CD2: 	CALL	RANDOM			;randomize further...
-    // asm 00004CD3: 	CALL	BUTTONS			;lighted buttons routine
-    // asm 00004CD4: 	CALL	COIN_COUNTER		;coin counter routine
-    // asm 00004CD5: 	CALL	CHECK_STATE
-    // asm 00004CD6: 	CALL	LATCH_ERROR		;motion error
-    // asm 00004CD7: 	ANDN	INT0_M,IF		;set 60Hz IRQ no longer pending
-    // asm 00004CD8: 	POP	AR7
-    // asm 00004CD9: 	POP	AR6
-    // asm 00004CDA: 	POP	AR5
-    // asm 00004CDB: 	POP	AR4
-    // asm 00004CDC: 	POP	AR3
-    // asm 00004CDD: 	POP	AR2
-    // asm 00004CDE: 	POP	AR1
-    // asm 00004CDF: 	POP	AR0
-    // asm 00004CE0: 	POP	IR1
-    // asm 00004CE1: 	POP	IR0
-    // asm 00004CE2: 	POP	BK
-    // asm 00004CE3: 	POP	RE
-    // asm 00004CE4: 	POP	RS
-    // asm 00004CE5: 	POP	RC
-    // asm 00004CE6: 	POPF	R7
-    // asm 00004CE7: 	POPF	R6
-    // asm 00004CE8: 	POPF	R5
-    // asm 00004CE9: 	POPF	R4
-    // asm 00004CEA: 	POPF	R3
-    // asm 00004CEB: 	POPF	R2
-    // asm 00004CEC: 	POPF	R1
-    // asm 00004CED: 	POPF	R0
-    // asm 00004CEE: 	POP	R7
-    // asm 00004CEF: 	POP	R6
-    // asm 00004CF0: 	POP	R5
-    // asm 00004CF1: 	POP	R4
-    // asm 00004CF2: 	POP	R3
-    // asm 00004CF3: 	POP	R2
-    // asm 00004CF4: 	POP	R1
-    // asm 00004CF5: 	POP	R0
-    // asm 00004CF6: 	LDP	@CPU_WS
-    // asm 00004CF7: 	STI	R0,@CPU_WS
-    // asm 00004CF8: 	POP	R0
-    // asm 00004CF9: 	LDI	INT1_M|INT3_M|INT0_M,IE
-    // asm 00004CFA: 	LDP	@COMMINTM
-    // asm 00004CFB: 	OR	@COMMINTM,IE
-    // asm 00004CFC: 	POP	DP
-    // asm 00004CFD: 	POP	ST
-    // asm 00004CFE: 	RETI
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTINGAME", 0, 0);
     UNIMPL();
 }
 
@@ -1332,16 +1279,11 @@ void BUTTONS(void)
     // asm 00004E6B: 	OR	BUT_START,R0
     // asm 00004E6C: 	STI	R0,@BUTTON_STATUS
     // asm 00004E6D: 	BU	BUT3
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BUTTONS", 0, 0);
-    UNIMPL();
-}
-
-void JUSTGOON(void)
-{
+JUSTGOON:
     // asm 00004E6E: 	READAUD	AUD_CREDITS
     // asm 00004E70: 	CMPI	0,R0
     // asm 00004E71: 	BLE	DASHLIGHT
-BUT3:
+    // asm 00004E72: BUT3
     // asm 00004E72: 	LDI	@BUTTON_STATUS,R0
     // asm 00004E73: 	TSTB	BUT_START,R0
     // asm 00004E74: 	BZ	NOSTART
@@ -1366,7 +1308,7 @@ NOSTART:
     // asm 00004E86: 	RETSEQ
 PAPAFFD:
     // asm 00004E87: STI	R0,@OLD_BUTTON_STATUS
-BUTLITE:
+    // asm 00004E88: BUTLITE
     // asm 00004E88: 	LDIL	SOUND,AR0
     // asm 00004E8B: 	LDI	0FF05h,R1
     // asm 00004E8C: 	LDI	0F705h,R2
@@ -1386,7 +1328,7 @@ BUTLITE:
     // asm 00004E9A: 	AND	0FFh,R0
     // asm 00004E9B: 	ANDN	BUT_FRONT,R0
     // asm 00004E9C: 	BU	FDDDA
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "JUSTGOON", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BUTTONS", 0, 0);
     UNIMPL();
 }
 
@@ -1408,7 +1350,12 @@ FDDDA:
     // asm 00004EA9: 	RPTS	SPACER
     // asm 00004EAA: 	NOP
     // asm 00004EAB: 	RETS
-DIAG_BUTTONS:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KKDAK", 0, 0);
+    UNIMPL();
+}
+
+void DIAG_BUTTONS(void)
+{
     // asm 00004EAC: 	LDP	@BUTTON_STATUS
     // asm 00004EAD: 	LDI	@BUTTON_STATUS,R0
     // asm 00004EAE: 	SETDP
@@ -1452,7 +1399,7 @@ DGBT:
     // asm 00004ED5: 	RPTS	SPACER
     // asm 00004ED6: 	NOP
     // asm 00004ED7: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "KKDAK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_BUTTONS", 0, 0);
     UNIMPL();
 }
 
@@ -1499,11 +1446,6 @@ void ERROR_TRAP(void)
     // asm 00004EF0: 	NOP
     // asm 00004EF1: 	NOP
     // asm 00004EF2: 	NOP
-    // asm: 	SLOCKON	U,"ERROR_TRAP INT"
-#if DEBUG
-    // asm: 	BU	$
-#endif
-    // asm 00004EF3: 	RETI
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ERROR_TRAP", 0, 0);
     UNIMPL();
 }
@@ -1595,12 +1537,7 @@ TIMELP:
     // asm 00004F2C: STF	R1,*+AR0(31)
     // asm 00004F2D: 	POP	DP
     // asm 00004F2E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMERESET", 0, 0);
-    UNIMPL();
-}
-
-void TIMEL1(void)
-{
+TIMEL1:
     // asm 00004F2F: 	LDI	0,R0
     // asm 00004F30: 	STI	R0,@TIMECLR
     // asm 00004F31: 	LDF	0,R0
@@ -1610,7 +1547,7 @@ void TIMEL1(void)
     // asm 00004F35: 	STF	R0,*AR0++
     // asm 00004F36: 	POP	DP
     // asm 00004F37: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMEL1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMERESET", 0, 0);
     UNIMPL();
 }
 
@@ -1755,12 +1692,7 @@ void CHECK_STATE(void)
     // asm 00004FE9: 	BLT	ABORT_STATE
     // asm 00004FEA: 	STI	R0,@STATE_TIK
     // asm 00004FEB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_STATE", 0, 0);
-    UNIMPL();
-}
-
-void NEXTSTATE(void)
-{
+NEXTSTATE:
     // asm 00004FEC: 	LDI	@STATE_NUM,R0
     // asm 00004FED: 	INC	R0
     // asm 00004FEE: 	CMPI	NUM_STATES,R0
@@ -1769,12 +1701,7 @@ void NEXTSTATE(void)
     // asm 00004FF1: 	LDI	120,R0
     // asm 00004FF2: 	STI	R0,@STATE_TIK
     // asm 00004FF3: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXTSTATE", 0, 0);
-    UNIMPL();
-}
-
-void DODIAG(void)
-{
+DODIAG:
     // asm 00004FF4: 	CLRI	R0
     // asm 00004FF5: 	STI	R0,@STATE_NUM
     // asm 00004FF6: 	STI	R0,@STATE_TIK
@@ -1782,12 +1709,17 @@ void DODIAG(void)
     // *
     // *
     // *
-ABORT_STATE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_STATE", 0, 0);
+    UNIMPL();
+}
+
+void ABORT_STATE(void)
+{
     // asm 00004FF8: 	CLRI	R0
     // asm 00004FF9: 	STI	R0,@STATE_NUM
     // asm 00004FFA: 	STI	R0,@STATE_TIK
     // asm 00004FFB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DODIAG", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ABORT_STATE", 0, 0);
     UNIMPL();
 }
 

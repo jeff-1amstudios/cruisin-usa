@@ -31,9 +31,6 @@ void TIME2STR(void);
 void CVTTIME(void);
 void RADAR_PLOT(void);
 void GL14(void);
-void ISBEHIND(void);
-void NOTTHEOPLYR(void);
-void RADAR_X(void);
 
 /* *----------------------------------------------------------------------------
 *
@@ -92,7 +89,6 @@ int MAPPAL24;
 int STOPWATCH;
 /* asm: STOPWATCH_CNTL	.bss	STOPWATCH_CNTL,1 */
 int STOPWATCH_CNTL;
-const char *COLON = ":";
 /* *----------------------------------------------------------------------------
 *RETURNS
 *	AR2	POINTING TO LAP BUFFER
@@ -1234,12 +1230,7 @@ GL15:
     // asm 000061A6: 	STI	R0,@_ARPS+(0*3)+1
     // asm 000061A7: 	STI	R0,@_ARPS+(1*3)+1
     // asm 000061A8: 	BU	DADA4
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GL14", 0, 0);
-    UNIMPL();
-}
-
-void ISBEHIND(void)
-{
+ISBEHIND:
     // ;	LDI	RADAR_XCNTR,R0
     // ;	ADDI	9,R0
     // ;	STI	R0,@_ARPS+(1*3)
@@ -1259,12 +1250,7 @@ DADA4:
     // asm 000061B1: 	CLRI	R0
     // asm 000061B2: 	STI	R0,@_ACMAP
     // asm 000061B3: 	BU	RADAR_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISBEHIND", 0, 0);
-    UNIMPL();
-}
-
-void NOTTHEOPLYR(void)
-{
+NOTTHEOPLYR:
     // asm 000061B4: 	CMPI	RADAR_XMIN,R0
     // asm 000061B5: 	BLT	RADAR_LP
     // asm 000061B6: 	CMPI	RADAR_XMAX,R0
@@ -1291,12 +1277,7 @@ void NOTTHEOPLYR(void)
     // asm 000061CB: 	STI	R0,@(_ARPS+(2*3)+1)
     // asm 000061CC: 	CALL	_stuff_fpga
     // asm 000061CD: 	BU	RADAR_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTTHEOPLYR", 0, 0);
-    UNIMPL();
-}
-
-void RADAR_X(void)
-{
+RADAR_X:
     // asm 000061CE: 	LDI	CC|1,R0
     // asm 000061CF: 	STI	R0,@_ACNTL
     // asm 000061D0: 	LDI	RADAR_XCNTR-2,R0
@@ -1328,6 +1309,6 @@ void RADAR_X(void)
     // asm 000061EA: 	STI	R0,@THIS_MACHINE_AHEAD
 NODOAP:
     // asm 000061EB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADAR_X", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GL14", 0, 0);
     UNIMPL();
 }

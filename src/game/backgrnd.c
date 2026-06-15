@@ -22,25 +22,18 @@
 
 void FIND_STARTING_VALUES(void);
 void BGD_INIT(void);
+void NOOVERE(void);
 void BGD_WATCHER(void);
 void GAMECHK(void);
+void SHIFT1(void);
 void BGD_ACTIVATE_TYCOGROUP(void);
-void NOTCORNFLAKE(void);
-void NOTREVERSED(void);
-void NOTGROUND(void);
-void NOTSIGN(void);
-void NOTDYNAROAD(void);
-void CHECK2(void);
-void CHECK2II(void);
-void NOOVERLAYGROUP(void);
+void NOVRDD(void);
 void ADD_TO_NEWLIST(void);
-void REGADD(void);
 void FIND_SUBLIST_START_END(void);
-void FSDN(void);
 void APPEND_NEWLIST(void);
+void SHINY_NEWLIST(void);
 void GROUP_DELETE(void);
 void DELLP(void);
-void NXTCHK(void);
 void GET_XZ_DISTANCE(void);
 void BGD_OROUTINE(void);
 void OVERCAR(void);
@@ -63,7 +56,6 @@ void RUT_ANI(void);
 void PLAINANI_PROC_SLOW(void);
 void FLAGWAVE_TALL(void);
 void FLAGWAVE(void);
-void MAKEPPP(void);
 void PLAINANI_PROC(void);
 void LOAD_SINGLE_SECTION(void);
 void OHARE_PLANE(void);
@@ -72,7 +64,6 @@ void TRAIN_FWRD_MAKEB(void);
 void TRAIN_FWRD_MAKE(void);
 void TRAIN_FWRDB(void);
 void TRAIN_FWRD(void);
-void TRAINX(void);
 void LOAD_SINGLE_SECTION_OFFSET(void);
 
 /* asm: STARTSECTION	.bss	STARTSECTION,1 */
@@ -141,6 +132,9 @@ float DDACT_DIST = 15000.0f;
  */
 /* asm: ATTR_DDACT_DIST	.float	45000	;dynamic deactivate distance (+ radius) */
 float ATTR_DDACT_DIST = 45000.0f;
+#endif
+#endif
+#endif
 /* *----------------------------------------------------------------------------
 *ACTIVATE A TYCO GROUP (ROAD PIECES ARE LINKED, ETC.)
 *
@@ -164,6 +158,7 @@ int PASS1;
 int SECRADY;
 /* asm: LVAL	.word	151720 */
 int LVAL = 151720;
+#endif
 /* *----------------------------------------------------------------------------
  */
 /* asm: OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
@@ -423,30 +418,12 @@ NOO2a:
 #if DEBUG
     // asm: 	LDI	@DGROUP_COUNT,R0
     // asm: 	CMPI	1,R0
-    // asm: 	SLOCKON	NE,"DGROUP\BACKGRND_INIT ERROR"
-#endif
-    // asm 00003FCE: 	PUSH	AR6
-    // asm 00003FCF: 	LDI	@DGROUPSI,AR1
-    // asm 00003FD0: 	LDI	3,AR6
-    // asm 00003FD1: LPP5
-    // asm 00003FD1: 	LDI	@DGROUP_AW,AR2
-    // asm 00003FD2: 	LDI	AR2,AR0
-    // asm 00003FD3: 	CALL	BGD_ACTIVATE_TYCOGROUP	;returns top pointer in R0
-    // asm 00003FD4: 	STI	R0,*+AR1(DGRP_HEAD+DGRP_SIZE)	;lead object (link by OLINK3)
-    // asm 00003FD5: 	STI	AR0,*+AR1(DGRP_BIN+DGRP_SIZE)	;rom struct ptr
-    // asm 00003FD6: 	LDI	@STARTS,R0
-    // asm 00003FD7: 	STI	R0,*+AR1(DGRP_FSTART+DGRP_SIZE)
-    // asm 00003FD8: 	LDI	@SECTIONIDX,R0
-    // asm 00003FD9: 	STI	R0,*+AR1(DGRP_IDX+DGRP_SIZE)	;SAVE THE INDEX #
-    // asm 00003FDA: 	LDI	@TYCOFLAG,R0
-    // asm 00003FDB: 	STI	R0,*+AR1(DGRP_FLAG+DGRP_SIZE)	;SAVE THE TYCOFLAG
-    // asm 00003FDC: 	INCM	@DGROUP_COUNT
-    // asm 00003FDF: 	LDI	@DGROUP_AW,AR0
-    // asm 00003FE0: 	LDI	*AR0++(6),R1
-    // asm 00003FE1: 	TSTB	1,R1
-    // asm 00003FE2: 	BZ	NOOVERE
-    // asm 00003FE3: 	ADDI	1,AR0
-NOOVERE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_INIT", 0, 0);
+    UNIMPL();
+}
+
+void NOOVERE(void)
+{
     // asm 00003FE4: TSTB	SC_REVERSE,R1
     // asm 00003FE5: 	BZ	CNT55d
     // asm 00003FE6: 	NOP	*AR0++(4)
@@ -461,7 +438,7 @@ NOO2d:
     // asm 00003FED: 	POP	AR6
     // asm 00003FEE: 	CREATE	BGD_WATCHER,UTIL_C|BACKGRND_T
     // asm 00003FF1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_INIT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOOVERE", 0, 0);
     UNIMPL();
 }
 
@@ -626,14 +603,12 @@ DO_DEL:
     // asm 00004054: 	SUBI	2,RC
 #if DEBUG
     // asm: 	CMPI	0,RC
-    // asm: 	SLOCKON	LT,"BACKGRND\LBACK_WATCH ERROR"
-#endif
-    // asm 00004055: 	BLT	SHIFT1
-    // asm 00004056: 	LDI	@DGROUPSI,AR0
-    // asm 00004057: 	LDI	AR0,AR1
-    // asm 00004058: 	ADDI	DGRP_SIZE,AR1
-    // asm 00004059: 	RPTB	LL45
-SHIFT1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GAMECHK", 0, 0);
+    UNIMPL();
+}
+
+void SHIFT1(void)
+{
     // asm 0000405A: LDI	*AR1++,R0
     // asm 0000405B: 	STI	R0,*AR0++
     // asm 0000405C: 	LDI	*AR1++,R0
@@ -652,13 +627,7 @@ NODEACT:
     // 	;THE AMOUNT OF DGROUPs WE CAN HANDLE
     // 	;
     // asm: 	LDI	@DGROUP_COUNT,R0
-    // asm: 	SLOCKON	LE,"BACKGRND\LBACK_WATCH ERRONEOUS DGROUP_COUNT LE"
-    // asm: 	CMPI	MAX_DGROUPS,R0
-    // asm: 	SLOCKON	GE,"BACKGRND\LBACK_WATCH ERRONEOUS DGROUP_COUNT GE"
-#endif
-    // asm 00004067: 	SLEEP	3
-    // asm 00004069: 	B	BGD_WATCHER
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GAMECHK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHIFT1", 0, 0);
     UNIMPL();
 }
 
@@ -687,22 +656,8 @@ void BGD_ACTIVATE_TYCOGROUP(void)
     UNIMPL();
 }
 
-void NOTCORNFLAKE(void)
+void NOVRDD(void)
 {
-    // *CORNFLAKE END CHECK
-    // asm 00004091: 	LDI	-1,R0
-    // asm 00004092: 	STI	R0,@SUBLIST_BEGIN
-    // asm 00004093: 	CLRI	R0
-    // asm 00004094: 	STI	R0,@PASS1
-    // asm 00004095: 	STI	R0,@NEW_GROUP
-    // asm 00004096: 	LDI	@TYCO_TRACK,AR2
-    // asm 00004097: 	LDI	AR2,AR7				;DEDICATED POINTER
-    // asm 00004098: 	LDI	*AR7,R0				;LOAD FLAG
-    // asm 00004099: 	STI	R0,@TYCOFLAG
-    // asm 0000409A: 	TSTB	SC_OVERLAY,R0
-    // asm 0000409B: 	BZ	NOVRDD
-    // asm 0000409C: 	ADDI	1,AR2
-NOVRDD:
     // asm 0000409D: TSTB	SC_REVERSE,R0
     // asm 0000409E: 	BZD	REG_LD
     // asm 0000409F: 	NOP
@@ -731,334 +686,7 @@ NOEXTRA:
     // asm 000040B3: 	STI	R0,@NEWSUBLIST_TOPB
     // asm 000040B4: 	PUSH	R0
     // asm 000040B5: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND 1"
-    // asm 000040B6: 	SUBI	1,R4
-    // asm 000040B7: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS"
-L12:
-    // asm 000040B8: 	LDI	*AR5++,AR2		;GET MODEL PTR
-    // asm 000040B9: 	CALL	OBJ_GETE
-    // asm: 	SLOCKON	C,"BACKGRND\ACTIVATE   DANGER ERROR *FATAL*"
-    // asm 000040BA: 	BC	ACTIVATE_X
-    // 					;INTERNAL LINK (FOR DEALLOCATION)
-    // asm 000040BB: 	LDI	AR0,AR4			;SET OBJECT ROM PTR
-    // asm 000040BC: 	POP	R0			;GET LAST BACK LINK
-    // asm 000040BD: 	STI	R0,*+AR4(OLINK2)
-    // asm 000040BE: 	PUSH	R0
-    // asm 000040BF: 	FLOAT	*AR5++,R1		;GET X POSITION
-    // asm 000040C0: 	STF	R1,*+AR4(OPOSX)
-    // asm 000040C1: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    // asm 000040C2: 	LDI	@TYCOFLAG,R0
-    // asm 000040C3: 	TSTB	SC_REVERSE,R0
-    // asm 000040C4: 	BZD	NOTREVERSED
-    // asm 000040C5: 	STF	R1,*+AR4(OPOSY)
-    // asm 000040C6: 	FLOAT	*AR5++,R1		;GET Z POSITION
-    // asm 000040C7: 	STF	R1,*+AR4(OPOSZ)
-    // 	;---->BZD	NOTREVERSED
-    // 	;
-    // 	;	SPECIAL REVERSED CASE
-    // 	;
-    // asm 000040C8: 	PUSH	AR7
-    // asm 000040C9: 	TSTB	SC_OVERLAY,R0
-    // asm 000040CA: 	BNZ	ISOVER
-    // asm 000040CB: 	DEC	AR7
-ISOVER:
-    // asm 000040CC: 	LDF	*+AR7(TB_RVS_POSX),R0	;TRANSLATE BY THE NEGATIVE OFFSET
-    // asm 000040CD: 	ADDF	*+AR4(OPOSX),R0		;POSITION (THIS BLOCKS ENDING POSITION)
-    // asm 000040CE: 	STF	R0,*+AR4(OPOSX)
-    // asm 000040CF: 	LDF	*+AR7(TB_RVS_POSY),R0
-    // asm 000040D0: 	ADDF	*+AR4(OPOSY),R0
-    // asm 000040D1: 	STF	R0,*+AR4(OPOSY)
-    // asm 000040D2: 	LDF	*+AR7(TB_RVS_POSZ),R0
-    // asm 000040D3: 	ADDF	*+AR4(OPOSZ),R0
-    // asm 000040D4: 	STF	R0,*+AR4(OPOSZ)
-    // asm 000040D5: 	POP	AR7
-    // asm 000040D6: 	LDI	@MATRIXAI,R2
-    // asm 000040D7: 	LDI	AR4,AR2
-    // asm 000040D8: 	ADDI	OPOSX,AR2
-    // asm 000040D9: 	LDI	@VECTORAI,R3
-    // asm 000040DA: 	CALL	MATRIX_MUL		;rotation by occurance matrix
-    // asm 000040DB: 	LDI	@VECTORAI,AR0
-    // asm 000040DC: 	LDF	*AR0++,R1
-    // asm 000040DD: 	ADDF	*+AR7(TB_POSX),R1
-    // asm 000040DE: 	STF	R1,*+AR4(OPOSX)
-    // asm 000040DF: 	LDF	*AR0++,R1
-    // asm 000040E0: 	ADDF	*+AR7(TB_POSY),R1
-    // asm 000040E1: 	STF	R1,*+AR4(OPOSY)
-    // asm 000040E2: 	LDF	*AR0++,R1
-    // asm 000040E3: 	ADDF	*+AR7(TB_POSZ),R1
-    // asm 000040E4: 	STF	R1,*+AR4(OPOSZ)
-    // asm 000040E5: 	LDF	*AR5++,R2		;GET Y ROT
-    // asm 000040E6: 	ADDF	@SECRADY,R2
-    // asm 000040E7: 	STF	R2,*+AR4(ORADY)
-    // asm 000040E8: 	LDI	AR4,AR2
-    // asm 000040E9: 	ADDI	OMATRIX,AR2
-    // asm 000040EA: 	CALL	HPFIND_YMATRIX
-    // asm 000040EB: 	BU	JOIN_UP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTCORNFLAKE", 0, 0);
-    UNIMPL();
-}
-
-void NOTREVERSED(void)
-{
-    // asm 000040EC: 	LDI	@MATRIXAI,R2
-    // asm 000040ED: 	LDI	AR4,AR2
-    // asm 000040EE: 	ADDI	OPOSX,AR2
-    // asm 000040EF: 	LDI	R2,R3
-    // asm 000040F0: 	LDI	@VECTORAI,R3
-    // asm 000040F1: 	CALL	MATRIX_MUL		;ROTATION BY OCCURANCE MATRIX
-    // asm 000040F2: 	LDI	@VECTORAI,AR0
-    // asm 000040F3: 	LDF	*AR0++,R1
-    // asm 000040F4: 	ADDF	*+AR7(TB_POSX),R1
-    // asm 000040F5: 	STF	R1,*+AR4(OPOSX)
-    // asm 000040F6: 	LDF	*AR0++,R1
-    // asm 000040F7: 	ADDF	*+AR7(TB_POSY),R1
-    // asm 000040F8: 	STF	R1,*+AR4(OPOSY)
-    // asm 000040F9: 	LDF	*AR0++,R1
-    // asm 000040FA: 	ADDF	*+AR7(TB_POSZ),R1
-    // asm 000040FB: 	STF	R1,*+AR4(OPOSZ)
-    // asm 000040FC: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
-    // asm 000040FD: 	ADDF	@SECRADY,R2
-    // asm 000040FE: 	STF	R2,*+AR4(ORADY)
-    // asm 000040FF: 	LDI	AR4,AR2
-    // asm 00004100: 	ADDI	OMATRIX,AR2
-    // asm 00004101: 	CALL	HPFIND_YMATRIX
-JOIN_UP:
-    // asm 00004102: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
-    // asm 00004103: 	LDI	R1,R2
-    // asm 00004104: 	AND	CLASS_M|TYPE_M|SUBTYPE_M,R1
-    // asm 00004105: 	STI	R1,*+AR4(OID)
-    // 	;TEST TO SEE IF WE SHOULD CALL A SPECIAL ROUTINE
-    // 	;OR PALETTE SHIFT
-    // 	;
-    // asm 00004106: 	TSTB	BGD_ROUTINE,R2
-    // asm 00004107: 	CALLNZ	BGD_OROUTINE
-    // asm 00004108: 	LDI	R2,R0
-    // asm 00004109: 	RS	16,R2
-    // asm 0000410A: 	AND	O_GENVSPEC,R2		;make sure list data is not ORed in
-    // asm 0000410B: 	TSTB	BGD_BIGOBJ,R0		;BIG OBJECT TEST
-    // asm 0000410C: 	BZ	NOTBIGOBJ
-    // asm 0000410D: 	LDI	1,R0
-    // asm 0000410E: 	LS	O_BIGOBJECT_B,R0
-    // asm 0000410F: 	OR	R0,R2
-NOTBIGOBJ:
-    // asm 00004110: 	OR	*+AR4(OFLAGS),R2	;or in the flags
-    // asm 00004111: 	STI	R2,*+AR4(OFLAGS)
-    // asm 00004112: 	LDI	AR4,AR2
-    // asm 00004113: 	CALL	OBJ_INSERT			;INSERT THE BABE
-    // 	;NOW FIND IF THE OBJECT BELONGS IN A SUPPLIMENTAL
-    // 	;LIST.
-    // 	;OID =	x3xx	-> DRIVE_SUPP
-    // 	;	x4xx	-> BUILD_SUPP
-    // 	;
-    // asm 00004114: 	LDI	*+AR4(OID),R0
-    // asm 00004115: 	AND	CLASS_M,R0
-    // asm 00004116: 	CMPI	ROAD_C,R0
-    // asm 00004117: 	BNE	NOTDRIVE
-    // asm 00004118: 	LDI	@DRIVE_LIST,AR0
-    // asm 00004119: 	STI	AR0,*+AR4(OLINK3)
-    // asm 0000411A: 	STI	AR4,@DRIVE_LIST
-    // asm 0000411B: 	LDI	1,R1
-    // asm 0000411C: 	BUD	DONELISTS
-    // asm 0000411D: 	LS	28,R1			;O_ROAD_SUPP
-    // asm 0000411E: 	OR	*+AR4(OFLAGS),R1
-    // asm 0000411F: 	STI	R1,*+AR4(OFLAGS)
-NOTDRIVE:
-    // asm 00004120: 	CMPI	GROUND_C,R0
-    // asm 00004121: 	BNE	NOTGROUND
-    // asm 00004122: 	LDI	@GROUND_LIST,AR0
-    // asm 00004123: 	STI	AR0,*+AR4(OLINK3)
-    // asm 00004124: 	STI	AR4,@GROUND_LIST
-    // asm 00004125: 	LDI	1,R1
-    // asm 00004126: 	LS	O_GROUND_B,R1
-    // asm 00004127: 	OR	*+AR4(OFLAGS),R1
-    // asm 00004128: 	STI	R1,*+AR4(OFLAGS)
-    // asm 00004129: 	B	DONELISTS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTREVERSED", 0, 0);
-    UNIMPL();
-}
-
-void NOTGROUND(void)
-{
-    // asm 0000412A: 	CMPI	TSIGN_C,R0
-    // asm 0000412B: 	BNE	NOTSIGN
-    // asm 0000412C: 	LDI	@SIGN_LIST,AR0
-    // asm 0000412D: 	STI	AR0,*+AR4(OLINK3)
-    // asm 0000412E: 	STI	AR4,@SIGN_LIST
-    // asm 0000412F: 	LDI	1,R1
-    // asm 00004130: 	LS	O_SIGN_SUPP_B,R1
-    // asm 00004131: 	OR	*+AR4(OFLAGS),R1
-    // asm 00004132: 	STI	R1,*+AR4(OFLAGS)
-    // asm 00004133: 	B	DONELISTS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTGROUND", 0, 0);
-    UNIMPL();
-}
-
-void NOTSIGN(void)
-{
-    // asm 00004134: 	CMPI	0B00h,R0
-    // asm 00004135: 	BNE	NOTDYNAROAD
-    // 	;
-    // 	;add this element to dynamic fLEX list
-    // 	;
-    // asm 00004136: 	LDI	@SECTIONIDX,R1
-    // asm 00004137: 	LS	8,R1
-    // asm 00004138: 	LDI	*+AR4(OID),R0
-    // asm 00004139: 	AND	0FFh,R0
-    // asm 0000413A: 	LDI	@TYCOFLAG,R2			;in the case of reversed track
-    // asm 0000413B: 	TSTB	SC_REVERSE,R2			;we say the index value is
-    // asm 0000413C: 	BZ	NOTRVSTRK			;255 - index
-    // asm 0000413D: 	SUBRI	255,R0				;
-    // asm 0000413E: NOTRVSTRK					;
-    // asm 0000413E: 	OR	R1,R0
-    // asm 0000413F: 	STI	R0,*+AR4(OUSR1)
-    // asm 00004140: 	LDI	0300h,R0
-    // asm 00004141: 	STI	R0,*+AR4(OID)
-    // asm 00004142: 	LDI	@DRIVE_LIST,AR0
-    // asm 00004143: 	STI	AR0,*+AR4(OLINK3)
-    // asm 00004144: 	STI	AR4,@DRIVE_LIST
-    // asm 00004145: 	LDI	1,R1
-    // asm 00004146: 	LS	O_DRIVE_SUPP_B,R1
-    // asm 00004147: 	OR	*+AR4(OFLAGS),R1
-    // asm 00004148: 	STI	R1,*+AR4(OFLAGS)
-    // asm 00004149: 	CALL	ADD_TO_NEWLIST
-    // asm 0000414A: 	BU	DONELISTS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTSIGN", 0, 0);
-    UNIMPL();
-}
-
-void NOTDYNAROAD(void)
-{
-DONELISTS:
-    // asm 0000414B: 	SUBI	1,R4
-    // asm 0000414C: 	BGE	L12
-ACTIVATE_X:
-    // asm 0000414D: 	POP	AR0			;clear stack of last item
-    // asm 0000414E: 	LDI	@PASS1,R0
-    // asm 0000414F: 	BNZ	CHECK2
-    // asm 00004150: 	LDI	1,R0
-    // asm 00004151: 	STI	R0,@PASS1
-    // asm 00004152: 	LDI	*AR7,R0			;load flag
-    // asm 00004153: 	TSTB	SC_OVERLAY,R0
-    // asm 00004154: 	BZ	CHECK2II
-    // asm 00004155: 	LDI	*+AR7(TB_GROUPOVERLAY),AR5	;Group pointer
-    // asm 00004156: 	ADDI	1,AR5			;skip radius
-    // asm 00004157: 	LDI	@NEWSUBLIST_TOPB,R0
-    // asm 00004158: 	PUSH	R0
-    // asm 00004159: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED"
-    // asm 0000415A: 	SUBI	1,R4
-    // asm 0000415B: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
-    // asm 0000415C: 	BU	L12
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTDYNAROAD", 0, 0);
-    UNIMPL();
-}
-
-void CHECK2(void)
-{
-    // asm 0000415D: 	CMPI	2,R0
-    // asm 0000415E: 	BEQ	NOOVERLAYGROUP
-    // asm 0000415F: 	LDI	2,R0
-    // asm 00004160: 	STI	R0,@PASS1
-    // asm 00004161: 	LDI	*AR7,R0			;load flag
-    // asm 00004162: 	TSTB	SC_OVER2,R0
-    // asm 00004163: 	BZ	NOOVERLAYGROUP
-    // asm 00004164: 	PUSH	IR0
-    // asm 00004165: 	TSTB	SC_REVERSE,R0
-    // asm 00004166: 	LDIZ	TB_GROUPOVERLAY+1,IR0
-    // asm 00004167: 	LDINZ	TB_GROUPOVERLAY+5,IR0
-    // asm 00004168: 	LDI	*+AR7(IR0),AR5	;Group pointer
-    // asm 00004169: 	ADDI	1,AR5			;skip radius
-    // asm 0000416A: 	TSTB	SC_REVERSE,R0
-    // asm 0000416B: 	BZ	UHNO2
-    // asm 0000416C: 	TSTB	SC_OVERLAY,R0
-    // asm 0000416D: 	LDIZ	TB_RVS_RADY-1,IR0
-    // asm 0000416E: 	LDINZ	TB_RVS_RADY,IR0
-    // asm 0000416F: 	LDF	*+AR7(IR0),R0
-    // asm 00004170: 	STPF	R0,@SECRADY
-UHNO2:
-    // asm 00004171: 	POP	IR0
-    // asm 00004172: 	LDI	@TYCOFLAG,R0		;overlay 2 is not reversed - EVER!
-    // asm 00004173: 	ANDN	SC_REVERSE,R0
-    // asm 00004174: 	STI	R0,@TYCOFLAG
-    // asm 00004175: 	LDI	@NEWSUBLIST_TOPB,R0
-    // asm 00004176: 	PUSH	R0
-    // asm 00004177: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED OVER2"
-    // asm 00004178: 	SUBI	1,R4
-    // asm 00004179: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
-    // asm 0000417A: 	BU	L12
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK2", 0, 0);
-    UNIMPL();
-}
-
-void CHECK2II(void)
-{
-    // asm 0000417B: 	CMPI	2,R0
-    // asm 0000417C: 	BEQ	NOOVERLAYGROUP
-    // asm 0000417D: 	LDI	2,R0
-    // asm 0000417E: 	STI	R0,@PASS1
-    // asm 0000417F: 	LDI	*AR7,R0			;load flag
-    // asm 00004180: 	TSTB	SC_OVER2,R0
-    // asm 00004181: 	BZ	NOOVERLAYGROUP
-    // asm 00004182: 	PUSH	IR0
-    // asm 00004183: 	TSTB	SC_REVERSE,R0
-    // asm 00004184: 	LDIZ	TB_GROUPOVERLAY,IR0
-    // asm 00004185: 	LDINZ	TB_GROUPOVERLAY+4,IR0
-    // asm 00004186: 	LDI	*+AR7(IR0),AR5		;Group pointer
-    // asm 00004187: 	TSTB	SC_REVERSE,R0
-    // asm 00004188: 	BZ	UHNO
-    // asm 00004189: 	TSTB	SC_OVERLAY,R0
-    // asm 0000418A: 	LDIZ	TB_RVS_RADY-1,IR0
-    // asm 0000418B: 	LDINZ	TB_RVS_RADY,IR0
-    // asm 0000418C: 	LDF	*+AR7(IR0),R0
-    // asm 0000418D: 	STPF	R0,@SECRADY
-UHNO:
-    // asm 0000418E: 	POP	IR0
-    // asm 0000418F: 	ADDI	1,AR5			;skip radius
-    // asm 00004190: 	LDI	@TYCOFLAG,R0		;overlay 2 is not reversed - EVER!
-    // asm 00004191: 	ANDN	SC_REVERSE,R0
-    // asm 00004192: 	STI	R0,@TYCOFLAG
-    // asm 00004193: 	LDI	@NEWSUBLIST_TOPB,R0
-    // asm 00004194: 	PUSH	R0
-    // asm 00004195: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED OVER2"
-    // asm 00004196: 	SUBI	1,R4
-    // asm 00004197: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
-    // asm 00004198: 	BU	L12
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK2II", 0, 0);
-    UNIMPL();
-}
-
-void NOOVERLAYGROUP(void)
-{
-    // 	;*NOW DO THE FANCY MESS OF:
-    // 	;*
-    // 	;*	1)	DO WE LOAD A NEW OVERLAY INTO A SECTION?
-    // 	;*	2)	WHICH SECTION DO WE OVERLAY IT INTO (1 OR 2)?
-    // 	;*	3)	WHICH LOOK DO WE PLACE INTO THE SECTION (DESERT..)?
-    // 	;*
-    // 	;*
-    // asm 00004199: 	LDI	@TYCOFLAG,R0
-    // asm 0000419A: 	TSTB	SC_LDSECT,R0
-    // asm 0000419B: 	BZ	NO_NEWLOAD
-NO_NEWLOAD:
-    // asm 0000419C: 	CALL	FIND_SUBLIST_START_END
-    // asm 0000419D: 	CALL	APPEND_NEWLIST
-    // asm 0000419E: 	LDI	@NEWSUBLIST_TOPB,R0		;return pointer to 1st object
-    // asm 0000419F: 	POP	AR7
-    // asm 000041A0: 	POP	AR5
-    // asm 000041A1: 	POP	AR4
-    // asm 000041A2: 	POP	AR2
-    // asm 000041A3: 	POP	AR1
-    // asm 000041A4: 	POP	AR0
-    // asm 000041A5: 	POP	R5
-    // asm 000041A6: 	POP	R4
-    // asm 000041A7: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOOVERLAYGROUP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOVRDD", 0, 0);
     UNIMPL();
 }
 
@@ -1086,23 +714,18 @@ void ADD_TO_NEWLIST(void)
     // asm 000041AD: 	STI	R0,*+AR4(OLINK4)
     // asm 000041AE: 	STI	R0,*+AR4(OBLINK4)
     // asm 000041AF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADD_TO_NEWLIST", 0, 0);
-    UNIMPL();
-}
-
-void REGADD(void)
-{
+REGADD:
     // asm 000041B0: 	SUBI	OLINK4,AR1
     // asm 000041B1: 	LDI	AR1,AR2
     // asm 000041B2: 	LDI	*+AR4(OUSR1),R0		;GET fLEX index number
-ADDNOBJL:
+    // asm 000041B3: ADDNOBJL
     // asm 000041B3: 	LDI	AR1,AR0			;AR0 IS PREVIOUS LINK
     // asm 000041B4: 	LDI	*+AR1(OLINK4),R1	;CHECK END OF LIST
     // asm 000041B5: 	BZ	ADDNOBJ_AT_END
     // asm 000041B6: 	LDI	R1,AR1
     // asm 000041B7: 	CMPI	*+AR1(OUSR1),R0
     // asm 000041B8: 	BGT	ADDNOBJL
-ADDNOBJ_AT_END:
+    // asm 000041B9: ADDNOBJ_AT_END
     // asm 000041B9: 	STI	R1,*+AR4(OLINK4)	;LINK TO NEXT (SUBLIST LINK)
     // asm 000041BA: 	STI	AR4,*+AR0(OLINK4)	;LINK FROM PREVIOUS (SUBLIST LINK)
     // asm 000041BB: 	CMPI	AR2,AR0			;IS IT THE HEAD OF LIST WE LOAD AT
@@ -1114,7 +737,7 @@ ADDNOBJ_AT_END:
     // asm 000041C1: 	STI	AR4,*+AR0(OBLINK4)	;  MUST POINT TO NEW ELEMENT
 ISZERO:
     // asm 000041C2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "REGADD", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADD_TO_NEWLIST", 0, 0);
     UNIMPL();
 }
 
@@ -1127,25 +750,7 @@ void FIND_SUBLIST_START_END(void)
     // asm 000041C5: 	LDI	@NEW_GROUP,AR0
 #if DEBUG
     // asm: 	CMPI	0,AR0
-    // asm: 	SLOCKON	EQ,"BACKGRND\FIND_SUBLIST_START_END"
-#endif
-    // asm 000041C6: 	STPI	AR0,@SUBLIST_BEGIN
-FSLP:
-    // asm 000041C7: 	LDI	*+AR0(OLINK4),R1	;CHECK END OF LIST
-    // asm 000041C8: 	BZ	FSDN
-    // asm 000041C9: 	LDI	R1,AR0
-    // asm 000041CA: 	BU	FSLP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_SUBLIST_START_END", 0, 0);
-    UNIMPL();
-}
-
-void FSDN(void)
-{
-    // asm 000041CB: 	STPI	AR0,@SUBLIST_END	;ALWAYS NAME IT AS THE END
-    // asm 000041CC: 	POP	AR0
-    // asm 000041CD: 	POP	R1
-    // asm 000041CE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FSDN", 0, 0);
     UNIMPL();
 }
 
@@ -1183,17 +788,18 @@ void APPEND_NEWLIST(void)
     // asm 000041D7: 	STI	AR0,*+AR1(OBLINK4)
     // asm 000041D8: 	STPI	R0,@STARTS
     // asm 000041D9: 	RETS
-SHINY_NEWLIST:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "APPEND_NEWLIST", 0, 0);
+    UNIMPL();
+}
+
+void SHINY_NEWLIST(void)
+{
     // asm 000041DA: 	LDI	@SUBLIST_END,R0
     // asm 000041DB: 	STPI	R0,@DYNALIST_END
     // asm 000041DC: 	LDI	@SUBLIST_BEGIN,R0	;new line, check it out...
     // asm 000041DD: 	STPI	R0,@DYNALIST_TRUEBEGIN
     // asm 000041DE: 	LDI	@SUBLIST_BEGIN,R0
-    // asm: 	SLOCKON	Z,"BACKGRND\SHINY_NEWLIST"
-    // asm 000041DF: 	STPI	R0,@DYNALIST_BEGIN
-    // asm 000041E0: 	STPI	R0,@STARTS
-    // asm 000041E1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "APPEND_NEWLIST", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHINY_NEWLIST", 0, 0);
     UNIMPL();
 }
 
@@ -1231,7 +837,7 @@ void GROUP_DELETE(void)
 
 void DELLP(void)
 {
-    // asm 000041EF: LDI	R1,AR1			;WE MUST FIND DEAD OBJECT TO LINK AROUND
+    // asm 000041EF: LDI	R1,AR1
     // asm 000041F0: 	LDI	*AR1,R1
     // asm 000041F1: 	BZ	NXTCHK
     // asm 000041F2: 	LDI	R1,AR0
@@ -1271,14 +877,9 @@ void DELLP(void)
     // asm 00004211: 	STI	R0,@OFREECNT
     // asm 00004212: 	LDI	AR1,R1
     // asm 00004213: 	BU	DELLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DELLP", 0, 0);
-    UNIMPL();
-}
-
-void NXTCHK(void)
-{
+NXTCHK:
     // asm 00004214: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NXTCHK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DELLP", 0, 0);
     UNIMPL();
 }
 
@@ -1343,7 +944,7 @@ void BGD_OROUTINE(void)
     // asm 0000422D: 	POP	R1
     // asm 0000422E: 	POP	R0
     // asm 0000422F: 	RETS
-BGD_RFND:
+    // asm 00004230: BGD_RFND
     // asm 00004230: 	LDI	*+AR0,R0
     // asm 00004231: 	CALLU	R0
     // asm 00004232: 	POP	AR0
@@ -1670,7 +1271,7 @@ IS_T1:
 
 void NOT_T1(void)
 {
-    // asm 0000434C: CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
+    // asm 0000434C: CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2
     // asm 0000434D: 	BNE	NOT_T2
 IS_T2:
     // asm 0000434E: 	LDI	R2,R1
@@ -1858,12 +1459,7 @@ void FLAGWAVE(void)
     // asm 000043FD: 	CREATE	PLAINANI_LP,SPAWNER_C|ANIMATION_T
     // asm 00004400: 	BC	FWL1
     // asm 00004401: 	BU	J2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAGWAVE", 0, 0);
-    UNIMPL();
-}
-
-void MAKEPPP(void)
-{
+MAKEPPP:
     // asm 00004402: 	CREATE	PLAINANI_PROC,SPAWNER_C|ANIMATION_T
     // asm 00004405: 	BC	FWL1
 J2:
@@ -1880,7 +1476,7 @@ FWL1:
     // asm 0000440F: 	POP	AR0
     // asm 00004410: 	POP	R0
     // asm 00004411: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKEPPP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAGWAVE", 0, 0);
     UNIMPL();
 }
 
@@ -1921,50 +1517,6 @@ void LOAD_SINGLE_SECTION(void)
     // asm 00004427: 	LDI	AR2,AR5
     // asm 00004428: 	INC	AR5
     // asm 00004429: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND\LOAD_SINGLE_SECTION GROUP ERROR"
-    // asm 0000442A: 	DEC	R4
-    // asm 0000442B: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS"
-LS_L12:
-    // asm 0000442C: 	LDI	*AR5++,AR2		;GET MODEL PTR
-    // asm 0000442D: 	CALL	OBJ_GETE
-    // asm: 	SLOCKON	C,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS *FATAL*"
-    // asm 0000442E: 	BC	LS_ACTIVATE_X
-    // asm 0000442F: 	LDI	AR0,AR4
-    // asm 00004430: 	STI	AR4,*+AR6(OLINK2)
-    // asm 00004431: 	LDI	AR4,AR6
-    // asm 00004432: 	FLOAT	*AR5++,R1		;GET X POSITION
-    // asm 00004433: 	STF	R1,*+AR4(OPOSX)
-    // asm 00004434: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    // asm 00004435: 	STF	R1,*+AR4(OPOSY)
-    // asm 00004436: 	FLOAT	*AR5++,R1		;GET Z POSITION
-    // asm 00004437: 	STF	R1,*+AR4(OPOSZ)
-    // asm 00004438: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
-    // asm 00004439: 	STF	R2,*+AR4(ORADY)
-    // asm 0000443A: 	LDI	AR4,AR2
-    // asm 0000443B: 	ADDI	OMATRIX,AR2
-    // asm 0000443C: 	CALL	HPFIND_YMATRIX
-    // asm 0000443D: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
-    // asm 0000443E: 	LDI	R1,R2
-    // asm 0000443F: 	AND	CLASS_M|TYPE_M|SUBTYPE_M,R1
-    // asm 00004440: 	STI	R1,*+AR4(OID)
-    // asm 00004441: 	LDI	AR4,AR2
-    // asm 00004442: 	CALL	OBJ_INSERT			;INSERT THE BABE
-    // asm 00004443: 	SUBI	1,R4
-    // asm 00004444: 	BGE	LS_L12
-LS_ACTIVATE_X:
-    // asm 00004445: 	CLRI	R0
-    // asm 00004446: 	STI	R0,*+AR6(OLINK2)
-    // asm 00004447: 	LDI	@SINGLE_SECTION_TEMPPTR,R0
-    // asm 00004448: 	POP	AR7
-    // asm 00004449: 	POP	AR6
-    // asm 0000444A: 	POP	AR5
-    // asm 0000444B: 	POP	AR4
-    // asm 0000444C: 	POP	AR2
-    // asm 0000444D: 	POP	AR0
-    // asm 0000444E: 	POP	R5
-    // asm 0000444F: 	POP	R4
-    // asm 00004450: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SINGLE_SECTION", 0, 0);
     UNIMPL();
 }
@@ -2119,12 +1671,7 @@ TRAIN_FWL:
     // asm 000044C0: 	BLT	TRAINX
     // asm 000044C1: 	SLEEP	1
     // asm 000044C3: 	BU	TRAIN_FWL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAIN_FWRD", 0, 0);
-    UNIMPL();
-}
-
-void TRAINX(void)
-{
+TRAINX:
     // asm 000044C4: 	CLRI	R0
     // asm 000044C5: 	STI	R0,*+AR4(OPLINK)
     // asm 000044C6: 	LDI	1,R0
@@ -2133,7 +1680,7 @@ void TRAINX(void)
     // asm 000044C9: 	ANDN	R0,R1
     // asm 000044CA: 	STI	R1,*+AR4(OFLAGS)
     // asm 000044CB: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAINX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAIN_FWRD", 0, 0);
     UNIMPL();
 }
 
@@ -2162,67 +1709,6 @@ void LOAD_SINGLE_SECTION_OFFSET(void)
     // asm 000044D6: 	LDI	AR2,AR5
     // asm 000044D7: 	INC	AR5
     // asm 000044D8: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND\LOAD_SINGLE_SECTION GROUP ERROR"
-    // asm 000044D9: 	DEC	R4
-    // asm 000044DA: 	LDF	@START_RADY,R2
-    // asm 000044DB: 	LDI	@MATRIXAI,AR2
-    // asm 000044DC: 	CALL	HPFIND_YMATRIX
-    // asm 000044DD: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS"
-LS_L12O:
-    // asm 000044DE: 	LDI	*AR5++,AR2		;GET MODEL PTR
-    // asm 000044DF: 	CALL	OBJ_GETE
-    // asm: 	SLOCKON	C,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS *FATAL*"
-    // asm 000044E0: 	BC	LS_ACTIVATE_XO
-    // asm 000044E1: 	LDI	AR0,AR4
-    // asm 000044E2: 	STI	AR4,*+AR6(OLINK2)
-    // asm 000044E3: 	LDI	AR4,AR6
-    // asm 000044E4: 	LDI	@VECTORAI,AR2
-    // asm 000044E5: 	FLOAT	*AR5++,R1		;GET X POSITION
-    // asm 000044E6: 	STF	R1,*+AR2(X)
-    // asm 000044E7: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    // asm 000044E8: 	STF	R1,*+AR2(Y)
-    // asm 000044E9: 	FLOAT	*AR5++,R1		;GET Z POSITION
-    // asm 000044EA: 	STF	R1,*+AR2(Z)
-    // asm 000044EB: 	LDI	@MATRIXAI,R2
-    // asm 000044EC: 	LDI	AR2,R3
-    // asm 000044ED: 	CALL	MATRIX_MUL
-    // asm 000044EE: 	LDF	*+AR2(X),R1
-    // asm 000044EF: 	ADDF	@START_POS+X,R1
-    // asm 000044F0: 	STF	R1,*+AR4(OPOSX)
-    // asm 000044F1: 	LDF	*+AR2(Y),R1
-    // asm 000044F2: 	ADDF	@START_POS+Y,R1
-    // asm 000044F3: 	STF	R1,*+AR4(OPOSY)
-    // asm 000044F4: 	LDF	*+AR2(Z),R1
-    // asm 000044F5: 	ADDF	@START_POS+Z,R1
-    // asm 000044F6: 	STF	R1,*+AR4(OPOSZ)
-    // asm 000044F7: 	LDF	*AR5++,R2		;GET THE RADIANS FOR THE OBJECT
-    // asm 000044F8: 	ADDF	@START_RADY,R2
-    // asm 000044F9: 	STF	R2,*+AR4(ORADY)
-    // asm 000044FA: 	LDI	AR4,AR2
-    // asm 000044FB: 	ADDI	OMATRIX,AR2
-    // asm 000044FC: 	CALL	HPFIND_YMATRIX
-    // asm 000044FD: 	LDI	*AR5++,R1		;GET OBJECT ID (GENV STYLE)
-    // asm 000044FE: 	LDI	R1,R2
-    // asm 000044FF: 	AND	CLASS_M|TYPE_M|SUBTYPE_M,R1
-    // asm 00004500: 	STI	R1,*+AR4(OID)
-    // asm 00004501: 	LDI	AR4,AR2
-    // asm 00004502: 	CALL	OBJ_INSERT			;INSERT THE BABE
-    // asm 00004503: 	SUBI	1,R4
-    // asm 00004504: 	BGE	LS_L12O
-LS_ACTIVATE_XO:
-    // asm 00004505: 	CLRI	R0
-    // asm 00004506: 	STI	R0,*+AR6(OLINK2)
-    // asm 00004507: 	LDI	@SINGLE_SECTION_TEMPPTR,R0
-    // asm 00004508: 	POP	AR7
-    // asm 00004509: 	POP	AR6
-    // asm 0000450A: 	POP	AR5
-    // asm 0000450B: 	POP	AR4
-    // asm 0000450C: 	POP	AR2
-    // asm 0000450D: 	POP	AR0
-    // asm 0000450E: 	POP	R5
-    // asm 0000450F: 	POP	R4
-    // asm 00004510: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SINGLE_SECTION_OFFSET", 0, 0);
     UNIMPL();
 }

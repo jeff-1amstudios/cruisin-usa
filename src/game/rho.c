@@ -20,29 +20,16 @@
  * Source module: asm/RHO.ASM
  */
 
-void RHO_START(void);
 void RHO_DRONE(void);
-void NONOLONG(void);
 void RHO_LP(void);
-void DONTABORT(void);
-void ALLOK66(void);
-void NOT_WEAVER_LP2(void);
-void THIS_PIECE(void);
-void IIIL(void);
-void NOTPRECOL(void);
 void CKCAROFF(void);
-void CKCXPASS(void);
 void RHO_DIE(void);
-void RHO_DIE0(void);
 void RHO_ISHIT(void);
 void SEND_RHO_XSFER(void);
 void DECODE_RHO_XSFER(void);
-void DECRHOX2(void);
-void DECRHOX(void);
 void RHO_ACTIVE_XSFER(void);
 void SEND_RHO_KILL(void);
 void DECODE_RHO_KILL(void);
-void DRKXX(void);
 
 #define RHO_WEAVER 1 //DRUNK ONCOMER
 /* *
@@ -117,23 +104,6 @@ int RHOFLAG;
 /* asm: RHOPAL	.bss	RHOPAL,1 */
 int RHOPAL;
 
-/* *
-*RHO STARTER
-*R4= VEHICLE INDEX
-*R5= VEHICLE ID
-*
-*ENTRY POINT FOR RHO START BY OTHER GAME
- */
-void RHO_START(void)
-{
-    // asm 0000978C: 	STI	AR6,@RHOPAL
-    // asm 0000978D: 	STI	R4,@RHOFLAG		;SAVE CAR ID #
-    // asm 0000978E: 	LDI	R5,R0			;INDEX #
-    // asm 0000978F: 	B	IBOIBO
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_START", 0, 0);
-    UNIMPL();
-}
-
 void RHO_DRONE(void)
 {
     // asm 00009790: 	LDI	0,R5
@@ -153,12 +123,7 @@ IBOIBO:
     // asm 0000979E: 	BZ	NONOLONG
     // asm 0000979F: 	LDI	5,R0
     // asm 000097A0: 	BU	IBOIBO
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DRONE", 0, 0);
-    UNIMPL();
-}
-
-void NONOLONG(void)
-{
+NONOLONG:
     // asm 000097A1: 	LDI	*+AR2(RT_VEHIDX),R0
     // asm 000097A2: 	LDI	R0,AR2
     // asm 000097A3: 	STI	R0,*+AR7(DELTA_MODEL)
@@ -263,7 +228,7 @@ NOT_WEAVER:
 RHOLL1:
     // asm 000097FC: 	CALL	DRONE_PTR_ADD
     // asm 000097FD: 	CALL	SEND_RHO_CREATE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NONOLONG", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DRONE", 0, 0);
     UNIMPL();
 }
 
@@ -328,12 +293,7 @@ ABORTWEAVE:
     // asm 00009813: 	ADDI	2,R0
     // asm 00009814: 	STI	R0,*+AR7(DELTA_STATUS)
     // asm 00009815: 	BU	NOT_WEAVER_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_LP", 0, 0);
-    UNIMPL();
-}
-
-void DONTABORT(void)
-{
+DONTABORT:
     // asm 00009816: 	LDI	100,AR2
     // asm 00009817: 	CALL	RANDPER
     // asm 00009818: 	BNC	III
@@ -408,12 +368,7 @@ CHECK_DIST:
     // asm 0000984C: 	CMPI	R1,R0
     // asm 0000984D: 	BGT	ALLOK66
     // asm 0000984E: 	BU	$	;probably RHO_DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DONTABORT", 0, 0);
-    UNIMPL();
-}
-
-void ALLOK66(void)
-{
+ALLOK66:
     // asm 0000984F: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00009850: 	LDI	*+AR2(OBLINK4),R0
     // asm 00009851: 	BZ	RHO_DIE				;should we kill ourselves
@@ -422,12 +377,7 @@ void ALLOK66(void)
     // asm 00009854: 	BNE	NOT_WEAVER_LP2
     // asm 00009855: 	CALL	GET_TRACK_POS_RVS_XLANE
     // asm 00009856: 	BU	L9999
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOK66", 0, 0);
-    UNIMPL();
-}
-
-void NOT_WEAVER_LP2(void)
-{
+NOT_WEAVER_LP2:
     // asm 00009857: 	CALL	GET_TRACK_POS_RVS		;CHECK IF WE SHOULD ADVANCE
 L9999:
     // asm 00009858: FLOAT	5000,R1				;TO THE NEXT ROADPIECE
@@ -446,12 +396,7 @@ L9999:
 #endif
     // asm 00009860: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
     // asm 00009861: 	BU	CHECK_DIST
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_WEAVER_LP2", 0, 0);
-    UNIMPL();
-}
-
-void THIS_PIECE(void)
-{
+THIS_PIECE:
     // asm 00009862: 	LDF	*+AR5(CARSPEED),R1
     // asm 00009863: 	LDFLE	30,R1			;if 0 or less assume 30 mph
     // asm 00009864: 	FLOATP	@NFRAMES,R2
@@ -511,12 +456,7 @@ NODIV:
     // asm 00009897: 	BZ	NOLOAD
     // asm 00009898: 	LDI	R0,AR2
     // asm 00009899: 	BU	LLL88
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "THIS_PIECE", 0, 0);
-    UNIMPL();
-}
-
-void IIIL(void)
-{
+IIIL:
 NOLOAD:
     // asm 0000989A: 	RANDN	B4HIT_SIZE
     // asm 0000989C: 	LDI	R0,AR2
@@ -531,12 +471,7 @@ LLL88:
     // asm 000098A4: 	MPYF	0.01,R2
     // asm 000098A5: 	STF	R2,*+AR5(CARTHROTTLE)
     // asm 000098A6: 	BU	L99
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "IIIL", 0, 0);
-    UNIMPL();
-}
-
-void NOTPRECOL(void)
-{
+NOTPRECOL:
     // 	;set throttle
     // asm 000098A7: 	CLRF	R2
     // asm 000098A8: 	STF	R2,*+AR5(CARBRAKE)
@@ -560,7 +495,7 @@ RHO_SLP:
     // asm 000098B8: 	BZ	RHO_DIE		;YES
     // asm 000098B9: 	SLEEP	1
     // asm 000098BB: 	BU	RHO_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTPRECOL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_LP", 0, 0);
     UNIMPL();
 }
 
@@ -588,15 +523,10 @@ void CKCAROFF(void)
 CKCXFAIL:
     // asm 000098C8: 	LDI	0,R0
     // asm 000098C9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKCAROFF", 0, 0);
-    UNIMPL();
-}
-
-void CKCXPASS(void)
-{
+CKCXPASS:
     // asm 000098CA: 	LDI	1,R0
     // asm 000098CB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKCXPASS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKCAROFF", 0, 0);
     UNIMPL();
 }
 
@@ -608,12 +538,7 @@ void RHO_DIE(void)
     // asm 000098CF: 	BLE	RHO_DIE0
     // asm 000098D0: 	CALL	SEND_RHO_XSFER
     // asm 000098D1: 	B	OM_DRONE		;CONTROL SWAPS TO OTHER MACHINE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DIE", 0, 0);
-    UNIMPL();
-}
-
-void RHO_DIE0(void)
-{
+RHO_DIE0:
     // asm 000098D2: 	LDI	*+AR5(CARNUM),R0	;GET ID
     // asm 000098D3: 	CALL	SEND_RHO_KILL		;KILL OFF THE UTHA MACHINES MUTHA
 RHO_DIE1:
@@ -634,7 +559,7 @@ NODYNALEAN:
     // asm 000098E1: 	LDI	AR4,AR2
     // asm 000098E2: 	CALL	OBJ_DELETE
     // asm 000098E3: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DIE0", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DIE", 0, 0);
     UNIMPL();
 }
 
@@ -756,26 +681,16 @@ void DECODE_RHO_XSFER(void)
     // asm 00009926: 	LDI	*AR2++,R0		;GET CAR STATE 1=HIT, 0=ACTIVE
     // asm 00009927: 	STI	R0,*+AR7(PR4)		;SAVE CODE IN REGISTER
     // asm 00009928: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_XSFER", 0, 0);
-    UNIMPL();
-}
-
-void DECRHOX2(void)
-{
+DECRHOX2:
     // asm 00009929: 	ADDI	2,AR2			;UPDATES NOT ALLOWED
     // asm 0000992A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECRHOX2", 0, 0);
-    UNIMPL();
-}
-
-void DECRHOX(void)
-{
+DECRHOX:
     // asm 0000992B: 	ADDI	1,AR2			;COULDN'T FIND CAR ERROR
     // asm 0000992C: 	RETS
     // *
     // *TRANSFER ACTIVE RHO
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECRHOX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_XSFER", 0, 0);
     UNIMPL();
 }
 
@@ -849,14 +764,9 @@ void DECODE_RHO_KILL(void)
     // asm 0000995C: 	STI	R2,*+AR7(PWAKE)		;CHANGE WAKE-UP ADDR
 DRKX:
     // asm 0000995D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_KILL", 0, 0);
-    UNIMPL();
-}
-
-void DRKXX(void)
-{
+DRKXX:
     // asm 0000995E: 	INC	AR2
     // asm 0000995F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRKXX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_KILL", 0, 0);
     UNIMPL();
 }

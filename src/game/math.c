@@ -21,13 +21,12 @@
 
 void _COSI(void);
 void _SINE(void);
-void ALLOK(void);
 void NORMITS(void);
 void NORMIT(void);
 void ARCTANF(void);
 void FIND_MATRIX(void);
 void FIND_XMATRIX(void);
-void FIND_YMATRIX(void);
+#define FIND_YMATRIX _find_Ymatrix
 void _find_Ymatrix(void);
 void HPFIND_YMATRIX(void);
 void FIND_ZMATRIX(void);
@@ -267,12 +266,7 @@ PERFECT2:
     // asm 00009542: 	NEGF	*AR0,R0
     // asm 00009543: 	POP	AR0
     // asm 00009544: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_SINE", 0, 0);
-    UNIMPL();
-}
-
-void ALLOK(void)
-{
+ALLOK:
     // asm 00009545: 	CMPI	256,R0
     // asm 00009546: 	BLT	PERFECT
     // asm 00009547: 	SUBI	512,R0
@@ -283,7 +277,7 @@ PERFECT:
     // asm 0000954B: 	LDF	*AR0,R0
     // asm 0000954C: 	POP	AR0
     // asm 0000954D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_SINE", 0, 0);
     UNIMPL();
 }
 
@@ -508,12 +502,6 @@ void FIND_XMATRIX(void)
 *	R2	SOURCE RADIANS
 *
  */
-void FIND_YMATRIX(void)
-{
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
 void _find_Ymatrix(void)
 {
     // asm 000095D8: 	PUSH	R0

@@ -22,7 +22,6 @@ void INIT_RDDEBRIS(void);
 void ADD_RDDEBRIS(void);
 void FREE_RDDEBRIS(void);
 void DEBRIS_SORT(void);
-void DBINSLP(void);
 
 /* asm: ROAD_DEBRIS	.bss	ROAD_DEBRIS,1 */
 int ROAD_DEBRIS;
@@ -156,12 +155,7 @@ DSORTNXT:
     // asm 0000AFBA: 	NOP
     // 	;---->	BNZD	IDB1		;GO LOOP...
     // asm 0000AFBB: 	B	IDBX			;WERE DONE, NULL LIST
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBRIS_SORT", 0, 0);
-    UNIMPL();
-}
-
-void DBINSLP(void)
-{
+DBINSLP:
     // asm 0000AFBC: 	LDI	*+AR4(OUSR1),R0		;DO WE HAVE A LINK
     // asm 0000AFBD: 	LDI	R0,AR5
     // asm 0000AFBE: 	BZ	GETRK0			;NO, GET A NEW ONE
@@ -228,6 +222,6 @@ IDB1:
     // 	;---->	BNED	DBINSLP
 IDBX:
     // asm 0000AFF1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DBINSLP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBRIS_SORT", 0, 0);
     UNIMPL();
 }

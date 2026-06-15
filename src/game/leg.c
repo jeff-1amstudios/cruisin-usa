@@ -16,13 +16,9 @@ void LEG_INIT(void);
 void ELEMENT_INIT(void);
 void ELEMENT_GET(void);
 void ELEMENT_ADD(void);
-void QT(void);
 void ELEMENT_DUMP_INTO_LEGMAP(void);
-void ENDIT(void);
 void LEG_GENERATE_MAP(void);
-void DNFND(void);
 void LEG_ADD_GROUP(void);
-void NOTREVERSED(void);
 void GENERATE_LINEAR_DISTANCE(void);
 
 #define USEFIXED 1
@@ -139,16 +135,11 @@ R65:
     // asm 0000AA79: 	BLT	QT
     // asm 0000AA7A: 	LDI	AR1,AR0
     // asm 0000AA7B: 	BU	R65
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_ADD", 0, 0);
-    UNIMPL();
-}
-
-void QT(void)
-{
+QT:
     // asm 0000AA7D: 	STI	AR1,*AR3
     // asm 0000AA7E: 	STI	AR3,*AR0
     // asm 0000AA80: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "QT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_ADD", 0, 0);
     UNIMPL();
 }
 
@@ -176,17 +167,12 @@ EDILL:
 K99:
     // asm 0000AA8B: STI	R0,*AR3++
     // asm 0000AA8C: 	BU	EDILL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_DUMP_INTO_LEGMAP", 0, 0);
-    UNIMPL();
-}
-
-void ENDIT(void)
-{
+ENDIT:
     // asm 0000AA8E: 	POP	AR1
     // asm 0000AA8F: 	POP	AR0
     // asm 0000AA90: 	POP	R0
     // asm 0000AA91: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENDIT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_DUMP_INTO_LEGMAP", 0, 0);
     UNIMPL();
 }
 
@@ -230,12 +216,7 @@ CNTA:
 CNTNA:
     // asm 0000AAA2: 	INC	AR4			;INCREMENT INDEX
     // asm 0000AAA3: 	BU	LPP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_GENERATE_MAP", 0, 0);
-    UNIMPL();
-}
-
-void DNFND(void)
-{
+DNFND:
     // asm: 	LDI	@LEG_MAPI,AR3
     // *
     // *LOAD TYCO ENTRIES UNTIL LAST LEG IS FOUND
@@ -297,7 +278,7 @@ CNTNB2:
     // *AND RETURN TO GAME...
     // *
     // asm 0000AACB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DNFND", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_GENERATE_MAP", 0, 0);
     UNIMPL();
 }
 
@@ -386,12 +367,7 @@ ISOVER:
     // asm: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 0000AB08: 	STF	R1,*+AR3(LEG_POSZ)
     // asm 0000AB0A: 	BU	JOIN_UP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_ADD_GROUP", 0, 0);
-    UNIMPL();
-}
-
-void NOTREVERSED(void)
-{
+NOTREVERSED:
     // asm 0000AB0C: 	LDI	@MATRIXAI,R2
     // asm 0000AB0D: 	LDI	AR3,AR2
     // asm: 	ADDI	LEG_POSX,AR2
@@ -467,7 +443,7 @@ NOTDYNAROAD:
     // asm 0000AB40: 	POP	R4
     // asm 0000AB42: 	CALL	ELEMENT_DUMP_INTO_LEGMAP
     // asm 0000AB43: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTREVERSED", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_ADD_GROUP", 0, 0);
     UNIMPL();
 }
 

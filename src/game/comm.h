@@ -261,6 +261,13 @@
 // asm: OMS_FINISHLINE	.set	00800h
 #define OMS_FINISHLINE 0x00800
 
+// ***	COMM.ASM
+// asm: 	.globl	 RECEIVE_BUFFERI
+#define RECEIVE_BUFFERI RECEIVE_BUFFER
+
+// asm: 	.globl	 COMMQ_TMP_BUFFI
+#define COMMQ_TMP_BUFFI COMMQ_TMP_BUFF
+
 // asm: 	.globl	 COMMQ_TMP_BUFF
 extern int COMMQ_TMP_BUFF[80];
 
@@ -303,14 +310,5 @@ void SEND_PLAYERS_POS(void);
 
 // asm: 	.globl	 SEND_BSYNC0
 void SEND_BSYNC0(void);
-
-// asm: 	.globl	 SEND_BSYNC1
-void SEND_BSYNC1(void);
-
-// asm: 	.globl	 SEND_BSYNC2
-void SEND_BSYNC2(void);
-
-// asm: 	.globl	 SEND_BSYNC3
-void SEND_BSYNC3(void);
 
 #endif /* COMM_H */

@@ -16,18 +16,14 @@
  */
 
 void INPUT_BITS(void);
-void MULTIWORD(void);
 void PUTC(void);
+void WVWRLP2(void);
 void DECOMPRESS(void);
-void DECOMPRESS_TOPLP(void);
-void CONT(void);
 void DECOMPRESS_PROC(void);
-void NOBUMP(void);
 void SAVE_DECOMP_REGS(void);
 void RESTORE_DECOMP_REGS(void);
 void BOOT_PACIFY_SCREEN(void);
 void LOAD_SECTION_REQ(void);
-void NOWTLD(void);
 void REQWAIT(void);
 
 /* asm: PADDING	.bss	PADDING,50 */
@@ -60,6 +56,7 @@ int DECODE_STACK[TABLE_SIZE];
 int NEXT_BUMP_CODE;
 /* asm: LINEBUFFER	lobss	LINEBUFFER,64 */
 int LINEBUFFER[64];
+#endif
 /* asm: SAVESPCI	.word	SAVESPC+1 */
 int SAVESPCI = SAVESPC+1;
 /* asm: SAVESPC	.bss	SAVESPC,25 */
@@ -104,12 +101,7 @@ void INPUT_BITS(void)
     // asm 0000A2DC: 	LSH	R1,R0
     // asm: 	ADDI	CURRENT_CODE_BITS,BIT_ADDR
     // asm 0000A2DE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INPUT_BITS", 0, 0);
-    UNIMPL();
-}
-
-void MULTIWORD(void)
-{
+    // asm 0000A2E0: MULTIWORD
     // asm 0000A2E2: 	LDI	*AR0++,R1
     // asm 0000A2E4: 	LSH	BIT_ADDR,R1		;left justify
     // asm: 	LDI	32,R0
@@ -125,7 +117,7 @@ void MULTIWORD(void)
     // asm 0000A2EC: 	LSH	R2,R1
     // asm 0000A2ED: 	OR	R1,R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MULTIWORD", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INPUT_BITS", 0, 0);
     UNIMPL();
 }
 
@@ -158,45 +150,12 @@ void PUTC(void)
     // asm: 	LDI	0A0h,AR2
     // asm: 	LS	16,AR2
     // asm: 	CMPI	AR2,AR1
-    // asm: 	SLOCKON	LT,"COMP\PUTC   ATTEMPT UNDER WRITE OF WAVERAM"
-    // asm: 	LDI	0BFh,AR2
-    // asm: 	LS	16,AR2
-    // asm: 	CMPI	AR2,AR1
-    // asm: 	SLOCKON	GT,"COMP\PUTC  ATTEMPT OVER WRITE OF WAVERAM"
-#endif
-    // 	;PACIFY
-    // asm: 	LDI	@PACIFY_COUNT,R0
-    // asm: 	ADDI	64,R0
-    // asm: 	STI	R0,@PACIFY_COUNT
-    // 	;
-    // asm 0000A2FC: 	CLRI	bufcnt
-    // asm 0000A2FD: 	PUSH	AR4
-    // asm 0000A2FE: 	LDI	@LINEBUFFERI,AR4
-    // asm: 	CLRI	AR2			;for dummy read
-    // asm: 	PUSH	ST			;this push must be here
-    // asm 0000A2FF: 	PUSH	RC
-    // asm 0000A300: 	PUSH	RE
-    // asm 0000A301: 	PUSH	RS
-    // asm 0000A302: 	PUSH	R7
-    // asm 0000A303: 	PUSH	IE
-    // asm 0000A304: 	LDP	@COMMINTM
-    // asm 0000A305: 	LDI	@COMMINTM,IE
-    // asm 0000A306: 	SETDP
-    // ;	PUSH	IE			;disable interrupts
-    // ;	LDI	0,IE			;watch for pipeline conflicts
-    // asm 0000A309: 	LDI	HARD_WS,R0
-    // asm 0000A30A: 	LDI	SOFT_WS,R1
-    // ;	AND	0DFFFh,ST		;turn off GIE.
-    // ;	POP	IE
-    // asm 0000A30C: 	LDP	@CPU_WS
-    // asm 0000A30D: 	STI	R0,@CPU_WS		;set hard wait states
-    // asm: 	LDI	63,RC
-    // asm: 	LDI	-16,R7
-    // asm: 	RPTB	WVWRLP2
-    // asm 0000A30E: 	LDI	*AR4,R2			;read from the buffer
-    // asm 0000A30F:     	STI	R2,*AR1++		;write to wave ram
-    // asm:  	LSH	R7,*AR4++,R2		;read/shift right
-WVWRLP2:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PUTC", 0, 0);
+    UNIMPL();
+}
+
+void WVWRLP2(void)
+{
     // asm 0000A310: STI	R2,*AR1++
     // asm 0000A313: 	LDI	*AR4,R2			;DUMMY READ TO CLEAR THE LINE
     // asm 0000A314: 	STI	R1,@CPU_WS		;set soft wait states
@@ -212,7 +171,7 @@ WVWRLP2:
     // asm 0000A31D: 	CLRI	PUTC_BUF
     // asm 0000A31E: 	CLRI	PUTC_SH
     // 	;---->	BUD	ENABLEGIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PUTC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WVWRLP2", 0, 0);
     UNIMPL();
 }
 
@@ -254,12 +213,7 @@ void DECOMPRESS(void)
 NOHARDLOAD:
     // asm 0000A33D: 	CALL	POPALL
     // asm 0000A33E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS", 0, 0);
-    UNIMPL();
-}
-
-void DECOMPRESS_TOPLP(void)
-{
+DECOMPRESS_TOPLP:
     // ;	LDI	@FLUSH_COUNT,R0
     // ;	INC	R0
     // ;	STPI	R0,@FLUSH_COUNT
@@ -277,17 +231,12 @@ void DECOMPRESS_TOPLP(void)
     // asm: 	LDI	@BOOT_PACIFY_SCREEN_P,R0
     // asm: 	CALLNZ	BOOT_PACIFY_SCREEN
     // asm 0000A346: 	BU	DECOMPRESS_TOPLP3
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS_TOPLP", 0, 0);
-    UNIMPL();
-}
-
-void CONT(void)
-{
+CONT:
     // asm 0000A349: 	CALL	SAVE_DECOMP_REGS
     // asm: 	CALL	POPALL
     // ;	CALL	ENABLEGIE
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CONT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS", 0, 0);
     UNIMPL();
 }
 
@@ -344,12 +293,7 @@ DECOMPRESSLP:
     // asm 0000A370: 	BNE	NOBUMP
     // asm 0000A371: 	INC	CURRENT_CODE_BITS
     // asm 0000A372: 	BU	DECOMPRESSLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS_PROC", 0, 0);
-    UNIMPL();
-}
-
-void NOBUMP(void)
-{
+NOBUMP:
     // asm 0000A374: 	CMPI	NEXT_CODE,new_code
     // asm: 	BLTD	NODS
     // asm 0000A376: 	LDP	@DECODE_STACKI
@@ -399,7 +343,7 @@ DECOMPRESSX:
     // asm: 	STPI	R0,@HARD_SECTION_LOAD
     // asm: 	CALL	POPALL
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOBUMP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS_PROC", 0, 0);
     UNIMPL();
 }
 
@@ -527,12 +471,7 @@ void LOAD_SECTION_REQ(void)
     // asm 0000A3F1: 	POP	AR0
     // asm 0000A3F2: 	POP	R2
     // asm 0000A3F3: 	BU	NOLOAD
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SECTION_REQ", 0, 0);
-    UNIMPL();
-}
-
-void NOWTLD(void)
-{
+NOWTLD:
     // ;	LDI	@LASTLOAD,AR0
     // ;	CMPI	AR0,AR2
     // ;	BEQ	NOLOAD
@@ -544,7 +483,7 @@ NOLOAD:
     // asm: 	POP	AR5
     // asm: 	POP	AR4
     // asm 0000A3FC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOWTLD", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SECTION_REQ", 0, 0);
     UNIMPL();
 }
 

@@ -31,20 +31,6 @@
 // asm: MAX_DRONES	.set	11	;MAXIMUM DRONES IN UNIVERSE
 #define MAX_DRONES 11 //MAXIMUM DRONES IN UNIVERSE
 
-// STRUCT REGRAC
-// asm: REGRAC_POSITION	.set	0	;UD	THIS IS COMPUTED
-#define REGRAC_POSITION 0 //UD	THIS IS COMPUTED
-
-// asm: REGRAC_OBJECT	.set	1	;UH	PTR TO RACER #X OBJECT
-#define REGRAC_OBJECT 1 //UH	PTR TO RACER #X OBJECT
-
-// asm: REGRAC_CARBLOCK	.set	2	;UH	PTR TO RACER #X CARBLOCK
-#define REGRAC_CARBLOCK 2 //UH	PTR TO RACER #X CARBLOCK
-
-// asm: REGRAC_PROC	.set	3	;UH	PTR TO RACER #X PROCESS
-#define REGRAC_PROC 3 //UH	PTR TO RACER #X PROCESS
-
-// ENDSTRUCT
 // asm: REGRAC_SIZE	.set	4	;SIZ
 #define REGRAC_SIZE 4 //SIZ
 
@@ -92,78 +78,6 @@
 #define DELTA_MAX_ACCEL_INIT 0.90 //(0.82 == PLYR)
 
 // ----------------------------------------------------------------------------
-// STRUCT	DELTA (WITHIN PROCESS BLOCK)
-// 
-// asm: DELTA_STATUS	.set	PDATA+0		;UH	GENERAL STATUS
-#define DELTA_STATUS (PDATA+0) //UH	GENERAL STATUS
-
-// asm: DELTA_RADYDELTA	.set	PDATA+1		;UH	Y theta Delta
-#define DELTA_RADYDELTA (PDATA+1) //UH	Y theta Delta
-
-// asm: DELTA_INIT	.set	PDATA+2		;SD	INITIAL POSITION PARAMETER
-#define DELTA_INIT (PDATA+2) //SD	INITIAL POSITION PARAMETER
-
-// asm: DELTA_THROTTLE	.set	PDATA+3		;FL	throttle level
-#define DELTA_THROTTLE (PDATA+3) //FL	throttle level
-
-// asm: DELTA_TPIECE	.set	PDATA+4		;UH	ROAD TRACKED PIECE
-#define DELTA_TPIECE (PDATA+4) //UH	ROAD TRACKED PIECE
-
-// asm: DELTA_MODE	.set	PDATA+5		;UH	TRACKING MODE FLAGS (NORMAL/STEALTH)
-#define DELTA_MODE (PDATA+5) //UH	TRACKING MODE FLAGS (NORMAL/STEALTH)
-
-// asm: DELTA_SPTR	.set	PDATA+6		;UH	STEALTH POINTER
-#define DELTA_SPTR (PDATA+6) //UH	STEALTH POINTER
-
-// asm: DELTA_LAST_OID	.set	PDATA+7		;UH	*LAST KNOWN OID TO SEARCH FOR
-#define DELTA_LAST_OID (PDATA+7) //UH	*LAST KNOWN OID TO SEARCH FOR
-
-// asm: DELTA_PSTAT	.set	PDATA+8		;UH	0=behind plyr, 1=ahead of plyr
-#define DELTA_PSTAT (PDATA+8) //UH	0=behind plyr, 1=ahead of plyr
-
-// asm: DELTA_PLAYIT	.set	PDATA+9		;UH	WAY THE GAME IS BEING PLAYED
-#define DELTA_PLAYIT (PDATA+9) //UH	WAY THE GAME IS BEING PLAYED
-
-// 
-// asm: PLAYIT_LOGIC	.set	0FF00h
-#define PLAYIT_LOGIC 0x0FF00
-
-// asm: KAMIKAZE	.set	00200h
-#define KAMIKAZE 0x00200
-
-// asm: FALL_BACK	.set	00300h
-#define FALL_BACK 0x00300
-
-// 
-// asm: DELTA_LANE		.set	PDATA+10	;FL	LANE
-#define DELTA_LANE (PDATA+10) //FL	LANE
-
-// asm: DELTA_PLYRDIST		.set	PDATA+11	;FL
-#define DELTA_PLYRDIST (PDATA+11) //FL
-
-// asm: DELTA_OPLYRDIST		.set	PDATA+12	;FL
-#define DELTA_OPLYRDIST (PDATA+12) //FL
-
-// asm: DELTA_MODEL		.set	PDATA+13	;UD
-#define DELTA_MODEL (PDATA+13) //UD
-
-// asm: DELTA_LANE_SWITCH_TMR	.set	PDATA+14	;UD
-#define DELTA_LANE_SWITCH_TMR (PDATA+14) //UD
-
-// asm: DELTA_XLANE		.set	PDATA+15	;UD	extended lanes
-#define DELTA_XLANE (PDATA+15) //UD	extended lanes
-
-// asm: DELTA_MIN_THROTTLE	.set	PDATA+16	;FL
-#define DELTA_MIN_THROTTLE (PDATA+16) //FL
-
-// asm: DELTA_MAX_THROTTLE	.set	PDATA+17	;FL
-#define DELTA_MAX_THROTTLE (PDATA+17) //FL
-
-// asm: DELTA_UPDATE_FL		.set	PDATA+18	;UD	comm update flag 1=just updated
-#define DELTA_UPDATE_FL (PDATA+18) //UD	comm update flag 1=just updated
-
-// DELTA_OM		.set	PDATA+19	;UD	1=Other Machine controls this vehicle
-// ENDSTRUCT
 
 // asm: SUBDRNSTRT		.set	PDATA+20
 #define SUBDRNSTRT (PDATA+20)
@@ -322,14 +236,21 @@ extern int SUSPEND_MODE;
 
 // ***	DELTA.ASM
 // asm: 	.globl	 RACER_PTRI,RACER_PTR
+#define RACER_PTRI RACER_PTR
+
 extern int RACER_PTR[10];
 
 // asm: 	.globl	 LANEPI,LANEP,LANESI,LANES,LANES4
+#define LANEPI LANEP
+
 extern int LANEP[2];
 
 extern float LANES[4];
 
 extern float LANES4[4];
+
+// asm: 	.globl	 SUB_FUNCTION_XLANE
+#define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
 
 // asm: 	.globl	 RACER_GRID_START	;Starting Index
 extern int RACER_GRID_START;
@@ -389,9 +310,6 @@ void SUB_FUNCTION_RVS(void);
 void SUB_FUNCTION(void);
 
 void SUB_FUNCTION_RVS_XLANE(void);
-
-// asm: 	.globl	 SUB_FUNCTION_XLANE
-void SUB_FUNCTION_XLANE(void);
 
 // .globl	 FIND_MAPENTRY
 // asm: 	.globl	 INIT_DRONES,ADD_DRONE,FREE_DRONE

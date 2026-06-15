@@ -27,19 +27,11 @@ void COMM_MASTER_SEND_SYNC(void);
 void SETONE(void);
 void CLRONE(void);
 void COMM_ROUTINE(void);
-void COMM_HOLDFORA2D(void);
 void COMM_MASTER(void);
-void CM1(void);
-void CM2(void);
-void CM3(void);
-void COMM_MASTER_ERROR(void);
 void COMM_IRQ(void);
+void DO_SLAVE_SYNC(void);
 void COMM_SLAVE(void);
-void CS1(void);
-void CS2(void);
-void CS3(void);
 void CSERROR1(void);
-void COMM_SLAVE_ERROR(void);
 
 #define TIME_DELAY 18
 /* asm: COMM_MASTER_ERROR_CNT	fbss	COMM_MASTER_ERROR_CNT,1 */
@@ -209,12 +201,7 @@ void COMM_ROUTINE(void)
     // asm 00007F9E: 	LDI	@DIPRAM,R0		;CHECK FOR COMMUNICATIONS
     // asm 00007F9F: 	TSTB	DIP_COMMP,R0
     // asm 00007FA0: 	RETSNZ				;NO
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_ROUTINE", 0, 0);
-    UNIMPL();
-}
-
-void COMM_HOLDFORA2D(void)
-{
+COMM_HOLDFORA2D:
     // asm 00007FA1: 	LDI	@RDPOT,R1
     // asm 00007FA2: 	CMPI	3,R1
     // asm 00007FA3: 	BNZ	COMM_HOLDFORA2D
@@ -225,7 +212,7 @@ void COMM_HOLDFORA2D(void)
     // *
     // *MASTER MUST ALWAYS 0 <- C_IRQE
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_HOLDFORA2D", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_ROUTINE", 0, 0);
     UNIMPL();
 }
 
@@ -237,12 +224,7 @@ void COMM_MASTER(void)
     // asm 00007FAA: 	LDI	@ONEFLAG,R0
     // asm 00007FAB: 	BZ	CM1
     // asm 00007FAC: 	RETS		      		;WE'RE IN ONE PLAYER, EXIT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_MASTER", 0, 0);
-    UNIMPL();
-}
-
-void CM1(void)
-{
+CM1:
     // asm 00007FAD: 	LDI	@SEND_BUFFER_A_LEN,R6	;16 bits
     // asm 00007FAE: 	LDI	@SEND_BUFFER_AI,AR2
     // asm 00007FAF: 	CMPI	0,R6
@@ -273,23 +255,13 @@ WTLPMI:
     // asm 00007FC6: 	STI	R0,@TRANSMISSION_ACTIVE
     // asm 00007FC7: 	STI	R0,@TRANSMISSION_DEAD
     // asm 00007FC8: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CM1", 0, 0);
-    UNIMPL();
-}
-
-void CM2(void)
-{
+CM2:
     // asm 00007FC9: 	TSTB	C_C0,R0	      		;WAIT FOR SLAVE READY SIGNAL
     // asm 00007FCA: 	BNZ	CM3			;GOT IT...
     // asm 00007FCB: 	CMPI	@INFRAMES,R3		;WAITING TOO LONG?
     // asm 00007FCC: 	BGT	WTLPMI			;NO, KEEP LOOPING
     // asm 00007FCD: 	B	CMERRORDEAD		;YES, ITS DEAD...
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CM2", 0, 0);
-    UNIMPL();
-}
-
-void CM3(void)
-{
+CM3:
     // asm 00007FCE: 	LDI	0,R0
     // asm 00007FCF: 	STI	R0,@TRANSMISSION_DEAD
     // asm 00007FD0: 	LDI	1,R0
@@ -594,12 +566,7 @@ CMERRORDEAD:
     // asm 000080BE: 		LDI	1,R0		      	;YES OTHER GAME IS DEAD, LEAVE...
     // asm 000080BF: 		STI	R0,@TRANSMISSION_DEAD
     // asm 000080C0: 		B	COMM_MASTER_ERROR	;WENT DEAD...
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CM3", 0, 0);
-    UNIMPL();
-}
-
-void COMM_MASTER_ERROR(void)
-{
+COMM_MASTER_ERROR:
     // asm 000080C1: 	LDP	@COMM_MASTER_TRANSES
     // asm 000080C2: 	INCM	@COMM_MASTER_ERROR_CNT
     // asm 000080C5: 	SETDP
@@ -609,7 +576,7 @@ void COMM_MASTER_ERROR(void)
     // ;	LS	16,R0
     // ;	STI	R0,*AR5
     // asm 000080C8: 	B	COMM_MASTER_ERR_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_MASTER_ERROR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_MASTER", 0, 0);
     UNIMPL();
 }
 
@@ -631,7 +598,12 @@ void COMM_IRQ(void)
     // asm 000080D2: 	POP	DP
     // asm 000080D3: 	POP	ST
     // asm 000080D4: 	RETI
-DO_SLAVE_SYNC:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_IRQ", 0, 0);
+    UNIMPL();
+}
+
+void DO_SLAVE_SYNC(void)
+{
     // asm 000080D5: 	PUSH	R1
     // asm 000080D6: 	PUSH	IE
     // asm 000080D7: 	LDI	INT1_M|INT2_M,IE	;disable everything except TV30 interrupt & comm int
@@ -679,7 +651,7 @@ WTLP:
     // ;	LDI	INT1_M|INT2_M|INT3_M|INT0_M,IE
     // asm 000080F8: 	POP	ST
     // asm 000080F9: 	RETI
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_IRQ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DO_SLAVE_SYNC", 0, 0);
     UNIMPL();
 }
 
@@ -705,12 +677,7 @@ void COMM_SLAVE(void)
     // asm 000080FF: 	LDI	@ONEFLAG,R0
     // asm 00008100: 	BZ	CS1
     // asm 00008101: 	RETS				;WE'RE IN ONE PLAYER, EXIT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_SLAVE", 0, 0);
-    UNIMPL();
-}
-
-void CS1(void)
-{
+CS1:
     // asm 00008102: 	TSTB	*AR5,R5
     // asm 00008103: 	BZ	CS2			;C2=1, MASTER IN ONE PLAYER, EXIT
     // asm 00008104: 	LDI	0,R0
@@ -718,12 +685,7 @@ void CS1(void)
     // asm 00008106: 	STI	R0,@TRANSMISSION_ACTIVE
     // asm 00008107: 	RETS
     // *SYNC UP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CS1", 0, 0);
-    UNIMPL();
-}
-
-void CS2(void)
-{
+CS2:
     // asm 00008108: 	LDI	120,R3			;WAIT 120 FRAMES IF NOT DEAD
     // asm 00008109: 	LDI	@TRANSMISSION_DEAD,R0 	;GET TIMEOUT VALUES
     // asm 0000810A: 	BZ	CS20
@@ -755,12 +717,7 @@ WTLPI:
     // asm 00008121: 	BZ	CS3			;NO
     // asm 00008122: 	RETS				;YES, LEAVE
     // *END SYNC
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CS2", 0, 0);
-    UNIMPL();
-}
-
-void CS3(void)
-{
+CS3:
     // asm 00008123: 	DINT
     // *SET DATA CONTROL TO RECEIVE		;CM_A 1
     // asm 00008129: 	LDI	C_RCV,R0
@@ -1026,13 +983,13 @@ COMM_SLAVE_ERR_X:
     // asm 000081FA: 	STI	R0,@COMMFLAG		;COMMUNICATIONS IS OVER
     // asm 000081FB: 	EINT
     // asm 000081FC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CS3", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_SLAVE", 0, 0);
     UNIMPL();
 }
 
 void CSERROR1(void)
 {
-    // asm 000081FD: B COMM_SLAVE_ERROR ;LENGTH TIMEOUT
+    // asm 000081FD: B COMM_SLAVE_ERROR
 CSERROR2:
     // asm 000081FE: B COMM_SLAVE_ERROR ;LENGTH TIMEOUT
 CSERROR3:
@@ -1055,18 +1012,13 @@ CSERRORDEAD:
     // asm 00008207: 		LDI	1,R0		      	;YES OTHER GAME IS DEAD, LEAVE...
     // asm 00008208: 		STI	R0,@TRANSMISSION_DEAD
     // asm 00008209: 		B	COMM_SLAVE_ERROR	;WENT DEAD...
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CSERROR1", 0, 0);
-    UNIMPL();
-}
-
-void COMM_SLAVE_ERROR(void)
-{
+COMM_SLAVE_ERROR:
     // asm 0000820A: 	LDP	@COMM_SLAVE_ERROR_CNT
     // asm 0000820B: 	INCM	@COMM_SLAVE_ERROR_CNT
     // asm 0000820E: 	SETDP
     // asm 0000820F: 	LDI	0,R0
     // asm 00008210: 	STI	R0,@RBUFF_LEN	   	;RECEIVE BUFFER CLEARED	ON ERROR
     // asm 00008211: 	BU	COMM_SLAVE_ERR_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_SLAVE_ERROR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CSERROR1", 0, 0);
     UNIMPL();
 }

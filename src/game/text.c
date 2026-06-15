@@ -35,17 +35,10 @@ void SETFIXEDFONT(void);
 void SETFIXEDFONTDS(void);
 void STRLEN(void);
 void TEXT_OUTPUT(void);
-void NO_CENTER(void);
 void IBO1(void);
-void OUCX(void);
-void NODELETE(void);
 void STRCPY(void);
 void STRCAT(void);
-void FIXEDFONT(void);
 void HIGHLIGHTN(void);
-void NO_CENTERa(void);
-void ALLREG(void);
-void oucXa(void);
 
 /* asm: TEXT_LIST	hibss	TEXT_LIST,NUM_TEXTS*TEXT_SIZ */
 int TEXT_LIST[NUM_TEXTS*TEXT_SIZ];
@@ -75,6 +68,57 @@ int FONT10_A = osg10fnt_I;
  */
 /* asm: FONTN43_A	.word	lgnum43_I */
 int FONTN43_A = lgnum43_I;
+/* *----------------------------------------------------------------------------
+*
+*FONTENT		.macro	PRECEDING,XSTART,XEND,YSTART,TRAIL
+*
+*
+ */
+/* asm: FIXEDFONT: */
+/* asm: FONTENT	0,64,71,0,1	;0 */
+/* asm: FONTENT	0,72,79,0,1	;1 */
+/* asm: FONTENT	0,80,87,0,1	;2 */
+/* asm: FONTENT	0,88,95,0,1	;3 */
+/* asm: FONTENT	0,96,103,0,1	;4 */
+/* asm: FONTENT	0,104,111,0,1	;5 */
+/* asm: FONTENT	0,112,119,0,1	;6 */
+/* asm: FONTENT	0,120,127,0,1	;7 */
+/* asm: FONTENT	0,128,135,0,1	;8 */
+/* asm: FONTENT	0,136,143,0,1	;9 */
+/* asm: FONTENT	0,144,151,0,1	; : */
+/* asm: FONTENT	0,152,159,0,1	; ; */
+/* asm: FONTENT	0,160,167,0,1	; < */
+/* asm: FONTENT	0,48,55,0,1	; =	. */
+/* asm: FONTENT	0,32,39,0,1	; >	, */
+/* asm: FONTENT	0,40,47,0,1	; ?	- */
+/* asm: FONTENT	0,56,63,0,1	; @	/ */
+/* asm: FONTENT	0,200,207,0,1	;A */
+/* asm: FONTENT	0,208,215,0,1 */
+/* asm: FONTENT	0,216,223,0,1 */
+/* asm: FONTENT	0,224,231,0,1	;D */
+/* asm: FONTENT	0,232,239,0,1	;E */
+/* asm: FONTENT	0,240,247,0,1	;F */
+/* asm: FONTENT	0,248,255,0,1	;G */
+/* asm: FONTENT	0,0,7,7,1	;H */
+/* asm: FONTENT	0,8,15,7,1 */
+/* asm: FONTENT	0,16,23,7,1 */
+/* asm: FONTENT	0,24,31,7,1 */
+/* asm: FONTENT	0,32,39,7,1	;L */
+/* asm: FONTENT	0,40,47,7,1	;M */
+/* asm: FONTENT	0,48,55,7,1	;N */
+/* asm: FONTENT	0,56,63,7,1	;O */
+/* asm: FONTENT	0,64,71,7,1	;P */
+/* asm: FONTENT	0,72,79,7,1	;Q */
+/* asm: FONTENT	0,80,87,7,1	;R */
+/* asm: FONTENT	0,88,95,7,1 */
+/* asm: FONTENT	0,96,103,7,1 */
+/* asm: FONTENT	0,104,111,7,1	;U */
+/* asm: FONTENT	0,112,119,7,1 */
+/* asm: FONTENT	0,120,127,7,1 */
+/* asm: FONTENT	0,128,135,7,1 */
+/* asm: FONTENT	0,136,143,7,1 */
+/* asm: FONTENT	0,144,151,7,1	;Z */
+int FIXEDFONT;
 
 /* *----------------------------------------------------------------------------
  */
@@ -458,7 +502,7 @@ void STRLEN(void)
     // asm 00007A54: 	BNE	STLP2
     // asm 00007A55: 	CLRI	RS
     // asm 00007A56: 	NOP	*AR2++
-STLP2:
+    // asm 00007A57: STLP2
     // asm 00007A57: 	LDI	*AR2,AR0
     // asm 00007A58: 	LSH	RS,AR0
     // asm 00007A59: 	SUBI	8,RS
@@ -480,10 +524,10 @@ STLP2:
     // asm 00007A69: 	LDI	*+AR1(FONTENT_TRAIL),R2
     // asm 00007A6A: 	RS	16,R2
     // asm 00007A6B: 	ADDI	R2,R1
-STRLENNCHAR:
+    // asm 00007A6C: STRLENNCHAR
     // asm 00007A6C: 	ADDI	R1,R0			;INCREASE STRING LENGTH
     // asm 00007A6D: 	BU	STRLP
-STRLENX:
+    // asm 00007A6E: STRLENX
     // asm 00007A6E: 	POP	AR2
     // asm 00007A6F: 	POP	AR1
     // asm 00007A70: 	POP	AR0
@@ -520,12 +564,7 @@ TEXTLP:
     // asm 00007A85: 	RS	1,R0
     // asm 00007A86: 	SUBI	R0,R2
     // asm 00007A87: 	B	TEXT_RET
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_OUTPUT", 0, 0);
-    UNIMPL();
-}
-
-void NO_CENTER(void)
-{
+NO_CENTER:
     // asm 00007A88: 	TSTB	TXT_RIGHT,R0
     // asm 00007A89: 	BZ	NO_RIGHT
     // asm 00007A8A: 	CALL	STRLEN
@@ -558,7 +597,7 @@ REGLP:
     // asm 00007A9F: 	AND	0FFh,R0
     // asm 00007AA0: 	OR	NZR|ZS|TM,R0
     // asm 00007AA1: 	BU	IBO2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_CENTER", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_OUTPUT", 0, 0);
     UNIMPL();
 }
 
@@ -615,12 +654,7 @@ IBO2:
 NXTCHAR:
     // asm 00007AD1: 	ADDI	R7,R2			;to next X position
     // asm 00007AD2: 	BU	OLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "IBO1", 0, 0);
-    UNIMPL();
-}
-
-void OUCX(void)
-{
+OUCX:
     // asm 00007AD3: 	LDI	@TEXT_FREEZE,R0
     // asm 00007AD4: 	BNZ	ISFROZEN
     // asm 00007AD5: 	LDF	*+AR4(TEXT_POSX),R0
@@ -658,12 +692,7 @@ DELLP:
     // asm 00007AF0: 	LDI	R7,R0
     // asm 00007AF1: 	BNZ	TEXTLP
     // asm 00007AF2: 	B	TXTOUT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OUCX", 0, 0);
-    UNIMPL();
-}
-
-void NODELETE(void)
-{
+NODELETE:
     // asm 00007AF3: 	STI	R0,*+AR4(TEXT_TIKS)
 NXTGRP:
     // asm 00007AF4: 	LDI	*AR4,R0
@@ -675,7 +704,7 @@ TXTOUT:
     // asm 00007AF9: 	POP	AR5
     // asm 00007AFA: 	POP	AR4
     // asm 00007AFB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NODELETE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "IBO1", 0, 0);
     UNIMPL();
 }
 
@@ -803,63 +832,6 @@ REGLP2:
 
 /* *----------------------------------------------------------------------------
 *
-*FONTENT		.macro	PRECEDING,XSTART,XEND,YSTART,TRAIL
-*
-*
- */
-void FIXEDFONT(void)
-{
-    // asm: 	FONTENT	0,64,71,0,1	;0
-    // asm: 	FONTENT	0,72,79,0,1	;1
-    // asm: 	FONTENT	0,80,87,0,1	;2
-    // asm: 	FONTENT	0,88,95,0,1	;3
-    // asm: 	FONTENT	0,96,103,0,1	;4
-    // asm: 	FONTENT	0,104,111,0,1	;5
-    // asm: 	FONTENT	0,112,119,0,1	;6
-    // asm: 	FONTENT	0,120,127,0,1	;7
-    // asm: 	FONTENT	0,128,135,0,1	;8
-    // asm: 	FONTENT	0,136,143,0,1	;9
-    // 				;special characters:
-    // 				;ASCII		actual
-    // asm: 	FONTENT	0,144,151,0,1	; :
-    // asm: 	FONTENT	0,152,159,0,1	; ;
-    // asm: 	FONTENT	0,160,167,0,1	; <
-    // asm: 	FONTENT	0,48,55,0,1	; =	.
-    // asm: 	FONTENT	0,32,39,0,1	; >	,
-    // asm: 	FONTENT	0,40,47,0,1	; ?	-
-    // asm: 	FONTENT	0,56,63,0,1	; @	/
-    // asm: 	FONTENT	0,200,207,0,1	;A
-    // asm: 	FONTENT	0,208,215,0,1
-    // asm: 	FONTENT	0,216,223,0,1
-    // asm: 	FONTENT	0,224,231,0,1	;D
-    // asm: 	FONTENT	0,232,239,0,1	;E
-    // asm: 	FONTENT	0,240,247,0,1	;F
-    // asm: 	FONTENT	0,248,255,0,1	;G
-    // asm: 	FONTENT	0,0,7,7,1	;H
-    // asm: 	FONTENT	0,8,15,7,1
-    // asm: 	FONTENT	0,16,23,7,1
-    // asm: 	FONTENT	0,24,31,7,1
-    // asm: 	FONTENT	0,32,39,7,1	;L
-    // asm: 	FONTENT	0,40,47,7,1	;M
-    // asm: 	FONTENT	0,48,55,7,1	;N
-    // asm: 	FONTENT	0,56,63,7,1	;O
-    // asm: 	FONTENT	0,64,71,7,1	;P
-    // asm: 	FONTENT	0,72,79,7,1	;Q
-    // asm: 	FONTENT	0,80,87,7,1	;R
-    // asm: 	FONTENT	0,88,95,7,1
-    // asm: 	FONTENT	0,96,103,7,1
-    // asm: 	FONTENT	0,104,111,7,1	;U
-    // asm: 	FONTENT	0,112,119,7,1
-    // asm: 	FONTENT	0,120,127,7,1
-    // asm: 	FONTENT	0,128,135,7,1
-    // asm: 	FONTENT	0,136,143,7,1
-    // asm: 	FONTENT	0,144,151,7,1	;Z
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIXEDFONT", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
-*
 *
 *PARAMETERS
 *	AR2	PTR TO TEXT ENTRY
@@ -884,12 +856,7 @@ void HIGHLIGHTN(void)
     // asm 00007C02: 	RS	1,R0
     // asm 00007C03: 	SUBI	R0,R2
     // asm 00007C04: 	B	text_reta
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIGHLIGHTN", 0, 0);
-    UNIMPL();
-}
-
-void NO_CENTERa(void)
-{
+NO_CENTERa:
     // asm 00007C05: 	TSTB	TXT_RIGHT,R0
     // asm 00007C06: 	BZ	NO_RIGHTa
     // asm 00007C07: 	CALL	STRLEN
@@ -931,12 +898,7 @@ REGLPa:
     // asm 00007C26: 	ASH	-16,R0
     // asm 00007C27: 	ADDI	R0,R7
     // asm 00007C28: 	BU	NXTCHARa
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_CENTERa", 0, 0);
-    UNIMPL();
-}
-
-void ALLREG(void)
-{
+ALLREG:
     // 	;NOW PLOT OUT THE CHARACTER
     // asm 00007C29:  	LDI	*+AR4(TEXT_COLOR),R0
     // asm 00007C2A: 	AND	0FFh,R0
@@ -996,14 +958,9 @@ IBO1a:
 NXTCHARa:
     // asm 00007C5F: 	ADDI	R7,R2			;to next X position
     // asm 00007C60: 	BU	OLPa
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLREG", 0, 0);
-    UNIMPL();
-}
-
-void oucXa(void)
-{
+oucXa:
     // asm 00007C61: 	CALL	POPALL
     // asm 00007C62: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "oucXa", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIGHLIGHTN", 0, 0);
     UNIMPL();
 }

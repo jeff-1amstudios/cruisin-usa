@@ -56,6 +56,10 @@ void FULLSETUP_WASHINGTONDC(void);
 
 /* *----------------------------------------------------------------------------
  */
+/* asm: FULLSETUP_TABLEI */
+/* asm: .word	FULLSETUP_TABLE */
+/* asm: romdata */
+int FULLSETUP_TABLEI;
 /* asm: FULLSETUP_TABLE: */
 /* asm: 	.word	FULLSETUP_GGPARK */
 /* asm: 	.word	FULLSETUP_SANFRAN,FULLSETUP_H280,FULLSETUP_REDWOOD */

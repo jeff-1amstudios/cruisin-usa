@@ -5,9 +5,10 @@
  * Source module: asm/ROUTS.ASM
  */
 
-void DIV_F(void);
-void DIV_I(void);
-void zero(void);
+#define DIV_F DIV_F30
+void DIV_F30(void);
+#define DIV_I DIV_I30
+void DIV_I30(void);
 void DIV_U30(void);
 void zerob(void);
 void INV_F30(void);
@@ -51,9 +52,8 @@ void SQRT(void);
 *	Cycles: 40
 *
  */
-void DIV_F(void)
+void DIV_F30(void)
 {
-    // asm 0000A534: DIV_F30
     // asm 0000A534: 	POP	BK	;Pop return address
     // asm 0000A535: 	PUSH	R2	;Save R2: integer part
     // asm 0000A536: 	PUSHF	R2	;Save R2: floating point part
@@ -123,13 +123,12 @@ void DIV_F(void)
     // asm 0000A55A: 	POPF	R2		;Restore R2: floating point part
     // asm 0000A55B: 	POP	R2		;Restore R2: integer part
     // 	;---->B	BK		;BRANCH OCCURS (RETURN)
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_F", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_F30", 0, 0);
     UNIMPL();
 }
 
-void DIV_I(void)
+void DIV_I30(void)
 {
-    // asm 0000A55C: DIV_I30
     // 	;
     // 	;Determine sign of result.	Get absolute value of operands.
     // 	;
@@ -167,7 +166,7 @@ void DIV_I(void)
     // asm 0000A571: 	NEGI	COUNT
     // asm 0000A572: 	LSH	COUNT,R0	;shift right to get result
     // 	;Check sign and negate result if necessary.
-return:
+    // asm 0000A573: return
     // asm 0000A573: 	POP	RC		;return address
     // asm 0000A574: 	NEGI	R0,TEMP		;negate result
     // asm 0000A575: 	BD	RC		;delayed branch to return
@@ -184,15 +183,10 @@ div_32:
     // asm 0000A57B: 	POP	SIGN		;restore sign
     // asm 0000A57C: 	B	return		;return
     // 	;***Return zero.
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_I", 0, 0);
-    UNIMPL();
-}
-
-void zero(void)
-{
+zero:
     // asm 0000A57D: 	LDI	0,R0
     // asm 0000A57E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "zero", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_I30", 0, 0);
     UNIMPL();
 }
 
@@ -447,7 +441,7 @@ void MOD_I30(void)
     // 	;
     // 	; Check sign and negate result if necessary.
     // 	;
-returnc:
+    // asm 0000A5EA: returnc
     // asm 0000A5EA: 	POP	RC		;return address
     // asm 0000A5EB: 	NEGI	R0,TEMP		;negate result
     // asm 0000A5EC: 	BD	RC		;delayed branch to return
@@ -570,7 +564,7 @@ void onec(void)
 
 void zeroc(void)
 {
-    // asm 0000A61A: CMPI	0,R0		;set status from result
+    // asm 0000A61A: CMPI	0,R0
     // asm 0000A61B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "zeroc", 0, 0);
     UNIMPL();

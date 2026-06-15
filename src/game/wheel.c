@@ -10,11 +10,6 @@
  */
 
 void NUWHEEL(void);
-void NUWHL1(void);
-void NBON(void);
-void NIC(void);
-void NUWHL2(void);
-void NUWHL3(void);
 void TOWHEEL(void);
 
 #define WHEEL_KILL 0
@@ -60,60 +55,35 @@ void NUWHEEL(void)
     // asm 0000AFFA: 	LDF	@WHEELPWR,R3
     // asm 0000AFFB: 	LDF	126,R2
     // asm 0000AFFC: 	B	NUWHL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHEEL", 0, 0);
-    UNIMPL();
-}
-
-void NUWHL1(void)
-{
+NUWHL1:
     // asm 0000AFFD: 	CMPI	MBONUS,R0
     // asm 0000AFFE: 	BNE	NBON
     // asm 0000AFFF: 	LDF	2,R1
     // ;	LDF	64,R2
     // ;	LDF	2,R3
     // asm 0000B000: 	B	NUWHL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHL1", 0, 0);
-    UNIMPL();
-}
-
-void NBON(void)
-{
+NBON:
     // asm 0000B001: 	CMPI	MINSERT_COINS,R0
     // asm 0000B002: 	BNE	NIC
     // asm 0000B003: 	LDF	0,R1		;2
     // ;	LDF	64,R2
     // ;	LDF	2,R3
     // asm 0000B004: 	B	NUWHL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NBON", 0, 0);
-    UNIMPL();
-}
-
-void NIC(void)
-{
+NIC:
     // asm 0000B005: 	CMPI	MINTRO,R0		;INTRO
     // asm 0000B006: 	BNE	NUWHL2
     // asm 0000B007: 	LDF	0.5,R1
     // ;	LDF	64,R2
     // ;	LDF	0.5,R3
     // asm 0000B008: 	B	NUWHL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NIC", 0, 0);
-    UNIMPL();
-}
-
-void NUWHL2(void)
-{
+NUWHL2:
     // asm 0000B009: 	CMPI	MINIT,R0		;INITIAL ENTRY
     // asm 0000B00A: 	BNE	NUWHL3
     // asm 0000B00B: 	LDF	0.75,R1
     // ;	LDF	64,R2
     // ;	LDF	0.75,R3
     // asm 0000B00C: 	BU	NUWHL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHL2", 0, 0);
-    UNIMPL();
-}
-
-void NUWHL3(void)
-{
+NUWHL3:
     // asm 0000B00D: 	CMPI	MDIAG,R0
     // asm 0000B00E: 	BNE	NUWHL
     // asm 0000B00F: 	CLRF	R3
@@ -152,7 +122,7 @@ NUWHL:
     // asm 0000B02E: 	AND	0FFH,R0
     // asm 0000B02F: 	CALL	TOWHEEL
     // asm 0000B030: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHL3", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHEEL", 0, 0);
     UNIMPL();
 }
 

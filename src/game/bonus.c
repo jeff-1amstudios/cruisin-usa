@@ -24,7 +24,7 @@
  */
 
 void BONUS_SANFRAN(void);
-void BONUS_GGATE(void);
+#define BONUS_GGATE BONUS_BEVHILLS
 void BONUS_BEVHILLS(void);
 void BONUSNULL(void);
 void BONUS14(void);
@@ -43,19 +43,15 @@ void BONUS2(void);
 void BONUS1(void);
 void JSUB(void);
 void DISPLAY_H2H_WINNER(void);
-void DODIEXXX(void);
 void OBJ_DELETE_HIGH_PRIORITY(void);
 void BONUS_SCREEN(void);
 void BONSCRN2(void);
-void PAPAPA44(void);
 void ISREC(void);
-void NOT1ST(void);
 void CLINTON_SHOW(void);
 void BLINK_FREEBE(void);
 void BACKUP_CAMERA(void);
 void TIMED_OUT(void);
 void KILL_PLYR_SOUNDS(void);
-void CONGRAT_SPEECH(void);
 void FREE_RACE_ANNOUNCE(void);
 void SHOWLEG_PROC(void);
 void SHOWNEXTLEG_PROC(void);
@@ -74,7 +70,6 @@ void BONS_POSITION(void);
 void KILL_THEM(void);
 void FIND_AND_REACTIVATE(void);
 void NOTRUT(void);
-void FARX(void);
 void KILL_THE_REANIMATORS(void);
 
 /* asm: MAXMPH	.bss	MAXMPH,1 */
@@ -92,25 +87,7 @@ int DO_FOLDFLAG;
 #define NUM_LEGS 14
 /* asm: LEG_NAMES	.word	LEG1,LEG2,LEG3,LEG4,LEG5,LEG6,LEG7,LEG8 */
 /* asm: 	.word	LEG9,LEG10,LEG11,LEG12,LEG13,LEG14,LEG_USA */
-const char *LEG_NAMES[] = {
-    LEG1, LEG2, LEG3, LEG4, LEG5, LEG6, LEG7, LEG8,
-    LEG9, LEG10, LEG11, LEG12, LEG13, LEG14, LEG_USA,
-};
-const char *LEG1 = "GOLDEN GATE PARK";
-const char *LEG2 = "SAN FRANCISCO";
-const char *LEG3 = "US 101";
-const char *LEG4 = "REDWOOD FOREST";
-const char *LEG5 = "BEVERLY HILLS";
-const char *LEG6 = "LA FREEWAY";
-const char *LEG7 = "DEATH VALLEY";
-const char *LEG8 = "ARIZONA";
-const char *LEG9 = "GRAND CANYON";
-const char *LEG10 = "IOWA";
-const char *LEG11 = "CHICAGO";
-const char *LEG12 = "INDIANA";
-const char *LEG13 = "APPALACHIA";
-const char *LEG14 = "WASHINGTON DC";
-const char *LEG_USA = "SF TO WASHINGTON DC";
+const char *LEG_NAMES[] = { "GOLDEN GATE PARK", "SAN FRANCISCO", "US 101", "REDWOOD FOREST", "BEVERLY HILLS", "LA FREEWAY", "DEATH VALLEY", "ARIZONA", "GRAND CANYON", "IOWA", "CHICAGO", "INDIANA", "APPALACHIA", "WASHINGTON DC", "SF TO WASHINGTON DC" };
 const char *WINT1 = "FREE GAME FOR";
 const char *WINT2 = "1ST PLACE";
 const char *EXPIRED = "EXPIRED";
@@ -130,7 +107,7 @@ int BIGBUFFER[(4+1+2+2)*NUM_LEGS];
 /* asm: 	.word	BONUSNULL,BONUSNULL,BONUSNULL */
 /* asm: 	.word	BONUSNULL,BONUSNULL,BONUSNULL */
 /* asm: 	.word	BONUSNULL,BONUSNULL,BONUSNULL */
-void (*BONUS_POSTLAUNCH[])(void) = {
+int BONUS_POSTLAUNCH[] = {
     BONUS_GGATE, BONUS_SANFRAN, BONUSNULL, BONUSNULL,
     BONUS_BEVHILLS, BONUSNULL, BONUSNULL,
     BONUSNULL, BONUSNULL, BONUSNULL,
@@ -162,12 +139,14 @@ int DID_TIMED_OUT;
 const char *FRA1 = "FIRST PLACE";
 const char *FRA2 = "FREE RACE";
 #define CONGRATS 4
+/* asm: CONGRAT_SPEECH:	.word	GL_WOOLAUGH,GL_YEAH,GL_YES,GL_YOUDIDIT */
+int CONGRAT_SPEECH[] = {
+    GL_WOOLAUGH, GL_YEAH, GL_YES, GL_YOUDIDIT,
+};
 /* *----------------------------------------------------------------------------
 *
 *
  */
-const char *LCTS = "RACE COMPLETED:";
-const char *LNLS = "NEXT RACE:";
 /* *
 *
  */
@@ -227,12 +206,6 @@ void BONUS_SANFRAN(void)
     // asm: 	FLOAT	-35,R0
     // asm: 	STF	R0,@INFIN_CORRECT
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS_SANFRAN", 0, 0);
-    UNIMPL();
-}
-
-void BONUS_GGATE(void)
-{
-    /* no executable asm lines detected */
     UNIMPL();
 }
 
@@ -500,20 +473,6 @@ void DISPLAY_H2H_WINNER(void)
     UNIMPL();
 }
 
-void DODIEXXX(void)
-{
-    // asm 00003A22: 	LDI	*+AR7(PDATA),AR2
-    // asm 00003A23: 	CALL	OBJ_DELETE_HIGH_PRIORITY
-    // asm: 	LDI	*+AR7(PDATA+1),AR2
-    // asm 00003A24: 	CALL	OBJ_DELETE_HIGH_PRIORITY
-    // asm: 	LDI	*+AR7(PDATA+2),AR2
-    // asm: 	CALL	OBJ_DELETE_HIGH_PRIORITY
-DODIE:
-    // asm 00003A26: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DODIEXXX", 0, 0);
-    UNIMPL();
-}
-
 void OBJ_DELETE_HIGH_PRIORITY(void)
 {
     // asm: 	PUSH	R0
@@ -617,42 +576,6 @@ CONTINUE:
     UNIMPL();
 }
 
-void PAPAPA44(void)
-{
-    // asm 00003A81: 	CREATE	BACKUP_CAMERA,UTIL_C|BONUS_SCREEN_T
-    // asm: 	SONDFX	CROWD1
-    // ;	LDI	@DID_TIMED_OUT,R0
-    // ;	B
-    // asm 00003A85: 	SONDFX	CROWDROAR
-    // asm: 	SOND1	CHICKCHEER		;CHAN3
-    // asm 00003A86: JJDDHH
-    // asm: 	LDI	@POSITION,R0
-    // asm: 	CMPI	1,R0
-    // asm 00003A8B: 	BNE	COOLRET
-    // asm: 	CREATEC	FREE_RACE_ANNOUNCE,UTIL_C
-    // asm: 	JSRP	BABE_TROPHY
-COOLRET:
-    // 	;LAME TEXT EFFECTS
-    // 	;
-    // 	;
-    // asm 00003A95: 	LDI	AR7,AR5
-    // asm: 	CREATE	BONS_MAXMPH,UTIL_C|TEXTP_T
-    // asm: 	CREATE	BONS_ETIME,UTIL_C|TEXTP_T
-    // asm: 	CREATE	BONS_POSITION,UTIL_C|TEXTP_T
-    // asm: 	CREATE	BONS_RECORDTIME,UTIL_C|TEXTP_T
-    // asm: 	CREATE	DISPLAY_H2H_WINNER,UTIL_C|TEXTP_T|3
-    // asm 00003A9B: 	LDI	@DID_TIMED_OUT,R0
-    // asm 00003A9C: 	BNZ	NODOHOTTIME
-    // asm 00003AA2: 	CALL	INTO_TABLE_P
-    // asm 00003AA5: 	BNC	NODOHOTTIME
-    // asm 00003AA8: 	CMPI	0,R0
-    // asm: 	BNE	ISREC
-    // asm 00003AAB: 	CREATE	BONS_HOTTIME_REC,UTIL_C|TEXTP_T
-    // asm 00003AAC: 	BU	NODOHOTTIME
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAPAPA44", 0, 0);
-    UNIMPL();
-}
-
 void ISREC(void)
 {
     // asm 00003AAD: CREATE	BONS_HOTTIME,UTIL_C|TEXTP_T
@@ -698,7 +621,7 @@ PAPA45X:
     // asm 00003AD8: 	LDI	AR2,R0
     // asm 00003AD9: 	LDI	R0,R1
     // asm 00003ADA: 	CALL	PAL_OVERWRITE
-FIXPAL1:
+    // asm 00003ADB: FIXPAL1
     // asm 00003ADB: 	NOP	*++AR5(2)
     // asm 00003ADC: 	DBU	AR6,FIXPALLP
     // asm 00003ADD: 	POP	AR6
@@ -862,12 +785,7 @@ NOT_ATOZ:
     // 	;T-> Branch over this Coin Grab
     // 	;F-> Get more coin to continue
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISREC", 0, 0);
-    UNIMPL();
-}
-
-void NOT1ST(void)
-{
+NOT1ST:
     // 	;;;	SYNCED INSMORE...
     // 	;;;	the difference is that the two machine communicate the time
     // 	;;;
@@ -968,7 +886,7 @@ FINFIN:
     // asm 00003BD1: 	STI	R0,@DID_TIMED_OUT
     // asm 00003BD3: 	CALL	INIT_GAMELEG
     // asm: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT1ST", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISREC", 0, 0);
     UNIMPL();
 }
 
@@ -1187,12 +1105,6 @@ void KILL_PLYR_SOUNDS(void)
     // asm 00003C91: 	CALL	KILLSNDFX
     // asm 00003C92: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILL_PLYR_SOUNDS", 0, 0);
-    UNIMPL();
-}
-
-void CONGRAT_SPEECH(void)
-{
-    /* no executable asm lines detected */
     UNIMPL();
 }
 
@@ -1737,7 +1649,7 @@ void BONS_HOTTIME(void)
     // asm 00003EA6: 	CALL	PAL_FIND_RAW
     // asm: 	STI	R0,*+AR4(TEXT_PAL)
     // asm 00003EA7: 	STI	R0,*+AR5(TEXT_PAL)
-BONHTLP:
+    // asm 00003EA9: BONHTLP
     // asm 00003EAA: 	LDF	*+AR4(TEXT_POSY),R0
     // asm 00003EAB: 	FLOAT	152,R1
     // asm 00003EAC: 	LDF	R1,R3
@@ -1760,7 +1672,7 @@ BONHTLP:
     // asm 00003EBC: 	SLEEP	1
     // asm 00003EBD: 	LDI	@DO_FOLDFLAG,R0
     // asm 00003EBE: 	BZ	BONHTLP
-BONHTLP2:
+    // asm 00003EC0: BONHTLP2
     // asm 00003EC0: 	LDF	*+AR4(TEXT_POSY),R0
     // asm 00003EC2: 	FLOAT	152+300,R1
     // asm 00003EC3: 	LDF	R1,R3
@@ -1900,7 +1812,7 @@ void BONS_POSITION(void)
     // asm 00003F24: 	SLEEP	1
     // asm: 	DBU	AR6,BPL1
     // asm 00003F28: 	LDI	158,AR6
-BPL2:
+    // asm 00003F29: BPL2
     // asm 00003F2A: 	LDI	*AR4,AR2
     // asm 00003F2C: 	LDI	220,R2
     // asm: 	ADDI	*+AR4(2),R2
@@ -1995,16 +1907,11 @@ void NOTRUT(void)
     // asm 00003F6A: 	LDI	AR0,AR4
     // asm 00003F6C: 	CALL	HUNGH_ANI_REENTER
     // asm 00003F6D: 	BU	FARLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTRUT", 0, 0);
-    UNIMPL();
-}
-
-void FARX(void)
-{
+FARX:
     // asm: 	POP	AR4
     // asm: 	POP	AR0
     // asm 00003F70: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FARX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTRUT", 0, 0);
     UNIMPL();
 }
 

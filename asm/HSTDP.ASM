@@ -533,7 +533,7 @@ HSTD_TIMER:
 	POP	AR4
 	RETS
 *----------------------------------------------------------------------------
-INSERT_INITS
+INSERT_INITS:
 	LDI	@SCORE,R0
 	LDI	*+AR7(INITI0),R1
 	LDI	*+AR7(INITI1),R2

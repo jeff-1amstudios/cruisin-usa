@@ -24,84 +24,58 @@
  */
 
 void CAMSCAN(void);
-void CMS2(void);
-void CMS1L(void);
+void CAMSCANS(void);
 void OBJSCAN(void);
 void BOXSCAN(void);
+void BOXSCSUB(void);
 void CAR_ROAD_COLL(void);
 void ROADSCAN(void);
 void RDSCNSUB(void);
 void _coll_road(void);
 void GETNMAT(void);
 void _obj_coll(void);
-void VLINST(void);
 void _makbox(void);
 void COLSCC(void);
-void ATTR_COLLISION(void);
-void PLYR_VS_DEBRIS(void);
-void PLYR_VS_SIGN(void);
-void DRONE_VS_DEBRIS(void);
-void DRONE_VS_SIGN(void);
+#define PLYR_VS_DEBRIS PLYRDEBRIS
+void PLYRDEBRIS(void);
+#define PLYR_VS_SIGN PLYRSIGN
+void PLYRSIGN(void);
+#define DRONE_VS_DEBRIS DRONDEBRIS
+void DRONDEBRIS(void);
+#define DRONE_VS_SIGN DRONSIGN
+void DRONSIGN(void);
+void DRONEPTL(void);
 void COLPOINT(void);
 void COLSGCK(void);
 void HARDCOL(void);
-void NOTCOCONUT(void);
-void HARDCOL1(void);
-void KLFD(void);
-void FLYCOLL1(void);
+void ROADKILL(void);
+void FLYCOLL(void);
 void RUNOVER(void);
-void RUNOV0(void);
-void COLSGCX0(void);
 void FLYCOLLP(void);
-void FLYSTOP(void);
 void DEBSCAN(void);
-void DEBSCL0(void);
-void DEBSCL(void);
-void SIGNFALP(void);
-void TREESHKL(void);
+void SIGNFALL(void);
+void TREESHAK(void);
 void FREESIGN(void);
 void ADDSIGN(void);
 void FLYCAR(void);
-void FLY0(void);
-void FLY3(void);
-void FC00(void);
-void FC02(void);
 void FLYCARP(void);
-void FLYCARSTOP0(void);
-void FLYCSTP00(void);
-void FLYCSTP0(void);
-void FLYCSTP1(void);
-void FLYCARSTP(void);
-void FLYCARPXX(void);
-void FLYCARPXXX(void);
 void SEND_FLY_KILL(void);
 void DECODE_FLY_KILL(void);
-void SENDP(void);
+void SEND_FLY_XSFER(void);
 void DECODE_FLY_XSFER(void);
-void DFXX(void);
 void GETFLYMAT(void);
-void PLYR_VS_DRONES(void);
-void COLSCL0(void);
-void DRONES_VS_DRONES(void);
-void CLDSCLP0(void);
+#define PLYR_VS_DRONES COLSCAN
+void COLSCAN(void);
+#define DRONES_VS_DRONES CLDSCAN
+void CLDSCAN(void);
 void REPELL(void);
 void COLDISP(void);
 void SPINROT(void);
-void PLSPIN1(void);
-void PLBIG(void);
-void PSPINNIT(void);
-void SPINBOUNCE(void);
-void DRONESPIN(void);
-void SPINNIT(void);
-void SPINBUMP(void);
+void BEHINDCK(void);
 void ANGMOM(void);
 void CKBOUNCE(void);
-void CKBNCX(void);
-void DRCOLSND(void);
+void COLSND(void);
 void COLCHK(void);
-void PNTNXT0(void);
-void PNTNXT1(void);
-void GOTCOL(void);
 void GETBOX(void);
 void GETBOX0(void);
 
@@ -250,7 +224,12 @@ void CAMSCAN(void)
     // *FALL THRU TO CAMSCANS
     // *
     // *SCAN LIST FOR POINT-OBJECT INTERSECTION
-    // asm 00001F8F: CAMSCANS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCAN", 0, 0);
+    UNIMPL();
+}
+
+void CAMSCANS(void)
+{
     // asm 00001F8F: 	BZ	CMSX  			;NULL LIST DUDES
     // asm 00001F90: 	LDI	R0,AR2
     // asm 00001F91: 	LDI	OPOSZ,IR1
@@ -276,21 +255,11 @@ CMS1:
     // 	;---->	BNZ	CMS1
     // asm 00001FA3: 	B	CMSX			;WE FAILED
     // *CHECK OUT POINT COLLISION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCAN", 0, 0);
-    UNIMPL();
-}
-
-void CMS2(void)
-{
+CMS2:
     // asm 00001FA4: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
     // asm 00001FA5: 	BNC	CMS1L
     // asm 00001FA6: 	RETS				;RETURN COLLISION VALUE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CMS2", 0, 0);
-    UNIMPL();
-}
-
-void CMS1L(void)
-{
+CMS1L:
     // asm 00001FA7: 	LDI	*+AR2(OLINK3),AR2
     // asm 00001FA8: 	LDI	AR2,R1
     // asm 00001FA9: 	BNZD	CMS0
@@ -302,7 +271,7 @@ CMSX:
     // asm 00001FAD: 	FLOAT	0,R0		;DEFAULT HT.
     // asm 00001FAE: 	CLRC
     // asm 00001FAF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CMS1L", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCANS", 0, 0);
     UNIMPL();
 }
 
@@ -354,7 +323,7 @@ void BOXSCAN(void)
     // asm 00001FCA: 	BLT	BS3X
     // asm 00001FCB: 	CLRC	 			;NOTHING FOUND
     // asm 00001FCC: 	RETS
-BS3X:
+    // asm 00001FCD: BS3X
     // asm 00001FCD: 	SETC
     // asm 00001FCE: 	RETS
     // *
@@ -364,18 +333,23 @@ BS3X:
     // *R5=QUICK REJECT LIMIT
     // *R7=LOWEST HEIGHT SO FAR
     // *
-    // asm 00001FCF: BOXSCSUB
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BOXSCAN", 0, 0);
+    UNIMPL();
+}
+
+void BOXSCSUB(void)
+{
     // asm 00001FCF: 	BZ	BSCX  			;NULL LIST DUDES
     // asm 00001FD0: 	LDI	R0,AR2
     // asm 00001FD1: 	LDI	OPOSZ,IR1
-BS0:
+    // asm 00001FD2: BS0
     // asm 00001FD2: 	FLOAT	*+AR4(ORAD),R0		;GET BOX RADIUS
     // asm 00001FD3: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
     // asm 00001FD4: 	LDF	*+AR4(OPOSX),R3		;GET OBJECT X
     // asm 00001FD5: 	SUBF	*+AR2(OPOSX),R3,R2
     // asm 00001FD6: 	SUBF	*+AR2(IR1),R4,R1
     // asm 00001FD7: 	MPYF	R1,R1
-BS1:
+    // asm 00001FD8: BS1
     // asm 00001FD8: 	MPYF	R2,R2
     // asm 00001FD9: 	ADDF	R1,R2
     // asm 00001FDA: 	FLOAT	*+AR2(ORAD),R1	 	;GET ROAD RADIUS
@@ -392,7 +366,7 @@ BS1:
     // 	;---->	BNZ	BS1
     // asm 00001FE5: 	RETS
     // *CHECK OUT POINT COLLISION
-BS2:
+    // asm 00001FE6: BS2
     // asm 00001FE6: 	PUSH	AR4
     // asm 00001FE7: 	LDPI	@BOXSCRAMI,AR4
     // asm 00001FE8: 	ADDI	18H,AR4
@@ -402,7 +376,7 @@ BS2:
     // asm 00001FEB: 	BNC	BS10			;NOPE...
     // asm 00001FEC: 	CMPF	R0,R7
     // asm 00001FED: 	LDFGT	R0,R7			;SAVE LOWEST POINT
-BS10:
+    // asm 00001FEE: BS10
     // asm 00001FEE: 	NOP	*AR4++(3)     		;CHECK NEXT POINT
     // asm 00001FEF: 	DB	AR5,BSRDLP
     // asm 00001FF0: 	LDI	*+AR2(OLINK3),R0
@@ -411,9 +385,9 @@ BS10:
     // asm 00001FF3: 	POP	AR4
     // asm 00001FF4: 	LDI	OPOSZ,IR1
     // 	;---->	BNZ	BS0
-BSCX:
+    // asm 00001FF5: BSCX
     // asm 00001FF5: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BOXSCAN", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BOXSCSUB", 0, 0);
     UNIMPL();
 }
 
@@ -640,9 +614,9 @@ void RDSCNSUB(void)
     // asm 00002077: 	FLOAT	*+AR4(ORAD),R0		;GET BOX RADIUS
     //       	;------>BZD	RDSCNX		;NULL LIST
     // asm 00002078: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
-RS0:
+    // asm 00002079: RS0
     // asm 00002079: 	LDF	*+AR4(OPOSX),R3		;GET OBJECT X
-RS1:
+    // asm 0000207A: RS1
     // asm 0000207A: 	SUBF	*+AR2(OPOSX),R3,R2
     // asm 0000207B: 	SUBF	*+AR2(IR1),R4,R1
     // asm 0000207C: 	MPYF	R1,R1
@@ -663,7 +637,7 @@ RS1:
     // 	;---->	BNZ	RS1
     // asm 0000208A: 	RETS
     // *CHECK OUT ROAD COLLISION
-RS2:
+    // asm 0000208B: RS2
     // asm 0000208B: 	PUSH	AR4
     // asm 0000208C: 	LDI	AR6,AR4
     // asm 0000208D: 	LDI	CARVNUM-1,AR5		;LOOP ALL POINTS
@@ -685,7 +659,7 @@ RS2:
     // asm 0000209B: 	BGT	RS30
     // asm 0000209C: 	B	RS301
     // *OLD IS POSITIVE
-RS297:
+    // asm 0000209D: RS297
     // asm 0000209D: 	LDF	R0,R0
     // asm 0000209E: 	BNN	RS299
     // *OLD IS POS, NEW IS NEG
@@ -694,17 +668,17 @@ RS297:
     // asm 000020A1: 	BGT	RS301
     // asm 000020A2: 	B	RS30
     // *BOTH POSITIVE CASE
-RS299:
+    // asm 000020A3: RS299
     // asm 000020A3: 	CMPF	R0,R1			;TAKE LEAST POSITIVE
     // asm 000020A4: 	BLT	RS30
     // asm 000020A5: 	B	RS301
-RS300:
+    // asm 000020A6: RS300
     // asm 000020A6: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
     // asm 000020A7: 	BNC	RS30			;NOPE...
-RS301:
+    // asm 000020A8: RS301
     // asm 000020A8: 	STF	R0,*+AR4(CARPRDYD)		;SAVE ROAD Y DELTA
     // asm 000020A9: 	STI	AR2,*+AR4(CARPCOL) 	;SAVE COLLISION OBJECT
-RS30:
+    // asm 000020AA: RS30
     // asm 000020AA: 	NOP	*AR4++(CARVSIZ)
     // asm 000020AB: 	DB	AR5,RS3LP
     // asm 000020AC: 	POP	AR4
@@ -944,96 +918,6 @@ EOTV:
     UNIMPL();
 }
 
-void VLINST(void)
-{
-    // asm 0000213C: 	LDI	*AR4++(5),R1
-    // asm 0000213D: 	RPTB	VLINLP
-    // ;	LDI	*AR4++(5),R1
-    // asm 0000213E: 	AND	R1,R4,AR1
-    // asm 0000213F: 	MPYI	3,AR1 		;FIRST INDEX
-    // asm 00002140: 	RS	8,R1
-    // asm 00002141: 	AND	R1,R4,AR3
-    // asm 00002142: 	MPYI	3,AR3		;SECOND INDEX
-    // asm 00002143: 	RS	8,R1
-    // asm 00002144: 	AND	R1,R4,AR5
-    // asm 00002145: 	MPYI	3,AR5		;THIRD INDEX
-    // asm 00002146: 	LSH	R5,R1,AR6
-    // asm 00002147: 	MPYI	3,AR6		;FOURTH INDEX
-    // asm 00002148: 	CMPI	AR5,AR6		;CHECK FOR QUAD OR TRIANGLE
-    // asm 00002149: 	BZD	VLTRI
-    // *
-    // *CHECK POLYGON PT COLLISION
-    // *AR1,AR3,AR5,AR6= PTR TO VERTICES
-    // *IMPLIED COLLISION POINT IS 0,0,0
-    // *
-    // asm 0000214A: VLQUAD
-    // asm 0000214A: 	SUBF	*+AR5(IR0),*+AR6(IR0),R0	;-A
-    // asm 0000214B: 	SUBF	*+AR6(IR1),*+AR5(IR1),R1	;-B
-    // asm 0000214C: 	MPYF	R0,*+AR5(IR1),R2		;-AX1
-    // 	;------>BZD	VLTRI
-    // asm 0000214D: 	MPYF	R1,*+AR5(IR0),R3		;-BY1
-    // asm 0000214E: 	ADDF	R3,R2				;C
-    // asm 0000214F: 	ABSF	R1
-    // asm 00002150: 	CMPF	R1,R2
-    // asm 00002151: 	BGTD	VLINLP	   			;FAIL
-VLTRI:
-    // asm 00002152: 	SUBF	*+AR6(IR0),*+AR1(IR0),R0	;-A
-    // asm 00002153: 	SUBF	*+AR1(IR1),*+AR6(IR1),R1	;-B
-    // asm 00002154: 	MPYF	R0,*+AR6(IR1),R2		;-AX1
-    // asm 00002155: 	MPYF	R1,*+AR6(IR0),R3		;-BY1
-    // asm 00002156: 	ADDF	R3,R2				;C
-    // asm 00002157: 	ABSF	R1
-    // asm 00002158: 	CMPF	R1,R2
-    // asm 00002159: 	BGTD	VLINLP	   			;FAIL
-    // asm 0000215A: 	SUBF	*+AR1(IR0),*+AR3(IR0),R0	;-A
-    // asm 0000215B: 	SUBF	*+AR3(IR1),*+AR1(IR1),R1	;-B
-    // asm 0000215C: 	MPYF	R0,*+AR1(IR1),R2		;-AX1
-    // asm 0000215D: 	MPYF	R1,*+AR1(IR0),R3		;-BY1
-    // asm 0000215E: 	ADDF	R3,R2				;C
-    // asm 0000215F: 	ABSF	R1
-    // asm 00002160: 	CMPF	R1,R2
-    // asm 00002161: 	BGTD	VLINLP	   			;FAIL
-    // asm 00002162: 	SUBF	*+AR3(IR0),*+AR5(IR0),R0	;-A
-    // asm 00002163: 	SUBF	*+AR5(IR1),*+AR3(IR1),R1	;-B
-    // asm 00002164: 	MPYF	R0,*+AR3(IR1),R2		;-AX1
-    // asm 00002165: 	MPYF	R1,*+AR3(IR0),R3		;-BY1
-    // asm 00002166: 	ADDF	R3,R2				;C
-    // asm 00002167: 	ABSF	R1
-    // asm 00002168: 	CMPF	R1,R2
-    // asm 00002169: 	BLE	VLCOLL				;GOT ONE...
-VLINLP:
-    // asm 0000216A: 	LDI	*AR4++(5),R1
-    // asm 0000216B: 	CLRC
-    // asm 0000216C: 	POP	AR7
-    // asm 0000216D: 	POP	AR6
-    // asm 0000216E: 	POP	AR5
-    // asm 0000216F: 	POP	AR4
-    // asm 00002170: 	POP	AR3
-    // asm 00002171: 	POP	AR1
-    // asm 00002172: 	POP	R5
-    // asm 00002173: 	POP	R4
-    // asm 00002174: 	RETS
-    // asm 00002175: VLCOLL						;FOUND ONE!
-    // asm 00002175: 	ADDI	IR1,AR1
-    // asm 00002176: 	ADDI	IR1,AR3
-    // asm 00002177: 	ADDI	IR1,AR5
-    // asm 00002178: 	STI	AR1,@VL
-    // asm 00002179: 	STI	AR3,@VL+1
-    // asm 0000217A: 	STI	AR5,@VL+2
-    // asm 0000217B: 	SETC
-    // asm 0000217C: 	POP	AR7
-    // asm 0000217D: 	POP	AR6
-    // asm 0000217E: 	POP	AR5
-    // asm 0000217F: 	POP	AR4
-    // asm 00002180: 	POP	AR3
-    // asm 00002181: 	POP	AR1
-    // asm 00002182: 	POP	R5
-    // asm 00002183: 	POP	R4
-    // asm 00002184: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VLINST", 0, 0);
-    UNIMPL();
-}
-
 /* *----------------------------------------------------------------------------
 *MAKBOX	GET XYZPLUS-MINUS VALUES FOR CAR
 *       MAKE WHEEL OFFSET TABLE
@@ -1162,77 +1046,57 @@ COLSCCX:
 }
 
 /* *----------------------------------------------------------------------------
- */
-void ATTR_COLLISION(void)
-{
-    // ;	LDI	@_ATTR_MODE,R0
-    // ;	CMPI	-3,R0		;BUG IN FUTURE
-    // asm 000021E0: 	LDI	@_MODE,R0	;This check makes sure the code is not active
-    // asm 000021E1: 	TSTB	MHS,R0		;during the high score display. Thus allowing
-    // asm 000021E2: 	BNZ	NO_ATTR_COL	;use to set MATTR mode during high score
-    // 				;display while in the attract mode
-    // asm 000021E3: 	LDI	@PACTIVEI,AR7	      	;ROOT PROCESS
-    // asm 000021E4: 	CALL	CLDSCAN			;DRONES VS. DRONES
-    // asm 000021E5:  	CALL	DRONSIGN		;DRONES VS. SIGNS, POLES, TREES
-    // asm 000021E6: 	CALL	DRONDEBRIS		;DRONES VS. ROAD DEBRIS
-    // asm 000021E7: 	CALL	DEBSCAN			;CLEAR OUT DEAD DEBRIS
-NO_ATTR_COL:
-    // asm 000021E8: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ATTR_COLLISION", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
 *PLAYER COLLIDE WITH DEBRIS
 *
  */
-void PLYR_VS_DEBRIS(void)
+void PLYRDEBRIS(void)
 {
-    // asm 000021E9: PLYRDEBRIS
     // asm 000021E9: 	LDPI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000021EA: 	LDPI	@ROAD_DEBRISI,AR1
     // asm 000021EB: 	B	COLPOINT
     // *
     // *PLAYER COLLIDE WITH SIGNS
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_VS_DEBRIS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRDEBRIS", 0, 0);
     UNIMPL();
 }
 
-void PLYR_VS_SIGN(void)
+void PLYRSIGN(void)
 {
-    // asm 000021EC: PLYRSIGN
     // asm 000021EC: 	LDPI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000021ED: 	LDPI	@SIGN_LISTI,AR1
     // asm 000021EE: 	B	COLPOINT
     // *
     // *DRONE COLLIDE WITH DEBRIS
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_VS_SIGN", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRSIGN", 0, 0);
     UNIMPL();
 }
 
-void DRONE_VS_DEBRIS(void)
+void DRONDEBRIS(void)
 {
-    // asm 000021EF: DRONDEBRIS
     // asm 000021EF: 	LDPI	@ROAD_DEBRISI,AR1
     // asm 000021F0: 	B	DRONEPT
     // *
     // *DRONE COLLIDE WITH SIGNS
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONE_VS_DEBRIS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONDEBRIS", 0, 0);
     UNIMPL();
 }
 
-void DRONE_VS_SIGN(void)
+void DRONSIGN(void)
 {
-    // asm 000021F1: DRONSIGN
     // asm 000021F1: 	LDPI	@SIGN_LISTI,AR1
 DRONEPT:
     // asm 000021F2: 	LDPI	@CAR_LIST,R0	 	;GET LIST AND CHECK NULL
     // asm 000021F3: 	LDI	R0,AR0
     // asm 000021F4: 	RETSZ
-DRONEPTL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONSIGN", 0, 0);
+    UNIMPL();
+}
+
+void DRONEPTL(void)
+{
     // asm 000021F5: 	LDI	*+AR0(OID),R0
     // asm 000021F6: 	CMPI	DRONE_C|HELICOPTER,R0
     // asm 000021F7: 	BEQ	DRONEPT1
@@ -1252,7 +1116,7 @@ DRONEPT1:
     // asm 00002204: 	LDI	R0,AR0
     // asm 00002205: 	BNZ	DRONEPTL
     // asm 00002206: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONE_VS_SIGN", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONEPTL", 0, 0);
     UNIMPL();
 }
 
@@ -1400,12 +1264,7 @@ void HARDCOL(void)
     // asm 00002259: 	POP	R2
     // asm 0000225A: 	POP	R0
     // asm 0000225B: 	BU	DOREPEL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDCOL", 0, 0);
-    UNIMPL();
-}
-
-void NOTCOCONUT(void)
-{
+NOTCOCONUT:
     // asm 0000225C: 	AND	TYPE_M,R0		;REDWOODS MUST NOT GET KNOCKED OVER
     // asm 0000225D: 	CMPI	TSC_HARD,R0
     // asm 0000225E: 	BNE	RUNOVER
@@ -1442,12 +1301,7 @@ HARDCOL00:
     // asm 00002279: 	LDFLE	-0.02,R0
     // asm 0000227A: 	B	HARDCOL2			;STORE DROT, SET VROT
     // *SPIN THE DUDE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTCOCONUT", 0, 0);
-    UNIMPL();
-}
-
-void HARDCOL1(void)
-{
+HARDCOL1:
     // asm 0000227B: 	LDI	1,R0				;SPIN THE DUDE
     // asm 0000227C: 	STI	R0,*+AR5(CAR_SPIN)
     // asm 0000227D: 	LDF	3.14,R1				;SET 180 MIN SPIN
@@ -1504,7 +1358,12 @@ HARDCOL3:
     // *	AR0	POINTS TO CAR OBJECT
     // *	AR1	POINTS TO ROADKILL OBJECT HIT
     // *
-ROADKILL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDCOL", 0, 0);
+    UNIMPL();
+}
+
+void ROADKILL(void)
+{
     // asm 000022AC: 	LDI	1,R0
     // asm 000022AD: 	STI	R0,*+AR1(OCARBLK)
     // asm 000022AE: 	CALL	ROADKILL_HIT		;MAKE A SOUND
@@ -1515,7 +1374,12 @@ ROADKILL:
     // *FLYING OBJECT
     // *	AR0	POINTS TO CAR OBJECT
     // *	AR1	POINTS TO OBJECT HIT
-FLYCOLL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL", 0, 0);
+    UNIMPL();
+}
+
+void FLYCOLL(void)
+{
     // asm 000022B2: 	LDF	*+AR0(OPOSY),R0		;MAKE SURE HEIGHT IS CLOSE
     // asm 000022B3: 	SUBF	*+AR1(OPOSY),R0
     // asm 000022B4: 	ABSF	R0
@@ -1578,12 +1442,7 @@ CLLL1:
     // asm 000022EB: 	BNE	KLFD
     // asm 000022EC: 	CALL	ROADKILL_SETKILL
     // asm 000022ED: 	BU	COLSGCX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDCOL1", 0, 0);
-    UNIMPL();
-}
-
-void KLFD(void)
-{
+KLFD:
     // asm 000022EE: 	AND	SUBTYPE_M,R2
     // asm 000022EF: 	CMPI	@PLYCAR,AR3		;PLAYERS CAR?
     // asm 000022F0: 	BNZ	FLYCOLL1		;NO...
@@ -1592,17 +1451,12 @@ void KLFD(void)
     // asm 000022F3: 	LDINE	SIGNSND,AR2
     // asm 000022F4: 	CALL	ONESNDFX
     // asm 000022F5: 	B	COLSGCX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "KLFD", 0, 0);
-    UNIMPL();
-}
-
-void FLYCOLL1(void)
-{
+FLYCOLL1:
     // asm 000022F6: 	CMPI	RDD_55GAL,R2
     // asm 000022F7: 	LDIEQ	DRMBNCE,AR2
     // asm 000022F8: 	LDINE	DSIGNSND,AR2
     // asm 000022F9: 	B	COLSGCX0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCOLL1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCOLL", 0, 0);
     UNIMPL();
 }
 
@@ -1657,12 +1511,7 @@ void RUNOVER(void)
     // asm 0000231E: 	LDI	R0,AR2
     // asm 0000231F: 	LDI	*AR2,AR2
     // asm 00002320: 	B	RUNOV00
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUNOVER", 0, 0);
-    UNIMPL();
-}
-
-void RUNOV0(void)
-{
+RUNOV0:
     // asm 00002321: 	CMPI	TSC_R_POLE,R0
     // asm 00002322: 	LDIZ	DONGSND,AR2
     // asm 00002323: 	CMPI	TSC_R_LAMPPOST,R0
@@ -1672,19 +1521,14 @@ RUNOV00:
     // asm 00002326: 	BNZ	COLSGCX0		;NO...
     // asm 00002327: 	CALL	ONESNDFX
     // asm 00002328: 	B	COLSGCX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUNOV0", 0, 0);
-    UNIMPL();
-}
-
-void COLSGCX0(void)
-{
+COLSGCX0:
     // asm 00002329: 	CALL	DRONESND1
 SIGN_IGNORE:
 COLSGCX:
     // asm 0000232A: 	POP	AR1
     // asm 0000232B: 	POP	AR0
     // asm 0000232C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLSGCX0", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUNOVER", 0, 0);
     UNIMPL();
 }
 
@@ -1779,12 +1623,7 @@ FLYCOLP0:
 FLYCSLP:
     // asm 0000237E: 	SLEEP	1
     // asm 00002380: 	B	FLYCOLP0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCOLLP", 0, 0);
-    UNIMPL();
-}
-
-void FLYSTOP(void)
-{
+FLYSTOP:
     // asm 00002381: 	LDI	1,R0
     // asm 00002382: 	LSH	O_PROC_B,R0		;CLEAR PROCESS BIT
     // asm 00002383: 	NOT	R0
@@ -1797,7 +1636,7 @@ void FLYSTOP(void)
     // asm 0000238A: 	CALL	OBJ_DELETE
 NOT_ROADKILL:
     // asm 0000238B: 	BR 	SUICIDE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYSTOP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCOLLP", 0, 0);
     UNIMPL();
 }
 
@@ -1810,12 +1649,7 @@ void DEBSCAN(void)
 {
     // asm 0000238C: 	LDI	@ROAD_DEBRIS,R0
     // asm 0000238D: 	B	DEBSCL1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBSCAN", 0, 0);
-    UNIMPL();
-}
-
-void DEBSCL0(void)
-{
+DEBSCL0:
     // asm 0000238E: 	LDI	*+AR2(OLINK2),R0 	;IN BACKGROUND GROUP?
     // asm 0000238F: 	BNZ	DEBSCL			;YES, SKIP IT...
     // asm 00002390: 	LDI	*+AR2(OFLAGS),R0
@@ -1825,23 +1659,20 @@ void DEBSCL0(void)
     // asm 00002394: 	LDI	*+AR2(OLINK3),R0
     // asm 00002395: 	CALL	OBJ_DELETE			;OBJECT INACTIVE, CAN IT + PROCESS
     // asm 00002396: 	B	DEBSCL1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBSCL0", 0, 0);
-    UNIMPL();
-}
-
-void DEBSCL(void)
-{
+DEBSCL:
     // asm 00002397: 	LDI	*+AR2(OLINK3),R0
 DEBSCL1:
     // asm 00002398: 	LDI	R0,AR2
     // asm 00002399: 	BNZ	DEBSCL0
     // asm 0000239A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBSCL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBSCAN", 0, 0);
     UNIMPL();
 }
 
-void SIGNFALP(void)
+void SIGNFALL(void)
 {
+    // asm 0000239C: 	LDF	0,R6
+SIGNFALP:
     // asm 0000239D: 	ADDF	R7,R6 			;ACCUMULATE RADIANS
     // asm 0000239E: 	CMPF	1.5,R6			;CHECK DONE
     // asm 0000239F: 	BLT	SIGNFALP0		;NOPE...
@@ -1860,12 +1691,25 @@ SIGNFALP0:
     // asm 000023AC: 	CMPF	1.5,R6
     // asm 000023AD: 	BLT	SIGNFALP   		;LOOP TIL DONE
     // asm 000023AE: 	BR	SUICIDE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGNFALP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGNFALL", 0, 0);
     UNIMPL();
 }
 
-void TREESHKL(void)
+void TREESHAK(void)
 {
+    // *SHAKE IT FORWARD
+    // asm 000023B0: 	LDF	R7,R2
+    // asm 000023B1: 	LDPI	@MATRIXAI,AR2  		;GET TEMP STORE
+    // asm 000023B2: 	CALL    FIND_XMATRIX		;NEW MATRIX
+    // asm 000023B3: 	LDI	AR4,R2
+    // asm 000023B4: 	ADDI	OMATRIX,R2
+    // asm 000023B5: 	LDI	R2,R3
+    // asm 000023B6: 	CALL	CONCATMAT
+    // asm 000023B7: 	SLEEP	1
+    // *SHAKE IT BACK
+    // asm 000023B9: 	LDI	3,AR6			;# FRAMES/SHAKE
+    // asm 000023BA: 	MPYF	-0.40,R7     		;DAMP IT
+TREESHKL:
     // asm 000023BB: 	LDF	R7,R2
     // ;	LDP	@MATRIXAI
     // asm 000023BC: 	LDPI	@MATRIXAI,AR2  		;GET TEMP STORE
@@ -1889,7 +1733,7 @@ void TREESHKL(void)
     // asm 000023CE: 	ANDN	R1,R0
     // asm 000023CF: 	STI	R0,*+AR4(OFLAGS)
     // asm 000023D0: 	BR	SUICIDE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TREESHKL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TREESHAK", 0, 0);
     UNIMPL();
 }
 
@@ -2041,12 +1885,7 @@ L78G:
     // asm 0000243D: 	LDI	@DETHTAB2I,AR2
     // asm 0000243E: 	LDI	4,R0
     // asm 0000243F: 	B	FLYCARXX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCAR", 0, 0);
-    UNIMPL();
-}
-
-void FLY0(void)
-{
+FLY0:
     // asm 00002440: 	LDPI	@CAMVIEW,R0
     // asm 00002441: 	BZ	FLY1
     // asm 00002442: 	LDI	750,AR2
@@ -2060,12 +1899,7 @@ FLY1:
     // asm 00002448: 	LDF	0,R1
     // asm 00002449: 	LDI	15,R0			;REVERSE FOR 15 COUNT
     // asm 0000244A: 	B	FLYCARX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLY0", 0, 0);
-    UNIMPL();
-}
-
-void FLY3(void)
-{
+FLY3:
     // asm 0000244B: 	LDF	3.14,R0			;SPIN HIM AROUND
     // asm 0000244C: 	STF	R0,*+AR3(CARSPRAD)
     // asm 0000244D: 	LDF	0.04,R0
@@ -2086,24 +1920,14 @@ FLYCARXX:
     // asm 0000245A: 	BNZ	FC00
     // asm 0000245B: 	LDI	KIDSCREAM2,AR2
     // asm 0000245C: 	B	FC01
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLY3", 0, 0);
-    UNIMPL();
-}
-
-void FC00(void)
-{
+FC00:
     // asm 0000245D: 	CMPI	@CBUSI,R1
     // asm 0000245E: 	BNZ	FC02
     // asm 0000245F: 	LDI	ROAR,AR2
 FC01:
     // asm 00002460: 	CALL	ONESNDFX
     // asm 00002461: 	B	FC03
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FC00", 0, 0);
-    UNIMPL();
-}
-
-void FC02(void)
-{
+FC02:
     // asm 00002462: 	CALL	RANDSND
 FC03:
     // asm 00002463: 	POP	AR5
@@ -2112,7 +1936,7 @@ FC03:
     // asm 00002466: 	POP	AR1
     // asm 00002467: 	POP	AR0
     // asm 00002468: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FC02", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCAR", 0, 0);
     UNIMPL();
 }
 
@@ -2241,12 +2065,7 @@ FLYCARSLP:
     // asm 000024CC: 	SLEEP	1
     // asm 000024CE: 	B	FLYCARP0
     // *ROTATE TO QUIESCENT STATE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCARP", 0, 0);
-    UNIMPL();
-}
-
-void FLYCARSTOP0(void)
-{
+FLYCARSTOP0:
     // ;	CALL	GETCARVSPD		;CONVERT XVEL,ZVEL TO CARSPEED, CARVROT
 FLYCARSTOP:
     // asm 000024CF: 	LDI	@SUSPEND_MODE,R0       	;WAIT IN SUSPEND MODE
@@ -2325,34 +2144,19 @@ FLYCARSTOP:
     // asm 00002512: 	STF	R3,*+AR7(PDATA+3)
     // asm 00002513: 	LDI	2,R0
     // asm 00002514: 	B	FLYCCC			;YES, TIME TO STOP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCARSTOP0", 0, 0);
-    UNIMPL();
-}
-
-void FLYCSTP00(void)
-{
+FLYCSTP00:
     // asm 00002515: 	CMPF	2.95,R3			;UPSIDE DOWN?
     // asm 00002516: 	BLT	FLYCSTP0		;NOPE
     // asm 00002517: FLYCSTP
     // asm 00002517: 	LDI	1,R0	 		;WERE DONE DUDES...
     // asm 00002518: 	B	FLYCCC
     // *ACCELERATE X ROTATION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCSTP00", 0, 0);
-    UNIMPL();
-}
-
-void FLYCSTP0(void)
-{
+FLYCSTP0:
     // asm 00002519: 	LDF	R2,R2
     // asm 0000251A: 	BN	FLYCSTP1
     // asm 0000251B: 	CMPF	1.57,R2
     // asm 0000251C: 	B 	FLYCSTP2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCSTP0", 0, 0);
-    UNIMPL();
-}
-
-void FLYCSTP1(void)
-{
+FLYCSTP1:
     // asm 0000251D: 	CMPF	-1.57,R2
 FLYCSTP2:
     // asm 0000251E: 	LDFLT	-0.01,R0
@@ -2394,12 +2198,7 @@ FLYSTOPSLP:
     // asm 0000253F: 	CALLNZ	SEND_FLY_POS		;SEND YOUR POSITION TO LINKED GAME
     // asm 00002540: 	SLEEP	1
     // asm 00002542: 	B	FLYCARSTOP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCSTP1", 0, 0);
-    UNIMPL();
-}
-
-void FLYCARSTP(void)
-{
+FLYCARSTP:
     // asm 00002543: 	CMPI	2,R1
     // asm 00002544: 	BZ	DEADCAR			;RIGHT SIDE UP CARCASS
     // ;	LDPI	@SCOLLTABI,AR2	   	;RANDOM COLLISION CRUNCH
@@ -2441,24 +2240,14 @@ FLYCARWT:
     // asm 00002556: 	STF	R0,*+AR7(PDATA)	  	;X RADIANS RATE
     // asm 00002557: 	B	FLYCARSTOP		;GO ROCK AND ROLL
     // *CLEAN UP THE MESS...
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCARSTP", 0, 0);
-    UNIMPL();
-}
-
-void FLYCARPXX(void)
-{
+FLYCARPXX:
     // asm 00002558: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 00002559: 	BZ	FLYCARPXXXX		;NOPE...
     // asm 0000255A: 	CALL	COMPTRAK 		;OTHER GUY BEHIND?
     // asm 0000255B: 	BLE	FLYCARPXXX		;NO KILL THE DUDE...
     // asm 0000255C: 	CALL	SEND_FLY_XSFER
     // asm 0000255D: 	BR	OM_DRONE		;CONTROL SWAPS TO OTHER MACHINE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCARPXX", 0, 0);
-    UNIMPL();
-}
-
-void FLYCARPXXX(void)
-{
+FLYCARPXXX:
     // asm 0000255E: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 0000255F: 	CALLNZ	SEND_FLY_KILL		;SEND YOUR POSITION TO LINKED GAME
 FLYCARPXXXX:
@@ -2511,7 +2300,7 @@ DEADLP:
     // *AR4= OBJECT
     // *AR5= CAR BLOCK
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCARPXXX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCARP", 0, 0);
     UNIMPL();
 }
 
@@ -2545,8 +2334,34 @@ DRKX:
     UNIMPL();
 }
 
-void SENDP(void)
+/* *
+*KILL OFF FLY MESSAGE
+*AR4= OBJECT
+*AR5= CAR BLOCK
+*AR7= PROCESS
+*R4=  STATE PARAMETER
+*
+ */
+void SEND_FLY_XSFER(void)
 {
+    // asm 00002597: 	LDI	@COMMQ_TMP_BUFFI,AR2
+    // asm 00002598: 	LDI	CB_FLY_XSFER,R1
+    // asm 00002599: 	STI	R1,*AR2++		;SEND HEADER
+    // asm 0000259A: 	LDI	*+AR5(CARNUM),R1	;SEND ID
+    // asm 0000259B: 	STI	R1,*AR2++
+    // asm 0000259C: 	STI	R4,*AR2++		;SEND STATE
+    // asm 0000259D: 	LDI	AR7,AR0
+    // asm 0000259E: 	ADDI	PDATA,AR0		;GET PDATA 0-5
+    // asm 0000259F: 	LDI	5,RC
+    // asm 000025A0: 	RPTB	SENDP
+    // asm 000025A1: 	LDI	*AR0++,R0
+    // asm 000025A2: 	STI	R0,*AR2++
+    // asm 000025A3: 	LSH	-8,R0
+    // asm 000025A4: 	STI	R0,*AR2++
+    // asm 000025A5: 	LSH	-8,R0
+    // asm 000025A6: 	STI	R0,*AR2++
+    // asm 000025A7: 	LSH	-8,R0
+SENDP:
     // asm 000025A8: STI	R0,*AR2++
     // asm 000025A9: 	LDI	27-1,RC
     // asm 000025AA: 	LDI	@COMMQ_TMP_BUFFI,AR2
@@ -2556,7 +2371,7 @@ void SENDP(void)
     // *GET A FLYER FROM OTHER GAME
     // *AR2=MESSAGE BUFFER
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SENDP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_FLY_XSFER", 0, 0);
     UNIMPL();
 }
 
@@ -2600,15 +2415,10 @@ DECP:
 DFX1:
     // asm 000025CF: 	STI	R5,*+AR7(PWAKE)		;CHANGE WAKE-UP ADDR
     // asm 000025D0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_FLY_XSFER", 0, 0);
-    UNIMPL();
-}
-
-void DFXX(void)
-{
+DFXX:
     // asm 000025D1: 	ADDI	25,AR2			;SKIP REST OF MESSAGE
     // asm 000025D2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DFXX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_FLY_XSFER", 0, 0);
     UNIMPL();
 }
 
@@ -2677,9 +2487,8 @@ void GETFLYMAT(void)
 *	AR1	ADDRESS OF LIST HEADER
 *
  */
-void PLYR_VS_DRONES(void)
+void COLSCAN(void)
 {
-    // asm 000025E8: COLSCAN
     // asm 000025E8: 	BD	COLSCL0
     // asm 000025E9: 	LDI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000025EA: 	LDI	@CAR_LISTI,AR1
@@ -2711,12 +2520,7 @@ COLSCLP0:
     // asm 00002601: 	ADDF	1.0,R0
     // asm 00002602: 	STF	R0,@PMULT		;SPEED MULTIPLIER
     // asm 00002603: 	B	COLDISP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_VS_DRONES", 0, 0);
-    UNIMPL();
-}
-
-void COLSCL0(void)
-{
+COLSCL0:
     // asm 00002604: 	LDI	OPOSZ,IR0
     // asm 00002605: 	LDF	*+AR0(OPOSX),R2		;GET X COORD
     // asm 00002606: 	LDF	*+AR0(OPOSZ),R3		;GET Z COORD
@@ -2729,7 +2533,7 @@ COLSCL:
     // asm 0000260C: 	TSTB	O_NOCOLL,R0		;check non-collide flag
     // ********BNZD	COLSCLP0
     // asm 0000260D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLSCL0", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLSCAN", 0, 0);
     UNIMPL();
 }
 
@@ -2743,9 +2547,8 @@ COLSCL:
 *	AR1	ADDRESS OF LIST HEADER
 *
  */
-void DRONES_VS_DRONES(void)
+void CLDSCAN(void)
 {
-    // asm 0000260E: CLDSCAN
     // asm 0000260E: 	LDPI	@CAR_LIST,R0	 	;GET LIST AND CHECK NULL
     // asm 0000260F: 	BNZD	CLDSCL0
     // asm 00002610: 	LDI	R0,AR0
@@ -2753,12 +2556,7 @@ void DRONES_VS_DRONES(void)
     // asm 00002612: 	NOP
     // 	;------->BNZD CLDSCL0
     // asm 00002613: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONES_VS_DRONES", 0, 0);
-    UNIMPL();
-}
-
-void CLDSCLP0(void)
-{
+CLDSCLP0:
     // asm 00002614: 	BNZD	CLDSCL			;NOCOL BIT SET
     // asm 00002615: 	SUBF	*+AR1(OPOSX),R2,R0
     // asm 00002616: 	MPYF	R0,R0
@@ -2796,7 +2594,7 @@ CLDSCL1:
     // asm 00002631: 	NOP
     // 	;------->BNZD CLDSCL0
     // asm 00002632: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLDSCLP0", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLDSCAN", 0, 0);
     UNIMPL();
 }
 
@@ -3271,12 +3069,7 @@ void SPINROT(void)
     // asm 00002777: 	CALL	CKBOUNCE
     // asm 00002778: 	BNC	SPINBUMP
     // asm 00002779: 	B	SPINBOUNCE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINROT", 0, 0);
-    UNIMPL();
-}
-
-void PLSPIN1(void)
-{
+PLSPIN1:
     // asm 0000277A: 	CMPF	100,R3
     // asm 0000277B: 	BGT	PLBIG			;SPIN, RELATIVE VELOCITY LARGE
     // asm 0000277C: 	LDI	500,AR2			;SPIN PROBABILITY
@@ -3291,12 +3084,7 @@ PLSPIN2:
     // asm 00002784: 	CALL	RANDPER
     // asm 00002785: 	BC	PSPINNIT       		;NORMAL SPIN
     // asm 00002786: 	B	SPINBUMP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLSPIN1", 0, 0);
-    UNIMPL();
-}
-
-void PLBIG(void)
-{
+PLBIG:
     // asm 00002787: 	LDI	@CAMVIEW,R2
     // asm 00002788: 	LDINZ	500,AR2
     // asm 00002789: 	LDIZ	250,AR2			;LESS SPIN 1ST PERSON
@@ -3308,7 +3096,12 @@ void PLBIG(void)
     // *
     // *CHECK IF PLAYER HIT FROM BEHIND
     // *
-    // asm 0000278F: BEHINDCK
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINROT", 0, 0);
+    UNIMPL();
+}
+
+void BEHINDCK(void)
+{
     // asm 0000278F: 	PUSHF	R0
     // asm 00002790: 	PUSHF	R3
     // asm 00002791: 	PUSH	AR2
@@ -3332,21 +3125,11 @@ void PLBIG(void)
     // *
     // *CHECK PLAYER SPINNOUT
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLBIG", 0, 0);
-    UNIMPL();
-}
-
-void PSPINNIT(void)
-{
+PSPINNIT:
     // asm 000027A3: 	LDI	@PLYRBEHIND,R2
     // asm 000027A4: 	BNE	SPINBUMP		;YES, JUST BUMP THE DUDE
     // asm 000027A5: 	B 	SPINNIT			;NO, SPIN 'EM OUT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PSPINNIT", 0, 0);
-    UNIMPL();
-}
-
-void SPINBOUNCE(void)
-{
+SPINBOUNCE:
     // asm 000027A6: 	LDF	*+AR5(CARSPEED),R4
     // asm 000027A7: 	CMPF	20,R4		      	;MINIMUM SPEED VALUE
     // asm 000027A8: 	LDFLT	20,R4
@@ -3370,12 +3153,7 @@ void SPINBOUNCE(void)
     // *DRONE SPIN
     // *R0	ROTATION SPEED (FLOAT)
     // *R3	COLLSION RELATIVE SPEED
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINBOUNCE", 0, 0);
-    UNIMPL();
-}
-
-void DRONESPIN(void)
-{
+DRONESPIN:
     // asm 000027B6: 	ABSF	R0,R1	     		;COMPUTE SPIN PROBABILITY
     // asm 000027B7: 	CMPF	0.1,R1
     // asm 000027B8: 	BLT	SPINBUMP		;NO SPIN, TOO SMALL
@@ -3424,12 +3202,7 @@ DSPIN0:
     // * SPINNIT: TOTAL SPINOUT
     // *SET RANGE TO .08 -.12 DUDES
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESPIN", 0, 0);
-    UNIMPL();
-}
-
-void SPINNIT(void)
-{
+SPINNIT:
     // asm 000027DC: 	ABSF	@SPINTEMP,R2     	;GET SPIN MAGNITUDE
     // asm 000027DD: 	CMPF	10,R2
     // asm 000027DE: 	LDFGT	10,R2
@@ -3463,12 +3236,7 @@ SPINTM1:
     // *MOMENTARY BUMP SPIN
     // *R3=RELATIVE VELOCITY OF HIT
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINNIT", 0, 0);
-    UNIMPL();
-}
-
-void SPINBUMP(void)
-{
+SPINBUMP:
     // asm 000027F7: 	LDF	@SPINTEMP,R2
     // asm 000027F8: 	CMPF	0.05,R2
     // asm 000027F9: 	LDFGT	0.05,R2
@@ -3517,7 +3285,7 @@ SPINXXX:
     // *ANGULAR MOMENTUM
     // *R2=NEW ANGULAR MOMENTUM
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINBUMP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BEHINDCK", 0, 0);
     UNIMPL();
 }
 
@@ -3561,12 +3329,7 @@ void CKBOUNCE(void)
     // asm 00002830: 	BGT	CKBNCX			;DIRECTION OUT OF RANGE
     // asm 00002831: 	SETC
     // asm 00002832: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKBOUNCE", 0, 0);
-    UNIMPL();
-}
-
-void CKBNCX(void)
-{
+CKBNCX:
     // asm 00002833: 	CLRC
     // asm 00002834: 	RETS
     // *
@@ -3575,7 +3338,12 @@ void CKBNCX(void)
     // *AR1=VEHICLE #2
     // *R0=IMPACT SPEED
     // *
-    // asm 00002835: COLSND
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKBOUNCE", 0, 0);
+    UNIMPL();
+}
+
+void COLSND(void)
+{
     // asm 00002835: 	PUSHF	R0
     // asm 00002836: 	PUSH	AR0
     // asm 00002837: 	PUSH	AR1
@@ -3604,12 +3372,7 @@ COLSND1:
     // asm 0000284D: 	CALL	RANDVSND       		;DO COLLISION SOUND+EXIT
     // asm 0000284E: 	B	COLSNDX
     // * DRONE VS. DRONE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKBNCX", 0, 0);
-    UNIMPL();
-}
-
-void DRCOLSND(void)
-{
+DRCOLSND:
     // asm 0000284F: 	PUSH	AR4
     // asm 00002850: 	LDI	AR0,AR4
     // asm 00002851: 	CALL	DRONESND
@@ -3620,7 +3383,7 @@ COLSNDX:
     // asm 00002855: 	POP	AR0
     // asm 00002856: 	POPF	R0
     // asm 00002857: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRCOLSND", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLSND", 0, 0);
     UNIMPL();
 }
 
@@ -3673,12 +3436,7 @@ PLANEQ:
 EQCHK0:
     // asm 00002887: NOP
     // asm 00002888: 	BU	GOTCOL			;GOT A COLLISION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLCHK", 0, 0);
-    UNIMPL();
-}
-
-void PNTNXT0(void)
-{
+PNTNXT0:
     // asm 00002889: 	NOP	*AR3++(3)
     // asm 0000288A: 	DBU	AR4,PNTCKL0
     // *CHECK POINTS OBJ0 VS EQ OBJ1
@@ -3699,12 +3457,7 @@ void PNTNXT0(void)
 EQCHK1:
     // asm 00002898: NOP
     // asm 00002899: 	BU	GOTCOL			;GOT A COLLISION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PNTNXT0", 0, 0);
-    UNIMPL();
-}
-
-void PNTNXT1(void)
-{
+PNTNXT1:
     // asm 0000289A: 	NOP	*AR3++(3)
     // asm 0000289B: 	DBU	AR4,PNTCKL1
     // asm 0000289C: 	CLRC				;NO COLLISION
@@ -3716,17 +3469,12 @@ COLCHKX:
     // asm 000028A1: 	POP	R3
     // asm 000028A2:  	POP	R2
     // asm 000028A3: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PNTNXT1", 0, 0);
-    UNIMPL();
-}
-
-void GOTCOL(void)
-{
+GOTCOL:
     // asm 000028A4: 	POP	AR1  			;GET COLLIDING OBJECTS
     // asm 000028A5: 	POP	AR0
     // asm 000028A6: 	SETC
     // asm 000028A7: 	BU	COLCHKX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GOTCOL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLCHK", 0, 0);
     UNIMPL();
 }
 

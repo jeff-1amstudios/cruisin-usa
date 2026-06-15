@@ -21,13 +21,10 @@
 
 void COIN1(void);
 void COIN2(void);
-void JAJA3(void);
 void COIN3(void);
 void COIN4(void);
 void SERV_COIN(void);
-void NOINC(void);
 void GETCOIN(void);
-void USE_STANDARD(void);
 void GET_THIS_COIN(void);
 void GET_THIS_COINTXT(void);
 void GETCOINTXT(void);
@@ -52,29 +49,21 @@ void INICC(void);
 void FONT18RED(void);
 void FONT18REDDS(void);
 void INSERT_COINS(void);
-void NO_START(void);
-void GODO_CREDITS(void);
 void FLASH_INSERTCOINS(void);
 void SHOW_INSERTCOINS(void);
-void NO_INSERTCOINS(void);
 void FLASH_START(void);
-void FLASH_STARTX(void);
 void PRINT_COINAGE(void);
 void GET_COINAGE_HIGHT(void);
 void WHITE10FNT(void);
 void PRINT_CREDITS(void);
 void FLASH_TO_START(void);
-void NO_TOSTART(void);
 void TOSTART_STRING(void);
 void TOCONT_STRING(void);
 void VOLUME_DISPLAY(void);
 void INSERT_MORE_COINS(void);
-void ISMCC(void);
 void FLASH_INSERTCOINSM(void);
-void NO_INSERTCOINSM(void);
 void PRINT_TOCONT(void);
 void COIN_COUNTER(void);
-void CLEARIT(void);
 void MOTIONDIS(void);
 void MOTION_VALID(void);
 
@@ -88,8 +77,6 @@ int CUSTOM_COINSTR[10];
 #define bufferi buffer
 /* asm: buffer	.bss	buffer,2 */
 int buffer[2];
-const char *CTS_STR = " TO START";
-const char *CTC_STR = " TO CONTINUE";
 /* asm: FCB	.bss	FCB,1 */
 int FCB;
 /* asm: PCB	.bss	PCB,1 */
@@ -102,23 +89,15 @@ int CREDITBUFFER[8];
 #define TOSTARTBUFFI TOSTARTBUFFER
 /* asm: TOSTARTBUFFER	.bss	TOSTARTBUFFER,8 */
 int TOSTARTBUFFER[8];
-const char *NCB = "@";
-const char *SPC = " ";
-const char *DBLSPC = "  ";
-const char *CW = "CREDITS";
-const char *CWS = "CREDIT";
 /* asm: SCI	.word	SCS	;CREDITS TO START (START CREDIT) */
 #define SCI SCS
 /* asm: SCS	.bss	SCS,1 */
 int SCS;
-const char *MSG_NULL = "";
 /* *----------------------------------------------------------------------------
 *
 *	F  P/N  CREDITS
 *
  */
-const char *INSERTCOINS = "INSERT COINS";
-const char *HITSTART = "PRESS START";
 /* asm: ICF	.bss	ICF,1 */
 int ICF;
 /* *----------------------------------------------------------------------------
@@ -192,12 +171,7 @@ void COIN2(void)
     // asm 00007358: 	STI	R1,@COIN_COUNTER1
     // asm 00007359: 	SETDP
     // asm 0000735A: 	BU	JAJA5
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN2", 0, 0);
-    UNIMPL();
-}
-
-void JAJA3(void)
-{
+JAJA3:
     // asm 0000735B: 	CALL	GET_COIN2_COUNTER
     // asm 0000735C: 	LDP	@COIN_COUNTER2
     // asm 0000735D: 	LDI	@COIN_COUNTER2,R1
@@ -207,7 +181,7 @@ void JAJA3(void)
 JAJA5:
     // asm 00007361: 	CALL	GET_COIN2
     // asm 00007362: 	BU	CHECK_CREDITS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "JAJA3", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN2", 0, 0);
     UNIMPL();
 }
 
@@ -293,12 +267,7 @@ CHECK_CREDITSLP:
     // asm 000073AF: NOINCCRD
     // asm 000073AF: 	POP	R2
     // asm 000073B0: 	BU	CHECK_CREDITSLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SERV_COIN", 0, 0);
-    UNIMPL();
-}
-
-void NOINC(void)
-{
+NOINC:
     // asm 000073B1: 	READAUD	AUD_BCREDITS
     // asm 000073B3: 	LDI	R0,R2
     // asm 000073B4: 	CALL	GET_UNITS_FOR_BONUS
@@ -322,7 +291,7 @@ void NOINC(void)
 NOBONUS:
 CHECK_CREDITSX:
     // asm 000073CA: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOINC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SERV_COIN", 0, 0);
     UNIMPL();
 }
 
@@ -334,16 +303,11 @@ void GETCOIN(void)
     // asm 000073CE: 	BEQ	USE_STANDARD
     // asm 000073CF: 	LDI	@CUSTOM_COINTABI,AR0
     // asm 000073D0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCOIN", 0, 0);
-    UNIMPL();
-}
-
-void USE_STANDARD(void)
-{
+USE_STANDARD:
     // asm 000073D1: 	LDI	ADJ_COINMODE,AR2
     // asm 000073D2: 	CALL	ADJUSTMENT_READ
     // asm 000073D3: 	LDI	R0,AR0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "USE_STANDARD", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCOIN", 0, 0);
     UNIMPL();
 }
 
@@ -645,7 +609,6 @@ void GET_COIN4_COUNTER(void)
     // asm: 	POP	AR2
     // asm: 	POP	AR0
     // asm: 	RETS
-    // asm: 	END_LONGROUT
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_COIN4_COUNTER", 0, 0);
     UNIMPL();
 }
@@ -841,12 +804,7 @@ SHOW_COINAGE:
     // asm 000074AB: 	CALLGE	FLASH_START
     // asm 000074AC: 	ADDF	22,R3
     // asm 000074AD: 	BU	SHOW_CREDITS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_COINS", 0, 0);
-    UNIMPL();
-}
-
-void NO_START(void)
-{
+NO_START:
     // asm 000074AE: 	CALL	FLASH_TO_START		;FLASH THE TO START AND TO CONTINUE MESSAGES
     // asm 000074AF: 	ADDF	22,R3
 SHOW_CREDITS:
@@ -858,12 +816,7 @@ SHOW_CREDITS:
     // asm 000074B7: 	BNZ	GODO_CREDITS
     // asm 000074B8: 	CALL	SHOW_INSERTCOINS
     // asm 000074B9: 	BU	DO_COINAGE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_START", 0, 0);
-    UNIMPL();
-}
-
-void GODO_CREDITS(void)
-{
+GODO_CREDITS:
     // asm 000074BA: 	CALL	PRINT_CREDITS		;Print the credits message
     // asm 000074BB: 	LDI	@CREDITBUFFI,AR2
     // asm 000074BC: 	FLOAT	256,R2
@@ -879,7 +832,7 @@ DO_COINAGE:
     // asm 000074C8: 	CALL	PRINT_COINAGE
     // asm 000074C9: INSERT_COINSX
     // asm 000074C9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GODO_CREDITS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_COINS", 0, 0);
     UNIMPL();
 }
 
@@ -905,12 +858,7 @@ void SHOW_INSERTCOINS(void)
     // asm 000074D7: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
     // asm 000074DA: 	CALL	FONT18REDDS
     // asm 000074DB: 	BU	FLASH_INSERTCOINSX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_INSERTCOINS", 0, 0);
-    UNIMPL();
-}
-
-void NO_INSERTCOINS(void)
-{
+NO_INSERTCOINS:
     // asm 000074DC: 	LDI	@ICF,R0
     // asm 000074DD: 	ADDI	@NFRAMES,R0
     // asm 000074DE: 	CMPI	30,R0
@@ -918,7 +866,7 @@ void NO_INSERTCOINS(void)
     // asm 000074E0: 	STI	R0,@ICF
 FLASH_INSERTCOINSX:
     // asm 000074E1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_INSERTCOINS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_INSERTCOINS", 0, 0);
     UNIMPL();
 }
 
@@ -944,20 +892,15 @@ void FLASH_START(void)
     // asm 000074F1: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
     // asm 000074F4: 	CALL	FONT18REDDS
     // asm 000074F5: 	BU	FLASH_STARTX
-START_SKIP:
+    // asm 000074F6: START_SKIP
     // asm 000074F6: 	ADDI	@NFRAMES,R0
     // asm 000074F7: 	CMPI	20,R0
     // asm 000074F8: 	LDIGT	-1,R0
     // asm 000074F9: 	STI	R0,@ICF
     // asm 000074FA: 	BU	FLASH_STARTX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_START", 0, 0);
-    UNIMPL();
-}
-
-void FLASH_STARTX(void)
-{
+FLASH_STARTX:
     // asm 000074FB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_STARTX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_START", 0, 0);
     UNIMPL();
 }
 
@@ -1101,12 +1044,7 @@ void FLASH_TO_START(void)
     // asm 00007574: 	STI	R0,@ICF
     // asm 00007575: 	CALL	TOSTART_STRING
     // asm 00007576: 	BU	PRINT_TOSTART
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_TO_START", 0, 0);
-    UNIMPL();
-}
-
-void NO_TOSTART(void)
-{
+NO_TOSTART:
     // asm 00007577: 	LDI	@ICF,R0
     // asm 00007578: 	ADDI	@NFRAMES,R0
     // asm 00007579: 	CMPI	45,R0
@@ -1129,7 +1067,7 @@ PRINT_TOSTART:
     // asm 0000758D: 	CALL	FONT18REDDS
 FLASH_TOSTARTX:
     // asm 0000758E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_TOSTART", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_TO_START", 0, 0);
     UNIMPL();
 }
 
@@ -1248,12 +1186,7 @@ void INSERT_MORE_COINS(void)
     // asm 000075E6: 	BNZ	ISMCC
     // asm 000075E7: 	CALL	FLASH_INSERTCOINSM
     // asm 000075E8: 	BU	INSERT_COINSXM
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_MORE_COINS", 0, 0);
-    UNIMPL();
-}
-
-void ISMCC(void)
-{
+ISMCC:
     // asm 000075E9: 	CALL	PRINT_CREDITS
     // asm 000075EA: 	LDI	@CREDITBUFFI,AR2
     // asm 000075EB: 	FLOAT	256,R2
@@ -1265,7 +1198,7 @@ void ISMCC(void)
 INSERT_COINSXM:
     // asm 000075F5: 	POP	R4
     // asm 000075F6: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISMCC", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_MORE_COINS", 0, 0);
     UNIMPL();
 }
 
@@ -1287,12 +1220,7 @@ void FLASH_INSERTCOINSM(void)
     // asm 00007602: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm 00007605: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
     // asm 00007608: 	BU	FLASH_INSERTCOINSXM
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_INSERTCOINSM", 0, 0);
-    UNIMPL();
-}
-
-void NO_INSERTCOINSM(void)
-{
+NO_INSERTCOINSM:
     // asm 00007609: 	LDI	@ICF,R0
     // asm 0000760A: 	ADDI	@NFRAMES,R0
     // asm 0000760B: 	CMPI	30,R0
@@ -1300,7 +1228,7 @@ void NO_INSERTCOINSM(void)
     // asm 0000760D: 	STI	R0,@ICF
 FLASH_INSERTCOINSXM:
     // asm 0000760E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_INSERTCOINSM", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_INSERTCOINSM", 0, 0);
     UNIMPL();
 }
 
@@ -1381,12 +1309,7 @@ NOINC2:
     // asm 00007644: 	EINT
     // asm 00007645: 	SETDP
     // asm 00007646: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN_COUNTER", 0, 0);
-    UNIMPL();
-}
-
-void CLEARIT(void)
-{
+CLEARIT:
     // asm 00007647: 	LDI	1,R0
     // asm 00007648: 	STI	R0,@COUNTER_MODE
     // asm 00007649: 	DINT
@@ -1399,7 +1322,7 @@ void CLEARIT(void)
     // asm 00007655: 	EINT
     // asm 00007656: 	SETDP
     // asm 00007657: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEARIT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN_COUNTER", 0, 0);
     UNIMPL();
 }
 

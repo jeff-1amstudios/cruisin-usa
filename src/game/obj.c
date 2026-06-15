@@ -18,7 +18,6 @@
 void OBJ_INIT(void);
 void OBJ_GETE(void);
 void OBJ_GET(void);
-void NOOBJ(void);
 void GETDIST(void);
 void OBJ_INSERTP(void);
 void OBJ_INSERTLP(void);
@@ -26,7 +25,6 @@ void OBJ_INSERTHP(void);
 void OBJ_INSERT(void);
 void OBJ_FIND_FIRST_PRIORITY(void);
 void OBJ_FIND_FIRST(void);
-void FF_OK(void);
 void OBJ_FREE_GROUND(void);
 void OBJ_FREE_SIGN(void);
 void OBJ_FREE_DRIVE(void);
@@ -36,23 +34,14 @@ void OBJ_DELETE_CLASS(void);
 void OBJ_PULL(void);
 void OBJ_FREE(void);
 void ZSORTWT(void);
-void ZWPRIOK(void);
-void ZSWTX(void);
 void PLYRDLINK(void);
 void PLYRSORT(void);
-void PSRT1L(void);
-void PSRT2(void);
 void DRONESORT(void);
-void DSLP1(void);
-void DZSORTUP1(void);
-void DSLP(void);
 void OSCAN(void);
 void ISCAN(void);
 void RESCAN(void);
 void ZSORTPRIOR(void);
-void PRIOKP(void);
 void ZSORTACT(void);
-void PRIOK(void);
 void OBJ_MAKE(void);
 void OBJ_QMAKE(void);
 
@@ -233,17 +222,12 @@ void OBJ_GET(void)
     // asm 00007075: 	CLRC
     // asm 00007076: 	POP	R0
     // asm 00007077: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_GET", 0, 0);
-    UNIMPL();
-}
-
-void NOOBJ(void)
-{
+NOOBJ:
     // asm 00007078: 	ERRON	U,EC_OBJ|ET_ALLOC
     // asm 00007080: 	SETC
     // asm 00007081: 	POP	R0
     // asm 00007082: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOOBJ", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_GET", 0, 0);
     UNIMPL();
 }
 
@@ -467,16 +451,11 @@ FF_ERR:
     // asm 000070EF: 	CLRC
     // asm 000070F0: 	POP	R0
     // asm 000070F1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FIND_FIRST", 0, 0);
-    UNIMPL();
-}
-
-void FF_OK(void)
-{
+FF_OK:
     // asm 000070F2: 	SETC
     // asm 000070F3: 	POP	R0
     // asm 000070F4: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FF_OK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FIND_FIRST", 0, 0);
     UNIMPL();
 }
 
@@ -823,12 +802,7 @@ ZSWTLP:
     // asm 000071CB: 	LDI	R6,R6			;ANY SWAPS?
     // asm 000071CC: 	BZ	ZSWTXX			;NO DONE...
     // asm 000071CD: 	B	ZSORTWL	      		;START OVER AT THE BEGINNING
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZSORTWT", 0, 0);
-    UNIMPL();
-}
-
-void ZWPRIOK(void)
-{
+ZWPRIOK:
     // asm 000071CE: 	LDI	*AR2,R1			;NEW NEXT LINK
     // asm 000071CF: 	BNZD	ZSWTLP
     // asm 000071D0: 	LDI	AR1,AR0			;AR4=PREVIOUS-1 LINK
@@ -836,12 +810,7 @@ void ZWPRIOK(void)
     // asm 000071D2: 	LDI	R1,AR2
     // 	;---->	BNZD	ZSWTLP
     // asm 000071D3: 	BR	ZSORTWL			;START OVER AT THE BEGINNING
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZWPRIOK", 0, 0);
-    UNIMPL();
-}
-
-void ZSWTX(void)
-{
+ZSWTX:
 ZSWTXX:
     // asm 000071D4: 	LDI	@_MODE,R0
     // asm 000071D5: 	AND	MHS,R0
@@ -853,7 +822,7 @@ ZSWTXX:
     // asm 000071DB: 	CALL	SORT_SMOKE
     // asm 000071DC: 	CALL	FLAMESORT
     // asm 000071DD: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZSWTX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZSORTWT", 0, 0);
     UNIMPL();
 }
 
@@ -905,12 +874,7 @@ void PLYRSORT(void)
     // asm 000071F0: 	STI	R0,*AR5			;ZERO OUT PLAYERS LINK
     // asm 000071F1: 	LDI	@OACTIVEI,AR1		;GET OBJECT LIST POINTER
     // asm 000071F2: 	BR	PSRT1NXT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRSORT", 0, 0);
-    UNIMPL();
-}
-
-void PSRT1L(void)
-{
+PSRT1L:
     // asm 000071F3: 	AND	CLASS_M|TYPE_M,R1	;CHECK FOR A DRONE
     // asm 000071F4: 	CMPI	DRONE_C|VEHICLE_T,R1
     // asm 000071F5: 	BNE	PSRT1NXT
@@ -929,12 +893,7 @@ PSRT2A:
     // asm 00007200: 	BZ	PSRT2
     // asm 00007201: 	LDI	R1,AR2
     // asm 00007202: 	BR	PSRT2A
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PSRT1L", 0, 0);
-    UNIMPL();
-}
-
-void PSRT2(void)
-{
+PSRT2:
     // asm 00007203: 	LDI	*AR1,R0			;REMOVE DRONE FORM OBJECT LIST
     // asm 00007204: 	STI	R0,*AR0
     // asm 00007205: 	STI	AR1,*AR2		;LINK DRONE TO TEMP PLAYER LIST
@@ -951,7 +910,7 @@ PSRT1NXT:
     // asm 0000720D: 	STI	AR5,*AR0		;LINK IN PLAYER CHAIN
 PSORTX:
     // asm 0000720E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PSRT2", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRSORT", 0, 0);
     UNIMPL();
 }
 
@@ -1072,12 +1031,7 @@ DZSORTUP:
     // asm 0000725E: 	LDI	ROAD_C+SHLDR_T,R2	;GET SOULDER ID
     // asm 0000725F: 	LDI	CLASS_M,R3
     // asm 00007260: 	BU	DSL11
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESORT", 0, 0);
-    UNIMPL();
-}
-
-void DSLP1(void)
-{
+DSLP1:
     // asm 00007261: 	BGT	DSL000	 		;ROAD OR CAR, CHECK IT OUT..
     // asm 00007262: 	AND	R3,R4,R5
     // asm 00007263: 	CMPI	TSIGN_C,R5		;SIGN OR TREE, NEED TO CHECK PRIORITY ?
@@ -1098,20 +1052,10 @@ DSL11:
     // *Z SORT IT UPWARDS
     // *AR1=OBJECT TO INSERT AFTER IN OBJECT LIST
     // *AR5=DRONE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DSLP1", 0, 0);
-    UNIMPL();
-}
-
-void DZSORTUP1(void)
-{
+DZSORTUP1:
     // asm 0000726E: 	LDI	*+AR5(ODIST),R1	     	;GET DRONE DISTANCE
     // asm 0000726F: 	BU	DSL1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DZSORTUP1", 0, 0);
-    UNIMPL();
-}
-
-void DSLP(void)
-{
+DSLP:
     // asm 00007270: 	BGE	DSDONE	 		;PRIORITY IS O.K., WERE DONE WITH DRONE
     // asm 00007271: 	LDI	AR2,AR1
 DSL1:
@@ -1131,7 +1075,7 @@ DSDONE:
     // asm 0000727B: 	BNZ	NXTDRONE
 DSORTXX:
     // asm 0000727C: 	RETS				;WE QUIT...
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DSLP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESORT", 0, 0);
     UNIMPL();
 }
 
@@ -1315,12 +1259,7 @@ ZSLPP:
     // asm 000072F1: 	LDI	R1,R1
     // asm 000072F2: 	BNZ	ZSLPP
     // asm 000072F3: 	BR	ZSORTXP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZSORTPRIOR", 0, 0);
-    UNIMPL();
-}
-
-void PRIOKP(void)
-{
+PRIOKP:
     // asm 000072F4: 	LDI	R1,R0
     // asm 000072F5: 	LDI	AR1,AR0			;AR4=PREVIOUS-1 LINK
     // asm 000072F6: 	LDI	AR2,AR1			;AR0=PREVIOUS
@@ -1331,7 +1270,7 @@ ZSORTXP:
     // asm 000072FA: LDI	R2,R2
     // asm 000072FB: 	BNZ	ZSORTA1P
     // asm 000072FC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRIOKP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZSORTPRIOR", 0, 0);
     UNIMPL();
 }
 
@@ -1366,12 +1305,7 @@ ZSLP:
     // asm 00007310: 	LDI	R1,R1
     // asm 00007311: 	BNZ	ZSLP
     // asm 00007312: 	BR	ZSORTX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZSORTACT", 0, 0);
-    UNIMPL();
-}
-
-void PRIOK(void)
-{
+PRIOK:
     // asm 00007313: 	LDI	R1,R0
     // asm 00007314: 	LDI	AR1,AR0			;AR4=PREVIOUS-1 LINK
     // asm 00007315: 	LDI	AR2,AR1			;AR0=PREVIOUS
@@ -1382,7 +1316,7 @@ ZSORTX:
     // asm 00007319: 	LDI	R2,R2
     // asm 0000731A: 	BNZ	ZSORTA1
     // asm 0000731B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRIOK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZSORTACT", 0, 0);
     UNIMPL();
 }
 

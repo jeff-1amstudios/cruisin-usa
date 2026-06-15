@@ -8,6 +8,15 @@
 // COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // ALL RIGHTS RESERVED
 
+// asm: 	.globl	FONTDIGSMI
+#define FONTDIGSMI FONTDIGSM
+
+// asm: 	.globl	FONTDIGLGI
+#define FONTDIGLGI FONTDIGLG
+
+// asm: 	.globl	FONTN43TABI
+#define FONTN43TABI FONTN43TAB
+
 // asm: 	.globl	FONT40TABI
 extern int FONT40TABI;
 

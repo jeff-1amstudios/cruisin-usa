@@ -20,39 +20,17 @@
  */
 
 void ENTER_INITIALS(void);
-void MSLPX(void);
-void EIML(void);
-void EMIL1(void);
-void TRIGPOTCHK(void);
-void DORUB(void);
-void NOTBCKSPC(void);
-void DONE_ENTRY(void);
+void PEDALWT(void);
 void ENTERTEXT(void);
 void CREATE_ENTERTEXT(void);
 void MAKE_CENTER(void);
 void HSTD_TIMER(void);
 void INSERT_INITS(void);
 void INTO_TABLE_P(void);
-void ITP2(void);
 void CHECK_FIRST_TIME(void);
-void NOT_FIRST_TIME(void);
 void CALC_TOTAL_ELAPSED(void);
 void PRESS_CODE_ENTRY(void);
-void PRA(void);
-void PR0A2(void);
-void PR1(void);
-void PR2A(void);
-void PR2AA(void);
-void PR2A1(void);
-void PR3(void);
 void INIT_PRESS_OBJECTS(void);
-void FPO1(void);
-void FPO1A(void);
-void FPO3(void);
-void FPO4(void);
-void FPO6(void);
-void FPO7(void);
-void FPOX(void);
 void MAKE_NEW_MARQ(void);
 void MOVE_PRESSB(void);
 void MOVE_BIGLET_PRESS(void);
@@ -65,34 +43,22 @@ void MAKE_PLAYERS_PLATE(void);
 void INI_PLAYERS_BOLTS(void);
 void FLY_BOLT(void);
 void OBJ_FIND(void);
-void OH_NO(void);
 void OBJ_FIND_NEXT(void);
 void OBJ_GFIND(void);
-void OH_GNO(void);
 void OBJ_GFIND_NEXT(void);
 void OBJ_TAG(void);
-void OTAG(void);
-void OTAGX(void);
 void OBJ_TAGALL(void);
-void OTAX(void);
 void OBJ_MOVY_GROUP(void);
-void OMYG(void);
 void OBJ_DEL_GROUP(void);
-void ODG(void);
 void FIND_ALL_PLATES(void);
 void FIND_PLATES(void);
 void MAKE_NUMBERS(void);
 void MAKE_TIME(void);
-void MT2(void);
 void FORMAT_NUM(void);
 void CREATE_LETTERS(void);
 void ASCII_TO_OBJ(void);
-void CRLL(void);
 void PRINT3D(void);
-void PR3DX(void);
 void DISPLAY_HIGH_SCORES(void);
-void DHSNOBUT(void);
-void DHSNEXT(void);
 void DISPLAY_HS(void);
 void FLASH_LETTERS_PROC(void);
 void FLASH_LETTERS(void);
@@ -136,7 +102,6 @@ int PLATE_LETTERS[] = {
     ps, pt, pu, pv, pw, px, py, pz, arrow, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, pend,
 };
 #define LASTCHAR (LAST_LETTER-PLATE_LETTERS-1)
-const char *EIP = "ENTER INITIALS";
 /* *----------------------------------------------------------------------------
  */
 #define LETTER0 (PDATA+3)
@@ -309,12 +274,7 @@ MSLP2:
 MSLP3:
     // asm 000031B5: 	SLEEP	1
     // asm 000031B7: 	BU	MSLP2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_INITIALS", 0, 0);
-    UNIMPL();
-}
-
-void MSLPX(void)
-{
+MSLPX:
     // asm 000031B8: 	LDI	0,R0
     // asm 000031B9: 	STI	R0,@NOAERASE
     // asm 000031BA: 	CALL	SILENT
@@ -431,155 +391,12 @@ void MSLPX(void)
     // asm 00003231: 	STI	R1,*+AR7(PEDTRIG)
     // asm 00003232: 	LDI	0,AR6			;Set debounce counter to 0
     // ;	BR	PEDALWT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MSLPX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_INITIALS", 0, 0);
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
-*
- */
-void EIML(void)
+void PEDALWT(void)
 {
-    // asm 00003235: 	CMPI	0,AR6
-    // asm 00003236: 	BNE	TOSLP2
-    // asm 00003237: 	LDI	@SWITCHBUTS,R0
-    // asm 00003238: 	LDL	SW_RADIO|SW_VIEW0|SW_VIEW1|SW_VIEW2,R1
-    // asm 00003239: 	AND	R1,R0
-    // asm 0000323A: 	BZ	TOSLP2
-    // asm 0000323B: 	LDI	@_countdown,R0
-    // asm 0000323C: 	DEC	R0
-    // asm 0000323D: 	STI	R0,@_countdown
-    // asm 0000323E: 	LDI	2,AR6
-TOSLP2:
-    // asm 0000323F: 	CMPI	0,AR6
-    // asm 00003240: 	BEQ	TOSLP3
-    // asm 00003241: 	SUBI	1,AR6
-TOSLP3:
-    // asm 00003242: 	CALL	GETCHOICE	;READS the steering wheel, uses POSES = number of choices
-    // asm 00003243: 	LDI	@POSE,R4	;On return POSE = Choice wheel is pointing at.
-    // asm 00003244: 	CMPI	LASTCHAR,R4
-    // asm 00003245: 	LDIGT	LASTCHAR,R4
-    // asm 00003246: 	CMPI	0,R4
-    // asm 00003247: 	LDILT	0,R4
-    // asm 00003248: 	LDI	*+AR7(OLDPOT0),R1
-    // asm 00003249: 	STI	R4,*+AR7(OLDPOT0)
-    // asm 0000324A: 	ADDI	R1,R4
-    // asm 0000324B: 	RS	1,R4
-    // asm 0000324C: 	LDI	R4,R0
-    // asm 0000324D: 	CMPI	LASTCHAR,R0
-    // asm 0000324E: 	LDIGT	LASTCHAR,R0
-    // asm 0000324F: 	ADDI	@PLATE_LETTERSI,R0	;Add in the start of the Letter table
-    // asm 00003250: 	LDI	R0,AR0
-    // asm 00003251: 	LDI	*AR0,AR1		;Get the ROM pointer to the image the letter will use
-    // asm 00003252: 	LDI	AR7,AR0
-    // asm 00003253: 	ADDI	INIT0,AR0		;GET index to which letter we are on
-    // asm 00003254: 	ADDI	AR5,AR0
-    // asm 00003255: 	LDI	*AR0,AR0
-    // asm 00003256: 	LDI	*+AR7(WHITE_PAL),R0
-    // asm 00003257: 	STI	R0,*+AR0(OPAL)
-    // asm 00003258: 	STI	AR1,*+AR0(OROMDATA)	;Set the ROM point of the object for this leter
-    // asm 00003259: 	LDI	AR7,AR0
-    // asm 0000325A: 	ADDI	INITI0,AR0
-    // asm 0000325B: 	ADDI	AR5,AR0			;AR5 = which letter 0-2
-    // asm 0000325C: 	LDI	R4,R0
-    // asm 0000325D: 	CMPI	LASTCHAR,R0
-    // asm 0000325E: 	LDIGE	' ',R0
-    // asm 0000325F: 	BGE	EMIL1A
-    // asm 00003260: 	CMPI	RUB+1,R0
-    // asm 00003261: 	BLT	EMIL1
-    // asm 00003262: 	ADDI	'0'-RUB-1,R0
-    // asm 00003263: 	BR	EMIL1A
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "EIML", 0, 0);
-    UNIMPL();
-}
-
-void EMIL1(void)
-{
-    // asm 00003264: 	ADDI	'A',R0			;TRANSLATE BACK TO ASCII
-EMIL1A:
-    // asm 00003265: 	STI	R0,*AR0			;initial index SET THE LETTER
-    // asm 00003266: 	LDI	@_countdown,R0
-    // asm 00003267: 	BLE	DOTRIG			;Out of time, then auto trigger the next letter
-    // asm 00003268: 	LDI	@START_HIT,R0
-    // asm 00003269: 	BNZ	DOTRIG
-    // *ELP CHANGE
-    // asm 0000326A: 	LDI	@_pot1,R0
-    // asm 0000326B: 	CMPI	*+AR7(PEDTRIG),R0
-    // asm 0000326C: 	BGE	TRIGPOTCHK
-    // asm 0000326D: 	CLRI	R0
-    // asm 0000326E: 	STI	R0,@PEDHIT
-    // asm 0000326F: 	BU	NOTRIG
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "EMIL1", 0, 0);
-    UNIMPL();
-}
-
-void TRIGPOTCHK(void)
-{
-    // asm 00003270: 	LDI	@PEDHIT,R1
-    // asm 00003271: 	CMPI	1,R1
-    // asm 00003272: 	BEQ	NOTRIG
-    // asm 00003273: 	LDI	1,R0
-    // asm 00003274: 	STI	R0,@PEDHIT
-    // *ELP END CHANGE
-DOTRIG:
-    // asm 00003275: 	LDI	@_countdown,R0
-    // asm 00003276: 	BZ	DT1			;If out of time don't decrement
-    // asm 00003277: 	LDI	20,R0			;Set the number of seconds to enter your initials
-    // asm 00003278: 	STI	R0,@_countdown
-DT1:
-    // asm 00003279: 	CLRI	R0
-    // asm 0000327A: 	STI	R0,@START_HIT
-    // asm 0000327B: 	LDI	AR7,AR0
-    // asm 0000327C: 	ADDI	INIT0,AR0
-    // asm 0000327D: 	ADDI	AR5,AR0
-    // asm 0000327E: 	CMPI	RUB,R4
-    // asm 0000327F: 	BNE	NOTBCKSPC
-    // asm 00003280: 	LDI	@_countdown,R0
-    // asm 00003281: 	BGT	DORUB			;Out of time?
-    // asm 00003282: 	LDI	LASTCHAR,R4		;FORCE END
-    // asm 00003283: 	LDI	AR7,AR0			;Put a space in the position the RUB was in
-    // asm 00003284: 	ADDI	INITI0,AR0
-    // asm 00003285: 	ADDI	AR5,AR0			;AR5 = which letter 0-2
-    // asm 00003286: 	LDI	' ',R0
-    // asm 00003287: 	STI	R0,*AR0
-    // asm 00003288: 	BR	NOTBCKSPC		;THIS WILL BAIL CORRECTLY
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TRIGPOTCHK", 0, 0);
-    UNIMPL();
-}
-
-void DORUB(void)
-{
-    // asm 00003289: 	CMPI	0,AR5			;if char[0] then dont backspace
-    // asm 0000328A: 	BEQ	PEDALWT
-    // ;This does a back space
-    // asm 0000328B: 	LDI	*AR0,AR2
-    // asm 0000328C: 	CALL	OBJ_PULL			;Get rid of the letter on
-    // asm 0000328D: 	DEC	AR5			;AR5 = LETTER on
-    // asm 0000328E: 	BR	PEDALWT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DORUB", 0, 0);
-    UNIMPL();
-}
-
-void NOTBCKSPC(void)
-{
-    // asm 0000328F: 	LDI	AR7,AR1
-    // asm 00003290: 	ADDI	INIT0,AR1		;GET index to the last letter we are on
-    // asm 00003291: 	ADDI	AR5,AR1
-    // asm 00003292: 	LDI	*AR1,AR1
-    // asm 00003293: 	LDI	*+AR7(GREY_PAL),R0
-    // asm 00003294: 	STI	R0,*+AR1(OPAL)
-    // asm 00003295: 	LDI	*+AR1(OROMDATA),R1	;Set the ROM point of the object for this leter
-    // asm 00003296: 	CMPI	LASTCHAR,R4
-    // asm 00003297: 	BEQ	DONE_ENTRY
-    // asm 00003298: 	INC	AR5
-    // asm 00003299: 	CMPI	3,AR5
-    // asm 0000329A: 	BGE	DONE_ENTRY
-    // asm 0000329B: 	INC	AR0
-    // asm 0000329C: 	LDI	*AR0,AR2
-    // asm 0000329D: 	STI	R1,*+AR2(OROMDATA)	;Set the ROM point of the object for this leter
-    // asm 0000329E: 	CALL	OBJ_INSERT		;Add the next letters object
-    // asm 0000329F: 	SONDFX	CHOOSE_LETTER
-PEDALWT:
     // ;	LDI	@_countdown,R0
     // ;	BLE	EIML
     // ;
@@ -595,12 +412,7 @@ NOTRIG:
     // asm 000032A2: 	CALL	POS_SCROLLB
     // asm 000032A3: 	SLEEP	1
     // asm 000032A5: 	BR	EIML
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTBCKSPC", 0, 0);
-    UNIMPL();
-}
-
-void DONE_ENTRY(void)
-{
+DONE_ENTRY:
     // asm 000032A6: 	CMPI	LASTCHAR,R4
     // asm 000032A7: 	BNE	DE1
     // asm 000032A8: 	LDI	AR1,AR2
@@ -613,7 +425,7 @@ DE1:
     // asm 000032AE: 	OR	*+AR7(INITI0),R2
     // asm 000032AF: 	SETADJ	ADJ_INITIALS
     // asm 000032B1: 	BR	PRESS_CODE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DONE_ENTRY", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PEDALWT", 0, 0);
     UNIMPL();
 }
 
@@ -736,15 +548,10 @@ void INTO_TABLE_P(void)
 ITP1:
     // asm 000032F7: 	CLRC
     // asm 000032F8: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INTO_TABLE_P", 0, 0);
-    UNIMPL();
-}
-
-void ITP2(void)
-{
+ITP2:
     // asm 000032F9: 	SETC
     // asm 000032FA: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ITP2", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INTO_TABLE_P", 0, 0);
     UNIMPL();
 }
 
@@ -761,12 +568,7 @@ void CHECK_FIRST_TIME(void)
     // asm 000032FE: 	BNE	NOT_FIRST_TIME
     // asm 000032FF: 	CLRC
     // asm 00003300: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_FIRST_TIME", 0, 0);
-    UNIMPL();
-}
-
-void NOT_FIRST_TIME(void)
-{
+NOT_FIRST_TIME:
     // asm 00003301: 	LDI	' ',R1			;Just incase the initials have been corrupted
     // asm 00003302: 	STI	R1,*+AR7(INITI1)
     // asm 00003303: 	STI	R1,*+AR7(INITI2)
@@ -782,7 +584,7 @@ NFTLP:
 NFTX:
     // asm 0000330C: 	SETC
     // asm 0000330D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_FIRST_TIME", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_FIRST_TIME", 0, 0);
     UNIMPL();
 }
 
@@ -943,12 +745,7 @@ PRESS_CODE:
     // asm 0000338D: 	LDI	AR0,AR2
     // asm 0000338E: 	CALL	OBJ_DELETE
     // asm 0000338F: 	BR	PRA0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRESS_CODE_ENTRY", 0, 0);
-    UNIMPL();
-}
-
-void PRA(void)
-{
+PRA:
     // ;Pan the camera back,pull back the frame,rotate the press down,
     // ;and scroll the plate in on the rollers
     // asm 00003390: 	FLOAT	PRESS_FRAMES,R1		;Pan camera to correct y
@@ -1012,12 +809,7 @@ PR0A:
     // asm 000033C4: 	LDI	AR0,AR2
     // asm 000033C5: 	CALL	OBJ_DELETE
     // asm 000033C6: 	BR	PR0A
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRA", 0, 0);
-    UNIMPL();
-}
-
-void PR0A2(void)
-{
+PR0A2:
     // asm 000033C7: 	SONDFX	HYDRO
     // *ELP CHANGE
     // 	;SLEEP	10
@@ -1049,12 +841,7 @@ PR0:
     // asm 000033DE: 	BGE	PR1
     // asm 000033DF: 	SLEEP	1
     // asm 000033E1: 	BR	PR0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PR0A2", 0, 0);
-    UNIMPL();
-}
-
-void PR1(void)
-{
+PR1:
     // asm 000033E2: 	SONDFX	STAMP
     // asm 000033E4: 	SONDFX	STAMP1
     // ;STAMP
@@ -1130,366 +917,10 @@ PR2:
     // asm 00003420: 	BLE	PR2A
     // asm 00003421: 	SLEEP	1
     // asm 00003423: 	BR	PR2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PR1", 0, 0);
-    UNIMPL();
-}
-
-void PR2A(void)
-{
+PR2A:
     // ;Rotate the camera up
     // asm 00003424: 	SONDFX	DOPEN
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PR2A", 0, 0);
-    UNIMPL();
-}
-
-void PR2AA(void)
-{
-    // *ELP CHANGE
-    // asm 0000342F: 	LDI	@START_HIT,R0
-    // asm 00003430: 	BNZ	PR2A1
-    // *ELP END CHANGE
-    // asm 00003431: 	LDI	*+AR7(PRESSOBJ),AR0
-    // asm 00003432: 	FLOAT	-50,R0
-    // asm 00003433: 	LDF	*+AR0(OPOSY),R2
-    // asm 00003434: 	ADDF	R0,R2
-    // asm 00003435: 	STF	R2,*+AR0(OPOSY)
-    // asm 00003436: 	LDI	*+AR7(ARMSOBJ),AR0
-    // asm 00003437: 	LDF	*+AR0(OPOSY),R2
-    // asm 00003438: 	ADDF	R0,R2
-    // asm 00003439: 	STF	R2,*+AR0(OPOSY)
-    // asm 0000343A: 	LDI	*+AR7(BPRESSOBJ),AR0
-    // asm 0000343B: 	LDF	*+AR0(OPOSY),R2
-    // asm 0000343C: 	ADDF	R0,R2
-    // asm 0000343D: 	STF	R2,*+AR0(OPOSY)
-    // asm 0000343E: 	LDI	ARMS2,R1
-    // asm 0000343F: 	CALL	OBJ_FIND
-    // asm 00003440: 	LDF	*+AR0(OPOSY),R2
-    // asm 00003441: 	ADDF	R0,R2
-    // asm 00003442: 	STF	R2,*+AR0(OPOSY)
-    // asm 00003443: 	CALL	OBJ_FIND_NEXT
-    // asm 00003444: 	LDF	*+AR0(OPOSY),R2
-    // asm 00003445: 	ADDF	R0,R2
-    // asm 00003446: 	STF	R2,*+AR0(OPOSY)
-    // asm 00003447: 	FLOAT	ROT_FRAMES,R1		;Pan camera to correct y
-    // asm 00003448: 	LDF	CAM_RADX,R0
-    // asm 00003449: 	CALL	DIV_F
-    // asm 0000344A: 	LDP	@_CAMERARAD
-    // asm 0000344B: 	LDF	@_CAMERARAD,R2
-    // asm 0000344C: 	ADDF	R0,R2
-    // asm 0000344D: 	STF	R2,@_CAMERARAD
-    // asm 0000344E: 	SETDP
-    // asm 0000344F: 	LDI	@CAMERAMATRIXI,AR2
-    // asm 00003450: 	CALL	FIND_XMATRIX
-    // asm 00003451: 	NEGF	R2
-    // asm 00003452: 	LDI	@MATRIXAI,AR2
-    // asm 00003453: 	CALL	FIND_XMATRIX
-    // asm 00003454: 	LDI	@MATRIXAI,R2
-    // asm 00003455: 	LDI	AR7,AR2
-    // asm 00003456: 	ADDI	CAMX,AR2
-    // asm 00003457: 	LDI	@CAMERAPOSI,R3
-    // asm 00003458: 	CALL	MATRIX_MUL
-    // asm 00003459: 	SLEEP	1
-    // asm 0000345B: 	DBU	AR6,PR2AA
-    // ;Scroll plate left,pan camera left with th plate;ZOOM IN;ZOOM OUT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PR2AA", 0, 0);
-    UNIMPL();
-}
-
-void PR2A1(void)
-{
-    // *ELP CHANGE
-    // asm 0000345F: 	LDI	@START_HIT,R0
-    // asm 00003460: 	BNZ	PR2A3
-    // *ELP END CHANGE
-    // asm 00003461: 	LDF	R6,R0
-    // *ELP CHANGE
-    // 	;ADDF	0.02,R6	 		;ACCELERATE
-    // asm 00003462: 	ADDF	0.04,R6	 		;ACCELERATE
-    // *ELP END CHANGE
-    // ;	ADDF	0.01,R6	 		;ACCELERATE
-    // asm 00003463: 	CALL	SPIN_ROLLERS
-    // asm 00003464: 	LDI	*+AR7(PLATEOBJ),AR0
-    // asm 00003465: 	LDF	*+AR0(OPOSX),R0
-    // asm 00003466: 	SUBF	*+AR7(CAMX),R0
-    // *ELP CHANGE
-    // 	;MPYF	0.20,R0
-    // asm 00003467: 	MPYF	0.40,R0
-    // *ELP END CHANGE
-    // asm 00003468: 	ADDF	*+AR7(CAMX),R0
-    // asm 00003469: 	FLOAT	cam_left_stop,R1
-    // asm 0000346A: 	CMPF	R1,R0
-    // asm 0000346B: 	LDFLT	R1,R0
-    // asm 0000346C: 	STF	R0,*+AR7(CAMX)
-    // asm 0000346D: 	LDF	R0,R3
-    // asm 0000346E: 	FLOAT	zoomin_stop,R4
-    // asm 0000346F: 	FLOAT	zoomout_stop,R5
-    // asm 00003470: 	FLOAT	-2500,R2		;Accelerating or decelerating?
-    // asm 00003471: 	CMPF	R2,R3			;R3 set above to = PLATE OPOSX
-    // asm 00003472: 	LDFGE	R4,R0			;Accelerating
-    // asm 00003473: 	LDFLT	R5,R0			;Deccelerating
-    // asm 00003474: 	SUBF	*+AR7(CAMZ),R0
-    // *ELP CHANGE
-    // 	;MPYF	0.1,R0
-    // asm 00003475: 	MPYF	0.2,R0
-    // *ELP END CHANGE
-    // ;	MPYF	0.05,R0
-    // asm 00003476: 	ADDF	*+AR7(CAMZ),R0
-    // asm 00003477: 	CMPF	R4,R0			;Range check the zpos
-    // asm 00003478: 	LDFGT	R4,R0			;to large
-    // asm 00003479: 	CMPF	R5,R0
-    // asm 0000347A: 	LDFLT	R5,R0			;to small
-    // asm 0000347B: 	STF	R0,*+AR7(CAMZ)
-    // asm 0000347C: 	LDP	@_CAMERARAD
-    // asm 0000347D: 	LDF	@_CAMERARAD,R2
-    // asm 0000347E: 	SETDP
-    // asm 0000347F: 	NEGF	R2
-    // asm 00003480: 	LDI	@MATRIXAI,AR2
-    // asm 00003481: 	CALL	FIND_XMATRIX
-    // asm 00003482: 	LDI	@MATRIXAI,R2
-    // asm 00003483: 	LDI	AR7,AR2
-    // asm 00003484: 	ADDI	CAMX,AR2
-    // asm 00003485: 	LDI	@CAMERAPOSI,R3
-    // asm 00003486: 	CALL	MATRIX_MUL
-    // asm 00003487: 	CALL	ADJUST_ROLLERS
-    // asm 00003488: 	SLEEP	1
-    // asm 0000348A: 	LDI	*+AR7(PLATEOBJ),AR0
-    // asm 0000348B: 	LDF	*+AR0(OPOSX),R0
-    // asm 0000348C: 	FLOAT	-2500,R1
-    // asm 0000348D: 	CMPF	R1,R0
-    // asm 0000348E: 	BGE	PR2A2
-    // *ELP CHANGE
-    // asm 0000348F: 	ADDF	-0.08,R6	 		;DEACCELERATE (MUST BE TWICE ACCELERATE)
-    // *ELP END CHANGE
-    // asm 00003490: 	CMPF	0.02,R6
-    // asm 00003491: 	LDFN	0.02,R6
-    // ;	ADDF	-0.02,R6	 		;DEACCELERATE (MUST BE TWICE ACCELERATE)
-    // ;	CMPF	0.01,R6
-    // ;	LDFN	0.01,R6
-PR2A2:
-    // asm 00003492: 	LDI	*+AR7(PLATEOBJ),AR0
-    // asm 00003493: 	LDF	*+AR0(OPOSX),R0
-    // asm 00003494: 	FLOAT	left_stop,R1
-    // asm 00003495: 	CMPF	R1,R0
-    // asm 00003496: 	BGE	PR2A1
-    // ;Flip the plate up on end 90deg
-PR2A3:
-    // *ELP CHANGE
-    // asm 00003497: 	LDI	@START_HIT,R0
-    // asm 00003498: 	BNZ	PR3B
-    // *ELP END CHANGE
-    // asm 00003499: 	LDI	*+AR7(PLATEOBJ),AR2
-    // asm 0000349A: 	LDF	0.15708,R2
-    // asm 0000349B: 	ADDF	*+AR2(ORADX),R2
-    // asm 0000349C: 	CMPF	HALFPI,R2
-    // asm 0000349D: 	LDFGT	HALFPI,R2
-    // asm 0000349E: 	STF	R2,*+AR2(ORADX)
-    // asm 0000349F: 	ADDI	OMATRIX,AR2
-    // asm 000034A0: 	CALL	FIND_XMATRIX
-    // asm 000034A1: 	LDI	*+AR7(PLATEOBJ),AR2	;Setup the offset for the bottom of the plate
-    // asm 000034A2: 	LDF	0,R0
-    // asm 000034A3: 	STF	R0,*+AR2(OVELX)
-    // asm 000034A4: 	STF	R0,*+AR2(OVELY)
-    // asm 000034A5: 	FLOAT	-156,R0
-    // asm 000034A6: 	STF	R0,*+AR2(OVELZ)
-    // asm 000034A7: 	LDI	*+AR7(PLATEOBJ),R2
-    // asm 000034A8: 	ADDI	OMATRIX,R2
-    // asm 000034A9: 	ADDI	OVELX,AR2
-    // asm 000034AA: 	LDI	AR2,R3
-    // asm 000034AB: 	CALL	MATRIX_MUL
-    // asm 000034AC: 	LDI	*+AR7(PLATEOBJ),AR0
-    // asm 000034AD: 	FLOAT	PLATE_ZOFF,R0
-    // asm 000034AE: 	ADDF	*+AR0(OVELZ),R0
-    // asm 000034AF: 	STF	R0,*+AR0(OPOSZ)
-    // asm 000034B0: 	FLOAT	610,R0
-    // asm 000034B1: 	ADDF	*+AR0(OVELY),R0
-    // asm 000034B2: 	STF	R0,*+AR0(OPOSY)
-    // asm 000034B3: 	LDF	0,R0			;No x movement
-    // asm 000034B4: 	CALL	MOVE_PLAYERS_LETTERS
-    // asm 000034B5: 	SLEEP	1
-    // asm 000034B7: 	LDI	*+AR7(PLATEOBJ),AR0
-    // asm 000034B8: 	LDF	*+AR0(ORADX),R2
-    // asm 000034B9: 	CMPF	HALFPI,R2
-    // asm 000034BA: 	BNE	PR2A3
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PR2A1", 0, 0);
-    UNIMPL();
-}
-
-void PR3(void)
-{
-    // asm 000034BE: 	FLOAT	PLACE_FRAMES,R1
-    // asm 000034BF: 	LDF	PLACE_ENDRADX,R0
-    // asm 000034C0: 	SUBF	HALFPI,R0		;Allready rotated 90deg
-    // asm 000034C1: 	CALL	DIV_F
-    // asm 000034C2: 	LDI	*+AR7(PLATEOBJ),AR2
-    // asm 000034C3: 	ADDF	*+AR2(ORADX),R0
-    // asm 000034C4: 	CMPF	PLACE_ENDRADX,R0
-    // asm 000034C5: 	LDFGT	PLACE_ENDRADX,R0
-    // asm 000034C6: 	STF	R0,*+AR2(ORADX)
-    // asm 000034C7: 	LDF	R0,R2
-    // asm 000034C8: 	ADDI	OMATRIX,AR2
-    // asm 000034C9: 	CALL	FIND_XMATRIX
-    // asm 000034CA: 	LDI	*+AR7(MISPLATEOBJ),AR2
-    // asm 000034CB: 	LDI	*+AR7(PLATEOBJ),AR0
-    // asm 000034CC: 	LDF	*+AR2(OPOSY),R0
-    // asm 000034CD: 	SUBF	*+AR0(OPOSY),R0
-    // asm 000034CE: 	FLOAT	AR5,R1
-    // asm 000034CF: 	CALL	DIV_F
-    // asm 000034D0: 	LDF	R0,R2
-    // asm 000034D1: 	ADDF	*+AR0(OPOSY),R0
-    // asm 000034D2: 	STF	R0,*+AR0(OPOSY)
-    // asm 000034D3: 	CMPF	*+AR7(CAMY),R0
-    // asm 000034D4: 	BGT	PR3A			;Don't move the camera until the plate is above center
-    // asm 000034D5: 	SUBF	*+AR7(CAMY),R0
-    // asm 000034D6: 	MPYF	0.20,R0
-    // asm 000034D7: 	ADDF	*+AR7(CAMY),R0
-    // asm 000034D8: 	FLOAT	-2150,R1
-    // asm 000034D9: 	CMPF	R1,R0
-    // asm 000034DA: 	LDFLT	R1,R0
-    // asm 000034DB: 	STF	R0,*+AR7(CAMY)
-PR3A:
-    // asm 000034DC: 	LDF	*+AR2(OPOSZ),R0
-    // asm 000034DD: 	SUBF	*+AR0(OPOSZ),R0
-    // asm 000034DE: 	FLOAT	AR5,R1
-    // asm 000034DF: 	CALL	DIV_F
-    // asm 000034E0: 	LDF	R0,R2
-    // asm 000034E1: 	ADDF	*+AR0(OPOSZ),R0
-    // asm 000034E2: 	STF	R0,*+AR0(OPOSZ)
-    // asm 000034E3: 	LDF	*+AR2(OPOSX),R0
-    // asm 000034E4: 	SUBF	*+AR0(OPOSX),R0
-    // asm 000034E5: 	FLOAT	AR5,R1
-    // asm 000034E6: 	CALL	DIV_F
-    // asm 000034E7: 	LDF	R0,R2
-    // asm 000034E8: 	ADDF	*+AR0(OPOSX),R0
-    // asm 000034E9: 	STF	R0,*+AR0(OPOSX)
-    // asm 000034EA: 	LDI	*+AR7(PLATEOBJ),AR0
-    // asm 000034EB: 	LDF	R2,R0
-    // asm 000034EC: 	NEGF	R0
-    // asm 000034ED: 	CALL	MOVE_PLAYERS_LETTERS
-    // asm 000034EE: 	FLOAT	ROT_FRAMES,R1		;Pan camera to correct y
-    // asm 000034EF: 	LDF	-CAM_RADX,R0
-    // asm 000034F0: 	CALL	DIV_F
-    // asm 000034F1: 	LDP	@_CAMERARAD
-    // asm 000034F2: 	LDF	@_CAMERARAD,R2
-    // asm 000034F3: 	ADDF	R0,R2
-    // asm 000034F4: 	CMPF	-0.01,R2
-    // asm 000034F5: 	LDFGT	0,R2
-    // asm 000034F6: 	STF	R2,@_CAMERARAD
-    // asm 000034F7: 	SETDP
-    // asm 000034F8: 	LDI	@CAMERAMATRIXI,AR2
-    // asm 000034F9: 	CALL	FIND_XMATRIX
-    // asm 000034FA: 	NEGF	R2
-    // asm 000034FB: 	LDI	@MATRIXAI,AR2
-    // asm 000034FC: 	CALL	FIND_XMATRIX
-    // asm 000034FD: 	LDI	@MATRIXAI,R2
-    // asm 000034FE: 	LDI	AR7,AR2
-    // asm 000034FF: 	ADDI	CAMX,AR2
-    // asm 00003500: 	LDI	@CAMERAPOSI,R3
-    // asm 00003501: 	CALL	MATRIX_MUL
-    // asm 00003502: 	SLEEP	1
-    // asm 00003504: 	DBU	AR5,PR3
-    // ;Now fly the bolts in
-    // asm 00003505: 	LDI	*+AR7(PLACE),R4	;Calculate the first bolts object number
-    // asm 00003506: 	MPYI	4,R4
-    // asm 00003507: 	ADDI	FIRST_BOLT,R4
-    // asm 00003508: 	LDI	3,AR5
-PR3B:
-    // *ELP CHANGE
-    // asm 00003509: 	LDI	@START_HIT,R0
-    // asm 0000350A: 	BNZ	PR3BA
-    // *ELP END CHANGE
-    // asm 0000350B: 	LDI	R4,R1
-    // asm 0000350C: 	CALL	OBJ_FIND
-    // asm 0000350D: 	BC	PR3BA
-    // asm 0000350E: 	LDI	AR0,AR4
-    // asm 0000350F: 	CREATE	FLY_BOLT,UTIL_C
-    // *ELP CHANGE
-    // 	;SLEEP	15
-    // asm 00003512: 	SLEEP	6
-    // *ELP END CHANGE
-    // asm 00003514: 	ADDI	1,R4
-    // asm 00003515: 	DBU	AR5,PR3B
-PR3BA:
-    // *ELP CHANGE
-    // asm 00003516: 	LDI	@START_HIT,R0
-    // asm 00003517: 	BNZ	PR5A
-    // *ELP END CHANGE
-    // ;If not in top 5 skip the pan up
-    // asm 00003518: 	LDI	*+AR7(PLACE),R0
-    // asm 00003519: 	CMPI	4,R0
-    // asm 0000351A: 	BGT	PR5A
-    // ;Continue to pan the camera to the top of the highscore table
-PR4A:
-    // *ELP CHANGE
-    // asm 0000351B: 	LDI	@START_HIT,R0
-    // asm 0000351C: 	BNZ	PR5A
-    // *ELP END CHANGE
-    // asm 0000351D: 	SLEEP	1
-    // asm 0000351F: 	LDP	@_CAMERAPOS+Y
-    // asm 00003520: 	LDF	@_CAMERAPOS+Y,R0
-    // asm 00003521: 	ADDF	-20,R0
-    // asm 00003522: 	FLOAT	-2150,R1
-    // asm 00003523: 	CMPF	R1,R0
-    // asm 00003524: 	LDFLT	R1,R0
-    // asm 00003525: 	STF	R0,@_CAMERAPOS+Y
-    // asm 00003526: 	SETDP
-    // asm 00003527: 	CMPF	R1,R0
-    // asm 00003528: 	BNE	PR4A
-PR5A:
-    // asm 00003529: 	LDL	plate_darkp,AR2
-    // asm 0000352A: 	CALL	PAL_ALLOC_RAW
-    // asm 0000352B: 	STI	R0,*+AR7(darkp_pal)
-    // asm 0000352C: 	LDL	plate_medp,AR2
-    // asm 0000352D: 	CALL	PAL_ALLOC_RAW
-    // asm 0000352E: 	STI	R0,*+AR7(medp_pal)
-    // asm 0000352F: 	LDL	plate_lightp,AR2
-    // asm 00003530: 	CALL	PAL_ALLOC_RAW
-    // asm 00003531: 	STI	R0,*+AR7(lightp_pal)
-    // asm 00003532: 	LDL	plate_lightp1,AR2
-    // asm 00003533: 	CALL	PAL_ALLOC_RAW
-    // asm 00003534: 	STI	R0,*+AR7(lightp1_pal)
-    // *ELP CHANGE
-    // asm 00003535: 	LDI	@START_HIT,R0
-    // asm 00003536: 	BNZ	PRESSCODEX2
-    // *ELP END CHANGE
-    // asm 00003537: 	LDI	*+AR7(RACE_NUMBER),R4
-    // asm 00003538: 	CREATEC	FLASH_LETTERS_PROC,UTIL_C
-    // asm 0000353B: 	STI	AR0,*+AR7(FLASH_PROC)
-    // asm 0000353C: PRESS_CODEX
-    // ;	SLEEP	60
-    // *ELP CHANGE
-    // 	;SLEEP	90
-    // asm 0000353C: 	SLEEP	30
-    // *ELP END CHANGE
-    // asm 0000353E: 	SOND1	CLOSING
-PRESSCODEX2:
-    // *ELP CHANGE
-    // 	;CREATE	UNFOLDMAP_NOPAL,UTIL_C
-    // asm 00003540: 	CREATE	UNFOLDMAP,UTIL_C
-    // 	;SLEEP	40
-    // asm 00003543: 	SLEEP	20
-    // *ELP END CHANGE
-    // asm 00003545: 	LDI	*+AR7(FLASH_PROC),AR2
-    // asm 00003546: 	CALL	PRC_KILL
-    // asm 00003547: 	LDL	press_PALETTES,AR2
-    // asm 00003548: 	CALL	dealloc_section
-    // asm 00003549: 	LDI	*+AR7(GREY_PAL),AR2
-    // asm 0000354A: 	CALL	PAL_DELETE_RAW
-    // asm 0000354B: 	LDI	*+AR7(WHITE_PAL),AR2
-    // asm 0000354C: 	CALL	PAL_DELETE_RAW
-    // asm 0000354D: 	LDI	*+AR7(darkp_pal),AR2
-    // asm 0000354E: 	CALL	PAL_DELETE_RAW
-    // asm 0000354F: 	LDI	*+AR7(medp_pal),AR2
-    // asm 00003550: 	CALL	PAL_DELETE_RAW
-    // asm 00003551: 	LDI	*+AR7(lightp_pal),AR2
-    // asm 00003552: 	CALL	PAL_DELETE_RAW
-    // asm 00003553: 	LDI	*+AR7(lightp1_pal),AR2
-    // asm 00003554: 	CALL	PAL_DELETE_RAW
-    // asm 00003555: 	LDI	@_MODE,R0
-    // asm 00003556: 	ANDN	MMODE|MINFIN|MHS,R0
-    // asm 00003557: 	OR	MBONUS,R0
-    // asm 00003558: 	STI	R0,@_MODE
-    // asm 00003559: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PR3", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRESS_CODE_ENTRY", 0, 0);
     UNIMPL();
 }
 
@@ -1529,24 +960,14 @@ FPO:
     // asm 0000357B: 	ADDI	OMATRIX,AR2
     // asm 0000357C: 	CALL	FIND_XMATRIX
     // asm 0000357D: 	BR	FPLE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_PRESS_OBJECTS", 0, 0);
-    UNIMPL();
-}
-
-void FPO1(void)
-{
+FPO1:
     // asm 0000357E: 	LDI	*+AR0(OID),R0
     // asm 0000357F: 	AND	0FFh,R0
     // asm 00003580: 	CMPI	PRESSB,R0
     // asm 00003581: 	BNE	FPO1A
     // asm 00003582: 	STI	AR0,*+AR7(BPRESSOBJ)
     // asm 00003583: 	BR	FPLE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FPO1", 0, 0);
-    UNIMPL();
-}
-
-void FPO1A(void)
-{
+FPO1A:
     // asm 00003584: 	CMPI	PLATE,R0
     // asm 00003585: 	BNE	FPO3
     // asm 00003586: 	STI	AR0,*+AR7(PLATEOBJ)
@@ -1555,56 +976,31 @@ void FPO1A(void)
     // asm 00003589: 	ADDF	R0,R2
     // asm 0000358A: 	STF	R2,*+AR0(OPOSZ)
     // asm 0000358B: 	BR	FPLE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FPO1A", 0, 0);
-    UNIMPL();
-}
-
-void FPO3(void)
-{
+FPO3:
     // asm 0000358C: 	CMPI	ARMS,R0
     // asm 0000358D: 	BNE	FPO4
     // asm 0000358E: 	STI	AR0,*+AR7(ARMSOBJ)
     // asm 0000358F: 	BR	FPLE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FPO3", 0, 0);
-    UNIMPL();
-}
-
-void FPO4(void)
-{
+FPO4:
     // asm 00003590: 	CMPI	SCROLLB,R0
     // asm 00003591: 	BNE	FPO6
     // asm 00003592: 	LDI	*+AR7(WHITE_PAL),R2	;This is the palette for the letters
     // asm 00003593: 	STI	R2,*+AR0(OPAL)
     // asm 00003594: 	STI	AR0,*+AR7(SCROLLBOBJ)
     // asm 00003595: 	BR	FPLE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FPO4", 0, 0);
-    UNIMPL();
-}
-
-void FPO6(void)
-{
+FPO6:
     // ;	CMPI	FRAME,R0
     // ;	BNE	FPO7
     // ;	STI	AR0,*+AR7(FRAMEOBJ)
     // asm 00003596: 	BR	FPLE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FPO6", 0, 0);
-    UNIMPL();
-}
-
-void FPO7(void)
-{
+    // asm 00003597: FPO7
 FPLE:
     // asm 00003597: 	BR	FPO
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FPO7", 0, 0);
-    UNIMPL();
-}
-
-void FPOX(void)
-{
+FPOX:
     // asm 00003598: 	CALL	MOVE_PRESSB
     // asm 00003599: 	CALL	MAKE_NEW_MARQ
     // asm 0000359A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FPOX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_PRESS_OBJECTS", 0, 0);
     UNIMPL();
 }
 
@@ -1989,15 +1385,10 @@ O_FOUND:
     // asm 000036C2: 	POPF	R0
     // asm 000036C3: 	POP	R0
     // asm 000036C4: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FIND", 0, 0);
-    UNIMPL();
-}
-
-void OH_NO(void)
-{
+OH_NO:
     // asm 000036C5: 	SETC
     // asm 000036C6: 	BR	O_FOUND		;OBJECT NOT found
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OH_NO", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FIND", 0, 0);
     UNIMPL();
 }
 
@@ -2051,16 +1442,11 @@ OGFIND:
     // asm 000036E9: 	POPF	R0
     // asm 000036EA: 	POP	R0
     // asm 000036EB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_GFIND", 0, 0);
-    UNIMPL();
-}
-
-void OH_GNO(void)
-{
+OH_GNO:
     // asm 000036EC: 	SETC
     // asm 000036ED: 	LDI	0,AR0
     // asm 000036EE: 	BR	O_GFOUND		;OBJECT NOT found
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OH_GNO", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_GFIND", 0, 0);
     UNIMPL();
 }
 
@@ -2112,24 +1498,14 @@ OTAG1:
     // asm 0000370A: 	CMPI	R1,R0
     // asm 0000370B: 	BGE	OTAG1
     // asm 0000370C: 	BR	OTAG0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_TAG", 0, 0);
-    UNIMPL();
-}
-
-void OTAG(void)
-{
+OTAG:
     // asm 0000370D: 	CMPI	0,R1
     // asm 0000370E: 	BEQ	OTAGX
     // asm 0000370F: 	CALL	OBJ_TAGALL
     // asm 00003710: 	BR	OTAG0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OTAG", 0, 0);
-    UNIMPL();
-}
-
-void OTAGX(void)
-{
+OTAGX:
     // asm 00003711: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OTAGX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_TAG", 0, 0);
     UNIMPL();
 }
 
@@ -2152,14 +1528,9 @@ OTA1:
     // asm 0000371A: 	OR	R2,R3
     // asm 0000371B: 	STI	R3,*+AR0(OID)
     // asm 0000371C: 	BR	OTA1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_TAGALL", 0, 0);
-    UNIMPL();
-}
-
-void OTAX(void)
-{
+OTAX:
     // asm 0000371D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OTAX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_TAGALL", 0, 0);
     UNIMPL();
 }
 
@@ -2185,16 +1556,11 @@ OMYG1:
     // asm 00003728: 	ADDF	R2,R3
     // asm 00003729: 	STF	R3,*+AR0(OPOSY)
     // asm 0000372A: 	BR	OMYG1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_MOVY_GROUP", 0, 0);
-    UNIMPL();
-}
-
-void OMYG(void)
-{
+OMYG:
     // asm 0000372B: 	POPF	R3
     // asm 0000372C: 	POP	R3
     // asm 0000372D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OMYG", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_MOVY_GROUP", 0, 0);
     UNIMPL();
 }
 
@@ -2216,14 +1582,9 @@ ODG1:
     // asm 00003734: 	LDI	AR0,AR2
     // asm 00003735: 	CALL	OBJ_PULL
     // asm 00003736: 	BR	ODG1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_DEL_GROUP", 0, 0);
-    UNIMPL();
-}
-
-void ODG(void)
-{
+ODG:
     // asm 00003737: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ODG", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_DEL_GROUP", 0, 0);
     UNIMPL();
 }
 
@@ -2372,12 +1733,7 @@ MT1:
     // asm 000037A9: 	CALL	OBJ_GETE
     // asm 000037AA: 	FLOAT	-82,R1			;WIDTH OF ONE COLON
     // asm 000037AB: 	BR	MT3
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_TIME", 0, 0);
-    UNIMPL();
-}
-
-void MT2(void)
-{
+MT2:
     // asm 000037AC: 	LDI	*AR4++,IR0
     // asm 000037AD: 	LDI	@NUMTABI,AR0
     // asm 000037AE: 	LDI	*+AR0(IR0),AR2
@@ -2401,7 +1757,7 @@ MT3:
     // asm 000037BF: 	CALL	OBJ_INSERT
     // asm 000037C0: 	DBU	AR6,MTLOOP
     // asm 000037C1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MT2", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_TIME", 0, 0);
     UNIMPL();
 }
 
@@ -2519,12 +1875,7 @@ void ASCII_TO_OBJ(void)
     // asm 00003816: 	BGT	CRLL
     // asm 00003817: 	ADDI	'Z'+2-'0',AR2
     // asm 00003818: 	BR	CRL1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ASCII_TO_OBJ", 0, 0);
-    UNIMPL();
-}
-
-void CRLL(void)
-{
+CRLL:
     // asm 00003819: 	CMPI	'Z',AR2
     // asm 0000381A: 	LDIGT	'Z',AR2
 CRL1:
@@ -2537,7 +1888,7 @@ CRL1:
     // asm 00003821: 	LDI	*AR2,AR2
     // asm 00003822: 	CALL	OBJ_GETE
     // asm 00003823: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CRLL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ASCII_TO_OBJ", 0, 0);
     UNIMPL();
 }
 
@@ -2602,14 +1953,9 @@ PR3DNEXT:
     // asm 00003855: 	FLOAT	LETTER3D_SIZEX,R0
     // asm 00003856: 	SUBF	R0,R2
     // asm 00003857: 	BR	PR3DLOOP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT3D", 0, 0);
-    UNIMPL();
-}
-
-void PR3DX(void)
-{
+PR3DX:
     // asm 00003858: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PR3DX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT3D", 0, 0);
     UNIMPL();
 }
 
@@ -2659,12 +2005,7 @@ DHSLOOP:
     // asm 00003876: 	CMPI	-1,R0			;First trigger
     // asm 00003877: 	LDIEQ	-1,AR5			;First trigger set level = -1 (DHSNEXT WILL INC)
     // asm 00003878: 	BR	DHSNEXT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_HIGH_SCORES", 0, 0);
-    UNIMPL();
-}
-
-void DHSNOBUT(void)
-{
+DHSNOBUT:
     // asm 00003879: 	DBU	AR6,DHSWAIT
     // asm 0000387A: 	CALL	OBJ_INIT	;initialize object system (ERASE OLD OBJECTS)
     // asm 0000387B: 	ADDI	1,AR5
@@ -2674,12 +2015,7 @@ void DHSNOBUT(void)
     // asm 0000387F: 	BNE	DHSLOOP
 DHSLOOPX:
     // asm 00003880: 	BR	CYCLE_ATTR
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DHSNOBUT", 0, 0);
-    UNIMPL();
-}
-
-void DHSNEXT(void)
-{
+DHSNEXT:
     // asm 00003881: 	ADDI	1,AR5
     // asm 00003882: 	CMPI	15,AR5
     // asm 00003883: 	BGE	DHSLOOPX
@@ -2688,7 +2024,7 @@ void DHSNEXT(void)
     // asm 00003886: 	CALL	PRC_KILLALL
     // asm 00003887: 	CALL	OBJ_INIT	;initialize object system (ERASE OLD OBJECTS)
     // asm 00003888: 	BR	DHSLOOP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DHSNEXT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_HIGH_SCORES", 0, 0);
     UNIMPL();
 }
 
@@ -2837,7 +2173,7 @@ void FIX_PLATES(void)
     // asm 000038FB: 	LDI	0,AR5
     // asm 000038FC: 	LDI	1h,R2
     // asm 000038FD: 	LSH	16,R2
-FIXPL:
+    // asm 000038FE: FIXPL
     // asm 000038FE: 	LDI	AR5,R1
     // asm 000038FF: 	ADDI	FIRST_PLATE,R1
     // asm 00003900: 	CALL	OBJ_FIND
@@ -2850,11 +2186,11 @@ FIXPL:
     // asm 00003906: 	LSH	1,R2
     // asm 00003907: 	CALL	OBJ_GFIND
     // asm 00003908: 	BC	FIXPL3			;No letters on this plate, move on. (useually hosed CMOS)
-FIXPL2:
+    // asm 00003909: FIXPL2
     // asm 00003909: 	STF	R3,*+AR0(OPOSZ)		;Now do the letters on it
     // asm 0000390A: 	CALL	OBJ_GFIND_NEXT
     // asm 0000390B: 	BNC	FIXPL2			;do as many as there are
-FIXPL3:
+    // asm 0000390C: FIXPL3
     // asm 0000390C: 	FLOAT	-500,R1			;PLate to plate offset
     // asm 0000390D: 	ADDF	R1,R0
     // asm 0000390E: 	ADDI	1,AR5

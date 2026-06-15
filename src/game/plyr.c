@@ -28,62 +28,44 @@ void BONUS_WAIT_LOOP(void);
 void PLYR_CAR_INIT(void);
 void PLYR_INTRO_ENTER(void);
 void _PLYR(void);
-void PLYR_INTRO_JOIN(void);
 void L883(void);
-void PLYRSPD(void);
-void PLYRSPD0(void);
-void CAM3RD(void);
-void CAMBAD1(void);
-void CCK1(void);
 void CAMCHKL(void);
 void CAMCHKR(void);
 void CAMCHKLR(void);
 void CAMCHK(void);
 void CAMROT(void);
-void CAMROT1(void);
 void GETCAMPOS(void);
 void CAMYADJ(void);
 void PLYONRD(void);
 void DRONEGO(void);
 void DRONESTOP(void);
 void GETREV(void);
-void REV1(void);
 void GETRPM(void);
 void GETSKID(void);
-void GETSK00(void);
-void GETSK0(void);
 void CKOFRD(void);
-void NOTOFF(void);
 void GETDIR(void);
-void GETDIR1(void);
-void SPINL0(void);
-void DRONESPIN(void);
-void SPINLX(void);
-void SPINREC0(void);
+void CARSPIN(void);
 void GETCARROT(void);
 void GETSPD(void);
-void GETSPD1(void);
-void GETSPD10(void);
 void GETBRAKE(void);
 void _off_brake(void);
 void _on_brake(void);
-void NO_COLORS(void);
 void GETPEDAL(void);
 void GETGEAR(void);
+void GETMAN(void);
+void GETAUTO(void);
 void GETSTEER(void);
 void _VIEW0(void);
 void _VIEW1(void);
 void _VIEW2(void);
 void ZOOMUP(void);
-void ZOOMUP1(void);
 void GETTRAK(void);
+void BACKCK(void);
 void CKBND(void);
-void CURBCKX(void);
 void TUNCHK(void);
 void INBOUNDZ(void);
 void DRONINBZ(void);
 void CURBCOL0(void);
-void CURBCOLP(void);
 void CURBSPIN(void);
 void CURBSPN(void);
 void SOFTCURB(void);
@@ -94,19 +76,14 @@ void GETRDIR(void);
 void PLYRWHL(void);
 void PWHLX(void);
 void PLYR_SNDS(void);
-void PSND1(void);
-void SKIDAMP(void);
-void SKIDAMP1(void);
-void NOSKID(void);
-void NOBRAKSND(void);
-void NOSPUTSND(void);
 void TUNOFF(void);
-void NOGRAV(void);
 void MKFXSND(void);
 void MKVFXSND(void);
+void MKVFX1(void);
 void RANDSND(void);
 void RANDVSND(void);
 void DRONESND(void);
+void DRONESND1(void);
 void GETCMOS_VALUES(void);
 void CAMMATSAV(void);
 void CAMMATAVG(void);
@@ -452,8 +429,8 @@ void BONUS_WAIT_LOOP(void)
     // asm 0000297A: 	TSTB	O_LIST_M,R0
     // asm 0000297B: 	BNZ	BWLX			;YES, DONT INSERT
     // asm 0000297C: 	CALL	OBJ_INSERT		;INSERT PLAYER OBJECT
-BWLX:
-BONUS_WAIT_LP:
+    // asm 0000297D: BWLX
+    // asm 0000297D: BONUS_WAIT_LP
     // asm 0000297D: 	LDI	@PLYCAR,AR4
     // asm 0000297E: 	LDI	@PLYCBLK,AR5
     // asm 0000297F: 	CALL	ZOOMUP			;UPDATE YOUR ZOOM
@@ -656,37 +633,9 @@ PLYR_ENTER:
     UNIMPL();
 }
 
-/* *CAMERA INIT
- */
-void PLYR_INTRO_JOIN(void)
-{
-    // ;	LDF	1.0,R0			;INIT DRAFT VALUE
-    // ;	STF	R0,@PLDRAFTVAL
-    // asm 00002A3F: 	LDF	0,R0	 		;INITIALIZE PLAYER ZOOM POSITION
-    // asm 00002A40:    	STF	R0,@ZOOMDD
-    // asm 00002A41:    	STF	R0,@ZOOMHD
-    // asm 00002A42: 	FLOAT	PLYPOS2Y,R0
-    // asm 00002A43: 	STF	R0,@ZOOMH
-    // asm 00002A44: 	STF	R0,@ZOOMHG
-    // asm 00002A45: 	FLOAT	PLYPOS2Z,R0
-    // asm 00002A46: 	STF	R0,@ZOOMD
-    // asm 00002A47: 	STF	R0,@ZOOMDG
-    // asm 00002A48: 	LDI	@VIEW1I,AR2
-    // asm 00002A49: 	LDI	@CAMVIEW,R0
-    // asm 00002A4A: 	LDIEQ	@VIEW0I,AR2
-    // asm 00002A4B: 	LDI	1,R1
-    // asm 00002A4C: 	STI	R1,@CAMVIEW		;INIT CAMERA VIEW TO 3RD PERSON
-    // asm 00002A4D: 	CMPI	2,R0
-    // asm 00002A4E: 	LDIEQ	@VIEW2I,AR2
-    // asm 00002A4F: 	LDI	UTIL_C,R2  		;RESTORE OLD VIEW
-    // asm 00002A50: 	CALL	PRC_CREATE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_INTRO_JOIN", 0, 0);
-    UNIMPL();
-}
-
 void L883(void)
 {
-    // asm 00002A51: LDI	0,R0	      		;BRAKE INITIALLY OFF
+    // asm 00002A51: LDI	0,R0
     // asm 00002A52: 	STPI	R0,@BRAKEON
     // asm 00002A53: 	STI	R0,@WRECKFLG		;WRECK OFF
     // asm 00002A54: 	STI	R0,@PLYRFIRST		;TIMER FOR PLAYER IN 1ST PLACE
@@ -729,12 +678,7 @@ PLYRLP:
     // asm 00002A6F: 	CALL	WRECK			;DO YOUR WRECK THING
     // asm 00002A70: 	CALL	INBOUNDZ		;KEEP IN BOUNDS
     // asm 00002A71: 	B	PLYRCAM			;DONT CHANGE MATRIX OR CAMERA POS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "L883", 0, 0);
-    UNIMPL();
-}
-
-void PLYRSPD(void)
-{
+PLYRSPD:
     // asm 00002A72: 	CALL	CKOFRD			;CHECK YOUR OFFROAD COUNTER
     // asm 00002A73: 	CMPI	0,R0
     // asm 00002A74: 	CALLZ	PLYONRD			;RESET PLAYER ON ROAD
@@ -763,12 +707,7 @@ void PLYRSPD(void)
     // ;	CALL	ONESND
     // asm 00002A8A: 	POPF	R0
     // asm 00002A8B: 	B	PLYRSPD01
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRSPD", 0, 0);
-    UNIMPL();
-}
-
-void PLYRSPD0(void)
-{
+PLYRSPD0:
     // asm 00002A8C: 	CALL	GETPEDAL		;GET GAS PEDAL VALUE
 PLYRSPD01:
     // ;	NEGF	*+AR5(CARTHROTTLE),R1
@@ -915,12 +854,7 @@ PLYRCAM:
     // 	;
     // 	;THIRD PERSON CAMERA
     // 	;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRSPD0", 0, 0);
-    UNIMPL();
-}
-
-void CAM3RD(void)
-{
+CAM3RD:
     // asm 00002AFB: 	CLRF	R2
     // asm 00002AFC: 	LDP	@_CAMERARAD+X
     // asm 00002AFD: 	STF	R2,@_CAMERARAD+X
@@ -966,12 +900,7 @@ void CAM3RD(void)
     // asm 00002B23: 	BLT	CAMBAD1
     // asm 00002B24: 	LDF	R5,R0	      		;NEW ONE IS CLOSER, GO WITH CORRECTION
     // asm 00002B25: 	B	CAMOK
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAM3RD", 0, 0);
-    UNIMPL();
-}
-
-void CAMBAD1(void)
-{
+CAMBAD1:
 CAM3RD0:
     // asm 00002B26: 	LDP	@_CAMERARAD+Y
     // asm 00002B27: 	LDF	@_CAMERARAD+Y,R0	;UPDATE CAMERA RAD
@@ -1041,40 +970,10 @@ PLYS1:
     // asm 00002B5B: 	STI	R0,*+AR5(CARTRACK_ID)		;SAVE TRACK ID
     // asm 00002B5C: 	CALL	SEND_PLAYERS_POS
     // asm 00002B5D: 	CALL	CHEATCK
-NOPLINK:
+    // asm 00002B5E: NOPLINK
     // asm 00002B5E: 	SLEEP	1
     // asm 00002B60: 	B	PLYRLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMBAD1", 0, 0);
-    UNIMPL();
-}
-
-void CCK1(void)
-{
-    // *JARV CHANGE  February 7,1995
-    // ;	ADDF	0.10,R0		;MAXIMUM VALUE
-    // asm 00002B7B: 	ADDF	0.09,R0		;MAXIMUM VALUE
-    // *JARV END CHANGE
-    // asm 00002B7C: 	CMPF	R0,R1
-    // asm 00002B7D: 	LDFGT	R0,R1
-    // asm 00002B7E: 	CMPF	1.0,R1
-    // asm 00002B7F: 	LDFLT	1.0,R1
-    // asm 00002B80: 	STF	R1,@CHEAT
-    // asm 00002B81: 	FLOAT	300,R2
-    // asm 00002B82: 	SUBF	*+AR5(CARSPEED),R2
-    // asm 00002B83: 	LDFLT	0,R2
-    // asm 00002B84: 	MPYF	@SPDCON,R2
-    // asm 00002B85: 	SUBF	1.10,R0
-    // asm 00002B86: 	MPYF	10,R0
-    // asm 00002B87: 	MPYF	R0,R2
-    // asm 00002B88: 	ADDF	1.0,R2
-    // asm 00002B89: 	CMPF	2.0,R2
-    // asm 00002B8A: 	LDFGT	2.0,R2
-    // asm 00002B8B: 	CALL	COMPTRAK
-    // asm 00002B8C: 	LDFGE	1.0,R2
-CCKX:
-    // asm 00002B8D: 	STF	R2,@CHEATACC
-    // asm 00002B8E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CCK1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "L883", 0, 0);
     UNIMPL();
 }
 
@@ -1207,12 +1106,7 @@ void CAMROT(void)
     // asm 00002BC5: 	BGT	CAMROT1
     // asm 00002BC6: 	NEGF	R2,R1
     // asm 00002BC7: 	B 	CAMROT2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMROT", 0, 0);
-    UNIMPL();
-}
-
-void CAMROT1(void)
-{
+CAMROT1:
     // asm 00002BC8: 	LDF	R2,R2
     // asm 00002BC9: 	LDFN	0.1,R1
     // asm 00002BCA: 	LDFNN	-0.1,R1
@@ -1221,7 +1115,7 @@ CAMROT2:
     // asm 00002BCC:  	POP	AR2
     // asm 00002BCD:  	POP	AR0
     // asm 00002BCE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMROT1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMROT", 0, 0);
     UNIMPL();
 }
 
@@ -1453,12 +1347,7 @@ REV0:
     // asm 00002C5F: 	LDFLT	R1,R0
     // asm 00002C60: 	B	REV3
     // *REGULAR IN GEAR CASE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETREV", 0, 0);
-    UNIMPL();
-}
-
-void REV1(void)
-{
+REV1:
     // asm 00002C61: 	LDI	@GEARTABI,AR0
     // asm 00002C62: 	ADDI	*+AR5(CARGEAR),AR0
     // asm 00002C63: 	LDF	*+AR5(CARSPEED),R0	;GET SPEED
@@ -1518,7 +1407,7 @@ REV4:
     // asm 00002C90: 	LSH	-4,R1		;CUT VOLUME ON START LINE
 REV5:
     // asm 00002C91: 	B	PLYR_ENGINE	;GO DO IT...
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "REV1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETREV", 0, 0);
     UNIMPL();
 }
 
@@ -1561,12 +1450,7 @@ void GETSKID(void)
     // asm 00002C9E:        	LDF	1.00,R0
     // asm 00002C9F: 	B	GETSKXX
     // *CHECK OVERREV
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSKID", 0, 0);
-    UNIMPL();
-}
-
-void GETSK00(void)
-{
+GETSK00:
     // asm 00002CA0: 	LDI	*+AR5(CARGEAR),R0	;HI GEAR?
     // asm 00002CA1: 	CMPI	4,R0
     // asm 00002CA2: 	BZ	GETSK0			;YES, NO OVERREV...
@@ -1576,12 +1460,7 @@ void GETSK00(void)
     // asm 00002CA6:        	LDF	0.80,R0			;YES DO A SKID
     // asm 00002CA7: 	B	GETSKXX
     // *GET STEERING-SPEED SKID
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSK00", 0, 0);
-    UNIMPL();
-}
-
-void GETSK0(void)
-{
+GETSK0:
     // asm 00002CA8: 	LDF	*+AR5(CARYROT),R2
     // asm 00002CA9: 	SUBF	*+AR5(CARVROT),R2
     // asm 00002CAA: 	CALL	NORMITS
@@ -1634,7 +1513,7 @@ GETSK1:
 GETSKXX:
     // asm 00002CD1: 	STF	R0,*+AR5(CARSKID) 	;NEW SKID FACTOR
     // asm 00002CD2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSK0", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSKID", 0, 0);
     UNIMPL();
 }
 
@@ -1669,17 +1548,12 @@ OFFRLP:
     // asm 00002CE5: 	CMPI	8,R0
     // asm 00002CE6: 	LDILE	0,R0			;RESET HIM ON 8 IF NO GROUND
     // asm 00002CE7: 	B	NOTOFFX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKOFRD", 0, 0);
-    UNIMPL();
-}
-
-void NOTOFF(void)
-{
+NOTOFF:
     // asm 00002CE8: 	LDI	20,R0
     // asm 00002CE9: 	STI	R0,@OFFROAD_TMR		;ALL WHEELS OFFROAD FLAG
 NOTOFFX:
     // asm 00002CEA: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTOFF", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKOFRD", 0, 0);
     UNIMPL();
 }
 
@@ -1703,12 +1577,7 @@ void GETDIR(void)
     // asm 00002CEE: 	LDF	*+AR5(CARDROT),R1
     // asm 00002CEF: 	ADDF	*+AR5(CARYROT),R1
     // asm 00002CF0: 	B	GETDIR2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDIR", 0, 0);
-    UNIMPL();
-}
-
-void GETDIR1(void)
-{
+GETDIR1:
     // asm 00002CF1: 	LDI	*+AR5(CAR_SPIN),R1	;CHECK SPINOUT...
     // asm 00002CF2: 	BNZ	CARSPIN
     // *GET SKID FACTOR
@@ -1749,7 +1618,12 @@ GETDIR2:
     // *
     // *CAR SPINOUT
     // *
-CARSPIN:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDIR", 0, 0);
+    UNIMPL();
+}
+
+void CARSPIN(void)
+{
     // asm 00002D10: 	LDI	@NFRAMES,AR3
     // asm 00002D11: 	SUBI	1,AR3			;CUT DOWN COUNT
     // asm 00002D12: 	CMPI	2,R1 			;TIMED SPIN?
@@ -1765,12 +1639,7 @@ CARSPIN:
     // asm 00002D1B: 	STF	R1,*+AR5(CARYROT)	;BODY DIRECTION
     // asm 00002D1C:       	B	SPINLX
     // *ANGULAR SPIN
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDIR1", 0, 0);
-    UNIMPL();
-}
-
-void SPINL0(void)
-{
+SPINL0:
     // asm 00002D1D: 	LDF	*+AR5(CARDROT),R1	;ROTATE THE DUDE
     // asm 00002D1E: 	LDF	*+AR5(CARYROT),R2  	;VELOCITY ROTATION
     // asm 00002D1F: 	ADDF	R1,R2,R3
@@ -1796,12 +1665,7 @@ void SPINL0(void)
     // asm 00002D32: 	LDFLT	0,R0
     // asm 00002D33: 	STF	R0,*+AR5(CARDROT)
     // asm 00002D34: 	B	SPINL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINL0", 0, 0);
-    UNIMPL();
-}
-
-void DRONESPIN(void)
-{
+DRONESPIN:
     // asm 00002D35: 	ADDF	3.14,R0			;ADJUST FOR TRAFFIC GOING AGAINST ROAD
 REGSPIN:
     // asm 00002D36: 	LDF	R0,R2
@@ -1812,21 +1676,11 @@ REGSPIN:
     // asm 00002D3B: 	BLT	SPINREC0		;DO THE RECOVERY...
 SPINL:
     // asm 00002D3C: 	DB	AR3,SPINL0
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESPIN", 0, 0);
-    UNIMPL();
-}
-
-void SPINLX(void)
-{
+SPINLX:
     // asm 00002D3D: 	LDF	0,R0			;NO STEERING SPIN
     // asm 00002D3E: 	RETS
     // *RECOVER FROM SPIN DUDE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINLX", 0, 0);
-    UNIMPL();
-}
-
-void SPINREC0(void)
-{
+SPINREC0:
     // asm 00002D3F: 	STF	R0,*+AR5(CARYROT)	;LOAD ROAD DIRECTION
 SPINREC:
     // asm 00002D40: 	LDF	*+AR5(CARYROT),R2
@@ -1839,7 +1693,7 @@ SPINREC:
     // asm 00002D47: 	STF	R0,*+AR5(CARSPRAD)     	;CLEAR SPIN RADIANS
     // asm 00002D48: 	STF	R0,*+AR5(CARDROT)	;BODY DELTA
     // asm 00002D49: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINREC0", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARSPIN", 0, 0);
     UNIMPL();
 }
 
@@ -1902,24 +1756,14 @@ void GETSPD(void)
     // asm 00002D8A: 	LDF	0,R3
     // asm 00002D8B: 	BR	GETSPD2
     // *CHECK SPIN OUT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSPD", 0, 0);
-    UNIMPL();
-}
-
-void GETSPD1(void)
-{
+GETSPD1:
     // asm 00002D8C: 	LDI	*+AR5(CAR_SPIN),R0
     // asm 00002D8D: 	BZ	GETSPD10       		;NO SPINOUT...
     // asm 00002D8E: 	LDF	0,R0			;SET ACCEL TO ZERO
     // asm 00002D8F: 	LDF	@SPINFRICI,R3
     // asm 00002D90: 	BR	GETSPD2
     // *GET ENGINE ACCEL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSPD1", 0, 0);
-    UNIMPL();
-}
-
-void GETSPD10(void)
-{
+GETSPD10:
     // asm 00002D91: 	LDF	*+AR5(CARTHROTTLE),R0
     // asm 00002D92: 	MPYF	*+AR5(CARMAXACCEL),R0
     // asm 00002D93: 	CMPI	@PLYCAR,AR4	    	;CHEAT ACCEL
@@ -2071,7 +1915,7 @@ GSL0:
     // *GET BRAKE PEDAL
     // *RETURNS R0=BRAKE VALUE 0-1 (FLOAT)
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSPD10", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSPD", 0, 0);
     UNIMPL();
 }
 
@@ -2096,7 +1940,7 @@ void GETBRAKE(void)
     // asm 00002E1C: 	CALL	_on_brake	;TURN ON FIRST TIME ONLY
     // asm 00002E1D: 	LDI	1,R0
     // asm 00002E1E: 	B	GETBXX
-BRAKEOFF:
+    // asm 00002E1F: BRAKEOFF
     // asm 00002E1F: 	PUSHF	R0		;SAVE THE VALUE
     // asm 00002E20: 	LDI	@BRAKEON,R0
     // asm 00002E21: 	BZ	GETBX	   	;ALREADY OFF DUDES
@@ -2168,15 +2012,10 @@ L888:
     // asm 00002E52: 	POP	AR2
     // asm 00002E53: 	POP	AR0
     // asm 00002E54: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_on_brake", 0, 0);
-    UNIMPL();
-}
-
-void NO_COLORS(void)
-{
+NO_COLORS:
     // asm 00002E55: 	POP	AR2
     // asm 00002E56: 	BU	BRAK_X
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_COLORS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_on_brake", 0, 0);
     UNIMPL();
 }
 
@@ -2215,7 +2054,12 @@ void GETGEAR(void)
     // asm 00002E66: 	LDI	*+AR5(CARGEAR),R0	;YES, DONT SWITCH AUTO TRANS
     // asm 00002E67: 	RETS
     // *MANUAL
-GETMAN:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETGEAR", 0, 0);
+    UNIMPL();
+}
+
+void GETMAN(void)
+{
     // asm 00002E68: 	LDI	0,R0
     // asm 00002E69: 	LDI	@SWITCHBUTS,R1
     // asm 00002E6A: 	TSTB	SW_4TH,R1
@@ -2232,7 +2076,12 @@ GETMAN:
     // *AR5=CAR STRUCTURE
     // *RETURNS:
     // *R0=GEAR SHIFT VALUE 0=neutral,1,2,3,4  (INT)
-GETAUTO:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETMAN", 0, 0);
+    UNIMPL();
+}
+
+void GETAUTO(void)
+{
     // asm 00002E73: 	LDI	0,R2
     // asm 00002E74: 	LDF	*+AR5(CARTHROTTLE),R3	;TORQUE SENSOR FOR DOWNSHIFT
     // asm 00002E75: 	CMPF	1.0,R3
@@ -2253,7 +2102,7 @@ GETAUTO:
     // asm 00002E84: 	CMPI	4,R0
     // asm 00002E85: 	LDIGT	4,R0			;MAX OUT AT 4TH
     // asm 00002E86: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETGEAR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETAUTO", 0, 0);
     UNIMPL();
 }
 
@@ -2407,12 +2256,7 @@ void ZOOMUP(void)
     // asm 00002EEC: 	CMPF	@ZOOMDG,R2
     // asm 00002EED: 	BGE	ZOOMDN		;DONE WITH ZOOM
     // asm 00002EEE: 	B	ZOOMUP3
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMUP", 0, 0);
-    UNIMPL();
-}
-
-void ZOOMUP1(void)
-{
+ZOOMUP1:
     // asm 00002EEF: 	CMPF	@ZOOMDG,R2
     // asm 00002EF0: 	BGT	ZOOMUP3		;NOT DONE WITH ZOOM
 ZOOMDN:
@@ -2431,7 +2275,7 @@ ZOOMUP3:
     // asm 00002EFB: 	STF	R2,@ZOOMD
 ZOOMUPX:
     // asm 00002EFC: RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMUP1", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMUP", 0, 0);
     UNIMPL();
 }
 
@@ -2482,6 +2326,42 @@ GETRKX:
 }
 
 /* *----------------------------------------------------------------------------
+*CHECK IF DRIVING BACKWARDS
+*PARAMETERS
+*	AR4	CAR
+*	AR5	CAR STRUCTURE
+ */
+void BACKCK(void)
+{
+    // asm 00002F17: 	LDI	*+AR5(CAR_SPIN),R0
+    // asm 00002F18: 	BNE	BACKCKX
+    // asm 00002F19: 	LDF	*+AR5(CARSPEED),R4	;MUST BE MOVING SOMEWHAT
+    // asm 00002F1A: 	CMPF	2,R4
+    // asm 00002F1B: 	BLT	BACKCKX
+    // asm 00002F1C: 	CALL	ROADIR			;GET DIRECTIONAL DIFFERENCE
+    // asm 00002F1D: 	LDF	*+AR5(CARVROT),R1
+    // asm 00002F1E: 	SUBF	R1,R0,R2
+    // asm 00002F1F: 	CALL	NORMITS
+    // asm 00002F20: 	ABSF	R2,R3			;VELOCITY BACKWARDS?
+    // asm 00002F21: 	CMPF	1.75,R3
+    // asm 00002F22: 	BLT	BACKCKX		      	;NO...
+    // asm 00002F23: BACKCK1
+    // asm 00002F23: 	LDF	1.0,R0			;SET RADIAN SPIN COUNT
+    // asm 00002F24: 	STF	R0,*+AR5(CARSPRAD)
+    // asm 00002F25: 	LDF	0.12,R0			;ROTATE AROUND
+    // asm 00002F26: 	LDF	R2,R2
+    // asm 00002F27: 	LDFN	-0.12,R0
+    // asm 00002F28: 	LDI	1,R1
+    // asm 00002F29: BACKCK2
+    // asm 00002F29: 	STF	R0,*+AR5(CARDROT)	;SPIN HIM BACK
+    // asm 00002F2A: 	STI	R1,*+AR5(CAR_SPIN)
+    // asm 00002F2B: BACKCKX
+    // asm 00002F2B: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BACKCK", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
 *CHECK OUT OF BOUNDS
 *PARAMETERS
 *	AR4	CAR
@@ -2515,17 +2395,12 @@ CURBCKL:
     // asm 00002F3C: 	POP	AR3
     // asm 00002F3D: 	LDI	R1,R1
     // asm 00002F3E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKBND", 0, 0);
-    UNIMPL();
-}
-
-void CURBCKX(void)
-{
+CURBCKX:
     // asm 00002F3F: 	SETC
     // asm 00002F40: 	POP	AR0
     // asm 00002F41: 	POP	AR3
     // asm 00002F42: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CURBCKX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKBND", 0, 0);
     UNIMPL();
 }
 
@@ -2638,12 +2513,7 @@ void CURBCOL0(void)
     // asm 00002F7E: 	STF	R0,*+AR5(CARSPEED)
     // asm 00002F7F: 	B	CURBCOL
     // *PLAYER HIT SOUND
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CURBCOL0", 0, 0);
-    UNIMPL();
-}
-
-void CURBCOLP(void)
-{
+CURBCOLP:
     // asm 00002F80: 	LDI	@WALLHITABI,AR2		;MAKE A SOUND
     // asm 00002F81: 	LDI	3,R0
     // asm 00002F82: 	CALL	RANDSND
@@ -2721,7 +2591,7 @@ CURBCOL2:
     // asm 00002FC1: 	STF	R2,*+AR5(CARVROT)
     // asm 00002FC2: 	STF	R2,*+AR5(CARYROT)	;ADJUST YROT <--- CARVROT
     // asm 00002FC3: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CURBCOLP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CURBCOL0", 0, 0);
     UNIMPL();
 }
 
@@ -2811,13 +2681,13 @@ void SOFTCURB(void)
     // asm 00002FFE: 	ADDF	R1,R2
     // asm 00002FFF: 	STF	R2,*+AR5(CARVROT)
     // asm 00003000: 	RETS
-SOFTCRB00:
+    // asm 00003001: SOFTCRB00
     // asm 00003001: 	LDF	*+AR5(CARSPEED),R0	;TIMED SPIN
     // asm 00003002: 	CMPF	80,R0
     // asm 00003003: 	BLT	SOFTVELX		;SLOW TREECOL FIX
     // asm 00003004: 	B	SOFTVEL			;FAST, NEEDS CORRECTION
     // *CHECK BODY ROTATION
-SOFTCURB0:
+    // asm 00003005: SOFTCURB0
     // asm 00003005: 	LDF	*+AR5(CARYROT),R0
     // asm 00003006: 	SUBF	R1,R0,R2
     // asm 00003007: 	CALL	NORMITS
@@ -2828,12 +2698,12 @@ SOFTCURB0:
     // asm 0000300C: 	CMPF	0.1,R6			;MAX DELTA
     // asm 0000300D: 	LDFGT	0.1,R6
     // asm 0000300E: 	B 	SOFT11
-SOFT10:
+    // asm 0000300F: SOFT10
     // asm 0000300F: 	SUBF	R2,R5,R6
     // asm 00003010: 	BGT	SOFTVEL			;ROTATION IS O.K.
     // asm 00003011: 	CMPF	-0.1,R6			;MAX DELTA
     // asm 00003012: 	LDFLT	-0.1,R6
-SOFT11:
+    // asm 00003013: SOFT11
     // asm 00003013: 	ADDF	*+AR5(CARYROT),R6  	;ADD IN ROTATION
     // asm 00003014: 	STF	R6,*+AR5(CARYROT)
     // *CHECK VELOCITY ROTATION
@@ -2864,7 +2734,7 @@ SOFT11:
     // asm 0000302D: 	LDFLT	-0.1,R5
     // asm 0000302E: SOFT21	ADDF	*+AR5(CARVROT),R5  	;ADD IN ROTATION
     // asm 0000302F: 	STF	R5,*+AR5(CARVROT)
-SOFTVELX:
+    // asm 00003030: SOFTVELX
     // asm 00003030: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SOFTCURB", 0, 0);
     UNIMPL();
@@ -3059,19 +2929,14 @@ PSND0:
     // asm 000030AB: 	CALL	RANDSND
     // asm 000030AC: 	LDI	1,R0
     // asm 000030AD: 	B	PSND2
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_SNDS", 0, 0);
-    UNIMPL();
-}
-
-void PSND1(void)
-{
+PSND1:
     // asm 000030AE: 	CMPF	0.50,R0
     // asm 000030AF: 	LDIGE	@REVFLG,R0
     // asm 000030B0: 	LDILT	0,R0
 PSND2:
     // asm 000030B1: 	STI	R0,@REVFLG
     // *CHECK BACKGROUND STARTING LINE REV SOUNDS
-BACKREV:
+    // asm 000030B2: BACKREV
     // asm 000030B2: 	LDI	@_MODE,R2 		;STARTING LINE MODE?
     // asm 000030B3: 	AND	MSLINE,R2
     // asm 000030B4: 	BZ	PLAIR			;NOPE
@@ -3079,7 +2944,7 @@ BACKREV:
     // asm 000030B6: 	BZ	BACKREV1
     // asm 000030B7: 	LDI	@SNDSTR+(2*SND_SIZ)+SND_PRI,R2	;CHECK TRACK2
     // asm 000030B8: 	BNZ	PLAIR
-BACKREV1:
+    // asm 000030B9: BACKREV1
     // asm 000030B9: 	SONDFX	STARTLINEREVS2		     	;START REV WHEN NOTHING
     // *CHECK IN AIR SPEECH CALL
 PLAIR:
@@ -3109,7 +2974,7 @@ PLYRSND1B:
     // asm 000030CF: 	LDI	0,R0
 NOBOTTOM:
     // asm 000030D0: 	STI	R0,@OLDPLYAIR
-BOTX:
+    // asm 000030D1: BOTX
     // *CHECK SKID SOUND
     // asm 000030D1: 	LDF	*+AR5(CARSKID),R0
     // asm 000030D2: 	CMPF	0.5,R0
@@ -3144,21 +3009,11 @@ NO_FLAME:
     // asm 000030EF: 	LDI	2,R0
     // asm 000030F0: 	CALL	RANDVSND   	       		;START A SKID AND EXIT
     // asm 000030F1: 	B	SKIDX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PSND1", 0, 0);
-    UNIMPL();
-}
-
-void SKIDAMP(void)
-{
+SKIDAMP:
     // asm 000030F2: 	LDI	@SNDSTR+(SND_SIZ)+SND_VOL,R2	;VOLUME CHANGE?
     // asm 000030F3: 	LDI	1,R0
     // asm 000030F4: 	B	SKIDAMP10
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SKIDAMP", 0, 0);
-    UNIMPL();
-}
-
-void SKIDAMP1(void)
-{
+SKIDAMP1:
     // asm 000030F5: 	LDI	@SNDSTR+(2*SND_SIZ)+SND_VOL,R2	;VOLUME CHANGE?
     // asm 000030F6: 	LDI	2,R0
 SKIDAMP10:
@@ -3168,12 +3023,7 @@ SKIDAMP10:
     // asm 000030FA: 	BLT	SKIDX
     // asm 000030FB: 	CALL	SET_TRACK_VOL 			;ADJUST YOUR VOLUME, DUDES
     // asm 000030FC: 	B	SKIDX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SKIDAMP1", 0, 0);
-    UNIMPL();
-}
-
-void NOSKID(void)
-{
+NOSKID:
     // asm 000030FD: 	LDI	SKIDB,AR2
     // asm 000030FE: 	CALL	KILLSNDFX
     // asm 000030FF: 	LDI	SKIDC,AR2
@@ -3190,15 +3040,10 @@ SKIDX:
     // asm 0000310A: 	LDI	BRAKSND,AR2
     // asm 0000310B: 	CALL	MKFXSND
     // asm 0000310C: 	B	BRAKSNDX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOSKID", 0, 0);
-    UNIMPL();
-}
-
-void NOBRAKSND(void)
-{
+NOBRAKSND:
     // asm 0000310D: 	LDI	BRAKSND,AR2
     // asm 0000310E: 	CALL	KILLSNDFX
-BRAKSNDX:
+    // asm 0000310F: BRAKSNDX
     // *ENGINE SPUTTER SOUND
     // asm 0000310F: 	LDF	*+AR5(CARTHROTTLE),R0
     // asm 00003110: 	CMPF	0.15,R0
@@ -3214,12 +3059,7 @@ BRAKSNDX:
     // asm 0000311A: 	BZ	SPUTSNDX
     // asm 0000311B: 	CALL	ONESND
     // asm 0000311C: 	B	SPUTSNDX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOBRAKSND", 0, 0);
-    UNIMPL();
-}
-
-void NOSPUTSND(void)
-{
+NOSPUTSND:
     // asm 0000311D: 	LDI	SPUTSND,AR2
     // asm 0000311E: 	CALL	KILLSNDFX
 SPUTSNDX:
@@ -3235,7 +3075,7 @@ SPUTSNDX:
     // asm 00003127: 	LDI	TUNSND,AR2
     // asm 00003128: 	CALL	MKVFXSND
     // asm 00003129: 	B	TUNSNDX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOSPUTSND", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_SNDS", 0, 0);
     UNIMPL();
 }
 
@@ -3263,12 +3103,7 @@ TUNSNDX:
     // asm 0000313A: 	BLT	NOGRAV
     // asm 0000313B: 	LDI	GRAVELA,AR2
     // asm 0000313C: 	B	MKVFXSND
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TUNOFF", 0, 0);
-    UNIMPL();
-}
-
-void NOGRAV(void)
-{
+NOGRAV:
     // asm 0000313D: 	LDI	GRAVELA,AR2
     // asm 0000313E: 	CALL	KILLSNDFX
     // asm 0000313F: 	BNC	GRAVX
@@ -3276,7 +3111,7 @@ void NOGRAV(void)
 GRAVX:
     // asm 00003142: PLSNDX
     // asm 00003142: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOGRAV", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TUNOFF", 0, 0);
     UNIMPL();
 }
 
@@ -3314,7 +3149,12 @@ void MKVFXSND(void)
     // asm 0000314E: 	RETSLE
     // asm 0000314F: 	LDI	1,R0	  	;TRACK #
     // asm 00003150: 	B	SET_TRACK_VOL	;R0=TRACK#,R1=VOL
-MKVFX1:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MKVFXSND", 0, 0);
+    UNIMPL();
+}
+
+void MKVFX1(void)
+{
     // asm 00003151: 	CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 00003152: 	BNZ	VOLSNDFX		     	;DO NEW SOUND DUDES
     // asm 00003153: 	SUBI	@SNDSTR+(2*SND_SIZ)+SND_VOL,R0	;CHECK TRACK2 VOLUME
@@ -3323,7 +3163,7 @@ MKVFX1:
     // asm 00003156: 	RETSLE
     // asm 00003157: 	LDI	2,R0	  	;TRACK #
     // asm 00003158: 	B	SET_TRACK_VOL	;R0=TRACK#,R1=VOL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MKVFXSND", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MKVFX1", 0, 0);
     UNIMPL();
 }
 
@@ -3382,7 +3222,12 @@ void DRONESND(void)
     // asm 0000316B: 	POP	AR2
     // asm 0000316C: 	ADDI	R0,AR2
     // asm 0000316D: 	LDI	*AR2,AR2
-    // asm 0000316E: DRONESND1	       			;MAKE ONE DRONE SOUND ONLY...
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESND", 0, 0);
+    UNIMPL();
+}
+
+void DRONESND1(void)
+{
     // asm 0000316E: 	FLOAT	*+AR4(ODIST),R0
     // asm 0000316F: 	RETSN				;BEHIND PLAYER NO SOUND
     // asm 00003170: 	FLOAT	10000,R1
@@ -3396,7 +3241,7 @@ void DRONESND(void)
     // asm 00003178: 	CMPI	220,R0
     // asm 00003179: 	LDIGT	220,R0
     // asm 0000317A: 	B	VOLSNDFX     		;R0=VOLUME, AR2=SOUND
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESND", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESND1", 0, 0);
     UNIMPL();
 }
 

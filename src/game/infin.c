@@ -17,7 +17,6 @@
 void FIND_HIGHEST_ROADY(void);
 void INFINITY(void);
 void II(void);
-void NOCLIPPING(void);
 void TRANS_PTS(void);
 void WATER_INFINITY(void);
 
@@ -529,12 +528,7 @@ III44:
     // *
     // *
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "II", 0, 0);
-    UNIMPL();
-}
-
-void NOCLIPPING(void)
-{
+NOCLIPPING:
     // 	;DUMP X
     // asm 00008306: 	FIX	*AR6,R0
     // asm 00008307: 	STI	R0,*AR5				;ARPS[0][0]
@@ -622,7 +616,7 @@ LOOP1:
     // asm 00008351: 	TSTB	MWATER,R0
     // asm 00008352: 	CALLNZ	WATER_INFINITY
     // asm 00008353: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOCLIPPING", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "II", 0, 0);
     UNIMPL();
 }
 

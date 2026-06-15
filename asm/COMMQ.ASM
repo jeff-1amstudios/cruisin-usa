@@ -354,7 +354,7 @@ MASBX
 	RETS
 *----------------------------------------------------------------------------
 
-DECODE_NULL		;DO NOTHING
+DECODE_NULL:		;DO NOTHING
 	RETS
 *----------------------------------------------------------------------------
 
@@ -1307,7 +1307,7 @@ DCRKX
 
 
 *DECODE TRACK RANGE OTHER MACHINE
-DECODE_OM_TRACK
+DECODE_OM_TRACK:
 
 	LDI	-16,R2
 	LDI	-8,R3
@@ -1329,7 +1329,7 @@ DECODE_OM_TRACK
 *SEND YOUR TRACK RANGE
 	.GLOBL	OM_TRACK_LO,OM_TRACK_HI
 	.GLOBL 	SEND_OM_TRACK
-SEND_OM_TRACK
+SEND_OM_TRACK:
 	LDI	@COMMQ_TMP_BUFFI,AR2
 	LDI	CB_OM_TRACK,R2			;GET MESSAGE HEADER
 	STI	R2,*AR2++

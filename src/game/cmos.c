@@ -11,6 +11,7 @@
  * Source module: asm/CMOS.ASM
  */
 
+void HSTDEC(void);
 void CMOS_ON_C(void);
 void CMOS_OFF_C(void);
 void CMOS_WPON_C(void);
@@ -22,7 +23,7 @@ void RESET_ADJUSTMENTS(void);
 void CHECKSUMGEN_ADJ(void);
 void AUDIT_INC(void);
 void AUDIT_ADD(void);
-void ADJUSTMENT_READ(void);
+#define ADJUSTMENT_READ AUDIT_READ
 void AUDIT_READ(void);
 void ADJUSTMENT_WRITE(void);
 void AUDIT_WRITE(void);
@@ -31,27 +32,113 @@ void _rd_cw(void);
 void _wr_cw(void);
 void _rd_cwR(void);
 void _wr_cwR(void);
-void DEFAULT_TABLE(void);
-void DEFAULT_TABLE_TOTAL(void);
 void INIT_LASTHS_TABLE(void);
 void UPDATE_LASTHS(void);
 void CHECK_LASTHS(void);
 void INIT_HSTD_TABLES(void);
 void VALIDATE_HSTD_TABLES(void);
+void RESETALL(void);
 void GET_TABLE_ADDR(void);
 void TABLE_ENTRY_WRITE(void);
 void TABLE_ENTRY_WRITE0(void);
 void TABLE_ENTRY_READ(void);
 void CHECK_RACE_TABLE(void);
-void INSERT_HERE(void);
 void INSERT_TABLE_ENTRY(void);
 
 /* *----------------------------------------------------------------------------
  */
+/* asm: VERIFY_ADJUSTMENTS_ACCURACYTAB */
+/* asm: VADJTAB	0,81,0		;ADJ_COINMODE */
+/* asm: VADJTAB	0,255,0		;ADJ_GASMIN */
+/* asm: VADJTAB	0,255,255	;ADJ_GASMAX */
+/* asm: VADJTAB	0,255,0		;ADJ_STEERMIN */
+/* asm: VADJTAB	0,255,255	;ADJ_STEERMAX */
+/* asm: VADJTAB	0,255,128	;ADJ_STEERCENTER */
+/* asm: VADJTAB	0,255,0		;ADJ_BRAKEMIN */
+/* asm: VADJTAB	0,255,255	;ADJ_BRAKEMAX */
+/* asm: VADJTAB	0,255,200	;ADJ_VOLUME */
+/* asm: VADJTAB	0,100,1		;ADJ_COIN1_UNITS */
+/* asm: VADJTAB	0,100,1		;ADJ_COIN2_UNITS */
+/* asm: VADJTAB	0,100,1		;ADJ_COIN3_UNITS */
+/* asm: VADJTAB	0,100,1		;ADJ_COIN4_UNITS */
+/* asm: VADJTAB 0,100,1		;ADJ_UNITS_PER_CREDIT */
+/* asm: VADJTAB 0,100,0		;ADJ_BONUS_UNITS */
+/* asm: VADJTAB 0,100,0		;ADJ_UNITS_MIN */
+/* asm: VADJTAB 0,100,3		;ADJ_CREDITS_TO_START */
+/* asm: VADJTAB 0,100,3		;ADJ_CREDITS_TO_CONTINUE */
+/* asm: VADJTAB 0,1,1		;ADJ_SHOW_FRAC */
+/* asm: VADJTAB 0,127,1		;ADJ_COIN1_COUNTER */
+/* asm: VADJTAB 0,127,1		;ADJ_COIN2_COUNTER */
+/* asm: VADJTAB 0,127,1		;ADJ_COIN3_COUNTER */
+/* asm: VADJTAB 0,127,4		;ADJ_COIN4_COUNTER */
+/* asm: VADJTAB	0,1,1		;ADJ_STANDARD_PRICING */
+/* asm: VADJTAB	0,1,0		;ADJ_CUSTOM_PRICING */
+/* asm: VADJTAB	0,1,0		;ADJ_FREE_PLAY */
+/* asm: VADJTAB	0,1,1		;ADJ_FREEGAME */
+/* asm: VADJTAB	0,9,5		;ADJ_DIFFICULTY */
+/* asm: VADJTAB	0,6,3		;ADJ_TIME_TO_START */
+/* asm: VADJTAB	10,25,20	;ADJ_CHECKPOINT_BONUS */
+/* asm: VADJTAB	0,1,0		;ADJ_ATTRACT_MODE_SOUND */
+/* asm: VADJTAB	0,1,1		;ADJ_HIGH_SCORE_ENTRY */
+/* asm: VADJTAB	0,255,100	;ADJ_MIN_VOL_LEVEL */
+/* asm: VADJTAB	0,25000,4000	;ADJ_ACTUALHSTDRESET */
+/* asm: VADJTAB	0,1,0		;ADJ_MPHORKPM */
+/* asm: VADJTAB	0,1,1		;ADJ_ROADKILL */
+/* asm: VADJTAB	0,1,1		;ADJ_CLINTON */
+/* asm: VADJTAB	0,1,1		;ADJ_GIRLS */
+/* asm: VADJTAB	0,5,5		;ADJ_STEERING_SENSE */
+/* asm: VADJTAB	1000,25000,5000	;ADJ_HIGHSCORE_RESET (step 1000) */
+/* asm: VADJTAB	0,100,50	;ADJ_DIFF_LOCAL */
+/* asm: VADJTAB	0,1,0		;UNKNOWN */
+/* asm: VADJTAB	0,30,20		;ADJ_RAMP_PERCENTAGE */
+/* asm: VADJTAB	0,5000,0	;ADJ_RAMP_COUNT */
+/* asm: VADJTAB	0,1,1		;ADJ_ENTER_INITS */
+/* asm: VADJTAB	10,50,30	;ADJ_MAX_CREDITS */
+int VERIFY_ADJUSTMENTS_ACCURACYTAB;
 /* *----------------------------------------------------------------------------
  */
 #define DEFAULT_TABLE_SIZE 2
+/* asm: DEFAULT_TABLE: */
+/* asm: TABLEENT	'T','V','G',2,01,3 */
+/* asm: TABLEENT	'E','L','P',2,02,3 */
+/* asm: TABLEENT	'E','P','J',2,03,3 */
+/* asm: TABLEENT	'M','L',' ',2,04,3 */
+/* asm: TABLEENT	'G','W','S',2,06,3 */
+/* asm: TABLEENT	'S','X','C',2,08,3 */
+/* asm: TABLEENT	'T','E','D',2,10,3 */
+/* asm: TABLEENT	'M','E','Y',2,12,3 */
+/* asm: TABLEENT	'M','M','V',2,14,3 */
+/* asm: TABLEENT	'B','D','P',2,16,3 */
+int DEFAULT_TABLE;
+/* asm: DEFAULT_TABLE_TOTAL: */
+/* asm: TABLEENT	'T','V','G',28,00,3 */
+/* asm: TABLEENT	'E','L','P',28,10,3 */
+/* asm: TABLEENT	'E','P','J',28,20,3 */
+/* asm: TABLEENT	'M','L',' ',28,30,3 */
+/* asm: TABLEENT	'G','W','S',28,40,3 */
+/* asm: TABLEENT	'S','X','C',28,50,3 */
+/* asm: TABLEENT	'T','E','D',30,00,3 */
+/* asm: TABLEENT	'M','E','Y',31,10,3 */
+/* asm: TABLEENT	'M','M','V',32,20,3 */
+/* asm: TABLEENT	'B','D','P',34,30,3 */
+int DEFAULT_TABLE_TOTAL;
 #define NUM_TABLES 14
+
+/* *----------------------------------------------------------------------------
+*DECREMENT HIGH SCORE RESET COUNTER
+*
+ */
+void HSTDEC(void)
+{
+    // asm 00009962: 	READAUD	ADJ_ACTUALHSTDRESET
+    // asm 00009964: 	SUBI	1,R0
+    // asm 00009965: 	LDILT	0,R0
+    // asm 00009966: 	LDI	R0,R2
+    // asm 00009967: 	SETADJ	ADJ_ACTUALHSTDRESET
+    // asm 00009969: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HSTDEC", 0, 0);
+    UNIMPL();
+}
 
 /* *----------------------------------------------------------------------------
  */
@@ -360,12 +447,6 @@ void AUDIT_ADD(void)
 *	R0	AUDIT VALUE
 *
  */
-void ADJUSTMENT_READ(void)
-{
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
 void AUDIT_READ(void)
 {
     // asm: 	LS	2,AR2
@@ -582,38 +663,6 @@ void _wr_cwR(void)
     UNIMPL();
 }
 
-void DEFAULT_TABLE(void)
-{
-    // asm: 	TABLEENT	'T','V','G',2,01,3
-    // asm: 	TABLEENT	'E','L','P',2,02,3
-    // asm: 	TABLEENT	'E','P','J',2,03,3
-    // asm: 	TABLEENT	'M','L',' ',2,04,3
-    // asm: 	TABLEENT	'G','W','S',2,06,3
-    // asm: 	TABLEENT	'S','X','C',2,08,3
-    // asm: 	TABLEENT	'T','E','D',2,10,3
-    // asm: 	TABLEENT	'M','E','Y',2,12,3
-    // asm: 	TABLEENT	'M','M','V',2,14,3
-    // asm: 	TABLEENT	'B','D','P',2,16,3
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEFAULT_TABLE", 0, 0);
-    UNIMPL();
-}
-
-void DEFAULT_TABLE_TOTAL(void)
-{
-    // asm: 	TABLEENT	'T','V','G',28,00,3
-    // asm: 	TABLEENT	'E','L','P',28,10,3
-    // asm: 	TABLEENT	'E','P','J',28,20,3
-    // asm: 	TABLEENT	'M','L',' ',28,30,3
-    // asm: 	TABLEENT	'G','W','S',28,40,3
-    // asm: 	TABLEENT	'S','X','C',28,50,3
-    // asm: 	TABLEENT	'T','E','D',30,00,3
-    // asm: 	TABLEENT	'M','E','Y',31,10,3
-    // asm: 	TABLEENT	'M','M','V',32,20,3
-    // asm: 	TABLEENT	'B','D','P',34,30,3
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEFAULT_TABLE_TOTAL", 0, 0);
-    UNIMPL();
-}
-
 /* *INIT_LASTHS_TABLE
 *CHECK_LASTHS
 *----------------------------------------------------------------------------
@@ -751,10 +800,15 @@ J3:
     // asm: 	INC	R6
     // asm 00009AF1: 	DBU	AR5,ITL1A
     // asm 00009AF2: 	RETS
-RESETALL:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "VALIDATE_HSTD_TABLES", 0, 0);
+    UNIMPL();
+}
+
+void RESETALL(void)
+{
     // asm: 	CALL	INIT_HSTD_TABLES
     // asm 00009AF5: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VALIDATE_HSTD_TABLES", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RESETALL", 0, 0);
     UNIMPL();
 }
 
@@ -931,15 +985,10 @@ NXTENT:
     // asm 00009B46: 	BLT	NXTENT
     // asm: 	LDI	-1,R0
     // asm 00009B48: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_RACE_TABLE", 0, 0);
-    UNIMPL();
-}
-
-void INSERT_HERE(void)
-{
+INSERT_HERE:
     // asm 00009B4B: 	LDI	R5,R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_HERE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_RACE_TABLE", 0, 0);
     UNIMPL();
 }
 

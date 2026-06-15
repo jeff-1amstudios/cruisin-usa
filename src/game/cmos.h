@@ -631,23 +631,6 @@
 // 
 // TOP RACE TIMES
 // 
-// STRUCT RACEENTRY
-// asm: TE_TIME		.set	0	;TIME
-#define TE_TIME 0 //TIME
-
-// asm: TE_INIT1	.set	4	; }
-#define TE_INIT1 4 //}
-
-// asm: TE_INIT2	.set	5	;  } PLAYERS INITIALS
-#define TE_INIT2 5 //} PLAYERS INITIALS
-
-// asm: TE_INIT3	.set	6	; }
-#define TE_INIT3 6 //}
-
-// asm: TE_RANK		.set	7	;RANK
-#define TE_RANK 7 //RANK
-
-// ENDSTRUCT
 // asm: TE_SIZE		.set	8
 #define TE_SIZE 8
 
@@ -699,6 +682,13 @@
 // asm: DC_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE*8)
 #define DC_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE*8))
 
+// CMOS.ASM
+// asm: 	.globl	CMOSI
+#define CMOSI CMOS
+
+// asm: 	.globl	ADJUSTMENT_READ
+#define ADJUSTMENT_READ AUDIT_READ
+
 // asm: 	.globl	CHECK_RACE_TABLE,INSERT_TABLE_ENTRY
 void CHECK_RACE_TABLE(void);
 
@@ -719,9 +709,6 @@ void VALIDATE_HSTD_TABLES(void);
 
 // asm: 	.globl	INIT_HSTD_TABLES
 void INIT_HSTD_TABLES(void);
-
-// asm: 	.globl	ADJUSTMENT_READ
-void ADJUSTMENT_READ(void);
 
 // asm: 	.globl	ADJUSTMENT_WRITE
 void ADJUSTMENT_WRITE(void);

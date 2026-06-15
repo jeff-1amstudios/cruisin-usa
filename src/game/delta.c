@@ -225,25 +225,6 @@ CARPROCL:
     // 	;STUFF YOUR DYNAMIC MATRICES
     // 	;
     // asm 0000AEEB: 	LDI	*+AR4(ODYNALIST),R0
-    // asm: 	SLOCKON	Z,"DELTA\DRONE_DANI_PROC 1"
-CDTOP:
-    // asm 0000AEEC: 	LDI	R0,AR0
-    // asm 0000AEED: 	LDI	*AR0,R0
-    // asm 0000AEEE: 	BZ	CARSLP
-    // asm 0000AEEF: 	LDI	AR0,AR2
-    // asm 0000AEF0: 	ADDI	DYNAMATRIX,AR2
-    // 	;STUFF WHEEL
-    // 	;
-    // asm 0000AEF1: 	LDF	*AR3++,R0
-    // asm 0000AEF2: 	RPTS	7
-    // asm 0000AEF3: 	LDF	*AR3++,R0
-    // asm 0000AEF4:  	STF	R0,*AR2++
-    // asm 0000AEF5: 	NOP	*AR3--(9)
-    // asm 0000AEF6: 	LDI	*AR0,R0
-    // asm 0000AEF7: 	BNZ	CDTOP
-CARSLP:
-    // asm 0000AEF8: 	SLEEP	3
-    // asm 0000AEFA: 	B 	CARPROCL
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONE_DANI_PROC", 0, 0);
     UNIMPL();
 }

@@ -21,10 +21,7 @@
 
 void ERROR_LOG(void);
 void ERROR_LOG_DISPLAY(void);
-void ONE_LOG(void);
-void LLPPT(void);
-void NOCLEAR(void);
-void NOT_NEXT_PAGE(void);
+void ION(void);
 
 #define ERR_SIZE 16
 #define MAX_LOGS 30
@@ -123,7 +120,7 @@ void ERROR_LOG(void)
     // asm 0000AB85: 	LDI	*+AR2(OUSR1),R2
     // asm 0000AB86: 	POP	AR2
     // asm: 	CALL	_wr_cw
-ERROR_X:
+    // asm 0000AB88: ERROR_X
     // asm 0000AB8A: 	POP	AR7
     // asm 0000AB8B: 	POP	AR6
     // asm 0000AB8C: 	POP	AR5
@@ -162,7 +159,7 @@ void ERROR_LOG_DISPLAY(void)
     // asm: 	TEXTITT	"VIEW 1  TO EXIT",10,310
     // asm: 	TEXTITT	"VIEW 3  NEXT PAGE",10,320
     // asm: 	TEXTITT	"VIEW 3 + VIEW 2 + VIEW 1 CLEAR LOG",10,330
-ERRLOG_D:
+    // asm 0000ABA9: ERRLOG_D
     // asm: 	LDI	RACE_TABLE_SIZE*NUM_RACES+NUM_RACES,AR2
     // asm: 	ADDI	MAX_AUDITS*4,AR2
     // asm: 	ADDI	@CMOSI,AR2
@@ -178,11 +175,11 @@ NEXT_PAGE:
     // asm: 	CMPI	0,R0
     // asm: 	BGT	ERRLOG_D2
     // asm: 	TEXTITT	"NO ERRORS",10,50
-ERRLOG_D2:
+    // asm 0000ABBC: ERRLOG_D2
     // asm 0000ABBD: 	LDI	5,R4
     // asm 0000ABBE: 	LDI	10,R6
     // asm 0000ABBF: 	LDI	50,R7
-BIGLOOP:
+    // asm 0000ABC0: BIGLOOP
     // asm: 	PUSH	AR2
     // asm 0000ABC0: 	READAUD	AUD_LOG_COUNT
     // asm 0000ABC1: 	POP	AR2
@@ -207,25 +204,8 @@ BIGLOOP:
     UNIMPL();
 }
 
-void ONE_LOG(void)
+void ION(void)
 {
-    // asm: 	CALL	_rd_cw
-    // asm 0000ABE9: 	LDI	R0,R2
-    // asm 0000ABEB: 	PUSH	AR2
-    // asm 0000ABEE: 	LDI	@OBJSTRI,AR2
-    // asm: 	CALL	HEX2ASC
-    // asm: 	LDI	R6,R2
-    // asm: 	LDI	R7,R3
-    // asm: 	LDI	@OBJSTRI,AR2
-    // asm: 	LDI	DEFAULT_COLOR,RC
-    // asm: 	CALL	_outtextxyc
-    // asm: 	POP	AR2
-    // asm 0000ABF0: 	ADDI	70,R6
-    // asm: 	CMPI	450,R6
-    // asm 0000ABF1: 	BLT	ION
-    // asm 0000ABF2: 	LDI	10,R6
-    // asm: 	ADDI	10,R7
-ION:
     // asm 0000ABF3: DBU	AR5,ONE_LOG
     // asm: 	LDI	10,R6
     // asm 0000ABF4: 	ADDI	20,R7
@@ -233,12 +213,7 @@ ION:
     // asm 0000ABF7: 	DEC	R4
     // asm 0000ABF8: 	BLT	LLPPT
     // asm 0000ABF9: 	BU	BIGLOOP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ONE_LOG", 0, 0);
-    UNIMPL();
-}
-
-void LLPPT(void)
-{
+LLPPT:
     // asm 0000ABFD: 	CALL	WAIT_FOR_VBLANK
     // asm 0000AC01: 	LDI	@_newbut,R1		;debounce
     // asm: 	TSTB	SW_DIAG,R1		;start to return to main
@@ -254,12 +229,7 @@ void LLPPT(void)
     // asm: 	CALL	WAIT_FOR_VBLANK
     // asm 0000AC08: 	CALL	WAIT_FOR_VBLANK
     // asm: 	BU	ERROR_LOG_DISPLAY
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LLPPT", 0, 0);
-    UNIMPL();
-}
-
-void NOCLEAR(void)
-{
+NOCLEAR:
     // asm 0000AC0A: 	TSTB	SW_VIEW2_H,R1
     // asm 0000AC0B: 	BNZ	NOT_NEXT_PAGE
     // asm 0000AC0C: 	PUSH	AR2
@@ -268,12 +238,7 @@ void NOCLEAR(void)
     // asm 0000AC0E: 	CMPI	R0,AR6
     // asm: 	BGE	ERRLOG_D
     // asm 0000AC10: 	BU	NEXT_PAGE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOCLEAR", 0, 0);
-    UNIMPL();
-}
-
-void NOT_NEXT_PAGE(void)
-{
+NOT_NEXT_PAGE:
     // asm 0000AC14: 	TSTB	SW_VIEW0_H,R1
     // asm 0000AC15: 	BZ	BOOKX2
     // asm 0000AC16: 	BU	LLPPT
@@ -286,6 +251,6 @@ void NOT_NEXT_PAGE(void)
     // asm 0000AC1E: 	AND	SW_DIAG,R0
     // asm: 	BNZ	BOOKX
     // asm 0000AC1F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOT_NEXT_PAGE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ION", 0, 0);
     UNIMPL();
 }

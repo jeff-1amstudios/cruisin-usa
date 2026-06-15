@@ -22,6 +22,8 @@ extern int _ATTR_MODE;
 // asm:  .globl TITLES,TEXTTABSI
 extern int TITLES[];
 
+#define TEXTTABSI TEXTTABS
+
 // attrdrne.asm
 // asm:  .globl ATTRWAVE,LOAD_ATTR_LEG
 extern int ATTRWAVE;
@@ -31,6 +33,8 @@ extern int BABE_CONTROL;
 
 // backgrnd.asm
 // asm:  .globl RACE_STARTING_POINTSI,RACE_STARTING_POINTS
+#define RACE_STARTING_POINTSI RACE_STARTING_POINTS
+
 extern int RACE_STARTING_POINTS[];
 
 extern int FINISH_LINE;
@@ -53,6 +57,9 @@ extern int STARTSECTION;
 extern int START_POS[];
 
 extern int START_RADY;
+
+// asm:  .globl DGROUPSI
+#define DGROUPSI DGROUPS
 
 // asm:  .globl DGROUPS
 extern int DGROUPS[];
@@ -90,6 +97,10 @@ extern int SINGLE_SECTION_TEMPPTR;
 // asm:  .globl BSSSTART
 extern int BSSSTART;
 
+// bonus.asm
+// asm:  .globl WAS_HEAD2HEAD_ON
+extern int WAS_HEAD2HEAD_ON;
+
 // asm:  .globl ETIME
 extern int ETIME;
 
@@ -98,6 +109,11 @@ extern int DO_FOLDFLAG;
 
 // asm:  .globl DID_TIMED_OUT
 extern int DID_TIMED_OUT;
+
+// asm:  .globl FULLSETUP_TABLEI,BONUS_POSTLAUNCHI
+#define FULLSETUP_TABLEI FULLSETUP_TABLE
+
+#define BONUS_POSTLAUNCHI BONUS_POSTLAUNCH
 
 // asm:  .globl CHALLENGE_RACE
 extern int CHALLENGE_RACE;
@@ -110,18 +126,39 @@ extern int BONUS_WAVE;
 // asm:  .globl MAXMPH,CAR_COLLS,MISC_COLLS
 extern int MAXMPH;
 
+// asm:  .globl BONUS_TABLEI
+#define BONUS_TABLEI BONUS_TABLE
+
 // asm:  .globl GAMETRAKI,GAMETRAK
+#define GAMETRAKI GAMETRAK
+
 extern int GAMETRAK[];
 
 // asm:  .globl LEG_NAMESI,LEG_NAMES
+#define LEG_NAMESI LEG_NAMES
+
 extern int LEG_NAMES[];
 
 // asm:  .globl HELI_ABORT
 extern int HELI_ABORT;
 
+// asm:  .globl CMOSI,HSTD_PAGEI,ALL_TIME_HSTDI,DAILY_HSTDI
+#define CMOSI CMOS
+
+#define SCOLLTABI SCOLLTAB
+
+// asm:  .globl BOXSCRAMI
+#define BOXSCRAMI BOXSCRAM
+
+// asm:  .globl FLYCOLLPI
+#define FLYCOLLPI FLYCOLLP
+
 // coin.asm
 // asm:  .globl ICF
 extern int ICF;
+
+// asm:  .globl COIN_TABLEI
+#define COIN_TABLEI COIN_TABLE
 
 // asm:  .globl COINOFF
 extern int COINOFF;
@@ -187,6 +224,9 @@ extern int OM_HIDDEN_ON;
 // asm:  .globl IGNORE_UPDATES
 extern int IGNORE_UPDATES;
 
+// asm:  .globl COMMQ_TMP_BUFFI
+#define COMMQ_TMP_BUFFI COMMQ_TMP_BUFF
+
 // asm:  .globl LINKEDP
 extern int LINKEDP;
 
@@ -210,6 +250,9 @@ extern int SEND_BUFFER_A_LEN;
 
 // asm:  .globl SEND_BUFFER_A
 extern int SEND_BUFFER_A[];
+
+// asm:  .globl SEND_BUFFER_AI
+#define SEND_BUFFER_AI SEND_BUFFER_A
 
 // asm:  .globl RECEIVE_BUFFER
 extern int RECEIVE_BUFFER[];
@@ -331,6 +374,8 @@ extern int DD_MAX_DRONES;
 extern int DRONE_DISPATCH_P;
 
 // asm:  .globl MODELTABI,TEXTTABSI,TABING
+#define MODELTABI MODELTAB
+
 extern float TABING[];
 
 // asm:  .globl COCONUT_COUNT
@@ -351,14 +396,51 @@ extern int IDLE_LIST;
 // asm:  .globl OLOW_PRIORITY
 extern int OLOW_PRIORITY;
 
+// asm:  .globl OACTIVEI,OACTIVE_PRIORITYI,IDLE_LISTI
+#define OACTIVEI OACTIVE
+
+#define OACTIVE_PRIORITYI OACTIVE_PRIORITY
+
+#define IDLE_LISTI IDLE_LIST
+
+// asm:  .globl CAMERAPOSI,CAMERARADI,CAMERAMATRIXI
+#define CAMERAPOSI _CAMERAPOS
+
+#define CAMERARADI _CAMERARAD
+
+#define CAMERAMATRIXI _CAMERAMATRIX
+
+// asm:  .globl POSTERMATI
+#define POSTERMATI POSTERMATRIX
+
+// asm:  .globl DRIVE_LISTI,CAR_LISTI,SIGN_LISTI,GROUND_LISTI
+#define DRIVE_LISTI DRIVE_LIST
+
+#define CAR_LISTI CAR_LIST
+
+#define SIGN_LISTI SIGN_LIST
+
+#define GROUND_LISTI GROUND_LIST
+
+// asm:  .globl LOCTEMPER_MATI
+#define LOCTEMPER_MATI LOCTEMPER_MAT
+
 // asm:  .globl LIGHTIY
 extern int LIGHTIY;
 
 // asm:  .globl transmatrixI,transvectorYI
+#define transmatrixI ROTATION_MATRIX
+
 extern int transvectorYI;
 
 // asm:  .globl BLOWLISTI,tmpmatI,tmpmatY,INVTABI
+#define BLOWLISTI BLOWLIST
+
+#define tmpmatI TMPMAT
+
 extern int tmpmatY;
+
+#define INVTABI INVTAB
 
 // asm:  .globl SCRNHXI,SCRNHYI
 extern float SCRNHXI[];
@@ -367,6 +449,11 @@ extern float SCRNHYI[];
 
 // asm:  .globl LOW_TOSS_LEVELI,LOW_CLIP_LEVELI,HIGH_CLIP_LEVELI,HIGH_CLIP_LEV8,MAXZI
 extern int HIGH_CLIP_LEV8;
+
+// asm:  .globl CENTSI,_PALLISTI,FASTSTKI
+#define _PALLISTI _PALLIST
+
+#define FASTSTKI FASTSTK
 
 // asm:  .globl _ACMAP,_ARPS,_AIVI,_ADDRL,_ACNTL
 extern int _ACMAP;
@@ -379,11 +466,29 @@ extern int _ADDRL;
 
 extern int _ACNTL;
 
+// asm:  .globl MATRIXAI,MATRIXBI,MATRIXCI,VECTORAI,VECTORBI,VECTORCI,VECTORDI
+#define MATRIXAI _MATRIXA
+
+#define MATRIXBI _MATRIXB
+
+#define MATRIXCI _MATRIXC
+
+#define VECTORAI _VECTORA
+
+#define VECTORBI _VECTORB
+
+#define VECTORCI _VECTORC
+
+#define VECTORDI _VECTORD
+
 // asm:  .globl ASHADOW
 extern int ASHADOW;
 
 // asm:  .globl SOFT_AUDIT
 extern int SOFT_AUDIT;
+
+// asm:  .globl bufferI
+#define bufferI buffer
 
 // asm:  .globl NULLSTR
 extern const char *NULLSTR;
@@ -398,12 +503,21 @@ extern int MOVEIN_OFFSET;
 // asm:  .globl POSITION
 extern int POSITION;
 
+// asm:  .globl POS_TABLEI
+#define POS_TABLEI POS_TABLE
+
 // asm:  .globl _countdown,SCORE,_MPH
 extern int _countdown;
 
 extern int SCORE;
 
 extern int _MPH;
+
+// asm:  .globl alloc_section
+#define alloc_section HARDalloc_section
+
+// asm:  .globl COUNTDOWN_BUFI
+#define COUNTDOWN_BUFI COUNTDOWN_BUF
 
 // asm:  .globl INFIN_CORRECT
 extern int INFIN_CORRECT;
@@ -413,6 +527,12 @@ extern int VAR_ROAD_KFACTOR;
 
 // asm:  .globl MAXMPH_COUNT
 extern int MAXMPH_COUNT;
+
+// asm:  .globl BONUS_WAITFLAG
+extern int BONUS_WAITFLAG;
+
+// asm:  .globl OM_BONUS_WAITFLAG
+extern int OM_BONUS_WAITFLAG;
 
 // asm:  .globl H2H_FLAGSTATE
 extern int H2H_FLAGSTATE;
@@ -452,6 +572,9 @@ extern int DIRTY_SHARED;
 // asm:  .globl LASTCHOICE
 extern int LASTCHOICE;
 
+// asm:  .globl START_NOW_P
+extern int START_NOW_P;
+
 // asm:  .globl START_HIT
 extern int START_HIT;
 
@@ -465,6 +588,8 @@ extern float INVTAB[];
 // asm:  .globl LEG_MAP,LEG_MAPI
 extern int LEG_MAP[];
 
+#define LEG_MAPI LEG_MAP
+
 // asm:  .globl FINISH_ID
 extern int FINISH_ID;
 
@@ -474,6 +599,8 @@ extern float HALFPII[];
 extern float PII[];
 
 extern float TWOPII[];
+
+#define FIND_YMATRIX _find_Ymatrix
 
 // map.asm
 // asm:  .globl THIS_MACHINE_AHEAD
@@ -525,26 +652,45 @@ extern int CAMVIEW;
 extern int OFFROAD_TMR;
 
 // asm:  .globl ZOOM,ZOOMI,ZOOMD
+#define ZOOMI ZOOMRAM
+
 extern int ZOOMD;
+
+// racer.asm
+// asm:  .globl RACER_PTRI
+#define RACER_PTRI RACER_PTR
 
 // asm:  .globl NOLONG_VEHICLES
 extern int NOLONG_VEHICLES;
 
 // asm:  .globl ROAD_DEBRISI,ROAD_DEBRIS
+#define ROAD_DEBRISI ROAD_DEBRIS
+
 extern int ROAD_DEBRIS;
 
 // asm:  .globl ROADKILL_SOUND_TIMER
 extern int ROADKILL_SOUND_TIMER;
 
+#define FLYTRAINPI FLYTRAINP
+
 // asm:  .globl FREEZE_IT
 extern int FREEZE_IT;
+
+// setups.asm
+// asm:  .globl LOADSECTION_TABLEI
+#define LOADSECTION_TABLEI LOADSECTION_TABLE
 
 extern int TIRE_SMOKE_COUNT;
 
 // asm:  .globl SNDSTR,SNDSTRI
 extern int SNDSTR[];
 
+#define SNDSTRI SNDSTR
+
 extern int TUNE_IDX;
+
+// asm:  .globl SNDTABI
+#define SNDTABI SNDTAB
 
 // asm:  .globl IN_RESET_MODE
 extern int IN_RESET_MODE;
@@ -558,16 +704,32 @@ extern int EPALRR[];
 
 extern int EPALRL[];
 
+extern int DOORLIST;
+
+// tracksel.asm
+// asm:  .globl HIDDEN_ON
+extern int HIDDEN_ON;
+
 // util.asm
 // asm:  .globl RAND,CRTCTLRAM,ACTIVE_SCREEN
 extern int CRTCTLRAM;
 
 extern int ACTIVE_SCREEN;
 
+// asm:  .globl FASTCLR0,FASTCLR1
+#define FASTCLR0 FASTCLR1
+
 // asm:  .globl DYNALIST,DYNAFREE,NULL
 extern int DYNALIST[];
 
 extern int DYNAFREE;
+
+// asm:  .globl DYNALISTI,DYNAFREEI,NULLI
+#define DYNALISTI DYNALIST
+
+#define DYNAFREEI DYNAFREE
+
+#define NULLI NULL
 
 // asm:  .globl CARLIST,CARFREE,CAR_COUNT
 extern int CARLIST[];
@@ -575,6 +737,11 @@ extern int CARLIST[];
 extern int CARFREE;
 
 extern int CAR_COUNT;
+
+// asm:  .globl CARLISTI,CARFREEI,CAR_COUNTI
+#define CARLISTI CARLIST
+
+#define CARFREEI CARFREE
 
 // wave.asm
 // asm:  .globl LOADED
@@ -585,12 +752,6 @@ extern int FIXEDPAL;
 
 // asm:  .globl ILLUM_PAL
 extern int ILLUM_PAL;
-
-// asm:  .globl VEHICLE_TABLE,VEHICLE_TABLEI
-extern int VEHICLE_TABLE[];
-
-// asm:  .globl tower_bgrey
-extern int tower_bgrey[];
 
 // asm:  .globl TEASE_COUNT,ATTR_MODEL
 extern int TEASE_COUNT;
@@ -660,6 +821,38 @@ void BLINK_FREEBE(void);
 
 // asm:  .globl TIMED_OUT
 void TIMED_OUT(void);
+
+// asm:  .globl BONUS1,BONUS2,BONUS3,BONUS4
+void BONUS1(void);
+
+void BONUS2(void);
+
+void BONUS3(void);
+
+void BONUS4(void);
+
+// asm:  .globl BONUS5,BONUS6,BONUS7,BONUS8
+void BONUS5(void);
+
+void BONUS6(void);
+
+void BONUS7(void);
+
+void BONUS8(void);
+
+// asm:  .globl BONUS9,BONUS10,BONUS11,BONUS12
+void BONUS9(void);
+
+void BONUS10(void);
+
+void BONUS11(void);
+
+void BONUS12(void);
+
+// asm:  .globl BONUS13,BONUS14
+void BONUS13(void);
+
+void BONUS14(void);
 
 // chopper.asm
 // asm:  .globl CHOPPER
@@ -835,6 +1028,9 @@ void FEED_WATCHDOG(void);
 // asm:  .globl INT0   ;DISPLAY INT
 void INT0(void);
 
+// asm:  .globl DIAG_RETURN
+void DIAG_RETURN(void);
+
 // asm:  .globl COLD_ENTER
 void COLD_ENTER(void);
 
@@ -1004,9 +1200,6 @@ void INFINITY(void);
 // asm:  .globl HUD
 void HUD(void);
 
-// asm:  .globl alloc_section
-void alloc_section(void);
-
 // asm:  .globl dealloc_section
 void dealloc_section(void);
 
@@ -1137,8 +1330,6 @@ void INITMAT(void);
 
 // asm:  .globl FIND_XMATRIX,FIND_YMATRIX,FIND_ZMATRIX
 void FIND_XMATRIX(void);
-
-void FIND_YMATRIX(void);
 
 void FIND_ZMATRIX(void);
 
@@ -1563,9 +1754,6 @@ void BLTMOD2D_DS(void);
 void SETPAGE0(void);
 
 void SETPAGE1(void);
-
-// asm:  .globl FASTCLR0,FASTCLR1
-void FASTCLR0(void);
 
 void FASTCLR1(void);
 

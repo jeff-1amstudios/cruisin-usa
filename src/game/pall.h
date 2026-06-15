@@ -32,6 +32,11 @@
 // asm: 	.globl	PTTRAM,PALLISTI
 extern int PTTRAM[PALNUM*3];
 
+#define PALLISTI _PALLIST
+
+// asm: 	.globl	PALROMI
+#define PALROMI _PALROM
+
 // asm: 	.globl	PAL_INIT		;CLEAR ALLOCATION/TRANSFER TABLES
 void PAL_INIT(void);
 

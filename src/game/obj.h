@@ -173,128 +173,6 @@
 
 // ----------------------------------------------------------------------------
 
-// STRUCT	OBJ
-// asm: OLINK	 	.set	00h	;UH
-#define OLINK 0x00 //UH
-
-// asm: OPOSX	 	.set	01h	;FL
-#define OPOSX 0x01 //FL
-
-// asm: OPOSY	 	.set	02h	;FL
-#define OPOSY 0x02 //FL
-
-// asm: OPOSZ	 	.set	03h	;FL
-#define OPOSZ 0x03 //FL
-
-// asm: OMATRIX	 	.set	04h	;
-#define OMATRIX 0x04
-
-// asm: OMAT00	 	.set	04h	;
-#define OMAT00 0x04
-
-// asm: OMAT10	 	.set	05h	;
-#define OMAT10 0x05
-
-// asm: OMAT20	 	.set	06h	;
-#define OMAT20 0x06
-
-// asm: OMAT01	 	.set	07h	;
-#define OMAT01 0x07
-
-// asm: OMAT11	 	.set	08h	;
-#define OMAT11 0x08
-
-// asm: OMAT21	 	.set	09h	;
-#define OMAT21 0x09
-
-// asm: OMAT02	 	.set	0Ah	;
-#define OMAT02 0x0A
-
-// asm: OMAT12	 	.set	0Bh	;
-#define OMAT12 0x0B
-
-// asm: OMAT22	 	.set	0Ch	;
-#define OMAT22 0x0C
-
-// asm: OROMDATA 	.set	0Dh	;UH
-#define OROMDATA 0x0D //UH
-
-// asm: OFLAGS	 	.set	0Eh	;UH
-#define OFLAGS 0x0E //UH
-
-// asm: OID		.set	0Fh	;UH
-#define OID 0x0F //UH
-
-// asm: OPAL		.set	10h	;UH	for single paletted model
-#define OPAL 0x10 //UH	for single paletted model
-
-// 
-// asm: OVELX	 	.set	11h	;FL
-#define OVELX 0x11 //FL
-
-// asm: OVELY	 	.set	12h	;FL
-#define OVELY 0x12 //FL
-
-// asm: OVELZ	 	.set	13h	;FL
-#define OVELZ 0x13 //FL
-
-// 
-// asm: ORADX	 	.set	14h	;FL
-#define ORADX 0x14 //FL
-
-// asm: ORADY	 	.set	15h	;FL
-#define ORADY 0x15 //FL
-
-// asm: ORADZ	 	.set	16h	;FL
-#define ORADZ 0x16 //FL
-
-// asm: OPLINK	 	.set	17h	;UH
-#define OPLINK 0x17 //UH
-
-// asm: OBLINK4		 .set	 17h	;	used in BACKGRND.ASM
-#define OBLINK4 0x17 //used in BACKGRND.ASM
-
-// asm: ODEGRADE_ROM	.set	18h	;UH
-#define ODEGRADE_ROM 0x18 //UH
-
-// asm: ODEGRADE_ROM2	.set	19h	;UH
-#define ODEGRADE_ROM2 0x19 //UH
-
-// asm: OROMDATA2	.set	1Ah	;UH	for models which interpolate or are dynamic objects
-#define OROMDATA2 0x1A //UH	for models which interpolate or are dynamic objects
-
-// asm: ODYNALIST	 .set	 1Ah	;	just another name for OROMDATA2
-#define ODYNALIST 0x1A //just another name for OROMDATA2
-
-// asm: OCARBLK		.set	1Bh	;UH	VEHICLE BLOCK POINTER (for DRONES/PLAYERS/VEHICLES)
-#define OCARBLK 0x1B //UH	VEHICLE BLOCK POINTER (for DRONES/PLAYERS/VEHICLES)
-
-// asm: OANIBLK		 .set	 1Bh	;	for animating objects
-#define OANIBLK 0x1B //for animating objects
-
-// asm: ODIST	 	.set	1Ch	;SD	DISTANCE FROM CAMERA POSITION IN Z
-#define ODIST 0x1C //SD	DISTANCE FROM CAMERA POSITION IN Z
-
-// asm: ORAD	 	.set	1Dh	;SD	RADIUS of OBJECT
-#define ORAD 0x1D //SD	RADIUS of OBJECT
-
-// asm: OUSR1		.set	1Eh	;UH	USER VARIABLE 1 (FORMATION LEAD)
-#define OUSR1 0x1E //UH	USER VARIABLE 1 (FORMATION LEAD)
-
-// asm: OLINK2		.set	1Fh	;UH	reserved for BACKGRND GROUP (DE)/ALLOCATION
-#define OLINK2 0x1F //UH	reserved for BACKGRND GROUP (DE)/ALLOCATION
-
-// asm: OLINK3		.set	20h	;UH	reserved for type (ie road/drone etc)
-#define OLINK3 0x20 //UH	reserved for type (ie road/drone etc)
-
-// asm: OLINK4		.set	21h	;UH	reserved for fLEX MAIN LIST
-#define OLINK4 0x21 //UH	reserved for fLEX MAIN LIST
-
-// asm: OBJSIZ		.set   	22h	;SIZ	OBJECT BLOCK SIZE
-#define OBJSIZ 0x22 //SIZ	OBJECT BLOCK SIZE
-
-// ENDSTRUCT
-
 // asm: OUSR2		.set	OLINK2
 #define OUSR2 OLINK2
 
@@ -328,8 +206,13 @@ extern int OMAX_OBJECTS;
 // asm: 	.globl	OLOW_PRIORITY,OHIGH_PRIORITY
 extern int OHIGH_PRIORITY;
 
+// asm: 	.globl	OFREEI
+#define OFREEI OFREE
+
 // asm: 	.globl	OBJSTR,OBJSTRI
 extern int OBJSTR[OBJSIZ*NUM_OBJECTS];
+
+#define OBJSTRI OBJSTR
 
 // asm: 	.globl	ZSORTWT,RESCAN
 void ZSORTWT(void);

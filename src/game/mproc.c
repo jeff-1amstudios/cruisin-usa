@@ -13,11 +13,13 @@
 
 void PRC_DEBUG_CHECK(void);
 void PRC_CREATE(void);
-void GETPROC0(void);
 void PRC_CREATE_CHILD(void);
 void PRC_DISPATCH(void);
-void PRC_SLEEP(void);
+#define PRC_SLEEP SLEEP
+void SLEEP(void);
+void NEXTPRC(void);
 void PRC_SUICIDE(void);
+void DIELP(void);
 void PRC_KILL(void);
 void PRC_KILLALL(void);
 void PRC_EXISTP(void);
@@ -43,6 +45,14 @@ int PACTIVE;
 int PFREE;
 /* asm: PRCSTR	hibss	PRCSTR,PRCSIZ*NUMPROC */
 int PRCSTR[PRCSIZ*NUMPROC];
+/* ;	LDP	@TIMER_CNTR1
+;	LDI	@TIMER_CNTR1,R0
+;	STI	R0,*+AR7(PDBGTIM)
+;	SETDP
+ */
+#endif
+#endif
+#endif
 
 /* *----------------------------------------------------------------------------
  */
@@ -89,12 +99,7 @@ void PRC_CREATE(void)
     // asm 0000A872: 	ERRON	U,EC_PROC|ET_ALLOC	;OUT OF PROCESSES ERROR
     // asm 0000A87A: 	SETC
     // asm 0000A87B: 	B	GETPROCX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_CREATE", 0, 0);
-    UNIMPL();
-}
-
-void GETPROC0(void)
-{
+GETPROC0:
     // asm 0000A87C: 	LDI	R0,AR0
     // asm 0000A87D: 	LDI	*AR0,R0
     // asm 0000A87E: 	STI	R0,@PFREE		;AND UPDATE FREE LIST
@@ -128,7 +133,7 @@ void GETPROC0(void)
 GETPROCX:
     // asm 0000A891: 	POP	R0
     // asm 0000A892: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPROC0", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_CREATE", 0, 0);
     UNIMPL();
 }
 
@@ -194,9 +199,8 @@ void PRC_DISPATCH(void)
     UNIMPL();
 }
 
-void PRC_SLEEP(void)
+void SLEEP(void)
 {
-    // asm 0000A89F: SLEEP
     // asm 0000A89F: 	POP	R0
     // asm 0000A8A0: 	STI	R0,*+AR7(PWAKE)		;SAVE WAKEUP ADDRESS
 #if DEBUG
@@ -206,28 +210,13 @@ void PRC_SLEEP(void)
     // asm: 	CMPI	0,DP
     // asm: 	BNE	$
     // asm: 	CMPI	@OLDSP,SP		;PROC IN AR7
-    // asm: 	SLOCKON	NE,"_sleep   OLDSP != SP  *FATAL*"
-    // asm: 	LDI	@CURRENT_PROC,R0
-    // asm: 	CMPI	R0,AR7			;AR7 HAS BEEN TRASHED!
-    // asm: 	SLOCKON	NE,"_sleep   CURRENT_PROC != AR7  *FATAL*"
-    // ;	LDP	@TIMER_CNTR1
-    // ;	LDI	@TIMER_CNTR1,R0
-    // ;	STI	R0,*+AR7(PDBGTIM)
-    // ;	SETDP
-#endif
-    // asm 0000A8A1: 	SETDP
-    // asm 0000A8A2: 	LDI	@OLDSP,SP		;PROC IN AR7
-    // asm 0000A8A3: 	LDI	@CURRENT_PROC,AR7
-    // asm 0000A8A4: 	STI	R4,*+AR7(PR4)
-    // asm 0000A8A5: 	STI	R5,*+AR7(PR5)
-    // asm 0000A8A6: 	STF	R6,*+AR7(PR6)
-    // asm 0000A8A7: 	STF	R7,*+AR7(PR7)
-    // asm 0000A8A8: 	STI	AR2,*+AR7(PTIME)	;SAVE SLEEP TIME
-    // asm 0000A8A9: 	STI	AR4,*+AR7(PAR4)
-    // asm 0000A8AA: 	STI	AR5,*+AR7(PAR5)
-    // asm 0000A8AB: 	STI	AR6,*+AR7(PAR6)
-NEXTPRC:
-    // asm 0000A8AC: LDI	*AR7,R0			;GET NEXT PROC, SET Z FLAG
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SLEEP", 0, 0);
+    UNIMPL();
+}
+
+void NEXTPRC(void)
+{
+    // asm 0000A8AC: LDI	*AR7,R0
 NP1:
     // asm 0000A8AD: BZD	DISPPRCX
     // asm 0000A8AE: 	LDI	R0,AR7			;PUT IT IN AR7
@@ -254,7 +243,7 @@ NP1:
     // 	;---->BU R0 DELAYED BRANCH HERE
 DISPPRCX:
     // asm 0000A8C0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_SLEEP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXTPRC", 0, 0);
     UNIMPL();
 }
 
@@ -284,18 +273,12 @@ SUICIDE:
     // asm: 	CMPI	0,DP
     // asm: 	BNE	$
     // asm: 	CMPI	@OLDSP,SP
-    // asm: 	SLOCKON	NE,"SUICIDE   OLD != SP  *FATAL*"
-    // asm: 	BNE	$			;PROC IN AR7
-    // asm: 	LDI	@CURRENT_PROC,R0
-    // asm: 	CMPI	R0,AR7
-    // asm: 	SLOCKON	NE,"SUICIDE   CURRENT_PROC != AR7  *FATAL*"
-#endif
-    // asm 0000A8C1: 	LDI	*AR7,R0			;LINK TO NEXT PROC
-    // asm 0000A8C2: 	LDI	@PFREE,AR1		;LINK TO START OF FREE
-    // asm 0000A8C3: 	STI	AR1,*AR7
-    // asm 0000A8C4: 	STI	AR7,@PFREE
-    // asm 0000A8C5: 	LDI	@PACTIVEI,R1		;WE MUST FIND DEAD PROCESS TO LINK AROUND
-DIELP:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_SUICIDE", 0, 0);
+    UNIMPL();
+}
+
+void DIELP(void)
+{
     // asm 0000A8C6: LDI	R1,AR1
     // asm 0000A8C7: 	LDI	*AR1,R1
     // asm 0000A8C8: 	ERRON	Z,EC_PROC|ET_DELETE	;SUICIDE   PROCESS NOT FOUND??? *FATAL*"
@@ -307,7 +290,7 @@ DIELP:
     // asm 0000A8D5: 	LDI	AR1,AR7			;SO SOMETHING IS POINTING TO NEXT PROC
     // asm 0000A8D6: 	NOP
     // 	;--->BR NEXTPRC
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_SUICIDE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIELP", 0, 0);
     UNIMPL();
 }
 
@@ -502,15 +485,6 @@ void PRC_XFER(void)
     // asm 0000A933: 	PUSH	AR1
 #if DEBUG
     // asm: 	CMPI	AR0,AR7				;ARE WE ATTEMPTING TO XFER OURSELVES?
-    // asm: 	SLOCKON	Z,"XFERPROC  ATTEMPT TO XFER OURSELF"
-#endif
-    // asm 0000A934: 	STI	AR1,*+AR0(PWAKE)		;SAVE WAKEUP ADDRESS
-    // asm 0000A935: 	LDI	1,R0
-    // asm 0000A936: 	STI	R0,*+AR0(PTIME)			;WAKEUP ASAP
-    // 	;someday it might be nessesary to re-initialize the
-    // 	;processes stack.  for now this is ignored.
-    // asm 0000A937: 	POP	AR1
-    // asm 0000A938: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_XFER", 0, 0);
     UNIMPL();
 }

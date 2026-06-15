@@ -22,11 +22,11 @@
 
 void CLEAR_LINK(void);
 void DECODE_BUFFER(void);
-void DECODE_LP(void);
 void COMMQ_PACKET_INIT(void);
 void COMMQ_READY_TO_SEND(void);
 void MESSAGE_ADD(void);
 void MESSAGE_ADD_SB(void);
+void DECODE_NULL(void);
 void SEND_WAVEFL_READY(void);
 void SEND_WAVEFL_SET(void);
 void SEND_WAVEFL_GO(void);
@@ -38,8 +38,6 @@ void SEND_LINKEDF(void);
 void DECODE_LINKEDT(void);
 void DECODE_LINKEDF(void);
 void DECODE_MODE(void);
-void DC_M_NOP(void);
-void DWAI(void);
 void SEND_CHECKPOINT(void);
 void SEND_FINISH(void);
 void SEND_MODE(void);
@@ -60,24 +58,21 @@ void SEND_RACER_POS(void);
 void SEND_PLAYERS_POS(void);
 void SEND_RHO_CREATE(void);
 void FIND_DRONE(void);
-void FDL(void);
-void DECODE_FLY_UPDATE(void);
+#define DECODE_FLY_UPDATE DECODE_RHO_UPDATE
 void DECODE_RHO_UPDATE(void);
 void DECODE_RACER_UPDATE(void);
 void DECODE_CAR_UPDATE(void);
-void DECCARX(void);
 void DECODE_RHO_CREATE(void);
-void DCRHOX(void);
 void DECODE_RACER_KILL(void);
-void DCRKX(void);
 void DECODE_OM_TRACK(void);
-void SEND_BSYNC0(void);
-void SEND_BSYNC1(void);
-void SEND_BSYNC2(void);
+void SEND_OM_TRACK(void);
+#define SEND_BSYNC0 SEND_BSYNC3
+#define SEND_BSYNC1 SEND_BSYNC3
+#define SEND_BSYNC2 SEND_BSYNC3
 void SEND_BSYNC3(void);
-void DECODE_BSYNC0(void);
-void DECODE_BSYNC1(void);
-void DECODE_BSYNC2(void);
+#define DECODE_BSYNC0 DECODE_BSYNC3
+#define DECODE_BSYNC1 DECODE_BSYNC3
+#define DECODE_BSYNC2 DECODE_BSYNC3
 void DECODE_BSYNC3(void);
 void DECODE_CHANGE_MUSIC(void);
 void SEND_CHANGE_MUSIC(void);
@@ -290,12 +285,7 @@ void DECODE_BUFFER(void)
     // asm 00007687: 	LS	1,AR6
     // asm 00007688: 	ADDI	AR2,AR6
     // asm 00007689: 	B	DECLPX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BUFFER", 0, 0);
-    UNIMPL();
-}
-
-void DECODE_LP(void)
-{
+DECODE_LP:
     // asm 0000768A: 	LDI	*AR2++,AR0		;GET THE BLOCK ID
     // asm 0000768B: 	LS	8,AR0
     // asm 0000768C: 	RS	24,AR0			;SHIFT OFF THE CRAP
@@ -314,7 +304,7 @@ ISDONE:
     // asm 00007694: 	CLRI	R0
     // asm 00007695: 	STI	R0,@RBUFF_LEN
     // asm 00007696: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_LP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BUFFER", 0, 0);
     UNIMPL();
 }
 
@@ -453,6 +443,13 @@ MASBX:
     // asm 000076EF: 	POP	R0
     // asm 000076F0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MESSAGE_ADD_SB", 0, 0);
+    UNIMPL();
+}
+
+void DECODE_NULL(void)
+{
+    // asm 000076F1: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_NULL", 0, 0);
     UNIMPL();
 }
 
@@ -619,12 +616,7 @@ void DECODE_MODE(void)
     // asm 00007748: 	STI	R0,@OM_CHOSEN_RACE
     // asm 00007749: 	STI	R0,@OM_VEHICLE
     // asm 0000774A: 	BU	DCMX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_MODE", 0, 0);
-    UNIMPL();
-}
-
-void DC_M_NOP(void)
-{
+DC_M_NOP:
     // asm 0000774B: 	LDI	@OM_STATE,R0
     // asm 0000774C: 	TSTB	OMS_FINISHLINE,R0
     // asm 0000774D: 	BZ	DWAI
@@ -638,12 +630,7 @@ void DC_M_NOP(void)
     // asm 00007751: 	CLRI	R1
     // asm 00007752: 	STI	R1,@_countdown
     // asm 00007753: 	BU	DCMX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DC_M_NOP", 0, 0);
-    UNIMPL();
-}
-
-void DWAI(void)
-{
+DWAI:
     // asm 00007754: 	LDI	@OM_MODE,R0
     // asm 00007755: 	AND	MMODE,R0
     // asm 00007756: 	CMPI	MGAME,R0	;OM in game?
@@ -666,7 +653,7 @@ DCMX:
     // asm 00007765: 	POP	R1
     // asm 00007766: 	POP	R0
     // asm 00007767: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DWAI", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_MODE", 0, 0);
     UNIMPL();
 }
 
@@ -805,7 +792,7 @@ void DECODE_START_GAME(void)
     // asm 000077B2: 	RETSNE
     // asm 000077B3: 	CALL	SEND_RACENUM
     // asm 000077B4: 	RETS
-NOPE:
+    // asm 000077B5: NOPE
     // asm 000077B5: 	CALL	SEND_LINKEDF
     // asm 000077B6: 	LDI	-1,R0
     // asm 000077B7: 	STI	R0,@OM_CHOSEN_RACE
@@ -1118,12 +1105,7 @@ void FIND_DRONE(void)
     // asm 00007868: 	LSH	R2,*AR2++,R1   		;GET CAR #
     // asm 00007869: 	LDI	@CAR_LIST,R0	 	;GET LIST
     // asm 0000786A: 	B	FD1
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_DRONE", 0, 0);
-    UNIMPL();
-}
-
-void FDL(void)
-{
+FDL:
     // asm 0000786B: 	LDI	*+AR0(OCARBLK),AR1	;GET CAR BLOCK
     // asm 0000786C: 	CMPI	*+AR1(CARNUM),R1   	;IS THIS THE CAR
     // asm 0000786D: 	RETSZ				;WE FOUND IT
@@ -1139,13 +1121,7 @@ FD1:
     // *
     // *DECODE RHO CAR UPDATE
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FDL", 0, 0);
-    UNIMPL();
-}
-
-void DECODE_FLY_UPDATE(void)
-{
-    /* no executable asm lines detected */
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_DRONE", 0, 0);
     UNIMPL();
 }
 
@@ -1298,16 +1274,11 @@ GETMAT:
     // asm 000078DE: 	STI	R0,*+AR1(CARTRACK_ID)
     // ;	ADDI	1,AR2	 		;PADDING
     // asm 000078DF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_CAR_UPDATE", 0, 0);
-    UNIMPL();
-}
-
-void DECCARX(void)
-{
+DECCARX:
     // ;	ADDI	46,AR2	 		;BLOW IT OFF
     // asm 000078E0: 	ADDI	45,AR2	 		;BLOW IT OFF
     // asm 000078E1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECCARX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_CAR_UPDATE", 0, 0);
     UNIMPL();
 }
 
@@ -1328,18 +1299,13 @@ void DECODE_RHO_CREATE(void)
     // asm 000078F0: 	POP	AR2
     // asm 000078F1: 	POP	AR6
     // asm 000078F2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_CREATE", 0, 0);
-    UNIMPL();
-}
-
-void DCRHOX(void)
-{
+DCRHOX:
     // asm 000078F3: 	ADDI	3,AR2
     // asm 000078F4: 	RETS
     // *
     // *KILL OFF RACER
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DCRHOX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_CREATE", 0, 0);
     UNIMPL();
 }
 
@@ -1359,16 +1325,11 @@ void DECODE_RACER_KILL(void)
     // *KILL OFF OBJECT, PROCESS, ANIMATION PROCESS
 DECRKX:
     // asm 00007900: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_KILL", 0, 0);
-    UNIMPL();
-}
-
-void DCRKX(void)
-{
+DCRKX:
     // asm 00007901: 	INC	AR2
     // asm 00007902: 	RETS
     // *DECODE TRACK RANGE OTHER MACHINE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DCRKX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_KILL", 0, 0);
     UNIMPL();
 }
 
@@ -1390,7 +1351,12 @@ void DECODE_OM_TRACK(void)
     // asm 00007910: 	STI	R0,@OM_TRACK_HI
     // asm 00007911: 	RETS
     // *SEND YOUR TRACK RANGE
-    // asm 00007912: SEND_OM_TRACK
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_OM_TRACK", 0, 0);
+    UNIMPL();
+}
+
+void SEND_OM_TRACK(void)
+{
     // asm 00007912: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00007913: 	LDI	CB_OM_TRACK,R2			;GET MESSAGE HEADER
     // asm 00007914: 	STI	R2,*AR2++
@@ -1413,44 +1379,29 @@ void DECODE_OM_TRACK(void)
     // asm 00007925: 	LDI	7-1,RC
     // asm 00007926: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00007927: 	BR	MESSAGE_ADD
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_OM_TRACK", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_OM_TRACK", 0, 0);
     UNIMPL();
 }
 
 /* *----------------------------------------------------------------------------
  */
-void SEND_BSYNC0(void)
+void SEND_BSYNC3(void)
 {
     // ;	LDI	0,R0
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC0,AR2
     // ;	BU	SBLS
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
-void SEND_BSYNC1(void)
-{
+SEND_BSYNC1:
     // ;	LDI	1,R0
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC1,AR2
     // ;	BU	SBLS
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
-void SEND_BSYNC2(void)
-{
+SEND_BSYNC2:
     // ;	LDI	2,R0
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC2,AR2
     // ;	BU	SBLS
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
-void SEND_BSYNC3(void)
-{
+SEND_BSYNC3:
     // asm 00007928: 	LDI	3,R0
     // asm 00007929: 	STI	R0,@BSYNC
     // asm 0000792A: 	LDI	CB_BONUS_SYNC3,AR2
@@ -1460,35 +1411,20 @@ SBLS:
     UNIMPL();
 }
 
-void DECODE_BSYNC0(void)
+void DECODE_BSYNC3(void)
 {
     // ;	LDI	0,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
-void DECODE_BSYNC1(void)
-{
+DECODE_BSYNC1:
     // ;	LDI	1,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
-void DECODE_BSYNC2(void)
-{
+DECODE_BSYNC2:
     // ;	LDI	2,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
-void DECODE_BSYNC3(void)
-{
+DECODE_BSYNC3:
     // asm 0000792C: 	LDI	3,R0
     // asm 0000792D: 	STI	R0,@OM_BSYNC
     // asm 0000792E: 	RETS

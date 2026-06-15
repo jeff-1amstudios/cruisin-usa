@@ -252,6 +252,34 @@ CONTINUE
         self.assertNotIn("int CONTINUE[WAS_HEAD2HEAD_ON];", rendered)
         self.assertIn("int WAS_HEAD2HEAD_ON;", rendered)
 
+    def test_data_only_macro_after_bare_label_closes_previous_function(self) -> None:
+        asm_source = """AUDENT .MACRO A
+\t.word\t:A:
+\t.string\t"A",0
+\t.ENDM
+
+COMPUTE_GAMETIME:\tLDI\tR0,R1
+\tRETS
+AUDIT_LIST
+\tAUDENT\tENTRY1
+
+NEXTFUNC:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "AUDITS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void COMPUTE_GAMETIME(void)", rendered)
+        self.assertIn("    // asm: \tRETS", rendered)
+        self.assertIn("/* asm: AUDIT_LIST */", rendered)
+        self.assertIn("/* asm: AUDENT\tENTRY1 */", rendered)
+        self.assertIn("int AUDIT_LIST;", rendered)
+        self.assertIn("void NEXTFUNC(void)", rendered)
+        compute_section = rendered.split("void COMPUTE_GAMETIME(void)", 1)[1].split("void NEXTFUNC(void)", 1)[0]
+        self.assertNotIn("AUDIT_LIST", compute_section)
+
     def test_parse_discovered_defines_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             defines_path = Path(tmpdir) / "discovered_defines.txt"
@@ -484,6 +512,23 @@ SEND2:\tLDI\t1,R0
         self.assertIn("void SEND2(void)", rendered)
         self.assertEqual(symbol_table["SEND0"].expr, "SEND2")
         self.assertEqual(symbol_table["SEND1"].expr, "SEND2")
+
+    def test_bare_branch_labels_are_preserved_inside_function(self) -> None:
+        asm_source = """FUNC:\tLDI\t0,R0
+LOOP
+\tADDI\t1,R0
+\tBLT\tLOOP
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "TEST.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void FUNC(void)", rendered)
+        self.assertIn("LOOP:", rendered)
+        self.assertIn("// asm: \tADDI\t1,R0", rendered)
 
     def test_top_level_data_claims_immediately_adjacent_comments_only(self) -> None:
         asm_source = """*----------------------------------------------------------------------------\n*DYNAMIC fLEX OBJECTS\nNEW_GROUPI\t.word\tNEW_GROUP\n\t.bss\tNEW_GROUP,1\n\n*ORPHAN\n\nOTHER\t.word\t1\n"""

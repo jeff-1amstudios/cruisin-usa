@@ -255,6 +255,8 @@ def render_globl_symbol(symbol: SymbolInfo | None, name: str, sizeless_extern_ar
         return None
     if symbol is None:
         return None
+    if symbol.kind == "define" and symbol.expr is not None:
+        return f"#define {sanitize_identifier(name)} {sanitize_identifier(symbol.expr)}"
     if symbol.kind == "function":
         return f"void {sanitize_identifier(name)}(void);"
     if symbol.kind == "variable":

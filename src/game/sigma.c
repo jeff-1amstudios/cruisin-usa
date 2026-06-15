@@ -19,11 +19,6 @@
  */
 
 void SIGMA_DRONE(void);
-void GOAHEAD(void);
-void DONTWORRY(void);
-void NOSL2DIE(void);
-void THIS_PIECE(void);
-void NOTPRECOL(void);
 void BREAKDOWN(void);
 void SIGMA_DIE(void);
 
@@ -96,12 +91,7 @@ void SIGMA_DRONE(void)
     // asm 0000A42A: 	BNZ	GOAHEAD
     // asm 0000A42B: 	SLEEP	1
     // asm 0000A42C: 	BU	SIGMA_DRONE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DRONE", 0, 0);
-    UNIMPL();
-}
-
-void GOAHEAD(void)
-{
+GOAHEAD:
     // asm: 	LDI	SIGMA_LIST_LEN,AR2
     // asm 0000A42F: 	CALL	RANDU0
     // asm: 	CMPI	SIGT_COPCAR,R0		;ONLY 1 COPCAR ACTIVE AT A TIME
@@ -126,12 +116,7 @@ NOT_COP:
     // asm 0000A43C: 	BZ	DONTWORRY
     // asm: 	LDI	SIGT_GTRUCK,R0
     // asm 0000A43E: 	BU	WORIT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GOAHEAD", 0, 0);
-    UNIMPL();
-}
-
-void DONTWORRY(void)
-{
+DONTWORRY:
     // asm: 	STI	AR2,*+AR7(DELTA_MODEL)
     // asm 0000A440: 	MPYI	VEHTAB_SIZE,AR2
     // asm 0000A441: 	ADDI	@VEHICLE_TABLEI,AR2
@@ -255,12 +240,7 @@ NOTPSYCHO_LP:
     // asm 0000A4A2: 	LDI	*+AR7(SIGMA_ONCE),R0
     // asm 0000A4A4: 	BZ	NOSL2DIE2
     // asm 0000A4A5: 	BU	BREAKDOWN
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DONTWORRY", 0, 0);
-    UNIMPL();
-}
-
-void NOSL2DIE(void)
-{
+    // asm 0000A4A6: NOSL2DIE
     // asm: 	LDI	1,R0
     // asm 0000A4A7: 	STI	R0,*+AR7(SIGMA_ONCE)
 NOSL2DIE2:
@@ -347,12 +327,7 @@ CHECK_DIST:
 #endif
     // asm: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
     // asm 0000A4E8: 	BU	CHECK_DIST
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOSL2DIE", 0, 0);
-    UNIMPL();
-}
-
-void THIS_PIECE(void)
-{
+THIS_PIECE:
     // asm: 	LDF	*+AR5(CARSPEED),R1
     // asm 0000A4EA: 	LDFLE	30,R1			;if 0 or less assume 30 mph
     // asm 0000A4EB: 	FLOATP	@NFRAMES,R2
@@ -387,12 +362,7 @@ NODIV:
     // asm 0000A504: 	MPYF	0.01,R2
     // asm 0000A505: 	STF	R2,*+AR5(CARTHROTTLE)
     // asm 0000A506: 	BU	L99
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "THIS_PIECE", 0, 0);
-    UNIMPL();
-}
-
-void NOTPRECOL(void)
-{
+NOTPRECOL:
     // 	;set throttle
     // asm: 	LDF	*+AR7(DELTA_THROTTLE),R2
     // asm 0000A508: 	MPYF	1.01,R2
@@ -413,7 +383,7 @@ L99:
 SIGMASLP:
     // asm: 	SLEEP	1
     // asm 0000A516: 	B	SIGMA_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTPRECOL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DRONE", 0, 0);
     UNIMPL();
 }
 
@@ -435,7 +405,7 @@ void BREAKDOWN(void)
     // ;	STI	R0,*+AR7(PID)
     // asm: 	CREATEC	SMOKE_PUFF,2
     // asm: 	LDI	10,AR6
-BREAKDOWNLP:
+    // asm 0000A51C: BREAKDOWNLP
     // asm: 	LDI	@SUSPEND_MODE,R0
     // asm 0000A51D: 	CMPI	SM_HALT,R0
     // asm 0000A51E: 	BEQ	BREAKDNSLP
@@ -454,7 +424,7 @@ NOSMK:
     // asm 0000A52C: 	STF	R2,*+AR5(CARTHROTTLE)
     // asm 0000A52D: 	CALL	DRONEGO
     // asm 0000A52E: 	CALL	GETTRAK
-BREAKDNSLP:
+    // asm 0000A530: BREAKDNSLP
     // asm: 	SLEEP	1
     // asm 0000A530: 	BU	BREAKDOWNLP
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BREAKDOWN", 0, 0);

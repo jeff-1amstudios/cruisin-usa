@@ -65,7 +65,7 @@
 *	Cycles: 40
 *
 DIV_F:
-DIV_F30
+DIV_F30:
 	POP	BK	;Pop return address
 	PUSH	R2	;Save R2: integer part
 	PUSHF	R2	;Save R2: floating point part
@@ -182,7 +182,7 @@ DIV_F30
 	.asg	RC,EXP		;divisor exponent 
 
 DIV_I:
-DIV_I30
+DIV_I30:
 
 	;
 	;Determine sign of result.	Get absolute value of operands.

@@ -20,18 +20,11 @@
  */
 
 void HOTTUB_SCENE(void);
-void HOTTUB_LPB(void);
 void HOTTUB_WATERVOL(void);
 void NBIBO(void);
-void NDOO(void);
 void PREZSPEAK(void);
 void START_ANIMATIONS(void);
-void HHTT(void);
-void NTT1(void);
-void NTT1A(void);
-void NTT1B(void);
 void NTT2(void);
-void ODCX(void);
 void HT_HUNGH(void);
 void HT_RUT(void);
 void HT_HILLY(void);
@@ -39,6 +32,7 @@ void HT_GIRL(void);
 void HT_HOTTUB(void);
 void HT_RADAR(void);
 void HT_STAGENT(void);
+void PLAINANI_PROC(void);
 void AGENTANI_PROC(void);
 void JKG(void);
 void PC1(void);
@@ -182,86 +176,6 @@ void HOTTUB_SCENE(void)
     UNIMPL();
 }
 
-/* ;	LDI	210,AR5
- */
-void HOTTUB_LPB(void)
-{
-    // asm 00008A19: 	LDI	@CAMERAPOSI,AR6
-    // asm 00008A1A: 	LDF	*+AR6(Z),R0
-    // asm 00008A1B: 	FLOAT	-1500,R1
-    // asm 00008A1C: 	SUBF	R0,R1,R2
-    // ;	MPYF	0.02,R2
-    // asm 00008A1D: 	MPYF	0.017,R2
-    // asm 00008A1E: 	ADDF	R2,R0
-    // asm 00008A1F: 	STF	R0,*+AR6(Z)
-    // asm 00008A20: 	LDF	*+AR6(Y),R0
-    // asm 00008A21: 	FLOAT	-4300,R1
-    // asm 00008A22: 	SUBF	R0,R1,R2
-    // asm 00008A23: 	MPYF	0.04,R2
-    // asm 00008A24: 	ADDF	R2,R0
-    // asm 00008A25: 	STF	R0,*+AR6(Y)
-    // asm 00008A26: 	SLEEP	1
-    // asm 00008A28: 	DBU	AR5,HOTTUB_LPB
-    // asm 00008A29: 	SLEEP	300
-    // asm 00008A2B: 	CALL	SCREENWIPE_CLOSE
-    // asm 00008A2C: 	LDI	1235h,R0
-    // asm 00008A2D: 	LDI	-1,R1
-    // asm 00008A2E: 	CALL	PRC_KILLALL
-    // asm 00008A2F: 	LDI	FIREHYDRSND,AR2
-    // asm 00008A30: 	CALL	KILLSNDFX
-    // asm 00008A31: 	SOND1	CLIN8
-    // asm 00008A33: 	SLEEP	15
-    // asm 00008A35: 	SONDFX	CROWD1
-    // asm 00008A37: 	SONDFX	CROWDROAR
-    // asm 00008A39: 	LDI	100,AR5
-    // asm 00008A3A: HOTTUB_LPB2
-    // asm 00008A3A: 	LDI	@CAMERAPOSI,AR6
-    // asm 00008A3B: 	LDF	*+AR6(Z),R0
-    // asm 00008A3C: 	FLOAT	-12000,R1
-    // asm 00008A3D: 	SUBF	R0,R1,R2
-    // asm 00008A3E: 	MPYF	0.01,R2
-    // asm 00008A3F: 	ADDF	R2,R0
-    // asm 00008A40: 	STF	R0,*+AR6(Z)
-    // asm 00008A41: 	CMPI	60,AR5
-    // asm 00008A42: 	BNE	HOTTT
-    // asm 00008A43: 	SOND1	CLIN5
-    // asm 00008A45: 	LDI	3,R0 		;COOL LAST YEEHAH
-    // asm 00008A46: 	LDI	130,R1
-    // asm 00008A47: 	CALL	SET_TRACK_VOL
-HOTTT:
-    // asm 00008A48: 	SLEEP	1
-    // asm 00008A4A: 	DBU	AR5,HOTTUB_LPB2
-    // ;moved to bonus.asm
-    // ;Wed Mar 8 09:52:21 1995
-    // ;
-    // ;	SLEEP	1
-    // ;
-    // ;	CALL	OBJ_INIT
-    // ;	CALL	INIT_DRONES	;initialize DRONE tracker system
-    // ;	CALL	DYNAOBJ_INIT	;initialize DYNAMIC OBJECTS
-    // ;	CALL	CARB_INIT	;initialize CAR BLOCKS
-    // ;	CALL	INIT_RDDEBRIS	;initialize ROAD DEBRIS list(s)
-    // ;
-    // ;
-    // ;	LDI	1234h,R0
-    // ;	LDI	-1,R1
-    // ;	CALL	PRC_KILLALL
-    // ;
-    // ;
-    // ;	LDI	SPAWNER_C|ANIMATION_T,R0
-    // ;	LDI	-1,R1
-    // ;	CALL	PRC_KILLALL
-    // ;
-    // ;
-    // ;	LDL	dc_shared_PALETTES,AR2
-    // ;	CALL	dealloc_section
-    // ;	LDL	finale_PALETTES,AR2
-    // ;	CALL	dealloc_section
-    // asm 00008A4B: 	RETP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HOTTUB_LPB", 0, 0);
-    UNIMPL();
-}
-
 /* *----------------------------------------------------------------------------
  */
 void HOTTUB_WATERVOL(void)
@@ -292,12 +206,7 @@ void NBIBO(void)
 {
     // asm 00008A5E: LDI	10,R2
     // asm 00008A5F: 	BU	BIBO
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NBIBO", 0, 0);
-    UNIMPL();
-}
-
-void NDOO(void)
-{
+NDOO:
     // asm 00008A60: 	FLOAT	12000,R2
     // asm 00008A61: 	CMPF	R2,R0
     // asm 00008A62: 	BGT	NBIBO
@@ -312,7 +221,7 @@ void NDOO(void)
     // asm 00008A6B: 	CALL	AMBIENCE_SOUND
     // asm 00008A6C: 	SLEEP	1
     // asm 00008A6E: 	BU	HOTTUB_WATERVOL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NDOO", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NBIBO", 0, 0);
     UNIMPL();
 }
 
@@ -362,47 +271,27 @@ ODCL2:
     // asm 00008AA2: 	BNE	HHTT
     // asm 00008AA3: 	CALL	HT_HUNGH
     // asm 00008AA4: 	BU	ODC
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "START_ANIMATIONS", 0, 0);
-    UNIMPL();
-}
-
-void HHTT(void)
-{
+HHTT:
     // asm 00008AA5: 	CMPI	621h,R2
     // asm 00008AA6: 	BNE	NTT1
     // asm 00008AA7: 	CALL	HT_HOTTUB
     // asm 00008AA8: 	BU	ODC
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HHTT", 0, 0);
-    UNIMPL();
-}
-
-void NTT1(void)
-{
+NTT1:
     // asm 00008AA9: 	CMPI	622h,R2
     // asm 00008AAA: 	BNE	NTT1A
     // asm 00008AAB: 	CALL	HT_HILLY
     // asm 00008AAC: 	BU	ODC
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTT1", 0, 0);
-    UNIMPL();
-}
-
-void NTT1A(void)
-{
+NTT1A:
     // asm 00008AAD: 	CMPI	623h,R2
     // asm 00008AAE: 	BNE	NTT1B
     // asm 00008AAF: 	CALL	HT_GIRL
     // asm 00008AB0: 	BU	ODC
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTT1A", 0, 0);
-    UNIMPL();
-}
-
-void NTT1B(void)
-{
+NTT1B:
     // asm 00008AB1: 	CMPI	615h,R2
     // asm 00008AB2: 	BNE	NTT2
     // asm 00008AB3: 	CALL	HT_RADAR
     // asm 00008AB4: 	BU	ODC
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTT1B", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "START_ANIMATIONS", 0, 0);
     UNIMPL();
 }
 
@@ -412,14 +301,9 @@ void NTT2(void)
     // asm 00008AB6: 	BNE	ODC
     // asm 00008AB7: 	CALL	HT_STAGENT
     // asm 00008AB8: 	BU	ODC
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTT2", 0, 0);
-    UNIMPL();
-}
-
-void ODCX(void)
-{
+ODCX:
     // asm 00008AB9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ODCX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NTT2", 0, 0);
     UNIMPL();
 }
 
@@ -511,7 +395,12 @@ void HT_STAGENT(void)
     // asm 00008B1A: 	CREATE	AGENTANI_PROC,SPAWNER_C|ANIMATION_T
     // asm 00008B1D: 	POP	AR6
     // asm 00008B1E: 	RETS
-PLAINANI_PROC:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HT_STAGENT", 0, 0);
+    UNIMPL();
+}
+
+void PLAINANI_PROC(void)
+{
     // asm 00008B1F: 	LDI	AR6,AR5
 PLAINANI_LP:
     // asm 00008B20: 	LDI	*AR5++,R0
@@ -525,7 +414,7 @@ PPDD:
     // asm 00008B29: 	SUBI	@NFRAMES,R4
     // asm 00008B2A: 	BLE	PLAINANI_LP
     // asm 00008B2B: 	BU	PPDD
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HT_STAGENT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLAINANI_PROC", 0, 0);
     UNIMPL();
 }
 
@@ -727,14 +616,13 @@ void BABE_IBO(void)
 void BABE_ANI(void)
 {
     // asm 00008BC5: 	LONGROUT
-BABE_ANIKK:
+    // asm: BABE_ANIKK
     // asm: 	LDI	*AR6++,R0
     // asm: 	BN	BX
     // asm: 	STI	R0,*+AR4(OROMDATA)
     // asm: 	RETS
     // asm: BX	LDI	*+AR7(BABE_ASTRT),AR6
     // asm: 	BU	BABE_ANIKK
-    // asm: 	END_LONGROUT
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_ANI", 0, 0);
     UNIMPL();
 }
@@ -766,7 +654,7 @@ void BABE_WAVEFLAG(void)
     // asm 00008BE5: 	STI	R0,*+AR4(OROMDATA)
     // asm 00008BE6: 	LDI	AR4,AR2
     // asm 00008BE7: 	CALL	OBJ_INSERTP
-BABEWTLP:
+    // asm 00008BE8: BABEWTLP
     // asm 00008BE8: 	LDI	@BABE_CONTROL,R0
     // asm 00008BE9: 	BNZ	BABEGO
     // asm 00008BEA: 	LDF	*+AR4(OPOSX),R0
@@ -778,9 +666,9 @@ BABEWTLP:
 IBO2:
     // asm 00008BF0: 	SLEEP	1
     // asm 00008BF2: 	BU	BABEWTLP
-BABEGO:
+    // asm 00008BF3: BABEGO
     // asm 00008BF3: 	LDI	17,AR5
-BABERST:
+    // asm 00008BF4: BABERST
     // asm 00008BF4: 	LDL	BABE_FLAG_SCRIPT,AR6
     // asm 00008BF5: BABE_LPWF
     // asm 00008BF5: 	LDI	*AR6++,R0

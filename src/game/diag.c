@@ -24,6 +24,7 @@
 void WT_START(void);
 void WT_NSTART(void);
 void KEYPAUSE(void);
+void BEEP(void);
 void MAKE_WINDOW(void);
 void MAKE_IWINDOW(void);
 void HARD_LOAD_DIAGPAL(void);
@@ -35,16 +36,13 @@ void TOEXIT(void);
 void MONITOR_DIAGNOSTICS(void);
 void COLORBARS(void);
 void SHOWSWITCH(void);
-void NOWTOEXIT(void);
 void ASCII_TO_BINARY(void);
 void DISPLAY_SWITCH_STATUS(void);
-void DONEDSS(void);
 void DISPLAY_SHIFTER(void);
 void DISPPOTS(void);
 void SHOW_DIPSWITCH(void);
 void SHOW_DIPSWITCH_STATUS(void);
 void DISPLAY_DIPSWITCH_STATUS(void);
-void DONE_MODE_MSG(void);
 void DMOD1(void);
 void MOMT(void);
 void RUN_MOTION_MENU(void);
@@ -56,17 +54,9 @@ void RUN_UTILITIES_MENU(void);
 void MMT(void);
 void RUN_DIAG_MENU(void);
 void HANDLE_MENU(void);
-void HMSTAND(void);
-void HM_NOTUP(void);
-void wtta(void);
-void HM_EXECUTE(void);
 void XIT_MENU_TO_MAIN(void);
 void SETUP_DIAG_SCREEN(void);
-void MUSIC_TAB(void);
 void SOUND_BOARD_TEST(void);
-void NOXIT(void);
-void NONEXTT(void);
-void NONEXTE(void);
 void STEERING_WHEEL_TEST(void);
 void AMODES(void);
 void AMODESND(void);
@@ -76,8 +66,6 @@ void PRINT_STANDARD(void);
 void PRINT_SPYN(void);
 void SET_CONTROLS(void);
 void SET_VOLUME(void);
-void NOTRET(void);
-void NOTUPA(void);
 void SHOW_VOLUME(void);
 void FULL_FACTORY_RESTORE(void);
 void FFRSUB(void);
@@ -105,9 +93,7 @@ void MESSAGE_BOX(void);
 void CLEAR_YES_NO(void);
 void ASK_YES_NO(void);
 void DUAL_ON_OFF(void);
-void CHNG(void);
-void DOEXIT(void);
-void CYN_YES(void);
+void DUAL_VALUE(void);
 void SSGD(void);
 void SET_STEERING_SENSITIVITY(void);
 void HSGD(void);
@@ -128,9 +114,6 @@ void SET_MIN_VOL_LEVEL(void);
 void SET_MIN_VOL_LEVEL_CVT(void);
 void MULTI_VALUE(void);
 void MULTI_VALUE_STEP(void);
-void CHNGDV(void);
-void WTTT5(void);
-void DOEXITDV(void);
 void SPM(void);
 void RUN_STANDARD_PRICING(void);
 void PRICE_YES_NO(void);
@@ -142,7 +125,6 @@ void PRINT_SLOT(void);
 void PRINT_VALUE(void);
 void PRINT_VOL(void);
 void GETSTR_LENGTH(void);
-void GSLDONE(void);
 void PRINT_COINMODE(void);
 void PRINT_CUSTOM_SELECTED(void);
 void PRINT_TIME(void);
@@ -153,11 +135,7 @@ void PRINT_ONOFF_INV(void);
 void PRINT_ONOFF(void);
 void PRINT_MPH_INV(void);
 void PRINT_MPH(void);
-void MAIN_MENU(void);
-void DIAGNOSTIC_MENU(void);
-void UTILITIES_MENU(void);
 void LAMPT(void);
-void LAMP_MENU(void);
 void RUN_LAMP_TEST(void);
 void LAMPSOFF(void);
 void LAMPSALL(void);
@@ -171,8 +149,6 @@ void LAMPLF(void);
 void LAMPRF(void);
 void MOTION_CHECK_SAFETY_CODES(void);
 void JJDDA(void);
-void NO_ERRORS(void);
-void MOTION_SAFETY_CODES(void);
 void MSC_BOARD_NOTPLUGGED(void);
 void MSC_MAT_STEPPED(void);
 void MSC_MAT_NOTPLUGGED(void);
@@ -197,8 +173,24 @@ const char *inst2 = "ENTER TO ACTIVATE";
 const char *title = "CRUISIN USA   DIAGNOSTICS";
 const char *toexit = "HIT ENTER TO EXIT";
 /* asm: DIAGPAL: */
-/* asm: 	.word	16			;LENGTH OF PALETTE */
-int DIAGPAL = 16;
+/* asm: .word	16			;LENGTH OF PALETTE */
+/* asm: RGB	060h,060h,060h		;0 LIGHT GREY */
+/* asm: RGB	0ffh,0ffh,0ffh		;1  WHITE */
+/* asm: RGB	070h,070h,070h		;2  GREY */
+/* asm: RGB	0ffh,000h,000h		;3  RED */
+/* asm: RGB	000h,0ffh,000h		;4  GREEN */
+/* asm: RGB	055h,055h,099h		;5  BLUE  (for the sky paled out) */
+/* asm: RGB	0ffh,0ffh,000h		;6  YELLOW */
+/* asm: RGB	000h,0ffh,0ffh		;7  CYAN */
+/* asm: RGB	000h,000h,000h		;8  BLACK */
+/* asm: RGB	000h,000h,077h		;9  TRUE BLUE */
+/* asm: RGB	0C0h,0A0h,000h		;A  Amber color */
+/* asm: RGB	050h,050h,050h		;B	DARK GREY */
+/* asm: RGB	060h,060h,060h		;	LIGHT GREY */
+/* asm: RGB	090h,090h,090h		;	LIGHT GREY2 */
+/* asm: RGB	0C0h,0C0h,0C0h		;	LIGHT GREY3 */
+/* asm: RGB	020h,020h,020h		;	LIGHT GREY3 */
+int DIAGPAL;
 /* asm: SOFT_AUDIT	.bss	SOFT_AUDIT,1 */
 int SOFT_AUDIT;
 /* *----------------------------------------------------------------------------
@@ -291,16 +283,6 @@ int DIPTMP[2];
 const char *ISON = ONTEXT;
 /* asm: ISOFF	.word	OFFTEXT */
 const char *ISOFF = OFFTEXT;
-const char *ONTEXT = "ON";
-const char *OFFTEXT = "OFF";
-const char *DNSUP = "UPRIGHT";
-const char *DSUP = "SITDOWN";
-const char *COINCNTR1 = "ONE COIN COUNTER";
-const char *COINCNTR2 = "TWO COIN COUNTERS";
-const char *DMOT = "MOTION ON";
-const char *DNMOT = "MOTION OFF";
-const char *DLINKD = "LINK ON";
-const char *DNLINKD = "LINK OFF";
 /* asm: DMOD2	SPTR	"SLAVE" */
 const char *DMOD2 = "SLAVE";
 /* asm: ADJTAB */
@@ -346,6 +328,18 @@ int ADJTAB[] = {
 const char *DMT = "DIAGNOSTIC MENU";
 /* asm: MENU_SCROLL	.bss	MENU_SCROLL,1 */
 int MENU_SCROLL;
+/* asm: MUSIC_TAB */
+/* asm: SNDMAC	"REDLINE SHUFFLE",SHUFFLE_DRIV */
+/* asm: SNDMAC	"HOUSE SPECIAL",DISCODUCK */
+/* asm: SNDMAC	"DEADWOOD RIDE",SPAGETTI */
+int MUSIC_TAB;
+/* asm: EFFECTS_TAB */
+/* asm: SNDMAC	"GIRL SPEECH",CHOOSEUCAR */
+/* asm: SNDMAC	"TRUCK HORN",TRUCKHORN_BLAST */
+/* asm: SNDMAC	"EXPLOSION 1",EXP1 */
+/* asm: SNDMAC	"COLLISION",SCOLLF */
+/* asm: SNDMAC	"CAR PASS",CARPASS */
+int EFFECTS_TAB;
 #define STANDARD_PRICING_MENU_LEN 16
 #define USA_MENU_LEN 13
 /* asm: USA_MENU */
@@ -641,6 +635,25 @@ int PSLAST;
 /* *----------------------------------------------------------------------------
  */
 #define CUSTOM_PRICING_MENU_LEN 16
+/* asm: CUSTOM_PRICING_MENU */
+/* asm: MENUENTRY	"LEFT CHUTE UNITS",SET_SLOT */
+/* asm: MENUENTRY	"RIGHT CHUTE UNITS",SET_SLOT */
+/* asm: MENUENTRY	"CENTER CHUTE UNITS",SET_SLOT */
+/* asm: MENUENTRY	"FOURTH CHUTE UNITS",SET_SLOT */
+/* asm: MENUENTRY	"UNITS PER CREDIT",SET_SLOT */
+/* asm: MENUENTRY	"UNITS FOR BONUS",SET_SLOT */
+/* asm: MENUENTRY	"MINIMUM UNITS",SET_SLOT */
+/* asm: MENUENTRY	"CREDITS TO START",SET_SLOT */
+/* asm: MENUENTRY	"CREDITS TO CONTINUE",SET_SLOT */
+/* asm: MENUENTRY	"LEFT CHUTE COUNTER",SET_SLOT */
+/* asm: MENUENTRY	"RIGHT CHUTE COUNTER",SET_SLOT */
+/* asm: MENUENTRY	"CENTER CHUTE COUNTER",SET_SLOT */
+/* asm: MENUENTRY	"FOURTH CHUTE COUNTER",SET_SLOT */
+/* asm: MENUENTRY	"SHOW FRACTION",FRACTION_YES_NO */
+/* asm: MENUENTRY	"SELECT CUSTOM PRICING",CUSTOM_YES_NO */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+/* asm: romdata */
+int CUSTOM_PRICING_MENU;
 const char *sct = "CALIBRATE CONTROLS";
 /* asm: INCIDENT	.word	CARPASS,TRUCKPASS */
 /* asm: 	.word	SCOLLA,TKEY */
@@ -762,11 +775,90 @@ int PSTAB[] = {
 *
  */
 #define MAIN_MENU_LEN 7
+/* asm: MAIN_MENU: */
+/* asm: MENUENTRY	"DIAGNOSTIC MENU",RUN_DIAG_MENU */
+/* asm: MENUENTRY	"GAME AUDITS",AUDIT_DISPLAY */
+/* asm: MENUENTRY	"ADJUSTMENTS MENU",RUN_ADJUSTMENT_MENU */
+/* asm: MENUENTRY	"UTILITIES",RUN_UTILITIES_MENU */
+/* asm: MENUENTRY	"CALIBRATE CONTROLS",SET_CONTROLS */
+/* asm: MENUENTRY	"ADJUST VOLUME",SET_VOLUME */
+/* asm: MENUENTRY	"EXIT TO GAME OVER",DIAG_RETURN */
+int MAIN_MENU;
 #define DIAGNOSTIC_MENU_LEN 10
+/* asm: DIAGNOSTIC_MENU: */
+/* asm: MENUENTRY	"SWITCH TEST",SHOWSWITCH */
+/* asm: MENUENTRY	"DIP SWITCH TEST",SHOW_DIPSWITCH */
+/* asm: MENUENTRY	"CPU BOARD TEST",TEST_CHIPS */
+/* asm: MENUENTRY	"SOUND BOARD TEST",SOUND_BOARD_TEST */
+/* asm: MENUENTRY	"STEERING WHEEL TEST",STEERING_WHEEL_TEST */
+/* asm: MENUENTRY	"MONITOR TEST",MONITOR_DIAGNOSTICS */
+/* asm: MENUENTRY	"BURNIN TEST",BURNIN_TEST */
+/* asm: MENUENTRY	"MOTION MENU",RUN_MOTION_MENU		;MOTION_BURNIN */
+/* asm: MENUENTRY	"LAMP TEST",RUN_LAMP_TEST */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+int DIAGNOSTIC_MENU;
 #define UTILITIES_MENU_LEN 6
+/* asm: UTILITIES_MENU: */
+/* asm: MENUENTRY	"CLEAR CREDITS",CLEAR_CREDITS */
+/* asm: MENUENTRY	"CLEAR GAME AUDITS",CLEAR_GAME_AUDITS */
+/* asm: MENUENTRY	"RESET HIGH SCORES",RESET_HIGH_SCORES */
+/* asm: MENUENTRY	"DEFAULT ADJUSTMENTS",DEFAULT_ADJUSTMENTS */
+/* asm: MENUENTRY	"FULL FACTORY RESTORE",FULL_FACTORY_RESTORE */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+int UTILITIES_MENU;
 #define ADJUSTMENT_MENU_LEN 18
+/* asm: ADJUSTMENT_MENU */
+/* asm: MENUENTRY	"STANDARD PRICING",RUN_STANDARD_PRICING */
+/* asm: MENUENTRY	"CUSTOM PRICING",RUN_CUSTOM_PRICING */
+/* asm: MENUENTRY	"FREE PLAY",FREEPLAYONOFF */
+/* asm: MENUENTRY	"FIRST PLACE AWARDS FREE GAME",FREEGAMEONOFF */
+/* asm: MENUENTRY	"START TIME BONUS SECS",SET_TIME_TO_START */
+/* asm: MENUENTRY	"CHECKPOINT BONUS TIME SECS",SET_CHECKPOINT_BONUS */
+/* asm: MENUENTRY	"ATTRACT MODE SOUND",AMODESND */
+/* asm: MENUENTRY	"HIGH SCORE ENTRY",HIGHSCORE_ENTRY */
+/* asm: MENUENTRY	"MIN VOLUME LEVEL",SET_MIN_VOL_LEVEL */
+/* asm: MENUENTRY	"SPEED IN MPH OR KPH",MILES_OR_KILO */
+/* asm: MENUENTRY	"SHOW ROADKILL",ROADKILL_ONOFF */
+/* asm: MENUENTRY	"SHOW PRESIDENT",CLINTON_ONOFF */
+/* asm: MENUENTRY	"SHOW GIRLS",GIRLS_ONOFF */
+/* asm: MENUENTRY	"HIGHSCORE RESET",SET_HIGHSCORE_RESET */
+/* asm: MENUENTRY	"GAME DIFFICULTY",SET_GAME_DIFFICULTY */
+/* asm: MENUENTRY	"MAX CREDITS",SET_MAX_CREDITS */
+/* asm: MENUENTRY	"STEERING SENSITIVITY",SET_STEERING_SENSITIVITY */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+int ADJUSTMENT_MENU;
 #define MOTION_MENU_LEN 7
+/* asm: MOTION_MENU */
+/* asm: MENUENTRY	"FRONT AXIS UP/DOWN",DIAG_MOTION_TESTZ */
+/* asm: MENUENTRY	"LEFT REAR AXIS UP/DOWN",DIAG_MOTION_TESTX */
+/* asm: MENUENTRY	"RIGHT REAR AXIS UP/DOWN",DIAG_MOTION_TESTY */
+/* asm: MENUENTRY	"COMBINED MOTION",DIAG_MOTION_BURNIN */
+/* asm: MENUENTRY	"MOTION SAFETY SWITCHES",MOTION_SAFETY_SWITCHES_DIAG */
+int MOTION_MENU;
 #define LAMP_MENU_LEN 11
+/* asm: LAMP_MENU: */
+/* asm: MENUENTRY	"TURN ON ALL LAMPS",LAMPSALL */
+/* asm: MENUENTRY	"TURN OFF ALL LAMPS",LAMPSOFF */
+/* asm: MENUENTRY	"TURN ON START",LAMPS */
+/* asm: MENUENTRY	"TURN ON VIEW 1",LAMPV1 */
+/* asm: MENUENTRY	"TURN ON VIEW 2",LAMPV2 */
+/* asm: MENUENTRY	"TURN ON VIEW 3",LAMPV3 */
+/* asm: MENUENTRY	"TURN ON LEFT TAIL",LAMPLT */
+/* asm: MENUENTRY	"TURN ON RIGHT TAIL",LAMPRT */
+/* asm: MENUENTRY	"TURN ON LEFT FRONT",LAMPLF */
+/* asm: MENUENTRY	"TURN ON RIGHT FRONT",LAMPRF */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+int LAMP_MENU;
+/* asm: MOTION_SAFETY_CODES: */
+/* asm: MSCM	080h,080h,MSC_BOARD_NOTPLUGGED */
+/* asm: MSCM	070h,0F0h,MSC_FAILSAFE_NOTCONNECTED */
+/* asm: MSCM	060h,0F0h,MSC_FAILSAFE_OK */
+/* asm: MSCM	050h,0F0h,MSC_OPTO_LED */
+/* asm: MSCM	040h,0F0h,MSC_OPTO_DETECTOR */
+/* asm: MSCM	030h,0F0h,MSC_OPTO_PATH */
+/* asm: MSCM	020h,0F0h,MSC_MAT_STEPPED */
+/* asm: MSCM	010h,0F0h,MSC_MAT_NOTPLUGGED */
+int MOTION_SAFETY_CODES;
 /* asm: OLD_MOTION_CODE	.bss	OLD_MOTION_CODE,1 */
 int OLD_MOTION_CODE;
 /* asm: IBOIBOT	.bss	IBOIBOT,2 */
@@ -803,11 +895,16 @@ void KEYPAUSE(void)
     // asm 000005FE: 	CALL	WT_START
     // asm 000005FF: 	B	WT_NSTART
     // *MAKE A BEEP
-    // asm 00000600: BEEP
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KEYPAUSE", 0, 0);
+    UNIMPL();
+}
+
+void BEEP(void)
+{
     // asm 00000600: 	LDI	980,AR2
     // asm 00000601: 	BR	SENDSND
     // ;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "KEYPAUSE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BEEP", 0, 0);
     UNIMPL();
 }
 
@@ -1254,12 +1351,7 @@ SSLP:
     // ;	RETSNZ
     // asm 00000872: 	CALL	WAIT_FOR_VBLANK		;wait for vblk
     // asm 00000873: 	B	SSLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOWSWITCH", 0, 0);
-    UNIMPL();
-}
-
-void NOWTOEXIT(void)
-{
+NOWTOEXIT:
     // asm 00000874: 	LDI	330,AR2
     // asm 00000875: 	LDI	AR2,R3
     // asm 00000876: 	ADDI	10,R3
@@ -1273,7 +1365,7 @@ void NOWTOEXIT(void)
     // asm 0000087E: BBD5	CALL	WAIT_FOR_VBLANK		;wait for vblk
     // asm 0000087F: 	DBU	AR5,BBD5
     // asm 00000880: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOWTOEXIT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOWSWITCH", 0, 0);
     UNIMPL();
 }
 
@@ -1344,14 +1436,9 @@ DSS:
     // asm 000008B6: 	CALL	_fill
     // asm 000008B7: NOPLOT
     // asm 000008B7: 	B	DSS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_SWITCH_STATUS", 0, 0);
-    UNIMPL();
-}
-
-void DONEDSS(void)
-{
+DONEDSS:
     // asm 000008B8: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DONEDSS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_SWITCH_STATUS", 0, 0);
     UNIMPL();
 }
 
@@ -1417,7 +1504,7 @@ void DISPPOTS(void)
     // asm 0000090D: 	LDI	100,R3
     // asm 0000090E: 	LDI	COL_VDGREY,RC
     // asm 0000090F: 	CALL	_outtextxyc
-NOPLOTpot0:
+    // asm 00000910: NOPLOTpot0
     // asm 00000910: 	LDI	@_pot1,R2
     // asm 00000911: 	CMPI	@_opot1,R2
     // asm 00000912: 	BEQ	NOPLOTpot1
@@ -1430,7 +1517,7 @@ NOPLOTpot0:
     // asm 0000091E: 	LDI	110,R3
     // asm 0000091F: 	LDI	COL_VDGREY,RC
     // asm 00000920: 	CALL	_outtextxyc
-NOPLOTpot1:
+    // asm 00000921: NOPLOTpot1
     // asm 00000921: 	LDI	@_pot2,R2
     // asm 00000922: 	CMPI	@_opot2,R2
     // asm 00000923: 	BEQ	NOPLOTpot2
@@ -1443,7 +1530,7 @@ NOPLOTpot1:
     // asm 0000092F: 	LDI	120,R3
     // asm 00000930: 	LDI	COL_VDGREY,RC
     // asm 00000931: 	CALL	_outtextxyc
-NOPLOTpot2:
+    // asm 00000932: NOPLOTpot2
     // asm 00000932: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPPOTS", 0, 0);
     UNIMPL();
@@ -1550,34 +1637,6 @@ void DISPLAY_DIPSWITCH_STATUS(void)
     // asm 000009A7: 	LDIZ	@DMOTI,AR2
     // asm 000009A8: 	CALL	_outtextxyc
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_DIPSWITCH_STATUS", 0, 0);
-    UNIMPL();
-}
-
-void DONE_MODE_MSG(void)
-{
-    // asm 00000A20: 	POP	AR2
-    // asm 00000A21: 	ADDI	@COINMSGC_TABI,AR2
-    // asm 00000A22: 	LDI	*AR2,AR2
-    // asm 00000A23: 	LDI	90,R2
-    // asm 00000A24: 	LDI	200+(2*10),R3
-    // asm 00000A25: 	LDI	COL_VDGREY,RC
-    // asm 00000A26: 	CALL	_outtextxyc
-    // ;	PUSH	AR2
-    // ;	LDI	R2,AR0
-    // ;	CALL	GET_THIS_COINTXT
-    // ;	LDI	AR0,AR2
-    // ;	LDI	90,R2
-    // ;	LDI	200+(3*10),R3
-    // ;	LDI	COL_VDGREY,RC
-    // ;	CALL	_outtextxyc
-    // ;
-    // ;	POP	AR2
-    // ;	LDI	*+AR2,AR2
-    // ;	LDI	90,R2
-    // ;	LDI	200+(2*10),R3
-    // ;	LDI	COL_VDGREY,RC
-    // ;	CALL	_outtextxyc
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DONE_MODE_MSG", 0, 0);
     UNIMPL();
 }
 
@@ -1695,12 +1754,7 @@ HMER:
     // asm 00000A5C: 	BEQ	HMSTAND
     // asm 00000A60: 	CALLU	R2
     // asm: 	BR	HMNOTSTAND
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HANDLE_MENU", 0, 0);
-    UNIMPL();
-}
-
-void HMSTAND(void)
-{
+HMSTAND:
     // asm 00000A65: 	IWINDOW	20,45,280,250
 HMNOTSTAND:
     // asm 00000A67: 	LDI	30,R2
@@ -1770,12 +1824,7 @@ JAJA5:
     // asm 00000AA2: 	LDI	AR6,R6
     // asm: 	DEC	R6
     // asm 00000AA3: 	B	HM_WT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HMSTAND", 0, 0);
-    UNIMPL();
-}
-
-void HM_NOTUP(void)
-{
+HM_NOTUP:
     // asm: 	TSTB	SW_VOLPLUS,R0		;move down
     // asm 00000AA6: 	BNZ	HM_NOTDOWN
     // asm 00000AA8: 	LDI	981,AR2
@@ -1795,12 +1844,7 @@ wta:
     // asm: 	LDI	10000,R7
     // asm 00000AB2: 	MPYI	55,R7
     // asm 00000AB3: 	BU	J55
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HM_NOTUP", 0, 0);
-    UNIMPL();
-}
-
-void wtta(void)
-{
+wtta:
     // asm 00000AB5: 	LDI	5000,R7
     // asm: 	MPYI	55,R7
 J55:
@@ -1827,12 +1871,7 @@ GO_SCROLL:
     // asm 00000AC7: 	BNE	HMER			;REDRAW entir screen if scrolled
 NO_SCROLL:
     // asm 00000ACA: 	B	HANMENL
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "wtta", 0, 0);
-    UNIMPL();
-}
-
-void HM_EXECUTE(void)
-{
+HM_EXECUTE:
     // asm 00000ACD: 	LDI	982,AR2
     // asm: 	CALL	SENDSND
     // asm 00000ACE: 	LDI	R6,AR0
@@ -1850,7 +1889,7 @@ void HM_EXECUTE(void)
     // asm 00000AD7: 	POP	AR6
     // asm 00000AD8: 	POP	AR5
     // asm 00000AD9: 	B	HMER
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HM_EXECUTE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HANDLE_MENU", 0, 0);
     UNIMPL();
 }
 
@@ -1887,21 +1926,6 @@ void SETUP_DIAG_SCREEN(void)
     // asm: 	STI	R0,@ACTIVE_SCREEN
     // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETUP_DIAG_SCREEN", 0, 0);
-    UNIMPL();
-}
-
-void MUSIC_TAB(void)
-{
-    // asm: 	SNDMAC	"REDLINE SHUFFLE",SHUFFLE_DRIV
-    // asm: 	SNDMAC	"HOUSE SPECIAL",DISCODUCK
-    // asm: 	SNDMAC	"DEADWOOD RIDE",SPAGETTI
-    // asm: EFFECTS_TAB
-    // asm: 	SNDMAC	"GIRL SPEECH",CHOOSEUCAR
-    // asm: 	SNDMAC	"TRUCK HORN",TRUCKHORN_BLAST
-    // asm: 	SNDMAC	"EXPLOSION 1",EXP1
-    // asm: 	SNDMAC	"COLLISION",SCOLLF
-    // asm: 	SNDMAC	"CAR PASS",CARPASS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MUSIC_TAB", 0, 0);
     UNIMPL();
 }
 
@@ -1952,12 +1976,7 @@ SBT_LP:
     // asm 00000B3F: 	BZ	NOXIT
     // asm 00000B40: 	CALL	SILENT
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SOUND_BOARD_TEST", 0, 0);
-    UNIMPL();
-}
-
-void NOXIT(void)
-{
+NOXIT:
     // asm: 	NOT	@_newbut,R0
     // asm: 	AND	SW_VOLPLUS,R0
     // asm: 	BZ	NONEXTT
@@ -1971,12 +1990,7 @@ SBTLP2:
     // asm: 	BNN	SBT_UPDT
     // asm 00000B47: 	LDL	MUSIC_TAB,AR5
     // asm 00000B48: 	BU	SBT_UPDT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOXIT", 0, 0);
-    UNIMPL();
-}
-
-void NONEXTT(void)
-{
+NONEXTT:
     // asm 00000B4B: 	NOT	@_newbut,R0
     // asm 00000B4C: 	AND	SW_VOLMINUS,R0
     // asm 00000B4D: 	BZ	NONEXTE
@@ -1990,19 +2004,14 @@ SBTLP1:
     // asm 00000B53: 	BNN	SBT_UPDT
     // asm 00000B54: 	LDL	EFFECTS_TAB,AR6
     // asm 00000B55: 	BU	SBT_UPDT
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NONEXTT", 0, 0);
-    UNIMPL();
-}
-
-void NONEXTE(void)
-{
+NONEXTE:
     // asm 00000B58: 	LDI	7FFFh,R0
     // asm 00000B59: 	MPYI	10,R0
     // asm: 	RPTS	R0
     // asm: 	NOP
     // asm 00000B5A: 	CALL	WAIT_FOR_VBLANK
     // asm 00000B5B: 	BU	SBT_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NONEXTE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SOUND_BOARD_TEST", 0, 0);
     UNIMPL();
 }
 
@@ -2352,7 +2361,7 @@ void SET_VOLUME(void)
     // asm 00000D6E: 	CALL	SHOW_VOLUME
     // asm 00000D76: 	SOND1	MUNSTER_SURF
     // asm: 	SOND1	ENGINESTART
-SETVOL_LP:
+    // asm 00000D7C: SETVOL_LP
     // asm: 	LDI	700,AR2
     // asm 00000D7D: 	CALL	RANDU0
     // asm 00000D7F: 	LDI	R0,R0
@@ -2364,51 +2373,6 @@ SETVOL_LP:
     // asm: 	LDI	*AR2,AR2
     // asm: 	CALL	ONESND
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_VOLUME", 0, 0);
-    UNIMPL();
-}
-
-void NOTRET(void)
-{
-    // asm: 	TSTB	SW_VOLPLUS,R0		;move up
-    // asm: 	BNZ	NOTUPA
-    // asm 00000D91: 	ADDI	1,R4
-    // asm 00000D92: 	CMPI	255,R4
-    // asm 00000D93: 	LDIGT	255,R4
-    // asm: 	PUSH	R0
-    // asm: 	READAUD	ADJ_MIN_VOL_LEVEL
-    // asm: 	CMPI	R0,R4
-    // asm 00000D97: 	LDILT	R0,R4
-    // asm 00000D98: 	POP	R0
-    // asm 00000D9A: 	LDI	R4,R1
-    // asm 00000D9B: 	CALL	SET_MASTER_VOL
-    // asm: 	LDI	R4,R2
-    // asm: 	SETADJ	ADJ_VOLUME
-    // asm 00000D9D: 	CALL	SHOW_VOLUME
-    // asm 00000D9F: 	B	WTA
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTRET", 0, 0);
-    UNIMPL();
-}
-
-void NOTUPA(void)
-{
-    // asm: 	TSTB	SW_VOLMINUS,R0		;move down
-    // asm: 	BNZ	NOTDOWNA
-    // asm 00000DA3: 	SUBI	1,R4
-    // asm: 	LDILT	1,R4
-    // asm 00000DA7: 	PUSH	R0
-    // asm 00000DA8: 	READAUD	ADJ_MIN_VOL_LEVEL
-    // asm: 	CMPI	R0,R4
-    // asm: 	LDILT	R0,R4
-    // asm 00000DA9: 	POP	R0
-    // asm 00000DAB: 	LDI	R4,R1
-    // asm 00000DAC: 	CALL	SET_MASTER_VOL
-    // asm: 	LDI	R4,R2
-    // asm: 	SETADJ	ADJ_VOLUME
-    // asm 00000DAE: 	CALL	SHOW_VOLUME
-WTA:
-NOTDOWNA:
-    // asm 00000DB2: 	B	SETVOL_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NOTUPA", 0, 0);
     UNIMPL();
 }
 
@@ -2740,7 +2704,12 @@ void DUAL_ON_OFF(void)
     // asm: 	LDI	@ONS,AR4
     // asm: 	LDI	@OFFS,AR5
     // asm: 	BU	DUAL_VALUE
-DUAL_VALUE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DUAL_ON_OFF", 0, 0);
+    UNIMPL();
+}
+
+void DUAL_VALUE(void)
+{
     // asm: 	AND	1,R5				;KEEP IT WITHIN RANGE
     // asm 00000E77: 	PUSH	AR4
     // asm 00000E78: 	PUSH	AR5
@@ -2787,37 +2756,22 @@ CYNLOOP:
     // asm 00000EAE: 	TSTB	SW_VOLMINUS,R0		;move up
     // asm 00000EAF: 	BZ	NCHNG
     // asm 00000EB0: 	BU	NCHNG
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DUAL_ON_OFF", 0, 0);
-    UNIMPL();
-}
-
-void CHNG(void)
-{
+CHNG:
     // asm 00000EB2: 	XOR	1,R5
     // asm: 	SOND1	WPC_MISC2
 NCHNG:
     // asm 00000EB4: 	WAIT_MAC_NOREPEAT
     // asm 00000EB5: 	B	CYNLOOP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHNG", 0, 0);
-    UNIMPL();
-}
-
-void DOEXIT(void)
-{
+DOEXIT:
     // asm 00000EB8: 	CMPI	0,R5
     // asm 00000EB9: 	BEQ	CYN_YES
     // asm 00000EBA: CYN_NO
     // asm: 	CLRC
     // asm 00000EBB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOEXIT", 0, 0);
-    UNIMPL();
-}
-
-void CYN_YES(void)
-{
+CYN_YES:
     // asm 00000EBE: 	SETC
     // asm 00000EC2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CYN_YES", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DUAL_VALUE", 0, 0);
     UNIMPL();
 }
 
@@ -3149,12 +3103,7 @@ DVLOOP:
     // asm: 	LDI	980,AR2
     // asm 00000FA2: 	CALL	SENDSND
     // asm 00000FA3: 	BU	NCHNGDV
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MULTI_VALUE_STEP", 0, 0);
-    UNIMPL();
-}
-
-void CHNGDV(void)
-{
+CHNGDV:
     // asm: 	ADDI	R4,R5
     // asm 00000FA5: 	LDI	981,AR2
     // asm 00000FA6: 	CALL	SENDSND
@@ -3174,25 +3123,15 @@ WTT5:
     // asm: 	MPYI	55,R1
     // asm 00000FB1: 	STI	R1,@REPEAT_TIME
     // asm 00000FB2: 	B	DVLOOP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHNGDV", 0, 0);
-    UNIMPL();
-}
-
-void WTTT5(void)
-{
+WTTT5:
     // asm 00000FB3: 	LDI	10000,R1
     // asm 00000FB4: 	MPYI	55,R1
     // asm 00000FB5: 	STI	R1,@REPEAT_TIME
     // asm: 	STI	R0,@REPEAT_SW
     // asm 00000FB7: 	B	DVLOOP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WTTT5", 0, 0);
-    UNIMPL();
-}
-
-void DOEXITDV(void)
-{
+DOEXITDV:
     // asm 00000FBA: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DOEXITDV", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MULTI_VALUE_STEP", 0, 0);
     UNIMPL();
 }
 
@@ -3305,7 +3244,7 @@ void SET_SLOT(void)
     // asm: 	BLT	SET_SLOT1
     // asm: 	LDI	ADJ_COIN1_COUNTER,R0
     // asm: 	SUBI	9,R0			;STRIP THE MENU OFFSET
-SET_SLOT1:
+    // asm 00001032: SET_SLOT1
     // asm: 	ADDI	R0,AR2
     // asm: 	CALL	ADJUSTMENT_READ
     // asm: 	LDI	R0,R5
@@ -3326,7 +3265,7 @@ SET_SLOT1:
     // asm 00001040: 	BLT	SET_SLOT2
     // asm 00001041: 	LDI	ADJ_COIN1_COUNTER,R0
     // asm: 	SUBI	9,R0			;STRIP THE MENU OFFSET
-SET_SLOT2:
+    // asm 00001042: SET_SLOT2
     // asm 00001043: 	ADDI	R0,AR2
     // asm: 	CALL	ADJUSTMENT_WRITE
     // ;IF YOU CHANGE MODES YOU RESET THE CREDITS
@@ -3435,18 +3374,13 @@ GSLP1:
     // asm: 	CMPI	-32,R1
     // asm 0000107F: 	BGT	GSLP1
     // asm: 	BR	GSLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSTR_LENGTH", 0, 0);
-    UNIMPL();
-}
-
-void GSLDONE(void)
-{
+GSLDONE:
     // asm 00001081: 	POP	R3
     // asm: 	POP	R1
     // asm 00001082: 	POP	R0
     // asm 00001083: 	POP	AR2
     // asm 00001084: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GSLDONE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSTR_LENGTH", 0, 0);
     UNIMPL();
 }
 
@@ -3580,70 +3514,12 @@ void PRINT_MPH(void)
     UNIMPL();
 }
 
-void MAIN_MENU(void)
-{
-    // asm 000010D6: 	MENUENTRY	"DIAGNOSTIC MENU",RUN_DIAG_MENU
-    // asm: 	MENUENTRY	"GAME AUDITS",AUDIT_DISPLAY
-    // asm: 	MENUENTRY	"ADJUSTMENTS MENU",RUN_ADJUSTMENT_MENU
-    // asm: 	MENUENTRY	"UTILITIES",RUN_UTILITIES_MENU
-    // asm: 	MENUENTRY	"CALIBRATE CONTROLS",SET_CONTROLS
-    // asm: 	MENUENTRY	"ADJUST VOLUME",SET_VOLUME
-    // asm: 	MENUENTRY	"EXIT TO GAME OVER",DIAG_RETURN
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAIN_MENU", 0, 0);
-    UNIMPL();
-}
-
-void DIAGNOSTIC_MENU(void)
-{
-    // asm: 	MENUENTRY	"SWITCH TEST",SHOWSWITCH
-    // asm: 	MENUENTRY	"DIP SWITCH TEST",SHOW_DIPSWITCH
-    // asm: 	MENUENTRY	"CPU BOARD TEST",TEST_CHIPS
-    // asm: 	MENUENTRY	"SOUND BOARD TEST",SOUND_BOARD_TEST
-    // asm: 	MENUENTRY	"STEERING WHEEL TEST",STEERING_WHEEL_TEST
-    // asm: 	MENUENTRY	"MONITOR TEST",MONITOR_DIAGNOSTICS
-    // asm: 	MENUENTRY	"BURNIN TEST",BURNIN_TEST
-    // asm: 	MENUENTRY	"MOTION MENU",RUN_MOTION_MENU		;MOTION_BURNIN
-    // asm: 	MENUENTRY	"LAMP TEST",RUN_LAMP_TEST
-    // asm: 	MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAGNOSTIC_MENU", 0, 0);
-    UNIMPL();
-}
-
-void UTILITIES_MENU(void)
-{
-    // asm: 	MENUENTRY	"CLEAR CREDITS",CLEAR_CREDITS
-    // asm: 	MENUENTRY	"CLEAR GAME AUDITS",CLEAR_GAME_AUDITS
-    // asm: 	MENUENTRY	"RESET HIGH SCORES",RESET_HIGH_SCORES
-    // asm: 	MENUENTRY	"DEFAULT ADJUSTMENTS",DEFAULT_ADJUSTMENTS
-    // asm: 	MENUENTRY	"FULL FACTORY RESTORE",FULL_FACTORY_RESTORE
-    // asm: 	MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "UTILITIES_MENU", 0, 0);
-    UNIMPL();
-}
-
 /* *----------------------------------------------------------------------------
  */
 void LAMPT(void)
 {
     // asm: SPTR	"LAMP TEST"
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPT", 0, 0);
-    UNIMPL();
-}
-
-void LAMP_MENU(void)
-{
-    // asm: 	MENUENTRY	"TURN ON ALL LAMPS",LAMPSALL
-    // asm: 	MENUENTRY	"TURN OFF ALL LAMPS",LAMPSOFF
-    // asm: 	MENUENTRY	"TURN ON START",LAMPS
-    // asm: 	MENUENTRY	"TURN ON VIEW 1",LAMPV1
-    // asm: 	MENUENTRY	"TURN ON VIEW 2",LAMPV2
-    // asm: 	MENUENTRY	"TURN ON VIEW 3",LAMPV3
-    // asm: 	MENUENTRY	"TURN ON LEFT TAIL",LAMPLT
-    // asm: 	MENUENTRY	"TURN ON RIGHT TAIL",LAMPRT
-    // asm: 	MENUENTRY	"TURN ON LEFT FRONT",LAMPLF
-    // asm: 	MENUENTRY	"TURN ON RIGHT FRONT",LAMPRF
-    // asm: 	MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMP_MENU", 0, 0);
     UNIMPL();
 }
 
@@ -3777,12 +3653,7 @@ void JJDDA(void)
 {
     // asm 0000117E: NOP	*++AR2(3)
     // asm 0000117F: 	BU	MCSC_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "JJDDA", 0, 0);
-    UNIMPL();
-}
-
-void NO_ERRORS(void)
-{
+NO_ERRORS:
     // asm 00001182: 	IWINDOW	50,320,450,360
     // asm 00001183: 	LDI	COL_BLACK,RC
     // asm: 	TEXTITT	"ALL SYSTEMS OK",70,330
@@ -3792,21 +3663,7 @@ ALL_DONE:
     // asm 00001187: 	POP	R1
     // asm 00001188: 	POP	R0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_ERRORS", 0, 0);
-    UNIMPL();
-}
-
-void MOTION_SAFETY_CODES(void)
-{
-    // asm: 	MSCM	080h,080h,MSC_BOARD_NOTPLUGGED
-    // asm 00001193: 	MSCM	070h,0F0h,MSC_FAILSAFE_NOTCONNECTED
-    // asm 00001194: 	MSCM	060h,0F0h,MSC_FAILSAFE_OK
-    // asm 00001195: 	MSCM	050h,0F0h,MSC_OPTO_LED
-    // asm 00001196: 	MSCM	040h,0F0h,MSC_OPTO_DETECTOR
-    // asm 00001197: 	MSCM	030h,0F0h,MSC_OPTO_PATH
-    // asm: 	MSCM	020h,0F0h,MSC_MAT_STEPPED
-    // asm: 	MSCM	010h,0F0h,MSC_MAT_NOTPLUGGED
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_SAFETY_CODES", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "JJDDA", 0, 0);
     UNIMPL();
 }
 

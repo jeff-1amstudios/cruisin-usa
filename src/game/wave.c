@@ -27,12 +27,15 @@
 void WAVE(void);
 void HEAD2HEADWATCH(void);
 void HEAD2HEAD_WAIT(void);
+void HIGH_SCORE(void);
 void MIDSPIN(void);
 void MIDSPINHS(void);
 void RACELEG(void);
-void HIGH_SCORE_INI(void);
+#define HIGH_SCORE_INI THANKS
 void THANKS(void);
+void CREDITS(void);
 void LOAD_HIGH_SCORE(void);
+void BEGIN_GAME(void);
 void INIT_SYSTEM(void);
 void LOAD_FIXED_PALETTES(void);
 void LOAD_STARTUP_PALS(void);
@@ -66,11 +69,42 @@ int _ATTR_WAVETABI[] = {
 /* *----------------------------------------------------------------------------
  */
 /* asm: FIXEDPAL: */
-/* asm: 	.word	14 */
-int FIXEDPAL = 14;
+/* asm: .word	14 */
+/* asm: RGB	0,0,0 */
+/* asm: RGB	255,255,255		;1  WHITE */
+/* asm: RGB	070h,070h,070h		;2  GREY */
+/* asm: RGB	255,0,0			;3  RED */
+/* asm: RGB	0,255,0			;4  GREEN */
+/* asm: RGB	055h,055h,99h		;5  BLUE  (for the sky paled out) */
+/* asm: RGB	255,255,0		;6  YELLOW */
+/* asm: RGB	0,255,255		;7  CYAN */
+/* asm: RGB	0,0,0			;8  BLACK */
+/* asm: RGB	0,0,255			;9  TRUE BLUE */
+/* asm: RGB	0C0h,0A0h,0		;A  Amber color */
+/* asm: RGB	050h,050h,050h		;B	DARK GREY */
+/* asm: RGB	0A0h,0A0h,0A0h		;C	LIGHT GREY */
+/* asm: RGB	030h,030h,030h		;D	VERY DARK GREY */
+int FIXEDPAL;
 /* asm: ILLUM_PAL: */
-/* asm: 	.word	16 */
-int ILLUM_PAL = 16;
+/* asm: .word	16 */
+/* asm: RGB	06Ah,000h,000h */
+/* asm: RGB	06Fh,000h,000h */
+/* asm: RGB	074h,000h,000h */
+/* asm: RGB	079h,000h,000h */
+/* asm: RGB	07Eh,000h,000h */
+/* asm: RGB	083h,000h,000h */
+/* asm: RGB	088h,000h,000h */
+/* asm: RGB	08Dh,000h,000h */
+/* asm: RGB	092h,000h,000h */
+/* asm: RGB	097h,000h,000h */
+/* asm: RGB	09Ch,000h,000h */
+/* asm: RGB	0A1h,002h,005h */
+/* asm: RGB	0A6h,007h,00Ah */
+/* asm: RGB	0ABh,00Ch,00Fh */
+/* asm: RGB	0B0h,011h,014h */
+/* asm: RGB	0B5h,016h,019h */
+/* asm: romdata */
+int ILLUM_PAL;
 /* *----------------------------------------------------------------------------
  */
 /* asm: COPCARTAB	;PLAYERS VERSION!!! */
@@ -532,7 +566,12 @@ void HEAD2HEAD_WAIT(void)
     // asm 00009378: 	STI	R0,@BUTTON_STATUS
     // asm 00009379: 	CREATE	HEAD2HEAD_LOGO_WAIT,UTIL_C
     // asm 0000937C: 	RETS
-HIGH_SCORE:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HEAD2HEAD_WAIT", 0, 0);
+    UNIMPL();
+}
+
+void HIGH_SCORE(void)
+{
     // asm 0000937D: 	LDI	@BUTTON_STATUS,R0
     // asm 0000937E: 	ANDN	BUT_VIEWS,R0
     // asm 0000937F: 	STI	R0,@BUTTON_STATUS
@@ -543,7 +582,7 @@ HIGH_SCORE:
     // asm 00009384: 	CREATE	DISPLAY_HIGH_SCORES,UTIL_C
     // asm 00009387: 	CREATE	HEAD2HEADWATCH,UTIL_C
     // asm 0000938A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HEAD2HEAD_WAIT", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIGH_SCORE", 0, 0);
     UNIMPL();
 }
 
@@ -607,23 +646,22 @@ void RACELEG(void)
     UNIMPL();
 }
 
-void HIGH_SCORE_INI(void)
-{
-    /* no executable asm lines detected */
-    UNIMPL();
-}
-
 void THANKS(void)
 {
     // asm 000093BB: 	CALL	LOAD_HIGH_SCORE
     // asm 000093BC: 	BU	HIGH_SCORE
     // 	;these are not cycled, they are special routines
-CREDITS:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "THANKS", 0, 0);
+    UNIMPL();
+}
+
+void CREDITS(void)
+{
     // asm 000093BD: 	CREATE	VANITY,UTIL_C
     // asm 000093C0: 	LDI	-1,R0
     // asm 000093C1: 	STI	R0,@_ATTR_MODE
     // asm 000093C2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "THANKS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CREDITS", 0, 0);
     UNIMPL();
 }
 
@@ -640,13 +678,18 @@ void LOAD_HIGH_SCORE(void)
     // *
     // *NOTE	ANY GAME STARTUP CODE & PROC INITS ARE CALLED/CREATED IN INTRO.ASM
     // *
-BEGIN_GAME:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_HIGH_SCORE", 0, 0);
+    UNIMPL();
+}
+
+void BEGIN_GAME(void)
+{
     // asm 000093CB: 	CALL	SND_RESET_QUIET
     // asm 000093CC: 	LDI	1,R0
     // asm 000093CD: 	STI	R0,@LOADED
     // asm 000093CE: 	CREATE	PLYR_INTRO,PLYR_C|PLYR1_T	;PLAYERS PROCESS
     // asm 000093D1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_HIGH_SCORE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BEGIN_GAME", 0, 0);
     UNIMPL();
 }
 

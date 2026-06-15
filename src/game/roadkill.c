@@ -24,41 +24,29 @@ void PLYRROADKILL(void);
 void CHECK_COLLISION(void);
 void CHECK_OFFSET(void);
 void ROADKILL_FLYERP(void);
-void NORMAL_ROADKILL(void);
 void ROADKILL_HIT(void);
-void DO_PLYR(void);
 void PKQ(void);
 void ROADKILL_SETKILL(void);
 void OBJ_MOVE_GROUND(void);
 void GET_ROADKILL_TRACK(void);
 void PROC_COUNT(void);
-void PCLP(void);
 void COW_SPAWNER_PROC(void);
-void CSPX(void);
 void COW_PROC(void);
-void COW_DIE(void);
 void DEER_SPAWNER_PROC(void);
-void DSPX(void);
 void DEER_PROC(void);
-void DEER_DIE(void);
 void INIT_DEER(void);
 void INIT_COW(void);
 void DEER_EXPLODE(void);
-void DEER_EXPX(void);
 void MAKE_NOCOLL(void);
 void DEER_BLOOD_PROC(void);
-void DBP_DONE(void);
 void FLYING_PARTS(void);
 void FLY_PARTS(void);
 void GEESE_SPAWNER(void);
 void GEESE_PROC(void);
-void GEESE_DONE(void);
 void BUG_SPAWNER_PROC(void);
 void SPLAT_PROC(void);
 void DELETE_SPLAT(void);
-void DBSX(void);
 void NEXT_ROAD(void);
-void NEXTRX(void);
 void GET_ROAD_RADY(void);
 void FIND_MAP(void);
 
@@ -300,12 +288,7 @@ void ROADKILL_FLYERP(void)
     // asm 0000698C: 	BNE	NORMAL_ROADKILL
     // asm 0000698D: 	CALL	FLYING_PARTS		;HANDLE COLLISION
     // asm 0000698E: 	BR	RKFPX
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL_FLYERP", 0, 0);
-    UNIMPL();
-}
-
-void NORMAL_ROADKILL(void)
-{
+NORMAL_ROADKILL:
     // asm 0000698F: 	CALL	ROADKILL_SETKILL
     // asm 00006990: 	LDF	@ROADKILLXZ,R0
     // asm 00006991: 	ADDF	@ROADKILLXZ+1,R0
@@ -321,7 +304,7 @@ RKFPX:
     // asm 00006999: 	POP	AR2
     // asm 0000699A: 	POP	R0
     // asm 0000699B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NORMAL_ROADKILL", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL_FLYERP", 0, 0);
     UNIMPL();
 }
 
@@ -354,12 +337,7 @@ void ROADKILL_HIT(void)
     // asm 000069B4: 	LDI	AR0,AR4			;A drone hit the animal
     // asm 000069B5: 	CALL	DRONESND1
     // asm 000069B6: 	BR	PKQ
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL_HIT", 0, 0);
-    UNIMPL();
-}
-
-void DO_PLYR(void)
-{
+DO_PLYR:
     // asm 000069B7: 	CALL	ONESNDFX
     // ;	LDI	*+AR1(OID),AR2
     // ;	AND	SUBTYPE_M,AR2
@@ -373,7 +351,7 @@ void DO_PLYR(void)
     // ;	LDI	0,R1
     // ;	CALL	SET_TRACK_VOL
     // asm 000069BC: 	BU	PKQ
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DO_PLYR", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL_HIT", 0, 0);
     UNIMPL();
 }
 
@@ -490,12 +468,7 @@ void PROC_COUNT(void)
     // asm 00006A01: 	LDI	0,R0
     // asm 00006A02: 	LDI	@PACTIVEI,R1
     // asm 00006A03: 	RETSZ				;NULL LIST?
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PROC_COUNT", 0, 0);
-    UNIMPL();
-}
-
-void PCLP(void)
-{
+PCLP:
     // asm 00006A04: 	LDI	R1,AR0
     // asm 00006A05: 	LDI	*+AR0(PID),R1
     // asm 00006A06: 	CMPI	R2,R1
@@ -505,7 +478,7 @@ PC1:
     // asm 00006A09: 	LDI	*AR0,R1
     // asm 00006A0A: 	BNZ	PCLP
     // asm 00006A0B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PCLP", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PROC_COUNT", 0, 0);
     UNIMPL();
 }
 
@@ -544,14 +517,9 @@ CSPLP:
     // asm 00006A24: 	BGE	CSPLP
     // asm 00006A25: 	CREATE	COW_PROC,RDDEBRIS_C|TSC_ROADKILL|TSC_COW_S
     // asm 00006A28: 	BR	CSPLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COW_SPAWNER_PROC", 0, 0);
-    UNIMPL();
-}
-
-void CSPX(void)
-{
+CSPX:
     // asm 00006A29: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CSPX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COW_SPAWNER_PROC", 0, 0);
     UNIMPL();
 }
 
@@ -585,14 +553,9 @@ COW_WAIT:
 COW_SLEEP:
     // asm 00006A44: 	SLEEP	100			;THIS IS NEEDED FOR COW COUNTING
     // asm 00006A46: 	BR	COW_SLEEP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COW_PROC", 0, 0);
-    UNIMPL();
-}
-
-void COW_DIE(void)
-{
+COW_DIE:
     // asm 00006A47: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COW_DIE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COW_PROC", 0, 0);
     UNIMPL();
 }
 
@@ -623,14 +586,9 @@ DSPLP:
     // asm 00006A59: 	BGE	DSPLP
     // asm 00006A5A: 	CREATE	DEER_PROC,RDDEBRIS_C|TSC_ROADKILL|TSC_DEER_S
     // asm 00006A5D: 	BR	DSPLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_SPAWNER_PROC", 0, 0);
-    UNIMPL();
-}
-
-void DSPX(void)
-{
+DSPX:
     // asm 00006A5E: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DSPX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_SPAWNER_PROC", 0, 0);
     UNIMPL();
 }
 
@@ -648,14 +606,9 @@ DEERANI_LOOP:
     // asm 00006A67: DEER_SLEEP
     // asm 00006A67: 	SLEEP	3			;frame rate of 3
     // asm 00006A69: 	BR	DEERANI_LOOP		;Ultimatly backgrnd or colla will kill this proc
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_PROC", 0, 0);
-    UNIMPL();
-}
-
-void DEER_DIE(void)
-{
+DEER_DIE:
     // asm 00006A6A: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_DIE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_PROC", 0, 0);
     UNIMPL();
 }
 
@@ -749,12 +702,7 @@ MAKE_PARTSLP:
     // asm 00006AB0: 	LDI	*AR1++,R0
     // asm 00006AB1: 	CALLNE	MAKE_NOCOLL
     // asm 00006AB2: 	BR	MAKE_PARTSLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_EXPLODE", 0, 0);
-    UNIMPL();
-}
-
-void DEER_EXPX(void)
-{
+DEER_EXPX:
     // asm 00006AB3: 	LDI	AR6,AR4
     // asm 00006AB4: 	NEGF	*+AR4(OVELX),R7		;Deer distance from center
     // asm 00006AB5: 	CALL	FLY_PARTS
@@ -785,7 +733,7 @@ NO_SPINOUT:
     // asm 00006ACE: 	STF	R0,*+AR5(CARSPEED)
     // asm 00006ACF: 	CALL	POPALL
     // asm 00006AD0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_EXPX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_EXPLODE", 0, 0);
     UNIMPL();
 }
 
@@ -837,17 +785,12 @@ DBP_LP:
     // asm 00006AF8: 	STI	R0,*+AR4(OROMDATA)
     // asm 00006AF9: 	CALL	OVELNADD		;Update position based on velocity
     // asm 00006AFA: 	BR	DBP_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_BLOOD_PROC", 0, 0);
-    UNIMPL();
-}
-
-void DBP_DONE(void)
-{
+DBP_DONE:
     // asm 00006AFB: 	LDI	AR4,AR2
     // asm 00006AFC: 	CALL	OBJ_DELETE
 DBP_DIE:
     // asm 00006AFD: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DBP_DONE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_BLOOD_PROC", 0, 0);
     UNIMPL();
 }
 
@@ -1132,19 +1075,14 @@ GEESELP:
     // asm 00006BF8: 	CREATE	SPLAT_PROC,UTIL_C	;The SPLAT will hit the windshield
 NO_SPLAT:
     // asm 00006BFB: 	BU	GEESELP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GEESE_PROC", 0, 0);
-    UNIMPL();
-}
-
-void GEESE_DONE(void)
-{
+GEESE_DONE:
     // asm 00006BFC: 	LDI	AR4,AR2
     // asm 00006BFD: 	CALL	OBJ_DELETE
     // asm 00006BFE: 	LDI	GEESES,AR2
     // asm 00006BFF: 	CALL	KILLSNDFX
 GEESE_DIE:
     // asm 00006C00: 	DIE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GEESE_DONE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "GEESE_PROC", 0, 0);
     UNIMPL();
 }
 
@@ -1157,7 +1095,7 @@ void BUG_SPAWNER_PROC(void)
     // asm 00006C08: 	LDI	@_MODE,R0
     // asm 00006C09: 	AND	MGO,R0
     // asm 00006C0A: 	BZ	BUG_SPAWNER_PROC
-BSPLP:
+    // asm 00006C0B: BSPLP
     // asm 00006C0B: 	SLEEP	30*5
     // asm 00006C0D: 	LDI	@CAMVIEW,R0
     // asm 00006C0E: 	BNZ	BSPLP			;NOT in First person
@@ -1171,7 +1109,7 @@ BSPLP:
     // asm 00006C19: 	CREATE	SPLAT_PROC,UTIL_C	;The SPLAT will hit the windshield
     // asm 00006C1C: 	SLEEP	30*20			;20 seconds before another bug can apear
     // asm 00006C1E: 	BR	BSPLP
-BSPX:
+    // asm 00006C1F: BSPX
     // asm 00006C1F: 	DIE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BUG_SPAWNER_PROC", 0, 0);
     UNIMPL();
@@ -1286,14 +1224,9 @@ DBSLP:
     // asm 00006C80: 	LDI	AR0,AR2
     // asm 00006C81: 	CALL	OBJ_DELETE
     // asm 00006C82: 	BR	DBSLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DELETE_SPLAT", 0, 0);
-    UNIMPL();
-}
-
-void DBSX(void)
-{
+DBSX:
     // asm 00006C83: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DBSX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DELETE_SPLAT", 0, 0);
     UNIMPL();
 }
 
@@ -1336,15 +1269,10 @@ NEXT_ROADLP:
     // asm 00006C9C: 	BLT	NEXTRX			;don't fly off the back of the map
     // asm 00006C9D: 	ADDI	1,R3			;R3 is the number of road segments moved
     // asm 00006C9E: 	BR	NEXT_ROADLP		;See if the road segment beyond is even closer
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXT_ROAD", 0, 0);
-    UNIMPL();
-}
-
-void NEXTRX(void)
-{
+NEXTRX:
     // asm 00006C9F: 	LDI	R3,R2
     // asm 00006CA0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXTRX", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXT_ROAD", 0, 0);
     UNIMPL();
 }
 
