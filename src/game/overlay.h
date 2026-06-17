@@ -8,4 +8,11 @@ extern int CHECKPOINT_TIME_BONUS;
 // asm: 	.bss	REAL_CHECKPOINTS,1
 extern int REAL_CHECKPOINTS;
 
+
+
+
+
+
+
+
 #endif /* OVERLAY_H */

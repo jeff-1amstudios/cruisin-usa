@@ -7,9 +7,7 @@
 #include "objects.h"
 #include "text.h"
 #include "texttab.h"
-#include "text_defs.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
+#include "port.h"
 
 /*
  * Source module: asm/TEXT.ASM
@@ -63,61 +61,6 @@ int TEXTTABLEFONT18 = FONT18_TAB;
 int FONT40_A = ommdfont_I;
 /* asm: FONT10_A	.word	osg10fnt_I */
 int FONT10_A = osg10fnt_I;
-/* *----------------------------------------------------------------------------
- */
-/* asm: FONTN43_A	.word	lgnum43_I */
-int FONTN43_A = lgnum43_I;
-/* *----------------------------------------------------------------------------
-*
-*FONTENT		.macro	PRECEDING,XSTART,XEND,YSTART,TRAIL
-*
-*
- */
-/* asm: FIXEDFONT: */
-/* asm: FONTENT	0,64,71,0,1	;0 */
-/* asm: FONTENT	0,72,79,0,1	;1 */
-/* asm: FONTENT	0,80,87,0,1	;2 */
-/* asm: FONTENT	0,88,95,0,1	;3 */
-/* asm: FONTENT	0,96,103,0,1	;4 */
-/* asm: FONTENT	0,104,111,0,1	;5 */
-/* asm: FONTENT	0,112,119,0,1	;6 */
-/* asm: FONTENT	0,120,127,0,1	;7 */
-/* asm: FONTENT	0,128,135,0,1	;8 */
-/* asm: FONTENT	0,136,143,0,1	;9 */
-/* asm: FONTENT	0,144,151,0,1	; : */
-/* asm: FONTENT	0,152,159,0,1	; ; */
-/* asm: FONTENT	0,160,167,0,1	; < */
-/* asm: FONTENT	0,48,55,0,1	; =	. */
-/* asm: FONTENT	0,32,39,0,1	; >	, */
-/* asm: FONTENT	0,40,47,0,1	; ?	- */
-/* asm: FONTENT	0,56,63,0,1	; @	/ */
-/* asm: FONTENT	0,200,207,0,1	;A */
-/* asm: FONTENT	0,208,215,0,1 */
-/* asm: FONTENT	0,216,223,0,1 */
-/* asm: FONTENT	0,224,231,0,1	;D */
-/* asm: FONTENT	0,232,239,0,1	;E */
-/* asm: FONTENT	0,240,247,0,1	;F */
-/* asm: FONTENT	0,248,255,0,1	;G */
-/* asm: FONTENT	0,0,7,7,1	;H */
-/* asm: FONTENT	0,8,15,7,1 */
-/* asm: FONTENT	0,16,23,7,1 */
-/* asm: FONTENT	0,24,31,7,1 */
-/* asm: FONTENT	0,32,39,7,1	;L */
-/* asm: FONTENT	0,40,47,7,1	;M */
-/* asm: FONTENT	0,48,55,7,1	;N */
-/* asm: FONTENT	0,56,63,7,1	;O */
-/* asm: FONTENT	0,64,71,7,1	;P */
-/* asm: FONTENT	0,72,79,7,1	;Q */
-/* asm: FONTENT	0,80,87,7,1	;R */
-/* asm: FONTENT	0,88,95,7,1 */
-/* asm: FONTENT	0,96,103,7,1 */
-/* asm: FONTENT	0,104,111,7,1	;U */
-/* asm: FONTENT	0,112,119,7,1 */
-/* asm: FONTENT	0,120,127,7,1 */
-/* asm: FONTENT	0,128,135,7,1 */
-/* asm: FONTENT	0,136,143,7,1 */
-/* asm: FONTENT	0,144,151,7,1	;Z */
-int FIXEDFONT;
 
 /* *----------------------------------------------------------------------------
  */
@@ -172,6 +115,7 @@ void TEXT_ADDDS(void)
 void TEXT_ADD1(void)
 {
     // asm 0000798A: 	LDI	1,RC
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_ADD1", 0, 0);
     UNIMPL();
 }
@@ -205,6 +149,7 @@ void TEXT_ADD(void)
     // asm 0000799F: 	STF	R0,*+AR0(TEXT_VELY)
     // 	;set default font
     // asm 000079A0: 	BU	SET18FONT
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_ADD", 0, 0);
     UNIMPL();
 }
@@ -284,6 +229,11 @@ void SETLGDIGITFONTDS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETLGDIGITFONTDS", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: FONTN43_A	.word	lgnum43_I */
+int FONTN43_A = lgnum43_I;
 
 void SETN43FONT(void)
 {
@@ -823,6 +773,58 @@ REGLP2:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "STRCAT", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*FONTENT		.macro	PRECEDING,XSTART,XEND,YSTART,TRAIL
+*
+*
+ */
+/* asm: FIXEDFONT: */
+/* asm: FONTENT	0,64,71,0,1	;0 */
+/* asm: FONTENT	0,72,79,0,1	;1 */
+/* asm: FONTENT	0,80,87,0,1	;2 */
+/* asm: FONTENT	0,88,95,0,1	;3 */
+/* asm: FONTENT	0,96,103,0,1	;4 */
+/* asm: FONTENT	0,104,111,0,1	;5 */
+/* asm: FONTENT	0,112,119,0,1	;6 */
+/* asm: FONTENT	0,120,127,0,1	;7 */
+/* asm: FONTENT	0,128,135,0,1	;8 */
+/* asm: FONTENT	0,136,143,0,1	;9 */
+/* asm: FONTENT	0,144,151,0,1	; : */
+/* asm: FONTENT	0,152,159,0,1	; ; */
+/* asm: FONTENT	0,160,167,0,1	; < */
+/* asm: FONTENT	0,48,55,0,1	; =	. */
+/* asm: FONTENT	0,32,39,0,1	; >	, */
+/* asm: FONTENT	0,40,47,0,1	; ?	- */
+/* asm: FONTENT	0,56,63,0,1	; @	/ */
+/* asm: FONTENT	0,200,207,0,1	;A */
+/* asm: FONTENT	0,208,215,0,1 */
+/* asm: FONTENT	0,216,223,0,1 */
+/* asm: FONTENT	0,224,231,0,1	;D */
+/* asm: FONTENT	0,232,239,0,1	;E */
+/* asm: FONTENT	0,240,247,0,1	;F */
+/* asm: FONTENT	0,248,255,0,1	;G */
+/* asm: FONTENT	0,0,7,7,1	;H */
+/* asm: FONTENT	0,8,15,7,1 */
+/* asm: FONTENT	0,16,23,7,1 */
+/* asm: FONTENT	0,24,31,7,1 */
+/* asm: FONTENT	0,32,39,7,1	;L */
+/* asm: FONTENT	0,40,47,7,1	;M */
+/* asm: FONTENT	0,48,55,7,1	;N */
+/* asm: FONTENT	0,56,63,7,1	;O */
+/* asm: FONTENT	0,64,71,7,1	;P */
+/* asm: FONTENT	0,72,79,7,1	;Q */
+/* asm: FONTENT	0,80,87,7,1	;R */
+/* asm: FONTENT	0,88,95,7,1 */
+/* asm: FONTENT	0,96,103,7,1 */
+/* asm: FONTENT	0,104,111,7,1	;U */
+/* asm: FONTENT	0,112,119,7,1 */
+/* asm: FONTENT	0,120,127,7,1 */
+/* asm: FONTENT	0,128,135,7,1 */
+/* asm: FONTENT	0,136,143,7,1 */
+/* asm: FONTENT	0,144,151,7,1	;Z */
+int FIXEDFONT;
 
 /* *----------------------------------------------------------------------------
 *

@@ -24,4 +24,11 @@ extern int LEG_RADY;
 // asm: 	.bss	LEG_SECTIONIDX,1	;UH
 extern int LEG_SECTIONIDX;
 
+
+
+
+
+
+
+
 #endif /* LEG_H */

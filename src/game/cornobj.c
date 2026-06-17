@@ -1,5 +1,6 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "port.h"
 
 /*
  * Source module: asm/CORNOBJ.ASM
@@ -12,8 +13,3 @@ int _SECcorn[] = {
     0x0C16800, // Src (Compressed) Addr
     0x0BE9600, // Dest Addr
 };
-
-void cornobj(void)
-{
-    UNIMPL();
-}

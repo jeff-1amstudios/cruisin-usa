@@ -14,6 +14,7 @@
 #include "text.h"
 #include "delta.h"
 #include "comm.h"
+#include "port.h"
 #include "rho.h"
 
 /*
@@ -228,6 +229,7 @@ NOT_WEAVER:
 RHOLL1:
     // asm 000097FC: 	CALL	DRONE_PTR_ADD
     // asm 000097FD: 	CALL	SEND_RHO_CREATE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DRONE", 0, 0);
     UNIMPL();
 }
@@ -495,6 +497,7 @@ RHO_SLP:
     // asm 000098B8: 	BZ	RHO_DIE		;YES
     // asm 000098B9: 	SLEEP	1
     // asm 000098BB: 	BU	RHO_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_LP", 0, 0);
     UNIMPL();
 }
@@ -559,6 +562,7 @@ NODYNALEAN:
     // asm 000098E1: 	LDI	AR4,AR2
     // asm 000098E2: 	CALL	OBJ_DELETE
     // asm 000098E3: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DIE", 0, 0);
     UNIMPL();
 }
@@ -632,6 +636,7 @@ RHOISHIT_SLP:
     // asm 0000990C: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 0000990D: 	CALLNZ	SEND_RHO_POS		;SEND YOUR POSITION TO LINKED GAME
     // asm 0000990E: 	BU	RHO_ISHITLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_ISHIT", 0, 0);
     UNIMPL();
 }
@@ -662,6 +667,7 @@ void SEND_RHO_XSFER(void)
     // *AR7=PROCESS
     // *
     // *NOTE SHOULD ADD IN FUTURE: CAR_SPIN,CARSPRAD,CARGEAR,CARRPM,CARSKID
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RHO_XSFER", 0, 0);
     UNIMPL();
 }
@@ -733,6 +739,7 @@ void RHO_ACTIVE_XSFER(void)
     // *KILL OFF RHO MESSAGE
     // *R0=ID
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_ACTIVE_XSFER", 0, 0);
     UNIMPL();
 }

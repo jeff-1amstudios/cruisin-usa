@@ -7,8 +7,8 @@
 #include "sys.h"
 #include "vunit.h"
 #include "pall.h"
+#include "port.h"
 #include "infin.h"
-#include "discovered_defines.h"
 
 /*
  * Source module: asm/INFIN.ASM
@@ -39,185 +39,6 @@ int HIGHEST_ROADY;
 int HIGHEST_ROADY_X;
 /* asm: VAR_ROAD_KFACTOR	.bss	VAR_ROAD_KFACTOR,1 */
 int VAR_ROAD_KFACTOR;
-/* *----------------------------------------------------------------------------
-*PLOT INFINITY PLANE
-*
-*VERTICES TRANSFORMED AS
-*     1	 3  5
-*
-*     0	 2  4  etc.
-*
-*
- */
-/* asm: AMOUNT_CLIPPED	.bss	AMOUNT_CLIPPED,1 */
-int AMOUNT_CLIPPED;
-/* asm: FORMULA	.float	-244.4619926	;(6*256)/2PI  (convert radians to length of infinity plane) */
-float FORMULA = -244.4619926f;
-/* asm: LOWVAL	.float	-1536 */
-float LOWVAL = -1536.0f;
-/* asm: HIGHVAL	.float	1536 */
-float HIGHVAL = 1536.0f;
-/* asm: LOIVAL	.word	-768 */
-int LOIVAL = -768;
-/* asm: HIGHIVAL	.word	1536 */
-int HIGHIVAL = 1536;
-/* asm: INFPROJ	.float	0.0064 */
-float INFPROJ = 0.0064f;
-/* asm: INFVAL	.float  80000 */
-float INFVAL = 80000.0f;
-/* *----------------------------------------------------------------------------
- */
-/* asm: INFINITY_POINTS	.word	INFINPOINTS */
-#define INFINITY_POINTS INFINPOINTS
-/* asm: INFINPOINTS */
-/* asm: 	.float	-1280,0,0 */
-/* asm: 	.float	-1280,-255,0 */
-/* asm: 	.float	-1024,0,0 */
-/* asm: 	.float	-1024,-255,0 */
-/* asm: 	.float	-768,0,0 */
-/* asm: 	.float	-768,-255,0 */
-/* asm: 	.float	-512,0,0 */
-/* asm: 	.float	-512,-255,0 */
-/* asm: 	.float	-256,0,0 */
-/* asm: 	.float	-256,-255,0 */
-/* asm: 	.float	0,0,0 */
-/* asm: 	.float	0,-255,0 */
-/* asm: 	.float	256,0,0 */
-/* asm: 	.float	256,-255,0 */
-/* asm: 	.float	512,0,0 */
-/* asm: 	.float	512,-255,0 */
-/* asm: 	.float	768,0,0 */
-/* asm: 	.float	768,-255,0 */
-/* asm: 	.float	1024,0,0 */
-/* asm: 	.float	1024,-255,0 */
-/* asm: 	.float	1280,0,0 */
-/* asm: 	.float	1280,-255,0 */
-/* asm: 	.float	1536,0,0 */
-/* asm: 	.float	1536,-255,0 */
-/* asm: 	.float	1792,0,0 */
-/* asm: 	.float	1792,-255,0 */
-/* asm: 	.float	-1280,-253,0 */
-/* asm: 	.float	-1280,-1250,0 */
-/* asm: 	.float	-300,-253,0 */
-/* asm: 	.float	-300,-1250,0 */
-/* asm: 	.float	700,-253,0 */
-/* asm: 	.float	700,-1250,0 */
-/* asm: 	.float	1700,-253,0 */
-/* asm: 	.float	1700,-1250,0 */
-int INFINPOINTS[] = {
-    -1280, 0, 0,
-    -1280, -255, 0,
-    -1024, 0, 0,
-    -1024, -255, 0,
-    -768, 0, 0,
-    -768, -255, 0,
-    -512, 0, 0,
-    -512, -255, 0,
-    -256, 0, 0,
-    -256, -255, 0,
-    0, 0, 0,
-    0, -255, 0,
-    256, 0, 0,
-    256, -255, 0,
-    512, 0, 0,
-    512, -255, 0,
-    768, 0, 0,
-    768, -255, 0,
-    1024, 0, 0,
-    1024, -255, 0,
-    1280, 0, 0,
-    1280, -255, 0,
-    1536, 0, 0,
-    1536, -255, 0,
-    1792, 0, 0,
-    1792, -255, 0,
-    -1280, -253, 0,
-    -1280, -1250, 0,
-    -300, -253, 0,
-    -300, -1250, 0,
-    700, -253, 0,
-    700, -1250, 0,
-    1700, -253, 0,
-    1700, -1250, 0,
-};
-/* asm: INFIN_POLYGONSI	.word	BLUESKY */
-#define INFIN_POLYGONSI BLUESKY
-/* asm: BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
-/* asm: 	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
-int BLUESKY[] = {
-    sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
-    sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
-};
-/* *----------------------------------------------------------------------------
-*
-*
-*PARAMETERS
-*	AR4	NUMBER OF VERTICES
-*	AR5	POINTERS [X Y Z]
-*	AR6	RAM BUFFER
-*
-*
-*
- */
-/* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
-int INFIN_CORRECT;
-/* asm: WATERPOSI	.word	WATERPOS */
-#define WATERPOSI WATERPOS
-/* asm: WATERPOS */
-/* asm: 	.float	-1280,128,0 */
-/* asm: 	.float	-1280,0,0 */
-/* asm: 	.float	-1024,128,0 */
-/* asm: 	.float	-1024,0,0 */
-/* asm: 	.float	-768,128,0 */
-/* asm: 	.float	-768,0,0 */
-/* asm: 	.float	-512,128,0 */
-/* asm: 	.float	-512,0,0 */
-/* asm: 	.float	-256,128,0 */
-/* asm: 	.float	-256,0,0 */
-/* asm: 	.float	0,128,0 */
-/* asm: 	.float	0,0,0 */
-/* asm: 	.float	256,128,0 */
-/* asm: 	.float	256,0,0 */
-/* asm: 	.float	512,128,0 */
-/* asm: 	.float	512,0,0 */
-/* asm: 	.float	768,128,0 */
-/* asm: 	.float	768,0,0 */
-/* asm: 	.float	1024,128,0 */
-/* asm: 	.float	1024,0,0 */
-/* asm: 	.float	1280,128,0 */
-/* asm: 	.float	1280,0,0 */
-/* asm: 	.float	1536,128,0 */
-/* asm: 	.float	1536,0,0 */
-/* asm: 	.float	1792,128,0 */
-/* asm: 	.float	1792,0,0 */
-float WATERPOS[] = {
-    -1280.0f, 128.0f, 0.0f,
-    -1280.0f, 0.0f, 0.0f,
-    -1024.0f, 128.0f, 0.0f,
-    -1024.0f, 0.0f, 0.0f,
-    -768.0f, 128.0f, 0.0f,
-    -768.0f, 0.0f, 0.0f,
-    -512.0f, 128.0f, 0.0f,
-    -512.0f, 0.0f, 0.0f,
-    -256.0f, 128.0f, 0.0f,
-    -256.0f, 0.0f, 0.0f,
-    0.0f, 128.0f, 0.0f,
-    0.0f, 0.0f, 0.0f,
-    256.0f, 128.0f, 0.0f,
-    256.0f, 0.0f, 0.0f,
-    512.0f, 128.0f, 0.0f,
-    512.0f, 0.0f, 0.0f,
-    768.0f, 128.0f, 0.0f,
-    768.0f, 0.0f, 0.0f,
-    1024.0f, 128.0f, 0.0f,
-    1024.0f, 0.0f, 0.0f,
-    1280.0f, 128.0f, 0.0f,
-    1280.0f, 0.0f, 0.0f,
-    1536.0f, 128.0f, 0.0f,
-    1536.0f, 0.0f, 0.0f,
-    1792.0f, 128.0f, 0.0f,
-    1792.0f, 0.0f, 0.0f,
-};
 
 void FIND_HIGHEST_ROADY(void)
 {
@@ -308,6 +129,33 @@ FHRY_X:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_HIGHEST_ROADY", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*PLOT INFINITY PLANE
+*
+*VERTICES TRANSFORMED AS
+*     1	 3  5
+*
+*     0	 2  4  etc.
+*
+*
+ */
+/* asm: AMOUNT_CLIPPED	.bss	AMOUNT_CLIPPED,1 */
+int AMOUNT_CLIPPED;
+/* asm: FORMULA	.float	-244.4619926	;(6*256)/2PI  (convert radians to length of infinity plane) */
+float FORMULA = -244.4619926f;
+/* asm: LOWVAL	.float	-1536 */
+float LOWVAL = -1536.0f;
+/* asm: HIGHVAL	.float	1536 */
+float HIGHVAL = 1536.0f;
+/* asm: LOIVAL	.word	-768 */
+int LOIVAL = -768;
+/* asm: HIGHIVAL	.word	1536 */
+int HIGHIVAL = 1536;
+/* asm: INFPROJ	.float	0.0064 */
+float INFPROJ = 0.0064f;
+/* asm: INFVAL	.float  80000 */
+float INFVAL = 80000.0f;
 
 /* *
 *
@@ -614,6 +462,103 @@ LOOP1:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: INFINITY_POINTS	.word	INFINPOINTS */
+#define INFINITY_POINTS INFINPOINTS
+/* asm: INFINPOINTS */
+/* asm: 	.float	-1280,0,0 */
+/* asm: 	.float	-1280,-255,0 */
+/* asm: 	.float	-1024,0,0 */
+/* asm: 	.float	-1024,-255,0 */
+/* asm: 	.float	-768,0,0 */
+/* asm: 	.float	-768,-255,0 */
+/* asm: 	.float	-512,0,0 */
+/* asm: 	.float	-512,-255,0 */
+/* asm: 	.float	-256,0,0 */
+/* asm: 	.float	-256,-255,0 */
+/* asm: 	.float	0,0,0 */
+/* asm: 	.float	0,-255,0 */
+/* asm: 	.float	256,0,0 */
+/* asm: 	.float	256,-255,0 */
+/* asm: 	.float	512,0,0 */
+/* asm: 	.float	512,-255,0 */
+/* asm: 	.float	768,0,0 */
+/* asm: 	.float	768,-255,0 */
+/* asm: 	.float	1024,0,0 */
+/* asm: 	.float	1024,-255,0 */
+/* asm: 	.float	1280,0,0 */
+/* asm: 	.float	1280,-255,0 */
+/* asm: 	.float	1536,0,0 */
+/* asm: 	.float	1536,-255,0 */
+/* asm: 	.float	1792,0,0 */
+/* asm: 	.float	1792,-255,0 */
+/* asm: 	.float	-1280,-253,0 */
+/* asm: 	.float	-1280,-1250,0 */
+/* asm: 	.float	-300,-253,0 */
+/* asm: 	.float	-300,-1250,0 */
+/* asm: 	.float	700,-253,0 */
+/* asm: 	.float	700,-1250,0 */
+/* asm: 	.float	1700,-253,0 */
+/* asm: 	.float	1700,-1250,0 */
+int INFINPOINTS[] = {
+    -1280, 0, 0,
+    -1280, -255, 0,
+    -1024, 0, 0,
+    -1024, -255, 0,
+    -768, 0, 0,
+    -768, -255, 0,
+    -512, 0, 0,
+    -512, -255, 0,
+    -256, 0, 0,
+    -256, -255, 0,
+    0, 0, 0,
+    0, -255, 0,
+    256, 0, 0,
+    256, -255, 0,
+    512, 0, 0,
+    512, -255, 0,
+    768, 0, 0,
+    768, -255, 0,
+    1024, 0, 0,
+    1024, -255, 0,
+    1280, 0, 0,
+    1280, -255, 0,
+    1536, 0, 0,
+    1536, -255, 0,
+    1792, 0, 0,
+    1792, -255, 0,
+    -1280, -253, 0,
+    -1280, -1250, 0,
+    -300, -253, 0,
+    -300, -1250, 0,
+    700, -253, 0,
+    700, -1250, 0,
+    1700, -253, 0,
+    1700, -1250, 0,
+};
+/* asm: INFIN_POLYGONSI	.word	BLUESKY */
+#define INFIN_POLYGONSI BLUESKY
+/* asm: BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
+/* asm: 	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
+int BLUESKY[] = {
+    sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
+    sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
+};
+/* *----------------------------------------------------------------------------
+*
+*
+*PARAMETERS
+*	AR4	NUMBER OF VERTICES
+*	AR5	POINTERS [X Y Z]
+*	AR6	RAM BUFFER
+*
+*
+*
+ */
+/* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
+int INFIN_CORRECT;
+
 void TRANS_PTS(void)
 {
     // ;	LDF	@AMOUNT_CLIPPED,R4
@@ -804,3 +749,61 @@ LOOPA:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WATER_INFINITY", 0, 0);
     UNIMPL();
 }
+
+/* asm: WATERPOSI	.word	WATERPOS */
+#define WATERPOSI WATERPOS
+/* asm: WATERPOS */
+/* asm: 	.float	-1280,128,0 */
+/* asm: 	.float	-1280,0,0 */
+/* asm: 	.float	-1024,128,0 */
+/* asm: 	.float	-1024,0,0 */
+/* asm: 	.float	-768,128,0 */
+/* asm: 	.float	-768,0,0 */
+/* asm: 	.float	-512,128,0 */
+/* asm: 	.float	-512,0,0 */
+/* asm: 	.float	-256,128,0 */
+/* asm: 	.float	-256,0,0 */
+/* asm: 	.float	0,128,0 */
+/* asm: 	.float	0,0,0 */
+/* asm: 	.float	256,128,0 */
+/* asm: 	.float	256,0,0 */
+/* asm: 	.float	512,128,0 */
+/* asm: 	.float	512,0,0 */
+/* asm: 	.float	768,128,0 */
+/* asm: 	.float	768,0,0 */
+/* asm: 	.float	1024,128,0 */
+/* asm: 	.float	1024,0,0 */
+/* asm: 	.float	1280,128,0 */
+/* asm: 	.float	1280,0,0 */
+/* asm: 	.float	1536,128,0 */
+/* asm: 	.float	1536,0,0 */
+/* asm: 	.float	1792,128,0 */
+/* asm: 	.float	1792,0,0 */
+float WATERPOS[] = {
+    -1280.0f, 128.0f, 0.0f,
+    -1280.0f, 0.0f, 0.0f,
+    -1024.0f, 128.0f, 0.0f,
+    -1024.0f, 0.0f, 0.0f,
+    -768.0f, 128.0f, 0.0f,
+    -768.0f, 0.0f, 0.0f,
+    -512.0f, 128.0f, 0.0f,
+    -512.0f, 0.0f, 0.0f,
+    -256.0f, 128.0f, 0.0f,
+    -256.0f, 0.0f, 0.0f,
+    0.0f, 128.0f, 0.0f,
+    0.0f, 0.0f, 0.0f,
+    256.0f, 128.0f, 0.0f,
+    256.0f, 0.0f, 0.0f,
+    512.0f, 128.0f, 0.0f,
+    512.0f, 0.0f, 0.0f,
+    768.0f, 128.0f, 0.0f,
+    768.0f, 0.0f, 0.0f,
+    1024.0f, 128.0f, 0.0f,
+    1024.0f, 0.0f, 0.0f,
+    1280.0f, 128.0f, 0.0f,
+    1280.0f, 0.0f, 0.0f,
+    1536.0f, 128.0f, 0.0f,
+    1536.0f, 0.0f, 0.0f,
+    1792.0f, 128.0f, 0.0f,
+    1792.0f, 0.0f, 0.0f,
+};

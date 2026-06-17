@@ -13,6 +13,7 @@
 #include "objects.h"
 #include "text.h"
 #include "delta.h"
+#include "port.h"
 
 /*
  * Source module: asm/SIGMA.ASM
@@ -383,6 +384,7 @@ L99:
 SIGMASLP:
     // asm: 	SLEEP	1
     // asm 0000A516: 	B	SIGMA_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DRONE", 0, 0);
     UNIMPL();
 }
@@ -427,6 +429,7 @@ NOSMK:
     // asm 0000A530: BREAKDNSLP
     // asm: 	SLEEP	1
     // asm 0000A530: 	BU	BREAKDOWNLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BREAKDOWN", 0, 0);
     UNIMPL();
 }
@@ -436,6 +439,7 @@ NOSMK:
 void SIGMA_DIE(void)
 {
     // asm: 	BU	RHO_DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DIE", 0, 0);
     UNIMPL();
 }

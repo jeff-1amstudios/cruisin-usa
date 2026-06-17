@@ -26,4 +26,11 @@ extern int SMOKE_COUNT;
 // asm: 	.bss	COCONUT_COUNT,1
 extern int COCONUT_COUNT;
 
+
+
+
+
+
+
+
 #endif /* DRONES_H */

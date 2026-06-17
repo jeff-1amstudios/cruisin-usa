@@ -12,4 +12,11 @@ extern int _AIVI[4];
 // asm: 	.bss	_ADDRL,1
 extern int _ADDRL;
 
+
+
+
+
+
+
+
 #endif /* TOTALA_H */

@@ -15,9 +15,8 @@
 #include "delta.h"
 #include "comm.h"
 #include "h2hobj.h"
+#include "port.h"
 #include "bonus.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/BONUS.ASM
@@ -109,84 +108,6 @@ int BONUS_POSTLAUNCH[] = {
     BONUSNULL, BONUSNULL, BONUSNULL,
     BONUSNULL, BONUSNULL, BONUSNULL,
 };
-/* asm: BONUS_TABLE	.word	BONUS1,BONUS2,BONUS3,BONUS4,BONUS5 */
-/* asm: 	.word	BONUS6,BONUS7,BONUS8,BONUS9,BONUS10 */
-/* asm: 	.word	BONUS11,BONUS12,BONUS13,BONUS14 */
-void (*BONUS_TABLE[])(void) = {
-    BONUS1, BONUS2, BONUS3, BONUS4, BONUS5,
-    BONUS6, BONUS7, BONUS8, BONUS9, BONUS10,
-    BONUS11, BONUS12, BONUS13, BONUS14,
-};
-/* *----------------------------------------------------------------------------
-*
- */
-/* asm: SAVED_COUNTDOWN	.bss	SAVED_COUNTDOWN,1 */
-int SAVED_COUNTDOWN;
-/* asm: SPEEDHIT	.bss	SPEEDHIT,1 */
-int SPEEDHIT;
-/* asm: DID_TIMED_OUT	.bss	DID_TIMED_OUT,1 */
-int DID_TIMED_OUT;
-const char *FRA1 = "FIRST PLACE";
-const char *FRA2 = "FREE RACE";
-#define CONGRATS 4
-/* asm: CONGRAT_SPEECH:	.word	GL_WOOLAUGH,GL_YEAH,GL_YES,GL_YOUDIDIT */
-int CONGRAT_SPEECH[] = {
-    GL_WOOLAUGH, GL_YEAH, GL_YES, GL_YOUDIDIT,
-};
-/* *----------------------------------------------------------------------------
-*
-*
- */
-/* *
-*
- */
-#define SHOWLEG_TIME (20+20+50)
-/* *----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	R4	INDEX
-*
-*
- */
-/* asm: FLAG_POS_TABLE */
-/* asm: 	.word	 36,133	;GGpark */
-/* asm: 	.word	 39,147	;Sanfran */
-/* asm: 	.word	 40,156	;I101 */
-/* asm: 	.word	 43,166	;Redwds */
-/* asm: 	.word	 63,192	;BeverlyHils */
-/* asm: 	.word	 76,200	;LA freeway */
-/* asm: 	.word	 88,190	;Deathvalley */
-/* asm: 	.word	128,198	;Arizona */
-/* asm: 	.word	257,106	;Mount Rush */
-/* asm: 	.word	302,125	;Iowa */
-/* asm: 	.word	334,125	;Chicago */
-/* asm: 	.word	358,134	;Indiana */
-/* asm: 	.word	412,129	;Appalachia */
-/* asm: 	.word	434,140	;Washington */
-int FLAG_POS_TABLE[] = {
-    36, 133, // GGpark
-    39, 147, // Sanfran
-    40, 156, // I101
-    43, 166, // Redwds
-    63, 192, // BeverlyHils
-    76, 200, // LA freeway
-    88, 190, // Deathvalley
-    128, 198, // Arizona
-    257, 106, // Mount Rush
-    302, 125, // Iowa
-    334, 125, // Chicago
-    358, 134, // Indiana
-    412, 129, // Appalachia
-    434, 140, // Washington
-};
-const char *BT1 = "AVERAGE MPH:";
-const char *BT1A = "AVERAGE KPH:";
-const char *RT2 = "RECORD TIME:";
-const char *HH1 = "NEW RECORD TIME";
-const char *HH2 = "NEW HOT TIME";
-const char *NULLSTR5 = " ";
-const char *BT2 = "ELAPSED TIME:";
-const char *BT3 = "POSITION:";
 
 /* *----------------------------------------------------------------------------
  */
@@ -195,6 +116,7 @@ void BONUS_SANFRAN(void)
     // asm: 	CREATE	TRAFFIC_LIGHT,SPAWNER_C|COLORCYC_T
     // asm: 	FLOAT	-35,R0
     // asm: 	STF	R0,@INFIN_CORRECT
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS_SANFRAN", 0, 0);
     UNIMPL();
 }
@@ -204,6 +126,7 @@ void BONUS_BEVHILLS(void)
     // asm: 	LDI	@_MODE,R0
     // asm: 	OR	MWATER,R0
     // asm 00003966: 	STI	R0,@_MODE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS_BEVHILLS", 0, 0);
     UNIMPL();
 }
@@ -215,6 +138,15 @@ void BONUSNULL(void)
     UNIMPL();
 }
 
+/* asm: BONUS_TABLE	.word	BONUS1,BONUS2,BONUS3,BONUS4,BONUS5 */
+/* asm: 	.word	BONUS6,BONUS7,BONUS8,BONUS9,BONUS10 */
+/* asm: 	.word	BONUS11,BONUS12,BONUS13,BONUS14 */
+void (*BONUS_TABLE[])(void) = {
+    BONUS1, BONUS2, BONUS3, BONUS4, BONUS5,
+    BONUS6, BONUS7, BONUS8, BONUS9, BONUS10,
+    BONUS11, BONUS12, BONUS13, BONUS14,
+};
+
 /* *----------------------------------------------------------------------------
 *ROUTINES FOR OVERLAY.ASM
 *
@@ -224,6 +156,7 @@ void BONUS14(void)
 {
     // asm: 	LDI	14,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS14", 0, 0);
     UNIMPL();
 }
@@ -233,6 +166,7 @@ void BONUS13(void)
     // asm: LDI	L_LEG14_BEGIN+1,R0
     // asm: 	LDI	13,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS13", 0, 0);
     UNIMPL();
 }
@@ -242,6 +176,7 @@ void BONUS12(void)
     // asm 00003970: LDI	L_LEG13_BEGIN+1,R0
     // asm 00003970: 	LDI	12,R1
     // asm 00003971: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS12", 0, 0);
     UNIMPL();
 }
@@ -251,6 +186,7 @@ void BONUS11(void)
     // asm 00003973: LDI	L_LEG12_BEGIN+1,R0
     // asm 00003974: 	LDI	11,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS11", 0, 0);
     UNIMPL();
 }
@@ -260,6 +196,7 @@ void BONUS10(void)
     // asm 00003976: LDI	L_LEG11_BEGIN+1,R0
     // asm 00003977: 	LDI	10,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS10", 0, 0);
     UNIMPL();
 }
@@ -269,6 +206,7 @@ void BONUS9(void)
     // asm 00003979: LDI	L_LEG10_BEGIN+1,R0
     // asm 0000397A: 	LDI	9,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS9", 0, 0);
     UNIMPL();
 }
@@ -278,6 +216,7 @@ void BONUS8(void)
     // asm 0000397C: LDI	L_LEG9_BEGIN+1,R0
     // asm 0000397D: 	LDI	8,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS8", 0, 0);
     UNIMPL();
 }
@@ -287,6 +226,7 @@ void BONUS7(void)
     // asm 0000397F: LDI	L_LEG8_BEGIN+1,R0
     // asm 00003980: 	LDI	7,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS7", 0, 0);
     UNIMPL();
 }
@@ -296,6 +236,7 @@ void BONUS6(void)
     // asm 00003982: LDI	L_LEG7_BEGIN+1,R0
     // asm 00003983: 	LDI	6,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS6", 0, 0);
     UNIMPL();
 }
@@ -305,6 +246,7 @@ void BONUS5(void)
     // asm 00003985: LDI	L_LEG6_BEGIN+1,R0
     // asm 00003986: 	LDI	5,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS5", 0, 0);
     UNIMPL();
 }
@@ -314,6 +256,7 @@ void BONUS4(void)
     // asm 00003988: LDI	L_LEG5_BEGIN+1,R0
     // asm 00003989: 	LDI	4,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS4", 0, 0);
     UNIMPL();
 }
@@ -323,6 +266,7 @@ void BONUS3(void)
     // asm 0000398B: LDI	L_LEG4_BEGIN+1,R0
     // asm 0000398C: 	LDI	3,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS3", 0, 0);
     UNIMPL();
 }
@@ -332,6 +276,7 @@ void BONUS2(void)
     // asm 0000398E: LDI	L_LEG3_BEGIN+1,R0
     // asm 0000398F: 	LDI	2,R1
     // asm: 	BU	LK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS2", 0, 0);
     UNIMPL();
 }
@@ -503,6 +448,7 @@ DODIEXXX:
     // asm: 	CALL	OBJ_DELETE_HIGH_PRIORITY
 DODIE:
     // asm 00003A26: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_H2H_WINNER", 0, 0);
     UNIMPL();
 }
@@ -541,6 +487,12 @@ DELOBJX:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*
+ */
+/* asm: SAVED_COUNTDOWN	.bss	SAVED_COUNTDOWN,1 */
+int SAVED_COUNTDOWN;
+
 void BONUS_SCREEN(void)
 {
     // asm: 	LDI	@BGNDCOLA,R0
@@ -570,9 +522,13 @@ void BONUS_SCREEN(void)
     // asm:         LDP     @FASTSTKI		;GET PAGE OF STORED ADDRESS
     // asm 00003A60:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
     // asm: 	BR	COLD_ENTER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS_SCREEN", 0, 0);
     UNIMPL();
 }
+
+/* asm: SPEEDHIT	.bss	SPEEDHIT,1 */
+int SPEEDHIT;
 
 /* *
 *
@@ -960,6 +916,7 @@ FINFIN:
     // asm 00003BD1: 	STI	R0,@DID_TIMED_OUT
     // asm 00003BD3: 	CALL	INIT_GAMELEG
     // asm: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONSCRN2", 0, 0);
     UNIMPL();
 }
@@ -1044,6 +1001,7 @@ JAJD:
     // asm 00003C1A: 	LDI	-2,R0
     // asm 00003C1B: 	STI	R0,@_ATTR_MODE
     // asm 00003C1D: 	BU	SET_ATTR
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLINTON_SHOW", 0, 0);
     UNIMPL();
 }
@@ -1092,6 +1050,7 @@ void BLINK_FREEBE(void)
     // asm 00003C53: 	SLEEP	1
     // asm 00003C54: 	DBU	AR5,BFLP1
     // asm 00003C55: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BLINK_FREEBE", 0, 0);
     UNIMPL();
 }
@@ -1141,9 +1100,13 @@ void BACKUP_CAMERA(void)
     // asm 00003C79: 	SLEEP	1
     // asm: 	DBU	AR5,BACKLP
     // asm 00003C7A: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BACKUP_CAMERA", 0, 0);
     UNIMPL();
 }
+
+/* asm: DID_TIMED_OUT	.bss	DID_TIMED_OUT,1 */
+int DID_TIMED_OUT;
 
 /* *----------------------------------------------------------------------------
  */
@@ -1181,6 +1144,14 @@ void KILL_PLYR_SOUNDS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILL_PLYR_SOUNDS", 0, 0);
     UNIMPL();
 }
+
+const char *FRA1 = "FIRST PLACE";
+const char *FRA2 = "FREE RACE";
+#define CONGRATS 4
+/* asm: CONGRAT_SPEECH:	.word	GL_WOOLAUGH,GL_YEAH,GL_YES,GL_YOUDIDIT */
+int CONGRAT_SPEECH[] = {
+    GL_WOOLAUGH, GL_YEAH, GL_YES, GL_YOUDIDIT,
+};
 
 void FREE_RACE_ANNOUNCE(void)
 {
@@ -1220,9 +1191,19 @@ ISFREE:
     // asm: 	SLEEP	10
     // asm 00003CE2: 	DBU	AR5,FRAL1
     // asm 00003CE3: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FREE_RACE_ANNOUNCE", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*
+ */
+/* *
+*
+ */
+#define SHOWLEG_TIME (20+20+50)
 
 /* *
 *
@@ -1304,6 +1285,7 @@ SLLP1A:
     // asm: 	SLEEP	1
     // asm 00003D38: 	DBU	AR5,SLLP1A
     // asm 00003D3A: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOWLEG_PROC", 0, 0);
     UNIMPL();
 }
@@ -1388,9 +1370,49 @@ SLLP2A:
     // asm: 	SLEEP	1
     // asm 00003D8B: 	DBU	AR5,SLLP2A
     // asm 00003D8D: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOWNEXTLEG_PROC", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*PARAMETERS
+*	R4	INDEX
+*
+*
+ */
+/* asm: FLAG_POS_TABLE */
+/* asm: 	.word	 36,133	;GGpark */
+/* asm: 	.word	 39,147	;Sanfran */
+/* asm: 	.word	 40,156	;I101 */
+/* asm: 	.word	 43,166	;Redwds */
+/* asm: 	.word	 63,192	;BeverlyHils */
+/* asm: 	.word	 76,200	;LA freeway */
+/* asm: 	.word	 88,190	;Deathvalley */
+/* asm: 	.word	128,198	;Arizona */
+/* asm: 	.word	257,106	;Mount Rush */
+/* asm: 	.word	302,125	;Iowa */
+/* asm: 	.word	334,125	;Chicago */
+/* asm: 	.word	358,134	;Indiana */
+/* asm: 	.word	412,129	;Appalachia */
+/* asm: 	.word	434,140	;Washington */
+int FLAG_POS_TABLE[] = {
+    36, 133, // GGpark
+    39, 147, // Sanfran
+    40, 156, // I101
+    43, 166, // Redwds
+    63, 192, // BeverlyHils
+    76, 200, // LA freeway
+    88, 190, // Deathvalley
+    128, 198, // Arizona
+    257, 106, // Mount Rush
+    302, 125, // Iowa
+    334, 125, // Chicago
+    358, 134, // Indiana
+    412, 129, // Appalachia
+    434, 140, // Washington
+};
 
 /* *----------------------------------------------------------------------------
 *
@@ -1486,9 +1508,13 @@ ALLDN7:
     // asm 00003DD8: 	LDF	*+AR4(OVELY),R0
     // asm 00003DDA: 	STF	R0,*+AR4(OPOSY)
     // asm: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLACE_FLAG_PROC", 0, 0);
     UNIMPL();
 }
+
+const char *BT1 = "AVERAGE MPH:";
+const char *BT1A = "AVERAGE KPH:";
 
 void BONS_MAXMPH(void)
 {
@@ -1620,9 +1646,12 @@ KKL:
     // asm 00003E56: 	SLEEP	1
     // asm 00003E57: 	DBU	AR5,BML2
     // asm 00003E59: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_MAXMPH", 0, 0);
     UNIMPL();
 }
+
+const char *RT2 = "RECORD TIME:";
 
 void BONS_RECORDTIME(void)
 {
@@ -1682,9 +1711,13 @@ void BONS_RECORDTIME(void)
     // asm: 	STI	AR0,*+AR7(PDATA+12)
     // asm: 	STI	AR1,*+AR7(PDATA+13)
     // asm 00003E8D: 	BU	ENTER_HERE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_RECORDTIME", 0, 0);
     UNIMPL();
 }
+
+const char *HH1 = "NEW RECORD TIME";
+const char *HH2 = "NEW HOT TIME";
 
 void BONS_HOTTIME_REC(void)
 {
@@ -1692,6 +1725,7 @@ void BONS_HOTTIME_REC(void)
     // asm: 	SLEEP	5
     // asm: 	LDL	HH1,AR2
     // asm: 	BU	BLAHB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_HOTTIME_REC", 0, 0);
     UNIMPL();
 }
@@ -1766,6 +1800,7 @@ void BONS_HOTTIME(void)
     // asm 00003ED4: 	STI	R0,*+AR4(TEXT_TIKS)
     // asm 00003ED5: 	STI	R0,*+AR5(TEXT_TIKS)
     // asm: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_HOTTIME", 0, 0);
     UNIMPL();
 }
@@ -1792,6 +1827,9 @@ IBOIBO:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTTOG", 0, 0);
     UNIMPL();
 }
+
+const char *NULLSTR5 = " ";
+const char *BT2 = "ELAPSED TIME:";
 
 void BONS_ETIME(void)
 {
@@ -1837,9 +1875,12 @@ LREG3:
     // asm: 	CLRI	R0
     // asm: 	STI	R0,@STOPWATCH
     // asm 00003F0B: 	BU	ENTER_HERE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_ETIME", 0, 0);
     UNIMPL();
 }
+
+const char *BT3 = "POSITION:";
 
 void BONS_POSITION(void)
 {
@@ -1908,6 +1949,7 @@ void BONS_POSITION(void)
     // asm 00003F49: 	SLEEP	1
     // asm: 	DBU	AR6,BPL3
     // asm 00003F4A: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONS_POSITION", 0, 0);
     UNIMPL();
 }

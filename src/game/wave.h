@@ -10,4 +10,11 @@ extern int _ATTR_MODE;
 // asm: 	pbss	LOADED,1	;IS THE SYSTEM READY TO SLAVE OVER TO A NEW SCREENP
 extern int LOADED;
 
+
+
+
+
+
+
+
 #endif /* WAVE_H */

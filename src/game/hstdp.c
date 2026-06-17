@@ -12,8 +12,8 @@
 #include "sndtab.h"
 #include "pall.h"
 #include "sysid.h"
+#include "port.h"
 #include "hstdp.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/HSTDP.ASM
@@ -138,110 +138,6 @@ int PLATE_LETTERS[] = {
 #define CAMZ (PDATA+32)
 #define RACE_NUMBER (PDATA+33)
 #define GREY_PAL (PDATA+34)
-/* *----------------------------------------------------------------------------
-*	This routine is branched to from within a proccess
-*	It will stamp the letters on the plate then put the plate onto the wall
-*
- */
-#define PRESS_FRAMES 60 //120
-#define PLACE_FRAMES 40
-#define ROLLER_TRAVEL 12.7117 //2*PI = 1 revolution PI = 3.14
-#define ARM_FRAMES 10 //20
-#define ARM_START 0
-#define ARM_BOTTOM (ARM_START+240)
-#define ARM_TRAVEL (ARM_BOTTOM-ARM_START)
-#define STAMP_FRAMES 4
-#define STAMP_SHAKE 7
-#define ARMS2 0x8A
-/* *----------------------------------------------------------------------------
- */
-#define FRAME 0x85
-#define SCROLLB 0x86
-#define PRESS 0x87
-#define PRESSB 0x88
-#define ARMS 0x89
-#define PLATE 0x8B
-#define MARQLET 0x8C
-#define PLATE_ZOFF (ROLLER_ZOFF-140)
-/* asm: SCROLLBTAB	;	A    B	  C   D	  E   F	  G   H	  I   J	  K   L	  M   N	  O */
-/* asm: 	.word	1057,1010,960,911,855,803,753,696,648,598,546,494,426,367,307 */
-/* asm: 	.word	252,193,138,82,24,-35,-97,-161,-230,-292,-347,-401,-465,-517,-573 */
-/* asm: 	.word	-633,-697,-757,-820,-880,-945,-1007,-1063 */
-int SCROLLBTAB[] = {
-    1057, 1010, 960, 911, 855, 803, 753, 696, 648, 598, 546, 494, 426, 367, 307,
-    252, 193, 138, 82, 24, -35, -97, -161, -230, -292, -347, -401, -465, -517, -573,
-    -633, -697, -757, -820, -880, -945, -1007, -1063,
-};
-/* *----------------------------------------------------------------------------
-*ADJUST_ROLLERS	This routine places the rollers in a arc so that there
-*		priorities are correct.
-*IO = NONE
-*
- */
-#define ROLLER_GROUP 0x400
-/* *----------------------------------------------------------------------------
- */
-#define ROLLER_DIAM 111
-/* *----------------------------------------------------------------------------
- */
-#define FIRST_BOLT 0x30
-#define NUM_PLATES 9
-#define FIRST_PLATE 0x20
-/* *----------------------------------------------------------------------------
-*MAKE_NUMBERS
-*	R0	= INTEGER SCORE
-*	AR5	= PLACE
-*
-*
- */
-#define FIRST_NUMBER 0x10
-/* asm: LONGEST_TIME	.word	198000 */
-int LONGEST_TIME = 198000;
-/* *----------------------------------------------------------------------------
-*	PARAMETERS	AR0 = POINTER TO PLATE that owns this
-*		LETTER0-LETTER2 = THE three letters
-*		R1  = Place the player is in
- */
-#define LETTER_SIZEX 120
-#define LETTER_XOFF (-120)
-#define LETTER_YOFF (-12)
-/* *----------------------------------------------------------------------------
-*	PARAMETERS	AR2 = POINTER TO STRING
-*		R2  = Xpos FL
-*		R3  = Ypos FL
-*		R4  = Zpos FL
-*		R6  = ID
- */
-#define LETTER3D_SIZEX 80
-#define HS_ZOOM 40
-#define HS_STARTY 650
-/* ;HS_ENDY 	.set	-280
- */
-#define HS_ENDY (-210)
-#define HS_YDIFF ((HS_ENDY-HS_STARTY)/HS_ZOOM)
-#define HS_STARTZ (-4200)
-#define HS_ENDZ (-1960) //-800
-#define HS_ZDIFF ((HS_ENDZ-HS_STARTZ)/HS_ZOOM)
-/* *----------------------------------------------------------------------------
-*PROC
-*R4 = race number
- */
-/* asm: FLASH_PALS */
-/* asm: 	.word	plate_medp,plate_lightp,plate_lightp1,plate_lightp,-1 */
-int FLASH_PALS[] = {
-    plate_medp, plate_lightp, plate_lightp1, plate_lightp, -1,
-};
-/* asm: DELIST	.word	808Bh,0104h,3057h,0 */
-int DELIST[] = {
-    0x808B, 0x0104, 0x3057, 0,
-};
-#define LOGO_X (-250)
-#define LOGO_Y (-170)
-#define LOGO_Z (368*2)
-/* asm: RADIO_HS_SHADOW	.bss	RADIO_HS_SHADOW,1 */
-int RADIO_HS_SHADOW;
-/* asm: RADIO_HS_SWITCH	.bss	RADIO_HS_SWITCH,1 */
-int RADIO_HS_SWITCH;
 
 /* *----------------------------------------------------------------------------
  */
@@ -384,6 +280,7 @@ MSLPX:
     // ;	BR	PEDALWT
     // asm 00003233: 	LDI	1,R0
     // asm 00003234: 	STI	R0,@PEDHIT		;not touched
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_INITIALS", 0, 0);
     UNIMPL();
 }
@@ -418,6 +315,7 @@ DE1:
     // asm 000032AE: 	OR	*+AR7(INITI0),R2
     // asm 000032AF: 	SETADJ	ADJ_INITIALS
     // asm 000032B1: 	BR	PRESS_CODE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PEDALWT", 0, 0);
     UNIMPL();
 }
@@ -440,6 +338,7 @@ void ENTERTEXT(void)
 ET0:
     // asm 000032BE: 	SLEEP	1
     // asm 000032C0: 	BR	ET0			;THIS PROC GETS KILLED BY PRESS_CODE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTERTEXT", 0, 0);
     UNIMPL();
 }
@@ -617,6 +516,22 @@ CTEX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CALC_TOTAL_ELAPSED", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*	This routine is branched to from within a proccess
+*	It will stamp the letters on the plate then put the plate onto the wall
+*
+ */
+#define PRESS_FRAMES 60 //120
+#define PLACE_FRAMES 40
+#define ROLLER_TRAVEL 12.7117 //2*PI = 1 revolution PI = 3.14
+#define ARM_FRAMES 10 //20
+#define ARM_START 0
+#define ARM_BOTTOM (ARM_START+240)
+#define ARM_TRAVEL (ARM_BOTTOM-ARM_START)
+#define STAMP_FRAMES 4
+#define STAMP_SHAKE 7
+#define ARMS2 0x8A
 
 void PRESS_CODE_ENTRY(void)
 {
@@ -1267,9 +1182,21 @@ PRESSCODEX2:
     // asm 00003557: 	OR	MBONUS,R0
     // asm 00003558: 	STI	R0,@_MODE
     // asm 00003559: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRESS_CODE_ENTRY", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+#define FRAME 0x85
+#define SCROLLB 0x86
+#define PRESS 0x87
+#define PRESSB 0x88
+#define ARMS 0x89
+#define PLATE 0x8B
+#define MARQLET 0x8C
+#define PLATE_ZOFF (ROLLER_ZOFF-140)
 
 void INIT_PRESS_OBJECTS(void)
 {
@@ -1495,6 +1422,16 @@ MPB:
     UNIMPL();
 }
 
+/* asm: SCROLLBTAB	;	A    B	  C   D	  E   F	  G   H	  I   J	  K   L	  M   N	  O */
+/* asm: 	.word	1057,1010,960,911,855,803,753,696,648,598,546,494,426,367,307 */
+/* asm: 	.word	252,193,138,82,24,-35,-97,-161,-230,-292,-347,-401,-465,-517,-573 */
+/* asm: 	.word	-633,-697,-757,-820,-880,-945,-1007,-1063 */
+int SCROLLBTAB[] = {
+    1057, 1010, 960, 911, 855, 803, 753, 696, 648, 598, 546, 494, 426, 367, 307,
+    252, 193, 138, 82, 24, -35, -97, -161, -230, -292, -347, -401, -465, -517, -573,
+    -633, -697, -757, -820, -880, -945, -1007, -1063,
+};
+
 void POS_SCROLLB(void)
 {
     // asm 0000361B: 	LDI	*+AR7(SCROLLBOBJ),AR2
@@ -1519,6 +1456,14 @@ POSBX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "POS_SCROLLB", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*ADJUST_ROLLERS	This routine places the rollers in a arc so that there
+*		priorities are correct.
+*IO = NONE
+*
+ */
+#define ROLLER_GROUP 0x400
 
 void ADJUST_ROLLERS(void)
 {
@@ -1574,6 +1519,10 @@ FRL:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_ROLLER", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+#define ROLLER_DIAM 111
 
 void SPIN_ROLLERS(void)
 {
@@ -1663,6 +1612,10 @@ void MAKE_PLAYERS_PLATE(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+#define FIRST_BOLT 0x30
+
 void INI_PLAYERS_BOLTS(void)
 {
     // asm 00003695: 	LDI	*+AR7(PLACE),R1	;Calculate the first bolts object number
@@ -1706,6 +1659,7 @@ void FLY_BOLT(void)
     // asm 000036AF: 	SLEEP	1
     // asm 000036B1: 	DBU	AR5,FBL
     // asm 000036B2: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLY_BOLT", 0, 0);
     UNIMPL();
 }
@@ -1735,6 +1689,7 @@ O_FOUND:
 OH_NO:
     // asm 000036C5: 	SETC
     // asm 000036C6: 	BR	O_FOUND		;OBJECT NOT found
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FIND", 0, 0);
     UNIMPL();
 }
@@ -1793,6 +1748,7 @@ OH_GNO:
     // asm 000036EC: 	SETC
     // asm 000036ED: 	LDI	0,AR0
     // asm 000036EE: 	BR	O_GFOUND		;OBJECT NOT found
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_GFIND", 0, 0);
     UNIMPL();
 }
@@ -1947,6 +1903,9 @@ void FIND_ALL_PLATES(void)
     UNIMPL();
 }
 
+#define NUM_PLATES 9
+#define FIRST_PLATE 0x20
+
 void FIND_PLATES(void)
 {
     // asm 0000373C: 	PUSH	AR5
@@ -1987,9 +1946,19 @@ MP2:
     // asm 0000375C: 	LDI	@SCORE,R0
     // asm 0000375D: 	CALL	MAKE_TIME
     // asm 0000375E: 	BR	MP2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_PLATES", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*MAKE_NUMBERS
+*	R0	= INTEGER SCORE
+*	AR5	= PLACE
+*
+*
+ */
+#define FIRST_NUMBER 0x10
 
 void MAKE_NUMBERS(void)
 {
@@ -2038,6 +2007,9 @@ void MAKE_NUMBERS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_NUMBERS", 0, 0);
     UNIMPL();
 }
+
+/* asm: LONGEST_TIME	.word	198000 */
+int LONGEST_TIME = 198000;
 
 void MAKE_TIME(void)
 {
@@ -2161,6 +2133,15 @@ FORMNX:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*	PARAMETERS	AR0 = POINTER TO PLATE that owns this
+*		LETTER0-LETTER2 = THE three letters
+*		R1  = Place the player is in
+ */
+#define LETTER_SIZEX 120
+#define LETTER_XOFF (-120)
+#define LETTER_YOFF (-12)
+
 void CREATE_LETTERS(void)
 {
     // asm 000037E6: 	LDI	AR7,AR3
@@ -2239,6 +2220,15 @@ CRL1:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*	PARAMETERS	AR2 = POINTER TO STRING
+*		R2  = Xpos FL
+*		R3  = Ypos FL
+*		R4  = Zpos FL
+*		R6  = ID
+ */
+#define LETTER3D_SIZEX 80
+
 void PRINT3D(void)
 {
     // asm 00003824: 	LDI	AR2,AR1			;I use AR2 as input for continuity with the 2d print
@@ -2306,6 +2296,16 @@ PR3DX:
     UNIMPL();
 }
 
+#define HS_ZOOM 40
+#define HS_STARTY 650
+/* ;HS_ENDY 	.set	-280
+ */
+#define HS_ENDY (-210)
+#define HS_YDIFF ((HS_ENDY-HS_STARTY)/HS_ZOOM)
+#define HS_STARTZ (-4200)
+#define HS_ENDZ (-1960) //-800
+#define HS_ZDIFF ((HS_ENDZ-HS_STARTZ)/HS_ZOOM)
+
 void DISPLAY_HIGH_SCORES(void)
 {
     // asm 00003859: 	LDL	scroll_white,AR2
@@ -2371,6 +2371,7 @@ DHSNEXT:
     // asm 00003886: 	CALL	PRC_KILLALL
     // asm 00003887: 	CALL	OBJ_INIT	;initialize object system (ERASE OLD OBJECTS)
     // asm 00003888: 	BR	DHSLOOP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_HIGH_SCORES", 0, 0);
     UNIMPL();
 }
@@ -2439,9 +2440,20 @@ DHS0:
     // asm 000038C8: 	LDI	*+AR7(FLASH_PROC),AR2
     // asm 000038C9: 	CALL	PRC_KILL
     // asm 000038CA: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_HS", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*PROC
+*R4 = race number
+ */
+/* asm: FLASH_PALS */
+/* asm: 	.word	plate_medp,plate_lightp,plate_lightp1,plate_lightp,-1 */
+int FLASH_PALS[] = {
+    plate_medp, plate_lightp, plate_lightp1, plate_lightp, -1,
+};
 
 void FLASH_LETTERS_PROC(void)
 {
@@ -2471,6 +2483,7 @@ FLASH_LOOP:
 FLASH_LOCK:
     // asm 000038E2: 	SLEEP	1
     // asm 000038E4: 	BR	FLASH_LOCK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_LETTERS_PROC", 0, 0);
     UNIMPL();
 }
@@ -2496,6 +2509,11 @@ FLASHX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_LETTERS", 0, 0);
     UNIMPL();
 }
+
+/* asm: DELIST	.word	808Bh,0104h,3057h,0 */
+int DELIST[] = {
+    0x808B, 0x0104, 0x3057, 0,
+};
 
 void DELETE_PRESS_OBJECTS(void)
 {
@@ -2595,6 +2613,7 @@ void DISPLAY_HSTEXT(void)
 {
     // asm 0000392E: 	FLOAT	-910,R3
     // asm 0000392F: 	BR	RACE_TEXT
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_HSTEXT", 0, 0);
     UNIMPL();
 }
@@ -2614,6 +2633,10 @@ RACE_TEXT:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_HSTEXT", 0, 0);
     UNIMPL();
 }
+
+#define LOGO_X (-250)
+#define LOGO_Y (-170)
+#define LOGO_Z (368*2)
 
 void INIT_LOGO(void)
 {
@@ -2639,6 +2662,11 @@ LOGOX:
     UNIMPL();
 }
 
+/* asm: RADIO_HS_SHADOW	.bss	RADIO_HS_SHADOW,1 */
+int RADIO_HS_SHADOW;
+/* asm: RADIO_HS_SWITCH	.bss	RADIO_HS_SWITCH,1 */
+int RADIO_HS_SWITCH;
+
 void RBMATTR_CHECK(void)
 {
     // asm 0000394C: 	LDI	@_MODE,R0
@@ -2649,6 +2677,7 @@ void RBMATTR_CHECK(void)
     // asm 00003951: 	STI	R0,@RADIO_HS_SWITCH
 RBMCX:
     // asm 00003952: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RBMATTR_CHECK", 0, 0);
     UNIMPL();
 }

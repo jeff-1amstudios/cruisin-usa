@@ -26,4 +26,11 @@ extern int LASTSEC;
 // asm: 	.bss	TACHOMETER_PAL,32
 extern int TACHOMETER_PAL[32];
 
+
+
+
+
+
+
+
 #endif /* HUD_H */

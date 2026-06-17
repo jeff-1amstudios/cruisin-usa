@@ -9,8 +9,8 @@
 #include "globals.h"
 #include "pall.h"
 #include "objects.h"
+#include "port.h"
 #include "smoke.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/SMOKE.ASM
@@ -56,24 +56,6 @@ int SMOKE2ANI[] = {
 #define NUM_SMOKES PDATA
 #define SMOKE_PAL (PDATA+1)
 #define SMOKE_OBJS (PDATA+2)
-/* asm: SPARKANI */
-/* asm: 	.word	x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,-1 */
-int SPARKANI[] = {
-    x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, -1,
-};
-/* *----------------------------------------------------------------------------
-* INIT_SPARK
-*INPUT	AR4 = object of parent
-*Creates and maintains several spark animations
- */
-#define COLL_X PDATA
-#define COLL_Y (PDATA+1)
-#define COLL_Z (PDATA+2)
-#define FRAME_ON (PDATA+3)
-#define CAR_OBJ (PDATA+4)
-#define CAR_BLOCK (PDATA+5)
-#define NUM_SPARKS (PDATA+6)
-#define SPARK_OBJS (PDATA+7)
 
 void SMOKE_PROC(void)
 {
@@ -168,6 +150,7 @@ SMOKEX:
     // asm 00008508: 	STI	R0,@TIRE_SMOKE_COUNT
 SMOKE_DIE:
     // asm 00008509: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_PROC", 0, 0);
     UNIMPL();
 }
@@ -235,6 +218,7 @@ void GET_OTHER_REAR(void)
 {
     // asm 0000853A: 	LDI	*AR2,R0
     // asm 0000853B: 	BR	FBLOOP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_OTHER_REAR", 0, 0);
     UNIMPL();
 }
@@ -359,6 +343,25 @@ SORT_SMOKEX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SORT_SMOKE", 0, 0);
     UNIMPL();
 }
+
+/* asm: SPARKANI */
+/* asm: 	.word	x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,-1 */
+int SPARKANI[] = {
+    x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, -1,
+};
+/* *----------------------------------------------------------------------------
+* INIT_SPARK
+*INPUT	AR4 = object of parent
+*Creates and maintains several spark animations
+ */
+#define COLL_X PDATA
+#define COLL_Y (PDATA+1)
+#define COLL_Z (PDATA+2)
+#define FRAME_ON (PDATA+3)
+#define CAR_OBJ (PDATA+4)
+#define CAR_BLOCK (PDATA+5)
+#define NUM_SPARKS (PDATA+6)
+#define SPARK_OBJS (PDATA+7)
 
 void INIT_SPARK(void)
 {
@@ -605,6 +608,7 @@ SPARK_ANIX:
     // asm 0000866C: 	CALL	OBJ_DELETE
 NO_OBJ:
     // asm 0000866D: 	BR	NEXT_SPARK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SPARK_PROC", 0, 0);
     UNIMPL();
 }

@@ -18,4 +18,11 @@ extern int TUNE_IDX;
 // asm: 	.bss	DO_NOT_REENABLE_INT,1
 extern int DO_NOT_REENABLE_INT;
 
+
+
+
+
+
+
+
 #endif /* SND_H */

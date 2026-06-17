@@ -56,4 +56,11 @@ extern int SECRADY;
 // asm: 	.bss	SINGLE_SECTION_TEMPPTR,1
 extern int SINGLE_SECTION_TEMPPTR;
 
+
+
+
+
+
+
+
 #endif /* BACKGRND_H */

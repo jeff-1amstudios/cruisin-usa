@@ -6,4 +6,11 @@
 // asm: 	fbss	BASICS_RAM,10
 extern int BASICS_RAM[10];
 
+
+
+
+
+
+
+
 #endif /* MEMTEST_H */

@@ -30,4 +30,11 @@ extern int CT_TURNTOSEL;
 // asm: 	.bss	TRANS_HEAD,1
 extern int TRANS_HEAD;
 
+
+
+
+
+
+
+
 #endif /* TRANS_H */

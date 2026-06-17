@@ -402,7 +402,7 @@
 #define THANKS_TABLEI 0x0000A2D6
 #define theheads_PALETTES 0x0000A196
 #define thetrains_PALETTES 0x0000A174
-#define time 0x00C2FC08
+#define time_ROM 0x00C2FC08
 #define toxic 0x00C3B641
 #define trm1 0x00C2EBEC
 #define trm2 0x00C2EBFC

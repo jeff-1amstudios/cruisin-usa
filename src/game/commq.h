@@ -58,4 +58,11 @@ extern int OM_DIAGVALUE;
 // asm: 	fbss	DIAGVALUE,1
 extern int DIAGVALUE;
 
+
+
+
+
+
+
+
 #endif /* COMMQ_H */

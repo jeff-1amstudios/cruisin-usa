@@ -15,8 +15,7 @@
 #include "delta.h"
 #include "racer.h"
 #include "comm.h"
-#include "racer_defs.h"
-#include "discovered_labels.h"
+#include "port.h"
 
 /*
  * Source module: asm/RACER.ASM
@@ -84,67 +83,6 @@ int OM_TRACK_HI;
  */
 /* asm: GMAX	.word	100000 */
 int GMAX = 100000;
-/* asm: DIFFTABI	.word	DIFFTAB */
-#define DIFFTABI DIFFTAB
-/* asm: DIFFTAB */
-/* asm: 	.float	0 		;GG */
-/* asm: 	.float	-0.03 		;SF */
-/* asm: 	.float	-0.02 		;101 */
-/* asm: 	.float	-0.03 		;REDWD */
-/* asm: 	.float	-0.03 		;BEVH */
-/* asm: 	.float	0 		;LA */
-/* asm: 	.float	-0.03 		;DV */
-/* asm: 	.float	-0.01 		;AZ */
-/* asm: 	.float	-0.02 		;GCAN */
-/* asm: 	.float	-0.03 		;IOWA */
-/* asm: 	.float	-0.03 		;CHI */
-/* asm: 	.float	-0.02 		;IND */
-/* asm: 	.float	-0.02 		;APP */
-/* asm: 	.float	0 		;DC */
-int DIFFTAB[] = {
-    0, // GG
-    -0.03, // SF
-    -0.02, // 101
-    -0.03, // REDWD
-    -0.03, // BEVH
-    0, // LA
-    -0.03, // DV
-    -0.01, // AZ
-    -0.02, // GCAN
-    -0.03, // IOWA
-    -0.03, // CHI
-    -0.02, // IND
-    -0.02, // APP
-    0, // DC
-};
-/* *
-*TRANSFER ACTIVE RACER
-*
- */
-/* asm: ROADOBSTAB	.BSS	ROADOBSTAB,50 */
-int ROADOBSTAB[50];
-/* asm: PLYRCLOSE	.BSS	PLYRCLOSE,1 */
-int PLYRCLOSE;
-/* *----------------------------------------------------------------------------
- */
-/* asm: WACKER	.word	3D20AH */
-int WACKER = 0x3D20A;
-/* asm: LAKEL	.word	3EF0CH */
-int LAKEL = 0x3EF0C;
-/* *----------------------------------------------------------------------------
-*CHECK CAR OBSTACLE
-*
-*PARAMETERS
-*	AR2	OBSTACLE CAR
-*	AR4	DRONE CAR
-*	AR5	DRONE CAR BLOCK
-*	R0	TABLE CODE 1000= PLAYER, 2000=DRONE
-*RETURNS
-*	R0	CLOSING TIME (800H=OUT OF RANGE)
-*
- */
-/* asm: CARTMP1	.BSS	CARTMP1,1 */
-int CARTMP1;
 
 void DIFF_CHANGE(void)
 {
@@ -210,6 +148,40 @@ GD1:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDIFF", 0, 0);
     UNIMPL();
 }
+
+/* asm: DIFFTABI	.word	DIFFTAB */
+#define DIFFTABI DIFFTAB
+/* asm: DIFFTAB */
+/* asm: 	.float	0 		;GG */
+/* asm: 	.float	-0.03 		;SF */
+/* asm: 	.float	-0.02 		;101 */
+/* asm: 	.float	-0.03 		;REDWD */
+/* asm: 	.float	-0.03 		;BEVH */
+/* asm: 	.float	0 		;LA */
+/* asm: 	.float	-0.03 		;DV */
+/* asm: 	.float	-0.01 		;AZ */
+/* asm: 	.float	-0.02 		;GCAN */
+/* asm: 	.float	-0.03 		;IOWA */
+/* asm: 	.float	-0.03 		;CHI */
+/* asm: 	.float	-0.02 		;IND */
+/* asm: 	.float	-0.02 		;APP */
+/* asm: 	.float	0 		;DC */
+float DIFFTAB[] = {
+    0.0f, // GG
+    -0.03f, // SF
+    -0.02f, // 101
+    -0.03f, // REDWD
+    -0.03f, // BEVH
+    0.0f, // LA
+    -0.03f, // DV
+    -0.01f, // AZ
+    -0.02f, // GCAN
+    -0.03f, // IOWA
+    -0.03f, // CHI
+    -0.02f, // IND
+    -0.02f, // APP
+    0.0f, // DC
+};
 
 /* *----------------------------------------------------------------------------
 *
@@ -520,6 +492,7 @@ RACER_SLP:
     // *
     // *CHECK RACE FINISH
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RACER_DRONE", 0, 0);
     UNIMPL();
 }
@@ -584,6 +557,7 @@ RDL:
     // *CHECK PLAYER COLLISION
     // *AR4=DRONE CAR
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RACE_FIN", 0, 0);
     UNIMPL();
 }
@@ -713,6 +687,7 @@ REENTER:
     // *
     // *CHECK TRANSFER TO OTHER MACHINE ON LINK
     // *LO STEALTH CASE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HI_STEALTH", 0, 0);
     UNIMPL();
 }
@@ -806,6 +781,7 @@ void SEND_RACER_XSFER(void)
     // *AR7=PROCESS
     // *
     // *NOTE SHOULD ADD IN FUTURE: CAR_SPIN,CARSPRAD,CARGEAR,CARRPM,CARSKID
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RACER_XSFER", 0, 0);
     UNIMPL();
 }
@@ -865,6 +841,11 @@ LINKRECX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_XSFER", 0, 0);
     UNIMPL();
 }
+
+/* *
+*TRANSFER ACTIVE RACER
+*
+ */
 
 void ACTIVE_XSFER(void)
 {
@@ -1201,6 +1182,9 @@ void CKAHEAD(void)
     UNIMPL();
 }
 
+/* asm: ROADOBSTAB	.BSS	ROADOBSTAB,50 */
+int ROADOBSTAB[50];
+
 /* *----------------------------------------------------------------------------
 *SCAN CAR LIST FOR OBSTACLES TO AVOID
 *BUILD OBSTACLE ARRAY
@@ -1236,6 +1220,9 @@ OBSCX:
     UNIMPL();
 }
 
+/* asm: PLYRCLOSE	.BSS	PLYRCLOSE,1 */
+int PLYRCLOSE;
+
 void PLSCAN(void)
 {
     // asm 000053BF: 	LDPI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
@@ -1247,6 +1234,13 @@ void PLSCAN(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLSCAN", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: WACKER	.word	3D20AH */
+int WACKER = 0x3D20A;
+/* asm: LAKEL	.word	3EF0CH */
+int LAKEL = 0x3EF0C;
 
 /* *
 *OBSTACLE TABLE INIT
@@ -1474,6 +1468,21 @@ FAIL:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETRDOFFSET", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*CHECK CAR OBSTACLE
+*
+*PARAMETERS
+*	AR2	OBSTACLE CAR
+*	AR4	DRONE CAR
+*	AR5	DRONE CAR BLOCK
+*	R0	TABLE CODE 1000= PLAYER, 2000=DRONE
+*RETURNS
+*	R0	CLOSING TIME (800H=OUT OF RANGE)
+*
+ */
+/* asm: CARTMP1	.BSS	CARTMP1,1 */
+int CARTMP1;
 
 void CARCHEK(void)
 {

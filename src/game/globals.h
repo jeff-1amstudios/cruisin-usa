@@ -97,10 +97,6 @@ extern int SINGLE_SECTION_TEMPPTR;
 // asm:  .globl BSSSTART
 extern int BSSSTART;
 
-// bonus.asm
-// asm:  .globl WAS_HEAD2HEAD_ON
-extern int WAS_HEAD2HEAD_ON;
-
 // asm:  .globl ETIME
 extern int ETIME;
 
@@ -111,7 +107,7 @@ extern int DO_FOLDFLAG;
 extern int DID_TIMED_OUT;
 
 // asm:  .globl FULLSETUP_TABLEI,BONUS_POSTLAUNCHI
-#define FULLSETUP_TABLEI FULLSETUP_TABLE
+extern int FULLSETUP_TABLEI;
 
 #define BONUS_POSTLAUNCHI BONUS_POSTLAUNCH
 
@@ -503,9 +499,6 @@ extern int MOVEIN_OFFSET;
 // asm:  .globl POSITION
 extern int POSITION;
 
-// asm:  .globl POS_TABLEI
-#define POS_TABLEI POS_TABLE
-
 // asm:  .globl _countdown,SCORE,_MPH
 extern int _countdown;
 
@@ -671,6 +664,12 @@ extern int ROAD_DEBRIS;
 // asm:  .globl ROADKILL_SOUND_TIMER
 extern int ROADKILL_SOUND_TIMER;
 
+// asm:  .globl DIV_F,DIV_F30
+#define DIV_F DIV_F30
+
+// asm:  .globl DIV_I,DIV_I30
+#define DIV_I DIV_I30
+
 #define FLYTRAINPI FLYTRAINP
 
 // asm:  .globl FREEZE_IT
@@ -704,11 +703,10 @@ extern int EPALRR[];
 
 extern int EPALRL[];
 
-extern int DOORLIST;
+// asm:  .globl DOORLISTI,DOORLIST
+extern int DOORLISTI;
 
-// tracksel.asm
-// asm:  .globl HIDDEN_ON
-extern int HIDDEN_ON;
+extern int DOORLIST;
 
 // util.asm
 // asm:  .globl RAND,CRTCTLRAM,ACTIVE_SCREEN
@@ -861,6 +859,10 @@ void CHOPPER(void);
 // asm:  .globl GET_CLOSEST_TRAK
 void GET_CLOSEST_TRAK(void);
 
+// cmos.asm
+// asm:  .globl RESET_DAILY_CMOS,HSTDEC
+void HSTDEC(void);
+
 // asm:  .globl _wr_cw,_rd_cw
 void _wr_cw(void);
 
@@ -884,6 +886,9 @@ void _makbox(void);
 // asm:  .globl COLSCC
 void COLSCC(void);
 
+// asm:  .globl COLSCAN,COLSCPRC
+void COLSCAN(void);
+
 // asm:  .globl BOXSCAN
 void BOXSCAN(void);
 
@@ -900,6 +905,8 @@ void COLCHK(void);
 void ROADSCAN(void);
 
 void DRONESND(void);
+
+void DRONESND1(void);
 
 // asm:  .globl COLSGCK
 void COLSGCK(void);
@@ -1027,9 +1034,6 @@ void FEED_WATCHDOG(void);
 
 // asm:  .globl INT0   ;DISPLAY INT
 void INT0(void);
-
-// asm:  .globl DIAG_RETURN
-void DIAG_RETURN(void);
 
 // asm:  .globl COLD_ENTER
 void COLD_ENTER(void);
@@ -1546,11 +1550,9 @@ void COW_SPAWNER_PROC(void);
 // asm:  .globl SQRT
 void SQRT(void);
 
-// asm:  .globl DIV_F,DIV_F30
-void DIV_F(void);
+void DIV_F30(void);
 
-// asm:  .globl DIV_I,DIV_I30
-void DIV_I(void);
+void DIV_I30(void);
 
 // asm:  .globl DIV_U30
 void DIV_U30(void);
@@ -1692,9 +1694,6 @@ void DROPTHETURN(void);
 void DROPTHEWHEEL(void);
 
 void DROPTHEOTHER(void);
-
-// asm:  .globl DOORLISTI,DOORLIST
-void DOORLISTI(void);
 
 // asm:  .globl DOOR_OPENING
 void DOOR_OPENING(void);

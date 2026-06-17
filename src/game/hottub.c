@@ -12,8 +12,8 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
+#include "port.h"
 #include "hottub.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/HOTTUB.ASM
@@ -44,69 +44,6 @@ void BABE_WAVEFLAG(void);
 const char *BABA1 = "THE PRESIDENT OF";
 /* asm: BABA2	SPTR	"THE UNITED STATES" */
 const char *BABA2 = "THE UNITED STATES";
-/* asm: ANI_HOTTUB	.word	htub,htub1,htub2,htub3,htub4,htub5,-1 */
-int ANI_HOTTUB[] = {
-    htub, htub1, htub2, htub3, htub4, htub5, -1,
-};
-/* asm: HILLANI	.word	hilly1,hilly2,hilly3,hilly4,hilly5,hilly6,-1 */
-int HILLANI[] = {
-    hilly1, hilly2, hilly3, hilly4, hilly5, hilly6, -1,
-};
-/* asm: GIRLANI	.word	girl1,girl2,girl3,girl4,girl5,girl6,-1 */
-int GIRLANI[] = {
-    girl1, girl2, girl3, girl4, girl5, girl6, -1,
-};
-/* asm: ANI_RADAR	.word	rad1,rad2,rad3,rad4,rad5,rad6,rad7,rad8,rad9,-1 */
-int ANI_RADAR[] = {
-    rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9, -1,
-};
-/* asm: ANI_STAG	.word	stagent1,stagent2,stagent3,5,stagent2,-1 */
-int ANI_STAG[] = {
-    stagent1, stagent2, stagent3, 5, stagent2, -1,
-};
-/* asm: WATCHOBJ	.bss	WATCHOBJ,1 */
-int WATCHOBJ;
-/* asm: PC1	SPTR	"CELEBRITY IMPERSONATION" */
-const char *PC1 = "CELEBRITY IMPERSONATION";
-/* asm: PC2	SPTR	"POLITICAL CARTOON" */
-const char *PC2 = "POLITICAL CARTOON";
-#define BABE_ASTRT PDATA
-/* asm: BABE_TROPHY_SCRIPT */
-/* asm: 	.word	here1 */
-/* asm: 	.word	here2 */
-/* asm: 	.word	here3 */
-/* asm: 	.word	here4 */
-/* asm: 	.word	here5 */
-/* asm: 	.word	here6 */
-/* asm: 	.word	-1 */
-int BABE_TROPHY_SCRIPT[] = {
-    here1,
-    here2,
-    here3,
-    here4,
-    here5,
-    here6,
-    -1,
-};
-/* asm: BABE_FLAG_SCRIPT */
-/* asm: 	.word	flag1 */
-/* asm: 	.word	flag2 */
-/* asm: 	.word	flag3 */
-/* asm: 	.word	flag4 */
-/* asm: 	.word	flag5 */
-/* asm: 	.word	flag6 */
-/* asm: 	.word	flag7 */
-/* asm: 	.word	-1 */
-int BABE_FLAG_SCRIPT[] = {
-    flag1,
-    flag2,
-    flag3,
-    flag4,
-    flag5,
-    flag6,
-    flag7,
-    -1,
-};
 
 /* *----------------------------------------------------------------------------
 *
@@ -279,6 +216,7 @@ HOTTT:
     // ;	LDL	finale_PALETTES,AR2
     // ;	CALL	dealloc_section
     // asm 00008A4B: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HOTTUB_SCENE", 0, 0);
     UNIMPL();
 }
@@ -323,6 +261,7 @@ NDOO:
     // asm 00008A6B: 	CALL	AMBIENCE_SOUND
     // asm 00008A6C: 	SLEEP	1
     // asm 00008A6E: 	BU	HOTTUB_WATERVOL
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HOTTUB_WATERVOL", 0, 0);
     UNIMPL();
 }
@@ -354,6 +293,7 @@ void PREZSPEAK(void)
     // asm 00008A97: 	SLEEP	40
     // asm 00008A99: 	SOND1	CLIN7	;Hey Doggie
     // asm 00008A9B: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PREZSPEAK", 0, 0);
     UNIMPL();
 }
@@ -404,6 +344,27 @@ ODCX:
     UNIMPL();
 }
 
+/* asm: ANI_HOTTUB	.word	htub,htub1,htub2,htub3,htub4,htub5,-1 */
+int ANI_HOTTUB[] = {
+    htub, htub1, htub2, htub3, htub4, htub5, -1,
+};
+/* asm: HILLANI	.word	hilly1,hilly2,hilly3,hilly4,hilly5,hilly6,-1 */
+int HILLANI[] = {
+    hilly1, hilly2, hilly3, hilly4, hilly5, hilly6, -1,
+};
+/* asm: GIRLANI	.word	girl1,girl2,girl3,girl4,girl5,girl6,-1 */
+int GIRLANI[] = {
+    girl1, girl2, girl3, girl4, girl5, girl6, -1,
+};
+/* asm: ANI_RADAR	.word	rad1,rad2,rad3,rad4,rad5,rad6,rad7,rad8,rad9,-1 */
+int ANI_RADAR[] = {
+    rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9, -1,
+};
+/* asm: ANI_STAG	.word	stagent1,stagent2,stagent3,5,stagent2,-1 */
+int ANI_STAG[] = {
+    stagent1, stagent2, stagent3, 5, stagent2, -1,
+};
+
 void HT_HUNGH(void)
 {
     // asm 00008AE4: 	PUSH	AR6
@@ -439,6 +400,9 @@ void HT_RUT(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HT_RUT", 0, 0);
     UNIMPL();
 }
+
+/* asm: WATCHOBJ	.bss	WATCHOBJ,1 */
+int WATCHOBJ;
 
 void HT_HILLY(void)
 {
@@ -511,6 +475,7 @@ PPDD:
     // asm 00008B29: 	SUBI	@NFRAMES,R4
     // asm 00008B2A: 	BLE	PLAINANI_LP
     // asm 00008B2B: 	BU	PPDD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLAINANI_PROC", 0, 0);
     UNIMPL();
 }
@@ -539,9 +504,15 @@ PPDDA:
     // asm 00008B3D: 	SUBI	@NFRAMES,R4
     // asm 00008B3E: 	BLE	AGENTANI_LP
     // asm 00008B3F: 	BU	PPDDA
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AGENTANI_PROC", 0, 0);
     UNIMPL();
 }
+
+/* asm: PC1	SPTR	"CELEBRITY IMPERSONATION" */
+const char *PC1 = "CELEBRITY IMPERSONATION";
+/* asm: PC2	SPTR	"POLITICAL CARTOON" */
+const char *PC2 = "POLITICAL CARTOON";
 
 /* *----------------------------------------------------------------------------
  */
@@ -555,6 +526,7 @@ void POLITICAL_CARTOON_NOTICE(void)
     // asm 00008B48: 	LDI	20,RC
     // asm 00008B49: 	CALL	POLTXT
     // asm 00008B4A: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "POLITICAL_CARTOON_NOTICE", 0, 0);
     UNIMPL();
 }
@@ -574,6 +546,8 @@ void POLTXT(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "POLTXT", 0, 0);
     UNIMPL();
 }
+
+#define BABE_ASTRT PDATA
 
 /* *----------------------------------------------------------------------------
  */
@@ -666,6 +640,7 @@ NODA:
     // asm 00008BAA: 	RETP
     // *
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_TROPHY", 0, 0);
     UNIMPL();
 }
@@ -692,6 +667,7 @@ void BABE_IBO(void)
     // asm 00008BC1: 	CALL	SET_TRACK_VOL
     // asm 00008BC2: 	SOND1	MAPTUNE
     // asm 00008BC4: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_IBO", 0, 0);
     UNIMPL();
 }
@@ -709,9 +685,47 @@ void BABE_ANI(void)
     // asm: BX	LDI	*+AR7(BABE_ASTRT),AR6
     // asm: 	BU	BABE_ANIKK
     // asm: 	END_LONGROUT
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_ANI", 0, 0);
     UNIMPL();
 }
+
+/* asm: BABE_TROPHY_SCRIPT */
+/* asm: 	.word	here1 */
+/* asm: 	.word	here2 */
+/* asm: 	.word	here3 */
+/* asm: 	.word	here4 */
+/* asm: 	.word	here5 */
+/* asm: 	.word	here6 */
+/* asm: 	.word	-1 */
+int BABE_TROPHY_SCRIPT[] = {
+    here1,
+    here2,
+    here3,
+    here4,
+    here5,
+    here6,
+    -1,
+};
+/* asm: BABE_FLAG_SCRIPT */
+/* asm: 	.word	flag1 */
+/* asm: 	.word	flag2 */
+/* asm: 	.word	flag3 */
+/* asm: 	.word	flag4 */
+/* asm: 	.word	flag5 */
+/* asm: 	.word	flag6 */
+/* asm: 	.word	flag7 */
+/* asm: 	.word	-1 */
+int BABE_FLAG_SCRIPT[] = {
+    flag1,
+    flag2,
+    flag3,
+    flag4,
+    flag5,
+    flag6,
+    flag7,
+    -1,
+};
 
 /* *----------------------------------------------------------------------------
 *
@@ -777,6 +791,7 @@ IBO2:
     // asm 00008C09: 	LDI	AR4,AR2
     // asm 00008C0A: 	CALL	OBJ_DELETE
     // asm 00008C0B: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_WAVEFLAG", 0, 0);
     UNIMPL();
 }

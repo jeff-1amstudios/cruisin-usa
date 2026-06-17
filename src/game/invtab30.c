@@ -1,5 +1,6 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "port.h"
 
 /*
  * Source module: asm/INVTAB30.ASM
@@ -1120,8 +1121,3 @@ float INVTAB[] = {
     0.006418f, 0.006417f, 0.006415f, 0.006414f, 0.006413f, 0.006411f, 0.006410f, 0.006409f, 0.006408f,
     0.006406f, 0.006405f, 0.006404f, 0.006402f, 0.006401f,
 };
-
-void invtab30(void)
-{
-    UNIMPL();
-}

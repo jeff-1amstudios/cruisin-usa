@@ -108,4 +108,12 @@ void SETSMDIGITFONTDS(void);
 // asm: 	.globl	HIGHLIGHTN
 void HIGHLIGHTN(void);
 
+// TEXT.ASM
+// asm: 	hibss	TEXT_LIST,NUM_TEXTS*TEXT_SIZ
+extern int TEXT_LIST[];
+// asm: 	.bss	TEXT_FREE,1
+extern int TEXT_FREE;
+// asm: 	.bss	TEXT_ACTIVE,1
+extern int TEXT_ACTIVE;
+
 #endif /* TEXT_H */

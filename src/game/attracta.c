@@ -10,7 +10,7 @@
 #include "vunit.h"
 #include "cmos.h"
 #include "sndtab.h"
-#include "discovered_labels.h"
+#include "port.h"
 
 /*
  * Source module: asm/ATTRACTA.ASM
@@ -30,22 +30,6 @@ void DEMOTHANKS(void);
 #define startthez 0.087266462 //deg(5)
 #define CREATED_DCS (PDATA+1)
 #define DECOMP_COUNT (PDATA+1)
-/* asm: SPIN_CARTAB	.word	missle,hotrod,testor,cvette */
-int SPIN_CARTAB[] = {
-    missle, hotrod, testor, cvette,
-};
-const char *DT1 = "THANK YOU FOR PLAYING";
-const char *DT2 = "CRUISIN USA";
-const char *DT3 = "SNEAK PREVIEW";
-/* asm: DEMOTHANKS_LIST */
-/* asm: 	.word	140,DT1 */
-/* asm: 	.word	180,DT2 */
-/* asm: 	.word	220,DT3 */
-int DEMOTHANKS_LIST[] = {
-    140, DT1,
-    180, DT2,
-    220, DT3,
-};
 
 /* *----------------------------------------------------------------------------
 *AR6 is set by the creator of this routine. 0= play dcs logo sound 1=don't play
@@ -141,6 +125,7 @@ MSLP1:
     // asm 0000A9B2: 	SLEEP	1
     // asm 0000A9B4: 	CALL	MSLP_CHECK
     // asm 0000A9B5: 	BR	MSLP1
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_MIDWAYSPIN", 0, 0);
     UNIMPL();
 }
@@ -168,6 +153,7 @@ MSLP4:
     // asm 0000A9C3: 	STI	R0,@LOADED
     // asm 0000A9C4: 	POP	BK		;POP return address
     // asm 0000A9C5: 	BR	CYCLE_ATTR
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MSLP_CHECK", 0, 0);
     UNIMPL();
 }
@@ -228,9 +214,15 @@ void MIDWAYSPINENTER(void)
     // asm 0000A9F4: 	DBU	AR5,MSLP1a
     // asm 0000A9F5: 	CALL	TEXT_INIT
     // asm 0000A9F6: 	BR	CYCLE_ATTR
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MIDWAYSPINENTER", 0, 0);
     UNIMPL();
 }
+
+/* asm: SPIN_CARTAB	.word	missle,hotrod,testor,cvette */
+int SPIN_CARTAB[] = {
+    missle, hotrod, testor, cvette,
+};
 
 void SPIN_CAR(void)
 {
@@ -295,6 +287,7 @@ SPIN_CARLP:
     // asm 0000AA33: 	SLEEP	1
     // asm 0000AA35: 	CALL	MSLP_CHECK
     // asm 0000AA36: 	BU	SPIN_CARLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SPIN_CAR", 0, 0);
     UNIMPL();
 }
@@ -325,9 +318,16 @@ TXTLPB:
     // asm 0000AA47: 	LDI	R0,AR0
     // asm 0000AA48: 	STF	R1,*+AR0(TEXT_VELY)
     // asm 0000AA49: 	BR	TXTLPA
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTTOGET", 0, 0);
     UNIMPL();
 }
+
+tDEMO_THANKS DEMOTHANKS_LIST[] = {
+    { 140, "THANK YOU FOR PLAYING" },
+    { 180, "CRUISIN USA" },
+    { 220, "SNEAK PREVIEW" },
+};
 
 void DEMOTHANKS(void)
 {
@@ -349,6 +349,7 @@ void DEMOTHANKS(void)
     // asm 0000AA5C: 	LDI	-6,R0
     // asm 0000AA5D: 	STI	R0,@_ATTR_MODE
     // asm 0000AA5E: 	BR	MIDWAYSPINENTER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEMOTHANKS", 0, 0);
     UNIMPL();
 }

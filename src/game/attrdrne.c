@@ -15,9 +15,8 @@
 #include "text.h"
 #include "dirq.h"
 #include "delta.h"
+#include "port.h"
 #include "attrdrne.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/ATTRDRNE.ASM
@@ -56,6 +55,7 @@ void FACE_FRONT(void);
 void SMOOTH_VECTOR(void);
 void SERIOUSLY_NORMALIZE(void);
 void SET_SMOOTH_VIEW(void);
+void SMOOTH_VIEW(void);
 void ZOOM_CAMERA(void);
 void UPDATE_CAMERA(void);
 void CAMERA_HORIZON_PROJECTION(void);
@@ -87,125 +87,6 @@ int ATTRWAVE;
 #define CAMERA_LANE (PDATA+43)
 #define OBJINS (PDATA+44)
 #define CAMYOFF (PDATA+45)
-/* *----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*CREATE THE OBJECT 'CRUISIN USA' FOR OVERLAY DURING ATTRACT MODE
-*
- */
-#define LOGO_STARTZ 10000
-#define LOGO_ENDX (-120)
-#define LOGO_ENDY (-85)
-#define LOGO_ENDZ 368
-#define LOGO_FLYIN_FRAMES 125
-#define LOGO_WHOOSH_FRAMES 462
-#define LOGO_SPINZ 18.85 //3 revolutions
-/* asm: VIEWLIST */
-/* asm: 	.word	GGPARK_LIST */
-/* asm: 	.word	BEVHILL_LIST */
-/* asm: 	.word	GCANYON_LIST */
-/* asm: 	.word	CHICAGO_LIST */
-/* asm: 	.word	GGPARK_LIST */
-/* asm: 	.word	BEVHILL_LIST */
-/* asm: 	.word	GCANYON_LIST */
-/* asm: 	.word	CHICAGO_LIST */
-int *VIEWLIST[] = {
-    GGPARK_LIST,
-    BEVHILL_LIST,
-    GCANYON_LIST,
-    CHICAGO_LIST,
-    GGPARK_LIST,
-    BEVHILL_LIST,
-    GCANYON_LIST,
-    CHICAGO_LIST,
-};
-/* asm: GGPARK_LIST */
-/* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
-/* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
-/* asm: 	.word	INIT_WATCH,1214h,240,WATCH_VIEW */
-/* asm: 	.word	CUT_TO_VIEW2,1404h,SMOOTH_VIEW */
-/* asm: 	.word	INITVIEW1_VIEW,17FBh,SMOOTH_VIEW */
-/* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
-/* asm: 	.word	0,0 */
-int GGPARK_LIST[] = {
-    INIT_STARTING, 70, ROAD_VIEW,
-    INIT_LEAD, 80, LEAD_VIEW,
-    INIT_WATCH, 0x1214, 240, WATCH_VIEW,
-    CUT_TO_VIEW2, 0x1404, SMOOTH_VIEW,
-    INITVIEW1_VIEW, 0x17FB, SMOOTH_VIEW,
-    INIT_LEAD, 80, LEAD_VIEW,
-    0, 0,
-};
-/* asm: BEVHILL_LIST */
-/* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
-/* asm: 	.word	CUT_TO_VIEW2,14AFBh,SMOOTH_VIEW */
-/* asm: 	.word	INITVIEW1_VIEW,14DF3h,SMOOTH_VIEW */
-/* asm: 	.word	INIT_STARTING,100,ROAD_VIEW */
-/* asm: 	.word	0,0 */
-int BEVHILL_LIST[] = {
-    INIT_STARTING, 80, ROAD_VIEW,
-    CUT_TO_VIEW2, 0x14AFB, SMOOTH_VIEW,
-    INITVIEW1_VIEW, 0x14DF3, SMOOTH_VIEW,
-    INIT_STARTING, 100, ROAD_VIEW,
-    0, 0,
-};
-/* asm: GCANYON_LIST */
-/* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
-/* asm: 	.word	INIT_WATCH,2E20Ah,220,WATCH_VIEW */
-/* asm: 	.word	CUT_TO_VIEW2,2E800h,SMOOTH_VIEW */
-/* asm: 	.word	INITVIEW1_VIEW,2EC00h,SMOOTH_VIEW */
-/* asm: 	.word	INIT_WATCH,2EF00h,240,WATCH_VIEW */
-/* asm: 	.word	CUT_TO_VIEW2,30000h,SMOOTH_VIEW */
-/* asm: 	.word	0,0 */
-int GCANYON_LIST[] = {
-    INIT_STARTING, 70, ROAD_VIEW,
-    INIT_WATCH, 0x2E20A, 220, WATCH_VIEW,
-    CUT_TO_VIEW2, 0x2E800, SMOOTH_VIEW,
-    INITVIEW1_VIEW, 0x2EC00, SMOOTH_VIEW,
-    INIT_WATCH, 0x2EF00, 240, WATCH_VIEW,
-    CUT_TO_VIEW2, 0x30000, SMOOTH_VIEW,
-    0, 0,
-};
-/* asm: CHICAGO_LIST */
-/* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
-/* asm: 	.word	INIT_REVERS_CUP,60,REV_ROAD_VIEW */
-/* asm: 	.word	CUT_TO_VIEW2,3AA0Eh,SMOOTH_VIEW */
-/* asm: 	.word	INITVIEW1_VIEW,3C00Ah,SMOOTH_VIEW */
-/* asm: 	.word	INIT_WATCH,3C5F5h,240,WATCH_VIEW */
-/* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
-/* asm: 	.word	0,0 */
-int CHICAGO_LIST[] = {
-    INIT_STARTING, 80, ROAD_VIEW,
-    INIT_REVERS_CUP, 60, REV_ROAD_VIEW,
-    CUT_TO_VIEW2, 0x3AA0E, SMOOTH_VIEW,
-    INITVIEW1_VIEW, 0x3C00A, SMOOTH_VIEW,
-    INIT_WATCH, 0x3C5F5, 240, WATCH_VIEW,
-    INIT_LEAD, 80, LEAD_VIEW,
-    0, 0,
-};
-/* asm: ACCEL_RATE	.float	0.000002 */
-float ACCEL_RATE = 0.000002f;
-/* asm: ZOOMACCEL	.float	0.006 */
-float ZOOMACCEL = 0.006f;
-/* asm: ATTR_WAVETAB */
-/* asm: 	.word	0,0 */
-/* asm: 	.word	L_LEG5_BEGIN+1,4 */
-/* asm: 	.word	L_LEG9_BEGIN+1,8 */
-/* asm: 	.word	L_LEG11_BEGIN+1,10 */
-/* asm: 	.word	0,0 */
-/* asm: 	.word	L_LEG5_BEGIN+1,4 */
-/* asm: 	.word	L_LEG9_BEGIN+1,8 */
-/* asm: 	.word	L_LEG11_BEGIN+1,10 */
-int ATTR_WAVETAB[] = {
-    0, 0,
-    L_LEG5_BEGIN+1, 4,
-    L_LEG9_BEGIN+1, 8,
-    L_LEG11_BEGIN+1, 10,
-    0, 0,
-    L_LEG5_BEGIN+1, 4,
-    L_LEG9_BEGIN+1, 8,
-    L_LEG11_BEGIN+1, 10,
-};
-#define ATTR_WAVETAB_LEN ($-ATTR_WAVETAB-1)
 
 void ATTRACT_DELTA(void)
 {
@@ -273,9 +154,23 @@ NO_OBJINS:
     // asm 000055FC: 	CALLU	AR0
     // asm 000055FD: 	LDI	*AR6++,AR5
     // asm 000055FE: 	B	ADELTA2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ATTRACT_DELTA", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*CREATE THE OBJECT 'CRUISIN USA' FOR OVERLAY DURING ATTRACT MODE
+*
+ */
+#define LOGO_STARTZ 10000
+#define LOGO_ENDX (-120)
+#define LOGO_ENDY (-85)
+#define LOGO_ENDZ 368
+#define LOGO_FLYIN_FRAMES 125
+#define LOGO_WHOOSH_FRAMES 462
+#define LOGO_SPINZ 18.85 //3 revolutions
 
 void LOGO_PROC(void)
 {
@@ -349,6 +244,7 @@ LOGO2:
     // asm 00005643: 	BP	LOGO_LOOP1
 LOGOX:
     // asm 00005644: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOGO_PROC", 0, 0);
     UNIMPL();
 }
@@ -364,6 +260,90 @@ void GET_LIST_ADDR(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LIST_ADDR", 0, 0);
     UNIMPL();
 }
+
+/* asm: VIEWLIST */
+/* asm: 	.word	GGPARK_LIST */
+/* asm: 	.word	BEVHILL_LIST */
+/* asm: 	.word	GCANYON_LIST */
+/* asm: 	.word	CHICAGO_LIST */
+/* asm: 	.word	GGPARK_LIST */
+/* asm: 	.word	BEVHILL_LIST */
+/* asm: 	.word	GCANYON_LIST */
+/* asm: 	.word	CHICAGO_LIST */
+intptr_t *VIEWLIST = {
+    GGPARK_LIST,
+    BEVHILL_LIST,
+    GCANYON_LIST,
+    CHICAGO_LIST,
+    GGPARK_LIST,
+    BEVHILL_LIST,
+    GCANYON_LIST,
+    CHICAGO_LIST,
+};
+/* asm: GGPARK_LIST */
+/* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
+/* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
+/* asm: 	.word	INIT_WATCH,1214h,240,WATCH_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,1404h,SMOOTH_VIEW */
+/* asm: 	.word	INITVIEW1_VIEW,17FBh,SMOOTH_VIEW */
+/* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
+/* asm: 	.word	0,0 */
+intptr_t GGPARK_LIST = {
+    INIT_STARTING, 70, ROAD_VIEW,
+    INIT_LEAD, 80, LEAD_VIEW,
+    INIT_WATCH, 0x1214, 240, WATCH_VIEW,
+    CUT_TO_VIEW2, 0x1404, SMOOTH_VIEW,
+    INITVIEW1_VIEW, 0x17FB, SMOOTH_VIEW,
+    INIT_LEAD, 80, LEAD_VIEW,
+    0, 0,
+};
+/* asm: BEVHILL_LIST */
+/* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,14AFBh,SMOOTH_VIEW */
+/* asm: 	.word	INITVIEW1_VIEW,14DF3h,SMOOTH_VIEW */
+/* asm: 	.word	INIT_STARTING,100,ROAD_VIEW */
+/* asm: 	.word	0,0 */
+intptr_t BEVHILL_LIST = {
+    INIT_STARTING, 80, ROAD_VIEW,
+    CUT_TO_VIEW2, 0x14AFB, SMOOTH_VIEW,
+    INITVIEW1_VIEW, 0x14DF3, SMOOTH_VIEW,
+    INIT_STARTING, 100, ROAD_VIEW,
+    0, 0,
+};
+/* asm: GCANYON_LIST */
+/* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
+/* asm: 	.word	INIT_WATCH,2E20Ah,220,WATCH_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,2E800h,SMOOTH_VIEW */
+/* asm: 	.word	INITVIEW1_VIEW,2EC00h,SMOOTH_VIEW */
+/* asm: 	.word	INIT_WATCH,2EF00h,240,WATCH_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,30000h,SMOOTH_VIEW */
+/* asm: 	.word	0,0 */
+intptr_t GCANYON_LIST = {
+    INIT_STARTING, 70, ROAD_VIEW,
+    INIT_WATCH, 0x2E20A, 220, WATCH_VIEW,
+    CUT_TO_VIEW2, 0x2E800, SMOOTH_VIEW,
+    INITVIEW1_VIEW, 0x2EC00, SMOOTH_VIEW,
+    INIT_WATCH, 0x2EF00, 240, WATCH_VIEW,
+    CUT_TO_VIEW2, 0x30000, SMOOTH_VIEW,
+    0, 0,
+};
+/* asm: CHICAGO_LIST */
+/* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
+/* asm: 	.word	INIT_REVERS_CUP,60,REV_ROAD_VIEW */
+/* asm: 	.word	CUT_TO_VIEW2,3AA0Eh,SMOOTH_VIEW */
+/* asm: 	.word	INITVIEW1_VIEW,3C00Ah,SMOOTH_VIEW */
+/* asm: 	.word	INIT_WATCH,3C5F5h,240,WATCH_VIEW */
+/* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
+/* asm: 	.word	0,0 */
+intptr_t CHICAGO_LIST = {
+    INIT_STARTING, 80, ROAD_VIEW,
+    INIT_REVERS_CUP, 60, REV_ROAD_VIEW,
+    CUT_TO_VIEW2, 0x3AA0E, SMOOTH_VIEW,
+    INITVIEW1_VIEW, 0x3C00A, SMOOTH_VIEW,
+    INIT_WATCH, 0x3C5F5, 240, WATCH_VIEW,
+    INIT_LEAD, 80, LEAD_VIEW,
+    0, 0,
+};
 
 /* *----------------------------------------------------------------------------
  */
@@ -635,6 +615,9 @@ void REV_ROAD_VIEW(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "REV_ROAD_VIEW", 0, 0);
     UNIMPL();
 }
+
+/* asm: ACCEL_RATE	.float	0.000002 */
+float ACCEL_RATE = 0.000002f;
 
 void ROAD_VIEW(void)
 {
@@ -1161,6 +1144,7 @@ void INITVIEW1_VIEW(void)
     // asm 0000588B: 	FLOAT	0,R2
     // asm 0000588C: 	LDF	0,R3
     // asm 0000588D: 	BR	SET_SMOOTH_VIEW
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INITVIEW1_VIEW", 0, 0);
     UNIMPL();
 }
@@ -1192,6 +1176,7 @@ void INITVIEW2_VIEW(void)
     // asm 0000589E: 	FLOAT	-2200,R2
     // asm 0000589F: 	LDF	0,R3
     // asm 000058A0: 	BR	SET_SMOOTH_VIEW
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INITVIEW2_VIEW", 0, 0);
     UNIMPL();
 }
@@ -1205,6 +1190,7 @@ void INITVIEW3_VIEW(void)
     // asm 000058A5: 	FLOAT	-3840,R2
     // asm 000058A6: 	LDF	0,R3
     // asm 000058A7: 	BR	SET_SMOOTH_VIEW
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INITVIEW3_VIEW", 0, 0);
     UNIMPL();
 }
@@ -1370,7 +1356,13 @@ void SET_SMOOTH_VIEW(void)
     // asm 0000591E: 	STF	R1,*+AR7(CAMERA_XYZR+1)
     // asm 0000591F: 	STF	R2,*+AR7(CAMERA_XYZR+2)
     // asm 00005920: 	STF	R3,*+AR7(CAMERA_XYZR+3)
-SMOOTH_VIEW:
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_SMOOTH_VIEW", 0, 0);
+    UNIMPL();
+}
+
+void SMOOTH_VIEW(void)
+{
     // asm 00005921: 	CALL	ZOOM_CAMERA
     // asm 00005922: 	CALL	FACE_FRONT
     // asm 00005923: 	LDI	AR7,AR2
@@ -1404,9 +1396,12 @@ SMOOTH_VIEW:
     // ;	CALL	OBJ_INSERT			;INSERT PLAYER OBJECT
 SMOOTH_VIEWX:
     // asm 0000593D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_SMOOTH_VIEW", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOOTH_VIEW", 0, 0);
     UNIMPL();
 }
+
+/* asm: ZOOMACCEL	.float	0.006 */
+float ZOOMACCEL = 0.006f;
 
 void ZOOM_CAMERA(void)
 {
@@ -1564,6 +1559,27 @@ void CAMERA_HORIZON_PROJECTION(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMERA_HORIZON_PROJECTION", 0, 0);
     UNIMPL();
 }
+
+/* asm: ATTR_WAVETAB */
+/* asm: 	.word	0,0 */
+/* asm: 	.word	L_LEG5_BEGIN+1,4 */
+/* asm: 	.word	L_LEG9_BEGIN+1,8 */
+/* asm: 	.word	L_LEG11_BEGIN+1,10 */
+/* asm: 	.word	0,0 */
+/* asm: 	.word	L_LEG5_BEGIN+1,4 */
+/* asm: 	.word	L_LEG9_BEGIN+1,8 */
+/* asm: 	.word	L_LEG11_BEGIN+1,10 */
+int ATTR_WAVETAB[] = {
+    0, 0,
+    L_LEG5_BEGIN+1, 4,
+    L_LEG9_BEGIN+1, 8,
+    L_LEG11_BEGIN+1, 10,
+    0, 0,
+    L_LEG5_BEGIN+1, 4,
+    L_LEG9_BEGIN+1, 8,
+    L_LEG11_BEGIN+1, 10,
+};
+#define ATTR_WAVETAB_LEN ($-ATTR_WAVETAB-1)
 
 void INIT_ATTR_LEG(void)
 {

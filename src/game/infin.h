@@ -16,4 +16,11 @@ extern int AMOUNT_CLIPPED;
 // asm: 	.bss	INFIN_CORRECT,1
 extern int INFIN_CORRECT;
 
+
+
+
+
+
+
+
 #endif /* INFIN_H */

@@ -14,8 +14,8 @@
 #include "objects.h"
 #include "text.h"
 #include "delta.h"
+#include "port.h"
 #include "drones.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/DRONES.ASM
@@ -82,110 +82,6 @@ float LANES4[] = {
  */
 /* asm: ONCSCREEN_CARS	.bss	ONCSCREEN_CARS,1 */
 int ONCSCREEN_CARS;
-/* *----------------------------------------------------------------------------
-*DRONE DISPATCHER
-*
-*
- */
-/* asm: DD_SLP	.bss	DD_SLP,1 */
-int DD_SLP;
-/* asm: DD_VAR	.bss	DD_VAR,1 */
-int DD_VAR;
-/* asm: DD_MAX_DRONES	.bss	DD_MAX_DRONES,1 */
-int DD_MAX_DRONES;
-/* asm: DRONENUM	.bss	DRONENUM,1 */
-int DRONENUM;
-/* *----------------------------------------------------------------------------
- */
-/* asm: EXP_ANI */
-/* asm: 	.word	dexplo1,dexplo2,dexplo3,dexplo4,dexplo5 */
-/* asm: 	.word	dexplo6,dexplo7,dexplo8,dexplo9,dexplo10,dexplo11,-1 */
-int EXP_ANI[] = {
-    dexplo1, dexplo2, dexplo3, dexplo4, dexplo5,
-    dexplo6, dexplo7, dexplo8, dexplo9, dexplo10, dexplo11, -1,
-};
-/* *----------------------------------------------------------------------------
-*SMOKE_PUFF
-*
-*PARAMETERS
-*	AR4	OBJECT THAT IS SMOKING
-*
- */
-/* asm: SMOKE_COUNT	.bss	SMOKE_COUNT,1 */
-int SMOKE_COUNT;
-/* *----------------------------------------------------------------------------
- */
-/* asm: SMOKE_ANI */
-/* asm: 	.word	bnout1,1 */
-/* asm: 	.float	10 */
-/* asm: 	.word	bnout2,2 */
-/* asm: 	.float	12 */
-/* asm: 	.word	bnout3,1 */
-/* asm: 	.float	16 */
-/* asm: 	.word	bnout4,1 */
-/* asm: 	.float	20 */
-/* asm: 	.word	bnout5,1 */
-/* asm: 	.float	24 */
-/* asm: 	.word	bnout6,1 */
-/* asm: 	.float	30 */
-/* asm: 	.word	bnout7,1 */
-/* asm: 	.float	35 */
-/* asm: 	.word	bnout8,1 */
-/* asm: 	.float	40 */
-/* asm: 	.word	bnout9,1 */
-/* asm: 	.float	45 */
-/* asm: 	.word	-1 */
-int SMOKE_ANI[] = {
-    bnout1, 1,
-    10,
-    bnout2, 2,
-    12,
-    bnout3, 1,
-    16,
-    bnout4, 1,
-    20,
-    bnout5, 1,
-    24,
-    bnout6, 1,
-    30,
-    bnout7, 1,
-    35,
-    bnout8, 1,
-    40,
-    bnout9, 1,
-    45,
-    -1,
-};
-/* *----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR5	PALM TREE OBJECT
-*
- */
-/* asm: COCONUT_COUNT	.bss	COCONUT_COUNT,1 */
-int COCONUT_COUNT;
-/* asm: MODELTAB	.word	cvettem,hotrodm,missle,testorm */
-int MODELTAB[] = {
-    cvettem, hotrodm, missle, testorm,
-};
-/* asm: TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
-int *TEXTTABS[] = {
-    VETETXT, RODRTXT, BULLTXT, FERRTXT,
-};
-/* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
-const char *TITLES[] = { "TOP SPEED:", "SKIDPAD:", "AERO COEFF:", "0?60 MPH:", "POWER:" };
-/* asm: VETETXT	.word	HRS11,HRS12,HRS13,HRS14,HRS15,HRS16 */
-const char *VETETXT[] = { "63 MUSCLE CAR", "145 MPH@233 KPH", "0=89 G", "0=39", "2=98 SEC=", "462HP  454 CID V8" };
-/* asm: RODRTXT	.word	HRS21,HRS22,HRS23,HRS24,HRS25,HRS26 */
-const char *RODRTXT[] = { "LA BOMBA", "142 MPH@228 KPH", "0=98 G", "0=45", "2=51 SEC=", "580HP  SUPERCHARGED V12" };
-/* asm: BULLTXT	.word	HRS31,HRS32,HRS33,HRS34,HRS35,HRS36 */
-const char *BULLTXT[] = { "DEVASTATOR VI", "147 MPH@236 KPH", "0=85 G", "0=25", "3=15 SEC=", "395HP  TWIN TURBO V6" };
-/* asm: FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
-const char *FERRTXT[] = { "ITALIA P69", "144 MPH@231 KPH", "1=01 G", "0=28", "2=88 SEC=", "472HP  V12 DOHC 48V" };
-/* asm: TABING	.float	60,220,220,220,220,220 */
-float TABING[] = {
-    60.0f, 220.0f, 220.0f, 220.0f, 220.0f, 220.0f,
-};
 
 void POSITION_FINDER(void)
 {
@@ -194,6 +90,7 @@ void POSITION_FINDER(void)
     // asm 000065CC: 	CALL	FIND_PLAYERS_POSITION
     // asm 000065CD: 	SLEEP	14
     // asm 000065CF: 	BU	POSITION_FINDER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "POSITION_FINDER", 0, 0);
     UNIMPL();
 }
@@ -325,6 +222,18 @@ FPPX:
 }
 
 /* *----------------------------------------------------------------------------
+*DRONE DISPATCHER
+*
+*
+ */
+/* asm: DD_SLP	.bss	DD_SLP,1 */
+int DD_SLP;
+/* asm: DD_VAR	.bss	DD_VAR,1 */
+int DD_VAR;
+/* asm: DD_MAX_DRONES	.bss	DD_MAX_DRONES,1 */
+int DD_MAX_DRONES;
+
+/* *----------------------------------------------------------------------------
  */
 void SIGMA_DISPATCHER(void)
 {
@@ -392,9 +301,13 @@ NOTYET:
     // asm 00006650: 	CMPF	R1,R0
     // asm 00006651: 	BLT	NOTYET
     // asm 00006652: 	BU	SIGDSP_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DISPATCHER", 0, 0);
     UNIMPL();
 }
+
+/* asm: DRONENUM	.bss	DRONENUM,1 */
+int DRONENUM;
 
 void DRONE_PTR_ADD(void)
 {
@@ -515,6 +428,7 @@ DOITR:
     // asm 000066A6: 	BZ	RHO_DLP			;NOT DISPATCHING, BEHIND IN LINK
     // asm 000066A7: 	CREATE	RHO_DRONE,DRONE_C|VEHICLE_T|DRNE_RHO
     // asm 000066AA: 	BU	RHO_DLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DISPATCHER", 0, 0);
     UNIMPL();
 }
@@ -705,6 +619,7 @@ void GET_TRACK_POS_RVS_XLANE(void)
     // asm 0000670B: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 0000670C: 	CALL	SUB_FUNCTION_RVS_XLANE		;GET LANE OFFSET (VECTOR A)
     // asm 0000670D: 	BU	TRKP2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TRACK_POS_RVS_XLANE", 0, 0);
     UNIMPL();
 }
@@ -717,6 +632,7 @@ void GET_TRACK_POS_RVS(void)
     // asm 00006713: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00006714: 	CALL	SUB_FUNCTION_RVS
     // asm 00006715: 	BU	TRKP2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TRACK_POS_RVS", 0, 0);
     UNIMPL();
 }
@@ -729,6 +645,7 @@ void DELTA_GET_TRACK_POS(void)
     // asm 0000671B: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 0000671C: 	CALL	DELTA_SUB_FUNCTION		;GET LANE OFFSET (VECTOR A)
     // asm 0000671D: 	BU	TRKP2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DELTA_GET_TRACK_POS", 0, 0);
     UNIMPL();
 }
@@ -797,6 +714,7 @@ void SUB_FUNCTION_RVS(void)
     // asm 00006738: 	LDI	*+AR2(OBLINK4),R0
     // asm: 	SLOCKON	Z,"DRONES\SUB_FUNCTION_RVS  OBLINK4 to NULL"
     // asm 00006739: 	BU	SF_ENTER2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SUB_FUNCTION_RVS", 0, 0);
     UNIMPL();
 }
@@ -856,6 +774,7 @@ void SUB_FUNCTION_RVS_XLANE(void)
     // asm 00006767: 	PUSHFL	R3
     // asm 00006769: 	LDI	*+AR2(OBLINK4),R0
     // asm 0000676A: 	BU	SFENTER66
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SUB_FUNCTION_RVS_XLANE", 0, 0);
     UNIMPL();
 }
@@ -882,6 +801,7 @@ SFENTER66:
     // asm 0000677C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
     // asm 0000677D: 	LDF	*+AR7(DELTA_XLANE),R0
     // asm 0000677E: 	BU	DELTA_JOININ
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DELTA_SUB_FUNCTION", 0, 0);
     UNIMPL();
 }
@@ -1022,9 +942,20 @@ EXP_DIE:
     // asm 000067D7: 	LDI	AR4,AR2
     // asm 000067D8: 	CALL	OBJ_DELETE
     // asm 000067D9: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "EXP_PUFF", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: EXP_ANI */
+/* asm: 	.word	dexplo1,dexplo2,dexplo3,dexplo4,dexplo5 */
+/* asm: 	.word	dexplo6,dexplo7,dexplo8,dexplo9,dexplo10,dexplo11,-1 */
+int EXP_ANI[] = {
+    dexplo1, dexplo2, dexplo3, dexplo4, dexplo5,
+    dexplo6, dexplo7, dexplo8, dexplo9, dexplo10, dexplo11, -1,
+};
 
 /* *----------------------------------------------------------------------------
 *PRECOLLIDE_PLYR	CHECK TO SEE IF CAR WILL COLLIDE WITH PLAYER
@@ -1149,6 +1080,7 @@ void DRONE_RIDE_RIGHT(void)
     // asm 00006814: 	PUSH	AR4
     // asm 00006815: 	PUSH	AR5
     // asm 00006816: 	BU	RIDE_RIGHT_JOININ
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONE_RIDE_RIGHT", 0, 0);
     UNIMPL();
 }
@@ -1216,6 +1148,16 @@ PRR_X:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*SMOKE_PUFF
+*
+*PARAMETERS
+*	AR4	OBJECT THAT IS SMOKING
+*
+ */
+/* asm: SMOKE_COUNT	.bss	SMOKE_COUNT,1 */
+int SMOKE_COUNT;
+
 void SMOKE_PUFF(void)
 {
     // asm 0000684D: 	LDI	@SMOKE_COUNT,R0
@@ -1279,9 +1221,62 @@ SMOKE_DIE:
     // asm 00006884: 	LDI	AR4,AR2
     // asm 00006885: 	CALL	OBJ_DELETE
     // asm 00006886: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_PUFF", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: SMOKE_ANI */
+/* asm: 	.word	bnout1,1 */
+/* asm: 	.float	10 */
+/* asm: 	.word	bnout2,2 */
+/* asm: 	.float	12 */
+/* asm: 	.word	bnout3,1 */
+/* asm: 	.float	16 */
+/* asm: 	.word	bnout4,1 */
+/* asm: 	.float	20 */
+/* asm: 	.word	bnout5,1 */
+/* asm: 	.float	24 */
+/* asm: 	.word	bnout6,1 */
+/* asm: 	.float	30 */
+/* asm: 	.word	bnout7,1 */
+/* asm: 	.float	35 */
+/* asm: 	.word	bnout8,1 */
+/* asm: 	.float	40 */
+/* asm: 	.word	bnout9,1 */
+/* asm: 	.float	45 */
+/* asm: 	.word	-1 */
+int SMOKE_ANI[] = {
+    bnout1, 1,
+    10,
+    bnout2, 2,
+    12,
+    bnout3, 1,
+    16,
+    bnout4, 1,
+    20,
+    bnout5, 1,
+    24,
+    bnout6, 1,
+    30,
+    bnout7, 1,
+    35,
+    bnout8, 1,
+    40,
+    bnout9, 1,
+    45,
+    -1,
+};
+/* *----------------------------------------------------------------------------
+*
+*PARAMETERS
+*	AR5	PALM TREE OBJECT
+*
+ */
+/* asm: COCONUT_COUNT	.bss	COCONUT_COUNT,1 */
+int COCONUT_COUNT;
 
 void DROP_COCONUTS(void)
 {
@@ -1423,9 +1418,33 @@ DROPCOCOKILL:
     // asm 0000690D: 	LDI	AR4,AR2
     // asm 0000690E: 	CALL	OBJ_DELETE
     // asm 0000690F: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DROP_COCONUTS", 0, 0);
     UNIMPL();
 }
+
+/* asm: MODELTAB	.word	cvettem,hotrodm,missle,testorm */
+int MODELTAB[] = {
+    cvettem, hotrodm, missle, testorm,
+};
+/* asm: TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
+int *TEXTTABS[] = {
+    VETETXT, RODRTXT, BULLTXT, FERRTXT,
+};
+/* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
+const char *TITLES[] = { "TOP SPEED:", "SKIDPAD:", "AERO COEFF:", "0?60 MPH:", "POWER:" };
+/* asm: VETETXT	.word	HRS11,HRS12,HRS13,HRS14,HRS15,HRS16 */
+const char *VETETXT[] = { "63 MUSCLE CAR", "145 MPH@233 KPH", "0=89 G", "0=39", "2=98 SEC=", "462HP  454 CID V8" };
+/* asm: RODRTXT	.word	HRS21,HRS22,HRS23,HRS24,HRS25,HRS26 */
+const char *RODRTXT[] = { "LA BOMBA", "142 MPH@228 KPH", "0=98 G", "0=45", "2=51 SEC=", "580HP  SUPERCHARGED V12" };
+/* asm: BULLTXT	.word	HRS31,HRS32,HRS33,HRS34,HRS35,HRS36 */
+const char *BULLTXT[] = { "DEVASTATOR VI", "147 MPH@236 KPH", "0=85 G", "0=25", "3=15 SEC=", "395HP  TWIN TURBO V6" };
+/* asm: FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
+const char *FERRTXT[] = { "ITALIA P69", "144 MPH@231 KPH", "1=01 G", "0=28", "2=88 SEC=", "472HP  V12 DOHC 48V" };
+/* asm: TABING	.float	60,220,220,220,220,220 */
+float TABING[] = {
+    60.0f, 220.0f, 220.0f, 220.0f, 220.0f, 220.0f,
+};
 
 /* *----------------------------------------------------------------------------
 *AM I AHEAD OF THE PLAYER?

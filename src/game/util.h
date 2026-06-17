@@ -20,4 +20,11 @@ extern int CARFREE;
 // asm: 	.bss	CAR_COUNT,1
 extern int CAR_COUNT;
 
+
+
+
+
+
+
+
 #endif /* UTIL_H */

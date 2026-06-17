@@ -12,7 +12,7 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
-#include "discovered_labels.h"
+#include "port.h"
 
 /*
  * Source module: asm/FLAME.ASM
@@ -138,6 +138,7 @@ FLAME_ANIX:
 FLANX1:
 FLAME_DIE:
     // asm 0000AE0F: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAME_PRC", 0, 0);
     UNIMPL();
 }

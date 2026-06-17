@@ -12,9 +12,8 @@
 #include "objects.h"
 #include "text.h"
 #include "h2hobj.h"
+#include "port.h"
 #include "map.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/MAP.ASM
@@ -74,59 +73,6 @@ float M4STDI = M2STD;
 #define MAPLMATEND (PDATA+20)
 #define MAPXD (PDATA+21)
 #define MAPYD (PDATA+22)
-/* *----------------------------------------------------------------------------
- */
-/* asm: FORMULA1	.float	0.318309886 */
-float FORMULA1 = 0.318309886f;
-/* *----------------------------------------------------------------------------
- */
-/* asm: MAPPAL13	.bss	MAPPAL13,1 */
-int MAPPAL13;
-/* asm: MAPPAL24	.bss	MAPPAL24,1 */
-int MAPPAL24;
-/* asm: STOPWATCH	.bss	STOPWATCH,1 */
-int STOPWATCH;
-/* asm: STOPWATCH_CNTL	.bss	STOPWATCH_CNTL,1 */
-int STOPWATCH_CNTL;
-/* *----------------------------------------------------------------------------
-*RETURNS
-*	AR2	POINTING TO LAP BUFFER
-*
- */
-/* asm: lap_buffer	.bss	lap_buffer,4 */
-int lap_buffer[4];
-/* asm: tmp_buffer	.bss	tmp_buffer,2 */
-int tmp_buffer[2];
-/* *----------------------------------------------------------------------------
-*CVTTIME	CVT TIMECODE TO COMPONENTS
-*
-*PARAMETERS
-*	R0
-*
-*RETURNS
-*	R0	(INT) HUNDERTHS
-*	R1	(INT) SECONDS
-*	R2	(INT) MINUTES
-*
- */
-/* asm: MINFACT	.float	0.000303030303		;1/(55*60) */
-float MINFACT = 0.000303030303f;
-/* asm: SECFACT	.float	0.018181818		;1/55 */
-float SECFACT = 0.018181818f;
-/* asm: HUNFACT	.float	1.818181818		;100/55 */
-float HUNFACT = 1.818181818f;
-#define RADAR_XMIN 460
-#define RADAR_XMAX 500
-#define RADAR_XCNTR (((RADAR_XMAX-RADAR_XMIN)/2)+RADAR_XMIN)
-#define RADAR_YMIN 100
-#define RADAR_YMAX 200
-#define RADAR_YCNTR (((RADAR_YMAX-RADAR_YMIN)/2)+RADAR_YMIN)
-#define BLIPSIZE_X 4
-#define BLIPSIZE_Y 4
-#define BLIPSIZE_XH 2
-#define BLIPSIZE_YH 2
-/* asm: THIS_MACHINE_AHEAD	.bss	THIS_MACHINE_AHEAD,1 */
-int THIS_MACHINE_AHEAD;
 
 /* *
 *
@@ -138,6 +84,7 @@ int THIS_MACHINE_AHEAD;
 void UNFOLDMAP(void)
 {
     // asm 00005E0B: 	CALL	MAPPAL_ILLUM_INIT
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "UNFOLDMAP", 0, 0);
     UNIMPL();
 }
@@ -397,6 +344,7 @@ void UNFOLDMAP_NOPAL(void)
     // asm 00005EE8: 	ANDN	O_1PAL,R0
     // asm 00005EE9: 	STI	R0,*+AR0(OFLAGS)
     // asm 00005EEA: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "UNFOLDMAP_NOPAL", 0, 0);
     UNIMPL();
 }
@@ -646,6 +594,7 @@ void FOLDMAP(void)
     // asm 00005FC9: 	CALL	OBJ_DELETE
     // asm 00005FCA: 	CALL	CLEAR_MAP_PALS
     // asm 00005FCB: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FOLDMAP", 0, 0);
     UNIMPL();
 }
@@ -704,6 +653,11 @@ L342:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: FORMULA1	.float	0.318309886 */
+float FORMULA1 = 0.318309886f;
+
 void MAP_ILLUM_COMPUTE(void)
 {
     // asm 00005FED: 	LDF	*+AR7(MAP1T),R0
@@ -725,6 +679,13 @@ void MAP_ILLUM_COMPUTE(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MAP_ILLUM_COMPUTE", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: MAPPAL13	.bss	MAPPAL13,1 */
+int MAPPAL13;
+/* asm: MAPPAL24	.bss	MAPPAL24,1 */
+int MAPPAL24;
 
 void MAPPAL_ILLUM(void)
 {
@@ -938,6 +899,20 @@ JAJA5:
     UNIMPL();
 }
 
+/* asm: STOPWATCH	.bss	STOPWATCH,1 */
+int STOPWATCH;
+/* asm: STOPWATCH_CNTL	.bss	STOPWATCH_CNTL,1 */
+int STOPWATCH_CNTL;
+/* *----------------------------------------------------------------------------
+*RETURNS
+*	AR2	POINTING TO LAP BUFFER
+*
+ */
+/* asm: lap_buffer	.bss	lap_buffer,4 */
+int lap_buffer[4];
+/* asm: tmp_buffer	.bss	tmp_buffer,2 */
+int tmp_buffer[2];
+
 /* *----------------------------------------------------------------------------
 *TIME2STR	CONVERT TIME CODE TO STRING
 *
@@ -985,6 +960,25 @@ void TIME2STR(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TIME2STR", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*CVTTIME	CVT TIMECODE TO COMPONENTS
+*
+*PARAMETERS
+*	R0
+*
+*RETURNS
+*	R0	(INT) HUNDERTHS
+*	R1	(INT) SECONDS
+*	R2	(INT) MINUTES
+*
+ */
+/* asm: MINFACT	.float	0.000303030303		;1/(55*60) */
+float MINFACT = 0.000303030303f;
+/* asm: SECFACT	.float	0.018181818		;1/55 */
+float SECFACT = 0.018181818f;
+/* asm: HUNFACT	.float	1.818181818		;100/55 */
+float HUNFACT = 1.818181818f;
 
 void CVTTIME(void)
 {
@@ -1037,6 +1031,19 @@ void CVTTIME(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CVTTIME", 0, 0);
     UNIMPL();
 }
+
+#define RADAR_XMIN 460
+#define RADAR_XMAX 500
+#define RADAR_XCNTR (((RADAR_XMAX-RADAR_XMIN)/2)+RADAR_XMIN)
+#define RADAR_YMIN 100
+#define RADAR_YMAX 200
+#define RADAR_YCNTR (((RADAR_YMAX-RADAR_YMIN)/2)+RADAR_YMIN)
+#define BLIPSIZE_X 4
+#define BLIPSIZE_Y 4
+#define BLIPSIZE_XH 2
+#define BLIPSIZE_YH 2
+/* asm: THIS_MACHINE_AHEAD	.bss	THIS_MACHINE_AHEAD,1 */
+int THIS_MACHINE_AHEAD;
 
 /* *----------------------------------------------------------------------------
  */

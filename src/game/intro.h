@@ -70,4 +70,11 @@ extern int miniidle;
 // asm: 	.bss	DIRTY_SHARED,1
 extern int DIRTY_SHARED;
 
+
+
+
+
+
+
+
 #endif /* INTRO_H */

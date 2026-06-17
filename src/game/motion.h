@@ -36,4 +36,11 @@ extern int GALIL_STATUS_Y;
 // asm: 	.bss	GALIL_STATUS_Z,1
 extern int GALIL_STATUS_Z;
 
+
+
+
+
+
+
+
 #endif /* MOTION_H */

@@ -269,13 +269,13 @@
 #define COMMQ_TMP_BUFFI COMMQ_TMP_BUFF
 
 // asm: 	.globl	 COMMQ_TMP_BUFF
-extern int COMMQ_TMP_BUFF[80];
+extern int COMMQ_TMP_BUFF[];
 
 // asm: 	.globl	 SEND_BUFFER_A
-extern int SEND_BUFFER_A[COMM_BUFFER_SIZE];
+extern int SEND_BUFFER_A[];
 
 // asm: 	.globl	 RECEIVE_BUFFER
-extern int RECEIVE_BUFFER[COMM_BUFFER_SIZE];
+extern int RECEIVE_BUFFER[];
 
 // asm: 	.globl	 RBUFF_LEN
 extern int RBUFF_LEN;
@@ -283,6 +283,15 @@ extern int RBUFF_LEN;
 extern int OM_MODE;
 
 extern int OM_CHOSEN_RACE;
+
+// asm: 	.globl	 SEND_BSYNC0
+#define SEND_BSYNC0 SEND_BSYNC3
+
+// asm: 	.globl	 SEND_BSYNC1
+#define SEND_BSYNC1 SEND_BSYNC3
+
+// asm: 	.globl	 SEND_BSYNC2
+#define SEND_BSYNC2 SEND_BSYNC3
 
 // ***	COMMQ.ASM
 // asm: 	.globl	 SEND_CHANGE_MUSIC
@@ -308,7 +317,28 @@ void SEND_RACENUM(void);
 // asm: 	.globl	 SEND_PLAYERS_POS
 void SEND_PLAYERS_POS(void);
 
-// asm: 	.globl	 SEND_BSYNC0
-void SEND_BSYNC0(void);
+// asm: 	.globl	 SEND_OM_TRACK
+void SEND_OM_TRACK(void);
+
+// asm: 	.globl	 SEND_BSYNC3
+void SEND_BSYNC3(void);
+
+// COMM.ASM
+// asm: 	fbss	COMM_MASTER_ERROR_CNT,1
+extern int COMM_MASTER_ERROR_CNT;
+// asm: 	fbss	COMM_MASTER_TRANSES,1
+extern int COMM_MASTER_TRANSES;
+// asm: 	fbss	COMM_SLAVE_ERROR_CNT,1
+extern int COMM_SLAVE_ERROR_CNT;
+// asm: 	fbss	COMM_SLAVE_TRANSES,1
+extern int COMM_SLAVE_TRANSES;
+// asm: 	.bss	COMMFLAG,1		;COMMUNICATIONS IS OVER
+extern int COMMFLAG;
+// asm: 	pbss 	ONEFLAG,1
+extern int ONEFLAG;
+// asm: 	pbss	TRANSMISSION_ACTIVE,1	;1=TRUE
+extern int TRANSMISSION_ACTIVE;
+// asm: 	pbss	TRANSMISSION_DEAD,1	;1=DEAD LINK
+extern int TRANSMISSION_DEAD;
 
 #endif /* COMM_H */

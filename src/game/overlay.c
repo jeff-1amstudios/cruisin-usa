@@ -14,8 +14,8 @@
 #include "text.h"
 #include "delta.h"
 #include "dirq.h"
+#include "port.h"
 #include "overlay.h"
-#include "discovered_defines.h"
 
 /*
  * Source module: asm/OVERLAY.ASM
@@ -53,6 +53,31 @@ void TURNON_INFINITY(void);
 void TOWER_PAL_LD(void);
 void TOWER_PAL_RESTORE(void);
 void END_OF_GAME(void);
+
+/* *----------------------------------------------------------------------------
+*When a section is loaded (from the tyco track)and the SC_ROUTINE field
+*is not zero, the entry is used as an index, and executed from this table.
+*
+*Note that the call is made not when loading, but when the point has been
+*hit.
+*
+*PARAMETERS
+*	AR0	ROUTINE INDEX
+*
+*CLOBBERS	AR0
+*
+ */
+void SECTION_ROUTINE(void)
+{
+    // asm 0000ACFA: 	CMPI	0,AR0
+    // asm 0000ACFB: 	RETSEQ
+    // asm 0000ACFC: 	ADDI	@ROUTINE_TABLEI,AR0
+    // asm 0000ACFD: 	LDI	*AR0,AR0
+    // asm 0000ACFE: 	CALLU	AR0
+    // asm 0000ACFF: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SECTION_ROUTINE", 0, 0);
+    UNIMPL();
+}
 
 /* *----------------------------------------------------------------------------
  */
@@ -153,37 +178,6 @@ int ROUTINE_TABLE[] = {
 };
 #if DEBUG
 #endif
-/* *----------------------------------------------------------------------------
- */
-/* asm: CHECKPOINT_TIME_BONUS	.bss	CHECKPOINT_TIME_BONUS,1 */
-int CHECKPOINT_TIME_BONUS;
-/* asm: REAL_CHECKPOINTS	.bss	REAL_CHECKPOINTS,1 */
-int REAL_CHECKPOINTS;
-
-/* *----------------------------------------------------------------------------
-*When a section is loaded (from the tyco track)and the SC_ROUTINE field
-*is not zero, the entry is used as an index, and executed from this table.
-*
-*Note that the call is made not when loading, but when the point has been
-*hit.
-*
-*PARAMETERS
-*	AR0	ROUTINE INDEX
-*
-*CLOBBERS	AR0
-*
- */
-void SECTION_ROUTINE(void)
-{
-    // asm 0000ACFA: 	CMPI	0,AR0
-    // asm 0000ACFB: 	RETSEQ
-    // asm 0000ACFC: 	ADDI	@ROUTINE_TABLEI,AR0
-    // asm 0000ACFD: 	LDI	*AR0,AR0
-    // asm 0000ACFE: 	CALLU	AR0
-    // asm 0000ACFF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SECTION_ROUTINE", 0, 0);
-    UNIMPL();
-}
 
 void OVERLOCK(void)
 {
@@ -195,11 +189,19 @@ void OVERLOCK(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: CHECKPOINT_TIME_BONUS	.bss	CHECKPOINT_TIME_BONUS,1 */
+int CHECKPOINT_TIME_BONUS;
+/* asm: REAL_CHECKPOINTS	.bss	REAL_CHECKPOINTS,1 */
+int REAL_CHECKPOINTS;
+
 void CHECKPOINT_HIT_R(void)
 {
     // asm 0000AD30: 	PUSH	R0
     // asm 0000AD31: 	PUSH	AR2
     // asm 0000AD32: 	BU	JJGH
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKPOINT_HIT_R", 0, 0);
     UNIMPL();
 }

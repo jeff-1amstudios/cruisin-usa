@@ -12,6 +12,7 @@
 #include "objects.h"
 #include "text.h"
 #include "diag.h"
+#include "port.h"
 #include "motion.h"
 
 /*
@@ -60,95 +61,6 @@ int MOTION_NOT_ON;
 int MOTION_STOP_HIT;
 /* asm: MOTION_RCV_TIKS	.bss	MOTION_RCV_TIKS,1 */
 int MOTION_RCV_TIKS;
-/* asm: MOTOFF_PROG */
-/* asm: 	.word	MOTOROFF1 */
-/* asm: 	.word	MOTOROFF2 */
-/* asm: 	.word	MOTOROFF3 */
-/* asm: 	.word	MOTOROFF4 */
-/* asm: 	.word	MOTOROFF5 */
-/* asm: 	.word	MOTOROFF6 */
-/* asm: 	.word	MOTOROFF7 */
-/* asm: 	.word	MOTOROFF8 */
-/* asm: 	.word	MOTOROFF9 */
-/* asm: 	.word	MOTOROFF10 */
-/* asm: 	.word	MOTOROFF11 */
-/* asm: 	.word	MOTOROFF12 */
-/* asm: 	.word	0 */
-int MOTOFF_PROG[] = {
-    MOTOROFF1,
-    MOTOROFF2,
-    MOTOROFF3,
-    MOTOROFF4,
-    MOTOROFF5,
-    MOTOROFF6,
-    MOTOROFF7,
-    MOTOROFF8,
-    MOTOROFF9,
-    MOTOROFF10,
-    MOTOROFF11,
-    MOTOROFF12,
-    0,
-};
-/* asm: BABAID	.word	JJG */
-int *BABAID = JJG;
-/* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
-const char *JJG[] = { "UNKNOWN ERROR", "MAT NOT PLUGGED IN", "MAT STEPPED ON", "SAFETY BEAM PATH BROKEN", "SAFETY BEAM DETECTOR NOT RECEIVING", "SAFETY BEAM LIGHT NOT EMITTING", "FAIL SAFE SWITCH ENGAGED", "FAIL SAFE SWITCH NOT CONNECT PROPERLY" };
-const char *bbd = "MOTION BURNIN";
-/* asm: THEPROGL */
-/* asm: 	.word	EDIT,T5,T6,T7,T8,T9 */
-/* asm: 	.word	T10,T11,T12,T13,T14,T15,T16,T17,T18,T19 */
-/* asm: 	.word	T20,T21,T22,T23,T24,T25,T26,T27,T28,T29 */
-/* asm: 	.word	T30,T31,T32,T33,T34,T35,T36,T37,T38,T39 */
-/* asm: 	.word	T40,T41,T42,T43,T44,T45,T46,T47,T48,T49 */
-/* asm: 	.word	T50,T51,T52,T53,T54,T55,T56,T57,T58,T59 */
-/* asm: 	.word	T60 */
-/* asm: 	.word	T1,T2,T3 */
-/* asm: 	.word	T66X,T67X,T68X */
-/* asm: 	.word	T66Y,T67Y,T68Y */
-/* asm: 	.word	T66Z,T67Z,T68Z */
-/* asm: 	.word	T69 */
-/* asm: 	.word	T70,T71,T72,T73,T74,T75,T76,T77,T78,T79 */
-/* asm: 	.word	T80,T81,T82,T83,T84 */
-/* asm: 	.word	0 */
-int THEPROGL[] = {
-    EDIT, T5, T6, T7, T8, T9,
-    T10, T11, T12, T13, T14, T15, T16, T17, T18, T19,
-    T20, T21, T22, T23, T24, T25, T26, T27, T28, T29,
-    T30, T31, T32, T33, T34, T35, T36, T37, T38, T39,
-    T40, T41, T42, T43, T44, T45, T46, T47, T48, T49,
-    T50, T51, T52, T53, T54, T55, T56, T57, T58, T59,
-    T60,
-    T1, T2, T3,
-    T66X, T67X, T68X,
-    T66Y, T67Y, T68Y,
-    T66Z, T67Z, T68Z,
-    T69,
-    T70, T71, T72, T73, T74, T75, T76, T77, T78, T79,
-    T80, T81, T82, T83, T84,
-    0,
-};
-/* *----------------------------------------------------------------------------
-*
-*
-*RETURNS
-*	C	IF ERROR
-*	NC	IF NOT ERROR
-*
-*
- */
-/* asm: CME_MASK	.word	0FF80h */
-int CME_MASK = 0x0FF80;
-/* asm: LATCHED_ERROR	.bss	LATCHED_ERROR,1 */
-int LATCHED_ERROR;
-/* asm: GALIL_STATUS_X	.bss	GALIL_STATUS_X,1 */
-int GALIL_STATUS_X;
-/* asm: GALIL_STATUS_Y	.bss	GALIL_STATUS_Y,1 */
-int GALIL_STATUS_Y;
-/* asm: GALIL_STATUS_Z	.bss	GALIL_STATUS_Z,1 */
-int GALIL_STATUS_Z;
-const char *PXC1 = "XA=";
-const char *PYC1 = "YA=";
-const char *PZC1 = "ZA=";
 
 /* *----------------------------------------------------------------------------
 *This is the initial check of the galil board.
@@ -420,6 +332,36 @@ LLLTA:
     UNIMPL();
 }
 
+/* asm: MOTOFF_PROG */
+/* asm: 	.word	MOTOROFF1 */
+/* asm: 	.word	MOTOROFF2 */
+/* asm: 	.word	MOTOROFF3 */
+/* asm: 	.word	MOTOROFF4 */
+/* asm: 	.word	MOTOROFF5 */
+/* asm: 	.word	MOTOROFF6 */
+/* asm: 	.word	MOTOROFF7 */
+/* asm: 	.word	MOTOROFF8 */
+/* asm: 	.word	MOTOROFF9 */
+/* asm: 	.word	MOTOROFF10 */
+/* asm: 	.word	MOTOROFF11 */
+/* asm: 	.word	MOTOROFF12 */
+/* asm: 	.word	0 */
+int MOTOFF_PROG[] = {
+    MOTOROFF1,
+    MOTOROFF2,
+    MOTOROFF3,
+    MOTOROFF4,
+    MOTOROFF5,
+    MOTOROFF6,
+    MOTOROFF7,
+    MOTOROFF8,
+    MOTOROFF9,
+    MOTOROFF10,
+    MOTOROFF11,
+    MOTOROFF12,
+    0,
+};
+
 void SEND_MOTOR_OFF(void)
 {
     // asm 0000461C:         CALL    RESET_GALIL
@@ -525,6 +467,12 @@ FFFD:
     UNIMPL();
 }
 
+/* asm: BABAID	.word	JJG */
+int *BABAID = JJG;
+/* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
+const char *JJG[] = { "UNKNOWN ERROR", "MAT NOT PLUGGED IN", "MAT STEPPED ON", "SAFETY BEAM PATH BROKEN", "SAFETY BEAM DETECTOR NOT RECEIVING", "SAFETY BEAM LIGHT NOT EMITTING", "FAIL SAFE SWITCH ENGAGED", "FAIL SAFE SWITCH NOT CONNECT PROPERLY" };
+const char *bbd = "MOTION BURNIN";
+
 /* *----------------------------------------------------------------------------
 *
 *WAIT 500
@@ -587,6 +535,7 @@ void DIAG_MOTION_TESTZ(void)
 {
     // asm 000046B2: 	LDI	1,IR1
     // asm 000046B3: 	BU	MOTION_BURNIN_J
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_MOTION_TESTZ", 0, 0);
     UNIMPL();
 }
@@ -595,6 +544,7 @@ void DIAG_MOTION_TESTX(void)
 {
     // asm 000046B4: 	LDI	2,IR1
     // asm 000046B5: 	BU	MOTION_BURNIN_J
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_MOTION_TESTX", 0, 0);
     UNIMPL();
 }
@@ -603,6 +553,7 @@ void DIAG_MOTION_TESTY(void)
 {
     // asm 000046B6: 	LDI	4,IR1
     // asm 000046B7: 	BU	MOTION_BURNIN_J
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_MOTION_TESTY", 0, 0);
     UNIMPL();
 }
@@ -987,6 +938,7 @@ NO_MOTION_ERRORS:
     // *R2=Z FRONT		-1.0->1.0
     // *R3=X LFT REAR		-1.0->1.0
     // *R4=Y RT REAR		-1.0->1.0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLMOTION", 0, 0);
     UNIMPL();
 }
@@ -1144,6 +1096,40 @@ void LEVEL_THE_MOTION(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LEVEL_THE_MOTION", 0, 0);
     UNIMPL();
 }
+
+/* asm: THEPROGL */
+/* asm: 	.word	EDIT,T5,T6,T7,T8,T9 */
+/* asm: 	.word	T10,T11,T12,T13,T14,T15,T16,T17,T18,T19 */
+/* asm: 	.word	T20,T21,T22,T23,T24,T25,T26,T27,T28,T29 */
+/* asm: 	.word	T30,T31,T32,T33,T34,T35,T36,T37,T38,T39 */
+/* asm: 	.word	T40,T41,T42,T43,T44,T45,T46,T47,T48,T49 */
+/* asm: 	.word	T50,T51,T52,T53,T54,T55,T56,T57,T58,T59 */
+/* asm: 	.word	T60 */
+/* asm: 	.word	T1,T2,T3 */
+/* asm: 	.word	T66X,T67X,T68X */
+/* asm: 	.word	T66Y,T67Y,T68Y */
+/* asm: 	.word	T66Z,T67Z,T68Z */
+/* asm: 	.word	T69 */
+/* asm: 	.word	T70,T71,T72,T73,T74,T75,T76,T77,T78,T79 */
+/* asm: 	.word	T80,T81,T82,T83,T84 */
+/* asm: 	.word	0 */
+int THEPROGL[] = {
+    EDIT, T5, T6, T7, T8, T9,
+    T10, T11, T12, T13, T14, T15, T16, T17, T18, T19,
+    T20, T21, T22, T23, T24, T25, T26, T27, T28, T29,
+    T30, T31, T32, T33, T34, T35, T36, T37, T38, T39,
+    T40, T41, T42, T43, T44, T45, T46, T47, T48, T49,
+    T50, T51, T52, T53, T54, T55, T56, T57, T58, T59,
+    T60,
+    T1, T2, T3,
+    T66X, T67X, T68X,
+    T66Y, T67Y, T68Y,
+    T66Z, T67Z, T68Z,
+    T69,
+    T70, T71, T72, T73, T74, T75, T76, T77, T78, T79,
+    T80, T81, T82, T83, T84,
+    0,
+};
 
 /* *----------------------------------------------------------------------------
  */
@@ -1400,6 +1386,18 @@ WTMLP:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*
+*
+*RETURNS
+*	C	IF ERROR
+*	NC	IF NOT ERROR
+*
+*
+ */
+/* asm: CME_MASK	.word	0FF80h */
+int CME_MASK = 0x0FF80;
+
 void CHECK_MOTION_ERROR(void)
 {
     // asm 000049A7: 	PUSH	R0
@@ -1434,6 +1432,9 @@ void CLEAR_LATCH_ERROR(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEAR_LATCH_ERROR", 0, 0);
     UNIMPL();
 }
+
+/* asm: LATCHED_ERROR	.bss	LATCHED_ERROR,1 */
+int LATCHED_ERROR;
 
 void LATCH_ERROR(void)
 {
@@ -1604,6 +1605,13 @@ GSX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "G_STRING", 0, 0);
     UNIMPL();
 }
+
+/* asm: GALIL_STATUS_X	.bss	GALIL_STATUS_X,1 */
+int GALIL_STATUS_X;
+/* asm: GALIL_STATUS_Y	.bss	GALIL_STATUS_Y,1 */
+int GALIL_STATUS_Y;
+/* asm: GALIL_STATUS_Z	.bss	GALIL_STATUS_Z,1 */
+int GALIL_STATUS_Z;
 
 /* *----------------------------------------------------------------------------
 *
@@ -1817,3 +1825,7 @@ LLL3:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOWER_LIMIT_ERROR", 0, 0);
     UNIMPL();
 }
+
+const char *PXC1 = "XA=";
+const char *PYC1 = "YA=";
+const char *PZC1 = "ZA=";

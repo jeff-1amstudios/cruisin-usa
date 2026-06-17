@@ -13,6 +13,7 @@
 #include "objects.h"
 #include "text.h"
 #include "delta.h"
+#include "port.h"
 #include "rroad.h"
 
 /*
@@ -43,8 +44,6 @@ float COLL_DIST = 117465.0f;
 #define TRAIN_SPEED 240
 #define TRAIN_SPEED_MIN 170
 #define TRAIN_SPEED_MAX 280
-/* *----------------------------------------------------------------------------
- */
 
 /* *----------------------------------------------------------------------------
  */
@@ -140,6 +139,7 @@ void CARFORWARD(void)
     // asm 00009B76: 	CALL	PRC_FIND
     // asm 00009B77: 	LDI	AR0,AR2
     // asm 00009B78: 	CALL	PRC_FOLLOW		;FOLLOW THE ENGINE!
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARFORWARD", 0, 0);
     UNIMPL();
 }
@@ -186,6 +186,7 @@ KKG:
     // asm 00009B9C: 	LDF	@COLL_DIST,R2
     // asm 00009B9D: 	MPYF	2,R2
     // asm 00009B9E: 	STF	R2,*+AR7(DELTA_PLYRDIST)
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARFORWARD_ENGINE", 0, 0);
     UNIMPL();
 }
@@ -224,6 +225,7 @@ RAMPDOWNTRAINSND_DEATH:
     // asm: 	CALL	KILLSNDFX
 RDTX:
     // asm: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RAMPDOWNTRAINSND_PROC", 0, 0);
     UNIMPL();
 }
@@ -326,6 +328,9 @@ FLY1A:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYTRAIN", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
 
 /* *
 *FLYING CAR PROCESS
@@ -586,6 +591,7 @@ RROAD_DIE:
     // asm 00009CED: 	LDI	AR5,AR2
     // asm 00009CEE: 	CALL	DELCAR
     // asm 00009CEF: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYTRAINP", 0, 0);
     UNIMPL();
 }
@@ -623,6 +629,7 @@ DEADLPA:
     // asm 00009D07: DEADSLPA
     // asm 00009D07: 	SLEEP	1
     // asm 00009D09: 	B	DEADLPA
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEADCARA", 0, 0);
     UNIMPL();
 }
@@ -654,6 +661,7 @@ void GETFLYMAT_TRAIN(void)
     // asm: 	ADDI	OMATRIX,R2
     // asm: 	LDI	R2,R3
     // asm: 	BR	CONCATMAT		;FORMULATE COMBINED MATRIX
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETFLYMAT_TRAIN", 0, 0);
     UNIMPL();
 }

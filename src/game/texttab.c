@@ -3,6 +3,7 @@
 #include "text.h"
 #include "texttab.h"
 #include "macs.h"
+#include "port.h"
 
 /*
  * Source module: asm/TEXTTAB.ASM
@@ -178,8 +179,3 @@ int FONT18_TAB;
 /* asm: FONTENT	1,45,55,13,0	;Y	13,25 */
 /* asm: FONTENT	1,56,65,13,0	;Z	13,25 */
 int OGSMFONT_TAB;
-
-void texttab(void)
-{
-    UNIMPL();
-}

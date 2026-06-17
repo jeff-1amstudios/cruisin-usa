@@ -24,4 +24,11 @@ extern int BOXSCRAM[50];
 // asm: 	.BSS	PLYRBEHIND,1
 extern int PLYRBEHIND;
 
+
+
+
+
+
+
+
 #endif /* COLLA_H */

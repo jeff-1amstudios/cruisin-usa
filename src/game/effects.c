@@ -6,6 +6,7 @@
 #include "sysid.h"
 #include "globals.h"
 #include "objects.h"
+#include "port.h"
 #include "effects.h"
 
 /*
@@ -62,6 +63,7 @@ void SCREENWIPE_OPEN_PRC_FAST(void)
     // asm 0000B0AB: 	LONGROUT
     // asm: 	LDF	1.9,R0
     // asm: 	BR	L55
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCREENWIPE_OPEN_PRC_FAST", 0, 0);
     UNIMPL();
 }
@@ -157,6 +159,7 @@ L55:
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,@SCREENWIPE_DONE
     // asm: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCREENWIPE_OPEN_PRC", 0, 0);
     UNIMPL();
 }
@@ -235,6 +238,7 @@ void SCREENWIPE_CLOSE_PRC(void)
     // asm: 	LDI	1,R0
     // asm: 	STI	R0,@SCREENWIPE_DONE
     // asm: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCREENWIPE_CLOSE_PRC", 0, 0);
     UNIMPL();
 }

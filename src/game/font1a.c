@@ -4,6 +4,7 @@
 #include "vunit.h"
 #include "macs.h"
 #include "text.h"
+#include "port.h"
 #include "font1a.h"
 
 /*
@@ -21,18 +22,18 @@ void _pixel(void);
 
 /* *----------------------------------------------------------------------------
  */
-const char *POINT = ".";
-/* asm: ftoa_tmp	.bss	ftoa_tmp,2 */
-int ftoa_tmp[2];
-
-/* *----------------------------------------------------------------------------
- */
 void ENABLEGIE(void)
 {
     // asm 0000A75C: RETI
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+const char *POINT = ".";
+/* asm: ftoa_tmp	.bss	ftoa_tmp,2 */
+int ftoa_tmp[2];
 
 void _ftoa(void)
 {
@@ -100,6 +101,7 @@ void _itoaLZ(void)
     // asm 0000A78A: 	BGT	itoa1
     // asm 0000A78B: 	LDI	1,AR7
     // asm 0000A78C: 	BU	itoa1
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoaLZ", 0, 0);
     UNIMPL();
 }
@@ -190,6 +192,7 @@ ISZERO:
     // asm 0000A7D5: 	STI	R0,*AR2
     // asm 0000A7D6: 	LDI	8,R0
     // 	;---->	BUD	itoaX
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoa", 0, 0);
     UNIMPL();
 }
@@ -271,6 +274,7 @@ ISZEROH:
     // asm 0000A80D: 	LDI	030h,R0			;case when number is zero
     // asm 0000A80E: 	STI	R0,*AR2
     // asm 0000A80F: 	LDI	8,R0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HEX2ASC", 0, 0);
     UNIMPL();
 }

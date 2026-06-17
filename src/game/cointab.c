@@ -6,6 +6,7 @@
 #include "macs.h"
 #include "sys.h"
 #include "globals.h"
+#include "port.h"
 
 /*
  * Source module: asm/COINTAB.ASM
@@ -517,8 +518,3 @@ int COUNTRY_DEFAULTS[] = {
     HUNGARY1, HUNGARY1, HUNGARY1, HUNGARY1, // 18
     GENERAL1, GENERAL3, GENERAL5, GENERAL7, // 19
 };
-
-void cointab(void)
-{
-    UNIMPL();
-}

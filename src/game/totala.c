@@ -4,6 +4,7 @@
 #include "vunit.h"
 #include "globals.h"
 #include "pall.h"
+#include "port.h"
 #include "totala.h"
 
 /*
@@ -56,6 +57,7 @@ void _rdma(void)
     // asm 0000AF04: 	STI	RC,@_ARPS+7		;CY
     // asm 0000AF05: 	STI	RC,@_ARPS+10		;DY
     // 	;BU	_stuff_fpga
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_rdma", 0, 0);
     UNIMPL();
 }
@@ -172,6 +174,7 @@ void BLTMOD2D_NOPAL(void)
     // asm 0000AF36: 	PUSHM	R0,R1,R2,R3,R4,R5,R6,R7
     // asm 0000AF3E: 	PUSHM	AR0,AR1,AR2,AR3
     // asm 0000AF42: 	BU	SKIPPALENTRY
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BLTMOD2D_NOPAL", 0, 0);
     UNIMPL();
 }

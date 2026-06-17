@@ -11,6 +11,7 @@
 #include "dirq.h"
 #include "diag.h"
 #include "error.h"
+#include "port.h"
 #include "audits.h"
 
 /*
@@ -23,6 +24,51 @@ void AUDIT_DISPLAY(void);
 
 #define AUD_ROUTINE 0x5A
 #define AUD_ROUTINEH 0x5A0000
+
+/* *----------------------------------------------------------------------------
+*
+*
+*RETURN
+*	R0	VALUE
+*
+ */
+void COMPUTE_FREEGAMES_PRCNT(void)
+{
+    // asm: 	READAUD	AUD_GAMES_CONTINUES
+    // asm: 	LDI	R0,R1
+    // asm: 	READAUD	AUD_GAMES_START
+    // asm: 	ADDI	R0,R1
+    // asm: 	LDIZ	R1,R0
+    // asm: 	RETSZ
+    // asm: 	READAUD	AUD_TOTAL_FREEGAMES
+    // ;	ADDI	R0,R1
+    // asm: 	MPYI	100,R0
+    // asm: 	CALL	DIV_I30
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMPUTE_FREEGAMES_PRCNT", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+*
+*
+*RETURN
+*	R0	VALUE
+*
+ */
+void COMPUTE_GAMETIME(void)
+{
+    // asm: 	READAUD	AUD_GAMES_CONTINUES
+    // asm 00001421: 	LDI	R0,R1
+    // asm: 	READAUD	AUD_GAMES_START
+    // asm 00001423: 	ADDI	R0,R1
+    // asm: 	READAUD	AUD_GAMEON_TIME
+    // asm 00001425: 	CALL	DIV_I30
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMPUTE_GAMETIME", 0, 0);
+    UNIMPL();
+}
+
 /* asm: AUDIT_LIST */
 /* asm: AUDENT	AUD_COIN1,"LEFT COIN" */
 /* asm: AUDENT	AUD_COIN2,"RIGHT COIN" */
@@ -116,50 +162,6 @@ int AUDIT_LIST;
  */
 /* asm: OLDDIP	.bss	OLDDIP,1 */
 int OLDDIP;
-
-/* *----------------------------------------------------------------------------
-*
-*
-*RETURN
-*	R0	VALUE
-*
- */
-void COMPUTE_FREEGAMES_PRCNT(void)
-{
-    // asm: 	READAUD	AUD_GAMES_CONTINUES
-    // asm: 	LDI	R0,R1
-    // asm: 	READAUD	AUD_GAMES_START
-    // asm: 	ADDI	R0,R1
-    // asm: 	LDIZ	R1,R0
-    // asm: 	RETSZ
-    // asm: 	READAUD	AUD_TOTAL_FREEGAMES
-    // ;	ADDI	R0,R1
-    // asm: 	MPYI	100,R0
-    // asm: 	CALL	DIV_I30
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMPUTE_FREEGAMES_PRCNT", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
-*
-*
-*RETURN
-*	R0	VALUE
-*
- */
-void COMPUTE_GAMETIME(void)
-{
-    // asm: 	READAUD	AUD_GAMES_CONTINUES
-    // asm 00001421: 	LDI	R0,R1
-    // asm: 	READAUD	AUD_GAMES_START
-    // asm 00001423: 	ADDI	R0,R1
-    // asm: 	READAUD	AUD_GAMEON_TIME
-    // asm 00001425: 	CALL	DIV_I30
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMPUTE_GAMETIME", 0, 0);
-    UNIMPL();
-}
 
 void AUDIT_DISPLAY(void)
 {

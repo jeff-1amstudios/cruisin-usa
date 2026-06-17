@@ -6,4 +6,11 @@
 // asm: 	.bss	PLY2CAR,1
 extern int PLY2CAR;
 
+
+
+
+
+
+
+
 #endif /* COMMDRNE_H */

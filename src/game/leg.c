@@ -5,8 +5,8 @@
 #include "sys.h"
 #include "globals.h"
 #include "objects.h"
+#include "port.h"
 #include "leg.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/LEG.ASM
@@ -35,21 +35,6 @@ int LAST_END_CACHE;
 int LAST_END_INDEX;
 /* asm: LAST_ORIENTATION	.bss	LAST_ORIENTATION,1 */
 int LAST_ORIENTATION;
-/* *----------------------------------------------------------------------------
- */
-#define MINILL_SIZE 60
-/* asm: LEG_SSLL	hibss	LEG_SSLL,MINILL_SIZE*(LEG_SIZE+1) */
-int LEG_SSLL[MINILL_SIZE*(LEG_SIZE+1)];
-/* asm: LEGFREE	.bss	LEGFREE,1 */
-int LEGFREE;
-/* asm: LEGLL	.bss	LEGLL,1 */
-int LEGLL;
-/* asm: LEG_FLAG	.bss	LEG_FLAG,1 */
-int LEG_FLAG;
-/* asm: LEG_RADY	.bss	LEG_RADY,1 */
-int LEG_RADY;
-/* asm: LEG_SECTIONIDX	.bss	LEG_SECTIONIDX,1 */
-int LEG_SECTIONIDX;
 
 /* *----------------------------------------------------------------------------
 *
@@ -73,6 +58,16 @@ void LEG_INIT(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_INIT", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+#define MINILL_SIZE 60
+/* asm: LEG_SSLL	hibss	LEG_SSLL,MINILL_SIZE*(LEG_SIZE+1) */
+int LEG_SSLL[MINILL_SIZE*(LEG_SIZE+1)];
+/* asm: LEGFREE	.bss	LEGFREE,1 */
+int LEGFREE;
+/* asm: LEGLL	.bss	LEGLL,1 */
+int LEGLL;
 
 /* *
 *NOT A TRUE LINKED LIST, BECAUSE THERE IS NO DYNAMIC
@@ -282,6 +277,13 @@ CNTNB2:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LEG_GENERATE_MAP", 0, 0);
     UNIMPL();
 }
+
+/* asm: LEG_FLAG	.bss	LEG_FLAG,1 */
+int LEG_FLAG;
+/* asm: LEG_RADY	.bss	LEG_RADY,1 */
+int LEG_RADY;
+/* asm: LEG_SECTIONIDX	.bss	LEG_SECTIONIDX,1 */
+int LEG_SECTIONIDX;
 
 /* *----------------------------------------------------------------------------
 *

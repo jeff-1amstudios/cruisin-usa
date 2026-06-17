@@ -6,4 +6,11 @@
 // asm: 		pbss	ATTRWAVE,1
 extern int ATTRWAVE;
 
+
+
+
+
+
+
+
 #endif /* ATTRDRNE_H */

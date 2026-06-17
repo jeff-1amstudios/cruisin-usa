@@ -8,6 +8,9 @@
 // COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // ALL RIGHTS RESERVED
 
+// asm: 	.globl	FONT18_TAB
+extern int FONT18_TAB;
+
 // asm: 	.globl	FONTDIGSMI
 #define FONTDIGSMI FONTDIGSM
 
@@ -20,10 +23,7 @@
 // asm: 	.globl	FONT40TABI
 extern int FONT40TABI;
 
-// asm: 	.globl	FONT18_TAB
-void FONT18_TAB(void);
-
 // asm: 	.globl	OGSMFONT_TAB
-void OGSMFONT_TAB(void);
+extern int OGSMFONT_TAB;
 
 #endif /* TEXTTAB_H */

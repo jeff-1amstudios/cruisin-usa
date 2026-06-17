@@ -17,9 +17,8 @@
 #include "h2hobj.h"
 #include "comm.h"
 #include "racer.h"
+#include "port.h"
 #include "intro.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/INTRO.ASM
@@ -104,235 +103,12 @@ int CHECKPOINT_NUM;
 /* asm: H2H_FLAGSTATE	.bss	H2H_FLAGSTATE,1 */
 int H2H_FLAGSTATE;
 const char *JINOW = "JOIN IN NOW";
-const char *WFCHAL1 = "WAITING";
-const char *WFCHAL2 = "FOR CHALLENGER";
-const char *WFCHAL3 = "HOLD RADIO OR VIEW3 TO CANCEL";
-/* asm: FRAMELAG	.bss	FRAMELAG,1 */
-int FRAMELAG;
-/* asm: BONUS_WAITFLAG	pbss	BONUS_WAITFLAG,1 */
-int BONUS_WAITFLAG;
-/* asm: OM_BONUS_WAITFLAG	pbss	OM_BONUS_WAITFLAG,1 */
-int OM_BONUS_WAITFLAG;
-/* asm: START_NOW_P	.bss	START_NOW_P,1 */
-int START_NOW_P;
-#define PLYPOS2YL (-400)
-#define PLYPOS2ZL 2200
-/* *----------------------------------------------------------------------------
-*CHOOSECAR
-*
- */
-/* 	;all Y's were 0
-	;
- */
-/* asm: CCTAB */
-/* asm: 	.word	-1384,-164,-4708,cvettem */
-/* asm: 	.float	PI */
-/* asm: 	.word	0481h */
-/* asm: 	.word	-448,-200,-4708,hotrodm */
-/* asm: 	.float	PI */
-/* asm: 	.word	0482h */
-/* asm: 	.word	464,-177,-4708,misslem */
-/* asm: 	.float	PI */
-/* asm: 	.word	0483h */
-/* asm: 	.word	1424,-147,-4708,testorm */
-/* asm: 	.float	PI */
-/* asm: 	.word	0484h */
-/* asm: 	.word	-1 */
-int CCTAB[] = {
-    -1384, -164, -4708, cvettem,
-    PI,
-    0x0481,
-    -448, -200, -4708, hotrodm,
-    PI,
-    0x0482,
-    464, -177, -4708, misslem,
-    PI,
-    0x0483,
-    1424, -147, -4708, testorm,
-    PI,
-    0x0484,
-    -1,
-};
-/* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
-int CHOOSENCAR;
-/* asm: RACE_STARTING_POINTS */
-/* asm: 	.word	0 */
-/* asm: 	.word	L_LEG2_BEGIN+1 */
-/* asm: 	.word	L_LEG3_BEGIN+1 */
-/* asm: 	.word	L_LEG4_BEGIN+1 */
-/* asm: 	.word	L_LEG5_BEGIN+1 */
-/* asm: 	.word	L_LEG6_BEGIN+1 */
-/* asm: 	.word	L_LEG7_BEGIN+1 */
-/* asm: 	.word	L_LEG8_BEGIN+1 */
-/* asm: 	.word	L_LEG9_BEGIN+1 */
-/* asm: 	.word	L_LEG10_BEGIN+1 */
-/* asm: 	.word	L_LEG11_BEGIN+1 */
-/* asm: 	.word	L_LEG12_BEGIN+1 */
-/* asm: 	.word	L_LEG13_BEGIN+1 */
-/* asm: 	.word	L_LEG14_BEGIN+1 */
-int RACE_STARTING_POINTS[] = {
-    0,
-    L_LEG2_BEGIN+1,
-    L_LEG3_BEGIN+1,
-    L_LEG4_BEGIN+1,
-    L_LEG5_BEGIN+1,
-    L_LEG6_BEGIN+1,
-    L_LEG7_BEGIN+1,
-    L_LEG8_BEGIN+1,
-    L_LEG9_BEGIN+1,
-    L_LEG10_BEGIN+1,
-    L_LEG11_BEGIN+1,
-    L_LEG12_BEGIN+1,
-    L_LEG13_BEGIN+1,
-    L_LEG14_BEGIN+1,
-};
-/* *----------------------------------------------------------------------------
- */
-/* asm: CAR_CHOICE_GOTTEN	.bss	CAR_CHOICE_GOTTEN,1 */
-int CAR_CHOICE_GOTTEN;
-/* *----------------------------------------------------------------------------
- */
-/* asm: CAR_ARRAY	.bss	CAR_ARRAY,4 */
-int CAR_ARRAY[4];
-/* *----------------------------------------------------------------------------
-*SHOW CAR STATISTICS
-*
-*USES
-*	AR4,AR5,AR6,R4,R5
-*
- */
-/* asm: SCS_TAB	.float	10,70,170,230 */
-float SCS_TAB[] = {
-    10.0f, 70.0f, 170.0f, 230.0f,
-};
-/* asm: CAR1PAL	.bss	CAR1PAL,129 */
-int CAR1PAL[129];
-/* asm: CAR2PAL	.bss	CAR2PAL,129 */
-int CAR2PAL[129];
-/* asm: CAR3PAL	.bss	CAR3PAL,129 */
-int CAR3PAL[129];
-/* asm: CAR4PAL	.bss	CAR4PAL,129 */
-int CAR4PAL[129];
-/* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
-int *CARPAL_TABLE[] = {
-    CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL,
-};
-/* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
-int CARSRCPAL_TAB[] = {
-    cvette_p, hotrod_p, missle_p, testor_p,
-};
-/* *----------------------------------------------------------------------------
-*GENERAL PURPOSE CHOOSE CAR LOOP ROUTINE
-*
-*
-	;THE CAR
- */
-#define RNDR_C1_DYH (PDATA+1) //desired Y height
-#define RNDR_C1_SYH (PDATA+2) //starting y height
-#define RNDR_C2_DYH (PDATA+3)
-#define RNDR_C2_SYH (PDATA+4)
-#define RNDR_C3_DYH (PDATA+5)
-#define RNDR_C3_SYH (PDATA+6)
-#define RNDR_C4_DYH (PDATA+7)
-#define RNDR_C4_SYH (PDATA+8)
-/* 	;THE LIFT
- */
-#define RNDR_L1_DYH (PDATA+9) //desired Y height
-#define RNDR_L1_SYH (PDATA+10) //starting y height
-#define RNDR_L2_DYH (PDATA+11)
-#define RNDR_L2_SYH (PDATA+12)
-#define RNDR_L3_DYH (PDATA+13)
-#define RNDR_L3_SYH (PDATA+14)
-#define RNDR_L4_DYH (PDATA+15)
-#define RNDR_L4_SYH (PDATA+16)
-#define CDYH 0
-#define CSYH 1
-#define C_SIZE 2
-#define C_STRT (PDATA+1)
-#define C_OFF2LIFT 8
-/* *----------------------------------------------------------------------------
-*HIDDEN VEHICLES
-*
-*
-*
- */
-/* asm: IS_HIDDEN	.bss	IS_HIDDEN,1 */
-int IS_HIDDEN;
-/* asm: HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
-int HIDDEN_TABLE[] = {
-    jeepm, sbuspm, copcar, gtruck,
-};
-/* asm: SPINCURR	.bss	SPINCURR,1 */
-int SPINCURR;
-const char *T_READY = "READY";
-const char *T_SET = "SET";
-const char *T_GO = "GO";
-const char *T_CHALLENG = "CHALLENGE RACE";
-/* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
-/* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
-int TLIST[] = {
-    T_READY, CHICK_READY, SEND_WAVEFL_READY,
-    T_SET, CHICK_SET, SEND_WAVEFL_SET,
-};
-/* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
-int TLGO[] = {
-    T_GO, CHICK_GO, SEND_WAVEFL_GO,
-};
-/* asm: BABE_CONTROL	.bss	BABE_CONTROL,1 */
-int BABE_CONTROL;
-/* asm: CURR_FLAGSTATE	.bss	CURR_FLAGSTATE,1 */
-int CURR_FLAGSTATE;
-/* *----------------------------------------------------------------------------
-*DIAL ROUT
-*
-*SET THE PROPER OBJECT COLOR CYCLING
-*
- */
-/* asm: LASTCHOICE	.bss	LASTCHOICE,1 */
-int LASTCHOICE;
-/* *----------------------------------------------------------------------------
-*ATTRACT MODE TIMEOUT MECHANISM
-*SLEEP _timer TIKS THEN JUMP TO CYCLE_ATTR
-*
- */
-/* asm: _timer	.bss	_timer,1 */
-int _timer;
-/* *----------------------------------------------------------------------------
-*INSERT COINS ROUTINES
-*
-*	INSMORE		JSRPed FROM PLYR.ASM
-*	COIN_CNTDOWN	CREATED, KILLED
-*
- */
-/* asm: TROI	SPTR	"INSERT COINS" */
-const char *TROI = "INSERT COINS";
-/* asm: ICCI	SPTR	"TO CONTINUE" */
-const char *ICCI = "TO CONTINUE";
-/* asm: PSCI	SPTR	"PRESS START" */
-const char *PSCI = "PRESS START";
-/* asm: SAVEDMODE	.bss	SAVEDMODE,1 */
-int SAVEDMODE;
-/* *----------------------------------------------------------------------------
- */
-/* asm: DIRTY_SHARED	.bss	DIRTY_SHARED,1 */
-int DIRTY_SHARED;
-/* asm: TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
-int TRAFFIC_LL[] = {
-    light_yellowon, 10, light_redon, 32, light_greenon, 32, -1,
-};
-/* *----------------------------------------------------------------------------
- */
-/* asm: RGBTAB_CP */
-/* asm: .word	4 */
-/* asm: RGB	212,212,0 */
-/* asm: RGB	212,212,0 */
-/* asm: RGB	212,212,0 */
-int RGBTAB_CP;
 
 void HEAD2HEAD_LOGO_WAIT(void)
 {
     // asm 0000154D: 	LDI	1,AR6
     // asm 0000154E: 	BU	H2HLE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HEAD2HEAD_LOGO_WAIT", 0, 0);
     UNIMPL();
 }
@@ -475,6 +251,7 @@ KABOSH:
     // asm 000015D1: 	LDI	-2,R0
     // asm 000015D2: 	STI	R0,@_ATTR_MODE
     // asm 000015D3: 	BU	SET_ATTR
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HEAD2HEAD_LOGO", 0, 0);
     UNIMPL();
 }
@@ -564,9 +341,16 @@ KKGKG:
     // asm 00001606: 	DBU	AR5,THROBLP2
 ENDTHROB:
     // asm: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "THROBIT", 0, 0);
     UNIMPL();
 }
+
+const char *WFCHAL1 = "WAITING";
+const char *WFCHAL2 = "FOR CHALLENGER";
+const char *WFCHAL3 = "HOLD RADIO OR VIEW3 TO CANCEL";
+/* asm: FRAMELAG	.bss	FRAMELAG,1 */
+int FRAMELAG;
 
 /* *
 *
@@ -712,6 +496,7 @@ WAITX:
     // asm: 	LDI	5,R0			;so player doesn't puke (see near call)
     // asm: 	STI	R0,@_countdown
     // asm: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_FOR_CHALLENGER", 0, 0);
     UNIMPL();
 }
@@ -748,6 +533,11 @@ CEBT:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_ENDBONUS", 0, 0);
     UNIMPL();
 }
+
+/* asm: BONUS_WAITFLAG	pbss	BONUS_WAITFLAG,1 */
+int BONUS_WAITFLAG;
+/* asm: OM_BONUS_WAITFLAG	pbss	OM_BONUS_WAITFLAG,1 */
+int OM_BONUS_WAITFLAG;
 
 void WAIT_FOR_ENDBONUS(void)
 {
@@ -859,6 +649,7 @@ NOJHASD:
     // asm 0000170F: 	CALLNE	OBJ_DELETE
 IURENDFL:
     // asm 00001713: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_FOR_ENDBONUS", 0, 0);
     UNIMPL();
 }
@@ -869,6 +660,7 @@ void ISSUE_STARTGAME_TSEL(void)
 {
     // asm 00001718: 	LDI	1,R6
     // asm: 	BU	LKAS534
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ISSUE_STARTGAME_TSEL", 0, 0);
     UNIMPL();
 }
@@ -998,6 +790,7 @@ NOGAME:
     // asm: 	STI	R0,@NOASK_LINK
     // asm: 	CALL	SETONE
     // asm 00001764: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ISSUE_STARTGAME", 0, 0);
     UNIMPL();
 }
@@ -1123,9 +916,13 @@ ALL_JOINUP:
     // asm: 	LDF	1.0,R0
     // asm 00001802: 	STF	R0,@WHEELPWR
     // asm: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_INTRO", 0, 0);
     UNIMPL();
 }
+
+/* asm: START_NOW_P	.bss	START_NOW_P,1 */
+int START_NOW_P;
 
 /* *----------------------------------------------------------------------------
  */
@@ -1151,6 +948,7 @@ void CHOOSE_NEXT_RACE(void)
     // asm 00001815: 	SLEEP	4
     // 	;
     // asm 00001817: 	BU	CNR_ENTER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOOSE_NEXT_RACE", 0, 0);
     UNIMPL();
 }
@@ -1192,9 +990,13 @@ void LOAD_NEW_SELECTION(void)
     // asm 00001835: 	LDI	BUT_VIEW2,R0			;BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
     // asm: 	STI	R0,@BUTTON_STATUS
     // asm 00001836: 	BU	ALL_JOINUP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_NEW_SELECTION", 0, 0);
     UNIMPL();
 }
+
+#define PLYPOS2YL (-400)
+#define PLYPOS2ZL 2200
 
 /* *----------------------------------------------------------------------------
 *
@@ -1283,6 +1085,76 @@ void INIT_GAMELEG(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_GAMELEG", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*CHOOSECAR
+*
+ */
+/* 	;all Y's were 0
+	;
+ */
+/* asm: CCTAB */
+/* asm: 	.word	-1384,-164,-4708,cvettem */
+/* asm: 	.float	PI */
+/* asm: 	.word	0481h */
+/* asm: 	.word	-448,-200,-4708,hotrodm */
+/* asm: 	.float	PI */
+/* asm: 	.word	0482h */
+/* asm: 	.word	464,-177,-4708,misslem */
+/* asm: 	.float	PI */
+/* asm: 	.word	0483h */
+/* asm: 	.word	1424,-147,-4708,testorm */
+/* asm: 	.float	PI */
+/* asm: 	.word	0484h */
+/* asm: 	.word	-1 */
+int CCTAB[] = {
+    -1384, -164, -4708, cvettem,
+    PI,
+    0x0481,
+    -448, -200, -4708, hotrodm,
+    PI,
+    0x0482,
+    464, -177, -4708, misslem,
+    PI,
+    0x0483,
+    1424, -147, -4708, testorm,
+    PI,
+    0x0484,
+    -1,
+};
+/* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
+int CHOOSENCAR;
+/* asm: RACE_STARTING_POINTS */
+/* asm: 	.word	0 */
+/* asm: 	.word	L_LEG2_BEGIN+1 */
+/* asm: 	.word	L_LEG3_BEGIN+1 */
+/* asm: 	.word	L_LEG4_BEGIN+1 */
+/* asm: 	.word	L_LEG5_BEGIN+1 */
+/* asm: 	.word	L_LEG6_BEGIN+1 */
+/* asm: 	.word	L_LEG7_BEGIN+1 */
+/* asm: 	.word	L_LEG8_BEGIN+1 */
+/* asm: 	.word	L_LEG9_BEGIN+1 */
+/* asm: 	.word	L_LEG10_BEGIN+1 */
+/* asm: 	.word	L_LEG11_BEGIN+1 */
+/* asm: 	.word	L_LEG12_BEGIN+1 */
+/* asm: 	.word	L_LEG13_BEGIN+1 */
+/* asm: 	.word	L_LEG14_BEGIN+1 */
+int RACE_STARTING_POINTS[] = {
+    0,
+    L_LEG2_BEGIN+1,
+    L_LEG3_BEGIN+1,
+    L_LEG4_BEGIN+1,
+    L_LEG5_BEGIN+1,
+    L_LEG6_BEGIN+1,
+    L_LEG7_BEGIN+1,
+    L_LEG8_BEGIN+1,
+    L_LEG9_BEGIN+1,
+    L_LEG10_BEGIN+1,
+    L_LEG11_BEGIN+1,
+    L_LEG12_BEGIN+1,
+    L_LEG13_BEGIN+1,
+    L_LEG14_BEGIN+1,
+};
 
 /* *
 *CAMERA POSITION IS ASSUMED TO BE SET BY THE TIME
@@ -1434,9 +1306,15 @@ JAJAKKA:
     // asm: 	CALL	PRC_KILLALL
     // asm: 	CALL	CLEANUP_DIMCAR_PALS
     // asm 00001933: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOOSECAR", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: CAR_CHOICE_GOTTEN	.bss	CAR_CHOICE_GOTTEN,1 */
+int CAR_CHOICE_GOTTEN;
 
 void THE_CAR_CHOICE_PROC(void)
 {
@@ -1477,6 +1355,7 @@ CCLPX:
     // asm: 	LDI	1,R0
     // asm 00001953: 	STI	R0,@CAR_CHOICE_GOTTEN
     // asm 00001954: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "THE_CAR_CHOICE_PROC", 0, 0);
     UNIMPL();
 }
@@ -1502,6 +1381,7 @@ void RAISE_DOOR(void)
     // asm: 	SLEEP	1
     // asm: 	DBU	AR5,RDLP
     // asm 00001960: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RAISE_DOOR", 0, 0);
     UNIMPL();
 }
@@ -1738,9 +1618,15 @@ IBODONE:
     // asm 00001A1E: 	LDI	MGAME|MINFIN|MWATER,R0	;NOT MGO NOT MHUD
     // asm 00001A1F: 	STI	R0,@_MODE
     // asm: 	BU	PLYR_INTRO_ENTER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMTOCAR", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: CAR_ARRAY	.bss	CAR_ARRAY,4 */
+int CAR_ARRAY[4];
 
 void GETTHECARS(void)
 {
@@ -1797,6 +1683,18 @@ LISTLP:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*SHOW CAR STATISTICS
+*
+*USES
+*	AR4,AR5,AR6,R4,R5
+*
+ */
+/* asm: SCS_TAB	.float	10,70,170,230 */
+float SCS_TAB[] = {
+    10.0f, 70.0f, 170.0f, 230.0f,
+};
+
 void SHOW_CAR_STATISTICS(void)
 {
     // asm: 	LDI	@DCALL,R0
@@ -1849,6 +1747,23 @@ GBERLP:
     UNIMPL();
 }
 
+/* asm: CAR1PAL	.bss	CAR1PAL,129 */
+int CAR1PAL[129];
+/* asm: CAR2PAL	.bss	CAR2PAL,129 */
+int CAR2PAL[129];
+/* asm: CAR3PAL	.bss	CAR3PAL,129 */
+int CAR3PAL[129];
+/* asm: CAR4PAL	.bss	CAR4PAL,129 */
+int CAR4PAL[129];
+/* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
+int *CARPAL_TABLE[] = {
+    CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL,
+};
+/* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
+int CARSRCPAL_TAB[] = {
+    cvette_p, hotrod_p, missle_p, testor_p,
+};
+
 /* *----------------------------------------------------------------------------
 *
 *(AND OVERHEAD LIGHT CLEANUP)
@@ -1881,6 +1796,36 @@ void CLEANUP_DIMCAR_PALS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEANUP_DIMCAR_PALS", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*GENERAL PURPOSE CHOOSE CAR LOOP ROUTINE
+*
+*
+	;THE CAR
+ */
+#define RNDR_C1_DYH (PDATA+1) //desired Y height
+#define RNDR_C1_SYH (PDATA+2) //starting y height
+#define RNDR_C2_DYH (PDATA+3)
+#define RNDR_C2_SYH (PDATA+4)
+#define RNDR_C3_DYH (PDATA+5)
+#define RNDR_C3_SYH (PDATA+6)
+#define RNDR_C4_DYH (PDATA+7)
+#define RNDR_C4_SYH (PDATA+8)
+/* 	;THE LIFT
+ */
+#define RNDR_L1_DYH (PDATA+9) //desired Y height
+#define RNDR_L1_SYH (PDATA+10) //starting y height
+#define RNDR_L2_DYH (PDATA+11)
+#define RNDR_L2_SYH (PDATA+12)
+#define RNDR_L3_DYH (PDATA+13)
+#define RNDR_L3_SYH (PDATA+14)
+#define RNDR_L4_DYH (PDATA+15)
+#define RNDR_L4_SYH (PDATA+16)
+#define CDYH 0
+#define CSYH 1
+#define C_SIZE 2
+#define C_STRT (PDATA+1)
+#define C_OFF2LIFT 8
 
 /* *----------------------------------------------------------------------------
 *
@@ -2023,6 +1968,7 @@ RLL:
     // asm 00001B07: 	CALL	AFFECT_THE_CARS
     // asm: 	SLEEP	1
     // asm: 	BU	ROUNDERLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROUNDER", 0, 0);
     UNIMPL();
 }
@@ -2062,6 +2008,19 @@ void AFFECT_THE_CARS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AFFECT_THE_CARS", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*HIDDEN VEHICLES
+*
+*
+*
+ */
+/* asm: IS_HIDDEN	.bss	IS_HIDDEN,1 */
+int IS_HIDDEN;
+/* asm: HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
+int HIDDEN_TABLE[] = {
+    jeepm, sbuspm, copcar, gtruck,
+};
 
 void HIDDEN_VEHICLES(void)
 {
@@ -2109,6 +2068,7 @@ NSCD:
     // *PARAMETERS
     // *	R0	INDEX OF PREVIOUS VEHICLES
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HIDDEN_VEHICLES", 0, 0);
     UNIMPL();
 }
@@ -2134,6 +2094,9 @@ void RESET_ORIGINAL(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESET_ORIGINAL", 0, 0);
     UNIMPL();
 }
+
+/* asm: SPINCURR	.bss	SPINCURR,1 */
+int SPINCURR;
 
 /* *----------------------------------------------------------------------------
 *
@@ -2421,6 +2384,25 @@ PEDALTRUE:
     UNIMPL();
 }
 
+const char *T_READY = "READY";
+const char *T_SET = "SET";
+const char *T_GO = "GO";
+const char *T_CHALLENG = "CHALLENGE RACE";
+/* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
+/* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
+int TLIST[] = {
+    T_READY, CHICK_READY, SEND_WAVEFL_READY,
+    T_SET, CHICK_SET, SEND_WAVEFL_SET,
+};
+/* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
+int TLGO[] = {
+    T_GO, CHICK_GO, SEND_WAVEFL_GO,
+};
+/* asm: BABE_CONTROL	.bss	BABE_CONTROL,1 */
+int BABE_CONTROL;
+/* asm: CURR_FLAGSTATE	.bss	CURR_FLAGSTATE,1 */
+int CURR_FLAGSTATE;
+
 void WAVEFLAG(void)
 {
     // asm: 	LDP	@STOPWATCH_CNTL
@@ -2581,6 +2563,7 @@ NOTHHHH:
     // asm 00001D2D: 	CMPI	MATTR,R0
     // asm 00001D2E: 	CALLNE	RESUME_TUNE_NT
     // asm 00001D2F:  	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVEFLAG", 0, 0);
     UNIMPL();
 }
@@ -2597,6 +2580,7 @@ void RACESEL_TIMER(void)
     // asm 00001D37: 	FLOAT	253,R3
     // asm: 	LDI	1,RC
     // 	;---->	BUD	IT_E2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RACESEL_TIMER", 0, 0);
     UNIMPL();
 }
@@ -2607,6 +2591,7 @@ void WAITINTROTIMER(void)
 {
     // asm: 	FLOAT	215,R3
     // asm: 	BU	LKJAFSD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAITINTROTIMER", 0, 0);
     UNIMPL();
 }
@@ -2633,6 +2618,15 @@ IT_E2:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INTROTIMER", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*DIAL ROUT
+*
+*SET THE PROPER OBJECT COLOR CYCLING
+*
+ */
+/* asm: LASTCHOICE	.bss	LASTCHOICE,1 */
+int LASTCHOICE;
 
 void DIAL_ROUT(void)
 {
@@ -2703,6 +2697,7 @@ KK5:
     // asm 00001D7A: 	CLRI	R1			;R1	(B0-15) MASK
     // asm: 	CALL	PRC_KILLALL
     // asm: 	BU	SET_ATTR
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ENDPLAYER", 0, 0);
     UNIMPL();
 }
@@ -2823,6 +2818,7 @@ CYCLEOUT:
     // asm: 	BR	COLD_ENTER		;RESET SYSTEM RUNNING
 _startX:
     // asm 00001DBA: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_start", 0, 0);
     UNIMPL();
 }
@@ -2848,6 +2844,7 @@ UPLP:
     // asm: 	CALL	FIND_YMATRIX
     // asm: 	SLEEP	1
     // asm: 	BU	UPLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ULTRA_PROC", 0, 0);
     UNIMPL();
 }
@@ -2950,6 +2947,7 @@ void SET_ATTR(void)
     // asm: 	CALL	WAVE
     // asm: 	BU	COLD_ENTER
 CYCLE_ATTR:
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_ATTR", 0, 0);
     UNIMPL();
 }
@@ -2966,18 +2964,44 @@ void _debug(void)
     // asm: 	STI	AR2,@_ATTR_MODE
     // asm: 	CALL	WAVE
     // asm: 	BU	COLD_ENTER		;RESET SYSTEM RUNNING
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_debug", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*ATTRACT MODE TIMEOUT MECHANISM
+*SLEEP _timer TIKS THEN JUMP TO CYCLE_ATTR
+*
+ */
+/* asm: _timer	.bss	_timer,1 */
+int _timer;
 
 void _timeout(void)
 {
     // asm 00001E23: 	LDI	@_timer,AR2
     // asm 00001E24: 	CALL	SLEEP
     // asm 00001E25: 	BU	CYCLE_ATTR
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_timeout", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*INSERT COINS ROUTINES
+*
+*	INSMORE		JSRPed FROM PLYR.ASM
+*	COIN_CNTDOWN	CREATED, KILLED
+*
+ */
+/* asm: TROI	SPTR	"INSERT COINS" */
+const char *TROI = "INSERT COINS";
+/* asm: ICCI	SPTR	"TO CONTINUE" */
+const char *ICCI = "TO CONTINUE";
+/* asm: PSCI	SPTR	"PRESS START" */
+const char *PSCI = "PRESS START";
+/* asm: SAVEDMODE	.bss	SAVEDMODE,1 */
+int SAVEDMODE;
 
 void INSMORE(void)
 {
@@ -3166,6 +3190,7 @@ NOSECRET_CRUISE:
     // asm 00001ED1: 	CLRF	R0
     // asm: 	STPF	R0,@GAME_TIMER
     // asm: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INSMORE", 0, 0);
     UNIMPL();
 }
@@ -3193,9 +3218,15 @@ COIN_CNTDOWN_LP:
     // asm 00001EE1: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 00001EE2: 	SLEEP	1
     // asm 00001EE3: 	BU	COIN_CNTDOWN_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN_CNTDOWN", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: DIRTY_SHARED	.bss	DIRTY_SHARED,1 */
+int DIRTY_SHARED;
 
 void LOAD_SHARED(void)
 {
@@ -3239,9 +3270,15 @@ CCC:
     // asm 00001F15: 	LDI	*AR5++,AR2
     // asm: 	CALL	SLEEP
     // asm: 	BU	TLT_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAFFIC_LIGHT", 0, 0);
     UNIMPL();
 }
+
+/* asm: TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
+int TRAFFIC_LL[] = {
+    light_yellowon, 10, light_redon, 32, light_greenon, 32, -1,
+};
 
 /* *----------------------------------------------------------------------------
  */
@@ -3268,9 +3305,19 @@ CNT:
     // asm 00001F31: 	LDI	*AR4++,AR2
     // asm 00001F32: 	CALL	SLEEP
     // asm 00001F33: 	B	CPL_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CPOINT_LIGHT", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: RGBTAB_CP */
+/* asm: .word	4 */
+/* asm: RGB	212,212,0 */
+/* asm: RGB	212,212,0 */
+/* asm: RGB	212,212,0 */
+int RGBTAB_CP;
 
 /* *----------------------------------------------------------------------------
 *
@@ -3325,6 +3372,7 @@ SLLP1A:
     // asm: 	SLEEP	1
     // asm: 	DBU	AR6,SLLP1A
     // asm 00001F79: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_RACE_NAME", 0, 0);
     UNIMPL();
 }

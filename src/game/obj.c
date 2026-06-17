@@ -9,7 +9,7 @@
 #include "macs.h"
 #include "error.h"
 #include "globals.h"
-#include "obj_defs.h"
+#include "port.h"
 
 /*
  * Source module: asm/OBJ.ASM
@@ -63,17 +63,9 @@ int OACTIVECNT;
 int OFREECNT;
 /* asm: OMAX_OBJECTS	.bss	OMAX_OBJECTS,1 */
 int OMAX_OBJECTS;
-/* asm: OBJSTR	hibss	OBJSTR,OBJSIZ*NUM_OBJECTS */
-int OBJSTR[OBJSIZ*NUM_OBJECTS];
+int OBJSTR[sizeof(OBJ)*NUM_OBJECTS];
 /* asm: COMM_DRONE_PTR	.bss	COMM_DRONE_PTR,1 */
 int COMM_DRONE_PTR;
-/* asm: PLYRTEMP	.BSS	PLYRTEMP,1 */
-int PLYRTEMP;
-/* asm: ACTIVEHI1	.word	75000		;HI LIMIT FOR INACTIVE-ACTIVE */
-int ACTIVEHI1 = 75000;
-/* asm: ACTIVEHI	.word	80000		;HI LIMIT FOR ACTIVE-INACTIVE */
-int ACTIVEHI = 80000;
-#define ACTIVELO (-5000) //LO LIMIT INACTIVE OBJECT LIST
 
 /* *----------------------------------------------------------------------------
 *INITIALIZE OBJECT DATA STRUCTURES
@@ -430,6 +422,7 @@ void OBJ_FIND_FIRST_PRIORITY(void)
     // asm 000070E3: 	PUSH	R0
     // asm 000070E4: 	LDI	@OACTIVE_PRIORITYI,AR0
     // asm 000070E5: 	BU	L89
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FIND_FIRST_PRIORITY", 0, 0);
     UNIMPL();
 }
@@ -469,6 +462,7 @@ void OBJ_FREE_GROUND(void)
     // asm 000070F8: 	LDI	@GROUND_LISTI,R1		;we must find dead object to link around
     // asm 000070F9: 	SUBI	OLINK3,R1
     // 	;---->	BUD	DELSLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FREE_GROUND", 0, 0);
     UNIMPL();
 }
@@ -855,6 +849,9 @@ PDLINKX:
     UNIMPL();
 }
 
+/* asm: PLYRTEMP	.BSS	PLYRTEMP,1 */
+int PLYRTEMP;
+
 /* *-----------------------------------------------------------------------------
 *SORT PLYR CAR WITH DRONE CARS INTO ROAD WITH PRIORITY
 *
@@ -1078,6 +1075,12 @@ DSORTXX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESORT", 0, 0);
     UNIMPL();
 }
+
+/* asm: ACTIVEHI1	.word	75000		;HI LIMIT FOR INACTIVE-ACTIVE */
+int ACTIVEHI1 = 75000;
+/* asm: ACTIVEHI	.word	80000		;HI LIMIT FOR ACTIVE-INACTIVE */
+int ACTIVEHI = 80000;
+#define ACTIVELO (-5000) //LO LIMIT INACTIVE OBJECT LIST
 
 /* *----------------------------------------------------------------------------
 *SCAN ACTIVE LIST

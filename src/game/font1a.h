@@ -6,4 +6,11 @@
 // asm: 	.bss	ftoa_tmp,2
 extern int ftoa_tmp[2];
 
+
+
+
+
+
+
+
 #endif /* FONT1A_H */

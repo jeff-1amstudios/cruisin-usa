@@ -82,4 +82,11 @@ extern int BUTTON_IBO;
 // asm: 	.bss	BUTTON_TIK,1
 extern int BUTTON_TIK;
 
+
+
+
+
+
+
+
 #endif /* CUSA_H */

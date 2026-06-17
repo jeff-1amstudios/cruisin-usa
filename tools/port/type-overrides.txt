@@ -5,22 +5,18 @@
 # unsigned short FLAGS[16];
 
 void *SWTAB;
-BONUS1()
-BONUS2()
-BONUS3()
-BONUS4()
-BONUS5()
-BONUS6()
-BONUS7()
-BONUS8()
-BONUS9()
-BONUS10()
-BONUS11()
-BONUS12()
-BONUS13()
-BONUS14()
+intptr_t *VIEWLIST[];
+intptr_t GGPARK_LIST[];
+intptr_t BEVHILL_LIST[];
+intptr_t GCANYON_LIST[];
+intptr_t CHICAGO_LIST[];
+time=time_ROM
 -PB1
 -PB2
 -PBSS_PTR
 -PBSS_BSSEND
 -RAM_PTR
+-DT1
+-DT2
+-DT3
+SMOOTH_VIEW()

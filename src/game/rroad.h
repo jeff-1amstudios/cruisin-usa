@@ -10,4 +10,11 @@ extern int THE_TRAIN_SPEED;
 // asm: 	.bss	KILL_TRAIN,1		;UD
 extern int KILL_TRAIN;
 
+
+
+
+
+
+
+
 #endif /* RROAD_H */

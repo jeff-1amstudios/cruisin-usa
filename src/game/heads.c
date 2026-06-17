@@ -12,8 +12,8 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
+#include "port.h"
 #include "heads.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/HEADS.ASM
@@ -29,36 +29,6 @@ void CENTEREM(void);
 void RIGHTEM(void);
 
 #define HEADTYPE 0x88D0
-/* asm: HEADS	.word	jeno */
-/* asm: 	.word	marc */
-/* asm: 	.word	pet */
-/* asm: 	.word	xion */
-/* asm: 	.word	ted */
-/* asm: 	.word	matt */
-/* asm: 	.word	vince */
-/* asm: 	.word	carl */
-/* asm: 	.word	glen */
-/* asm: 	.word	ken */
-/* asm: 	.word	eric */
-/* asm: 	.word	-1 */
-int HEADS[] = {
-    jeno,
-    marc,
-    pet,
-    xion,
-    ted,
-    matt,
-    vince,
-    carl,
-    glen,
-    ken,
-    eric,
-    -1,
-};
-/* asm: YINCREMENT	.bss	YINCREMENT,1 */
-int YINCREMENT;
-/* asm: FONTUSED	.bss	FONTUSED,1 */
-int FONTUSED;
 
 /* *----------------------------------------------------------------------------
  */
@@ -98,9 +68,37 @@ DELLP:
 TXTXX:
     // asm 0000A1BD: 	SLEEP	1
     // asm 0000A1BF: 	BU	TEXTDELER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXTDELER", 0, 0);
     UNIMPL();
 }
+
+/* asm: HEADS	.word	jeno */
+/* asm: 	.word	marc */
+/* asm: 	.word	pet */
+/* asm: 	.word	xion */
+/* asm: 	.word	ted */
+/* asm: 	.word	matt */
+/* asm: 	.word	vince */
+/* asm: 	.word	carl */
+/* asm: 	.word	glen */
+/* asm: 	.word	ken */
+/* asm: 	.word	eric */
+/* asm: 	.word	-1 */
+int HEADS[] = {
+    jeno,
+    marc,
+    pet,
+    xion,
+    ted,
+    matt,
+    vince,
+    carl,
+    glen,
+    ken,
+    eric,
+    -1,
+};
 
 /* *----------------------------------------------------------------------------
 *
@@ -176,6 +174,7 @@ VOLP:
 VOSLP:
     // asm 0000A20C: SLEEP	1
     // asm 0000A20E: 	BU	VANITY_HEADS_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_HEADS", 0, 0);
     UNIMPL();
 }
@@ -194,10 +193,14 @@ void SET18FONTDS_WHITE(void)
     UNIMPL();
 }
 
+/* asm: YINCREMENT	.bss	YINCREMENT,1 */
+int YINCREMENT;
+
 void VANITY(void)
 {
     // asm 0000A215: 	JSRP	VANITY_SUB
     // asm 0000A21B: 	BR	CYCLE_ATTR
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY", 0, 0);
     UNIMPL();
 }
@@ -369,9 +372,13 @@ WTD55:
     // asm 0000A2BA: 	LDI	-1,R1
     // asm 0000A2BB: 	CALL	PRC_KILLALL
     // asm 0000A2BC: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VANITY_SUB", 0, 0);
     UNIMPL();
 }
+
+/* asm: FONTUSED	.bss	FONTUSED,1 */
+int FONTUSED;
 
 /* ;	LDL	SET18FONTDS
 ;	LDL	SETFIXEDFONTDS

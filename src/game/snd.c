@@ -11,9 +11,8 @@
 #include "text.h"
 #include "objects.h"
 #include "comm.h"
+#include "port.h"
 #include "snd.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/SND.ASM
@@ -83,32 +82,6 @@ int STATION_LIST[] = {
 int STATION_TIMEOUT;
 /* asm: RS_X	.bss	RS_X,1 */
 int RS_X;
-/* asm: TUNE_IDX	.bss	TUNE_IDX,1 */
-int TUNE_IDX;
-/* asm: DO_NOT_REENABLE_INT	.bss	DO_NOT_REENABLE_INT,1 */
-int DO_NOT_REENABLE_INT;
-/* *----------------------------------------------------------------------------
-*CLEAR THE SOUND DATA BASE
-*
- */
-/* *----------------------------------------------------------------------------
-*SEND SOUND TO SOUND BOARD
-*
-*PARAMETER
-*	AR2	SOUND CODE (16 BITS)
-*
-*RETURNS
-*	NOTHING
-*
-*NOTE	On the actual writes to the sound board we are blowing the
-*	specified timings as per Loffs suggestion to save time. He
-*	says that they are over speced and that it shouldn't be a
-*	problem. Initial tests indicate no change in operation.
-*	Alter .set SPACER to a larger number if there is a problem.
-*
-*
- */
-#define SPACER 30 //# OF NOPs BETWEEN WRITES
 
 void RADIO_SHOW(void)
 {
@@ -138,6 +111,7 @@ KILLME:
     // asm 000090F8: 	CLRI	R0
     // asm 000090F9: 	STI	R0,@STATION_TIMEOUT
     // asm 000090FA: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_SHOW", 0, 0);
     UNIMPL();
 }
@@ -155,6 +129,7 @@ void RADIO_BUT(void)
 RBMGAME:
     // asm 00009100: 	CALL	CHANGE_STATION
     // asm 00009101: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_BUT", 0, 0);
     UNIMPL();
 }
@@ -199,6 +174,9 @@ void CHANGE_STATION(void)
     UNIMPL();
 }
 
+/* asm: TUNE_IDX	.bss	TUNE_IDX,1 */
+int TUNE_IDX;
+
 /* *----------------------------------------------------------------------------
 *PARAMETERS (SET_TUNE)
 *	AR2	CHANNEL
@@ -211,6 +189,7 @@ void SET_TUNE_LINKED(void)
     // asm 00009110: 	LDI	1,AR6
     // asm 00009111: 	STI	AR2,@TUNE_IDX
     // asm 00009112: 	BU	L987
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_TUNE_LINKED", 0, 0);
     UNIMPL();
 }
@@ -222,6 +201,7 @@ void SET_TUNE(void)
     // asm 00009115: 	CLRI	AR6
     // asm 00009116: 	STI	AR2,@TUNE_IDX
     // asm 00009117: 	BU	L987
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_TUNE", 0, 0);
     UNIMPL();
 }
@@ -289,6 +269,7 @@ void SET_MASTER_VOL(void)
     // asm 0000913A: 	PUSH	R1
     // asm 0000913B: 	LDI	055AAh,R0
     // 	;---->	BUD	JI1
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_MASTER_VOL", 0, 0);
     UNIMPL();
 }
@@ -328,6 +309,9 @@ JI1:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_TRACK_VOL", 0, 0);
     UNIMPL();
 }
+
+/* asm: DO_NOT_REENABLE_INT	.bss	DO_NOT_REENABLE_INT,1 */
+int DO_NOT_REENABLE_INT;
 
 /* *----------------------------------------------------------------------------
  */
@@ -392,6 +376,7 @@ WAITIT:
     // asm 0000918B: 	NOP
     // asm 0000918C: 	POP	DP
     // asm 0000918D: 	BU	CLRSNDDB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESET_SNDBRD", 0, 0);
     UNIMPL();
 }
@@ -418,6 +403,11 @@ void SILENT(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SILENT", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*CLEAR THE SOUND DATA BASE
+*
+ */
 
 void CLRSNDDB(void)
 {
@@ -466,6 +456,7 @@ void VOLSNDFX(void)
 {
     // asm 000091AE:  	AND	0FFH,R0		;KEEP IN RANGE
     // asm 000091AF: 	B	SNDFX
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VOLSNDFX", 0, 0);
     UNIMPL();
 }
@@ -554,6 +545,7 @@ L88:
 NOSOUND_FX:
     // asm 000091E7: 	CLRC
     // asm 000091E8: 	BU	L88
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ONESNDFX", 0, 0);
     UNIMPL();
 }
@@ -614,6 +606,7 @@ void PLYR_ENGINE(void)
     // asm 000091FF: 	STI	R0,@DO_NOT_REENABLE_INT
     // asm 00009200: 	LDI	R1,AR2
     // asm 00009201: 	B	SENDSND
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_ENGINE", 0, 0);
     UNIMPL();
 }
@@ -706,6 +699,25 @@ SNDLDX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ONESND", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*SEND SOUND TO SOUND BOARD
+*
+*PARAMETER
+*	AR2	SOUND CODE (16 BITS)
+*
+*RETURNS
+*	NOTHING
+*
+*NOTE	On the actual writes to the sound board we are blowing the
+*	specified timings as per Loffs suggestion to save time. He
+*	says that they are over speced and that it shouldn't be a
+*	problem. Initial tests indicate no change in operation.
+*	Alter .set SPACER to a larger number if there is a problem.
+*
+*
+ */
+#define SPACER 30 //# OF NOPs BETWEEN WRITES
 
 void SENDSND(void)
 {

@@ -36,4 +36,11 @@ extern int COUNTER_IDX;
 // asm: 	.bss	COUNTER_MODE,1
 extern int COUNTER_MODE;
 
+
+
+
+
+
+
+
 #endif /* COIN_H */

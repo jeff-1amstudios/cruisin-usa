@@ -10,4 +10,11 @@ extern int RHOFLAG;
 // asm: 	.bss	RHOPAL,1
 extern int RHOPAL;
 
+
+
+
+
+
+
+
 #endif /* RHO_H */

@@ -8,4 +8,11 @@ extern int YINCREMENT;
 // asm: 	.bss	FONTUSED,1
 extern int FONTUSED;
 
+
+
+
+
+
+
+
 #endif /* HEADS_H */

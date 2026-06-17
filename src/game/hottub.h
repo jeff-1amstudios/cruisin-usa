@@ -8,4 +8,11 @@ extern int PRES;
 // asm: 	.bss	WATCHOBJ,1
 extern int WATCHOBJ;
 
+
+
+
+
+
+
+
 #endif /* HOTTUB_H */

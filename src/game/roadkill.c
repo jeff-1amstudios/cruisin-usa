@@ -12,9 +12,8 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
+#include "port.h"
 #include "roadkill.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/ROADKILL.ASM
@@ -69,103 +68,6 @@ int ROADKILL_TAB[] = {
 };
 /* asm: ROADKILLXZ	.bss	ROADKILLXZ,2 */
 int ROADKILLXZ[2];
-/* asm: SOUNDTIME	.float	0.00204678	;7(1/60)/57 of a minute */
-float SOUNDTIME = 0.00204678f;
-/* asm: ROADKILL_SOUND_TIMER	.bss	ROADKILL_SOUND_TIMER,1 */
-int ROADKILL_SOUND_TIMER;
-/* *----------------------------------------------------------------------------
-* COW_PROC	PROC
-*Maintains a COW
-*	CREATE	COW_PROC,RDDEBRIS_C|TSC_ROADKILL|TSC_COW_S
- */
-#define LOOP_COUNT PDATA
-#define TOTAL_FRAMES (PDATA+1)
-/* asm: DEERANI */
-/* asm: 	.word	edeer,edeer1,edeer2,edeer3,edeer4,edeer5,-1 */
-int DEERANI[] = {
-    edeer, edeer1, edeer2, edeer3, edeer4, edeer5, -1,
-};
-/* asm: SPINSPEEDF	.float	0.0002 */
-float SPINSPEEDF = 0.0002f;
-/* asm: COW_PARTS */
-/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
-/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
-/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0,-1 */
-int COW_PARTS[] = {
-    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
-    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
-    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0, -1,
-};
-/* asm: DEER_PARTS */
-/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0 */
-/* asm: 	.word	deerc4,0,antler,0,antler,0,dheada,0 */
-/* asm: 	.word	dheada,1,dheada,1,deerc1,1,deerc1,1,deerc2,0 */
-/* asm: 	.word	deerc2,0,deerc3,0,deerc4,0,-1 */
-int DEER_PARTS[] = {
-    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0,
-    deerc4, 0, antler, 0, antler, 0, dheada, 0,
-    dheada, 1, dheada, 1, deerc1, 1, deerc1, 1, deerc2, 0,
-    deerc2, 0, deerc3, 0, deerc4, 0, -1,
-};
-/* asm: DEERBLOOD_ANI	.word	adblud1,adblud2,adblud3,adblud4,adblud5,adblud6,-1 */
-int DEERBLOOD_ANI[] = {
-    adblud1, adblud2, adblud3, adblud4, adblud5, adblud6, -1,
-};
-/* asm: GEESEANI: */
-/* asm: 	.word	geese1,geeseb,geesec,geesed */
-/* asm: 	.word	geesee,geesef,geeseg,geeseh,-1 */
-int GEESEANI[] = {
-    geese1, geeseb, geesec, geesed,
-    geesee, geesef, geeseg, geeseh, -1,
-};
-/* asm: GEESE_DIR: */
-/* asm: 	.word	250,1 */
-/* asm: 	.float	0 */
-/* asm: 	.word	150,-1 */
-/* asm: 	.float	0 */
-/* asm: 	.word	150,-1 */
-/* asm: 	.float	-0.13 */
-/* asm: 	.word	250,1 */
-/* asm: 	.float	-0.13 */
-int GEESE_DIR[] = {
-    250, 1,
-    0,
-    150, -1,
-    0,
-    150, -1,
-    -0.13,
-    250, 1,
-    -0.13,
-};
-/* *----------------------------------------------------------------------------
- */
-#define SPEED PDATA
-#define DIRECTION (PDATA+1)
-#define DIR_RAD (PDATA+2)
-#define NUM_SPLATS (PDATA+3)
-/* *----------------------------------------------------------------------------
-* Set by Spawner:
-*	R4	=	SPEED
-*	R5	=	DIRECTION INT (+/-1, Direction to travers road)
-*	R6	=	RADS direction FL
- */
-/* asm: SHIT_ANI	.word	bdst,bdst2,bdst3,bdst4,bdst5,bdst6,-1 */
-int SHIT_ANI[] = {
-    bdst, bdst2, bdst3, bdst4, bdst5, bdst6, -1,
-};
-/* *---------------------------------------------------------------------------
-*---------------------------------------------------------------------------
-*---------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-* BUG_SPAWNER_PROC	PROC
-*Creates several BUG SPLAT PROCS
-*	CREATE	BUG_SPAWNER_PROC,SPAWNER_C
-*
- */
-/* asm: BUG_ANI	.word	bug1,bug2,bug3,bug4,bug5,-1 */
-int BUG_ANI[] = {
-    bug1, bug2, bug3, bug4, bug5, -1,
-};
 
 void PLYRROADKILL(void)
 {
@@ -306,6 +208,11 @@ RKFPX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL_FLYERP", 0, 0);
     UNIMPL();
 }
+
+/* asm: SOUNDTIME	.float	0.00204678	;7(1/60)/57 of a minute */
+float SOUNDTIME = 0.00204678f;
+/* asm: ROADKILL_SOUND_TIMER	.bss	ROADKILL_SOUND_TIMER,1 */
+int ROADKILL_SOUND_TIMER;
 
 void ROADKILL_HIT(void)
 {
@@ -513,9 +420,18 @@ CSPLP:
     // asm 00006A28: 	BR	CSPLP
 CSPX:
     // asm 00006A29: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COW_SPAWNER_PROC", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+* COW_PROC	PROC
+*Maintains a COW
+*	CREATE	COW_PROC,RDDEBRIS_C|TSC_ROADKILL|TSC_COW_S
+ */
+#define LOOP_COUNT PDATA
+#define TOTAL_FRAMES (PDATA+1)
 
 void COW_PROC(void)
 {
@@ -549,9 +465,16 @@ COW_SLEEP:
     // asm 00006A46: 	BR	COW_SLEEP
 COW_DIE:
     // asm 00006A47: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COW_PROC", 0, 0);
     UNIMPL();
 }
+
+/* asm: DEERANI */
+/* asm: 	.word	edeer,edeer1,edeer2,edeer3,edeer4,edeer5,-1 */
+int DEERANI[] = {
+    edeer, edeer1, edeer2, edeer3, edeer4, edeer5, -1,
+};
 
 /* *----------------------------------------------------------------------------
 * DEER_SPAWNER_PROC	PROC
@@ -582,6 +505,7 @@ DSPLP:
     // asm 00006A5D: 	BR	DSPLP
 DSPX:
     // asm 00006A5E: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_SPAWNER_PROC", 0, 0);
     UNIMPL();
 }
@@ -602,6 +526,7 @@ DEERANI_LOOP:
     // asm 00006A69: 	BR	DEERANI_LOOP		;Ultimatly backgrnd or colla will kill this proc
 DEER_DIE:
     // asm 00006A6A: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_PROC", 0, 0);
     UNIMPL();
 }
@@ -610,6 +535,7 @@ void INIT_DEER(void)
 {
     // asm 00006A6B: 	LDI	@DEERANII,AR6
     // asm 00006A6C: 	LDI	*AR6,AR2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_DEER", 0, 0);
     UNIMPL();
 }
@@ -657,6 +583,29 @@ INIT_DEERX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_COW", 0, 0);
     UNIMPL();
 }
+
+/* asm: SPINSPEEDF	.float	0.0002 */
+float SPINSPEEDF = 0.0002f;
+/* asm: COW_PARTS */
+/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
+/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
+/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0,-1 */
+int COW_PARTS[] = {
+    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
+    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
+    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0, -1,
+};
+/* asm: DEER_PARTS */
+/* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0 */
+/* asm: 	.word	deerc4,0,antler,0,antler,0,dheada,0 */
+/* asm: 	.word	dheada,1,dheada,1,deerc1,1,deerc1,1,deerc2,0 */
+/* asm: 	.word	deerc2,0,deerc3,0,deerc4,0,-1 */
+int DEER_PARTS[] = {
+    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0,
+    deerc4, 0, antler, 0, antler, 0, dheada, 0,
+    dheada, 1, dheada, 1, deerc1, 1, deerc1, 1, deerc2, 0,
+    deerc2, 0, deerc3, 0, deerc4, 0, -1,
+};
 
 void DEER_EXPLODE(void)
 {
@@ -743,6 +692,11 @@ void MAKE_NOCOLL(void)
     UNIMPL();
 }
 
+/* asm: DEERBLOOD_ANI	.word	adblud1,adblud2,adblud3,adblud4,adblud5,adblud6,-1 */
+int DEERBLOOD_ANI[] = {
+    adblud1, adblud2, adblud3, adblud4, adblud5, adblud6, -1,
+};
+
 void DEER_BLOOD_PROC(void)
 {
     // asm 00006AD7: 	LDL	DEERBLOOD_ANI,AR6
@@ -784,6 +738,7 @@ DBP_DONE:
     // asm 00006AFC: 	CALL	OBJ_DELETE
 DBP_DIE:
     // asm 00006AFD: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_BLOOD_PROC", 0, 0);
     UNIMPL();
 }
@@ -871,6 +826,39 @@ FLY_PARTSX:
     UNIMPL();
 }
 
+/* asm: GEESEANI: */
+/* asm: 	.word	geese1,geeseb,geesec,geesed */
+/* asm: 	.word	geesee,geesef,geeseg,geeseh,-1 */
+int GEESEANI[] = {
+    geese1, geeseb, geesec, geesed,
+    geesee, geesef, geeseg, geeseh, -1,
+};
+/* asm: GEESE_DIR: */
+/* asm: 	.word	250,1 */
+/* asm: 	.float	0 */
+/* asm: 	.word	150,-1 */
+/* asm: 	.float	0 */
+/* asm: 	.word	150,-1 */
+/* asm: 	.float	-0.13 */
+/* asm: 	.word	250,1 */
+/* asm: 	.float	-0.13 */
+int GEESE_DIR[] = {
+    250, 1,
+    0,
+    150, -1,
+    0,
+    150, -1,
+    -0.13,
+    250, 1,
+    -0.13,
+};
+/* *----------------------------------------------------------------------------
+ */
+#define SPEED PDATA
+#define DIRECTION (PDATA+1)
+#define DIR_RAD (PDATA+2)
+#define NUM_SPLATS (PDATA+3)
+
 /* *----------------------------------------------------------------------------
  */
 void GEESE_SPAWNER(void)
@@ -898,9 +886,21 @@ GOOSE_ME:
     // asm 00006B52: 	LDF	*AR0++,R6
     // asm 00006B53: 	CREATE	GEESE_PROC,UTIL_C
     // asm 00006B56: 	BR	GOOSE_ME
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GEESE_SPAWNER", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+* Set by Spawner:
+*	R4	=	SPEED
+*	R5	=	DIRECTION INT (+/-1, Direction to travers road)
+*	R6	=	RADS direction FL
+ */
+/* asm: SHIT_ANI	.word	bdst,bdst2,bdst3,bdst4,bdst5,bdst6,-1 */
+int SHIT_ANI[] = {
+    bdst, bdst2, bdst3, bdst4, bdst5, bdst6, -1,
+};
 
 void GEESE_PROC(void)
 {
@@ -1076,9 +1076,24 @@ GEESE_DONE:
     // asm 00006BFF: 	CALL	KILLSNDFX
 GEESE_DIE:
     // asm 00006C00: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GEESE_PROC", 0, 0);
     UNIMPL();
 }
+
+/* *---------------------------------------------------------------------------
+*---------------------------------------------------------------------------
+*---------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+* BUG_SPAWNER_PROC	PROC
+*Creates several BUG SPLAT PROCS
+*	CREATE	BUG_SPAWNER_PROC,SPAWNER_C
+*
+ */
+/* asm: BUG_ANI	.word	bug1,bug2,bug3,bug4,bug5,-1 */
+int BUG_ANI[] = {
+    bug1, bug2, bug3, bug4, bug5, -1,
+};
 
 void BUG_SPAWNER_PROC(void)
 {
@@ -1105,6 +1120,7 @@ void BUG_SPAWNER_PROC(void)
     // asm 00006C1E: 	BR	BSPLP
     // asm 00006C1F: BSPX
     // asm 00006C1F: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BUG_SPAWNER_PROC", 0, 0);
     UNIMPL();
 }
@@ -1205,6 +1221,7 @@ SPLAT_DONE:
     // asm 00006C7A: 	LDI	BUGBUZZ,AR2		;Make sure that it dies (it loops)
     // asm 00006C7B: 	CALL	KILLSNDFX
     // asm 00006C7C: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SPLAT_PROC", 0, 0);
     UNIMPL();
 }

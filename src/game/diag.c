@@ -15,7 +15,7 @@
 #include "dirq.h"
 #include "diag.h"
 #include "error.h"
-#include "diag_defs.h"
+#include "port.h"
 
 /*
  * Source module: asm/DIAG.ASM
@@ -136,12 +136,147 @@ void DRAW_MOTION_SAFETY_DIAG(void);
 void CLEAR_MATS(void);
 void MOTION_SAFETY_SWITCHES_DIAG(void);
 
+/* *WAIT FOR ENTER BUTTON ON
+ */
+void WT_START(void)
+{
+WT_S1:
+    // asm 000005F6: 	LDI	@_newbut,R0
+    // asm 000005F7: 	TSTB	SW_DIAG,R0
+    // asm 000005F8: 	BNZ	WT_S1
+    // asm 000005F9: 	RETS
+    // *WAIT FOR ENTER BUTTON OFF
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WT_START", 0, 0);
+    UNIMPL();
+}
+
+void WT_NSTART(void)
+{
+WT_NS1:
+    // asm 000005FA: 	LDI	@_newbut,R0
+    // asm 000005FB: 	TSTB	SW_DIAG,R0
+    // asm 000005FC: 	BZ	WT_NS1
+    // asm 000005FD: 	RETS
+    // *WAIT FOR ENTER ON THEN OFF
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "WT_NSTART", 0, 0);
+    UNIMPL();
+}
+
+void KEYPAUSE(void)
+{
+    // asm 000005FE: 	CALL	WT_START
+    // asm 000005FF: 	B	WT_NSTART
+    // *MAKE A BEEP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KEYPAUSE", 0, 0);
+    UNIMPL();
+}
+
+void BEEP(void)
+{
+    // asm 00000600: 	LDI	980,AR2
+    // asm 00000601: 	BR	SENDSND
+    // ;
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BEEP", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
  */
 #define MW_Y2 0
 #define MW_X2 1
 #define MW_Y1 2
 #define MW_X1 3
+
+void MAKE_WINDOW(void)
+{
+    // asm 00000602: 	PUSH	AR3
+    // asm 00000603: 	PUSH	AR2
+    // asm 00000604: 	PUSH	R2
+    // asm 00000605: 	PUSH	R3
+    // asm 00000606: 	PUSH	RC
+    // asm 00000607: 	LDI	SP,AR3
+    // asm 00000608: 	LDI	COL_LGREY,RS
+    // asm 00000609: 	CALL	_fill
+    // asm 0000060A: 	LDI	*-AR3(MW_X1),AR2
+    // asm 0000060B: 	LDI	*-AR3(MW_Y1),R2
+    // asm 0000060C: 	LDI	*-AR3(MW_X2),R3
+    // asm 0000060D: 	LDI	*-AR3(MW_Y1),RC
+    // asm 0000060E: 	LDI	COL_LGREY2,RS
+    // asm 0000060F: 	CALL	_line
+    // asm 00000610: 	LDI	*-AR3(MW_X1),AR2
+    // asm 00000611: 	LDI	*-AR3(MW_Y1),R2
+    // asm 00000612: 	LDI	*-AR3(MW_X1),R3
+    // asm 00000613: 	LDI	*-AR3(MW_Y2),RC
+    // asm 00000614: 	LDI	COL_LGREY2,RS
+    // asm 00000615: 	CALL	_line
+    // asm 00000616: 	LDI	*-AR3(MW_X2),AR2
+    // asm 00000617: 	LDI	*-AR3(MW_Y1),R2
+    // asm 00000618: 	LDI	*-AR3(MW_X2),R3
+    // asm 00000619: 	LDI	*-AR3(MW_Y2),RC
+    // asm 0000061A: 	LDI	COL_DGREY,RS
+    // asm 0000061B: 	CALL	_line
+    // asm 0000061C: 	LDI	*-AR3(MW_X1),AR2
+    // asm 0000061D: 	LDI	*-AR3(MW_Y2),R2
+    // asm 0000061E: 	LDI	*-AR3(MW_X2),R3
+    // asm 0000061F: 	LDI	*-AR3(MW_Y2),RC
+    // asm 00000620: 	LDI	COL_DGREY,RS
+    // asm 00000621: 	CALL	_line
+    // asm 00000622: 	POP	RC
+    // asm 00000623: 	POP	R3
+    // asm 00000624: 	POP	R2
+    // asm 00000625: 	POP	AR2
+    // asm 00000626: 	POP	AR3
+    // asm 00000627: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_WINDOW", 0, 0);
+    UNIMPL();
+}
+
+void MAKE_IWINDOW(void)
+{
+    // asm 00000628: 	PUSH	AR3
+    // asm 00000629: 	PUSH	AR2
+    // asm 0000062A: 	PUSH	R2
+    // asm 0000062B: 	PUSH	R3
+    // asm 0000062C: 	PUSH	RC
+    // asm 0000062D: 	LDI	SP,AR3
+    // asm 0000062E: 	LDI	COL_LGREY,RS
+    // asm 0000062F: 	CALL	_fill
+    // asm 00000630: 	LDI	*-AR3(MW_X1),AR2
+    // asm 00000631: 	LDI	*-AR3(MW_Y1),R2
+    // asm 00000632: 	LDI	*-AR3(MW_X2),R3
+    // asm 00000633: 	LDI	*-AR3(MW_Y1),RC
+    // asm 00000634: 	LDI	COL_DGREY,RS
+    // asm 00000635: 	CALL	_line
+    // asm 00000636: 	LDI	*-AR3(MW_X1),AR2
+    // asm 00000637: 	LDI	*-AR3(MW_Y1),R2
+    // asm 00000638: 	LDI	*-AR3(MW_X1),R3
+    // asm 00000639: 	LDI	*-AR3(MW_Y2),RC
+    // asm 0000063A: 	LDI	COL_DGREY,RS
+    // asm 0000063B: 	CALL	_line
+    // asm 0000063C: 	LDI	*-AR3(MW_X2),AR2
+    // asm 0000063D: 	LDI	*-AR3(MW_Y1),R2
+    // asm 0000063E: 	LDI	*-AR3(MW_X2),R3
+    // asm 0000063F: 	LDI	*-AR3(MW_Y2),RC
+    // asm 00000640: 	LDI	COL_LGREY2,RS
+    // asm 00000641: 	CALL	_line
+    // asm 00000642: 	LDI	*-AR3(MW_X1),AR2
+    // asm 00000643: 	LDI	*-AR3(MW_Y2),R2
+    // asm 00000644: 	LDI	*-AR3(MW_X2),R3
+    // asm 00000645: 	LDI	*-AR3(MW_Y2),RC
+    // asm 00000646: 	LDI	COL_LGREY2,RS
+    // asm 00000647: 	CALL	_line
+    // asm 00000648: 	POP	RC
+    // asm 00000649: 	POP	R3
+    // asm 0000064A: 	POP	R2
+    // asm 0000064B: 	POP	AR2
+    // asm 0000064C: 	POP	AR3
+    // asm 0000064D: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_IWINDOW", 0, 0);
+    UNIMPL();
+}
+
 const char *inst1 = "USE UP/DOWN TO SELECT FUNCTION";
 const char *inst2 = "ENTER TO ACTIVATE";
 const char *title = "CRUISIN USA   DIAGNOSTICS";
@@ -165,8 +300,124 @@ const char *toexit = "HIT ENTER TO EXIT";
 /* asm: RGB	0C0h,0C0h,0C0h		;	LIGHT GREY3 */
 /* asm: RGB	020h,020h,020h		;	LIGHT GREY3 */
 int DIAGPAL;
+
+/* *----------------------------------------------------------------------------
+ */
+void HARD_LOAD_DIAGPAL(void)
+{
+    // asm 0000065F: 	LDL	DIAGPAL,AR2
+    // asm 00000660: 	LDIL	COLORAM,AR1
+    // asm 00000663: 	LDI	*AR2++,AR0
+    // asm 00000664: 	DEC	AR0
+    // asm 00000665: LODLP
+    // asm 00000665: 	LDI	*AR2++,R0
+    // asm 00000666: 	STI	R0,*AR1++
+    // asm 00000667: 	DBU	AR0,LODLP
+    // asm 00000668: 	RETS					;F  -cycling color
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARD_LOAD_DIAGPAL", 0, 0);
+    UNIMPL();
+}
+
 /* asm: SOFT_AUDIT	.bss	SOFT_AUDIT,1 */
 int SOFT_AUDIT;
+
+void HIDDEN_DIAG(void)
+{
+    // asm 00000669: 	CALL	ENTER_DIAG_INIT
+    // asm 0000066A: 	LDI	@DIAGPAL+1,R0
+    // asm 0000066B: 	STI	R0,@BGNDCOLA
+    // asm 0000066C: 	LDI	MDIAG,R0		;set mode appropriate
+    // asm 0000066D: 	STI	R0,@_MODE
+    // asm 0000066E: 	CALL	CLRSCRN			;we are NOT page flipping
+    // asm 0000066F: 	CALL	SETPAGE0
+    // asm 00000670: 	LDIL	SCREEN0,R0		;set active screen to 1 (writeable)
+    // asm 00000673: 	STI	R0,@ACTIVE_SCREEN
+    // asm 00000674: 	LDI	1,R0
+    // asm 00000675: 	STI	R0,@SOFT_AUDIT
+    // asm 00000676: 	CALL	AUDIT_DISPLAY
+    // asm 00000677: 	BR	DIAG_RETURN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIDDEN_DIAG", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+*
+*
+ */
+void ENTER_DIAG_INIT(void)
+{
+    // asm 00000678: 	POP	R0
+    // asm 00000679: 	LDP	@FASTSTKI
+    // asm 0000067A:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
+    // asm 0000067B: 	PUSH	R0
+    // asm 0000067C: 	FIFO_CLRP	R0		;is the fifo clear
+    // asm 00000681: 	DMA_WT		R0
+    // asm 00000686: 	CALL	FIFO_RESET
+    // asm 00000687: 	CALL	SILENT
+    // asm 00000688: 	LDI	1,R2
+    // asm 00000689: 	SETAUD	ADJ_OUTOFDIAG
+    // asm 0000068B: 	LDI	MDIAG,R0		;MELLOW THE WHEEL
+    // asm 0000068C: 	STI	R0,@_MODE
+    // asm 0000068D: 	LDI	INT0_M|INT3_M,IE	;ENABLE INTERRUPTS
+    // asm 0000068E: 	AND     0,IF
+    // asm 0000068F: 	CALL	ENABLEGIE		;MUST DO AT START FOR I/O READING
+    // asm 00000690: 	CALL	INIT_SYSTEM
+    // asm 00000691: 	CALL	PAL_INIT
+    // asm 00000692: 	LDL	DIAGPAL,AR2
+    // asm 00000693: 	CALL	PAL_ALLOC_RAW
+    // asm 00000694: 	CLRI	AR2
+    // asm 00000695: 	CALL	SENDSND
+    // asm 00000696: 	CLRI	R4
+    // asm 00000697: 	STI	R4,@SOFT_AUDIT
+    // asm 00000698: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_DIAG_INIT", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+ */
+void ENTER_DIAG(void)
+{
+    // asm 00000699: 	CALL	ENTER_DIAG_INIT
+    // asm 0000069A: ENTER_DIAG2
+    // asm 0000069A: 	CLRI	R0
+    // asm 0000069B: 	STI	R0,@BUTTON_STATUS
+    // asm 0000069C: 	LDI	MDIAG,R0		;set mode appropriate
+    // asm 0000069D: 	STI	R0,@_MODE
+    // asm 0000069E: 	LDL	MAIN_MENU,AR5
+    // asm 0000069F: 	LDI	MAIN_MENU_LEN,AR6
+    // asm 000006A0: 	LDI	@MMT,AR7
+    // asm 000006A1: 	BU	HANDLE_MENU
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_DIAG", 0, 0);
+    UNIMPL();
+}
+
+void RETURN_TO_MAINMENU(void)
+{
+    // asm 000006A2: 	LDI	MDIAG,R0		;set mode appropriate
+    // asm 000006A3: 	STI	R0,@_MODE
+    // asm 000006A4: 	LDL	MAIN_MENU,AR5
+    // asm 000006A5: 	LDI	MAIN_MENU_LEN,AR6
+    // asm 000006A6: 	LDI	@MMT,AR7
+    // asm 000006A7: 	BU	HMER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RETURN_TO_MAINMENU", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+ */
+void TOEXIT(void)
+{
+    // asm 000006A8: 	LDI	DEFAULT_COLOR,RC
+    // asm 000006A9: 	TEXTIT	toexit,180,371
+    // asm 000006AD: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "TOEXIT", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
 *
  */
@@ -180,6 +431,140 @@ int GREENV = 0x40004;
 int BLUEV = 0x90009;
 /* asm: BLACKV	.word	80008h */
 int BLACKV = 0x80008;
+
+void MONITOR_DIAGNOSTICS(void)
+{
+    // asm 000006B3: 	CALL	COLORBARS
+    // asm 000006B4: 	CALL	KEYPAUSE
+    // asm 000006B5: 	CALL	PAL_INIT
+    // asm 000006B6: 	LDL	DIAGPAL,AR2
+    // asm 000006B7: 	CALL	PAL_ALLOC_RAW
+    // asm 000006B8: 	LDIL	SCREEN0,AR2
+    // asm 000006BB: 	LDI	@FILSIZI,R3
+    // asm 000006BC: 	LDI	@REDV,R2
+    // asm 000006BD: 	CALL	SCREEN_FILL
+    // asm 000006BE: 	CALL	KEYPAUSE
+    // ;	CALL	DIAG_ACTIVEP
+    // asm 000006BF: 	LDIL	SCREEN0,AR2
+    // asm 000006C2: 	LDI	@FILSIZI,R3
+    // asm 000006C3: 	LDI	@GREENV,R2
+    // asm 000006C4: 	CALL	SCREEN_FILL
+    // asm 000006C5: 	CALL	KEYPAUSE
+    // ;	CALL	DIAG_ACTIVEP
+    // asm 000006C6: 	LDIL	SCREEN0,AR2
+    // asm 000006C9: 	LDI	@FILSIZI,R3
+    // asm 000006CA: 	LDI	@BLUEV,R2
+    // asm 000006CB: 	CALL	SCREEN_FILL
+    // asm 000006CC: 	CALL	KEYPAUSE
+    // ;	CALL	DIAG_ACTIVEP
+    // asm 000006CD: 	LDIL	SCREEN0,AR2
+    // asm 000006D0: 	LDI	@FILSIZI,R3
+    // asm 000006D1: 	LDI	@BLACKV,R2
+    // asm 000006D2: 	CALL	SCREEN_FILL
+    // 	;12 across
+    // 	;HLINES
+    // 	;20 down
+    // asm 000006D3: 	LDI	20,AR7
+    // asm 000006D4: 	LDI	0,AR6
+    // asm 000006D5: LINLOP
+    // asm 000006D5: 	CMPI	20,AR6
+    // asm 000006D6: 	LDIEQ	19,AR6
+    // asm 000006D7: 	CLRI	AR2
+    // asm 000006D8: 	LDI	511,R3
+    // asm 000006D9: 	LDI	AR6,R2
+    // asm 000006DA: 	LDI	AR6,RC
+    // asm 000006DB: 	LDI	1,RS
+    // asm 000006DC: 	CALL	_line
+    // asm 000006DD: 	ADDI	20,AR6
+    // asm 000006DE: 	DBU	AR7,LINLOP
+    // 	;VLINES
+    // asm 000006DF: 	LDI	32,AR7
+    // asm 000006E0: 	LDI	0,AR6
+    // asm 000006E1: VLINLOP
+    // asm 000006E1: 	CMPI	16,AR6
+    // asm 000006E2: 	LDIEQ	15,AR6
+    // asm 000006E3: 	CLRI	R2
+    // asm 000006E4: 	LDI	399,RC
+    // asm 000006E5: 	LDI	AR6,AR2
+    // asm 000006E6: 	LDI	AR6,R3
+    // asm 000006E7: 	LDI	1,RS
+    // asm 000006E8: 	CALL	_line
+    // asm 000006E9: 	ADDI	16,AR6
+    // asm 000006EA: 	DBU	AR7,VLINLOP
+    // asm 000006EB: 	CALL	KEYPAUSE
+    // asm 000006EC: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MONITOR_DIAGNOSTICS", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+ */
+void COLORBARS(void)
+{
+    // asm 000006ED: 	CALL	CLRSCRN0
+    // asm 000006EE: 	CLRI	R0
+    // asm 000006EF: 	STI	R0,@BGNDCOLA
+    // asm 000006F0: 	LDI	09Eh,AR0
+    // asm 000006F1: 	LS	16,AR0
+    // asm 000006F2: 	LDI	15,RC
+    // asm 000006F3: 	RPTB	GREYLP
+    // asm 000006F4: 	LDI	R0,R1
+    // asm 000006F5: 	LDI	R0,R2
+    // asm 000006F6: 	LS	5,R1
+    // asm 000006F7: 	LS	10,R2
+    // asm 000006F8: 	LDI	R0,R3
+    // asm 000006F9: 	OR	R1,R3
+    // asm 000006FA: 	OR	R2,R3
+    // asm 000006FB: 	STI	R3,*AR0++
+GREYLP:
+    // asm 000006FC: ADDI	2,R0
+    // asm 000006FD: 	CLRI	R0
+    // asm 000006FE: 	LDI	15,RC
+    // asm 000006FF: 	RPTB	REDLP
+    // asm 00000700: 	LDI	R0,R1
+    // asm 00000701: 	LS	10,R1
+    // asm 00000702: 	STI	R1,*AR0++
+REDLP:
+    // asm 00000703: ADDI	2,R0
+    // asm 00000704: 	CLRI	R0
+    // asm 00000705: 	LDI	15,RC
+    // asm 00000706: 	RPTB	GREENLP
+    // asm 00000707: 	LDI	R0,R1
+    // asm 00000708: 	LSH	5,R1
+    // asm 00000709: 	STI	R1,*AR0++
+GREENLP:
+    // asm 0000070A: ADDI	2,R0
+    // asm 0000070B: 	CLRI	R0
+    // asm 0000070C: 	LDI	15,RC
+    // asm 0000070D: 	RPTB	BLUELP
+    // asm 0000070E: 	STI	R0,*AR0++
+    // asm 0000070F: BLUELP	ADDI	2,R0
+    // asm 00000710: 	CLRI	R3		;color
+    // asm 00000711: 	LDI	50,R2		;starting Y coordinate
+    // asm 00000712: 	LDI	3,AR4
+    // asm 00000713: WHOLELP
+    // asm 00000713: 	LDI	R3,R4
+    // asm 00000714: 	LDI	50,AR5		;lines per mess
+GROUPLP:
+    // asm 00000715: LDI	R4,R3
+    // asm 00000716: 	LDI	128,AR2		;starting X pixel
+    // asm 00000717: 	LDI	15,AR7		;blocks per lines
+LINELP:
+    // asm 00000718: LDI	15,AR6
+    // asm 00000719: BLOCKLP	CALL	_pixel
+    // asm 0000071A: 	INC	AR2		;next pixel
+    // asm 0000071B: 	DBU	AR6,BLOCKLP
+    // asm 0000071C: 	INC	R3
+    // asm 0000071D: 	DBU	AR7,LINELP
+    // asm 0000071E: 	INC	R2
+    // asm 0000071F: 	DBU	AR5,GROUPLP
+    // asm 00000720: 	ADDI	20,R2
+    // asm 00000721: 	DBU	AR4,WHOLELP
+    // asm 00000722: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLORBARS", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
 *SHOW SWITCHES (AND POTS)
 *
@@ -192,10 +577,214 @@ int _opot0;
 int _opot1;
 /* asm: _opot2	.bss	_opot2,1 */
 int _opot2;
+
+void SHOWSWITCH(void)
+{
+    // asm 00000724: 	CALL	SETUP_DIAG_SCREEN
+    // asm 00000725: 	LDI	-1,R0
+    // asm 00000726: 	STI	R0,@_opot0
+    // asm 00000727: 	STI	R0,@_opot1
+    // asm 00000728: 	STI	R0,@_opot2
+    // asm 00000729: 	STI	R0,@_onebut
+    // asm 0000072A: 	STI	R0,@LASTDIPPLOT
+    // asm 0000072B: 	STI	R0,@LASTSHIFT
+    // asm 0000072C: 	IWINDOW	125,170,145,355
+    // asm 00000731: 	IWINDOW	135,95,220,135
+    // asm 00000736: 	IWINDOW	245,95,420,135
+    // asm 0000073B: 	GROUP	10,60,465,150	;pots etc
+    // asm 0000076B: 	GROUP	10,160,170,360	;switches
+    // asm 0000079B: 	GROUP	190,160,360,250	;shifter
+    // asm 000007CB: 	LDI	COL_VDGREY,RC
+    // asm 000007CC: 	TEXTITT	"SWITCH TEST",205,26
+    // asm 000007D0: 	TEXTITT	"STEERING WHEEL",20,100
+    // asm 000007D4: 	TEXTITT	"GAS PEDAL",20,110
+    // asm 000007D8: 	TEXTITT	"BRAKE PEDAL",20,120
+    // asm 000007DC: 	TEXTITT	"VIEW 1",20,180
+    // asm 000007E0: 	TEXTITT	"VIEW 2",20,200
+    // asm 000007E4: 	TEXTITT	"VIEW 3",20,220
+    // asm 000007E8: 	TEXTITT	"START",20,240
+    // asm 000007EC: 	TEXTITT	"COIN 1",20,260
+    // asm 000007F0: 	TEXTITT	"COIN 2",20,280
+    // asm 000007F4: 	TEXTITT	"COIN 3",20,300
+    // asm 000007F8: 	TEXTITT	"COIN 4",20,320
+    // asm 000007FC: 	TEXTITT	"RADIO",20,340
+    // asm 00000800: 	TEXTITT	"HIT ENTER TO EXIT",40,40
+    // asm 00000804: 	TEXTITT	"ENTER",215,280
+    // asm 00000808: 	TEXTITT	"VOLUME UP",215,300
+    // asm 0000080C: 	TEXTITT	"VOLUME DOWN",215,320
+    // asm 00000810: 	TEXTITT	"SERVICE",215,340
+    // asm 00000814: 	TEXTITT	"CREDIT",225,350
+    // asm 00000818: 	IWINDOW	325,270,355,360
+SSLP:
+    // ;	CALL	DIAG_ACTIVEP
+    // asm 0000081D: 	CALL	DISPPOTS
+    // asm 0000081E: 	CALL	DISPLAY_SWITCH_STATUS
+    // asm 0000081F: 	LDI	COL_VDGREY,RC
+    // asm 00000820: 	TEXTITT	"CMOS VALUES",250,70
+    // asm 00000824: 	TEXTITT	"MIN  CENTER MAX",250,80
+    // asm 00000828: 	TEXTITT	"POT READING",134,80
+    // asm 0000082C: 	READADJ	ADJ_GASMIN
+    // asm 0000082E: 	LDI	R0,R2
+    // asm 0000082F: 	LDI	@bufferI,AR2
+    // asm 00000830: 	CALL	_itoa
+    // asm 00000831: 	LDI	250,R2
+    // asm 00000832: 	LDI	110,R3
+    // asm 00000833: 	LDI	DEFAULT_COLOR,RC
+    // asm 00000834: 	CALL	_outtextxyc
+    // asm 00000835: 	READADJ	ADJ_GASMAX
+    // asm 00000837: 	LDI	R0,R2
+    // asm 00000838: 	LDI	@bufferI,AR2
+    // asm 00000839: 	CALL	_itoa
+    // asm 0000083A: 	LDI	350,R2
+    // asm 0000083B: 	LDI	110,R3
+    // asm 0000083C: 	LDI	DEFAULT_COLOR,RC
+    // asm 0000083D: 	CALL	_outtextxyc
+    // asm 0000083E: 	READADJ	ADJ_STEERMIN
+    // asm 00000840: 	LDI	R0,R2
+    // asm 00000841: 	LDI	@bufferI,AR2
+    // asm 00000842: 	CALL	_itoa
+    // asm 00000843: 	LDI	250,R2
+    // asm 00000844: 	LDI	100,R3
+    // asm 00000845: 	LDI	DEFAULT_COLOR,RC
+    // asm 00000846: 	CALL	_outtextxyc
+    // asm 00000847: 	READADJ	ADJ_STEERCENTER
+    // asm 00000849: 	LDI	R0,R2
+    // asm 0000084A: 	LDI	@bufferI,AR2
+    // asm 0000084B: 	CALL	_itoa
+    // asm 0000084C: 	LDI	300,R2
+    // asm 0000084D: 	LDI	100,R3
+    // asm 0000084E: 	LDI	DEFAULT_COLOR,RC
+    // asm 0000084F: 	CALL	_outtextxyc
+    // asm 00000850: 	READADJ	ADJ_STEERMAX
+    // asm 00000852: 	LDI	R0,R2
+    // asm 00000853: 	LDI	@bufferI,AR2
+    // asm 00000854: 	CALL	_itoa
+    // asm 00000855: 	LDI	350,R2
+    // asm 00000856: 	LDI	100,R3
+    // asm 00000857: 	LDI	DEFAULT_COLOR,RC
+    // asm 00000858: 	CALL	_outtextxyc
+    // asm 00000859: 	READADJ	ADJ_BRAKEMIN
+    // asm 0000085B: 	LDI	R0,R2
+    // asm 0000085C: 	LDI	@bufferI,AR2
+    // asm 0000085D: 	CALL	_itoa
+    // asm 0000085E: 	LDI	250,R2
+    // asm 0000085F: 	LDI	120,R3
+    // asm 00000860: 	LDI	DEFAULT_COLOR,RC
+    // asm 00000861: 	CALL	_outtextxyc
+    // asm 00000862: 	READADJ	ADJ_BRAKEMAX
+    // asm 00000864: 	LDI	R0,R2
+    // asm 00000865: 	LDI	@bufferI,AR2
+    // asm 00000866: 	CALL	_itoa
+    // asm 00000867: 	LDI	350,R2
+    // asm 00000868: 	LDI	120,R3
+    // asm 00000869: 	LDI	DEFAULT_COLOR,RC
+    // asm 0000086A: 	CALL	_outtextxyc
+    // asm 0000086B: 	LDI	7FFFh,R0		;waste a little time
+    // asm 0000086C: 	MPYI	10,R0
+    // asm 0000086D: 	RPTS	R0
+    // asm 0000086E: 	NOP
+    // asm 0000086F: 	NOT	@_newbut,R0
+    // asm 00000870: 	AND	SW_DIAG,R0
+    // asm 00000871: 	BNZ	NOWTOEXIT
+    // ;	RETSNZ
+    // asm 00000872: 	CALL	WAIT_FOR_VBLANK		;wait for vblk
+    // asm 00000873: 	B	SSLP
+NOWTOEXIT:
+    // asm 00000874: 	LDI	330,AR2
+    // asm 00000875: 	LDI	AR2,R3
+    // asm 00000876: 	ADDI	10,R3
+    // asm 00000877: 	LDI	275,R2
+    // asm 00000878: 	SUBI	2,R2
+    // asm 00000879: 	LDI	R2,RC
+    // asm 0000087A: 	ADDI	12,RC
+    // asm 0000087B: 	LDI	COL_RED,RS
+    // asm 0000087C: 	CALL	_fill
+    // asm 0000087D: 	LDI	10,AR5
+    // asm 0000087E: BBD5	CALL	WAIT_FOR_VBLANK		;wait for vblk
+    // asm 0000087F: 	DBU	AR5,BBD5
+    // asm 00000880: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOWSWITCH", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+*BOTTOM EIGHT BITS ONLY
+*
+*
+*PARAMETER
+*	AR2	STRING
+*	R2	VALUE
+*
+*
+ */
+void ASCII_TO_BINARY(void)
+{
+    // asm 00000881: 	LDI	0,RS
+    // asm 00000882: 	LDI	0,R0	;output
+    // asm 00000883: 	LDI	80h,R1	;mask
+    // asm 00000884: 	LDI	7,AR3
+    // asm 00000885: ATBLP
+    // asm 00000885: 	TSTB	R1,R2
+    // asm 00000886: 	LDIZ	'0',R3
+    // asm 00000887: 	LDINZ	'1',R3
+    // asm 00000888: 	LSH	RS,R3
+    // asm 00000889: 	OR	R3,R0
+    // asm 0000088A: 	RS	1,R1
+    // asm 0000088B: 	ADDI	8,RS
+    // asm 0000088C: 	CMPI	32,RS
+    // asm 0000088D: 	BLT	JJ
+    // asm 0000088E: 	LDI	0,RS
+    // asm 0000088F: 	STI	R0,*AR2++
+    // asm 00000890: 	CLRI	R0
+JJ:
+    // asm 00000891: 	DBU	AR3,ATBLP
+    // asm 00000892: 	CLRI	R0
+    // asm 00000893: 	STI	R0,*AR2++
+    // asm 00000894: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ASCII_TO_BINARY", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
  */
 /* asm: _onebut	.bss	_onebut,1 */
 int _onebut;
+
+void DISPLAY_SWITCH_STATUS(void)
+{
+    // asm 00000895: 	CALL	DISPLAY_SHIFTER
+    // asm 00000896: 	LDI	@_newbut,R0
+    // asm 00000897: 	LDI	@_onebut,R1
+    // asm 00000898: 	CMPI	R1,R0
+    // asm 00000899: 	RETSEQ
+    // asm 0000089A: 	STI	R0,@_onebut
+    // asm 0000089B: 	FILL	130,175,140,350,0	;MAIN
+    // asm 000008A1: 	FILL	327,272,353,358,0	;TEST SWITCHES
+    // asm 000008A7: 	LDI	@SWITCHES_DIAGI,AR6
+DSS:
+    // asm 000008A8: 	LDI	@_newbut,R0
+    // asm 000008A9: 	LDI	*AR6++(3),R1
+    // asm 000008AA: 	CMPI	-1,R1
+    // asm 000008AB: 	BZ	DONEDSS
+    // asm 000008AC: 	AND	R1,R0
+    // asm 000008AD: 	BNZ	DSS
+    // asm 000008AE: 	LDI	*-AR6(1),AR2
+    // asm 000008AF: 	LDI	AR2,R3
+    // asm 000008B0: 	ADDI	10,R3
+    // asm 000008B1: 	LDI	*-AR6(2),R2
+    // asm 000008B2: 	SUBI	2,R2
+    // asm 000008B3: 	LDI	R2,RC
+    // asm 000008B4: 	ADDI	12,RC
+    // asm 000008B5: 	LDI	COL_RED,RS
+    // asm 000008B6: 	CALL	_fill
+    // asm 000008B7: NOPLOT
+    // asm 000008B7: 	B	DSS
+DONEDSS:
+    // asm 000008B8: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_SWITCH_STATUS", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
  */
 /* asm: SWITCHES_DIAG	.word	SW_VIEW0,180,130 */
@@ -232,6 +821,101 @@ int SWITCHES_DIAG[] = {
  */
 /* asm: LASTSHIFT	.bss	LASTSHIFT,1 */
 int LASTSHIFT;
+
+void DISPLAY_SHIFTER(void)
+{
+    // asm 000008BA: 	NOT	@_newbut,R0
+    // asm 000008BB: 	AND	3C00h,R0
+    // asm 000008BC: 	CMPI	@LASTSHIFT,R0
+    // asm 000008BD: 	RETSEQ
+    // asm 000008BE: 	STI	R0,@LASTSHIFT
+    // asm 000008BF: 	LDI	COL_VDGREY,RC
+    // asm 000008C0: 	TEXTITT	"SHIFT 1",215,170
+    // asm 000008C4: 	TEXTITT	"SHIFT 2",215,240
+    // asm 000008C8: 	TEXTITT	"SHIFT 3",290,170
+    // asm 000008CC: 	TEXTITT	"SHIFT 4",290,240
+    // asm 000008D0: 	PUSH	R0
+    // asm 000008D1: 	PUSH	AR2
+    // asm 000008D2: 	FILL	230,180,325,230,0
+    // asm 000008D8: 	POP	AR2
+    // asm 000008D9: 	POP	R0
+    // ; 400h = 4
+    // ; 800h = 3
+    // ;1000h = 2
+    // ;2000h = 1
+    // asm 000008DA: 	LDI	@_newbut,R0
+    // asm 000008DB: 	TSTB	2000h,R0
+    // asm 000008DC: 	BNZ	NOT1ST
+    // asm 000008DD: 	FILL	230,180,250,200,COL_RED
+NOT1ST:
+    // asm 000008E3: 	LDI	@_newbut,R0
+    // asm 000008E4: 	TSTB	1000h,R0
+    // asm 000008E5: 	BNZ	NOT2ND
+    // asm 000008E6: 	FILL	230,210,250,230,COL_RED
+NOT2ND:
+    // asm 000008EC: 	LDI	@_newbut,R0
+    // asm 000008ED: 	TSTB	800h,R0
+    // asm 000008EE: 	BNZ	NOT3RD
+    // asm 000008EF: 	FILL	305,180,325,200,COL_RED
+NOT3RD:
+    // asm 000008F5: 	LDI	@_newbut,R0
+    // asm 000008F6: 	TSTB	400h,R0
+    // asm 000008F7: 	BNZ	NOT4TH
+    // asm 000008F8: 	FILL	305,210,325,230,COL_RED
+NOT4TH:
+    // asm 000008FE: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_SHIFTER", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+ */
+void DISPPOTS(void)
+{
+    // asm 000008FF: 	LDI	@_pot0,R2
+    // asm 00000900: 	CMPI	@_opot0,R2
+    // asm 00000901: 	BEQ	NOPLOTpot0
+    // asm 00000902: 	STI	R2,@_opot0
+    // asm 00000903: 	FILL	150,100,215,109,0
+    // asm 00000909: 	LDI	@_pot0,R2
+    // asm 0000090A: 	LDI	@bufferI,AR2
+    // asm 0000090B: 	CALL	_itoa
+    // asm 0000090C: 	LDI	150,R2
+    // asm 0000090D: 	LDI	100,R3
+    // asm 0000090E: 	LDI	COL_VDGREY,RC
+    // asm 0000090F: 	CALL	_outtextxyc
+    // asm 00000910: NOPLOTpot0
+    // asm 00000910: 	LDI	@_pot1,R2
+    // asm 00000911: 	CMPI	@_opot1,R2
+    // asm 00000912: 	BEQ	NOPLOTpot1
+    // asm 00000913: 	STI	R2,@_opot1
+    // asm 00000914: 	FILL	150,110,215,119,0
+    // asm 0000091A: 	LDI	@_pot1,R2
+    // asm 0000091B: 	LDI	@bufferI,AR2
+    // asm 0000091C: 	CALL	_itoa
+    // asm 0000091D: 	LDI	150,R2
+    // asm 0000091E: 	LDI	110,R3
+    // asm 0000091F: 	LDI	COL_VDGREY,RC
+    // asm 00000920: 	CALL	_outtextxyc
+    // asm 00000921: NOPLOTpot1
+    // asm 00000921: 	LDI	@_pot2,R2
+    // asm 00000922: 	CMPI	@_opot2,R2
+    // asm 00000923: 	BEQ	NOPLOTpot2
+    // asm 00000924: 	STI	R2,@_opot2
+    // asm 00000925: 	FILL	150,120,215,129,0
+    // asm 0000092B: 	LDPI	@_pot2,R2
+    // asm 0000092C: 	LDPI	@bufferI,AR2
+    // asm 0000092D: 	CALL	_itoa
+    // asm 0000092E: 	LDI	150,R2
+    // asm 0000092F: 	LDI	120,R3
+    // asm 00000930: 	LDI	COL_VDGREY,RC
+    // asm 00000931: 	CALL	_outtextxyc
+    // asm 00000932: NOPLOTpot2
+    // asm 00000932: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPPOTS", 0, 0);
+    UNIMPL();
+}
+
 const char *SW1T = "DIP SW2";
 const char *SW2T = "DIP SW3";
 /* asm: SW1BANK	.bss	SW1BANK,3 */
@@ -240,6 +924,27 @@ int SW1BANK[3];
 int SW2BANK[3];
 /* asm: LASTDIPPLOT	.bss	LASTDIPPLOT,1 */
 int LASTDIPPLOT;
+
+void SHOW_DIPSWITCH(void)
+{
+    // asm 00000933: 	CALL	SETUP_DIAG_SCREEN
+    // asm 00000934: 	LDI	COL_VDGREY,RC
+    // asm 00000935: 	TEXTITT	"DIP SWITCH TEST",20,15
+    // asm 00000939: 	LDI	-1,R0
+    // asm 0000093A: 	STI	R0,@LASTDIPPLOT
+    // asm 0000093B: 	CALL	TOEXIT
+DIPLP:
+    // asm 0000093C: 	CALL	DISPLAY_DIPSWITCH_STATUS
+    // asm 0000093D: 	NOT	@_newbut,R0
+    // asm 0000093E: 	AND	SW_DIAG,R0
+    // asm 0000093F: 	RETSNZ
+    // asm 00000940: 	CALL	WAIT_FOR_VBLANK		;wait for vblk
+    // asm 00000941: 	B	DIPLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_DIPSWITCH", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
 *
 *PARAMETERS
@@ -257,6 +962,198 @@ int DIPTMP[2];
 const char *ISON = ONTEXT;
 /* asm: ISOFF	.word	OFFTEXT */
 const char *ISOFF = OFFTEXT;
+
+/* *
+ */
+void SHOW_DIPSWITCH_STATUS(void)
+{
+    // asm 00000942: 	LDI	7,AR5
+    // asm 00000943: 	LDI	1,R4		;Index Number
+    // asm 00000944: SDS_LP
+    // asm 00000944: 	TSTB	80h,R7
+    // asm 00000945: 	LDIZ	@ISON,AR2
+    // asm 00000946: 	LDINZ	@ISOFF,AR2
+    // asm 00000947: 	PUSH	R7
+    // asm 00000948: 	LDI	R5,R2
+    // asm 00000949: 	ADDI	20,R2
+    // asm 0000094A: 	LDI	R6,R3
+    // asm 0000094B: 	LDI	COL_VDGREY,RC
+    // asm 0000094C: 	CALL	_outtextxyc
+    // asm 0000094D: 	LDI	R4,R2
+    // asm 0000094E: 	LDL	DIPTMP,AR2
+    // asm 0000094F: 	CALL	_itoa
+    // asm 00000950: 	LDI	R5,R2
+    // asm 00000951: 	LDI	R6,R3
+    // asm 00000952: 	LDI	COL_VDGREY,RC
+    // asm 00000953: 	CALL	_outtextxyc
+    // asm 00000954: 	POP	R7
+    // asm 00000955: 	LS	1,R7
+    // asm 00000956: 	INC	R4
+    // asm 00000957: 	ADDI	10,R6
+    // asm 00000958: 	DBU	AR5,SDS_LP
+    // asm 00000959: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_DIPSWITCH_STATUS", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+*
+*
+*
+*
+ */
+void DISPLAY_DIPSWITCH_STATUS(void)
+{
+    // asm 0000095A: 	LDI	@DIPRAM,R0
+    // asm 0000095B: 	CMPI	@LASTDIPPLOT,R0
+    // asm 0000095C: 	RETSEQ
+    // asm 0000095D: 	STI	R0,@LASTDIPPLOT
+    // 	;BANK 1
+    // asm 0000095E: 	LDI	COL_VDGREY,RC
+    // asm 0000095F: 	TEXTITT	"DIP SW2 U97",30,40
+    // asm 00000963: 	GROUP	20,50,400,170
+    // asm 00000993: 	FILL	22,52,398,168,0
+    // asm 00000999: 	LDI	30,R5
+    // asm 0000099A: 	LDI	60,R6
+    // asm 0000099B: 	CLRI	AR2
+    // asm 0000099C: 	LDP	@DIPSW
+    // asm 0000099D: 	LDI	@DIPSW,R7
+    // asm 0000099E: 	LDI	*AR2,AR2
+    // asm 0000099F: 	SETDP
+    // asm 000009A0: 	RS	16,R7
+    // asm 000009A1: 	CALL	SHOW_DIPSWITCH_STATUS
+    // 	;BANK ONE (SW2) DECODED...
+    // ;	.data
+    // ;TONI	.word	TON
+    // ;TOFFI	.word	TOFF
+    // ;TON	.string	"TEST ON",0
+    // ;TOFF	.string	"TEST OFF",0
+    // ;	.text
+    // ;
+    // ;	LDI	90,R2			;DIAGNOSTICS
+    // ;	LDI	60+(0*10),R3
+    // ;	LDI	@DIPRAM,R0
+    // ;	TSTB	DIP_DIAG,R0
+    // ;	LDINZ	@TOFFI,AR2
+    // ;	LDIZ	@TONI,AR2
+    // ;	CALL	_outtextxyc
+    // asm 000009A2: 	LDI	90,R2			;MOTION
+    // asm 000009A3: 	LDI	60+(1*10),R3
+    // asm 000009A4: 	LDI	@DIPRAM,R0
+    // asm 000009A5: 	TSTB	DIP_MOTION,R0
+    // asm 000009A6: 	LDINZ	@DNMOTI,AR2
+    // asm 000009A7: 	LDIZ	@DMOTI,AR2
+    // asm 000009A8: 	CALL	_outtextxyc
+    // asm 000009A9: 	LDI	90,R2
+    // asm 000009AA: 	LDI	60+(2*10),R3
+    // asm 000009AB: 	LDI	@DIPRAM,R0
+    // asm 000009AC: 	TSTB	DIP_STANDUP,R0
+    // asm 000009AD: 	LDINZ	@DNSUPI,AR2
+    // asm 000009AE: 	LDIZ	@DSUPI,AR2
+    // asm 000009AF: 	CALL	_outtextxyc
+    // ;	.data
+    // ;RF1I	.word	RF1
+    // ;RF2I	.word	RF2
+    // ;RF1	.string	"FREEZE ON",0
+    // ;RF2	.string	"FREEZE OFF",0
+    // ;	.text
+    // ;
+    // ;	LDI	90,R2
+    // ;	LDI	60+(3*10),R3
+    // ;	LDI	@DIPRAM,R0
+    // ;	TSTB	DIP_FREEZE,R0
+    // ;	LDIZ	@RF1I,AR2
+    // ;	LDINZ	@RF2I,AR2
+    // ;	CALL	_outtextxyc
+    // asm 000009B0: 	LDI	90,R2			;COMMUNICATION
+    // asm 000009B1: 	LDI	60+(5*10),R3
+    // asm 000009B2: 	LDI	@DIPRAM,R0
+    // asm 000009B3: 	TSTB	DIP_COMMP,R0
+    // asm 000009B4: 	LDINZ	@DNLINKDI,AR2
+    // asm 000009B5: 	LDIZ	@DLINKDI,AR2
+    // asm 000009B6: 	CALL	_outtextxyc
+    // asm 000009B7: 	LDI	90,R2			;COMMUNICATION
+    // asm 000009B8: 	LDI	60+(7*10),R3
+    // asm 000009B9: 	LDI	@DIPRAM,R0
+    // asm 000009BA: 	TSTB	CMDP_MASTER,R0
+    // asm 000009BB: 	LDIZ	@DMOD1,AR2
+    // asm 000009BC: 	LDINZ	@DMOD2,AR2
+    // asm 000009BD: 	CALL	_outtextxyc
+    // 	;BANK 2
+    // asm 000009BE: 	LDI	COL_VDGREY,RC
+    // asm 000009BF: 	TEXTITT	"DIP SW3",30,180
+    // asm 000009C3: 	GROUP	20,190,400,310
+    // asm 000009F3: 	FILL	22,192,398,308,0
+    // asm 000009F9: 	LDI	30,R5
+    // asm 000009FA: 	LDI	200,R6
+    // asm 000009FB: 	CLRI	AR2
+    // asm 000009FC: 	LDP	@DIPSW
+    // asm 000009FD: 	LDI	@DIPSW,R7
+    // asm 000009FE: 	LDI	*AR2,AR2
+    // asm 000009FF: 	SETDP
+    // asm 00000A00: 	RS	24,R7
+    // asm 00000A01: 	CALL	SHOW_DIPSWITCH_STATUS
+    // 	;BANK TWO (SW3) DECODED...
+    // asm 00000A02: 	LINE	85,200,85,200+(6*10)+9,COL_VDGREY
+    // asm 00000A08: 	CALL	GETCOIN_DEFAULT
+    // asm 00000A09: 	PUSH	R2
+    // asm 00000A0A: 	LDI	R2,AR0
+    // asm 00000A0B: 	CALL	GET_THIS_COINTXT
+    // asm 00000A0C: 	LDI	AR0,AR4
+    // asm 00000A0D: 	LDI	*AR4++,AR2
+    // asm 00000A0E: 	LDI	90,R2
+    // asm 00000A0F: 	LDI	200+(3*10),R3
+    // asm 00000A10: 	LDI	COL_VDGREY,RC
+    // asm 00000A11: 	CALL	_outtextxyc
+    // asm 00000A12: 	LDI	*AR4++,AR2
+    // asm 00000A13: 	CMPI	0,AR2
+    // asm 00000A14: 	BEQ	DONE_MODE_MSG
+    // asm 00000A15: 	LDI	90,R2
+    // asm 00000A16: 	LDI	200+(4*10),R3
+    // asm 00000A17: 	LDI	COL_VDGREY,RC
+    // asm 00000A18: 	CALL	_outtextxyc
+    // asm 00000A19: 	LDI	*AR4++,AR2
+    // asm 00000A1A: 	CMPI	0,AR2
+    // asm 00000A1B: 	BEQ	DONE_MODE_MSG
+    // asm 00000A1C: 	LDI	90,R2
+    // asm 00000A1D: 	LDI	200+(5*10),R3
+    // asm 00000A1E: 	LDI	COL_VDGREY,RC
+    // asm 00000A1F: 	CALL	_outtextxyc
+DONE_MODE_MSG:
+    // asm 00000A20: 	POP	AR2
+    // asm 00000A21: 	ADDI	@COINMSGC_TABI,AR2
+    // asm 00000A22: 	LDI	*AR2,AR2
+    // asm 00000A23: 	LDI	90,R2
+    // asm 00000A24: 	LDI	200+(2*10),R3
+    // asm 00000A25: 	LDI	COL_VDGREY,RC
+    // asm 00000A26: 	CALL	_outtextxyc
+    // ;	PUSH	AR2
+    // ;	LDI	R2,AR0
+    // ;	CALL	GET_THIS_COINTXT
+    // ;	LDI	AR0,AR2
+    // ;	LDI	90,R2
+    // ;	LDI	200+(3*10),R3
+    // ;	LDI	COL_VDGREY,RC
+    // ;	CALL	_outtextxyc
+    // ;
+    // ;	POP	AR2
+    // ;	LDI	*+AR2,AR2
+    // ;	LDI	90,R2
+    // ;	LDI	200+(2*10),R3
+    // ;	LDI	COL_VDGREY,RC
+    // ;	CALL	_outtextxyc
+    // asm 00000A27: 	LDI	90,R2			;COMMUNICATION
+    // asm 00000A28: 	LDI	200+(7*10),R3
+    // asm 00000A29: 	LDI	@DIPRAM,R0
+    // asm 00000A2A: 	TSTB	DIP_COINCNTR,R0
+    // asm 00000A2B: 	LDINZ	@COINCNTR1I,AR2
+    // asm 00000A2C: 	LDIZ	@COINCNTR2I,AR2
+    // asm 00000A2D: 	CALL	_outtextxyc
+    // asm 00000A2E: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_DIPSWITCH_STATUS", 0, 0);
+    UNIMPL();
+}
+
 /* asm: DMOD1	SPTR	"MASTER" */
 const char *DMOD1 = "MASTER";
 /* asm: DMOD2	SPTR	"SLAVE" */
@@ -265,10 +1162,34 @@ const char *DMOD2 = "SLAVE";
  */
 /* asm: MOMT	SPTR	"MOTION MENU" */
 const char *MOMT = "MOTION MENU";
+
+void RUN_MOTION_MENU(void)
+{
+    // asm: 	LDL	MOTION_MENU,AR5
+    // asm: 	LDI	MOTION_MENU_LEN,AR6
+    // asm: 	LDI	@MOMT,AR7
+    // asm: 	BU	HANDLE_MENU
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_MOTION_MENU", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
  */
 /* asm: AMT	SPTR	"ADJUSTMENT MENU" */
 const char *AMT = "ADJUSTMENT MENU";
+
+void RUN_ADJUSTMENT_MENU(void)
+{
+    // asm 00000A38: 	LDL	ADJUSTMENT_MENU,AR5
+    // asm 00000A39: 	LDI	ADJUSTMENT_MENU_LEN,AR6
+    // asm: 	LDI	@AMT,AR7
+    // asm: 	BU	HANDLE_MENU
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_ADJUSTMENT_MENU", 0, 0);
+    UNIMPL();
+}
+
 /* asm: ADJTAB */
 /* asm: 	.word	ADJ_COINMODE,PRINT_COINMODE */
 /* asm: 	.word	ADJ_STANDARD_PRICING,PRINT_CUSTOM_SELECTED */
@@ -308,18 +1229,251 @@ int ADJTAB[] = {
     ADJ_STEERING_SENSITIVITY, PRINT_NUMBER,
     0, 0,
 };
+
+void PRINT_ADJUSTMENT(void)
+{
+    // asm: 	PUSH	AR4
+    // asm: 	LDI	@ADJTABI,AR4
+    // asm: 	CALL	PRINT_VALUE
+    // asm: 	POP	AR4
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_ADJUSTMENT", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
  */
 /* asm: UMT	SPTR	"UTILITIES MENU" */
 const char *UMT = "UTILITIES MENU";
+
+void RUN_UTILITIES_MENU(void)
+{
+    // asm 00000A44: 	LDL	UTILITIES_MENU,AR5
+    // asm: 	LDI	UTILITIES_MENU_LEN,AR6
+    // asm: 	LDI	@UMT,AR7
+    // asm: 	BU	HANDLE_MENU
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_UTILITIES_MENU", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
  */
 /* asm: MMT	SPTR	"MAIN MENU" */
 const char *MMT = "MAIN MENU";
 /* asm: DMT	SPTR	"DIAGNOSTIC MENU" */
 const char *DMT = "DIAGNOSTIC MENU";
+
+void RUN_DIAG_MENU(void)
+{
+    // asm 00000A49: 	LDL	DIAGNOSTIC_MENU,AR5
+    // asm: 	LDI	DIAGNOSTIC_MENU_LEN,AR6
+    // asm: 	LDI	@DMT,AR7
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_DIAG_MENU", 0, 0);
+    UNIMPL();
+}
+
 /* asm: MENU_SCROLL	.bss	MENU_SCROLL,1 */
 int MENU_SCROLL;
+
+void HANDLE_MENU(void)
+{
+    // asm: 	LDI	0,R0
+    // asm: 	STI	R0,@MENU_SCROLL
+    // asm: 	CLRI	R6			;MENU INDEX
+HMER:
+    // asm 00000A4F: 	PUSH	R6
+    // asm 00000A50: 	LDI	@DIAGPAL+1,R0
+    // asm: 	STI	R0,@BGNDCOLA
+    // asm: 	PUSH	AR7
+    // asm 00000A52: 	CALL	SETUP_DIAG_SCREEN
+    // asm: 	LDI	COL_VDGREY,RC
+    // asm 00000A55: 	TEXTIT	title,30,20
+    // asm: 	TEXTIT	inst1,20,260
+    // asm 00000A56: 	TEXTIT	inst2,20,270
+    // asm: 	LDI	*-AR5,R2		;Routine that prints the value
+    // asm 00000A57: 	BEQ	HMSTAND
+    // asm 00000A58: 	LDI	*-AR5(2),R2
+    // asm 00000A5C: 	BEQ	HMSTAND
+    // asm 00000A60: 	CALLU	R2
+    // asm: 	BR	HMNOTSTAND
+HMSTAND:
+    // asm 00000A65: 	IWINDOW	20,45,280,250
+HMNOTSTAND:
+    // asm 00000A67: 	LDI	30,R2
+    // asm 00000A68: 	LDI	35,R3
+    // asm 00000A69: 	LDI	COL_VDGREY,RC
+    // asm: 	POP	AR7
+    // asm 00000A6A: 	LDI	AR7,AR2
+    // asm: 	CALL	_outtextxyc
+    // asm 00000A70: 	LDI	10000,R7		;wait_mac counter
+    // asm 00000A71: 	MPYI	55,R7
+    // asm 00000A72: 	POP	R6
+HANMENL:
+    // asm 00000A75: 	LDI	@MENU_SCROLL,R0
+    // ;	CLRI	R0
+    // ;	LDI	AR5,AR4
+    // asm: 	LDI	2,AR4			;OFFSET AR4 to MENU_SCROLL
+    // asm: 	MPYI	R0,AR4
+    // asm: 	ADDI	AR5,AR4
+    // asm: 	LDI	50,R3			;Y POSITION OF TEXT
+    // asm 00000A7A: 	PUSH	AR7
+    // asm: 	LDI	AR6,AR7
+    // asm 00000A7C: 	SUBI	@MENU_SCROLL,AR7
+    // asm: 	CMPI	20,AR7
+    // asm: 	LDIGT	20,AR7
+    // asm: 	DEC	AR7
+    // asm 00000A7E: HANMENL_PLOT
+    // asm 00000A7F: 	LDI	COL_VDGREY,RC
+    // asm 00000A80: 	CMPI	R0,R6
+    // asm 00000A81: 	LDIEQ	COL_RED,RC
+    // asm 00000A82: 	LDI	*AR4++(2),AR2
+    // asm: 	LDI	30,R2
+    // asm 00000A83: 	CALL	_outtextxyc
+    // asm 00000A85: 	LDI	*-AR5,R5		;Routine that prints the value
+    // asm: 	CALLNE	R5
+    // asm 00000A87: 	ADDI	10,R3
+    // asm 00000A88: 	INC	R0
+    // asm: 	DBU	AR7,HANMENL_PLOT
+    // asm 00000A89: 	POP	AR7
+    // asm 00000A8C: 	LDI	@_newbut,R0		;old system method
+    // asm 00000A8D: 	LDI	R0,R1
+    // asm 00000A8E: 	TSTB    SW_COINSRV,R1
+    // asm: 	BNZ	JAJA5
+    // ;this locks on the main menu.
+    // ;fix later
+    // asm 00000A91: 	LDL	MAIN_MENU,AR0
+    // asm 00000A92: 	CMPI	AR0,AR5
+    // asm: 	BEQ	JAJA5
+    // asm: 	LDI	982,AR2
+    // asm: 	CALL	SENDSND
+    // asm 00000A93: 	PUSH	AR5
+    // asm 00000A94: 	PUSH	AR6
+    // asm 00000A95: 	PUSH	AR7
+    // asm: 	PUSH	R6
+    // asm 00000A96: 	CALL	XIT_MENU_TO_MAIN
+    // ;
+    // ;	CALLZ	ESCAPE_TO_MAIN
+JAJA5:
+    // asm 00000A9C: 	TSTB    SW_DIAG,R1
+    // asm: 	BZ	HM_EXECUTE
+    // asm: 	TSTB	SW_VOLMINUS,R0		;move up
+    // asm: 	BNZ	HM_NOTUP
+    // asm 00000A9D: 	LDI	980,AR2
+    // asm 00000A9E: 	CALL	SENDSND
+    // asm 00000A9F: 	ADDI	1,R6
+    // asm 00000AA0: 	CMPI	AR6,R6
+    // asm: 	BLT	HM_WT
+    // asm 00000AA2: 	LDI	AR6,R6
+    // asm: 	DEC	R6
+    // asm 00000AA3: 	B	HM_WT
+HM_NOTUP:
+    // asm: 	TSTB	SW_VOLPLUS,R0		;move down
+    // asm 00000AA6: 	BNZ	HM_NOTDOWN
+    // asm 00000AA8: 	LDI	981,AR2
+    // asm: 	CALL	SENDSND
+    // asm 00000AA9: 	SUBI	1,R6
+    // asm 00000AAA: 	LDILT	0,R6
+HM_WT:
+    // ;	WAIT_MAC
+    // asm 00000AAC: 	LDI	R7,R1
+wta:
+    // asm 00000AAD: 	DEC	R1
+    // asm 00000AAE: 	BLT	wtta
+    // asm: 	LDI	@_newbut,R0
+    // asm 00000AAF: 	AND	SW_VOLPLUS|SW_VOLMINUS,R0
+    // asm: 	CMPI	SW_VOLPLUS|SW_VOLMINUS,R0
+    // asm 00000AB0: 	BNE	wta
+    // asm: 	LDI	10000,R7
+    // asm 00000AB2: 	MPYI	55,R7
+    // asm 00000AB3: 	BU	J55
+wtta:
+    // asm 00000AB5: 	LDI	5000,R7
+    // asm: 	MPYI	55,R7
+J55:
+HM_NOTDOWN:
+    // asm 00000ABA: 	CMPI	0,R6
+    // asm: 	BEQ	NO_SCROLL
+    // asm: 	LDI	0,R2
+    // asm: 	LDI	@MENU_SCROLL,R0
+    // asm: 	LDI	R0,R1
+    // asm: 	ADDI	20,R1
+    // asm 00000ABB: 	CMPI	R0,R6
+    // asm 00000ABC: 	BLT	GO_SCROLL
+    // asm 00000ABD: 	CMPI	R1,AR6
+    // asm 00000ABE: 	BLE	NO_SCROLL
+GO_SCROLL:
+    // asm 00000AC0: 	CMPI	R0,R6
+    // asm 00000AC1: 	LDILT	-10,R2
+    // asm 00000AC2: 	CMPI	R1,R6
+    // asm 00000AC3: 	LDIGE	10,R2
+    // asm 00000AC4: 	ADDI	R2,R0
+    // asm: 	LDIN	0,R0
+    // asm 00000AC5: 	STI	R0,@MENU_SCROLL
+    // asm 00000AC6: 	CMPI	0,R2
+    // asm 00000AC7: 	BNE	HMER			;REDRAW entir screen if scrolled
+NO_SCROLL:
+    // asm 00000ACA: 	B	HANMENL
+HM_EXECUTE:
+    // asm 00000ACD: 	LDI	982,AR2
+    // asm: 	CALL	SENDSND
+    // asm 00000ACE: 	LDI	R6,AR0
+    // asm: 	MPYI	2,AR0
+    // asm: 	ADDI	AR5,AR0
+    // asm 00000ACF: 	LDI	*+AR0(1),R0
+    // asm 00000AD0: 	BZ	HANMENL
+    // asm: 	PUSH	AR5
+    // asm 00000AD1: 	PUSH	AR6
+    // asm 00000AD2: 	PUSH	AR7
+    // asm 00000AD3: 	PUSH	R6
+    // asm 00000AD4: 	CALLU	R0
+    // asm 00000AD5: 	POP	R6
+    // asm 00000AD6: 	POP	AR7
+    // asm 00000AD7: 	POP	AR6
+    // asm 00000AD8: 	POP	AR5
+    // asm 00000AD9: 	B	HMER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "HANDLE_MENU", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+;ESCAPE_TO_MAIN:
+;	LDI	982,AR2
+;	CALL	SENDSND
+;	POP	R0
+;	RETS
+ */
+void XIT_MENU_TO_MAIN(void)
+{
+    // asm: 	LDI	0,R0
+    // asm: 	STI	R0,@MENU_SCROLL
+    // asm: 	CALL	LAMPSOFF
+    // asm: 	POP	R0	;return address
+    // asm 00000AE0: 	POP	R6
+    // asm 00000AE1: 	POP	AR7
+    // asm: 	POP	AR6
+    // asm 00000AE2: 	POP	AR5
+    // asm: 	RETS
+    // ;	BR	RETURN_TO_MAINMENU
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "XIT_MENU_TO_MAIN", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+ */
+void SETUP_DIAG_SCREEN(void)
+{
+    // asm: 	CALL	CLRSCRN
+    // asm: 	CALL	SETPAGE0
+    // asm: 	LDIL	SCREEN0,R0
+    // asm: 	STI	R0,@ACTIVE_SCREEN
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SETUP_DIAG_SCREEN", 0, 0);
+    UNIMPL();
+}
+
 /* asm: MUSIC_TAB */
 /* asm: SNDMAC	"REDLINE SHUFFLE",SHUFFLE_DRIV */
 /* asm: SNDMAC	"HOUSE SPECIAL",DISCODUCK */
@@ -332,10 +1486,185 @@ int MUSIC_TAB;
 /* asm: SNDMAC	"COLLISION",SCOLLF */
 /* asm: SNDMAC	"CAR PASS",CARPASS */
 int EFFECTS_TAB;
+
+void SOUND_BOARD_TEST(void)
+{
+    // asm: 	CALL	SETUP_DIAG_SCREEN
+    // asm: 	CLRI	R5	;TUNE INDEX
+    // asm: 	CLRI	R6	;SNDFX INDEX
+    // asm: 	LDI	COL_VDGREY,RC
+    // asm: 	TEXTITT	"SOUND BOARD TEST",50,20
+    // asm: 	TEXTITT	"ENTER  TO EXIT",20,100
+    // asm: 	TEXTITT	"UP     TO CHANGE MUSIC",20,110
+    // asm: 	TEXTITT	"DOWN   TO TRIGGER SOUND EFFECT",20,120
+    // asm: 	LDL	MUSIC_TAB,AR5
+    // asm 00000B02: 	LDL	EFFECTS_TAB,AR6
+    // asm 00000B03: 	LDI	-1,R5
+    // asm 00000B04: 	LDI	-1,R6
+SBT_UPDT:
+    // asm 00000B06: 	CMPI	AR5,R5
+    // asm 00000B0A: 	BEQ	NUPDT
+    // asm 00000B12: 	LDI	AR5,R5
+    // asm: 	FILL	20,200,200,220,0
+    // asm 00000B16: 	LDI	COL_VDGREY,RC
+    // asm 00000B17: 	TEXTITT	"TUNE",20,200
+    // asm: 	LDI	*AR5,AR2
+    // asm 00000B18: 	LDI	30,R2
+    // asm 00000B19: 	LDI	210,R3
+    // asm: 	CALL	_outtextxyc
+    // asm 00000B1A: 	LDI	*+AR5,AR2
+    // asm: 	CALL	HARDSND
+NUPDT:
+    // asm 00000B23: 	CMPI	AR6,R6
+    // asm 00000B24: 	BEQ	NUPDE
+    // asm 00000B29: 	LDI	AR6,R6
+    // asm 00000B2A: 	FILL	20,250,200,270,0
+    // asm 00000B2B: 	LDI	COL_VDGREY,RC
+    // asm: 	TEXTITT	"SOUND EFFECT",20,250
+    // asm 00000B2C: 	LDI	*AR6,AR2
+    // asm: 	LDI	30,R2
+    // asm 00000B2D: 	LDI	260,R3
+    // asm: 	CALL	_outtextxyc
+    // asm 00000B2E: 	LDI	*+AR6,AR2
+    // asm: 	CALL	HARDSND
+NUPDE:
+SBT_LP:
+    // asm 00000B3D: 	NOT	@_newbut,R0
+    // asm 00000B3E: 	AND	SW_DIAG,R0
+    // asm 00000B3F: 	BZ	NOXIT
+    // asm 00000B40: 	CALL	SILENT
+    // asm: 	RETS
+NOXIT:
+    // asm: 	NOT	@_newbut,R0
+    // asm: 	AND	SW_VOLPLUS,R0
+    // asm: 	BZ	NONEXTT
+SBTLP2:
+    // asm 00000B42: CALL	WAIT_FOR_VBLANK
+    // asm 00000B43: 	NOT	@_newbut,R0
+    // asm 00000B44: 	AND	SW_VOLPLUS,R0
+    // asm: 	BNZ	SBTLP2
+    // asm 00000B46: 	ADDI	2,AR5
+    // asm: 	LDI	*AR5,R0
+    // asm: 	BNN	SBT_UPDT
+    // asm 00000B47: 	LDL	MUSIC_TAB,AR5
+    // asm 00000B48: 	BU	SBT_UPDT
+NONEXTT:
+    // asm 00000B4B: 	NOT	@_newbut,R0
+    // asm 00000B4C: 	AND	SW_VOLMINUS,R0
+    // asm 00000B4D: 	BZ	NONEXTE
+SBTLP1:
+    // asm 00000B4E: CALL	WAIT_FOR_VBLANK
+    // asm 00000B4F: 	NOT	@_newbut,R0
+    // asm 00000B50: 	AND	SW_VOLMINUS,R0
+    // asm 00000B51: 	BNZ	SBTLP1
+    // asm: 	ADDI	2,AR6
+    // asm: 	LDI	*AR6,R0
+    // asm 00000B53: 	BNN	SBT_UPDT
+    // asm 00000B54: 	LDL	EFFECTS_TAB,AR6
+    // asm 00000B55: 	BU	SBT_UPDT
+NONEXTE:
+    // asm 00000B58: 	LDI	7FFFh,R0
+    // asm 00000B59: 	MPYI	10,R0
+    // asm: 	RPTS	R0
+    // asm: 	NOP
+    // asm 00000B5A: 	CALL	WAIT_FOR_VBLANK
+    // asm 00000B5B: 	BU	SBT_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SOUND_BOARD_TEST", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+ */
+void STEERING_WHEEL_TEST(void)
+{
+    // asm: 	CALL	SETUP_DIAG_SCREEN
+    // asm 00000B5F: 	LDI	COL_VDGREY,RC
+    // asm 00000B60: 	TEXTITT	"STEERING WHEEL TEST",20,50
+    // asm 00000B61: 	TEXTITT	"MOVING WHEEL TO LEFT",20,100
+    // asm 00000B63: 	CLRI	R6
+    // *	R0	BYTE TO SEND TO WHEEL
+    // asm: 	LDI	127,AR5
+    // asm 00000B65: SWTLP1
+    // asm: 	INC	R6
+    // asm 00000B65: 	CMPI	127,R6
+    // asm 00000B66: 	LDIGT	127,R6
+    // asm 00000B6B: 	LDI	R6,R0
+    // asm: 	OR	080h,R0
+    // asm 00000B6F: 	CALL	TOWHEEL
+    // asm: 	CALL	WAIT_FOR_VBLANK
+    // asm: 	DBU	AR5,SWTLP1
+    // asm: 	LDI	COL_VDGREY,RC
+    // asm 00000B71: 	TEXTITT	"HIT ENTER TO CONTINUE",20,120
+    // asm 00000B72: 	CALL	WT_NSTART
+    // asm 00000B73: 	CALL	WT_START
+    // asm: 	CALL	BEEP
+    // asm 00000B76: 	LDI	COL_VDGREY,RC
+    // asm 00000B77: 	TEXTITT	"MOVING WHEEL TO RIGHT",20,140
+    // asm: 	CLRI	R6
+    // asm: 	LDI	127,AR5
+    // asm 00000B79: SWTLP3
+    // asm 00000B7A: 	INC	R6
+    // asm 00000B7E: 	CMPI	127,R6
+    // asm 00000B7F: 	LDIGT	127,R6
+    // asm: 	LDI	R6,R0
+    // asm: 	CALL	TOWHEEL
+    // asm 00000B81: 	CALL	WAIT_FOR_VBLANK
+    // asm 00000B82: 	DBU	AR5,SWTLP3
+    // asm 00000B87: 	LDI	COL_VDGREY,RC
+    // asm: 	TEXTITT	"HIT ENTER TO CONTINUE",20,160
+    // asm 00000B88: 	CALL	WT_NSTART
+    // asm 00000B89: 	CALL	WT_START
+    // asm 00000B8A: 	CALL	BEEP
+    // asm 00000B8B: 	CLRI	R0
+    // asm 00000B8C: 	CALL	TOWHEEL
+    // asm 00000B8E: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "STEERING_WHEEL_TEST", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
  */
 /* asm: AMODES	SPTR	"ATTRACT MODE SOUNDS" */
 const char *AMODES = "ATTRACT MODE SOUNDS";
+
+void AMODESND(void)
+{
+    // asm: 	READAUD	ADJ_ATTRACT_MODE_SOUND
+    // asm 00000B97: 	LDI	R0,R5
+    // asm: 	LDI	@AMODES,AR2
+    // asm 00000B99: 	LDI	@NULLSTR,AR3
+    // asm: 	CALL	DUAL_ON_OFF
+    // asm: 	LDI	R5,R2
+    // asm: 	SETADJ	ADJ_ATTRACT_MODE_SOUND
+    // asm: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "AMODESND", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+ */
+void BURNIN_TEST(void)
+{
+    // asm 00000B9E: 	CALL	TEST_CHIPS
+    // asm 00000BA0: 	SOFTWTM	R0		    	;SET WAIT STATES
+    // asm: 	DINT
+    // asm 00000BA1:         LDP	@FASTSTKI
+    // asm 00000BA2:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
+    // asm: 	LDI	AUD_SUCCESSFULL_BURNINS,AR2
+    // asm: 	CALL	AUDIT_INC
+    // 	;IGNORE GLITCH FIX
+    // asm: 	LDP	@SWITCH1
+    // asm 00000BA5: 	LDI	@SWITCH1,R0
+    // asm: 	SETDP
+    // asm 00000BAA: 	TSTB	SW_DIAG,R0
+    // asm 00000BB0: 	BNZ	BURNIN_TEST
+    // asm: 	BU	ENTER_DIAG
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "BURNIN_TEST", 0, 0);
+    UNIMPL();
+}
+
 #define STANDARD_PRICING_MENU_LEN 16
 #define USA_MENU_LEN 13
 /* asm: USA_MENU */
@@ -625,1604 +1954,6 @@ int COUNTRY_MENUTAB[] = {
 };
 /* asm: COUNTRY	.bss	COUNTRY,1 */
 int COUNTRY;
-#define PSSTARTY 100
-/* asm: PSLAST	.bss	PSLAST,1 */
-int PSLAST;
-/* *----------------------------------------------------------------------------
- */
-#define CUSTOM_PRICING_MENU_LEN 16
-/* asm: CUSTOM_PRICING_MENU */
-/* asm: MENUENTRY	"LEFT CHUTE UNITS",SET_SLOT */
-/* asm: MENUENTRY	"RIGHT CHUTE UNITS",SET_SLOT */
-/* asm: MENUENTRY	"CENTER CHUTE UNITS",SET_SLOT */
-/* asm: MENUENTRY	"FOURTH CHUTE UNITS",SET_SLOT */
-/* asm: MENUENTRY	"UNITS PER CREDIT",SET_SLOT */
-/* asm: MENUENTRY	"UNITS FOR BONUS",SET_SLOT */
-/* asm: MENUENTRY	"MINIMUM UNITS",SET_SLOT */
-/* asm: MENUENTRY	"CREDITS TO START",SET_SLOT */
-/* asm: MENUENTRY	"CREDITS TO CONTINUE",SET_SLOT */
-/* asm: MENUENTRY	"LEFT CHUTE COUNTER",SET_SLOT */
-/* asm: MENUENTRY	"RIGHT CHUTE COUNTER",SET_SLOT */
-/* asm: MENUENTRY	"CENTER CHUTE COUNTER",SET_SLOT */
-/* asm: MENUENTRY	"FOURTH CHUTE COUNTER",SET_SLOT */
-/* asm: MENUENTRY	"SHOW FRACTION",FRACTION_YES_NO */
-/* asm: MENUENTRY	"SELECT CUSTOM PRICING",CUSTOM_YES_NO */
-/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
-/* asm: romdata */
-int CUSTOM_PRICING_MENU;
-const char *sct = "CALIBRATE CONTROLS";
-/* asm: FFRST	SPTR	"FULL FACTORY RESTORE" */
-const char *FFRST = "FULL FACTORY RESTORE";
-/* asm: DAS	SPTR	"DEFAULT ADJUSTMENTS SET" */
-const char *DAS = "DEFAULT ADJUSTMENTS SET";
-/* asm: HSRS	SPTR	"HIGH SCORES RESET" */
-const char *HSRS = "HIGH SCORES RESET";
-/* asm: BOOKR	SPTR	"BOOKKEEPING RESET" */
-const char *BOOKR = "BOOKKEEPING RESET";
-/* *----------------------------------------------------------------------------
- */
-/* asm: FREEPLAYT	SPTR	"FREE PLAY" */
-const char *FREEPLAYT = "FREE PLAY";
-/* *----------------------------------------------------------------------------
- */
-/* asm: FGOO1	SPTR	"GIVE FREE GAME" */
-const char *FGOO1 = "GIVE FREE GAME";
-/* asm: FGOO2	SPTR	"ON 1ST POSITION" */
-const char *FGOO2 = "ON 1ST POSITION";
-/* *----------------------------------------------------------------------------
- */
-/* asm: APHSTD	SPTR	"ALLOW PLAYER TO" */
-const char *APHSTD = "ALLOW PLAYER TO";
-/* asm: APHSTD2	SPTR	"ENTER INITIALS" */
-const char *APHSTD2 = "ENTER INITIALS";
-/* *----------------------------------------------------------------------------
- */
-/* asm: GI1	SPTR	"SHOW GIRLS" */
-const char *GI1 = "SHOW GIRLS";
-/* *----------------------------------------------------------------------------
- */
-/* asm: CL1	SPTR	"SHOW PRESIDENT" */
-const char *CL1 = "SHOW PRESIDENT";
-/* *----------------------------------------------------------------------------
- */
-/* asm: RK1	SPTR	"SHOW ROADKILL" */
-const char *RK1 = "SHOW ROADKILL";
-/* *----------------------------------------------------------------------------
-*
-*	0 = MPH (default)
-*	1 = KPH
-*
- */
-/* asm: MP1	SPTR	"SPEED IN MPH OR KPH" */
-const char *MP1 = "SPEED IN MPH OR KPH";
-/* asm: MP2	SPTR	"KPH" */
-const char *MP2 = "KPH";
-/* asm: MP3	SPTR	"MPH" */
-const char *MP3 = "MPH";
-/* *----------------------------------------------------------------------------
- */
-/* asm: CLR_CRED	SPTR	"CLEAR CREDITS" */
-const char *CLR_CRED = "CLEAR CREDITS";
-/* asm: YES		SPTR	"YES" */
-const char *YES = "YES";
-/* asm: NO		SPTR	"NO" */
-const char *NO = "NO";
-/* asm: ONS		SPTR	"ON" */
-const char *ONS = "ON";
-/* asm: OFFS		SPTR	"OFF" */
-const char *OFFS = "OFF";
-/* asm: NULLSTR		SPTR	"" */
-const char *NULLSTR = "";
-/* asm: AREUSURE	SPTR	"ARE YOU SURE?" */
-const char *AREUSURE = "ARE YOU SURE?";
-/* asm: CCD2A	SPTR	"CREDITS CLEARED" */
-const char *CCD2A = "CREDITS CLEARED";
-/* *----------------------------------------------------------------------------
- */
-/* asm: SSGD	SPTR	"STEERING SENSITIVITY" */
-const char *SSGD = "STEERING SENSITIVITY";
-/* asm: SSGD2	SPTR	"0 (ADOLT) TO 5 (GAMEPLAYER)" */
-const char *SSGD2 = "0 (ADOLT) TO 5 (GAMEPLAYER)";
-/* *----------------------------------------------------------------------------
- */
-/* asm: HSGD	SPTR	"PLAYS TO HIGHSCORE" */
-const char *HSGD = "PLAYS TO HIGHSCORE";
-/* asm: HSGD2	SPTR	"RESET 1000 TO 25000" */
-const char *HSGD2 = "RESET 1000 TO 25000";
-/* *----------------------------------------------------------------------------
-*
-*
-*
- */
-/* asm: SGD	SPTR	"GAME DIFFICULTY" */
-const char *SGD = "GAME DIFFICULTY";
-/* asm: SGD2	SPTR	"0 (EASY) TO 9 (HARD)" */
-const char *SGD2 = "0 (EASY) TO 9 (HARD)";
-/* *----------------------------------------------------------------------------
-*
-*
-*
- */
-/* asm: ITD	SPTR	"INITIAL TIME" */
-const char *ITD = "INITIAL TIME";
-/* asm: ITD2	SPTR	"60-90 SECONDS" */
-const char *ITD2 = "60-90 SECONDS";
-/* *----------------------------------------------------------------------------
- */
-/* asm: CPBTT	SPTR	"CHECKPOINT TIME BONUS" */
-const char *CPBTT = "CHECKPOINT TIME BONUS";
-/* asm: CPBTT2	SPTR	"10-25 SECONDS" */
-const char *CPBTT2 = "10-25 SECONDS";
-/* *----------------------------------------------------------------------------
- */
-/* asm: MXT1	SPTR	"MAX CREDITS" */
-const char *MXT1 = "MAX CREDITS";
-/* asm: MXT2	SPTR	"10-50" */
-const char *MXT2 = "10-50";
-/* *----------------------------------------------------------------------------
-*
-*
-*
- */
-/* asm: MVL	SPTR	"MINIMUM VOLUME LEVEL" */
-const char *MVL = "MINIMUM VOLUME LEVEL";
-/* asm: REPEAT_SW	.bss	REPEAT_SW,1 */
-int REPEAT_SW;
-/* asm: REPEAT_TIME	.bss	REPEAT_TIME,1 */
-int REPEAT_TIME;
-/* asm: SPM	SPTR	"STANDARD PRICING MENU" */
-const char *SPM = "STANDARD PRICING MENU";
-const char *SELTP = "SELECT THIS PRICING";
-/* asm: STP	SPTR	"PRICING SELECTED" */
-const char *STP = "PRICING SELECTED";
-/* asm: RCMT	SPTR	"CUSTOM PRICING" */
-const char *RCMT = "CUSTOM PRICING";
-const char *FRACYN = "SHOW FRACTION";
-const char *USECP = "USE CUSTOM PRICING";
-/* asm: CPS	SPTR	"CUSTOM PRICING SELECTED" */
-const char *CPS = "CUSTOM PRICING SELECTED";
-/* asm: CMESSAGE_TAB */
-/* asm: 	.word	CPCS,CPCS,CPCS,CPCS,CUPC,CTSS,CTCS,CCTS,CCTC,CTPC,CTPC,CTPC,CTPC */
-const char *CMESSAGE_TAB[] = {
-    CPCS, CPCS, CPCS, CPCS, CUPC, CTSS, CTCS, CCTS, CCTC, CTPC, CTPC, CTPC, CTPC,
-};
-const char *CPCS = "UNITS PER COIN";
-const char *CUPC = "UNITS PER CREDIT";
-const char *CTSS = "BONUS UNITS";
-const char *CTCS = "MINIMUM UNITS";
-const char *CCTS = "CREDITS TO START";
-const char *CCTC = "CREDITS TO CONTINUE";
-const char *CTPC = "COUNTER TICKS PER COIN";
-/* asm: PSTAB */
-/* asm: 	.word	ADJ_COIN1_UNITS,PRINT_NUMBER */
-/* asm: 	.word	ADJ_COIN2_UNITS,PRINT_NUMBER */
-/* asm: 	.word	ADJ_COIN3_UNITS,PRINT_NUMBER */
-/* asm: 	.word	ADJ_COIN4_UNITS,PRINT_NUMBER */
-/* asm: 	.word	ADJ_UNITS_PER_CREDIT,PRINT_NUMBER */
-/* asm: 	.word	ADJ_BONUS_UNITS,PRINT_NUMBER */
-/* asm: 	.word	ADJ_UNITS_MIN,PRINT_NUMBER */
-/* asm: 	.word	ADJ_CREDITS_TO_START,PRINT_NUMBER */
-/* asm: 	.word	ADJ_CREDITS_TO_CONTINUE,PRINT_NUMBER */
-/* asm: 	.word	ADJ_COIN1_COUNTER,PRINT_NUMBER */
-/* asm: 	.word	ADJ_COIN2_COUNTER,PRINT_NUMBER */
-/* asm: 	.word	ADJ_COIN3_COUNTER,PRINT_NUMBER */
-/* asm: 	.word	ADJ_COIN4_COUNTER,PRINT_NUMBER */
-/* asm: 	.word	ADJ_SHOW_FRAC,PRINT_YN */
-/* asm: 	.word	ADJ_STANDARD_PRICING,PRINT_YN_INV */
-/* asm: 	.word	0,0 */
-int PSTAB[] = {
-    ADJ_COIN1_UNITS, PRINT_NUMBER,
-    ADJ_COIN2_UNITS, PRINT_NUMBER,
-    ADJ_COIN3_UNITS, PRINT_NUMBER,
-    ADJ_COIN4_UNITS, PRINT_NUMBER,
-    ADJ_UNITS_PER_CREDIT, PRINT_NUMBER,
-    ADJ_BONUS_UNITS, PRINT_NUMBER,
-    ADJ_UNITS_MIN, PRINT_NUMBER,
-    ADJ_CREDITS_TO_START, PRINT_NUMBER,
-    ADJ_CREDITS_TO_CONTINUE, PRINT_NUMBER,
-    ADJ_COIN1_COUNTER, PRINT_NUMBER,
-    ADJ_COIN2_COUNTER, PRINT_NUMBER,
-    ADJ_COIN3_COUNTER, PRINT_NUMBER,
-    ADJ_COIN4_COUNTER, PRINT_NUMBER,
-    ADJ_SHOW_FRAC, PRINT_YN,
-    ADJ_STANDARD_PRICING, PRINT_YN_INV,
-    0, 0,
-};
-/* *----------------------------------------------------------------------------
-*MENU DEFINITIONS
-*
-*
- */
-#define MAIN_MENU_LEN 7
-/* asm: MAIN_MENU: */
-/* asm: MENUENTRY	"DIAGNOSTIC MENU",RUN_DIAG_MENU */
-/* asm: MENUENTRY	"GAME AUDITS",AUDIT_DISPLAY */
-/* asm: MENUENTRY	"ADJUSTMENTS MENU",RUN_ADJUSTMENT_MENU */
-/* asm: MENUENTRY	"UTILITIES",RUN_UTILITIES_MENU */
-/* asm: MENUENTRY	"CALIBRATE CONTROLS",SET_CONTROLS */
-/* asm: MENUENTRY	"ADJUST VOLUME",SET_VOLUME */
-/* asm: MENUENTRY	"EXIT TO GAME OVER",DIAG_RETURN */
-int MAIN_MENU;
-#define DIAGNOSTIC_MENU_LEN 10
-/* asm: DIAGNOSTIC_MENU: */
-/* asm: MENUENTRY	"SWITCH TEST",SHOWSWITCH */
-/* asm: MENUENTRY	"DIP SWITCH TEST",SHOW_DIPSWITCH */
-/* asm: MENUENTRY	"CPU BOARD TEST",TEST_CHIPS */
-/* asm: MENUENTRY	"SOUND BOARD TEST",SOUND_BOARD_TEST */
-/* asm: MENUENTRY	"STEERING WHEEL TEST",STEERING_WHEEL_TEST */
-/* asm: MENUENTRY	"MONITOR TEST",MONITOR_DIAGNOSTICS */
-/* asm: MENUENTRY	"BURNIN TEST",BURNIN_TEST */
-/* asm: MENUENTRY	"MOTION MENU",RUN_MOTION_MENU		;MOTION_BURNIN */
-/* asm: MENUENTRY	"LAMP TEST",RUN_LAMP_TEST */
-/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
-int DIAGNOSTIC_MENU;
-#define UTILITIES_MENU_LEN 6
-/* asm: UTILITIES_MENU: */
-/* asm: MENUENTRY	"CLEAR CREDITS",CLEAR_CREDITS */
-/* asm: MENUENTRY	"CLEAR GAME AUDITS",CLEAR_GAME_AUDITS */
-/* asm: MENUENTRY	"RESET HIGH SCORES",RESET_HIGH_SCORES */
-/* asm: MENUENTRY	"DEFAULT ADJUSTMENTS",DEFAULT_ADJUSTMENTS */
-/* asm: MENUENTRY	"FULL FACTORY RESTORE",FULL_FACTORY_RESTORE */
-/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
-int UTILITIES_MENU;
-#define ADJUSTMENT_MENU_LEN 18
-/* asm: ADJUSTMENT_MENU */
-/* asm: MENUENTRY	"STANDARD PRICING",RUN_STANDARD_PRICING */
-/* asm: MENUENTRY	"CUSTOM PRICING",RUN_CUSTOM_PRICING */
-/* asm: MENUENTRY	"FREE PLAY",FREEPLAYONOFF */
-/* asm: MENUENTRY	"FIRST PLACE AWARDS FREE GAME",FREEGAMEONOFF */
-/* asm: MENUENTRY	"START TIME BONUS SECS",SET_TIME_TO_START */
-/* asm: MENUENTRY	"CHECKPOINT BONUS TIME SECS",SET_CHECKPOINT_BONUS */
-/* asm: MENUENTRY	"ATTRACT MODE SOUND",AMODESND */
-/* asm: MENUENTRY	"HIGH SCORE ENTRY",HIGHSCORE_ENTRY */
-/* asm: MENUENTRY	"MIN VOLUME LEVEL",SET_MIN_VOL_LEVEL */
-/* asm: MENUENTRY	"SPEED IN MPH OR KPH",MILES_OR_KILO */
-/* asm: MENUENTRY	"SHOW ROADKILL",ROADKILL_ONOFF */
-/* asm: MENUENTRY	"SHOW PRESIDENT",CLINTON_ONOFF */
-/* asm: MENUENTRY	"SHOW GIRLS",GIRLS_ONOFF */
-/* asm: MENUENTRY	"HIGHSCORE RESET",SET_HIGHSCORE_RESET */
-/* asm: MENUENTRY	"GAME DIFFICULTY",SET_GAME_DIFFICULTY */
-/* asm: MENUENTRY	"MAX CREDITS",SET_MAX_CREDITS */
-/* asm: MENUENTRY	"STEERING SENSITIVITY",SET_STEERING_SENSITIVITY */
-/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
-int ADJUSTMENT_MENU;
-#define MOTION_MENU_LEN 7
-/* asm: MOTION_MENU */
-/* asm: MENUENTRY	"FRONT AXIS UP/DOWN",DIAG_MOTION_TESTZ */
-/* asm: MENUENTRY	"LEFT REAR AXIS UP/DOWN",DIAG_MOTION_TESTX */
-/* asm: MENUENTRY	"RIGHT REAR AXIS UP/DOWN",DIAG_MOTION_TESTY */
-/* asm: MENUENTRY	"COMBINED MOTION",DIAG_MOTION_BURNIN */
-/* asm: MENUENTRY	"MOTION SAFETY SWITCHES",MOTION_SAFETY_SWITCHES_DIAG */
-int MOTION_MENU;
-/* *----------------------------------------------------------------------------
- */
-/* asm: LAMPT	SPTR	"LAMP TEST" */
-const char *LAMPT = "LAMP TEST";
-#define LAMP_MENU_LEN 11
-/* asm: LAMP_MENU: */
-/* asm: MENUENTRY	"TURN ON ALL LAMPS",LAMPSALL */
-/* asm: MENUENTRY	"TURN OFF ALL LAMPS",LAMPSOFF */
-/* asm: MENUENTRY	"TURN ON START",LAMPS */
-/* asm: MENUENTRY	"TURN ON VIEW 1",LAMPV1 */
-/* asm: MENUENTRY	"TURN ON VIEW 2",LAMPV2 */
-/* asm: MENUENTRY	"TURN ON VIEW 3",LAMPV3 */
-/* asm: MENUENTRY	"TURN ON LEFT TAIL",LAMPLT */
-/* asm: MENUENTRY	"TURN ON RIGHT TAIL",LAMPRT */
-/* asm: MENUENTRY	"TURN ON LEFT FRONT",LAMPLF */
-/* asm: MENUENTRY	"TURN ON RIGHT FRONT",LAMPRF */
-/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
-int LAMP_MENU;
-/* asm: MOTION_SAFETY_CODES: */
-/* asm: MSCM	080h,080h,MSC_BOARD_NOTPLUGGED */
-/* asm: MSCM	070h,0F0h,MSC_FAILSAFE_NOTCONNECTED */
-/* asm: MSCM	060h,0F0h,MSC_FAILSAFE_OK */
-/* asm: MSCM	050h,0F0h,MSC_OPTO_LED */
-/* asm: MSCM	040h,0F0h,MSC_OPTO_DETECTOR */
-/* asm: MSCM	030h,0F0h,MSC_OPTO_PATH */
-/* asm: MSCM	020h,0F0h,MSC_MAT_STEPPED */
-/* asm: MSCM	010h,0F0h,MSC_MAT_NOTPLUGGED */
-int MOTION_SAFETY_CODES;
-/* asm: OLD_MOTION_CODE	.bss	OLD_MOTION_CODE,1 */
-int OLD_MOTION_CODE;
-
-/* *WAIT FOR ENTER BUTTON ON
- */
-void WT_START(void)
-{
-WT_S1:
-    // asm 000005F6: 	LDI	@_newbut,R0
-    // asm 000005F7: 	TSTB	SW_DIAG,R0
-    // asm 000005F8: 	BNZ	WT_S1
-    // asm 000005F9: 	RETS
-    // *WAIT FOR ENTER BUTTON OFF
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WT_START", 0, 0);
-    UNIMPL();
-}
-
-void WT_NSTART(void)
-{
-WT_NS1:
-    // asm 000005FA: 	LDI	@_newbut,R0
-    // asm 000005FB: 	TSTB	SW_DIAG,R0
-    // asm 000005FC: 	BZ	WT_NS1
-    // asm 000005FD: 	RETS
-    // *WAIT FOR ENTER ON THEN OFF
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WT_NSTART", 0, 0);
-    UNIMPL();
-}
-
-void KEYPAUSE(void)
-{
-    // asm 000005FE: 	CALL	WT_START
-    // asm 000005FF: 	B	WT_NSTART
-    // *MAKE A BEEP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "KEYPAUSE", 0, 0);
-    UNIMPL();
-}
-
-void BEEP(void)
-{
-    // asm 00000600: 	LDI	980,AR2
-    // asm 00000601: 	BR	SENDSND
-    // ;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BEEP", 0, 0);
-    UNIMPL();
-}
-
-void MAKE_WINDOW(void)
-{
-    // asm 00000602: 	PUSH	AR3
-    // asm 00000603: 	PUSH	AR2
-    // asm 00000604: 	PUSH	R2
-    // asm 00000605: 	PUSH	R3
-    // asm 00000606: 	PUSH	RC
-    // asm 00000607: 	LDI	SP,AR3
-    // asm 00000608: 	LDI	COL_LGREY,RS
-    // asm 00000609: 	CALL	_fill
-    // asm 0000060A: 	LDI	*-AR3(MW_X1),AR2
-    // asm 0000060B: 	LDI	*-AR3(MW_Y1),R2
-    // asm 0000060C: 	LDI	*-AR3(MW_X2),R3
-    // asm 0000060D: 	LDI	*-AR3(MW_Y1),RC
-    // asm 0000060E: 	LDI	COL_LGREY2,RS
-    // asm 0000060F: 	CALL	_line
-    // asm 00000610: 	LDI	*-AR3(MW_X1),AR2
-    // asm 00000611: 	LDI	*-AR3(MW_Y1),R2
-    // asm 00000612: 	LDI	*-AR3(MW_X1),R3
-    // asm 00000613: 	LDI	*-AR3(MW_Y2),RC
-    // asm 00000614: 	LDI	COL_LGREY2,RS
-    // asm 00000615: 	CALL	_line
-    // asm 00000616: 	LDI	*-AR3(MW_X2),AR2
-    // asm 00000617: 	LDI	*-AR3(MW_Y1),R2
-    // asm 00000618: 	LDI	*-AR3(MW_X2),R3
-    // asm 00000619: 	LDI	*-AR3(MW_Y2),RC
-    // asm 0000061A: 	LDI	COL_DGREY,RS
-    // asm 0000061B: 	CALL	_line
-    // asm 0000061C: 	LDI	*-AR3(MW_X1),AR2
-    // asm 0000061D: 	LDI	*-AR3(MW_Y2),R2
-    // asm 0000061E: 	LDI	*-AR3(MW_X2),R3
-    // asm 0000061F: 	LDI	*-AR3(MW_Y2),RC
-    // asm 00000620: 	LDI	COL_DGREY,RS
-    // asm 00000621: 	CALL	_line
-    // asm 00000622: 	POP	RC
-    // asm 00000623: 	POP	R3
-    // asm 00000624: 	POP	R2
-    // asm 00000625: 	POP	AR2
-    // asm 00000626: 	POP	AR3
-    // asm 00000627: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_WINDOW", 0, 0);
-    UNIMPL();
-}
-
-void MAKE_IWINDOW(void)
-{
-    // asm 00000628: 	PUSH	AR3
-    // asm 00000629: 	PUSH	AR2
-    // asm 0000062A: 	PUSH	R2
-    // asm 0000062B: 	PUSH	R3
-    // asm 0000062C: 	PUSH	RC
-    // asm 0000062D: 	LDI	SP,AR3
-    // asm 0000062E: 	LDI	COL_LGREY,RS
-    // asm 0000062F: 	CALL	_fill
-    // asm 00000630: 	LDI	*-AR3(MW_X1),AR2
-    // asm 00000631: 	LDI	*-AR3(MW_Y1),R2
-    // asm 00000632: 	LDI	*-AR3(MW_X2),R3
-    // asm 00000633: 	LDI	*-AR3(MW_Y1),RC
-    // asm 00000634: 	LDI	COL_DGREY,RS
-    // asm 00000635: 	CALL	_line
-    // asm 00000636: 	LDI	*-AR3(MW_X1),AR2
-    // asm 00000637: 	LDI	*-AR3(MW_Y1),R2
-    // asm 00000638: 	LDI	*-AR3(MW_X1),R3
-    // asm 00000639: 	LDI	*-AR3(MW_Y2),RC
-    // asm 0000063A: 	LDI	COL_DGREY,RS
-    // asm 0000063B: 	CALL	_line
-    // asm 0000063C: 	LDI	*-AR3(MW_X2),AR2
-    // asm 0000063D: 	LDI	*-AR3(MW_Y1),R2
-    // asm 0000063E: 	LDI	*-AR3(MW_X2),R3
-    // asm 0000063F: 	LDI	*-AR3(MW_Y2),RC
-    // asm 00000640: 	LDI	COL_LGREY2,RS
-    // asm 00000641: 	CALL	_line
-    // asm 00000642: 	LDI	*-AR3(MW_X1),AR2
-    // asm 00000643: 	LDI	*-AR3(MW_Y2),R2
-    // asm 00000644: 	LDI	*-AR3(MW_X2),R3
-    // asm 00000645: 	LDI	*-AR3(MW_Y2),RC
-    // asm 00000646: 	LDI	COL_LGREY2,RS
-    // asm 00000647: 	CALL	_line
-    // asm 00000648: 	POP	RC
-    // asm 00000649: 	POP	R3
-    // asm 0000064A: 	POP	R2
-    // asm 0000064B: 	POP	AR2
-    // asm 0000064C: 	POP	AR3
-    // asm 0000064D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_IWINDOW", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
- */
-void HARD_LOAD_DIAGPAL(void)
-{
-    // asm 0000065F: 	LDL	DIAGPAL,AR2
-    // asm 00000660: 	LDIL	COLORAM,AR1
-    // asm 00000663: 	LDI	*AR2++,AR0
-    // asm 00000664: 	DEC	AR0
-    // asm 00000665: LODLP
-    // asm 00000665: 	LDI	*AR2++,R0
-    // asm 00000666: 	STI	R0,*AR1++
-    // asm 00000667: 	DBU	AR0,LODLP
-    // asm 00000668: 	RETS					;F  -cycling color
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARD_LOAD_DIAGPAL", 0, 0);
-    UNIMPL();
-}
-
-void HIDDEN_DIAG(void)
-{
-    // asm 00000669: 	CALL	ENTER_DIAG_INIT
-    // asm 0000066A: 	LDI	@DIAGPAL+1,R0
-    // asm 0000066B: 	STI	R0,@BGNDCOLA
-    // asm 0000066C: 	LDI	MDIAG,R0		;set mode appropriate
-    // asm 0000066D: 	STI	R0,@_MODE
-    // asm 0000066E: 	CALL	CLRSCRN			;we are NOT page flipping
-    // asm 0000066F: 	CALL	SETPAGE0
-    // asm 00000670: 	LDIL	SCREEN0,R0		;set active screen to 1 (writeable)
-    // asm 00000673: 	STI	R0,@ACTIVE_SCREEN
-    // asm 00000674: 	LDI	1,R0
-    // asm 00000675: 	STI	R0,@SOFT_AUDIT
-    // asm 00000676: 	CALL	AUDIT_DISPLAY
-    // asm 00000677: 	BR	DIAG_RETURN
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIDDEN_DIAG", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
-*
-*
- */
-void ENTER_DIAG_INIT(void)
-{
-    // asm 00000678: 	POP	R0
-    // asm 00000679: 	LDP	@FASTSTKI
-    // asm 0000067A:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
-    // asm 0000067B: 	PUSH	R0
-    // asm 0000067C: 	FIFO_CLRP	R0		;is the fifo clear
-    // asm 00000681: 	DMA_WT		R0
-    // asm 00000686: 	CALL	FIFO_RESET
-    // asm 00000687: 	CALL	SILENT
-    // asm 00000688: 	LDI	1,R2
-    // asm 00000689: 	SETAUD	ADJ_OUTOFDIAG
-    // asm 0000068B: 	LDI	MDIAG,R0		;MELLOW THE WHEEL
-    // asm 0000068C: 	STI	R0,@_MODE
-    // asm 0000068D: 	LDI	INT0_M|INT3_M,IE	;ENABLE INTERRUPTS
-    // asm 0000068E: 	AND     0,IF
-    // asm 0000068F: 	CALL	ENABLEGIE		;MUST DO AT START FOR I/O READING
-    // asm 00000690: 	CALL	INIT_SYSTEM
-    // asm 00000691: 	CALL	PAL_INIT
-    // asm 00000692: 	LDL	DIAGPAL,AR2
-    // asm 00000693: 	CALL	PAL_ALLOC_RAW
-    // asm 00000694: 	CLRI	AR2
-    // asm 00000695: 	CALL	SENDSND
-    // asm 00000696: 	CLRI	R4
-    // asm 00000697: 	STI	R4,@SOFT_AUDIT
-    // asm 00000698: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_DIAG_INIT", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
- */
-void ENTER_DIAG(void)
-{
-    // asm 00000699: 	CALL	ENTER_DIAG_INIT
-    // asm 0000069A: ENTER_DIAG2
-    // asm 0000069A: 	CLRI	R0
-    // asm 0000069B: 	STI	R0,@BUTTON_STATUS
-    // asm 0000069C: 	LDI	MDIAG,R0		;set mode appropriate
-    // asm 0000069D: 	STI	R0,@_MODE
-    // asm 0000069E: 	LDL	MAIN_MENU,AR5
-    // asm 0000069F: 	LDI	MAIN_MENU_LEN,AR6
-    // asm 000006A0: 	LDI	@MMT,AR7
-    // asm 000006A1: 	BU	HANDLE_MENU
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_DIAG", 0, 0);
-    UNIMPL();
-}
-
-void RETURN_TO_MAINMENU(void)
-{
-    // asm 000006A2: 	LDI	MDIAG,R0		;set mode appropriate
-    // asm 000006A3: 	STI	R0,@_MODE
-    // asm 000006A4: 	LDL	MAIN_MENU,AR5
-    // asm 000006A5: 	LDI	MAIN_MENU_LEN,AR6
-    // asm 000006A6: 	LDI	@MMT,AR7
-    // asm 000006A7: 	BU	HMER
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RETURN_TO_MAINMENU", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
- */
-void TOEXIT(void)
-{
-    // asm 000006A8: 	LDI	DEFAULT_COLOR,RC
-    // asm 000006A9: 	TEXTIT	toexit,180,371
-    // asm 000006AD: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TOEXIT", 0, 0);
-    UNIMPL();
-}
-
-void MONITOR_DIAGNOSTICS(void)
-{
-    // asm 000006B3: 	CALL	COLORBARS
-    // asm 000006B4: 	CALL	KEYPAUSE
-    // asm 000006B5: 	CALL	PAL_INIT
-    // asm 000006B6: 	LDL	DIAGPAL,AR2
-    // asm 000006B7: 	CALL	PAL_ALLOC_RAW
-    // asm 000006B8: 	LDIL	SCREEN0,AR2
-    // asm 000006BB: 	LDI	@FILSIZI,R3
-    // asm 000006BC: 	LDI	@REDV,R2
-    // asm 000006BD: 	CALL	SCREEN_FILL
-    // asm 000006BE: 	CALL	KEYPAUSE
-    // ;	CALL	DIAG_ACTIVEP
-    // asm 000006BF: 	LDIL	SCREEN0,AR2
-    // asm 000006C2: 	LDI	@FILSIZI,R3
-    // asm 000006C3: 	LDI	@GREENV,R2
-    // asm 000006C4: 	CALL	SCREEN_FILL
-    // asm 000006C5: 	CALL	KEYPAUSE
-    // ;	CALL	DIAG_ACTIVEP
-    // asm 000006C6: 	LDIL	SCREEN0,AR2
-    // asm 000006C9: 	LDI	@FILSIZI,R3
-    // asm 000006CA: 	LDI	@BLUEV,R2
-    // asm 000006CB: 	CALL	SCREEN_FILL
-    // asm 000006CC: 	CALL	KEYPAUSE
-    // ;	CALL	DIAG_ACTIVEP
-    // asm 000006CD: 	LDIL	SCREEN0,AR2
-    // asm 000006D0: 	LDI	@FILSIZI,R3
-    // asm 000006D1: 	LDI	@BLACKV,R2
-    // asm 000006D2: 	CALL	SCREEN_FILL
-    // 	;12 across
-    // 	;HLINES
-    // 	;20 down
-    // asm 000006D3: 	LDI	20,AR7
-    // asm 000006D4: 	LDI	0,AR6
-    // asm 000006D5: LINLOP
-    // asm 000006D5: 	CMPI	20,AR6
-    // asm 000006D6: 	LDIEQ	19,AR6
-    // asm 000006D7: 	CLRI	AR2
-    // asm 000006D8: 	LDI	511,R3
-    // asm 000006D9: 	LDI	AR6,R2
-    // asm 000006DA: 	LDI	AR6,RC
-    // asm 000006DB: 	LDI	1,RS
-    // asm 000006DC: 	CALL	_line
-    // asm 000006DD: 	ADDI	20,AR6
-    // asm 000006DE: 	DBU	AR7,LINLOP
-    // 	;VLINES
-    // asm 000006DF: 	LDI	32,AR7
-    // asm 000006E0: 	LDI	0,AR6
-    // asm 000006E1: VLINLOP
-    // asm 000006E1: 	CMPI	16,AR6
-    // asm 000006E2: 	LDIEQ	15,AR6
-    // asm 000006E3: 	CLRI	R2
-    // asm 000006E4: 	LDI	399,RC
-    // asm 000006E5: 	LDI	AR6,AR2
-    // asm 000006E6: 	LDI	AR6,R3
-    // asm 000006E7: 	LDI	1,RS
-    // asm 000006E8: 	CALL	_line
-    // asm 000006E9: 	ADDI	16,AR6
-    // asm 000006EA: 	DBU	AR7,VLINLOP
-    // asm 000006EB: 	CALL	KEYPAUSE
-    // asm 000006EC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MONITOR_DIAGNOSTICS", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
- */
-void COLORBARS(void)
-{
-    // asm 000006ED: 	CALL	CLRSCRN0
-    // asm 000006EE: 	CLRI	R0
-    // asm 000006EF: 	STI	R0,@BGNDCOLA
-    // asm 000006F0: 	LDI	09Eh,AR0
-    // asm 000006F1: 	LS	16,AR0
-    // asm 000006F2: 	LDI	15,RC
-    // asm 000006F3: 	RPTB	GREYLP
-    // asm 000006F4: 	LDI	R0,R1
-    // asm 000006F5: 	LDI	R0,R2
-    // asm 000006F6: 	LS	5,R1
-    // asm 000006F7: 	LS	10,R2
-    // asm 000006F8: 	LDI	R0,R3
-    // asm 000006F9: 	OR	R1,R3
-    // asm 000006FA: 	OR	R2,R3
-    // asm 000006FB: 	STI	R3,*AR0++
-GREYLP:
-    // asm 000006FC: ADDI	2,R0
-    // asm 000006FD: 	CLRI	R0
-    // asm 000006FE: 	LDI	15,RC
-    // asm 000006FF: 	RPTB	REDLP
-    // asm 00000700: 	LDI	R0,R1
-    // asm 00000701: 	LS	10,R1
-    // asm 00000702: 	STI	R1,*AR0++
-REDLP:
-    // asm 00000703: ADDI	2,R0
-    // asm 00000704: 	CLRI	R0
-    // asm 00000705: 	LDI	15,RC
-    // asm 00000706: 	RPTB	GREENLP
-    // asm 00000707: 	LDI	R0,R1
-    // asm 00000708: 	LSH	5,R1
-    // asm 00000709: 	STI	R1,*AR0++
-GREENLP:
-    // asm 0000070A: ADDI	2,R0
-    // asm 0000070B: 	CLRI	R0
-    // asm 0000070C: 	LDI	15,RC
-    // asm 0000070D: 	RPTB	BLUELP
-    // asm 0000070E: 	STI	R0,*AR0++
-    // asm 0000070F: BLUELP	ADDI	2,R0
-    // asm 00000710: 	CLRI	R3		;color
-    // asm 00000711: 	LDI	50,R2		;starting Y coordinate
-    // asm 00000712: 	LDI	3,AR4
-    // asm 00000713: WHOLELP
-    // asm 00000713: 	LDI	R3,R4
-    // asm 00000714: 	LDI	50,AR5		;lines per mess
-GROUPLP:
-    // asm 00000715: LDI	R4,R3
-    // asm 00000716: 	LDI	128,AR2		;starting X pixel
-    // asm 00000717: 	LDI	15,AR7		;blocks per lines
-LINELP:
-    // asm 00000718: LDI	15,AR6
-    // asm 00000719: BLOCKLP	CALL	_pixel
-    // asm 0000071A: 	INC	AR2		;next pixel
-    // asm 0000071B: 	DBU	AR6,BLOCKLP
-    // asm 0000071C: 	INC	R3
-    // asm 0000071D: 	DBU	AR7,LINELP
-    // asm 0000071E: 	INC	R2
-    // asm 0000071F: 	DBU	AR5,GROUPLP
-    // asm 00000720: 	ADDI	20,R2
-    // asm 00000721: 	DBU	AR4,WHOLELP
-    // asm 00000722: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLORBARS", 0, 0);
-    UNIMPL();
-}
-
-void SHOWSWITCH(void)
-{
-    // asm 00000724: 	CALL	SETUP_DIAG_SCREEN
-    // asm 00000725: 	LDI	-1,R0
-    // asm 00000726: 	STI	R0,@_opot0
-    // asm 00000727: 	STI	R0,@_opot1
-    // asm 00000728: 	STI	R0,@_opot2
-    // asm 00000729: 	STI	R0,@_onebut
-    // asm 0000072A: 	STI	R0,@LASTDIPPLOT
-    // asm 0000072B: 	STI	R0,@LASTSHIFT
-    // asm 0000072C: 	IWINDOW	125,170,145,355
-    // asm 00000731: 	IWINDOW	135,95,220,135
-    // asm 00000736: 	IWINDOW	245,95,420,135
-    // asm 0000073B: 	GROUP	10,60,465,150	;pots etc
-    // asm 0000076B: 	GROUP	10,160,170,360	;switches
-    // asm 0000079B: 	GROUP	190,160,360,250	;shifter
-    // asm 000007CB: 	LDI	COL_VDGREY,RC
-    // asm 000007CC: 	TEXTITT	"SWITCH TEST",205,26
-    // asm 000007D0: 	TEXTITT	"STEERING WHEEL",20,100
-    // asm 000007D4: 	TEXTITT	"GAS PEDAL",20,110
-    // asm 000007D8: 	TEXTITT	"BRAKE PEDAL",20,120
-    // asm 000007DC: 	TEXTITT	"VIEW 1",20,180
-    // asm 000007E0: 	TEXTITT	"VIEW 2",20,200
-    // asm 000007E4: 	TEXTITT	"VIEW 3",20,220
-    // asm 000007E8: 	TEXTITT	"START",20,240
-    // asm 000007EC: 	TEXTITT	"COIN 1",20,260
-    // asm 000007F0: 	TEXTITT	"COIN 2",20,280
-    // asm 000007F4: 	TEXTITT	"COIN 3",20,300
-    // asm 000007F8: 	TEXTITT	"COIN 4",20,320
-    // asm 000007FC: 	TEXTITT	"RADIO",20,340
-    // asm 00000800: 	TEXTITT	"HIT ENTER TO EXIT",40,40
-    // asm 00000804: 	TEXTITT	"ENTER",215,280
-    // asm 00000808: 	TEXTITT	"VOLUME UP",215,300
-    // asm 0000080C: 	TEXTITT	"VOLUME DOWN",215,320
-    // asm 00000810: 	TEXTITT	"SERVICE",215,340
-    // asm 00000814: 	TEXTITT	"CREDIT",225,350
-    // asm 00000818: 	IWINDOW	325,270,355,360
-SSLP:
-    // ;	CALL	DIAG_ACTIVEP
-    // asm 0000081D: 	CALL	DISPPOTS
-    // asm 0000081E: 	CALL	DISPLAY_SWITCH_STATUS
-    // asm 0000081F: 	LDI	COL_VDGREY,RC
-    // asm 00000820: 	TEXTITT	"CMOS VALUES",250,70
-    // asm 00000824: 	TEXTITT	"MIN  CENTER MAX",250,80
-    // asm 00000828: 	TEXTITT	"POT READING",134,80
-    // asm 0000082C: 	READADJ	ADJ_GASMIN
-    // asm 0000082E: 	LDI	R0,R2
-    // asm 0000082F: 	LDI	@bufferI,AR2
-    // asm 00000830: 	CALL	_itoa
-    // asm 00000831: 	LDI	250,R2
-    // asm 00000832: 	LDI	110,R3
-    // asm 00000833: 	LDI	DEFAULT_COLOR,RC
-    // asm 00000834: 	CALL	_outtextxyc
-    // asm 00000835: 	READADJ	ADJ_GASMAX
-    // asm 00000837: 	LDI	R0,R2
-    // asm 00000838: 	LDI	@bufferI,AR2
-    // asm 00000839: 	CALL	_itoa
-    // asm 0000083A: 	LDI	350,R2
-    // asm 0000083B: 	LDI	110,R3
-    // asm 0000083C: 	LDI	DEFAULT_COLOR,RC
-    // asm 0000083D: 	CALL	_outtextxyc
-    // asm 0000083E: 	READADJ	ADJ_STEERMIN
-    // asm 00000840: 	LDI	R0,R2
-    // asm 00000841: 	LDI	@bufferI,AR2
-    // asm 00000842: 	CALL	_itoa
-    // asm 00000843: 	LDI	250,R2
-    // asm 00000844: 	LDI	100,R3
-    // asm 00000845: 	LDI	DEFAULT_COLOR,RC
-    // asm 00000846: 	CALL	_outtextxyc
-    // asm 00000847: 	READADJ	ADJ_STEERCENTER
-    // asm 00000849: 	LDI	R0,R2
-    // asm 0000084A: 	LDI	@bufferI,AR2
-    // asm 0000084B: 	CALL	_itoa
-    // asm 0000084C: 	LDI	300,R2
-    // asm 0000084D: 	LDI	100,R3
-    // asm 0000084E: 	LDI	DEFAULT_COLOR,RC
-    // asm 0000084F: 	CALL	_outtextxyc
-    // asm 00000850: 	READADJ	ADJ_STEERMAX
-    // asm 00000852: 	LDI	R0,R2
-    // asm 00000853: 	LDI	@bufferI,AR2
-    // asm 00000854: 	CALL	_itoa
-    // asm 00000855: 	LDI	350,R2
-    // asm 00000856: 	LDI	100,R3
-    // asm 00000857: 	LDI	DEFAULT_COLOR,RC
-    // asm 00000858: 	CALL	_outtextxyc
-    // asm 00000859: 	READADJ	ADJ_BRAKEMIN
-    // asm 0000085B: 	LDI	R0,R2
-    // asm 0000085C: 	LDI	@bufferI,AR2
-    // asm 0000085D: 	CALL	_itoa
-    // asm 0000085E: 	LDI	250,R2
-    // asm 0000085F: 	LDI	120,R3
-    // asm 00000860: 	LDI	DEFAULT_COLOR,RC
-    // asm 00000861: 	CALL	_outtextxyc
-    // asm 00000862: 	READADJ	ADJ_BRAKEMAX
-    // asm 00000864: 	LDI	R0,R2
-    // asm 00000865: 	LDI	@bufferI,AR2
-    // asm 00000866: 	CALL	_itoa
-    // asm 00000867: 	LDI	350,R2
-    // asm 00000868: 	LDI	120,R3
-    // asm 00000869: 	LDI	DEFAULT_COLOR,RC
-    // asm 0000086A: 	CALL	_outtextxyc
-    // asm 0000086B: 	LDI	7FFFh,R0		;waste a little time
-    // asm 0000086C: 	MPYI	10,R0
-    // asm 0000086D: 	RPTS	R0
-    // asm 0000086E: 	NOP
-    // asm 0000086F: 	NOT	@_newbut,R0
-    // asm 00000870: 	AND	SW_DIAG,R0
-    // asm 00000871: 	BNZ	NOWTOEXIT
-    // ;	RETSNZ
-    // asm 00000872: 	CALL	WAIT_FOR_VBLANK		;wait for vblk
-    // asm 00000873: 	B	SSLP
-NOWTOEXIT:
-    // asm 00000874: 	LDI	330,AR2
-    // asm 00000875: 	LDI	AR2,R3
-    // asm 00000876: 	ADDI	10,R3
-    // asm 00000877: 	LDI	275,R2
-    // asm 00000878: 	SUBI	2,R2
-    // asm 00000879: 	LDI	R2,RC
-    // asm 0000087A: 	ADDI	12,RC
-    // asm 0000087B: 	LDI	COL_RED,RS
-    // asm 0000087C: 	CALL	_fill
-    // asm 0000087D: 	LDI	10,AR5
-    // asm 0000087E: BBD5	CALL	WAIT_FOR_VBLANK		;wait for vblk
-    // asm 0000087F: 	DBU	AR5,BBD5
-    // asm 00000880: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOWSWITCH", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
-*BOTTOM EIGHT BITS ONLY
-*
-*
-*PARAMETER
-*	AR2	STRING
-*	R2	VALUE
-*
-*
- */
-void ASCII_TO_BINARY(void)
-{
-    // asm 00000881: 	LDI	0,RS
-    // asm 00000882: 	LDI	0,R0	;output
-    // asm 00000883: 	LDI	80h,R1	;mask
-    // asm 00000884: 	LDI	7,AR3
-    // asm 00000885: ATBLP
-    // asm 00000885: 	TSTB	R1,R2
-    // asm 00000886: 	LDIZ	'0',R3
-    // asm 00000887: 	LDINZ	'1',R3
-    // asm 00000888: 	LSH	RS,R3
-    // asm 00000889: 	OR	R3,R0
-    // asm 0000088A: 	RS	1,R1
-    // asm 0000088B: 	ADDI	8,RS
-    // asm 0000088C: 	CMPI	32,RS
-    // asm 0000088D: 	BLT	JJ
-    // asm 0000088E: 	LDI	0,RS
-    // asm 0000088F: 	STI	R0,*AR2++
-    // asm 00000890: 	CLRI	R0
-JJ:
-    // asm 00000891: 	DBU	AR3,ATBLP
-    // asm 00000892: 	CLRI	R0
-    // asm 00000893: 	STI	R0,*AR2++
-    // asm 00000894: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ASCII_TO_BINARY", 0, 0);
-    UNIMPL();
-}
-
-void DISPLAY_SWITCH_STATUS(void)
-{
-    // asm 00000895: 	CALL	DISPLAY_SHIFTER
-    // asm 00000896: 	LDI	@_newbut,R0
-    // asm 00000897: 	LDI	@_onebut,R1
-    // asm 00000898: 	CMPI	R1,R0
-    // asm 00000899: 	RETSEQ
-    // asm 0000089A: 	STI	R0,@_onebut
-    // asm 0000089B: 	FILL	130,175,140,350,0	;MAIN
-    // asm 000008A1: 	FILL	327,272,353,358,0	;TEST SWITCHES
-    // asm 000008A7: 	LDI	@SWITCHES_DIAGI,AR6
-DSS:
-    // asm 000008A8: 	LDI	@_newbut,R0
-    // asm 000008A9: 	LDI	*AR6++(3),R1
-    // asm 000008AA: 	CMPI	-1,R1
-    // asm 000008AB: 	BZ	DONEDSS
-    // asm 000008AC: 	AND	R1,R0
-    // asm 000008AD: 	BNZ	DSS
-    // asm 000008AE: 	LDI	*-AR6(1),AR2
-    // asm 000008AF: 	LDI	AR2,R3
-    // asm 000008B0: 	ADDI	10,R3
-    // asm 000008B1: 	LDI	*-AR6(2),R2
-    // asm 000008B2: 	SUBI	2,R2
-    // asm 000008B3: 	LDI	R2,RC
-    // asm 000008B4: 	ADDI	12,RC
-    // asm 000008B5: 	LDI	COL_RED,RS
-    // asm 000008B6: 	CALL	_fill
-    // asm 000008B7: NOPLOT
-    // asm 000008B7: 	B	DSS
-DONEDSS:
-    // asm 000008B8: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_SWITCH_STATUS", 0, 0);
-    UNIMPL();
-}
-
-void DISPLAY_SHIFTER(void)
-{
-    // asm 000008BA: 	NOT	@_newbut,R0
-    // asm 000008BB: 	AND	3C00h,R0
-    // asm 000008BC: 	CMPI	@LASTSHIFT,R0
-    // asm 000008BD: 	RETSEQ
-    // asm 000008BE: 	STI	R0,@LASTSHIFT
-    // asm 000008BF: 	LDI	COL_VDGREY,RC
-    // asm 000008C0: 	TEXTITT	"SHIFT 1",215,170
-    // asm 000008C4: 	TEXTITT	"SHIFT 2",215,240
-    // asm 000008C8: 	TEXTITT	"SHIFT 3",290,170
-    // asm 000008CC: 	TEXTITT	"SHIFT 4",290,240
-    // asm 000008D0: 	PUSH	R0
-    // asm 000008D1: 	PUSH	AR2
-    // asm 000008D2: 	FILL	230,180,325,230,0
-    // asm 000008D8: 	POP	AR2
-    // asm 000008D9: 	POP	R0
-    // ; 400h = 4
-    // ; 800h = 3
-    // ;1000h = 2
-    // ;2000h = 1
-    // asm 000008DA: 	LDI	@_newbut,R0
-    // asm 000008DB: 	TSTB	2000h,R0
-    // asm 000008DC: 	BNZ	NOT1ST
-    // asm 000008DD: 	FILL	230,180,250,200,COL_RED
-NOT1ST:
-    // asm 000008E3: 	LDI	@_newbut,R0
-    // asm 000008E4: 	TSTB	1000h,R0
-    // asm 000008E5: 	BNZ	NOT2ND
-    // asm 000008E6: 	FILL	230,210,250,230,COL_RED
-NOT2ND:
-    // asm 000008EC: 	LDI	@_newbut,R0
-    // asm 000008ED: 	TSTB	800h,R0
-    // asm 000008EE: 	BNZ	NOT3RD
-    // asm 000008EF: 	FILL	305,180,325,200,COL_RED
-NOT3RD:
-    // asm 000008F5: 	LDI	@_newbut,R0
-    // asm 000008F6: 	TSTB	400h,R0
-    // asm 000008F7: 	BNZ	NOT4TH
-    // asm 000008F8: 	FILL	305,210,325,230,COL_RED
-NOT4TH:
-    // asm 000008FE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_SHIFTER", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
- */
-void DISPPOTS(void)
-{
-    // asm 000008FF: 	LDI	@_pot0,R2
-    // asm 00000900: 	CMPI	@_opot0,R2
-    // asm 00000901: 	BEQ	NOPLOTpot0
-    // asm 00000902: 	STI	R2,@_opot0
-    // asm 00000903: 	FILL	150,100,215,109,0
-    // asm 00000909: 	LDI	@_pot0,R2
-    // asm 0000090A: 	LDI	@bufferI,AR2
-    // asm 0000090B: 	CALL	_itoa
-    // asm 0000090C: 	LDI	150,R2
-    // asm 0000090D: 	LDI	100,R3
-    // asm 0000090E: 	LDI	COL_VDGREY,RC
-    // asm 0000090F: 	CALL	_outtextxyc
-    // asm 00000910: NOPLOTpot0
-    // asm 00000910: 	LDI	@_pot1,R2
-    // asm 00000911: 	CMPI	@_opot1,R2
-    // asm 00000912: 	BEQ	NOPLOTpot1
-    // asm 00000913: 	STI	R2,@_opot1
-    // asm 00000914: 	FILL	150,110,215,119,0
-    // asm 0000091A: 	LDI	@_pot1,R2
-    // asm 0000091B: 	LDI	@bufferI,AR2
-    // asm 0000091C: 	CALL	_itoa
-    // asm 0000091D: 	LDI	150,R2
-    // asm 0000091E: 	LDI	110,R3
-    // asm 0000091F: 	LDI	COL_VDGREY,RC
-    // asm 00000920: 	CALL	_outtextxyc
-    // asm 00000921: NOPLOTpot1
-    // asm 00000921: 	LDI	@_pot2,R2
-    // asm 00000922: 	CMPI	@_opot2,R2
-    // asm 00000923: 	BEQ	NOPLOTpot2
-    // asm 00000924: 	STI	R2,@_opot2
-    // asm 00000925: 	FILL	150,120,215,129,0
-    // asm 0000092B: 	LDPI	@_pot2,R2
-    // asm 0000092C: 	LDPI	@bufferI,AR2
-    // asm 0000092D: 	CALL	_itoa
-    // asm 0000092E: 	LDI	150,R2
-    // asm 0000092F: 	LDI	120,R3
-    // asm 00000930: 	LDI	COL_VDGREY,RC
-    // asm 00000931: 	CALL	_outtextxyc
-    // asm 00000932: NOPLOTpot2
-    // asm 00000932: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPPOTS", 0, 0);
-    UNIMPL();
-}
-
-void SHOW_DIPSWITCH(void)
-{
-    // asm 00000933: 	CALL	SETUP_DIAG_SCREEN
-    // asm 00000934: 	LDI	COL_VDGREY,RC
-    // asm 00000935: 	TEXTITT	"DIP SWITCH TEST",20,15
-    // asm 00000939: 	LDI	-1,R0
-    // asm 0000093A: 	STI	R0,@LASTDIPPLOT
-    // asm 0000093B: 	CALL	TOEXIT
-DIPLP:
-    // asm 0000093C: 	CALL	DISPLAY_DIPSWITCH_STATUS
-    // asm 0000093D: 	NOT	@_newbut,R0
-    // asm 0000093E: 	AND	SW_DIAG,R0
-    // asm 0000093F: 	RETSNZ
-    // asm 00000940: 	CALL	WAIT_FOR_VBLANK		;wait for vblk
-    // asm 00000941: 	B	DIPLP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_DIPSWITCH", 0, 0);
-    UNIMPL();
-}
-
-/* *
- */
-void SHOW_DIPSWITCH_STATUS(void)
-{
-    // asm 00000942: 	LDI	7,AR5
-    // asm 00000943: 	LDI	1,R4		;Index Number
-    // asm 00000944: SDS_LP
-    // asm 00000944: 	TSTB	80h,R7
-    // asm 00000945: 	LDIZ	@ISON,AR2
-    // asm 00000946: 	LDINZ	@ISOFF,AR2
-    // asm 00000947: 	PUSH	R7
-    // asm 00000948: 	LDI	R5,R2
-    // asm 00000949: 	ADDI	20,R2
-    // asm 0000094A: 	LDI	R6,R3
-    // asm 0000094B: 	LDI	COL_VDGREY,RC
-    // asm 0000094C: 	CALL	_outtextxyc
-    // asm 0000094D: 	LDI	R4,R2
-    // asm 0000094E: 	LDL	DIPTMP,AR2
-    // asm 0000094F: 	CALL	_itoa
-    // asm 00000950: 	LDI	R5,R2
-    // asm 00000951: 	LDI	R6,R3
-    // asm 00000952: 	LDI	COL_VDGREY,RC
-    // asm 00000953: 	CALL	_outtextxyc
-    // asm 00000954: 	POP	R7
-    // asm 00000955: 	LS	1,R7
-    // asm 00000956: 	INC	R4
-    // asm 00000957: 	ADDI	10,R6
-    // asm 00000958: 	DBU	AR5,SDS_LP
-    // asm 00000959: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_DIPSWITCH_STATUS", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
-*
-*
-*
-*
- */
-void DISPLAY_DIPSWITCH_STATUS(void)
-{
-    // asm 0000095A: 	LDI	@DIPRAM,R0
-    // asm 0000095B: 	CMPI	@LASTDIPPLOT,R0
-    // asm 0000095C: 	RETSEQ
-    // asm 0000095D: 	STI	R0,@LASTDIPPLOT
-    // 	;BANK 1
-    // asm 0000095E: 	LDI	COL_VDGREY,RC
-    // asm 0000095F: 	TEXTITT	"DIP SW2 U97",30,40
-    // asm 00000963: 	GROUP	20,50,400,170
-    // asm 00000993: 	FILL	22,52,398,168,0
-    // asm 00000999: 	LDI	30,R5
-    // asm 0000099A: 	LDI	60,R6
-    // asm 0000099B: 	CLRI	AR2
-    // asm 0000099C: 	LDP	@DIPSW
-    // asm 0000099D: 	LDI	@DIPSW,R7
-    // asm 0000099E: 	LDI	*AR2,AR2
-    // asm 0000099F: 	SETDP
-    // asm 000009A0: 	RS	16,R7
-    // asm 000009A1: 	CALL	SHOW_DIPSWITCH_STATUS
-    // 	;BANK ONE (SW2) DECODED...
-    // ;	.data
-    // ;TONI	.word	TON
-    // ;TOFFI	.word	TOFF
-    // ;TON	.string	"TEST ON",0
-    // ;TOFF	.string	"TEST OFF",0
-    // ;	.text
-    // ;
-    // ;	LDI	90,R2			;DIAGNOSTICS
-    // ;	LDI	60+(0*10),R3
-    // ;	LDI	@DIPRAM,R0
-    // ;	TSTB	DIP_DIAG,R0
-    // ;	LDINZ	@TOFFI,AR2
-    // ;	LDIZ	@TONI,AR2
-    // ;	CALL	_outtextxyc
-    // asm 000009A2: 	LDI	90,R2			;MOTION
-    // asm 000009A3: 	LDI	60+(1*10),R3
-    // asm 000009A4: 	LDI	@DIPRAM,R0
-    // asm 000009A5: 	TSTB	DIP_MOTION,R0
-    // asm 000009A6: 	LDINZ	@DNMOTI,AR2
-    // asm 000009A7: 	LDIZ	@DMOTI,AR2
-    // asm 000009A8: 	CALL	_outtextxyc
-    // asm 000009A9: 	LDI	90,R2
-    // asm 000009AA: 	LDI	60+(2*10),R3
-    // asm 000009AB: 	LDI	@DIPRAM,R0
-    // asm 000009AC: 	TSTB	DIP_STANDUP,R0
-    // asm 000009AD: 	LDINZ	@DNSUPI,AR2
-    // asm 000009AE: 	LDIZ	@DSUPI,AR2
-    // asm 000009AF: 	CALL	_outtextxyc
-    // ;	.data
-    // ;RF1I	.word	RF1
-    // ;RF2I	.word	RF2
-    // ;RF1	.string	"FREEZE ON",0
-    // ;RF2	.string	"FREEZE OFF",0
-    // ;	.text
-    // ;
-    // ;	LDI	90,R2
-    // ;	LDI	60+(3*10),R3
-    // ;	LDI	@DIPRAM,R0
-    // ;	TSTB	DIP_FREEZE,R0
-    // ;	LDIZ	@RF1I,AR2
-    // ;	LDINZ	@RF2I,AR2
-    // ;	CALL	_outtextxyc
-    // asm 000009B0: 	LDI	90,R2			;COMMUNICATION
-    // asm 000009B1: 	LDI	60+(5*10),R3
-    // asm 000009B2: 	LDI	@DIPRAM,R0
-    // asm 000009B3: 	TSTB	DIP_COMMP,R0
-    // asm 000009B4: 	LDINZ	@DNLINKDI,AR2
-    // asm 000009B5: 	LDIZ	@DLINKDI,AR2
-    // asm 000009B6: 	CALL	_outtextxyc
-    // asm 000009B7: 	LDI	90,R2			;COMMUNICATION
-    // asm 000009B8: 	LDI	60+(7*10),R3
-    // asm 000009B9: 	LDI	@DIPRAM,R0
-    // asm 000009BA: 	TSTB	CMDP_MASTER,R0
-    // asm 000009BB: 	LDIZ	@DMOD1,AR2
-    // asm 000009BC: 	LDINZ	@DMOD2,AR2
-    // asm 000009BD: 	CALL	_outtextxyc
-    // 	;BANK 2
-    // asm 000009BE: 	LDI	COL_VDGREY,RC
-    // asm 000009BF: 	TEXTITT	"DIP SW3",30,180
-    // asm 000009C3: 	GROUP	20,190,400,310
-    // asm 000009F3: 	FILL	22,192,398,308,0
-    // asm 000009F9: 	LDI	30,R5
-    // asm 000009FA: 	LDI	200,R6
-    // asm 000009FB: 	CLRI	AR2
-    // asm 000009FC: 	LDP	@DIPSW
-    // asm 000009FD: 	LDI	@DIPSW,R7
-    // asm 000009FE: 	LDI	*AR2,AR2
-    // asm 000009FF: 	SETDP
-    // asm 00000A00: 	RS	24,R7
-    // asm 00000A01: 	CALL	SHOW_DIPSWITCH_STATUS
-    // 	;BANK TWO (SW3) DECODED...
-    // asm 00000A02: 	LINE	85,200,85,200+(6*10)+9,COL_VDGREY
-    // asm 00000A08: 	CALL	GETCOIN_DEFAULT
-    // asm 00000A09: 	PUSH	R2
-    // asm 00000A0A: 	LDI	R2,AR0
-    // asm 00000A0B: 	CALL	GET_THIS_COINTXT
-    // asm 00000A0C: 	LDI	AR0,AR4
-    // asm 00000A0D: 	LDI	*AR4++,AR2
-    // asm 00000A0E: 	LDI	90,R2
-    // asm 00000A0F: 	LDI	200+(3*10),R3
-    // asm 00000A10: 	LDI	COL_VDGREY,RC
-    // asm 00000A11: 	CALL	_outtextxyc
-    // asm 00000A12: 	LDI	*AR4++,AR2
-    // asm 00000A13: 	CMPI	0,AR2
-    // asm 00000A14: 	BEQ	DONE_MODE_MSG
-    // asm 00000A15: 	LDI	90,R2
-    // asm 00000A16: 	LDI	200+(4*10),R3
-    // asm 00000A17: 	LDI	COL_VDGREY,RC
-    // asm 00000A18: 	CALL	_outtextxyc
-    // asm 00000A19: 	LDI	*AR4++,AR2
-    // asm 00000A1A: 	CMPI	0,AR2
-    // asm 00000A1B: 	BEQ	DONE_MODE_MSG
-    // asm 00000A1C: 	LDI	90,R2
-    // asm 00000A1D: 	LDI	200+(5*10),R3
-    // asm 00000A1E: 	LDI	COL_VDGREY,RC
-    // asm 00000A1F: 	CALL	_outtextxyc
-DONE_MODE_MSG:
-    // asm 00000A20: 	POP	AR2
-    // asm 00000A21: 	ADDI	@COINMSGC_TABI,AR2
-    // asm 00000A22: 	LDI	*AR2,AR2
-    // asm 00000A23: 	LDI	90,R2
-    // asm 00000A24: 	LDI	200+(2*10),R3
-    // asm 00000A25: 	LDI	COL_VDGREY,RC
-    // asm 00000A26: 	CALL	_outtextxyc
-    // ;	PUSH	AR2
-    // ;	LDI	R2,AR0
-    // ;	CALL	GET_THIS_COINTXT
-    // ;	LDI	AR0,AR2
-    // ;	LDI	90,R2
-    // ;	LDI	200+(3*10),R3
-    // ;	LDI	COL_VDGREY,RC
-    // ;	CALL	_outtextxyc
-    // ;
-    // ;	POP	AR2
-    // ;	LDI	*+AR2,AR2
-    // ;	LDI	90,R2
-    // ;	LDI	200+(2*10),R3
-    // ;	LDI	COL_VDGREY,RC
-    // ;	CALL	_outtextxyc
-    // asm 00000A27: 	LDI	90,R2			;COMMUNICATION
-    // asm 00000A28: 	LDI	200+(7*10),R3
-    // asm 00000A29: 	LDI	@DIPRAM,R0
-    // asm 00000A2A: 	TSTB	DIP_COINCNTR,R0
-    // asm 00000A2B: 	LDINZ	@COINCNTR1I,AR2
-    // asm 00000A2C: 	LDIZ	@COINCNTR2I,AR2
-    // asm 00000A2D: 	CALL	_outtextxyc
-    // asm 00000A2E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPLAY_DIPSWITCH_STATUS", 0, 0);
-    UNIMPL();
-}
-
-void RUN_MOTION_MENU(void)
-{
-    // asm: 	LDL	MOTION_MENU,AR5
-    // asm: 	LDI	MOTION_MENU_LEN,AR6
-    // asm: 	LDI	@MOMT,AR7
-    // asm: 	BU	HANDLE_MENU
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_MOTION_MENU", 0, 0);
-    UNIMPL();
-}
-
-void RUN_ADJUSTMENT_MENU(void)
-{
-    // asm 00000A38: 	LDL	ADJUSTMENT_MENU,AR5
-    // asm 00000A39: 	LDI	ADJUSTMENT_MENU_LEN,AR6
-    // asm: 	LDI	@AMT,AR7
-    // asm: 	BU	HANDLE_MENU
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_ADJUSTMENT_MENU", 0, 0);
-    UNIMPL();
-}
-
-void PRINT_ADJUSTMENT(void)
-{
-    // asm: 	PUSH	AR4
-    // asm: 	LDI	@ADJTABI,AR4
-    // asm: 	CALL	PRINT_VALUE
-    // asm: 	POP	AR4
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_ADJUSTMENT", 0, 0);
-    UNIMPL();
-}
-
-void RUN_UTILITIES_MENU(void)
-{
-    // asm 00000A44: 	LDL	UTILITIES_MENU,AR5
-    // asm: 	LDI	UTILITIES_MENU_LEN,AR6
-    // asm: 	LDI	@UMT,AR7
-    // asm: 	BU	HANDLE_MENU
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_UTILITIES_MENU", 0, 0);
-    UNIMPL();
-}
-
-void RUN_DIAG_MENU(void)
-{
-    // asm 00000A49: 	LDL	DIAGNOSTIC_MENU,AR5
-    // asm: 	LDI	DIAGNOSTIC_MENU_LEN,AR6
-    // asm: 	LDI	@DMT,AR7
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_DIAG_MENU", 0, 0);
-    UNIMPL();
-}
-
-void HANDLE_MENU(void)
-{
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,@MENU_SCROLL
-    // asm: 	CLRI	R6			;MENU INDEX
-HMER:
-    // asm 00000A4F: 	PUSH	R6
-    // asm 00000A50: 	LDI	@DIAGPAL+1,R0
-    // asm: 	STI	R0,@BGNDCOLA
-    // asm: 	PUSH	AR7
-    // asm 00000A52: 	CALL	SETUP_DIAG_SCREEN
-    // asm: 	LDI	COL_VDGREY,RC
-    // asm 00000A55: 	TEXTIT	title,30,20
-    // asm: 	TEXTIT	inst1,20,260
-    // asm 00000A56: 	TEXTIT	inst2,20,270
-    // asm: 	LDI	*-AR5,R2		;Routine that prints the value
-    // asm 00000A57: 	BEQ	HMSTAND
-    // asm 00000A58: 	LDI	*-AR5(2),R2
-    // asm 00000A5C: 	BEQ	HMSTAND
-    // asm 00000A60: 	CALLU	R2
-    // asm: 	BR	HMNOTSTAND
-HMSTAND:
-    // asm 00000A65: 	IWINDOW	20,45,280,250
-HMNOTSTAND:
-    // asm 00000A67: 	LDI	30,R2
-    // asm 00000A68: 	LDI	35,R3
-    // asm 00000A69: 	LDI	COL_VDGREY,RC
-    // asm: 	POP	AR7
-    // asm 00000A6A: 	LDI	AR7,AR2
-    // asm: 	CALL	_outtextxyc
-    // asm 00000A70: 	LDI	10000,R7		;wait_mac counter
-    // asm 00000A71: 	MPYI	55,R7
-    // asm 00000A72: 	POP	R6
-HANMENL:
-    // asm 00000A75: 	LDI	@MENU_SCROLL,R0
-    // ;	CLRI	R0
-    // ;	LDI	AR5,AR4
-    // asm: 	LDI	2,AR4			;OFFSET AR4 to MENU_SCROLL
-    // asm: 	MPYI	R0,AR4
-    // asm: 	ADDI	AR5,AR4
-    // asm: 	LDI	50,R3			;Y POSITION OF TEXT
-    // asm 00000A7A: 	PUSH	AR7
-    // asm: 	LDI	AR6,AR7
-    // asm 00000A7C: 	SUBI	@MENU_SCROLL,AR7
-    // asm: 	CMPI	20,AR7
-    // asm: 	LDIGT	20,AR7
-    // asm: 	DEC	AR7
-    // asm 00000A7E: HANMENL_PLOT
-    // asm 00000A7F: 	LDI	COL_VDGREY,RC
-    // asm 00000A80: 	CMPI	R0,R6
-    // asm 00000A81: 	LDIEQ	COL_RED,RC
-    // asm 00000A82: 	LDI	*AR4++(2),AR2
-    // asm: 	LDI	30,R2
-    // asm 00000A83: 	CALL	_outtextxyc
-    // asm 00000A85: 	LDI	*-AR5,R5		;Routine that prints the value
-    // asm: 	CALLNE	R5
-    // asm 00000A87: 	ADDI	10,R3
-    // asm 00000A88: 	INC	R0
-    // asm: 	DBU	AR7,HANMENL_PLOT
-    // asm 00000A89: 	POP	AR7
-    // asm 00000A8C: 	LDI	@_newbut,R0		;old system method
-    // asm 00000A8D: 	LDI	R0,R1
-    // asm 00000A8E: 	TSTB    SW_COINSRV,R1
-    // asm: 	BNZ	JAJA5
-    // ;this locks on the main menu.
-    // ;fix later
-    // asm 00000A91: 	LDL	MAIN_MENU,AR0
-    // asm 00000A92: 	CMPI	AR0,AR5
-    // asm: 	BEQ	JAJA5
-    // asm: 	LDI	982,AR2
-    // asm: 	CALL	SENDSND
-    // asm 00000A93: 	PUSH	AR5
-    // asm 00000A94: 	PUSH	AR6
-    // asm 00000A95: 	PUSH	AR7
-    // asm: 	PUSH	R6
-    // asm 00000A96: 	CALL	XIT_MENU_TO_MAIN
-    // ;
-    // ;	CALLZ	ESCAPE_TO_MAIN
-JAJA5:
-    // asm 00000A9C: 	TSTB    SW_DIAG,R1
-    // asm: 	BZ	HM_EXECUTE
-    // asm: 	TSTB	SW_VOLMINUS,R0		;move up
-    // asm: 	BNZ	HM_NOTUP
-    // asm 00000A9D: 	LDI	980,AR2
-    // asm 00000A9E: 	CALL	SENDSND
-    // asm 00000A9F: 	ADDI	1,R6
-    // asm 00000AA0: 	CMPI	AR6,R6
-    // asm: 	BLT	HM_WT
-    // asm 00000AA2: 	LDI	AR6,R6
-    // asm: 	DEC	R6
-    // asm 00000AA3: 	B	HM_WT
-HM_NOTUP:
-    // asm: 	TSTB	SW_VOLPLUS,R0		;move down
-    // asm 00000AA6: 	BNZ	HM_NOTDOWN
-    // asm 00000AA8: 	LDI	981,AR2
-    // asm: 	CALL	SENDSND
-    // asm 00000AA9: 	SUBI	1,R6
-    // asm 00000AAA: 	LDILT	0,R6
-HM_WT:
-    // ;	WAIT_MAC
-    // asm 00000AAC: 	LDI	R7,R1
-wta:
-    // asm 00000AAD: 	DEC	R1
-    // asm 00000AAE: 	BLT	wtta
-    // asm: 	LDI	@_newbut,R0
-    // asm 00000AAF: 	AND	SW_VOLPLUS|SW_VOLMINUS,R0
-    // asm: 	CMPI	SW_VOLPLUS|SW_VOLMINUS,R0
-    // asm 00000AB0: 	BNE	wta
-    // asm: 	LDI	10000,R7
-    // asm 00000AB2: 	MPYI	55,R7
-    // asm 00000AB3: 	BU	J55
-wtta:
-    // asm 00000AB5: 	LDI	5000,R7
-    // asm: 	MPYI	55,R7
-J55:
-HM_NOTDOWN:
-    // asm 00000ABA: 	CMPI	0,R6
-    // asm: 	BEQ	NO_SCROLL
-    // asm: 	LDI	0,R2
-    // asm: 	LDI	@MENU_SCROLL,R0
-    // asm: 	LDI	R0,R1
-    // asm: 	ADDI	20,R1
-    // asm 00000ABB: 	CMPI	R0,R6
-    // asm 00000ABC: 	BLT	GO_SCROLL
-    // asm 00000ABD: 	CMPI	R1,AR6
-    // asm 00000ABE: 	BLE	NO_SCROLL
-GO_SCROLL:
-    // asm 00000AC0: 	CMPI	R0,R6
-    // asm 00000AC1: 	LDILT	-10,R2
-    // asm 00000AC2: 	CMPI	R1,R6
-    // asm 00000AC3: 	LDIGE	10,R2
-    // asm 00000AC4: 	ADDI	R2,R0
-    // asm: 	LDIN	0,R0
-    // asm 00000AC5: 	STI	R0,@MENU_SCROLL
-    // asm 00000AC6: 	CMPI	0,R2
-    // asm 00000AC7: 	BNE	HMER			;REDRAW entir screen if scrolled
-NO_SCROLL:
-    // asm 00000ACA: 	B	HANMENL
-HM_EXECUTE:
-    // asm 00000ACD: 	LDI	982,AR2
-    // asm: 	CALL	SENDSND
-    // asm 00000ACE: 	LDI	R6,AR0
-    // asm: 	MPYI	2,AR0
-    // asm: 	ADDI	AR5,AR0
-    // asm 00000ACF: 	LDI	*+AR0(1),R0
-    // asm 00000AD0: 	BZ	HANMENL
-    // asm: 	PUSH	AR5
-    // asm 00000AD1: 	PUSH	AR6
-    // asm 00000AD2: 	PUSH	AR7
-    // asm 00000AD3: 	PUSH	R6
-    // asm 00000AD4: 	CALLU	R0
-    // asm 00000AD5: 	POP	R6
-    // asm 00000AD6: 	POP	AR7
-    // asm 00000AD7: 	POP	AR6
-    // asm 00000AD8: 	POP	AR5
-    // asm 00000AD9: 	B	HMER
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HANDLE_MENU", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
-;ESCAPE_TO_MAIN:
-;	LDI	982,AR2
-;	CALL	SENDSND
-;	POP	R0
-;	RETS
- */
-void XIT_MENU_TO_MAIN(void)
-{
-    // asm: 	LDI	0,R0
-    // asm: 	STI	R0,@MENU_SCROLL
-    // asm: 	CALL	LAMPSOFF
-    // asm: 	POP	R0	;return address
-    // asm 00000AE0: 	POP	R6
-    // asm 00000AE1: 	POP	AR7
-    // asm: 	POP	AR6
-    // asm 00000AE2: 	POP	AR5
-    // asm: 	RETS
-    // ;	BR	RETURN_TO_MAINMENU
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "XIT_MENU_TO_MAIN", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
- */
-void SETUP_DIAG_SCREEN(void)
-{
-    // asm: 	CALL	CLRSCRN
-    // asm: 	CALL	SETPAGE0
-    // asm: 	LDIL	SCREEN0,R0
-    // asm: 	STI	R0,@ACTIVE_SCREEN
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SETUP_DIAG_SCREEN", 0, 0);
-    UNIMPL();
-}
-
-void SOUND_BOARD_TEST(void)
-{
-    // asm: 	CALL	SETUP_DIAG_SCREEN
-    // asm: 	CLRI	R5	;TUNE INDEX
-    // asm: 	CLRI	R6	;SNDFX INDEX
-    // asm: 	LDI	COL_VDGREY,RC
-    // asm: 	TEXTITT	"SOUND BOARD TEST",50,20
-    // asm: 	TEXTITT	"ENTER  TO EXIT",20,100
-    // asm: 	TEXTITT	"UP     TO CHANGE MUSIC",20,110
-    // asm: 	TEXTITT	"DOWN   TO TRIGGER SOUND EFFECT",20,120
-    // asm: 	LDL	MUSIC_TAB,AR5
-    // asm 00000B02: 	LDL	EFFECTS_TAB,AR6
-    // asm 00000B03: 	LDI	-1,R5
-    // asm 00000B04: 	LDI	-1,R6
-SBT_UPDT:
-    // asm 00000B06: 	CMPI	AR5,R5
-    // asm 00000B0A: 	BEQ	NUPDT
-    // asm 00000B12: 	LDI	AR5,R5
-    // asm: 	FILL	20,200,200,220,0
-    // asm 00000B16: 	LDI	COL_VDGREY,RC
-    // asm 00000B17: 	TEXTITT	"TUNE",20,200
-    // asm: 	LDI	*AR5,AR2
-    // asm 00000B18: 	LDI	30,R2
-    // asm 00000B19: 	LDI	210,R3
-    // asm: 	CALL	_outtextxyc
-    // asm 00000B1A: 	LDI	*+AR5,AR2
-    // asm: 	CALL	HARDSND
-NUPDT:
-    // asm 00000B23: 	CMPI	AR6,R6
-    // asm 00000B24: 	BEQ	NUPDE
-    // asm 00000B29: 	LDI	AR6,R6
-    // asm 00000B2A: 	FILL	20,250,200,270,0
-    // asm 00000B2B: 	LDI	COL_VDGREY,RC
-    // asm: 	TEXTITT	"SOUND EFFECT",20,250
-    // asm 00000B2C: 	LDI	*AR6,AR2
-    // asm: 	LDI	30,R2
-    // asm 00000B2D: 	LDI	260,R3
-    // asm: 	CALL	_outtextxyc
-    // asm 00000B2E: 	LDI	*+AR6,AR2
-    // asm: 	CALL	HARDSND
-NUPDE:
-SBT_LP:
-    // asm 00000B3D: 	NOT	@_newbut,R0
-    // asm 00000B3E: 	AND	SW_DIAG,R0
-    // asm 00000B3F: 	BZ	NOXIT
-    // asm 00000B40: 	CALL	SILENT
-    // asm: 	RETS
-NOXIT:
-    // asm: 	NOT	@_newbut,R0
-    // asm: 	AND	SW_VOLPLUS,R0
-    // asm: 	BZ	NONEXTT
-SBTLP2:
-    // asm 00000B42: CALL	WAIT_FOR_VBLANK
-    // asm 00000B43: 	NOT	@_newbut,R0
-    // asm 00000B44: 	AND	SW_VOLPLUS,R0
-    // asm: 	BNZ	SBTLP2
-    // asm 00000B46: 	ADDI	2,AR5
-    // asm: 	LDI	*AR5,R0
-    // asm: 	BNN	SBT_UPDT
-    // asm 00000B47: 	LDL	MUSIC_TAB,AR5
-    // asm 00000B48: 	BU	SBT_UPDT
-NONEXTT:
-    // asm 00000B4B: 	NOT	@_newbut,R0
-    // asm 00000B4C: 	AND	SW_VOLMINUS,R0
-    // asm 00000B4D: 	BZ	NONEXTE
-SBTLP1:
-    // asm 00000B4E: CALL	WAIT_FOR_VBLANK
-    // asm 00000B4F: 	NOT	@_newbut,R0
-    // asm 00000B50: 	AND	SW_VOLMINUS,R0
-    // asm 00000B51: 	BNZ	SBTLP1
-    // asm: 	ADDI	2,AR6
-    // asm: 	LDI	*AR6,R0
-    // asm 00000B53: 	BNN	SBT_UPDT
-    // asm 00000B54: 	LDL	EFFECTS_TAB,AR6
-    // asm 00000B55: 	BU	SBT_UPDT
-NONEXTE:
-    // asm 00000B58: 	LDI	7FFFh,R0
-    // asm 00000B59: 	MPYI	10,R0
-    // asm: 	RPTS	R0
-    // asm: 	NOP
-    // asm 00000B5A: 	CALL	WAIT_FOR_VBLANK
-    // asm 00000B5B: 	BU	SBT_LP
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SOUND_BOARD_TEST", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
- */
-void STEERING_WHEEL_TEST(void)
-{
-    // asm: 	CALL	SETUP_DIAG_SCREEN
-    // asm 00000B5F: 	LDI	COL_VDGREY,RC
-    // asm 00000B60: 	TEXTITT	"STEERING WHEEL TEST",20,50
-    // asm 00000B61: 	TEXTITT	"MOVING WHEEL TO LEFT",20,100
-    // asm 00000B63: 	CLRI	R6
-    // *	R0	BYTE TO SEND TO WHEEL
-    // asm: 	LDI	127,AR5
-    // asm 00000B65: SWTLP1
-    // asm: 	INC	R6
-    // asm 00000B65: 	CMPI	127,R6
-    // asm 00000B66: 	LDIGT	127,R6
-    // asm 00000B6B: 	LDI	R6,R0
-    // asm: 	OR	080h,R0
-    // asm 00000B6F: 	CALL	TOWHEEL
-    // asm: 	CALL	WAIT_FOR_VBLANK
-    // asm: 	DBU	AR5,SWTLP1
-    // asm: 	LDI	COL_VDGREY,RC
-    // asm 00000B71: 	TEXTITT	"HIT ENTER TO CONTINUE",20,120
-    // asm 00000B72: 	CALL	WT_NSTART
-    // asm 00000B73: 	CALL	WT_START
-    // asm: 	CALL	BEEP
-    // asm 00000B76: 	LDI	COL_VDGREY,RC
-    // asm 00000B77: 	TEXTITT	"MOVING WHEEL TO RIGHT",20,140
-    // asm: 	CLRI	R6
-    // asm: 	LDI	127,AR5
-    // asm 00000B79: SWTLP3
-    // asm 00000B7A: 	INC	R6
-    // asm 00000B7E: 	CMPI	127,R6
-    // asm 00000B7F: 	LDIGT	127,R6
-    // asm: 	LDI	R6,R0
-    // asm: 	CALL	TOWHEEL
-    // asm 00000B81: 	CALL	WAIT_FOR_VBLANK
-    // asm 00000B82: 	DBU	AR5,SWTLP3
-    // asm 00000B87: 	LDI	COL_VDGREY,RC
-    // asm: 	TEXTITT	"HIT ENTER TO CONTINUE",20,160
-    // asm 00000B88: 	CALL	WT_NSTART
-    // asm 00000B89: 	CALL	WT_START
-    // asm 00000B8A: 	CALL	BEEP
-    // asm 00000B8B: 	CLRI	R0
-    // asm 00000B8C: 	CALL	TOWHEEL
-    // asm 00000B8E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "STEERING_WHEEL_TEST", 0, 0);
-    UNIMPL();
-}
-
-void AMODESND(void)
-{
-    // asm: 	READAUD	ADJ_ATTRACT_MODE_SOUND
-    // asm 00000B97: 	LDI	R0,R5
-    // asm: 	LDI	@AMODES,AR2
-    // asm 00000B99: 	LDI	@NULLSTR,AR3
-    // asm: 	CALL	DUAL_ON_OFF
-    // asm: 	LDI	R5,R2
-    // asm: 	SETADJ	ADJ_ATTRACT_MODE_SOUND
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AMODESND", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
- */
-void BURNIN_TEST(void)
-{
-    // asm 00000B9E: 	CALL	TEST_CHIPS
-    // asm 00000BA0: 	SOFTWTM	R0		    	;SET WAIT STATES
-    // asm: 	DINT
-    // asm 00000BA1:         LDP	@FASTSTKI
-    // asm 00000BA2:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
-    // asm: 	LDI	AUD_SUCCESSFULL_BURNINS,AR2
-    // asm: 	CALL	AUDIT_INC
-    // 	;IGNORE GLITCH FIX
-    // asm: 	LDP	@SWITCH1
-    // asm 00000BA5: 	LDI	@SWITCH1,R0
-    // asm: 	SETDP
-    // asm 00000BAA: 	TSTB	SW_DIAG,R0
-    // asm 00000BB0: 	BNZ	BURNIN_TEST
-    // asm: 	BU	ENTER_DIAG
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BURNIN_TEST", 0, 0);
-    UNIMPL();
-}
 
 void RUN_COUNTRY(void)
 {
@@ -2240,6 +1971,7 @@ void RUN_COUNTRY(void)
     // asm 00000BDC: 	LDI	*AR5,AR5			;MENU DATA
     // asm 00000BDD: 	LDI	@SPM,AR7
     // asm: 	BU	HANDLE_MENU
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_COUNTRY", 0, 0);
     UNIMPL();
 }
@@ -2252,6 +1984,10 @@ void MAKE_STANDARW(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_STANDARW", 0, 0);
     UNIMPL();
 }
+
+#define PSSTARTY 100
+/* asm: PSLAST	.bss	PSLAST,1 */
+int PSLAST;
 
 void PRINT_STANDARD(void)
 {
@@ -2396,6 +2132,30 @@ void PRINT_SPYN(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_SPYN", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+#define CUSTOM_PRICING_MENU_LEN 16
+/* asm: CUSTOM_PRICING_MENU */
+/* asm: MENUENTRY	"LEFT CHUTE UNITS",SET_SLOT */
+/* asm: MENUENTRY	"RIGHT CHUTE UNITS",SET_SLOT */
+/* asm: MENUENTRY	"CENTER CHUTE UNITS",SET_SLOT */
+/* asm: MENUENTRY	"FOURTH CHUTE UNITS",SET_SLOT */
+/* asm: MENUENTRY	"UNITS PER CREDIT",SET_SLOT */
+/* asm: MENUENTRY	"UNITS FOR BONUS",SET_SLOT */
+/* asm: MENUENTRY	"MINIMUM UNITS",SET_SLOT */
+/* asm: MENUENTRY	"CREDITS TO START",SET_SLOT */
+/* asm: MENUENTRY	"CREDITS TO CONTINUE",SET_SLOT */
+/* asm: MENUENTRY	"LEFT CHUTE COUNTER",SET_SLOT */
+/* asm: MENUENTRY	"RIGHT CHUTE COUNTER",SET_SLOT */
+/* asm: MENUENTRY	"CENTER CHUTE COUNTER",SET_SLOT */
+/* asm: MENUENTRY	"FOURTH CHUTE COUNTER",SET_SLOT */
+/* asm: MENUENTRY	"SHOW FRACTION",FRACTION_YES_NO */
+/* asm: MENUENTRY	"SELECT CUSTOM PRICING",CUSTOM_YES_NO */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+/* asm: romdata */
+int CUSTOM_PRICING_MENU;
+const char *sct = "CALIBRATE CONTROLS";
 
 void SET_CONTROLS(void)
 {
@@ -2549,6 +2309,7 @@ NOTUPA:
 WTA:
 NOTDOWNA:
     // asm 00000DB2: 	B	SETVOL_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_VOLUME", 0, 0);
     UNIMPL();
 }
@@ -2583,6 +2344,7 @@ void FULL_FACTORY_RESTORE(void)
     // asm 00000DC7: 	CALL	CLEAR_YES_NO
     // asm 00000DC8: 	RETSC
     // asm: 	SETDP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULL_FACTORY_RESTORE", 0, 0);
     UNIMPL();
 }
@@ -2603,6 +2365,9 @@ void FFRSUB(void)
     UNIMPL();
 }
 
+/* asm: FFRST	SPTR	"FULL FACTORY RESTORE" */
+const char *FFRST = "FULL FACTORY RESTORE";
+
 /* *----------------------------------------------------------------------------
  */
 void DEFAULT_ADJUSTMENTS(void)
@@ -2621,6 +2386,9 @@ void DEFAULT_ADJUSTMENTS(void)
     UNIMPL();
 }
 
+/* asm: DAS	SPTR	"DEFAULT ADJUSTMENTS SET" */
+const char *DAS = "DEFAULT ADJUSTMENTS SET";
+
 /* *----------------------------------------------------------------------------
  */
 void RESET_HIGH_SCORES(void)
@@ -2637,6 +2405,9 @@ void RESET_HIGH_SCORES(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESET_HIGH_SCORES", 0, 0);
     UNIMPL();
 }
+
+/* asm: HSRS	SPTR	"HIGH SCORES RESET" */
+const char *HSRS = "HIGH SCORES RESET";
 
 /* *----------------------------------------------------------------------------
  */
@@ -2655,6 +2426,13 @@ void CLEAR_GAME_AUDITS(void)
     UNIMPL();
 }
 
+/* asm: BOOKR	SPTR	"BOOKKEEPING RESET" */
+const char *BOOKR = "BOOKKEEPING RESET";
+/* *----------------------------------------------------------------------------
+ */
+/* asm: FREEPLAYT	SPTR	"FREE PLAY" */
+const char *FREEPLAYT = "FREE PLAY";
+
 void FREEPLAYONOFF(void)
 {
     // asm: 	READAUD	ADJ_FREE_PLAY
@@ -2668,6 +2446,13 @@ void FREEPLAYONOFF(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FREEPLAYONOFF", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: FGOO1	SPTR	"GIVE FREE GAME" */
+const char *FGOO1 = "GIVE FREE GAME";
+/* asm: FGOO2	SPTR	"ON 1ST POSITION" */
+const char *FGOO2 = "ON 1ST POSITION";
 
 void FREEGAMEONOFF(void)
 {
@@ -2683,6 +2468,13 @@ void FREEGAMEONOFF(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: APHSTD	SPTR	"ALLOW PLAYER TO" */
+const char *APHSTD = "ALLOW PLAYER TO";
+/* asm: APHSTD2	SPTR	"ENTER INITIALS" */
+const char *APHSTD2 = "ENTER INITIALS";
+
 void HIGHSCORE_ENTRY(void)
 {
     // asm: 	READAUD	ADJ_HIGH_SCORE_ENTRY
@@ -2696,6 +2488,11 @@ void HIGHSCORE_ENTRY(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HIGHSCORE_ENTRY", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: GI1	SPTR	"SHOW GIRLS" */
+const char *GI1 = "SHOW GIRLS";
 
 void GIRLS_ONOFF(void)
 {
@@ -2711,6 +2508,11 @@ void GIRLS_ONOFF(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: CL1	SPTR	"SHOW PRESIDENT" */
+const char *CL1 = "SHOW PRESIDENT";
+
 void CLINTON_ONOFF(void)
 {
     // asm 00000E22: 	READAUD	ADJ_CLINTON
@@ -2725,6 +2527,11 @@ void CLINTON_ONOFF(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: RK1	SPTR	"SHOW ROADKILL" */
+const char *RK1 = "SHOW ROADKILL";
+
 void ROADKILL_ONOFF(void)
 {
     // asm 00000E2C: 	READAUD	ADJ_ROADKILL
@@ -2738,6 +2545,19 @@ void ROADKILL_ONOFF(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL_ONOFF", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*	0 = MPH (default)
+*	1 = KPH
+*
+ */
+/* asm: MP1	SPTR	"SPEED IN MPH OR KPH" */
+const char *MP1 = "SPEED IN MPH OR KPH";
+/* asm: MP2	SPTR	"KPH" */
+const char *MP2 = "KPH";
+/* asm: MP3	SPTR	"MPH" */
+const char *MP3 = "MPH";
 
 void MILES_OR_KILO(void)
 {
@@ -2757,6 +2577,23 @@ void MILES_OR_KILO(void)
 
 /* *----------------------------------------------------------------------------
  */
+/* asm: CLR_CRED	SPTR	"CLEAR CREDITS" */
+const char *CLR_CRED = "CLEAR CREDITS";
+/* asm: YES		SPTR	"YES" */
+const char *YES = "YES";
+/* asm: NO		SPTR	"NO" */
+const char *NO = "NO";
+/* asm: ONS		SPTR	"ON" */
+const char *ONS = "ON";
+/* asm: OFFS		SPTR	"OFF" */
+const char *OFFS = "OFF";
+/* asm: NULLSTR		SPTR	"" */
+const char *NULLSTR = "";
+/* asm: AREUSURE	SPTR	"ARE YOU SURE?" */
+const char *AREUSURE = "ARE YOU SURE?";
+
+/* *----------------------------------------------------------------------------
+ */
 void CLEAR_CREDITS(void)
 {
     // asm: 	LDI	@CLR_CRED,AR2
@@ -2773,6 +2610,9 @@ void CLEAR_CREDITS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEAR_CREDITS", 0, 0);
     UNIMPL();
 }
+
+/* asm: CCD2A	SPTR	"CREDITS CLEARED" */
+const char *CCD2A = "CREDITS CLEARED";
 
 /* *----------------------------------------------------------------------------
  */
@@ -2814,6 +2654,7 @@ ABLP:
 void CLEAR_YES_NO(void)
 {
     // asm: 	LDI	0,R5
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEAR_YES_NO", 0, 0);
     UNIMPL();
 }
@@ -2824,6 +2665,7 @@ void ASK_YES_NO(void)
     // asm: 	LDI	@NO,AR5
     // asm: 	BU	DUAL_VALUE
     // *	R5	DEFAULT
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ASK_YES_NO", 0, 0);
     UNIMPL();
 }
@@ -2899,6 +2741,13 @@ CYN_YES:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: SSGD	SPTR	"STEERING SENSITIVITY" */
+const char *SSGD = "STEERING SENSITIVITY";
+/* asm: SSGD2	SPTR	"0 (ADOLT) TO 5 (GAMEPLAYER)" */
+const char *SSGD2 = "0 (ADOLT) TO 5 (GAMEPLAYER)";
+
 void SET_STEERING_SENSITIVITY(void)
 {
     // asm: 	READAUD	ADJ_STEERING_SENSITIVITY
@@ -2917,6 +2766,13 @@ void SET_STEERING_SENSITIVITY(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: HSGD	SPTR	"PLAYS TO HIGHSCORE" */
+const char *HSGD = "PLAYS TO HIGHSCORE";
+/* asm: HSGD2	SPTR	"RESET 1000 TO 25000" */
+const char *HSGD2 = "RESET 1000 TO 25000";
+
 void SET_HIGHSCORE_RESET(void)
 {
     // asm: 	READAUD	ADJ_HIGHSCORE_RESET
@@ -2934,6 +2790,16 @@ void SET_HIGHSCORE_RESET(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_HIGHSCORE_RESET", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*
+*
+ */
+/* asm: SGD	SPTR	"GAME DIFFICULTY" */
+const char *SGD = "GAME DIFFICULTY";
+/* asm: SGD2	SPTR	"0 (EASY) TO 9 (HARD)" */
+const char *SGD2 = "0 (EASY) TO 9 (HARD)";
 
 void SET_GAME_DIFFICULTY(void)
 {
@@ -2968,6 +2834,16 @@ void GAMEDIFF_CVT(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GAMEDIFF_CVT", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*
+*
+ */
+/* asm: ITD	SPTR	"INITIAL TIME" */
+const char *ITD = "INITIAL TIME";
+/* asm: ITD2	SPTR	"60-90 SECONDS" */
+const char *ITD2 = "60-90 SECONDS";
 
 void SET_TIME_TO_START(void)
 {
@@ -3004,6 +2880,13 @@ void TIME_CVT(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: CPBTT	SPTR	"CHECKPOINT TIME BONUS" */
+const char *CPBTT = "CHECKPOINT TIME BONUS";
+/* asm: CPBTT2	SPTR	"10-25 SECONDS" */
+const char *CPBTT2 = "10-25 SECONDS";
+
 void SET_CHECKPOINT_BONUS(void)
 {
     // asm 00000F15: 	READAUD	ADJ_CHECKPOINT_BONUS
@@ -3034,6 +2917,13 @@ void CHECKPOINT_BONUS_CVT(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: MXT1	SPTR	"MAX CREDITS" */
+const char *MXT1 = "MAX CREDITS";
+/* asm: MXT2	SPTR	"10-50" */
+const char *MXT2 = "10-50";
+
 void SET_MAX_CREDITS(void)
 {
     // asm 00000F2C: 	READAUD	ADJ_MAX_CREDITS
@@ -3050,6 +2940,14 @@ void SET_MAX_CREDITS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_MAX_CREDITS", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*
+*
+ */
+/* asm: MVL	SPTR	"MINIMUM VOLUME LEVEL" */
+const char *MVL = "MINIMUM VOLUME LEVEL";
 
 void SET_MIN_VOL_LEVEL(void)
 {
@@ -3088,9 +2986,15 @@ void SET_MIN_VOL_LEVEL_CVT(void)
     UNIMPL();
 }
 
+/* asm: REPEAT_SW	.bss	REPEAT_SW,1 */
+int REPEAT_SW;
+/* asm: REPEAT_TIME	.bss	REPEAT_TIME,1 */
+int REPEAT_TIME;
+
 void MULTI_VALUE(void)
 {
     // asm: 	LDI	1,R4
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MULTI_VALUE", 0, 0);
     UNIMPL();
 }
@@ -3187,15 +3091,21 @@ DOEXITDV:
     UNIMPL();
 }
 
+/* asm: SPM	SPTR	"STANDARD PRICING MENU" */
+const char *SPM = "STANDARD PRICING MENU";
+
 void RUN_STANDARD_PRICING(void)
 {
     // asm 00000FBF: 	LDL	STANDARD_PRICING_MENU,AR5
     // asm: 	LDI	STANDARD_PRICING_MENU_LEN,AR6
     // asm 00000FC0: 	LDI	@SPM,AR7
     // asm 00000FC1: 	BU	HANDLE_MENU
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_STANDARD_PRICING", 0, 0);
     UNIMPL();
 }
+
+const char *SELTP = "SELECT THIS PRICING";
 
 void PRICE_YES_NO(void)
 {
@@ -3231,15 +3141,23 @@ void PRICE_YES_NO(void)
     UNIMPL();
 }
 
+/* asm: STP	SPTR	"PRICING SELECTED" */
+const char *STP = "PRICING SELECTED";
+/* asm: RCMT	SPTR	"CUSTOM PRICING" */
+const char *RCMT = "CUSTOM PRICING";
+
 void RUN_CUSTOM_PRICING(void)
 {
     // asm: 	LDL	CUSTOM_PRICING_MENU,AR5
     // asm 00000FDE: 	LDI	CUSTOM_PRICING_MENU_LEN,AR6
     // asm 00000FDF: 	LDI	@RCMT,AR7
     // asm 00000FE0: 	BU	HANDLE_MENU
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_CUSTOM_PRICING", 0, 0);
     UNIMPL();
 }
+
+const char *FRACYN = "SHOW FRACTION";
 
 void FRACTION_YES_NO(void)
 {
@@ -3256,6 +3174,8 @@ void FRACTION_YES_NO(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FRACTION_YES_NO", 0, 0);
     UNIMPL();
 }
+
+const char *USECP = "USE CUSTOM PRICING";
 
 void CUSTOM_YES_NO(void)
 {
@@ -3280,6 +3200,21 @@ CUSTOM_NO:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CUSTOM_YES_NO", 0, 0);
     UNIMPL();
 }
+
+/* asm: CPS	SPTR	"CUSTOM PRICING SELECTED" */
+const char *CPS = "CUSTOM PRICING SELECTED";
+/* asm: CMESSAGE_TAB */
+/* asm: 	.word	CPCS,CPCS,CPCS,CPCS,CUPC,CTSS,CTCS,CCTS,CCTC,CTPC,CTPC,CTPC,CTPC */
+const char *CMESSAGE_TAB[] = {
+    CPCS, CPCS, CPCS, CPCS, CUPC, CTSS, CTCS, CCTS, CCTC, CTPC, CTPC, CTPC, CTPC,
+};
+const char *CPCS = "UNITS PER COIN";
+const char *CUPC = "UNITS PER CREDIT";
+const char *CTSS = "BONUS UNITS";
+const char *CTCS = "MINIMUM UNITS";
+const char *CCTS = "CREDITS TO START";
+const char *CCTC = "CREDITS TO CONTINUE";
+const char *CTPC = "COUNTER TICKS PER COIN";
 
 void SET_SLOT(void)
 {
@@ -3324,6 +3259,42 @@ void SET_SLOT(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_SLOT", 0, 0);
     UNIMPL();
 }
+
+/* asm: PSTAB */
+/* asm: 	.word	ADJ_COIN1_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN2_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN3_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN4_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_UNITS_PER_CREDIT,PRINT_NUMBER */
+/* asm: 	.word	ADJ_BONUS_UNITS,PRINT_NUMBER */
+/* asm: 	.word	ADJ_UNITS_MIN,PRINT_NUMBER */
+/* asm: 	.word	ADJ_CREDITS_TO_START,PRINT_NUMBER */
+/* asm: 	.word	ADJ_CREDITS_TO_CONTINUE,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN1_COUNTER,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN2_COUNTER,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN3_COUNTER,PRINT_NUMBER */
+/* asm: 	.word	ADJ_COIN4_COUNTER,PRINT_NUMBER */
+/* asm: 	.word	ADJ_SHOW_FRAC,PRINT_YN */
+/* asm: 	.word	ADJ_STANDARD_PRICING,PRINT_YN_INV */
+/* asm: 	.word	0,0 */
+int PSTAB[] = {
+    ADJ_COIN1_UNITS, PRINT_NUMBER,
+    ADJ_COIN2_UNITS, PRINT_NUMBER,
+    ADJ_COIN3_UNITS, PRINT_NUMBER,
+    ADJ_COIN4_UNITS, PRINT_NUMBER,
+    ADJ_UNITS_PER_CREDIT, PRINT_NUMBER,
+    ADJ_BONUS_UNITS, PRINT_NUMBER,
+    ADJ_UNITS_MIN, PRINT_NUMBER,
+    ADJ_CREDITS_TO_START, PRINT_NUMBER,
+    ADJ_CREDITS_TO_CONTINUE, PRINT_NUMBER,
+    ADJ_COIN1_COUNTER, PRINT_NUMBER,
+    ADJ_COIN2_COUNTER, PRINT_NUMBER,
+    ADJ_COIN3_COUNTER, PRINT_NUMBER,
+    ADJ_COIN4_COUNTER, PRINT_NUMBER,
+    ADJ_SHOW_FRAC, PRINT_YN,
+    ADJ_STANDARD_PRICING, PRINT_YN_INV,
+    0, 0,
+};
 
 void PRINT_SLOT(void)
 {
@@ -3464,6 +3435,7 @@ void PRINT_TIME(void)
 {
     // asm: 	MPYI	5,R0
     // asm: 	ADDI	60,R0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_TIME", 0, 0);
     UNIMPL();
 }
@@ -3501,6 +3473,7 @@ void PRINT_YN_INV(void)
 {
     // asm 000010B5: 	NEGI	R0
     // asm 000010B6: 	ADDI	1,R0	;Drops through to PRINT_YN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_YN_INV", 0, 0);
     UNIMPL();
 }
@@ -3522,6 +3495,7 @@ void PRINT_ONOFF_INV(void)
 {
     // asm 000010BD: 	NEGI	R0
     // asm 000010BE: 	ADDI	1,R0	;Drops through to PRINT_ONOFF
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_ONOFF_INV", 0, 0);
     UNIMPL();
 }
@@ -3543,6 +3517,7 @@ void PRINT_MPH_INV(void)
 {
     // asm 000010C6: 	NEGI	R0
     // asm 000010C7: 	ADDI	1,R0	;Drops through to PRINT_MPH
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_MPH_INV", 0, 0);
     UNIMPL();
 }
@@ -3559,12 +3534,98 @@ void PRINT_MPH(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*MENU DEFINITIONS
+*
+*
+ */
+#define MAIN_MENU_LEN 7
+/* asm: MAIN_MENU: */
+/* asm: MENUENTRY	"DIAGNOSTIC MENU",RUN_DIAG_MENU */
+/* asm: MENUENTRY	"GAME AUDITS",AUDIT_DISPLAY */
+/* asm: MENUENTRY	"ADJUSTMENTS MENU",RUN_ADJUSTMENT_MENU */
+/* asm: MENUENTRY	"UTILITIES",RUN_UTILITIES_MENU */
+/* asm: MENUENTRY	"CALIBRATE CONTROLS",SET_CONTROLS */
+/* asm: MENUENTRY	"ADJUST VOLUME",SET_VOLUME */
+/* asm: MENUENTRY	"EXIT TO GAME OVER",DIAG_RETURN */
+int MAIN_MENU;
+#define DIAGNOSTIC_MENU_LEN 10
+/* asm: DIAGNOSTIC_MENU: */
+/* asm: MENUENTRY	"SWITCH TEST",SHOWSWITCH */
+/* asm: MENUENTRY	"DIP SWITCH TEST",SHOW_DIPSWITCH */
+/* asm: MENUENTRY	"CPU BOARD TEST",TEST_CHIPS */
+/* asm: MENUENTRY	"SOUND BOARD TEST",SOUND_BOARD_TEST */
+/* asm: MENUENTRY	"STEERING WHEEL TEST",STEERING_WHEEL_TEST */
+/* asm: MENUENTRY	"MONITOR TEST",MONITOR_DIAGNOSTICS */
+/* asm: MENUENTRY	"BURNIN TEST",BURNIN_TEST */
+/* asm: MENUENTRY	"MOTION MENU",RUN_MOTION_MENU		;MOTION_BURNIN */
+/* asm: MENUENTRY	"LAMP TEST",RUN_LAMP_TEST */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+int DIAGNOSTIC_MENU;
+#define UTILITIES_MENU_LEN 6
+/* asm: UTILITIES_MENU: */
+/* asm: MENUENTRY	"CLEAR CREDITS",CLEAR_CREDITS */
+/* asm: MENUENTRY	"CLEAR GAME AUDITS",CLEAR_GAME_AUDITS */
+/* asm: MENUENTRY	"RESET HIGH SCORES",RESET_HIGH_SCORES */
+/* asm: MENUENTRY	"DEFAULT ADJUSTMENTS",DEFAULT_ADJUSTMENTS */
+/* asm: MENUENTRY	"FULL FACTORY RESTORE",FULL_FACTORY_RESTORE */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+int UTILITIES_MENU;
+#define ADJUSTMENT_MENU_LEN 18
+/* asm: ADJUSTMENT_MENU */
+/* asm: MENUENTRY	"STANDARD PRICING",RUN_STANDARD_PRICING */
+/* asm: MENUENTRY	"CUSTOM PRICING",RUN_CUSTOM_PRICING */
+/* asm: MENUENTRY	"FREE PLAY",FREEPLAYONOFF */
+/* asm: MENUENTRY	"FIRST PLACE AWARDS FREE GAME",FREEGAMEONOFF */
+/* asm: MENUENTRY	"START TIME BONUS SECS",SET_TIME_TO_START */
+/* asm: MENUENTRY	"CHECKPOINT BONUS TIME SECS",SET_CHECKPOINT_BONUS */
+/* asm: MENUENTRY	"ATTRACT MODE SOUND",AMODESND */
+/* asm: MENUENTRY	"HIGH SCORE ENTRY",HIGHSCORE_ENTRY */
+/* asm: MENUENTRY	"MIN VOLUME LEVEL",SET_MIN_VOL_LEVEL */
+/* asm: MENUENTRY	"SPEED IN MPH OR KPH",MILES_OR_KILO */
+/* asm: MENUENTRY	"SHOW ROADKILL",ROADKILL_ONOFF */
+/* asm: MENUENTRY	"SHOW PRESIDENT",CLINTON_ONOFF */
+/* asm: MENUENTRY	"SHOW GIRLS",GIRLS_ONOFF */
+/* asm: MENUENTRY	"HIGHSCORE RESET",SET_HIGHSCORE_RESET */
+/* asm: MENUENTRY	"GAME DIFFICULTY",SET_GAME_DIFFICULTY */
+/* asm: MENUENTRY	"MAX CREDITS",SET_MAX_CREDITS */
+/* asm: MENUENTRY	"STEERING SENSITIVITY",SET_STEERING_SENSITIVITY */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+int ADJUSTMENT_MENU;
+#define MOTION_MENU_LEN 7
+/* asm: MOTION_MENU */
+/* asm: MENUENTRY	"FRONT AXIS UP/DOWN",DIAG_MOTION_TESTZ */
+/* asm: MENUENTRY	"LEFT REAR AXIS UP/DOWN",DIAG_MOTION_TESTX */
+/* asm: MENUENTRY	"RIGHT REAR AXIS UP/DOWN",DIAG_MOTION_TESTY */
+/* asm: MENUENTRY	"COMBINED MOTION",DIAG_MOTION_BURNIN */
+/* asm: MENUENTRY	"MOTION SAFETY SWITCHES",MOTION_SAFETY_SWITCHES_DIAG */
+int MOTION_MENU;
+/* *----------------------------------------------------------------------------
+ */
+/* asm: LAMPT	SPTR	"LAMP TEST" */
+const char *LAMPT = "LAMP TEST";
+#define LAMP_MENU_LEN 11
+/* asm: LAMP_MENU: */
+/* asm: MENUENTRY	"TURN ON ALL LAMPS",LAMPSALL */
+/* asm: MENUENTRY	"TURN OFF ALL LAMPS",LAMPSOFF */
+/* asm: MENUENTRY	"TURN ON START",LAMPS */
+/* asm: MENUENTRY	"TURN ON VIEW 1",LAMPV1 */
+/* asm: MENUENTRY	"TURN ON VIEW 2",LAMPV2 */
+/* asm: MENUENTRY	"TURN ON VIEW 3",LAMPV3 */
+/* asm: MENUENTRY	"TURN ON LEFT TAIL",LAMPLT */
+/* asm: MENUENTRY	"TURN ON RIGHT TAIL",LAMPRT */
+/* asm: MENUENTRY	"TURN ON LEFT FRONT",LAMPLF */
+/* asm: MENUENTRY	"TURN ON RIGHT FRONT",LAMPRF */
+/* asm: MENUENTRY	"EXIT TO MAIN MENU",XIT_MENU_TO_MAIN */
+int LAMP_MENU;
+
 void RUN_LAMP_TEST(void)
 {
     // asm: 	LDL	LAMP_MENU,AR5
     // asm: 	LDI	LAMP_MENU_LEN,AR6
     // asm: 	LDI	@LAMPT,AR7
     // asm: 	BU	HANDLE_MENU
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_LAMP_TEST", 0, 0);
     UNIMPL();
 }
@@ -3573,6 +3634,7 @@ void LAMPSOFF(void)
 {
     // asm: 	LDI	0,R0
     // asm: 	BU	LJIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPSOFF", 0, 0);
     UNIMPL();
 }
@@ -3581,6 +3643,7 @@ void LAMPSALL(void)
 {
     // asm: 	LDI	0FFh,R0
     // asm: 	BU	LJIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPSALL", 0, 0);
     UNIMPL();
 }
@@ -3589,6 +3652,7 @@ void LAMPS(void)
 {
     // asm: LDI	1,R0
     // asm: 	BU	LJIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPS", 0, 0);
     UNIMPL();
 }
@@ -3597,6 +3661,7 @@ void LAMPV1(void)
 {
     // asm 00001155: LDI	2,R0
     // asm 00001156: 	BU	LJIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPV1", 0, 0);
     UNIMPL();
 }
@@ -3605,6 +3670,7 @@ void LAMPV2(void)
 {
     // asm 00001157: LDI	4,R0
     // asm 00001158: 	BU	LJIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPV2", 0, 0);
     UNIMPL();
 }
@@ -3613,6 +3679,7 @@ void LAMPV3(void)
 {
     // asm 00001159: LDI	8,R0
     // asm 00001159: 	BU	LJIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPV3", 0, 0);
     UNIMPL();
 }
@@ -3621,6 +3688,7 @@ void LAMPLT(void)
 {
     // asm 0000115A: LDI	10h,R0
     // asm: 	BU	LJIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPLT", 0, 0);
     UNIMPL();
 }
@@ -3629,6 +3697,7 @@ void LAMPRT(void)
 {
     // asm 0000115B: LDI	20h,R0
     // asm 0000115C: 	BU	LJIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPRT", 0, 0);
     UNIMPL();
 }
@@ -3637,6 +3706,7 @@ void LAMPLF(void)
 {
     // asm 0000115D: LDI	40h,R0
     // asm 0000115E: 	BU	LJIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LAMPLF", 0, 0);
     UNIMPL();
 }
@@ -3697,6 +3767,17 @@ ALL_DONE:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_CHECK_SAFETY_CODES", 0, 0);
     UNIMPL();
 }
+
+/* asm: MOTION_SAFETY_CODES: */
+/* asm: MSCM	080h,080h,MSC_BOARD_NOTPLUGGED */
+/* asm: MSCM	070h,0F0h,MSC_FAILSAFE_NOTCONNECTED */
+/* asm: MSCM	060h,0F0h,MSC_FAILSAFE_OK */
+/* asm: MSCM	050h,0F0h,MSC_OPTO_LED */
+/* asm: MSCM	040h,0F0h,MSC_OPTO_DETECTOR */
+/* asm: MSCM	030h,0F0h,MSC_OPTO_PATH */
+/* asm: MSCM	020h,0F0h,MSC_MAT_STEPPED */
+/* asm: MSCM	010h,0F0h,MSC_MAT_NOTPLUGGED */
+int MOTION_SAFETY_CODES;
 
 /* *----------------------------------------------------------------------------
  */
@@ -3989,6 +4070,9 @@ void CLEAR_MATS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEAR_MATS", 0, 0);
     UNIMPL();
 }
+
+/* asm: OLD_MOTION_CODE	.bss	OLD_MOTION_CODE,1 */
+int OLD_MOTION_CODE;
 
 void MOTION_SAFETY_SWITCHES_DIAG(void)
 {

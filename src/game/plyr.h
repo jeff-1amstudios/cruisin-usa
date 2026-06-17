@@ -66,4 +66,11 @@ extern int BRAKEMX;
 // asm: 	.bss	STEERFR,1		;STEERING FREE
 extern int STEERFR;
 
+
+
+
+
+
+
+
 #endif /* PLYR_H */

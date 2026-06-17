@@ -13,6 +13,7 @@
 #include "objects.h"
 #include "text.h"
 #include "delta.h"
+#include "port.h"
 #include "chopper.h"
 
 /*
@@ -184,6 +185,7 @@ LLK28:
     // asm 00007CBB: 	CALL	FSL_MOVE
     // asm 00007CBC: 	SLEEP	1
     // asm 00007CBE: 	BU	DIRECT_ATTACK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIRECT_ATTACK", 0, 0);
     UNIMPL();
 }
@@ -323,6 +325,7 @@ LLK2:
     // asm 00007D2F: 	CALL	FSL_MOVE
     // asm 00007D30: 	SLEEP	1
     // asm 00007D32: 	BU	ONBUZZ_L
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ONCOMMING_BUZZ", 0, 0);
     UNIMPL();
 }
@@ -406,6 +409,7 @@ DOTHEMOVE:
     // asm 00007D6B: 	STI	R0,*+AR7(CD_DOATTACK)
     // asm 00007D6C: 	LDI	R0,R0
     // asm 00007D6D: 	BNZ	ONCOMMING_BUZZ
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOPPER", 0, 0);
     UNIMPL();
 }
@@ -649,6 +653,7 @@ NO_BOMBS:
 CHOPPER_SLP:
     // asm 00007E3E: 	SLEEP	1
     // asm 00007E40: 	B	CHOPPER_L
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FORWARD_BUZZ", 0, 0);
     UNIMPL();
 }
@@ -692,6 +697,7 @@ KKUU:
     // asm 00007E5E: 	SLEEP	1
     // asm 00007E60: 	DBU	AR5,FLYAWAY_LP
     // asm 00007E61: 	BU	CHOPPER_PASS
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYAWAY", 0, 0);
     UNIMPL();
 }
@@ -709,6 +715,7 @@ void CHOPPER_DIE(void)
     // asm 00007E68: 	LDI	*+AR7(CD_ANIPROC),AR2
     // asm 00007E69: 	CALL	PRC_KILL
     // asm 00007E6A: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOPPER_DIE", 0, 0);
     UNIMPL();
 }
@@ -804,6 +811,7 @@ CANILP:
     // asm: 	CALL	FIND_YMATRIX
     // asm: 	SLEEP	1
     // asm: 	BU	CANILP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOPPERANI", 0, 0);
     UNIMPL();
 }

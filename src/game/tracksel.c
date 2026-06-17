@@ -15,8 +15,8 @@
 #include "delta.h"
 #include "error.h"
 #include "comm.h"
+#include "port.h"
 #include "tracksel.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/TRACKSEL.ASM
@@ -63,66 +63,6 @@ const char *CRUISE = "CRUISE THE USA";
 const char *CRUISE2 = "JAM WITH THE PRESIDENT";
 /* asm: CRUISE3	SPTR	"IN THE WHITE HOUSE HOT TUB" */
 const char *CRUISE3 = "IN THE WHITE HOUSE HOT TUB";
-/* *----------------------------------------------------------------------------
- */
-/* asm: TSEL_HEAD	.bss	TSEL_HEAD,1 */
-int TSEL_HEAD;
-/* asm: TSEL_THEONE	.bss	TSEL_THEONE,1 */
-int TSEL_THEONE;
-/* *----------------------------------------------------------------------------
-*
-*
- */
-/* asm: ANIMATE_MAP_TAB	.word	mhop1,mhop2,mhop3,mhop4,-1 */
-int ANIMATE_MAP_TAB[] = {
-    mhop1, mhop2, mhop3, mhop4, -1,
-};
-/* *----------------------------------------------------------------------------
- */
-/* asm: TURNANI	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
-int TURNANI[] = {
-    whel1, whel2, whel3, whel4, whel3, whel2, -1,
-};
-/* *----------------------------------------------------------------------------
- */
-#define TRACK_SELECTION_LIST_LEN 11
-/* asm: TRACK_SELECTION_LISTI	.word	TRACK_SELECTION_LIST */
-#define TRACK_SELECTION_LISTI TRACK_SELECTION_LIST
-/* asm: TRACK_SELECTION_LIST */
-/* asm: 	.word	RACE_AZ */
-/* asm: 	.word	RACE_US101 */
-/* asm: 	.word	RACE_LA */
-/* asm: 	.word	RACE_IOWA */
-/* asm: 	.word	RACE_DV */
-/* asm: 	.word	RACE_USA */
-/* asm: 	.word	RACE_BH */
-/* asm: 	.word	RACE_APPL */
-/* asm: 	.word	RACE_RW */
-/* asm: 	.word	RACE_GC */
-/* asm: 	.word	RACE_CH */
-/* asm: 	.word	RACE_GG */
-/* asm: 	.word	RACE_IN */
-/* asm: 	.word	RACE_SF */
-int TRACK_SELECTION_LIST[] = {
-    RACE_AZ,
-    RACE_US101,
-    RACE_LA,
-    RACE_IOWA,
-    RACE_DV,
-    RACE_USA,
-    RACE_BH,
-    RACE_APPL,
-    RACE_RW,
-    RACE_GC,
-    RACE_CH,
-    RACE_GG,
-    RACE_IN,
-    RACE_SF,
-};
-/* *----------------------------------------------------------------------------
- */
-/* asm: BOILEROBJ	.bss	BOILEROBJ,1 */
-int BOILEROBJ;
 
 /* *----------------------------------------------------------------------------
 *
@@ -196,6 +136,7 @@ NOT_RACE1:
     // asm 00006D0A: 	READAUD	AUD_RESET_TOTALLY
     // asm 00006D0C: 	CMPI	0,R0
     // asm 00006D0D: 	BEQ	JAJAD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TRACK_SELECTION", 0, 0);
     UNIMPL();
 }
@@ -529,6 +470,7 @@ JJ2:
     // asm 00006E20: 	LDI	@CHOSEN_RACE,R0
     // asm 00006E21: 	STI	R0,@BONUS_WAVE		;Set bonus wave 'cause noby else does until you finish a wave
     // asm 00006E22: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_SCREWED", 0, 0);
     UNIMPL();
 }
@@ -761,6 +703,7 @@ NOWAY543:
     // asm 00006ED4: 	SLEEP	1
     // asm 00006ED6: 	DBU	AR4,ZITSP
     // asm 00006ED7: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMINP", 0, 0);
     UNIMPL();
 }
@@ -916,6 +859,13 @@ FTSLX:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: TSEL_HEAD	.bss	TSEL_HEAD,1 */
+int TSEL_HEAD;
+/* asm: TSEL_THEONE	.bss	TSEL_THEONE,1 */
+int TSEL_THEONE;
+
 void TSEL_ZOOMOUTP(void)
 {
     // asm 00006F55: 	SONDFX	VIEW2IN
@@ -938,6 +888,7 @@ TSLLP:
     // asm 00006F66: 	SLEEP	1
     // asm 00006F68: 	DBU	AR5,TSLLP
     // asm 00006F69: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TSEL_ZOOMOUTP", 0, 0);
     UNIMPL();
 }
@@ -970,6 +921,7 @@ CTOLPB:
     // asm 00006F81: 	SLEEP	1
     // asm 00006F83: 	DBU	AR5,CTOLPB
     // asm 00006F84: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CENTER_THEONE", 0, 0);
     UNIMPL();
 }
@@ -1035,6 +987,15 @@ ALLDN:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*
+*
+ */
+/* asm: ANIMATE_MAP_TAB	.word	mhop1,mhop2,mhop3,mhop4,-1 */
+int ANIMATE_MAP_TAB[] = {
+    mhop1, mhop2, mhop3, mhop4, -1,
+};
+
 /* *
  */
 void ANIMATE_MAP(void)
@@ -1046,6 +1007,7 @@ AMLP:
     // asm 00006FBA: 	STI	R0,*+AR4(OROMDATA)
     // asm 00006FBB: 	SLEEP	4
     // asm 00006FBD: 	BU	AMLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ANIMATE_MAP", 0, 0);
     UNIMPL();
 }
@@ -1083,6 +1045,13 @@ void TRACK_SEL_CURSOR(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: TURNANI	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
+int TURNANI[] = {
+    whel1, whel2, whel3, whel4, whel3, whel2, -1,
+};
+
 /* *	R6	X
 *	R7	Y
 *	AR5	Z
@@ -1112,9 +1081,47 @@ JIJI:
     // asm 00006FEC: STI	R0,*+AR4(OROMDATA)
     // asm 00006FED: 	SLEEP	7
     // asm 00006FEF: 	BU	GETTOLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TURNOBJ", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+#define TRACK_SELECTION_LIST_LEN 11
+/* asm: TRACK_SELECTION_LISTI	.word	TRACK_SELECTION_LIST */
+#define TRACK_SELECTION_LISTI TRACK_SELECTION_LIST
+/* asm: TRACK_SELECTION_LIST */
+/* asm: 	.word	RACE_AZ */
+/* asm: 	.word	RACE_US101 */
+/* asm: 	.word	RACE_LA */
+/* asm: 	.word	RACE_IOWA */
+/* asm: 	.word	RACE_DV */
+/* asm: 	.word	RACE_USA */
+/* asm: 	.word	RACE_BH */
+/* asm: 	.word	RACE_APPL */
+/* asm: 	.word	RACE_RW */
+/* asm: 	.word	RACE_GC */
+/* asm: 	.word	RACE_CH */
+/* asm: 	.word	RACE_GG */
+/* asm: 	.word	RACE_IN */
+/* asm: 	.word	RACE_SF */
+int TRACK_SELECTION_LIST[] = {
+    RACE_AZ,
+    RACE_US101,
+    RACE_LA,
+    RACE_IOWA,
+    RACE_DV,
+    RACE_USA,
+    RACE_BH,
+    RACE_APPL,
+    RACE_RW,
+    RACE_GC,
+    RACE_CH,
+    RACE_GG,
+    RACE_IN,
+    RACE_SF,
+};
 
 /* *----------------------------------------------------------------------------
  */
@@ -1146,6 +1153,11 @@ void BOILERPLATE(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BOILERPLATE", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: BOILEROBJ	.bss	BOILEROBJ,1 */
+int BOILEROBJ;
 
 /* *----------------------------------------------------------------------------
  */

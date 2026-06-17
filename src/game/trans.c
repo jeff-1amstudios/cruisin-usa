@@ -13,9 +13,8 @@
 #include "objects.h"
 #include "text.h"
 #include "delta.h"
+#include "port.h"
 #include "trans.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/TRANS.ASM
@@ -54,84 +53,6 @@ int *EPALL = EPALRL;
 int EPALRR[129];
 /* asm: EPALRL	.bss	EPALRL,129 */
 int EPALRL[129];
-/* *----------------------------------------------------------------------------
-*
-*	OLINK2	- the link of the list
-*	OID	- 1 == left
-*		- 2 == right
-*
-*	OVEL?	- original position
-*
-*
-*
- */
-/* asm: DOORTHETA	.bss	DOORTHETA,1 */
-int DOORTHETA;
-/* asm: DOORLIST	.bss	DOORLIST,1 */
-int DOORLIST;
-/* *
-*
- */
-/* asm: DO_LPPX	.float	-256 */
-float DO_LPPX = -256.0f;
-/* asm: DO_PPZ	.float	368 */
-float DO_PPZ = 368.0f;
-/* asm: DO_RPPX	.float	256 */
-float DO_RPPX = 256.0f;
-/* *----------------------------------------------------------------------------
-*
-*
-*
- */
-/* asm: LASTCHOICEA	.bss	LASTCHOICEA,1 */
-int LASTCHOICEA;
-/* *----------------------------------------------------------------------------
-*
-*RETURNS
-*	R0	FL 0-1.0 Steering wheel position
-*
- */
-/* asm: GUWP	.bss	GUWP,1 */
-int GUWP;
-/* *----------------------------------------------------------------------------
-*
-*Object Z values
-*	cursor		-3
-*	wheel		-2
-*	forward objects	-1
-*	others		0
-*
- */
-/* asm: CT_CURSOR	.bss	CT_CURSOR,1 */
-int CT_CURSOR;
-/* asm: CT_WHEEL	.bss	CT_WHEEL,1 */
-int CT_WHEEL;
-/* asm: CT_PUSHTOCYCLE	.bss	CT_PUSHTOCYCLE,1 */
-int CT_PUSHTOCYCLE;
-/* asm: CT_LENG	.bss	CT_LENG,1 */
-int CT_LENG;
-/* asm: CT_RENG	.bss	CT_RENG,1 */
-int CT_RENG;
-/* asm: CT_MAN	.bss	CT_MAN,1 */
-int CT_MAN;
-/* asm: CT_AUTO	.bss	CT_AUTO,1 */
-int CT_AUTO;
-/* asm: CT_TURNTOSEL	.bss	CT_TURNTOSEL,1 */
-int CT_TURNTOSEL;
-/* asm: TRANS_HEAD	.bss	TRANS_HEAD,1 */
-int TRANS_HEAD;
-/* *----------------------------------------------------------------------------
- */
-/* asm: TRNTAB	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
-int TRNTAB[] = {
-    whel1, whel2, whel3, whel4, whel3, whel2, -1,
-};
-/* *----------------------------------------------------------------------------
- */
-/* asm: CYCTAB	.word	trm3,trm2,trm1,trm2,trm3,trm4,-1 */
-int CYCTAB[] = {
-    trm3, trm2, trm1, trm2, trm3, trm4, -1,
-};
 
 /* *----------------------------------------------------------------------------
 *CHOOSE TRANSMISSION
@@ -279,6 +200,7 @@ CTLPX:
     // asm 00005AA8: 	SONDFX	DOPEN
     // asm 00005AAA: 	JSRP	OPEN_DOOR_PROC
     // asm 00005AB0: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOOSE_TRANSMISSION", 0, 0);
     UNIMPL();
 }
@@ -338,6 +260,7 @@ IJH:
     // asm 00005AE6: 	LDI	R0,AR2
     // asm 00005AE7: 	CALL	PAL_DELETE_RAW
     // asm 00005AE8: 	RETP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OPEN_DOOR_PROC", 0, 0);
     UNIMPL();
 }
@@ -413,6 +336,7 @@ FLYUPL:
     // asm 00005B20: 	STF	R0,*+AR4(OPOSZ)
     // asm 00005B21: 	SLEEP	1
     // asm 00005B23: 	BU	FLYUPL
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CENTERTHEONE", 0, 0);
     UNIMPL();
 }
@@ -423,6 +347,7 @@ void DROPTHETURN(void)
 {
     // asm 00005B24: 	LDI	@CT_TURNTOSEL,AR4
     // asm 00005B25: 	BU	J85
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DROPTHETURN", 0, 0);
     UNIMPL();
 }
@@ -431,6 +356,7 @@ void DROPTHECYCLE(void)
 {
     // asm 00005B26: 	LDI	@CT_PUSHTOCYCLE,AR4
     // asm 00005B27: 	BU	J85
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DROPTHECYCLE", 0, 0);
     UNIMPL();
 }
@@ -439,6 +365,7 @@ void DROPTHEWHEEL(void)
 {
     // asm 00005B28: 	LDI	@CT_WHEEL,AR4
     // asm 00005B29: 	BU	J85
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DROPTHEWHEEL", 0, 0);
     UNIMPL();
 }
@@ -463,6 +390,7 @@ J86:
     // asm 00005B36: 	SLEEP	1
     // asm 00005B38: 	DBU	AR5,DTOLP
     // asm 00005B39: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DROPTHEOTHER", 0, 0);
     UNIMPL();
 }
@@ -499,6 +427,31 @@ DOLSX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SIDE_DOOR", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*	OLINK2	- the link of the list
+*	OID	- 1 == left
+*		- 2 == right
+*
+*	OVEL?	- original position
+*
+*
+*
+ */
+/* asm: DOORTHETA	.bss	DOORTHETA,1 */
+int DOORTHETA;
+/* asm: DOORLIST	.bss	DOORLIST,1 */
+int DOORLIST;
+/* *
+*
+ */
+/* asm: DO_LPPX	.float	-256 */
+float DO_LPPX = -256.0f;
+/* asm: DO_PPZ	.float	368 */
+float DO_PPZ = 368.0f;
+/* asm: DO_RPPX	.float	256 */
+float DO_RPPX = 256.0f;
 
 /* *
 *
@@ -581,6 +534,14 @@ void SNAPCURSOR(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SNAPCURSOR", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*
+*
+ */
+/* asm: LASTCHOICEA	.bss	LASTCHOICEA,1 */
+int LASTCHOICEA;
 
 void WHEEL_ROUT(void)
 {
@@ -714,6 +675,15 @@ void TRANSCHOICE(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*
+*RETURNS
+*	R0	FL 0-1.0 Steering wheel position
+*
+ */
+/* asm: GUWP	.bss	GUWP,1 */
+int GUWP;
+
 void GET_UNIT_WHEEL(void)
 {
     // asm 00005BEA: 	FLOAT	@_pot0,R0
@@ -767,9 +737,38 @@ void TILE_PIECES(void)
     // asm 00005C12: 	SLEEP	1
     // asm 00005C14: 	DBU	AR5,TP_LP
     // asm 00005C15: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TILE_PIECES", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*Object Z values
+*	cursor		-3
+*	wheel		-2
+*	forward objects	-1
+*	others		0
+*
+ */
+/* asm: CT_CURSOR	.bss	CT_CURSOR,1 */
+int CT_CURSOR;
+/* asm: CT_WHEEL	.bss	CT_WHEEL,1 */
+int CT_WHEEL;
+/* asm: CT_PUSHTOCYCLE	.bss	CT_PUSHTOCYCLE,1 */
+int CT_PUSHTOCYCLE;
+/* asm: CT_LENG	.bss	CT_LENG,1 */
+int CT_LENG;
+/* asm: CT_RENG	.bss	CT_RENG,1 */
+int CT_RENG;
+/* asm: CT_MAN	.bss	CT_MAN,1 */
+int CT_MAN;
+/* asm: CT_AUTO	.bss	CT_AUTO,1 */
+int CT_AUTO;
+/* asm: CT_TURNTOSEL	.bss	CT_TURNTOSEL,1 */
+int CT_TURNTOSEL;
+/* asm: TRANS_HEAD	.bss	TRANS_HEAD,1 */
+int TRANS_HEAD;
 
 /* *
 *
@@ -996,9 +995,17 @@ void MOVE_PUSH_BOX(void)
     // asm 00005CDF: 	SLEEP	1
     // asm 00005CE1: 	DBU	AR5,MVPBL
     // asm 00005CE2: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVE_PUSH_BOX", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: TRNTAB	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
+int TRNTAB[] = {
+    whel1, whel2, whel3, whel4, whel3, whel2, -1,
+};
 
 void TURNTO_SELECT(void)
 {
@@ -1010,9 +1017,17 @@ TURNLP:
     // asm 00005CEF: 	STI	R0,*+AR4(OROMDATA)
     // asm 00005CF0: 	SLEEP	5
     // asm 00005CF2: 	BU	TURNLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TURNTO_SELECT", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: CYCTAB	.word	trm3,trm2,trm1,trm2,trm3,trm4,-1 */
+int CYCTAB[] = {
+    trm3, trm2, trm1, trm2, trm3, trm4, -1,
+};
 
 void CYCLE_PUSH(void)
 {
@@ -1029,6 +1044,7 @@ CYCLP:
     // asm 00005D05: 	LDI	R0,AR2
     // asm 00005D06: 	CALL	PRC_SLEEP
     // asm 00005D07: 	BU	CYCLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CYCLE_PUSH", 0, 0);
     UNIMPL();
 }

@@ -210,7 +210,7 @@ extern int OHIGH_PRIORITY;
 #define OFREEI OFREE
 
 // asm: 	.globl	OBJSTR,OBJSTRI
-extern int OBJSTR[OBJSIZ*NUM_OBJECTS];
+extern int OBJSTR[];
 
 #define OBJSTRI OBJSTR
 
@@ -283,5 +283,11 @@ void OBJ_MAKE(void);
 
 // asm: 	.globl	OBJ_QMAKE
 void OBJ_QMAKE(void);
+
+// OBJ.ASM
+// asm: 	.bss	COMM_DRONE_PTR,1
+extern int COMM_DRONE_PTR;
+// asm:      	.BSS	PLYRTEMP,1		;PLAYER OBJECT STORE
+extern int PLYRTEMP;
 
 #endif /* OBJ_H */

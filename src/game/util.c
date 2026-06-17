@@ -15,6 +15,7 @@
 #include "sysid.h"
 #include "dirq.h"
 #include "delta.h"
+#include "port.h"
 #include "util.h"
 
 /*
@@ -81,54 +82,6 @@ int LINE511I = SCREEN0+0x7FC00;
 /* asm: SCRSIZI	.word	3FFFFH */
 int SCRSIZI = 0x3FFFF;
 #if DEBUG
-/* *----------------------------------------------------------------------------
- */
-#endif
-/* *----------------------------------------------------------------------------
-*CAR PROCESS
-*
-*	SPINS WHEELS
-*	TURNS FRONT WHEELS
-*	LEANS BODY
-*
-*PARAMETERS
-*	AR4	CAR OBJECT
-*	AR5	CAR BLOCK
-*	R6	X RADIANS	;FOR WHEEL SPIN
-*USES
-*	AR3	DYNA OBJECT
-*	AR4	MASTER OBJECT
-*	AR5	CAR BLOCK
-*	AR6	DYNAMATRIX
-*	R4	OLD ORADY
-*	R5	Z RADIANS FOR BODY LEAN
-*	R6	X RADIANS FOR BODY LEAN
-*	R7	OLD CAR SPEED
-*	PDATA	OLD CAR ORADY
-*	PDATA+1 BODY LEAN Z RADIANS
-*	PDATA+2 X RADIANS FOR WHEEL SPIN
- */
-/* *----------------------------------------------------------------------------
- */
-/* asm: NTWOPII	.float	-TWOPI */
-float NTWOPII = -TWOPI;
-/* *----------------------------------------------------------------------------
-*DYNAOBJECT DYNAMIC ALLOCATION SUBSYSTEM
-*----------------------------------------------------------------------------
-*
- */
-/* asm: DYNALIST	.bss	DYNALIST,NUM_DYNAS*DYNASIZE */
-int DYNALIST[NUM_DYNAS*DYNASIZE];
-/* asm: DYNAFREE	.bss	DYNAFREE,1 */
-int DYNAFREE;
-/* asm: NULL	.bss	NULL,1 */
-int NULL;
-/* asm: CARLIST	.bss	CARLIST,NUM_CARS*CARSIZ */
-int CARLIST[NUM_CARS*CARSIZ];
-/* asm: CARFREE	.bss	CARFREE,1 */
-int CARFREE;
-/* asm: CAR_COUNT	.bss	CAR_COUNT,1 */
-int CAR_COUNT;
 
 void TVBP(void)
 {
@@ -143,6 +96,10 @@ void TVBPX(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TVBPX", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+#endif
 
 /* *----------------------------------------------------------------------------
 *SET SCREEN DISPLAY TO PAGE 0  (AND WRITE PAGE TO 1)
@@ -233,6 +190,7 @@ void FASTCLR1(void)
 void CLRSCRN(void)
 {
     // asm 00008EA1: 	CALL	CLRSCRN0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLRSCRN", 0, 0);
     UNIMPL();
 }
@@ -242,6 +200,7 @@ void CLRSCRN1(void)
     // asm 00008EA2: 	PUSH	AR2
     // asm 00008EA3: 	LDI	@SCREEN1I,AR2
     // asm 00008EA4: 	B	CLRSC00
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLRSCRN1", 0, 0);
     UNIMPL();
 }
@@ -275,6 +234,7 @@ void CLR255(void)
     // asm 00008EB2: 	LDI	@LINE255I,AR2
     // asm 00008EB3: 	LDI	1023,R3		;ONE ROW ONLY
     // asm 00008EB4: 	B	CLRSC01
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLR255", 0, 0);
     UNIMPL();
 }
@@ -290,6 +250,7 @@ void CLR511(void)
     // asm 00008EB7: 	LDI	@LINE511I,AR2
     // asm 00008EB8: 	LDI	1023,R3		;ONE ROW ONLY
     // asm 00008EB9: 	B	CLRSC01
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLR511", 0, 0);
     UNIMPL();
 }
@@ -303,6 +264,7 @@ void SCRNFIL(void)
     // asm 00008EBB: 	LDI	@FILSIZI,R3
     // asm 00008EBC: 	LDI	@FILWORD,R2	;fill it with some crud
     // asm 00008EBD: 	B	SCREEN_FILL
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCRNFIL", 0, 0);
     UNIMPL();
 }
@@ -608,6 +570,7 @@ GETLL_X:
 GETLL_ERR:
     // asm 00008F39: 	CLRC
     // asm 00008F3A: 	BU	GETLL_X
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LLIST", 0, 0);
     UNIMPL();
 }
@@ -639,6 +602,7 @@ ALLOCLIST_X:
 ALLOCLIST_ISERROR:
     // asm 00008F45: 	CLRC
     // asm 00008F46: 	BU	ALLOCLIST_X
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ALLOC_LLIST", 0, 0);
     UNIMPL();
 }
@@ -772,6 +736,31 @@ VANIX:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*CAR PROCESS
+*
+*	SPINS WHEELS
+*	TURNS FRONT WHEELS
+*	LEANS BODY
+*
+*PARAMETERS
+*	AR4	CAR OBJECT
+*	AR5	CAR BLOCK
+*	R6	X RADIANS	;FOR WHEEL SPIN
+*USES
+*	AR3	DYNA OBJECT
+*	AR4	MASTER OBJECT
+*	AR5	CAR BLOCK
+*	AR6	DYNAMATRIX
+*	R4	OLD ORADY
+*	R5	Z RADIANS FOR BODY LEAN
+*	R6	X RADIANS FOR BODY LEAN
+*	R7	OLD CAR SPEED
+*	PDATA	OLD CAR ORADY
+*	PDATA+1 BODY LEAN Z RADIANS
+*	PDATA+2 X RADIANS FOR WHEEL SPIN
+ */
+
 void CARPROC(void)
 {
     // asm 00008F90: 	LDI	*+AR4(OCARBLK),AR5
@@ -859,9 +848,15 @@ CARBODY:
 CARSLP:
     // asm 00008FD3: 	CALL	SLEEP
     // asm 00008FD4: 	B 	CARPROCL
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARPROC", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: NTWOPII	.float	-TWOPI */
+float NTWOPII = -TWOPI;
 
 /* *
 *LEAN BODY IN Z
@@ -954,6 +949,18 @@ void LEAN(void)
 }
 
 /* *----------------------------------------------------------------------------
+*DYNAOBJECT DYNAMIC ALLOCATION SUBSYSTEM
+*----------------------------------------------------------------------------
+*
+ */
+/* asm: DYNALIST	.bss	DYNALIST,NUM_DYNAS*DYNASIZE */
+int DYNALIST[NUM_DYNAS*DYNASIZE];
+/* asm: DYNAFREE	.bss	DYNAFREE,1 */
+int DYNAFREE;
+/* asm: NULL	.bss	NULL,1 */
+int NULL;
+
+/* *----------------------------------------------------------------------------
  */
 void DYNAOBJ_INIT(void)
 {
@@ -1012,6 +1019,7 @@ GETDYNA_X:
 GETDYNA_ERR:
     // asm 00009037: 	CLRC
     // asm 00009038: 	B	GETDYNA_X
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDYNA", 0, 0);
     UNIMPL();
 }
@@ -1036,6 +1044,13 @@ void DELDYNA(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DELDYNA", 0, 0);
     UNIMPL();
 }
+
+/* asm: CARLIST	.bss	CARLIST,NUM_CARS*CARSIZ */
+int CARLIST[NUM_CARS*CARSIZ];
+/* asm: CARFREE	.bss	CARFREE,1 */
+int CARFREE;
+/* asm: CAR_COUNT	.bss	CAR_COUNT,1 */
+int CAR_COUNT;
 
 /* *----------------------------------------------------------------------------
  */
@@ -1087,6 +1102,7 @@ GETCAR_X:
 GETCAR_ERR:
     // asm 00009058: 	CLRC
     // asm 00009059: 	B	GETCAR_X
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAR", 0, 0);
     UNIMPL();
 }
@@ -1125,6 +1141,7 @@ void SCAN_OBJECTS(void)
     // asm 00009066: 	CALL	OSCAN
     // asm 00009067: 	SLEEP	1
     // asm 00009069: 	B	SCAN_OBJECTS
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCAN_OBJECTS", 0, 0);
     UNIMPL();
 }
@@ -1159,6 +1176,7 @@ void PUSHALL(void)
     // asm 00009081: 	PUSHF	R6
     // asm 00009082: 	PUSHF	R7
     // asm 00009083: 	BU	BK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PUSHALL", 0, 0);
     UNIMPL();
 }
@@ -1193,6 +1211,7 @@ void POPALL(void)
     // asm 0000909B: 	POP	AR1
     // asm 0000909C: 	POP	AR0
     // asm 0000909D: 	BU	BK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "POPALL", 0, 0);
     UNIMPL();
 }

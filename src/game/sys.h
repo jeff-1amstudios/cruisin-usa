@@ -418,6 +418,6 @@ extern int RACE_MODE;
 extern int FIRST_RACE;
 
 // asm: 	.globl	LEG_MAP	;RAM SPACE
-extern int LEG_MAP[MAX_LEG_ELEMENTS*LEG_SIZE];
+extern int LEG_MAP[];
 
 #endif /* SYS_H */

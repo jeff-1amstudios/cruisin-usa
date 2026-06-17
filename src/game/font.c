@@ -1,5 +1,6 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "port.h"
 
 /*
  * Source module: asm/FONT.ASM
@@ -806,8 +807,3 @@ int _font1[] = {
     0000000b,
     0000000b,
 };
-
-void font(void)
-{
-    UNIMPL();
-}

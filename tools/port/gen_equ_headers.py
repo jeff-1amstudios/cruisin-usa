@@ -11,6 +11,7 @@ from pathlib import Path
 from gen_c_skeleton import (
     SymbolInfo,
     collect_module_symbol_table,
+    output_symbol_name,
     parse_type_overrides_file,
     sanitize_identifier,
     strip_struct_definition_blocks,
@@ -256,11 +257,11 @@ def render_globl_symbol(symbol: SymbolInfo | None, name: str, sizeless_extern_ar
     if symbol is None:
         return None
     if symbol.kind == "define" and symbol.expr is not None:
-        return f"#define {sanitize_identifier(name)} {sanitize_identifier(symbol.expr)}"
+        return f"#define {sanitize_identifier(symbol.name)} {sanitize_identifier(symbol.expr)}"
     if symbol.kind == "function":
-        return f"void {sanitize_identifier(name)}(void);"
+        return f"void {sanitize_identifier(symbol.name)}(void);"
     if symbol.kind == "variable":
-        if sizeless_extern_arrays and symbol.array_expr is not None:
+        if symbol.array_expr is not None:
             ident = sanitize_identifier(symbol.name)
             sep = "" if symbol.c_type.endswith("*") else " "
             return f"extern {symbol.c_type}{sep}{ident}[];"

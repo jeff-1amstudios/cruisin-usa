@@ -26,4 +26,11 @@ extern int PREVX;
 // asm: 	.bss	DELTA,1
 extern int DELTA;
 
+
+
+
+
+
+
+
 #endif /* COMP_H */

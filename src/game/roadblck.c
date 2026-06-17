@@ -12,6 +12,7 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
+#include "port.h"
 #include "roadblck.h"
 
 /*
@@ -25,16 +26,6 @@ void DEBRIS_SORT(void);
 
 /* asm: ROAD_DEBRIS	.bss	ROAD_DEBRIS,1 */
 int ROAD_DEBRIS;
-/* *----------------------------------------------------------------------------
-*SORT YOUR DEBRIS IN THE WORLD
-*
-*PARAMETERS
-*	AR4	PULL LIST HEADER
-*
-*
- */
-/* asm: MAXDIST	.float	9999999999.0  		;A VERY LARGE NUMBER */
-float MAXDIST = 9999999999.0f;
 
 /* *----------------------------------------------------------------------------
  */
@@ -117,6 +108,17 @@ FREEDR_X:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FREE_RDDEBRIS", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*SORT YOUR DEBRIS IN THE WORLD
+*
+*PARAMETERS
+*	AR4	PULL LIST HEADER
+*
+*
+ */
+/* asm: MAXDIST	.float	9999999999.0  		;A VERY LARGE NUMBER */
+float MAXDIST = 9999999999.0f;
 
 /* *
  */

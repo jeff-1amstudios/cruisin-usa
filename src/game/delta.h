@@ -238,16 +238,16 @@ extern int SUSPEND_MODE;
 // asm: 	.globl	 RACER_PTRI,RACER_PTR
 #define RACER_PTRI RACER_PTR
 
-extern int RACER_PTR[10];
+extern int RACER_PTR[];
 
 // asm: 	.globl	 LANEPI,LANEP,LANESI,LANES,LANES4
 #define LANEPI LANEP
 
-extern int LANEP[2];
+extern int LANEP[];
 
-extern float LANES[4];
+extern float LANES[];
 
-extern float LANES4[4];
+extern float LANES4[];
 
 // asm: 	.globl	 SUB_FUNCTION_XLANE
 #define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION

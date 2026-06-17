@@ -53,6 +53,8 @@ STANDALONE_DATA_DIRECTIVE_RE = re.compile(
     re.IGNORECASE,
 )
 CPP_DEFINE_RE = re.compile(r"^\s*#\s*define\s+([_A-Za-z][_A-Za-z0-9]*)\b")
+RENDER_OVERRIDE_START_RE = re.compile(r"^\s*%%\s+([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s*$")
+RENDER_OVERRIDE_END_RE = re.compile(r"^\s*%%\s+END\s*$", re.IGNORECASE)
 
 CONTROL_KEYWORDS = {
     ".if",
@@ -216,8 +218,31 @@ class TypeOverride:
     name: str
     c_type: str
     array_expr: str | None = None
+    rename_to: str | None = None
     omit: bool = False
     force_function: bool = False
+
+
+def output_symbol_name(name: str, type_overrides: dict[str, TypeOverride] | None = None) -> str:
+    if type_overrides is not None:
+        override = type_overrides.get(name)
+        if override is not None and override.rename_to:
+            return override.rename_to
+    return name
+
+
+def render_identifier(name: str, type_overrides: dict[str, TypeOverride] | None = None) -> str:
+    return sanitize_identifier(output_symbol_name(name, type_overrides))
+
+
+def build_symbol_rename_map(type_overrides: dict[str, TypeOverride] | None) -> dict[str, str]:
+    if type_overrides is None:
+        return {}
+    return {
+        name: override.rename_to
+        for name, override in type_overrides.items()
+        if override.rename_to
+    }
 
 
 def sanitize_identifier(name: str) -> str:
@@ -366,6 +391,19 @@ def parse_type_overrides_file(overrides_path: Path) -> dict[str, TypeOverride]:
         line = raw.strip()
         if not line or line.startswith("#") or line.startswith("//"):
             continue
+        rename_match = re.fullmatch(
+            r"(?P<name>[_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s*=\s*(?P<rename>[_A-Za-z.$?@][_A-Za-z0-9.$?@]*)",
+            line,
+        )
+        if rename_match:
+            name = rename_match.group("name")
+            rename_to = rename_match.group("rename")
+            existing = out.get(name)
+            if existing is not None:
+                existing.rename_to = rename_to
+            else:
+                out[name] = TypeOverride(name=name, c_type="", rename_to=rename_to)
+            continue
         if line.startswith("-"):
             name = line[1:].strip()
             if re.fullmatch(r"[_A-Za-z.$?@][_A-Za-z0-9.$?@]*", name):
@@ -393,7 +431,46 @@ def parse_type_overrides_file(overrides_path: Path) -> dict[str, TypeOverride]:
         if re.search(r"[^A-Za-z0-9_\s*]", c_type):
             continue
         array_expr = match.group("array")
-        out[name] = TypeOverride(name=name, c_type=c_type, array_expr=array_expr.strip() if array_expr is not None else None)
+        existing = out.get(name)
+        rename_to = existing.rename_to if existing is not None else None
+        omit = existing.omit if existing is not None else False
+        force_function = existing.force_function if existing is not None else False
+        out[name] = TypeOverride(
+            name=name,
+            c_type=c_type,
+            array_expr=array_expr.strip() if array_expr is not None else None,
+            rename_to=rename_to,
+            omit=omit,
+            force_function=force_function,
+        )
+    return out
+
+
+def parse_render_overrides_file(overrides_path: Path) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {}
+    if not overrides_path.exists():
+        return out
+
+    current_name: str | None = None
+    current_lines: list[str] = []
+    for raw in overrides_path.read_text(errors="ignore").splitlines():
+        if current_name is None:
+            match = RENDER_OVERRIDE_START_RE.match(raw)
+            if match is not None:
+                current_name = match.group(1)
+                current_lines = []
+            continue
+
+        if RENDER_OVERRIDE_END_RE.match(raw):
+            while current_lines and not current_lines[-1].strip():
+                current_lines.pop()
+            out[current_name] = current_lines[:]
+            current_name = None
+            current_lines = []
+            continue
+
+        current_lines.append(raw.rstrip())
+
     return out
 
 
@@ -411,17 +488,26 @@ def apply_type_override(symbol: SymbolInfo, type_overrides: dict[str, TypeOverri
     if override is None or override.omit:
         return symbol
     if override.force_function:
-        return SymbolInfo(name=symbol.name, kind="function", module=symbol.module)
+        return SymbolInfo(name=output_symbol_name(symbol.name, type_overrides), kind="function", module=symbol.module)
     if symbol.kind != "variable":
         return symbol
     return SymbolInfo(
-        name=symbol.name,
+        name=output_symbol_name(symbol.name, type_overrides),
         kind=symbol.kind,
         module=symbol.module,
-        c_type=override.c_type,
+        c_type=override.c_type if override.c_type else symbol.c_type,
         array_expr=symbol.array_expr if override.array_expr is None else override.array_expr,
         expr=symbol.expr,
     )
+
+
+def render_symbol_override(name: str, render_overrides: dict[str, list[str]] | None) -> list[str] | None:
+    if render_overrides is None:
+        return None
+    override_lines = render_overrides.get(name)
+    if override_lines is None:
+        return None
+    return override_lines[:]
 
 
 def lookup_address_map_symbol(address_map: dict[str, int], name: str, module: str) -> int | None:
@@ -448,10 +534,14 @@ def variable_declaration(name: str, c_type: str, array_expr: str | None = None, 
     if "(*)" in c_type:
         if array_expr is None or array_expr.strip() in {"", "0", "1"}:
             return f"{prefix}{c_type.replace('(*)', f'(*{ident})')};"
+        if is_extern:
+            return f"{prefix}{c_type.replace('(*)', f'(*{ident}[])')};"
         return f"{prefix}{c_type.replace('(*)', f'(*{ident}[{array_expr.strip()}])')};"
     sep = "" if c_type.endswith("*") else " "
     if array_expr is None or array_expr.strip() in {"", "0", "1"}:
         return f"{prefix}{c_type}{sep}{ident};"
+    if is_extern:
+        return f"{prefix}{c_type}{sep}{ident}[];"
     return f"{prefix}{c_type}{sep}{ident}[{array_expr.strip()}];"
 
 
@@ -476,8 +566,8 @@ def variable_definition_prefix(
     return f"{c_type}{sep}{ident}[{array_expr.strip()}]"
 
 
-def storage_declaration(name: str, size_expr: str, is_extern: bool = False) -> str:
-    expr = convert_expr(size_expr).strip()
+def storage_declaration(name: str, size_expr: str, is_extern: bool = False, type_overrides: dict[str, TypeOverride] | None = None) -> str:
+    expr = convert_expr(size_expr, type_overrides).strip()
     if expr in {"", "0", "1"}:
         return variable_declaration(name, "int", None, is_extern=is_extern)
     return variable_declaration(name, "int", expr, is_extern=is_extern)
@@ -556,6 +646,15 @@ def collect_module_storage_defines(
     return out
 
 
+def render_storage_header_lines(src_path: Path, defines: list[StorageVariable]) -> list[str]:
+    out: list[str] = []
+    out.append(f"// {src_path.name}")
+    for entry in defines:
+        out.append(f"// asm: {entry.asm_line}")
+        out.append(storage_declaration(entry.name, entry.size_expr, is_extern=True))
+    return out
+
+
 def render_storage_header(src_path: Path, defines: list[StorageVariable]) -> str:
     guard = sanitize_identifier(src_path.stem).upper() + "_H"
     out: list[str] = []
@@ -564,24 +663,72 @@ def render_storage_header(src_path: Path, defines: list[StorageVariable]) -> str
     out.append("")
     out.append(f"/* Generated from asm/{src_path.name}. */")
     out.append("")
-    for entry in defines:
-        out.append(f"// asm: {entry.asm_line}")
-        out.append(storage_declaration(entry.name, entry.size_expr, is_extern=True))
+    out.extend(render_storage_header_lines(src_path, defines))
     out.append("")
     out.append(f"#endif /* {guard} */")
     out.append("")
     return "\n".join(out)
 
 
-def storage_header_name(module: str, include_dir: Path) -> str:
-    base = module.lower() + ".h"
-    base_path = include_dir / base
-    if not base_path.exists():
-        return base
-    existing = base_path.read_text(errors="ignore")
-    if f"Generated from asm/{module.upper()}.ASM." in existing:
-        return base
-    return module.lower() + "_defs.h"
+def storage_header_name(module: str, _include_dir: Path) -> str:
+    return module.lower() + ".h"
+
+
+HEADER_DEFINE_RE = re.compile(r"^\s*#define\s+([A-Za-z_][A-Za-z0-9_]*)\b")
+HEADER_EXTERN_RE = re.compile(r"^\s*extern\b.*?\b([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[[^\]]*\])?;")
+HEADER_VOID_PROTO_RE = re.compile(r"^\s*void\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(void\)\s*;")
+
+
+def collect_declared_header_names(existing: str) -> set[str]:
+    names: set[str] = set()
+    for raw in existing.splitlines():
+        for regex in (HEADER_DEFINE_RE, HEADER_EXTERN_RE, HEADER_VOID_PROTO_RE):
+            match = regex.match(raw)
+            if match:
+                names.add(match.group(1))
+                break
+    return names
+
+
+def merge_storage_into_header(existing: str, src_path: Path, defines: list[StorageVariable]) -> str:
+    marker = f"// {src_path.name}"
+    end_guard = f"#endif /* {sanitize_identifier(src_path.stem).upper()}_H */"
+    lines = existing.splitlines()
+    try:
+        end_idx = next(i for i, line in enumerate(lines) if line.strip() == end_guard)
+    except StopIteration:
+        return render_storage_header(src_path, defines)
+
+    body = lines[:end_idx]
+    if marker in body:
+        body = body[: body.index(marker)]
+
+    equ_marker = f"// {src_path.stem.upper()}.EQU"
+    if f"Generated from asm/{src_path.stem.upper()}.EQU." in existing and equ_marker not in body:
+        insert_at = 0
+        for idx, line in enumerate(body):
+            insert_at = idx + 1
+            if line.startswith("/* Generated from asm/"):
+                break
+        while insert_at < len(body) and body[insert_at] == "":
+            insert_at += 1
+        body[insert_at:insert_at] = ["", equ_marker]
+
+    existing_names = collect_declared_header_names("\n".join(body))
+    filtered_defines = [entry for entry in defines if entry.name not in existing_names]
+    if not filtered_defines:
+        body.append("")
+        body.append(end_guard)
+        body.append("")
+        return "\n".join(body)
+
+    if body and body[-1] != "":
+        body.append("")
+    body.extend(render_storage_header_lines(src_path, filtered_defines))
+    body.append("")
+    body.append(end_guard)
+    body.append("")
+    return "\n".join(body)
 
 
 def collect_word_symbol_dependencies(lines: list[str], owner_headers: dict[str, str], current_module: str) -> set[str]:
@@ -628,16 +775,23 @@ def parse_include_headers(lines: list[str]) -> list[str]:
     return headers
 
 
-def convert_expr(expr: str) -> str:
+def convert_expr(expr: str, type_overrides: dict[str, TypeOverride] | None = None) -> str:
     expr = expr.strip()
     expr = HEX_SUFFIX_RE.sub(lambda m: f"0x{m.group(1)}", expr)
+    rename_map = build_symbol_rename_map(type_overrides)
+    if rename_map:
+        expr = re.sub(
+            BRANCH_TARGET_RE,
+            lambda m: output_symbol_name(m.group(1), type_overrides),
+            expr,
+        )
     expr = re.sub(r"(?<![<>!=])=(?!=)", "==", expr)
     expr = re.sub(r"\s+", " ", expr)
     return expr
 
 
-def format_float_expr(expr: str) -> str:
-    rendered = convert_expr(expr)
+def format_float_expr(expr: str, type_overrides: dict[str, TypeOverride] | None = None) -> str:
+    rendered = convert_expr(expr, type_overrides)
     parsed = parse_int_token(rendered)
     if parsed is not None:
         return f"{parsed}.0f"
@@ -648,10 +802,10 @@ def format_float_expr(expr: str) -> str:
     return rendered
 
 
-def render_conditional_line(raw: str) -> str | None:
+def render_conditional_line(raw: str, type_overrides: dict[str, TypeOverride] | None = None) -> str | None:
     match = IF_RE.match(raw)
     if match:
-        return f"#if {convert_expr(match.group(1))}"
+        return f"#if {convert_expr(match.group(1), type_overrides)}"
     if ELSE_RE.match(raw):
         return "#else"
     if ENDIF_RE.match(raw):
@@ -816,6 +970,10 @@ def line_ends_function(raw: str) -> bool:
         is_instr, code = classify_instruction_text(raw)
     if not is_instr:
         return False
+    return instruction_terminates_function(code)
+
+
+def instruction_terminates_function(code: str) -> bool:
     mnemonic = code.split(None, 1)[0].upper()
     return mnemonic in FUNCTION_END_MNEMONICS
 
@@ -1363,6 +1521,7 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
     out.append("{")
 
     emitted_any = False
+    last_executable_code: str | None = None
     first_label_emitted = False
     pending_entry_labels = [*fn.aliases, fn.name]
     for raw, line_no in zip(body_lines, body_line_numbers):
@@ -1378,6 +1537,7 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
                     else:
                         out.append(f"    // asm {line_address:08X}: {code}")
                     emitted_any = True
+                    last_executable_code = code
                 continue
 
             inline_label_match = INLINE_LABEL_RE.match(raw)
@@ -1397,6 +1557,7 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
                     else:
                         out.append(f"    // asm {line_address:08X}: {code}")
                     emitted_any = True
+                    last_executable_code = code
                 continue
 
             bare_label_match = BARE_LABEL_RE.match(raw)
@@ -1438,6 +1599,7 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
                 else:
                     out.append(f"    // asm {line_address:08X}: {rest.lstrip().rstrip()}")
                 emitted_any = True
+                last_executable_code = code
             continue
 
         inline_label_match = INLINE_LABEL_RE.match(raw)
@@ -1457,6 +1619,7 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
                 else:
                     out.append(f"    // asm {line_address:08X}: {code}")
                 emitted_any = True
+                last_executable_code = code
                 continue
 
         bare_label_match = BARE_LABEL_RE.match(raw)
@@ -1477,8 +1640,11 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
         else:
             out.append(f"    // asm {line_address:08X}: {raw.rstrip()}")
         emitted_any = True
+        last_executable_code = code
 
     if emitted_any:
+        if last_executable_code is not None and not instruction_terminates_function(last_executable_code):
+            out.append("    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION")
         out.append(f'    TRACE_EVENT(&g_crusn_machine->trace, "function", "{fn.name}", 0, 0);')
     else:
         out.append("    /* no executable asm lines detected */")
@@ -1487,10 +1653,15 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
     return out
 
 
-def infer_word_symbol(var: WordVariable, module: str, symbol_table: dict[str, SymbolInfo] | None = None) -> SymbolInfo:
+def infer_word_symbol(
+    var: WordVariable,
+    module: str,
+    symbol_table: dict[str, SymbolInfo] | None = None,
+    type_overrides: dict[str, TypeOverride] | None = None,
+) -> SymbolInfo:
     if len(var.values) == 1:
         value = var.values[0].strip()
-        rendered_value = convert_expr(value)
+        rendered_value = convert_expr(value, type_overrides)
         if var.name.lower().endswith("i") and BRANCH_TARGET_RE.fullmatch(value) and parse_int_token(value) is None:
             return SymbolInfo(name=var.name, kind="define", module=module, expr=rendered_value)
         if var.name.endswith("I") and value == var.name[:-1]:
@@ -1538,11 +1709,21 @@ def infer_word_symbol(var: WordVariable, module: str, symbol_table: dict[str, Sy
     return SymbolInfo(name=var.name, kind="variable", module=module, c_type="int", array_expr=str(len(var.values)))
 
 
-def infer_numeric_symbol(var: NumericVariable, module: str, symbol_table: dict[str, SymbolInfo] | None = None) -> SymbolInfo:
+def infer_numeric_symbol(
+    var: NumericVariable,
+    module: str,
+    symbol_table: dict[str, SymbolInfo] | None = None,
+    type_overrides: dict[str, TypeOverride] | None = None,
+) -> SymbolInfo:
     if var.directive == ".float":
         return SymbolInfo(name=var.name, kind="variable", module=module, c_type="float", array_expr=str(len(var.values)))
     if var.directive in {".word", ".intdata"}:
-        return infer_word_symbol(WordVariable(name=var.name, values=var.values, asm_lines=var.asm_lines), module, symbol_table)
+        return infer_word_symbol(
+            WordVariable(name=var.name, values=var.values, asm_lines=var.asm_lines),
+            module,
+            symbol_table,
+            type_overrides,
+        )
     return SymbolInfo(name=var.name, kind="variable", module=module, c_type="int", array_expr=str(len(var.values)))
 
 
@@ -1550,16 +1731,20 @@ def infer_string_symbol(name: str, module: str) -> SymbolInfo:
     return SymbolInfo(name=name, kind="variable", module=module, c_type="const char *")
 
 
-def infer_storage_symbol(name: str, size_expr: str, module: str) -> SymbolInfo:
-    expr = convert_expr(size_expr).strip()
+def infer_storage_symbol(name: str, size_expr: str, module: str, type_overrides: dict[str, TypeOverride] | None = None) -> SymbolInfo:
+    expr = convert_expr(size_expr, type_overrides).strip()
     if expr in {"", "0", "1"}:
         return SymbolInfo(name=name, kind="variable", module=module, c_type="int")
     return SymbolInfo(name=name, kind="variable", module=module, c_type="int", array_expr=expr)
 
 
-def render_numeric_variable(var: NumericVariable, symbol_table: dict[str, SymbolInfo] | None = None) -> list[str]:
+def render_numeric_variable(
+    var: NumericVariable,
+    symbol_table: dict[str, SymbolInfo] | None = None,
+    type_overrides: dict[str, TypeOverride] | None = None,
+) -> list[str]:
     out: list[str] = []
-    inferred_symbol = infer_numeric_symbol(var, "", symbol_table)
+    inferred_symbol = infer_numeric_symbol(var, "", symbol_table, type_overrides)
     existing_symbol = symbol_table.get(var.name) if symbol_table is not None else None
     if existing_symbol is None:
         symbol = inferred_symbol
@@ -1585,11 +1770,11 @@ def render_numeric_variable(var: NumericVariable, symbol_table: dict[str, Symbol
         out.append(f"#define {ident} {symbol.expr}")
     elif len(var.values) == 1:
         value = var.values[0].strip()
-        rendered_value = format_float_expr(value) if var.directive == ".float" else convert_expr(value)
-        out.append(f"{variable_definition_prefix(var.name, symbol.c_type)} = {rendered_value};")
+        rendered_value = format_float_expr(value, type_overrides) if var.directive == ".float" else convert_expr(value, type_overrides)
+        out.append(f"{variable_definition_prefix(symbol.name, symbol.c_type)} = {rendered_value};")
     else:
         if var.string_literal_values is not None:
-            prefix = variable_definition_prefix(var.name, symbol.c_type, symbol.array_expr, omit_array_size=True)
+            prefix = variable_definition_prefix(symbol.name, symbol.c_type, symbol.array_expr, omit_array_size=True)
             values = ", ".join(var.string_literal_values)
             out.append(f"{prefix} = {{ {values} }};")
             return out
@@ -1601,33 +1786,38 @@ def render_numeric_variable(var: NumericVariable, symbol_table: dict[str, Symbol
                     continue
                 row_values, asm_comment = parsed_row
                 if var.directive == ".float":
-                    rendered_values = ", ".join(format_float_expr(value) for value in row_values)
+                    rendered_values = ", ".join(format_float_expr(value, type_overrides) for value in row_values)
                 else:
-                    rendered_values = ", ".join(convert_expr(value) for value in row_values)
+                    rendered_values = ", ".join(convert_expr(value, type_overrides) for value in row_values)
                 comment_text = asm_comment[1:].strip() if asm_comment.startswith(";") else asm_comment.strip()
                 if comment_text:
                     structured_rows.append(f"    {rendered_values}, // {comment_text}")
                 else:
                     structured_rows.append(f"    {rendered_values},")
         if structured_rows:
-            prefix = variable_definition_prefix(var.name, symbol.c_type, symbol.array_expr, omit_array_size=True)
+            prefix = variable_definition_prefix(symbol.name, symbol.c_type, symbol.array_expr, omit_array_size=True)
             out.append(f"{prefix} = {{")
             out.extend(structured_rows)
             out.append("};")
         else:
             if var.directive == ".float":
-                values = ", ".join(format_float_expr(value) for value in var.values)
+                values = ", ".join(format_float_expr(value, type_overrides) for value in var.values)
             else:
-                values = ", ".join(convert_expr(value) for value in var.values)
-            prefix = variable_definition_prefix(var.name, symbol.c_type, symbol.array_expr, omit_array_size=True)
+                values = ", ".join(convert_expr(value, type_overrides) for value in var.values)
+            prefix = variable_definition_prefix(symbol.name, symbol.c_type, symbol.array_expr, omit_array_size=True)
             out.append(f"{prefix} = {{ {values} }};")
     return out
 
 
-def render_word_variable(var: WordVariable, symbol_table: dict[str, SymbolInfo] | None = None) -> list[str]:
+def render_word_variable(
+    var: WordVariable,
+    symbol_table: dict[str, SymbolInfo] | None = None,
+    type_overrides: dict[str, TypeOverride] | None = None,
+) -> list[str]:
     return render_numeric_variable(
         NumericVariable(name=var.name, directive=".word", values=var.values, asm_lines=var.asm_lines),
         symbol_table,
+        type_overrides,
     )
 
 
@@ -1660,7 +1850,10 @@ def render_discovered_defines_header(defines: list[DefineEntry]) -> str:
     return "\n".join(out)
 
 
-def render_discovered_labels_header(labels: list[LabelEntry]) -> str:
+def render_discovered_labels_header(
+    labels: list[LabelEntry],
+    type_overrides: dict[str, TypeOverride] | None = None,
+) -> str:
     out = [
         "#ifndef DISCOVERED_LABELS_H",
         "#define DISCOVERED_LABELS_H",
@@ -1669,12 +1862,27 @@ def render_discovered_labels_header(labels: list[LabelEntry]) -> str:
         "",
     ]
     for entry in labels:
-        out.append(f"#define {entry.name} 0x{entry.addr:08X}")
+        out.append(f"#define {output_symbol_name(entry.name, type_overrides)} 0x{entry.addr:08X}")
     out.extend([
         "",
         "#endif /* DISCOVERED_LABELS_H */",
         "",
     ])
+    return "\n".join(out)
+
+
+def render_port_header() -> str:
+    out = [
+        "#ifndef PORT_H",
+        "#define PORT_H",
+        "",
+        '#include "discovered_defines.h"',
+        '#include "discovered_labels.h"',
+        '#include "types.h"',
+        "",
+        "#endif /* PORT_H */",
+        "",
+    ]
     return "\n".join(out)
 
 
@@ -1921,7 +2129,10 @@ def render_top_level_items(
     emit_set_defines: bool = True,
     collapsed_string_tables: dict[str, list[str]] | None = None,
     skipped_string_labels: set[str] | None = None,
+    render_overrides: dict[str, list[str]] | None = None,
     data_only_macros: frozenset[str] | None = None,
+    initial_seen_function_lines: bool = False,
+    line_number_offset: int = 0,
 ) -> list[str]:
     if collapsed_string_tables is None:
         collapsed_string_tables = {}
@@ -1943,7 +2154,7 @@ def render_top_level_items(
     out: list[str] = []
     emitted_sets: set[str] = set()
     pending_comment_lines: list[str] = []
-    seen_function_lines = False
+    seen_function_lines = initial_seen_function_lines
     saw_top_level_data_after_function = False
     idx = 0
     while idx < len(lines):
@@ -1982,7 +2193,7 @@ def render_top_level_items(
         set_match = SET_RE.match(code)
         if set_match:
             name, expr = set_match.groups()
-            define_entry = SetDefine(name=name, expr=convert_expr(expr), comment=comment)
+            define_entry = SetDefine(name=output_symbol_name(name, type_overrides), expr=convert_expr(expr, type_overrides), comment=comment)
             flush_pending_comments()
             if emit_set_asm_comments:
                 out.append(f"// asm: {raw.rstrip()}")
@@ -1997,6 +2208,14 @@ def render_top_level_items(
         storage_match = STANDALONE_STORAGE_FULL_RE.match(code)
         if storage_match:
             directive, label, rest = storage_match.groups()
+            override_lines = render_symbol_override(label, render_overrides)
+            if override_lines is not None:
+                flush_pending_comments()
+                out.extend(override_lines)
+                if seen_function_lines:
+                    saw_top_level_data_after_function = True
+                idx += 1
+                continue
             if is_omitted_symbol(label, type_overrides):
                 if seen_function_lines:
                     saw_top_level_data_after_function = True
@@ -2012,6 +2231,14 @@ def render_top_level_items(
 
         standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
         if standalone_data is not None:
+            override_lines = render_symbol_override(standalone_data.name, render_overrides)
+            if override_lines is not None:
+                flush_pending_comments()
+                out.extend(override_lines)
+                if seen_function_lines:
+                    saw_top_level_data_after_function = True
+                idx = next_idx
+                continue
             if is_omitted_symbol(standalone_data.name, type_overrides):
                 if seen_function_lines:
                     saw_top_level_data_after_function = True
@@ -2048,7 +2275,7 @@ def render_top_level_items(
                     next_label_match = BARE_LABEL_RE.match(next_code)
                     if next_label_match and next_label_match.group(1) == values[0]:
                         out.append(f"/* asm: {standalone_data.asm_lines[0].strip()} */")
-                        out.append(f"#define {sanitize_identifier(standalone_data.name)} {convert_expr(values[0])}")
+                        out.append(f"#define {render_identifier(standalone_data.name, type_overrides)} {convert_expr(values[0], type_overrides)}")
                         idx = next_idx
                         continue
                 out.extend(
@@ -2061,6 +2288,7 @@ def render_top_level_items(
                             string_literal_values=collapsed_string_tables.get(standalone_data.name),
                         ),
                         symbol_table,
+                        type_overrides,
                     )
                 )
             elif directive_lower == ".string":
@@ -2090,7 +2318,7 @@ def render_top_level_items(
             and top_level_instruction is not None
         ):
             raise ValueError(
-                f"unexpected top-level code at line {idx + 1}: {raw.rstrip()}"
+                f"unexpected top-level code at line {line_number_offset + idx + 1}: {raw.rstrip()}"
             )
 
         if not is_flush_left(raw):
@@ -2101,6 +2329,14 @@ def render_top_level_items(
         sptr_match = parse_sptr_label(raw)
         if sptr_match is not None:
             label, c_string = sptr_match
+            override_lines = render_symbol_override(label, render_overrides)
+            if override_lines is not None:
+                flush_pending_comments()
+                out.extend(override_lines)
+                if seen_function_lines:
+                    saw_top_level_data_after_function = True
+                idx += 1
+                continue
             flush_pending_comments()
             out.extend(render_sptr_variable(label, c_string, raw))
             if seen_function_lines:
@@ -2115,13 +2351,35 @@ def render_top_level_items(
             continue
 
         label, directive, rest = data_match.groups()
+        directive_lower = directive.lower()
+        override_lines = render_symbol_override(label, render_overrides)
+        if override_lines is not None:
+            flush_pending_comments()
+            out.extend(override_lines)
+            if seen_function_lines:
+                saw_top_level_data_after_function = True
+            next_idx = idx + 1
+            if directive_lower in {".word", ".float"}:
+                while next_idx < len(lines):
+                    next_raw = lines[next_idx]
+                    if next_idx in function_line_indexes:
+                        break
+                    if is_comment_or_blank(next_raw):
+                        break
+                    if is_flush_left(next_raw):
+                        break
+                    next_code, _next_comment = split_comment(next_raw)
+                    if not next_code.strip():
+                        break
+                    next_idx += 1
+            idx = next_idx
+            continue
         if is_omitted_symbol(label, type_overrides):
             if seen_function_lines:
                 saw_top_level_data_after_function = True
             pending_comment_lines = []
             idx += 1
             continue
-        directive_lower = directive.lower()
         if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
             flush_pending_comments()
             out.extend(render_storage_variable(label, parse_storage_size(rest), f"{directive}{rest}"))
@@ -2182,7 +2440,7 @@ def render_top_level_items(
                 next_label_match = BARE_LABEL_RE.match(next_code)
                 if next_label_match and next_label_match.group(1) == values[0]:
                     out.append(f"/* asm: {asm_lines[0].strip()} */")
-                    out.append(f"#define {sanitize_identifier(label)} {convert_expr(values[0])}")
+                    out.append(f"#define {render_identifier(label, type_overrides)} {convert_expr(values[0], type_overrides)}")
                     if seen_function_lines:
                         saw_top_level_data_after_function = True
                     idx = next_idx
@@ -2197,6 +2455,7 @@ def render_top_level_items(
                         string_literal_values=collapsed_string_tables.get(label),
                     ),
                     symbol_table,
+                    type_overrides,
                 )
             )
             if seen_function_lines:
@@ -2242,6 +2501,7 @@ def render_top_level_items(
                 render_numeric_variable(
                     NumericVariable(name=label, directive=".float", values=values, asm_lines=asm_lines),
                     symbol_table,
+                    type_overrides,
                 )
             )
             if seen_function_lines:
@@ -2252,7 +2512,7 @@ def render_top_level_items(
         top_level_instruction = instruction_text_for_top_level_line(raw)
         if saw_top_level_data_after_function and top_level_instruction is not None:
             raise ValueError(
-                f"unexpected top-level code at line {idx + 1}: {raw.rstrip()}"
+                f"unexpected top-level code at line {line_number_offset + idx + 1}: {raw.rstrip()}"
             )
 
         pending_comment_lines = []
@@ -2272,6 +2532,7 @@ def render_module(
     type_overrides: dict[str, TypeOverride] | None = None,
     discovered_labels_needed: bool = False,
     instruction_addresses: dict[int, int] | None = None,
+    render_overrides: dict[str, list[str]] | None = None,
 ) -> str:
     lines = strip_noncode_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     is_equ_source = src_path.suffix.upper() == ".EQU"
@@ -2282,12 +2543,9 @@ def render_module(
         if override.force_function
     }
     headers = parse_include_headers(lines)
+    headers.append("port.h")
     if own_header is not None:
         headers.append(own_header)
-    if discovered_header_needed:
-        headers.append("discovered_defines.h")
-    if discovered_labels_needed:
-        headers.append("discovered_labels.h")
     headers.extend(sorted(collect_word_symbol_dependencies(lines, owner_headers, src_path.stem.upper())))
     headers = list(dict.fromkeys(headers))
     branch_targets = collect_branch_targets(lines)
@@ -2301,22 +2559,6 @@ def render_module(
         symbol_table,
         data_only_macros,
     )
-    top_level_items = render_top_level_items(
-        lines,
-        functions,
-        branch_targets,
-        address_map,
-        src_path.stem.upper(),
-        symbol_table,
-        type_overrides,
-        strip_asm_comment_markers=is_equ_source,
-        emit_set_asm_comments=is_equ_source,
-        emit_set_defines=not is_equ_source,
-        collapsed_string_tables=collapsed_string_tables,
-        skipped_string_labels=skipped_string_labels,
-        data_only_macros=data_only_macros,
-    )
-
     out: list[str] = []
     out.append('#include "../core/cpu.h"')
     out.append('#include "../core/machine.h"')
@@ -2332,22 +2574,60 @@ def render_module(
         out.extend(local_prototypes)
     out.append("")
 
-    if top_level_items:
-        out.extend(top_level_items)
-        out.append("")
-
     rendered_count = 0
     seen_names: set[str] = set()
+    cursor = 0
+    saw_any_rendered_body = False
+
+    def append_top_level_segment(start: int, end: int, seen_function_context: bool) -> None:
+        nonlocal saw_any_rendered_body
+        if start >= end:
+            return
+        segment = render_top_level_items(
+            lines[start:end],
+            [],
+            branch_targets,
+            address_map,
+            src_path.stem.upper(),
+            symbol_table,
+            type_overrides,
+            strip_asm_comment_markers=is_equ_source,
+            emit_set_asm_comments=is_equ_source,
+            emit_set_defines=not is_equ_source,
+            collapsed_string_tables=collapsed_string_tables,
+            skipped_string_labels=skipped_string_labels,
+            render_overrides=render_overrides,
+            data_only_macros=data_only_macros,
+            initial_seen_function_lines=seen_function_context,
+            line_number_offset=start,
+        )
+        if not segment:
+            return
+        if saw_any_rendered_body:
+            out.append("")
+        out.extend(segment)
+        saw_any_rendered_body = True
+
     for fn in functions:
+        append_top_level_segment(cursor, fn.start_index, rendered_count > 0)
         ident = sanitize_identifier(fn.name)
         if ident in seen_names:
+            cursor = fn.end_index + 1
             continue
         seen_names.add(ident)
+        if saw_any_rendered_body:
+            out.append("")
         out.extend(render_function(fn, instruction_addresses))
-        out.append("")
+        saw_any_rendered_body = True
         rendered_count += 1
+        cursor = fn.end_index + 1
 
-    if rendered_count == 0 and not (is_equ_source and top_level_items):
+    append_top_level_segment(cursor, len(lines), rendered_count > 0)
+
+    if saw_any_rendered_body:
+        out.append("")
+
+    if rendered_count == 0 and not saw_any_rendered_body:
         fallback = sanitize_identifier(src_path.stem.lower())
         out.append(f"void {fallback}(void)")
         out.append("{")
@@ -2692,7 +2972,7 @@ def collect_module_symbol_table(
                 continue
             symbol_table.setdefault(
                 label,
-                apply_type_override(infer_storage_symbol(label, parse_storage_size(rest), module), type_overrides),
+                apply_type_override(infer_storage_symbol(label, parse_storage_size(rest), module, type_overrides), type_overrides),
             )
             idx += 1
             continue
@@ -2730,6 +3010,7 @@ def collect_module_symbol_table(
                             ),
                             module,
                             symbol_table,
+                            type_overrides,
                         ),
                         type_overrides,
                     ),
@@ -2750,7 +3031,7 @@ def collect_module_symbol_table(
                 symbol_table.setdefault(
                     standalone_data.name,
                     apply_type_override(
-                        infer_storage_symbol(standalone_data.name, parse_storage_size(standalone_data.rest), module),
+                        infer_storage_symbol(standalone_data.name, parse_storage_size(standalone_data.rest), module, type_overrides),
                         type_overrides,
                     ),
                 )
@@ -2784,7 +3065,7 @@ def collect_module_symbol_table(
         if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
             symbol_table.setdefault(
                 label,
-                apply_type_override(infer_storage_symbol(label, parse_storage_size(rest), module), type_overrides),
+                apply_type_override(infer_storage_symbol(label, parse_storage_size(rest), module, type_overrides), type_overrides),
             )
             idx += 1
             continue
@@ -2820,7 +3101,7 @@ def collect_module_symbol_table(
             symbol_table.setdefault(
                 label,
                 apply_type_override(
-                    infer_word_symbol(WordVariable(name=label, values=values, asm_lines=asm_lines), module, symbol_table),
+                    infer_word_symbol(WordVariable(name=label, values=values, asm_lines=asm_lines), module, symbol_table, type_overrides),
                     type_overrides,
                 ),
             )
@@ -2856,6 +3137,7 @@ def collect_module_symbol_table(
                         NumericVariable(name=label, directive=".float", values=values, asm_lines=asm_lines),
                         module,
                         symbol_table,
+                        type_overrides,
                     ),
                     type_overrides,
                 ),
@@ -2896,6 +3178,7 @@ def main() -> int:
         root / "tools" / "ida" / "log" / "romlst_instruction_addresses.tsv"
     )
     type_overrides = parse_type_overrides_file(root / "tools" / "port" / "type-overrides.txt")
+    render_overrides = parse_render_overrides_file(root / "tools" / "port" / "render-overrides.txt")
     label_types = parse_romlst_label_types(root / "tools" / "ida" / "log" / "romlst_labels.tsv")
     out_dir.mkdir(parents=True, exist_ok=True)
     include_dir.mkdir(parents=True, exist_ok=True)
@@ -2906,8 +3189,9 @@ def main() -> int:
         key=lambda item: item.name.upper(),
     )
     discovered_define_names = {entry.name for entry in discovered_define_entries}
-    if discovered_define_entries:
-        (include_dir / "discovered_defines.h").write_text(render_discovered_defines_header(discovered_define_entries))
+    (include_dir / "discovered_defines.h").write_text(render_discovered_defines_header(discovered_define_entries))
+    (include_dir / "discovered_labels.h").write_text(render_discovered_labels_header([], type_overrides))
+    (include_dir / "port.h").write_text(render_port_header())
     global_source_symbols: set[str] = set()
     source_label_names: set[str] = set()
     for src_path in sorted(asm_dir.glob("*.ASM")):
@@ -2935,7 +3219,16 @@ def main() -> int:
         header_name = storage_header_name(src_path.stem, include_dir)
         for entry in defines:
             owner_headers[entry.name] = header_name
-        (include_dir / header_name).write_text(render_storage_header(src_path, defines))
+        header_path = include_dir / header_name
+        if header_path.exists():
+            existing = header_path.read_text(errors="ignore")
+            rendered = merge_storage_into_header(existing, src_path, defines)
+        else:
+            rendered = render_storage_header(src_path, defines)
+        header_path.write_text(rendered)
+        obsolete_defs_path = include_dir / f"{src_path.stem.lower()}_defs.h"
+        if obsolete_defs_path.exists():
+            obsolete_defs_path.unlink()
 
     for src_path in sorted(asm_dir.glob("*.ASM")):
         lines = src_path.read_text(errors="ignore").splitlines()
@@ -2969,6 +3262,7 @@ def main() -> int:
                 type_overrides,
                 discovered_labels_needed,
                 instruction_addresses_by_module.get(src_path.stem.upper()),
+                render_overrides,
             )
         )
 
@@ -2976,8 +3270,7 @@ def main() -> int:
         LabelEntry(name=name, addr=address_map[name])
         for name in sorted(discovered_label_names, key=str.upper)
     ]
-    if discovered_label_entries:
-        (include_dir / "discovered_labels.h").write_text(render_discovered_labels_header(discovered_label_entries))
+    (include_dir / "discovered_labels.h").write_text(render_discovered_labels_header(discovered_label_entries, type_overrides))
 
     skipped_log = log_dir / "skipped_data_symbols.txt"
     skipped_rows = sorted(skipped_data_symbols)

@@ -8,8 +8,7 @@
 #include "macs.h"
 #include "error.h"
 #include "globals.h"
-#include "pall_defs.h"
-#include "discovered_defines.h"
+#include "port.h"
 
 /*
  * Source module: asm/PALL.ASM
@@ -45,25 +44,6 @@ int NUM_FIXED;
 #define PALROMI _PALROM
 /* asm: PALLISTI	.word	_PALLIST	;CROSS-REFERENCE LIST */
 #define PALLISTI _PALLIST
-/* *----------------------------------------------------------------------------
-*PALTRANS- TRANSFER PALETTE DATA TO COLORRAM
-*	CALL FROM DISPLAY IRQ AT BEGIN OF VBLNK
-*
-*CLOBBERS
-*	R0,R1,R7,AR0,AR1,AR2
-*
- */
-/* asm: PALSXFER	.bss	PALSXFER,1 */
-int PALSXFER;
-#define NXFER_PALS 128
-/* asm: PALXFER_ACTIVE	.bss	PALXFER_ACTIVE,1 */
-int PALXFER_ACTIVE;
-/* asm: PALXFER_FREE	.bss	PALXFER_FREE,1 */
-int PALXFER_FREE;
-/* asm: PALXFER_AVAILABLE_P	.bss	PALXFER_AVAILABLE_P,1 */
-int PALXFER_AVAILABLE_P;
-/* asm: PALXFER_STR	.bss	PALXFER_STR,PALX_SIZE*NXFER_PALS */
-int PALXFER_STR[PALX_SIZE*NXFER_PALS];
 
 /* *----------------------------------------------------------------------------
 *CLEAR OUT PALETTE RAM
@@ -102,6 +82,17 @@ void PAL_INIT(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_INIT", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*PALTRANS- TRANSFER PALETTE DATA TO COLORRAM
+*	CALL FROM DISPLAY IRQ AT BEGIN OF VBLNK
+*
+*CLOBBERS
+*	R0,R1,R7,AR0,AR1,AR2
+*
+ */
+/* asm: PALSXFER	.bss	PALSXFER,1 */
+int PALSXFER;
 
 void PAL_XFER(void)
 {
@@ -503,6 +494,16 @@ void PAL_SET(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_SET", 0, 0);
     UNIMPL();
 }
+
+#define NXFER_PALS 128
+/* asm: PALXFER_ACTIVE	.bss	PALXFER_ACTIVE,1 */
+int PALXFER_ACTIVE;
+/* asm: PALXFER_FREE	.bss	PALXFER_FREE,1 */
+int PALXFER_FREE;
+/* asm: PALXFER_AVAILABLE_P	.bss	PALXFER_AVAILABLE_P,1 */
+int PALXFER_AVAILABLE_P;
+/* asm: PALXFER_STR	.bss	PALXFER_STR,PALX_SIZE*NXFER_PALS */
+int PALXFER_STR[PALX_SIZE*NXFER_PALS];
 
 /* *----------------------------------------------------------------------------
  */

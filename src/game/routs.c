@@ -1,5 +1,6 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "port.h"
 
 /*
  * Source module: asm/ROUTS.ASM
@@ -120,6 +121,7 @@ void DIV_F30(void)
     // asm 0000A55A: 	POPF	R2		;Restore R2: floating point part
     // asm 0000A55B: 	POP	R2		;Restore R2: integer part
     // 	;---->B	BK		;BRANCH OCCURS (RETURN)
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_F30", 0, 0);
     UNIMPL();
 }
@@ -389,6 +391,7 @@ void INV_F30(void)
     // asm 0000A5D2: 	POPF	R2		;Restore R2: floating point part
     // asm 0000A5D3: 	POP	R2		;Restore R2: integer part
     // 	;---->B	BK		;BRANCH OCCURS (RETURN)
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INV_F30", 0, 0);
     UNIMPL();
 }
@@ -451,6 +454,7 @@ mod_32:
     // asm 0000A5F1: 	CALL	MOD_U30		;do divide
     // asm 0000A5F2: 	POP	SIGN		;restore sign
     // asm 0000A5F3: 	B	return	 	;return
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOD_I30", 0, 0);
     UNIMPL();
 }

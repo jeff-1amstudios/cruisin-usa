@@ -61,7 +61,7 @@
 // asm: 	.GLOBL	FINISH_ID,LEG_MAP,ROADIR,LEG_MAPI
 extern int FINISH_ID;
 
-extern int LEG_MAP[MAX_LEG_ELEMENTS*LEG_SIZE];
+extern int LEG_MAP[];
 
 #define LEG_MAPI LEG_MAP
 
@@ -74,7 +74,7 @@ extern int LEG_MAP[MAX_LEG_ELEMENTS*LEG_SIZE];
 // asm: 	.GLOBL	PLYRFIRST,DRONESTOP,PLYRDRAFT,PLDRAFTVAL,CKAHEAD,STEERI
 extern int PLYRFIRST;
 
-extern float STEERI;
+extern float STEERI[];
 
 // asm: 	.globl	SPOS_INIT
 void SPOS_INIT(void);
@@ -84,10 +84,28 @@ void ROADIR(void);
 // asm: 	.GLOBL	GETRPM,GETAUTO,ENGFRI,GEARACTABI,ENGACTABI,GETRDIR
 void GETRPM(void);
 
+void GETAUTO(void);
+
 void GETRDIR(void);
 
 void DRONESTOP(void);
 
 void CKAHEAD(void);
+
+// RACER.ASM
+// asm: 	.bss	FINISHNUM,1		;NUMBER OF DRONES FINISHED
+extern int FINISHNUM;
+// asm: 		.bss	RACER_PTR,10
+extern int RACER_PTR[];
+// asm: 	.bss	OM_TRACK_LO,1
+extern int OM_TRACK_LO;
+// asm: 	.bss	OM_TRACK_HI,1
+extern int OM_TRACK_HI;
+// asm: 	.BSS	ROADOBSTAB,50  		;ARRAY OF ROAD OBSTACLES
+extern int ROADOBSTAB[];
+// asm: 	.BSS	PLYRCLOSE,1		;CLOSING VELOCITY OF DRONE ON PLAYER
+extern int PLYRCLOSE;
+// asm: 	.BSS	CARTMP1,1
+extern int CARTMP1;
 
 #endif /* RACER_H */

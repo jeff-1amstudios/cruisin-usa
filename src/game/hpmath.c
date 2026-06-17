@@ -1,5 +1,6 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "port.h"
 
 /*
  * Source module: asm/HPMATH.ASM
@@ -11,23 +12,6 @@ void _HPcos(void);
 void EPI0_2(void);
 
 #define FP AR3
-/* asm: CONST: */
-/* asm: 	.float	3.1830988618379067154e-1;0 */
-/* asm: 	.float	9.67653589793e-4 ;1 */
-/* asm: 	.float	2.601903036e-6   ;2 */
-/* asm: 	.float	-1.980741872e-4  ;3 */
-/* asm: 	.float	8.333025139e-3   ;4 */
-/* asm: 	.float	-1.666665668e-1  ;5 */
-/* asm: 	.float	1.57079632679489661923;6 */
-float CONST[] = {
-    3.1830988618379067154e-1f, // 0
-    9.67653589793e-4f, // 1
-    2.601903036e-6f, // 2
-    -1.980741872e-4f, // 3
-    8.333025139e-3f, // 4
-    -1.666665668e-1f, // 5
-    1.57079632679489661923f, // 6
-};
 
 /* ******************************************************
 * FUNCTION DEF : _HPsin
@@ -79,6 +63,7 @@ LL3:
     // asm 0000B06D: 	MPYF	R4,R0
     // asm 0000B06E: 	ADDF	R4,R0
     // asm 0000B06F: 	MPYF	R3,R0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_HPsin", 0, 0);
     UNIMPL();
 }
@@ -140,6 +125,7 @@ void _HPcos(void)
     // asm 0000B096: 	MPYF	R3,R0
     // asm 0000B097: 	ADDF	R3,R0
     // asm 0000B098: 	MPYF	R4,R0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_HPcos", 0, 0);
     UNIMPL();
 }
@@ -154,3 +140,21 @@ void EPI0_2(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "EPI0_2", 0, 0);
     UNIMPL();
 }
+
+/* asm: CONST: */
+/* asm: 	.float	3.1830988618379067154e-1;0 */
+/* asm: 	.float	9.67653589793e-4 ;1 */
+/* asm: 	.float	2.601903036e-6   ;2 */
+/* asm: 	.float	-1.980741872e-4  ;3 */
+/* asm: 	.float	8.333025139e-3   ;4 */
+/* asm: 	.float	-1.666665668e-1  ;5 */
+/* asm: 	.float	1.57079632679489661923;6 */
+float CONST[] = {
+    3.1830988618379067154e-1f, // 0
+    9.67653589793e-4f, // 1
+    2.601903036e-6f, // 2
+    -1.980741872e-4f, // 3
+    8.333025139e-3f, // 4
+    -1.666665668e-1f, // 5
+    1.57079632679489661923f, // 6
+};

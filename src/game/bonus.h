@@ -28,4 +28,11 @@ extern int WAS_HEAD2HEAD_ON;
 // asm: 	.bss	DID_TIMED_OUT,1
 extern int DID_TIMED_OUT;
 
+
+
+
+
+
+
+
 #endif /* BONUS_H */

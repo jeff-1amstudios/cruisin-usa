@@ -18,4 +18,11 @@ extern int tmp_buffer[2];
 // asm: 	.bss	THIS_MACHINE_AHEAD,1
 extern int THIS_MACHINE_AHEAD;
 
+
+
+
+
+
+
+
 #endif /* MAP_H */

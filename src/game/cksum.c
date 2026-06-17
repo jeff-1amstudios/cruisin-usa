@@ -1,5 +1,6 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "port.h"
 
 /*
  * Source module: asm/CKSUM.ASM
@@ -45,8 +46,3 @@ int CHECKSUM_E01 = 0x0FF00;
 int CHECKSUM_E02 = 0x09E3;
 /* asm: CHECKSUM_E03	.word	0CCCAh */
 int CHECKSUM_E03 = 0x0CCCA;
-
-void cksum(void)
-{
-    UNIMPL();
-}

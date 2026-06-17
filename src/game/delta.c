@@ -14,6 +14,7 @@
 #include "objects.h"
 #include "text.h"
 #include "delta.h"
+#include "port.h"
 
 /*
  * Source module: asm/DELTA.ASM
@@ -22,30 +23,6 @@
 void DELTA_OINIT(void);
 void DDYNA_INIT(void);
 void DRONE_DANI_PROC(void);
-
-/* *----------------------------------------------------------------------------
-*DRONE DYNA ANIMATION PROCESS
-*
-*	SPINS WHEELS	(ONLY!)
-*
-*PARAMETERS
-*	AR4	CAR OBJECT
-*	AR5	CAR BLOCK
-*	R6	X RADIANS	;FOR WHEEL SPIN
-*USES
-*	AR3	DYNA OBJECT
-*	AR4	MASTER OBJECT
-*	AR5	CAR BLOCK
-*	AR6	DYNAMATRIX
-*	R4	OLD ORADY
-*	R5	Z RADIANS FOR BODY LEAN
-*	R6	X RADIANS FOR BODY LEAN
-*	R7	OLD CAR SPEED
-*	PDATA	OLD CAR ORADY
-*	PDATA+1 BODY LEAN Z RADIANS
-*	PDATA+2 X RADIANS FOR WHEEL SPIN
-*
- */
 
 /* *----------------------------------------------------------------------------
 *GENERAL DRONE OBJECT INITIALIZATION
@@ -197,6 +174,30 @@ VANIX:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*DRONE DYNA ANIMATION PROCESS
+*
+*	SPINS WHEELS	(ONLY!)
+*
+*PARAMETERS
+*	AR4	CAR OBJECT
+*	AR5	CAR BLOCK
+*	R6	X RADIANS	;FOR WHEEL SPIN
+*USES
+*	AR3	DYNA OBJECT
+*	AR4	MASTER OBJECT
+*	AR5	CAR BLOCK
+*	AR6	DYNAMATRIX
+*	R4	OLD ORADY
+*	R5	Z RADIANS FOR BODY LEAN
+*	R6	X RADIANS FOR BODY LEAN
+*	R7	OLD CAR SPEED
+*	PDATA	OLD CAR ORADY
+*	PDATA+1 BODY LEAN Z RADIANS
+*	PDATA+2 X RADIANS FOR WHEEL SPIN
+*
+ */
+
 void DRONE_DANI_PROC(void)
 {
     // asm 0000AED8: 	LDI	*+AR4(OCARBLK),AR5
@@ -244,6 +245,7 @@ CDTOP:
 CARSLP:
     // asm 0000AEF8: 	SLEEP	3
     // asm 0000AEFA: 	B 	CARPROCL
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONE_DANI_PROC", 0, 0);
     UNIMPL();
 }

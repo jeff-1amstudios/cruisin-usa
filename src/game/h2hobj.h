@@ -75,6 +75,6 @@
 #define H2HPAL3 0x0C140EF
 
 // asm: 	.globl	_SEChead2head
-extern int _SEChead2head[2];
+extern int _SEChead2head[];
 
 #endif /* H2HOBJ_H */

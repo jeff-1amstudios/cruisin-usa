@@ -1,5 +1,6 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "port.h"
 
 /*
  * Source module: asm/LINE.ASM
@@ -55,6 +56,7 @@ void _rectangle(void)
     // asm 0000AC4A: 	LDI	*+FP(1),RS
     // asm 0000AC4B: 	CALL	_line
     // asm 0000AC4C:  POP DP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_rectangle", 0, 0);
     UNIMPL();
 }
@@ -71,6 +73,7 @@ void EPI0_1(void)
     // ******************************************************
     // * FUNCTION DEF : _line
     // ******************************************************
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "EPI0_1", 0, 0);
     UNIMPL();
 }
@@ -269,6 +272,7 @@ L39:
     // asm 0000ACF0: 	BGE	L39
 L38:
     // asm 0000ACF1:  POP DP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_line", 0, 0);
     UNIMPL();
 }
@@ -287,6 +291,7 @@ void EPI0_2(void)
     // ******************************************************
     // * UNDEFINED REFERENCES                               *
     // ******************************************************
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "EPI0_2", 0, 0);
     UNIMPL();
 }

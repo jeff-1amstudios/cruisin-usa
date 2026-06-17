@@ -9,6 +9,7 @@
 #include "globals.h"
 #include "objects.h"
 #include "text.h"
+#include "port.h"
 #include "comp.h"
 
 /*
@@ -55,29 +56,6 @@ int DECODE_STACK[TABLE_SIZE];
 int NEXT_BUMP_CODE;
 /* asm: LINEBUFFER	lobss	LINEBUFFER,64 */
 int LINEBUFFER[64];
-/* asm: SAVESPCI	.word	SAVESPC+1 */
-int SAVESPCI = SAVESPC+1;
-/* asm: SAVESPC	.bss	SAVESPC,25 */
-int SAVESPC[25];
-#define MIN_X 240 //if this changes modify CUSA.ASM
-#define MAX_X 300
-/* asm: BOOT_PACIFY_SCREEN_P	.word	1 */
-int BOOT_PACIFY_SCREEN_P = 1;
-/* asm: PREVX	.bss	PREVX,1 */
-int PREVX;
-/* asm: DELTA	.bss	DELTA,1 */
-int DELTA;
-/* *----------------------------------------------------------------------------
-*SECTION LOAD REQUEST
-*	IF ACTIVE THEN REQUEST IS QUEUED BY CREATING A PROCESS
-*
-*
-*PARAMETERS
-*	AR2	POINTER TO SECTION CONTROL
-*
- */
-/* asm: LASTLOAD	.bss	LASTLOAD,1 */
-int LASTLOAD;
 
 /* *----------------------------------------------------------------------------
 *
@@ -202,6 +180,7 @@ WVWRLP2:
     // asm 0000A31D: 	CLRI	PUTC_BUF
     // asm 0000A31E: 	CLRI	PUTC_SH
     // 	;---->	BUD	ENABLEGIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PUTC", 0, 0);
     UNIMPL();
 }
@@ -378,6 +357,11 @@ DECOMPRESSX:
     UNIMPL();
 }
 
+/* asm: SAVESPCI	.word	SAVESPC+1 */
+int SAVESPCI = SAVESPC+1;
+/* asm: SAVESPC	.bss	SAVESPC,25 */
+int SAVESPC[25];
+
 /* *----------------------------------------------------------------------------
  */
 void SAVE_DECOMP_REGS(void)
@@ -442,6 +426,15 @@ void RESTORE_DECOMP_REGS(void)
     UNIMPL();
 }
 
+#define MIN_X 240 //if this changes modify CUSA.ASM
+#define MAX_X 300
+/* asm: BOOT_PACIFY_SCREEN_P	.word	1 */
+int BOOT_PACIFY_SCREEN_P = 1;
+/* asm: PREVX	.bss	PREVX,1 */
+int PREVX;
+/* asm: DELTA	.bss	DELTA,1 */
+int DELTA;
+
 /* *----------------------------------------------------------------------------
  */
 void BOOT_PACIFY_SCREEN(void)
@@ -483,6 +476,18 @@ LLL:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BOOT_PACIFY_SCREEN", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*SECTION LOAD REQUEST
+*	IF ACTIVE THEN REQUEST IS QUEUED BY CREATING A PROCESS
+*
+*
+*PARAMETERS
+*	AR2	POINTER TO SECTION CONTROL
+*
+ */
+/* asm: LASTLOAD	.bss	LASTLOAD,1 */
+int LASTLOAD;
 
 void LOAD_SECTION_REQ(void)
 {
@@ -528,6 +533,7 @@ void REQWAIT(void)
     // asm: 	LDI	AR4,AR2
     // asm: 	CALL	LOAD_SECTION_REQ
     // asm 0000A402: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "REQWAIT", 0, 0);
     UNIMPL();
 }

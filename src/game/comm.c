@@ -14,7 +14,7 @@
 #include "objects.h"
 #include "text.h"
 #include "comm.h"
-#include "comm_defs.h"
+#include "port.h"
 #include "commq.h"
 
 /*
@@ -51,11 +51,6 @@ int ONEFLAG;
 int TRANSMISSION_ACTIVE;
 /* asm: TRANSMISSION_DEAD	pbss	TRANSMISSION_DEAD,1 */
 int TRANSMISSION_DEAD;
-/* *----------------------------------------------------------------------------
-*COMMUNICATIONS LINK
-*
- */
-#define COMMPAL 0x0990000 //COMMUNICATIONS PAL
 
 /* *----------------------------------------------------------------------------
  */
@@ -160,6 +155,7 @@ void SETONE(void)
     // *
     // *CLR ONE PLAYER GAME (NO LINK)
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETONE", 0, 0);
     UNIMPL();
 }
@@ -187,6 +183,12 @@ ONEX:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*COMMUNICATIONS LINK
+*
+ */
+#define COMMPAL 0x0990000 //COMMUNICATIONS PAL
+
 void COMM_ROUTINE(void)
 {
     // asm 00007F96: 	CLRI	AR7
@@ -211,6 +213,7 @@ COMM_HOLDFORA2D:
     // *
     // *MASTER MUST ALWAYS 0 <- C_IRQE
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_ROUTINE", 0, 0);
     UNIMPL();
 }
@@ -575,6 +578,7 @@ COMM_MASTER_ERROR:
     // ;	LS	16,R0
     // ;	STI	R0,*AR5
     // asm 000080C8: 	B	COMM_MASTER_ERR_X
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_MASTER", 0, 0);
     UNIMPL();
 }
@@ -1013,6 +1017,7 @@ COMM_SLAVE_ERROR:
     // asm 0000820F: 	LDI	0,R0
     // asm 00008210: 	STI	R0,@RBUFF_LEN	   	;RECEIVE BUFFER CLEARED	ON ERROR
     // asm 00008211: 	BU	COMM_SLAVE_ERR_X
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_SLAVE", 0, 0);
     UNIMPL();
 }

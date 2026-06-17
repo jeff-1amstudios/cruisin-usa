@@ -12,9 +12,8 @@
 #include "pall.h"
 #include "objects.h"
 #include "cornobj.h"
+#include "port.h"
 #include "backgrnd.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/BACKGRND.ASM
@@ -126,165 +125,6 @@ float DDACT_DIST = 15000.0f;
  */
 /* asm: ATTR_DDACT_DIST	.float	45000	;dynamic deactivate distance (+ radius) */
 float ATTR_DDACT_DIST = 45000.0f;
-/* *----------------------------------------------------------------------------
-*ACTIVATE A TYCO GROUP (ROAD PIECES ARE LINKED, ETC.)
-*
-*PARAMETERS
-*	AR2	PTR TO TYCO BLOCK
-*
-*
-*
- */
-/* asm: NEWSUBLIST_TOP	.word	NEWSUBLIST_TOPB */
-int *NEWSUBLIST_TOP = NEWSUBLIST_TOPB;
-/* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
-int NEWSUBLIST_TOPB;
-/* asm: GROUP_RADY	.bss	GROUP_RADY,1 */
-int GROUP_RADY;
-/* asm: TYCOFLAG	.bss	TYCOFLAG,1 */
-int TYCOFLAG;
-/* asm: PASS1	.bss	PASS1,1 */
-int PASS1;
-/* asm: SECRADY	.bss	SECRADY,1 */
-int SECRADY;
-/* *----------------------------------------------------------------------------
- */
-/* asm: OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
-int OVERCARLIST[] = {
-    dcbus, dgtruck, dsbus, dcbus,
-};
-/* asm: SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
-/* asm: 	.word	-1 */
-int SMOKE_ANI[] = {
-    smoa, smob, smoc, smod, smoe, smof,
-    -1,
-};
-/* ;eug1,eug2,eug3,eug4,eug5,eug6
- */
-/* asm: CAR_FIRE_ANII	.word	CAR_FIRE_ANI */
-#define CAR_FIRE_ANII CAR_FIRE_ANI
-/* asm: CAR_FIRE_ANI */
-/* asm: 	.word	rdflm1,rdflm2,rdflm3,rdflm4,rdflm5,rdflm6 */
-/* asm: 	.word	rdflm7,rdflm8,rdflm9,rdflm10,rdflm11,rdflm12 */
-/* asm: 	.word	-1 */
-int CAR_FIRE_ANI[] = {
-    rdflm1, rdflm2, rdflm3, rdflm4, rdflm5, rdflm6,
-    rdflm7, rdflm8, rdflm9, rdflm10, rdflm11, rdflm12,
-    -1,
-};
-/* asm: DC_MINIFOUNTAIN_ANII	.word	DC_MINIFOUNTAIN_ANI */
-#define DC_MINIFOUNTAIN_ANII DC_MINIFOUNTAIN_ANI
-/* asm: DC_MINIFOUNTAIN_ANI */
-/* asm: 	.word	aft1,aft2,aft3,aft4,aft5,aft6,-1 */
-int DC_MINIFOUNTAIN_ANI[] = {
-    aft1, aft2, aft3, aft4, aft5, aft6, -1,
-};
-/* asm: DC_FOUNTAIN_ANII	.word	DC_FOUNTAIN_ANI */
-#define DC_FOUNTAIN_ANII DC_FOUNTAIN_ANI
-/* asm: DC_FOUNTAIN_ANI */
-/* asm: 	.word	ft2,ft3,ft4,ft5,ft6,-1 */
-int DC_FOUNTAIN_ANI[] = {
-    ft2, ft3, ft4, ft5, ft6, -1,
-};
-/* *----------------------------------------------------------------------------
- */
-/* asm: WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
-int WATERFALL_ANI[] = {
-    w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, -1,
-};
-/* *----------------------------------------------------------------------------
- */
-/* asm: FLAGANI	.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
-/* asm: 	.word	bflag6,bflag7,bflag9,bflag10,-1 */
-int FLAGANI[] = {
-    bflag1, bflag2, bflag3, bflag4, bflag5,
-    bflag6, bflag7, bflag9, bflag10, -1,
-};
-/* asm: FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
-/* asm: 	.word	aflag6,aflag7,aflag9,aflag10,-1 */
-int FLAGANITALL[] = {
-    aflag1, aflag2, aflag3, aflag4, aflag5,
-    aflag6, aflag7, aflag9, aflag10, -1,
-};
-/* asm: RUT_ANIS	.word	rut,rut2,rut3,-1 */
-int RUT_ANIS[] = {
-    rut, rut2, rut3, -1,
-};
-/* asm: HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
-int HUNGH_ANIS[] = {
-    hungh1, hungh2, hungh3, hungh4, hungh5, hungh6, hungh7, -1,
-};
-/* asm: BABE_PALIST */
-/* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
-/* asm: 	.word	ungh1_yellow,lift_p,ungh1_skin,bvwall_p */
-int BABE_PALIST[] = {
-    ungh1_blue, logo_p, ungh1_green, nintendo_p, ungh1_silver, map1_p,
-    ungh1_yellow, lift_p, ungh1_skin, bvwall_p,
-};
-/* *----------------------------------------------------------------------------
-*ABSOLUTE LOAD INTO OBJECT LIST FOR A SINGLE SECTION
-*
-*
-*PARAMETERS
-*	AR2	POINTER TO ROM GROUP (OBJECTS.EQU)
-*
-*RETURNS
-*	R0	PTR TO THE FIRST OBJECT IN GROUP
-*
- */
-/* asm: SINGLE_SECTION_TEMPPTR	.bss	SINGLE_SECTION_TEMPPTR,1 */
-int SINGLE_SECTION_TEMPPTR;
-/* asm: ROUTINE_TAB: */
-/* asm: 	.word	40Ah,FLAGWAVE */
-/* asm: 	.word	460h,ROAD_DEBRIS_CREATE */
-/* asm: 	.word	461h,ROAD_DEBRIS_CREATE_55GAL */
-/* asm: 	.word	462h,ROAD_DEBRIS_CREATE_55GAL	;actually TOXIC */
-/* asm: 	.word	463h,ROAD_DEBRIS_CREATE_55GAL	;actually CONE */
-/* asm: 	.word	465h,FLAGWAVE			;short flag */
-/* asm: 	.word	466h,FLAGWAVE_TALL		;tall flag */
-/* asm: 	.word	467h,WATERFALL */
-/* asm: 	.word	469h,OVERCAR		;LA & CHICAGO, FREEWAY OVERPASS CAR */
-/* asm: 	.word	470h,RRSTART_ENGINE */
-/* asm: 	.word	471h,RRSTART_BOXCAR */
-/* asm: 	.word	472h,RRSTART_BOXCAR */
-/* asm: 	.word	473h,RRSTART_BOXCAR */
-/* asm: 	.word	474h,RRSTART_BOXCAR */
-/* asm: 	.word	475h,RRSTART_BOXCAR */
-/* asm: 	.word	476h,RRSTART_BOXCAR */
-/* asm: 	.word	481h,SMOKE_STACK */
-/* asm: 	.word	482h,CAR_FIRE */
-/* asm: 	.word	498h,OHARE_PLANE	;CHICAGO AIRPLANE */
-/* asm: 	.word	741h,RUT_ANI */
-/* asm: 	.word	742h,HUNGH_ANI */
-/* asm: 	.word	4A1h,DC_FOUNTAIN */
-/* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
-/* asm: 	.word	0	;END OF TABLE ID */
-int ROUTINE_TAB[] = {
-    0x40A, FLAGWAVE,
-    0x460, ROAD_DEBRIS_CREATE,
-    0x461, ROAD_DEBRIS_CREATE_55GAL,
-    0x462, ROAD_DEBRIS_CREATE_55GAL, // actually TOXIC
-    0x463, ROAD_DEBRIS_CREATE_55GAL, // actually CONE
-    0x465, FLAGWAVE, // short flag
-    0x466, FLAGWAVE_TALL, // tall flag
-    0x467, WATERFALL,
-    0x469, OVERCAR, // LA & CHICAGO, FREEWAY OVERPASS CAR
-    0x470, RRSTART_ENGINE,
-    0x471, RRSTART_BOXCAR,
-    0x472, RRSTART_BOXCAR,
-    0x473, RRSTART_BOXCAR,
-    0x474, RRSTART_BOXCAR,
-    0x475, RRSTART_BOXCAR,
-    0x476, RRSTART_BOXCAR,
-    0x481, SMOKE_STACK,
-    0x482, CAR_FIRE,
-    0x498, OHARE_PLANE, // CHICAGO AIRPLANE
-    0x741, RUT_ANI,
-    0x742, HUNGH_ANI,
-    0x4A1, DC_FOUNTAIN,
-    0x4A2, DC_MINIFOUNTAIN,
-    0, // END OF TABLE ID
-};
 
 /* *----------------------------------------------------------------------------
  */
@@ -636,9 +476,32 @@ NODEACT:
 #endif
     // asm 00004067: 	SLEEP	3
     // asm 00004069: 	B	BGD_WATCHER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_WATCHER", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*ACTIVATE A TYCO GROUP (ROAD PIECES ARE LINKED, ETC.)
+*
+*PARAMETERS
+*	AR2	PTR TO TYCO BLOCK
+*
+*
+*
+ */
+/* asm: NEWSUBLIST_TOP	.word	NEWSUBLIST_TOPB */
+int *NEWSUBLIST_TOP = NEWSUBLIST_TOPB;
+/* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
+int NEWSUBLIST_TOPB;
+/* asm: GROUP_RADY	.bss	GROUP_RADY,1 */
+int GROUP_RADY;
+/* asm: TYCOFLAG	.bss	TYCOFLAG,1 */
+int TYCOFLAG;
+/* asm: PASS1	.bss	PASS1,1 */
+int PASS1;
+/* asm: SECRADY	.bss	SECRADY,1 */
+int SECRADY;
 
 void BGD_ACTIVATE_TYCOGROUP(void)
 {
@@ -1326,6 +1189,13 @@ void OVERCAR(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
+int OVERCARLIST[] = {
+    dcbus, dgtruck, dsbus, dcbus,
+};
+
 void CARFORWARD(void)
 {
     // asm 00004253: 	RANDN	50
@@ -1399,6 +1269,7 @@ CARFORWARDLP:
     // asm 00004299: 	STF	R0,*+AR4(OPOSZ)
     // asm 0000429A: 	SLEEP	1
     // asm 0000429C: 	BU	CARFORWARDLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CARFORWARD", 0, 0);
     UNIMPL();
 }
@@ -1420,6 +1291,7 @@ void ROAD_DEBRIS_CREATE_55GAL(void)
 void ROAD_DEBRIS_CREATE(void)
 {
     // asm 000042A3: 	BU	ADD_RDDEBRIS
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROAD_DEBRIS_CREATE", 0, 0);
     UNIMPL();
 }
@@ -1438,6 +1310,7 @@ void SMOKE_STACK(void)
     // asm 000042AB: 	NOP
     // asm 000042AC: 	LDI	@SMOKE_ANII,AR6
     // 	;---->	BUD	MAKEPPP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_STACK", 0, 0);
     UNIMPL();
 }
@@ -1454,9 +1327,37 @@ void CAR_FIRE(void)
     // asm 000042B4: 	NOP
     // asm 000042B5: 	LDI	@CAR_FIRE_ANII,AR6
     // 	;---->	BUD	MAKEPPP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAR_FIRE", 0, 0);
     UNIMPL();
 }
+
+/* asm: SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
+/* asm: 	.word	-1 */
+int SMOKE_ANI[] = {
+    smoa, smob, smoc, smod, smoe, smof,
+    -1,
+};
+/* ;eug1,eug2,eug3,eug4,eug5,eug6
+ */
+/* asm: CAR_FIRE_ANII	.word	CAR_FIRE_ANI */
+#define CAR_FIRE_ANII CAR_FIRE_ANI
+/* asm: CAR_FIRE_ANI */
+/* asm: 	.word	rdflm1,rdflm2,rdflm3,rdflm4,rdflm5,rdflm6 */
+/* asm: 	.word	rdflm7,rdflm8,rdflm9,rdflm10,rdflm11,rdflm12 */
+/* asm: 	.word	-1 */
+int CAR_FIRE_ANI[] = {
+    rdflm1, rdflm2, rdflm3, rdflm4, rdflm5, rdflm6,
+    rdflm7, rdflm8, rdflm9, rdflm10, rdflm11, rdflm12,
+    -1,
+};
+/* asm: DC_MINIFOUNTAIN_ANII	.word	DC_MINIFOUNTAIN_ANI */
+#define DC_MINIFOUNTAIN_ANII DC_MINIFOUNTAIN_ANI
+/* asm: DC_MINIFOUNTAIN_ANI */
+/* asm: 	.word	aft1,aft2,aft3,aft4,aft5,aft6,-1 */
+int DC_MINIFOUNTAIN_ANI[] = {
+    aft1, aft2, aft3, aft4, aft5, aft6, -1,
+};
 
 void DC_MINIFOUNTAIN(void)
 {
@@ -1470,9 +1371,18 @@ void DC_MINIFOUNTAIN(void)
     // asm 000042DB: 	CREATE	WATERANI_PROC,SPAWNER_C|ANIMATION_T
     // asm 000042DE: 	BC	FWL1A
     // asm 000042DF: 	BU	J262
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DC_MINIFOUNTAIN", 0, 0);
     UNIMPL();
 }
+
+/* asm: DC_FOUNTAIN_ANII	.word	DC_FOUNTAIN_ANI */
+#define DC_FOUNTAIN_ANII DC_FOUNTAIN_ANI
+/* asm: DC_FOUNTAIN_ANI */
+/* asm: 	.word	ft2,ft3,ft4,ft5,ft6,-1 */
+int DC_FOUNTAIN_ANI[] = {
+    ft2, ft3, ft4, ft5, ft6, -1,
+};
 
 void DC_FOUNTAIN(void)
 {
@@ -1486,9 +1396,17 @@ void DC_FOUNTAIN(void)
     // asm 000042EE: 	CREATE	WATERANI_PROC,SPAWNER_C|ANIMATION_T
     // asm 000042F1: 	BC	FWL1A
     // asm 000042F2: 	BU	J262
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DC_FOUNTAIN", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
+int WATERFALL_ANI[] = {
+    w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, -1,
+};
 
 void WATERFALL(void)
 {
@@ -1541,6 +1459,7 @@ WATERANI_LP:
     // asm 00004321: 	LDINZ	2,AR2
     // asm 00004322: 	CALL	PRC_SLEEP
     // asm 00004323: 	BU	WATERANI_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WATERANI_PROC", 0, 0);
     UNIMPL();
 }
@@ -1582,6 +1501,7 @@ WF1:
     // asm 0000433E: 	LDI	WATERFALLSND,AR2
     // asm 0000433F: 	CALL	AMBIENCE_SOUND
     // asm 00004340: 	BU	WATERFALL_SND
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WATERFALL_SND", 0, 0);
     UNIMPL();
 }
@@ -1620,6 +1540,36 @@ HEND:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AMBIENCE_SOUND", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: FLAGANI	.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
+/* asm: 	.word	bflag6,bflag7,bflag9,bflag10,-1 */
+int FLAGANI[] = {
+    bflag1, bflag2, bflag3, bflag4, bflag5,
+    bflag6, bflag7, bflag9, bflag10, -1,
+};
+/* asm: FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
+/* asm: 	.word	aflag6,aflag7,aflag9,aflag10,-1 */
+int FLAGANITALL[] = {
+    aflag1, aflag2, aflag3, aflag4, aflag5,
+    aflag6, aflag7, aflag9, aflag10, -1,
+};
+/* asm: RUT_ANIS	.word	rut,rut2,rut3,-1 */
+int RUT_ANIS[] = {
+    rut, rut2, rut3, -1,
+};
+/* asm: HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
+int HUNGH_ANIS[] = {
+    hungh1, hungh2, hungh3, hungh4, hungh5, hungh6, hungh7, -1,
+};
+/* asm: BABE_PALIST */
+/* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
+/* asm: 	.word	ungh1_yellow,lift_p,ungh1_skin,bvwall_p */
+int BABE_PALIST[] = {
+    ungh1_blue, logo_p, ungh1_green, nintendo_p, ungh1_silver, map1_p,
+    ungh1_yellow, lift_p, ungh1_skin, bvwall_p,
+};
 
 void HUNGH_ANI(void)
 {
@@ -1662,6 +1612,7 @@ HUNGH_NOPAL:
     // asm 0000439A: 	CREATE	PLAINANI_LP_SLOW,SPAWNER_C|ANIMATION_T|7
     // asm 0000439D: 	BC	FWL1
     // asm 0000439E: 	BU	J2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HUNGH_ANI", 0, 0);
     UNIMPL();
 }
@@ -1683,6 +1634,7 @@ void HUNGH_ANI_REENTER(void)
     // asm 000043AA: 	CREATE	PLAINANI_LP_SLOW,SPAWNER_C|ANIMATION_T|7
     // asm 000043AD: 	BC	FWL1
     // asm 000043AE: 	BU	J2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HUNGH_ANI_REENTER", 0, 0);
     UNIMPL();
 }
@@ -1728,6 +1680,7 @@ DORUT_ANI:
     // asm 000043CB: 	CREATE	PLAINANI_LP_SLOW,SPAWNER_C|ANIMATION_T|7
     // asm 000043CE: 	BC	FWL1
     // asm 000043CF: 	BU	J2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RUT_ANI", 0, 0);
     UNIMPL();
 }
@@ -1748,6 +1701,7 @@ PLAINANI_LP_SLOW:
     // asm 000043D9: 	ADDI	1,AR2
     // asm 000043DA: 	CALL	PRC_SLEEP
     // asm 000043DB: 	BU	PLAINANI_LP_SLOW
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLAINANI_PROC_SLOW", 0, 0);
     UNIMPL();
 }
@@ -1772,6 +1726,7 @@ void FLAGWAVE_TALL(void)
     // asm 000043EA: 	CREATE	PLAINANI_LP,SPAWNER_C|ANIMATION_T
     // asm 000043ED: 	BC	FWL1
     // asm 000043EE: 	BU	J2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAGWAVE_TALL", 0, 0);
     UNIMPL();
 }
@@ -1835,9 +1790,24 @@ PLAINANI_LP:
     // asm 0000441A: 	LDINZ	2,AR2
     // asm 0000441B: 	CALL	PRC_SLEEP
     // asm 0000441C: 	BU	PLAINANI_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLAINANI_PROC", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*ABSOLUTE LOAD INTO OBJECT LIST FOR A SINGLE SECTION
+*
+*
+*PARAMETERS
+*	AR2	POINTER TO ROM GROUP (OBJECTS.EQU)
+*
+*RETURNS
+*	R0	PTR TO THE FIRST OBJECT IN GROUP
+*
+ */
+/* asm: SINGLE_SECTION_TEMPPTR	.bss	SINGLE_SECTION_TEMPPTR,1 */
+int SINGLE_SECTION_TEMPPTR;
 
 void LOAD_SINGLE_SECTION(void)
 {
@@ -1962,6 +1932,7 @@ PLANE_FWL:
     // asm 00004480: 	BLT	TRAINX
     // asm 00004481: 	SLEEP	1
     // asm 00004483: 	BU	PLANE_FWL
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLANE_FWRD", 0, 0);
     UNIMPL();
 }
@@ -1980,6 +1951,7 @@ void TRAIN_FWRD_MAKEB(void)
     // asm 0000448D: 	OR	*+AR4(OFLAGS),R0
     // asm 0000448E: 	STI	R0,*+AR4(OFLAGS)
     // asm 0000448F: 	BU	J87
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAIN_FWRD_MAKEB", 0, 0);
     UNIMPL();
 }
@@ -2013,6 +1985,7 @@ void TRAIN_FWRDB(void)
     // asm 000044A3: 	FLOAT	32000,R6
     // asm 000044A4: 	MPYF	8,R6
     // asm 000044A5: 	BU	J765
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAIN_FWRDB", 0, 0);
     UNIMPL();
 }
@@ -2061,6 +2034,7 @@ TRAINX:
     // asm 000044C9: 	ANDN	R0,R1
     // asm 000044CA: 	STI	R1,*+AR4(OFLAGS)
     // asm 000044CB: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAIN_FWRD", 0, 0);
     UNIMPL();
 }
@@ -2154,3 +2128,55 @@ void LOAD_SINGLE_SECTION_OFFSET(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SINGLE_SECTION_OFFSET", 0, 0);
     UNIMPL();
 }
+
+/* asm: ROUTINE_TAB: */
+/* asm: 	.word	40Ah,FLAGWAVE */
+/* asm: 	.word	460h,ROAD_DEBRIS_CREATE */
+/* asm: 	.word	461h,ROAD_DEBRIS_CREATE_55GAL */
+/* asm: 	.word	462h,ROAD_DEBRIS_CREATE_55GAL	;actually TOXIC */
+/* asm: 	.word	463h,ROAD_DEBRIS_CREATE_55GAL	;actually CONE */
+/* asm: 	.word	465h,FLAGWAVE			;short flag */
+/* asm: 	.word	466h,FLAGWAVE_TALL		;tall flag */
+/* asm: 	.word	467h,WATERFALL */
+/* asm: 	.word	469h,OVERCAR		;LA & CHICAGO, FREEWAY OVERPASS CAR */
+/* asm: 	.word	470h,RRSTART_ENGINE */
+/* asm: 	.word	471h,RRSTART_BOXCAR */
+/* asm: 	.word	472h,RRSTART_BOXCAR */
+/* asm: 	.word	473h,RRSTART_BOXCAR */
+/* asm: 	.word	474h,RRSTART_BOXCAR */
+/* asm: 	.word	475h,RRSTART_BOXCAR */
+/* asm: 	.word	476h,RRSTART_BOXCAR */
+/* asm: 	.word	481h,SMOKE_STACK */
+/* asm: 	.word	482h,CAR_FIRE */
+/* asm: 	.word	498h,OHARE_PLANE	;CHICAGO AIRPLANE */
+/* asm: 	.word	741h,RUT_ANI */
+/* asm: 	.word	742h,HUNGH_ANI */
+/* asm: 	.word	4A1h,DC_FOUNTAIN */
+/* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
+/* asm: 	.word	0	;END OF TABLE ID */
+int ROUTINE_TAB[] = {
+    0x40A, FLAGWAVE,
+    0x460, ROAD_DEBRIS_CREATE,
+    0x461, ROAD_DEBRIS_CREATE_55GAL,
+    0x462, ROAD_DEBRIS_CREATE_55GAL, // actually TOXIC
+    0x463, ROAD_DEBRIS_CREATE_55GAL, // actually CONE
+    0x465, FLAGWAVE, // short flag
+    0x466, FLAGWAVE_TALL, // tall flag
+    0x467, WATERFALL,
+    0x469, OVERCAR, // LA & CHICAGO, FREEWAY OVERPASS CAR
+    0x470, RRSTART_ENGINE,
+    0x471, RRSTART_BOXCAR,
+    0x472, RRSTART_BOXCAR,
+    0x473, RRSTART_BOXCAR,
+    0x474, RRSTART_BOXCAR,
+    0x475, RRSTART_BOXCAR,
+    0x476, RRSTART_BOXCAR,
+    0x481, SMOKE_STACK,
+    0x482, CAR_FIRE,
+    0x498, OHARE_PLANE, // CHICAGO AIRPLANE
+    0x741, RUT_ANI,
+    0x742, HUNGH_ANI,
+    0x4A1, DC_FOUNTAIN,
+    0x4A2, DC_MINIFOUNTAIN,
+    0, // END OF TABLE ID
+};

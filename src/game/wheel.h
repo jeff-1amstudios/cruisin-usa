@@ -20,4 +20,11 @@ extern int WHEELVEL;
 // asm: 	.bss	DAMPPWR,1
 extern int DAMPPWR;
 
+
+
+
+
+
+
+
 #endif /* WHEEL_H */

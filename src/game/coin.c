@@ -11,9 +11,9 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
+#include "port.h"
 #include "coin.h"
-#include "discovered_labels.h"
-#include "diag_defs.h"
+#include "diag.h"
 
 /*
  * Source module: asm/COIN.ASM
@@ -68,71 +68,6 @@ void MOTION_VALID(void);
 
 /* asm: COINOFF	.bss	COINOFF,1 */
 int COINOFF;
-/* asm: CUSTOM_COINTAB	.bss	CUSTOM_COINTAB,COIN_ENTRY_SIZE */
-int CUSTOM_COINTAB[COIN_ENTRY_SIZE];
-/* asm: CUSTOM_COINSTR	.bss	CUSTOM_COINSTR,10 */
-int CUSTOM_COINSTR[10];
-/* asm: bufferi	.word	buffer */
-#define bufferi buffer
-/* asm: buffer	.bss	buffer,2 */
-int buffer[2];
-/* asm: FCB	.bss	FCB,1 */
-int FCB;
-/* asm: PCB	.bss	PCB,1 */
-int PCB;
-/* asm: CREDITBUFFI	.word	CREDITBUFFER */
-#define CREDITBUFFI CREDITBUFFER
-/* asm: CREDITBUFFER	.bss	CREDITBUFFER,8 */
-int CREDITBUFFER[8];
-/* asm: TOSTARTBUFFI	.word	TOSTARTBUFFER */
-#define TOSTARTBUFFI TOSTARTBUFFER
-/* asm: TOSTARTBUFFER	.bss	TOSTARTBUFFER,8 */
-int TOSTARTBUFFER[8];
-/* asm: SCI	.word	SCS	;CREDITS TO START (START CREDIT) */
-#define SCI SCS
-/* asm: SCS	.bss	SCS,1 */
-int SCS;
-/* *----------------------------------------------------------------------------
-*
-*	F  P/N  CREDITS
-*
- */
-/* asm: ICF	.bss	ICF,1 */
-int ICF;
-/* *----------------------------------------------------------------------------
-*PRINT_COINAGE
-*
-*Prints up to 3 lines of text that describes credits per coin
-*
-*INPUT
-*	R2 (FLOAT)	= X screen position in pixels
-*	R3 (FLOAT)	= Y screen position in pixels
- */
-#define FONT10_HIGHT 17.0
-/* *----------------------------------------------------------------------------
-*VOLUME DISPLAY
-*
-*
- */
-/* asm: VOLUME_ACTIVE	.bss	VOLUME_ACTIVE,1 */
-int VOLUME_ACTIVE;
-/* asm: VOLUME_COUNT	.bss	VOLUME_COUNT,4 */
-int VOLUME_COUNT[4];
-const char *VOLUME_TXT = "VOLUME";
-/* asm: CMOS_WP_WORD_SHADOW	.bss	CMOS_WP_WORD_SHADOW,1 */
-int CMOS_WP_WORD_SHADOW;
-/* asm: COIN_COUNTER1	.bss	COIN_COUNTER1,1 */
-int COIN_COUNTER1;
-/* asm: COIN_COUNTER2	.bss	COIN_COUNTER2,1 */
-int COIN_COUNTER2;
-/* asm: COUNTER_IDX	.bss	COUNTER_IDX,1 */
-int COUNTER_IDX;
-/* asm: COUNTER_MODE	.bss	COUNTER_MODE,1 */
-int COUNTER_MODE;
-/* *----------------------------------------------------------------------------
- */
-/* asm: MOTIONDIS	SPTR	"MOTION OFF" */
-const char *MOTIONDIS = "MOTION OFF";
 
 /* *----------------------------------------------------------------------------
 *THESE ROUTINES MUST PRESERVE R3
@@ -151,6 +86,7 @@ void COIN1(void)
     // asm 00007349: 	SETDP
     // asm 0000734A: 	CALL	GET_COIN1
     // asm 0000734B: 	BU	CHECK_CREDITS
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN1", 0, 0);
     UNIMPL();
 }
@@ -184,6 +120,7 @@ JAJA3:
 JAJA5:
     // asm 00007361: 	CALL	GET_COIN2
     // asm 00007362: 	BU	CHECK_CREDITS
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN2", 0, 0);
     UNIMPL();
 }
@@ -200,6 +137,7 @@ void COIN3(void)
     // asm 0000736C: 	SETDP
     // asm 0000736D: 	CALL	GET_COIN3
     // asm 0000736E: 	BU	CHECK_CREDITS
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN3", 0, 0);
     UNIMPL();
 }
@@ -216,6 +154,7 @@ void COIN4(void)
     // asm 00007378: 	SETDP
     // asm 00007379: 	CALL	GET_COIN4
     // asm 0000737A: 	BU	CHECK_CREDITS
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN4", 0, 0);
     UNIMPL();
 }
@@ -294,6 +233,7 @@ NOINC:
 NOBONUS:
 CHECK_CREDITSX:
     // asm 000073CA: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SERV_COIN", 0, 0);
     UNIMPL();
 }
@@ -310,6 +250,7 @@ USE_STANDARD:
     // asm 000073D1: 	LDI	ADJ_COINMODE,AR2
     // asm 000073D2: 	CALL	ADJUSTMENT_READ
     // asm 000073D3: 	LDI	R0,AR0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCOIN", 0, 0);
     UNIMPL();
 }
@@ -749,6 +690,31 @@ INICC_LP:
     UNIMPL();
 }
 
+/* asm: CUSTOM_COINTAB	.bss	CUSTOM_COINTAB,COIN_ENTRY_SIZE */
+int CUSTOM_COINTAB[COIN_ENTRY_SIZE];
+/* asm: CUSTOM_COINSTR	.bss	CUSTOM_COINSTR,10 */
+int CUSTOM_COINSTR[10];
+/* asm: bufferi	.word	buffer */
+#define bufferi buffer
+/* asm: buffer	.bss	buffer,2 */
+int buffer[2];
+/* asm: FCB	.bss	FCB,1 */
+int FCB;
+/* asm: PCB	.bss	PCB,1 */
+int PCB;
+/* asm: CREDITBUFFI	.word	CREDITBUFFER */
+#define CREDITBUFFI CREDITBUFFER
+/* asm: CREDITBUFFER	.bss	CREDITBUFFER,8 */
+int CREDITBUFFER[8];
+/* asm: TOSTARTBUFFI	.word	TOSTARTBUFFER */
+#define TOSTARTBUFFI TOSTARTBUFFER
+/* asm: TOSTARTBUFFER	.bss	TOSTARTBUFFER,8 */
+int TOSTARTBUFFER[8];
+/* asm: SCI	.word	SCS	;CREDITS TO START (START CREDIT) */
+#define SCI SCS
+/* asm: SCS	.bss	SCS,1 */
+int SCS;
+
 void FONT18RED(void)
 {
     // asm 00007477: 	LDL	font18_white,AR2
@@ -769,6 +735,14 @@ void FONT18REDDS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FONT18REDDS", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*	F  P/N  CREDITS
+*
+ */
+/* asm: ICF	.bss	ICF,1 */
+int ICF;
 
 void INSERT_COINS(void)
 {
@@ -847,6 +821,7 @@ void FLASH_INSERTCOINS(void)
     // asm 000074CD: 	CMPI	-30,R0
     // asm 000074CE: 	LDILT	1,R0
     // asm 000074CF: 	STI	R0,@ICF
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_INSERTCOINS", 0, 0);
     UNIMPL();
 }
@@ -906,6 +881,17 @@ FLASH_STARTX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_START", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*PRINT_COINAGE
+*
+*Prints up to 3 lines of text that describes credits per coin
+*
+*INPUT
+*	R2 (FLOAT)	= X screen position in pixels
+*	R3 (FLOAT)	= Y screen position in pixels
+ */
+#define FONT10_HIGHT 17.0
 
 void PRINT_COINAGE(void)
 {
@@ -1136,6 +1122,17 @@ void TOCONT_STRING(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*VOLUME DISPLAY
+*
+*
+ */
+/* asm: VOLUME_ACTIVE	.bss	VOLUME_ACTIVE,1 */
+int VOLUME_ACTIVE;
+/* asm: VOLUME_COUNT	.bss	VOLUME_COUNT,4 */
+int VOLUME_COUNT[4];
+const char *VOLUME_TXT = "VOLUME";
+
 void VOLUME_DISPLAY(void)
 {
     // asm 000075BF: 	LDI	@VOLUME_ACTIVE,R0
@@ -1253,6 +1250,17 @@ void PRINT_TOCONT(void)
     UNIMPL();
 }
 
+/* asm: CMOS_WP_WORD_SHADOW	.bss	CMOS_WP_WORD_SHADOW,1 */
+int CMOS_WP_WORD_SHADOW;
+/* asm: COIN_COUNTER1	.bss	COIN_COUNTER1,1 */
+int COIN_COUNTER1;
+/* asm: COIN_COUNTER2	.bss	COIN_COUNTER2,1 */
+int COIN_COUNTER2;
+/* asm: COUNTER_IDX	.bss	COUNTER_IDX,1 */
+int COUNTER_IDX;
+/* asm: COUNTER_MODE	.bss	COUNTER_MODE,1 */
+int COUNTER_MODE;
+
 /* *----------------------------------------------------------------------------
 *
 *IT TAKES 75ms - 100ms FOR STOBING THE COIN COUNTERS
@@ -1328,6 +1336,11 @@ CLEARIT:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN_COUNTER", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: MOTIONDIS	SPTR	"MOTION OFF" */
+const char *MOTIONDIS = "MOTION OFF";
 
 void MOTION_VALID(void)
 {

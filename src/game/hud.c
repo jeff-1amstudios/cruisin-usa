@@ -14,9 +14,8 @@
 #include "objects.h"
 #include "text.h"
 #include "dirq.h"
+#include "port.h"
 #include "hud.h"
-#include "discovered_defines.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/HUD.ASM
@@ -60,15 +59,6 @@ int OFFROADBUFF[2];
  */
 /* asm: MOVEIN_OFFSET	.bss	MOVEIN_OFFSET,1 */
 int MOVEIN_OFFSET;
-/* asm: TACHOMETER_PAL	.bss	TACHOMETER_PAL,32 */
-int TACHOMETER_PAL[32];
-/* asm: GEARPAL */
-/* asm: .word	0 */
-/* asm: .word	0 */
-/* asm: .word	0 */
-/* asm: .word	0 */
-/* asm: RGB	0,255,255 */
-int GEARPAL;
 
 void MOVEIN_HUD_EQUIP(void)
 {
@@ -91,6 +81,7 @@ M2L:
     // asm 00009D1D: 	CLRI	R0
     // asm 00009D1E: 	STI	R0,@MOVEIN_OFFSET
     // asm 00009D1F: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVEIN_HUD_EQUIP", 0, 0);
     UNIMPL();
 }
@@ -109,6 +100,7 @@ void MOVEOUT_HUD_EQUIP(void)
     // asm 00009D27: 	LDI	150,R0
     // asm 00009D28: 	STI	R0,@MOVEIN_OFFSET
     // asm 00009D29: 	DIE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVEOUT_HUD_EQUIP", 0, 0);
     UNIMPL();
 }
@@ -466,6 +458,9 @@ void dealloc_section(void)
     UNIMPL();
 }
 
+/* asm: TACHOMETER_PAL	.bss	TACHOMETER_PAL,32 */
+int TACHOMETER_PAL[32];
+
 /* *----------------------------------------------------------------------------
  */
 void TACHOMETER_ANIMATE(void)
@@ -524,6 +519,14 @@ LP89:
     UNIMPL();
 }
 
+/* asm: GEARPAL */
+/* asm: .word	0 */
+/* asm: .word	0 */
+/* asm: .word	0 */
+/* asm: .word	0 */
+/* asm: RGB	0,255,255 */
+int GEARPAL;
+
 /* *----------------------------------------------------------------------------
 *
 *PARAMETERS
@@ -548,6 +551,7 @@ void FILL_DITHER(void)
     // asm 00009E8C: 	CLRI	R4
     // asm 00009E8D: 	STI	R4,@_ACMAP
     // 	;---->	BD	ENTER2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FILL_DITHER", 0, 0);
     UNIMPL();
 }

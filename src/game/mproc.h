@@ -16,6 +16,9 @@
 // asm: NUMPROC	.set	105	;NUMBER OF PROCESSES
 #define NUMPROC 105 //NUMBER OF PROCESSES
 
+// asm: 	.globl	PRC_SLEEP
+#define PRC_SLEEP SLEEP
+
 // DATA STRUCTURES
 // asm: 	.globl	PACTIVE,PFREE
 extern int PACTIVE;
@@ -42,9 +45,6 @@ void PRC_CREATE_CHILD(void);
 // asm: 	.globl	PRC_DISPATCH
 void PRC_DISPATCH(void);
 
-// asm: 	.globl	PRC_SLEEP
-void PRC_SLEEP(void);
-
 // asm: 	.globl	PRC_SUICIDE
 void PRC_SUICIDE(void);
 
@@ -68,5 +68,12 @@ void PRC_FINDNEXT(void);
 
 // asm: 	.globl	PRC_FOLLOW
 void PRC_FOLLOW(void);
+
+// asm: 	.globl	SLEEP
+void SLEEP(void);
+
+// MPROC.ASM
+// asm: 	hibss	PRCSTR,PRCSIZ*NUMPROC	;PROCESS STORE AREA
+extern int PRCSTR[];
 
 #endif /* MPROC_H */

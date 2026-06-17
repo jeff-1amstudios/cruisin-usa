@@ -16,6 +16,7 @@
 #include "dirq.h"
 #include "delta.h"
 #include "comm.h"
+#include "port.h"
 #include "plyr.h"
 
 /*
@@ -200,121 +201,6 @@ int CARPARAMTAB1[] = {
     0.89, 0.50, 0.0028, 0.010,
 };
 #define CARPARAMTABL (CARPARAMTAB1-CARPARAMTAB) //LENGTH OF ENTRY
-/* asm: CATCHUP	.float	0.0001 */
-float CATCHUP = 0.0001f;
-/* asm: AHEAD	.float	-0.0008 */
-float AHEAD = -0.0008f;
-/* asm: DISTCON	.float	0.000001 */
-float DISTCON = 0.000001f;
-/* asm: SPDCON	.float	0.00333 */
-float SPDCON = 0.00333f;
-/* *----------------------------------------------------------------------------
-*GEAR RATIO TABLE
- */
-/* asm: GEARTAB	.float	0.0,0.60,0.35,0.21,0.15 */
-float GEARTAB[] = {
-    0.0f, 0.60f, 0.35f, 0.21f, 0.15f,
-};
-/* asm: ENGVOL	.BSS	ENGVOL,1 */
-int ENGVOL;
-/* *----------------------------------------------------------------------------
-*ENGINE ACCEL MULTIPLIER TABLE
-*
- */
-/* asm: GEARACTABI	.word	GEARACTAB */
-#define GEARACTABI GEARACTAB
-/* asm: GEARACTAB */
-/* asm: 	.float	0.0,1.7,1.5,1.4,1.2  		;POWER FACTOR GEAR(0-4) */
-int GEARACTAB[] = {
-    0.0, 1.7, 1.5, 1.4, 1.2, // POWER FACTOR GEAR(0-4)
-};
-/* asm: ENGACTABI	.word	ENGACTAB */
-#define ENGACTABI ENGACTAB
-/* asm: ENGACTAB */
-/* asm: 	.float	1.20,1.20,0.50,0.60,0.70	;0000,0300,0600,0900,1200 */
-/* asm: 	.float	0.80,0.90,1.00,1.00,1.00	;1500,1800,2100,2400,2700 */
-/* asm: 	.float	1.00,1.00,1.00,1.00,0.90	;3000,3300,3600,3900,4200 */
-/* asm: 	.float	0.80,0.40,0.20,0.00,0.00	;4500,4800,5100,5400,5700 */
-int ENGACTAB[] = {
-    1.20, 1.20, 0.50, 0.60, 0.70, // 0000,0300,0600,0900,1200
-    0.80, 0.90, 1.00, 1.00, 1.00, // 1500,1800,2100,2400,2700
-    1.00, 1.00, 1.00, 1.00, 0.90, // 3000,3300,3600,3900,4200
-    0.80, 0.40, 0.20, 0.00, 0.00, // 4500,4800,5100,5400,5700
-};
-/* asm: ENGFR	.float	0.000,0.005,0.003,0.001,0.000  	;GEAR(0-4) ENGINE FRICTION */
-float ENGFR[] = {
-    0.000f, 0.005f, 0.003f, 0.001f, 0.000f, // GEAR(0-4) ENGINE FRICTION
-};
-/* *----------------------------------------------------------------------------
- */
-/* *----------------------------------------------------------------------------
- */
-/* asm: STEERI	.float	-0.0013 */
-float STEERI = -0.0013f;
-/* *----------------------------------------------------------------------------
- */
-/* asm: WHLTIM	.bss	WHLTIM,1 */
-int WHLTIM;
-/* asm: WHLOLD	.bss	WHLOLD,1 */
-int WHLOLD;
-/* *----------------------------------------------------------------------------
-*SOUND TABLES
-*PLAYER COLLISION SOUND TABLE
- */
-/* asm: SCOLLTAB	.word	SCOLLA,SCOLLB,SCOLLC */
-int SCOLLTAB[] = {
-    SCOLLA, SCOLLB, SCOLLC,
-};
-/* *WALL HIT SOUND TABLE
- */
-/* asm: WALLHITAB	.word	WALLHITA,WALLHITB,WALLHITC */
-int WALLHITAB[] = {
-    WALLHITA, WALLHITB, WALLHITC,
-};
-/* *SKID SOUND TABLE
- */
-/* asm: SKIDTAB	.word	SKIDB,SKIDC */
-int SKIDTAB[] = {
-    SKIDB, SKIDC,
-};
-/* asm: PLAIRSND	.word 	RH_BABEWHOA,GL_WOOLAUGH,CHICKSCREAM */
-int PLAIRSND[] = {
-    RH_BABEWHOA, GL_WOOLAUGH, CHICKSCREAM,
-};
-/* asm: REVSNDTAB	.word	SINGLEREV5,SINGLEREV6 */
-int REVSNDTAB[] = {
-    SINGLEREV5, SINGLEREV6,
-};
-/* *----------------------------------------------------------------------------
-*STEERING WHEEL AND GAS PEDAL PARAMETERS
-*(VALUES ARE READ FROM CMOS AND COPIED INTO RAM FOR EASY ACCESS)
-*(COPIED AT THE START OF EACH GAME)
-*ALL FLOATS
- */
-/* asm: PEDALMN	.bss	PEDALMN,1 */
-int PEDALMN;
-/* asm: PEDALMX	.bss	PEDALMX,1 */
-int PEDALMX;
-/* asm: STEERMN	.bss	STEERMN,1 */
-int STEERMN;
-/* asm: STEERMX	.bss	STEERMX,1 */
-int STEERMX;
-/* asm: STEERCT	.bss	STEERCT,1 */
-int STEERCT;
-/* asm: BRAKEMN	.bss	BRAKEMN,1 */
-int BRAKEMN;
-/* asm: BRAKEMX	.bss	BRAKEMX,1 */
-int BRAKEMX;
-/* asm: STEERFR	.bss	STEERFR,1 */
-int STEERFR;
-#define ADJ_COINMODE 0
-#define ADJ_GASMIN 1
-#define ADJ_GASMAX 2
-#define ADJ_STEERMIN 3
-#define ADJ_STEERMAX 4
-#define ADJ_STEERCENTER 5
-#define ADJ_BRAKEMIN 6
-#define ADJ_BRAKEMAX 7
 
 /* *----------------------------------------------------------------------------
 *GET CAR PARAMETERS FOR PLAYER
@@ -429,6 +315,7 @@ void BONUS_WAIT_LOOP(void)
     // asm 00002984: 	CMPI	MGAME,R0
     // asm 00002985: 	BNE	BONUS_WAIT_LP
     // asm 00002986: 	BU	PLYR_ENTER
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS_WAIT_LOOP", 0, 0);
     UNIMPL();
 }
@@ -557,6 +444,7 @@ void PLYR_INTRO_ENTER(void)
     // asm 000029EB: 	LDI	1,R0
     // asm 000029EC: 	STI	R0,@CAMVIEW		;INIT CAMERA VIEW TO 3RD PERSON
     // asm 000029ED: 	BU	PLYR_INTRO_JOIN
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_INTRO_ENTER", 0, 0);
     UNIMPL();
 }
@@ -1024,9 +912,19 @@ PLYS1:
     // asm 00002B5E: NOPLINK
     // asm 00002B5E: 	SLEEP	1
     // asm 00002B60: 	B	PLYRLP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_PLYR", 0, 0);
     UNIMPL();
 }
+
+/* asm: CATCHUP	.float	0.0001 */
+float CATCHUP = 0.0001f;
+/* asm: AHEAD	.float	-0.0008 */
+float AHEAD = -0.0008f;
+/* asm: DISTCON	.float	0.000001 */
+float DISTCON = 0.000001f;
+/* asm: SPDCON	.float	0.00333 */
+float SPDCON = 0.00333f;
 
 /* *----------------------------------------------------------------------------
 *CAMERA CHECK
@@ -1042,6 +940,7 @@ void CAMCHKL(void)
 {
     // asm 00002B93: 	FLOAT	-170,R1	    		;GET LEFT CORNER DIST
     // asm 00002B94: 	B	CAMCHK0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMCHKL", 0, 0);
     UNIMPL();
 }
@@ -1341,6 +1240,7 @@ void DRONEGO(void)
 DAIRB:
     // asm 00002C38: 	CALL	OVELADD
     // *GET ROAD MATRIX
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONEGO", 0, 0);
     UNIMPL();
 }
@@ -1365,6 +1265,16 @@ void DRONESTOP(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESTOP", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*GEAR RATIO TABLE
+ */
+/* asm: GEARTAB	.float	0.0,0.60,0.35,0.21,0.15 */
+float GEARTAB[] = {
+    0.0f, 0.60f, 0.35f, 0.21f, 0.15f,
+};
+/* asm: ENGVOL	.BSS	ENGVOL,1 */
+int ENGVOL;
 
 /* *----------------------------------------------------------------------------
 *GET REV FOR PLAYER CAR
@@ -1458,6 +1368,7 @@ REV4:
     // asm 00002C90: 	LSH	-4,R1		;CUT VOLUME ON START LINE
 REV5:
     // asm 00002C91: 	B	PLYR_ENGINE	;GO DO IT...
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETREV", 0, 0);
     UNIMPL();
 }
@@ -1787,6 +1698,35 @@ GETC1:
 }
 
 /* *----------------------------------------------------------------------------
+*ENGINE ACCEL MULTIPLIER TABLE
+*
+ */
+/* asm: GEARACTABI	.word	GEARACTAB */
+#define GEARACTABI GEARACTAB
+/* asm: GEARACTAB */
+/* asm: 	.float	0.0,1.7,1.5,1.4,1.2  		;POWER FACTOR GEAR(0-4) */
+int GEARACTAB[] = {
+    0.0, 1.7, 1.5, 1.4, 1.2, // POWER FACTOR GEAR(0-4)
+};
+/* asm: ENGACTABI	.word	ENGACTAB */
+#define ENGACTABI ENGACTAB
+/* asm: ENGACTAB */
+/* asm: 	.float	1.20,1.20,0.50,0.60,0.70	;0000,0300,0600,0900,1200 */
+/* asm: 	.float	0.80,0.90,1.00,1.00,1.00	;1500,1800,2100,2400,2700 */
+/* asm: 	.float	1.00,1.00,1.00,1.00,0.90	;3000,3300,3600,3900,4200 */
+/* asm: 	.float	0.80,0.40,0.20,0.00,0.00	;4500,4800,5100,5400,5700 */
+int ENGACTAB[] = {
+    1.20, 1.20, 0.50, 0.60, 0.70, // 0000,0300,0600,0900,1200
+    0.80, 0.90, 1.00, 1.00, 1.00, // 1500,1800,2100,2400,2700
+    1.00, 1.00, 1.00, 1.00, 0.90, // 3000,3300,3600,3900,4200
+    0.80, 0.40, 0.20, 0.00, 0.00, // 4500,4800,5100,5400,5700
+};
+/* asm: ENGFR	.float	0.000,0.005,0.003,0.001,0.000  	;GEAR(0-4) ENGINE FRICTION */
+float ENGFR[] = {
+    0.000f, 0.005f, 0.003f, 0.001f, 0.000f, // GEAR(0-4) ENGINE FRICTION
+};
+
+/* *----------------------------------------------------------------------------
 *GET NEW CAR SPEED
 *
 *PARAMETERS
@@ -2006,6 +1946,9 @@ GETBX:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+
 /* *
 *TURN ON/OFF BRAKE LIGHTS
 *
@@ -2026,6 +1969,7 @@ void _off_brake(void)
     // asm 00002E38: 	LDI	@OFFREDI,AR2
     // asm 00002E39: 	PUSH	AR2
     // asm 00002E3A: 	BU	L888
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_off_brake", 0, 0);
     UNIMPL();
 }
@@ -2066,6 +2010,7 @@ L888:
 NO_COLORS:
     // asm 00002E55: 	POP	AR2
     // asm 00002E56: 	BU	BRAK_X
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_on_brake", 0, 0);
     UNIMPL();
 }
@@ -2157,6 +2102,11 @@ void GETAUTO(void)
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+ */
+/* asm: STEERI	.float	-0.0013 */
+float STEERI = -0.0013f;
+
 /* *GET STEERING ANGLE
 *AR5=CAR STRUCTURE
 *RET R0= STEERING ANGLE
@@ -2225,6 +2175,7 @@ void _VIEW0(void)
     // asm 00002EB6: 	LDI	0,R2		;CAMVIEW STATUS
     // asm 00002EB7: 	LDI	BUT_VIEW1,R3
     // asm 00002EB8:  	B	ZOOM
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_VIEW0", 0, 0);
     UNIMPL();
 }
@@ -2236,6 +2187,7 @@ void _VIEW1(void)
     // asm 00002EBB: 	LDI	1,R2		;CAMVIEW STATUS
     // asm 00002EBC: 	LDI	BUT_VIEW2,R3
     // asm 00002EBD:  	B	ZOOM
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_VIEW1", 0, 0);
     UNIMPL();
 }
@@ -2288,6 +2240,7 @@ ZOOM:
 ZOOMX:
     // asm 00002EE4: 	CALL	ZOOMUP
     // asm 00002EE5: 	BR	SUICIDE	      		;CAN IT DUDES
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_VIEW2", 0, 0);
     UNIMPL();
 }
@@ -2806,6 +2759,7 @@ void GETNXTRDIR(void)
     // *AR4=CAR OBJECT
     // *RET R0 = RADIANS (FLOAT)
     // *CLOBBERS AR0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETNXTRDIR", 0, 0);
     UNIMPL();
 }
@@ -2818,6 +2772,7 @@ void GETRDCAR(void)
     // *AR5=CARBLOCK
     // *RET R0 = RADIANS (FLOAT)
     // *CLOBBERS AR0,AR2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETRDCAR", 0, 0);
     UNIMPL();
 }
@@ -2831,6 +2786,7 @@ void ROADIR(void)
     // *AR2=ROAD SEGMENT OBJECT
     // *RET R0 = RADIANS (FLOAT)
     // *CLOBBERS AR0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADIR", 0, 0);
     UNIMPL();
 }
@@ -2858,6 +2814,13 @@ ROADIRX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETRDIR", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+ */
+/* asm: WHLTIM	.bss	WHLTIM,1 */
+int WHLTIM;
+/* asm: WHLOLD	.bss	WHLOLD,1 */
+int WHLOLD;
 
 /* *PLAYER WHEEL ROUTINE
 *PARAMETERS
@@ -2938,6 +2901,35 @@ WHLOFFX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRWHL", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*SOUND TABLES
+*PLAYER COLLISION SOUND TABLE
+ */
+/* asm: SCOLLTAB	.word	SCOLLA,SCOLLB,SCOLLC */
+int SCOLLTAB[] = {
+    SCOLLA, SCOLLB, SCOLLC,
+};
+/* *WALL HIT SOUND TABLE
+ */
+/* asm: WALLHITAB	.word	WALLHITA,WALLHITB,WALLHITC */
+int WALLHITAB[] = {
+    WALLHITA, WALLHITB, WALLHITC,
+};
+/* *SKID SOUND TABLE
+ */
+/* asm: SKIDTAB	.word	SKIDB,SKIDC */
+int SKIDTAB[] = {
+    SKIDB, SKIDC,
+};
+/* asm: PLAIRSND	.word 	RH_BABEWHOA,GL_WOOLAUGH,CHICKSCREAM */
+int PLAIRSND[] = {
+    RH_BABEWHOA, GL_WOOLAUGH, CHICKSCREAM,
+};
+/* asm: REVSNDTAB	.word	SINGLEREV5,SINGLEREV6 */
+int REVSNDTAB[] = {
+    SINGLEREV5, SINGLEREV6,
+};
 
 /* ;SHIFTSNDTABI	.WORD	SHIFTSNDTAB
 ;SHIFTSNDTAB	.WORD	FIRSTSND,SECONDSND,THIRDSND,FOURTHSND
@@ -3199,6 +3191,7 @@ MKVFX1:
     // asm 00003156: 	RETSLE
     // asm 00003157: 	LDI	2,R0	  	;TRACK #
     // asm 00003158: 	B	SET_TRACK_VOL	;R0=TRACK#,R1=VOL
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MKVFXSND", 0, 0);
     UNIMPL();
 }
@@ -3225,6 +3218,7 @@ void RANDSND(void)
     // *	R1	VOLUME
     // *	AR2	TABLE ADDR	OF SOUNDS
     // *TRASHED R0,AR2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDSND", 0, 0);
     UNIMPL();
 }
@@ -3246,6 +3240,7 @@ void RANDVSND(void)
     // *	AR4	DRONE CAR OBJECT
     // *COMPUTES VOLUME BASED ON DISTANCE
     // *TRASHED R0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDVSND", 0, 0);
     UNIMPL();
 }
@@ -3258,6 +3253,7 @@ void DRONESND(void)
     // asm 0000316B: 	POP	AR2
     // asm 0000316C: 	ADDI	R0,AR2
     // asm 0000316D: 	LDI	*AR2,AR2
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESND", 0, 0);
     UNIMPL();
 }
@@ -3277,9 +3273,41 @@ void DRONESND1(void)
     // asm 00003178: 	CMPI	220,R0
     // asm 00003179: 	LDIGT	220,R0
     // asm 0000317A: 	B	VOLSNDFX     		;R0=VOLUME, AR2=SOUND
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESND1", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*STEERING WHEEL AND GAS PEDAL PARAMETERS
+*(VALUES ARE READ FROM CMOS AND COPIED INTO RAM FOR EASY ACCESS)
+*(COPIED AT THE START OF EACH GAME)
+*ALL FLOATS
+ */
+/* asm: PEDALMN	.bss	PEDALMN,1 */
+int PEDALMN;
+/* asm: PEDALMX	.bss	PEDALMX,1 */
+int PEDALMX;
+/* asm: STEERMN	.bss	STEERMN,1 */
+int STEERMN;
+/* asm: STEERMX	.bss	STEERMX,1 */
+int STEERMX;
+/* asm: STEERCT	.bss	STEERCT,1 */
+int STEERCT;
+/* asm: BRAKEMN	.bss	BRAKEMN,1 */
+int BRAKEMN;
+/* asm: BRAKEMX	.bss	BRAKEMX,1 */
+int BRAKEMX;
+/* asm: STEERFR	.bss	STEERFR,1 */
+int STEERFR;
+#define ADJ_COINMODE 0
+#define ADJ_GASMIN 1
+#define ADJ_GASMAX 2
+#define ADJ_STEERMIN 3
+#define ADJ_STEERMAX 4
+#define ADJ_STEERCENTER 5
+#define ADJ_BRAKEMIN 6
+#define ADJ_BRAKEMAX 7
 
 void GETCMOS_VALUES(void)
 {
@@ -3318,6 +3346,7 @@ void CAMMATSAV(void)
     // asm 00003192: 	LDF	*AR1++,R0
     // asm 00003193: 	STF	R0,*++AR0
     // asm 00003194: 	B	BK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMMATSAV", 0, 0);
     UNIMPL();
 }
@@ -3346,6 +3375,7 @@ CAMAVG:
 CAMMATX:
     // asm 000031A4: SUBI	9,SP
     // asm 000031A5: 	B	BK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMMATAVG", 0, 0);
     UNIMPL();
 }

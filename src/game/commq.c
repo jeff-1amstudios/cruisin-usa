@@ -14,6 +14,7 @@
 #include "text.h"
 #include "comm.h"
 #include "delta.h"
+#include "port.h"
 #include "commq.h"
 
 /*
@@ -143,6 +144,72 @@ int HEAD2HEAD_ON;
  */
 /* asm: SAVED_PLY2CAR	.bss	SAVED_PLY2CAR,1 */
 int SAVED_PLY2CAR;
+
+void CLEAR_LINK(void)
+{
+    // asm 0000766B: 	LDI	@PLY2CAR,R0
+    // asm 0000766C: 	STI	R0,@SAVED_PLY2CAR
+    // asm 0000766D: 	CLRI	R0
+    // asm 0000766E: 	STI	R0,@MY_STATE
+    // asm 0000766F: 	STI	R0,@OM_STATE
+    // asm 00007670: 	STI	R0,@OM_MODE
+    // asm 00007671: 	STI	R0,@HEAD2HEAD_ON
+    // asm 00007672: 	STI	R0,@MY_LINKWAIT
+    // asm 00007673: 	STI	R0,@OM_LINKWAIT
+    // asm 00007674: 	STI	R0,@PLY2CAR
+    // asm 00007675: 	STI	R0,@CAR_LIST
+    // asm 00007676: 	LDI	@RACER_PTRI,AR0
+    // asm 00007677: 	RPTS	10-1
+    // asm 00007678: 	STI	R0,*AR0++
+    // asm 00007679: 	LDI	-1,R0
+    // asm 0000767A: 	STI	R0,@OM_CHOSEN_RACE
+    // asm 0000767B: 	STI	R0,@OM_VEHICLE
+    // asm 0000767C: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEAR_LINK", 0, 0);
+    UNIMPL();
+}
+
+/* *----------------------------------------------------------------------------
+*
+ */
+void DECODE_BUFFER(void)
+{
+    // asm 0000767D: 	LDI	@DIPRAM,R0
+    // asm 0000767E: 	TSTB	DIP_COMMP,R0 	       ;LINKED ?
+    // asm 0000767F: 	RETSNZ			       ;NOPE...
+    // asm 00007680: 	LDI	@TRANSMISSION_ACTIVE,R0
+    // asm 00007681: 	RETSZ
+    // asm 00007682: 	LDI	@RBUFF_LEN,R0	       ;ANYTHING THERE ?
+    // asm 00007683: 	RETSZ			       ;NOPE
+    // asm 00007684: 	LDI	@RECEIVE_BUFFERI,AR2
+    // asm 00007685: 	LDI	@RBUFF_LEN,AR6
+    // asm 00007686: 	INC	AR6
+    // asm 00007687: 	LS	1,AR6
+    // asm 00007688: 	ADDI	AR2,AR6
+    // asm 00007689: 	B	DECLPX
+DECODE_LP:
+    // asm 0000768A: 	LDI	*AR2++,AR0		;GET THE BLOCK ID
+    // asm 0000768B: 	LS	8,AR0
+    // asm 0000768C: 	RS	24,AR0			;SHIFT OFF THE CRAP
+    // asm 0000768D: 	CMPI	CB_LASTMSG,AR0		;CHECK BOGUS MESSAGE
+#if CDEBUG
+    // asm: 	BGE	$			;TRAP ON BUGUS FOR DEBUG
+#endif
+    // asm 0000768E: 	BGE	ISDONE			;EXIT ON BOGUS
+    // asm 0000768F: 	ADDI	@DECODE_BLOCKI,AR0
+    // asm 00007690: 	LDI	*AR0,R0
+    // asm 00007691: 	CALLU	R0
+DECLPX:
+    // asm 00007692: 	CMPI	AR6,AR2
+    // asm 00007693: 	BLT	DECODE_LP
+ISDONE:
+    // asm 00007694: 	CLRI	R0
+    // asm 00007695: 	STI	R0,@RBUFF_LEN
+    // asm 00007696: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BUFFER", 0, 0);
+    UNIMPL();
+}
+
 /* *----------------------------------------------------------------------------
 *
 *	.word	ID,ROUTINE TO DECODE
@@ -230,83 +297,6 @@ int DECODE_BLOCK[] = {
     DECODE_ATTRSND,
     -1,
 };
-/* *MATRIX DECODE CONSTANT
- */
-/* asm: MATCON	.float	0.00003125		;1/32000 */
-float MATCON = 0.00003125f;
-/* asm: RADCON	.float	0.001			;1/1000 */
-float RADCON = 0.001f;
-/* asm: COINDROP	.bss	COINDROP,1 */
-int COINDROP;
-/* asm: OM_DIAGVALUE	fbss	OM_DIAGVALUE,1 */
-int OM_DIAGVALUE;
-/* asm: DIAGVALUE	fbss	DIAGVALUE,1 */
-int DIAGVALUE;
-
-void CLEAR_LINK(void)
-{
-    // asm 0000766B: 	LDI	@PLY2CAR,R0
-    // asm 0000766C: 	STI	R0,@SAVED_PLY2CAR
-    // asm 0000766D: 	CLRI	R0
-    // asm 0000766E: 	STI	R0,@MY_STATE
-    // asm 0000766F: 	STI	R0,@OM_STATE
-    // asm 00007670: 	STI	R0,@OM_MODE
-    // asm 00007671: 	STI	R0,@HEAD2HEAD_ON
-    // asm 00007672: 	STI	R0,@MY_LINKWAIT
-    // asm 00007673: 	STI	R0,@OM_LINKWAIT
-    // asm 00007674: 	STI	R0,@PLY2CAR
-    // asm 00007675: 	STI	R0,@CAR_LIST
-    // asm 00007676: 	LDI	@RACER_PTRI,AR0
-    // asm 00007677: 	RPTS	10-1
-    // asm 00007678: 	STI	R0,*AR0++
-    // asm 00007679: 	LDI	-1,R0
-    // asm 0000767A: 	STI	R0,@OM_CHOSEN_RACE
-    // asm 0000767B: 	STI	R0,@OM_VEHICLE
-    // asm 0000767C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEAR_LINK", 0, 0);
-    UNIMPL();
-}
-
-/* *----------------------------------------------------------------------------
-*
- */
-void DECODE_BUFFER(void)
-{
-    // asm 0000767D: 	LDI	@DIPRAM,R0
-    // asm 0000767E: 	TSTB	DIP_COMMP,R0 	       ;LINKED ?
-    // asm 0000767F: 	RETSNZ			       ;NOPE...
-    // asm 00007680: 	LDI	@TRANSMISSION_ACTIVE,R0
-    // asm 00007681: 	RETSZ
-    // asm 00007682: 	LDI	@RBUFF_LEN,R0	       ;ANYTHING THERE ?
-    // asm 00007683: 	RETSZ			       ;NOPE
-    // asm 00007684: 	LDI	@RECEIVE_BUFFERI,AR2
-    // asm 00007685: 	LDI	@RBUFF_LEN,AR6
-    // asm 00007686: 	INC	AR6
-    // asm 00007687: 	LS	1,AR6
-    // asm 00007688: 	ADDI	AR2,AR6
-    // asm 00007689: 	B	DECLPX
-DECODE_LP:
-    // asm 0000768A: 	LDI	*AR2++,AR0		;GET THE BLOCK ID
-    // asm 0000768B: 	LS	8,AR0
-    // asm 0000768C: 	RS	24,AR0			;SHIFT OFF THE CRAP
-    // asm 0000768D: 	CMPI	CB_LASTMSG,AR0		;CHECK BOGUS MESSAGE
-#if CDEBUG
-    // asm: 	BGE	$			;TRAP ON BUGUS FOR DEBUG
-#endif
-    // asm 0000768E: 	BGE	ISDONE			;EXIT ON BOGUS
-    // asm 0000768F: 	ADDI	@DECODE_BLOCKI,AR0
-    // asm 00007690: 	LDI	*AR0,R0
-    // asm 00007691: 	CALLU	R0
-DECLPX:
-    // asm 00007692: 	CMPI	AR6,AR2
-    // asm 00007693: 	BLT	DECODE_LP
-ISDONE:
-    // asm 00007694: 	CLRI	R0
-    // asm 00007695: 	STI	R0,@RBUFF_LEN
-    // asm 00007696: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BUFFER", 0, 0);
-    UNIMPL();
-}
 
 /* *----------------------------------------------------------------------------
 *
@@ -459,6 +449,7 @@ void SEND_WAVEFL_READY(void)
 {
     // asm 000076F2: 	LDI	CB_WAVEFL_READY,AR2
     // asm 000076F3: 	BR	MESSAGE_ADD_SB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_WAVEFL_READY", 0, 0);
     UNIMPL();
 }
@@ -467,6 +458,7 @@ void SEND_WAVEFL_SET(void)
 {
     // asm 000076F4: 	LDI	CB_WAVEFL_SET,AR2
     // asm 000076F5: 	BR	MESSAGE_ADD_SB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_WAVEFL_SET", 0, 0);
     UNIMPL();
 }
@@ -477,6 +469,7 @@ void SEND_WAVEFL_GO(void)
     // asm 000076F7: 	STI	R0,@_sectime
     // asm 000076F8: 	LDI	CB_WAVEFL_GO,AR2
     // asm 000076F9: 	BR	MESSAGE_ADD_SB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_WAVEFL_GO", 0, 0);
     UNIMPL();
 }
@@ -719,6 +712,7 @@ void SEND_MODE(void)
     // asm 0000778B: 	STI	R0,*AR2--(10)
     // asm 0000778C: 	LDI	11-1,RC
     // asm 0000778D: 	BR	MESSAGE_ADD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_MODE", 0, 0);
     UNIMPL();
 }
@@ -740,6 +734,7 @@ void SEND_LINKCANCELLED(void)
 {
     // asm 00007791: 	LDI	CB_LINKCANCELLED,AR2
     // asm 00007792: 	BR	MESSAGE_ADD_SB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_LINKCANCELLED", 0, 0);
     UNIMPL();
 }
@@ -808,6 +803,7 @@ void SEND_END_GAME(void)
 {
     // asm 000077BA: 	LDI	CB_END_GAME,AR2
     // asm 000077BB: 	BR	MESSAGE_ADD_SB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_END_GAME", 0, 0);
     UNIMPL();
 }
@@ -839,6 +835,7 @@ void SEND_TIMECODE(void)
     // asm 000077C7: 	STI	R0,*AR2--(3)
     // asm 000077C8: 	LDI	4-1,RC
     // asm 000077C9: 	BR	MESSAGE_ADD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_TIMECODE", 0, 0);
     UNIMPL();
 }
@@ -858,6 +855,7 @@ void SEND_RACENUM(void)
     // asm 000077D2: 	STI	R0,*AR2--(3)
     // asm 000077D3: 	LDI	4-1,RC
     // asm 000077D4: 	BR	MESSAGE_ADD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RACENUM", 0, 0);
     UNIMPL();
 }
@@ -910,6 +908,7 @@ void SEND_VEHICLE(void)
     // asm 000077ED: 	STI	R0,*AR2--
     // asm 000077EE: 	LDI	2-1,RC
     // asm 000077EF: 	BR	MESSAGE_ADD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_VEHICLE", 0, 0);
     UNIMPL();
 }
@@ -955,6 +954,7 @@ void SEND_RHO_POS(void)
     // *AR5=CAR BLOCK
     // *AR7=RACER PROCESS
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RHO_POS", 0, 0);
     UNIMPL();
 }
@@ -965,6 +965,7 @@ void SEND_RACER_POS(void)
     // asm 0000780A: 	STI	R0,*+AR5(CARTRACK_ID)  	;SAVE TRACK ID
     // asm 0000780B: 	LDI	CB_RACER_UPDATE,R0	;GET MESSAGE HEADER
     // asm 0000780C: 	B	SEND_CAR_POS
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RACER_POS", 0, 0);
     UNIMPL();
 }
@@ -1074,6 +1075,7 @@ MATLP:
     // *R5=VEHICLE DESCRIPTOR INDEX
     // *R0=VEHICLE ID #
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_PLAYERS_POS", 0, 0);
     UNIMPL();
 }
@@ -1093,9 +1095,17 @@ void SEND_RHO_CREATE(void)
     // asm 00007861: 	LDI	4-1,RC
     // asm 00007862: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00007863: 	BR	MESSAGE_ADD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RHO_CREATE", 0, 0);
     UNIMPL();
 }
+
+/* *MATRIX DECODE CONSTANT
+ */
+/* asm: MATCON	.float	0.00003125		;1/32000 */
+float MATCON = 0.00003125f;
+/* asm: RADCON	.float	0.001			;1/1000 */
+float RADCON = 0.001f;
 
 void FIND_DRONE(void)
 {
@@ -1136,6 +1146,7 @@ void DECODE_RHO_UPDATE(void)
     // *
     // *DECODE DRONE CAR UPDATE
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_UPDATE", 0, 0);
     UNIMPL();
 }
@@ -1161,6 +1172,7 @@ void DECODE_RACER_UPDATE(void)
     // *
     // *DECODE THE LINKED PLAYERS POSITION
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_UPDATE", 0, 0);
     UNIMPL();
 }
@@ -1379,6 +1391,7 @@ void SEND_OM_TRACK(void)
     // asm 00007925: 	LDI	7-1,RC
     // asm 00007926: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00007927: 	BR	MESSAGE_ADD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_OM_TRACK", 0, 0);
     UNIMPL();
 }
@@ -1407,6 +1420,7 @@ SEND_BSYNC3:
     // asm 0000792A: 	LDI	CB_BONUS_SYNC3,AR2
 SBLS:
     // asm 0000792B: BR	MESSAGE_ADD_SB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_BSYNC3", 0, 0);
     UNIMPL();
 }
@@ -1466,6 +1480,9 @@ void SEND_CHANGE_MUSIC(void)
     UNIMPL();
 }
 
+/* asm: COINDROP	.bss	COINDROP,1 */
+int COINDROP;
+
 /* *----------------------------------------------------------------------------
  */
 void DECODE_COINDROP(void)
@@ -1483,9 +1500,15 @@ void SEND_COINDROP(void)
 {
     // asm 00007944: 	LDI	CB_COINDROP,AR2
     // asm 00007945: 	BR	MESSAGE_ADD_SB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_COINDROP", 0, 0);
     UNIMPL();
 }
+
+/* asm: OM_DIAGVALUE	fbss	OM_DIAGVALUE,1 */
+int OM_DIAGVALUE;
+/* asm: DIAGVALUE	fbss	DIAGVALUE,1 */
+int DIAGVALUE;
 
 /* *----------------------------------------------------------------------------
 *For diagnostics on the Link we send a 'ping'
@@ -1527,6 +1550,7 @@ void SEND_DIAGNOSTIC(void)
     // asm 00007959: 	STI	R0,*AR2--
     // asm 0000795A: 	LDI	2-1,RC
     // asm 0000795B: 	BR	MESSAGE_ADD
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_DIAGNOSTIC", 0, 0);
     UNIMPL();
 }
@@ -1555,6 +1579,7 @@ void SEND_ATTRSND(void)
 {
     // asm 00007967: 	LDI	CB_ATTRSND,AR2
     // asm 00007968: 	BU	MESSAGE_ADD_SB
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_ATTRSND", 0, 0);
     UNIMPL();
 }

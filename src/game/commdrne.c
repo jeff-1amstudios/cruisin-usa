@@ -16,6 +16,7 @@
 #include "comm.h"
 #include "racer.h"
 #include "h2hobj.h"
+#include "port.h"
 #include "commdrne.h"
 
 /*
@@ -271,6 +272,7 @@ COMMDRNE_LP:
     // asm 0000A71F: 	CALL	SEND_OM_TRACK
     // asm 0000A720: 	SLEEP	1
     // asm 0000A722: 	BU	COMMDRNE_LP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_DRONE", 0, 0);
     UNIMPL();
 }
@@ -353,6 +355,7 @@ OM_DRONEL:
 DRONELL:
     // ************
     // asm 0000A75A: 	B	OM_DRONEL
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OM_DRONE", 0, 0);
     UNIMPL();
 }

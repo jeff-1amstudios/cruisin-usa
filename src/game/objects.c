@@ -1,5 +1,6 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "port.h"
 
 /*
  * Source module: asm/OBJECTS.ASM
@@ -12,8 +13,3 @@ int _SEChead2head[] = {
     0x0C15000, // Src (Compressed) Addr
     0x0BEFA00, // Dest Addr
 };
-
-void objects(void)
-{
-    UNIMPL();
-}

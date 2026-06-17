@@ -27,6 +27,6 @@
 // num_sections	.set	1
 // corn                	.set	0AF4B00h	;1DC0
 // asm: 	.globl	_SECcorn
-extern int _SECcorn[2];
+extern int _SECcorn[];
 
 #endif /* CORNOBJ_H */

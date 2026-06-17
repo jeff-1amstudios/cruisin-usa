@@ -5,7 +5,7 @@
 #include "c30.h"
 #include "vunit.h"
 #include "error.h"
-#include "mproc_defs.h"
+#include "port.h"
 
 /*
  * Source module: asm/MPROC.ASM
@@ -185,6 +185,7 @@ void PRC_DISPATCH(void)
     // *PASSED
     // *	AR2	SLEEP TIME x 16MSEC.
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_DISPATCH", 0, 0);
     UNIMPL();
 }
@@ -301,6 +302,7 @@ DIELP:
     // asm 0000A8D5: 	LDI	AR1,AR7			;SO SOMETHING IS POINTING TO NEXT PROC
     // asm 0000A8D6: 	NOP
     // 	;--->BR NEXTPRC
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_SUICIDE", 0, 0);
     UNIMPL();
 }
@@ -534,6 +536,7 @@ void PRC_FINDNEXT(void)
     // asm 0000A93B: 	AND	R1,R0
     // asm 0000A93C: 	NOP
     // 	;---->	BUD	FINDE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_FINDNEXT", 0, 0);
     UNIMPL();
 }

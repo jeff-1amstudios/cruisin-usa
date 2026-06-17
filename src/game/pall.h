@@ -30,7 +30,7 @@
 #define PALDEST 2 //DEST ADDR
 
 // asm: 	.globl	PTTRAM,PALLISTI
-extern int PTTRAM[PALNUM*3];
+extern int PTTRAM[];
 
 #define PALLISTI _PALLIST
 
@@ -69,5 +69,19 @@ void PAL_XFER(void);
 
 // asm: 	.globl	PAL_OVERWRITE
 void PAL_OVERWRITE(void);
+
+// PALL.ASM
+// asm: 	.bss  	PALRAM,PALNUM		;ACTIVE PALETTES
+extern int PALRAM[];
+// asm: 	.bss	RAWLOCS,PALNUM
+extern int RAWLOCS[];
+// asm: 	.bss	PALXFER_ACTIVE,1
+extern int PALXFER_ACTIVE;
+// asm: 	.bss	PALXFER_FREE,1
+extern int PALXFER_FREE;
+// asm: 	.bss	PALXFER_AVAILABLE_P,1
+extern int PALXFER_AVAILABLE_P;
+// asm: 	.bss	PALXFER_STR,PALX_SIZE*NXFER_PALS
+extern int PALXFER_STR[];
 
 #endif /* PALL_H */

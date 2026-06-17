@@ -8,4 +8,11 @@ extern int ROADKILLXZ[2];
 // asm: 	.bss	ROADKILL_SOUND_TIMER,1
 extern int ROADKILL_SOUND_TIMER;
 
+
+
+
+
+
+
+
 #endif /* ROADKILL_H */

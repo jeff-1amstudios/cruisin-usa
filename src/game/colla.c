@@ -16,8 +16,8 @@
 #include "dirq.h"
 #include "delta.h"
 #include "comm.h"
+#include "port.h"
 #include "colla.h"
-#include "discovered_labels.h"
 
 /*
  * Source module: asm/COLLA.ASM
@@ -93,114 +93,6 @@ int COLVEL;
 int PMULT;
 /* asm: SPINTEMP	.bss	SPINTEMP,1 */
 int SPINTEMP;
-/* asm: BOXSCRAM	FBSS	BOXSCRAM,50 */
-int BOXSCRAM[50];
-/* asm: SAGETAB	.word	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
-int SAGETAB[] = {
-    SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND,
-};
-/* *----------------------------------------------------------------------------
-*FLYING SIGN COLLISION PROCESS
-*
-*AR4= SIGN OBJECT
-*
- */
-/* *----------------------------------------------------------------------------
-*FALLING SIGN PROCESS
-*
-*PARAMETERS
-*	AR4	SIGN OBJECT
-*	R7	ROTATION DELTA
-*
- */
-/* *----------------------------------------------------------------------------
-*TREE SHAKE PROCESS
-*
-*PARAMETERS
-*	AR4	SIGN OBJECT
-*	R7	ROTATION DELTA
-*
- */
-/* *----------------------------------------------------------------------------
-*
-*FLYING CAR WRECK
-*
-*	AR0	POINTS TO PLAYER CAR
-*	AR1	POINTS TO CAR TO SEND FLYING
-*	AR4	POINTS TO PLAYER CAR BLOCK
-*	AR5	POINTS TO DRONE CAR BLOCK
-*
- */
-/* asm: SBUSI	.word	sbus */
-#define SBUSI sbus
-/* asm: CBUSI	.word	cbus */
-#define CBUSI cbus
-/* asm: DETHTAB1	.word	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
-/* asm: 	.WORD	NDETHSCREAM1,NDETHSCREAM3,NDETHSCREAM4,NDETHSCREAM7 */
-int DETHTAB1[] = {
-    MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3,
-    NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7,
-};
-/* asm: DETHTAB2	.word	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
-int DETHTAB2[] = {
-    MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2,
-};
-/* asm: FLYCARP0I	.word	FLYCARP */
-#define FLYCARP0I FLYCARP
-/* asm: PLYRBEHIND	.BSS	PLYRBEHIND,1 */
-int PLYRBEHIND;
-/* asm: SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
-int SCUPDTAB[] = {
-    SCOLLF, SCOLLF, SCOLLG, SCOLLH,
-};
-/* asm: SCTAB	.word	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
-int SCTAB[] = {
-    SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE,
-};
-/* *----------------------------------------------------------------------------
-*TABLE OF 6 BOX EQUATIONS
-*CLOCKWISE ORDER
- */
-#define VCTO (BLOWLIST+24)
-#define VCTO1 (BLOWLIST+72)
-/* asm: EQTABI	.word	EQTAB */
-#define EQTABI EQTAB
-/* asm: EQTAB */
-/* asm: 	.WORD	VCTO+(3*0),VCTO+(3*2),VCTO+(3*3)	;FRONT */
-/* asm: 	.WORD	VCTO+(3*0),VCTO+(3*4),VCTO+(3*6)	;LSIDE */
-/* asm: 	.WORD	VCTO+(3*0),VCTO+(3*1),VCTO+(3*5) 	;BOTTOM */
-/* asm: 	.WORD	VCTO+(3*2),VCTO+(3*6),VCTO+(3*7)	;TOP */
-/* asm: 	.WORD	VCTO+(3*1),VCTO+(3*3),VCTO+(3*7)	;RSIDE */
-/* asm: 	.WORD	VCTO+(3*7),VCTO+(3*6),VCTO+(3*4)	;BACK */
-/* asm: 	.WORD	VCTO1+(3*0),VCTO1+(3*2),VCTO1+(3*3)	;FRONT */
-/* asm: 	.WORD	VCTO1+(3*0),VCTO1+(3*4),VCTO1+(3*6)	;LSIDE */
-/* asm: 	.WORD	VCTO1+(3*0),VCTO1+(3*1),VCTO1+(3*5) 	;BOTTOM */
-/* asm: 	.WORD	VCTO1+(3*2),VCTO1+(3*6),VCTO1+(3*7)	;TOP */
-/* asm: 	.WORD	VCTO1+(3*1),VCTO1+(3*3),VCTO1+(3*7)	;RSIDE */
-/* asm: 	.WORD	VCTO1+(3*7),VCTO1+(3*6),VCTO1+(3*4)	;BACK */
-int EQTAB[] = {
-    VCTO+(3*0), VCTO+(3*2), VCTO+(3*3), // FRONT
-    VCTO+(3*0), VCTO+(3*4), VCTO+(3*6), // LSIDE
-    VCTO+(3*0), VCTO+(3*1), VCTO+(3*5), // BOTTOM
-    VCTO+(3*2), VCTO+(3*6), VCTO+(3*7), // TOP
-    VCTO+(3*1), VCTO+(3*3), VCTO+(3*7), // RSIDE
-    VCTO+(3*7), VCTO+(3*6), VCTO+(3*4), // BACK
-    VCTO1+(3*0), VCTO1+(3*2), VCTO1+(3*3), // FRONT
-    VCTO1+(3*0), VCTO1+(3*4), VCTO1+(3*6), // LSIDE
-    VCTO1+(3*0), VCTO1+(3*1), VCTO1+(3*5), // BOTTOM
-    VCTO1+(3*2), VCTO1+(3*6), VCTO1+(3*7), // TOP
-    VCTO1+(3*1), VCTO1+(3*3), VCTO1+(3*7), // RSIDE
-    VCTO1+(3*7), VCTO1+(3*6), VCTO1+(3*4), // BACK
-};
-/* asm: LEQTABI	.word	LEQTAB */
-#define LEQTABI LEQTAB
-/* asm: LEQTAB */
-/* asm: 	.WORD	VCTO+(3*2)+1,VCTO+(3*6)+1,VCTO+(3*7)+1 */
-/* asm: 	.WORD	VCTO+(3*3)+1,VCTO+(3*2)+1 */
-int LEQTAB[] = {
-    VCTO+(3*2)+1, VCTO+(3*6)+1, VCTO+(3*7)+1,
-    VCTO+(3*3)+1, VCTO+(3*2)+1,
-};
 
 /* *----------------------------------------------------------------------------
 *CAMERA SCAN FOR ROAD HEIGHT
@@ -222,6 +114,7 @@ void CAMSCAN(void)
     // *FALL THRU TO CAMSCANS
     // *
     // *SCAN LIST FOR POINT-OBJECT INTERSECTION
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCAN", 0, 0);
     UNIMPL();
 }
@@ -291,6 +184,9 @@ void OBJSCAN(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJSCAN", 0, 0);
     UNIMPL();
 }
+
+/* asm: BOXSCRAM	FBSS	BOXSCRAM,50 */
+int BOXSCRAM[50];
 
 /* *
 *CHECK ROAD OBJECTS ON ROAD LIST IN RANGE
@@ -912,6 +808,7 @@ EOTV:
     // asm 0000213A: 	LDI	BK,RC
     // asm 0000213B: 	RS	16,RC
     // 	;----->BD	VLINST
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_obj_coll", 0, 0);
     UNIMPL();
 }
@@ -1055,6 +952,7 @@ void PLYRDEBRIS(void)
     // *
     // *PLAYER COLLIDE WITH SIGNS
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRDEBRIS", 0, 0);
     UNIMPL();
 }
@@ -1067,6 +965,7 @@ void PLYRSIGN(void)
     // *
     // *DRONE COLLIDE WITH DEBRIS
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRSIGN", 0, 0);
     UNIMPL();
 }
@@ -1078,6 +977,7 @@ void DRONDEBRIS(void)
     // *
     // *DRONE COLLIDE WITH SIGNS
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONDEBRIS", 0, 0);
     UNIMPL();
 }
@@ -1233,6 +1133,7 @@ CSGLNEQ:
     // *	AR0	POINTS TO CAR OBJECT
     // *	AR1	POINTS TO SIGN/POLE OBJECT
     // *	AR5	CARBLOCK
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COLSGCK", 0, 0);
     UNIMPL();
 }
@@ -1444,6 +1345,7 @@ FLYCOLL1:
     // asm 000022F7: 	LDIEQ	DRMBNCE,AR2
     // asm 000022F8: 	LDINE	DSIGNSND,AR2
     // asm 000022F9: 	B	COLSGCX0
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDCOL", 0, 0);
     UNIMPL();
 }
@@ -1519,6 +1421,17 @@ COLSGCX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RUNOVER", 0, 0);
     UNIMPL();
 }
+
+/* asm: SAGETAB	.word	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
+int SAGETAB[] = {
+    SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND,
+};
+/* *----------------------------------------------------------------------------
+*FLYING SIGN COLLISION PROCESS
+*
+*AR4= SIGN OBJECT
+*
+ */
 
 void FLYCOLLP(void)
 {
@@ -1624,6 +1537,7 @@ FLYSTOP:
     // asm 0000238A: 	CALL	OBJ_DELETE
 NOT_ROADKILL:
     // asm 0000238B: 	BR 	SUICIDE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCOLLP", 0, 0);
     UNIMPL();
 }
@@ -1657,6 +1571,15 @@ DEBSCL1:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*FALLING SIGN PROCESS
+*
+*PARAMETERS
+*	AR4	SIGN OBJECT
+*	R7	ROTATION DELTA
+*
+ */
+
 void SIGNFALL(void)
 {
     // asm 0000239C: 	LDF	0,R6
@@ -1679,9 +1602,19 @@ SIGNFALP0:
     // asm 000023AC: 	CMPF	1.5,R6
     // asm 000023AD: 	BLT	SIGNFALP   		;LOOP TIL DONE
     // asm 000023AE: 	BR	SUICIDE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGNFALL", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*TREE SHAKE PROCESS
+*
+*PARAMETERS
+*	AR4	SIGN OBJECT
+*	R7	ROTATION DELTA
+*
+ */
 
 void TREESHAK(void)
 {
@@ -1721,6 +1654,7 @@ TREESHKL:
     // asm 000023CE: 	ANDN	R1,R0
     // asm 000023CF: 	STI	R0,*+AR4(OFLAGS)
     // asm 000023D0: 	BR	SUICIDE
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TREESHAK", 0, 0);
     UNIMPL();
 }
@@ -1784,6 +1718,21 @@ void ADDSIGN(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ADDSIGN", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*
+*FLYING CAR WRECK
+*
+*	AR0	POINTS TO PLAYER CAR
+*	AR1	POINTS TO CAR TO SEND FLYING
+*	AR4	POINTS TO PLAYER CAR BLOCK
+*	AR5	POINTS TO DRONE CAR BLOCK
+*
+ */
+/* asm: SBUSI	.word	sbus */
+#define SBUSI sbus
+/* asm: CBUSI	.word	cbus */
+#define CBUSI cbus
 
 void FLYCAR(void)
 {
@@ -1927,6 +1876,17 @@ FC03:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCAR", 0, 0);
     UNIMPL();
 }
+
+/* asm: DETHTAB1	.word	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
+/* asm: 	.WORD	NDETHSCREAM1,NDETHSCREAM3,NDETHSCREAM4,NDETHSCREAM7 */
+int DETHTAB1[] = {
+    MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3,
+    NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7,
+};
+/* asm: DETHTAB2	.word	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
+int DETHTAB2[] = {
+    MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2,
+};
 
 /* *
 *FLYING CAR PROCESS
@@ -2288,6 +2248,7 @@ DEADLP:
     // *AR4= OBJECT
     // *AR5= CAR BLOCK
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCARP", 0, 0);
     UNIMPL();
 }
@@ -2410,6 +2371,9 @@ DFXX:
     UNIMPL();
 }
 
+/* asm: FLYCARP0I	.word	FLYCARP */
+#define FLYCARP0I FLYCARP
+
 /* *----------------------------------------------------------------------------
 *GET MATRIX FOR FLYING CAR
 *
@@ -2461,6 +2425,7 @@ void GETFLYMAT(void)
     // ;	STF	R0,*+AR5(CARSPEED)
     // ;
     // ;	RETS
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETFLYMAT", 0, 0);
     UNIMPL();
 }
@@ -2620,6 +2585,7 @@ void REPELL(void)
     // asm 00002642: 	MPYF	R1,R1
     // asm 00002643: 	ADDF	R0,R1,R2
     // asm 00002644: 	BR	SQRT
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "REPELL", 0, 0);
     UNIMPL();
 }
@@ -2947,6 +2913,9 @@ ZZZ1:
     UNIMPL();
 }
 
+/* asm: PLYRBEHIND	.BSS	PLYRBEHIND,1 */
+int PLYRBEHIND;
+
 /* *
  */
 void SPINROT(void)
@@ -3084,6 +3053,7 @@ PLBIG:
     // *
     // *CHECK IF PLAYER HIT FROM BEHIND
     // *
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINROT", 0, 0);
     UNIMPL();
 }
@@ -3375,6 +3345,15 @@ COLSNDX:
     UNIMPL();
 }
 
+/* asm: SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
+int SCUPDTAB[] = {
+    SCOLLF, SCOLLF, SCOLLG, SCOLLH,
+};
+/* asm: SCTAB	.word	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
+int SCTAB[] = {
+    SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE,
+};
+
 void COLCHK(void)
 {
     // asm 00002863:  	PUSH	R2
@@ -3462,6 +3441,7 @@ GOTCOL:
     // asm 000028A5: 	POP	AR0
     // asm 000028A6: 	SETC
     // asm 000028A7: 	BU	COLCHKX
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COLCHK", 0, 0);
     UNIMPL();
 }
@@ -3484,6 +3464,7 @@ void GETBOX(void)
     // asm 000028AB: 	LDF	1.0,R3		;XPLUS MULT FACTOR
     // asm 000028AC: 	LDF	1.0,R4		;YPLUS MULT FACTOR
     // asm 000028AD: 	LDF	1.0,R5		;ZPLUS MULT FACTOR
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETBOX", 0, 0);
     UNIMPL();
 }
@@ -3566,3 +3547,48 @@ EOCV:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETBOX0", 0, 0);
     UNIMPL();
 }
+
+/* *----------------------------------------------------------------------------
+*TABLE OF 6 BOX EQUATIONS
+*CLOCKWISE ORDER
+ */
+#define VCTO (BLOWLIST+24)
+#define VCTO1 (BLOWLIST+72)
+/* asm: EQTABI	.word	EQTAB */
+#define EQTABI EQTAB
+/* asm: EQTAB */
+/* asm: 	.WORD	VCTO+(3*0),VCTO+(3*2),VCTO+(3*3)	;FRONT */
+/* asm: 	.WORD	VCTO+(3*0),VCTO+(3*4),VCTO+(3*6)	;LSIDE */
+/* asm: 	.WORD	VCTO+(3*0),VCTO+(3*1),VCTO+(3*5) 	;BOTTOM */
+/* asm: 	.WORD	VCTO+(3*2),VCTO+(3*6),VCTO+(3*7)	;TOP */
+/* asm: 	.WORD	VCTO+(3*1),VCTO+(3*3),VCTO+(3*7)	;RSIDE */
+/* asm: 	.WORD	VCTO+(3*7),VCTO+(3*6),VCTO+(3*4)	;BACK */
+/* asm: 	.WORD	VCTO1+(3*0),VCTO1+(3*2),VCTO1+(3*3)	;FRONT */
+/* asm: 	.WORD	VCTO1+(3*0),VCTO1+(3*4),VCTO1+(3*6)	;LSIDE */
+/* asm: 	.WORD	VCTO1+(3*0),VCTO1+(3*1),VCTO1+(3*5) 	;BOTTOM */
+/* asm: 	.WORD	VCTO1+(3*2),VCTO1+(3*6),VCTO1+(3*7)	;TOP */
+/* asm: 	.WORD	VCTO1+(3*1),VCTO1+(3*3),VCTO1+(3*7)	;RSIDE */
+/* asm: 	.WORD	VCTO1+(3*7),VCTO1+(3*6),VCTO1+(3*4)	;BACK */
+int EQTAB[] = {
+    VCTO+(3*0), VCTO+(3*2), VCTO+(3*3), // FRONT
+    VCTO+(3*0), VCTO+(3*4), VCTO+(3*6), // LSIDE
+    VCTO+(3*0), VCTO+(3*1), VCTO+(3*5), // BOTTOM
+    VCTO+(3*2), VCTO+(3*6), VCTO+(3*7), // TOP
+    VCTO+(3*1), VCTO+(3*3), VCTO+(3*7), // RSIDE
+    VCTO+(3*7), VCTO+(3*6), VCTO+(3*4), // BACK
+    VCTO1+(3*0), VCTO1+(3*2), VCTO1+(3*3), // FRONT
+    VCTO1+(3*0), VCTO1+(3*4), VCTO1+(3*6), // LSIDE
+    VCTO1+(3*0), VCTO1+(3*1), VCTO1+(3*5), // BOTTOM
+    VCTO1+(3*2), VCTO1+(3*6), VCTO1+(3*7), // TOP
+    VCTO1+(3*1), VCTO1+(3*3), VCTO1+(3*7), // RSIDE
+    VCTO1+(3*7), VCTO1+(3*6), VCTO1+(3*4), // BACK
+};
+/* asm: LEQTABI	.word	LEQTAB */
+#define LEQTABI LEQTAB
+/* asm: LEQTAB */
+/* asm: 	.WORD	VCTO+(3*2)+1,VCTO+(3*6)+1,VCTO+(3*7)+1 */
+/* asm: 	.WORD	VCTO+(3*3)+1,VCTO+(3*2)+1 */
+int LEQTAB[] = {
+    VCTO+(3*2)+1, VCTO+(3*6)+1, VCTO+(3*7)+1,
+    VCTO+(3*3)+1, VCTO+(3*2)+1,
+};

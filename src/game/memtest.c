@@ -9,6 +9,7 @@
 #include "cksum.h"
 #include "globals.h"
 #include "checksum.h"
+#include "port.h"
 #include "memtest.h"
 
 /*
@@ -247,181 +248,6 @@ int TESTING_CHIPS;
 /* asm: CMOS_CHIP */
 /* asm: CHIPMC	RTU31,130,120,40,18,"U31",ISROM		;CMOS CHIP */
 int CMOS_CHIP;
-/* *----------------------------------------------------------------------------
-*FOR THE DISPLAY TO WORK WE MUST HAVE OPERATING PROPERLY:
-*	VIDEO RAM (8 CHIPS)
-*	COLOR RAM (2 CHIPS)
-*SO, WE TEST THESE (NOT PLOTTING TO THE SCREEN), AND SAVE THE RESULTS,
-*THEN WE BEGIN PLOTTING THE SCREEN, INITIALIZATING THESE SPACES WITH THE
-*RESULTS.
-*
-*
- */
-/* asm: BASICS_RAM	fbss	BASICS_RAM,10 */
-int BASICS_RAM[10];
-#if CHECKSUM_GEN
-/* asm: CHKSUMC00	.word	-1 */
-int CHKSUMC00 = -1;
-/* asm: CHKSUMC80	.word	-1 */
-int CHKSUMC80 = -1;
-/* asm: CHKSUMD00	.word	-1 */
-int CHKSUMD00 = -1;
-/* asm: CHKSUMD80	.word	-1 */
-int CHKSUMD80 = -1;
-/* asm: CHKSUME00	.word	-1 */
-int CHKSUME00 = -1;
-/* asm: CHKSUMC01	.word	-1 */
-int CHKSUMC01 = -1;
-/* asm: CHKSUMC81	.word	-1 */
-int CHKSUMC81 = -1;
-/* asm: CHKSUMD01	.word	-1 */
-int CHKSUMD01 = -1;
-/* asm: CHKSUMD81	.word	-1 */
-int CHKSUMD81 = -1;
-/* asm: CHKSUME01	.word	-1 */
-int CHKSUME01 = -1;
-/* asm: CHKSUMC02	.word	-1 */
-int CHKSUMC02 = -1;
-/* asm: CHKSUMC82	.word	-1 */
-int CHKSUMC82 = -1;
-/* asm: CHKSUMD02	.word	-1 */
-int CHKSUMD02 = -1;
-/* asm: CHKSUMD82	.word	-1 */
-int CHKSUMD82 = -1;
-/* asm: CHKSUME02	.word	-1 */
-int CHKSUME02 = -1;
-/* asm: CHKSUMC03	.word	-1 */
-int CHKSUMC03 = -1;
-/* asm: CHKSUMC83	.word	-1 */
-int CHKSUMC83 = -1;
-/* asm: CHKSUMD03	.word	-1 */
-int CHKSUMD03 = -1;
-/* asm: CHKSUMD83	.word	-1 */
-int CHKSUMD83 = -1;
-/* asm: CHKSUME03	.word	-1 */
-int CHKSUME03 = -1;
-/* asm: CCHKSUMC00	.word	0 */
-int CCHKSUMC00 = 0;
-/* asm: CCHKSUMC80	.word	0 */
-int CCHKSUMC80 = 0;
-/* asm: CCHKSUMD00	.word	0 */
-int CCHKSUMD00 = 0;
-/* asm: CCHKSUMD80	.word	0 */
-int CCHKSUMD80 = 0;
-/* asm: CCHKSUME00	.word	0 */
-int CCHKSUME00 = 0;
-/* asm: CCHKSUMC01	.word	0 */
-int CCHKSUMC01 = 0;
-/* asm: CCHKSUMC81	.word	0 */
-int CCHKSUMC81 = 0;
-/* asm: CCHKSUMD01	.word	0 */
-int CCHKSUMD01 = 0;
-/* asm: CCHKSUMD81	.word	0 */
-int CCHKSUMD81 = 0;
-/* asm: CCHKSUME01	.word	0 */
-int CCHKSUME01 = 0;
-/* asm: CCHKSUMC02	.word	0 */
-int CCHKSUMC02 = 0;
-/* asm: CCHKSUMC82	.word	0 */
-int CCHKSUMC82 = 0;
-/* asm: CCHKSUMD02	.word	0 */
-int CCHKSUMD02 = 0;
-/* asm: CCHKSUMD82	.word	0 */
-int CCHKSUMD82 = 0;
-/* asm: CCHKSUME02	.word	0 */
-int CCHKSUME02 = 0;
-/* asm: CCHKSUMC03	.word	0 */
-int CCHKSUMC03 = 0;
-/* asm: CCHKSUMC83	.word	0 */
-int CCHKSUMC83 = 0;
-/* asm: CCHKSUMD03	.word	0 */
-int CCHKSUMD03 = 0;
-/* asm: CCHKSUMD83	.word	0 */
-int CCHKSUMD83 = 0;
-/* asm: CCHKSUME03	.word	0 */
-int CCHKSUME03 = 0;
-#else
-/* asm: CHKSUMC00	.word	CHECKSUM_C00 */
-int CHKSUMC00 = CHECKSUM_C00;
-/* asm: CHKSUMC80	.word	CHECKSUM_C80 */
-int CHKSUMC80 = CHECKSUM_C80;
-/* asm: CHKSUMD00	.word	CHECKSUM_D00 */
-int CHKSUMD00 = CHECKSUM_D00;
-/* asm: CHKSUMD80	.word	CHECKSUM_D80 */
-int CHKSUMD80 = CHECKSUM_D80;
-/* asm: CHKSUME00	.word	CHECKSUM_E00 */
-int CHKSUME00 = CHECKSUM_E00;
-/* asm: CHKSUMC01	.word	CHECKSUM_C01 */
-int CHKSUMC01 = CHECKSUM_C01;
-/* asm: CHKSUMC81	.word	CHECKSUM_C81 */
-int CHKSUMC81 = CHECKSUM_C81;
-/* asm: CHKSUMD01	.word	CHECKSUM_D01 */
-int CHKSUMD01 = CHECKSUM_D01;
-/* asm: CHKSUMD81	.word	CHECKSUM_D81 */
-int CHKSUMD81 = CHECKSUM_D81;
-/* asm: CHKSUME01	.word	CHECKSUM_E01 */
-int CHKSUME01 = CHECKSUM_E01;
-/* asm: CHKSUMC02	.word	CHECKSUM_C02 */
-int CHKSUMC02 = CHECKSUM_C02;
-/* asm: CHKSUMC82	.word	CHECKSUM_C82 */
-int CHKSUMC82 = CHECKSUM_C82;
-/* asm: CHKSUMD02	.word	CHECKSUM_D02 */
-int CHKSUMD02 = CHECKSUM_D02;
-/* asm: CHKSUMD82	.word	CHECKSUM_D82 */
-int CHKSUMD82 = CHECKSUM_D82;
-/* asm: CHKSUME02	.word	CHECKSUM_E02 */
-int CHKSUME02 = CHECKSUM_E02;
-/* asm: CHKSUMC03	.word	CHECKSUM_C03 */
-int CHKSUMC03 = CHECKSUM_C03;
-/* asm: CHKSUMC83	.word	CHECKSUM_C83 */
-int CHKSUMC83 = CHECKSUM_C83;
-/* asm: CHKSUMD03	.word	CHECKSUM_D03 */
-int CHKSUMD03 = CHECKSUM_D03;
-/* asm: CHKSUMD83	.word	CHECKSUM_D83 */
-int CHKSUMD83 = CHECKSUM_D83;
-/* asm: CHKSUME03	.word	CHECKSUM_E03 */
-int CHKSUME03 = CHECKSUM_E03;
-/* asm: CCHKSUMC00	.word	~CHECKSUM_C00 */
-int CCHKSUMC00 = ~CHECKSUM_C00;
-/* asm: CCHKSUMC80	.word	~CHECKSUM_C80 */
-int CCHKSUMC80 = ~CHECKSUM_C80;
-/* asm: CCHKSUMD00	.word	~CHECKSUM_D00 */
-int CCHKSUMD00 = ~CHECKSUM_D00;
-/* asm: CCHKSUMD80	.word	~CHECKSUM_D80 */
-int CCHKSUMD80 = ~CHECKSUM_D80;
-/* asm: CCHKSUME00	.word	~CHECKSUM_E00 */
-int CCHKSUME00 = ~CHECKSUM_E00;
-/* asm: CCHKSUMC01	.word	~CHECKSUM_C01 */
-int CCHKSUMC01 = ~CHECKSUM_C01;
-/* asm: CCHKSUMC81	.word	~CHECKSUM_C81 */
-int CCHKSUMC81 = ~CHECKSUM_C81;
-/* asm: CCHKSUMD01	.word	~CHECKSUM_D01 */
-int CCHKSUMD01 = ~CHECKSUM_D01;
-/* asm: CCHKSUMD81	.word	~CHECKSUM_D81 */
-int CCHKSUMD81 = ~CHECKSUM_D81;
-/* asm: CCHKSUME01	.word	~CHECKSUM_E01 */
-int CCHKSUME01 = ~CHECKSUM_E01;
-/* asm: CCHKSUMC02	.word	~CHECKSUM_C02 */
-int CCHKSUMC02 = ~CHECKSUM_C02;
-/* asm: CCHKSUMC82	.word	~CHECKSUM_C82 */
-int CCHKSUMC82 = ~CHECKSUM_C82;
-/* asm: CCHKSUMD02	.word	~CHECKSUM_D02 */
-int CCHKSUMD02 = ~CHECKSUM_D02;
-/* asm: CCHKSUMD82	.word	~CHECKSUM_D82 */
-int CCHKSUMD82 = ~CHECKSUM_D82;
-/* asm: CCHKSUME02	.word	~CHECKSUM_E02 */
-int CCHKSUME02 = ~CHECKSUM_E02;
-/* asm: CCHKSUMC03	.word	~CHECKSUM_C03 */
-int CCHKSUMC03 = ~CHECKSUM_C03;
-/* asm: CCHKSUMC83	.word	~CHECKSUM_C83 */
-int CCHKSUMC83 = ~CHECKSUM_C83;
-/* asm: CCHKSUMD03	.word	~CHECKSUM_D03 */
-int CCHKSUMD03 = ~CHECKSUM_D03;
-/* asm: CCHKSUMD83	.word	~CHECKSUM_D83 */
-int CCHKSUMD83 = ~CHECKSUM_D83;
-/* asm: CCHKSUME03	.word	~CHECKSUM_E03 */
-int CCHKSUME03 = ~CHECKSUM_E03;
-#endif
 
 void TEST_STATIC_CHIPS(void)
 {
@@ -525,6 +351,7 @@ void IS_STATIC_ERROR(void)
 ELOOP:
     // asm 0000633B: 	CALL	BLINK_DIGITS
     // asm 0000633C: 	BU	ELOOP
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "IS_STATIC_ERROR", 0, 0);
     UNIMPL();
 }
@@ -881,6 +708,19 @@ KKJJ:
     UNIMPL();
 }
 
+/* *----------------------------------------------------------------------------
+*FOR THE DISPLAY TO WORK WE MUST HAVE OPERATING PROPERLY:
+*	VIDEO RAM (8 CHIPS)
+*	COLOR RAM (2 CHIPS)
+*SO, WE TEST THESE (NOT PLOTTING TO THE SCREEN), AND SAVE THE RESULTS,
+*THEN WE BEGIN PLOTTING THE SCREEN, INITIALIZATING THESE SPACES WITH THE
+*RESULTS.
+*
+*
+ */
+/* asm: BASICS_RAM	fbss	BASICS_RAM,10 */
+int BASICS_RAM[10];
+
 void TEST_BASICS(void)
 {
     // asm: 	LDL	BASICS_RAM,AR5
@@ -1031,6 +871,7 @@ void RAMTEST(void)
     // 		;THIS IS THE ACTUAL ROUTINE, BUT IT MUST
     // 		;BE PLACED IN ON-CHIP MEMORY
     // 		;
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RAMTEST", 0, 0);
     UNIMPL();
 }
@@ -1121,6 +962,7 @@ void RAMERR(void)
 {
     // asm: 	LDI	1,R0		;IS BAD RAM
     // asm 00006564: 	BU	ENDING
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RAMERR", 0, 0);
     UNIMPL();
 }
@@ -1188,3 +1030,167 @@ CHKSUMG:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GENERATE_CHECKSUM", 0, 0);
     UNIMPL();
 }
+
+#if CHECKSUM_GEN
+/* asm: CHKSUMC00	.word	-1 */
+int CHKSUMC00 = -1;
+/* asm: CHKSUMC80	.word	-1 */
+int CHKSUMC80 = -1;
+/* asm: CHKSUMD00	.word	-1 */
+int CHKSUMD00 = -1;
+/* asm: CHKSUMD80	.word	-1 */
+int CHKSUMD80 = -1;
+/* asm: CHKSUME00	.word	-1 */
+int CHKSUME00 = -1;
+/* asm: CHKSUMC01	.word	-1 */
+int CHKSUMC01 = -1;
+/* asm: CHKSUMC81	.word	-1 */
+int CHKSUMC81 = -1;
+/* asm: CHKSUMD01	.word	-1 */
+int CHKSUMD01 = -1;
+/* asm: CHKSUMD81	.word	-1 */
+int CHKSUMD81 = -1;
+/* asm: CHKSUME01	.word	-1 */
+int CHKSUME01 = -1;
+/* asm: CHKSUMC02	.word	-1 */
+int CHKSUMC02 = -1;
+/* asm: CHKSUMC82	.word	-1 */
+int CHKSUMC82 = -1;
+/* asm: CHKSUMD02	.word	-1 */
+int CHKSUMD02 = -1;
+/* asm: CHKSUMD82	.word	-1 */
+int CHKSUMD82 = -1;
+/* asm: CHKSUME02	.word	-1 */
+int CHKSUME02 = -1;
+/* asm: CHKSUMC03	.word	-1 */
+int CHKSUMC03 = -1;
+/* asm: CHKSUMC83	.word	-1 */
+int CHKSUMC83 = -1;
+/* asm: CHKSUMD03	.word	-1 */
+int CHKSUMD03 = -1;
+/* asm: CHKSUMD83	.word	-1 */
+int CHKSUMD83 = -1;
+/* asm: CHKSUME03	.word	-1 */
+int CHKSUME03 = -1;
+/* asm: CCHKSUMC00	.word	0 */
+int CCHKSUMC00 = 0;
+/* asm: CCHKSUMC80	.word	0 */
+int CCHKSUMC80 = 0;
+/* asm: CCHKSUMD00	.word	0 */
+int CCHKSUMD00 = 0;
+/* asm: CCHKSUMD80	.word	0 */
+int CCHKSUMD80 = 0;
+/* asm: CCHKSUME00	.word	0 */
+int CCHKSUME00 = 0;
+/* asm: CCHKSUMC01	.word	0 */
+int CCHKSUMC01 = 0;
+/* asm: CCHKSUMC81	.word	0 */
+int CCHKSUMC81 = 0;
+/* asm: CCHKSUMD01	.word	0 */
+int CCHKSUMD01 = 0;
+/* asm: CCHKSUMD81	.word	0 */
+int CCHKSUMD81 = 0;
+/* asm: CCHKSUME01	.word	0 */
+int CCHKSUME01 = 0;
+/* asm: CCHKSUMC02	.word	0 */
+int CCHKSUMC02 = 0;
+/* asm: CCHKSUMC82	.word	0 */
+int CCHKSUMC82 = 0;
+/* asm: CCHKSUMD02	.word	0 */
+int CCHKSUMD02 = 0;
+/* asm: CCHKSUMD82	.word	0 */
+int CCHKSUMD82 = 0;
+/* asm: CCHKSUME02	.word	0 */
+int CCHKSUME02 = 0;
+/* asm: CCHKSUMC03	.word	0 */
+int CCHKSUMC03 = 0;
+/* asm: CCHKSUMC83	.word	0 */
+int CCHKSUMC83 = 0;
+/* asm: CCHKSUMD03	.word	0 */
+int CCHKSUMD03 = 0;
+/* asm: CCHKSUMD83	.word	0 */
+int CCHKSUMD83 = 0;
+/* asm: CCHKSUME03	.word	0 */
+int CCHKSUME03 = 0;
+#else
+/* asm: CHKSUMC00	.word	CHECKSUM_C00 */
+int CHKSUMC00 = CHECKSUM_C00;
+/* asm: CHKSUMC80	.word	CHECKSUM_C80 */
+int CHKSUMC80 = CHECKSUM_C80;
+/* asm: CHKSUMD00	.word	CHECKSUM_D00 */
+int CHKSUMD00 = CHECKSUM_D00;
+/* asm: CHKSUMD80	.word	CHECKSUM_D80 */
+int CHKSUMD80 = CHECKSUM_D80;
+/* asm: CHKSUME00	.word	CHECKSUM_E00 */
+int CHKSUME00 = CHECKSUM_E00;
+/* asm: CHKSUMC01	.word	CHECKSUM_C01 */
+int CHKSUMC01 = CHECKSUM_C01;
+/* asm: CHKSUMC81	.word	CHECKSUM_C81 */
+int CHKSUMC81 = CHECKSUM_C81;
+/* asm: CHKSUMD01	.word	CHECKSUM_D01 */
+int CHKSUMD01 = CHECKSUM_D01;
+/* asm: CHKSUMD81	.word	CHECKSUM_D81 */
+int CHKSUMD81 = CHECKSUM_D81;
+/* asm: CHKSUME01	.word	CHECKSUM_E01 */
+int CHKSUME01 = CHECKSUM_E01;
+/* asm: CHKSUMC02	.word	CHECKSUM_C02 */
+int CHKSUMC02 = CHECKSUM_C02;
+/* asm: CHKSUMC82	.word	CHECKSUM_C82 */
+int CHKSUMC82 = CHECKSUM_C82;
+/* asm: CHKSUMD02	.word	CHECKSUM_D02 */
+int CHKSUMD02 = CHECKSUM_D02;
+/* asm: CHKSUMD82	.word	CHECKSUM_D82 */
+int CHKSUMD82 = CHECKSUM_D82;
+/* asm: CHKSUME02	.word	CHECKSUM_E02 */
+int CHKSUME02 = CHECKSUM_E02;
+/* asm: CHKSUMC03	.word	CHECKSUM_C03 */
+int CHKSUMC03 = CHECKSUM_C03;
+/* asm: CHKSUMC83	.word	CHECKSUM_C83 */
+int CHKSUMC83 = CHECKSUM_C83;
+/* asm: CHKSUMD03	.word	CHECKSUM_D03 */
+int CHKSUMD03 = CHECKSUM_D03;
+/* asm: CHKSUMD83	.word	CHECKSUM_D83 */
+int CHKSUMD83 = CHECKSUM_D83;
+/* asm: CHKSUME03	.word	CHECKSUM_E03 */
+int CHKSUME03 = CHECKSUM_E03;
+/* asm: CCHKSUMC00	.word	~CHECKSUM_C00 */
+int CCHKSUMC00 = ~CHECKSUM_C00;
+/* asm: CCHKSUMC80	.word	~CHECKSUM_C80 */
+int CCHKSUMC80 = ~CHECKSUM_C80;
+/* asm: CCHKSUMD00	.word	~CHECKSUM_D00 */
+int CCHKSUMD00 = ~CHECKSUM_D00;
+/* asm: CCHKSUMD80	.word	~CHECKSUM_D80 */
+int CCHKSUMD80 = ~CHECKSUM_D80;
+/* asm: CCHKSUME00	.word	~CHECKSUM_E00 */
+int CCHKSUME00 = ~CHECKSUM_E00;
+/* asm: CCHKSUMC01	.word	~CHECKSUM_C01 */
+int CCHKSUMC01 = ~CHECKSUM_C01;
+/* asm: CCHKSUMC81	.word	~CHECKSUM_C81 */
+int CCHKSUMC81 = ~CHECKSUM_C81;
+/* asm: CCHKSUMD01	.word	~CHECKSUM_D01 */
+int CCHKSUMD01 = ~CHECKSUM_D01;
+/* asm: CCHKSUMD81	.word	~CHECKSUM_D81 */
+int CCHKSUMD81 = ~CHECKSUM_D81;
+/* asm: CCHKSUME01	.word	~CHECKSUM_E01 */
+int CCHKSUME01 = ~CHECKSUM_E01;
+/* asm: CCHKSUMC02	.word	~CHECKSUM_C02 */
+int CCHKSUMC02 = ~CHECKSUM_C02;
+/* asm: CCHKSUMC82	.word	~CHECKSUM_C82 */
+int CCHKSUMC82 = ~CHECKSUM_C82;
+/* asm: CCHKSUMD02	.word	~CHECKSUM_D02 */
+int CCHKSUMD02 = ~CHECKSUM_D02;
+/* asm: CCHKSUMD82	.word	~CHECKSUM_D82 */
+int CCHKSUMD82 = ~CHECKSUM_D82;
+/* asm: CCHKSUME02	.word	~CHECKSUM_E02 */
+int CCHKSUME02 = ~CHECKSUM_E02;
+/* asm: CCHKSUMC03	.word	~CHECKSUM_C03 */
+int CCHKSUMC03 = ~CHECKSUM_C03;
+/* asm: CCHKSUMC83	.word	~CHECKSUM_C83 */
+int CCHKSUMC83 = ~CHECKSUM_C83;
+/* asm: CCHKSUMD03	.word	~CHECKSUM_D03 */
+int CCHKSUMD03 = ~CHECKSUM_D03;
+/* asm: CCHKSUMD83	.word	~CHECKSUM_D83 */
+int CCHKSUMD83 = ~CHECKSUM_D83;
+/* asm: CCHKSUME03	.word	~CHECKSUM_E03 */
+int CCHKSUME03 = ~CHECKSUM_E03;
+#endif
