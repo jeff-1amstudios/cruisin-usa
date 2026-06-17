@@ -19,21 +19,50 @@
 
 void DIRQ(void);
 
-extern int ASHADOW;
-extern int LIGHTIY;
-extern int transvectorYI;
-extern int tmpmatY;
+#define OACTIVEI OACTIVE
+#define IDLE_LISTI IDLE_LIST
+#define OACTIVE_PRIORITYI OACTIVE_PRIORITY
+#define OLOW_PRIORITYI OLOW_PRIORITY
+#define OHIGH_PRIORITYI OHIGH_PRIORITY
+#define CAMERAPOSI _CAMERAPOS
+#define CAMERARADI _CAMERARAD
+#define CAMERAMATRIXI _CAMERAMATRIX
+#define LOCTEMPER_MATI LOCTEMPER_MAT
+#define transmatrixI ROTATION_MATRIX
+#define POSTERMATI POSTERMATRIX
+#define POSTERMAT2DI POSTERMATRIX2D
+#define BLOWLISTI BLOWLIST
+#define tmpmatI TMPMAT
+#define INVTABI INVTAB
+#define DRIVE_LISTI DRIVE_LIST
+#define CAR_LISTI CAR_LIST
+#define SIGN_LISTI SIGN_LIST
+#define GROUND_LISTI GROUND_LIST
+#define MATRIXAI _MATRIXA
+#define MATRIXBI _MATRIXB
+#define MATRIXCI _MATRIXC
+#define VECTORAI _VECTORA
+#define VECTORBI _VECTORB
+#define VECTORCI _VECTORC
+#define VECTORDI _VECTORD
+#define _PALLISTI _PALLIST
+#define FASTSTKI FASTSTK
+
+extern uintptr_t ASHADOW;
+extern uintptr_t LIGHTIY;
+extern uintptr_t transvectorYI;
+extern uintptr_t tmpmatY;
 extern float SCRNHXI;
 extern float SCRNHYI;
 extern int HIGH_CLIP_LEV8;
-extern int VECTORAYI;
+extern uintptr_t VECTORAYI;
 extern int POSTERMATRIX2D[];
 
 /* *----------------------------------------------------------------------------
  */
 #define POSTERCLIP 300
 #define LOW_CLIP_LEVEL 100
-#define HIGH_CLIP_LEVEL ((5000-1)) //ACTUAL # OF ENTRIES
+#define HIGH_CLIP_LEVEL 4999 //ACTUAL # OF ENTRIES
 /* asm: CAMERAPOSI	.word	_CAMERAPOS */
 #define CAMERAPOSI _CAMERAPOS
 /* asm: CAMERARADI	.word	_CAMERARAD */
@@ -41,13 +70,13 @@ extern int POSTERMATRIX2D[];
 /* asm: CAMERAMATRIXI	.word	_CAMERAMATRIX */
 #define CAMERAMATRIXI _CAMERAMATRIX
 /* asm: ASHADOW	.word	_ACNTL		;HEADS UP THE FIFO MIRROR */
-int ASHADOW = _ACNTL;
+uintptr_t ASHADOW = (uintptr_t)&_ACNTL;
 /* asm: LIGHTIY	.word	_LIGHT+1 */
-int LIGHTIY = _LIGHT+1;
+uintptr_t LIGHTIY = (uintptr_t)(_LIGHT+1);
 /* asm: transmatrixI	.word	ROTATION_MATRIX */
 #define transmatrixI ROTATION_MATRIX
 /* asm: transvectorYI	.word	TRANSVECTOR+1 */
-int transvectorYI = TRANSVECTOR+1;
+uintptr_t transvectorYI = (uintptr_t)(TRANSVECTOR+1);
 /* asm: POSTERMATI	.word	POSTERMATRIX */
 #define POSTERMATI POSTERMATRIX
 /* asm: POSTERMAT2DI	.word	POSTERMATRIX2D */
@@ -55,7 +84,7 @@ int transvectorYI = TRANSVECTOR+1;
 /* asm: tmpmatI	.word	TMPMAT */
 #define tmpmatI TMPMAT
 /* asm: tmpmatY	.word	TMPMAT+1 */
-int tmpmatY = TMPMAT+1;
+uintptr_t tmpmatY = (uintptr_t)(TMPMAT+1);
 /* asm: SCRNHXI	.float	SCRNHX */
 float SCRNHXI = SCRNHX;
 /* asm: SCRNHYI	.float	SCRNHY */
@@ -77,7 +106,7 @@ int HIGH_CLIP_LEV8 = 80000;
 /* asm: VECTORDI	.word	_VECTORD */
 #define VECTORDI _VECTORD
 /* asm: VECTORAYI	.word	_VECTORA+1 */
-int VECTORAYI = _VECTORA+1;
+uintptr_t VECTORAYI = (uintptr_t)(_VECTORA+1);
 /* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */
 int POSTERMATRIX2D[4];
 

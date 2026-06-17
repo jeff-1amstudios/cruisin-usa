@@ -27,6 +27,11 @@ void PRC_FINDNEXT(void);
 void PRC_FIND(void);
 void PRC_FOLLOW(void);
 
+#define PRC_SLEEP SLEEP
+#define PACTIVEI PACTIVE
+#define PFREEI PFREE
+#define PRCSTRI PRCSTR
+
 extern int NUM_PROCS_ACTIVE;
 extern int NUM_PROCS_IDLE;
 extern int CURRENT_PROC;

@@ -9,6 +9,10 @@
  * Source module: asm/TEXTTAB.ASM
  */
 
+#define FONTDIGLGI FONTDIGLG
+#define FONTDIGSMI FONTDIGSM
+#define FONTN43TABI FONTN43TAB
+
 extern int FONTDIGLG;
 extern int FONTDIGSM;
 extern int FONTN43TAB;

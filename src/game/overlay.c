@@ -54,6 +54,8 @@ void TOWER_PAL_LD(void);
 void TOWER_PAL_RESTORE(void);
 void END_OF_GAME(void);
 
+#define ROUTINE_TABLEI ROUTINE_TABLE
+
 extern int ROUTINE_TABLE[];
 extern int CHECKPOINT_TIME_BONUS;
 extern int REAL_CHECKPOINTS;

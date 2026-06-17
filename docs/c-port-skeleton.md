@@ -55,7 +55,6 @@ src/
 tools/
   port/
     gen_c_skeleton.py
-    gen_equ_headers.py
     sync_module_layout.py
     compare_trace.py
 ```
@@ -328,18 +327,16 @@ Do not try to use one build configuration for both goals.
    - moves/validates source layout
    - maps `asm/*.ASM` to `src/game/*.c`
 
-2. `tools/port/gen_equ_headers.py`
-   - converts `.EQU` and suitable `.INC` files to headers
-
-3. `tools/port/gen_c_skeleton.py`
+2. `tools/port/gen_c_skeleton.py`
    - parses ASM
+   - converts `.EQU` files to headers
    - emits or refreshes block-based module C files
-   - preserves `@user:` blocks
+   - emits or refreshes generated headers
 
-4. `tools/port/compare_trace.py`
+3. `tools/port/compare_trace.py`
    - compares MAME and native traces
 
-5. MAME trace helpers
+4. MAME trace helpers
    - function/label hit logging
    - memory write capture for selected ranges
    - framebuffer dump/hash support

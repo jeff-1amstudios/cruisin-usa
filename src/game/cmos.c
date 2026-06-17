@@ -46,6 +46,12 @@ void TABLE_ENTRY_READ(void);
 void CHECK_RACE_TABLE(void);
 void INSERT_TABLE_ENTRY(void);
 
+#define ADJUSTMENT_READ AUDIT_READ
+#define CMOSI CMOS
+#define DEFAULT_TABLE_TOTALI DEFAULT_TABLE_TOTAL
+
+void GETCOIN_DEFAULT(void);
+
 extern int VERIFY_ADJUSTMENTS_ACCURACYTAB;
 extern int DEFAULT_TABLE;
 extern int DEFAULT_TABLE_TOTAL;
@@ -239,43 +245,43 @@ int VERIFY_ADJUSTMENTS_ACCURACYTAB;
  */
 void VERIFY_ADJUSTMENTS_ACCURACY(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	R4
-    // asm: 	PUSH	AR2
-    // asm 000099AC: 	PUSH	AR5
-    // asm 000099AD: 	PUSH	AR6
-    // asm 000099AE: 	CLRI	AR5
-    // asm 000099AF: 	LDL	VERIFY_ADJUSTMENTS_ACCURACYTAB,AR6
+    // asm 000099AC: 	PUSH	R0
+    // asm 000099AD: 	PUSH	R1
+    // asm 000099AE: 	PUSH	R2
+    // asm 000099AF: 	PUSH	R3
+    // asm 000099B0: 	PUSH	R4
+    // asm 000099B1: 	PUSH	AR2
+    // asm 000099B2: 	PUSH	AR5
+    // asm 000099B3: 	PUSH	AR6
+    // asm 000099B4: 	CLRI	AR5
+    // asm 000099B5: 	LDL	VERIFY_ADJUSTMENTS_ACCURACYTAB,AR6
 VAALP:
-    // asm 000099B1: 	LDI	AR5,AR2
-    // asm 000099B2: 	CALL	AUDIT_READ	;R0 = ADJUSTMENT VALUE
-    // asm 000099B4: 	LDI	*AR6++,R1
-    // asm 000099B5: 	LDI	*AR6++,R2
-    // asm: 	LDI	*AR6++,R3
-    // asm 000099B7: 	CMPI	R1,R0
-    // asm: 	BLT	DORST
-    // asm 000099B8: 	CMPI	R2,R0
-    // asm 000099B9: 	BLE	NORST
+    // asm 000099B6: 	LDI	AR5,AR2
+    // asm 000099B7: 	CALL	AUDIT_READ	;R0 = ADJUSTMENT VALUE
+    // asm 000099B8: 	LDI	*AR6++,R1
+    // asm 000099B9: 	LDI	*AR6++,R2
+    // asm 000099BA: 	LDI	*AR6++,R3
+    // asm 000099BB: 	CMPI	R1,R0
+    // asm 000099BC: 	BLT	DORST
+    // asm 000099BD: 	CMPI	R2,R0
+    // asm 000099BE: 	BLE	NORST
 DORST:
-    // asm 000099BB: LDI	R3,R2
-    // asm 000099BB: 	LDI	AR5,AR2
-    // asm 000099BC: 	CALL	ADJUSTMENT_WRITE
+    // asm 000099BF: LDI	R3,R2
+    // asm 000099C0: 	LDI	AR5,AR2
+    // asm 000099C1: 	CALL	ADJUSTMENT_WRITE
 NORST:
-    // asm 000099BE: INC	AR5
-    // asm: 	CMPI	NUM_ADJUSTMENTS,AR5
-    // asm 000099BF: 	BLT	VAALP
-    // asm 000099C1: 	POP	AR6
-    // asm: 	POP	AR5
-    // asm 000099C2: 	POP	AR2
-    // asm 000099C3: 	POP	R4
-    // asm 000099C4: 	POP	R3
-    // asm: 	POP	R2
-    // asm 000099C5: 	POP	R1
-    // asm 000099C6: 	POP	R0
-    // asm 000099C7: 	RETS
+    // asm 000099C2: INC	AR5
+    // asm 000099C3: 	CMPI	NUM_ADJUSTMENTS,AR5
+    // asm 000099C4: 	BLT	VAALP
+    // asm 000099C5: 	POP	AR6
+    // asm 000099C6: 	POP	AR5
+    // asm 000099C7: 	POP	AR2
+    // asm 000099C8: 	POP	R4
+    // asm 000099C9: 	POP	R3
+    // asm 000099CA: 	POP	R2
+    // asm 000099CB: 	POP	R1
+    // asm 000099CC: 	POP	R0
+    // asm 000099CD: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VERIFY_ADJUSTMENTS_ACCURACY", 0, 0);
     UNIMPL();
 }
@@ -284,25 +290,25 @@ NORST:
  */
 void RESET_ADJUSTMENTS(void)
 {
-    // asm 000099CD: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR5
-    // asm 000099CE: 	PUSH	AR6
-    // asm 000099D0: 	CLRI	AR5
-    // asm 000099D1: 	LDL	VERIFY_ADJUSTMENTS_ACCURACYTAB,AR6
+    // asm 000099CE: 	PUSH	R0
+    // asm 000099CF: 	PUSH	R1
+    // asm 000099D0: 	PUSH	R2
+    // asm 000099D1: 	PUSH	R3
+    // asm 000099D2: 	PUSH	AR2
+    // asm 000099D3: 	PUSH	AR5
+    // asm 000099D4: 	PUSH	AR6
+    // asm 000099D5: 	CLRI	AR5
+    // asm 000099D6: 	LDL	VERIFY_ADJUSTMENTS_ACCURACYTAB,AR6
 VAALP2:
-    // asm 000099D3: 	LDI	*AR6++,R2
-    // asm 000099D4: 	LDI	*AR6++,R2
-    // asm: 	LDI	*AR6++,R2		;RESET VALUE
-    // asm 000099D5: 	LDI	AR5,AR2
-    // asm 000099D6: 	CALL	AUDIT_WRITE
-    // asm 000099D7: 	INC	AR5
-    // asm 000099D8: 	CMPI	NUM_ADJUSTMENTS,AR5
-    // asm 000099D9: 	BLT	VAALP2
-    // asm: 	CALL	GETCOIN_DEFAULT
+    // asm 000099D7: 	LDI	*AR6++,R2
+    // asm 000099D8: 	LDI	*AR6++,R2
+    // asm 000099D9: 	LDI	*AR6++,R2		;RESET VALUE
+    // asm 000099DA: 	LDI	AR5,AR2
+    // asm 000099DB: 	CALL	AUDIT_WRITE
+    // asm 000099DC: 	INC	AR5
+    // asm 000099DD: 	CMPI	NUM_ADJUSTMENTS,AR5
+    // asm 000099DE: 	BLT	VAALP2
+    // asm 000099DF: 	CALL	GETCOIN_DEFAULT
     // ;	LDP	@DIPSW
     // ;	LDI	@DIPSW,R2
     // ;	SETDP
@@ -316,26 +322,26 @@ VAALP2:
     // ;	AND	07Fh,R0
     // ;	LDI	R0,R2
     // ;Now check to see if the dipswitch setting is a valid coinmode
-    // asm: 	LDL	VERIFY_ADJUSTMENTS_ACCURACYTAB,AR2
-    // asm: 	LDI	ADJ_COINMODE,R0
-    // asm: 	MPYI	3,R0
-    // asm: 	ADDI	R0,AR2
-    // asm: 	LDI	*+AR2,R0
-    // asm: 	CMPI	R0,R2
-    // asm 000099E0: 	LDIGT	*+AR2(2),R2
-    // asm 000099E2: 	LDI	ADJ_COINMODE,AR2
-    // asm 000099E3: 	CALL	ADJUSTMENT_WRITE
-    // asm 000099E6: 	CALL	CHECKSUMGEN_ADJ
-    // asm: 	LDI	R0,R2
-    // asm 000099E7: 	SETAUD	ADJ_CHECKSUM
-    // asm 000099E8: 	POP	AR6
-    // asm: 	POP	AR5
-    // asm: 	POP	AR2
-    // asm 000099E9: 	POP	R3
-    // asm 000099EA: 	POP	R2
-    // asm 000099EB: 	POP	R1
-    // asm 000099ED: 	POP	R0
-    // asm 000099EE: 	RETS
+    // asm 000099E0: 	LDL	VERIFY_ADJUSTMENTS_ACCURACYTAB,AR2
+    // asm 000099E1: 	LDI	ADJ_COINMODE,R0
+    // asm 000099E2: 	MPYI	3,R0
+    // asm 000099E3: 	ADDI	R0,AR2
+    // asm 000099E4: 	LDI	*+AR2,R0
+    // asm 000099E5: 	CMPI	R0,R2
+    // asm 000099E6: 	LDIGT	*+AR2(2),R2
+    // asm 000099E7: 	LDI	ADJ_COINMODE,AR2
+    // asm 000099E8: 	CALL	ADJUSTMENT_WRITE
+    // asm 000099E9: 	CALL	CHECKSUMGEN_ADJ
+    // asm 000099EA: 	LDI	R0,R2
+    // asm 000099EB: 	SETAUD	ADJ_CHECKSUM
+    // asm 000099ED: 	POP	AR6
+    // asm 000099EE: 	POP	AR5
+    // asm 000099EF: 	POP	AR2
+    // asm 000099F0: 	POP	R3
+    // asm 000099F1: 	POP	R2
+    // asm 000099F2: 	POP	R1
+    // asm 000099F3: 	POP	R0
+    // asm 000099F4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESET_ADJUSTMENTS", 0, 0);
     UNIMPL();
 }
@@ -349,23 +355,23 @@ VAALP2:
  */
 void CHECKSUMGEN_ADJ(void)
 {
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	AR5
-    // asm: 	CLRI	AR5
-    // asm: 	CLRI	R1
+    // asm 000099F5: 	PUSH	R1
+    // asm 000099F6: 	PUSH	AR2
+    // asm 000099F7: 	PUSH	AR5
+    // asm 000099F8: 	CLRI	AR5
+    // asm 000099F9: 	CLRI	R1
 VAALP3:
-    // asm 000099F6: 	LDI	AR5,AR2
-    // asm 000099F7: 	CALL	AUDIT_READ	;R0 = ADJUSTMENT VALUE
-    // asm: 	ADDI	R0,R1
-    // asm 000099F9: 	INC	AR5
-    // asm: 	CMPI	NUM_ADJUSTMENTS,AR5
-    // asm 000099FA: 	BLT	VAALP3
-    // asm 000099FC: 	LDI	R1,R0
-    // asm: 	POP	AR5
-    // asm 000099FD: 	POP	AR2
-    // asm 000099FE: 	POP	R1
-    // asm 000099FF: 	RETS
+    // asm 000099FA: 	LDI	AR5,AR2
+    // asm 000099FB: 	CALL	AUDIT_READ	;R0 = ADJUSTMENT VALUE
+    // asm 000099FC: 	ADDI	R0,R1
+    // asm 000099FD: 	INC	AR5
+    // asm 000099FE: 	CMPI	NUM_ADJUSTMENTS,AR5
+    // asm 000099FF: 	BLT	VAALP3
+    // asm 00009A00: 	LDI	R1,R0
+    // asm 00009A01: 	POP	AR5
+    // asm 00009A02: 	POP	AR2
+    // asm 00009A03: 	POP	R1
+    // asm 00009A04: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKSUMGEN_ADJ", 0, 0);
     UNIMPL();
 }
@@ -381,14 +387,14 @@ VAALP3:
  */
 void AUDIT_INC(void)
 {
-    // asm: 	LS	2,AR2
-    // asm: 	ADDI	@CMOSI,AR2
-    // asm: 	CALL	_rd_cw
-    // asm: 	NOP	*AR2--(4)
-    // asm: 	ADDI	1,R0
-    // asm: 	LDI	R0,R2
-    // asm 00009A05: 	CALL	_wr_cw
-    // asm 00009A06: 	RETS
+    // asm 00009A05: 	LS	2,AR2
+    // asm 00009A06: 	ADDI	@CMOSI,AR2
+    // asm 00009A07: 	CALL	_rd_cw
+    // asm 00009A08: 	NOP	*AR2--(4)
+    // asm 00009A09: 	ADDI	1,R0
+    // asm 00009A0A: 	LDI	R0,R2
+    // asm 00009A0B: 	CALL	_wr_cw
+    // asm 00009A0C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_INC", 0, 0);
     UNIMPL();
 }
@@ -405,13 +411,13 @@ void AUDIT_INC(void)
  */
 void AUDIT_ADD(void)
 {
-    // asm: 	LS	2,AR2
-    // asm: 	ADDI	@CMOSI,AR2
-    // asm: 	CALL	_rd_cw
-    // asm: 	NOP	*AR2--(4)
-    // asm: 	ADDI	R0,R2
-    // asm: 	CALL	_wr_cw
-    // asm 00009A0D: 	RETS
+    // asm 00009A0D: 	LS	2,AR2
+    // asm 00009A0E: 	ADDI	@CMOSI,AR2
+    // asm 00009A0F: 	CALL	_rd_cw
+    // asm 00009A10: 	NOP	*AR2--(4)
+    // asm 00009A11: 	ADDI	R0,R2
+    // asm 00009A12: 	CALL	_wr_cw
+    // asm 00009A13: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_ADD", 0, 0);
     UNIMPL();
 }
@@ -427,11 +433,11 @@ void AUDIT_ADD(void)
  */
 void AUDIT_READ(void)
 {
-    // asm: 	LS	2,AR2
-    // asm: 	ADDI	@CMOSI,AR2
-    // asm: 	CALL	_rd_cw
-    // asm: 	NOP	*AR2--(4)
-    // asm: 	RETS
+    // asm 00009A14: 	LS	2,AR2
+    // asm 00009A15: 	ADDI	@CMOSI,AR2
+    // asm 00009A16: 	CALL	_rd_cw
+    // asm 00009A17: 	NOP	*AR2--(4)
+    // asm 00009A18: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_READ", 0, 0);
     UNIMPL();
 }
@@ -448,12 +454,12 @@ void AUDIT_READ(void)
  */
 void ADJUSTMENT_WRITE(void)
 {
-    // asm: 	CALL	AUDIT_WRITE_ADJ
-    // asm: 	CALL	CHECKSUMGEN_ADJ
-    // asm: 	LDI	R0,R2
-    // asm: 	LDI	ADJ_CHECKSUM,AR2
-    // asm: 	CALL	AUDIT_WRITE_ADJ
-    // asm: 	RETS
+    // asm 00009A19: 	CALL	AUDIT_WRITE_ADJ
+    // asm 00009A1A: 	CALL	CHECKSUMGEN_ADJ
+    // asm 00009A1B: 	LDI	R0,R2
+    // asm 00009A1C: 	LDI	ADJ_CHECKSUM,AR2
+    // asm 00009A1D: 	CALL	AUDIT_WRITE_ADJ
+    // asm 00009A1E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ADJUSTMENT_WRITE", 0, 0);
     UNIMPL();
 }
@@ -481,11 +487,11 @@ void AUDIT_WRITE(void)
 
 void AUDIT_WRITE_ADJ(void)
 {
-    // asm: 	LS	2,AR2
-    // asm: 	ADDI	@CMOSI,AR2
-    // asm: 	CALL	_wr_cw
-    // asm: 	NOP	*AR2--(4)
-    // asm: 	RETS
+    // asm 00009A1F: 	LS	2,AR2
+    // asm 00009A20: 	ADDI	@CMOSI,AR2
+    // asm 00009A21: 	CALL	_wr_cw
+    // asm 00009A22: 	NOP	*AR2--(4)
+    // asm 00009A23: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_WRITE_ADJ", 0, 0);
     UNIMPL();
 }
@@ -502,26 +508,26 @@ void AUDIT_WRITE_ADJ(void)
  */
 void _rd_cw(void)
 {
-    // asm: 	PUSH	R1
-    // asm: 	CMOS_ON
-    // asm: 	NOP			;DELAY FOR TIMING...
-    // asm: 	LDI	*AR2++,R0
-    // asm: 	RS	24,R0
-    // asm 00009A24: 	LS	8,R0
-    // asm 00009A26: 	LDI	*AR2++,R1
-    // asm: 	RS	24,R1
-    // asm 00009A27: 	OR	R1,R0
-    // asm 00009A28: 	LS	8,R0
-    // asm: 	LDI	*AR2++,R1
-    // asm 00009A2A: 	RS	24,R1
-    // asm 00009A2B: 	OR	R1,R0
-    // asm 00009A2C: 	LS	8,R0
-    // asm: 	LDI	*AR2++,R1
-    // asm 00009A2E: 	RS	24,R1
-    // asm 00009A2F: 	OR	R1,R0
-    // asm 00009A31: 	CMOS_OFF
-    // asm: 	POP	R1
-    // asm 00009A32: 	RETS
+    // asm 00009A24: 	PUSH	R1
+    // asm 00009A25: 	CMOS_ON
+    // asm 00009A26: 	NOP			;DELAY FOR TIMING...
+    // asm 00009A27: 	LDI	*AR2++,R0
+    // asm 00009A28: 	RS	24,R0
+    // asm 00009A29: 	LS	8,R0
+    // asm 00009A2A: 	LDI	*AR2++,R1
+    // asm 00009A2B: 	RS	24,R1
+    // asm 00009A2C: 	OR	R1,R0
+    // asm 00009A2D: 	LS	8,R0
+    // asm 00009A2E: 	LDI	*AR2++,R1
+    // asm 00009A2F: 	RS	24,R1
+    // asm 00009A30: 	OR	R1,R0
+    // asm 00009A31: 	LS	8,R0
+    // asm 00009A32: 	LDI	*AR2++,R1
+    // asm 00009A33: 	RS	24,R1
+    // asm 00009A34: 	OR	R1,R0
+    // asm 00009A35: 	CMOS_OFF
+    // asm 00009A36: 	POP	R1
+    // asm 00009A37: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_rd_cw", 0, 0);
     UNIMPL();
 }
@@ -539,25 +545,25 @@ void _rd_cw(void)
  */
 void _wr_cw(void)
 {
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	CMOS_ON
-    // asm: 	CMOS_WP_OFF
-    // asm: 	NOP			;DELAY FOR TIMING...
-    // asm 00009A39: 	STI	R2,*AR2++
-    // asm 00009A3A: 	LS	8,R2
-    // asm 00009A3B: 	STI	R2,*AR2++
-    // asm 00009A3C: 	LS	8,R2
-    // asm 00009A3D: 	STI	R2,*AR2++
-    // asm: 	LS	8,R2
+    // asm 00009A38: 	PUSH	R1
+    // asm 00009A39: 	PUSH	R2
+    // asm 00009A3A: 	PUSH	R3
+    // asm 00009A3B: 	CMOS_ON
+    // asm 00009A3C: 	CMOS_WP_OFF
+    // asm 00009A3D: 	NOP			;DELAY FOR TIMING...
     // asm 00009A3E: 	STI	R2,*AR2++
-    // asm 00009A3F: 	CMOS_WP_ON
-    // asm 00009A40: 	CMOS_OFF
-    // asm 00009A41: 	POP	R3
-    // asm 00009A42: 	POP	R2
-    // asm 00009A43: 	POP	R1
-    // asm 00009A44: 	RETS
+    // asm 00009A3F: 	LS	8,R2
+    // asm 00009A40: 	STI	R2,*AR2++
+    // asm 00009A41: 	LS	8,R2
+    // asm 00009A42: 	STI	R2,*AR2++
+    // asm 00009A43: 	LS	8,R2
+    // asm 00009A44: 	STI	R2,*AR2++
+    // asm 00009A45: 	CMOS_WP_ON
+    // asm 00009A46: 	CMOS_OFF
+    // asm 00009A47: 	POP	R3
+    // asm 00009A48: 	POP	R2
+    // asm 00009A49: 	POP	R1
+    // asm 00009A4A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_wr_cw", 0, 0);
     UNIMPL();
 }
@@ -575,26 +581,26 @@ void _wr_cw(void)
  */
 void _rd_cwR(void)
 {
-    // asm: 	PUSH	R1
-    // asm: 	CMOS_ON
-    // asm: 	NOP			;DELAY FOR TIMING...
-    // asm: 	LDI	*AR2++,R0
-    // asm: 	RS	24,R0
-    // asm 00009A4C: 	LDI	*AR2++,R1
-    // asm 00009A4D: 	RS	24,R1
-    // asm: 	LS	8,R1
-    // asm 00009A4E: 	OR	R1,R0
-    // asm: 	LDI	*AR2++,R1
-    // asm 00009A50: 	RS	24,R1
-    // asm 00009A51: 	LS	16,R1
-    // asm 00009A52: 	OR	R1,R0
-    // asm: 	LDI	*AR2++,R1
-    // asm 00009A54: 	RS	24,R1
-    // asm 00009A55: 	LS	24,R1
-    // asm 00009A56: 	OR	R1,R0
-    // asm: 	CMOS_OFF
-    // asm 00009A58: 	POP	R1
-    // asm 00009A59: 	RETS
+    // asm 00009A4B: 	PUSH	R1
+    // asm 00009A4C: 	CMOS_ON
+    // asm 00009A4D: 	NOP			;DELAY FOR TIMING...
+    // asm 00009A4E: 	LDI	*AR2++,R0
+    // asm 00009A4F: 	RS	24,R0
+    // asm 00009A50: 	LDI	*AR2++,R1
+    // asm 00009A51: 	RS	24,R1
+    // asm 00009A52: 	LS	8,R1
+    // asm 00009A53: 	OR	R1,R0
+    // asm 00009A54: 	LDI	*AR2++,R1
+    // asm 00009A55: 	RS	24,R1
+    // asm 00009A56: 	LS	16,R1
+    // asm 00009A57: 	OR	R1,R0
+    // asm 00009A58: 	LDI	*AR2++,R1
+    // asm 00009A59: 	RS	24,R1
+    // asm 00009A5A: 	LS	24,R1
+    // asm 00009A5B: 	OR	R1,R0
+    // asm 00009A5C: 	CMOS_OFF
+    // asm 00009A5D: 	POP	R1
+    // asm 00009A5E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_rd_cwR", 0, 0);
     UNIMPL();
 }
@@ -612,32 +618,32 @@ void _rd_cwR(void)
  */
 void _wr_cwR(void)
 {
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	LDI	R2,R3
-    // asm: 	LS	24,R3
-    // asm: 	CMOS_ON
-    // asm 00009A5F: 	CMOS_WP_OFF
-    // asm 00009A61: 	NOP			;DELAY FOR TIMING...
-    // asm 00009A63: 	STI	R3,*AR2++
-    // asm 00009A64: 	LDI	R2,R3
-    // asm 00009A65: 	RS	8,R3
-    // asm: 	LS	24,R3
-    // asm 00009A66: 	STI	R3,*AR2++
-    // asm 00009A67: 	LDI	R2,R3
-    // asm 00009A68: 	RS	16,R3
-    // asm 00009A69: 	LS	24,R3
-    // asm 00009A6A: 	STI	R3,*AR2++
-    // asm: 	RS	24,R2
-    // asm 00009A6C: 	LS	24,R3
-    // asm 00009A6D: 	STI	R2,*AR2++
-    // asm 00009A6E: 	CMOS_WP_ON
-    // asm 00009A6F: 	CMOS_OFF
-    // asm: 	POP	R3
-    // asm 00009A70: 	POP	R2
-    // asm 00009A71: 	POP	R1
-    // asm 00009A72: 	RETS
+    // asm 00009A5F: 	PUSH	R1
+    // asm 00009A60: 	PUSH	R2
+    // asm 00009A61: 	PUSH	R3
+    // asm 00009A62: 	LDI	R2,R3
+    // asm 00009A63: 	LS	24,R3
+    // asm 00009A64: 	CMOS_ON
+    // asm 00009A65: 	CMOS_WP_OFF
+    // asm 00009A66: 	NOP			;DELAY FOR TIMING...
+    // asm 00009A67: 	STI	R3,*AR2++
+    // asm 00009A68: 	LDI	R2,R3
+    // asm 00009A69: 	RS	8,R3
+    // asm 00009A6A: 	LS	24,R3
+    // asm 00009A6B: 	STI	R3,*AR2++
+    // asm 00009A6C: 	LDI	R2,R3
+    // asm 00009A6D: 	RS	16,R3
+    // asm 00009A6E: 	LS	24,R3
+    // asm 00009A6F: 	STI	R3,*AR2++
+    // asm 00009A70: 	RS	24,R2
+    // asm 00009A71: 	LS	24,R3
+    // asm 00009A72: 	STI	R2,*AR2++
+    // asm 00009A73: 	CMOS_WP_ON
+    // asm 00009A74: 	CMOS_OFF
+    // asm 00009A75: 	POP	R3
+    // asm 00009A76: 	POP	R2
+    // asm 00009A77: 	POP	R1
+    // asm 00009A78: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_wr_cwR", 0, 0);
     UNIMPL();
 }
@@ -683,15 +689,15 @@ int DEFAULT_TABLE_TOTAL;
  */
 void INIT_LASTHS_TABLE(void)
 {
-    // asm: 	LDI	NUM_TABLES+1,R6
-    // asm: 	LDI	0,R7
-    // asm: 	CALL	GET_TABLE_ADDR
-    // asm: 	LDI	-1,R2
-    // asm: 	LDI	14,AR5
-    // asm: ILT_LP
-    // asm: 	CALL	_wr_cw
-    // asm: 	DBU	AR5,ILT_LP
-    // asm: 	RETS
+    // asm 00009AA2: 	LDI	NUM_TABLES+1,R6
+    // asm 00009AA3: 	LDI	0,R7
+    // asm 00009AA4: 	CALL	GET_TABLE_ADDR
+    // asm 00009AA5: 	LDI	-1,R2
+    // asm 00009AA6: 	LDI	14,AR5
+    // asm 00009AA7: ILT_LP
+    // asm 00009AA7: 	CALL	_wr_cw
+    // asm 00009AA8: 	DBU	AR5,ILT_LP
+    // asm 00009AA9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_LASTHS_TABLE", 0, 0);
     UNIMPL();
 }
@@ -702,120 +708,120 @@ void INIT_LASTHS_TABLE(void)
  */
 void UPDATE_LASTHS(void)
 {
-    // asm 00009AA7: 	PUSH	AR2
-    // asm 00009AA8: 	PUSH	R0
-    // asm 00009AA9: 	PUSH	R2
-    // asm: 	PUSH	R6
-    // asm: 	PUSH	R7
-    // asm: 	LDI	R6,R0
-    // asm: 	LDI	NUM_TABLES+1,R6
-    // asm: 	LDI	0,R7
-    // asm: 	CALL	GET_TABLE_ADDR
-    // asm: 	MPYI	4,R0		;4 bytes per word
-    // asm 00009AAA: 	ADDI	R0,AR2
-    // asm 00009AAB: 	POP	R7
-    // asm 00009AAC: 	LDI	R7,R2
-    // asm 00009AAD: 	CALL	_wr_cw
-    // asm 00009AAF: 	POP	R6
-    // asm 00009AB0: 	POP	R2
-    // asm 00009AB1: 	POP	R0
-    // asm 00009AB2: 	POP	AR2
-    // asm 00009AB3: 	RETS
+    // asm 00009AAA: 	PUSH	AR2
+    // asm 00009AAB: 	PUSH	R0
+    // asm 00009AAC: 	PUSH	R2
+    // asm 00009AAD: 	PUSH	R6
+    // asm 00009AAE: 	PUSH	R7
+    // asm 00009AAF: 	LDI	R6,R0
+    // asm 00009AB0: 	LDI	NUM_TABLES+1,R6
+    // asm 00009AB1: 	LDI	0,R7
+    // asm 00009AB2: 	CALL	GET_TABLE_ADDR
+    // asm 00009AB3: 	MPYI	4,R0		;4 bytes per word
+    // asm 00009AB4: 	ADDI	R0,AR2
+    // asm 00009AB5: 	POP	R7
+    // asm 00009AB6: 	LDI	R7,R2
+    // asm 00009AB7: 	CALL	_wr_cw
+    // asm 00009AB8: 	POP	R6
+    // asm 00009AB9: 	POP	R2
+    // asm 00009ABA: 	POP	R0
+    // asm 00009ABB: 	POP	AR2
+    // asm 00009ABC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "UPDATE_LASTHS", 0, 0);
     UNIMPL();
 }
 
 void CHECK_LASTHS(void)
 {
-    // asm 00009ABC: 	LDI	NUM_TABLES+1,R6
-    // asm: 	LDI	0,R7
-    // asm: 	CALL	GET_TABLE_ADDR
-    // asm: 	MPYI	4,R1		;4 bytes per word
-    // asm: 	ADDI	R1,AR2
-    // asm: 	CALL	_rd_cw
-    // asm: 	RETS
+    // asm 00009ABD: 	LDI	NUM_TABLES+1,R6
+    // asm 00009ABE: 	LDI	0,R7
+    // asm 00009ABF: 	CALL	GET_TABLE_ADDR
+    // asm 00009AC0: 	MPYI	4,R1		;4 bytes per word
+    // asm 00009AC1: 	ADDI	R1,AR2
+    // asm 00009AC2: 	CALL	_rd_cw
+    // asm 00009AC3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_LASTHS", 0, 0);
     UNIMPL();
 }
 
 void INIT_HSTD_TABLES(void)
 {
-    // asm: 	CLRI	R6
-    // asm: 	LDI	15-1,AR5
-    // asm 00009AC4: ITL1
-    // asm: 	CLRI	R7
-    // asm: 	LDI	10-1,AR4
-    // asm: 	LDL	DEFAULT_TABLE,AR1
-    // asm: 	CMPI	14,R6			;the 15th entry is the totals for the entire country
-    // asm: 	LDIEQ	@DEFAULT_TABLE_TOTALI,AR1
-    // asm 00009AC4: ITL2
-    // asm: 	CALL	GET_TABLE_ADDR
-    // asm 00009AC4: 	CALL	TABLE_ENTRY_WRITE
-    // asm: 	ADDI	DEFAULT_TABLE_SIZE,AR1
-    // asm 00009AC6: 	INC	R7
-    // asm 00009AC7: 	DBU	AR4,ITL2
-    // asm 00009AC8: 	INC	R6
-    // asm 00009AC9: 	DBU	AR5,ITL1
-    // asm: 	CALL	INIT_LASTHS_TABLE
-    // asm 00009ACB: 	RETS
+    // asm 00009AC4: 	CLRI	R6
+    // asm 00009AC5: 	LDI	15-1,AR5
+    // asm 00009AC6: ITL1
+    // asm 00009AC6: 	CLRI	R7
+    // asm 00009AC7: 	LDI	10-1,AR4
+    // asm 00009AC8: 	LDL	DEFAULT_TABLE,AR1
+    // asm 00009AC9: 	CMPI	14,R6			;the 15th entry is the totals for the entire country
+    // asm 00009ACA: 	LDIEQ	@DEFAULT_TABLE_TOTALI,AR1
+    // asm 00009ACB: ITL2
+    // asm 00009ACB: 	CALL	GET_TABLE_ADDR
+    // asm 00009ACC: 	CALL	TABLE_ENTRY_WRITE
+    // asm 00009ACD: 	ADDI	DEFAULT_TABLE_SIZE,AR1
+    // asm 00009ACE: 	INC	R7
+    // asm 00009ACF: 	DBU	AR4,ITL2
+    // asm 00009AD0: 	INC	R6
+    // asm 00009AD1: 	DBU	AR5,ITL1
+    // asm 00009AD2: 	CALL	INIT_LASTHS_TABLE
+    // asm 00009AD3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_HSTD_TABLES", 0, 0);
     UNIMPL();
 }
 
 void VALIDATE_HSTD_TABLES(void)
 {
-    // asm 00009AD1: 	CLRI	R6
-    // asm: 	LDI	10-1,AR5
-    // asm 00009AD2: ITL1A
-    // asm 00009AD3: 	CLRI	R7
-    // asm: 	LDI	10-1,AR4
-    // asm: 	LDL	DEFAULT_TABLE,AR1
-    // asm 00009AD4: ITL2A
-    // asm: 	CALL	GET_TABLE_ADDR
-    // asm: 	CALL	TABLE_ENTRY_READ
-    // asm 00009AD4: 	CMPI	' ',R1
-    // asm 00009AD5: 	BEQ	J1
-    // asm: 	CMPI	'0',R1
-    // asm 00009AD6: 	BLT	RESETALL
-    // asm 00009AD7: 	CMPI	'Z',R1
-    // asm 00009AD8: 	BGT	RESETALL
+    // asm 00009AD4: 	CLRI	R6
+    // asm 00009AD5: 	LDI	10-1,AR5
+    // asm 00009AD6: ITL1A
+    // asm 00009AD6: 	CLRI	R7
+    // asm 00009AD7: 	LDI	10-1,AR4
+    // asm 00009AD8: 	LDL	DEFAULT_TABLE,AR1
+    // asm 00009AD9: ITL2A
+    // asm 00009AD9: 	CALL	GET_TABLE_ADDR
+    // asm 00009ADA: 	CALL	TABLE_ENTRY_READ
+    // asm 00009ADB: 	CMPI	' ',R1
+    // asm 00009ADC: 	BEQ	J1
+    // asm 00009ADD: 	CMPI	'0',R1
+    // asm 00009ADE: 	BLT	RESETALL
+    // asm 00009ADF: 	CMPI	'Z',R1
+    // asm 00009AE0: 	BGT	RESETALL
 J1:
-    // asm 00009AD9: CMPI	' ',R2
-    // asm 00009AD9: 	BEQ	J2
-    // asm 00009ADA: 	CMPI	'0',R2
-    // asm: 	BLT	RESETALL
-    // asm 00009ADB: 	CMPI	'Z',R2
-    // asm 00009ADC: 	BGT	RESETALL
+    // asm 00009AE1: CMPI	' ',R2
+    // asm 00009AE2: 	BEQ	J2
+    // asm 00009AE3: 	CMPI	'0',R2
+    // asm 00009AE4: 	BLT	RESETALL
+    // asm 00009AE5: 	CMPI	'Z',R2
+    // asm 00009AE6: 	BGT	RESETALL
 J2:
-    // asm 00009ADD: CMPI	' ',R3
-    // asm 00009ADE: 	BEQ	J3
-    // asm 00009ADF: 	CMPI	'0',R3
-    // asm 00009AE0: 	BLT	RESETALL
-    // asm 00009AE1: 	CMPI	'Z',R3
-    // asm 00009AE2: 	BGT	RESETALL
+    // asm 00009AE7: CMPI	' ',R3
+    // asm 00009AE8: 	BEQ	J3
+    // asm 00009AE9: 	CMPI	'0',R3
+    // asm 00009AEA: 	BLT	RESETALL
+    // asm 00009AEB: 	CMPI	'Z',R3
+    // asm 00009AEC: 	BGT	RESETALL
 J3:
-    // asm 00009AE4: CMPI	0,R4
-    // asm 00009AE5: 	BLT	RESETALL
-    // asm 00009AE6: 	CMPI	10,R4
-    // asm 00009AE7: 	BGT	RESETALL
-    // asm 00009AE9: 	CMPI	4*60*60,R0
-    // asm 00009AEA: 	BGT	RESETALL
-    // asm 00009AEB: 	CMPI	0,R0
-    // asm 00009AEC: 	BLT	RESETALL
-    // asm 00009AED: 	ADDI	DEFAULT_TABLE_SIZE,AR1
-    // asm 00009AEE: 	INC	R7
-    // asm 00009AEF: 	DBU	AR4,ITL2A
-    // asm: 	INC	R6
-    // asm 00009AF1: 	DBU	AR5,ITL1A
-    // asm 00009AF2: 	RETS
+    // asm 00009AED: CMPI	0,R4
+    // asm 00009AEE: 	BLT	RESETALL
+    // asm 00009AEF: 	CMPI	10,R4
+    // asm 00009AF0: 	BGT	RESETALL
+    // asm 00009AF1: 	CMPI	4*60*60,R0
+    // asm 00009AF2: 	BGT	RESETALL
+    // asm 00009AF3: 	CMPI	0,R0
+    // asm 00009AF4: 	BLT	RESETALL
+    // asm 00009AF5: 	ADDI	DEFAULT_TABLE_SIZE,AR1
+    // asm 00009AF6: 	INC	R7
+    // asm 00009AF7: 	DBU	AR4,ITL2A
+    // asm 00009AF8: 	INC	R6
+    // asm 00009AF9: 	DBU	AR5,ITL1A
+    // asm 00009AFA: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VALIDATE_HSTD_TABLES", 0, 0);
     UNIMPL();
 }
 
 void RESETALL(void)
 {
-    // asm: 	CALL	INIT_HSTD_TABLES
-    // asm 00009AF5: 	RETS
+    // asm 00009AFB: 	CALL	INIT_HSTD_TABLES
+    // asm 00009AFC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESETALL", 0, 0);
     UNIMPL();
 }
@@ -832,16 +838,16 @@ void RESETALL(void)
  */
 void GET_TABLE_ADDR(void)
 {
-    // asm: 	PUSH	R6
-    // asm: 	PUSH	R7
-    // asm: 	MPYI	RACE_TABLE_SIZE,R6
-    // asm: 	MPYI	TE_SIZE,R7
-    // asm: 	ADDI	R6,R7,AR2
-    // asm: 	ADDI	MAX_AUDITS*4,AR2
-    // asm: 	ADDI	@CMOSI,AR2
-    // asm: 	POP	R7
-    // asm 00009AFD: 	POP	R6
-    // asm 00009AFE: 	RETS
+    // asm 00009AFD: 	PUSH	R6
+    // asm 00009AFE: 	PUSH	R7
+    // asm 00009AFF: 	MPYI	RACE_TABLE_SIZE,R6
+    // asm 00009B00: 	MPYI	TE_SIZE,R7
+    // asm 00009B01: 	ADDI	R6,R7,AR2
+    // asm 00009B02: 	ADDI	MAX_AUDITS*4,AR2
+    // asm 00009B03: 	ADDI	@CMOSI,AR2
+    // asm 00009B04: 	POP	R7
+    // asm 00009B05: 	POP	R6
+    // asm 00009B06: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TABLE_ADDR", 0, 0);
     UNIMPL();
 }
@@ -859,21 +865,21 @@ void GET_TABLE_ADDR(void)
  */
 void TABLE_ENTRY_WRITE(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	AR1
-    // asm: 	LDI	*AR1++,R0
-    // asm: 	LDI	*AR1++,R1
-    // asm: 	LDI	R1,R2
-    // asm: 	RS	8,R2
-    // asm 00009B08: 	LDI	R1,R3
-    // asm 00009B09: 	RS	16,R3
-    // asm: 	LDI	R1,R4
-    // asm 00009B0B: 	RS	24,R4
-    // asm 00009B0C: 	POP	AR1
-    // asm 00009B0E: 	BU	TEWL1
+    // asm 00009B07: 	PUSH	R0
+    // asm 00009B08: 	PUSH	R1
+    // asm 00009B09: 	PUSH	R2
+    // asm 00009B0A: 	PUSH	R3
+    // asm 00009B0B: 	PUSH	AR1
+    // asm 00009B0C: 	LDI	*AR1++,R0
+    // asm 00009B0D: 	LDI	*AR1++,R1
+    // asm 00009B0E: 	LDI	R1,R2
+    // asm 00009B0F: 	RS	8,R2
+    // asm 00009B10: 	LDI	R1,R3
+    // asm 00009B11: 	RS	16,R3
+    // asm 00009B12: 	LDI	R1,R4
+    // asm 00009B13: 	RS	24,R4
+    // asm 00009B14: 	POP	AR1
+    // asm 00009B15: 	BU	TEWL1
     // *
     // *PARAMETERS
     // *	R0	TIME CODE
@@ -891,35 +897,35 @@ void TABLE_ENTRY_WRITE(void)
 
 void TABLE_ENTRY_WRITE0(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-TEWL1:
-    // asm: 	PUSH	R2
-    // asm: 	LDI	R0,R2
-    // asm: 	CALL	_wr_cw
-    // asm: 	POP	R2
+    // asm 00009B16: 	PUSH	R0
     // asm 00009B17: 	PUSH	R1
-    // asm 00009B18: 	CMOS_ON
-    // asm 00009B19: 	CMOS_WP_OFF
+    // asm 00009B18: 	PUSH	R2
+    // asm 00009B19: 	PUSH	R3
+TEWL1:
+    // asm 00009B1A: 	PUSH	R2
+    // asm 00009B1B: 	LDI	R0,R2
+    // asm 00009B1C: 	CALL	_wr_cw
+    // asm 00009B1D: 	POP	R2
+    // asm 00009B1E: 	PUSH	R1
+    // asm 00009B1F: 	CMOS_ON
+    // asm 00009B20: 	CMOS_WP_OFF
     // ;	NOP			;DELAY FOR TIMING...
-    // asm: 	POP	R1
-    // asm 00009B1B: 	LS	24,R1
-    // asm 00009B1C: 	STI	R1,*AR2++
-    // asm 00009B1D: 	LS	24,R2
-    // asm: 	STI	R2,*AR2++
-    // asm 00009B1E: 	LS	24,R3
-    // asm 00009B1F: 	STI	R3,*AR2++
-    // asm 00009B20: 	LS	24,R4
-    // asm: 	STI	R4,*AR2++
-    // asm 00009B21: 	CMOS_WP_ON
-    // asm: 	CMOS_OFF
-    // asm 00009B23: 	POP	R3
-    // asm 00009B24: 	POP	R2
-    // asm 00009B25: 	POP	R1
-    // asm 00009B26: 	POP	R0
-    // asm 00009B27: 	RETS
+    // asm 00009B21: 	POP	R1
+    // asm 00009B22: 	LS	24,R1
+    // asm 00009B23: 	STI	R1,*AR2++
+    // asm 00009B24: 	LS	24,R2
+    // asm 00009B25: 	STI	R2,*AR2++
+    // asm 00009B26: 	LS	24,R3
+    // asm 00009B27: 	STI	R3,*AR2++
+    // asm 00009B28: 	LS	24,R4
+    // asm 00009B29: 	STI	R4,*AR2++
+    // asm 00009B2A: 	CMOS_WP_ON
+    // asm 00009B2B: 	CMOS_OFF
+    // asm 00009B2C: 	POP	R3
+    // asm 00009B2D: 	POP	R2
+    // asm 00009B2E: 	POP	R1
+    // asm 00009B2F: 	POP	R0
+    // asm 00009B30: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TABLE_ENTRY_WRITE0", 0, 0);
     UNIMPL();
 }
@@ -941,24 +947,24 @@ TEWL1:
  */
 void TABLE_ENTRY_READ(void)
 {
-    // asm: 	CALL	_rd_cw
-    // asm: 	PUSH	R0
-    // asm: 	CMOS_ON
-    // asm: 	CMOS_WP_OFF
-    // asm: 	LDI	*AR2++,R1
-    // asm: 	RS	24,R1
-    // asm: 	LDI	*AR2++,R2
-    // asm 00009B31: 	RS	24,R2
-    // asm: 	LDI	*AR2++,R3
-    // asm 00009B32: 	RS	24,R3
-    // asm: 	LDI	*AR2++,R4
-    // asm 00009B33: 	RS	24,R4
-    // asm: 	PUSH	R1
-    // asm 00009B35: 	CMOS_WP_ON	;This trashes register R1
-    // asm 00009B36: 	CMOS_OFF
-    // asm 00009B37: 	POP	R1
-    // asm 00009B38: 	POP	R0
-    // asm 00009B39: 	RETS
+    // asm 00009B31: 	CALL	_rd_cw
+    // asm 00009B32: 	PUSH	R0
+    // asm 00009B33: 	CMOS_ON
+    // asm 00009B34: 	CMOS_WP_OFF
+    // asm 00009B35: 	LDI	*AR2++,R1
+    // asm 00009B36: 	RS	24,R1
+    // asm 00009B37: 	LDI	*AR2++,R2
+    // asm 00009B38: 	RS	24,R2
+    // asm 00009B39: 	LDI	*AR2++,R3
+    // asm 00009B3A: 	RS	24,R3
+    // asm 00009B3B: 	LDI	*AR2++,R4
+    // asm 00009B3C: 	RS	24,R4
+    // asm 00009B3D: 	PUSH	R1
+    // asm 00009B3E: 	CMOS_WP_ON	;This trashes register R1
+    // asm 00009B3F: 	CMOS_OFF
+    // asm 00009B40: 	POP	R1
+    // asm 00009B41: 	POP	R0
+    // asm 00009B42: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TABLE_ENTRY_READ", 0, 0);
     UNIMPL();
 }
@@ -979,24 +985,24 @@ void TABLE_ENTRY_READ(void)
  */
 void CHECK_RACE_TABLE(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	LDI	R1,R6
-    // asm: 	CLRI	R7
-    // asm: 	CALL	GET_TABLE_ADDR
-    // asm: 	POP	R6
-    // asm: 	CLRI	R5		;RETURN INDEX
+    // asm 00009B43: 	PUSH	R0
+    // asm 00009B44: 	LDI	R1,R6
+    // asm 00009B45: 	CLRI	R7
+    // asm 00009B46: 	CALL	GET_TABLE_ADDR
+    // asm 00009B47: 	POP	R6
+    // asm 00009B48: 	CLRI	R5		;RETURN INDEX
 NXTENT:
-    // asm 00009B43: CALL	TABLE_ENTRY_READ
-    // asm: 	CMPI	R0,R6
-    // asm: 	BLT	INSERT_HERE
-    // asm 00009B44: 	INC	R5
-    // asm 00009B45: 	CMPI	10,R5
-    // asm 00009B46: 	BLT	NXTENT
-    // asm: 	LDI	-1,R0
-    // asm 00009B48: 	RETS
+    // asm 00009B49: CALL	TABLE_ENTRY_READ
+    // asm 00009B4A: 	CMPI	R0,R6
+    // asm 00009B4B: 	BLT	INSERT_HERE
+    // asm 00009B4C: 	INC	R5
+    // asm 00009B4D: 	CMPI	10,R5
+    // asm 00009B4E: 	BLT	NXTENT
+    // asm 00009B4F: 	LDI	-1,R0
+    // asm 00009B50: 	RETS
 INSERT_HERE:
-    // asm 00009B4B: 	LDI	R5,R0
-    // asm: 	RETS
+    // asm 00009B51: 	LDI	R5,R0
+    // asm 00009B52: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_RACE_TABLE", 0, 0);
     UNIMPL();
 }
@@ -1018,34 +1024,34 @@ INSERT_HERE:
  */
 void INSERT_TABLE_ENTRY(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm: 	PUSH	R4
-    // asm: 	PUSH	R5
-    // asm: 	LDI	NUM_ENTRIES_PER_RACE-2,R7	;Start at position 8
-    // asm: 	CALL	GET_TABLE_ADDR
-    // asm 00009B53: 	CMPI	9,R5
-    // asm 00009B54: 	BGE	ITLX
+    // asm 00009B53: 	PUSH	R0
+    // asm 00009B54: 	PUSH	R1
+    // asm 00009B55: 	PUSH	R2
+    // asm 00009B56: 	PUSH	R3
+    // asm 00009B57: 	PUSH	R4
+    // asm 00009B58: 	PUSH	R5
+    // asm 00009B59: 	LDI	NUM_ENTRIES_PER_RACE-2,R7	;Start at position 8
+    // asm 00009B5A: 	CALL	GET_TABLE_ADDR
+    // asm 00009B5B: 	CMPI	9,R5
+    // asm 00009B5C: 	BGE	ITLX
 ITEL:
-    // asm 00009B56: CALL	TABLE_ENTRY_READ
-    // asm 00009B57: 	CALL	TABLE_ENTRY_WRITE0	;This uses the registers as input instead of *AR1
-    // asm: 	NOP	*AR2--(TE_SIZE*3)
-    // asm 00009B59: 	DEC	R7
-    // asm 00009B5A: 	CMPI	R5,R7
-    // asm: 	BGE	ITEL				;Copy down position including where inserting
+    // asm 00009B5D: CALL	TABLE_ENTRY_READ
+    // asm 00009B5E: 	CALL	TABLE_ENTRY_WRITE0	;This uses the registers as input instead of *AR1
+    // asm 00009B5F: 	NOP	*AR2--(TE_SIZE*3)
+    // asm 00009B60: 	DEC	R7
+    // asm 00009B61: 	CMPI	R5,R7
+    // asm 00009B62: 	BGE	ITEL				;Copy down position including where inserting
 ITLX:
-    // asm 00009B5C: POP	R7
-    // asm: 	CALL	GET_TABLE_ADDR			;Get the ADDR of the insert point
-    // asm 00009B5D: 	POP	R4
-    // asm 00009B5E: 	POP	R3
-    // asm: 	POP	R2
-    // asm 00009B5F: 	POP	R1
-    // asm 00009B60: 	POP	R0
-    // asm 00009B61: 	CALL	TABLE_ENTRY_WRITE0	;This uses the registers as input instead of *AR1
-    // asm: 	CALL	UPDATE_LASTHS
-    // asm 00009B63: 	RETS
+    // asm 00009B63: POP	R7
+    // asm 00009B64: 	CALL	GET_TABLE_ADDR			;Get the ADDR of the insert point
+    // asm 00009B65: 	POP	R4
+    // asm 00009B66: 	POP	R3
+    // asm 00009B67: 	POP	R2
+    // asm 00009B68: 	POP	R1
+    // asm 00009B69: 	POP	R0
+    // asm 00009B6A: 	CALL	TABLE_ENTRY_WRITE0	;This uses the registers as input instead of *AR1
+    // asm 00009B6B: 	CALL	UPDATE_LASTHS
+    // asm 00009B6C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_TABLE_ENTRY", 0, 0);
     UNIMPL();
 }

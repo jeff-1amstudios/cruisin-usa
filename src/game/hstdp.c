@@ -70,10 +70,23 @@ void ENTER_HSTEXT(void);
 void INIT_LOGO(void);
 void RBMATTR_CHECK(void);
 
+#define PLATE_LETTERSI PLATE_LETTERS
+#define THREED_LETTERSI THREED_LETTERS
+#define EIPI EIP
+#define SCROLLBTABI SCROLLBTAB
+#define DELISTI DELIST
+#define NUMTABI NUMTAB
+#define FLASH_PALSI FLASH_PALS
+#define scroll_whiteI scroll_white
+
+extern const char DT1[];
+extern const char MP1[];
+extern const char MP2[];
+
 extern int NUMTAB[];
 extern int THREED_LETTERS[];
 extern int PLATE_LETTERS[];
-extern const char *EIP;
+extern const char EIP[];
 extern int SCROLLBTAB[];
 extern int LONGEST_TIME;
 extern int FLASH_PALS[];
@@ -113,7 +126,7 @@ int PLATE_LETTERS[] = {
     ps, pt, pu, pv, pw, px, py, pz, arrow, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, pend,
 };
 #define LASTCHAR (LAST_LETTER-PLATE_LETTERS-1)
-const char *EIP = "ENTER INITIALS";
+const char EIP[] = "ENTER INITIALS";
 /* *----------------------------------------------------------------------------
  */
 #define LETTER0 (PDATA+3)
@@ -2648,7 +2661,7 @@ RACE_TEXT:
 
 #define LOGO_X (-250)
 #define LOGO_Y (-170)
-#define LOGO_Z (368*2)
+#define LOGO_Z 736
 
 void INIT_LOGO(void)
 {

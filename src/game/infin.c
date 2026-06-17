@@ -19,6 +19,9 @@ void INFINITY(void);
 void TRANS_PTS(void);
 void WATER_INFINITY(void);
 
+#define INFIN_POLYGONSI BLUESKY
+#define WATERPOSI WATERPOS
+
 extern int CAMRADY;
 extern int HIGHEST_ROADY;
 extern int HIGHEST_ROADY_X;
@@ -31,7 +34,7 @@ extern int LOIVAL;
 extern int HIGHIVAL;
 extern float INFPROJ;
 extern float INFVAL;
-extern int INFINITY_POINTS;
+extern int *INFINITY_POINTS;
 extern int INFINPOINTS[];
 extern int BLUESKY[];
 extern int INFIN_CORRECT;
@@ -50,7 +53,7 @@ int CAMRADY;
 *
 *
  */
-#define HIGH_CLIP_LEVEL ((5000-1)) //ACTUAL # OF ENTRIES
+#define HIGH_CLIP_LEVEL 4999 //ACTUAL # OF ENTRIES
 /* asm: HIGHEST_ROADY	.bss	HIGHEST_ROADY,1 */
 int HIGHEST_ROADY;
 /* asm: HIGHEST_ROADY_X	.bss	HIGHEST_ROADY_X,1 */

@@ -13,7 +13,7 @@ extern int FLUSH_COUNT;
 // asm: 	.bss	PACIFY_COUNT,1
 extern int PACIFY_COUNT;
 // asm: 		hibss	DICT,TABLE_SIZE*DICT_SIZ
-extern int DICT[];
+extern tDICT DICT;
 // asm: 		hibss	DECODE_STACK,TABLE_SIZE
 extern int DECODE_STACK[];
 // asm: 		.bss	NEXT_BUMP_CODE,1

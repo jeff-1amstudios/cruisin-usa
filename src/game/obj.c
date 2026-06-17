@@ -45,6 +45,9 @@ void ZSORTACT(void);
 void OBJ_MAKE(void);
 void OBJ_QMAKE(void);
 
+#define OFREEI OFREE
+#define OBJSTRI OBJSTR
+
 extern int OACTIVE;
 extern int OFREE;
 extern int IDLE_LIST;

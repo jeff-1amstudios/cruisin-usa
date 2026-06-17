@@ -85,6 +85,25 @@ void GETCMOS_VALUES(void);
 void CAMMATSAV(void);
 void CAMMATAVG(void);
 
+#define ZOOMI ZOOMRAM
+#define CARPARAMTABI CARPARAMTAB
+#define GEARTABI GEARTAB
+#define GEARACTABI GEARACTAB
+#define ENGACTABI ENGACTAB
+#define ENGFRI ENGFR
+#define HIREDI HIRED
+#define OFFREDI OFFRED
+#define SCOLLTABI SCOLLTAB
+#define WALLHITABI WALLHITAB
+#define SKIDTABI SKIDTAB
+#define PLAIRSNDI PLAIRSND
+#define REVSNDTABI REVSNDTAB
+#define PEDALMNI PEDALMN
+
+void WRECK(void);
+void WRECKST(void);
+void COMPTRAK(void);
+
 extern int OFFROAD_TMR;
 extern int ZOOMRAM;
 extern int ZOOMD;
@@ -129,11 +148,11 @@ extern float ENGFR[];
 extern float STEERI;
 extern int WHLTIM;
 extern int WHLOLD;
-extern int SCOLLTAB[];
-extern int WALLHITAB[];
-extern int SKIDTAB[];
-extern int PLAIRSND[];
-extern int REVSNDTAB[];
+extern uintptr_t SCOLLTAB[];
+extern uintptr_t WALLHITAB[];
+extern uintptr_t SKIDTAB[];
+extern uintptr_t PLAIRSND[];
+extern uintptr_t REVSNDTAB[];
 extern int PEDALMN;
 extern int PEDALMX;
 extern int STEERMN;
@@ -2965,28 +2984,28 @@ WHLOFFX:
 *PLAYER COLLISION SOUND TABLE
  */
 /* asm: SCOLLTAB	.word	SCOLLA,SCOLLB,SCOLLC */
-int SCOLLTAB[] = {
-    SCOLLA, SCOLLB, SCOLLC,
+uintptr_t SCOLLTAB[] = {
+    (uintptr_t)(SCOLLA), (uintptr_t)(SCOLLB), (uintptr_t)(SCOLLC),
 };
 /* *WALL HIT SOUND TABLE
  */
 /* asm: WALLHITAB	.word	WALLHITA,WALLHITB,WALLHITC */
-int WALLHITAB[] = {
-    WALLHITA, WALLHITB, WALLHITC,
+uintptr_t WALLHITAB[] = {
+    (uintptr_t)(WALLHITA), (uintptr_t)(WALLHITB), (uintptr_t)(WALLHITC),
 };
 /* *SKID SOUND TABLE
  */
 /* asm: SKIDTAB	.word	SKIDB,SKIDC */
-int SKIDTAB[] = {
-    SKIDB, SKIDC,
+uintptr_t SKIDTAB[] = {
+    (uintptr_t)(SKIDB), (uintptr_t)(SKIDC),
 };
 /* asm: PLAIRSND	.word 	RH_BABEWHOA,GL_WOOLAUGH,CHICKSCREAM */
-int PLAIRSND[] = {
-    RH_BABEWHOA, GL_WOOLAUGH, CHICKSCREAM,
+uintptr_t PLAIRSND[] = {
+    (uintptr_t)(RH_BABEWHOA), (uintptr_t)(GL_WOOLAUGH), (uintptr_t)(CHICKSCREAM),
 };
 /* asm: REVSNDTAB	.word	SINGLEREV5,SINGLEREV6 */
-int REVSNDTAB[] = {
-    SINGLEREV5, SINGLEREV6,
+uintptr_t REVSNDTAB[] = {
+    (uintptr_t)(SINGLEREV5), (uintptr_t)(SINGLEREV6),
 };
 
 /* ;SHIFTSNDTABI	.WORD	SHIFTSNDTAB

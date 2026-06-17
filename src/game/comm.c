@@ -32,6 +32,9 @@ void COMM_IRQ(void);
 void DO_SLAVE_SYNC(void);
 void COMM_SLAVE(void);
 
+#define RECEIVE_BUFFERI RECEIVE_BUFFER
+#define COMM_IOI COMM_IO
+
 extern int COMM_MASTER_ERROR_CNT;
 extern int COMM_MASTER_TRANSES;
 extern int COMM_SLAVE_ERROR_CNT;

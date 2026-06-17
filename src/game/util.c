@@ -65,6 +65,18 @@ void OVELADD(void);
 void OVELNADD(void);
 void FORWARD(void);
 
+#define FASTCLR0 FASTCLR1
+#define SCREEN0I SCREEN0
+#define SCREEN1I SCREEN1
+#define CARPROCI CARPROC
+#define DYNALISTI DYNALIST
+#define DYNAFREEI DYNAFREE
+#define NULLI NULL
+#define CARLISTI CARLIST
+#define CARFREEI CARFREE
+
+extern int FILSIZI;
+
 extern int RAND;
 extern int CRTCTLRAM;
 extern int ACTIVE_SCREEN;

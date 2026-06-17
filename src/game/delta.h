@@ -243,7 +243,7 @@ extern int RACER_PTR[];
 // asm: 	.globl	 LANEPI,LANEP,LANESI,LANES,LANES4
 #define LANEPI LANEP
 
-extern int LANEP[];
+extern float *LANEP[];
 
 extern float LANES[];
 

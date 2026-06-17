@@ -37,6 +37,12 @@ void STRCPY(void);
 void STRCAT(void);
 void HIGHLIGHTN(void);
 
+#define TEXT_FREEI TEXT_FREE
+#define TEXT_ACTIVEI TEXT_ACTIVE
+#define TEXT_LISTI TEXT_LIST
+#define TEXTTABLEFIXEDI FIXEDFONT
+#define OGSMFONT_TABI OGSMFONT_TAB
+
 extern int TEXT_LIST[];
 extern int TEXT_FREE;
 extern int TEXT_ACTIVE;

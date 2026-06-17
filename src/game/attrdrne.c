@@ -63,6 +63,10 @@ void INIT_ATTR_LEG(void);
 void ATTR_INIT_GAMELEG(void);
 void LOAD_ATTR_LEG(void);
 
+#define _CAMERAPOSI _CAMERAPOS
+#define VIEWLISTI VIEWLIST
+#define ATTR_WAVETABI ATTR_WAVETAB
+
 extern int ATTRWAVE;
 extern uintptr_t *VIEWLIST[];
 extern uintptr_t GGPARK_LIST[];

@@ -17,6 +17,8 @@ void BLTMOD2D_NOPAL(void);
 void BLTMOD2D(void);
 void BLTMOD2D_DS(void);
 
+#define AIVI _AIVI
+
 extern int _ACNTL;
 extern int _ACMAP;
 extern int _ARPS[];

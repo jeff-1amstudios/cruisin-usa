@@ -24,6 +24,9 @@ void FLAMESORT(void);
 void GETCARBODY(void);
 void FIND_NEXT_OBJ(void);
 
+#define FLAMEANII FLAMEANI
+#define FLAME_POSI FLAME_POS
+
 extern int FLAME_POS[];
 extern int FLAMEANI[];
 

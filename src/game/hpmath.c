@@ -11,6 +11,8 @@ void EPI0_1(void);
 void _HPcos(void);
 void EPI0_2(void);
 
+void MOD_I30(void);
+
 extern float CONST[];
 
 #define FP AR3

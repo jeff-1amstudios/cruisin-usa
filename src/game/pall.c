@@ -29,6 +29,15 @@ void PALXFER_DEL(void);
 void PAL_DELETE(void);
 void PAL_DIMMER(void);
 
+#define PALROMI _PALROM
+#define PTTRAMI PTTRAM
+#define PALRAMI PALRAM
+#define PALLISTI _PALLIST
+#define RAWLOCSI RAWLOCS
+#define PALXFER_ACTIVEI PALXFER_ACTIVE
+#define PALXFER_FREEI PALXFER_FREE
+#define PALXFER_STRI PALXFER_STR
+
 extern int PALRAM[];
 extern int RAWLOCS[];
 extern int PTTRAM[];
@@ -519,25 +528,25 @@ int PALXFER_STR[PALX_SIZE*NXFER_PALS];
  */
 void PALXFER_INIT(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR1
-    // asm: 	CLRI	R0
-    // asm: 	STI	R0,@PALXFER_ACTIVE
-    // asm 00009F9D: 	LDI	@PALXFER_FREEI,AR0	 	;GET FREE POINTER
-    // asm 00009F9E: 	LDI	@PALXFER_STRI,AR1
-    // asm 00009F9F: 	LDI	NXFER_PALS-1,RC
-    // asm 00009FA0: 	RPTB	PXIL
-    // asm 00009FA1: 	STI	AR1,*AR0
-    // asm: 	LDI	AR1,AR0
+    // asm 00009F9D: 	PUSH	R0
+    // asm 00009F9E: 	PUSH	AR0
+    // asm 00009F9F: 	PUSH	AR1
+    // asm 00009FA0: 	CLRI	R0
+    // asm 00009FA1: 	STI	R0,@PALXFER_ACTIVE
+    // asm 00009FA2: 	LDI	@PALXFER_FREEI,AR0	 	;GET FREE POINTER
+    // asm 00009FA3: 	LDI	@PALXFER_STRI,AR1
+    // asm 00009FA4: 	LDI	NXFER_PALS-1,RC
+    // asm 00009FA5: 	RPTB	PXIL
+    // asm 00009FA6: 	STI	AR1,*AR0
+    // asm 00009FA7: 	LDI	AR1,AR0
 PXIL:
-    // asm 00009FA2: ADDI	PALX_SIZE,AR1
-    // asm 00009FA4: 	LDI	0,R0
-    // asm: 	STI	R0,*AR0
-    // asm 00009FA6: 	POP	AR1
-    // asm 00009FA7: 	POP	AR0
-    // asm 00009FA8: 	POP	R0
-    // asm: 	RETS
+    // asm 00009FA8: ADDI	PALX_SIZE,AR1
+    // asm 00009FA9: 	LDI	0,R0
+    // asm 00009FAA: 	STI	R0,*AR0
+    // asm 00009FAB: 	POP	AR1
+    // asm 00009FAC: 	POP	AR0
+    // asm 00009FAD: 	POP	R0
+    // asm 00009FAE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PALXFER_INIT", 0, 0);
     UNIMPL();
 }
@@ -551,24 +560,24 @@ PXIL:
  */
 void PALXFER_GET(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	LDI	1,R0
-    // asm: 	STI	R0,@PALXFER_AVAILABLE_P
-    // asm: 	LDI	@PALXFER_FREE,AR0
+    // asm 00009FAF: 	PUSH	R0
+    // asm 00009FB0: 	LDI	1,R0
+    // asm 00009FB1: 	STI	R0,@PALXFER_AVAILABLE_P
+    // asm 00009FB2: 	LDI	@PALXFER_FREE,AR0
 #if DEBUG
     // asm: 	CMPI	0,AR0
-    // asm 00009FAF: 	BNE	CNT
-    // asm 00009FB0: 	EINT
-    // asm 00009FB1: 	BU	$
+    // asm: 	BNE	CNT
+    // asm: 	EINT
+    // asm: 	BU	$
 CNT:
 #endif
-    // asm: 	LDI	*+AR0(PALX_LINK),R0
-    // asm: 	STI	R0,@PALXFER_FREE
-    // asm: 	LDI	@PALXFER_ACTIVE,R0
-    // asm: 	STI	R0,*+AR0(PALX_LINK)
-    // asm: 	STI	AR0,@PALXFER_ACTIVE
-    // asm: 	POP	R0
-    // asm 00009FB3: 	RETS
+    // asm 00009FB3: 	LDI	*+AR0(PALX_LINK),R0
+    // asm 00009FB4: 	STI	R0,@PALXFER_FREE
+    // asm 00009FB5: 	LDI	@PALXFER_ACTIVE,R0
+    // asm 00009FB6: 	STI	R0,*+AR0(PALX_LINK)
+    // asm 00009FB7: 	STI	AR0,@PALXFER_ACTIVE
+    // asm 00009FB8: 	POP	R0
+    // asm 00009FB9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PALXFER_GET", 0, 0);
     UNIMPL();
 }
@@ -582,27 +591,27 @@ CNT:
  */
 void PALXFER_DEL(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	AR1
-    // asm: 	LDI	@PALXFER_ACTIVEI,R1
+    // asm 00009FBA: 	PUSH	R0
+    // asm 00009FBB: 	PUSH	AR1
+    // asm 00009FBC: 	LDI	@PALXFER_ACTIVEI,R1
 PXFLP:
-    // asm 00009FBA: LDI	R1,AR1
-    // asm: 	LDI	*AR1,R1
+    // asm 00009FBD: LDI	R1,AR1
+    // asm 00009FBE: 	LDI	*AR1,R1
 #if DEBUG
-    // asm 00009FBA: 	BZ	$
+    // asm: 	BZ	$
 #endif
-    // asm: 	BZ	PXXX
-    // asm 00009FBD: 	CMPI	R1,AR0
-    // asm 00009FBE: 	BNE	PXFLP
-    // asm: 	LDI	*AR0,R1
-    // asm: 	STI	R1,*AR1			;LINK AROUND
-    // asm: 	LDI	@PALXFER_FREE,R1
-    // asm 00009FC0: 	STI	R1,*AR0
-    // asm 00009FC1: 	STI	AR0,@PALXFER_FREE
+    // asm 00009FBF: 	BZ	PXXX
+    // asm 00009FC0: 	CMPI	R1,AR0
+    // asm 00009FC1: 	BNE	PXFLP
+    // asm 00009FC2: 	LDI	*AR0,R1
+    // asm 00009FC3: 	STI	R1,*AR1			;LINK AROUND
+    // asm 00009FC4: 	LDI	@PALXFER_FREE,R1
+    // asm 00009FC5: 	STI	R1,*AR0
+    // asm 00009FC6: 	STI	AR0,@PALXFER_FREE
 PXXX:
-    // asm 00009FC2: 	POP	AR1
-    // asm 00009FC3: 	POP	R0
-    // asm: 	RETS
+    // asm 00009FC7: 	POP	AR1
+    // asm 00009FC8: 	POP	R0
+    // asm 00009FC9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PALXFER_DEL", 0, 0);
     UNIMPL();
 }
@@ -617,37 +626,37 @@ PXXX:
  */
 void PAL_DELETE(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	AR0
+    // asm 00009FCA: 	PUSH	R0
+    // asm 00009FCB: 	PUSH	AR0
     // ;edbg
     // ;	CMPI	0,AR2
     // ;	BEQ	$
     // ;edbg
     // 	;DELETE FROM PALETTE LIST AREA
-    // asm: 	LDP	@PALLISTI
-    // asm: 	LDI	@PALLISTI,AR0
-    // asm: 	ADDI	AR2,AR0
-    // asm: 	LDI	*AR0,R0
-    // asm: 	BZ	DELP2
-    // asm: 	RS	16,R0
-    // asm 00009FCC: 	LS	16,R0
-    // asm 00009FCE:      	STI	R0,*AR0
-    // asm: 	LDI	R0,RC
-    // asm 00009FCF: 	LSH	16,R0
-    // asm 00009FD0: 	BNZ	DELP2	;palette not found ignore...
+    // asm 00009FCC: 	LDP	@PALLISTI
+    // asm 00009FCD: 	LDI	@PALLISTI,AR0
+    // asm 00009FCE: 	ADDI	AR2,AR0
+    // asm 00009FCF: 	LDI	*AR0,R0
+    // asm 00009FD0: 	BZ	DELP2
+    // asm 00009FD1: 	RS	16,R0
+    // asm 00009FD2: 	LS	16,R0
+    // asm 00009FD3:      	STI	R0,*AR0
+    // asm 00009FD4: 	LDI	R0,RC
+    // asm 00009FD5: 	LSH	16,R0
+    // asm 00009FD6: 	BNZ	DELP2	;palette not found ignore...
     // 	;CLEAR OUT PALRAM, LIST ENTRY IF COUNT IS ZERO
 DELP1:
-    // asm 00009FD3: LDI	0,R0
-    // asm 00009FD3: 	STI	R0,*AR0		;CLEAR OUT LIST ENTRY
-    // asm 00009FD4: 	LDP	@PALRAMI
-    // asm 00009FD5: 	LDI	@PALRAMI,AR0
-    // asm 00009FD6: 	LSH	-16,RC
-    // asm: 	ADDI	RC,AR0
-    // asm: 	STI	R0,*AR0		;ZERO OUT PALRAM AREA
+    // asm 00009FD7: LDI	0,R0
+    // asm 00009FD8: 	STI	R0,*AR0		;CLEAR OUT LIST ENTRY
+    // asm 00009FD9: 	LDP	@PALRAMI
+    // asm 00009FDA: 	LDI	@PALRAMI,AR0
+    // asm 00009FDB: 	LSH	-16,RC
+    // asm 00009FDC: 	ADDI	RC,AR0
+    // asm 00009FDD: 	STI	R0,*AR0		;ZERO OUT PALRAM AREA
 DELP2:
-    // asm 00009FD8: 	POP	AR0
-    // asm 00009FD9: 	POP	R0
-    // asm 00009FDA: 	RETS
+    // asm 00009FDE: 	POP	AR0
+    // asm 00009FDF: 	POP	R0
+    // asm 00009FE0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_DELETE", 0, 0);
     UNIMPL();
 }
@@ -671,83 +680,83 @@ DELP2:
  */
 void PAL_DIMMER(void)
 {
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR1
-    // asm: 	PUSH	AR2
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSHFL	R6
-    // asm: 	PUSHFL	R7
+    // asm 00009FE1: 	PUSH	AR0
     // asm 00009FE2: 	PUSH	AR1
-    // asm 00009FE3: 	LDF	R0,R7
-    // asm 00009FE5: 	LDI	*AR0++,R0
-    // asm 00009FE6: 	STI	R0,*AR1++
-    // asm 00009FE8: 	LDI	127,AR5
-    // asm 00009FEA: PDMLP
-    // asm 00009FEA: 	LDI	*AR0++,R4	;get src2
-    // asm 00009FEB: 	LDI	R4,R1
-    // asm: 	AND	01Fh,R1
-    // asm 00009FEC: 	FLOAT	R1
-    // asm 00009FED: 	MPYF	R7,R1
-    // asm 00009FEE: 	FIX	R1
-    // asm 00009FEF: 	LDI	R4,R2		;--
-    // asm 00009FF0: 	RS	5,R2
-    // asm 00009FF1: 	AND	01Fh,R2
-    // asm 00009FF2: 	FLOAT	R2
-    // asm 00009FF3: 	MPYF	R7,R2
-    // asm 00009FF4: 	FIX	R2
-    // asm: 	LS	5,R2
-    // asm 00009FF5: 	OR	R2,R1
-    // asm 00009FF7: 	LDI	R4,R2		;--
-    // asm 00009FF8: 	RS	10,R2
-    // asm 00009FF9: 	AND	01Fh,R2
-    // asm 00009FFA: 	FLOAT	R2
-    // asm 00009FFB: 	MPYF	R7,R2
-    // asm 00009FFC: 	FIX	R2
-    // asm: 	LS	10,R2
-    // asm 00009FFD: 	OR	R2,R1
-    // asm 00009FFE: 	PUSH	R1
+    // asm 00009FE3: 	PUSH	AR2
+    // asm 00009FE4: 	PUSH	R0
+    // asm 00009FE5: 	PUSH	R1
+    // asm 00009FE6: 	PUSHFL	R6
+    // asm 00009FE8: 	PUSHFL	R7
+    // asm 00009FEA: 	PUSH	AR1
+    // asm 00009FEB: 	LDF	R0,R7
+    // asm 00009FEC: 	LDI	*AR0++,R0
+    // asm 00009FED: 	STI	R0,*AR1++
+    // asm 00009FEE: 	LDI	127,AR5
+    // asm 00009FEF: PDMLP
+    // asm 00009FEF: 	LDI	*AR0++,R4	;get src2
+    // asm 00009FF0: 	LDI	R4,R1
+    // asm 00009FF1: 	AND	01Fh,R1
+    // asm 00009FF2: 	FLOAT	R1
+    // asm 00009FF3: 	MPYF	R7,R1
+    // asm 00009FF4: 	FIX	R1
+    // asm 00009FF5: 	LDI	R4,R2		;--
+    // asm 00009FF6: 	RS	5,R2
+    // asm 00009FF7: 	AND	01Fh,R2
+    // asm 00009FF8: 	FLOAT	R2
+    // asm 00009FF9: 	MPYF	R7,R2
+    // asm 00009FFA: 	FIX	R2
+    // asm 00009FFB: 	LS	5,R2
+    // asm 00009FFC: 	OR	R2,R1
+    // asm 00009FFD: 	LDI	R4,R2		;--
+    // asm 00009FFE: 	RS	10,R2
+    // asm 00009FFF: 	AND	01Fh,R2
+    // asm 0000A000: 	FLOAT	R2
+    // asm 0000A001: 	MPYF	R7,R2
+    // asm 0000A002: 	FIX	R2
+    // asm 0000A003: 	LS	10,R2
+    // asm 0000A004: 	OR	R2,R1
+    // asm 0000A005: 	PUSH	R1
     // 	;----second word----------
-    // asm 0000A001: 	RS	16,R4		;get src1(B)
-    // asm 0000A002: 	LDI	R4,R1
-    // asm 0000A003: 	AND	01Fh,R1
-    // asm 0000A004: 	FLOAT	R1
-    // asm 0000A005: 	MPYF	R7,R1
-    // asm: 	FIX	R1
-    // asm 0000A006: 	LDI	R4,R2
-    // asm 0000A007: 	RS	5,R2
-    // asm 0000A008: 	AND	01Fh,R2
-    // asm 0000A009: 	FLOAT	R2
-    // asm 0000A00A: 	MPYF	R7,R2
-    // asm 0000A00B: 	FIX	R2
-    // asm: 	LS	5,R2
-    // asm 0000A00C: 	OR	R2,R1
-    // asm 0000A00E: 	LDI	R4,R2
-    // asm 0000A00F: 	RS	10,R2
-    // asm 0000A010: 	AND	01Fh,R2
-    // asm 0000A011: 	FLOAT	R2
-    // asm 0000A012: 	MPYF	R7,R2
-    // asm 0000A013: 	FIX	R2
-    // asm: 	LS	10,R2
-    // asm 0000A014: 	OR	R2,R1
-    // asm 0000A016: 	POP	R2
-    // asm 0000A017: 	LS	16,R1
-    // asm 0000A018: 	OR	R2,R1
-    // asm 0000A019: 	STI	R1,*AR1++
-    // asm 0000A01A: 	DBU	AR5,PDMLP
-    // asm: 	POP	AR2			;RECOVER RAM BUFFER ADDR
-    // asm 0000A01C: 	CALL	PAL_FIND_RAW
-    // asm 0000A01D: 	LDI	*AR2++,R3
-    // asm 0000A01E: 	LDI	R0,R2
-    // asm 0000A01F: 	CALL	PAL_SET
-    // asm: 	POPFL	R7
-    // asm 0000A021: 	POPFL	R6
-    // asm 0000A022: 	POP	R1
-    // asm 0000A023: 	POP	R0
-    // asm 0000A024: 	POP	AR2
-    // asm 0000A025: 	POP	AR1
-    // asm: 	POP	AR0
-    // asm 0000A026: 	RETS
+    // asm 0000A006: 	RS	16,R4		;get src1(B)
+    // asm 0000A007: 	LDI	R4,R1
+    // asm 0000A008: 	AND	01Fh,R1
+    // asm 0000A009: 	FLOAT	R1
+    // asm 0000A00A: 	MPYF	R7,R1
+    // asm 0000A00B: 	FIX	R1
+    // asm 0000A00C: 	LDI	R4,R2
+    // asm 0000A00D: 	RS	5,R2
+    // asm 0000A00E: 	AND	01Fh,R2
+    // asm 0000A00F: 	FLOAT	R2
+    // asm 0000A010: 	MPYF	R7,R2
+    // asm 0000A011: 	FIX	R2
+    // asm 0000A012: 	LS	5,R2
+    // asm 0000A013: 	OR	R2,R1
+    // asm 0000A014: 	LDI	R4,R2
+    // asm 0000A015: 	RS	10,R2
+    // asm 0000A016: 	AND	01Fh,R2
+    // asm 0000A017: 	FLOAT	R2
+    // asm 0000A018: 	MPYF	R7,R2
+    // asm 0000A019: 	FIX	R2
+    // asm 0000A01A: 	LS	10,R2
+    // asm 0000A01B: 	OR	R2,R1
+    // asm 0000A01C: 	POP	R2
+    // asm 0000A01D: 	LS	16,R1
+    // asm 0000A01E: 	OR	R2,R1
+    // asm 0000A01F: 	STI	R1,*AR1++
+    // asm 0000A020: 	DBU	AR5,PDMLP
+    // asm 0000A021: 	POP	AR2			;RECOVER RAM BUFFER ADDR
+    // asm 0000A022: 	CALL	PAL_FIND_RAW
+    // asm 0000A023: 	LDI	*AR2++,R3
+    // asm 0000A024: 	LDI	R0,R2
+    // asm 0000A025: 	CALL	PAL_SET
+    // asm 0000A026: 	POPFL	R7
+    // asm 0000A028: 	POPFL	R6
+    // asm 0000A02A: 	POP	R1
+    // asm 0000A02B: 	POP	R0
+    // asm 0000A02C: 	POP	AR2
+    // asm 0000A02D: 	POP	AR1
+    // asm 0000A02E: 	POP	AR0
+    // asm 0000A02F: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_DIMMER", 0, 0);
     UNIMPL();
 }

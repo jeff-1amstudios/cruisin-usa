@@ -24,6 +24,8 @@ void DELTA_OINIT(void);
 void DDYNA_INIT(void);
 void DRONE_DANI_PROC(void);
 
+#define DRONE_DANI_PROCI DRONE_DANI_PROC
+
 /* *----------------------------------------------------------------------------
 *GENERAL DRONE OBJECT INITIALIZATION
 *

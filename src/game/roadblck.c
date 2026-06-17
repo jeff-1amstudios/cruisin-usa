@@ -24,6 +24,8 @@ void ADD_RDDEBRIS(void);
 void FREE_RDDEBRIS(void);
 void DEBRIS_SORT(void);
 
+#define ROAD_DEBRISI ROAD_DEBRIS
+
 extern int ROAD_DEBRIS;
 extern float MAXDIST;
 

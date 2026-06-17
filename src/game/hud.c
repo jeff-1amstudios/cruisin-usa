@@ -32,6 +32,14 @@ void TACHOMETER_ANIMATE(void);
 void FILL_DITHER(void);
 void FILL_PLOT(void);
 
+#define SECTION_PALETTE_ALLOC HARDalloc_section
+#define alloc_section HARDalloc_section
+#define COUNTDOWN_BUFI COUNTDOWN_BUF
+#define MPH_BUFFERI MPH_BUFFER
+#define STOPBUFFI STOPBUFFER
+
+extern int CHEAT;
+
 extern int COUNTDOWN_BUF[];
 extern int MPH_BUFFER[];
 extern int _countdown;
@@ -40,8 +48,8 @@ extern int SCORE;
 extern int POSITION;
 extern int MAXMPH_COUNT;
 extern int STOPBUFFER[];
-extern const char *YOURLOSTTXT;
-extern const char *OFFROADTXT;
+extern const char YOURLOSTTXT[];
+extern const char OFFROADTXT[];
 extern int OFFROADBUFF[];
 extern int MOVEIN_OFFSET;
 extern int TACHOMETER_PAL[];
@@ -66,8 +74,8 @@ int MAXMPH_COUNT;
 #define STOPBUFFI STOPBUFFER
 /* asm: STOPBUFFER	.bss	STOPBUFFER,4 */
 int STOPBUFFER[4];
-const char *YOURLOSTTXT = "YOU ARE LOST";
-const char *OFFROADTXT = "OFFROAD";
+const char YOURLOSTTXT[] = "YOU ARE LOST";
+const char OFFROADTXT[] = "OFFROAD";
 /* asm: OFFROADBUFF	.bss	OFFROADBUFF,2 */
 int OFFROADBUFF[2];
 /* *----------------------------------------------------------------------------

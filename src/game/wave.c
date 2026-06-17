@@ -37,6 +37,11 @@ void INIT_SYSTEM(void);
 void LOAD_FIXED_PALETTES(void);
 void LOAD_STARTUP_PALS(void);
 
+#define HIGH_SCORE_INI THANKS
+
+extern int OLD_BUTTON_STATUS;
+void SPIN_CAR(void);
+
 extern int TEASE_COUNT;
 extern int ATTR_MODEL;
 extern int _ATTR_MODE;

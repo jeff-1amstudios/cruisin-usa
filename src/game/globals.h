@@ -20,7 +20,7 @@ extern int COMM_DRONE_PTR;
 extern int _ATTR_MODE;
 
 // asm:  .globl TITLES,TEXTTABSI
-extern int TITLES[];
+extern const char *TITLES[];
 
 #define TEXTTABSI TEXTTABS
 
@@ -339,11 +339,11 @@ extern int TIMECLR;
 extern int FRAMETIME;
 
 // asm:  .globl VERSION_STAMP
-extern const char *VERSION_STAMP;
+extern const char VERSION_STAMP[];
 
 // date.asm
 // asm:  .globl DATE_STAMP
-extern const char *DATE_STAMP;
+extern const char DATE_STAMP[];
 
 // asm:  .globl DRONENUM
 extern int DRONENUM;
@@ -419,26 +419,26 @@ extern int OLOW_PRIORITY;
 #define LOCTEMPER_MATI LOCTEMPER_MAT
 
 // asm:  .globl LIGHTIY
-extern int LIGHTIY;
+extern uintptr_t LIGHTIY;
 
 // asm:  .globl transmatrixI,transvectorYI
 #define transmatrixI ROTATION_MATRIX
 
-extern int transvectorYI;
+extern uintptr_t transvectorYI;
 
 // asm:  .globl BLOWLISTI,tmpmatI,tmpmatY,INVTABI
 #define BLOWLISTI BLOWLIST
 
 #define tmpmatI TMPMAT
 
-extern int tmpmatY;
+extern uintptr_t tmpmatY;
 
 #define INVTABI INVTAB
 
 // asm:  .globl SCRNHXI,SCRNHYI
-extern float SCRNHXI[];
+extern float SCRNHXI;
 
-extern float SCRNHYI[];
+extern float SCRNHYI;
 
 // asm:  .globl LOW_TOSS_LEVELI,LOW_CLIP_LEVELI,HIGH_CLIP_LEVELI,HIGH_CLIP_LEV8,MAXZI
 extern int HIGH_CLIP_LEV8;
@@ -475,7 +475,7 @@ extern int _ACNTL;
 #define VECTORDI _VECTORD
 
 // asm:  .globl ASHADOW
-extern int ASHADOW;
+extern uintptr_t ASHADOW;
 
 // asm:  .globl SOFT_AUDIT
 extern int SOFT_AUDIT;
@@ -484,7 +484,7 @@ extern int SOFT_AUDIT;
 #define bufferI buffer
 
 // asm:  .globl NULLSTR
-extern const char *NULLSTR;
+extern const char NULLSTR[];
 
 // asm:  .globl SCREENWIPE_DONE
 extern int SCREENWIPE_DONE;
@@ -584,11 +584,11 @@ extern int LEG_MAP[];
 extern int FINISH_ID;
 
 // asm:  .globl HALFPII,PII,TWOPII
-extern float HALFPII[];
+extern float HALFPII;
 
-extern float PII[];
+extern float PII;
 
-extern float TWOPII[];
+extern float TWOPII;
 
 #define FIND_YMATRIX _find_Ymatrix
 
@@ -692,16 +692,16 @@ extern int TUNE_IDX;
 extern int IN_RESET_MODE;
 
 // asm:  .globl EPALR,EPALL,EPALRR,EPALRL
-extern int EPALR;
+extern int *EPALR;
 
-extern int EPALL;
+extern int *EPALL;
 
 extern int EPALRR[];
 
 extern int EPALRL[];
 
 // asm:  .globl DOORLISTI,DOORLIST
-extern int DOORLISTI;
+#define DOORLISTI DOORLIST
 
 extern int DOORLIST;
 

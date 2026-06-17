@@ -5,7 +5,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gen_equ_headers import parse_equ_file, render_header
 from gen_c_skeleton import (
     DefineEntry,
     LabelEntry,
@@ -19,9 +18,11 @@ from gen_c_skeleton import (
     collect_referenced_define_symbols,
     collect_referenced_data_symbols,
     parse_discovered_defines_file,
+    parse_equ_file,
     parse_instruction_addresses_file,
     parse_render_overrides_file,
     parse_type_overrides_file,
+    render_equ_header,
     merge_storage_into_header,
     render_discovered_defines_header,
     render_discovered_labels_header,
@@ -165,8 +166,8 @@ MSG3:\tLDI\t11,RC
             rendered = render_module(src_path, {}, {}, None)
 
         self.assertIn('void MSG2(void)\n{\n    // asm: LDI\t11,RC', rendered)
-        self.assertIn('const char *LINKDISABLED = "LINK DISABLED BY U97  DIP6 OFF";', rendered)
-        self.assertIn('const char *IAMMASTER = "LINK MASTER MACHINE";', rendered)
+        self.assertIn('const char LINKDISABLED[] = "LINK DISABLED BY U97  DIP6 OFF";', rendered)
+        self.assertIn('const char IAMMASTER[] = "LINK MASTER MACHINE";', rendered)
         self.assertIn('void MSG3(void)', rendered)
         self.assertNotIn('LINKDISABLED:\n    // asm: SPTR\t"LINK DISABLED BY U97  DIP6 OFF"', rendered)
         self.assertNotIn('\nchar *LINKDISABLED = "LINK DISABLED BY U97  DIP6 OFF";', rendered)
@@ -196,6 +197,37 @@ MSG3:\tLDI\t11,RC
         self.assertIn("    // asm 00004AE9: \tTEXTIT\tM6,1,260", rendered)
         self.assertIn("    // asm 00004AED: \tRETS", rendered)
         self.assertNotIn("    // asm: \tTEXTIT\tM6,1,260", rendered)
+
+    def test_instruction_addresses_survive_stripped_macro_blocks_and_alias_labels(self) -> None:
+        asm_source = """MAKE_NOP\t.MACRO
+\tNOP
+\t.ENDM
+
+ENTRY:
+ALIAS:
+\tLDI\t@_MODE,R0
+\tOR\tMWATER,R0
+\tSTI\tR0,@_MODE
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(
+                src_path,
+                {},
+                {},
+                None,
+                False,
+                None,
+                False,
+                {7: 0x0000396B, 8: 0x0000396C, 9: 0x0000396D},
+            )
+
+        self.assertIn("void ALIAS(void)\n{", rendered)
+        self.assertIn("    // asm 0000396B: \tLDI\t@_MODE,R0", rendered)
+        self.assertIn("    // asm 0000396C: \tOR\tMWATER,R0", rendered)
+        self.assertIn("    // asm 0000396D: \tSTI\tR0,@_MODE", rendered)
 
     def test_label_only_function_line_uses_next_instruction_address(self) -> None:
         asm_source = """START:\tLDI\t11,RC
@@ -321,9 +353,9 @@ LEG2\t.string\t"SAN FRANCISCO",0
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("int LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
-        self.assertIn('const char *LEG1 = "GOLDEN GATE PARK";', rendered)
-        self.assertIn('const char *LEG2 = "SAN FRANCISCO";', rendered)
+        self.assertIn("const char *LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
+        self.assertIn('const char LEG1[] = "GOLDEN GATE PARK";', rendered)
+        self.assertIn('const char LEG2[] = "SAN FRANCISCO";', rendered)
 
     def test_string_label_table_keeps_children_when_directly_referenced(self) -> None:
         asm_source = """LEG_NAMES\t.word\tLEG1,LEG2
@@ -337,9 +369,9 @@ LEG2\t.string\t"SAN FRANCISCO",0
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("int LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
-        self.assertIn('const char *LEG1 = "GOLDEN GATE PARK";', rendered)
-        self.assertIn('const char *LEG2 = "SAN FRANCISCO";', rendered)
+        self.assertIn("const char *LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
+        self.assertIn('const char LEG1[] = "GOLDEN GATE PARK";', rendered)
+        self.assertIn('const char LEG2[] = "SAN FRANCISCO";', rendered)
 
     def test_collects_skipped_data_symbol_references(self) -> None:
         asm_lines = [
@@ -602,7 +634,7 @@ AUDIT_DISPLAY:\tRETS
 
         self.assertIn("OLDDIP", rendered)
         self.assertIn("void AUDIT_DISPLAY(void)", rendered)
-        self.assertNotIn('const char *l_ = ":ATEXT:";', rendered)
+        self.assertNotIn('const char l_[] = ":ATEXT:";', rendered)
         self.assertNotIn("void _word(void)", rendered)
 
     def test_struct_definition_body_is_ignored_in_module_render(self) -> None:
@@ -639,7 +671,7 @@ AFTER\t.set\t2
             src_path = Path(tmpdir) / "TEST.EQU"
             src_path.write_text(equ_source)
             banner_comments, globls, sets = parse_equ_file(src_path)
-            rendered = render_header(src_path, banner_comments, globls, sets, {})
+            rendered = render_equ_header(src_path, banner_comments, globls, sets, {})
 
         self.assertIn("// asm: VISIBLE\t.set\t1", rendered)
         self.assertIn("#define VISIBLE 1", rendered)
@@ -648,6 +680,20 @@ AFTER\t.set\t2
         self.assertNotIn("FIELD0", rendered)
         self.assertNotIn("FIELD1", rendered)
         self.assertNotIn("STRUCT\tTEST", rendered)
+
+    def test_set_define_preserves_hex_literal_format(self) -> None:
+        asm_source = """FRAME\t.set\t85h
+SCROLLB\t.set\t86h
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "HSTDP.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("#define FRAME 0x85", rendered)
+        self.assertIn("#define SCROLLB 0x86", rendered)
+        self.assertNotIn("#define FRAME 133", rendered)
 
     def test_first_function_claims_immediately_adjacent_comments_only(self) -> None:
         asm_source = """*COMMENT A\n*COMMENT B\nFIRST:\tRETS\n\n*COMMENT C\n\nSECOND:\tRETS\n"""
@@ -731,7 +777,7 @@ FUNC:\tRETS
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn('int TABLE[] = {\n    ONE, TWO,\n};', rendered)
+        self.assertIn('const char *TABLE[] = {\n    ONE, TWO,\n};', rendered)
         self.assertNotIn("void TABLE(void)", rendered)
         self.assertIn("void FUNC(void)", rendered)
 
@@ -828,6 +874,24 @@ LOOP
         self.assertEqual(variable_declaration("TABLE", "int", "", is_extern=True), "extern int TABLE[];")
         self.assertEqual(variable_declaration("TABLE", "void (*)(void)", ""), "void (*TABLE[])(void);")
 
+    def test_storage_type_override_without_brackets_suppresses_inferred_array(self) -> None:
+        asm_source = """\thibss\tDICT,TABLE_SIZE*DICT_SIZ
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "COMP.ASM"
+            src_path.write_text(asm_source)
+            overrides_path = Path(tmpdir) / "type-overrides.txt"
+            overrides_path.write_text("tDICT DICT;\n")
+            overrides = parse_type_overrides_file(overrides_path)
+            symbol_table = collect_module_symbol_table(src_path, {}, overrides)
+            rendered = render_storage_header(src_path, [StorageVariable("DICT", 0, "COMP", "\thibss\tDICT,TABLE_SIZE*DICT_SIZ", "TABLE_SIZE*DICT_SIZ")], overrides)
+
+        self.assertEqual(symbol_table["DICT"].c_type, "tDICT")
+        self.assertIsNone(symbol_table["DICT"].array_expr)
+        self.assertIn("extern tDICT DICT;", rendered)
+        self.assertNotIn("extern tDICT DICT[];", rendered)
+
     def test_uintptr_word_table_casts_function_entries(self) -> None:
         asm_source = """INIT_STARTING:\tRETS
 ROAD_VIEW:\tRETS
@@ -867,6 +931,24 @@ GGPARK_LIST\t.word\tINIT_STARTING,70,ROAD_VIEW
         self.assertIn("uintptr_t ROUTINE_TAB[] = {", rendered)
         self.assertIn("    0x470, (uintptr_t)RRSTART_ENGINE,", rendered)
 
+    def test_flush_left_branch_target_label_starting_with_b_renders_as_c_label(self) -> None:
+        asm_source = """WAIT_FOR_CHALLENGER:\tLDI\t@HEAD2HEAD_ON,R0
+\tBZ\tBABAB
+\tLDI\t@OM_VEHICLE,R0
+BABAB
+\tBNZ\tHHFBF
+HHFBF:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "INTRO.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("    // asm: \tBZ\tBABAB", rendered)
+        self.assertIn("BABAB:", rendered)
+        self.assertNotIn("// asm: BABAB", rendered)
+
     def test_uintptr_word_table_casts_local_string_entries_with_address_of(self) -> None:
         asm_source = """STRING_TAB\t.word\tLEG1
 LEG1\t.string\t"GOLDEN GATE PARK",0
@@ -880,7 +962,7 @@ LEG1\t.string\t"GOLDEN GATE PARK",0
             rendered = render_module(src_path, {}, {}, None, type_overrides=type_overrides)
 
         self.assertIn("uintptr_t STRING_TAB = (uintptr_t)&LEG1;", rendered)
-        self.assertIn('const char *LEG1 = "GOLDEN GATE PARK";', rendered)
+        self.assertIn('const char LEG1[] = "GOLDEN GATE PARK";', rendered)
 
     def test_uintptr_word_table_casts_cross_module_string_entries_with_address_of(self) -> None:
         asm_source = """STRING_TAB\t.word\tLEG1
@@ -898,7 +980,7 @@ LEG1\t.string\t"GOLDEN GATE PARK",0
                 None,
                 type_overrides=type_overrides,
                 global_symbol_table={
-                    "LEG1": SymbolInfo(name="LEG1", kind="variable", module="TEXT", c_type="const char *"),
+                    "LEG1": SymbolInfo(name="LEG1", kind="variable", module="TEXT", c_type="const char", array_expr=""),
                 },
             )
 
@@ -1054,7 +1136,7 @@ DEMOTHANKS_LIST\t.word\t140,DT1
 
         self.assertIn("tDEMO_THANKS DEMOTHANKS_LIST[] = {\n    { 140, DT1 },\n    { 180, DT2 },\n    { 220, DT3 },\n};", rendered)
         self.assertNotIn("int DEMOTHANKS_LIST[] = {", rendered)
-        self.assertIn('const char *DT1 = "THANK YOU FOR PLAYING";', rendered)
+        self.assertIn('const char DT1[] = "THANK YOU FOR PLAYING";', rendered)
 
     def test_function_override_emits_function_pointer_table_and_prototypes(self) -> None:
         asm_source = """BONUS_TABLE\t.word\tBONUS8
@@ -1113,7 +1195,7 @@ BONUS8\tLDI\t8,R1
             equ_path.write_text(equ_source)
             banner_comments, globls, sets = parse_equ_file(equ_path)
             symbol_table = collect_module_symbol_table(asm_path, {}, None)
-            rendered = render_header(equ_path, banner_comments, globls, sets, symbol_table)
+            rendered = render_equ_header(equ_path, banner_comments, globls, sets, symbol_table)
 
         self.assertIn("void HARDalloc_section(void);", rendered)
         self.assertIn("#define alloc_section HARDalloc_section", rendered)

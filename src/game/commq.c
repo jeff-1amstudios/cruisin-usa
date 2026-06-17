@@ -84,6 +84,26 @@ void SEND_DIAGNOSTIC(void);
 void DECODE_ATTRSND(void);
 void SEND_ATTRSND(void);
 
+#define DECODE_FLY_UPDATE DECODE_RHO_UPDATE
+#define SEND_BSYNC0 SEND_BSYNC3
+#define SEND_BSYNC1 SEND_BSYNC3
+#define SEND_BSYNC2 SEND_BSYNC3
+#define DECODE_BSYNC0 DECODE_BSYNC3
+#define DECODE_BSYNC1 DECODE_BSYNC3
+#define DECODE_BSYNC2 DECODE_BSYNC3
+#define SEND_BUFFER_AI SEND_BUFFER_A
+#define COMMQ_TMP_BUFFI COMMQ_TMP_BUFF
+#define DECODE_BLOCKI DECODE_BLOCK
+
+void DECODE_RACER_XSFER(void);
+void DECODE_RHO_KILL(void);
+void DECODE_RHO_XSFER(void);
+void DECODE_FLY_KILL(void);
+void DECODE_FLY_XSFER(void);
+void SEND_FLY_KILL(void);
+extern int OM_TRACK_LO;
+extern int OM_TRACK_HI;
+
 extern int IGNORE_UPDATES;
 extern int COMMQ_TMP_BUFF[];
 extern int SEND_BUFFER_A[];
@@ -108,7 +128,7 @@ extern int OM_BSYNC;
 extern int OM_POSITION;
 extern int HEAD2HEAD_ON;
 extern int SAVED_PLY2CAR;
-extern int DECODE_BLOCK[];
+extern uintptr_t DECODE_BLOCK[];
 extern float MATCON;
 extern float RADCON;
 extern int COINDROP;
@@ -291,41 +311,41 @@ ISDONE:
 /* asm: 	.word	DECODE_DIAGNOSTIC */
 /* asm: 	.word	DECODE_ATTRSND */
 /* asm: 	.word	-1 */
-int DECODE_BLOCK[] = {
-    DECODE_NULL,
-    DECODE_MODE, // CB_MODE
-    DECODE_TIMECODE, // CB_TIMECODE
-    DECODE_RACENUM, // CB_RACENUM
-    DECODE_VEHICLE, // CHOSEN CAR IDENTITY CODE
-    DECODE_START_GAME,
-    DECODE_END_GAME,
-    DECODE_CAR_UPDATE, // UPDATE DATA BLOCK FOR CAR
-    DECODE_END_GAME,
-    DECODE_LINKEDT,
-    DECODE_LINKEDF,
-    DECODE_LINKCANCELLED,
-    DECODE_RACER_UPDATE,
-    DECODE_RACER_XSFER,
-    DECODE_RACER_KILL,
-    DECODE_RHO_CREATE,
-    DECODE_RHO_KILL,
-    DECODE_RHO_XSFER,
-    DECODE_RHO_UPDATE,
-    DECODE_FLY_KILL,
-    DECODE_FLY_XSFER,
-    DECODE_FLY_UPDATE,
-    DECODE_WAVEFL_READY,
-    DECODE_WAVEFL_SET,
-    DECODE_WAVEFL_GO,
-    DECODE_OM_TRACK,
-    DECODE_BSYNC0,
-    DECODE_BSYNC1,
-    DECODE_BSYNC2,
-    DECODE_BSYNC3,
-    DECODE_CHANGE_MUSIC,
-    DECODE_COINDROP,
-    DECODE_DIAGNOSTIC,
-    DECODE_ATTRSND,
+uintptr_t DECODE_BLOCK[] = {
+    (uintptr_t)DECODE_NULL,
+    (uintptr_t)DECODE_MODE, // CB_MODE
+    (uintptr_t)DECODE_TIMECODE, // CB_TIMECODE
+    (uintptr_t)DECODE_RACENUM, // CB_RACENUM
+    (uintptr_t)DECODE_VEHICLE, // CHOSEN CAR IDENTITY CODE
+    (uintptr_t)DECODE_START_GAME,
+    (uintptr_t)DECODE_END_GAME,
+    (uintptr_t)DECODE_CAR_UPDATE, // UPDATE DATA BLOCK FOR CAR
+    (uintptr_t)DECODE_END_GAME,
+    (uintptr_t)DECODE_LINKEDT,
+    (uintptr_t)DECODE_LINKEDF,
+    (uintptr_t)DECODE_LINKCANCELLED,
+    (uintptr_t)DECODE_RACER_UPDATE,
+    (uintptr_t)DECODE_RACER_XSFER,
+    (uintptr_t)DECODE_RACER_KILL,
+    (uintptr_t)DECODE_RHO_CREATE,
+    (uintptr_t)DECODE_RHO_KILL,
+    (uintptr_t)DECODE_RHO_XSFER,
+    (uintptr_t)DECODE_RHO_UPDATE,
+    (uintptr_t)DECODE_FLY_KILL,
+    (uintptr_t)DECODE_FLY_XSFER,
+    (uintptr_t)DECODE_FLY_UPDATE,
+    (uintptr_t)DECODE_WAVEFL_READY,
+    (uintptr_t)DECODE_WAVEFL_SET,
+    (uintptr_t)DECODE_WAVEFL_GO,
+    (uintptr_t)DECODE_OM_TRACK,
+    (uintptr_t)DECODE_BSYNC0,
+    (uintptr_t)DECODE_BSYNC1,
+    (uintptr_t)DECODE_BSYNC2,
+    (uintptr_t)DECODE_BSYNC3,
+    (uintptr_t)DECODE_CHANGE_MUSIC,
+    (uintptr_t)DECODE_COINDROP,
+    (uintptr_t)DECODE_DIAGNOSTIC,
+    (uintptr_t)DECODE_ATTRSND,
     -1,
 };
 
@@ -1435,17 +1455,14 @@ void SEND_BSYNC3(void)
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC0,AR2
     // ;	BU	SBLS
-SEND_BSYNC1:
     // ;	LDI	1,R0
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC1,AR2
     // ;	BU	SBLS
-SEND_BSYNC2:
     // ;	LDI	2,R0
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC2,AR2
     // ;	BU	SBLS
-SEND_BSYNC3:
     // asm 00007928: 	LDI	3,R0
     // asm 00007929: 	STI	R0,@BSYNC
     // asm 0000792A: 	LDI	CB_BONUS_SYNC3,AR2
@@ -1461,15 +1478,12 @@ void DECODE_BSYNC3(void)
     // ;	LDI	0,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
-DECODE_BSYNC1:
     // ;	LDI	1,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
-DECODE_BSYNC2:
     // ;	LDI	2,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
-DECODE_BSYNC3:
     // asm 0000792C: 	LDI	3,R0
     // asm 0000792D: 	STI	R0,@OM_BSYNC
     // asm 0000792E: 	RETS

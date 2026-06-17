@@ -16,6 +16,9 @@ void MOD_I30(void);
 void MOD_U30(void);
 void SQRT(void);
 
+#define DIV_F DIV_F30
+#define DIV_I DIV_I30
+
 /* *----------------------------------------------------------------------------
 *DIVF	Floating point divide function
 *

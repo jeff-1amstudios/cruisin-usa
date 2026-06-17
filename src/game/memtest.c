@@ -35,6 +35,30 @@ void RAMTEST_END(void);
 void COPY_RAMTEST(void);
 void GENERATE_CHECKSUM(void);
 
+#define CHIPTEST_TABLEI CHIPTEST_TABLE
+#define CHKSUMC00 CHECKSUM_C00
+#define CHKSUMC80 CHECKSUM_C80
+#define CHKSUMD00 CHECKSUM_D00
+#define CHKSUMD80 CHECKSUM_D80
+#define CHKSUME00 CHECKSUM_E00
+#define CHKSUMC01 CHECKSUM_C01
+#define CHKSUMC81 CHECKSUM_C81
+#define CHKSUMD01 CHECKSUM_D01
+#define CHKSUMD81 CHECKSUM_D81
+#define CHKSUME01 CHECKSUM_E01
+#define CHKSUMC02 CHECKSUM_C02
+#define CHKSUMC82 CHECKSUM_C82
+#define CHKSUMD02 CHECKSUM_D02
+#define CHKSUMD82 CHECKSUM_D82
+#define CHKSUME02 CHECKSUM_E02
+#define CHKSUMC03 CHECKSUM_C03
+#define CHKSUMC83 CHECKSUM_C83
+#define CHKSUMD03 CHECKSUM_D03
+#define CHKSUMD83 CHECKSUM_D83
+#define CHKSUME03 CHECKSUM_E03
+
+void FEED_WATCHDOG_HARD(void);
+
 extern int RANDI;
 extern int RTU26[];
 extern int RTU22[];
@@ -78,26 +102,6 @@ extern int CHIPTEST_TABLE;
 extern int TESTING_CHIPS;
 extern int CMOS_CHIP;
 extern int BASICS_RAM[];
-extern int CHKSUMC00;
-extern int CHKSUMC80;
-extern int CHKSUMD00;
-extern int CHKSUMD80;
-extern int CHKSUME00;
-extern int CHKSUMC01;
-extern int CHKSUMC81;
-extern int CHKSUMD01;
-extern int CHKSUMD81;
-extern int CHKSUME01;
-extern int CHKSUMC02;
-extern int CHKSUMC82;
-extern int CHKSUMD02;
-extern int CHKSUMD82;
-extern int CHKSUME02;
-extern int CHKSUMC03;
-extern int CHKSUMC83;
-extern int CHKSUMD03;
-extern int CHKSUMD83;
-extern int CHKSUME03;
 extern int CCHKSUMC00;
 extern int CCHKSUMC80;
 extern int CCHKSUMD00;
@@ -335,36 +339,36 @@ int CMOS_CHIP;
 
 void TEST_STATIC_CHIPS(void)
 {
-    // asm: 	DINT
-    // asm: 	SETDP
-    // asm: 	CALL	COPY_RAMTEST
-    // asm: 	LDL	BASICS_RAM,AR5
-    // asm: 	LDI	3,AR6
-    // asm: 	LDL	STATIC_TABLE,AR4
-    // asm 00006300: TSTBL1A
-    // asm: 	LDI	*+AR4(CTT_TESTTAB),AR0
-    // asm: 	LDI	*AR0++,AR2
-    // asm: 	LDI	*AR0++,R2
-    // asm: 	LDI	*AR0++,R3
-    // asm: 	LDI	*AR0++,RC
-    // asm: 	LDI	*AR0++,RS
-    // asm: 	LDI	*AR0++,BK
-    // asm: 	CALL	FEED_WATCHDOG_HARD
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR6
-    // asm: 	PUSH	AR5
-    // asm 00006300: 	PUSH	AR4
-    // asm 00006306: 	CALL	RAMTEST
-    // asm 00006307: 	POP	AR4
-    // asm 00006308: 	POP	AR5
-    // asm 00006309: 	POP	AR6
-    // asm 0000630A: 	POP	AR0
-    // asm: 	STI	R0,*AR5++		;SAVE RESULTS
-    // asm 0000630B: 	CMPI	1,R0
-    // asm 0000630C: 	BEQ	IS_STATIC_ERROR
-    // asm 0000630D: 	LDI	*++AR4(CTT_SIZE),R0
-    // asm 0000630E: 	DBU	AR6,TSTBL1A
-    // asm 0000630F: 	RETS
+    // asm 00006300: 	DINT
+    // asm 00006306: 	SETDP
+    // asm 00006307: 	CALL	COPY_RAMTEST
+    // asm 00006308: 	LDL	BASICS_RAM,AR5
+    // asm 00006309: 	LDI	3,AR6
+    // asm 0000630A: 	LDL	STATIC_TABLE,AR4
+    // asm 0000630B: TSTBL1A
+    // asm 0000630B: 	LDI	*+AR4(CTT_TESTTAB),AR0
+    // asm 0000630C: 	LDI	*AR0++,AR2
+    // asm 0000630D: 	LDI	*AR0++,R2
+    // asm 0000630E: 	LDI	*AR0++,R3
+    // asm 0000630F: 	LDI	*AR0++,RC
+    // asm 00006310: 	LDI	*AR0++,RS
+    // asm 00006311: 	LDI	*AR0++,BK
+    // asm 00006312: 	CALL	FEED_WATCHDOG_HARD
+    // asm 00006313: 	PUSH	AR0
+    // asm 00006314: 	PUSH	AR6
+    // asm 00006315: 	PUSH	AR5
+    // asm 00006316: 	PUSH	AR4
+    // asm 00006317: 	CALL	RAMTEST
+    // asm 00006318: 	POP	AR4
+    // asm 00006319: 	POP	AR5
+    // asm 0000631A: 	POP	AR6
+    // asm 0000631B: 	POP	AR0
+    // asm 0000631C: 	STI	R0,*AR5++		;SAVE RESULTS
+    // asm 0000631D: 	CMPI	1,R0
+    // asm 0000631E: 	BEQ	IS_STATIC_ERROR
+    // asm 0000631F: 	LDI	*++AR4(CTT_SIZE),R0
+    // asm 00006320: 	DBU	AR6,TSTBL1A
+    // asm 00006321: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEST_STATIC_CHIPS", 0, 0);
     UNIMPL();
 }
@@ -373,31 +377,31 @@ void TEST_STATIC_CHIPS(void)
  */
 void GET_AR4_DIGITS(void)
 {
-    // asm 00006313: 	LDI	*+AR4(CTT_U),AR0
-    // asm 00006314: 	LDI	*AR0,AR0
-    // asm 00006315: 	LDI	AR0,R1
-    // asm 00006316: 	RS	8,R1
-    // asm 00006317: 	AND	0FFh,R1
-    // asm 00006318: 	SUBI	'0',R1
-    // asm 0000631A: 	LDI	AR0,R2
-    // asm 0000631B: 	RS	16,R2
-    // asm 0000631C: 	AND	0FFh,R2
-    // asm: 	CMPI	0,R2
-    // asm 0000631D: 	BEQ	R1R2ZER
-    // asm 0000631E: 	SUBI	'0',R2
-    // asm 00006320: 	LDI	AR0,R3
-    // asm 00006321: 	RS	24,R3
-    // asm: 	AND	0FFh,R3
-    // asm: 	CMPI	0,R3
-    // asm: 	BEQ	R3ZERO
-    // asm: 	SUBI	'0',R3
-    // asm: 	BU	NZERO
+    // asm 00006322: 	LDI	*+AR4(CTT_U),AR0
+    // asm 00006323: 	LDI	*AR0,AR0
+    // asm 00006324: 	LDI	AR0,R1
+    // asm 00006325: 	RS	8,R1
+    // asm 00006326: 	AND	0FFh,R1
+    // asm 00006327: 	SUBI	'0',R1
+    // asm 00006328: 	LDI	AR0,R2
+    // asm 00006329: 	RS	16,R2
+    // asm 0000632A: 	AND	0FFh,R2
+    // asm 0000632B: 	CMPI	0,R2
+    // asm 0000632C: 	BEQ	R1R2ZER
+    // asm 0000632D: 	SUBI	'0',R2
+    // asm 0000632E: 	LDI	AR0,R3
+    // asm 0000632F: 	RS	24,R3
+    // asm 00006330: 	AND	0FFh,R3
+    // asm 00006331: 	CMPI	0,R3
+    // asm 00006332: 	BEQ	R3ZERO
+    // asm 00006333: 	SUBI	'0',R3
+    // asm 00006334: 	BU	NZERO
 R1R2ZER:
-    // asm 00006322: CLRI	R2
+    // asm 00006335: CLRI	R2
 R3ZERO:
-    // asm 00006322: CLRI	R3
+    // asm 00006336: CLRI	R3
 NZERO:
-    // asm 00006324: 	RETS
+    // asm 00006337: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_AR4_DIGITS", 0, 0);
     UNIMPL();
 }
@@ -406,23 +410,23 @@ NZERO:
  */
 void BLINK_AND_CONTINUE(void)
 {
-    // asm 0000632A: 	PUSH	RS
-    // asm 0000632B: 	PUSH	RE
-    // asm 0000632C: 	PUSH	RC
-    // asm 0000632D: 	PUSH	AR0
-    // asm: 	PUSH	R1
-    // asm 0000632E: 	PUSH	R2
-    // asm 0000632F: 	PUSH	R3
-    // asm 00006330: 	CALL	GET_AR4_DIGITS
-    // asm 00006331: 	CALL	BLINK_DIGITS
-    // asm 00006332: 	POP	R3
-    // asm 00006333: 	POP	R2
-    // asm 00006334: 	POP	R1
-    // asm 00006335: 	POP	AR0
-    // asm 00006336: 	POP	RC
-    // asm: 	POP	RE
-    // asm 00006337: 	POP	RS
-    // asm: 	RETS
+    // asm 00006338: 	PUSH	RS
+    // asm 00006339: 	PUSH	RE
+    // asm 0000633A: 	PUSH	RC
+    // asm 0000633B: 	PUSH	AR0
+    // asm 0000633C: 	PUSH	R1
+    // asm 0000633D: 	PUSH	R2
+    // asm 0000633E: 	PUSH	R3
+    // asm 0000633F: 	CALL	GET_AR4_DIGITS
+    // asm 00006340: 	CALL	BLINK_DIGITS
+    // asm 00006341: 	POP	R3
+    // asm 00006342: 	POP	R2
+    // asm 00006343: 	POP	R1
+    // asm 00006344: 	POP	AR0
+    // asm 00006345: 	POP	RC
+    // asm 00006346: 	POP	RE
+    // asm 00006347: 	POP	RS
+    // asm 00006348: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BLINK_AND_CONTINUE", 0, 0);
     UNIMPL();
 }
@@ -431,10 +435,10 @@ void BLINK_AND_CONTINUE(void)
  */
 void IS_STATIC_ERROR(void)
 {
-    // asm 00006338: 	CALL	GET_AR4_DIGITS
+    // asm 00006349: 	CALL	GET_AR4_DIGITS
 ELOOP:
-    // asm 0000633B: 	CALL	BLINK_DIGITS
-    // asm 0000633C: 	BU	ELOOP
+    // asm 0000634A: 	CALL	BLINK_DIGITS
+    // asm 0000634B: 	BU	ELOOP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "IS_STATIC_ERROR", 0, 0);
     UNIMPL();
@@ -452,189 +456,189 @@ ELOOP:
  */
 void LLED_ON(void)
 {
-    // asm: 	LDI	@SYSCNTL,R0		;if the system hangs and the LED
-    // asm: 	ANDN	LED_OFF,R0		;is on we were in this routine
-    // asm: 	STI	R0,@SYSCNTL		;when it happened
-    // asm: 	LDP	@SYSCNTLR
-    // asm 00006349: 	STI	R0,@SYSCNTLR
-    // asm: 	SETDP
-    // asm: 	RETS
+    // asm 0000634C: 	LDI	@SYSCNTL,R0		;if the system hangs and the LED
+    // asm 0000634D: 	ANDN	LED_OFF,R0		;is on we were in this routine
+    // asm 0000634E: 	STI	R0,@SYSCNTL		;when it happened
+    // asm 0000634F: 	LDP	@SYSCNTLR
+    // asm 00006350: 	STI	R0,@SYSCNTLR
+    // asm 00006351: 	SETDP
+    // asm 00006352: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LLED_ON", 0, 0);
     UNIMPL();
 }
 
 void LLED_OFF(void)
 {
-    // asm: 	LDI	@SYSCNTL,R0
-    // asm: 	OR	LED_OFF,R0
-    // asm: 	STI	R0,@SYSCNTL
-    // asm: 	LDP	@SYSCNTLR
-    // asm: 	STI	R0,@SYSCNTLR
-    // asm: 	SETDP
-    // asm: 	RETS
+    // asm 00006353: 	LDI	@SYSCNTL,R0
+    // asm 00006354: 	OR	LED_OFF,R0
+    // asm 00006355: 	STI	R0,@SYSCNTL
+    // asm 00006356: 	LDP	@SYSCNTLR
+    // asm 00006357: 	STI	R0,@SYSCNTLR
+    // asm 00006358: 	SETDP
+    // asm 00006359: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LLED_OFF", 0, 0);
     UNIMPL();
 }
 
 void BLINK_DIGITS(void)
 {
-    // asm: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm: 	PUSH	R2
-    // asm: 	PUSH	R3
-    // asm 0000634C: 	PUSH	AR4
-    // asm 0000634E: 	LDI	R1,AR4		;#NUMBER OF ITERATIONS
-    // asm 0000634F: 	DEC	AR4
-    // asm 00006350: 	CMPI	0,AR4
-    // asm 00006351: 	BLT	BDL1X
-    // asm 00006352: BDL1
-    // asm: 	CALL	LLED_ON
-    // asm 00006353: 	LDIL	8000000,RC
-    // asm 00006354: 	RPTS	RC
-    // asm 00006355: 	NOP
-    // asm 00006356: 	CALL	LLED_OFF
-    // asm 00006358: 	LDIL	8000000,RC
-    // asm 00006359: 	RPTS	RC
-    // asm: 	NOP
-    // asm: 	DBU	AR4,BDL1
-    // asm 0000635A: BDL1X
-    // asm 0000635E: 	LDIL	35000000,RC
-    // asm: 	RPTS	RC
-    // asm 0000635F: 	NOP
-    // asm 00006362: 	LDI	R2,AR4		;#NUMBER OF ITERATIONS
-    // asm: 	DEC	AR4
-    // asm 00006363: 	CMPI	0,AR4
-    // asm: 	BLT	BDL2X
-    // asm 00006364: BDL2
-    // asm 00006367: 	CALL	LLED_ON
-    // asm 00006368: 	LDIL	8000000,RC
-    // asm 00006369: 	RPTS	RC
-    // asm: 	NOP
-    // asm 0000636A: 	CALL	LLED_OFF
-    // asm 0000636D: 	LDIL	8000000,RC
-    // asm 0000636E: 	RPTS	RC
-    // asm 0000636F: 	NOP
-    // asm: 	DBU	AR4,BDL2
-    // asm 00006370: BDL2X
-    // asm 00006373: 	LDIL	35000000,RC
-    // asm 00006374: 	RPTS	RC
-    // asm: 	NOP
-    // asm 00006375: 	LDI	R3,AR4		;#NUMBER OF ITERATIONS
+    // asm 0000635A: 	PUSH	R0
+    // asm 0000635B: 	PUSH	R1
+    // asm 0000635C: 	PUSH	R2
+    // asm 0000635D: 	PUSH	R3
+    // asm 0000635E: 	PUSH	AR4
+    // asm 0000635F: 	LDI	R1,AR4		;#NUMBER OF ITERATIONS
+    // asm 00006360: 	DEC	AR4
+    // asm 00006361: 	CMPI	0,AR4
+    // asm 00006362: 	BLT	BDL1X
+    // asm 00006363: BDL1
+    // asm 00006363: 	CALL	LLED_ON
+    // asm 00006364: 	LDIL	8000000,RC
+    // asm 00006367: 	RPTS	RC
+    // asm 00006368: 	NOP
+    // asm 00006369: 	CALL	LLED_OFF
+    // asm 0000636A: 	LDIL	8000000,RC
+    // asm 0000636D: 	RPTS	RC
+    // asm 0000636E: 	NOP
+    // asm 0000636F: 	DBU	AR4,BDL1
+    // asm 00006370: BDL1X
+    // asm 00006370: 	LDIL	35000000,RC
+    // asm 00006373: 	RPTS	RC
+    // asm 00006374: 	NOP
+    // asm 00006375: 	LDI	R2,AR4		;#NUMBER OF ITERATIONS
     // asm 00006376: 	DEC	AR4
     // asm 00006377: 	CMPI	0,AR4
-    // asm 00006378: 	BLT	BDL3X
-    // asm 00006379: BDL3	CALL	LLED_ON
-    // asm 00006379: 	LDIL	8000000,RC
-    // asm 0000637A: 	RPTS	RC
-    // asm 0000637D: 	NOP
-    // asm 0000637E: 	CALL	LLED_OFF
-    // asm 0000637F: 	LDIL	8000000,RC
-    // asm 00006380: 	RPTS	RC
-    // asm 00006383: 	NOP
-    // asm: 	DBU	AR4,BDL3
-    // asm 00006385: BDL3X
-    // asm: 	LDIL	35000000,RC
-    // asm 00006386: 	RPTS	RC
-    // asm 00006389: 	NOP
-    // asm 0000638B: 	LDIL	35000000,RC
-    // asm 0000638C: 	RPTS	RC
-    // asm 0000638D: 	NOP
-    // asm 0000638F: 	POP	AR4
-    // asm 00006390: 	POP	R3
-    // asm 00006393: 	POP	R2
-    // asm 00006394: 	POP	R1
-    // asm 00006395: 	POP	R0
-    // asm 00006396: 	RETS
+    // asm 00006378: 	BLT	BDL2X
+    // asm 00006379: BDL2
+    // asm 00006379: 	CALL	LLED_ON
+    // asm 0000637A: 	LDIL	8000000,RC
+    // asm 0000637D: 	RPTS	RC
+    // asm 0000637E: 	NOP
+    // asm 0000637F: 	CALL	LLED_OFF
+    // asm 00006380: 	LDIL	8000000,RC
+    // asm 00006383: 	RPTS	RC
+    // asm 00006384: 	NOP
+    // asm 00006385: 	DBU	AR4,BDL2
+    // asm 00006386: BDL2X
+    // asm 00006386: 	LDIL	35000000,RC
+    // asm 00006389: 	RPTS	RC
+    // asm 0000638A: 	NOP
+    // asm 0000638B: 	LDI	R3,AR4		;#NUMBER OF ITERATIONS
+    // asm 0000638C: 	DEC	AR4
+    // asm 0000638D: 	CMPI	0,AR4
+    // asm 0000638E: 	BLT	BDL3X
+    // asm 0000638F: BDL3	CALL	LLED_ON
+    // asm 00006390: 	LDIL	8000000,RC
+    // asm 00006393: 	RPTS	RC
+    // asm 00006394: 	NOP
+    // asm 00006395: 	CALL	LLED_OFF
+    // asm 00006396: 	LDIL	8000000,RC
+    // asm 00006399: 	RPTS	RC
+    // asm 0000639A: 	NOP
+    // asm 0000639B: 	DBU	AR4,BDL3
+    // asm 0000639C: BDL3X
+    // asm 0000639C: 	LDIL	35000000,RC
+    // asm 0000639F: 	RPTS	RC
+    // asm 000063A0: 	NOP
+    // asm 000063A1: 	LDIL	35000000,RC
+    // asm 000063A4: 	RPTS	RC
+    // asm 000063A5: 	NOP
+    // asm 000063A6: 	POP	AR4
+    // asm 000063A7: 	POP	R3
+    // asm 000063A8: 	POP	R2
+    // asm 000063A9: 	POP	R1
+    // asm 000063AA: 	POP	R0
+    // asm 000063AB: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BLINK_DIGITS", 0, 0);
     UNIMPL();
 }
 
 void TEST_CHIPS(void)
 {
-    // asm: 	PUSH	DP
-    // asm: 	LDP	@9E0000h
-    // asm 0000639C: 	CLRI	R0			;set background to 0
-    // asm 0000639F: 	STI	R0,@9E0000h
-    // asm 000063A0: 	POP	DP
-    // asm 000063A1: 	CALL	SETPAGE0
-    // asm 000063A4: 	LDIL	SCREEN0,R0		;set active screen to 1 (writeable)
-    // asm 000063A5: 	STI	R0,@ACTIVE_SCREEN
-    // asm: 	DINT
-    // asm 000063A6: 	CALL	COPY_RAMTEST
-    // asm 000063A7: 	CALL	TEST_BASICS
-    // asm 000063AA: 	LDI	COL_VDGREY,RC
-    // asm 000063AB: 	TEXTITT	"CPU BOARD TEST",50,40
+    // asm 000063AC: 	PUSH	DP
+    // asm 000063AD: 	LDP	@9E0000h
+    // asm 000063AE: 	CLRI	R0			;set background to 0
+    // asm 000063AF: 	STI	R0,@9E0000h
+    // asm 000063B0: 	POP	DP
+    // asm 000063B1: 	CALL	SETPAGE0
+    // asm 000063B2: 	LDIL	SCREEN0,R0		;set active screen to 1 (writeable)
+    // asm 000063B5: 	STI	R0,@ACTIVE_SCREEN
+    // asm 000063B6: 	DINT
+    // asm 000063BC: 	CALL	COPY_RAMTEST
+    // asm 000063BD: 	CALL	TEST_BASICS
+    // asm 000063BE: 	LDI	COL_VDGREY,RC
+    // asm 000063BF: 	TEXTITT	"CPU BOARD TEST",50,40
     // 		;
     // 		;NOW CHECK AND PLOT ACCORDINGLY
     // 		;
-    // asm: 	LDL	TESTING_CHIPS,AR4
+    // asm 000063C3: 	LDL	TESTING_CHIPS,AR4
 TESTLP1:
-    // asm 000063AD: 	LDI	*+AR4(CTT_RAMROM),R0
-    // asm 000063AE: 	BZ	CHECK_AS_RAM	;(W/ SCRAMBLE)
-    // asm 000063B0: 	LDI	*+AR4(CTT_TESTTAB),AR0
-    // asm: 	LDI	*AR0++,AR2	;ADDR
-    // asm: 	LDI	*AR0++,RC	;LENGTH
-    // asm 000063B1: 	LDI	*AR0++,R2	;MASK
-    // asm 000063B2: 	LDI	*AR0++,R3	;SHIFT
-    // asm 000063B5: 	CALL	GENERATE_CHECKSUM
-    // asm 000063BC: 	LDI	*AR0,AR0
-    // asm 000063BD: 	LDI	*AR0,R1
-    // asm: 	CMPI	R1,R0
-    // asm: 	LDIEQ	COL_GREEN,RS
-    // asm 000063BE: 	LDINE	COL_RED,RS
+    // asm 000063C4: 	LDI	*+AR4(CTT_RAMROM),R0
+    // asm 000063C5: 	BZ	CHECK_AS_RAM	;(W/ SCRAMBLE)
+    // asm 000063C6: 	LDI	*+AR4(CTT_TESTTAB),AR0
+    // asm 000063C7: 	LDI	*AR0++,AR2	;ADDR
+    // asm 000063C8: 	LDI	*AR0++,RC	;LENGTH
+    // asm 000063C9: 	LDI	*AR0++,R2	;MASK
+    // asm 000063CA: 	LDI	*AR0++,R3	;SHIFT
+    // asm 000063CB: 	CALL	GENERATE_CHECKSUM
+    // asm 000063CC: 	LDI	*AR0,AR0
+    // asm 000063CD: 	LDI	*AR0,R1
+    // asm 000063CE: 	CMPI	R1,R0
+    // asm 000063CF: 	LDIEQ	COL_GREEN,RS
+    // asm 000063D0: 	LDINE	COL_RED,RS
     // ;	CMPI	COL_RED,RS
     // ;	CALLEQ	BLINK_AND_CONTINUE
     // 	;CHECKSUM PART
-    // asm 000063C4: 	BU	DN_CHK
+    // asm 000063D1: 	BU	DN_CHK
 CHECK_AS_RAM:
-    // asm 000063C6: 	LDI	*+AR4(CTT_TESTTAB),AR0
-    // asm 000063C7: 	CMPI	-1,AR0
-    // asm 000063C8: 	BEQ	TEST_CHIPSX
-    // asm 000063CA: 	LDI	*AR0++,AR2
-    // asm 000063CB: 	LDI	*AR0++,R2
-    // asm: 	LDI	*AR0++,R3
-    // asm 000063CC: 	LDI	*AR0++,RC
-    // asm 000063CD: 	LDI	*AR0++,RS
-    // asm 000063CE: 	LDI	*AR0++,BK
-    // asm 000063CF: 	PUSH	AR0
-    // asm 000063D0: 	PUSH	AR4
-    // asm: 	CALL	RAMTEST
-    // asm: 	POP	AR4
-    // asm: 	POP	AR0
-    // asm: 	LDI	R0,R0
-    // asm: 	LDIZ	COL_GREEN,RS
+    // asm 000063D2: 	LDI	*+AR4(CTT_TESTTAB),AR0
+    // asm 000063D3: 	CMPI	-1,AR0
+    // asm 000063D4: 	BEQ	TEST_CHIPSX
+    // asm 000063D5: 	LDI	*AR0++,AR2
+    // asm 000063D6: 	LDI	*AR0++,R2
+    // asm 000063D7: 	LDI	*AR0++,R3
+    // asm 000063D8: 	LDI	*AR0++,RC
+    // asm 000063D9: 	LDI	*AR0++,RS
+    // asm 000063DA: 	LDI	*AR0++,BK
+    // asm 000063DB: 	PUSH	AR0
+    // asm 000063DC: 	PUSH	AR4
+    // asm 000063DD: 	CALL	RAMTEST
+    // asm 000063DE: 	POP	AR4
+    // asm 000063DF: 	POP	AR0
+    // asm 000063E0: 	LDI	R0,R0
+    // asm 000063E1: 	LDIZ	COL_GREEN,RS
     // ;	LDIZ	COL_GREY,RS
-    // asm: 	LDINZ	COL_RED,RS
+    // asm 000063E2: 	LDINZ	COL_RED,RS
     // ;	CMPI	COL_RED,RS
     // ;	CALLEQ	BLINK_AND_CONTINUE
 DN_CHK:
-    // asm: 	LDI	*+AR4(CTT_MINX),AR2
-    // asm 000063D5: 	INC	AR2
-    // asm 000063D6: 	LDI	*+AR4(CTT_MINY),R2
-    // asm 000063D7: 	INC	R2
-    // asm 000063D8: 	LDI	*+AR4(CTT_MAXX),R3
-    // asm 000063D9: 	DEC	R3
-    // asm 000063DA: 	LDI	*+AR4(CTT_MAXY),RC
-    // asm 000063DB: 	DEC	RC
-    // asm 000063DC: 	CALL	_fill
-    // asm 000063DE: 	LDI	*+AR4(CTT_U),AR2
-    // asm 000063DF: 	LDI	*+AR4(CTT_MAXX),R2
-    // asm 000063E0: 	LDI	*+AR4(CTT_MAXY),R3
-    // asm 000063E1: 	SUBI	*+AR4(CTT_MINX),R2
-    // asm: 	SUBI	*+AR4(CTT_MINY),R3
-    // asm 000063E2: 	RS	1,R2
-    // asm: 	RS	1,R3
-    // asm: 	ADDI	*+AR4(CTT_MINX),R2
-    // asm: 	ADDI	*+AR4(CTT_MINY),R3
-    // asm: 	SUBI	15,R2
-    // asm: 	SUBI	4,R3
-    // asm: 	LDI	COL_BLACK,RC
-    // asm 000063E3: 	CALL	_outtextxyc
-    // asm 000063E5: 	LDI	*++AR4(CTT_SIZE),R0
-    // asm 000063E6: 	BNZ	TESTLP1
+    // asm 000063E3: 	LDI	*+AR4(CTT_MINX),AR2
+    // asm 000063E4: 	INC	AR2
+    // asm 000063E5: 	LDI	*+AR4(CTT_MINY),R2
+    // asm 000063E6: 	INC	R2
+    // asm 000063E7: 	LDI	*+AR4(CTT_MAXX),R3
+    // asm 000063E8: 	DEC	R3
+    // asm 000063E9: 	LDI	*+AR4(CTT_MAXY),RC
+    // asm 000063EA: 	DEC	RC
+    // asm 000063EB: 	CALL	_fill
+    // asm 000063EC: 	LDI	*+AR4(CTT_U),AR2
+    // asm 000063ED: 	LDI	*+AR4(CTT_MAXX),R2
+    // asm 000063EE: 	LDI	*+AR4(CTT_MAXY),R3
+    // asm 000063EF: 	SUBI	*+AR4(CTT_MINX),R2
+    // asm 000063F0: 	SUBI	*+AR4(CTT_MINY),R3
+    // asm 000063F1: 	RS	1,R2
+    // asm 000063F2: 	RS	1,R3
+    // asm 000063F3: 	ADDI	*+AR4(CTT_MINX),R2
+    // asm 000063F4: 	ADDI	*+AR4(CTT_MINY),R3
+    // asm 000063F5: 	SUBI	15,R2
+    // asm 000063F6: 	SUBI	4,R3
+    // asm 000063F7: 	LDI	COL_BLACK,RC
+    // asm 000063F8: 	CALL	_outtextxyc
+    // asm 000063F9: 	LDI	*++AR4(CTT_SIZE),R0
+    // asm 000063FA: 	BNZ	TESTLP1
 TEST_CHIPSX:
-    // asm 000063E9: 	CALL	CMOS_CHIP_TEST
-    // asm 000063EB: 	RETS
+    // asm 000063FB: 	CALL	CMOS_CHIP_TEST
+    // asm 000063FC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEST_CHIPS", 0, 0);
     UNIMPL();
 }
@@ -643,33 +647,33 @@ TEST_CHIPSX:
  */
 void PLOT_OUTLINE_OF_CHIPS(void)
 {
-    // asm 000063F1: 	LDI	@CHIPTEST_TABLEI,AR4
+    // asm 000063FD: 	LDI	@CHIPTEST_TABLEI,AR4
 POOCL:
-    // asm 000063F3: 	LDI	*+AR4(CTT_MINX),AR2
-    // asm 000063F4: 	LDI	*+AR4(CTT_MINY),R2
-    // asm 000063F5: 	LDI	*+AR4(CTT_MAXX),R3
-    // asm 000063F6: 	LDI	*+AR4(CTT_MAXY),RC
-    // asm 000063F7: 	LDI	COL_WHITE,RS
-    // asm 000063F8: 	PUSH	DP
-    // asm: 	CALL	_rectangle
-    // asm 000063F9: 	POP	DP
-    // asm: 	LDI	*+AR4(CTT_U),AR2
-    // asm: 	LDI	*+AR4(CTT_MAXX),R2
-    // asm 000063FB: 	LDI	*+AR4(CTT_MAXY),R3
-    // asm: 	SUBI	*+AR4(CTT_MINX),R2
-    // asm 000063FC: 	SUBI	*+AR4(CTT_MINY),R3
-    // asm: 	RS	1,R2
-    // asm: 	RS	1,R3
-    // asm: 	ADDI	*+AR4(CTT_MINX),R2
-    // asm: 	ADDI	*+AR4(CTT_MINY),R3
-    // asm: 	SUBI	15,R2
-    // asm: 	SUBI	4,R3
-    // asm 000063FD: 	LDI	COL_DGREY,RC
-    // asm: 	CALL	_outtextxyc
-    // asm 000063FF: 	LDI	*++AR4(CTT_SIZE),R0
-    // asm 00006400: 	BNZ	POOCL
-    // asm 00006402: 	CALL	CMOS_CHIP_DISPLAY
-    // asm 00006403: 	RETS
+    // asm 000063FE: 	LDI	*+AR4(CTT_MINX),AR2
+    // asm 000063FF: 	LDI	*+AR4(CTT_MINY),R2
+    // asm 00006400: 	LDI	*+AR4(CTT_MAXX),R3
+    // asm 00006401: 	LDI	*+AR4(CTT_MAXY),RC
+    // asm 00006402: 	LDI	COL_WHITE,RS
+    // asm 00006403: 	PUSH	DP
+    // asm 00006404: 	CALL	_rectangle
+    // asm 00006405: 	POP	DP
+    // asm 00006406: 	LDI	*+AR4(CTT_U),AR2
+    // asm 00006407: 	LDI	*+AR4(CTT_MAXX),R2
+    // asm 00006408: 	LDI	*+AR4(CTT_MAXY),R3
+    // asm 00006409: 	SUBI	*+AR4(CTT_MINX),R2
+    // asm 0000640A: 	SUBI	*+AR4(CTT_MINY),R3
+    // asm 0000640B: 	RS	1,R2
+    // asm 0000640C: 	RS	1,R3
+    // asm 0000640D: 	ADDI	*+AR4(CTT_MINX),R2
+    // asm 0000640E: 	ADDI	*+AR4(CTT_MINY),R3
+    // asm 0000640F: 	SUBI	15,R2
+    // asm 00006410: 	SUBI	4,R3
+    // asm 00006411: 	LDI	COL_DGREY,RC
+    // asm 00006412: 	CALL	_outtextxyc
+    // asm 00006413: 	LDI	*++AR4(CTT_SIZE),R0
+    // asm 00006414: 	BNZ	POOCL
+    // asm 00006415: 	CALL	CMOS_CHIP_DISPLAY
+    // asm 00006416: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOT_OUTLINE_OF_CHIPS", 0, 0);
     UNIMPL();
 }
@@ -678,29 +682,29 @@ POOCL:
  */
 void CMOS_CHIP_DISPLAY(void)
 {
-    // asm 00006408: 	LDL	CMOS_CHIP,AR4
-    // asm 00006409: 	LDI	*+AR4(CTT_MINX),AR2
-    // asm 0000640A: 	LDI	*+AR4(CTT_MINY),R2
-    // asm 0000640B: 	LDI	*+AR4(CTT_MAXX),R3
-    // asm 0000640C: 	LDI	*+AR4(CTT_MAXY),RC
-    // asm 0000640D: 	LDI	COL_WHITE,RS
-    // asm 0000640E: 	PUSH	DP
-    // asm 0000640F: 	CALL	_rectangle
-    // asm 00006410: 	POP	DP
-    // asm 00006412: 	LDI	*+AR4(CTT_U),AR2
-    // asm: 	LDI	*+AR4(CTT_MAXX),R2
-    // asm 00006413: 	LDI	*+AR4(CTT_MAXY),R3
-    // asm 00006414: 	SUBI	*+AR4(CTT_MINX),R2
-    // asm: 	SUBI	*+AR4(CTT_MINY),R3
-    // asm 00006415: 	RS	1,R2
-    // asm 00006416: 	RS	1,R3
-    // asm: 	ADDI	*+AR4(CTT_MINX),R2
-    // asm: 	ADDI	*+AR4(CTT_MINY),R3
-    // asm: 	SUBI	15,R2
-    // asm: 	SUBI	4,R3
-    // asm: 	LDI	COL_DGREY,RC
-    // asm 00006417: 	CALL	_outtextxyc
-    // asm 00006418: 	RETS
+    // asm 00006417: 	LDL	CMOS_CHIP,AR4
+    // asm 00006418: 	LDI	*+AR4(CTT_MINX),AR2
+    // asm 00006419: 	LDI	*+AR4(CTT_MINY),R2
+    // asm 0000641A: 	LDI	*+AR4(CTT_MAXX),R3
+    // asm 0000641B: 	LDI	*+AR4(CTT_MAXY),RC
+    // asm 0000641C: 	LDI	COL_WHITE,RS
+    // asm 0000641D: 	PUSH	DP
+    // asm 0000641E: 	CALL	_rectangle
+    // asm 0000641F: 	POP	DP
+    // asm 00006420: 	LDI	*+AR4(CTT_U),AR2
+    // asm 00006421: 	LDI	*+AR4(CTT_MAXX),R2
+    // asm 00006422: 	LDI	*+AR4(CTT_MAXY),R3
+    // asm 00006423: 	SUBI	*+AR4(CTT_MINX),R2
+    // asm 00006424: 	SUBI	*+AR4(CTT_MINY),R3
+    // asm 00006425: 	RS	1,R2
+    // asm 00006426: 	RS	1,R3
+    // asm 00006427: 	ADDI	*+AR4(CTT_MINX),R2
+    // asm 00006428: 	ADDI	*+AR4(CTT_MINY),R3
+    // asm 00006429: 	SUBI	15,R2
+    // asm 0000642A: 	SUBI	4,R3
+    // asm 0000642B: 	LDI	COL_DGREY,RC
+    // asm 0000642C: 	CALL	_outtextxyc
+    // asm 0000642D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CMOS_CHIP_DISPLAY", 0, 0);
     UNIMPL();
 }
@@ -709,85 +713,85 @@ void CMOS_CHIP_DISPLAY(void)
  */
 void CMOS_CHIP_TEST(void)
 {
-    // asm 0000641E: 	PUSH	AR4
-    // asm 0000641F: 	PUSH	R0
-    // asm: 	PUSH	R1
-    // asm 00006420: 	PUSH	R2
-    // asm 00006421: 	PUSH	R3
-    // asm 00006422: 	LDL	CMOS_CHIP,AR4
-    // asm 00006423: 	LDIL	5A5A5A5Ah,R3
-    // asm 00006425: 	LDP	@CPU_WS
-    // asm 00006426: 	LDI	88h,R1
-    // asm 00006427: 	STI	R1,@CPU_WS
-    // asm 00006428: 	SETDP
-    // asm 0000642A: 	CMOS_WP_OFF
-    // asm 0000642B: 	NOP			;DELAY FOR TIMING...
-    // asm 0000642D: 	LDI	5,AR5
+    // asm 0000642E: 	PUSH	AR4
+    // asm 0000642F: 	PUSH	R0
+    // asm 00006430: 	PUSH	R1
+    // asm 00006431: 	PUSH	R2
+    // asm 00006432: 	PUSH	R3
+    // asm 00006433: 	LDL	CMOS_CHIP,AR4
+    // asm 00006434: 	LDIL	5A5A5A5Ah,R3
+    // asm 00006437: 	LDP	@CPU_WS
+    // asm 00006438: 	LDI	88h,R1
+    // asm 00006439: 	STI	R1,@CPU_WS
+    // asm 0000643A: 	SETDP
+    // asm 0000643B: 	CMOS_WP_OFF
+    // asm 0000643C: 	NOP			;DELAY FOR TIMING...
+    // asm 0000643D: 	LDI	5,AR5
 KKLL1:
-    // asm 0000642E: LDI	R3,R2
-    // asm: 	AND	0FFh,R2
-    // asm: 	LS	24,R2
-    // asm 0000642E: 	LDI	AUD_CHIPTEST_DEDICATED,AR2
-    // asm 0000642F: 	LS	2,AR2
-    // asm 00006430: 	ADDI	@CMOSI,AR2
-    // asm 00006433: 	STI	R2,*AR2
-    // asm 00006434: 	RS	24,R2
-    // asm 00006438: 	LDL	0C00000h,AR0		;DUMMY READ
-    // asm 00006439: 	LDI	*AR0,R0
-    // asm: 	LDI	*AR2,R0
-    // asm 0000643B: 	RS	24,R0
-    // asm: 	CMPI	R2,R0
-    // asm 0000643D: 	BNE	CM_ISERROR
-    // asm: 	LDI	R3,R1
-    // asm 0000643F: 	LSH	1,R3
-    // asm 00006440: 	XOR	R3,R1
-    // asm: 	BNN	RND2
-    // asm 00006441: 	OR	1,R3
+    // asm 0000643E: LDI	R3,R2
+    // asm 0000643F: 	AND	0FFh,R2
+    // asm 00006440: 	LS	24,R2
+    // asm 00006441: 	LDI	AUD_CHIPTEST_DEDICATED,AR2
+    // asm 00006442: 	LS	2,AR2
+    // asm 00006443: 	ADDI	@CMOSI,AR2
+    // asm 00006444: 	STI	R2,*AR2
+    // asm 00006445: 	RS	24,R2
+    // asm 00006446: 	LDL	0C00000h,AR0		;DUMMY READ
+    // asm 00006447: 	LDI	*AR0,R0
+    // asm 00006448: 	LDI	*AR2,R0
+    // asm 00006449: 	RS	24,R0
+    // asm 0000644A: 	CMPI	R2,R0
+    // asm 0000644B: 	BNE	CM_ISERROR
+    // asm 0000644C: 	LDI	R3,R1
+    // asm 0000644D: 	LSH	1,R3
+    // asm 0000644E: 	XOR	R3,R1
+    // asm 0000644F: 	BNN	RND2
+    // asm 00006450: 	OR	1,R3
 RND2:
-    // asm 00006442: MPYI	794Fh,R3
-    // asm 00006443: 	DBU	AR5,KKLL1
-    // asm: 	CMOS_WP_ON
+    // asm 00006451: MPYI	794Fh,R3
+    // asm 00006452: 	DBU	AR5,KKLL1
+    // asm 00006453: 	CMOS_WP_ON
     // 	;NO ERROR
-    // asm: 	LDI	COL_GREEN,RS
-    // asm 00006446: 	BU	KKJJ
+    // asm 00006454: 	LDI	COL_GREEN,RS
+    // asm 00006455: 	BU	KKJJ
 CM_ISERROR:
-    // asm 00006448: 	CMOS_WP_ON
-    // asm 00006449: 	LDI	COL_RED,RS
+    // asm 00006456: 	CMOS_WP_ON
+    // asm 00006457: 	LDI	COL_RED,RS
 KKJJ:
     // ;	CMPI	COL_RED,RS
     // ;	CALLEQ	BLINK_AND_CONTINUE
-    // asm 0000644E: 	LDP	@CPU_WS
-    // asm 0000644F: 	LDI	1048h,R0
-    // asm 00006450: 	STI	R0,@CPU_WS
-    // asm 00006451: 	SETDP
-    // asm 00006453: 	LDI	*+AR4(CTT_MINX),AR2
-    // asm: 	INC	AR2
-    // asm: 	LDI	*+AR4(CTT_MINY),R2
-    // asm: 	INC	R2
-    // asm 00006454: 	LDI	*+AR4(CTT_MAXX),R3
-    // asm 00006455: 	DEC	R3
-    // asm: 	LDI	*+AR4(CTT_MAXY),RC
-    // asm: 	DEC	RC
-    // asm 00006456: 	CALL	_fill
-    // asm: 	LDI	*+AR4(CTT_U),AR2
-    // asm: 	LDI	*+AR4(CTT_MAXX),R2
-    // asm: 	LDI	*+AR4(CTT_MAXY),R3
-    // asm: 	SUBI	*+AR4(CTT_MINX),R2
-    // asm: 	SUBI	*+AR4(CTT_MINY),R3
-    // asm: 	RS	1,R2
-    // asm 00006458: 	RS	1,R3
-    // asm 00006459: 	ADDI	*+AR4(CTT_MINX),R2
-    // asm 0000645A: 	ADDI	*+AR4(CTT_MINY),R3
-    // asm 0000645B: 	SUBI	15,R2
-    // asm: 	SUBI	4,R3
-    // asm: 	LDI	COL_BLACK,RC
-    // asm 0000645C: 	CALL	_outtextxyc
-    // asm 0000645E: 	POP	R3
-    // asm 0000645F: 	POP	R2
-    // asm 00006460: 	POP	R1
-    // asm 00006461: 	POP	R0
-    // asm 00006462: 	POP	AR4
-    // asm 00006463: 	RETS
+    // asm 00006458: 	LDP	@CPU_WS
+    // asm 00006459: 	LDI	1048h,R0
+    // asm 0000645A: 	STI	R0,@CPU_WS
+    // asm 0000645B: 	SETDP
+    // asm 0000645C: 	LDI	*+AR4(CTT_MINX),AR2
+    // asm 0000645D: 	INC	AR2
+    // asm 0000645E: 	LDI	*+AR4(CTT_MINY),R2
+    // asm 0000645F: 	INC	R2
+    // asm 00006460: 	LDI	*+AR4(CTT_MAXX),R3
+    // asm 00006461: 	DEC	R3
+    // asm 00006462: 	LDI	*+AR4(CTT_MAXY),RC
+    // asm 00006463: 	DEC	RC
+    // asm 00006464: 	CALL	_fill
+    // asm 00006465: 	LDI	*+AR4(CTT_U),AR2
+    // asm 00006466: 	LDI	*+AR4(CTT_MAXX),R2
+    // asm 00006467: 	LDI	*+AR4(CTT_MAXY),R3
+    // asm 00006468: 	SUBI	*+AR4(CTT_MINX),R2
+    // asm 00006469: 	SUBI	*+AR4(CTT_MINY),R3
+    // asm 0000646A: 	RS	1,R2
+    // asm 0000646B: 	RS	1,R3
+    // asm 0000646C: 	ADDI	*+AR4(CTT_MINX),R2
+    // asm 0000646D: 	ADDI	*+AR4(CTT_MINY),R3
+    // asm 0000646E: 	SUBI	15,R2
+    // asm 0000646F: 	SUBI	4,R3
+    // asm 00006470: 	LDI	COL_BLACK,RC
+    // asm 00006471: 	CALL	_outtextxyc
+    // asm 00006472: 	POP	R3
+    // asm 00006473: 	POP	R2
+    // asm 00006474: 	POP	R1
+    // asm 00006475: 	POP	R0
+    // asm 00006476: 	POP	AR4
+    // asm 00006477: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CMOS_CHIP_TEST", 0, 0);
     UNIMPL();
 }
@@ -807,118 +811,118 @@ int BASICS_RAM[10];
 
 void TEST_BASICS(void)
 {
-    // asm: 	LDL	BASICS_RAM,AR5
-    // asm 00006472: 	LDI	5,AR6
-    // asm 00006473: 	LDL	CHIPTEST_TABLE,AR4
-    // asm 00006475: TSTBL1
-    // asm 00006476: 	LDI	*+AR4(CTT_TESTTAB),AR0
-    // asm 00006477: 	LDI	*AR0++,AR2
-    // asm: 	LDI	*AR0++,R2
-    // asm: 	LDI	*AR0++,R3
-    // asm: 	LDI	*AR0++,RC
-    // asm: 	LDI	*AR0++,RS
-    // asm: 	LDI	*AR0++,BK
-    // asm: 	PUSH	AR0
-    // asm: 	PUSH	AR6
-    // asm: 	PUSH	AR5
-    // asm: 	PUSH	AR4
-    // asm: 	CALL	RAMTEST
-    // asm: 	POP	AR4
-    // asm: 	POP	AR5
-    // asm: 	POP	AR6
-    // asm: 	POP	AR0
-    // asm: 	STI	R0,*AR5++		;SAVE RESULTS
-    // asm 00006479: 	CMPI	0,R0
-    // asm 0000647A: 	CALLNZ	BLINK_AND_CONTINUE
-    // asm 0000647B: 	LDI	*++AR4(CTT_SIZE),R0
-    // asm 0000647C: 	DBU	AR6,TSTBL1
-    // asm 00006481: 	CALL	HARD_LOAD_DIAGPAL
-    // asm 00006482: 	CLRI	R0
-    // asm 00006483: 	STI	R0,@COLORAM
-    // asm 00006484: 	CALL	CLRSCRN			;we are NOT page flipping
-    // asm 00006485: 	PUSH	DP
-    // asm 00006486: 	LINE	20,50,490,50,COL_WHITE
-    // asm 00006487: 	LINE	20,50,20,360,COL_WHITE
-    // asm 00006488: 	LINE	490,50,490,360,COL_WHITE
-    // asm 0000648A: 	LINE	20,360,80,360,COL_WHITE
-    // asm 0000648B: 	LINE	80,360,80,340,COL_WHITE
-    // asm: 	LINE	80,340,100,340,COL_WHITE
-    // asm 0000648C: 	LINE	100,340,100,360,COL_WHITE
-    // asm 0000648D: 	LINE	100,360,200,360,COL_WHITE
-    // asm: 	LINE	200,360,200,340,COL_WHITE
-    // asm: 	LINE	200,340,220,340,COL_WHITE
-    // asm 0000648E: 	LINE	220,340,220,360,COL_WHITE
-    // asm 0000648F: 	LINE	220,360,490,360,COL_WHITE
-    // asm: 	POP	DP
-    // asm: 	CALL	PLOT_OUTLINE_OF_CHIPS
-    // asm 00006494: 	LDI	COL_VDGREY,RC
-    // asm 00006495: 	TEXTIT	MEMTST1,50,20
-    // asm 0000649B: 	TEXTIT	DATE_STAMP,50,30
-    // asm 000064A1: 	TEXTIT	VERSION_STAMP,270,30
-    // asm 000064AD: 	LDL	BASICS_RAM,AR5
-    // asm 000064B3: 	LDI	9,AR6
-    // asm 000064B9: 	LDL	CHIPTEST_TABLE,AR4
-    // asm 000064C5: TSTBL2
-    // asm 000064CB: 	LDI	*AR5++,R0		;SAVE RESULTS
-    // asm 000064D1: 	LDIZ	COL_GREEN,RS
-    // asm 000064D7: 	LDINZ	COL_RED,RS
-    // asm 000064DE: 	LDI	*+AR4(CTT_MINX),AR2
-    // asm: 	INC	AR2
-    // asm: 	LDI	*+AR4(CTT_MINY),R2
-    // asm: 	INC	R2
-    // asm: 	LDI	*+AR4(CTT_MAXX),R3
-    // asm: 	DEC	R3
-    // asm 000064DF: 	LDI	*+AR4(CTT_MAXY),RC
-    // asm 000064E0: 	DEC	RC
-    // asm 000064E4: 	CALL	_fill
-    // asm: 	LDI	*+AR4(CTT_U),AR2
-    // asm: 	LDI	*+AR4(CTT_MAXX),R2
-    // asm 000064EC: 	LDI	*+AR4(CTT_MAXY),R3
-    // asm 000064ED: 	SUBI	*+AR4(CTT_MINX),R2
-    // asm 000064EE: 	SUBI	*+AR4(CTT_MINY),R3
-    // asm: 	RS	1,R2
-    // asm: 	RS	1,R3
-    // asm 000064EF: 	ADDI	*+AR4(CTT_MINX),R2
-    // asm 000064F0: 	ADDI	*+AR4(CTT_MINY),R3
-    // asm 000064F1: 	SUBI	15,R2
-    // asm: 	SUBI	4,R3
-    // asm: 	LDI	COL_BLACK,RC
-    // asm 000064F2: 	CALL	_outtextxyc
-    // asm 000064F4: 	LDI	*++AR4(CTT_SIZE),R0
-    // asm 000064F5: 	DBU	AR6,TSTBL2
+    // asm 00006478: 	LDL	BASICS_RAM,AR5
+    // asm 00006479: 	LDI	5,AR6
+    // asm 0000647A: 	LDL	CHIPTEST_TABLE,AR4
+    // asm 0000647B: TSTBL1
+    // asm 0000647B: 	LDI	*+AR4(CTT_TESTTAB),AR0
+    // asm 0000647C: 	LDI	*AR0++,AR2
+    // asm 0000647D: 	LDI	*AR0++,R2
+    // asm 0000647E: 	LDI	*AR0++,R3
+    // asm 0000647F: 	LDI	*AR0++,RC
+    // asm 00006480: 	LDI	*AR0++,RS
+    // asm 00006481: 	LDI	*AR0++,BK
+    // asm 00006482: 	PUSH	AR0
+    // asm 00006483: 	PUSH	AR6
+    // asm 00006484: 	PUSH	AR5
+    // asm 00006485: 	PUSH	AR4
+    // asm 00006486: 	CALL	RAMTEST
+    // asm 00006487: 	POP	AR4
+    // asm 00006488: 	POP	AR5
+    // asm 00006489: 	POP	AR6
+    // asm 0000648A: 	POP	AR0
+    // asm 0000648B: 	STI	R0,*AR5++		;SAVE RESULTS
+    // asm 0000648C: 	CMPI	0,R0
+    // asm 0000648D: 	CALLNZ	BLINK_AND_CONTINUE
+    // asm 0000648E: 	LDI	*++AR4(CTT_SIZE),R0
+    // asm 0000648F: 	DBU	AR6,TSTBL1
+    // asm 00006490: 	CALL	HARD_LOAD_DIAGPAL
+    // asm 00006491: 	CLRI	R0
+    // asm 00006492: 	STI	R0,@COLORAM
+    // asm 00006493: 	CALL	CLRSCRN			;we are NOT page flipping
+    // asm 00006494: 	PUSH	DP
+    // asm 00006495: 	LINE	20,50,490,50,COL_WHITE
+    // asm 0000649B: 	LINE	20,50,20,360,COL_WHITE
+    // asm 000064A1: 	LINE	490,50,490,360,COL_WHITE
+    // asm 000064A7: 	LINE	20,360,80,360,COL_WHITE
+    // asm 000064AD: 	LINE	80,360,80,340,COL_WHITE
+    // asm 000064B3: 	LINE	80,340,100,340,COL_WHITE
+    // asm 000064B9: 	LINE	100,340,100,360,COL_WHITE
+    // asm 000064BF: 	LINE	100,360,200,360,COL_WHITE
+    // asm 000064C5: 	LINE	200,360,200,340,COL_WHITE
+    // asm 000064CB: 	LINE	200,340,220,340,COL_WHITE
+    // asm 000064D1: 	LINE	220,340,220,360,COL_WHITE
+    // asm 000064D7: 	LINE	220,360,490,360,COL_WHITE
+    // asm 000064DD: 	POP	DP
+    // asm 000064DE: 	CALL	PLOT_OUTLINE_OF_CHIPS
+    // asm 000064DF: 	LDI	COL_VDGREY,RC
+    // asm 000064E0: 	TEXTIT	MEMTST1,50,20
+    // asm 000064E4: 	TEXTIT	DATE_STAMP,50,30
+    // asm 000064E8: 	TEXTIT	VERSION_STAMP,270,30
+    // asm 000064EC: 	LDL	BASICS_RAM,AR5
+    // asm 000064ED: 	LDI	9,AR6
+    // asm 000064EE: 	LDL	CHIPTEST_TABLE,AR4
+    // asm 000064EF: TSTBL2
+    // asm 000064EF: 	LDI	*AR5++,R0		;SAVE RESULTS
+    // asm 000064F0: 	LDIZ	COL_GREEN,RS
+    // asm 000064F1: 	LDINZ	COL_RED,RS
+    // asm 000064F2: 	LDI	*+AR4(CTT_MINX),AR2
+    // asm 000064F3: 	INC	AR2
+    // asm 000064F4: 	LDI	*+AR4(CTT_MINY),R2
+    // asm 000064F5: 	INC	R2
+    // asm 000064F6: 	LDI	*+AR4(CTT_MAXX),R3
+    // asm 000064F7: 	DEC	R3
+    // asm 000064F8: 	LDI	*+AR4(CTT_MAXY),RC
+    // asm 000064F9: 	DEC	RC
+    // asm 000064FA: 	CALL	_fill
+    // asm 000064FB: 	LDI	*+AR4(CTT_U),AR2
+    // asm 000064FC: 	LDI	*+AR4(CTT_MAXX),R2
+    // asm 000064FD: 	LDI	*+AR4(CTT_MAXY),R3
+    // asm 000064FE: 	SUBI	*+AR4(CTT_MINX),R2
+    // asm 000064FF: 	SUBI	*+AR4(CTT_MINY),R3
+    // asm 00006500: 	RS	1,R2
+    // asm 00006501: 	RS	1,R3
+    // asm 00006502: 	ADDI	*+AR4(CTT_MINX),R2
+    // asm 00006503: 	ADDI	*+AR4(CTT_MINY),R3
+    // asm 00006504: 	SUBI	15,R2
+    // asm 00006505: 	SUBI	4,R3
+    // asm 00006506: 	LDI	COL_BLACK,RC
+    // asm 00006507: 	CALL	_outtextxyc
+    // asm 00006508: 	LDI	*++AR4(CTT_SIZE),R0
+    // asm 00006509: 	DBU	AR6,TSTBL2
     // 	;Static *MUST* be working to get this far,
     // 	;so mark them ALL as cool
     // 	;
-    // asm: 	LDI	3,AR6
-    // asm 000064FB: 	LDL	STATIC_TABLE,AR4
-    // asm 000064FC: TSTBL2C
-    // asm 000064FD: 	LDI	COL_GREEN,RS
-    // asm 000064FE: 	LDI	*+AR4(CTT_MINX),AR2
-    // asm 000064FF: 	INC	AR2
-    // asm 00006500: 	LDI	*+AR4(CTT_MINY),R2
-    // asm 00006501: 	INC	R2
-    // asm 00006502: 	LDI	*+AR4(CTT_MAXX),R3
-    // asm 00006503: 	DEC	R3
-    // asm 00006504: 	LDI	*+AR4(CTT_MAXY),RC
-    // asm 00006505: 	DEC	RC
-    // asm 00006506: 	CALL	_fill
-    // asm: 	LDI	*+AR4(CTT_U),AR2
-    // asm 00006508: 	LDI	*+AR4(CTT_MAXX),R2
-    // asm 00006509: 	LDI	*+AR4(CTT_MAXY),R3
-    // asm: 	SUBI	*+AR4(CTT_MINX),R2
-    // asm: 	SUBI	*+AR4(CTT_MINY),R3
-    // asm: 	RS	1,R2
-    // asm: 	RS	1,R3
-    // asm: 	ADDI	*+AR4(CTT_MINX),R2
-    // asm 0000650A: 	ADDI	*+AR4(CTT_MINY),R3
-    // asm 0000650B: 	SUBI	15,R2
-    // asm: 	SUBI	4,R3
-    // asm 0000650C: 	LDI	COL_BLACK,RC
-    // asm 0000650D: 	CALL	_outtextxyc
-    // asm 0000650E: 	LDI	*++AR4(CTT_SIZE),R0
-    // asm 0000650F: 	DBU	AR6,TSTBL2C
-    // asm 00006511: 	CALL	CMOS_CHIP_TEST
-    // asm 00006512: 	RETS
+    // asm 0000650A: 	LDI	3,AR6
+    // asm 0000650B: 	LDL	STATIC_TABLE,AR4
+    // asm 0000650C: TSTBL2C
+    // asm 0000650C: 	LDI	COL_GREEN,RS
+    // asm 0000650D: 	LDI	*+AR4(CTT_MINX),AR2
+    // asm 0000650E: 	INC	AR2
+    // asm 0000650F: 	LDI	*+AR4(CTT_MINY),R2
+    // asm 00006510: 	INC	R2
+    // asm 00006511: 	LDI	*+AR4(CTT_MAXX),R3
+    // asm 00006512: 	DEC	R3
+    // asm 00006513: 	LDI	*+AR4(CTT_MAXY),RC
+    // asm 00006514: 	DEC	RC
+    // asm 00006515: 	CALL	_fill
+    // asm 00006516: 	LDI	*+AR4(CTT_U),AR2
+    // asm 00006517: 	LDI	*+AR4(CTT_MAXX),R2
+    // asm 00006518: 	LDI	*+AR4(CTT_MAXY),R3
+    // asm 00006519: 	SUBI	*+AR4(CTT_MINX),R2
+    // asm 0000651A: 	SUBI	*+AR4(CTT_MINY),R3
+    // asm 0000651B: 	RS	1,R2
+    // asm 0000651C: 	RS	1,R3
+    // asm 0000651D: 	ADDI	*+AR4(CTT_MINX),R2
+    // asm 0000651E: 	ADDI	*+AR4(CTT_MINY),R3
+    // asm 0000651F: 	SUBI	15,R2
+    // asm 00006520: 	SUBI	4,R3
+    // asm 00006521: 	LDI	COL_BLACK,RC
+    // asm 00006522: 	CALL	_outtextxyc
+    // asm 00006523: 	LDI	*++AR4(CTT_SIZE),R0
+    // asm 00006524: 	DBU	AR6,TSTBL2C
+    // asm 00006525: 	CALL	CMOS_CHIP_TEST
+    // asm 00006526: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEST_BASICS", 0, 0);
     UNIMPL();
 }
@@ -950,8 +954,8 @@ void TEST_BASICS(void)
  */
 void RAMTEST(void)
 {
-    // asm: 	LDL	BLOWLIST,R0
-    // asm: 	BU	R0
+    // asm 00006527: 	LDL	BLOWLIST,R0
+    // asm 00006528: 	BU	R0
     // 		;THIS IS THE ACTUAL ROUTINE, BUT IT MUST
     // 		;BE PLACED IN ON-CHIP MEMORY
     // 		;
@@ -962,90 +966,90 @@ void RAMTEST(void)
 
 void RAMTEST_REAL(void)
 {
-    // asm: 	PUSH	DP
-    // asm: 	PUSH	R6
-    // asm: 	PUSH	AR6
-    // asm: 	LCALL	FEED_WATCHDOG_HARD
-    // asm: 	LDP	@CPU_WS		;set hardware wait states
-    // asm: 	LDI	@CPU_WS,R0
-    // asm: 	PUSH	R0
-    // asm: 	STI	RS,@CPU_WS
-    // asm: 	LDI	0,AR3		;DUMMY READ ADDRESS
-    // asm: 	LDI	*AR3,R5		;DUMMY READ
-    // asm: 	LDP	@RANDI
-    // asm 00006527: 	LDI	@RANDI,R4	;SETUP R4=RANDOM # REGISTER
-    // asm: 	LDI	RC,AR0		;NUMBER OF PASSES
-    // asm: 	DEC	AR0
-    // asm: 	DEC	R2		;LENGTH OF CHECK
-    // asm: 	LDI	R2,AR4
-    // asm 00006529: RAMTST0
-    // asm 0000652B: 	LDI	AR2,AR1		;GET ADDRESS
-    // asm: 	LDI	R4,R0		;GET RANDOM # STARTING POINT
-    // *WRITE RANDOM NUMBERS TO RAM
-    // asm 00006536: RAMTST1
-    // asm 00006536: 	LDI	R0,R1
-    // asm 00006537: 	LSH	1,R0
-    // asm 00006538: 	LDI	0,R6
-    // asm 00006539: 	XOR	R0,R1
-    // asm 0000653B: 	LDIN	2,R6		;	BNN	RAMTST2
-    // asm 0000653C: 	OR	R6,R0		;	OR	2,R0
-    // 				;RAMTST2
-    // asm: 	DBUD	AR4,RAMTST1
-    // asm 0000653F: 	STI	R0,*AR1
-    // asm: 	ADDI	BK,AR1
-LKKK:
-    // asm 00006540: LDI	*AR3,R5
-    // *READ RANDOM NUMBERS FROM RAM
+    // asm 00006529: 	PUSH	DP
+    // asm 0000652A: 	PUSH	R6
+    // asm 0000652B: 	PUSH	AR6
+    // asm 0000652C: 	LCALL	FEED_WATCHDOG_HARD
+    // asm 00006536: 	LDP	@CPU_WS		;set hardware wait states
+    // asm 00006537: 	LDI	@CPU_WS,R0
+    // asm 00006538: 	PUSH	R0
+    // asm 00006539: 	STI	RS,@CPU_WS
+    // asm 0000653A: 	LDI	0,AR3		;DUMMY READ ADDRESS
+    // asm 0000653B: 	LDI	*AR3,R5		;DUMMY READ
+    // asm 0000653C: 	LDP	@RANDI
+    // asm 0000653D: 	LDI	@RANDI,R4	;SETUP R4=RANDOM # REGISTER
+    // asm 0000653E: 	LDI	RC,AR0		;NUMBER OF PASSES
+    // asm 0000653F: 	DEC	AR0
+    // asm 00006540: 	DEC	R2		;LENGTH OF CHECK
+    // asm 00006541: 	LDI	R2,AR4
+    // asm 00006542: RAMTST0
     // asm 00006542: 	LDI	AR2,AR1		;GET ADDRESS
     // asm 00006543: 	LDI	R4,R0		;GET RANDOM # STARTING POINT
-    // asm: 	LDI	R0,R1
-    // asm: 	LSH	1,R0
-    // asm 00006545: 	CLRI	R6
-    // asm 00006546: 	CLRI	R7
-    // asm 00006548: 	LDI	R2,AR4		;LENGTH
-    // asm 00006549: 	XOR	R0,R1
-    // asm: 	LDIN	2,R6		;	BNN	RAMTST4
-    // asm 0000654B: RAMTST3
-    // asm 0000654B: 	OR	R6,R0		;	OR	2,R0
+    // *WRITE RANDOM NUMBERS TO RAM
+    // asm 00006544: RAMTST1
+    // asm 00006544: 	LDI	R0,R1
+    // asm 00006545: 	LSH	1,R0
+    // asm 00006546: 	LDI	0,R6
+    // asm 00006547: 	XOR	R0,R1
+    // asm 00006548: 	LDIN	2,R6		;	BNN	RAMTST2
+    // asm 00006549: 	OR	R6,R0		;	OR	2,R0
+    // 				;RAMTST2
+    // asm 0000654A: 	DBUD	AR4,RAMTST1
+    // asm 0000654B: 	STI	R0,*AR1
+    // asm 0000654C: 	ADDI	BK,AR1
+LKKK:
+    // asm 0000654D: LDI	*AR3,R5
+    // *READ RANDOM NUMBERS FROM RAM
+    // asm 0000654E: 	LDI	AR2,AR1		;GET ADDRESS
+    // asm 0000654F: 	LDI	R4,R0		;GET RANDOM # STARTING POINT
+    // asm 00006550: 	LDI	R0,R1
+    // asm 00006551: 	LSH	1,R0
+    // asm 00006552: 	CLRI	R6
+    // asm 00006553: 	CLRI	R7
+    // asm 00006554: 	LDI	R2,AR4		;LENGTH
+    // asm 00006555: 	XOR	R0,R1
+    // asm 00006556: 	LDIN	2,R6		;	BNN	RAMTST4
+    // asm 00006557: RAMTST3
+    // asm 00006557: 	OR	R6,R0		;	OR	2,R0
     // 				;RAMTST4
-    // asm 0000654D: 	INC	R7
-    // asm: 	LDI	*AR1,R1
-    // asm: 	ADDI	BK,AR1
-    // asm: 	LDI	*AR3,R5		;DUMMY READ
-    // asm 0000654F: 	AND	R3,R1
-    // asm: 	LDI	R0,R4
-    // asm 00006550: 	AND	R3,R0
-    // asm 00006551: 	CMPI	R1,R0
-    // asm: 	BNE	RAMERR
-    // asm 00006553: 	LDI	R4,R0
-    // asm: 	LDI	R0,R1		;mirrored from above
-    // asm: 	LSH	1,R0
+    // asm 00006558: 	INC	R7
+    // asm 00006559: 	LDI	*AR1,R1
+    // asm 0000655A: 	ADDI	BK,AR1
+    // asm 0000655B: 	LDI	*AR3,R5		;DUMMY READ
+    // asm 0000655C: 	AND	R3,R1
+    // asm 0000655D: 	LDI	R0,R4
+    // asm 0000655E: 	AND	R3,R0
+    // asm 0000655F: 	CMPI	R1,R0
+    // asm 00006560: 	BNE	RAMERR
+    // asm 00006561: 	LDI	R4,R0
+    // asm 00006562: 	LDI	R0,R1		;mirrored from above
+    // asm 00006563: 	LSH	1,R0
     // 	;---->BNE	RAMERR
-    // asm 00006556: 	DBUD	AR4,RAMTST3
+    // asm 00006564: 	DBUD	AR4,RAMTST3
 JJJH:
-    // asm 00006557: CLRI	R6
-    // asm: 	XOR	R0,R1
-    // asm 00006557: 	LDIN	2,R6		;	BNN	RAMTST4
+    // asm 00006565: CLRI	R6
+    // asm 00006566: 	XOR	R0,R1
+    // asm 00006567: 	LDIN	2,R6		;	BNN	RAMTST4
     // 	;---->	DBUD	AR4,RAMTST3
-    // asm 00006559: RAMRPT
-    // asm 00006559: 	DBU	AR0,RAMTST0
-    // asm: 	CLRI	R0		;IS GOOD RAM
+    // asm 00006568: RAMRPT
+    // asm 00006568: 	DBU	AR0,RAMTST0
+    // asm 00006569: 	CLRI	R0		;IS GOOD RAM
 ENDING:
-    // asm 0000655D: 	POP	R1		;FIND WAIT STATES
-    // asm 0000655E: 	LDP	@CPU_WS		;set original wait states
-    // asm 0000655F: 	STI	R1,@CPU_WS
-    // asm 00006560: 	POP	AR6
-    // asm: 	POP	R6
-    // asm 00006561: 	POP	DP
-    // asm 00006562: 	RETS
+    // asm 0000656A: 	POP	R1		;FIND WAIT STATES
+    // asm 0000656B: 	LDP	@CPU_WS		;set original wait states
+    // asm 0000656C: 	STI	R1,@CPU_WS
+    // asm 0000656D: 	POP	AR6
+    // asm 0000656E: 	POP	R6
+    // asm 0000656F: 	POP	DP
+    // asm 00006570: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RAMTEST_REAL", 0, 0);
     UNIMPL();
 }
 
 void RAMERR(void)
 {
-    // asm: 	LDI	1,R0		;IS BAD RAM
-    // asm 00006564: 	BU	ENDING
+    // asm 00006571: 	LDI	1,R0		;IS BAD RAM
+    // asm 00006572: 	BU	ENDING
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RAMERR", 0, 0);
     UNIMPL();
@@ -1061,16 +1065,16 @@ void RAMTEST_END(void)
  */
 void COPY_RAMTEST(void)
 {
-    // asm: 	LDL	RAMTEST_END,AR0
-    // asm 00006569: 	LDL	RAMTEST_REAL,AR1
-    // asm: 	SUBI	AR1,AR0			;GET LENGTH
-    // asm 0000656A: 	DEC	AR0
-    // asm 0000656C: 	LDL	BLOWLIST,AR2
-    // asm 0000656E: 	LDI	AR0,RC
-    // asm 0000656F: 	RPTB	BBCP
-    // asm 00006570: 	LDI	*AR1++,R0
-    // asm 00006571: BBCP	STI	R0,*AR2++
-    // asm 00006571: 	RETS
+    // asm 00006573: 	LDL	RAMTEST_END,AR0
+    // asm 00006574: 	LDL	RAMTEST_REAL,AR1
+    // asm 00006575: 	SUBI	AR1,AR0			;GET LENGTH
+    // asm 00006576: 	DEC	AR0
+    // asm 00006577: 	LDL	BLOWLIST,AR2
+    // asm 00006578: 	LDI	AR0,RC
+    // asm 00006579: 	RPTB	BBCP
+    // asm 0000657A: 	LDI	*AR1++,R0
+    // asm 0000657B: BBCP	STI	R0,*AR2++
+    // asm 0000657C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COPY_RAMTEST", 0, 0);
     UNIMPL();
 }
@@ -1093,69 +1097,69 @@ void COPY_RAMTEST(void)
  */
 void GENERATE_CHECKSUM(void)
 {
-    // asm: 	PUSH	R1
-    // asm 0000657C: 	PUSH	RC
-    // asm: 	PUSH	AR2
-    // asm: 	LCALL	FEED_WATCHDOG
-    // asm: 	CLRI	R0
-    // asm: 	DEC	RC
-    // asm: 	RPTB	CHKSUMG
-    // asm: 	LDI	*AR2++,R1
-    // asm: 	AND	R2,R1
-    // asm: 	LSH	R3,R1
+    // asm 0000657D: 	PUSH	R1
+    // asm 0000657E: 	PUSH	RC
+    // asm 0000657F: 	PUSH	AR2
+    // asm 00006580: 	LCALL	FEED_WATCHDOG
+    // asm 0000658A: 	CLRI	R0
+    // asm 0000658B: 	DEC	RC
+    // asm 0000658C: 	RPTB	CHKSUMG
+    // asm 0000658D: 	LDI	*AR2++,R1
+    // asm 0000658E: 	AND	R2,R1
+    // asm 0000658F: 	LSH	R3,R1
 CHKSUMG:
-    // asm: ADDI	R1,R0
-    // asm: 	LS	16,R0
-    // asm: 	RS	16,R0
-    // asm: 	POP	AR2
-    // asm: 	POP	RC
-    // asm: 	POP	R1
-    // asm: 	RETS
+    // asm 00006590: ADDI	R1,R0
+    // asm 00006591: 	LS	16,R0
+    // asm 00006592: 	RS	16,R0
+    // asm 00006593: 	POP	AR2
+    // asm 00006594: 	POP	RC
+    // asm 00006595: 	POP	R1
+    // asm 00006596: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GENERATE_CHECKSUM", 0, 0);
     UNIMPL();
 }
 
 #if CHECKSUM_GEN
 /* asm: CHKSUMC00	.word	-1 */
-int CHKSUMC00 = -1;
+#define CHKSUMC00 CHECKSUM_C00
 /* asm: CHKSUMC80	.word	-1 */
-int CHKSUMC80 = -1;
+#define CHKSUMC80 CHECKSUM_C80
 /* asm: CHKSUMD00	.word	-1 */
-int CHKSUMD00 = -1;
+#define CHKSUMD00 CHECKSUM_D00
 /* asm: CHKSUMD80	.word	-1 */
-int CHKSUMD80 = -1;
+#define CHKSUMD80 CHECKSUM_D80
 /* asm: CHKSUME00	.word	-1 */
-int CHKSUME00 = -1;
+#define CHKSUME00 CHECKSUM_E00
 /* asm: CHKSUMC01	.word	-1 */
-int CHKSUMC01 = -1;
+#define CHKSUMC01 CHECKSUM_C01
 /* asm: CHKSUMC81	.word	-1 */
-int CHKSUMC81 = -1;
+#define CHKSUMC81 CHECKSUM_C81
 /* asm: CHKSUMD01	.word	-1 */
-int CHKSUMD01 = -1;
+#define CHKSUMD01 CHECKSUM_D01
 /* asm: CHKSUMD81	.word	-1 */
-int CHKSUMD81 = -1;
+#define CHKSUMD81 CHECKSUM_D81
 /* asm: CHKSUME01	.word	-1 */
-int CHKSUME01 = -1;
+#define CHKSUME01 CHECKSUM_E01
 /* asm: CHKSUMC02	.word	-1 */
-int CHKSUMC02 = -1;
+#define CHKSUMC02 CHECKSUM_C02
 /* asm: CHKSUMC82	.word	-1 */
-int CHKSUMC82 = -1;
+#define CHKSUMC82 CHECKSUM_C82
 /* asm: CHKSUMD02	.word	-1 */
-int CHKSUMD02 = -1;
+#define CHKSUMD02 CHECKSUM_D02
 /* asm: CHKSUMD82	.word	-1 */
-int CHKSUMD82 = -1;
+#define CHKSUMD82 CHECKSUM_D82
 /* asm: CHKSUME02	.word	-1 */
-int CHKSUME02 = -1;
+#define CHKSUME02 CHECKSUM_E02
 /* asm: CHKSUMC03	.word	-1 */
-int CHKSUMC03 = -1;
+#define CHKSUMC03 CHECKSUM_C03
 /* asm: CHKSUMC83	.word	-1 */
-int CHKSUMC83 = -1;
+#define CHKSUMC83 CHECKSUM_C83
 /* asm: CHKSUMD03	.word	-1 */
-int CHKSUMD03 = -1;
+#define CHKSUMD03 CHECKSUM_D03
 /* asm: CHKSUMD83	.word	-1 */
-int CHKSUMD83 = -1;
+#define CHKSUMD83 CHECKSUM_D83
 /* asm: CHKSUME03	.word	-1 */
-int CHKSUME03 = -1;
+#define CHKSUME03 CHECKSUM_E03
 /* asm: CCHKSUMC00	.word	0 */
 int CCHKSUMC00 = 0;
 /* asm: CCHKSUMC80	.word	0 */
@@ -1198,45 +1202,45 @@ int CCHKSUMD83 = 0;
 int CCHKSUME03 = 0;
 #else
 /* asm: CHKSUMC00	.word	CHECKSUM_C00 */
-int CHKSUMC00 = CHECKSUM_C00;
+#define CHKSUMC00 CHECKSUM_C00
 /* asm: CHKSUMC80	.word	CHECKSUM_C80 */
-int CHKSUMC80 = CHECKSUM_C80;
+#define CHKSUMC80 CHECKSUM_C80
 /* asm: CHKSUMD00	.word	CHECKSUM_D00 */
-int CHKSUMD00 = CHECKSUM_D00;
+#define CHKSUMD00 CHECKSUM_D00
 /* asm: CHKSUMD80	.word	CHECKSUM_D80 */
-int CHKSUMD80 = CHECKSUM_D80;
+#define CHKSUMD80 CHECKSUM_D80
 /* asm: CHKSUME00	.word	CHECKSUM_E00 */
-int CHKSUME00 = CHECKSUM_E00;
+#define CHKSUME00 CHECKSUM_E00
 /* asm: CHKSUMC01	.word	CHECKSUM_C01 */
-int CHKSUMC01 = CHECKSUM_C01;
+#define CHKSUMC01 CHECKSUM_C01
 /* asm: CHKSUMC81	.word	CHECKSUM_C81 */
-int CHKSUMC81 = CHECKSUM_C81;
+#define CHKSUMC81 CHECKSUM_C81
 /* asm: CHKSUMD01	.word	CHECKSUM_D01 */
-int CHKSUMD01 = CHECKSUM_D01;
+#define CHKSUMD01 CHECKSUM_D01
 /* asm: CHKSUMD81	.word	CHECKSUM_D81 */
-int CHKSUMD81 = CHECKSUM_D81;
+#define CHKSUMD81 CHECKSUM_D81
 /* asm: CHKSUME01	.word	CHECKSUM_E01 */
-int CHKSUME01 = CHECKSUM_E01;
+#define CHKSUME01 CHECKSUM_E01
 /* asm: CHKSUMC02	.word	CHECKSUM_C02 */
-int CHKSUMC02 = CHECKSUM_C02;
+#define CHKSUMC02 CHECKSUM_C02
 /* asm: CHKSUMC82	.word	CHECKSUM_C82 */
-int CHKSUMC82 = CHECKSUM_C82;
+#define CHKSUMC82 CHECKSUM_C82
 /* asm: CHKSUMD02	.word	CHECKSUM_D02 */
-int CHKSUMD02 = CHECKSUM_D02;
+#define CHKSUMD02 CHECKSUM_D02
 /* asm: CHKSUMD82	.word	CHECKSUM_D82 */
-int CHKSUMD82 = CHECKSUM_D82;
+#define CHKSUMD82 CHECKSUM_D82
 /* asm: CHKSUME02	.word	CHECKSUM_E02 */
-int CHKSUME02 = CHECKSUM_E02;
+#define CHKSUME02 CHECKSUM_E02
 /* asm: CHKSUMC03	.word	CHECKSUM_C03 */
-int CHKSUMC03 = CHECKSUM_C03;
+#define CHKSUMC03 CHECKSUM_C03
 /* asm: CHKSUMC83	.word	CHECKSUM_C83 */
-int CHKSUMC83 = CHECKSUM_C83;
+#define CHKSUMC83 CHECKSUM_C83
 /* asm: CHKSUMD03	.word	CHECKSUM_D03 */
-int CHKSUMD03 = CHECKSUM_D03;
+#define CHKSUMD03 CHECKSUM_D03
 /* asm: CHKSUMD83	.word	CHECKSUM_D83 */
-int CHKSUMD83 = CHECKSUM_D83;
+#define CHKSUMD83 CHECKSUM_D83
 /* asm: CHKSUME03	.word	CHECKSUM_E03 */
-int CHKSUME03 = CHECKSUM_E03;
+#define CHKSUME03 CHECKSUM_E03
 /* asm: CCHKSUMC00	.word	~CHECKSUM_C00 */
 int CCHKSUMC00 = ~CHECKSUM_C00;
 /* asm: CCHKSUMC80	.word	~CHECKSUM_C80 */

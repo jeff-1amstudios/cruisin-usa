@@ -40,23 +40,32 @@ void BABE_IBO(void);
 void BABE_ANI(void);
 void BABE_WAVEFLAG(void);
 
-extern const char *BABA1;
-extern const char *BABA2;
+#define ANI_HOTTUBI ANI_HOTTUB
+#define HILLANII HILLANI
+#define GIRLANII GIRLANI
+#define ANI_RADARI ANI_RADAR
+#define ANI_STAGI ANI_STAG
+
+#define HUNGH_ANISI HUNGH_ANIS
+#define RUT_ANISI RUT_ANIS
+
+extern const char BABA1[];
+extern const char BABA2[];
 extern int ANI_HOTTUB[];
 extern int HILLANI[];
 extern int GIRLANI[];
 extern int ANI_RADAR[];
 extern int ANI_STAG[];
 extern int WATCHOBJ;
-extern const char *PC1;
-extern const char *PC2;
+extern const char PC1[];
+extern const char PC2[];
 extern int BABE_TROPHY_SCRIPT[];
 extern int BABE_FLAG_SCRIPT[];
 
 /* asm: BABA1	SPTR	"THE PRESIDENT OF" */
-const char *BABA1 = "THE PRESIDENT OF";
+const char BABA1[] = "THE PRESIDENT OF";
 /* asm: BABA2	SPTR	"THE UNITED STATES" */
-const char *BABA2 = "THE UNITED STATES";
+const char BABA2[] = "THE UNITED STATES";
 
 /* *----------------------------------------------------------------------------
 *
@@ -523,9 +532,9 @@ PPDDA:
 }
 
 /* asm: PC1	SPTR	"CELEBRITY IMPERSONATION" */
-const char *PC1 = "CELEBRITY IMPERSONATION";
+const char PC1[] = "CELEBRITY IMPERSONATION";
 /* asm: PC2	SPTR	"POLITICAL CARTOON" */
-const char *PC2 = "POLITICAL CARTOON";
+const char PC2[] = "POLITICAL CARTOON";
 
 /* *----------------------------------------------------------------------------
  */

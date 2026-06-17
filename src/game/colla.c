@@ -77,6 +77,51 @@ void COLCHK(void);
 void GETBOX(void);
 void GETBOX0(void);
 
+#define PLYR_VS_DEBRIS PLYRDEBRIS
+#define PLYR_VS_SIGN PLYRSIGN
+#define DRONE_VS_DEBRIS DRONDEBRIS
+#define DRONE_VS_SIGN DRONSIGN
+#define PLYR_VS_DRONES COLSCAN
+#define DRONES_VS_DRONES CLDSCAN
+#define VLI VL
+#define TNORMI TNORM
+#define TVECT1I TVECT1
+#define TVECT2I TVECT2
+#define TMATRIXI TMATRIX
+#define BOXSCRAMI BOXSCRAM
+#define SAGETABI SAGETAB
+#define FLYCOLLPI FLYCOLLP
+#define SIGNFALLI SIGNFALL
+#define TREESHAKI TREESHAK
+#define SBUSI sbus
+#define CBUSI cbus
+#define DETHTAB1I DETHTAB1
+#define DETHTAB2I DETHTAB2
+#define FLYCARPI FLYCARP
+#define FLYCARPXXXXI FLYCARPXXXX
+#define FLYCARPXXXI FLYCARPXXX
+#define DEADLPI DEADLP
+#define FLYCARP0I FLYCARP
+#define FLYCARSTOPI FLYCARSTOP
+#define SCUPDTABI SCUPDTAB
+#define SCTABI SCTAB
+#define EQTABI EQTAB
+#define LEQTABI LEQTAB
+
+void WRECKST(void);
+extern int WRECKFLG;
+extern int CHEAT;
+void DRONINBZ(void);
+void ROADIR(void);
+void CKAHEAD(void);
+extern const char PC2[];
+void GETNXTRDIR(void);
+void RANDSND(void);
+void COMPTRAK(void);
+void OM_DRONE(void);
+void FIND_DRONE(void);
+void RANDVSND(void);
+
 extern int VL[];
 extern int TNORM[];
 extern int TVECT1[];
@@ -86,12 +131,12 @@ extern int COLVEL;
 extern int PMULT;
 extern int SPINTEMP;
 extern int BOXSCRAM[];
-extern int SAGETAB[];
-extern int DETHTAB1[];
-extern int DETHTAB2[];
+extern uintptr_t SAGETAB[];
+extern uintptr_t DETHTAB1[];
+extern uintptr_t DETHTAB2[];
 extern int PLYRBEHIND;
-extern int SCUPDTAB[];
-extern int SCTAB[];
+extern uintptr_t SCUPDTAB[];
+extern uintptr_t SCTAB[];
 extern int EQTAB[];
 extern int LEQTAB[];
 
@@ -1441,8 +1486,8 @@ COLSGCX:
 }
 
 /* asm: SAGETAB	.word	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
-int SAGETAB[] = {
-    SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND,
+uintptr_t SAGETAB[] = {
+    (uintptr_t)(SAGESND), (uintptr_t)(SAGESND1), (uintptr_t)(SAGESND2), (uintptr_t)(SAGESND3), (uintptr_t)(SAGESND),
 };
 /* *----------------------------------------------------------------------------
 *FLYING SIGN COLLISION PROCESS
@@ -1897,13 +1942,13 @@ FC03:
 
 /* asm: DETHTAB1	.word	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
 /* asm: 	.WORD	NDETHSCREAM1,NDETHSCREAM3,NDETHSCREAM4,NDETHSCREAM7 */
-int DETHTAB1[] = {
-    MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3,
-    NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7,
+uintptr_t DETHTAB1[] = {
+    (uintptr_t)(MDETHSCREAM2), (uintptr_t)(MDETHSCREAM4), (uintptr_t)(EXP1), (uintptr_t)(EXP3),
+    (uintptr_t)(NDETHSCREAM1), (uintptr_t)(NDETHSCREAM3), (uintptr_t)(NDETHSCREAM4), (uintptr_t)(NDETHSCREAM7),
 };
 /* asm: DETHTAB2	.word	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
-int DETHTAB2[] = {
-    MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2,
+uintptr_t DETHTAB2[] = {
+    (uintptr_t)(MFDETHSCREAM1), (uintptr_t)(MFDETHSCREAM2), (uintptr_t)(BCHEER), (uintptr_t)(EXP2),
 };
 
 /* *
@@ -3364,12 +3409,12 @@ COLSNDX:
 }
 
 /* asm: SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
-int SCUPDTAB[] = {
-    SCOLLF, SCOLLF, SCOLLG, SCOLLH,
+uintptr_t SCUPDTAB[] = {
+    (uintptr_t)(SCOLLF), (uintptr_t)(SCOLLF), (uintptr_t)(SCOLLG), (uintptr_t)(SCOLLH),
 };
 /* asm: SCTAB	.word	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
-int SCTAB[] = {
-    SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE,
+uintptr_t SCTAB[] = {
+    (uintptr_t)(SCOLLA), (uintptr_t)(SCOLLB), (uintptr_t)(SCOLLC), (uintptr_t)(SCOLLD), (uintptr_t)(SCOLLE),
 };
 
 void COLCHK(void)

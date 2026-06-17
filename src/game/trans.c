@@ -45,12 +45,15 @@ void ADD_TO_DOOR_LIST(void);
 void ENGINE_COLOR_INIT(void);
 void ENGINE_COLOR(void);
 
-extern int EPALR;
-extern int EPALL;
+#define DOORLISTI DOORLIST
+#define TRNTABI TRNTAB
+#define CYCTABI CYCTAB
+
+extern int *EPALR;
+extern int *EPALL;
 extern int EPALRR[];
 extern int EPALRL[];
 extern int DOORTHETA;
-extern int DOORLISTI;
 extern int DOORLIST;
 extern float DO_LPPX;
 extern float DO_PPZ;

@@ -66,35 +66,60 @@ void PRINT_TOCONT(void);
 void COIN_COUNTER(void);
 void MOTION_VALID(void);
 
+#define CUSTOM_COINTABI CUSTOM_COINTAB
+#define CUSTOM_COINSTRI CUSTOM_COINSTR
+#define bufferi buffer
+#define CTS_STRI CTS_STR
+#define CTC_STRI CTC_STR
+#define FCBI FCB
+#define PCBI PCB
+#define CREDITBUFFI CREDITBUFFER
+#define TOSTARTBUFFI TOSTARTBUFFER
+#define NCBI NCB
+#define SPCI SPC
+#define DBLSPCI DBLSPC
+#define CWI CW
+#define CWSI CWS
+#define SCI SCS
+#define MSG_NULLI MSG_NULL
+#define INSERTCOINSI INSERTCOINS
+#define HITSTARTI HITSTART
+
+#define COIN_TABLEENDI COIN_TABLEEND
+#define COUNTRY_DEFAULTS_ENDI COUNTRY_DEFAULTS_END
+#define COUNTRY_DEFAULTSI COUNTRY_DEFAULTS
+void CHECK_MOTION_DIP(void);
+void CHECK_MOTION_PRESENT(void);
+
 extern int COINOFF;
 extern int CUSTOM_COINTAB[];
 extern int CUSTOM_COINSTR[];
 extern int buffer[];
-extern const char *CTS_STR;
-extern const char *CTC_STR;
+extern const char CTS_STR[];
+extern const char CTC_STR[];
 extern int FCB;
 extern int PCB;
 extern int CREDITBUFFER[];
 extern int TOSTARTBUFFER[];
-extern const char *NCB;
-extern const char *SPC;
-extern const char *DBLSPC;
-extern const char *CW;
-extern const char *CWS;
+extern const char NCB[];
+extern const char SPC[];
+extern const char DBLSPC[];
+extern const char CW[];
+extern const char CWS[];
 extern int SCS;
-extern const char *MSG_NULL;
-extern const char *INSERTCOINS;
-extern const char *HITSTART;
+extern const char MSG_NULL[];
+extern const char INSERTCOINS[];
+extern const char HITSTART[];
 extern int ICF;
 extern int VOLUME_ACTIVE;
 extern int VOLUME_COUNT[];
-extern const char *VOLUME_TXT;
+extern const char VOLUME_TXT[];
 extern int CMOS_WP_WORD_SHADOW;
 extern int COIN_COUNTER1;
 extern int COIN_COUNTER2;
 extern int COUNTER_IDX;
 extern int COUNTER_MODE;
-extern const char *MOTIONDIS;
+extern const char MOTIONDIS[];
 
 /* asm: COINOFF	.bss	COINOFF,1 */
 int COINOFF;
@@ -728,8 +753,8 @@ int CUSTOM_COINSTR[10];
 #define bufferi buffer
 /* asm: buffer	.bss	buffer,2 */
 int buffer[2];
-const char *CTS_STR = " TO START";
-const char *CTC_STR = " TO CONTINUE";
+const char CTS_STR[] = " TO START";
+const char CTC_STR[] = " TO CONTINUE";
 /* asm: FCB	.bss	FCB,1 */
 int FCB;
 /* asm: PCB	.bss	PCB,1 */
@@ -742,16 +767,16 @@ int CREDITBUFFER[8];
 #define TOSTARTBUFFI TOSTARTBUFFER
 /* asm: TOSTARTBUFFER	.bss	TOSTARTBUFFER,8 */
 int TOSTARTBUFFER[8];
-const char *NCB = "@";
-const char *SPC = " ";
-const char *DBLSPC = "  ";
-const char *CW = "CREDITS";
-const char *CWS = "CREDIT";
+const char NCB[] = "@";
+const char SPC[] = " ";
+const char DBLSPC[] = "  ";
+const char CW[] = "CREDITS";
+const char CWS[] = "CREDIT";
 /* asm: SCI	.word	SCS	;CREDITS TO START (START CREDIT) */
 #define SCI SCS
 /* asm: SCS	.bss	SCS,1 */
 int SCS;
-const char *MSG_NULL = "";
+const char MSG_NULL[] = "";
 
 void FONT18RED(void)
 {
@@ -779,8 +804,8 @@ void FONT18REDDS(void)
 *	F  P/N  CREDITS
 *
  */
-const char *INSERTCOINS = "INSERT COINS";
-const char *HITSTART = "PRESS START";
+const char INSERTCOINS[] = "INSERT COINS";
+const char HITSTART[] = "PRESS START";
 /* asm: ICF	.bss	ICF,1 */
 int ICF;
 
@@ -1171,7 +1196,7 @@ void TOCONT_STRING(void)
 int VOLUME_ACTIVE;
 /* asm: VOLUME_COUNT	.bss	VOLUME_COUNT,4 */
 int VOLUME_COUNT[4];
-const char *VOLUME_TXT = "VOLUME";
+const char VOLUME_TXT[] = "VOLUME";
 
 void VOLUME_DISPLAY(void)
 {
@@ -1380,7 +1405,7 @@ CLEARIT:
 /* *----------------------------------------------------------------------------
  */
 /* asm: MOTIONDIS	SPTR	"MOTION OFF" */
-const char *MOTIONDIS = "MOTION OFF";
+const char MOTIONDIS[] = "MOTION OFF";
 
 void MOTION_VALID(void)
 {

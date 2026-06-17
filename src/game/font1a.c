@@ -20,7 +20,15 @@ void _fill(void);
 void _outtextxyc(void);
 void _pixel(void);
 
-extern const char *POINT;
+#define _font1I _font1
+
+void DIV_I30(void);
+void MOD_I30(void);
+extern int ACTIVE_SCREEN;
+extern int _font1[];
+extern int COMMINTM;
+
+extern const char POINT[];
 extern int ftoa_tmp[];
 
 /* *----------------------------------------------------------------------------
@@ -34,7 +42,7 @@ void ENABLEGIE(void)
 
 /* *----------------------------------------------------------------------------
  */
-const char *POINT = ".";
+const char POINT[] = ".";
 /* asm: ftoa_tmp	.bss	ftoa_tmp,2 */
 int ftoa_tmp[2];
 

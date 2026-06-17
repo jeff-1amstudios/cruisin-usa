@@ -33,6 +33,10 @@ void SKID_SPARK(void);
 void TOO_MANY_SPARKS(void);
 void OBJ_MOVE(void);
 
+#define SMOKEANII SMOKEANI
+#define SMOKE2ANII SMOKE2ANI
+#define SPARKANII SPARKANI
+
 extern int TIRE_SMOKE_COUNT;
 extern int SMOKEANI[];
 extern int SMOKE2ANI[];

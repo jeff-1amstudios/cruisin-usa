@@ -11,6 +11,9 @@ void EPI0_1(void);
 void _line(void);
 void EPI0_2(void);
 
+void INV_F30(void);
+void _pixel(void);
+
 #define FP AR3
 
 /* ******************************************************

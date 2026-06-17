@@ -42,16 +42,19 @@ void BOILERPLATE_INIT(void);
 void BOILERPLATE(void);
 void BOILERPLATE_DELETE(void);
 
+#define ANIMATE_MAP_TABI ANIMATE_MAP_TAB
+#define TRACK_SELECTION_LISTI TRACK_SELECTION_LIST
+
 extern int TURNOBJ;
 extern int RAW_CHOOSENTRK;
-extern const char *CRUISE;
-extern const char *CRUISE2;
-extern const char *CRUISE3;
+extern const char CRUISE[];
+extern const char CRUISE2[];
+extern const char CRUISE3[];
 extern int TSEL_HEAD;
 extern int TSEL_THEONE;
 extern int ANIMATE_MAP_TAB[];
 extern int TURNANI[];
-extern int TRACK_SELECTION_LIST[];
+extern uintptr_t TRACK_SELECTION_LIST[];
 extern int BOILEROBJ;
 
 /* asm: TURNOBJ	.bss	TURNOBJ,1 */
@@ -70,11 +73,11 @@ int TURNOBJ;
 /* asm: RAW_CHOOSENTRK	.bss	RAW_CHOOSENTRK,1 */
 int RAW_CHOOSENTRK;
 /* asm: CRUISE	SPTR	"CRUISE THE USA" */
-const char *CRUISE = "CRUISE THE USA";
+const char CRUISE[] = "CRUISE THE USA";
 /* asm: CRUISE2	SPTR	"JAM WITH THE PRESIDENT" */
-const char *CRUISE2 = "JAM WITH THE PRESIDENT";
+const char CRUISE2[] = "JAM WITH THE PRESIDENT";
 /* asm: CRUISE3	SPTR	"IN THE WHITE HOUSE HOT TUB" */
-const char *CRUISE3 = "IN THE WHITE HOUSE HOT TUB";
+const char CRUISE3[] = "IN THE WHITE HOUSE HOT TUB";
 
 /* *----------------------------------------------------------------------------
 *
@@ -1118,21 +1121,21 @@ JIJI:
 /* asm: 	.word	RACE_GG */
 /* asm: 	.word	RACE_IN */
 /* asm: 	.word	RACE_SF */
-int TRACK_SELECTION_LIST[] = {
-    RACE_AZ,
-    RACE_US101,
-    RACE_LA,
-    RACE_IOWA,
-    RACE_DV,
-    RACE_USA,
-    RACE_BH,
-    RACE_APPL,
-    RACE_RW,
-    RACE_GC,
-    RACE_CH,
-    RACE_GG,
-    RACE_IN,
-    RACE_SF,
+uintptr_t TRACK_SELECTION_LIST[] = {
+    (uintptr_t)(RACE_AZ),
+    (uintptr_t)(RACE_US101),
+    (uintptr_t)(RACE_LA),
+    (uintptr_t)(RACE_IOWA),
+    (uintptr_t)(RACE_DV),
+    (uintptr_t)(RACE_USA),
+    (uintptr_t)(RACE_BH),
+    (uintptr_t)(RACE_APPL),
+    (uintptr_t)(RACE_RW),
+    (uintptr_t)(RACE_GC),
+    (uintptr_t)(RACE_CH),
+    (uintptr_t)(RACE_GG),
+    (uintptr_t)(RACE_IN),
+    (uintptr_t)(RACE_SF),
 };
 
 /* *----------------------------------------------------------------------------

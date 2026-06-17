@@ -48,6 +48,10 @@ void DIST_PT2LINE(void);
 void GETLINE_EQ_2D(void);
 void SCALE_MATRIX(void);
 
+#define FIND_YMATRIX _find_Ymatrix
+#define SINTABLEI SINTABLE
+#define LOCTEMPER_MAT2I LOCTEMPER_MAT2
+
 extern float SINTABLE[];
 extern float FORMULA;
 extern float HALFPII;
@@ -56,8 +60,8 @@ extern float TWOPII;
 extern float INVFORM;
 extern float RADFORM;
 extern float RADFORMI;
-extern int ATTABV;
-extern int OFFTABV;
+extern float *ATTABV;
+extern int *OFFTABV;
 extern int ATOFFTAB[];
 extern float ATTAB[];
 extern int LOCTEMPER_MAT2[];

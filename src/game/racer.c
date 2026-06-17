@@ -51,6 +51,19 @@ void SPOS_INIT(void);
 void WRECKST(void);
 void WRECK(void);
 
+#define RACER_DRONE_INITTABI RACER_DRONE_INITTAB
+#define RACER_PTRI RACER_PTR
+#define DIFFTABI DIFFTAB
+#define HI_STEALTHI HI_STEALTH
+#define LO_STEALTHI LO_STEALTH
+#define ACTIVE_XSFERI ACTIVE_XSFER
+#define ROADOBSTABI ROADOBSTAB
+
+void OM_DRONE(void);
+void SEND_RACER_POS(void);
+extern int WRECKFLG;
+void GETFLYMAT(void);
+
 extern int RACER_DRONE_INITTAB;
 extern int FINISHNUM;
 extern int RACER_PTR[];

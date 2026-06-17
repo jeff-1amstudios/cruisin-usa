@@ -44,11 +44,16 @@ void SND_RESET_QUIET(void);
 void SNDPROC(void);
 void SNDUPD(void);
 
+#define SNDTABI SNDTAB
+#define STATION_LISTI STATION_LIST
+#define STATION_TEXTI STATION_TEXT
+#define SNDSTRI SNDSTR
+
 extern int IN_RESET_MODE;
 extern int RESET_TIMER[];
 extern int SNDSTR[];
 extern int SNDEND;
-extern int STATION_LIST[];
+extern uintptr_t STATION_LIST[];
 extern int STATION_TIMEOUT;
 extern int RS_X;
 extern int TUNE_IDX;
@@ -74,15 +79,15 @@ int SNDEND;
 /* asm: 	.word	STRAIGHT_2_4	;5 */
 /* asm: 	.word	DISCODUCK	;6 */
 /* asm: 	.word	BOOGIE		;7 */
-int STATION_LIST[] = {
-    MUNSTER_SURF, // 0
-    SHUFFLE_DRIV, // 1
-    DISCODUCK, // 2
-    SPAGETTI, // 3
-    VENTURE, // 4
-    STRAIGHT_2_4, // 5
-    DISCODUCK, // 6
-    BOOGIE, // 7
+uintptr_t STATION_LIST[] = {
+    (uintptr_t)(MUNSTER_SURF), // 0
+    (uintptr_t)(SHUFFLE_DRIV), // 1
+    (uintptr_t)(DISCODUCK), // 2
+    (uintptr_t)(SPAGETTI), // 3
+    (uintptr_t)(VENTURE), // 4
+    (uintptr_t)(STRAIGHT_2_4), // 5
+    (uintptr_t)(DISCODUCK), // 6
+    (uintptr_t)(BOOGIE), // 7
 };
 /* asm: STATION_TEXTI	.word	STATION_TEXT */
 #define STATION_TEXTI STATION_TEXT

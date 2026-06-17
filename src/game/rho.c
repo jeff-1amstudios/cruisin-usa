@@ -32,7 +32,20 @@ void RHO_ACTIVE_XSFER(void);
 void SEND_RHO_KILL(void);
 void DECODE_RHO_KILL(void);
 
-extern int B4HIT_TABLE[];
+#define B4HIT_TABLEI B4HIT_TABLE
+#define RHO_TABLEI RHO_TABLE
+#define RHO_ACTIVE_XSFERI RHO_ACTIVE_XSFER
+#define RHO_DIE1I RHO_DIE1
+
+void OM_DRONE(void);
+void SEND_RHO_CREATE(void);
+void SEND_RHO_POS(void);
+void COMPTRAK(void);
+void DECODE_RACER_XSFER(void);
+void FIND_DRONE(void);
+void FIND_DYNA(void);
+
+extern uintptr_t B4HIT_TABLE[];
 extern int NOLONG_VEHICLES;
 extern int RHO_TABLE[];
 extern int RHOFLAG;
@@ -45,9 +58,9 @@ extern int RHOPAL;
 #define B4HIT_SIZE 6
 /* asm: B4HIT_TABLE	.word	RH_GOFORIT,RH_TAKEHIM,RH_BABESCREAM1 */
 /* asm: 	.word	RH_BABEWHOA,RH_HURRYUP,RH_GONNACRASH */
-int B4HIT_TABLE[] = {
-    RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1,
-    RH_BABEWHOA, RH_HURRYUP, RH_GONNACRASH,
+uintptr_t B4HIT_TABLE[] = {
+    (uintptr_t)(RH_GOFORIT), (uintptr_t)(RH_TAKEHIM), (uintptr_t)(RH_BABESCREAM1),
+    (uintptr_t)(RH_BABEWHOA), (uintptr_t)(RH_HURRYUP), (uintptr_t)(RH_GONNACRASH),
 };
 /* *RHO FLAGS (RF_)
 *

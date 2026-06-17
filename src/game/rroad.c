@@ -31,6 +31,8 @@ void FLYTRAINP(void);
 void DEADCARA(void);
 void GETFLYMAT_TRAIN(void);
 
+#define FLYTRAINPI FLYTRAINP
+
 extern int FREEZE_IT;
 extern int COLL_POS[];
 extern int THE_TRAIN_SPEED;
