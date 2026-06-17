@@ -31,6 +31,12 @@ void FLYTRAINP(void);
 void DEADCARA(void);
 void GETFLYMAT_TRAIN(void);
 
+extern int FREEZE_IT;
+extern int COLL_POS[];
+extern int THE_TRAIN_SPEED;
+extern int KILL_TRAIN;
+extern float COLL_DIST;
+
 /* asm: FREEZE_IT	.bss	FREEZE_IT,1 */
 int FREEZE_IT;
 /* asm: COLL_POS	.bss	COLL_POS,3 */

@@ -42,6 +42,18 @@ void BOILERPLATE_INIT(void);
 void BOILERPLATE(void);
 void BOILERPLATE_DELETE(void);
 
+extern int TURNOBJ;
+extern int RAW_CHOOSENTRK;
+extern const char *CRUISE;
+extern const char *CRUISE2;
+extern const char *CRUISE3;
+extern int TSEL_HEAD;
+extern int TSEL_THEONE;
+extern int ANIMATE_MAP_TAB[];
+extern int TURNANI[];
+extern int TRACK_SELECTION_LIST[];
+extern int BOILEROBJ;
+
 /* asm: TURNOBJ	.bss	TURNOBJ,1 */
 int TURNOBJ;
 /* *----------------------------------------------------------------------------

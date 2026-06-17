@@ -74,6 +74,9 @@
 #define chicago_PALETTES 0x0000A188
 #define chostrns_grp 0x00CBEEE1
 #define coco1 0x00C6ED7D
+#define COMMDP 0x00997000
+#define COMM_CTL 0x00997001
+#define COMM_IO 0x00997000
 #define copcar 0x00C2B5CA
 #define copcarp 0x00C2BA00
 #define cow_pal 0x00C10F6E
@@ -286,6 +289,7 @@
 #define next 0x00CBEA2D
 #define ommdfont_p 0x00000043
 #define osg10fnt_white 0x00C115BD
+#define O_3DROT 0x08000000
 #define p0 0x00CD1A7B
 #define p1 0x00CD1A8B
 #define p2 0x00CD1A9B

@@ -3,6 +3,7 @@
 
 /* Generated from asm/CUSA.ASM. */
 
+// CUSA.ASM
 // asm: 	fbss	COMMINTM,1	;0       if NON-linked
 extern int COMMINTM;
 // asm: 	pbss	_MODE,1		;machine mode
@@ -56,7 +57,7 @@ extern int WDHIT;
 // asm: 	pbss	_newbut,0
 extern int _newbut;
 // asm: 	pbss	SWRAM,3       		;SWITCH STATE STORE N,N-1,N-2
-extern int SWRAM[3];
+extern int SWRAM[];
 // asm: 	pbss	DIPRAM,1		;DIP SWITCH RAM COPY
 extern int DIPRAM;
 // asm: 	fbss	BUTTON_TIKS,1
@@ -72,7 +73,7 @@ extern int TIMEX;
 // asm: 	.bss	TIMECLR,1
 extern int TIMECLR;
 // asm: 	.bss	TIMERAM,50
-extern int TIMERAM[50];
+extern int TIMERAM[];
 // asm: 		.bss	STATE_NUM,1
 extern int STATE_NUM;
 // asm: 		.bss	STATE_TIK,1
@@ -81,12 +82,5 @@ extern int STATE_TIK;
 extern int BUTTON_IBO;
 // asm: 	.bss	BUTTON_TIK,1
 extern int BUTTON_TIK;
-
-
-
-
-
-
-
 
 #endif /* CUSA_H */

@@ -48,6 +48,20 @@ void NEXT_ROAD(void);
 void GET_ROAD_RADY(void);
 void FIND_MAP(void);
 
+extern int ROADKILL_TAB[];
+extern int ROADKILLXZ[];
+extern float SOUNDTIME;
+extern int ROADKILL_SOUND_TIMER;
+extern int DEERANI[];
+extern float SPINSPEEDF;
+extern int COW_PARTS[];
+extern int DEER_PARTS[];
+extern int DEERBLOOD_ANI[];
+extern int GEESEANI[];
+extern int GEESE_DIR[];
+extern int SHIT_ANI[];
+extern int BUG_ANI[];
+
 #define ROADKILL_TYPES (2-1)
 #define RKT_DEATH 0 //UH
 #define RKT_SND 1 //UH

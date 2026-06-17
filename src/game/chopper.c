@@ -33,6 +33,9 @@ void FSL_MOVE(void);
 void HELI_SND(void);
 void GET_CLOSEST_TRAK(void);
 
+extern int HELI_ABORT;
+extern int CHOPPERDYNA[];
+
 /* asm: HELI_ABORT	.bss	HELI_ABORT,1 */
 int HELI_ABORT;
 /* *LOCALS  (AFTER DELTA EQUATES)

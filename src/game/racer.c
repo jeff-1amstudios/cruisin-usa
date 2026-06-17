@@ -51,6 +51,19 @@ void SPOS_INIT(void);
 void WRECKST(void);
 void WRECK(void);
 
+extern int RACER_DRONE_INITTAB;
+extern int FINISHNUM;
+extern int RACER_PTR[];
+extern int OM_TRACK_LO;
+extern int OM_TRACK_HI;
+extern int GMAX;
+extern int DIFFTAB[];
+extern int ROADOBSTAB[];
+extern int PLYRCLOSE;
+extern int WACKER;
+extern int LAKEL;
+extern int CARTMP1;
+
 /* asm: RACER_DRONE_INITTABI	.word	RACER_DRONE_INITTAB */
 #define RACER_DRONE_INITTABI RACER_DRONE_INITTAB
 /* asm: RACER_DRONE_INITTAB */

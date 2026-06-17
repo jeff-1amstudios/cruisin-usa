@@ -45,6 +45,30 @@ void ADD_TO_DOOR_LIST(void);
 void ENGINE_COLOR_INIT(void);
 void ENGINE_COLOR(void);
 
+extern int EPALR;
+extern int EPALL;
+extern int EPALRR[];
+extern int EPALRL[];
+extern int DOORTHETA;
+extern int DOORLISTI;
+extern int DOORLIST;
+extern float DO_LPPX;
+extern float DO_PPZ;
+extern float DO_RPPX;
+extern int LASTCHOICEA;
+extern int GUWP;
+extern int CT_CURSOR;
+extern int CT_WHEEL;
+extern int CT_PUSHTOCYCLE;
+extern int CT_LENG;
+extern int CT_RENG;
+extern int CT_MAN;
+extern int CT_AUTO;
+extern int CT_TURNTOSEL;
+extern int TRANS_HEAD;
+extern int TRNTAB[];
+extern int CYCTAB[];
+
 /* asm: EPALR	.word	EPALRR */
 int *EPALR = EPALRR;
 /* asm: EPALL	.word	EPALRL */

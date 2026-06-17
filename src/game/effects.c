@@ -21,6 +21,8 @@ void SCREENWIPE_CLOSE_PRC(void);
 void GET_EFFECTS_OBJS(void);
 void MEMCPY(void);
 
+extern int SCREENWIPE_DONE;
+
 /* asm: MONKEYOBJRVI	.word	mnkrv */
 #define MONKEYOBJRVI mnkrv
 /* asm: MONKEYOBJLVI	.word	mnklv */

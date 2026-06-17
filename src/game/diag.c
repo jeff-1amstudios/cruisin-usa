@@ -136,6 +136,135 @@ void DRAW_MOTION_SAFETY_DIAG(void);
 void CLEAR_MATS(void);
 void MOTION_SAFETY_SWITCHES_DIAG(void);
 
+extern const char *inst1;
+extern const char *inst2;
+extern const char *title;
+extern const char *toexit;
+extern int DIAGPAL;
+extern int SOFT_AUDIT;
+extern int FILSIZI;
+extern int REDV;
+extern int GREENV;
+extern int BLUEV;
+extern int BLACKV;
+extern int buffer[];
+extern int _opot0;
+extern int _opot1;
+extern int _opot2;
+extern int _onebut;
+extern int SWITCHES_DIAG[];
+extern int LASTSHIFT;
+extern const char *SW1T;
+extern const char *SW2T;
+extern int SW1BANK[];
+extern int SW2BANK[];
+extern int LASTDIPPLOT;
+extern int DIPTMP[];
+extern int ISON;
+extern int ISOFF;
+extern const char *ONTEXT;
+extern const char *OFFTEXT;
+extern const char *DMOT;
+extern const char *DNMOT;
+extern const char *DLINKD;
+extern const char *DNLINKD;
+extern const char *DMOD1;
+extern const char *DMOD2;
+extern const char *MOMT;
+extern const char *AMT;
+extern int ADJTAB[];
+extern const char *UMT;
+extern const char *MMT;
+extern const char *DMT;
+extern int MENU_SCROLL;
+extern int MUSIC_TAB;
+extern int EFFECTS_TAB;
+extern const char *AMODES;
+extern int USA_MENU[];
+extern int GERMAN_MENU[];
+extern int FRENCH_MENU[];
+extern int CANADA_MENU[];
+extern int SWISS_MENU[];
+extern int ITALY_MENU[];
+extern int UK_MENU[];
+extern int SPAIN_MENU[];
+extern int AUSTRALIA_MENU[];
+extern int JAPAN_MENU[];
+extern int TAIWAN_MENU[];
+extern int AUSTRIA_MENU[];
+extern int BELGIUM_MENU[];
+extern int OTHER_MENU[];
+extern int GENERAL_MENU[];
+extern const char *ETMAIN;
+extern int COUNTRY_MENUTAB[];
+extern int COUNTRY;
+extern int PSLAST;
+extern int CUSTOM_PRICING_MENU;
+extern const char *sct;
+extern const char *FFRST;
+extern const char *DAS;
+extern const char *HSRS;
+extern const char *BOOKR;
+extern const char *FREEPLAYT;
+extern const char *FGOO1;
+extern const char *FGOO2;
+extern const char *APHSTD;
+extern const char *APHSTD2;
+extern const char *GI1;
+extern const char *CL1;
+extern const char *RK1;
+extern const char *MP1;
+extern const char *MP2;
+extern const char *MP3;
+extern const char *CLR_CRED;
+extern const char *YES;
+extern const char *NO;
+extern const char *ONS;
+extern const char *OFFS;
+extern const char *NULLSTR;
+extern const char *AREUSURE;
+extern const char *CCD2A;
+extern const char *SSGD;
+extern const char *SSGD2;
+extern const char *HSGD;
+extern const char *HSGD2;
+extern const char *SGD;
+extern const char *SGD2;
+extern const char *ITD;
+extern const char *ITD2;
+extern const char *CPBTT;
+extern const char *CPBTT2;
+extern const char *MXT1;
+extern const char *MXT2;
+extern const char *MVL;
+extern int REPEAT_SW;
+extern int REPEAT_TIME;
+extern const char *SPM;
+extern const char *SELTP;
+extern const char *STP;
+extern const char *RCMT;
+extern const char *FRACYN;
+extern const char *USECP;
+extern const char *CPS;
+extern int CMESSAGE_TAB[];
+extern const char *CPCS;
+extern const char *CUPC;
+extern const char *CTSS;
+extern const char *CTCS;
+extern const char *CCTS;
+extern const char *CCTC;
+extern const char *CTPC;
+extern int PSTAB[];
+extern int MAIN_MENU;
+extern int DIAGNOSTIC_MENU;
+extern int UTILITIES_MENU;
+extern int ADJUSTMENT_MENU;
+extern int MOTION_MENU;
+extern const char *LAMPT;
+extern int LAMP_MENU;
+extern int MOTION_SAFETY_CODES;
+extern int OLD_MOTION_CODE;
+
 /* *WAIT FOR ENTER BUTTON ON
  */
 void WT_START(void)
@@ -959,9 +1088,11 @@ DIPLP:
 /* asm: DIPTMP	.bss	DIPTMP,2 */
 int DIPTMP[2];
 /* asm: ISON	.word	ONTEXT */
-const char *ISON = ONTEXT;
+int ISON = ONTEXT;
 /* asm: ISOFF	.word	OFFTEXT */
-const char *ISOFF = OFFTEXT;
+int ISOFF = OFFTEXT;
+const char *ONTEXT = "ON";
+const char *OFFTEXT = "OFF";
 
 /* *
  */
@@ -1154,6 +1285,10 @@ DONE_MODE_MSG:
     UNIMPL();
 }
 
+const char *DMOT = "MOTION ON";
+const char *DNMOT = "MOTION OFF";
+const char *DLINKD = "LINK ON";
+const char *DNLINKD = "LINK OFF";
 /* asm: DMOD1	SPTR	"MASTER" */
 const char *DMOD1 = "MASTER";
 /* asm: DMOD2	SPTR	"SLAVE" */
@@ -3205,7 +3340,7 @@ CUSTOM_NO:
 const char *CPS = "CUSTOM PRICING SELECTED";
 /* asm: CMESSAGE_TAB */
 /* asm: 	.word	CPCS,CPCS,CPCS,CPCS,CUPC,CTSS,CTCS,CCTS,CCTC,CTPC,CTPC,CTPC,CTPC */
-const char *CMESSAGE_TAB[] = {
+int CMESSAGE_TAB[] = {
     CPCS, CPCS, CPCS, CPCS, CUPC, CTSS, CTCS, CCTS, CCTC, CTPC, CTPC, CTPC, CTPC,
 };
 const char *CPCS = "UNITS PER COIN";

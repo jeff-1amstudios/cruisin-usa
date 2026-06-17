@@ -48,9 +48,6 @@ extern int SIGN_LIST;
 
 extern int GROUND_LIST;
 
-// asm:  .globl NEWSUBLIST_TOP
-extern int NEWSUBLIST_TOP;
-
 // asm:  .globl STARTSECTION,START_POS,START_RADY
 extern int STARTSECTION;
 
@@ -133,7 +130,7 @@ extern int GAMETRAK[];
 // asm:  .globl LEG_NAMESI,LEG_NAMES
 #define LEG_NAMESI LEG_NAMES
 
-extern int LEG_NAMES[];
+extern uintptr_t LEG_NAMES[];
 
 // asm:  .globl HELI_ABORT
 extern int HELI_ABORT;

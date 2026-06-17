@@ -77,6 +77,24 @@ void COLCHK(void);
 void GETBOX(void);
 void GETBOX0(void);
 
+extern int VL[];
+extern int TNORM[];
+extern int TVECT1[];
+extern int TVECT2[];
+extern int TMATRIX[];
+extern int COLVEL;
+extern int PMULT;
+extern int SPINTEMP;
+extern int BOXSCRAM[];
+extern int SAGETAB[];
+extern int DETHTAB1[];
+extern int DETHTAB2[];
+extern int PLYRBEHIND;
+extern int SCUPDTAB[];
+extern int SCTAB[];
+extern int EQTAB[];
+extern int LEQTAB[];
+
 /* asm: VL	.bss	VL,4 */
 int VL[4];
 /* asm: TNORM	.bss	TNORM,3 */

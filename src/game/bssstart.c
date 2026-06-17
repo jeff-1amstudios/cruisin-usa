@@ -8,5 +8,7 @@
  * Source module: asm/BSSSTART.ASM
  */
 
+extern int BSSSTART;
+
 /* asm: BSSSTART	lobss	BSSSTART,0 */
 int BSSSTART;

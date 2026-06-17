@@ -53,6 +53,10 @@ void FULLSETUP_INDIANA(void);
 void FULLSETUP_APPALACHIA(void);
 void FULLSETUP_WASHINGTONDC(void);
 
+extern int FULLSETUP_TABLEI;
+extern void (*FULLSETUP_TABLE[])(void);
+extern void (*LOADSECTION_TABLE[])(void);
+
 /* *----------------------------------------------------------------------------
  */
 void CLEANUP_PALS(void)

@@ -37,6 +37,20 @@ void STRCPY(void);
 void STRCAT(void);
 void HIGHLIGHTN(void);
 
+extern int TEXT_LIST[];
+extern int TEXT_FREE;
+extern int TEXT_ACTIVE;
+extern int TEXT_FREE_COUNT;
+extern int TEXT_FREEZE;
+extern int FIXEDFONT_A;
+extern int FONTDIGITSM_A;
+extern int FONT18_A;
+extern int TEXTTABLEFONT18;
+extern int FONT40_A;
+extern int FONT10_A;
+extern int FONTN43_A;
+extern int FIXEDFONT;
+
 /* asm: TEXT_LIST	hibss	TEXT_LIST,NUM_TEXTS*TEXT_SIZ */
 int TEXT_LIST[NUM_TEXTS*TEXT_SIZ];
 /* asm: TEXT_FREE	.bss	TEXT_FREE,1 */

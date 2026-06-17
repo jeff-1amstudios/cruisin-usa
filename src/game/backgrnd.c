@@ -59,6 +59,51 @@ void TRAIN_FWRDB(void);
 void TRAIN_FWRD(void);
 void LOAD_SINGLE_SECTION_OFFSET(void);
 
+extern int STARTSECTION;
+extern int START_POS[];
+extern int START_RADY;
+extern int DRIVE_LIST;
+extern int CAR_LIST;
+extern int SIGN_LIST;
+extern int GROUND_LIST;
+extern int NEW_GROUP;
+extern int DGROUPS[];
+extern int DGROUP_COUNT;
+extern int DGROUP_AW;
+extern int DYNALIST_TRUEBEGIN;
+extern int DYNALIST_BEGIN;
+extern int DYNALIST_END;
+extern int SUBLIST_BEGIN;
+extern int SUBLIST_END;
+extern int STARTS;
+extern int SECTIONIDX;
+extern int TYCO_TRACK;
+extern int TYCO_TRACK_NTL;
+extern int TYCO_NTL_IDX;
+extern float ATTRACT_ACTIVATE_DIST;
+extern float ACTIVATE_DIST;
+extern float DACT_DIST;
+extern float DDACT_DIST;
+extern float ATTR_DDACT_DIST;
+extern int NEWSUBLIST_TOPB;
+extern int GROUP_RADY;
+extern int TYCOFLAG;
+extern int PASS1;
+extern int SECRADY;
+extern int OVERCARLIST[];
+extern int SMOKE_ANI[];
+extern int CAR_FIRE_ANI[];
+extern int DC_MINIFOUNTAIN_ANI[];
+extern int DC_FOUNTAIN_ANI[];
+extern int WATERFALL_ANI[];
+extern int FLAGANI[];
+extern int FLAGANITALL[];
+extern int RUT_ANIS[];
+extern int HUNGH_ANIS[];
+extern int BABE_PALIST[];
+extern int SINGLE_SECTION_TEMPPTR;
+extern uintptr_t ROUTINE_TAB[];
+
 /* asm: STARTSECTION	.bss	STARTSECTION,1 */
 int STARTSECTION;
 /* asm: START_POS	.bss	START_POS,3 */
@@ -481,17 +526,6 @@ NODEACT:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
-*ACTIVATE A TYCO GROUP (ROAD PIECES ARE LINKED, ETC.)
-*
-*PARAMETERS
-*	AR2	PTR TO TYCO BLOCK
-*
-*
-*
- */
-/* asm: NEWSUBLIST_TOP	.word	NEWSUBLIST_TOPB */
-int *NEWSUBLIST_TOP = NEWSUBLIST_TOPB;
 /* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
 int NEWSUBLIST_TOPB;
 /* asm: GROUP_RADY	.bss	GROUP_RADY,1 */
@@ -2154,29 +2188,29 @@ void LOAD_SINGLE_SECTION_OFFSET(void)
 /* asm: 	.word	4A1h,DC_FOUNTAIN */
 /* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
 /* asm: 	.word	0	;END OF TABLE ID */
-int ROUTINE_TAB[] = {
-    0x40A, FLAGWAVE,
-    0x460, ROAD_DEBRIS_CREATE,
-    0x461, ROAD_DEBRIS_CREATE_55GAL,
-    0x462, ROAD_DEBRIS_CREATE_55GAL, // actually TOXIC
-    0x463, ROAD_DEBRIS_CREATE_55GAL, // actually CONE
-    0x465, FLAGWAVE, // short flag
-    0x466, FLAGWAVE_TALL, // tall flag
-    0x467, WATERFALL,
-    0x469, OVERCAR, // LA & CHICAGO, FREEWAY OVERPASS CAR
-    0x470, RRSTART_ENGINE,
-    0x471, RRSTART_BOXCAR,
-    0x472, RRSTART_BOXCAR,
-    0x473, RRSTART_BOXCAR,
-    0x474, RRSTART_BOXCAR,
-    0x475, RRSTART_BOXCAR,
-    0x476, RRSTART_BOXCAR,
-    0x481, SMOKE_STACK,
-    0x482, CAR_FIRE,
-    0x498, OHARE_PLANE, // CHICAGO AIRPLANE
-    0x741, RUT_ANI,
-    0x742, HUNGH_ANI,
-    0x4A1, DC_FOUNTAIN,
-    0x4A2, DC_MINIFOUNTAIN,
+uintptr_t ROUTINE_TAB[] = {
+    0x40A, (uintptr_t)FLAGWAVE,
+    0x460, (uintptr_t)ROAD_DEBRIS_CREATE,
+    0x461, (uintptr_t)ROAD_DEBRIS_CREATE_55GAL,
+    0x462, (uintptr_t)ROAD_DEBRIS_CREATE_55GAL, // actually TOXIC
+    0x463, (uintptr_t)ROAD_DEBRIS_CREATE_55GAL, // actually CONE
+    0x465, (uintptr_t)FLAGWAVE, // short flag
+    0x466, (uintptr_t)FLAGWAVE_TALL, // tall flag
+    0x467, (uintptr_t)WATERFALL,
+    0x469, (uintptr_t)OVERCAR, // LA & CHICAGO, FREEWAY OVERPASS CAR
+    0x470, (uintptr_t)RRSTART_ENGINE,
+    0x471, (uintptr_t)RRSTART_BOXCAR,
+    0x472, (uintptr_t)RRSTART_BOXCAR,
+    0x473, (uintptr_t)RRSTART_BOXCAR,
+    0x474, (uintptr_t)RRSTART_BOXCAR,
+    0x475, (uintptr_t)RRSTART_BOXCAR,
+    0x476, (uintptr_t)RRSTART_BOXCAR,
+    0x481, (uintptr_t)SMOKE_STACK,
+    0x482, (uintptr_t)CAR_FIRE,
+    0x498, (uintptr_t)OHARE_PLANE, // CHICAGO AIRPLANE
+    0x741, (uintptr_t)RUT_ANI,
+    0x742, (uintptr_t)HUNGH_ANI,
+    0x4A1, (uintptr_t)DC_FOUNTAIN,
+    0x4A2, (uintptr_t)DC_MINIFOUNTAIN,
     0, // END OF TABLE ID
 };

@@ -3,6 +3,7 @@
 
 /* Generated from asm/PLYR.ASM. */
 
+// PLYR.ASM
 // asm: 	.bss	OFFROAD_TMR,1
 extern int OFFROAD_TMR;
 // asm: 	.bss	ZOOMD,1		;CURRENT ZOOM DISTANCE
@@ -65,12 +66,5 @@ extern int BRAKEMN;
 extern int BRAKEMX;
 // asm: 	.bss	STEERFR,1		;STEERING FREE
 extern int STEERFR;
-
-
-
-
-
-
-
 
 #endif /* PLYR_H */

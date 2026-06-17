@@ -54,6 +54,10 @@ void TOWER_PAL_LD(void);
 void TOWER_PAL_RESTORE(void);
 void END_OF_GAME(void);
 
+extern int ROUTINE_TABLE[];
+extern int CHECKPOINT_TIME_BONUS;
+extern int REAL_CHECKPOINTS;
+
 /* *----------------------------------------------------------------------------
 *When a section is loaded (from the tyco track)and the SC_ROUTINE field
 *is not zero, the entry is used as an index, and executed from this table.

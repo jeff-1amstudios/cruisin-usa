@@ -65,6 +65,20 @@ void OVELADD(void);
 void OVELNADD(void);
 void FORWARD(void);
 
+extern int RAND;
+extern int CRTCTLRAM;
+extern int ACTIVE_SCREEN;
+extern int LINE255I;
+extern int LINE511I;
+extern int SCRSIZI;
+extern float NTWOPII;
+extern int DYNALIST[];
+extern int DYNAFREE;
+extern int NULL;
+extern int CARLIST[];
+extern int CARFREE;
+extern int CAR_COUNT;
+
 /* asm: RAND	pbss	RAND,1 */
 int RAND;
 /* asm: CRTCTLRAM	.bss	CRTCTLRAM,1 */

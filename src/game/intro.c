@@ -80,6 +80,59 @@ void TRAFFIC_LIGHT(void);
 void CPOINT_LIGHT(void);
 void SHOW_RACE_NAME(void);
 
+extern int START_HIT;
+extern int CHOSEN_VEHICLE;
+extern int CHOSEN_TRANSMISSION;
+extern int CHOSEN_RACE;
+extern int END_OF_GAMEP;
+extern int RACE_MODE;
+extern int FIRST_RACE;
+extern int POSES;
+extern int GAMEDIFF;
+extern int CHECKPOINT_NUM;
+extern int H2H_FLAGSTATE;
+extern const char *JINOW;
+extern const char *WFCHAL1;
+extern const char *WFCHAL2;
+extern const char *WFCHAL3;
+extern int FRAMELAG;
+extern int BONUS_WAITFLAG;
+extern int OM_BONUS_WAITFLAG;
+extern int START_NOW_P;
+extern const char *CCT;
+extern int CCTAB[];
+extern int CHOOSENCAR;
+extern int RACE_STARTING_POINTS[];
+extern int CAR_CHOICE_GOTTEN;
+extern int CAR_ARRAY[];
+extern float SCS_TAB[];
+extern int CAR1PAL[];
+extern int CAR2PAL[];
+extern int CAR3PAL[];
+extern int CAR4PAL[];
+extern int *CARPAL_TABLE[];
+extern int CARSRCPAL_TAB[];
+extern int IS_HIDDEN;
+extern int HIDDEN_TABLE[];
+extern int SPINCURR;
+extern const char *T_READY;
+extern const char *T_SET;
+extern const char *T_GO;
+extern const char *T_CHALLENG;
+extern int TLIST[];
+extern int TLGO[];
+extern int BABE_CONTROL;
+extern int CURR_FLAGSTATE;
+extern int LASTCHOICE;
+extern int _timer;
+extern const char *TROI;
+extern const char *ICCI;
+extern const char *PSCI;
+extern int SAVEDMODE;
+extern int DIRTY_SHARED;
+extern int TRAFFIC_LL[];
+extern int RGBTAB_CP;
+
 /* asm: START_HIT	.bss	START_HIT,1 */
 int START_HIT;
 /* asm: CHOSEN_VEHICLE	.bss	CHOSEN_VEHICLE,1 */
@@ -1090,6 +1143,7 @@ void INIT_GAMELEG(void)
 *CHOOSECAR
 *
  */
+const char *CCT = "CHOOSE CAR";
 /* 	;all Y's were 0
 	;
  */

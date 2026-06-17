@@ -3,6 +3,7 @@
 
 /* Generated from asm/WHEEL.ASM. */
 
+// WHEEL.ASM
 // asm: 	.bss	POSE,1
 extern int POSE;
 // asm: 	pbss	lpot0,1			;LAST POT
@@ -19,12 +20,5 @@ extern int WHEELMAX;
 extern int WHEELVEL;
 // asm: 	.bss	DAMPPWR,1
 extern int DAMPPWR;
-
-
-
-
-
-
-
 
 #endif /* WHEEL_H */

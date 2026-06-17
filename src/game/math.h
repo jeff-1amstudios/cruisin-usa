@@ -3,14 +3,8 @@
 
 /* Generated from asm/MATH.ASM. */
 
+// MATH.ASM
 // asm: 		fbss	LOCTEMPER_MAT2,12
-extern int LOCTEMPER_MAT2[12];
-
-
-
-
-
-
-
+extern int LOCTEMPER_MAT2[];
 
 #endif /* MATH_H */

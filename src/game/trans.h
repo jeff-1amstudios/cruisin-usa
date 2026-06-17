@@ -3,6 +3,7 @@
 
 /* Generated from asm/TRANS.ASM. */
 
+// TRANS.ASM
 // asm: 		.bss	DOORTHETA,1	;FL
 extern int DOORTHETA;
 // asm: 		.bss	DOORLIST,1	;UH
@@ -29,12 +30,5 @@ extern int CT_AUTO;
 extern int CT_TURNTOSEL;
 // asm: 	.bss	TRANS_HEAD,1
 extern int TRANS_HEAD;
-
-
-
-
-
-
-
 
 #endif /* TRANS_H */

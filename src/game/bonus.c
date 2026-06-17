@@ -66,6 +66,54 @@ void KILL_THEM(void);
 void FIND_AND_REACTIVATE(void);
 void KILL_THE_REANIMATORS(void);
 
+extern int MAXMPH;
+extern int CHALLENGE_RACE;
+extern int NEXT_STARTUP;
+extern int BONUS_WAVE;
+extern int FINISH_LINE;
+extern int DO_FOLDFLAG;
+extern uintptr_t LEG_NAMES[];
+extern const char *LEG1;
+extern const char *LEG2;
+extern const char *LEG3;
+extern const char *LEG4;
+extern const char *LEG5;
+extern const char *LEG6;
+extern const char *LEG7;
+extern const char *LEG8;
+extern const char *LEG9;
+extern const char *LEG10;
+extern const char *LEG11;
+extern const char *LEG12;
+extern const char *LEG13;
+extern const char *LEG14;
+extern const char *LEG_USA;
+extern const char *WINT1;
+extern const char *WINT2;
+extern const char *EXPIRED;
+extern int GAMETRAK[];
+extern int ETIME;
+extern int BIGBUFFER[];
+extern uintptr_t BONUS_POSTLAUNCH[];
+extern void (*BONUS_TABLE[])(void);
+extern int SAVED_COUNTDOWN;
+extern int SPEEDHIT;
+extern int DID_TIMED_OUT;
+extern const char *FRA1;
+extern const char *FRA2;
+extern int CONGRAT_SPEECH;
+extern const char *LCTS;
+extern const char *LNLS;
+extern int FLAG_POS_TABLE[];
+extern const char *BT1;
+extern const char *BT1A;
+extern const char *RT2;
+extern const char *HH1;
+extern const char *HH2;
+extern const char *NULLSTR5;
+extern const char *BT2;
+extern const char *BT3;
+
 /* asm: MAXMPH	.bss	MAXMPH,1 */
 int MAXMPH;
 /* asm: CHALLENGE_RACE	.bss	CHALLENGE_RACE,1 */
@@ -81,12 +129,29 @@ int DO_FOLDFLAG;
 #define NUM_LEGS 14
 /* asm: LEG_NAMES	.word	LEG1,LEG2,LEG3,LEG4,LEG5,LEG6,LEG7,LEG8 */
 /* asm: 	.word	LEG9,LEG10,LEG11,LEG12,LEG13,LEG14,LEG_USA */
-const char *LEG_NAMES[] = { "GOLDEN GATE PARK", "SAN FRANCISCO", "US 101", "REDWOOD FOREST", "BEVERLY HILLS", "LA FREEWAY", "DEATH VALLEY", "ARIZONA", "GRAND CANYON", "IOWA", "CHICAGO", "INDIANA", "APPALACHIA", "WASHINGTON DC", "SF TO WASHINGTON DC" };
+uintptr_t LEG_NAMES[] = {
+    (uintptr_t)&LEG1, (uintptr_t)&LEG2, (uintptr_t)&LEG3, (uintptr_t)&LEG4, (uintptr_t)&LEG5, (uintptr_t)&LEG6, (uintptr_t)&LEG7, (uintptr_t)&LEG8,
+    (uintptr_t)&LEG9, (uintptr_t)&LEG10, (uintptr_t)&LEG11, (uintptr_t)&LEG12, (uintptr_t)&LEG13, (uintptr_t)&LEG14, (uintptr_t)&LEG_USA,
+};
+const char *LEG1 = "GOLDEN GATE PARK";
+const char *LEG2 = "SAN FRANCISCO";
+const char *LEG3 = "US 101";
+const char *LEG4 = "REDWOOD FOREST";
+const char *LEG5 = "BEVERLY HILLS";
+const char *LEG6 = "LA FREEWAY";
+const char *LEG7 = "DEATH VALLEY";
+const char *LEG8 = "ARIZONA";
+const char *LEG9 = "GRAND CANYON";
+const char *LEG10 = "IOWA";
+const char *LEG11 = "CHICAGO";
+const char *LEG12 = "INDIANA";
+const char *LEG13 = "APPALACHIA";
+const char *LEG14 = "WASHINGTON DC";
+const char *LEG_USA = "SF TO WASHINGTON DC";
 const char *WINT1 = "FREE GAME FOR";
 const char *WINT2 = "1ST PLACE";
 const char *EXPIRED = "EXPIRED";
-/* asm: GAMETRAK	.bss	GAMETRAK,NUM_LEGS*GT_SIZE */
-int GAMETRAK[NUM_LEGS*GT_SIZE];
+int GAMETRAK[NUM_LEGS*sizeof(tagGAMETRAK)];
 /* asm: ETIME	.bss	ETIME,1 */
 int ETIME;
 /* ;etime,#,maxmph
@@ -101,12 +166,12 @@ int BIGBUFFER[(4+1+2+2)*NUM_LEGS];
 /* asm: 	.word	BONUSNULL,BONUSNULL,BONUSNULL */
 /* asm: 	.word	BONUSNULL,BONUSNULL,BONUSNULL */
 /* asm: 	.word	BONUSNULL,BONUSNULL,BONUSNULL */
-int BONUS_POSTLAUNCH[] = {
-    BONUS_GGATE, BONUS_SANFRAN, BONUSNULL, BONUSNULL,
-    BONUS_BEVHILLS, BONUSNULL, BONUSNULL,
-    BONUSNULL, BONUSNULL, BONUSNULL,
-    BONUSNULL, BONUSNULL, BONUSNULL,
-    BONUSNULL, BONUSNULL, BONUSNULL,
+uintptr_t BONUS_POSTLAUNCH[] = {
+    (uintptr_t)BONUS_GGATE, (uintptr_t)BONUS_SANFRAN, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUS_BEVHILLS, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
 };
 
 /* *----------------------------------------------------------------------------
@@ -1200,6 +1265,8 @@ ISFREE:
 *
 *
  */
+const char *LCTS = "RACE COMPLETED:";
+const char *LNLS = "NEXT RACE:";
 /* *
 *
  */

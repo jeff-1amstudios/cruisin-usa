@@ -20,6 +20,9 @@ void _fill(void);
 void _outtextxyc(void);
 void _pixel(void);
 
+extern const char *POINT;
+extern int ftoa_tmp[];
+
 /* *----------------------------------------------------------------------------
  */
 void ENABLEGIE(void)

@@ -52,6 +52,62 @@ void SMOKE_PUFF(void);
 void DROP_COCONUTS(void);
 void AHEAD_OF_PLAYER_P(void);
 
+extern int DRONE_DISPATCH_P;
+extern int SUSPEND_MODE;
+extern int RACER_GRID_START;
+extern int DRONE_COUNT;
+extern int MIN_TRACK_TIME;
+extern int PSYCHO_RHO;
+extern int LANEP[];
+extern float LANES[];
+extern float LANES4[];
+extern int ONCSCREEN_CARS;
+extern int DD_SLP;
+extern int DD_VAR;
+extern int DD_MAX_DRONES;
+extern int DRONENUM;
+extern int EXP_ANI[];
+extern int SMOKE_COUNT;
+extern int SMOKE_ANI[];
+extern int COCONUT_COUNT;
+extern int MODELTAB[];
+extern int TEXTTABS[];
+extern int TITLES[];
+extern int VETETXT[];
+extern int RODRTXT[];
+extern int BULLTXT[];
+extern int FERRTXT[];
+extern const char *HRT12;
+extern const char *HRT13;
+extern const char *HRT14;
+extern const char *HRT15;
+extern const char *HRT16;
+extern float TABING[];
+extern const char *HRS11;
+extern const char *HRS12;
+extern const char *HRS13;
+extern const char *HRS14;
+extern const char *HRS15;
+extern const char *HRS16;
+extern const char *HRS21;
+extern const char *HRS22;
+extern const char *HRS23;
+extern const char *HRS24;
+extern const char *HRS25;
+extern const char *HRS26;
+extern const char *HRS31;
+extern const char *HRS32;
+extern const char *HRS33;
+extern const char *HRS34;
+extern const char *HRS35;
+extern const char *HRS36;
+extern const char *HRS41;
+extern const char *HRS42;
+extern const char *HRS43;
+extern const char *HRS44;
+extern const char *HRS45;
+extern const char *HRS46;
+
 /* asm: DRONE_DISPATCH_P	.bss	DRONE_DISPATCH_P,1 */
 int DRONE_DISPATCH_P;
 /* asm: SUSPEND_MODE	.bss	SUSPEND_MODE,1 */
@@ -1432,19 +1488,58 @@ int *TEXTTABS[] = {
     VETETXT, RODRTXT, BULLTXT, FERRTXT,
 };
 /* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
-const char *TITLES[] = { "TOP SPEED:", "SKIDPAD:", "AERO COEFF:", "0?60 MPH:", "POWER:" };
+int TITLES[] = {
+    HRT12, HRT13, HRT14, HRT15, HRT16,
+};
 /* asm: VETETXT	.word	HRS11,HRS12,HRS13,HRS14,HRS15,HRS16 */
-const char *VETETXT[] = { "63 MUSCLE CAR", "145 MPH@233 KPH", "0=89 G", "0=39", "2=98 SEC=", "462HP  454 CID V8" };
+int VETETXT[] = {
+    HRS11, HRS12, HRS13, HRS14, HRS15, HRS16,
+};
 /* asm: RODRTXT	.word	HRS21,HRS22,HRS23,HRS24,HRS25,HRS26 */
-const char *RODRTXT[] = { "LA BOMBA", "142 MPH@228 KPH", "0=98 G", "0=45", "2=51 SEC=", "580HP  SUPERCHARGED V12" };
+int RODRTXT[] = {
+    HRS21, HRS22, HRS23, HRS24, HRS25, HRS26,
+};
 /* asm: BULLTXT	.word	HRS31,HRS32,HRS33,HRS34,HRS35,HRS36 */
-const char *BULLTXT[] = { "DEVASTATOR VI", "147 MPH@236 KPH", "0=85 G", "0=25", "3=15 SEC=", "395HP  TWIN TURBO V6" };
+int BULLTXT[] = {
+    HRS31, HRS32, HRS33, HRS34, HRS35, HRS36,
+};
 /* asm: FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
-const char *FERRTXT[] = { "ITALIA P69", "144 MPH@231 KPH", "1=01 G", "0=28", "2=88 SEC=", "472HP  V12 DOHC 48V" };
+int FERRTXT[] = {
+    HRS41, HRS42, HRS43, HRS44, HRS45, HRS46,
+};
+const char *HRT12 = "TOP SPEED:";
+const char *HRT13 = "SKIDPAD:";
+const char *HRT14 = "AERO COEFF:";
+const char *HRT15 = "0?60 MPH:";
+const char *HRT16 = "POWER:";
 /* asm: TABING	.float	60,220,220,220,220,220 */
 float TABING[] = {
     60.0f, 220.0f, 220.0f, 220.0f, 220.0f, 220.0f,
 };
+const char *HRS11 = "63 MUSCLE CAR";
+const char *HRS12 = "145 MPH@233 KPH";
+const char *HRS13 = "0=89 G";
+const char *HRS14 = "0=39";
+const char *HRS15 = "2=98 SEC=";
+const char *HRS16 = "462HP  454 CID V8";
+const char *HRS21 = "LA BOMBA";
+const char *HRS22 = "142 MPH@228 KPH";
+const char *HRS23 = "0=98 G";
+const char *HRS24 = "0=45";
+const char *HRS25 = "2=51 SEC=";
+const char *HRS26 = "580HP  SUPERCHARGED V12";
+const char *HRS31 = "DEVASTATOR VI";
+const char *HRS32 = "147 MPH@236 KPH";
+const char *HRS33 = "0=85 G";
+const char *HRS34 = "0=25";
+const char *HRS35 = "3=15 SEC=";
+const char *HRS36 = "395HP  TWIN TURBO V6";
+const char *HRS41 = "ITALIA P69";
+const char *HRS42 = "144 MPH@231 KPH";
+const char *HRS43 = "1=01 G";
+const char *HRS44 = "0=28";
+const char *HRS45 = "2=88 SEC=";
+const char *HRS46 = "472HP  V12 DOHC 48V";
 
 /* *----------------------------------------------------------------------------
 *AM I AHEAD OF THE PLAYER?

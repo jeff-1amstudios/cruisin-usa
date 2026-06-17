@@ -70,6 +70,17 @@ void ENTER_HSTEXT(void);
 void INIT_LOGO(void);
 void RBMATTR_CHECK(void);
 
+extern int NUMTAB[];
+extern int THREED_LETTERS[];
+extern int PLATE_LETTERS[];
+extern const char *EIP;
+extern int SCROLLBTAB[];
+extern int LONGEST_TIME;
+extern int FLASH_PALS[];
+extern int DELIST[];
+extern int RADIO_HS_SHADOW;
+extern int RADIO_HS_SWITCH;
+
 #define FLASH_ON 1 //TURN THIS OFF TO LOOSE FLASHING
 #define PRESS_DIAM 271 //NOTE: The plate is on the bottom surface
 #define PRESS_RADX 1.5708
@@ -102,6 +113,7 @@ int PLATE_LETTERS[] = {
     ps, pt, pu, pv, pw, px, py, pz, arrow, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, pend,
 };
 #define LASTCHAR (LAST_LETTER-PLATE_LETTERS-1)
+const char *EIP = "ENTER INITIALS";
 /* *----------------------------------------------------------------------------
  */
 #define LETTER0 (PDATA+3)

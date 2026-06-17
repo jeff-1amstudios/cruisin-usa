@@ -5,18 +5,21 @@
 # unsigned short FLAGS[16];
 
 void *SWTAB;
-intptr_t *VIEWLIST[];
-intptr_t GGPARK_LIST[];
-intptr_t BEVHILL_LIST[];
-intptr_t GCANYON_LIST[];
-intptr_t CHICAGO_LIST[];
+uintptr_t *VIEWLIST[];
+uintptr_t GGPARK_LIST[];
+uintptr_t BEVHILL_LIST[];
+uintptr_t GCANYON_LIST[];
+uintptr_t CHICAGO_LIST[];
 time=time_ROM
 -PB1
 -PB2
 -PBSS_PTR
 -PBSS_BSSEND
 -RAM_PTR
--DT1
--DT2
--DT3
+
 SMOOTH_VIEW()
+uintptr_t DEMOTHANKS_LIST[];
+-NEWSUBLIST_TOP
+uintptr_t ROUTINE_TAB[];
+uintptr_t LEG_NAMES[];
+uintptr_t BONUS_POSTLAUNCH[];

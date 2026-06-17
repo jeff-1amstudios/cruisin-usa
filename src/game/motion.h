@@ -3,6 +3,7 @@
 
 /* Generated from asm/MOTION.ASM. */
 
+// MOTION.ASM
 // asm: 	.bss	MOTION_NOT_ON,1
 extern int MOTION_NOT_ON;
 // asm: 	.bss	MOTION_STOP_HIT,1
@@ -18,9 +19,9 @@ extern int MOTION_SAFETY_ON;
 // asm: 	.bss	MOTION_SAFETY_TYPE,1
 extern int MOTION_SAFETY_TYPE;
 // asm: 	.bss	sPOTVALUE,15
-extern int sPOTVALUE[15];
+extern int sPOTVALUE[];
 // asm: 	.bss	MOTION_CMDSTR,80
-extern int MOTION_CMDSTR[80];
+extern int MOTION_CMDSTR[];
 // asm: 	.bss	LAST_ZF,1
 extern int LAST_ZF;
 // asm: 	.bss	LAST_XL,1
@@ -35,12 +36,5 @@ extern int GALIL_STATUS_X;
 extern int GALIL_STATUS_Y;
 // asm: 	.bss	GALIL_STATUS_Z,1
 extern int GALIL_STATUS_Z;
-
-
-
-
-
-
-
 
 #endif /* MOTION_H */

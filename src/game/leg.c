@@ -21,6 +21,19 @@ void LEG_GENERATE_MAP(void);
 void LEG_ADD_GROUP(void);
 void GENERATE_LINEAR_DISTANCE(void);
 
+extern int FINISH_ID;
+extern int LEG_ELEMENTS;
+extern int LEG_MAP[];
+extern int LAST_END_CACHE;
+extern int LAST_END_INDEX;
+extern int LAST_ORIENTATION;
+extern int LEG_SSLL[];
+extern int LEGFREE;
+extern int LEGLL;
+extern int LEG_FLAG;
+extern int LEG_RADY;
+extern int LEG_SECTIONIDX;
+
 #define USEFIXED 1
 #define USEEXTENDED 0
 /* asm: FINISH_ID	.bss	FINISH_ID,1 */

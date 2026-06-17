@@ -44,6 +44,16 @@ void SND_RESET_QUIET(void);
 void SNDPROC(void);
 void SNDUPD(void);
 
+extern int IN_RESET_MODE;
+extern int RESET_TIMER[];
+extern int SNDSTR[];
+extern int SNDEND;
+extern int STATION_LIST[];
+extern int STATION_TIMEOUT;
+extern int RS_X;
+extern int TUNE_IDX;
+extern int DO_NOT_REENABLE_INT;
+
 /* asm: IN_RESET_MODE	fbss	IN_RESET_MODE,1 */
 int IN_RESET_MODE;
 /* asm: RESET_TIMER	fbss	RESET_TIMER,R0 */

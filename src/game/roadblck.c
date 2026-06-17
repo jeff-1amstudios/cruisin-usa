@@ -24,6 +24,9 @@ void ADD_RDDEBRIS(void);
 void FREE_RDDEBRIS(void);
 void DEBRIS_SORT(void);
 
+extern int ROAD_DEBRIS;
+extern float MAXDIST;
+
 /* asm: ROAD_DEBRIS	.bss	ROAD_DEBRIS,1 */
 int ROAD_DEBRIS;
 

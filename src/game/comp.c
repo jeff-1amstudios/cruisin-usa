@@ -26,6 +26,22 @@ void BOOT_PACIFY_SCREEN(void);
 void LOAD_SECTION_REQ(void);
 void REQWAIT(void);
 
+extern int PADDING[];
+extern int DECOMP_ACTIVE;
+extern int HARD_SECTION_LOAD;
+extern int FLUSH_COUNT;
+extern int PACIFY_COUNT;
+extern int DICT[];
+extern int DECODE_STACK[];
+extern int NEXT_BUMP_CODE;
+extern int LINEBUFFER[];
+extern int SAVESPCI;
+extern int SAVESPC[];
+extern int BOOT_PACIFY_SCREEN_P;
+extern int PREVX;
+extern int DELTA;
+extern int LASTLOAD;
+
 /* asm: PADDING	.bss	PADDING,50 */
 int PADDING[50];
 /* asm: DECOMP_ACTIVE	.bss	DECOMP_ACTIVE,1 */

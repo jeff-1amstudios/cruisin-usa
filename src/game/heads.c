@@ -28,6 +28,10 @@ void GETT(void);
 void CENTEREM(void);
 void RIGHTEM(void);
 
+extern int HEADS[];
+extern int YINCREMENT;
+extern int FONTUSED;
+
 #define HEADTYPE 0x88D0
 
 /* *----------------------------------------------------------------------------

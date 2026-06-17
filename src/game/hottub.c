@@ -40,6 +40,19 @@ void BABE_IBO(void);
 void BABE_ANI(void);
 void BABE_WAVEFLAG(void);
 
+extern const char *BABA1;
+extern const char *BABA2;
+extern int ANI_HOTTUB[];
+extern int HILLANI[];
+extern int GIRLANI[];
+extern int ANI_RADAR[];
+extern int ANI_STAG[];
+extern int WATCHOBJ;
+extern const char *PC1;
+extern const char *PC2;
+extern int BABE_TROPHY_SCRIPT[];
+extern int BABE_FLAG_SCRIPT[];
+
 /* asm: BABA1	SPTR	"THE PRESIDENT OF" */
 const char *BABA1 = "THE PRESIDENT OF";
 /* asm: BABA2	SPTR	"THE UNITED STATES" */

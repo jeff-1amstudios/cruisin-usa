@@ -48,6 +48,20 @@ void DIST_PT2LINE(void);
 void GETLINE_EQ_2D(void);
 void SCALE_MATRIX(void);
 
+extern float SINTABLE[];
+extern float FORMULA;
+extern float HALFPII;
+extern float PII;
+extern float TWOPII;
+extern float INVFORM;
+extern float RADFORM;
+extern float RADFORMI;
+extern int ATTABV;
+extern int OFFTABV;
+extern int ATOFFTAB[];
+extern float ATTAB[];
+extern int LOCTEMPER_MAT2[];
+
 /* *----------------------------------------------------------------------------
 *	float	COSI(float theta)
 *	float	SINE(float theta)

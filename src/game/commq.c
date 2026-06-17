@@ -84,6 +84,37 @@ void SEND_DIAGNOSTIC(void);
 void DECODE_ATTRSND(void);
 void SEND_ATTRSND(void);
 
+extern int IGNORE_UPDATES;
+extern int COMMQ_TMP_BUFF[];
+extern int SEND_BUFFER_A[];
+extern int SEND_BUFFER_A_LEN;
+extern int RBUFF_LEN;
+extern int RECEIVE_BUFFER[];
+extern int OM_DIFF;
+extern int OM_MODE;
+extern int OM_CHOSEN_RACE;
+extern int OM_VEHICLE;
+extern int OM_STATE;
+extern int MY_STATE;
+extern int OM_ATTR_MODE;
+extern int OLD_OM_ATTR_MODE;
+extern int OM_LINKWAIT;
+extern int MY_LINKWAIT;
+extern int LINKEDP;
+extern int OM_HIDDEN_ON;
+extern int OM_RACE_MODE;
+extern int BSYNC;
+extern int OM_BSYNC;
+extern int OM_POSITION;
+extern int HEAD2HEAD_ON;
+extern int SAVED_PLY2CAR;
+extern int DECODE_BLOCK[];
+extern float MATCON;
+extern float RADCON;
+extern int COINDROP;
+extern int OM_DIAGVALUE;
+extern int DIAGVALUE;
+
 /* asm: IGNORE_UPDATES	.bss	IGNORE_UPDATES,1 */
 int IGNORE_UPDATES;
 /* asm: COMMQ_TMP_BUFF	fbss	COMMQ_TMP_BUFF,80 */

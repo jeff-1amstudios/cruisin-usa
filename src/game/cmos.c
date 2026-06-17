@@ -46,6 +46,10 @@ void TABLE_ENTRY_READ(void);
 void CHECK_RACE_TABLE(void);
 void INSERT_TABLE_ENTRY(void);
 
+extern int VERIFY_ADJUSTMENTS_ACCURACYTAB;
+extern int DEFAULT_TABLE;
+extern int DEFAULT_TABLE_TOTAL;
+
 /* *----------------------------------------------------------------------------
  */
 

@@ -23,6 +23,8 @@ void SIGMA_DRONE(void);
 void BREAKDOWN(void);
 void SIGMA_DIE(void);
 
+extern int SIGMA_LIST[];
+
 /* *SIGMA_STARTUP STRUCT
  */
 #define SS_MODEL 0

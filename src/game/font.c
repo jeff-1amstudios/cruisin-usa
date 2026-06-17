@@ -6,6 +6,8 @@
  * Source module: asm/FONT.ASM
  */
 
+extern int _font1[];
+
 /* asm: _font1 */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0111000b */

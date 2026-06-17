@@ -3,18 +3,19 @@
 
 /* Generated from asm/COMMQ.ASM. */
 
+// COMMQ.ASM
 // asm: 	.bss	IGNORE_UPDATES,1
 extern int IGNORE_UPDATES;
 // asm: 	fbss	COMMQ_TMP_BUFF,80
-extern int COMMQ_TMP_BUFF[80];
+extern int COMMQ_TMP_BUFF[];
 // asm: 	phibss	SEND_BUFFER_A,COMM_BUFFER_SIZE
-extern int SEND_BUFFER_A[COMM_BUFFER_SIZE];
+extern int SEND_BUFFER_A[];
 // asm: 	pbss	SEND_BUFFER_A_LEN,1
 extern int SEND_BUFFER_A_LEN;
 // asm: 	pbss	RBUFF_LEN,1
 extern int RBUFF_LEN;
 // asm: 	phibss	RECEIVE_BUFFER,COMM_BUFFER_SIZE
-extern int RECEIVE_BUFFER[COMM_BUFFER_SIZE];
+extern int RECEIVE_BUFFER[];
 // asm: 	pbss	OM_DIFF,1
 extern int OM_DIFF;
 // asm: 	pbss	OM_MODE,1
@@ -57,12 +58,5 @@ extern int COINDROP;
 extern int OM_DIAGVALUE;
 // asm: 	fbss	DIAGVALUE,1
 extern int DIAGVALUE;
-
-
-
-
-
-
-
 
 #endif /* COMMQ_H */

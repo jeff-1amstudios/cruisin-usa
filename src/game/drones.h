@@ -3,6 +3,7 @@
 
 /* Generated from asm/DRONES.ASM. */
 
+// DRONES.ASM
 // asm: 	.bss	DRONE_DISPATCH_P,1	;FLAG dispatching active???
 extern int DRONE_DISPATCH_P;
 // asm: 	.bss	SUSPEND_MODE,1		;ALL DRONES *MUST* CHECK EVERY FRAME
@@ -25,12 +26,5 @@ extern int DRONENUM;
 extern int SMOKE_COUNT;
 // asm: 	.bss	COCONUT_COUNT,1
 extern int COCONUT_COUNT;
-
-
-
-
-
-
-
 
 #endif /* DRONES_H */

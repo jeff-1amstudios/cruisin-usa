@@ -37,6 +37,21 @@ void INIT_SYSTEM(void);
 void LOAD_FIXED_PALETTES(void);
 void LOAD_STARTUP_PALS(void);
 
+extern int TEASE_COUNT;
+extern int ATTR_MODEL;
+extern int _ATTR_MODE;
+extern int LOADED;
+extern int FIXEDPAL;
+extern int ILLUM_PAL;
+extern int COPCARTAB[];
+extern int HOTRODTAB[];
+extern int TESTORTAB[];
+extern int JEEPTAB[];
+extern int VETTTAB[];
+extern int GTRUCKTABP[];
+extern int MISSILE_TAB[];
+extern int PSBUSTAB[];
+
 /* asm: TEASE_COUNT	pbss	TEASE_COUNT,1 */
 int TEASE_COUNT;
 /* asm: ATTR_MODEL	pbss	ATTR_MODEL,1 */

@@ -54,6 +54,31 @@ void WAIT_ACK_REAL(void);
 void UPPER_LIMIT_ERROR(void);
 void LOWER_LIMIT_ERROR(void);
 
+extern int MOTION_NOT_ON;
+extern int MOTION_STOP_HIT;
+extern int MOTION_RCV_TIKS;
+extern int MOTOFF_PROG[];
+extern int BABAID;
+extern int JJG[];
+extern const char *MM0;
+extern const char *MM1;
+extern const char *MM2;
+extern const char *MM3;
+extern const char *MM4;
+extern const char *MM5;
+extern const char *MM6;
+extern const char *MM7;
+extern const char *bbd;
+extern int THEPROGL[];
+extern int CME_MASK;
+extern int LATCHED_ERROR;
+extern int GALIL_STATUS_X;
+extern int GALIL_STATUS_Y;
+extern int GALIL_STATUS_Z;
+extern const char *PXC1;
+extern const char *PYC1;
+extern const char *PZC1;
+
 #define MIN_MOVE_DIST 200
 /* asm: MOTION_NOT_ON	.bss	MOTION_NOT_ON,1 */
 int MOTION_NOT_ON;
@@ -470,7 +495,17 @@ FFFD:
 /* asm: BABAID	.word	JJG */
 int *BABAID = JJG;
 /* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
-const char *JJG[] = { "UNKNOWN ERROR", "MAT NOT PLUGGED IN", "MAT STEPPED ON", "SAFETY BEAM PATH BROKEN", "SAFETY BEAM DETECTOR NOT RECEIVING", "SAFETY BEAM LIGHT NOT EMITTING", "FAIL SAFE SWITCH ENGAGED", "FAIL SAFE SWITCH NOT CONNECT PROPERLY" };
+int JJG[] = {
+    MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7,
+};
+const char *MM0 = "UNKNOWN ERROR";
+const char *MM1 = "MAT NOT PLUGGED IN";
+const char *MM2 = "MAT STEPPED ON";
+const char *MM3 = "SAFETY BEAM PATH BROKEN";
+const char *MM4 = "SAFETY BEAM DETECTOR NOT RECEIVING";
+const char *MM5 = "SAFETY BEAM LIGHT NOT EMITTING";
+const char *MM6 = "FAIL SAFE SWITCH ENGAGED";
+const char *MM7 = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
 const char *bbd = "MOTION BURNIN";
 
 /* *----------------------------------------------------------------------------

@@ -29,6 +29,16 @@ void PALXFER_DEL(void);
 void PAL_DELETE(void);
 void PAL_DIMMER(void);
 
+extern int PALRAM[];
+extern int RAWLOCS[];
+extern int PTTRAM[];
+extern int NUM_FIXED;
+extern int PALSXFER;
+extern int PALXFER_ACTIVE;
+extern int PALXFER_FREE;
+extern int PALXFER_AVAILABLE_P;
+extern int PALXFER_STR[];
+
 /* asm: PALRAM	.bss	PALRAM,PALNUM */
 int PALRAM[PALNUM];
 /* asm: RAWLOCS	.bss	RAWLOCS,PALNUM */

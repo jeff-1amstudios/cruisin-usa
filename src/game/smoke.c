@@ -33,6 +33,11 @@ void SKID_SPARK(void);
 void TOO_MANY_SPARKS(void);
 void OBJ_MOVE(void);
 
+extern int TIRE_SMOKE_COUNT;
+extern int SMOKEANI[];
+extern int SMOKE2ANI[];
+extern int SPARKANI[];
+
 /* asm: TIRE_SMOKE_COUNT	.bss	TIRE_SMOKE_COUNT,1 */
 int TIRE_SMOKE_COUNT;
 /* asm: SMOKEANI */

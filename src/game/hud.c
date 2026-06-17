@@ -32,6 +32,21 @@ void TACHOMETER_ANIMATE(void);
 void FILL_DITHER(void);
 void FILL_PLOT(void);
 
+extern int COUNTDOWN_BUF[];
+extern int MPH_BUFFER[];
+extern int _countdown;
+extern int _MPH;
+extern int SCORE;
+extern int POSITION;
+extern int MAXMPH_COUNT;
+extern int STOPBUFFER[];
+extern const char *YOURLOSTTXT;
+extern const char *OFFROADTXT;
+extern int OFFROADBUFF[];
+extern int MOVEIN_OFFSET;
+extern int TACHOMETER_PAL[];
+extern int GEARPAL;
+
 #define SECTION_COUNTER 0 //1 = TURN ON UL CRNR
 /* asm: COUNTDOWN_BUF	.bss	COUNTDOWN_BUF,2 */
 int COUNTDOWN_BUF[2];

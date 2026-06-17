@@ -3,6 +3,7 @@
 
 /* Generated from asm/INTRO.ASM. */
 
+// INTRO.ASM
 // asm: 	.bss	START_HIT,1
 extern int START_HIT;
 // asm: 	.bss	CHOSEN_VEHICLE,1	;WHEEL POSITION W/HYSTERISUS
@@ -42,15 +43,15 @@ extern int CHOOSENCAR;
 // asm: 	.bss	CAR_CHOICE_GOTTEN,1
 extern int CAR_CHOICE_GOTTEN;
 // asm: 	.bss	CAR_ARRAY,4
-extern int CAR_ARRAY[4];
+extern int CAR_ARRAY[];
 // asm: 	.bss	CAR1PAL,129
-extern int CAR1PAL[129];
+extern int CAR1PAL[];
 // asm: 	.bss	CAR2PAL,129
-extern int CAR2PAL[129];
+extern int CAR2PAL[];
 // asm: 	.bss	CAR3PAL,129
-extern int CAR3PAL[129];
+extern int CAR3PAL[];
 // asm: 	.bss	CAR4PAL,129
-extern int CAR4PAL[129];
+extern int CAR4PAL[];
 // asm: 	.bss	IS_HIDDEN,1
 extern int IS_HIDDEN;
 // asm: 	.bss	SPINCURR,1
@@ -69,12 +70,5 @@ extern int SAVEDMODE;
 extern int miniidle;
 // asm: 	.bss	DIRTY_SHARED,1
 extern int DIRTY_SHARED;
-
-
-
-
-
-
-
 
 #endif /* INTRO_H */

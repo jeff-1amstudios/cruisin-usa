@@ -17,5 +17,7 @@
  * Source module: asm/GALIL.ASM
  */
 
+extern int GALIL_RESPONSE[];
+
 /* asm: GALIL_RESPONSE	.bss	GALIL_RESPONSE,80 */
 int GALIL_RESPONSE[80];

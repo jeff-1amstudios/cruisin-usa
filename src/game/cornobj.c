@@ -6,6 +6,8 @@
  * Source module: asm/CORNOBJ.ASM
  */
 
+extern int _SECcorn[];
+
 /* asm: _SECcorn:		;(15779 lines, 98.62%) */
 /* asm: 	.word	0C16800h	;Src (Compressed) Addr */
 /* asm: 	.word	0BE9600h	;Dest Addr */

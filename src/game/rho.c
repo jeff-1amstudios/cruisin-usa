@@ -32,6 +32,12 @@ void RHO_ACTIVE_XSFER(void);
 void SEND_RHO_KILL(void);
 void DECODE_RHO_KILL(void);
 
+extern int B4HIT_TABLE[];
+extern int NOLONG_VEHICLES;
+extern int RHO_TABLE[];
+extern int RHOFLAG;
+extern int RHOPAL;
+
 #define RHO_WEAVER 1 //DRUNK ONCOMER
 /* *
 *YELL B4 HIT TO PLAYER

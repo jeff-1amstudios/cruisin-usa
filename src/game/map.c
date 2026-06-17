@@ -30,6 +30,21 @@ void TIME2STR(void);
 void CVTTIME(void);
 void RADAR_PLOT(void);
 
+extern float M3STDI;
+extern float M4STDI;
+extern float FORMULA1;
+extern int MAPPAL13;
+extern int MAPPAL24;
+extern int STOPWATCH;
+extern int STOPWATCH_CNTL;
+extern const char *COLON;
+extern int lap_buffer[];
+extern int tmp_buffer[];
+extern float MINFACT;
+extern float SECFACT;
+extern float HUNFACT;
+extern int THIS_MACHINE_AHEAD;
+
 /* *----------------------------------------------------------------------------
 *
 *
@@ -903,6 +918,7 @@ JAJA5:
 int STOPWATCH;
 /* asm: STOPWATCH_CNTL	.bss	STOPWATCH_CNTL,1 */
 int STOPWATCH_CNTL;
+const char *COLON = ":";
 /* *----------------------------------------------------------------------------
 *RETURNS
 *	AR2	POINTING TO LAP BUFFER

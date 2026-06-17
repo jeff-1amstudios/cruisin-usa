@@ -32,6 +32,16 @@ void COMM_IRQ(void);
 void DO_SLAVE_SYNC(void);
 void COMM_SLAVE(void);
 
+extern int COMM_MASTER_ERROR_CNT;
+extern int COMM_MASTER_TRANSES;
+extern int COMM_SLAVE_ERROR_CNT;
+extern int COMM_SLAVE_TRANSES;
+extern int COMM_SLAVE_NREADY;
+extern int COMMFLAG;
+extern int ONEFLAG;
+extern int TRANSMISSION_ACTIVE;
+extern int TRANSMISSION_DEAD;
+
 #define TIME_DELAY 18
 /* asm: COMM_MASTER_ERROR_CNT	fbss	COMM_MASTER_ERROR_CNT,1 */
 int COMM_MASTER_ERROR_CNT;

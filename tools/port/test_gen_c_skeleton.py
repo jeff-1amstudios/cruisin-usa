@@ -10,6 +10,7 @@ from gen_c_skeleton import (
     DefineEntry,
     LabelEntry,
     StorageVariable,
+    SymbolInfo,
     TypeOverride,
     collect_existing_macro_names,
     collect_source_label_names,
@@ -53,9 +54,9 @@ FUNC2:\tRETS
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        var1_idx = rendered.index("int VAR1;")
+        var1_idx = rendered.rindex("int VAR1;")
         func1_idx = rendered.index("void FUNC1(void)\n{")
-        var2_idx = rendered.index("int VAR2;")
+        var2_idx = rendered.rindex("int VAR2;")
         func2_idx = rendered.index("void FUNC2(void)\n{")
         self.assertLess(var1_idx, func1_idx)
         self.assertLess(func1_idx, var2_idx)
@@ -233,6 +234,19 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
         self.assertIn("int _SEChead2head[] = {\n    0x0C15000,\n    0x0BEFA00,\n};", rendered)
         self.assertNotIn("void _SEChead2head(void)", rendered)
 
+    def test_standalone_label_word_forward_declaration_matches_array_shape(self) -> None:
+        asm_source = """CONGRAT_SPEECH:\t.word\tGL_WOOLAUGH,GL_YEAH,GL_YES,GL_YOUDIDIT
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("extern int CONGRAT_SPEECH[];", rendered)
+        self.assertIn("int CONGRAT_SPEECH[] = {\n    GL_WOOLAUGH, GL_YEAH, GL_YES, GL_YOUDIDIT,\n};", rendered)
+        self.assertNotIn("extern int CONGRAT_SPEECH;", rendered)
+
     def test_single_symbol_word_renders_as_define(self) -> None:
         asm_source = """CREDITBUFFI\t.word\tCREDITBUFFER\n"""
 
@@ -296,7 +310,7 @@ LANES4\t.float\t-1728.0,-576.0,576.0,1728.0
         self.assertIn("float LANES[] = {\n    -576.0f, -576.0f, 576.0f, 576.0f,\n};", rendered)
         self.assertIn("float LANES4[] = {\n    -1728.0f, -576.0f, 576.0f, 1728.0f,\n};", rendered)
 
-    def test_string_label_table_collapses_unreferenced_children_to_literals(self) -> None:
+    def test_string_label_table_keeps_unreferenced_children(self) -> None:
         asm_source = """LEG_NAMES\t.word\tLEG1,LEG2
 LEG1\t.string\t"GOLDEN GATE PARK",0
 LEG2\t.string\t"SAN FRANCISCO",0
@@ -307,10 +321,9 @@ LEG2\t.string\t"SAN FRANCISCO",0
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn('const char *LEG_NAMES[] = { "GOLDEN GATE PARK", "SAN FRANCISCO" };', rendered)
-        self.assertNotIn("const char * *LEG_NAMES[]", rendered)
-        self.assertNotIn('const char *LEG1 = "GOLDEN GATE PARK";', rendered)
-        self.assertNotIn('const char *LEG2 = "SAN FRANCISCO";', rendered)
+        self.assertIn("int LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
+        self.assertIn('const char *LEG1 = "GOLDEN GATE PARK";', rendered)
+        self.assertIn('const char *LEG2 = "SAN FRANCISCO";', rendered)
 
     def test_string_label_table_keeps_children_when_directly_referenced(self) -> None:
         asm_source = """LEG_NAMES\t.word\tLEG1,LEG2
@@ -324,7 +337,7 @@ LEG2\t.string\t"SAN FRANCISCO",0
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("const char *LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
+        self.assertIn("int LEG_NAMES[] = {\n    LEG1, LEG2,\n};", rendered)
         self.assertIn('const char *LEG1 = "GOLDEN GATE PARK";', rendered)
         self.assertIn('const char *LEG2 = "SAN FRANCISCO";', rendered)
 
@@ -718,7 +731,7 @@ FUNC:\tRETS
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn('const char *TABLE[] = {\n    ONE, TWO,\n};', rendered)
+        self.assertIn('int TABLE[] = {\n    ONE, TWO,\n};', rendered)
         self.assertNotIn("void TABLE(void)", rendered)
         self.assertIn("void FUNC(void)", rendered)
 
@@ -794,7 +807,9 @@ LOOP
     def test_parse_type_overrides_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             overrides_path = Path(tmpdir) / "type-overrides.txt"
-            overrides_path.write_text("# comment\n-PB1\nBONUS8()\ntime=time_ROM\nvoid *SWTAB;\nunsigned short FLAGS[16];\n")
+            overrides_path.write_text(
+                "# comment\n-PB1\nBONUS8()\ntime=time_ROM\nvoid *SWTAB;\nunsigned short FLAGS[16];\nintptr_t GGPARK_LIST[];\n"
+            )
 
             parsed = parse_type_overrides_file(overrides_path)
 
@@ -805,6 +820,128 @@ LOOP
         self.assertIsNone(parsed["SWTAB"].array_expr)
         self.assertEqual(parsed["FLAGS"].c_type, "unsigned short")
         self.assertEqual(parsed["FLAGS"].array_expr, "16")
+        self.assertEqual(parsed["GGPARK_LIST"].c_type, "intptr_t")
+        self.assertEqual(parsed["GGPARK_LIST"].array_expr, "")
+
+    def test_variable_declaration_preserves_unsized_array_override(self) -> None:
+        self.assertEqual(variable_declaration("TABLE", "int", ""), "int TABLE[];")
+        self.assertEqual(variable_declaration("TABLE", "int", "", is_extern=True), "extern int TABLE[];")
+        self.assertEqual(variable_declaration("TABLE", "void (*)(void)", ""), "void (*TABLE[])(void);")
+
+    def test_uintptr_word_table_casts_function_entries(self) -> None:
+        asm_source = """INIT_STARTING:\tRETS
+ROAD_VIEW:\tRETS
+GGPARK_LIST\t.word\tINIT_STARTING,70,ROAD_VIEW
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "ATTRDRNE.ASM"
+            src_path.write_text(asm_source)
+            type_overrides = parse_type_overrides_file(Path("/dev/null"))
+            type_overrides["GGPARK_LIST"] = TypeOverride(name="GGPARK_LIST", c_type="uintptr_t", array_expr="")
+            rendered = render_module(src_path, {}, {}, None, type_overrides=type_overrides)
+
+        self.assertIn("uintptr_t GGPARK_LIST[] = {", rendered)
+        self.assertIn("    (uintptr_t)INIT_STARTING, 70, (uintptr_t)ROAD_VIEW,", rendered)
+
+    def test_uintptr_word_table_casts_cross_module_function_entries(self) -> None:
+        asm_source = """ROUTINE_TAB\t.word\t470h,RRSTART_ENGINE
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BACKGRND.ASM"
+            src_path.write_text(asm_source)
+            type_overrides = parse_type_overrides_file(Path("/dev/null"))
+            type_overrides["ROUTINE_TAB"] = TypeOverride(name="ROUTINE_TAB", c_type="uintptr_t", array_expr="")
+            rendered = render_module(
+                src_path,
+                {},
+                {},
+                None,
+                type_overrides=type_overrides,
+                global_symbol_table={
+                    "RRSTART_ENGINE": SymbolInfo(name="RRSTART_ENGINE", kind="function", module="RROAD"),
+                },
+            )
+
+        self.assertIn("uintptr_t ROUTINE_TAB[] = {", rendered)
+        self.assertIn("    0x470, (uintptr_t)RRSTART_ENGINE,", rendered)
+
+    def test_uintptr_word_table_casts_local_string_entries_with_address_of(self) -> None:
+        asm_source = """STRING_TAB\t.word\tLEG1
+LEG1\t.string\t"GOLDEN GATE PARK",0
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            type_overrides = parse_type_overrides_file(Path("/dev/null"))
+            type_overrides["STRING_TAB"] = TypeOverride(name="STRING_TAB", c_type="uintptr_t", array_expr="")
+            rendered = render_module(src_path, {}, {}, None, type_overrides=type_overrides)
+
+        self.assertIn("uintptr_t STRING_TAB = (uintptr_t)&LEG1;", rendered)
+        self.assertIn('const char *LEG1 = "GOLDEN GATE PARK";', rendered)
+
+    def test_uintptr_word_table_casts_cross_module_string_entries_with_address_of(self) -> None:
+        asm_source = """STRING_TAB\t.word\tLEG1
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            type_overrides = parse_type_overrides_file(Path("/dev/null"))
+            type_overrides["STRING_TAB"] = TypeOverride(name="STRING_TAB", c_type="uintptr_t", array_expr="")
+            rendered = render_module(
+                src_path,
+                {},
+                {},
+                None,
+                type_overrides=type_overrides,
+                global_symbol_table={
+                    "LEG1": SymbolInfo(name="LEG1", kind="variable", module="TEXT", c_type="const char *"),
+                },
+            )
+
+        self.assertIn("uintptr_t STRING_TAB = (uintptr_t)&LEG1;", rendered)
+
+    def test_uintptr_word_table_casts_model_alias_to_function(self) -> None:
+        asm_source = """BONUS_POSTLAUNCH\t.word\tBONUS_GGATE,BONUS_BEVHILLS
+BONUS_GGATE:
+BONUS_BEVHILLS:
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            type_overrides = parse_type_overrides_file(Path("/dev/null"))
+            type_overrides["BONUS_POSTLAUNCH"] = TypeOverride(name="BONUS_POSTLAUNCH", c_type="uintptr_t", array_expr="")
+            rendered = render_module(src_path, {}, {}, None, type_overrides=type_overrides)
+            symbol_table = collect_module_symbol_table(src_path, {}, type_overrides)
+
+        self.assertEqual(symbol_table["BONUS_GGATE"].kind, "define")
+        self.assertEqual(symbol_table["BONUS_GGATE"].expr, "BONUS_BEVHILLS")
+        self.assertEqual(symbol_table["BONUS_BEVHILLS"].kind, "function")
+        self.assertIn("uintptr_t BONUS_POSTLAUNCH[] = {", rendered)
+        self.assertIn("    (uintptr_t)BONUS_GGATE, (uintptr_t)BONUS_BEVHILLS,", rendered)
+
+    def test_render_module_emits_local_variable_forward_declarations(self) -> None:
+        asm_source = """VIEWLIST\t.word\tGGPARK_LIST,GGPARK_LIST
+GGPARK_LIST\t.word\t1,2,3
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "ATTRDRNE.ASM"
+            src_path.write_text(asm_source)
+            type_overrides = parse_type_overrides_file(Path("/dev/null"))
+            type_overrides["VIEWLIST"] = TypeOverride(name="VIEWLIST", c_type="uintptr_t *", array_expr="")
+            type_overrides["GGPARK_LIST"] = TypeOverride(name="GGPARK_LIST", c_type="uintptr_t", array_expr="")
+            rendered = render_module(src_path, {}, {}, None, type_overrides=type_overrides)
+
+        self.assertIn("extern uintptr_t *VIEWLIST[];", rendered)
+        self.assertIn("extern uintptr_t GGPARK_LIST[];", rendered)
+        self.assertIn("uintptr_t *VIEWLIST[] = {", rendered)
+        self.assertIn("uintptr_t GGPARK_LIST[] = {", rendered)
 
     def test_parse_render_overrides_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

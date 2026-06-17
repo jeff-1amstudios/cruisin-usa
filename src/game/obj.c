@@ -45,6 +45,21 @@ void ZSORTACT(void);
 void OBJ_MAKE(void);
 void OBJ_QMAKE(void);
 
+extern int OACTIVE;
+extern int OFREE;
+extern int IDLE_LIST;
+extern int OACTIVE_PRIORITY;
+extern int OLOW_PRIORITY;
+extern int OHIGH_PRIORITY;
+extern int OACTIVECNT;
+extern int OFREECNT;
+extern int OMAX_OBJECTS;
+extern int OBJSTR[];
+extern int COMM_DRONE_PTR;
+extern int PLYRTEMP;
+extern int ACTIVEHI1;
+extern int ACTIVEHI;
+
 /* asm: OACTIVE	.bss	OACTIVE,1 */
 int OACTIVE;
 /* asm: OFREE	.bss	OFREE,1 */

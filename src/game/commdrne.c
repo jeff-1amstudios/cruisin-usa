@@ -27,6 +27,9 @@ void COMM_DRONE(void);
 void COMM_DRONE_PTR_SORT(void);
 void OM_DRONE(void);
 
+extern float STARTUP_POS_TABLE[];
+extern int PLY2CAR;
+
 /* *----------------------------------------------------------------------------
 *Startup Position Table
 *

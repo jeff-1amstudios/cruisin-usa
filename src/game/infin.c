@@ -19,6 +19,24 @@ void INFINITY(void);
 void TRANS_PTS(void);
 void WATER_INFINITY(void);
 
+extern int CAMRADY;
+extern int HIGHEST_ROADY;
+extern int HIGHEST_ROADY_X;
+extern int VAR_ROAD_KFACTOR;
+extern int AMOUNT_CLIPPED;
+extern float FORMULA;
+extern float LOWVAL;
+extern float HIGHVAL;
+extern int LOIVAL;
+extern int HIGHIVAL;
+extern float INFPROJ;
+extern float INFVAL;
+extern int INFINITY_POINTS;
+extern int INFINPOINTS[];
+extern int BLUESKY[];
+extern int INFIN_CORRECT;
+extern float WATERPOS[];
+
 /* asm: CAMRADY	.bss	CAMRADY,1 */
 int CAMRADY;
 /* *----------------------------------------------------------------------------

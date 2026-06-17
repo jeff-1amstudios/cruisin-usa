@@ -24,6 +24,9 @@ void FLAMESORT(void);
 void GETCARBODY(void);
 void FIND_NEXT_OBJ(void);
 
+extern int FLAME_POS[];
+extern int FLAMEANI[];
+
 /* asm: FLAME_POS */
 /* asm: 	.word	180,87,-450		;Vette */
 /* asm: 	.word	130,105,-586		;Coope */

@@ -63,6 +63,16 @@ void INIT_ATTR_LEG(void);
 void ATTR_INIT_GAMELEG(void);
 void LOAD_ATTR_LEG(void);
 
+extern int ATTRWAVE;
+extern uintptr_t *VIEWLIST[];
+extern uintptr_t GGPARK_LIST[];
+extern uintptr_t BEVHILL_LIST[];
+extern uintptr_t GCANYON_LIST[];
+extern uintptr_t CHICAGO_LIST[];
+extern float ACCEL_RATE;
+extern float ZOOMACCEL;
+extern int ATTR_WAVETAB[];
+
 /* asm: ATTRWAVE	pbss	ATTRWAVE,1 */
 int ATTRWAVE;
 #define CUT_PAN (PDATA+1)
@@ -270,7 +280,7 @@ void GET_LIST_ADDR(void)
 /* asm: 	.word	BEVHILL_LIST */
 /* asm: 	.word	GCANYON_LIST */
 /* asm: 	.word	CHICAGO_LIST */
-intptr_t *VIEWLIST = {
+uintptr_t *VIEWLIST[] = {
     GGPARK_LIST,
     BEVHILL_LIST,
     GCANYON_LIST,
@@ -288,13 +298,13 @@ intptr_t *VIEWLIST = {
 /* asm: 	.word	INITVIEW1_VIEW,17FBh,SMOOTH_VIEW */
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
-intptr_t GGPARK_LIST = {
-    INIT_STARTING, 70, ROAD_VIEW,
-    INIT_LEAD, 80, LEAD_VIEW,
-    INIT_WATCH, 0x1214, 240, WATCH_VIEW,
-    CUT_TO_VIEW2, 0x1404, SMOOTH_VIEW,
-    INITVIEW1_VIEW, 0x17FB, SMOOTH_VIEW,
-    INIT_LEAD, 80, LEAD_VIEW,
+uintptr_t GGPARK_LIST[] = {
+    (uintptr_t)INIT_STARTING, 70, (uintptr_t)ROAD_VIEW,
+    (uintptr_t)INIT_LEAD, 80, (uintptr_t)LEAD_VIEW,
+    (uintptr_t)INIT_WATCH, 0x1214, 240, (uintptr_t)WATCH_VIEW,
+    (uintptr_t)CUT_TO_VIEW2, 0x1404, (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INITVIEW1_VIEW, 0x17FB, (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INIT_LEAD, 80, (uintptr_t)LEAD_VIEW,
     0, 0,
 };
 /* asm: BEVHILL_LIST */
@@ -303,11 +313,11 @@ intptr_t GGPARK_LIST = {
 /* asm: 	.word	INITVIEW1_VIEW,14DF3h,SMOOTH_VIEW */
 /* asm: 	.word	INIT_STARTING,100,ROAD_VIEW */
 /* asm: 	.word	0,0 */
-intptr_t BEVHILL_LIST = {
-    INIT_STARTING, 80, ROAD_VIEW,
-    CUT_TO_VIEW2, 0x14AFB, SMOOTH_VIEW,
-    INITVIEW1_VIEW, 0x14DF3, SMOOTH_VIEW,
-    INIT_STARTING, 100, ROAD_VIEW,
+uintptr_t BEVHILL_LIST[] = {
+    (uintptr_t)INIT_STARTING, 80, (uintptr_t)ROAD_VIEW,
+    (uintptr_t)CUT_TO_VIEW2, 0x14AFB, (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INITVIEW1_VIEW, 0x14DF3, (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INIT_STARTING, 100, (uintptr_t)ROAD_VIEW,
     0, 0,
 };
 /* asm: GCANYON_LIST */
@@ -318,13 +328,13 @@ intptr_t BEVHILL_LIST = {
 /* asm: 	.word	INIT_WATCH,2EF00h,240,WATCH_VIEW */
 /* asm: 	.word	CUT_TO_VIEW2,30000h,SMOOTH_VIEW */
 /* asm: 	.word	0,0 */
-intptr_t GCANYON_LIST = {
-    INIT_STARTING, 70, ROAD_VIEW,
-    INIT_WATCH, 0x2E20A, 220, WATCH_VIEW,
-    CUT_TO_VIEW2, 0x2E800, SMOOTH_VIEW,
-    INITVIEW1_VIEW, 0x2EC00, SMOOTH_VIEW,
-    INIT_WATCH, 0x2EF00, 240, WATCH_VIEW,
-    CUT_TO_VIEW2, 0x30000, SMOOTH_VIEW,
+uintptr_t GCANYON_LIST[] = {
+    (uintptr_t)INIT_STARTING, 70, (uintptr_t)ROAD_VIEW,
+    (uintptr_t)INIT_WATCH, 0x2E20A, 220, (uintptr_t)WATCH_VIEW,
+    (uintptr_t)CUT_TO_VIEW2, 0x2E800, (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INITVIEW1_VIEW, 0x2EC00, (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INIT_WATCH, 0x2EF00, 240, (uintptr_t)WATCH_VIEW,
+    (uintptr_t)CUT_TO_VIEW2, 0x30000, (uintptr_t)SMOOTH_VIEW,
     0, 0,
 };
 /* asm: CHICAGO_LIST */
@@ -335,13 +345,13 @@ intptr_t GCANYON_LIST = {
 /* asm: 	.word	INIT_WATCH,3C5F5h,240,WATCH_VIEW */
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
-intptr_t CHICAGO_LIST = {
-    INIT_STARTING, 80, ROAD_VIEW,
-    INIT_REVERS_CUP, 60, REV_ROAD_VIEW,
-    CUT_TO_VIEW2, 0x3AA0E, SMOOTH_VIEW,
-    INITVIEW1_VIEW, 0x3C00A, SMOOTH_VIEW,
-    INIT_WATCH, 0x3C5F5, 240, WATCH_VIEW,
-    INIT_LEAD, 80, LEAD_VIEW,
+uintptr_t CHICAGO_LIST[] = {
+    (uintptr_t)INIT_STARTING, 80, (uintptr_t)ROAD_VIEW,
+    (uintptr_t)INIT_REVERS_CUP, 60, (uintptr_t)REV_ROAD_VIEW,
+    (uintptr_t)CUT_TO_VIEW2, 0x3AA0E, (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INITVIEW1_VIEW, 0x3C00A, (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INIT_WATCH, 0x3C5F5, 240, (uintptr_t)WATCH_VIEW,
+    (uintptr_t)INIT_LEAD, 80, (uintptr_t)LEAD_VIEW,
     0, 0,
 };
 

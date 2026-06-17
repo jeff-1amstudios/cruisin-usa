@@ -6,6 +6,27 @@
  * Source module: asm/CKSUM.ASM
  */
 
+extern int CHECKSUM_C00;
+extern int CHECKSUM_C01;
+extern int CHECKSUM_C02;
+extern int CHECKSUM_C03;
+extern int CHECKSUM_C80;
+extern int CHECKSUM_C81;
+extern int CHECKSUM_C82;
+extern int CHECKSUM_C83;
+extern int CHECKSUM_D00;
+extern int CHECKSUM_D01;
+extern int CHECKSUM_D02;
+extern int CHECKSUM_D03;
+extern int CHECKSUM_D80;
+extern int CHECKSUM_D81;
+extern int CHECKSUM_D82;
+extern int CHECKSUM_D83;
+extern int CHECKSUM_E00;
+extern int CHECKSUM_E01;
+extern int CHECKSUM_E02;
+extern int CHECKSUM_E03;
+
 /* asm: CHECKSUM_C00	.word	05148h */
 int CHECKSUM_C00 = 0x05148;
 /* asm: CHECKSUM_C01	.word	04894h */

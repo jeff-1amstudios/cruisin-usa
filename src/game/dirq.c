@@ -19,6 +19,16 @@
 
 void DIRQ(void);
 
+extern int ASHADOW;
+extern int LIGHTIY;
+extern int transvectorYI;
+extern int tmpmatY;
+extern float SCRNHXI;
+extern float SCRNHYI;
+extern int HIGH_CLIP_LEV8;
+extern int VECTORAYI;
+extern int POSTERMATRIX2D[];
+
 /* *----------------------------------------------------------------------------
  */
 #define POSTERCLIP 300

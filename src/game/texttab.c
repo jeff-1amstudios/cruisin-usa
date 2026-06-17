@@ -9,6 +9,14 @@
  * Source module: asm/TEXTTAB.ASM
  */
 
+extern int FONTDIGLG;
+extern int FONTDIGSM;
+extern int FONTN43TAB;
+extern int FONT40TABI;
+extern int FONT40_TAB;
+extern int FONT18_TAB;
+extern int OGSMFONT_TAB;
+
 /* 	;size = 22
  */
 /* asm: FONTDIGLG: */

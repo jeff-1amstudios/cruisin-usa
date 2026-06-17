@@ -22,6 +22,9 @@ void COMPUTE_FREEGAMES_PRCNT(void);
 void COMPUTE_GAMETIME(void);
 void AUDIT_DISPLAY(void);
 
+extern int AUDIT_LIST;
+extern int OLDDIP;
+
 #define AUD_ROUTINE 0x5A
 #define AUD_ROUTINEH 0x5A0000
 

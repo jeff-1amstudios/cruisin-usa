@@ -3,14 +3,8 @@
 
 /* Generated from asm/SMOKE.ASM. */
 
+// SMOKE.ASM
 // asm: 	.bss	TIRE_SMOKE_COUNT,1
 extern int TIRE_SMOKE_COUNT;
-
-
-
-
-
-
-
 
 #endif /* SMOKE_H */

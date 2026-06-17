@@ -23,6 +23,12 @@ void SPIN_CAR(void);
 void TEXTTOGET(void);
 void DEMOTHANKS(void);
 
+extern int SPIN_CARTAB[];
+extern const char *DT1;
+extern const char *DT2;
+extern const char *DT3;
+extern uintptr_t DEMOTHANKS_LIST[];
+
 #define NOVANITY 1
 /* *----------------------------------------------------------------------------
  */
@@ -323,10 +329,13 @@ TXTLPB:
     UNIMPL();
 }
 
-tDEMO_THANKS DEMOTHANKS_LIST[] = {
-    { 140, "THANK YOU FOR PLAYING" },
-    { 180, "CRUISIN USA" },
-    { 220, "SNEAK PREVIEW" },
+const char *DT1 = "THANK YOU FOR PLAYING";
+const char *DT2 = "CRUISIN USA";
+const char *DT3 = "SNEAK PREVIEW";
+uintptr_t DEMOTHANKS_LIST[] = {
+    140, (uintptr_t)&DT1,
+    180, (uintptr_t)&DT2,
+    220, (uintptr_t)&DT3,
 };
 
 void DEMOTHANKS(void)

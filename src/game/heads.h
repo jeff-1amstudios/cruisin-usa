@@ -3,16 +3,10 @@
 
 /* Generated from asm/HEADS.ASM. */
 
+// HEADS.ASM
 // asm: 	.bss	YINCREMENT,1
 extern int YINCREMENT;
 // asm: 	.bss	FONTUSED,1
 extern int FONTUSED;
-
-
-
-
-
-
-
 
 #endif /* HEADS_H */

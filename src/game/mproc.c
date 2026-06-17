@@ -27,6 +27,14 @@ void PRC_FINDNEXT(void);
 void PRC_FIND(void);
 void PRC_FOLLOW(void);
 
+extern int NUM_PROCS_ACTIVE;
+extern int NUM_PROCS_IDLE;
+extern int CURRENT_PROC;
+extern int OLDSP;
+extern int PACTIVE;
+extern int PFREE;
+extern int PRCSTR[];
+
 #if DEBUG
 /* asm: NUM_PROCS_ACTIVE	.bss	NUM_PROCS_ACTIVE,1 */
 int NUM_PROCS_ACTIVE;
