@@ -22,6 +22,15 @@ extern int WHEELMAX;
 extern int WHEELVEL;
 extern int DAMPPWR;
 
+/*
+*----------------------------------------------------------------------------
+*FORCE FEEDBACK WHEEL CODE
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 #define WHEEL_KILL 0
 #define WHEEL 0x0995000
 /* asm: POSE	.bss	POSE,1 */
@@ -41,14 +50,15 @@ int WHEELVEL;
 /* asm: DAMPPWR	.bss	DAMPPWR,1 */
 int DAMPPWR;
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *WHEEL HANDLER
 *
 *PARAMETERS
 *	WHEELPWR	FORCE
 *	WHEELPOS	POSITION DESIRED
 *
- */
+*/
 void NUWHEEL(void)
 {
     // asm 0000AFF2: 	LDI	@_MODE,R0
@@ -136,7 +146,10 @@ NUWHL:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *THIS IS THE ONLY ROUTINE WHICH WRITES TO THE WHEEL
 *
 *
@@ -144,7 +157,7 @@ NUWHL:
 *	R0	BYTE TO SEND TO WHEEL
 *
 *
- */
+*/
 void TOWHEEL(void)
 {
     // asm 0000B031: 	PUSH	DP

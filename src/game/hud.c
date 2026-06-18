@@ -55,6 +55,15 @@ extern int MOVEIN_OFFSET;
 extern int TACHOMETER_PAL[];
 extern int GEARPAL;
 
+/*
+*----------------------------------------------------------------------------
+*HEADS UP DISPLAY ROUTINES
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 #define SECTION_COUNTER 0 //1 = TURN ON UL CRNR
 /* asm: COUNTDOWN_BUF	.bss	COUNTDOWN_BUF,2 */
 int COUNTDOWN_BUF[2];
@@ -78,8 +87,7 @@ const char YOURLOSTTXT[] = "YOU ARE LOST";
 const char OFFROADTXT[] = "OFFROAD";
 /* asm: OFFROADBUFF	.bss	OFFROADBUFF,2 */
 int OFFROADBUFF[2];
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 /* asm: MOVEIN_OFFSET	.bss	MOVEIN_OFFSET,1 */
 int MOVEIN_OFFSET;
 
@@ -109,8 +117,9 @@ M2L:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MOVEOUT_HUD_EQUIP(void)
 {
     // asm 00009D20: 	LDI	25-1,AR5
@@ -128,13 +137,16 @@ void MOVEOUT_HUD_EQUIP(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *HEADS UP DISPLAY ROUTINE
 *CALL FROM MAIN LOOP
 *
 *SHOULD ONLY BE CALLED DURING GAME PLAY
 *
- */
+*/
 void HUD(void)
 {
     // asm 00009D2A: 	CALL	TACHOMETER_ANIMATE
@@ -438,13 +450,16 @@ ISKPH:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *ALLOCATE PALETTES FOR A SECTION
 *
 *PARAMETERS
 *	AR2	PTR TO SECTION HEADER
 *
- */
+*/
 void HARDalloc_section(void)
 {
     // asm 00009E21: 	LDI	*AR2++,AR6
@@ -460,14 +475,17 @@ void HARDalloc_section(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *DEALLOCATE PALETTES USED FOR A SECTION
 *
 *
 *PARAMETERS
 *	AR2	SECTION POINTER
 *
- */
+*/
 void dealloc_section(void)
 {
     // asm 00009E29: 	PUSH	AR4
@@ -489,11 +507,12 @@ void dealloc_section(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: TACHOMETER_PAL	.bss	TACHOMETER_PAL,32 */
 int TACHOMETER_PAL[32];
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void TACHOMETER_ANIMATE(void)
 {
     // asm 00009E4D: 	LDL	TACH_GRADIENT,AR0
@@ -557,8 +576,10 @@ LP89:
 /* asm: .word	0 */
 /* asm: RGB	0,255,255 */
 int GEARPAL;
+// *----------------------------------------------------------------------------
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	R0	X POS
@@ -567,7 +588,7 @@ int GEARPAL;
 *	R3	Y WIDTH
 *
 *
- */
+*/
 void FILL_DITHER(void)
 {
     // asm 00009E84: 	PUSH	R0

@@ -56,13 +56,22 @@ extern int VERIFY_ADJUSTMENTS_ACCURACYTAB;
 extern int DEFAULT_TABLE;
 extern int DEFAULT_TABLE_TOTAL;
 
-/* *----------------------------------------------------------------------------
- */
+/*
+*----------------------------------------------------------------------------
+*CMOS ROUTINES
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *DECREMENT HIGH SCORE RESET COUNTER
 *
- */
+*/
 void HSTDEC(void)
 {
     // asm 00009962: 	READAUD	ADJ_ACTUALHSTDRESET
@@ -75,8 +84,9 @@ void HSTDEC(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void CMOS_ON_C(void)
 {
     // asm 0000996A: 	PUSH	DP
@@ -130,7 +140,10 @@ void CMOS_WPOFF_C(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *VALIDATE_CMOS
 *
 *THIS ROUTINE VERIFIES THAT THE CMOS WE ARE USING
@@ -138,7 +151,7 @@ void CMOS_WPOFF_C(void)
 *CALL ON STARTUP
 *
 *
- */
+*/
 void VALIDATE_CMOS(void)
 {
     // asm 00009987: 	READAUD	AUD_PCREDITS
@@ -163,12 +176,15 @@ void VALIDATE_CMOS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *RESET_BOOKKEEPING
 *
 *	RESET THE BOOKKEEPING CMOS PAGE (GENERATE THE NEW CHECKSUM)
 *
- */
+*/
 void RESET_BOOKKEEPING(void)
 {
     // asm 0000999D: 	PUSH	R0
@@ -191,6 +207,8 @@ RBLP:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESET_BOOKKEEPING", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 /* asm: VERIFY_ADJUSTMENTS_ACCURACYTAB */
 /* asm: VADJTAB	0,81,0		;ADJ_COINMODE */
@@ -241,8 +259,7 @@ RBLP:
 /* asm: VADJTAB	10,50,30	;ADJ_MAX_CREDITS */
 int VERIFY_ADJUSTMENTS_ACCURACYTAB;
 
-/* *
- */
+// *
 void VERIFY_ADJUSTMENTS_ACCURACY(void)
 {
     // asm 000099AC: 	PUSH	R0
@@ -286,8 +303,9 @@ NORST:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void RESET_ADJUSTMENTS(void)
 {
     // asm 000099CE: 	PUSH	R0
@@ -346,13 +364,16 @@ VAALP2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GENERATE CHECKSUM FOR THE ADJUSTMENTS
 *
 *RETURNS
 *	R0	ADJUSTMENT CHECKSUM
 *
- */
+*/
 void CHECKSUMGEN_ADJ(void)
 {
     // asm 000099F5: 	PUSH	R1
@@ -376,7 +397,42 @@ VAALP3:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+;*----------------------------------------------------------------------------
+;*GENERATE CHECKSUM FOR THE AUDITS
+;*
+;*RETURNS
+;*	R0	ADJUSTMENT CHECKSUM
+;*
+;CHECKSUMGEN_AUD:
+;	PUSH	R0
+;	PUSH	R1
+;	PUSH	AR2
+;	PUSH	AR5
+;
+;	LDI	AUD_COIN1,AR5
+;	CLRI	R1
+;VAALP4	LDI	AR5,AR2
+;	CALL	AUDIT_READ	;R0 = ADJUSTMENT VALUE
+;	ADDI	R0,R1
+;
+;	INC	AR5
+;	CMPI	NUM_AUDITS-MAX_ADJUSTMENTS,AR5
+;	BLT	VAALP4
+;
+;	LDI	R1,R0
+;	POP	AR5
+;	POP	AR2
+;	POP	R1
+;	POP	R0
+;	RETS
+;*----------------------------------------------------------------------------
+*/
+
+/*
+*----------------------------------------------------------------------------
 *void	audit_inc(int index)
 *
 *PARAMETERS
@@ -384,7 +440,7 @@ VAALP3:
 *RETURNS
 *	R0	AUDIT VALUE
 *
- */
+*/
 void AUDIT_INC(void)
 {
     // asm 00009A05: 	LS	2,AR2
@@ -399,7 +455,10 @@ void AUDIT_INC(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *void	audit_add(int index)
 *
 *PARAMETERS
@@ -408,7 +467,7 @@ void AUDIT_INC(void)
 *RETURNS
 *	R0	AUDIT VALUE
 *
- */
+*/
 void AUDIT_ADD(void)
 {
     // asm 00009A0D: 	LS	2,AR2
@@ -422,7 +481,10 @@ void AUDIT_ADD(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *AUDIT_READ
 *
 *PARAMETERS
@@ -430,7 +492,7 @@ void AUDIT_ADD(void)
 *RETURNS
 *	R0	AUDIT VALUE
 *
- */
+*/
 void AUDIT_READ(void)
 {
     // asm 00009A14: 	LS	2,AR2
@@ -442,7 +504,10 @@ void AUDIT_READ(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
@@ -451,7 +516,7 @@ void AUDIT_READ(void)
 *	R2	VALUE
 *RETURNS
 *	R0	AUDIT VALUE
- */
+*/
 void ADJUSTMENT_WRITE(void)
 {
     // asm 00009A19: 	CALL	AUDIT_WRITE_ADJ
@@ -464,7 +529,10 @@ void ADJUSTMENT_WRITE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *AUDIT_WRITE
 *
 *PARAMETERS
@@ -473,7 +541,7 @@ void ADJUSTMENT_WRITE(void)
 *RETURNS
 *	R0	AUDIT VALUE
 *
- */
+*/
 void AUDIT_WRITE(void)
 {
 #if DEBUG
@@ -496,7 +564,34 @@ void AUDIT_WRITE_ADJ(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*
+*NOTE!!!:	MODIFICATIONS TO _rd_cw,_wr_cw,_rd_cwR,_wr_cwR
+*NOTE!!!:	MODIFICATIONS TO _rd_cw,_wr_cw,_rd_cwR,_wr_cwR
+*NOTE!!!:	MODIFICATIONS TO _rd_cw,_wr_cw,_rd_cwR,_wr_cwR
+*
+*
+*THE REGISTER RULES ARE:
+*
+*	AR2 is incremented to next entry in CMOS
+*	R0  holds RETURN VALUE
+*
+*	ALL OTHER REGS ARE PRESERVED!!!
+*	ALL OTHER REGS ARE PRESERVED!!!
+*	ALL OTHER REGS ARE PRESERVED!!!
+*
+*
+*	These are the basic pieces for CMOS I/O.  No other routines
+*	should directly access CMOS.
+*
+*----------------------------------------------------------------------------
+*/
+
+/*
+*----------------------------------------------------------------------------
 *int	rd_cw(int addr);
 *READ CMOS WORD
 *
@@ -505,7 +600,7 @@ void AUDIT_WRITE_ADJ(void)
 *RETURNS
 *	R0	WORD
 *	AR2	INCREMENTED TO NEXT ENTRY IN CMOS
- */
+*/
 void _rd_cw(void)
 {
     // asm 00009A24: 	PUSH	R1
@@ -532,7 +627,10 @@ void _rd_cw(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *void	wr_cw(int addr, int value);
 *WRITE CMOS WORD
 *
@@ -542,7 +640,7 @@ void _rd_cw(void)
 *RETURNS
 *	AR2	INCREMENTED TO NEXT ENTRY IN CMOS
 *
- */
+*/
 void _wr_cw(void)
 {
     // asm 00009A38: 	PUSH	R1
@@ -568,7 +666,10 @@ void _wr_cw(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *int	rd_cmR(int addr);
 *READ CMOS WORD REVERSED  (MOTOROLA STYLE)
 *
@@ -578,7 +679,7 @@ void _wr_cw(void)
 *	R0	WORD
 *	AR2	INCREMENTED TO NEXT ENTRY IN CMOS
 *
- */
+*/
 void _rd_cwR(void)
 {
     // asm 00009A4B: 	PUSH	R1
@@ -605,7 +706,10 @@ void _rd_cwR(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *void	wr_cmR(int addr, int value);
 *WRITE CMOS WORD REVERSED
 *
@@ -615,7 +719,7 @@ void _rd_cwR(void)
 *RETURNS
 *	AR2	INCREMENTED TO NEXT ENTRY IN CMOS
 *
- */
+*/
 void _wr_cwR(void)
 {
     // asm 00009A5F: 	PUSH	R1
@@ -648,8 +752,9 @@ void _wr_cwR(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 #define DEFAULT_TABLE_SIZE 2
 /* asm: DEFAULT_TABLE: */
 /* asm: TABLEENT	'T','V','G',2,01,3 */
@@ -677,7 +782,8 @@ int DEFAULT_TABLE;
 int DEFAULT_TABLE_TOTAL;
 #define NUM_TABLES 14
 
-/* *INIT_LASTHS_TABLE
+/*
+*INIT_LASTHS_TABLE
 *CHECK_LASTHS
 *----------------------------------------------------------------------------
 *Initialize the LAST HS SET CMOS table
@@ -686,7 +792,7 @@ int DEFAULT_TABLE_TOTAL;
 *by the last player.
 *There is one byte per Race location.
 * -1 = not set by last player. 0-9 = Position in this table for that race
- */
+*/
 void INIT_LASTHS_TABLE(void)
 {
     // asm 00009AA2: 	LDI	NUM_TABLES+1,R6
@@ -702,10 +808,13 @@ void INIT_LASTHS_TABLE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *	R6 = RACE NUMBER
 *	R7 = ENTRY NUMBER
- */
+*/
 void UPDATE_LASTHS(void)
 {
     // asm 00009AAA: 	PUSH	AR2
@@ -731,6 +840,15 @@ void UPDATE_LASTHS(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*	R1 = RACE NUMBER
+*
+*Returns R0 = position in table of the last player that played. -1 = not in table
+*/
+
 void CHECK_LASTHS(void)
 {
     // asm 00009ABD: 	LDI	NUM_TABLES+1,R6
@@ -743,6 +861,8 @@ void CHECK_LASTHS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_LASTHS", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void INIT_HSTD_TABLES(void)
 {
@@ -767,6 +887,8 @@ void INIT_HSTD_TABLES(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_HSTD_TABLES", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void VALIDATE_HSTD_TABLES(void)
 {
@@ -826,7 +948,10 @@ void RESETALL(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	R6	RACE NUMBER
@@ -835,7 +960,7 @@ void RESETALL(void)
 *RETURNS
 *	AR2	ADDRESS
 *
- */
+*/
 void GET_TABLE_ADDR(void)
 {
     // asm 00009AFD: 	PUSH	R6
@@ -852,7 +977,10 @@ void GET_TABLE_ADDR(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *WRITE ENTRY IN TABLE
 *
 *PARAMETER
@@ -862,7 +990,7 @@ void GET_TABLE_ADDR(void)
 *	(AR2 INCREMENTED TO THE NEXT ENTRY)
 *
 *
- */
+*/
 void TABLE_ENTRY_WRITE(void)
 {
     // asm 00009B07: 	PUSH	R0
@@ -930,7 +1058,10 @@ TEWL1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *READ A TABLE ENTRY
 *
 *
@@ -944,7 +1075,7 @@ TEWL1:
 *	R4	POSITION
 *	(AR2 INCREMENTED TO THE NEXT ENTRY)
 *
- */
+*/
 void TABLE_ENTRY_READ(void)
 {
     // asm 00009B31: 	CALL	_rd_cw
@@ -969,7 +1100,10 @@ void TABLE_ENTRY_READ(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *CHECK_TABLE
 *
 *THIS ROUTINE CHECKS THE SPECIFIED TABLE TO SEE WHETHER OR NOT
@@ -982,7 +1116,7 @@ void TABLE_ENTRY_READ(void)
 *	R0	{-1}     = NO, MAY NOT ENTER
 *	R0	{0...9}  = INDEX TO ENTER TABLE
 *
- */
+*/
 void CHECK_RACE_TABLE(void)
 {
     // asm 00009B43: 	PUSH	R0
@@ -1007,7 +1141,10 @@ INSERT_HERE:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *PARAMETERS
@@ -1021,7 +1158,7 @@ INSERT_HERE:
 *
 *
 *
- */
+*/
 void INSERT_TABLE_ENTRY(void)
 {
     // asm 00009B53: 	PUSH	R0

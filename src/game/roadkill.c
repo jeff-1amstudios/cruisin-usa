@@ -83,6 +83,7 @@ extern int BUG_ANI[];
 /* asm: 	.float	-200,200			;SOON TO BE A COW */
 /* asm: 	.word	deerc1,EXP3,DEER_PARTS */
 /* asm: 	.float	-400,400			;DEER */
+/* asm: 	 */
 int ROADKILL_TAB[] = {
     deerc1, EXP3, COW_PARTS,
     -200, 200, // SOON TO BE A COW
@@ -91,6 +92,15 @@ int ROADKILL_TAB[] = {
 };
 /* asm: ROADKILLXZ	.bss	ROADKILLXZ,2 */
 int ROADKILLXZ[2];
+/*
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*This checks collisions between the Player and the roadkill. This is needed
+*because the roadkill are to wide to be covered completely by the POINT
+*collision routine.
+*No special list is needed. This routine simply searches for the ID's. Seeing
+*it is only checking agianst the player the overhead is nominal.
+*/
 
 void PLYRROADKILL(void)
 {
@@ -117,10 +127,11 @@ PLYRKX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *AR0	= CAR OBJECT TO CHECK
 *AR1	= ROADKILL OBJECT
- */
+*/
 void CHECK_COLLISION(void)
 {
     // asm 00006957: 	LDI	*+AR1(OID),R0
@@ -145,11 +156,12 @@ CCOLLX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *AR0	= CAR OBJECT TO CHECK
 *AR1	= ROADKILL OBJECT
 *R4	= OFFSET
- */
+*/
 void CHECK_OFFSET(void)
 {
     // asm 00006968: 	PUSH	AR3
@@ -187,7 +199,8 @@ COFFX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *----------------------------------------------------------------------------
 *
 *PARAMETERS
@@ -198,7 +211,7 @@ COFFX:
 *	NC	NOT A FLYER
 *
 *
- */
+*/
 void ROADKILL_FLYERP(void)
 {
     // asm 00006984: 	PUSH	R0
@@ -290,12 +303,17 @@ PKQ:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *INPUT	AR1 = OBJECT
 *
 *PARAMTERS
 *
- */
+*/
 void ROADKILL_SETKILL(void)
 {
     // asm 000069C2: 	PUSH	AR0
@@ -320,6 +338,18 @@ NNWAY:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADKILL_SETKILL", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*INPUT
+*	R1 = hight off ground
+*
+*OUTPUT
+*	C = 0,no ground under object
+*	C = 1,Ground under object
+*/
 
 void OBJ_MOVE_GROUND(void)
 {
@@ -353,11 +383,12 @@ OMGX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *Sets ORADY, OMATRIX, and AR0 to 10 tracks down the road
 *
 *
- */
+*/
 void GET_ROADKILL_TRACK(void)
 {
     // asm 000069EC: 	LDI	@PLYCBLK,AR2
@@ -387,6 +418,13 @@ OUT_OF_TRACK:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*INPUT		R2= PID to count
+*RETURNS	R0= number of active procs
+*Trashes AR0,R1
+*/
+
 void PROC_COUNT(void)
 {
     // asm 00006A01: 	LDI	0,R0
@@ -406,12 +444,13 @@ PC1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 * COW_SPAWNER_PROC	PROC
 *This PROC has a COW
 *	CREATE	COW_SPAWNER_PROC,SPAWNER_C
 *
- */
+*/
 void COW_SPAWNER_PROC(void)
 {
     // asm 00006A0C: 	READADJ	ADJ_ROADKILL
@@ -448,11 +487,12 @@ CSPX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 * COW_PROC	PROC
 *Maintains a COW
 *	CREATE	COW_PROC,RDDEBRIS_C|TSC_ROADKILL|TSC_COW_S
- */
+*/
 #define LOOP_COUNT PDATA
 #define TOTAL_FRAMES (PDATA+1)
 
@@ -495,16 +535,18 @@ COW_DIE:
 
 /* asm: DEERANI */
 /* asm: 	.word	edeer,edeer1,edeer2,edeer3,edeer4,edeer5,-1 */
+/* asm: 	 */
 int DEERANI[] = {
     edeer, edeer1, edeer2, edeer3, edeer4, edeer5, -1,
 };
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 * DEER_SPAWNER_PROC	PROC
 *Maintains several DEER animations
 *	CREATE	DEER_SPAWNER_PROC,SPAWNER_C
 *
- */
+*/
 void DEER_SPAWNER_PROC(void)
 {
     // asm 00006A48: 	READADJ	ADJ_ROADKILL
@@ -533,6 +575,13 @@ DSPX:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+* DEER_PROC	PROC
+*Maintains several DEER animations
+*	CREATE	DEER_PROC,RDDEBRIS_C|TSC_ROADKILL|TSC_DEER_S
+*/
+
 void DEER_PROC(void)
 {
     // asm 00006A5F: 	FLOAT	219,R4			;Hight of a deer
@@ -553,6 +602,13 @@ DEER_DIE:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEER_PROC", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+* INIT_DEER
+*INPUT R4 = hight to place off ground
+*Creates and maintains a DEER animation
+*/
 
 void INIT_DEER(void)
 {
@@ -608,11 +664,13 @@ INIT_DEERX:
 }
 
 /* asm: SPINSPEEDF	.float	0.0002 */
+/* asm: 	 */
 float SPINSPEEDF = 0.0002f;
 /* asm: COW_PARTS */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0,-1 */
+/* asm: 	 */
 int COW_PARTS[] = {
     deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
     deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
@@ -623,6 +681,7 @@ int COW_PARTS[] = {
 /* asm: 	.word	deerc4,0,antler,0,antler,0,dheada,0 */
 /* asm: 	.word	dheada,1,dheada,1,deerc1,1,deerc1,1,deerc2,0 */
 /* asm: 	.word	deerc2,0,deerc3,0,deerc4,0,-1 */
+/* asm: 	 */
 int DEER_PARTS[] = {
     deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0,
     deerc4, 0, antler, 0, antler, 0, dheada, 0,
@@ -715,6 +774,17 @@ void MAKE_NOCOLL(void)
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*DEER_BLOOD_PROC	PROC
+*
+*INPUT
+*	AR4	= THE DEER
+*	AR5	= CARBLK THAT HIT THE DEER
+*Creates and maintains a single blood animation
+*	CREATEC	DEER_BLOOD_PROC,UTIL_C
+*/
+
 /* asm: DEERBLOOD_ANI	.word	adblud1,adblud2,adblud3,adblud4,adblud5,adblud6,-1 */
 int DEERBLOOD_ANI[] = {
     adblud1, adblud2, adblud3, adblud4, adblud5, adblud6, -1,
@@ -766,9 +836,10 @@ DBP_DIE:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *CALLABLE FROM COLLA
- */
+*/
 void FLYING_PARTS(void)
 {
     // asm 00006AFE: 	CALL	PUSHALL
@@ -780,6 +851,16 @@ void FLYING_PARTS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYING_PARTS", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*
+*FLY PARTS			;YES THIS WAS RIPPED OF FROM COLLA
+*	AR5	POINTS TO CAR OBJECT
+*	AR4	POINTS TO OBJECT HIT
+*This routine is needed to insure that the parts do fly
+*When I just simply added them the would not collide with the cars if they were going fast
+*/
 
 void FLY_PARTS(void)
 {
@@ -852,6 +933,7 @@ FLY_PARTSX:
 /* asm: GEESEANI: */
 /* asm: 	.word	geese1,geeseb,geesec,geesed */
 /* asm: 	.word	geesee,geesef,geeseg,geeseh,-1 */
+/* asm: 	 */
 int GEESEANI[] = {
     geese1, geeseb, geesec, geesed,
     geesee, geesef, geeseg, geeseh, -1,
@@ -865,6 +947,7 @@ int GEESEANI[] = {
 /* asm: 	.float	-0.13 */
 /* asm: 	.word	250,1 */
 /* asm: 	.float	-0.13 */
+/* asm: 	 */
 int GEESE_DIR[] = {
     250, 1,
     0,
@@ -875,15 +958,13 @@ int GEESE_DIR[] = {
     250, 1,
     -0.13,
 };
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 #define SPEED PDATA
 #define DIRECTION (PDATA+1)
 #define DIR_RAD (PDATA+2)
 #define NUM_SPLATS (PDATA+3)
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void GEESE_SPAWNER(void)
 {
     // asm 00006B3F: 	SLEEP	1
@@ -914,12 +995,13 @@ GOOSE_ME:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 * Set by Spawner:
 *	R4	=	SPEED
 *	R5	=	DIRECTION INT (+/-1, Direction to travers road)
 *	R6	=	RADS direction FL
- */
+*/
 /* asm: SHIT_ANI	.word	bdst,bdst2,bdst3,bdst4,bdst5,bdst6,-1 */
 int SHIT_ANI[] = {
     bdst, bdst2, bdst3, bdst4, bdst5, bdst6, -1,
@@ -1104,7 +1186,8 @@ GEESE_DIE:
     UNIMPL();
 }
 
-/* *---------------------------------------------------------------------------
+/*
+*---------------------------------------------------------------------------
 *---------------------------------------------------------------------------
 *---------------------------------------------------------------------------
 *----------------------------------------------------------------------------
@@ -1112,7 +1195,7 @@ GEESE_DIE:
 *Creates several BUG SPLAT PROCS
 *	CREATE	BUG_SPAWNER_PROC,SPAWNER_C
 *
- */
+*/
 /* asm: BUG_ANI	.word	bug1,bug2,bug3,bug4,bug5,-1 */
 int BUG_ANI[] = {
     bug1, bug2, bug3, bug4, bug5, -1,
@@ -1147,6 +1230,12 @@ BSPX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BUG_SPAWNER_PROC", 0, 0);
     UNIMPL();
 }
+
+/*
+*---------------------------------------------------------------------------
+*SPLAT PROC
+*R5 points to start of animation
+*/
 
 void SPLAT_PROC(void)
 {
@@ -1264,7 +1353,8 @@ DBSX:
     UNIMPL();
 }
 
-/* *---------------------------------------------------------------------------
+/*
+*---------------------------------------------------------------------------
 * Updates AR2 to point to the road segment that the camera is on
 * NOTE: uses Stealth mode
 * INPUT	AR2 = segment on
@@ -1272,7 +1362,7 @@ DBSX:
 *	R2  = Direction moving	INT (+/-1)
 * OUTPUT AR2 = segment on (updated)
 *	R2 = # of segments moved
- */
+*/
 void NEXT_ROAD(void)
 {
     // asm 00006C84: 	LDI	R2,R4
@@ -1310,12 +1400,13 @@ NEXTRX:
     UNIMPL();
 }
 
-/* *---------------------------------------------------------------------------
+/*
+*---------------------------------------------------------------------------
 *INPUT	AR2 = POINTER to LEG_MAP where road is
 *	R2  = Direction moving	INT (+/-1)
 *
 *OUTPUT	R2 = DIRECTION of road
- */
+*/
 void GET_ROAD_RADY(void)
 {
     // asm 00006CA1: 	MPYI	4*2,R2
@@ -1337,12 +1428,13 @@ void GET_ROAD_RADY(void)
     UNIMPL();
 }
 
-/* *---------------------------------------------------------------------------
+/*
+*---------------------------------------------------------------------------
 *
 *GET POINTER TO MAP_LEG, ID IN R2
 *INPUTS  R2=OUSR1
 *OUPTUTS AR2=POINTER TO place in LEG_MAP
- */
+*/
 void FIND_MAP(void)
 {
     // asm 00006CB0: 	LDI	@LEG_MAPI,AR2		;FIND THE POSITION IN THE MAP
@@ -1357,3 +1449,5 @@ FIND_LP:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_MAP", 0, 0);
     UNIMPL();
 }
+
+// *---------------------------------------------------------------------------

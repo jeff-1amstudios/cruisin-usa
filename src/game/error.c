@@ -25,6 +25,15 @@ void ERROR_LOG_DISPLAY(void);
 
 extern const char NO[];
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 #define ERR_SIZE 16
 #define MAX_LOGS 30
 #define PSS_AR7 0
@@ -39,8 +48,7 @@ extern const char NO[];
 #define PSS_SP 9
 #define PSS_R0 10
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void ERROR_LOG(void)
 {
     // asm 0000AB4A: 	PUSH	R1
@@ -142,14 +150,17 @@ ERROR_X:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *TO BE REACHED VIA THE CONSOLE (NO SWITCHES)
 *
 *	ONCE ENTERED, USER MUST SCROLL THROUGH ALL
 *	OF THE LOGS.  ROUTINE THEN RETURNS.
 *
 *
- */
+*/
 void ERROR_LOG_DISPLAY(void)
 {
     // asm 0000ABA9: 	CALL	CLRSCRN

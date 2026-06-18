@@ -26,7 +26,17 @@ void DRONE_DANI_PROC(void);
 
 #define DRONE_DANI_PROCI DRONE_DANI_PROC
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
+*DELTA DRONE
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
+/*
+*----------------------------------------------------------------------------
 *GENERAL DRONE OBJECT INITIALIZATION
 *
 *PARAMETERS
@@ -35,7 +45,7 @@ void DRONE_DANI_PROC(void);
 *RETURNS
 *	AR5	CAR BLOCK
 *
- */
+*/
 void DELTA_OINIT(void)
 {
     // asm 0000AE6A: 	LDI	*+AR7(DELTA_MODEL),R0
@@ -92,7 +102,10 @@ NODYNAX1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *DDYNA_INIT
 *
 *DRONE (STRIPPED DOWN) DYNAMIC OBJECT
@@ -103,7 +116,7 @@ NODYNAX1:
 *	AR2	TABLE POINTER
 *	AR4	CAR OBJECT
 *
- */
+*/
 void DDYNA_INIT(void)
 {
     // asm 0000AE9A: 	PUSH	R1
@@ -176,7 +189,10 @@ VANIX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *DRONE DYNA ANIMATION PROCESS
 *
 *	SPINS WHEELS	(ONLY!)
@@ -198,7 +214,7 @@ VANIX:
 *	PDATA+1 BODY LEAN Z RADIANS
 *	PDATA+2 X RADIANS FOR WHEEL SPIN
 *
- */
+*/
 
 void DRONE_DANI_PROC(void)
 {

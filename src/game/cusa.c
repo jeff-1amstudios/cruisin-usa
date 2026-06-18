@@ -149,10 +149,37 @@ extern int BUTTON_TIK;
 extern int BUTTII[];
 extern int SYSCNTL_OC;
 
+/*
+*----------------------------------------------------------------------------
+*			CRUIS'N USA
+*
+*
+*	EUGENE JARVIS			DIRECTOR
+*
+*	ERIC PRIBYL			SOFTWARE
+*
+*	MARK LOFFREDO			HARDWARE
+*	GLENN SHIPP			HARDWARE
+*
+*	TED BARBER			GRAPHICS
+*	SHAWN COOPER			GRAPHICS
+*
+*	MATT BOOTY			SOUND FX
+*	VINCE PONTARELLI		MUSIC
+*
+*
+*	COPYRIGHT (C) 1994 NINTENDO, DEVELOPED BY TV GAMES, INC.
+*	MANUFACTURED AND SOLD BY MIDWAY MANUFACTURING COMPANY UNDER LICENSE
+*
+*
+*/
+
 #define MEMTESTS 1
 #define TIKS_PER_SECOND 57
 /* asm: COMMINTM	fbss	COMMINTM,1 */
 int COMMINTM;
+// 				;INT2_M  if linked
+
 #if 0
 const char startup0[] = "DO NOT EVEN CONSIDER RELEASING THESE ROMS";
 const char startup2[] = "   THIS VERSION HAS A FATAL BUG";
@@ -164,16 +191,18 @@ const char startup1[] = "  (C) 1994 NINTENDO, DEVELOPED BY TV GAMES, INC.";
 const char startup2[] = "MANUFACTURED AND SOLD BY MIDWAY MANUFACTURING COMPANY";
 const char startup3[] = "                  UNDER LICENSE.";
 const char dlts[] = "DOWNLOADING TEXTURES";
-/* ;Release of linked version will be 4.0
+/*
+;Release of linked version will be 4.0
 ;	I = I4000
 ;	VID = 40
 ;
- */
+*/
 const char VERSION_STAMP[] = "VERSION  4.4";
 #endif
 const char INTERNAL_VERS[] = "I440";
 #define VERSION_ID 40
-/* 	;Because of managements inability to deal with software projects,
+/*
+	;Because of managements inability to deal with software projects,
 	;or being able to keep the version control straight
 	;we have now moved into Internal and External versions of the program
 	;VERSION_STAMP contains whatever the management wants to call it.
@@ -184,7 +213,8 @@ const char INTERNAL_VERS[] = "I440";
 	;Keep in mind that multiple releases exist under the external
 	;version name, and the true software version can be gotten from
 	;the title page.
- */
+*/
+
 const char M1[] = "LOADING OS-WMS...";
 const char M2[] = "I-NODES ALLOCATED,  DCS DECODED (14-1715)";
 const char M3[] = "WMS SATELLITE COMM, CHANNEL 3 ACTIVE LYBIRP";
@@ -194,8 +224,7 @@ const char M6[] = "CONNECTION ESTABLISHED, PUBLIC-KEY: CIRE";
 const char M7[] = "USR/ELP/CUSA>FTP GET CUSA";
 const char M8[] = "37940813 BYTES RECEIVED OK";
 const char M9[] = "USR/ELP/CUSA>TV30 CUSA /L";
-/* 	;*** RAM DEFINITIONS
- */
+// 	;*** RAM DEFINITIONS
 /* asm: _MODE	pbss	_MODE,1 */
 int _MODE;
 /* asm: STATE	pbss	STATE,1 */
@@ -247,8 +276,7 @@ int DISPLAY_PAGE;
 /* asm: MPROC_TIK	fbss	MPROC_TIK,1 */
 int MPROC_TIK;
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void _c_int00(void)
 {
     // asm 00004AE6: 	LDI	02h,IOF			;TV30 KLUDGE
@@ -519,8 +547,7 @@ NODO1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void MAINLOOP(void)
 {
     // asm 00004BD1: 	FIFO_CLRP	R0		;IS THE FIFO CLEAR
@@ -620,7 +647,10 @@ NODO555:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *WE HAVE A RADICAL SYSTEM CHANGE
 *WE WANT TO
 *1.	LET EXECUTE ANY PROCESSES THAT WE HAVE BEGUN
@@ -628,7 +658,7 @@ NODO555:
 *3.	PLOT THE NEW SCREEN
 *4.	CONTINUE WITH THE SYSTEM
 *
- */
+*/
 void COLD_ENTER(void)
 {
     // asm 00004C2C: 	FIFO_CLRP	R0		;is the fifo clear
@@ -653,7 +683,10 @@ C_WAIT:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *INTERRUPT ROUTINE
 *
 *1.	initially mask out all interupts we dont want to occur
@@ -662,7 +695,7 @@ C_WAIT:
 *3.	increment number of frames passed since last screen update
 *
 *
- */
+*/
 void ENABLEGIE(void)
 {
     // asm 00004C44: 	RETI
@@ -854,11 +887,14 @@ NOTASEC:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *READ IO  SWITCHES AND POTS
 *
 *
- */
+*/
 /* asm: _newbut	pbss	_newbut,0 */
 int _newbut;
 /* asm: SWRAM	pbss	SWRAM,3 */
@@ -940,8 +976,9 @@ NIGY:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void VOL_MINUS(void)
 {
     // asm 00004D39: 	PUSH	R0
@@ -1029,9 +1066,12 @@ DTXX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *OPTIMIZED 9/14/93-ELP
- */
+*/
 void ATODINT(void)
 {
     // asm 00004D80: 	PUSH	ST
@@ -1168,10 +1208,13 @@ EXITR:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SWITCH DISPATCH	 START PROCESSES FOR SWITCHES
 *
- */
+*/
 void SWDISP(void)
 {
     // ;	LDP	@SWRAM
@@ -1203,10 +1246,13 @@ SWSTX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SWITCH ROUTINE TABLE
 *0 = NO PROCESS TO CREATE
- */
+*/
 /* asm: SWTABI	.word	SWTAB */
 #define SWTABI SWTAB
 /* asm: SWTAB */
@@ -1242,6 +1288,9 @@ SWSTX:
 /* asm: 	.word	0		;20000000 */
 /* asm: 	.word	0		;40000000 */
 /* asm: 	.word	0		;80000000 */
+/* asm: 	 */
+/* asm: 	 */
+/* asm: 	 */
 void *SWTAB[] = {
     COIN1, // 00000001 SW_COIN1	(COIN.ASM)
     COIN2, // 00000002 SW_COIN2 	(COIN.ASM)
@@ -1275,10 +1324,10 @@ void *SWTAB[] = {
     0, // 20000000
     0, // 40000000
     0, // 80000000
+    // ----------------------------------------------------------------------------
 };
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void CHECKDIAG(void)
 {
     // asm 00004E2C: 	LDI	@DIAG_ACTIVE,R0
@@ -1289,6 +1338,8 @@ void CHECKDIAG(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKDIAG", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void CLR_PBSS(void)
 {
@@ -1316,9 +1367,11 @@ PRAMCLP:
     UNIMPL();
 }
 
-/* ;RAM_BSSEND	.word	01F7FFh
- */
+// *----------------------------------------------------------------------------
+
+// ;RAM_BSSEND	.word	01F7FFh
 /* asm: RAM_BSSEND	.word	01EFFFh		;save protected hi bss ram */
+/* asm: 	 */
 int RAM_BSSEND = 0x01EFFF;
 
 void CLR_RAM(void)
@@ -1346,10 +1399,13 @@ RAMCLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *THESE MUST BE CALLED *BEFORE* PROGRAM IS COPIED INTO FAST RAM
 *
- */
+*/
 void CLEAR_ONCHIPRAM(void)
 {
     // asm 00004E58: 	LDIL	809800h,AR0
@@ -1362,10 +1418,13 @@ void CLEAR_ONCHIPRAM(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
- */
+*/
 #define SPACER 20
 /* asm: BUTTON_TIKS	fbss	BUTTON_TIKS,1 */
 int BUTTON_TIKS;
@@ -1374,8 +1433,7 @@ int BUTTON_STATUS;
 /* asm: OLD_BUTTON_STATUS	.bss	OLD_BUTTON_STATUS,1 */
 int OLD_BUTTON_STATUS;
 
-/* *
- */
+// *
 void BUTTONS(void)
 {
     // asm 00004E60: 	LDI	@_MODE,R0
@@ -1510,10 +1568,13 @@ DGBT:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *WAIT FOR INTERRUPT AT VBLANK
 *
- */
+*/
 void WAIT_FOR_VBLANK(void)
 {
     // asm 00004ED8: 	LDI	@INFRAMES,R0
@@ -1525,8 +1586,9 @@ WAIT1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: CRT_REG_SETUP_STRI */
 /* asm: .word	CRT_REG_SETUP_STR */
 /* asm: romdata */
@@ -1539,11 +1601,14 @@ int CRT_REG_SETUP_STRI;
 /* asm: 	.word	0227h		;CRT_HSYNCEND */
 /* asm: 	.word	0299h		;CRT_HBLKEND */
 /* asm: 	.word	029ah		;CRT_HTTL */
+/* asm: 	 */
 /* asm: 	.word	018eh		;CRT_VBLKSTART */
 /* asm: 	.word	0191h		;CRT_SYNCSTART */
 /* asm: 	.word	0194h		;CRT_SYNCEND */
 /* asm: 	.word	01afh		;CRT_VBLK */
 /* asm: 	.word	01b0h		;CRT_VTTL */
+/* asm: 	 */
+/* asm: 	 */
 int CRT_REG_SETUP_STR[] = {
     399|CRT_SETUP_ICSYNC, // CRT_SETUP
     0x01ff, // CRT_HADDRINC
@@ -1557,6 +1622,19 @@ int CRT_REG_SETUP_STR[] = {
     0x0194, // CRT_SYNCEND
     0x01af, // CRT_VBLK
     0x01b0, // CRT_VTTL
+    // before syncing
+    // 	.word	400|CRT_SETUP_ICSYNC	;CRT_SETUP
+    // 	.word	01ffh		;CRT_HADDRINC
+    // 	.word	01feh		;CRT_HBLKSTART
+    // 	.word	020eh		;CRT_HSYNCSTART
+    // 	.word	0227h		;CRT_HSYNCEND
+    // 	.word	0299h		;CRT_HBLKEND
+    // 	.word	029ah		;CRT_HTTL
+    // 	.word	018fh		;CRT_VBLKSTART
+    // 	.word	0192h		;CRT_SYNCSTART
+    // 	.word	0195h		;CRT_SYNCEND
+    // 	.word	01b0h		;CRT_VBLK
+    // 	.word	01b0h		;CRT_VTTL
 };
 
 void CRT_REG_SETUP(void)
@@ -1576,11 +1654,14 @@ CRTRGLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *IF THIS IS EVER HIT STOP AND FIND OUT WHERE IT IS
 *COMING FROM
 *
- */
+*/
 void ERROR_TRAP(void)
 {
     // asm 00004EEF: 	CALL	ENABLEGIE
@@ -1596,8 +1677,9 @@ void ERROR_TRAP(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void FIFO_RESET(void)
 {
     // asm 00004EF4: 	DINT
@@ -1621,8 +1703,11 @@ void FIFO_RESET(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 #if STATISTICS
 /* asm: ST_POLYGONS	.bss	ST_POLYGONS,1 */
 int ST_POLYGONS;
@@ -1631,14 +1716,16 @@ int ST_VERTICES;
 /* asm: ST_OBJECTS	.bss	ST_OBJECTS,1 */
 int ST_OBJECTS;
 #endif
+// *----------------------------------------------------------------------------
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *1ms   = 10 counts
 *1mils = 10000
 *1frame should = 165000 (roughly)
 *
- */
+*/
 void TIMER_RESET(void)
 {
     // asm 00004F0A: 	PUSH	DP
@@ -1654,8 +1741,9 @@ void TIMER_RESET(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void TIMER_READ(void)
 {
     // asm 00004F13: 	PUSH	DP
@@ -1667,6 +1755,8 @@ void TIMER_READ(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: TIMEFRAME	.bss	TIMEFRAME,1 */
 int TIMEFRAME;
 /* asm: TIMEX	.bss	TIMEX,1 */
@@ -1676,8 +1766,7 @@ int TIMECLR;
 /* asm: TIMERAM	.bss	TIMERAM,50 */
 int TIMERAM[50];
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void TIMERESET(void)
 {
     // asm 00004F19: 	PUSH	DP
@@ -1717,8 +1806,9 @@ TIMEL1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void TIMEREC(void)
 {
     // asm 00004F38: 	PUSH	DP
@@ -1736,8 +1826,9 @@ void TIMEREC(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MESSAGE1(void)
 {
     // asm 00004F43: 	CLRI	R0
@@ -1860,11 +1951,14 @@ void MSG3(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SECRET OCTOPUS
 *
 *
- */
+*/
 #define NUM_STATES 7
 /* asm: STATE_TABLE	.word	SW_VIEW0|SW_VIEW2 */
 /* asm: 	.word	SW_VIEW2 */
@@ -1882,8 +1976,7 @@ int STATE_TABLE[] = {
     SW_VIEW0,
     SW_VIEW0|SW_RADIO,
 };
-/* *
- */
+// *
 /* asm: STATE_MASK	.word	SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO */
 int STATE_MASK = SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO;
 /* asm: STATE_NUM	.bss	STATE_NUM,1 */
@@ -1891,10 +1984,11 @@ int STATE_NUM;
 /* asm: STATE_TIK	.bss	STATE_TIK,1 */
 int STATE_TIK;
 
-/* *
+/*
 *
 *
- */
+*
+*/
 void CHECK_STATE(void)
 {
     // asm 00004FD3: 	LDI	@_MODE,R0
@@ -1948,12 +2042,13 @@ ABORT_STATE:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: BUTTON_IBO	.bss	BUTTON_IBO,1 */
 int BUTTON_IBO;
 /* asm: BUTTON_TIK	.bss	BUTTON_TIK,1 */
 int BUTTON_TIK;
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 /* asm: BUTTONI	.word	BUTTII */
 #define BUTTONI BUTTII
 /* asm: BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
@@ -1961,8 +2056,7 @@ int BUTTII[] = {
     BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2,
 };
 
-/* *
- */
+// *
 void DASHLIGHT(void)
 {
     // asm 00005001: 	LDI	@BUTTON_TIK,R0
@@ -1989,8 +2083,9 @@ void DASHLIGHT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void CMOS_ERROR(void)
 {
     // asm 00005014: 	LDI	8,AR6
@@ -2015,8 +2110,9 @@ void CMOS_ERROR(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void VERSION_UPDATE(void)
 {
     // asm 0000502B: 	LDI	8,AR6
@@ -2044,6 +2140,8 @@ void VERSION_UPDATE(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void FAKEDIAG(void)
 {
     // asm 00005045: 	CALL	INIT_SYSTEM
@@ -2059,8 +2157,9 @@ void FAKEDIAG(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void FEED_WATCHDOG(void)
 {
     // asm 0000504E: 	PUSH	DP
@@ -2086,8 +2185,9 @@ void FEED_WATCHDOG(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: SYSCNTL_OC	fbss	SYSCNTL_OC,1 */
 int SYSCNTL_OC;
 
@@ -2115,6 +2215,8 @@ void FEED_WATCHDOG_HARD(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FEED_WATCHDOG_HARD", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void VERIFY_CODE_INTEGRITY(void)
 {

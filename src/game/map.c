@@ -49,33 +49,43 @@ extern float SECFACT;
 extern float HUNFACT;
 extern int THIS_MACHINE_AHEAD;
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
+*OVERHEAD MAP
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
 *
 *
 *
- */
+*/
 #define MAP_ITERATIONS 30
-/* 	;INITIAL THETAs
- */
+// 	;INITIAL THETAs
 #define M1ST (-HALFPI)
 #define M2ST HALFPI
 #define M3ST (-HALFPI)
 #define M4ST HALFPI
-/* 	;THETA DELTAs
- */
+// 	;THETA DELTAs
 #define M1STD 0.052359877 //HALFPI/30
 #define M2STD (-0.052359877) //-HALFPI/30
 #define M3STD 0.052359877 //HALFPI/30
 #define M4STD (-0.052359877) //-HALFPI/30
 /* asm: M3STDI	.float	M1STD */
+/* asm: 	 */
 float M3STDI = M1STD;
 /* asm: M4STDI	.float	M2STD */
+/* asm: 	 */
+/* asm: 	 */
 float M4STDI = M2STD;
-/* 	;PROCESS DATA DEFINEs
- */
+// 	;PROCESS DATA DEFINEs
 #define MAP1OBJ (PDATA+0)
 #define MAP2OBJ (PDATA+1)
 #define MAP3OBJ (PDATA+2)
@@ -93,13 +103,14 @@ float M4STDI = M2STD;
 #define MAPXD (PDATA+21)
 #define MAPYD (PDATA+22)
 
-/* *
+/*
 *
 *
 *
 *
 *
- */
+*
+*/
 void UNFOLDMAP(void)
 {
     // asm 00005E0B: 	CALL	MAPPAL_ILLUM_INIT
@@ -368,11 +379,14 @@ void UNFOLDMAP_NOPAL(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
- */
+*/
 void FOLDMAP(void)
 {
     // asm 00005EEB: 	SONDFX	WIPE4
@@ -618,6 +632,8 @@ void FOLDMAP(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void CLEAR_MAP_PALS(void)
 {
     // asm 00005FCC: 	LDI	@EPALL,AR2
@@ -642,8 +658,9 @@ IBOIBO:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MAPPAL_ILLUM_INIT(void)
 {
     // asm 00005FD7: 	LDI	@EPALR,AR0	;LOAD PALETTES AT
@@ -672,7 +689,10 @@ L342:
     UNIMPL();
 }
 
-/* ;*----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+;*----------------------------------------------------------------------------
 ;MAPPAL_ILLUM_CLEANUP:
 ;	PUSH	R0
 ;	PUSH	AR2
@@ -689,8 +709,9 @@ L342:
 ;	POP	R0
 ;	RETS
 ;*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
- */
+*/
+
+// *----------------------------------------------------------------------------
 /* asm: FORMULA1	.float	0.318309886 */
 float FORMULA1 = 0.318309886f;
 
@@ -716,8 +737,9 @@ void MAP_ILLUM_COMPUTE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: MAPPAL13	.bss	MAPPAL13,1 */
 int MAPPAL13;
 /* asm: MAPPAL24	.bss	MAPPAL24,1 */
@@ -935,22 +957,26 @@ JAJA5:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: STOPWATCH	.bss	STOPWATCH,1 */
 int STOPWATCH;
 /* asm: STOPWATCH_CNTL	.bss	STOPWATCH_CNTL,1 */
 int STOPWATCH_CNTL;
 const char COLON[] = ":";
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *RETURNS
 *	AR2	POINTING TO LAP BUFFER
 *
- */
+*/
 /* asm: lap_buffer	.bss	lap_buffer,4 */
 int lap_buffer[4];
 /* asm: tmp_buffer	.bss	tmp_buffer,2 */
 int tmp_buffer[2];
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *TIME2STR	CONVERT TIME CODE TO STRING
 *
 *
@@ -958,7 +984,7 @@ int tmp_buffer[2];
 *	R0	TIME (IN 1/60 SECONDS)
 *	AR2	STRING SPACE
 *
- */
+*/
 void TIME2STR(void)
 {
     // asm 000060C4: 	PUSH	R0
@@ -998,7 +1024,10 @@ void TIME2STR(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *CVTTIME	CVT TIMECODE TO COMPONENTS
 *
 *PARAMETERS
@@ -1009,12 +1038,13 @@ void TIME2STR(void)
 *	R1	(INT) SECONDS
 *	R2	(INT) MINUTES
 *
- */
+*/
 /* asm: MINFACT	.FLOAT	0.000303030303		;1/(55*60) */
 float MINFACT = 0.000303030303f;
 /* asm: SECFACT	.FLOAT	0.018181818		;1/55 */
 float SECFACT = 0.018181818f;
 /* asm: HUNFACT	.FLOAT	1.818181818		;100/55 */
+/* asm: 	 */
 float HUNFACT = 1.818181818f;
 
 void CVTTIME(void)
@@ -1069,6 +1099,8 @@ void CVTTIME(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 #define RADAR_XMIN 460
 #define RADAR_XMAX 500
 #define RADAR_XCNTR (((RADAR_XMAX-RADAR_XMIN)/2)+RADAR_XMIN)
@@ -1082,8 +1114,7 @@ void CVTTIME(void)
 /* asm: THIS_MACHINE_AHEAD	.bss	THIS_MACHINE_AHEAD,1 */
 int THIS_MACHINE_AHEAD;
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void RADAR_PLOT(void)
 {
     // asm 0000610A: 	PUSH	AR4

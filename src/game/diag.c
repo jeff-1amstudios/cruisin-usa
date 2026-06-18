@@ -373,8 +373,16 @@ extern int LAMP_MENU;
 extern int MOTION_SAFETY_CODES;
 extern int OLD_MOTION_CODE;
 
-/* *WAIT FOR ENTER BUTTON ON
- */
+/*
+*----------------------------------------------------------------------------
+*DIAGNOSTIC AND BOOK KEEPING ROUTINES
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
+// *WAIT FOR ENTER BUTTON ON
 void WT_START(void)
 {
 WT_S1:
@@ -419,8 +427,7 @@ void BEEP(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 #define MW_Y2 0
 #define MW_X2 1
 #define MW_Y1 2
@@ -470,6 +477,8 @@ void MAKE_WINDOW(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void MAKE_IWINDOW(void)
 {
     // asm 00000628: 	PUSH	AR3
@@ -514,6 +523,8 @@ void MAKE_IWINDOW(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 const char inst1[] = "USE UP/DOWN TO SELECT FUNCTION";
 const char inst2[] = "ENTER TO ACTIVATE";
 const char title[] = "CRUISIN USA   DIAGNOSTICS";
@@ -538,8 +549,7 @@ const char toexit[] = "HIT ENTER TO EXIT";
 /* asm: RGB	020h,020h,020h		;	LIGHT GREY3 */
 int DIAGPAL;
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void HARD_LOAD_DIAGPAL(void)
 {
     // asm 0000065F: 	LDL	DIAGPAL,AR2
@@ -554,6 +564,8 @@ void HARD_LOAD_DIAGPAL(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HARD_LOAD_DIAGPAL", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 /* asm: SOFT_AUDIT	.bss	SOFT_AUDIT,1 */
 int SOFT_AUDIT;
@@ -578,10 +590,13 @@ void HIDDEN_DIAG(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
- */
+*/
 void ENTER_DIAG_INIT(void)
 {
     // asm 00000678: 	POP	R0
@@ -612,8 +627,9 @@ void ENTER_DIAG_INIT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void ENTER_DIAG(void)
 {
     // asm 00000699: 	CALL	ENTER_DIAG_INIT
@@ -644,8 +660,9 @@ void RETURN_TO_MAINMENU(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void TOEXIT(void)
 {
     // asm 000006A8: 	LDI	DEFAULT_COLOR,RC
@@ -655,9 +672,24 @@ void TOEXIT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+;*ARE DIAGs STILL ACTIVE?
+;*T-> RETURN
+;*F-> RESET
+;*
+;DIAG_ACTIVEP:
+;	LDI	@_newbut,R0	;old system method
+;	RETS
+*----------------------------------------------------------------------------
+*/
+
+/*
+*----------------------------------------------------------------------------
 *
- */
+*/
 /* asm: FILSIZI	.word	3FFFFH */
 int FILSIZI = 0x3FFFF;
 /* asm: REDV	.word	30003h		;these values point into fixed palette */
@@ -667,6 +699,7 @@ int GREENV = 0x40004;
 /* asm: BLUEV	.word	90009h */
 int BLUEV = 0x90009;
 /* asm: BLACKV	.word	80008h */
+/* asm: 	 */
 int BLACKV = 0x80008;
 
 void MONITOR_DIAGNOSTICS(void)
@@ -734,8 +767,9 @@ void MONITOR_DIAGNOSTICS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void COLORBARS(void)
 {
     // asm 000006ED: 	CALL	CLRSCRN0
@@ -804,10 +838,13 @@ BLOCKLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SHOW SWITCHES (AND POTS)
 *
- */
+*/
 /* asm: buffer	.bss	buffer,20 */
 int buffer[20];
 /* asm: _opot0	.bss	_opot0,1 */
@@ -947,7 +984,10 @@ BBD5:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *BOTTOM EIGHT BITS ONLY
 *
 *
@@ -956,7 +996,7 @@ BBD5:
 *	R2	VALUE
 *
 *
- */
+*/
 void ASCII_TO_BINARY(void)
 {
     // asm 00000881: 	LDI	0,RS
@@ -985,8 +1025,9 @@ JJ:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: _onebut	.bss	_onebut,1 */
 int _onebut;
 
@@ -1025,8 +1066,9 @@ DONEDSS:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: SWITCHES_DIAG	.word	SW_VIEW0,180,130 */
 /* asm: 	.word	SW_VIEW1,200,130 */
 /* asm: 	.word	SW_VIEW2,220,130 */
@@ -1057,8 +1099,9 @@ int SWITCHES_DIAG[] = {
     SW_COINSRV, 335, 330,
     -1,
 };
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: LASTSHIFT	.bss	LASTSHIFT,1 */
 int LASTSHIFT;
 
@@ -1108,8 +1151,9 @@ NOT4TH:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void DISPPOTS(void)
 {
     // asm 000008FF: 	LDI	@_pot0,R2
@@ -1156,6 +1200,8 @@ NOPLOTpot2:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 const char SW1T[] = "DIP SW2";
 const char SW2T[] = "DIP SW3";
 /* asm: SW1BANK	.bss	SW1BANK,3 */
@@ -1185,7 +1231,10 @@ DIPLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	R5	X
@@ -1195,18 +1244,18 @@ DIPLP:
 *vertical plotting of the dipswitches as 'on'|'off'
 *
 *
- */
+*/
 /* asm: DIPTMP	.bss	DIPTMP,2 */
 int DIPTMP[2];
 /* asm: ISON	.word	ONTEXT */
 uintptr_t ISON = (uintptr_t)&ONTEXT;
 /* asm: ISOFF	.word	OFFTEXT */
+/* asm: 	 */
 uintptr_t ISOFF = (uintptr_t)&OFFTEXT;
 const char ONTEXT[] = "ON";
 const char OFFTEXT[] = "OFF";
 
-/* *
- */
+// *
 void SHOW_DIPSWITCH_STATUS(void)
 {
     // asm 00000942: 	LDI	7,AR5
@@ -1238,12 +1287,15 @@ void SHOW_DIPSWITCH_STATUS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
 *
- */
+*/
 void DISPLAY_DIPSWITCH_STATUS(void)
 {
     // asm 0000095A: 	LDI	@DIPRAM,R0
@@ -1404,6 +1456,8 @@ COINCNTR2I:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 const char DMOT[] = "MOTION ON";
 const char DNMOT[] = "MOTION OFF";
 const char DLINKD[] = "LINK ON";
@@ -1412,8 +1466,9 @@ const char DNLINKD[] = "LINK OFF";
 const char DMOD1[] = "MASTER";
 /* asm: DMOD2	SPTR	"SLAVE" */
 const char DMOD2[] = "SLAVE";
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: MOMT	SPTR	"MOTION MENU" */
 const char MOMT[] = "MOTION MENU";
 
@@ -1428,8 +1483,7 @@ void RUN_MOTION_MENU(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 /* asm: AMT	SPTR	"ADJUSTMENT MENU" */
 const char AMT[] = "ADJUSTMENT MENU";
 
@@ -1445,8 +1499,10 @@ void RUN_ADJUSTMENT_MENU(void)
 }
 
 /* asm: ADJTAB */
+/* asm: 	 */
 /* asm: 	.word	ADJ_COINMODE,PRINT_COINMODE */
 /* asm: 	.word	ADJ_STANDARD_PRICING,PRINT_CUSTOM_SELECTED */
+/* asm: 	 */
 /* asm: 	.word	ADJ_FREE_PLAY,PRINT_ONOFF */
 /* asm: 	.word	ADJ_FREEGAME,PRINT_ONOFF */
 /* asm: 	.word	ADJ_TIME_TO_START,PRINT_TIME */
@@ -1466,6 +1522,8 @@ void RUN_ADJUSTMENT_MENU(void)
 uintptr_t ADJTAB[] = {
     (uintptr_t)(ADJ_COINMODE), (uintptr_t)PRINT_COINMODE,
     (uintptr_t)(ADJ_STANDARD_PRICING), (uintptr_t)PRINT_CUSTOM_SELECTED,
+    // 	.word	0,0
+    // 	.word	0,0
     (uintptr_t)(ADJ_FREE_PLAY), (uintptr_t)PRINT_ONOFF,
     (uintptr_t)(ADJ_FREEGAME), (uintptr_t)PRINT_ONOFF,
     (uintptr_t)(ADJ_TIME_TO_START), (uintptr_t)PRINT_TIME,
@@ -1495,8 +1553,7 @@ void PRINT_ADJUSTMENT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 /* asm: UMT	SPTR	"UTILITIES MENU" */
 const char UMT[] = "UTILITIES MENU";
 
@@ -1511,8 +1568,7 @@ void RUN_UTILITIES_MENU(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 /* asm: MMT	SPTR	"MAIN MENU" */
 const char MMT[] = "MAIN MENU";
 /* asm: DMT	SPTR	"DIAGNOSTIC MENU" */
@@ -1527,6 +1583,16 @@ void RUN_DIAG_MENU(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_DIAG_MENU", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*
+*PARAMETERS
+*	AR5	POINTER TO MENU TABLE
+*	AR6	LENGTH OF MENU
+*	AR7	SPTR MENU NAME
+*
+*/
 
 /* asm: MENU_SCROLL	.bss	MENU_SCROLL,1 */
 int MENU_SCROLL;
@@ -1692,13 +1758,16 @@ HM_EXECUTE:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 ;ESCAPE_TO_MAIN:
 ;	LDI	982,AR2
 ;	CALL	SENDSND
 ;	POP	R0
 ;	RETS
- */
+*/
 void XIT_MENU_TO_MAIN(void)
 {
     // asm 00000AE0: 	LDI	0,R0
@@ -1715,8 +1784,9 @@ void XIT_MENU_TO_MAIN(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void SETUP_DIAG_SCREEN(void)
 {
     // asm 00000AE9: 	CALL	CLRSCRN
@@ -1727,6 +1797,10 @@ void SETUP_DIAG_SCREEN(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETUP_DIAG_SCREEN", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 
 /* asm: MUSIC_TAB */
 /* asm: SNDMAC	"REDLINE SHUFFLE",SHUFFLE_DRIV */
@@ -1828,8 +1902,9 @@ NONEXTE:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void STEERING_WHEEL_TEST(void)
 {
     // asm 00000B65: 	CALL	SETUP_DIAG_SCREEN
@@ -1877,8 +1952,9 @@ void STEERING_WHEEL_TEST(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: AMODES	SPTR	"ATTRACT MODE SOUNDS" */
 const char AMODES[] = "ATTRACT MODE SOUNDS";
 
@@ -1896,8 +1972,9 @@ void AMODESND(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void BURNIN_TEST(void)
 {
     // asm 00000BA5: 	CALL	TEST_CHIPS
@@ -1918,6 +1995,12 @@ void BURNIN_TEST(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BURNIN_TEST", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
+
+// ;	.ref	COINMSG_TABI	;????
 
 #define STANDARD_PRICING_MENU_LEN 16
 /* asm: STANDARD_PRICING_MENU */
@@ -1954,6 +2037,7 @@ int STANDARD_PRICING_MENU;
 /* asm: 	.word	MSGC_USA11,PRICE_YES_NO */
 /* asm: 	.word	MSGC_USA12,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t USA_MENU[] = {
     (uintptr_t)&MSGC_USA1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_USA2, (uintptr_t)PRICE_YES_NO,
@@ -1980,6 +2064,7 @@ uintptr_t USA_MENU[] = {
 /* asm: 	.word	MSGC_GERMAN7,PRICE_YES_NO */
 /* asm: 	.word	MSGC_GERMAN8,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t GERMAN_MENU[] = {
     (uintptr_t)&MSGC_GERMAN1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_GERMAN2, (uintptr_t)PRICE_YES_NO,
@@ -2005,6 +2090,7 @@ uintptr_t GERMAN_MENU[] = {
 /* asm: 	.word	MSGC_FRENCH10,PRICE_YES_NO */
 /* asm: 	.word	MSGC_FRENCH11,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t FRENCH_MENU[] = {
     (uintptr_t)&MSGC_FRENCH1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_FRENCH2, (uintptr_t)PRICE_YES_NO,
@@ -2025,6 +2111,7 @@ uintptr_t FRENCH_MENU[] = {
 /* asm: 	.word	MSGC_CANADA2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_CANADA3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t CANADA_MENU[] = {
     (uintptr_t)&MSGC_CANADA1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_CANADA2, (uintptr_t)PRICE_YES_NO,
@@ -2037,6 +2124,7 @@ uintptr_t CANADA_MENU[] = {
 /* asm: 	.word	MSGC_SWISS2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_SWISS3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t SWISS_MENU[] = {
     (uintptr_t)&MSGC_SWISS1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_SWISS2, (uintptr_t)PRICE_YES_NO,
@@ -2049,6 +2137,7 @@ uintptr_t SWISS_MENU[] = {
 /* asm: 	.word	MSGC_ITALY2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_ITALY3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t ITALY_MENU[] = {
     (uintptr_t)&MSGC_ITALY1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_ITALY2, (uintptr_t)PRICE_YES_NO,
@@ -2061,6 +2150,7 @@ uintptr_t ITALY_MENU[] = {
 /* asm: 	.word	MSGC_UK2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_UK3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t UK_MENU[] = {
     (uintptr_t)&MSGC_UK1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_UK2, (uintptr_t)PRICE_YES_NO,
@@ -2076,6 +2166,7 @@ uintptr_t UK_MENU[] = {
 /* asm: 	.word	MSGC_SPAIN5,PRICE_YES_NO */
 /* asm: 	.word	MSGC_SPAIN6,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t SPAIN_MENU[] = {
     (uintptr_t)&MSGC_SPAIN1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_SPAIN2, (uintptr_t)PRICE_YES_NO,
@@ -2092,6 +2183,7 @@ uintptr_t SPAIN_MENU[] = {
 /* asm: 	.word	MSGC_AUSTRALIA3,PRICE_YES_NO */
 /* asm: 	.word	MSGC_AUSTRALIA4,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t AUSTRALIA_MENU[] = {
     (uintptr_t)&MSGC_AUSTRALIA1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_AUSTRALIA2, (uintptr_t)PRICE_YES_NO,
@@ -2105,6 +2197,7 @@ uintptr_t AUSTRALIA_MENU[] = {
 /* asm: 	.word	MSGC_JAPAN2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_JAPAN3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t JAPAN_MENU[] = {
     (uintptr_t)&MSGC_JAPAN1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_JAPAN2, (uintptr_t)PRICE_YES_NO,
@@ -2117,6 +2210,7 @@ uintptr_t JAPAN_MENU[] = {
 /* asm: 	.word	MSGC_TAIWAN2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_TAIWAN3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t TAIWAN_MENU[] = {
     (uintptr_t)&MSGC_TAIWAN1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_TAIWAN2, (uintptr_t)PRICE_YES_NO,
@@ -2130,6 +2224,7 @@ uintptr_t TAIWAN_MENU[] = {
 /* asm: 	.word	MSGC_AUSTRIA3,PRICE_YES_NO */
 /* asm: 	.word	MSGC_AUSTRIA4,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t AUSTRIA_MENU[] = {
     (uintptr_t)&MSGC_AUSTRIA1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_AUSTRIA2, (uintptr_t)PRICE_YES_NO,
@@ -2143,6 +2238,8 @@ uintptr_t AUSTRIA_MENU[] = {
 /* asm: 	.word	MSGC_BELGIUM2,PRICE_YES_NO */
 /* asm: 	.word	MSGC_BELGIUM3,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
+/* asm: 	 */
 uintptr_t BELGIUM_MENU[] = {
     (uintptr_t)&MSGC_BELGIUM1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_BELGIUM2, (uintptr_t)PRICE_YES_NO,
@@ -2159,6 +2256,7 @@ uintptr_t BELGIUM_MENU[] = {
 /* asm: 	.word	MSGC_DENMARK1,PRICE_YES_NO */
 /* asm: 	.word	MSGC_HUNGARY1,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t OTHER_MENU[] = {
     (uintptr_t)&MSGC_SWEDEN1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_FINLAND1, (uintptr_t)PRICE_YES_NO,
@@ -2180,6 +2278,7 @@ uintptr_t OTHER_MENU[] = {
 /* asm: 	.word	MSGC_GENERAL7,PRICE_YES_NO */
 /* asm: 	.word	MSGC_GENERAL8,PRICE_YES_NO */
 /* asm: 	.word	ETMAIN,XIT_MENU_TO_MAIN */
+/* asm: 	 */
 uintptr_t GENERAL_MENU[] = {
     (uintptr_t)&MSGC_GENERAL1, (uintptr_t)PRICE_YES_NO,
     (uintptr_t)&MSGC_GENERAL2, (uintptr_t)PRICE_YES_NO,
@@ -2248,6 +2347,8 @@ void RUN_COUNTRY(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RUN_COUNTRY", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void MAKE_STANDARW(void)
 {
@@ -2406,8 +2507,9 @@ void PRINT_SPYN(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 #define CUSTOM_PRICING_MENU_LEN 16
 /* asm: CUSTOM_PRICING_MENU */
 /* asm: MENUENTRY	"LEFT CHUTE UNITS",SET_SLOT */
@@ -2496,7 +2598,10 @@ DADA5:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SET_VOLUME	SYSTEM ADJUSTMENT
 *
 *
@@ -2505,7 +2610,7 @@ DADA5:
 *VIEW2	VOLUME DOWN
 *
 *
- */
+*/
 void SET_VOLUME(void)
 {
     // asm 00000D1F: 	CALL	SETUP_DIAG_SCREEN
@@ -2612,8 +2717,9 @@ void SHOW_VOLUME(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void FULL_FACTORY_RESTORE(void)
 {
     // asm 00000DC9: 	LDL	FFR,AR2
@@ -2644,9 +2750,9 @@ void FFRSUB(void)
 
 /* asm: FFRST	SPTR	"FULL FACTORY RESTORE" */
 const char FFRST[] = "FULL FACTORY RESTORE";
+// *----------------------------------------------------------------------------
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void DEFAULT_ADJUSTMENTS(void)
 {
     // asm 00000DDB: 	LDL	RDA,AR2
@@ -2665,9 +2771,9 @@ void DEFAULT_ADJUSTMENTS(void)
 
 /* asm: DAS	SPTR	"DEFAULT ADJUSTMENTS SET" */
 const char DAS[] = "DEFAULT ADJUSTMENTS SET";
+// *----------------------------------------------------------------------------
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void RESET_HIGH_SCORES(void)
 {
     // asm 00000DE6: 	LDL	RHS,AR2
@@ -2685,9 +2791,9 @@ void RESET_HIGH_SCORES(void)
 
 /* asm: HSRS	SPTR	"HIGH SCORES RESET" */
 const char HSRS[] = "HIGH SCORES RESET";
+// *----------------------------------------------------------------------------
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void CLEAR_GAME_AUDITS(void)
 {
     // asm 00000DF0: 	LDL	CGA,AR2
@@ -2705,8 +2811,9 @@ void CLEAR_GAME_AUDITS(void)
 
 /* asm: BOOKR	SPTR	"BOOKKEEPING RESET" */
 const char BOOKR[] = "BOOKKEEPING RESET";
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: FREEPLAYT	SPTR	"FREE PLAY" */
 const char FREEPLAYT[] = "FREE PLAY";
 
@@ -2724,8 +2831,9 @@ void FREEPLAYONOFF(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: FGOO1	SPTR	"GIVE FREE GAME" */
 const char FGOO1[] = "GIVE FREE GAME";
 /* asm: FGOO2	SPTR	"ON 1ST POSITION" */
@@ -2745,8 +2853,9 @@ void FREEGAMEONOFF(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: APHSTD	SPTR	"ALLOW PLAYER TO" */
 const char APHSTD[] = "ALLOW PLAYER TO";
 /* asm: APHSTD2	SPTR	"ENTER INITIALS" */
@@ -2766,8 +2875,9 @@ void HIGHSCORE_ENTRY(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: GI1	SPTR	"SHOW GIRLS" */
 const char GI1[] = "SHOW GIRLS";
 
@@ -2785,8 +2895,9 @@ void GIRLS_ONOFF(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: CL1	SPTR	"SHOW PRESIDENT" */
 const char CL1[] = "SHOW PRESIDENT";
 
@@ -2804,8 +2915,9 @@ void CLINTON_ONOFF(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: RK1	SPTR	"SHOW ROADKILL" */
 const char RK1[] = "SHOW ROADKILL";
 
@@ -2823,12 +2935,15 @@ void ROADKILL_ONOFF(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *	0 = MPH (default)
 *	1 = KPH
 *
- */
+*/
 /* asm: MP1	SPTR	"SPEED IN MPH OR KPH" */
 const char MP1[] = "SPEED IN MPH OR KPH";
 /* asm: MP2	SPTR	"KPH" */
@@ -2852,8 +2967,9 @@ void MILES_OR_KILO(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: CLR_CRED	SPTR	"CLEAR CREDITS" */
 const char CLR_CRED[] = "CLEAR CREDITS";
 /* asm: YES		SPTR	"YES" */
@@ -2869,8 +2985,7 @@ const char NULLSTR[] = "";
 /* asm: AREUSURE	SPTR	"ARE YOU SURE?" */
 const char AREUSURE[] = "ARE YOU SURE?";
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void CLEAR_CREDITS(void)
 {
     // asm 00000E54: 	LDI	@CLR_CRED,AR2
@@ -2890,9 +3005,9 @@ void CLEAR_CREDITS(void)
 
 /* asm: CCD2A	SPTR	"CREDITS CLEARED" */
 const char CCD2A[] = "CREDITS CLEARED";
+// *----------------------------------------------------------------------------
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void MESSAGE_BOX(void)
 {
     // asm 00000E62: 	PUSH	AR2
@@ -2912,7 +3027,10 @@ ABLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *DUAL VALUE
 *
 *
@@ -2927,7 +3045,7 @@ ABLP:
 *	C  ON YES  (RESPONSE 1)
 *	NC ON NO   (RESPONSE 2)
 *
- */
+*/
 void CLEAR_YES_NO(void)
 {
     // asm 00000E76: 	LDI	0,R5
@@ -3018,8 +3136,9 @@ CYN_YES:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: SSGD	SPTR	"STEERING SENSITIVITY" */
 const char SSGD[] = "STEERING SENSITIVITY";
 /* asm: SSGD2	SPTR	"0 (ADOLT) TO 5 (GAMEPLAYER)" */
@@ -3043,8 +3162,9 @@ void SET_STEERING_SENSITIVITY(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: HSGD	SPTR	"PLAYS TO HIGHSCORE" */
 const char HSGD[] = "PLAYS TO HIGHSCORE";
 /* asm: HSGD2	SPTR	"RESET 1000 TO 25000" */
@@ -3068,11 +3188,37 @@ void SET_HIGHSCORE_RESET(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+;*----------------------------------------------------------------------------
+;FSGD	SPTR	"FIRST PLACE PERCENT"
+;FSGD2	SPTR	"10 TO 40"
+;SET_FIRST_PLACE_PERCENT:
+;
+;	READAUD	ADJ_FIRST_PLACE_PERCENT
+;	LDI	R0,R5
+;
+;	LDI	@FSGD,AR2
+;	LDI	@FSGD2,AR3
+;	LDI	10,R6
+;	LDI	40,R7
+;
+;	LDI	@GAMEDIFF_CVTI,AR4
+;	CALL	MULTI_VALUE
+;
+;	LDI	R5,R2
+;	SETADJ	ADJ_FIRST_PLACE_PERCENT
+;	RETS
+;*----------------------------------------------------------------------------
+*/
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
- */
+*/
 /* asm: SGD	SPTR	"GAME DIFFICULTY" */
 const char SGD[] = "GAME DIFFICULTY";
 /* asm: SGD2	SPTR	"0 (EASY) TO 9 (HARD)" */
@@ -3096,9 +3242,10 @@ void SET_GAME_DIFFICULTY(void)
     UNIMPL();
 }
 
-/* *
+/*
 *
- */
+*
+*/
 void GAMEDIFF_CVT(void)
 {
     // asm 00000EFA: 	PUSH	R2
@@ -3112,11 +3259,14 @@ void GAMEDIFF_CVT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
- */
+*/
 /* asm: ITD	SPTR	"INITIAL TIME" */
 const char ITD[] = "INITIAL TIME";
 /* asm: ITD2	SPTR	"60-90 SECONDS" */
@@ -3139,9 +3289,10 @@ void SET_TIME_TO_START(void)
     UNIMPL();
 }
 
-/* *
+/*
 *
- */
+*
+*/
 void TIME_CVT(void)
 {
     // asm 00000F11: 	PUSH	R2
@@ -3157,8 +3308,9 @@ void TIME_CVT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: CPBTT	SPTR	"CHECKPOINT TIME BONUS" */
 const char CPBTT[] = "CHECKPOINT TIME BONUS";
 /* asm: CPBTT2	SPTR	"10-25 SECONDS" */
@@ -3194,8 +3346,9 @@ void CHECKPOINT_BONUS_CVT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: MXT1	SPTR	"MAX CREDITS" */
 const char MXT1[] = "MAX CREDITS";
 /* asm: MXT2	SPTR	"10-50" */
@@ -3218,11 +3371,14 @@ void SET_MAX_CREDITS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
- */
+*/
 /* asm: MVL	SPTR	"MINIMUM VOLUME LEVEL" */
 const char MVL[] = "MINIMUM VOLUME LEVEL";
 
@@ -3247,9 +3403,10 @@ void SET_MIN_VOL_LEVEL(void)
     UNIMPL();
 }
 
-/* *
+/*
 *
- */
+*
+*/
 void SET_MIN_VOL_LEVEL_CVT(void)
 {
     // asm 00000F53: 	PUSH	R2
@@ -3263,10 +3420,37 @@ void SET_MIN_VOL_LEVEL_CVT(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*MULTI VALUE
+*
+*PARAMETERS
+*	AR2	STRING 1
+*	AR3	STRING 2
+*	AR4	ROUTINE TO RETURN VALUE STRING
+*	R5	INITIAL VALUE
+*	R6	MIN VALUE
+*	R7	MAX VALUE
+*	(NO WRAP AROUND)
+*RETURNS
+*	R5	VALUE (INDEX)
+*
+*/
+
 /* asm: REPEAT_SW	.bss	REPEAT_SW,1 */
 int REPEAT_SW;
 /* asm: REPEAT_TIME	.bss	REPEAT_TIME,1 */
 int REPEAT_TIME;
+/*
+*
+*
+*PARAMETERS (ADDITIONAL FOR STEP)
+*	R4	STEP
+*
+*
+*/
 
 void MULTI_VALUE(void)
 {
@@ -3368,6 +3552,8 @@ DOEXITDV:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: SPM	SPTR	"STANDARD PRICING MENU" */
 const char SPM[] = "STANDARD PRICING MENU";
 
@@ -3420,6 +3606,10 @@ void PRICE_YES_NO(void)
 
 /* asm: STP	SPTR	"PRICING SELECTED" */
 const char STP[] = "PRICING SELECTED";
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
+
 /* asm: RCMT	SPTR	"CUSTOM PRICING" */
 const char RCMT[] = "CUSTOM PRICING";
 
@@ -3452,6 +3642,8 @@ void FRACTION_YES_NO(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 const char USECP[] = "USE CUSTOM PRICING";
 
 void CUSTOM_YES_NO(void)
@@ -3480,8 +3672,11 @@ CUSTOM_NO:
 
 /* asm: CPS	SPTR	"CUSTOM PRICING SELECTED" */
 const char CPS[] = "CUSTOM PRICING SELECTED";
+// *----------------------------------------------------------------------------
+
 /* asm: CMESSAGE_TAB */
 /* asm: 	.word	CPCS,CPCS,CPCS,CPCS,CUPC,CTSS,CTCS,CCTS,CCTC,CTPC,CTPC,CTPC,CTPC */
+/* asm: 	 */
 uintptr_t CMESSAGE_TAB[] = {
     (uintptr_t)&CPCS, (uintptr_t)&CPCS, (uintptr_t)&CPCS, (uintptr_t)&CPCS, (uintptr_t)&CUPC, (uintptr_t)&CTSS, (uintptr_t)&CTCS, (uintptr_t)&CCTS, (uintptr_t)&CCTC, (uintptr_t)&CTPC, (uintptr_t)&CTPC, (uintptr_t)&CTPC, (uintptr_t)&CTPC,
 };
@@ -3554,6 +3749,7 @@ SET_SLOT2:
 /* asm: 	.word	ADJ_SHOW_FRAC,PRINT_YN */
 /* asm: 	.word	ADJ_STANDARD_PRICING,PRINT_YN_INV */
 /* asm: 	.word	0,0 */
+/* asm: 	 */
 uintptr_t PSTAB[] = {
     (uintptr_t)(ADJ_COIN1_UNITS), (uintptr_t)PRINT_NUMBER,
     (uintptr_t)(ADJ_COIN2_UNITS), (uintptr_t)PRINT_NUMBER,
@@ -3811,11 +4007,14 @@ void PRINT_MPH(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *MENU DEFINITIONS
 *
 *
- */
+*/
 #define MAIN_MENU_LEN 7
 /* asm: MAIN_MENU: */
 /* asm: MENUENTRY	"DIAGNOSTIC MENU",RUN_DIAG_MENU */
@@ -3877,8 +4076,9 @@ int ADJUSTMENT_MENU;
 /* asm: MENUENTRY	"COMBINED MOTION",DIAG_MOTION_BURNIN */
 /* asm: MENUENTRY	"MOTION SAFETY SWITCHES",MOTION_SAFETY_SWITCHES_DIAG */
 int MOTION_MENU;
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: LAMPT	SPTR	"LAMP TEST" */
 const char LAMPT[] = "LAMP TEST";
 #define LAMP_MENU_LEN 11
@@ -4000,8 +4200,9 @@ LJIN:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MOTION_CHECK_SAFETY_CODES(void)
 {
     // asm 00001170: 	PUSH	R0
@@ -4045,6 +4246,10 @@ ALL_DONE:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
+
 /* asm: MOTION_SAFETY_CODES: */
 /* asm: MSCM	080h,080h,MSC_BOARD_NOTPLUGGED */
 /* asm: MSCM	070h,0F0h,MSC_FAILSAFE_NOTCONNECTED */
@@ -4055,9 +4260,9 @@ ALL_DONE:
 /* asm: MSCM	020h,0F0h,MSC_MAT_STEPPED */
 /* asm: MSCM	010h,0F0h,MSC_MAT_NOTPLUGGED */
 int MOTION_SAFETY_CODES;
+// *----------------------------------------------------------------------------
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void MSC_BOARD_NOTPLUGGED(void)
 {
     // asm 000011B1: 	IWINDOW	50,320,450,360
@@ -4100,8 +4305,9 @@ NM4:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MSC_MAT_NOTPLUGGED(void)
 {
     // asm 000011ED: 	IWINDOW	50,320,450,360
@@ -4134,8 +4340,9 @@ NM4A:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MSC_OPTO_PATH(void)
 {
     // asm 0000121E: 	IWINDOW	50,320,450,360
@@ -4146,8 +4353,9 @@ void MSC_OPTO_PATH(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MSC_OPTO_LED(void)
 {
     // asm 00001229: 	IWINDOW	50,320,450,360
@@ -4180,8 +4388,9 @@ NJ4:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MSC_OPTO_DETECTOR(void)
 {
     // asm 0000125A: 	IWINDOW	50,320,450,360
@@ -4214,8 +4423,9 @@ NJ4A:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MSC_FAILSAFE_OK(void)
 {
     // asm 0000128B: 	IWINDOW	50,320,450,360
@@ -4272,8 +4482,9 @@ NM2BA:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void DRAW_MOTION_SAFETY_DIAG(void)
 {
     // asm 000012DD: 	LDI	COL_BLACK,RC
@@ -4322,6 +4533,8 @@ void DRAW_MOTION_SAFETY_DIAG(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void CLEAR_MATS(void)
 {
     // 	;MATS
@@ -4347,6 +4560,17 @@ void CLEAR_MATS(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEAR_MATS", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*
+*diagnostic routine to show motion safety condition
+*
+*
+*
+*/
 
 /* asm: OLD_MOTION_CODE	.bss	OLD_MOTION_CODE,1 */
 int OLD_MOTION_CODE;
@@ -4417,3 +4641,5 @@ MSFX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_SAFETY_SWITCHES_DIAG", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------

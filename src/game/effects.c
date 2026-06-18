@@ -28,6 +28,49 @@ void MEMCPY(void);
 
 extern int SCREENWIPE_DONE;
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
+/*
+*----------------------------------------------------------------------------
+*ADVANCED FEATURES
+*
+*it would be best to do open and close via the same process
+*also, sideways wipes  //  or \\  up, down, left or right can be specified
+*via on word ala:
+*
+*	SCW_OPEN	.set	0
+*	SCW_CLOSE	.set	1
+*	SCW_L		.set	10h	;these specifiy the
+*	SCW_R		.set	20h	;single panels
+*	SCW_T		.set	40h	;
+*	SCW_B		.set	80h	;
+*
+*for convience:
+*	SCW_OPEN_H	.set	030h
+*	SCW_CLOSE_H	.set	031h
+*	SCW_OPEN_V	.set	0C0h
+*	SCW_CLOSE_V	.set	0C1h
+*
+*also can be added:	(S = straight instead of diagonal)
+*
+*	SCW_LS		.set	12h	;these specifiy the
+*	SCW_RS		.set	22h	;single panels
+*	SCW_TS		.set	42h	;
+*	SCW_BS		.set	82h	;
+*
+*
+*these parameters would be encoded into AR2 when calling SCREEN_WIPE
+*and from there it would be moved to AR6, and checked each tik.
+*
+*/
+
 /* asm: MONKEYOBJRVI	.word	mnkrv */
 #define MONKEYOBJRVI mnkrv
 /* asm: MONKEYOBJLVI	.word	mnklv */
@@ -35,12 +78,14 @@ extern int SCREENWIPE_DONE;
 /* asm: MONKEYOBJUHI	.word	mnkuh */
 #define MONKEYOBJUHI mnkuh
 /* asm: MONKEYOBJLHI	.word	mnklh */
+/* asm: 	 */
+/* asm: 	 */
+/* asm: 	 */
 #define MONKEYOBJLHI mnklh
 /* asm: SCREENWIPE_DONE	.bss	SCREENWIPE_DONE,1 */
 int SCREENWIPE_DONE;
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void SCREENWIPE_OPEN(void)
 {
     // asm 0000B09F: 	CLRI	R0
@@ -51,8 +96,9 @@ void SCREENWIPE_OPEN(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void SCREENWIPE_CLOSE(void)
 {
     // asm 0000B0A5: 	CLRI	R0
@@ -63,8 +109,9 @@ void SCREENWIPE_CLOSE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void SCREENWIPE_OPEN_PRC_FAST(void)
 {
     // asm 0000B0AB: 	LONGROUT
@@ -171,8 +218,9 @@ L55:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void SCREENWIPE_CLOSE_PRC(void)
 {
     // asm 0000B0AD: 	LONGROUT
@@ -250,8 +298,9 @@ void SCREENWIPE_CLOSE_PRC(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void GET_EFFECTS_OBJS(void)
 {
     // asm 0000B0AE: 	LONGROUT
@@ -328,7 +377,10 @@ void GET_EFFECTS_OBJS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *MEMCPY
 *
 *PARAMETERS
@@ -336,7 +388,7 @@ void GET_EFFECTS_OBJS(void)
 *	AR1	DEST POINTER
 *	RC	LENGTH -1
 *
- */
+*/
 void MEMCPY(void)
 {
     // asm 0000B0AF: 	LONGROUT

@@ -399,6 +399,27 @@ LANES4\t.float\t-1728.0,-576.0,576.0,1728.0
         self.assertIn("float LANES[] = {\n    -576.0f, -576.0f, 576.0f, 576.0f,\n};", rendered)
         self.assertIn("float LANES4[] = {\n    -1728.0f, -576.0f, 576.0f, 1728.0f,\n};", rendered)
 
+    def test_float_table_preserves_disabled_and_row_comments(self) -> None:
+        asm_source = """TABLEPTR\t.word\tTABLE
+
+*STDARD .float\t0.82,1.00,0.0028,0.010
+*NEWSTD\t.float\t0.82,0.90,0.0028,0.0060
+
+TABLE:
+*#0 MUSCLE CAR
+\t.float\t0.91,0.60,0.0028,0.010\t\t;ALL AROUND
+*#1 XXX
+\t.float\t0.98,0.50,0.0032,0.0042\t\t;ACCEL
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "PLYR.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("/*\n*STDARD .float\t0.82,1.00,0.0028,0.010\n*NEWSTD\t.float\t0.82,0.90,0.0028,0.0060\n*/", rendered)
+        self.assertIn("float TABLE[] = {\n    // #0 MUSCLE CAR\n    0.91f, 0.60f, 0.0028f, 0.010f, // ALL AROUND\n    // #1 XXX\n    0.98f, 0.50f, 0.0032f, 0.0042f, // ACCEL\n};", rendered)
+
     def test_string_label_table_keeps_unreferenced_children(self) -> None:
         asm_source = """LEG_NAMES\t.word\tLEG1,LEG2
 LEG1\t.string\t"GOLDEN GATE PARK",0
@@ -783,8 +804,8 @@ SCROLLB\t.set\t86h
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("/* *COMMENT A\n*COMMENT B\n */\nvoid FIRST(void)", rendered)
-        self.assertNotIn("/* *COMMENT C\n */\nvoid SECOND(void)", rendered)
+        self.assertIn("/*\n*COMMENT A\n*COMMENT B\n*/\nvoid FIRST(void)", rendered)
+        self.assertNotIn("/*\n*COMMENT C\n*/\nvoid SECOND(void)", rendered)
 
     def test_same_entry_labels_render_as_alias_macros_and_one_function(self) -> None:
         asm_source = """*ALLOCATE PALETTES FOR A SECTION
@@ -805,7 +826,7 @@ HARDalloc_section:\tLDI\t*AR2++,AR6
         self.assertIn("void HARDalloc_section(void)", rendered)
         self.assertNotIn("void SECTION_PALETTE_ALLOC(void)\n{", rendered)
         self.assertNotIn("void alloc_section(void)\n{", rendered)
-        self.assertIn("/* *ALLOCATE PALETTES FOR A SECTION\n */\nvoid HARDalloc_section(void)", rendered)
+        self.assertIn("// *ALLOCATE PALETTES FOR A SECTION\nvoid HARDalloc_section(void)", rendered)
         self.assertEqual(symbol_table["HARDalloc_section"].kind, "function")
         self.assertEqual(symbol_table["alloc_section"].kind, "define")
         self.assertEqual(symbol_table["alloc_section"].expr, "HARDalloc_section")
@@ -907,8 +928,22 @@ LOOP
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("/* *----------------------------------------------------------------------------\n*DYNAMIC fLEX OBJECTS\n */\n/* asm: NEW_GROUP\t.bss\tNEW_GROUP,1 */", rendered)
-        self.assertNotIn("/* *ORPHAN\n */\n/* asm: OTHER\t.word\t1 */", rendered)
+        self.assertIn("/*\n*----------------------------------------------------------------------------\n*DYNAMIC fLEX OBJECTS\n*/\n/* asm: NEW_GROUP\t.bss\tNEW_GROUP,1 */", rendered)
+        self.assertNotIn("/*\n*ORPHAN\n*/\n/* asm: OTHER\t.word\t1 */", rendered)
+
+    def test_single_preserved_top_level_comment_renders_as_cpp_comment(self) -> None:
+        asm_source = """*NO MORE UNLESS NOT JSRPing
+
+THING\t.word\t1
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "TEST.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("// *NO MORE UNLESS NOT JSRPing", rendered)
+        self.assertNotIn("/*\n*NO MORE UNLESS NOT JSRPing\n*/", rendered)
 
     def test_standalone_word_data_omits_comment_only_lines_from_asm_preamble(self) -> None:
         asm_source = """CRT_REG_SETUP_STR
@@ -1130,7 +1165,7 @@ USA2\t.string\t1,1,4,4
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("/* ;1/2X25\n */\n/* asm: USA2\t.string\t1,1,4,4 */", rendered)
+        self.assertIn("// ;1/2X25\n/* asm: USA2\t.string\t1,1,4,4 */", rendered)
 
     def test_uintptr_word_table_casts_local_string_entries_with_address_of(self) -> None:
         asm_source = """STRING_TAB\t.word\tLEG1

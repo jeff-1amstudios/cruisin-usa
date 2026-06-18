@@ -27,16 +27,36 @@ extern const char EXPIRED[];
 extern int AUDIT_LIST;
 extern int OLDDIP;
 
+/*
+;	.FILE	"AUDITS.ASM"
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
+/*
+*----------------------------------------------------------------------------
+*DISPLAYABLE AUDITS
+*
+*	.word	AUDIT_#,string
+*
+*
+*/
+
 #define AUD_ROUTINE 0x5A
 #define AUD_ROUTINEH 0x5A0000
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *
 *RETURN
 *	R0	VALUE
 *
- */
+*/
 void COMPUTE_FREEGAMES_PRCNT(void)
 {
     // asm 00001419: 	READAUD	AUD_GAMES_CONTINUES
@@ -54,13 +74,16 @@ void COMPUTE_FREEGAMES_PRCNT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *RETURN
 *	R0	VALUE
 *
- */
+*/
 void COMPUTE_GAMETIME(void)
 {
     // asm 00001426: 	READAUD	AUD_GAMES_CONTINUES
@@ -161,10 +184,13 @@ void COMPUTE_GAMETIME(void)
 /* asm: AUDENT	AUD_WIN_DC,"DC WINS" */
 /* asm: AUDENT_PAGE */
 int AUDIT_LIST;
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *AUDITS DISPLAY
 *
- */
+*/
 /* asm: OLDDIP	.bss	OLDDIP,1 */
 int OLDDIP;
 
@@ -296,3 +322,5 @@ WL266:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_DISPLAY", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------

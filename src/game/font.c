@@ -8,6 +8,17 @@
 
 extern int _font1[];
 
+/*
+*----------------------------------------------------------------------------
+*FONT.ASM
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*SLOW ROM
+*
+*/
+
 /* asm: _font1 */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0111000b */
@@ -16,6 +27,7 @@ extern int _font1[];
 /* asm: 	.word	1110000b */
 /* asm: 	.word	0111000b */
 /* asm: 	.word	0001100b */
+/* asm: 	 */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0001110b */
 /* asm: 	.word	0000111b */
@@ -23,6 +35,7 @@ extern int _font1[];
 /* asm: 	.word	0000111b */
 /* asm: 	.word	0001110b */
 /* asm: 	.word	0011000b */
+/* asm: 	 */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	0011000b */
@@ -30,6 +43,7 @@ extern int _font1[];
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	1100110b */
+/* asm: 	 */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0001000b */
 /* asm: 	.word	0001000b */
@@ -37,6 +51,8 @@ extern int _font1[];
 /* asm: 	.word	0001000b */
 /* asm: 	.word	0001000b */
 /* asm: 	.word	0000000b */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
@@ -44,6 +60,9 @@ extern int _font1[];
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0011000b */
+/* asm: 	 */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
@@ -51,6 +70,7 @@ extern int _font1[];
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
+/* asm: 	 */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
@@ -58,6 +78,7 @@ extern int _font1[];
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0001100b */
+/* asm: 	 */
 /* asm: 	.word	0000001b */
 /* asm: 	.word	0000011b */
 /* asm: 	.word	0000110b */
@@ -65,6 +86,7 @@ extern int _font1[];
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0110000b */
 /* asm: 	.word	1100000b */
+/* asm: 	 */
 /* asm: 	.word	0111100b	;0 */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -72,6 +94,7 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0011100b */
 /* asm: 	.word	0001100b */
@@ -79,6 +102,7 @@ extern int _font1[];
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0001100b */
+/* asm: 	 */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0000110b */
@@ -86,6 +110,7 @@ extern int _font1[];
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0110000b */
 /* asm: 	.word	1111110b */
+/* asm: 	 */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0000110b */
@@ -93,6 +118,7 @@ extern int _font1[];
 /* asm: 	.word	0000110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
 /* asm: 	.word	0100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -100,6 +126,7 @@ extern int _font1[];
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
+/* asm: 	 */
 /* asm: 	.word	1111110b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
@@ -107,6 +134,7 @@ extern int _font1[];
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
 /* asm: 	.word	0111110b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
@@ -114,6 +142,7 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
 /* asm: 	.word	1111110b */
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
@@ -121,6 +150,7 @@ extern int _font1[];
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
+/* asm: 	 */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -128,6 +158,8 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.word	0111110b	;9 */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -135,6 +167,8 @@ extern int _font1[];
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0001100b */
@@ -142,6 +176,7 @@ extern int _font1[];
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0000000b */
+/* asm: 	 */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0001100b */
@@ -149,6 +184,7 @@ extern int _font1[];
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0000100b */
+/* asm: 	 */
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0110000b */
@@ -156,6 +192,7 @@ extern int _font1[];
 /* asm: 	.word	0110000b */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0001100b */
+/* asm: 	 */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0111110b */
 /* asm: 	.word	0111110b */
@@ -163,6 +200,7 @@ extern int _font1[];
 /* asm: 	.word	0111110b */
 /* asm: 	.word	0111110b */
 /* asm: 	.word	0000000b */
+/* asm: 	 */
 /* asm: 	.word	0110000b */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0001100b */
@@ -170,6 +208,7 @@ extern int _font1[];
 /* asm: 	.word	0001100b */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0110000b */
+/* asm: 	 */
 /* asm: 	.word	0011100b */
 /* asm: 	.word	0110100b */
 /* asm: 	.word	0000100b */
@@ -177,6 +216,8 @@ extern int _font1[];
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0011000b */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.word	0000001b */
 /* asm: 	.word	0000011b */
 /* asm: 	.word	0000110b */
@@ -184,6 +225,9 @@ extern int _font1[];
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0110000b */
 /* asm: 	.word	1100000b */
+/* asm: 	 */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.word	1111100b	;A */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -191,6 +235,7 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
+/* asm: 	 */
 /* asm: 	.word	1111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -198,6 +243,7 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1111100b */
+/* asm: 	 */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100000b */
@@ -205,6 +251,7 @@ extern int _font1[];
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
 /* asm: 	.word	1111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -212,6 +259,7 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1111100b */
+/* asm: 	 */
 /* asm: 	.word	1111110b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
@@ -219,6 +267,7 @@ extern int _font1[];
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1111110b */
+/* asm: 	 */
 /* asm: 	.word	1111110b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
@@ -226,6 +275,7 @@ extern int _font1[];
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
+/* asm: 	 */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100000b */
@@ -233,6 +283,7 @@ extern int _font1[];
 /* asm: 	.word	1101110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111110b */
+/* asm: 	 */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -240,6 +291,7 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
+/* asm: 	 */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0011000b */
@@ -247,6 +299,7 @@ extern int _font1[];
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
@@ -254,6 +307,7 @@ extern int _font1[];
 /* asm: 	.word	0000110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
 /* asm: 	.word	1100010b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1101100b */
@@ -261,6 +315,7 @@ extern int _font1[];
 /* asm: 	.word	1101100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100010b */
+/* asm: 	 */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
@@ -268,6 +323,7 @@ extern int _font1[];
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1111110b */
+/* asm: 	 */
 /* asm: 	.word	1100011b */
 /* asm: 	.word	1110111b */
 /* asm: 	.word	1101011b */
@@ -275,6 +331,7 @@ extern int _font1[];
 /* asm: 	.word	1100011b */
 /* asm: 	.word	1100011b */
 /* asm: 	.word	1100011b */
+/* asm: 	 */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1110110b */
 /* asm: 	.word	1111110b */
@@ -282,6 +339,7 @@ extern int _font1[];
 /* asm: 	.word	1101110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
+/* asm: 	 */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -289,6 +347,7 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
 /* asm: 	.word	1111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -296,6 +355,7 @@ extern int _font1[];
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
+/* asm: 	 */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	1100110b */
@@ -303,6 +363,8 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
 /* asm: 	.word	0011010b */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.word	1111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -310,6 +372,7 @@ extern int _font1[];
 /* asm: 	.word	1111000b */
 /* asm: 	.word	1101100b */
 /* asm: 	.word	1100110b */
+/* asm: 	 */
 /* asm: 	.word	0111110b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1100000b */
@@ -317,6 +380,7 @@ extern int _font1[];
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0000110b */
 /* asm: 	.word	1111100b */
+/* asm: 	 */
 /* asm: 	.word	1111110b */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0011000b */
@@ -324,6 +388,7 @@ extern int _font1[];
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0011000b */
+/* asm: 	 */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
@@ -331,6 +396,7 @@ extern int _font1[];
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
+/* asm: 	 */
 /* asm: 	.word	1100011b */
 /* asm: 	.word	1100011b */
 /* asm: 	.word	1100011b */
@@ -338,6 +404,7 @@ extern int _font1[];
 /* asm: 	.word	0111110b */
 /* asm: 	.word	0011100b */
 /* asm: 	.word	0011100b */
+/* asm: 	 */
 /* asm: 	.word	1100011b */
 /* asm: 	.word	1100011b */
 /* asm: 	.word	1101011b */
@@ -345,6 +412,7 @@ extern int _font1[];
 /* asm: 	.word	1111111b */
 /* asm: 	.word	1110111b */
 /* asm: 	.word	1100011b */
+/* asm: 	 */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
@@ -352,6 +420,7 @@ extern int _font1[];
 /* asm: 	.word	0111100b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
+/* asm: 	 */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	1100110b */
 /* asm: 	.word	0111100b */
@@ -359,6 +428,7 @@ extern int _font1[];
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0011000b */
 /* asm: 	.word	0011000b */
+/* asm: 	 */
 /* asm: 	.word	1111110b */
 /* asm: 	.word	0000110b */
 /* asm: 	.word	0001100b */
@@ -366,6 +436,7 @@ extern int _font1[];
 /* asm: 	.word	0110000b */
 /* asm: 	.word	1100000b */
 /* asm: 	.word	1111110b */
+/* asm: 	 */
 /* asm: 	.word	0111000b */
 /* asm: 	.word	0110000b */
 /* asm: 	.word	0110000b */
@@ -408,6 +479,7 @@ extern int _font1[];
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
+/* asm: 	 */
 int _font1[] = {
     12,
     56,
@@ -584,6 +656,13 @@ int _font1[] = {
     24,
     48,
     96,
+    // 	.word	0011100b
+    // 	.word	1100110b
+    // 	.word	1000110b
+    // 	.word	1011110b
+    // 	.word	1001100b
+    // 	.word	1100000b
+    // 	.word	0111110b
     124, // A
     102,
     102,

@@ -36,10 +36,24 @@ void GET_CLOSEST_TRAK(void);
 extern int HELI_ABORT;
 extern int CHOPPERDYNA[];
 
+/*
+*----------------------------------------------------------------------------
+*CHOPPER IN THE SKY
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 /* asm: HELI_ABORT	.bss	HELI_ABORT,1 */
 int HELI_ABORT;
-/* *LOCALS  (AFTER DELTA EQUATES)
- */
+/*
+*
+*	!!!!NO JSRPing!!!!
+*
+*/
+
+// *LOCALS  (AFTER DELTA EQUATES)
 #define CD_ANIPROC (PDATA+18)
 #define CD_MODE (PDATA+19)
 #define CD_ACC (PDATA+20) //acceleration
@@ -58,23 +72,28 @@ int HELI_ABORT;
 #define CD_MAX_BOMBS (PDATA+33)
 #define CD_LASTPASS (PDATA+34) //P
 #define CD_DOATTACK (PDATA+35) //P
-/* *CHOPPER MODE
- */
+// *NO MORE UNLESS NOT JSRPing
+
+// *CHOPPER MODE
 #define CM_CU 1 //CATCH UP
 #define CM_DB 2 //DROP BOMBS
 #define CM_FA 3 //FLY AWAY
 #define CRADZ OUSR1
 #define MAX_SPEED 667 //about 180 mph
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 /* asm: CHOPPERDYNA */
 /* asm: 	.word	1		;#OF DYNAS-1 */
+/* asm: 	 */
 /* asm: 	.float	0,-206,14	;blades */
 /* asm: 	.word	3		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	0,0,0		;main body */
 /* asm: 	.word	94		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
+/* asm: 	 */
+/* asm: 	 */
 int CHOPPERDYNA[] = {
     1, // #OF DYNAS-1
     0, -206, 14, // blades
@@ -83,9 +102,11 @@ int CHOPPERDYNA[] = {
     0, 0, 0, // main body
     94, // VERTS-1
     1, // DYNAFLAG
+    // ----------------------------------------------------------------------------
 };
 
-/* *---------------------------------------------------------------------------
+/*
+*---------------------------------------------------------------------------
 *
 *go straight for the plyrs car
 *
@@ -93,7 +114,7 @@ int CHOPPERDYNA[] = {
 *branched to from oncoming buzz
 *
 *
- */
+*/
 void DIRECT_ATTACK(void)
 {
     // 	;
@@ -193,13 +214,16 @@ LLK28:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *Take the helicopter, and buzz (@ 200 MPH) right over the players car
 *exit when start of the world is hit
 *
 *
 *
- */
+*/
 void ONCOMMING_BUZZ(void)
 {
     // asm 00007CBF: 	LDF	0,R0
@@ -333,7 +357,227 @@ LLK2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+;
+;*----------------------------------------------------------------------------
+;*
+;*
+;*
+;*
+;CIRCLE_BUZZ:
+;	LDF	0,R0
+;	STF	R0,*+AR4(ORADX)
+;	STF	R0,*+AR4(ORADY)
+;	STF	R0,*+AR4(CRADZ)
+;
+;	STF	R0,*+AR4(OVELX)
+;	STF	R0,*+AR4(OVELY)
+;	STF	R0,*+AR4(OVELZ)
+;
+;
+;	;
+;	;find where player is
+;
+;	LDI	@PLYCBLK,AR2
+;	NEGF	*+AR2(CARDIST2CNTR),R0
+;	STF	R0,*+AR7(DELTA_XLANE)
+;	LDI	*+AR2(CARTRAK),AR2
+;	LDI	*+AR2(OBLINK4),AR2
+;
+;	STI	AR2,*+AR7(DELTA_TPIECE)
+;	LDI	*+AR2(OUSR1),R0
+;	STI	R0,*+AR7(DELTA_LAST_OID)
+;	CALL	DELTA_SUB_FUNCTION			;MATRIXA,VECTORA,R2
+;
+;	LDP	@_VECTORA
+;	LDF	*+AR2(OPOSX),R0
+;	ADDF	@_VECTORA+X,R0
+;	STF	R0,*+AR4(OPOSX)
+;	LDF	*+AR2(OPOSY),R0
+;	FLOAT	1000,R1
+;	SUBF	R1,R0
+;	ADDF	@_VECTORA+Y,R0
+;	STF	R0,*+AR4(OPOSY)
+;	LDF	*+AR2(OPOSZ),R0
+;	ADDF	@_VECTORA+Z,R0
+;	STF	R0,*+AR4(OPOSZ)
+;	SETDP
+;
+;
+;	;initialize Ytheta to the intentional direction
+;	STF	R2,*+AR4(ORADY)
+;	STF	R2,*+AR7(DELTA_RADYDELTA)
+;
+;	LDI	AR4,AR2
+;	ADDI	OMATRIX,AR2
+;	CALL	FIND_YMATRIX
+;
+;
+;CIRCLE_JOIN
+;	CLRF	R6
+;	LDI	@CIRCLE_SI,AR5
+;
+;CIRCL_L
+;	LDI	@PLYCBLK,AR0
+;	LDF	*+AR0(CARSPEED),R0
+;	CMPF	40,R0
+;	BLT	ISOK55
+;	RETP
+;ISOK55
+;
+;
+;	CALL	DIST_TO_PLYR
+;	LDF	*+AR7(DELTA_PLYRDIST),R1
+;	STF	R0,*+AR7(DELTA_PLYRDIST)
+;	STF	R1,*+AR7(DELTA_OPLYRDIST)
+;
+;	CALL	HELI_SND
+;
+;	.data
+;CIRCLE_SI	.word	CIRCLE_S
+;CIRCLE_S ;	X,Z
+;	.float	4000,2200
+;	.float	2500,5000
+;	.float	0,9000
+;	.float	-2500,5000
+;	.float	-4000,2200
+;	.float	-1
+;	.text
+;
+;
+;JKKU
+;	LDI	@PLYCBLK,AR2
+;	LDI	*+AR2(CARTRAK),AR2
+;	LDI	*+AR2(OLINK4),AR0
+;	LDF	*+AR0(OPOSX),R2
+;	SUBF	*+AR2(OPOSX),R2
+;	LDF	*+AR0(OPOSZ),R3
+;	SUBF	*+AR2(OPOSZ),R3
+;	CALL	ARCTANF
+;	SUBF	HALFPI,R0
+;	LDF	R0,R2				;FIND THETA
+;	LDI	@MATRIXAI,AR2
+;	CALL	FIND_YMATRIX
+;
+;
+;	CALL	CLR_VECTORA
+;	LDF	*AR5,R4
+;	LDF	*+AR5(1),R5
+;	STF	R4,*+AR2(X)
+;	STF	R5,*+AR2(Z)
+;
+;
+;	LDI	@MATRIXAI,R2
+;	LDI	AR2,R3
+;	CALL	MATRIX_MUL
+;
+;
+;	LDI	@PLYCAR,AR3
+;	LDF	*+AR3(OPOSX),R4
+;	ADDF	*+AR2(X),R4
+;	LDF	*+AR3(OPOSZ),R5
+;	ADDF	*+AR2(Z),R5		;R4,R5 contains X/Z position
+;
+;
+;	LDF	*+AR4(OPOSX),R2
+;	SUBF	R4,R2
+;	MPYF	R2,R2
+;	LDF	*+AR4(OPOSZ),R1
+;	SUBF	R5,R1
+;	ADDF	R1,R2
+;	CALL	SQRT			;R0 <- distance to new position
+;
+;
+;	FLOAT	2000,R1
+;	CMPF	R1,R0
+;	BGT	KKK
+;	LDF	*++AR5(2),R0
+;	CMPF	-1,R0
+;	BNE	JKKU
+;	LDI	@CIRCLE_SI,AR5
+;	BU	JKKU
+;KKK
+;
+;
+;
+;	PUSHF	R4
+;	PUSHF	R5
+;
+;	FLOAT	@NFRAMES,R1
+;	MPYF	*+AR7(CD_TSPEED),R1
+;	LDFLE	30,R1			;if 0 or less assume 30 voxel per frame
+;	CALL	DIV_F			;R0/R1 (distance to piece/speed) -> # frames to achieve
+;	FIX	R0,R7
+;
+;	POPF	R5
+;	POPF	R4
+;
+;	LDF	R4,R2			;X
+;	SUBF	*+AR4(OPOSX),R2
+;	LDF	R5,R3			;Z
+;	SUBF	*+AR4(OPOSZ),R3
+;
+;
+;
+;	;find the theta delta to this position
+;	;
+;	CALL	ARCTANF			;-> R0
+;	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
+;
+; 	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
+;	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
+;	FLOAT	R7,R1			;theta / number of turns to achieve
+;	SUBF	1,R1
+;	BLE	NODIV3
+;	CALL	DIV_F			;-> R0
+;NODIV3
+;	CMPF	0.06926,R0		;PI/8 (maximum turning radius)
+;	LDFGT	0.06926,R0
+;	CMPF	-0.06926,R0
+;	LDFLT	-0.06926,R0
+;	STF	R0,*+AR7(DELTA_RADYDELTA)
+;
+;
+;	PUSH	AR4
+;	ADDI	OPOSX,AR4
+;	CALL	CAMSCAN
+;	POP	AR4
+;	BNC	LLK23
+;
+;	NEGF	R0
+;	FLOAT	-1300,R1
+;	SUBF	R1,R0
+;	NEGF	R0
+;	ADDF	*+AR4(OPOSY),R0
+;	STF	R0,*+AR7(CD_DHEIGHT)
+;LLK23
+;
+;
+;	LDF	*+AR7(CD_SPEED),R3
+;	ADDF	*+AR7(CD_ACC),R3
+;
+;	FLOAT	300,R1			;MAX speed
+;
+;	CMPF	R1,R3
+;	LDFGT	R1,R3
+;	STF	R3,*+AR7(CD_SPEED)
+;
+;
+;
+;	LDF	*+AR7(DELTA_RADYDELTA),R2
+;	CALL	FSL_MOVE
+;
+;
+;	SLEEP	1
+;	BU	CIRCL_L
+;*----------------------------------------------------------------------------
+;
+*/
+
+/*
+*----------------------------------------------------------------------------
 *CHOPPER SEQUENCE:
 *
 *
@@ -347,7 +591,7 @@ LLK2:
 *
 *
 *
- */
+*/
 void CHOPPER(void)
 {
     // 	;BEGIN INITIALIZATION CODE
@@ -661,8 +905,9 @@ CHOPPER_SLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void FLYAWAY(void)
 {
     // asm 00007E41: 	CLRI	AR6			;flag
@@ -705,8 +950,9 @@ KKUU:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void CHOPPER_DIE(void)
 {
     // asm 00007E62: 	LDI	*+AR4(OCARBLK),AR2
@@ -723,12 +969,15 @@ void CHOPPER_DIE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	AR4	OBJECT
 *
- */
+*/
 void FIND_YX_MATRIX(void)
 {
     // asm 00007E6B: 	LDF	*+AR4(ORADY),R2
@@ -748,8 +997,9 @@ void FIND_YX_MATRIX(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void SETDYNAOBJ(void)
 {
     // asm 00007E78: 	LDI	O_DYNAMIC,R0	 	;MAKE PARENT OBJECT DYNAMIC
@@ -794,8 +1044,9 @@ CHOPLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void CHOPPERANI(void)
 {
     // asm 00007E9C: 	LONGROUT
@@ -819,14 +1070,17 @@ CANILP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *FSL_MOVE	Frictionless Movement
 *
 *PARAMETERS
 *	R2	THETA DELTA (CHANGE IN THETA)
 *	R3	SPEED
 *
- */
+*/
 void FSL_MOVE(void)
 {
     // ;	LDP	@NFRAMES
@@ -940,8 +1194,234 @@ void FSL_MOVE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+/*
+;
+;*----------------------------------------------------------------------------
+;*
+;*PARAMETERS
+;*	AR4	CHOPPER OBJECT
+;*
+;BOMB_PROC:
+;	LDI	AR4,AR5
+;	CALL	OBJ_GET
+;	BC	SUICIDE
+;
+;	LDI	AR0,AR4
+;	LDF	*+AR5(OPOSX),R0
+;	STF	R0,*+AR4(OPOSX)
+;	LDF	*+AR5(OPOSY),R0
+;	STF	R0,*+AR4(OPOSY)
+;	LDF	*+AR5(OPOSZ),R0
+;	STF	R0,*+AR4(OPOSZ)
+;
+;	STI	AR7,*+AR4(OPLINK)
+;
+;	LDF	*+AR2(ORADY),R2
+;	LDI	AR4,AR2
+;	ADDI	OMATRIX,AR2
+;	CALL	FIND_YMATRIX
+;
+;	LDIL	bomb,AR0
+;	STI	AR0,*+AR4(OROMDATA)
+;
+;	LDI	1,R1
+;	LS	O_PROC_B,R1
+;	LDI	1,R0
+;	LS	O_3DROT_B,R0
+;	OR	R1,R0
+;	OR	*+AR4(OFLAGS),R0
+;	STI	R0,*+AR4(OFLAGS)
+;
+;	LDF	HALFPI,R2
+;	LDI	AR4,AR2
+;	ADDI	OMATRIX,AR2
+;	CALL	FIND_XMATRIX
+;
+;	LDI	AR4,AR2
+;	CALL	OBJ_INSERT
+;
+;
+;	LDF	HALFPI,R0
+;	STF	R0,*+AR4(ORADX)
+;
+;
+;	LDF	*+AR5(OVELX),R0
+;	STF	R0,*+AR4(OVELX)
+;	LDF	*+AR5(OVELY),R0
+;	STF	R0,*+AR4(OVELY)
+;	LDF	*+AR5(OVELZ),R0
+;	STF	R0,*+AR4(OVELZ)
+;
+;	CALL	ADD_RDDEBRIS
+;	LDI	TSIGN_C|TSC_HARD,R0
+;	STI	R0,*+AR4(OID)
+;
+;
+;
+;	LDI	120,AR6
+;BOMB_L
+;	DEC	AR6
+;	CMPI	0,AR6
+;	BLE	BOMBDIE
+;
+;	PUSH	AR4
+;	ADDI	OPOSX,AR4
+;	CALL	CAMSCAN
+;	POP	AR4
+;	BNC	BOMBDIE
+;
+;	FLOAT	100,R1
+;	CMPF	R1,R0
+;	BLE	BOMBDIE
+;
+;
+;	LDF	*+AR4(OVELX),R0
+;	MPYF	0.99,R0
+;	STF	R0,*+AR4(OVELX)
+;	LDF	*+AR4(OVELY),R0
+;	ADDF	5,R0
+;	FLOAT	50,R1
+;	CMPF	R1,R0
+;	LDFGT	R1,R0
+;	STF	R0,*+AR4(OVELY)
+;	LDF	*+AR4(OVELZ),R0
+;	MPYF	0.99,R0
+;	STF	R0,*+AR4(OVELZ)
+;
+;	FLOAT	@NFRAMES,R2
+;
+;	LDF	*+AR4(OVELX),R0
+;	MPYF	R2,R0
+;	ADDF	*+AR4(OPOSX),R0
+;	STF	R0,*+AR4(OPOSX)
+;
+;	LDF	*+AR4(OVELY),R0
+;	MPYF	R2,R0
+;	ADDF	*+AR4(OPOSY),R0
+;	STF	R0,*+AR4(OPOSY)
+;
+;	LDF	*+AR4(OVELZ),R0
+;	MPYF	R2,R0
+;	ADDF	*+AR4(OPOSZ),R0
+;	STF	R0,*+AR4(OPOSZ)
+;
+;
+;	LDF	*+AR4(ORADX),R2
+;	MPYF	0.80,R2
+;	STF	R2,*+AR4(ORADX)
+;	LDI	@MATRIXAI,AR2
+;	CALL	FIND_XMATRIX
+;
+;
+;	LDF	*+AR4(ORADY),R2
+;	ADDF	0.3,R2
+;	CALL	NORMITS
+;	STF	R2,*+AR4(ORADY)
+;
+;	LDI	AR4,AR2
+;	ADDI	OMATRIX,AR2
+;	CALL	FIND_YMATRIX
+;
+;	LDI	@MATRIXAI,AR2
+;	LDI	AR4,R2
+;	ADDI	OMATRIX,R2
+;	LDI	R2,R3
+;	CALL	CONCATMATV
+;
+;	SLEEP	1
+;	BU	BOMB_L
+;
+;BOMBDIE
+;	LDI	@EXP_ANII,AR5
+;
+;	LDI	*AR5,AR0
+;	STI	AR0,*+AR4(OROMDATA)
+;
+;	ORM	O_POSTER,*+AR4(OFLAGS)
+;
+;	LDI	*+AR4(OFLAGS),R0
+;	ANDN	O_1PAL,R0
+;	OR	O_POSTER,R0
+;	STI	R0,*+AR4(OFLAGS)
+;
+;	BU	EXLJ
+;*----------------------------------------------------------------------------
+*/
+
+/*
+*----------------------------------------------------------------------------
+;EXP_ANII	.word	EXP_ANI
+;EXP_ANI
+;	;.word	exp1,exp2,exp3,exp4,exp5,exp6,exp7,-1
+;	;.word	dexplo1,dexplo2,dexplo3,dexplo4,dexplo5
+;	;.word	dexplo6,dexplo7,dexplo8,dexplo9,dexplo10,dexplo11,-1
+;
+;	.word	blast1,blast2,blast3,blast4,blast5
+;	.word	blast6,blast7,blast8,blast9,blast10,-1
+;
+;
+;
+;EXPLO_SOUNDSI	.word	EXPLO_SOUNDS
+;EXPLO_SOUNDS	.word	EXP1,EXP2,EXP3
+;
+;EXP_NMPUFF:
+;	LDI	AR4,AR6
+;	CALL	OBJ_GET
+;	BC	SUICIDE
+;	LDI	AR0,AR4
+;	LDI	@EXP_ANII,AR5
+;
+;	LDI	*AR5,AR0
+;	STI	AR0,*+AR4(OROMDATA)
+;
+;	LDF	*+AR6(OPOSX),R0
+;	STF	R0,*+AR4(OPOSX)
+;	LDF	*+AR6(OPOSY),R0
+;	STF	R0,*+AR4(OPOSY)
+;	LDF	*+AR6(OPOSZ),R0
+;	STF	R0,*+AR4(OPOSZ)
+;	ORM	O_POSTER,*+AR4(OFLAGS)
+;	LDI	AR4,AR2
+;	CALL	OBJ_INSERT
+;EXLJ
+;
+;;explosions must get louder
+;;
+;;	RANDN	3
+;	LDI	@EXPLO_SOUNDSI,AR2
+;;	ADDI	R0,AR2
+;	LDI	*AR2,AR2
+;	CALL	ONESNDFX
+;
+;	;collidable explosion
+;
+;EXP_NMPUFFLP
+;	LDI	*AR5++,AR0
+;	CMPI	-1,AR0
+;	BEQ	EXP_DIE
+;	STI	AR0,*+AR4(OROMDATA)
+;
+;	SLEEP	1
+;	BU	EXP_NMPUFFLP
+;
+;EXP_DIE
+;	LDI	1,R1
+;	LS	O_PROC_B,R1
+;	NOT	R1
+;	LDI	*+AR4(OFLAGS),R0
+;	AND	R1,R0
+;	STI	R0,*+AR4(OFLAGS)
+;
+;
+;	LDI	AR4,AR2
+;	CALL	OBJ_DELETE
+;	DIE
+;*----------------------------------------------------------------------------
+*/
+
+// *----------------------------------------------------------------------------
 void HELI_SND(void)
 {
     // asm 00007EFF: 	LDI	HELI_SNDLP,AR2		;may want to add in volume effects
@@ -992,12 +1472,15 @@ HEND:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *RETURNS
 *	AR0	ROAD OBJECT
 *
- */
+*/
 void GET_CLOSEST_TRAK(void)
 {
     // asm 00007F22: 	LDI	@DRIVE_LIST,R0

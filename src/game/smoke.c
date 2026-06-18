@@ -42,6 +42,15 @@ extern int SMOKEANI[];
 extern int SMOKE2ANI[];
 extern int SPARKANI[];
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 /* asm: TIRE_SMOKE_COUNT	.bss	TIRE_SMOKE_COUNT,1 */
 int TIRE_SMOKE_COUNT;
 /* asm: SMOKEANI */
@@ -52,16 +61,18 @@ int SMOKEANI[] = {
 /* asm: SMOKE2ANI */
 /* asm: 	.word	bnout1,bnout2,bnout3,bnout4,bnout5,bnout6,bnout7,bnout8,bnout9,bnout10 */
 /* asm: 	.word	bnout11,bnout12,bnout14,bnout15,bnout16,-1 */
+/* asm: 	 */
 int SMOKE2ANI[] = {
     bnout1, bnout2, bnout3, bnout4, bnout5, bnout6, bnout7, bnout8, bnout9, bnout10,
     bnout11, bnout12, bnout14, bnout15, bnout16, -1,
 };
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 * SMOKE	PROC
 *INPUT	AR4 = CAROBJ
 *	AR5 = CARBLK
 *Creates and maintains several puffs of smoke
- */
+*/
 #define NUM_SMOKES PDATA
 #define SMOKE_PAL (PDATA+1)
 #define SMOKE_OBJS (PDATA+2)
@@ -164,6 +175,16 @@ SMOKE_DIE:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+* CREATE_SMOKE_OBJ
+*INPUT	AR4 = CAROBJ
+*	AR5 = CARBLK
+*	R5 = ZOFFSET
+*OUTPUT	SETC if no obj made; CLRC if obj made
+*Creates a puff of smoke
+*/
+
 void CREATE_SMOKE_OBJ(void)
 {
     // asm 0000850A: 	LDI	*+AR7(NUM_SMOKES),R0
@@ -223,6 +244,14 @@ NO_SMOKE:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*FIND THE WHEEL IN THE DYNALIST OF THE CAR POINTED TO BY AR2
+*INPUT	AR2 = CARS OBJECT
+*OUTPUT AR0 = MATRIX OF THE BODY
+* SCRAMBLES R0,R1
+*/
+
 void GET_OTHER_REAR(void)
 {
     // asm 0000853A: 	LDI	*AR2,R0
@@ -248,6 +277,16 @@ FOUND_REAR:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_REAR", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*INPUT	AR0 = obj to init
+*	AR1 = ANI to init with
+*	AR2 = wheel obj
+*	MATRIXAI - MATRIX of car
+*	R4 = OID of object over
+*	R5 = ZOFFSET
+*/
 
 void INIT_SMOKE(void)
 {
@@ -303,11 +342,12 @@ INSM1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
- */
+*/
 void SORT_SMOKE(void)
 {
     // asm 00008574: 	LDI	PLYR_C,AR2
@@ -355,14 +395,18 @@ SORT_SMOKEX:
 
 /* asm: SPARKANI */
 /* asm: 	.word	x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,-1 */
+/* asm: 	 */
 int SPARKANI[] = {
+    // 	.word	sparc10,sparc10,sparc11,sparc11,sparc12,sparc12,-1
     x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, -1,
+    // 	.word	x2,x4,x6,x8,x10,-1
 };
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 * INIT_SPARK
 *INPUT	AR4 = object of parent
 *Creates and maintains several spark animations
- */
+*/
 #define COLL_X PDATA
 #define COLL_Y (PDATA+1)
 #define COLL_Z (PDATA+2)
@@ -452,6 +496,13 @@ INIT_SPARKX:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*Called from within SPARK_PROC. Will make a new spark based on...
+*INPUT	AR7 = PROCESS BLOCK OF SPARK_PROC
+*	R7  = FL, NUMBER OF FRAMES SINCE LAST SPARK
+*/
+
 void REPLICATE_SPARK(void)
 {
     // asm 000085DC: 	LDI	*+AR7(NUM_SPARKS),R0
@@ -524,9 +575,15 @@ REPSPARKX:
     UNIMPL();
 }
 
-/* *INPUT	PDATA = SETUP see equates at begining of file
+/*
+*----------------------------------------------------------------------------
+* SPARK_PROC	PROC
+*/
+
+/*
+*INPUT	PDATA = SETUP see equates at begining of file
 *Maintains several spark animations
- */
+*/
 void SPARK_PROC(void)
 {
     // asm 0000861C: 	LDF	0,R7
@@ -622,11 +679,12 @@ NO_OBJ:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 * INIT_COLLA_OBJS
 *INPUT	AR0 points to proc memory
 *Creates several spark animations
- */
+*/
 void INIT_COLLA_OBJS(void)
 {
     // asm 0000866E: 	LDI	0,R5
@@ -692,6 +750,15 @@ INIT_SPARK_KILL:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_COLLA_OBJS", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*INPUT	AR4	Car object
+*	AR5	Car block
+*OUTPUT	NONE
+*
+* Creates sparks at position where the wall was hit
+*/
 
 void WALL_SPARK(void)
 {
@@ -770,6 +837,14 @@ WALL_SPARKX:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*IMPACT_SPARK
+*	INPUT *-AR3(1) = XYZ
+*	INPUT	AR0,AR1 = two objects
+*
+*/
+
 void IMPACT_SPARK(void)
 {
     // asm 000086E4: 	CALL	PUSHALL
@@ -814,6 +889,14 @@ IMPACT_SPARKX:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*ROAD_IMPACT_SPARK ASSUMSE IT IS CALLED FROM A ROUTINE THAT USED BOXSCAN IN COLLA
+*INPUT	R2 = distance to road bottom from the point the is bellow it
+*
+*
+*/
+
 void ROAD_IMPACT_SPARK(void)
 {
     // asm 00008707: 	RETS
@@ -850,10 +933,11 @@ void ROAD_IMPACT_SPARK(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *INPUT	AR4 = CARS OBJECT
 *	AR5 = CARBLK
- */
+*/
 void SKID_SPARK(void)
 {
     // asm 00008708: 	RETS
@@ -888,11 +972,12 @@ void SKID_SPARK(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *RETURNS	R2= number of spark procs
 *		C=1 if too many
 *		C=0 if ok
- */
+*/
 void TOO_MANY_SPARKS(void)
 {
     // asm 00008709: 	LDI	0,R2

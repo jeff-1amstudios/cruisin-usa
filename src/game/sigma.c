@@ -27,8 +27,16 @@ void SIGMA_DIE(void);
 
 extern int SIGMA_LIST[];
 
-/* *SIGMA_STARTUP STRUCT
- */
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
+// *SIGMA_STARTUP STRUCT
 #define SS_MODEL 0
 #define SS_FLAG 1
 #define SS_COPCAR 1
@@ -50,17 +58,22 @@ extern int SIGMA_LIST[];
 /* asm: 	.word	COPCAR_MOD,SS_COPCAR */
 /* asm: 	.word	MUSTANG_MOD,0 */
 /* asm: 	.word	MUSCLE_MOD,0 */
+/* asm: 	 */
 /* asm: 	.word	CARAVAN_MOD,0 */
 /* asm: 	.word	SBUS_MOD,SS_LONG */
 /* asm: 	.word	PTRUCKG_MOD,0 */
 /* asm: 	.word	JEEP_MOD,0 */
 /* asm: 	.word	GTRUCK_MOD,0 */
+/* asm: 	 */
 /* asm: 	.word	COPCAR_MOD,SS_COPCAR */
 /* asm: 	.word	MUSTANG_MOD,0 */
 /* asm: 	.word	MUSCLE_MOD,0 */
 /* asm: 	.word	CARAVAN_MOD,0 */
 /* asm: 	.word	PTRUCKG_MOD,0 */
+/* asm: 	 */
 /* asm: 	.word	JEEP_MOD,0 */
+/* asm: 	 */
+/* asm: 	 */
 int SIGMA_LIST[] = {
     GTRUCK_MOD, 0,
     CBUS_MOD, SS_LONG,
@@ -81,7 +94,8 @@ int SIGMA_LIST[] = {
 };
 #define SIGMA_PSYCHO 1
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *SIGMA IS A BIG FAT PIG THAT STARTS UP AHEAD OF THE PLAYER
 *AND MOVES RATHER SLOWLY AKIN TO A CTA BUS, OR A COMBINE VEHICLE.
 *IN ANY INSTANCE THE DRONE DISAPPEARS ONCE IT IS TRACKING BENEATH THE WORLD.
@@ -89,7 +103,7 @@ int SIGMA_LIST[] = {
 *SIGMA TRAVELS IN THE SAME DIRECTION AS THE PLAYER.
 *
 *
- */
+*/
 void SIGMA_DRONE(void)
 {
     // asm 0000A42A: 	LDI	@DD_MAX_DRONES,R0
@@ -393,14 +407,17 @@ SIGMASLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *In the case of a 'breakdown' we simply wait until the universe has passed
 *us up, and then goto SIGMA_DIE.
 *
 *
- */
+*/
 void BREAKDOWN(void)
 {
     // ;	LDI	*+AR4(OID),R0
@@ -438,8 +455,9 @@ BREAKDNSLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void SIGMA_DIE(void)
 {
     // asm 0000A533: 	BU	RHO_DIE

@@ -19,7 +19,31 @@ void SQRT(void);
 #define DIV_F DIV_F30
 #define DIV_I DIV_I30
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
+*RUNTIME SYSTEM ROUTINES
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*
+*THIS FILE CONTAINS THE RUNTIME SOURCE CODE TO C ORIENTED OPERATIONS
+*
+*CONTAINED IN THIS FILE ARE THE FOLLOWING FUNCTIONS
+*
+*	DIV_F		divide floating
+*	DIV_I		divide integer
+*	DIV_U30		divide unsigned
+*	INV_F30		inverse floating
+*	MOD_I30		modulus integer
+*	MOD_U30		modulus unsigned
+*	SQRT		C callable sqrt()
+*
+*
+*/
+
+/*
+*----------------------------------------------------------------------------
 *DIVF	Floating point divide function
 *
 *PARAMETERS	u in R0, v in R1
@@ -52,7 +76,7 @@ void SQRT(void);
 *
 *	Cycles: 40
 *
- */
+*/
 void DIV_F30(void)
 {
     // asm 0000A534: 	POP	BK	;Pop return address
@@ -129,6 +153,8 @@ void DIV_F30(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void DIV_I30(void)
 {
     // 	;
@@ -191,6 +217,8 @@ zero:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_I30", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void DIV_U30(void)
 {
@@ -299,7 +327,10 @@ zerob:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *INVF	Floating point inverse function
 *
 *
@@ -330,7 +361,7 @@ zerob:
 *	It can also be shown that e[i+1] = e[i] * e[i].
 *	Cycles: 36
 *
- */
+*/
 void INV_F30(void)
 {
     // asm 0000A5B0: 	POP	BK		;Pop return address
@@ -399,6 +430,8 @@ void INV_F30(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void MOD_I30(void)
 {
     // 	;
@@ -461,6 +494,8 @@ mod_32:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOD_I30", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void MOD_U30(void)
 {
@@ -558,6 +593,34 @@ zeroc:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOD_U30", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*double sqrt(double x)
+*SQRT	Square Root
+*
+*PARAMETERS
+*	R2	float	x
+*
+*RETURNS
+*	R0	float square root of x
+*		If x <= 0 returns x
+*
+*CLOBBERS
+*	R0,R1,R2,R3
+*
+*The algorithm is from the TMS320C30 User's Guide, p. 11-30
+*
+*This has been modified from the C version such that _errno
+*is not set (nor does it exist).
+*
+*
+*CYCLES
+*	52 (64 OUT OF CACHE  (PUSHES))
+*
+*/
 
 void SQRT(void)
 {

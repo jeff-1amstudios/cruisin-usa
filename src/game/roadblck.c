@@ -29,11 +29,45 @@ void DEBRIS_SORT(void);
 extern int ROAD_DEBRIS;
 extern float MAXDIST;
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
+/*
+*----------------------------------------------------------------------------
+*RDDEBRIS_C
+*
+*THIS FILE HANDLES THE RDDEBRIS (Road Debris) CLASS
+*OF OBJECTS.
+*
+*
+*This Class has the following properties:
+*
+*	o	associated with a road piece
+*	o	single point collision
+*	o	has reaction to this collision
+*
+*
+*Association assertions:
+*
+*In this class all objects are pulled from the object
+*list and then sorted as normal (ala DRONES).  The objects
+*are then reinserted onto the object list (exactly in front
+*of the road piece it is associated with.
+*
+*
+*
+*/
+
 /* asm: ROAD_DEBRIS	.bss	ROAD_DEBRIS,1 */
 int ROAD_DEBRIS;
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void INIT_RDDEBRIS(void)
 {
     // asm 0000AF85: 	CLRI	R0
@@ -43,7 +77,10 @@ void INIT_RDDEBRIS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *INSERT OBJECT ONTO THE ROAD DEBRIS LIST
 *
 *take object and insert on list and insert the closest
@@ -57,7 +94,7 @@ void INIT_RDDEBRIS(void)
 *	AR4	OBJECT
 *
 *
- */
+*/
 void ADD_RDDEBRIS(void)
 {
     // asm 0000AF88: 	PUSH	R0
@@ -82,13 +119,16 @@ void ADD_RDDEBRIS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PULL OBJECT FROM ROAD DEBRIS LIST
 *
 *PARAMETERS
 *	AR2	OBJECT
 *
- */
+*/
 void FREE_RDDEBRIS(void)
 {
     // asm 0000AF96: 	PUSH	R0
@@ -114,19 +154,21 @@ FREEDR_X:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SORT YOUR DEBRIS IN THE WORLD
 *
 *PARAMETERS
 *	AR4	PULL LIST HEADER
 *
 *
- */
+*/
 /* asm: MAXDIST	.FLOAT	9999999999.0  		;A VERY LARGE NUMBER */
 float MAXDIST = 9999999999.0f;
 
-/* *
- */
+// *
 void DEBRIS_SORT(void)
 {
     // 	;PULL FLYING DEBRIS FROM THE LIST

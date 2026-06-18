@@ -37,10 +37,49 @@ extern int LEG_FLAG;
 extern int LEG_RADY;
 extern int LEG_SECTIONIDX;
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 #define USEFIXED 1
 #define USEEXTENDED 0
 /* asm: FINISH_ID	.bss	FINISH_ID,1 */
 int FINISH_ID;
+/*
+*----------------------------------------------------------------------------
+* USEAGE:
+*
+*
+*FOR EACH LEG IN THE SYSTEM THE LEG_GENERATE_MAP ROUTINE IS
+*CALLED TO GENERATE THE LEG MAP.
+*THIS MAP IS IDENTICAL TO HOW THE OBJECTS WILL BE ALLOCATED ON
+*THE DYNAMIC LIST.
+*
+*THE LIST STARTS AT LEGMAP (located in hibss space)
+*AND HAS THE FOLLOWING STRUCTURE:
+*
+*
+*LEG_SIZE	.set	4	;SI
+*	.globl	LEG_MAP	;RAM SPACE
+*MAX_LEG_ELEMENTS	.set	1200
+*
+*THE LAST ENTRY IN THE MAP HAS ALL FIELDS AS
+*0FFFF FFFFh
+*
+*DRONES ON STARTING GRID MUST USE:
+*	.bss	RACER_GRID_START
+*AS THE STARTING INDEX TO ASSUME THE PLAYER
+*WILL BE LOCATED AT.
+*
+*
+*
+*/
+
 /* asm: LEG_ELEMENTS	.bss	LEG_ELEMENTS,1 */
 int LEG_ELEMENTS;
 /* asm: LEG_MAP	hibss	LEG_MAP,MAX_LEG_ELEMENTS*LEG_SIZE */
@@ -52,14 +91,15 @@ int LAST_END_INDEX;
 /* asm: LAST_ORIENTATION	.bss	LAST_ORIENTATION,1 */
 int LAST_ORIENTATION;
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *
 *THIS INITIALIZATION IS FOR EACH GAME, NOT
 *EACH LEG
 *
 *
- */
+*/
 void LEG_INIT(void)
 {
     // asm 0000AA60: 	PUSH	R0
@@ -75,8 +115,9 @@ void LEG_INIT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 #define MINILL_SIZE 60
 /* asm: LEG_SSLL	hibss	LEG_SSLL,MINILL_SIZE*(LEG_SIZE+1) */
 int LEG_SSLL[MINILL_SIZE*(LEG_SIZE+1)];
@@ -85,14 +126,15 @@ int LEGFREE;
 /* asm: LEGLL	.bss	LEGLL,1 */
 int LEGLL;
 
-/* *
+/*
+*
 *NOT A TRUE LINKED LIST, BECAUSE THERE IS NO DYNAMIC
 *DEALLOCATION (TO ALLOW REALLOCATION)  THE SYSTEM IS
 *RESET WHEN PIECES ARE REALLOCATED.
 *
 *THIS IS FOR THE SAKE OF SPEED
 *
- */
+*/
 void ELEMENT_INIT(void)
 {
     // asm 0000AA69: 	PUSH	R0
@@ -109,12 +151,15 @@ void ELEMENT_INIT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *RETURNS
 *	AR3	PTR TO ELEMENT
 *
- */
+*/
 void ELEMENT_GET(void)
 {
     // asm 0000AA70: 	PUSH	AR0
@@ -134,6 +179,18 @@ void ELEMENT_GET(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ELEMENT_GET", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*
+*PARAMETERS
+*	AR3	LIST ELEMENT
+*
+*INSERT LOWEST TO HIGHEST ONTO LEGLL
+*
+*/
 
 void ELEMENT_ADD(void)
 {
@@ -155,12 +212,15 @@ QT:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	AR3	PTR TO LEG MAP ENTRY
 *
- */
+*/
 void ELEMENT_DUMP_INTO_LEGMAP(void)
 {
     // asm 0000AA84: 	PUSH	R0
@@ -188,14 +248,17 @@ ENDIT:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	AR0	START INDEX
 *	AR1	END INDEX
 *
 *
- */
+*/
 void LEG_GENERATE_MAP(void)
 {
     // asm 0000AA96: 	LDI	AR1,R1
@@ -294,6 +357,8 @@ CNTNB2:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: LEG_FLAG	.bss	LEG_FLAG,1 */
 int LEG_FLAG;
 /* asm: LEG_RADY	.bss	LEG_RADY,1 */
@@ -301,7 +366,8 @@ int LEG_RADY;
 /* asm: LEG_SECTIONIDX	.bss	LEG_SECTIONIDX,1 */
 int LEG_SECTIONIDX;
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
@@ -311,7 +377,7 @@ int LEG_SECTIONIDX;
 *	AR4	INDEX
 *
 *
- */
+*/
 void LEG_ADD_GROUP(void)
 {
     // asm 0000AACD: 	PUSH	R4
@@ -466,13 +532,16 @@ NOTDYNAROAD:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *POST PROCESS LEG MAP
 *
 *
 *
 *
- */
+*/
 void GENERATE_LINEAR_DISTANCE(void)
 {
 #if USEEXTENDED
@@ -510,3 +579,5 @@ GLDX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GENERATE_LINEAR_DISTANCE", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------

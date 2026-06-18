@@ -77,8 +77,23 @@ extern float ACCEL_RATE;
 extern float ZOOMACCEL;
 extern int ATTR_WAVETAB[];
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 /* asm: ATTRWAVE	pbss	ATTRWAVE,1 */
 int ATTRWAVE;
+/*
+*----------------------------------------------------------------------------
+* CAMERA variable space
+*
+*/
+
 #define CUT_PAN (PDATA+1)
 #define ZOOMVEL (PDATA+2)
 #define CAMERA_XYZR (PDATA+3) //4 long
@@ -173,11 +188,12 @@ NO_OBJINS:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *----------------------------------------------------------------------------
 *CREATE THE OBJECT 'CRUISIN USA' FOR OVERLAY DURING ATTRACT MODE
 *
- */
+*/
 #define LOGO_STARTZ 10000
 #define LOGO_ENDX (-120)
 #define LOGO_ENDY (-85)
@@ -263,8 +279,7 @@ LOGOX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void GET_LIST_ADDR(void)
 {
     // asm 00005645: 	LDI	*+AR7(LIST_NUM),AR6
@@ -275,6 +290,8 @@ void GET_LIST_ADDR(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: VIEWLIST */
 /* asm: 	.word	GGPARK_LIST */
 /* asm: 	.word	BEVHILL_LIST */
@@ -284,6 +301,7 @@ void GET_LIST_ADDR(void)
 /* asm: 	.word	BEVHILL_LIST */
 /* asm: 	.word	GCANYON_LIST */
 /* asm: 	.word	CHICAGO_LIST */
+/* asm: 	 */
 uintptr_t *VIEWLIST[] = {
     GGPARK_LIST,
     BEVHILL_LIST,
@@ -302,7 +320,9 @@ uintptr_t *VIEWLIST[] = {
 /* asm: 	.word	INITVIEW1_VIEW,17FBh,SMOOTH_VIEW */
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
+/* asm: 	 */
 uintptr_t GGPARK_LIST[] = {
+    // THE first call is to intialize
     (uintptr_t)INIT_STARTING, 70, (uintptr_t)ROAD_VIEW,
     (uintptr_t)INIT_LEAD, 80, (uintptr_t)LEAD_VIEW,
     (uintptr_t)INIT_WATCH, 0x1214, 240, (uintptr_t)WATCH_VIEW,
@@ -317,7 +337,10 @@ uintptr_t GGPARK_LIST[] = {
 /* asm: 	.word	INITVIEW1_VIEW,14DF3h,SMOOTH_VIEW */
 /* asm: 	.word	INIT_STARTING,100,ROAD_VIEW */
 /* asm: 	.word	0,0 */
+/* asm: 	 */
+/* asm: 	 */
 uintptr_t BEVHILL_LIST[] = {
+    // THE first call is to intialize
     (uintptr_t)INIT_STARTING, 80, (uintptr_t)ROAD_VIEW,
     (uintptr_t)CUT_TO_VIEW2, 0x14AFB, (uintptr_t)SMOOTH_VIEW,
     (uintptr_t)INITVIEW1_VIEW, 0x14DF3, (uintptr_t)SMOOTH_VIEW,
@@ -332,7 +355,9 @@ uintptr_t BEVHILL_LIST[] = {
 /* asm: 	.word	INIT_WATCH,2EF00h,240,WATCH_VIEW */
 /* asm: 	.word	CUT_TO_VIEW2,30000h,SMOOTH_VIEW */
 /* asm: 	.word	0,0 */
+/* asm: 	 */
 uintptr_t GCANYON_LIST[] = {
+    // THE first call is to intialize
     (uintptr_t)INIT_STARTING, 70, (uintptr_t)ROAD_VIEW,
     (uintptr_t)INIT_WATCH, 0x2E20A, 220, (uintptr_t)WATCH_VIEW,
     (uintptr_t)CUT_TO_VIEW2, 0x2E800, (uintptr_t)SMOOTH_VIEW,
@@ -349,7 +374,9 @@ uintptr_t GCANYON_LIST[] = {
 /* asm: 	.word	INIT_WATCH,3C5F5h,240,WATCH_VIEW */
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
+/* asm: 	 */
 uintptr_t CHICAGO_LIST[] = {
+    // THE first call is to intialize
     (uintptr_t)INIT_STARTING, 80, (uintptr_t)ROAD_VIEW,
     (uintptr_t)INIT_REVERS_CUP, 60, (uintptr_t)REV_ROAD_VIEW,
     (uintptr_t)CUT_TO_VIEW2, 0x3AA0E, (uintptr_t)SMOOTH_VIEW,
@@ -359,8 +386,7 @@ uintptr_t CHICAGO_LIST[] = {
     0, 0,
 };
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void INIT_STARTING(void)
 {
     // asm 00005649: 	LDI	-350,R0
@@ -382,8 +408,7 @@ void INIT_STARTING(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void INIT_WATCH(void)
 {
     // asm 00005658: 	LDI	1,R0
@@ -454,8 +479,7 @@ INIW2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void INIT_REVERS_CUP(void)
 {
     // asm 00005696: 	LDI	-350,R0
@@ -477,8 +501,7 @@ void INIT_REVERS_CUP(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void INIT_CATCHUP(void)
 {
     // asm 000056A5: 	LDI	-350,R0
@@ -500,8 +523,7 @@ void INIT_CATCHUP(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void INIT_LEAD(void)
 {
     // asm 000056B4: 	LDI	-300,R0
@@ -523,8 +545,7 @@ void INIT_LEAD(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void INITROAD_VIEW(void)
 {
     // asm 000056C3: 	STI	R0,*+AR7(CAMERA_XYZR)
@@ -572,8 +593,7 @@ OK_FOUNDIT:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void WATCH_VIEW(void)
 {
     // asm 000056EA: 	LDI	*+AR7(CAROBJ),AR0
@@ -613,8 +633,7 @@ NO_WHOOSH:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void REV_ROAD_VIEW(void)
 {
     // asm 0000570B: 	LDI	*+AR7(CAROBJ),AR0
@@ -675,8 +694,7 @@ RV1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void LEAD_VIEW(void)
 {
     // asm 00005735: 	LDI	*+AR7(CAROBJ),AR0
@@ -692,8 +710,7 @@ void LEAD_VIEW(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void MOVE_ROAD_CAMERA(void)
 {
     // asm 0000573E: 	LDI	@NOSWAP,R0	;If noswap is on definatly do it
@@ -790,6 +807,15 @@ MRCX:
     UNIMPL();
 }
 
+/*
+*---------------------------------------------------------------------------
+* Updates AR4 to point to the road segment that the camera is on
+* NOTE: uses Stealth mode
+* INPUT	AR4 = segment on
+* OUTPUT AR4 = segment on (updated)
+*
+*/
+
 void NEXT_ROAD(void)
 {
     // asm 00005793: 	FLOAT	*+AR4(X),R0
@@ -826,6 +852,14 @@ fcrx:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NEXT_ROAD", 0, 0);
     UNIMPL();
 }
+
+/*
+*---------------------------------------------------------------------------
+* Sets the cameras RADY based on the next track segments reletive position
+* NOTE: uses stealth mode
+* No I/O
+*	Sets CAMERA_RADY = (CAMERA_XYZR+3)+ RAD to next track section
+*/
 
 void GETCAMDIR(void)
 {
@@ -875,9 +909,10 @@ void GETCAMDIR(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *INPUT R2 = FL smoothing
- */
+*/
 void SET_LANE(void)
 {
     // asm 000057D3: 	LDI	*+AR7(CAROBJ),AR0
@@ -904,8 +939,7 @@ SL2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void INIT_LANE(void)
 {
     // asm 000057E4: 	LDF	*+AR7(CAMERA_LANE),R3
@@ -914,6 +948,12 @@ void INIT_LANE(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_LANE", 0, 0);
     UNIMPL();
 }
+
+/*
+*---------------------------------------------------------------------------
+*INPUT	R2 = RADIANS to offset for doing the lanes
+*	R3 = Distance from center +/-
+*/
 
 void DO_LANE_POS(void)
 {
@@ -946,10 +986,11 @@ void DO_LANE_POS(void)
     UNIMPL();
 }
 
-/* *---------------------------------------------------------------------------
+/*
+*---------------------------------------------------------------------------
 *INPUT	AR4 = POINTER to LEG_MAP where road is
 *OUTPUT	R0 = DIRECTION of road
- */
+*/
 void GET_ROAD_RADY(void)
 {
     // asm 00005800: 	PUSH	AR1
@@ -977,14 +1018,15 @@ void GET_ROAD_RADY(void)
     UNIMPL();
 }
 
-/* *---------------------------------------------------------------------------
+/*
+*---------------------------------------------------------------------------
 *This algorithm is based on a bubble sort
 *Find the RACER DRONE IN FIRST PLACE based on position in LEG_MAP
 *INPUT R2 = Position to find
 *OUTPUT AR4 = OBJ of the racer
 *
 *
- */
+*/
 void FIND_RACER(void)
 {
     // asm 00005815: 	LDI	AR7,AR3			;clear the list
@@ -1043,6 +1085,16 @@ FRXX:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*This algorithm is based on a single pass bubble sort
+*OUTPUT
+*	R0	=	Distance to the closest Racer Drone
+*	AR1	=	Pointer to the Closest Racer Drone in front of the camera
+*	AR1	=	0, If no Racer Drones in front of the camera
+*
+*/
+
 void FIND_CLOSEST_RACER(void)
 {
     // asm 00005843: 	FLOAT	30000,R5
@@ -1092,13 +1144,14 @@ FCRX:
     UNIMPL();
 }
 
-/* *---------------------------------------------------------------------------
+/*
+*---------------------------------------------------------------------------
 *
 *GET OBJECT POINTER TO ROAD SEG ID IN R2
 *INPUTS  R2=OUSR1
 *OUPTUTS AR2=POINTER TO OBJECT
 *	  AR2=0 not found
- */
+*/
 void FIND_TRACK(void)
 {
     // asm 0000586C: 	LDI	@DYNALIST_TRUEBEGIN,AR2
@@ -1114,6 +1167,15 @@ FDLX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_TRACK", 0, 0);
     UNIMPL();
 }
+
+/*
+*---------------------------------------------------------------------------
+*
+*GET POINTER TO MAP_LEG, FOR THE CAR IN AR4
+*INPUTS  AR0=POINTER TO CARBLK
+*OUPTUTS AR4=POINTER TO place in LEG_MAP
+*SETS CAROBJ IF GET_MAP_SEGMENT is called
+*/
 
 void GET_MAP_CARBLK(void)
 {
@@ -1132,6 +1194,14 @@ GMSX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_MAP_CARBLK", 0, 0);
     UNIMPL();
 }
+
+/*
+*---------------------------------------------------------------------------
+*
+*GET POINTER TO MAP_LEG, ID IN R2
+*INPUTS  R2=OUSR1
+*OUPTUTS AR4=POINTER TO place in LEG_MAP
+*/
 
 void FIND_MAP(void)
 {
@@ -1300,14 +1370,15 @@ FFX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *Does averaging
 *INPUT
 *		R2 = average	0.20
 *		R0 = difference between the two angles
 *OUTPUT
 *		R0 = SMOOTHED difference
- */
+*/
 void SMOOTH_VECTOR(void)
 {
     // asm 000058F5: 	CALL	NORM_VECTOR
@@ -1353,6 +1424,8 @@ NORM_VECTOR:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SERIOUSLY_NORMALIZE", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void SET_SMOOTH_VIEW(void)
 {
@@ -1415,6 +1488,7 @@ SMOOTH_VIEWX:
 }
 
 /* asm: ZOOMACCEL	.float	0.006 */
+/* asm: 	 */
 float ZOOMACCEL = 0.006f;
 
 void ZOOM_CAMERA(void)
@@ -1467,12 +1541,15 @@ ZOOMX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 * UPDATE_CAMERA
 *	INPUT	NEW_POSx/y/z,NEW_RADx/y/z,NEW_MATRIX
 *	OUTPUT	_CAMERAPOS,_CAMERAMATRIX,_CAMERARAD
 *
- */
+*/
 void UPDATE_CAMERA(void)
 {
     // asm 00005968: 	LDI	@_CAMERAPOSI,AR0
@@ -1559,8 +1636,7 @@ UPCAMX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void CAMERA_HORIZON_PROJECTION(void)
 {
     // asm 0000598D: 	LDF	*+AR7(NEW_RADX),R2
@@ -1583,6 +1659,7 @@ void CAMERA_HORIZON_PROJECTION(void)
 /* asm: 	.word	L_LEG5_BEGIN+1,4 */
 /* asm: 	.word	L_LEG9_BEGIN+1,8 */
 /* asm: 	.word	L_LEG11_BEGIN+1,10 */
+/* asm: 	 */
 int ATTR_WAVETAB[] = {
     0, 0,
     L_LEG5_BEGIN+1, 4,
@@ -1683,8 +1760,7 @@ NO_MUSIC:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void ATTR_INIT_GAMELEG(void)
 {
     // asm 000059DA: 	CREATE	RHO_DISPATCHER,SPAWNER_C|TRAFFIC_T
@@ -1737,3 +1813,112 @@ void LOAD_ATTR_LEG(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_ATTR_LEG", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*OLD CODE THAT I DEARLY LIKE TO REFFERENCE
+*/
+
+/*
+;*----------------------------------------------------------------------------
+;*TURN CAMERA TO FOLLOW OBJECT IN AR4
+;*
+;*PARAMETERS
+;*	AR4	OBJECT TO 'WATCH'
+;*
+;WATCH_OBJ:
+;	LDF	*+AR4(OPOSX),R2
+;	SUBF	@NEW_CAMERA+CAMERAX,R2
+;	LDF	*+AR4(OPOSZ),R3
+;	SUBF	@NEW_CAMERA+CAMERAZ,R3
+;	CALL	ARCTANF
+;	SUBF	HALFPI,R0
+;
+;	NEGF	R0,R2
+;	STF	R2,@NEW_CAMERA+CAMERARADY
+;
+;	LDF	*+AR4(OPOSZ),R0
+;	SUBF	@NEW_CAMERA+CAMERAZ,R0
+;	MPYF	R0,R0
+;	LDF	*+AR4(OPOSX),R1
+;	SUBF	@NEW_CAMERA+CAMERAX,R1
+;	MPYF	R1,R1
+;	ADDF3	R0,R1,R2	;R= SQRT (X^2 + Z^2)
+;	CALL	SQRT
+;	LDF	R0,R3
+;
+;	LDF	*+AR4(OPOSY),R2
+;	SUBF	@NEW_CAMERA+CAMERAY,R2
+;
+;	CALL	ARCTANF
+;
+;	SUBF	HALFPI,R0
+;
+;	STF	R0,@NEW_CAMERA+CAMERARADX
+;
+;	LDI	@NEW_CAMERAI,R2
+;	ADDI	CAMERARADX,R2
+;	LDI	@NEW_CAMERAI,AR2
+;	ADDI	CAMERA_MATRIX,AR2
+;	CALL	FIND_MATRIX
+;
+;	CAll	CAMERA_HORIZON_PROJECTION
+;
+;	RETS
+;*----------------------------------------------------------------------------
+;INITFLYBY_VIEW:
+;	LDI	-1,R0
+;	STI	R0,*+AR7(CUT_PAN)
+;
+;	FLOAT	-4300,R0
+;	STF	R0,@NEW_CAMERA+CAMERA_SPEED
+;
+;FLYBY_VIEW:
+;	LDF	@NEW_CAMERA+CAMERA_SPEED,R0
+;	FLOAT	150,R1
+;	ADDF	R1,R0
+;	STF	R0,@NEW_CAMERA+CAMERA_SPEED
+;
+;	LDF	*+AR4(OPOSY),R0
+;	STF	R0,@NEW_CAMERA+CAMERAY
+;
+;	LDF	*+AR4(ORADY),R2
+;	ADDF	-1.54,R2
+;	CALL	_SINE
+;	FLOAT	500,R2
+;	MPYF	R0,R2
+;	LDF	*+AR4(OPOSX),R0
+;	ADDF	R2,R0
+;	STF	R0,@NEW_CAMERA+CAMERAX
+;
+;	LDF	*+AR4(ORADY),R2
+;	ADDF	-1.54,R2
+;	CALL	_COSI
+;	FLOAT	500,R2
+;	MPYF	R0,R2
+;	LDF	*+AR4(OPOSZ),R0
+;	ADDF	R2,R0
+;	STF	R0,@NEW_CAMERA+CAMERAZ
+;
+;	LDF	*+AR4(ORADY),R0
+;	SUBF	0.10,R0
+;	STF	R0,@NEW_CAMERA+CAMERA_VECY
+;
+;	LDF	0.3,R0
+;	STF	R0,@NEW_CAMERA+CAMERA_VECX
+;
+;	LDF	*+AR4(ORADZ),R0
+;	STF	R0,@NEW_CAMERA+CAMERA_VECZ
+;
+;	CALL	MOVE_CAMERA
+;
+;	LDF	*+AR4(OPOSY),R0
+;	FLOAT	-1500,R1			;FIX ELEVATION
+;	ADDF	R1,R0
+;	STF	R0,@NEW_CAMERA+CAMERAY
+;passed
+;	CALL	WATCH_OBJ
+;
+;	RETS
+*/

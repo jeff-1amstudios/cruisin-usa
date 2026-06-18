@@ -133,7 +133,8 @@ int CAR_LIST;
 int SIGN_LIST;
 /* asm: GROUND_LIST	.bss	GROUND_LIST,1 */
 int GROUND_LIST;
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *DYNAMIC fLEX OBJECTS (THE ACTUAL ROAD OBJECTS (LIST))
 *
 *	OLINK2	GROUP SUBLINK (standard)
@@ -142,7 +143,7 @@ int GROUND_LIST;
 *	OUSR1	fLEX code
 *
 *
- */
+*/
 /* asm: NEW_GROUP	.bss	NEW_GROUP,1 */
 int NEW_GROUP;
 /* asm: DGROUPS	.bss	DGROUPS,DGRP_SIZE*MAX_DGROUPS */
@@ -163,8 +164,7 @@ int SUBLIST_BEGIN;
 int SUBLIST_END;
 /* asm: STARTS	.bss	STARTS,1 */
 int STARTS;
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 /* asm: SECTIONIDX	.bss	SECTIONIDX,1 */
 int SECTIONIDX;
 /* asm: TYCO_TRACK	.bss	TYCO_TRACK,1 */
@@ -176,18 +176,20 @@ int TYCO_NTL_IDX;
 /* asm: ATTRACT_ACTIVATE_DIST	.float	15000 */
 float ATTRACT_ACTIVATE_DIST = 15000.0f;
 /* asm: ACTIVATE_DIST		.float	5000	;to activate */
+/* asm: 	 */
 float ACTIVATE_DIST = 5000.0f;
 /* asm: DACT_DIST		.float	80000	;dynamic activate distance */
 float DACT_DIST = 80000.0f;
 /* asm: DDACT_DIST		.float	15000	;dynamic activate distance (+ radius) */
 float DDACT_DIST = 15000.0f;
-/* ;ATTR_DDACT_DIST		.float	35000	;dynamic deactivate distance (+ radius)
- */
+// ;ATTR_DDACT_DIST		.float	35000	;dynamic deactivate distance (+ radius)
 /* asm: ATTR_DDACT_DIST		.float	45000	;dynamic deactivate distance (+ radius) */
+/* asm: 	 */
+/* asm: 	 */
+/* asm: 	 */
 float ATTR_DDACT_DIST = 45000.0f;
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void FIND_STARTING_VALUES(void)
 {
     // asm 00003F80: 	LDI	@TYCO_TRKI,AR1
@@ -229,11 +231,14 @@ NOWARP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *INITIALIZE the background system for the game
 *
 *
- */
+*/
 void BGD_INIT(void)
 {
     // asm 00003F9E: 	CLRI	R0
@@ -347,6 +352,8 @@ NOO2d:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_INIT", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void BGD_WATCHER(void)
 {
@@ -540,6 +547,8 @@ NODEACT:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_WATCHER", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 /* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
 int NEWSUBLIST_TOPB;
@@ -932,7 +941,10 @@ NO_NEWLOAD:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *ADD AN ELEMENT (OBJECT) TO THE NEW LIST BEING CREATED
 *SEARCH ON ITS OID SO THAT IT IS IN ORDER
 *
@@ -945,7 +957,7 @@ NO_NEWLOAD:
 *PLACE IN ASCENDING ORDER IN THE LIST
 *
 *
- */
+*/
 void ADD_TO_NEWLIST(void)
 {
     // asm 000041A8: 	LDI	@NEW_GROUPI,AR1
@@ -983,8 +995,9 @@ ISZERO:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void FIND_SUBLIST_START_END(void)
 {
     // asm 000041C3: 	PUSH	R1
@@ -1009,7 +1022,10 @@ FSDN:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *APPEND THE NEW LIST TO THE OLD LIST
 *
 *LINKED VIA OLINK4
@@ -1029,7 +1045,7 @@ FSDN:
 *	}
 *
 *
- */
+*/
 void APPEND_NEWLIST(void)
 {
     // asm 000041CF: 	LDI	@DYNALIST_END,R0
@@ -1062,7 +1078,10 @@ void SHINY_NEWLIST(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *DELETE GROUP LIST FROM OBJECT LIST
 *
 *	CYCLE OUT THE LRU IN ACTIVE GROUPS
@@ -1074,7 +1093,7 @@ void SHINY_NEWLIST(void)
 *search for items in idle
 *
 *
- */
+*/
 void GROUP_DELETE(void)
 {
     // asm 000041E2: 	PUSH	R0
@@ -1137,7 +1156,10 @@ NXTCHK:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	AR2	VECTOR V1
@@ -1147,7 +1169,7 @@ NXTCHK:
 *	(FROM X/Z ONLY)
 *
 *
- */
+*/
 void GET_XZ_DISTANCE(void)
 {
     // asm 00004215: 	PUSH	AR0
@@ -1168,7 +1190,10 @@ void GET_XZ_DISTANCE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *BGD_OROUTINE
 *	The object has (or will have) a routine associated with it, search the
 *	ID of the object vs the list and call any routine nessesary.
@@ -1182,7 +1207,7 @@ void GET_XZ_DISTANCE(void)
 *NOTE
 *	ALL REGISTERS MUST BE SAVED
 *
- */
+*/
 void BGD_OROUTINE(void)
 {
     // asm 00004223: 	PUSH	R0
@@ -1210,8 +1235,9 @@ BGD_RFND:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void OVERCAR(void)
 {
     // asm 00004236: 	PUSH	R0
@@ -1239,9 +1265,11 @@ void OVERCAR(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
+/* asm: 	 */
 int OVERCARLIST[] = {
     dcbus, dgtruck, dsbus, dcbus,
 };
@@ -1324,8 +1352,9 @@ CARFORWARDLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void ROAD_DEBRIS_CREATE_55GAL(void)
 {
     // asm 0000429D: 	PUSH	R0
@@ -1346,8 +1375,9 @@ void ROAD_DEBRIS_CREATE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void SMOKE_STACK(void)
 {
     // asm 000042A4: 	PUSH	R0
@@ -1384,25 +1414,27 @@ void CAR_FIRE(void)
 
 /* asm: SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
 /* asm: 	.word	-1 */
+/* asm: 	 */
 int SMOKE_ANI[] = {
     smoa, smob, smoc, smod, smoe, smof,
     -1,
 };
-/* ;eug1,eug2,eug3,eug4,eug5,eug6
- */
+// ;eug1,eug2,eug3,eug4,eug5,eug6
 /* asm: CAR_FIRE_ANII	.word	CAR_FIRE_ANI */
 #define CAR_FIRE_ANII CAR_FIRE_ANI
 /* asm: CAR_FIRE_ANI */
 /* asm: 	.word	rdflm1,rdflm2,rdflm3,rdflm4,rdflm5,rdflm6 */
 /* asm: 	.word	rdflm7,rdflm8,rdflm9,rdflm10,rdflm11,rdflm12 */
 /* asm: 	.word	-1 */
+/* asm: 	 */
 int CAR_FIRE_ANI[] = {
     rdflm1, rdflm2, rdflm3, rdflm4, rdflm5, rdflm6,
     rdflm7, rdflm8, rdflm9, rdflm10, rdflm11, rdflm12,
     -1,
 };
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: DC_MINIFOUNTAIN_ANII	.word	DC_MINIFOUNTAIN_ANI */
 #define DC_MINIFOUNTAIN_ANII DC_MINIFOUNTAIN_ANI
 /* asm: DC_MINIFOUNTAIN_ANI */
@@ -1453,9 +1485,9 @@ void DC_FOUNTAIN(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 /* asm: WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
+/* asm: 	 */
 int WATERFALL_ANI[] = {
     w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, -1,
 };
@@ -1490,14 +1522,17 @@ FWL1A:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *AR6	START OF SCRIPT
 *
 *the big difference is that this *MUST* handle the sound animation also...
 *
 *
- */
+*/
 void WATERANI_PROC(void)
 {
     // asm 00004319: 	LDI	AR6,AR5
@@ -1516,11 +1551,16 @@ WATERANI_LP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+// *
+
+/*
+*----------------------------------------------------------------------------
 *
 *AR4=WATERFALL OBJECT
 *
- */
+*/
 void WATERFALL_SND(void)
 {
     // asm 00004324: 	SLEEP	1
@@ -1558,13 +1598,18 @@ WF1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+// *
+
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	AR2	SOUND
 *	R2	VOLUME (0-255)
 *
- */
+*/
 void AMBIENCE_SOUND(void)
 {
     // asm 00004341: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
@@ -1593,16 +1638,19 @@ HEND:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: FLAGANI		.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
 /* asm: 	.word	bflag6,bflag7,bflag9,bflag10,-1 */
+/* asm: 	 */
 int FLAGANI[] = {
     bflag1, bflag2, bflag3, bflag4, bflag5,
     bflag6, bflag7, bflag9, bflag10, -1,
 };
 /* asm: FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
 /* asm: 	.word	aflag6,aflag7,aflag9,aflag10,-1 */
+/* asm: 	 */
 int FLAGANITALL[] = {
     aflag1, aflag2, aflag3, aflag4, aflag5,
     aflag6, aflag7, aflag9, aflag10, -1,
@@ -1614,6 +1662,7 @@ int RUT_ANIS[] = {
 /* asm: HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
 int HUNGH_ANIS[] = {
     hungh1, hungh2, hungh3, hungh4, hungh5, hungh6, hungh7, -1,
+    // ----------------------------------------------------------------------------
 };
 /* asm: BABE_PALIST */
 /* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
@@ -1669,6 +1718,8 @@ HUNGH_NOPAL:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void HUNGH_ANI_REENTER(void)
 {
     // asm 0000439F: 	PUSH	R0
@@ -1711,6 +1762,8 @@ PORX:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void RUT_ANI(void)
 {
     // asm 000043BC: 	PUSH	R0
@@ -1737,8 +1790,7 @@ DORUT_ANI:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void PLAINANI_PROC_SLOW(void)
 {
     // asm 000043D0: 	LDI	AR6,AR5
@@ -1758,8 +1810,9 @@ PLAINANI_LP_SLOW:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void FLAGWAVE_TALL(void)
 {
     // asm 000043DC: 	PUSH	R0
@@ -1783,8 +1836,9 @@ void FLAGWAVE_TALL(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void FLAGWAVE(void)
 {
     // asm 000043EF: 	PUSH	R0
@@ -1824,11 +1878,14 @@ FWL1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *AR6	START OF SCRIPT
 *
- */
+*/
 void PLAINANI_PROC(void)
 {
     // asm 00004412: 	LDI	AR6,AR5
@@ -1847,7 +1904,10 @@ PLAINANI_LP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *ABSOLUTE LOAD INTO OBJECT LIST FOR A SINGLE SECTION
 *
 *
@@ -1857,7 +1917,7 @@ PLAINANI_LP:
 *RETURNS
 *	R0	PTR TO THE FIRST OBJECT IN GROUP
 *
- */
+*/
 /* asm: SINGLE_SECTION_TEMPPTR	.bss	SINGLE_SECTION_TEMPPTR,1 */
 int SINGLE_SECTION_TEMPPTR;
 
@@ -1924,8 +1984,145 @@ LS_ACTIVATE_X:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+/*
+;*----------------------------------------------------------------------------
+;OIL_PUMP:
+;	PUSH	AR0
+;	PUSH	AR2
+;	PUSH	R2
+;	CREATE	OILWELL,UTIL_C
+;	POP	R2
+;	POP	AR2
+;	POP	AR0
+;	RETS
+;
+;OILWELL_DYNA
+;	.word	2		;#OF DYNAS-1
+;
+;;	.float	-1197,0,0	;WHEEL
+;	.float	0,-538,0	;WHEEL
+;	.word	41		;VERTS-1
+;	.word	2		;DYNAFLAG
+;
+;	.float	-1276,-2325,0	;HAMMER
+;	.word	38		;VERTS-1
+;	.word	3		;DYNAFLAG
+;
+;	.float	0,0,0		;main body
+;	.word	56		;VERTS-1
+;	.word	1		;DYNAFLAG
+;
+;*
+;*PARAMETERS
+;*	AR4	OILWELL OBJECT
+;*
+;*
+;OILWELL:
+;	STI	AR7,*+AR4(OPLINK)
+;
+;	LDI	1,R0
+;	LS	O_PROC_B,R0
+;	OR	*+AR4(OFLAGS),R0
+;	OR	O_DYNAMIC,R0	 	;MAKE PARENT OBJECT DYNAMIC
+;	STI	R0,*+AR4(OFLAGS)
+;
+;	LDL	OILWELL_DYNA,AR2
+;
+;	LDI	AR4,AR3
+;	ADDI	ODYNALIST,AR3
+;
+;*INIT DYNA OBJECTS
+;	LDI	*AR2++,RC		;GET DYNAMIC OBJECT COUNT (-1)
+;	RPTB	OWINLP
+;
+; 	CALL	GETDYNA	     		;LINK HIM INTO LIST
+;	STI	AR0,*AR3
+;
+;
+;	LDF	*AR2++,R0
+;	STF	R0,*+AR0(DYNACENTERX)
+;	STF	R0,*+AR0(DYNATRANSX)
+;	LDF	*AR2++,R0
+;	STF	R0,*+AR0(DYNACENTERY)
+;	STF	R0,*+AR0(DYNATRANSY)
+;	LDF	*AR2++,R0
+;	STF	R0,*+AR0(DYNACENTERZ)
+;	STF	R0,*+AR0(DYNATRANSZ)
+;	LDI	*AR2++,R0
+;	STI	R0,*+AR0(DYNANVERTS)
+;	LDI	*AR2++,R0
+;	STI	R0,*+AR0(DYNAFLAG)
+;
+;	CMPI	2,R0	;
+;	BNE	H75
+;	STI	AR0,*+AR7(PDATA)		;WHEEL
+;H75
+;
+;	CMPI	3,R0	;
+;	BNE	H76
+;	STI	AR0,*+AR7(PDATA+1)	;HAMMER
+;H76
+;
+;	STI	AR4,*+AR0(DYNAPARENT)
+;OWINLP	LDI	AR0,AR3
+;
+;	LDI	0,R0
+;	STI	R0,*AR3			;LAST LINK IS ZERO, DUDES
+;
+;	LDI	AR3,AR0
+;	ADDI	DYNAMATRIX,AR0
+;	CALL	INITMAT
+;
+;	CLRF	R6
+;	CLRF	R7
+;
+;	LDF	0.1,R0
+;	STF	R0,*+AR7(PDATA+2)
+;
+;*
+;*
+;*	R6	THETA FOR THE WHEELS
+;*	R7	THETA FOR THE HAMMER
+;*
+;OILWELLP
+;
+;	ADDF	0.1,R6
+;	LDF	R6,R2
+;	CALL	NORMITS
+;	LDF	R2,R6
+;	LDI	*+AR7(PDATA),AR2
+;	ADDI	DYNAMATRIX,AR2
+;	CALL	FIND_ZMATRIX
+;
+;
+;	LDF	*+AR7(PDATA+2),R0
+;	NEGF	R0,R1
+;
+;	CMPF	PI,R7
+;	BLT	NC1
+;	LDF	R1,R0
+;	BU	IRV
+;NC1
+;	CMPF	-PI,R7
+;	BGT	IRV
+;	LDF	R1,R0
+;IRV
+;	ADDF	R0,R7
+;	STF	R0,*+AR7(PDATA+2)
+;
+;	LDF	R0,R2
+;	LDI	*+AR7(PDATA+1),AR2
+;	ADDI	DYNAMATRIX,AR2
+;	CALL	FIND_ZMATRIX
+;
+;	SLEEP	1
+;	BU	OILWELLP
+;*----------------------------------------------------------------------------
+*/
+
+// *----------------------------------------------------------------------------
 void OHARE_PLANE(void)
 {
     // asm 00004451: 	PUSH	AR0
@@ -1989,8 +2186,9 @@ PLANE_FWL:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void TRAIN_FWRD_MAKEB(void)
 {
     // asm 00004484: 	PUSH	AR0
@@ -2091,7 +2289,10 @@ TRAINX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *PARAMETERS
@@ -2100,7 +2301,7 @@ TRAINX:
 *	OFFSET BY START_POS
 *
 *
- */
+*/
 void LOAD_SINGLE_SECTION_OFFSET(void)
 {
     // asm 000044CC: 	PUSH	R4
@@ -2181,6 +2382,8 @@ LS_ACTIVATE_XO:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: ROUTINE_TAB: */
 /* asm: 	.word	40Ah,FLAGWAVE */
 /* asm: 	.word	460h,ROAD_DEBRIS_CREATE */
@@ -2203,6 +2406,7 @@ LS_ACTIVATE_XO:
 /* asm: 	.word	498h,OHARE_PLANE	;CHICAGO AIRPLANE */
 /* asm: 	.word	741h,RUT_ANI */
 /* asm: 	.word	742h,HUNGH_ANI */
+/* asm: 	 */
 /* asm: 	.word	4A1h,DC_FOUNTAIN */
 /* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
 /* asm: 	.word	0	;END OF TABLE ID */
@@ -2214,6 +2418,7 @@ uintptr_t ROUTINE_TAB[] = {
     0x463, (uintptr_t)ROAD_DEBRIS_CREATE_55GAL, // actually CONE
     0x465, (uintptr_t)FLAGWAVE, // short flag
     0x466, (uintptr_t)FLAGWAVE_TALL, // tall flag
+    // 
     0x467, (uintptr_t)WATERFALL,
     0x469, (uintptr_t)OVERCAR, // LA & CHICAGO, FREEWAY OVERPASS CAR
     0x470, (uintptr_t)RRSTART_ENGINE,
@@ -2223,12 +2428,21 @@ uintptr_t ROUTINE_TAB[] = {
     0x474, (uintptr_t)RRSTART_BOXCAR,
     0x475, (uintptr_t)RRSTART_BOXCAR,
     0x476, (uintptr_t)RRSTART_BOXCAR,
+    // 
     0x481, (uintptr_t)SMOKE_STACK,
     0x482, (uintptr_t)CAR_FIRE,
+    // 
+    // 	.word	485h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR (BRIDGE)
+    // 	.word	486h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE (BRIDGE)
+    // 	.word	487h,OIL_PUMP		;RUSHMORE OIL PUMP
+    // 	.word	495h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR
+    // 	.word	496h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE
     0x498, (uintptr_t)OHARE_PLANE, // CHICAGO AIRPLANE
+    // 
     0x741, (uintptr_t)RUT_ANI,
     0x742, (uintptr_t)HUNGH_ANI,
     0x4A1, (uintptr_t)DC_FOUNTAIN,
     0x4A2, (uintptr_t)DC_MINIFOUNTAIN,
     0, // END OF TABLE ID
+    // ----------------------------------------------------------------------------
 };

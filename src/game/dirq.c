@@ -58,8 +58,51 @@ extern int HIGH_CLIP_LEV8;
 extern uintptr_t VECTORAYI;
 extern int POSTERMATRIX2D[];
 
-/* *----------------------------------------------------------------------------
- */
+/*
+*v7.03
+*----------------------------------------------------------------------------
+*DISPLAY/TRANSFORMATION SYSTEM
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*
+*	Eric L Pribyl
+*	Eugene P. Jarvis
+*
+*	1.0	JUL 91	ELP	Original version	May 30, 1991
+*	2.00    NOV 91  EPJ     HEAVY OPTIMIZATIONS
+*	2.01	DEC 91  ELP	PComp support
+*	2.10	MAR 92  ELP/EPJ	Altering for target,Optimizations
+*	3.00	MAY 92  ELP	Modification for Illumination models
+*	3.01	MAY 92  ELP	POLYGON PLOT OPTIMIZATIONS
+*	3.02	AUG 92  ELP	Mods for reality
+*	3.03	AUG 92  ELP	Sorting removed
+*	3.04	SEP 92  ELP	FIFO, single palette added, optimizations
+*	3.05	OCT 92	ELP	no control panel,dithering,centroid remove
+*	3.06	OCT 92	ELP	Dynamic objects added
+*	4.00	DEC 92	EPJ/ELP	dynamic optimizations and data structure alterations
+*	4.01	JAN 93	ELP	Illuminated, TMed Objects
+*	5.00	JUL 93	ELP	DMA ASIC
+*	5.01	JUL 93	ELP	Direct stuff to DMA
+*	6.00	JUL 93	ELP	Removal of Direct Stuff to DMA (copy in 'dirqnfif.asm')
+*				.	statistics added
+*				.	optimization
+*	6.01	AUG 93	ELP	Compressed Polygon Format & Compressed Vertex Format
+*	7.00	OCT 93  ELP	test case for 2D rotations
+*	7.01	NOV 93  ELP	full blown 2D rotations
+*	7.02	APR 94	ELP	true operation for O_NOUROT
+*	7.03	JUL 94  ELP	DPs removed, statistics optional
+*	7.04	SEP 94  EPJ	GLITCH FIX
+*
+*IN ALL ROUTINES
+*	AR0 - OBJECT BLOCK
+*	AR1 - ROM POINTER
+*
+*
+*/
+
+// *----------------------------------------------------------------------------
 #define POSTERCLIP 300
 #define LOW_CLIP_LEVEL 100
 #define HIGH_CLIP_LEVEL ((5000-1)) //ACTUAL # OF ENTRIES
@@ -68,10 +111,12 @@ extern int POSTERMATRIX2D[];
 /* asm: CAMERARADI		.word	_CAMERARAD */
 #define CAMERARADI _CAMERARAD
 /* asm: CAMERAMATRIXI		.word	_CAMERAMATRIX */
+/* asm: 	 */
 #define CAMERAMATRIXI _CAMERAMATRIX
 /* asm: ASHADOW			.word	_ACNTL		;HEADS UP THE FIFO MIRROR */
 uintptr_t ASHADOW = (uintptr_t)&_ACNTL;
 /* asm: LIGHTIY			.word	_LIGHT+1 */
+/* asm: 	 */
 uintptr_t LIGHTIY = (uintptr_t)(_LIGHT+1);
 /* asm: transmatrixI		.word	ROTATION_MATRIX */
 #define transmatrixI ROTATION_MATRIX
@@ -80,6 +125,7 @@ uintptr_t transvectorYI = (uintptr_t)(TRANSVECTOR+1);
 /* asm: POSTERMATI		.word	POSTERMATRIX */
 #define POSTERMATI POSTERMATRIX
 /* asm: POSTERMAT2DI		.word	POSTERMATRIX2D */
+/* asm: 	 */
 #define POSTERMAT2DI POSTERMATRIX2D
 /* asm: tmpmatI			.word	TMPMAT */
 #define tmpmatI TMPMAT
@@ -88,8 +134,11 @@ uintptr_t tmpmatY = (uintptr_t)(TMPMAT+1);
 /* asm: SCRNHXI			.float	SCRNHX */
 float SCRNHXI = SCRNHX;
 /* asm: SCRNHYI			.float	SCRNHY */
+/* asm: 	 */
 float SCRNHYI = SCRNHY;
 /* asm: HIGH_CLIP_LEV8		.word	80000		;MATHEMATICAL LIMIT */
+/* asm: 	 */
+/* asm: 	 */
 int HIGH_CLIP_LEV8 = 80000;
 /* asm: MATRIXAI		.word	_MATRIXA */
 #define MATRIXAI _MATRIXA
@@ -106,11 +155,13 @@ int HIGH_CLIP_LEV8 = 80000;
 /* asm: VECTORDI		.word	_VECTORD */
 #define VECTORDI _VECTORD
 /* asm: VECTORAYI		.word	_VECTORA+1 */
+/* asm: 	 */
 uintptr_t VECTORAYI = (uintptr_t)(_VECTORA+1);
 /* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */
 int POSTERMATRIX2D[4];
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *DIRQ
 *
 *This is the main display loop which queues up each object list to be sent
@@ -126,7 +177,7 @@ int POSTERMATRIX2D[4];
 *		next polygon
 *	next object
 *
- */
+*/
 void DIRQ(void)
 {
     // asm 00000064: 	PUSH	R4
@@ -182,3 +233,5 @@ void DIRQ(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIRQ", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------

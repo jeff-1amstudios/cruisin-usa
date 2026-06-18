@@ -30,6 +30,13 @@ void FIND_NEXT_OBJ(void);
 extern int FLAME_POS[];
 extern int FLAMEANI[];
 
+/*
+*----------------------------------------------------------------------------
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*/
+
 /* asm: FLAME_POS */
 /* asm: 	.word	180,87,-450		;Vette */
 /* asm: 	.word	130,105,-586		;Coope */
@@ -38,6 +45,7 @@ extern int FLAMEANI[];
 /* asm: 	.word	180,87,-450		;JEEP */
 /* asm: 	.word	190,87,-650		;SBUSP */
 /* asm: 	.word	160,155,-500		;COPCAR */
+/* asm: 	 */
 int FLAME_POS[] = {
     180, 87, -450, // Vette
     130, 105, -586, // Coope
@@ -50,14 +58,16 @@ int FLAME_POS[] = {
 /* asm: FLAMEANI */
 /* asm: 	.word	sparc1,sparc3,sparc5,sparc7,sparc9,sparc7 */
 /* asm: 	.word	sparc5,sparc3,sparc1,-1 */
+/* asm: 	 */
 int FLAMEANI[] = {
     sparc1, sparc3, sparc5, sparc7, sparc9, sparc7,
     sparc5, sparc3, sparc1, -1,
 };
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 * FLAME	PROC
 *
- */
+*/
 #define FRAME_ON (PDATA+1)
 #define CARBODY_MATRIX (PDATA+2)
 
@@ -149,6 +159,19 @@ FLAME_DIE:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*Input
+*	AR0 = object to position and ani
+*	    OVELX/Y/Z = offset from parent
+*	AR6 = object to position reletive to
+*	AR1 = Animation list
+*	IR0  = Frame on
+*OUTPUT
+*	IR0  = Next frame
+*TRASHES	AR2,R1,R2,R3
+*/
+
 void animate_child(void)
 {
     // ;Set the Frame
@@ -195,6 +218,12 @@ set_frame:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*CALLED BY ZSORTWT in obj.asm just after the players car is linked in.
+*PUTS THE FLAMES JUST BEHIND THE PLAYERS CAR
+*/
+
 void FLAMESORT(void)
 {
     // asm 0000AE35: 	LDI	@OACTIVE,AR0
@@ -228,6 +257,14 @@ FLMSORTX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAMESORT", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*FIND THE MATRIX IN THE DYNALIST OF THE CAR POINTED TO BY AR2
+*INPUT	AR2 = CARS OBJECT
+*OUTPUT AR0 = MATRIX OF THE BODY
+* SCRAMBLES R0,R1
+*/
 
 void GETCARBODY(void)
 {

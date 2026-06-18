@@ -77,6 +77,14 @@ extern int WACKER;
 extern int LAKEL;
 extern int CARTMP1;
 
+/*
+*----------------------------------------------------------------------------
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 /* asm: RACER_DRONE_INITTABI	.word	RACER_DRONE_INITTAB */
 #define RACER_DRONE_INITTABI RACER_DRONE_INITTAB
 /* asm: RACER_DRONE_INITTAB */
@@ -99,15 +107,17 @@ int RACER_PTR[10];
 int OM_TRACK_LO;
 /* asm: OM_TRACK_HI	.bss	OM_TRACK_HI,1 */
 int OM_TRACK_HI;
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	R0	POSITION ACHIEVED FOR THIS RACE
 *
 *MODIFIES : ADJ_DIFFICULTY,ADJ_DIFF_LOCAL (CMOS)
 *
- */
+*/
 /* asm: GMAX	.word	100000 */
+/* asm: 	 */
 int GMAX = 100000;
 
 void DIFF_CHANGE(void)
@@ -126,10 +136,13 @@ void DIFF_CHANGE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GET YOUR DIFFICULTY
 *
- */
+*/
 void GETDIFF(void)
 {
     // *GET DIFFICULTY	ADJUST
@@ -209,7 +222,8 @@ float DIFFTAB[] = {
     0.0f, // DC
 };
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *	1.	INIT
 *	2.	SPREAD
@@ -223,7 +237,7 @@ float DIFFTAB[] = {
 *		this drone is possibly a linked drone
 *	end if
 *
- */
+*/
 void RACER_DRONE(void)
 {
     // asm 000050F0: 	LDF	0,R0
@@ -868,10 +882,11 @@ LINKRECX:
     UNIMPL();
 }
 
-/* *
+/*
+*
 *TRANSFER ACTIVE RACER
 *
- */
+*/
 
 void ACTIVE_XSFER(void)
 {
@@ -1035,7 +1050,10 @@ POWERX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GET STEALTH CAR SPEED
 *
 *PARAMETERS
@@ -1045,7 +1063,7 @@ POWERX:
 *RETURNS
 *	 R5	DISTANCE TRAVELLED
 *
- */
+*/
 void GETSTSPD(void)
 {
     // *GET ENGINE ACCEL
@@ -1118,7 +1136,10 @@ GSL0:
     UNIMPL();
 }
 
-/* *---------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*---------------------------------------------------------------------------
 *GET OBJECT POINTER TO ROAD SEG ID IN R2
 *
 *PARAMETERS
@@ -1126,7 +1147,7 @@ GSL0:
 *RETURNS
 *	AR2	POINTER TO OBJECT
 *
- */
+*/
 void FIND_DYNA(void)
 {
     // asm 00005385: 	LDI	@DYNALIST_TRUEBEGIN,AR2
@@ -1146,7 +1167,10 @@ FDLX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GIVEN A SECTION/ROAD ID FIND THE MAP ENTRY IN THE
 *ROAD MAP WHICH CONTAINS THE ID EQUAL TO, OR GREATER
 *THAN THE GIVEN ID.
@@ -1161,7 +1185,7 @@ FDLX:
 *	MAP ENTRY-->*+AR7(DELTA_SPTR)
 *	MAP FLAGS-->*+AR7(DELTA_LAST_OID)
 *
- */
+*/
 void FIND_MAP(void)
 {
     // asm 00005391: 	LDI	@LEG_MAPI,AR0
@@ -1178,6 +1202,8 @@ FIND_LP:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_MAP", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void CKAHEAD(void)
 {
@@ -1208,10 +1234,13 @@ void CKAHEAD(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: ROADOBSTAB	.BSS	ROADOBSTAB,50 */
 int ROADOBSTAB[50];
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *SCAN CAR LIST FOR OBSTACLES TO AVOID
 *BUILD OBSTACLE ARRAY
 *ROAD IS 5000 WIDE SO 50 UNITS X 100
@@ -1221,7 +1250,7 @@ int ROADOBSTAB[50];
 *	AR4	CAR OBJECT
 *	AR5	CAR STRUCTURE
 *
- */
+*/
 void CARSCAN(void)
 {
     // asm 000053B2: 	LDI	@CAR_LIST,R0
@@ -1261,17 +1290,19 @@ void PLSCAN(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: WACKER	.WORD	3D20AH */
 int WACKER = 0x3D20A;
 /* asm: LAKEL	.WORD	3EF0CH */
 int LAKEL = 0x3EF0C;
 
-/* *
+/*
+*
 *OBSTACLE TABLE INIT
 *
- */
+*/
 void OBSTABINIT(void)
 {
     // asm 000053C7: 	LDI	0,R0
@@ -1345,7 +1376,10 @@ OIX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *EXAMINE ROAD OBSTACLE MAP TO GET OFFSET CHANGE IF ANY
 *
 *PARAMETERS
@@ -1356,7 +1390,7 @@ OIX:
 *	R0	NEW ROAD OFFSET
 *TRASHES AR2
 *
- */
+*/
 void GETRDOFFSET(void)
 {
     // asm 000053FF: 	LDI	0,R6		;LFT SCAN INIT
@@ -1495,7 +1529,10 @@ FAIL:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *CHECK CAR OBSTACLE
 *
 *PARAMETERS
@@ -1506,7 +1543,7 @@ FAIL:
 *RETURNS
 *	R0	CLOSING TIME (800H=OUT OF RANGE)
 *
- */
+*/
 /* asm: CARTMP1	.BSS	CARTMP1,1 */
 int CARTMP1;
 
@@ -1634,7 +1671,10 @@ CARCHKX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GET PERPENDICULAR VELOCITY
 *OF CAR TO ROAD
 *
@@ -1645,7 +1685,7 @@ CARCHKX:
 *	R0	PERP SPEED +RIGHT -LEFT
 *	R2	ANGLE
 *
- */
+*/
 void GETPV(void)
 {
     // asm 000054CF: 	LDI	*+AR2(OCARBLK),AR3
@@ -1663,7 +1703,10 @@ void GETPV(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GET CAR WIDTH ON ROAD
 *
 *PARAMETERS
@@ -1673,7 +1716,7 @@ void GETPV(void)
 *	R0	WIDTH
 *	R1	HEIGHT
 *
- */
+*/
 void GETWIDTH(void)
 {
     // asm 000054DA: 	PUSH	AR2
@@ -1702,14 +1745,17 @@ void GETWIDTH(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *CHECK FOR RACER PASSING SOUND
 *
 *PARAMETERS
 *	AR4	RACER CAR OBJ
 *	AR5	RACER CAR STRUCT
 *
- */
+*/
 void RPASS(void)
 {
     // asm 000054F0: 	LDI	*+AR7(PASSCNT),R0      	;INHIBIT PASSING SOUND?
@@ -1771,7 +1817,10 @@ RPASSX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *INITIALIZE RACER STARTING POSITION
 *
 *PARAMETERS
@@ -1782,7 +1831,7 @@ RPASSX:
 *	R2	(FL) FACING THETA
 *
 *
- */
+*/
 void SPOS_INIT(void)
 {
     // asm 00005522: 	PUSH	AR5
@@ -1861,7 +1910,10 @@ L874:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *START PLAYER WRECK
 *
 *PARAMETERS
@@ -1869,7 +1921,7 @@ L874:
 *	AR5	PLAYER CAR BLOCK
 *	AR7	PROCESS BLOCK
 *
- */
+*/
 void WRECKST(void)
 {
     // asm 00005568: 	PUSH	AR4
@@ -1913,6 +1965,8 @@ WRKST1:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WRECKST", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void WRECK(void)
 {

@@ -21,8 +21,16 @@ extern int FONT40_TAB;
 extern int FONT18_TAB;
 extern int OGSMFONT_TAB;
 
-/* 	;size = 22
- */
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
+// 	;size = 22
 /* asm: FONTDIGLG: */
 /* asm: FONTENT	1,0,17,0,0	;0 */
 /* asm: FONTENT	2,19,35,0,0 */
@@ -36,8 +44,7 @@ extern int OGSMFONT_TAB;
 /* asm: FONTENT	1,157,174,0,0	;9 */
 /* asm: FONTENT	2,176,179,0,1	;':' */
 int FONTDIGLG;
-/* 	;size = 12
- */
+// 	;size = 12
 /* asm: FONTDIGSM: */
 /* asm: FONTENT	2,181,190,0,0	;0 */
 /* asm: FONTENT	2,192,199,0,0 */
@@ -52,8 +59,7 @@ int FONTDIGLG;
 /* asm: FONTENT	3,211,212,14,2	;':' */
 /* asm: FONTENT	0,215,224,14,0	;;  'N' */
 int FONTDIGSM;
-/* *leading,xstart,xend,ystart,trailing
- */
+// *leading,xstart,xend,ystart,trailing
 /* asm: FONTN43TAB: */
 /* asm: FONTENT	4,26,50,0,0	;0	28 */
 /* asm: FONTENT	3,50,75,0,0	;1 */
@@ -97,8 +103,7 @@ int FONT40TABI = FONT40_TAB-(17*FONTENT_SIZE);
 /* asm: FONTENT	1,174,201,96,0	;Y	177,139 */
 /* asm: FONTENT	1,205,228,88,0	;Z	88,131 */
 int FONT40_TAB;
-/* *SIZE = 18
- */
+// *SIZE = 18
 /* asm: FONT18_TAB: */
 /* asm: FONTENT	3,54,65,18,0	;0 */
 /* asm: FONTENT	5,66,72,18,3	;1 */
@@ -144,8 +149,7 @@ int FONT40_TAB;
 /* asm: FONTENT	2,31,42,18,0	;Y	18,35 */
 /* asm: FONTENT	2,43,53,18,0	;Z	18,35 */
 int FONT18_TAB;
-/* *SIZE = 12
- */
+// *SIZE = 12
 /* asm: OGSMFONT_TAB: */
 /* asm: FONTENT	1,66,75,13,0	;0	13,25 */
 /* asm: FONTENT	1,76,85,13,0	;1	13,25 */

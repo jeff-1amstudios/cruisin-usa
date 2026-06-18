@@ -32,10 +32,18 @@ extern int HEADS[];
 extern int YINCREMENT;
 extern int FONTUSED;
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 #define HEADTYPE 0x88D0
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void TEXTDELER(void)
 {
     // asm 0000A1A4: 	LDI	@TEXT_ACTIVEI,AR4
@@ -77,6 +85,8 @@ TXTXX:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: HEADS	.word	jeno */
 /* asm: 	.word	marc */
 /* asm: 	.word	pet */
@@ -89,6 +99,7 @@ TXTXX:
 /* asm: 	.word	ken */
 /* asm: 	.word	eric */
 /* asm: 	.word	-1 */
+/* asm: 	 */
 int HEADS[] = {
     jeno,
     marc,
@@ -104,11 +115,12 @@ int HEADS[] = {
     -1,
 };
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
- */
+*/
 void VANITY_HEADS(void)
 {
     // asm 0000A1CC: 	SETDP
@@ -183,8 +195,9 @@ VOSLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void SET18FONTDS_WHITE(void)
 {
     // asm 0000A20F: 	CALL	SET18FONTDS
@@ -196,6 +209,8 @@ void SET18FONTDS_WHITE(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET18FONTDS_WHITE", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 /* asm: YINCREMENT	.bss	YINCREMENT,1 */
 int YINCREMENT;
@@ -381,12 +396,31 @@ WTD55:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*SUBROUTINE FOR THE ABOVE
+*
+*
+*PARAMETERS
+*	AR2	STRING
+*	R2	X
+*	R3	Y
+*	R4	FONT
+*RETURNS
+*	AR0	S1
+*	AR1	S2
+*
+*/
+
 /* asm: FONTUSED	.bss	FONTUSED,1 */
 int FONTUSED;
 
-/* ;	LDL	SET18FONTDS
+/*
+;	LDL	SET18FONTDS
 ;	LDL	SETFIXEDFONTDS
- */
+*/
 void GETT(void)
 {
     // asm 0000A2C0: 	LDI	9999,RC
@@ -426,3 +460,5 @@ void RIGHTEM(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RIGHTEM", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------

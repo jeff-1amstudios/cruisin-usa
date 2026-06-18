@@ -40,9 +40,19 @@ extern int BLUESKY[];
 extern int INFIN_CORRECT;
 extern float WATERPOS[];
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 /* asm: CAMRADY	.bss	CAMRADY,1 */
 int CAMRADY;
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *SEARCH THE ROAD OBJECTS AND FIND THE HIGHEST POSITIONED OBJECT.
 *
 *Note that the case of the player being inverted can not happen because the
@@ -52,7 +62,7 @@ int CAMRADY;
 *only that value must be projected in Y.
 *
 *
- */
+*/
 #define HIGH_CLIP_LEVEL ((5000-1)) //ACTUAL # OF ENTRIES
 /* asm: HIGHEST_ROADY	.bss	HIGHEST_ROADY,1 */
 int HIGHEST_ROADY;
@@ -154,7 +164,10 @@ FHRY_X:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PLOT INFINITY PLANE
 *
 *VERTICES TRANSFORMED AS
@@ -163,28 +176,32 @@ FHRY_X:
 *     0	 2  4  etc.
 *
 *
- */
+*/
 /* asm: AMOUNT_CLIPPED	.bss	AMOUNT_CLIPPED,1 */
 int AMOUNT_CLIPPED;
 /* asm: FORMULA		.float	-244.4619926	;(6*256)/2PI  (convert radians to length of infinity plane) */
+/* asm: 	 */
 float FORMULA = -244.4619926f;
 /* asm: LOWVAL		.float	-1536 */
 float LOWVAL = -1536.0f;
 /* asm: HIGHVAL		.float	1536 */
+/* asm: 	 */
 float HIGHVAL = 1536.0f;
 /* asm: LOIVAL		.word	-768 */
 int LOIVAL = -768;
 /* asm: HIGHIVAL	.word	1536 */
+/* asm: 	 */
 int HIGHIVAL = 1536;
 /* asm: INFPROJ		.float	0.0064 */
 float INFPROJ = 0.0064f;
 /* asm: INFVAL		.float  80000 */
 float INFVAL = 80000.0f;
 
-/* *
+/*
 *
 *
- */
+*
+*/
 void INFINITY(void)
 {
     // asm 00008264: 	LDI	@_MODE,R0
@@ -486,8 +503,9 @@ LOOP1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: INFINITY_POINTS	.word	INFINPOINTS */
 #define INFINITY_POINTS INFINPOINTS
 /* asm: INFINPOINTS */
@@ -517,14 +535,21 @@ LOOP1:
 /* asm: 	.float	1536,-255,0 */
 /* asm: 	.float	1792,0,0 */
 /* asm: 	.float	1792,-255,0 */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.float	-1280,-253,0 */
 /* asm: 	.float	-1280,-1250,0 */
+/* asm: 	 */
 /* asm: 	.float	-300,-253,0 */
 /* asm: 	.float	-300,-1250,0 */
+/* asm: 	 */
 /* asm: 	.float	700,-253,0 */
 /* asm: 	.float	700,-1250,0 */
+/* asm: 	 */
 /* asm: 	.float	1700,-253,0 */
 /* asm: 	.float	1700,-1250,0 */
+/* asm: 	 */
+/* asm: 	 */
 int INFINPOINTS[] = {
     -1280, 0, 0,
     -1280, -255, 0,
@@ -565,9 +590,23 @@ int INFINPOINTS[] = {
 #define INFIN_POLYGONSI BLUESKY
 /* asm: BLUESKY	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
 /* asm: 	.word	sky1_p,sky1_I,sky1_p,sky2_I,sky1_p,sky3_I,sky1_p,sky4_I,sky1_p,sky5_I,sky1_p,sky6_I */
+/* asm: 	 */
+/* asm: 	 */
+/* asm: 	 */
 int BLUESKY[] = {
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
+    // ----------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------
+    // 
+    // 
+    // PARAMETERS
+    // 	AR4	NUMBER OF VERTICES
+    // 	AR5	POINTERS [X Y Z]
+    // 	AR6	RAM BUFFER
+    // 
+    // 
+    // 
 };
 /* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
 int INFIN_CORRECT;
@@ -647,12 +686,15 @@ LKJ25:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *DISPLAY THE WATER TO THE SCREEN
 *
 *THIS MUST BE CALLED AFTER INFINITY
 *
- */
+*/
 void WATER_INFINITY(void)
 {
     // asm 0000840A: 	LDF	@CAMRADY,R2
@@ -766,6 +808,7 @@ LOOPA:
 /* asm: WATERPOSI	.word	WATERPOS */
 #define WATERPOSI WATERPOS
 /* asm: WATERPOS */
+/* asm: 	 */
 /* asm: 	.float	-1280,128,0 */
 /* asm: 	.float	-1280,0,0 */
 /* asm: 	.float	-1024,128,0 */
@@ -819,4 +862,5 @@ float WATERPOS[] = {
     1536.0f, 0.0f, 0.0f,
     1792.0f, 128.0f, 0.0f,
     1792.0f, 0.0f, 0.0f,
+    // ----------------------------------------------------------------------------
 };

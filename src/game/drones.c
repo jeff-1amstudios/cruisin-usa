@@ -117,14 +117,35 @@ extern const char HRS44[];
 extern const char HRS45[];
 extern const char HRS46[];
 
+/*
+*----------------------------------------------------------------------------
+*COMMON DRONE ROUTINES
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
+/*
+*----------------------------------------------------------------------------
+*DRONE TYPES
+*	DELTA	intelligent, race vs plyr
+*	RHO	oncoming traffic + RHO WEAVER
+*	SIGMA	slow moving same direction as plyr (obstacles)
+*		+ WEAVER SIGMA
+*	COPCAR
+*	CHOPPER	the helicopter
+*
+*/
+
 /* asm: DRONE_DISPATCH_P	.bss	DRONE_DISPATCH_P,1 */
 int DRONE_DISPATCH_P;
 /* asm: SUSPEND_MODE	.bss	SUSPEND_MODE,1 */
 int SUSPEND_MODE;
 /* asm: RACER_GRID_START	.bss	RACER_GRID_START,1 */
 int RACER_GRID_START;
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 /* asm: DRONE_COUNT	.bss	DRONE_COUNT,1 */
 int DRONE_COUNT;
 /* asm: MIN_TRACK_TIME	.bss	MIN_TRACK_TIME,1 */
@@ -140,8 +161,12 @@ float LANES[] = {
     -576.0f, -576.0f, 576.0f, 576.0f, // TWO & 2/2 LANE
 };
 /* asm: LANES4	.float	-1728.0,-576.0,576.0,1728.0	;TWO & 2/2 LANE */
+/* asm: 	 */
+/* asm: 	 */
+/* asm: 	 */
 float LANES4[] = {
     -1728.0f, -576.0f, 576.0f, 1728.0f, // TWO & 2/2 LANE
+    // ----------------------------------------------------------------------------
 };
 /* asm: ONCSCREEN_CARS	.bss	ONCSCREEN_CARS,1 */
 int ONCSCREEN_CARS;
@@ -158,7 +183,10 @@ void POSITION_FINDER(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *FIND PLAYERS POSITION, AND # OF CARS CLOSE ONSCREEN
 *
@@ -168,7 +196,7 @@ void POSITION_FINDER(void)
 *
 * OUTPUT:SETS @POSITION, @ONCSCREEN_CARS
 *
- */
+*/
 void FIND_PLAYERS_POSITION(void)
 {
     // ;	CLRI	IR0	;TEMP FLAG FOR OTHER MACHINE
@@ -284,11 +312,14 @@ FPPX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *DRONE DISPATCHER
 *
 *
- */
+*/
 /* asm: DD_SLP	.bss	DD_SLP,1 */
 int DD_SLP;
 /* asm: DD_VAR	.bss	DD_VAR,1 */
@@ -296,8 +327,7 @@ int DD_VAR;
 /* asm: DD_MAX_DRONES	.bss	DD_MAX_DRONES,1 */
 int DD_MAX_DRONES;
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void SIGMA_DISPATCHER(void)
 {
     // asm 00006618: 	LDI	@HEAD2HEAD_ON,R0
@@ -369,6 +399,20 @@ NOTYET:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*ADD ID TO DRONE POINTER TABLE
+*
+*PARAMETERS
+*	AR4	OBJECT
+*	AR5	CAR BLOCK
+*RETURNS
+*	R0	ID
+*
+*/
+
 /* asm: DRONENUM	.bss	DRONENUM,1 */
 int DRONENUM;
 
@@ -401,7 +445,10 @@ void DRONE_CLR(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
@@ -411,7 +458,7 @@ void DRONE_CLR(void)
 *OF EACH LEG IS REALLY CUTTING IT
 *
 *
- */
+*/
 void RHO_DISPATCHER(void)
 {
     // asm 00006664: 	CALL	DRONE_CLR 	;CLEAR OUT DRONE POINTER TABLE
@@ -516,8 +563,7 @@ GODISP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void SET_DRONE_PAL(void)
 {
     // asm 000066B7: 	PUSH	R0
@@ -552,14 +598,17 @@ NO_EPALS:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PARAMETERS
 *	AR2	OBJECT TO CHECK VALID LANES FOR...
 *RETURNS
 *	R0	0 - 2 lanes
 *		1 - 4 lanes
 *
- */
+*/
 void GET_LANES(void)
 {
     // asm 000066D2: 	PUSH	AR0
@@ -589,7 +638,10 @@ GL_FND:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GET X/Z DISTANCE TO PLAYER
 *
 *PARAMETERS
@@ -597,7 +649,7 @@ GL_FND:
 *RETURNS
 *	R0	FL DISTANCE TO PLAYER (IN VOXELS)
 *
- */
+*/
 void DIST_TO_PLYR(void)
 {
     // asm 000066E7: 	PUSH	AR3
@@ -624,7 +676,10 @@ void DIST_TO_PLYR(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GRAB THE AR2th PIECE ON THE CURRENT TRACK
 *
 *PARAMETERS
@@ -632,7 +687,7 @@ void DIST_TO_PLYR(void)
 *RETURNS
 *	AR2	OBJECT POINTER TO STARTING ROAD PIECE
 *
- */
+*/
 void INIT_TRACKING_PIECE(void)
 {
     // asm 000066FB: 	PUSH	AR0
@@ -655,7 +710,10 @@ LPP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *TRACK APPROPRIATE PIECE
 *
 *GETS THE POSITION THAT WE ARE CURRENTLY TRACKING ON,
@@ -673,7 +731,7 @@ LPP:
 *	R0		(FL) DISTANCE TO NEXT PIECE
 *	MATRIXA		find Y Matrix (of Tracking Piece)
 *
- */
+*/
 void GET_TRACK_POS_RVS_XLANE(void)
 {
     // asm 00006706: 	PUSHFL	R1
@@ -744,7 +802,81 @@ TRKP2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+;*----------------------------------------------------------------------------
+;*
+;*PARAMETERS
+;*	AR7			DRONE PROCESS
+;*	AR4			DRONE OBJECT
+;*	*+AR7(DELTA_SPTR)	VALID STEALTH POINTER
+;*
+;*
+;*
+;*RETURNS
+;*	VECTORA		[X Y Z] POSITION
+;*	R0		(FL) DISTANCE TO NEXT PIECE
+;*	MATRIXA		find Y Matrix (of Tracking Piece)
+;*
+;GET_STEALTH_POS:
+;	PUSHFL	R1
+;	PUSHFL	R2
+;	PUSHFL	R3
+;	PUSH	AR2
+;	LDI	*+AR7(DELTA_SPTR),AR2
+;
+;	FLOAT	*+AR2(Y),R0
+;	FLOAT	52,R1
+;	SUBF	R1,R0
+;	STF	R0,*+AR4(OPOSY)
+;
+;;	yrot  = cr + ROAD_ITEMS[i].rads.y;
+;;	yrot *= 128;
+;;	yroti = (int) yrot;
+;;
+;;	ROAD_MAP[MAP_LENGTH].id = (ROAD_MAP[MAP_LENGTH].id & 0x0fffff) |
+;;				((yroti & 0x0fff) << 20);
+;
+;
+;	;to get the proper theta we must compute the direction to the next
+;	;piece via arctan2
+;	;
+;	LDI	*+AR2(4+X),R2
+;	LDI	*+AR2(4+Z),R3
+;	SUBI	*+AR2(X),R2
+;	SUBI	*+AR2(Z),R3
+;	FLOAT	R2
+;	FLOAT	R3
+;	CALL	ARCTANF
+;	SUBF	HALFPI,R0
+;	LDF	R0,R2
+;
+;
+;	LDI	@MATRIXAI,AR2
+;	CALL	FIND_YMATRIX
+;
+;	LDI	*+AR7(DELTA_SPTR),AR2
+;	FLOAT	*+AR2(X),R2
+;	SUBF	*+AR4(OPOSX),R2
+;	FLOAT	*+AR2(Z),R1
+;	SUBF	*+AR4(OPOSZ),R1
+;
+;	MPYF	R2,R2
+;	MPYF	R1,R1
+;	ADDF	R1,R2
+;	CALL	SQRT
+;
+;	POP	AR2
+;	POPFL	R3
+;	POPFL	R2
+;	POPFL	R1
+;	RETS
+;*----------------------------------------------------------------------------
+*/
+
+/*
+*----------------------------------------------------------------------------
 *GETS OFFSET OF LANE
 *
 *
@@ -768,7 +900,7 @@ TRKP2:
 *
 *	}
 *
- */
+*/
 void SUB_FUNCTION_RVS(void)
 {
     // asm 00006733: 	PUSH	AR0
@@ -869,10 +1001,49 @@ SFENTER66:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+;*----------------------------------------------------------------------------
+;*GIVEN A SECTION/ROAD ID FIND THE MAP ENTRY IN THE
+;*ROAD MAP WHICH CONTAINS THE ID EQUAL TO, OR GREATER
+;*THAN THE GIVEN ID.
+;*[finds GE road ID ptr]
+;*
+;*PARAMETERS
+;*	R2	CODED ID (from OUSR1)
+;*	AR7	DRONE PROCESS
+;*
+;*RETURNS
+;*	*+AR7(STEALTH_PTR)
+;*
+;FIND_MAPENTRY:
+;	PUSH	AR0
+;	PUSH	R0
+;	LDI	@ROAD_MAPI,AR0
+;FIND_LP
+;	LDI	*+AR0(3),R0
+;	LS	12,R0
+;	RS	12,R0
+;	CMPI	R2,R0
+;	BGE	FINDX
+;	ADDI	4,AR0
+;	BU	FIND_LP
+;FINDX
+;	STI	AR0,*+AR7(DELTA_SPTR)
+;	STI	R0,*+AR7(DELTA_LAST_OID)	;save road id
+;
+;	POP	R0
+;	POP	AR0
+;	RETS
+;*----------------------------------------------------------------------------
+*/
+
+/*
+*----------------------------------------------------------------------------
 *DRONE UTILITY FUNCTIONS
 *
- */
+*/
 void INIT_DRONES(void)
 {
     // asm 0000677F: 	PUSH	R0
@@ -893,13 +1064,16 @@ void INIT_DRONES(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *ADD TO DRONE SUPP LIST
 *
 *PARAMETERS
 *	AR4	OBJECT DRONE POINTER
 *
- */
+*/
 void ADD_DRONE(void)
 {
     // asm 0000678D: 	PUSH	R0
@@ -913,14 +1087,17 @@ void ADD_DRONE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *FREE_DRONE
 *unlink DRONE from DRONE supplimentary list
 *
 *PARAMETERS
 *	AR4	OBJECT DRONE POINTER
 *
- */
+*/
 void FREE_DRONE(void)
 {
     // asm 00006796: 	PUSH	R0
@@ -951,10 +1128,13 @@ FREEDR_X:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
- */
+*/
 void EXP_PUFF(void)
 {
     // asm 000067A9: 	LDL	40000,R0
@@ -1010,17 +1190,108 @@ EXP_DIE:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: EXP_ANI */
+/* asm: 	 */
 /* asm: 	.word	dexplo1,dexplo2,dexplo3,dexplo4,dexplo5 */
 /* asm: 	.word	dexplo6,dexplo7,dexplo8,dexplo9,dexplo10,dexplo11,-1 */
 int EXP_ANI[] = {
+    // 	.word	blast1,blast2,blast3,blast4,blast5
+    // 	.word	blast6,blast7,blast8,blast9,blast10,-1
     dexplo1, dexplo2, dexplo3, dexplo4, dexplo5,
     dexplo6, dexplo7, dexplo8, dexplo9, dexplo10, dexplo11, -1,
 };
+// *----------------------------------------------------------------------------
 
-/* *----------------------------------------------------------------------------
+/*
+;*----------------------------------------------------------------------------
+;*MK_CHUNK
+;*
+;*PARAMETERS
+;*	AR4	HEAD OBJECT
+;*	AR2	ROM DATA PTR
+;*
+;*RETURNS
+;*	C	CANNOT GET OBJECT
+;*	AR0	CHUNK
+;*
+;*
+;	.bss	XZSPC,1
+;	.bss	XZMIN,1
+;	.bss	YSPC,1
+;	.bss	YMIN,1
+;MK_CHUNK:
+;	PUSH	AR2
+;	PUSH	R0
+;	PUSH	R1
+;	PUSH	R2
+;	PUSHF	R0
+;	PUSHF	R1
+;	PUSHF	R2
+;
+;
+;	CALL	OBJ_GET
+;	BC	MK_CHUNKX
+;
+;	MOVMF	*+AR4(OPOSX),*+AR0(OPOSX)
+;	MOVMF	*+AR4(OPOSY),*+AR0(OPOSY)
+;	MOVMF	*+AR4(OPOSZ),*+AR0(OPOSZ)
+;	STI	AR2,*+AR0(OROMDATA)
+;
+;	LDI	@XZSPC,AR2
+;	CALL	SRAND
+;	FLOAT	R0
+;	FLOATP	@XZMIN,R1
+;	SADDFR	R1,R0
+;	STF	R0,*+AR0(OVELX)
+;
+;	LDI	@XZSPC,AR2
+;	CALL	SRAND
+;	FLOAT	R0
+;	FLOAT	@XZMIN,R1
+;	SADDFR	R1,R0
+;	STF	R0,*+AR0(OVELZ)
+;
+;
+;	LDI	@YSPC,AR2
+;	CALL	RANDU0
+;	ADDI	@YMIN,R0
+;	FLOAT	R0
+;	NEGF	R0
+;	STF	R0,*+AR0(OVELY)
+;	LDI	AR0,AR2
+;	CALL	OBJ_INSERT
+;
+;
+;	LDI	10,AR2
+;	CALL	SRAND
+;	FLOAT	R0
+;	MPYF	0.01,R0
+;	STF	R0,*+AR0(OUSR2)
+;
+;	LDI	10,AR2
+;	CALL	SRAND
+;	FLOAT	R0
+;	MPYF	0.03,R0
+;	STF	R0,*+AR0(OUSR3)
+;
+;	CLRC
+;MK_CHUNKX
+;	POPF	R2
+;	POPF	R1
+;	POPF	R0
+;	POP	R2
+;	POP	R1
+;	POP	R0
+;	POP	AR2
+;	RETS
+;*----------------------------------------------------------------------------
+*/
+
+/*
+*----------------------------------------------------------------------------
 *PRECOLLIDE_PLYR	CHECK TO SEE IF CAR WILL COLLIDE WITH PLAYER
 *
 *
@@ -1039,7 +1310,7 @@ int EXP_ANI[] = {
 *	CARRY SET ON COLLISION IMMINENT
 *	CARRY CLR PATH MAINLY CLEAR
 *
- */
+*/
 void PRECOLLIDE_PLYR(void)
 {
     // asm 000067DB: 	CALL	DIST_TO_PLYR
@@ -1107,7 +1378,10 @@ NOT_IMMINENT:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PLYR_RIDE_RIGHT	is the player riding on the right side of the road?
 *
 *RETURNS
@@ -1132,7 +1406,7 @@ NOT_IMMINENT:
 *RETURNS
 *	R0	(FL) DISTANCE TO CENTERLINE OF ROAD
 *
- */
+*/
 void DRONE_RIDE_RIGHT(void)
 {
     // asm 0000680E: 	PUSH	R1
@@ -1211,13 +1485,16 @@ PRR_X:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SMOKE_PUFF
 *
 *PARAMETERS
 *	AR4	OBJECT THAT IS SMOKING
 *
- */
+*/
 /* asm: SMOKE_COUNT	.bss	SMOKE_COUNT,1 */
 int SMOKE_COUNT;
 
@@ -1289,8 +1566,9 @@ SMOKE_DIE:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: SMOKE_ANI */
 /* asm: 	.word	bnout1,1 */
 /* asm: 	.float	10 */
@@ -1311,6 +1589,7 @@ SMOKE_DIE:
 /* asm: 	.word	bnout9,1 */
 /* asm: 	.float	45 */
 /* asm: 	.word	-1 */
+/* asm: 	 */
 int SMOKE_ANI[] = {
     bnout1, 1,
     10,
@@ -1332,12 +1611,15 @@ int SMOKE_ANI[] = {
     45,
     -1,
 };
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	AR5	PALM TREE OBJECT
 *
- */
+*/
 /* asm: COCONUT_COUNT	.bss	COCONUT_COUNT,1 */
 int COCONUT_COUNT;
 
@@ -1486,15 +1768,20 @@ DROPCOCOKILL:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: MODELTAB	.word	cvettem,hotrodm,missle,testorm */
+/* asm: 	 */
 int MODELTAB[] = {
     cvettem, hotrodm, missle, testorm,
 };
 /* asm: TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
+/* asm: 	 */
 const char **TEXTTABS[] = {
     VETETXT, RODRTXT, BULLTXT, FERRTXT,
 };
 /* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
+/* asm: 	 */
 const char *TITLES[] = {
     HRT12, HRT13, HRT14, HRT15, HRT16,
 };
@@ -1511,6 +1798,7 @@ const char *BULLTXT[] = {
     HRS31, HRS32, HRS33, HRS34, HRS35, HRS36,
 };
 /* asm: FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
+/* asm: 	 */
 const char *FERRTXT[] = {
     HRS41, HRS42, HRS43, HRS44, HRS45, HRS46,
 };
@@ -1520,6 +1808,8 @@ const char HRT14[] = "AERO COEFF:";
 const char HRT15[] = "0?60 MPH:";
 const char HRT16[] = "POWER:";
 /* asm: TABING	.float	60,220,220,220,220,220 */
+/* asm: 	 */
+/* asm: 	 */
 float TABING[] = {
     60.0f, 220.0f, 220.0f, 220.0f, 220.0f, 220.0f,
 };
@@ -1547,8 +1837,10 @@ const char HRS43[] = "1=01 G";
 const char HRS44[] = "0=28";
 const char HRS45[] = "2=88 SEC=";
 const char HRS46[] = "472HP  V12 DOHC 48V";
+// *----------------------------------------------------------------------------
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *AM I AHEAD OF THE PLAYER?
 *
 *PARAMETERS
@@ -1559,7 +1851,7 @@ const char HRS46[] = "472HP  V12 DOHC 48V";
 *	CARRY SET ON AHEAD OF PLAYER
 *	CARRY CLR ON BEHIND PLAYER
 *
- */
+*/
 void AHEAD_OF_PLAYER_P(void)
 {
     // asm 0000691F: 	PUSH	AR0

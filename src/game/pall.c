@@ -48,6 +48,19 @@ extern int PALXFER_FREE;
 extern int PALXFER_AVAILABLE_P;
 extern int PALXFER_STR[];
 
+/*
+*----------------------------------------------------------------------------
+*PALETTE ALLOCATION SYSTEM
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*
+*PALETTE MANAGEMENT ROUTINES
+*PALETTES ARE ALLOCATED IN 128 BLOCKS OF 256 COLORS
+*
+*/
+
 /* asm: PALRAM	.bss	PALRAM,PALNUM */
 int PALRAM[PALNUM];
 /* asm: RAWLOCS	.bss	RAWLOCS,PALNUM */
@@ -56,19 +69,21 @@ int RAWLOCS[PALNUM];
 int PTTRAM[PALNUM*3];
 /* asm: NUM_FIXED	.bss	NUM_FIXED,1 */
 int NUM_FIXED;
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *INDEX STORAGE
- */
+*/
 /* asm: PALROMI		.word	_PALROM		;INDEXED PALETTES SOURCE ADDR LIST */
 #define PALROMI _PALROM
 /* asm: PALLISTI	.word	_PALLIST	;CROSS-REFERENCE LIST */
 #define PALLISTI _PALLIST
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *CLEAR OUT PALETTE RAM
 *
 *
- */
+*/
 void PAL_INIT(void)
 {
     // asm 00009EAB: 	PUSH	R0
@@ -102,14 +117,17 @@ void PAL_INIT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PALTRANS- TRANSFER PALETTE DATA TO COLORRAM
 *	CALL FROM DISPLAY IRQ AT BEGIN OF VBLNK
 *
 *CLOBBERS
 *	R0,R1,R7,AR0,AR1,AR2
 *
- */
+*/
 /* asm: PALSXFER	.bss	PALSXFER,1 */
 int PALSXFER;
 
@@ -198,7 +216,10 @@ PALTRX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *PARAMETERS
@@ -206,7 +227,7 @@ PALTRX:
 *	R1	SOURCE PAL
 *
 *
- */
+*/
 void PAL_OVERWRITE(void)
 {
     // asm 00009EED: 	LDI	R0,AR2
@@ -226,7 +247,10 @@ void PAL_OVERWRITE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *FIND A PALETTE
 *
 *PARAMETERS
@@ -235,7 +259,7 @@ void PAL_OVERWRITE(void)
 *	R0	COLORAM CODE
 *	CARRY SET IF PALETTE NOT FOUND
 *
- */
+*/
 void PAL_FIND(void)
 {
     // asm 00009EF8: 	PUSH	AR2
@@ -260,7 +284,10 @@ FPLXEX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *FIND RAW PALETTE
 *
 *Raw palettes are not allocated the same as regular polygon palettes
@@ -276,7 +303,7 @@ FPLXEX:
 *		CARRY SET
 *		R0	PALLETTE CODE
 *
- */
+*/
 void PAL_FIND_RAW(void)
 {
     // asm 00009F06: 	PUSH	AR0
@@ -307,7 +334,10 @@ FOUNDRAW:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
@@ -315,7 +345,7 @@ FOUNDRAW:
 *	AR2	ACTUAL PALETTE INDEX
 *		(16 BIT)
 *
- */
+*/
 void PAL_DELETE_RAW(void)
 {
     // asm 00009F17: 	PUSH	AR0
@@ -340,7 +370,10 @@ void PAL_DELETE_RAW(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GET A PALETTE
 *
 *PARAMETERS
@@ -349,7 +382,7 @@ void PAL_DELETE_RAW(void)
 *	R0	PALETTE CODE
 *	LOCKUP ON ERROR
 *
- */
+*/
 void PAL_ALLOC(void)
 {
     // asm 00009F25: 	PUSHM	R2,R3,AR1,AR0,AR2
@@ -410,7 +443,10 @@ GPLX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PAL_ALLOC_RAW
 *THIS ROUTINE IS FOR USE WHEN YOU HAVE A SELF-CREATED PALETTE THAT
 *YOU NEED TO ALLOCATE INTO MEMORY, BUT NOT USE THE PCOMP INDEXING SYSTEM
@@ -421,7 +457,7 @@ GPLX:
 *	R0	PALETTE CODE
 *	LOCKUP ON ERROR
 *
- */
+*/
 void PAL_ALLOC_RAW(void)
 {
     // asm 00009F5A: 	PUSHM	R2,R3,AR1,AR0,AR2
@@ -468,7 +504,10 @@ RAWPEX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SETUP PALETTE TRANSFER
 *
 *PARAMETERS
@@ -476,7 +515,7 @@ RAWPEX:
 *	R2	DEST PALETTE(B8-15), DEST COLOR(B0-7)
 *	R3	COUNT
 *
- */
+*/
 void PAL_SET(void)
 {
     // asm 00009F87: 	PUSH	R0
@@ -517,6 +556,8 @@ void PAL_SET(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 #define NXFER_PALS 128
 /* asm: PALXFER_ACTIVE	.bss	PALXFER_ACTIVE,1 */
 int PALXFER_ACTIVE;
@@ -526,8 +567,7 @@ int PALXFER_FREE;
 int PALXFER_AVAILABLE_P;
 int PALXFER_STR[sizeof(PALXFER) * NXFER_PALS];
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void PALXFER_INIT(void)
 {
     // asm 00009F9D: 	PUSH	R0
@@ -553,13 +593,16 @@ PXIL:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *ALLOCATE A PALETTE XFER BLOCK
 *
 *RETURNS
 *	AR0	PTR TO AVAILABLE XFER BLOCK
 *
- */
+*/
 void PALXFER_GET(void)
 {
     // asm 00009FAF: 	PUSH	R0
@@ -584,13 +627,16 @@ CNT:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *FREE A PALETTE XFER BLOCK
 *
 *PARAMETERS
 *	AR0	PTR TO XFER BLOCK TO FREE
 *
- */
+*/
 void PALXFER_DEL(void)
 {
     // asm 00009FBA: 	PUSH	R0
@@ -618,14 +664,17 @@ PXXX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *DELETE A PALETTE
 *
 *PARAMETERS
 *	AR2	PALETTE INDEX
 *	LOCKUP ON ERROR
 *
- */
+*/
 void PAL_DELETE(void)
 {
     // asm 00009FCA: 	PUSH	R0
@@ -663,7 +712,10 @@ DELP2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PALETTE DIMMER
 *
 *PARAMETERS
@@ -679,7 +731,7 @@ DELP2:
 *	 AS A PALETTE)
 *
 *
- */
+*/
 void PAL_DIMMER(void)
 {
     // asm 00009FE1: 	PUSH	AR0

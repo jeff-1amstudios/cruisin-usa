@@ -47,6 +47,15 @@ extern int PREVX;
 extern int DELTA;
 extern int LASTLOAD;
 
+/*
+*----------------------------------------------------------------------------
+*DECOMPRESSION SYSTEM
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 /* asm: PADDING	.bss	PADDING,50 */
 int PADDING[50];
 /* asm: DECOMP_ACTIVE	.bss	DECOMP_ACTIVE,1 */
@@ -58,9 +67,45 @@ int FLUSH_COUNT;
 /* asm: PACIFY_COUNT	.bss	PACIFY_COUNT,1 */
 int PACIFY_COUNT;
 #define PACIFY_MOMENT 2048
-/* *
+/*
+;PACIFY_MOMENT	.set	512
+*----------------------------------------------------------------------------
+*REGISTER ALLOCATION
 *
- */
+*AR0	SADDR	(source addr or bitstream)
+*AR1	DADDR	(dest addr)
+*AR2	scratch
+*AR3	DICTI
+*AR4	scratch
+*AR5	scratch
+*AR6	CURRENT_CODE_BITS
+*AR7	BIT_ADDR
+*
+*R0	scratch
+*R1	scratch
+*R2	scratch
+*R3	PUTC_SH
+*R4	new_code
+*R5	old_code
+*R6	character
+*R7	BUFCNT
+*
+*
+*IR0	CHARACTER (offset)
+*IR1	PUTC_BUF
+*BK	NEXT_CODE
+*
+*RC	count
+*RS
+*RE
+*
+*
+*/
+
+/*
+*
+*
+*/
 #define BITS 12
 #define MAX_CODE ((( 1 << BITS) -1 ))
 #define TABLE_SIZE 4421
@@ -69,6 +114,11 @@ int PACIFY_COUNT;
 #define FLUSH_CODE 258
 #define FIRST_CODE 259
 #define UNUSED (-1)
+/*
+*
+*
+*/
+
 tDICT DICT;
 /* asm: DECODE_STACK	hibss	DECODE_STACK,TABLE_SIZE */
 int DECODE_STACK[TABLE_SIZE];
@@ -77,7 +127,8 @@ int NEXT_BUMP_CODE;
 /* asm: LINEBUFFER	lobss	LINEBUFFER,64 */
 int LINEBUFFER[64];
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *BIT_ADDR
 *SADDR
@@ -85,7 +136,7 @@ int LINEBUFFER[64];
 *
 *
 *
- */
+*/
 void INPUT_BITS(void)
 {
     // asm 0000A2DB: 	ADDI	CURRENT_CODE_BITS,BIT_ADDR,R0
@@ -117,13 +168,16 @@ void INPUT_BITS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PARAMETERS
 *	R0	CHARACTER (BYTE) TO OUTPUT
 *	AR1	DADDR
 *
 *
- */
+*/
 void PUTC(void)
 {
     // asm 0000A2F4: 	LDI	@LINEBUFFERI,AR2
@@ -205,14 +259,17 @@ WVWRLP2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *PARAMETERS
 *	AR4	SADDR
 *	AR5	DADDR
 *
 *
- */
+*/
 void DECOMPRESS(void)
 {
     // asm 0000A324: 	CALL	PUSHALL
@@ -378,13 +435,14 @@ DECOMPRESSX:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: SAVESPCI	.word	SAVESPC+1 */
 uintptr_t SAVESPCI = (uintptr_t)(SAVESPC+1);
 /* asm: SAVESPC	.bss	SAVESPC,25 */
 int SAVESPC[25];
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void SAVE_DECOMP_REGS(void)
 {
     // asm 0000A39F: 	LDP	@SAVESPC
@@ -415,8 +473,9 @@ void SAVE_DECOMP_REGS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void RESTORE_DECOMP_REGS(void)
 {
     // asm 0000A3B7: 	LDI	@SAVESPCI,AR0
@@ -447,17 +506,23 @@ void RESTORE_DECOMP_REGS(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 #define MIN_X 240 //if this changes modify CUSA.ASM
 #define MAX_X 300
 /* asm: BOOT_PACIFY_SCREEN_P	.word	1 */
+/* asm: 	 */
 int BOOT_PACIFY_SCREEN_P = 1;
 /* asm: PREVX	.bss	PREVX,1 */
 int PREVX;
 /* asm: DELTA	.bss	DELTA,1 */
 int DELTA;
+/*
+;PREVX		.word	MIN_X
+;DELTA		.word	1
+*/
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void BOOT_PACIFY_SCREEN(void)
 {
     // asm 0000A3D0: 	CALL	SAVE_DECOMP_REGS
@@ -498,7 +563,10 @@ LLL:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SECTION LOAD REQUEST
 *	IF ACTIVE THEN REQUEST IS QUEUED BY CREATING A PROCESS
 *
@@ -506,7 +574,7 @@ LLL:
 *PARAMETERS
 *	AR2	POINTER TO SECTION CONTROL
 *
- */
+*/
 /* asm: LASTLOAD	.bss	LASTLOAD,1 */
 int LASTLOAD;
 
@@ -544,8 +612,9 @@ NOLOAD:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void REQWAIT(void)
 {
     // asm 0000A402: 	SLEEP	1

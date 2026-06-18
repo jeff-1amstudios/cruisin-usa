@@ -51,21 +51,33 @@ extern int RHO_TABLE[];
 extern int RHOFLAG;
 extern int RHOPAL;
 
+/*
+*----------------------------------------------------------------------------
+*RHO	(ONCOMING TRAFFIC)
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 #define RHO_WEAVER 1 //DRUNK ONCOMER
-/* *
+/*
+*
 *YELL B4 HIT TO PLAYER
- */
+*/
 #define B4HIT_SIZE 6
 /* asm: B4HIT_TABLE	.word	RH_GOFORIT,RH_TAKEHIM,RH_BABESCREAM1 */
 /* asm: 	.word	RH_BABEWHOA,RH_HURRYUP,RH_GONNACRASH */
+/* asm: 	 */
 int B4HIT_TABLE[] = {
     RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1,
     RH_BABEWHOA, RH_HURRYUP, RH_GONNACRASH,
 };
-/* *RHO FLAGS (RF_)
+/*
+*RHO FLAGS (RF_)
 *
 *
- */
+*/
 #define RF_WEAVER 0x001 //may this become a weaver (SUICIDE)
 #define RF_LONG 0x002 //Eugenes system can't handle long vehicles under circumstances
 #define RT_VEHIDX 0
@@ -74,13 +86,14 @@ int B4HIT_TABLE[] = {
 #define RT_SIZE 3
 /* asm: NOLONG_VEHICLES	.bss	NOLONG_VEHICLES,1 */
 int NOLONG_VEHICLES;
-/* *
+/*
+*
 *RHO_TABLE
 *	.word	VEHICLE_INDEX,RHO_FLAG
 *	.word	ONCOMESCREAM	;either fixed or general
 *
 ;	.word	SBUS_MOD,RF_LONG,BUSDOPL
- */
+*/
 #define RHO_TABLE_LENGTH 17
 /* asm: RHO_TABLE: */
 /* asm: 	.word	GTRUCK_MOD,0,DIESEL_DOPPLER */
@@ -88,18 +101,23 @@ int NOLONG_VEHICLES;
 /* asm: 	.word	CBUS_MOD,RF_LONG,BUSDOPL */
 /* asm: 	.word	COPCAR_MOD,0,CARDOPL2 */
 /* asm: 	.word	MUSCLE_MOD,RF_WEAVER,CARDOPL3 */
+/* asm: 	 */
 /* asm: 	.word	CARAVAN_MOD,0,CARDOPL3 */
 /* asm: 	.word	SBUS_MOD,RF_LONG,BUSDOPL */
 /* asm: 	.word	PTRUCKG_MOD,0,SEMIDOPL */
 /* asm: 	.word	MUSTANG_MOD,0,CARDOPL2 */
 /* asm: 	.word	JEEP_MOD,0,CARDOPL1 */
+/* asm: 	 */
 /* asm: 	.word	GTRUCK_MOD,0,DIESEL_DOPPLER */
 /* asm: 	.word	COPCAR_MOD,0,CARDOPL2 */
 /* asm: 	.word	MUSCLE_MOD,RF_WEAVER,CARDOPL3 */
 /* asm: 	.word	CARAVAN_MOD,0,CARDOPL3 */
+/* asm: 	 */
 /* asm: 	.word	PTRUCKG_MOD,0,SEMIDOPL */
 /* asm: 	.word	MUSTANG_MOD,0,CARDOPL2 */
 /* asm: 	.word	JEEP_MOD,0,CARDOPL1 */
+/* asm: 	 */
+/* asm: 	 */
 int RHO_TABLE[] = {
     GTRUCK_MOD, 0, DIESEL_DOPPLER,
     FTRUCK_MOD, RF_LONG, TRUCKHORN_BLAST,
@@ -112,12 +130,29 @@ int RHO_TABLE[] = {
     MUSTANG_MOD, 0, CARDOPL2,
     JEEP_MOD, 0, CARDOPL1,
     GTRUCK_MOD, 0, DIESEL_DOPPLER,
+    // 	.word	CBUS_MOD,RF_LONG,BUSDOPL
     COPCAR_MOD, 0, CARDOPL2,
     MUSCLE_MOD, RF_WEAVER, CARDOPL3,
     CARAVAN_MOD, 0, CARDOPL3,
     PTRUCKG_MOD, 0, SEMIDOPL,
     MUSTANG_MOD, 0, CARDOPL2,
+    // 	.word	SBUS_MOD,RF_LONG,BUSDOPL
     JEEP_MOD, 0, CARDOPL1,
+    // ----------------------------------------------------------------------------
+    // RHO DRONE	ONCOMING TRAFFIC DRONE
+    // 
+    // allocated standard drone
+    // 
+    // starting position = end of the current universe (up ahead)
+    // 
+    // in lane 0 or 1 accelerate past the player
+    // when rho has reached the begining of the universe
+    // 
+    // 
+    // RHO may be allocated as a suicide vehicle
+    // but in general plays a straight game as an
+    // oncomer.
+    // 
 };
 /* asm: RHOFLAG	.bss	RHOFLAG,1 */
 int RHOFLAG;
@@ -253,14 +288,15 @@ RHOLL1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *
 *----------------------------------------------------------------------------
 *
 *
 *
- */
+*/
 void RHO_LP(void)
 {
     // asm 000097FE: 	LDI	@SUSPEND_MODE,R0
@@ -521,13 +557,14 @@ RHO_SLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *CHECK IF OFF THE UNIVERSE
 *RET EQ (R0=0) IF OFF UNIVERSE, NE (R0=1) IF IN BOUNDS
 *AR7=DRONE PROCESS
 *
- */
+*/
 void CKCAROFF(void)
 {
     // asm 000098BC: 	LDI	*+AR7(DELTA_TPIECE),R0
@@ -551,6 +588,13 @@ CKCXPASS:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CKCAROFF", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*FREE UP THE ALLOCATED STRUCTURES, DELINK THE LINKS, AND
+*KILL THE PROCESS
+*
+*/
 
 void RHO_DIE(void)
 {
@@ -586,7 +630,10 @@ NODYNALEAN:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *THE RHO HAS BEEN HIT NOW CHOOSE
 *
 *	uneffected (if low intensity)?
@@ -604,7 +651,7 @@ NODYNALEAN:
 *
 ;COLTABI	.word	COLTAB
 ;COLTAB	.word	SCOLLA,SCOLLB,SCOLLC
- */
+*/
 void RHO_ISHIT(void)
 {
     // asm 000098E4: 	LDI	*+AR4(OID),R0
@@ -659,6 +706,17 @@ RHOISHIT_SLP:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_ISHIT", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
+
+/*
+*
+*TRANSFER CAR TO OTHER MACHINE
+*AR4=CAR
+*AR5=CAR BLOCK
+*AR7=PROCESS
+*
+*/
 
 void SEND_RHO_XSFER(void)
 {

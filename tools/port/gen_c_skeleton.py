@@ -1089,6 +1089,24 @@ def render_asm_comment(raw: str, strip_asm_comment_markers: bool = False) -> str
     return None
 
 
+def strip_asm_comment_marker(raw: str) -> str | None:
+    stripped = raw.strip()
+    if not stripped or stripped[0] not in {"*", ";"}:
+        return None
+    return stripped[1:].lstrip()
+
+
+def comment_looks_like_disabled_data(raw: str) -> bool:
+    body = strip_asm_comment_marker(raw)
+    if body is None or not body:
+        return False
+    if parse_numeric_directive(body) is not None:
+        return True
+    if DATA_LABEL_RE.match(body) is not None:
+        return True
+    return STANDALONE_DATA_DIRECTIVE_RE.match(body) is not None
+
+
 def is_context_line(raw: str) -> bool:
     if not raw.strip():
         return True
@@ -1910,10 +1928,12 @@ def assign_function_aliases(functions: list[FunctionBlock]) -> None:
 def render_leading_comment_block(lines: list[str]) -> list[str]:
     if not lines:
         return []
-    out = [f"/* {lines[0].rstrip()}"]
-    for raw in lines[1:]:
+    if len(lines) == 1:
+        return [f"// {lines[0].rstrip()}"]
+    out = ["/*"]
+    for raw in lines:
         out.append(raw.rstrip())
-    out.append(" */")
+    out.append("*/")
     return out
 
 
@@ -2256,9 +2276,11 @@ def render_numeric_variable(
     if symbol.kind == "define" and symbol.expr is not None and symbol.expr == var.name[:-1] and var.name.endswith("I"):
         return out
     if var.asm_lines:
-        out.append(f"/* asm: {var.asm_lines[0].strip()} */")
-        for extra_line in var.asm_lines[1:]:
-            out.append(f"/* asm: \t{extra_line.strip()} */")
+        renderable_asm_lines = [line for line in var.asm_lines if render_asm_comment(line) is None]
+        if renderable_asm_lines:
+            out.append(f"/* asm: {renderable_asm_lines[0].strip()} */")
+            for extra_line in renderable_asm_lines[1:]:
+                out.append(f"/* asm: \t{extra_line.strip()} */")
     ident = sanitize_identifier(var.name)
     if symbol.kind == "define" and symbol.expr is not None:
         out.append(f"#define {ident} {symbol.expr}")
@@ -2270,6 +2292,10 @@ def render_numeric_variable(
         structured_rows: list[str] = []
         if var.asm_lines:
             for asm_line in var.asm_lines:
+                asm_comment = render_asm_comment(asm_line, strip_asm_comment_markers=True)
+                if asm_comment is not None:
+                    structured_rows.append(f"    {asm_comment}")
+                    continue
                 parsed_row = parse_numeric_data_line(asm_line, var.name)
                 if parsed_row is None:
                     continue
@@ -3012,7 +3038,7 @@ def render_top_level_items(
     def should_preserve_pending_comments_across_blank(blank_idx: int) -> bool:
         if not pending_comment_lines:
             return False
-        if not all(line.lstrip().startswith(";") for line in pending_comment_lines):
+        if not all(comment_looks_like_disabled_data(line) for line in pending_comment_lines):
             return False
         next_idx = next_significant_line_index(lines, blank_idx + 1)
         if next_idx is None:
@@ -3022,7 +3048,8 @@ def render_top_level_items(
         return bool(
             is_flush_left(next_raw)
             and (
-                DATA_LABEL_RE.match(next_code)
+                LABEL_RE.match(next_code)
+                or DATA_LABEL_RE.match(next_code)
                 or BARE_LABEL_RE.match(next_code)
                 or STANDALONE_STORAGE_FULL_RE.match(next_code)
             )
@@ -3057,7 +3084,10 @@ def render_top_level_items(
 
         if not raw.strip():
             if not should_preserve_pending_comments_across_blank(idx):
-                pending_comment_lines = []
+                had_pending_comments = bool(pending_comment_lines)
+                flush_pending_comments()
+                if had_pending_comments and out and out[-1] != "":
+                    out.append("")
             idx += 1
             continue
 
@@ -3180,7 +3210,7 @@ def render_top_level_items(
                             name=standalone_data.name,
                             directive=directive_lower,
                             values=values,
-                            asm_lines=filter_renderable_asm_lines(standalone_data.asm_lines),
+                            asm_lines=standalone_data.asm_lines,
                         ),
                         symbol_table,
                         type_overrides,

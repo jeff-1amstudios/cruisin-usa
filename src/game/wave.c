@@ -57,6 +57,15 @@ extern int GTRUCKTABP[];
 extern int MISSILE_TAB[];
 extern int PSBUSTAB[];
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 /* asm: TEASE_COUNT	pbss	TEASE_COUNT,1 */
 int TEASE_COUNT;
 /* asm: ATTR_MODEL	pbss	ATTR_MODEL,1 */
@@ -66,13 +75,14 @@ int _ATTR_MODE;
 /* asm: LOADED	pbss	LOADED,1 */
 int LOADED;
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *PARAMETERS
 *	AR2	WAVE INDEX
 *		<  0 -> ATTRACT MODE N
 *		>= 0 -> REGULAR GAME
 *
- */
+*/
 void WAVE(void)
 {
     // asm 00009307: 	POP	AR7	;return addr
@@ -316,8 +326,9 @@ void BEGIN_GAME(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void INIT_SYSTEM(void)
 {
     // asm 000093D2: 	CALL	PRC_INIT	;initialize process system
@@ -334,8 +345,9 @@ void INIT_SYSTEM(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: FIXEDPAL: */
 /* asm: .word	14 */
 /* asm: RGB	0,0,0 */
@@ -374,10 +386,11 @@ int FIXEDPAL;
 /* asm: romdata */
 int ILLUM_PAL;
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *THESE PALETTES ONLY HAVE TO BE LOADED UPON STARTUP
 *
- */
+*/
 void LOAD_FIXED_PALETTES(void)
 {
     // asm 000093FC: 	CALL	PAL_INIT
@@ -419,8 +432,9 @@ void LOAD_FIXED_PALETTES(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void LOAD_STARTUP_PALS(void)
 {
     // asm 0000941F: 	LDL	ggate_PALETTES,AR2
@@ -430,25 +444,32 @@ void LOAD_STARTUP_PALS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: COPCARTAB	;PLAYERS VERSION!!! */
 /* asm: 	.word	5		;#OF DYNAS-1 */
+/* asm: 	 */
 /* asm: 	.float	0,101,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
 /* asm: 	.word	-1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	192,101,-301	;RT REAR WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	208,101,371	;RT FRONT WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-192,101,-301	;LFT REAR WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-208,101,371	;LFT FRONT WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	0,0,0	 	;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	72-1		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
@@ -473,28 +494,37 @@ int COPCARTAB[] = {
     72-1, // VERTS-1
     0, // DYNAFLAG
 };
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: HOTRODTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
+/* asm: 	 */
 /* asm: 	.float	0,117,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
 /* asm: 	.word	-1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	211,100,-329	;RT REAR WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	221,100,414	;RT FRONT WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-211,100,-329	;LFT REAR WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-221,100,414	;LFT FRONT WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	0,0,0	 	;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	131		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
+/* asm: 	 */
+/* asm: 	 */
 int HOTRODTAB[] = {
     5, // #OF DYNAS-1
     0, 117, 0, // SHADOW
@@ -518,24 +548,31 @@ int HOTRODTAB[] = {
 };
 /* asm: TESTORTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
+/* asm: 	 */
 /* asm: 	.float	0,62,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
 /* asm: 	.word	-1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	251,62,-333	;RT REAR WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	251,62,285	;RT FRONT WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-251,62,285	;LFT FRONT WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-251,62,-333	;LFT REAR WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	0,0,0	 	;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	59		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
+/* asm: 	 */
 int TESTORTAB[] = {
     5, // #OF DYNAS-1
     0, 62, 0, // SHADOW
@@ -557,30 +594,38 @@ int TESTORTAB[] = {
     59, // VERTS-1
     0, // DYNAFLAG
 };
-/* *
+/*
+*
 *JEEP DYNAMIC OBJECT SETUP
 *
- */
+*/
 /* asm: JEEPTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
+/* asm: 	 */
 /* asm: 	.float	0,119,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
 /* asm: 	.word	-1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	250,131,-285	;RT REAR WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	250,131,355	;RT FRONT WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-250,131,-285	;LFT REAR WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-250,131,357	;LFT FRONT WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	0,0,0		;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	62		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
+/* asm: 	 */
 int JEEPTAB[] = {
     5, // #OF DYNAS-1
     0, 119, 0, // SHADOW
@@ -602,30 +647,39 @@ int JEEPTAB[] = {
     62, // VERTS-1
     0, // DYNAFLAG
 };
-/* *
+/*
+*
 *CVETT DYNAMIC OBJECT SETUP
 *
- */
+*/
 /* asm: VETTTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
+/* asm: 	 */
 /* asm: 	.float	0,-164,0	;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
 /* asm: 	.word	-1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	254,67,-296	;RT REAR WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	228,81,376	;RT FRONT WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-254,67,-296	;LFT REAR WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-228,81,376	;LFT FRONT WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	0,0,0		;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	114		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
+/* asm: 	 */
+/* asm: 	 */
 int VETTTAB[] = {
     5, // #OF DYNAS-1
     0, -164, 0, // SHADOW
@@ -647,30 +701,39 @@ int VETTTAB[] = {
     114, // VERTS-1
     0, // DYNAFLAG
 };
-/* *
+/*
+*
 *GTRUCKP DYNAMIC OBJECT SETUP
 *
- */
+*/
 /* asm: GTRUCKTABP */
 /* asm: 	.word	5		;#OF DYNAS-1 */
+/* asm: 	 */
 /* asm: 	.float	0,-117,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
 /* asm: 	.word	-1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	259,86,-358	;RT REAR WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	248,90,388	;RT FRONT WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-259,86,-358	;LFT REAR WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-248,90,388	;LFT FRONT WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	0,0,0		;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	131		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
+/* asm: 	 */
+/* asm: 	 */
 int GTRUCKTABP[] = {
     5, // #OF DYNAS-1
     0, -117, 0, // SHADOW
@@ -692,30 +755,41 @@ int GTRUCKTABP[] = {
     131, // VERTS-1
     0, // DYNAFLAG
 };
-/* *
+/*
+*
 *MISSILE DYNAMIC OBJECT SETUP
 *
- */
+*/
 /* asm: MISSILE_TAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
+/* asm: 	 */
 /* asm: 	.float	0,-117,0		;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
 /* asm: 	.word	-1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	259,86,-358	;RT REAR WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	248,90,388	;RT FRONT WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-259,86,-358	;LFT REAR WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.float	-248,90,388	;LFT FRONT WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.float	0,0,0		;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	131		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
+/* asm: 	 */
+/* asm: 	 */
 int MISSILE_TAB[] = {
     5, // #OF DYNAS-1
     0, -117, 0, // SHADOW
@@ -737,30 +811,39 @@ int MISSILE_TAB[] = {
     131, // VERTS-1
     0, // DYNAFLAG
 };
-/* *
+/*
+*
 *PLAYERS SCHOOL BUS
 *
- */
+*/
 /* asm: PSBUSTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
+/* asm: 	 */
 /* asm: 	.float	0,-127,0	;SHADOW */
 /* asm: 	.word	3		;VERTS-1 */
 /* asm: 	.word	-1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	246,127,-380	;RT REAR WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	247,127,573	;RT FRONT WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-247,127,-380	;LFT REAR WHEEL	XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	1		;DYNAFLAG */
+/* asm: 	 */
 /* asm: 	.float	-247,127,573	;LFT FRONT WHEEL XYZ CENTER OFFSET */
 /* asm: 	.word	23		;VERTS-1 */
 /* asm: 	.word	2		;DYNAFLAG */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.float	0,0,0		;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	91		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
+/* asm: 	 */
 int PSBUSTAB[] = {
     5, // #OF DYNAS-1
     0, -127, 0, // SHADOW
@@ -781,4 +864,5 @@ int PSBUSTAB[] = {
     0, 0, 0, // BODY XYZ CENTER OFFSET
     91, // VERTS-1
     0, // DYNAFLAG
+    // ----------------------------------------------------------------------------
 };

@@ -124,12 +124,35 @@ extern int CCHKSUMD03;
 extern int CCHKSUMD83;
 extern int CCHKSUME03;
 
-/* *----------------------------------------------------------------------------
- */
+/*
+*----------------------------------------------------------------------------
+*MEMTEST.ASM
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*CHIP TEST ROUTINES
+*
+*
+*MEMORY WAIT STATE ACCESS NOTES
+*
+*NORMAL=WAIT STATES SET TO SW=2 OR HARDWARE WHICHEVER RELEASES FIRST
+*FOR COLOR RAM SET T0 SW=1 OR HARDWARE WHICHEVER RELEASES FIRST
+*FOR BITMAP OR WAVERAM MODE HARDWARE ONLY
+*AFTER BITMAP READ, READ 0 AFTERWARD TO RESET HDWE.
+*FOR A-D SET WAIT TO SW=4 ONLY
+*
+*/
+
+// 			;CHECKSUM_GEN	.set	1
+
+// *----------------------------------------------------------------------------
 /* asm: RANDI		.word	5A5A5A5Ah */
+/* asm: 	 */
+/* asm: 	 */
+/* asm: 	 */
 int RANDI = 0x5A5A5A5A;
-/* ;EPROM
- */
+// ;EPROM
 /* asm: RTU26	.word	0E00000h,080000h,0000000FFh,0,CHKSUME00 */
 int RTU26[] = {
     0x0E00000, 0x080000, 0x0000000FF, 0, CHKSUME00,
@@ -147,6 +170,7 @@ int RTU14[] = {
     0x0C80000, 0x080000, 0x0000000FF, 0, CHKSUMC80,
 };
 /* asm: RTU10	.word	0C00000h,080000h,0000000FFh,0,CHKSUMC00 */
+/* asm: 	 */
 int RTU10[] = {
     0x0C00000, 0x080000, 0x0000000FF, 0, CHKSUMC00,
 };
@@ -167,6 +191,7 @@ int RTU15[] = {
     0x0C80000, 0x080000, 0x00000FF00, -8, CHKSUMC81,
 };
 /* asm: RTU11	.word	0C00000h,080000h,00000FF00h,-8,CHKSUMC01 */
+/* asm: 	 */
 int RTU11[] = {
     0x0C00000, 0x080000, 0x00000FF00, -8, CHKSUMC01,
 };
@@ -187,6 +212,7 @@ int RTU16[] = {
     0x0C80000, 0x080000, 0x000FF0000, -16, CHKSUMC82,
 };
 /* asm: RTU12	.word	0C00000h,080000h,000FF0000h,-16,CHKSUMC02 */
+/* asm: 	 */
 int RTU12[] = {
     0x0C00000, 0x080000, 0x000FF0000, -16, CHKSUMC02,
 };
@@ -210,8 +236,15 @@ int RTU17[] = {
 int RTU13[] = {
     0x0C00000, 0x080000, 0x0FF000000, -24, CHKSUMC03,
 };
-/* ;WAVE RAM
- */
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*RAM CHIP DEFINES
+*	.word	START_ADDR,LENGTH,MASK,REPETITIONS,WAIT_STATE_MODE,PRINTABLE?,UNUMBER
+*/
+
+// ;WAVE RAM
 /* asm: RTU72	.word	0A00000h,080000h,00000000Fh,1,1000h,2 */
 int RTU72[] = {
     0x0A00000, 0x080000, 0x00000000F, 1, 0x1000, 2,
@@ -225,6 +258,7 @@ int RTU70[] = {
     0x0A00000, 0x080000, 0x000000F00, 1, 0x1000, 2,
 };
 /* asm: RTU71	.word	0A00000h,080000h,00000F000h,1,1000h,2 */
+/* asm: 	 */
 int RTU71[] = {
     0x0A00000, 0x080000, 0x00000F000, 1, 0x1000, 2,
 };
@@ -241,21 +275,21 @@ int RTU74[] = {
     0x0A00001, 0x080000, 0x000000F00, 1, 0x1000, 2,
 };
 /* asm: RTU75	.word	0A00001h,080000h,00000F000h,1,1000h,2 */
+/* asm: 	 */
 int RTU75[] = {
     0x0A00001, 0x080000, 0x00000F000, 1, 0x1000, 2,
 };
-/* ;COLOR RAM
- */
+// ;COLOR RAM
 /* asm: RTU85	.word	09E0000h,08000h,000FF00h,1,SOFT_WS,1 */
 int RTU85[] = {
     0x09E0000, 0x08000, 0x000FF00, 1, SOFT_WS, 1,
 };
 /* asm: RTU87	.word	09E0000h,08000h,00000FFh,1,SOFT_WS,1 */
+/* asm: 	 */
 int RTU87[] = {
     0x09E0000, 0x08000, 0x00000FF, 1, SOFT_WS, 1,
 };
-/* ;VIDEO RAM
- */
+// ;VIDEO RAM
 /* asm: RTU102	.word	0900000h,020000h,0000000FFh,1,1000h,2 */
 int RTU102[] = {
     0x0900000, 0x020000, 0x0000000FF, 1, 0x1000, 2,
@@ -269,11 +303,11 @@ int RTU94[] = {
     0x0900001, 0x020000, 0x0000000FF, 1, 0x1000, 2,
 };
 /* asm: RTU101	.word	0900001h,020000h,00000FF00h,1,1000h,2 */
+/* asm: 	 */
 int RTU101[] = {
     0x0900001, 0x020000, 0x00000FF00, 1, 0x1000, 2,
 };
-/* ;FAST RAM
- */
+// ;FAST RAM
 /* asm: RTU57	.word	0400000h,020000h,00000FF00h,1,SOFT_WS,1 */
 int RTU57[] = {
     0x0400000, 0x020000, 0x00000FF00, 1, SOFT_WS, 1,
@@ -290,10 +324,19 @@ int RTU60[] = {
 int RTU59[] = {
     0x0400000, 0x020000, 0x000FF0000, 1, SOFT_WS, 1,
 };
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*VECTOR PTR,XmYm,XM,YM,U_NUM
+*
+*/
+
 #define ISRAM 0
 #define ISROM 1
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 /* asm: CHIPTEST_TABLEI	.word	CHIPTEST_TABLE */
 #define CHIPTEST_TABLEI CHIPTEST_TABLE
 /* asm: CHIPTEST_TABLE */
@@ -380,8 +423,9 @@ void TEST_STATIC_CHIPS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void GET_AR4_DIGITS(void)
 {
     // asm 00006322: 	LDI	*+AR4(CTT_U),AR0
@@ -413,8 +457,9 @@ NZERO:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void BLINK_AND_CONTINUE(void)
 {
     // asm 00006338: 	PUSH	RS
@@ -438,8 +483,9 @@ void BLINK_AND_CONTINUE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void IS_STATIC_ERROR(void)
 {
     // asm 00006349: 	CALL	GET_AR4_DIGITS
@@ -451,7 +497,10 @@ ELOOP:
     UNIMPL();
 }
 
-/* *
+// *----------------------------------------------------------------------------
+
+/*
+*
 *THIS ROUTINE TAKES OVER THE CPU, AND RETURNS
 *
 *PARAMETERS
@@ -460,7 +509,7 @@ ELOOP:
 *	R3 DIGIT 3
 *
 *
- */
+*/
 void LLED_ON(void)
 {
     // asm 0000634C: 	LDI	@SYSCNTL,R0		;if the system hangs and the LED
@@ -561,6 +610,8 @@ BDL3X:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void TEST_CHIPS(void)
 {
     // asm 000063AC: 	PUSH	DP
@@ -651,8 +702,9 @@ TEST_CHIPSX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void PLOT_OUTLINE_OF_CHIPS(void)
 {
     // asm 000063FD: 	LDI	@CHIPTEST_TABLEI,AR4
@@ -686,8 +738,9 @@ POOCL:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void CMOS_CHIP_DISPLAY(void)
 {
     // asm 00006417: 	LDL	CMOS_CHIP,AR4
@@ -717,8 +770,9 @@ void CMOS_CHIP_DISPLAY(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void CMOS_CHIP_TEST(void)
 {
     // asm 0000642E: 	PUSH	AR4
@@ -804,7 +858,10 @@ KKJJ:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *FOR THE DISPLAY TO WORK WE MUST HAVE OPERATING PROPERLY:
 *	VIDEO RAM (8 CHIPS)
 *	COLOR RAM (2 CHIPS)
@@ -813,7 +870,7 @@ KKJJ:
 *RESULTS.
 *
 *
- */
+*/
 /* asm: BASICS_RAM	fbss	BASICS_RAM,10 */
 int BASICS_RAM[10];
 
@@ -935,7 +992,10 @@ void TEST_BASICS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *TEST RAM AREA
 *CALLING PARAMETERS
 *
@@ -959,7 +1019,7 @@ void TEST_BASICS(void)
 *	AR6	WATCHDOG FEEDER
 *
 *
- */
+*/
 void RAMTEST(void)
 {
     // asm 00006527: 	LDL	BLOWLIST,R0
@@ -1069,8 +1129,9 @@ void RAMTEST_END(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void COPY_RAMTEST(void)
 {
     // asm 00006573: 	LDL	RAMTEST_END,AR0
@@ -1088,7 +1149,10 @@ BBCP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *GENERATE_CHECKSUM
 *
 *GENERATES A 16 BIT CHECKSUM
@@ -1103,7 +1167,7 @@ BBCP:
 *RETURNS
 *	R0	PART CHECKSUM
 *
- */
+*/
 void GENERATE_CHECKSUM(void)
 {
     // asm 0000657D: 	PUSH	R1
@@ -1128,6 +1192,14 @@ CHKSUMG:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*ROM CHIP CHECKSUMS
+*
+*/
+
 #if CHECKSUM_GEN
 /* asm: CHKSUMC00	.word	-1 */
 #define CHKSUMC00 CHECKSUM_C00
@@ -1138,6 +1210,7 @@ CHKSUMG:
 /* asm: CHKSUMD80	.word	-1 */
 #define CHKSUMD80 CHECKSUM_D80
 /* asm: CHKSUME00	.word	-1 */
+/* asm: 	 */
 #define CHKSUME00 CHECKSUM_E00
 /* asm: CHKSUMC01	.word	-1 */
 #define CHKSUMC01 CHECKSUM_C01
@@ -1148,6 +1221,7 @@ CHKSUMG:
 /* asm: CHKSUMD81	.word	-1 */
 #define CHKSUMD81 CHECKSUM_D81
 /* asm: CHKSUME01	.word	-1 */
+/* asm: 	 */
 #define CHKSUME01 CHECKSUM_E01
 /* asm: CHKSUMC02	.word	-1 */
 #define CHKSUMC02 CHECKSUM_C02
@@ -1158,6 +1232,7 @@ CHKSUMG:
 /* asm: CHKSUMD82	.word	-1 */
 #define CHKSUMD82 CHECKSUM_D82
 /* asm: CHKSUME02	.word	-1 */
+/* asm: 	 */
 #define CHKSUME02 CHECKSUM_E02
 /* asm: CHKSUMC03	.word	-1 */
 #define CHKSUMC03 CHECKSUM_C03
@@ -1168,6 +1243,8 @@ CHKSUMG:
 /* asm: CHKSUMD83	.word	-1 */
 #define CHKSUMD83 CHECKSUM_D83
 /* asm: CHKSUME03	.word	-1 */
+/* asm: 	 */
+/* asm: 	 */
 #define CHKSUME03 CHECKSUM_E03
 /* asm: CCHKSUMC00	.word	0 */
 int CCHKSUMC00 = 0;
@@ -1178,6 +1255,7 @@ int CCHKSUMD00 = 0;
 /* asm: CCHKSUMD80	.word	0 */
 int CCHKSUMD80 = 0;
 /* asm: CCHKSUME00	.word	0 */
+/* asm: 	 */
 int CCHKSUME00 = 0;
 /* asm: CCHKSUMC01	.word	0 */
 int CCHKSUMC01 = 0;
@@ -1188,6 +1266,7 @@ int CCHKSUMD01 = 0;
 /* asm: CCHKSUMD81	.word	0 */
 int CCHKSUMD81 = 0;
 /* asm: CCHKSUME01	.word	0 */
+/* asm: 	 */
 int CCHKSUME01 = 0;
 /* asm: CCHKSUMC02	.word	0 */
 int CCHKSUMC02 = 0;
@@ -1198,6 +1277,7 @@ int CCHKSUMD02 = 0;
 /* asm: CCHKSUMD82	.word	0 */
 int CCHKSUMD82 = 0;
 /* asm: CCHKSUME02	.word	0 */
+/* asm: 	 */
 int CCHKSUME02 = 0;
 /* asm: CCHKSUMC03	.word	0 */
 int CCHKSUMC03 = 0;
@@ -1219,6 +1299,7 @@ int CCHKSUME03 = 0;
 /* asm: CHKSUMD80	.word	CHECKSUM_D80 */
 #define CHKSUMD80 CHECKSUM_D80
 /* asm: CHKSUME00	.word	CHECKSUM_E00 */
+/* asm: 	 */
 #define CHKSUME00 CHECKSUM_E00
 /* asm: CHKSUMC01	.word	CHECKSUM_C01 */
 #define CHKSUMC01 CHECKSUM_C01
@@ -1229,6 +1310,7 @@ int CCHKSUME03 = 0;
 /* asm: CHKSUMD81	.word	CHECKSUM_D81 */
 #define CHKSUMD81 CHECKSUM_D81
 /* asm: CHKSUME01	.word	CHECKSUM_E01 */
+/* asm: 	 */
 #define CHKSUME01 CHECKSUM_E01
 /* asm: CHKSUMC02	.word	CHECKSUM_C02 */
 #define CHKSUMC02 CHECKSUM_C02
@@ -1239,6 +1321,7 @@ int CCHKSUME03 = 0;
 /* asm: CHKSUMD82	.word	CHECKSUM_D82 */
 #define CHKSUMD82 CHECKSUM_D82
 /* asm: CHKSUME02	.word	CHECKSUM_E02 */
+/* asm: 	 */
 #define CHKSUME02 CHECKSUM_E02
 /* asm: CHKSUMC03	.word	CHECKSUM_C03 */
 #define CHKSUMC03 CHECKSUM_C03
@@ -1249,6 +1332,7 @@ int CCHKSUME03 = 0;
 /* asm: CHKSUMD83	.word	CHECKSUM_D83 */
 #define CHKSUMD83 CHECKSUM_D83
 /* asm: CHKSUME03	.word	CHECKSUM_E03 */
+/* asm: 	 */
 #define CHKSUME03 CHECKSUM_E03
 /* asm: CCHKSUMC00	.word	~CHECKSUM_C00 */
 int CCHKSUMC00 = ~CHECKSUM_C00;
@@ -1259,6 +1343,7 @@ int CCHKSUMD00 = ~CHECKSUM_D00;
 /* asm: CCHKSUMD80	.word	~CHECKSUM_D80 */
 int CCHKSUMD80 = ~CHECKSUM_D80;
 /* asm: CCHKSUME00	.word	~CHECKSUM_E00 */
+/* asm: 	 */
 int CCHKSUME00 = ~CHECKSUM_E00;
 /* asm: CCHKSUMC01	.word	~CHECKSUM_C01 */
 int CCHKSUMC01 = ~CHECKSUM_C01;
@@ -1269,6 +1354,7 @@ int CCHKSUMD01 = ~CHECKSUM_D01;
 /* asm: CCHKSUMD81	.word	~CHECKSUM_D81 */
 int CCHKSUMD81 = ~CHECKSUM_D81;
 /* asm: CCHKSUME01	.word	~CHECKSUM_E01 */
+/* asm: 	 */
 int CCHKSUME01 = ~CHECKSUM_E01;
 /* asm: CCHKSUMC02	.word	~CHECKSUM_C02 */
 int CCHKSUMC02 = ~CHECKSUM_C02;
@@ -1279,6 +1365,7 @@ int CCHKSUMD02 = ~CHECKSUM_D02;
 /* asm: CCHKSUMD82	.word	~CHECKSUM_D82 */
 int CCHKSUMD82 = ~CHECKSUM_D82;
 /* asm: CCHKSUME02	.word	~CHECKSUM_E02 */
+/* asm: 	 */
 int CCHKSUME02 = ~CHECKSUM_E02;
 /* asm: CCHKSUMC03	.word	~CHECKSUM_C03 */
 int CCHKSUMC03 = ~CHECKSUM_C03;
@@ -1289,5 +1376,6 @@ int CCHKSUMD03 = ~CHECKSUM_D03;
 /* asm: CCHKSUMD83	.word	~CHECKSUM_D83 */
 int CCHKSUMD83 = ~CHECKSUM_D83;
 /* asm: CCHKSUME03	.word	~CHECKSUM_E03 */
+/* asm: 	 */
 int CCHKSUME03 = ~CHECKSUM_E03;
 #endif

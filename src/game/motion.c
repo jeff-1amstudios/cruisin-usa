@@ -190,6 +190,38 @@ extern int PYC2;
 extern const char PZC1[];
 extern int PZC2;
 
+/*
+*----------------------------------------------------------------------------
+*
+*
+*COPYRIGHT (C) 1994 BY	TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*
+*
+*Misc Notes:
+*
+*	The Galil board is unreliable under conditions of abort, and can
+*	become confused.  To illustrate this point D/L a program, send a
+*	HW Abort, then send an XQ command, and send a HW Abort.  We have been
+*	able to repeatedly shut the Galil board down, so that it will not
+*	respond (under normal AB circumstances even under abort, Galil will
+*	still return a prompt).
+*
+*	We have to place the following redundancies into our code to assure
+*	safe handling of the motion control:
+*
+*	1)	within the program the TL (torque limit) must be tested to
+*		insure no runaway motors (test incombination of movement)
+*	2)	check HW value for safety controls
+*	3)	every thirty frames the Galil board is polled for abort status
+*	4)	every sixty frames (when motion is OK) we must make sure
+*		that we are receiving characters
+*
+*
+*
+*/
+
 #define MIN_MOVE_DIST 200
 /* asm: MOTION_NOT_ON	.bss	MOTION_NOT_ON,1 */
 int MOTION_NOT_ON;
@@ -198,7 +230,8 @@ int MOTION_STOP_HIT;
 /* asm: MOTION_RCV_TIKS	.bss	MOTION_RCV_TIKS,1 */
 int MOTION_RCV_TIKS;
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *This is the initial check of the galil board.
 *The CMOS value will be set to ON if cool else OFF
 *No other routine may turn it ON.
@@ -208,7 +241,7 @@ int MOTION_RCV_TIKS;
 *
 *
 *
- */
+*/
 void INITIALIZATION_MOTION_CHECK(void)
 {
     // asm 00004541: 	CALL	CLEAR_LATCH_ERROR
@@ -468,7 +501,19 @@ LLLTA:
     UNIMPL();
 }
 
-/* ;MOTOROFF	.string	"ST;MO",13,0
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*
+*an intialization error has occurred:
+*	shutdown and dont use the galil
+*
+*
+*/
+
+/*
+;MOTOROFF	.string	"ST;MO",13,0
 ;MOTOROFF	.string	"ST",13,0
 ;MOTOROFF	.string	"TL 0.6,0.6,1.8;JG 90000,90000,90000;BG;WT 4000;TL 0.5,0.5,1.6;WT 4000;TL 0.3,0.3,1.4;WT 4000;ST XYZ;MO",13,0
 ;
@@ -478,7 +523,7 @@ LLLTA:
 ;MOTOROFF4	.string	"ST XYZ;MO",13,0
 ;MOTOROFF4	.string	0
 ;
- */
+*/
 const char MOTOROFF0[] = "JG 90000,90000,90000;BG;TL 0.6,0.6,1.8\n";
 const char MOTOROFF1[] = "TL 0.55,0.55,1.7;WT 1000\n";
 const char MOTOROFF2[] = "TL 0.50,0.50,1.6;WT 1000\n";
@@ -506,6 +551,7 @@ const char MOTOROFF12[] = "ST XYZ;MO\n";
 /* asm: 	.word	MOTOROFF11 */
 /* asm: 	.word	MOTOROFF12 */
 /* asm: 	.word	0 */
+/* asm: 	 */
 uintptr_t MOTOFF_PROG[] = {
     (uintptr_t)&MOTOROFF1,
     (uintptr_t)&MOTOROFF2,
@@ -639,13 +685,44 @@ const char MM4[] = "SAFETY BEAM DETECTOR NOT RECEIVING";
 const char MM5[] = "SAFETY BEAM LIGHT NOT EMITTING";
 const char MM6[] = "FAIL SAFE SWITCH ENGAGED";
 const char MM7[] = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
+// *----------------------------------------------------------------------------
+
+/*
+;if EVER failsafe problem MOTOR OFF
+	;now message on screen
+	;countdown 10 seconds
+	;if in 10 seconds error not cleared
+	;no motion for game
+;move it up
+;read status
+;check for upper limit switches
+;if not found in 3 seconds shut down NO MOTION
+;check failsafes and all errors
+;if failsafes still engaged msg "NO MOTION FOR THIS GAME"
+;other safety error  10 seconds to clear if not clear NO MOTION FOR GAME
+;dl the program
+;has error been latched?
+;F->continue
+;T->dl program again if > 2x than NO MOTION
+;xq the program
+*/
+
+/*
+;if ST from galil (during gameplay) MOTION OFF until reset
+;	hit the ABORT LINE ???
+;	stop sending commands
+;TS
+*----------------------------------------------------------------------------
+*/
+
 const char bbd[] = "MOTION BURNIN";
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *WAIT 500
 *
- */
+*/
 void WAIT500(void)
 {
     // ;	RPTS	490
@@ -664,12 +741,13 @@ WT500X:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *CHECK FOR MOTION DIPSWITCH
 *RET NE IF MOTION DIPSWITCH OFF
 *
- */
+*/
 void CHECK_MOTION_DIP(void)
 {
     // asm 000046A4: 	PUSH	AR2
@@ -841,7 +919,10 @@ JJ7:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PLAYER CABINET MOTION
 *
 *PARAMETERS
@@ -853,7 +934,7 @@ JJ7:
 *		Y=RT REAR  0=GROUND, 50000=FULL HEIGHT
 *		Z=FRONT	   0=GROUND, 50000=FULL HEIGHT
 *
- */
+*/
 void PLMOTION(void)
 {
     // asm 0000473B: 	CALL	CHECK_MOTION_DIP
@@ -1202,8 +1283,9 @@ N78:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void LEVEL_THE_MOTION(void)
 {
     // asm 00004845: 	CALL	CHECK_MOTION_DIP
@@ -1265,6 +1347,10 @@ void LEVEL_THE_MOTION(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
+
 const char SH[] = "SH;JG 10000,10000,10000;BG\n";
 /* asm: THEPROGL */
 /* asm: 	.word	EDIT,T5,T6,T7,T8,T9 */
@@ -1274,6 +1360,8 @@ const char SH[] = "SH;JG 10000,10000,10000;BG\n";
 /* asm: 	.word	T40,T41,T42,T43,T44,T45,T46,T47,T48,T49 */
 /* asm: 	.word	T50,T51,T52,T53,T54,T55,T56,T57,T58,T59 */
 /* asm: 	.word	T60 */
+/* asm: 	 */
+/* asm: 	 */
 /* asm: 	.word	T1,T2,T3 */
 /* asm: 	.word	T66X,T67X,T68X */
 /* asm: 	.word	T66Y,T67Y,T68Y */
@@ -1282,6 +1370,8 @@ const char SH[] = "SH;JG 10000,10000,10000;BG\n";
 /* asm: 	.word	T70,T71,T72,T73,T74,T75,T76,T77,T78,T79 */
 /* asm: 	.word	T80,T81,T82,T83,T84 */
 /* asm: 	.word	0 */
+/* asm: 	 */
+/* asm: 	 */
 uintptr_t THEPROGL[] = {
     (uintptr_t)&EDIT, (uintptr_t)&T5, (uintptr_t)&T6, (uintptr_t)&T7, (uintptr_t)&T8, (uintptr_t)&T9,
     (uintptr_t)&T10, (uintptr_t)&T11, (uintptr_t)&T12, (uintptr_t)&T13, (uintptr_t)&T14, (uintptr_t)&T15, (uintptr_t)&T16, (uintptr_t)&T17, (uintptr_t)&T18, (uintptr_t)&T19,
@@ -1290,6 +1380,8 @@ uintptr_t THEPROGL[] = {
     (uintptr_t)&T40, (uintptr_t)&T41, (uintptr_t)&T42, (uintptr_t)&T43, (uintptr_t)&T44, (uintptr_t)&T45, (uintptr_t)&T46, (uintptr_t)&T47, (uintptr_t)&T48, (uintptr_t)&T49,
     (uintptr_t)&T50, (uintptr_t)&T51, (uintptr_t)&T52, (uintptr_t)&T53, (uintptr_t)&T54, (uintptr_t)&T55, (uintptr_t)&T56, (uintptr_t)&T57, (uintptr_t)&T58, (uintptr_t)&T59,
     (uintptr_t)&T60,
+    // 	.word	T60,T1,T2,T3,T4,T61,T63,T64,T65,0
+    // 	.word	T60,T1,T2,T3,T4,T61,T62,T63,T64,T65,0
     (uintptr_t)&T1, (uintptr_t)&T2, (uintptr_t)&T3,
     (uintptr_t)&T66X, (uintptr_t)&T67X, (uintptr_t)&T68X,
     (uintptr_t)&T66Y, (uintptr_t)&T67Y, (uintptr_t)&T68Y,
@@ -1298,10 +1390,24 @@ uintptr_t THEPROGL[] = {
     (uintptr_t)&T70, (uintptr_t)&T71, (uintptr_t)&T72, (uintptr_t)&T73, (uintptr_t)&T74, (uintptr_t)&T75, (uintptr_t)&T76, (uintptr_t)&T77, (uintptr_t)&T78, (uintptr_t)&T79,
     (uintptr_t)&T80, (uintptr_t)&T81, (uintptr_t)&T82, (uintptr_t)&T83, (uintptr_t)&T84,
     0,
+    // INITPROGL
+    // 	.word	EDIT,T5,T6,T7,T8,T9
+    // 	.word	T10,T11,T13,T14,T15,T16,T17,T18,T19
+    // 	.word	T20,T21,T22,T23,T25,T26,T27,T28,T29
+    // 	.word	T30,T31,T32,T33,T34,T35,T36,T37,T38,T39
+    // 	.word	T40,T41,T42,T43,T44,T45,T46,T47,T48,T49
+    // 	.word	T50,T51,T52,T53,T54,T55,T56,T57,T58,T59
+    // 	.word	T60
+    // 
+    // 	.word	T1,T2,T3
+    // 	.word	T66,T67,T68,T69
+    // 	.word	T70,T71,T72,T73,T74,T75,T76,T77,T78,T79
+    // 	.word	T80,T81,T82,T83,T84
+    // 	.word	0
+    // 
 };
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void DOWNLOAD_PROGRAM(void)
 {
 IBO654:
@@ -1338,7 +1444,10 @@ DNF:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *SEND COMMAND TO GALIL MOTION CONTROL BOARD
 *
 *
@@ -1355,7 +1464,7 @@ DNF:
 *	AR2	PTR TO STR
 *
 *
- */
+*/
 void SEND_CMD(void)
 {
     // asm 000048E3: 	PUSH	R0
@@ -1415,8 +1524,9 @@ KKKII:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void RESET_GALIL(void)
 {
     // asm 0000491C: 	DINT
@@ -1459,6 +1569,8 @@ void RESET_GALIL(void)
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 void ABORT_RESET_GALIL(void)
 {
     // asm 00004947: 	DINT
@@ -1491,8 +1603,9 @@ void ABORT_RESET_GALIL(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void MOTION_DLPROG(void)
 {
     // asm 00004965: 	CALL	CHECK_MOTION_DIP
@@ -1512,8 +1625,9 @@ void MOTION_DLPROG(void)
     UNIMPL();
 }
 
-/* *MOTION NO DETECTED
- */
+// *----------------------------------------------------------------------------
+
+// *MOTION NO DETECTED
 void GALIL_ERROR(void)
 {
     // ;	.globl	MOTION_SAFETY_SWITCHES_DIAG
@@ -1555,7 +1669,10 @@ WTMLP:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *RETURNS
@@ -1563,7 +1680,7 @@ WTMLP:
 *	NC	IF NOT ERROR
 *
 *
- */
+*/
 /* asm: CME_MASK	.word	0FF80h */
 int CME_MASK = 0x0FF80;
 
@@ -1590,6 +1707,8 @@ CME_NO_MOTION_ERRORS:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_MOTION_ERROR", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
 
 void CLEAR_LATCH_ERROR(void)
 {
@@ -1618,11 +1737,14 @@ void LATCH_ERROR(void)
     UNIMPL();
 }
 
-/* *
+// *----------------------------------------------------------------------------
+
+/*
+*
 *CHECK GALIL READY
 *RET CS IF GALIL READY W/ CHAR
 *
- */
+*/
 void G_READY(void)
 {
     // asm 000049C9:         LDIL    SOUND,AR3
@@ -1781,6 +1903,8 @@ GSX:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
 /* asm: GALIL_STATUS_X	.bss	GALIL_STATUS_X,1 */
 int GALIL_STATUS_X;
 /* asm: GALIL_STATUS_Y	.bss	GALIL_STATUS_Y,1 */
@@ -1788,11 +1912,12 @@ int GALIL_STATUS_Y;
 /* asm: GALIL_STATUS_Z	.bss	GALIL_STATUS_Z,1 */
 int GALIL_STATUS_Z;
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *
 *GET HEX STRING
 *
- */
+*/
 void G_HEX(void)
 {
     // asm 00004A3F: 	CALL	G_CHAR
@@ -1847,8 +1972,9 @@ ASCERR:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void WAIT_ACK(void)
 {
     // asm 00004A5F: 	DINT
@@ -1870,8 +1996,9 @@ EXITL2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void NO_RESPONSE(void)
 {
     // asm 00004A71: 	EINT
@@ -1882,8 +2009,9 @@ void NO_RESPONSE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void WAIT_ACK_REAL(void)
 {
     // asm 00004A76: 	LDI	10000,R6	;NO RESPONSE TIMEOUT
@@ -1907,11 +2035,14 @@ EXITL2A:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *
 *
 *
- */
+*/
 void UPPER_LIMIT_ERROR(void)
 {
     // ;
@@ -1955,8 +2086,9 @@ ULL3:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 void LOWER_LIMIT_ERROR(void)
 {
     // ;
@@ -2001,6 +2133,44 @@ LLL3:
     UNIMPL();
 }
 
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
+
+/*
+*We must take into consideration:
+*	IF a limit switch is bogus, we can compensate by
+*	doing:
+*
+*	"JG -26000,-26000,-26000;BG",13,"WT 3100",13,
+*	"SH",13
+*	"PR 500,500,500"		;just to relieve the pressure a bit...
+*	"DP 0,0,0",13
+*	"SP 15000,15000,15000",13,0
+*	etc... etc...
+*
+*	NO NOT TRUE
+*
+*AC	ACCERATION
+*BG	BEGIN MOTION
+*DC	DECELERATION
+*DP	DEFINE POSITION AS
+*IT	INDEPENDANT TIME CONSTANT (SMOOTHING FUNCTION)
+*JG	JOG (MOVE AT SPEED)
+*JP	JUMP
+*MO	MOTOR OFF
+*PA	POSITION ABSOLUTE
+*PR	POSITION RELATIVE
+*SP	SPEED
+*WT	WAIT
+*XQ	EXECUTE (LABEL)
+*#<>	LABEL
+*EN	END OF PROGRAM
+*ED	EDIT (OPEN BUFFER)
+*^Q	(17/CTRL-Q) (END OF BUFFER)
+*
+*/
+
 const char PPSAF[] = "PR 4000,4000,4000;BG\nWT 500\nPR -12000,-12000,-12000\n";
 const char PP[] = "JG -26000,-26000,-26000;BG\nWT 3100\nDP 0,0,0\nSP 15000,15000,15000\n";
 const char PP1[] = "AC 105000,105000,105000\nER 8000,8000,8000\n";
@@ -2028,14 +2198,11 @@ const char T21[] = "YE=YE*5\n";
 const char T22[] = "ZE=ZA-_RPZ\n";
 const char T23[] = "ZE=ZE*5\n";
 const char T24[] = "JG XE,YE,ZE\n";
-/* ;T25	.string	"JP #CHKX,(_TTX*_TTX)>21",13,0
- */
+// ;T25	.string	"JP #CHKX,(_TTX*_TTX)>21",13,0
 const char T25[] = "JP #CHKX,(_TTX*_TTX)>23\n";
-/* ;T26	.string	"JP #CHKY,(_TTY*_TTY)>21",13,0
- */
+// ;T26	.string	"JP #CHKY,(_TTY*_TTY)>21",13,0
 const char T26[] = "JP #CHKY,(_TTY*_TTY)>23\n";
-/* ;T27	.string	"JP #CHKZ,(_TTZ*_TTZ)>21",13,0
- */
+// ;T27	.string	"JP #CHKZ,(_TTZ*_TTZ)>21",13,0
 const char T27[] = "JP #CHKZ,(_TTZ*_TTZ)>26\n";
 const char T28[] = "JP #LOOP\n";
 const char T29[] = "#INITP\n";
@@ -2044,8 +2211,7 @@ const char T31[] = "#CHKX\n";
 const char T32[] = "ACC=0\n";
 const char T33[] = "INITP=_TPX\n";
 const char T34[] = "#MLPX\n";
-/* ;T35	.string	"JP #LOOP,(_TTX*_TTX)<7",13,0
- */
+// ;T35	.string	"JP #LOOP,(_TTX*_TTX)<7",13,0
 const char T35[] = "JP #LOOP,(_TTX*_TTX)<10\n";
 const char T36[] = "JP #LOOP,(_TPX-INITP)>5\n";
 const char T37[] = "JP #LOOP,(_TPX-INITP)<-8\n";
@@ -2056,8 +2222,7 @@ const char T41[] = "#CHKY\n";
 const char T42[] = "COUNT=0\n";
 const char T43[] = "INITP=_TPY\n";
 const char T44[] = "#MLPY\n";
-/* ;T45	.string	"JP #LOOP,(_TTY*_TTY)<7",13,0
- */
+// ;T45	.string	"JP #LOOP,(_TTY*_TTY)<7",13,0
 const char T45[] = "JP #LOOP,(_TTY*_TTY)<10\n";
 const char T46[] = "JP #LOOP,(_TPY-INITP)>5\n";
 const char T47[] = "JP #LOOP,(_TPY-INITP)<-8\n";
@@ -2068,8 +2233,7 @@ const char T51[] = "#CHKZ\n";
 const char T52[] = "COUNT=0\n";
 const char T53[] = "INITP=_TPZ\n";
 const char T54[] = "#MLPZ\n";
-/* ;T55	.string	"JP #LOOP,(_TTZ*_TTZ)<7",13,0		;LOFF DLTA November 9,1994
- */
+// ;T55	.string	"JP #LOOP,(_TTZ*_TTZ)<7",13,0		;LOFF DLTA November 9,1994
 const char T55[] = "JP #LOOP,(_TTZ*_TTZ)<17\n";
 const char T56[] = "JP #LOOP,(_TPZ-INITP)>5\n";
 const char T57[] = "JP #LOOP,(_TPZ-INITP)<-8\n";
@@ -2111,7 +2275,9 @@ const char PXC1[] = "XA=";
 const char PXC2[] = "\nBG XYZ\n";
 const char PYC1[] = "YA=";
 /* asm: PYC2	.string	13,0 */
+/* asm: 	 */
 int PYC2 = 0x0000000D;
 const char PZC1[] = "ZA=";
 /* asm: PZC2	.string	13,0 */
+/* asm: 	 */
 int PZC2 = 0x0000000D;

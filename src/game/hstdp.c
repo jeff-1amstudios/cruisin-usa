@@ -94,22 +94,31 @@ extern int DELIST[];
 extern int RADIO_HS_SHADOW;
 extern int RADIO_HS_SWITCH;
 
+/*
+*----------------------------------------------------------------------------
+*HSTD PROCESSES
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*/
+
 #define FLASH_ON 1 //TURN THIS OFF TO LOOSE FLASHING
-/* ;These are for the license plate and pressing of the plate
- */
+// ;These are for the license plate and pressing of the plate
+
 #define PRESS_DIAM 271 //NOTE: The plate is on the bottom surface
 #define PRESS_RADX 1.5708
 #define ROLLER_ZOFF 620
 #define PRESS_STARTZ (-1300)
 #define PRESS_LASTZ (-2100) //-1900
 #define PRESS_TRAVELZ (PRESS_LASTZ-PRESS_STARTZ)
-/* ;PRESS_STARTY	.set	-30
- */
+// ;PRESS_STARTY	.set	-30
 #define PRESS_STARTY (-45)
 #define PRESS_LASTY (-100)
 #define PRESS_TRAVELY (PRESS_LASTY-PRESS_STARTY)
 #define HIGH_SCORE_GROUP 0x200
 /* asm: NUMTAB		.word	dzero,done,dtwo,dthree,dfour,dfive,dsix,dseven,deight,dnine */
+/* asm: 	 */
 int NUMTAB[] = {
     dzero, done, dtwo, dthree, dfour, dfive, dsix, dseven, deight, dnine,
 };
@@ -129,8 +138,7 @@ int PLATE_LETTERS[] = {
 };
 #define LASTCHAR (LAST_LETTER-PLATE_LETTERS-1)
 const char EIP[] = "ENTER INITIALS";
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 #define LETTER0 (PDATA+3)
 #define LETTER1 (PDATA+4)
 #define LETTER2 (PDATA+5)
@@ -166,8 +174,7 @@ const char EIP[] = "ENTER INITIALS";
 #define RACE_NUMBER (PDATA+33)
 #define GREY_PAL (PDATA+34)
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void ENTER_INITIALS(void)
 {
     // asm 000031A6: 	CALL	INTO_TABLE_P
@@ -312,6 +319,10 @@ MSLPX:
     UNIMPL();
 }
 
+// *ELP END CHANGE
+
+// ;This does a back space
+
 void PEDALWT(void)
 {
     // ;	LDI	@_countdown,R0
@@ -347,9 +358,10 @@ DE1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *This proc slides in the WORDS "ENTER INITIALS"
- */
+*/
 void ENTERTEXT(void)
 {
     // asm 000032B2: 	FLOAT	616,R2			;XPOS
@@ -370,9 +382,12 @@ ET0:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
 *PARAMETERS	R2 = XPOS
- */
+*/
 void CREATE_ENTERTEXT(void)
 {
     // asm 000032C1: 	LDI	@EIPI,AR2		;enter initials	string
@@ -385,8 +400,7 @@ void CREATE_ENTERTEXT(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void MAKE_CENTER(void)
 {
     // asm 000032C7: 	LDI	AR0,AR4
@@ -398,8 +412,7 @@ void MAKE_CENTER(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void HSTD_TIMER(void)
 {
     // asm 000032D0: 	LDI	@_countdown,R2
@@ -419,8 +432,7 @@ void HSTD_TIMER(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void INSERT_INITS(void)
 {
     // asm 000032DD: 	LDI	@SCORE,R0
@@ -437,12 +449,13 @@ void INSERT_INITS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 * USES BONUS_WAVE and GAMETRAKI to determine...
 *
 *RETURNS C = 1 PLAYER WILL MAKE IT INTO THE HS TABLE
 *	 C = 0 PLAYER WILL NOT MAKE IT
- */
+*/
 void INTO_TABLE_P(void)
 {
     // asm 000032E7: 	CALL	VALIDATE_HSTD_TABLES
@@ -474,12 +487,13 @@ ITP2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *RETURNS C = 1 PLAYER HAS ALLREADY ENTERED INITS
 *	 C = 0 PLAYER HAS NOT ENTERED INITS
 *SETS PLAYER LETTERS IF FOUND
 * INITI0-INITI2
- */
+*/
 void CHECK_FIRST_TIME(void)
 {
     // asm 000032FB: 	READADJ	ADJ_INITIALS
@@ -507,7 +521,8 @@ NFTX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *----------------------------------------------------------------------------
 *----------------------------------------------------------------------------
 *Below Is code only used for the plate stamping sequence
@@ -518,7 +533,7 @@ NFTX:
 *----------------------------------------------------------------------------
 *R0 = total elapsed time
 *R0 = 0, did not finish
- */
+*/
 void CALC_TOTAL_ELAPSED(void)
 {
     // asm 0000330E: 	PUSH	R1
@@ -544,11 +559,12 @@ CTEX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *	This routine is branched to from within a proccess
 *	It will stamp the letters on the plate then put the plate onto the wall
 *
- */
+*/
 #define PRESS_FRAMES 60 //120
 #define PLACE_FRAMES 40
 #define ROLLER_TRAVEL 12.7117 //2*PI = 1 revolution PI = 3.14
@@ -1214,8 +1230,9 @@ PRESSCODEX2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 #define FRAME 0x85
 #define SCROLLB 0x86
 #define PRESS 0x87
@@ -1304,6 +1321,11 @@ FPOX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_PRESS_OBJECTS", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*This proc prints the name of the location on the marque
+*/
 
 void MAKE_NEW_MARQ(void)
 {
@@ -1449,13 +1471,23 @@ MPB:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+* This positions the bar of letters during the Name Entry
+*
+*
+*/
+
 /* asm: SCROLLBTAB	;	A    B	  C   D	  E   F	  G   H	  I   J	  K   L	  M   N	  O */
 /* asm: 	.word	1057,1010,960,911,855,803,753,696,648,598,546,494,426,367,307 */
 /* asm: 	.word	252,193,138,82,24,-35,-97,-161,-230,-292,-347,-401,-465,-517,-573 */
 /* asm: 	.word	-633,-697,-757,-820,-880,-945,-1007,-1063 */
+/* asm: 	 */
 int SCROLLBTAB[] = {
     1057, 1010, 960, 911, 855, 803, 753, 696, 648, 598, 546, 494, 426, 367, 307,
+    //       P   Q   R   S  T  U   V    W    X    Y    Z	RUB 0    1    2
     252, 193, 138, 82, 24, -35, -97, -161, -230, -292, -347, -401, -465, -517, -573,
+    // 	3	4   5   6   7     8    9     END
     -633, -697, -757, -820, -880, -945, -1007, -1063,
 };
 
@@ -1484,12 +1516,13 @@ POSBX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *ADJUST_ROLLERS	This routine places the rollers in a arc so that there
 *		priorities are correct.
 *IO = NONE
 *
- */
+*/
 #define ROLLER_GROUP 0x400
 
 void ADJUST_ROLLERS(void)
@@ -1523,6 +1556,13 @@ ADJRL:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*FIND_ROLLER Finds the roller with XPOS closest to R2
+*	PARAMETERS	R2 = XPOS to look for
+*	 RETURNS	AR2 points to closest roller
+*/
+
 void FIND_ROLLER(void)
 {
     // asm 00003646: 	PUSH	R3			;R3 is used by the routine that calls this
@@ -1547,8 +1587,9 @@ FRL:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
+
+// *----------------------------------------------------------------------------
 #define ROLLER_DIAM 111
 
 void SPIN_ROLLERS(void)
@@ -1577,6 +1618,13 @@ SR0:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SPIN_ROLLERS", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*Moves the LEtters on the plate being stamped
+*PARAMETERS	R0 = X distance to move the letters
+*
+*/
 
 void MOVE_PLAYERS_LETTERS(void)
 {
@@ -1618,8 +1666,7 @@ MPLX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void MAKE_PLAYERS_PLATE(void)
 {
     // asm 00003688: 	LDI	*+AR7(RACE_NUMBER),R6			;Race number
@@ -1639,8 +1686,7 @@ void MAKE_PLAYERS_PLATE(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 #define FIRST_BOLT 0x30
 
 void INI_PLAYERS_BOLTS(void)
@@ -1662,10 +1708,11 @@ IPBX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *PROC 	FLY BOLT
 *
- */
+*/
 void FLY_BOLT(void)
 {
     // asm 000036A0: 	SONDFX	DD2
@@ -1690,6 +1737,28 @@ void FLY_BOLT(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLY_BOLT", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*Below Is code That is shared by both the High score entry and display
+*
+*
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*/
+
+/*
+*----------------------------------------------------------------------------
+*	OBJ_FIND	Finds the object in the Active list
+*	PARAMETERS
+*	R1 =	ID of the object
+*	RETURNS
+*	AR0		Points to the first object in the list with that ID
+*	CARRY = SET if not found
+*/
 
 void OBJ_FIND(void)
 {
@@ -1721,6 +1790,16 @@ OH_NO:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*	OBJ_FIND_NEXT	Find the next instance of the object
+*	PARAMETERS
+*	AR0		The First instance of the object.
+*	RETURNS
+*	AR0		Points to the next object in the list with that ID
+*	CARRY = SET if not found
+*/
+
 void OBJ_FIND_NEXT(void)
 {
     // asm 000036C7: 	PUSH	R0
@@ -1749,6 +1828,16 @@ OFNX1:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FIND_NEXT", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*	OBJ_GFIND	Finds the FIRST object in the GROUP on the Active list
+*	PARAMETERS
+*	R1 =	BIT in the ID that determines the group
+*	RETURNS
+*	AR0		Points to the first object in the list with that ID
+*	CARRY = SET if not found
+*/
 
 void OBJ_GFIND(void)
 {
@@ -1780,6 +1869,18 @@ OH_GNO:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*	OBJ_GFIND_NEXT	Find the next instance of the GROUP
+*	PARAMETERS
+*	AR0		The First instance of the object.
+*	R1 =	BIT in the ID that determines the group
+*
+*	RETURNS
+*	AR0		Points to the next object in the list with that ID
+*	CARRY = SET if not found
+*/
+
 void OBJ_GFIND_NEXT(void)
 {
     // asm 000036EF: 	PUSH	R0
@@ -1808,11 +1909,12 @@ OGFNX1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *This code can be deleted after I can change the ID numbers for the PRESS Group
 * PARAMETERS AR3 = packed list of object ID's to tag
 *	R2  = What to tage them with. NOTE R2 will be orred with the ID
- */
+*/
 void OBJ_TAG(void)
 {
 OTAG0:
@@ -1839,11 +1941,12 @@ OTAGX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *This code can be deleted after I can change the ID numbers for the PRESS Group
 *	R1 = Object looking for
 *	R2  = What to tage them with. NOTE R2 will be orred with the ID
- */
+*/
 void OBJ_TAGALL(void)
 {
     // asm 00003712: 	CALL	OBJ_FIND
@@ -1864,12 +1967,13 @@ OTAX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *OBJ_MOVY_GROUP
 *	PARAMETERS	R1 = Bit of OID to search for
 *	PARAMETERS	R2 = FLOAT amount to move YPOS
 *
- */
+*/
 void OBJ_MOVY_GROUP(void)
 {
     // asm 0000371E: 	PUSH	R3
@@ -1894,12 +1998,13 @@ OMYG:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *OBJ_DEL_GROUP
 *	PARAMETERS	R1 = Bit of OID to search for
 *
 *
- */
+*/
 void OBJ_DEL_GROUP(void)
 {
     // asm 0000372E: 	CALL	OBJ_GFIND
@@ -1918,8 +2023,7 @@ ODG:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
- */
+// *----------------------------------------------------------------------------
 void FIND_ALL_PLATES(void)
 {
     // asm 00003738: 	LDI	15,R0			;HE WILL NEVER GET TO THIS PLACE
@@ -1929,6 +2033,14 @@ void FIND_ALL_PLATES(void)
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_ALL_PLATES", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*FIND_PLATES Creates the objects for the name and the score
+*
+*
+*
+*/
 
 #define NUM_PLATES 9
 #define FIRST_PLATE 0x20
@@ -1978,13 +2090,14 @@ MP2:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *MAKE_NUMBERS
 *	R0	= INTEGER SCORE
 *	AR5	= PLACE
 *
 *
- */
+*/
 #define FIRST_NUMBER 0x10
 
 void MAKE_NUMBERS(void)
@@ -2107,10 +2220,11 @@ MT3:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *READS ASCI NUMBER and reformats it to 7 digit display
 *	AR2 = string
- */
+*/
 void FORMAT_NUM(void)
 {
     // asm 000037C2: 	LDI	0,R1
@@ -2160,11 +2274,12 @@ FORMNX:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *	PARAMETERS	AR0 = POINTER TO PLATE that owns this
 *		LETTER0-LETTER2 = THE three letters
 *		R1  = Place the player is in
- */
+*/
 #define LETTER_SIZEX 120
 #define LETTER_XOFF (-120)
 #define LETTER_YOFF (-12)
@@ -2247,13 +2362,14 @@ CRL1:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *	PARAMETERS	AR2 = POINTER TO STRING
 *		R2  = Xpos FL
 *		R3  = Ypos FL
 *		R4  = Zpos FL
 *		R6  = ID
- */
+*/
 #define LETTER3D_SIZEX 80
 
 void PRINT3D(void)
@@ -2323,10 +2439,22 @@ PR3DX:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*Below Is code only used to display the high score and is not used during high
+*score entry
+*
+*
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
+*/
+
 #define HS_ZOOM 40
 #define HS_STARTY 650
-/* ;HS_ENDY 	.set	-280
- */
+// ;HS_ENDY 	.set	-280
 #define HS_ENDY (-210)
 #define HS_YDIFF ((HS_ENDY-HS_STARTY)/HS_ZOOM)
 #define HS_STARTZ (-4200)
@@ -2472,10 +2600,11 @@ DHS0:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *PROC
 *R4 = race number
- */
+*/
 /* asm: FLASH_PALS */
 /* asm: 	.word	plate_medp,plate_lightp,plate_lightp1,plate_lightp,-1 */
 int FLASH_PALS[] = {
@@ -2515,10 +2644,11 @@ FLASH_LOCK:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *R0 OPAL
 *R4 OID
- */
+*/
 void FLASH_LETTERS(void)
 {
     // asm 000038E5: 	LDI	R0,AR2
@@ -2537,7 +2667,16 @@ FLASHX:
     UNIMPL();
 }
 
+/*
+*----------------------------------------------------------------------------
+*REMOVES the objects in the list of ID's
+*NOTE if the value of the ID is > FF it will eliminate the range (inclusive)
+*
+*/
+
 /* asm: DELIST		.word	808Bh,0104h,3057h,0 */
+/* asm: 	 */
+/* asm: 	 */
 int DELIST[] = {
     0x808B, 0x0104, 0x3057, 0,
 };
@@ -2554,10 +2693,11 @@ void DELETE_PRESS_OBJECTS(void)
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *	FIX_PLATES
 *
- */
+*/
 void FIX_PLATES(void)
 {
     // asm 000038F9: 	PUSH	AR5
@@ -2594,11 +2734,12 @@ FIXPL3:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/*
+*----------------------------------------------------------------------------
 *	FLY PLATES
 *	R0 = how far to move
 *	R3 = position of the last plate
- */
+*/
 void FLY_PLATES(void)
 {
     // asm 00003913: 	PUSH	AR5
@@ -2635,6 +2776,11 @@ FLPL3:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLY_PLATES", 0, 0);
     UNIMPL();
 }
+
+/*
+*----------------------------------------------------------------------------
+*This proc prints the name of the location on the marque
+*/
 
 void DISPLAY_HSTEXT(void)
 {
@@ -2688,6 +2834,14 @@ LOGOX:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_LOGO", 0, 0);
     UNIMPL();
 }
+
+// *----------------------------------------------------------------------------
+
+/*
+*----------------------------------------------------------------------------
+*BRANCHED TO FROM RADIO_BUT IN SND.asm
+*IS A PROC
+*/
 
 /* asm: RADIO_HS_SHADOW	.bss	RADIO_HS_SHADOW,1 */
 int RADIO_HS_SHADOW;
