@@ -32,3 +32,7 @@ endif()
 if(CRUSN_TRACE)
   target_compile_definitions(crusn PRIVATE CRUSN_TRACE=1)
 endif()
+
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+  target_compile_options(crusn PRIVATE -Werror=literal-conversion)
+endif()

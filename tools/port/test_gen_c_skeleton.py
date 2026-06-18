@@ -21,7 +21,12 @@ from gen_c_skeleton import (
     parse_equ_file,
     parse_instruction_addresses_file,
     parse_render_overrides_file,
+    parse_string_blob_operand,
     parse_type_overrides_file,
+    classify_instruction_text,
+    file_has_noedit_guard,
+    instruction_text_for_top_level_line,
+    resolve_generated_output_path,
     render_equ_header,
     merge_storage_into_header,
     render_discovered_defines_header,
@@ -38,6 +43,40 @@ class GenCSkeletonTests(unittest.TestCase):
         match = re.search(rf"void {re.escape(name)}\(void\)\n\{{\n(.*?)\n\}}", rendered, re.S)
         self.assertIsNotNone(match)
         return match.group(1)
+
+    def test_file_has_noedit_guard_only_when_first_line_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guarded = Path(tmpdir) / "guarded.c"
+            guarded.write_text("// NOEDIT\nint x;\n")
+            unguarded = Path(tmpdir) / "unguarded.c"
+            unguarded.write_text("int x;\n// NOEDIT\n")
+
+            self.assertTrue(file_has_noedit_guard(guarded))
+            self.assertFalse(file_has_noedit_guard(unguarded))
+
+    def test_resolve_generated_output_path_redirects_guarded_targets(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            target = tmp / "src" / "game" / "cointab.c"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text("// NOEDIT\n")
+            generated_dir = tmp / "src" / "generated"
+
+            resolved = resolve_generated_output_path(target, generated_dir)
+
+            self.assertEqual(resolved, generated_dir / "cointab.c")
+
+    def test_resolve_generated_output_path_keeps_unguarded_targets(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            target = tmp / "src" / "game" / "coin.h"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text("/* generated */\n")
+            generated_dir = tmp / "src" / "generated"
+
+            resolved = resolve_generated_output_path(target, generated_dir)
+
+            self.assertEqual(resolved, target)
 
     def test_variable_declaration_omits_size_for_extern_arrays(self) -> None:
         self.assertEqual(variable_declaration("OBJSTR", "int", "OBJSIZ*NUM_OBJECTS", is_extern=True), "extern int OBJSTR[];")
@@ -172,6 +211,24 @@ MSG3:\tLDI\t11,RC
         self.assertNotIn('LINKDISABLED:\n    // asm: SPTR\t"LINK DISABLED BY U97  DIP6 OFF"', rendered)
         self.assertNotIn('\nchar *LINKDISABLED = "LINK DISABLED BY U97  DIP6 OFF";', rendered)
         self.assertEqual(rendered.count("// asm: LDI\t11,RC"), 2)
+
+    def test_bare_label_followed_by_sptr_rows_renders_string_pointer_array(self) -> None:
+        asm_source = """STATION_TEXT
+\tSPTR\t"SURFARI MONSTER"\t;MONSTER_SURF\t;0
+\tSPTR\t"REDLINE SHUFFLE"\t;SHUFFLE_DRIV\t;1
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "SND.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+            symbol_table = collect_module_symbol_table(src_path, {})
+
+        self.assertEqual(symbol_table["STATION_TEXT"].c_type, "const char *")
+        self.assertEqual(symbol_table["STATION_TEXT"].array_expr, "2")
+        self.assertIn("const char *STATION_TEXT[] = {", rendered)
+        self.assertIn('    "SURFARI MONSTER", // MONSTER_SURF\t;0', rendered)
+        self.assertIn('    "REDLINE SHUFFLE", // SHUFFLE_DRIV\t;1', rendered)
 
     def test_function_comments_include_instruction_addresses_when_available(self) -> None:
         asm_source = """START:\tLDI\t11,RC
@@ -373,6 +430,20 @@ LEG2\t.string\t"SAN FRANCISCO",0
         self.assertIn('const char LEG1[] = "GOLDEN GATE PARK";', rendered)
         self.assertIn('const char LEG2[] = "SAN FRANCISCO";', rendered)
 
+    def test_parse_string_blob_operand_decodes_mixed_string_and_byte_suffix(self) -> None:
+        self.assertEqual(parse_string_blob_operand('"ST XYZ;MO",13,0'), r'"ST XYZ;MO\n"')
+
+    def test_mixed_string_blob_renders_as_char_array(self) -> None:
+        asm_source = 'MOTOROFF12\t.string\t"ST XYZ;MO",13,0\n'
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "MOTION.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn('const char MOTOROFF12[] = "ST XYZ;MO\\n";', rendered)
+        self.assertNotIn("int MOTOROFF12[] = {", rendered)
+
     def test_collects_skipped_data_symbol_references(self) -> None:
         asm_lines = [
             "\tLDL\t_SECshared,AR2",
@@ -405,6 +476,15 @@ CONTINUE
 
         self.assertNotIn("int CONTINUE[WAS_HEAD2HEAD_ON];", rendered)
         self.assertIn("int WAS_HEAD2HEAD_ON;", rendered)
+
+    def test_classify_instruction_text_uses_remainder_after_flush_left_label(self) -> None:
+        self.assertEqual(classify_instruction_text("BABAB\tBZ\tNEXT"), (True, "BZ\tNEXT"))
+        self.assertEqual(classify_instruction_text("TABLE\t.word\t1,2"), (False, ""))
+        self.assertEqual(classify_instruction_text("LDI\t*AR1++(6),R1"), (True, "LDI\t*AR1++(6),R1"))
+
+    def test_instruction_text_for_top_level_line_treats_labeled_word_as_data(self) -> None:
+        self.assertIsNone(instruction_text_for_top_level_line("TABLE\t.word\t1,2"))
+        self.assertEqual(instruction_text_for_top_level_line("BABAB\tBZ\tNEXT"), "BZ\tNEXT")
 
     def test_data_only_macro_after_bare_label_closes_previous_function(self) -> None:
         asm_source = """AUDENT .MACRO A
@@ -931,6 +1011,35 @@ GGPARK_LIST\t.word\tINIT_STARTING,70,ROAD_VIEW
         self.assertIn("uintptr_t ROUTINE_TAB[] = {", rendered)
         self.assertIn("    0x470, (uintptr_t)RRSTART_ENGINE,", rendered)
 
+    def test_word_table_of_predeclared_defines_stays_int_array(self) -> None:
+        asm_source = """STATION_LIST\t.word\tMUNSTER_SURF,SHUFFLE_DRIV
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            asm_dir = tmp_path / "asm"
+            include_dir = tmp_path / "src" / "game"
+            asm_dir.mkdir()
+            include_dir.mkdir(parents=True)
+            src_path = asm_dir / "SND.ASM"
+            src_path.write_text(asm_source)
+            (include_dir / "port.h").write_text("#define PORT_H\n#define MUNSTER_SURF 222\n#define SHUFFLE_DRIV 223\n")
+            symbol_table = collect_module_symbol_table(
+                src_path,
+                {},
+                predefined_define_names={"MUNSTER_SURF", "SHUFFLE_DRIV"},
+            )
+            rendered = render_module(
+                src_path,
+                {},
+                {},
+                None,
+            )
+
+        self.assertEqual(symbol_table["STATION_LIST"].c_type, "int")
+        self.assertIn("int STATION_LIST[] = {", rendered)
+        self.assertNotIn("uintptr_t STATION_LIST[] = {", rendered)
+
     def test_flush_left_branch_target_label_starting_with_b_renders_as_c_label(self) -> None:
         asm_source = """WAIT_FOR_CHALLENGER:\tLDI\t@HEAD2HEAD_ON,R0
 \tBZ\tBABAB
@@ -948,6 +1057,80 @@ HHFBF:\tRETS
         self.assertIn("    // asm: \tBZ\tBABAB", rendered)
         self.assertIn("BABAB:", rendered)
         self.assertNotIn("// asm: BABAB", rendered)
+
+    def test_inline_label_keeps_trailing_comment_on_instruction(self) -> None:
+        asm_source = """FUNC:\tRPTB\tBLOOPER
+BLOOPER\tLDI\t*--AR4,R0\t;and this becomes a pre-decrement
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "COMP.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("BLOOPER:", rendered)
+        self.assertIn("    // asm: LDI\t*--AR4,R0\t;and this becomes a pre-decrement", rendered)
+
+    def test_mixed_inline_and_bare_labeled_numeric_records_render_as_separate_arrays(self) -> None:
+        asm_source = """COIN_TABLE
+USA1\t.string\t1,1,4,4
+\t.string\t3,0,0,1
+\t.word\tMSG_13
+\t.string\t1,1,4,4
+
+USA2\t.string\t1,1,4,4
+\t.string\t2,0,0,1
+\t.word\tMSG_12
+\t.string\t1,1,4,4
+
+USA3
+\t.string\t1,1,4,4
+\t.string\t4,0,0,1
+\t.word\tMSG_14
+\t.string\t1,1,4,4
+
+USA4
+\t.string\t1,1,4,4
+\t.string\t5,0,0,1
+\t.word\tMSG_15
+\t.string\t1,1,4,4
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "COINTAB.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+            symbol_table = collect_module_symbol_table(src_path, {})
+
+        for name in ("USA1", "USA2", "USA3", "USA4"):
+            self.assertEqual(symbol_table[name].kind, "variable")
+            self.assertIn(f"int {name}[] = {{", rendered)
+        self.assertNotIn("#define USA2", rendered)
+        self.assertNotIn("#define USA3", rendered)
+        self.assertNotIn("#define USA4", rendered)
+
+    def test_separator_comment_between_numeric_records_stays_with_following_record(self) -> None:
+        asm_source = """COIN_TABLE
+;1/3X25
+USA1\t.string\t1,1,4,4
+\t.string\t3,0,0,1
+\t.word\tMSG_13
+\t.string\t1,1,4,4
+
+;1/2X25
+USA2\t.string\t1,1,4,4
+\t.string\t2,0,0,1
+\t.word\tMSG_12
+\t.string\t1,1,4,4
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "COINTAB.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("/* ;1/2X25\n */\n/* asm: USA2\t.string\t1,1,4,4 */", rendered)
 
     def test_uintptr_word_table_casts_local_string_entries_with_address_of(self) -> None:
         asm_source = """STRING_TAB\t.word\tLEG1

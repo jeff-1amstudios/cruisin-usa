@@ -121,7 +121,7 @@ void ERROR_LOG(void)
     // asm 0000AB96: 	LDI	*+AR2(OUSR1),R2
     // asm 0000AB97: 	POP	AR2
     // asm 0000AB98: 	CALL	_wr_cw
-    // asm 0000AB99: ERROR_X
+ERROR_X:
     // asm 0000AB99: 	POP	AR7
     // asm 0000AB9A: 	POP	AR6
     // asm 0000AB9B: 	POP	AR5
@@ -160,7 +160,7 @@ void ERROR_LOG_DISPLAY(void)
     // asm 0000ABB0: 	TEXTITT	"VIEW 1  TO EXIT",10,310
     // asm 0000ABB4: 	TEXTITT	"VIEW 3  NEXT PAGE",10,320
     // asm 0000ABB8: 	TEXTITT	"VIEW 3 + VIEW 2 + VIEW 1 CLEAR LOG",10,330
-    // asm 0000ABBC: ERRLOG_D
+ERRLOG_D:
     // asm 0000ABBC: 	LDI	RACE_TABLE_SIZE*NUM_RACES+NUM_RACES,AR2
     // asm 0000ABBD: 	ADDI	MAX_AUDITS*4,AR2
     // asm 0000ABBE: 	ADDI	@CMOSI,AR2
@@ -176,11 +176,11 @@ NEXT_PAGE:
     // asm 0000ABCB: 	CMPI	0,R0
     // asm 0000ABCC: 	BGT	ERRLOG_D2
     // asm 0000ABCD: 	TEXTITT	"NO ERRORS",10,50
-    // asm 0000ABD1: ERRLOG_D2
+ERRLOG_D2:
     // asm 0000ABD1: 	LDI	5,R4
     // asm 0000ABD2: 	LDI	10,R6
     // asm 0000ABD3: 	LDI	50,R7
-    // asm 0000ABD4: BIGLOOP
+BIGLOOP:
     // asm 0000ABD4: 	PUSH	AR2
     // asm 0000ABD5: 	READAUD	AUD_LOG_COUNT
     // asm 0000ABD7: 	POP	AR2
@@ -266,12 +266,14 @@ NOT_NEXT_PAGE:
     // asm 0000AC20: 	TSTB	SW_VIEW0_H,R1
     // asm 0000AC21: 	BZ	BOOKX2
     // asm 0000AC22: 	BU	LLPPT
-    // asm 0000AC23: BOOKX2	LDI	@_newbut,R1		;debounce
+BOOKX2:
+    // asm 0000AC23: LDI	@_newbut,R1		;debounce
     // asm 0000AC24: 	RS	16,R1
     // asm 0000AC25: 	TSTB	SW_VIEW0_H,R1		;start to return to main
     // asm 0000AC26: 	BNZ	BOOKX2
     // asm 0000AC27: 	RETS
-    // asm 0000AC28: BOOKX	NOT	@_newbut,R0
+BOOKX:
+    // asm 0000AC28: NOT	@_newbut,R0
     // asm 0000AC29: 	AND	SW_DIAG,R0
     // asm 0000AC2A: 	BNZ	BOOKX
     // asm 0000AC2B: 	RETS

@@ -59,7 +59,7 @@ int NUM_FIXED;
 /* *----------------------------------------------------------------------------
 *INDEX STORAGE
  */
-/* asm: PALROMI	.word	_PALROM		;INDEXED PALETTES SOURCE ADDR LIST */
+/* asm: PALROMI		.word	_PALROM		;INDEXED PALETTES SOURCE ADDR LIST */
 #define PALROMI _PALROM
 /* asm: PALLISTI	.word	_PALLIST	;CROSS-REFERENCE LIST */
 #define PALLISTI _PALLIST
@@ -152,6 +152,8 @@ I889:
     // ;	LDI	*AR0++,AR1		;GET SOURCE
     // ;	LDI	*AR0++,AR2		;GET DESTINATION
 #if DEBUG
+COLRAML:
+    // asm 00009ED8: .word	COLORAM
     // asm: 	CMPI	@COLRAML,AR2
     // asm: 	SLOCKON	LT,"PALL\PALTRANS SETUP XFER OUT OF CRAM LT"
     // asm: 	CMPI	@COLRAMH,AR2
@@ -164,7 +166,7 @@ I889:
     // asm 00009EDC: 	STI	R2,*AR2++	;FIRST COLOR
     // asm 00009EDD: 	RS	16,R2
 PACBLK:
-    // asm 00009EDE: STI	R2,*AR2++
+    // asm 00009EDE: STI	R2,*AR2++	;SECOND COLOR
     // asm 00009EDF: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
 NOT_PACKED_PAL:
     // ;	STI	R1,*AR0++	;CLEAR OUT COUNT
@@ -187,6 +189,7 @@ REGDOIT:
     // asm 00009EE7: 	LDI	*AR1++,R2
     // asm 00009EE8: 	RPTS	R0
     // asm 00009EE9: 	LDI	*AR1++,R2
+    // asm 00009EE9:  ||	STI	R2,*AR2++
     // asm 00009EEA: 	STI	R2,*AR2++
     // asm 00009EEB: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
 PALTRX:
@@ -371,7 +374,7 @@ GPL0:
     // asm 00009F35: 	RPTB	GPLP
     // asm 00009F36: 	BZ	GETPL		;GOT A EMPTY
 GPLP:
-    // asm 00009F37: LDI	*AR0++,R0
+    // asm 00009F37: LDI	*AR0++,R0	;GET NEXT ONE
     // asm 00009F38: GPERR
     // ;	SLOCKON	U,"PALL\GETPAL   ERROR NONE LEFT"
     // asm 00009F38: 	ERRON	U,77h
@@ -430,7 +433,7 @@ void PAL_ALLOC_RAW(void)
     // asm 00009F63: 	RPTB	RPLP
     // asm 00009F64: 	BZ	RAWPL		;GOT A EMPTY
 RPLP:
-    // asm 00009F65: LDI	*AR0++,R0
+    // asm 00009F65: LDI	*AR0++,R0	;GET NEXT ONE
     // asm 00009F66: 	ERRON	U,78h
     // ;	SLOCKON	U,"PALL\RAWPAL  ERROR... NONE LEFT"
     // ;edbg	.if	DEBUG
@@ -452,7 +455,7 @@ RAWPL:
     // asm 00009F79: 	CALL	PAL_SET
     // asm 00009F7A: 	SUBI	1,AR2		;RESTORE AR2
 RPLX:
-    // asm 00009F7B: LSH	-16,R0
+    // asm 00009F7B: LSH	-16,R0		;SHIFT DOWN CODE
     // asm 00009F7C: 	LDI	R0,AR0
     // asm 00009F7D: 	LDP	@RAWLOCSI
     // asm 00009F7E: 	ADDI	@RAWLOCSI,AR0
@@ -521,8 +524,7 @@ int PALXFER_ACTIVE;
 int PALXFER_FREE;
 /* asm: PALXFER_AVAILABLE_P	.bss	PALXFER_AVAILABLE_P,1 */
 int PALXFER_AVAILABLE_P;
-/* asm: PALXFER_STR	.bss	PALXFER_STR,PALX_SIZE*NXFER_PALS */
-int PALXFER_STR[PALX_SIZE*NXFER_PALS];
+int PALXFER_STR[sizeof(PALXFER) * NXFER_PALS];
 
 /* *----------------------------------------------------------------------------
  */

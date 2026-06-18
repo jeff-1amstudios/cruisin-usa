@@ -149,6 +149,10 @@ void HUD(void)
     // asm 00009D31: 	BNZ	NOMOTIONMSGS
     // asm 00009D32: 	LDI	@MOTION_SAFETY_ON,R0
     // asm 00009D33: 	BZ	BLAHBLAH
+SAFETSI:
+    // asm 00009D34: .word	SAFETS
+SAFETS:
+    // asm 00009D34: .word	MSAF,BSAF,OSAF,MSSM
     // asm 00009D34: 	LDI	@SAFETSI,AR2
     // asm 00009D35: 	ADDI	@MOTION_SAFETY_TYPE,AR2
     // asm 00009D36: 	LDI	*AR2,AR2
@@ -158,7 +162,7 @@ void HUD(void)
     // asm 00009D3A: 	CALL	TEXT_ADDDS
     // asm 00009D3B: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm 00009D3E: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-    // asm 00009D41: BLAHBLAH
+BLAHBLAH:
     // 	;
     // 	;
 NOMOTIONMSGS:
@@ -244,6 +248,10 @@ DNDNL:
     // asm 00009D8E: 	LDI	1,RC
     // asm 00009D8F: 	CALL	TEXT_ADD
     // asm 00009D90: 	CALL	SETSMDIGITFONT
+GEARI:
+    // asm 00009D91: .word	GEARS
+GEARS:
+    // asm 00009D91: .word	GEARN,GEAR1,GEAR2,GEAR3,GEAR4
     // 	;show MPH or KPH
     // 	;
     // asm 00009D91: 	LDL	mph,AR2

@@ -99,6 +99,7 @@ extern int RTU56[];
 extern int RTU60[];
 extern int RTU59[];
 extern int CHIPTEST_TABLE;
+extern int STATIC_TABLE;
 extern int TESTING_CHIPS;
 extern int CMOS_CHIP;
 extern int BASICS_RAM[];
@@ -125,7 +126,7 @@ extern int CCHKSUME03;
 
 /* *----------------------------------------------------------------------------
  */
-/* asm: RANDI	.word	5A5A5A5Ah */
+/* asm: RANDI		.word	5A5A5A5Ah */
 int RANDI = 0x5A5A5A5A;
 /* ;EPROM
  */
@@ -303,6 +304,12 @@ int RTU59[] = {
 /* asm: CHIPMAC	RTU94,240,280,290,296,"U94",ISRAM */
 /* asm: CHIPMAC	RTU101,240,300,290,316,"U101",ISRAM */
 int CHIPTEST_TABLE;
+/* asm: STATIC_TABLE */
+/* asm: CHIPMC	RTU56,250,195,40,15,"U56",ISROM */
+/* asm: CHIPMC	RTU57,300,195,40,15,"U57",ISROM		;FAST RAM */
+/* asm: CHIPMC	RTU59,370,195,40,15,"U59",ISROM */
+/* asm: CHIPMC	RTU60,420,195,40,15,"U60",ISROM */
+int STATIC_TABLE;
 /* asm: TESTING_CHIPS */
 /* asm: CHIPMAC	RTU26,240,60, 290,80, "U26",ISROM	;BIG EPROM WORLD */
 /* asm: CHIPMAC	RTU22,240,85, 290,105,"U22",ISROM */
@@ -501,7 +508,7 @@ void BLINK_DIGITS(void)
     // asm 0000636D: 	RPTS	RC
     // asm 0000636E: 	NOP
     // asm 0000636F: 	DBU	AR4,BDL1
-    // asm 00006370: BDL1X
+BDL1X:
     // asm 00006370: 	LDIL	35000000,RC
     // asm 00006373: 	RPTS	RC
     // asm 00006374: 	NOP
@@ -519,7 +526,7 @@ void BLINK_DIGITS(void)
     // asm 00006383: 	RPTS	RC
     // asm 00006384: 	NOP
     // asm 00006385: 	DBU	AR4,BDL2
-    // asm 00006386: BDL2X
+BDL2X:
     // asm 00006386: 	LDIL	35000000,RC
     // asm 00006389: 	RPTS	RC
     // asm 0000638A: 	NOP
@@ -527,7 +534,8 @@ void BLINK_DIGITS(void)
     // asm 0000638C: 	DEC	AR4
     // asm 0000638D: 	CMPI	0,AR4
     // asm 0000638E: 	BLT	BDL3X
-    // asm 0000638F: BDL3	CALL	LLED_ON
+BDL3:
+    // asm 0000638F: CALL	LLED_ON
     // asm 00006390: 	LDIL	8000000,RC
     // asm 00006393: 	RPTS	RC
     // asm 00006394: 	NOP
@@ -536,7 +544,7 @@ void BLINK_DIGITS(void)
     // asm 00006399: 	RPTS	RC
     // asm 0000639A: 	NOP
     // asm 0000639B: 	DBU	AR4,BDL3
-    // asm 0000639C: BDL3X
+BDL3X:
     // asm 0000639C: 	LDIL	35000000,RC
     // asm 0000639F: 	RPTS	RC
     // asm 000063A0: 	NOP
@@ -998,7 +1006,7 @@ void RAMTEST_REAL(void)
     // asm 0000654B: 	STI	R0,*AR1
     // asm 0000654C: 	ADDI	BK,AR1
 LKKK:
-    // asm 0000654D: LDI	*AR3,R5
+    // asm 0000654D: LDI	*AR3,R5		;DUMMY READ
     // *READ RANDOM NUMBERS FROM RAM
     // asm 0000654E: 	LDI	AR2,AR1		;GET ADDRESS
     // asm 0000654F: 	LDI	R4,R0		;GET RANDOM # STARTING POINT
@@ -1073,7 +1081,8 @@ void COPY_RAMTEST(void)
     // asm 00006578: 	LDI	AR0,RC
     // asm 00006579: 	RPTB	BBCP
     // asm 0000657A: 	LDI	*AR1++,R0
-    // asm 0000657B: BBCP	STI	R0,*AR2++
+BBCP:
+    // asm 0000657B: STI	R0,*AR2++
     // asm 0000657C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COPY_RAMTEST", 0, 0);
     UNIMPL();

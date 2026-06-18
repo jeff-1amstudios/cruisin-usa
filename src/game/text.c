@@ -467,11 +467,12 @@ void STRLEN(void)
     // asm 00007A50: 	PUSH	AR2
     // asm 00007A51: 	CLRI	R0			;length of string
     // asm 00007A52: 	CLRI	RS
-    // asm 00007A53: STRLP	CMPI	-32,RS
+STRLP:
+    // asm 00007A53: CMPI	-32,RS
     // asm 00007A54: 	BNE	STLP2
     // asm 00007A55: 	CLRI	RS
     // asm 00007A56: 	NOP	*AR2++
-    // asm 00007A57: STLP2
+STLP2:
     // asm 00007A57: 	LDI	*AR2,AR0
     // asm 00007A58: 	LSH	RS,AR0
     // asm 00007A59: 	SUBI	8,RS
@@ -493,10 +494,10 @@ void STRLEN(void)
     // asm 00007A69: 	LDI	*+AR1(FONTENT_TRAIL),R2
     // asm 00007A6A: 	RS	16,R2
     // asm 00007A6B: 	ADDI	R2,R1
-    // asm 00007A6C: STRLENNCHAR
+STRLENNCHAR:
     // asm 00007A6C: 	ADDI	R1,R0			;INCREASE STRING LENGTH
     // asm 00007A6D: 	BU	STRLP
-    // asm 00007A6E: STRLENX
+STRLENX:
     // asm 00007A6E: 	POP	AR2
     // asm 00007A6F: 	POP	AR1
     // asm 00007A70: 	POP	AR0

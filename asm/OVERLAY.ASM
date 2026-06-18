@@ -81,7 +81,7 @@ ROUTINE_TABLE:					;routine
 	.word	REDWOOD_START			;28
 	.word	BEACHON				;29
 	.word	RAMPDOWNTRAINSND		;30
-	.word	OL				;31***
+	.word	OVERLOCK				;31***
 	.word	BONUS1				;32
 	.word	BONUS2				;33
 	.word	BONUS3				;34

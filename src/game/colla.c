@@ -131,12 +131,12 @@ extern int COLVEL;
 extern int PMULT;
 extern int SPINTEMP;
 extern int BOXSCRAM[];
-extern uintptr_t SAGETAB[];
-extern uintptr_t DETHTAB1[];
-extern uintptr_t DETHTAB2[];
+extern int SAGETAB[];
+extern int DETHTAB1[];
+extern int DETHTAB2[];
 extern int PLYRBEHIND;
-extern uintptr_t SCUPDTAB[];
-extern uintptr_t SCTAB[];
+extern int SCUPDTAB[];
+extern int SCTAB[];
 extern int EQTAB[];
 extern int LEQTAB[];
 
@@ -280,7 +280,7 @@ void BOXSCAN(void)
     // asm 00001FCA: 	BLT	BS3X
     // asm 00001FCB: 	CLRC	 			;NOTHING FOUND
     // asm 00001FCC: 	RETS
-    // asm 00001FCD: BS3X
+BS3X:
     // asm 00001FCD: 	SETC
     // asm 00001FCE: 	RETS
     // *
@@ -299,14 +299,14 @@ void BOXSCSUB(void)
     // asm 00001FCF: 	BZ	BSCX  			;NULL LIST DUDES
     // asm 00001FD0: 	LDI	R0,AR2
     // asm 00001FD1: 	LDI	OPOSZ,IR1
-    // asm 00001FD2: BS0
+BS0:
     // asm 00001FD2: 	FLOAT	*+AR4(ORAD),R0		;GET BOX RADIUS
     // asm 00001FD3: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
     // asm 00001FD4: 	LDF	*+AR4(OPOSX),R3		;GET OBJECT X
     // asm 00001FD5: 	SUBF	*+AR2(OPOSX),R3,R2
     // asm 00001FD6: 	SUBF	*+AR2(IR1),R4,R1
     // asm 00001FD7: 	MPYF	R1,R1
-    // asm 00001FD8: BS1
+BS1:
     // asm 00001FD8: 	MPYF	R2,R2
     // asm 00001FD9: 	ADDF	R1,R2
     // asm 00001FDA: 	FLOAT	*+AR2(ORAD),R1	 	;GET ROAD RADIUS
@@ -323,7 +323,7 @@ void BOXSCSUB(void)
     // 	;---->	BNZ	BS1
     // asm 00001FE5: 	RETS
     // *CHECK OUT POINT COLLISION
-    // asm 00001FE6: BS2
+BS2:
     // asm 00001FE6: 	PUSH	AR4
     // asm 00001FE7: 	LDPI	@BOXSCRAMI,AR4
     // asm 00001FE8: 	ADDI	18H,AR4
@@ -333,7 +333,7 @@ void BOXSCSUB(void)
     // asm 00001FEB: 	BNC	BS10			;NOPE...
     // asm 00001FEC: 	CMPF	R0,R7
     // asm 00001FED: 	LDFGT	R0,R7			;SAVE LOWEST POINT
-    // asm 00001FEE: BS10
+BS10:
     // asm 00001FEE: 	NOP	*AR4++(3)     		;CHECK NEXT POINT
     // asm 00001FEF: 	DB	AR5,BSRDLP
     // asm 00001FF0: 	LDI	*+AR2(OLINK3),R0
@@ -342,7 +342,7 @@ void BOXSCSUB(void)
     // asm 00001FF3: 	POP	AR4
     // asm 00001FF4: 	LDI	OPOSZ,IR1
     // 	;---->	BNZ	BS0
-    // asm 00001FF5: BSCX
+BSCX:
     // asm 00001FF5: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BOXSCSUB", 0, 0);
     UNIMPL();
@@ -488,6 +488,7 @@ void ROADSCAN(void)
     // *ADD IN X,Z OFFSETS
     // asm 0000204E: 	ADDF	R1,*AR3,R0
     // asm 0000204F: 	ADDF	R4,*+AR3(1),R0
+    // asm 0000204F: ||	STF	R0,*AR3
     // asm 00002050: 	STF	R0,*+AR3(1)
     // ;	NEGF	R0			;DEFAULT COLLISION DELTA = - HEIGHT
     // asm 00002051: 	LDF	0,R0			;CLEAR DEFAULT HEIGHT
@@ -571,9 +572,9 @@ void RDSCNSUB(void)
     // asm 00002077: 	FLOAT	*+AR4(ORAD),R0		;GET BOX RADIUS
     //       	;------>BZD	RDSCNX		;NULL LIST
     // asm 00002078: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
-    // asm 00002079: RS0
+RS0:
     // asm 00002079: 	LDF	*+AR4(OPOSX),R3		;GET OBJECT X
-    // asm 0000207A: RS1
+RS1:
     // asm 0000207A: 	SUBF	*+AR2(OPOSX),R3,R2
     // asm 0000207B: 	SUBF	*+AR2(IR1),R4,R1
     // asm 0000207C: 	MPYF	R1,R1
@@ -594,7 +595,7 @@ void RDSCNSUB(void)
     // 	;---->	BNZ	RS1
     // asm 0000208A: 	RETS
     // *CHECK OUT ROAD COLLISION
-    // asm 0000208B: RS2
+RS2:
     // asm 0000208B: 	PUSH	AR4
     // asm 0000208C: 	LDI	AR6,AR4
     // asm 0000208D: 	LDI	CARVNUM-1,AR5		;LOOP ALL POINTS
@@ -616,7 +617,7 @@ void RDSCNSUB(void)
     // asm 0000209B: 	BGT	RS30
     // asm 0000209C: 	B	RS301
     // *OLD IS POSITIVE
-    // asm 0000209D: RS297
+RS297:
     // asm 0000209D: 	LDF	R0,R0
     // asm 0000209E: 	BNN	RS299
     // *OLD IS POS, NEW IS NEG
@@ -625,17 +626,17 @@ void RDSCNSUB(void)
     // asm 000020A1: 	BGT	RS301
     // asm 000020A2: 	B	RS30
     // *BOTH POSITIVE CASE
-    // asm 000020A3: RS299
+RS299:
     // asm 000020A3: 	CMPF	R0,R1			;TAKE LEAST POSITIVE
     // asm 000020A4: 	BLT	RS30
     // asm 000020A5: 	B	RS301
-    // asm 000020A6: RS300
+RS300:
     // asm 000020A6: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
     // asm 000020A7: 	BNC	RS30			;NOPE...
-    // asm 000020A8: RS301
+RS301:
     // asm 000020A8: 	STF	R0,*+AR4(CARPRDYD)		;SAVE ROAD Y DELTA
     // asm 000020A9: 	STI	AR2,*+AR4(CARPCOL) 	;SAVE COLLISION OBJECT
-    // asm 000020AA: RS30
+RS30:
     // asm 000020AA: 	NOP	*AR4++(CARVSIZ)
     // asm 000020AB: 	DB	AR5,RS3LP
     // asm 000020AC: 	POP	AR4
@@ -842,25 +843,34 @@ void _obj_coll(void)
     // asm 00002123: 	FLOAT	R4
     // asm 00002124:  	STF	R3,*-AR7(1)
     // asm 00002125: 	FLOAT	*AR4++,R2		;get z element of source 1
+    // asm 00002125:  ||	STF	R4,*AR7
     // *
     // *MULTIPLY BY ROTATION MATRIX
     // *AND ADD TRANSLATION (IN THAT ORDER)
     // *
     // asm 00002126: 	MPYF3	*AR5++,R3,R0
+    // asm 00002126:  ||	STF	R2,*+AR7(1)  		;STORE OUT Z ELEMENT
     // asm 00002127: 	MPYF3	*AR5++,R4,R1
     // asm 00002128: 	MPYF3	*AR5++,*+AR7(1),R1
+    // asm 00002128:  ||	ADDF3	R0,R1,R2
     // asm 00002129: 	MPYF3	*AR5++,*-AR7(1),R0
+    // asm 00002129:  ||	ADDF3	R1,R2,R2
     // asm 0000212A: 	ADDF	*-AR6(1),R2		;*blowlist++   += translation[X]
     // asm 0000212B: 	MPYF3	*AR5++,R4,R1
+    // asm 0000212B:  ||	STF	R2,*AR3++ 		;STORE ROTATED X
     // asm 0000212C: 	MPYF3	*AR5++,*+AR7(1),R1
+    // asm 0000212C:  ||	ADDF3	R0,R1,R2
     // asm 0000212D: 	MPYF3	*AR5++,*-AR7(1),R0
+    // asm 0000212D:  ||	ADDF3	R1,R2,R3
     // asm 0000212E: 	ADDF	*AR6,R3			;*blowlist++   += translation[Y]
     // asm 0000212F: 	MPYF3	*AR5++,R4,R1
+    // asm 0000212F:  ||	STF	R3,*AR3++		;STORE ROTATED Y
     // asm 00002130: 	MPYF3	*AR5--(IR0),*+AR7(1),R1
+    // asm 00002130:  ||	ADDF3	R0,R1,R2
     // asm 00002131: 	ADDF	R1,R2			;FORM ROTATED Z
     // asm 00002132: 	ADDF	*+AR6(1),R2		;ADD IN TRANSLATION Z
 EOTV:
-    // asm 00002133: STF	R2,*AR3++
+    // asm 00002133: STF	R2,*AR3++		;STORE Z
     // asm 00002134: 	LDPI	@BLOWLISTI,IR1		;blowlist pointer = IR1
     // asm 00002135: 	LDI	IR1,IR0
     // asm 00002136: 	ADDI	2,IR0
@@ -1485,9 +1495,9 @@ COLSGCX:
     UNIMPL();
 }
 
-/* asm: SAGETAB	.word	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
-uintptr_t SAGETAB[] = {
-    (uintptr_t)(SAGESND), (uintptr_t)(SAGESND1), (uintptr_t)(SAGESND2), (uintptr_t)(SAGESND3), (uintptr_t)(SAGESND),
+/* asm: SAGETAB	 .WORD	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
+int SAGETAB[] = {
+    SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND,
 };
 /* *----------------------------------------------------------------------------
 *FLYING SIGN COLLISION PROCESS
@@ -1940,15 +1950,15 @@ FC03:
     UNIMPL();
 }
 
-/* asm: DETHTAB1	.word	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
+/* asm: DETHTAB1	.WORD	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
 /* asm: 	.WORD	NDETHSCREAM1,NDETHSCREAM3,NDETHSCREAM4,NDETHSCREAM7 */
-uintptr_t DETHTAB1[] = {
-    (uintptr_t)(MDETHSCREAM2), (uintptr_t)(MDETHSCREAM4), (uintptr_t)(EXP1), (uintptr_t)(EXP3),
-    (uintptr_t)(NDETHSCREAM1), (uintptr_t)(NDETHSCREAM3), (uintptr_t)(NDETHSCREAM4), (uintptr_t)(NDETHSCREAM7),
+int DETHTAB1[] = {
+    MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3,
+    NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7,
 };
-/* asm: DETHTAB2	.word	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
-uintptr_t DETHTAB2[] = {
-    (uintptr_t)(MFDETHSCREAM1), (uintptr_t)(MFDETHSCREAM2), (uintptr_t)(BCHEER), (uintptr_t)(EXP2),
+/* asm: DETHTAB2	.WORD	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
+int DETHTAB2[] = {
+    MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2,
 };
 
 /* *
@@ -2434,7 +2444,7 @@ DFXX:
     UNIMPL();
 }
 
-/* asm: FLYCARP0I	.word	FLYCARP */
+/* asm: FLYCARP0I	.WORD	FLYCARP */
 #define FLYCARP0I FLYCARP
 
 /* *----------------------------------------------------------------------------
@@ -3409,12 +3419,12 @@ COLSNDX:
 }
 
 /* asm: SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
-uintptr_t SCUPDTAB[] = {
-    (uintptr_t)(SCOLLF), (uintptr_t)(SCOLLF), (uintptr_t)(SCOLLG), (uintptr_t)(SCOLLH),
+int SCUPDTAB[] = {
+    SCOLLF, SCOLLF, SCOLLG, SCOLLH,
 };
-/* asm: SCTAB	.word	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
-uintptr_t SCTAB[] = {
-    (uintptr_t)(SCOLLA), (uintptr_t)(SCOLLB), (uintptr_t)(SCOLLC), (uintptr_t)(SCOLLD), (uintptr_t)(SCOLLE),
+/* asm: SCTAB		.WORD	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
+int SCTAB[] = {
+    SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE,
 };
 
 void COLCHK(void)
@@ -3445,9 +3455,10 @@ void COLCHK(void)
     // asm 00002875: 	MPYF	*AR0++,*AR3++,R0   	;COMPUTE DOT PRODUCT
     // asm 00002876: 	MPYF	*AR0++,*AR3++,R1
     // asm 00002877: 	MPYF	*AR0++,*AR3++,R0
+    // asm 00002877: ||	ADDF	R0,R1,R2
     // asm 00002878: 	ADDF	R0,R2
 PLANEQ:
-    // asm 00002879: STF	R2,*AR0++
+    // asm 00002879: STF	R2,*AR0++		;SAVE DOT PRODUCT
     // *CHECK POINTS OBJ1 VS EQ OBJ0
     // asm 0000287A: 	SUBI	48,AR0			;GET OBJ 0 EQUATION BASE ADDR
     // asm 0000287B: 	LDI	AR0,AR3
@@ -3460,6 +3471,7 @@ PLANEQ:
     // asm 00002881: 	MPYF	*AR2++,*-AR3(1),R0
     // asm 00002882: 	MPYF	*AR2++,*AR3,R1
     // asm 00002883: 	MPYF	*AR2++,*+AR3(1),R0
+    // asm 00002883: ||	ADDF	R0,R1,R2
     // asm 00002884: 	ADDF	R0,R2
     // asm 00002885: 	CMPF	*AR2++,R2
     // asm 00002886: 	BLT	PNTNXT0			;THIS POINT FAILED, GET A NEW ONE
@@ -3481,6 +3493,7 @@ PNTNXT0:
     // asm 00002892: 	MPYF	*AR2++,*-AR3(1),R0
     // asm 00002893: 	MPYF	*AR2++,*AR3,R1
     // asm 00002894: 	MPYF	*AR2++,*+AR3(1),R0
+    // asm 00002894: ||	ADDF	R0,R1,R2
     // asm 00002895: 	ADDF	R0,R2
     // asm 00002896: 	CMPF	*AR2++,R2
     // asm 00002897: 	BLT	PNTNXT1			;THIS POINT FAILED, GET A NEW ONE
@@ -3549,17 +3562,29 @@ void GETBOX0(void)
     // asm 000028B9: 	PUSH	AR2
     // asm 000028BA: 	NOP	*AR2++
     // asm 000028BB: 	STF	R0,*-AR2(1)    	;X1
+    // asm 000028BB: ||	STF	R1,*AR2++(IR0)	;Y1
     // asm 000028BC: 	STF	R2,*-AR2(1)	;Z1
+    // asm 000028BC: ||	STF	R3,*AR2++(IR0)	;X2
     // asm 000028BD: 	STF	R1,*-AR2(1)	;Y2
+    // asm 000028BD: ||	STF	R2,*AR2++(IR0)	;Z2
     // asm 000028BE: 	STF	R0,*-AR2(1)    	;X3
+    // asm 000028BE: ||	STF	R4,*AR2++(IR0)	;Y3
     // asm 000028BF: 	STF	R2,*-AR2(1)	;Z3
+    // asm 000028BF: ||	STF	R3,*AR2++(IR0)	;X4
     // asm 000028C0: 	STF	R4,*-AR2(1)	;Y4
+    // asm 000028C0: ||	STF	R2,*AR2++(IR0)	;Z4
     // asm 000028C1: 	STF	R0,*-AR2(1)    	;X5
+    // asm 000028C1: ||	STF	R1,*AR2++(IR0)	;Y5
     // asm 000028C2: 	STF	R5,*-AR2(1)	;Z5
+    // asm 000028C2: ||	STF	R3,*AR2++(IR0)	;X6
     // asm 000028C3: 	STF	R1,*-AR2(1)	;Y6
+    // asm 000028C3: ||	STF	R5,*AR2++(IR0)	;Z6
     // asm 000028C4: 	STF	R0,*-AR2(1)    	;X7
+    // asm 000028C4: ||	STF	R4,*AR2++(IR0)	;Y7
     // asm 000028C5: 	STF	R5,*-AR2(1)	;Z7
+    // asm 000028C5: ||	STF	R3,*AR2++(IR0)	;X8
     // asm 000028C6: 	STF	R4,*-AR2(1)	;Y8
+    // asm 000028C6: ||	STF	R5,*AR2++	;Z8
     // *
     // *ROTATE POINTS FOR OBJ 0
     // *AR0=OBJ 0
@@ -3579,6 +3604,7 @@ void GETBOX0(void)
     // asm 000028CD: 	LDF	*+AR0(OPOSX),R0
     // asm 000028CE: 	LDF	*+AR0(OPOSY),R1
     // asm 000028CF: 	STF	R0,*-AR6(1)		;transvector.x
+    // asm 000028CF:  ||	STF	R1,*AR6			;transvector.y
     // asm 000028D0: 	LDF	*+AR0(OPOSZ),R0
     // asm 000028D1: 	STF	R0,*+AR6(1)		;transvector.z
     // asm 000028D2: 	LDI	7,RC
@@ -3591,18 +3617,25 @@ void GETBOX0(void)
     // asm 000028D5: 	MPYF3	*AR5++,*-AR4(1),R0
     // asm 000028D6: 	MPYF3	*AR5++,R4,R1
     // asm 000028D7: 	MPYF3	*AR5++,*+AR4(1),R1
+    // asm 000028D7:  ||	ADDF3	R0,R1,R2
     // asm 000028D8: 	MPYF3	*AR5++,*-AR4(1),R0
+    // asm 000028D8:  ||	ADDF3	R1,R2,R2
     // asm 000028D9: 	ADDF	*-AR6(1),R2		;*blowlist++   += translation[X]
     // asm 000028DA: 	MPYF3	*AR5++,R4,R1
+    // asm 000028DA:  ||	STF	R2,*AR2++ 		;STORE ROTATED X
     // asm 000028DB: 	MPYF3	*AR5++,*+AR4(1),R1
+    // asm 000028DB:  ||	ADDF3	R0,R1,R2
     // asm 000028DC: 	MPYF3	*AR5++,*-AR4(1),R0
+    // asm 000028DC:  ||	ADDF3	R1,R2,R3
     // asm 000028DD: 	ADDF	*AR6,R3			;*blowlist++   += translation[Y]
     // asm 000028DE: 	MPYF3	*AR5++,R4,R1
+    // asm 000028DE:  ||	STF	R3,*AR2++		;STORE ROTATED Y
     // asm 000028DF: 	MPYF3	*AR5--(IR0),*+AR4(1),R1
+    // asm 000028DF:  ||	ADDF3	R0,R1,R2
     // asm 000028E0: 	ADDF	R1,R2			;FORM ROTATED Z
     // asm 000028E1: 	ADDF	*+AR6(1),R2		;ADD IN TRANSLATION Z
 EOCV:
-    // asm 000028E2: STF	R2,*AR2++
+    // asm 000028E2: STF	R2,*AR2++		;STORE Z
     // asm 000028E3: 	POP	AR6
     // asm 000028E4: 	POP	AR5
     // asm 000028E5: 	POP	AR4
@@ -3617,7 +3650,7 @@ EOCV:
  */
 #define VCTO (BLOWLIST+24)
 #define VCTO1 (BLOWLIST+72)
-/* asm: EQTABI	.word	EQTAB */
+/* asm: EQTABI	.WORD	EQTAB */
 #define EQTABI EQTAB
 /* asm: EQTAB */
 /* asm: 	.WORD	VCTO+(3*0),VCTO+(3*2),VCTO+(3*3)	;FRONT */
@@ -3646,7 +3679,7 @@ int EQTAB[] = {
     VCTO1+(3*1), VCTO1+(3*3), VCTO1+(3*7), // RSIDE
     VCTO1+(3*7), VCTO1+(3*6), VCTO1+(3*4), // BACK
 };
-/* asm: LEQTABI	.word	LEQTAB */
+/* asm: LEQTABI	.WORD	LEQTAB */
 #define LEQTABI LEQTAB
 /* asm: LEQTAB */
 /* asm: 	.WORD	VCTO+(3*2)+1,VCTO+(3*6)+1,VCTO+(3*7)+1 */

@@ -121,7 +121,7 @@ extern int SPEEDHIT;
 extern int DID_TIMED_OUT;
 extern const char FRA1[];
 extern const char FRA2[];
-extern uintptr_t CONGRAT_SPEECH[];
+extern int CONGRAT_SPEECH[];
 extern const char LCTS[];
 extern const char LNLS[];
 extern int FLAG_POS_TABLE[];
@@ -736,7 +736,7 @@ PAPA45X:
     // asm 00003ADE: 	LDI	AR2,R0
     // asm 00003ADF: 	LDI	R0,R1
     // asm 00003AE0: 	CALL	PAL_OVERWRITE
-    // asm 00003AE1: FIXPAL1
+FIXPAL1:
     // asm 00003AE1: 	NOP	*++AR5(2)
     // asm 00003AE2: 	DBU	AR6,FIXPALLP
     // asm 00003AE3: 	POP	AR6
@@ -1234,8 +1234,8 @@ const char FRA1[] = "FIRST PLACE";
 const char FRA2[] = "FREE RACE";
 #define CONGRATS 4
 /* asm: CONGRAT_SPEECH:	.word	GL_WOOLAUGH,GL_YEAH,GL_YES,GL_YOUDIDIT */
-uintptr_t CONGRAT_SPEECH[] = {
-    (uintptr_t)(GL_WOOLAUGH), (uintptr_t)(GL_YEAH), (uintptr_t)(GL_YES), (uintptr_t)(GL_YOUDIDIT),
+int CONGRAT_SPEECH[] = {
+    GL_WOOLAUGH, GL_YEAH, GL_YES, GL_YOUDIDIT,
 };
 
 void FREE_RACE_ANNOUNCE(void)
@@ -1290,7 +1290,7 @@ const char LNLS[] = "NEXT RACE:";
 /* *
 *
  */
-#define SHOWLEG_TIME 90
+#define SHOWLEG_TIME (20+20+50)
 
 /* *
 *
@@ -1822,7 +1822,8 @@ void BONS_HOTTIME(void)
     // asm 00003E98: 	CLRI	R4			;ON OFF TOGGLE
     // asm 00003E99: 	SLEEP	5
     // asm 00003E9B: 	LDL	HH2,AR2
-    // asm 00003E9C: BLAHB	STI	AR2,*+AR7(PDATA)
+BLAHB:
+    // asm 00003E9C: STI	AR2,*+AR7(PDATA)
     // asm 00003E9D: 	FLOAT	256,R2
     // asm 00003E9E: 	FLOAT	(150+300),R3
     // asm 00003E9F: 	LDI	999,RC
@@ -1839,7 +1840,7 @@ void BONS_HOTTIME(void)
     // asm 00003EAA: 	CALL	PAL_FIND_RAW
     // asm 00003EAB: 	STI	R0,*+AR4(TEXT_PAL)
     // asm 00003EAC: 	STI	R0,*+AR5(TEXT_PAL)
-    // asm 00003EAD: BONHTLP
+BONHTLP:
     // asm 00003EAD: 	LDF	*+AR4(TEXT_POSY),R0
     // asm 00003EAE: 	FLOAT	152,R1
     // asm 00003EAF: 	LDF	R1,R3
@@ -1862,7 +1863,7 @@ void BONS_HOTTIME(void)
     // asm 00003EC0: 	SLEEP	1
     // asm 00003EC2: 	LDI	@DO_FOLDFLAG,R0
     // asm 00003EC3: 	BZ	BONHTLP
-    // asm 00003EC4: BONHTLP2
+BONHTLP2:
     // asm 00003EC4: 	LDF	*+AR4(TEXT_POSY),R0
     // asm 00003EC5: 	FLOAT	152+300,R1
     // asm 00003EC6: 	LDF	R1,R3
@@ -1883,7 +1884,8 @@ void BONS_HOTTIME(void)
     // asm 00003ED5: 	STF	R1,*+AR5(TEXT_POSY)
     // asm 00003ED6: 	SLEEP	1
     // asm 00003ED8: 	BU	BONHTLP2
-    // asm 00003ED9: BADA	LDI	1,R0
+BADA:
+    // asm 00003ED9: LDI	1,R0
     // asm 00003EDA: 	STI	R0,*+AR4(TEXT_TIKS)
     // asm 00003EDB: 	STI	R0,*+AR5(TEXT_TIKS)
     // asm 00003EDC: 	DIE
@@ -1999,7 +2001,7 @@ void BONS_POSITION(void)
     // asm 00003F2A: 	SLEEP	1
     // asm 00003F2C: 	DBU	AR6,BPL1
     // asm 00003F2D: 	LDI	158,AR6
-    // asm 00003F2E: BPL2
+BPL2:
     // asm 00003F2E: 	LDI	*AR4,AR2
     // asm 00003F2F: 	LDI	220,R2
     // asm 00003F30: 	ADDI	*+AR4(2),R2

@@ -287,7 +287,7 @@ KKLL5:
     // asm 00001547: 	RETSZ
 KKL:
     // asm 00001548: 	BU	WL2A
-    // asm 00001549: BOOKX
+BOOKX:
 WL266:
     // asm 00001549: 	NOT	@_newbut,R0
     // asm 0000154A: 	AND	SW_DIAG,R0

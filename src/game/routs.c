@@ -168,7 +168,7 @@ void DIV_I30(void)
     // asm 0000A571: 	NEGI	COUNT
     // asm 0000A572: 	LSH	COUNT,R0	;shift right to get result
     // 	;Check sign and negate result if necessary.
-    // asm 0000A573: return
+return:
     // asm 0000A573: 	POP	RC		;return address
     // asm 0000A574: 	NEGI	R0,TEMP		;negate result
     // asm 0000A575: 	BD	RC		;delayed branch to return
@@ -439,7 +439,7 @@ void MOD_I30(void)
     // 	;
     // 	; Check sign and negate result if necessary.
     // 	;
-    // asm 0000A5EA: returnc
+returnc:
     // asm 0000A5EA: 	POP	RC		;return address
     // asm 0000A5EB: 	NEGI	R0,TEMP		;negate result
     // asm 0000A5EC: 	BD	RC		;delayed branch to return
@@ -553,7 +553,7 @@ onec:
     // 	; Return dividend.
     // 	;
 zeroc:
-    // asm 0000A61A: CMPI	0,R0
+    // asm 0000A61A: CMPI	0,R0		;set status from result
     // asm 0000A61B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOD_U30", 0, 0);
     UNIMPL();

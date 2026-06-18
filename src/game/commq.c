@@ -188,11 +188,6 @@ int OM_BSYNC;
 int OM_POSITION;
 /* asm: HEAD2HEAD_ON	pbss	HEAD2HEAD_ON,1 */
 int HEAD2HEAD_ON;
-/* *----------------------------------------------------------------------------
-*Clear all of the linking elements
-*
-*
- */
 /* asm: SAVED_PLY2CAR	.bss	SAVED_PLY2CAR,1 */
 int SAVED_PLY2CAR;
 
@@ -838,7 +833,7 @@ void DECODE_START_GAME(void)
     // asm 000077B2: 	RETSNE
     // asm 000077B3: 	CALL	SEND_RACENUM
     // asm 000077B4: 	RETS
-    // asm 000077B5: NOPE
+NOPE:
     // asm 000077B5: 	CALL	SEND_LINKEDF
     // asm 000077B6: 	LDI	-1,R0
     // asm 000077B7: 	STI	R0,@OM_CHOSEN_RACE
@@ -1153,9 +1148,9 @@ void SEND_RHO_CREATE(void)
 
 /* *MATRIX DECODE CONSTANT
  */
-/* asm: MATCON	.float	0.00003125		;1/32000 */
+/* asm: MATCON	.FLOAT	0.00003125		;1/32000 */
 float MATCON = 0.00003125f;
-/* asm: RADCON	.float	0.001			;1/1000 */
+/* asm: RADCON	.FLOAT	0.001			;1/1000 */
 float RADCON = 0.001f;
 
 void FIND_DRONE(void)

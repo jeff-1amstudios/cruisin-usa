@@ -143,8 +143,6 @@ float LANES[] = {
 float LANES4[] = {
     -1728.0f, -576.0f, 576.0f, 1728.0f, // TWO & 2/2 LANE
 };
-/* *----------------------------------------------------------------------------
- */
 /* asm: ONCSCREEN_CARS	.bss	ONCSCREEN_CARS,1 */
 int ONCSCREEN_CARS;
 
@@ -444,7 +442,7 @@ RHOPSL:
     // asm 0000667A: 	BGT	BEGIN_RELEASING
     // asm 0000667B: 	SLEEP	1
     // asm 0000667D: 	BU	RHOPSL
-    // asm 0000667E: BEGIN_RELEASING
+BEGIN_RELEASING:
 RHO_DLP:
     // asm 0000667E: 	LDI	@POSITION,R0
     // asm 0000667F: 	CMPI	2,R0

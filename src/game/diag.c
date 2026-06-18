@@ -287,6 +287,7 @@ extern int MENU_SCROLL;
 extern int MUSIC_TAB;
 extern int EFFECTS_TAB;
 extern const char AMODES[];
+extern int STANDARD_PRICING_MENU;
 extern uintptr_t USA_MENU[];
 extern uintptr_t GERMAN_MENU[];
 extern uintptr_t FRENCH_MENU[];
@@ -774,7 +775,8 @@ GREENLP:
     // asm 0000070C: 	LDI	15,RC
     // asm 0000070D: 	RPTB	BLUELP
     // asm 0000070E: 	STI	R0,*AR0++
-    // asm 0000070F: BLUELP	ADDI	2,R0
+BLUELP:
+    // asm 0000070F: ADDI	2,R0
     // asm 00000710: 	CLRI	R3		;color
     // asm 00000711: 	LDI	50,R2		;starting Y coordinate
     // asm 00000712: 	LDI	3,AR4
@@ -786,8 +788,9 @@ GROUPLP:
     // asm 00000716: 	LDI	128,AR2		;starting X pixel
     // asm 00000717: 	LDI	15,AR7		;blocks per lines
 LINELP:
-    // asm 00000718: LDI	15,AR6
-    // asm 00000719: BLOCKLP	CALL	_pixel
+    // asm 00000718: LDI	15,AR6		;pixels per block
+BLOCKLP:
+    // asm 00000719: CALL	_pixel
     // asm 0000071A: 	INC	AR2		;next pixel
     // asm 0000071B: 	DBU	AR6,BLOCKLP
     // asm 0000071C: 	INC	R3
@@ -936,7 +939,8 @@ NOWTOEXIT:
     // asm 0000087B: 	LDI	COL_RED,RS
     // asm 0000087C: 	CALL	_fill
     // asm 0000087D: 	LDI	10,AR5
-    // asm 0000087E: BBD5	CALL	WAIT_FOR_VBLANK		;wait for vblk
+BBD5:
+    // asm 0000087E: CALL	WAIT_FOR_VBLANK		;wait for vblk
     // asm 0000087F: 	DBU	AR5,BBD5
     // asm 00000880: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOWSWITCH", 0, 0);
@@ -1120,7 +1124,7 @@ void DISPPOTS(void)
     // asm 0000090D: 	LDI	100,R3
     // asm 0000090E: 	LDI	COL_VDGREY,RC
     // asm 0000090F: 	CALL	_outtextxyc
-    // asm 00000910: NOPLOTpot0
+NOPLOTpot0:
     // asm 00000910: 	LDI	@_pot1,R2
     // asm 00000911: 	CMPI	@_opot1,R2
     // asm 00000912: 	BEQ	NOPLOTpot1
@@ -1133,7 +1137,7 @@ void DISPPOTS(void)
     // asm 0000091E: 	LDI	110,R3
     // asm 0000091F: 	LDI	COL_VDGREY,RC
     // asm 00000920: 	CALL	_outtextxyc
-    // asm 00000921: NOPLOTpot1
+NOPLOTpot1:
     // asm 00000921: 	LDI	@_pot2,R2
     // asm 00000922: 	CMPI	@_opot2,R2
     // asm 00000923: 	BEQ	NOPLOTpot2
@@ -1146,7 +1150,7 @@ void DISPPOTS(void)
     // asm 0000092F: 	LDI	120,R3
     // asm 00000930: 	LDI	COL_VDGREY,RC
     // asm 00000931: 	CALL	_outtextxyc
-    // asm 00000932: NOPLOTpot2
+NOPLOTpot2:
     // asm 00000932: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DISPPOTS", 0, 0);
     UNIMPL();
@@ -1282,6 +1286,10 @@ void DISPLAY_DIPSWITCH_STATUS(void)
     // asm 000009A6: 	LDINZ	@DNMOTI,AR2
     // asm 000009A7: 	LDIZ	@DMOTI,AR2
     // asm 000009A8: 	CALL	_outtextxyc
+DNSUPI:
+    // asm 000009A9: .word	DNSUP
+DSUPI:
+    // asm 000009A9: .word	DSUP
     // asm 000009A9: 	LDI	90,R2
     // asm 000009AA: 	LDI	60+(2*10),R3
     // asm 000009AB: 	LDI	@DIPRAM,R0
@@ -1380,6 +1388,10 @@ DONE_MODE_MSG:
     // ;	LDI	200+(2*10),R3
     // ;	LDI	COL_VDGREY,RC
     // ;	CALL	_outtextxyc
+COINCNTR1I:
+    // asm 00000A27: .word	COINCNTR1
+COINCNTR2I:
+    // asm 00000A27: .word	COINCNTR2
     // asm 00000A27: 	LDI	90,R2			;COMMUNICATION
     // asm 00000A28: 	LDI	200+(7*10),R3
     // asm 00000A29: 	LDI	@DIPRAM,R0
@@ -1908,6 +1920,25 @@ void BURNIN_TEST(void)
 }
 
 #define STANDARD_PRICING_MENU_LEN 16
+/* asm: STANDARD_PRICING_MENU */
+/* asm: MENUENTRY	"USA",RUN_COUNTRY */
+/* asm: MENUENTRY	"GERMAN",RUN_COUNTRY */
+/* asm: MENUENTRY	"FRENCH",RUN_COUNTRY */
+/* asm: MENUENTRY	"CANADA",RUN_COUNTRY */
+/* asm: MENUENTRY	"SWISS",RUN_COUNTRY */
+/* asm: MENUENTRY	"ITALY",RUN_COUNTRY */
+/* asm: MENUENTRY	"UK",RUN_COUNTRY */
+/* asm: MENUENTRY	"SPAIN",RUN_COUNTRY */
+/* asm: MENUENTRY	"AUSTRALIA",RUN_COUNTRY */
+/* asm: MENUENTRY	"JAPAN",RUN_COUNTRY */
+/* asm: MENUENTRY	"TAIWAN",RUN_COUNTRY */
+/* asm: MENUENTRY	"AUSTRIA",RUN_COUNTRY */
+/* asm: MENUENTRY	"BELGIUM",RUN_COUNTRY */
+/* asm: MENUENTRY	"OTHER",RUN_COUNTRY */
+/* asm: MENUENTRY	"GENERAL",RUN_COUNTRY */
+/* asm: MENUENTRY	"EXIT TO MAIN",XIT_MENU_TO_MAIN */
+/* asm: romdata */
+int STANDARD_PRICING_MENU;
 #define USA_MENU_LEN 13
 /* asm: USA_MENU */
 /* asm: 	.word	MSGC_USA1,PRICE_YES_NO */
@@ -2498,7 +2529,7 @@ void SET_VOLUME(void)
     // asm 00000D81: 	CALL	SHOW_VOLUME
     // asm 00000D82: 	SOND1	MUNSTER_SURF
     // asm 00000D84: 	SOND1	ENGINESTART
-    // asm 00000D86: SETVOL_LP
+SETVOL_LP:
     // asm 00000D86: 	LDI	700,AR2
     // asm 00000D87: 	CALL	RANDU0
     // asm 00000D88: 	LDI	R0,R0
@@ -2509,7 +2540,11 @@ void SET_VOLUME(void)
     // asm 00000D8D: 	ADDI	R0,AR2
     // asm 00000D8E: 	LDI	*AR2,AR2
     // asm 00000D8F: 	CALL	ONESND
-    // asm 00000D90: SETNN
+INCIDENTI:
+    // asm 00000D90: .word	INCIDENT
+INCIDENT:
+    // asm 00000D90: .word	CARPASS,TRUCKPASS
+SETNN:
     // asm 00000D90: 	LDI	@_newbut,R0
     // asm 00000D91: 	LDI	R0,R1
     // asm 00000D92: 	TSTB	SW_DIAG,R1		;move up
@@ -3466,7 +3501,7 @@ void SET_SLOT(void)
     // asm 00001035: 	BLT	SET_SLOT1
     // asm 00001036: 	LDI	ADJ_COIN1_COUNTER,R0
     // asm 00001037: 	SUBI	9,R0			;STRIP THE MENU OFFSET
-    // asm 00001038: SET_SLOT1
+SET_SLOT1:
     // asm 00001038: 	ADDI	R0,AR2
     // asm 00001039: 	CALL	ADJUSTMENT_READ
     // asm 0000103A: 	LDI	R0,R5
@@ -3487,7 +3522,7 @@ void SET_SLOT(void)
     // asm 00001049: 	BLT	SET_SLOT2
     // asm 0000104A: 	LDI	ADJ_COIN1_COUNTER,R0
     // asm 0000104B: 	SUBI	9,R0			;STRIP THE MENU OFFSET
-    // asm 0000104C: SET_SLOT2
+SET_SLOT2:
     // asm 0000104C: 	ADDI	R0,AR2
     // asm 0000104D: 	CALL	ADJUSTMENT_WRITE
     // ;IF YOU CHANGE MODES YOU RESET THE CREDITS

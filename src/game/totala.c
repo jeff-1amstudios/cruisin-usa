@@ -90,7 +90,8 @@ void _stuff_fpga(void)
     // asm: 	STI	R0,@ST_POLYGONS
 #endif
     // asm 0000AF0D: 	LDP	@FIFO_STATUS
-    // asm 0000AF0E: STUFFWT	LDI	@FIFO_STATUS,R0
+STUFFWT:
+    // asm 0000AF0E: LDI	@FIFO_STATUS,R0
     // asm 0000AF0F: 	AND	FIFO_STATUS_MAX_FLAG,R0
     // asm 0000AF10: 	BNZ	STUFFWT
     // asm 0000AF11: 	SETDP
@@ -100,6 +101,7 @@ void _stuff_fpga(void)
     // asm 0000AF19: 	LDI	@ASHADOW,AR1
     // asm 0000AF1A: 	LDI	*AR1++,R0
     // asm 0000AF1B: 	STI	R0,*AR0
+    // asm 0000AF1B:  ||	LDI	*AR1++,R0
     // asm 0000AF1C: 	STI	R0,*AR0
     // asm 0000AF1D: 	LDI	3,RC
     // asm 0000AF1E: 	RPTB	LP1
@@ -110,9 +112,13 @@ LP1:
     // asm 0000AF22: STI	R0,*AR0
     // asm 0000AF23:  	LDI	*AR1++,R0			;IVs
     // asm 0000AF24:  	STI	R0,*AR0
+    // asm 0000AF24:  ||	LDI	*AR1++,R0
     // asm 0000AF25:  	STI	R0,*AR0
+    // asm 0000AF25:  ||	LDI	*AR1++,R0
     // asm 0000AF26:  	STI	R0,*AR0
+    // asm 0000AF26:  ||	LDI	*AR1++,R0
     // asm 0000AF27:  	STI	R0,*AR0
+    // asm 0000AF27:  ||	LDI	*AR1++,R0			;addr
     // asm 0000AF28: 	STI	R0,*AR0
     // asm 0000AF29: 	LDP	@FIFO_INC
     // asm 0000AF2A: 	LDI	@FIFO_INC,R0

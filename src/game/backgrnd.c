@@ -175,15 +175,15 @@ int TYCO_TRACK_NTL;
 int TYCO_NTL_IDX;
 /* asm: ATTRACT_ACTIVATE_DIST	.float	15000 */
 float ATTRACT_ACTIVATE_DIST = 15000.0f;
-/* asm: ACTIVATE_DIST	.float	5000	;to activate */
+/* asm: ACTIVATE_DIST		.float	5000	;to activate */
 float ACTIVATE_DIST = 5000.0f;
-/* asm: DACT_DIST	.float	80000	;dynamic activate distance */
+/* asm: DACT_DIST		.float	80000	;dynamic activate distance */
 float DACT_DIST = 80000.0f;
-/* asm: DDACT_DIST	.float	15000	;dynamic activate distance (+ radius) */
+/* asm: DDACT_DIST		.float	15000	;dynamic activate distance (+ radius) */
 float DDACT_DIST = 15000.0f;
 /* ;ATTR_DDACT_DIST		.float	35000	;dynamic deactivate distance (+ radius)
  */
-/* asm: ATTR_DDACT_DIST	.float	45000	;dynamic deactivate distance (+ radius) */
+/* asm: ATTR_DDACT_DIST		.float	45000	;dynamic deactivate distance (+ radius) */
 float ATTR_DDACT_DIST = 45000.0f;
 
 /* *----------------------------------------------------------------------------
@@ -960,14 +960,14 @@ REGADD:
     // asm 000041B0: 	SUBI	OLINK4,AR1
     // asm 000041B1: 	LDI	AR1,AR2
     // asm 000041B2: 	LDI	*+AR4(OUSR1),R0		;GET fLEX index number
-    // asm 000041B3: ADDNOBJL
+ADDNOBJL:
     // asm 000041B3: 	LDI	AR1,AR0			;AR0 IS PREVIOUS LINK
     // asm 000041B4: 	LDI	*+AR1(OLINK4),R1	;CHECK END OF LIST
     // asm 000041B5: 	BZ	ADDNOBJ_AT_END
     // asm 000041B6: 	LDI	R1,AR1
     // asm 000041B7: 	CMPI	*+AR1(OUSR1),R0
     // asm 000041B8: 	BGT	ADDNOBJL
-    // asm 000041B9: ADDNOBJ_AT_END
+ADDNOBJ_AT_END:
     // asm 000041B9: 	STI	R1,*+AR4(OLINK4)	;LINK TO NEXT (SUBLIST LINK)
     // asm 000041BA: 	STI	AR4,*+AR0(OLINK4)	;LINK FROM PREVIOUS (SUBLIST LINK)
     // asm 000041BB: 	CMPI	AR2,AR0			;IS IT THE HEAD OF LIST WE LOAD AT
@@ -1190,7 +1190,8 @@ void BGD_OROUTINE(void)
     // asm 00004225: 	PUSH	AR0
     // asm 00004226: 	LDI	*+AR4(OID),R0
     // asm 00004227: 	LDI	@ROUTINE_TABI,AR0
-    // asm 00004228: BGDORLP	CMPI	*AR0,R0
+BGDORLP:
+    // asm 00004228: CMPI	*AR0,R0
     // asm 00004229: 	BEQ	BGD_RFND
     // asm 0000422A: 	LDI	*AR0++(2),R1
     // asm 0000422B: 	BNZ	BGDORLP
@@ -1198,7 +1199,7 @@ void BGD_OROUTINE(void)
     // asm 0000422D: 	POP	R1
     // asm 0000422E: 	POP	R0
     // asm 0000422F: 	RETS
-    // asm 00004230: BGD_RFND
+BGD_RFND:
     // asm 00004230: 	LDI	*+AR0,R0
     // asm 00004231: 	CALLU	R0
     // asm 00004232: 	POP	AR0
@@ -1400,6 +1401,8 @@ int CAR_FIRE_ANI[] = {
     rdflm7, rdflm8, rdflm9, rdflm10, rdflm11, rdflm12,
     -1,
 };
+/* *----------------------------------------------------------------------------
+ */
 /* asm: DC_MINIFOUNTAIN_ANII	.word	DC_MINIFOUNTAIN_ANI */
 #define DC_MINIFOUNTAIN_ANII DC_MINIFOUNTAIN_ANI
 /* asm: DC_MINIFOUNTAIN_ANI */
@@ -1592,7 +1595,7 @@ HEND:
 
 /* *----------------------------------------------------------------------------
  */
-/* asm: FLAGANI	.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
+/* asm: FLAGANI		.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
 /* asm: 	.word	bflag6,bflag7,bflag9,bflag10,-1 */
 int FLAGANI[] = {
     bflag1, bflag2, bflag3, bflag4, bflag5,
@@ -1877,7 +1880,7 @@ void LOAD_SINGLE_SECTION(void)
     // asm 0000442A: 	DEC	R4
     // asm 0000442B: 	CMPI	@OFREECNT,R4
     // asm: 	SLOCKON	GT,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS"
-    // asm 0000442C: LS_L12
+LS_L12:
     // asm 0000442C: 	LDI	*AR5++,AR2		;GET MODEL PTR
     // asm 0000442D: 	CALL	OBJ_GETE
     // asm: 	SLOCKON	C,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS *FATAL*"
@@ -1904,7 +1907,7 @@ void LOAD_SINGLE_SECTION(void)
     // asm 00004442: 	CALL	OBJ_INSERT			;INSERT THE BABE
     // asm 00004443: 	SUBI	1,R4
     // asm 00004444: 	BGE	LS_L12
-    // asm 00004445: LS_ACTIVATE_X
+LS_ACTIVATE_X:
     // asm 00004445: 	CLRI	R0
     // asm 00004446: 	STI	R0,*+AR6(OLINK2)
     // asm 00004447: 	LDI	@SINGLE_SECTION_TEMPPTR,R0
@@ -2120,7 +2123,7 @@ void LOAD_SINGLE_SECTION_OFFSET(void)
     // asm 000044DC: 	CALL	HPFIND_YMATRIX
     // asm 000044DD: 	CMPI	@OFREECNT,R4
     // asm: 	SLOCKON	GT,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS"
-    // asm 000044DE: LS_L12O
+LS_L12O:
     // asm 000044DE: 	LDI	*AR5++,AR2		;GET MODEL PTR
     // asm 000044DF: 	CALL	OBJ_GETE
     // asm: 	SLOCKON	C,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS *FATAL*"
@@ -2161,7 +2164,7 @@ void LOAD_SINGLE_SECTION_OFFSET(void)
     // asm 00004502: 	CALL	OBJ_INSERT			;INSERT THE BABE
     // asm 00004503: 	SUBI	1,R4
     // asm 00004504: 	BGE	LS_L12O
-    // asm 00004505: LS_ACTIVATE_XO
+LS_ACTIVATE_XO:
     // asm 00004505: 	CLRI	R0
     // asm 00004506: 	STI	R0,*+AR6(OLINK2)
     // asm 00004507: 	LDI	@SINGLE_SECTION_TEMPPTR,R0

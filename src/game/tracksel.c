@@ -54,7 +54,7 @@ extern int TSEL_HEAD;
 extern int TSEL_THEONE;
 extern int ANIMATE_MAP_TAB[];
 extern int TURNANI[];
-extern uintptr_t TRACK_SELECTION_LIST[];
+extern int TRACK_SELECTION_LIST[];
 extern int BOILEROBJ;
 
 /* asm: TURNOBJ	.bss	TURNOBJ,1 */
@@ -158,6 +158,14 @@ NOT_RACE1:
 
 void MOTION_SCREWED(void)
 {
+LLG1:
+    // asm 00006D0E: .word	L4A
+LLG2:
+    // asm 00006D0E: .word	L5A
+LLG3:
+    // asm 00006D0E: .word	L5B
+L88:
+    // asm 00006D0E: .word	IBOIBOJ
     // asm 00006D0E: 	CALL	OBJ_INIT
     // asm 00006D0F: 	LDI	10,AR5
     // asm 00006D10: LLKJ
@@ -466,7 +474,7 @@ NO_HID1:
     // asm 00006E09: 	LDI	*AR2,AR2
 JJ2:
     // asm 00006E0A: STI	AR2,@CHOSEN_RACE
-    // asm 00006E0B: BOUGHRAU
+BOUGHRAU:
     // asm 00006E0B: 	JSRP	TSEL_ZOOMOUTP
     // asm 00006E11: 	CLRI	R0
     // asm 00006E12: 	STI	R0,@NOAERASE
@@ -1006,7 +1014,7 @@ ALLDN:
 *
 *
  */
-/* asm: ANIMATE_MAP_TAB	.word	mhop1,mhop2,mhop3,mhop4,-1 */
+/* asm: ANIMATE_MAP_TAB		.word	mhop1,mhop2,mhop3,mhop4,-1 */
 int ANIMATE_MAP_TAB[] = {
     mhop1, mhop2, mhop3, mhop4, -1,
 };
@@ -1121,21 +1129,21 @@ JIJI:
 /* asm: 	.word	RACE_GG */
 /* asm: 	.word	RACE_IN */
 /* asm: 	.word	RACE_SF */
-uintptr_t TRACK_SELECTION_LIST[] = {
-    (uintptr_t)(RACE_AZ),
-    (uintptr_t)(RACE_US101),
-    (uintptr_t)(RACE_LA),
-    (uintptr_t)(RACE_IOWA),
-    (uintptr_t)(RACE_DV),
-    (uintptr_t)(RACE_USA),
-    (uintptr_t)(RACE_BH),
-    (uintptr_t)(RACE_APPL),
-    (uintptr_t)(RACE_RW),
-    (uintptr_t)(RACE_GC),
-    (uintptr_t)(RACE_CH),
-    (uintptr_t)(RACE_GG),
-    (uintptr_t)(RACE_IN),
-    (uintptr_t)(RACE_SF),
+int TRACK_SELECTION_LIST[] = {
+    RACE_AZ,
+    RACE_US101,
+    RACE_LA,
+    RACE_IOWA,
+    RACE_DV,
+    RACE_USA,
+    RACE_BH,
+    RACE_APPL,
+    RACE_RW,
+    RACE_GC,
+    RACE_CH,
+    RACE_GG,
+    RACE_IN,
+    RACE_SF,
 };
 
 /* *----------------------------------------------------------------------------

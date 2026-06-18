@@ -672,7 +672,24 @@ L342:
     UNIMPL();
 }
 
-/* *----------------------------------------------------------------------------
+/* ;*----------------------------------------------------------------------------
+;MAPPAL_ILLUM_CLEANUP:
+;	PUSH	R0
+;	PUSH	AR2
+;	LDI	@EPALR,AR2
+;	CALL	PAL_FIND_RAW
+;	LDI	R0,AR2
+;	CALL	PAL_DELETE_RAW
+;
+;	LDI	@EPALL,AR2
+;	CALL	PAL_FIND_RAW
+;	LDI	R0,AR2
+;	CALL	PAL_DELETE_RAW
+;	POP	AR2
+;	POP	R0
+;	RETS
+;*----------------------------------------------------------------------------
+*----------------------------------------------------------------------------
  */
 /* asm: FORMULA1	.float	0.318309886 */
 float FORMULA1 = 0.318309886f;
@@ -993,11 +1010,11 @@ void TIME2STR(void)
 *	R2	(INT) MINUTES
 *
  */
-/* asm: MINFACT	.float	0.000303030303		;1/(55*60) */
+/* asm: MINFACT	.FLOAT	0.000303030303		;1/(55*60) */
 float MINFACT = 0.000303030303f;
-/* asm: SECFACT	.float	0.018181818		;1/55 */
+/* asm: SECFACT	.FLOAT	0.018181818		;1/55 */
 float SECFACT = 0.018181818f;
-/* asm: HUNFACT	.float	1.818181818		;100/55 */
+/* asm: HUNFACT	.FLOAT	1.818181818		;100/55 */
 float HUNFACT = 1.818181818f;
 
 void CVTTIME(void)

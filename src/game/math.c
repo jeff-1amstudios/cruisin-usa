@@ -61,8 +61,8 @@ extern float INVFORM;
 extern float RADFORM;
 extern float RADFORMI;
 extern float *ATTABV;
-extern int *OFFTABV;
-extern int ATOFFTAB[];
+extern float *OFFTABV;
+extern float ATOFFTAB[];
 extern float ATTAB[];
 extern int LOCTEMPER_MAT2[];
 
@@ -213,7 +213,7 @@ float PII = PI;
 float TWOPII = TWOPI;
 /* asm: INVFORM	.float	0.012265625	;1/FORMULA */
 float INVFORM = 0.012265625f;
-/* asm: RADFORM	.float	10430.37835	;65535/(2PI) */
+/* asm: RADFORM		.float	10430.37835	;65535/(2PI) */
 float RADFORM = 10430.37835f;
 /* asm: RADFORMI	.float	0.000095873	;1/(65535/(2PI)) */
 float RADFORMI = 0.000095873f;
@@ -329,7 +329,7 @@ AT1:
 /* asm: ATTABV	.word	ATTAB */
 float *ATTABV = ATTAB;
 /* asm: OFFTABV	.word	ATOFFTAB */
-int *OFFTABV = ATOFFTAB;
+float *OFFTABV = ATOFFTAB;
 /* asm: ATOFFTAB */
 /* asm: 	.float	1		;0-45 */
 /* asm: 	.float	0 */
@@ -347,24 +347,28 @@ int *OFFTABV = ATOFFTAB;
 /* asm: 	.float	3.1416 */
 /* asm: 	.float	-1		;225-270 */
 /* asm: 	.float	4.7123 */
-int ATOFFTAB[] = {
-    1, // 0-45
-    0,
-    -1, // 45-90
-    1.5707,
-    -1, // 135-180
-    3.1416,
-    1, // 90-135
-    1.5707,
-    -1, // 315-360
-    6.2831,
-    1, // 270-315
-    4.7123,
-    1, // 180-225
-    3.1416,
-    -1, // 225-270
-    4.7123,
+float ATOFFTAB[] = {
+    1.0f, // 0-45
+    0.0f,
+    -1.0f, // 45-90
+    1.5707f,
+    -1.0f, // 135-180
+    3.1416f,
+    1.0f, // 90-135
+    1.5707f,
+    -1.0f, // 315-360
+    6.2831f,
+    1.0f, // 270-315
+    4.7123f,
+    1.0f, // 180-225
+    3.1416f,
+    -1.0f, // 225-270
+    4.7123f,
 };
+/* *
+*ARCTAN TABLE 0-45
+*
+ */
 /* asm: ATTAB */
 /* asm: 	.float	0.000000,0.007812,0.015624,0.023433,0.031240,0.039043,0.046841 */
 /* asm: 	.float	0.054633,0.062419,0.070197,0.077967,0.085727,0.093477,0.101215 */
@@ -446,21 +450,27 @@ FM1:
     // asm 000095A7: 	STF	R0,*AR2++		 	;A(0,0)=CZ*CY
     // asm 000095A8: 	MPYF	*+AR3(1),*+AR1(0),R0		;SZ*CY
     // asm 000095A9: 	NEGF	*+AR3(0),R2			;-SY
+    // asm 000095A9:  ||	STF	R0,*AR2++			;A(0,1)=SZ*CY
     // asm 000095AA: 	MPYF	*-AR3(1),*+AR3(0),R0		;SX*SY
     // asm 000095AB: 	MPYF	*+AR1(1),R0,R1			;SX*SY*CZ
+    // asm 000095AB:  ||	STF	R2,*AR2++			;A(0,2)=-SY
     // asm 000095AC: 	MPYF	*-AR1(1),*+AR3(1),R2		;CX*SZ
     // asm 000095AD: 	SUBF	R2,R1
     // asm 000095AE: 	MPYF	*+AR3(1),R0,R0			;SZ*(SX*SY)
+    // asm 000095AE:  ||	STF	R1,*AR2++			;A(1,0)=SX*SY*SZ-CX*SZ
     // asm 000095AF: 	MPYF	*-AR1(1),*+AR1(1),R1		;CX*CZ
     // asm 000095B0: 	ADDF	R1,R0
     // asm 000095B1: 	STF	R0,*AR2++			;A(1,1)= SX*SY*SZ+CX*CZ
     // asm 000095B2: 	MPYF	*-AR3(1),*+AR1(0),R0
     // asm 000095B3: 	MPYF	*+AR3(0),R1,R1			;SY*(CX*CZ)
+    // asm 000095B3:  ||	STF	R0,*AR2++			;A(1,2)= SX*CY
     // asm 000095B4: 	MPYF	*-AR3(1),*+AR3(1),R0		;SX*SZ
     // asm 000095B5: 	ADDF	R1,R0
     // asm 000095B6: 	MPYF	*+AR3(0),R2,R2
+    // asm 000095B6:  ||	STF	R0,*AR2++			;A(2,0)= CX*SY*CZ+SX*SZ
     // asm 000095B7: 	MPYF	*-AR3(1),*+AR1(1),R0
     // asm 000095B8: 	MPYF	*-AR1(1),*+AR1(0),R1		;CX*CY
+    // asm 000095B8:  ||	SUBF	R0,R2
     // asm 000095B9: 	STF	R2,*AR2++			;A(2,1)= CX*SY*SZ-SX*CZ
     // asm 000095BA: 	STF	R1,*AR2--(8)			;A(2,2)= CX*CY
     // asm 000095BB: 	POP	AR3
@@ -714,6 +724,7 @@ void CPYMAT(void)
     // asm 00009643: 	LDF	*AR0++,R0
     // asm 00009644: 	RPTS	7
     // asm 00009645: 	LDF	*AR0++,R0
+    // asm 00009645:  ||	STF	R0,*AR2++
     // asm 00009646: 	STF	R0,*AR2--(8)
     // asm 00009647: 	POPF	R0
     // asm 00009648: 	POP	R0
@@ -743,14 +754,17 @@ void CPYIMAT(void)
     // asm 0000964E: 	LDI	R2,AR0
     // asm 0000964F: 	LDF	*AR0++(2),R0   	;0->0
     // asm 00009650: 	LDF	*+AR0(1),R0	;3->1
+    // asm 00009650:  ||	STF	R0,*AR2++
     // asm 00009651: 	STF	R0,*AR2++
     // asm 00009652: 	LDF	*+AR0(4),R0	;6->2
     // asm 00009653: 	LDF	*-AR0(1),R0	;1->3
+    // asm 00009653:  ||	STF	R0,*AR2++
     // asm 00009654: 	STF	R0,*AR2++
     // asm 00009655: 	LDF	*+AR0(2),R0	;4->4
     // asm 00009656: 	STF	R0,*AR2++
     // asm 00009657: 	LDF	*+AR0(5),R0	;7->5
     // asm 00009658: 	LDF	*+AR0(0),R0	;2->6
+    // asm 00009658:  ||	STF	R0,*AR2++
     // asm 00009659: 	STF	R0,*AR2++
     // asm 0000965A: 	LDF	*+AR0(3),R0	;5->7
     // asm 0000965B: 	STF	R0,*AR2++
@@ -808,20 +822,26 @@ void MATRIX_MUL(void)
     // asm 00009672: 	MPYF	*AR2++,*AR1++,R0
     // asm 00009673: 	MPYF	*AR2,*AR1++,R2
     // asm 00009674: 	MPYF	*+AR2(1),*AR1++,R0
+    // asm 00009674:  || 	ADDF	R0,R2
     // asm 00009675: 	MPYF	*-AR2(1),*AR1++,R0
+    // asm 00009675:  ||	ADDF	R0,R2
     // asm 00009676: 	PUSHF	R2
     // asm 00009677: 	MPYF	*AR2,*AR1++,R2
     // asm 00009678: 	MPYF	*+AR2(1),*AR1++,R0
+    // asm 00009678:  || 	ADDF	R0,R2
     // asm 00009679: 	MPYF	*-AR2(1),*AR1++,R0
+    // asm 00009679:  ||	ADDF	R0,R2
     // asm 0000967A: 	PUSHF	R2
     // asm 0000967B: 	MPYF	*+AR2(1),*+AR1(1),R2
     // asm 0000967C: 	MPYF	*AR2--(1),*AR1,R0
+    // asm 0000967C:  || 	ADDF	R0,R2
     // asm 0000967D: 	LDI	R3,AR1
     // asm 0000967E: 	ADDF	R2,R0
     // asm 0000967F: 	POPF	R2
     // asm 00009680: 	STF	R0,*+AR1(2)
     // asm 00009681: 	POPF	R0
     // asm 00009682: 	STF	R0,*AR1
+    // asm 00009682:  ||	STF	R2,*+AR1(1)
     // asm 00009683: 	POPF	R2
     // asm 00009684: 	POP	R2
     // asm 00009685: 	POP	AR1
@@ -983,14 +1003,19 @@ void CONCAT201(void)
     // asm 000096D3: 	MPYF3	*AR0++,*AR2++(IR0),R0
     // asm 000096D4: 	MPYF3	*AR0,*AR2++(IR0),R1
     // asm 000096D5: 	MPYF3	*+AR0(1),*AR2--(IR1),R1
+    // asm 000096D5:   ||	ADDF3	R0,R1,R2
     // asm 000096D6: 	MPYF3	*-AR0(1),*AR2++(IR0),R0
+    // asm 000096D6:   ||	ADDF3	R1,R2,R2
     // asm 000096D7: 	MPYF3	*AR0,*AR2++(IR0),R1
     // asm 000096D8: 	STF	R2,*AR1++(1)			;store MATij
     // asm 000096D9: 	MPYF3	*+AR0(1),*AR2--(IR1),R1
+    // asm 000096D9:   ||	ADDF3	R0,R1,R2
     // asm 000096DA: 	MPYF3	*-AR0(1),*AR2++(IR0),R0
+    // asm 000096DA:   ||	ADDF3	R1,R2,R2
     // asm 000096DB: 	MPYF3	*AR0++,*AR2++(IR0),R1
     // asm 000096DC: 	STF	R2,*AR1++(1)			;store MATij
     // asm 000096DD: 	MPYF3	*AR0++,*AR2--(IR1),R1
+    // asm 000096DD:   ||	ADDF3	R0,R1,R2
     // asm 000096DE: 	ADDF	R1,R2
     // asm 000096DF: 	STF	R2,*AR1++(1)			;store MATij
 INLP2:

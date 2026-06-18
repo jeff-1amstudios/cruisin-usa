@@ -152,7 +152,7 @@ FLAME_DIE:
 void animate_child(void)
 {
     // ;Set the Frame
-    // asm 0000AE10: set_frame
+set_frame:
     // asm 0000AE10: 	LDI	*+AR1(IR0),R1
     // asm 0000AE11: 	LDIN	0,IR0
     // asm 0000AE12: 	BN	set_frame

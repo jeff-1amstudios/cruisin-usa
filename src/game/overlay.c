@@ -56,7 +56,7 @@ void END_OF_GAME(void);
 
 #define ROUTINE_TABLEI ROUTINE_TABLE
 
-extern int ROUTINE_TABLE[];
+extern uintptr_t ROUTINE_TABLE[];
 extern int CHECKPOINT_TIME_BONUS;
 extern int REAL_CHECKPOINTS;
 
@@ -119,7 +119,7 @@ void SECTION_ROUTINE(void)
 /* asm: 	.word	REDWOOD_START			;28 */
 /* asm: 	.word	BEACHON				;29 */
 /* asm: 	.word	RAMPDOWNTRAINSND		;30 */
-/* asm: 	.word	OL				;31*** */
+/* asm: 	.word	OVERLOCK				;31*** */
 /* asm: 	.word	BONUS1				;32 */
 /* asm: 	.word	BONUS2				;33 */
 /* asm: 	.word	BONUS3				;34 */
@@ -134,53 +134,53 @@ void SECTION_ROUTINE(void)
 /* asm: 	.word	BONUS12				;43 */
 /* asm: 	.word	BONUS13				;44 */
 /* asm: 	.word	BONUS14				;45 */
-int ROUTINE_TABLE[] = {
+uintptr_t ROUTINE_TABLE[] = {
     0, // 0 none leave blank
-    CHECKPOINT_HIT, // 1
-    WATERON, // 2
-    WATEROFF, // 3
-    SET_BGNDCOL2BROWN, // 4
-    TURNOFF_INFINITY, // 5
-    TURNON_INFINITY, // 6
-    RR_UNFREEZE, // 7
-    RAILPRIME, // 8
-    HELISTART, // 9
-    HELIEND, // 10
-    BOFFNC, // 11
-    TOWER_PAL_LD, // 12
-    TOWER_PAL_RESTORE, // 13
-    TUNNEL_ON, // 14
-    TUNNEL_OFF, // 15
-    BRIDGE_ON, // 16
-    BRIDGE_OFF, // 17
-    CHANGE_TUNE, // 18
-    END_OF_GAME, // 19
-    LOOK_HOLLYWOOD, // 20
-    LOOK_GCANYON, // 21
-    LOOK_DEATHVALLEY, // 22
-    LOOK_MTRUSHMORE, // 23
-    LOOK_MIDWEST, // 24
-    LOOK_REDWOOD, // 25
-    LOOK_SANFRANCISCO, // 26
-    START_SANFRAN, // 27
-    REDWOOD_START, // 28
-    BEACHON, // 29
-    RAMPDOWNTRAINSND, // 30
-    OL, // 31***
-    BONUS1, // 32
-    BONUS2, // 33
-    BONUS3, // 34
-    BONUS4, // 35
-    BONUS5, // 36
-    BONUS6, // 37
-    BONUS7, // 38
-    BONUS8, // 39
-    BONUS9, // 40
-    BONUS10, // 41
-    BONUS11, // 42
-    BONUS12, // 43
-    BONUS13, // 44
-    BONUS14, // 45
+    (uintptr_t)CHECKPOINT_HIT, // 1
+    (uintptr_t)WATERON, // 2
+    (uintptr_t)WATEROFF, // 3
+    (uintptr_t)SET_BGNDCOL2BROWN, // 4
+    (uintptr_t)TURNOFF_INFINITY, // 5
+    (uintptr_t)TURNON_INFINITY, // 6
+    (uintptr_t)RR_UNFREEZE, // 7
+    (uintptr_t)RAILPRIME, // 8
+    (uintptr_t)HELISTART, // 9
+    (uintptr_t)HELIEND, // 10
+    (uintptr_t)BOFFNC, // 11
+    (uintptr_t)TOWER_PAL_LD, // 12
+    (uintptr_t)TOWER_PAL_RESTORE, // 13
+    (uintptr_t)TUNNEL_ON, // 14
+    (uintptr_t)TUNNEL_OFF, // 15
+    (uintptr_t)BRIDGE_ON, // 16
+    (uintptr_t)BRIDGE_OFF, // 17
+    (uintptr_t)CHANGE_TUNE, // 18
+    (uintptr_t)END_OF_GAME, // 19
+    (uintptr_t)LOOK_HOLLYWOOD, // 20
+    (uintptr_t)LOOK_GCANYON, // 21
+    (uintptr_t)LOOK_DEATHVALLEY, // 22
+    (uintptr_t)LOOK_MTRUSHMORE, // 23
+    (uintptr_t)LOOK_MIDWEST, // 24
+    (uintptr_t)LOOK_REDWOOD, // 25
+    (uintptr_t)LOOK_SANFRANCISCO, // 26
+    (uintptr_t)START_SANFRAN, // 27
+    (uintptr_t)REDWOOD_START, // 28
+    (uintptr_t)BEACHON, // 29
+    (uintptr_t)RAMPDOWNTRAINSND, // 30
+    (uintptr_t)OVERLOCK, // 31***
+    (uintptr_t)BONUS1, // 32
+    (uintptr_t)BONUS2, // 33
+    (uintptr_t)BONUS3, // 34
+    (uintptr_t)BONUS4, // 35
+    (uintptr_t)BONUS5, // 36
+    (uintptr_t)BONUS6, // 37
+    (uintptr_t)BONUS7, // 38
+    (uintptr_t)BONUS8, // 39
+    (uintptr_t)BONUS9, // 40
+    (uintptr_t)BONUS10, // 41
+    (uintptr_t)BONUS11, // 42
+    (uintptr_t)BONUS12, // 43
+    (uintptr_t)BONUS13, // 44
+    (uintptr_t)BONUS14, // 45
 };
 #if DEBUG
 #endif

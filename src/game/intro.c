@@ -94,6 +94,7 @@ void BOILERPLATE_INIT(void);
 void CHECK_MOTION_DIP(void);
 void CHECK_MOTION_PRESENT(void);
 void ABORT_RESET_GALIL(void);
+extern const char XQ[];
 void SEND_CMD(void);
 void WAIT_ACK(void);
 void GET_CREDITS_TO_START(void);
@@ -119,7 +120,7 @@ extern int BONUS_WAITFLAG;
 extern int OM_BONUS_WAITFLAG;
 extern int START_NOW_P;
 extern const char CCT[];
-extern int CCTAB[];
+extern tCHOOSE_CAR_ENTRY CCTAB[];
 extern int CHOOSENCAR;
 extern int RACE_STARTING_POINTS[];
 extern int CAR_CHOICE_GOTTEN;
@@ -514,7 +515,7 @@ NOMSG768:
     // asm 0000165C: 	BZ	BABAHH
     // asm 0000165D: 	SLEEP	1
     // asm 0000165F: 	BU	WFCLP
-    // asm 00001660: BABAHH
+BABAHH:
     // *ELP CHANGE
     // ;	LDI	@miniidle,R0
     // ;	INC	R0
@@ -1151,7 +1152,7 @@ void INIT_GAMELEG(void)
     // asm 00001899: 	TSTB	CMDP_MASTER,R0
     // asm 0000189A: 	BZ	BABA66
     // asm 0000189B: 	LDI	8,R4
-    // asm 0000189C: BABA66
+BABA66:
     // asm 0000189C: 	CREATE	RACER_DRONE,DRONE_C
     // asm 0000189F: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_GAMELEG", 0, 0);
@@ -1166,34 +1167,11 @@ const char CCT[] = "CHOOSE CAR";
 /* 	;all Y's were 0
 	;
  */
-/* asm: CCTAB */
-/* asm: 	.word	-1384,-164,-4708,cvettem */
-/* asm: 	.float	PI */
-/* asm: 	.word	0481h */
-/* asm: 	.word	-448,-200,-4708,hotrodm */
-/* asm: 	.float	PI */
-/* asm: 	.word	0482h */
-/* asm: 	.word	464,-177,-4708,misslem */
-/* asm: 	.float	PI */
-/* asm: 	.word	0483h */
-/* asm: 	.word	1424,-147,-4708,testorm */
-/* asm: 	.float	PI */
-/* asm: 	.word	0484h */
-/* asm: 	.word	-1 */
-int CCTAB[] = {
-    -1384, -164, -4708, cvettem,
-    PI,
-    0x0481,
-    -448, -200, -4708, hotrodm,
-    PI,
-    0x0482,
-    464, -177, -4708, misslem,
-    PI,
-    0x0483,
-    1424, -147, -4708, testorm,
-    PI,
-    0x0484,
-    -1,
+tCHOOSE_CAR_ENTRY CCTAB[] = {
+    { -1384, -164, -4708, cvettem, PI, 0x0481 },
+    {  -448, -200, -4708, hotrodm, PI, 0x0482 },
+    {   464, -177, -4708, misslem, PI, 0x0483 },
+    {  1424, -147, -4708, testorm, PI, 0x0484 },
 };
 /* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
 int CHOOSENCAR;
@@ -1269,6 +1247,8 @@ JT75:
 KIBO:
     // asm 000018C8: 	LDL	crace_PALETTES,AR2
     // asm 000018C9: 	CALL	dealloc_section
+XOFFSETI:
+    // asm 000018CA: .word	XOFFSET
     // asm 000018CA: 	LDI	@CHOSEN_VEHICLE,AR0
     // asm 000018CB: 	ADDI	@XOFFSETI,AR0
     // asm 000018CC: 	LDF	*AR0,R6
@@ -1284,7 +1264,7 @@ KIBO:
     // asm 000018D3: 	BZ	BABA
     // asm 000018D4: 	FLOAT	LANESIZE,R1
     // asm 000018D5: 	ADDF	R1,R6
-    // asm 000018D6: BABA
+BABA:
     // asm 000018D6: 	LDF	@START_RADY,R2
     // asm 000018D7: 	LDI	@MATRIXAI,AR2
     // asm 000018D8: 	CALL	HPFIND_YMATRIX
@@ -1659,7 +1639,7 @@ MOVELOOP:
     // asm 00001A06: 	BZ	BABADUY
     // asm 00001A07: 	FLOAT	LANESIZE,R3
     // asm 00001A08: 	ADDF	R3,R1
-    // asm 00001A09: BABADUY
+BABADUY:
     // asm 00001A09: 	MPYF	R1,R1
     // asm 00001A0A: 	CMPF	R1,R0
     // asm 00001A0B: 	BLE	IBODONE
@@ -1685,7 +1665,7 @@ IBODONE:
     // asm 00001A1F: 	STF	R0,*+AR7(DELTA_XLANE)
     // asm 00001A20: 	LDI	0,AR3
     // asm 00001A21: 	CALL	SPOS_INIT		;INIT STARTING POSITION
-    // asm 00001A22: BABADUY4
+BABADUY4:
     // asm 00001A22: 	LDI	1,R0
     // asm 00001A23: 	STI	R0,@START_NOW_P
     // asm 00001A24: 	LDI	MGAME|MINFIN|MWATER,R0	;NOT MGO NOT MHUD
@@ -1763,7 +1743,7 @@ LISTLP:
 *	AR4,AR5,AR6,R4,R5
 *
  */
-/* asm: SCS_TAB	.float	10,70,170,230 */
+/* asm: SCS_TAB		.float	10,70,170,230 */
 float SCS_TAB[] = {
     10.0f, 70.0f, 170.0f, 230.0f,
 };
@@ -2129,7 +2109,7 @@ NSCD:
     // asm 00001B42: 	ANDN	O_1PAL,R0
     // asm 00001B43: 	STI	R0,*+AR0(OFLAGS)
     // asm 00001B44: 	BU	HIDDEN_VEHICLES_LP
-    // asm 00001B45: SETAS_ORIGINALS
+SETAS_ORIGINALS:
     // asm 00001B45: 	LDI	@IS_HIDDEN,R0
     // asm 00001B46: 	CMPI	-1,R0
     // asm 00001B47: 	BEQ	HIDDEN_VEHICLES_LP	;no one was hidden,
@@ -2566,7 +2546,8 @@ KKLFF:
     // asm 00001CED: 	BNZ	BABAD
     // asm 00001CEE: 	LDI	*AR6,R0
     // asm 00001CEF: 	CALLU	R0
-    // asm 00001CF0: BABAD	ADDI	1,AR6
+BABAD:
+    // asm 00001CF0: ADDI	1,AR6
     // asm 00001CF1: 	DEC	AR5
     // asm 00001CF2: 	CMPI	0,AR5
     // asm 00001CF3: 	BGT	WAVEFLAGLP
@@ -2591,7 +2572,7 @@ JUMPOUT:
     // asm 00001D09: 	TSTB	CMDP_MASTER,R0
     // asm 00001D0A: 	BNZ	BABAD666
     // asm 00001D0B: 	CALL	SEND_WAVEFL_GO
-    // asm 00001D0C: BABAD666
+BABAD666:
     // asm 00001D0C: 	OR	MGO,R5			;SAVED MODE
     // asm 00001D0D: 	ANDN	MSLINE,R5
     // asm 00001D0E: 	STI	R5,@_MODE
@@ -3252,7 +3233,7 @@ NOSECRET_CRUISE:
     // asm 00001ECF: 	ANDN	BUT_START,R0
     // asm 00001ED0: 	STI	R0,@BUTTON_STATUS
     // asm 00001ED1: 	INCAUD	AUD_NUM_BUYINS
-    // asm 00001ED3: RETURNTOPLYR
+RETURNTOPLYR:
     // asm 00001ED3: 	LDI	@SAVEDMODE,R0
     // asm 00001ED4: 	STI	R0,@_MODE
     // asm 00001ED5: 	LDI	034h,R0
@@ -3385,6 +3366,8 @@ CNT:
 
 /* *----------------------------------------------------------------------------
  */
+/* asm: RGBTAB_CPI	.word	RGBTAB_CP */
+#define RGBTAB_CPI RGBTAB_CP
 /* asm: RGBTAB_CP */
 /* asm: .word	4 */
 /* asm: RGB	212,212,0 */

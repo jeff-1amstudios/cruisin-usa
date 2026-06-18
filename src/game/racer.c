@@ -70,7 +70,7 @@ extern int RACER_PTR[];
 extern int OM_TRACK_LO;
 extern int OM_TRACK_HI;
 extern int GMAX;
-extern int DIFFTAB[];
+extern float DIFFTAB[];
 extern int ROADOBSTAB[];
 extern int PLYRCLOSE;
 extern int WACKER;
@@ -916,7 +916,7 @@ STEALTH_UPDATE:
     // asm 000052EE:       	BNZ	STEALTH_UPDATE
     // asm 000052EF: 	POP	R0				;END OF LINE JUST SLEEP
     // asm 000052F0: 	B	HI_ST_END
-    // asm 000052F1: STLUP1
+STLUP1:
     // asm 000052F1: 	FLOAT	*+AR0(Y),R0	       		;GET Y POSITION SET
     // ;	LDF	*+AR0(Y),R0	       		;GET Y POSITION SET
     // asm 000052F2: 	FLOAT	250,R1
@@ -1109,7 +1109,7 @@ void GETSTSPD(void)
     // asm 0000537E: 	SUBF	R4,R1			;SUBTRACT FRICTION
     // asm 0000537F: 	ADDF	R0,R1			;ADD ACCEL
 GSL0:
-    // asm 00005380: ADDF	R1,R5
+    // asm 00005380: ADDF	R1,R5			;ADD TO DISTANCE
     // asm 00005381: 	MPYF	1.5,R5			;SPEEDFUDGE
     // asm 00005382: 	STF	R5,*+AR5(CARDIST)	;SAVE YOUR DISTANCE
     // asm 00005383: 	STF	R1,*+AR5(CARSPEED)	;NEW SPEED
@@ -1263,9 +1263,9 @@ void PLSCAN(void)
 
 /* *----------------------------------------------------------------------------
  */
-/* asm: WACKER	.word	3D20AH */
+/* asm: WACKER	.WORD	3D20AH */
 int WACKER = 0x3D20A;
-/* asm: LAKEL	.word	3EF0CH */
+/* asm: LAKEL	.WORD	3EF0CH */
 int LAKEL = 0x3EF0C;
 
 /* *

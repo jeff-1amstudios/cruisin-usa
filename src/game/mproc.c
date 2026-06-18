@@ -54,8 +54,7 @@ int OLDSP;
 int PACTIVE;
 /* asm: PFREE	.bss	PFREE,1 */
 int PFREE;
-/* asm: PRCSTR	hibss	PRCSTR,PRCSIZ*NUMPROC */
-int PRCSTR[PRCSIZ*NUMPROC];
+int PRCSTR[sizeof(PROC) * NUMPROC];
 
 /* *----------------------------------------------------------------------------
  */
@@ -260,7 +259,7 @@ NP1:
     // asm 0000A8BE: 	LDI	*+AR7(PR5),R5
     // asm 0000A8BF: 	LDI	*+AR7(PR4),R4
     // 	;---->BU R0 DELAYED BRANCH HERE
-DISPPRCX:
+    // asm 0000A8C0: DISPPRCX
     // asm 0000A8C0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SLEEP", 0, 0);
     UNIMPL();

@@ -105,7 +105,7 @@ int ACTIVE_SCREEN;
 int LINE255I = SCREEN0+0x3F000;
 /* asm: LINE511I	.word	SCREEN0+7FC00H	;LAST LINE PAGE 1 */
 int LINE511I = SCREEN0+0x7FC00;
-/* asm: SCRSIZI	.word	3FFFFH */
+/* asm: SCRSIZI		.word	3FFFFH */
 int SCRSIZI = 0x3FFFF;
 #if DEBUG
 
@@ -235,7 +235,8 @@ void CLRSCRN0(void)
 {
     // asm 00008EA5: 	PUSH	AR2
     // asm 00008EA6: 	LDI	@SCREEN0I,AR2
-    // asm 00008EA7: CLRSC00	PUSH	R3
+CLRSC00:
+    // asm 00008EA7: PUSH	R3
     // asm 00008EA8: 	LDI	@SCRSIZI,R3
 CLRSC01:
     // asm 00008EA9: 	PUSH	R2
@@ -321,7 +322,8 @@ void SCREEN_FILL(void)
     // asm 00008ECC: 	STI	R0,@CPU_WS
     // asm 00008ECD: 	RPTB	CLRSCL
     // asm 00008ECE: 	STI	R2,*AR2++
-    // asm 00008ECF: CLRSCL	LDI	*AR1,R0		;DUMMY READ FOR WAIT STATE SHIT
+CLRSCL:
+    // asm 00008ECF: LDI	*AR1,R0		;DUMMY READ FOR WAIT STATE SHIT
     // asm 00008ED0: 	LDP	@CPU_WS
     // asm 00008ED1: 	LDI	SOFT_WS,R0
     // asm 00008ED2: 	STI	R0,@CPU_WS
@@ -851,6 +853,7 @@ CDTOP:
     // asm 00008FC2: 	LDF	*AR6++,R0
     // asm 00008FC3: 	RPTS	7
     // asm 00008FC4: 	LDF	*AR6++,R0
+    // asm 00008FC4:  ||	STF	R0,*AR2++
     // asm 00008FC5:  	STF	R0,*AR2++
     // asm 00008FC6: 	NOP	*AR6--(9)
     // asm 00008FC7: 	B	CDLP
@@ -859,6 +862,7 @@ CARRWHL:
     // asm 00008FC8: 	LDF	*AR3++,R0
     // asm 00008FC9: 	RPTS	7
     // asm 00008FCA: 	LDF	*AR3++,R0
+    // asm 00008FCA:  ||	STF	R0,*AR2++
     // asm 00008FCB:  	STF	R0,*AR2++
     // asm 00008FCC: 	NOP	*AR3--(9)
 CDLP:

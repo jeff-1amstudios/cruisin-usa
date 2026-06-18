@@ -45,7 +45,7 @@ void DECODE_RACER_XSFER(void);
 void FIND_DRONE(void);
 void FIND_DYNA(void);
 
-extern uintptr_t B4HIT_TABLE[];
+extern int B4HIT_TABLE[];
 extern int NOLONG_VEHICLES;
 extern int RHO_TABLE[];
 extern int RHOFLAG;
@@ -58,9 +58,9 @@ extern int RHOPAL;
 #define B4HIT_SIZE 6
 /* asm: B4HIT_TABLE	.word	RH_GOFORIT,RH_TAKEHIM,RH_BABESCREAM1 */
 /* asm: 	.word	RH_BABEWHOA,RH_HURRYUP,RH_GONNACRASH */
-uintptr_t B4HIT_TABLE[] = {
-    (uintptr_t)(RH_GOFORIT), (uintptr_t)(RH_TAKEHIM), (uintptr_t)(RH_BABESCREAM1),
-    (uintptr_t)(RH_BABEWHOA), (uintptr_t)(RH_HURRYUP), (uintptr_t)(RH_GONNACRASH),
+int B4HIT_TABLE[] = {
+    RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1,
+    RH_BABEWHOA, RH_HURRYUP, RH_GONNACRASH,
 };
 /* *RHO FLAGS (RF_)
 *

@@ -146,7 +146,7 @@ extern int STATE_NUM;
 extern int STATE_TIK;
 extern int BUTTON_IBO;
 extern int BUTTON_TIK;
-extern uintptr_t BUTTII[];
+extern int BUTTII[];
 extern int SYSCNTL_OC;
 
 #define MEMTESTS 1
@@ -173,6 +173,18 @@ const char VERSION_STAMP[] = "VERSION  4.4";
 #endif
 const char INTERNAL_VERS[] = "I440";
 #define VERSION_ID 40
+/* 	;Because of managements inability to deal with software projects,
+	;or being able to keep the version control straight
+	;we have now moved into Internal and External versions of the program
+	;VERSION_STAMP contains whatever the management wants to call it.
+	;If management asks call it 'version' or 'release'.
+	;'actual version' or 'internal version' or 'internal' is what
+	;to use for us.
+	;INTERNAL_VERS is the actual version of the software.
+	;Keep in mind that multiple releases exist under the external
+	;version name, and the true software version can be gotten from
+	;the title page.
+ */
 const char M1[] = "LOADING OS-WMS...";
 const char M2[] = "I-NODES ALLOCATED,  DCS DECODED (14-1715)";
 const char M3[] = "WMS SATELLITE COMM, CHANNEL 3 ACTIVE LYBIRP";
@@ -297,7 +309,8 @@ void _c_int00(void)
     // asm: 	SUBI	41h,RC
     // asm: 	RPTB	LD_DBG1
     // asm: 	LDI	*AR1++,R0
-    // asm 00004B11: LD_DBG1	STI	R0,*AR2++
+LD_DBG1:
+    // asm 00004B11: STI	R0,*AR2++
 #endif
     // asm 00004B11: 	LDI	0,AR1			;SOURCE ADDRESS
     // asm 00004B12: 	LDI	4000h,AR2		;DESINATION ADDRESS
@@ -306,7 +319,8 @@ void _c_int00(void)
     // asm 00004B15: 	LS	4,RC			;FAST RAM
     // asm 00004B16: 	RPTB	LD_RAM
     // asm 00004B17: 	LDI	*AR1++,R0
-    // asm 00004B18: LD_RAM	STI	R0,*AR2++
+LD_RAM:
+    // asm 00004B18: STI	R0,*AR2++
     // asm 00004B19: 	NOP
     // asm 00004B1A: 	NOP				;DELAY FOR PIPELINE
     // asm 00004B1B: 	NOP
@@ -345,7 +359,8 @@ void _c_int00(void)
     // asm: 	SUBI	41h,RC
     // asm: 	RPTB	LD_RAM3
     // asm: 	LDI	*AR1++,R0
-    // asm 00004B35: LD_RAM3	STI	R0,*AR2++
+LD_RAM3:
+    // asm 00004B35: STI	R0,*AR2++
     // asm: 	LDI	@SYSCNTL,R0
     // asm: 	OR	10h,R0
     // asm: 	STI	R0,@SYSCNTL
@@ -379,7 +394,8 @@ DR1:
     // asm 00004B4D: 	LS	4,RC			;FAST RAM
     // asm 00004B4E: 	RPTB	LD_RAM2
     // asm 00004B4F: 	LDI	*AR2++,R0
-    // asm 00004B50: LD_RAM2	STI	R0,*AR1++
+LD_RAM2:
+    // asm 00004B50: STI	R0,*AR1++
     // asm 00004B51: 	CLRI	R0
     // asm 00004B52: 	LDP	@COLORAM
     // asm 00004B53: 	STI	R0,@COLORAM
@@ -465,7 +481,7 @@ DR1:
     // asm 00004BAA: 	AND	8,R0 			;CHECK B3
     // asm 00004BAB: 	BNZ	NOPEIT
     // asm 00004BAC: 	INCAUD	AUD_NUM_WATCHDOGS
-    // asm 00004BAE: NOPEIT
+NOPEIT:
     // asm 00004BAE: 	CLRI	R0
     // asm 00004BAF: 	STI	R0,@_newbut
     // asm 00004BB0: 	LDI	-1,AR2
@@ -1379,7 +1395,7 @@ JUSTGOON:
     // asm 00004E6E: 	READAUD	AUD_CREDITS
     // asm 00004E70: 	CMPI	0,R0
     // asm 00004E71: 	BLE	DASHLIGHT
-    // asm 00004E72: BUT3
+BUT3:
     // asm 00004E72: 	LDI	@BUTTON_STATUS,R0
     // asm 00004E73: 	TSTB	BUT_START,R0
     // asm 00004E74: 	BZ	NOSTART
@@ -1404,7 +1420,7 @@ NOSTART:
     // asm 00004E86: 	RETSEQ
 PAPAFFD:
     // asm 00004E87: STI	R0,@OLD_BUTTON_STATUS
-    // asm 00004E88: BUTLITE
+BUTLITE:
     // asm 00004E88: 	LDIL	SOUND,AR0
     // asm 00004E8B: 	LDI	0FF05h,R1
     // asm 00004E8C: 	LDI	0F705h,R2
@@ -1870,8 +1886,6 @@ int STATE_TABLE[] = {
  */
 /* asm: STATE_MASK	.word	SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO */
 int STATE_MASK = SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO;
-/* *
- */
 /* asm: STATE_NUM	.bss	STATE_NUM,1 */
 int STATE_NUM;
 /* asm: STATE_TIK	.bss	STATE_TIK,1 */
@@ -1943,8 +1957,8 @@ int BUTTON_TIK;
 /* asm: BUTTONI	.word	BUTTII */
 #define BUTTONI BUTTII
 /* asm: BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
-uintptr_t BUTTII[] = {
-    (uintptr_t)(BUT_VIEW1), (uintptr_t)(BUT_VIEW2), (uintptr_t)(BUT_VIEW3), (uintptr_t)(BUT_VIEW2),
+int BUTTII[] = {
+    BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2,
 };
 
 /* *
@@ -2123,7 +2137,8 @@ void VERIFY_CODE_INTEGRITY(void)
 #if CODE_CHECK
     // asm: 	BNE	$
 #endif
-    // asm 00005075: LD_CHK1	NOP
+LD_CHK1:
+    // asm 00005075: NOP
 #endif
     // asm 00005075: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VERIFY_CODE_INTEGRITY", 0, 0);

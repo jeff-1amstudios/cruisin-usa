@@ -42,6 +42,7 @@ HEX_SUFFIX_RE = re.compile(r"\b([0-9A-Fa-f]+)[Hh]\b")
 BIN_SUFFIX_RE = re.compile(r"\b([01]+)[Bb]\b")
 SIMPLE_STRING_RE = re.compile(r'^\s*("([^"\\]|\\.)*")\s*(?:,\s*0+\s*)?$')
 SPTR_LABEL_RE = re.compile(r'^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s+SPTR\b(.*)$', re.IGNORECASE)
+SPTR_ROW_RE = re.compile(r'^\s*SPTR\b(.*)$', re.IGNORECASE)
 STANDALONE_STORAGE_RE = re.compile(r"^\s*(?:\.bss|\.usect|fbss|pbss|hibss|lobss|phibss)\b", re.IGNORECASE)
 STANDALONE_STORAGE_FULL_RE = re.compile(
     r"^\s*((?:\.bss|\.usect|fbss|pbss|hibss|lobss|phibss))\s+([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\b(.*)$",
@@ -59,6 +60,7 @@ STANDALONE_DATA_DIRECTIVE_RE = re.compile(
 CPP_DEFINE_RE = re.compile(r"^\s*#\s*define\s+([_A-Za-z][_A-Za-z0-9]*)\b")
 RENDER_OVERRIDE_START_RE = re.compile(r"^\s*%%\s+([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s*$")
 RENDER_OVERRIDE_END_RE = re.compile(r"^\s*%%\s+END\s*$", re.IGNORECASE)
+NOEDIT_SENTINEL = "// NOEDIT"
 
 CONTROL_KEYWORDS = {
     ".if",
@@ -100,39 +102,11 @@ FUNCTION_END_MNEMONICS = {
     "RET",
 }
 
-INSTRUCTION_PREFIXES = (
-    ".",
-    "LD",
-    "ST",
-    "PUSH",
-    "POP",
-    "CALL",
-    "RET",
-    "B",
-    "ADD",
-    "SUB",
-    "MPY",
-    "CMP",
-    "TST",
-    "AND",
-    "OR",
-    "XOR",
-    "LS",
-    "RS",
-    "RPT",
-    "SET",
-    "CLR",
-    "NOP",
-    "FIX",
-    "FLOAT",
-    "LDF",
-    "STF",
-    "DINT",
-    "EINT",
-    "SOFT",
-    "ERR",
-)
-
+REGISTER_NAMES = {
+    "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7",
+    "AR0", "AR1", "AR2", "AR3", "AR4", "AR5", "AR6", "AR7",
+    "RC", "RS", "RE", "BK", "DP", "SP", "ST", "IE", "IF", "IR0", "IR1", "IOF",
+}
 
 @dataclass
 class FunctionBlock:
@@ -261,6 +235,20 @@ def build_symbol_rename_map(type_overrides: dict[str, TypeOverride] | None) -> d
         for name, override in type_overrides.items()
         if override.rename_to
     }
+
+
+def file_has_noedit_guard(path: Path) -> bool:
+    if not path.exists():
+        return False
+    with path.open("r", errors="ignore") as handle:
+        first_line = handle.readline()
+    return first_line.removeprefix("\ufeff").strip() == NOEDIT_SENTINEL
+
+
+def resolve_generated_output_path(target_path: Path, generated_dir: Path) -> Path:
+    if file_has_noedit_guard(target_path):
+        return generated_dir / target_path.name
+    return target_path
 
 
 def eval_constant_expr(expr: str) -> int | None:
@@ -1166,6 +1154,59 @@ def split_string_operands(rest: str) -> list[str]:
     return tokens
 
 
+def render_c_string_literal_from_bytes(byte_values: list[int]) -> str:
+    out = ['"']
+    for value in byte_values:
+        if value == 0x0D:
+            out.append(r"\n")
+        elif value == 0x0A:
+            out.append(r"\n")
+        elif value == 0x09:
+            out.append(r"\t")
+        elif value == 0x5C:
+            out.append(r"\\")
+        elif value == 0x22:
+            out.append(r"\"")
+        elif 0x20 <= value <= 0x7E:
+            out.append(chr(value))
+        else:
+            out.append(f"\\x{value:02X}")
+    out.append('"')
+    return "".join(out)
+
+
+def parse_string_blob_operand(operand_text: str) -> str | None:
+    operands, _comment = split_comment(operand_text.strip())
+    tokens = split_string_operands(operands)
+    if not tokens:
+        return None
+
+    saw_quoted = False
+    byte_values: list[int] = []
+    for token in tokens:
+        if token.startswith('"') and token.endswith('"'):
+            try:
+                decoded = ast.literal_eval(token)
+            except (SyntaxError, ValueError):
+                return None
+            if not isinstance(decoded, str):
+                return None
+            saw_quoted = True
+            byte_values.extend(ord(ch) for ch in decoded)
+            continue
+
+        value = parse_int_token(token)
+        if value is None or not 0 <= value <= 0xFF:
+            return None
+        byte_values.append(value)
+
+    if not saw_quoted:
+        return None
+    if byte_values and byte_values[-1] == 0:
+        byte_values.pop()
+    return render_c_string_literal_from_bytes(byte_values)
+
+
 def pack_string_directive(operand_text: str) -> list[str] | None:
     operands, _comment = split_comment(operand_text.strip())
     if parse_simple_string_operand(operands) is not None:
@@ -1210,6 +1251,14 @@ def parse_sptr_label(raw: str) -> tuple[str, str] | None:
     if c_string is None:
         return None
     return label, c_string
+
+
+def parse_sptr_row(raw: str) -> str | None:
+    code, _comment = split_comment(raw)
+    match = SPTR_ROW_RE.match(code)
+    if not match:
+        return None
+    return parse_simple_string_operand(match.group(1))
 
 
 def parse_numeric_directive(stripped: str) -> tuple[str, list[str]] | None:
@@ -1260,6 +1309,29 @@ def parse_numeric_data_line(raw: str, label_name: str | None = None) -> tuple[li
         return None
     _directive, values = numeric_directive
     return values, comment
+
+
+def asm_lines_form_string_blob(asm_lines: list[str]) -> bool:
+    saw_string = False
+    for raw in asm_lines:
+        code, _comment = split_comment(raw)
+        stripped = code.strip().lower()
+        if not stripped:
+            continue
+        if ".word" in stripped or ".float" in stripped:
+            return False
+        if ".string" in stripped:
+            saw_string = True
+    return saw_string
+
+
+def next_significant_line_index(lines: list[str], start_idx: int) -> int | None:
+    idx = start_idx
+    while idx < len(lines):
+        if not is_comment_or_blank(lines[idx]):
+            return idx
+        idx += 1
+    return None
 
 
 def line_starts_data_only_macro(raw: str, data_only_macros: frozenset[str] | None) -> bool:
@@ -1516,45 +1588,69 @@ def colon_label_has_code_body(
 
 
 def classify_instruction_text(text: str) -> tuple[bool, str]:
-    stripped = text.strip()
-    if not stripped:
+    if not text.strip():
         return False, ""
-    if stripped.startswith("*") or stripped.startswith(";"):
-        return False, ""
-
-    code, _comment = split_comment(stripped)
-    code = code.strip()
-    if not code:
+    if text.lstrip().startswith("*") or text.lstrip().startswith(";"):
         return False, ""
 
-    data_label_match = DATA_LABEL_RE.match(code)
-    if data_label_match:
+    code, _comment = split_comment(text)
+    if not code.strip():
         return False, ""
+
+    label, remainder = split_flush_left_label(code)
+    if label is not None and remainder_begins_with_operation(remainder):
+        code = remainder.strip()
+        if not code:
+            return False, ""
+    else:
+        code = code.strip()
 
     first = code.split()[0]
     upper = first.upper()
     if first.lower() in CONTROL_KEYWORDS_LOWER:
         return False, ""
 
-    if first.startswith(".") and upper not in {".WORD"}:
+    if first.startswith("."):
         return False, ""
 
     if upper == "EQU":
         return False, ""
 
-    if upper.startswith(INSTRUCTION_PREFIXES) or upper.isupper():
-        return True, code
-
-    return False, ""
+    return True, code
 
 
-def looks_like_instruction_token(token: str) -> bool:
-    upper = token.upper()
-    if token.lower() in CONTROL_KEYWORDS_LOWER:
+def remainder_begins_with_operation(text: str) -> bool:
+    toks = ccm.parse_line_tokens(text)
+    if not toks:
+        return False
+    first = toks[0]
+    upper = first.upper()
+    if first == "||":
         return True
-    if token.startswith("."):
+    if first.startswith("."):
         return True
-    return upper.startswith(INSTRUCTION_PREFIXES)
+    if first.lower() in CONTROL_KEYWORDS_LOWER or upper == "EQU":
+        return True
+    if upper in REGISTER_NAMES:
+        return False
+    return bool(re.fullmatch(r"[A-Za-z][A-Za-z0-9.]*", first))
+
+
+def split_flush_left_label(code: str) -> tuple[str | None, str]:
+    if not is_flush_left(code):
+        return None, code
+    label_match = LABEL_RE.match(code)
+    if label_match is not None:
+        return label_match.group(1), label_match.group(2)
+
+    inline_label_match = re.match(r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*)\s+(.*)$", code)
+    if inline_label_match is not None:
+        return inline_label_match.group(1), inline_label_match.group(2)
+
+    bare_label_match = BARE_LABEL_RE.match(code)
+    if bare_label_match is not None:
+        return bare_label_match.group(1), ""
+    return None, code
 
 
 def function_has_executable_lines(fn: FunctionBlock) -> bool:
@@ -1892,13 +1988,13 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
             ):
                 pending_entry_labels.pop(0)
                 line_address = lookup_instruction_address_for_line(raw, line_no, body_line_numbers, instruction_addresses)
-                code = f"{inline_label_match.group(2)}{inline_label_match.group(3)}".rstrip()
-                is_instr, code = classify_instruction_text(code)
+                raw_code = f"{inline_label_match.group(2)}{inline_label_match.group(3)}".rstrip()
+                is_instr, code = classify_instruction_text(raw_code)
                 if is_instr:
                     if line_address is None:
-                        out.append(f"    // asm: {code}")
+                        out.append(f"    // asm: {raw_code}")
                     else:
-                        out.append(f"    // asm {line_address:08X}: {code}")
+                        out.append(f"    // asm {line_address:08X}: {raw_code}")
                     emitted_any = True
                     last_executable_code = code
                 continue
@@ -1950,8 +2046,8 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
         inline_label_match = INLINE_LABEL_RE.match(raw)
         if inline_label_match:
             label = inline_label_match.group(1)
-            code = f"{inline_label_match.group(2)}{inline_label_match.group(3)}".rstrip()
-            is_instr, code = classify_instruction_text(code)
+            raw_code = f"{inline_label_match.group(2)}{inline_label_match.group(3)}".rstrip()
+            is_instr, code = classify_instruction_text(raw_code)
             if is_flush_left(raw) and is_instr:
                 label_ident = sanitize_identifier(label)
                 if label in fn.aliases:
@@ -1962,9 +2058,9 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
                     out.append(f"{label_ident}:")
                     first_label_emitted = True
                 if line_address is None:
-                    out.append(f"    // asm: {code}")
+                    out.append(f"    // asm: {raw_code}")
                 else:
-                    out.append(f"    // asm {line_address:08X}: {code}")
+                    out.append(f"    // asm {line_address:08X}: {raw_code}")
                 emitted_any = True
                 last_executable_code = code
                 continue
@@ -1979,6 +2075,13 @@ def render_function(fn: FunctionBlock, instruction_addresses: dict[int, int] | N
             else:
                 out.append(f"{label_ident}:")
                 first_label_emitted = True
+            continue
+
+        if is_flush_left(raw) and bare_label_match:
+            if line_address is None:
+                out.append(f"    // asm: {raw.rstrip()}")
+            else:
+                out.append(f"    // asm {line_address:08X}: {raw.rstrip()}")
             continue
 
         is_instr, code = classify_instruction_text(raw)
@@ -2031,6 +2134,8 @@ def infer_word_symbol(
 
     if symbol_table is not None and all(parse_int_token(value) is None for value in var.values):
         targets = [symbol_table.get(value) for value in var.values]
+        if all(target is not None and target.kind == "define" for target in targets):
+            return SymbolInfo(name=var.name, kind="variable", module=module, c_type="int", array_expr=str(len(var.values)))
         if all(target is not None and target.kind == "function" for target in targets):
             return SymbolInfo(
                 name=var.name,
@@ -2444,6 +2549,27 @@ def render_sptr_variable(name: str, c_string: str, asm_line: str) -> list[str]:
     ]
 
 
+def render_sptr_table(name: str, asm_lines: list[str]) -> list[str]:
+    out = [f"/* asm: {asm_lines[0].strip()} */"]
+    values: list[tuple[str, str]] = []
+    for extra_line in asm_lines[1:]:
+        out.append(f"/* asm: {extra_line.strip()} */")
+        c_string = parse_sptr_row(extra_line)
+        if c_string is not None:
+            _code, comment = split_comment(extra_line)
+            values.append((c_string, comment))
+    prefix = variable_definition_prefix(name, "const char *", str(len(values)), omit_array_size=True)
+    out.append(f"{prefix} = {{")
+    for value, comment in values:
+        comment_text = comment[1:].strip() if comment.startswith(";") else comment.strip()
+        if comment_text:
+            out.append(f"    {value}, // {comment_text}")
+        else:
+            out.append(f"    {value},")
+    out.append("};")
+    return out
+
+
 def render_storage_variable(name: str, size_expr: str, asm_line: str) -> list[str]:
     return [
         f"/* asm: {name}\t{asm_line.strip()} */",
@@ -2559,14 +2685,26 @@ def collect_standalone_labeled_data(
     if branch_targets is None:
         branch_targets = set()
     raw = lines[start_idx]
+    raw_code, _raw_comment = split_comment(raw)
     label_match = LABEL_RE.match(raw)
-    if label_match:
-        label, rest = label_match.groups()
+    data_label_match = DATA_LABEL_RE.match(raw_code) if is_flush_left(raw) else None
+    if label_match or data_label_match:
+        if data_label_match is not None:
+            label, directive, rest = data_label_match.groups()
+            rest = f"{directive}{rest}"
+        else:
+            assert label_match is not None
+            label, rest = label_match.groups()
         rest_code, _rest_comment = split_comment(rest)
         if rest_code.strip():
             if line_starts_data_only_macro(rest_code, data_only_macros):
                 return StandaloneLabeledData(label, ".macrodata", "", [raw.rstrip()]), start_idx + 1
             stripped = rest_code.strip()
+            if stripped.lower().startswith(".string"):
+                string_operands = stripped[7:].strip()
+                c_string = parse_simple_string_operand(string_operands) or parse_string_blob_operand(string_operands)
+                if c_string is not None:
+                    return StandaloneLabeledData(label, ".string", string_operands, [raw.rstrip()]), start_idx + 1
             numeric_directive = parse_numeric_directive(stripped)
             if numeric_directive is not None:
                 directive_name, values = numeric_directive
@@ -2576,7 +2714,14 @@ def collect_standalone_labeled_data(
                 mixed_numeric_directives = False
                 while next_idx < len(lines):
                     next_raw = lines[next_idx]
-                    if is_comment_or_blank(next_raw):
+                    if not next_raw.strip():
+                        asm_lines.append(next_raw.rstrip())
+                        next_idx += 1
+                        continue
+                    if render_asm_comment(next_raw) is not None:
+                        following_idx = next_significant_line_index(lines, next_idx + 1)
+                        if following_idx is not None and is_flush_left(lines[following_idx]):
+                            break
                         asm_lines.append(next_raw.rstrip())
                         next_idx += 1
                         continue
@@ -2613,26 +2758,27 @@ def collect_standalone_labeled_data(
         label = bare_label_match.group(1)
         if label in branch_targets:
             return None, start_idx
-        if looks_like_instruction_token(label):
-            probe_idx = start_idx + 1
-            next_data_like = False
-            while probe_idx < len(lines):
-                probe_raw = lines[probe_idx]
-                if is_comment_or_blank(probe_raw):
-                    probe_idx += 1
-                    continue
-                if is_flush_left(probe_raw):
-                    break
-                probe_code, _probe_comment = split_comment(probe_raw)
-                probe_stripped = probe_code.strip()
-                next_data_like = (
-                    parse_numeric_directive(probe_stripped) is not None
-                    or parse_simple_string_operand(probe_stripped) is not None
-                    or STANDALONE_STORAGE_RE.match(probe_stripped) is not None
-                )
+        probe_idx = start_idx + 1
+        next_data_like = False
+        while probe_idx < len(lines):
+            probe_raw = lines[probe_idx]
+            if is_comment_or_blank(probe_raw):
+                probe_idx += 1
+                continue
+            if is_flush_left(probe_raw):
                 break
-            if not next_data_like:
-                return None, start_idx
+            probe_code, _probe_comment = split_comment(probe_raw)
+            probe_stripped = probe_code.strip()
+            next_data_like = (
+                parse_sptr_row(probe_raw) is not None
+                or parse_numeric_directive(probe_stripped) is not None
+                or parse_simple_string_operand(probe_stripped) is not None
+                or STANDALONE_STORAGE_RE.match(probe_stripped) is not None
+                or line_starts_data_only_macro(probe_raw, data_only_macros)
+            )
+            break
+        if not next_data_like:
+            return None, start_idx
 
     asm_lines = [raw.rstrip()]
     next_idx = start_idx + 1
@@ -2640,13 +2786,28 @@ def collect_standalone_labeled_data(
     saw_numeric_directive = False
     numeric_directive_name: str | None = None
     mixed_numeric_directives = False
+    saw_sptr_rows = False
     inner_labels: list[tuple[str, int]] = []
     while next_idx < len(lines):
         next_raw = lines[next_idx]
-        if is_comment_or_blank(next_raw):
+        if not next_raw.strip():
             asm_lines.append(next_raw.rstrip())
             next_idx += 1
             continue
+        if render_asm_comment(next_raw) is not None:
+            following_idx = next_significant_line_index(lines, next_idx + 1)
+            if following_idx is not None and is_flush_left(lines[following_idx]):
+                break
+            asm_lines.append(next_raw.rstrip())
+            next_idx += 1
+            continue
+        if parse_sptr_row(next_raw) is not None:
+            asm_lines.append(next_raw.rstrip())
+            saw_sptr_rows = True
+            next_idx += 1
+            continue
+        if saw_sptr_rows:
+            return StandaloneLabeledData(label, ".sptrtable", "", asm_lines, inner_labels), next_idx
         if line_starts_data_only_macro(next_raw, data_only_macros):
             asm_lines.append(next_raw.rstrip())
             next_idx += 1
@@ -2678,7 +2839,14 @@ def collect_standalone_labeled_data(
                         probe_idx = next_idx + 1
                         while probe_idx < len(lines):
                             probe_raw = lines[probe_idx]
-                            if is_comment_or_blank(probe_raw):
+                            if not probe_raw.strip():
+                                nested_lines.append(probe_raw.rstrip())
+                                probe_idx += 1
+                                continue
+                            if render_asm_comment(probe_raw) is not None:
+                                following_idx = next_significant_line_index(lines, probe_idx + 1)
+                                if following_idx is not None and is_flush_left(lines[following_idx]):
+                                    break
                                 nested_lines.append(probe_raw.rstrip())
                                 probe_idx += 1
                                 continue
@@ -2695,7 +2863,7 @@ def collect_standalone_labeled_data(
                             probe_values, _probe_row_comment = parsed_probe_row
                             nested_values.extend(probe_values)
                             probe_idx += 1
-                        if nested_values and nested_has_string:
+                        if nested_values and nested_has_string and asm_lines_form_string_blob(nested_lines):
                             nested_offset = len(numeric_values)
                             inner_labels.append((nested_name, nested_offset))
                             asm_lines.extend(nested_lines)
@@ -2717,7 +2885,7 @@ def collect_standalone_labeled_data(
                 nested_data is not None
                 and nested_data.directive == ".intdata"
                 and nested_data.name not in branch_targets
-                and any(".string" in line.lower() for line in nested_data.asm_lines)
+                and asm_lines_form_string_blob(nested_data.asm_lines)
             ):
                 nested_values = [part.strip() for part in nested_data.rest.split(",") if part.strip()]
                 if nested_values:
@@ -2767,6 +2935,8 @@ def collect_standalone_labeled_data(
     if saw_numeric_directive:
         normalized = ".intdata" if mixed_numeric_directives or numeric_directive_name is None else numeric_directive_name
         return StandaloneLabeledData(label, normalized, ",".join(numeric_values), asm_lines, inner_labels), next_idx
+    if saw_sptr_rows:
+        return StandaloneLabeledData(label, ".sptrtable", "", asm_lines, inner_labels), next_idx
     return None, start_idx
 
 
@@ -2814,21 +2984,11 @@ def instruction_text_for_top_level_line(raw: str) -> str | None:
     if parse_numeric_directive(stripped) is not None:
         return None
 
-    label_match = LABEL_RE.match(raw)
-    if label_match:
-        is_instr, code = classify_instruction_text(label_match.group(2))
-        return code if is_instr else None
-
-    inline_label_match = INLINE_LABEL_RE.match(raw)
-    if inline_label_match and is_flush_left(raw):
-        is_instr, code = classify_instruction_text(f"{inline_label_match.group(2)}{inline_label_match.group(3)}")
-        return code if is_instr else None
-
-    bare_label_match = BARE_LABEL_RE.match(code)
-    if bare_label_match and is_flush_left(raw):
+    _label, remainder = split_flush_left_label(code)
+    if _label is not None and not remainder.strip():
         return None
 
-    is_instr, code = classify_instruction_text(raw)
+    is_instr, code = classify_instruction_text(code)
     return code if is_instr else None
 
 
@@ -2849,6 +3009,25 @@ def render_top_level_items(
     initial_seen_function_lines: bool = False,
     line_number_offset: int = 0,
 ) -> list[str]:
+    def should_preserve_pending_comments_across_blank(blank_idx: int) -> bool:
+        if not pending_comment_lines:
+            return False
+        if not all(line.lstrip().startswith(";") for line in pending_comment_lines):
+            return False
+        next_idx = next_significant_line_index(lines, blank_idx + 1)
+        if next_idx is None:
+            return False
+        next_raw = lines[next_idx]
+        next_code, _next_comment = split_comment(next_raw)
+        return bool(
+            is_flush_left(next_raw)
+            and (
+                DATA_LABEL_RE.match(next_code)
+                or BARE_LABEL_RE.match(next_code)
+                or STANDALONE_STORAGE_FULL_RE.match(next_code)
+            )
+        )
+
     def flush_pending_comments() -> None:
         nonlocal pending_comment_lines
         if pending_comment_lines:
@@ -2877,7 +3056,8 @@ def render_top_level_items(
             continue
 
         if not raw.strip():
-            pending_comment_lines = []
+            if not should_preserve_pending_comments_across_blank(idx):
+                pending_comment_lines = []
             idx += 1
             continue
 
@@ -3008,9 +3188,11 @@ def render_top_level_items(
                     )
                 )
             elif directive_lower == ".string":
-                c_string = parse_simple_string_operand(standalone_data.rest)
+                c_string = parse_simple_string_operand(standalone_data.rest) or parse_string_blob_operand(standalone_data.rest)
                 if c_string is not None:
                     out.extend(render_string_variable(StringVariable(name=standalone_data.name, c_string=c_string)))
+            elif directive_lower == ".sptrtable":
+                out.extend(render_sptr_table(standalone_data.name, standalone_data.asm_lines))
             elif directive_lower == ".macrodata":
                 out.extend(render_macro_data_placeholder(standalone_data.name, standalone_data.asm_lines))
             elif directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
@@ -3104,13 +3286,20 @@ def render_top_level_items(
             idx += 1
             continue
         if directive_lower == ".string":
-            c_string = parse_simple_string_operand(rest)
+            c_string = parse_simple_string_operand(rest) or parse_string_blob_operand(rest)
             if c_string is not None:
                 flush_pending_comments()
                 out.extend(render_string_variable(StringVariable(name=label, c_string=c_string)))
+                if seen_function_lines:
+                    saw_top_level_data_after_function = True
+            idx += 1
+            continue
+        if directive_lower == ".sptrtable":
+            flush_pending_comments()
+            out.extend(render_sptr_table(label, standalone_data.asm_lines))
             if seen_function_lines:
                 saw_top_level_data_after_function = True
-            idx += 1
+            idx = next_idx
             continue
 
         if directive_lower == ".word":
@@ -3407,12 +3596,10 @@ def iter_operand_symbol_tokens(text: str) -> Iterable[str]:
 
 
 def extract_reference_text(raw: str) -> str:
-    label_match = LABEL_RE.match(raw)
-    if label_match:
-        return label_match.group(2)
-    inline_label_match = INLINE_LABEL_RE.match(raw)
-    if is_flush_left(raw) and inline_label_match:
-        return f"{inline_label_match.group(2)}{inline_label_match.group(3)}"
+    code, _comment = split_comment(raw)
+    _label, remainder = split_flush_left_label(code)
+    if _label is not None:
+        return remainder
     return raw
 
 
@@ -3697,12 +3884,27 @@ def collect_module_symbol_table(
                             SymbolInfo(name=inner_name, kind="define", module=module, expr=str(offset)),
                         )
             elif directive_lower == ".string":
-                c_string = parse_simple_string_operand(standalone_data.rest)
+                c_string = parse_simple_string_operand(standalone_data.rest) or parse_string_blob_operand(standalone_data.rest)
                 if c_string is not None:
                     symbol_table.setdefault(
                         standalone_data.name,
                         apply_type_override(infer_string_symbol(standalone_data.name, module), type_overrides),
                     )
+            elif directive_lower == ".sptrtable":
+                entry_count = sum(1 for line in standalone_data.asm_lines[1:] if parse_sptr_row(line) is not None)
+                symbol_table.setdefault(
+                    standalone_data.name,
+                    apply_type_override(
+                        SymbolInfo(
+                            name=standalone_data.name,
+                            kind="variable",
+                            module=module,
+                            c_type="const char *",
+                            array_expr=str(entry_count),
+                        ),
+                        type_overrides,
+                    ),
+                )
             elif directive_lower == ".macrodata":
                 symbol_table.setdefault(
                     standalone_data.name,
@@ -3751,7 +3953,7 @@ def collect_module_symbol_table(
             idx += 1
             continue
         if directive_lower == ".string":
-            c_string = parse_simple_string_operand(rest)
+            c_string = parse_simple_string_operand(rest) or parse_string_blob_operand(rest)
             if c_string is not None:
                 symbol_table.setdefault(label, apply_type_override(infer_string_symbol(label, module), type_overrides))
             idx += 1
@@ -3884,6 +4086,7 @@ def main() -> int:
     root = Path(__file__).resolve().parents[2]
     asm_dir = root / "asm"
     out_dir = root / "src" / "game"
+    generated_dir = root / "src" / "generated"
     include_dir = root / "src" / "game"
     address_map = parse_address_map(root / "tools" / "ida" / "address.map")
     define_entries = parse_discovered_defines_file(root / "tools" / "ida" / "discovered_defines.txt")
@@ -3894,6 +4097,7 @@ def main() -> int:
     render_overrides = parse_render_overrides_file(root / "tools" / "port" / "render-overrides.txt")
     label_types = parse_romlst_label_types(root / "tools" / "ida" / "log" / "romlst_labels.tsv")
     out_dir.mkdir(parents=True, exist_ok=True)
+    generated_dir.mkdir(parents=True, exist_ok=True)
     include_dir.mkdir(parents=True, exist_ok=True)
     log_dir = root / "tools" / "port" / "log"
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -3902,9 +4106,13 @@ def main() -> int:
         key=lambda item: item.name.upper(),
     )
     discovered_define_names = {entry.name for entry in discovered_define_entries}
-    (include_dir / "discovered_defines.h").write_text(render_discovered_defines_header(discovered_define_entries))
-    (include_dir / "discovered_labels.h").write_text(render_discovered_labels_header([], type_overrides))
-    (include_dir / "port.h").write_text(render_port_header())
+    resolve_generated_output_path(include_dir / "discovered_defines.h", generated_dir).write_text(
+        render_discovered_defines_header(discovered_define_entries)
+    )
+    resolve_generated_output_path(include_dir / "discovered_labels.h", generated_dir).write_text(
+        render_discovered_labels_header([], type_overrides)
+    )
+    resolve_generated_output_path(include_dir / "port.h", generated_dir).write_text(render_port_header())
     global_symbol_table = build_global_symbol_table(asm_dir, address_map, type_overrides)
     source_label_names: set[str] = set()
     for src_path in sorted(asm_dir.glob("*.ASM")):
@@ -3921,7 +4129,7 @@ def main() -> int:
 
     for src_path in sorted(asm_dir.glob("*.EQU")):
         banner_comments, globls, sets = parse_equ_file(src_path)
-        out_path = include_dir / (src_path.stem.lower() + ".h")
+        out_path = resolve_generated_output_path(include_dir / (src_path.stem.lower() + ".h"), generated_dir)
         out_path.write_text(render_equ_header(src_path, banner_comments, globls, sets, global_symbol_table))
 
     storage_defines_by_module: dict[str, list[StorageVariable]] = {}
@@ -3936,7 +4144,7 @@ def main() -> int:
         header_name = storage_header_name(src_path.stem, include_dir)
         for entry in defines:
             owner_headers[entry.name] = header_name
-        header_path = include_dir / header_name
+        header_path = resolve_generated_output_path(include_dir / header_name, generated_dir)
         rendered = render_storage_header(src_path, defines, type_overrides)
         if header_path.exists():
             existing = header_path.read_text()
@@ -3963,7 +4171,7 @@ def main() -> int:
         discovered_label_names.update(mapped_missing_data_symbols)
         discovered_header_needed = bool(collect_referenced_define_symbols(lines, discovered_define_names))
         discovered_labels_needed = bool(mapped_missing_data_symbols)
-        out_path = out_dir / (src_path.stem.lower() + ".c")
+        out_path = resolve_generated_output_path(out_dir / (src_path.stem.lower() + ".c"), generated_dir)
         own_header = owner_headers.get(next(iter([d.name for d in storage_defines_by_module.get(src_path.stem.upper(), [])]), ""), None)
         if src_path.stem.upper() in storage_defines_by_module:
             own_header = storage_header_name(src_path.stem, include_dir)
@@ -3988,7 +4196,9 @@ def main() -> int:
         LabelEntry(name=name, addr=address_map[name])
         for name in sorted(discovered_label_names, key=str.upper)
     ]
-    (include_dir / "discovered_labels.h").write_text(render_discovered_labels_header(discovered_label_entries, type_overrides))
+    resolve_generated_output_path(include_dir / "discovered_labels.h", generated_dir).write_text(
+        render_discovered_labels_header(discovered_label_entries, type_overrides)
+    )
 
     skipped_log = log_dir / "skipped_data_symbols.txt"
     skipped_rows = sorted(skipped_data_symbols)

@@ -109,7 +109,8 @@ void WAVE(void)
     // asm 00009325: 	LS	4,RC			;FAST RAM
     // asm 00009326: 	RPTB	LD_RAM
     // asm 00009327: 	LDI	*AR1++,R0
-    // asm 00009328: LD_RAM	STI	R0,*AR3++
+LD_RAM:
+    // asm 00009328: STI	R0,*AR3++
     // asm 00009329: 	PUSH	AR7
     // asm 0000932A: 	PUSH	AR2
 #if DEBUG
@@ -472,6 +473,8 @@ int COPCARTAB[] = {
     72-1, // VERTS-1
     0, // DYNAFLAG
 };
+/* *----------------------------------------------------------------------------
+ */
 /* asm: HOTRODTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,117,0		;SHADOW */
@@ -554,6 +557,10 @@ int TESTORTAB[] = {
     59, // VERTS-1
     0, // DYNAFLAG
 };
+/* *
+*JEEP DYNAMIC OBJECT SETUP
+*
+ */
 /* asm: JEEPTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,119,0		;SHADOW */
@@ -595,6 +602,10 @@ int JEEPTAB[] = {
     62, // VERTS-1
     0, // DYNAFLAG
 };
+/* *
+*CVETT DYNAMIC OBJECT SETUP
+*
+ */
 /* asm: VETTTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,-164,0	;SHADOW */
@@ -636,6 +647,10 @@ int VETTTAB[] = {
     114, // VERTS-1
     0, // DYNAFLAG
 };
+/* *
+*GTRUCKP DYNAMIC OBJECT SETUP
+*
+ */
 /* asm: GTRUCKTABP */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,-117,0		;SHADOW */
@@ -677,6 +692,10 @@ int GTRUCKTABP[] = {
     131, // VERTS-1
     0, // DYNAFLAG
 };
+/* *
+*MISSILE DYNAMIC OBJECT SETUP
+*
+ */
 /* asm: MISSILE_TAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,-117,0		;SHADOW */
@@ -718,6 +737,10 @@ int MISSILE_TAB[] = {
     131, // VERTS-1
     0, // DYNAFLAG
 };
+/* *
+*PLAYERS SCHOOL BUS
+*
+ */
 /* asm: PSBUSTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
 /* asm: 	.float	0,-127,0	;SHADOW */

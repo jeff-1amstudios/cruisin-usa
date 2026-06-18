@@ -71,7 +71,7 @@ extern int GEESE_DIR[];
 extern int SHIT_ANI[];
 extern int BUG_ANI[];
 
-#define ROADKILL_TYPES 1
+#define ROADKILL_TYPES (2-1)
 #define RKT_DEATH 0 //UH
 #define RKT_SND 1 //UH
 #define RKT_PARTS 2 //UH
@@ -1127,7 +1127,7 @@ void BUG_SPAWNER_PROC(void)
     // asm 00006C08: 	LDI	@_MODE,R0
     // asm 00006C09: 	AND	MGO,R0
     // asm 00006C0A: 	BZ	BUG_SPAWNER_PROC
-    // asm 00006C0B: BSPLP
+BSPLP:
     // asm 00006C0B: 	SLEEP	30*5
     // asm 00006C0D: 	LDI	@CAMVIEW,R0
     // asm 00006C0E: 	BNZ	BSPLP			;NOT in First person
@@ -1141,7 +1141,7 @@ void BUG_SPAWNER_PROC(void)
     // asm 00006C19: 	CREATE	SPLAT_PROC,UTIL_C	;The SPLAT will hit the windshield
     // asm 00006C1C: 	SLEEP	30*20			;20 seconds before another bug can apear
     // asm 00006C1E: 	BR	BSPLP
-    // asm 00006C1F: BSPX
+BSPX:
     // asm 00006C1F: 	DIE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BUG_SPAWNER_PROC", 0, 0);

@@ -4,7 +4,7 @@
 
 - Port the original TMS320C3x codebase to portable C in a way that stays easy to compare against MAME.
 - Preserve a close source-to-source relationship with the original ASM so stepping, tracing, and symbol lookup stay practical.
-- Keep each translated C file as the single working file for that module. No separate generated-vs-handwritten source tree.
+- Keep each translated C file as the single working file for that module. Exception: if an existing generated `.c` or `.h` starts with `// NOEDIT`, regeneration writes the fresh skeleton to `src/generated/` instead of overwriting the hand-edited file.
 - Build a cross-platform host runtime around SDL, including a memory-backed 2D screen model.
 - Automated translation of asm to C
 
@@ -64,6 +64,7 @@ Notes:
 - Move original `.ASM`, `.EQU`, and `.INC` files into `asm/`.
 - Keep generated C output in its final destination under `src/game/`.
 - Keep generated headers in `src/game/`.
+- If a checked-in `.c` or `.h` begins with `// NOEDIT`, emit the regenerated version to `src/generated/` with the same basename.
 - Keep generator metadata out of the source tree so regeneration does not force source layout changes.
 
 ## Translation Format

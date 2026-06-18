@@ -59,8 +59,20 @@ void MOTION_SAFETY_SWITCHES_DIAG(void);
 extern int MOTION_NOT_ON;
 extern int MOTION_STOP_HIT;
 extern int MOTION_RCV_TIKS;
-extern int MOTOFF_PROG[];
-extern int *BABAID;
+extern const char MOTOROFF0[];
+extern const char MOTOROFF1[];
+extern const char MOTOROFF2[];
+extern const char MOTOROFF3[];
+extern const char MOTOROFF4[];
+extern const char MOTOROFF5[];
+extern const char MOTOROFF6[];
+extern const char MOTOROFF7[];
+extern const char MOTOROFF8[];
+extern const char MOTOROFF9[];
+extern const char MOTOROFF10[];
+extern const char MOTOROFF11[];
+extern const char MOTOROFF12[];
+extern uintptr_t MOTOFF_PROG[];
 extern const char *JJG[];
 extern const char MM0[];
 extern const char MM1[];
@@ -71,15 +83,112 @@ extern const char MM5[];
 extern const char MM6[];
 extern const char MM7[];
 extern const char bbd[];
-extern int THEPROGL[];
+extern const char SH[];
+extern uintptr_t THEPROGL[];
 extern int CME_MASK;
 extern int LATCHED_ERROR;
 extern int GALIL_STATUS_X;
 extern int GALIL_STATUS_Y;
 extern int GALIL_STATUS_Z;
+extern const char PPSAF[];
+extern const char PP[];
+extern const char PP1[];
+extern const char PP2[];
+extern const char PP3[];
+extern const char PP4[];
+extern const char EDIT[];
+extern const char T5[];
+extern const char T6[];
+extern const char T7[];
+extern const char T8[];
+extern const char T9[];
+extern const char T10[];
+extern const char T11[];
+extern const char T12[];
+extern const char T13[];
+extern const char T14[];
+extern const char T15[];
+extern const char T16[];
+extern const char T17[];
+extern const char T18[];
+extern const char T19[];
+extern const char T20[];
+extern const char T21[];
+extern const char T22[];
+extern const char T23[];
+extern const char T24[];
+extern const char T25[];
+extern const char T26[];
+extern const char T27[];
+extern const char T28[];
+extern const char T29[];
+extern const char T30[];
+extern const char T31[];
+extern const char T32[];
+extern const char T33[];
+extern const char T34[];
+extern const char T35[];
+extern const char T36[];
+extern const char T37[];
+extern const char T38[];
+extern const char T39[];
+extern const char T40[];
+extern const char T41[];
+extern const char T42[];
+extern const char T43[];
+extern const char T44[];
+extern const char T45[];
+extern const char T46[];
+extern const char T47[];
+extern const char T48[];
+extern const char T49[];
+extern const char T50[];
+extern const char T51[];
+extern const char T52[];
+extern const char T53[];
+extern const char T54[];
+extern const char T55[];
+extern const char T56[];
+extern const char T57[];
+extern const char T58[];
+extern const char T59[];
+extern const char T60[];
+extern const char T1[];
+extern const char T2[];
+extern const char T3[];
+extern const char T66X[];
+extern const char T67X[];
+extern const char T68X[];
+extern const char T66Y[];
+extern const char T67Y[];
+extern const char T68Y[];
+extern const char T66Z[];
+extern const char T67Z[];
+extern const char T68Z[];
+extern const char T69[];
+extern const char T70[];
+extern const char T71[];
+extern const char T72[];
+extern const char T73[];
+extern const char T74[];
+extern const char T75[];
+extern const char T76[];
+extern const char T77[];
+extern const char T78[];
+extern const char T79[];
+extern const char T80[];
+extern const char T81[];
+extern const char T82[];
+extern const char T83[];
+extern const char T84[];
+extern int ENDED;
+extern const char XQ[];
 extern const char PXC1[];
+extern const char PXC2[];
 extern const char PYC1[];
+extern int PYC2;
 extern const char PZC1[];
+extern int PZC2;
 
 #define MIN_MOVE_DIST 200
 /* asm: MOTION_NOT_ON	.bss	MOTION_NOT_ON,1 */
@@ -359,6 +468,30 @@ LLLTA:
     UNIMPL();
 }
 
+/* ;MOTOROFF	.string	"ST;MO",13,0
+;MOTOROFF	.string	"ST",13,0
+;MOTOROFF	.string	"TL 0.6,0.6,1.8;JG 90000,90000,90000;BG;WT 4000;TL 0.5,0.5,1.6;WT 4000;TL 0.3,0.3,1.4;WT 4000;ST XYZ;MO",13,0
+;
+;MOTOROFF1	.string	"TL 0.6,0.6,1.8;JG 90000,90000,90000;BG",13,0
+;MOTOROFF2	.string	"TL 0.5,0.5,1.6;WT 3000;TL 0.4,0.4,1.4;WT 3000;TL 0.3,0.3,1.2",13,0
+;MOTOROFF3	.string	"TL 0.2,0.2,1.0;WT 3000;TL 0.1,0.1,0.8;WT 3000;TL 0.0,0.0,0.6",13,0
+;MOTOROFF4	.string	"ST XYZ;MO",13,0
+;MOTOROFF4	.string	0
+;
+ */
+const char MOTOROFF0[] = "JG 90000,90000,90000;BG;TL 0.6,0.6,1.8\n";
+const char MOTOROFF1[] = "TL 0.55,0.55,1.7;WT 1000\n";
+const char MOTOROFF2[] = "TL 0.50,0.50,1.6;WT 1000\n";
+const char MOTOROFF3[] = "TL 0.45,0.45,1.5;WT 1000\n";
+const char MOTOROFF4[] = "TL 0.40,0.40,1.4;WT 1000\n";
+const char MOTOROFF5[] = "TL 0.35,0.35,1.3;WT 1000\n";
+const char MOTOROFF6[] = "TL 0.30,0.30,1.2;WT 1000\n";
+const char MOTOROFF7[] = "TL 0.25,0.25,1.1;WT 1000\n";
+const char MOTOROFF8[] = "TL 0.20,0.20,1.0;WT 1000\n";
+const char MOTOROFF9[] = "TL 0.15,0.15,0.9;WT 1000\n";
+const char MOTOROFF10[] = "TL 0.10,0.10,0.8;WT 1000\n";
+const char MOTOROFF11[] = "TL 0.05,0.05,0.7;WT 1000\n";
+const char MOTOROFF12[] = "ST XYZ;MO\n";
 /* asm: MOTOFF_PROG */
 /* asm: 	.word	MOTOROFF1 */
 /* asm: 	.word	MOTOROFF2 */
@@ -373,19 +506,19 @@ LLLTA:
 /* asm: 	.word	MOTOROFF11 */
 /* asm: 	.word	MOTOROFF12 */
 /* asm: 	.word	0 */
-int MOTOFF_PROG[] = {
-    MOTOROFF1,
-    MOTOROFF2,
-    MOTOROFF3,
-    MOTOROFF4,
-    MOTOROFF5,
-    MOTOROFF6,
-    MOTOROFF7,
-    MOTOROFF8,
-    MOTOROFF9,
-    MOTOROFF10,
-    MOTOROFF11,
-    MOTOROFF12,
+uintptr_t MOTOFF_PROG[] = {
+    (uintptr_t)&MOTOROFF1,
+    (uintptr_t)&MOTOROFF2,
+    (uintptr_t)&MOTOROFF3,
+    (uintptr_t)&MOTOROFF4,
+    (uintptr_t)&MOTOROFF5,
+    (uintptr_t)&MOTOROFF6,
+    (uintptr_t)&MOTOROFF7,
+    (uintptr_t)&MOTOROFF8,
+    (uintptr_t)&MOTOROFF9,
+    (uintptr_t)&MOTOROFF10,
+    (uintptr_t)&MOTOROFF11,
+    (uintptr_t)&MOTOROFF12,
     0,
 };
 
@@ -494,8 +627,6 @@ FFFD:
     UNIMPL();
 }
 
-/* asm: BABAID	.word	JJG */
-int *BABAID = JJG;
 /* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
 const char *JJG[] = {
     MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7,
@@ -1134,6 +1265,7 @@ void LEVEL_THE_MOTION(void)
     UNIMPL();
 }
 
+const char SH[] = "SH;JG 10000,10000,10000;BG\n";
 /* asm: THEPROGL */
 /* asm: 	.word	EDIT,T5,T6,T7,T8,T9 */
 /* asm: 	.word	T10,T11,T12,T13,T14,T15,T16,T17,T18,T19 */
@@ -1150,21 +1282,21 @@ void LEVEL_THE_MOTION(void)
 /* asm: 	.word	T70,T71,T72,T73,T74,T75,T76,T77,T78,T79 */
 /* asm: 	.word	T80,T81,T82,T83,T84 */
 /* asm: 	.word	0 */
-int THEPROGL[] = {
-    EDIT, T5, T6, T7, T8, T9,
-    T10, T11, T12, T13, T14, T15, T16, T17, T18, T19,
-    T20, T21, T22, T23, T24, T25, T26, T27, T28, T29,
-    T30, T31, T32, T33, T34, T35, T36, T37, T38, T39,
-    T40, T41, T42, T43, T44, T45, T46, T47, T48, T49,
-    T50, T51, T52, T53, T54, T55, T56, T57, T58, T59,
-    T60,
-    T1, T2, T3,
-    T66X, T67X, T68X,
-    T66Y, T67Y, T68Y,
-    T66Z, T67Z, T68Z,
-    T69,
-    T70, T71, T72, T73, T74, T75, T76, T77, T78, T79,
-    T80, T81, T82, T83, T84,
+uintptr_t THEPROGL[] = {
+    (uintptr_t)&EDIT, (uintptr_t)&T5, (uintptr_t)&T6, (uintptr_t)&T7, (uintptr_t)&T8, (uintptr_t)&T9,
+    (uintptr_t)&T10, (uintptr_t)&T11, (uintptr_t)&T12, (uintptr_t)&T13, (uintptr_t)&T14, (uintptr_t)&T15, (uintptr_t)&T16, (uintptr_t)&T17, (uintptr_t)&T18, (uintptr_t)&T19,
+    (uintptr_t)&T20, (uintptr_t)&T21, (uintptr_t)&T22, (uintptr_t)&T23, (uintptr_t)&T24, (uintptr_t)&T25, (uintptr_t)&T26, (uintptr_t)&T27, (uintptr_t)&T28, (uintptr_t)&T29,
+    (uintptr_t)&T30, (uintptr_t)&T31, (uintptr_t)&T32, (uintptr_t)&T33, (uintptr_t)&T34, (uintptr_t)&T35, (uintptr_t)&T36, (uintptr_t)&T37, (uintptr_t)&T38, (uintptr_t)&T39,
+    (uintptr_t)&T40, (uintptr_t)&T41, (uintptr_t)&T42, (uintptr_t)&T43, (uintptr_t)&T44, (uintptr_t)&T45, (uintptr_t)&T46, (uintptr_t)&T47, (uintptr_t)&T48, (uintptr_t)&T49,
+    (uintptr_t)&T50, (uintptr_t)&T51, (uintptr_t)&T52, (uintptr_t)&T53, (uintptr_t)&T54, (uintptr_t)&T55, (uintptr_t)&T56, (uintptr_t)&T57, (uintptr_t)&T58, (uintptr_t)&T59,
+    (uintptr_t)&T60,
+    (uintptr_t)&T1, (uintptr_t)&T2, (uintptr_t)&T3,
+    (uintptr_t)&T66X, (uintptr_t)&T67X, (uintptr_t)&T68X,
+    (uintptr_t)&T66Y, (uintptr_t)&T67Y, (uintptr_t)&T68Y,
+    (uintptr_t)&T66Z, (uintptr_t)&T67Z, (uintptr_t)&T68Z,
+    (uintptr_t)&T69,
+    (uintptr_t)&T70, (uintptr_t)&T71, (uintptr_t)&T72, (uintptr_t)&T73, (uintptr_t)&T74, (uintptr_t)&T75, (uintptr_t)&T76, (uintptr_t)&T77, (uintptr_t)&T78, (uintptr_t)&T79,
+    (uintptr_t)&T80, (uintptr_t)&T81, (uintptr_t)&T82, (uintptr_t)&T83, (uintptr_t)&T84,
     0,
 };
 
@@ -1597,6 +1729,12 @@ NOTQQERRORY:
     // asm 00004A1A: 	BNE	NOTQQERRORZ		;
     // asm 00004A1B: 	LDI	@LLG6Z,AR2
     // asm 00004A1C: 	BU	SHOWENCODER
+LLG6X:
+    // asm 00004A1D: .word	L4ABX
+LLG6Y:
+    // asm 00004A1D: .word	L4ABY
+LLG6Z:
+    // asm 00004A1D: .word	L4ABZ
 SHOWENCODER:
     // asm 00004A1D: 	FLOAT	256,R2
     // asm 00004A1E: 	FLOAT	110,R3
@@ -1863,6 +2001,117 @@ LLL3:
     UNIMPL();
 }
 
+const char PPSAF[] = "PR 4000,4000,4000;BG\nWT 500\nPR -12000,-12000,-12000\n";
+const char PP[] = "JG -26000,-26000,-26000;BG\nWT 3100\nDP 0,0,0\nSP 15000,15000,15000\n";
+const char PP1[] = "AC 105000,105000,105000\nER 8000,8000,8000\n";
+const char PP2[] = "DC 435000,435000,435000\nTL 7,7,7\n";
+const char PP3[] = "IT 0.1,0.1,0.1\nPA 0,0,0;BG\n";
+const char PP4[] = "JG 0,0,0;BG\n";
+const char EDIT[] = "ED\n";
+const char T5[] = "#PROG\n";
+const char T6[] = "#XE\n";
+const char T7[] = "#XA\n";
+const char T8[] = "#YE\n";
+const char T9[] = "#YA\n";
+const char T10[] = "#ZE\n";
+const char T11[] = "#ZA\n";
+const char T12[] = "JG 0,0,0\n";
+const char T13[] = "BG XYZ\n";
+const char T14[] = "XA=0\n";
+const char T15[] = "YA=0\n";
+const char T16[] = "ZA=0\n";
+const char T17[] = "#LOOP\n";
+const char T18[] = "XE=XA-_RPX\n";
+const char T19[] = "XE=XE*5\n";
+const char T20[] = "YE=YA-_RPY\n";
+const char T21[] = "YE=YE*5\n";
+const char T22[] = "ZE=ZA-_RPZ\n";
+const char T23[] = "ZE=ZE*5\n";
+const char T24[] = "JG XE,YE,ZE\n";
+/* ;T25	.string	"JP #CHKX,(_TTX*_TTX)>21",13,0
+ */
+const char T25[] = "JP #CHKX,(_TTX*_TTX)>23\n";
+/* ;T26	.string	"JP #CHKY,(_TTY*_TTY)>21",13,0
+ */
+const char T26[] = "JP #CHKY,(_TTY*_TTY)>23\n";
+/* ;T27	.string	"JP #CHKZ,(_TTZ*_TTZ)>21",13,0
+ */
+const char T27[] = "JP #CHKZ,(_TTZ*_TTZ)>26\n";
+const char T28[] = "JP #LOOP\n";
+const char T29[] = "#INITP\n";
+const char T30[] = "#COUNT\n";
+const char T31[] = "#CHKX\n";
+const char T32[] = "ACC=0\n";
+const char T33[] = "INITP=_TPX\n";
+const char T34[] = "#MLPX\n";
+/* ;T35	.string	"JP #LOOP,(_TTX*_TTX)<7",13,0
+ */
+const char T35[] = "JP #LOOP,(_TTX*_TTX)<10\n";
+const char T36[] = "JP #LOOP,(_TPX-INITP)>5\n";
+const char T37[] = "JP #LOOP,(_TPX-INITP)<-8\n";
+const char T38[] = "COUNT=COUNT+1\n";
+const char T39[] = "JP #ERROUTX,COUNT>5\n";
+const char T40[] = "JP #MLPX\n";
+const char T41[] = "#CHKY\n";
+const char T42[] = "COUNT=0\n";
+const char T43[] = "INITP=_TPY\n";
+const char T44[] = "#MLPY\n";
+/* ;T45	.string	"JP #LOOP,(_TTY*_TTY)<7",13,0
+ */
+const char T45[] = "JP #LOOP,(_TTY*_TTY)<10\n";
+const char T46[] = "JP #LOOP,(_TPY-INITP)>5\n";
+const char T47[] = "JP #LOOP,(_TPY-INITP)<-8\n";
+const char T48[] = "COUNT=COUNT+1\n";
+const char T49[] = "JP #ERROUTY,COUNT>5\n";
+const char T50[] = "JP #MLPY\n";
+const char T51[] = "#CHKZ\n";
+const char T52[] = "COUNT=0\n";
+const char T53[] = "INITP=_TPZ\n";
+const char T54[] = "#MLPZ\n";
+/* ;T55	.string	"JP #LOOP,(_TTZ*_TTZ)<7",13,0		;LOFF DLTA November 9,1994
+ */
+const char T55[] = "JP #LOOP,(_TTZ*_TTZ)<17\n";
+const char T56[] = "JP #LOOP,(_TPZ-INITP)>5\n";
+const char T57[] = "JP #LOOP,(_TPZ-INITP)<-8\n";
+const char T58[] = "COUNT=COUNT+1\n";
+const char T59[] = "JP #ERROUTZ,COUNT>5\n";
+const char T60[] = "JP #MLPZ\n";
+const char T1[] = "#POSERR\n";
+const char T2[] = "MG \"G\"\n";
+const char T3[] = "JP #MOTOFF\n";
+const char T66X[] = "#ERROUTX\n";
+const char T67X[] = "MG \n";
+const char T68X[] = "MG \"W\"\n";
+const char T66Y[] = "#ERROUTY\n";
+const char T67Y[] = "MG \n";
+const char T68Y[] = "MG \"S\"\n";
+const char T66Z[] = "#ERROUTZ\n";
+const char T67Z[] = "MG \n";
+const char T68Z[] = "MG \"Q\"\n";
+const char T69[] = "#MOTOFF\n";
+const char T70[] = "JG 90000,90000,90000;BG;TL 0.6,0.6,1.8\n";
+const char T71[] = "WT 2000;TL 0.55,0.55,1.6\n";
+const char T72[] = "WT 2000;TL 0.50,0.50,1.5\n";
+const char T73[] = "WT 2000;TL 0.45,0.45,1.4\n";
+const char T74[] = "WT 2000;TL 0.40,0.40,1.3\n";
+const char T75[] = "WT 2000;TL 0.35,0.35,1.2\n";
+const char T76[] = "WT 2000;TL 0.30,0.30,1.1\n";
+const char T77[] = "WT 2000;TL 0.25,0.25,1.0\n";
+const char T78[] = "WT 2000;TL 0.20,0.20,0.9\n";
+const char T79[] = "WT 2000;TL 0.15,0.15,0.8\n";
+const char T80[] = "WT 2000;TL 0.10,0.10,0.7\n";
+const char T81[] = "WT 2000;TL 0.05,0.05,0.6\n";
+const char T82[] = "WT 2000\n";
+const char T83[] = "OE 1,1,1;AB\n";
+const char T84[] = "TL 7,7,7;EN\n";
+/* asm: ENDED	.string	17,0 */
+int ENDED = 0x00000011;
+const char XQ[] = "XQ\n";
 const char PXC1[] = "XA=";
+const char PXC2[] = "\nBG XYZ\n";
 const char PYC1[] = "YA=";
+/* asm: PYC2	.string	13,0 */
+int PYC2 = 0x0000000D;
 const char PZC1[] = "ZA=";
+/* asm: PZC2	.string	13,0 */
+int PZC2 = 0x0000000D;

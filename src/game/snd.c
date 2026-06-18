@@ -53,7 +53,8 @@ extern int IN_RESET_MODE;
 extern int RESET_TIMER[];
 extern int SNDSTR[];
 extern int SNDEND;
-extern uintptr_t STATION_LIST[];
+extern int STATION_LIST[];
+extern const char *STATION_TEXT[];
 extern int STATION_TIMEOUT;
 extern int RS_X;
 extern int TUNE_IDX;
@@ -79,20 +80,42 @@ int SNDEND;
 /* asm: 	.word	STRAIGHT_2_4	;5 */
 /* asm: 	.word	DISCODUCK	;6 */
 /* asm: 	.word	BOOGIE		;7 */
-uintptr_t STATION_LIST[] = {
-    (uintptr_t)(MUNSTER_SURF), // 0
-    (uintptr_t)(SHUFFLE_DRIV), // 1
-    (uintptr_t)(DISCODUCK), // 2
-    (uintptr_t)(SPAGETTI), // 3
-    (uintptr_t)(VENTURE), // 4
-    (uintptr_t)(STRAIGHT_2_4), // 5
-    (uintptr_t)(DISCODUCK), // 6
-    (uintptr_t)(BOOGIE), // 7
+int STATION_LIST[] = {
+    MUNSTER_SURF, // 0
+    SHUFFLE_DRIV, // 1
+    DISCODUCK, // 2
+    SPAGETTI, // 3
+    VENTURE, // 4
+    STRAIGHT_2_4, // 5
+    DISCODUCK, // 6
+    BOOGIE, // 7
 };
 /* asm: STATION_TEXTI	.word	STATION_TEXT */
 #define STATION_TEXTI STATION_TEXT
-/* *----------------------------------------------------------------------------
- */
+/* asm: STATION_TEXT */
+/* asm: SPTR	"SURFARI MONSTER"	;MONSTER_SURF	;0	[2 */
+/* asm: SPTR	"REDLINE SHUFFLE"	;SHUFFLE_DRIV	;1	[4 */
+/* asm: SPTR	"HOUSE SPECIAL"		;DISCODUCK	;2	[24 */
+/* asm: SPTR	"DEADWOOD RIDE"		;SPAGETTI	;3	[16 */
+/* asm: SPTR	"TUBULAR SURF"		;VENTURE	;4	[10 */
+/* asm: SPTR	"ROADKILL JAM"		;STRAIGHT_2_4	;5	[6 */
+/* asm: SPTR	"HOUSE SPECIAL"		;DISCODUCK	;6	[24 */
+/* asm: SPTR	"BLUEGRASS BOOGIE"	;BOOGIE		;7	[13 */
+/* asm: *---------------------------------------------------------------------------- */
+/* asm:  */
+/* asm:  */
+/* asm:  */
+/* asm: *---------------------------------------------------------------------------- */
+const char *STATION_TEXT[] = {
+    "SURFARI MONSTER", // MONSTER_SURF	;0	[2
+    "REDLINE SHUFFLE", // SHUFFLE_DRIV	;1	[4
+    "HOUSE SPECIAL", // DISCODUCK	;2	[24
+    "DEADWOOD RIDE", // SPAGETTI	;3	[16
+    "TUBULAR SURF", // VENTURE	;4	[10
+    "ROADKILL JAM", // STRAIGHT_2_4	;5	[6
+    "HOUSE SPECIAL", // DISCODUCK	;6	[24
+    "BLUEGRASS BOOGIE", // BOOGIE		;7	[13
+};
 /* asm: STATION_TIMEOUT	.bss	STATION_TIMEOUT,1 */
 int STATION_TIMEOUT;
 /* asm: RS_X	.bss	RS_X,1 */

@@ -279,7 +279,8 @@ NDOO:
     // asm 00008A67: 	FIX	R0,R2
     // asm 00008A68: 	CMPI	180,R2
     // asm 00008A69: 	LDIGT	180,R2
-    // asm 00008A6A: BIBO	LDI	FIREHYDRSND,AR2
+BIBO:
+    // asm 00008A6A: LDI	FIREHYDRSND,AR2
     // asm 00008A6B: 	CALL	AMBIENCE_SOUND
     // asm 00008A6C: 	SLEEP	1
     // asm 00008A6E: 	BU	HOTTUB_WATERVOL
@@ -370,14 +371,16 @@ ODCX:
 int ANI_HOTTUB[] = {
     htub, htub1, htub2, htub3, htub4, htub5, -1,
 };
-/* asm: HILLANI	.word	hilly1,hilly2,hilly3,hilly4,hilly5,hilly6,-1 */
+/* asm: HILLANI		.word	hilly1,hilly2,hilly3,hilly4,hilly5,hilly6,-1 */
 int HILLANI[] = {
     hilly1, hilly2, hilly3, hilly4, hilly5, hilly6, -1,
 };
-/* asm: GIRLANI	.word	girl1,girl2,girl3,girl4,girl5,girl6,-1 */
+/* asm: GIRLANI		.word	girl1,girl2,girl3,girl4,girl5,girl6,-1 */
 int GIRLANI[] = {
     girl1, girl2, girl3, girl4, girl5, girl6, -1,
 };
+/* ;hott1,hott2,hott3,hott4,hott5,hott6,-1
+ */
 /* asm: ANI_RADAR	.word	rad1,rad2,rad3,rad4,rad5,rad6,rad7,rad8,rad9,-1 */
 int ANI_RADAR[] = {
     rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9, -1,
@@ -637,7 +640,8 @@ NODA:
     // asm 00008B8D: 	SLEEP	1
     // asm 00008B8F: 	DBU	AR5,BABE_LP
     // asm 00008B90: 	LDI	13,AR5
-    // asm 00008B91: BBD	CALL	BABE_ANI
+BBD:
+    // asm 00008B91: CALL	BABE_ANI
     // asm 00008B92: 	CALL	CROWD_IT
     // asm 00008B93: 	SLEEP	3
     // asm 00008B95: 	DBU	AR5,BBD
@@ -650,7 +654,8 @@ NODA:
     // asm 00008B9D: 	DBU	AR5,BABE_LP2
     // ;	LDI	25-1,AR5
     // asm 00008B9E: 	LDI	50-1,AR5
-    // asm 00008B9F: BABLP3	SLEEP	1
+BABLP3:
+    // asm 00008B9F: SLEEP	1
     // asm 00008BA1: 	SUBI	@NFRAMES,AR5
     // asm 00008BA2: 	CMPI	0,AR5
     // asm 00008BA3: 	LDILT	0,AR5
@@ -699,14 +704,14 @@ void BABE_IBO(void)
 void BABE_ANI(void)
 {
     // asm 00008BC5: 	LONGROUT
-    // asm: BABE_ANIKK
+BABE_ANIKK:
     // asm: 	LDI	*AR6++,R0
     // asm: 	BN	BX
     // asm: 	STI	R0,*+AR4(OROMDATA)
     // asm: 	RETS
-    // asm: BX	LDI	*+AR7(BABE_ASTRT),AR6
+BX:
+    // asm: LDI	*+AR7(BABE_ASTRT),AR6
     // asm: 	BU	BABE_ANIKK
-    // asm: 	END_LONGROUT
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_ANI", 0, 0);
     UNIMPL();
@@ -776,7 +781,7 @@ void BABE_WAVEFLAG(void)
     // asm 00008BE5: 	STI	R0,*+AR4(OROMDATA)
     // asm 00008BE6: 	LDI	AR4,AR2
     // asm 00008BE7: 	CALL	OBJ_INSERTP
-    // asm 00008BE8: BABEWTLP
+BABEWTLP:
     // asm 00008BE8: 	LDI	@BABE_CONTROL,R0
     // asm 00008BE9: 	BNZ	BABEGO
     // asm 00008BEA: 	LDF	*+AR4(OPOSX),R0
@@ -788,9 +793,9 @@ void BABE_WAVEFLAG(void)
 IBO2:
     // asm 00008BF0: 	SLEEP	1
     // asm 00008BF2: 	BU	BABEWTLP
-    // asm 00008BF3: BABEGO
+BABEGO:
     // asm 00008BF3: 	LDI	17,AR5
-    // asm 00008BF4: BABERST
+BABERST:
     // asm 00008BF4: 	LDL	BABE_FLAG_SCRIPT,AR6
     // asm 00008BF5: BABE_LPWF
     // asm 00008BF5: 	LDI	*AR6++,R0

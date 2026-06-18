@@ -240,6 +240,7 @@ CDTOP:
     // asm 0000AEF1: 	LDF	*AR3++,R0
     // asm 0000AEF2: 	RPTS	7
     // asm 0000AEF3: 	LDF	*AR3++,R0
+    // asm 0000AEF3:  ||	STF	R0,*AR2++
     // asm 0000AEF4:  	STF	R0,*AR2++
     // asm 0000AEF5: 	NOP	*AR3--(9)
     // asm 0000AEF6: 	LDI	*AR0,R0

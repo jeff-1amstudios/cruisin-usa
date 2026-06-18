@@ -53,7 +53,7 @@ int CAMRADY;
 *
 *
  */
-#define HIGH_CLIP_LEVEL 4999 //ACTUAL # OF ENTRIES
+#define HIGH_CLIP_LEVEL ((5000-1)) //ACTUAL # OF ENTRIES
 /* asm: HIGHEST_ROADY	.bss	HIGHEST_ROADY,1 */
 int HIGHEST_ROADY;
 /* asm: HIGHEST_ROADY_X	.bss	HIGHEST_ROADY_X,1 */
@@ -102,10 +102,13 @@ FHRYLP:
     // asm 00008231:  	MPYF	*AR0++,*AR1++,R0
     // asm 00008232: 	MPYF	*AR0,*AR1++,R2
     // asm 00008233: 	MPYF	*+AR0(1),*AR1++,R0
+    // asm 00008233:  || 	ADDF	R0,R2
     // asm 00008234: 	MPYF	*-AR0(1),*AR1++,R0
+    // asm 00008234:  ||	ADDF	R0,R2
     // asm 00008235: 	PUSHF	R2
     // asm 00008236: 	MPYF	*AR0,*AR1++,R2
     // asm 00008237: 	MPYF	*+AR0(1),*AR1++,R0
+    // asm 00008237:  || 	ADDF	R0,R2
     // asm 00008238: 	ADDF	R0,R2
     // 	;
     // asm 00008239: 	POPF	R3
@@ -163,19 +166,19 @@ FHRY_X:
  */
 /* asm: AMOUNT_CLIPPED	.bss	AMOUNT_CLIPPED,1 */
 int AMOUNT_CLIPPED;
-/* asm: FORMULA	.float	-244.4619926	;(6*256)/2PI  (convert radians to length of infinity plane) */
+/* asm: FORMULA		.float	-244.4619926	;(6*256)/2PI  (convert radians to length of infinity plane) */
 float FORMULA = -244.4619926f;
-/* asm: LOWVAL	.float	-1536 */
+/* asm: LOWVAL		.float	-1536 */
 float LOWVAL = -1536.0f;
-/* asm: HIGHVAL	.float	1536 */
+/* asm: HIGHVAL		.float	1536 */
 float HIGHVAL = 1536.0f;
-/* asm: LOIVAL	.word	-768 */
+/* asm: LOIVAL		.word	-768 */
 int LOIVAL = -768;
 /* asm: HIGHIVAL	.word	1536 */
 int HIGHIVAL = 1536;
-/* asm: INFPROJ	.float	0.0064 */
+/* asm: INFPROJ		.float	0.0064 */
 float INFPROJ = 0.0064f;
-/* asm: INFVAL	.float  80000 */
+/* asm: INFVAL		.float  80000 */
 float INFVAL = 80000.0f;
 
 /* *
@@ -566,17 +569,6 @@ int BLUESKY[] = {
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
 };
-/* *----------------------------------------------------------------------------
-*
-*
-*PARAMETERS
-*	AR4	NUMBER OF VERTICES
-*	AR5	POINTERS [X Y Z]
-*	AR6	RAM BUFFER
-*
-*
-*
- */
 /* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
 int INFIN_CORRECT;
 

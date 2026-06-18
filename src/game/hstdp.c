@@ -95,6 +95,8 @@ extern int RADIO_HS_SHADOW;
 extern int RADIO_HS_SWITCH;
 
 #define FLASH_ON 1 //TURN THIS OFF TO LOOSE FLASHING
+/* ;These are for the license plate and pressing of the plate
+ */
 #define PRESS_DIAM 271 //NOTE: The plate is on the bottom surface
 #define PRESS_RADX 1.5708
 #define ROLLER_ZOFF 620
@@ -107,7 +109,7 @@ extern int RADIO_HS_SWITCH;
 #define PRESS_LASTY (-100)
 #define PRESS_TRAVELY (PRESS_LASTY-PRESS_STARTY)
 #define HIGH_SCORE_GROUP 0x200
-/* asm: NUMTAB	.word	dzero,done,dtwo,dthree,dfour,dfive,dsix,dseven,deight,dnine */
+/* asm: NUMTAB		.word	dzero,done,dtwo,dthree,dfour,dfive,dsix,dseven,deight,dnine */
 int NUMTAB[] = {
     dzero, done, dtwo, dthree, dfour, dfive, dsix, dseven, deight, dnine,
 };
@@ -2535,7 +2537,7 @@ FLASHX:
     UNIMPL();
 }
 
-/* asm: DELIST	.word	808Bh,0104h,3057h,0 */
+/* asm: DELIST		.word	808Bh,0104h,3057h,0 */
 int DELIST[] = {
     0x808B, 0x0104, 0x3057, 0,
 };
@@ -2563,7 +2565,7 @@ void FIX_PLATES(void)
     // asm 000038FB: 	LDI	0,AR5
     // asm 000038FC: 	LDI	1h,R2
     // asm 000038FD: 	LSH	16,R2
-    // asm 000038FE: FIXPL
+FIXPL:
     // asm 000038FE: 	LDI	AR5,R1
     // asm 000038FF: 	ADDI	FIRST_PLATE,R1
     // asm 00003900: 	CALL	OBJ_FIND
@@ -2576,11 +2578,11 @@ void FIX_PLATES(void)
     // asm 00003906: 	LSH	1,R2
     // asm 00003907: 	CALL	OBJ_GFIND
     // asm 00003908: 	BC	FIXPL3			;No letters on this plate, move on. (useually hosed CMOS)
-    // asm 00003909: FIXPL2
+FIXPL2:
     // asm 00003909: 	STF	R3,*+AR0(OPOSZ)		;Now do the letters on it
     // asm 0000390A: 	CALL	OBJ_GFIND_NEXT
     // asm 0000390B: 	BNC	FIXPL2			;do as many as there are
-    // asm 0000390C: FIXPL3
+FIXPL3:
     // asm 0000390C: 	FLOAT	-500,R1			;PLate to plate offset
     // asm 0000390D: 	ADDF	R1,R0
     // asm 0000390E: 	ADDI	1,AR5
@@ -2661,7 +2663,7 @@ RACE_TEXT:
 
 #define LOGO_X (-250)
 #define LOGO_Y (-170)
-#define LOGO_Z 736
+#define LOGO_Z (368*2)
 
 void INIT_LOGO(void)
 {

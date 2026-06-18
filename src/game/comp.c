@@ -185,7 +185,7 @@ void PUTC(void)
     // asm 0000A314:     	STI	R2,*AR1++		;write to wave ram
     // asm 0000A315:  	LSH	R7,*AR4++,R2		;read/shift right
 WVWRLP2:
-    // asm 0000A316: STI	R2,*AR1++
+    // asm 0000A316: STI	R2,*AR1++		;write to wave ram
     // asm 0000A317: 	LDI	*AR4,R2			;DUMMY READ TO CLEAR THE LINE
     // asm 0000A318: 	STI	R1,@CPU_WS		;set soft wait states
     // asm 0000A319: 	SETDP
@@ -359,7 +359,8 @@ DECODEL3i:
     // asm 0000A390: 	CMPI	32,PUTC_SH		;
     // asm 0000A391: 	CALLGE	PUTC
     // 	;CALL	PUTC
-    // asm 0000A392: BLOOPER	LDI	*--AR4,R0			;and this becomes a pre-decrement
+BLOOPER:
+    // asm 0000A392: LDI	*--AR4,R0			;and this becomes a pre-decrement
     // asm 0000A393: 	ADDI	NEXT_CODE,AR3,AR2
     // asm 0000A394: 	STI	old_code,*+AR2(PARENT_CODE)	;DICT[next_code].parent = old_code
     // asm 0000A395: 	BUD	DECOMPRESSLP
