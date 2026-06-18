@@ -37,7 +37,7 @@
 *PARAMETERS	u in R0, v in R1
 *	R0	FL u
 *	R1	FL v
-*RETURNS	
+*RETURNS
 *	R0	FL R0/R1
 *STATUS		Set from result in R0
 *OPERATION	Result = (1/v) * u.
@@ -53,9 +53,9 @@
 *	for (i = 1; i <= 5; i++)
 *	 x[i] = x[i-1] * (2.0 - v * x[i-1])
 *
-*	The single-precision floating-point format is accurate to 6.9 
-*	decimal places.	The single-precision format is accurate to 
-*	2**-23 = 1.192E-7, so we would like to have that much accuracy 
+*	The single-precision floating-point format is accurate to 6.9
+*	decimal places.	The single-precision format is accurate to
+*	2**-23 = 1.192E-7, so we would like to have that much accuracy
 *	in the final result.
 *
 *	The algorithm's error at an iteration i (e[i]) is defined as
@@ -71,7 +71,7 @@ DIV_F30:
 	PUSHF	R2	;Save R2: floating point part
 
 	PUSHF	R1	;SAVE THE SIGN
-	PUSHF	R0	;Save u (dividend) 
+	PUSHF	R0	;Save u (dividend)
 ;	LDI	R1,AR0	;Save mantissa of v to remember sign
 	ABSF	R1	;The algorithm uses v = |v|.
 
@@ -105,19 +105,19 @@ DIV_F30:
 	MPYF	R2,R1,R0	;R0 = v * x[0]
 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[0]
 	MPYF	R0,R2		;R2 = x[1] = x[0] * (2.0 - v * x[0])
- 
+
 	MPYF	R2,R1,R0	;R0 = v * x[1]
 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[1]
 	MPYF	R0,R2		;R2 = x[2] = x[1] * (2.0 - v * x[1])
- 
+
 	MPYF	R2,R1,R0	;R0 = v * x[2]
 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[2]
 	MPYF	R0,R2		;R2 = x[3] = x[2] * (2.0 - v * x[2])
- 
+
 	MPYF	R2,R1,R0	;R0 = v * x[3]
 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[3]
 	MPYF	R0,R2		;R2 = x[4] = x[3] * (2.0 - v * x[3])
- 
+
 	RND	R2		;This minimizes error in the LSBs.
 
 
@@ -177,9 +177,9 @@ DIV_F30:
 *
 	.asg	AR1,V		;divisor
 	.asg	R1,TEMP		;float value of operands
-	.asg	R1,COUNT	;repeat/shift count 
+	.asg	R1,COUNT	;repeat/shift count
 	.asg	AR0,SIGN	;sign of quotient
-	.asg	RC,EXP		;divisor exponent 
+	.asg	RC,EXP		;divisor exponent
 
 DIV_I:
 DIV_I30:
@@ -192,7 +192,7 @@ DIV_I30:
 	BVD	div_32	 	;if still negative, escape
 	ABSI	R1		;make divisor positive
 	LDI	R1,V		;save in V
-	CMPI	R0,V		;divisor > dividend ? 
+	CMPI	R0,V		;divisor > dividend ?
 	BHID	zero		; if so, return 0
 
 	;
@@ -200,12 +200,12 @@ DIV_I30:
 	;for divisor, and as repeat count for SUBC.
 	;
 	FLOAT	R1,TEMP		;normalize divisor
-	PUSHF	TEMP		;push as float 
+	PUSHF	TEMP		;push as float
 	POP	EXP		;pop as int
 
 	FLOAT	R0,TEMP		;normalize dividend
 	PUSHF	TEMP		;push as float
-	POP	COUNT		;pop as int 
+	POP	COUNT		;pop as int
 
 	LSH	-24,EXP		;divisor exponent
 	LSH	-24,COUNT	;dividend exponent
@@ -214,7 +214,7 @@ DIV_I30:
 	;
 	;Do COUNT+1 subtract & shifts.
 	;
-	RPTS	COUNT 
+	RPTS	COUNT
 	SUBC	V,R0
 	;
 	; Mask off the lower COUNT+1 bits of R0
@@ -227,11 +227,11 @@ DIV_I30:
 
 
 	;Check sign and negate result if necessary.
-return
+return_
 	POP	RC		;return address
 	NEGI	R0,TEMP		;negate result
 	BD	RC		;delayed branch to return
-	CMPI	0,SIGN		;check sign 
+	CMPI	0,SIGN		;check sign
 	LDIN	TEMP,R0		;if set, use negative result
 	CMPI	0,R0		;set status from result
 	;---->	B	RC		;BRANCH OCCURS (RETURN)
@@ -244,7 +244,7 @@ div_32
 	PUSH	SIGN		;remember sign
 	CALL	DIV_U30		;do divide
 	POP	SIGN		;restore sign
-	B	return		;return
+	B	return_		;return
 
 	;***Return zero.
 zero
@@ -259,7 +259,7 @@ zero
 *DIVU	Integer divide routine (unsigned)
 *
 *
-*PARAMETERS		Unsigned dividend in R0, 
+*PARAMETERS		Unsigned dividend in R0,
 *			unsigned divisor in R1.
 *
 *	Output:		R0 / R1 into R0.
@@ -267,7 +267,7 @@ zero
 *	Registers used:	R0, R1, AR0, AR1, RC, RS, RE
 *	Operation:	1. Normalize divisor with dividend
 *			2. Repeat SUBC
-*			3. Quotient is in LSBs of result 
+*			3. Quotient is in LSBs of result
 *
 *	Cycles:		31-65
 *
@@ -280,7 +280,7 @@ zero
 
 DIV_U30:
 
-	CMPI	R0,R1		;divisor > dividend ? 
+	CMPI	R0,R1		;divisor > dividend ?
 	BHI	zerob		;	if so, return 0
 	LDI	R1,V		;move divisor to AR1
 
@@ -312,7 +312,7 @@ DIV_U30:
 	;Do COUNT+1 subtract & shifts.
 	;
 	RPTS	COUNT
-	SUBC	V,R0	
+	SUBC	V,R0
 	;
 	; Mask off the lower COUNT+1 bits of U and return.
 	;
@@ -329,17 +329,17 @@ DIV_U30:
 ;SUBC can be used, the top bit must be cleared (otherwise SUBC can
 ;possibly shift a significant 1 out the top of the dividend).	This
 ;is accomplished by first doing a normal subtraction, then proceeding
-;with SUBCs. 
+;with SUBCs.
 ;
 div_32b
 ;
-;If the top bit of the divisor is set too, the quotient is 1.	
-;Otherwise, shift the divisor up to line up the MSBs. 
+;If the top bit of the divisor is set too, the quotient is 1.
+;Otherwise, shift the divisor up to line up the MSBs.
 ;
 	CMPI	0,V		;check divisor
 	BLTD	one		;if top bit set, quotient is 1
 	LSH	-24,EXP		;divisor exponent
-	SUBRI	31,EXP		;shift count 
+	SUBRI	31,EXP		;shift count
 	LSH	EXP,V		;shift up to line up MSBs
 
 	;
@@ -351,7 +351,7 @@ div_32b
 	LSH	EXP,QMASK	;create a mask for the MSBs
 	SUBI	1,QMASK		;mask is (2 << COUNT) - 1
 
-	SUBI	V,R0,TEMP	;subtract 
+	SUBI	V,R0,TEMP	;subtract
 	LDIHS	TEMP,R0		;if positive, replace dividend
 	LDIHS	1,MSBQ		;	and set quotient to 1
 	LDILO	0,MSBQ		;if negative, set quotient to 0
@@ -363,7 +363,7 @@ div_32b
 	;
 	;Do EXP subtract & shifts.
 	;
-	RPTS	EXP	
+	RPTS	EXP
 	SUBC	V,R0
 
 	;
@@ -410,15 +410,15 @@ zerob	LDI	0,R0
 *	for (i = 1;i <= 5;i++)
 *	 x[i] = x[i-1] * (2.0 - v * x[i-1])
 *
-*	The single-precision floating-point format is accurate to 6.9 
+*	The single-precision floating-point format is accurate to 6.9
 *	Given v = a * 2**e
 *	x[0] = 1.0 * 2**(-e-1)
 *	for (i = 1;i <= 5;i++)
 *	 x[i] = x[i-1] * (2.0 - v * x[i-1])
 *
-*	The single-precision floating-point format is accurate to 6.9 
-*	decimal places.	The single-precision format is accurate to 
-*	2**-23 = 1.192E-7, so we would like to have that much accuracy 
+*	The single-precision floating-point format is accurate to 6.9
+*	decimal places.	The single-precision format is accurate to
+*	2**-23 = 1.192E-7, so we would like to have that much accuracy
 *	in the final result.
 *
 *	The algorithm's error at an iteration i (e[i]) is defined as
@@ -463,19 +463,19 @@ INV_F30:
 	MPYF	R1,R0,R2	;R2 = v * x[0]
 	SUBRF	2.0,R2		;R2 = 2.0 - v * x[0]
 	MPYF	R2,R1		;R1 = x[1] = x[0] * (2.0 - v * x[0])
- 
+
 	MPYF	R1,R0,R2	;R2 = v * x[1]
 	SUBRF	2.0,R2		;R2 = 2.0 - v * x[1]
 	MPYF	R2,R1		;R1 = x[2] = x[1] * (2.0 - v * x[1])
- 
+
 	MPYF	R1,R0,R2	;R2 = v * x[2]
 	SUBRF	2.0,R2		;R2 = 2.0 - v * x[2]
 	MPYF	R2,R1		;R1 = x[3] = x[2] * (2.0 - v * x[2])
- 
+
 	MPYF	R1,R0,R2	;R2 = v * x[3]
 	SUBRF	2.0,R2		;R2 = 2.0 - v * x[3]
 	MPYF	R2,R1		;R1 = x[4] = x[3] * (2.0 - v * x[3])
- 
+
 	RND	R1		;This minimizes error in the LSBs.
 	;
 	;For the last iteration we use the formulation:
@@ -505,7 +505,7 @@ INV_F30:
 *----------------------------------------------------------------------------
 *MODI	Integer modulo (signed)
 *
-*PARAMETERS		Signed integer dividend in R0, 
+*PARAMETERS		Signed integer dividend in R0,
 *			Signed integer divisor in R1.
 *Output			R0 % R1 into R0.
 *Status			Set from result in R0.
@@ -519,9 +519,9 @@ INV_F30:
 *
 	.asg	AR1,V		;divisor
 	.asg	R1,TEMP		;float value of operands
-	.asg	R1,COUNT	;repeat/shift count 
+	.asg	R1,COUNT	;repeat/shift count
 	.asg	AR0,SIGN	;sign of result
-	.asg	RC,EXP	 	;divisor exponent 
+	.asg	RC,EXP	 	;divisor exponent
 
 MOD_I30:
 
@@ -532,20 +532,20 @@ MOD_I30:
 	ABSI	R0		;make dividend positive
 	BVD	mod_32	 	;if still negative, escape
 	ABSI	R1		;make divisor positive
-	LDI	R1,V		;save in V	
-	CMPI	R0,V		;divisor > dividend ? 
+	LDI	R1,V		;save in V
+	CMPI	R0,V		;divisor > dividend ?
 	BHID	returnc	 	; if so, return dividend
 	;
 	;Normalize operands.	Use difference in exponents as shift count
 	;for divisor, and as repeat count for SUBC.
 	;
 	FLOAT	R1,TEMP		;normalize divisor
-	PUSHF	TEMP		;push as float 
+	PUSHF	TEMP		;push as float
 	POP	EXP		;pop as int
 
 	FLOAT	R0,TEMP		;normalize dividend
 	PUSHF	TEMP		;push as float
-	POP	COUNT		;pop as int 
+	POP	COUNT		;pop as int
 
 	LSH	-24,EXP		;get divisor exponent
 	LSH	-24,COUNT	;get dividend exponent
@@ -560,7 +560,7 @@ MOD_I30:
 	; Remainder is in upper bits of R0
 	;
 	ADDI	1,COUNT		;shift count is -(COUNT+1)
-	NEGI	COUNT 
+	NEGI	COUNT
 	LSH	COUNT,R0	;shift right
 	;
 	; Check sign and negate result if necessary.
@@ -591,7 +591,7 @@ mod_32
 *----------------------------------------------------------------------------
 *MODU	Integer modulo (unsigned)
 *
-*PARAMETERS		Unsigned dividend in R0, 
+*PARAMETERS		Unsigned dividend in R0,
 *			unsigned divisor in R1.
 *
 *Output			R0 % R1 into R0.
@@ -610,7 +610,7 @@ mod_32
 
 MOD_U30:
 
-	CMPI	R0,R1		;divisor > dividend ? 
+	CMPI	R0,R1		;divisor > dividend ?
 	BHI	zerob		;	if so, return dividend
 	LDI	R1,V		;load divisor
 	;
@@ -641,7 +641,7 @@ MOD_U30:
 	;Do COUNT+1 subtract & shifts.
 	;
 	RPTS	COUNT
-	SUBC	V,R0	
+	SUBC	V,R0
 	;
 	; Remainder is in upper 31-COUNT bits.
 	;
@@ -657,12 +657,12 @@ MOD_U30:
 ;SUBC can be used, the top bit must be cleared (otherwise SUBC can
 ;possibly shift a significant 1 out the top of the dividend).	This
 ;is accomplished by first doing a normal subtraction, then proceeding
-;with SUBCs. 
+;with SUBCs.
 ;
 mod_32c
 ;
 ;If the top bit of the divisor is set too, the remainder is simply
-;the difference between the dividend and divisor.	Otherwise, shift 
+;the difference between the dividend and divisor.	Otherwise, shift
 ;the divisor up to line up the MSBs.
 ;
 	CMPI	0,V		;check divisor
@@ -678,7 +678,7 @@ mod_32c
 	;Then, shift divisor right rather than shifting dividend left.	This leaves
 	;a 0 in the top bit of the dividend.
 	;
-	SUBI	V,R0,TEMP	;subtract 
+	SUBI	V,R0,TEMP	;subtract
 	LDIHS	TEMP,R0		;if positive, replace dividend
 	SUBI	1,EXP		;first iteration is done
 	LSH	-1,V		;shift divisor down
@@ -686,7 +686,7 @@ mod_32c
 	;
 	;Do EXP subtract & shifts.
 	;
-	RPTS	EXP	
+	RPTS	EXP
 	SUBC	V,R0
 
 	;
@@ -698,7 +698,7 @@ mod_32c
 	;
 	; Return (dividend - divisor).
 	;
-onec	SUBI	R1,R0	
+onec	SUBI	R1,R0
 	RETS
 
 	;
@@ -730,7 +730,7 @@ zeroc	CMPI	0,R0		;set status from result
 *is not set (nor does it exist).
 *
 *
-*CYCLES	
+*CYCLES
 *	52 (64 OUT OF CACHE  (PUSHES))
 *
 
@@ -743,7 +743,7 @@ SQRT:
 	PUSHF	R1
 	PUSH	R2
 	PUSHF	R2
- 
+
 	MPYF	2.0,R2		;add a rounding bit in exponent
 	PUSHF	R2		;push x as float
 	POP	R1		;pop as int
@@ -752,9 +752,9 @@ SQRT:
 	;
 	;determine initial estimate .25 * 2**(-e/2)
 	;
-	NEGI	R1		;negate exponent 
+	NEGI	R1		;negate exponent
 	ASH	24,R1	 	;shift into place
-	PUSH	R1		;push as int 
+	PUSH	R1		;push as int
 	POPF	R1		;pop as float
 	MPYF	0.25,R2		;remove rounding bit
 
@@ -806,4 +806,3 @@ SQRT:
 	RETS
 *----------------------------------------------------------------------------
 	.END
-
