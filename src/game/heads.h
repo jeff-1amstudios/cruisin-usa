@@ -1,6 +1,8 @@
 #ifndef HEADS_H
 #define HEADS_H
 
+#include "port.h"
+
 /* Generated from asm/HEADS.ASM. */
 
 // HEADS.ASM

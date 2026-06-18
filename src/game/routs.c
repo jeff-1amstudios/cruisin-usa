@@ -1,6 +1,5 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
-#include "port.h"
 
 /*
  * Source module: asm/ROUTS.ASM
@@ -194,7 +193,7 @@ void DIV_I30(void)
     // asm 0000A571: 	NEGI	COUNT
     // asm 0000A572: 	LSH	COUNT,R0	;shift right to get result
     // 	;Check sign and negate result if necessary.
-return:
+return_:
     // asm 0000A573: 	POP	RC		;return address
     // asm 0000A574: 	NEGI	R0,TEMP		;negate result
     // asm 0000A575: 	BD	RC		;delayed branch to return
@@ -209,7 +208,7 @@ div_32:
     // asm 0000A579: 	PUSH	SIGN		;remember sign
     // asm 0000A57A: 	CALL	DIV_U30		;do divide
     // asm 0000A57B: 	POP	SIGN		;restore sign
-    // asm 0000A57C: 	B	return		;return
+    // asm 0000A57C: 	B	return_		;return
     // 	;***Return zero.
 zero:
     // asm 0000A57D: 	LDI	0,R0

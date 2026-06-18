@@ -14,7 +14,6 @@
 #include "objects.h"
 #include "text.h"
 #include "comm.h"
-#include "port.h"
 #include "commq.h"
 
 /*

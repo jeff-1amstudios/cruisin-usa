@@ -11,7 +11,6 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
-#include "port.h"
 
 /*
  * Source module: asm/GALIL.ASM

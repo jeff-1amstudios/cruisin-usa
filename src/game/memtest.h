@@ -1,6 +1,8 @@
 #ifndef MEMTEST_H
 #define MEMTEST_H
 
+#include "port.h"
+
 /* Generated from asm/MEMTEST.ASM. */
 
 // MEMTEST.ASM

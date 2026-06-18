@@ -16,7 +16,6 @@
 #include "comm.h"
 #include "racer.h"
 #include "h2hobj.h"
-#include "port.h"
 #include "commdrne.h"
 
 /*

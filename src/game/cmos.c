@@ -6,7 +6,6 @@
 #include "cmos.h"
 #include "macs.h"
 #include "globals.h"
-#include "port.h"
 
 /*
  * Source module: asm/CMOS.ASM

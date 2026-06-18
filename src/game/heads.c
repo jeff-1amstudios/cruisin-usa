@@ -12,7 +12,6 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
-#include "port.h"
 #include "heads.h"
 
 /*

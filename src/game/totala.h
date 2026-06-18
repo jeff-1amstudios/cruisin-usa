@@ -1,6 +1,8 @@
 #ifndef TOTALA_H
 #define TOTALA_H
 
+#include "port.h"
+
 /* Generated from asm/TOTALA.ASM. */
 
 // TOTALA.ASM

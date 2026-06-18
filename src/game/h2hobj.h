@@ -1,6 +1,8 @@
 #ifndef H2HOBJ_H
 #define H2HOBJ_H
 
+#include "port.h"
+
 /* Generated from asm/H2HOBJ.EQU. */
 
 // OBJECTS.EQU

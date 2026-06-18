@@ -1,6 +1,8 @@
 #ifndef CHOPPER_H
 #define CHOPPER_H
 
+#include "port.h"
+
 /* Generated from asm/CHOPPER.ASM. */
 
 // CHOPPER.ASM

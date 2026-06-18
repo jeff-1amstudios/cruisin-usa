@@ -15,7 +15,6 @@
 #include "delta.h"
 #include "error.h"
 #include "comm.h"
-#include "port.h"
 #include "tracksel.h"
 
 /*

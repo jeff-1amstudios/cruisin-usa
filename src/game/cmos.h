@@ -1,6 +1,8 @@
 #ifndef CMOS_H
 #define CMOS_H
 
+#include "port.h"
+
 /* Generated from asm/CMOS.EQU. */
 
 // CMOS.EQU

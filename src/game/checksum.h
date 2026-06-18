@@ -1,6 +1,8 @@
 #ifndef CHECKSUM_H
 #define CHECKSUM_H
 
+#include "port.h"
+
 /* Generated from asm/CHECKSUM.EQU. */
 
 // asm: CHECKSUM_GEN .set 0

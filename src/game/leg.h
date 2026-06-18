@@ -1,6 +1,8 @@
 #ifndef LEG_H
 #define LEG_H
 
+#include "port.h"
+
 /* Generated from asm/LEG.ASM. */
 
 // LEG.ASM

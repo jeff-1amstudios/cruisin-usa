@@ -1,6 +1,8 @@
 #ifndef COMM_H
 #define COMM_H
 
+#include "port.h"
+
 /* Generated from asm/COMM.EQU. */
 
 // COMM.EQU

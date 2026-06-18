@@ -12,7 +12,6 @@
 #include "sndtab.h"
 #include "pall.h"
 #include "sysid.h"
-#include "port.h"
 #include "hstdp.h"
 
 /*

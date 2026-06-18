@@ -12,7 +12,6 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
-#include "port.h"
 #include "roadkill.h"
 
 /*
@@ -57,7 +56,7 @@ void FIND_MAP(void);
 
 extern const char PC1[];
 
-extern int ROADKILL_TAB[];
+extern tROADKILL_TAB_ENTRY ROADKILL_TAB[];
 extern int ROADKILLXZ[];
 extern float SOUNDTIME;
 extern int ROADKILL_SOUND_TIMER;
@@ -67,7 +66,7 @@ extern int COW_PARTS[];
 extern int DEER_PARTS[];
 extern int DEERBLOOD_ANI[];
 extern int GEESEANI[];
-extern int GEESE_DIR[];
+extern tGEESE_DIR_ENTRY GEESE_DIR[];
 extern int SHIT_ANI[];
 extern int BUG_ANI[];
 
@@ -78,17 +77,9 @@ extern int BUG_ANI[];
 #define RKT_WIDTHL 3 //FL LEFT half the width
 #define RKT_WIDTHR 4 //FL RIGHT half the width
 #define RKT_SIZE 5
-/* asm: ROADKILL_TAB */
-/* asm: 	.word	deerc1,EXP3,COW_PARTS */
-/* asm: 	.float	-200,200			;SOON TO BE A COW */
-/* asm: 	.word	deerc1,EXP3,DEER_PARTS */
-/* asm: 	.float	-400,400			;DEER */
-/* asm: 	 */
-int ROADKILL_TAB[] = {
-    deerc1, EXP3, COW_PARTS,
-    -200, 200, // SOON TO BE A COW
-    deerc1, EXP3, DEER_PARTS,
-    -400, 400, // DEER
+tROADKILL_TAB_ENTRY ROADKILL_TAB[] = {
+    { deerc1, EXP3, (uintptr_t)COW_PARTS, -200, 200 }, // SOON TO BE A COW
+    { deerc1, EXP3, (uintptr_t)DEER_PARTS, -400, 400 }, // DEER
 };
 /* asm: ROADKILLXZ	.bss	ROADKILLXZ,2 */
 int ROADKILLXZ[2];
@@ -938,25 +929,11 @@ int GEESEANI[] = {
     geese1, geeseb, geesec, geesed,
     geesee, geesef, geeseg, geeseh, -1,
 };
-/* asm: GEESE_DIR: */
-/* asm: 	.word	250,1 */
-/* asm: 	.float	0 */
-/* asm: 	.word	150,-1 */
-/* asm: 	.float	0 */
-/* asm: 	.word	150,-1 */
-/* asm: 	.float	-0.13 */
-/* asm: 	.word	250,1 */
-/* asm: 	.float	-0.13 */
-/* asm: 	 */
-int GEESE_DIR[] = {
-    250, 1,
-    0,
-    150, -1,
-    0,
-    150, -1,
-    -0.13,
-    250, 1,
-    -0.13,
+tGEESE_DIR_ENTRY GEESE_DIR[] = {
+    { 250, 1, 0.0f },
+    { 150, -1, 0.0f },
+    { 150, -1, -0.13f },
+    { 250, 1, -0.13f },
 };
 // *----------------------------------------------------------------------------
 #define SPEED PDATA

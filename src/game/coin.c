@@ -11,7 +11,6 @@
 #include "pall.h"
 #include "objects.h"
 #include "text.h"
-#include "port.h"
 #include "coin.h"
 #include "diag.h"
 

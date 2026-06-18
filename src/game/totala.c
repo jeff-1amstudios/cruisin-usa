@@ -4,7 +4,6 @@
 #include "vunit.h"
 #include "globals.h"
 #include "pall.h"
-#include "port.h"
 #include "totala.h"
 
 /*

@@ -1,6 +1,8 @@
 #ifndef COMP_H
 #define COMP_H
 
+#include "port.h"
+
 /* Generated from asm/COMP.ASM. */
 
 // COMP.ASM

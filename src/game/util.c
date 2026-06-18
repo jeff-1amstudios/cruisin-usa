@@ -15,7 +15,6 @@
 #include "sysid.h"
 #include "dirq.h"
 #include "delta.h"
-#include "port.h"
 #include "util.h"
 
 /*

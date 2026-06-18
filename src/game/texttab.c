@@ -3,7 +3,6 @@
 #include "text.h"
 #include "texttab.h"
 #include "macs.h"
-#include "port.h"
 
 /*
  * Source module: asm/TEXTTAB.ASM

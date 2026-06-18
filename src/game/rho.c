@@ -14,7 +14,6 @@
 #include "text.h"
 #include "delta.h"
 #include "comm.h"
-#include "port.h"
 #include "rho.h"
 
 /*

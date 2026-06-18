@@ -1,6 +1,8 @@
 #ifndef SNDTAB_H
 #define SNDTAB_H
 
+#include "port.h"
+
 /* Generated from asm/SNDTAB.EQU. */
 
 // SND.EQU

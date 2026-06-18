@@ -11,7 +11,6 @@
 #include "text.h"
 #include "objects.h"
 #include "comm.h"
-#include "port.h"
 #include "snd.h"
 
 /*
@@ -50,7 +49,7 @@ void SNDUPD(void);
 #define SNDSTRI SNDSTR
 
 extern int IN_RESET_MODE;
-extern int RESET_TIMER[];
+extern int RESET_TIMER;
 extern int SNDSTR[];
 extern int SNDEND;
 extern int STATION_LIST[];
@@ -62,8 +61,8 @@ extern int DO_NOT_REENABLE_INT;
 
 /* asm: IN_RESET_MODE	fbss	IN_RESET_MODE,1 */
 int IN_RESET_MODE;
-/* asm: RESET_TIMER	fbss	RESET_TIMER,R0 */
-int RESET_TIMER[R0];
+/* asm: RESET_TIMER	fbss	RESET_TIMER,1 */
+int RESET_TIMER;
 /* asm: SNDSTR	.bss	SNDSTR,NCHAN*SND_SIZ */
 int SNDSTR[NCHAN*SND_SIZ];
 /* asm: SNDEND	.bss	SNDEND,0 */

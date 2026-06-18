@@ -1,6 +1,8 @@
 #ifndef DELTA_H
 #define DELTA_H
 
+#include "port.h"
+
 /* Generated from asm/DELTA.EQU. */
 
 // DELTA.EQU

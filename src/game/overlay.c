@@ -14,7 +14,6 @@
 #include "text.h"
 #include "delta.h"
 #include "dirq.h"
-#include "port.h"
 #include "overlay.h"
 
 /*

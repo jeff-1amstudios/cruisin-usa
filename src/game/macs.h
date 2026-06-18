@@ -1,6 +1,8 @@
 #ifndef MACS_H
 #define MACS_H
 
+#include "port.h"
+
 /* Generated from asm/MACS.EQU. */
 
 // MACS.EQU

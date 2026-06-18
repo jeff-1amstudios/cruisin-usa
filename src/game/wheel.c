@@ -3,7 +3,6 @@
 #include "macs.h"
 #include "sys.h"
 #include "globals.h"
-#include "port.h"
 #include "wheel.h"
 
 /*

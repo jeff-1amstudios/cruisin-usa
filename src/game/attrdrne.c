@@ -15,7 +15,6 @@
 #include "text.h"
 #include "dirq.h"
 #include "delta.h"
-#include "port.h"
 #include "attrdrne.h"
 
 /*

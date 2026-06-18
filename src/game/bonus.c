@@ -15,7 +15,6 @@
 #include "delta.h"
 #include "comm.h"
 #include "h2hobj.h"
-#include "port.h"
 #include "bonus.h"
 
 /*

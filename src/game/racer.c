@@ -15,7 +15,6 @@
 #include "delta.h"
 #include "racer.h"
 #include "comm.h"
-#include "port.h"
 
 /*
  * Source module: asm/RACER.ASM

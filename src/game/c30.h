@@ -1,6 +1,8 @@
 #ifndef C30_H
 #define C30_H
 
+#include "port.h"
+
 /* Generated from asm/C30.EQU. */
 
 // C30.EQU

@@ -7,7 +7,6 @@
 #include "objects.h"
 #include "text.h"
 #include "texttab.h"
-#include "port.h"
 
 /*
  * Source module: asm/TEXT.ASM
@@ -43,7 +42,7 @@ void HIGHLIGHTN(void);
 #define TEXTTABLEFIXEDI FIXEDFONT
 #define OGSMFONT_TABI OGSMFONT_TAB
 
-extern int TEXT_LIST[];
+extern tTEXT TEXT_LIST[];
 extern int TEXT_FREE;
 extern int TEXT_ACTIVE;
 extern int TEXT_FREE_COUNT;
@@ -66,8 +65,7 @@ extern int FIXEDFONT;
 *
 */
 
-/* asm: TEXT_LIST	hibss	TEXT_LIST,NUM_TEXTS*TEXT_SIZ */
-int TEXT_LIST[NUM_TEXTS*TEXT_SIZ];
+tTEXT TEXT_LIST[NUM_TEXTS * sizeof(tTEXT)];
 /* asm: TEXT_FREE	.bss	TEXT_FREE,1 */
 int TEXT_FREE;
 /* asm: TEXT_ACTIVE	.bss	TEXT_ACTIVE,1 */

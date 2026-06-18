@@ -9,7 +9,6 @@
 #include "globals.h"
 #include "pall.h"
 #include "objects.h"
-#include "port.h"
 #include "smoke.h"
 
 /*

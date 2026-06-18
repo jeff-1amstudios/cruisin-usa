@@ -16,7 +16,6 @@
 #include "dirq.h"
 #include "delta.h"
 #include "comm.h"
-#include "port.h"
 #include "colla.h"
 
 /*

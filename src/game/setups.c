@@ -12,7 +12,6 @@
 #include "objects.h"
 #include "text.h"
 #include "cornobj.h"
-#include "port.h"
 
 /*
  * Source module: asm/SETUPS.ASM

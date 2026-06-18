@@ -1,6 +1,8 @@
 #ifndef COLLA_H
 #define COLLA_H
 
+#include "port.h"
+
 /* Generated from asm/COLLA.ASM. */
 
 // COLLA.ASM

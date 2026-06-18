@@ -12,7 +12,6 @@
 #include "objects.h"
 #include "text.h"
 #include "h2hobj.h"
-#include "port.h"
 #include "map.h"
 
 /*

@@ -17,7 +17,6 @@
 #include "h2hobj.h"
 #include "comm.h"
 #include "racer.h"
-#include "port.h"
 #include "intro.h"
 
 /*

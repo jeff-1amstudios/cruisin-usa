@@ -1,6 +1,8 @@
 #ifndef HUD_H
 #define HUD_H
 
+#include "port.h"
+
 /* Generated from asm/HUD.ASM. */
 
 // HUD.ASM

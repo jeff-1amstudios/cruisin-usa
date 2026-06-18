@@ -1,6 +1,8 @@
 #ifndef AUDITS_H
 #define AUDITS_H
 
+#include "port.h"
+
 /* Generated from asm/AUDITS.ASM. */
 
 // AUDITS.ASM

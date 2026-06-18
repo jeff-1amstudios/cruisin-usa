@@ -1,6 +1,8 @@
 #ifndef MPROC_H
 #define MPROC_H
 
+#include "port.h"
+
 /* Generated from asm/MPROC.EQU. */
 
 // MPROC.EQU

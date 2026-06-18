@@ -10,7 +10,6 @@
 #include "vunit.h"
 #include "cmos.h"
 #include "sndtab.h"
-#include "port.h"
 
 /*
  * Source module: asm/ATTRACTA.ASM

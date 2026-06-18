@@ -420,6 +420,22 @@ TABLE:
         self.assertIn("/*\n*STDARD .float\t0.82,1.00,0.0028,0.010\n*NEWSTD\t.float\t0.82,0.90,0.0028,0.0060\n*/", rendered)
         self.assertIn("float TABLE[] = {\n    // #0 MUSCLE CAR\n    0.91f, 0.60f, 0.0028f, 0.010f, // ALL AROUND\n    // #1 XXX\n    0.98f, 0.50f, 0.0032f, 0.0042f, // ACCEL\n};", rendered)
 
+    def test_bare_label_single_row_float_table_stays_float(self) -> None:
+        asm_source = """GEARACTABI\t.word\tGEARACTAB
+GEARACTAB
+\t.float\t0.0,1.7,1.5,1.4,1.2
+NEXT\t.word\t1
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "PLYR.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+            symbol_table = collect_module_symbol_table(src_path, {})
+
+        self.assertEqual(symbol_table["GEARACTAB"].c_type, "float")
+        self.assertIn("float GEARACTAB[] = {\n    0.0f, 1.7f, 1.5f, 1.4f, 1.2f,\n};", rendered)
+
     def test_string_label_table_keeps_unreferenced_children(self) -> None:
         asm_source = """LEG_NAMES\t.word\tLEG1,LEG2
 LEG1\t.string\t"GOLDEN GATE PARK",0
@@ -672,7 +688,7 @@ NEXTFUNC:\tRETS
                 True,
             )
 
-        self.assertIn('#include "port.h"', rendered)
+        self.assertNotIn('#include "port.h"', rendered)
         self.assertNotIn('#include "discovered_defines.h"', rendered)
         self.assertNotIn("#define bottom_gtmp_p", rendered)
 
@@ -692,7 +708,7 @@ NEXTFUNC:\tRETS
                 True,
             )
 
-        self.assertIn('#include "port.h"', rendered)
+        self.assertNotIn('#include "port.h"', rendered)
         self.assertNotIn('#include "discovered_labels.h"', rendered)
         self.assertNotIn("#define missle", rendered)
 
@@ -774,6 +790,7 @@ AFTER\t.set\t2
             banner_comments, globls, sets = parse_equ_file(src_path)
             rendered = render_equ_header(src_path, banner_comments, globls, sets, {})
 
+        self.assertIn('#include "port.h"', rendered)
         self.assertIn("// asm: VISIBLE\t.set\t1", rendered)
         self.assertIn("#define VISIBLE 1", rendered)
         self.assertIn("// asm: AFTER\t.set\t2", rendered)
@@ -1473,6 +1490,7 @@ BONUS8\tLDI\t8,R1
             ],
         )
 
+        self.assertIn('#include "port.h"', rendered)
         self.assertIn("// asm: .bss heads_count,1", rendered)
         self.assertIn("extern int heads_count;", rendered)
         self.assertNotIn("// addr:", rendered)

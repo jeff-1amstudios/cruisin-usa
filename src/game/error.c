@@ -14,7 +14,6 @@
 #include "text.h"
 #include "diag.h"
 #include "error.h"
-#include "port.h"
 
 /*
  * Source module: asm/ERROR.ASM

@@ -1,6 +1,8 @@
 #ifndef CORNOBJ_H
 #define CORNOBJ_H
 
+#include "port.h"
+
 /* Generated from asm/CORNOBJ.EQU. */
 
 // OBJECTS.EQU

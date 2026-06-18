@@ -1,6 +1,8 @@
 #ifndef ROADBLCK_H
 #define ROADBLCK_H
 
+#include "port.h"
+
 /* Generated from asm/ROADBLCK.ASM. */
 
 // ROADBLCK.ASM

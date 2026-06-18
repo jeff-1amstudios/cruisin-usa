@@ -11,7 +11,6 @@
 #include "dirq.h"
 #include "diag.h"
 #include "error.h"
-#include "port.h"
 #include "audits.h"
 
 /*

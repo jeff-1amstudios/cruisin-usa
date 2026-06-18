@@ -1,6 +1,8 @@
 #ifndef COMMQ_H
 #define COMMQ_H
 
+#include "port.h"
+
 /* Generated from asm/COMMQ.ASM. */
 
 // COMMQ.ASM

@@ -1,6 +1,8 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+#include "port.h"
+
 /* Generated from asm/ERROR.EQU. */
 
 // ERROR.EQU

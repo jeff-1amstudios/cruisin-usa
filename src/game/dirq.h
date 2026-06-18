@@ -1,6 +1,8 @@
 #ifndef DIRQ_H
 #define DIRQ_H
 
+#include "port.h"
+
 /* Generated from asm/DIRQ.EQU. */
 
 // DIRQ.EQU

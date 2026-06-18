@@ -1,6 +1,8 @@
 #ifndef MATH_H
 #define MATH_H
 
+#include "port.h"
+
 /* Generated from asm/MATH.ASM. */
 
 // MATH.ASM

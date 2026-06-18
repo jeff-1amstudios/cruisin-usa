@@ -1,7 +1,6 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
 #include "sys.h"
-#include "port.h"
 
 /*
  * Source module: asm/SNDTABA.ASM

@@ -1,6 +1,8 @@
 #ifndef ROADKILL_H
 #define ROADKILL_H
 
+#include "port.h"
+
 /* Generated from asm/ROADKILL.ASM. */
 
 // ROADKILL.ASM

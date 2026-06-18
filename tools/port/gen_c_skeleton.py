@@ -885,6 +885,8 @@ def render_storage_header(
     out.append(f"#ifndef {guard}")
     out.append(f"#define {guard}")
     out.append("")
+    out.append('#include "port.h"')
+    out.append("")
     out.append(f"/* Generated from asm/{src_path.name}. */")
     out.append("")
     out.extend(render_storage_header_lines(src_path, defines, type_overrides))
@@ -2205,6 +2207,46 @@ def infer_string_symbol(name: str, module: str) -> SymbolInfo:
     return SymbolInfo(name=name, kind="variable", module=module, c_type="const char", array_expr="")
 
 
+def standalone_numeric_values(data: StandaloneLabeledData) -> list[str]:
+    directive_lower = data.directive.lower()
+    values: list[str] = []
+    if directive_lower in {".intdata", ".float"}:
+        values = [part.strip() for part in data.rest.split(",") if part.strip()]
+    elif directive_lower == ".word":
+        first_row = parse_numeric_data_line(data.asm_lines[0], data.name)
+        if first_row is not None:
+            row_values, _comment = first_row
+            values.extend(row_values)
+        for asm_line in data.asm_lines[1:]:
+            asm_code, _asm_comment = split_comment(asm_line)
+            stripped = asm_code.strip()
+            if not stripped.lower().startswith(".word"):
+                continue
+            operands = stripped[5:].strip()
+            if operands:
+                values.extend(part.strip() for part in operands.split(",") if part.strip())
+    if not values:
+        return ["0"]
+    return values
+
+
+def standalone_numeric_variable(data: StandaloneLabeledData) -> NumericVariable:
+    return NumericVariable(
+        name=data.name,
+        directive=data.directive.lower(),
+        values=standalone_numeric_values(data),
+        asm_lines=data.asm_lines,
+    )
+
+
+def standalone_string_value(data: StandaloneLabeledData) -> str | None:
+    return parse_simple_string_operand(data.rest) or parse_string_blob_operand(data.rest)
+
+
+def standalone_storage_asm_text(data: StandaloneLabeledData) -> str:
+    return "\n".join(line for line in data.asm_lines if line.strip())
+
+
 def infer_storage_symbol(name: str, size_expr: str, module: str, type_overrides: dict[str, TypeOverride] | None = None) -> SymbolInfo:
     c_type = "int"
     if type_overrides is not None:
@@ -2439,6 +2481,8 @@ def render_equ_header(
     out: list[str] = []
     out.append(f"#ifndef {guard}")
     out.append(f"#define {guard}")
+    out.append("")
+    out.append('#include "port.h"')
     out.append("")
     out.append(f"/* Generated from asm/{src_path.name}. */")
     if banner_comments:
@@ -2929,7 +2973,8 @@ def collect_standalone_labeled_data(
                     next_idx = nested_next_idx
                     continue
             if saw_numeric_directive:
-                return StandaloneLabeledData(label, ".intdata", ",".join(numeric_values), asm_lines, inner_labels), next_idx
+                normalized = ".intdata" if mixed_numeric_directives or numeric_directive_name is None else numeric_directive_name
+                return StandaloneLabeledData(label, normalized, ",".join(numeric_values), asm_lines, inner_labels), next_idx
             return None, start_idx
         next_code, _next_comment = split_comment(next_raw)
         stripped = next_code.strip()
@@ -3174,24 +3219,8 @@ def render_top_level_items(
             if directive_lower in {".word", ".intdata", ".float"}:
                 if standalone_data.inner_labels:
                     out.extend(render_inner_label_defines(standalone_data.inner_labels))
-                values: list[str] = []
-                if directive_lower in {".intdata", ".float"}:
-                    values = [part.strip() for part in standalone_data.rest.split(",") if part.strip()]
-                else:
-                    first_row = parse_numeric_data_line(standalone_data.asm_lines[0], standalone_data.name)
-                    if first_row is not None:
-                        row_values, _comment = first_row
-                        values.extend(row_values)
-                    for asm_line in standalone_data.asm_lines[1:]:
-                        asm_code, _asm_comment = split_comment(asm_line)
-                        stripped = asm_code.strip()
-                        if not stripped.lower().startswith(".word"):
-                            continue
-                        operands = stripped[5:].strip()
-                        if operands:
-                            values.extend(part.strip() for part in operands.split(",") if part.strip())
-                if not values:
-                    values = ["0"]
+                numeric_var = standalone_numeric_variable(standalone_data)
+                values = numeric_var.values
                 if (
                     len(values) == 1
                     and next_idx < len(lines)
@@ -3206,19 +3235,14 @@ def render_top_level_items(
                         continue
                 out.extend(
                     render_numeric_variable(
-                        NumericVariable(
-                            name=standalone_data.name,
-                            directive=directive_lower,
-                            values=values,
-                            asm_lines=standalone_data.asm_lines,
-                        ),
+                        numeric_var,
                         symbol_table,
                         type_overrides,
                         global_symbol_table,
                     )
                 )
             elif directive_lower == ".string":
-                c_string = parse_simple_string_operand(standalone_data.rest) or parse_string_blob_operand(standalone_data.rest)
+                c_string = standalone_string_value(standalone_data)
                 if c_string is not None:
                     out.extend(render_string_variable(StringVariable(name=standalone_data.name, c_string=c_string)))
             elif directive_lower == ".sptrtable":
@@ -3230,7 +3254,7 @@ def render_top_level_items(
                     render_storage_variable(
                         standalone_data.name,
                         parse_storage_size(standalone_data.rest),
-                        "\n".join(line for line in standalone_data.asm_lines if line.strip()),
+                        standalone_storage_asm_text(standalone_data),
                     )
                 )
             if seen_function_lines:
@@ -3278,173 +3302,6 @@ def render_top_level_items(
             idx += 1
             continue
 
-        label, directive, rest = data_match.groups()
-        directive_lower = directive.lower()
-        override_lines = render_symbol_override(label, render_overrides)
-        if override_lines is not None:
-            flush_pending_comments()
-            out.extend(override_lines)
-            if seen_function_lines:
-                saw_top_level_data_after_function = True
-            next_idx = idx + 1
-            if directive_lower in {".word", ".float"}:
-                while next_idx < len(lines):
-                    next_raw = lines[next_idx]
-                    if next_idx in function_line_indexes:
-                        break
-                    if is_comment_or_blank(next_raw):
-                        break
-                    if is_flush_left(next_raw):
-                        break
-                    next_code, _next_comment = split_comment(next_raw)
-                    if not next_code.strip():
-                        break
-                    next_idx += 1
-            idx = next_idx
-            continue
-        if is_omitted_symbol(label, type_overrides):
-            if seen_function_lines:
-                saw_top_level_data_after_function = True
-            pending_comment_lines = []
-            idx += 1
-            continue
-        if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
-            flush_pending_comments()
-            out.extend(render_storage_variable(label, parse_storage_size(rest), f"{directive}{rest}"))
-            if seen_function_lines:
-                saw_top_level_data_after_function = True
-            idx += 1
-            continue
-        if directive_lower == ".string":
-            c_string = parse_simple_string_operand(rest) or parse_string_blob_operand(rest)
-            if c_string is not None:
-                flush_pending_comments()
-                out.extend(render_string_variable(StringVariable(name=label, c_string=c_string)))
-                if seen_function_lines:
-                    saw_top_level_data_after_function = True
-            idx += 1
-            continue
-        if directive_lower == ".sptrtable":
-            flush_pending_comments()
-            out.extend(render_sptr_table(label, standalone_data.asm_lines))
-            if seen_function_lines:
-                saw_top_level_data_after_function = True
-            idx = next_idx
-            continue
-
-        if directive_lower == ".word":
-            flush_pending_comments()
-            asm_lines = [f"{label}\t.word{rest}"]
-            values: list[str] = []
-            first_row = parse_numeric_data_line(asm_lines[0], label)
-            if first_row is not None:
-                row_values, _comment = first_row
-                values.extend(row_values)
-
-            next_idx = idx + 1
-            while next_idx < len(lines):
-                next_raw = lines[next_idx]
-                if next_idx in function_line_indexes:
-                    break
-                if is_comment_or_blank(next_raw):
-                    break
-                if is_flush_left(next_raw):
-                    break
-
-                next_code, _next_comment = split_comment(next_raw)
-                next_stripped = next_code.strip()
-                if not next_stripped:
-                    break
-                parsed_row = parse_numeric_data_line(next_raw)
-                if parsed_row is not None:
-                    asm_lines.append(next_raw.rstrip())
-                    row_values, _comment = parsed_row
-                    values.extend(row_values)
-                    next_idx += 1
-                    continue
-                break
-
-            if not values:
-                values = ["0"]
-            if (
-                len(values) == 1
-                and next_idx < len(lines)
-                and is_flush_left(lines[next_idx])
-            ):
-                next_code, _next_comment = split_comment(lines[next_idx])
-                next_label_match = BARE_LABEL_RE.match(next_code)
-                if next_label_match and next_label_match.group(1) == values[0]:
-                    out.append(f"/* asm: {asm_lines[0].strip()} */")
-                    out.append(f"#define {render_identifier(label, type_overrides)} {convert_expr(values[0], type_overrides)}")
-                    if seen_function_lines:
-                        saw_top_level_data_after_function = True
-                    idx = next_idx
-                    continue
-            out.extend(
-                render_numeric_variable(
-                    NumericVariable(
-                        name=label,
-                        directive=".word",
-                        values=values,
-                        asm_lines=asm_lines,
-                    ),
-                    symbol_table,
-                    type_overrides,
-                    global_symbol_table,
-                )
-            )
-            if seen_function_lines:
-                saw_top_level_data_after_function = True
-            idx = next_idx
-            continue
-
-        if directive_lower == ".float":
-            flush_pending_comments()
-            asm_lines = [f"{label}\t.float{rest}"]
-            values: list[str] = []
-            first_row = parse_numeric_data_line(asm_lines[0], label)
-            if first_row is not None:
-                row_values, _comment = first_row
-                values.extend(row_values)
-
-            next_idx = idx + 1
-            while next_idx < len(lines):
-                next_raw = lines[next_idx]
-                if next_idx in function_line_indexes:
-                    break
-                if is_comment_or_blank(next_raw):
-                    break
-                if is_flush_left(next_raw):
-                    break
-
-                next_code, _next_comment = split_comment(next_raw)
-                next_stripped = next_code.strip()
-                if not next_stripped:
-                    break
-                parsed_row = parse_numeric_data_line(next_raw)
-                if parsed_row is not None:
-                    asm_lines.append(next_raw.rstrip())
-                    row_values, _comment = parsed_row
-                    values.extend(row_values)
-                    next_idx += 1
-                    continue
-                break
-
-            if not values:
-                values = ["0"]
-            out.extend(
-                render_numeric_variable(
-                    NumericVariable(name=label, directive=".float", values=values, asm_lines=asm_lines),
-                    symbol_table,
-                    type_overrides,
-                    global_symbol_table,
-                )
-            )
-            if seen_function_lines:
-                saw_top_level_data_after_function = True
-            idx = next_idx
-            continue
-
         top_level_instruction = instruction_text_for_top_level_line(raw)
         if saw_top_level_data_after_function and top_level_instruction is not None:
             raise ValueError(
@@ -3482,7 +3339,6 @@ def render_module(
         if override.force_function
     }
     headers = parse_include_headers(lines)
-    headers.append("port.h")
     if own_header is not None:
         headers.append(own_header)
     headers.extend(sorted(collect_word_symbol_dependencies(lines, owner_headers, src_path.stem.upper())))
@@ -3861,29 +3717,12 @@ def collect_module_symbol_table(
                 continue
             directive_lower = standalone_data.directive.lower()
             if directive_lower in {".word", ".intdata", ".float"}:
-                values: list[str] = []
-                if directive_lower in {".intdata", ".float"}:
-                    values = [part.strip() for part in standalone_data.rest.split(",") if part.strip()]
-                else:
-                    first_row = parse_numeric_data_line(standalone_data.asm_lines[0], standalone_data.name)
-                    if first_row is not None:
-                        row_values, _comment = first_row
-                        values.extend(row_values)
-                    for asm_line in standalone_data.asm_lines[1:]:
-                        asm_code, _asm_comment = split_comment(asm_line)
-                        stripped = asm_code.strip()
-                        if not stripped.lower().startswith(".word"):
-                            continue
-                        operands = stripped[5:].strip()
-                        if operands:
-                            values.extend(part.strip() for part in operands.split(",") if part.strip())
-                if not values:
-                    values = ["0"]
+                numeric_var = standalone_numeric_variable(standalone_data)
                 if directive_lower == ".word":
                     word_variables.append(
                         WordVariable(
                             name=standalone_data.name,
-                            values=values,
+                            values=numeric_var.values,
                             asm_lines=filter_renderable_asm_lines(standalone_data.asm_lines),
                         )
                     )
@@ -3892,10 +3731,10 @@ def collect_module_symbol_table(
                     apply_type_override(
                         infer_numeric_symbol(
                             NumericVariable(
-                                name=standalone_data.name,
-                                directive=directive_lower,
-                                values=values,
-                                asm_lines=filter_renderable_asm_lines(standalone_data.asm_lines),
+                                name=numeric_var.name,
+                                directive=numeric_var.directive,
+                                values=numeric_var.values,
+                                asm_lines=filter_renderable_asm_lines(numeric_var.asm_lines),
                             ),
                             module,
                             resolution_symbols,
@@ -3914,7 +3753,7 @@ def collect_module_symbol_table(
                             SymbolInfo(name=inner_name, kind="define", module=module, expr=str(offset)),
                         )
             elif directive_lower == ".string":
-                c_string = parse_simple_string_operand(standalone_data.rest) or parse_string_blob_operand(standalone_data.rest)
+                c_string = standalone_string_value(standalone_data)
                 if c_string is not None:
                     symbol_table.setdefault(
                         standalone_data.name,
@@ -3968,95 +3807,6 @@ def collect_module_symbol_table(
         data_match = DATA_LABEL_RE.match(raw)
         if not data_match:
             idx += 1
-            continue
-
-        label, directive, rest = data_match.groups()
-        if is_omitted_symbol(label, type_overrides):
-            idx += 1
-            continue
-        directive_lower = directive.lower()
-        if directive_lower in {".bss", ".usect", "fbss", "pbss", "hibss", "lobss", "phibss"}:
-            symbol_table.setdefault(
-                label,
-                apply_type_override(infer_storage_symbol(label, parse_storage_size(rest), module, type_overrides), type_overrides),
-            )
-            idx += 1
-            continue
-        if directive_lower == ".string":
-            c_string = parse_simple_string_operand(rest) or parse_string_blob_operand(rest)
-            if c_string is not None:
-                symbol_table.setdefault(label, apply_type_override(infer_string_symbol(label, module), type_overrides))
-            idx += 1
-            continue
-        if directive_lower == ".word":
-            asm_lines = [f"{label}\t.word{rest}"]
-            values: list[str] = []
-            first_row = parse_numeric_data_line(asm_lines[0], label)
-            if first_row is not None:
-                row_values, _row_comment = first_row
-                values.extend(row_values)
-
-            next_idx = idx + 1
-            while next_idx < len(lines):
-                next_raw = lines[next_idx]
-                if next_idx in function_line_indexes or is_comment_or_blank(next_raw) or is_flush_left(next_raw):
-                    break
-                parsed_row = parse_numeric_data_line(next_raw)
-                if parsed_row is None:
-                    break
-                asm_lines.append(next_raw.rstrip())
-                row_values, _row_comment = parsed_row
-                values.extend(row_values)
-                next_idx += 1
-
-            if not values:
-                values = ["0"]
-            word_variables.append(WordVariable(name=label, values=values, asm_lines=asm_lines))
-            symbol_table.setdefault(
-                label,
-                apply_type_override(
-                    infer_word_symbol(WordVariable(name=label, values=values, asm_lines=asm_lines), module, resolution_symbols, type_overrides),
-                    type_overrides,
-                ),
-            )
-            idx = next_idx
-            continue
-        if directive_lower == ".float":
-            asm_lines = [f"{label}\t.float{rest}"]
-            values: list[str] = []
-            first_row = parse_numeric_data_line(asm_lines[0], label)
-            if first_row is not None:
-                row_values, _row_comment = first_row
-                values.extend(row_values)
-
-            next_idx = idx + 1
-            while next_idx < len(lines):
-                next_raw = lines[next_idx]
-                if next_idx in function_line_indexes or is_comment_or_blank(next_raw) or is_flush_left(next_raw):
-                    break
-                parsed_row = parse_numeric_data_line(next_raw)
-                if parsed_row is None:
-                    break
-                asm_lines.append(next_raw.rstrip())
-                row_values, _row_comment = parsed_row
-                values.extend(row_values)
-                next_idx += 1
-
-            if not values:
-                values = ["0"]
-            symbol_table.setdefault(
-                label,
-                apply_type_override(
-                    infer_numeric_symbol(
-                        NumericVariable(name=label, directive=".float", values=values, asm_lines=asm_lines),
-                        module,
-                        resolution_symbols,
-                        type_overrides,
-                    ),
-                    type_overrides,
-                ),
-            )
-            idx = next_idx
             continue
 
         idx += 1

@@ -17,7 +17,6 @@
 #include "error.h"
 #include "comm.h"
 #include "checksum.h"
-#include "port.h"
 #include "cusa.h"
 #include "bssstart.h"
 

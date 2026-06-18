@@ -9,7 +9,6 @@
 #include "cksum.h"
 #include "globals.h"
 #include "checksum.h"
-#include "port.h"
 #include "memtest.h"
 
 /*

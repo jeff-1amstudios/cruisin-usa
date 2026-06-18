@@ -12,7 +12,6 @@
 #include "objects.h"
 #include "text.h"
 #include "diag.h"
-#include "port.h"
 #include "motion.h"
 
 /*

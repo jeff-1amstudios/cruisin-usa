@@ -16,7 +16,6 @@
 #include "dirq.h"
 #include "comm.h"
 #include "h2hobj.h"
-#include "port.h"
 #include "wave.h"
 
 /*

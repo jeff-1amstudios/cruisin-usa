@@ -14,7 +14,6 @@
 #include "objects.h"
 #include "text.h"
 #include "delta.h"
-#include "port.h"
 #include "drones.h"
 
 /*

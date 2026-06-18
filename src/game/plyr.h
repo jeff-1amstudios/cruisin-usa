@@ -1,6 +1,8 @@
 #ifndef PLYR_H
 #define PLYR_H
 
+#include "port.h"
+
 /* Generated from asm/PLYR.ASM. */
 
 // PLYR.ASM

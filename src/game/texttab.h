@@ -1,6 +1,8 @@
 #ifndef TEXTTAB_H
 #define TEXTTAB_H
 
+#include "port.h"
+
 /* Generated from asm/TEXTTAB.EQU. */
 
 // TEXTTAB.EQU

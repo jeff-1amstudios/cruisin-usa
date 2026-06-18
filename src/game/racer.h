@@ -1,6 +1,8 @@
 #ifndef RACER_H
 #define RACER_H
 
+#include "port.h"
+
 /* Generated from asm/RACER.EQU. */
 
 // RACER.EQU

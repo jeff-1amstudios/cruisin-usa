@@ -1,6 +1,8 @@
 #ifndef OBJ_H
 #define OBJ_H
 
+#include "port.h"
+
 /* Generated from asm/OBJ.EQU. */
 
 // OBJ.EQU

@@ -9,7 +9,6 @@
 #include "macs.h"
 #include "error.h"
 #include "globals.h"
-#include "port.h"
 
 /*
  * Source module: asm/OBJ.ASM

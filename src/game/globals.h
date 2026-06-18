@@ -1,6 +1,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include "port.h"
+
 /* Generated from asm/GLOBALS.EQU. */
 
 // globals.equ

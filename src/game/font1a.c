@@ -4,7 +4,6 @@
 #include "vunit.h"
 #include "macs.h"
 #include "text.h"
-#include "port.h"
 #include "font1a.h"
 
 /*

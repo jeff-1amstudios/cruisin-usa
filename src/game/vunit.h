@@ -1,6 +1,8 @@
 #ifndef VUNIT_H
 #define VUNIT_H
 
+#include "port.h"
+
 /* Generated from asm/VUNIT.EQU. */
 
 // VUNIT.EQU

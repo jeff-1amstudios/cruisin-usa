@@ -5,7 +5,6 @@
 #include "sys.h"
 #include "globals.h"
 #include "objects.h"
-#include "port.h"
 #include "leg.h"
 
 /*

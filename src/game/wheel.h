@@ -1,6 +1,8 @@
 #ifndef WHEEL_H
 #define WHEEL_H
 
+#include "port.h"
+
 /* Generated from asm/WHEEL.ASM. */
 
 // WHEEL.ASM

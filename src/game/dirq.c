@@ -9,7 +9,6 @@
 #include "dirq.h"
 #include "sysid.h"
 #include "globals.h"
-#include "port.h"
 #include "backgrnd.h"
 #include "totala.h"
 

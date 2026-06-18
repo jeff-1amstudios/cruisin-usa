@@ -5,7 +5,6 @@
 #include "c30.h"
 #include "vunit.h"
 #include "error.h"
-#include "port.h"
 
 /*
  * Source module: asm/MPROC.ASM

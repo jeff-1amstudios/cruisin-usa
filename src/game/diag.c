@@ -15,7 +15,6 @@
 #include "dirq.h"
 #include "diag.h"
 #include "error.h"
-#include "port.h"
 
 /*
  * Source module: asm/DIAG.ASM

@@ -1,6 +1,8 @@
 #ifndef CUSA_H
 #define CUSA_H
 
+#include "port.h"
+
 /* Generated from asm/CUSA.ASM. */
 
 // CUSA.ASM

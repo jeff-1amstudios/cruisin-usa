@@ -1,6 +1,8 @@
 #ifndef DIAG_H
 #define DIAG_H
 
+#include "port.h"
+
 /* Generated from asm/DIAG.EQU. */
 
 // DIAG.EQU

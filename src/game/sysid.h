@@ -1,6 +1,8 @@
 #ifndef SYSID_H
 #define SYSID_H
 
+#include "port.h"
+
 /* Generated from asm/SYSID.EQU. */
 
 // SYSID.EQU

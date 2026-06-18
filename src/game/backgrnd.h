@@ -1,6 +1,8 @@
 #ifndef BACKGRND_H
 #define BACKGRND_H
 
+#include "port.h"
+
 /* Generated from asm/BACKGRND.ASM. */
 
 // BACKGRND.ASM

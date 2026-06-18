@@ -1,6 +1,8 @@
 #ifndef RROAD_H
 #define RROAD_H
 
+#include "port.h"
+
 /* Generated from asm/RROAD.ASM. */
 
 // RROAD.ASM

@@ -1,6 +1,5 @@
 #include "../core/cpu.h"
 #include "../core/machine.h"
-#include "port.h"
 
 /*
  * Source module: asm/CORNOBJ.ASM

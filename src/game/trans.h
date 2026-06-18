@@ -1,6 +1,8 @@
 #ifndef TRANS_H
 #define TRANS_H
 
+#include "port.h"
+
 /* Generated from asm/TRANS.ASM. */
 
 // TRANS.ASM

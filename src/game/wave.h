@@ -1,6 +1,8 @@
 #ifndef WAVE_H
 #define WAVE_H
 
+#include "port.h"
+
 /* Generated from asm/WAVE.ASM. */
 
 // WAVE.ASM

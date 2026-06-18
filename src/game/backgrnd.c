@@ -12,7 +12,6 @@
 #include "pall.h"
 #include "objects.h"
 #include "cornobj.h"
-#include "port.h"
 #include "backgrnd.h"
 
 /*

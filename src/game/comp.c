@@ -9,7 +9,6 @@
 #include "globals.h"
 #include "objects.h"
 #include "text.h"
-#include "port.h"
 #include "comp.h"
 
 /*

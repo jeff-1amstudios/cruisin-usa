@@ -1,6 +1,8 @@
 #ifndef SMOKE_H
 #define SMOKE_H
 
+#include "port.h"
+
 /* Generated from asm/SMOKE.ASM. */
 
 // SMOKE.ASM

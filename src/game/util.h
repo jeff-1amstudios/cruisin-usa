@@ -1,6 +1,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "port.h"
+
 /* Generated from asm/UTIL.ASM. */
 
 // UTIL.ASM

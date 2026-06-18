@@ -16,7 +16,6 @@
 #include "dirq.h"
 #include "delta.h"
 #include "comm.h"
-#include "port.h"
 #include "plyr.h"
 
 /*
@@ -141,7 +140,7 @@ extern float DISTCON;
 extern float SPDCON;
 extern float GEARTAB[];
 extern int ENGVOL;
-extern int GEARACTAB[];
+extern float GEARACTAB[];
 extern float ENGACTAB[];
 extern float ENGFR[];
 extern float STEERI;
@@ -1835,8 +1834,8 @@ GETC1:
 #define GEARACTABI GEARACTAB
 /* asm: GEARACTAB */
 /* asm: 	.float	0.0,1.7,1.5,1.4,1.2  		;POWER FACTOR GEAR(0-4) */
-int GEARACTAB[] = {
-    0.0, 1.7, 1.5, 1.4, 1.2, // POWER FACTOR GEAR(0-4)
+float GEARACTAB[] = {
+    0.0f, 1.7f, 1.5f, 1.4f, 1.2f, // POWER FACTOR GEAR(0-4)
 };
 /* asm: ENGACTABI	.word	ENGACTAB */
 #define ENGACTABI ENGACTAB

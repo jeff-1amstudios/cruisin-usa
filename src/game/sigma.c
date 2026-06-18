@@ -13,7 +13,6 @@
 #include "objects.h"
 #include "text.h"
 #include "delta.h"
-#include "port.h"
 
 /*
  * Source module: asm/SIGMA.ASM

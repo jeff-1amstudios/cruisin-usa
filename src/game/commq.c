@@ -14,7 +14,6 @@
 #include "text.h"
 #include "comm.h"
 #include "delta.h"
-#include "port.h"
 #include "commq.h"
 
 /*
