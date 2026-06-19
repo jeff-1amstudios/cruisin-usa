@@ -4,7 +4,6 @@
 #include "c30.h"
 #include "macs.h"
 #include "obj.h"
-#include "objects.h"
 #include "globals.h"
 #include "sys.h"
 #include "text.h"
@@ -21,8 +20,8 @@
  * Source module: asm/UTIL.ASM
  */
 
-void TVBP(void);
-void TVBPX(void);
+static void TVBP(void);
+static void TVBPX(void);
 void SETPAGE0(void);
 void SETPAGE1(void);
 #define FASTCLR0 FASTCLR1
@@ -76,20 +75,6 @@ void FORWARD(void);
 
 extern int FILSIZI;
 
-extern int RAND;
-extern int CRTCTLRAM;
-extern int ACTIVE_SCREEN;
-extern int LINE255I;
-extern int LINE511I;
-extern int SCRSIZI;
-extern float NTWOPII;
-extern int DYNALIST[];
-extern int DYNAFREE;
-extern int NULL;
-extern int CARLIST[];
-extern int CARFREE;
-extern int CAR_COUNT;
-
 /* asm: RAND	pbss	RAND,1 */
 int RAND;
 /* asm: CRTCTLRAM	.bss	CRTCTLRAM,1 */
@@ -102,24 +87,24 @@ int ACTIVE_SCREEN;
 *
 */
 /* asm: LINE255I	.word	SCREEN0+3F000H 	;LAST LINE PAGE 0 */
-int LINE255I = SCREEN0+0x3F000;
+static int LINE255I = SCREEN0+0x3F000;
 /* asm: LINE511I	.word	SCREEN0+7FC00H	;LAST LINE PAGE 1 */
 /* asm: 	 */
-int LINE511I = SCREEN0+0x7FC00;
+static int LINE511I = SCREEN0+0x7FC00;
 /* asm: SCRSIZI		.word	3FFFFH */
 /* asm: 	 */
 /* asm: 	 */
-int SCRSIZI = 0x3FFFF;
+static int SCRSIZI = 0x3FFFF;
 #if DEBUG
 
-void TVBP(void)
+static void TVBP(void)
 {
     // asm: RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TVBP", 0, 0);
     UNIMPL();
 }
 
-void TVBPX(void)
+static void TVBPX(void)
 {
     // asm: RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TVBPX", 0, 0);
@@ -974,7 +959,7 @@ CARSLP:
 
 // *----------------------------------------------------------------------------
 /* asm: NTWOPII	.float	-TWOPI */
-float NTWOPII = -TWOPI;
+static float NTWOPII = -TWOPI;
 
 /*
 *
@@ -1079,8 +1064,6 @@ void LEAN(void)
 int DYNALIST[NUM_DYNAS*DYNASIZE];
 /* asm: DYNAFREE	.bss	DYNAFREE,1 */
 int DYNAFREE;
-/* asm: NULL	.bss	NULL,1 */
-int NULL;
 
 // *----------------------------------------------------------------------------
 void DYNAOBJ_INIT(void)
@@ -1174,8 +1157,7 @@ void DELDYNA(void)
 
 // *----------------------------------------------------------------------------
 
-/* asm: CARLIST	.bss	CARLIST,NUM_CARS*CARSIZ */
-int CARLIST[NUM_CARS*CARSIZ];
+CARBLK CARLIST[NUM_CARS];
 /* asm: CARFREE	.bss	CARFREE,1 */
 int CARFREE;
 /* asm: CAR_COUNT	.bss	CAR_COUNT,1 */

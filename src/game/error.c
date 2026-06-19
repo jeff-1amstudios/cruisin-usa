@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "diag.h"
 #include "error.h"

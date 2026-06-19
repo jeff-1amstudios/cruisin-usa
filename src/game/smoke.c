@@ -8,7 +8,6 @@
 #include "sys.h"
 #include "globals.h"
 #include "pall.h"
-#include "objects.h"
 #include "smoke.h"
 
 /*
@@ -16,30 +15,29 @@
  */
 
 void SMOKE_PROC(void);
-void CREATE_SMOKE_OBJ(void);
-void GET_OTHER_REAR(void);
-void GET_REAR(void);
-void INIT_SMOKE(void);
+static void CREATE_SMOKE_OBJ(void);
+static void GET_OTHER_REAR(void);
+static void GET_REAR(void);
+static void INIT_SMOKE(void);
 void SORT_SMOKE(void);
 void INIT_SPARK(void);
-void REPLICATE_SPARK(void);
+static void REPLICATE_SPARK(void);
 void SPARK_PROC(void);
-void INIT_COLLA_OBJS(void);
+static void INIT_COLLA_OBJS(void);
 void WALL_SPARK(void);
 void IMPACT_SPARK(void);
 void ROAD_IMPACT_SPARK(void);
 void SKID_SPARK(void);
-void TOO_MANY_SPARKS(void);
+static void TOO_MANY_SPARKS(void);
 void OBJ_MOVE(void);
 
 #define SMOKEANII SMOKEANI
 #define SMOKE2ANII SMOKE2ANI
 #define SPARKANII SPARKANI
 
-extern int TIRE_SMOKE_COUNT;
-extern int SMOKEANI[];
-extern int SMOKE2ANI[];
-extern int SPARKANI[];
+static int SMOKEANI[9];
+static int SMOKE2ANI[16];
+static int SPARKANI[11];
 
 /*
 *----------------------------------------------------------------------------
@@ -54,16 +52,16 @@ extern int SPARKANI[];
 int TIRE_SMOKE_COUNT;
 /* asm: SMOKEANI */
 /* asm: 	.word	bnout2,bnout4,bnout6,bnout8,bnout10,bnout12,bnout14,bnout16,-1 */
-int SMOKEANI[] = {
-    bnout2, bnout4, bnout6, bnout8, bnout10, bnout12, bnout14, bnout16, -1,
+static int SMOKEANI[] = {
+    bnout2_ROM, bnout4_ROM, bnout6_ROM, bnout8_ROM, bnout10_ROM, bnout12_ROM, bnout14_ROM, bnout16_ROM, -1,
 };
 /* asm: SMOKE2ANI */
 /* asm: 	.word	bnout1,bnout2,bnout3,bnout4,bnout5,bnout6,bnout7,bnout8,bnout9,bnout10 */
 /* asm: 	.word	bnout11,bnout12,bnout14,bnout15,bnout16,-1 */
 /* asm: 	 */
-int SMOKE2ANI[] = {
-    bnout1, bnout2, bnout3, bnout4, bnout5, bnout6, bnout7, bnout8, bnout9, bnout10,
-    bnout11, bnout12, bnout14, bnout15, bnout16, -1,
+static int SMOKE2ANI[] = {
+    bnout1_ROM, bnout2_ROM, bnout3_ROM, bnout4_ROM, bnout5_ROM, bnout6_ROM, bnout7_ROM, bnout8_ROM, bnout9_ROM, bnout10_ROM,
+    bnout11_ROM, bnout12_ROM, bnout14_ROM, bnout15_ROM, bnout16_ROM, -1,
 };
 /*
 *----------------------------------------------------------------------------
@@ -184,7 +182,7 @@ SMOKE_DIE:
 *Creates a puff of smoke
 */
 
-void CREATE_SMOKE_OBJ(void)
+static void CREATE_SMOKE_OBJ(void)
 {
     // asm 0000850A: 	LDI	*+AR7(NUM_SMOKES),R0
     // asm 0000850B: 	CMPI	1,R0
@@ -251,7 +249,7 @@ NO_SMOKE:
 * SCRAMBLES R0,R1
 */
 
-void GET_OTHER_REAR(void)
+static void GET_OTHER_REAR(void)
 {
     // asm 0000853A: 	LDI	*AR2,R0
     // asm 0000853B: 	BR	FBLOOP
@@ -260,7 +258,7 @@ void GET_OTHER_REAR(void)
     UNIMPL();
 }
 
-void GET_REAR(void)
+static void GET_REAR(void)
 {
     // asm 0000853C: 	LDI	*+AR2(ODYNALIST),R0
     // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
@@ -287,7 +285,7 @@ FOUND_REAR:
 *	R5 = ZOFFSET
 */
 
-void INIT_SMOKE(void)
+static void INIT_SMOKE(void)
 {
     // asm 00008544: 	PUSH	AR1
     // asm 00008545: 	LDI	*+AR7(NUM_SMOKES),R0
@@ -395,9 +393,9 @@ SORT_SMOKEX:
 /* asm: SPARKANI */
 /* asm: 	.word	x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,-1 */
 /* asm: 	 */
-int SPARKANI[] = {
+static int SPARKANI[] = {
     // 	.word	sparc10,sparc10,sparc11,sparc11,sparc12,sparc12,-1
-    x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, -1,
+    x1_ROM, x2_ROM, x3_ROM, x4_ROM, x5_ROM, x6_ROM, x7_ROM, x8_ROM, x9_ROM, x10_ROM, -1,
     // 	.word	x2,x4,x6,x8,x10,-1
 };
 /*
@@ -502,7 +500,7 @@ INIT_SPARKX:
 *	R7  = FL, NUMBER OF FRAMES SINCE LAST SPARK
 */
 
-void REPLICATE_SPARK(void)
+static void REPLICATE_SPARK(void)
 {
     // asm 000085DC: 	LDI	*+AR7(NUM_SPARKS),R0
     // asm 000085DD: 	CMPI	4,R0
@@ -684,7 +682,7 @@ NO_OBJ:
 *INPUT	AR0 points to proc memory
 *Creates several spark animations
 */
-void INIT_COLLA_OBJS(void)
+static void INIT_COLLA_OBJS(void)
 {
     // asm 0000866E: 	LDI	0,R5
 ICO_LOOP:
@@ -977,7 +975,7 @@ void SKID_SPARK(void)
 *		C=1 if too many
 *		C=0 if ok
 */
-void TOO_MANY_SPARKS(void)
+static void TOO_MANY_SPARKS(void)
 {
     // asm 00008709: 	LDI	0,R2
     // asm 0000870A: 	LDI	@PACTIVEI,R0

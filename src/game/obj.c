@@ -17,7 +17,7 @@
 void OBJ_INIT(void);
 void OBJ_GETE(void);
 void OBJ_GET(void);
-void GETDIST(void);
+static void GETDIST(void);
 void OBJ_INSERTP(void);
 void OBJ_INSERTLP(void);
 void OBJ_INSERTHP(void);
@@ -33,34 +33,21 @@ void OBJ_DELETE_CLASS(void);
 void OBJ_PULL(void);
 void OBJ_FREE(void);
 void ZSORTWT(void);
-void PLYRDLINK(void);
-void PLYRSORT(void);
-void DRONESORT(void);
+static void PLYRDLINK(void);
+static void PLYRSORT(void);
+static void DRONESORT(void);
 void OSCAN(void);
 void ISCAN(void);
 void RESCAN(void);
 void ZSORTPRIOR(void);
-void ZSORTACT(void);
+static void ZSORTACT(void);
 void OBJ_MAKE(void);
 void OBJ_QMAKE(void);
 
 #define OFREEI OFREE
 #define OBJSTRI OBJSTR
 
-extern int OACTIVE;
-extern int OFREE;
-extern int IDLE_LIST;
-extern int OACTIVE_PRIORITY;
-extern int OLOW_PRIORITY;
-extern int OHIGH_PRIORITY;
-extern int OACTIVECNT;
-extern int OFREECNT;
-extern int OMAX_OBJECTS;
-extern int OBJSTR[];
-extern int COMM_DRONE_PTR;
-extern int PLYRTEMP;
-extern int ACTIVEHI1;
-extern int ACTIVEHI;
+static int ACTIVEHI;
 
 /*
 *----------------------------------------------------------------------------
@@ -269,7 +256,7 @@ NOOBJ:
 *	R0	ODIST
 *		STORES IN *+AR2(ODIST)
 */
-void GETDIST(void)
+static void GETDIST(void)
 {
     // asm 00007083: 	PUSH	R1
     // asm 00007084: 	PUSH	R2
@@ -898,7 +885,7 @@ ZSWTXX:
 *PLYRDLINK
 *
 */
-void PLYRDLINK(void)
+static void PLYRDLINK(void)
 {
     // asm 000071DE: 	LDI	@OACTIVEI,AR1		;GET OBJECT LIST POINTER
 PSORTNXT:
@@ -934,7 +921,7 @@ int PLYRTEMP;
 *IF NO DRONE CLOSER, INSERT AT END OF LIST
 *
 */
-void PLYRSORT(void)
+static void PLYRSORT(void)
 {
     // asm 000071EA: 	LDI	@PLYRTEMP,R0		;GET PLAYER
     // asm 000071EB: 	BZD	PSORTX	     		;NO PLAYER, HANG IT UP...
@@ -999,7 +986,7 @@ PSORTX:
 *	AR4	POINTER TO DRONES
 *
 */
-void DRONESORT(void)
+static void DRONESORT(void)
 {
     // 	;PULL LIST OF DRONES OFF OBJECT LIST
     // asm 0000720F: 	BUD	DSORTNXT
@@ -1157,9 +1144,9 @@ DSORTXX:
 // *----------------------------------------------------------------------------
 
 /* asm: ACTIVEHI1	.word	75000		;HI LIMIT FOR INACTIVE-ACTIVE */
-int ACTIVEHI1 = 75000;
+static int ACTIVEHI1 = 75000;
 /* asm: ACTIVEHI	.word	80000		;HI LIMIT FOR ACTIVE-INACTIVE */
-int ACTIVEHI = 80000;
+static int ACTIVEHI = 80000;
 #define ACTIVELO (-5000) //LO LIMIT INACTIVE OBJECT LIST
 
 /*
@@ -1374,7 +1361,7 @@ ZSORTXP:
 *BUBBLE SORT ACTIVE LIST UNTIL DONE
 *
 */
-void ZSORTACT(void)
+static void ZSORTACT(void)
 {
 ZSORTA1:
     // asm 000072FD: 	LDI	0,R2			;CLEAR EXCHANGE FLAG

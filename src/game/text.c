@@ -4,7 +4,6 @@
 #include "vunit.h"
 #include "globals.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "texttab.h"
 
@@ -30,7 +29,7 @@ void SET18FONT(void);
 void SET18FONTDS(void);
 void SETFIXEDFONT(void);
 void SETFIXEDFONTDS(void);
-void STRLEN(void);
+static void STRLEN(void);
 void TEXT_OUTPUT(void);
 void STRCPY(void);
 void STRCAT(void);
@@ -42,19 +41,7 @@ void HIGHLIGHTN(void);
 #define TEXTTABLEFIXEDI FIXEDFONT
 #define OGSMFONT_TABI OGSMFONT_TAB
 
-extern tTEXT TEXT_LIST[];
-extern int TEXT_FREE;
-extern int TEXT_ACTIVE;
-extern int TEXT_FREE_COUNT;
-extern int TEXT_FREEZE;
-extern int FIXEDFONT_A;
-extern int FONTDIGITSM_A;
-extern int FONT18_A;
-extern int TEXTTABLEFONT18;
-extern int FONT40_A;
-extern int FONT10_A;
-extern int FONTN43_A;
-extern int FIXEDFONT;
+static int FIXEDFONT;
 
 /*
 *----------------------------------------------------------------------------
@@ -65,7 +52,7 @@ extern int FIXEDFONT;
 *
 */
 
-tTEXT TEXT_LIST[NUM_TEXTS * sizeof(tTEXT)];
+tTEXT TEXT_LIST[NUM_TEXTS];
 /* asm: TEXT_FREE	.bss	TEXT_FREE,1 */
 int TEXT_FREE;
 /* asm: TEXT_ACTIVE	.bss	TEXT_ACTIVE,1 */
@@ -75,25 +62,25 @@ int TEXT_FREE_COUNT;
 /* asm: TEXT_FREEZE	.bss	TEXT_FREEZE,1 */
 int TEXT_FREEZE;
 /* asm: FIXEDFONT_A	.word	fixedfnt */
-int FIXEDFONT_A = fixedfnt;
+static int FIXEDFONT_A = fixedfnt;
 /* asm: TEXTTABLEFIXEDI	.word	FIXEDFONT */
 /* asm: 	 */
 #define TEXTTABLEFIXEDI FIXEDFONT
 /* asm: FONTDIGITSM_A	.word	dnums_I */
 /* asm: 	 */
-int FONTDIGITSM_A = dnums_I;
+static int FONTDIGITSM_A = dnums_I;
 /* asm: FONT18_A	.word	font18_I */
-int FONT18_A = font18_I;
+static int FONT18_A = font18_I;
 /* asm: TEXTTABLEFONT18	.word	FONT18_TAB */
-int TEXTTABLEFONT18 = FONT18_TAB;
+static FONTENTRY*TEXTTABLEFONT18 = FONT18_TAB;
 /* asm: FONT40_A	.word	ommdfont_I */
-int FONT40_A = ommdfont_I;
+static int FONT40_A = ommdfont_I;
 /* asm: FONT10_A	.word	osg10fnt_I */
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-int FONT10_A = osg10fnt_I;
+static int FONT10_A = osg10fnt_I;
 
 // *----------------------------------------------------------------------------
 void TEXT_INIT(void)
@@ -271,7 +258,7 @@ void SETLGDIGITFONTDS(void)
 
 // *----------------------------------------------------------------------------
 /* asm: FONTN43_A	.word	lgnum43_I */
-int FONTN43_A = lgnum43_I;
+static int FONTN43_A = lgnum43_I;
 
 void SETN43FONT(void)
 {
@@ -485,7 +472,7 @@ void SETFIXEDFONTDS(void)
 *	R0	LENGTH (IN PIXEL) OF STRING
 *
 */
-void STRLEN(void)
+static void STRLEN(void)
 {
     // asm 00007A4B: 	PUSH	RS
     // asm 00007A4C: 	PUSH	R1
@@ -883,7 +870,7 @@ REGLP2:
 /* asm: FONTENT	0,128,135,7,1 */
 /* asm: FONTENT	0,136,143,7,1 */
 /* asm: FONTENT	0,144,151,7,1	;Z */
-int FIXEDFONT;
+static int FIXEDFONT;
 
 /*
 *----------------------------------------------------------------------------

@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "chopper.h"
@@ -19,21 +18,18 @@
  * Source module: asm/CHOPPER.ASM
  */
 
-void DIRECT_ATTACK(void);
-void ONCOMMING_BUZZ(void);
+static void DIRECT_ATTACK(void);
+static void ONCOMMING_BUZZ(void);
 void CHOPPER(void);
-void FORWARD_BUZZ(void);
-void FLYAWAY(void);
-void CHOPPER_DIE(void);
-void FIND_YX_MATRIX(void);
-void SETDYNAOBJ(void);
-void CHOPPERANI(void);
-void FSL_MOVE(void);
-void HELI_SND(void);
+static void FORWARD_BUZZ(void);
+static void FLYAWAY(void);
+static void CHOPPER_DIE(void);
+static void FIND_YX_MATRIX(void);
+static void SETDYNAOBJ(void);
+static void CHOPPERANI(void);
+static void FSL_MOVE(void);
+static void HELI_SND(void);
 void GET_CLOSEST_TRAK(void);
-
-extern int HELI_ABORT;
-extern int CHOPPERDYNA[];
 
 /*
 *----------------------------------------------------------------------------
@@ -93,7 +89,7 @@ int HELI_ABORT;
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-int CHOPPERDYNA[] = {
+static int CHOPPERDYNA[] = {
     1, // #OF DYNAS-1
     0, -206, 14, // blades
     3, // VERTS-1
@@ -114,7 +110,7 @@ int CHOPPERDYNA[] = {
 *
 *
 */
-void DIRECT_ATTACK(void)
+static void DIRECT_ATTACK(void)
 {
     // 	;
     // 	;DEBUG	only attack player when he is in the first position
@@ -223,7 +219,7 @@ LLK28:
 *
 *
 */
-void ONCOMMING_BUZZ(void)
+static void ONCOMMING_BUZZ(void)
 {
     // asm 00007CBF: 	LDF	0,R0
     // asm 00007CC0: 	STF	R0,*+AR4(ORADX)
@@ -660,7 +656,7 @@ DOTHEMOVE:
     UNIMPL();
 }
 
-void FORWARD_BUZZ(void)
+static void FORWARD_BUZZ(void)
 {
     // 	;FORWARD BUZZ INIT. CODE
     // 	;
@@ -907,7 +903,7 @@ CHOPPER_SLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void FLYAWAY(void)
+static void FLYAWAY(void)
 {
     // asm 00007E41: 	CLRI	AR6			;flag
     // asm 00007E42: 	LDI	100,AR5
@@ -952,7 +948,7 @@ KKUU:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CHOPPER_DIE(void)
+static void CHOPPER_DIE(void)
 {
     // asm 00007E62: 	LDI	*+AR4(OCARBLK),AR2
     // asm 00007E63: 	CALL	DELCAR
@@ -977,7 +973,7 @@ void CHOPPER_DIE(void)
 *	AR4	OBJECT
 *
 */
-void FIND_YX_MATRIX(void)
+static void FIND_YX_MATRIX(void)
 {
     // asm 00007E6B: 	LDF	*+AR4(ORADY),R2
     // asm 00007E6C: 	LDI	AR4,AR2
@@ -999,7 +995,7 @@ void FIND_YX_MATRIX(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SETDYNAOBJ(void)
+static void SETDYNAOBJ(void)
 {
     // asm 00007E78: 	LDI	O_DYNAMIC,R0	 	;MAKE PARENT OBJECT DYNAMIC
     // asm 00007E79: 	OR	*+AR4(OFLAGS),R0
@@ -1046,7 +1042,7 @@ CHOPLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CHOPPERANI(void)
+static void CHOPPERANI(void)
 {
     // asm 00007E9C: 	LONGROUT
     // asm: 	CLRF	R6
@@ -1080,7 +1076,7 @@ CANILP:
 *	R3	SPEED
 *
 */
-void FSL_MOVE(void)
+static void FSL_MOVE(void)
 {
     // ;	LDP	@NFRAMES
     // ;	FLOAT	@NFRAMES,R0
@@ -1421,7 +1417,7 @@ void FSL_MOVE(void)
 */
 
 // *----------------------------------------------------------------------------
-void HELI_SND(void)
+static void HELI_SND(void)
 {
     // asm 00007EFF: 	LDI	HELI_SNDLP,AR2		;may want to add in volume effects
     // asm 00007F00: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1

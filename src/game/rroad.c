@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "rroad.h"
@@ -21,22 +20,16 @@
 
 void RRSTART_ENGINE(void);
 void RRSTART_BOXCAR(void);
-void CARFORWARD(void);
-void CARFORWARD_ENGINE(void);
+static void CARFORWARD(void);
+static void CARFORWARD_ENGINE(void);
 void RAMPDOWNTRAINSND(void);
-void RAMPDOWNTRAINSND_PROC(void);
+static void RAMPDOWNTRAINSND_PROC(void);
 void FLYTRAIN(void);
-void FLYTRAINP(void);
+static void FLYTRAINP(void);
 void DEADCARA(void);
 void GETFLYMAT_TRAIN(void);
 
 #define FLYTRAINPI FLYTRAINP
-
-extern int FREEZE_IT;
-extern int COLL_POS[];
-extern int THE_TRAIN_SPEED;
-extern int KILL_TRAIN;
-extern float COLL_DIST;
 
 /*
 *----------------------------------------------------------------------------
@@ -50,14 +43,14 @@ extern float COLL_DIST;
 /* asm: FREEZE_IT	.bss	FREEZE_IT,1 */
 int FREEZE_IT;
 /* asm: COLL_POS	.bss	COLL_POS,3 */
-int COLL_POS[3];
+static int COLL_POS[3];
 /* asm: THE_TRAIN_SPEED	.bss	THE_TRAIN_SPEED,1 */
 int THE_TRAIN_SPEED;
 /* asm: KILL_TRAIN	.bss	KILL_TRAIN,1 */
 int KILL_TRAIN;
 /* asm: COLL_DIST	.float	117465.0	;distance to collision from engine start */
 /* asm: 	 */
-float COLL_DIST = 117465.0f;
+static float COLL_DIST = 117465.0f;
 #define TRAIN_SPEED 240
 #define TRAIN_SPEED_MIN 170
 #define TRAIN_SPEED_MAX 280
@@ -150,7 +143,7 @@ void RRSTART_BOXCAR(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CARFORWARD(void)
+static void CARFORWARD(void)
 {
     // asm 00009B74: 	LDI	DRONE_C|RAILROAD|1,R0
     // asm 00009B75: 	LDI	-1,R1
@@ -162,7 +155,7 @@ void CARFORWARD(void)
     UNIMPL();
 }
 
-void CARFORWARD_ENGINE(void)
+static void CARFORWARD_ENGINE(void)
 {
     // asm 00009B79: 	LDI	*+AR4(OID),IR0
     // asm 00009B7A: 	AND	0Fh,IR0
@@ -233,7 +226,7 @@ void RAMPDOWNTRAINSND(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RAMPDOWNTRAINSND_PROC(void)
+static void RAMPDOWNTRAINSND_PROC(void)
 {
     // asm 00009C19: 	LONGROUT
     // asm: 	LDI	255,R5
@@ -380,7 +373,7 @@ FLY1A:
 *PDATA+6=MATRIX
 *
 */
-void FLYTRAINP(void)
+static void FLYTRAINP(void)
 {
     // *GET YOUR RADIANS
     // asm 00009C1C: 	LDF	0.2,R0

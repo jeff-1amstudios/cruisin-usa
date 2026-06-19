@@ -1,31 +1,28 @@
+// NOEDIT
 #ifndef TEXTTAB_H
 #define TEXTTAB_H
 
 #include "port.h"
 
-/* Generated from asm/TEXTTAB.EQU. */
+/*
+ * Hand-maintained translation of asm/TEXTTAB.ASM.
+ * Kept out of the skeleton generator because the generator does not currently
+ * model these font tables as array-of-struct data.
+ */
 
-// TEXTTAB.EQU
-// 
-// COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-// ALL RIGHTS RESERVED
+extern FONTENTRY FONTDIGLG[];
+extern FONTENTRY *FONTDIGLGI;
 
-// asm: 	.globl	FONT18_TAB
-extern int FONT18_TAB;
+extern FONTENTRY FONTDIGSM[];
+extern FONTENTRY *FONTDIGSMI;
 
-// asm: 	.globl	FONTDIGSMI
-#define FONTDIGSMI FONTDIGSM
+extern FONTENTRY FONTN43TAB[];
+extern FONTENTRY *FONTN43TABI;
 
-// asm: 	.globl	FONTDIGLGI
-#define FONTDIGLGI FONTDIGLG
+extern FONTENTRY *FONT40_TAB;
+extern FONTENTRY *FONT40TABI;
 
-// asm: 	.globl	FONTN43TABI
-#define FONTN43TABI FONTN43TAB
-
-// asm: 	.globl	FONT40TABI
-extern int FONT40TABI;
-
-// asm: 	.globl	OGSMFONT_TAB
-extern int OGSMFONT_TAB;
+extern FONTENTRY FONT18_TAB[];
+extern FONTENTRY OGSMFONT_TAB[];
 
 #endif /* TEXTTAB_H */

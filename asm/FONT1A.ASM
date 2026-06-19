@@ -31,7 +31,7 @@ _font1I		.word	_font1
 
 
 *----------------------------------------------------------------------------
-ENABLEGIE:	RETI
+ENABLEGIE_font:	RETI
 *----------------------------------------------------------------------------
 
 
@@ -464,7 +464,7 @@ _pixel:
 	STI	R2,@CPU_WS
 	SETDP
 
-	CALL	ENABLEGIE
+	CALL	ENABLEGIE_font
 
 	POP	R2
 	POP	AR2

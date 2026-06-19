@@ -12,15 +12,6 @@
 void NUWHEEL(void);
 void TOWHEEL(void);
 
-extern int POSE;
-extern int lpot0;
-extern int WHEELPWR;
-extern int WHEELPOS;
-extern int WHEELOUT;
-extern int WHEELMAX;
-extern int WHEELVEL;
-extern int DAMPPWR;
-
 /*
 *----------------------------------------------------------------------------
 *FORCE FEEDBACK WHEEL CODE

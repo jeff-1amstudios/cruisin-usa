@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 
@@ -19,12 +18,12 @@
  */
 
 void SIGMA_DRONE(void);
-void BREAKDOWN(void);
-void SIGMA_DIE(void);
+static void BREAKDOWN(void);
+static void SIGMA_DIE(void);
 
 #define SIGMA_LISTI SIGMA_LIST
 
-extern int SIGMA_LIST[];
+static int SIGMA_LIST[32];
 
 /*
 *----------------------------------------------------------------------------
@@ -73,7 +72,7 @@ extern int SIGMA_LIST[];
 /* asm: 	.word	JEEP_MOD,0 */
 /* asm: 	 */
 /* asm: 	 */
-int SIGMA_LIST[] = {
+static int SIGMA_LIST[] = {
     GTRUCK_MOD, 0,
     CBUS_MOD, SS_LONG,
     COPCAR_MOD, SS_COPCAR,
@@ -417,7 +416,7 @@ SIGMASLP:
 *
 *
 */
-void BREAKDOWN(void)
+static void BREAKDOWN(void)
 {
     // ;	LDI	*+AR4(OID),R0
     // ;	ANDN	TYPE_M,R0
@@ -457,7 +456,7 @@ BREAKDNSLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SIGMA_DIE(void)
+static void SIGMA_DIE(void)
 {
     // asm 0000A533: 	BU	RHO_DIE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION

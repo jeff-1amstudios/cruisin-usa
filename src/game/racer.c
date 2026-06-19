@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "racer.h"
@@ -21,31 +20,31 @@
  */
 
 void DIFF_CHANGE(void);
-void GETDIFF(void);
+static void GETDIFF(void);
 void RACER_DRONE(void);
-void RACE_FIN(void);
-void CKPCOL(void);
-void HI_STEALTH(void);
-void CKTRANSLO(void);
-void CKTRANSHI(void);
-void CKRANGE(void);
+static void RACE_FIN(void);
+static void CKPCOL(void);
+static void HI_STEALTH(void);
+static void CKTRANSLO(void);
+static void CKTRANSHI(void);
+static void CKRANGE(void);
 void COMPTRAK(void);
-void SEND_RACER_XSFER(void);
+static void SEND_RACER_XSFER(void);
 void DECODE_RACER_XSFER(void);
-void ACTIVE_XSFER(void);
-void GETPOWER(void);
-void GETSTSPD(void);
+static void ACTIVE_XSFER(void);
+static void GETPOWER(void);
+static void GETSTSPD(void);
 void FIND_DYNA(void);
-void FIND_MAP(void);
+static void FIND_MAP(void);
 void CKAHEAD(void);
 void CARSCAN(void);
 void PLSCAN(void);
 void OBSTABINIT(void);
 void GETRDOFFSET(void);
-void CARCHEK(void);
-void GETPV(void);
-void GETWIDTH(void);
-void RPASS(void);
+static void CARCHEK(void);
+static void GETPV(void);
+static void GETWIDTH(void);
+static void RPASS(void);
 void SPOS_INIT(void);
 void WRECKST(void);
 void WRECK(void);
@@ -63,18 +62,8 @@ void SEND_RACER_POS(void);
 extern int WRECKFLG;
 void GETFLYMAT(void);
 
-extern int RACER_DRONE_INITTAB;
-extern int FINISHNUM;
-extern int RACER_PTR[];
-extern int OM_TRACK_LO;
-extern int OM_TRACK_HI;
-extern int GMAX;
-extern float DIFFTAB[];
-extern int ROADOBSTAB[];
-extern int PLYRCLOSE;
-extern int WACKER;
-extern int LAKEL;
-extern int CARTMP1;
+static int RACER_DRONE_INITTAB;
+static float DIFFTAB[14];
 
 /*
 *----------------------------------------------------------------------------
@@ -97,7 +86,7 @@ extern int CARTMP1;
 /* asm: RDIM	TESTOR_MOD,1, 572,0.70,0.30,testor_blue */
 /* asm: RDIM	HOTROD_MOD,0, 572,0.66,1.00,hotrod_brtblue */
 /* asm: RDIM	BULLET_MOD,0,1724,0.62,1.00,missle_yellow */
-int RACER_DRONE_INITTAB;
+static int RACER_DRONE_INITTAB;
 /* asm: FINISHNUM	.bss	FINISHNUM,1 */
 int FINISHNUM;
 /* asm: RACER_PTR	.bss	RACER_PTR,10 */
@@ -117,7 +106,7 @@ int OM_TRACK_HI;
 */
 /* asm: GMAX	.word	100000 */
 /* asm: 	 */
-int GMAX = 100000;
+static int GMAX = 100000;
 
 void DIFF_CHANGE(void)
 {
@@ -142,7 +131,7 @@ void DIFF_CHANGE(void)
 *GET YOUR DIFFICULTY
 *
 */
-void GETDIFF(void)
+static void GETDIFF(void)
 {
     // *GET DIFFICULTY	ADJUST
     // asm 000050BF: 	LDI	ADJ_DIFFICULTY,AR2		;GET DIFFICULTY	ADJUST
@@ -204,7 +193,7 @@ GD1:
 /* asm: 	.float	-0.02 		;IND */
 /* asm: 	.float	-0.02 		;APP */
 /* asm: 	.float	0 		;DC */
-float DIFFTAB[] = {
+static float DIFFTAB[] = {
     0.0f, // GG
     -0.03f, // SF
     -0.02f, // 101
@@ -536,7 +525,7 @@ RACER_SLP:
     UNIMPL();
 }
 
-void RACE_FIN(void)
+static void RACE_FIN(void)
 {
     // asm 000051E7: 	LDF	*+AR7(FINISHDIST),R0
     // asm 000051E8: 	BNZ	RACFIN1
@@ -601,7 +590,7 @@ RDL:
     UNIMPL();
 }
 
-void CKPCOL(void)
+static void CKPCOL(void)
 {
     // asm 00005219: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
     // asm 0000521A: 	LDI	*+AR2(OCARBLK),AR3
@@ -632,7 +621,7 @@ CKPX:
     UNIMPL();
 }
 
-void HI_STEALTH(void)
+static void HI_STEALTH(void)
 {
     // asm 0000522D: 	LDI	1,R0
     // asm 0000522E: 	STI	R0,*+AR7(STEALTHMODE)		;HI STEALTH FLAG
@@ -731,7 +720,7 @@ REENTER:
     UNIMPL();
 }
 
-void CKTRANSLO(void)
+static void CKTRANSLO(void)
 {
     // asm 0000527A: 	CALL	COMPTRAK
     // asm 0000527B: 	BLE	CKTLX
@@ -744,7 +733,7 @@ CKTLX:
     UNIMPL();
 }
 
-void CKTRANSHI(void)
+static void CKTRANSHI(void)
 {
     // asm 0000527F: 	CALL	COMPTRAK
     // asm 00005280: 	BGE	CKTHX
@@ -759,7 +748,7 @@ CKTHX:
     UNIMPL();
 }
 
-void CKRANGE(void)
+static void CKRANGE(void)
 {
     // asm 00005284: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
     // asm 00005285: 	CMPI	@OM_TRACK_LO,R2
@@ -800,7 +789,7 @@ void COMPTRAK(void)
     UNIMPL();
 }
 
-void SEND_RACER_XSFER(void)
+static void SEND_RACER_XSFER(void)
 {
     // asm 00005294: 	LDI	CB_RACER_XSFER,R0 	;MESSAGE HEADER
     // *SEND MESSAGE HEADER
@@ -887,7 +876,7 @@ LINKRECX:
 *
 */
 
-void ACTIVE_XSFER(void)
+static void ACTIVE_XSFER(void)
 {
     // asm 000052CD: 	LDI	0,R0
     // asm 000052CE: 	STI	R0,*+AR7(STEALTHMODE)		;NO STEALTH INIT
@@ -963,7 +952,7 @@ STLUP1:
     UNIMPL();
 }
 
-void GETPOWER(void)
+static void GETPOWER(void)
 {
     // asm 00005309: 	PUSH	AR2
     // asm 0000530A: 	LDI	*+AR7(CATCHTIME),R0 	;CHECK IF TIME FOR POWER CHANGE
@@ -1063,7 +1052,7 @@ POWERX:
 *	 R5	DISTANCE TRAVELLED
 *
 */
-void GETSTSPD(void)
+static void GETSTSPD(void)
 {
     // *GET ENGINE ACCEL
     // asm 00005350: 	LDF	*+AR7(DELTA_THROTTLE),R0	;HAS THE RACE BEGUN?
@@ -1185,7 +1174,7 @@ FDLX:
 *	MAP FLAGS-->*+AR7(DELTA_LAST_OID)
 *
 */
-void FIND_MAP(void)
+static void FIND_MAP(void)
 {
     // asm 00005391: 	LDI	@LEG_MAPI,AR0
     // asm 00005392: 	ADDI	3,AR0				;OFFSET TO ID
@@ -1293,9 +1282,9 @@ void PLSCAN(void)
 
 // *----------------------------------------------------------------------------
 /* asm: WACKER	.WORD	3D20AH */
-int WACKER = 0x3D20A;
+static int WACKER = 0x3D20A;
 /* asm: LAKEL	.WORD	3EF0CH */
-int LAKEL = 0x3EF0C;
+static int LAKEL = 0x3EF0C;
 
 /*
 *
@@ -1546,7 +1535,7 @@ FAIL:
 /* asm: CARTMP1	.BSS	CARTMP1,1 */
 int CARTMP1;
 
-void CARCHEK(void)
+static void CARCHEK(void)
 {
     // asm 00005466: 	STI	R0,@CARTMP1   		;SAVE CAR CODE
     // asm 00005467: 	LDI	*+AR2(OCARBLK),AR3
@@ -1685,7 +1674,7 @@ CARCHKX:
 *	R2	ANGLE
 *
 */
-void GETPV(void)
+static void GETPV(void)
 {
     // asm 000054CF: 	LDI	*+AR2(OCARBLK),AR3
     // asm 000054D0: 	PUSH	AR2
@@ -1716,7 +1705,7 @@ void GETPV(void)
 *	R1	HEIGHT
 *
 */
-void GETWIDTH(void)
+static void GETWIDTH(void)
 {
     // asm 000054DA: 	PUSH	AR2
     // asm 000054DB: 	LDI	*+AR3(CARTRAK),AR2
@@ -1755,7 +1744,7 @@ void GETWIDTH(void)
 *	AR5	RACER CAR STRUCT
 *
 */
-void RPASS(void)
+static void RPASS(void)
 {
     // asm 000054F0: 	LDI	*+AR7(PASSCNT),R0      	;INHIBIT PASSING SOUND?
     // asm 000054F1: 	BZ	RPASS1

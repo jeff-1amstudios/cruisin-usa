@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "comm.h"
@@ -21,14 +20,14 @@
  */
 
 void RHO_DRONE(void);
-void RHO_LP(void);
-void CKCAROFF(void);
+static void RHO_LP(void);
+static void CKCAROFF(void);
 void RHO_DIE(void);
-void RHO_ISHIT(void);
-void SEND_RHO_XSFER(void);
+static void RHO_ISHIT(void);
+static void SEND_RHO_XSFER(void);
 void DECODE_RHO_XSFER(void);
-void RHO_ACTIVE_XSFER(void);
-void SEND_RHO_KILL(void);
+static void RHO_ACTIVE_XSFER(void);
+static void SEND_RHO_KILL(void);
 void DECODE_RHO_KILL(void);
 
 #define B4HIT_TABLEI B4HIT_TABLE
@@ -44,11 +43,7 @@ void DECODE_RACER_XSFER(void);
 void FIND_DRONE(void);
 void FIND_DYNA(void);
 
-extern int B4HIT_TABLE[];
-extern int NOLONG_VEHICLES;
-extern int RHO_TABLE[];
-extern int RHOFLAG;
-extern int RHOPAL;
+static int RHO_TABLE[51];
 
 /*
 *----------------------------------------------------------------------------
@@ -68,7 +63,7 @@ extern int RHOPAL;
 /* asm: B4HIT_TABLE	.word	RH_GOFORIT,RH_TAKEHIM,RH_BABESCREAM1 */
 /* asm: 	.word	RH_BABEWHOA,RH_HURRYUP,RH_GONNACRASH */
 /* asm: 	 */
-int B4HIT_TABLE[] = {
+static int B4HIT_TABLE[] = {
     RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1,
     RH_BABEWHOA, RH_HURRYUP, RH_GONNACRASH,
 };
@@ -117,7 +112,7 @@ int NOLONG_VEHICLES;
 /* asm: 	.word	JEEP_MOD,0,CARDOPL1 */
 /* asm: 	 */
 /* asm: 	 */
-int RHO_TABLE[] = {
+static int RHO_TABLE[] = {
     GTRUCK_MOD, 0, DIESEL_DOPPLER,
     FTRUCK_MOD, RF_LONG, TRUCKHORN_BLAST,
     CBUS_MOD, RF_LONG, BUSDOPL,
@@ -296,7 +291,7 @@ RHOLL1:
 *
 *
 */
-void RHO_LP(void)
+static void RHO_LP(void)
 {
     // asm 000097FE: 	LDI	@SUSPEND_MODE,R0
     // asm 000097FF: 	CMPI	SM_HALT,R0
@@ -564,7 +559,7 @@ RHO_SLP:
 *AR7=DRONE PROCESS
 *
 */
-void CKCAROFF(void)
+static void CKCAROFF(void)
 {
     // asm 000098BC: 	LDI	*+AR7(DELTA_TPIECE),R0
     // asm 000098BD: 	LDI	@DYNALIST_TRUEBEGIN,AR0
@@ -651,7 +646,7 @@ NODYNALEAN:
 ;COLTABI	.word	COLTAB
 ;COLTAB	.word	SCOLLA,SCOLLB,SCOLLC
 */
-void RHO_ISHIT(void)
+static void RHO_ISHIT(void)
 {
     // asm 000098E4: 	LDI	*+AR4(OID),R0
     // asm 000098E5: 	ANDN	TYPE_M,R0
@@ -717,7 +712,7 @@ RHOISHIT_SLP:
 *
 */
 
-void SEND_RHO_XSFER(void)
+static void SEND_RHO_XSFER(void)
 {
     // asm 0000990F: 	LDI	CB_RHO_XSFER,R0 	;MESSAGE HEADER
     // *SEND MESSAGE HEADER
@@ -776,7 +771,7 @@ DECRHOX:
     UNIMPL();
 }
 
-void RHO_ACTIVE_XSFER(void)
+static void RHO_ACTIVE_XSFER(void)
 {
     // asm 0000992E: 	LDI	0,R0
     // asm 0000992F: 	STI	R0,*+AR5(CAR_OM)		;CAR BELONGS TO ME NOW!!!
@@ -820,7 +815,7 @@ void RHO_ACTIVE_XSFER(void)
     UNIMPL();
 }
 
-void SEND_RHO_KILL(void)
+static void SEND_RHO_KILL(void)
 {
     // asm 0000994F: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00009950: 	LDI	CB_RHO_KILL,R1

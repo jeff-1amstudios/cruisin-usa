@@ -14,10 +14,8 @@ extern int ACTIVE_SCREEN;
 extern int DYNALIST[];
 // asm: 	.bss	DYNAFREE,1
 extern int DYNAFREE;
-// asm: 	.bss	NULL,1
-extern int NULL;
 // asm: 	.bss	CARLIST,NUM_CARS*CARSIZ 	;(~1050 WORDS)
-extern int CARLIST[];
+extern CARBLK CARLIST[];
 // asm: 	.bss	CARFREE,1
 extern int CARFREE;
 // asm: 	.bss	CAR_COUNT,1

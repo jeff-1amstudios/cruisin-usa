@@ -166,5 +166,9 @@ extern int REPEAT_TIME;
 extern int OLD_MOTION_CODE;
 // asm: 	.bss	IBOIBOT,2
 extern int IBOIBOT[];
+void HIDDEN_DIAG(void);
+void FFRSUB(void);
+void SET_CONTROLS(void);
+void MOTION_SAFETY_SWITCHES_DIAG(void);
 
 #endif /* DIAG_H */

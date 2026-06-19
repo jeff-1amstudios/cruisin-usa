@@ -29,6 +29,7 @@ from gen_c_skeleton import (
     resolve_generated_output_path,
     render_equ_header,
     merge_storage_into_header,
+    render_macro_data_placeholder,
     render_discovered_defines_header,
     render_discovered_labels_header,
     render_port_header,
@@ -332,8 +333,8 @@ _SEChead2head:\t\t;(16345 lines, 102.16%)
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("extern int CONGRAT_SPEECH[];", rendered)
-        self.assertIn("int CONGRAT_SPEECH[] = {\n    GL_WOOLAUGH, GL_YEAH, GL_YES, GL_YOUDIDIT,\n};", rendered)
+        self.assertNotIn("static int CONGRAT_SPEECH[4];", rendered)
+        self.assertIn("static int CONGRAT_SPEECH[] = {\n    GL_WOOLAUGH, GL_YEAH, GL_YES, GL_YOUDIDIT,\n};", rendered)
         self.assertNotIn("extern int CONGRAT_SPEECH;", rendered)
 
     def test_single_symbol_word_renders_as_define(self) -> None:
@@ -712,6 +713,129 @@ NEXTFUNC:\tRETS
         self.assertNotIn('#include "discovered_labels.h"', rendered)
         self.assertNotIn("#define missle", rendered)
 
+    def test_render_module_marks_non_exported_functions_static(self) -> None:
+        asm_source = """EXPORTED:\tRETS
+INTERNAL:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            asm_dir = tmp / "asm"
+            include_dir = tmp / "src" / "game"
+            asm_dir.mkdir(parents=True, exist_ok=True)
+            include_dir.mkdir(parents=True, exist_ok=True)
+            src_path = asm_dir / "LOCALS.ASM"
+            src_path.write_text(asm_source)
+            (include_dir / "locals.h").write_text("void EXPORTED(void);\n")
+
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void EXPORTED(void);", rendered)
+        self.assertIn("void EXPORTED(void)\n{", rendered)
+        self.assertIn("static void INTERNAL(void);", rendered)
+        self.assertIn("static void INTERNAL(void)\n{", rendered)
+
+    def test_module_globl_function_stays_external_without_header_proto(self) -> None:
+        asm_source = """.globl\tDECODE_FLY_KILL
+DECODE_FLY_KILL:\tRETS
+LOCAL_ONLY:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "COLLA.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("void DECODE_FLY_KILL(void);", rendered)
+        self.assertIn("void DECODE_FLY_KILL(void)\n{", rendered)
+        self.assertIn("static void LOCAL_ONLY(void);", rendered)
+        self.assertIn("static void LOCAL_ONLY(void)\n{", rendered)
+
+    def test_non_exported_top_level_data_becomes_static(self) -> None:
+        asm_source = """FORMULA\t.float\t1.25
+USEIT:\tMPYF\t@FORMULA,R0
+\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "MATH.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertNotIn("static float FORMULA;", rendered)
+        self.assertIn("static float FORMULA = 1.25f;", rendered)
+
+    def test_non_exported_top_level_data_without_early_use_skips_forward_declaration(self) -> None:
+        asm_source = """FORMULA\t.float\t1.25
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "MATH.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertNotIn("static float FORMULA;", rendered)
+        self.assertIn("static float FORMULA = 1.25f;", rendered)
+
+    def test_word_alias_to_immediately_following_variable_skips_forward_declaration(self) -> None:
+        asm_source = """BUFFERSI\t.word\tBIGBUFFER
+\t.bss\tBIGBUFFER,8
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("#define BUFFERSI BIGBUFFER", rendered)
+        self.assertNotIn("static int BIGBUFFER;", rendered)
+        self.assertIn("static int BIGBUFFER[8];", rendered)
+
+    def test_word_alias_to_later_variable_skips_forward_declaration_without_intervening_use(self) -> None:
+        asm_source = """BUFFERSI\t.word\tBIGBUFFER
+* comment
+\t.if\tDEBUG
+\t.endif
+\t.bss\tBIGBUFFER,8
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "BONUS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("#define BUFFERSI BIGBUFFER", rendered)
+        self.assertNotIn("static int BIGBUFFER;", rendered)
+        self.assertIn("static int BIGBUFFER[8];", rendered)
+
+    def test_header_exported_top_level_data_stays_external(self) -> None:
+        asm_source = """\tpbss\tATTRWAVE,1
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            asm_dir = tmp / "asm"
+            include_dir = tmp / "src" / "game"
+            asm_dir.mkdir(parents=True, exist_ok=True)
+            include_dir.mkdir(parents=True, exist_ok=True)
+            src_path = asm_dir / "ATTRDRNE.ASM"
+            src_path.write_text(asm_source)
+            (include_dir / "attrdrne.h").write_text("extern int ATTRWAVE;\n")
+
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertNotIn("extern int ATTRWAVE;", rendered)
+        self.assertNotIn("static int ATTRWAVE;", rendered)
+        self.assertIn("int ATTRWAVE;", rendered)
+
+    def test_non_exported_macrodata_placeholder_becomes_static(self) -> None:
+        rendered = render_macro_data_placeholder(
+            "AUDIT_LIST",
+            ["AUDIT_LIST", '\tAUDENT\tAUD_COIN1,"LEFT COIN"'],
+        )
+
+        self.assertIn("static int AUDIT_LIST;", rendered)
+
     def test_render_port_header(self) -> None:
         rendered = render_port_header()
 
@@ -821,8 +945,8 @@ SCROLLB\t.set\t86h
             src_path.write_text(asm_source)
             rendered = render_module(src_path, {}, {}, None)
 
-        self.assertIn("/*\n*COMMENT A\n*COMMENT B\n*/\nvoid FIRST(void)", rendered)
-        self.assertNotIn("/*\n*COMMENT C\n*/\nvoid SECOND(void)", rendered)
+        self.assertIn("/*\n*COMMENT A\n*COMMENT B\n*/\nstatic void FIRST(void)", rendered)
+        self.assertNotIn("/*\n*COMMENT C\n*/\nstatic void SECOND(void)", rendered)
 
     def test_same_entry_labels_render_as_alias_macros_and_one_function(self) -> None:
         asm_source = """*ALLOCATE PALETTES FOR A SECTION
@@ -840,10 +964,10 @@ HARDalloc_section:\tLDI\t*AR2++,AR6
 
         self.assertIn("#define SECTION_PALETTE_ALLOC HARDalloc_section", rendered)
         self.assertIn("#define alloc_section HARDalloc_section", rendered)
-        self.assertIn("void HARDalloc_section(void)", rendered)
+        self.assertIn("static void HARDalloc_section(void)", rendered)
         self.assertNotIn("void SECTION_PALETTE_ALLOC(void)\n{", rendered)
         self.assertNotIn("void alloc_section(void)\n{", rendered)
-        self.assertIn("// *ALLOCATE PALETTES FOR A SECTION\nvoid HARDalloc_section(void)", rendered)
+        self.assertIn("// *ALLOCATE PALETTES FOR A SECTION\nstatic void HARDalloc_section(void)", rendered)
         self.assertEqual(symbol_table["HARDalloc_section"].kind, "function")
         self.assertEqual(symbol_table["alloc_section"].kind, "define")
         self.assertEqual(symbol_table["alloc_section"].expr, "HARDalloc_section")
@@ -1255,10 +1379,10 @@ GGPARK_LIST\t.word\t1,2,3
             type_overrides["GGPARK_LIST"] = TypeOverride(name="GGPARK_LIST", c_type="uintptr_t", array_expr="")
             rendered = render_module(src_path, {}, {}, None, type_overrides=type_overrides)
 
-        self.assertIn("extern uintptr_t *VIEWLIST[];", rendered)
-        self.assertIn("extern uintptr_t GGPARK_LIST[];", rendered)
-        self.assertIn("uintptr_t *VIEWLIST[] = {", rendered)
-        self.assertIn("uintptr_t GGPARK_LIST[] = {", rendered)
+        self.assertNotIn("static uintptr_t *VIEWLIST[];", rendered)
+        self.assertIn("static uintptr_t GGPARK_LIST[];", rendered)
+        self.assertIn("static uintptr_t *VIEWLIST[] = {", rendered)
+        self.assertIn("static uintptr_t GGPARK_LIST[] = {", rendered)
 
     def test_parse_render_overrides_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -1416,8 +1540,28 @@ BONUS8\tLDI\t8,R1
             LabelEntry(name="misslem", addr=0x00C29323),
         ])
 
-        self.assertIn("#define missle 0x00C28DF4", rendered)
-        self.assertIn("#define misslem 0x00C29323", rendered)
+        self.assertIn("#define missle_ROM 0x00C28DF4", rendered)
+        self.assertIn("#define misslem_ROM 0x00C29323", rendered)
+
+    def test_render_module_uses_discovered_label_rom_names_in_references(self) -> None:
+        asm_source = """MISSLEPAL\t.word\tmissle
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "MISSLE.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(
+                src_path,
+                {"missle": 0x00C28DF4},
+                {},
+                None,
+                discovered_labels_needed=True,
+                discovered_label_names={"missle"},
+            )
+
+        self.assertIn("int MISSLEPAL = missle_ROM;", rendered)
+        self.assertNotIn("int MISSLEPAL = missle;", rendered)
+
 
     def test_render_header_emits_function_alias_macro_for_globl(self) -> None:
         asm_source = """SECTION_PALETTE_ALLOC:\nalloc_section:\nHARDalloc_section:\tRETS\n"""

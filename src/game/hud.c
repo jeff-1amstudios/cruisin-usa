@@ -11,7 +11,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "dirq.h"
 #include "hud.h"
@@ -27,7 +26,7 @@ void HUD(void);
 #define alloc_section HARDalloc_section
 void HARDalloc_section(void);
 void dealloc_section(void);
-void TACHOMETER_ANIMATE(void);
+static void TACHOMETER_ANIMATE(void);
 void FILL_DITHER(void);
 void FILL_PLOT(void);
 
@@ -39,20 +38,7 @@ void FILL_PLOT(void);
 
 extern int CHEAT;
 
-extern int COUNTDOWN_BUF[];
-extern int MPH_BUFFER[];
-extern int _countdown;
-extern int _MPH;
-extern int SCORE;
-extern int POSITION;
-extern int MAXMPH_COUNT;
-extern int STOPBUFFER[];
-extern const char YOURLOSTTXT[];
-extern const char OFFROADTXT[];
-extern int OFFROADBUFF[];
-extern int MOVEIN_OFFSET;
-extern int TACHOMETER_PAL[];
-extern int GEARPAL;
+static int GEARPAL;
 
 /*
 *----------------------------------------------------------------------------
@@ -81,9 +67,9 @@ int MAXMPH_COUNT;
 /* asm: STOPBUFFI	.word	STOPBUFFER */
 #define STOPBUFFI STOPBUFFER
 /* asm: STOPBUFFER	.bss	STOPBUFFER,4 */
-int STOPBUFFER[4];
-const char YOURLOSTTXT[] = "YOU ARE LOST";
-const char OFFROADTXT[] = "OFFROAD";
+static int STOPBUFFER[4];
+static const char YOURLOSTTXT[] = "YOU ARE LOST";
+static const char OFFROADTXT[] = "OFFROAD";
 /* asm: OFFROADBUFF	.bss	OFFROADBUFF,2 */
 int OFFROADBUFF[2];
 // *----------------------------------------------------------------------------
@@ -512,7 +498,7 @@ void dealloc_section(void)
 int TACHOMETER_PAL[32];
 
 // *----------------------------------------------------------------------------
-void TACHOMETER_ANIMATE(void)
+static void TACHOMETER_ANIMATE(void)
 {
     // asm 00009E4D: 	LDL	TACH_GRADIENT,AR0
     // asm 00009E4E: 	LDL	TACHOMETER_PAL,AR1
@@ -574,7 +560,7 @@ LP89:
 /* asm: .word	0 */
 /* asm: .word	0 */
 /* asm: RGB	0,255,255 */
-int GEARPAL;
+static int GEARPAL;
 // *----------------------------------------------------------------------------
 
 /*

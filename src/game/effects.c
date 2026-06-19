@@ -5,7 +5,6 @@
 #include "obj.h"
 #include "sysid.h"
 #include "globals.h"
-#include "objects.h"
 #include "effects.h"
 
 /*
@@ -17,15 +16,13 @@ void SCREENWIPE_CLOSE(void);
 void SCREENWIPE_OPEN_PRC_FAST(void);
 void SCREENWIPE_OPEN_PRC(void);
 void SCREENWIPE_CLOSE_PRC(void);
-void GET_EFFECTS_OBJS(void);
-void MEMCPY(void);
+static void GET_EFFECTS_OBJS(void);
+static void MEMCPY(void);
 
 #define MONKEYOBJRVI mnkrv
 #define MONKEYOBJLVI mnklv
 #define MONKEYOBJUHI mnkuh
 #define MONKEYOBJLHI mnklh
-
-extern int SCREENWIPE_DONE;
 
 /*
 *----------------------------------------------------------------------------
@@ -300,7 +297,7 @@ void SCREENWIPE_CLOSE_PRC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void GET_EFFECTS_OBJS(void)
+static void GET_EFFECTS_OBJS(void)
 {
     // asm 0000B0AE: 	LONGROUT
     // asm: 	LDI	@MONKEYOBJRVI,AR1
@@ -388,7 +385,7 @@ void GET_EFFECTS_OBJS(void)
 *	RC	LENGTH -1
 *
 */
-void MEMCPY(void)
+static void MEMCPY(void)
 {
     // asm 0000B0AF: 	LONGROUT
     // asm: 	PUSH	AR0

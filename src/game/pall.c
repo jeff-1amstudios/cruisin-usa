@@ -3,7 +3,6 @@
 #include "vunit.h"
 #include "mproc.h"
 #include "pall.h"
-#include "objects.h"
 #include "sys.h"
 #include "macs.h"
 #include "error.h"
@@ -22,9 +21,9 @@ void PAL_DELETE_RAW(void);
 void PAL_ALLOC(void);
 void PAL_ALLOC_RAW(void);
 void PAL_SET(void);
-void PALXFER_INIT(void);
-void PALXFER_GET(void);
-void PALXFER_DEL(void);
+static void PALXFER_INIT(void);
+static void PALXFER_GET(void);
+static void PALXFER_DEL(void);
 void PAL_DELETE(void);
 void PAL_DIMMER(void);
 
@@ -36,16 +35,6 @@ void PAL_DIMMER(void);
 #define PALXFER_ACTIVEI PALXFER_ACTIVE
 #define PALXFER_FREEI PALXFER_FREE
 #define PALXFER_STRI PALXFER_STR
-
-extern int PALRAM[];
-extern int RAWLOCS[];
-extern int PTTRAM[];
-extern int NUM_FIXED;
-extern int PALSXFER;
-extern int PALXFER_ACTIVE;
-extern int PALXFER_FREE;
-extern int PALXFER_AVAILABLE_P;
-extern int PALXFER_STR[];
 
 /*
 *----------------------------------------------------------------------------
@@ -67,7 +56,7 @@ int RAWLOCS[PALNUM];
 /* asm: PTTRAM	.bss	PTTRAM,PALNUM*3 */
 int PTTRAM[PALNUM*3];
 /* asm: NUM_FIXED	.bss	NUM_FIXED,1 */
-int NUM_FIXED;
+static int NUM_FIXED;
 /*
 *----------------------------------------------------------------------------
 *INDEX STORAGE
@@ -128,7 +117,7 @@ void PAL_INIT(void)
 *
 */
 /* asm: PALSXFER	.bss	PALSXFER,1 */
-int PALSXFER;
+static int PALSXFER;
 
 void PAL_XFER(void)
 {
@@ -567,7 +556,7 @@ int PALXFER_AVAILABLE_P;
 int PALXFER_STR[sizeof(PALXFER) * NXFER_PALS];
 
 // *----------------------------------------------------------------------------
-void PALXFER_INIT(void)
+static void PALXFER_INIT(void)
 {
     // asm 00009F9D: 	PUSH	R0
     // asm 00009F9E: 	PUSH	AR0
@@ -602,7 +591,7 @@ PXIL:
 *	AR0	PTR TO AVAILABLE XFER BLOCK
 *
 */
-void PALXFER_GET(void)
+static void PALXFER_GET(void)
 {
     // asm 00009FAF: 	PUSH	R0
     // asm 00009FB0: 	LDI	1,R0
@@ -636,7 +625,7 @@ CNT:
 *	AR0	PTR TO XFER BLOCK TO FREE
 *
 */
-void PALXFER_DEL(void)
+static void PALXFER_DEL(void)
 {
     // asm 00009FBA: 	PUSH	R0
     // asm 00009FBB: 	PUSH	AR1

@@ -917,12 +917,10 @@ DIPLP
 	.bss	DIPTMP,2
 
 	.data
-ISON	.word	ONTEXT
-ISOFF	.word	OFFTEXT
-
-	romdata
 ONTEXT	.string	"ON",0
 OFFTEXT	.string	"OFF",0
+ISON	.word	ONTEXT
+ISOFF	.word	OFFTEXT
 	.text
 *
 SHOW_DIPSWITCH_STATUS:

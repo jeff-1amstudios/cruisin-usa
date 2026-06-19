@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "comm.h"
 #include "delta.h"
@@ -26,45 +25,45 @@ void COMMQ_PACKET_INIT(void);
 void COMMQ_READY_TO_SEND(void);
 void MESSAGE_ADD(void);
 void MESSAGE_ADD_SB(void);
-void DECODE_NULL(void);
+static void DECODE_NULL(void);
 void SEND_WAVEFL_READY(void);
 void SEND_WAVEFL_SET(void);
 void SEND_WAVEFL_GO(void);
-void DECODE_WAVEFL_READY(void);
-void DECODE_WAVEFL_SET(void);
-void DECODE_WAVEFL_GO(void);
-void SEND_LINKEDT(void);
-void SEND_LINKEDF(void);
-void DECODE_LINKEDT(void);
-void DECODE_LINKEDF(void);
-void DECODE_MODE(void);
+static void DECODE_WAVEFL_READY(void);
+static void DECODE_WAVEFL_SET(void);
+static void DECODE_WAVEFL_GO(void);
+static void SEND_LINKEDT(void);
+static void SEND_LINKEDF(void);
+static void DECODE_LINKEDT(void);
+static void DECODE_LINKEDF(void);
+static void DECODE_MODE(void);
 void SEND_CHECKPOINT(void);
-void SEND_FINISH(void);
+static void SEND_FINISH(void);
 void SEND_MODE(void);
-void DECODE_LINKCANCELLED(void);
+static void DECODE_LINKCANCELLED(void);
 void SEND_LINKCANCELLED(void);
 void SEND_START_GAME(void);
-void DECODE_START_GAME(void);
+static void DECODE_START_GAME(void);
 void SEND_END_GAME(void);
-void DECODE_END_GAME(void);
+static void DECODE_END_GAME(void);
 void SEND_TIMECODE(void);
 void SEND_RACENUM(void);
-void DECODE_RACENUM(void);
-void DECODE_VEHICLE(void);
+static void DECODE_RACENUM(void);
+static void DECODE_VEHICLE(void);
 void SEND_VEHICLE(void);
-void DECODE_TIMECODE(void);
+static void DECODE_TIMECODE(void);
 void SEND_RHO_POS(void);
 void SEND_RACER_POS(void);
 void SEND_PLAYERS_POS(void);
 void SEND_RHO_CREATE(void);
 void FIND_DRONE(void);
 #define DECODE_FLY_UPDATE DECODE_RHO_UPDATE
-void DECODE_RHO_UPDATE(void);
-void DECODE_RACER_UPDATE(void);
-void DECODE_CAR_UPDATE(void);
-void DECODE_RHO_CREATE(void);
-void DECODE_RACER_KILL(void);
-void DECODE_OM_TRACK(void);
+static void DECODE_RHO_UPDATE(void);
+static void DECODE_RACER_UPDATE(void);
+static void DECODE_CAR_UPDATE(void);
+static void DECODE_RHO_CREATE(void);
+static void DECODE_RACER_KILL(void);
+static void DECODE_OM_TRACK(void);
 void SEND_OM_TRACK(void);
 #define SEND_BSYNC0 SEND_BSYNC3
 #define SEND_BSYNC1 SEND_BSYNC3
@@ -73,14 +72,14 @@ void SEND_BSYNC3(void);
 #define DECODE_BSYNC0 DECODE_BSYNC3
 #define DECODE_BSYNC1 DECODE_BSYNC3
 #define DECODE_BSYNC2 DECODE_BSYNC3
-void DECODE_BSYNC3(void);
-void DECODE_CHANGE_MUSIC(void);
+static void DECODE_BSYNC3(void);
+static void DECODE_CHANGE_MUSIC(void);
 void SEND_CHANGE_MUSIC(void);
-void DECODE_COINDROP(void);
+static void DECODE_COINDROP(void);
 void SEND_COINDROP(void);
-void DECODE_DIAGNOSTIC(void);
-void SEND_DIAGNOSTIC(void);
-void DECODE_ATTRSND(void);
+static void DECODE_DIAGNOSTIC(void);
+static void SEND_DIAGNOSTIC(void);
+static void DECODE_ATTRSND(void);
 void SEND_ATTRSND(void);
 
 #define DECODE_FLY_UPDATE DECODE_RHO_UPDATE
@@ -103,36 +102,7 @@ void SEND_FLY_KILL(void);
 extern int OM_TRACK_LO;
 extern int OM_TRACK_HI;
 
-extern int IGNORE_UPDATES;
-extern int COMMQ_TMP_BUFF[];
-extern int SEND_BUFFER_A[];
-extern int SEND_BUFFER_A_LEN;
-extern int RBUFF_LEN;
-extern int RECEIVE_BUFFER[];
-extern int OM_DIFF;
-extern int OM_MODE;
-extern int OM_CHOSEN_RACE;
-extern int OM_VEHICLE;
-extern int OM_STATE;
-extern int MY_STATE;
-extern int OM_ATTR_MODE;
-extern int OLD_OM_ATTR_MODE;
-extern int OM_LINKWAIT;
-extern int MY_LINKWAIT;
-extern int LINKEDP;
-extern int OM_HIDDEN_ON;
-extern int OM_RACE_MODE;
-extern int BSYNC;
-extern int OM_BSYNC;
-extern int OM_POSITION;
-extern int HEAD2HEAD_ON;
-extern int SAVED_PLY2CAR;
-extern uintptr_t DECODE_BLOCK[];
-extern float MATCON;
-extern float RADCON;
-extern int COINDROP;
-extern int OM_DIAGVALUE;
-extern int DIAGVALUE;
+static uintptr_t DECODE_BLOCK[];
 
 /*
 *----------------------------------------------------------------------------
@@ -332,7 +302,7 @@ ISDONE:
 /* asm: 	 */
 /* asm: 	.word	-1 */
 /* asm: 	 */
-uintptr_t DECODE_BLOCK[] = {
+static uintptr_t DECODE_BLOCK[] = {
     (uintptr_t)DECODE_NULL,
     (uintptr_t)DECODE_MODE, // CB_MODE
     (uintptr_t)DECODE_TIMECODE, // CB_TIMECODE
@@ -520,7 +490,7 @@ MASBX:
 
 // *----------------------------------------------------------------------------
 
-void DECODE_NULL(void)
+static void DECODE_NULL(void)
 {
     // asm 000076F1: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_NULL", 0, 0);
@@ -562,7 +532,7 @@ void SEND_WAVEFL_GO(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DECODE_WAVEFL_READY(void)
+static void DECODE_WAVEFL_READY(void)
 {
     // asm 000076FA: 	LDI	1,R0
     // asm 000076FB: 	STI	R0,@H2H_FLAGSTATE
@@ -571,7 +541,7 @@ void DECODE_WAVEFL_READY(void)
     UNIMPL();
 }
 
-void DECODE_WAVEFL_SET(void)
+static void DECODE_WAVEFL_SET(void)
 {
     // asm 000076FD: 	LDI	2,R0
     // asm 000076FE: 	STI	R0,@H2H_FLAGSTATE
@@ -580,7 +550,7 @@ void DECODE_WAVEFL_SET(void)
     UNIMPL();
 }
 
-void DECODE_WAVEFL_GO(void)
+static void DECODE_WAVEFL_GO(void)
 {
     // asm 00007700: 	LDI	3,R0
     // asm 00007701: 	STI	R0,@H2H_FLAGSTATE
@@ -594,7 +564,7 @@ void DECODE_WAVEFL_GO(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_LINKEDT(void)
+static void SEND_LINKEDT(void)
 {
     // asm 00007705: 	PUSH	AR2
     // asm 00007706: 	LDI	CB_HEAD2HEADT,AR2
@@ -605,7 +575,7 @@ void SEND_LINKEDT(void)
     UNIMPL();
 }
 
-void SEND_LINKEDF(void)
+static void SEND_LINKEDF(void)
 {
     // asm 0000770A: 	PUSH	AR2
     // asm 0000770B: 	LDI	CB_HEAD2HEADF,AR2
@@ -616,7 +586,7 @@ void SEND_LINKEDF(void)
     UNIMPL();
 }
 
-void DECODE_LINKEDT(void)
+static void DECODE_LINKEDT(void)
 {
     // asm 0000770F: 	PUSH	R0
     // asm 00007710: 	LDI	1,R0
@@ -627,7 +597,7 @@ void DECODE_LINKEDT(void)
     UNIMPL();
 }
 
-void DECODE_LINKEDF(void)
+static void DECODE_LINKEDF(void)
 {
     // asm 00007714: 	PUSH	R0
     // asm 00007715: 	LDI	2,R0
@@ -641,7 +611,7 @@ void DECODE_LINKEDF(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DECODE_MODE(void)
+static void DECODE_MODE(void)
 {
     // asm 00007719: 	PUSH	R0
     // asm 0000771A: 	PUSH	R1
@@ -763,7 +733,7 @@ void SEND_CHECKPOINT(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_FINISH(void)
+static void SEND_FINISH(void)
 {
     // asm 0000776F: 	LDI	OMS_FINISHLINE,R0
     // asm 00007770: 	OR	@MY_STATE,R0
@@ -813,7 +783,7 @@ void SEND_MODE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DECODE_LINKCANCELLED(void)
+static void DECODE_LINKCANCELLED(void)
 {
     // asm 0000778E: 	CLRI	R0
     // asm 0000778F: 	STI	R0,@OM_LINKWAIT
@@ -862,7 +832,7 @@ void SEND_START_GAME(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DECODE_START_GAME(void)
+static void DECODE_START_GAME(void)
 {
     // asm 0000779D: 	LDI	1,R0
     // asm 0000779E: 	STI	R0,@OM_LINKWAIT
@@ -914,7 +884,7 @@ void SEND_END_GAME(void)
 *----------------------------------------------------------------------------
 *clear the variables associated with the game...
 */
-void DECODE_END_GAME(void)
+static void DECODE_END_GAME(void)
 {
     // asm 000077BC: 	LDI	0,R0
     // asm 000077BD: 	STI	R0,@HEAD2HEAD_ON
@@ -968,7 +938,7 @@ void SEND_RACENUM(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DECODE_RACENUM(void)
+static void DECODE_RACENUM(void)
 {
     // asm 000077D5: 	PUSH	R1
     // asm 000077D6: 	LDI	*AR2++,R1
@@ -993,7 +963,7 @@ void DECODE_RACENUM(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DECODE_VEHICLE(void)
+static void DECODE_VEHICLE(void)
 {
     // asm 000077E4: 	LDI	*AR2++,R0
     // asm 000077E5: 	LS	8,R0
@@ -1024,7 +994,7 @@ void SEND_VEHICLE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DECODE_TIMECODE(void)
+static void DECODE_TIMECODE(void)
 {
     // asm 000077F0: 	PUSH	R0
     // asm 000077F1: 	PUSH	R1
@@ -1215,10 +1185,10 @@ void SEND_RHO_CREATE(void)
 
 // *MATRIX DECODE CONSTANT
 /* asm: MATCON	.FLOAT	0.00003125		;1/32000 */
-float MATCON = 0.00003125f;
+static float MATCON = 0.00003125f;
 /* asm: RADCON	.FLOAT	0.001			;1/1000 */
 /* asm: 	 */
-float RADCON = 0.001f;
+static float RADCON = 0.001f;
 /*
 *
 *FIND DRONE CAR
@@ -1254,7 +1224,7 @@ FD1:
     UNIMPL();
 }
 
-void DECODE_RHO_UPDATE(void)
+static void DECODE_RHO_UPDATE(void)
 {
     // asm 00007875: 	LDI	@IGNORE_UPDATES,R0
     // asm 00007876: 	BNZ	DECCARX
@@ -1270,7 +1240,7 @@ void DECODE_RHO_UPDATE(void)
     UNIMPL();
 }
 
-void DECODE_RACER_UPDATE(void)
+static void DECODE_RACER_UPDATE(void)
 {
     // asm 0000787B: 	LDI	@IGNORE_UPDATES,R0
     // asm 0000787C: 	BNZ	DECCARX
@@ -1296,7 +1266,7 @@ void DECODE_RACER_UPDATE(void)
     UNIMPL();
 }
 
-void DECODE_CAR_UPDATE(void)
+static void DECODE_CAR_UPDATE(void)
 {
     // asm 0000788A: 	LDI	@IGNORE_UPDATES,R0
     // asm 0000788B: 	BNZ	DECCARX
@@ -1415,7 +1385,7 @@ DECCARX:
 
 // *----------------------------------------------------------------------------
 
-void DECODE_RHO_CREATE(void)
+static void DECODE_RHO_CREATE(void)
 {
     // asm 000078E2: 	LDI	@HEAD2HEAD_ON,R0
     // asm 000078E3: 	BZ	DCRHOX
@@ -1442,7 +1412,7 @@ DCRHOX:
     UNIMPL();
 }
 
-void DECODE_RACER_KILL(void)
+static void DECODE_RACER_KILL(void)
 {
     // asm 000078F5: 	LDI	-16,R2
     // asm 000078F6: 	LSH	R2,*AR2++,R0   		;GET CAR ID #
@@ -1466,7 +1436,7 @@ DCRKX:
     UNIMPL();
 }
 
-void DECODE_OM_TRACK(void)
+static void DECODE_OM_TRACK(void)
 {
     // asm 00007903: 	LDI	-16,R2
     // asm 00007904: 	LDI	-8,R3
@@ -1544,7 +1514,7 @@ SBLS:
     UNIMPL();
 }
 
-void DECODE_BSYNC3(void)
+static void DECODE_BSYNC3(void)
 {
     // ;	LDI	0,R0
     // ;	STI	R0,@OM_BSYNC
@@ -1565,7 +1535,7 @@ void DECODE_BSYNC3(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DECODE_CHANGE_MUSIC(void)
+static void DECODE_CHANGE_MUSIC(void)
 {
     // asm 0000792F: 	LDI	*AR2++,R0
     // asm 00007930: 	LDI	@HEAD2HEAD_ON,R1
@@ -1604,7 +1574,7 @@ void SEND_CHANGE_MUSIC(void)
 int COINDROP;
 
 // *----------------------------------------------------------------------------
-void DECODE_COINDROP(void)
+static void DECODE_COINDROP(void)
 {
     // asm 00007941: 	LDI	1,R0
     // asm 00007942: 	STI	R0,@COINDROP
@@ -1641,7 +1611,7 @@ int DIAGVALUE;
 *
 *
 */
-void DECODE_DIAGNOSTIC(void)
+static void DECODE_DIAGNOSTIC(void)
 {
     // asm 00007946: 	LDI	*AR2++,R0
     // asm 00007947: 	LS	8,R0
@@ -1658,7 +1628,7 @@ void DECODE_DIAGNOSTIC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_DIAGNOSTIC(void)
+static void SEND_DIAGNOSTIC(void)
 {
     // asm 0000794E: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 0000794F: 	LDI	CB_DIAGNOSTIC,R0
@@ -1682,7 +1652,7 @@ void SEND_DIAGNOSTIC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DECODE_ATTRSND(void)
+static void DECODE_ATTRSND(void)
 {
     // asm 0000795C: 	PUSH	R0
     // asm 0000795D: 	PUSH	AR2

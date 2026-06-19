@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "roadblck.h"
 
@@ -24,9 +23,6 @@ void FREE_RDDEBRIS(void);
 void DEBRIS_SORT(void);
 
 #define ROAD_DEBRISI ROAD_DEBRIS
-
-extern int ROAD_DEBRIS;
-extern float MAXDIST;
 
 /*
 *----------------------------------------------------------------------------
@@ -165,7 +161,7 @@ FREEDR_X:
 *
 */
 /* asm: MAXDIST	.FLOAT	9999999999.0  		;A VERY LARGE NUMBER */
-float MAXDIST = 9999999999.0f;
+static float MAXDIST = 9999999999.0f;
 
 // *
 void DEBRIS_SORT(void)

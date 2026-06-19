@@ -6,9 +6,9 @@
  */
 
 void _rectangle(void);
-void EPI0_1(void);
+static void EPI0_1(void);
 void _line(void);
-void EPI0_2(void);
+static void EPI0_2(void);
 
 void INV_F30(void);
 void _pixel(void);
@@ -64,7 +64,7 @@ void _rectangle(void)
     UNIMPL();
 }
 
-void EPI0_1(void)
+static void EPI0_1(void)
 {
     // asm 0000AC4D: 	LDI	*-FP(1),R1
     // asm 0000AC4E: 	LDI	*FP,FP
@@ -280,7 +280,7 @@ L38:
     UNIMPL();
 }
 
-void EPI0_2(void)
+static void EPI0_2(void)
 {
     // asm 0000ACF2: 	LDI	*-FP(1),R1
     // asm 0000ACF3: 	LDI	*FP,FP

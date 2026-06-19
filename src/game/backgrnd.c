@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "cornobj.h"
 #include "backgrnd.h"
 
@@ -20,42 +19,42 @@
 
 void FIND_STARTING_VALUES(void);
 void BGD_INIT(void);
-void BGD_WATCHER(void);
-void BGD_ACTIVATE_TYCOGROUP(void);
-void ADD_TO_NEWLIST(void);
-void FIND_SUBLIST_START_END(void);
-void APPEND_NEWLIST(void);
-void SHINY_NEWLIST(void);
-void GROUP_DELETE(void);
+static void BGD_WATCHER(void);
+static void BGD_ACTIVATE_TYCOGROUP(void);
+static void ADD_TO_NEWLIST(void);
+static void FIND_SUBLIST_START_END(void);
+static void APPEND_NEWLIST(void);
+static void SHINY_NEWLIST(void);
+static void GROUP_DELETE(void);
 void GET_XZ_DISTANCE(void);
-void BGD_OROUTINE(void);
-void OVERCAR(void);
-void CARFORWARD(void);
-void ROAD_DEBRIS_CREATE_55GAL(void);
-void ROAD_DEBRIS_CREATE(void);
-void SMOKE_STACK(void);
-void CAR_FIRE(void);
-void DC_MINIFOUNTAIN(void);
-void DC_FOUNTAIN(void);
-void WATERFALL(void);
-void WATERANI_PROC(void);
-void WATERFALL_SND(void);
+static void BGD_OROUTINE(void);
+static void OVERCAR(void);
+static void CARFORWARD(void);
+static void ROAD_DEBRIS_CREATE_55GAL(void);
+static void ROAD_DEBRIS_CREATE(void);
+static void SMOKE_STACK(void);
+static void CAR_FIRE(void);
+static void DC_MINIFOUNTAIN(void);
+static void DC_FOUNTAIN(void);
+static void WATERFALL(void);
+static void WATERANI_PROC(void);
+static void WATERFALL_SND(void);
 void AMBIENCE_SOUND(void);
 void HUNGH_ANI(void);
-void HUNGH_ANI_REENTER(void);
-void PLACE_ON_ROAD(void);
+static void HUNGH_ANI_REENTER(void);
+static void PLACE_ON_ROAD(void);
 void RUT_ANI(void);
-void PLAINANI_PROC_SLOW(void);
-void FLAGWAVE_TALL(void);
-void FLAGWAVE(void);
-void PLAINANI_PROC(void);
+static void PLAINANI_PROC_SLOW(void);
+static void FLAGWAVE_TALL(void);
+static void FLAGWAVE(void);
+static void PLAINANI_PROC(void);
 void LOAD_SINGLE_SECTION(void);
-void OHARE_PLANE(void);
-void PLANE_FWRD(void);
-void TRAIN_FWRD_MAKEB(void);
-void TRAIN_FWRD_MAKE(void);
-void TRAIN_FWRDB(void);
-void TRAIN_FWRD(void);
+static void OHARE_PLANE(void);
+static void PLANE_FWRD(void);
+static void TRAIN_FWRD_MAKEB(void);
+static void TRAIN_FWRD_MAKE(void);
+static void TRAIN_FWRDB(void);
+static void TRAIN_FWRD(void);
 void LOAD_SINGLE_SECTION_OFFSET(void);
 
 #define NEW_GROUPI NEW_GROUP
@@ -73,50 +72,11 @@ void LOAD_SINGLE_SECTION_OFFSET(void);
 #define BABE_PALISTI BABE_PALIST
 #define ROUTINE_TABI ROUTINE_TAB
 
-extern int STARTSECTION;
-extern int START_POS[];
-extern int START_RADY;
-extern int DRIVE_LIST;
-extern int CAR_LIST;
-extern int SIGN_LIST;
-extern int GROUND_LIST;
-extern int NEW_GROUP;
-extern int DGROUPS[];
-extern int DGROUP_COUNT;
-extern int DGROUP_AW;
-extern int DYNALIST_TRUEBEGIN;
-extern int DYNALIST_BEGIN;
-extern int DYNALIST_END;
-extern int SUBLIST_BEGIN;
-extern int SUBLIST_END;
-extern int STARTS;
-extern int SECTIONIDX;
-extern int TYCO_TRACK;
-extern int TYCO_TRACK_NTL;
-extern int TYCO_NTL_IDX;
-extern float ATTRACT_ACTIVATE_DIST;
-extern float ACTIVATE_DIST;
-extern float DACT_DIST;
-extern float DDACT_DIST;
-extern float ATTR_DDACT_DIST;
-extern int NEWSUBLIST_TOPB;
-extern int GROUP_RADY;
-extern int TYCOFLAG;
-extern int PASS1;
-extern int SECRADY;
-extern int OVERCARLIST[];
-extern int SMOKE_ANI[];
-extern int CAR_FIRE_ANI[];
-extern int DC_MINIFOUNTAIN_ANI[];
-extern int DC_FOUNTAIN_ANI[];
-extern int WATERFALL_ANI[];
-extern int FLAGANI[];
-extern int FLAGANITALL[];
-extern int RUT_ANIS[];
-extern int HUNGH_ANIS[];
-extern int BABE_PALIST[];
-extern int SINGLE_SECTION_TEMPPTR;
-extern uintptr_t ROUTINE_TAB[];
+static int CAR_FIRE_ANI[13];
+static int DC_MINIFOUNTAIN_ANI[7];
+static int DC_FOUNTAIN_ANI[6];
+static int BABE_PALIST[10];
+static uintptr_t ROUTINE_TAB[];
 
 /* asm: STARTSECTION	.bss	STARTSECTION,1 */
 int STARTSECTION;
@@ -173,20 +133,20 @@ int TYCO_TRACK_NTL;
 /* asm: TYCO_NTL_IDX	.bss	TYCO_NTL_IDX,1 */
 int TYCO_NTL_IDX;
 /* asm: ATTRACT_ACTIVATE_DIST	.float	15000 */
-float ATTRACT_ACTIVATE_DIST = 15000.0f;
+static float ATTRACT_ACTIVATE_DIST = 15000.0f;
 /* asm: ACTIVATE_DIST		.float	5000	;to activate */
 /* asm: 	 */
-float ACTIVATE_DIST = 5000.0f;
+static float ACTIVATE_DIST = 5000.0f;
 /* asm: DACT_DIST		.float	80000	;dynamic activate distance */
-float DACT_DIST = 80000.0f;
+static float DACT_DIST = 80000.0f;
 /* asm: DDACT_DIST		.float	15000	;dynamic activate distance (+ radius) */
-float DDACT_DIST = 15000.0f;
+static float DDACT_DIST = 15000.0f;
 // ;ATTR_DDACT_DIST		.float	35000	;dynamic deactivate distance (+ radius)
 /* asm: ATTR_DDACT_DIST		.float	45000	;dynamic deactivate distance (+ radius) */
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-float ATTR_DDACT_DIST = 45000.0f;
+static float ATTR_DDACT_DIST = 45000.0f;
 
 // *----------------------------------------------------------------------------
 void FIND_STARTING_VALUES(void)
@@ -354,7 +314,7 @@ NOO2d:
 
 // *----------------------------------------------------------------------------
 
-void BGD_WATCHER(void)
+static void BGD_WATCHER(void)
 {
     // asm 00003FF4: 	LDI	@_MODE,R0
     // asm 00003FF5: 	AND	MMODE,R0
@@ -552,7 +512,7 @@ NODEACT:
 /* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
 int NEWSUBLIST_TOPB;
 /* asm: GROUP_RADY	.bss	GROUP_RADY,1 */
-int GROUP_RADY;
+static int GROUP_RADY;
 /* asm: TYCOFLAG	.bss	TYCOFLAG,1 */
 int TYCOFLAG;
 /* asm: PASS1	.bss	PASS1,1 */
@@ -560,7 +520,7 @@ int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
 int SECRADY;
 
-void BGD_ACTIVATE_TYCOGROUP(void)
+static void BGD_ACTIVATE_TYCOGROUP(void)
 {
     // asm 0000406B: 	PUSH	R4
     // asm 0000406C: 	PUSH	R5
@@ -957,7 +917,7 @@ NO_NEWLOAD:
 *
 *
 */
-void ADD_TO_NEWLIST(void)
+static void ADD_TO_NEWLIST(void)
 {
     // asm 000041A8: 	LDI	@NEW_GROUPI,AR1
     // asm 000041A9: 	LDI	*AR1,R0
@@ -997,7 +957,7 @@ ISZERO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void FIND_SUBLIST_START_END(void)
+static void FIND_SUBLIST_START_END(void)
 {
     // asm 000041C3: 	PUSH	R1
     // asm 000041C4: 	PUSH	AR0
@@ -1045,7 +1005,7 @@ FSDN:
 *
 *
 */
-void APPEND_NEWLIST(void)
+static void APPEND_NEWLIST(void)
 {
     // asm 000041CF: 	LDI	@DYNALIST_END,R0
     // asm 000041D0: 	BZ	SHINY_NEWLIST
@@ -1062,7 +1022,7 @@ void APPEND_NEWLIST(void)
     UNIMPL();
 }
 
-void SHINY_NEWLIST(void)
+static void SHINY_NEWLIST(void)
 {
     // asm 000041DA: 	LDI	@SUBLIST_END,R0
     // asm 000041DB: 	STPI	R0,@DYNALIST_END
@@ -1093,7 +1053,7 @@ void SHINY_NEWLIST(void)
 *
 *
 */
-void GROUP_DELETE(void)
+static void GROUP_DELETE(void)
 {
     // asm 000041E2: 	PUSH	R0
     // asm 000041E3: 	PUSH	R1
@@ -1207,7 +1167,7 @@ void GET_XZ_DISTANCE(void)
 *	ALL REGISTERS MUST BE SAVED
 *
 */
-void BGD_OROUTINE(void)
+static void BGD_OROUTINE(void)
 {
     // asm 00004223: 	PUSH	R0
     // asm 00004224: 	PUSH	R1
@@ -1237,7 +1197,7 @@ BGD_RFND:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OVERCAR(void)
+static void OVERCAR(void)
 {
     // asm 00004236: 	PUSH	R0
     // asm 00004237: 	PUSH	R2
@@ -1269,11 +1229,11 @@ void OVERCAR(void)
 // *----------------------------------------------------------------------------
 /* asm: OVERCARLIST	.word	dcbus,dgtruck,dsbus,dcbus */
 /* asm: 	 */
-int OVERCARLIST[] = {
-    dcbus, dgtruck, dsbus, dcbus,
+static int OVERCARLIST[] = {
+    dcbus_ROM, dgtruck_ROM, dsbus_ROM, dcbus_ROM,
 };
 
-void CARFORWARD(void)
+static void CARFORWARD(void)
 {
     // asm 00004253: 	RANDN	50
     // asm 00004255: 	CMPI	25,R0
@@ -1354,7 +1314,7 @@ CARFORWARDLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void ROAD_DEBRIS_CREATE_55GAL(void)
+static void ROAD_DEBRIS_CREATE_55GAL(void)
 {
     // asm 0000429D: 	PUSH	R0
     // asm 0000429E: 	CALL	ADD_RDDEBRIS
@@ -1366,7 +1326,7 @@ void ROAD_DEBRIS_CREATE_55GAL(void)
     UNIMPL();
 }
 
-void ROAD_DEBRIS_CREATE(void)
+static void ROAD_DEBRIS_CREATE(void)
 {
     // asm 000042A3: 	BU	ADD_RDDEBRIS
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1377,7 +1337,7 @@ void ROAD_DEBRIS_CREATE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SMOKE_STACK(void)
+static void SMOKE_STACK(void)
 {
     // asm 000042A4: 	PUSH	R0
     // asm 000042A5: 	PUSH	AR0
@@ -1394,7 +1354,7 @@ void SMOKE_STACK(void)
     UNIMPL();
 }
 
-void CAR_FIRE(void)
+static void CAR_FIRE(void)
 {
     // asm 000042AD: 	PUSH	R0
     // asm 000042AE: 	PUSH	AR0
@@ -1414,8 +1374,8 @@ void CAR_FIRE(void)
 /* asm: SMOKE_ANI	.word	smoa,smob,smoc,smod,smoe,smof */
 /* asm: 	.word	-1 */
 /* asm: 	 */
-int SMOKE_ANI[] = {
-    smoa, smob, smoc, smod, smoe, smof,
+static int SMOKE_ANI[] = {
+    smoa_ROM, smob_ROM, smoc_ROM, smod_ROM, smoe_ROM, smof_ROM,
     -1,
 };
 // ;eug1,eug2,eug3,eug4,eug5,eug6
@@ -1426,9 +1386,9 @@ int SMOKE_ANI[] = {
 /* asm: 	.word	rdflm7,rdflm8,rdflm9,rdflm10,rdflm11,rdflm12 */
 /* asm: 	.word	-1 */
 /* asm: 	 */
-int CAR_FIRE_ANI[] = {
-    rdflm1, rdflm2, rdflm3, rdflm4, rdflm5, rdflm6,
-    rdflm7, rdflm8, rdflm9, rdflm10, rdflm11, rdflm12,
+static int CAR_FIRE_ANI[] = {
+    rdflm1_ROM, rdflm2_ROM, rdflm3_ROM, rdflm4_ROM, rdflm5_ROM, rdflm6_ROM,
+    rdflm7_ROM, rdflm8_ROM, rdflm9_ROM, rdflm10_ROM, rdflm11_ROM, rdflm12_ROM,
     -1,
 };
 // *----------------------------------------------------------------------------
@@ -1438,11 +1398,11 @@ int CAR_FIRE_ANI[] = {
 #define DC_MINIFOUNTAIN_ANII DC_MINIFOUNTAIN_ANI
 /* asm: DC_MINIFOUNTAIN_ANI */
 /* asm: 	.word	aft1,aft2,aft3,aft4,aft5,aft6,-1 */
-int DC_MINIFOUNTAIN_ANI[] = {
-    aft1, aft2, aft3, aft4, aft5, aft6, -1,
+static int DC_MINIFOUNTAIN_ANI[] = {
+    aft1_ROM, aft2_ROM, aft3_ROM, aft4_ROM, aft5_ROM, aft6_ROM, -1,
 };
 
-void DC_MINIFOUNTAIN(void)
+static void DC_MINIFOUNTAIN(void)
 {
     // asm 000042D4: 	PUSH	R0
     // asm 000042D5: 	PUSH	AR0
@@ -1463,11 +1423,11 @@ void DC_MINIFOUNTAIN(void)
 #define DC_FOUNTAIN_ANII DC_FOUNTAIN_ANI
 /* asm: DC_FOUNTAIN_ANI */
 /* asm: 	.word	ft2,ft3,ft4,ft5,ft6,-1 */
-int DC_FOUNTAIN_ANI[] = {
-    ft2, ft3, ft4, ft5, ft6, -1,
+static int DC_FOUNTAIN_ANI[] = {
+    ft2_ROM, ft3_ROM, ft4_ROM, ft5_ROM, ft6_ROM, -1,
 };
 
-void DC_FOUNTAIN(void)
+static void DC_FOUNTAIN(void)
 {
     // asm 000042E7: 	PUSH	R0
     // asm 000042E8: 	PUSH	AR0
@@ -1487,11 +1447,11 @@ void DC_FOUNTAIN(void)
 // *----------------------------------------------------------------------------
 /* asm: WATERFALL_ANI	.word	w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,-1 */
 /* asm: 	 */
-int WATERFALL_ANI[] = {
-    w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, -1,
+static int WATERFALL_ANI[] = {
+    w1_ROM, w2_ROM, w3_ROM, w4_ROM, w5_ROM, w6_ROM, w7_ROM, w8_ROM, w9_ROM, w10_ROM, -1,
 };
 
-void WATERFALL(void)
+static void WATERFALL(void)
 {
     // asm 000042FF: 	PUSH	R0
     // asm 00004300: 	PUSH	AR0
@@ -1532,7 +1492,7 @@ FWL1A:
 *
 *
 */
-void WATERANI_PROC(void)
+static void WATERANI_PROC(void)
 {
     // asm 00004319: 	LDI	AR6,AR5
 WATERANI_LP:
@@ -1560,7 +1520,7 @@ WATERANI_LP:
 *AR4=WATERFALL OBJECT
 *
 */
-void WATERFALL_SND(void)
+static void WATERFALL_SND(void)
 {
     // asm 00004324: 	SLEEP	1
     // asm 00004326: 	LDI	*+AR4(ODIST),R0
@@ -1643,32 +1603,32 @@ HEND:
 /* asm: FLAGANI		.word	bflag1,bflag2,bflag3,bflag4,bflag5 */
 /* asm: 	.word	bflag6,bflag7,bflag9,bflag10,-1 */
 /* asm: 	 */
-int FLAGANI[] = {
-    bflag1, bflag2, bflag3, bflag4, bflag5,
-    bflag6, bflag7, bflag9, bflag10, -1,
+static int FLAGANI[] = {
+    bflag1_ROM, bflag2_ROM, bflag3_ROM, bflag4_ROM, bflag5_ROM,
+    bflag6_ROM, bflag7_ROM, bflag9_ROM, bflag10_ROM, -1,
 };
 /* asm: FLAGANITALL	.word	aflag1,aflag2,aflag3,aflag4,aflag5 */
 /* asm: 	.word	aflag6,aflag7,aflag9,aflag10,-1 */
 /* asm: 	 */
-int FLAGANITALL[] = {
-    aflag1, aflag2, aflag3, aflag4, aflag5,
-    aflag6, aflag7, aflag9, aflag10, -1,
+static int FLAGANITALL[] = {
+    aflag1_ROM, aflag2_ROM, aflag3_ROM, aflag4_ROM, aflag5_ROM,
+    aflag6_ROM, aflag7_ROM, aflag9_ROM, aflag10_ROM, -1,
 };
 /* asm: RUT_ANIS	.word	rut,rut2,rut3,-1 */
-int RUT_ANIS[] = {
-    rut, rut2, rut3, -1,
+static int RUT_ANIS[] = {
+    rut_ROM, rut2_ROM, rut3_ROM, -1,
 };
 /* asm: HUNGH_ANIS	.word	hungh1,hungh2,hungh3,hungh4,hungh5,hungh6,hungh7,-1 */
-int HUNGH_ANIS[] = {
-    hungh1, hungh2, hungh3, hungh4, hungh5, hungh6, hungh7, -1,
+static int HUNGH_ANIS[] = {
+    hungh1_ROM, hungh2_ROM, hungh3_ROM, hungh4_ROM, hungh5_ROM, hungh6_ROM, hungh7_ROM, -1,
     // ----------------------------------------------------------------------------
 };
 /* asm: BABE_PALIST */
 /* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
 /* asm: 	.word	ungh1_yellow,lift_p,ungh1_skin,bvwall_p */
-int BABE_PALIST[] = {
-    ungh1_blue, logo_p, ungh1_green, nintendo_p, ungh1_silver, map1_p,
-    ungh1_yellow, lift_p, ungh1_skin, bvwall_p,
+static int BABE_PALIST[] = {
+    ungh1_blue_ROM, logo_p, ungh1_green_ROM, nintendo_p, ungh1_silver_ROM, map1_p,
+    ungh1_yellow_ROM, lift_p, ungh1_skin_ROM, bvwall_p,
 };
 
 void HUNGH_ANI(void)
@@ -1719,7 +1679,7 @@ HUNGH_NOPAL:
 
 // *----------------------------------------------------------------------------
 
-void HUNGH_ANI_REENTER(void)
+static void HUNGH_ANI_REENTER(void)
 {
     // asm 0000439F: 	PUSH	R0
     // asm 000043A0: 	PUSH	AR0
@@ -1741,7 +1701,7 @@ void HUNGH_ANI_REENTER(void)
     UNIMPL();
 }
 
-void PLACE_ON_ROAD(void)
+static void PLACE_ON_ROAD(void)
 {
     // asm 000043AF: 	CALL	ADD_RDDEBRIS
     // asm 000043B0: 	PUSH	AR4
@@ -1790,7 +1750,7 @@ DORUT_ANI:
 }
 
 // *----------------------------------------------------------------------------
-void PLAINANI_PROC_SLOW(void)
+static void PLAINANI_PROC_SLOW(void)
 {
     // asm 000043D0: 	LDI	AR6,AR5
 PLAINANI_LP_SLOW:
@@ -1812,7 +1772,7 @@ PLAINANI_LP_SLOW:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void FLAGWAVE_TALL(void)
+static void FLAGWAVE_TALL(void)
 {
     // asm 000043DC: 	PUSH	R0
     // asm 000043DD: 	PUSH	AR0
@@ -1838,7 +1798,7 @@ void FLAGWAVE_TALL(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void FLAGWAVE(void)
+static void FLAGWAVE(void)
 {
     // asm 000043EF: 	PUSH	R0
     // asm 000043F0: 	PUSH	AR0
@@ -1885,7 +1845,7 @@ FWL1:
 *AR6	START OF SCRIPT
 *
 */
-void PLAINANI_PROC(void)
+static void PLAINANI_PROC(void)
 {
     // asm 00004412: 	LDI	AR6,AR5
 PLAINANI_LP:
@@ -2122,7 +2082,7 @@ LS_ACTIVATE_X:
 */
 
 // *----------------------------------------------------------------------------
-void OHARE_PLANE(void)
+static void OHARE_PLANE(void)
 {
     // asm 00004451: 	PUSH	AR0
     // asm 00004452: 	PUSH	AR2
@@ -2142,7 +2102,7 @@ void OHARE_PLANE(void)
     UNIMPL();
 }
 
-void PLANE_FWRD(void)
+static void PLANE_FWRD(void)
 {
     // asm 00004462: 	FLOAT	250,R7
     // asm 00004463: 	FLOAT	32000,R6
@@ -2188,7 +2148,7 @@ PLANE_FWL:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TRAIN_FWRD_MAKEB(void)
+static void TRAIN_FWRD_MAKEB(void)
 {
     // asm 00004484: 	PUSH	AR0
     // asm 00004485: 	PUSH	AR2
@@ -2205,7 +2165,7 @@ void TRAIN_FWRD_MAKEB(void)
     UNIMPL();
 }
 
-void TRAIN_FWRD_MAKE(void)
+static void TRAIN_FWRD_MAKE(void)
 {
     // asm 00004490: 	PUSH	AR0
     // asm 00004491: 	PUSH	AR2
@@ -2225,7 +2185,7 @@ J87:
     UNIMPL();
 }
 
-void TRAIN_FWRDB(void)
+static void TRAIN_FWRDB(void)
 {
     // asm 0000449F: 	LDI	*+AR4(OUSR1),R0
     // asm 000044A0: 	ADDI	5,R0			;kludge to delete later than loaded
@@ -2239,7 +2199,7 @@ void TRAIN_FWRDB(void)
     UNIMPL();
 }
 
-void TRAIN_FWRD(void)
+static void TRAIN_FWRD(void)
 {
     // asm 000044A6: 	FLOAT	150,R7
     // asm 000044A7: 	FLOAT	32000,R6
@@ -2409,7 +2369,7 @@ LS_ACTIVATE_XO:
 /* asm: 	.word	4A1h,DC_FOUNTAIN */
 /* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
 /* asm: 	.word	0	;END OF TABLE ID */
-uintptr_t ROUTINE_TAB[] = {
+static uintptr_t ROUTINE_TAB[] = {
     0x40A, (uintptr_t)FLAGWAVE,
     0x460, (uintptr_t)ROAD_DEBRIS_CREATE,
     0x461, (uintptr_t)ROAD_DEBRIS_CREATE_55GAL,

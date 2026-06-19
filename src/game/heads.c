@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "heads.h"
 
@@ -18,18 +17,14 @@
  * Source module: asm/HEADS.ASM
  */
 
-void TEXTDELER(void);
-void VANITY_HEADS(void);
-void SET18FONTDS_WHITE(void);
+static void TEXTDELER(void);
+static void VANITY_HEADS(void);
+static void SET18FONTDS_WHITE(void);
 void VANITY(void);
 void VANITY_SUB(void);
-void GETT(void);
-void CENTEREM(void);
-void RIGHTEM(void);
-
-extern int HEADS[];
-extern int YINCREMENT;
-extern int FONTUSED;
+static void GETT(void);
+static void CENTEREM(void);
+static void RIGHTEM(void);
 
 /*
 *----------------------------------------------------------------------------
@@ -43,7 +38,7 @@ extern int FONTUSED;
 #define HEADTYPE 0x88D0
 
 // *----------------------------------------------------------------------------
-void TEXTDELER(void)
+static void TEXTDELER(void)
 {
     // asm 0000A1A4: 	LDI	@TEXT_ACTIVEI,AR4
 TEXTDELERLP:
@@ -99,18 +94,18 @@ TXTXX:
 /* asm: 	.word	eric */
 /* asm: 	.word	-1 */
 /* asm: 	 */
-int HEADS[] = {
-    jeno,
-    marc,
-    pet,
-    xion,
-    ted,
-    matt,
-    vince,
-    carl,
-    glen,
-    ken,
-    eric,
+static int HEADS[] = {
+    jeno_ROM,
+    marc_ROM,
+    pet_ROM,
+    xion_ROM,
+    ted_ROM,
+    matt_ROM,
+    vince_ROM,
+    carl_ROM,
+    glen_ROM,
+    ken_ROM,
+    eric_ROM,
     -1,
 };
 
@@ -120,7 +115,7 @@ int HEADS[] = {
 *
 *
 */
-void VANITY_HEADS(void)
+static void VANITY_HEADS(void)
 {
     // asm 0000A1CC: 	SETDP
     // asm 0000A1CD: 	LDI	@CAMERAPOSI,AR6
@@ -197,7 +192,7 @@ VOSLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SET18FONTDS_WHITE(void)
+static void SET18FONTDS_WHITE(void)
 {
     // asm 0000A20F: 	CALL	SET18FONTDS
     // asm 0000A210: 	LDL	font18_white,AR2
@@ -420,7 +415,7 @@ int FONTUSED;
 ;	LDL	SET18FONTDS
 ;	LDL	SETFIXEDFONTDS
 */
-void GETT(void)
+static void GETT(void)
 {
     // asm 0000A2C0: 	LDI	9999,RC
     // asm 0000A2C1: 	CALL	TEXT_ADDDS
@@ -434,7 +429,7 @@ void GETT(void)
     UNIMPL();
 }
 
-void CENTEREM(void)
+static void CENTEREM(void)
 {
     // asm 0000A2C8: 	LDI	*+AR0(TEXT_COLOR),R0
     // asm 0000A2C9: 	OR	TXT_CENTER,R0
@@ -447,7 +442,7 @@ void CENTEREM(void)
     UNIMPL();
 }
 
-void RIGHTEM(void)
+static void RIGHTEM(void)
 {
     // asm 0000A2CF: 	LDI	*+AR0(TEXT_COLOR),R0
     // asm 0000A2D0: 	OR	TXT_RIGHT,R0

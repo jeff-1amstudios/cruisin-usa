@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 
 /*
@@ -18,7 +17,7 @@
  */
 
 void FLAME_PRC(void);
-void animate_child(void);
+static void animate_child(void);
 void FLAMESORT(void);
 void GETCARBODY(void);
 void FIND_NEXT_OBJ(void);
@@ -26,8 +25,8 @@ void FIND_NEXT_OBJ(void);
 #define FLAMEANII FLAMEANI
 #define FLAME_POSI FLAME_POS
 
-extern int FLAME_POS[];
-extern int FLAMEANI[];
+static int FLAMEANI[10];
+static int FLAME_POS[21];
 
 /*
 *----------------------------------------------------------------------------
@@ -45,7 +44,7 @@ extern int FLAMEANI[];
 /* asm: 	.word	190,87,-650		;SBUSP */
 /* asm: 	.word	160,155,-500		;COPCAR */
 /* asm: 	 */
-int FLAME_POS[] = {
+static int FLAME_POS[] = {
     180, 87, -450, // Vette
     130, 105, -586, // Coope
     140, 107, -460, // Missle
@@ -58,9 +57,9 @@ int FLAME_POS[] = {
 /* asm: 	.word	sparc1,sparc3,sparc5,sparc7,sparc9,sparc7 */
 /* asm: 	.word	sparc5,sparc3,sparc1,-1 */
 /* asm: 	 */
-int FLAMEANI[] = {
-    sparc1, sparc3, sparc5, sparc7, sparc9, sparc7,
-    sparc5, sparc3, sparc1, -1,
+static int FLAMEANI[] = {
+    sparc1_ROM, sparc3_ROM, sparc5_ROM, sparc7_ROM, sparc9_ROM, sparc7_ROM,
+    sparc5_ROM, sparc3_ROM, sparc1_ROM, -1,
 };
 /*
 *----------------------------------------------------------------------------
@@ -171,7 +170,7 @@ FLAME_DIE:
 *TRASHES	AR2,R1,R2,R3
 */
 
-void animate_child(void)
+static void animate_child(void)
 {
     // ;Set the Frame
 set_frame:

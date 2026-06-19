@@ -68,5 +68,18 @@ extern int BRAKEMN;
 extern int BRAKEMX;
 // asm: 	.bss	STEERFR,1		;STEERING FREE
 extern int STEERFR;
+void RANDSND(void);
+void RANDVSND(void);
+void ROADIR(void);
+void GETNXTRDIR(void);
+void DRONINBZ(void);
+void INBOUNDZ(void);
+void GETRPM(void);
+void GETAUTO(void);
+void DRONESTOP(void);
+void BONUS_WAIT_LOOP(void);
+void PLYR_CAR_INIT(void);
+void DRONESND(void);
+void DRONESND1(void);
 
 #endif /* PLYR_H */

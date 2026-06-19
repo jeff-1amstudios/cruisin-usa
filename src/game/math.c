@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "dirq.h"
 #include "math.h"
@@ -51,19 +50,11 @@ void SCALE_MATRIX(void);
 #define SINTABLEI SINTABLE
 #define LOCTEMPER_MAT2I LOCTEMPER_MAT2
 
-extern float SINTABLE[];
-extern float FORMULA;
-extern float HALFPII;
-extern float PII;
-extern float TWOPII;
-extern float INVFORM;
-extern float RADFORM;
-extern float RADFORMI;
-extern float *ATTABV;
-extern float *OFFTABV;
-extern float ATOFFTAB[];
-extern float ATTAB[];
-extern int LOCTEMPER_MAT2[];
+static float FORMULA;
+static float *ATTABV;
+static float *OFFTABV;
+static float ATTAB[129];
+static float ATOFFTAB[16];
 
 /*
 *----------------------------------------------------------------------------
@@ -182,7 +173,7 @@ PERFECT:
 /* asm: 	.float	0.995185,0.995768,0.996313,0.996821,0.997291,0.997723,0.998118,0.998476 */
 /* asm: 	.float	0.998796,0.999078,0.999322,0.999529,0.999699,0.999831,0.999925,0.999981 */
 /* asm: 	.float	1.0 */
-float SINTABLE[] = {
+static float SINTABLE[] = {
     0.000000f, 0.006136f, 0.012272f, 0.018407f, 0.024541f, 0.030675f, 0.036807f, 0.042938f,
     0.049068f, 0.055195f, 0.061321f, 0.067444f, 0.073565f, 0.079682f, 0.085797f, 0.091909f,
     0.098017f, 0.104122f, 0.110222f, 0.116319f, 0.122411f, 0.128498f, 0.134581f, 0.140658f,
@@ -219,7 +210,7 @@ float SINTABLE[] = {
 };
 /* asm: FORMULA	.float	162.9746617		;256/(PI/2) */
 /* asm: 	 */
-float FORMULA = 162.9746617f;
+static float FORMULA = 162.9746617f;
 /* asm: HALFPII	.float	HALFPI */
 float HALFPII = HALFPI;
 /* asm: PII	.float	PI */
@@ -227,15 +218,15 @@ float PII = PI;
 /* asm: TWOPII	.float	TWOPI */
 float TWOPII = TWOPI;
 /* asm: INVFORM	.float	0.012265625	;1/FORMULA */
-float INVFORM = 0.012265625f;
+static float INVFORM = 0.012265625f;
 // *----------------------------------------------------------------------------
 
 /* asm: RADFORM		.float	10430.37835	;65535/(2PI) */
-float RADFORM = 10430.37835f;
+static float RADFORM = 10430.37835f;
 /* asm: RADFORMI	.float	0.000095873	;1/(65535/(2PI)) */
 /* asm: 	 */
 /* asm: 	 */
-float RADFORMI = 0.000095873f;
+static float RADFORMI = 0.000095873f;
 
 /*
 *----------------------------------------------------------------------------
@@ -353,9 +344,9 @@ AT1:
 }
 
 /* asm: ATTABV	.word	ATTAB */
-float *ATTABV = ATTAB;
+static float *ATTABV = ATTAB;
 /* asm: OFFTABV	.word	ATOFFTAB */
-float *OFFTABV = ATOFFTAB;
+static float *OFFTABV = ATOFFTAB;
 /* asm: ATOFFTAB */
 /* asm: 	.float	1		;0-45 */
 /* asm: 	.float	0 */
@@ -374,7 +365,7 @@ float *OFFTABV = ATOFFTAB;
 /* asm: 	.float	-1		;225-270 */
 /* asm: 	.float	4.7123 */
 /* asm: 	 */
-float ATOFFTAB[] = {
+static float ATOFFTAB[] = {
     1.0f, // 0-45
     0.0f,
     -1.0f, // 45-90
@@ -417,7 +408,7 @@ float ATOFFTAB[] = {
 /* asm: 	.float	0.718830,0.723238,0.727611,0.731951,0.736257,0.740530,0.744770 */
 /* asm: 	.float	0.748977,0.753151,0.757293,0.761403,0.765480,0.769526,0.773541 */
 /* asm: 	.float	0.777524,0.781477,0.785398 */
-float ATTAB[] = {
+static float ATTAB[] = {
     0.000000f, 0.007812f, 0.015624f, 0.023433f, 0.031240f, 0.039043f, 0.046841f,
     0.054633f, 0.062419f, 0.070197f, 0.077967f, 0.085727f, 0.093477f, 0.101215f,
     0.108942f, 0.116655f, 0.124355f, 0.132040f, 0.139709f, 0.147361f, 0.154997f,

@@ -11,7 +11,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 
@@ -20,8 +19,8 @@
  */
 
 void DELTA_OINIT(void);
-void DDYNA_INIT(void);
-void DRONE_DANI_PROC(void);
+static void DDYNA_INIT(void);
+static void DRONE_DANI_PROC(void);
 
 #define DRONE_DANI_PROCI DRONE_DANI_PROC
 
@@ -116,7 +115,7 @@ NODYNAX1:
 *	AR4	CAR OBJECT
 *
 */
-void DDYNA_INIT(void)
+static void DDYNA_INIT(void)
 {
     // asm 0000AE9A: 	PUSH	R1
     // asm 0000AE9B: 	PUSH	R2
@@ -215,7 +214,7 @@ VANIX:
 *
 */
 
-void DRONE_DANI_PROC(void)
+static void DRONE_DANI_PROC(void)
 {
     // asm 0000AED8: 	LDI	*+AR4(OCARBLK),AR5
     // asm 0000AED9: 	LDF	0,R6	 		;INIT SPIN RADIANS

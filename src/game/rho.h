@@ -12,5 +12,7 @@ extern int NOLONG_VEHICLES;
 extern int RHOFLAG;
 // asm: 	.bss	RHOPAL,1
 extern int RHOPAL;
+void DECODE_RHO_KILL(void);
+void DECODE_RHO_XSFER(void);
 
 #endif /* RHO_H */

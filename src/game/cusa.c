@@ -3,7 +3,6 @@
 #include "mproc.h"
 #include "macs.h"
 #include "obj.h"
-#include "objects.h"
 #include "globals.h"
 #include "sys.h"
 #include "c30.h"
@@ -25,38 +24,38 @@
  */
 
 void _c_int00(void);
-void MAINLOOP(void);
+static void MAINLOOP(void);
 void COLD_ENTER(void);
 void ENABLEGIE(void);
 void INT0(void);
-void READIO(void);
-void VOL_MINUS(void);
-void VOL_PLUS(void);
-void DIAG_TOGGLE(void);
-void ATODINT(void);
-void SWDISP(void);
+static void READIO(void);
+static void VOL_MINUS(void);
+static void VOL_PLUS(void);
+static void DIAG_TOGGLE(void);
+static void ATODINT(void);
+static void SWDISP(void);
 void CHECKDIAG(void);
-void CLR_PBSS(void);
+static void CLR_PBSS(void);
 void CLR_RAM(void);
-void CLEAR_ONCHIPRAM(void);
-void BUTTONS(void);
-void DIAG_BUTTONS(void);
+static void CLEAR_ONCHIPRAM(void);
+static void BUTTONS(void);
+static void DIAG_BUTTONS(void);
 void WAIT_FOR_VBLANK(void);
-void CRT_REG_SETUP(void);
-void ERROR_TRAP(void);
+static void CRT_REG_SETUP(void);
+static void ERROR_TRAP(void);
 void FIFO_RESET(void);
 void TIMER_RESET(void);
 void TIMER_READ(void);
-void TIMERESET(void);
-void TIMEREC(void);
-void MESSAGE1(void);
-void MSG1(void);
-void MSG2(void);
-void MSG3(void);
-void CHECK_STATE(void);
-void DASHLIGHT(void);
-void CMOS_ERROR(void);
-void VERSION_UPDATE(void);
+static void TIMERESET(void);
+static void TIMEREC(void);
+static void MESSAGE1(void);
+static void MSG1(void);
+static void MSG2(void);
+static void MSG3(void);
+static void CHECK_STATE(void);
+static void DASHLIGHT(void);
+static void CMOS_ERROR(void);
+static void VERSION_UPDATE(void);
 void FAKEDIAG(void);
 void FEED_WATCHDOG(void);
 void FEED_WATCHDOG_HARD(void);
@@ -74,79 +73,13 @@ void SET_CONTROLS(void);
 void FFRSUB(void);
 extern int DIAGPAL;
 
-extern int COMMINTM;
-extern const char startup0[];
-extern const char startup2[];
-extern const char dlts[];
-extern const char VERSION_STAMP[];
-extern const char startup1[];
-extern const char startup3[];
-extern const char INTERNAL_VERS[];
-extern const char M1[];
-extern const char M2[];
-extern const char M3[];
-extern const char M4[];
-extern const char M5[];
-extern const char M6[];
-extern const char M7[];
-extern const char M8[];
-extern const char M9[];
-extern int _MODE;
-extern int STATE;
-extern int NFRAMES;
-extern int INFRAMES;
-extern int FRAMRATE;
-extern int IFRAMES;
-extern int OFRAMES;
-extern int ERRORN;
-extern int ERRORO;
-extern int FRAMETIME;
-extern int SWITCHBUTS;
-extern int BGNDCOLA;
-extern int DIAG_ACTIVE;
-extern int GAME_TIMER;
-extern int SYSCNTL;
-extern int _pot0;
-extern int _pot1;
-extern int _pot2;
-extern int RDPOT;
-extern int _sectime;
-extern int CLEARRDY;
-extern int NOAERASE;
-extern int NOSWAP;
-extern int DISPLAY_PAGE;
-extern int MPROC_TIK;
-extern int _newbut;
-extern int SWRAM[];
-extern int DIPRAM;
-extern void *SWTAB[];
-extern int RAM_BSSEND;
-extern int BUTTON_TIKS;
-extern int BUTTON_STATUS;
-extern int OLD_BUTTON_STATUS;
-extern int CRT_REG_SETUP_STRI;
-extern int CRT_REG_SETUP_STR[];
-extern int ST_POLYGONS;
-extern int ST_VERTICES;
-extern int ST_OBJECTS;
-extern int TIMEFRAME;
-extern int TIMEX;
-extern int TIMECLR;
-extern int TIMERAM[];
-extern int MSG_CNT;
-extern const char LINKDISABLED[];
-extern const char IAMMASTER[];
-extern const char IAMSLAVE[];
-extern const char TPALI[];
-extern const char TPALNI[];
-extern int STATE_TABLE[];
-extern int STATE_MASK;
-extern int STATE_NUM;
-extern int STATE_TIK;
-extern int BUTTON_IBO;
-extern int BUTTON_TIK;
-extern int BUTTII[];
-extern int SYSCNTL_OC;
+static void *SWTAB[32];
+static int CRT_REG_SETUP_STR[12];
+static const char LINKDISABLED[];
+static const char IAMMASTER[];
+static const char IAMSLAVE[];
+static const char TPALI[];
+static const char TPALNI[];
 
 /*
 *----------------------------------------------------------------------------
@@ -180,16 +113,16 @@ int COMMINTM;
 // 				;INT2_M  if linked
 
 #if 0
-const char startup0[] = "DO NOT EVEN CONSIDER RELEASING THESE ROMS";
-const char startup2[] = "   THIS VERSION HAS A FATAL BUG";
-const char dlts[] = "TEST VERSION";
+static const char startup0[] = "DO NOT EVEN CONSIDER RELEASING THESE ROMS";
+static const char startup2[] = "   THIS VERSION HAS A FATAL BUG";
+static const char dlts[] = "TEST VERSION";
 const char VERSION_STAMP[] = "VERSION NOT FOR RELEASE";
 #else
-const char startup0[] = "          CRUISN USA (TM)     HEAD 2 HEAD";
-const char startup1[] = "  (C) 1994 NINTENDO, DEVELOPED BY TV GAMES, INC.";
-const char startup2[] = "MANUFACTURED AND SOLD BY MIDWAY MANUFACTURING COMPANY";
-const char startup3[] = "                  UNDER LICENSE.";
-const char dlts[] = "DOWNLOADING TEXTURES";
+static const char startup0[] = "          CRUISN USA (TM)     HEAD 2 HEAD";
+static const char startup1[] = "  (C) 1994 NINTENDO, DEVELOPED BY TV GAMES, INC.";
+static const char startup2[] = "MANUFACTURED AND SOLD BY MIDWAY MANUFACTURING COMPANY";
+static const char startup3[] = "                  UNDER LICENSE.";
+static const char dlts[] = "DOWNLOADING TEXTURES";
 /*
 ;Release of linked version will be 4.0
 ;	I = I4000
@@ -198,7 +131,7 @@ const char dlts[] = "DOWNLOADING TEXTURES";
 */
 const char VERSION_STAMP[] = "VERSION  4.4";
 #endif
-const char INTERNAL_VERS[] = "I440";
+static const char INTERNAL_VERS[] = "I440";
 #define VERSION_ID 40
 /*
 	;Because of managements inability to deal with software projects,
@@ -214,20 +147,20 @@ const char INTERNAL_VERS[] = "I440";
 	;the title page.
 */
 
-const char M1[] = "LOADING OS-WMS...";
-const char M2[] = "I-NODES ALLOCATED,  DCS DECODED (14-1715)";
-const char M3[] = "WMS SATELLITE COMM, CHANNEL 3 ACTIVE LYBIRP";
-const char M4[] = "USR/ELP/CUSA>NETLINK WMS 14.32.86.1 -K CIRE";
-const char M5[] = "CONNECTING TO HOST...";
-const char M6[] = "CONNECTION ESTABLISHED, PUBLIC-KEY: CIRE";
-const char M7[] = "USR/ELP/CUSA>FTP GET CUSA";
-const char M8[] = "37940813 BYTES RECEIVED OK";
-const char M9[] = "USR/ELP/CUSA>TV30 CUSA /L";
+static const char M1[] = "LOADING OS-WMS...";
+static const char M2[] = "I-NODES ALLOCATED,  DCS DECODED (14-1715)";
+static const char M3[] = "WMS SATELLITE COMM, CHANNEL 3 ACTIVE LYBIRP";
+static const char M4[] = "USR/ELP/CUSA>NETLINK WMS 14.32.86.1 -K CIRE";
+static const char M5[] = "CONNECTING TO HOST...";
+static const char M6[] = "CONNECTION ESTABLISHED, PUBLIC-KEY: CIRE";
+static const char M7[] = "USR/ELP/CUSA>FTP GET CUSA";
+static const char M8[] = "37940813 BYTES RECEIVED OK";
+static const char M9[] = "USR/ELP/CUSA>TV30 CUSA /L";
 // 	;*** RAM DEFINITIONS
 /* asm: _MODE	pbss	_MODE,1 */
 int _MODE;
 /* asm: STATE	pbss	STATE,1 */
-int STATE;
+static int STATE;
 /* asm: NFRAMES	.bss	NFRAMES,1 */
 int NFRAMES;
 /* asm: INFRAMES	.bss	INFRAMES,1 */
@@ -237,7 +170,7 @@ int FRAMRATE;
 /* asm: IFRAMES	.bss	IFRAMES,1 */
 int IFRAMES;
 /* asm: OFRAMES	.bss	OFRAMES,1 */
-int OFRAMES;
+static int OFRAMES;
 /* asm: ERRORN	.bss	ERRORN,1 */
 int ERRORN;
 /* asm: ERRORO	.bss	ERRORO,1 */
@@ -547,7 +480,7 @@ NODO1:
 }
 
 // *----------------------------------------------------------------------------
-void MAINLOOP(void)
+static void MAINLOOP(void)
 {
     // asm 00004BD1: 	FIFO_CLRP	R0		;IS THE FIFO CLEAR
     // asm 00004BD6: 	DMA_WT		R0
@@ -901,7 +834,7 @@ int SWRAM[3];
 /* asm: DIPRAM	pbss	DIPRAM,1 */
 int DIPRAM;
 
-void READIO(void)
+static void READIO(void)
 {
     // asm 00004D00: 	CLRI	AR0			;for Loff production board timing problem
     // asm 00004D01: 	LDP	@DIPSW
@@ -978,7 +911,7 @@ NIGY:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void VOL_MINUS(void)
+static void VOL_MINUS(void)
 {
     // asm 00004D39: 	PUSH	R0
     // asm 00004D3A: 	PUSH	R1
@@ -1004,7 +937,7 @@ void VOL_MINUS(void)
     UNIMPL();
 }
 
-void VOL_PLUS(void)
+static void VOL_PLUS(void)
 {
     // asm 00004D4E: 	PUSH	R0
     // asm 00004D4F: 	PUSH	R1
@@ -1044,7 +977,7 @@ VOLJN:
     UNIMPL();
 }
 
-void DIAG_TOGGLE(void)
+static void DIAG_TOGGLE(void)
 {
     // asm 00004D72: 	PUSH	R0
     // asm 00004D73: 	LDI	@_MODE,R0
@@ -1071,7 +1004,7 @@ DTXX:
 *----------------------------------------------------------------------------
 *OPTIMIZED 9/14/93-ELP
 */
-void ATODINT(void)
+static void ATODINT(void)
 {
     // asm 00004D80: 	PUSH	ST
     // asm 00004D81: 	PUSH	IE
@@ -1214,7 +1147,7 @@ EXITR:
 *SWITCH DISPATCH	 START PROCESSES FOR SWITCHES
 *
 */
-void SWDISP(void)
+static void SWDISP(void)
 {
     // ;	LDP	@SWRAM
     // asm 00004DF7: 	LDI	@SWRAM+2,R3
@@ -1290,7 +1223,7 @@ SWSTX:
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-void *SWTAB[] = {
+static void *SWTAB[] = {
     COIN1, // 00000001 SW_COIN1	(COIN.ASM)
     COIN2, // 00000002 SW_COIN2 	(COIN.ASM)
     _start, // 00000004 START		(INTRO.ASM)
@@ -1340,7 +1273,7 @@ void CHECKDIAG(void)
 
 // *----------------------------------------------------------------------------
 
-void CLR_PBSS(void)
+static void CLR_PBSS(void)
 {
     // asm 00004E31: 	PUSH	R0
     // asm 00004E32: 	PUSH	AR0
@@ -1371,7 +1304,7 @@ PRAMCLP:
 // ;RAM_BSSEND	.word	01F7FFh
 /* asm: RAM_BSSEND	.word	01EFFFh		;save protected hi bss ram */
 /* asm: 	 */
-int RAM_BSSEND = 0x01EFFF;
+static int RAM_BSSEND = 0x01EFFF;
 
 void CLR_RAM(void)
 {
@@ -1405,7 +1338,7 @@ RAMCLP:
 *THESE MUST BE CALLED *BEFORE* PROGRAM IS COPIED INTO FAST RAM
 *
 */
-void CLEAR_ONCHIPRAM(void)
+static void CLEAR_ONCHIPRAM(void)
 {
     // asm 00004E58: 	LDIL	809800h,AR0
     // asm 00004E5B: 	CLRI	R0
@@ -1433,7 +1366,7 @@ int BUTTON_STATUS;
 int OLD_BUTTON_STATUS;
 
 // *
-void BUTTONS(void)
+static void BUTTONS(void)
 {
     // asm 00004E60: 	LDI	@_MODE,R0
     // asm 00004E61: 	AND	MMODE,R0
@@ -1518,7 +1451,7 @@ FDDDA:
     UNIMPL();
 }
 
-void DIAG_BUTTONS(void)
+static void DIAG_BUTTONS(void)
 {
     // asm 00004EAC: 	LDP	@BUTTON_STATUS
     // asm 00004EAD: 	LDI	@BUTTON_STATUS,R0
@@ -1591,7 +1524,7 @@ WAIT1:
 /* asm: CRT_REG_SETUP_STRI */
 /* asm: .word	CRT_REG_SETUP_STR */
 /* asm: romdata */
-int CRT_REG_SETUP_STRI;
+static int CRT_REG_SETUP_STRI;
 /* asm: CRT_REG_SETUP_STR */
 /* asm: 	.word	399|CRT_SETUP_ICSYNC	;CRT_SETUP */
 /* asm: 	.word	01ffh		;CRT_HADDRINC */
@@ -1608,7 +1541,7 @@ int CRT_REG_SETUP_STRI;
 /* asm: 	.word	01b0h		;CRT_VTTL */
 /* asm: 	 */
 /* asm: 	 */
-int CRT_REG_SETUP_STR[] = {
+static int CRT_REG_SETUP_STR[] = {
     399|CRT_SETUP_ICSYNC, // CRT_SETUP
     0x01ff, // CRT_HADDRINC
     0x01fe, // CRT_HBLKSTART
@@ -1636,7 +1569,7 @@ int CRT_REG_SETUP_STR[] = {
     // 	.word	01b0h		;CRT_VTTL
 };
 
-void CRT_REG_SETUP(void)
+static void CRT_REG_SETUP(void)
 {
     // asm 00004EDD: 	PUSHM	AR0,AR1,R0,DP
     // asm 00004EE1: 	LDIL	CRT_SETUP,AR0
@@ -1661,7 +1594,7 @@ CRTRGLP:
 *COMING FROM
 *
 */
-void ERROR_TRAP(void)
+static void ERROR_TRAP(void)
 {
     // asm 00004EEF: 	CALL	ENABLEGIE
     // asm 00004EF0: 	NOP
@@ -1766,7 +1699,7 @@ int TIMECLR;
 int TIMERAM[50];
 
 // *----------------------------------------------------------------------------
-void TIMERESET(void)
+static void TIMERESET(void)
 {
     // asm 00004F19: 	PUSH	DP
     // asm 00004F1A: 	CALL	TIMER_RESET
@@ -1808,7 +1741,7 @@ TIMEL1:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TIMEREC(void)
+static void TIMEREC(void)
 {
     // asm 00004F38: 	PUSH	DP
     // asm 00004F39: 	PUSH	AR0
@@ -1828,7 +1761,7 @@ void TIMEREC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void MESSAGE1(void)
+static void MESSAGE1(void)
 {
     // asm 00004F43: 	CLRI	R0
     // asm 00004F44: 	LDP	@9E0000h
@@ -1905,9 +1838,9 @@ HJSADF:
 }
 
 /* asm: MSG_CNT	.bss	MSG_CNT,1 */
-int MSG_CNT;
+static int MSG_CNT;
 
-void MSG1(void)
+static void MSG1(void)
 {
     // asm 00004F9F: LDI	11,RC
     // asm 00004FA0: 	TEXTIT	M2,1,200
@@ -1919,7 +1852,7 @@ void MSG1(void)
     UNIMPL();
 }
 
-void MSG2(void)
+static void MSG2(void)
 {
     // asm 00004FB1: LDI	11,RC
     // asm 00004FB2: 	TEXTIT	M6,1,260
@@ -1930,17 +1863,17 @@ void MSG2(void)
 }
 
 /* asm: LINKDISABLED	SPTR	"LINK DISABLED BY U97  DIP6 OFF" */
-const char LINKDISABLED[] = "LINK DISABLED BY U97  DIP6 OFF";
+static const char LINKDISABLED[] = "LINK DISABLED BY U97  DIP6 OFF";
 /* asm: IAMMASTER	SPTR	"LINK MASTER MACHINE" */
-const char IAMMASTER[] = "LINK MASTER MACHINE";
+static const char IAMMASTER[] = "LINK MASTER MACHINE";
 /* asm: IAMSLAVE	SPTR	"LINK SLAVE MACHINE" */
-const char IAMSLAVE[] = "LINK SLAVE MACHINE";
+static const char IAMSLAVE[] = "LINK SLAVE MACHINE";
 /* asm: TPALI		SPTR	"U38 LINK PAL INSTALLED" */
-const char TPALI[] = "U38 LINK PAL INSTALLED";
+static const char TPALI[] = "U38 LINK PAL INSTALLED";
 /* asm: TPALNI		SPTR	"U38 LINK PAL NOT INSTALLED" */
-const char TPALNI[] = "U38 LINK PAL NOT INSTALLED";
+static const char TPALNI[] = "U38 LINK PAL NOT INSTALLED";
 
-void MSG3(void)
+static void MSG3(void)
 {
     // asm 00004FC0: LDI	11,RC
     // asm 00004FC1: 	TEXTIT	M8,1,280
@@ -1966,7 +1899,7 @@ void MSG3(void)
 /* asm: 	.word	SW_VIEW0|SW_VIEW1 */
 /* asm: 	.word	SW_VIEW0 */
 /* asm: 	.word	SW_VIEW0|SW_RADIO */
-int STATE_TABLE[] = {
+static int STATE_TABLE[] = {
     SW_VIEW0|SW_VIEW2,
     SW_VIEW2,
     SW_VIEW1|SW_VIEW2,
@@ -1977,7 +1910,7 @@ int STATE_TABLE[] = {
 };
 // *
 /* asm: STATE_MASK	.word	SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO */
-int STATE_MASK = SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO;
+static int STATE_MASK = SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO;
 /* asm: STATE_NUM	.bss	STATE_NUM,1 */
 int STATE_NUM;
 /* asm: STATE_TIK	.bss	STATE_TIK,1 */
@@ -1988,7 +1921,7 @@ int STATE_TIK;
 *
 *
 */
-void CHECK_STATE(void)
+static void CHECK_STATE(void)
 {
     // asm 00004FD3: 	LDI	@_MODE,R0
     // asm 00004FD4: 	AND	MMODE,R0
@@ -2051,12 +1984,12 @@ int BUTTON_TIK;
 /* asm: BUTTONI	.word	BUTTII */
 #define BUTTONI BUTTII
 /* asm: BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
-int BUTTII[] = {
+static int BUTTII[] = {
     BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2,
 };
 
 // *
-void DASHLIGHT(void)
+static void DASHLIGHT(void)
 {
     // asm 00005001: 	LDI	@BUTTON_TIK,R0
     // asm 00005002: 	INC	R0
@@ -2085,7 +2018,7 @@ void DASHLIGHT(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CMOS_ERROR(void)
+static void CMOS_ERROR(void)
 {
     // asm 00005014: 	LDI	8,AR6
     // asm 00005015: FLASH_LP
@@ -2112,7 +2045,7 @@ void CMOS_ERROR(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void VERSION_UPDATE(void)
+static void VERSION_UPDATE(void)
 {
     // asm 0000502B: 	LDI	8,AR6
     // asm 0000502C: VFLASH_LP
@@ -2188,7 +2121,7 @@ void FEED_WATCHDOG(void)
 
 // *----------------------------------------------------------------------------
 /* asm: SYSCNTL_OC	fbss	SYSCNTL_OC,1 */
-int SYSCNTL_OC;
+static int SYSCNTL_OC;
 
 void FEED_WATCHDOG_HARD(void)
 {

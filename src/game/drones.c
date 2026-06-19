@@ -11,7 +11,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "drones.h"
@@ -26,7 +25,7 @@ void SIGMA_DISPATCHER(void);
 void DRONE_PTR_ADD(void);
 void DRONE_CLR(void);
 void RHO_DISPATCHER(void);
-void CK_LINK_DISP(void);
+static void CK_LINK_DISP(void);
 void SET_DRONE_PAL(void);
 void GET_LANES(void);
 void DIST_TO_PLYR(void);
@@ -60,61 +59,41 @@ void AHEAD_OF_PLAYER_P(void);
 
 void COMPTRAK(void);
 
-extern int DRONE_DISPATCH_P;
-extern int SUSPEND_MODE;
-extern int RACER_GRID_START;
-extern int DRONE_COUNT;
-extern int MIN_TRACK_TIME;
-extern int PSYCHO_RHO;
-extern float *LANEP[];
-extern float LANES[];
-extern float LANES4[];
-extern int ONCSCREEN_CARS;
-extern int DD_SLP;
-extern int DD_VAR;
-extern int DD_MAX_DRONES;
-extern int DRONENUM;
-extern int EXP_ANI[];
-extern int SMOKE_COUNT;
-extern int SMOKE_ANI[];
-extern int COCONUT_COUNT;
-extern int MODELTAB[];
-extern const char **TEXTTABS[];
-extern const char *TITLES[];
-extern const char *VETETXT[];
-extern const char *RODRTXT[];
-extern const char *BULLTXT[];
-extern const char *FERRTXT[];
-extern const char HRT12[];
-extern const char HRT13[];
-extern const char HRT14[];
-extern const char HRT15[];
-extern const char HRT16[];
-extern float TABING[];
-extern const char HRS11[];
-extern const char HRS12[];
-extern const char HRS13[];
-extern const char HRS14[];
-extern const char HRS15[];
-extern const char HRS16[];
-extern const char HRS21[];
-extern const char HRS22[];
-extern const char HRS23[];
-extern const char HRS24[];
-extern const char HRS25[];
-extern const char HRS26[];
-extern const char HRS31[];
-extern const char HRS32[];
-extern const char HRS33[];
-extern const char HRS34[];
-extern const char HRS35[];
-extern const char HRS36[];
-extern const char HRS41[];
-extern const char HRS42[];
-extern const char HRS43[];
-extern const char HRS44[];
-extern const char HRS45[];
-extern const char HRS46[];
+static int EXP_ANI[12];
+static int SMOKE_ANI[28];
+static const char *VETETXT[6];
+static const char *RODRTXT[6];
+static const char *BULLTXT[6];
+static const char *FERRTXT[6];
+static const char HRT12[];
+static const char HRT13[];
+static const char HRT14[];
+static const char HRT15[];
+static const char HRT16[];
+static const char HRS11[];
+static const char HRS12[];
+static const char HRS13[];
+static const char HRS14[];
+static const char HRS15[];
+static const char HRS16[];
+static const char HRS21[];
+static const char HRS22[];
+static const char HRS23[];
+static const char HRS24[];
+static const char HRS25[];
+static const char HRS26[];
+static const char HRS31[];
+static const char HRS32[];
+static const char HRS33[];
+static const char HRS34[];
+static const char HRS35[];
+static const char HRS36[];
+static const char HRS41[];
+static const char HRS42[];
+static const char HRS43[];
+static const char HRS44[];
+static const char HRS45[];
+static const char HRS46[];
 
 /*
 *----------------------------------------------------------------------------
@@ -150,7 +129,7 @@ int DRONE_COUNT;
 /* asm: MIN_TRACK_TIME	.bss	MIN_TRACK_TIME,1 */
 int MIN_TRACK_TIME;
 /* asm: PSYCHO_RHO	.bss	PSYCHO_RHO,1 */
-int PSYCHO_RHO;
+static int PSYCHO_RHO;
 /* asm: LANEP	.word	LANES,LANES4 */
 float *LANEP[] = {
     LANES, LANES4,
@@ -542,7 +521,7 @@ DOITR:
     UNIMPL();
 }
 
-void CK_LINK_DISP(void)
+static void CK_LINK_DISP(void)
 {
     // asm 000066AB: 	LDI	@HEAD2HEAD_ON,R0
     // asm 000066AC: 	BZ	GODISP
@@ -1196,11 +1175,11 @@ EXP_DIE:
 /* asm: 	 */
 /* asm: 	.word	dexplo1,dexplo2,dexplo3,dexplo4,dexplo5 */
 /* asm: 	.word	dexplo6,dexplo7,dexplo8,dexplo9,dexplo10,dexplo11,-1 */
-int EXP_ANI[] = {
+static int EXP_ANI[] = {
     // 	.word	blast1,blast2,blast3,blast4,blast5
     // 	.word	blast6,blast7,blast8,blast9,blast10,-1
-    dexplo1, dexplo2, dexplo3, dexplo4, dexplo5,
-    dexplo6, dexplo7, dexplo8, dexplo9, dexplo10, dexplo11, -1,
+    dexplo1_ROM, dexplo2_ROM, dexplo3_ROM, dexplo4_ROM, dexplo5_ROM,
+    dexplo6_ROM, dexplo7_ROM, dexplo8_ROM, dexplo9_ROM, dexplo10_ROM, dexplo11_ROM, -1,
 };
 // *----------------------------------------------------------------------------
 
@@ -1589,24 +1568,24 @@ SMOKE_DIE:
 /* asm: 	.float	45 */
 /* asm: 	.word	-1 */
 /* asm: 	 */
-int SMOKE_ANI[] = {
-    bnout1, 1,
+static int SMOKE_ANI[] = {
+    bnout1_ROM, 1,
     10,
-    bnout2, 2,
+    bnout2_ROM, 2,
     12,
-    bnout3, 1,
+    bnout3_ROM, 1,
     16,
-    bnout4, 1,
+    bnout4_ROM, 1,
     20,
-    bnout5, 1,
+    bnout5_ROM, 1,
     24,
-    bnout6, 1,
+    bnout6_ROM, 1,
     30,
-    bnout7, 1,
+    bnout7_ROM, 1,
     35,
-    bnout8, 1,
+    bnout8_ROM, 1,
     40,
-    bnout9, 1,
+    bnout9_ROM, 1,
     45,
     -1,
 };
@@ -1771,12 +1750,12 @@ DROPCOCOKILL:
 
 /* asm: MODELTAB	.word	cvettem,hotrodm,missle,testorm */
 /* asm: 	 */
-int MODELTAB[] = {
-    cvettem, hotrodm, missle, testorm,
+static int MODELTAB[] = {
+    cvettem_ROM, hotrodm_ROM, missle_ROM, testorm_ROM,
 };
 /* asm: TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
 /* asm: 	 */
-const char **TEXTTABS[] = {
+static const char **TEXTTABS[] = {
     VETETXT, RODRTXT, BULLTXT, FERRTXT,
 };
 /* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
@@ -1785,57 +1764,57 @@ const char *TITLES[] = {
     HRT12, HRT13, HRT14, HRT15, HRT16,
 };
 /* asm: VETETXT	.word	HRS11,HRS12,HRS13,HRS14,HRS15,HRS16 */
-const char *VETETXT[] = {
+static const char *VETETXT[] = {
     HRS11, HRS12, HRS13, HRS14, HRS15, HRS16,
 };
 /* asm: RODRTXT	.word	HRS21,HRS22,HRS23,HRS24,HRS25,HRS26 */
-const char *RODRTXT[] = {
+static const char *RODRTXT[] = {
     HRS21, HRS22, HRS23, HRS24, HRS25, HRS26,
 };
 /* asm: BULLTXT	.word	HRS31,HRS32,HRS33,HRS34,HRS35,HRS36 */
-const char *BULLTXT[] = {
+static const char *BULLTXT[] = {
     HRS31, HRS32, HRS33, HRS34, HRS35, HRS36,
 };
 /* asm: FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
 /* asm: 	 */
-const char *FERRTXT[] = {
+static const char *FERRTXT[] = {
     HRS41, HRS42, HRS43, HRS44, HRS45, HRS46,
 };
-const char HRT12[] = "TOP SPEED:";
-const char HRT13[] = "SKIDPAD:";
-const char HRT14[] = "AERO COEFF:";
-const char HRT15[] = "0?60 MPH:";
-const char HRT16[] = "POWER:";
+static const char HRT12[] = "TOP SPEED:";
+static const char HRT13[] = "SKIDPAD:";
+static const char HRT14[] = "AERO COEFF:";
+static const char HRT15[] = "0?60 MPH:";
+static const char HRT16[] = "POWER:";
 /* asm: TABING	.float	60,220,220,220,220,220 */
 /* asm: 	 */
 /* asm: 	 */
 float TABING[] = {
     60.0f, 220.0f, 220.0f, 220.0f, 220.0f, 220.0f,
 };
-const char HRS11[] = "63 MUSCLE CAR";
-const char HRS12[] = "145 MPH@233 KPH";
-const char HRS13[] = "0=89 G";
-const char HRS14[] = "0=39";
-const char HRS15[] = "2=98 SEC=";
-const char HRS16[] = "462HP  454 CID V8";
-const char HRS21[] = "LA BOMBA";
-const char HRS22[] = "142 MPH@228 KPH";
-const char HRS23[] = "0=98 G";
-const char HRS24[] = "0=45";
-const char HRS25[] = "2=51 SEC=";
-const char HRS26[] = "580HP  SUPERCHARGED V12";
-const char HRS31[] = "DEVASTATOR VI";
-const char HRS32[] = "147 MPH@236 KPH";
-const char HRS33[] = "0=85 G";
-const char HRS34[] = "0=25";
-const char HRS35[] = "3=15 SEC=";
-const char HRS36[] = "395HP  TWIN TURBO V6";
-const char HRS41[] = "ITALIA P69";
-const char HRS42[] = "144 MPH@231 KPH";
-const char HRS43[] = "1=01 G";
-const char HRS44[] = "0=28";
-const char HRS45[] = "2=88 SEC=";
-const char HRS46[] = "472HP  V12 DOHC 48V";
+static const char HRS11[] = "63 MUSCLE CAR";
+static const char HRS12[] = "145 MPH@233 KPH";
+static const char HRS13[] = "0=89 G";
+static const char HRS14[] = "0=39";
+static const char HRS15[] = "2=98 SEC=";
+static const char HRS16[] = "462HP  454 CID V8";
+static const char HRS21[] = "LA BOMBA";
+static const char HRS22[] = "142 MPH@228 KPH";
+static const char HRS23[] = "0=98 G";
+static const char HRS24[] = "0=45";
+static const char HRS25[] = "2=51 SEC=";
+static const char HRS26[] = "580HP  SUPERCHARGED V12";
+static const char HRS31[] = "DEVASTATOR VI";
+static const char HRS32[] = "147 MPH@236 KPH";
+static const char HRS33[] = "0=85 G";
+static const char HRS34[] = "0=25";
+static const char HRS35[] = "3=15 SEC=";
+static const char HRS36[] = "395HP  TWIN TURBO V6";
+static const char HRS41[] = "ITALIA P69";
+static const char HRS42[] = "144 MPH@231 KPH";
+static const char HRS43[] = "1=01 G";
+static const char HRS44[] = "0=28";
+static const char HRS45[] = "2=88 SEC=";
+static const char HRS46[] = "472HP  V12 DOHC 48V";
 // *----------------------------------------------------------------------------
 
 /*

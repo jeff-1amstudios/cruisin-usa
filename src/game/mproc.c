@@ -10,7 +10,7 @@
  * Source module: asm/MPROC.ASM
  */
 
-void PRC_DEBUG_CHECK(void);
+static void PRC_DEBUG_CHECK(void);
 void PRC_CREATE(void);
 void PRC_CREATE_CHILD(void);
 void PRC_DISPATCH(void);
@@ -31,14 +31,6 @@ void PRC_FOLLOW(void);
 #define PFREEI PFREE
 #define PRCSTRI PRCSTR
 
-extern int NUM_PROCS_ACTIVE;
-extern int NUM_PROCS_IDLE;
-extern int CURRENT_PROC;
-extern int OLDSP;
-extern int PACTIVE;
-extern int PFREE;
-extern int PRCSTR[];
-
 /*
 *----------------------------------------------------------------------------
 *MULTIPROCESS SYSTEM
@@ -51,9 +43,9 @@ extern int PRCSTR[];
 
 #if DEBUG
 /* asm: NUM_PROCS_ACTIVE	.bss	NUM_PROCS_ACTIVE,1 */
-int NUM_PROCS_ACTIVE;
+static int NUM_PROCS_ACTIVE;
 /* asm: NUM_PROCS_IDLE	.bss	NUM_PROCS_IDLE,1 */
-int NUM_PROCS_IDLE;
+static int NUM_PROCS_IDLE;
 #endif
 /* asm: CURRENT_PROC	.bss	CURRENT_PROC,1 */
 int CURRENT_PROC;
@@ -66,7 +58,7 @@ int PFREE;
 int PRCSTR[sizeof(PROC) * NUMPROC];
 
 // *----------------------------------------------------------------------------
-void PRC_DEBUG_CHECK(void)
+static void PRC_DEBUG_CHECK(void)
 {
 #if DEBUG
     // asm: 	PUSH	R0

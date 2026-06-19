@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "hottub.h"
 
@@ -19,24 +18,24 @@
  */
 
 void HOTTUB_SCENE(void);
-void HOTTUB_WATERVOL(void);
-void PREZSPEAK(void);
-void START_ANIMATIONS(void);
-void HT_HUNGH(void);
-void HT_RUT(void);
-void HT_HILLY(void);
-void HT_GIRL(void);
+static void HOTTUB_WATERVOL(void);
+static void PREZSPEAK(void);
+static void START_ANIMATIONS(void);
+static void HT_HUNGH(void);
+static void HT_RUT(void);
+static void HT_HILLY(void);
+static void HT_GIRL(void);
 void HT_HOTTUB(void);
 void HT_RADAR(void);
 void HT_STAGENT(void);
-void PLAINANI_PROC(void);
-void AGENTANI_PROC(void);
-void POLITICAL_CARTOON_NOTICE(void);
-void POLTXT(void);
+static void PLAINANI_PROC(void);
+static void AGENTANI_PROC(void);
+static void POLITICAL_CARTOON_NOTICE(void);
+static void POLTXT(void);
 void CROWD_IT(void);
 void BABE_TROPHY(void);
-void BABE_IBO(void);
-void BABE_ANI(void);
+static void BABE_IBO(void);
+static void BABE_ANI(void);
 void BABE_WAVEFLAG(void);
 
 #define ANI_HOTTUBI ANI_HOTTUB
@@ -48,18 +47,7 @@ void BABE_WAVEFLAG(void);
 #define HUNGH_ANISI HUNGH_ANIS
 #define RUT_ANISI RUT_ANIS
 
-extern const char BABA1[];
-extern const char BABA2[];
-extern int ANI_HOTTUB[];
-extern int HILLANI[];
-extern int GIRLANI[];
-extern int ANI_RADAR[];
-extern int ANI_STAG[];
-extern int WATCHOBJ;
-extern const char PC1[];
-extern const char PC2[];
-extern int BABE_TROPHY_SCRIPT[];
-extern int BABE_FLAG_SCRIPT[];
+static int BABE_TROPHY_SCRIPT[7];
 
 /*
 *----------------------------------------------------------------------------
@@ -71,9 +59,9 @@ extern int BABE_FLAG_SCRIPT[];
 */
 
 /* asm: BABA1	SPTR	"THE PRESIDENT OF" */
-const char BABA1[] = "THE PRESIDENT OF";
+static const char BABA1[] = "THE PRESIDENT OF";
 /* asm: BABA2	SPTR	"THE UNITED STATES" */
-const char BABA2[] = "THE UNITED STATES";
+static const char BABA2[] = "THE UNITED STATES";
 
 /*
 *----------------------------------------------------------------------------
@@ -255,7 +243,7 @@ HOTTT:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void HOTTUB_WATERVOL(void)
+static void HOTTUB_WATERVOL(void)
 {
     // asm 00008A4F: 	LDI	@WATCHOBJ,AR4
     // asm 00008A50: 	LDF	*+AR4(OPOSX),R0
@@ -302,7 +290,7 @@ BIBO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void PREZSPEAK(void)
+static void PREZSPEAK(void)
 {
     // asm 00008A6F: 	SLEEP	25
     // asm 00008A71: 	SONDFX	CROWDROAR
@@ -335,7 +323,7 @@ void PREZSPEAK(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void START_ANIMATIONS(void)
+static void START_ANIMATIONS(void)
 {
     // asm 00008A9C: 	LDI	@OACTIVEI,AR4
 ODC:
@@ -383,34 +371,34 @@ ODCX:
 
 /* asm: ANI_HOTTUB	.word	htub,htub1,htub2,htub3,htub4,htub5,-1 */
 /* asm: 	 */
-int ANI_HOTTUB[] = {
-    htub, htub1, htub2, htub3, htub4, htub5, -1,
+static int ANI_HOTTUB[] = {
+    htub_ROM, htub1_ROM, htub2_ROM, htub3_ROM, htub4_ROM, htub5_ROM, -1,
 };
 /* asm: HILLANI		.word	hilly1,hilly2,hilly3,hilly4,hilly5,hilly6,-1 */
 /* asm: 	 */
-int HILLANI[] = {
-    hilly1, hilly2, hilly3, hilly4, hilly5, hilly6, -1,
+static int HILLANI[] = {
+    hilly1_ROM, hilly2_ROM, hilly3_ROM, hilly4_ROM, hilly5_ROM, hilly6_ROM, -1,
 };
 /* asm: GIRLANI		.word	girl1,girl2,girl3,girl4,girl5,girl6,-1 */
 /* asm: 	 */
-int GIRLANI[] = {
-    girl1, girl2, girl3, girl4, girl5, girl6, -1,
+static int GIRLANI[] = {
+    girl1_ROM, girl2_ROM, girl3_ROM, girl4_ROM, girl5_ROM, girl6_ROM, -1,
 };
 // ;hott1,hott2,hott3,hott4,hott5,hott6,-1
 
 /* asm: ANI_RADAR	.word	rad1,rad2,rad3,rad4,rad5,rad6,rad7,rad8,rad9,-1 */
 /* asm: 	 */
-int ANI_RADAR[] = {
-    rad1, rad2, rad3, rad4, rad5, rad6, rad7, rad8, rad9, -1,
+static int ANI_RADAR[] = {
+    rad1_ROM, rad2_ROM, rad3_ROM, rad4_ROM, rad5_ROM, rad6_ROM, rad7_ROM, rad8_ROM, rad9_ROM, -1,
 };
 /* asm: ANI_STAG	.word	stagent1,stagent2,stagent3,5,stagent2,-1 */
 /* asm: 	 */
 /* asm: 	 */
-int ANI_STAG[] = {
-    stagent1, stagent2, stagent3, 5, stagent2, -1,
+static int ANI_STAG[] = {
+    stagent1_ROM, stagent2_ROM, stagent3_ROM, 5, stagent2_ROM, -1,
 };
 
-void HT_HUNGH(void)
+static void HT_HUNGH(void)
 {
     // asm 00008AE4: 	PUSH	AR6
     // ;	LDI	*+AR4(OPLINK),AR2
@@ -430,7 +418,7 @@ void HT_HUNGH(void)
     UNIMPL();
 }
 
-void HT_RUT(void)
+static void HT_RUT(void)
 {
     // asm 00008AEF: 	PUSH	AR6
     // asm 00008AF0: 	LDI	*+AR4(OPLINK),AR2
@@ -449,7 +437,7 @@ void HT_RUT(void)
 /* asm: WATCHOBJ	.bss	WATCHOBJ,1 */
 int WATCHOBJ;
 
-void HT_HILLY(void)
+static void HT_HILLY(void)
 {
     // asm 00008AFB: 	PUSH	AR6
     // asm 00008AFC: 	LDI	@HILLANII,AR6
@@ -460,7 +448,7 @@ void HT_HILLY(void)
     UNIMPL();
 }
 
-void HT_GIRL(void)
+static void HT_GIRL(void)
 {
     // asm 00008B02: 	PUSH	AR6
     // asm 00008B03: 	LDI	@GIRLANII,AR6
@@ -505,7 +493,7 @@ void HT_STAGENT(void)
     UNIMPL();
 }
 
-void PLAINANI_PROC(void)
+static void PLAINANI_PROC(void)
 {
     // asm 00008B1F: 	LDI	AR6,AR5
 PLAINANI_LP:
@@ -528,7 +516,7 @@ PPDD:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void AGENTANI_PROC(void)
+static void AGENTANI_PROC(void)
 {
     // asm 00008B2C: 	RANDN	50
     // asm 00008B2E: 	LDI	R0,AR2
@@ -558,12 +546,12 @@ PPDDA:
 // *----------------------------------------------------------------------------
 
 /* asm: PC1	SPTR	"CELEBRITY IMPERSONATION" */
-const char PC1[] = "CELEBRITY IMPERSONATION";
+static const char PC1[] = "CELEBRITY IMPERSONATION";
 /* asm: PC2	SPTR	"POLITICAL CARTOON" */
-const char PC2[] = "POLITICAL CARTOON";
+static const char PC2[] = "POLITICAL CARTOON";
 
 // *----------------------------------------------------------------------------
-void POLITICAL_CARTOON_NOTICE(void)
+static void POLITICAL_CARTOON_NOTICE(void)
 {
     // asm 00008B42: 	LDI	@PC1,AR2
     // asm 00008B43: 	LDI	15,RC
@@ -578,7 +566,7 @@ void POLITICAL_CARTOON_NOTICE(void)
     UNIMPL();
 }
 
-void POLTXT(void)
+static void POLTXT(void)
 {
     // asm 00008B4B: 	FLOAT	256,R2
     // asm 00008B4C: 	FLOAT	20,R3
@@ -696,7 +684,7 @@ BABLP3:
     UNIMPL();
 }
 
-void BABE_IBO(void)
+static void BABE_IBO(void)
 {
     // asm 00008BAE: 	LDI	6,AR5
     // asm 00008BAF: BABE_LP3
@@ -726,7 +714,7 @@ void BABE_IBO(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BABE_ANI(void)
+static void BABE_ANI(void)
 {
     // asm 00008BC5: 	LONGROUT
 BABE_ANIKK:
@@ -754,13 +742,13 @@ BX:
 /* asm: 	.word	-1 */
 /* asm: 	 */
 /* asm: 	 */
-int BABE_TROPHY_SCRIPT[] = {
-    here1,
-    here2,
-    here3,
-    here4,
-    here5,
-    here6,
+static int BABE_TROPHY_SCRIPT[] = {
+    here1_ROM,
+    here2_ROM,
+    here3_ROM,
+    here4_ROM,
+    here5_ROM,
+    here6_ROM,
     -1,
 };
 /* asm: BABE_FLAG_SCRIPT */
@@ -777,14 +765,14 @@ int BABE_TROPHY_SCRIPT[] = {
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-int BABE_FLAG_SCRIPT[] = {
-    flag1,
-    flag2,
-    flag3,
-    flag4,
-    flag5,
-    flag6,
-    flag7,
+static int BABE_FLAG_SCRIPT[] = {
+    flag1_ROM,
+    flag2_ROM,
+    flag3_ROM,
+    flag4_ROM,
+    flag5_ROM,
+    flag6_ROM,
+    flag7_ROM,
     -1,
 };
 

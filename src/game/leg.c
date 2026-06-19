@@ -4,7 +4,6 @@
 #include "vunit.h"
 #include "sys.h"
 #include "globals.h"
-#include "objects.h"
 #include "leg.h"
 
 /*
@@ -12,29 +11,16 @@
  */
 
 void LEG_INIT(void);
-void ELEMENT_INIT(void);
-void ELEMENT_GET(void);
-void ELEMENT_ADD(void);
-void ELEMENT_DUMP_INTO_LEGMAP(void);
+static void ELEMENT_INIT(void);
+static void ELEMENT_GET(void);
+static void ELEMENT_ADD(void);
+static void ELEMENT_DUMP_INTO_LEGMAP(void);
 void LEG_GENERATE_MAP(void);
-void LEG_ADD_GROUP(void);
-void GENERATE_LINEAR_DISTANCE(void);
+static void LEG_ADD_GROUP(void);
+static void GENERATE_LINEAR_DISTANCE(void);
 
 #define LEG_MAPI LEG_MAP
 #define LEGLLI LEGLL
-
-extern int FINISH_ID;
-extern int LEG_ELEMENTS;
-extern int LEG_MAP[];
-extern int LAST_END_CACHE;
-extern int LAST_END_INDEX;
-extern int LAST_ORIENTATION;
-extern int LEG_SSLL[];
-extern int LEGFREE;
-extern int LEGLL;
-extern int LEG_FLAG;
-extern int LEG_RADY;
-extern int LEG_SECTIONIDX;
 
 /*
 *----------------------------------------------------------------------------
@@ -88,7 +74,7 @@ int LAST_END_CACHE;
 /* asm: LAST_END_INDEX	.bss	LAST_END_INDEX,1 */
 int LAST_END_INDEX;
 /* asm: LAST_ORIENTATION	.bss	LAST_ORIENTATION,1 */
-int LAST_ORIENTATION;
+static int LAST_ORIENTATION;
 
 /*
 *----------------------------------------------------------------------------
@@ -134,7 +120,7 @@ int LEGLL;
 *THIS IS FOR THE SAKE OF SPEED
 *
 */
-void ELEMENT_INIT(void)
+static void ELEMENT_INIT(void)
 {
     // asm 0000AA69: 	PUSH	R0
     // asm 0000AA6A: 	LDL	LEG_SSLL,R0
@@ -159,7 +145,7 @@ void ELEMENT_INIT(void)
 *	AR3	PTR TO ELEMENT
 *
 */
-void ELEMENT_GET(void)
+static void ELEMENT_GET(void)
 {
     // asm 0000AA70: 	PUSH	AR0
 #if DEBUG
@@ -191,7 +177,7 @@ void ELEMENT_GET(void)
 *
 */
 
-void ELEMENT_ADD(void)
+static void ELEMENT_ADD(void)
 {
     // asm 0000AA78: 	LDI	*+AR3(1+LEG_ID),R0
     // asm 0000AA79: 	LDI	@LEGLLI,AR0
@@ -220,7 +206,7 @@ QT:
 *	AR3	PTR TO LEG MAP ENTRY
 *
 */
-void ELEMENT_DUMP_INTO_LEGMAP(void)
+static void ELEMENT_DUMP_INTO_LEGMAP(void)
 {
     // asm 0000AA84: 	PUSH	R0
     // asm 0000AA85: 	PUSH	AR0
@@ -359,7 +345,7 @@ CNTNB2:
 // *----------------------------------------------------------------------------
 
 /* asm: LEG_FLAG	.bss	LEG_FLAG,1 */
-int LEG_FLAG;
+static int LEG_FLAG;
 /* asm: LEG_RADY	.bss	LEG_RADY,1 */
 int LEG_RADY;
 /* asm: LEG_SECTIONIDX	.bss	LEG_SECTIONIDX,1 */
@@ -377,7 +363,7 @@ int LEG_SECTIONIDX;
 *
 *
 */
-void LEG_ADD_GROUP(void)
+static void LEG_ADD_GROUP(void)
 {
     // asm 0000AACD: 	PUSH	R4
     // asm 0000AACE: 	PUSH	R5
@@ -541,7 +527,7 @@ NOTDYNAROAD:
 *
 *
 */
-void GENERATE_LINEAR_DISTANCE(void)
+static void GENERATE_LINEAR_DISTANCE(void)
 {
 #if USEEXTENDED
     // asm: 	LDL	LEG_MAP,AR2

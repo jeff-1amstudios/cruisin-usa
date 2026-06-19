@@ -47,16 +47,6 @@ void DIRQ(void);
 #define _PALLISTI _PALLIST
 #define FASTSTKI FASTSTK
 
-extern uintptr_t ASHADOW;
-extern uintptr_t LIGHTIY;
-extern uintptr_t transvectorYI;
-extern uintptr_t tmpmatY;
-extern float SCRNHXI;
-extern float SCRNHYI;
-extern int HIGH_CLIP_LEV8;
-extern uintptr_t VECTORAYI;
-extern int POSTERMATRIX2D[];
-
 /*
 *v7.03
 *----------------------------------------------------------------------------
@@ -155,9 +145,9 @@ int HIGH_CLIP_LEV8 = 80000;
 #define VECTORDI _VECTORD
 /* asm: VECTORAYI		.word	_VECTORA+1 */
 /* asm: 	 */
-uintptr_t VECTORAYI = (uintptr_t)(_VECTORA+1);
+static uintptr_t VECTORAYI = (uintptr_t)(_VECTORA+1);
 /* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */
-int POSTERMATRIX2D[4];
+static int POSTERMATRIX2D[4];
 
 /*
 *----------------------------------------------------------------------------

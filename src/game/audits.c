@@ -17,14 +17,11 @@
  * Source module: asm/AUDITS.ASM
  */
 
-void COMPUTE_FREEGAMES_PRCNT(void);
-void COMPUTE_GAMETIME(void);
+static void COMPUTE_FREEGAMES_PRCNT(void);
+static void COMPUTE_GAMETIME(void);
 void AUDIT_DISPLAY(void);
 
 extern const char EXPIRED[];
-
-extern int AUDIT_LIST;
-extern int OLDDIP;
 
 /*
 ;	.FILE	"AUDITS.ASM"
@@ -56,7 +53,7 @@ extern int OLDDIP;
 *	R0	VALUE
 *
 */
-void COMPUTE_FREEGAMES_PRCNT(void)
+static void COMPUTE_FREEGAMES_PRCNT(void)
 {
     // asm 00001419: 	READAUD	AUD_GAMES_CONTINUES
     // asm 0000141B: 	LDI	R0,R1
@@ -83,7 +80,7 @@ void COMPUTE_FREEGAMES_PRCNT(void)
 *	R0	VALUE
 *
 */
-void COMPUTE_GAMETIME(void)
+static void COMPUTE_GAMETIME(void)
 {
     // asm 00001426: 	READAUD	AUD_GAMES_CONTINUES
     // asm 00001428: 	LDI	R0,R1
@@ -182,7 +179,7 @@ void COMPUTE_GAMETIME(void)
 /* asm: AUDENT	AUD_WIN_APPALACHIA,"APPALACHIA WINS" */
 /* asm: AUDENT	AUD_WIN_DC,"DC WINS" */
 /* asm: AUDENT_PAGE */
-int AUDIT_LIST;
+static int AUDIT_LIST;
 // *----------------------------------------------------------------------------
 
 /*

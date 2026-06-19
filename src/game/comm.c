@@ -11,7 +11,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "comm.h"
 #include "commq.h"
@@ -26,23 +25,15 @@ void COMM_MASTER_SEND_SYNC(void);
 void SETONE(void);
 void CLRONE(void);
 void COMM_ROUTINE(void);
-void COMM_MASTER(void);
+static void COMM_MASTER(void);
 void COMM_IRQ(void);
-void DO_SLAVE_SYNC(void);
-void COMM_SLAVE(void);
+static void DO_SLAVE_SYNC(void);
+static void COMM_SLAVE(void);
 
 #define RECEIVE_BUFFERI RECEIVE_BUFFER
 #define COMM_IOI COMM_IO
 
-extern int COMM_MASTER_ERROR_CNT;
-extern int COMM_MASTER_TRANSES;
-extern int COMM_SLAVE_ERROR_CNT;
-extern int COMM_SLAVE_TRANSES;
-extern int COMM_SLAVE_NREADY;
-extern int COMMFLAG;
-extern int ONEFLAG;
-extern int TRANSMISSION_ACTIVE;
-extern int TRANSMISSION_DEAD;
+static int COMM_SLAVE_NREADY;
 
 /*
 *----------------------------------------------------------------------------
@@ -63,7 +54,7 @@ int COMM_SLAVE_ERROR_CNT;
 /* asm: COMM_SLAVE_TRANSES	fbss	COMM_SLAVE_TRANSES,1 */
 int COMM_SLAVE_TRANSES;
 /* asm: COMM_SLAVE_NREADY	fbss	COMM_SLAVE_NREADY,1 */
-int COMM_SLAVE_NREADY;
+static int COMM_SLAVE_NREADY;
 /* asm: COMMFLAG	.bss	COMMFLAG,1 */
 int COMMFLAG;
 /* asm: ONEFLAG	pbss	ONEFLAG,1 */
@@ -243,7 +234,7 @@ COMM_HOLDFORA2D:
     UNIMPL();
 }
 
-void COMM_MASTER(void)
+static void COMM_MASTER(void)
 {
     // asm 00007FA8: 	SETDP
     // asm 00007FA9: 	LDI	@COMM_IOI,AR5		;SETUP I/O REGISTER
@@ -631,7 +622,7 @@ void COMM_IRQ(void)
     UNIMPL();
 }
 
-void DO_SLAVE_SYNC(void)
+static void DO_SLAVE_SYNC(void)
 {
     // asm 000080D5: 	PUSH	R1
     // asm 000080D6: 	PUSH	IE
@@ -698,7 +689,7 @@ WTLP:
 *
 *
 */
-void COMM_SLAVE(void)
+static void COMM_SLAVE(void)
 {
     // asm 000080FA: 	SETDP
     // asm 000080FB: 	LDI	@COMM_IOI,AR5		;AR5=COMM I/O ADDRESS

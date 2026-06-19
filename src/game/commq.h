@@ -60,5 +60,10 @@ extern int COINDROP;
 extern int OM_DIAGVALUE;
 // asm: 	fbss	DIAGVALUE,1
 extern int DIAGVALUE;
+void SEND_RACER_POS(void);
+void SEND_RHO_POS(void);
+void SEND_RHO_CREATE(void);
+void FIND_DRONE(void);
+void SEND_OM_TRACK(void);
 
 #endif /* COMMQ_H */

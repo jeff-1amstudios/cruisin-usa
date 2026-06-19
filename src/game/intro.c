@@ -10,11 +10,9 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "error.h"
-#include "h2hobj.h"
 #include "comm.h"
 #include "racer.h"
 #include "intro.h"
@@ -25,59 +23,59 @@
 
 void HEAD2HEAD_LOGO_WAIT(void);
 void HEAD2HEAD_LOGO(void);
-void KABOSHP(void);
-void JINMSG(void);
-void THROBIT(void);
+static void KABOSHP(void);
+static void JINMSG(void);
+static void THROBIT(void);
 void WAIT_FOR_CHALLENGER(void);
-void CHECK_ENDBONUS(void);
-void WAIT_FOR_ENDBONUS(void);
+static void CHECK_ENDBONUS(void);
+static void WAIT_FOR_ENDBONUS(void);
 void ISSUE_STARTGAME_TSEL(void);
 void ISSUE_STARTGAME(void);
 void PLYR_INTRO(void);
 void CHOOSE_NEXT_RACE(void);
-void LOAD_NEW_SELECTION(void);
-void WATCH_PLYRS_CAR(void);
+static void LOAD_NEW_SELECTION(void);
+static void WATCH_PLYRS_CAR(void);
 void INIT_GAMELEG(void);
-void CHOOSECAR(void);
+static void CHOOSECAR(void);
 void THE_CAR_CHOICE_PROC(void);
-void RAISE_DOOR(void);
+static void RAISE_DOOR(void);
 void ZOOMTOCAR(void);
 void GETTHECARS(void);
 void SHOW_CAR_STATISTICS(void);
-void CLEANUP_DIMCAR_PALS(void);
-void GETTHECAR(void);
+static void CLEANUP_DIMCAR_PALS(void);
+static void GETTHECAR(void);
 void ROUNDER(void);
-void AFFECT_THE_CARS(void);
-void HIDDEN_VEHICLES(void);
-void RESET_ORIGINAL(void);
-void AFFECTED_CAR(void);
-void CAR_DIMMER(void);
-void LIGHT_INIT(void);
-void LIGHT_OFF(void);
-void LIGHT_ON(void);
+static void AFFECT_THE_CARS(void);
+static void HIDDEN_VEHICLES(void);
+static void RESET_ORIGINAL(void);
+static void AFFECTED_CAR(void);
+static void CAR_DIMMER(void);
+static void LIGHT_INIT(void);
+static void LIGHT_OFF(void);
+static void LIGHT_ON(void);
 void INIT_PEDALCHK(void);
 void GETCHOICE(void);
 void PEDALCHK(void);
 void WAVEFLAG(void);
 void RACESEL_TIMER(void);
-void WAITINTROTIMER(void);
+static void WAITINTROTIMER(void);
 void INTROTIMER(void);
 void DIAL_ROUT(void);
 void ENDPLAYER(void);
-void GAME_AVAILABLEP(void);
+static void GAME_AVAILABLEP(void);
 void _start(void);
-void ULTRA_PROC(void);
+static void ULTRA_PROC(void);
 void ULTRA_LOGO(void);
 void LOGO_SMALL(void);
 void SET_ATTR(void);
 void _debug(void);
 void _timeout(void);
 void INSMORE(void);
-void COIN_CNTDOWN(void);
+static void COIN_CNTDOWN(void);
 void LOAD_SHARED(void);
 void TRAFFIC_LIGHT(void);
 void CPOINT_LIGHT(void);
-void SHOW_RACE_NAME(void);
+static void SHOW_RACE_NAME(void);
 
 #define CCTI CCT
 #define CCTABI CCTAB
@@ -99,58 +97,9 @@ void WAIT_ACK(void);
 void GET_CREDITS_TO_START(void);
 void GET_CREDITS_TO_CONTINUE(void);
 
-extern int START_HIT;
-extern int CHOSEN_VEHICLE;
-extern int CHOSEN_TRANSMISSION;
-extern int CHOSEN_RACE;
-extern int END_OF_GAMEP;
-extern int RACE_MODE;
-extern int FIRST_RACE;
-extern int POSES;
-extern int GAMEDIFF;
-extern int CHECKPOINT_NUM;
-extern int H2H_FLAGSTATE;
-extern const char JINOW[];
-extern const char WFCHAL1[];
-extern const char WFCHAL2[];
-extern const char WFCHAL3[];
-extern int FRAMELAG;
-extern int BONUS_WAITFLAG;
-extern int OM_BONUS_WAITFLAG;
-extern int START_NOW_P;
-extern const char CCT[];
-extern tCHOOSE_CAR_ENTRY CCTAB[];
-extern int CHOOSENCAR;
-extern int RACE_STARTING_POINTS[];
-extern int CAR_CHOICE_GOTTEN;
-extern int CAR_ARRAY[];
-extern float SCS_TAB[];
-extern int CAR1PAL[];
-extern int CAR2PAL[];
-extern int CAR3PAL[];
-extern int CAR4PAL[];
-extern int *CARPAL_TABLE[];
-extern int CARSRCPAL_TAB[];
-extern int IS_HIDDEN;
-extern int HIDDEN_TABLE[];
-extern int SPINCURR;
-extern const char T_READY[];
-extern const char T_SET[];
-extern const char T_GO[];
-extern const char T_CHALLENG[];
-extern uintptr_t TLIST[];
-extern uintptr_t TLGO[];
-extern int BABE_CONTROL;
-extern int CURR_FLAGSTATE;
-extern int LASTCHOICE;
-extern int _timer;
-extern const char TROI[];
-extern const char ICCI[];
-extern const char PSCI[];
-extern int SAVEDMODE;
-extern int DIRTY_SHARED;
-extern int TRAFFIC_LL[];
-extern int RGBTAB_CP;
+static tCHOOSE_CAR_ENTRY CCTAB[];
+static int TRAFFIC_LL[7];
+static int RGBTAB_CP;
 
 /* asm: START_HIT	.bss	START_HIT,1 */
 int START_HIT;
@@ -174,7 +123,7 @@ int GAMEDIFF;
 int CHECKPOINT_NUM;
 /* asm: H2H_FLAGSTATE	.bss	H2H_FLAGSTATE,1 */
 int H2H_FLAGSTATE;
-const char JINOW[] = "JOIN IN NOW";
+static const char JINOW[] = "JOIN IN NOW";
 
 void HEAD2HEAD_LOGO_WAIT(void)
 {
@@ -335,7 +284,7 @@ KABOSH:
 *
 *
 */
-void KABOSHP(void)
+static void KABOSHP(void)
 {
     // asm 000015D4: 	LDI	@TRANSMISSION_ACTIVE,R0
     // asm 000015D5: 	BZ	TKABOSH
@@ -361,7 +310,7 @@ TKABOSH:
     UNIMPL();
 }
 
-void JINMSG(void)
+static void JINMSG(void)
 {
     // asm 000015E6: 	CMPI	1,AR6
     // asm 000015E7: 	BNE	NOJINMSG
@@ -379,7 +328,7 @@ NOJINMSG:
 }
 
 // *----------------------------------------------------------------------------
-void THROBIT(void)
+static void THROBIT(void)
 {
     // asm 000015F2: 	LDI	1,AR5
     // asm 000015F3: THROBLP1
@@ -422,9 +371,9 @@ ENDTHROB:
 
 // *----------------------------------------------------------------------------
 
-const char WFCHAL1[] = "WAITING";
-const char WFCHAL2[] = "FOR CHALLENGER";
-const char WFCHAL3[] = "HOLD RADIO OR VIEW3 TO CANCEL";
+static const char WFCHAL1[] = "WAITING";
+static const char WFCHAL2[] = "FOR CHALLENGER";
+static const char WFCHAL3[] = "HOLD RADIO OR VIEW3 TO CANCEL";
 /* asm: FRAMELAG	.bss	FRAMELAG,1 */
 int FRAMELAG;
 
@@ -591,7 +540,7 @@ WAITX:
 *
 *
 */
-void CHECK_ENDBONUS(void)
+static void CHECK_ENDBONUS(void)
 {
     // asm 0000168C: 	LDI	@TRANSMISSION_ACTIVE,R0
     // asm 0000168D: 	BZ	CEBT
@@ -619,7 +568,7 @@ int BONUS_WAITFLAG;
 /* asm: OM_BONUS_WAITFLAG	pbss	OM_BONUS_WAITFLAG,1 */
 int OM_BONUS_WAITFLAG;
 
-void WAIT_FOR_ENDBONUS(void)
+static void WAIT_FOR_ENDBONUS(void)
 {
     // asm 0000169C: 	PUSHP	R6
     // asm 0000169F: 	SLEEP	2
@@ -1038,7 +987,7 @@ void CHOOSE_NEXT_RACE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void LOAD_NEW_SELECTION(void)
+static void LOAD_NEW_SELECTION(void)
 {
     // asm 0000181F: 	LDI	@CHOSEN_RACE,AR0
     // asm 00001820: 	ADDI	@FULLSETUP_TABLEI,AR0
@@ -1090,7 +1039,7 @@ void LOAD_NEW_SELECTION(void)
 *	AR4	PLYRS CAR
 *
 */
-void WATCH_PLYRS_CAR(void)
+static void WATCH_PLYRS_CAR(void)
 {
     // asm 00001841: 	LDF	@START_RADY,R2
     // asm 00001842: 	LDI	@MATRIXAI,AR2
@@ -1180,16 +1129,16 @@ BABA66:
 *CHOOSECAR
 *
 */
-const char CCT[] = "CHOOSE CAR";
+static const char CCT[] = "CHOOSE CAR";
 /*
 	;all Y's were 0
 	;
 */
-tCHOOSE_CAR_ENTRY CCTAB[] = {
-    { -1384, -164, -4708, cvettem, PI, 0x0481 },
-    {  -448, -200, -4708, hotrodm, PI, 0x0482 },
-    {   464, -177, -4708, misslem, PI, 0x0483 },
-    {  1424, -147, -4708, testorm, PI, 0x0484 },
+static tCHOOSE_CAR_ENTRY CCTAB[] = {
+    { -1384, -164, -4708, cvettem_ROM, PI, 0x0481 },
+    {  -448, -200, -4708, hotrodm_ROM, PI, 0x0482 },
+    {   464, -177, -4708, misslem_ROM, PI, 0x0483 },
+    {  1424, -147, -4708, testorm_ROM, PI, 0x0484 },
 };
 /* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
 int CHOOSENCAR;
@@ -1232,7 +1181,7 @@ int RACE_STARTING_POINTS[] = {
 *
 *
 */
-void CHOOSECAR(void)
+static void CHOOSECAR(void)
 {
     // asm 000018A6: 	LDI	@CHOSEN_RACE,AR0
     // asm 000018A7: 	ADDI	@FULLSETUP_TABLEI,AR0
@@ -1442,7 +1391,7 @@ CCLPX:
 *
 *
 */
-void RAISE_DOOR(void)
+static void RAISE_DOOR(void)
 {
     // asm 0000195D: 	SOND1	GOPEN
     // asm 0000195F: 	LDI	49,AR5
@@ -1775,7 +1724,7 @@ LISTLP:
 */
 /* asm: SCS_TAB		.float	10,70,170,230 */
 /* asm: 	 */
-float SCS_TAB[] = {
+static float SCS_TAB[] = {
     10.0f, 70.0f, 170.0f, 230.0f,
 };
 
@@ -1842,11 +1791,11 @@ int CAR3PAL[129];
 /* asm: CAR4PAL	.bss	CAR4PAL,129 */
 int CAR4PAL[129];
 /* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
-int *CARPAL_TABLE[] = {
+static int *CARPAL_TABLE[] = {
     CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL,
 };
 /* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
-int CARSRCPAL_TAB[] = {
+static int CARSRCPAL_TAB[] = {
     cvette_p, hotrod_p, missle_p, testor_p,
 };
 
@@ -1857,7 +1806,7 @@ int CARSRCPAL_TAB[] = {
 *
 *
 */
-void CLEANUP_DIMCAR_PALS(void)
+static void CLEANUP_DIMCAR_PALS(void)
 {
     // asm 00001A8A: 	LDL	flour_lghtof,AR2
     // asm 00001A8B: 	CALL	PAL_FIND_RAW
@@ -1929,7 +1878,7 @@ void CLEANUP_DIMCAR_PALS(void)
 *	IR1	INDEX OF VEHCILE
 *
 */
-void GETTHECAR(void)
+static void GETTHECAR(void)
 {
     // asm 00001A9F: 	LDI	1,R0
     // asm 00001AA0: 	STI	R0,*AR2
@@ -2082,7 +2031,7 @@ RLL:
 *
 *
 */
-void AFFECT_THE_CARS(void)
+static void AFFECT_THE_CARS(void)
 {
     // asm 00001B13: 	LDI	481h,AR2
     // asm 00001B14: 	LDI	RNDR_C1_DYH,IR0
@@ -2119,11 +2068,11 @@ int IS_HIDDEN;
 /* asm: HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
 /* asm: 	 */
 /* asm: 	 */
-int HIDDEN_TABLE[] = {
-    jeepm, sbuspm, copcar, gtruck,
+static int HIDDEN_TABLE[] = {
+    jeepm_ROM, sbuspm_ROM, copcar_ROM, gtruck_ROM,
 };
 
-void HIDDEN_VEHICLES(void)
+static void HIDDEN_VEHICLES(void)
 {
     // asm 00001B29: 	LDI	-1,R0
     // asm 00001B2A: 	STI	R0,@IS_HIDDEN
@@ -2174,7 +2123,7 @@ SETAS_ORIGINALS:
     UNIMPL();
 }
 
-void RESET_ORIGINAL(void)
+static void RESET_ORIGINAL(void)
 {
     // 	;insert code here to set the old vehicle
     // 	;as
@@ -2212,7 +2161,7 @@ int SPINCURR;
 *
 *
 */
-void AFFECTED_CAR(void)
+static void AFFECTED_CAR(void)
 {
     // asm 00001B59: 	CALL	OBJ_FIND_FIRST
     // asm 00001B5A: 	LDF	*+AR0(OPOSY),R0
@@ -2298,7 +2247,7 @@ N12:
 *	R0	(FL) DIMMER VALUE
 *
 */
-void CAR_DIMMER(void)
+static void CAR_DIMMER(void)
 {
     // asm 00001B9D: 	LDI	AR0,AR1
     // asm 00001B9E: 	ADDI	@CARPAL_TABLEI,AR1
@@ -2316,7 +2265,7 @@ void CAR_DIMMER(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void LIGHT_INIT(void)
+static void LIGHT_INIT(void)
 {
     // asm 00001C27: 	PUSH	AR2
     // asm 00001C28: 	LDL	flour_lghtof,AR2
@@ -2345,7 +2294,7 @@ void LIGHT_INIT(void)
 *	AR2	INDEX  (0 to 3)
 *
 */
-void LIGHT_OFF(void)
+static void LIGHT_OFF(void)
 {
     // asm 00001C34: 	PUSH	R0
     // asm 00001C35: 	PUSH	AR0
@@ -2381,7 +2330,7 @@ void LIGHT_OFF(void)
 *as above
 *
 */
-void LIGHT_ON(void)
+static void LIGHT_ON(void)
 {
     // asm 00001C4A: 	PUSH	R0
     // asm 00001C4B: 	PUSH	AR0
@@ -2507,19 +2456,19 @@ PEDALTRUE:
 
 // *----------------------------------------------------------------------------
 
-const char T_READY[] = "READY";
-const char T_SET[] = "SET";
-const char T_GO[] = "GO";
-const char T_CHALLENG[] = "CHALLENGE RACE";
+static const char T_READY[] = "READY";
+static const char T_SET[] = "SET";
+static const char T_GO[] = "GO";
+static const char T_CHALLENG[] = "CHALLENGE RACE";
 /* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
 /* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
-uintptr_t TLIST[] = {
+static uintptr_t TLIST[] = {
     (uintptr_t)&T_READY, (uintptr_t)(CHICK_READY), (uintptr_t)SEND_WAVEFL_READY,
     (uintptr_t)&T_SET, (uintptr_t)(CHICK_SET), (uintptr_t)SEND_WAVEFL_SET,
 };
 /* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
 /* asm: 	 */
-uintptr_t TLGO[] = {
+static uintptr_t TLGO[] = {
     (uintptr_t)&T_GO, (uintptr_t)(CHICK_GO), (uintptr_t)SEND_WAVEFL_GO,
 };
 /* asm: BABE_CONTROL	.bss	BABE_CONTROL,1 */
@@ -2712,7 +2661,7 @@ void RACESEL_TIMER(void)
 }
 
 // *----------------------------------------------------------------------------
-void WAITINTROTIMER(void)
+static void WAITINTROTIMER(void)
 {
     // asm 00001D3F: 	FLOAT	215,R3
     // asm 00001D40: 	BU	LKJAFSD
@@ -2844,7 +2793,7 @@ KK5:
 *	R0	CREDITS AVAILABLE
 *
 */
-void GAME_AVAILABLEP(void)
+static void GAME_AVAILABLEP(void)
 {
     // asm 00001D7F: 	PUSH	R2
     // asm 00001D80: 	PUSH	AR2
@@ -2970,7 +2919,7 @@ _startX:
 *
 *
 */
-void ULTRA_PROC(void)
+static void ULTRA_PROC(void)
 {
     // asm 00001DC3: 	CLRF	R6
 UPLP:
@@ -3146,11 +3095,11 @@ void _timeout(void)
 *
 */
 /* asm: TROI	SPTR	"INSERT COINS" */
-const char TROI[] = "INSERT COINS";
+static const char TROI[] = "INSERT COINS";
 /* asm: ICCI	SPTR	"TO CONTINUE" */
-const char ICCI[] = "TO CONTINUE";
+static const char ICCI[] = "TO CONTINUE";
 /* asm: PSCI	SPTR	"PRESS START" */
-const char PSCI[] = "PRESS START";
+static const char PSCI[] = "PRESS START";
 /* asm: SAVEDMODE	.bss	SAVEDMODE,1 */
 int SAVEDMODE;
 
@@ -3354,7 +3303,7 @@ RETURNTOPLYR:
 *
 *
 */
-void COIN_CNTDOWN(void)
+static void COIN_CNTDOWN(void)
 {
     // asm 00001EE0: 	LDI	@_countdown,R4
 COIN_CNTDOWN_LP:
@@ -3435,7 +3384,7 @@ CCC:
 /* asm: TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
 /* asm: 	 */
 /* asm: 	 */
-int TRAFFIC_LL[] = {
+static int TRAFFIC_LL[] = {
     light_yellowon, 10, light_redon, 32, light_greenon, 32, -1,
     // ----------------------------------------------------------------------------
 };
@@ -3479,7 +3428,7 @@ CNT:
 /* asm: RGB	212,212,0 */
 /* asm: RGB	212,212,0 */
 /* asm: RGB	212,212,0 */
-int RGBTAB_CP;
+static int RGBTAB_CP;
 // *----------------------------------------------------------------------------
 
 /*
@@ -3489,7 +3438,7 @@ int RGBTAB_CP;
 *
 *
 */
-void SHOW_RACE_NAME(void)
+static void SHOW_RACE_NAME(void)
 {
     // asm 00001F56: 	LDI	@BONUS_WAVE,AR2
     // asm 00001F57: 	ADDI	@LEG_NAMESI,AR2

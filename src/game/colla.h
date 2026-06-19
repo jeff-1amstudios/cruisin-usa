@@ -26,5 +26,10 @@ extern int SPINTEMP;
 extern int BOXSCRAM[];
 // asm: 	.BSS	PLYRBEHIND,1
 extern int PLYRBEHIND;
+void COLSCC(void);
+void GETFLYMAT(void);
+void SEND_FLY_KILL(void);
+void DECODE_FLY_KILL(void);
+void DECODE_FLY_XSFER(void);
 
 #endif /* COLLA_H */

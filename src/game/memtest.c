@@ -16,23 +16,23 @@
  */
 
 void TEST_STATIC_CHIPS(void);
-void GET_AR4_DIGITS(void);
-void BLINK_AND_CONTINUE(void);
-void IS_STATIC_ERROR(void);
-void LLED_ON(void);
-void LLED_OFF(void);
-void BLINK_DIGITS(void);
+static void GET_AR4_DIGITS(void);
+static void BLINK_AND_CONTINUE(void);
+static void IS_STATIC_ERROR(void);
+static void LLED_ON(void);
+static void LLED_OFF(void);
+static void BLINK_DIGITS(void);
 void TEST_CHIPS(void);
-void PLOT_OUTLINE_OF_CHIPS(void);
-void CMOS_CHIP_DISPLAY(void);
-void CMOS_CHIP_TEST(void);
-void TEST_BASICS(void);
-void RAMTEST(void);
-void RAMTEST_REAL(void);
-void RAMERR(void);
-void RAMTEST_END(void);
-void COPY_RAMTEST(void);
-void GENERATE_CHECKSUM(void);
+static void PLOT_OUTLINE_OF_CHIPS(void);
+static void CMOS_CHIP_DISPLAY(void);
+static void CMOS_CHIP_TEST(void);
+static void TEST_BASICS(void);
+static void RAMTEST(void);
+static void RAMTEST_REAL(void);
+static void RAMERR(void);
+static void RAMTEST_END(void);
+static void COPY_RAMTEST(void);
+static void GENERATE_CHECKSUM(void);
 
 #define CHIPTEST_TABLEI CHIPTEST_TABLE
 #define CHKSUMC00 CHECKSUM_C00
@@ -58,70 +58,7 @@ void GENERATE_CHECKSUM(void);
 
 void FEED_WATCHDOG_HARD(void);
 
-extern int RANDI;
-extern int RTU26[];
-extern int RTU22[];
-extern int RTU18[];
-extern int RTU14[];
-extern int RTU10[];
-extern int RTU27[];
-extern int RTU23[];
-extern int RTU19[];
-extern int RTU15[];
-extern int RTU11[];
-extern int RTU28[];
-extern int RTU24[];
-extern int RTU20[];
-extern int RTU16[];
-extern int RTU12[];
-extern int RTU29[];
-extern int RTU25[];
-extern int RTU21[];
-extern int RTU17[];
-extern int RTU13[];
-extern int RTU72[];
-extern int RTU69[];
-extern int RTU70[];
-extern int RTU71[];
-extern int RTU76[];
-extern int RTU73[];
-extern int RTU74[];
-extern int RTU75[];
-extern int RTU85[];
-extern int RTU87[];
-extern int RTU102[];
-extern int RTU95[];
-extern int RTU94[];
-extern int RTU101[];
-extern int RTU57[];
-extern int RTU56[];
-extern int RTU60[];
-extern int RTU59[];
-extern int CHIPTEST_TABLE;
-extern int STATIC_TABLE;
-extern int TESTING_CHIPS;
-extern int CMOS_CHIP;
-extern int BASICS_RAM[];
-extern int CCHKSUMC00;
-extern int CCHKSUMC80;
-extern int CCHKSUMD00;
-extern int CCHKSUMD80;
-extern int CCHKSUME00;
-extern int CCHKSUMC01;
-extern int CCHKSUMC81;
-extern int CCHKSUMD01;
-extern int CCHKSUMD81;
-extern int CCHKSUME01;
-extern int CCHKSUMC02;
-extern int CCHKSUMC82;
-extern int CCHKSUMD02;
-extern int CCHKSUMD82;
-extern int CCHKSUME02;
-extern int CCHKSUMC03;
-extern int CCHKSUMC83;
-extern int CCHKSUMD03;
-extern int CCHKSUMD83;
-extern int CCHKSUME03;
+static int CHIPTEST_TABLE;
 
 /*
 *----------------------------------------------------------------------------
@@ -150,89 +87,89 @@ extern int CCHKSUME03;
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-int RANDI = 0x5A5A5A5A;
+static int RANDI = 0x5A5A5A5A;
 // ;EPROM
 /* asm: RTU26	.word	0E00000h,080000h,0000000FFh,0,CHKSUME00 */
-int RTU26[] = {
+static int RTU26[] = {
     0x0E00000, 0x080000, 0x0000000FF, 0, CHKSUME00,
 };
 /* asm: RTU22	.word	0D80000h,080000h,0000000FFh,0,CHKSUMD80 */
-int RTU22[] = {
+static int RTU22[] = {
     0x0D80000, 0x080000, 0x0000000FF, 0, CHKSUMD80,
 };
 /* asm: RTU18	.word	0D00000h,080000h,0000000FFh,0,CHKSUMD00 */
-int RTU18[] = {
+static int RTU18[] = {
     0x0D00000, 0x080000, 0x0000000FF, 0, CHKSUMD00,
 };
 /* asm: RTU14	.word	0C80000h,080000h,0000000FFh,0,CHKSUMC80 */
-int RTU14[] = {
+static int RTU14[] = {
     0x0C80000, 0x080000, 0x0000000FF, 0, CHKSUMC80,
 };
 /* asm: RTU10	.word	0C00000h,080000h,0000000FFh,0,CHKSUMC00 */
 /* asm: 	 */
-int RTU10[] = {
+static int RTU10[] = {
     0x0C00000, 0x080000, 0x0000000FF, 0, CHKSUMC00,
 };
 /* asm: RTU27	.word	0E00000h,080000h,00000FF00h,-8,CHKSUME01 */
-int RTU27[] = {
+static int RTU27[] = {
     0x0E00000, 0x080000, 0x00000FF00, -8, CHKSUME01,
 };
 /* asm: RTU23	.word	0D80000h,080000h,00000FF00h,-8,CHKSUMD81 */
-int RTU23[] = {
+static int RTU23[] = {
     0x0D80000, 0x080000, 0x00000FF00, -8, CHKSUMD81,
 };
 /* asm: RTU19	.word	0D00000h,080000h,00000FF00h,-8,CHKSUMD01 */
-int RTU19[] = {
+static int RTU19[] = {
     0x0D00000, 0x080000, 0x00000FF00, -8, CHKSUMD01,
 };
 /* asm: RTU15	.word	0C80000h,080000h,00000FF00h,-8,CHKSUMC81 */
-int RTU15[] = {
+static int RTU15[] = {
     0x0C80000, 0x080000, 0x00000FF00, -8, CHKSUMC81,
 };
 /* asm: RTU11	.word	0C00000h,080000h,00000FF00h,-8,CHKSUMC01 */
 /* asm: 	 */
-int RTU11[] = {
+static int RTU11[] = {
     0x0C00000, 0x080000, 0x00000FF00, -8, CHKSUMC01,
 };
 /* asm: RTU28	.word	0E00000h,080000h,000FF0000h,-16,CHKSUME02 */
-int RTU28[] = {
+static int RTU28[] = {
     0x0E00000, 0x080000, 0x000FF0000, -16, CHKSUME02,
 };
 /* asm: RTU24	.word	0D80000h,080000h,000FF0000h,-16,CHKSUMD82 */
-int RTU24[] = {
+static int RTU24[] = {
     0x0D80000, 0x080000, 0x000FF0000, -16, CHKSUMD82,
 };
 /* asm: RTU20	.word	0D00000h,080000h,000FF0000h,-16,CHKSUMD02 */
-int RTU20[] = {
+static int RTU20[] = {
     0x0D00000, 0x080000, 0x000FF0000, -16, CHKSUMD02,
 };
 /* asm: RTU16	.word	0C80000h,080000h,000FF0000h,-16,CHKSUMC82 */
-int RTU16[] = {
+static int RTU16[] = {
     0x0C80000, 0x080000, 0x000FF0000, -16, CHKSUMC82,
 };
 /* asm: RTU12	.word	0C00000h,080000h,000FF0000h,-16,CHKSUMC02 */
 /* asm: 	 */
-int RTU12[] = {
+static int RTU12[] = {
     0x0C00000, 0x080000, 0x000FF0000, -16, CHKSUMC02,
 };
 /* asm: RTU29	.word	0E00000h,080000h,0FF000000h,-24,CHKSUME03 */
-int RTU29[] = {
+static int RTU29[] = {
     0x0E00000, 0x080000, 0x0FF000000, -24, CHKSUME03,
 };
 /* asm: RTU25	.word	0D80000h,080000h,0FF000000h,-24,CHKSUMD83 */
-int RTU25[] = {
+static int RTU25[] = {
     0x0D80000, 0x080000, 0x0FF000000, -24, CHKSUMD83,
 };
 /* asm: RTU21	.word	0D00000h,080000h,0FF000000h,-24,CHKSUMD03 */
-int RTU21[] = {
+static int RTU21[] = {
     0x0D00000, 0x080000, 0x0FF000000, -24, CHKSUMD03,
 };
 /* asm: RTU17	.word	0C80000h,080000h,0FF000000h,-24,CHKSUMC83 */
-int RTU17[] = {
+static int RTU17[] = {
     0x0C80000, 0x080000, 0x0FF000000, -24, CHKSUMC83,
 };
 /* asm: RTU13	.word	0C00000h,080000h,0FF000000h,-24,CHKSUMC03 */
-int RTU13[] = {
+static int RTU13[] = {
     0x0C00000, 0x080000, 0x0FF000000, -24, CHKSUMC03,
 };
 // *----------------------------------------------------------------------------
@@ -245,82 +182,82 @@ int RTU13[] = {
 
 // ;WAVE RAM
 /* asm: RTU72	.word	0A00000h,080000h,00000000Fh,1,1000h,2 */
-int RTU72[] = {
+static int RTU72[] = {
     0x0A00000, 0x080000, 0x00000000F, 1, 0x1000, 2,
 };
 /* asm: RTU69	.word	0A00000h,080000h,0000000F0h,1,1000h,2 */
-int RTU69[] = {
+static int RTU69[] = {
     0x0A00000, 0x080000, 0x0000000F0, 1, 0x1000, 2,
 };
 /* asm: RTU70	.word	0A00000h,080000h,000000F00h,1,1000h,2 */
-int RTU70[] = {
+static int RTU70[] = {
     0x0A00000, 0x080000, 0x000000F00, 1, 0x1000, 2,
 };
 /* asm: RTU71	.word	0A00000h,080000h,00000F000h,1,1000h,2 */
 /* asm: 	 */
-int RTU71[] = {
+static int RTU71[] = {
     0x0A00000, 0x080000, 0x00000F000, 1, 0x1000, 2,
 };
 /* asm: RTU76	.word	0A00001h,080000h,00000000Fh,1,1000h,2 */
-int RTU76[] = {
+static int RTU76[] = {
     0x0A00001, 0x080000, 0x00000000F, 1, 0x1000, 2,
 };
 /* asm: RTU73	.word	0A00001h,080000h,0000000F0h,1,1000h,2 */
-int RTU73[] = {
+static int RTU73[] = {
     0x0A00001, 0x080000, 0x0000000F0, 1, 0x1000, 2,
 };
 /* asm: RTU74	.word	0A00001h,080000h,000000F00h,1,1000h,2 */
-int RTU74[] = {
+static int RTU74[] = {
     0x0A00001, 0x080000, 0x000000F00, 1, 0x1000, 2,
 };
 /* asm: RTU75	.word	0A00001h,080000h,00000F000h,1,1000h,2 */
 /* asm: 	 */
-int RTU75[] = {
+static int RTU75[] = {
     0x0A00001, 0x080000, 0x00000F000, 1, 0x1000, 2,
 };
 // ;COLOR RAM
 /* asm: RTU85	.word	09E0000h,08000h,000FF00h,1,SOFT_WS,1 */
-int RTU85[] = {
+static int RTU85[] = {
     0x09E0000, 0x08000, 0x000FF00, 1, SOFT_WS, 1,
 };
 /* asm: RTU87	.word	09E0000h,08000h,00000FFh,1,SOFT_WS,1 */
 /* asm: 	 */
-int RTU87[] = {
+static int RTU87[] = {
     0x09E0000, 0x08000, 0x00000FF, 1, SOFT_WS, 1,
 };
 // ;VIDEO RAM
 /* asm: RTU102	.word	0900000h,020000h,0000000FFh,1,1000h,2 */
-int RTU102[] = {
+static int RTU102[] = {
     0x0900000, 0x020000, 0x0000000FF, 1, 0x1000, 2,
 };
 /* asm: RTU95	.word	0900000h,020000h,00000FF00h,1,1000h,2 */
-int RTU95[] = {
+static int RTU95[] = {
     0x0900000, 0x020000, 0x00000FF00, 1, 0x1000, 2,
 };
 /* asm: RTU94	.word	0900001h,020000h,0000000FFh,1,1000h,2 */
-int RTU94[] = {
+static int RTU94[] = {
     0x0900001, 0x020000, 0x0000000FF, 1, 0x1000, 2,
 };
 /* asm: RTU101	.word	0900001h,020000h,00000FF00h,1,1000h,2 */
 /* asm: 	 */
-int RTU101[] = {
+static int RTU101[] = {
     0x0900001, 0x020000, 0x00000FF00, 1, 0x1000, 2,
 };
 // ;FAST RAM
 /* asm: RTU57	.word	0400000h,020000h,00000FF00h,1,SOFT_WS,1 */
-int RTU57[] = {
+static int RTU57[] = {
     0x0400000, 0x020000, 0x00000FF00, 1, SOFT_WS, 1,
 };
 /* asm: RTU56	.word	0400000h,020000h,0000000FFh,1,SOFT_WS,1 */
-int RTU56[] = {
+static int RTU56[] = {
     0x0400000, 0x020000, 0x0000000FF, 1, SOFT_WS, 1,
 };
 /* asm: RTU60	.word	0400000h,020000h,0FF000000h,1,SOFT_WS,1 */
-int RTU60[] = {
+static int RTU60[] = {
     0x0400000, 0x020000, 0x0FF000000, 1, SOFT_WS, 1,
 };
 /* asm: RTU59	.word	0400000h,020000h,000FF0000h,1,SOFT_WS,1 */
-int RTU59[] = {
+static int RTU59[] = {
     0x0400000, 0x020000, 0x000FF0000, 1, SOFT_WS, 1,
 };
 // *----------------------------------------------------------------------------
@@ -345,13 +282,13 @@ int RTU59[] = {
 /* asm: CHIPMAC	RTU95,300,280,350,296,"U95",ISRAM */
 /* asm: CHIPMAC	RTU94,240,280,290,296,"U94",ISRAM */
 /* asm: CHIPMAC	RTU101,240,300,290,316,"U101",ISRAM */
-int CHIPTEST_TABLE;
+static int CHIPTEST_TABLE;
 /* asm: STATIC_TABLE */
 /* asm: CHIPMC	RTU56,250,195,40,15,"U56",ISROM */
 /* asm: CHIPMC	RTU57,300,195,40,15,"U57",ISROM		;FAST RAM */
 /* asm: CHIPMC	RTU59,370,195,40,15,"U59",ISROM */
 /* asm: CHIPMC	RTU60,420,195,40,15,"U60",ISROM */
-int STATIC_TABLE;
+static int STATIC_TABLE;
 /* asm: TESTING_CHIPS */
 /* asm: CHIPMAC	RTU26,240,60, 290,80, "U26",ISROM	;BIG EPROM WORLD */
 /* asm: CHIPMAC	RTU22,240,85, 290,105,"U22",ISROM */
@@ -381,10 +318,10 @@ int STATIC_TABLE;
 /* asm: CHIPMC	RTU74,410,240,40,14,"U74",ISRAM */
 /* asm: CHIPMC	RTU75,410,260,40,14,"U75",ISRAM */
 /* asm: CHIPMC	RTU76,410,280,40,14,"U76",ISRAM		;WAVE RAM */
-int TESTING_CHIPS;
+static int TESTING_CHIPS;
 /* asm: CMOS_CHIP */
 /* asm: CHIPMC	RTU31,130,120,40,18,"U31",ISROM		;CMOS CHIP */
-int CMOS_CHIP;
+static int CMOS_CHIP;
 
 void TEST_STATIC_CHIPS(void)
 {
@@ -425,7 +362,7 @@ void TEST_STATIC_CHIPS(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void GET_AR4_DIGITS(void)
+static void GET_AR4_DIGITS(void)
 {
     // asm 00006322: 	LDI	*+AR4(CTT_U),AR0
     // asm 00006323: 	LDI	*AR0,AR0
@@ -459,7 +396,7 @@ NZERO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BLINK_AND_CONTINUE(void)
+static void BLINK_AND_CONTINUE(void)
 {
     // asm 00006338: 	PUSH	RS
     // asm 00006339: 	PUSH	RE
@@ -485,7 +422,7 @@ void BLINK_AND_CONTINUE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void IS_STATIC_ERROR(void)
+static void IS_STATIC_ERROR(void)
 {
     // asm 00006349: 	CALL	GET_AR4_DIGITS
 ELOOP:
@@ -509,7 +446,7 @@ ELOOP:
 *
 *
 */
-void LLED_ON(void)
+static void LLED_ON(void)
 {
     // asm 0000634C: 	LDI	@SYSCNTL,R0		;if the system hangs and the LED
     // asm 0000634D: 	ANDN	LED_OFF,R0		;is on we were in this routine
@@ -522,7 +459,7 @@ void LLED_ON(void)
     UNIMPL();
 }
 
-void LLED_OFF(void)
+static void LLED_OFF(void)
 {
     // asm 00006353: 	LDI	@SYSCNTL,R0
     // asm 00006354: 	OR	LED_OFF,R0
@@ -535,7 +472,7 @@ void LLED_OFF(void)
     UNIMPL();
 }
 
-void BLINK_DIGITS(void)
+static void BLINK_DIGITS(void)
 {
     // asm 0000635A: 	PUSH	R0
     // asm 0000635B: 	PUSH	R1
@@ -704,7 +641,7 @@ TEST_CHIPSX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void PLOT_OUTLINE_OF_CHIPS(void)
+static void PLOT_OUTLINE_OF_CHIPS(void)
 {
     // asm 000063FD: 	LDI	@CHIPTEST_TABLEI,AR4
 POOCL:
@@ -740,7 +677,7 @@ POOCL:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CMOS_CHIP_DISPLAY(void)
+static void CMOS_CHIP_DISPLAY(void)
 {
     // asm 00006417: 	LDL	CMOS_CHIP,AR4
     // asm 00006418: 	LDI	*+AR4(CTT_MINX),AR2
@@ -772,7 +709,7 @@ void CMOS_CHIP_DISPLAY(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CMOS_CHIP_TEST(void)
+static void CMOS_CHIP_TEST(void)
 {
     // asm 0000642E: 	PUSH	AR4
     // asm 0000642F: 	PUSH	R0
@@ -873,7 +810,7 @@ KKJJ:
 /* asm: BASICS_RAM	fbss	BASICS_RAM,10 */
 int BASICS_RAM[10];
 
-void TEST_BASICS(void)
+static void TEST_BASICS(void)
 {
     // asm 00006478: 	LDL	BASICS_RAM,AR5
     // asm 00006479: 	LDI	5,AR6
@@ -1019,7 +956,7 @@ void TEST_BASICS(void)
 *
 *
 */
-void RAMTEST(void)
+static void RAMTEST(void)
 {
     // asm 00006527: 	LDL	BLOWLIST,R0
     // asm 00006528: 	BU	R0
@@ -1031,7 +968,7 @@ void RAMTEST(void)
     UNIMPL();
 }
 
-void RAMTEST_REAL(void)
+static void RAMTEST_REAL(void)
 {
     // asm 00006529: 	PUSH	DP
     // asm 0000652A: 	PUSH	R6
@@ -1113,7 +1050,7 @@ ENDING:
     UNIMPL();
 }
 
-void RAMERR(void)
+static void RAMERR(void)
 {
     // asm 00006571: 	LDI	1,R0		;IS BAD RAM
     // asm 00006572: 	BU	ENDING
@@ -1122,7 +1059,7 @@ void RAMERR(void)
     UNIMPL();
 }
 
-void RAMTEST_END(void)
+static void RAMTEST_END(void)
 {
     /* no executable asm lines detected */
     UNIMPL();
@@ -1131,7 +1068,7 @@ void RAMTEST_END(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void COPY_RAMTEST(void)
+static void COPY_RAMTEST(void)
 {
     // asm 00006573: 	LDL	RAMTEST_END,AR0
     // asm 00006574: 	LDL	RAMTEST_REAL,AR1
@@ -1167,7 +1104,7 @@ BBCP:
 *	R0	PART CHECKSUM
 *
 */
-void GENERATE_CHECKSUM(void)
+static void GENERATE_CHECKSUM(void)
 {
     // asm 0000657D: 	PUSH	R1
     // asm 0000657E: 	PUSH	RC
@@ -1246,48 +1183,48 @@ CHKSUMG:
 /* asm: 	 */
 #define CHKSUME03 CHECKSUM_E03
 /* asm: CCHKSUMC00	.word	0 */
-int CCHKSUMC00 = 0;
+static int CCHKSUMC00 = 0;
 /* asm: CCHKSUMC80	.word	0 */
-int CCHKSUMC80 = 0;
+static int CCHKSUMC80 = 0;
 /* asm: CCHKSUMD00	.word	0 */
-int CCHKSUMD00 = 0;
+static int CCHKSUMD00 = 0;
 /* asm: CCHKSUMD80	.word	0 */
-int CCHKSUMD80 = 0;
+static int CCHKSUMD80 = 0;
 /* asm: CCHKSUME00	.word	0 */
 /* asm: 	 */
-int CCHKSUME00 = 0;
+static int CCHKSUME00 = 0;
 /* asm: CCHKSUMC01	.word	0 */
-int CCHKSUMC01 = 0;
+static int CCHKSUMC01 = 0;
 /* asm: CCHKSUMC81	.word	0 */
-int CCHKSUMC81 = 0;
+static int CCHKSUMC81 = 0;
 /* asm: CCHKSUMD01	.word	0 */
-int CCHKSUMD01 = 0;
+static int CCHKSUMD01 = 0;
 /* asm: CCHKSUMD81	.word	0 */
-int CCHKSUMD81 = 0;
+static int CCHKSUMD81 = 0;
 /* asm: CCHKSUME01	.word	0 */
 /* asm: 	 */
-int CCHKSUME01 = 0;
+static int CCHKSUME01 = 0;
 /* asm: CCHKSUMC02	.word	0 */
-int CCHKSUMC02 = 0;
+static int CCHKSUMC02 = 0;
 /* asm: CCHKSUMC82	.word	0 */
-int CCHKSUMC82 = 0;
+static int CCHKSUMC82 = 0;
 /* asm: CCHKSUMD02	.word	0 */
-int CCHKSUMD02 = 0;
+static int CCHKSUMD02 = 0;
 /* asm: CCHKSUMD82	.word	0 */
-int CCHKSUMD82 = 0;
+static int CCHKSUMD82 = 0;
 /* asm: CCHKSUME02	.word	0 */
 /* asm: 	 */
-int CCHKSUME02 = 0;
+static int CCHKSUME02 = 0;
 /* asm: CCHKSUMC03	.word	0 */
-int CCHKSUMC03 = 0;
+static int CCHKSUMC03 = 0;
 /* asm: CCHKSUMC83	.word	0 */
-int CCHKSUMC83 = 0;
+static int CCHKSUMC83 = 0;
 /* asm: CCHKSUMD03	.word	0 */
-int CCHKSUMD03 = 0;
+static int CCHKSUMD03 = 0;
 /* asm: CCHKSUMD83	.word	0 */
-int CCHKSUMD83 = 0;
+static int CCHKSUMD83 = 0;
 /* asm: CCHKSUME03	.word	0 */
-int CCHKSUME03 = 0;
+static int CCHKSUME03 = 0;
 #else
 /* asm: CHKSUMC00	.word	CHECKSUM_C00 */
 #define CHKSUMC00 CHECKSUM_C00
@@ -1334,47 +1271,47 @@ int CCHKSUME03 = 0;
 /* asm: 	 */
 #define CHKSUME03 CHECKSUM_E03
 /* asm: CCHKSUMC00	.word	~CHECKSUM_C00 */
-int CCHKSUMC00 = ~CHECKSUM_C00;
+static int CCHKSUMC00 = ~CHECKSUM_C00;
 /* asm: CCHKSUMC80	.word	~CHECKSUM_C80 */
-int CCHKSUMC80 = ~CHECKSUM_C80;
+static int CCHKSUMC80 = ~CHECKSUM_C80;
 /* asm: CCHKSUMD00	.word	~CHECKSUM_D00 */
-int CCHKSUMD00 = ~CHECKSUM_D00;
+static int CCHKSUMD00 = ~CHECKSUM_D00;
 /* asm: CCHKSUMD80	.word	~CHECKSUM_D80 */
-int CCHKSUMD80 = ~CHECKSUM_D80;
+static int CCHKSUMD80 = ~CHECKSUM_D80;
 /* asm: CCHKSUME00	.word	~CHECKSUM_E00 */
 /* asm: 	 */
-int CCHKSUME00 = ~CHECKSUM_E00;
+static int CCHKSUME00 = ~CHECKSUM_E00;
 /* asm: CCHKSUMC01	.word	~CHECKSUM_C01 */
-int CCHKSUMC01 = ~CHECKSUM_C01;
+static int CCHKSUMC01 = ~CHECKSUM_C01;
 /* asm: CCHKSUMC81	.word	~CHECKSUM_C81 */
-int CCHKSUMC81 = ~CHECKSUM_C81;
+static int CCHKSUMC81 = ~CHECKSUM_C81;
 /* asm: CCHKSUMD01	.word	~CHECKSUM_D01 */
-int CCHKSUMD01 = ~CHECKSUM_D01;
+static int CCHKSUMD01 = ~CHECKSUM_D01;
 /* asm: CCHKSUMD81	.word	~CHECKSUM_D81 */
-int CCHKSUMD81 = ~CHECKSUM_D81;
+static int CCHKSUMD81 = ~CHECKSUM_D81;
 /* asm: CCHKSUME01	.word	~CHECKSUM_E01 */
 /* asm: 	 */
-int CCHKSUME01 = ~CHECKSUM_E01;
+static int CCHKSUME01 = ~CHECKSUM_E01;
 /* asm: CCHKSUMC02	.word	~CHECKSUM_C02 */
-int CCHKSUMC02 = ~CHECKSUM_C02;
+static int CCHKSUMC02 = ~CHECKSUM_C02;
 /* asm: CCHKSUMC82	.word	~CHECKSUM_C82 */
-int CCHKSUMC82 = ~CHECKSUM_C82;
+static int CCHKSUMC82 = ~CHECKSUM_C82;
 /* asm: CCHKSUMD02	.word	~CHECKSUM_D02 */
-int CCHKSUMD02 = ~CHECKSUM_D02;
+static int CCHKSUMD02 = ~CHECKSUM_D02;
 /* asm: CCHKSUMD82	.word	~CHECKSUM_D82 */
-int CCHKSUMD82 = ~CHECKSUM_D82;
+static int CCHKSUMD82 = ~CHECKSUM_D82;
 /* asm: CCHKSUME02	.word	~CHECKSUM_E02 */
 /* asm: 	 */
-int CCHKSUME02 = ~CHECKSUM_E02;
+static int CCHKSUME02 = ~CHECKSUM_E02;
 /* asm: CCHKSUMC03	.word	~CHECKSUM_C03 */
-int CCHKSUMC03 = ~CHECKSUM_C03;
+static int CCHKSUMC03 = ~CHECKSUM_C03;
 /* asm: CCHKSUMC83	.word	~CHECKSUM_C83 */
-int CCHKSUMC83 = ~CHECKSUM_C83;
+static int CCHKSUMC83 = ~CHECKSUM_C83;
 /* asm: CCHKSUMD03	.word	~CHECKSUM_D03 */
-int CCHKSUMD03 = ~CHECKSUM_D03;
+static int CCHKSUMD03 = ~CHECKSUM_D03;
 /* asm: CCHKSUMD83	.word	~CHECKSUM_D83 */
-int CCHKSUMD83 = ~CHECKSUM_D83;
+static int CCHKSUMD83 = ~CHECKSUM_D83;
 /* asm: CCHKSUME03	.word	~CHECKSUM_E03 */
 /* asm: 	 */
-int CCHKSUME03 = ~CHECKSUM_E03;
+static int CCHKSUME03 = ~CHECKSUM_E03;
 #endif

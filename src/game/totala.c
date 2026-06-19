@@ -18,12 +18,6 @@ void BLTMOD2D_DS(void);
 
 #define AIVI _AIVI
 
-extern int _ACNTL;
-extern int _ACMAP;
-extern int _ARPS[];
-extern int _AIVI[];
-extern int _ADDRL;
-
 #define NOFIFO 0
 /* asm: AIVI	.word	_AIVI */
 /* asm: 	 */

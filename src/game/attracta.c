@@ -3,7 +3,6 @@
 #include "mproc.h"
 #include "macs.h"
 #include "obj.h"
-#include "objects.h"
 #include "globals.h"
 #include "sys.h"
 #include "text.h"
@@ -16,20 +15,16 @@
  */
 
 void _MIDWAYSPIN(void);
-void MSLP_CHECK(void);
+static void MSLP_CHECK(void);
 void MIDWAYSPINENTER(void);
 void SPIN_CAR(void);
-void TEXTTOGET(void);
-void DEMOTHANKS(void);
+static void TEXTTOGET(void);
+static void DEMOTHANKS(void);
 
 #define SPIN_CARTABI SPIN_CARTAB
 #define DEMOTHANKS_LISTI DEMOTHANKS_LIST
 
-extern int SPIN_CARTAB[];
-extern const char DT1[];
-extern const char DT2[];
-extern const char DT3[];
-extern uintptr_t DEMOTHANKS_LIST[];
+static uintptr_t DEMOTHANKS_LIST[];
 
 /*
 *----------------------------------------------------------------------------
@@ -148,7 +143,7 @@ MSLP1:
     UNIMPL();
 }
 
-void MSLP_CHECK(void)
+static void MSLP_CHECK(void)
 {
     // asm 0000A9B6: 	SUBI	@NFRAMES,AR6
     // asm 0000A9B7: 	LDI	@DECOMP_ACTIVE,R0
@@ -239,8 +234,8 @@ void MIDWAYSPINENTER(void)
 }
 
 /* asm: SPIN_CARTAB	.word	missle,hotrod,testor,cvette */
-int SPIN_CARTAB[] = {
-    missle, hotrod, testor, cvette,
+static int SPIN_CARTAB[] = {
+    missle_ROM, hotrod_ROM, testor_ROM, cvette_ROM,
 };
 
 void SPIN_CAR(void)
@@ -315,7 +310,7 @@ SPIN_CARLP:
 *----------------------------------------------------------------------------
 *
 */
-void TEXTTOGET(void)
+static void TEXTTOGET(void)
 {
     // asm 0000AA37: 	SLEEP	75
     // asm 0000AA39: 	LDI	@TEXT_ACTIVEI,AR0
@@ -345,16 +340,16 @@ TXTLPB:
 
 // *----------------------------------------------------------------------------
 
-const char DT1[] = "THANK YOU FOR PLAYING";
-const char DT2[] = "CRUISIN USA";
-const char DT3[] = "SNEAK PREVIEW";
-uintptr_t DEMOTHANKS_LIST[] = {
+static const char DT1[] = "THANK YOU FOR PLAYING";
+static const char DT2[] = "CRUISIN USA";
+static const char DT3[] = "SNEAK PREVIEW";
+static uintptr_t DEMOTHANKS_LIST[] = {
     140, (uintptr_t)&DT1,
     180, (uintptr_t)&DT2,
     220, (uintptr_t)&DT3,
 };
 
-void DEMOTHANKS(void)
+static void DEMOTHANKS(void)
 {
     // asm 0000AA4A: 	LDI	1,R0
     // asm 0000AA4B: 	STI	R0,@COINOFF

@@ -20,5 +20,6 @@ extern int lap_buffer[];
 extern int tmp_buffer[];
 // asm: 	.bss	THIS_MACHINE_AHEAD,1
 extern int THIS_MACHINE_AHEAD;
+void CLEAR_MAP_PALS(void);
 
 #endif /* MAP_H */

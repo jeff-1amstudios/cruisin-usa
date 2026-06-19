@@ -9,7 +9,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "text.h"
-#include "objects.h"
 #include "comm.h"
 #include "snd.h"
 
@@ -17,7 +16,7 @@
  * Source module: asm/SND.ASM
  */
 
-void RADIO_SHOW(void);
+static void RADIO_SHOW(void);
 void RADIO_BUT(void);
 void SET_STATION(void);
 void CHANGE_STATION(void);
@@ -38,26 +37,17 @@ void PLYR_ENGINE(void);
 void HARDSND(void);
 void ONESND(void);
 void SENDSND(void);
-void RESETMUNGE(void);
+static void RESETMUNGE(void);
 void SND_RESET_QUIET(void);
 void SNDPROC(void);
-void SNDUPD(void);
+static void SNDUPD(void);
 
 #define SNDTABI SNDTAB
 #define STATION_LISTI STATION_LIST
 #define STATION_TEXTI STATION_TEXT
 #define SNDSTRI SNDSTR
 
-extern int IN_RESET_MODE;
-extern int RESET_TIMER;
-extern int SNDSTR[];
-extern int SNDEND;
-extern int STATION_LIST[];
-extern const char *STATION_TEXT[];
-extern int STATION_TIMEOUT;
-extern int RS_X;
-extern int TUNE_IDX;
-extern int DO_NOT_REENABLE_INT;
+static const char *STATION_TEXT[8];
 
 /* asm: IN_RESET_MODE	fbss	IN_RESET_MODE,1 */
 int IN_RESET_MODE;
@@ -66,7 +56,7 @@ int RESET_TIMER;
 /* asm: SNDSTR	.bss	SNDSTR,NCHAN*SND_SIZ */
 int SNDSTR[NCHAN*SND_SIZ];
 /* asm: SNDEND	.bss	SNDEND,0 */
-int SNDEND;
+static int SNDEND;
 /*
 *----------------------------------------------------------------------------
 *STATION TABLE
@@ -81,7 +71,7 @@ int SNDEND;
 /* asm: 	.word	DISCODUCK	;6 */
 /* asm: 	.word	BOOGIE		;7 */
 /* asm: 	 */
-int STATION_LIST[] = {
+static int STATION_LIST[] = {
     MUNSTER_SURF, // 0
     SHUFFLE_DRIV, // 1
     DISCODUCK, // 2
@@ -107,7 +97,7 @@ int STATION_LIST[] = {
 /* asm:  */
 /* asm:  */
 /* asm: *---------------------------------------------------------------------------- */
-const char *STATION_TEXT[] = {
+static const char *STATION_TEXT[] = {
     "SURFARI MONSTER", // MONSTER_SURF	;0	[2
     "REDLINE SHUFFLE", // SHUFFLE_DRIV	;1	[4
     "HOUSE SPECIAL", // DISCODUCK	;2	[24
@@ -122,7 +112,7 @@ int STATION_TIMEOUT;
 /* asm: RS_X	.bss	RS_X,1 */
 int RS_X;
 
-void RADIO_SHOW(void)
+static void RADIO_SHOW(void)
 {
     // asm 000090E1: 	LDI	@TUNE_IDX,AR2
     // asm 000090E2: 	ADDI	@STATION_TEXTI,AR2
@@ -865,7 +855,7 @@ NIRM:
 *
 *
 */
-void RESETMUNGE(void)
+static void RESETMUNGE(void)
 {
     // asm 0000926F: 	DINT
     // asm 00009275: 	LDP	@RESET_TIMER
@@ -1039,7 +1029,7 @@ SNDPLP:
 *	AR0	PTR TO SOUND CHANNEL RAM
 *
 */
-void SNDUPD(void)
+static void SNDUPD(void)
 {
     // ;this code allows for scripted sound calls.
     // ;as of now they are not used, and I don't

@@ -9,7 +9,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "diag.h"
 #include "motion.h"
@@ -20,9 +19,9 @@
 
 void INITIALIZATION_MOTION_CHECK(void);
 void SEND_MOTOR_OFF(void);
-void SEND_MOTOR_OFF_NO_RESET(void);
-void INIT_MOTION_ERROROUT(void);
-void WAIT500(void);
+static void SEND_MOTOR_OFF_NO_RESET(void);
+static void INIT_MOTION_ERROROUT(void);
+static void WAIT500(void);
 void CHECK_MOTION_DIP(void);
 void CHECK_MOTION_PRESENT(void);
 void DIAG_MOTION_TESTZ(void);
@@ -30,164 +29,137 @@ void DIAG_MOTION_TESTX(void);
 void DIAG_MOTION_TESTY(void);
 void DIAG_MOTION_BURNIN(void);
 void PLMOTION(void);
-void MOTION_SCALE_ENTER(void);
+static void MOTION_SCALE_ENTER(void);
 void LEVEL_THE_MOTION(void);
-void DOWNLOAD_PROGRAM(void);
+static void DOWNLOAD_PROGRAM(void);
 void SEND_CMD(void);
 void RESET_GALIL(void);
 void ABORT_RESET_GALIL(void);
 void MOTION_DLPROG(void);
-void GALIL_ERROR(void);
-void WAITMSEC(void);
-void CHECK_MOTION_ERROR(void);
+static void GALIL_ERROR(void);
+static void WAITMSEC(void);
+static void CHECK_MOTION_ERROR(void);
 void CLEAR_LATCH_ERROR(void);
 void LATCH_ERROR(void);
-void G_READY(void);
-void G_CHAR(void);
-void G_STRING(void);
-void G_HEX(void);
-void ASCIIHEX(void);
+static void G_READY(void);
+static void G_CHAR(void);
+static void G_STRING(void);
+static void G_HEX(void);
+static void ASCIIHEX(void);
 void WAIT_ACK(void);
-void NO_RESPONSE(void);
-void WAIT_ACK_REAL(void);
-void UPPER_LIMIT_ERROR(void);
-void LOWER_LIMIT_ERROR(void);
+static void NO_RESPONSE(void);
+static void WAIT_ACK_REAL(void);
+static void UPPER_LIMIT_ERROR(void);
+static void LOWER_LIMIT_ERROR(void);
 
-void MOTION_SAFETY_SWITCHES_DIAG(void);
-
-extern int MOTION_NOT_ON;
-extern int MOTION_STOP_HIT;
-extern int MOTION_RCV_TIKS;
-extern const char MOTOROFF0[];
-extern const char MOTOROFF1[];
-extern const char MOTOROFF2[];
-extern const char MOTOROFF3[];
-extern const char MOTOROFF4[];
-extern const char MOTOROFF5[];
-extern const char MOTOROFF6[];
-extern const char MOTOROFF7[];
-extern const char MOTOROFF8[];
-extern const char MOTOROFF9[];
-extern const char MOTOROFF10[];
-extern const char MOTOROFF11[];
-extern const char MOTOROFF12[];
-extern uintptr_t MOTOFF_PROG[];
-extern const char *JJG[];
-extern const char MM0[];
-extern const char MM1[];
-extern const char MM2[];
-extern const char MM3[];
-extern const char MM4[];
-extern const char MM5[];
-extern const char MM6[];
-extern const char MM7[];
-extern const char bbd[];
-extern const char SH[];
-extern uintptr_t THEPROGL[];
-extern int CME_MASK;
-extern int LATCHED_ERROR;
-extern int GALIL_STATUS_X;
-extern int GALIL_STATUS_Y;
-extern int GALIL_STATUS_Z;
-extern const char PPSAF[];
-extern const char PP[];
-extern const char PP1[];
-extern const char PP2[];
-extern const char PP3[];
-extern const char PP4[];
-extern const char EDIT[];
-extern const char T5[];
-extern const char T6[];
-extern const char T7[];
-extern const char T8[];
-extern const char T9[];
-extern const char T10[];
-extern const char T11[];
-extern const char T12[];
-extern const char T13[];
-extern const char T14[];
-extern const char T15[];
-extern const char T16[];
-extern const char T17[];
-extern const char T18[];
-extern const char T19[];
-extern const char T20[];
-extern const char T21[];
-extern const char T22[];
-extern const char T23[];
-extern const char T24[];
-extern const char T25[];
-extern const char T26[];
-extern const char T27[];
-extern const char T28[];
-extern const char T29[];
-extern const char T30[];
-extern const char T31[];
-extern const char T32[];
-extern const char T33[];
-extern const char T34[];
-extern const char T35[];
-extern const char T36[];
-extern const char T37[];
-extern const char T38[];
-extern const char T39[];
-extern const char T40[];
-extern const char T41[];
-extern const char T42[];
-extern const char T43[];
-extern const char T44[];
-extern const char T45[];
-extern const char T46[];
-extern const char T47[];
-extern const char T48[];
-extern const char T49[];
-extern const char T50[];
-extern const char T51[];
-extern const char T52[];
-extern const char T53[];
-extern const char T54[];
-extern const char T55[];
-extern const char T56[];
-extern const char T57[];
-extern const char T58[];
-extern const char T59[];
-extern const char T60[];
-extern const char T1[];
-extern const char T2[];
-extern const char T3[];
-extern const char T66X[];
-extern const char T67X[];
-extern const char T68X[];
-extern const char T66Y[];
-extern const char T67Y[];
-extern const char T68Y[];
-extern const char T66Z[];
-extern const char T67Z[];
-extern const char T68Z[];
-extern const char T69[];
-extern const char T70[];
-extern const char T71[];
-extern const char T72[];
-extern const char T73[];
-extern const char T74[];
-extern const char T75[];
-extern const char T76[];
-extern const char T77[];
-extern const char T78[];
-extern const char T79[];
-extern const char T80[];
-extern const char T81[];
-extern const char T82[];
-extern const char T83[];
-extern const char T84[];
-extern int ENDED;
-extern const char XQ[];
-extern const char PXC1[];
-extern const char PXC2[];
-extern const char PYC1[];
-extern int PYC2;
-extern const char PZC1[];
-extern int PZC2;
+static const char SH[];
+static int CME_MASK;
+static const char PP[];
+static const char PP1[];
+static const char PP2[];
+static const char PP3[];
+static const char PP4[];
+static const char MM0[];
+static const char MM1[];
+static const char MM2[];
+static const char MM3[];
+static const char MM4[];
+static const char MM5[];
+static const char MM6[];
+static const char MM7[];
+static const char XQ[];
+static const char PZC1[];
+static int PZC2;
+static const char PYC1[];
+static int PYC2;
+static const char PXC1[];
+static const char PXC2[];
+static const char EDIT[];
+static const char T5[];
+static const char T6[];
+static const char T7[];
+static const char T8[];
+static const char T9[];
+static const char T10[];
+static const char T11[];
+static const char T12[];
+static const char T13[];
+static const char T14[];
+static const char T15[];
+static const char T16[];
+static const char T17[];
+static const char T18[];
+static const char T19[];
+static const char T20[];
+static const char T21[];
+static const char T22[];
+static const char T23[];
+static const char T24[];
+static const char T25[];
+static const char T26[];
+static const char T27[];
+static const char T28[];
+static const char T29[];
+static const char T30[];
+static const char T31[];
+static const char T32[];
+static const char T33[];
+static const char T34[];
+static const char T35[];
+static const char T36[];
+static const char T37[];
+static const char T38[];
+static const char T39[];
+static const char T40[];
+static const char T41[];
+static const char T42[];
+static const char T43[];
+static const char T44[];
+static const char T45[];
+static const char T46[];
+static const char T47[];
+static const char T48[];
+static const char T49[];
+static const char T50[];
+static const char T51[];
+static const char T52[];
+static const char T53[];
+static const char T54[];
+static const char T55[];
+static const char T56[];
+static const char T57[];
+static const char T58[];
+static const char T59[];
+static const char T60[];
+static const char T1[];
+static const char T2[];
+static const char T3[];
+static const char T66X[];
+static const char T67X[];
+static const char T68X[];
+static const char T66Y[];
+static const char T67Y[];
+static const char T68Y[];
+static const char T66Z[];
+static const char T67Z[];
+static const char T68Z[];
+static const char T69[];
+static const char T70[];
+static const char T71[];
+static const char T72[];
+static const char T73[];
+static const char T74[];
+static const char T75[];
+static const char T76[];
+static const char T77[];
+static const char T78[];
+static const char T79[];
+static const char T80[];
+static const char T81[];
+static const char T82[];
+static const char T83[];
+static const char T84[];
+static int ENDED;
 
 /*
 *----------------------------------------------------------------------------
@@ -523,19 +495,19 @@ LLLTA:
 ;MOTOROFF4	.string	0
 ;
 */
-const char MOTOROFF0[] = "JG 90000,90000,90000;BG;TL 0.6,0.6,1.8\n";
-const char MOTOROFF1[] = "TL 0.55,0.55,1.7;WT 1000\n";
-const char MOTOROFF2[] = "TL 0.50,0.50,1.6;WT 1000\n";
-const char MOTOROFF3[] = "TL 0.45,0.45,1.5;WT 1000\n";
-const char MOTOROFF4[] = "TL 0.40,0.40,1.4;WT 1000\n";
-const char MOTOROFF5[] = "TL 0.35,0.35,1.3;WT 1000\n";
-const char MOTOROFF6[] = "TL 0.30,0.30,1.2;WT 1000\n";
-const char MOTOROFF7[] = "TL 0.25,0.25,1.1;WT 1000\n";
-const char MOTOROFF8[] = "TL 0.20,0.20,1.0;WT 1000\n";
-const char MOTOROFF9[] = "TL 0.15,0.15,0.9;WT 1000\n";
-const char MOTOROFF10[] = "TL 0.10,0.10,0.8;WT 1000\n";
-const char MOTOROFF11[] = "TL 0.05,0.05,0.7;WT 1000\n";
-const char MOTOROFF12[] = "ST XYZ;MO\n";
+static const char MOTOROFF0[] = "JG 90000,90000,90000;BG;TL 0.6,0.6,1.8\n";
+static const char MOTOROFF1[] = "TL 0.55,0.55,1.7;WT 1000\n";
+static const char MOTOROFF2[] = "TL 0.50,0.50,1.6;WT 1000\n";
+static const char MOTOROFF3[] = "TL 0.45,0.45,1.5;WT 1000\n";
+static const char MOTOROFF4[] = "TL 0.40,0.40,1.4;WT 1000\n";
+static const char MOTOROFF5[] = "TL 0.35,0.35,1.3;WT 1000\n";
+static const char MOTOROFF6[] = "TL 0.30,0.30,1.2;WT 1000\n";
+static const char MOTOROFF7[] = "TL 0.25,0.25,1.1;WT 1000\n";
+static const char MOTOROFF8[] = "TL 0.20,0.20,1.0;WT 1000\n";
+static const char MOTOROFF9[] = "TL 0.15,0.15,0.9;WT 1000\n";
+static const char MOTOROFF10[] = "TL 0.10,0.10,0.8;WT 1000\n";
+static const char MOTOROFF11[] = "TL 0.05,0.05,0.7;WT 1000\n";
+static const char MOTOROFF12[] = "ST XYZ;MO\n";
 /* asm: MOTOFF_PROG */
 /* asm: 	.word	MOTOROFF1 */
 /* asm: 	.word	MOTOROFF2 */
@@ -551,7 +523,7 @@ const char MOTOROFF12[] = "ST XYZ;MO\n";
 /* asm: 	.word	MOTOROFF12 */
 /* asm: 	.word	0 */
 /* asm: 	 */
-uintptr_t MOTOFF_PROG[] = {
+static uintptr_t MOTOFF_PROG[] = {
     (uintptr_t)&MOTOROFF1,
     (uintptr_t)&MOTOROFF2,
     (uintptr_t)&MOTOROFF3,
@@ -585,7 +557,7 @@ void SEND_MOTOR_OFF(void)
     UNIMPL();
 }
 
-void SEND_MOTOR_OFF_NO_RESET(void)
+static void SEND_MOTOR_OFF_NO_RESET(void)
 {
     // asm 00004626: 	LDL	MOTOROFF0,AR2
     // asm 00004627: 	CALL	SEND_CMD
@@ -622,7 +594,7 @@ MOTOFF_DONE:
     UNIMPL();
 }
 
-void INIT_MOTION_ERROROUT(void)
+static void INIT_MOTION_ERROROUT(void)
 {
     // asm 00004655: 	CALL    SEND_MOTOR_OFF_NO_RESET
     // asm 00004656: 	CLRI	R2
@@ -673,17 +645,17 @@ FFFD:
 }
 
 /* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
-const char *JJG[] = {
+static const char *JJG[] = {
     MM0, MM1, MM2, MM3, MM4, MM5, MM6, MM7,
 };
-const char MM0[] = "UNKNOWN ERROR";
-const char MM1[] = "MAT NOT PLUGGED IN";
-const char MM2[] = "MAT STEPPED ON";
-const char MM3[] = "SAFETY BEAM PATH BROKEN";
-const char MM4[] = "SAFETY BEAM DETECTOR NOT RECEIVING";
-const char MM5[] = "SAFETY BEAM LIGHT NOT EMITTING";
-const char MM6[] = "FAIL SAFE SWITCH ENGAGED";
-const char MM7[] = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
+static const char MM0[] = "UNKNOWN ERROR";
+static const char MM1[] = "MAT NOT PLUGGED IN";
+static const char MM2[] = "MAT STEPPED ON";
+static const char MM3[] = "SAFETY BEAM PATH BROKEN";
+static const char MM4[] = "SAFETY BEAM DETECTOR NOT RECEIVING";
+static const char MM5[] = "SAFETY BEAM LIGHT NOT EMITTING";
+static const char MM6[] = "FAIL SAFE SWITCH ENGAGED";
+static const char MM7[] = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
 // *----------------------------------------------------------------------------
 
 /*
@@ -714,7 +686,7 @@ const char MM7[] = "FAIL SAFE SWITCH NOT CONNECT PROPERLY";
 *----------------------------------------------------------------------------
 */
 
-const char bbd[] = "MOTION BURNIN";
+static const char bbd[] = "MOTION BURNIN";
 
 /*
 *----------------------------------------------------------------------------
@@ -722,7 +694,7 @@ const char bbd[] = "MOTION BURNIN";
 *WAIT 500
 *
 */
-void WAIT500(void)
+static void WAIT500(void)
 {
     // ;	RPTS	490
     // asm 0000469A: 	RPTS	100
@@ -1191,7 +1163,7 @@ NO_MOTION_ERRORS:
     UNIMPL();
 }
 
-void MOTION_SCALE_ENTER(void)
+static void MOTION_SCALE_ENTER(void)
 {
     // 	;NOW SCALE INTO THE RANGE USEABLE
     // 	;BY OR MOTION SYSTEM
@@ -1350,7 +1322,7 @@ void LEVEL_THE_MOTION(void)
 
 // *----------------------------------------------------------------------------
 
-const char SH[] = "SH;JG 10000,10000,10000;BG\n";
+static const char SH[] = "SH;JG 10000,10000,10000;BG\n";
 /* asm: THEPROGL */
 /* asm: 	.word	EDIT,T5,T6,T7,T8,T9 */
 /* asm: 	.word	T10,T11,T12,T13,T14,T15,T16,T17,T18,T19 */
@@ -1371,7 +1343,7 @@ const char SH[] = "SH;JG 10000,10000,10000;BG\n";
 /* asm: 	.word	0 */
 /* asm: 	 */
 /* asm: 	 */
-uintptr_t THEPROGL[] = {
+static uintptr_t THEPROGL[] = {
     (uintptr_t)&EDIT, (uintptr_t)&T5, (uintptr_t)&T6, (uintptr_t)&T7, (uintptr_t)&T8, (uintptr_t)&T9,
     (uintptr_t)&T10, (uintptr_t)&T11, (uintptr_t)&T12, (uintptr_t)&T13, (uintptr_t)&T14, (uintptr_t)&T15, (uintptr_t)&T16, (uintptr_t)&T17, (uintptr_t)&T18, (uintptr_t)&T19,
     (uintptr_t)&T20, (uintptr_t)&T21, (uintptr_t)&T22, (uintptr_t)&T23, (uintptr_t)&T24, (uintptr_t)&T25, (uintptr_t)&T26, (uintptr_t)&T27, (uintptr_t)&T28, (uintptr_t)&T29,
@@ -1407,7 +1379,7 @@ uintptr_t THEPROGL[] = {
 };
 
 // *----------------------------------------------------------------------------
-void DOWNLOAD_PROGRAM(void)
+static void DOWNLOAD_PROGRAM(void)
 {
 IBO654:
     // asm 000048D5: 	LDI	*AR4++,AR2
@@ -1627,7 +1599,7 @@ void MOTION_DLPROG(void)
 // *----------------------------------------------------------------------------
 
 // *MOTION NO DETECTED
-void GALIL_ERROR(void)
+static void GALIL_ERROR(void)
 {
     // ;	.globl	MOTION_SAFETY_SWITCHES_DIAG
     // ;	CALL	MOTION_SAFETY_SWITCHES_DIAG
@@ -1657,7 +1629,7 @@ void GALIL_ERROR(void)
     UNIMPL();
 }
 
-void WAITMSEC(void)
+static void WAITMSEC(void)
 {
     // asm 000049A2: 	MPYI	5000,R0
 WTMLP:
@@ -1681,9 +1653,9 @@ WTMLP:
 *
 */
 /* asm: CME_MASK	.word	0FF80h */
-int CME_MASK = 0x0FF80;
+static int CME_MASK = 0x0FF80;
 
-void CHECK_MOTION_ERROR(void)
+static void CHECK_MOTION_ERROR(void)
 {
     // asm 000049A7: 	PUSH	R0
     // asm 000049A8: 	PUSH	AR0
@@ -1744,7 +1716,7 @@ void LATCH_ERROR(void)
 *RET CS IF GALIL READY W/ CHAR
 *
 */
-void G_READY(void)
+static void G_READY(void)
 {
     // asm 000049C9:         LDIL    SOUND,AR3
     // asm 000049CC:         LDI     0FF0Ah,R0
@@ -1776,7 +1748,7 @@ void G_READY(void)
     UNIMPL();
 }
 
-void G_CHAR(void)
+static void G_CHAR(void)
 {
     // asm 000049DF: 	CALL	G_READY
     // asm 000049E0: 	RETSNC			;RETURN IF NOTHING
@@ -1811,7 +1783,7 @@ void G_CHAR(void)
     UNIMPL();
 }
 
-void G_STRING(void)
+static void G_STRING(void)
 {
 GS0:
     // asm 000049FB: 	CALL	G_CHAR	   		;CHARACTER READY?
@@ -1917,7 +1889,7 @@ int GALIL_STATUS_Z;
 *GET HEX STRING
 *
 */
-void G_HEX(void)
+static void G_HEX(void)
 {
     // asm 00004A3F: 	CALL	G_CHAR
     // asm 00004A40: 	BNC	GHX			;NO...
@@ -1950,7 +1922,7 @@ GHX:
     UNIMPL();
 }
 
-void ASCIIHEX(void)
+static void ASCIIHEX(void)
 {
     // asm 00004A52: 	CMPI	47H,R1
     // asm 00004A53: 	BGE	ASCERR
@@ -1998,7 +1970,7 @@ EXITL2:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void NO_RESPONSE(void)
+static void NO_RESPONSE(void)
 {
     // asm 00004A71: 	EINT
     // asm 00004A72: 	LDI	0,R2
@@ -2011,7 +1983,7 @@ void NO_RESPONSE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void WAIT_ACK_REAL(void)
+static void WAIT_ACK_REAL(void)
 {
     // asm 00004A76: 	LDI	10000,R6	;NO RESPONSE TIMEOUT
 WAR0:
@@ -2042,7 +2014,7 @@ EXITL2A:
 *
 *
 */
-void UPPER_LIMIT_ERROR(void)
+static void UPPER_LIMIT_ERROR(void)
 {
     // ;
     // ;	CALL	RESET_GALIL
@@ -2088,7 +2060,7 @@ ULL3:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void LOWER_LIMIT_ERROR(void)
+static void LOWER_LIMIT_ERROR(void)
 {
     // ;
     // ;	CALL	RESET_GALIL
@@ -2170,113 +2142,113 @@ LLL3:
 *
 */
 
-const char PPSAF[] = "PR 4000,4000,4000;BG\nWT 500\nPR -12000,-12000,-12000\n";
-const char PP[] = "JG -26000,-26000,-26000;BG\nWT 3100\nDP 0,0,0\nSP 15000,15000,15000\n";
-const char PP1[] = "AC 105000,105000,105000\nER 8000,8000,8000\n";
-const char PP2[] = "DC 435000,435000,435000\nTL 7,7,7\n";
-const char PP3[] = "IT 0.1,0.1,0.1\nPA 0,0,0;BG\n";
-const char PP4[] = "JG 0,0,0;BG\n";
-const char EDIT[] = "ED\n";
-const char T5[] = "#PROG\n";
-const char T6[] = "#XE\n";
-const char T7[] = "#XA\n";
-const char T8[] = "#YE\n";
-const char T9[] = "#YA\n";
-const char T10[] = "#ZE\n";
-const char T11[] = "#ZA\n";
-const char T12[] = "JG 0,0,0\n";
-const char T13[] = "BG XYZ\n";
-const char T14[] = "XA=0\n";
-const char T15[] = "YA=0\n";
-const char T16[] = "ZA=0\n";
-const char T17[] = "#LOOP\n";
-const char T18[] = "XE=XA-_RPX\n";
-const char T19[] = "XE=XE*5\n";
-const char T20[] = "YE=YA-_RPY\n";
-const char T21[] = "YE=YE*5\n";
-const char T22[] = "ZE=ZA-_RPZ\n";
-const char T23[] = "ZE=ZE*5\n";
-const char T24[] = "JG XE,YE,ZE\n";
+static const char PPSAF[] = "PR 4000,4000,4000;BG\nWT 500\nPR -12000,-12000,-12000\n";
+static const char PP[] = "JG -26000,-26000,-26000;BG\nWT 3100\nDP 0,0,0\nSP 15000,15000,15000\n";
+static const char PP1[] = "AC 105000,105000,105000\nER 8000,8000,8000\n";
+static const char PP2[] = "DC 435000,435000,435000\nTL 7,7,7\n";
+static const char PP3[] = "IT 0.1,0.1,0.1\nPA 0,0,0;BG\n";
+static const char PP4[] = "JG 0,0,0;BG\n";
+static const char EDIT[] = "ED\n";
+static const char T5[] = "#PROG\n";
+static const char T6[] = "#XE\n";
+static const char T7[] = "#XA\n";
+static const char T8[] = "#YE\n";
+static const char T9[] = "#YA\n";
+static const char T10[] = "#ZE\n";
+static const char T11[] = "#ZA\n";
+static const char T12[] = "JG 0,0,0\n";
+static const char T13[] = "BG XYZ\n";
+static const char T14[] = "XA=0\n";
+static const char T15[] = "YA=0\n";
+static const char T16[] = "ZA=0\n";
+static const char T17[] = "#LOOP\n";
+static const char T18[] = "XE=XA-_RPX\n";
+static const char T19[] = "XE=XE*5\n";
+static const char T20[] = "YE=YA-_RPY\n";
+static const char T21[] = "YE=YE*5\n";
+static const char T22[] = "ZE=ZA-_RPZ\n";
+static const char T23[] = "ZE=ZE*5\n";
+static const char T24[] = "JG XE,YE,ZE\n";
 // ;T25	.string	"JP #CHKX,(_TTX*_TTX)>21",13,0
-const char T25[] = "JP #CHKX,(_TTX*_TTX)>23\n";
+static const char T25[] = "JP #CHKX,(_TTX*_TTX)>23\n";
 // ;T26	.string	"JP #CHKY,(_TTY*_TTY)>21",13,0
-const char T26[] = "JP #CHKY,(_TTY*_TTY)>23\n";
+static const char T26[] = "JP #CHKY,(_TTY*_TTY)>23\n";
 // ;T27	.string	"JP #CHKZ,(_TTZ*_TTZ)>21",13,0
-const char T27[] = "JP #CHKZ,(_TTZ*_TTZ)>26\n";
-const char T28[] = "JP #LOOP\n";
-const char T29[] = "#INITP\n";
-const char T30[] = "#COUNT\n";
-const char T31[] = "#CHKX\n";
-const char T32[] = "ACC=0\n";
-const char T33[] = "INITP=_TPX\n";
-const char T34[] = "#MLPX\n";
+static const char T27[] = "JP #CHKZ,(_TTZ*_TTZ)>26\n";
+static const char T28[] = "JP #LOOP\n";
+static const char T29[] = "#INITP\n";
+static const char T30[] = "#COUNT\n";
+static const char T31[] = "#CHKX\n";
+static const char T32[] = "ACC=0\n";
+static const char T33[] = "INITP=_TPX\n";
+static const char T34[] = "#MLPX\n";
 // ;T35	.string	"JP #LOOP,(_TTX*_TTX)<7",13,0
-const char T35[] = "JP #LOOP,(_TTX*_TTX)<10\n";
-const char T36[] = "JP #LOOP,(_TPX-INITP)>5\n";
-const char T37[] = "JP #LOOP,(_TPX-INITP)<-8\n";
-const char T38[] = "COUNT=COUNT+1\n";
-const char T39[] = "JP #ERROUTX,COUNT>5\n";
-const char T40[] = "JP #MLPX\n";
-const char T41[] = "#CHKY\n";
-const char T42[] = "COUNT=0\n";
-const char T43[] = "INITP=_TPY\n";
-const char T44[] = "#MLPY\n";
+static const char T35[] = "JP #LOOP,(_TTX*_TTX)<10\n";
+static const char T36[] = "JP #LOOP,(_TPX-INITP)>5\n";
+static const char T37[] = "JP #LOOP,(_TPX-INITP)<-8\n";
+static const char T38[] = "COUNT=COUNT+1\n";
+static const char T39[] = "JP #ERROUTX,COUNT>5\n";
+static const char T40[] = "JP #MLPX\n";
+static const char T41[] = "#CHKY\n";
+static const char T42[] = "COUNT=0\n";
+static const char T43[] = "INITP=_TPY\n";
+static const char T44[] = "#MLPY\n";
 // ;T45	.string	"JP #LOOP,(_TTY*_TTY)<7",13,0
-const char T45[] = "JP #LOOP,(_TTY*_TTY)<10\n";
-const char T46[] = "JP #LOOP,(_TPY-INITP)>5\n";
-const char T47[] = "JP #LOOP,(_TPY-INITP)<-8\n";
-const char T48[] = "COUNT=COUNT+1\n";
-const char T49[] = "JP #ERROUTY,COUNT>5\n";
-const char T50[] = "JP #MLPY\n";
-const char T51[] = "#CHKZ\n";
-const char T52[] = "COUNT=0\n";
-const char T53[] = "INITP=_TPZ\n";
-const char T54[] = "#MLPZ\n";
+static const char T45[] = "JP #LOOP,(_TTY*_TTY)<10\n";
+static const char T46[] = "JP #LOOP,(_TPY-INITP)>5\n";
+static const char T47[] = "JP #LOOP,(_TPY-INITP)<-8\n";
+static const char T48[] = "COUNT=COUNT+1\n";
+static const char T49[] = "JP #ERROUTY,COUNT>5\n";
+static const char T50[] = "JP #MLPY\n";
+static const char T51[] = "#CHKZ\n";
+static const char T52[] = "COUNT=0\n";
+static const char T53[] = "INITP=_TPZ\n";
+static const char T54[] = "#MLPZ\n";
 // ;T55	.string	"JP #LOOP,(_TTZ*_TTZ)<7",13,0		;LOFF DLTA November 9,1994
-const char T55[] = "JP #LOOP,(_TTZ*_TTZ)<17\n";
-const char T56[] = "JP #LOOP,(_TPZ-INITP)>5\n";
-const char T57[] = "JP #LOOP,(_TPZ-INITP)<-8\n";
-const char T58[] = "COUNT=COUNT+1\n";
-const char T59[] = "JP #ERROUTZ,COUNT>5\n";
-const char T60[] = "JP #MLPZ\n";
-const char T1[] = "#POSERR\n";
-const char T2[] = "MG \"G\"\n";
-const char T3[] = "JP #MOTOFF\n";
-const char T66X[] = "#ERROUTX\n";
-const char T67X[] = "MG \n";
-const char T68X[] = "MG \"W\"\n";
-const char T66Y[] = "#ERROUTY\n";
-const char T67Y[] = "MG \n";
-const char T68Y[] = "MG \"S\"\n";
-const char T66Z[] = "#ERROUTZ\n";
-const char T67Z[] = "MG \n";
-const char T68Z[] = "MG \"Q\"\n";
-const char T69[] = "#MOTOFF\n";
-const char T70[] = "JG 90000,90000,90000;BG;TL 0.6,0.6,1.8\n";
-const char T71[] = "WT 2000;TL 0.55,0.55,1.6\n";
-const char T72[] = "WT 2000;TL 0.50,0.50,1.5\n";
-const char T73[] = "WT 2000;TL 0.45,0.45,1.4\n";
-const char T74[] = "WT 2000;TL 0.40,0.40,1.3\n";
-const char T75[] = "WT 2000;TL 0.35,0.35,1.2\n";
-const char T76[] = "WT 2000;TL 0.30,0.30,1.1\n";
-const char T77[] = "WT 2000;TL 0.25,0.25,1.0\n";
-const char T78[] = "WT 2000;TL 0.20,0.20,0.9\n";
-const char T79[] = "WT 2000;TL 0.15,0.15,0.8\n";
-const char T80[] = "WT 2000;TL 0.10,0.10,0.7\n";
-const char T81[] = "WT 2000;TL 0.05,0.05,0.6\n";
-const char T82[] = "WT 2000\n";
-const char T83[] = "OE 1,1,1;AB\n";
-const char T84[] = "TL 7,7,7;EN\n";
+static const char T55[] = "JP #LOOP,(_TTZ*_TTZ)<17\n";
+static const char T56[] = "JP #LOOP,(_TPZ-INITP)>5\n";
+static const char T57[] = "JP #LOOP,(_TPZ-INITP)<-8\n";
+static const char T58[] = "COUNT=COUNT+1\n";
+static const char T59[] = "JP #ERROUTZ,COUNT>5\n";
+static const char T60[] = "JP #MLPZ\n";
+static const char T1[] = "#POSERR\n";
+static const char T2[] = "MG \"G\"\n";
+static const char T3[] = "JP #MOTOFF\n";
+static const char T66X[] = "#ERROUTX\n";
+static const char T67X[] = "MG \n";
+static const char T68X[] = "MG \"W\"\n";
+static const char T66Y[] = "#ERROUTY\n";
+static const char T67Y[] = "MG \n";
+static const char T68Y[] = "MG \"S\"\n";
+static const char T66Z[] = "#ERROUTZ\n";
+static const char T67Z[] = "MG \n";
+static const char T68Z[] = "MG \"Q\"\n";
+static const char T69[] = "#MOTOFF\n";
+static const char T70[] = "JG 90000,90000,90000;BG;TL 0.6,0.6,1.8\n";
+static const char T71[] = "WT 2000;TL 0.55,0.55,1.6\n";
+static const char T72[] = "WT 2000;TL 0.50,0.50,1.5\n";
+static const char T73[] = "WT 2000;TL 0.45,0.45,1.4\n";
+static const char T74[] = "WT 2000;TL 0.40,0.40,1.3\n";
+static const char T75[] = "WT 2000;TL 0.35,0.35,1.2\n";
+static const char T76[] = "WT 2000;TL 0.30,0.30,1.1\n";
+static const char T77[] = "WT 2000;TL 0.25,0.25,1.0\n";
+static const char T78[] = "WT 2000;TL 0.20,0.20,0.9\n";
+static const char T79[] = "WT 2000;TL 0.15,0.15,0.8\n";
+static const char T80[] = "WT 2000;TL 0.10,0.10,0.7\n";
+static const char T81[] = "WT 2000;TL 0.05,0.05,0.6\n";
+static const char T82[] = "WT 2000\n";
+static const char T83[] = "OE 1,1,1;AB\n";
+static const char T84[] = "TL 7,7,7;EN\n";
 /* asm: ENDED	.string	17,0 */
-int ENDED = 0x00000011;
-const char XQ[] = "XQ\n";
-const char PXC1[] = "XA=";
-const char PXC2[] = "\nBG XYZ\n";
-const char PYC1[] = "YA=";
+static int ENDED = 0x00000011;
+static const char XQ[] = "XQ\n";
+static const char PXC1[] = "XA=";
+static const char PXC2[] = "\nBG XYZ\n";
+static const char PYC1[] = "YA=";
 /* asm: PYC2	.string	13,0 */
 /* asm: 	 */
-int PYC2 = 0x0000000D;
-const char PZC1[] = "ZA=";
+static int PYC2 = 0x0000000D;
+static const char PZC1[] = "ZA=";
 /* asm: PZC2	.string	13,0 */
 /* asm: 	 */
-int PZC2 = 0x0000000D;
+static int PZC2 = 0x0000000D;

@@ -11,11 +11,9 @@
 #include "globals.h"
 #include "pall.h"
 #include "sndtab.h"
-#include "objects.h"
 #include "text.h"
 #include "dirq.h"
 #include "comm.h"
-#include "h2hobj.h"
 #include "wave.h"
 
 /*
@@ -23,15 +21,15 @@
  */
 
 void WAVE(void);
-void HEAD2HEAD_WAIT(void);
-void HIGH_SCORE(void);
-void MIDSPIN(void);
-void MIDSPINHS(void);
-void RACELEG(void);
+static void HEAD2HEAD_WAIT(void);
+static void HIGH_SCORE(void);
+static void MIDSPIN(void);
+static void MIDSPINHS(void);
+static void RACELEG(void);
 #define HIGH_SCORE_INI THANKS
-void THANKS(void);
-void LOAD_HIGH_SCORE(void);
-void BEGIN_GAME(void);
+static void THANKS(void);
+static void LOAD_HIGH_SCORE(void);
+static void BEGIN_GAME(void);
 void INIT_SYSTEM(void);
 void LOAD_FIXED_PALETTES(void);
 void LOAD_STARTUP_PALS(void);
@@ -40,21 +38,6 @@ void LOAD_STARTUP_PALS(void);
 
 extern int OLD_BUTTON_STATUS;
 void SPIN_CAR(void);
-
-extern int TEASE_COUNT;
-extern int ATTR_MODEL;
-extern int _ATTR_MODE;
-extern int LOADED;
-extern int FIXEDPAL;
-extern int ILLUM_PAL;
-extern int COPCARTAB[];
-extern int HOTRODTAB[];
-extern int TESTORTAB[];
-extern int JEEPTAB[];
-extern int VETTTAB[];
-extern int GTRUCKTABP[];
-extern int MISSILE_TAB[];
-extern int PSBUSTAB[];
 
 /*
 *----------------------------------------------------------------------------
@@ -196,7 +179,7 @@ ISTRUE:
     UNIMPL();
 }
 
-void HEAD2HEAD_WAIT(void)
+static void HEAD2HEAD_WAIT(void)
 {
     // asm 00009376: 	LDI	@BUTTON_STATUS,R0
     // asm 00009377: 	ANDN	BUT_VIEWS,R0
@@ -207,7 +190,7 @@ void HEAD2HEAD_WAIT(void)
     UNIMPL();
 }
 
-void HIGH_SCORE(void)
+static void HIGH_SCORE(void)
 {
     // asm 0000937D: 	LDI	@BUTTON_STATUS,R0
     // asm 0000937E: 	ANDN	BUT_VIEWS,R0
@@ -223,7 +206,7 @@ void HIGH_SCORE(void)
     UNIMPL();
 }
 
-void MIDSPIN(void)
+static void MIDSPIN(void)
 {
     // asm 0000938B: 	LDI	@BUTTON_STATUS,R0
     // asm 0000938C: 	ANDN	BUT_VIEWS,R0
@@ -248,7 +231,7 @@ void MIDSPIN(void)
     UNIMPL();
 }
 
-void MIDSPINHS(void)
+static void MIDSPINHS(void)
 {
     // asm 0000939A: 	LDI	@BUTTON_STATUS,R0
     // asm 0000939B: 	ANDN	BUT_VIEWS,R0
@@ -264,7 +247,7 @@ void MIDSPINHS(void)
     UNIMPL();
 }
 
-void RACELEG(void)
+static void RACELEG(void)
 {
     // asm 000093A8: 	CLRI	R0
     // asm 000093A9: 	STI	R0,@TEASE_COUNT
@@ -283,7 +266,7 @@ void RACELEG(void)
     UNIMPL();
 }
 
-void THANKS(void)
+static void THANKS(void)
 {
     // asm 000093BB: 	CALL	LOAD_HIGH_SCORE
     // asm 000093BC: 	BU	HIGH_SCORE
@@ -297,7 +280,7 @@ CREDITS:
     UNIMPL();
 }
 
-void LOAD_HIGH_SCORE(void)
+static void LOAD_HIGH_SCORE(void)
 {
     // asm 000093C3: 	CALL	FIFO_RESET
     // asm 000093C4: 	LDI	1,R0
@@ -314,7 +297,7 @@ void LOAD_HIGH_SCORE(void)
     UNIMPL();
 }
 
-void BEGIN_GAME(void)
+static void BEGIN_GAME(void)
 {
     // asm 000093CB: 	CALL	SND_RESET_QUIET
     // asm 000093CC: 	LDI	1,R0
@@ -472,7 +455,7 @@ void LOAD_STARTUP_PALS(void)
 /* asm: 	.float	0,0,0	 	;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	72-1		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
-int COPCARTAB[] = {
+static int COPCARTAB[] = {
     5, // #OF DYNAS-1
     0, 101, 0, // SHADOW
     3, // VERTS-1
@@ -524,7 +507,7 @@ int COPCARTAB[] = {
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
 /* asm: 	 */
-int HOTRODTAB[] = {
+static int HOTRODTAB[] = {
     5, // #OF DYNAS-1
     0, 117, 0, // SHADOW
     3, // VERTS-1
@@ -572,7 +555,7 @@ int HOTRODTAB[] = {
 /* asm: 	.word	59		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
-int TESTORTAB[] = {
+static int TESTORTAB[] = {
     5, // #OF DYNAS-1
     0, 62, 0, // SHADOW
     3, // VERTS-1
@@ -625,7 +608,7 @@ int TESTORTAB[] = {
 /* asm: 	.word	62		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
-int JEEPTAB[] = {
+static int JEEPTAB[] = {
     5, // #OF DYNAS-1
     0, 119, 0, // SHADOW
     3, // VERTS-1
@@ -679,7 +662,7 @@ int JEEPTAB[] = {
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
 /* asm: 	 */
-int VETTTAB[] = {
+static int VETTTAB[] = {
     5, // #OF DYNAS-1
     0, -164, 0, // SHADOW
     3, // VERTS-1
@@ -733,7 +716,7 @@ int VETTTAB[] = {
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
 /* asm: 	 */
-int GTRUCKTABP[] = {
+static int GTRUCKTABP[] = {
     5, // #OF DYNAS-1
     0, -117, 0, // SHADOW
     3, // VERTS-1
@@ -789,7 +772,7 @@ int GTRUCKTABP[] = {
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
 /* asm: 	 */
-int MISSILE_TAB[] = {
+static int MISSILE_TAB[] = {
     5, // #OF DYNAS-1
     0, -117, 0, // SHADOW
     3, // VERTS-1
@@ -843,7 +826,7 @@ int MISSILE_TAB[] = {
 /* asm: 	.word	91		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
-int PSBUSTAB[] = {
+static int PSBUSTAB[] = {
     5, // #OF DYNAS-1
     0, -127, 0, // SHADOW
     3, // VERTS-1

@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "error.h"
@@ -24,37 +23,27 @@
 void TRACK_SELECTION(void);
 void MOTION_SCREWED(void);
 void CLEANUP_TRACKSEL_PALS(void);
-void RESTORE_HIDDEN(void);
-void HIDDEN_TRACKS(void);
-void GET_RACE_IDX(void);
-void ZOOMINP(void);
-void ZOOMIN_TSEL(void);
-void FIX_TRACK_SCREEN(void);
-void TSEL_ZOOMOUTP(void);
-void CENTER_THEONE(void);
-void CENTER_SUB1(void);
-void TSEL_ZOOMOUT(void);
-void ANIMATE_MAP(void);
-void TRACK_SEL_CURSOR(void);
-void GET_TURNOBJ(void);
+static void RESTORE_HIDDEN(void);
+static void HIDDEN_TRACKS(void);
+static void GET_RACE_IDX(void);
+static void ZOOMINP(void);
+static void ZOOMIN_TSEL(void);
+static void FIX_TRACK_SCREEN(void);
+static void TSEL_ZOOMOUTP(void);
+static void CENTER_THEONE(void);
+static void CENTER_SUB1(void);
+static void TSEL_ZOOMOUT(void);
+static void ANIMATE_MAP(void);
+static void TRACK_SEL_CURSOR(void);
+static void GET_TURNOBJ(void);
 void BOILERPLATE_INIT(void);
-void BOILERPLATE(void);
-void BOILERPLATE_DELETE(void);
+static void BOILERPLATE(void);
+static void BOILERPLATE_DELETE(void);
 
 #define ANIMATE_MAP_TABI ANIMATE_MAP_TAB
 #define TRACK_SELECTION_LISTI TRACK_SELECTION_LIST
 
-extern int TURNOBJ;
-extern int RAW_CHOOSENTRK;
-extern const char CRUISE[];
-extern const char CRUISE2[];
-extern const char CRUISE3[];
-extern int TSEL_HEAD;
-extern int TSEL_THEONE;
-extern int ANIMATE_MAP_TAB[];
-extern int TURNANI[];
-extern int TRACK_SELECTION_LIST[];
-extern int BOILEROBJ;
+static int TRACK_SELECTION_LIST[14];
 
 /*
 *----------------------------------------------------------------------------
@@ -66,7 +55,7 @@ extern int BOILEROBJ;
 */
 
 /* asm: TURNOBJ	.bss	TURNOBJ,1 */
-int TURNOBJ;
+static int TURNOBJ;
 /*
 *----------------------------------------------------------------------------
 *
@@ -82,11 +71,11 @@ int TURNOBJ;
 /* asm: RAW_CHOOSENTRK	.bss	RAW_CHOOSENTRK,1 */
 int RAW_CHOOSENTRK;
 /* asm: CRUISE	SPTR	"CRUISE THE USA" */
-const char CRUISE[] = "CRUISE THE USA";
+static const char CRUISE[] = "CRUISE THE USA";
 /* asm: CRUISE2	SPTR	"JAM WITH THE PRESIDENT" */
-const char CRUISE2[] = "JAM WITH THE PRESIDENT";
+static const char CRUISE2[] = "JAM WITH THE PRESIDENT";
 /* asm: CRUISE3	SPTR	"IN THE WHITE HOUSE HOT TUB" */
-const char CRUISE3[] = "IN THE WHITE HOUSE HOT TUB";
+static const char CRUISE3[] = "IN THE WHITE HOUSE HOT TUB";
 
 /*
 *----------------------------------------------------------------------------
@@ -540,7 +529,7 @@ void CLEANUP_TRACKSEL_PALS(void)
 *	R0	IDX {1,2,3}
 *
 */
-void RESTORE_HIDDEN(void)
+static void RESTORE_HIDDEN(void)
 {
     // asm 00006E29: 	CMPI	-1,R0
     // asm 00006E2A: 	RETSEQ
@@ -564,7 +553,7 @@ void RESTORE_HIDDEN(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void HIDDEN_TRACKS(void)
+static void HIDDEN_TRACKS(void)
 {
     // asm 00006E38: 	LDI	@SWITCHBUTS,R0
     // asm 00006E39: 	RS	16,R0
@@ -651,7 +640,7 @@ HIDDTX:
 *
 *
 */
-void GET_RACE_IDX(void)
+static void GET_RACE_IDX(void)
 {
     // asm 00006E7A: 	CALL	GETCHOICE
     // asm 00006E7B: 	LDI	@POSE,R0
@@ -743,7 +732,7 @@ NOTTHEWH:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void ZOOMINP(void)
+static void ZOOMINP(void)
 {
     // asm 00006ECD: 	LDI	20,AR4
 ZITSP:
@@ -765,7 +754,7 @@ NOWAY543:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void ZOOMIN_TSEL(void)
+static void ZOOMIN_TSEL(void)
 {
     // asm 00006EDB: 	LDI	@OACTIVE,AR5
 ZISL:
@@ -816,7 +805,7 @@ ZIX:
 *
 *
 */
-void FIX_TRACK_SCREEN(void)
+static void FIX_TRACK_SCREEN(void)
 {
     // asm 00006EF8: 	CLRI	R0
     // asm 00006EF9: 	STI	R0,@TSEL_HEAD
@@ -925,7 +914,7 @@ int TSEL_HEAD;
 /* asm: TSEL_THEONE	.bss	TSEL_THEONE,1 */
 int TSEL_THEONE;
 
-void TSEL_ZOOMOUTP(void)
+static void TSEL_ZOOMOUTP(void)
 {
     // asm 00006F55: 	SONDFX	VIEW2IN
     // asm 00006F57: 	LDI	@RACE_MODE,R0
@@ -955,7 +944,7 @@ TSLLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CENTER_THEONE(void)
+static void CENTER_THEONE(void)
 {
     // asm 00006F6D: 	LDI	@TSEL_THEONE,AR4
     // asm 00006F6E: 	LDI	15,AR5
@@ -986,7 +975,7 @@ CTOLPB:
     UNIMPL();
 }
 
-void CENTER_SUB1(void)
+static void CENTER_SUB1(void)
 {
     // asm 00006F85: 	LDF	*+AR4(OPOSX),R2
     // asm 00006F86: 	FLOAT	256,R0
@@ -1016,7 +1005,7 @@ K99:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TSEL_ZOOMOUT(void)
+static void TSEL_ZOOMOUT(void)
 {
     // asm 00006F9A: 	LDI	@TSEL_HEAD,R0
     // asm 00006F9B: 	BU	LKGG
@@ -1056,12 +1045,12 @@ ALLDN:
 *
 */
 /* asm: ANIMATE_MAP_TAB		.word	mhop1,mhop2,mhop3,mhop4,-1 */
-int ANIMATE_MAP_TAB[] = {
-    mhop1, mhop2, mhop3, mhop4, -1,
+static int ANIMATE_MAP_TAB[] = {
+    mhop1_ROM, mhop2_ROM, mhop3_ROM, mhop4_ROM, -1,
 };
 
 // *
-void ANIMATE_MAP(void)
+static void ANIMATE_MAP(void)
 {
     // asm 00006FB7: 	LDI	@ANIMATE_MAP_TABI,AR5
 AMLP:
@@ -1083,7 +1072,7 @@ AMLP:
 *
 *
 */
-void TRACK_SEL_CURSOR(void)
+static void TRACK_SEL_CURSOR(void)
 {
     // asm 00006FBE: 	LDI	*+AR7(OLD_INDEX),R0
     // asm 00006FBF: 	LDI	@CHOSEN_RACE,AR0
@@ -1116,8 +1105,8 @@ void TRACK_SEL_CURSOR(void)
 // *----------------------------------------------------------------------------
 /* asm: TURNANI	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
 /* asm: 	 */
-int TURNANI[] = {
-    whel1, whel2, whel3, whel4, whel3, whel2, -1,
+static int TURNANI[] = {
+    whel1_ROM, whel2_ROM, whel3_ROM, whel4_ROM, whel3_ROM, whel2_ROM, -1,
 };
 
 /*
@@ -1126,7 +1115,7 @@ int TURNANI[] = {
 *	AR5	Z
 *
 */
-void GET_TURNOBJ(void)
+static void GET_TURNOBJ(void)
 {
     // asm 00006FDB: 	FLOAT	AR5,R5
     // asm 00006FDC: 	LDL	TURNANI,AR5
@@ -1182,7 +1171,7 @@ JIJI:
 /* asm: 	.word	RACE_SF */
 /* asm: 	 */
 /* asm: 	 */
-int TRACK_SELECTION_LIST[] = {
+static int TRACK_SELECTION_LIST[] = {
     RACE_AZ,
     RACE_US101,
     RACE_LA,
@@ -1219,7 +1208,7 @@ void BOILERPLATE_INIT(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BOILERPLATE(void)
+static void BOILERPLATE(void)
 {
     // asm 00007006: 	LDI	*+AR7(SMALL_CURSOR),AR2
     // asm 00007007: 	LDF	*+AR2(OPOSX),R0
@@ -1238,7 +1227,7 @@ void BOILERPLATE(void)
 int BOILEROBJ;
 
 // *----------------------------------------------------------------------------
-void BOILERPLATE_DELETE(void)
+static void BOILERPLATE_DELETE(void)
 {
     // asm 0000700E: 	LDI	@BOILEROBJ,AR2
     // asm 0000700F: 	CALL	OBJ_DELETE

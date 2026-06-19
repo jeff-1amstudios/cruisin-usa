@@ -1,0 +1,98 @@
+# Optional symbol-level render overrides for the skeleton generator.
+#
+# Format:
+# %% SYMBOL_NAME
+# full replacement text for that top-level symbol
+# %% END
+#
+# Example:
+# %% DEMOTHANKS_LIST
+# tDEMO_THANKS DEMOTHANKS_LIST[] = {
+#     { 140, DT1 },
+#     { 180, DT2 },
+#     { 220, DT3 },
+# };
+# %% END
+
+%% DEMOTHANKS_LIST
+static uintptr_t DEMOTHANKS_LIST[] = {
+    140, (uintptr_t)&DT1,
+    180, (uintptr_t)&DT2,
+    220, (uintptr_t)&DT3,
+};
+%% END
+
+%% OBJSTR
+int OBJSTR[sizeof(OBJ)*NUM_OBJECTS];
+%% END
+
+%% GAMETRAK
+int GAMETRAK[NUM_LEGS*sizeof(tagGAMETRAK)];
+%% END
+
+%% DICT
+tDICT DICT;
+%% END
+
+%% CCTAB
+static tCHOOSE_CAR_ENTRY CCTAB[] = {
+    { -1384, -164, -4708, cvettem_ROM, PI, 0x0481 },
+    {  -448, -200, -4708, hotrodm_ROM, PI, 0x0482 },
+    {   464, -177, -4708, misslem_ROM, PI, 0x0483 },
+    {  1424, -147, -4708, testorm_ROM, PI, 0x0484 },
+};
+%% END
+
+%% PRCSTR
+int PRCSTR[sizeof(PROC) * NUMPROC];
+%% END
+
+%% PALXFER_STR
+int PALXFER_STR[sizeof(PALXFER) * NXFER_PALS];
+%% END
+
+%% CARPARAMTAB
+static tCARPARAM CARPARAMTAB[] = {
+    // #0 MUSCLE CAR
+    { 0.91, 0.60, 0.0028, 0.010}, // ALL AROUND
+    // #1 XXX
+    { 0.98, 0.50, 0.0032, 0.0042}, // ACCEL
+    // #2 MISSILE
+    { 0.88, 0.70, 0.0026, 0.010}, // TOP SPEED
+    // #3 FERRARI
+    { 0.89, 0.50, 0.0028, 0.010}, // HANDLING
+    // HIDDEN VEHICLES
+    // #4 jeep
+    { 0.95, 0.60, 0.0030, 0.0039},
+    // #5 sbusp
+    { 0.89, 0.50, 0.0028, 0.010},
+    // #6 copcar
+    { 0.91, 0.65, 0.0028, 0.0050},
+    // #7 gtruck
+    { 0.89, 0.50, 0.0028, 0.010},
+};
+%% END
+
+%% ROADKILL_TAB
+static tROADKILL_TAB_ENTRY ROADKILL_TAB[] = {
+    { deerc1_ROM, EXP3, (uintptr_t)COW_PARTS, -200, 200 }, // SOON TO BE A COW
+    { deerc1_ROM, EXP3, (uintptr_t)DEER_PARTS, -400, 400 }, // DEER
+};
+%% END
+
+%% GEESE_DIR
+static tGEESE_DIR_ENTRY GEESE_DIR[] = {
+    { 250, 1, 0.0f },
+    { 150, -1, 0.0f },
+    { 150, -1, -0.13f },
+    { 250, 1, -0.13f },
+};
+%% END
+
+%% TEXT_LIST
+tTEXT TEXT_LIST[NUM_TEXTS];
+%% END
+
+%% CARLIST
+CARBLK CARLIST[NUM_CARS];
+%% END

@@ -14,11 +14,84 @@ if(NOT SDL2_FOUND)
   pkg_check_modules(SDL2 REQUIRED sdl2)
 endif()
 
-file(GLOB_RECURSE CRUSN_SOURCES CONFIGURE_DEPENDS
-  src/*.c
+set(CRUSN_SOURCES
+  src/core/cpu.c
+  src/core/machine.c
+  src/core/memory.c
+  src/core/trace.c
+  src/game/attrdrne.c
+  src/game/attracta.c
+  src/game/audits.c
+  src/game/backgrnd.c
+  src/game/bonus.c
+  src/game/bssstart.c
+  src/game/chopper.c
+  src/game/cksum.c
+  src/game/cmos.c
+  src/game/cointab.c
+  src/game/colla.c
+  src/game/coin.c
+  src/game/commdrne.c
+  src/game/commq.c
+  src/game/comm.c
+  src/game/comp.c
+  src/game/cornobj.c
+  src/game/cusa.c
+  src/game/date.c
+  src/game/delta.c
+  src/game/diag.c
+  src/game/dirq.c
+  src/game/drones.c
+  src/game/effects.c
+  src/game/error.c
+  src/game/flame.c
+  src/game/font1a.c
+  src/game/font.c
+  src/game/galil.c
+  src/game/heads.c
+  src/game/hottub.c
+  src/game/hpmath.c
+  src/game/hstdp.c
+  src/game/hud.c
+  src/game/infin.c
+  src/game/intro.c
+  src/game/invtab30.c
+  src/game/leg.c
+  src/game/line.c
+  src/game/map.c
+  src/game/math.c
+  src/game/memtest.c
+  src/game/motion.c
+  src/game/mproc.c
+  src/game/obj.c
+  src/game/overlay.c
+  src/game/pall.c
+  src/game/plyr.c
+  src/game/racer.c
+  src/game/rho.c
+  src/game/routs.c
+  src/game/rroad.c
+  src/game/roadblck.c
+  src/game/roadkill.c
+  src/game/setups.c
+  src/game/sigma.c
+  src/game/smoke.c
+  src/game/sndtaba.c
+  src/game/snd.c
+  src/game/texttab.c
+  src/game/text.c
+  src/game/totala.c
+  src/game/tracksel.c
+  src/game/trans.c
+  src/game/util.c
+  src/game/wave.c
+  src/game/wheel.c
+  src/platform/sdl_main.c
+  src/platform/sdl_video.c
 )
 
-add_executable(crusn ${CRUSN_SOURCES})
+add_executable(crusn)
+target_sources(crusn PRIVATE ${CRUSN_SOURCES})
 
 target_include_directories(crusn PRIVATE src src/core src/platform src/game)
 

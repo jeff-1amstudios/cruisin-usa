@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "trans.h"
@@ -20,24 +19,24 @@
  */
 
 void CHOOSE_TRANSMISSION(void);
-void OPEN_DOOR_PROC(void);
-void WHEEL_FROM_BELOW(void);
-void CENTERTHEONE(void);
+static void OPEN_DOOR_PROC(void);
+static void WHEEL_FROM_BELOW(void);
+static void CENTERTHEONE(void);
 void DROPTHETURN(void);
 void DROPTHECYCLE(void);
 void DROPTHEWHEEL(void);
 void DROPTHEOTHER(void);
 void SIDE_DOOR(void);
 void DOOR_OPENING(void);
-void SNAPCURSOR(void);
+static void SNAPCURSOR(void);
 void WHEEL_ROUT(void);
 void DOOR_ELEMENT_DELETE_ALL(void);
 void DOOR_ELEMENT_DELETE(void);
 void TRANSCHOICE(void);
 void GET_UNIT_WHEEL(void);
-void TILE_PIECES(void);
+static void TILE_PIECES(void);
 void FIX_TRANSMISSION_SCREEN(void);
-void MOVE_PUSH_BOX(void);
+static void MOVE_PUSH_BOX(void);
 void TURNTO_SELECT(void);
 void CYCLE_PUSH(void);
 void ADD_TO_DOOR_LIST(void);
@@ -47,29 +46,6 @@ void ENGINE_COLOR(void);
 #define DOORLISTI DOORLIST
 #define TRNTABI TRNTAB
 #define CYCTABI CYCTAB
-
-extern int *EPALR;
-extern int *EPALL;
-extern int EPALRR[];
-extern int EPALRL[];
-extern int DOORTHETA;
-extern int DOORLIST;
-extern float DO_LPPX;
-extern float DO_PPZ;
-extern float DO_RPPX;
-extern int LASTCHOICEA;
-extern int GUWP;
-extern int CT_CURSOR;
-extern int CT_WHEEL;
-extern int CT_PUSHTOCYCLE;
-extern int CT_LENG;
-extern int CT_RENG;
-extern int CT_MAN;
-extern int CT_AUTO;
-extern int CT_TURNTOSEL;
-extern int TRANS_HEAD;
-extern int TRNTAB[];
-extern int CYCTAB[];
 
 /*
 *----------------------------------------------------------------------------
@@ -245,7 +221,7 @@ CTLPX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OPEN_DOOR_PROC(void)
+static void OPEN_DOOR_PROC(void)
 {
     // asm 00005AB4: 	CREATE	THE_CAR_CHOICE_PROC,UTIL_C
     // asm 00005AB7: 	LDI	@VECTORCI,AR2
@@ -311,7 +287,7 @@ IJH:
 *THE WHEEL AND PUSH TO CHOOSE COME FROM BELOW
 *
 */
-void WHEEL_FROM_BELOW(void)
+static void WHEEL_FROM_BELOW(void)
 {
     // asm 00005AEC: 	LDI	@CT_WHEEL,AR0
     // asm 00005AED: 	LDF	*+AR0(OPOSY),R0
@@ -333,7 +309,7 @@ void WHEEL_FROM_BELOW(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CENTERTHEONE(void)
+static void CENTERTHEONE(void)
 {
     // asm 00005AF9: 	LDI	@CHOSEN_TRANSMISSION,R0
     // asm 00005AFA: 	CMPI	MANUAL_TRANSMISSION,R0
@@ -495,11 +471,11 @@ int DOORLIST;
 *
 */
 /* asm: DO_LPPX	.float	-256 */
-float DO_LPPX = -256.0f;
+static float DO_LPPX = -256.0f;
 /* asm: DO_PPZ	.float	368 */
-float DO_PPZ = 368.0f;
+static float DO_PPZ = 368.0f;
 /* asm: DO_RPPX	.float	256 */
-float DO_RPPX = 256.0f;
+static float DO_RPPX = 256.0f;
 
 /*
 *
@@ -575,7 +551,7 @@ DOLX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SNAPCURSOR(void)
+static void SNAPCURSOR(void)
 {
     // asm 00005B8D: 	LDI	@CT_CURSOR,AR2
     // asm 00005B8E: 	CALL	DOOR_ELEMENT_DELETE
@@ -765,7 +741,7 @@ void GET_UNIT_WHEEL(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TILE_PIECES(void)
+static void TILE_PIECES(void)
 {
     // asm 00005BF5: 	SLEEP	10
     // asm 00005BF7: 	LDI	29,AR5
@@ -1041,7 +1017,7 @@ FTSLX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void MOVE_PUSH_BOX(void)
+static void MOVE_PUSH_BOX(void)
 {
     // asm 00005CD0: 	LDI	@CT_TURNTOSEL,AR6
     // asm 00005CD1: 	LDI	@CT_PUSHTOCYCLE,AR4
@@ -1071,8 +1047,8 @@ void MOVE_PUSH_BOX(void)
 
 // *----------------------------------------------------------------------------
 /* asm: TRNTAB	.word	whel1,whel2,whel3,whel4,whel3,whel2,-1 */
-int TRNTAB[] = {
-    whel1, whel2, whel3, whel4, whel3, whel2, -1,
+static int TRNTAB[] = {
+    whel1_ROM, whel2_ROM, whel3_ROM, whel4_ROM, whel3_ROM, whel2_ROM, -1,
 };
 
 void TURNTO_SELECT(void)
@@ -1094,8 +1070,8 @@ TURNLP:
 
 // *----------------------------------------------------------------------------
 /* asm: CYCTAB	.word	trm3,trm2,trm1,trm2,trm3,trm4,-1 */
-int CYCTAB[] = {
-    trm3, trm2, trm1, trm2, trm3, trm4, -1,
+static int CYCTAB[] = {
+    trm3_ROM, trm2_ROM, trm1_ROM, trm2_ROM, trm3_ROM, trm4_ROM, -1,
 };
 
 void CYCLE_PUSH(void)

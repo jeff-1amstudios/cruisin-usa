@@ -7,7 +7,6 @@
 #include "sysid.h"
 #include "sys.h"
 #include "globals.h"
-#include "objects.h"
 #include "text.h"
 #include "comp.h"
 
@@ -15,36 +14,20 @@
  * Source module: asm/COMP.ASM
  */
 
-void INPUT_BITS(void);
-void PUTC(void);
+static void INPUT_BITS(void);
+static void PUTC(void);
 void DECOMPRESS(void);
 void DECOMPRESS_PROC(void);
-void SAVE_DECOMP_REGS(void);
-void RESTORE_DECOMP_REGS(void);
-void BOOT_PACIFY_SCREEN(void);
+static void SAVE_DECOMP_REGS(void);
+static void RESTORE_DECOMP_REGS(void);
+static void BOOT_PACIFY_SCREEN(void);
 void LOAD_SECTION_REQ(void);
-void REQWAIT(void);
+static void REQWAIT(void);
 
 #define CPU_WSI CPU_WS
 #define DICTI DICT
 #define DECODE_STACKI DECODE_STACK
 #define LINEBUFFERI LINEBUFFER
-
-extern int PADDING[];
-extern int DECOMP_ACTIVE;
-extern int HARD_SECTION_LOAD;
-extern int FLUSH_COUNT;
-extern int PACIFY_COUNT;
-extern tDICT DICT;
-extern int DECODE_STACK[];
-extern int NEXT_BUMP_CODE;
-extern int LINEBUFFER[];
-extern uintptr_t SAVESPCI;
-extern int SAVESPC[];
-extern int BOOT_PACIFY_SCREEN_P;
-extern int PREVX;
-extern int DELTA;
-extern int LASTLOAD;
 
 /*
 *----------------------------------------------------------------------------
@@ -56,7 +39,7 @@ extern int LASTLOAD;
 */
 
 /* asm: PADDING	.bss	PADDING,50 */
-int PADDING[50];
+static int PADDING[50];
 /* asm: DECOMP_ACTIVE	.bss	DECOMP_ACTIVE,1 */
 int DECOMP_ACTIVE;
 /* asm: HARD_SECTION_LOAD	.bss	HARD_SECTION_LOAD,1 */
@@ -136,7 +119,7 @@ int LINEBUFFER[64];
 *
 *
 */
-void INPUT_BITS(void)
+static void INPUT_BITS(void)
 {
     // asm 0000A2DB: 	ADDI	CURRENT_CODE_BITS,BIT_ADDR,R0
     // asm 0000A2DC: 	IFI	R0,GT,31,MULTIWORD
@@ -177,7 +160,7 @@ void INPUT_BITS(void)
 *
 *
 */
-void PUTC(void)
+static void PUTC(void)
 {
     // asm 0000A2F4: 	LDI	@LINEBUFFERI,AR2
     // asm 0000A2F5: 	ADDI	bufcnt,AR2
@@ -437,12 +420,12 @@ DECOMPRESSX:
 // *----------------------------------------------------------------------------
 
 /* asm: SAVESPCI	.word	SAVESPC+1 */
-uintptr_t SAVESPCI = (uintptr_t)(SAVESPC+1);
+static uintptr_t SAVESPCI = (uintptr_t)(SAVESPC+1);
 /* asm: SAVESPC	.bss	SAVESPC,25 */
 int SAVESPC[25];
 
 // *----------------------------------------------------------------------------
-void SAVE_DECOMP_REGS(void)
+static void SAVE_DECOMP_REGS(void)
 {
     // asm 0000A39F: 	LDP	@SAVESPC
     // asm 0000A3A0: 	STI	AR0,@SAVESPC
@@ -475,7 +458,7 @@ void SAVE_DECOMP_REGS(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RESTORE_DECOMP_REGS(void)
+static void RESTORE_DECOMP_REGS(void)
 {
     // asm 0000A3B7: 	LDI	@SAVESPCI,AR0
     // asm 0000A3B8: 	LDI	*AR0++,AR1
@@ -522,7 +505,7 @@ int DELTA;
 */
 
 // *----------------------------------------------------------------------------
-void BOOT_PACIFY_SCREEN(void)
+static void BOOT_PACIFY_SCREEN(void)
 {
     // asm 0000A3D0: 	CALL	SAVE_DECOMP_REGS
     // asm 0000A3D1: 	LDI	@PREVX,R6
@@ -575,7 +558,7 @@ LLL:
 *
 */
 /* asm: LASTLOAD	.bss	LASTLOAD,1 */
-int LASTLOAD;
+static int LASTLOAD;
 
 void LOAD_SECTION_REQ(void)
 {
@@ -614,7 +597,7 @@ NOLOAD:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void REQWAIT(void)
+static void REQWAIT(void)
 {
     // asm 0000A402: 	SLEEP	1
     // asm 0000A404: 	LDI	@DECOMP_ACTIVE,R0

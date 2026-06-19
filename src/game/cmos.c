@@ -18,29 +18,29 @@ void CMOS_WPON_C(void);
 void CMOS_WPOFF_C(void);
 void VALIDATE_CMOS(void);
 void RESET_BOOKKEEPING(void);
-void VERIFY_ADJUSTMENTS_ACCURACY(void);
+static void VERIFY_ADJUSTMENTS_ACCURACY(void);
 void RESET_ADJUSTMENTS(void);
-void CHECKSUMGEN_ADJ(void);
+static void CHECKSUMGEN_ADJ(void);
 void AUDIT_INC(void);
 void AUDIT_ADD(void);
 #define ADJUSTMENT_READ AUDIT_READ
 void AUDIT_READ(void);
 void ADJUSTMENT_WRITE(void);
 void AUDIT_WRITE(void);
-void AUDIT_WRITE_ADJ(void);
+static void AUDIT_WRITE_ADJ(void);
 void _rd_cw(void);
 void _wr_cw(void);
 void _rd_cwR(void);
 void _wr_cwR(void);
 void INIT_LASTHS_TABLE(void);
-void UPDATE_LASTHS(void);
+static void UPDATE_LASTHS(void);
 void CHECK_LASTHS(void);
 void INIT_HSTD_TABLES(void);
 void VALIDATE_HSTD_TABLES(void);
-void RESETALL(void);
+static void RESETALL(void);
 void GET_TABLE_ADDR(void);
-void TABLE_ENTRY_WRITE(void);
-void TABLE_ENTRY_WRITE0(void);
+static void TABLE_ENTRY_WRITE(void);
+static void TABLE_ENTRY_WRITE0(void);
 void TABLE_ENTRY_READ(void);
 void CHECK_RACE_TABLE(void);
 void INSERT_TABLE_ENTRY(void);
@@ -51,9 +51,7 @@ void INSERT_TABLE_ENTRY(void);
 
 void GETCOIN_DEFAULT(void);
 
-extern int VERIFY_ADJUSTMENTS_ACCURACYTAB;
-extern int DEFAULT_TABLE;
-extern int DEFAULT_TABLE_TOTAL;
+static int DEFAULT_TABLE_TOTAL;
 
 /*
 *----------------------------------------------------------------------------
@@ -256,10 +254,10 @@ RBLP:
 /* asm: VADJTAB	0,5000,0	;ADJ_RAMP_COUNT */
 /* asm: VADJTAB	0,1,1		;ADJ_ENTER_INITS */
 /* asm: VADJTAB	10,50,30	;ADJ_MAX_CREDITS */
-int VERIFY_ADJUSTMENTS_ACCURACYTAB;
+static int VERIFY_ADJUSTMENTS_ACCURACYTAB;
 
 // *
-void VERIFY_ADJUSTMENTS_ACCURACY(void)
+static void VERIFY_ADJUSTMENTS_ACCURACY(void)
 {
     // asm 000099AC: 	PUSH	R0
     // asm 000099AD: 	PUSH	R1
@@ -373,7 +371,7 @@ VAALP2:
 *	R0	ADJUSTMENT CHECKSUM
 *
 */
-void CHECKSUMGEN_ADJ(void)
+static void CHECKSUMGEN_ADJ(void)
 {
     // asm 000099F5: 	PUSH	R1
     // asm 000099F6: 	PUSH	AR2
@@ -552,7 +550,7 @@ void AUDIT_WRITE(void)
     UNIMPL();
 }
 
-void AUDIT_WRITE_ADJ(void)
+static void AUDIT_WRITE_ADJ(void)
 {
     // asm 00009A1F: 	LS	2,AR2
     // asm 00009A20: 	ADDI	@CMOSI,AR2
@@ -766,7 +764,7 @@ void _wr_cwR(void)
 /* asm: TABLEENT	'M','E','Y',2,12,3 */
 /* asm: TABLEENT	'M','M','V',2,14,3 */
 /* asm: TABLEENT	'B','D','P',2,16,3 */
-int DEFAULT_TABLE;
+static int DEFAULT_TABLE;
 /* asm: DEFAULT_TABLE_TOTAL: */
 /* asm: TABLEENT	'T','V','G',28,00,3 */
 /* asm: TABLEENT	'E','L','P',28,10,3 */
@@ -778,7 +776,7 @@ int DEFAULT_TABLE;
 /* asm: TABLEENT	'M','E','Y',31,10,3 */
 /* asm: TABLEENT	'M','M','V',32,20,3 */
 /* asm: TABLEENT	'B','D','P',34,30,3 */
-int DEFAULT_TABLE_TOTAL;
+static int DEFAULT_TABLE_TOTAL;
 #define NUM_TABLES 14
 
 /*
@@ -814,7 +812,7 @@ void INIT_LASTHS_TABLE(void)
 *	R6 = RACE NUMBER
 *	R7 = ENTRY NUMBER
 */
-void UPDATE_LASTHS(void)
+static void UPDATE_LASTHS(void)
 {
     // asm 00009AAA: 	PUSH	AR2
     // asm 00009AAB: 	PUSH	R0
@@ -939,7 +937,7 @@ J3:
     UNIMPL();
 }
 
-void RESETALL(void)
+static void RESETALL(void)
 {
     // asm 00009AFB: 	CALL	INIT_HSTD_TABLES
     // asm 00009AFC: 	RETS
@@ -990,7 +988,7 @@ void GET_TABLE_ADDR(void)
 *
 *
 */
-void TABLE_ENTRY_WRITE(void)
+static void TABLE_ENTRY_WRITE(void)
 {
     // asm 00009B07: 	PUSH	R0
     // asm 00009B08: 	PUSH	R1
@@ -1022,7 +1020,7 @@ void TABLE_ENTRY_WRITE(void)
     UNIMPL();
 }
 
-void TABLE_ENTRY_WRITE0(void)
+static void TABLE_ENTRY_WRITE0(void)
 {
     // asm 00009B16: 	PUSH	R0
     // asm 00009B17: 	PUSH	R1

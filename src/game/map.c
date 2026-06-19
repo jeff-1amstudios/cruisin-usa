@@ -9,9 +9,7 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
-#include "h2hobj.h"
 #include "map.h"
 
 /*
@@ -22,9 +20,9 @@ void UNFOLDMAP(void);
 void UNFOLDMAP_NOPAL(void);
 void FOLDMAP(void);
 void CLEAR_MAP_PALS(void);
-void MAPPAL_ILLUM_INIT(void);
-void MAP_ILLUM_COMPUTE(void);
-void MAPPAL_ILLUM(void);
+static void MAPPAL_ILLUM_INIT(void);
+static void MAP_ILLUM_COMPUTE(void);
+static void MAPPAL_ILLUM(void);
 void TIME2STR(void);
 void CVTTIME(void);
 void RADAR_PLOT(void);
@@ -32,21 +30,6 @@ void RADAR_PLOT(void);
 #define COLONI COLON
 #define lap_bufferI lap_buffer
 #define tmp_bufferI tmp_buffer
-
-extern float M3STDI;
-extern float M4STDI;
-extern float FORMULA1;
-extern int MAPPAL13;
-extern int MAPPAL24;
-extern int STOPWATCH;
-extern int STOPWATCH_CNTL;
-extern const char COLON[];
-extern int lap_buffer[];
-extern int tmp_buffer[];
-extern float MINFACT;
-extern float SECFACT;
-extern float HUNFACT;
-extern int THIS_MACHINE_AHEAD;
 
 /*
 *----------------------------------------------------------------------------
@@ -79,11 +62,11 @@ extern int THIS_MACHINE_AHEAD;
 #define M4STD (-0.052359877) //-HALFPI/30
 /* asm: M3STDI	.float	M1STD */
 /* asm: 	 */
-float M3STDI = M1STD;
+static float M3STDI = M1STD;
 /* asm: M4STDI	.float	M2STD */
 /* asm: 	 */
 /* asm: 	 */
-float M4STDI = M2STD;
+static float M4STDI = M2STD;
 // 	;PROCESS DATA DEFINEs
 #define MAP1OBJ (PDATA+0)
 #define MAP2OBJ (PDATA+1)
@@ -660,7 +643,7 @@ IBOIBO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void MAPPAL_ILLUM_INIT(void)
+static void MAPPAL_ILLUM_INIT(void)
 {
     // asm 00005FD7: 	LDI	@EPALR,AR0	;LOAD PALETTES AT
     // asm 00005FD8: 	LDI	@EPALL,AR1	;THE SAME TIME
@@ -712,9 +695,9 @@ L342:
 
 // *----------------------------------------------------------------------------
 /* asm: FORMULA1	.float	0.318309886 */
-float FORMULA1 = 0.318309886f;
+static float FORMULA1 = 0.318309886f;
 
-void MAP_ILLUM_COMPUTE(void)
+static void MAP_ILLUM_COMPUTE(void)
 {
     // asm 00005FED: 	LDF	*+AR7(MAP1T),R0
     // asm 00005FEE: 	ADDF	HALFPI,R0
@@ -744,7 +727,7 @@ int MAPPAL13;
 /* asm: MAPPAL24	.bss	MAPPAL24,1 */
 int MAPPAL24;
 
-void MAPPAL_ILLUM(void)
+static void MAPPAL_ILLUM(void)
 {
     // asm 00005FFD: 	PUSH	AR0
     // asm 00005FFE: 	PUSH	AR1
@@ -962,7 +945,7 @@ JAJA5:
 int STOPWATCH;
 /* asm: STOPWATCH_CNTL	.bss	STOPWATCH_CNTL,1 */
 int STOPWATCH_CNTL;
-const char COLON[] = ":";
+static const char COLON[] = ":";
 /*
 *----------------------------------------------------------------------------
 *RETURNS
@@ -1039,12 +1022,12 @@ void TIME2STR(void)
 *
 */
 /* asm: MINFACT	.FLOAT	0.000303030303		;1/(55*60) */
-float MINFACT = 0.000303030303f;
+static float MINFACT = 0.000303030303f;
 /* asm: SECFACT	.FLOAT	0.018181818		;1/55 */
-float SECFACT = 0.018181818f;
+static float SECFACT = 0.018181818f;
 /* asm: HUNFACT	.FLOAT	1.818181818		;100/55 */
 /* asm: 	 */
-float HUNFACT = 1.818181818f;
+static float HUNFACT = 1.818181818f;
 
 void CVTTIME(void)
 {

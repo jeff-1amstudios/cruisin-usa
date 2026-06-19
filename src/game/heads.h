@@ -10,5 +10,7 @@
 extern int YINCREMENT;
 // asm: 	.bss	FONTUSED,1
 extern int FONTUSED;
+void VANITY(void);
+void VANITY_SUB(void);
 
 #endif /* HEADS_H */

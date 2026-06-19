@@ -6,13 +6,13 @@
  */
 
 void _HPsin(void);
-void EPI0_1(void);
+static void EPI0_1(void);
 void _HPcos(void);
-void EPI0_2(void);
+static void EPI0_2(void);
 
 void MOD_I30(void);
 
-extern float CONST[];
+static float CONST[7];
 
 #define FP AR3
 
@@ -72,7 +72,7 @@ LL3:
     UNIMPL();
 }
 
-void EPI0_1(void)
+static void EPI0_1(void)
 {
     // asm 0000B070: 	POP	R4
     // asm 0000B071: 	RETS
@@ -134,7 +134,7 @@ void _HPcos(void)
     UNIMPL();
 }
 
-void EPI0_2(void)
+static void EPI0_2(void)
 {
     // asm 0000B099: 	POP	R4
     // asm 0000B09A: 	RETS
@@ -153,7 +153,7 @@ void EPI0_2(void)
 /* asm: 	.float	8.333025139e-3   ;4 */
 /* asm: 	.float	-1.666665668e-1  ;5 */
 /* asm: 	.float	1.57079632679489661923;6 */
-float CONST[] = {
+static float CONST[] = {
     3.1830988618379067154e-1f, // 0
     9.67653589793e-4f, // 1
     2.601903036e-6f, // 2

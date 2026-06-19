@@ -11,7 +11,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "dirq.h"
 #include "delta.h"
@@ -23,58 +22,58 @@
  */
 
 void CAMSCAN(void);
-void CAMSCANS(void);
+static void CAMSCANS(void);
 void OBJSCAN(void);
 void BOXSCAN(void);
-void BOXSCSUB(void);
+static void BOXSCSUB(void);
 void CAR_ROAD_COLL(void);
 void ROADSCAN(void);
-void RDSCNSUB(void);
+static void RDSCNSUB(void);
 void _coll_road(void);
-void GETNMAT(void);
+static void GETNMAT(void);
 void _obj_coll(void);
 void _makbox(void);
 void COLSCC(void);
 #define PLYR_VS_DEBRIS PLYRDEBRIS
-void PLYRDEBRIS(void);
+static void PLYRDEBRIS(void);
 #define PLYR_VS_SIGN PLYRSIGN
-void PLYRSIGN(void);
+static void PLYRSIGN(void);
 #define DRONE_VS_DEBRIS DRONDEBRIS
-void DRONDEBRIS(void);
+static void DRONDEBRIS(void);
 #define DRONE_VS_SIGN DRONSIGN
-void DRONSIGN(void);
-void DRONEPTL(void);
-void COLPOINT(void);
+static void DRONSIGN(void);
+static void DRONEPTL(void);
+static void COLPOINT(void);
 void COLSGCK(void);
-void HARDCOL(void);
-void RUNOVER(void);
-void FLYCOLLP(void);
-void DEBSCAN(void);
-void SIGNFALL(void);
-void TREESHAK(void);
-void FREESIGN(void);
-void ADDSIGN(void);
-void FLYCAR(void);
+static void HARDCOL(void);
+static void RUNOVER(void);
+static void FLYCOLLP(void);
+static void DEBSCAN(void);
+static void SIGNFALL(void);
+static void TREESHAK(void);
+static void FREESIGN(void);
+static void ADDSIGN(void);
+static void FLYCAR(void);
 void FLYCARP(void);
 void SEND_FLY_KILL(void);
 void DECODE_FLY_KILL(void);
-void SEND_FLY_XSFER(void);
+static void SEND_FLY_XSFER(void);
 void DECODE_FLY_XSFER(void);
 void GETFLYMAT(void);
 #define PLYR_VS_DRONES COLSCAN
 void COLSCAN(void);
 #define DRONES_VS_DRONES CLDSCAN
-void CLDSCAN(void);
-void REPELL(void);
-void COLDISP(void);
-void SPINROT(void);
-void BEHINDCK(void);
-void ANGMOM(void);
-void CKBOUNCE(void);
-void COLSND(void);
+static void CLDSCAN(void);
+static void REPELL(void);
+static void COLDISP(void);
+static void SPINROT(void);
+static void BEHINDCK(void);
+static void ANGMOM(void);
+static void CKBOUNCE(void);
+static void COLSND(void);
 void COLCHK(void);
-void GETBOX(void);
-void GETBOX0(void);
+static void GETBOX(void);
+static void GETBOX0(void);
 
 #define PLYR_VS_DEBRIS PLYRDEBRIS
 #define PLYR_VS_SIGN PLYRSIGN
@@ -92,8 +91,8 @@ void GETBOX0(void);
 #define FLYCOLLPI FLYCOLLP
 #define SIGNFALLI SIGNFALL
 #define TREESHAKI TREESHAK
-#define SBUSI sbus
-#define CBUSI cbus
+#define SBUSI sbus_ROM
+#define CBUSI cbus_ROM
 #define DETHTAB1I DETHTAB1
 #define DETHTAB2I DETHTAB2
 #define FLYCARPI FLYCARP
@@ -121,23 +120,8 @@ void OM_DRONE(void);
 void FIND_DRONE(void);
 void RANDVSND(void);
 
-extern int VL[];
-extern int TNORM[];
-extern int TVECT1[];
-extern int TVECT2[];
-extern int TMATRIX[];
-extern int COLVEL;
-extern int PMULT;
-extern int SPINTEMP;
-extern int BOXSCRAM[];
-extern int SAGETAB[];
-extern int DETHTAB1[];
-extern int DETHTAB2[];
-extern int PLYRBEHIND;
-extern int SCUPDTAB[];
-extern int SCTAB[];
-extern int EQTAB[];
-extern int LEQTAB[];
+static int EQTAB[36];
+static int LEQTAB[5];
 
 /* asm: VL	.bss	VL,4 */
 int VL[4];
@@ -182,7 +166,7 @@ void CAMSCAN(void)
     UNIMPL();
 }
 
-void CAMSCANS(void)
+static void CAMSCANS(void)
 {
     // asm 00001F8F: 	BZ	CMSX  			;NULL LIST DUDES
     // asm 00001F90: 	LDI	R0,AR2
@@ -296,7 +280,7 @@ BS3X:
     UNIMPL();
 }
 
-void BOXSCSUB(void)
+static void BOXSCSUB(void)
 {
     // asm 00001FCF: 	BZ	BSCX  			;NULL LIST DUDES
     // asm 00001FD0: 	LDI	R0,AR2
@@ -569,7 +553,7 @@ PC3X:
 *	AR4	CAR OBJECT
 *
 */
-void RDSCNSUB(void)
+static void RDSCNSUB(void)
 {
     // asm 00002074:       	BZD	RDSCNX		  	;NULL LIST
     // asm 00002075: 	LDI	R0,AR2
@@ -723,7 +707,7 @@ CRX:
 *AR6=CARVCT RAM AREA
 *
 */
-void GETNMAT(void)
+static void GETNMAT(void)
 {
     // 	;*GENERATE A (UNIT) NORMAL FOR THE PLANE
     // asm 000020D4: 	LDPI	@VLI,AR2		;rotate for universe etc.
@@ -1049,7 +1033,7 @@ COLSCCX:
 *PLAYER COLLIDE WITH DEBRIS
 *
 */
-void PLYRDEBRIS(void)
+static void PLYRDEBRIS(void)
 {
     // asm 000021E9: 	LDPI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000021EA: 	LDPI	@ROAD_DEBRISI,AR1
@@ -1062,7 +1046,7 @@ void PLYRDEBRIS(void)
     UNIMPL();
 }
 
-void PLYRSIGN(void)
+static void PLYRSIGN(void)
 {
     // asm 000021EC: 	LDPI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000021ED: 	LDPI	@SIGN_LISTI,AR1
@@ -1075,7 +1059,7 @@ void PLYRSIGN(void)
     UNIMPL();
 }
 
-void DRONDEBRIS(void)
+static void DRONDEBRIS(void)
 {
     // asm 000021EF: 	LDPI	@ROAD_DEBRISI,AR1
     // asm 000021F0: 	B	DRONEPT
@@ -1087,7 +1071,7 @@ void DRONDEBRIS(void)
     UNIMPL();
 }
 
-void DRONSIGN(void)
+static void DRONSIGN(void)
 {
     // asm 000021F1: 	LDPI	@SIGN_LISTI,AR1
 DRONEPT:
@@ -1098,7 +1082,7 @@ DRONEPT:
     UNIMPL();
 }
 
-void DRONEPTL(void)
+static void DRONEPTL(void)
 {
     // asm 000021F5: 	LDI	*+AR0(OID),R0
     // asm 000021F6: 	CMPI	DRONE_C|HELICOPTER,R0
@@ -1138,7 +1122,7 @@ DRONEPT1:
 *
 *
 */
-void COLPOINT(void)
+static void COLPOINT(void)
 {
     // asm 00002207: 	BD	CARSCL0			;GET FIRST GUY
     // asm 00002208: 	LDF	*+AR0(OPOSX),R2		;GET X COORD
@@ -1245,7 +1229,7 @@ CSGLNEQ:
     UNIMPL();
 }
 
-void HARDCOL(void)
+static void HARDCOL(void)
 {
     // asm 00002243: 	LDI	*+AR1(OID),R0
     // asm 00002244: 	AND	CLASS_M|TYPE_M|SUBTYPE_M,R0
@@ -1468,7 +1452,7 @@ FLYCOLL1:
 *	AR1	POINTS TO SIGN/POLE OBJECT
 *	AR5	CARBLOCK
 */
-void RUNOVER(void)
+static void RUNOVER(void)
 {
     // asm 000022FA: 	LDF	*+AR5(CARVROT),R2
     // asm 000022FB: 	LDI	AR1,AR2		 	;FORM OMATRIX POINTER
@@ -1531,7 +1515,7 @@ COLSGCX:
 }
 
 /* asm: SAGETAB	 .WORD	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
-int SAGETAB[] = {
+static int SAGETAB[] = {
     SAGESND, SAGESND1, SAGESND2, SAGESND3, SAGESND,
 };
 /*
@@ -1542,7 +1526,7 @@ int SAGETAB[] = {
 *
 */
 
-void FLYCOLLP(void)
+static void FLYCOLLP(void)
 {
     // asm 00002334: 	LDF	0.2,R0
     // asm 00002335: 	CALL	SFRAND
@@ -1657,7 +1641,7 @@ NOT_ROADKILL:
 *KILL OFFSCREEN ROAD DEBRIS
 *
 */
-void DEBSCAN(void)
+static void DEBSCAN(void)
 {
     // asm 0000238C: 	LDI	@ROAD_DEBRIS,R0
     // asm 0000238D: 	B	DEBSCL1
@@ -1691,7 +1675,7 @@ DEBSCL1:
 *
 */
 
-void SIGNFALL(void)
+static void SIGNFALL(void)
 {
     // asm 0000239C: 	LDF	0,R6
 SIGNFALP:
@@ -1728,7 +1712,7 @@ SIGNFALP0:
 *
 */
 
-void TREESHAK(void)
+static void TREESHAK(void)
 {
     // *SHAKE IT FORWARD
     // asm 000023B0: 	LDF	R7,R2
@@ -1779,7 +1763,7 @@ TREESHKL:
 *	AR4	OBJECT SIGN POINTER
 *	R0 IS TRASHED
 */
-void FREESIGN(void)
+static void FREESIGN(void)
 {
     // asm 000023D1: 	PUSH	AR1
     // ;	LDP	@SIGN_LISTI
@@ -1819,7 +1803,7 @@ SFREELP:
 *	AR4	OBJECT SIGN POINTER
 *	R0 IS TRASHED
 */
-void ADDSIGN(void)
+static void ADDSIGN(void)
 {
     // asm 000023E5: 	LDPI	@SIGN_LIST,R0
     // asm 000023E6: 	STI	AR4,@SIGN_LIST
@@ -1845,12 +1829,12 @@ void ADDSIGN(void)
 *
 */
 /* asm: SBUSI	.word	sbus */
-#define SBUSI sbus
+#define SBUSI sbus_ROM
 /* asm: CBUSI	.word	cbus */
 /* asm: 	 */
-#define CBUSI cbus
+#define CBUSI cbus_ROM
 
-void FLYCAR(void)
+static void FLYCAR(void)
 {
     // asm 000023EF: 	PUSH	AR0
     // asm 000023F0: 	PUSH	AR1
@@ -1996,13 +1980,13 @@ FC03:
 /* asm: DETHTAB1	.WORD	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
 /* asm: 	.WORD	NDETHSCREAM1,NDETHSCREAM3,NDETHSCREAM4,NDETHSCREAM7 */
 /* asm: 	 */
-int DETHTAB1[] = {
+static int DETHTAB1[] = {
     MDETHSCREAM2, MDETHSCREAM4, EXP1, EXP3,
     NDETHSCREAM1, NDETHSCREAM3, NDETHSCREAM4, NDETHSCREAM7,
 };
 /* asm: DETHTAB2	.WORD	MFDETHSCREAM1,MFDETHSCREAM2,BCHEER,EXP2 */
 /* asm: 	 */
-int DETHTAB2[] = {
+static int DETHTAB2[] = {
     MFDETHSCREAM1, MFDETHSCREAM2, BCHEER, EXP2,
 };
 
@@ -2411,7 +2395,7 @@ DRKX:
 *R4=  STATE PARAMETER
 *
 */
-void SEND_FLY_XSFER(void)
+static void SEND_FLY_XSFER(void)
 {
     // asm 00002597: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00002598: 	LDI	CB_FLY_XSFER,R1
@@ -2623,7 +2607,7 @@ COLSCL:
 *	AR1	ADDRESS OF LIST HEADER
 *
 */
-void CLDSCAN(void)
+static void CLDSCAN(void)
 {
     // asm 0000260E: 	LDPI	@CAR_LIST,R0	 	;GET LIST AND CHECK NULL
     // asm 0000260F: 	BNZD	CLDSCL0
@@ -2688,7 +2672,7 @@ CLDSCL1:
 *FIND REPULSION AXIS
 *
 */
-void REPELL(void)
+static void REPELL(void)
 {
     // asm 00002633: 	LDPI	@VECTORAI,AR2		;COMPUTE REPULSION VECTOR
     // asm 00002634: 	LDF	*+AR0(OPOSX),R0
@@ -2724,7 +2708,7 @@ void REPELL(void)
 *	*-AR3(1)	COLLISION PT
 *
 */
-void COLDISP(void)
+static void COLDISP(void)
 {
     // *SET COLLISION BITS
     // asm 00002645: 	LDI	*+AR0(OCARBLK),AR4
@@ -3062,7 +3046,7 @@ ZZZ1:
 int PLYRBEHIND;
 
 // *
-void SPINROT(void)
+static void SPINROT(void)
 {
     // asm 00002727: 	LDI	0,R2
     // asm 00002728: 	STI	R2,@PLYRBEHIND		;PLAYER HIT FROM BEHIND FLAG
@@ -3202,7 +3186,7 @@ PLBIG:
     UNIMPL();
 }
 
-void BEHINDCK(void)
+static void BEHINDCK(void)
 {
     // asm 0000278F: 	PUSHF	R0
     // asm 00002790: 	PUSHF	R3
@@ -3391,7 +3375,7 @@ SPINXXX:
     UNIMPL();
 }
 
-void ANGMOM(void)
+static void ANGMOM(void)
 {
     // asm 0000281D: 	LDI	*+AR5(CAR_SPIN),R3 	;ADD IN EXISTING INERTIA
     // asm 0000281E: 	BZ	ANGM1
@@ -3415,7 +3399,7 @@ ANGM1:
 *R2=YROT-ROADIR
 *
 */
-void CKBOUNCE(void)
+static void CKBOUNCE(void)
 {
     // asm 00002824: 	CALL	ROADIR			;GET DIRECTIONAL DIFFERENCE
     // asm 00002825: 	LDF	*+AR5(CARVROT),R1
@@ -3445,7 +3429,7 @@ CKBNCX:
     UNIMPL();
 }
 
-void COLSND(void)
+static void COLSND(void)
 {
     // asm 00002835: 	PUSHF	R0
     // asm 00002836: 	PUSH	AR0
@@ -3491,13 +3475,13 @@ COLSNDX:
 }
 
 /* asm: SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
-int SCUPDTAB[] = {
+static int SCUPDTAB[] = {
     SCOLLF, SCOLLF, SCOLLG, SCOLLH,
 };
 /* asm: SCTAB		.WORD	SCOLLA,SCOLLB,SCOLLC,SCOLLD,SCOLLE */
 /* asm: 	 */
 /* asm: 	 */
-int SCTAB[] = {
+static int SCTAB[] = {
     SCOLLA, SCOLLB, SCOLLC, SCOLLD, SCOLLE,
     // ----------------------------------------------------------------------------
     // DISPATCH COLLISION
@@ -3625,7 +3609,7 @@ GOTCOL:
 *TRASHES R0-R5
 *
 */
-void GETBOX(void)
+static void GETBOX(void)
 {
     // asm 000028A8: 	LDF	1.0,R0		;XMINUS MULT FACTOR
     // asm 000028A9: 	LDF	1.0,R1		;YMINUS MULT FACTOR
@@ -3638,7 +3622,7 @@ void GETBOX(void)
     UNIMPL();
 }
 
-void GETBOX0(void)
+static void GETBOX0(void)
 {
     // asm 000028AE: 	PUSH	AR4
     // asm 000028AF: 	PUSH	AR5
@@ -3760,7 +3744,7 @@ EOCV:
 /* asm: 	.WORD	VCTO1+(3*1),VCTO1+(3*3),VCTO1+(3*7)	;RSIDE */
 /* asm: 	.WORD	VCTO1+(3*7),VCTO1+(3*6),VCTO1+(3*4)	;BACK */
 /* asm: 	 */
-int EQTAB[] = {
+static int EQTAB[] = {
     // OBJECT 0
     VCTO+(3*0), VCTO+(3*2), VCTO+(3*3), // FRONT
     VCTO+(3*0), VCTO+(3*4), VCTO+(3*6), // LSIDE
@@ -3783,7 +3767,7 @@ int EQTAB[] = {
 /* asm: LEQTAB */
 /* asm: 	.WORD	VCTO+(3*2)+1,VCTO+(3*6)+1,VCTO+(3*7)+1 */
 /* asm: 	.WORD	VCTO+(3*3)+1,VCTO+(3*2)+1 */
-int LEQTAB[] = {
+static int LEQTAB[] = {
     VCTO+(3*2)+1, VCTO+(3*6)+1, VCTO+(3*7)+1,
     VCTO+(3*3)+1, VCTO+(3*2)+1,
 };

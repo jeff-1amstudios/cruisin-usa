@@ -729,7 +729,7 @@ extern int DYNAFREE;
 #define NULLI NULL
 
 // asm:  .globl CARLIST,CARFREE,CAR_COUNT
-extern int CARLIST[];
+extern CARBLK CARLIST[];
 
 extern int CARFREE;
 

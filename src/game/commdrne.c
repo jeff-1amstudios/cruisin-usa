@@ -10,12 +10,10 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "comm.h"
 #include "racer.h"
-#include "h2hobj.h"
 #include "commdrne.h"
 
 /*
@@ -28,8 +26,7 @@ void OM_DRONE(void);
 
 #define STARTUP_POS_TABLEI STARTUP_POS_TABLE
 
-extern float STARTUP_POS_TABLE[];
-extern int PLY2CAR;
+static float STARTUP_POS_TABLE[78];
 
 /*
 *----------------------------------------------------------------------------
@@ -78,7 +75,7 @@ extern int PLY2CAR;
 /* asm: 	.float	-2353891,-16335,-2928112	;APPAL */
 /* asm: 	 */
 /* asm: 	 */
-float STARTUP_POS_TABLE[] = {
+static float STARTUP_POS_TABLE[] = {
     576.0f, -180.0f, 3287.0f, // GG
     -1928700.0f, 4654.0f, 584166.0f, // SF
     -2611877.0f, 14000.0f, -628750.0f, // H280

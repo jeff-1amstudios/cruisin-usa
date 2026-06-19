@@ -759,4 +759,7 @@ void CMOS_WPON_C(void);
 
 void CMOS_WPOFF_C(void);
 
+// CMOS.ASM
+void INIT_HSTD_TABLES(void);
+
 #endif /* CMOS_H */

@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "roadkill.h"
 
@@ -19,8 +18,8 @@
  */
 
 void PLYRROADKILL(void);
-void CHECK_COLLISION(void);
-void CHECK_OFFSET(void);
+static void CHECK_COLLISION(void);
+static void CHECK_OFFSET(void);
 void ROADKILL_FLYERP(void);
 void ROADKILL_HIT(void);
 void ROADKILL_SETKILL(void);
@@ -28,24 +27,24 @@ void OBJ_MOVE_GROUND(void);
 void GET_ROADKILL_TRACK(void);
 void PROC_COUNT(void);
 void COW_SPAWNER_PROC(void);
-void COW_PROC(void);
+static void COW_PROC(void);
 void DEER_SPAWNER_PROC(void);
-void DEER_PROC(void);
-void INIT_DEER(void);
-void INIT_COW(void);
+static void DEER_PROC(void);
+static void INIT_DEER(void);
+static void INIT_COW(void);
 void DEER_EXPLODE(void);
-void MAKE_NOCOLL(void);
-void DEER_BLOOD_PROC(void);
+static void MAKE_NOCOLL(void);
+static void DEER_BLOOD_PROC(void);
 void FLYING_PARTS(void);
-void FLY_PARTS(void);
+static void FLY_PARTS(void);
 void GEESE_SPAWNER(void);
-void GEESE_PROC(void);
+static void GEESE_PROC(void);
 void BUG_SPAWNER_PROC(void);
-void SPLAT_PROC(void);
+static void SPLAT_PROC(void);
 void DELETE_SPLAT(void);
-void NEXT_ROAD(void);
-void GET_ROAD_RADY(void);
-void FIND_MAP(void);
+static void NEXT_ROAD(void);
+static void GET_ROAD_RADY(void);
+static void FIND_MAP(void);
 
 #define ROADKILL_TABI ROADKILL_TAB
 #define DEERANII DEERANI
@@ -56,19 +55,12 @@ void FIND_MAP(void);
 
 extern const char PC1[];
 
-extern tROADKILL_TAB_ENTRY ROADKILL_TAB[];
-extern int ROADKILLXZ[];
-extern float SOUNDTIME;
-extern int ROADKILL_SOUND_TIMER;
-extern int DEERANI[];
-extern float SPINSPEEDF;
-extern int COW_PARTS[];
-extern int DEER_PARTS[];
-extern int DEERBLOOD_ANI[];
-extern int GEESEANI[];
-extern tGEESE_DIR_ENTRY GEESE_DIR[];
-extern int SHIT_ANI[];
-extern int BUG_ANI[];
+static tROADKILL_TAB_ENTRY ROADKILL_TAB[];
+static int COW_PARTS[37];
+static int DEER_PARTS[35];
+static int DEERANI[7];
+static int GEESEANI[9];
+static tGEESE_DIR_ENTRY GEESE_DIR[];
 
 #define ROADKILL_TYPES (2-1)
 #define RKT_DEATH 0 //UH
@@ -77,9 +69,9 @@ extern int BUG_ANI[];
 #define RKT_WIDTHL 3 //FL LEFT half the width
 #define RKT_WIDTHR 4 //FL RIGHT half the width
 #define RKT_SIZE 5
-tROADKILL_TAB_ENTRY ROADKILL_TAB[] = {
-    { deerc1, EXP3, (uintptr_t)COW_PARTS, -200, 200 }, // SOON TO BE A COW
-    { deerc1, EXP3, (uintptr_t)DEER_PARTS, -400, 400 }, // DEER
+static tROADKILL_TAB_ENTRY ROADKILL_TAB[] = {
+    { deerc1_ROM, EXP3, (uintptr_t)COW_PARTS, -200, 200 }, // SOON TO BE A COW
+    { deerc1_ROM, EXP3, (uintptr_t)DEER_PARTS, -400, 400 }, // DEER
 };
 /* asm: ROADKILLXZ	.bss	ROADKILLXZ,2 */
 int ROADKILLXZ[2];
@@ -123,7 +115,7 @@ PLYRKX:
 *AR0	= CAR OBJECT TO CHECK
 *AR1	= ROADKILL OBJECT
 */
-void CHECK_COLLISION(void)
+static void CHECK_COLLISION(void)
 {
     // asm 00006957: 	LDI	*+AR1(OID),R0
     // asm 00006958: 	AND	SUBTYPE_M,R0
@@ -153,7 +145,7 @@ CCOLLX:
 *AR1	= ROADKILL OBJECT
 *R4	= OFFSET
 */
-void CHECK_OFFSET(void)
+static void CHECK_OFFSET(void)
 {
     // asm 00006968: 	PUSH	AR3
     // asm 00006969: 	LDF	*+AR1(OPOSX),R0		;Set the roadkills real XZ coords
@@ -237,7 +229,7 @@ RKFPX:
 }
 
 /* asm: SOUNDTIME	.float	0.00204678	;7(1/60)/57 of a minute */
-float SOUNDTIME = 0.00204678f;
+static float SOUNDTIME = 0.00204678f;
 /* asm: ROADKILL_SOUND_TIMER	.bss	ROADKILL_SOUND_TIMER,1 */
 int ROADKILL_SOUND_TIMER;
 
@@ -487,7 +479,7 @@ CSPX:
 #define LOOP_COUNT PDATA
 #define TOTAL_FRAMES (PDATA+1)
 
-void COW_PROC(void)
+static void COW_PROC(void)
 {
     // asm 00006A2A: 	LDL	kow3,AR2
     // asm 00006A2B: 	FLOAT	10,R4			;Hight of a cow
@@ -527,8 +519,8 @@ COW_DIE:
 /* asm: DEERANI */
 /* asm: 	.word	edeer,edeer1,edeer2,edeer3,edeer4,edeer5,-1 */
 /* asm: 	 */
-int DEERANI[] = {
-    edeer, edeer1, edeer2, edeer3, edeer4, edeer5, -1,
+static int DEERANI[] = {
+    edeer_ROM, edeer1_ROM, edeer2_ROM, edeer3_ROM, edeer4_ROM, edeer5_ROM, -1,
 };
 
 /*
@@ -573,7 +565,7 @@ DSPX:
 *	CREATE	DEER_PROC,RDDEBRIS_C|TSC_ROADKILL|TSC_DEER_S
 */
 
-void DEER_PROC(void)
+static void DEER_PROC(void)
 {
     // asm 00006A5F: 	FLOAT	219,R4			;Hight of a deer
     // asm 00006A60: 	CALL	INIT_DEER
@@ -601,7 +593,7 @@ DEER_DIE:
 *Creates and maintains a DEER animation
 */
 
-void INIT_DEER(void)
+static void INIT_DEER(void)
 {
     // asm 00006A6B: 	LDI	@DEERANII,AR6
     // asm 00006A6C: 	LDI	*AR6,AR2
@@ -610,7 +602,7 @@ void INIT_DEER(void)
     UNIMPL();
 }
 
-void INIT_COW(void)
+static void INIT_COW(void)
 {
     // asm 00006A6D: 	LDF	1,R6
     // asm 00006A6E: 	CALL	OBJ_GETE
@@ -656,16 +648,16 @@ INIT_DEERX:
 
 /* asm: SPINSPEEDF	.float	0.0002 */
 /* asm: 	 */
-float SPINSPEEDF = 0.0002f;
+static float SPINSPEEDF = 0.0002f;
 /* asm: COW_PARTS */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0,-1 */
 /* asm: 	 */
-int COW_PARTS[] = {
-    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
-    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0,
-    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0, deerc4, 0, -1,
+static int COW_PARTS[] = {
+    deerc1_ROM, 1, deerc1_ROM, 1, deerc2_ROM, 0, deerc2_ROM, 0, deerc3_ROM, 0, deerc4_ROM, 0,
+    deerc1_ROM, 1, deerc1_ROM, 1, deerc2_ROM, 0, deerc2_ROM, 0, deerc3_ROM, 0, deerc4_ROM, 0,
+    deerc1_ROM, 1, deerc1_ROM, 1, deerc2_ROM, 0, deerc2_ROM, 0, deerc3_ROM, 0, deerc4_ROM, 0, -1,
 };
 /* asm: DEER_PARTS */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0 */
@@ -673,11 +665,11 @@ int COW_PARTS[] = {
 /* asm: 	.word	dheada,1,dheada,1,deerc1,1,deerc1,1,deerc2,0 */
 /* asm: 	.word	deerc2,0,deerc3,0,deerc4,0,-1 */
 /* asm: 	 */
-int DEER_PARTS[] = {
-    deerc1, 1, deerc1, 1, deerc2, 0, deerc2, 0, deerc3, 0,
-    deerc4, 0, antler, 0, antler, 0, dheada, 0,
-    dheada, 1, dheada, 1, deerc1, 1, deerc1, 1, deerc2, 0,
-    deerc2, 0, deerc3, 0, deerc4, 0, -1,
+static int DEER_PARTS[] = {
+    deerc1_ROM, 1, deerc1_ROM, 1, deerc2_ROM, 0, deerc2_ROM, 0, deerc3_ROM, 0,
+    deerc4_ROM, 0, antler_ROM, 0, antler_ROM, 0, dheada_ROM, 0,
+    dheada_ROM, 1, dheada_ROM, 1, deerc1_ROM, 1, deerc1_ROM, 1, deerc2_ROM, 0,
+    deerc2_ROM, 0, deerc3_ROM, 0, deerc4_ROM, 0, -1,
 };
 
 void DEER_EXPLODE(void)
@@ -753,7 +745,7 @@ NO_SPINOUT:
     UNIMPL();
 }
 
-void MAKE_NOCOLL(void)
+static void MAKE_NOCOLL(void)
 {
     // asm 00006AD1: 	LDI	RDDEBRIS_C|TSC_ROADKILL|TSC_PARTS_S,R0
     // asm 00006AD2: 	STI	R0,*+AR4(OID)
@@ -777,11 +769,11 @@ void MAKE_NOCOLL(void)
 */
 
 /* asm: DEERBLOOD_ANI	.word	adblud1,adblud2,adblud3,adblud4,adblud5,adblud6,-1 */
-int DEERBLOOD_ANI[] = {
-    adblud1, adblud2, adblud3, adblud4, adblud5, adblud6, -1,
+static int DEERBLOOD_ANI[] = {
+    adblud1_ROM, adblud2_ROM, adblud3_ROM, adblud4_ROM, adblud5_ROM, adblud6_ROM, -1,
 };
 
-void DEER_BLOOD_PROC(void)
+static void DEER_BLOOD_PROC(void)
 {
     // asm 00006AD7: 	LDL	DEERBLOOD_ANI,AR6
     // asm 00006AD8: 	LDI	*AR6++,AR2
@@ -853,7 +845,7 @@ void FLYING_PARTS(void)
 *When I just simply added them the would not collide with the cars if they were going fast
 */
 
-void FLY_PARTS(void)
+static void FLY_PARTS(void)
 {
     // asm 00006B04: 	LDI	@CAMVIEW,R0
     // asm 00006B05: 	LDFZ	1.5,R6			;First person
@@ -925,11 +917,11 @@ FLY_PARTSX:
 /* asm: 	.word	geese1,geeseb,geesec,geesed */
 /* asm: 	.word	geesee,geesef,geeseg,geeseh,-1 */
 /* asm: 	 */
-int GEESEANI[] = {
-    geese1, geeseb, geesec, geesed,
-    geesee, geesef, geeseg, geeseh, -1,
+static int GEESEANI[] = {
+    geese1_ROM, geeseb_ROM, geesec_ROM, geesed_ROM,
+    geesee_ROM, geesef_ROM, geeseg_ROM, geeseh_ROM, -1,
 };
-tGEESE_DIR_ENTRY GEESE_DIR[] = {
+static tGEESE_DIR_ENTRY GEESE_DIR[] = {
     { 250, 1, 0.0f },
     { 150, -1, 0.0f },
     { 150, -1, -0.13f },
@@ -980,11 +972,11 @@ GOOSE_ME:
 *	R6	=	RADS direction FL
 */
 /* asm: SHIT_ANI	.word	bdst,bdst2,bdst3,bdst4,bdst5,bdst6,-1 */
-int SHIT_ANI[] = {
-    bdst, bdst2, bdst3, bdst4, bdst5, bdst6, -1,
+static int SHIT_ANI[] = {
+    bdst_ROM, bdst2_ROM, bdst3_ROM, bdst4_ROM, bdst5_ROM, bdst6_ROM, -1,
 };
 
-void GEESE_PROC(void)
+static void GEESE_PROC(void)
 {
     // asm 00006B58: 	FLOAT	R4
     // asm 00006B59: 	STF	R4,*+AR7(SPEED)
@@ -1174,8 +1166,8 @@ GEESE_DIE:
 *
 */
 /* asm: BUG_ANI	.word	bug1,bug2,bug3,bug4,bug5,-1 */
-int BUG_ANI[] = {
-    bug1, bug2, bug3, bug4, bug5, -1,
+static int BUG_ANI[] = {
+    bug1_ROM, bug2_ROM, bug3_ROM, bug4_ROM, bug5_ROM, -1,
 };
 
 void BUG_SPAWNER_PROC(void)
@@ -1214,7 +1206,7 @@ BSPX:
 *R5 points to start of animation
 */
 
-void SPLAT_PROC(void)
+static void SPLAT_PROC(void)
 {
     // asm 00006C20: 	LDI	@PLYCBLK,AR5
     // asm 00006C21: 	LDI	R5,AR6
@@ -1340,7 +1332,7 @@ DBSX:
 * OUTPUT AR2 = segment on (updated)
 *	R2 = # of segments moved
 */
-void NEXT_ROAD(void)
+static void NEXT_ROAD(void)
 {
     // asm 00006C84: 	LDI	R2,R4
     // asm 00006C85: 	MPYI	4,R4
@@ -1384,7 +1376,7 @@ NEXTRX:
 *
 *OUTPUT	R2 = DIRECTION of road
 */
-void GET_ROAD_RADY(void)
+static void GET_ROAD_RADY(void)
 {
     // asm 00006CA1: 	MPYI	4*2,R2
     // asm 00006CA2: 	LDI	AR2,AR1
@@ -1412,7 +1404,7 @@ void GET_ROAD_RADY(void)
 *INPUTS  R2=OUSR1
 *OUPTUTS AR2=POINTER TO place in LEG_MAP
 */
-void FIND_MAP(void)
+static void FIND_MAP(void)
 {
     // asm 00006CB0: 	LDI	@LEG_MAPI,AR2		;FIND THE POSITION IN THE MAP
     // asm 00006CB1: 	ADDI	3,AR2				;OFFSET TO ID

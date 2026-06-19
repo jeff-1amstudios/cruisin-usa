@@ -10,5 +10,8 @@
 extern int PRES;
 // asm: 	.bss	WATCHOBJ,1
 extern int WATCHOBJ;
+void HT_HOTTUB(void);
+void HT_RADAR(void);
+void HT_STAGENT(void);
 
 #endif /* HOTTUB_H */

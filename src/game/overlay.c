@@ -10,7 +10,6 @@
 #include "globals.h"
 #include "sndtab.h"
 #include "pall.h"
-#include "objects.h"
 #include "text.h"
 #include "delta.h"
 #include "dirq.h"
@@ -21,43 +20,41 @@
  */
 
 void SECTION_ROUTINE(void);
-void OVERLOCK(void);
+static void OVERLOCK(void);
 void CHECKPOINT_HIT_R(void);
 void CHECKPOINT_HIT(void);
-void WATERON(void);
-void WATEROFF(void);
-void HELISTART(void);
-void HELIEND(void);
-void RAILPRIME(void);
-void RR_UNFREEZE(void);
-void BRIDGE_OFF(void);
-void BRIDGE_ON(void);
-void BOFFNC(void);
-void TUNNEL_ON(void);
-void TUNNEL_OFF(void);
-void START_SANFRAN(void);
-void BEACHON(void);
-void REDWOOD_START(void);
-void LOOK_SANFRANCISCO(void);
-void LOOK_REDWOOD(void);
-void LOOK_MIDWEST(void);
-void LOOK_MTRUSHMORE(void);
-void LOOK_DEATHVALLEY(void);
-void LOOK_GCANYON(void);
-void LOOK_HOLLYWOOD(void);
-void CHANGE_TUNE(void);
-void SET_BGNDCOL2BROWN(void);
-void TURNOFF_INFINITY(void);
-void TURNON_INFINITY(void);
-void TOWER_PAL_LD(void);
-void TOWER_PAL_RESTORE(void);
-void END_OF_GAME(void);
+static void WATERON(void);
+static void WATEROFF(void);
+static void HELISTART(void);
+static void HELIEND(void);
+static void RAILPRIME(void);
+static void RR_UNFREEZE(void);
+static void BRIDGE_OFF(void);
+static void BRIDGE_ON(void);
+static void BOFFNC(void);
+static void TUNNEL_ON(void);
+static void TUNNEL_OFF(void);
+static void START_SANFRAN(void);
+static void BEACHON(void);
+static void REDWOOD_START(void);
+static void LOOK_SANFRANCISCO(void);
+static void LOOK_REDWOOD(void);
+static void LOOK_MIDWEST(void);
+static void LOOK_MTRUSHMORE(void);
+static void LOOK_DEATHVALLEY(void);
+static void LOOK_GCANYON(void);
+static void LOOK_HOLLYWOOD(void);
+static void CHANGE_TUNE(void);
+static void SET_BGNDCOL2BROWN(void);
+static void TURNOFF_INFINITY(void);
+static void TURNON_INFINITY(void);
+static void TOWER_PAL_LD(void);
+static void TOWER_PAL_RESTORE(void);
+static void END_OF_GAME(void);
 
 #define ROUTINE_TABLEI ROUTINE_TABLE
 
-extern uintptr_t ROUTINE_TABLE[];
-extern int CHECKPOINT_TIME_BONUS;
-extern int REAL_CHECKPOINTS;
+static uintptr_t ROUTINE_TABLE[];
 
 /*
 *----------------------------------------------------------------------------
@@ -144,7 +141,7 @@ void SECTION_ROUTINE(void)
 /* asm: 	.word	BONUS12				;43 */
 /* asm: 	.word	BONUS13				;44 */
 /* asm: 	.word	BONUS14				;45 */
-uintptr_t ROUTINE_TABLE[] = {
+static uintptr_t ROUTINE_TABLE[] = {
     0, // 0 none leave blank
     (uintptr_t)CHECKPOINT_HIT, // 1
     (uintptr_t)WATERON, // 2
@@ -195,7 +192,7 @@ uintptr_t ROUTINE_TABLE[] = {
 #if DEBUG
 #endif
 
-void OVERLOCK(void)
+static void OVERLOCK(void)
 {
 #if DEBUG
     // asm: 	BU	$
@@ -252,7 +249,7 @@ CPHX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void WATERON(void)
+static void WATERON(void)
 {
     // asm 0000AD4A: 	LDI	@_MODE,R0
     // asm 0000AD4B: 	OR	MWATER,R0
@@ -265,7 +262,7 @@ void WATERON(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void WATEROFF(void)
+static void WATEROFF(void)
 {
     // asm 0000AD4E: 	LDI	@_MODE,R0
     // asm 0000AD4F: 	ANDN	MWATER,R0
@@ -278,7 +275,7 @@ void WATEROFF(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void HELISTART(void)
+static void HELISTART(void)
 {
     // asm 0000AD52: 	CREATE	CHOPPER,DRONE_C|VEHICLE_T|DRNE_SIGMA
     // asm 0000AD55: 	CLRI	R0
@@ -288,7 +285,7 @@ void HELISTART(void)
     UNIMPL();
 }
 
-void HELIEND(void)
+static void HELIEND(void)
 {
     // asm 0000AD58: 	LDI	1,R0
     // asm 0000AD59: 	STI	R0,@HELI_ABORT
@@ -300,7 +297,7 @@ void HELIEND(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RAILPRIME(void)
+static void RAILPRIME(void)
 {
     // asm 0000AD5B: 	CLRI	R0
     // asm 0000AD5C: 	STI	R0,@DD_MAX_DRONES
@@ -310,7 +307,7 @@ void RAILPRIME(void)
     UNIMPL();
 }
 
-void RR_UNFREEZE(void)
+static void RR_UNFREEZE(void)
 {
     // asm 0000AD5F: 	LDI	1,R0
     // asm 0000AD60: 	STI	R0,@FREEZE_IT
@@ -322,7 +319,7 @@ void RR_UNFREEZE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BRIDGE_OFF(void)
+static void BRIDGE_OFF(void)
 {
     // asm 0000AD62: 	LDI	@_MODE,R0
     // asm 0000AD63: 	ANDN	MBRIDGE,R0
@@ -332,7 +329,7 @@ void BRIDGE_OFF(void)
     UNIMPL();
 }
 
-void BRIDGE_ON(void)
+static void BRIDGE_ON(void)
 {
     // asm 0000AD66: 	LDI	@_MODE,R0
     // asm 0000AD67: 	OR	MBRIDGE,R0
@@ -345,7 +342,7 @@ void BRIDGE_ON(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BOFFNC(void)
+static void BOFFNC(void)
 {
     // asm 0000AD6A: 	CALL	BRIDGE_OFF
     // asm 0000AD6B: 	RETS
@@ -356,7 +353,7 @@ void BOFFNC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TUNNEL_ON(void)
+static void TUNNEL_ON(void)
 {
     // asm 0000AD6C: 	LDI	@_MODE,R0
     // asm 0000AD6D: 	OR	MINTUNNEL,R0
@@ -369,7 +366,7 @@ void TUNNEL_ON(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TUNNEL_OFF(void)
+static void TUNNEL_OFF(void)
 {
     // asm 0000AD70: 	LDI	@_MODE,R0
     // asm 0000AD71: 	ANDN	MINTUNNEL,R0
@@ -382,7 +379,7 @@ void TUNNEL_OFF(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void START_SANFRAN(void)
+static void START_SANFRAN(void)
 {
     // asm 0000AD74: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "START_SANFRAN", 0, 0);
@@ -392,7 +389,7 @@ void START_SANFRAN(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BEACHON(void)
+static void BEACHON(void)
 {
     // asm 0000AD75: 	LDI	@_MODE,R0
     // asm 0000AD76: 	OR	MWATER,R0
@@ -411,7 +408,7 @@ void BEACHON(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void REDWOOD_START(void)
+static void REDWOOD_START(void)
 {
     // asm 0000AD7F: 	LDF	10,R0
     // asm 0000AD80: 	STF	R0,@VAR_ROAD_KFACTOR			;pixels UNDER (overshoot)
@@ -431,7 +428,7 @@ void REDWOOD_START(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void LOOK_SANFRANCISCO(void)
+static void LOOK_SANFRANCISCO(void)
 {
     // asm 0000AD8A: 	SONDFX	ER_SANFRANCISCO
     // asm 0000AD8C: 	RETS
@@ -439,7 +436,7 @@ void LOOK_SANFRANCISCO(void)
     UNIMPL();
 }
 
-void LOOK_REDWOOD(void)
+static void LOOK_REDWOOD(void)
 {
     // asm 0000AD8D: 	SONDFX	ER_REDWOOD
     // asm 0000AD8F: 	RETS
@@ -447,7 +444,7 @@ void LOOK_REDWOOD(void)
     UNIMPL();
 }
 
-void LOOK_MIDWEST(void)
+static void LOOK_MIDWEST(void)
 {
     // asm 0000AD90: 	SONDFX	ER_MIDWEST
     // asm 0000AD92: 	RETS
@@ -455,7 +452,7 @@ void LOOK_MIDWEST(void)
     UNIMPL();
 }
 
-void LOOK_MTRUSHMORE(void)
+static void LOOK_MTRUSHMORE(void)
 {
     // asm 0000AD93: 	SONDFX	ER_MTRUSHMORE
     // asm 0000AD95: 	RETS
@@ -463,7 +460,7 @@ void LOOK_MTRUSHMORE(void)
     UNIMPL();
 }
 
-void LOOK_DEATHVALLEY(void)
+static void LOOK_DEATHVALLEY(void)
 {
     // asm 0000AD96: 	SONDFX	ER_DEATHVALLEY
     // asm 0000AD98: 	RETS
@@ -471,7 +468,7 @@ void LOOK_DEATHVALLEY(void)
     UNIMPL();
 }
 
-void LOOK_GCANYON(void)
+static void LOOK_GCANYON(void)
 {
     // asm 0000AD99: 	SONDFX	ER_GRANDCANYON
     // asm 0000AD9B: 	RETS
@@ -479,7 +476,7 @@ void LOOK_GCANYON(void)
     UNIMPL();
 }
 
-void LOOK_HOLLYWOOD(void)
+static void LOOK_HOLLYWOOD(void)
 {
     // asm 0000AD9C: 	SONDFX	ER_HOLLYWOOD
     // asm 0000AD9E: 	RETS
@@ -490,7 +487,7 @@ void LOOK_HOLLYWOOD(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CHANGE_TUNE(void)
+static void CHANGE_TUNE(void)
 {
     // asm 0000AD9F: 	CALL	CHANGE_STATION
     // asm 0000ADA0: 	RETS
@@ -501,7 +498,7 @@ void CHANGE_TUNE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SET_BGNDCOL2BROWN(void)
+static void SET_BGNDCOL2BROWN(void)
 {
     // asm 0000ADA1: 	CALL	CHECKPOINT_HIT
     // asm 0000ADA2: 	LDIL	0984900h,R0		;want blue sky
@@ -513,7 +510,7 @@ void SET_BGNDCOL2BROWN(void)
     UNIMPL();
 }
 
-void TURNOFF_INFINITY(void)
+static void TURNOFF_INFINITY(void)
 {
     // asm 0000ADA9: 	LDI	@_MODE,R0
     // asm 0000ADAA: 	ANDN	MINFIN,R0
@@ -523,7 +520,7 @@ void TURNOFF_INFINITY(void)
     UNIMPL();
 }
 
-void TURNON_INFINITY(void)
+static void TURNON_INFINITY(void)
 {
     // asm 0000ADAD: 	LDI	@_MODE,R0
     // asm 0000ADAE: 	OR	MINFIN,R0
@@ -536,7 +533,7 @@ void TURNON_INFINITY(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TOWER_PAL_LD(void)
+static void TOWER_PAL_LD(void)
 {
     // 	;find the pal which tower is in
     // 	;do a palset with the new palette
@@ -551,7 +548,7 @@ void TOWER_PAL_LD(void)
     UNIMPL();
 }
 
-void TOWER_PAL_RESTORE(void)
+static void TOWER_PAL_RESTORE(void)
 {
     // asm 0000ADB8: 	PUSH	AR2
     // asm 0000ADB9: 	PUSH	R2
@@ -570,7 +567,7 @@ void TOWER_PAL_RESTORE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void END_OF_GAME(void)
+static void END_OF_GAME(void)
 {
     // asm 0000ADC0: 	LDI	1,R0
     // asm 0000ADC1: 	STI	R0,@END_OF_GAMEP

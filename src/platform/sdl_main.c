@@ -2,12 +2,12 @@
 #include <stdio.h>
 
 #include "../core/machine.h"
+#include "../game/globals.h"
 #include "sdl_video.h"
 
-int main(void)
-{
+int main(void) {
     crusn_machine machine;
-    crusn_video video = {0};
+    crusn_video video = { 0 };
     int running = 1;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS) != 0) {
@@ -28,6 +28,8 @@ int main(void)
         return 1;
     }
 
+    _c_int00();
+
     while (running) {
         SDL_Event event;
 
@@ -37,7 +39,8 @@ int main(void)
             }
         }
 
-        crusn_machine_tick(&machine);
+        INT0();
+        // crusn_machine_tick(&machine);
         if (crusn_video_present(&video, &machine) != 0) {
             fprintf(stderr, "Failed to present frame: %s\n", SDL_GetError());
             break;

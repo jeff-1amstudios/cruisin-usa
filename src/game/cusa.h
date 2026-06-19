@@ -84,5 +84,7 @@ extern int STATE_TIK;
 extern int BUTTON_IBO;
 // asm: 	.bss	BUTTON_TIK,1
 extern int BUTTON_TIK;
+void FAKEDIAG(void);
+void FEED_WATCHDOG_HARD(void);
 
 #endif /* CUSA_H */

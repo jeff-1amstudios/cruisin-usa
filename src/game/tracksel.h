@@ -16,5 +16,7 @@ extern int TSEL_HEAD;
 extern int TSEL_THEONE;
 // asm: 	.bss	BOILEROBJ,1
 extern int BOILEROBJ;
+void MOTION_SCREWED(void);
+void BOILERPLATE_INIT(void);
 
 #endif /* TRACKSEL_H */

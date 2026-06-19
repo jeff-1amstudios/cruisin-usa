@@ -2,7 +2,6 @@
 #include "../core/machine.h"
 #include "macs.h"
 #include "obj.h"
-#include "objects.h"
 #include "globals.h"
 #include "sys.h"
 #include "vunit.h"
@@ -13,31 +12,17 @@
  * Source module: asm/INFIN.ASM
  */
 
-void FIND_HIGHEST_ROADY(void);
+static void FIND_HIGHEST_ROADY(void);
 void INFINITY(void);
-void TRANS_PTS(void);
-void WATER_INFINITY(void);
+static void TRANS_PTS(void);
+static void WATER_INFINITY(void);
 
 #define INFIN_POLYGONSI BLUESKY
 #define WATERPOSI WATERPOS
 
-extern int CAMRADY;
-extern int HIGHEST_ROADY;
-extern int HIGHEST_ROADY_X;
-extern int VAR_ROAD_KFACTOR;
-extern int AMOUNT_CLIPPED;
-extern float FORMULA;
-extern float LOWVAL;
-extern float HIGHVAL;
-extern int LOIVAL;
-extern int HIGHIVAL;
-extern float INFPROJ;
-extern float INFVAL;
-extern float *INFINITY_POINTS;
-extern float INFINPOINTS[];
-extern int BLUESKY[];
-extern int INFIN_CORRECT;
-extern float WATERPOS[];
+static float *INFINITY_POINTS;
+static float INFINPOINTS[102];
+static float WATERPOS[78];
 
 /*
 *----------------------------------------------------------------------------
@@ -70,7 +55,7 @@ int HIGHEST_ROADY_X;
 /* asm: VAR_ROAD_KFACTOR	.bss	VAR_ROAD_KFACTOR,1 */
 int VAR_ROAD_KFACTOR;
 
-void FIND_HIGHEST_ROADY(void)
+static void FIND_HIGHEST_ROADY(void)
 {
     // asm 00008212: 	PUSH	R0
     // asm 00008213: 	PUSH	R1
@@ -180,21 +165,21 @@ FHRY_X:
 int AMOUNT_CLIPPED;
 /* asm: FORMULA		.float	-244.4619926	;(6*256)/2PI  (convert radians to length of infinity plane) */
 /* asm: 	 */
-float FORMULA = -244.4619926f;
+static float FORMULA = -244.4619926f;
 /* asm: LOWVAL		.float	-1536 */
-float LOWVAL = -1536.0f;
+static float LOWVAL = -1536.0f;
 /* asm: HIGHVAL		.float	1536 */
 /* asm: 	 */
-float HIGHVAL = 1536.0f;
+static float HIGHVAL = 1536.0f;
 /* asm: LOIVAL		.word	-768 */
-int LOIVAL = -768;
+static int LOIVAL = -768;
 /* asm: HIGHIVAL	.word	1536 */
 /* asm: 	 */
-int HIGHIVAL = 1536;
+static int HIGHIVAL = 1536;
 /* asm: INFPROJ		.float	0.0064 */
-float INFPROJ = 0.0064f;
+static float INFPROJ = 0.0064f;
 /* asm: INFVAL		.float  80000 */
-float INFVAL = 80000.0f;
+static float INFVAL = 80000.0f;
 
 /*
 *
@@ -549,7 +534,7 @@ LOOP1:
 /* asm: 	.float	1700,-1250,0 */
 /* asm: 	 */
 /* asm: 	 */
-float INFINPOINTS[] = {
+static float INFINPOINTS[] = {
     -1280.0f, 0.0f, 0.0f,
     -1280.0f, -255.0f, 0.0f,
     -1024.0f, 0.0f, 0.0f,
@@ -592,7 +577,7 @@ float INFINPOINTS[] = {
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-int BLUESKY[] = {
+static int BLUESKY[] = {
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
     sky1_p, sky1_I, sky1_p, sky2_I, sky1_p, sky3_I, sky1_p, sky4_I, sky1_p, sky5_I, sky1_p, sky6_I,
     // ----------------------------------------------------------------------------
@@ -610,7 +595,7 @@ int BLUESKY[] = {
 /* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
 int INFIN_CORRECT;
 
-void TRANS_PTS(void)
+static void TRANS_PTS(void)
 {
     // ;	LDF	@AMOUNT_CLIPPED,R4
     // asm 000083D4: 	LDF	@INFIN_CORRECT,R7
@@ -694,7 +679,7 @@ LKJ25:
 *THIS MUST BE CALLED AFTER INFINITY
 *
 */
-void WATER_INFINITY(void)
+static void WATER_INFINITY(void)
 {
     // asm 0000840A: 	LDF	@CAMRADY,R2
     // 	;FIND HORIZON X OFFSET
@@ -834,7 +819,7 @@ LOOPA:
 /* asm: 	.float	1536,0,0 */
 /* asm: 	.float	1792,128,0 */
 /* asm: 	.float	1792,0,0 */
-float WATERPOS[] = {
+static float WATERPOS[] = {
     -1280.0f, 128.0f, 0.0f,
     -1280.0f, 0.0f, 0.0f,
     -1024.0f, 128.0f, 0.0f,

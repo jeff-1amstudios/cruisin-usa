@@ -10,7 +10,7 @@
  * Source module: asm/FONT1A.ASM
  */
 
-void ENABLEGIE(void);
+static void ENABLEGIE_font(void);
 void _ftoa(void);
 void _itoaLZ(void);
 void _itoa(void);
@@ -27,21 +27,18 @@ extern int ACTIVE_SCREEN;
 extern int _font1[];
 extern int COMMINTM;
 
-extern const char POINT[];
-extern int ftoa_tmp[];
-
 // *----------------------------------------------------------------------------
-void ENABLEGIE(void)
+static void ENABLEGIE_font(void)
 {
     // asm 0000A75C: RETI
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE_font", 0, 0);
     UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-const char POINT[] = ".";
+static const char POINT[] = ".";
 /* asm: ftoa_tmp	.bss	ftoa_tmp,2 */
 int ftoa_tmp[2];
 
@@ -458,7 +455,7 @@ void _pixel(void)
     // asm 0000A863: 	LDI	SOFT_WS,R2
     // asm 0000A864: 	STI	R2,@CPU_WS
     // asm 0000A865: 	SETDP
-    // asm 0000A866: 	CALL	ENABLEGIE
+    // asm 0000A866: 	CALL	ENABLEGIE_font
     // asm 0000A867: 	POP	R2
     // asm 0000A868: 	POP	AR2
     // asm 0000A869: 	POP	AR1
