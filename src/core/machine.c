@@ -14,10 +14,16 @@ int crusn_machine_init(crusn_machine *machine)
 
     machine->ram_word_count = CRUSN_RAM_WORDS;
     machine->screen_word_count = CRUSN_SCREEN_WORDS;
+    machine->cmos_word_count = CRUSN_CMOS_WORDS;
+    machine->colorram_word_count = CRUSN_COLORRAM_WORDS;
+    machine->timer_word_count = CRUSN_TIMER_WORDS;
     machine->ram_words = calloc(machine->ram_word_count, sizeof(*machine->ram_words));
     machine->screen_words = calloc(machine->screen_word_count, sizeof(*machine->screen_words));
+    machine->cmos_words = calloc(machine->cmos_word_count, sizeof(*machine->cmos_words));
+    machine->colorram_words = calloc(machine->colorram_word_count, sizeof(*machine->colorram_words));
+    machine->timer_words = calloc(machine->timer_word_count, sizeof(*machine->timer_words));
 
-    if (machine->ram_words == NULL || machine->screen_words == NULL) {
+    if (machine->ram_words == NULL || machine->screen_words == NULL || machine->cmos_words == NULL || machine->colorram_words == NULL || machine->timer_words == NULL) {
         crusn_machine_shutdown(machine);
         return -1;
     }
@@ -29,6 +35,12 @@ int crusn_machine_init(crusn_machine *machine)
         machine->ram_word_count,
         machine->screen_words,
         machine->screen_word_count,
+        machine->cmos_words,
+        machine->cmos_word_count,
+        machine->colorram_words,
+        machine->colorram_word_count,
+        machine->timer_words,
+        machine->timer_word_count,
         &machine->trace
     );
 
@@ -41,10 +53,19 @@ void crusn_machine_shutdown(crusn_machine *machine)
 {
     free(machine->ram_words);
     free(machine->screen_words);
+    free(machine->cmos_words);
+    free(machine->colorram_words);
+    free(machine->timer_words);
     machine->ram_words = NULL;
     machine->screen_words = NULL;
+    machine->cmos_words = NULL;
+    machine->colorram_words = NULL;
+    machine->timer_words = NULL;
     machine->ram_word_count = 0;
     machine->screen_word_count = 0;
+    machine->cmos_word_count = 0;
+    machine->colorram_word_count = 0;
+    machine->timer_word_count = 0;
     if (g_crusn_machine == machine) {
         g_crusn_machine = NULL;
     }

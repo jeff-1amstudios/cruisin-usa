@@ -18,6 +18,9 @@ typedef struct crusn_memory_region {
 typedef struct crusn_memory_map {
     crusn_memory_region ram;
     crusn_memory_region screen;
+    crusn_memory_region cmos;
+    crusn_memory_region colorram;
+    crusn_memory_region timer;
     crusn_trace *trace;
 } crusn_memory_map;
 
@@ -27,10 +30,16 @@ void crusn_memory_init(
     size_t ram_word_count,
     u32 *screen_words,
     size_t screen_word_count,
+    u32 *cmos_words,
+    size_t cmos_word_count,
+    u32 *colorram_words,
+    size_t colorram_word_count,
+    u32 *timer_words,
+    size_t timer_word_count,
     crusn_trace *trace
 );
 
-u32 crusn_mem_rd32(const crusn_memory_map *memory, word_addr_t addr);
-void crusn_mem_wr32(crusn_memory_map *memory, word_addr_t addr, u32 value);
+u32 crusn_mem_rd32_map(const crusn_memory_map *memory, word_addr_t addr);
+void crusn_mem_wr32_map(crusn_memory_map *memory, word_addr_t addr, u32 value);
 
 #endif

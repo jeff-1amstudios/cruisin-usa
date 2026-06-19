@@ -1,23 +1,24 @@
+#include "cusa.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
-#include "mproc.h"
-#include "macs.h"
-#include "obj.h"
-#include "globals.h"
-#include "sys.h"
+#include "../core/validator.h"
+#include "bssstart.h"
 #include "c30.h"
-#include "text.h"
-#include "vunit.h"
+#include "checksum.h"
 #include "cmos.h"
-#include "sndtab.h"
-#include "pall.h"
-#include "sysid.h"
+#include "comm.h"
 #include "dirq.h"
 #include "error.h"
-#include "comm.h"
-#include "checksum.h"
-#include "cusa.h"
-#include "bssstart.h"
+#include "globals.h"
+#include "macs.h"
+#include "mproc.h"
+#include "obj.h"
+#include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
+#include "text.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/CUSA.ASM
@@ -73,7 +74,7 @@ void SET_CONTROLS(void);
 void FFRSUB(void);
 extern int DIAGPAL;
 
-static void *SWTAB[32];
+static void* SWTAB[32];
 static int CRT_REG_SETUP_STR[12];
 static const char LINKDISABLED[];
 static const char IAMMASTER[];
@@ -82,29 +83,29 @@ static const char TPALI[];
 static const char TPALNI[];
 
 /*
-*----------------------------------------------------------------------------
-*			CRUIS'N USA
-*
-*
-*	EUGENE JARVIS			DIRECTOR
-*
-*	ERIC PRIBYL			SOFTWARE
-*
-*	MARK LOFFREDO			HARDWARE
-*	GLENN SHIPP			HARDWARE
-*
-*	TED BARBER			GRAPHICS
-*	SHAWN COOPER			GRAPHICS
-*
-*	MATT BOOTY			SOUND FX
-*	VINCE PONTARELLI		MUSIC
-*
-*
-*	COPYRIGHT (C) 1994 NINTENDO, DEVELOPED BY TV GAMES, INC.
-*	MANUFACTURED AND SOLD BY MIDWAY MANUFACTURING COMPANY UNDER LICENSE
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *			CRUIS'N USA
+ *
+ *
+ *	EUGENE JARVIS			DIRECTOR
+ *
+ *	ERIC PRIBYL			SOFTWARE
+ *
+ *	MARK LOFFREDO			HARDWARE
+ *	GLENN SHIPP			HARDWARE
+ *
+ *	TED BARBER			GRAPHICS
+ *	SHAWN COOPER			GRAPHICS
+ *
+ *	MATT BOOTY			SOUND FX
+ *	VINCE PONTARELLI		MUSIC
+ *
+ *
+ *	COPYRIGHT (C) 1994 NINTENDO, DEVELOPED BY TV GAMES, INC.
+ *	MANUFACTURED AND SOLD BY MIDWAY MANUFACTURING COMPANY UNDER LICENSE
+ *
+ *
+ */
 
 #define MEMTESTS 1
 #define TIKS_PER_SECOND 57
@@ -134,17 +135,17 @@ const char VERSION_STAMP[] = "VERSION  4.4";
 static const char INTERNAL_VERS[] = "I440";
 #define VERSION_ID 40
 /*
-	;Because of managements inability to deal with software projects,
-	;or being able to keep the version control straight
-	;we have now moved into Internal and External versions of the program
-	;VERSION_STAMP contains whatever the management wants to call it.
-	;If management asks call it 'version' or 'release'.
-	;'actual version' or 'internal version' or 'internal' is what
-	;to use for us.
-	;INTERNAL_VERS is the actual version of the software.
-	;Keep in mind that multiple releases exist under the external
-	;version name, and the true software version can be gotten from
-	;the title page.
+        ;Because of managements inability to deal with software projects,
+        ;or being able to keep the version control straight
+        ;we have now moved into Internal and External versions of the program
+        ;VERSION_STAMP contains whatever the management wants to call it.
+        ;If management asks call it 'version' or 'release'.
+        ;'actual version' or 'internal version' or 'internal' is what
+        ;to use for us.
+        ;INTERNAL_VERS is the actual version of the software.
+        ;Keep in mind that multiple releases exist under the external
+        ;version name, and the true software version can be gotten from
+        ;the title page.
 */
 
 static const char M1[] = "LOADING OS-WMS...";
@@ -207,30 +208,54 @@ int NOSWAP;
 int DISPLAY_PAGE;
 /* asm: MPROC_TIK	fbss	MPROC_TIK,1 */
 int MPROC_TIK;
+/* asm: WDHIT	fbss	WDHIT,1 */
+int WDHIT;
 
 // *----------------------------------------------------------------------------
-void _c_int00(void)
-{
+void _c_int00(void) {
+    int i;
+
+#if 0 // jeff ignore for now
     // asm 00004AE6: 	LDI	02h,IOF			;TV30 KLUDGE
     // asm 00004AE7: 	CLRI	R0			;must fix COMM setup asap
     // asm 00004AE8: 	LDP	@COMMINTM
     // asm 00004AE9: 	STI	R0,@COMMINTM
+    R0.s = 0;
+    COMMINTM = R0.s;
+    validate_word("COMMINTM", &COMMINTM);
+
     // asm 00004AEA: 	LDP	@CPU_WS
     // asm 00004AEB: 	LDI	1068h,R0
     // asm 00004AEC: 	STI	R0,@CPU_WS
+    R0.u = 0x1068u;
+    crusn_mem_wr32(CPU_WS, R0.u);
+
     // asm 00004AED: 	LDP	@FIFO_CONTROL
     // asm 00004AEE: 	LDI	FIFO_CONTROL_INIT,R0
     // asm 00004AEF: 	STI	R0,@FIFO_CONTROL
+    R0.u = FIFO_CONTROL_INIT;
+    crusn_mem_wr32(FIFO_CONTROL, R0.u);
+
     // asm 00004AF0: 	LDI	800h,ST			;ENABLE THE CACHE, DISABLE INTERRUPTS
     // asm 00004AF1:         LDP	@FASTSTKI
     // asm 00004AF2:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
     // asm 00004AF3: 	DINT				;DISABLE INTERUPTS
+    ST = 0x800u;
+    SP = FASTSTKI;
+
     // asm 00004AF9: 	CLRI	R0
     // asm 00004AFA: 	LDP	@CMOS_WP_WORD
     // asm 00004AFB: 	STI	R0,@CMOS_WP_WORD	;DISABLE CMOS WRITES
+    R0.s = 0;
+    crusn_mem_wr32(CMOS_WP_WORD, R0.u);
+
     // asm 00004AFC: 	LDIL	RAM0,AR0		;CLEARS CMOS_WP_WORD_SHADOW
     // asm 00004AFF: 	RPTS	2047
     // asm 00004B00: 	STI	R0,*AR0++
+    for (i = 0; i < 2048; ++i) {
+        crusn_mem_wr32(RAM0 + (u32)i, R0.u);
+    }
+
     // 	;
     // 	;CHECK TO SEE IF THIS IS A WATCHDOG
     // 	;
@@ -239,19 +264,34 @@ void _c_int00(void)
     // asm 00004B02: 	LDI	@991050h,R0
     // asm 00004B03: 	LDP	@WDHIT
     // asm 00004B04: 	STI	R0,@WDHIT		;SAVE YOUR DOGGIE
+    R0.u = crusn_mem_rd32(0x991050u);
+    WDHIT = R0.s;
+    validate_word("WDHIT", &WDHIT);
+
     // asm 00004B05: 	LDP	@SYSCNTLR
     // asm 00004B06: 	LDI	SYSCNTL_INIT,R0		;INIT SYSCNTL
     // asm 00004B07: 	STI	R0,@SYSCNTLR
+    R0.u = SYSCNTL_INIT;
+    crusn_mem_wr32(SYSCNTLR, R0.u);
+
     // asm 00004B08: 	LDP	@DMA_SETUP
     // asm 00004B09: 	LDI	DMA_SETUP_INIT,R0	;INIT DMA
     // asm 00004B0A: 	STI	R0,@DMA_SETUP
+    R0.u = DMA_SETUP_INIT;
+    crusn_mem_wr32(DMA_SETUP, R0.u);
+
     // asm 00004B0B: 	LDP	@FIFO_SIZE
     // asm 00004B0C: 	LDI	270,R0			;INIT FIFO SIZE
     // asm 00004B0D: 	STI	R0,@FIFO_SIZE
+    R0.s = 270;
+    crusn_mem_wr32(FIFO_SIZE, R0.u);
+
     // asm 00004B0E: 	CALL	CRT_REG_SETUP		;INIT CRT
+    CRT_REG_SETUP();
     // asm 00004B0F: 	SETDP
 #if MEMTESTS
     // asm 00004B10: 	CALL	TEST_STATIC_CHIPS	;TEST THE INSTALLABLE CHIPS
+    TEST_STATIC_CHIPS();
 #endif
 #if DEBUG
     // 	;
@@ -269,8 +309,14 @@ void _c_int00(void)
     // asm: 	SUBI	41h,RC
     // asm: 	RPTB	LD_DBG1
     // asm: 	LDI	*AR1++,R0
-LD_DBG1:
-    // asm 00004B11: STI	R0,*AR2++
+    AR1 = 0x40u;
+    AR2 = 0x0C00040u;
+    RC = (0x1000u << 4) - 0x41u;
+    for (i = 0; i <= (int)RC; ++i) {
+        R0.u = crusn_mem_rd32(AR1++);
+        // asm 00004B11: STI	R0,*AR2++
+        crusn_mem_wr32(AR2++, R0.u);
+    }
 #endif
     // asm 00004B11: 	LDI	0,AR1			;SOURCE ADDRESS
     // asm 00004B12: 	LDI	4000h,AR2		;DESINATION ADDRESS
@@ -279,8 +325,15 @@ LD_DBG1:
     // asm 00004B15: 	LS	4,RC			;FAST RAM
     // asm 00004B16: 	RPTB	LD_RAM
     // asm 00004B17: 	LDI	*AR1++,R0
-LD_RAM:
-    // asm 00004B18: STI	R0,*AR2++
+    AR1 = 0;
+    AR2 = 0x00400000u;
+    RC = 0x1000u << 4;
+    for (i = 0; i <= (int)RC; ++i) {
+        R0.u = crusn_mem_rd32(AR1++);
+        // asm 00004B18: STI	R0,*AR2++
+        crusn_mem_wr32(AR2++, R0.u);
+    }
+
     // asm 00004B19: 	NOP
     // asm 00004B1A: 	NOP				;DELAY FOR PIPELINE
     // asm 00004B1B: 	NOP
@@ -292,14 +345,19 @@ LD_RAM:
     // asm 00004B24: 	CLRI	R0
     // asm 00004B25: 	LDP	@COMMINTM
     // asm 00004B26: 	STI	R0,@COMMINTM
+    R0.s = 0;
+    COMMINTM = R0.s;
+    validate_word("COMMINTM", &COMMINTM);
     // asm 00004B27: 	SETDP
 #if MEMTESTS
     // asm 00004B28: 	CALL	TEST_CHIPS		;TEST THE INSTALLABLE CHIPS
+    TEST_CHIPS();
 #endif
     // asm 00004B29: 	SOFTWTM	R0		    	;SET WAIT STATES
     // asm 00004B2D: 	DINT
     // asm 00004B33:         LDP	@FASTSTKI
     // asm 00004B34:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
+    SP = FASTSTKI;
 #if MEMTESTS == 0
     // 	;For RAM (development) version, we must copy the
     // 	;program into what would be the ROM
@@ -307,8 +365,13 @@ LD_RAM:
     // asm: 	LDI	@SYSCNTL,R0
     // asm: 	ANDN	10h,R0
     // asm: 	STI	R0,@SYSCNTL
+    R0.s = SYSCNTL;
+    R0.s &= ~0x10;
+    SYSCNTL = R0.s;
+    validate_word("SYSCNTL", &SYSCNTL);
     // asm: 	LDP	@SYSCNTLR
     // asm: 	STI	R0,@SYSCNTLR
+    crusn_mem_wr32(SYSCNTLR, R0.u);
     // asm: 	SETDP
     // asm: 	LDI	040h,AR1		;SOURCE ADDRESS
     // asm: 	LDI	0C000h,AR2		;DESINATION ADDRESS
@@ -319,30 +382,55 @@ LD_RAM:
     // asm: 	SUBI	41h,RC
     // asm: 	RPTB	LD_RAM3
     // asm: 	LDI	*AR1++,R0
-LD_RAM3:
-    // asm 00004B35: STI	R0,*AR2++
+    AR1 = 0x40u;
+    AR2 = 0x0C00040u;
+    RC = (0x1000u << 4) - 0x41u;
+    for (i = 0; i <= (int)RC; ++i) {
+        R0.u = crusn_mem_rd32(AR1++);
+        // asm 00004B35: STI	R0,*AR2++
+        crusn_mem_wr32(AR2++, R0.u);
+    }
     // asm: 	LDI	@SYSCNTL,R0
     // asm: 	OR	10h,R0
     // asm: 	STI	R0,@SYSCNTL
+    R0.s = SYSCNTL;
+    R0.s |= 0x10;
+    SYSCNTL = R0.s;
+    validate_word("SYSCNTL", &SYSCNTL);
     // asm: 	LDP	@SYSCNTLR
     // asm: 	STI	R0,@SYSCNTLR
+    crusn_mem_wr32(SYSCNTLR, R0.u);
     // asm: 	SETDP
 #endif
+
+#endif
+
     // asm 00004B35: 	CLRI	R2
     // asm 00004B36: 	SETAUD	ADJ_OUTOFDIAG
+    R2.s = 0;
+    SETADJ(ADJ_OUTOFDIAG);
     // asm 00004B38:       	BU	DR1 			;SKIP DOGGIE
+    goto DR1;
+
 DIAG_RETURN:
     // asm 00004B39: 	LDI	8,R0	      		;PREVENT FALSE DOGGIE
     // asm 00004B3A: 	LDP	@WDHIT
     // asm 00004B3B: 	STI	R0,@WDHIT		;SAVE YOUR DOGGIE
+    R0.s = 8;
+    WDHIT = R0.s;
+    validate_word("WDHIT", &WDHIT);
+
 DR1:
     // asm 00004B3C: 	SOFTWTM	R0		    	;SET WAIT STATES
     // asm 00004B40: 	DINT
     // asm 00004B46:         LDP	@FASTSTKI
     // asm 00004B47:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
+    SP = FASTSTKI;
 #if DEBUG
     // asm: 	CALL	VERIFY_CODE_INTEGRITY
+    VERIFY_CODE_INTEGRITY();
 #endif
+#if 0 // jeff ignore for now
     // 	;LOAD CODE BACK INTO RAM
     // 	;
     // 	;
@@ -354,134 +442,266 @@ DR1:
     // asm 00004B4D: 	LS	4,RC			;FAST RAM
     // asm 00004B4E: 	RPTB	LD_RAM2
     // asm 00004B4F: 	LDI	*AR2++,R0
-LD_RAM2:
-    // asm 00004B50: STI	R0,*AR1++
+    AR1 = 0x40u;
+    AR2 = 0x0C00040u;
+    RC = 0x1000u << 4;
+    for (i = 0; i <= (int)RC; ++i) {
+        R0.u = crusn_mem_rd32(AR2++);
+        // asm 00004B50: STI	R0,*AR1++
+        crusn_mem_wr32(AR1++, R0.u);
+    }
+#endif
     // asm 00004B51: 	CLRI	R0
     // asm 00004B52: 	LDP	@COLORAM
     // asm 00004B53: 	STI	R0,@COLORAM
+    R0.s = 0;
+    crusn_mem_wr32(COLORAM, R0.u);
     // asm 00004B54: 	SETDP
     // asm 00004B55: 	STI	R0,@DIAG_ACTIVE
+    DIAG_ACTIVE = R0.s;
+    validate_word("DIAG_ACTIVE", &DIAG_ACTIVE);
     // asm 00004B56: 	CALL	CLR_PBSS
+    CLR_PBSS();
     // asm 00004B57: 	CALL	CLR_RAM			;INIT .BSS TO 0
+    CLR_RAM();
     // asm 00004B58: 	LDI	MDIAG,R0		;MELLOW THE WHEEL
     // asm 00004B59: 	STI	R0,@_MODE
+    R0.s = MDIAG;
+    _MODE = R0.s;
+    validate_word("_MODE", &_MODE);
     // asm 00004B5A: 	LDI	SYSCNTL_INIT,R0		;INIT SYSCNTL RAM SHADOW
     // asm 00004B5B: 	STI	R0,@SYSCNTL
+    R0.s = SYSCNTL_INIT;
+    SYSCNTL = R0.s;
+    validate_word("SYSCNTL", &SYSCNTL);
     // asm 00004B5C: 	CALL	FEED_WATCHDOG
+    FEED_WATCHDOG();
     // asm 00004B5D: 	CALL	MESSAGE1		;DISPLAY STARTUP MESSAGE TO SCREEN
+    MESSAGE1();
     // asm 00004B5E: 	CALL	MSG1
+    MSG1();
     // asm 00004B5F: 	LDI	240,R0			;X MIN
     // asm 00004B60: 	STI	R0,@PREVX
+    R0.s = 240;
+    PREVX = R0.s;
+    validate_word("PREVX", &PREVX);
     // asm 00004B61: 	LDI	1,R0
     // asm 00004B62: 	STI	R0,@DELTA
+    R0.s = 1;
+    DELTA = R0.s;
+    validate_word("DELTA", &DELTA);
     // asm 00004B63: 	LDP	@TIMER_CNTL1
     // asm 00004B64: 	LDI	200h|1,R0		;INIT TIMER MUMBO-JUMBO
     // asm 00004B65: 	STI	R0,@TIMER_CNTL1		;
+    R0.u = 0x200u | 1u;
+    crusn_mem_wr32(TIMER_CNTL1, R0.u);
     // asm 00004B66: 	LDI	-1,R0			;
     // asm 00004B67: 	STI	R0,@TIMER_PERIOD1	;
+    R0.s = -1;
+    crusn_mem_wr32(TIMER_PERIOD1, R0.u);
     // asm 00004B68: 	SETDP
     // asm 00004B69: 	LDF	0,R0
+    R0.f = 0.0f;
     // asm 00004B6A: 	LDI	@TIMERAMI,AR0
     // asm 00004B6B: 	RPTS	47	 		;CLEAR OUT COUNT AREA
     // asm 00004B6C: 	STF	R0,*AR0++
+    for (i = 0; i < 48; ++i) {
+        TIMERAM[i] = (int)R0.u;
+    }
     // asm 00004B6D: 	LDL	5A5A5A5Ah,R0	 	;INIT RANDOM NUMBER SEED
     // asm 00004B6E: 	STI	R0,@RAND
+    R0.u = 0x5A5A5A5Au;
+    RAND = (int)R0.u;
+    validate_word("RAND", &RAND);
     // asm 00004B6F: 	CALL	LOAD_FIXED_PALETTES	;LOAD BASE PALETTES
+    LOAD_FIXED_PALETTES();
     // asm 00004B70: 	CALL	INIT_SYSTEM		;INIT REST OF SYSTEM
+    INIT_SYSTEM();
     // asm 00004B71: 	CALL	READIO			;GET I/O STATUS (W/INTs OFF)
+    READIO();
     // asm 00004B72: 	CALL	CHECKDIAG		;GOTO DIAGNOSTICS PREDICATE
+    CHECKDIAG();
     // asm 00004B73: 	CALL	FIFO_RESET		;CLEAR THE FIFO
+    FIFO_RESET();
     // asm 00004B74: 	CALL	COMM_INIT
+    COMM_INIT();
     // asm 00004B75: 	CALL	TIMER_RESET
+    TIMER_RESET();
     // asm 00004B76: 	DINT
     // asm 00004B7C: 	CALL	RESET_SNDBRD		;RESET SOUND BOARD (and DB)
+    RESET_SNDBRD();
     // asm 00004B7D: 	EINT
     // asm 00004B7E: 	CALL	FIFO_RESET
+    FIFO_RESET();
     // asm 00004B7F: 	LDI	INT0_M|INT3_M,IE	;ENABLE INTERRUPTS
+    IE = INT0_M | INT3_M;
     // asm 00004B80: 	AND     0,IF
+    IF = 0;
     // asm 00004B81: 	CALL	ENABLEGIE
+    ENABLEGIE();
     // asm 00004B82: 	CALL	COMM_ENABLE_INT2
+    COMM_ENABLE_INT2();
     // asm 00004B83: 	CALL	INITIALIZATION_MOTION_CHECK
+    INITIALIZATION_MOTION_CHECK();
     // asm 00004B84: 	CLRI	R2
     // asm 00004B85: 	SETAUD	ADJ_OUTOFDIAG
+    R2.s = 0;
+    SETADJ(ADJ_OUTOFDIAG);
     // asm 00004B87: 	LDI	1,R0			;INIT BASE OF WAVERAM
     // asm 00004B88: 	STI	R0,@HARD_SECTION_LOAD
+    R0.s = 1;
+    HARD_SECTION_LOAD = R0.s;
+    validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
     // asm 00004B89: 	LDL	_SECshared,AR2
+    AR2 = _SECshared_ROM;
     // asm 00004B8A: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ();
     // asm 00004B8B: 	LDI	1,R0
     // asm 00004B8C: 	STI	R0,@HARD_SECTION_LOAD
+    R0.s = 1;
+    HARD_SECTION_LOAD = R0.s;
+    validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
     // asm 00004B8D: 	LDL	_SECskys,AR2
+    AR2 = _SECskys_ROM;
     // asm 00004B8E: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ();
     // asm 00004B8F: 	CALL	MSG2
+    MSG2();
     // asm 00004B90: 	LDI	1,R0
     // asm 00004B91: 	STI	R0,@HARD_SECTION_LOAD
+    R0.s = 1;
+    HARD_SECTION_LOAD = R0.s;
+    validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
     // asm 00004B92: 	STI	R0,@BOOT_PACIFY_SCREEN_P
+    BOOT_PACIFY_SCREEN_P = R0.s;
+    validate_word("BOOT_PACIFY_SCREEN_P", &BOOT_PACIFY_SCREEN_P);
     // asm 00004B93: 	LDL	_SECgeneral,AR2
+    AR2 = _SECgeneral_ROM;
     // asm 00004B94: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ();
     // asm 00004B95: 	LDI	1,R0
     // asm 00004B96: 	STI	R0,@HARD_SECTION_LOAD
+    R0.s = 1;
+    HARD_SECTION_LOAD = R0.s;
+    validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
     // asm 00004B97: 	STI	R0,@BOOT_PACIFY_SCREEN_P
+    BOOT_PACIFY_SCREEN_P = R0.s;
+    validate_word("BOOT_PACIFY_SCREEN_P", &BOOT_PACIFY_SCREEN_P);
     // asm 00004B98: 	LDL	_SEChead2head,AR2
+    AR2 = _SEChead2head_ROM;
     // asm 00004B99: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ();
     // asm 00004B9A: 	CALL	MSG3
+    MSG3();
     // asm 00004B9B: 	LDI	1,R0			;LOAD 1ST WAVE
     // asm 00004B9C: 	STI	R0,@HARD_SECTION_LOAD
+    R0.s = 1;
+    HARD_SECTION_LOAD = R0.s;
+    validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
     // asm 00004B9D: 	STI	R0,@BOOT_PACIFY_SCREEN_P
+    BOOT_PACIFY_SCREEN_P = R0.s;
+    validate_word("BOOT_PACIFY_SCREEN_P", &BOOT_PACIFY_SCREEN_P);
     // asm 00004B9E: 	LDL	_SECpress,AR2
+    AR2 = _SECpress_ROM;
     // asm 00004B9F: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ();
     // asm 00004BA0: 	LDI	0,R2
     // asm 00004BA1: 	LDI	AUD_BCREDITS,AR2
     // asm 00004BA2: 	CALL	AUDIT_WRITE
+    R2.s = 0;
+    AR2 = AUD_BCREDITS;
+    AUDIT_WRITE();
     // asm 00004BA3: 	READADJ	ADJ_VOLUME
+    READADJ(ADJ_VOLUME);
     // asm 00004BA5: 	LDI	R0,R1
+    R1 = R0;
     // asm 00004BA6: 	CALL	SET_MASTER_VOL
+    SET_MASTER_VOL();
     // asm 00004BA7: 	LDP	@WDHIT			;LOG WATCHDOG HIT
     // asm 00004BA8: 	LDI	@WDHIT,R0
+    R0.s = WDHIT;
     // asm 00004BA9: 	SETDP
     // asm 00004BAA: 	AND	8,R0 			;CHECK B3
+    R0.s &= 8;
     // asm 00004BAB: 	BNZ	NOPEIT
-    // asm 00004BAC: 	INCAUD	AUD_NUM_WATCHDOGS
+    if (R0.s == 0) {
+        // asm 00004BAC: 	INCAUD	AUD_NUM_WATCHDOGS
+        INCAUD(AUD_NUM_WATCHDOGS);
+    }
 NOPEIT:
     // asm 00004BAE: 	CLRI	R0
     // asm 00004BAF: 	STI	R0,@_newbut
+    R0.s = 0;
+    _newbut = R0.s;
+    validate_word("_newbut", &_newbut);
     // asm 00004BB0: 	LDI	-1,AR2
     // asm 00004BB1: 	STI	AR2,@_ATTR_MODE
+    AR2 = (u32)-1;
+    _ATTR_MODE = (int)AR2;
+    validate_word("_ATTR_MODE", &_ATTR_MODE);
     // asm 00004BB2: 	CALL	WAVE			;setup 1st wave
+    WAVE();
     // asm 00004BB3: 	CALL	FIFO_RESET
+    FIFO_RESET();
     // asm 00004BB4: 	LDI	INT0_M|INT3_M,IE	;ENABLE INTERRUPTS
+    IE = INT0_M | INT3_M;
     // asm 00004BB5: 	LDP	@COMMINTM
     // asm 00004BB6: 	OR	@COMMINTM,IE
+    IE |= (u32)COMMINTM;
     // asm 00004BB7: 	SETDP
     // asm 00004BB8: 	AND     0,IF
+    IF = 0;
     // asm 00004BB9: 	CALL	ENABLEGIE
+    ENABLEGIE();
     // asm 00004BBA: 	READAUD	AUD_VERSION		;version update???
+    READAUD(AUD_VERSION);
     // asm 00004BBC: 	CMPI	VERSION_ID,R0
     // asm 00004BBD: 	BNE	VERSION_UPDATE
+    if (R0.s != VERSION_ID) {
+        VERSION_UPDATE();
+        goto DIAG_RETURN;
+    }
     // asm 00004BBE: 	CALL	VALIDATE_CMOS		;DIAGNOSTIC CHECK ON CMOS
+    VALIDATE_CMOS();
     // asm 00004BBF: 	BC	CMOS_ERROR		;wait till its better
+    // BC CMOS_ERROR: carry-flag behavior is not modeled in the current C port.
     // asm 00004BC0: 	READAUD	ADJ_ACTUALHSTDRESET	;CHECK FOR HI SCORE RESET
+    READAUD(ADJ_ACTUALHSTDRESET);
     // asm 00004BC2: 	CMPI	0,R0
     // asm 00004BC3: 	BGT	NODO1
-    // asm 00004BC4: 	CALL	INIT_HSTD_TABLES
-    // asm 00004BC5: 	READAUD	ADJ_HIGHSCORE_RESET
-    // asm 00004BC7: 	LDI	R0,R2
-    // asm 00004BC8: 	SETADJ	ADJ_ACTUALHSTDRESET
+    if (R0.s <= 0) {
+        // asm 00004BC4: 	CALL	INIT_HSTD_TABLES
+        INIT_HSTD_TABLES();
+        // asm 00004BC5: 	READAUD	ADJ_HIGHSCORE_RESET
+        READAUD(ADJ_HIGHSCORE_RESET);
+        // asm 00004BC7: 	LDI	R0,R2
+        R2 = R0;
+        // asm 00004BC8: 	SETADJ	ADJ_ACTUALHSTDRESET
+        SETADJ(ADJ_ACTUALHSTDRESET);
+    }
 NODO1:
     // asm 00004BCA: LDI	1,R0
     // asm 00004BCB: 	STI	R0,@NFRAMES
+    R0.s = 1;
+    NFRAMES = R0.s;
+    validate_word("NFRAMES", &NFRAMES);
     // asm 00004BCC: 	LDI	0,R0
     // asm 00004BCD: 	STI	R0,@ERRORO
+    R0.s = 0;
+    ERRORO = R0.s;
+    validate_word("ERRORO", &ERRORO);
     // asm 00004BCE: 	STI	R0,@ERRORN
+    ERRORN = R0.s;
+    validate_word("ERRORN", &ERRORN);
     // asm 00004BCF: 	CALL	TIMERESET
+    TIMERESET();
     // asm 00004BD0: 	CALL	COMMQ_PACKET_INIT
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_c_int00", 0, 0);
-    UNIMPL();
+    COMMQ_PACKET_INIT();
+    MAINLOOP();
 }
 
 // *----------------------------------------------------------------------------
-static void MAINLOOP(void)
-{
+static void MAINLOOP(void) {
     // asm 00004BD1: 	FIFO_CLRP	R0		;IS THE FIFO CLEAR
     // asm 00004BD6: 	DMA_WT		R0
     // asm 00004BDB: 	CALL	FIFO_RESET
@@ -582,17 +802,16 @@ NODO555:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*WE HAVE A RADICAL SYSTEM CHANGE
-*WE WANT TO
-*1.	LET EXECUTE ANY PROCESSES THAT WE HAVE BEGUN
-*2.	CLEAR THE SCREEN (WHILE STILL VIEWING OLD SCREEN)
-*3.	PLOT THE NEW SCREEN
-*4.	CONTINUE WITH THE SYSTEM
-*
-*/
-void COLD_ENTER(void)
-{
+ *----------------------------------------------------------------------------
+ *WE HAVE A RADICAL SYSTEM CHANGE
+ *WE WANT TO
+ *1.	LET EXECUTE ANY PROCESSES THAT WE HAVE BEGUN
+ *2.	CLEAR THE SCREEN (WHILE STILL VIEWING OLD SCREEN)
+ *3.	PLOT THE NEW SCREEN
+ *4.	CONTINUE WITH THE SYSTEM
+ *
+ */
+void COLD_ENTER(void) {
     // asm 00004C2C: 	FIFO_CLRP	R0		;is the fifo clear
     // asm 00004C31: 	DMA_WT		R0
     // asm 00004C36: 	CALL	FIFO_RESET
@@ -618,25 +837,23 @@ C_WAIT:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INTERRUPT ROUTINE
-*
-*1.	initially mask out all interupts we dont want to occur
-*2.	enable GIE of ST by calling a routine that RETI's
-*	(allows debugger to function)
-*3.	increment number of frames passed since last screen update
-*
-*
-*/
-void ENABLEGIE(void)
-{
+ *----------------------------------------------------------------------------
+ *INTERRUPT ROUTINE
+ *
+ *1.	initially mask out all interupts we dont want to occur
+ *2.	enable GIE of ST by calling a routine that RETI's
+ *	(allows debugger to function)
+ *3.	increment number of frames passed since last screen update
+ *
+ *
+ */
+void ENABLEGIE(void) {
     // asm 00004C44: 	RETI
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE", 0, 0);
     UNIMPL();
 }
 
-void INT0(void)
-{
+void INT0(void) {
     // asm 00004C45: 	PUSH	ST
     // asm 00004C46: 	LDI	INT1_M,IE	;disable everything except TV30 interrupt & comm int
     // asm 00004C47: 	ANDN	INT0_M,IF	;we wont irq ourself
@@ -822,11 +1039,11 @@ NOTASEC:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*READ IO  SWITCHES AND POTS
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *READ IO  SWITCHES AND POTS
+ *
+ *
+ */
 /* asm: _newbut	pbss	_newbut,0 */
 int _newbut;
 /* asm: SWRAM	pbss	SWRAM,3 */
@@ -834,8 +1051,7 @@ int SWRAM[3];
 /* asm: DIPRAM	pbss	DIPRAM,1 */
 int DIPRAM;
 
-static void READIO(void)
-{
+static void READIO(void) {
     // asm 00004D00: 	CLRI	AR0			;for Loff production board timing problem
     // asm 00004D01: 	LDP	@DIPSW
     // asm 00004D02: 	LDI	@DIPSW,R0
@@ -911,8 +1127,7 @@ NIGY:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void VOL_MINUS(void)
-{
+static void VOL_MINUS(void) {
     // asm 00004D39: 	PUSH	R0
     // asm 00004D3A: 	PUSH	R1
     // asm 00004D3B: 	PUSH	R2
@@ -937,8 +1152,7 @@ static void VOL_MINUS(void)
     UNIMPL();
 }
 
-static void VOL_PLUS(void)
-{
+static void VOL_PLUS(void) {
     // asm 00004D4E: 	PUSH	R0
     // asm 00004D4F: 	PUSH	R1
     // asm 00004D50: 	PUSH	R2
@@ -977,8 +1191,7 @@ VOLJN:
     UNIMPL();
 }
 
-static void DIAG_TOGGLE(void)
-{
+static void DIAG_TOGGLE(void) {
     // asm 00004D72: 	PUSH	R0
     // asm 00004D73: 	LDI	@_MODE,R0
     // asm 00004D74: 	AND	MMODE,R0
@@ -1001,11 +1214,10 @@ DTXX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*OPTIMIZED 9/14/93-ELP
-*/
-static void ATODINT(void)
-{
+ *----------------------------------------------------------------------------
+ *OPTIMIZED 9/14/93-ELP
+ */
+static void ATODINT(void) {
     // asm 00004D80: 	PUSH	ST
     // asm 00004D81: 	PUSH	IE
     // asm 00004D82: 	PUSH	DP
@@ -1143,12 +1355,11 @@ EXITR:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SWITCH DISPATCH	 START PROCESSES FOR SWITCHES
-*
-*/
-static void SWDISP(void)
-{
+ *----------------------------------------------------------------------------
+ *SWITCH DISPATCH	 START PROCESSES FOR SWITCHES
+ *
+ */
+static void SWDISP(void) {
     // ;	LDP	@SWRAM
     // asm 00004DF7: 	LDI	@SWRAM+2,R3
     // asm 00004DF8: 	LS	4,R3 		;MASK GARBAGE
@@ -1181,10 +1392,10 @@ SWSTX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SWITCH ROUTINE TABLE
-*0 = NO PROCESS TO CREATE
-*/
+ *----------------------------------------------------------------------------
+ *SWITCH ROUTINE TABLE
+ *0 = NO PROCESS TO CREATE
+ */
 /* asm: SWTABI	.word	SWTAB */
 #define SWTABI SWTAB
 /* asm: SWTAB */
@@ -1223,45 +1434,44 @@ SWSTX:
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-static void *SWTAB[] = {
-    COIN1, // 00000001 SW_COIN1	(COIN.ASM)
-    COIN2, // 00000002 SW_COIN2 	(COIN.ASM)
-    _start, // 00000004 START		(INTRO.ASM)
-    0, // 00000008
-    0, // 00000010 SW_DIAG	(DIAG.ASM)
-    0, // 00000020
+static void* SWTAB[] = {
+    COIN1,     // 00000001 SW_COIN1	(COIN.ASM)
+    COIN2,     // 00000002 SW_COIN2 	(COIN.ASM)
+    _start,    // 00000004 START		(INTRO.ASM)
+    0,         // 00000008
+    0,         // 00000010 SW_DIAG	(DIAG.ASM)
+    0,         // 00000020
     SERV_COIN, // 00000040 SW_COINSRV	(COIN.ASM)
-    COIN3, // 00000080
-    0, // 00000100
-    0, // 00000200
-    0, // 00000400
-    0, // 00000800
-    0, // 00001000
-    0, // 00002000
-    COIN4, // 00004000
-    0, // 00008000
-    0, // 00010000 BRAKE
+    COIN3,     // 00000080
+    0,         // 00000100
+    0,         // 00000200
+    0,         // 00000400
+    0,         // 00000800
+    0,         // 00001000
+    0,         // 00002000
+    COIN4,     // 00004000
+    0,         // 00008000
+    0,         // 00010000 BRAKE
     RADIO_BUT, // 00020000 RADIO (OLD ABORT)
-    0, // 00040000 LOW
-    _debug, // 00080000 DEBUG
-    _VIEW0, // 00100000 VIEW0
-    _VIEW1, // 00200000 VIEW1
-    _VIEW2, // 00400000 VIEW2
-    0, // 00800000 VIEW4
-    0, // 01000000
-    0, // 02000000
-    0, // 04000000
-    0, // 08000000
-    0, // 10000000
-    0, // 20000000
-    0, // 40000000
-    0, // 80000000
+    0,         // 00040000 LOW
+    _debug,    // 00080000 DEBUG
+    _VIEW0,    // 00100000 VIEW0
+    _VIEW1,    // 00200000 VIEW1
+    _VIEW2,    // 00400000 VIEW2
+    0,         // 00800000 VIEW4
+    0,         // 01000000
+    0,         // 02000000
+    0,         // 04000000
+    0,         // 08000000
+    0,         // 10000000
+    0,         // 20000000
+    0,         // 40000000
+    0,         // 80000000
     // ----------------------------------------------------------------------------
 };
 
 // *----------------------------------------------------------------------------
-void CHECKDIAG(void)
-{
+void CHECKDIAG(void) {
     // asm 00004E2C: 	LDI	@DIAG_ACTIVE,R0
     // asm 00004E2D: 	RETSZ
     // asm 00004E2E: 	BR	ENTER_DIAG
@@ -1273,8 +1483,7 @@ void CHECKDIAG(void)
 
 // *----------------------------------------------------------------------------
 
-static void CLR_PBSS(void)
-{
+static void CLR_PBSS(void) {
     // asm 00004E31: 	PUSH	R0
     // asm 00004E32: 	PUSH	AR0
     // asm 00004E33: 	PUSH	RC
@@ -1306,8 +1515,7 @@ PRAMCLP:
 /* asm: 	 */
 static int RAM_BSSEND = 0x01EFFF;
 
-void CLR_RAM(void)
-{
+void CLR_RAM(void) {
     // asm 00004E46: 	PUSH	R0
     // asm 00004E47: 	PUSH	AR0
     // asm 00004E48: 	PUSH	RC
@@ -1334,12 +1542,11 @@ RAMCLP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*THESE MUST BE CALLED *BEFORE* PROGRAM IS COPIED INTO FAST RAM
-*
-*/
-static void CLEAR_ONCHIPRAM(void)
-{
+ *----------------------------------------------------------------------------
+ *THESE MUST BE CALLED *BEFORE* PROGRAM IS COPIED INTO FAST RAM
+ *
+ */
+static void CLEAR_ONCHIPRAM(void) {
     // asm 00004E58: 	LDIL	809800h,AR0
     // asm 00004E5B: 	CLRI	R0
     // asm 00004E5C: 	LDI	2047h,RC
@@ -1353,10 +1560,10 @@ static void CLEAR_ONCHIPRAM(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ */
 #define SPACER 20
 /* asm: BUTTON_TIKS	fbss	BUTTON_TIKS,1 */
 int BUTTON_TIKS;
@@ -1366,8 +1573,7 @@ int BUTTON_STATUS;
 int OLD_BUTTON_STATUS;
 
 // *
-static void BUTTONS(void)
-{
+static void BUTTONS(void) {
     // asm 00004E60: 	LDI	@_MODE,R0
     // asm 00004E61: 	AND	MMODE,R0
     // asm 00004E62: 	CMPI	MDIAG,R0
@@ -1451,8 +1657,7 @@ FDDDA:
     UNIMPL();
 }
 
-static void DIAG_BUTTONS(void)
-{
+static void DIAG_BUTTONS(void) {
     // asm 00004EAC: 	LDP	@BUTTON_STATUS
     // asm 00004EAD: 	LDI	@BUTTON_STATUS,R0
     // asm 00004EAE: 	SETDP
@@ -1503,12 +1708,11 @@ DGBT:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*WAIT FOR INTERRUPT AT VBLANK
-*
-*/
-void WAIT_FOR_VBLANK(void)
-{
+ *----------------------------------------------------------------------------
+ *WAIT FOR INTERRUPT AT VBLANK
+ *
+ */
+void WAIT_FOR_VBLANK(void) {
     // asm 00004ED8: 	LDI	@INFRAMES,R0
 WAIT1:
     // asm 00004ED9: CMPI	@INFRAMES,R0		;wait for a hot one
@@ -1542,18 +1746,18 @@ static int CRT_REG_SETUP_STRI;
 /* asm: 	 */
 /* asm: 	 */
 static int CRT_REG_SETUP_STR[] = {
-    399|CRT_SETUP_ICSYNC, // CRT_SETUP
-    0x01ff, // CRT_HADDRINC
-    0x01fe, // CRT_HBLKSTART
-    0x020e, // CRT_HSYNCSTART
-    0x0227, // CRT_HSYNCEND
-    0x0299, // CRT_HBLKEND
-    0x029a, // CRT_HTTL
-    0x018e, // CRT_VBLKSTART
-    0x0191, // CRT_SYNCSTART
-    0x0194, // CRT_SYNCEND
-    0x01af, // CRT_VBLK
-    0x01b0, // CRT_VTTL
+    399 | CRT_SETUP_ICSYNC, // CRT_SETUP
+    0x01ff,                 // CRT_HADDRINC
+    0x01fe,                 // CRT_HBLKSTART
+    0x020e,                 // CRT_HSYNCSTART
+    0x0227,                 // CRT_HSYNCEND
+    0x0299,                 // CRT_HBLKEND
+    0x029a,                 // CRT_HTTL
+    0x018e,                 // CRT_VBLKSTART
+    0x0191,                 // CRT_SYNCSTART
+    0x0194,                 // CRT_SYNCEND
+    0x01af,                 // CRT_VBLK
+    0x01b0,                 // CRT_VTTL
     // before syncing
     // 	.word	400|CRT_SETUP_ICSYNC	;CRT_SETUP
     // 	.word	01ffh		;CRT_HADDRINC
@@ -1569,8 +1773,7 @@ static int CRT_REG_SETUP_STR[] = {
     // 	.word	01b0h		;CRT_VTTL
 };
 
-static void CRT_REG_SETUP(void)
-{
+static void CRT_REG_SETUP(void) {
     // asm 00004EDD: 	PUSHM	AR0,AR1,R0,DP
     // asm 00004EE1: 	LDIL	CRT_SETUP,AR0
     // asm 00004EE4: 	LDP	@CRT_REG_SETUP_STRI
@@ -1589,13 +1792,12 @@ CRTRGLP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*IF THIS IS EVER HIT STOP AND FIND OUT WHERE IT IS
-*COMING FROM
-*
-*/
-static void ERROR_TRAP(void)
-{
+ *----------------------------------------------------------------------------
+ *IF THIS IS EVER HIT STOP AND FIND OUT WHERE IT IS
+ *COMING FROM
+ *
+ */
+static void ERROR_TRAP(void) {
     // asm 00004EEF: 	CALL	ENABLEGIE
     // asm 00004EF0: 	NOP
     // asm 00004EF1: 	NOP
@@ -1612,8 +1814,7 @@ static void ERROR_TRAP(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void FIFO_RESET(void)
-{
+void FIFO_RESET(void) {
     // asm 00004EF4: 	DINT
     // asm 00004EFA: 	LDP	@SYSCNTL
     // asm 00004EFB: 	LDI	@SYSCNTL,R0		;READ SHADOW LOCATION
@@ -1651,15 +1852,14 @@ int ST_OBJECTS;
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*1ms   = 10 counts
-*1mils = 10000
-*1frame should = 165000 (roughly)
-*
-*/
-void TIMER_RESET(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *1ms   = 10 counts
+ *1mils = 10000
+ *1frame should = 165000 (roughly)
+ *
+ */
+void TIMER_RESET(void) {
     // asm 00004F0A: 	PUSH	DP
     // asm 00004F0B: 	PUSH	R0
     // asm 00004F0C: 	LDP	@TIMER_CNTL1
@@ -1676,8 +1876,7 @@ void TIMER_RESET(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TIMER_READ(void)
-{
+void TIMER_READ(void) {
     // asm 00004F13: 	PUSH	DP
     // asm 00004F14: 	LDP	@TIMER_CNTR1
     // asm 00004F15: 	LDI	@TIMER_CNTR1,R0
@@ -1699,8 +1898,7 @@ int TIMECLR;
 int TIMERAM[50];
 
 // *----------------------------------------------------------------------------
-static void TIMERESET(void)
-{
+static void TIMERESET(void) {
     // asm 00004F19: 	PUSH	DP
     // asm 00004F1A: 	CALL	TIMER_RESET
     // asm 00004F1B: 	SETDP
@@ -1741,8 +1939,7 @@ TIMEL1:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void TIMEREC(void)
-{
+static void TIMEREC(void) {
     // asm 00004F38: 	PUSH	DP
     // asm 00004F39: 	PUSH	AR0
     // asm 00004F3A: 	LDP	@TIMER_CNTR1
@@ -1761,8 +1958,7 @@ static void TIMEREC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void MESSAGE1(void)
-{
+static void MESSAGE1(void) {
     // asm 00004F43: 	CLRI	R0
     // asm 00004F44: 	LDP	@9E0000h
     // asm 00004F45: 	STI	R0,@9E0000h
@@ -1840,8 +2036,7 @@ HJSADF:
 /* asm: MSG_CNT	.bss	MSG_CNT,1 */
 static int MSG_CNT;
 
-static void MSG1(void)
-{
+static void MSG1(void) {
     // asm 00004F9F: LDI	11,RC
     // asm 00004FA0: 	TEXTIT	M2,1,200
     // asm 00004FA4: 	TEXTIT	M3,1,220
@@ -1852,8 +2047,7 @@ static void MSG1(void)
     UNIMPL();
 }
 
-static void MSG2(void)
-{
+static void MSG2(void) {
     // asm 00004FB1: LDI	11,RC
     // asm 00004FB2: 	TEXTIT	M6,1,260
     // asm 00004FB6: 	TEXTIT	M7,1,270
@@ -1873,8 +2067,7 @@ static const char TPALI[] = "U38 LINK PAL INSTALLED";
 /* asm: TPALNI		SPTR	"U38 LINK PAL NOT INSTALLED" */
 static const char TPALNI[] = "U38 LINK PAL NOT INSTALLED";
 
-static void MSG3(void)
-{
+static void MSG3(void) {
     // asm 00004FC0: LDI	11,RC
     // asm 00004FC1: 	TEXTIT	M8,1,280
     // asm 00004FC5: 	TEXTIT	M9,1,290
@@ -1886,11 +2079,11 @@ static void MSG3(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SECRET OCTOPUS
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *SECRET OCTOPUS
+ *
+ *
+ */
 #define NUM_STATES 7
 /* asm: STATE_TABLE	.word	SW_VIEW0|SW_VIEW2 */
 /* asm: 	.word	SW_VIEW2 */
@@ -1900,29 +2093,28 @@ static void MSG3(void)
 /* asm: 	.word	SW_VIEW0 */
 /* asm: 	.word	SW_VIEW0|SW_RADIO */
 static int STATE_TABLE[] = {
-    SW_VIEW0|SW_VIEW2,
+    SW_VIEW0 | SW_VIEW2,
     SW_VIEW2,
-    SW_VIEW1|SW_VIEW2,
+    SW_VIEW1 | SW_VIEW2,
     SW_VIEW1,
-    SW_VIEW0|SW_VIEW1,
+    SW_VIEW0 | SW_VIEW1,
     SW_VIEW0,
-    SW_VIEW0|SW_RADIO,
+    SW_VIEW0 | SW_RADIO,
 };
 // *
 /* asm: STATE_MASK	.word	SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO */
-static int STATE_MASK = SW_VIEW0|SW_VIEW1|SW_VIEW2|SW_RADIO;
+static int STATE_MASK = SW_VIEW0 | SW_VIEW1 | SW_VIEW2 | SW_RADIO;
 /* asm: STATE_NUM	.bss	STATE_NUM,1 */
 int STATE_NUM;
 /* asm: STATE_TIK	.bss	STATE_TIK,1 */
 int STATE_TIK;
 
 /*
-*
-*
-*
-*/
-static void CHECK_STATE(void)
-{
+ *
+ *
+ *
+ */
+static void CHECK_STATE(void) {
     // asm 00004FD3: 	LDI	@_MODE,R0
     // asm 00004FD4: 	AND	MMODE,R0
     // asm 00004FD5: 	CMPI	MATTR,R0
@@ -1985,12 +2177,14 @@ int BUTTON_TIK;
 #define BUTTONI BUTTII
 /* asm: BUTTII	.word	BUT_VIEW1,BUT_VIEW2,BUT_VIEW3,BUT_VIEW2 */
 static int BUTTII[] = {
-    BUT_VIEW1, BUT_VIEW2, BUT_VIEW3, BUT_VIEW2,
+    BUT_VIEW1,
+    BUT_VIEW2,
+    BUT_VIEW3,
+    BUT_VIEW2,
 };
 
 // *
-static void DASHLIGHT(void)
-{
+static void DASHLIGHT(void) {
     // asm 00005001: 	LDI	@BUTTON_TIK,R0
     // asm 00005002: 	INC	R0
     // asm 00005003: 	LDILT	0,R0
@@ -2018,8 +2212,7 @@ static void DASHLIGHT(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CMOS_ERROR(void)
-{
+static void CMOS_ERROR(void) {
     // asm 00005014: 	LDI	8,AR6
     // asm 00005015: FLASH_LP
     // asm 00005015: 	CALL	CLRSCRN			;CMOS WAS RESET
@@ -2045,8 +2238,7 @@ static void CMOS_ERROR(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void VERSION_UPDATE(void)
-{
+static void VERSION_UPDATE(void) {
     // asm 0000502B: 	LDI	8,AR6
     // asm 0000502C: VFLASH_LP
     // asm 0000502C: 	CALL	CLRSCRN			;CMOS WAS RESET
@@ -2074,8 +2266,7 @@ static void VERSION_UPDATE(void)
 
 // *----------------------------------------------------------------------------
 
-void FAKEDIAG(void)
-{
+void FAKEDIAG(void) {
     // asm 00005045: 	CALL	INIT_SYSTEM
     // asm 00005046: 	CALL	PAL_INIT
     // asm 00005047: 	LDL	DIAGPAL,AR2
@@ -2092,8 +2283,7 @@ void FAKEDIAG(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void FEED_WATCHDOG(void)
-{
+void FEED_WATCHDOG(void) {
     // asm 0000504E: 	PUSH	DP
     // asm 0000504F: 	PUSH	R0
     // asm 00005050: 	LDP	@CPU_WS
@@ -2123,8 +2313,7 @@ void FEED_WATCHDOG(void)
 /* asm: SYSCNTL_OC	fbss	SYSCNTL_OC,1 */
 static int SYSCNTL_OC;
 
-void FEED_WATCHDOG_HARD(void)
-{
+void FEED_WATCHDOG_HARD(void) {
     // asm 00005061: 	PUSH	DP
     // asm 00005062: 	PUSH	R0
     // asm 00005063: 	LDP	@CPU_WS
@@ -2150,8 +2339,7 @@ void FEED_WATCHDOG_HARD(void)
 
 // *----------------------------------------------------------------------------
 
-void VERIFY_CODE_INTEGRITY(void)
-{
+void VERIFY_CODE_INTEGRITY(void) {
 #if DEBUG
     // 	;
     // 	;verify that the code has not been corrupted

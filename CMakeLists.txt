@@ -6,6 +6,10 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+endif()
+
 option(CRUSN_TRACE "Enable native trace logging" ON)
 
 find_package(SDL2 CONFIG QUIET)
@@ -19,6 +23,7 @@ set(CRUSN_SOURCES
   src/core/machine.c
   src/core/memory.c
   src/core/trace.c
+  src/core/validator.c
   src/game/attrdrne.c
   src/game/attracta.c
   src/game/audits.c
