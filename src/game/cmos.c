@@ -374,24 +374,38 @@ VAALP2:
 static void CHECKSUMGEN_ADJ(void)
 {
     // asm 000099F5: 	PUSH	R1
+    crusn_machine_push_reg32(R1);
     // asm 000099F6: 	PUSH	AR2
+    crusn_machine_push_u32((u32)AR2);
     // asm 000099F7: 	PUSH	AR5
+    crusn_machine_push_u32((u32)AR5);
     // asm 000099F8: 	CLRI	AR5
+    AR5 = 0;
     // asm 000099F9: 	CLRI	R1
+    R1.s = 0;
 VAALP3:
     // asm 000099FA: 	LDI	AR5,AR2
+    AR2 = AR5;
     // asm 000099FB: 	CALL	AUDIT_READ	;R0 = ADJUSTMENT VALUE
+    AUDIT_READ();
     // asm 000099FC: 	ADDI	R0,R1
+    R1.s += R0.s;
     // asm 000099FD: 	INC	AR5
+    ++AR5;
     // asm 000099FE: 	CMPI	NUM_ADJUSTMENTS,AR5
     // asm 000099FF: 	BLT	VAALP3
+    if ((int32_t)AR5 < NUM_ADJUSTMENTS) {
+        goto VAALP3;
+    }
     // asm 00009A00: 	LDI	R1,R0
+    R0 = R1;
     // asm 00009A01: 	POP	AR5
+    AR5 = crusn_machine_pop_u32();
     // asm 00009A02: 	POP	AR2
+    AR2 = crusn_machine_pop_u32();
     // asm 00009A03: 	POP	R1
+    R1 = crusn_machine_pop_reg32();
     // asm 00009A04: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKSUMGEN_ADJ", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -493,12 +507,14 @@ void AUDIT_ADD(void)
 void AUDIT_READ(void)
 {
     // asm 00009A14: 	LS	2,AR2
+    AR2 <<= 2;
     // asm 00009A15: 	ADDI	@CMOSI,AR2
+    AR2 += CMOSI;
     // asm 00009A16: 	CALL	_rd_cw
+    _rd_cw();
     // asm 00009A17: 	NOP	*AR2--(4)
+    AR2 -= 4;
     // asm 00009A18: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_READ", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -517,13 +533,16 @@ void AUDIT_READ(void)
 void ADJUSTMENT_WRITE(void)
 {
     // asm 00009A19: 	CALL	AUDIT_WRITE_ADJ
+    AUDIT_WRITE_ADJ();
     // asm 00009A1A: 	CALL	CHECKSUMGEN_ADJ
+    CHECKSUMGEN_ADJ();
     // asm 00009A1B: 	LDI	R0,R2
+    R2 = R0;
     // asm 00009A1C: 	LDI	ADJ_CHECKSUM,AR2
+    AR2 = ADJ_CHECKSUM;
     // asm 00009A1D: 	CALL	AUDIT_WRITE_ADJ
+    AUDIT_WRITE_ADJ();
     // asm 00009A1E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADJUSTMENT_WRITE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -553,12 +572,14 @@ void AUDIT_WRITE(void)
 static void AUDIT_WRITE_ADJ(void)
 {
     // asm 00009A1F: 	LS	2,AR2
+    AR2 <<= 2;
     // asm 00009A20: 	ADDI	@CMOSI,AR2
+    AR2 += CMOSI;
     // asm 00009A21: 	CALL	_wr_cw
+    _wr_cw();
     // asm 00009A22: 	NOP	*AR2--(4)
+    AR2 -= 4;
     // asm 00009A23: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AUDIT_WRITE_ADJ", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -601,27 +622,41 @@ static void AUDIT_WRITE_ADJ(void)
 void _rd_cw(void)
 {
     // asm 00009A24: 	PUSH	R1
+    crusn_machine_push_reg32(R1);
     // asm 00009A25: 	CMOS_ON
     // asm 00009A26: 	NOP			;DELAY FOR TIMING...
     // asm 00009A27: 	LDI	*AR2++,R0
+    R0.u = crusn_mem_rd32(AR2++);
     // asm 00009A28: 	RS	24,R0
+    R0.s >>= 24;
     // asm 00009A29: 	LS	8,R0
+    R0.u <<= 8;
     // asm 00009A2A: 	LDI	*AR2++,R1
+    R1.u = crusn_mem_rd32(AR2++);
     // asm 00009A2B: 	RS	24,R1
+    R1.s >>= 24;
     // asm 00009A2C: 	OR	R1,R0
+    R0.u |= R1.u;
     // asm 00009A2D: 	LS	8,R0
+    R0.u <<= 8;
     // asm 00009A2E: 	LDI	*AR2++,R1
+    R1.u = crusn_mem_rd32(AR2++);
     // asm 00009A2F: 	RS	24,R1
+    R1.s >>= 24;
     // asm 00009A30: 	OR	R1,R0
+    R0.u |= R1.u;
     // asm 00009A31: 	LS	8,R0
+    R0.u <<= 8;
     // asm 00009A32: 	LDI	*AR2++,R1
+    R1.u = crusn_mem_rd32(AR2++);
     // asm 00009A33: 	RS	24,R1
+    R1.s >>= 24;
     // asm 00009A34: 	OR	R1,R0
+    R0.u |= R1.u;
     // asm 00009A35: 	CMOS_OFF
     // asm 00009A36: 	POP	R1
+    R1 = crusn_machine_pop_reg32();
     // asm 00009A37: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_rd_cw", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -643,24 +678,31 @@ void _wr_cw(void)
     // asm 00009A38: 	PUSH	R1
     // asm 00009A39: 	PUSH	R2
     // asm 00009A3A: 	PUSH	R3
+    crusn_machine_push_reg32(R2);
     // asm 00009A3B: 	CMOS_ON
     // asm 00009A3C: 	CMOS_WP_OFF
     // asm 00009A3D: 	NOP			;DELAY FOR TIMING...
     // asm 00009A3E: 	STI	R2,*AR2++
+    crusn_mem_wr32(AR2++, R2.u);
     // asm 00009A3F: 	LS	8,R2
+    R2.u <<= 8;
     // asm 00009A40: 	STI	R2,*AR2++
+    crusn_mem_wr32(AR2++, R2.u);
     // asm 00009A41: 	LS	8,R2
+    R2.u <<= 8;
     // asm 00009A42: 	STI	R2,*AR2++
+    crusn_mem_wr32(AR2++, R2.u);
     // asm 00009A43: 	LS	8,R2
+    R2.u <<= 8;
     // asm 00009A44: 	STI	R2,*AR2++
+    crusn_mem_wr32(AR2++, R2.u);
     // asm 00009A45: 	CMOS_WP_ON
     // asm 00009A46: 	CMOS_OFF
     // asm 00009A47: 	POP	R3
     // asm 00009A48: 	POP	R2
+    R2 = crusn_machine_pop_reg32();
     // asm 00009A49: 	POP	R1
     // asm 00009A4A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_wr_cw", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

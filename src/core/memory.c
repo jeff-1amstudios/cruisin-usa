@@ -4,7 +4,9 @@
 
 enum {
     CRUSN_RAM_BASE = 0x00000000u,
-    CRUSN_SCREEN_BASE = 0x00100000u,
+    CRUSN_SCREEN_BASE = 0x0900000u,
+    CRUSN_COMMPAL_ADDR = 0x0990000u,
+    CRUSN_DIPSW_ADDR = 0x0992000u,
     CRUSN_CMOS_BASE = 0x09C0000u,
     CRUSN_COLORRAM_BASE = 0x09E0000u,
     CRUSN_TIMER_BASE = 0x808020u,
@@ -90,6 +92,10 @@ u32 crusn_mem_rd32_map(const crusn_memory_map *memory, word_addr_t addr)
     const crusn_memory_region *region = crusn_find_region_const(memory, addr);
     size_t offset;
 
+    if (addr == CRUSN_COMMPAL_ADDR || addr == CRUSN_DIPSW_ADDR) {
+        return 0;
+    }
+
     assert(region != NULL);
     offset = (size_t)(addr - region->base);
     assert(offset < region->word_count);
@@ -107,5 +113,4 @@ void crusn_mem_wr32_map(crusn_memory_map *memory, word_addr_t addr, u32 value)
     assert(offset < region->word_count);
 
     region->words[offset] = value;
-    TRACE_EVENT(memory->trace, "write32", region->name, addr, value);
 }

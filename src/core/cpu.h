@@ -7,6 +7,7 @@ typedef union crusn_reg32 {
     uint32_t u;
     int32_t s;
     float f;
+    uintptr_t p;
 } crusn_reg32;
 
 extern crusn_reg32 R0;
@@ -18,14 +19,14 @@ extern crusn_reg32 R5;
 extern crusn_reg32 R6;
 extern crusn_reg32 R7;
 
-extern uint32_t AR0;
-extern uint32_t AR1;
-extern uint32_t AR2;
-extern uint32_t AR3;
-extern uint32_t AR4;
-extern uint32_t AR5;
-extern uint32_t AR6;
-extern uint32_t AR7;
+extern uintptr_t AR0;
+extern uintptr_t AR1;
+extern uintptr_t AR2;
+extern uintptr_t AR3;
+extern uintptr_t AR4;
+extern uintptr_t AR5;
+extern uintptr_t AR6;
+extern uintptr_t AR7;
 
 extern uint32_t DP;
 extern uint32_t SP;

@@ -314,17 +314,24 @@ static void BEGIN_GAME(void)
 void INIT_SYSTEM(void)
 {
     // asm 000093D2: 	CALL	PRC_INIT	;initialize process system
+    PRC_INIT();
     // asm 000093D3: 	CALL	OBJ_INIT	;initialize object system
+    OBJ_INIT();
     // asm 000093D4: 	CALL	TEXT_INIT	;initialize text system
+    TEXT_INIT();
     // asm 000093D5: 	CALL	INIT_DRONES	;initialize DRONE tracker system
+    INIT_DRONES();
     // asm 000093D6: 	CALL	DYNAOBJ_INIT	;initialize DYNAMIC OBJECTS
+    DYNAOBJ_INIT();
     // asm 000093D7: 	CALL	CARB_INIT	;initialize CAR BLOCKS
+    CARB_INIT();
     // asm 000093D8: 	CALL	INIT_RDDEBRIS	;initialize ROAD DEBRIS list(s)
+    INIT_RDDEBRIS();
     // asm 000093D9: 	CLRI	R0
+    R0.s = 0;
     // asm 000093DA: 	STI	R0,@_sectime
+    _sectime = R0.s;
     // asm 000093DB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_SYSTEM", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -410,7 +417,6 @@ void LOAD_FIXED_PALETTES(void)
     // asm 0000941C: 	LDL	general_PALETTES,AR2
     // asm 0000941D: 	CALL	HARDalloc_section
     // asm 0000941E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_FIXED_PALETTES", 0, 0);
     UNIMPL();
 }
 

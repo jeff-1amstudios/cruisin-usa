@@ -86,16 +86,22 @@ static int FONT10_A = osg10fnt_I;
 void TEXT_INIT(void)
 {
     // asm 00007973: 	LDI	@TEXT_LISTI,AR2
+    AR2 = (uintptr_t)&TEXT_LIST[0];
     // asm 00007974: 	LDI	@TEXT_FREEI,R2
+    R2.p = (uintptr_t)&TEXT_FREE;
     // asm 00007975: 	LDI	@TEXT_ACTIVEI,R3
+    R3.p = (uintptr_t)&TEXT_ACTIVE;
     // asm 00007976: 	LDI	NUM_TEXTS-1,RC
+    RC = NUM_TEXTS - 1;
     // asm 00007977: 	LDI	TEXT_SIZ,RS
+    RS = sizeof(tTEXT) / sizeof(u32);
     // asm 00007978: 	CALL	INIT_LINKED_LIST
+    INIT_LINKED_LIST();
     // asm 00007979: 	LDI	NUM_TEXTS,R2
+    R2.s = NUM_TEXTS;
     // asm 0000797A: 	STI	R2,@TEXT_FREE_COUNT
+    TEXT_FREE_COUNT = R2.s;
     // asm 0000797B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_INIT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

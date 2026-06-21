@@ -1,11 +1,92 @@
 #include "cpu.h"
 #include "machine.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 crusn_machine *g_crusn_machine = NULL;
+
+static void crusn_write_le16(FILE *fp, unsigned value)
+{
+    fputc((int)(value & 0xFFu), fp);
+    fputc((int)((value >> 8) & 0xFFu), fp);
+}
+
+static void crusn_write_le32(FILE *fp, unsigned value)
+{
+    fputc((int)(value & 0xFFu), fp);
+    fputc((int)((value >> 8) & 0xFFu), fp);
+    fputc((int)((value >> 16) & 0xFFu), fp);
+    fputc((int)((value >> 24) & 0xFFu), fp);
+}
+
+static unsigned char crusn_expand_5_to_8(unsigned value)
+{
+    return (unsigned char)((value << 3) | (value >> 2));
+}
+
+void crusn_machine_push_u32(u32 value)
+{
+    crusn_machine *machine = g_crusn_machine;
+
+    assert(machine != NULL);
+    assert(machine->translation_stack_top < CRUSN_TRANSLATION_STACK_WORDS);
+
+    machine->translation_stack[machine->translation_stack_top++] = value;
+}
+
+u32 crusn_machine_pop_u32(void)
+{
+    crusn_machine *machine = g_crusn_machine;
+
+    assert(machine != NULL);
+    assert(machine->translation_stack_top > 0);
+
+    return machine->translation_stack[--machine->translation_stack_top];
+}
+
+void crusn_machine_push_reg32(crusn_reg32 value)
+{
+    crusn_machine_push_u32(value.u);
+}
+
+crusn_reg32 crusn_machine_pop_reg32(void)
+{
+    crusn_reg32 value;
+
+    value.u = crusn_machine_pop_u32();
+    return value;
+}
+
+void crusn_machine_decode_screen_argb8888(const crusn_machine *machine, u32 *dst_pixels, size_t dst_pitch_bytes)
+{
+    size_t y;
+    size_t x;
+
+    for (y = 0; y < CRUSN_SCREEN_HEIGHT; ++y) {
+        const u32 *src_row = &machine->screen_words[y * CRUSN_SCREEN_WIDTH];
+        u32 *dst_row = (u32 *)((unsigned char *)dst_pixels + (y * dst_pitch_bytes));
+
+        for (x = 0; x < CRUSN_SCREEN_WIDTH; ++x) {
+            u32 pixel = src_row[x];
+
+            if ((pixel & 0xFFFF0000u) != 0u) {
+                dst_row[x] = pixel;
+            } else if ((pixel & 0xFFFFu) < machine->colorram_word_count) {
+                u32 rgb555 = machine->colorram_words[pixel & 0xFFFFu] & 0x7FFFu;
+                unsigned char r = crusn_expand_5_to_8((rgb555 >> 10) & 0x1Fu);
+                unsigned char g = crusn_expand_5_to_8((rgb555 >> 5) & 0x1Fu);
+                unsigned char b = crusn_expand_5_to_8(rgb555 & 0x1Fu);
+
+                dst_row[x] = 0xFF000000u | ((u32)r << 16) | ((u32)g << 8) | (u32)b;
+            } else {
+                dst_row[x] = 0xFF000000u;
+            }
+        }
+    }
+}
 
 int crusn_machine_init(crusn_machine *machine)
 {
@@ -87,4 +168,72 @@ void crusn_machine_tick(crusn_machine *machine)
 
     TRACE_EVENT(&machine->trace, "frame", "tick", (u32)machine->frame_counter, 0);
     machine->frame_counter++;
+}
+
+int crusn_machine_dump_screen_bmp(const crusn_machine *machine, const char *path)
+{
+    FILE *fp;
+    const unsigned width = CRUSN_SCREEN_WIDTH;
+    const unsigned height = CRUSN_SCREEN_HEIGHT;
+    const unsigned row_size = width * 4u;
+    const unsigned pixel_bytes = row_size * height;
+    const unsigned file_size = 14u + 40u + pixel_bytes;
+    u32 *pixels;
+    unsigned y;
+
+    if (machine == NULL || path == NULL) {
+        return -1;
+    }
+
+    fp = fopen(path, "wb");
+    if (fp == NULL) {
+        return -1;
+    }
+
+    fputc('B', fp);
+    fputc('M', fp);
+    crusn_write_le32(fp, file_size);
+    crusn_write_le16(fp, 0);
+    crusn_write_le16(fp, 0);
+    crusn_write_le32(fp, 14u + 40u);
+    crusn_write_le32(fp, 40u);
+    crusn_write_le32(fp, width);
+    crusn_write_le32(fp, (unsigned)(-(int)height));
+    crusn_write_le16(fp, 1);
+    crusn_write_le16(fp, 32);
+    crusn_write_le32(fp, 0);
+    crusn_write_le32(fp, pixel_bytes);
+    crusn_write_le32(fp, 0);
+    crusn_write_le32(fp, 0);
+    crusn_write_le32(fp, 0);
+    crusn_write_le32(fp, 0);
+
+    pixels = malloc(pixel_bytes);
+    if (pixels == NULL) {
+        fclose(fp);
+        return -1;
+    }
+
+    crusn_machine_decode_screen_argb8888(machine, pixels, row_size);
+
+    for (y = 0; y < height; ++y) {
+        const u32 *row = (const u32 *)((const unsigned char *)pixels + ((size_t)y * row_size));
+        unsigned x;
+
+        for (x = 0; x < width; ++x) {
+            u32 pixel = row[x];
+            unsigned char r = (unsigned char)((pixel >> 16) & 0xFFu);
+            unsigned char g = (unsigned char)((pixel >> 8) & 0xFFu);
+            unsigned char b = (unsigned char)(pixel & 0xFFu);
+
+            fputc((int)b, fp);
+            fputc((int)g, fp);
+            fputc((int)r, fp);
+            fputc(0, fp);
+        }
+    }
+
+    free(pixels);
+    fclose(fp);
+    return 0;
 }

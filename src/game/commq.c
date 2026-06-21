@@ -173,26 +173,44 @@ int SAVED_PLY2CAR;
 
 void CLEAR_LINK(void)
 {
+    int i;
+
     // asm 0000766B: 	LDI	@PLY2CAR,R0
+    R0.s = PLY2CAR;
     // asm 0000766C: 	STI	R0,@SAVED_PLY2CAR
+    SAVED_PLY2CAR = R0.s;
     // asm 0000766D: 	CLRI	R0
+    R0.s = 0;
     // asm 0000766E: 	STI	R0,@MY_STATE
+    MY_STATE = R0.s;
     // asm 0000766F: 	STI	R0,@OM_STATE
+    OM_STATE = R0.s;
     // asm 00007670: 	STI	R0,@OM_MODE
+    OM_MODE = R0.s;
     // asm 00007671: 	STI	R0,@HEAD2HEAD_ON
+    HEAD2HEAD_ON = R0.s;
     // asm 00007672: 	STI	R0,@MY_LINKWAIT
+    MY_LINKWAIT = R0.s;
     // asm 00007673: 	STI	R0,@OM_LINKWAIT
+    OM_LINKWAIT = R0.s;
     // asm 00007674: 	STI	R0,@PLY2CAR
+    PLY2CAR = R0.s;
     // asm 00007675: 	STI	R0,@CAR_LIST
+    CAR_LIST = R0.s;
     // asm 00007676: 	LDI	@RACER_PTRI,AR0
+    AR0 = 0;
     // asm 00007677: 	RPTS	10-1
     // asm 00007678: 	STI	R0,*AR0++
+    for (i = 0; i < 10; ++i) {
+        RACER_PTR[AR0++] = R0.s;
+    }
     // asm 00007679: 	LDI	-1,R0
+    R0.s = -1;
     // asm 0000767A: 	STI	R0,@OM_CHOSEN_RACE
+    OM_CHOSEN_RACE = R0.s;
     // asm 0000767B: 	STI	R0,@OM_VEHICLE
+    OM_VEHICLE = R0.s;
     // asm 0000767C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEAR_LINK", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

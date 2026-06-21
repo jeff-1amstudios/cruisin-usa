@@ -55,7 +55,7 @@ int OLDSP;
 int PACTIVE;
 /* asm: PFREE	.bss	PFREE,1 */
 int PFREE;
-int PRCSTR[sizeof(PROC) * NUMPROC];
+PROC PRCSTR[NUMPROC];
 
 // *----------------------------------------------------------------------------
 static void PRC_DEBUG_CHECK(void)
@@ -493,18 +493,31 @@ void PRC_INIT(void)
     // asm 0000A921: 	PUSH	AR0
     // asm 0000A922: 	PUSH	AR1
     // asm 0000A923: 	LDI	@PACTIVEI,AR0		;ZERO ACTIVE POINTER
+    AR0 = (uintptr_t)&PACTIVE;
     // asm 0000A924: 	LDI	0,R0
+    R0.s = 0;
     // asm 0000A925: 	STI	R0,*AR0
+    *(int *)AR0 = R0.s;
     // asm 0000A926: 	LDI	@PFREEI,AR0		;GET FREE POINTER
+    AR0 = (uintptr_t)&PFREE;
     // asm 0000A927: 	LDI	@PRCSTRI,AR1
+    AR1 = (uintptr_t)&PRCSTR[0];
     // asm 0000A928: 	LDI	NUMPROC-1,RC
+    RC = NUMPROC - 1;
     // asm 0000A929: 	RPTB	PINITL
-    // asm 0000A92A: 	STI	AR1,*AR0
-    // asm 0000A92B: 	LDI	AR1,AR0
+    do {
+        // asm 0000A92A: 	STI	AR1,*AR0
+        *(uintptr_t *)AR0 = AR1;
+        // asm 0000A92B: 	LDI	AR1,AR0
+        AR0 = AR1;
 PINITL:
-    // asm 0000A92C: ADDI	PRCSIZ,AR1
-    // asm 0000A92D: 	LDI	0,R0
-    // asm 0000A92E: 	STI	R0,*AR0
+        // asm 0000A92C: ADDI	PRCSIZ,AR1
+        AR1 = (uintptr_t)((PROC *)AR1 + 1);
+        // asm 0000A92D: 	LDI	0,R0
+        R0.s = 0;
+        // asm 0000A92E: 	STI	R0,*AR0
+        *(int *)AR0 = R0.s;
+    } while (RC-- != 0);
 #if DEBUG
     // asm: 	STI	R0,@NUM_PROCS_ACTIVE
     // asm: 	LDI	NUMPROC,R0
@@ -514,8 +527,6 @@ PINITL:
     // asm 0000A930: 	POP	AR0
     // asm 0000A931: 	POP	R0
     // asm 0000A932: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_INIT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

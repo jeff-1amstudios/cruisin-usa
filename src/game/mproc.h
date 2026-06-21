@@ -84,6 +84,6 @@ extern int PACTIVE;
 // asm: 	.bss	PFREE,1			;FREE PROCESS LIST POINTER
 extern int PFREE;
 // asm: 	hibss	PRCSTR,PRCSIZ*NUMPROC	;PROCESS STORE AREA
-extern int PRCSTR[];
+extern PROC PRCSTR[];
 
 #endif /* MPROC_H */

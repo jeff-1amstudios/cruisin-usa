@@ -5,7 +5,7 @@
  * Source module: asm/FONT.ASM
  */
 
-static int _font1[399];
+int _font1[399];
 
 /*
 *----------------------------------------------------------------------------
@@ -479,7 +479,7 @@ static int _font1[399];
 /* asm: 	.word	0000000b */
 /* asm: 	.word	0000000b */
 /* asm: 	 */
-static int _font1[] = {
+int _font1[] = {
     12,
     56,
     112,

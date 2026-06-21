@@ -3,16 +3,18 @@
 
 #include <stddef.h>
 
+#include "cpu.h"
 #include "memory.h"
 
 enum {
     CRUSN_SCREEN_WIDTH = 512,
     CRUSN_SCREEN_HEIGHT = 400,
-    CRUSN_SCREEN_WORDS = CRUSN_SCREEN_WIDTH * CRUSN_SCREEN_HEIGHT,
+    CRUSN_SCREEN_WORDS = 0x40000,
     CRUSN_CMOS_WORDS = 0x2000,
     CRUSN_COLORRAM_WORDS = 0x8000,
     CRUSN_TIMER_WORDS = 0x19,
     CRUSN_RAM_WORDS = 0x200000,
+    CRUSN_TRANSLATION_STACK_WORDS = 256,
 };
 
 typedef struct crusn_machine {
@@ -29,6 +31,8 @@ typedef struct crusn_machine {
     size_t colorram_word_count;
     size_t timer_word_count;
     int frame_counter;
+    u32 translation_stack[CRUSN_TRANSLATION_STACK_WORDS];
+    size_t translation_stack_top;
 } crusn_machine;
 
 extern crusn_machine *g_crusn_machine;
@@ -39,5 +43,11 @@ extern crusn_machine *g_crusn_machine;
 int crusn_machine_init(crusn_machine *machine);
 void crusn_machine_shutdown(crusn_machine *machine);
 void crusn_machine_tick(crusn_machine *machine);
+void crusn_machine_decode_screen_argb8888(const crusn_machine *machine, u32 *dst_pixels, size_t dst_pitch_bytes);
+int crusn_machine_dump_screen_bmp(const crusn_machine *machine, const char *path);
+void crusn_machine_push_u32(u32 value);
+u32 crusn_machine_pop_u32(void);
+void crusn_machine_push_reg32(crusn_reg32 value);
+crusn_reg32 crusn_machine_pop_reg32(void);
 
 #endif

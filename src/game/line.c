@@ -22,6 +22,12 @@ void _pixel(void);
 */
 void _rectangle(void)
 {
+    uint32_t x1;
+    int y1;
+    int x2;
+    int y2;
+    int color;
+
     // asm 0000AC2C: 	PUSH	FP
     // asm 0000AC2D: 	LDI	SP,FP
     // asm 0000AC2E: 	ADDI	3,SP
@@ -34,34 +40,59 @@ void _rectangle(void)
     // asm 0000AC31: 	STI	RS,*+FP(1)
     // asm 0000AC32: 	STI	R3,*+FP(3)
     // asm 0000AC33: 	STI	AR2,*+FP(2)
+    x1 = AR2;
+    x2 = R3.s;
+    color = (int)RS;
     // asm 0000AC34: 	LDI	R2,R5
+    y1 = R2.s;
     // asm 0000AC35: 	LDI	RC,R4
+    y2 = (int)RC;
     // asm 0000AC36:  PUSH DP
+    crusn_machine_push_u32(DP);
     // asm 0000AC37: 	LDI	R5,R2
+    R2.s = y1;
     // asm 0000AC38: 	LDI	R5,RC
+    RC = (uint32_t)y1;
     // asm 0000AC39: 	CALL	_line
+    _line();
     // asm 0000AC3A: 	LDI	*+FP(2),AR2
+    AR2 = x1;
     // asm 0000AC3B: 	LDI	R4,R2
+    R2.s = y2;
     // asm 0000AC3C: 	LDI	*+FP(3),R3
+    R3.s = x2;
     // asm 0000AC3D: 	LDI	R4,RC
+    RC = (uint32_t)y2;
     // asm 0000AC3E: 	LDI	*+FP(1),RS
+    RS = (uint32_t)color;
     // asm 0000AC3F: 	CALL	_line
+    _line();
     // asm 0000AC40: 	LDI	*+FP(2),AR2
+    AR2 = x1;
     // asm 0000AC41: 	LDI	R5,R2
+    R2.s = y1;
     // asm 0000AC42: 	LDI	*+FP(2),R3
+    R3.s = (int)x1;
     // asm 0000AC43: 	LDI	R4,RC
+    RC = (uint32_t)y2;
     // asm 0000AC44: 	LDI	*+FP(1),RS
+    RS = (uint32_t)color;
     // asm 0000AC45: 	CALL	_line
+    _line();
     // asm 0000AC46: 	LDI	*+FP(3),AR2
+    AR2 = (uint32_t)x2;
     // asm 0000AC47: 	LDI	R5,R2
+    R2.s = y1;
     // asm 0000AC48: 	LDI	*+FP(3),R3
+    R3.s = x2;
     // asm 0000AC49: 	LDI	R4,RC
+    RC = (uint32_t)y2;
     // asm 0000AC4A: 	LDI	*+FP(1),RS
+    RS = (uint32_t)color;
     // asm 0000AC4B: 	CALL	_line
+    _line();
     // asm 0000AC4C:  POP DP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_rectangle", 0, 0);
-    UNIMPL();
+    DP = crusn_machine_pop_u32();
 }
 
 static void EPI0_1(void)
@@ -83,6 +114,18 @@ static void EPI0_1(void)
 
 void _line(void)
 {
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+    int color;
+    int dx;
+    int dy;
+    int sx;
+    int sy;
+    int err;
+    int e2;
+
     // asm 0000AC53: 	PUSH	FP
     // asm 0000AC54: 	LDI	SP,FP
     // asm 0000AC55: 	ADDI	3,SP
@@ -104,8 +147,13 @@ void _line(void)
     // asm 0000AC5A: 	STI	RS,*+FP(1)
     // asm 0000AC5B: 	STI	R2,*+FP(3)
     // asm 0000AC5C: 	STI	AR2,*+FP(2)
+    x0 = (int)AR2;
+    y0 = R2.s;
+    color = (int)RS;
     // asm 0000AC5D: 	LDI	R3,RS
+    x1 = R3.s;
     // asm 0000AC5E:  PUSH DP
+    y1 = (int)RC;
     // asm 0000AC5F: 	CMPI	*+FP(2),RS
     // asm 0000AC60: 	BZ	L32
     // asm 0000AC61: 	CMPI	RC,R2
@@ -276,8 +324,29 @@ L39:
 L38:
     // asm 0000ACF1:  POP DP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_line", 0, 0);
-    UNIMPL();
+    dx = x1 > x0 ? x1 - x0 : x0 - x1;
+    dy = y1 > y0 ? y1 - y0 : y0 - y1;
+    sx = x0 < x1 ? 1 : -1;
+    sy = y0 < y1 ? 1 : -1;
+    err = dx - dy;
+LINE_LOOP:
+    AR2 = (uint32_t)x0;
+    R2.s = y0;
+    R3.s = color;
+    _pixel();
+    if (x0 == x1 && y0 == y1) {
+        return;
+    }
+    e2 = err << 1;
+    if (e2 > -dy) {
+        err -= dy;
+        x0 += sx;
+    }
+    if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+    }
+    goto LINE_LOOP;
 }
 
 static void EPI0_2(void)

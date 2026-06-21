@@ -4,6 +4,7 @@ Translate the commented "// asm:" lines to c. Each translated portion of C code 
 
 ## Rules
 - Correctness is your number 1 job. You must not invent anything except translating the assembly code into C.
+- Each translated C statement must be placed immediately after the `// asm:` line or lines it translates. Do not collect translated code later in the function or below unrelated asm comments.
 - Don't invent function arguments, everything is passed through registers for now
 - Dont invent functions
 - Ignore DP and CPU wait state related instructions

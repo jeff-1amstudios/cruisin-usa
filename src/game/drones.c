@@ -1026,20 +1026,29 @@ void INIT_DRONES(void)
 {
     // asm 0000677F: 	PUSH	R0
     // asm 00006780: 	CLRI	R0
+    R0.s = 0;
     // asm 00006781: 	STI	R0,@CAR_LIST
+    CAR_LIST = R0.s;
     // asm 00006782: 	STI	R0,@DRONE_COUNT
+    DRONE_COUNT = R0.s;
     // asm 00006783: 	LDI	SM_GO,R0
+    R0.s = SM_GO;
     // asm 00006784: 	STI	R0,@SUSPEND_MODE
+    SUSPEND_MODE = R0.s;
     // asm 00006785: 	LDI	40,R0
+    R0.s = 40;
     // asm 00006786: 	STI	R0,@DD_SLP
+    DD_SLP = R0.s;
     // asm 00006787: 	LDI	100,R0
+    R0.s = 100;
     // asm 00006788: 	STI	R0,@DD_VAR
+    DD_VAR = R0.s;
     // asm 00006789: 	LDI	MAX_DRONES,R0
+    R0.s = MAX_DRONES;
     // asm 0000678A: 	STI	R0,@DD_MAX_DRONES
+    DD_MAX_DRONES = R0.s;
     // asm 0000678B: 	POP	R0
     // asm 0000678C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_DRONES", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

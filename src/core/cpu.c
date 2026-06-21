@@ -11,14 +11,14 @@ crusn_reg32 R5;
 crusn_reg32 R6;
 crusn_reg32 R7;
 
-uint32_t AR0;
-uint32_t AR1;
-uint32_t AR2;
-uint32_t AR3;
-uint32_t AR4;
-uint32_t AR5;
-uint32_t AR6;
-uint32_t AR7;
+uintptr_t AR0;
+uintptr_t AR1;
+uintptr_t AR2;
+uintptr_t AR3;
+uintptr_t AR4;
+uintptr_t AR5;
+uintptr_t AR6;
+uintptr_t AR7;
 
 uint32_t DP;
 uint32_t SP;

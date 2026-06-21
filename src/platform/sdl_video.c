@@ -1,5 +1,7 @@
 #include "sdl_video.h"
 
+#include <stdlib.h>
+
 int crusn_video_init(crusn_video *video)
 {
     video->window = SDL_CreateWindow(
@@ -53,14 +55,15 @@ void crusn_video_shutdown(crusn_video *video)
 
 int crusn_video_present(crusn_video *video, const crusn_machine *machine)
 {
-    if (SDL_UpdateTexture(
-            video->texture,
-            NULL,
-            machine->screen_words,
-            CRUSN_SCREEN_WIDTH * (int)sizeof(machine->screen_words[0])
-        ) != 0) {
+    u32 *pixels;
+    int pitch;
+
+    if (SDL_LockTexture(video->texture, NULL, (void **)&pixels, &pitch) != 0) {
         return -1;
     }
+
+    crusn_machine_decode_screen_argb8888(machine, pixels, (size_t)pitch);
+    SDL_UnlockTexture(video->texture);
 
     if (SDL_RenderClear(video->renderer) != 0) {
         return -1;

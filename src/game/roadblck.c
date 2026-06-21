@@ -66,10 +66,10 @@ int ROAD_DEBRIS;
 void INIT_RDDEBRIS(void)
 {
     // asm 0000AF85: 	CLRI	R0
+    R0.s = 0;
     // asm 0000AF86: 	STPI	R0,@ROAD_DEBRIS
+    ROAD_DEBRIS = R0.s;
     // asm 0000AF87: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_RDDEBRIS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
