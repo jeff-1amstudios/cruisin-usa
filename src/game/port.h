@@ -4,5 +4,6 @@
 #include "discovered_defines.h"
 #include "discovered_labels.h"
 #include "types.h"
+#include <stdlib.h>
 
 #endif /* PORT_H */

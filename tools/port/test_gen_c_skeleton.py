@@ -524,6 +524,21 @@ CONTINUE
         self.assertIsNone(instruction_text_for_top_level_line("TABLE\t.word\t1,2"))
         self.assertEqual(instruction_text_for_top_level_line("BABAB\tBZ\tNEXT"), "BZ\tNEXT")
 
+    def test_comment_struct_without_endstruct_does_not_truncate_file(self) -> None:
+        asm_source = """TABLE0\t.word\t1
+*STRUCT VEHTAB
+*       .word   model
+TABLE1\t.word\t2
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "WAVE.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("static int TABLE0 = 1;", rendered)
+        self.assertIn("static int TABLE1 = 2;", rendered)
+
     def test_data_only_macro_after_bare_label_closes_previous_function(self) -> None:
         asm_source = """AUDENT .MACRO A
 \t.word\t:A:
@@ -546,8 +561,9 @@ NEXTFUNC:\tRETS
         self.assertIn("void COMPUTE_GAMETIME(void)", rendered)
         self.assertIn("    // asm: \tRETS", rendered)
         self.assertIn("/* asm: AUDIT_LIST */", rendered)
-        self.assertIn("/* asm: AUDENT\tENTRY1 */", rendered)
-        self.assertIn("int AUDIT_LIST;", rendered)
+        self.assertIn("/* asm: \t.word\tENTRY1 */", rendered)
+        self.assertIn('/* asm: \t.string\t"A",0 */', rendered)
+        self.assertIn("static int AUDIT_LIST[] = {\n    ENTRY1,\n    0x00000041,\n};", rendered)
         self.assertIn("void NEXTFUNC(void)", rendered)
         compute_section = rendered.split("void COMPUTE_GAMETIME(void)", 1)[1].split("void NEXTFUNC(void)", 1)[0]
         self.assertNotIn("AUDIT_LIST", compute_section)
@@ -835,6 +851,48 @@ USEIT:\tMPYF\t@FORMULA,R0
         )
 
         self.assertIn("static int AUDIT_LIST;", rendered)
+
+    def test_rgb_macro_table_renders_as_integer_array(self) -> None:
+        asm_source = """RGB\t.MACRO\tR,G,B
+\t.word\t(((:R:>>3)&01Fh)<<10)|(((:G:>>3)&01Fh)<<5)|(((:B:>>3)&01Fh))
+\t.ENDM
+
+FIXEDPAL:
+\t.word\t2
+\tRGB\t0,0,0
+\tRGB\t255,255,255
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "WAVE.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("static int FIXEDPAL[] = {", rendered)
+        self.assertIn("    2,", rendered)
+        self.assertIn("    (((0>>3)&0x01F)<<10)|(((0>>3)&0x01F)<<5)|(((0>>3)&0x01F)),", rendered)
+        self.assertIn("    (((255>>3)&0x01F)<<10)|(((255>>3)&0x01F)<<5)|(((255>>3)&0x01F)),", rendered)
+
+    def test_romdata_macro_terminates_numeric_table_without_placeholder(self) -> None:
+        asm_source = """romdata\t.MACRO
+\t.sect\t"THEDATA"
+\t.ENDM
+
+TABLEI
+\t.word\tTABLE
+\tromdata
+TABLE:
+\t.word\t1,2
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "SETUPS.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        self.assertIn("#define TABLEI TABLE", rendered)
+        self.assertIn("static int TABLE[] = {\n    1, 2,\n};", rendered)
+        self.assertNotIn("static int TABLEI;", rendered)
 
     def test_render_port_header(self) -> None:
         rendered = render_port_header()

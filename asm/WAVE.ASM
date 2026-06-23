@@ -167,7 +167,7 @@ LD_RAM	STI	R0,*AR3++
 
 
 _ATTR_WAVETABI	.word	_ATTR_WAVETAB	;NOTE THE VALUES ARE NEGATVIE
-	.word	HEAD2HEAD_WAIT	
+	.word	HEAD2HEAD_WAIT
 	.word	CREDITS		;MUST BE -6
 	.word	THANKS		;MUST BE -5
 	.word	MIDSPINHS ;-4
@@ -199,7 +199,7 @@ HEAD2HEAD_WAIT:
 	STI	R0,@BUTTON_STATUS
 	CREATE	HEAD2HEAD_LOGO_WAIT,UTIL_C
 	RETS
-	
+
 
 HIGH_SCORE:
 	LDI	@BUTTON_STATUS,R0
@@ -402,7 +402,7 @@ LOAD_FIXED_PALETTES:
 
 	LDL	fixedfnt_tPAL,AR2
 	CALL	PAL_ALLOC_RAW
-	
+
 	LDL	ILLUM_PAL,AR2		;only 1 palette
 	CALL	PAL_ALLOC_RAW
 
@@ -706,6 +706,7 @@ PSBUSTAB
 *	.word	passby,backnoise
 *	.word	pallete_table
 *	.word	drone_dyna_table
+*ENDSTRUCT
 *
 *
 VEHICLE_TABLEI	.word	VEHICLE_TABLE
@@ -1009,7 +1010,7 @@ LOAD_VARIOUS_PALETTES:
 
 	RETS
 *----------------------------------------------------------------------------
-	
+
 
 
 

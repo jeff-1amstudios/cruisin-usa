@@ -95,24 +95,24 @@ typedef struct SIGMA_STARTUP {
 } SIGMA_STARTUP;
 
 typedef struct PALXFER {
-    u32 link;
-    u32 source_addr;
-    u32 dest_addr;
+    struct PALXFER* link;
+    void* source_addr;
+    void* dest_addr;
     u32 count;
 } PALXFER;
 
 typedef struct VEHTAB {
-    u32 model;
-    u32 model_palette;
-    u32 animation;
-    u32 degraded_model;
-    u32 degraded_model_level2;
+    uintptr_t model;
+    uintptr_t model_palette;
+    uintptr_t animation;
+    uintptr_t degraded_model;
+    uintptr_t degraded_model_level2;
     u32 taillight_color_count;
     f32 mass;
-    u32 passby;
-    u32 backnoise;
-    u32 palette_table;
-    u32 drone_dyna_table;
+    uintptr_t passby;
+    uintptr_t backnoise;
+    uintptr_t palette_table;
+    uintptr_t drone_dyna_table;
 } VEHTAB;
 
 typedef struct ROM_VERTEX {
@@ -489,14 +489,13 @@ typedef struct tGEESE_DIR_ENTRY {
     float dir_rad;
 } tGEESE_DIR_ENTRY;
 
-// MACROS
+typedef struct tPAL {
+    int flags_and_count;
+    u32 data[128];
+} tPAL;
 
-/*
-FONTENT		.MACRO	PRECEDING,XSTART,XEND,YSTART,TRAIL
-    .WORD	(:PRECEDING:&0ffffh)|(:TRAIL:<<16),:XSTART:,:XEND:,:YSTART:
-    .ENDM
-*/
-#define FONTENT(PRECEDING, XSTART, XEND, YSTART, TRAIL) \
-    { ((((u32)(PRECEDING)) & 0xFFFFu) | (((u32)(TRAIL)) << 16)), (u32)(XSTART), (u32)(XEND), (u32)(YSTART) }
+typedef struct tPALLIST_ENTRY {
+    int ref_count_and_pal_code;
+} tPALLIST_ENTRY;
 
 #endif

@@ -73,7 +73,7 @@ void crusn_yield_display_interrupt(void);
 void HIDDEN_DIAG(void);
 void SET_CONTROLS(void);
 void FFRSUB(void);
-extern int DIAGPAL;
+extern int DIAGPAL[];
 
 static void* SWTAB[32];
 static int CRT_REG_SETUP_STR[12];
@@ -419,7 +419,7 @@ DIAG_RETURN:
     // asm 00004B3B: 	STI	R0,@WDHIT		;SAVE YOUR DOGGIE
     R0.s = 8;
     WDHIT = R0.s;
-    mame_validate_word("WDHIT", &WDHIT);
+    // mame_validate_word("WDHIT", &WDHIT);
 
 DR1:
     // asm 00004B3C: 	SOFTWTM	R0		    	;SET WAIT STATES
@@ -1162,10 +1162,9 @@ NIGY:
 
         mame_validate_word("DIPRAM", &DIPRAM);
         mame_validate_word("SWITCHBUTS", &SWITCHBUTS);
-        mame_validate_word("SWRAM", &SWRAM[0]);
-        mame_validate_word("SWRAM+1", &SWRAM[1]);
-        mame_validate_word("SWRAM+2", &SWRAM[2]);
+        mame_validate_word("SWRAM", &SWRAM);
         mame_validate_word("RDPOT", &RDPOT);
+        // asm 00004D00: 	CALLNZ	VOL_MINUS
     }
 }
 

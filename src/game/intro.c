@@ -99,7 +99,6 @@ void GET_CREDITS_TO_CONTINUE(void);
 
 static tCHOOSE_CAR_ENTRY CCTAB[];
 static int TRAFFIC_LL[7];
-static int RGBTAB_CP;
 
 /* asm: START_HIT	.bss	START_HIT,1 */
 int START_HIT;
@@ -3428,7 +3427,27 @@ CNT:
 /* asm: RGB	212,212,0 */
 /* asm: RGB	212,212,0 */
 /* asm: RGB	212,212,0 */
-static int RGBTAB_CP;
+static int RGBTAB_CP[] = {
+    4,
+    RGB(212, 212, 0),
+    RGB(212, 212, 0),
+    RGB(212, 212, 0),
+    0, 0,
+    2,
+    RGB(255, 255, 0),
+    RGB(255, 255, 0),
+    RGB(255, 255, 0),
+    0, 0,
+    4,
+    0, 0, 0,
+    RGB(212, 212, 0),
+    RGB(212, 212, 0),
+    2,
+    0, 0, 0,
+    RGB(255, 255, 0),
+    RGB(255, 255, 0),
+    -1,
+};
 // *----------------------------------------------------------------------------
 
 /*

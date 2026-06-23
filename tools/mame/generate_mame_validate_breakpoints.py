@@ -4,18 +4,31 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import pathlib
 import re
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional
+from typing import DefaultDict, Dict, Iterable, List, Optional
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 VALIDATE_RE = re.compile(
-    r'mame_validate_word\(\s*"(?P<label>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*\)\s*;'
+    r'mame_validate_word\(\s*"(?P<label>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
+)
+VALIDATE_ARG_RE = re.compile(
+    r'mame_validate_arg\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
 ASM_ADDR_RE = re.compile(r"^\s*//\s*asm\s+(?P<addr>[0-9A-Fa-f]{8}):")
 ADDRESS_MAP_RE = re.compile(r"^\s*[0-9A-Fa-f]{4}:([0-9A-Fa-f]{8})\s+(.+?)\s*$")
+ARRAY_DECL_RE = re.compile(
+    r"^\s*(?:extern\s+)?(?:static\s+)?(?:const\s+)?(?:[A-Za-z_][A-Za-z0-9_]*\s+)*[*\s]*(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*\[\s*(?P<size_expr>[^\]]+)\s*\]",
+    re.MULTILINE,
+)
+DEFINE_RE = re.compile(r"^\s*#define\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s+(?P<value>.+?)\s*$", re.MULTILINE)
+IDENT_RE = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*\b")
+FUNCTION_DEF_RE = re.compile(
+    r"^\s*.*?(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\([^;{}]*\)\s*\{\s*$"
+)
 
 
 @dataclass(frozen=True)
@@ -23,15 +36,43 @@ class BreakpointEntry:
     label: str
     variable_name: str
     variable_address: int
-    next_instruction_address: int
+    instruction_address: int
+    array_length: Optional[int]
     source_path: pathlib.Path
     source_line: int
+    command_override: Optional[str] = None
 
-    def format_mame(self, action: str = "g") -> str:
-        return (
-            f'bpset {self.next_instruction_address:08X}, 1, '
-            f'{{ logerror "validate {self.label}: 0x%08X\\n", d@{self.variable_address:08X}; {action} }}'
+    def _format_scalar_command(self) -> str:
+        return f'logerror "validate {self.label}: 0x%08X\\n", d@{self.variable_address:08X}'
+
+    def _format_small_array_command(self) -> str:
+        assert self.array_length is not None
+        fmt = " ".join(["0x%08X"] * self.array_length)
+        reads = ", ".join(
+            f"d@{self.variable_address + index:08X}" for index in range(self.array_length)
         )
+        return f'logerror "validate {self.variable_name}[{self.array_length}]: {fmt}\\n", {reads}'
+
+    def _format_large_array_command(self, save_index: int) -> str:
+        assert self.array_length is not None
+        dump_name = f"{self.instruction_address:08X}-{save_index}.bin"
+        return (
+            f'save {dump_name}, {self.variable_address:08X}, 0x{self.array_length:X}; '
+            f'logerror "validate {self.variable_name}: file={dump_name}\\n"'
+        )
+
+    def format_command(self, save_index: int = 0) -> str:
+        if self.command_override is not None:
+            return self.command_override
+        if self.array_length is None:
+            return self._format_scalar_command()
+        if self.array_length <= 5:
+            return self._format_small_array_command()
+        return self._format_large_array_command(save_index)
+
+    def format_mame(self, action: str = "g", save_index: int = 0) -> str:
+        command = self.format_command(save_index=save_index)
+        return f"bpset {self.instruction_address:08X}, 1, {{ {command}; {action} }}"
 
 
 def parse_address_map(map_path: pathlib.Path) -> Dict[str, int]:
@@ -50,6 +91,12 @@ def lookup_label_address(label: str, address_map: Dict[str, int]) -> Optional[in
     if label in address_map:
         return address_map[label]
 
+    offset_match = re.fullmatch(r"(?P<base>.+)\+(?P<offset>\d+)", label)
+    if offset_match:
+        base_address = lookup_label_address(offset_match.group("base"), address_map)
+        if base_address is not None:
+            return base_address + int(offset_match.group("offset"))
+
     folded = {name.upper(): ea for name, ea in address_map.items()}
     return folded.get(label.upper())
 
@@ -62,13 +109,80 @@ def find_next_instruction_address(lines: List[str], start_index: int) -> Optiona
     return None
 
 
+def find_containing_function_name(lines: List[str], start_index: int) -> Optional[str]:
+    for index in range(start_index, -1, -1):
+        match = FUNCTION_DEF_RE.match(lines[index])
+        if match:
+            return match.group("name")
+    return None
+
+
 def strip_cpp_line_comment(line: str) -> str:
     return line.split("//", 1)[0]
 
 
-def collect_breakpoints_for_file(path: pathlib.Path, address_map: Dict[str, int]) -> List[BreakpointEntry]:
+def parse_constant_defines(source_root: pathlib.Path) -> Dict[str, int]:
+    defines: Dict[str, int] = {}
+    for path in sorted(source_root.rglob("*.[ch]")):
+        text = path.read_text(errors="ignore")
+        for match in DEFINE_RE.finditer(text):
+            name = match.group("name")
+            value = strip_cpp_line_comment(match.group("value")).strip()
+            resolved = evaluate_constant_expr(value, defines)
+            if resolved is not None:
+                defines[name] = resolved
+    return defines
+
+
+def evaluate_constant_expr(expr: str, defines: Dict[str, int]) -> Optional[int]:
+    text = expr.strip()
+    if not text:
+        return None
+    if not re.fullmatch(r"[A-Za-z0-9_()+\-*/<>\s]+", text):
+        return None
+
+    def replace_ident(match: re.Match[str]) -> str:
+        token = match.group(0)
+        if token.isdigit():
+            return token
+        if token not in defines:
+            raise KeyError(token)
+        return str(defines[token])
+
+    try:
+        substituted = IDENT_RE.sub(replace_ident, text)
+    except KeyError:
+        return None
+
+    if not re.fullmatch(r"[0-9()+\-*/<>\s]+", substituted):
+        return None
+
+    try:
+        return int(eval(substituted, {"__builtins__": {}}, {}))
+    except Exception:
+        return None
+
+
+def infer_array_lengths(source_root: pathlib.Path) -> Dict[str, int]:
+    defines = parse_constant_defines(source_root)
+    array_lengths: Dict[str, int] = {}
+    for path in sorted(source_root.rglob("*.[ch]")):
+        text = path.read_text(errors="ignore")
+        for match in ARRAY_DECL_RE.finditer(text):
+            var_name = match.group("var")
+            size = evaluate_constant_expr(match.group("size_expr"), defines)
+            if size is None:
+                continue
+            array_lengths[var_name] = max(array_lengths.get(var_name, 0), size)
+    return array_lengths
+
+
+def collect_breakpoints_for_file(
+    path: pathlib.Path, address_map: Dict[str, int], array_lengths: Dict[str, int]
+) -> List[BreakpointEntry]:
     lines = path.read_text(errors="ignore").splitlines()
     entries: List[BreakpointEntry] = []
+    seen_arrays: set[tuple[int, str]] = set()
 
     for index, line in enumerate(lines):
         match = VALIDATE_RE.search(strip_cpp_line_comment(line))
@@ -77,8 +191,8 @@ def collect_breakpoints_for_file(path: pathlib.Path, address_map: Dict[str, int]
 
         label = match.group("label")
         variable_name = match.group("var")
-        next_instruction_address = find_next_instruction_address(lines, index)
-        if next_instruction_address is None:
+        instruction_address = find_next_instruction_address(lines, index)
+        if instruction_address is None:
             raise ValueError(
                 f"{path}:{index + 1}: could not find next original instruction address after mame_validate_word"
             )
@@ -87,14 +201,52 @@ def collect_breakpoints_for_file(path: pathlib.Path, address_map: Dict[str, int]
         if variable_address is None:
             raise ValueError(f"{path}:{index + 1}: label {label!r} not found in address map")
 
+        array_length = array_lengths.get(variable_name)
+        if array_length is not None:
+            dedupe_key = (instruction_address, variable_name)
+            if dedupe_key in seen_arrays:
+                continue
+            seen_arrays.add(dedupe_key)
+
         entries.append(
             BreakpointEntry(
                 label=label,
                 variable_name=variable_name,
                 variable_address=variable_address,
-                next_instruction_address=next_instruction_address,
+                instruction_address=instruction_address,
+                array_length=array_length,
                 source_path=path,
                 source_line=index + 1,
+            )
+        )
+
+        continue
+
+    for index, line in enumerate(lines):
+        match = VALIDATE_ARG_RE.search(strip_cpp_line_comment(line))
+        if not match:
+            continue
+
+        function_name = find_containing_function_name(lines, index)
+        if function_name is None:
+            raise ValueError(f"{path}:{index + 1}: could not find containing function for mame_validate_arg")
+
+        instruction_address = lookup_label_address(function_name, address_map)
+        if instruction_address is None:
+            raise ValueError(f"{path}:{index + 1}: function {function_name!r} not found in address map")
+
+        entries.append(
+            BreakpointEntry(
+                label=match.group("label"),
+                variable_name=match.group("expr").strip(),
+                variable_address=0,
+                instruction_address=instruction_address,
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+                command_override=(
+                    f'logerror "validate {match.group("label")}: 0x%08X\\n", {match.group("label").lower()}'
+                ),
             )
         )
 
@@ -102,21 +254,33 @@ def collect_breakpoints_for_file(path: pathlib.Path, address_map: Dict[str, int]
 
 
 def collect_breakpoints(source_root: pathlib.Path, address_map: Dict[str, int]) -> List[BreakpointEntry]:
+    array_lengths = infer_array_lengths(source_root)
     entries: List[BreakpointEntry] = []
     for path in sorted(source_root.rglob("*.c")):
-        entries.extend(collect_breakpoints_for_file(path, address_map))
+        entries.extend(collect_breakpoints_for_file(path, address_map, array_lengths))
     return entries
 
 
 def render_output(entries: Iterable[BreakpointEntry]) -> str:
     entry_list = list(entries)
+    save_counts: DefaultDict[int, int] = collections.defaultdict(int)
+    grouped_entries: "collections.OrderedDict[int, List[BreakpointEntry]]" = collections.OrderedDict()
+    for entry in entry_list:
+        grouped_entries.setdefault(entry.instruction_address, []).append(entry)
+
+    grouped_items = list(grouped_entries.items())
     rows = [
         "# Autogenerated by tools/mame/generate_mame_validate_breakpoints.py",
-        "# Format: bpset <next instr>, 1, { logerror \"<label>: %d\", d<addr>; }",
+        "# Format: bpset <hook instr>, 1, { <printf|logerror|save>; }",
     ]
-    for index, entry in enumerate(entry_list):
-        action = "quit" if index == len(entry_list) - 1 else "g"
-        rows.append(entry.format_mame(action=action))
+    for group_index, (instruction_address, group) in enumerate(grouped_items):
+        commands: List[str] = []
+        for entry in group:
+            save_index = save_counts[instruction_address]
+            commands.append(entry.format_command(save_index=save_index))
+            if entry.array_length is not None and entry.array_length > 5:
+                save_counts[instruction_address] += 1
+        rows.append(f'bpset {instruction_address:08X}, 1, {{ {"; ".join(commands)}; g }}')
     rows.append("")
     return "\n".join(rows) + "g"
 

@@ -813,8 +813,11 @@ def strip_macro_definition_blocks(lines: list[str]) -> list[str]:
 def strip_struct_definition_blocks(lines: list[str]) -> list[str]:
     out: list[str] = []
     struct_depth = 0
-    for raw in lines:
+    for idx, raw in enumerate(lines):
         if STRUCT_START_RE.match(raw):
+            if not any(STRUCT_END_RE.match(candidate) for candidate in lines[idx + 1:]):
+                out.append(raw)
+                continue
             struct_depth += 1
             continue
         if STRUCT_END_RE.match(raw):
@@ -853,8 +856,11 @@ def strip_noncode_definition_blocks_with_line_numbers(lines: list[str]) -> tuple
     def strip_struct_blocks(entries: list[tuple[int, str]]) -> list[tuple[int, str]]:
         out: list[tuple[int, str]] = []
         struct_depth = 0
-        for line_no, raw in entries:
+        for idx, (line_no, raw) in enumerate(entries):
             if STRUCT_START_RE.match(raw):
+                if not any(STRUCT_END_RE.match(candidate_raw) for _candidate_line_no, candidate_raw in entries[idx + 1:]):
+                    out.append((line_no, raw))
+                    continue
                 struct_depth += 1
                 continue
             if STRUCT_END_RE.match(raw):
@@ -1281,6 +1287,20 @@ def render_c_string_literal_from_bytes(byte_values: list[int]) -> str:
     return "".join(out)
 
 
+def decode_string_token(token: str) -> list[int] | None:
+    if not token:
+        return None
+    if token[0] not in {"'", '"'} or token[-1] != token[0]:
+        return None
+    try:
+        decoded = ast.literal_eval(token)
+    except (SyntaxError, ValueError):
+        return None
+    if not isinstance(decoded, str):
+        return None
+    return [ord(ch) for ch in decoded]
+
+
 def parse_string_blob_operand(operand_text: str) -> str | None:
     operands, _comment = split_comment(operand_text.strip())
     tokens = split_string_operands(operands)
@@ -1290,15 +1310,10 @@ def parse_string_blob_operand(operand_text: str) -> str | None:
     saw_quoted = False
     byte_values: list[int] = []
     for token in tokens:
-        if token.startswith('"') and token.endswith('"'):
-            try:
-                decoded = ast.literal_eval(token)
-            except (SyntaxError, ValueError):
-                return None
-            if not isinstance(decoded, str):
-                return None
+        decoded_bytes = decode_string_token(token)
+        if decoded_bytes is not None:
             saw_quoted = True
-            byte_values.extend(ord(ch) for ch in decoded)
+            byte_values.extend(decoded_bytes)
             continue
 
         value = parse_int_token(token)
@@ -1320,14 +1335,34 @@ def pack_string_directive(operand_text: str) -> list[str] | None:
 
     byte_values: list[int] = []
     for token in split_string_operands(operands):
-        if token.startswith('"') and token.endswith('"'):
-            try:
-                decoded = ast.literal_eval(token)
-            except (SyntaxError, ValueError):
-                return None
-            if not isinstance(decoded, str):
-                return None
-            byte_values.extend(ord(ch) for ch in decoded)
+        decoded_bytes = decode_string_token(token)
+        if decoded_bytes is not None:
+            byte_values.extend(decoded_bytes)
+            continue
+        value = parse_int_token(token)
+        if value is None or not 0 <= value <= 0xFF:
+            return None
+        byte_values.append(value)
+
+    if not byte_values:
+        return []
+
+    packed_words: list[str] = []
+    for idx in range(0, len(byte_values), 4):
+        word = 0
+        for shift, value in enumerate(byte_values[idx:idx + 4]):
+            word |= value << (shift * 8)
+        packed_words.append(f"0x{word:08X}")
+    return packed_words
+
+
+def pack_string_directive_any(operand_text: str) -> list[str] | None:
+    operands, _comment = split_comment(operand_text.strip())
+    byte_values: list[int] = []
+    for token in split_string_operands(operands):
+        decoded_bytes = decode_string_token(token)
+        if decoded_bytes is not None:
+            byte_values.extend(decoded_bytes)
             continue
         value = parse_int_token(token)
         if value is None or not 0 <= value <= 0xFF:
@@ -1450,6 +1485,49 @@ def line_starts_data_only_macro(raw: str, data_only_macros: frozenset[str] | Non
     if not toks or op_idx >= len(toks):
         return False
     return toks[op_idx].upper() in data_only_macros
+
+
+def expand_data_only_macro_invocation(
+    raw: str,
+    data_only_macros: frozenset[str] | None,
+    macros: dict[str, ccm.MacroDef] | None,
+    symbols: dict[str, int] | None,
+) -> list[str] | None:
+    if not data_only_macros or not macros or symbols is None:
+        return None
+
+    code, comment = split_comment(raw)
+    if not code.strip():
+        return None
+
+    op_idx, toks = ccm.split_label_and_tokens(code)
+    if not toks or op_idx >= len(toks):
+        return None
+
+    op = toks[op_idx].upper()
+    if op not in data_only_macros or op not in macros:
+        return None
+
+    expander = ccm.MacroExpander(macros, symbols)
+    args = expander.parse_invocation_args(op_idx, toks)
+    expanded = ccm.iter_active_lines(expander.expand(op, args), symbols)
+
+    out: list[str] = []
+    for expanded_raw in expanded:
+        nested = expand_data_only_macro_invocation(expanded_raw, data_only_macros, macros, symbols)
+        if nested is not None:
+            out.extend(nested)
+            continue
+        out.append(expanded_raw.rstrip())
+
+    if comment:
+        for idx, line in enumerate(out):
+            if not line.strip() or render_asm_comment(line) is not None:
+                continue
+            out[idx] = f"{line.rstrip()}\t{comment}"
+            break
+
+    return out
 
 
 def is_top_level_data_line(raw: str, data_only_macros: frozenset[str] | None = None) -> bool:
@@ -2438,6 +2516,18 @@ def render_numeric_variable(
                 if asm_comment is not None:
                     structured_rows.append(f"    {asm_comment}")
                     continue
+                asm_code, asm_comment_text = split_comment(asm_line)
+                asm_stripped = asm_code.strip()
+                if var.directive != ".float" and asm_stripped.lower().startswith(".string"):
+                    packed_words = pack_string_directive_any(asm_stripped[7:].strip())
+                    if packed_words is not None:
+                        rendered_values = ", ".join(render_word_value(value) for value in packed_words)
+                        comment_text = asm_comment_text[1:].strip() if asm_comment_text.startswith(";") else asm_comment_text.strip()
+                        if comment_text:
+                            structured_rows.append(f"    {rendered_values}, // {comment_text}")
+                        else:
+                            structured_rows.append(f"    {rendered_values},")
+                        continue
                 parsed_row = parse_numeric_data_line(asm_line, var.name)
                 if parsed_row is None:
                     continue
@@ -2997,6 +3087,8 @@ def collect_standalone_labeled_data(
     start_idx: int,
     branch_targets: set[str] | None = None,
     data_only_macros: frozenset[str] | None = None,
+    macros: dict[str, ccm.MacroDef] | None = None,
+    symbols: dict[str, int] | None = None,
 ) -> tuple[StandaloneLabeledData | None, int]:
     if branch_targets is None:
         branch_targets = set()
@@ -3014,6 +3106,18 @@ def collect_standalone_labeled_data(
         rest_code, _rest_comment = split_comment(rest)
         if rest_code.strip():
             if line_starts_data_only_macro(rest_code, data_only_macros):
+                expanded = expand_data_only_macro_invocation(raw, data_only_macros, macros, symbols)
+                if expanded:
+                    nested_data, _nested_next_idx = collect_standalone_labeled_data(
+                        [label, *expanded],
+                        0,
+                        set(),
+                        data_only_macros,
+                        macros,
+                        symbols,
+                    )
+                    if nested_data is not None:
+                        return nested_data, start_idx + 1
                 return StandaloneLabeledData(label, ".macrodata", "", [raw.rstrip()]), start_idx + 1
             stripped = rest_code.strip()
             if stripped.lower().startswith(".string"):
@@ -3049,6 +3153,14 @@ def collect_standalone_labeled_data(
                         asm_lines.append(next_raw.rstrip())
                         next_idx += 1
                         continue
+                    if next_stripped.lower().startswith(".string"):
+                        packed_words = pack_string_directive_any(next_stripped[7:].strip())
+                        if packed_words is not None:
+                            asm_lines.append(next_raw.rstrip())
+                            numeric_values.extend(packed_words)
+                            mixed_numeric_directives = True
+                            next_idx += 1
+                            continue
                     parsed_row = parse_numeric_data_line(next_raw)
                     if parsed_row is None:
                         break
@@ -3125,6 +3237,45 @@ def collect_standalone_labeled_data(
         if saw_sptr_rows:
             return StandaloneLabeledData(label, ".sptrtable", "", asm_lines, inner_labels), next_idx
         if line_starts_data_only_macro(next_raw, data_only_macros):
+            expanded = expand_data_only_macro_invocation(next_raw, data_only_macros, macros, symbols)
+            if expanded:
+                nested_data, _nested_next_idx = collect_standalone_labeled_data(
+                    ["_macro_expand_tmp", *expanded],
+                    0,
+                    set(),
+                    data_only_macros,
+                    macros,
+                    symbols,
+                )
+                if nested_data is not None:
+                    if nested_data.directive == ".sptrtable":
+                        if saw_numeric_directive:
+                            normalized = ".intdata" if mixed_numeric_directives or numeric_directive_name is None else numeric_directive_name
+                            return StandaloneLabeledData(label, normalized, ",".join(numeric_values), asm_lines, inner_labels), next_idx
+                        asm_lines.extend(nested_data.asm_lines[1:])
+                        saw_sptr_rows = True
+                        next_idx += 1
+                        continue
+
+                    if nested_data.directive in {".word", ".float", ".intdata"}:
+                        nested_values = standalone_numeric_values(nested_data)
+                        nested_offset = len(numeric_values)
+                        asm_lines.extend(nested_data.asm_lines[1:])
+                        numeric_values.extend(nested_values)
+                        for inner_name, inner_offset in nested_data.inner_labels:
+                            inner_labels.append((inner_name, nested_offset + inner_offset))
+                        saw_numeric_directive = True
+                        if numeric_directive_name is None:
+                            numeric_directive_name = nested_data.directive
+                        elif numeric_directive_name != nested_data.directive:
+                            mixed_numeric_directives = True
+                        next_idx += 1
+                        continue
+
+            if saw_numeric_directive:
+                normalized = ".intdata" if mixed_numeric_directives or numeric_directive_name is None else numeric_directive_name
+                return StandaloneLabeledData(label, normalized, ",".join(numeric_values), asm_lines, inner_labels), next_idx
+
             asm_lines.append(next_raw.rstrip())
             next_idx += 1
             while next_idx < len(lines):
@@ -3196,6 +3347,8 @@ def collect_standalone_labeled_data(
                 next_idx,
                 branch_targets,
                 data_only_macros,
+                macros,
+                symbols,
             )
             if (
                 nested_data is not None
@@ -3228,6 +3381,14 @@ def collect_standalone_labeled_data(
             asm_lines.append(next_raw.rstrip())
             next_idx += 1
             continue
+        if saw_numeric_directive and stripped.lower().startswith(".string"):
+            packed_words = pack_string_directive_any(stripped[7:].strip())
+            if packed_words is not None:
+                asm_lines.append(next_raw.rstrip())
+                numeric_values.extend(packed_words)
+                mixed_numeric_directives = True
+                next_idx += 1
+                continue
         numeric_directive = parse_numeric_directive(stripped)
         if numeric_directive is not None:
             directive_name, values = numeric_directive
@@ -3323,6 +3484,8 @@ def render_top_level_items(
     emit_set_defines: bool = True,
     render_overrides: dict[str, list[str]] | None = None,
     data_only_macros: frozenset[str] | None = None,
+    macros: dict[str, ccm.MacroDef] | None = None,
+    symbols: dict[str, int] | None = None,
     exported_header_names: set[str] | None = None,
     initial_seen_function_lines: bool = False,
     line_number_offset: int = 0,
@@ -3445,7 +3608,7 @@ def render_top_level_items(
             idx += 1
             continue
 
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros, macros, symbols)
         if standalone_data is not None:
             override_lines = render_symbol_override(standalone_data.name, render_overrides)
             if override_lines is not None:
@@ -3579,11 +3742,15 @@ def render_module(
     discovered_label_names: set[str] | None = None,
 ) -> str:
     effective_type_overrides = with_discovered_label_overrides(type_overrides, discovered_label_names)
+    root = source_root_for_path(src_path)
     lines, original_line_numbers = strip_noncode_definition_blocks_with_line_numbers(
         src_path.read_text(errors="ignore").splitlines()
     )
     is_equ_source = src_path.suffix.upper() == ".EQU"
-    data_only_macros = collect_data_only_macro_names(source_root_for_path(src_path))
+    data_only_macros = collect_data_only_macro_names(root)
+    macros = ccm.parse_macros(root)
+    symbols = ccm.parse_set_symbols(root)
+    symbols["DEBUG"] = 0
     force_function_names = {
         name
         for name, override in (effective_type_overrides or {}).items()
@@ -3596,7 +3763,7 @@ def render_module(
     headers = list(dict.fromkeys(headers))
     predeclared_header_names: set[str] = set()
     predeclared_define_names: set[str] = set()
-    include_dir = source_root_for_path(src_path) / "src" / "game"
+    include_dir = root / "src" / "game"
     exported_header_names = collect_exported_header_names(include_dir)
     for header in headers:
         header_path = include_dir / header
@@ -3675,6 +3842,8 @@ def render_module(
             emit_set_defines=not is_equ_source,
             render_overrides=render_overrides,
             data_only_macros=data_only_macros,
+            macros=macros,
+            symbols=symbols,
             exported_header_names=exported_header_names,
             initial_seen_function_lines=seen_function_context,
             line_number_offset=start,
@@ -3752,6 +3921,8 @@ def extract_reference_text(raw: str) -> str:
 def collect_defined_data_symbols(
     lines: list[str],
     data_only_macros: frozenset[str] | None = None,
+    macros: dict[str, ccm.MacroDef] | None = None,
+    symbols: dict[str, int] | None = None,
 ) -> set[str]:
     defined: set[str] = set()
     branch_targets = collect_branch_targets(lines)
@@ -3772,7 +3943,7 @@ def collect_defined_data_symbols(
             defined.add(data_match.group(1))
             idx += 1
             continue
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros, macros, symbols)
         if standalone_data is not None:
             defined.add(standalone_data.name)
             idx = next_idx
@@ -3920,7 +4091,11 @@ def collect_module_symbol_table(
 ) -> dict[str, SymbolInfo]:
     lines = strip_noncode_definition_blocks(src_path.read_text(errors="ignore").splitlines())
     module = src_path.stem.upper()
+    root = source_root_for_path(src_path)
     data_only_macros = collect_data_only_macro_names(source_root_for_path(src_path))
+    macros = ccm.parse_macros(root)
+    symbols = ccm.parse_set_symbols(root)
+    symbols["DEBUG"] = 0
     symbol_table: dict[str, SymbolInfo] = {}
     predefined_symbols = {
         name: SymbolInfo(name=name, kind="define", module=module, expr=name)
@@ -3970,7 +4145,7 @@ def collect_module_symbol_table(
             idx += 1
             continue
 
-        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
+        standalone_data, next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros, macros, symbols)
         if standalone_data is not None:
             if is_omitted_symbol(standalone_data.name, type_overrides):
                 idx = next_idx
@@ -4123,11 +4298,13 @@ def build_global_symbol_table(
 
 
 def main() -> int:
+    generated_only = "--generated-only" in sys.argv[1:]
     root = Path(__file__).resolve().parents[2]
     asm_dir = root / "asm"
-    out_dir = root / "src" / "game"
     generated_dir = root / "src" / "generated"
-    include_dir = root / "src" / "game"
+    reference_include_dir = root / "src" / "game"
+    out_dir = generated_dir if generated_only else reference_include_dir
+    include_dir = generated_dir if generated_only else reference_include_dir
     address_map = parse_address_map(root / "tools" / "ida" / "address.map")
     define_entries = parse_discovered_defines_file(root / "tools" / "ida" / "discovered_defines.txt")
     instruction_addresses_by_module = parse_instruction_addresses_file(
@@ -4158,7 +4335,7 @@ def main() -> int:
     for src_path in iter_module_paths(asm_dir, "*.ASM"):
         lines = src_path.read_text(errors="ignore").splitlines()
         source_label_names.update(collect_source_label_names(lines))
-    existing_macro_names = collect_existing_macro_names(include_dir)
+    existing_macro_names = collect_existing_macro_names(reference_include_dir)
     blocked_discovered_label_names = (
         set(global_symbol_table)
         | source_label_names
@@ -4213,10 +4390,16 @@ def main() -> int:
 
     for src_path in iter_module_paths(asm_dir, "*.ASM"):
         lines = src_path.read_text(errors="ignore").splitlines()
-        data_only_macros = collect_data_only_macro_names(source_root_for_path(src_path))
+        root = source_root_for_path(src_path)
+        data_only_macros = collect_data_only_macro_names(root)
+        macros = ccm.parse_macros(root)
+        symbols = ccm.parse_set_symbols(root)
+        symbols["DEBUG"] = 0
         missing_data_symbols = collect_referenced_data_symbols(lines, label_types) - collect_defined_data_symbols(
             lines,
             data_only_macros,
+            macros,
+            symbols,
         )
         skipped_data_symbols.update(missing_data_symbols)
         mapped_missing_data_symbols = {

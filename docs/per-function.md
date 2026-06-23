@@ -11,7 +11,7 @@ Translate the commented "// asm:" lines to c. Each translated portion of C code 
 
 
 ## Validation
-1. Add a VALIDATE_WORD("var_name", &var, 0xORIGINAL_ADDRESS) macro call after each store/set in C code. Dont worry that we havent defined the macro implementation yet.
+1. Add a mame_validate_word("var_name", &var, 0xORIGINAL_ADDRESS) macro call after each store/set in C code. Dont worry that we havent defined the macro implementation yet.
 <!-- 1. Generate a mame debugger script that dumps the variables in the list at function entry and exit into two separate files. We know the mame memory address of all vars in tools/ida/address.map At function exit, mame should exit.
 2. Run mame, wait for exit
 3. Run our port. `VALIDATE_VAR_...` will abort and log to stdout if any variable is not correct -->

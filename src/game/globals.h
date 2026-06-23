@@ -447,6 +447,7 @@ extern int HIGH_CLIP_LEV8;
 
 // asm:  .globl CENTSI,_PALLISTI,FASTSTKI
 #define _PALLISTI _PALLIST
+extern tPALLIST_ENTRY _PALLIST[];
 
 #define FASTSTKI FASTSTK
 
@@ -746,10 +747,10 @@ extern int CAR_COUNT;
 extern int LOADED;
 
 // asm:  .globl FIXEDPAL
-extern int FIXEDPAL;
+extern tPAL FIXEDPAL;
 
 // asm:  .globl ILLUM_PAL
-extern int ILLUM_PAL;
+extern tPAL ILLUM_PAL;
 
 // asm:  .globl TEASE_COUNT,ATTR_MODEL
 extern int TEASE_COUNT;

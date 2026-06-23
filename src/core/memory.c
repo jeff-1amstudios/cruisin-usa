@@ -3,6 +3,7 @@
 #include <assert.h>
 
 enum {
+    CRUSN_ROM_BASE = 0x0C00000u,
     CRUSN_RAM_BASE = 0x00000000u,
     CRUSN_SCREEN_BASE = 0x0900000u,
     CRUSN_COMMPAL_ADDR = 0x0990000u,
@@ -14,7 +15,7 @@ enum {
 
 static crusn_memory_region *crusn_find_region(crusn_memory_map *memory, word_addr_t addr)
 {
-    crusn_memory_region *regions[] = { &memory->ram, &memory->screen, &memory->cmos, &memory->colorram, &memory->timer };
+    crusn_memory_region *regions[] = { &memory->rom, &memory->ram, &memory->screen, &memory->cmos, &memory->colorram, &memory->timer };
     size_t i;
 
     for (i = 0; i < sizeof(regions) / sizeof(regions[0]); ++i) {
@@ -30,7 +31,7 @@ static crusn_memory_region *crusn_find_region(crusn_memory_map *memory, word_add
 
 static const crusn_memory_region *crusn_find_region_const(const crusn_memory_map *memory, word_addr_t addr)
 {
-    const crusn_memory_region *regions[] = { &memory->ram, &memory->screen, &memory->cmos, &memory->colorram, &memory->timer };
+    const crusn_memory_region *regions[] = { &memory->rom, &memory->ram, &memory->screen, &memory->cmos, &memory->colorram, &memory->timer };
     size_t i;
 
     for (i = 0; i < sizeof(regions) / sizeof(regions[0]); ++i) {
@@ -46,6 +47,8 @@ static const crusn_memory_region *crusn_find_region_const(const crusn_memory_map
 
 void crusn_memory_init(
     crusn_memory_map *memory,
+    u32 *rom_words,
+    size_t rom_word_count,
     u32 *ram_words,
     size_t ram_word_count,
     u32 *screen_words,
@@ -59,6 +62,11 @@ void crusn_memory_init(
     crusn_trace *trace
 )
 {
+    memory->rom.name = "rom";
+    memory->rom.base = CRUSN_ROM_BASE;
+    memory->rom.words = rom_words;
+    memory->rom.word_count = rom_word_count;
+
     memory->ram.name = "ram";
     memory->ram.base = CRUSN_RAM_BASE;
     memory->ram.words = ram_words;
@@ -109,6 +117,7 @@ void crusn_mem_wr32_map(crusn_memory_map *memory, word_addr_t addr, u32 value)
     size_t offset;
 
     assert(region != NULL);
+    assert(region != &memory->rom);
     offset = (size_t)(addr - region->base);
     assert(offset < region->word_count);
 

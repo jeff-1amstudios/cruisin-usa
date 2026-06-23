@@ -16,6 +16,7 @@ typedef struct crusn_memory_region {
 } crusn_memory_region;
 
 typedef struct crusn_memory_map {
+    crusn_memory_region rom;
     crusn_memory_region ram;
     crusn_memory_region screen;
     crusn_memory_region cmos;
@@ -26,6 +27,8 @@ typedef struct crusn_memory_map {
 
 void crusn_memory_init(
     crusn_memory_map *memory,
+    u32 *rom_words,
+    size_t rom_word_count,
     u32 *ram_words,
     size_t ram_word_count,
     u32 *screen_words,

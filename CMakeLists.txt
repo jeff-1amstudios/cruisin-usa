@@ -69,6 +69,7 @@ set(CRUSN_SOURCES
   src/game/motion.c
   src/game/mproc.c
   src/game/obj.c
+  src/game/objects.c
   src/game/overlay.c
   src/game/pall.c
   src/game/plyr.c
@@ -109,6 +110,12 @@ endif()
 
 if(CRUSN_TRACE)
   target_compile_definitions(crusn PRIVATE CRUSN_TRACE=1)
+endif()
+
+if(APPLE)
+  target_link_options(crusn PRIVATE "LINKER:SHELL:-map ${CMAKE_BINARY_DIR}/port.map")
+else()
+  target_link_options(crusn PRIVATE "LINKER:-Map=${CMAKE_BINARY_DIR}/port.map")
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")

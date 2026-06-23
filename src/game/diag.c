@@ -446,7 +446,25 @@ static const char toexit[] = "HIT ENTER TO EXIT";
 /* asm: RGB	090h,090h,090h		;	LIGHT GREY2 */
 /* asm: RGB	0C0h,0C0h,0C0h		;	LIGHT GREY3 */
 /* asm: RGB	020h,020h,020h		;	LIGHT GREY3 */
-static int DIAGPAL;
+static int DIAGPAL[] = {
+    16, // LENGTH OF PALETTE
+    RGB(0x060, 0x060, 0x060), // 0 LIGHT GREY
+    RGB(0x0FF, 0x0FF, 0x0FF), // 1  WHITE
+    RGB(0x070, 0x070, 0x070), // 2  GREY
+    RGB(0x0FF, 0x000, 0x000), // 3  RED
+    RGB(0x000, 0x0FF, 0x000), // 4  GREEN
+    RGB(0x055, 0x055, 0x099), // 5  BLUE  (for the sky paled out)
+    RGB(0x0FF, 0x0FF, 0x000), // 6  YELLOW
+    RGB(0x000, 0x0FF, 0x0FF), // 7  CYAN
+    RGB(0x000, 0x000, 0x000), // 8  BLACK
+    RGB(0x000, 0x000, 0x077), // 9  TRUE BLUE
+    RGB(0x0C0, 0x0A0, 0x000), // A  Amber color
+    RGB(0x050, 0x050, 0x050), // B	DARK GREY
+    RGB(0x060, 0x060, 0x060), // LIGHT GREY
+    RGB(0x090, 0x090, 0x090), // LIGHT GREY2
+    RGB(0x0C0, 0x0C0, 0x0C0), // LIGHT GREY3
+    RGB(0x020, 0x020, 0x020), // LIGHT GREY3
+};
 
 // *----------------------------------------------------------------------------
 void HARD_LOAD_DIAGPAL(void)

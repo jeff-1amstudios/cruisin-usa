@@ -19,11 +19,12 @@ from mame.generate_mame_validate_breakpoints import (
 
 def test_extracts_example_breakpoint() -> None:
     address_map = parse_address_map(ROOT / "tools" / "ida" / "address.map")
-    entries = collect_breakpoints_for_file(ROOT / "src" / "game" / "cusa.c", address_map)
-    first_wdhit = next(entry for entry in entries if entry.label == "WDHIT")
-    assert first_wdhit.variable_name == "WDHIT"
-    assert first_wdhit.next_instruction_address == 0x00004B3C
-    assert first_wdhit.variable_address == 0x008099E1
+    entries = collect_breakpoints_for_file(ROOT / "src" / "game" / "cusa.c", address_map, {})
+    diag_active = next(entry for entry in entries if entry.label == "DIAG_ACTIVE")
+    assert diag_active.variable_name == "DIAG_ACTIVE"
+    assert diag_active.instruction_address == 0x00004B56
+    assert diag_active.variable_address == 0x0000C969
+    assert diag_active.array_length is None
 
 
 def test_renders_expected_debugger_command() -> None:
@@ -48,10 +49,114 @@ def test_renders_expected_debugger_command() -> None:
 
         entries = collect_breakpoints(tmp, parse_address_map(sample_map))
         assert len(entries) == 1
-        assert entries[0].format_mame() == 'bpset 00001234, 1, { logerror "VALUE: 0x%08X\\n", d@00800010; g }'
+        assert entries[0].format_mame() == 'bpset 00001234, 1, { logerror "validate VALUE: 0x%08X\\n", d@00800010; g }'
 
         rendered = render_output(entries)
-        assert 'bpset 00001234, 1, { logerror "VALUE: 0x%08X\\n", d@00800010; quit }' in rendered
+        assert 'bpset 00001234, 1, { logerror "validate VALUE: 0x%08X\\n", d@00800010; g }' in rendered
+
+
+def test_small_array_uses_printf_once() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                int SWRAM[3];
+
+                void test(void) {
+                    mame_validate_word("SWRAM", &SWRAM[0]);
+                    mame_validate_word("SWRAM+1", &SWRAM[1]);
+                    mame_validate_word("SWRAM+2", &SWRAM[2]);
+                    // asm 00002002:   LDI 1,R0
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text(" 0000:00800100       SWRAM\n")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].array_length == 3
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00002002, 1, { logerror "validate SWRAM[3]: 0x%08X 0x%08X 0x%08X\\n", d@00800100, d@00800101, d@00800102; g }'
+        )
+
+
+def test_large_array_uses_save() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                int RAWLOCS[128];
+
+                void test(void) {
+                    mame_validate_word("RAWLOCS", &RAWLOCS[0]);
+                    // asm 00009F80:   LSH 8,R0
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text(" 0000:0000CA3D       RAWLOCS\n")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].array_length == 128
+        rendered = render_output(entries)
+        assert (
+            'bpset 00009F80, 1, { save 00009F80-0.bin, 0000CA3D, 0x80; '
+            'logerror "validate RAWLOCS: file=00009F80-0.bin\\n"; g }'
+        ) in rendered
+
+
+def test_shared_hook_address_is_collapsed() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                int PTTRAM[384];
+                int PALRAM[128];
+                int RAWLOCS[128];
+                int _PALLIST[256];
+
+                void test(void) {
+                    mame_validate_word("PTTRAM", &PTTRAM);
+                    mame_validate_word("PALRAM", &PALRAM);
+                    mame_validate_word("RAWLOCS", &RAWLOCS);
+                    mame_validate_word("_PALLIST", &_PALLIST);
+                    // asm 00009EBE:   CALL PALXFER_INIT
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text(
+            " 0000:0000CABD       PTTRAM\n"
+            " 0000:0000C9BD       PALRAM\n"
+            " 0000:0000CA3D       RAWLOCS\n"
+            " 0000:0000EA7C       _PALLIST\n"
+        )
+
+        rendered = render_output(collect_breakpoints(tmp, parse_address_map(sample_map)))
+        assert rendered.count("bpset 00009EBE, 1, {") == 1
+        assert (
+            'bpset 00009EBE, 1, { '
+            'save 00009EBE-0.bin, 0000CABD, 0x180; logerror "validate PTTRAM: file=00009EBE-0.bin\\n"; '
+            'save 00009EBE-1.bin, 0000C9BD, 0x80; logerror "validate PALRAM: file=00009EBE-1.bin\\n"; '
+            'save 00009EBE-2.bin, 0000CA3D, 0x80; logerror "validate RAWLOCS: file=00009EBE-2.bin\\n"; '
+            'save 00009EBE-3.bin, 0000EA7C, 0x100; logerror "validate _PALLIST: file=00009EBE-3.bin\\n"; '
+            'g }'
+        ) in rendered
 
 
 def test_ignores_commented_out_validate_call() -> None:
@@ -62,6 +167,7 @@ def test_ignores_commented_out_validate_call() -> None:
             textwrap.dedent(
                 """
                 LABEL:
+                    // asm 00001233:   STI R0,@ACTIVE
                     ACTIVE = R0.s;
                     mame_validate_word("ACTIVE", &ACTIVE);
                     // mame_validate_word("IGNORED", &IGNORED);
@@ -86,13 +192,45 @@ def test_ignores_commented_out_validate_call() -> None:
         assert entries[0].label == "ACTIVE"
 
 
+def test_mame_validate_arg_uses_function_entry_and_register() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                uint32_t PAL_ALLOC_RAW(void* palette_source) {
+                    mame_validate_arg("AR2", palette_source);
+                    return 0;
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text(" 0000:00009F5A       PAL_ALLOC_RAW\n")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x00009F5A
+        assert entries[0].format_mame() == 'bpset 00009F5A, 1, { logerror "validate AR2: 0x%08X\\n", ar2; g }'
+
+
 def main() -> int:
     test_extracts_example_breakpoint()
-    print("ok: real cusa.c WDHIT validate site resolves to 0x00004B3C / 0x008099E1")
+    print("ok: real cusa.c DIAG_ACTIVE validate site resolves to 0x00004B56 / 0x0000C969")
     test_renders_expected_debugger_command()
     print("ok: synthetic sample renders expected MAME debugger command")
+    test_small_array_uses_printf_once()
+    print("ok: small arrays render a single logerror breakpoint")
+    test_large_array_uses_save()
+    print("ok: large arrays render save plus filename logerror")
+    test_shared_hook_address_is_collapsed()
+    print("ok: shared hook addresses render as one grouped breakpoint")
     test_ignores_commented_out_validate_call()
     print("ok: commented-out mame_validate_word lines are ignored")
+    test_mame_validate_arg_uses_function_entry_and_register()
+    print("ok: mame_validate_arg emits a function-entry register breakpoint")
     return 0
 
 

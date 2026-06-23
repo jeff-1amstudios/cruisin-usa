@@ -1,19 +1,19 @@
+#include "hud.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
 #include "c30.h"
+#include "cmos.h"
+#include "dirq.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "dirq.h"
-#include "hud.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/HUD.ASM
@@ -38,18 +38,16 @@ void FILL_PLOT(void);
 
 extern int CHEAT;
 
-static int GEARPAL;
-
 /*
-*----------------------------------------------------------------------------
-*HEADS UP DISPLAY ROUTINES
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *HEADS UP DISPLAY ROUTINES
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
-#define SECTION_COUNTER 0 //1 = TURN ON UL CRNR
+#define SECTION_COUNTER 0 // 1 = TURN ON UL CRNR
 /* asm: COUNTDOWN_BUF	.bss	COUNTDOWN_BUF,2 */
 int COUNTDOWN_BUF[2];
 /* asm: MPH_BUFFER	.bss	MPH_BUFFER,2 */
@@ -76,8 +74,7 @@ int OFFROADBUFF[2];
 /* asm: MOVEIN_OFFSET	.bss	MOVEIN_OFFSET,1 */
 int MOVEIN_OFFSET;
 
-void MOVEIN_HUD_EQUIP(void)
-{
+void MOVEIN_HUD_EQUIP(void) {
     // asm 00009D0E: 	LDI	150,R0
     // asm 00009D0F: 	STI	R0,@MOVEIN_OFFSET
 LIU8:
@@ -105,8 +102,7 @@ M2L:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void MOVEOUT_HUD_EQUIP(void)
-{
+void MOVEOUT_HUD_EQUIP(void) {
     // asm 00009D20: 	LDI	25-1,AR5
     // asm 00009D21: MIHEL2
     // asm 00009D21: 	LDI	@MOVEIN_OFFSET,R0
@@ -125,15 +121,14 @@ void MOVEOUT_HUD_EQUIP(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*HEADS UP DISPLAY ROUTINE
-*CALL FROM MAIN LOOP
-*
-*SHOULD ONLY BE CALLED DURING GAME PLAY
-*
-*/
-void HUD(void)
-{
+ *----------------------------------------------------------------------------
+ *HEADS UP DISPLAY ROUTINE
+ *CALL FROM MAIN LOOP
+ *
+ *SHOULD ONLY BE CALLED DURING GAME PLAY
+ *
+ */
+void HUD(void) {
     // asm 00009D2A: 	CALL	TACHOMETER_ANIMATE
     // asm 00009D2B: 	CALL	RADAR_PLOT
     // 	;
@@ -438,15 +433,14 @@ ISKPH:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*ALLOCATE PALETTES FOR A SECTION
-*
-*PARAMETERS
-*	AR2	PTR TO SECTION HEADER
-*
-*/
-void HARDalloc_section(void)
-{
+ *----------------------------------------------------------------------------
+ *ALLOCATE PALETTES FOR A SECTION
+ *
+ *PARAMETERS
+ *	AR2	PTR TO SECTION HEADER
+ *
+ */
+void HARDalloc_section(void) {
     // asm 00009E21: 	LDI	*AR2++,AR6
     // asm 00009E22: 	LDI	*AR2,AR5
     // asm 00009E23: 	DEC	AR5
@@ -463,16 +457,15 @@ void HARDalloc_section(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*DEALLOCATE PALETTES USED FOR A SECTION
-*
-*
-*PARAMETERS
-*	AR2	SECTION POINTER
-*
-*/
-void dealloc_section(void)
-{
+ *----------------------------------------------------------------------------
+ *DEALLOCATE PALETTES USED FOR A SECTION
+ *
+ *
+ *PARAMETERS
+ *	AR2	SECTION POINTER
+ *
+ */
+void dealloc_section(void) {
     // asm 00009E29: 	PUSH	AR4
     // asm 00009E2A: 	PUSH	AR5
     // asm 00009E2B: 	PUSH	AR6
@@ -498,8 +491,7 @@ void dealloc_section(void)
 int TACHOMETER_PAL[32];
 
 // *----------------------------------------------------------------------------
-static void TACHOMETER_ANIMATE(void)
-{
+static void TACHOMETER_ANIMATE(void) {
     // asm 00009E4D: 	LDL	TACH_GRADIENT,AR0
     // asm 00009E4E: 	LDL	TACHOMETER_PAL,AR1
     // asm 00009E4F: 	LDI	22-1,RC
@@ -560,22 +552,33 @@ LP89:
 /* asm: .word	0 */
 /* asm: .word	0 */
 /* asm: RGB	0,255,255 */
-static int GEARPAL;
+/* asm: .word	0 */
+/* asm: .word	0 */
+/* asm: .word	0 */
+static int GEARPAL[] = {
+    0,
+    0,
+    0,
+    0,
+    RGB(0, 255, 255),
+    0,
+    0,
+    0,
+};
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	R0	X POS
-*	R1	Y POS
-*	R2	X WIDTH
-*	R3	Y WIDTH
-*
-*
-*/
-void FILL_DITHER(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	R0	X POS
+ *	R1	Y POS
+ *	R2	X WIDTH
+ *	R3	Y WIDTH
+ *
+ *
+ */
+void FILL_DITHER(void) {
     // asm 00009E84: 	PUSH	R0
     // asm 00009E85: 	PUSH	R1
     // asm 00009E86: 	PUSH	R2
@@ -593,8 +596,7 @@ void FILL_DITHER(void)
     UNIMPL();
 }
 
-void FILL_PLOT(void)
-{
+void FILL_PLOT(void) {
     // asm 00009E8E: 	PUSH	R0
     // asm 00009E8F: 	PUSH	R1
     // asm 00009E90: 	PUSH	R2
