@@ -1,4 +1,5 @@
 #include "cusa.h"
+#include "../core/config.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
 #include "../core/validator.h"
@@ -131,9 +132,9 @@ static const char dlts[] = "DOWNLOADING TEXTURES";
 ;	VID = 40
 ;
 */
-const char VERSION_STAMP[] = "VERSION  4.4";
+const char VERSION_STAMP[] = "VERSION  4.5";
 #endif
-static const char INTERNAL_VERS[] = "I440";
+static const char INTERNAL_VERS[] = "I450";
 #define VERSION_ID 40
 /*
         ;Because of managements inability to deal with software projects,
@@ -406,301 +407,134 @@ void _c_int00(void) {
 
 #endif
 
-    // asm 00004B35: 	CLRI	R2
-    // asm 00004B36: 	SETAUD	ADJ_OUTOFDIAG
-    R2.s = 0;
-    SETADJ(ADJ_OUTOFDIAG);
-    // asm 00004B38:       	BU	DR1 			;SKIP DOGGIE
+    SETADJ(ADJ_OUTOFDIAG, 0);
     goto DR1;
 
 DIAG_RETURN:
-    // asm 00004B39: 	LDI	8,R0	      		;PREVENT FALSE DOGGIE
-    // asm 00004B3A: 	LDP	@WDHIT
-    // asm 00004B3B: 	STI	R0,@WDHIT		;SAVE YOUR DOGGIE
-    R0.s = 8;
-    WDHIT = R0.s;
-    // mame_validate_word("WDHIT", &WDHIT);
+    WDHIT = 8; // prevent false watchdog
 
 DR1:
-    // asm 00004B3C: 	SOFTWTM	R0		    	;SET WAIT STATES
-    // asm 00004B40: 	DINT
-    // asm 00004B46:         LDP	@FASTSTKI
-    // asm 00004B47:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
-    SP = FASTSTKI;
+
 #if DEBUG
-    // asm: 	CALL	VERIFY_CODE_INTEGRITY
     VERIFY_CODE_INTEGRITY();
 #endif
-#if 0 // jeff ignore for now
-    // 	;LOAD CODE BACK INTO RAM
-    // 	;
-    // 	;
-    // asm 00004B48: 	LDI	040h,AR1		;SOURCE ADDRESS
-    // asm 00004B49: 	LDI	0C000h,AR2		;DESINATION ADDRESS
-    // asm 00004B4A: 	LS	8,AR2
-    // asm 00004B4B: 	ADDI	040h,AR2
-    // asm 00004B4C: 	LDI	1000h,RC		;COPY THE PROGRAM INTO
-    // asm 00004B4D: 	LS	4,RC			;FAST RAM
-    // asm 00004B4E: 	RPTB	LD_RAM2
-    // asm 00004B4F: 	LDI	*AR2++,R0
-    AR1 = 0x40u;
-    AR2 = 0x0C00040u;
-    RC = 0x1000u << 4;
-    for (i = 0; i <= (int)RC; ++i) {
-        R0.u = crusn_mem_rd32(AR2++);
-        // asm 00004B50: STI	R0,*AR1++
-        crusn_mem_wr32(AR1++, R0.u);
-    }
-#endif
-    // asm 00004B51: 	CLRI	R0
-    // asm 00004B52: 	LDP	@COLORAM
-    // asm 00004B53: 	STI	R0,@COLORAM
-    R0.s = 0;
-    crusn_mem_wr32(COLORAM, R0.u);
-    // asm 00004B54: 	SETDP
-    // asm 00004B55: 	STI	R0,@DIAG_ACTIVE
-    DIAG_ACTIVE = R0.s;
-    mame_validate_word("DIAG_ACTIVE", &DIAG_ACTIVE);
-    // asm 00004B56: 	CALL	CLR_PBSS
+
+    *COLOROM_ADDR(COLORAM) = 0;
+    DIAG_ACTIVE = 0;
+
     CLR_PBSS();
-    // asm 00004B57: 	CALL	CLR_RAM			;INIT .BSS TO 0
     CLR_RAM();
-    // asm 00004B58: 	LDI	MDIAG,R0		;MELLOW THE WHEEL
-    // asm 00004B59: 	STI	R0,@_MODE
-    R0.s = MDIAG;
-    _MODE = R0.s;
-    mame_validate_word("_MODE", &_MODE);
-    // asm 00004B5A: 	LDI	SYSCNTL_INIT,R0		;INIT SYSCNTL RAM SHADOW
-    // asm 00004B5B: 	STI	R0,@SYSCNTL
-    R0.s = SYSCNTL_INIT;
-    SYSCNTL = R0.s;
-    mame_validate_word("SYSCNTL", &SYSCNTL);
-    // asm 00004B5C: 	CALL	FEED_WATCHDOG
+
+    _MODE = MDIAG;
+    SYSCNTL = SYSCNTL_INIT;
+
     FEED_WATCHDOG();
-    // asm 00004B5D: 	CALL	MESSAGE1		;DISPLAY STARTUP MESSAGE TO SCREEN
+
     MESSAGE1();
+    mame_validate_region_at_addr(0x00004B5E, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
     crusn_yield_display_interrupt();
-    // asm 00004B5E: 	CALL	MSG1
     MSG1();
     crusn_yield_display_interrupt();
-    // asm 00004B5F: 	LDI	240,R0			;X MIN
-    // asm 00004B60: 	STI	R0,@PREVX
-    R0.s = 240;
-    PREVX = R0.s;
-    mame_validate_word("PREVX", &PREVX);
-    // asm 00004B61: 	LDI	1,R0
-    // asm 00004B62: 	STI	R0,@DELTA
-    R0.s = 1;
-    DELTA = R0.s;
-    mame_validate_word("DELTA", &DELTA);
-    // asm 00004B63: 	LDP	@TIMER_CNTL1
-    // asm 00004B64: 	LDI	200h|1,R0		;INIT TIMER MUMBO-JUMBO
-    // asm 00004B65: 	STI	R0,@TIMER_CNTL1		;
-    R0.u = 0x200u | 1u;
-    crusn_mem_wr32(TIMER_CNTL1, R0.u);
-    // asm 00004B66: 	LDI	-1,R0			;
-    // asm 00004B67: 	STI	R0,@TIMER_PERIOD1	;
-    R0.s = -1;
-    crusn_mem_wr32(TIMER_PERIOD1, R0.u);
-    // asm 00004B68: 	SETDP
-    // asm 00004B69: 	LDF	0,R0
-    R0.f = 0.0f;
-    // asm 00004B6A: 	LDI	@TIMERAMI,AR0
-    // asm 00004B6B: 	RPTS	47	 		;CLEAR OUT COUNT AREA
-    // asm 00004B6C: 	STF	R0,*AR0++
-    for (i = 0; i < 48; ++i) {
-        TIMERAM[i] = (int)R0.u;
-    }
-    // asm 00004B6D: 	LDL	5A5A5A5Ah,R0	 	;INIT RANDOM NUMBER SEED
-    // asm 00004B6E: 	STI	R0,@RAND
-    R0.u = 0x5A5A5A5Au;
-    RAND = (int)R0.u;
-    mame_validate_word("RAND", &RAND);
-    // asm 00004B6F: 	CALL	LOAD_FIXED_PALETTES	;LOAD BASE PALETTES
+    mame_validate_region_at_addr(0x00004B5F, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
+
+    PREVX = 240;
+    DELTA = 1;
+
+    crusn_mem_wr32(TIMER_CNTL1, 0x200 | 1);
+    crusn_mem_wr32(TIMER_PERIOD1, -1);
+
+    // clear_timer_ram_48_floats();
+
+    RAND = 0x5A5A5A5A;
+
     LOAD_FIXED_PALETTES();
-    // asm 00004B70: 	CALL	INIT_SYSTEM		;INIT REST OF SYSTEM
     INIT_SYSTEM();
-    // asm 00004B71: 	CALL	READIO			;GET I/O STATUS (W/INTs OFF)
+
     READIO();
-    // asm 00004B72: 	CALL	CHECKDIAG		;GOTO DIAGNOSTICS PREDICATE
     CHECKDIAG();
-    // asm 00004B73: 	CALL	FIFO_RESET		;CLEAR THE FIFO
+
     FIFO_RESET();
-    // asm 00004B74: 	CALL	COMM_INIT
     COMM_INIT();
-    // asm 00004B75: 	CALL	TIMER_RESET
+
     TIMER_RESET();
-    // asm 00004B76: 	DINT
-    // asm 00004B7C: 	CALL	RESET_SNDBRD		;RESET SOUND BOARD (and DB)
+
+    DINT();
     RESET_SNDBRD();
-    // asm 00004B7D: 	EINT
-    // asm 00004B7E: 	CALL	FIFO_RESET
+    EINT();
+
     FIFO_RESET();
-    // asm 00004B7F: 	LDI	INT0_M|INT3_M,IE	;ENABLE INTERRUPTS
-    IE = INT0_M | INT3_M;
-    // asm 00004B80: 	AND     0,IF
-    IF = 0;
-    // asm 00004B81: 	CALL	ENABLEGIE
+
     ENABLEGIE();
-    // asm 00004B82: 	CALL	COMM_ENABLE_INT2
+
     COMM_ENABLE_INT2();
-    // asm 00004B83: 	CALL	INITIALIZATION_MOTION_CHECK
+
     INITIALIZATION_MOTION_CHECK();
-    // asm 00004B84: 	CLRI	R2
-    // asm 00004B85: 	SETAUD	ADJ_OUTOFDIAG
-    R2.s = 0;
-    SETADJ(ADJ_OUTOFDIAG);
-    // asm 00004B87: 	LDI	1,R0			;INIT BASE OF WAVERAM
-    // asm 00004B88: 	STI	R0,@HARD_SECTION_LOAD
-    R0.s = 1;
-    HARD_SECTION_LOAD = R0.s;
-    mame_validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
-    // asm 00004B89: 	LDL	_SECshared,AR2
-    AR2 = _SECshared_ROM;
-    // asm 00004B8A: 	CALL	LOAD_SECTION_REQ
-    LOAD_SECTION_REQ();
-    // asm 00004B8B: 	LDI	1,R0
-    // asm 00004B8C: 	STI	R0,@HARD_SECTION_LOAD
-    R0.s = 1;
-    HARD_SECTION_LOAD = R0.s;
-    mame_validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
-    // asm 00004B8D: 	LDL	_SECskys,AR2
-    AR2 = _SECskys_ROM;
-    // asm 00004B8E: 	CALL	LOAD_SECTION_REQ
-    LOAD_SECTION_REQ();
-    // asm 00004B8F: 	CALL	MSG2
+
+    SETADJ(ADJ_OUTOFDIAG, 0);
+
+    HARD_SECTION_LOAD = 1;
+    LOAD_SECTION_REQ(_SECshared);
+
+    HARD_SECTION_LOAD = 1;
+    // LOAD_SECTION_REQ(_SECskys);
+
     MSG2();
-    // asm 00004B90: 	LDI	1,R0
-    // asm 00004B91: 	STI	R0,@HARD_SECTION_LOAD
-    R0.s = 1;
-    HARD_SECTION_LOAD = R0.s;
-    mame_validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
-    // asm 00004B92: 	STI	R0,@BOOT_PACIFY_SCREEN_P
-    BOOT_PACIFY_SCREEN_P = R0.s;
-    mame_validate_word("BOOT_PACIFY_SCREEN_P", &BOOT_PACIFY_SCREEN_P);
-    // asm 00004B93: 	LDL	_SECgeneral,AR2
-    AR2 = _SECgeneral_ROM;
-    // asm 00004B94: 	CALL	LOAD_SECTION_REQ
-    LOAD_SECTION_REQ();
-    // asm 00004B95: 	LDI	1,R0
-    // asm 00004B96: 	STI	R0,@HARD_SECTION_LOAD
-    R0.s = 1;
-    HARD_SECTION_LOAD = R0.s;
-    mame_validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
-    // asm 00004B97: 	STI	R0,@BOOT_PACIFY_SCREEN_P
-    BOOT_PACIFY_SCREEN_P = R0.s;
-    mame_validate_word("BOOT_PACIFY_SCREEN_P", &BOOT_PACIFY_SCREEN_P);
-    // asm 00004B98: 	LDL	_SEChead2head,AR2
-    AR2 = _SEChead2head_ROM;
-    // asm 00004B99: 	CALL	LOAD_SECTION_REQ
-    LOAD_SECTION_REQ();
-    // asm 00004B9A: 	CALL	MSG3
+
+    HARD_SECTION_LOAD = 1;
+    BOOT_PACIFY_SCREEN_P = 1;
+    // LOAD_SECTION_REQ(_SECgeneral);
+
+    HARD_SECTION_LOAD = 1;
+    BOOT_PACIFY_SCREEN_P = 1;
+    // LOAD_SECTION_REQ(_SEChead2head);
+
     MSG3();
-    // asm 00004B9B: 	LDI	1,R0			;LOAD 1ST WAVE
-    // asm 00004B9C: 	STI	R0,@HARD_SECTION_LOAD
-    R0.s = 1;
-    HARD_SECTION_LOAD = R0.s;
-    mame_validate_word("HARD_SECTION_LOAD", &HARD_SECTION_LOAD);
-    // asm 00004B9D: 	STI	R0,@BOOT_PACIFY_SCREEN_P
-    BOOT_PACIFY_SCREEN_P = R0.s;
-    mame_validate_word("BOOT_PACIFY_SCREEN_P", &BOOT_PACIFY_SCREEN_P);
-    // asm 00004B9E: 	LDL	_SECpress,AR2
-    AR2 = _SECpress_ROM;
-    // asm 00004B9F: 	CALL	LOAD_SECTION_REQ
-    LOAD_SECTION_REQ();
-    // asm 00004BA0: 	LDI	0,R2
-    // asm 00004BA1: 	LDI	AUD_BCREDITS,AR2
-    // asm 00004BA2: 	CALL	AUDIT_WRITE
-    R2.s = 0;
-    AR2 = AUD_BCREDITS;
-    AUDIT_WRITE();
-    // asm 00004BA3: 	READADJ	ADJ_VOLUME
+
+    HARD_SECTION_LOAD = 1;
+    BOOT_PACIFY_SCREEN_P = 1;
+    // LOAD_SECTION_REQ(_SECpress);
+
+    AUDIT_WRITE(AUD_BCREDITS, 0);
+
     READADJ(ADJ_VOLUME);
-    // asm 00004BA5: 	LDI	R0,R1
-    R1 = R0;
-    // asm 00004BA6: 	CALL	SET_MASTER_VOL
     SET_MASTER_VOL();
-    // asm 00004BA7: 	LDP	@WDHIT			;LOG WATCHDOG HIT
-    // asm 00004BA8: 	LDI	@WDHIT,R0
-    R0.s = WDHIT;
-    // asm 00004BA9: 	SETDP
-    // asm 00004BAA: 	AND	8,R0 			;CHECK B3
-    R0.s &= 8;
-    // asm 00004BAB: 	BNZ	NOPEIT
-    if (R0.s == 0) {
-        // asm 00004BAC: 	INCAUD	AUD_NUM_WATCHDOGS
+
+    if (WDHIT & 8)
         INCAUD(AUD_NUM_WATCHDOGS);
-    }
-NOPEIT:
-    // asm 00004BAE: 	CLRI	R0
-    // asm 00004BAF: 	STI	R0,@_newbut
-    R0.s = 0;
-    _newbut = R0.s;
-    mame_validate_word("_newbut", &_newbut);
-    // asm 00004BB0: 	LDI	-1,AR2
-    // asm 00004BB1: 	STI	AR2,@_ATTR_MODE
-    AR2 = (u32)-1;
-    _ATTR_MODE = (int)AR2;
-    mame_validate_word("_ATTR_MODE", &_ATTR_MODE);
-    // asm 00004BB2: 	CALL	WAVE			;setup 1st wave
+
+    _newbut = 0;
+    _ATTR_MODE = -1;
+
     WAVE();
-    // asm 00004BB3: 	CALL	FIFO_RESET
+
     FIFO_RESET();
-    // asm 00004BB4: 	LDI	INT0_M|INT3_M,IE	;ENABLE INTERRUPTS
-    IE = INT0_M | INT3_M;
-    // asm 00004BB5: 	LDP	@COMMINTM
-    // asm 00004BB6: 	OR	@COMMINTM,IE
-    IE |= (u32)COMMINTM;
-    // asm 00004BB7: 	SETDP
-    // asm 00004BB8: 	AND     0,IF
+
+    IE = INT0_M | INT3_M | COMMINTM;
     IF = 0;
-    // asm 00004BB9: 	CALL	ENABLEGIE
     ENABLEGIE();
-    // asm 00004BBA: 	READAUD	AUD_VERSION		;version update???
-    READAUD(AUD_VERSION);
-    // asm 00004BBC: 	CMPI	VERSION_ID,R0
-    // asm 00004BBD: 	BNE	VERSION_UPDATE
-    if (R0.s != VERSION_ID) {
+
+    if (READAUD(AUD_VERSION) != VERSION_ID) {
         VERSION_UPDATE();
-        goto DIAG_RETURN;
+        return;
     }
-    // asm 00004BBE: 	CALL	VALIDATE_CMOS		;DIAGNOSTIC CHECK ON CMOS
-    VALIDATE_CMOS();
-    // asm 00004BBF: 	BC	CMOS_ERROR		;wait till its better
-    // BC CMOS_ERROR: carry-flag behavior is not modeled in the current C port.
-    // asm 00004BC0: 	READAUD	ADJ_ACTUALHSTDRESET	;CHECK FOR HI SCORE RESET
-    READAUD(ADJ_ACTUALHSTDRESET);
-    // asm 00004BC2: 	CMPI	0,R0
-    // asm 00004BC3: 	BGT	NODO1
-    if (R0.s <= 0) {
-        // asm 00004BC4: 	CALL	INIT_HSTD_TABLES
+
+    if (VALIDATE_CMOS()) {
+        CMOS_ERROR();
+        return;
+    }
+
+    if (READAUD(ADJ_ACTUALHSTDRESET) <= 0) {
         INIT_HSTD_TABLES();
-        // asm 00004BC5: 	READAUD	ADJ_HIGHSCORE_RESET
-        READAUD(ADJ_HIGHSCORE_RESET);
-        // asm 00004BC7: 	LDI	R0,R2
-        R2 = R0;
-        // asm 00004BC8: 	SETADJ	ADJ_ACTUALHSTDRESET
-        SETADJ(ADJ_ACTUALHSTDRESET);
+        int reset_val = READAUD(ADJ_HIGHSCORE_RESET);
+        SETADJ(ADJ_ACTUALHSTDRESET, reset_val);
     }
-NODO1:
-    // asm 00004BCA: LDI	1,R0
-    // asm 00004BCB: 	STI	R0,@NFRAMES
-    R0.s = 1;
-    NFRAMES = R0.s;
-    // mame_validate_word("NFRAMES", &NFRAMES);
-    // asm 00004BCC: 	LDI	0,R0
-    // asm 00004BCD: 	STI	R0,@ERRORO
-    R0.s = 0;
-    ERRORO = R0.s;
-    // mame_validate_word("ERRORO", &ERRORO);
-    // asm 00004BCE: 	STI	R0,@ERRORN
-    ERRORN = R0.s;
-    // mame_validate_word("ERRORN", &ERRORN);
-    // asm 00004BCF: 	CALL	TIMERESET
+
+    NFRAMES = 1;
+    ERRORO = 0;
+    ERRORN = 0;
+
     TIMERESET();
-    // asm 00004BD0: 	CALL	COMMQ_PACKET_INIT
     COMMQ_PACKET_INIT();
-    MAINLOOP();
 }
 
 // *----------------------------------------------------------------------------
@@ -853,7 +687,7 @@ C_WAIT:
 void ENABLEGIE(void) {
     // asm 00004C44: 	RETI
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE", 0, 0);
-    UNIMPL();
+    // UNIMPL();
 }
 
 void INT0(void) {
@@ -1055,117 +889,7 @@ int SWRAM[3];
 int DIPRAM;
 
 static void READIO(void) {
-    // asm 00004D00: 	CLRI	AR0			;for Loff production board timing problem
-    // asm 00004D01: 	LDP	@DIPSW
-    // asm 00004D02: 	LDI	@DIPSW,R0
-    // asm 00004D03: 	LDI	*AR0,R2
-    // asm 00004D04: 	LDP	@DIPRAM
-    // asm 00004D05: 	RS	16,R0
-    // asm 00004D06: 	STI	R0,@DIPRAM
-    // asm 00004D07: 	LDP	@SWITCH3
-    // asm 00004D08: 	LDI	@SWITCH3,R0   		;READ HARDWARE 0=CLOSED, 1=OPEN
-    // asm 00004D09: 	LDI	*AR0,R2			;Loff
-    // asm 00004D0A: 	LS	16,R0
-    // asm 00004D0B: 	LDI	@SWITCH1,R1
-    // asm 00004D0C: 	LDI	*AR0,R2			;Loff
-    // asm 00004D0D: 	LS	16,R1
-    // asm 00004D0E: 	LDP	@FASTSTKI
-    // asm 00004D0F: 	RS	16,R1
-    // asm 00004D10: 	OR	R1,R0
-    // asm 00004D11: 	NOT	R0,R1
-    // asm 00004D12: 	LDI	@SWRAMI,AR0
-    // asm 00004D13: 	STI	R1,@SWITCHBUTS
-    // 	;
-    // 	;SCAN SWITCHES, TRIGGER ON LEADING EDGE
-    // 	;
-    // asm 00004D14: 	AND	*AR0,*+AR0(1),R2	;PREVIOUS TWO OPEN
-    // asm 00004D15: 	AND	R1,R2			;CURRENT ONE CLOSED
-    // asm 00004D16: 	OR	*+AR0(2),R2		;OR INTO EDGE LIST
-    // asm 00004D17: 	STI	R2,*+AR0(2)		;STORE EDGE WORD 1=EDGE TRIGGERED
-    // asm 00004D18: 	LDI	*AR0,R1			;GET N-1
-    // asm 00004D19: 	STI	R1,*+AR0(1)		;N-1 --> N-2
-    // asm 00004D1A: 	STI	R0,*AR0			;N --> N-1
-    // asm 00004D1B: 	PUSH	DP
-    // asm 00004D1C: 	LDI	@SYSCNTL,R0	      	;actually we signal a read of the
-    // asm 00004D1D: 	LDP	@SYSCNTLR		;have a value
-    // asm 00004D1E: 	ANDN	ATOD_WR,R0	      	;pot(s), they interrupt us when they
-    // asm 00004D1F: 	STI	R0,@SYSCNTLR		;have a value
-    // asm 00004D20: 	POP	DP
-    // asm 00004D21: 	CLRI	AR0
-    // asm 00004D22: 	LDP	@ATOD_R
-    // asm 00004D23: 	LDI	04h,R0
-    // asm 00004D24: 	LS	24,R0
-    // asm 00004D25: 	STI	R0,@ATOD_R
-    // asm 00004D26: 	LDI	*AR0,R2
-    // asm 00004D27: 	SETDP
-    // asm 00004D28: 	CLRI	R0
-    // asm 00004D29: 	STI	R0,@RDPOT
-    // 	;THESE ARE SPECIAL ROUTINES WHICH ARE CALLED, *NOT* CREATED
-    // 	;FOR PROCESSES.
-    // 	;	THIS INCLUDES:
-    // 	;		VOL+
-    // 	;		VOL-
-    // 	;		DIAG BUTTON
-    // 	;NO OTHER ROUTINES SHOULD BE HERE
-    // asm 00004D2A: 	LDI	@SWRAM+2,R0
-    // asm 00004D2B: 	TSTB	SW_DIAG,R0
-    // asm 00004D2C: 	CALLNZ	DIAG_TOGGLE
-    // asm 00004D2D: 	LDI	@_MODE,R0
-    // asm 00004D2E: 	AND	MMODE,R0
-    // asm 00004D2F: 	CMPI	MATTR,R0
-    // asm 00004D30: 	BEQ	NIGY
-    // asm 00004D31: 	CMPI	MDIAG,R0
-    // asm 00004D32: 	BEQ	NIGY
-    // asm 00004D33: 	LDI	@SWITCHBUTS,R0
-    // asm 00004D34: 	TSTB	SW_VOLPLUS,R0
-    // asm 00004D35: 	CALLNZ	VOL_PLUS
-    // asm 00004D36: 	TSTB	SW_VOLMINUS,R0
-    // asm 00004D37: 	CALLNZ	VOL_MINUS
-NIGY:
-    // asm 00004D38: 	RETS
-    {
-        u32 dipsw;
-        u32 switches_open;
-        u32 switches_closed;
-        u32 edge_bits;
-        int mode;
-
-        dipsw = crusn_mem_rd32(DIPSW);
-        DIPRAM = (int)(dipsw >> 16);
-
-        switches_open = (crusn_mem_rd32(SWITCH1) >> 16) | (crusn_mem_rd32(SWITCH3) << 16);
-        switches_closed = ~switches_open;
-        SWITCHBUTS = (int)switches_closed;
-
-        edge_bits = ((u32)SWRAM[0] & (u32)SWRAM[1] & switches_closed) | (u32)SWRAM[2];
-        SWRAM[2] = (int)edge_bits;
-        SWRAM[1] = SWRAM[0];
-        SWRAM[0] = (int)switches_open;
-
-        crusn_mem_wr32(SYSCNTLR, (u32)SYSCNTL & ~ATOD_WR);
-        crusn_mem_wr32(ATOD_R, 0x04u << 24);
-        RDPOT = 0;
-
-        if ((SWRAM[2] & SW_DIAG) != 0) {
-            DIAG_TOGGLE();
-        }
-
-        mode = _MODE & MMODE;
-        if (mode != MATTR && mode != MDIAG) {
-            if ((SWITCHBUTS & SW_VOLPLUS) != 0) {
-                VOL_PLUS();
-            }
-            if ((SWITCHBUTS & SW_VOLMINUS) != 0) {
-                VOL_MINUS();
-            }
-        }
-
-        mame_validate_word("DIPRAM", &DIPRAM);
-        mame_validate_word("SWITCHBUTS", &SWITCHBUTS);
-        mame_validate_word("SWRAM", &SWRAM);
-        mame_validate_word("RDPOT", &RDPOT);
-        // asm 00004D00: 	CALLNZ	VOL_MINUS
-    }
+    // TODO
 }
 
 // *----------------------------------------------------------------------------
@@ -1516,6 +1240,10 @@ static void* SWTAB[] = {
 
 // *----------------------------------------------------------------------------
 void CHECKDIAG(void) {
+    if (DIAG_ACTIVE == 0) {
+        return;
+    }
+    abort();
     // asm 00004E2C: 	LDI	@DIAG_ACTIVE,R0
     // asm 00004E2D: 	RETSZ
     // asm 00004E2E: 	BR	ENTER_DIAG
@@ -1528,59 +1256,6 @@ void CHECKDIAG(void) {
 // *----------------------------------------------------------------------------
 
 static void CLR_PBSS(void) {
-    int* pbss_words[] = {
-        &_MODE,
-        &STATE,
-        &SYSCNTL,
-        &_pot0,
-        &_newbut,
-        &SWRAM[0],
-        &SWRAM[1],
-        &SWRAM[2],
-        &DIPRAM,
-        &BUTTON_STATUS,
-    };
-    int i;
-
-    // asm 00004E31: 	PUSH	R0
-    crusn_machine_push_reg32(R0);
-    // asm 00004E32: 	PUSH	AR0
-    crusn_machine_push_u32((u32)AR0);
-    // asm 00004E33: 	PUSH	RC
-    crusn_machine_push_u32(RC);
-    // asm 00004E34: 	PUSH	RS
-    crusn_machine_push_u32(RS);
-    // asm 00004E35: 	PUSH	RE
-    crusn_machine_push_u32(RE);
-    // asm 00004E36: 	LDI	@PBSS_PTR,AR0
-    AR0 = 0;
-    // asm 00004E37: 	LDI	@PBSS_BSSEND,RC
-    RC = (uint32_t)(sizeof(pbss_words) / sizeof(pbss_words[0]));
-    // asm 00004E38: 	SUBI	AR0,RC
-    RC -= AR0;
-    // asm 00004E39: 	SUBI	1,RC
-    --RC;
-    // asm 00004E3A: 	CLRI	R0
-    R0.s = 0;
-    // asm 00004E3B: 	RPTB	PRAMCLP
-PRAMCLP:
-    // asm 00004E3C: STI	R0,*AR0++
-    for (i = 0; i <= (int)RC; ++i) {
-        *pbss_words[AR0++] = R0.s;
-    }
-    // asm 00004E3D: 	CALL	CLEAR_LINK
-    CLEAR_LINK();
-    // asm 00004E3E: 	POP	RE
-    RE = crusn_machine_pop_u32();
-    // asm 00004E3F: 	POP	RS
-    RS = crusn_machine_pop_u32();
-    // asm 00004E40: 	POP	RC
-    RC = crusn_machine_pop_u32();
-    // asm 00004E41: 	POP	AR0
-    AR0 = crusn_machine_pop_u32();
-    // asm 00004E42: 	POP	R0
-    R0 = crusn_machine_pop_reg32();
-    // asm 00004E43: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -1591,71 +1266,6 @@ PRAMCLP:
 static int RAM_BSSEND = 0x01EFFF;
 
 void CLR_RAM(void) {
-    int* bss_words[] = {
-        &COMMINTM,
-        &NFRAMES,
-        &INFRAMES,
-        &FRAMRATE,
-        &IFRAMES,
-        &OFRAMES,
-        &ERRORN,
-        &ERRORO,
-        &FRAMETIME,
-        &SWITCHBUTS,
-        &BGNDCOLA,
-        &DIAG_ACTIVE,
-        &GAME_TIMER,
-        &_pot1,
-        &_pot2,
-        &RDPOT,
-        &_sectime,
-        &CLEARRDY,
-        &NOAERASE,
-        &NOSWAP,
-        &DISPLAY_PAGE,
-        &MPROC_TIK,
-        &WDHIT,
-    };
-    const uint32_t bss_word_count = (uint32_t)(sizeof(bss_words) / sizeof(bss_words[0]));
-    int i;
-
-    // asm 00004E46: 	PUSH	R0
-    crusn_machine_push_reg32(R0);
-    // asm 00004E47: 	PUSH	AR0
-    crusn_machine_push_u32((u32)AR0);
-    // asm 00004E48: 	PUSH	RC
-    crusn_machine_push_u32(RC);
-    // asm 00004E49: 	PUSH	RS
-    crusn_machine_push_u32(RS);
-    // asm 00004E4A: 	PUSH	RE
-    crusn_machine_push_u32(RE);
-    // asm 00004E4B: 	LDI	@RAM_PTR,AR0
-    AR0 = 0;
-    // asm 00004E4C: 	LDI	@RAM_BSSEND,RC
-    RC = bss_word_count;
-    // asm 00004E4D: 	SUBI	AR0,RC
-    RC -= AR0;
-    // asm 00004E4E: 	SUBI	1,RC
-    --RC;
-    // asm 00004E4F: 	CLRI	R0
-    R0.s = 0;
-    // asm 00004E50: 	RPTB	RAMCLP
-RAMCLP:
-    // asm 00004E51: STI	R0,*AR0++
-    for (i = 0; i < (int)bss_word_count; ++i) {
-        *bss_words[i] = R0.s;
-    }
-    // asm 00004E52: 	POP	RE
-    RE = crusn_machine_pop_u32();
-    // asm 00004E53: 	POP	RS
-    RS = crusn_machine_pop_u32();
-    // asm 00004E54: 	POP	RC
-    RC = crusn_machine_pop_u32();
-    // asm 00004E55: 	POP	AR0
-    AR0 = crusn_machine_pop_u32();
-    // asm 00004E56: 	POP	R0
-    R0 = crusn_machine_pop_reg32();
-    // asm 00004E57: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -1934,25 +1544,7 @@ static void ERROR_TRAP(void) {
 
 // *----------------------------------------------------------------------------
 void FIFO_RESET(void) {
-    // asm 00004EF4: 	DINT
-    // asm 00004EFA: 	LDP	@SYSCNTL
-    // asm 00004EFB: 	LDI	@SYSCNTL,R0		;READ SHADOW LOCATION
-    // asm 00004EFC: 	LDI	R0,R1
-    // asm 00004EFD: 	ANDN	1,R1			;MASK OUT FIFORS
-    // asm 00004EFE: 	LDP	@SYSCNTLR
-    // asm 00004EFF: 	STI	R1,@SYSCNTLR		;STROBE SYSTEM
-    // asm 00004F00: 	STI	R0,@SYSCNTLR		;THEN BACK TO NORMAL
-    // asm 00004F01: 	EINT
-    // asm 00004F02: 	LDP	@FIFO_CONTROL		;RESET COUNTER ON FIFO  (SAFETY FEATURE)
-    // asm 00004F03: 	LDI	FIFO_CONTROL_DMA_RUNSEL|FIFO_CONTROL_FIFO_RST,R0
-    // asm 00004F04: 	STI	R0,@FIFO_CONTROL
-    // asm 00004F05: 	NOP
-    // asm 00004F06: 	LDI	FIFO_CONTROL_DMA_RUNSEL,R0
-    // asm 00004F07: 	STI	R0,@FIFO_CONTROL
-    // asm 00004F08: 	SETDP
-    // asm 00004F09: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIFO_RESET", 0, 0);
-    UNIMPL();
+    // TODO?
 }
 
 // *----------------------------------------------------------------------------
@@ -1979,17 +1571,8 @@ int ST_OBJECTS;
  *
  */
 void TIMER_RESET(void) {
-    // asm 00004F0A: 	PUSH	DP
-    // asm 00004F0B: 	PUSH	R0
-    // asm 00004F0C: 	LDP	@TIMER_CNTL1
-    // asm 00004F0D: 	LDI	@TIMER_CNTL1,R0
-    // asm 00004F0E: 	OR	TMR_RESET_GO,R0
-    // asm 00004F0F: 	STI	R0,@TIMER_CNTL1
-    // asm 00004F10: 	POP	R0
-    // asm 00004F11: 	POP	DP
-    // asm 00004F12: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMER_RESET", 0, 0);
-    UNIMPL();
+    // TIMER_CNTL1 |= TMR_RESET_GO;
+    // TOOD
 }
 
 // *----------------------------------------------------------------------------
@@ -2078,195 +1661,50 @@ static void TIMEREC(void) {
 
 // *----------------------------------------------------------------------------
 static void MESSAGE1(void) {
-    // asm 00004F43: 	CLRI	R0
-    R0.s = 0;
-    // asm 00004F44: 	LDP	@9E0000h
-    // asm 00004F45: 	STI	R0,@9E0000h
-    crusn_mem_wr32(COLORAM + 0x000u, R0.u);
-    // asm 00004F46: 	LDI	-1,R0
-    R0.s = -1;
-    // asm 00004F47: 	STI	R0,@9E0001h		;white
-    crusn_mem_wr32(COLORAM + 0x001u, R0.u);
-    // asm 00004F48: 	LDI	06000h,R0
-    R0.s = 0x06000;
-    // asm 00004F49: 	STI	R0,@9E0003h		;red
-    crusn_mem_wr32(COLORAM + 0x003u, R0.u);
-    // asm 00004F4A: 	LDI	0294Ah,R0
-    R0.s = 0x0294A;
-    // asm 00004F4B: 	STI	R0,@9E000Bh		;grey
-    crusn_mem_wr32(COLORAM + 0x00Bu, R0.u);
-    // asm 00004F4C: 	SETDP
-    // asm 00004F4D: 	CALL	CLRSCRN
     CLRSCRN();
-    // asm 00004F4E: 	CALL	SETPAGE0
     SETPAGE0();
-    // asm 00004F4F: 	LDIL	SCREEN0,R0		;set active screen to 1 (writeable)
-    R0.s = SCREEN0;
-    // asm 00004F52: 	STI	R0,@ACTIVE_SCREEN
-    ACTIVE_SCREEN = R0.s;
-    // asm 00004F53: 	LDI	1,RC
-    RC = 1;
-    // asm 00004F54: 	TEXTIT	startup0,1,40
-    AR2 = (uintptr_t)startup0;
-    R2.s = 1;
-    R3.s = 40;
-    _outtextxyc();
-    // asm 00004F58: 	TEXTIT	startup1,1,70
-    AR2 = (uintptr_t)startup1;
-    R2.s = 1;
-    R3.s = 70;
-    _outtextxyc();
-    // asm 00004F5C: 	TEXTIT	startup2,1,80
-    AR2 = (uintptr_t)startup2;
-    R2.s = 1;
-    R3.s = 80;
-    _outtextxyc();
-    // asm 00004F60: 	TEXTIT	startup3,1,90
-    AR2 = (uintptr_t)startup3;
-    R2.s = 1;
-    R3.s = 90;
-    _outtextxyc();
-    // asm 00004F64: 	LDI	11,RC
-    RC = 11;
-    // asm 00004F65: 	TEXTIT	dlts,40,110
-    AR2 = (uintptr_t)dlts;
-    R2.s = 40;
-    R3.s = 110;
-    _outtextxyc();
-    // asm 00004F69: 	LDI	1,RC
-    RC = 1;
-    // asm 00004F6A: 	TEXTIT	VERSION_STAMP,40,130
-    AR2 = (uintptr_t)VERSION_STAMP;
-    R2.s = 40;
-    R3.s = 130;
-    _outtextxyc();
-    // asm 00004F6E: 	TEXTIT	INTERNAL_VERS,260,150
-    AR2 = (uintptr_t)INTERNAL_VERS;
-    R2.s = 260;
-    R3.s = 150;
-    _outtextxyc();
-    // asm 00004F72: 	TEXTIT	DATE_STAMP,40,150
-    AR2 = (uintptr_t)DATE_STAMP;
-    R2.s = 40;
-    R3.s = 150;
-    _outtextxyc();
-    // asm 00004F76: 	CLRI	AR0
-    AR0 = 0;
-    // asm 00004F77: 	LDP	@DIPSW
-    // asm 00004F78: 	LDI	@DIPSW,R0
-    R0.u = crusn_mem_rd32(DIPSW);
-    // asm 00004F79: 	LDI	*AR0,AR0
-    AR0 = crusn_mem_rd32(AR0);
-    // asm 00004F7A: 	RS	16,R0
-    R0.s >>= 16;
-    // asm 00004F7B: 	SETDP
-    // asm 00004F7C: 	TSTB	DIP_COMMP,R0
-    // asm 00004F7D: 	BZ	DODOIBO
-    if ((R0.u & DIP_COMMP) == 0) {
-        goto DODOIBO;
+    crusn_mem_wr32(COLORAM + 0x000u, 0);
+    crusn_mem_wr32(COLORAM + 0x001u, (uint32_t)-1); // white
+    crusn_mem_wr32(COLORAM + 0x003u, 0x06000u);     // red
+    crusn_mem_wr32(COLORAM + 0x00Bu, 0x0294Au);     // grey
+
+    ACTIVE_SCREEN = SCREEN0; // set active screen to 1 (writeable)
+
+    TEXTIT(startup0, 1, 40, 1);
+    TEXTIT(startup1, 1, 70, 1);
+    TEXTIT(startup2, 1, 80, 1);
+    TEXTIT(startup3, 1, 90, 1);
+    TEXTIT(dlts, 40, 110, 11);
+    TEXTIT(VERSION_STAMP, 40, 130, 1);
+    TEXTIT(INTERNAL_VERS, 260, 150, 1);
+    TEXTIT(DATE_STAMP, 40, 150, 1);
+
+    uint32_t dipsw = port_get_dipswitches() >> 16;
+    const char* link_status = LINKDISABLED;
+    if ((dipsw & DIP_COMMP) == 0) {
+        link_status = (dipsw & CMDP_MASTER) == 0 ? IAMMASTER : IAMSLAVE;
     }
-    // asm 00004F7E: 	LDI	@LINKDISABLED,AR2
-    AR2 = (uintptr_t)LINKDISABLED;
-    // asm 00004F7F: 	BU	HJSADF
-    goto HJSADF;
-DODOIBO:
-    // asm 00004F80: TSTB	CMDP_MASTER,R0
-    // asm 00004F81: 	LDIZ	@IAMMASTER,AR2
-    if ((R0.u & CMDP_MASTER) == 0) {
-        AR2 = (uintptr_t)IAMMASTER;
-    }
-    // asm 00004F82: 	LDINZ	@IAMSLAVE,AR2
-    if ((R0.u & CMDP_MASTER) != 0) {
-        AR2 = (uintptr_t)IAMSLAVE;
-    }
-HJSADF:
-    // asm 00004F83: LDI	40,R2
-    R2.s = 40;
-    // asm 00004F84: 	LDI	160,R3
-    R3.s = 160;
-    // asm 00004F85: 	CALL	_outtextxyc
-    _outtextxyc();
+    TEXTIT(link_status, 40, 160, 1);
     // 	;test if link pal is installed
     // 	;
     // 	;
-    // asm 00004F86: 	CLRI	AR0
-    AR0 = 0;
-    // asm 00004F87: 	LDP	@COMMPAL
-    // asm 00004F88: 	LDI	@COMMPAL,R0
-    R0.u = crusn_mem_rd32(0x0990000u);
-    // asm 00004F89: 	LDI	*AR0,R1
-    R1.u = crusn_mem_rd32(AR0);
-    // asm 00004F8A: 	SETDP
-    // asm 00004F8B: 	AND	0FH,R0
-    R0.u &= 0x0Fu;
-    // asm 00004F8C: 	CMPI	4,R0			;BAD PAL ?
-    // asm 00004F8D: 	LDIZ	@TPALI,AR2
-    if (R0.s == 4) {
-        AR2 = (uintptr_t)TPALI;
-    }
-    // asm 00004F8E: 	LDINZ	@TPALNI,AR2
-    if (R0.s != 4) {
-        AR2 = (uintptr_t)TPALNI;
-    }
-    // asm 00004F8F: 	LDI	40,R2
-    R2.s = 40;
-    // asm 00004F90: 	LDI	170,R3
-    R3.s = 170;
-    // asm 00004F91: 	LDI	1,RC
-    RC = 1;
-    // asm 00004F92: 	CALL	_outtextxyc
-    _outtextxyc();
+    uint32_t commpal = port_get_commpal() & 0x0Fu;
+    const char* pal_status = commpal == 4 ? TPALI : TPALNI; // BAD PAL ?
+    TEXTIT(pal_status, 40, 170, 1);
     // 	;
     // 	;
-    // asm 00004F93: 	LDI	239,AR2
-    AR2 = 239;
-    // asm 00004F94: 	LDI	110,R2
-    R2.s = 110;
-    // asm 00004F95: 	LDI	301,R3
-    R3.s = 301;
-    // asm 00004F96: 	LDI	117,RC
-    RC = 117;
-    // asm 00004F97: 	LDI	11,RS
-    RS = 11;
-    // asm 00004F98: 	CALL	_rectangle
-    _rectangle();
-    // asm 00004F99: 	LDI	11,RC
-    RC = 11;
-    // asm 00004F9A: 	TEXTIT	M1,1,190
-    AR2 = (uintptr_t)M1;
-    R2.s = 1;
-    R3.s = 190;
-    _outtextxyc();
-    // asm 00004F9E: 	RETS
-    (void)crusn_machine_dump_screen_bmp(g_crusn_machine, "build/message1.bmp");
+    _rectangle(239, 110, 301, 117, 11);
+    TEXTIT(M1, 1, 190, 11);
 }
 
 /* asm: MSG_CNT	.bss	MSG_CNT,1 */
 static int MSG_CNT;
 
 static void MSG1(void) {
-    // asm 00004F9F: LDI	11,RC
-    RC = 11;
-    // asm 00004FA0: 	TEXTIT	M2,1,200
-    AR2 = (uintptr_t)M2;
-    R2.s = 1;
-    R3.s = 200;
-    _outtextxyc();
-    // asm 00004FA4: 	TEXTIT	M3,1,220
-    AR2 = (uintptr_t)M3;
-    R2.s = 1;
-    R3.s = 220;
-    _outtextxyc();
-    // asm 00004FA8: 	TEXTIT	M4,1,230
-    AR2 = (uintptr_t)M4;
-    R2.s = 1;
-    R3.s = 230;
-    _outtextxyc();
-    // asm 00004FAC: 	TEXTIT	M5,1,240
-    AR2 = (uintptr_t)M5;
-    R2.s = 1;
-    R3.s = 240;
-    _outtextxyc();
+    TEXTIT(M2, 1, 200, 11);
+    TEXTIT(M3, 1, 220, 11);
+    TEXTIT(M4, 1, 230, 11);
+    TEXTIT(M5, 1, 240, 11);
     // asm 00004FB0: 	RETS
 }
 

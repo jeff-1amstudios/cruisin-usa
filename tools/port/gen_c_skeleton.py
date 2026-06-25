@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import ast
 from collections import ChainMap
 import re
@@ -4298,13 +4299,26 @@ def build_global_symbol_table(
 
 
 def main() -> int:
-    generated_only = "--generated-only" in sys.argv[1:]
+    parser = argparse.ArgumentParser(description="Generate first-pass C scaffolds from asm modules.")
+    parser.add_argument(
+        "--generated-only",
+        action="store_true",
+        help="Write generated outputs to the default generated source directory.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="Override the output directory for generated C/H files and logs.",
+    )
+    args = parser.parse_args()
+
     root = Path(__file__).resolve().parents[2]
     asm_dir = root / "asm"
-    generated_dir = root / "src" / "generated"
+    generated_dir = (args.output_dir.resolve() if args.output_dir is not None else (root / "src" / "generated"))
     reference_include_dir = root / "src" / "game"
-    out_dir = generated_dir if generated_only else reference_include_dir
-    include_dir = generated_dir if generated_only else reference_include_dir
+    output_override_active = args.output_dir is not None
+    out_dir = generated_dir if (args.generated_only or output_override_active) else reference_include_dir
+    include_dir = generated_dir if (args.generated_only or output_override_active) else reference_include_dir
     address_map = parse_address_map(root / "tools" / "ida" / "address.map")
     define_entries = parse_discovered_defines_file(root / "tools" / "ida" / "discovered_defines.txt")
     instruction_addresses_by_module = parse_instruction_addresses_file(
@@ -4316,7 +4330,7 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     generated_dir.mkdir(parents=True, exist_ok=True)
     include_dir.mkdir(parents=True, exist_ok=True)
-    log_dir = root / "tools" / "port" / "log"
+    log_dir = (generated_dir / "log") if output_override_active else (root / "tools" / "port" / "log")
     log_dir.mkdir(parents=True, exist_ok=True)
     discovered_define_entries = sorted(
         list(define_entries.values()),

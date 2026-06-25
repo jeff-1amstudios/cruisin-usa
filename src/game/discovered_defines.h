@@ -80,6 +80,6 @@
 #define trmeng1_p 221
 #define wtra_p 49
 // #define _PALLIST 60028
-#define _PALROM 41008
+// #define _PALROM 41008
 
 #endif /* DISCOVERED_DEFINES_H */

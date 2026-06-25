@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "macs.h"
 #include "mproc.h"
+#include "objects.h"
 #include "pall.h"
 #include "sys.h"
 #include "vunit.h"
@@ -58,6 +59,7 @@ int PTTRAM[PALNUM * 3];
 static int NUM_FIXED;
 
 static int num_palettes = 253;
+
 /*
  *----------------------------------------------------------------------------
  *INDEX STORAGE
@@ -360,63 +362,52 @@ void PAL_DELETE_RAW(void) {
  *	LOCKUP ON ERROR
  *
  */
-void PAL_ALLOC(void) {
-    // asm 00009F25: 	PUSHM	R2,R3,AR1,AR0,AR2
-    // ;	.if	DEBUG
-    // ;	CMPI	256,AR2
-    // ;	SLOCKON	GT,"PALL\GETPAL	next RAM loc??? find out"
-    // ;	.endif
-    // 	;LOOK IF ALREADY ALLOCATED
-    // asm 00009F2A: 	LDI	@PALLISTI,AR1
-    // asm 00009F2B: 	ADDI	AR2,AR1
-    // asm 00009F2C: 	LDI	*AR1,R0	     	;ALREADY ALLOCATED?
-    // asm 00009F2D: 	BZ	GPL0		;NO...
-    // asm 00009F2E: 	ADDI	1,R0		;YES, INCREMENT AND RETURN
-    // asm 00009F2F: 	STI	R0,*AR1
-    // asm 00009F30: 	B	GPLX		;RETURN...
-GPL0:
-    // 	;FIND A FREE ONE
-    // asm 00009F31: 	LDP	@PALRAMI	 	;LOOK FOR FREE CELL
-    // asm 00009F32: 	LDI	@PALRAMI,AR0
-    // asm 00009F33: 	LDI	PALNUM-1,RC
-    // asm 00009F34: 	LDI	*AR0++,R0 	;GET FIRST ONE
-    // asm 00009F35: 	RPTB	GPLP
-    // asm 00009F36: 	BZ	GETPL		;GOT A EMPTY
-GPLP:
-    // asm 00009F37: LDI	*AR0++,R0	;GET NEXT ONE
-    // asm 00009F38: GPERR
-    // ;	SLOCKON	U,"PALL\GETPAL   ERROR NONE LEFT"
-    // asm 00009F38: 	ERRON	U,77h
-    // ;edbg	.if	DEBUG
-    // ;	BU	$
-    // ;	.endif
-    // asm 00009F40: 	B	GPLX
-GETPL:
-    // asm 00009F41: 	LDI	AR2,R2
-    // asm 00009F42: 	LDP	PALROMI
-    // asm 00009F43: 	ADDI	@PALROMI,AR2
-    // asm 00009F44: 	LDI	*AR2,AR2	;NOW HOLDS RAM LOCATION
-    // asm 00009F45: 	OR	8000H,R2	;MAKE SURE A BIT IS SET
-    // asm 00009F46: 	STI	R2,*-AR0(1)	;MARK PALETTE AS TAKEN
-    // asm 00009F47: 	SUBI	PALNUM-1,RC	;GET PALETTE CODE
-    // asm 00009F48: 	NEGI	RC,R0
-    // asm 00009F49: 	LSH	16,R0
-    // asm 00009F4A: 	ADDI	1,R0		;INC COUNT
-    // asm 00009F4B: 	STI	R0,*AR1
-    // 	;SETUP TRANSFER
-    // asm 00009F4C: 	LDI	*AR2++,R3	;GET COUNT
-    // asm 00009F4D: 	LDI	R0,R2		;GET DESTINATION
-    // asm 00009F4E: 	LSH	-16,R2
-    // asm 00009F4F: 	LSH	8,R2
-    // asm 00009F50: 	CALL	PAL_SET
-    // asm 00009F51: 	SUBI	1,AR2		;RESTORE AR2
-GPLX:
-    // asm 00009F52: 	LSH	-16,R0		;SHIFT DOWN CODE
-    // asm 00009F53: 	LSH	8,R0
-    // asm 00009F54: 	POPM	AR2,AR0,AR1,R3,R2
-    // asm 00009F59: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_ALLOC", 0, 0);
-    UNIMPL();
+tPALETTE_CODE PAL_ALLOC(u32 pal_index) {
+    tPALLIST_ENTRY* entry = &_PALLIST[pal_index];
+
+    /* LOOK IF ALREADY ALLOCATED */
+    if (entry->ref_count_and_pal_code != 0) {
+        /* YES, INCREMENT AND RETURN */
+        entry->ref_count_and_pal_code++;
+
+        // Upper 16 bits store the palette slot.
+        return ((entry->ref_count_and_pal_code >> 16) << 8);
+    }
+
+    /* FIND A FREE ONE */
+    /* LOOK FOR FREE CELL */
+    int slot = -1;
+
+    for (int i = 0; i < PALNUM; ++i) {
+        if (PALRAM[i] == 0) {
+            slot = i;
+            break;
+        }
+    }
+
+    if (slot < 0) {
+        /* ERROR NONE LEFT */
+        ERRON(0x77);
+        return 0;
+    }
+
+    tPAL* pal_src = PALROMI[pal_index];
+
+    /* MAKE SURE A BIT IS SET */
+    PALRAMI[slot] = pal_index | 0x8000;
+
+    /* GET PALETTE CODE */
+    entry->ref_count_and_pal_code = ((u32)slot << 16) | 1;
+
+    /* SETUP TRANSFER */
+    /* GET COUNT */
+    u32 count = pal_src->flags_and_count;
+
+    /* GET DESTINATION */
+    PAL_SET(pal_src->data, (u32)slot << 8, count);
+
+    /* SHIFT DOWN CODE */
+    return (u32)slot << 8;
 }
 
 // *----------------------------------------------------------------------------
@@ -434,7 +425,7 @@ GPLX:
  *	LOCKUP ON ERROR
  *
  */
-uint32_t PAL_ALLOC_RAW(tPAL* palette_source) {
+tPALETTE_CODE PAL_ALLOC_RAW(tPAL* palette_source) {
     int slot = -1;
 
     mame_validate_arg("AR2", palette_source);
@@ -457,6 +448,8 @@ uint32_t PAL_ALLOC_RAW(tPAL* palette_source) {
     // First word of source is the transfer count.
     uint32_t count = palette_source->flags_and_count;
 
+    mame_validate_reg_at_addr(0x00009F76, "R3", &count);
+
     // Hardware palette destination is slot in bits 8-15, color index 0 in bits 0-7.
     uint32_t palette_code = (uint32_t)slot << 8;
 
@@ -464,6 +457,8 @@ uint32_t PAL_ALLOC_RAW(tPAL* palette_source) {
 
     // Remember the original raw palette record pointer, including count header.
     RAWLOCSI[slot] = palette_source;
+
+    mame_validate_reg_at_addr(0x00009F86, "R0", &palette_code);
 
     return palette_code;
 }

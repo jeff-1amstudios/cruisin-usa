@@ -22,9 +22,6 @@
 void MOVEIN_HUD_EQUIP(void);
 void MOVEOUT_HUD_EQUIP(void);
 void HUD(void);
-#define SECTION_PALETTE_ALLOC HARDalloc_section
-#define alloc_section HARDalloc_section
-void HARDalloc_section(void);
 void dealloc_section(void);
 static void TACHOMETER_ANIMATE(void);
 void FILL_DITHER(void);
@@ -440,18 +437,13 @@ ISKPH:
  *	AR2	PTR TO SECTION HEADER
  *
  */
-void HARDalloc_section(void) {
-    // asm 00009E21: 	LDI	*AR2++,AR6
-    // asm 00009E22: 	LDI	*AR2,AR5
-    // asm 00009E23: 	DEC	AR5
-    // asm 00009E24: alloc_LPA
-    // asm 00009E24: 	LDI	AR6,AR2
-    // asm 00009E25: 	CALL	PAL_ALLOC
-    // asm 00009E26: 	INC	AR6
-    // asm 00009E27: 	DBU	AR5,alloc_LPA
-    // asm 00009E28: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HARDalloc_section", 0, 0);
-    UNIMPL();
+void HARDalloc_section(tSECTION_ALLOC sec) {
+    uint32_t pal = sec.pal_index;
+
+    for (uint32_t i = 0; i < sec.count; i++) {
+        PAL_ALLOC(pal);
+        pal++;
+    }
 }
 
 // *----------------------------------------------------------------------------

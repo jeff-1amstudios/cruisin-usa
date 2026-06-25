@@ -20,6 +20,7 @@ endif()
 
 set(CRUSN_SOURCES
   src/core/cpu.c
+  src/core/config.c
   src/core/machine.c
   src/core/memory.c
   src/core/trace.c
@@ -110,6 +111,14 @@ endif()
 
 if(CRUSN_TRACE)
   target_compile_definitions(crusn PRIVATE CRUSN_TRACE=1)
+endif()
+
+if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+  target_compile_options(crusn PRIVATE
+    $<$<CONFIG:Debug>:-fsanitize=address>
+    $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
+  )
+  target_link_options(crusn PRIVATE $<$<CONFIG:Debug>:-fsanitize=address>)
 endif()
 
 if(APPLE)

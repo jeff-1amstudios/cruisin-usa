@@ -3,12 +3,12 @@
 
 #include <dlfcn.h>
 #include <inttypes.h>
-#include <stddef.h>
-#include <stdnoreturn.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdnoreturn.h>
 #include <string.h>
 
 static FILE* g_validate_log;
@@ -58,8 +58,7 @@ static FILE* open_validate_log(void) {
 }
 
 static VALIDATE_SYMBOL_ENTRY* reserve_symbol_entry(VALIDATE_SYMBOL_MAP* map) {
-    VALIDATE_SYMBOL_ENTRY* grown_entries =
-        realloc(map->entries, (map->count + 1) * sizeof(VALIDATE_SYMBOL_ENTRY));
+    VALIDATE_SYMBOL_ENTRY* grown_entries = realloc(map->entries, (map->count + 1) * sizeof(VALIDATE_SYMBOL_ENTRY));
     if (grown_entries == NULL) {
         fprintf(stderr, "validator: failed to grow symbol map\n");
         fflush(stderr);
@@ -237,8 +236,7 @@ static noreturn void validate_fail(
     const char* name,
     const char* message,
     const char* expected,
-    const char* actual
-) {
+    const char* actual) {
     fprintf(
         stderr,
         "%s:%d: validate_word(%s) failed: %s; expected %s but was %s\n",
@@ -247,8 +245,7 @@ static noreturn void validate_fail(
         name,
         message,
         expected,
-        actual
-    );
+        actual);
     fflush(stderr);
     abort();
 }
@@ -391,9 +388,37 @@ static uint8_t* read_validate_dump(const char* path, size_t* out_size) {
     return buffer;
 }
 
+static int should_dump_screen0_validation_bitmaps(const char* name, size_t dump_size) {
+    return strcmp(name, "SCREEN0") == 0 && dump_size >= (CRUSN_SCREEN_WIDTH * CRUSN_SCREEN_HEIGHT * sizeof(uint32_t));
+}
+
+static void dump_screen0_validation_bitmaps(const char* name, const uint8_t* expected_bytes) {
+    if (!should_dump_screen0_validation_bitmaps(name, CRUSN_SCREEN_WIDTH * CRUSN_SCREEN_HEIGHT * sizeof(uint32_t))) {
+        return;
+    }
+    if (g_crusn_machine == NULL || expected_bytes == NULL) {
+        return;
+    }
+
+    (void)crusn_machine_dump_screen_bmp(
+        g_crusn_machine,
+        (const u32*)expected_bytes,
+        g_crusn_machine->colorram_words,
+        "build/validate_SCREEN0_expected.bmp");
+    (void)crusn_machine_dump_screen_bmp(
+        g_crusn_machine,
+        g_crusn_machine->screen_words,
+        g_crusn_machine->colorram_words,
+        "build/validate_SCREEN0_actual.bmp");
+}
+
 static void validate_dump_bytes(
-    const char* caller_file, int caller_line, const char* name, const void* ptr, const char* dump_path
-) {
+    const char* caller_file,
+    int caller_line,
+    const char* name,
+    const void* ptr,
+    const char* dump_path,
+    size_t expected_size) {
     char expected_buf[64];
     char actual_buf[64];
     char message_buf[96];
@@ -406,12 +431,21 @@ static void validate_dump_bytes(
         validate_fail(caller_file, caller_line, name, "failed to read validate dump file", dump_path, "<unreadable>");
     }
 
+    if (expected_size != 0 && dump_size != expected_size) {
+        dump_screen0_validation_bitmaps(name, expected_bytes);
+        snprintf(expected_buf, sizeof(expected_buf), "0x%zX bytes", expected_size);
+        snprintf(actual_buf, sizeof(actual_buf), "0x%zX bytes", dump_size);
+        free(expected_bytes);
+        validate_fail(caller_file, caller_line, name, "dump size mismatch", expected_buf, actual_buf);
+    }
+
     while (index + sizeof(uint32_t) <= dump_size) {
         uint32_t expected_word = 0;
         uint32_t actual_word = 0;
         memcpy(&expected_word, expected_bytes + index, sizeof(expected_word));
         memcpy(&actual_word, actual_bytes + index, sizeof(actual_word));
         if (expected_word != actual_word) {
+            dump_screen0_validation_bitmaps(name, expected_bytes);
             snprintf(message_buf, sizeof(message_buf), "value mismatch at word +0x%zX", index / sizeof(uint32_t));
             snprintf(expected_buf, sizeof(expected_buf), "0x%08" PRIX32, expected_word);
             snprintf(actual_buf, sizeof(actual_buf), "0x%08" PRIX32, actual_word);
@@ -423,6 +457,7 @@ static void validate_dump_bytes(
 
     while (index < dump_size) {
         if (expected_bytes[index] != actual_bytes[index]) {
+            dump_screen0_validation_bitmaps(name, expected_bytes);
             snprintf(message_buf, sizeof(message_buf), "value mismatch at byte +0x%zX", index);
             snprintf(expected_buf, sizeof(expected_buf), "0x%02X", expected_bytes[index]);
             snprintf(actual_buf, sizeof(actual_buf), "0x%02X", actual_bytes[index]);
@@ -433,11 +468,11 @@ static void validate_dump_bytes(
     }
 
     free(expected_bytes);
+    fprintf(stderr, "validate ok %s:\n", name);
 }
 
 static void validate_word_array(
-    const char* caller_file, int caller_line, const char* name, const void* ptr, const VALIDATE_ENTRY* entry
-) {
+    const char* caller_file, int caller_line, const char* name, const void* ptr, const VALIDATE_ENTRY* entry) {
     char expected_buf[64];
     char actual_buf[64];
     char message_buf[96];
@@ -472,7 +507,7 @@ void mame_validate_word_impl(const char* caller_file, int caller_line, const cha
     }
 
     if (entry.kind == VALIDATE_KIND_FILE) {
-        validate_dump_bytes(caller_file, caller_line, name, ptr, entry.file_path);
+        validate_dump_bytes(caller_file, caller_line, name, ptr, entry.file_path, 0);
         return;
     }
 
@@ -543,4 +578,70 @@ void mame_validate_arg_impl(const char* caller_file, int caller_line, const char
     }
 
     validate_pass_arg(name, expected_symbol);
+}
+
+void mame_validate_reg_at_addr_impl(
+    const char* caller_file, int caller_line, uint32_t breakpoint_address, const char* reg_name, const void* ptr) {
+    char actual_name[128];
+    char expected_buf[32];
+    char actual_buf[32];
+    VALIDATE_ENTRY entry;
+    uint32_t expected_value = *(const uint32_t*)ptr;
+
+    (void)breakpoint_address;
+
+    if (!read_next_validate_line(actual_name, sizeof(actual_name), &entry)) {
+        validate_fail(caller_file, caller_line, reg_name, "reached end of error.log before next validate line", "<validate line>", "<eof>");
+    }
+
+    if (strcmp(actual_name, reg_name) != 0) {
+        snprintf(expected_buf, sizeof(expected_buf), "%s", reg_name);
+        snprintf(actual_buf, sizeof(actual_buf), "%s", actual_name);
+        validate_fail(caller_file, caller_line, reg_name, "register name mismatch", expected_buf, actual_buf);
+    }
+
+    if (entry.kind != VALIDATE_KIND_WORD) {
+        validate_fail(caller_file, caller_line, reg_name, "validate line kind mismatch", "<word>", "<non-word>");
+    }
+
+    if (entry.word_value != expected_value) {
+        snprintf(expected_buf, sizeof(expected_buf), "0x%08" PRIX32, entry.word_value);
+        snprintf(actual_buf, sizeof(actual_buf), "0x%08" PRIX32, expected_value);
+        validate_fail(caller_file, caller_line, reg_name, "value mismatch", expected_buf, actual_buf);
+    }
+
+    validate_pass_word(reg_name, expected_value);
+}
+
+void mame_validate_region_at_addr_impl(
+    const char* caller_file,
+    int caller_line,
+    uint32_t breakpoint_address,
+    const char* name,
+    uint32_t region_address,
+    const void* ptr,
+    uint32_t word_count) {
+    char actual_name[128];
+    char expected_buf[64];
+    char actual_buf[64];
+    VALIDATE_ENTRY entry;
+
+    (void)breakpoint_address;
+    (void)region_address;
+
+    if (!read_next_validate_line(actual_name, sizeof(actual_name), &entry)) {
+        validate_fail(caller_file, caller_line, name, "reached end of error.log before next validate line", "<validate line>", "<eof>");
+    }
+
+    if (strcmp(actual_name, name) != 0) {
+        snprintf(expected_buf, sizeof(expected_buf), "%s", name);
+        snprintf(actual_buf, sizeof(actual_buf), "%s", actual_name);
+        validate_fail(caller_file, caller_line, name, "variable name mismatch", expected_buf, actual_buf);
+    }
+
+    if (entry.kind != VALIDATE_KIND_FILE) {
+        validate_fail(caller_file, caller_line, name, "validate line kind mismatch", "<file>", "<non-file>");
+    }
+
+    validate_dump_bytes(caller_file, caller_line, name, ptr, entry.file_path, (size_t)word_count * sizeof(uint32_t));
 }

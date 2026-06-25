@@ -3,7 +3,6 @@
 #include <assert.h>
 
 enum {
-    CRUSN_ROM_BASE = 0x0C00000u,
     CRUSN_RAM_BASE = 0x00000000u,
     CRUSN_SCREEN_BASE = 0x0900000u,
     CRUSN_COMMPAL_ADDR = 0x0990000u,

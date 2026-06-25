@@ -6,19 +6,19 @@
 /* Generated from asm/CMOS.EQU. */
 
 // CMOS.EQU
-// 
+//
 // COPYRIGHT (C) 1994  BY TV GAMES, INC.
 // ALL RIGHTS RESERVED
-// 
+//
 // ----------------------------------------------------------------------------
 // CMOS DEFINES
-// 
+//
 // 8K X 8 CMOS RAM
 // BITS ARE:	TTTT TTTT xxxx xxxx xxxx xxxx xxxx xxxx
-// 
+//
 // ADJUSTMENTS ARE FIRST, THEN AUDITS
 // SPACE FOR X AUDITS
-// 
+//
 // THEN HSTD SPACE
 // {
 // RACE_TABLE
@@ -26,160 +26,160 @@
 
 // ----------------------------------------------------------------------------
 // HSTD ENTRY INFORMATION
-// 
-// 
+//
+//
 // asm: CMWS			.set	4		;CMOS WORD SIZE
-#define CMWS 4 //CMOS WORD SIZE
+#define CMWS 4 // CMOS WORD SIZE
 
 // ----------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------
 // AUDIT AND ADJUSTMENTS
-// 
-// 
+//
+//
 // asm: ADJ_COINMODE		.set	0	;0-50,0
-#define ADJ_COINMODE 0 //0-50,0
+#define ADJ_COINMODE 0 // 0-50,0
 
 // asm: ADJ_GASMIN		.set	1	;0-255,0
-#define ADJ_GASMIN 1 //0-255,0
+#define ADJ_GASMIN 1 // 0-255,0
 
 // asm: ADJ_GASMAX		.set	2	;0-255,255
-#define ADJ_GASMAX 2 //0-255,255
+#define ADJ_GASMAX 2 // 0-255,255
 
 // asm: ADJ_STEERMIN		.set	3	;0-255,0
-#define ADJ_STEERMIN 3 //0-255,0
+#define ADJ_STEERMIN 3 // 0-255,0
 
 // asm: ADJ_STEERMAX		.set	4	;0-255,255
-#define ADJ_STEERMAX 4 //0-255,255
+#define ADJ_STEERMAX 4 // 0-255,255
 
 // asm: ADJ_STEERCENTER		.set	5	;0-255,128
-#define ADJ_STEERCENTER 5 //0-255,128
+#define ADJ_STEERCENTER 5 // 0-255,128
 
 // asm: ADJ_BRAKEMIN		.set	6	;0-255,0
-#define ADJ_BRAKEMIN 6 //0-255,0
+#define ADJ_BRAKEMIN 6 // 0-255,0
 
 // asm: ADJ_BRAKEMAX		.set	7	;0-255,255
-#define ADJ_BRAKEMAX 7 //0-255,255
+#define ADJ_BRAKEMAX 7 // 0-255,255
 
 // asm: ADJ_VOLUME		.set	8	;0-255,255
-#define ADJ_VOLUME 8 //0-255,255
+#define ADJ_VOLUME 8 // 0-255,255
 
 // asm: ADJ_COIN1_UNITS		.set	9	;0-100,1
-#define ADJ_COIN1_UNITS 9 //0-100,1
+#define ADJ_COIN1_UNITS 9 // 0-100,1
 
 // asm: ADJ_COIN2_UNITS		.set	10	;0-100,1
-#define ADJ_COIN2_UNITS 10 //0-100,1
+#define ADJ_COIN2_UNITS 10 // 0-100,1
 
 // asm: ADJ_COIN3_UNITS		.set	11	;0-100,1
-#define ADJ_COIN3_UNITS 11 //0-100,1
+#define ADJ_COIN3_UNITS 11 // 0-100,1
 
 // asm: ADJ_COIN4_UNITS		.set	12	;0-100,1
-#define ADJ_COIN4_UNITS 12 //0-100,1
+#define ADJ_COIN4_UNITS 12 // 0-100,1
 
 // asm: ADJ_UNITS_PER_CREDIT	.set	13	;0-100,1
-#define ADJ_UNITS_PER_CREDIT 13 //0-100,1
+#define ADJ_UNITS_PER_CREDIT 13 // 0-100,1
 
 // asm: ADJ_BONUS_UNITS		.set	14	;0-100,0
-#define ADJ_BONUS_UNITS 14 //0-100,0
+#define ADJ_BONUS_UNITS 14 // 0-100,0
 
 // asm: ADJ_UNITS_MIN		.set	15	;0-100,0
-#define ADJ_UNITS_MIN 15 //0-100,0
+#define ADJ_UNITS_MIN 15 // 0-100,0
 
 // asm: ADJ_CREDITS_TO_START	.set	16	;0-100,3
-#define ADJ_CREDITS_TO_START 16 //0-100,3
+#define ADJ_CREDITS_TO_START 16 // 0-100,3
 
 // asm: ADJ_CREDITS_TO_CONTINUE	.set	17	;0-100,3
-#define ADJ_CREDITS_TO_CONTINUE 17 //0-100,3
+#define ADJ_CREDITS_TO_CONTINUE 17 // 0-100,3
 
 // asm: ADJ_SHOW_FRAC		.set	18	;0-1,1
-#define ADJ_SHOW_FRAC 18 //0-1,1
+#define ADJ_SHOW_FRAC 18 // 0-1,1
 
 // asm: ADJ_COIN1_COUNTER	.set	19	;0-127,1
-#define ADJ_COIN1_COUNTER 19 //0-127,1
+#define ADJ_COIN1_COUNTER 19 // 0-127,1
 
 // asm: ADJ_COIN2_COUNTER	.set	20	;0-127,1
-#define ADJ_COIN2_COUNTER 20 //0-127,1
+#define ADJ_COIN2_COUNTER 20 // 0-127,1
 
 // asm: ADJ_COIN3_COUNTER	.set	21	;0-127,1
-#define ADJ_COIN3_COUNTER 21 //0-127,1
+#define ADJ_COIN3_COUNTER 21 // 0-127,1
 
 // asm: ADJ_COIN4_COUNTER	.set	22	;0-127,4
-#define ADJ_COIN4_COUNTER 22 //0-127,4
+#define ADJ_COIN4_COUNTER 22 // 0-127,4
 
 // asm: ADJ_STANDARD_PRICING	.set	23	;0-1,1
-#define ADJ_STANDARD_PRICING 23 //0-1,1
+#define ADJ_STANDARD_PRICING 23 // 0-1,1
 
 // asm: ADJ_CUSTOM_PRICING	.set	24	;0-1,0
-#define ADJ_CUSTOM_PRICING 24 //0-1,0
+#define ADJ_CUSTOM_PRICING 24 // 0-1,0
 
 // asm: ADJ_FREE_PLAY		.set	25	;0-1,0
-#define ADJ_FREE_PLAY 25 //0-1,0
+#define ADJ_FREE_PLAY 25 // 0-1,0
 
 // asm: ADJ_FREEGAME		.set	26	;0-1,1
-#define ADJ_FREEGAME 26 //0-1,1
+#define ADJ_FREEGAME 26 // 0-1,1
 
 // asm: ADJ_DIFFICULTY		.set	27	;0-10,7
-#define ADJ_DIFFICULTY 27 //0-10,7
+#define ADJ_DIFFICULTY 27 // 0-10,7
 
 // asm: ADJ_TIME_TO_START	.set	28	;0-6,6
-#define ADJ_TIME_TO_START 28 //0-6,6
+#define ADJ_TIME_TO_START 28 // 0-6,6
 
 // asm: ADJ_CHECKPOINT_BONUS	.set	29	;0-10,7
-#define ADJ_CHECKPOINT_BONUS 29 //0-10,7
+#define ADJ_CHECKPOINT_BONUS 29 // 0-10,7
 
 // asm: ADJ_ATTRACT_MODE_SOUND	.set	30	;0-1,0
-#define ADJ_ATTRACT_MODE_SOUND 30 //0-1,0
+#define ADJ_ATTRACT_MODE_SOUND 30 // 0-1,0
 
 // asm: ADJ_HIGH_SCORE_ENTRY	.set	31	;0-1,1
-#define ADJ_HIGH_SCORE_ENTRY 31 //0-1,1
+#define ADJ_HIGH_SCORE_ENTRY 31 // 0-1,1
 
 // asm: ADJ_MIN_VOL_LEVEL	.set	32	;0-255,200
-#define ADJ_MIN_VOL_LEVEL 32 //0-255,200
+#define ADJ_MIN_VOL_LEVEL 32 // 0-255,200
 
 // asm: ADJ_ACTUALHSTDRESET	.set	33	;0-25000,5000
-#define ADJ_ACTUALHSTDRESET 33 //0-25000,5000
+#define ADJ_ACTUALHSTDRESET 33 // 0-25000,5000
 
 // asm: ADJ_MPHORKPM		.set	34	;0-1,0
-#define ADJ_MPHORKPM 34 //0-1,0
+#define ADJ_MPHORKPM 34 // 0-1,0
 
 // asm: ADJ_ROADKILL		.set	35	;0-1,1
-#define ADJ_ROADKILL 35 //0-1,1
+#define ADJ_ROADKILL 35 // 0-1,1
 
 // asm: ADJ_CLINTON		.set	36	;0-1,1
-#define ADJ_CLINTON 36 //0-1,1
+#define ADJ_CLINTON 36 // 0-1,1
 
 // asm: ADJ_GIRLS		.set	37	;0-1,1
-#define ADJ_GIRLS 37 //0-1,1
+#define ADJ_GIRLS 37 // 0-1,1
 
 // asm: ADJ_STEERING_SENSITIVITY	.set	38	;0-40,10
-#define ADJ_STEERING_SENSITIVITY 38 //0-40,10
+#define ADJ_STEERING_SENSITIVITY 38 // 0-40,10
 
 // asm: ADJ_HIGHSCORE_RESET	.set	39	;1000,25000,5000
-#define ADJ_HIGHSCORE_RESET 39 //1000,25000,5000
+#define ADJ_HIGHSCORE_RESET 39 // 1000,25000,5000
 
 // asm: ADJ_DIFF_LOCAL		.set	40	;0-100,50
-#define ADJ_DIFF_LOCAL 40 //0-100,50
+#define ADJ_DIFF_LOCAL 40 // 0-100,50
 
 // asm: ADJ_OUTOFDIAG		.set	41	;have we just left diag???
-#define ADJ_OUTOFDIAG 41 //have we just left diag???
+#define ADJ_OUTOFDIAG 41 // have we just left diag???
 
 // asm: ADJ_RAMP_PERCENTAGE	.set	42	;0-30,20
-#define ADJ_RAMP_PERCENTAGE 42 //0-30,20
+#define ADJ_RAMP_PERCENTAGE 42 // 0-30,20
 
 // asm: ADJ_RAMP_COUNT		.set	43	;0-5000,0
-#define ADJ_RAMP_COUNT 43 //0-5000,0
+#define ADJ_RAMP_COUNT 43 // 0-5000,0
 
 // asm: ADJ_ENTER_INITS		.set	44	;0-1,1
-#define ADJ_ENTER_INITS 44 //0-1,1
+#define ADJ_ENTER_INITS 44 // 0-1,1
 
 // asm: ADJ_MAX_CREDITS		.set	45	;10-50,30
-#define ADJ_MAX_CREDITS 45 //10-50,30
+#define ADJ_MAX_CREDITS 45 // 10-50,30
 
 // asm: NUM_ADJUSTMENTS		.set	46
 #define NUM_ADJUSTMENTS 46
 
 // asm: ADJ_WDOG		.set	50	;temp space
-#define ADJ_WDOG 50 //temp space
+#define ADJ_WDOG 50 // temp space
 
 // asm: ADJ_INITIALS		.set	51	;-1 if reset x|b|b|b
 #define ADJ_INITIALS 51 //-1 if reset x|b|b|b
@@ -231,16 +231,16 @@
 #define AUD_GAMENUMBER 111
 
 // asm: AUD_PCREDITS		.set	112	;partial credits
-#define AUD_PCREDITS 112 //partial credits
+#define AUD_PCREDITS 112 // partial credits
 
 // asm: AUD_CREDITS		.set	113	;actual credits
-#define AUD_CREDITS 113 //actual credits
+#define AUD_CREDITS 113 // actual credits
 
 // asm: AUD_NUM_BUYINS		.set	114	;
 #define AUD_NUM_BUYINS 114
 
 // asm: AUD_TOTAL_TIME		.set	115	;AUD_TOTAL_TIME/AUD_NUM_BUYINS / 100
-#define AUD_TOTAL_TIME 115 //AUD_TOTAL_TIME/AUD_NUM_BUYINS / 100
+#define AUD_TOTAL_TIME 115 // AUD_TOTAL_TIME/AUD_NUM_BUYINS / 100
 
 // asm: AUD_AVG_TIME		.set	116	;
 #define AUD_AVG_TIME 116
@@ -249,10 +249,10 @@
 #define AUD_NUM_UNFINISHED 117
 
 // asm: AUD_POWERON_TIME	.set	118	;Measured in seconds...
-#define AUD_POWERON_TIME 118 //Measured in seconds...
+#define AUD_POWERON_TIME 118 // Measured in seconds...
 
 // asm: AUD_GAMEON_TIME		.set	119	;Measured in seconds...
-#define AUD_GAMEON_TIME 119 //Measured in seconds...
+#define AUD_GAMEON_TIME 119 // Measured in seconds...
 
 // asm: AUD_NUM_WATCHDOGS	.set	120
 #define AUD_NUM_WATCHDOGS 120
@@ -442,7 +442,7 @@
 // these are actually accumulators
 // to get the actual value thou must
 // / AUD_FINISH_<NAME>
-// 
+//
 // asm: AUD_WIN_GGATE			.set	181
 #define AUD_WIN_GGATE 181
 
@@ -529,7 +529,7 @@
 #define AUD_LOG_COUNT 222
 
 // asm: AUD_LAST_LEG			.set	223		;LAST LEG SETUP
-#define AUD_LAST_LEG 223 //LAST LEG SETUP
+#define AUD_LAST_LEG 223 // LAST LEG SETUP
 
 // asm: AUD_PLAYS_TO_HISCORE_RESET	.set	224
 #define AUD_PLAYS_TO_HISCORE_RESET 224
@@ -562,7 +562,7 @@
 #define AUD_HID_DIESEL_SELECTED 232
 
 // asm: AUD_FS_AZ			.set	233	;free select ARIZONA
-#define AUD_FS_AZ 233 //free select ARIZONA
+#define AUD_FS_AZ 233 // free select ARIZONA
 
 // asm: AUD_FS_US101			.set	234
 #define AUD_FS_US101 234
@@ -629,10 +629,10 @@
 
 // ----------------------------------------------------------------------------
 // CMOS STRUCTURES
-// 
-// 
+//
+//
 // TOP RACE TIMES
-// 
+//
 // asm: TE_SIZE		.set	8
 #define TE_SIZE 8
 
@@ -643,46 +643,46 @@
 #define NUM_ENTRIES_PER_RACE 10
 
 // asm: RACE_TABLE_SIZE		.set	NUM_ENTRIES_PER_RACE*TE_SIZE
-#define RACE_TABLE_SIZE (NUM_ENTRIES_PER_RACE*TE_SIZE)
+#define RACE_TABLE_SIZE (NUM_ENTRIES_PER_RACE * TE_SIZE)
 
-// 
-// 
-// 
+//
+//
+//
 // asm: CMOS_PAGE	.set	0800h			;page size (2048b in length, 512 words)
-#define CMOS_PAGE 0x0800 //page size (2048b in length, 512 words)
+#define CMOS_PAGE 0x0800 // page size (2048b in length, 512 words)
 
 // asm: HSTD_PAGE	.set	CMOS+(MAX_AUDITS*4)
-#define HSTD_PAGE (CMOS+(MAX_AUDITS*4))
+#define HSTD_PAGE (CMOS + (MAX_AUDITS * 4))
 
 // asm: H280_RTABLE	.set	HSTD_PAGE
 #define H280_RTABLE HSTD_PAGE
 
 // asm: SF_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE)
-#define SF_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE))
+#define SF_RTABLE (HSTD_PAGE + (RACE_TABLE_SIZE))
 
 // asm: RW_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE*1)
-#define RW_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE*1))
+#define RW_RTABLE (HSTD_PAGE + (RACE_TABLE_SIZE * 1))
 
 // asm: BEVLA_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE*2)
-#define BEVLA_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE*2))
+#define BEVLA_RTABLE (HSTD_PAGE + (RACE_TABLE_SIZE * 2))
 
 // asm: DVAZ_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE*3)
-#define DVAZ_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE*3))
+#define DVAZ_RTABLE (HSTD_PAGE + (RACE_TABLE_SIZE * 3))
 
 // asm: GC_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE*4)
-#define GC_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE*4))
+#define GC_RTABLE (HSTD_PAGE + (RACE_TABLE_SIZE * 4))
 
 // asm: IO_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE*5)
-#define IO_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE*5))
+#define IO_RTABLE (HSTD_PAGE + (RACE_TABLE_SIZE * 5))
 
 // asm: CH_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE*6)
-#define CH_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE*6))
+#define CH_RTABLE (HSTD_PAGE + (RACE_TABLE_SIZE * 6))
 
 // asm: AP_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE*7)
-#define AP_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE*7))
+#define AP_RTABLE (HSTD_PAGE + (RACE_TABLE_SIZE * 7))
 
 // asm: DC_RTABLE	.set	HSTD_PAGE+(RACE_TABLE_SIZE*8)
-#define DC_RTABLE (HSTD_PAGE+(RACE_TABLE_SIZE*8))
+#define DC_RTABLE (HSTD_PAGE + (RACE_TABLE_SIZE * 8))
 
 // CMOS.ASM
 // asm: 	.globl	CMOSI
@@ -707,38 +707,38 @@ void INIT_LASTHS_TABLE(void);
 void CHECK_LASTHS(void);
 
 // asm: 	.globl	VALIDATE_HSTD_TABLES
-void VALIDATE_HSTD_TABLES(void);
+int VALIDATE_HSTD_TABLES(void);
 
 // asm: 	.globl	INIT_HSTD_TABLES
 void INIT_HSTD_TABLES(void);
 
 // asm: 	.globl	ADJUSTMENT_WRITE
-void ADJUSTMENT_WRITE(void);
+int ADJUSTMENT_WRITE(int index, int value);
 
 // asm: 	.globl	AUDIT_INC
-void AUDIT_INC(void);
+int AUDIT_INC(int index);
 
 // asm: 	.globl	AUDIT_ADD
-void AUDIT_ADD(void);
+int AUDIT_ADD(int index, int value);
 
 // asm: 	.globl	AUDIT_READ
-void AUDIT_READ(void);
+int AUDIT_READ(int index);
 
 // asm: 	.globl	AUDIT_WRITE
-void AUDIT_WRITE(void);
+int AUDIT_WRITE(int index, int value);
 
 // asm: 	.globl	_wr_cw,_rd_cw
-void _wr_cw(void);
+void _wr_cw(u32 addr, int value);
 
-void _rd_cw(void);
+int _rd_cw(u32 addr);
 
 // asm: 	.globl	_wr_cwR,_rd_cwR
-void _wr_cwR(void);
+void _wr_cwR(u32 addr, int value);
 
-void _rd_cwR(void);
+int _rd_cwR(u32 addr);
 
 // asm: 	.globl	VALIDATE_CMOS
-void VALIDATE_CMOS(void);
+int VALIDATE_CMOS(void);
 
 // asm: 	.globl	RESET_BOOKKEEPING
 void RESET_BOOKKEEPING(void);

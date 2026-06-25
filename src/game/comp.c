@@ -1,14 +1,14 @@
+#include "comp.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
 #include "c30.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
-#include "vunit.h"
-#include "sysid.h"
 #include "sys.h"
-#include "globals.h"
+#include "sysid.h"
 #include "text.h"
-#include "comp.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/COMP.ASM
@@ -30,13 +30,13 @@ static void REQWAIT(void);
 #define LINEBUFFERI LINEBUFFER
 
 /*
-*----------------------------------------------------------------------------
-*DECOMPRESSION SYSTEM
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *DECOMPRESSION SYSTEM
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /* asm: PADDING	.bss	PADDING,50 */
 static int PADDING[50];
@@ -85,11 +85,11 @@ int PACIFY_COUNT;
 */
 
 /*
-*
-*
-*/
+ *
+ *
+ */
 #define BITS 12
-#define MAX_CODE ((( 1 << BITS) -1 ))
+#define MAX_CODE (((1 << BITS) - 1))
 #define TABLE_SIZE 4421
 #define END_OF_STREAM 256
 #define BUMP_CODE 257
@@ -97,9 +97,9 @@ int PACIFY_COUNT;
 #define FIRST_CODE 259
 #define UNUSED (-1)
 /*
-*
-*
-*/
+ *
+ *
+ */
 
 tDICT DICT;
 /* asm: DECODE_STACK	hibss	DECODE_STACK,TABLE_SIZE */
@@ -110,17 +110,16 @@ int NEXT_BUMP_CODE;
 int LINEBUFFER[64];
 
 /*
-*----------------------------------------------------------------------------
-*
-*BIT_ADDR
-*SADDR
-*CURRENT_CODE_BITS
-*
-*
-*
-*/
-static void INPUT_BITS(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *BIT_ADDR
+ *SADDR
+ *CURRENT_CODE_BITS
+ *
+ *
+ *
+ */
+static void INPUT_BITS(void) {
     // asm 0000A2DB: 	ADDI	CURRENT_CODE_BITS,BIT_ADDR,R0
     // asm 0000A2DC: 	IFI	R0,GT,31,MULTIWORD
     // asm 0000A2DE: 	LDI	*AR0,R0				;get data
@@ -153,15 +152,14 @@ static void INPUT_BITS(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS
-*	R0	CHARACTER (BYTE) TO OUTPUT
-*	AR1	DADDR
-*
-*
-*/
-static void PUTC(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS
+ *	R0	CHARACTER (BYTE) TO OUTPUT
+ *	AR1	DADDR
+ *
+ *
+ */
+static void PUTC(void) {
     // asm 0000A2F4: 	LDI	@LINEBUFFERI,AR2
     // asm 0000A2F5: 	ADDI	bufcnt,AR2
     // asm 0000A2F6: 	INC	bufcnt
@@ -244,16 +242,15 @@ WVWRLP2:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR4	SADDR
-*	AR5	DADDR
-*
-*
-*/
-void DECOMPRESS(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	AR4	SADDR
+ *	AR5	DADDR
+ *
+ *
+ */
+void DECOMPRESS(void) {
     // asm 0000A324: 	CALL	PUSHALL
     // 	;
     // 	;NEW ADDITION.  DONT F*CK THE WAVERAM
@@ -309,8 +306,7 @@ CONT:
     UNIMPL();
 }
 
-void DECOMPRESS_PROC(void)
-{
+void DECOMPRESS_PROC(void) {
     // asm 0000A34E: 	LDI	@DECOMP_ACTIVE,R0
     // asm 0000A34F: 	RETSZ
     // 	;
@@ -420,13 +416,12 @@ DECOMPRESSX:
 // *----------------------------------------------------------------------------
 
 /* asm: SAVESPCI	.word	SAVESPC+1 */
-static uintptr_t SAVESPCI = (uintptr_t)(SAVESPC+1);
+static uintptr_t SAVESPCI = (uintptr_t)(SAVESPC + 1);
 /* asm: SAVESPC	.bss	SAVESPC,25 */
 int SAVESPC[25];
 
 // *----------------------------------------------------------------------------
-static void SAVE_DECOMP_REGS(void)
-{
+static void SAVE_DECOMP_REGS(void) {
     // asm 0000A39F: 	LDP	@SAVESPC
     // asm 0000A3A0: 	STI	AR0,@SAVESPC
     // asm 0000A3A1: 	LDI	@SAVESPCI,AR0
@@ -458,8 +453,7 @@ static void SAVE_DECOMP_REGS(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void RESTORE_DECOMP_REGS(void)
-{
+static void RESTORE_DECOMP_REGS(void) {
     // asm 0000A3B7: 	LDI	@SAVESPCI,AR0
     // asm 0000A3B8: 	LDI	*AR0++,AR1
     // asm 0000A3B9: 	LDI	*AR0++,AR2
@@ -490,7 +484,7 @@ static void RESTORE_DECOMP_REGS(void)
 
 // *----------------------------------------------------------------------------
 
-#define MIN_X 240 //if this changes modify CUSA.ASM
+#define MIN_X 240 // if this changes modify CUSA.ASM
 #define MAX_X 300
 /* asm: BOOT_PACIFY_SCREEN_P	.word	1 */
 /* asm: 	 */
@@ -505,8 +499,7 @@ int DELTA;
 */
 
 // *----------------------------------------------------------------------------
-static void BOOT_PACIFY_SCREEN(void)
-{
+static void BOOT_PACIFY_SCREEN(void) {
     // asm 0000A3D0: 	CALL	SAVE_DECOMP_REGS
     // asm 0000A3D1: 	LDI	@PREVX,R6
     // asm 0000A3D2: 	LDI	R6,AR2
@@ -548,20 +541,19 @@ LLL:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SECTION LOAD REQUEST
-*	IF ACTIVE THEN REQUEST IS QUEUED BY CREATING A PROCESS
-*
-*
-*PARAMETERS
-*	AR2	POINTER TO SECTION CONTROL
-*
-*/
+ *----------------------------------------------------------------------------
+ *SECTION LOAD REQUEST
+ *	IF ACTIVE THEN REQUEST IS QUEUED BY CREATING A PROCESS
+ *
+ *
+ *PARAMETERS
+ *	AR2	POINTER TO SECTION CONTROL
+ *
+ */
 /* asm: LASTLOAD	.bss	LASTLOAD,1 */
 static int LASTLOAD;
 
-void LOAD_SECTION_REQ(void)
-{
+void LOAD_SECTION_REQ(void) {
     // asm 0000A3ED: 	PUSH	AR4
     // asm 0000A3EE: 	PUSH	AR5
     // asm 0000A3EF: 	LDI	@DECOMP_ACTIVE,R0
@@ -597,8 +589,7 @@ NOLOAD:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void REQWAIT(void)
-{
+static void REQWAIT(void) {
     // asm 0000A402: 	SLEEP	1
     // asm 0000A404: 	LDI	@DECOMP_ACTIVE,R0
     // asm 0000A405: 	BNZ	REQWAIT

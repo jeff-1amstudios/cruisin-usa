@@ -43,10 +43,10 @@ extern int PTTRAM[];
 void PAL_INIT(void);
 
 // asm: 	.globl	PAL_ALLOC
-void PAL_ALLOC(void);
+tPALETTE_CODE PAL_ALLOC(u32 pal_index);
 
 // asm: 	.globl	PAL_ALLOC_RAW
-uint32_t PAL_ALLOC_RAW(tPAL* palette_source);
+tPALETTE_CODE PAL_ALLOC_RAW(tPAL* palette_source);
 
 // asm: 	.globl	PAL_FIND
 void PAL_FIND(void);

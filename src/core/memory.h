@@ -8,6 +8,10 @@
 
 typedef u32 word_addr_t;
 
+enum {
+    CRUSN_ROM_BASE = 0x0C00000u,
+};
+
 typedef struct crusn_memory_region {
     const char *name;
     word_addr_t base;

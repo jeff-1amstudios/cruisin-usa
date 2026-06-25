@@ -1,16 +1,16 @@
+#include "snd.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "cmos.h"
+#include "comm.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
 #include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "comm.h"
-#include "snd.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/SND.ASM
@@ -47,21 +47,21 @@ static void SNDUPD(void);
 #define STATION_TEXTI STATION_TEXT
 #define SNDSTRI SNDSTR
 
-static const char *STATION_TEXT[8];
+static const char* STATION_TEXT[8];
 
 /* asm: IN_RESET_MODE	fbss	IN_RESET_MODE,1 */
 int IN_RESET_MODE;
 /* asm: RESET_TIMER	fbss	RESET_TIMER,1 */
 int RESET_TIMER;
 /* asm: SNDSTR	.bss	SNDSTR,NCHAN*SND_SIZ */
-int SNDSTR[NCHAN*SND_SIZ];
+int SNDSTR[NCHAN * SND_SIZ];
 /* asm: SNDEND	.bss	SNDEND,0 */
 static int SNDEND;
 /*
-*----------------------------------------------------------------------------
-*STATION TABLE
-*
-*/
+ *----------------------------------------------------------------------------
+ *STATION TABLE
+ *
+ */
 /* asm: STATION_LIST	.word	MUNSTER_SURF	;0 */
 /* asm: 	.word	SHUFFLE_DRIV	;1 */
 /* asm: 	.word	DISCODUCK	;2 */
@@ -74,12 +74,12 @@ static int SNDEND;
 static int STATION_LIST[] = {
     MUNSTER_SURF, // 0
     SHUFFLE_DRIV, // 1
-    DISCODUCK, // 2
-    SPAGETTI, // 3
-    VENTURE, // 4
+    DISCODUCK,    // 2
+    SPAGETTI,     // 3
+    VENTURE,      // 4
     STRAIGHT_2_4, // 5
-    DISCODUCK, // 6
-    BOOGIE, // 7
+    DISCODUCK,    // 6
+    BOOGIE,       // 7
 };
 /* asm: STATION_TEXTI	.word	STATION_TEXT */
 #define STATION_TEXTI STATION_TEXT
@@ -97,14 +97,14 @@ static int STATION_LIST[] = {
 /* asm:  */
 /* asm:  */
 /* asm: *---------------------------------------------------------------------------- */
-static const char *STATION_TEXT[] = {
-    "SURFARI MONSTER", // MONSTER_SURF	;0	[2
-    "REDLINE SHUFFLE", // SHUFFLE_DRIV	;1	[4
-    "HOUSE SPECIAL", // DISCODUCK	;2	[24
-    "DEADWOOD RIDE", // SPAGETTI	;3	[16
-    "TUBULAR SURF", // VENTURE	;4	[10
-    "ROADKILL JAM", // STRAIGHT_2_4	;5	[6
-    "HOUSE SPECIAL", // DISCODUCK	;6	[24
+static const char* STATION_TEXT[] = {
+    "SURFARI MONSTER",  // MONSTER_SURF	;0	[2
+    "REDLINE SHUFFLE",  // SHUFFLE_DRIV	;1	[4
+    "HOUSE SPECIAL",    // DISCODUCK	;2	[24
+    "DEADWOOD RIDE",    // SPAGETTI	;3	[16
+    "TUBULAR SURF",     // VENTURE	;4	[10
+    "ROADKILL JAM",     // STRAIGHT_2_4	;5	[6
+    "HOUSE SPECIAL",    // DISCODUCK	;6	[24
     "BLUEGRASS BOOGIE", // BOOGIE		;7	[13
 };
 /* asm: STATION_TIMEOUT	.bss	STATION_TIMEOUT,1 */
@@ -112,8 +112,7 @@ int STATION_TIMEOUT;
 /* asm: RS_X	.bss	RS_X,1 */
 int RS_X;
 
-static void RADIO_SHOW(void)
-{
+static void RADIO_SHOW(void) {
     // asm 000090E1: 	LDI	@TUNE_IDX,AR2
     // asm 000090E2: 	ADDI	@STATION_TEXTI,AR2
     // asm 000090E3: 	LDI	*AR2,AR2
@@ -148,8 +147,7 @@ KILLME:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RADIO_BUT(void)
-{
+void RADIO_BUT(void) {
     // asm 000090FB: 	LDPI	@_MODE,R0
     // asm 000090FC: 	AND	MMODE,R0
     // asm 000090FD: 	CMPI	MGAME,R0
@@ -167,13 +165,12 @@ RBMGAME:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS
-*	AR2	STATION #
-*
-*/
-void SET_STATION(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS
+ *	AR2	STATION #
+ *
+ */
+void SET_STATION(void) {
 #if DEBUG
     // asm: 	CMPI	0,AR2
     // asm: 	BLT	$
@@ -190,13 +187,12 @@ void SET_STATION(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS
-*	NONE
-*
-*/
-void CHANGE_STATION(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS
+ *	NONE
+ *
+ */
+void CHANGE_STATION(void) {
     // asm 00009105: 	PUSH	R0
     // asm 00009106: 	LDI	@TUNE_IDX,R0
     // asm 00009107: 	INC	R0
@@ -216,13 +212,12 @@ void CHANGE_STATION(void)
 int TUNE_IDX;
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS (SET_TUNE)
-*	AR2	CHANNEL
-*
-*/
-void SET_TUNE_LINKED(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS (SET_TUNE)
+ *	AR2	CHANNEL
+ *
+ */
+void SET_TUNE_LINKED(void) {
     // asm 0000910E: 	PUSH	AR2
     // asm 0000910F: 	PUSH	AR6
     // asm 00009110: 	LDI	1,AR6
@@ -233,8 +228,7 @@ void SET_TUNE_LINKED(void)
     UNIMPL();
 }
 
-void SET_TUNE(void)
-{
+void SET_TUNE(void) {
     // asm 00009113: 	PUSH	AR2
     // asm 00009114: 	PUSH	AR6
     // asm 00009115: 	CLRI	AR6
@@ -245,8 +239,7 @@ void SET_TUNE(void)
     UNIMPL();
 }
 
-void RESUME_TUNE(void)
-{
+void RESUME_TUNE(void) {
     // asm 00009118: 	PUSH	AR2
     // asm 00009119: 	PUSH	AR6
     // asm 0000911A: 	CLRI	AR6
@@ -282,8 +275,7 @@ NOOMUS:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RESUME_TUNE_NT(void)
-{
+void RESUME_TUNE_NT(void) {
     // asm 00009130: 	LDI	@TUNE_IDX,AR2
     // asm 00009131: 	CMPI	8,AR2
     // asm 00009132: 	LDIGT	0,AR2
@@ -298,14 +290,13 @@ void RESUME_TUNE_NT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS
-*	R0	TRACK #(0-3)	(EXCEPT IN MASTER VOL)
-*	R1	VOL (0-255)
-*
-*/
-void SET_MASTER_VOL(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS
+ *	R0	TRACK #(0-3)	(EXCEPT IN MASTER VOL)
+ *	R1	VOL (0-255)
+ *
+ */
+void SET_MASTER_VOL(void) {
     // asm 00009137: 	PUSH	AR2
     // asm 00009138: 	BUD	JI1
     // asm 00009139: 	PUSH	R0
@@ -317,8 +308,7 @@ void SET_MASTER_VOL(void)
     UNIMPL();
 }
 
-void SET_TRACK_VOL(void)
-{
+void SET_TRACK_VOL(void) {
     // asm 0000913C: 	PUSH	AR2
     // asm 0000913D: 	PUSH	R0
     // asm 0000913E: 	PUSH	R1
@@ -358,8 +348,7 @@ int DO_NOT_REENABLE_INT;
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RESET_SNDBRD(void)
-{
+void RESET_SNDBRD(void) {
     // 	;new sound system reset
     // 	;
     // 	;
@@ -420,15 +409,14 @@ WAITIT:
     // asm 0000918C: 	POP	DP
     // asm 0000918D: 	BU	CLRSNDDB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RESET_SNDBRD", 0, 0);
-    UNIMPL();
+
+    // TODO
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SILENT(void)
-{
+void SILENT(void) {
     // asm 0000918E: 	PUSH	AR2
     // asm 0000918F: 	CALL	CLRSNDDB
     // asm 00009190: 	CLRI	AR2
@@ -451,13 +439,12 @@ void SILENT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CLEAR THE SOUND DATA BASE
-*
-*/
+ *----------------------------------------------------------------------------
+ *CLEAR THE SOUND DATA BASE
+ *
+ */
 
-void CLRSNDDB(void)
-{
+void CLRSNDDB(void) {
     // asm 0000919E: 	PUSH	AR0
     // asm 0000919F: 	PUSH	R0
     // asm 000091A0: 	LDI	@SNDSTRI,AR0
@@ -474,15 +461,14 @@ void CLRSNDDB(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GET SOUND PRIORITY
-*
-*PARAMETERS
-*	AR0	CHANNEL #0-3
-*
-*/
-void GETPRI(void)
-{
+ *----------------------------------------------------------------------------
+ *GET SOUND PRIORITY
+ *
+ *PARAMETERS
+ *	AR0	CHANNEL #0-3
+ *
+ */
+void GETPRI(void) {
     // asm 000091A7: 	RS	8,AR0
     // asm 000091A8: 	AND	0Fh,AR0			;isolate channel
     // asm 000091A9: 	MPYI	SND_SIZ,AR0
@@ -497,16 +483,15 @@ void GETPRI(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*ACTIVATE SOUND WITH VARIABLE VOLUME
-*
-*PARAMETERS
-*	AR2	SOUND INDEX
-*	R0	VOLUME 0-255
-*
-*/
-void VOLSNDFX(void)
-{
+ *----------------------------------------------------------------------------
+ *ACTIVATE SOUND WITH VARIABLE VOLUME
+ *
+ *PARAMETERS
+ *	AR2	SOUND INDEX
+ *	R0	VOLUME 0-255
+ *
+ */
+void VOLSNDFX(void) {
     // asm 000091AE:  	AND	0FFH,R0		;KEEP IN RANGE
     // asm 000091AF: 	B	SNDFX
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -517,23 +502,22 @@ void VOLSNDFX(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*ACTIVATE ONE SOUND ON ONE OF THE FX TRACKS (CHAN1 or CHAN2)
-*
-*1.  IF EITHER TRACK IS OPEN THEN SEND TO THAT TRACK
-*2.  ELSE SEE IF IT HAS A HIGHER PRIORITY THAN EITHER TRACK
-*3.  ELSE RETURN NOT AVAILABLE
-*
-*PARAMETERS
-*	AR2	SOUND ENTRY INDEX
-*RETURNS
-*	C	SOUND SUCCESSFUL
-*	NC	SONUD UNSUCCESSFUL
-*
-*
-*/
-void ONESNDFX(void)
-{
+ *----------------------------------------------------------------------------
+ *ACTIVATE ONE SOUND ON ONE OF THE FX TRACKS (CHAN1 or CHAN2)
+ *
+ *1.  IF EITHER TRACK IS OPEN THEN SEND TO THAT TRACK
+ *2.  ELSE SEE IF IT HAS A HIGHER PRIORITY THAN EITHER TRACK
+ *3.  ELSE RETURN NOT AVAILABLE
+ *
+ *PARAMETERS
+ *	AR2	SOUND ENTRY INDEX
+ *RETURNS
+ *	C	SOUND SUCCESSFUL
+ *	NC	SONUD UNSUCCESSFUL
+ *
+ *
+ */
+void ONESNDFX(void) {
     // asm 000091B0: 	LDI	255,R0
     // *
     // *PARAMETERS
@@ -609,21 +593,20 @@ NOSOUND_FX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*KILL A SOUND ON ONE OF THE FX TRACKS (CHAN1 or CHAN2)
-*
-*1.  IF TRACK HAS SOUND, KILL THAT TRACK
-*2.  IF SOUND NOT ACTIVE DO NOTHING
-*
-*PARAMETERS
-*
-*	AR2	SOUND ENTRY INDEX
-*
-*RETURNS CS IF SOUND ACTUALLY KILLED, OTHERWISE CC
-*
-*/
-void KILLSNDFX(void)
-{
+ *----------------------------------------------------------------------------
+ *KILL A SOUND ON ONE OF THE FX TRACKS (CHAN1 or CHAN2)
+ *
+ *1.  IF TRACK HAS SOUND, KILL THAT TRACK
+ *2.  IF SOUND NOT ACTIVE DO NOTHING
+ *
+ *PARAMETERS
+ *
+ *	AR2	SOUND ENTRY INDEX
+ *
+ *RETURNS CS IF SOUND ACTUALLY KILLED, OTHERWISE CC
+ *
+ */
+void KILLSNDFX(void) {
     // asm 000091E9: 	PUSH	AR2
     // asm 000091EA: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2
     // asm 000091EB: 	BNE	KILSFX1
@@ -647,17 +630,16 @@ KILSFX3:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*PARAMETERS
-*	R0	SPEED  (0-255)
-*	R1	VOLUME (0-255)
-*
-*
-*/
-void PLYR_ENGINE(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *PARAMETERS
+ *	R0	SPEED  (0-255)
+ *	R1	VOLUME (0-255)
+ *
+ *
+ */
+void PLYR_ENGINE(void) {
     // asm 000091F8: 	LS	8,R0
     // asm 000091F9: 	OR	R0,R1
     // asm 000091FA: 	LDI	1,R0
@@ -675,8 +657,7 @@ void PLYR_ENGINE(void)
 
 // *----------------------------------------------------------------------------
 
-void HARDSND(void)
-{
+void HARDSND(void) {
     // asm 00009202: 	ADDI	@SNDTABI,AR2		;INDEX OUT TO GET ACTUAL SCRIPT
     // asm 00009203: 	LDI	*+AR2(1),AR2
     // asm 00009204: 	LS	16,AR2
@@ -690,17 +671,16 @@ void HARDSND(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*ACTIVATE ONE SOUND
-*
-*
-*PARAMETERS
-*	AR2	SOUND ENTRY INDEX
-*
-*
-*/
-void ONESND(void)
-{
+ *----------------------------------------------------------------------------
+ *ACTIVATE ONE SOUND
+ *
+ *
+ *PARAMETERS
+ *	AR2	SOUND ENTRY INDEX
+ *
+ *
+ */
+void ONESND(void) {
     // asm 00009208: 	PUSH	R0
     // asm 00009209: 	PUSH	R1
     // asm 0000920A: 	PUSH	R2
@@ -770,27 +750,26 @@ SNDLDX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SEND SOUND TO SOUND BOARD
-*
-*PARAMETER
-*	AR2	SOUND CODE (16 BITS)
-*
-*RETURNS
-*	NOTHING
-*
-*NOTE	On the actual writes to the sound board we are blowing the
-*	specified timings as per Loffs suggestion to save time. He
-*	says that they are over speced and that it shouldn't be a
-*	problem. Initial tests indicate no change in operation.
-*	Alter .set SPACER to a larger number if there is a problem.
-*
-*
-*/
-#define SPACER 30 //# OF NOPs BETWEEN WRITES
+ *----------------------------------------------------------------------------
+ *SEND SOUND TO SOUND BOARD
+ *
+ *PARAMETER
+ *	AR2	SOUND CODE (16 BITS)
+ *
+ *RETURNS
+ *	NOTHING
+ *
+ *NOTE	On the actual writes to the sound board we are blowing the
+ *	specified timings as per Loffs suggestion to save time. He
+ *	says that they are over speced and that it shouldn't be a
+ *	problem. Initial tests indicate no change in operation.
+ *	Alter .set SPACER to a larger number if there is a problem.
+ *
+ *
+ */
+#define SPACER 30 // # OF NOPs BETWEEN WRITES
 
-void SENDSND(void)
-{
+void SENDSND(void) {
     // asm 00009239: 	LDP	@IN_RESET_MODE
     // asm 0000923A: 	LDI	@IN_RESET_MODE,R0
     // asm 0000923B: 	SETDP
@@ -846,17 +825,16 @@ NIRM:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*Frame Number	Action
-*  1		Initialize Reset
-*  2		Lift Reset
-*  4		Send Single Byte
-*  6		Turn off Reset
-*
-*
-*/
-static void RESETMUNGE(void)
-{
+ *----------------------------------------------------------------------------
+ *Frame Number	Action
+ *  1		Initialize Reset
+ *  2		Lift Reset
+ *  4		Send Single Byte
+ *  6		Turn off Reset
+ *
+ *
+ */
+static void RESETMUNGE(void) {
     // asm 0000926F: 	DINT
     // asm 00009275: 	LDP	@RESET_TIMER
     // asm 00009276: 	LDI	@RESET_TIMER,R0
@@ -974,8 +952,7 @@ RESETMUNGE_X:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SND_RESET_QUIET(void)
-{
+void SND_RESET_QUIET(void) {
     // asm 000092D5: 	LDP	@RESET_TIMER
     // asm 000092D6: 	LDI	1,R0
     // asm 000092D7: 	STI	R0,@RESET_TIMER
@@ -989,12 +966,11 @@ void SND_RESET_QUIET(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CALLED IN DISPLAY INTERRUPT (16ms)
-*
-*/
-void SNDPROC(void)
-{
+ *----------------------------------------------------------------------------
+ *CALLED IN DISPLAY INTERRUPT (16ms)
+ *
+ */
+void SNDPROC(void) {
     // asm 000092DB: 	LDP	@IN_RESET_MODE
     // asm 000092DC: 	LDI	@IN_RESET_MODE,R0
     // asm 000092DD: 	SETDP
@@ -1024,13 +1000,12 @@ SNDPLP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS
-*	AR0	PTR TO SOUND CHANNEL RAM
-*
-*/
-static void SNDUPD(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS
+ *	AR0	PTR TO SOUND CHANNEL RAM
+ *
+ */
+static void SNDUPD(void) {
     // ;this code allows for scripted sound calls.
     // ;as of now they are not used, and I don't
     // ;believe they will be before CUSA is finished.

@@ -1,19 +1,19 @@
+#include "comm.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
 #include "c30.h"
-#include "obj.h"
+#include "cmos.h"
+#include "commq.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
+#include "obj.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "comm.h"
-#include "commq.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/COMM.ASM
@@ -36,13 +36,13 @@ static void COMM_SLAVE(void);
 static int COMM_SLAVE_NREADY;
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 #define TIME_DELAY 18
 /* asm: COMM_MASTER_ERROR_CNT	fbss	COMM_MASTER_ERROR_CNT,1 */
@@ -65,8 +65,7 @@ int TRANSMISSION_ACTIVE;
 int TRANSMISSION_DEAD;
 
 // *----------------------------------------------------------------------------
-void COMM_INIT(void)
-{
+void COMM_INIT(void) {
     // asm 00007F3F: 	PUSH	DP
     // asm 00007F40: 	LDP	@DIPRAM
     // asm 00007F41: 	LDI	@DIPRAM,R1
@@ -83,15 +82,25 @@ void COMM_INIT(void)
     // asm 00007F4C: 	STI	R0,@COMM_CTL
     // asm 00007F4D: 	POP	DP
     // asm 00007F4E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_INIT", 0, 0);
-    UNIMPL();
+    uint32_t dipram = DIPRAM;
+
+    ONEFLAG = 0; // clear one-player flag
+
+    uint32_t comm_io = C_SLA; // default: slave
+
+    if (dipram & CMDP_MASTER)
+        comm_io = C_MAS; // master if DIP switch says so
+
+    // COMM_IO  = comm_io << 16;
+    // COMM_CTL = C_CE << 16;
+
+    // TODO
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void COMM_ENABLE_INT2(void)
-{
+void COMM_ENABLE_INT2(void) {
     // 	;
     // 	;if slave then enable the interrupt 2
     // 	;(comm int 2)
@@ -111,14 +120,13 @@ BABA:
     // asm 00007F5C: 	SETDP
     // asm 00007F5D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_ENABLE_INT2", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void COMM_MASTER_SEND_SYNC(void)
-{
+void COMM_MASTER_SEND_SYNC(void) {
     // asm 00007F5E: 	LDI	@COMMFLAG,R0		;DONT INTERRUPT COMMUNICATIONS
     // asm 00007F5F: 	RETSNZ
     // asm 00007F60: 	LDI	@DIPRAM,R0
@@ -149,13 +157,12 @@ void COMM_MASTER_SEND_SYNC(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*
-*SET ONE PLAYER GAME (NO LINK)
-*
-*/
-void SETONE(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *SET ONE PLAYER GAME (NO LINK)
+ *
+ */
+void SETONE(void) {
     // asm 00007F7B: 	PUSH	R0
     // asm 00007F7C: 	PUSH	AR0
     // asm 00007F7D: 	CLRI	R0
@@ -175,8 +182,7 @@ void SETONE(void)
     UNIMPL();
 }
 
-void CLRONE(void)
-{
+void CLRONE(void) {
     // asm 00007F86: 	PUSH	R0
     // asm 00007F87: 	PUSH	AR0
     // asm 00007F88: 	LDI	1,R0
@@ -199,14 +205,13 @@ ONEX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*COMMUNICATIONS LINK
-*
-*/
-#define COMMPAL 0x0990000 //COMMUNICATIONS PAL
+ *----------------------------------------------------------------------------
+ *COMMUNICATIONS LINK
+ *
+ */
+#define COMMPAL 0x0990000 // COMMUNICATIONS PAL
 
-void COMM_ROUTINE(void)
-{
+void COMM_ROUTINE(void) {
     // asm 00007F96: 	CLRI	AR7
     // asm 00007F97: 	LDP	@COMMPAL
     // asm 00007F98: 	LDI	@COMMPAL,R0
@@ -234,8 +239,7 @@ COMM_HOLDFORA2D:
     UNIMPL();
 }
 
-static void COMM_MASTER(void)
-{
+static void COMM_MASTER(void) {
     // asm 00007FA8: 	SETDP
     // asm 00007FA9: 	LDI	@COMM_IOI,AR5		;SETUP I/O REGISTER
     // *CHECK ONE PLAYER MODE
@@ -602,8 +606,7 @@ COMM_MASTER_ERROR:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void COMM_IRQ(void)
-{
+void COMM_IRQ(void) {
     // asm 000080C9: 	PUSH	ST
     // asm 000080CA: 	PUSH	DP
     // asm 000080CB: 	PUSH	R0
@@ -622,8 +625,7 @@ void COMM_IRQ(void)
     UNIMPL();
 }
 
-static void DO_SLAVE_SYNC(void)
-{
+static void DO_SLAVE_SYNC(void) {
     // asm 000080D5: 	PUSH	R1
     // asm 000080D6: 	PUSH	IE
     // asm 000080D7: 	LDI	INT1_M|INT2_M,IE	;disable everything except TV30 interrupt & comm int
@@ -678,19 +680,18 @@ WTLP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CALLED FROM THE MAIN LOOP
-*
-*SET C0 HIGH
-*WAIT FOR C2 TO GO HIGH
-*BEGIN TRANSFER
-*END OF TRANSFER
-*SET ALL LOW
-*
-*
-*/
-static void COMM_SLAVE(void)
-{
+ *----------------------------------------------------------------------------
+ *CALLED FROM THE MAIN LOOP
+ *
+ *SET C0 HIGH
+ *WAIT FOR C2 TO GO HIGH
+ *BEGIN TRANSFER
+ *END OF TRANSFER
+ *SET ALL LOW
+ *
+ *
+ */
+static void COMM_SLAVE(void) {
     // asm 000080FA: 	SETDP
     // asm 000080FB: 	LDI	@COMM_IOI,AR5		;AR5=COMM I/O ADDRESS
     // asm 000080FC: 	LDI	@RECEIVE_BUFFERI,AR2	;AR2=RECEIVE BUFFER

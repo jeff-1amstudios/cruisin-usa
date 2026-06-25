@@ -384,7 +384,6 @@
 #define scred9_ROM 0x00C32A20
 #define scroll_gr2_ROM 0x00C10A85
 #define scroll_white_ROM 0x00C10A04
-#define shared_PALETTES_ROM 0x0000A16A
 #define smoa_ROM 0x00CA39EE
 #define smob_ROM 0x00CA3A0B
 #define smoc_ROM 0x00CA3A28

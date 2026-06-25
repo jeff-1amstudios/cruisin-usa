@@ -15,9 +15,9 @@ void _ftoa(void);
 void _itoaLZ(void);
 void _itoa(void);
 void HEX2ASC(void);
-void _fill(void);
-void _outtextxyc(void);
-void _pixel(void);
+void _fill(int x1, int y1, int x2, int y2, int color);
+void _outtextxyc(const char *string, int x, int y, int color);
+void _pixel(int x, int y, int color);
 
 #define _font1I _font1
 
@@ -305,39 +305,16 @@ ISZEROH:
 *
 *
 */
-void _fill(void)
+void _fill(int x1, int y1, int x2, int y2, int color)
 {
-    uint32_t x0;
     int x;
     int y;
 
-    // asm 0000A810: 	PUSH	AR2
-    x0 = AR2;
-FILLLP1:
-    // asm 0000A811: 	PUSH	R3
-    // asm 0000A812: 	LDI	RS,R3
-    // asm 0000A813: 	CALL	_pixel
-    // asm 0000A814: 	POP	R3
-    // asm 0000A815: 	INC	AR2
-    // asm 0000A816: 	CMPI	AR2,R3
-    // asm 0000A817: 	BGE	FILLLP1
-    // asm 0000A818: 	POP	AR2
-    // asm 0000A819: 	PUSH	AR2
-    // asm 0000A81A: 	INC	R2
-    // asm 0000A81B: 	CMPI	R2,RC
-    // asm 0000A81C: 	BGE	FILLLP1
-    // asm 0000A81D: 	POP	AR2
-    // asm 0000A81E: 	RETS
-    for (y = R2.s; y <= (int)RC; ++y) {
-        for (x = (int)x0; x <= R3.s; ++x) {
-            AR2 = (uintptr_t)(uint32_t)x;
-            R2.s = y;
-            R3.s = (int)RS;
-            _pixel();
+    for (y = y1; y <= y2; ++y) {
+        for (x = x1; x <= x2; ++x) {
+            _pixel(x, y, color);
         }
     }
-
-    AR2 = x0;
 }
 
 // *----------------------------------------------------------------------------
@@ -358,7 +335,7 @@ FILLLP1:
 *CLOBBERS	RS,RE,RC
 *
 */
-void _outtextxyc(void)
+void _outtextxyc(const char *string, int x, int y, int color)
 {
     const unsigned char *string_ptr;
     unsigned int glyph_index;
@@ -367,107 +344,30 @@ void _outtextxyc(void)
     int row;
     int col;
 
-    // asm 0000A81F: 	PUSH	R4
-    // asm 0000A820: 	PUSH	R5
-    // asm 0000A821: 	LDI	3,RS
-    // asm 0000A822: 	CLRI	RS
-    string_ptr = (const unsigned char *)(uintptr_t)AR2;
-    RS = 0;
-OLP:
-    // asm 0000A823: CMPI	-32,RS
-    // asm 0000A824: 	BNE	REGLP
-    if ((int32_t)RS == -32) {
-        // asm 0000A825: 	CLRI	RS
-        RS = 0;
-        // asm 0000A826: 	NOP	*AR2++
-        string_ptr += 4;
+    string_ptr = (const unsigned char *)string;
+
+    for (;;) {
+        ch = *string_ptr++;
+        if (ch == 0) {
+            return;
+        }
+        if (ch == ' ') {
+            x += 8;
+            continue;
+        }
+
+        glyph_index = (unsigned int)(ch - '(') * 7u;
+        for (row = 0; row < 7; ++row) {
+            row_bits = (unsigned int)_font1[glyph_index + (unsigned int)row] & 0xffu;
+            for (col = 0; col < 8; ++col) {
+                if ((row_bits & (1u << (7 - col))) != 0) {
+                    _pixel(x + col, y + row, color);
+                }
+            }
+        }
+
+        x += 8;
     }
-REGLP:
-    // asm 0000A827: 	LDI	*AR2,AR0
-    ch = string_ptr[((unsigned int)(-(int32_t)RS)) >> 3];
-    // asm 0000A828: 	LSH	RS,AR0
-    // asm 0000A829: 	SUBI	8,RS
-    RS = (uint32_t)((int32_t)RS - 8);
-    // asm 0000A82A: 	AND	0FFh,AR0
-    // asm 0000A82B: 	CMPI	0,AR0
-    // asm 0000A82C: 	BZ	oucX
-    if (ch == 0) {
-        goto oucX;
-    }
-    // asm 0000A82D: 	CMPI	' ',AR0
-    // asm 0000A82E: 	BEQ	NXTCHAR
-    if (ch == ' ') {
-        goto NXTCHAR;
-    }
-    // asm 0000A82F: 	SUBI	'(',AR0			;the start of the font
-    glyph_index = (unsigned int)(ch - '(');
-    // 	;NOW PLOT OT THE CHARACTER
-    // asm 0000A830: 	MPYI	7,AR0			;index to character
-    glyph_index *= 7u;
-    // asm 0000A831: 	ADDI	@_font1I,AR0		;pointing to font data
-    // asm 0000A832: 	LDI	7,R5			;Y count
-    row = 0;
-OUTRLP:
-    // asm 0000A833: 	LDI	*AR0++,R1
-    row_bits = (unsigned int)_font1[glyph_index + (unsigned int)row];
-    // asm 0000A834: 	LS	24,R1
-    // asm 0000A835: 	LDI	8,R4
-    col = 0;
-LOOP1:
-    // asm 0000A836: ASH	1,R1
-    // asm 0000A837: 	BNC	NPLOT
-    if (col < 7 && (row_bits & (1u << (6 - col))) != 0) {
-        // asm 0000A838: 	PUSH	AR2
-        crusn_machine_push_u32((u32)AR2);
-        // asm 0000A839: 	PUSH	R2
-        crusn_machine_push_reg32(R2);
-        // asm 0000A83A: 	PUSH	R3
-        crusn_machine_push_reg32(R3);
-        // asm 0000A83B: 	LDI	R2,AR2
-        AR2 = (uintptr_t)(uint32_t)R2.s;
-        // asm 0000A83C: 	LDI	R3,R2
-        R2.s = R3.s;
-        // asm 0000A83D: 	LDI	RC,R3
-        R3.s = (int)RC;
-        // asm 0000A83E: 	CALL	_pixel
-        _pixel();
-        // asm 0000A83F: 	POP	R3
-        R3 = crusn_machine_pop_reg32();
-        // asm 0000A840: 	POP	R2
-        R2 = crusn_machine_pop_reg32();
-        // asm 0000A841: 	POP	AR2
-        AR2 = crusn_machine_pop_u32();
-    }
-NPLOT:
-    // asm 0000A842: INC	R2			;advance to next pixel
-    ++R2.s;
-    // asm 0000A843: 	DEC	R4
-    // asm 0000A844: 	BGT	LOOP1
-    ++col;
-    if (col < 8) {
-        goto LOOP1;
-    }
-    // asm 0000A845: 	SUBI	8,R2			;reset X position
-    R2.s -= 8;
-    // asm 0000A846: 	INC	R3			;increment Y position
-    ++R3.s;
-    // asm 0000A847: 	DEC	R5
-    // asm 0000A848: 	BGT	OUTRLP
-    ++row;
-    if (row < 7) {
-        goto OUTRLP;
-    }
-    // asm 0000A849: 	SUBI	7,R3			;reset Y position
-    R3.s -= 7;
-NXTCHAR:
-    // asm 0000A84A: ADDI	8,R2			;to next X position
-    R2.s += 8;
-    // asm 0000A84B: 	BU	OLP
-    goto OLP;
-oucX:
-    // asm 0000A84C: 	POP	R5
-    // asm 0000A84D: 	POP	R4
-    // asm 0000A84E: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -491,44 +391,11 @@ oucX:
 *CLOBBERS	R0,AR1
 *
 */
-void _pixel(void)
+void _pixel(int x, int y, int color)
 {
-    uint32_t x;
-    int y;
-
-    // asm 0000A84F: 	PUSH	AR1
-    // asm 0000A850: 	PUSH	AR2
-    // asm 0000A851: 	PUSH	R2
-    // asm 0000A852: 	PUSH	IE
-    // asm 0000A853: 	LDP	@COMMINTM
-    // asm 0000A854: 	LDI	@COMMINTM,IE
-    // asm 0000A855: 	SETDP
-    // asm 0000A856: 	LDP	@CPU_WS
-    // asm 0000A857: 	LDI	HARD_WS,AR1
-    // asm 0000A858: 	AND	0DFFFh,ST		;turn off GIE.
-    // asm 0000A859: 	POP	IE
-    // asm 0000A85A: 	STI	AR1,@CPU_WS		;SET WAITSTATE MODE
-    // asm 0000A85B: 	SETDP
-    // asm 0000A85C: 	LDI	0,AR1			;DUMMY READ ADDR
-    // asm 0000A85D: 	LSH	9,R2
-    // asm 0000A85E: 	ADDI	@ACTIVE_SCREEN,AR2	;GET CURRENT SCREEN PAGE
-    // asm 0000A85F: 	ADDI	R2,AR2
-    // asm 0000A860: 	LDP	@CPU_WS
-    // asm 0000A861: 	STI	R3,*AR2			;store to screen
-    // asm 0000A862: 	LDI	*AR1,R2			;DUMMY READ
-    // asm 0000A863: 	LDI	SOFT_WS,R2
-    // asm 0000A864: 	STI	R2,@CPU_WS
-    // asm 0000A865: 	SETDP
-    // asm 0000A866: 	CALL	ENABLEGIE_font
-    // asm 0000A867: 	POP	R2
-    // asm 0000A868: 	POP	AR2
-    // asm 0000A869: 	POP	AR1
-    // asm 0000A86A: 	RETS
-    x = AR2;
-    y = R2.s;
     if (x >= CRUSN_SCREEN_WIDTH || y < 0 || y >= CRUSN_SCREEN_HEIGHT) {
         return;
     }
 
-    crusn_mem_wr32((word_addr_t)ACTIVE_SCREEN + ((word_addr_t)y << 9) + x, R3.u);
+    crusn_mem_wr32((word_addr_t)ACTIVE_SCREEN + ((word_addr_t)y << 9) + (word_addr_t)x, (u32)color);
 }

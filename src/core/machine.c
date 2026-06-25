@@ -7,6 +7,7 @@
 #include <string.h>
 
 crusn_machine* g_crusn_machine = NULL;
+u32 crusn_rom_words[CRUSN_ROM_WORDS];
 
 static const char* CRUSN_ROM_PATH = "roms/crusnusa45_maindata_interleaved.bin";
 
@@ -26,21 +27,16 @@ static unsigned char crusn_expand_5_to_8(unsigned value) {
     return (unsigned char)((value << 3) | (value >> 2));
 }
 
-static int crusn_load_rom_words(const char* path, u32** out_words, size_t* out_word_count) {
+static int crusn_load_rom_words(const char* path, u32* out_words, size_t out_word_count) {
     FILE* fp;
     unsigned char* bytes = NULL;
-    u32* words = NULL;
     long file_size_long;
     size_t file_size;
-    size_t word_count;
     size_t i;
 
     assert(path != NULL);
     assert(out_words != NULL);
-    assert(out_word_count != NULL);
-
-    *out_words = NULL;
-    *out_word_count = 0;
+    assert(out_word_count > 0);
 
     fp = fopen(path, "rb");
     if (fp == NULL) {
@@ -79,48 +75,22 @@ static int crusn_load_rom_words(const char* path, u32** out_words, size_t* out_w
     }
     fclose(fp);
 
-    word_count = file_size / 4u;
-    words = malloc(word_count * sizeof(*words));
-    if (words == NULL) {
+    if (file_size != out_word_count * sizeof(*out_words)) {
         free(bytes);
         return -1;
     }
 
     /* The raw interleaved ROM is byte-laid out so little-endian decode matches the TMS word view. */
-    for (i = 0; i < word_count; ++i) {
+    for (i = 0; i < out_word_count; ++i) {
         size_t off = i * 4u;
-        words[i] = (u32)bytes[off]
+        out_words[i] = (u32)bytes[off]
             | ((u32)bytes[off + 1] << 8)
             | ((u32)bytes[off + 2] << 16)
             | ((u32)bytes[off + 3] << 24);
     }
 
     free(bytes);
-    *out_words = words;
-    *out_word_count = word_count;
     return 0;
-}
-
-void crusn_machine_push_u32(u32 value) {
-    crusn_machine* machine = g_crusn_machine;
-
-    assert(machine != NULL);
-    assert(machine->translation_stack_top < CRUSN_TRANSLATION_STACK_WORDS);
-
-    machine->translation_stack[machine->translation_stack_top++] = value;
-}
-
-u32 crusn_machine_pop_u32(void) {
-    crusn_machine* machine = g_crusn_machine;
-
-    assert(machine != NULL);
-    assert(machine->translation_stack_top > 0);
-
-    return machine->translation_stack[--machine->translation_stack_top];
-}
-
-void crusn_machine_push_reg32(crusn_reg32 value) {
-    crusn_machine_push_u32(value.u);
 }
 
 u32* crusn_machine_rom_addr(word_addr_t addr) {
@@ -132,7 +102,7 @@ u32* crusn_machine_rom_addr(word_addr_t addr) {
     offset = (size_t)(addr - machine->memory.rom.base);
     assert(offset < machine->memory.rom.word_count);
 
-    return &machine->rom_words[offset];
+    return &crusn_rom_words[offset];
 }
 
 u32* crusn_machine_colorram_addr(word_addr_t addr) {
@@ -145,13 +115,6 @@ u32* crusn_machine_colorram_addr(word_addr_t addr) {
     assert(offset < machine->memory.colorram.word_count);
 
     return &machine->colorram_words[offset];
-}
-
-crusn_reg32 crusn_machine_pop_reg32(void) {
-    crusn_reg32 value;
-
-    value.u = crusn_machine_pop_u32();
-    return value;
 }
 
 void crusn_machine_decode_screen_argb8888(const crusn_machine* machine, u32* dst_pixels, size_t dst_pitch_bytes) {
@@ -185,7 +148,10 @@ int crusn_machine_init(crusn_machine* machine) {
     memset(machine, 0, sizeof(*machine));
     crusn_cpu_reset();
 
-    if (crusn_load_rom_words(CRUSN_ROM_PATH, &machine->rom_words, &machine->rom_word_count) != 0) {
+    machine->rom_words = crusn_rom_words;
+    machine->rom_word_count = CRUSN_ROM_WORDS;
+
+    if (crusn_load_rom_words(CRUSN_ROM_PATH, crusn_rom_words, CRUSN_ROM_WORDS) != 0) {
         return -1;
     }
 
@@ -228,7 +194,6 @@ int crusn_machine_init(crusn_machine* machine) {
 }
 
 void crusn_machine_shutdown(crusn_machine* machine) {
-    free(machine->rom_words);
     free(machine->ram_words);
     free(machine->screen_words);
     free(machine->cmos_words);
@@ -268,7 +233,8 @@ void crusn_machine_tick(crusn_machine* machine) {
     machine->frame_counter++;
 }
 
-int crusn_machine_dump_screen_bmp(const crusn_machine* machine, const char* path) {
+int crusn_machine_dump_screen_bmp(
+    const crusn_machine* machine, const u32* screen_words, const u32* colorram_words, const char* path) {
     FILE* fp;
     const unsigned width = CRUSN_SCREEN_WIDTH;
     const unsigned height = CRUSN_SCREEN_HEIGHT;
@@ -278,7 +244,7 @@ int crusn_machine_dump_screen_bmp(const crusn_machine* machine, const char* path
     u32* pixels;
     unsigned y;
 
-    if (machine == NULL || path == NULL) {
+    if (machine == NULL || screen_words == NULL || colorram_words == NULL || path == NULL) {
         return -1;
     }
 
@@ -311,7 +277,28 @@ int crusn_machine_dump_screen_bmp(const crusn_machine* machine, const char* path
         return -1;
     }
 
-    crusn_machine_decode_screen_argb8888(machine, pixels, row_size);
+    for (y = 0; y < CRUSN_SCREEN_HEIGHT; ++y) {
+        const u32* src_row = &screen_words[y * CRUSN_SCREEN_WIDTH];
+        u32* dst_row = (u32*)((unsigned char*)pixels + (y * row_size));
+        unsigned x;
+
+        for (x = 0; x < CRUSN_SCREEN_WIDTH; ++x) {
+            u32 pixel = src_row[x];
+
+            if ((pixel & 0xFFFF0000u) != 0u) {
+                dst_row[x] = pixel;
+            } else if ((pixel & 0xFFFFu) < machine->colorram_word_count) {
+                u32 rgb555 = colorram_words[pixel & 0xFFFFu] & 0x7FFFu;
+                unsigned char r = crusn_expand_5_to_8((rgb555 >> 10) & 0x1Fu);
+                unsigned char g = crusn_expand_5_to_8((rgb555 >> 5) & 0x1Fu);
+                unsigned char b = crusn_expand_5_to_8(rgb555 & 0x1Fu);
+
+                dst_row[x] = 0xFF000000u | ((u32)r << 16) | ((u32)g << 8) | (u32)b;
+            } else {
+                dst_row[x] = 0xFF000000u;
+            }
+        }
+    }
 
     for (y = 0; y < height; ++y) {
         const u32* row = (const u32*)((const unsigned char*)pixels + ((size_t)y * row_size));

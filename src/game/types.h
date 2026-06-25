@@ -158,6 +158,12 @@ typedef struct FONTENTRY {
     u32 y_start;
 } FONTENTRY;
 
+typedef struct ADJUSTMENT_RANGE {
+    int low;
+    int high;
+    int default_value;
+} ADJUSTMENT_RANGE;
+
 typedef struct tTEXT {
     u32 link;
     u32 text_ptr;
@@ -497,5 +503,12 @@ typedef struct tPAL {
 typedef struct tPALLIST_ENTRY {
     int ref_count_and_pal_code;
 } tPALLIST_ENTRY;
+
+typedef struct tSECTION_ALLOC {
+    int pal_index;
+    int count;
+} tSECTION_ALLOC;
+
+typedef u32 tPALETTE_CODE;
 
 #endif

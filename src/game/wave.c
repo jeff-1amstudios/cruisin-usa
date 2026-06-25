@@ -9,6 +9,7 @@
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
+#include "objects.h"
 #include "pall.h"
 #include "sndtab.h"
 #include "sys.h"
@@ -436,25 +437,21 @@ void LOAD_FIXED_PALETTES(void) {
 
     crusn_mem_wr32(COLORAM + 0xFF, R0.u);
 
-    PAL_ALLOC_RAW((tPAL*)ROM_ADDR(fixedfnt_tPAL_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(fixedfnt_tPAL_ROM));
     PAL_ALLOC_RAW(&ILLUM_PAL);
-    PAL_ALLOC_RAW((tPAL*)ROM_ADDR(lgnum43_coolyelo_ROM));
-    PAL_ALLOC_RAW((tPAL*)ROM_ADDR(font18_white_ROM));
-    PAL_ALLOC_RAW((tPAL*)ROM_ADDR(dnums_amber_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(lgnum43_coolyelo_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(font18_white_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(dnums_amber_ROM));
     LOAD_VARIOUS_PALETTES();
-    AR2 = (uintptr_t)ROM_ADDR(shared_PALETTES_ROM);
-    HARDalloc_section();
-    AR2 = (uintptr_t)sky1_p;
-    PAL_ALLOC();
-    PAL_ALLOC_RAW((tPAL*)ROM_ADDR(osg10fnt_white_ROM));
-    PAL_ALLOC_RAW((tPAL*)ROM_ADDR(bnout1_smoke_ROM));
-    PAL_ALLOC_RAW((tPAL*)ROM_ADDR(H2HPAL1_ROM));
-    PAL_ALLOC_RAW((tPAL*)ROM_ADDR(H2HPAL2_ROM));
-    PAL_ALLOC_RAW((tPAL*)ROM_ADDR(H2HPAL3_ROM));
+    HARDalloc_section(shared_PALETTES);
+    PAL_ALLOC(sky1_p);
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(osg10fnt_white_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(bnout1_smoke_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(H2HPAL1_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(H2HPAL2_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(H2HPAL3_ROM));
 
-    // asm 0000941C:  LDL     general_PALETTES,AR2
-    AR2 = (uintptr_t)ROM_ADDR(general_PALETTES_ROM);
-    HARDalloc_section();
+    HARDalloc_section(general_PALETTES);
 }
 
 // *----------------------------------------------------------------------------
@@ -1368,177 +1365,166 @@ static int PTRUCKGPAL[] = {
 };
 
 static void LOAD_VARIOUS_PALETTES(void) {
-    // asm 00009507: 	LDL	caravan_redyelo,AR2
-    // asm 00009508: 	CALL	PAL_ALLOC_RAW
-    // asm 00009509: 	LDL	caravan_yelogrey,AR2
-    // asm: 	CALL	PAL_ALLOC_RAW
-    // asm 0000950B: 	LDL	hotrod_yellow,AR2
-    // asm 0000950C: 	CALL	PAL_ALLOC_RAW
-    // asm 0000950D: 	LDL	hotrod_brtblue,AR2
-    // asm: 	CALL	PAL_ALLOC_RAW
-    // asm 0000950F: 	LDL	missle_yellow,AR2
-    // asm 00009510: 	CALL	PAL_ALLOC_RAW
-    // asm 00009511: 	LDL	missle_red,AR2
-    // asm 00009512: 	CALL	PAL_ALLOC_RAW
-    // asm 00009513: 	LDL	missle_blue,AR2
-    // asm: 	CALL	PAL_ALLOC_RAW
-    // asm 00009515: 	LDL	jeep_red,AR2
-    // asm 00009516: 	CALL	PAL_ALLOC_RAW
-    // asm 00009517: 	LDL	jeep_yellow,AR2
-    // asm: 	CALL	PAL_ALLOC_RAW
-    // asm 00009519: 	LDL	cvette_blue,AR2
-    // asm 0000951A: 	CALL	PAL_ALLOC_RAW
-    // asm 0000951B: 	LDL	cvette_red,AR2
-    // asm 0000951C: 	CALL	PAL_ALLOC_RAW
-    // asm 0000951D: 	LDL	cvette_purple,AR2
-    // asm: 	CALL	PAL_ALLOC_RAW
-    // asm 0000951F: 	LDL	testor_blue,AR2
-    // asm 00009520: 	CALL	PAL_ALLOC_RAW
-    // asm 00009521: 	LDL	testor_grape,AR2
-    // asm: 	CALL	PAL_ALLOC_RAW
-    // asm 00009523: 	LDL	gtruck_bluep,AR2
-    // asm: 	CALL	PAL_ALLOC_RAW
-    // asm 00009525: 	LDL	muscle_yellow,AR2
-    // asm 00009526: 	CALL	PAL_ALLOC_RAW
-    // asm 00009527: 	LDL	muscle_green,AR2
-    // asm: 	CALL	PAL_ALLOC_RAW
-    // asm 00009529: 	LDL	ptruckg_purple,AR2
-    // asm 0000952A: 	CALL	PAL_ALLOC_RAW
-    // asm 0000952B: 	LDL	ptruckg_yellr,AR2
-    // asm: 	CALL	PAL_ALLOC_RAW
-    // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_VARIOUS_PALETTES", 0, 0);
-    UNIMPL();
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(caravan_redyelo_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(caravan_yelogrey_ROM));
+
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(hotrod_yellow_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(hotrod_brtblue_ROM));
+
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(missle_yellow_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(missle_red_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(missle_blue_ROM));
+
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(jeep_red_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(jeep_yellow_ROM));
+
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(cvette_blue_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(cvette_red_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(cvette_purple_ROM));
+
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(testor_blue_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(testor_grape_ROM));
+
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(gtruck_bluep_ROM));
+
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(muscle_yellow_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(muscle_green_ROM));
+
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(ptruckg_purple_ROM));
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(ptruckg_yellr_ROM));
 }
 
-static int tower_bgrey[] = {
+/*
+ *OVERWRITTEN ON TOWER PALETTE, AND RESTORED IN GGATE PARK
+ */
+static tPAL tower_bgrey = {
     0x080000000 | 256,
-    (0x00 << 16) | 0x021,
-    (0x042 << 16) | 0x0463,
-    (0x0463 << 16) | 0x0884,
-    (0x0884 << 16) | 0x0884,
-    (0x0884 << 16) | 0x0CA5,
-    (0x0CA5 << 16) | 0x0CA5,
-    (0x0CA5 << 16) | 0x0CA5,
-    (0x0CA5 << 16) | 0x0CA5,
-    (0x0CA5 << 16) | 0x0CA5,
-    (0x0CA5 << 16) | 0x0CA5,
-    (0x0CA5 << 16) | 0x010C6,
-    (0x010C6 << 16) | 0x0CA5,
-    (0x0CA5 << 16) | 0x010C6,
-    (0x0CA5 << 16) | 0x010C6,
-    (0x010C6 << 16) | 0x010C6,
-    (0x010C6 << 16) | 0x010C6,
-    (0x010C6 << 16) | 0x010C6,
-    (0x010C6 << 16) | 0x010C6,
-    (0x014E7 << 16) | 0x010C6,
-    (0x010C6 << 16) | 0x010C6,
-    (0x010C6 << 16) | 0x014E7,
-    (0x010C6 << 16) | 0x010C6,
-    (0x014E7 << 16) | 0x010C6,
-    (0x014E7 << 16) | 0x014E7,
-    (0x014E7 << 16) | 0x014E7,
-    (0x014E7 << 16) | 0x014E7,
-    (0x014E7 << 16) | 0x014E7,
-    (0x014E7 << 16) | 0x014E7,
-    (0x014E7 << 16) | 0x014E7,
-    (0x014E7 << 16) | 0x01908,
-    (0x01908 << 16) | 0x01D29,
-    (0x014E7 << 16) | 0x01908,
-    (0x014E7 << 16) | 0x01908,
-    (0x01908 << 16) | 0x01908,
-    (0x01908 << 16) | 0x01908,
-    (0x01908 << 16) | 0x01908,
-    (0x01908 << 16) | 0x014E7,
-    (0x01908 << 16) | 0x01908,
-    (0x01908 << 16) | 0x01D29,
-    (0x01908 << 16) | 0x01908,
-    (0x01908 << 16) | 0x010C6,
-    (0x01D29 << 16) | 0x01908,
-    (0x01908 << 16) | 0x01D29,
-    (0x01908 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x01908,
-    (0x01908 << 16) | 0x01D29,
-    (0x01908 << 16) | 0x01D29,
-    (0x01908 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x01908,
-    (0x01D29 << 16) | 0x01908,
-    (0x01D29 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x0214A,
-    (0x01D29 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x0214A,
-    (0x01D29 << 16) | 0x0214A,
-    (0x014E7 << 16) | 0x01D29,
-    (0x01D29 << 16) | 0x01D29,
-    (0x0214A << 16) | 0x0214A,
-    (0x0214A << 16) | 0x01D29,
-    (0x0214A << 16) | 0x01D29,
-    (0x0214A << 16) | 0x0214A,
-    (0x0214A << 16) | 0x01D29,
-    (0x0214A << 16) | 0x0214A,
-    (0x0256B << 16) | 0x01D29,
-    (0x0214A << 16) | 0x0214A,
-    (0x0214A << 16) | 0x0214A,
-    (0x01D29 << 16) | 0x0214A,
-    (0x0256B << 16) | 0x014E7,
-    (0x01D29 << 16) | 0x0214A,
-    (0x0256B << 16) | 0x0214A,
-    (0x0214A << 16) | 0x0214A,
-    (0x0256B << 16) | 0x0214A,
-    (0x0214A << 16) | 0x0256B,
-    (0x0256B << 16) | 0x0214A,
-    (0x0214A << 16) | 0x0214A,
-    (0x0256B << 16) | 0x0214A,
-    (0x0256B << 16) | 0x0256B,
-    (0x0214A << 16) | 0x0256B,
-    (0x0256B << 16) | 0x0214A,
-    (0x0256B << 16) | 0x0256B,
-    (0x0214A << 16) | 0x0256B,
-    (0x0298C << 16) | 0x0256B,
-    (0x0256B << 16) | 0x0214A,
-    (0x0256B << 16) | 0x0256B,
-    (0x0256B << 16) | 0x0256B,
-    (0x0256B << 16) | 0x01D29,
-    (0x0298C << 16) | 0x0256B,
-    (0x0298C << 16) | 0x0256B,
-    (0x0256B << 16) | 0x0256B,
-    (0x0298C << 16) | 0x0298C,
-    (0x0298C << 16) | 0x0256B,
-    (0x0298C << 16) | 0x0298C,
-    (0x0298C << 16) | 0x01D29,
-    (0x0298C << 16) | 0x0298C,
-    (0x0298C << 16) | 0x0298C,
-    (0x0298C << 16) | 0x0256B,
-    (0x0298C << 16) | 0x0298C,
-    (0x0256B << 16) | 0x0298C,
-    (0x0298C << 16) | 0x0298C,
-    (0x0298C << 16) | 0x0298C,
-    (0x02DAD << 16) | 0x02DAD,
-    (0x0298C << 16) | 0x02DAD,
-    (0x02DAD << 16) | 0x0298C,
-    (0x0298C << 16) | 0x02DAD,
-    (0x02DAD << 16) | 0x02DAD,
-    (0x02DAD << 16) | 0x02DAD,
-    (0x0298C << 16) | 0x02DAD,
-    (0x02DAD << 16) | 0x02DAD,
-    (0x031CE << 16) | 0x02DAD,
-    (0x02DAD << 16) | 0x031CE,
-    (0x031CE << 16) | 0x031CE,
-    (0x031CE << 16) | 0x02DAD,
-    (0x031CE << 16) | 0x031CE,
-    (0x02DAD << 16) | 0x031CE,
-    (0x031CE << 16) | 0x031CE,
-    (0x031CE << 16) | 0x035EF,
-    (0x035EF << 16) | 0x031CE,
-    (0x031CE << 16) | 0x035EF,
-    (0x03A10 << 16) | 0x035EF,
-    (0x02DAD << 16) | 0x03E31,
-    (0x035EF << 16) | 0x03E31,
-    (0x03E31 << 16) | 0x04252,
-    (0x04673 << 16) | 0x04A94,
+    { (0x00 << 16) | 0x021,
+        (0x042 << 16) | 0x0463,
+        (0x0463 << 16) | 0x0884,
+        (0x0884 << 16) | 0x0884,
+        (0x0884 << 16) | 0x0CA5,
+        (0x0CA5 << 16) | 0x0CA5,
+        (0x0CA5 << 16) | 0x0CA5,
+        (0x0CA5 << 16) | 0x0CA5,
+        (0x0CA5 << 16) | 0x0CA5,
+        (0x0CA5 << 16) | 0x0CA5,
+        (0x0CA5 << 16) | 0x010C6,
+        (0x010C6 << 16) | 0x0CA5,
+        (0x0CA5 << 16) | 0x010C6,
+        (0x0CA5 << 16) | 0x010C6,
+        (0x010C6 << 16) | 0x010C6,
+        (0x010C6 << 16) | 0x010C6,
+        (0x010C6 << 16) | 0x010C6,
+        (0x010C6 << 16) | 0x010C6,
+        (0x014E7 << 16) | 0x010C6,
+        (0x010C6 << 16) | 0x010C6,
+        (0x010C6 << 16) | 0x014E7,
+        (0x010C6 << 16) | 0x010C6,
+        (0x014E7 << 16) | 0x010C6,
+        (0x014E7 << 16) | 0x014E7,
+        (0x014E7 << 16) | 0x014E7,
+        (0x014E7 << 16) | 0x014E7,
+        (0x014E7 << 16) | 0x014E7,
+        (0x014E7 << 16) | 0x014E7,
+        (0x014E7 << 16) | 0x014E7,
+        (0x014E7 << 16) | 0x01908,
+        (0x01908 << 16) | 0x01D29,
+        (0x014E7 << 16) | 0x01908,
+        (0x014E7 << 16) | 0x01908,
+        (0x01908 << 16) | 0x01908,
+        (0x01908 << 16) | 0x01908,
+        (0x01908 << 16) | 0x01908,
+        (0x01908 << 16) | 0x014E7,
+        (0x01908 << 16) | 0x01908,
+        (0x01908 << 16) | 0x01D29,
+        (0x01908 << 16) | 0x01908,
+        (0x01908 << 16) | 0x010C6,
+        (0x01D29 << 16) | 0x01908,
+        (0x01908 << 16) | 0x01D29,
+        (0x01908 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x01908,
+        (0x01908 << 16) | 0x01D29,
+        (0x01908 << 16) | 0x01D29,
+        (0x01908 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x01908,
+        (0x01D29 << 16) | 0x01908,
+        (0x01D29 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x0214A,
+        (0x01D29 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x0214A,
+        (0x01D29 << 16) | 0x0214A,
+        (0x014E7 << 16) | 0x01D29,
+        (0x01D29 << 16) | 0x01D29,
+        (0x0214A << 16) | 0x0214A,
+        (0x0214A << 16) | 0x01D29,
+        (0x0214A << 16) | 0x01D29,
+        (0x0214A << 16) | 0x0214A,
+        (0x0214A << 16) | 0x01D29,
+        (0x0214A << 16) | 0x0214A,
+        (0x0256B << 16) | 0x01D29,
+        (0x0214A << 16) | 0x0214A,
+        (0x0214A << 16) | 0x0214A,
+        (0x01D29 << 16) | 0x0214A,
+        (0x0256B << 16) | 0x014E7,
+        (0x01D29 << 16) | 0x0214A,
+        (0x0256B << 16) | 0x0214A,
+        (0x0214A << 16) | 0x0214A,
+        (0x0256B << 16) | 0x0214A,
+        (0x0214A << 16) | 0x0256B,
+        (0x0256B << 16) | 0x0214A,
+        (0x0214A << 16) | 0x0214A,
+        (0x0256B << 16) | 0x0214A,
+        (0x0256B << 16) | 0x0256B,
+        (0x0214A << 16) | 0x0256B,
+        (0x0256B << 16) | 0x0214A,
+        (0x0256B << 16) | 0x0256B,
+        (0x0214A << 16) | 0x0256B,
+        (0x0298C << 16) | 0x0256B,
+        (0x0256B << 16) | 0x0214A,
+        (0x0256B << 16) | 0x0256B,
+        (0x0256B << 16) | 0x0256B,
+        (0x0256B << 16) | 0x01D29,
+        (0x0298C << 16) | 0x0256B,
+        (0x0298C << 16) | 0x0256B,
+        (0x0256B << 16) | 0x0256B,
+        (0x0298C << 16) | 0x0298C,
+        (0x0298C << 16) | 0x0256B,
+        (0x0298C << 16) | 0x0298C,
+        (0x0298C << 16) | 0x01D29,
+        (0x0298C << 16) | 0x0298C,
+        (0x0298C << 16) | 0x0298C,
+        (0x0298C << 16) | 0x0256B,
+        (0x0298C << 16) | 0x0298C,
+        (0x0256B << 16) | 0x0298C,
+        (0x0298C << 16) | 0x0298C,
+        (0x0298C << 16) | 0x0298C,
+        (0x02DAD << 16) | 0x02DAD,
+        (0x0298C << 16) | 0x02DAD,
+        (0x02DAD << 16) | 0x0298C,
+        (0x0298C << 16) | 0x02DAD,
+        (0x02DAD << 16) | 0x02DAD,
+        (0x02DAD << 16) | 0x02DAD,
+        (0x0298C << 16) | 0x02DAD,
+        (0x02DAD << 16) | 0x02DAD,
+        (0x031CE << 16) | 0x02DAD,
+        (0x02DAD << 16) | 0x031CE,
+        (0x031CE << 16) | 0x031CE,
+        (0x031CE << 16) | 0x02DAD,
+        (0x031CE << 16) | 0x031CE,
+        (0x02DAD << 16) | 0x031CE,
+        (0x031CE << 16) | 0x031CE,
+        (0x031CE << 16) | 0x035EF,
+        (0x035EF << 16) | 0x031CE,
+        (0x031CE << 16) | 0x035EF,
+        (0x03A10 << 16) | 0x035EF,
+        (0x02DAD << 16) | 0x03E31,
+        (0x035EF << 16) | 0x03E31,
+        (0x03E31 << 16) | 0x04252,
+        (0x04673 << 16) | 0x04A94 }
 };

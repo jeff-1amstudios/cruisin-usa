@@ -865,9 +865,9 @@ void GET_CLOSEST_TRAK(void);
 void HSTDEC(void);
 
 // asm:  .globl _wr_cw,_rd_cw
-void _wr_cw(void);
+void _wr_cw(word_addr_t addr, int value);
 
-void _rd_cw(void);
+int _rd_cw(word_addr_t addr);
 
 // asm:  .globl _CARV0,_CARVCT
 void _CARV0(void);
@@ -1139,7 +1139,7 @@ void FIND_NEXT_OBJ(void);
 
 // font1a.asm
 // asm:  .globl _outtextxyc
-void _outtextxyc(void);
+void _outtextxyc(const char *string, int x, int y, int color);
 
 // asm:  .globl _itoa,_itoaLZ
 void _itoa(void);
@@ -1150,10 +1150,10 @@ void _itoaLZ(void);
 void _ftoa(void);
 
 // asm:  .globl _pixel
-void _pixel(void);
+void _pixel(int x, int y, int color);
 
 // asm:  .globl _fill
-void _fill(void);
+void _fill(int x1, int y1, int x2, int y2, int color);
 
 // asm:  .globl HEX2ASC
 void HEX2ASC(void);
@@ -1197,7 +1197,7 @@ void MOVEIN_HUD_EQUIP(void);
 void MOVEOUT_HUD_EQUIP(void);
 
 // asm:  .globl HARDalloc_section
-void HARDalloc_section(void);
+void HARDalloc_section(tSECTION_ALLOC sec);
 
 // asm:  .globl INFINITY
 void INFINITY(void);
@@ -1311,9 +1311,9 @@ void LEG_GENERATE_MAP(void);
 
 // line.c
 // asm:  .globl _rectangle,_line
-void _rectangle(void);
+void _rectangle(int x1, int y1, int x2, int y2, int color);
 
-void _line(void);
+void _line(int x0, int y0, int x1, int y1, int color);
 
 // math.asm
 // asm:  .globl GEN_NORMAL
@@ -1764,7 +1764,7 @@ void CLRSCRN0(void);
 
 void CLRSCRN1(void);
 
-void SCREEN_FILL(void);
+word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one);
 
 // asm:  .globl CLR255,CLR511,SCRNFIL
 void CLR255(void);

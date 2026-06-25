@@ -32,7 +32,7 @@ void CLRSCRN0(void);
 void CLR255(void);
 void CLR511(void);
 void SCRNFIL(void);
-void SCREEN_FILL(void);
+word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one);
 void CLRCRAM(void);
 void RANDOM(void);
 void FRAND(void);
@@ -96,6 +96,8 @@ static int LINE511I = SCREEN0 + 0x7FC00;
 /* asm: 	 */
 /* asm: 	 */
 static int SCRSIZI = 0x3FFFF;
+/* asm: FILWORD	.word	93093H */
+static int FILWORD = 0x93093;
 static u32 DMA_SETUP_SHADOW = DMA_SETUP_INIT;
 #if DEBUG
 
@@ -210,62 +212,25 @@ void FASTCLR1(void) {
 
 // *----------------------------------------------------------------------------
 
+static void port_clear_screen(word_addr_t start_addr) {
+    SCREEN_FILL(start_addr, 0, (u32)SCRSIZI);
+}
+
 /*
  *----------------------------------------------------------------------------
  *CLEAR SCREEN BITMAP
  *
  */
-// TODO: should this be a single function with labels like the ASM?
 void CLRSCRN(void) {
-    // asm 00008EA1: 	CALL	CLRSCRN0
     CLRSCRN0();
 }
 
 void CLRSCRN1(void) {
-    // asm 00008EA2: 	PUSH	AR2
-    crusn_machine_push_u32((u32)AR2);
-    // asm 00008EA3: 	LDI	@SCREEN1I,AR2
-    AR2 = SCREEN1I;
-    // asm 00008EA4: 	B	CLRSC00
-    // asm 00008EA7: PUSH	R3
-    // asm 00008EA8: 	LDI	@SCRSIZI,R3
-    // asm 00008EA9: 	PUSH	R2
-    // asm 00008EAA: 	LDI	0,R2
-    R3.s = SCRSIZI;
-    R2.s = 0;
-    // asm 00008EAB: 	CALL	SCREEN_FILL
-    SCREEN_FILL();
-    // asm 00008EAC: 	POP	R2
-    // asm 00008EAD: 	POP	R3
-    // asm 00008EAE: 	POP	AR2
-    AR2 = crusn_machine_pop_u32();
-    // asm 00008EAF: 	RETS
+    port_clear_screen((word_addr_t)SCREEN1I);
 }
 
 void CLRSCRN0(void) {
-    // asm 00008EA5: 	PUSH	AR2
-    crusn_machine_push_u32((u32)AR2);
-    // asm 00008EA6: 	LDI	@SCREEN0I,AR2
-    AR2 = SCREEN0I;
-CLRSC00:
-    // asm 00008EA7: PUSH	R3
-    crusn_machine_push_reg32(R3);
-    // asm 00008EA8: 	LDI	@SCRSIZI,R3
-    R3.s = SCRSIZI;
-CLRSC01:
-    // asm 00008EA9: 	PUSH	R2
-    crusn_machine_push_reg32(R2);
-    // asm 00008EAA: 	LDI	0,R2
-    R2.s = 0;
-    // asm 00008EAB: 	CALL	SCREEN_FILL
-    SCREEN_FILL();
-    // asm 00008EAC: 	POP	R2
-    R2 = crusn_machine_pop_reg32();
-    // asm 00008EAD: 	POP	R3
-    R3 = crusn_machine_pop_reg32();
-    // asm 00008EAE: 	POP	AR2
-    AR2 = crusn_machine_pop_u32();
-    // asm 00008EAF: 	RETS
+    port_clear_screen((word_addr_t)SCREEN0I);
 }
 
 // *----------------------------------------------------------------------------
@@ -276,14 +241,7 @@ CLRSC01:
  *
  */
 void CLR255(void) {
-    // asm 00008EB0: 	PUSH	AR2
-    // asm 00008EB1: 	PUSH	R3
-    // asm 00008EB2: 	LDI	@LINE255I,AR2
-    // asm 00008EB3: 	LDI	1023,R3		;ONE ROW ONLY
-    // asm 00008EB4: 	B	CLRSC01
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLR255", 0, 0);
-    UNIMPL();
+    SCREEN_FILL((word_addr_t)LINE255I, 0, 1023);
 }
 
 // *----------------------------------------------------------------------------
@@ -294,14 +252,7 @@ void CLR255(void) {
  *
  */
 void CLR511(void) {
-    // asm 00008EB5: 	PUSH	AR2
-    // asm 00008EB6: 	PUSH	R3
-    // asm 00008EB7: 	LDI	@LINE511I,AR2
-    // asm 00008EB8: 	LDI	1023,R3		;ONE ROW ONLY
-    // asm 00008EB9: 	B	CLRSC01
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLR511", 0, 0);
-    UNIMPL();
+    SCREEN_FILL((word_addr_t)LINE511I, 0, 1023);
 }
 
 // *----------------------------------------------------------------------------
@@ -311,13 +262,7 @@ void CLR511(void) {
  *FILL SCREEN
  */
 void SCRNFIL(void) {
-    // asm 00008EBA: 	LDI	@SCREEN0I,AR2
-    // asm 00008EBB: 	LDI	@FILSIZI,R3
-    // asm 00008EBC: 	LDI	@FILWORD,R2	;fill it with some crud
-    // asm 00008EBD: 	B	SCREEN_FILL
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SCRNFIL", 0, 0);
-    UNIMPL();
+    SCREEN_FILL((word_addr_t)SCREEN0I, (u32)FILWORD, (u32)FILSIZI);
 }
 
 // *----------------------------------------------------------------------------
@@ -327,58 +272,19 @@ void SCRNFIL(void) {
  *SCREEN WRITER
  *
  *PARAMETERS
- *	AR2	START ADDRESS
- *	R2	COLOR
- *	R3	COUNT-1
+ *	start_addr	START ADDRESS
+ *	color		FILL VALUE
+ *	count_minus_one	COUNT-1
  *
  */
-void SCREEN_FILL(void) {
-    uint32_t i;
+word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one) {
+    word_addr_t addr = start_addr;
 
-    // asm 00008EC0: 	PUSH	R0
-    crusn_machine_push_reg32(R0);
-    // asm 00008EC1: 	PUSH	AR1
-    crusn_machine_push_u32((u32)AR1);
-    // asm 00008EC2: 	PUSH	AR2
-    crusn_machine_push_u32((u32)AR2);
-    // asm 00008EC3: 	PUSH	IE
-    crusn_machine_push_u32(IE);
-    // asm 00008EC4: 	LDP	@COMMINTM
-    // asm 00008EC5: 	LDI	@COMMINTM,IE
-    IE = (u32)COMMINTM;
-    // asm 00008EC6: 	SETDP
-    // asm 00008EC7: 	PUSH	DP
-    crusn_machine_push_u32(DP);
-    // asm 00008EC8: 	LDP	@CPU_WS
-    // asm 00008EC9: 	LDI	0,AR1
-    AR1 = 0;
-    // asm 00008ECA: 	LDI	R3,RC
-    RC = R3.u;
-    // asm 00008ECB: 	LDI	HARD_WS,R0
-    R0.u = HARD_WS;
-    // asm 00008ECC: 	STI	R0,@CPU_WS
-    // asm 00008ECD: 	RPTB	CLRSCL
-    // asm 00008ECE: 	STI	R2,*AR2++
-    for (i = 0; i <= RC; ++i) {
-        crusn_mem_wr32((word_addr_t)AR2++, R2.u);
+    for (u32 i = 0; i <= count_minus_one; ++i) {
+        crusn_mem_wr32(addr++, color);
     }
-CLRSCL:
-    // asm 00008ECF: LDI	*AR1,R0		;DUMMY READ FOR WAIT STATE SHIT
-    // asm 00008ED0: 	LDP	@CPU_WS
-    // asm 00008ED1: 	LDI	SOFT_WS,R0
-    R0.u = SOFT_WS;
-    // asm 00008ED2: 	STI	R0,@CPU_WS
-    // asm 00008ED3: 	POP	DP
-    DP = crusn_machine_pop_u32();
-    // asm 00008ED4: 	POP	IE
-    IE = crusn_machine_pop_u32();
-    // asm 00008ED5: 	POP	AR2
-    AR2 = crusn_machine_pop_u32();
-    // asm 00008ED6: 	POP	AR1
-    AR1 = crusn_machine_pop_u32();
-    // asm 00008ED7: 	POP	R0
-    R0 = crusn_machine_pop_reg32();
-    // asm 00008ED8: 	RETS
+
+    return addr;
 }
 
 // *----------------------------------------------------------------------------

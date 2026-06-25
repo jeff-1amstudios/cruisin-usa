@@ -18,6 +18,12 @@ VALIDATE_RE = re.compile(
 VALIDATE_ARG_RE = re.compile(
     r'mame_validate_arg\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
+VALIDATE_REGION_AT_ADDR_RE = re.compile(
+    r'mame_validate_region_at_addr\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
+)
+VALIDATE_REG_AT_ADDR_RE = re.compile(
+    r'mame_validate_reg_at_addr\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*\)\s*;'
+)
 ASM_ADDR_RE = re.compile(r"^\s*//\s*asm\s+(?P<addr>[0-9A-Fa-f]{8}):")
 ADDRESS_MAP_RE = re.compile(r"^\s*[0-9A-Fa-f]{4}:([0-9A-Fa-f]{8})\s+(.+?)\s*$")
 ARRAY_DECL_RE = re.compile(
@@ -25,7 +31,9 @@ ARRAY_DECL_RE = re.compile(
     re.MULTILINE,
 )
 DEFINE_RE = re.compile(r"^\s*#define\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s+(?P<value>.+?)\s*$", re.MULTILINE)
+ENUM_VALUE_RE = re.compile(r"^\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?P<value>[^,]+)\s*,?\s*$", re.MULTILINE)
 IDENT_RE = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*\b")
+HEX_RE = re.compile(r"\b0[xX][0-9A-Fa-f]+\b")
 FUNCTION_DEF_RE = re.compile(
     r"^\s*.*?(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\([^;{}]*\)\s*\{\s*$"
 )
@@ -131,6 +139,12 @@ def parse_constant_defines(source_root: pathlib.Path) -> Dict[str, int]:
             resolved = evaluate_constant_expr(value, defines)
             if resolved is not None:
                 defines[name] = resolved
+        for match in ENUM_VALUE_RE.finditer(text):
+            name = match.group("name")
+            value = strip_cpp_line_comment(match.group("value")).strip()
+            resolved = evaluate_constant_expr(value, defines)
+            if resolved is not None:
+                defines[name] = resolved
     return defines
 
 
@@ -138,7 +152,9 @@ def evaluate_constant_expr(expr: str, defines: Dict[str, int]) -> Optional[int]:
     text = expr.strip()
     if not text:
         return None
-    if not re.fullmatch(r"[A-Za-z0-9_()+\-*/<>\s]+", text):
+    if re.fullmatch(r"(?:0[xX][0-9A-Fa-f]+|\d+)", text):
+        return int(text, 0)
+    if not re.fullmatch(r"[A-Za-z0-9_xX()+\-*/<>\s]+", text):
         return None
 
     def replace_ident(match: re.Match[str]) -> str:
@@ -150,7 +166,8 @@ def evaluate_constant_expr(expr: str, defines: Dict[str, int]) -> Optional[int]:
         return str(defines[token])
 
     try:
-        substituted = IDENT_RE.sub(replace_ident, text)
+        substituted = HEX_RE.sub(lambda match: str(int(match.group(0), 0)), text)
+        substituted = IDENT_RE.sub(replace_ident, substituted)
     except KeyError:
         return None
 
@@ -178,11 +195,12 @@ def infer_array_lengths(source_root: pathlib.Path) -> Dict[str, int]:
 
 
 def collect_breakpoints_for_file(
-    path: pathlib.Path, address_map: Dict[str, int], array_lengths: Dict[str, int]
+    path: pathlib.Path, address_map: Dict[str, int], array_lengths: Dict[str, int], defines: Optional[Dict[str, int]] = None
 ) -> List[BreakpointEntry]:
     lines = path.read_text(errors="ignore").splitlines()
     entries: List[BreakpointEntry] = []
     seen_arrays: set[tuple[int, str]] = set()
+    resolved_defines = defines or {}
 
     for index, line in enumerate(lines):
         match = VALIDATE_RE.search(strip_cpp_line_comment(line))
@@ -250,14 +268,69 @@ def collect_breakpoints_for_file(
             )
         )
 
+    for index, line in enumerate(lines):
+        match = VALIDATE_REGION_AT_ADDR_RE.search(strip_cpp_line_comment(line))
+        if not match:
+            continue
+
+        instruction_address = evaluate_constant_expr(match.group("instr_addr").strip(), resolved_defines)
+        if instruction_address is None:
+            raise ValueError(
+                f"{path}:{index + 1}: could not resolve instruction address {match.group('instr_addr')!r}"
+            )
+
+        region_expr = match.group("region_addr").strip()
+        variable_address = lookup_label_address(region_expr, address_map)
+        if variable_address is None:
+            variable_address = evaluate_constant_expr(region_expr, resolved_defines)
+        if variable_address is None:
+            raise ValueError(f"{path}:{index + 1}: could not resolve region address {region_expr!r}")
+
+        word_count = evaluate_constant_expr(match.group("word_count").strip(), resolved_defines)
+        if word_count is None:
+            raise ValueError(
+                f"{path}:{index + 1}: could not resolve word count {match.group('word_count')!r}"
+            )
+
+        entries.append(
+            BreakpointEntry(
+                label=match.group("label"),
+                variable_name=match.group("label"),
+                variable_address=variable_address,
+                instruction_address=instruction_address,
+                array_length=word_count,
+                source_path=path,
+                source_line=index + 1,
+            )
+        )
+
+    for index, line in enumerate(lines):
+        match = VALIDATE_REG_AT_ADDR_RE.search(strip_cpp_line_comment(line))
+        if not match:
+            continue
+
+        entries.append(
+            BreakpointEntry(
+                label=match.group("reg"),
+                variable_name=match.group("var"),
+                variable_address=0,
+                instruction_address=int(match.group("addr"), 0),
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+                command_override=f'logerror "validate {match.group("reg")}: 0x%08X\\n", {match.group("reg").lower()}',
+            )
+        )
+
     return entries
 
 
 def collect_breakpoints(source_root: pathlib.Path, address_map: Dict[str, int]) -> List[BreakpointEntry]:
+    defines = parse_constant_defines(source_root)
     array_lengths = infer_array_lengths(source_root)
     entries: List[BreakpointEntry] = []
     for path in sorted(source_root.rglob("*.c")):
-        entries.extend(collect_breakpoints_for_file(path, address_map, array_lengths))
+        entries.extend(collect_breakpoints_for_file(path, address_map, array_lengths, defines))
     return entries
 
 
