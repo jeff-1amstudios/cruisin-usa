@@ -309,6 +309,34 @@ def test_mame_validate_region_at_addr_groups_with_other_validations() -> None:
         ) in rendered
 
 
+def test_same_breakpoint_address_preserves_source_line_order() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                void test(uint32_t t) {
+                    mame_validate_reg_at_addr(0x00004B89, "R0", &t);
+                    mame_validate_reg_at_addr(0x00004B89, "HARD_SECTION_LOAD", &t);
+                    mame_validate_region_at_addr(0x00004B89, "_SECshared-compressed", 0x0D00000, ROM_PTR(0x0D00000), 1000);
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text("")
+
+        rendered = render_output(collect_breakpoints(tmp, parse_address_map(sample_map)))
+        assert (
+            'bpset 00004B89, 1, { logerror "validate R0: 0x%08X\\n", r0; '
+            'logerror "validate HARD_SECTION_LOAD: 0x%08X\\n", hard_section_load; '
+            'save 00004B89-0.bin, 00D00000, 0x3E8; logerror "validate _SECshared-compressed: file=00004B89-0.bin\\n"; '
+            'g }'
+        ) in rendered
+
+
 def main() -> int:
     test_extracts_example_breakpoint()
     print("ok: real cusa.c SCREEN0 validate site resolves to 0x00004B5E / 0x00900000")
@@ -330,6 +358,8 @@ def main() -> int:
     print("ok: mame_validate_region_at_addr emits an explicit-address region dump")
     test_mame_validate_region_at_addr_groups_with_other_validations()
     print("ok: mame_validate_region_at_addr groups with other validations at the same address")
+    test_same_breakpoint_address_preserves_source_line_order()
+    print("ok: same-address validations preserve source line ordering")
     return 0
 
 

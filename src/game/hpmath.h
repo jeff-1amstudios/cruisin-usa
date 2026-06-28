@@ -1,7 +1,7 @@
 #ifndef HPMATH_H
 #define HPMATH_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/HPMATH.ASM. */
 

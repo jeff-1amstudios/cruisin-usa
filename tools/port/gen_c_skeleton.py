@@ -939,7 +939,7 @@ def render_storage_header(
     out.append(f"#ifndef {guard}")
     out.append(f"#define {guard}")
     out.append("")
-    out.append('#include "port.h"')
+    out.append('#include "../core/port.h"')
     out.append("")
     out.append(f"/* Generated from asm/{src_path.name}. */")
     out.append("")
@@ -2677,7 +2677,7 @@ def render_equ_header(
     out.append(f"#ifndef {guard}")
     out.append(f"#define {guard}")
     out.append("")
-    out.append('#include "port.h"')
+    out.append('#include "../core/port.h"')
     out.append("")
     out.append(f"/* Generated from asm/{src_path.name}. */")
     if banner_comments:

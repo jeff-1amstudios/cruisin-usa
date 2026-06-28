@@ -304,8 +304,7 @@ void SET_MASTER_VOL(void) {
     // asm 0000913B: 	LDI	055AAh,R0
     // 	;---->	BUD	JI1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_MASTER_VOL", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 void SET_TRACK_VOL(void) {
@@ -433,7 +432,7 @@ void SILENT(void) {
     // asm 0000919B: 	POP	AR2
     // asm 0000919C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SILENT", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

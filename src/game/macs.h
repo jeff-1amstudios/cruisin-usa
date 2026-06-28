@@ -2,7 +2,7 @@
 #define MACS_H
 
 #include "../core/machine.h"
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/MACS.EQU. */
 
@@ -71,6 +71,7 @@ FONTENT		.MACRO	PRECEDING,XSTART,XEND,YSTART,TRAIL
     { ((((u32)(PRECEDING)) & 0xFFFFu) | (((u32)(TRAIL)) << 16)), (u32)(XSTART), (u32)(XEND), (u32)(YSTART) }
 
 #define ERRON(x) abort()
+#define SLOCKON(msg) crusn_slockon(__FILE__, __LINE__, msg)
 
 #define DINT()
 #define EINT()

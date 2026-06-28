@@ -1,7 +1,7 @@
 #ifndef INFIN_H
 #define INFIN_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/INFIN.ASM. */
 

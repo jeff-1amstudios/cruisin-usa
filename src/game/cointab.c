@@ -1,11 +1,11 @@
 // NOEDIT
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "../core/port.h"
 #include "c30.h"
 #include "cmos.h"
 #include "globals.h"
 #include "macs.h"
-#include "port.h"
 #include "sys.h"
 #include "vunit.h"
 
@@ -2864,7 +2864,6 @@ uintptr_t GENERAL8[] = {
 #define DENMARK_OFF 0
 #define HUNAGRY_OFF 0
 #define GENERAL_OFF 0
-
 
 /* asm: COUNTRY_TAB */
 /* asm: 	.word	USA_OFF		;1 */

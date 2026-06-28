@@ -1211,70 +1211,12 @@ void SCAN_OBJECTS(void) {
 
 // *----------------------------------------------------------------------------
 void PUSHALL(void) {
-    // asm 0000906A: 	POP	BK
-    // asm 0000906B: 	PUSH	AR0
-    // asm 0000906C: 	PUSH	AR1
-    // asm 0000906D: 	PUSH	AR2
-    // asm 0000906E: 	PUSH	AR3
-    // asm 0000906F: 	PUSH	AR4
-    // asm 00009070: 	PUSH	AR5
-    // asm 00009071: 	PUSH	AR6
-    // asm 00009072: 	PUSH	AR7
-    // asm 00009073: 	PUSH	R0
-    // asm 00009074: 	PUSH	R1
-    // asm 00009075: 	PUSH	R2
-    // asm 00009076: 	PUSH	R3
-    // asm 00009077: 	PUSH	R4
-    // asm 00009078: 	PUSH	R5
-    // asm 00009079: 	PUSH	R6
-    // asm 0000907A: 	PUSH	R7
-    // asm 0000907B: 	PUSHF	R0
-    // asm 0000907C: 	PUSHF	R1
-    // asm 0000907D: 	PUSHF	R2
-    // asm 0000907E: 	PUSHF	R3
-    // asm 0000907F: 	PUSHF	R4
-    // asm 00009080: 	PUSHF	R5
-    // asm 00009081: 	PUSHF	R6
-    // asm 00009082: 	PUSHF	R7
-    // asm 00009083: 	BU	BK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PUSHALL", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
 void POPALL(void) {
-    // asm 00009084: 	POP	BK
-    // asm 00009085: 	POPF	R7
-    // asm 00009086: 	POPF	R6
-    // asm 00009087: 	POPF	R5
-    // asm 00009088: 	POPF	R4
-    // asm 00009089: 	POPF	R3
-    // asm 0000908A: 	POPF	R2
-    // asm 0000908B: 	POPF	R1
-    // asm 0000908C: 	POPF	R0
-    // asm 0000908D: 	POP	R7
-    // asm 0000908E: 	POP	R6
-    // asm 0000908F: 	POP	R5
-    // asm 00009090: 	POP	R4
-    // asm 00009091: 	POP	R3
-    // asm 00009092: 	POP	R2
-    // asm 00009093: 	POP	R1
-    // asm 00009094: 	POP	R0
-    // asm 00009095: 	POP	AR7
-    // asm 00009096: 	POP	AR6
-    // asm 00009097: 	POP	AR5
-    // asm 00009098: 	POP	AR4
-    // asm 00009099: 	POP	AR3
-    // asm 0000909A: 	POP	AR2
-    // asm 0000909B: 	POP	AR1
-    // asm 0000909C: 	POP	AR0
-    // asm 0000909D: 	BU	BK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "POPALL", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

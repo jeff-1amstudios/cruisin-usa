@@ -1,7 +1,7 @@
 #ifndef OVERLAY_H
 #define OVERLAY_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/OVERLAY.ASM. */
 

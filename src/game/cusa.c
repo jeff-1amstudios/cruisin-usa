@@ -2,6 +2,7 @@
 #include "../core/config.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "../core/port.h"
 #include "../core/validator.h"
 #include "bssstart.h"
 #include "c30.h"
@@ -14,6 +15,7 @@
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
+#include "objects.h"
 #include "pall.h"
 #include "sndtab.h"
 #include "sys.h"
@@ -62,7 +64,6 @@ void FAKEDIAG(void);
 void FEED_WATCHDOG(void);
 void FEED_WATCHDOG_HARD(void);
 void VERIFY_CODE_INTEGRITY(void);
-void crusn_yield_display_interrupt(void);
 
 #define SWRAMI SWRAM
 #define SWTABI SWTAB
@@ -83,6 +84,8 @@ static const char IAMMASTER[];
 static const char IAMSLAVE[];
 static const char TPALI[];
 static const char TPALNI[];
+
+int dest[0x280000];
 
 /*
  *----------------------------------------------------------------------------
@@ -472,27 +475,36 @@ DR1:
 
     SETADJ(ADJ_OUTOFDIAG, 0);
 
-    HARD_SECTION_LOAD = 1;
-    LOAD_SECTION_REQ(_SECshared);
+    mame_validate_print_oks_off();
 
     HARD_SECTION_LOAD = 1;
-    // LOAD_SECTION_REQ(_SECskys);
+    LOAD_SECTION_REQ(&SECshared);
+    mame_validate_region_at_addr(0x00004B8B, "_SECshared-decompressed", 0x0A00000, SECshared.dest_addr, 0x1AB00);
+
+    HARD_SECTION_LOAD = 1;
+    LOAD_SECTION_REQ(&SECskys_CUSA);
+    mame_validate_region_at_addr(0x00004B8F, "SECskys_CUSA-decompressed", 0x0A1AB00, SECskys_CUSA.dest_addr, 0x30000);
 
     MSG2();
 
-    HARD_SECTION_LOAD = 1;
-    BOOT_PACIFY_SCREEN_P = 1;
-    // LOAD_SECTION_REQ(_SECgeneral);
+    mame_validate_print_oks_on();
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
-    // LOAD_SECTION_REQ(_SEChead2head);
+    LOAD_SECTION_REQ(&SECgeneral_CUSA);
+    mame_validate_region_at_addr(0x00004B95, "SECgeneral_CUSA-decompressed", 0x0A52900, SECgeneral_CUSA.dest_addr, 0x136280);
+
+    HARD_SECTION_LOAD = 1;
+    BOOT_PACIFY_SCREEN_P = 1;
+    LOAD_SECTION_REQ(&SEChead2head);
+    mame_validate_region_at_addr(0x00004B9A, "SEChead2head-decompressed", 0x0BEFA00, SEChead2head.dest_addr, 0x1000);
 
     MSG3();
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
-    // LOAD_SECTION_REQ(_SECpress);
+    LOAD_SECTION_REQ(&SECpress);
+    mame_validate_region_at_addr(0x00004BA0, "SECpress-decompressed", 0x0B88B80, SECpress.dest_addr, 0x1000);
 
     AUDIT_WRITE(AUD_BCREDITS, 0);
 
@@ -686,7 +698,7 @@ C_WAIT:
  */
 void ENABLEGIE(void) {
     // asm 00004C44: 	RETI
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE", 0, 0);
+    // TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE", 0, 0);
     // UNIMPL();
 }
 
@@ -889,6 +901,8 @@ int SWRAM[3];
 int DIPRAM;
 
 static void READIO(void) {
+
+    DIPRAM = port_get_dipswitches() >> 16;
     // TODO
 }
 
@@ -1705,16 +1719,11 @@ static void MSG1(void) {
     TEXTIT(M3, 1, 220, 11);
     TEXTIT(M4, 1, 230, 11);
     TEXTIT(M5, 1, 240, 11);
-    // asm 00004FB0: 	RETS
 }
 
 static void MSG2(void) {
-    // asm 00004FB1: LDI	11,RC
-    // asm 00004FB2: 	TEXTIT	M6,1,260
-    // asm 00004FB6: 	TEXTIT	M7,1,270
-    // asm 00004FBA: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MSG2", 0, 0);
-    UNIMPL();
+    TEXTIT(M6, 1, 260, 11);
+    TEXTIT(M7, 1, 270, 11);
 }
 
 /* asm: LINKDISABLED	SPTR	"LINK DISABLED BY U97  DIP6 OFF" */
@@ -1729,12 +1738,8 @@ static const char TPALI[] = "U38 LINK PAL INSTALLED";
 static const char TPALNI[] = "U38 LINK PAL NOT INSTALLED";
 
 static void MSG3(void) {
-    // asm 00004FC0: LDI	11,RC
-    // asm 00004FC1: 	TEXTIT	M8,1,280
-    // asm 00004FC5: 	TEXTIT	M9,1,290
-    // asm 00004FC9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MSG3", 0, 0);
-    UNIMPL();
+    TEXTIT(M8, 1, 280, 11);
+    TEXTIT(M9, 1, 290, 11);
 }
 
 // *----------------------------------------------------------------------------

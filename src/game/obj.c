@@ -1,14 +1,14 @@
+#include "obj.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
-#include "vunit.h"
-#include "mproc.h"
-#include "obj.h"
-#include "pall.h"
-#include "sysid.h"
-#include "sys.h"
-#include "macs.h"
 #include "error.h"
 #include "globals.h"
+#include "macs.h"
+#include "mproc.h"
+#include "pall.h"
+#include "sys.h"
+#include "sysid.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/OBJ.ASM
@@ -50,13 +50,13 @@ void OBJ_QMAKE(void);
 static int ACTIVEHI;
 
 /*
-*----------------------------------------------------------------------------
-*OBJECT SYSTEM
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *OBJECT SYSTEM
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /* asm: OACTIVE	.bss	OACTIVE,1 */
 int OACTIVE;
@@ -76,17 +76,16 @@ int OACTIVECNT;
 int OFREECNT;
 /* asm: OMAX_OBJECTS	.bss	OMAX_OBJECTS,1 */
 int OMAX_OBJECTS;
-int OBJSTR[sizeof(OBJ)*NUM_OBJECTS];
+int OBJSTR[sizeof(OBJ) * NUM_OBJECTS];
 /* asm: COMM_DRONE_PTR	.bss	COMM_DRONE_PTR,1 */
 int COMM_DRONE_PTR;
 
 /*
-*----------------------------------------------------------------------------
-*INITIALIZE OBJECT DATA STRUCTURES
-*
-*/
-void OBJ_INIT(void)
-{
+ *----------------------------------------------------------------------------
+ *INITIALIZE OBJECT DATA STRUCTURES
+ *
+ */
+void OBJ_INIT(void) {
     // asm 00007016: 	PUSH	R0
     // asm 00007017: 	PUSH	AR0
     // asm 00007018: 	PUSH	AR1
@@ -129,16 +128,16 @@ void OBJ_INIT(void)
     // asm 0000702B: 	RPTB	OINITL
     do {
         // asm 0000702C: 	STI	AR1,*AR0
-        *(uintptr_t *)AR0 = AR1;
+        *(uintptr_t*)AR0 = AR1;
         // asm 0000702D: 	LDI	AR1,AR0
         AR0 = AR1;
-OINITL:
+    OINITL:
         // asm 0000702E: ADDI	OBJSIZ,AR1
         AR1 += sizeof(OBJ);
         // asm 0000702F: 	LDI	0,R0
         R0.s = 0;
         // asm 00007030: 	STI	R0,*AR0
-        *(int *)AR0 = R0.s;
+        *(int*)AR0 = R0.s;
     } while (RC-- != 0);
     // asm 00007031: 	POP	AR1
     // asm 00007032: 	POP	AR0
@@ -149,23 +148,22 @@ OINITL:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*OBJ_GETE
-*	GET EXTENDED OBJECT
-*
-*PARAMETERS
-*	AR2	ROMDATA POINTER
-*
-*RETURNS
-*	(SUCCESSFUL)
-*	CARRY CLR
-*	AR0	OBJECT POINTER
-*	(UNSUCCESSFUL)
-*	CARRY SET
-*
-*/
-void OBJ_GETE(void)
-{
+ *----------------------------------------------------------------------------
+ *OBJ_GETE
+ *	GET EXTENDED OBJECT
+ *
+ *PARAMETERS
+ *	AR2	ROMDATA POINTER
+ *
+ *RETURNS
+ *	(SUCCESSFUL)
+ *	CARRY CLR
+ *	AR0	OBJECT POINTER
+ *	(UNSUCCESSFUL)
+ *	CARRY SET
+ *
+ */
+void OBJ_GETE(void) {
     // asm 00007035: 	CALL	OBJ_GET
     // asm 00007036: 	RETSC				;NO OBJECTS AVAILABLE RETURN ERROR CODE
     // asm 00007037: 	PUSH	R0
@@ -202,21 +200,20 @@ NOT_1PAL:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*OBJ_GET
-*	ALLOCATE AN OBJECT BLOCK FROM THE OBJECT FREE LIST
-*
-*RETURNS
-*	(SUCCESSFUL)
-*		CARRY CLR
-*		AR0	OBJECT POINTER
-*	(UNSUCCESSFUL)
-*		CARRY SET
-*
-*
-*/
-void OBJ_GET(void)
-{
+ *----------------------------------------------------------------------------
+ *OBJ_GET
+ *	ALLOCATE AN OBJECT BLOCK FROM THE OBJECT FREE LIST
+ *
+ *RETURNS
+ *	(SUCCESSFUL)
+ *		CARRY CLR
+ *		AR0	OBJECT POINTER
+ *	(UNSUCCESSFUL)
+ *		CARRY SET
+ *
+ *
+ */
+void OBJ_GET(void) {
     // asm 00007050: 	PUSH	R0
     // asm 00007051: 	LDI	@OFREE,R0
     // asm 00007052: 	LDI	R0,AR0
@@ -269,18 +266,17 @@ NOOBJ:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*COMPUTE DISTANCE OF OBJECT
-*
-*PARAMETERS
-*	AR2	OBJECT
-*
-*RETURNS
-*	R0	ODIST
-*		STORES IN *+AR2(ODIST)
-*/
-static void GETDIST(void)
-{
+ *----------------------------------------------------------------------------
+ *COMPUTE DISTANCE OF OBJECT
+ *
+ *PARAMETERS
+ *	AR2	OBJECT
+ *
+ *RETURNS
+ *	R0	ODIST
+ *		STORES IN *+AR2(ODIST)
+ */
+static void GETDIST(void) {
     // asm 00007083: 	PUSH	R1
     // asm 00007084: 	PUSH	R2
     // asm 00007085: 	PUSHF	R1
@@ -313,15 +309,14 @@ static void GETDIST(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INSERT PRIORITY OBJECT ON LIST
-*
-*PARAMETERS
-*	AR2	OBJECT
-*
-*/
-void OBJ_INSERTP(void)
-{
+ *----------------------------------------------------------------------------
+ *INSERT PRIORITY OBJECT ON LIST
+ *
+ *PARAMETERS
+ *	AR2	OBJECT
+ *
+ */
+void OBJ_INSERTP(void) {
     // asm 0000709B: 	PUSH	R0
     // asm 0000709C: 	PUSH	R1
     // asm 0000709D: 	PUSH	AR0
@@ -354,20 +349,19 @@ INS_AT_ENDP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INSERT LOW PRIORITY OBJECT
-*
-*THIS IS NOT THE SAME AS OTHER LISTS, FOR THIS LIST THE OBJECT MUST
-*BE DELINKED AND FREED BY THE USER
-*LIST IS NOT SORTED
-*
-*PARAMETERS
-*	AR2	OBJECT TO LINK IN
-*
-*
-*/
-void OBJ_INSERTLP(void)
-{
+ *----------------------------------------------------------------------------
+ *INSERT LOW PRIORITY OBJECT
+ *
+ *THIS IS NOT THE SAME AS OTHER LISTS, FOR THIS LIST THE OBJECT MUST
+ *BE DELINKED AND FREED BY THE USER
+ *LIST IS NOT SORTED
+ *
+ *PARAMETERS
+ *	AR2	OBJECT TO LINK IN
+ *
+ *
+ */
+void OBJ_INSERTLP(void) {
     // asm 000070B2: 	PUSH	R0
     // asm 000070B3: 	LDI	@OLOW_PRIORITY,R0
     // asm 000070B4: 	STI	R0,*+AR2(OLINK)
@@ -381,18 +375,17 @@ void OBJ_INSERTLP(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*THIS IS NOT THE SAME AS OTHER LISTS, FOR THIS LIST THE OBJECT MUST
-*BE DELINKED AND FREED BY THE USER
-*LIST IS NOT SORTED
-*
-*PARAMETERS
-*	AR2	OBJECT TO LINK IN
-*
-*/
-void OBJ_INSERTHP(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *THIS IS NOT THE SAME AS OTHER LISTS, FOR THIS LIST THE OBJECT MUST
+ *BE DELINKED AND FREED BY THE USER
+ *LIST IS NOT SORTED
+ *
+ *PARAMETERS
+ *	AR2	OBJECT TO LINK IN
+ *
+ */
+void OBJ_INSERTHP(void) {
     // asm 000070B8: 	PUSH	R0
     // asm 000070B9: 	LDI	@OHIGH_PRIORITY,R0
     // asm 000070BA: 	STI	R0,*+AR2(OLINK)
@@ -406,15 +399,14 @@ void OBJ_INSERTHP(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INSERT OBJECT ON OBJECT LIST
-*
-*PARAMETERS
-*	AR2	OBJECT
-*
-*/
-void OBJ_INSERT(void)
-{
+ *----------------------------------------------------------------------------
+ *INSERT OBJECT ON OBJECT LIST
+ *
+ *PARAMETERS
+ *	AR2	OBJECT
+ *
+ */
+void OBJ_INSERT(void) {
     // asm 000070BE: 	PUSH	R0
     // asm 000070BF: 	PUSHF	R0
     // asm 000070C0: 	PUSH	R1
@@ -466,20 +458,19 @@ INSOBJX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*
-*PARAMETERS
-*	AR2	ID
-*RETURNS
-*	CARRY CLR NOT FOUND
-*	CARRY SET FOUND
-*	AR0	FIRST OBJECT FOUND
-*
-*/
-void OBJ_FIND_FIRST_PRIORITY(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *
+ *PARAMETERS
+ *	AR2	ID
+ *RETURNS
+ *	CARRY CLR NOT FOUND
+ *	CARRY SET FOUND
+ *	AR0	FIRST OBJECT FOUND
+ *
+ */
+void OBJ_FIND_FIRST_PRIORITY(void) {
     // asm 000070E3: 	PUSH	R0
     // asm 000070E4: 	LDI	@OACTIVE_PRIORITYI,AR0
     // asm 000070E5: 	BU	L89
@@ -488,8 +479,7 @@ void OBJ_FIND_FIRST_PRIORITY(void)
     UNIMPL();
 }
 
-void OBJ_FIND_FIRST(void)
-{
+void OBJ_FIND_FIRST(void) {
     // asm 000070E6: 	PUSH	R0
     // asm 000070E7: 	LDI	@OACTIVEI,AR0
 L89:
@@ -516,8 +506,7 @@ FF_OK:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OBJ_FREE_GROUND(void)
-{
+void OBJ_FREE_GROUND(void) {
     // asm 000070F5: 	PUSH	R1
     // asm 000070F6: 	BUD	DELSLP
     // asm 000070F7: 	PUSH	AR1
@@ -529,8 +518,7 @@ void OBJ_FREE_GROUND(void)
     UNIMPL();
 }
 
-void OBJ_FREE_SIGN(void)
-{
+void OBJ_FREE_SIGN(void) {
     // asm 000070FA: 	PUSH	R1
     // asm 000070FB: 	PUSH	AR1
     // asm 000070FC: 	LDI	@SIGN_LISTI,R1		;we must find dead object to link around
@@ -555,8 +543,7 @@ NOT_ON_SUPPXLIST:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OBJ_FREE_DRIVE(void)
-{
+void OBJ_FREE_DRIVE(void) {
     // asm 00007110: 	PUSH	R1
     // asm 00007111: 	PUSH	AR1
     // asm 00007112: 	LDI	@DRIVE_LISTI,R1		;we must find dead object to link around
@@ -581,8 +568,7 @@ NOT_ON_SUPPROADLIST:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OBJ_FREE_PROC(void)
-{
+void OBJ_FREE_PROC(void) {
     // asm 00007126: 	PUSH	AR2
     // asm 00007127: 	LDI	*+AR2(OPLINK),AR2
     // asm 00007128: 	CALL	PRC_KILL
@@ -595,20 +581,19 @@ void OBJ_FREE_PROC(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*DELETE AN OBJECT
-*
-*PARAMETERS
-*	AR2	OBJECT
-*
-*NOTE
-*	If there is any major change to this code
-*	please check DELETE_GROUP in BACKGRND.ASM
-*	this is a speeded up version of this subroutine.
-*
-*/
-void OBJ_DELETE(void)
-{
+ *----------------------------------------------------------------------------
+ *DELETE AN OBJECT
+ *
+ *PARAMETERS
+ *	AR2	OBJECT
+ *
+ *NOTE
+ *	If there is any major change to this code
+ *	please check DELETE_GROUP in BACKGRND.ASM
+ *	this is a speeded up version of this subroutine.
+ *
+ */
+void OBJ_DELETE(void) {
     // asm 0000712B: 	PUSH	R0
     // asm 0000712C: 	PUSH	R1
     // asm 0000712D: 	PUSH	AR1
@@ -707,19 +692,18 @@ DELOBJX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*OBJ_DELETE_CLASS
-*
-*SEARCHES THE ACTIVE LIST FOR ALL OCCURANCES OF SPECIFIED ID
-*AND DELETES THAT OBJECT
-*
-*PARAMETERS
-*	R0	ID
-*	R1	MASK
-*
-*/
-void OBJ_DELETE_CLASS(void)
-{
+ *----------------------------------------------------------------------------
+ *OBJ_DELETE_CLASS
+ *
+ *SEARCHES THE ACTIVE LIST FOR ALL OCCURANCES OF SPECIFIED ID
+ *AND DELETES THAT OBJECT
+ *
+ *PARAMETERS
+ *	R0	ID
+ *	R1	MASK
+ *
+ */
+void OBJ_DELETE_CLASS(void) {
     // asm 0000716E: 	PUSH	AR0
     // asm 0000716F: 	PUSH	AR2
     // asm 00007170: 	PUSH	R0
@@ -758,19 +742,18 @@ ODCX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PULL AN OBJECT FROM ACTIVE LIST
-*
-*Most of the same effect as delobj, except that the object is not
-*inserted onto the free list, allowing the user to do hold onto
-*the object.
-*
-*PARAMETERS
-*	AR2	OBJECT
-*
-*/
-void OBJ_PULL(void)
-{
+ *----------------------------------------------------------------------------
+ *PULL AN OBJECT FROM ACTIVE LIST
+ *
+ *Most of the same effect as delobj, except that the object is not
+ *inserted onto the free list, allowing the user to do hold onto
+ *the object.
+ *
+ *PARAMETERS
+ *	AR2	OBJECT
+ *
+ */
+void OBJ_PULL(void) {
     // asm 0000718A: 	PUSH	R0
     // asm 0000718B: 	PUSH	R1
     // asm 0000718C: 	PUSH	AR1
@@ -807,16 +790,15 @@ PULOBJ_X:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*LINK OBJECT INTO FREE LIST
-*(NO ERROR CHECKING)
-*
-*PARAMETERS
-*	AR2	OBJECT
-*
-*/
-void OBJ_FREE(void)
-{
+ *----------------------------------------------------------------------------
+ *LINK OBJECT INTO FREE LIST
+ *(NO ERROR CHECKING)
+ *
+ *PARAMETERS
+ *	AR2	OBJECT
+ *
+ */
+void OBJ_FREE(void) {
     // asm 000071AC: 	PUSH	R0
     // asm 000071AD: 	LDI	@OFREE,R0
     // asm 000071AE: 	STI	R0,*AR2
@@ -830,17 +812,16 @@ void OBJ_FREE(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SORT OBJECTS BY CURRENT Z
-*WAIT FOR NEXT INTERRUPT
-*
-*CLOBBERS
-*	R0-R4,AR0-AR5,DP,etc.
-*CALL BY MAINLINE CODE
-*
-*/
-void ZSORTWT(void)
-{
+ *----------------------------------------------------------------------------
+ *SORT OBJECTS BY CURRENT Z
+ *WAIT FOR NEXT INTERRUPT
+ *
+ *CLOBBERS
+ *	R0-R4,AR0-AR5,DP,etc.
+ *CALL BY MAINLINE CODE
+ *
+ */
+void ZSORTWT(void) {
     // asm 000071B2: 	LDI	1,R0
     // asm 000071B3: 	STI	R0,@CLEARRDY	  	;READY FOR INTERRUPT
 ZSORTWL:
@@ -902,14 +883,13 @@ ZSWTXX:
 // *-----------------------------------------------------------------------------
 
 /*
-*-----------------------------------------------------------------------------
-*DELINK THE PLAYER --> SO NO INTERFERENCE WITH DRONESORT
-*
-*PLYRDLINK
-*
-*/
-static void PLYRDLINK(void)
-{
+ *-----------------------------------------------------------------------------
+ *DELINK THE PLAYER --> SO NO INTERFERENCE WITH DRONESORT
+ *
+ *PLYRDLINK
+ *
+ */
+static void PLYRDLINK(void) {
     // asm 000071DE: 	LDI	@OACTIVEI,AR1		;GET OBJECT LIST POINTER
 PSORTNXT:
     // asm 000071DF: 	LDI	*AR1,R0
@@ -937,15 +917,14 @@ PDLINKX:
 int PLYRTEMP;
 
 /*
-*-----------------------------------------------------------------------------
-*SORT PLYR CAR WITH DRONE CARS INTO ROAD WITH PRIORITY
-*
-*PLAYER INSERTED BEFORE DRONE WITH CLOSER ODIST
-*IF NO DRONE CLOSER, INSERT AT END OF LIST
-*
-*/
-static void PLYRSORT(void)
-{
+ *-----------------------------------------------------------------------------
+ *SORT PLYR CAR WITH DRONE CARS INTO ROAD WITH PRIORITY
+ *
+ *PLAYER INSERTED BEFORE DRONE WITH CLOSER ODIST
+ *IF NO DRONE CLOSER, INSERT AT END OF LIST
+ *
+ */
+static void PLYRSORT(void) {
     // asm 000071EA: 	LDI	@PLYRTEMP,R0		;GET PLAYER
     // asm 000071EB: 	BZD	PSORTX	     		;NO PLAYER, HANG IT UP...
     // asm 000071EC: 	LDI	R0,AR5
@@ -999,18 +978,17 @@ PSORTX:
 // *-----------------------------------------------------------------------------
 
 /*
-*-----------------------------------------------------------------------------
-*SORT DRONE CARS INTO ROAD WITH PRIORITY
-*
-*FIND CLOSEST ROAD PIECE DRONE IS ON TOP
-*THEN ZSORT DRONE CLOSER BASED ON ODIST
-*
-*USES
-*	AR4	POINTER TO DRONES
-*
-*/
-static void DRONESORT(void)
-{
+ *-----------------------------------------------------------------------------
+ *SORT DRONE CARS INTO ROAD WITH PRIORITY
+ *
+ *FIND CLOSEST ROAD PIECE DRONE IS ON TOP
+ *THEN ZSORT DRONE CLOSER BASED ON ODIST
+ *
+ *USES
+ *	AR4	POINTER TO DRONES
+ *
+ */
+static void DRONESORT(void) {
     // 	;PULL LIST OF DRONES OFF OBJECT LIST
     // asm 0000720F: 	BUD	DSORTNXT
     // asm 00007210: 	NOP
@@ -1170,16 +1148,15 @@ DSORTXX:
 static int ACTIVEHI1 = 75000;
 /* asm: ACTIVEHI	.word	80000		;HI LIMIT FOR ACTIVE-INACTIVE */
 static int ACTIVEHI = 80000;
-#define ACTIVELO (-5000) //LO LIMIT INACTIVE OBJECT LIST
+#define ACTIVELO (-5000) // LO LIMIT INACTIVE OBJECT LIST
 
 /*
-*----------------------------------------------------------------------------
-*SCAN ACTIVE LIST
-*PUT DISTANT OBJECTS ON INACTIVE LIST
-*
-*/
-void OSCAN(void)
-{
+ *----------------------------------------------------------------------------
+ *SCAN ACTIVE LIST
+ *PUT DISTANT OBJECTS ON INACTIVE LIST
+ *
+ */
+void OSCAN(void) {
     // asm 0000727F: 	BUD	OSCANNXT
     // asm 00007280: 	LDI	@ACTIVEHI,R4 		;GET FAR LIMIT
     // asm 00007281: 	LDI	@IDLE_LISTI,AR5		;IN SAME PAGE
@@ -1220,15 +1197,14 @@ OSCANNXT:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SCAN INACTIVE LIST FOR ACTIVES
-*PUT DISTANT OBJECTS ON INACTIVE LIST
-*IF RADIUS IS CLOSE, ACTIVATE
-*IF ANGLE COSINE POSITIVE (+-90 DEGREES), ACTIVATE
-*
-*/
-void ISCAN(void)
-{
+ *----------------------------------------------------------------------------
+ *SCAN INACTIVE LIST FOR ACTIVES
+ *PUT DISTANT OBJECTS ON INACTIVE LIST
+ *IF RADIUS IS CLOSE, ACTIVATE
+ *IF ANGLE COSINE POSITIVE (+-90 DEGREES), ACTIVATE
+ *
+ */
+void ISCAN(void) {
     // asm 0000729A: 	FLOAT	ACTIVELO,R3		;GET CLOSE LIMIT
     // asm 0000729B: 	LDI	@ACTIVEHI1,R4 		;GET FAR LIMIT
     // asm 0000729C: 	LDI	@CAMERAPOSI,AR4		;POINTER TO CAMERA STRUCT
@@ -1284,16 +1260,15 @@ ISCANNXT:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*RESCAN	TOTALLY RESCAN ALL OBJECTS ACTIVE AND INACTIVE
-*	FOR CAMERA VIEW CHANGE
-*
-*PARAMETERS
-*	CAMERAPOS AND CAMERAMATRIX WITH NEW VALUES
-*
-*/
-void RESCAN(void)
-{
+ *----------------------------------------------------------------------------
+ *RESCAN	TOTALLY RESCAN ALL OBJECTS ACTIVE AND INACTIVE
+ *	FOR CAMERA VIEW CHANGE
+ *
+ *PARAMETERS
+ *	CAMERAPOS AND CAMERAMATRIX WITH NEW VALUES
+ *
+ */
+void RESCAN(void) {
     // asm 000072C3: 	PUSH	AR3
     // asm 000072C4: 	PUSH	AR4
     // asm 000072C5: 	PUSH	AR5
@@ -1331,12 +1306,11 @@ RESCAN1:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*BUBBLE SORT PRIORITY LIST UNTIL DONE
-*
-*/
-void ZSORTPRIOR(void)
-{
+ *----------------------------------------------------------------------------
+ *BUBBLE SORT PRIORITY LIST UNTIL DONE
+ *
+ */
+void ZSORTPRIOR(void) {
 ZSORTA1P:
     // asm 000072DE: 	LDI	0,R2			;CLEAR EXCHANGE FLAG
     // asm 000072DF: 	LDI	@OACTIVE_PRIORITYI,AR0
@@ -1380,12 +1354,11 @@ ZSORTXP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*BUBBLE SORT ACTIVE LIST UNTIL DONE
-*
-*/
-static void ZSORTACT(void)
-{
+ *----------------------------------------------------------------------------
+ *BUBBLE SORT ACTIVE LIST UNTIL DONE
+ *
+ */
+static void ZSORTACT(void) {
 ZSORTA1:
     // asm 000072FD: 	LDI	0,R2			;CLEAR EXCHANGE FLAG
     // asm 000072FE: 	LDI	@OACTIVEI,AR0
@@ -1429,22 +1402,21 @@ ZSORTX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*OBJECTP	make_obj(int *rom,int px,int py,int pz,float rx,float ry)
-*
-*PARAMETERS
-*	AR2	ROMDATA					  ^
-*	RC	POS X					  |
-*	RS	POS Y					ignored
-*	RE	POS Z
-*	R2	RAD Y
-*RETURNS
-*	R0	OBJECT POINTER
-*
-*
-*/
-void OBJ_MAKE(void)
-{
+ *----------------------------------------------------------------------------
+ *OBJECTP	make_obj(int *rom,int px,int py,int pz,float rx,float ry)
+ *
+ *PARAMETERS
+ *	AR2	ROMDATA					  ^
+ *	RC	POS X					  |
+ *	RS	POS Y					ignored
+ *	RE	POS Z
+ *	R2	RAD Y
+ *RETURNS
+ *	R0	OBJECT POINTER
+ *
+ *
+ */
+void OBJ_MAKE(void) {
     // asm 0000731C: 	CALL	OBJ_GET
     // asm 0000731D: 	ERRON	C,EC_OBJ|5
     // asm 00007325: 	RETSC
@@ -1469,21 +1441,20 @@ void OBJ_MAKE(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*QWICK MAKE OBJ
-*
-*PARAMETERS
-*	AR2	ROM POINTER
-*	R2	POSX
-*	R3	POSY
-*	RC	POSZ
-*
-*RETURNS
-*	AR0	OBJECT
-*
-*/
-void OBJ_QMAKE(void)
-{
+ *----------------------------------------------------------------------------
+ *QWICK MAKE OBJ
+ *
+ *PARAMETERS
+ *	AR2	ROM POINTER
+ *	R2	POSX
+ *	R3	POSY
+ *	RC	POSZ
+ *
+ *RETURNS
+ *	AR0	OBJECT
+ *
+ */
+void OBJ_QMAKE(void) {
     // asm 00007334: 	CALL	OBJ_GET
     // asm 00007335: 	RETSC
     // asm 00007336: 	STI	AR2,*+AR0(OROMDATA)

@@ -183,25 +183,23 @@ void SETONE(void) {
 }
 
 void CLRONE(void) {
-    // asm 00007F86: 	PUSH	R0
-    // asm 00007F87: 	PUSH	AR0
-    // asm 00007F88: 	LDI	1,R0
-    // asm 00007F89: 	STI	R0,@TRANSMISSION_ACTIVE
-    // asm 00007F8A: 	LDI	0,R0
-    // asm 00007F8B: 	STI	R0,@ONEFLAG
-    // asm 00007F8C: 	LDI	@DIPRAM,R0
-    // asm 00007F8D: 	TSTB	CMDP_MASTER,R0
-    // asm 00007F8E: 	LDIZ	C_MAS,R0	;MASTER CASE
-    // asm 00007F8F: 	LDINZ	C_SLA,R0	;SLAVE CASE
-ONEX:
-    // asm 00007F90: 	LDI	@COMM_IOI,AR0 	;SETUP I/O REGISTER
-    // asm 00007F91: 	LS	16,R0
-    // asm 00007F92: 	STI	R0,*AR0
-    // asm 00007F93: 	POP	AR0
-    // asm 00007F94: 	POP	R0
-    // asm 00007F95: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLRONE", 0, 0);
-    UNIMPL();
+    int value;
+
+    TRANSMISSION_ACTIVE = 1;
+
+    ONEFLAG = 0;
+
+    if ((DIPRAM & CMDP_MASTER) == 0) {
+        // MASTER CASE
+        value = C_MAS;
+    } else {
+        // SLAVE CASE
+        value = C_SLA;
+    }
+
+    // SETUP I/O REGISTER
+    // COMM_IOI = value << 16;
+    UNIMPL_TODO();
 }
 
 /*

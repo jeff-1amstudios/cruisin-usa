@@ -1,7 +1,7 @@
 #ifndef INTRO_H
 #define INTRO_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/INTRO.ASM. */
 

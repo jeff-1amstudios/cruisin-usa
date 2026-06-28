@@ -23,7 +23,7 @@ void crusn_yield_display_interrupt(void) {
         *g_display_running = 0;
     }
 
-    SDL_Delay(500);
+    SDL_Delay(10);
 }
 
 int main(void) {

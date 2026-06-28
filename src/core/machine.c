@@ -7,7 +7,8 @@
 #include <string.h>
 
 crusn_machine* g_crusn_machine = NULL;
-u32 crusn_rom_words[CRUSN_ROM_WORDS];
+u32 crusn_rom_words[CRUSN_ROM_WORDS] = { 0 };
+u32 crusn_waveram[CRUSN_WAVERAM_WORDS] = { 0 };
 
 static const char* CRUSN_ROM_PATH = "roms/crusnusa45_maindata_interleaved.bin";
 

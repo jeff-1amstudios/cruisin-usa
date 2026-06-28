@@ -1,7 +1,7 @@
 #ifndef COMMDRNE_H
 #define COMMDRNE_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/COMMDRNE.ASM. */
 

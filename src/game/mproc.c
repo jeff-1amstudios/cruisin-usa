@@ -1,10 +1,10 @@
+#include "mproc.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
-#include "mproc.h"
-#include "macs.h"
 #include "c30.h"
-#include "vunit.h"
 #include "error.h"
+#include "macs.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/MPROC.ASM
@@ -32,14 +32,14 @@ void PRC_FOLLOW(void);
 #define PRCSTRI PRCSTR
 
 /*
-*----------------------------------------------------------------------------
-*MULTIPROCESS SYSTEM
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *MULTIPROCESS SYSTEM
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ *
+ */
 
 #if DEBUG
 /* asm: NUM_PROCS_ACTIVE	.bss	NUM_PROCS_ACTIVE,1 */
@@ -48,18 +48,17 @@ static int NUM_PROCS_ACTIVE;
 static int NUM_PROCS_IDLE;
 #endif
 /* asm: CURRENT_PROC	.bss	CURRENT_PROC,1 */
-int CURRENT_PROC;
+PROC* CURRENT_PROC;
 /* asm: OLDSP	.bss	OLDSP,1 */
 int OLDSP;
 /* asm: PACTIVE	.bss	PACTIVE,1 */
-int PACTIVE;
+PROC* PACTIVE;
 /* asm: PFREE	.bss	PFREE,1 */
-int PFREE;
+PROC* PFREE;
 PROC PRCSTR[NUMPROC];
 
 // *----------------------------------------------------------------------------
-static void PRC_DEBUG_CHECK(void)
-{
+static void PRC_DEBUG_CHECK(void) {
 #if DEBUG
     // asm: 	PUSH	R0
     // asm: 	LDI	@NUM_PROCS_ACTIVE,R0
@@ -76,28 +75,27 @@ static void PRC_DEBUG_CHECK(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GET A PROCESS
-*
-*	START UP A PROCESS AT FUNCTION_NAME.
-*	-FIND AN AVAILABLE PROCESS SPACE
-*	-SETUP STORED VARIABLES (AR7-3,R4-7) AND START ADDRESS
-*	-SETUP LSP POSITION (LOCAL STACK POINTER)
-*	-SET SLEEP TIKS TO ZERO
-*
-*PARAMETERS
-*	R2	PID
-*	AR2	START ADDRESS
-*RETURNS
-*	(IF PROCESS IS AVAILABLE)
-*		CARRY CLEAR
-*		AR0	POINTER TO PROCESS BLOCK
-*	(IF NO PROCESSES AVAILABLE)
-*		CARRY SET
-*
-*/
-void PRC_CREATE(void)
-{
+ *----------------------------------------------------------------------------
+ *GET A PROCESS
+ *
+ *	START UP A PROCESS AT FUNCTION_NAME.
+ *	-FIND AN AVAILABLE PROCESS SPACE
+ *	-SETUP STORED VARIABLES (AR7-3,R4-7) AND START ADDRESS
+ *	-SETUP LSP POSITION (LOCAL STACK POINTER)
+ *	-SET SLEEP TIKS TO ZERO
+ *
+ *PARAMETERS
+ *	R2	PID
+ *	AR2	START ADDRESS
+ *RETURNS
+ *	(IF PROCESS IS AVAILABLE)
+ *		CARRY CLEAR
+ *		AR0	POINTER TO PROCESS BLOCK
+ *	(IF NO PROCESSES AVAILABLE)
+ *		CARRY SET
+ *
+ */
+void PRC_CREATE(void) {
     // asm 0000A86F: 	PUSH	R0
     // asm 0000A870: 	LDI	@PFREE,R0		;TAKE OFF THE TOP OF PROCESS FREE LIST
     // asm 0000A871: 	BNZ	GETPROC0
@@ -145,15 +143,14 @@ GETPROCX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GET A CHILD PROCESS
-*LINKED AFTER AR7 (CALLING PROC) ON LIST
-*RETURNS
-*	AR0	POINTER TO PROCESS
-*
-*/
-void PRC_CREATE_CHILD(void)
-{
+ *----------------------------------------------------------------------------
+ *GET A CHILD PROCESS
+ *LINKED AFTER AR7 (CALLING PROC) ON LIST
+ *RETURNS
+ *	AR0	POINTER TO PROCESS
+ *
+ */
+void PRC_CREATE_CHILD(void) {
     // asm 0000A893:     	CALL 	PRC_CREATE
     // asm 0000A894: 	RETSC
     // asm 0000A895: 	PUSH	R0
@@ -171,30 +168,29 @@ void PRC_CREATE_CHILD(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*DISPPROC
-*
-*	Dispatch current process list.
-*
-*
-*REGISTER ALLOCATION (WITHIN PROCESSES) AS FOLLOWS:
-*
-*ALL REGISTERS TRASHED EXCEPT THE FOLLOWING:
-*
-*AR4	SAVED (OBJECT POINTER)
-*AR5	SAVED (CAR BLOCK POINTER W/DRONES/PLAYER)
-*AR6	SAVED
-*AR7	PROCESS POINTER
-*
-*R4	SAVED AS INT
-*R5	SAVED AS INT
-*R6	SAVED AS FLOAT
-*R7	SAVED AS FLOAT
-*
-*
-*/
-void PRC_DISPATCH(void)
-{
+ *----------------------------------------------------------------------------
+ *DISPPROC
+ *
+ *	Dispatch current process list.
+ *
+ *
+ *REGISTER ALLOCATION (WITHIN PROCESSES) AS FOLLOWS:
+ *
+ *ALL REGISTERS TRASHED EXCEPT THE FOLLOWING:
+ *
+ *AR4	SAVED (OBJECT POINTER)
+ *AR5	SAVED (CAR BLOCK POINTER W/DRONES/PLAYER)
+ *AR6	SAVED
+ *AR7	PROCESS POINTER
+ *
+ *R4	SAVED AS INT
+ *R5	SAVED AS INT
+ *R6	SAVED AS FLOAT
+ *R7	SAVED AS FLOAT
+ *
+ *
+ */
+void PRC_DISPATCH(void) {
     // asm 0000A89D: DISPPROC
     // asm 0000A89D: 	LDI	@PACTIVEI,AR7
     // asm 0000A89E: 	B	NEXTPRC
@@ -211,8 +207,7 @@ void PRC_DISPATCH(void)
     UNIMPL();
 }
 
-void SLEEP(void)
-{
+void SLEEP(void) {
     // asm 0000A89F: 	POP	R0
     // asm 0000A8A0: 	STI	R0,*+AR7(PWAKE)		;SAVE WAKEUP ADDRESS
 #if DEBUG
@@ -277,16 +272,15 @@ NP1:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SUICIDE
-*
-*REMOVE CURRENT PROCESS FROM ACTIVE LIST
-*
-*PROCESSES MUST BRANCH TO SUICIDE
-*
-*/
-void PRC_SUICIDE(void)
-{
+ *----------------------------------------------------------------------------
+ *SUICIDE
+ *
+ *REMOVE CURRENT PROCESS FROM ACTIVE LIST
+ *
+ *PROCESSES MUST BRANCH TO SUICIDE
+ *
+ */
+void PRC_SUICIDE(void) {
 SUICIDE:
 #if DEBUG
     // asm: 	PUSH	R0
@@ -334,17 +328,16 @@ DIELP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*KILL A PROCESS
-*
-*FIND AND REMOVE PROCESS FROM ACTIVE LIST
-*
-*PARAMETERS
-*	AR2	POINTER TO PROCESS TO KILL
-*
-*/
-void PRC_KILL(void)
-{
+ *----------------------------------------------------------------------------
+ *KILL A PROCESS
+ *
+ *FIND AND REMOVE PROCESS FROM ACTIVE LIST
+ *
+ *PARAMETERS
+ *	AR2	POINTER TO PROCESS TO KILL
+ *
+ */
+void PRC_KILL(void) {
     // asm 0000A8D7: 	PUSH	R1
     // asm 0000A8D8: 	PUSH	AR1
     // asm 0000A8D9: 	CMPI	AR2,AR7
@@ -385,17 +378,16 @@ KILL_X:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*KILLALL
-*KILL CLASS OF PROCESSES
-*
-*PARAMETERS
-*	R0	PID
-*	R1	MASK
-*
-*/
-void PRC_KILLALL(void)
-{
+ *----------------------------------------------------------------------------
+ *KILLALL
+ *KILL CLASS OF PROCESSES
+ *
+ *PARAMETERS
+ *	R0	PID
+ *	R1	MASK
+ *
+ */
+void PRC_KILLALL(void) {
     // asm 0000A8FA: 	PUSH	AR1
     // asm 0000A8FB: 	PUSH	AR2
     // asm 0000A8FC: 	AND	R1,R0
@@ -442,23 +434,22 @@ KADONE:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PRC_EXISTP	DOES A PROCESS EXIST
-*
-*PARAMETERS
-*	AR2	PID
-*	R2	MASK
-*RETURNS
-*	(IF FOUND)
-*		C=1 IF FOUND
-*		R0 POINTING TO PROCESS
-*	(IF NOT FOUND)
-*		C=0
-*		R0=0 IF PROCESS NOT FOUND
-*
-*/
-void PRC_EXISTP(void)
-{
+ *----------------------------------------------------------------------------
+ *PRC_EXISTP	DOES A PROCESS EXIST
+ *
+ *PARAMETERS
+ *	AR2	PID
+ *	R2	MASK
+ *RETURNS
+ *	(IF FOUND)
+ *		C=1 IF FOUND
+ *		R0 POINTING TO PROCESS
+ *	(IF NOT FOUND)
+ *		C=0
+ *		R0=0 IF PROCESS NOT FOUND
+ *
+ */
+void PRC_EXISTP(void) {
     // asm 0000A911: 	CLRC				;CLEAR CARRY
     // asm 0000A912: 	PUSH	AR2
     // asm 0000A913: 	LDI	AR2,RC
@@ -483,68 +474,52 @@ EXDONE:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INITIALIZE PROCESS DATA STRUCTURES
-*
-*/
-void PRC_INIT(void)
-{
-    // asm 0000A920: 	PUSH	R0
-    // asm 0000A921: 	PUSH	AR0
-    // asm 0000A922: 	PUSH	AR1
-    // asm 0000A923: 	LDI	@PACTIVEI,AR0		;ZERO ACTIVE POINTER
-    AR0 = (uintptr_t)&PACTIVE;
-    // asm 0000A924: 	LDI	0,R0
-    R0.s = 0;
-    // asm 0000A925: 	STI	R0,*AR0
-    *(int *)AR0 = R0.s;
-    // asm 0000A926: 	LDI	@PFREEI,AR0		;GET FREE POINTER
-    AR0 = (uintptr_t)&PFREE;
-    // asm 0000A927: 	LDI	@PRCSTRI,AR1
-    AR1 = (uintptr_t)&PRCSTR[0];
-    // asm 0000A928: 	LDI	NUMPROC-1,RC
-    RC = NUMPROC - 1;
-    // asm 0000A929: 	RPTB	PINITL
-    do {
-        // asm 0000A92A: 	STI	AR1,*AR0
-        *(uintptr_t *)AR0 = AR1;
-        // asm 0000A92B: 	LDI	AR1,AR0
-        AR0 = AR1;
-PINITL:
-        // asm 0000A92C: ADDI	PRCSIZ,AR1
-        AR1 = (uintptr_t)((PROC *)AR1 + 1);
-        // asm 0000A92D: 	LDI	0,R0
-        R0.s = 0;
-        // asm 0000A92E: 	STI	R0,*AR0
-        *(int *)AR0 = R0.s;
-    } while (RC-- != 0);
+ *----------------------------------------------------------------------------
+ *INITIALIZE PROCESS DATA STRUCTURES
+ *
+ */
+void PRC_INIT(void) {
+    PROC* proc;
+    PROC* freep;
+    int i;
+
+    // asm:
+    // *INITIALIZE PROCESS DATA STRUCTURES
+
+    // ZERO ACTIVE POINTER
+    PACTIVE = NULL;
+
+    // GET FREE POINTER
+    freep = PFREEI;
+    proc = PRCSTR;
+
+    for (i = 0; i < NUMPROC - 1; ++i) {
+        proc->link = &PRCSTR[i + 1];
+        proc++;
+    }
+    proc->link = NULL;
+
 #if DEBUG
-    // asm: 	STI	R0,@NUM_PROCS_ACTIVE
-    // asm: 	LDI	NUMPROC,R0
-    // asm: 	STI	R0,@NUM_PROCS_IDLE
+    NUM_PROCS_ACTIVE = 0;
+    NUM_PROCS_IDLE = NUMPROC;
 #endif
-    // asm 0000A92F: 	POP	AR1
-    // asm 0000A930: 	POP	AR0
-    // asm 0000A931: 	POP	R0
-    // asm 0000A932: 	RETS
 }
 
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*XFERPROC
-*
-*TRANSFER A PROCESS TO A DIFFERENT WAKEUP ADDRESS. WAKEUP WILL BE NEXT
-*POSSIBLE
-*
-*PARAMETERS
-*	AR0	POINTER TO PROCESS
-*	AR1	POINTER TO ADDRESS TO WAKE UP
-*
-*/
-void PRC_XFER(void)
-{
+ *----------------------------------------------------------------------------
+ *XFERPROC
+ *
+ *TRANSFER A PROCESS TO A DIFFERENT WAKEUP ADDRESS. WAKEUP WILL BE NEXT
+ *POSSIBLE
+ *
+ *PARAMETERS
+ *	AR0	POINTER TO PROCESS
+ *	AR1	POINTER TO ADDRESS TO WAKE UP
+ *
+ */
+void PRC_XFER(void) {
     // asm 0000A933: 	PUSH	AR1
 #if DEBUG
     // asm: 	CMPI	AR0,AR7				;ARE WE ATTEMPTING TO XFER OURSELVES?
@@ -564,26 +539,25 @@ void PRC_XFER(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PRC_FIND
-*	FIND PROCESS FROM ACTIVE LIST
-*
-*PARAMETERS
-*	R0	PID
-*	R1	PID MASK
-*RETURNS
-*	AR0	POINTER TO PROCESS IF FOUND OR ZERO IF NONE FOUND
-*
-*
-*PRC_FINDNEXT
-*
-*
-*PARAMETERS
-*	AR0	POINTER TO LIST
-*
-*/
-void PRC_FINDNEXT(void)
-{
+ *----------------------------------------------------------------------------
+ *PRC_FIND
+ *	FIND PROCESS FROM ACTIVE LIST
+ *
+ *PARAMETERS
+ *	R0	PID
+ *	R1	PID MASK
+ *RETURNS
+ *	AR0	POINTER TO PROCESS IF FOUND OR ZERO IF NONE FOUND
+ *
+ *
+ *PRC_FINDNEXT
+ *
+ *
+ *PARAMETERS
+ *	AR0	POINTER TO LIST
+ *
+ */
+void PRC_FINDNEXT(void) {
     // asm 0000A939: 	BUD	FINDE
     // asm 0000A93A: 	PUSH	R2
     // asm 0000A93B: 	AND	R1,R0
@@ -594,8 +568,7 @@ void PRC_FINDNEXT(void)
     UNIMPL();
 }
 
-void PRC_FIND(void)
-{
+void PRC_FIND(void) {
     // asm 0000A93D: 	BUD	FINDE
     // asm 0000A93E: 	PUSH	R2
     // asm 0000A93F: 	AND	R1,R0
@@ -621,18 +594,17 @@ FINDPROCX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SET THIS PROCESS TO FOLLOW SPECIFIED PROCESS
-*	(ASSERT ME AS A CHILD OF THE SPECIFIED PROCESS)
-*
-*PARAMETERS
-*	AR2	PROCESS TO FOLLOW
-*	AR7	!THIS PROCESS!
-*
-*
-*/
-void PRC_FOLLOW(void)
-{
+ *----------------------------------------------------------------------------
+ *SET THIS PROCESS TO FOLLOW SPECIFIED PROCESS
+ *	(ASSERT ME AS A CHILD OF THE SPECIFIED PROCESS)
+ *
+ *PARAMETERS
+ *	AR2	PROCESS TO FOLLOW
+ *	AR7	!THIS PROCESS!
+ *
+ *
+ */
+void PRC_FOLLOW(void) {
     // asm 0000A94A: 	PUSH	R1
     // asm 0000A94B: 	PUSH	AR1
     // asm 0000A94C: 	PUSH	AR2

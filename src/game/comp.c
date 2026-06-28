@@ -1,6 +1,5 @@
 #include "comp.h"
-#include "../core/cpu.h"
-#include "../core/machine.h"
+#include "../core/port.h"
 #include "c30.h"
 #include "globals.h"
 #include "macs.h"
@@ -9,24 +8,53 @@
 #include "sysid.h"
 #include "text.h"
 #include "vunit.h"
+#include <string.h>
 
 /*
  * Source module: asm/COMP.ASM
  */
 
-static void INPUT_BITS(void);
-static void PUTC(void);
-void DECOMPRESS(void);
+typedef struct DECOMP_STATE {
+    u32* source_addr;
+    u32* dest_addr;
+    int current_code_bits;
+    int bit_addr;
+    int putc_shift;
+    u32 putc_buf;
+    int bufcnt;
+} DECOMP_STATE;
+
+static u32 INPUT_BITS(DECOMP_STATE* state);
+static void PUTC(DECOMP_STATE* state);
+void DECOMPRESS(u32* source_addr, u32* dest_addr);
 void DECOMPRESS_PROC(void);
-static void SAVE_DECOMP_REGS(void);
-static void RESTORE_DECOMP_REGS(void);
+static void SAVE_DECOMP_REGS(const DECOMP_STATE* state);
+static void RESTORE_DECOMP_REGS(DECOMP_STATE* state);
 static void BOOT_PACIFY_SCREEN(void);
-void LOAD_SECTION_REQ(void);
+void LOAD_SECTION_REQ(const LOAD_SECTION_REQ_ARG* section_control);
 static void REQWAIT(void);
+
+#define COMP_PACK_OUTPUT(state_, value_)                                       \
+    do {                                                                       \
+        (state_)->putc_buf |= ((u32)(value_) & 0xffu) << (state_)->putc_shift; \
+        (state_)->putc_shift += 8;                                             \
+        if ((state_)->putc_shift >= 32) {                                      \
+            PUTC((state_));                                                    \
+        }                                                                      \
+    } while (0)
+
+#define SAVE_SADDR 0
+#define SAVE_DADDR 1
+#define SAVE_CUR_BITS 2
+#define SAVE_BIT_ADDR 3
+#define SAVE_PUTC_SHIFT 4
+#define SAVE_PUTC_BUF 5
+#define SAVE_BUFCNT 6
 
 #define CPU_WSI CPU_WS
 #define DICTI DICT
 #define DECODE_STACKI DECODE_STACK
+
 #define LINEBUFFERI LINEBUFFER
 
 /*
@@ -119,7 +147,7 @@ int LINEBUFFER[64];
  *
  *
  */
-static void INPUT_BITS(void) {
+static u32 INPUT_BITS(DECOMP_STATE* state) {
     // asm 0000A2DB: 	ADDI	CURRENT_CODE_BITS,BIT_ADDR,R0
     // asm 0000A2DC: 	IFI	R0,GT,31,MULTIWORD
     // asm 0000A2DE: 	LDI	*AR0,R0				;get data
@@ -145,8 +173,26 @@ static void INPUT_BITS(void) {
     // asm 0000A2F1: 	LSH	R2,R1
     // asm 0000A2F2: 	OR	R1,R0
     // asm 0000A2F3: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INPUT_BITS", 0, 0);
-    UNIMPL();
+    u32 value;
+
+    if (state->bit_addr + state->current_code_bits <= 31) {
+        u32 word = *state->source_addr;
+        value = (u32)(((word << state->bit_addr) & 0xFFFFFFFFu) >> (32 - state->current_code_bits));
+
+        state->bit_addr += state->current_code_bits;
+        return value;
+    }
+
+    u32 first_word = *state->source_addr++;
+    u32 part1 = (u32)((first_word << state->bit_addr) & 0xFFFFFFFFu);
+    int bits_in_first = 32 - state->bit_addr;
+    int bits_in_second = state->current_code_bits - bits_in_first;
+    u32 second_word = *state->source_addr;
+    u32 part2 = (u32)((second_word >> (32 - bits_in_second)) & ((1u << bits_in_second) - 1u));
+
+    state->bit_addr = bits_in_second;
+    value = (u32)(((part1 >> (32 - state->current_code_bits)) | part2) & ((1u << state->current_code_bits) - 1u));
+    return value;
 }
 
 // *----------------------------------------------------------------------------
@@ -159,7 +205,7 @@ static void INPUT_BITS(void) {
  *
  *
  */
-static void PUTC(void) {
+static void PUTC(DECOMP_STATE* state) {
     // asm 0000A2F4: 	LDI	@LINEBUFFERI,AR2
     // asm 0000A2F5: 	ADDI	bufcnt,AR2
     // asm 0000A2F6: 	INC	bufcnt
@@ -235,8 +281,36 @@ WVWRLP2:
     // asm 0000A323: 	CLRI	PUTC_SH
     // 	;---->	BUD	ENABLEGIE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PUTC", 0, 0);
-    UNIMPL();
+    LINEBUFFER[state->bufcnt] = (int)state->putc_buf;
+
+    state->bufcnt++;
+    state->putc_buf = 0;
+    state->putc_shift = 0;
+
+    if (state->bufcnt < 64) {
+        return;
+    }
+
+    // #if DEBUG
+    if (state->dest_addr < crusn_waveram) {
+        SLOCKON("COMP\\PUTC   ATTEMPT UNDER WRITE OF WAVERAM");
+    } else if (state->dest_addr > crusn_waveram + CRUSN_WAVERAM_WORDS) {
+        SLOCKON("COMP\\PUTC  ATTEMPT OVER WRITE OF WAVERAM");
+    }
+    // #endif
+
+    PACIFY_COUNT += 64;
+
+    state->bufcnt = 0;
+    for (int i = 0; i < 64; ++i) {
+        u32 packed_word = (u32)LINEBUFFER[i];
+        *state->dest_addr++ = packed_word & 0xffffu;
+        *state->dest_addr++ = (packed_word >> 16) & 0xffffu;
+    }
+
+    state->putc_buf = 0;
+    state->putc_shift = 0;
+    ENABLEGIE();
 }
 
 // *----------------------------------------------------------------------------
@@ -250,7 +324,9 @@ WVWRLP2:
  *
  *
  */
-void DECOMPRESS(void) {
+void DECOMPRESS(u32* source_addr, u32* dest_addr) {
+    DECOMP_STATE state;
+
     // asm 0000A324: 	CALL	PUSHALL
     // 	;
     // 	;NEW ADDITION.  DONT F*CK THE WAVERAM
@@ -302,11 +378,35 @@ CONT:
     // asm 0000A34C: 	CALL	POPALL
     // ;	CALL	ENABLEGIE
     // asm 0000A34D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS", 0, 0);
-    UNIMPL();
+    PUSHALL();
+    FIFO_RESET();
+
+    DECOMP_ACTIVE = 1;
+
+    FLUSH_COUNT = 0;
+
+    state.source_addr = source_addr;
+    state.dest_addr = dest_addr;
+    state.current_code_bits = 9;
+    state.bit_addr = 0;
+    state.putc_shift = 0;
+    state.putc_buf = 0;
+    state.bufcnt = 0;
+    SAVE_DECOMP_REGS(&state);
+
+    if (HARD_SECTION_LOAD != 0) {
+        DECOMPRESS_PROC();
+    }
+
+    POPALL();
 }
 
 void DECOMPRESS_PROC(void) {
+    DECOMP_STATE state;
+    u16 comp_parents[MAX_CODE + 1];
+    uint8_t comp_chars[MAX_CODE + 1];
+    int flush_epoch = 0;
+
     // asm 0000A34E: 	LDI	@DECOMP_ACTIVE,R0
     // asm 0000A34F: 	RETSZ
     // 	;
@@ -409,19 +509,138 @@ DECOMPRESSX:
     // asm 0000A39B: 	STPI	R0,@HARD_SECTION_LOAD
     // asm 0000A39C: 	CALL	POPALL
     // asm 0000A39D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DECOMPRESS_PROC", 0, 0);
-    UNIMPL();
+    if (DECOMP_ACTIVE == 0) {
+        return;
+    }
+
+    FIFO_RESET();
+
+    PACIFY_COUNT = 0;
+
+    PUSHALL();
+    RESTORE_DECOMP_REGS(&state);
+
+    for (;;) {
+        int old_code;
+        int character;
+        int next_code;
+
+        state.current_code_bits = 9;
+        NEXT_BUMP_CODE = 511;
+
+        next_code = FIRST_CODE;
+        memset(comp_parents, 0, sizeof(comp_parents));
+        memset(comp_chars, 0, sizeof(comp_chars));
+
+        old_code = (int)INPUT_BITS(&state);
+        if (old_code == END_OF_STREAM) {
+            break;
+        }
+
+        character = old_code;
+        COMP_PACK_OUTPUT(&state, old_code);
+
+        for (;;) {
+            int new_code;
+
+            new_code = (int)INPUT_BITS(&state);
+            if (new_code == END_OF_STREAM) {
+                DECOMP_ACTIVE = 0;
+                HARD_SECTION_LOAD = 0;
+                POPALL();
+                return;
+            }
+
+            if (new_code == FLUSH_CODE) {
+                FEED_WATCHDOG();
+
+                if (PACIFY_COUNT >= PACIFY_MOMENT) {
+                    if (HARD_SECTION_LOAD != 0) {
+                        if (BOOT_PACIFY_SCREEN_P != 0) {
+                            // BOOT_PACIFY_SCREEN();
+                        }
+                    } else {
+                        SAVE_DECOMP_REGS(&state);
+                        POPALL();
+                        return;
+                    }
+                }
+
+                flush_epoch++;
+                break;
+            }
+
+            if (new_code == BUMP_CODE) {
+                state.current_code_bits++;
+                continue;
+            }
+
+            if (new_code >= next_code) {
+                int count;
+                int code;
+
+                DECODE_STACK[0] = character;
+
+                count = 1;
+                code = old_code;
+
+                while (code > 255) {
+                    DECODE_STACK[count] = (int)comp_chars[code];
+                    count++;
+                    code = (int)comp_parents[code];
+                }
+
+                character = code;
+                COMP_PACK_OUTPUT(&state, code);
+                while (count > 0) {
+                    count--;
+                    COMP_PACK_OUTPUT(&state, DECODE_STACK[count]);
+                }
+            } else {
+                int count;
+                int code;
+
+                count = 0;
+                code = new_code;
+
+                while (code > 255) {
+                    DECODE_STACK[count] = (int)comp_chars[code];
+                    count++;
+                    code = (int)comp_parents[code];
+                }
+
+                character = code;
+                COMP_PACK_OUTPUT(&state, code);
+                while (count > 0) {
+                    count--;
+                    COMP_PACK_OUTPUT(&state, DECODE_STACK[count]);
+                }
+            }
+
+            if (next_code <= MAX_CODE) {
+                comp_parents[next_code] = (u16)old_code;
+                comp_chars[next_code] = (uint8_t)character;
+                next_code++;
+            }
+            old_code = new_code;
+        }
+    }
+
+    DECOMP_ACTIVE = 0;
+    HARD_SECTION_LOAD = 0;
+    POPALL();
 }
 
 // *----------------------------------------------------------------------------
 
 /* asm: SAVESPCI	.word	SAVESPC+1 */
-static uintptr_t SAVESPCI = (uintptr_t)(SAVESPC + 1);
+// static uintptr_t SAVESPCI = (uintptr_t)(SAVESPC + 1);
 /* asm: SAVESPC	.bss	SAVESPC,25 */
-int SAVESPC[25];
+// uintptr_t SAVESPC[25];
+DECOMP_STATE SAVE;
 
 // *----------------------------------------------------------------------------
-static void SAVE_DECOMP_REGS(void) {
+static void SAVE_DECOMP_REGS(const DECOMP_STATE* state) {
     // asm 0000A39F: 	LDP	@SAVESPC
     // asm 0000A3A0: 	STI	AR0,@SAVESPC
     // asm 0000A3A1: 	LDI	@SAVESPCI,AR0
@@ -446,14 +665,21 @@ static void SAVE_DECOMP_REGS(void) {
     // asm 0000A3B4: 	STI	IR1,*AR0++
     // asm 0000A3B5: 	STI	BK,*AR0++
     // asm 0000A3B6: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SAVE_DECOMP_REGS", 0, 0);
-    UNIMPL();
+
+    // SAVESPC[SAVE_SADDR] = (uintptr_t)state->source_addr;
+    // SAVESPC[SAVE_DADDR] = (uintptr_t)state->dest_addr;
+    // SAVESPC[SAVE_CUR_BITS] = state->current_code_bits;
+    // SAVESPC[SAVE_BIT_ADDR] = state->bit_addr;
+    // SAVESPC[SAVE_PUTC_SHIFT] = state->putc_shift;
+    // SAVESPC[SAVE_PUTC_BUF] = state->putc_buf;
+    // SAVESPC[SAVE_BUFCNT] = state->bufcnt;
+    SAVE = *state;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void RESTORE_DECOMP_REGS(void) {
+static void RESTORE_DECOMP_REGS(DECOMP_STATE* state) {
     // asm 0000A3B7: 	LDI	@SAVESPCI,AR0
     // asm 0000A3B8: 	LDI	*AR0++,AR1
     // asm 0000A3B9: 	LDI	*AR0++,AR2
@@ -478,8 +704,21 @@ static void RESTORE_DECOMP_REGS(void) {
     // asm 0000A3CC: 	LDP	@SAVESPC
     // asm 0000A3CD: 	LDI	@SAVESPC,AR0
     // asm 0000A3CE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RESTORE_DECOMP_REGS", 0, 0);
-    UNIMPL();
+    // state->source_addr = (u32*)SAVESPC[SAVE_SADDR];
+    // state->dest_addr = (u32*)SAVESPC[SAVE_DADDR];
+    // state->current_code_bits = SAVESPC[SAVE_CUR_BITS];
+    // state->bit_addr = SAVESPC[SAVE_BIT_ADDR];
+    // state->putc_shift = SAVESPC[SAVE_PUTC_SHIFT];
+    // state->putc_buf = SAVESPC[SAVE_PUTC_BUF];
+    // state->bufcnt = SAVESPC[SAVE_BUFCNT];
+
+    state->source_addr = SAVE.source_addr;
+    state->dest_addr = SAVE.dest_addr;
+    state->current_code_bits = SAVE.current_code_bits;
+    state->bit_addr = SAVE.bit_addr;
+    state->putc_shift = SAVE.putc_shift;
+    state->putc_buf = SAVE.putc_buf;
+    state->bufcnt = SAVE.bufcnt;
 }
 
 // *----------------------------------------------------------------------------
@@ -490,9 +729,9 @@ static void RESTORE_DECOMP_REGS(void) {
 /* asm: 	 */
 int BOOT_PACIFY_SCREEN_P = 1;
 /* asm: PREVX	.bss	PREVX,1 */
-int PREVX;
+int PREVX = MIN_X;
 /* asm: DELTA	.bss	DELTA,1 */
-int DELTA;
+int DELTA = 1;
 /*
 ;PREVX		.word	MIN_X
 ;DELTA		.word	1
@@ -534,8 +773,7 @@ LL:
 LLL:
     // asm 0000A3EB: 	CALL	RESTORE_DECOMP_REGS
     // asm 0000A3EC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BOOT_PACIFY_SCREEN", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -553,7 +791,8 @@ LLL:
 /* asm: LASTLOAD	.bss	LASTLOAD,1 */
 static int LASTLOAD;
 
-void LOAD_SECTION_REQ(void) {
+void LOAD_SECTION_REQ(const LOAD_SECTION_REQ_ARG* section_control) {
+
     // asm 0000A3ED: 	PUSH	AR4
     // asm 0000A3EE: 	PUSH	AR5
     // asm 0000A3EF: 	LDI	@DECOMP_ACTIVE,R0
@@ -582,8 +821,16 @@ NOLOAD:
     // asm 0000A3FF: 	POP	AR5
     // asm 0000A400: 	POP	AR4
     // asm 0000A401: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SECTION_REQ", 0, 0);
-    UNIMPL();
+
+    if (DECOMP_ACTIVE != 0) {
+        AR4 = (uintptr_t)section_control;
+        AR2 = (uintptr_t)REQWAIT;
+        R2.u = SPAWNER_C | LOAD_REQ_T;
+        PRC_CREATE();
+        return;
+    }
+
+    DECOMPRESS(section_control->source_addr, section_control->dest_addr);
 }
 
 // *----------------------------------------------------------------------------
@@ -597,6 +844,11 @@ static void REQWAIT(void) {
     // asm 0000A407: 	CALL	LOAD_SECTION_REQ
     // asm 0000A408: 	DIE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "REQWAIT", 0, 0);
-    UNIMPL();
+    while (DECOMP_ACTIVE != 0) {
+        AR2 = 1;
+        SLEEP();
+    }
+
+    LOAD_SECTION_REQ((const LOAD_SECTION_REQ_ARG*)AR4);
+    PRC_SUICIDE();
 }

@@ -2,8 +2,8 @@
 #include "texttab.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "../core/port.h"
 #include "macs.h"
-#include "port.h"
 #include "text.h"
 
 /*

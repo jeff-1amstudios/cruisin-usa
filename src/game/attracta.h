@@ -1,7 +1,7 @@
 #ifndef ATTRACTA_H
 #define ATTRACTA_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/ATTRACTA.ASM. */
 

@@ -198,6 +198,117 @@ ISTRUE:
     // asm 00009374: 	STI	R0,@_ATTR_MODE
     // asm 00009375: 	BR	SET_ATTR
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+
+    int saved_counter_idx;
+    int saved_counter_mode;
+    int saved_coin_counter1;
+    int saved_coin_counter2;
+    int* src;
+    int* dst;
+    int count;
+    float f0;
+
+    // asm:
+    // CALL SILENT
+    SILENT();
+
+    // ;CLEAR ALL RAM AND RELOAD CODE
+    // ;
+    // ;CLEAR INTERNAL RAM
+    // for (dst = (int*)RAM0, count = 0; count < 2048; ++count) {
+    //     *dst++ = 0;
+    // }
+
+    // asm:
+    // CALL COMM_ENABLE_INT2
+    COMM_ENABLE_INT2();
+
+    // saved_counter_idx = COUNTER_IDX;
+    // saved_counter_mode = COUNTER_MODE;
+    // saved_coin_counter1 = COIN_COUNTER1;
+    // saved_coin_counter2 = COIN_COUNTER2;
+
+    // asm:
+    // CALL CLR_RAM            ;CLEAR BSS SPACE
+    CLR_RAM();
+
+    // COIN_COUNTER2 = saved_coin_counter2;
+    // COIN_COUNTER1 = saved_coin_counter1;
+    // COUNTER_MODE = saved_counter_mode;
+    // COUNTER_IDX = saved_counter_idx;
+
+    // ;RELOAD GAME CODE
+    // ;SOURCE ADDRESS
+    // ;DESINATION ADDRESS
+    // ;COPY THE PROGRAM INTO
+    // ;FAST RAM
+    // src = (int*)0;
+    // dst = (int*)(0x4000 << 8);
+    // for (count = 0; count < (0x1000 << 4); ++count) {
+    //     *dst++ = *src++;
+    // }
+
+#if DEBUG
+    // asm:
+    // CALL VERIFY_CODE_INTEGRITY
+    VERIFY_CODE_INTEGRITY();
+#endif
+
+    // asm:
+    // CALL CLRONE    ;CAN NOW BE DUAL PLAYER
+    CLRONE();
+
+    // asm:
+    // CALL INIT_SYSTEM
+    INIT_SYSTEM();
+
+    _CAMERARAD.X = 0.0f;
+    _CAMERARAD.Y = 0.0f;
+    _CAMERARAD.Z = 0.0f;
+    _CAMERAPOS.X = 0.0f;
+    _CAMERAPOS.Y = 0.0f;
+    _CAMERAPOS.Z = 0.0f;
+    _LIGHT.Z = 0.0f;
+    _LIGHT.X = 0.707f;
+    _LIGHT.Y = 0.707f;
+
+    // asm:
+    // CALL INIT_CUSTOM_COIN    ;Set the CUSTOM SETUP in RAM
+    INIT_CUSTOM_COIN();
+
+    // asm:
+    // CALL INITMAT
+    // INITMAT(CAMERAMATRIXI);
+
+    INFIN_CORRECT = 35.0f;
+    CLEARRDY = 1;
+
+    WHEELPOS = (float)READADJ(ADJ_STEERCENTER);
+    WHEELPWR = 0.0f;
+    WHEELVEL = 0.0f;
+    COINOFF = 0;
+    NOLONG_VEHICLES = 0;
+
+    // asm:
+    // CALL LOAD_FIXED_PALETTES
+    LOAD_FIXED_PALETTES();
+
+    // asm:
+    // CREATE SCAN_OBJECTS,UTIL_C
+    // CREATE(SCAN_OBJECTS, UTIL_C);
+
+    // if (wave_index == 1) {
+    //     goto BEGIN_GAME;
+    // }
+
+    // ;READ HARDWARE 0=CLOSED, 1=OPEN
+    // if (((~SWITCH3) & (SW_VIEW0_H | SW_VIEW1_H | SW_VIEW2_H)) == (SW_VIEW1_H | SW_VIEW2_H)) {
+    //     goto CREDITS;
+    // }
+
+    // ((void (*)(void))_ATTR_WAVETABI[wave_index])();
+    return;
+
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVE", 0, 0);
     UNIMPL();
 }
@@ -327,24 +438,14 @@ static void BEGIN_GAME(void) {
 
 // *----------------------------------------------------------------------------
 void INIT_SYSTEM(void) {
-    // asm 000093D2: 	CALL	PRC_INIT	;initialize process system
-    PRC_INIT();
-    // asm 000093D3: 	CALL	OBJ_INIT	;initialize object system
-    OBJ_INIT();
-    // asm 000093D4: 	CALL	TEXT_INIT	;initialize text system
-    TEXT_INIT();
-    // asm 000093D5: 	CALL	INIT_DRONES	;initialize DRONE tracker system
-    INIT_DRONES();
-    // asm 000093D6: 	CALL	DYNAOBJ_INIT	;initialize DYNAMIC OBJECTS
-    DYNAOBJ_INIT();
-    // asm 000093D7: 	CALL	CARB_INIT	;initialize CAR BLOCKS
-    CARB_INIT();
-    // asm 000093D8: 	CALL	INIT_RDDEBRIS	;initialize ROAD DEBRIS list(s)
-    INIT_RDDEBRIS();
-    // asm 000093D9: 	CLRI	R0
-    R0.s = 0;
-    // asm 000093DA: 	STI	R0,@_sectime
-    _sectime = R0.s;
+    PRC_INIT();      // ;initialize process system
+    OBJ_INIT();      //;initialize object system
+    TEXT_INIT();     //;initialize text system
+    INIT_DRONES();   // ;initialize DRONE tracker system
+    DYNAOBJ_INIT();  //;initialize DYNAMIC OBJECTS
+    CARB_INIT();     //;initialize CAR BLOCKS
+    INIT_RDDEBRIS(); //;initialize ROAD DEBRIS list(s)
+    _sectime = 0;
     // asm 000093DB: 	RETS
 }
 

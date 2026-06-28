@@ -705,7 +705,7 @@ NEXTFUNC:\tRETS
                 True,
             )
 
-        self.assertNotIn('#include "port.h"', rendered)
+        self.assertNotIn('#include "../core/port.h"', rendered)
         self.assertNotIn('#include "discovered_defines.h"', rendered)
         self.assertNotIn("#define bottom_gtmp_p", rendered)
 
@@ -725,7 +725,7 @@ NEXTFUNC:\tRETS
                 True,
             )
 
-        self.assertNotIn('#include "port.h"', rendered)
+        self.assertNotIn('#include "../core/port.h"', rendered)
         self.assertNotIn('#include "discovered_labels.h"', rendered)
         self.assertNotIn("#define missle", rendered)
 
@@ -972,7 +972,7 @@ AFTER\t.set\t2
             banner_comments, globls, sets = parse_equ_file(src_path)
             rendered = render_equ_header(src_path, banner_comments, globls, sets, {})
 
-        self.assertIn('#include "port.h"', rendered)
+        self.assertIn('#include "../core/port.h"', rendered)
         self.assertIn("// asm: VISIBLE\t.set\t1", rendered)
         self.assertIn("#define VISIBLE 1", rendered)
         self.assertIn("// asm: AFTER\t.set\t2", rendered)
@@ -1692,7 +1692,7 @@ BONUS8\tLDI\t8,R1
             ],
         )
 
-        self.assertIn('#include "port.h"', rendered)
+        self.assertIn('#include "../core/port.h"', rendered)
         self.assertIn("// asm: .bss heads_count,1", rendered)
         self.assertIn("extern int heads_count;", rendered)
         self.assertNotIn("// addr:", rendered)

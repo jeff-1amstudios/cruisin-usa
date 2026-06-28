@@ -1,7 +1,7 @@
 #ifndef CMOS_H
 #define CMOS_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/CMOS.EQU. */
 

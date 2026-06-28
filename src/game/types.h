@@ -25,6 +25,9 @@ typedef unsigned int u32;
 typedef unsigned short u16;
 typedef float f32;
 
+typedef u32 word_addr_t;
+typedef u32 tPALETTE_CODE;
+
 typedef struct tVIEWLIST_entry {
     void* init;
     int arg;
@@ -224,20 +227,22 @@ typedef struct OBJ {
 } OBJ;
 
 typedef struct PROC {
-    u32 link;
-    u32 stack_ptr;
-    u32 wake;
+    struct PROC* link;
+    // u32 stack_ptr;
+    u32 wake_state;
     u32 id;
-    u32 sleep_time;
-    u32 r4;
-    u32 r5;
-    f32 r6;
-    f32 r7;
-    u32 ar4;
-    u32 ar5;
-    u32 ar6;
-    u32 data[35];       /* PDATA..PSDATA-1 */
-    u32 stack_data[15]; /* PSDATA..PRCSIZ-1 */
+    u32 sleep_ticks;
+    void* data;
+    void (*entry)(struct PROC*);
+    // u32 r4;
+    // u32 r5;
+    // f32 r6;
+    // f32 r7;
+    // u32 ar4;
+    // u32 ar5;
+    // u32 ar6;
+    // u32 data[35];       /* PDATA..PSDATA-1 */
+    // u32 stack_data[15]; /* PSDATA..PRCSIZ-1 */
 } PROC;
 
 typedef struct TRACKSEL {
@@ -351,10 +356,10 @@ typedef struct TYCOB {
 } TYCOB;
 
 typedef struct VECTOR {
-    f32 x;
-    f32 y;
-    f32 z;
-    f32 w;
+    f32 X;
+    f32 Y;
+    f32 Z;
+    // f32 w;
 } VECTOR;
 
 typedef struct EQUATION {
@@ -509,6 +514,9 @@ typedef struct tSECTION_ALLOC {
     int count;
 } tSECTION_ALLOC;
 
-typedef u32 tPALETTE_CODE;
+typedef struct LOAD_SECTION_REQ_ARG {
+    u32* source_addr;
+    u32* dest_addr;
+} LOAD_SECTION_REQ_ARG;
 
 #endif

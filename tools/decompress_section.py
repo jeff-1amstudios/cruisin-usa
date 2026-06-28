@@ -105,7 +105,7 @@ def input_bits(data: bytes, word_addr: int, bit_addr: int, nbits: int) -> tuple[
     return value, word_addr, bit_addr
 
 
-def decompress_section_bytes(data: bytes, source_addr: int, max_steps: int = 10_000_000) -> bytes:
+def decompress_section_raw_bytes(data: bytes, source_addr: int, max_steps: int = 10_000_000) -> bytes:
     word_addr = source_addr
     bit_addr = 0
     current_bits = BITS_MIN
@@ -173,6 +173,21 @@ def decompress_section_bytes(data: bytes, source_addr: int, max_steps: int = 10_
         old_code = new_code
 
     raise ValueError("decompression did not terminate before max_steps")
+
+
+def pack_waveram_words(raw_bytes: bytes) -> bytes:
+    out = bytearray()
+    for offset in range(0, len(raw_bytes), 4):
+        chunk = raw_bytes[offset:offset + 4]
+        chunk += b"\x00" * (4 - len(chunk))
+        packed_word = int.from_bytes(chunk, "little")
+        out += (packed_word & 0xFFFF).to_bytes(4, "little")
+        out += ((packed_word >> 16) & 0xFFFF).to_bytes(4, "little")
+    return bytes(out)
+
+
+def decompress_section_bytes(data: bytes, source_addr: int, max_steps: int = 10_000_000) -> bytes:
+    return pack_waveram_words(decompress_section_raw_bytes(data, source_addr, max_steps=max_steps))
 
 
 def build_arg_parser() -> argparse.ArgumentParser:

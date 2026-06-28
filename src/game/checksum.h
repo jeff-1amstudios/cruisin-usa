@@ -1,7 +1,7 @@
 #ifndef CHECKSUM_H
 #define CHECKSUM_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/CHECKSUM.EQU. */
 

@@ -1,27 +1,27 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/ERROR.EQU. */
 
 // ERROR.EQU
-// 
+//
 // COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // ALL RIGHTS RESERVED
 
 // ERROR CODE IDS
-// 
+//
 // ID = 	xxxxCCTS
-// 
+//
 // x unused
 // C class
 // T type
 // S subtype
-// 
-// 
-// 
-// 
+//
+//
+//
+//
 
 // asm: EC_MASK		.set	0FF00h
 #define EC_MASK 0x0FF00
@@ -60,7 +60,7 @@
 #define EC_UNFINISHED 0x00700
 
 // asm: EC_WATCHDOG2	.set	00800h	;reset triggered by > 100 frames (CUSA.ASM)
-#define EC_WATCHDOG2 0x00800 //reset triggered by > 100 frames (CUSA.ASM)
+#define EC_WATCHDOG2 0x00800 // reset triggered by > 100 frames (CUSA.ASM)
 
 // asm: 	.globl	ERROR_LOG
 void ERROR_LOG(void);

@@ -1,16 +1,16 @@
+#include "dirq.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "backgrnd.h"
 #include "c30.h"
-#include "vunit.h"
-#include "mproc.h"
+#include "globals.h"
 #include "macs.h"
+#include "mproc.h"
 #include "obj.h"
 #include "sys.h"
-#include "dirq.h"
 #include "sysid.h"
-#include "globals.h"
-#include "backgrnd.h"
 #include "totala.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/DIRQ.ASM
@@ -48,78 +48,88 @@ void DIRQ(void);
 #define FASTSTKI FASTSTK
 
 /*
-*v7.03
-*----------------------------------------------------------------------------
-*DISPLAY/TRANSFORMATION SYSTEM
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*
-*	Eric L Pribyl
-*	Eugene P. Jarvis
-*
-*	1.0	JUL 91	ELP	Original version	May 30, 1991
-*	2.00    NOV 91  EPJ     HEAVY OPTIMIZATIONS
-*	2.01	DEC 91  ELP	PComp support
-*	2.10	MAR 92  ELP/EPJ	Altering for target,Optimizations
-*	3.00	MAY 92  ELP	Modification for Illumination models
-*	3.01	MAY 92  ELP	POLYGON PLOT OPTIMIZATIONS
-*	3.02	AUG 92  ELP	Mods for reality
-*	3.03	AUG 92  ELP	Sorting removed
-*	3.04	SEP 92  ELP	FIFO, single palette added, optimizations
-*	3.05	OCT 92	ELP	no control panel,dithering,centroid remove
-*	3.06	OCT 92	ELP	Dynamic objects added
-*	4.00	DEC 92	EPJ/ELP	dynamic optimizations and data structure alterations
-*	4.01	JAN 93	ELP	Illuminated, TMed Objects
-*	5.00	JUL 93	ELP	DMA ASIC
-*	5.01	JUL 93	ELP	Direct stuff to DMA
-*	6.00	JUL 93	ELP	Removal of Direct Stuff to DMA (copy in 'dirqnfif.asm')
-*				.	statistics added
-*				.	optimization
-*	6.01	AUG 93	ELP	Compressed Polygon Format & Compressed Vertex Format
-*	7.00	OCT 93  ELP	test case for 2D rotations
-*	7.01	NOV 93  ELP	full blown 2D rotations
-*	7.02	APR 94	ELP	true operation for O_NOUROT
-*	7.03	JUL 94  ELP	DPs removed, statistics optional
-*	7.04	SEP 94  EPJ	GLITCH FIX
-*
-*IN ALL ROUTINES
-*	AR0 - OBJECT BLOCK
-*	AR1 - ROM POINTER
-*
-*
-*/
+ *v7.03
+ *----------------------------------------------------------------------------
+ *DISPLAY/TRANSFORMATION SYSTEM
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ *
+ *	Eric L Pribyl
+ *	Eugene P. Jarvis
+ *
+ *	1.0	JUL 91	ELP	Original version	May 30, 1991
+ *	2.00    NOV 91  EPJ     HEAVY OPTIMIZATIONS
+ *	2.01	DEC 91  ELP	PComp support
+ *	2.10	MAR 92  ELP/EPJ	Altering for target,Optimizations
+ *	3.00	MAY 92  ELP	Modification for Illumination models
+ *	3.01	MAY 92  ELP	POLYGON PLOT OPTIMIZATIONS
+ *	3.02	AUG 92  ELP	Mods for reality
+ *	3.03	AUG 92  ELP	Sorting removed
+ *	3.04	SEP 92  ELP	FIFO, single palette added, optimizations
+ *	3.05	OCT 92	ELP	no control panel,dithering,centroid remove
+ *	3.06	OCT 92	ELP	Dynamic objects added
+ *	4.00	DEC 92	EPJ/ELP	dynamic optimizations and data structure alterations
+ *	4.01	JAN 93	ELP	Illuminated, TMed Objects
+ *	5.00	JUL 93	ELP	DMA ASIC
+ *	5.01	JUL 93	ELP	Direct stuff to DMA
+ *	6.00	JUL 93	ELP	Removal of Direct Stuff to DMA (copy in 'dirqnfif.asm')
+ *				.	statistics added
+ *				.	optimization
+ *	6.01	AUG 93	ELP	Compressed Polygon Format & Compressed Vertex Format
+ *	7.00	OCT 93  ELP	test case for 2D rotations
+ *	7.01	NOV 93  ELP	full blown 2D rotations
+ *	7.02	APR 94	ELP	true operation for O_NOUROT
+ *	7.03	JUL 94  ELP	DPs removed, statistics optional
+ *	7.04	SEP 94  EPJ	GLITCH FIX
+ *
+ *IN ALL ROUTINES
+ *	AR0 - OBJECT BLOCK
+ *	AR1 - ROM POINTER
+ *
+ *
+ */
 
 // *----------------------------------------------------------------------------
 #define POSTERCLIP 300
 #define LOW_CLIP_LEVEL 100
-#define HIGH_CLIP_LEVEL ((5000-1)) //ACTUAL # OF ENTRIES
+#define HIGH_CLIP_LEVEL ((5000 - 1)) // ACTUAL # OF ENTRIES
+
+VECTOR _CAMERAPOS;
 /* asm: CAMERAPOSI		.word	_CAMERAPOS */
 #define CAMERAPOSI _CAMERAPOS
 /* asm: CAMERARADI		.word	_CAMERARAD */
+VECTOR _CAMERARAD;
 #define CAMERARADI _CAMERARAD
 /* asm: CAMERAMATRIXI		.word	_CAMERAMATRIX */
 /* asm: 	 */
+
+MATRIX _CAMERAMATRIX;
 #define CAMERAMATRIXI _CAMERAMATRIX
 /* asm: ASHADOW			.word	_ACNTL		;HEADS UP THE FIFO MIRROR */
-uintptr_t ASHADOW = (uintptr_t)&_ACNTL;
+// uintptr_t ASHADOW = (uintptr_t)&_ACNTL;
+VECTOR _LIGHT;
 /* asm: LIGHTIY			.word	_LIGHT+1 */
 /* asm: 	 */
-uintptr_t LIGHTIY = (uintptr_t)(_LIGHT+1);
+// uintptr_t LIGHTIY = (uintptr_t)(_LIGHT + 1);
 /* asm: transmatrixI		.word	ROTATION_MATRIX */
+MATRIX ROTATION_MATRIX;
 #define transmatrixI ROTATION_MATRIX
 /* asm: transvectorYI		.word	TRANSVECTOR+1 */
-uintptr_t transvectorYI = (uintptr_t)(TRANSVECTOR+1);
+VECTOR TRANSVECTOR;
+// uintptr_t transvectorYI = (uintptr_t)(TRANSVECTOR + 1);
 /* asm: POSTERMATI		.word	POSTERMATRIX */
+MATRIX POSTERMATRIX;
 #define POSTERMATI POSTERMATRIX
 /* asm: POSTERMAT2DI		.word	POSTERMATRIX2D */
 /* asm: 	 */
 #define POSTERMAT2DI POSTERMATRIX2D
 /* asm: tmpmatI			.word	TMPMAT */
+VECTOR TMPMAT;
 #define tmpmatI TMPMAT
 /* asm: tmpmatY			.word	TMPMAT+1 */
-uintptr_t tmpmatY = (uintptr_t)(TMPMAT+1);
+// uintptr_t tmpmatY = (uintptr_t)(TMPMAT + 1);
 /* asm: SCRNHXI			.float	SCRNHX */
 float SCRNHXI = SCRNHX;
 /* asm: SCRNHYI			.float	SCRNHY */
@@ -130,45 +140,53 @@ float SCRNHYI = SCRNHY;
 /* asm: 	 */
 int HIGH_CLIP_LEV8 = 80000;
 /* asm: MATRIXAI		.word	_MATRIXA */
+MATRIX _MATRIXA;
 #define MATRIXAI _MATRIXA
 /* asm: MATRIXBI		.word	_MATRIXB */
+MATRIX _MATRIXB;
 #define MATRIXBI _MATRIXB
 /* asm: MATRIXCI		.word	_MATRIXC */
+MATRIX _MATRIXC;
 #define MATRIXCI _MATRIXC
 /* asm: VECTORAI		.word	_VECTORA */
+VECTOR _VECTORA;
 #define VECTORAI _VECTORA
 /* asm: VECTORBI		.word	_VECTORB */
+VECTOR _VECTORB;
 #define VECTORBI _VECTORB
 /* asm: VECTORCI		.word	_VECTORC */
+VECTOR _VECTORC;
 #define VECTORCI _VECTORC
 /* asm: VECTORDI		.word	_VECTORD */
+VECTOR _VECTORD;
 #define VECTORDI _VECTORD
 /* asm: VECTORAYI		.word	_VECTORA+1 */
 /* asm: 	 */
-static uintptr_t VECTORAYI = (uintptr_t)(_VECTORA+1);
+// static uintptr_t VECTORAYI = (uintptr_t)(_VECTORA + 1);
 /* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */
-static int POSTERMATRIX2D[4];
+static u32 POSTERMATRIX2D[4];
+
+static u32 CLIPRAM[CLIPRAML];
 
 /*
-*----------------------------------------------------------------------------
-*DIRQ
-*
-*This is the main display loop which queues up each object list to be sent
-*to DISPLAY, and performs any nessesary leg work.
-*
-*	In essence:
-*	for all objects		   <--|
-*		trivial rejection  ---|
-*		translate vectors
-*		plot polygons  <---|
-*			hsr    ----|
-*			send to asic
-*		next polygon
-*	next object
-*
-*/
-void DIRQ(void)
-{
+ *----------------------------------------------------------------------------
+ *DIRQ
+ *
+ *This is the main display loop which queues up each object list to be sent
+ *to DISPLAY, and performs any nessesary leg work.
+ *
+ *	In essence:
+ *	for all objects		   <--|
+ *		trivial rejection  ---|
+ *		translate vectors
+ *		plot polygons  <---|
+ *			hsr    ----|
+ *			send to asic
+ *		next polygon
+ *	next object
+ *
+ */
+void DIRQ(void) {
     // asm 00000064: 	PUSH	R4
     // asm 00000065: 	LDI	@SYSCNTL,R0		;if the system hangs and the LED
     // asm 00000066: 	OR	LED_OFF,R0		;is on we were in this routine

@@ -2,7 +2,7 @@
 #ifndef TEXTTAB_H
 #define TEXTTAB_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /*
  * Hand-maintained translation of asm/TEXTTAB.ASM.
@@ -11,16 +11,16 @@
  */
 
 extern FONTENTRY FONTDIGLG[];
-extern FONTENTRY *FONTDIGLGI;
+extern FONTENTRY* FONTDIGLGI;
 
 extern FONTENTRY FONTDIGSM[];
-extern FONTENTRY *FONTDIGSMI;
+extern FONTENTRY* FONTDIGSMI;
 
 extern FONTENTRY FONTN43TAB[];
-extern FONTENTRY *FONTN43TABI;
+extern FONTENTRY* FONTN43TABI;
 
-extern FONTENTRY *FONT40_TAB;
-extern FONTENTRY *FONT40TABI;
+extern FONTENTRY* FONT40_TAB;
+extern FONTENTRY* FONT40TABI;
 
 extern FONTENTRY FONT18_TAB[];
 extern FONTENTRY OGSMFONT_TAB[];

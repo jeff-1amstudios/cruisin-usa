@@ -1,22 +1,22 @@
 #ifndef MPROC_H
 #define MPROC_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/MPROC.EQU. */
 
 // MPROC.EQU
-// 
+//
 // COPYRIGHT (C) 1994  BY TV GAMES, INC.
 // ALL RIGHTS RESERVED
-// 
+//
 // ROUTINES
 
 // PSADDR		.set	5	;UH	STARTUP ADDRESS
 // PDBGTIM	.set	13	;UD
 
 // asm: NUMPROC	.set	105	;NUMBER OF PROCESSES
-#define NUMPROC 105 //NUMBER OF PROCESSES
+#define NUMPROC 105 // NUMBER OF PROCESSES
 
 // asm: 	.globl	PRC_SLEEP
 #define PRC_SLEEP SLEEP

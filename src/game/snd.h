@@ -1,7 +1,7 @@
 #ifndef SND_H
 #define SND_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/SND.ASM. */
 

@@ -8,6 +8,7 @@
 
 enum {
     CRUSN_ROM_WORDS = 0x280000,
+    CRUSN_WAVERAM_WORDS = 0x1FFFFF,
     CRUSN_SCREEN_WIDTH = 512,
     CRUSN_SCREEN_HEIGHT = 400,
     CRUSN_SCREEN_WORDS = 0x40000,
@@ -40,10 +41,12 @@ typedef struct crusn_machine {
 
 extern crusn_machine* g_crusn_machine;
 extern u32 crusn_rom_words[CRUSN_ROM_WORDS];
+extern u32 crusn_waveram[CRUSN_WAVERAM_WORDS];
 
 #define crusn_mem_rd32(ADDR) crusn_mem_rd32_map(&g_crusn_machine->memory, (ADDR))
 #define crusn_mem_wr32(ADDR, VALUE) crusn_mem_wr32_map(&g_crusn_machine->memory, (ADDR), (VALUE))
 #define ROM_PTR(SYM) (&crusn_rom_words[(size_t)((word_addr_t)(SYM) - CRUSN_ROM_BASE)])
+#define WAVERAM_PTR(SYM) (&crusn_waveram[(size_t)((word_addr_t)(SYM) - CRUSN_WAVERAM_BASE)])
 #define COLOROM_ADDR(ADDR) crusn_machine_colorram_addr((word_addr_t)(ADDR))
 
 int crusn_machine_init(crusn_machine* machine);
@@ -51,13 +54,10 @@ void crusn_machine_shutdown(crusn_machine* machine);
 void crusn_machine_tick(crusn_machine* machine);
 void crusn_machine_decode_screen_argb8888(const crusn_machine* machine, u32* dst_pixels, size_t dst_pitch_bytes);
 int crusn_machine_dump_screen_bmp(
-    const crusn_machine* machine, const u32* screen_words, const u32* colorram_words, const char* path
-);
+    const crusn_machine* machine, const u32* screen_words, const u32* colorram_words, const char* path);
 u32* crusn_machine_rom_addr(word_addr_t addr);
 u32* crusn_machine_colorram_addr(word_addr_t addr);
-void crusn_machine_push_u32(u32 value);
-u32 crusn_machine_pop_u32(void);
-void crusn_machine_push_reg32(crusn_reg32 value);
-crusn_reg32 crusn_machine_pop_reg32(void);
+
+void crusn_yield_display_interrupt(void);
 
 #endif

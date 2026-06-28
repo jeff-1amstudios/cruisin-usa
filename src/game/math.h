@@ -1,7 +1,7 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/MATH.ASM. */
 

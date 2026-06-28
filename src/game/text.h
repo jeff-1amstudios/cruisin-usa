@@ -1,42 +1,42 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/TEXT.EQU. */
 
 // TEXT.EQU
-// 
+//
 // COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // ALL RIGHTS RESERVED
-// 
+//
 // ROUTINES
 
 // ----------------------------------------------------------------------------
 // TEXT OUTPUT STRUCTURE  (TEXT.ASM)
-// 
+//
 // asm: NUM_TEXTS	.set	160
 #define NUM_TEXTS 160
 
-// 
+//
 // TEXT FLAGS
-// 
+//
 // Flags are stored in upper 24 bits of TEXT_COLOR entry.
-// 
+//
 // asm: TXT_CENTER	.set	0100h	;center the text
-#define TXT_CENTER 0x0100 //center the text
+#define TXT_CENTER 0x0100 // center the text
 
 // asm: TXT_RIGHT	.set	0200h	;right justify the text
-#define TXT_RIGHT 0x0200 //right justify the text
+#define TXT_RIGHT 0x0200 // right justify the text
 
 // asm: TXT_NOPULL	.set	0400h	;remain onscreen - do not decrement tiks
-#define TXT_NOPULL 0x0400 //remain onscreen - do not decrement tiks
+#define TXT_NOPULL 0x0400 // remain onscreen - do not decrement tiks
 
 // asm: TXT_NRZ		.set	0800h	;replace all nonzero colors with COLOR
-#define TXT_NRZ 0x0800 //replace all nonzero colors with COLOR
+#define TXT_NRZ 0x0800 // replace all nonzero colors with COLOR
 
 // asm: TXT_COLOR	.set	00FFh	;the color for NZR
-#define TXT_COLOR 0x00FF //the color for NZR
+#define TXT_COLOR 0x00FF // the color for NZR
 
 // DATA STRUCTURES
 // asm: 	.globl	TEXT_ACTIVEI

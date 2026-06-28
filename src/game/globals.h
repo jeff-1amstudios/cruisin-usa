@@ -1,7 +1,9 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "port.h"
+#include "../core/port.h"
+
+typedef struct LOAD_SECTION_REQ_ARG LOAD_SECTION_REQ_ARG;
 
 /* Generated from asm/GLOBALS.EQU. */
 
@@ -399,13 +401,17 @@ extern int OLOW_PRIORITY;
 #define IDLE_LISTI IDLE_LIST
 
 // asm:  .globl CAMERAPOSI,CAMERARADI,CAMERAMATRIXI
+extern VECTOR _CAMERAPOS;
 #define CAMERAPOSI _CAMERAPOS
 
+extern VECTOR _CAMERARAD;
 #define CAMERARADI _CAMERARAD
 
+extern MATRIX _CAMERAMATRIX;
 #define CAMERAMATRIXI _CAMERAMATRIX
 
 // asm:  .globl POSTERMATI
+extern MATRIX POSTERMATRIX;
 #define POSTERMATI POSTERMATRIX
 
 // asm:  .globl DRIVE_LISTI,CAR_LISTI,SIGN_LISTI,GROUND_LISTI
@@ -421,19 +427,20 @@ extern int OLOW_PRIORITY;
 #define LOCTEMPER_MATI LOCTEMPER_MAT
 
 // asm:  .globl LIGHTIY
-extern uintptr_t LIGHTIY;
+extern VECTOR _LIGHT;
+// extern uintptr_t LIGHTIY;
 
 // asm:  .globl transmatrixI,transvectorYI
 #define transmatrixI ROTATION_MATRIX
 
-extern uintptr_t transvectorYI;
+// extern uintptr_t transvectorYI;
 
 // asm:  .globl BLOWLISTI,tmpmatI,tmpmatY,INVTABI
 #define BLOWLISTI BLOWLIST
 
 #define tmpmatI TMPMAT
 
-extern uintptr_t tmpmatY;
+// extern uintptr_t tmpmatY;
 
 #define INVTABI INVTAB
 
@@ -945,13 +952,13 @@ void INIT_CUSTOM_COIN(void);
 
 // comp.asm
 // asm:  .globl DECOMPRESS
-void DECOMPRESS(void);
+// void DECOMPRESS(word_addr_t source_addr, word_addr_t dest_addr);
 
 // asm:  .globl DECOMPRESS_PROC
 void DECOMPRESS_PROC(void);
 
 // asm:  .globl LOAD_SECTION_REQ
-void LOAD_SECTION_REQ(void);
+void LOAD_SECTION_REQ(const LOAD_SECTION_REQ_ARG* section_control);
 
 // asm:  .globl CLRONE
 void CLRONE(void);
@@ -1139,7 +1146,7 @@ void FIND_NEXT_OBJ(void);
 
 // font1a.asm
 // asm:  .globl _outtextxyc
-void _outtextxyc(const char *string, int x, int y, int color);
+void _outtextxyc(const char* string, int x, int y, int color);
 
 // asm:  .globl _itoa,_itoaLZ
 void _itoa(void);

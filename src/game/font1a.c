@@ -1,10 +1,10 @@
+#include "font1a.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
 #include "c30.h"
-#include "vunit.h"
 #include "macs.h"
 #include "text.h"
-#include "font1a.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/FONT1A.ASM
@@ -16,7 +16,7 @@ void _itoaLZ(void);
 void _itoa(void);
 void HEX2ASC(void);
 void _fill(int x1, int y1, int x2, int y2, int color);
-void _outtextxyc(const char *string, int x, int y, int color);
+void _outtextxyc(const char* string, int x, int y, int color);
 void _pixel(int x, int y, int color);
 
 #define _font1I _font1
@@ -28,8 +28,7 @@ extern int _font1[];
 extern int COMMINTM;
 
 // *----------------------------------------------------------------------------
-static void ENABLEGIE_font(void)
-{
+static void ENABLEGIE_font(void) {
     // asm 0000A75C: RETI
 }
 
@@ -40,8 +39,7 @@ static const char POINT[] = ".";
 /* asm: ftoa_tmp	.bss	ftoa_tmp,2 */
 int ftoa_tmp[2];
 
-void _ftoa(void)
-{
+void _ftoa(void) {
     // asm 0000A75E: 	PUSH	R0
     // asm 0000A75F: 	PUSH	R2
     // asm 0000A760: 	PUSH	AR2
@@ -74,21 +72,20 @@ void _ftoa(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INTEGER TO ASCIZ (PACKED)
-*
-*PARAMETERS
-*	AR2	STRING SPACE
-*	R2	NUMBER
-*RETS
-*	AR2	POINTING TO SPACE
-*	R0	HAVING THE SHIFT COUNT
-*
-*
-*INTEGER TO ASCIZ WITH LEADING ZERO
-*/
-void _itoaLZ(void)
-{
+ *----------------------------------------------------------------------------
+ *INTEGER TO ASCIZ (PACKED)
+ *
+ *PARAMETERS
+ *	AR2	STRING SPACE
+ *	R2	NUMBER
+ *RETS
+ *	AR2	POINTING TO SPACE
+ *	R0	HAVING THE SHIFT COUNT
+ *
+ *
+ *INTEGER TO ASCIZ WITH LEADING ZERO
+ */
+void _itoaLZ(void) {
     // asm 0000A779: 	PUSH	R0			;this entry includes a leading zero
     // asm 0000A77A: 	PUSH	R1			;if the value is 9 or less
     // asm 0000A77B: 	PUSH	R2			;
@@ -114,8 +111,7 @@ void _itoaLZ(void)
     UNIMPL();
 }
 
-void _itoa(void)
-{
+void _itoa(void) {
     // asm 0000A78D: 	PUSH	R0
     // asm 0000A78E: 	PUSH	R1
     // asm 0000A78F: 	PUSH	R2
@@ -208,17 +204,16 @@ ISZERO:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*HEX2ASC	CONVERT HEX TO ASCII
-*
-*PARAMETERS
-*	R2	NUMBER
-*	AR2	BUFFER
-*
-*
-*/
-void HEX2ASC(void)
-{
+ *----------------------------------------------------------------------------
+ *HEX2ASC	CONVERT HEX TO ASCII
+ *
+ *PARAMETERS
+ *	R2	NUMBER
+ *	AR2	BUFFER
+ *
+ *
+ */
+void HEX2ASC(void) {
     // asm 0000A7D7: 	PUSH	R0
     // asm 0000A7D8: 	PUSH	R1
     // asm 0000A7D9: 	PUSH	R2
@@ -293,20 +288,19 @@ ISZEROH:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*fill(int x1,int y1,int x2,int y2,int color)
-*
-*PARAMETERS
-*	AR2	X1
-*	R2	Y1
-*	R3	X2
-*	RC	Y2
-*	RS	COLOR
-*
-*
-*/
-void _fill(int x1, int y1, int x2, int y2, int color)
-{
+ *----------------------------------------------------------------------------
+ *fill(int x1,int y1,int x2,int y2,int color)
+ *
+ *PARAMETERS
+ *	AR2	X1
+ *	R2	Y1
+ *	R3	X2
+ *	RC	Y2
+ *	RS	COLOR
+ *
+ *
+ */
+void _fill(int x1, int y1, int x2, int y2, int color) {
     int x;
     int y;
 
@@ -320,31 +314,30 @@ void _fill(int x1, int y1, int x2, int y2, int color)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*OUTPUT TEXT STRING AT X,Y PACKED CHARACTERS
-*void	outtextxyc(Pchar *,int x,int y,int color_pal);
-*
-*PARAMETERS
-*	AR2	STRING
-*	R2	X LOC
-*	R3	Y LOC
-*	RC	COLOR
-*
-*	print a text string with the .string (packed)
-*
-*CLOBBERS	RS,RE,RC
-*
-*/
-void _outtextxyc(const char *string, int x, int y, int color)
-{
-    const unsigned char *string_ptr;
+ *----------------------------------------------------------------------------
+ *OUTPUT TEXT STRING AT X,Y PACKED CHARACTERS
+ *void	outtextxyc(Pchar *,int x,int y,int color_pal);
+ *
+ *PARAMETERS
+ *	AR2	STRING
+ *	R2	X LOC
+ *	R3	Y LOC
+ *	RC	COLOR
+ *
+ *	print a text string with the .string (packed)
+ *
+ *CLOBBERS	RS,RE,RC
+ *
+ */
+void _outtextxyc(const char* string /*AR2*/, int x /*R2*/, int y /*R3*/, int color /*RC*/) {
+    const unsigned char* string_ptr;
     unsigned int glyph_index;
     unsigned int row_bits;
     int ch;
     int row;
     int col;
 
-    string_ptr = (const unsigned char *)string;
+    string_ptr = (const unsigned char*)string;
 
     for (;;) {
         ch = *string_ptr++;
@@ -373,26 +366,25 @@ void _outtextxyc(const char *string, int x, int y, int color)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PIXEL ROUTINE
-*
-*NOTE :	other routines rely on the spec being exactly as they are specified
-*here. DO NOT TRASH OTHER REGISTERS!!!
-*
-*PARAMETERS
-*	AR2	X COORD
-*	R2	Y COORD
-*	R3	COLOR
-*
-*R3	: [ xxxxPPCC ]
-*	PP   PALETTE CODE
-*	CC   COLOR CODE
-*
-*CLOBBERS	R0,AR1
-*
-*/
-void _pixel(int x, int y, int color)
-{
+ *----------------------------------------------------------------------------
+ *PIXEL ROUTINE
+ *
+ *NOTE :	other routines rely on the spec being exactly as they are specified
+ *here. DO NOT TRASH OTHER REGISTERS!!!
+ *
+ *PARAMETERS
+ *	AR2	X COORD
+ *	R2	Y COORD
+ *	R3	COLOR
+ *
+ *R3	: [ xxxxPPCC ]
+ *	PP   PALETTE CODE
+ *	CC   COLOR CODE
+ *
+ *CLOBBERS	R0,AR1
+ *
+ */
+void _pixel(int x, int y, int color) {
     if (x >= CRUSN_SCREEN_WIDTH || y < 0 || y >= CRUSN_SCREEN_HEIGHT) {
         return;
     }

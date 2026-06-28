@@ -1,7 +1,7 @@
 #ifndef MOTION_H
 #define MOTION_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/MOTION.ASM. */
 

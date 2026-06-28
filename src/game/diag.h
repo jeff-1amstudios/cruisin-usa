@@ -1,12 +1,12 @@
 #ifndef DIAG_H
 #define DIAG_H
 
-#include "port.h"
+#include "../core/port.h"
 
 /* Generated from asm/DIAG.EQU. */
 
 // DIAG.EQU
-// 
+//
 // COPYRIGHT (C) 1994 BY  TV GAMES, INC.
 // ALL RIGHTS RESERVED
 
@@ -23,7 +23,7 @@
 #define COL_GREEN 4
 
 // asm: COL_BLUE	.set	5	;paled for sky
-#define COL_BLUE 5 //paled for sky
+#define COL_BLUE 5 // paled for sky
 
 // asm: COL_YELLOW	.set	6
 #define COL_YELLOW 6
@@ -68,7 +68,7 @@
 // TSTB	SW_DIAG,R0
 // BNZ	wt67?
 // .ENDM
-// 
+//
 // WT_NSTART	.MACRO
 // wt67?
 // ;	CALL	DIAG_ACTIVEP
@@ -101,28 +101,28 @@ void MAKE_WINDOW(void);
 
 // LDI	COL_LGREY,RS
 // CALL	_fill
-// 
+//
 // LDI	:X1:,AR2
 // LDI	:Y1:,R2
 // LDI	:X2:,R3
 // LDI	:Y1:,RC
 // LDI	COL_LGREY2,RS
 // CALL	_line
-// 
+//
 // LDI	:X1:,AR2
 // LDI	:Y1:,R2
 // LDI	:X1:,R3
 // LDI	:Y2:,RC
 // LDI	COL_LGREY2,RS
 // CALL	_line
-// 
+//
 // LDI	:X2:,AR2
 // LDI	:Y1:,R2
 // LDI	:X2:,R3
 // LDI	:Y2:,RC
 // LDI	COL_DGREY,RS
 // CALL	_line
-// 
+//
 // LDI	:X1:,AR2
 // LDI	:Y2:,R2
 // LDI	:X2:,R3

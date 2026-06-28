@@ -5,3 +5,4 @@ build/
 cfg/
 roms/
 tools/port/log/
+mame_debug/
