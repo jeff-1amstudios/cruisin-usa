@@ -683,8 +683,7 @@ void INIT_CUSTOM_COIN(void) {
     // asm 0000744A: 	CALL	INICC		;Set SLOT SETTINGS coin1,coin2,coin3,coin4
     // asm 0000744B: ICCX
     // asm 0000744B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_CUSTOM_COIN", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void INICC(void) {

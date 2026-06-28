@@ -1,18 +1,18 @@
+#include "math.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
 #include "c30.h"
+#include "cmos.h"
+#include "dirq.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "dirq.h"
-#include "math.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/MATH.ASM
@@ -29,7 +29,7 @@ void FIND_XMATRIX(void);
 void _find_Ymatrix(void);
 void HPFIND_YMATRIX(void);
 void FIND_ZMATRIX(void);
-void INITMAT(void);
+void INITMAT(MATRIX* mat /*AR0*/);
 void VECTLEN(void);
 void CPYMAT(void);
 void CPYIMAT(void);
@@ -51,36 +51,35 @@ void SCALE_MATRIX(void);
 #define LOCTEMPER_MAT2I LOCTEMPER_MAT2
 
 static float FORMULA;
-static float *ATTABV;
-static float *OFFTABV;
+static float* ATTABV;
+static float* OFFTABV;
 static float ATTAB[129];
 static float ATOFFTAB[16];
 
 /*
-*----------------------------------------------------------------------------
-*MATH ROUTINES
-*
-*COPYRIGHT (C) 1994 BY TV GAMES,INC.
-*ALL RIGHTS RESERVED
-*
-*See also:	ROUTS.ASM	Divide,Invert,Modulus
-*		HPMATH.C	higher precision functions
-*
-*/
+ *----------------------------------------------------------------------------
+ *MATH ROUTINES
+ *
+ *COPYRIGHT (C) 1994 BY TV GAMES,INC.
+ *ALL RIGHTS RESERVED
+ *
+ *See also:	ROUTS.ASM	Divide,Invert,Modulus
+ *		HPMATH.C	higher precision functions
+ *
+ */
 
 /*
-*----------------------------------------------------------------------------
-*	float	COSI(float theta)
-*	float	SINE(float theta)
-*COSINE FUNCTION
-*
-*PARAMETERS
-*	R2	VALUE IN RADIANS 0-INFINITY
-*	R0	RETURN VALUE
-*
-*/
-void _COSI(void)
-{
+ *----------------------------------------------------------------------------
+ *	float	COSI(float theta)
+ *	float	SINE(float theta)
+ *COSINE FUNCTION
+ *
+ *PARAMETERS
+ *	R2	VALUE IN RADIANS 0-INFINITY
+ *	R0	RETURN VALUE
+ *
+ */
+void _COSI(void) {
     // asm 0000952D: 	LDF	R2,R0
     // asm 0000952E: 	ADDF	@HALFPII,R0	;offset for COS
     // asm 0000952F: 	B	SINE0
@@ -96,8 +95,7 @@ void _COSI(void)
     UNIMPL();
 }
 
-void _SINE(void)
-{
+void _SINE(void) {
     // asm 00009530: 	LDF	R2,R0
 SINE0:
     // asm 00009531: PUSH	AR0
@@ -174,38 +172,262 @@ PERFECT:
 /* asm: 	.float	0.998796,0.999078,0.999322,0.999529,0.999699,0.999831,0.999925,0.999981 */
 /* asm: 	.float	1.0 */
 static float SINTABLE[] = {
-    0.000000f, 0.006136f, 0.012272f, 0.018407f, 0.024541f, 0.030675f, 0.036807f, 0.042938f,
-    0.049068f, 0.055195f, 0.061321f, 0.067444f, 0.073565f, 0.079682f, 0.085797f, 0.091909f,
-    0.098017f, 0.104122f, 0.110222f, 0.116319f, 0.122411f, 0.128498f, 0.134581f, 0.140658f,
-    0.146730f, 0.152797f, 0.158858f, 0.164913f, 0.170962f, 0.177004f, 0.183040f, 0.189069f,
-    0.195090f, 0.201105f, 0.207111f, 0.213110f, 0.219101f, 0.225084f, 0.231058f, 0.237024f,
-    0.242980f, 0.248928f, 0.254866f, 0.260794f, 0.266713f, 0.272621f, 0.278520f, 0.284408f,
-    0.290285f, 0.296151f, 0.302006f, 0.307850f, 0.313682f, 0.319502f, 0.325310f, 0.331106f,
-    0.336890f, 0.342661f, 0.348419f, 0.354163f, 0.359895f, 0.365613f, 0.371317f, 0.377007f,
-    0.382683f, 0.388345f, 0.393992f, 0.399624f, 0.405241f, 0.410843f, 0.416429f, 0.422000f,
-    0.427555f, 0.433094f, 0.438616f, 0.444122f, 0.449611f, 0.455083f, 0.460538f, 0.465976f,
-    0.471396f, 0.476799f, 0.482183f, 0.487550f, 0.492898f, 0.498227f, 0.503538f, 0.508830f,
-    0.514102f, 0.519356f, 0.524589f, 0.529803f, 0.534997f, 0.540171f, 0.545325f, 0.550458f,
-    0.555570f, 0.560661f, 0.565732f, 0.570781f, 0.575808f, 0.580814f, 0.585798f, 0.590760f,
-    0.595699f, 0.600616f, 0.605511f, 0.610383f, 0.615232f, 0.620057f, 0.624860f, 0.629638f,
-    0.634393f, 0.639125f, 0.643832f, 0.648515f, 0.653173f, 0.657807f, 0.662416f, 0.667000f,
-    0.671559f, 0.676093f, 0.680601f, 0.685084f, 0.689541f, 0.693972f, 0.698376f, 0.702755f,
-    0.707107f, 0.711432f, 0.715731f, 0.720003f, 0.724247f, 0.728465f, 0.732655f, 0.736817f,
-    0.740951f, 0.745058f, 0.749137f, 0.753187f, 0.757209f, 0.761203f, 0.765168f, 0.769104f,
-    0.773011f, 0.776889f, 0.780738f, 0.784557f, 0.788347f, 0.792107f, 0.795837f, 0.799538f,
-    0.803208f, 0.806848f, 0.810458f, 0.814037f, 0.817585f, 0.821103f, 0.824590f, 0.828046f,
-    0.831470f, 0.834863f, 0.838225f, 0.841555f, 0.844854f, 0.848121f, 0.851356f, 0.854559f,
-    0.857729f, 0.860867f, 0.863973f, 0.867047f, 0.870088f, 0.873096f, 0.876071f, 0.879013f,
-    0.881922f, 0.884798f, 0.887640f, 0.890449f, 0.893225f, 0.895967f, 0.898675f, 0.901349f,
-    0.903990f, 0.906596f, 0.909169f, 0.911707f, 0.914210f, 0.916680f, 0.919114f, 0.921515f,
-    0.923880f, 0.926211f, 0.928507f, 0.930767f, 0.932993f, 0.935184f, 0.937340f, 0.939460f,
-    0.941545f, 0.943594f, 0.945608f, 0.947586f, 0.949529f, 0.951436f, 0.953307f, 0.955142f,
-    0.956941f, 0.958704f, 0.960431f, 0.962122f, 0.963777f, 0.965395f, 0.966977f, 0.968523f,
-    0.970032f, 0.971504f, 0.972940f, 0.974340f, 0.975703f, 0.977029f, 0.978318f, 0.979570f,
-    0.980786f, 0.981964f, 0.983106f, 0.984210f, 0.985278f, 0.986308f, 0.987302f, 0.988258f,
-    0.989177f, 0.990059f, 0.990903f, 0.991710f, 0.992480f, 0.993212f, 0.993907f, 0.994565f,
-    0.995185f, 0.995768f, 0.996313f, 0.996821f, 0.997291f, 0.997723f, 0.998118f, 0.998476f,
-    0.998796f, 0.999078f, 0.999322f, 0.999529f, 0.999699f, 0.999831f, 0.999925f, 0.999981f,
+    0.000000f,
+    0.006136f,
+    0.012272f,
+    0.018407f,
+    0.024541f,
+    0.030675f,
+    0.036807f,
+    0.042938f,
+    0.049068f,
+    0.055195f,
+    0.061321f,
+    0.067444f,
+    0.073565f,
+    0.079682f,
+    0.085797f,
+    0.091909f,
+    0.098017f,
+    0.104122f,
+    0.110222f,
+    0.116319f,
+    0.122411f,
+    0.128498f,
+    0.134581f,
+    0.140658f,
+    0.146730f,
+    0.152797f,
+    0.158858f,
+    0.164913f,
+    0.170962f,
+    0.177004f,
+    0.183040f,
+    0.189069f,
+    0.195090f,
+    0.201105f,
+    0.207111f,
+    0.213110f,
+    0.219101f,
+    0.225084f,
+    0.231058f,
+    0.237024f,
+    0.242980f,
+    0.248928f,
+    0.254866f,
+    0.260794f,
+    0.266713f,
+    0.272621f,
+    0.278520f,
+    0.284408f,
+    0.290285f,
+    0.296151f,
+    0.302006f,
+    0.307850f,
+    0.313682f,
+    0.319502f,
+    0.325310f,
+    0.331106f,
+    0.336890f,
+    0.342661f,
+    0.348419f,
+    0.354163f,
+    0.359895f,
+    0.365613f,
+    0.371317f,
+    0.377007f,
+    0.382683f,
+    0.388345f,
+    0.393992f,
+    0.399624f,
+    0.405241f,
+    0.410843f,
+    0.416429f,
+    0.422000f,
+    0.427555f,
+    0.433094f,
+    0.438616f,
+    0.444122f,
+    0.449611f,
+    0.455083f,
+    0.460538f,
+    0.465976f,
+    0.471396f,
+    0.476799f,
+    0.482183f,
+    0.487550f,
+    0.492898f,
+    0.498227f,
+    0.503538f,
+    0.508830f,
+    0.514102f,
+    0.519356f,
+    0.524589f,
+    0.529803f,
+    0.534997f,
+    0.540171f,
+    0.545325f,
+    0.550458f,
+    0.555570f,
+    0.560661f,
+    0.565732f,
+    0.570781f,
+    0.575808f,
+    0.580814f,
+    0.585798f,
+    0.590760f,
+    0.595699f,
+    0.600616f,
+    0.605511f,
+    0.610383f,
+    0.615232f,
+    0.620057f,
+    0.624860f,
+    0.629638f,
+    0.634393f,
+    0.639125f,
+    0.643832f,
+    0.648515f,
+    0.653173f,
+    0.657807f,
+    0.662416f,
+    0.667000f,
+    0.671559f,
+    0.676093f,
+    0.680601f,
+    0.685084f,
+    0.689541f,
+    0.693972f,
+    0.698376f,
+    0.702755f,
+    0.707107f,
+    0.711432f,
+    0.715731f,
+    0.720003f,
+    0.724247f,
+    0.728465f,
+    0.732655f,
+    0.736817f,
+    0.740951f,
+    0.745058f,
+    0.749137f,
+    0.753187f,
+    0.757209f,
+    0.761203f,
+    0.765168f,
+    0.769104f,
+    0.773011f,
+    0.776889f,
+    0.780738f,
+    0.784557f,
+    0.788347f,
+    0.792107f,
+    0.795837f,
+    0.799538f,
+    0.803208f,
+    0.806848f,
+    0.810458f,
+    0.814037f,
+    0.817585f,
+    0.821103f,
+    0.824590f,
+    0.828046f,
+    0.831470f,
+    0.834863f,
+    0.838225f,
+    0.841555f,
+    0.844854f,
+    0.848121f,
+    0.851356f,
+    0.854559f,
+    0.857729f,
+    0.860867f,
+    0.863973f,
+    0.867047f,
+    0.870088f,
+    0.873096f,
+    0.876071f,
+    0.879013f,
+    0.881922f,
+    0.884798f,
+    0.887640f,
+    0.890449f,
+    0.893225f,
+    0.895967f,
+    0.898675f,
+    0.901349f,
+    0.903990f,
+    0.906596f,
+    0.909169f,
+    0.911707f,
+    0.914210f,
+    0.916680f,
+    0.919114f,
+    0.921515f,
+    0.923880f,
+    0.926211f,
+    0.928507f,
+    0.930767f,
+    0.932993f,
+    0.935184f,
+    0.937340f,
+    0.939460f,
+    0.941545f,
+    0.943594f,
+    0.945608f,
+    0.947586f,
+    0.949529f,
+    0.951436f,
+    0.953307f,
+    0.955142f,
+    0.956941f,
+    0.958704f,
+    0.960431f,
+    0.962122f,
+    0.963777f,
+    0.965395f,
+    0.966977f,
+    0.968523f,
+    0.970032f,
+    0.971504f,
+    0.972940f,
+    0.974340f,
+    0.975703f,
+    0.977029f,
+    0.978318f,
+    0.979570f,
+    0.980786f,
+    0.981964f,
+    0.983106f,
+    0.984210f,
+    0.985278f,
+    0.986308f,
+    0.987302f,
+    0.988258f,
+    0.989177f,
+    0.990059f,
+    0.990903f,
+    0.991710f,
+    0.992480f,
+    0.993212f,
+    0.993907f,
+    0.994565f,
+    0.995185f,
+    0.995768f,
+    0.996313f,
+    0.996821f,
+    0.997291f,
+    0.997723f,
+    0.998118f,
+    0.998476f,
+    0.998796f,
+    0.999078f,
+    0.999322f,
+    0.999529f,
+    0.999699f,
+    0.999831f,
+    0.999925f,
+    0.999981f,
     1.0f,
 };
 /* asm: FORMULA	.float	162.9746617		;256/(PI/2) */
@@ -229,16 +451,15 @@ static float RADFORM = 10430.37835f;
 static float RADFORMI = 0.000095873f;
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS
-*	R2	RADIANS
-*OUTPUT
-*	R2	IN RANGE -PI TO +PI
-*	N,Z BITS SET FOR R2
-*
-*/
-void NORMITS(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS
+ *	R2	RADIANS
+ *OUTPUT
+ *	R2	IN RANGE -PI TO +PI
+ *	N,Z BITS SET FOR R2
+ *
+ */
+void NORMITS(void) {
     // asm 00009556: 	MPYF	@RADFORM,R2
     // asm 00009557: 	FIX	R2
     // asm 00009558: 	LS	16,R2
@@ -258,15 +479,14 @@ NMS1:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS
-*	R2	RADIANS
-*OUTPUT
-*	R2	IN RANGE 0 TO 2PI
-*
-*/
-void NORMIT(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS
+ *	R2	RADIANS
+ *OUTPUT
+ *	R2	IN RANGE 0 TO 2PI
+ *
+ */
+void NORMIT(void) {
     // asm 00009561: 	MPYF	@RADFORM,R2
     // asm 00009562: 	FIX	R2
     // asm 00009563: 	LS	16,R2
@@ -282,19 +502,18 @@ void NORMIT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*ARCTANF - GET ARCTAN ( R3/R2) IN RADIANS
-*float	arctanf(float x,float y)  <- not true C style
-*
-*PARAMETERS
-*	R2	X (float)
-*	R3	Y (float)
-*RETURNS
-*	R0	RADIANS (FLOAT)
-*
-*/
-void ARCTANF(void)
-{
+ *----------------------------------------------------------------------------
+ *ARCTANF - GET ARCTAN ( R3/R2) IN RADIANS
+ *float	arctanf(float x,float y)  <- not true C style
+ *
+ *PARAMETERS
+ *	R2	X (float)
+ *	R3	Y (float)
+ *RETURNS
+ *	R0	RADIANS (FLOAT)
+ *
+ */
+void ARCTANF(void) {
     // asm 00009568: _arctanf
     // asm 00009568: 	PUSH	R1
     // asm 00009569: 	PUSHF	R1
@@ -344,9 +563,9 @@ AT1:
 }
 
 /* asm: ATTABV	.word	ATTAB */
-static float *ATTABV = ATTAB;
+static float* ATTABV = ATTAB;
 /* asm: OFFTABV	.word	ATOFFTAB */
-static float *OFFTABV = ATOFFTAB;
+static float* OFFTABV = ATOFFTAB;
 /* asm: ATOFFTAB */
 /* asm: 	.float	1		;0-45 */
 /* asm: 	.float	0 */
@@ -384,10 +603,10 @@ static float ATOFFTAB[] = {
     4.7123f,
 };
 /*
-*
-*ARCTAN TABLE 0-45
-*
-*/
+ *
+ *ARCTAN TABLE 0-45
+ *
+ */
 /* asm: ATTAB */
 /* asm: 	.float	0.000000,0.007812,0.015624,0.023433,0.031240,0.039043,0.046841 */
 /* asm: 	.float	0.054633,0.062419,0.070197,0.077967,0.085727,0.093477,0.101215 */
@@ -409,25 +628,135 @@ static float ATOFFTAB[] = {
 /* asm: 	.float	0.748977,0.753151,0.757293,0.761403,0.765480,0.769526,0.773541 */
 /* asm: 	.float	0.777524,0.781477,0.785398 */
 static float ATTAB[] = {
-    0.000000f, 0.007812f, 0.015624f, 0.023433f, 0.031240f, 0.039043f, 0.046841f,
-    0.054633f, 0.062419f, 0.070197f, 0.077967f, 0.085727f, 0.093477f, 0.101215f,
-    0.108942f, 0.116655f, 0.124355f, 0.132040f, 0.139709f, 0.147361f, 0.154997f,
-    0.162614f, 0.170212f, 0.177790f, 0.185348f, 0.192884f, 0.200399f, 0.207890f,
-    0.215358f, 0.222801f, 0.230220f, 0.237612f, 0.244979f, 0.252318f, 0.259630f,
-    0.266913f, 0.274167f, 0.281392f, 0.288587f, 0.295752f, 0.302885f, 0.309986f,
-    0.317056f, 0.324092f, 0.331096f, 0.338066f, 0.345002f, 0.351904f, 0.358771f,
-    0.365602f, 0.372398f, 0.379159f, 0.385883f, 0.392570f, 0.399221f, 0.405834f,
-    0.412410f, 0.418949f, 0.425450f, 0.431912f, 0.438337f, 0.444722f, 0.451070f,
-    0.457378f, 0.463648f, 0.469878f, 0.476069f, 0.482221f, 0.488334f, 0.494407f,
-    0.500441f, 0.506435f, 0.512389f, 0.518304f, 0.524180f, 0.530015f, 0.535811f,
-    0.541568f, 0.547284f, 0.552962f, 0.558599f, 0.564198f, 0.569756f, 0.575276f,
-    0.580756f, 0.586198f, 0.591600f, 0.596963f, 0.602287f, 0.607573f, 0.612820f,
-    0.618029f, 0.623199f, 0.628332f, 0.633426f, 0.638482f, 0.643501f, 0.648482f,
-    0.653426f, 0.658333f, 0.663203f, 0.668036f, 0.672833f, 0.677593f, 0.682317f,
-    0.687005f, 0.691657f, 0.696273f, 0.700854f, 0.705400f, 0.709912f, 0.714388f,
-    0.718830f, 0.723238f, 0.727611f, 0.731951f, 0.736257f, 0.740530f, 0.744770f,
-    0.748977f, 0.753151f, 0.757293f, 0.761403f, 0.765480f, 0.769526f, 0.773541f,
-    0.777524f, 0.781477f, 0.785398f,
+    0.000000f,
+    0.007812f,
+    0.015624f,
+    0.023433f,
+    0.031240f,
+    0.039043f,
+    0.046841f,
+    0.054633f,
+    0.062419f,
+    0.070197f,
+    0.077967f,
+    0.085727f,
+    0.093477f,
+    0.101215f,
+    0.108942f,
+    0.116655f,
+    0.124355f,
+    0.132040f,
+    0.139709f,
+    0.147361f,
+    0.154997f,
+    0.162614f,
+    0.170212f,
+    0.177790f,
+    0.185348f,
+    0.192884f,
+    0.200399f,
+    0.207890f,
+    0.215358f,
+    0.222801f,
+    0.230220f,
+    0.237612f,
+    0.244979f,
+    0.252318f,
+    0.259630f,
+    0.266913f,
+    0.274167f,
+    0.281392f,
+    0.288587f,
+    0.295752f,
+    0.302885f,
+    0.309986f,
+    0.317056f,
+    0.324092f,
+    0.331096f,
+    0.338066f,
+    0.345002f,
+    0.351904f,
+    0.358771f,
+    0.365602f,
+    0.372398f,
+    0.379159f,
+    0.385883f,
+    0.392570f,
+    0.399221f,
+    0.405834f,
+    0.412410f,
+    0.418949f,
+    0.425450f,
+    0.431912f,
+    0.438337f,
+    0.444722f,
+    0.451070f,
+    0.457378f,
+    0.463648f,
+    0.469878f,
+    0.476069f,
+    0.482221f,
+    0.488334f,
+    0.494407f,
+    0.500441f,
+    0.506435f,
+    0.512389f,
+    0.518304f,
+    0.524180f,
+    0.530015f,
+    0.535811f,
+    0.541568f,
+    0.547284f,
+    0.552962f,
+    0.558599f,
+    0.564198f,
+    0.569756f,
+    0.575276f,
+    0.580756f,
+    0.586198f,
+    0.591600f,
+    0.596963f,
+    0.602287f,
+    0.607573f,
+    0.612820f,
+    0.618029f,
+    0.623199f,
+    0.628332f,
+    0.633426f,
+    0.638482f,
+    0.643501f,
+    0.648482f,
+    0.653426f,
+    0.658333f,
+    0.663203f,
+    0.668036f,
+    0.672833f,
+    0.677593f,
+    0.682317f,
+    0.687005f,
+    0.691657f,
+    0.696273f,
+    0.700854f,
+    0.705400f,
+    0.709912f,
+    0.714388f,
+    0.718830f,
+    0.723238f,
+    0.727611f,
+    0.731951f,
+    0.736257f,
+    0.740530f,
+    0.744770f,
+    0.748977f,
+    0.753151f,
+    0.757293f,
+    0.761403f,
+    0.765480f,
+    0.769526f,
+    0.773541f,
+    0.777524f,
+    0.781477f,
+    0.785398f,
 };
 // *----------------------------------------------------------------------------
 
@@ -435,16 +764,15 @@ static float ATTAB[] = {
 int LOCTEMPER_MAT2[12];
 
 /*
-*----------------------------------------------------------------------------
-*FIND MATRIX
-*
-*PARAMETERS
-*	AR2	DESTINATION 3X3
-*	R2	SOURCE RADIANS 1X3
-*
-*/
-void FIND_MATRIX(void)
-{
+ *----------------------------------------------------------------------------
+ *FIND MATRIX
+ *
+ *PARAMETERS
+ *	AR2	DESTINATION 3X3
+ *	R2	SOURCE RADIANS 1X3
+ *
+ */
+void FIND_MATRIX(void) {
     // asm 00009591: 	PUSH	R0
     // asm 00009592: 	PUSH	R1
     // asm 00009593: 	PUSH	R2
@@ -512,18 +840,17 @@ FM1:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*	    1  0  0
-* Xrot = {  0  c  s }
-*	    0 -s  c
-*
-*PARAMETERS
-*	AR2	DESTINATION 3X3 MATRIX
-*	R2	SOURCE RADIANS
-*
-*/
-void FIND_XMATRIX(void)
-{
+ *----------------------------------------------------------------------------
+ *	    1  0  0
+ * Xrot = {  0  c  s }
+ *	    0 -s  c
+ *
+ *PARAMETERS
+ *	AR2	DESTINATION 3X3 MATRIX
+ *	R2	SOURCE RADIANS
+ *
+ */
+void FIND_XMATRIX(void) {
     // asm 000095C5: 	PUSH	R0
     // asm 000095C6: 	PUSHF	R0
     // asm 000095C7: 	CALL	_COSI
@@ -550,18 +877,17 @@ void FIND_XMATRIX(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*	    c  0 -s
-* Yrot = {  0  1  0 }
-*	    s  0  c
-*
-*PARAMETERS
-*	AR2	DESTINATION 3X3 MATRIX
-*	R2	SOURCE RADIANS
-*
-*/
-void _find_Ymatrix(void)
-{
+ *----------------------------------------------------------------------------
+ *	    c  0 -s
+ * Yrot = {  0  1  0 }
+ *	    s  0  c
+ *
+ *PARAMETERS
+ *	AR2	DESTINATION 3X3 MATRIX
+ *	R2	SOURCE RADIANS
+ *
+ */
+void _find_Ymatrix(void) {
     // asm 000095D8: 	PUSH	R0
     // asm 000095D9: 	PUSHF	R0
     // asm 000095DA: 	CALL	_COSI
@@ -588,18 +914,17 @@ void _find_Ymatrix(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*	    c  0 -s
-* Yrot = {  0  1  0 }
-*	    s  0  c
-*
-*PARAMETERS
-*	AR2	DESTINATION 3X3 MATRIX
-*	R2	SOURCE RADIANS
-*
-*/
-void HPFIND_YMATRIX(void)
-{
+ *----------------------------------------------------------------------------
+ *	    c  0 -s
+ * Yrot = {  0  1  0 }
+ *	    s  0  c
+ *
+ *PARAMETERS
+ *	AR2	DESTINATION 3X3 MATRIX
+ *	R2	SOURCE RADIANS
+ *
+ */
+void HPFIND_YMATRIX(void) {
     // asm 000095EB: 	PUSH	R0
     // asm 000095EC: 	PUSHF	R0
     // asm 000095ED: 	PUSH	R1
@@ -646,18 +971,17 @@ void HPFIND_YMATRIX(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-* 	    c s 0
-* Zrot = { -s c 0 }
-* 	    0 0 1
-*
-*PARAMETERS
-*	AR2	DESTINATION 3X3 MATRIX
-*	R2	SOURCE RADIANS
-*
-*/
-void FIND_ZMATRIX(void)
-{
+ *----------------------------------------------------------------------------
+ * 	    c s 0
+ * Zrot = { -s c 0 }
+ * 	    0 0 1
+ *
+ *PARAMETERS
+ *	AR2	DESTINATION 3X3 MATRIX
+ *	R2	SOURCE RADIANS
+ *
+ */
+void FIND_ZMATRIX(void) {
     // asm 00009612: 	PUSH	R0
     // asm 00009613: 	PUSHF	R0
     // asm 00009614: 	CALL	_COSI
@@ -684,54 +1008,41 @@ void FIND_ZMATRIX(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INITIALIZE MATRIX TO IDENTITY
-*
-*PARAMETERS
-*	AR0	POINTER TO MATRIX
-*
-*/
-void INITMAT(void)
-{
-    // asm 00009625: 	POP	BK			;RETURN ADDRESS
-    // asm 00009626: 	PUSH	R0
-    // asm 00009627: 	PUSHF	R0
-    // asm 00009628: 	LDF	1.0,R0
-    // asm 00009629: 	STF	R0,*AR0
-    // asm 0000962A: 	STF	R0,*+AR0(4)
-    // asm 0000962B: 	STF	R0,*+AR0(8)
-    // asm 0000962C: 	LDF	0,R0
-    // asm 0000962D: 	STF	R0,*+AR0(1)
-    // asm 0000962E: 	STF	R0,*+AR0(2)
-    // asm 0000962F: 	STF	R0,*+AR0(3)
-    // asm 00009630: 	STF	R0,*+AR0(5)
-    // asm 00009631: 	STF	R0,*+AR0(6)
-    // asm 00009632: 	BUD	BK
-    // asm 00009633: 	STF	R0,*+AR0(7)
-    // asm 00009634: 	POPF	R0
-    // asm 00009635: 	POP	R0
-    // 	;---->	RETS
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INITMAT", 0, 0);
-    UNIMPL();
+ *----------------------------------------------------------------------------
+ *INITIALIZE MATRIX TO IDENTITY
+ *
+ *PARAMETERS
+ *	AR0	POINTER TO MATRIX
+ *
+ */
+void INITMAT(MATRIX* mat /*AR0*/) {
+    mat->a00 = 1.0f;
+    mat->a11 = 1.0f;
+    mat->a22 = 1.0f;
+
+    mat->a01 = 0.0f;
+    mat->a02 = 0.0f;
+    mat->a10 = 0.0f;
+    mat->a12 = 0.0f;
+    mat->a20 = 0.0f;
+    mat->a21 = 0.0f;
 }
 
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*float	vectlen(VECTOR *);
-*
-*PARAMETERS
-*	AR2	PTS TO VECTOR
-*RETURNS
-*	R0	LENGTH OF VECTOR
-*CLOBBERS
-*	R1,R2
-*
-*/
-void VECTLEN(void)
-{
+ *----------------------------------------------------------------------------
+ *float	vectlen(VECTOR *);
+ *
+ *PARAMETERS
+ *	AR2	PTS TO VECTOR
+ *RETURNS
+ *	R0	LENGTH OF VECTOR
+ *CLOBBERS
+ *	R1,R2
+ *
+ */
+void VECTLEN(void) {
     // asm 00009636: 	LDF	*AR2++,R2
     // asm 00009637: 	MPYF	R2,R2
     // asm 00009638: 	LDF	*AR2++,R1
@@ -750,16 +1061,15 @@ void VECTLEN(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*void	cpymat(MATRIX *dst,MATRIX *src);
-*
-*PARAMETERS
-*	AR2	DEST MATRIX
-*	R2	SOURCE MATRIX
-*
-*/
-void CPYMAT(void)
-{
+ *----------------------------------------------------------------------------
+ *void	cpymat(MATRIX *dst,MATRIX *src);
+ *
+ *PARAMETERS
+ *	AR2	DEST MATRIX
+ *	R2	SOURCE MATRIX
+ *
+ */
+void CPYMAT(void) {
     // asm 0000963F: 	PUSH	AR0
     // asm 00009640: 	PUSH	R0
     // asm 00009641: 	PUSHF	R0
@@ -780,20 +1090,19 @@ void CPYMAT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*void	cpyimat(MATRIX *d,MATRIX *s)
-*
-*
-*PARAMETERS
-*	AR2	DEST
-*	R2	SOURCE
-*RETURNS
-*	AR2	INVERSE MATRIX (ROWS & COLUMNS XCHNGED)
-*
-*WARNING SOURCE CANNOT BE SAME AS DEST
-*/
-void CPYIMAT(void)
-{
+ *----------------------------------------------------------------------------
+ *void	cpyimat(MATRIX *d,MATRIX *s)
+ *
+ *
+ *PARAMETERS
+ *	AR2	DEST
+ *	R2	SOURCE
+ *RETURNS
+ *	AR2	INVERSE MATRIX (ROWS & COLUMNS XCHNGED)
+ *
+ *WARNING SOURCE CANNOT BE SAME AS DEST
+ */
+void CPYIMAT(void) {
     // asm 0000964B: 	PUSH	R0
     // asm 0000964C: 	PUSHF	R0
     // asm 0000964D: 	PUSH	AR0
@@ -827,12 +1136,11 @@ void CPYIMAT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CLEARS VECTOR A and RETURNS POINTER TO IT IN AR2
-*
-*/
-void CLR_VECTORA(void)
-{
+ *----------------------------------------------------------------------------
+ *CLEARS VECTOR A and RETURNS POINTER TO IT IN AR2
+ *
+ */
+void CLR_VECTORA(void) {
     // asm 00009662: 	PUSH	R0
     // asm 00009663: 	PUSHF	R0
     // asm 00009664: 	LDI	@VECTORAI,AR2
@@ -850,21 +1158,20 @@ void CLR_VECTORA(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*void	matrix_mul(VECTOR *src,MATRIX *m3x3,VECTOR *dst)
-*
-*PARAMETERS
-*	AR2	SRC 1x3
-*	R2	SRC 3x3
-*	R3	DST 1x3
-*RETURNS
-*	*R3 modified, all regs saved
-*
-*NOTE SRC 1x3 and DST 1x3 may be equal
-*
-*/
-void MATRIX_MUL(void)
-{
+ *----------------------------------------------------------------------------
+ *void	matrix_mul(VECTOR *src,MATRIX *m3x3,VECTOR *dst)
+ *
+ *PARAMETERS
+ *	AR2	SRC 1x3
+ *	R2	SRC 3x3
+ *	R3	DST 1x3
+ *RETURNS
+ *	*R3 modified, all regs saved
+ *
+ *NOTE SRC 1x3 and DST 1x3 may be equal
+ *
+ */
+void MATRIX_MUL(void) {
     // asm 0000966C: 	PUSH	R0
     // asm 0000966D: 	PUSHF	R0
     // asm 0000966E: 	PUSH	AR1
@@ -907,11 +1214,10 @@ void MATRIX_MUL(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*void	normalize(VECTOR *V)
-*/
-void NORMALIZE(void)
-{
+ *----------------------------------------------------------------------------
+ *void	normalize(VECTOR *V)
+ */
+void NORMALIZE(void) {
     // asm 00009689: 	PUSH	R0
     // asm 0000968A: 	PUSH	R1
     // asm 0000968B: 	PUSHF	R0
@@ -936,17 +1242,16 @@ void NORMALIZE(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*NORMAT		NORMALIZE MATRIX
-*
-*PARAMETERS
-*	AR2	POINTS TO MATRIX
-*
-*AR0,AR1,R0,R1,R2 TRASHED
-*
-*/
-void NORMAT(void)
-{
+ *----------------------------------------------------------------------------
+ *NORMAT		NORMALIZE MATRIX
+ *
+ *PARAMETERS
+ *	AR2	POINTS TO MATRIX
+ *
+ *AR0,AR1,R0,R1,R2 TRASHED
+ *
+ */
+void NORMAT(void) {
     // 	;NORMALIZE ROWS
     // asm 0000969A: 	LDI	2,RC
     // asm 0000969B: 	RPTB	NORMROW
@@ -984,19 +1289,18 @@ NORMROW:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*void	gen_normal(VECTOR *A,VECTOR *B,VECTOR *C,VECTOR *N)
-*
-*PARAMETERS
-*	AR2	PTS TO PTRA,PTRB,PTRC
-*	AR0	PTS TO NORMAL VECTOR TO RETURN
-*
-*CLOBBERS
-*	R0-R7,AR2
-*
-*/
-void GEN_NORMAL(void)
-{
+ *----------------------------------------------------------------------------
+ *void	gen_normal(VECTOR *A,VECTOR *B,VECTOR *C,VECTOR *N)
+ *
+ *PARAMETERS
+ *	AR2	PTS TO PTRA,PTRB,PTRC
+ *	AR0	PTS TO NORMAL VECTOR TO RETURN
+ *
+ *CLOBBERS
+ *	R0-R7,AR2
+ *
+ */
+void GEN_NORMAL(void) {
     // asm 000096B4: 	PUSH	AR0
     // asm 000096B5: 	LDI	*+AR2(1),AR0		;B
     // asm 000096B6: 	LDI	*+AR2(2),R3		;C
@@ -1029,27 +1333,26 @@ void GEN_NORMAL(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CONCATENATE MATRICES, VOLATILE
-*void	concatmat(MATRIX *s1, MATRIX *s2, MATRIX *d);
-*
-*PARAMETERS
-*	AR2	s1 SOURCE_1 MATRIX
-*	R2	s2 SOURCE_2 MATRIX
-*	R3	d  DEST MATRIX
-*
-*NOTE	__d can NOT be equal to either __s1 or __s2.
-*
-*
-*
-*__s1	   __s2	    		__d
-*A B C	   J K L    AJ+DK+GL BJ+EK+HL CJ+FK+IL
-*D E F	*  M N O  = AM+DN+GO BM+EN+HO CM+FN+IO
-*G H I     P Q R    AP+DQ+GR BP+EQ+HR CP+FQ+IR
-*
-*/
-void CONCATMATV(void)
-{
+ *----------------------------------------------------------------------------
+ *CONCATENATE MATRICES, VOLATILE
+ *void	concatmat(MATRIX *s1, MATRIX *s2, MATRIX *d);
+ *
+ *PARAMETERS
+ *	AR2	s1 SOURCE_1 MATRIX
+ *	R2	s2 SOURCE_2 MATRIX
+ *	R3	d  DEST MATRIX
+ *
+ *NOTE	__d can NOT be equal to either __s1 or __s2.
+ *
+ *
+ *
+ *__s1	   __s2	    		__d
+ *A B C	   J K L    AJ+DK+GL BJ+EK+HL CJ+FK+IL
+ *D E F	*  M N O  = AM+DN+GO BM+EN+HO CM+FN+IO
+ *G H I     P Q R    AP+DQ+GR BP+EQ+HR CP+FQ+IR
+ *
+ */
+void CONCATMATV(void) {
     // asm 000096CD: 	LDI	R2,AR0
     // asm 000096CE: 	LDI	R3,AR1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1057,8 +1360,7 @@ void CONCATMATV(void)
     UNIMPL();
 }
 
-void CONCAT201(void)
-{
+void CONCAT201(void) {
     // asm 000096CF: 	LDI	5,IR1
     // asm 000096D0: 	LDI	3,IR0
     // asm 000096D1: 	LDI	2,RC
@@ -1092,24 +1394,23 @@ INLP2:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CONCATENATE MATRICES
-*
-*this is the non-volatile concatmat,  if the destination is not the same as
-*either source use concatmatv because it doesn't do the extra copy (for
-*avoiding overwrites)
-*
-*void	concatmat(MATRIX *s1,MATRIX *s2,MATRIX *d);
-*
-*PARAMETERS
-*	AR2	s1 SOURCE_1 MATRIX
-*	R2	s2 SOURCE_2 MATRIX
-*	R3	d  DEST MATRIX
-*
-*
-*/
-void CONCATMAT(void)
-{
+ *----------------------------------------------------------------------------
+ *CONCATENATE MATRICES
+ *
+ *this is the non-volatile concatmat,  if the destination is not the same as
+ *either source use concatmatv because it doesn't do the extra copy (for
+ *avoiding overwrites)
+ *
+ *void	concatmat(MATRIX *s1,MATRIX *s2,MATRIX *d);
+ *
+ *PARAMETERS
+ *	AR2	s1 SOURCE_1 MATRIX
+ *	R2	s2 SOURCE_2 MATRIX
+ *	R3	d  DEST MATRIX
+ *
+ *
+ */
+void CONCATMAT(void) {
     // asm 000096E2: 	PUSH	AR0
     // asm 000096E3: 	PUSH	AR1
     // asm 000096E4: 	PUSH	AR0
@@ -1136,19 +1437,18 @@ void CONCATMAT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GETTHETADIFF
-*compute radY delta (as smallest possible turn)
-*
-*PARAMETERS
-*	R0	DESIRED THETA (float)
-*	R2	CURRENT THETA (float)
-*RETURNS
-*	R0	THETA DELTA (float)
-*
-*/
-void GETTHETADIFF(void)
-{
+ *----------------------------------------------------------------------------
+ *GETTHETADIFF
+ *compute radY delta (as smallest possible turn)
+ *
+ *PARAMETERS
+ *	R0	DESIRED THETA (float)
+ *	R2	CURRENT THETA (float)
+ *RETURNS
+ *	R0	THETA DELTA (float)
+ *
+ */
+void GETTHETADIFF(void) {
     // asm 000096F5: 	PUSHF	R1
     // asm 000096F6: 	SUBF	R2,R0
     // asm 000096F7: 	ABSF	R0,R1
@@ -1171,31 +1471,30 @@ NONEG:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*	LDI	AR2,AR0
-*	LDP	@VECTORBI
-*	LDI	@VECTORBI,AR1
-*	LDF	*+AR4(OPOSX),R0
-*	STF	R0,*+AR1(X)
-*	CLRF	R0
-*	STF	R0,*+AR1(Y)
-*	LDF	*+AR4(OPOSZ),R0
-*	STF	R0,*+AR1(Z)
-*
-*	CALL	DIST_PT2LINE
-*
-*PARAMETERS
-*	AR0	LINE EQUATION (2D) A B C
-*	AR1	2D POINT [X Y]
-*
-*RETURNS
-*	R0	FL	DISTANCE TO LINE (SIGNED)
-*
-*
-*/
-void DIST_PT2LINE(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *	LDI	AR2,AR0
+ *	LDP	@VECTORBI
+ *	LDI	@VECTORBI,AR1
+ *	LDF	*+AR4(OPOSX),R0
+ *	STF	R0,*+AR1(X)
+ *	CLRF	R0
+ *	STF	R0,*+AR1(Y)
+ *	LDF	*+AR4(OPOSZ),R0
+ *	STF	R0,*+AR1(Z)
+ *
+ *	CALL	DIST_PT2LINE
+ *
+ *PARAMETERS
+ *	AR0	LINE EQUATION (2D) A B C
+ *	AR1	2D POINT [X Y]
+ *
+ *RETURNS
+ *	R0	FL	DISTANCE TO LINE (SIGNED)
+ *
+ *
+ */
+void DIST_PT2LINE(void) {
     // asm 00009702: 	PUSH	R1
     // asm 00009703: 	PUSH	R2
     // asm 00009704: 	PUSHF	R1
@@ -1224,22 +1523,21 @@ void DIST_PT2LINE(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*	LDI	@VECTORAI,AR0
-*	LDI	@VECTORBI,AR1
-*	CALL	GETLINE_EQ
-*
-*PARAMETERS
-*	AR0	P1
-*	AR1	P2
-*	AR2	SPACE FOR LINE EQUATION
-*
-*RETURNS
-*	AR2	VECTOR AS A B C
-*
-*/
-void GETLINE_EQ_2D(void)
-{
+ *----------------------------------------------------------------------------
+ *	LDI	@VECTORAI,AR0
+ *	LDI	@VECTORBI,AR1
+ *	CALL	GETLINE_EQ
+ *
+ *PARAMETERS
+ *	AR0	P1
+ *	AR1	P2
+ *	AR2	SPACE FOR LINE EQUATION
+ *
+ *RETURNS
+ *	AR2	VECTOR AS A B C
+ *
+ */
+void GETLINE_EQ_2D(void) {
     // asm 00009717: 	PUSH	R0
     // asm 00009718: 	PUSH	R1
     // asm 00009719: 	PUSH	R2
@@ -1273,36 +1571,35 @@ void GETLINE_EQ_2D(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*see Foley & van Damn 2ed pg215
-*
-*scale matrix	Sx  0   0
-*		0   Sy  0
-*		0   0   Sz
-*
-*Once a FIND_MATRIX is complete you can pump that matrix through this
-*routine and the object will be scaled by R2.  (Obviously each of the
-*X Y and Z elements can be scaled independantly, but this might be
-*cumbersome, and it would be better suited for a different routine.
-*
-*Note that a 3x3 x 3x3 -> 3x3 matrix by the scale would be:
-*
-* ASx BSy CSz
-* DSx ESy FSz  (by eliminating all the multiply by zeros)
-* GSx HSy ISz
-*
-*PARAMETERS
-*	AR2	MATRIX to be scaled
-*	R2	SCALE FACTOR
-*
-*
-*RETURNS
-*	AR2	MATRIX modified for scaling
-*
-*
-*/
-void SCALE_MATRIX(void)
-{
+ *----------------------------------------------------------------------------
+ *see Foley & van Damn 2ed pg215
+ *
+ *scale matrix	Sx  0   0
+ *		0   Sy  0
+ *		0   0   Sz
+ *
+ *Once a FIND_MATRIX is complete you can pump that matrix through this
+ *routine and the object will be scaled by R2.  (Obviously each of the
+ *X Y and Z elements can be scaled independantly, but this might be
+ *cumbersome, and it would be better suited for a different routine.
+ *
+ *Note that a 3x3 x 3x3 -> 3x3 matrix by the scale would be:
+ *
+ * ASx BSy CSz
+ * DSx ESy FSz  (by eliminating all the multiply by zeros)
+ * GSx HSy ISz
+ *
+ *PARAMETERS
+ *	AR2	MATRIX to be scaled
+ *	R2	SCALE FACTOR
+ *
+ *
+ *RETURNS
+ *	AR2	MATRIX modified for scaling
+ *
+ *
+ */
+void SCALE_MATRIX(void) {
     // asm 00009731: 	PUSH	R3
     // asm 00009732: 	PUSHF	R3
     // asm 00009733: 	LDF	*+AR2(A00),R3

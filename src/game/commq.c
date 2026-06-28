@@ -1,19 +1,19 @@
+#include "commq.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
+#include "cmos.h"
+#include "comm.h"
+#include "delta.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "comm.h"
-#include "delta.h"
-#include "commq.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/COMMQ.ASM
@@ -105,13 +105,13 @@ extern int OM_TRACK_HI;
 static uintptr_t DECODE_BLOCK[];
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /* asm: IGNORE_UPDATES	.bss	IGNORE_UPDATES,1 */
 int IGNORE_UPDATES;
@@ -122,17 +122,17 @@ int SEND_BUFFER_A[COMM_BUFFER_SIZE];
 /* asm: SEND_BUFFER_A_LEN	pbss	SEND_BUFFER_A_LEN,1 */
 int SEND_BUFFER_A_LEN;
 /*
-	;RECEIVE BUFFER
-	;
+        ;RECEIVE BUFFER
+        ;
 */
 /* asm: RBUFF_LEN	pbss	RBUFF_LEN,1 */
 int RBUFF_LEN;
 /* asm: RECEIVE_BUFFER	phibss	RECEIVE_BUFFER,COMM_BUFFER_SIZE */
 int RECEIVE_BUFFER[COMM_BUFFER_SIZE];
 /*
-	;OTHER MACHINE
-	;(OM_*)
-	;
+        ;OTHER MACHINE
+        ;(OM_*)
+        ;
 */
 /* asm: OM_DIFF	pbss	OM_DIFF,1 */
 int OM_DIFF;
@@ -171,56 +171,36 @@ int HEAD2HEAD_ON;
 /* asm: SAVED_PLY2CAR	.bss	SAVED_PLY2CAR,1 */
 int SAVED_PLY2CAR;
 
-void CLEAR_LINK(void)
-{
+void CLEAR_LINK(void) {
     int i;
 
-    // asm 0000766B: 	LDI	@PLY2CAR,R0
-    R0.s = PLY2CAR;
-    // asm 0000766C: 	STI	R0,@SAVED_PLY2CAR
-    SAVED_PLY2CAR = R0.s;
-    // asm 0000766D: 	CLRI	R0
-    R0.s = 0;
-    // asm 0000766E: 	STI	R0,@MY_STATE
-    MY_STATE = R0.s;
-    // asm 0000766F: 	STI	R0,@OM_STATE
-    OM_STATE = R0.s;
-    // asm 00007670: 	STI	R0,@OM_MODE
-    OM_MODE = R0.s;
-    // asm 00007671: 	STI	R0,@HEAD2HEAD_ON
-    HEAD2HEAD_ON = R0.s;
-    // asm 00007672: 	STI	R0,@MY_LINKWAIT
-    MY_LINKWAIT = R0.s;
-    // asm 00007673: 	STI	R0,@OM_LINKWAIT
-    OM_LINKWAIT = R0.s;
-    // asm 00007674: 	STI	R0,@PLY2CAR
-    PLY2CAR = R0.s;
-    // asm 00007675: 	STI	R0,@CAR_LIST
-    CAR_LIST = R0.s;
-    // asm 00007676: 	LDI	@RACER_PTRI,AR0
-    AR0 = 0;
-    // asm 00007677: 	RPTS	10-1
-    // asm 00007678: 	STI	R0,*AR0++
+    // asm:
+    SAVED_PLY2CAR = PLY2CAR;
+
+    MY_STATE = 0;
+    OM_STATE = 0;
+    OM_MODE = 0;
+    HEAD2HEAD_ON = 0;
+    MY_LINKWAIT = 0;
+    OM_LINKWAIT = 0;
+    PLY2CAR = 0;
+    CAR_LIST = NULL;
+
     for (i = 0; i < 10; ++i) {
-        RACER_PTR[AR0++] = R0.s;
+        RACER_PTR[i] = 0;
     }
-    // asm 00007679: 	LDI	-1,R0
-    R0.s = -1;
-    // asm 0000767A: 	STI	R0,@OM_CHOSEN_RACE
-    OM_CHOSEN_RACE = R0.s;
-    // asm 0000767B: 	STI	R0,@OM_VEHICLE
-    OM_VEHICLE = R0.s;
-    // asm 0000767C: 	RETS
+
+    OM_CHOSEN_RACE = -1;
+    OM_VEHICLE = -1;
 }
 
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*/
-void DECODE_BUFFER(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ */
+void DECODE_BUFFER(void) {
     // asm 0000767D: 	LDI	@DIPRAM,R0
     // asm 0000767E: 	TSTB	DIP_COMMP,R0 	       ;LINKED ?
     // asm 0000767F: 	RETSNZ			       ;NOPE...
@@ -260,18 +240,18 @@ ISDONE:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*	.word	ID,ROUTINE TO DECODE
-*
-*
-*Each decode routine can assume:
-*	  AR2 is the pointer to the data block
-*	  AR6,DP registers must be saved/restored
-*	  AR2 should be incremented to the next block
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *	.word	ID,ROUTINE TO DECODE
+ *
+ *
+ *Each decode routine can assume:
+ *	  AR2 is the pointer to the data block
+ *	  AR6,DP registers must be saved/restored
+ *	  AR2 should be incremented to the next block
+ *
+ *
+ */
 /* asm: DECODE_BLOCKI	.word	DECODE_BLOCK */
 #define DECODE_BLOCKI DECODE_BLOCK
 /* asm: DECODE_BLOCK */
@@ -322,10 +302,10 @@ ISDONE:
 /* asm: 	 */
 static uintptr_t DECODE_BLOCK[] = {
     (uintptr_t)DECODE_NULL,
-    (uintptr_t)DECODE_MODE, // CB_MODE
+    (uintptr_t)DECODE_MODE,     // CB_MODE
     (uintptr_t)DECODE_TIMECODE, // CB_TIMECODE
-    (uintptr_t)DECODE_RACENUM, // CB_RACENUM
-    (uintptr_t)DECODE_VEHICLE, // CHOSEN CAR IDENTITY CODE
+    (uintptr_t)DECODE_RACENUM,  // CB_RACENUM
+    (uintptr_t)DECODE_VEHICLE,  // CHOSEN CAR IDENTITY CODE
     (uintptr_t)DECODE_START_GAME,
     (uintptr_t)DECODE_END_GAME,
     (uintptr_t)DECODE_CAR_UPDATE, // UPDATE DATA BLOCK FOR CAR
@@ -359,13 +339,12 @@ static uintptr_t DECODE_BLOCK[] = {
 };
 
 /*
-*----------------------------------------------------------------------------
-*
-*SETUP SEND BUFFER POINTERS
-*
-*/
-void COMMQ_PACKET_INIT(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *SETUP SEND BUFFER POINTERS
+ *
+ */
+void COMMQ_PACKET_INIT(void) {
     // asm 000076BB: 	PUSH	R0
     // ;	LDI	@SEND_BUFFER_AI,R0
     // ;	STI	R0,@FILLBUFF_PTR
@@ -384,17 +363,16 @@ void COMMQ_PACKET_INIT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*FOR MASTER, HE WILL SEND IMMEDIATELY FOLLOWING,
-*FOR SLAVE, HE WILL SWITCH BUFFERS, AND WHEN REQUESTED SEND THIS BUFFER
-*IF THE NEXT BUFFER IF FULL, SLAVE WILL OVERWRITE THIS BUFFER, AND SO ON
-*
-*
-*/
-void COMMQ_READY_TO_SEND(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *FOR MASTER, HE WILL SEND IMMEDIATELY FOLLOWING,
+ *FOR SLAVE, HE WILL SWITCH BUFFERS, AND WHEN REQUESTED SEND THIS BUFFER
+ *IF THE NEXT BUFFER IF FULL, SLAVE WILL OVERWRITE THIS BUFFER, AND SO ON
+ *
+ *
+ */
+void COMMQ_READY_TO_SEND(void) {
     // asm 000076C1: 	PUSH	R0
     // asm 000076C2: 	PUSH	AR0
     // asm 000076C3: 	PUSH	AR2
@@ -412,22 +390,21 @@ void COMMQ_READY_TO_SEND(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*REMEMBER ALSO THAT THESE ARE BYTE STRINGS (LOWER 8 BITS ONLY)
-*
-*
-*
-*PARAMETERS
-*	RC	(LENGTH OF BUFFER)-1
-*	AR2	PTR TO MESSAGE STRING (BUFFER)
-*
-*	(REMEMBER THAT THE FIRST WORD OF THE MESSAGE SHOULD BE THE
-*	BLOCK HEADER)
-*
-*/
-void MESSAGE_ADD(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *REMEMBER ALSO THAT THESE ARE BYTE STRINGS (LOWER 8 BITS ONLY)
+ *
+ *
+ *
+ *PARAMETERS
+ *	RC	(LENGTH OF BUFFER)-1
+ *	AR2	PTR TO MESSAGE STRING (BUFFER)
+ *
+ *	(REMEMBER THAT THE FIRST WORD OF THE MESSAGE SHOULD BE THE
+ *	BLOCK HEADER)
+ *
+ */
+void MESSAGE_ADD(void) {
     // asm 000076CA: 	PUSH	AR0
     // asm 000076CB: 	PUSH	AR2
     // asm 000076CC: 	PUSH	AR3
@@ -468,15 +445,14 @@ MESSADDX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*MESSAGE ADD, SINGLE BYTE
-*
-*PARAMETERS
-*	AR2	MESSAGE
-*
-*/
-void MESSAGE_ADD_SB(void)
-{
+ *----------------------------------------------------------------------------
+ *MESSAGE ADD, SINGLE BYTE
+ *
+ *PARAMETERS
+ *	AR2	MESSAGE
+ *
+ */
+void MESSAGE_ADD_SB(void) {
     // asm 000076E1: 	PUSH	R0
     // asm 000076E2: 	PUSH	AR0
     // asm 000076E3: 	LDI	@DIPRAM,R0
@@ -508,8 +484,7 @@ MASBX:
 
 // *----------------------------------------------------------------------------
 
-static void DECODE_NULL(void)
-{
+static void DECODE_NULL(void) {
     // asm 000076F1: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_NULL", 0, 0);
     UNIMPL();
@@ -518,8 +493,7 @@ static void DECODE_NULL(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_WAVEFL_READY(void)
-{
+void SEND_WAVEFL_READY(void) {
     // asm 000076F2: 	LDI	CB_WAVEFL_READY,AR2
     // asm 000076F3: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -527,8 +501,7 @@ void SEND_WAVEFL_READY(void)
     UNIMPL();
 }
 
-void SEND_WAVEFL_SET(void)
-{
+void SEND_WAVEFL_SET(void) {
     // asm 000076F4: 	LDI	CB_WAVEFL_SET,AR2
     // asm 000076F5: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -536,8 +509,7 @@ void SEND_WAVEFL_SET(void)
     UNIMPL();
 }
 
-void SEND_WAVEFL_GO(void)
-{
+void SEND_WAVEFL_GO(void) {
     // asm 000076F6: 	CLRI	R0
     // asm 000076F7: 	STI	R0,@_sectime
     // asm 000076F8: 	LDI	CB_WAVEFL_GO,AR2
@@ -550,8 +522,7 @@ void SEND_WAVEFL_GO(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void DECODE_WAVEFL_READY(void)
-{
+static void DECODE_WAVEFL_READY(void) {
     // asm 000076FA: 	LDI	1,R0
     // asm 000076FB: 	STI	R0,@H2H_FLAGSTATE
     // asm 000076FC: 	RETS
@@ -559,8 +530,7 @@ static void DECODE_WAVEFL_READY(void)
     UNIMPL();
 }
 
-static void DECODE_WAVEFL_SET(void)
-{
+static void DECODE_WAVEFL_SET(void) {
     // asm 000076FD: 	LDI	2,R0
     // asm 000076FE: 	STI	R0,@H2H_FLAGSTATE
     // asm 000076FF: 	RETS
@@ -568,8 +538,7 @@ static void DECODE_WAVEFL_SET(void)
     UNIMPL();
 }
 
-static void DECODE_WAVEFL_GO(void)
-{
+static void DECODE_WAVEFL_GO(void) {
     // asm 00007700: 	LDI	3,R0
     // asm 00007701: 	STI	R0,@H2H_FLAGSTATE
     // asm 00007702: 	CLRI	R0
@@ -582,8 +551,7 @@ static void DECODE_WAVEFL_GO(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SEND_LINKEDT(void)
-{
+static void SEND_LINKEDT(void) {
     // asm 00007705: 	PUSH	AR2
     // asm 00007706: 	LDI	CB_HEAD2HEADT,AR2
     // asm 00007707: 	CALL	MESSAGE_ADD_SB
@@ -593,8 +561,7 @@ static void SEND_LINKEDT(void)
     UNIMPL();
 }
 
-static void SEND_LINKEDF(void)
-{
+static void SEND_LINKEDF(void) {
     // asm 0000770A: 	PUSH	AR2
     // asm 0000770B: 	LDI	CB_HEAD2HEADF,AR2
     // asm 0000770C: 	CALL	MESSAGE_ADD_SB
@@ -604,8 +571,7 @@ static void SEND_LINKEDF(void)
     UNIMPL();
 }
 
-static void DECODE_LINKEDT(void)
-{
+static void DECODE_LINKEDT(void) {
     // asm 0000770F: 	PUSH	R0
     // asm 00007710: 	LDI	1,R0
     // asm 00007711: 	STI	R0,@LINKEDP
@@ -615,8 +581,7 @@ static void DECODE_LINKEDT(void)
     UNIMPL();
 }
 
-static void DECODE_LINKEDF(void)
-{
+static void DECODE_LINKEDF(void) {
     // asm 00007714: 	PUSH	R0
     // asm 00007715: 	LDI	2,R0
     // asm 00007716: 	STI	R0,@LINKEDP
@@ -629,8 +594,7 @@ static void DECODE_LINKEDF(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void DECODE_MODE(void)
-{
+static void DECODE_MODE(void) {
     // asm 00007719: 	PUSH	R0
     // asm 0000771A: 	PUSH	R1
     // asm 0000771B: 	PUSH	R2
@@ -729,14 +693,13 @@ DCMX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*turn on the checkpoint bit within the MY_STATE
-*does not actually send data over the comm lines.
-*
-*
-*/
-void SEND_CHECKPOINT(void)
-{
+ *----------------------------------------------------------------------------
+ *turn on the checkpoint bit within the MY_STATE
+ *does not actually send data over the comm lines.
+ *
+ *
+ */
+void SEND_CHECKPOINT(void) {
     // asm 00007768: 	LDI	@CHECKPOINT_NUM,R0
     // asm 00007769: 	LDI	1,R1
     // asm 0000776A: 	LS	R0,R1
@@ -751,8 +714,7 @@ void SEND_CHECKPOINT(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SEND_FINISH(void)
-{
+static void SEND_FINISH(void) {
     // asm 0000776F: 	LDI	OMS_FINISHLINE,R0
     // asm 00007770: 	OR	@MY_STATE,R0
     // asm 00007771: 	STI	R0,@MY_STATE
@@ -764,8 +726,7 @@ static void SEND_FINISH(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_MODE(void)
-{
+void SEND_MODE(void) {
     // asm 00007773: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00007774: 	LDI	CB_MODE,R0
     // asm 00007775: 	STI	R0,*AR2++
@@ -801,8 +762,7 @@ void SEND_MODE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void DECODE_LINKCANCELLED(void)
-{
+static void DECODE_LINKCANCELLED(void) {
     // asm 0000778E: 	CLRI	R0
     // asm 0000778F: 	STI	R0,@OM_LINKWAIT
     // asm 00007790: 	RETS
@@ -813,8 +773,7 @@ static void DECODE_LINKCANCELLED(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_LINKCANCELLED(void)
-{
+void SEND_LINKCANCELLED(void) {
     // asm 00007791: 	LDI	CB_LINKCANCELLED,AR2
     // asm 00007792: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -825,14 +784,13 @@ void SEND_LINKCANCELLED(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-* T 	I BOUGHT IN
-*
-*
-*
-*/
-void SEND_START_GAME(void)
-{
+ *----------------------------------------------------------------------------
+ * T 	I BOUGHT IN
+ *
+ *
+ *
+ */
+void SEND_START_GAME(void) {
     // asm 00007793: 	CLRI	R0
     // asm 00007794: 	STI	R0,@IGNORE_UPDATES
     // asm 00007795: 	LDI	CB_START_GAME,AR2
@@ -850,8 +808,7 @@ void SEND_START_GAME(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void DECODE_START_GAME(void)
-{
+static void DECODE_START_GAME(void) {
     // asm 0000779D: 	LDI	1,R0
     // asm 0000779E: 	STI	R0,@OM_LINKWAIT
     // asm 0000779F: 	LDI	@MY_LINKWAIT,R0
@@ -887,8 +844,7 @@ NOPE:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_END_GAME(void)
-{
+void SEND_END_GAME(void) {
     // asm 000077BA: 	LDI	CB_END_GAME,AR2
     // asm 000077BB: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -899,11 +855,10 @@ void SEND_END_GAME(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*clear the variables associated with the game...
-*/
-static void DECODE_END_GAME(void)
-{
+ *----------------------------------------------------------------------------
+ *clear the variables associated with the game...
+ */
+static void DECODE_END_GAME(void) {
     // asm 000077BC: 	LDI	0,R0
     // asm 000077BD: 	STI	R0,@HEAD2HEAD_ON
     // asm 000077BE: 	RETS
@@ -914,8 +869,7 @@ static void DECODE_END_GAME(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_TIMECODE(void)
-{
+void SEND_TIMECODE(void) {
     // asm 000077BF: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 000077C0: 	LDI	CB_TIMECODE,R0
     // asm 000077C1: 	STI	R0,*AR2++
@@ -935,8 +889,7 @@ void SEND_TIMECODE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_RACENUM(void)
-{
+void SEND_RACENUM(void) {
     // asm 000077CA: 	LDL	COMMQ_TMP_BUFF,AR2
     // asm 000077CB: 	LDI	CB_RACENUM,R0
     // asm 000077CC: 	STI	R0,*AR2++
@@ -956,8 +909,7 @@ void SEND_RACENUM(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void DECODE_RACENUM(void)
-{
+static void DECODE_RACENUM(void) {
     // asm 000077D5: 	PUSH	R1
     // asm 000077D6: 	LDI	*AR2++,R1
     // asm 000077D7: 	LS	8,R1
@@ -981,8 +933,7 @@ static void DECODE_RACENUM(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void DECODE_VEHICLE(void)
-{
+static void DECODE_VEHICLE(void) {
     // asm 000077E4: 	LDI	*AR2++,R0
     // asm 000077E5: 	LS	8,R0
     // asm 000077E6: 	RS	24,R0
@@ -995,8 +946,7 @@ static void DECODE_VEHICLE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_VEHICLE(void)
-{
+void SEND_VEHICLE(void) {
     // asm 000077E9: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 000077EA: 	LDI	CB_VEHICLE,R0
     // asm 000077EB: 	STI	R0,*AR2++
@@ -1012,8 +962,7 @@ void SEND_VEHICLE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void DECODE_TIMECODE(void)
-{
+static void DECODE_TIMECODE(void) {
     // asm 000077F0: 	PUSH	R0
     // asm 000077F1: 	PUSH	R1
     // asm 000077F2: 	PUSH	R2
@@ -1037,8 +986,7 @@ static void DECODE_TIMECODE(void)
 
 // *----------------------------------------------------------------------------
 
-void SEND_RHO_POS(void)
-{
+void SEND_RHO_POS(void) {
     // asm 00007801: 	LDI	*+AR7(DELTA_LAST_OID),R0
     // asm 00007802: 	STI	R0,*+AR5(CARTRACK_ID)  	;SAVE TRACK ID
     // asm 00007803: 	LDI	CB_RHO_UPDATE,R0	;GET MESSAGE HEADER
@@ -1058,8 +1006,7 @@ void SEND_RHO_POS(void)
     UNIMPL();
 }
 
-void SEND_RACER_POS(void)
-{
+void SEND_RACER_POS(void) {
     // asm 00007809: 	LDI	*+AR7(DELTA_LAST_OID),R0
     // asm 0000780A: 	STI	R0,*+AR5(CARTRACK_ID)  	;SAVE TRACK ID
     // asm 0000780B: 	LDI	CB_RACER_UPDATE,R0	;GET MESSAGE HEADER
@@ -1069,8 +1016,7 @@ void SEND_RACER_POS(void)
     UNIMPL();
 }
 
-void SEND_PLAYERS_POS(void)
-{
+void SEND_PLAYERS_POS(void) {
     // *
     // *AR4=PLAYER CAR OBJECT
     // *AR7=PLAYER PROCESS
@@ -1179,8 +1125,7 @@ MATLP:
     UNIMPL();
 }
 
-void SEND_RHO_CREATE(void)
-{
+void SEND_RHO_CREATE(void) {
     // asm 00007857: 	LDI	@HEAD2HEAD_ON,R1
     // asm 00007858: 	RETSZ
     // asm 00007859: 	LDI	CB_RHO_CREATE,R1	;GET MESSAGE HEADER
@@ -1208,14 +1153,13 @@ static float MATCON = 0.00003125f;
 /* asm: 	 */
 static float RADCON = 0.001f;
 /*
-*
-*FIND DRONE CAR
-*RET Z=FOUND, AR0=CAR OBJECT
-*R2=-16, R3=-8
-*/
+ *
+ *FIND DRONE CAR
+ *RET Z=FOUND, AR0=CAR OBJECT
+ *R2=-16, R3=-8
+ */
 
-void FIND_DRONE(void)
-{
+void FIND_DRONE(void) {
     // asm 00007866: 	LDI	-16,R2
     // asm 00007867: 	LDI	-8,R3
     // *GET CAR ID #
@@ -1242,8 +1186,7 @@ FD1:
     UNIMPL();
 }
 
-static void DECODE_RHO_UPDATE(void)
-{
+static void DECODE_RHO_UPDATE(void) {
     // asm 00007875: 	LDI	@IGNORE_UPDATES,R0
     // asm 00007876: 	BNZ	DECCARX
     // asm 00007877: 	CALL	FIND_DRONE
@@ -1258,8 +1201,7 @@ static void DECODE_RHO_UPDATE(void)
     UNIMPL();
 }
 
-static void DECODE_RACER_UPDATE(void)
-{
+static void DECODE_RACER_UPDATE(void) {
     // asm 0000787B: 	LDI	@IGNORE_UPDATES,R0
     // asm 0000787C: 	BNZ	DECCARX
     // asm 0000787D: 	LDI	-16,R2
@@ -1284,8 +1226,7 @@ static void DECODE_RACER_UPDATE(void)
     UNIMPL();
 }
 
-static void DECODE_CAR_UPDATE(void)
-{
+static void DECODE_CAR_UPDATE(void) {
     // asm 0000788A: 	LDI	@IGNORE_UPDATES,R0
     // asm 0000788B: 	BNZ	DECCARX
     // asm 0000788C: 	LDI	@PLY2CAR,R0
@@ -1403,8 +1344,7 @@ DECCARX:
 
 // *----------------------------------------------------------------------------
 
-static void DECODE_RHO_CREATE(void)
-{
+static void DECODE_RHO_CREATE(void) {
     // asm 000078E2: 	LDI	@HEAD2HEAD_ON,R0
     // asm 000078E3: 	BZ	DCRHOX
     // asm 000078E4: 	LDI	@IGNORE_UPDATES,R0
@@ -1430,8 +1370,7 @@ DCRHOX:
     UNIMPL();
 }
 
-static void DECODE_RACER_KILL(void)
-{
+static void DECODE_RACER_KILL(void) {
     // asm 000078F5: 	LDI	-16,R2
     // asm 000078F6: 	LSH	R2,*AR2++,R0   		;GET CAR ID #
     // asm 000078F7: 	LDI	@IGNORE_UPDATES,R1
@@ -1454,8 +1393,7 @@ DCRKX:
     UNIMPL();
 }
 
-static void DECODE_OM_TRACK(void)
-{
+static void DECODE_OM_TRACK(void) {
     // asm 00007903: 	LDI	-16,R2
     // asm 00007904: 	LDI	-8,R3
     // asm 00007905: 	LSH	R2,*AR2++,R0		;GET ROAD SECTION ID
@@ -1476,8 +1414,7 @@ static void DECODE_OM_TRACK(void)
     UNIMPL();
 }
 
-void SEND_OM_TRACK(void)
-{
+void SEND_OM_TRACK(void) {
     // asm 00007912: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00007913: 	LDI	CB_OM_TRACK,R2			;GET MESSAGE HEADER
     // asm 00007914: 	STI	R2,*AR2++
@@ -1508,8 +1445,7 @@ void SEND_OM_TRACK(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_BSYNC3(void)
-{
+void SEND_BSYNC3(void) {
     // ;	LDI	0,R0
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC0,AR2
@@ -1532,8 +1468,7 @@ SBLS:
     UNIMPL();
 }
 
-static void DECODE_BSYNC3(void)
-{
+static void DECODE_BSYNC3(void) {
     // ;	LDI	0,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
@@ -1553,8 +1488,7 @@ static void DECODE_BSYNC3(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void DECODE_CHANGE_MUSIC(void)
-{
+static void DECODE_CHANGE_MUSIC(void) {
     // asm 0000792F: 	LDI	*AR2++,R0
     // asm 00007930: 	LDI	@HEAD2HEAD_ON,R1
     // asm 00007931: 	RETSZ
@@ -1572,8 +1506,7 @@ static void DECODE_CHANGE_MUSIC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_CHANGE_MUSIC(void)
-{
+void SEND_CHANGE_MUSIC(void) {
     // asm 00007939: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 0000793A: 	LDI	CB_CHANGE_MUSIC,R0
     // asm 0000793B: 	STI	R0,*AR2++
@@ -1592,8 +1525,7 @@ void SEND_CHANGE_MUSIC(void)
 int COINDROP;
 
 // *----------------------------------------------------------------------------
-static void DECODE_COINDROP(void)
-{
+static void DECODE_COINDROP(void) {
     // asm 00007941: 	LDI	1,R0
     // asm 00007942: 	STI	R0,@COINDROP
     // asm 00007943: 	RETS
@@ -1604,8 +1536,7 @@ static void DECODE_COINDROP(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_COINDROP(void)
-{
+void SEND_COINDROP(void) {
     // asm 00007944: 	LDI	CB_COINDROP,AR2
     // asm 00007945: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1621,16 +1552,15 @@ int OM_DIAGVALUE;
 int DIAGVALUE;
 
 /*
-*----------------------------------------------------------------------------
-*For diagnostics on the Link we send a 'ping'
-*the ping is echoed back with the upper nybble
-*changed to reflect the machine type (MASTER
-*or SLAVE... 'A0' or 'B0' respectively.
-*
-*
-*/
-static void DECODE_DIAGNOSTIC(void)
-{
+ *----------------------------------------------------------------------------
+ *For diagnostics on the Link we send a 'ping'
+ *the ping is echoed back with the upper nybble
+ *changed to reflect the machine type (MASTER
+ *or SLAVE... 'A0' or 'B0' respectively.
+ *
+ *
+ */
+static void DECODE_DIAGNOSTIC(void) {
     // asm 00007946: 	LDI	*AR2++,R0
     // asm 00007947: 	LS	8,R0
     // asm 00007948: 	ASH	-24,R0
@@ -1646,8 +1576,7 @@ static void DECODE_DIAGNOSTIC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SEND_DIAGNOSTIC(void)
-{
+static void SEND_DIAGNOSTIC(void) {
     // asm 0000794E: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 0000794F: 	LDI	CB_DIAGNOSTIC,R0
     // asm 00007950: 	STI	R0,*AR2++
@@ -1670,8 +1599,7 @@ static void SEND_DIAGNOSTIC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void DECODE_ATTRSND(void)
-{
+static void DECODE_ATTRSND(void) {
     // asm 0000795C: 	PUSH	R0
     // asm 0000795D: 	PUSH	AR2
     // asm 0000795E: 	READADJ	ADJ_ATTRACT_MODE_SOUND
@@ -1689,8 +1617,7 @@ NO_MUSIC:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_ATTRSND(void)
-{
+void SEND_ATTRSND(void) {
     // asm 00007967: 	LDI	CB_ATTRSND,AR2
     // asm 00007968: 	BU	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION

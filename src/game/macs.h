@@ -78,4 +78,6 @@ FONTENT		.MACRO	PRECEDING,XSTART,XEND,YSTART,TRAIL
 
 #define TEXTIT _outtextxyc
 
+#define CREATE PRC_CREATE
+
 #endif /* MACS_H */

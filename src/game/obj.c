@@ -1,11 +1,10 @@
 #include "obj.h"
-#include "../core/cpu.h"
-#include "../core/machine.h"
 #include "error.h"
 #include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "pall.h"
+#include "port.h"
 #include "sys.h"
 #include "sysid.h"
 #include "vunit.h"
@@ -59,26 +58,26 @@ static int ACTIVEHI;
  */
 
 /* asm: OACTIVE	.bss	OACTIVE,1 */
-int OACTIVE;
+OBJ* OACTIVE;
 /* asm: OFREE	.bss	OFREE,1 */
-int OFREE;
+OBJ* OFREE;
 /* asm: IDLE_LIST	.bss	IDLE_LIST,1 */
-int IDLE_LIST;
+OBJ* IDLE_LIST;
 /* asm: OACTIVE_PRIORITY	.bss	OACTIVE_PRIORITY,1 */
-int OACTIVE_PRIORITY;
+OBJ* OACTIVE_PRIORITY;
 /* asm: OLOW_PRIORITY	.bss	OLOW_PRIORITY,1 */
-int OLOW_PRIORITY;
+OBJ* OLOW_PRIORITY;
 /* asm: OHIGH_PRIORITY	.bss	OHIGH_PRIORITY,1 */
-int OHIGH_PRIORITY;
+OBJ* OHIGH_PRIORITY;
 /* asm: OACTIVECNT	.bss	OACTIVECNT,1 */
 int OACTIVECNT;
 /* asm: OFREECNT	.bss	OFREECNT,1 */
 int OFREECNT;
 /* asm: OMAX_OBJECTS	.bss	OMAX_OBJECTS,1 */
 int OMAX_OBJECTS;
-int OBJSTR[sizeof(OBJ) * NUM_OBJECTS];
+OBJ OBJSTR[NUM_OBJECTS];
 /* asm: COMM_DRONE_PTR	.bss	COMM_DRONE_PTR,1 */
-int COMM_DRONE_PTR;
+OBJ* COMM_DRONE_PTR;
 
 /*
  *----------------------------------------------------------------------------
@@ -86,63 +85,34 @@ int COMM_DRONE_PTR;
  *
  */
 void OBJ_INIT(void) {
-    // asm 00007016: 	PUSH	R0
-    // asm 00007017: 	PUSH	AR0
-    // asm 00007018: 	PUSH	AR1
-    // asm 00007019: 	LDI	NUM_OBJECTS,R0
-    R0.s = NUM_OBJECTS;
-    // asm 0000701A: 	STI	R0,@OFREECNT
-    OFREECNT = R0.s;
-    // asm 0000701B: 	LDI	0,R0
-    R0.s = 0;
-    // asm 0000701C: 	STI	R0,@OACTIVE
-    OACTIVE = R0.s;
-    // asm 0000701D: 	STI	R0,@IDLE_LIST
-    IDLE_LIST = R0.s;
-    // asm 0000701E: 	STI	R0,@OACTIVE_PRIORITY
-    OACTIVE_PRIORITY = R0.s;
-    // asm 0000701F: 	STI	R0,@OACTIVECNT
-    OACTIVECNT = R0.s;
-    // asm 00007020: 	STI	R0,@OMAX_OBJECTS
-    OMAX_OBJECTS = R0.s;
-    // asm 00007021: 	STI	R0,@OLOW_PRIORITY
-    OLOW_PRIORITY = R0.s;
-    // asm 00007022: 	STI	R0,@OHIGH_PRIORITY
-    OHIGH_PRIORITY = R0.s;
-    // asm 00007023: 	STI	R0,@DRIVE_LIST
-    DRIVE_LIST = R0.s;
-    // asm 00007024: 	STI	R0,@CAR_LIST
-    CAR_LIST = R0.s;
-    // asm 00007025: 	STI	R0,@SIGN_LIST
-    SIGN_LIST = R0.s;
-    // asm 00007026: 	STI	R0,@GROUND_LIST
-    GROUND_LIST = R0.s;
-    // asm 00007027: 	STI	R0,@COMM_DRONE_PTR
-    COMM_DRONE_PTR = R0.s;
-    // asm 00007028: 	LDI	@OFREEI,AR0	 	;GET FREE POINTER
-    AR0 = (uintptr_t)&OFREE;
-    // asm 00007029: 	LDI	@OBJSTRI,AR1
-    AR1 = (uintptr_t)OBJSTR;
-    // asm 0000702A: 	LDI	NUM_OBJECTS-1,RC
-    RC = NUM_OBJECTS - 1;
-    // asm 0000702B: 	RPTB	OINITL
-    do {
-        // asm 0000702C: 	STI	AR1,*AR0
-        *(uintptr_t*)AR0 = AR1;
-        // asm 0000702D: 	LDI	AR1,AR0
-        AR0 = AR1;
-    OINITL:
-        // asm 0000702E: ADDI	OBJSIZ,AR1
-        AR1 += sizeof(OBJ);
-        // asm 0000702F: 	LDI	0,R0
-        R0.s = 0;
-        // asm 00007030: 	STI	R0,*AR0
-        *(int*)AR0 = R0.s;
-    } while (RC-- != 0);
-    // asm 00007031: 	POP	AR1
-    // asm 00007032: 	POP	AR0
-    // asm 00007033: 	POP	R0
-    // asm 00007034: 	RETS
+    OBJ* obj;
+    int i;
+
+    // asm:
+    OFREECNT = NUM_OBJECTS;
+
+    OACTIVE = NULL;
+    IDLE_LIST = NULL;
+    OACTIVE_PRIORITY = 0;
+    OACTIVECNT = 0;
+    OMAX_OBJECTS = 0;
+    OLOW_PRIORITY = 0;
+    OHIGH_PRIORITY = 0;
+
+    DRIVE_LIST = NULL;
+    CAR_LIST = NULL;
+    SIGN_LIST = NULL;
+    GROUND_LIST = NULL;
+
+    COMM_DRONE_PTR = NULL;
+
+    obj = OBJSTR;
+
+    for (i = 0; i < NUM_OBJECTS - 1; ++i) {
+        obj->link = &OBJSTR[i + 1];
+        obj++;
+    }
+    obj->link = NULL;
 }
 
 // *----------------------------------------------------------------------------

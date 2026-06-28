@@ -15,6 +15,7 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - Do not write register-based translation. Look at the give an example
 - Write your c code underneath the // asm: comment lines already in the function.
 - Retain the original developer comments in the assembly code as c comments
+- Retain the .if as #ifdef
 
 If you get stuck, stop, and explain the problem. Don't start inventing things in order to keep progressing.
 

@@ -21,17 +21,8 @@
 // asm: 	.globl	PRC_SLEEP
 #define PRC_SLEEP SLEEP
 
-// DATA STRUCTURES
-// asm: 	.globl	PACTIVE,PFREE
-extern int PACTIVE;
-
-extern int PFREE;
-
-// asm: 	.globl	PACTIVEI
-#define PACTIVEI PACTIVE
-
 // asm: 	.globl	CURRENT_PROC,OLDSP
-extern int CURRENT_PROC;
+extern PROC* CURRENT_PROC;
 
 extern int OLDSP;
 
@@ -73,17 +64,5 @@ void PRC_FOLLOW(void);
 
 // asm: 	.globl	SLEEP
 void SLEEP(void);
-
-// MPROC.ASM
-// asm: 	.bss	CURRENT_PROC,1		;CURRENT PROCESS POINTER (DEBUG ONLY!)
-extern int CURRENT_PROC;
-// asm: 	.bss	OLDSP,1	    		;SAVE OLD STACK POINTER
-extern int OLDSP;
-// asm: 	.bss	PACTIVE,1		;ACTIVE PROCESS LIST POINTER
-extern int PACTIVE;
-// asm: 	.bss	PFREE,1			;FREE PROCESS LIST POINTER
-extern int PFREE;
-// asm: 	hibss	PRCSTR,PRCSIZ*NUMPROC	;PROCESS STORE AREA
-extern PROC PRCSTR[];
 
 #endif /* MPROC_H */

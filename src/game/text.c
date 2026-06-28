@@ -1,11 +1,11 @@
+#include "text.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
-#include "macs.h"
-#include "vunit.h"
 #include "globals.h"
+#include "macs.h"
 #include "pall.h"
-#include "text.h"
 #include "texttab.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/TEXT.ASM
@@ -44,19 +44,19 @@ void HIGHLIGHTN(void);
 static int FIXEDFONT;
 
 /*
-*----------------------------------------------------------------------------
-*TEXT ROUTINES
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *TEXT ROUTINES
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 tTEXT TEXT_LIST[NUM_TEXTS];
 /* asm: TEXT_FREE	.bss	TEXT_FREE,1 */
-int TEXT_FREE;
+tTEXT* TEXT_FREE;
 /* asm: TEXT_ACTIVE	.bss	TEXT_ACTIVE,1 */
-int TEXT_ACTIVE;
+tTEXT* TEXT_ACTIVE;
 /* asm: TEXT_FREE_COUNT	.bss	TEXT_FREE_COUNT,1 */
 int TEXT_FREE_COUNT;
 /* asm: TEXT_FREEZE	.bss	TEXT_FREEZE,1 */
@@ -72,7 +72,7 @@ static int FONTDIGITSM_A = dnums_I;
 /* asm: FONT18_A	.word	font18_I */
 static int FONT18_A = font18_I;
 /* asm: TEXTTABLEFONT18	.word	FONT18_TAB */
-static FONTENTRY*TEXTTABLEFONT18 = FONT18_TAB;
+static FONTENTRY* TEXTTABLEFONT18 = FONT18_TAB;
 /* asm: FONT40_A	.word	ommdfont_I */
 static int FONT40_A = ommdfont_I;
 /* asm: FONT10_A	.word	osg10fnt_I */
@@ -83,45 +83,36 @@ static int FONT40_A = ommdfont_I;
 static int FONT10_A = osg10fnt_I;
 
 // *----------------------------------------------------------------------------
-void TEXT_INIT(void)
-{
-    // asm 00007973: 	LDI	@TEXT_LISTI,AR2
-    AR2 = (uintptr_t)&TEXT_LIST[0];
-    // asm 00007974: 	LDI	@TEXT_FREEI,R2
-    R2.p = (uintptr_t)&TEXT_FREE;
-    // asm 00007975: 	LDI	@TEXT_ACTIVEI,R3
-    R3.p = (uintptr_t)&TEXT_ACTIVE;
-    // asm 00007976: 	LDI	NUM_TEXTS-1,RC
-    RC = NUM_TEXTS - 1;
-    // asm 00007977: 	LDI	TEXT_SIZ,RS
-    RS = sizeof(tTEXT) / sizeof(u32);
-    // asm 00007978: 	CALL	INIT_LINKED_LIST
-    INIT_LINKED_LIST();
-    // asm 00007979: 	LDI	NUM_TEXTS,R2
-    R2.s = NUM_TEXTS;
-    // asm 0000797A: 	STI	R2,@TEXT_FREE_COUNT
-    TEXT_FREE_COUNT = R2.s;
-    // asm 0000797B: 	RETS
+void TEXT_INIT(void) {
+    // asm:
+    INIT_LINKED_LIST(
+        TEXT_LIST,            /* AR2 */
+        (void**)&TEXT_FREE,   /* R2 */
+        (void**)&TEXT_ACTIVE, /* R3 */
+        NUM_TEXTS - 1,        /* RC */
+        sizeof(tTEXT)         /* RS */
+    );
+
+    TEXT_FREE_COUNT = NUM_TEXTS;
 }
 
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*TEXT_ADD(int *string_pointer, float posx, float posy, int tiks)
-*
-*PARAMETERS
-*	AR2	PTR TO PACKED TEXT STRING
-*	R2	(FL) POS X
-*	R3	(FL) POS Y
-*	RC	TIKS TO DISPLAY
-*RETURNS
-*	AR0	PTR TO TEXT STRUCTURE
-*
-*
-*/
-void TEXT_ADDDS(void)
-{
+ *----------------------------------------------------------------------------
+ *TEXT_ADD(int *string_pointer, float posx, float posy, int tiks)
+ *
+ *PARAMETERS
+ *	AR2	PTR TO PACKED TEXT STRING
+ *	R2	(FL) POS X
+ *	R3	(FL) POS Y
+ *	RC	TIKS TO DISPLAY
+ *RETURNS
+ *	AR0	PTR TO TEXT STRUCTURE
+ *
+ *
+ */
+void TEXT_ADDDS(void) {
     // asm 0000797C: 	PUSH	AR2
     // asm 0000797D: 	CALL	TEXT_ADD
     // asm 0000797E: 	POP	AR2
@@ -140,16 +131,14 @@ void TEXT_ADDDS(void)
     UNIMPL();
 }
 
-void TEXT_ADD1(void)
-{
+void TEXT_ADD1(void) {
     // asm 0000798A: 	LDI	1,RC
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TEXT_ADD1", 0, 0);
     UNIMPL();
 }
 
-void TEXT_ADD(void)
-{
+void TEXT_ADD(void) {
     // asm 0000798B: 	PUSH	AR2
     // asm 0000798C: 	PUSH	R2
     // asm 0000798D: 	PUSHF	R2
@@ -185,8 +174,7 @@ void TEXT_ADD(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SETSMDIGITFONT(void)
-{
+void SETSMDIGITFONT(void) {
     // asm 000079A1: 	LDI	12,R0
     // asm 000079A2: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079A3: 	LDI	@FONTDIGITSM_A,R0
@@ -201,8 +189,7 @@ void SETSMDIGITFONT(void)
     UNIMPL();
 }
 
-void SETSMDIGITFONTDS(void)
-{
+void SETSMDIGITFONTDS(void) {
     // asm 000079AB: 	LDI	12,R0
     // asm 000079AC: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079AD: 	STI	R0,*+AR1(TEXT_HEIGHT)
@@ -224,8 +211,7 @@ void SETSMDIGITFONTDS(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SETLGDIGITFONT(void)
-{
+void SETLGDIGITFONT(void) {
     // asm 000079B9: 	LDI	22,R0
     // asm 000079BA: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079BB: 	LDI	@FONTDIGITLG_A,R0
@@ -240,8 +226,7 @@ void SETLGDIGITFONT(void)
     UNIMPL();
 }
 
-void SETLGDIGITFONTDS(void)
-{
+void SETLGDIGITFONTDS(void) {
     // asm 000079C3: 	LDI	22,R0
     // asm 000079C4: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079C5: 	STI	R0,*+AR1(TEXT_HEIGHT)
@@ -266,8 +251,7 @@ void SETLGDIGITFONTDS(void)
 /* asm: FONTN43_A	.word	lgnum43_I */
 static int FONTN43_A = lgnum43_I;
 
-void SETN43FONT(void)
-{
+void SETN43FONT(void) {
     // asm 000079D2: 	LDI	40,R0
     // asm 000079D3: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079D4: 	LDI	@FONTN43_A,R0
@@ -282,8 +266,7 @@ void SETN43FONT(void)
     UNIMPL();
 }
 
-void SETN43FONTDS(void)
-{
+void SETN43FONTDS(void) {
     // asm 000079DC: 	LDI	40,R0
     // asm 000079DD: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079DE: 	STI	R0,*+AR1(TEXT_HEIGHT)
@@ -305,8 +288,7 @@ void SETN43FONTDS(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SET40FONT(void)
-{
+void SET40FONT(void) {
     // asm 000079EA: 	LDI	42,R0
     // asm 000079EB: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079EC: 	LDI	@FONT40_A,R0
@@ -321,8 +303,7 @@ void SET40FONT(void)
     UNIMPL();
 }
 
-void SET40FONTDS(void)
-{
+void SET40FONTDS(void) {
     // asm 000079F4: 	LDI	42,R0
     // asm 000079F5: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079F6: 	STI	R0,*+AR1(TEXT_HEIGHT)
@@ -345,8 +326,7 @@ void SET40FONTDS(void)
 
 // *----------------------------------------------------------------------------
 
-void SET12FONT(void)
-{
+void SET12FONT(void) {
     // asm 00007A03: 	LDI	12,R0
     // asm 00007A04: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A05: 	LDI	@FONT10_A,R0
@@ -361,8 +341,7 @@ void SET12FONT(void)
     UNIMPL();
 }
 
-void SET12FONTDS(void)
-{
+void SET12FONTDS(void) {
     // asm 00007A0D: 	LDI	12,R0
     // asm 00007A0E: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A0F: 	STI	R0,*+AR1(TEXT_HEIGHT)
@@ -384,8 +363,7 @@ void SET12FONTDS(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SET18FONT(void)
-{
+void SET18FONT(void) {
     // asm 00007A1B: 	LDI	17,R0
     // asm 00007A1C: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A1D: 	LDI	@FONT18_A,R0
@@ -400,8 +378,7 @@ void SET18FONT(void)
     UNIMPL();
 }
 
-void SET18FONTDS(void)
-{
+void SET18FONTDS(void) {
     // asm 00007A25: 	LDI	17,R0
     // asm 00007A26: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A27: 	STI	R0,*+AR1(TEXT_HEIGHT)
@@ -423,8 +400,7 @@ void SET18FONTDS(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SETFIXEDFONT(void)
-{
+void SETFIXEDFONT(void) {
     // asm 00007A33: 	LDI	6,R0
     // asm 00007A34: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A35: 	LDI	@FIXEDFONT_A,R0
@@ -439,8 +415,7 @@ void SETFIXEDFONT(void)
     UNIMPL();
 }
 
-void SETFIXEDFONTDS(void)
-{
+void SETFIXEDFONTDS(void) {
     // asm 00007A3D: 	LDI	6,R0
     // asm 00007A3E: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A3F: 	STI	R0,*+AR1(TEXT_HEIGHT)
@@ -468,18 +443,17 @@ void SETFIXEDFONTDS(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*STRING LENGTH (IN PIXELS)
-*
-*
-*PARAMETERS
-*	AR2	PTR TO STRING
-*RETURNS
-*	R0	LENGTH (IN PIXEL) OF STRING
-*
-*/
-static void STRLEN(void)
-{
+ *----------------------------------------------------------------------------
+ *STRING LENGTH (IN PIXELS)
+ *
+ *
+ *PARAMETERS
+ *	AR2	PTR TO STRING
+ *RETURNS
+ *	R0	LENGTH (IN PIXEL) OF STRING
+ *
+ */
+static void STRLEN(void) {
     // asm 00007A4B: 	PUSH	RS
     // asm 00007A4C: 	PUSH	R1
     // asm 00007A4D: 	PUSH	R2
@@ -533,8 +507,7 @@ STRLENX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TEXT_OUTPUT(void)
-{
+void TEXT_OUTPUT(void) {
     // asm 00007A75: 	PUSH	AR4
     // asm 00007A76: 	PUSH	AR5
     // asm 00007A77: 	PUSH	R4
@@ -698,18 +671,17 @@ TXTOUT:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*STRING COPY
-*
-*PARAMETERS
-*	AR0	SOURCE STRING
-*	AR1	DESTINATION STRING
-*RETURNS
-*	AR1	SOURCE STRING
-*
-*/
-void STRCPY(void)
-{
+ *----------------------------------------------------------------------------
+ *STRING COPY
+ *
+ *PARAMETERS
+ *	AR0	SOURCE STRING
+ *	AR1	DESTINATION STRING
+ *RETURNS
+ *	AR1	SOURCE STRING
+ *
+ */
+void STRCPY(void) {
     // asm 00007AFC: 	PUSH	R0
     // asm 00007AFD: 	PUSH	AR0
     // asm 00007AFE: 	PUSH	AR1
@@ -742,20 +714,19 @@ REGPLP0:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*STRING CONCATENATION
-*
-*APPEND THE CONTENTS OF AR1 TO AR0
-*
-*PARAMETERS
-*	AR0	ORIGINAL STRING (W/SPACE FOR ADDITION)
-*	AR1	APPEND STRING
-*RETURNS
-*	AR0	ORIGINAL STRING + APPEND STRING
-*
-*/
-void STRCAT(void)
-{
+ *----------------------------------------------------------------------------
+ *STRING CONCATENATION
+ *
+ *APPEND THE CONTENTS OF AR1 TO AR0
+ *
+ *PARAMETERS
+ *	AR0	ORIGINAL STRING (W/SPACE FOR ADDITION)
+ *	AR1	APPEND STRING
+ *RETURNS
+ *	AR0	ORIGINAL STRING + APPEND STRING
+ *
+ */
+void STRCAT(void) {
     // asm 00007B12: 	PUSH	R0
     // asm 00007B13: 	PUSH	R1
     // asm 00007B14: 	PUSH	R2
@@ -826,12 +797,12 @@ REGLP2:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*FONTENT		.macro	PRECEDING,XSTART,XEND,YSTART,TRAIL
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *FONTENT		.macro	PRECEDING,XSTART,XEND,YSTART,TRAIL
+ *
+ *
+ */
 /* asm: FIXEDFONT: */
 /* asm: FONTENT	0,64,71,0,1	;0 */
 /* asm: FONTENT	0,72,79,0,1	;1 */
@@ -879,17 +850,16 @@ REGLP2:
 static int FIXEDFONT;
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*PARAMETERS
-*	AR2	PTR TO TEXT ENTRY
-*	R2	CHARACTER TO HIGHLIGHT
-*	R3	PALETTE
-*
-*/
-void HIGHLIGHTN(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *PARAMETERS
+ *	AR2	PTR TO TEXT ENTRY
+ *	R2	CHARACTER TO HIGHLIGHT
+ *	R3	PALETTE
+ *
+ */
+void HIGHLIGHTN(void) {
     // asm 00007BF6: 	INC	R2
     // asm 00007BF7: 	CALL	PUSHALL
     // asm 00007BF8: 	LDI	R2,IR0

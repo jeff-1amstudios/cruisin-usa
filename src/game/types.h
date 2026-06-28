@@ -168,7 +168,7 @@ typedef struct ADJUSTMENT_RANGE {
 } ADJUSTMENT_RANGE;
 
 typedef struct tTEXT {
-    u32 link;
+    struct tTEXT* link;
     u32 text_ptr;
     u32 font;
     f32 pos_x;
@@ -184,7 +184,7 @@ typedef struct tTEXT {
 } tTEXT;
 
 typedef struct OBJ {
-    u32 link;
+    struct OBJ* link;
     f32 pos_x;
     f32 pos_y;
     f32 pos_z;
@@ -259,6 +259,7 @@ typedef struct CAR_POINT {
 } CAR_POINT;
 
 typedef struct CARBLK {
+    struct CARBLK* link; // jeffh added, previously center.x was re-used as the link pointer
     CAR_POINT center;
     CAR_POINT right_front;
     CAR_POINT left_front;
@@ -382,7 +383,7 @@ typedef struct MATRIX {
 } MATRIX;
 
 typedef struct DYNAOBJ {
-    u32 link;
+    struct DYNAOBJ* link;
     f32 center_x;
     f32 center_y;
     f32 center_z;
@@ -399,7 +400,7 @@ typedef struct DYNAOBJ {
     f32 mat12;
     f32 mat22;
     u32 nverts;
-    u32 parent;
+    struct DYNAOBJ* parent;
     u32 flag;
 } DYNAOBJ;
 

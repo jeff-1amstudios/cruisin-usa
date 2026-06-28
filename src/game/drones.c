@@ -1,19 +1,19 @@
+#include "drones.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
 #include "c30.h"
+#include "cmos.h"
+#include "delta.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "delta.h"
-#include "drones.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/DRONES.ASM
@@ -61,10 +61,10 @@ void COMPTRAK(void);
 
 static int EXP_ANI[12];
 static int SMOKE_ANI[28];
-static const char *VETETXT[6];
-static const char *RODRTXT[6];
-static const char *BULLTXT[6];
-static const char *FERRTXT[6];
+static const char* VETETXT[6];
+static const char* RODRTXT[6];
+static const char* BULLTXT[6];
+static const char* FERRTXT[6];
 static const char HRT12[];
 static const char HRT13[];
 static const char HRT14[];
@@ -96,26 +96,26 @@ static const char HRS45[];
 static const char HRS46[];
 
 /*
-*----------------------------------------------------------------------------
-*COMMON DRONE ROUTINES
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *COMMON DRONE ROUTINES
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /*
-*----------------------------------------------------------------------------
-*DRONE TYPES
-*	DELTA	intelligent, race vs plyr
-*	RHO	oncoming traffic + RHO WEAVER
-*	SIGMA	slow moving same direction as plyr (obstacles)
-*		+ WEAVER SIGMA
-*	COPCAR
-*	CHOPPER	the helicopter
-*
-*/
+ *----------------------------------------------------------------------------
+ *DRONE TYPES
+ *	DELTA	intelligent, race vs plyr
+ *	RHO	oncoming traffic + RHO WEAVER
+ *	SIGMA	slow moving same direction as plyr (obstacles)
+ *		+ WEAVER SIGMA
+ *	COPCAR
+ *	CHOPPER	the helicopter
+ *
+ */
 
 /* asm: DRONE_DISPATCH_P	.bss	DRONE_DISPATCH_P,1 */
 int DRONE_DISPATCH_P;
@@ -131,26 +131,32 @@ int MIN_TRACK_TIME;
 /* asm: PSYCHO_RHO	.bss	PSYCHO_RHO,1 */
 static int PSYCHO_RHO;
 /* asm: LANEP	.word	LANES,LANES4 */
-float *LANEP[] = {
-    LANES, LANES4,
+float* LANEP[] = {
+    LANES,
+    LANES4,
 };
 /* asm: LANES	.float	-576.0,-576.0,576.0,576.0	;TWO & 2/2 LANE */
 float LANES[] = {
-    -576.0f, -576.0f, 576.0f, 576.0f, // TWO & 2/2 LANE
+    -576.0f,
+    -576.0f,
+    576.0f,
+    576.0f, // TWO & 2/2 LANE
 };
 /* asm: LANES4	.float	-1728.0,-576.0,576.0,1728.0	;TWO & 2/2 LANE */
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
 float LANES4[] = {
-    -1728.0f, -576.0f, 576.0f, 1728.0f, // TWO & 2/2 LANE
+    -1728.0f,
+    -576.0f,
+    576.0f,
+    1728.0f, // TWO & 2/2 LANE
     // ----------------------------------------------------------------------------
 };
 /* asm: ONCSCREEN_CARS	.bss	ONCSCREEN_CARS,1 */
 int ONCSCREEN_CARS;
 
-void POSITION_FINDER(void)
-{
+void POSITION_FINDER(void) {
     // asm 000065CA: 	LDI	@PLYCAR,AR4
     // asm 000065CB: 	LDI	@PLYCBLK,AR5
     // asm 000065CC: 	CALL	FIND_PLAYERS_POSITION
@@ -164,19 +170,18 @@ void POSITION_FINDER(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*FIND PLAYERS POSITION, AND # OF CARS CLOSE ONSCREEN
-*
-*PARAMETERS
-*	AR4	PLAYERS OBJECT
-*	AR5	PLAYERS CARBLOCK
-*
-* OUTPUT:SETS @POSITION, @ONCSCREEN_CARS
-*
-*/
-void FIND_PLAYERS_POSITION(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *FIND PLAYERS POSITION, AND # OF CARS CLOSE ONSCREEN
+ *
+ *PARAMETERS
+ *	AR4	PLAYERS OBJECT
+ *	AR5	PLAYERS CARBLOCK
+ *
+ * OUTPUT:SETS @POSITION, @ONCSCREEN_CARS
+ *
+ */
+void FIND_PLAYERS_POSITION(void) {
     // ;	CLRI	IR0	;TEMP FLAG FOR OTHER MACHINE
     // asm 000065D0: 	LDI	1,R7		;POSITION #
     // asm 000065D1: 	CLRI	R6		;CARS CLOSE TO SCREEN
@@ -293,11 +298,11 @@ FPPX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*DRONE DISPATCHER
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *DRONE DISPATCHER
+ *
+ *
+ */
 /* asm: DD_SLP	.bss	DD_SLP,1 */
 int DD_SLP;
 /* asm: DD_VAR	.bss	DD_VAR,1 */
@@ -306,8 +311,7 @@ int DD_VAR;
 int DD_MAX_DRONES;
 
 // *----------------------------------------------------------------------------
-void SIGMA_DISPATCHER(void)
-{
+void SIGMA_DISPATCHER(void) {
     // asm 00006618: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00006619: 	BZ	CONTIN
     // asm 0000661A: 	DIE
@@ -380,22 +384,21 @@ NOTYET:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*ADD ID TO DRONE POINTER TABLE
-*
-*PARAMETERS
-*	AR4	OBJECT
-*	AR5	CAR BLOCK
-*RETURNS
-*	R0	ID
-*
-*/
+ *----------------------------------------------------------------------------
+ *ADD ID TO DRONE POINTER TABLE
+ *
+ *PARAMETERS
+ *	AR4	OBJECT
+ *	AR5	CAR BLOCK
+ *RETURNS
+ *	R0	ID
+ *
+ */
 
 /* asm: DRONENUM	.bss	DRONENUM,1 */
 int DRONENUM;
 
-void DRONE_PTR_ADD(void)
-{
+void DRONE_PTR_ADD(void) {
     // asm 00006653: 	LDI	0,R0
     // asm 00006654: 	STI	R0,*+AR5(CAR_OM)
     // asm 00006655: 	LDI	@DRONENUM,R0		;INCREMENT ID #
@@ -414,8 +417,7 @@ void DRONE_PTR_ADD(void)
     UNIMPL();
 }
 
-void DRONE_CLR(void)
-{
+void DRONE_CLR(void) {
     // asm 00006661: 	LDI	10,R0
     // asm 00006662: 	STI	R0,@DRONENUM
     // asm 00006663: 	RETS
@@ -426,19 +428,18 @@ void DRONE_CLR(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*
-*MODIFICATION, THE PLYR MUST MOVE AT LEAST 9000 Voxels FROM THE
-*INITIAL STARTING POSITION FOR US TO RELEASE ANY RHO DRONES, BECAUSE
-*THEY DISAPPEAR WHEN THEY BEGIN TRACKING NO WORLD, WHICH AT THE STARTUP
-*OF EACH LEG IS REALLY CUTTING IT
-*
-*
-*/
-void RHO_DISPATCHER(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *
+ *MODIFICATION, THE PLYR MUST MOVE AT LEAST 9000 Voxels FROM THE
+ *INITIAL STARTING POSITION FOR US TO RELEASE ANY RHO DRONES, BECAUSE
+ *THEY DISAPPEAR WHEN THEY BEGIN TRACKING NO WORLD, WHICH AT THE STARTUP
+ *OF EACH LEG IS REALLY CUTTING IT
+ *
+ *
+ */
+void RHO_DISPATCHER(void) {
     // asm 00006664: 	CALL	DRONE_CLR 	;CLEAR OUT DRONE POINTER TABLE
     // asm 00006665: 	SLEEP	30		;WAIT A SECOND
     // asm 00006667: 	LDI	@PLYCAR,AR4
@@ -521,8 +522,7 @@ DOITR:
     UNIMPL();
 }
 
-static void CK_LINK_DISP(void)
-{
+static void CK_LINK_DISP(void) {
     // asm 000066AB: 	LDI	@HEAD2HEAD_ON,R0
     // asm 000066AC: 	BZ	GODISP
     // asm 000066AD: 	CALL	COMPTRAK	;COMPARE TRACK RANKS OF PLAYERS
@@ -542,8 +542,7 @@ GODISP:
 }
 
 // *----------------------------------------------------------------------------
-void SET_DRONE_PAL(void)
-{
+void SET_DRONE_PAL(void) {
     // asm 000066B7: 	PUSH	R0
     // asm 000066B8: 	PUSH	AR2
     // asm 000066B9: 	LDI	*+AR7(DELTA_MODEL),AR2
@@ -579,16 +578,15 @@ NO_EPALS:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS
-*	AR2	OBJECT TO CHECK VALID LANES FOR...
-*RETURNS
-*	R0	0 - 2 lanes
-*		1 - 4 lanes
-*
-*/
-void GET_LANES(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS
+ *	AR2	OBJECT TO CHECK VALID LANES FOR...
+ *RETURNS
+ *	R0	0 - 2 lanes
+ *		1 - 4 lanes
+ *
+ */
+void GET_LANES(void) {
     // asm 000066D2: 	PUSH	AR0
     // asm 000066D3: 	PUSH	AR1
     // asm 000066D4: 	LDI	*+AR2(OUSR1),R0
@@ -619,17 +617,16 @@ GL_FND:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GET X/Z DISTANCE TO PLAYER
-*
-*PARAMETERS
-*	AR4	OBJECT TO CHECK
-*RETURNS
-*	R0	FL DISTANCE TO PLAYER (IN VOXELS)
-*
-*/
-void DIST_TO_PLYR(void)
-{
+ *----------------------------------------------------------------------------
+ *GET X/Z DISTANCE TO PLAYER
+ *
+ *PARAMETERS
+ *	AR4	OBJECT TO CHECK
+ *RETURNS
+ *	R0	FL DISTANCE TO PLAYER (IN VOXELS)
+ *
+ */
+void DIST_TO_PLYR(void) {
     // asm 000066E7: 	PUSH	AR3
     // asm 000066E8: 	PUSHFL	R1
     // asm 000066EA: 	PUSHFL	R2
@@ -657,17 +654,16 @@ void DIST_TO_PLYR(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GRAB THE AR2th PIECE ON THE CURRENT TRACK
-*
-*PARAMETERS
-*	AR2	NUMBER OF PIECES IN TO START
-*RETURNS
-*	AR2	OBJECT POINTER TO STARTING ROAD PIECE
-*
-*/
-void INIT_TRACKING_PIECE(void)
-{
+ *----------------------------------------------------------------------------
+ *GRAB THE AR2th PIECE ON THE CURRENT TRACK
+ *
+ *PARAMETERS
+ *	AR2	NUMBER OF PIECES IN TO START
+ *RETURNS
+ *	AR2	OBJECT POINTER TO STARTING ROAD PIECE
+ *
+ */
+void INIT_TRACKING_PIECE(void) {
     // asm 000066FB: 	PUSH	AR0
     // asm 000066FC: 	PUSH	AR1
     // asm 000066FD: 	LDI	@DYNALIST_BEGIN,AR0
@@ -691,27 +687,26 @@ LPP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*TRACK APPROPRIATE PIECE
-*
-*GETS THE POSITION THAT WE ARE CURRENTLY TRACKING ON,
-*IF THE POSITION IS TOO CLOSE THEN WE ADVANCE TO THE NEXT POSITION (W/WRAP
-*AROUND)
-*
-*PARAMETERS
-*	AR4			DRONE OBJECT
-*	AR7			DRONE PROCESS
-*	*+AR7(DELTA_TPIECE)	VALID ROAD OBJECT CURRENTLY TRACKING
-*
-*RETURNS
-*	VECTORA		[X Y Z] POSITION
-*	AR5		PTR TO TRACK ENTRY
-*	R0		(FL) DISTANCE TO NEXT PIECE
-*	MATRIXA		find Y Matrix (of Tracking Piece)
-*
-*/
-void GET_TRACK_POS_RVS_XLANE(void)
-{
+ *----------------------------------------------------------------------------
+ *TRACK APPROPRIATE PIECE
+ *
+ *GETS THE POSITION THAT WE ARE CURRENTLY TRACKING ON,
+ *IF THE POSITION IS TOO CLOSE THEN WE ADVANCE TO THE NEXT POSITION (W/WRAP
+ *AROUND)
+ *
+ *PARAMETERS
+ *	AR4			DRONE OBJECT
+ *	AR7			DRONE PROCESS
+ *	*+AR7(DELTA_TPIECE)	VALID ROAD OBJECT CURRENTLY TRACKING
+ *
+ *RETURNS
+ *	VECTORA		[X Y Z] POSITION
+ *	AR5		PTR TO TRACK ENTRY
+ *	R0		(FL) DISTANCE TO NEXT PIECE
+ *	MATRIXA		find Y Matrix (of Tracking Piece)
+ *
+ */
+void GET_TRACK_POS_RVS_XLANE(void) {
     // asm 00006706: 	PUSHFL	R1
     // asm 00006708: 	PUSHFL	R2
     // asm 0000670A: 	PUSH	AR2
@@ -723,8 +718,7 @@ void GET_TRACK_POS_RVS_XLANE(void)
     UNIMPL();
 }
 
-void GET_TRACK_POS_RVS(void)
-{
+void GET_TRACK_POS_RVS(void) {
     // asm 0000670E: 	PUSHFL	R1
     // asm 00006710: 	PUSHFL	R2
     // asm 00006712: 	PUSH	AR2
@@ -736,8 +730,7 @@ void GET_TRACK_POS_RVS(void)
     UNIMPL();
 }
 
-void DELTA_GET_TRACK_POS(void)
-{
+void DELTA_GET_TRACK_POS(void) {
     // asm 00006716: 	PUSHFL	R1
     // asm 00006718: 	PUSHFL	R2
     // asm 0000671A: 	PUSH	AR2
@@ -749,8 +742,7 @@ void DELTA_GET_TRACK_POS(void)
     UNIMPL();
 }
 
-void GET_TRACK_POS(void)
-{
+void GET_TRACK_POS(void) {
     // asm 0000671E: 	PUSHFL	R1
     // asm 00006720: 	PUSHFL	R2
     // asm 00006722: 	PUSH	AR2
@@ -854,33 +846,32 @@ TRKP2:
 */
 
 /*
-*----------------------------------------------------------------------------
-*GETS OFFSET OF LANE
-*
-*
-*PARAMETERS
-*	AR2	PIECE TO TRACK (ALLOCATED OBJECT)
-*	AR4	DRONE OBJECT
-*	AR7	DRONE PROCESS
-*
-*
-*RETURNS
-*	MATRIXA	ROTATED FOR THE LANE
-*	VECTORA	LANE OFFSET
-*	R2	RADIAN Y
-*
-*
-*	if (obj -> OLINK4 == NULL)  {
-*		dont know???
-*	}
-*	else  {
-*
-*
-*	}
-*
-*/
-void SUB_FUNCTION_RVS(void)
-{
+ *----------------------------------------------------------------------------
+ *GETS OFFSET OF LANE
+ *
+ *
+ *PARAMETERS
+ *	AR2	PIECE TO TRACK (ALLOCATED OBJECT)
+ *	AR4	DRONE OBJECT
+ *	AR7	DRONE PROCESS
+ *
+ *
+ *RETURNS
+ *	MATRIXA	ROTATED FOR THE LANE
+ *	VECTORA	LANE OFFSET
+ *	R2	RADIAN Y
+ *
+ *
+ *	if (obj -> OLINK4 == NULL)  {
+ *		dont know???
+ *	}
+ *	else  {
+ *
+ *
+ *	}
+ *
+ */
+void SUB_FUNCTION_RVS(void) {
     // asm 00006733: 	PUSH	AR0
     // asm 00006734: 	PUSHFL	R0
     // asm 00006736: 	PUSHFL	R3
@@ -892,8 +883,7 @@ void SUB_FUNCTION_RVS(void)
     UNIMPL();
 }
 
-void SUB_FUNCTION(void)
-{
+void SUB_FUNCTION(void) {
     // asm 0000673A: 	PUSH	AR0
     // asm 0000673B: 	PUSHFL	R0
     // asm 0000673D: 	PUSHFL	R3
@@ -940,8 +930,7 @@ DELTA_JOININ:
     UNIMPL();
 }
 
-void SUB_FUNCTION_RVS_XLANE(void)
-{
+void SUB_FUNCTION_RVS_XLANE(void) {
     // asm 00006764: 	PUSH	AR0
     // asm 00006765: 	PUSHFL	R0
     // asm 00006767: 	PUSHFL	R3
@@ -952,8 +941,7 @@ void SUB_FUNCTION_RVS_XLANE(void)
     UNIMPL();
 }
 
-void DELTA_SUB_FUNCTION(void)
-{
+void DELTA_SUB_FUNCTION(void) {
     // asm 0000676B: 	PUSH	AR0
     // asm 0000676C: 	PUSHFL	R0
     // asm 0000676E: 	PUSHFL	R3
@@ -1018,51 +1006,32 @@ SFENTER66:
 */
 
 /*
-*----------------------------------------------------------------------------
-*DRONE UTILITY FUNCTIONS
-*
-*/
-void INIT_DRONES(void)
-{
-    // asm 0000677F: 	PUSH	R0
-    // asm 00006780: 	CLRI	R0
-    R0.s = 0;
-    // asm 00006781: 	STI	R0,@CAR_LIST
-    CAR_LIST = R0.s;
-    // asm 00006782: 	STI	R0,@DRONE_COUNT
-    DRONE_COUNT = R0.s;
-    // asm 00006783: 	LDI	SM_GO,R0
-    R0.s = SM_GO;
-    // asm 00006784: 	STI	R0,@SUSPEND_MODE
-    SUSPEND_MODE = R0.s;
-    // asm 00006785: 	LDI	40,R0
-    R0.s = 40;
-    // asm 00006786: 	STI	R0,@DD_SLP
-    DD_SLP = R0.s;
-    // asm 00006787: 	LDI	100,R0
-    R0.s = 100;
-    // asm 00006788: 	STI	R0,@DD_VAR
-    DD_VAR = R0.s;
-    // asm 00006789: 	LDI	MAX_DRONES,R0
-    R0.s = MAX_DRONES;
-    // asm 0000678A: 	STI	R0,@DD_MAX_DRONES
-    DD_MAX_DRONES = R0.s;
-    // asm 0000678B: 	POP	R0
-    // asm 0000678C: 	RETS
+ *----------------------------------------------------------------------------
+ *DRONE UTILITY FUNCTIONS
+ *
+ */
+void INIT_DRONES(void) {
+    CAR_LIST = NULL;
+    DRONE_COUNT = 0;
+
+    SUSPEND_MODE = SM_GO;
+
+    DD_SLP = 40;
+    DD_VAR = 100;
+    DD_MAX_DRONES = MAX_DRONES;
 }
 
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*ADD TO DRONE SUPP LIST
-*
-*PARAMETERS
-*	AR4	OBJECT DRONE POINTER
-*
-*/
-void ADD_DRONE(void)
-{
+ *----------------------------------------------------------------------------
+ *ADD TO DRONE SUPP LIST
+ *
+ *PARAMETERS
+ *	AR4	OBJECT DRONE POINTER
+ *
+ */
+void ADD_DRONE(void) {
     // asm 0000678D: 	PUSH	R0
     // asm 0000678E: 	LDI	@CAR_LIST,R0
     // asm 0000678F: 	STI	R0,*+AR4(OLINK3)
@@ -1077,16 +1046,15 @@ void ADD_DRONE(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*FREE_DRONE
-*unlink DRONE from DRONE supplimentary list
-*
-*PARAMETERS
-*	AR4	OBJECT DRONE POINTER
-*
-*/
-void FREE_DRONE(void)
-{
+ *----------------------------------------------------------------------------
+ *FREE_DRONE
+ *unlink DRONE from DRONE supplimentary list
+ *
+ *PARAMETERS
+ *	AR4	OBJECT DRONE POINTER
+ *
+ */
+void FREE_DRONE(void) {
     // asm 00006796: 	PUSH	R0
     // asm 00006797: 	PUSH	AR1
     // asm 00006798: 	PUSH	AR3
@@ -1118,12 +1086,11 @@ FREEDR_X:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*/
-void EXP_PUFF(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ */
+void EXP_PUFF(void) {
     // asm 000067A9: 	LDL	40000,R0
     // asm 000067AA: 	CMPI	*+AR4(ODIST),R0
     // asm 000067AB: 	BLT	SUICIDE
@@ -1187,8 +1154,18 @@ EXP_DIE:
 static int EXP_ANI[] = {
     // 	.word	blast1,blast2,blast3,blast4,blast5
     // 	.word	blast6,blast7,blast8,blast9,blast10,-1
-    dexplo1_ROM, dexplo2_ROM, dexplo3_ROM, dexplo4_ROM, dexplo5_ROM,
-    dexplo6_ROM, dexplo7_ROM, dexplo8_ROM, dexplo9_ROM, dexplo10_ROM, dexplo11_ROM, -1,
+    dexplo1_ROM,
+    dexplo2_ROM,
+    dexplo3_ROM,
+    dexplo4_ROM,
+    dexplo5_ROM,
+    dexplo6_ROM,
+    dexplo7_ROM,
+    dexplo8_ROM,
+    dexplo9_ROM,
+    dexplo10_ROM,
+    dexplo11_ROM,
+    -1,
 };
 // *----------------------------------------------------------------------------
 
@@ -1278,28 +1255,27 @@ static int EXP_ANI[] = {
 */
 
 /*
-*----------------------------------------------------------------------------
-*PRECOLLIDE_PLYR	CHECK TO SEE IF CAR WILL COLLIDE WITH PLAYER
-*
-*
-*check distance to player
-*if within that distance
-*
-*examine path, is player in immediate player
-*
-*
-*PARAMETERS
-*	AR4	OBJECT
-*	AR5	CARBLOCK
-*	AR7	DRONE PROCESS
-*
-*RETURNS
-*	CARRY SET ON COLLISION IMMINENT
-*	CARRY CLR PATH MAINLY CLEAR
-*
-*/
-void PRECOLLIDE_PLYR(void)
-{
+ *----------------------------------------------------------------------------
+ *PRECOLLIDE_PLYR	CHECK TO SEE IF CAR WILL COLLIDE WITH PLAYER
+ *
+ *
+ *check distance to player
+ *if within that distance
+ *
+ *examine path, is player in immediate player
+ *
+ *
+ *PARAMETERS
+ *	AR4	OBJECT
+ *	AR5	CARBLOCK
+ *	AR7	DRONE PROCESS
+ *
+ *RETURNS
+ *	CARRY SET ON COLLISION IMMINENT
+ *	CARRY CLR PATH MAINLY CLEAR
+ *
+ */
+void PRECOLLIDE_PLYR(void) {
     // asm 000067DB: 	CALL	DIST_TO_PLYR
     // asm 000067DC: 	FLOAT	15000,R1
     // asm 000067DD: 	CMPF	R1,R0
@@ -1368,34 +1344,33 @@ NOT_IMMINENT:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PLYR_RIDE_RIGHT	is the player riding on the right side of the road?
-*
-*RETURNS
-*	CARRY CLR	ON RIGHT SIDE OF ROAD
-*	CARRY SET	NOT ON RIGHT SIDE OF ROAD
-*	R0		DISTANCE TO ROAD CENTER
-*
-*Algorythm
-*
-*	generate line equation by the closest track piece and the next piece
-*	check the sign of the distance to this line (plyrs position)
-*	and return which side of the road
-*
-*ANY ERRORS WILL ASSUME PLYR IS ON RITE SIDE
-*
-*DRONE_RIDE_RIGHT
-*
-*
-*PARAMETERS
-*	AR4	DRONE OBJ
-*	AR5	DRONE CAR BLOCK
-*RETURNS
-*	R0	(FL) DISTANCE TO CENTERLINE OF ROAD
-*
-*/
-void DRONE_RIDE_RIGHT(void)
-{
+ *----------------------------------------------------------------------------
+ *PLYR_RIDE_RIGHT	is the player riding on the right side of the road?
+ *
+ *RETURNS
+ *	CARRY CLR	ON RIGHT SIDE OF ROAD
+ *	CARRY SET	NOT ON RIGHT SIDE OF ROAD
+ *	R0		DISTANCE TO ROAD CENTER
+ *
+ *Algorythm
+ *
+ *	generate line equation by the closest track piece and the next piece
+ *	check the sign of the distance to this line (plyrs position)
+ *	and return which side of the road
+ *
+ *ANY ERRORS WILL ASSUME PLYR IS ON RITE SIDE
+ *
+ *DRONE_RIDE_RIGHT
+ *
+ *
+ *PARAMETERS
+ *	AR4	DRONE OBJ
+ *	AR5	DRONE CAR BLOCK
+ *RETURNS
+ *	R0	(FL) DISTANCE TO CENTERLINE OF ROAD
+ *
+ */
+void DRONE_RIDE_RIGHT(void) {
     // asm 0000680E: 	PUSH	R1
     // asm 0000680F: 	PUSHFL	R2
     // asm 00006811: 	PUSH	R3
@@ -1409,8 +1384,7 @@ void DRONE_RIDE_RIGHT(void)
     UNIMPL();
 }
 
-void PLYR_RIDE_RIGHT(void)
-{
+void PLYR_RIDE_RIGHT(void) {
     // asm 00006817: 	PUSH	R1
     // asm 00006818: 	PUSHFL	R2
     // asm 0000681A: 	PUSH	R3
@@ -1475,18 +1449,17 @@ PRR_X:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SMOKE_PUFF
-*
-*PARAMETERS
-*	AR4	OBJECT THAT IS SMOKING
-*
-*/
+ *----------------------------------------------------------------------------
+ *SMOKE_PUFF
+ *
+ *PARAMETERS
+ *	AR4	OBJECT THAT IS SMOKING
+ *
+ */
 /* asm: SMOKE_COUNT	.bss	SMOKE_COUNT,1 */
 int SMOKE_COUNT;
 
-void SMOKE_PUFF(void)
-{
+void SMOKE_PUFF(void) {
     // asm 0000684D: 	LDI	@SMOKE_COUNT,R0
     // asm 0000684E: 	CMPI	5,R0
     // asm 0000684F: 	BGE	SUICIDE
@@ -1578,40 +1551,48 @@ SMOKE_DIE:
 /* asm: 	.word	-1 */
 /* asm: 	 */
 static int SMOKE_ANI[] = {
-    bnout1_ROM, 1,
+    bnout1_ROM,
+    1,
     10,
-    bnout2_ROM, 2,
+    bnout2_ROM,
+    2,
     12,
-    bnout3_ROM, 1,
+    bnout3_ROM,
+    1,
     16,
-    bnout4_ROM, 1,
+    bnout4_ROM,
+    1,
     20,
-    bnout5_ROM, 1,
+    bnout5_ROM,
+    1,
     24,
-    bnout6_ROM, 1,
+    bnout6_ROM,
+    1,
     30,
-    bnout7_ROM, 1,
+    bnout7_ROM,
+    1,
     35,
-    bnout8_ROM, 1,
+    bnout8_ROM,
+    1,
     40,
-    bnout9_ROM, 1,
+    bnout9_ROM,
+    1,
     45,
     -1,
 };
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR5	PALM TREE OBJECT
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	AR5	PALM TREE OBJECT
+ *
+ */
 /* asm: COCONUT_COUNT	.bss	COCONUT_COUNT,1 */
 int COCONUT_COUNT;
 
-void DROP_COCONUTS(void)
-{
+void DROP_COCONUTS(void) {
     // asm 00006888: 	LDI	@COCONUT_COUNT,R0
     // asm 00006889: 	CMPI	5,R0
     // asm 0000688A: 	BGE	SUICIDE
@@ -1760,34 +1741,64 @@ DROPCOCOKILL:
 /* asm: MODELTAB	.word	cvettem,hotrodm,missle,testorm */
 /* asm: 	 */
 static int MODELTAB[] = {
-    cvettem_ROM, hotrodm_ROM, missle_ROM, testorm_ROM,
+    cvettem_ROM,
+    hotrodm_ROM,
+    missle_ROM,
+    testorm_ROM,
 };
 /* asm: TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
 /* asm: 	 */
-static const char **TEXTTABS[] = {
-    VETETXT, RODRTXT, BULLTXT, FERRTXT,
+static const char** TEXTTABS[] = {
+    VETETXT,
+    RODRTXT,
+    BULLTXT,
+    FERRTXT,
 };
 /* asm: TITLES	.word	HRT12,HRT13,HRT14,HRT15,HRT16 */
 /* asm: 	 */
-const char *TITLES[] = {
-    HRT12, HRT13, HRT14, HRT15, HRT16,
+const char* TITLES[] = {
+    HRT12,
+    HRT13,
+    HRT14,
+    HRT15,
+    HRT16,
 };
 /* asm: VETETXT	.word	HRS11,HRS12,HRS13,HRS14,HRS15,HRS16 */
-static const char *VETETXT[] = {
-    HRS11, HRS12, HRS13, HRS14, HRS15, HRS16,
+static const char* VETETXT[] = {
+    HRS11,
+    HRS12,
+    HRS13,
+    HRS14,
+    HRS15,
+    HRS16,
 };
 /* asm: RODRTXT	.word	HRS21,HRS22,HRS23,HRS24,HRS25,HRS26 */
-static const char *RODRTXT[] = {
-    HRS21, HRS22, HRS23, HRS24, HRS25, HRS26,
+static const char* RODRTXT[] = {
+    HRS21,
+    HRS22,
+    HRS23,
+    HRS24,
+    HRS25,
+    HRS26,
 };
 /* asm: BULLTXT	.word	HRS31,HRS32,HRS33,HRS34,HRS35,HRS36 */
-static const char *BULLTXT[] = {
-    HRS31, HRS32, HRS33, HRS34, HRS35, HRS36,
+static const char* BULLTXT[] = {
+    HRS31,
+    HRS32,
+    HRS33,
+    HRS34,
+    HRS35,
+    HRS36,
 };
 /* asm: FERRTXT	.word	HRS41,HRS42,HRS43,HRS44,HRS45,HRS46 */
 /* asm: 	 */
-static const char *FERRTXT[] = {
-    HRS41, HRS42, HRS43, HRS44, HRS45, HRS46,
+static const char* FERRTXT[] = {
+    HRS41,
+    HRS42,
+    HRS43,
+    HRS44,
+    HRS45,
+    HRS46,
 };
 static const char HRT12[] = "TOP SPEED:";
 static const char HRT13[] = "SKIDPAD:";
@@ -1798,7 +1809,12 @@ static const char HRT16[] = "POWER:";
 /* asm: 	 */
 /* asm: 	 */
 float TABING[] = {
-    60.0f, 220.0f, 220.0f, 220.0f, 220.0f, 220.0f,
+    60.0f,
+    220.0f,
+    220.0f,
+    220.0f,
+    220.0f,
+    220.0f,
 };
 static const char HRS11[] = "63 MUSCLE CAR";
 static const char HRS12[] = "145 MPH@233 KPH";
@@ -1827,20 +1843,19 @@ static const char HRS46[] = "472HP  V12 DOHC 48V";
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*AM I AHEAD OF THE PLAYER?
-*
-*PARAMETERS
-*	AR4	OBJECT
-*	AR5	CAR BLOCK
-*
-*RETURNS
-*	CARRY SET ON AHEAD OF PLAYER
-*	CARRY CLR ON BEHIND PLAYER
-*
-*/
-void AHEAD_OF_PLAYER_P(void)
-{
+ *----------------------------------------------------------------------------
+ *AM I AHEAD OF THE PLAYER?
+ *
+ *PARAMETERS
+ *	AR4	OBJECT
+ *	AR5	CAR BLOCK
+ *
+ *RETURNS
+ *	CARRY SET ON AHEAD OF PLAYER
+ *	CARRY CLR ON BEHIND PLAYER
+ *
+ */
+void AHEAD_OF_PLAYER_P(void) {
     // asm 0000691F: 	PUSH	AR0
     // asm 00006920: 	PUSH	AR1
     // asm 00006921: 	PUSH	R0

@@ -41,7 +41,7 @@ void RANDU0(void);
 void RANDU(void);
 void SRAND(void);
 void RANDPER(void);
-void INIT_LINKED_LIST(void);
+void INIT_LINKED_LIST(void* start_addr /*AR2*/, void** free_list /*R2*/, void** active_list /*R3*/, int length_minus_1 /*RC*/, int size /*RS*/);
 void GET_LLIST(void);
 void ALLOC_LLIST(void);
 void FREE_LLIST(void);
@@ -520,39 +520,25 @@ RANDPX:
  *
  *
  */
-void INIT_LINKED_LIST(void) {
-    u32 entry_size;
+void INIT_LINKED_LIST(void* start_addr /*AR2*/, void** free_list /*R2*/, void** active_list /*R3*/, int length_minus_1 /*RC*/, int size /*RS*/) {
+    char* entry;
+    void** linkp;
+    int i;
 
-    // asm 00008F19: 	PUSH	R0
-    // asm 00008F1A: 	PUSH	AR0
-    // asm 00008F1B: 	LDI	R3,AR0		;ZERO ACTIVE POINTER
-    AR0 = R3.p;
-    // asm 00008F1C: 	LDI	0,R0
-    R0.s = 0;
-    // asm 00008F1D: 	STI	R0,*AR0
-    *(int*)AR0 = R0.s;
-    // asm 00008F1E: 	LDI	R2,AR0	 	;GET FREE POINTER
-    AR0 = R2.p;
-    // asm 00008F1F: 	LDI	RS,R0		;SAVE THE SIZE
-    R0.u = RS;
-    entry_size = R0.u;
-    // asm 00008F20: 	RPTB	INIT_LL
-    do {
-        // asm 00008F21: 	STI	AR2,*AR0
-        *(uintptr_t*)AR0 = AR2;
-        // asm 00008F22: 	LDI	AR2,AR0
-        AR0 = AR2;
-    INIT_LL:
-        // asm 00008F23: ADDI	R0,AR2
-        AR2 += entry_size * sizeof(u32);
-        // asm 00008F24: 	LDI	0,R0
-        R0.s = 0;
-        // asm 00008F25: 	STI	R0,*AR0
-        *(int*)AR0 = R0.s;
-    } while (RC-- != 0);
-    // asm 00008F26: 	POP	AR0
-    // asm 00008F27: 	POP	R0
-    // asm 00008F28: 	RETS
+    // ZERO ACTIVE POINTER
+    *active_list = NULL;
+
+    // GET FREE POINTER
+    linkp = free_list;
+    entry = (char*)start_addr;
+
+    for (i = 0; i < length_minus_1; ++i) {
+        *linkp = entry;
+        linkp = (void**)entry;
+        entry += size;
+    }
+
+    *linkp = NULL;
 }
 
 // *----------------------------------------------------------------------------
@@ -999,35 +985,21 @@ void LEAN(void) {
  *
  */
 /* asm: DYNALIST	.bss	DYNALIST,NUM_DYNAS*DYNASIZE */
-int DYNALIST[NUM_DYNAS * DYNASIZE];
+DYNAOBJ DYNALIST[NUM_DYNAS];
 /* asm: DYNAFREE	.bss	DYNAFREE,1 */
-int DYNAFREE;
+DYNAOBJ* DYNAFREE;
+
+DYNAOBJ* DYNAACTIVE; // port added
 
 // *----------------------------------------------------------------------------
 void DYNAOBJ_INIT(void) {
-    // asm 00009018: 	PUSH	AR2
-    // asm 00009019: 	PUSH	R2
-    // asm 0000901A: 	PUSH	R3
-    // asm 0000901B: 	PUSH	RC
-    // asm 0000901C: 	PUSH	RS
-    // asm 0000901D: 	LDI	@DYNALISTI,AR2
-    AR2 = (uintptr_t)&DYNALIST[0];
-    // asm 0000901E: 	LDI	@DYNAFREEI,R2
-    R2.p = (uintptr_t)&DYNAFREE;
-    // asm 0000901F: 	LDI	@NULLI,R3
-    R3.p = (uintptr_t)&NULLI;
-    // asm 00009020: 	LDI	NUM_DYNAS-1,RC
-    RC = NUM_DYNAS - 1;
-    // asm 00009021: 	LDI	DYNASIZE,RS
-    RS = DYNASIZE;
-    // asm 00009022: 	CALL	INIT_LINKED_LIST
-    INIT_LINKED_LIST();
-    // asm 00009023: 	POP	RS
-    // asm 00009024: 	POP	RC
-    // asm 00009025: 	POP	R3
-    // asm 00009026: 	POP	R2
-    // asm 00009027: 	POP	AR2
-    // asm 00009028: 	RETS
+    INIT_LINKED_LIST(
+        DYNALIST,            /* AR2 */
+        (void**)&DYNAFREE,   /* R2 */
+        (void**)&DYNAACTIVE, /* R3 */
+        NUM_DYNAS - 1,       /* RC */
+        DYNASIZE             /* RS */
+    );
 }
 
 // *----------------------------------------------------------------------------
@@ -1098,35 +1070,26 @@ void DELDYNA(void) {
 
 CARBLK CARLIST[NUM_CARS];
 /* asm: CARFREE	.bss	CARFREE,1 */
-int CARFREE;
+CARBLK* CARFREE;
 /* asm: CAR_COUNT	.bss	CAR_COUNT,1 */
 int CAR_COUNT;
 
 // *----------------------------------------------------------------------------
 void CARB_INIT(void) {
-    // asm 00009041: 	LDI	@CARFREEI,AR0
-    AR0 = (uintptr_t)&CARFREE;
-    // asm 00009042: 	LDI	@CARLISTI,AR1
-    AR1 = (uintptr_t)&CARLIST[0];
-    // asm 00009043: 	LDI	NUM_CARS-1,RC
-    RC = NUM_CARS - 1;
-    // asm 00009044: 	RPTB	CARINTL
-    do {
-        // asm 00009045: 	STI	AR1,*AR0
-        *(uintptr_t*)AR0 = AR1;
-        // asm 00009046: 	LDI	AR1,AR0
-        AR0 = AR1;
-    CARINTL:
-        // asm 00009047: ADDI	CARSIZ,AR1
-        AR1 = (uintptr_t)((CARBLK*)AR1 + 1);
-        // asm 00009048: 	LDI	0,R0
-        R0.s = 0;
-        // asm 00009049: 	STI	R0,*AR0
-        *(int*)AR0 = R0.s;
-    } while (RC-- != 0);
-    // asm 0000904A: 	STPI	R0,@CAR_COUNT
-    CAR_COUNT = R0.s;
-    // asm 0000904B: 	RETS
+    CARBLK* car;
+    CARBLK** freep;
+    int i;
+
+    // asm:
+    freep = &CARFREE;
+
+    for (i = 0; i < NUM_CARS - 1; i++) {
+        *freep = &CARLIST[i];
+        freep = &CARLIST[i].link;
+    }
+
+    *freep = NULL;
+    CAR_COUNT = 0;
 }
 
 // *----------------------------------------------------------------------------

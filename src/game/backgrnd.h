@@ -13,13 +13,13 @@ extern int START_POS[];
 // asm: 	.bss	START_RADY,1  		;Section Y Radian (if DEBUG SECTION != 0)
 extern int START_RADY;
 // asm: 	.bss	DRIVE_LIST,1		;OBJECTs which can be driven over (road/shoulder)
-extern int DRIVE_LIST;
+extern OBJ* DRIVE_LIST;
 // asm: 	.bss	CAR_LIST,1		;OBJECTs which are vehicles (drones/player car)
-extern int CAR_LIST;
+extern OBJ* CAR_LIST;
 // asm: 	.bss	SIGN_LIST,1		;OBJECTs which are signs (posts, road signs, trees etc)
-extern int SIGN_LIST;
+extern OBJ* SIGN_LIST;
 // asm: 	.bss	GROUND_LIST,1		;OBJECTs which define the the ground but are not ROAD_C or SHLDR_C
-extern int GROUND_LIST;
+extern OBJ* GROUND_LIST;
 // asm: 	.bss	NEW_GROUP,1	;TEMP PTR TO START OF NEW DGROUP LIST
 extern int NEW_GROUP;
 // asm: 	.bss	DGROUPS,DGRP_SIZE*MAX_DGROUPS

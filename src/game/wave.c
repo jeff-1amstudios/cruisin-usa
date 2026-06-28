@@ -277,8 +277,7 @@ ISTRUE:
     INIT_CUSTOM_COIN();
 
     // asm:
-    // CALL INITMAT
-    // INITMAT(CAMERAMATRIXI);
+    INITMAT(&_CAMERAMATRIX);
 
     INFIN_CORRECT = 35.0f;
     CLEARRDY = 1;
@@ -295,7 +294,7 @@ ISTRUE:
 
     // asm:
     // CREATE SCAN_OBJECTS,UTIL_C
-    // CREATE(SCAN_OBJECTS, UTIL_C);
+    CREATE(SCAN_OBJECTS, UTIL_C);
 
     // if (wave_index == 1) {
     //     goto BEGIN_GAME;

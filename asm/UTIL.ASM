@@ -272,8 +272,8 @@ CLRCRAM:
 *----------------------------------------------------------------------------
 *RANDOM - GENERATE A RANDOM NUMBER
 *RETURNS
-*	R0	32 BIT RANDOM #		  
-*   
+*	R0	32 BIT RANDOM #
+*
 RANDOM:
 	PUSH	R1
 	LDI	@RAND,R0
@@ -285,7 +285,7 @@ RANDOM:
 RND2	POP	R1
 	MPYI	794Fh,R0
 	STI	R0,@RAND
-	RETS	
+	RETS
 *----------------------------------------------------------------------------
 
 
@@ -347,13 +347,13 @@ SFRAND:
 *	AR2	N  RANGE INPUT (0-FFFF)
 *RETURNS
 *	R0	RANDOM # BETWEEN 0 AND [AR2]
-*             
+*
 RANDU0:
 	CALL	RANDOM
 	LSH	-16,R0
 	MPYI	AR2,R0
 	LSH	-16,R0
-	RETS		
+	RETS
 *----------------------------------------------------------------------------
 
 
@@ -396,7 +396,7 @@ SRAND:
 ;*	R2	UPPER BOUND
 ;*RETURNS
 ;*	R0	RANDOM # FROM AR2 TO R2
-;*                 
+;*
 ;RANGRAND:
 ;	SUBI	AR2,R2,R0
 ;	ADDI	1,R0
@@ -412,10 +412,10 @@ SRAND:
 *PARAMETERS
 *	AR2	PROBABILITY OF EVENT (0-1000) P(A0=1000) = 1; P(A0=1) = 1/1000.
 *RETURNS
-*	C=1	IF PROBABILITY IS TRUE, 
-*		R0	ACTUAL RANDOM # 0-999 
+*	C=1	IF PROBABILITY IS TRUE,
+*		R0	ACTUAL RANDOM # 0-999
 *	C=0	FOR FALSE
-*		R0	ZERO 
+*		R0	ZERO
 RANDPER:
 	CALL	RANDOM
 	LSH	-16,R0
@@ -425,7 +425,7 @@ RANDPER:
 	BC	RANDPX
 	LDI	0,R0
 RANDPX
-	RETS		
+	RETS
 *----------------------------------------------------------------------------
 
 
@@ -602,7 +602,7 @@ DELLP	LDI	R1,AR1
 	CMPI	R1,AR2
 	BNE	DELLP
 
-	LDI	*AR2,R1		
+	LDI	*AR2,R1
 	STI	R1,*AR1			;LINK AROUND
 
 	LDI	R3,AR1			;get free list pointer
@@ -706,7 +706,7 @@ VANIX
 *	R6	X RADIANS	;FOR WHEEL SPIN
 *USES
 *	AR3	DYNA OBJECT
-*	AR4	MASTER OBJECT 
+*	AR4	MASTER OBJECT
 *	AR5	CAR BLOCK
 *	AR6	DYNAMATRIX
 *	R4	OLD ORADY
@@ -760,7 +760,7 @@ NCS
 
 	LDF	*+AR5(CARTURN),R2
 	MPYF	1.5,R2			;BOOST TURN A LITTLE
-	
+
 	LDI	@MATRIXAI,AR2
 	CALL	FIND_YMATRIX
 	LDI	AR2,AR0
@@ -779,7 +779,7 @@ NCS
 *CONCAT FOR FRONT WHEELS
 
 	LDI	@MATRIXCI,AR1		;A X B = C
-	
+
 	LDI	AR1,AR6			;SAVE FRONT WHEEL MATRIX PTR
 	LDI	AR2,AR3			;SAVE REAR WHEEL MATRIX PTR
 	CALL	CONCAT201    		;CONCAT YOUR MATRICES INTO DYNOBJ
@@ -804,12 +804,12 @@ CDTOP
 *STUFF FRONT WHEEL
 
 	LDF	*AR6++,R0
-	
+
 	RPTS	7
 	LDF	*AR6++,R0
- ||	STF	R0,*AR2++	
+ ||	STF	R0,*AR2++
 
- 	STF	R0,*AR2++	
+ 	STF	R0,*AR2++
 	NOP	*AR6--(9)
 	B	CDLP
 
@@ -817,12 +817,12 @@ CDTOP
 
 CARRWHL
 	LDF	*AR3++,R0
-	
+
 	RPTS	7
 	LDF	*AR3++,R0
- ||	STF	R0,*AR2++	
+ ||	STF	R0,*AR2++
 
- 	STF	R0,*AR2++	
+ 	STF	R0,*AR2++
 	NOP	*AR3--(9)
 
 CDLP
@@ -837,7 +837,7 @@ CARBODY
 	CALL	LEAN
 	LDI	1,AR2
 CARSLP
-	CALL	SLEEP	
+	CALL	SLEEP
 	B 	CARPROCL
 *----------------------------------------------------------------------------
 
@@ -850,7 +850,7 @@ NTWOPII	.float	-TWOPI
 *
 *PARAMETERS
 *	AR0	DYNA OBJECT
-*	AR4	MASTER OBJECT 
+*	AR4	MASTER OBJECT
 *	AR5	CAR BLOCK
 *	AR6	DYNAMATRIX
 *	R4	OLD ORADY
@@ -862,7 +862,7 @@ NTWOPII	.float	-TWOPI
 *
 LEAN:
 	LDI	AR0,AR1
-	ADDI	DYNAMATRIX,AR1	
+	ADDI	DYNAMATRIX,AR1
 
 	;GET X LEAN (BRAKE/ACCEL)
 	;
@@ -905,7 +905,7 @@ LEAN:
 	;
 	LDF	*+AR7(PDATA),R4		;OLD ORADY
 	LDF	*+AR7(PDATA+1),R5	;Z RADIANS
-	
+
 	LDF	*+AR4(ORADY),R0
 	STF	R0,*+AR7(PDATA)		;SAVE NEW OLD ORADY
 	SUBF	R4,R0			;DELTA ORADY

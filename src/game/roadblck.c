@@ -1,17 +1,17 @@
+#include "roadblck.h"
 #include "../core/cpu.h"
 #include "../core/machine.h"
-#include "macs.h"
-#include "obj.h"
-#include "mproc.h"
-#include "vunit.h"
 #include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
 #include "globals.h"
-#include "sndtab.h"
+#include "macs.h"
+#include "mproc.h"
+#include "obj.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "roadblck.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/ROADBLCK.ASM
@@ -25,73 +25,67 @@ void DEBRIS_SORT(void);
 #define ROAD_DEBRISI ROAD_DEBRIS
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /*
-*----------------------------------------------------------------------------
-*RDDEBRIS_C
-*
-*THIS FILE HANDLES THE RDDEBRIS (Road Debris) CLASS
-*OF OBJECTS.
-*
-*
-*This Class has the following properties:
-*
-*	o	associated with a road piece
-*	o	single point collision
-*	o	has reaction to this collision
-*
-*
-*Association assertions:
-*
-*In this class all objects are pulled from the object
-*list and then sorted as normal (ala DRONES).  The objects
-*are then reinserted onto the object list (exactly in front
-*of the road piece it is associated with.
-*
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *RDDEBRIS_C
+ *
+ *THIS FILE HANDLES THE RDDEBRIS (Road Debris) CLASS
+ *OF OBJECTS.
+ *
+ *
+ *This Class has the following properties:
+ *
+ *	o	associated with a road piece
+ *	o	single point collision
+ *	o	has reaction to this collision
+ *
+ *
+ *Association assertions:
+ *
+ *In this class all objects are pulled from the object
+ *list and then sorted as normal (ala DRONES).  The objects
+ *are then reinserted onto the object list (exactly in front
+ *of the road piece it is associated with.
+ *
+ *
+ *
+ */
 
 /* asm: ROAD_DEBRIS	.bss	ROAD_DEBRIS,1 */
-int ROAD_DEBRIS;
+OBJ* ROAD_DEBRIS;
 
 // *----------------------------------------------------------------------------
-void INIT_RDDEBRIS(void)
-{
-    // asm 0000AF85: 	CLRI	R0
-    R0.s = 0;
-    // asm 0000AF86: 	STPI	R0,@ROAD_DEBRIS
-    ROAD_DEBRIS = R0.s;
-    // asm 0000AF87: 	RETS
+void INIT_RDDEBRIS(void) {
+    ROAD_DEBRIS = NULL;
 }
 
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INSERT OBJECT ONTO THE ROAD DEBRIS LIST
-*
-*take object and insert on list and insert the closest
-*road object to it
-*
-*OBJECT STRUCTURE ENTRIES USED:
-*	OLINK3	list link
-*	OUSR1	linked object
-*
-*PARAMETERS
-*	AR4	OBJECT
-*
-*
-*/
-void ADD_RDDEBRIS(void)
-{
+ *----------------------------------------------------------------------------
+ *INSERT OBJECT ONTO THE ROAD DEBRIS LIST
+ *
+ *take object and insert on list and insert the closest
+ *road object to it
+ *
+ *OBJECT STRUCTURE ENTRIES USED:
+ *	OLINK3	list link
+ *	OUSR1	linked object
+ *
+ *PARAMETERS
+ *	AR4	OBJECT
+ *
+ *
+ */
+void ADD_RDDEBRIS(void) {
     // asm 0000AF88: 	PUSH	R0
     // asm 0000AF89: 	LDI	@ROAD_DEBRIS,R0
 #if DEBUG
@@ -117,15 +111,14 @@ void ADD_RDDEBRIS(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PULL OBJECT FROM ROAD DEBRIS LIST
-*
-*PARAMETERS
-*	AR2	OBJECT
-*
-*/
-void FREE_RDDEBRIS(void)
-{
+ *----------------------------------------------------------------------------
+ *PULL OBJECT FROM ROAD DEBRIS LIST
+ *
+ *PARAMETERS
+ *	AR2	OBJECT
+ *
+ */
+void FREE_RDDEBRIS(void) {
     // asm 0000AF96: 	PUSH	R0
     // asm 0000AF97: 	PUSH	AR1
     // asm 0000AF98: 	LDPI	@ROAD_DEBRISI,R0
@@ -152,20 +145,19 @@ FREEDR_X:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SORT YOUR DEBRIS IN THE WORLD
-*
-*PARAMETERS
-*	AR4	PULL LIST HEADER
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *SORT YOUR DEBRIS IN THE WORLD
+ *
+ *PARAMETERS
+ *	AR4	PULL LIST HEADER
+ *
+ *
+ */
 /* asm: MAXDIST	.FLOAT	9999999999.0  		;A VERY LARGE NUMBER */
 static float MAXDIST = 9999999999.0f;
 
 // *
-void DEBRIS_SORT(void)
-{
+void DEBRIS_SORT(void) {
     // 	;PULL FLYING DEBRIS FROM THE LIST
     // 	;
     // asm 0000AFA5: 	BUD	DSORTNXT

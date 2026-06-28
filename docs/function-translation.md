@@ -1,4 +1,4 @@
-# Per function plan
+# Per function assembly translation
 
 Translate the specified assembly function into c. Where practical, keep the c code simple so its close to line for line with the assembly for ease of debugging. However, you may write the c code in idiomatic style for ease of readability.
 

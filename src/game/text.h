@@ -114,9 +114,9 @@ void HIGHLIGHTN(void);
 // asm: 	hibss	TEXT_LIST,NUM_TEXTS*TEXT_SIZ
 extern tTEXT TEXT_LIST[];
 // asm: 	.bss	TEXT_FREE,1
-extern int TEXT_FREE;
+extern tTEXT* TEXT_FREE;
 // asm: 	.bss	TEXT_ACTIVE,1
-extern int TEXT_ACTIVE;
+extern tTEXT* TEXT_ACTIVE;
 // asm: 	.bss	TEXT_FREE_COUNT,1
 extern int TEXT_FREE_COUNT;
 // asm: 	.bss	TEXT_FREEZE,1
