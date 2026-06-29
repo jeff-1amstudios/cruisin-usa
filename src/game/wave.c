@@ -21,7 +21,6 @@
  * Source module: asm/WAVE.ASM
  */
 
-void WAVE(void);
 static void HEAD2HEAD_WAIT(void);
 static void HIGH_SCORE(void);
 static void MIDSPIN(void);
@@ -29,6 +28,7 @@ static void MIDSPINHS(void);
 static void RACELEG(void);
 #define HIGH_SCORE_INI THANKS
 static void THANKS(void);
+static void CREDITS(void);
 static void LOAD_HIGH_SCORE(void);
 static void BEGIN_GAME(void);
 void INIT_SYSTEM(void);
@@ -81,6 +81,20 @@ int _ATTR_MODE;
 /* asm: LOADED	pbss	LOADED,1 */
 int LOADED;
 
+typedef void (*WAVE_FUNC)(void);
+// ;NOTE THE VALUES ARE NEGATVIE
+static WAVE_FUNC ATTR_WAVETAB[] = {
+    HEAD2HEAD_WAIT,
+    CREDITS,    //;MUST BE -6
+    THANKS,     //;MUST BE - 5
+    MIDSPINHS,  //;-4
+    RACELEG,    //;-3
+    MIDSPIN,    //;-2
+    HIGH_SCORE, //;-1
+};
+
+static WAVE_FUNC* const ATTR_WAVETAB_END = &ATTR_WAVETAB[7];
+
 /*
  *----------------------------------------------------------------------------
  *PARAMETERS
@@ -89,7 +103,7 @@ int LOADED;
  *		>= 0 -> REGULAR GAME
  *
  */
-void WAVE(void) {
+void WAVE(int wave_index) {
     // asm 00009307: 	POP	AR7	;return addr
     // asm 00009308: 	CALL	SILENT
     // 	;CLEAR ALL RAM AND RELOAD CODE
@@ -180,24 +194,6 @@ LD_RAM:
     // asm 0000935C: 	LDI	*AR0,R0
     // asm 0000935D: 	CALLU	R0
     // asm 0000935E: 	RETS
-    // asm 00009367: _ATTR_WAVETAB
-HEAD2HEADWATCH:
-    // asm 00009367: 	SLEEP	1
-    // asm 00009369: 	LDI	@OM_MODE,R0
-    // asm 0000936A: 	AND	MMODE,R0
-    // asm 0000936B: 	CMPI	MBONUS,R0
-    // asm 0000936C: 	BEQ	ISTRUE
-    // asm 0000936D: 	CMPI	MINIT,R0
-    // asm 0000936E: 	BEQ	ISTRUE
-    // asm 0000936F: 	CMPI	MINSERT_COINS,R0
-    // asm 00009370: 	BEQ	ISTRUE
-    // asm 00009371: 	LDI	@OM_LINKWAIT,R0
-    // asm 00009372: 	BZ	HEAD2HEADWATCH
-ISTRUE:
-    // asm 00009373: LDI	-7,R0
-    // asm 00009374: 	STI	R0,@_ATTR_MODE
-    // asm 00009375: 	BR	SET_ATTR
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
 
     int saved_counter_idx;
     int saved_counter_mode;
@@ -294,7 +290,8 @@ ISTRUE:
 
     // asm:
     // CREATE SCAN_OBJECTS,UTIL_C
-    CREATE(SCAN_OBJECTS, UTIL_C);
+    PROC_CONTEXT* ctx = malloc(sizeof(PROC_CONTEXT));
+    CREATE(SCAN_OBJECTS, UTIL_C, ctx);
 
     // if (wave_index == 1) {
     //     goto BEGIN_GAME;
@@ -306,10 +303,28 @@ ISTRUE:
     // }
 
     // ((void (*)(void))_ATTR_WAVETABI[wave_index])();
-    return;
+    ATTR_WAVETAB_END[wave_index]();
 
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVE", 0, 0);
     UNIMPL();
+}
+
+static void HEAD2HEADWATCH() {
+    // 	SLEEP	1
+    // 	LDI	@OM_MODE,R0
+    // 	AND	MMODE,R0
+    // 	CMPI	MBONUS,R0
+    // 	BEQ	ISTRUE
+    // 	CMPI	MINIT,R0
+    // 	BEQ	ISTRUE
+    // 	CMPI	MINSERT_COINS,R0
+    // 	BEQ	ISTRUE
+
+    // 	LDI	@OM_LINKWAIT,R0
+    // 	BZ	HEAD2HEADWATCH
+    // ISTRUE	LDI	-7,R0
+    // 	STI	R0,@_ATTR_MODE
+    // 	BR	SET_ATTR
 }
 
 static void HEAD2HEAD_WAIT(void) {
@@ -397,13 +412,17 @@ static void RACELEG(void) {
 static void THANKS(void) {
     // asm 000093BB: 	CALL	LOAD_HIGH_SCORE
     // asm 000093BC: 	BU	HIGH_SCORE
-    // 	;these are not cycled, they are special routines
-CREDITS:
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CREDITS", 0, 0);
+    UNIMPL();
+}
+
+// 	;these are not cycled, they are special routines
+static void CREDITS(void) {
     // asm 000093BD: 	CREATE	VANITY,UTIL_C
     // asm 000093C0: 	LDI	-1,R0
     // asm 000093C1: 	STI	R0,@_ATTR_MODE
     // asm 000093C2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "THANKS", 0, 0);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CREDITS", 0, 0);
     UNIMPL();
 }
 

@@ -226,14 +226,17 @@ typedef struct OBJ {
     u32 link4;
 } OBJ;
 
+struct PROC;
+typedef void (*PROC_FUNC)(struct PROC*);
+struct PROC_CONTEXT;
+
 typedef struct PROC {
     struct PROC* link;
     // u32 stack_ptr;
     u32 wake_state;
     u32 id;
     u32 sleep_ticks;
-    void* data;
-    void (*entry)(struct PROC*);
+    PROC_FUNC func;
     // u32 r4;
     // u32 r5;
     // f32 r6;
@@ -243,6 +246,7 @@ typedef struct PROC {
     // u32 ar6;
     // u32 data[35];       /* PDATA..PSDATA-1 */
     // u32 stack_data[15]; /* PSDATA..PRCSIZ-1 */
+    struct PROC_CONTEXT* ctx; // jeff added to replace the proc-local register and stack
 } PROC;
 
 typedef struct TRACKSEL {
@@ -519,5 +523,14 @@ typedef struct LOAD_SECTION_REQ_ARG {
     u32* source_addr;
     u32* dest_addr;
 } LOAD_SECTION_REQ_ARG;
+
+typedef struct PROC_CONTEXT {
+    union {
+        struct {
+            LOAD_SECTION_REQ_ARG* lsr;
+        } REQWAIT;
+    };
+
+} PROC_CONTEXT;
 
 #endif

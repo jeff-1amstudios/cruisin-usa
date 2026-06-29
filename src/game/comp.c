@@ -31,8 +31,8 @@ void DECOMPRESS_PROC(void);
 static void SAVE_DECOMP_REGS(const DECOMP_STATE* state);
 static void RESTORE_DECOMP_REGS(DECOMP_STATE* state);
 static void BOOT_PACIFY_SCREEN(void);
-void LOAD_SECTION_REQ(const LOAD_SECTION_REQ_ARG* section_control);
-static void REQWAIT(void);
+void LOAD_SECTION_REQ(LOAD_SECTION_REQ_ARG* section_control);
+static void REQWAIT(PROC* p);
 
 #define COMP_PACK_OUTPUT(state_, value_)                                       \
     do {                                                                       \
@@ -791,7 +791,7 @@ LLL:
 /* asm: LASTLOAD	.bss	LASTLOAD,1 */
 static int LASTLOAD;
 
-void LOAD_SECTION_REQ(const LOAD_SECTION_REQ_ARG* section_control) {
+void LOAD_SECTION_REQ(LOAD_SECTION_REQ_ARG* section_control) {
 
     // asm 0000A3ED: 	PUSH	AR4
     // asm 0000A3EE: 	PUSH	AR5
@@ -823,10 +823,9 @@ NOLOAD:
     // asm 0000A401: 	RETS
 
     if (DECOMP_ACTIVE != 0) {
-        AR4 = (uintptr_t)section_control;
-        AR2 = (uintptr_t)REQWAIT;
-        R2.u = SPAWNER_C | LOAD_REQ_T;
-        PRC_CREATE();
+        PROC_CONTEXT* ctx = malloc(sizeof(PROC_CONTEXT));
+        ctx->REQWAIT.lsr = section_control;
+        CREATE(REQWAIT, SPAWNER_C | LOAD_REQ_T, ctx);
         return;
     }
 
@@ -836,19 +835,19 @@ NOLOAD:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void REQWAIT(void) {
-    // asm 0000A402: 	SLEEP	1
-    // asm 0000A404: 	LDI	@DECOMP_ACTIVE,R0
-    // asm 0000A405: 	BNZ	REQWAIT
-    // asm 0000A406: 	LDI	AR4,AR2
-    // asm 0000A407: 	CALL	LOAD_SECTION_REQ
-    // asm 0000A408: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    while (DECOMP_ACTIVE != 0) {
-        AR2 = 1;
-        SLEEP();
-    }
+static void REQWAIT(PROC* p) {
 
-    LOAD_SECTION_REQ((const LOAD_SECTION_REQ_ARG*)AR4);
-    PRC_SUICIDE();
+    switch (p->wake_state) {
+    case 0:
+        p->wake_state++;
+        SLEEP(1);
+
+    case 1:
+        if (DECOMP_ACTIVE != 0) {
+            p->wake_state = 0;
+            return;
+        }
+        LOAD_SECTION_REQ(p->ctx->REQWAIT.lsr);
+        DIE();
+    }
 }

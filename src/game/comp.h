@@ -31,6 +31,6 @@ extern int PREVX;
 extern int DELTA;
 
 // void DECOMPRESS(word_addr_t source_addr, word_addr_t dest_addr);
-void LOAD_SECTION_REQ(const LOAD_SECTION_REQ_ARG* section_control);
+void LOAD_SECTION_REQ(LOAD_SECTION_REQ_ARG* section_control);
 
 #endif /* COMP_H */

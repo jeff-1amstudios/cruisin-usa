@@ -695,7 +695,7 @@ void INIT_HSTD_TABLES(void) {
     // asm 00009AD2: 	CALL	INIT_LASTHS_TABLE
     // asm 00009AD3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_HSTD_TABLES", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

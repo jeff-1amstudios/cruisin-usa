@@ -28,7 +28,6 @@
  */
 
 void _c_int00(void);
-static void MAINLOOP(void);
 void COLD_ENTER(void);
 void ENABLEGIE(void);
 void INT0(void);
@@ -517,7 +516,7 @@ DR1:
     _newbut = 0;
     _ATTR_MODE = -1;
 
-    WAVE();
+    WAVE(_ATTR_MODE);
 
     FIFO_RESET();
 
@@ -550,7 +549,7 @@ DR1:
 }
 
 // *----------------------------------------------------------------------------
-static void MAINLOOP(void) {
+void MAINLOOP(void) {
     // asm 00004BD1: 	FIFO_CLRP	R0		;IS THE FIFO CLEAR
     // asm 00004BD6: 	DMA_WT		R0
     // asm 00004BDB: 	CALL	FIFO_RESET
@@ -1927,7 +1926,7 @@ static void VERSION_UPDATE(void) {
     // asm 00005044: 	BR	DIAG_RETURN
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VERSION_UPDATE", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

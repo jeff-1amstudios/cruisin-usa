@@ -9,6 +9,8 @@ static crusn_machine* g_display_machine;
 static crusn_video* g_display_video;
 static int* g_display_running;
 
+extern void MAINLOOP(void);
+
 void crusn_yield_display_interrupt(void) {
     SDL_Event event;
 
@@ -56,6 +58,7 @@ int main(void) {
     _c_int00();
 
     while (running) {
+        MAINLOOP();
         INT0();
         crusn_yield_display_interrupt();
     }

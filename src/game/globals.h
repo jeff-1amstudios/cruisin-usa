@@ -936,7 +936,7 @@ void INIT_CUSTOM_COIN(void);
 void DECOMPRESS_PROC(void);
 
 // asm:  .globl LOAD_SECTION_REQ
-void LOAD_SECTION_REQ(const LOAD_SECTION_REQ_ARG* section_control);
+void LOAD_SECTION_REQ(LOAD_SECTION_REQ_ARG* section_control);
 
 // asm:  .globl CLRONE
 void CLRONE(void);
@@ -1813,7 +1813,7 @@ void GETCAR(void);
 void DELCAR(void);
 
 // asm:  .globl SCAN_OBJECTS
-void SCAN_OBJECTS(void);
+void SCAN_OBJECTS(PROC* p);
 
 // asm:  .globl PUSHALL,POPALL
 void PUSHALL(void);
@@ -1827,7 +1827,7 @@ void DISTANCE_2D(void);
 void FORWARD(void);
 
 // asm:  .globl WAVE
-void WAVE(void);
+void WAVE(int wave_index);
 
 // asm:  .globl INIT_SYSTEM
 void INIT_SYSTEM(void);

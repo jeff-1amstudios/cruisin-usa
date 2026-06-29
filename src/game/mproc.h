@@ -18,9 +18,6 @@
 // asm: NUMPROC	.set	105	;NUMBER OF PROCESSES
 #define NUMPROC 105 // NUMBER OF PROCESSES
 
-// asm: 	.globl	PRC_SLEEP
-#define PRC_SLEEP SLEEP
-
 // asm: 	.globl	CURRENT_PROC,OLDSP
 extern PROC* CURRENT_PROC;
 
@@ -30,7 +27,7 @@ extern int OLDSP;
 void PRC_INIT(void);
 
 // asm: 	.globl	PRC_CREATE
-void PRC_CREATE(void);
+PROC* PRC_CREATE(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx);
 
 // asm: 	.globl	PRC_CREATE_CHILD
 void PRC_CREATE_CHILD(void);
@@ -39,7 +36,7 @@ void PRC_CREATE_CHILD(void);
 void PRC_DISPATCH(void);
 
 // asm: 	.globl	PRC_SUICIDE
-void PRC_SUICIDE(void);
+void PRC_SUICIDE(PROC* p);
 
 // asm: 	.globl	PRC_KILL
 void PRC_KILL(void);
@@ -63,6 +60,18 @@ void PRC_FINDNEXT(void);
 void PRC_FOLLOW(void);
 
 // asm: 	.globl	SLEEP
-void SLEEP(void);
+void PRC_SLEEP(PROC* p, int ticks);
+
+#define SLEEP(t)         \
+    {                    \
+        PRC_SLEEP(p, t); \
+        return;          \
+    }
+
+#define DIE()           \
+    {                   \
+        PRC_SUICIDE(p); \
+        return;         \
+    }
 
 #endif /* MPROC_H */

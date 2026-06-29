@@ -11,12 +11,9 @@
  */
 
 static void PRC_DEBUG_CHECK(void);
-void PRC_CREATE(void);
+static void NEXTPRC(PROC* proc);
 void PRC_CREATE_CHILD(void);
 void PRC_DISPATCH(void);
-#define PRC_SLEEP SLEEP
-void SLEEP(void);
-void PRC_SUICIDE(void);
 void PRC_KILL(void);
 void PRC_KILLALL(void);
 void PRC_EXISTP(void);
@@ -26,7 +23,6 @@ void PRC_FINDNEXT(void);
 void PRC_FIND(void);
 void PRC_FOLLOW(void);
 
-#define PRC_SLEEP SLEEP
 #define PACTIVEI PACTIVE
 #define PFREEI PFREE
 #define PRCSTRI PRCSTR
@@ -56,6 +52,45 @@ PROC* PACTIVE;
 /* asm: PFREE	.bss	PFREE,1 */
 PROC* PFREE;
 PROC PRCSTR[NUMPROC];
+
+// *----------------------------------------------------------------------------
+static void NEXTPRC(PROC* proc) {
+    // asm 0000A8AC: NEXTPRC	LDI	*AR7,R0			;GET NEXT PROC, SET Z FLAG
+    // asm 0000A8AD: NP1	BZD	DISPPRCX
+    // asm 0000A8AE: 	LDI	R0,AR7			;PUT IT IN AR7
+    // asm 0000A8AF: 	LDI	*+AR7(PTIME),R0		;IS SLEEP TIME ZERO?
+    // asm 0000A8B0: 	SUBI	1,R0
+    // asm 0000A8B1: 	BGTD	NP1
+    // asm 0000A8B2: 	STI	R0,*+AR7(PTIME)
+    // asm 0000A8B3: 	LDI	*AR7,R0			;GET NEXT PROC
+    // asm 0000A8B4: 	NOP				;FOR DELAYED BRANCH
+    // asm 0000A8B5: EXEC
+    // asm 0000A8B5: 	STI	SP,@OLDSP
+    // asm 0000A8B6: 	STI	AR7,@CURRENT_PROC	;SAVE CURRENT PROCESS POINTER
+    // asm 0000A8B7: 	LDI	*+AR7(PAR6),AR6
+    // asm 0000A8B8: 	LDI	*+AR7(PAR5),AR5
+    // asm 0000A8B9: 	LDI	*+AR7(PAR4),AR4
+    // asm 0000A8BA: 	LDF	*+AR7(PR7),R7
+    // asm 0000A8BB: 	LDI	*+AR7(PWAKE),R0
+    // asm 0000A8BC: 	BUD	R0
+    // asm 0000A8BD: 	LDF	*+AR7(PR6),R6
+    // asm 0000A8BE: 	LDI	*+AR7(PR5),R5
+    // asm 0000A8BF: 	LDI	*+AR7(PR4),R4
+    // asm 0000A8C0: DISPPRCX	RETS
+    while (proc != NULL) {
+        if (proc->sleep_ticks > 0) {
+            proc->sleep_ticks -= 1;
+        }
+
+        if (proc->sleep_ticks == 0) {
+            CURRENT_PROC = proc;
+            proc->func(proc);
+            return;
+        }
+
+        proc = proc->link;
+    }
+}
 
 // *----------------------------------------------------------------------------
 static void PRC_DEBUG_CHECK(void) {
@@ -95,28 +130,51 @@ static void PRC_DEBUG_CHECK(void) {
  *		CARRY SET
  *
  */
-void PRC_CREATE(void) {
+PROC* PRC_CREATE(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx) {
+    PROC* proc;
+
     // asm 0000A86F: 	PUSH	R0
     // asm 0000A870: 	LDI	@PFREE,R0		;TAKE OFF THE TOP OF PROCESS FREE LIST
     // asm 0000A871: 	BNZ	GETPROC0
     // asm 0000A872: 	ERRON	U,EC_PROC|ET_ALLOC	;OUT OF PROCESSES ERROR
     // asm 0000A87A: 	SETC
     // asm 0000A87B: 	B	GETPROCX
+    proc = PFREE;
+    if (proc == NULL) {
+        ERRON(EC_PROC | ET_ALLOC);
+        return NULL;
+    }
+
 GETPROC0:
     // asm 0000A87C: 	LDI	R0,AR0
     // asm 0000A87D: 	LDI	*AR0,R0
     // asm 0000A87E: 	STI	R0,@PFREE		;AND UPDATE FREE LIST
+    PFREE = proc->link;
+
     // asm 0000A87F: 	LDI	@PACTIVE,R0		;INSERT TO HEAD OF PROCESS ACTIVE LIST
     // asm 0000A880: 	STI	R0,*AR0
     // asm 0000A881: 	STI	AR0,@PACTIVE
+    proc->link = PACTIVE;
+    PACTIVE = proc;
+
     // asm 0000A882: 	LDI	0,R0
     // asm 0000A883: 	STI	R0,*+AR0(PTIME)		;PLACE SLEEP TIME
+    proc->wake_state = 0;
+    proc->sleep_ticks = 0;
+
     // asm 0000A884: 	STI	AR2,*+AR0(PWAKE)	;START ADDRESS OF PROCESS
     // ;	STI	AR2,*+AR0(PSADDR)	;START ADDRESS OF PROCESS (SAVE FOR DEBUG & ID)
+    proc->func = func;
+
     // asm 0000A885: 	STI	R2,*+AR0(PID)		;SET PROCESS TYPE
+    proc->id = pid;
+
+    proc->ctx = ctx;
+
     // asm 0000A886: 	LDI	AR0,R0
     // asm 0000A887: 	ADDI	PSDATA,R0	  	;WHERE LOCAL STACK POINTER ACTUALLY IS
     // asm 0000A888: 	STI	R0,*+AR0(PSPTR)		;STORE LOCAL STACK POINTER (LSP)
+
     // asm 0000A889: 	STI	AR4,*+AR0(PAR4)
     // asm 0000A88A: 	STI	AR5,*+AR0(PAR5)
     // asm 0000A88B: 	STI	AR6,*+AR0(PAR6)
@@ -124,20 +182,23 @@ GETPROC0:
     // asm 0000A88D: 	STI	R5,*+AR0(PR5)
     // asm 0000A88E: 	STF	R6,*+AR0(PR6)
     // asm 0000A88F: 	STF	R7,*+AR0(PR7)
+
 #if DEBUG
     // asm: 	LDI	@NUM_PROCS_ACTIVE,R0
     // asm: 	INC	R0
     // asm: 	STI	R0,@NUM_PROCS_ACTIVE
+    NUM_PROCS_ACTIVE += 1;
+
     // asm: 	LDI	@NUM_PROCS_IDLE,R0
     // asm: 	DEC	R0
     // asm: 	STI	R0,@NUM_PROCS_IDLE
+    NUM_PROCS_IDLE -= 1;
 #endif
     // asm 0000A890: 	CLRC
 GETPROCX:
     // asm 0000A891: 	POP	R0
     // asm 0000A892: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_CREATE", 0, 0);
-    UNIMPL();
+    return proc;
 }
 
 // *----------------------------------------------------------------------------
@@ -203,11 +264,10 @@ void PRC_DISPATCH(void) {
     // *	AR2	SLEEP TIME x 16MSEC.
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_DISPATCH", 0, 0);
-    UNIMPL();
+    NEXTPRC(PACTIVE);
 }
 
-void SLEEP(void) {
+void PRC_SLEEP(PROC* p, int ticks) {
     // asm 0000A89F: 	POP	R0
     // asm 0000A8A0: 	STI	R0,*+AR7(PWAKE)		;SAVE WAKEUP ADDRESS
 #if DEBUG
@@ -237,36 +297,8 @@ void SLEEP(void) {
     // asm 0000A8A9: 	STI	AR4,*+AR7(PAR4)
     // asm 0000A8AA: 	STI	AR5,*+AR7(PAR5)
     // asm 0000A8AB: 	STI	AR6,*+AR7(PAR6)
-NEXTPRC:
-    // asm 0000A8AC: LDI	*AR7,R0			;GET NEXT PROC, SET Z FLAG
-NP1:
-    // asm 0000A8AD: BZD	DISPPRCX
-    // asm 0000A8AE: 	LDI	R0,AR7			;PUT IT IN AR7
-    // asm 0000A8AF: 	LDI	*+AR7(PTIME),R0		;IS SLEEP TIME ZERO?
-    // asm 0000A8B0: 	SUBI	1,R0
-    // 	;---->BZ DISPPRCX
-    // asm 0000A8B1: 	BGTD	NP1
-    // asm 0000A8B2: 	STI	R0,*+AR7(PTIME)
-    // asm 0000A8B3: 	LDI	*AR7,R0			;GET NEXT PROC
-    // asm 0000A8B4: 	NOP				;FOR DELAYED BRANCH
-    // 	;---->BGT NP1
-    // asm 0000A8B5: EXEC
-    // asm 0000A8B5: 	STI	SP,@OLDSP
-    // asm 0000A8B6: 	STI	AR7,@CURRENT_PROC	;SAVE CURRENT PROCESS POINTER
-    // asm 0000A8B7: 	LDI	*+AR7(PAR6),AR6
-    // asm 0000A8B8: 	LDI	*+AR7(PAR5),AR5
-    // asm 0000A8B9: 	LDI	*+AR7(PAR4),AR4
-    // asm 0000A8BA: 	LDF	*+AR7(PR7),R7
-    // asm 0000A8BB: 	LDI	*+AR7(PWAKE),R0
-    // asm 0000A8BC: 	BUD	R0
-    // asm 0000A8BD: 	LDF	*+AR7(PR6),R6
-    // asm 0000A8BE: 	LDI	*+AR7(PR5),R5
-    // asm 0000A8BF: 	LDI	*+AR7(PR4),R4
-    // 	;---->BU R0 DELAYED BRANCH HERE
-    // asm 0000A8C0: DISPPRCX
-    // asm 0000A8C0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SLEEP", 0, 0);
-    UNIMPL();
+    p->sleep_ticks = ticks;
+    NEXTPRC(p->link);
 }
 
 // *----------------------------------------------------------------------------
@@ -280,8 +312,12 @@ NP1:
  *PROCESSES MUST BRANCH TO SUICIDE
  *
  */
-void PRC_SUICIDE(void) {
+void PRC_SUICIDE(PROC* p) {
+    PROC* next_proc;
+    PROC** linkp;
+
 SUICIDE:
+
 #if DEBUG
     // asm: 	PUSH	R0
     // asm: 	LDI	@NUM_PROCS_ACTIVE,R0
@@ -320,9 +356,26 @@ DIELP:
     // asm 0000A8D5: 	LDI	AR1,AR7			;SO SOMETHING IS POINTING TO NEXT PROC
     // asm 0000A8D6: 	NOP
     // 	;--->BR NEXTPRC
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_SUICIDE", 0, 0);
-    UNIMPL();
+    next_proc = p->link;
+    p->link = PFREE;
+    PFREE = p;
+
+    linkp = &PACTIVE;
+    while (*linkp != NULL) {
+        if (*linkp == p) {
+            *linkp = next_proc;
+            if (p->ctx != NULL) {
+                free(p->ctx);
+                p->ctx = NULL;
+            }
+            NEXTPRC(next_proc);
+            return;
+        }
+        linkp = &(*linkp)->link;
+    }
+
+    ERRON(EC_PROC | ET_DELETE);
+    NEXTPRC(next_proc);
 }
 
 // *----------------------------------------------------------------------------
@@ -480,7 +533,6 @@ EXDONE:
  */
 void PRC_INIT(void) {
     PROC* proc;
-    PROC* freep;
     int i;
 
     // asm:
@@ -490,8 +542,8 @@ void PRC_INIT(void) {
     PACTIVE = NULL;
 
     // GET FREE POINTER
-    freep = PFREEI;
     proc = PRCSTR;
+    PFREE = proc;
 
     for (i = 0; i < NUMPROC - 1; ++i) {
         proc->link = &PRCSTR[i + 1];

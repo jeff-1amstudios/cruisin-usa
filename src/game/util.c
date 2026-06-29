@@ -55,7 +55,7 @@ void DELDYNA(void);
 void CARB_INIT(void);
 void GETCAR(void);
 void DELCAR(void);
-void SCAN_OBJECTS(void);
+void SCAN_OBJECTS(PROC* p);
 void PUSHALL(void);
 void POPALL(void);
 void DISTANCE_2D(void);
@@ -1159,7 +1159,7 @@ void DELCAR(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SCAN_OBJECTS(void) {
+void SCAN_OBJECTS(PROC* p) {
     // asm 00009063: 	CALL	ISCAN
     // asm 00009064: 	SLEEP	1
     // asm 00009066: 	CALL	OSCAN
