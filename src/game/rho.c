@@ -1,19 +1,19 @@
-#include "../core/cpu.h"
-#include "../core/machine.h"
-#include "macs.h"
-#include "obj.h"
-#include "mproc.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
-#include "pall.h"
-#include "text.h"
-#include "delta.h"
-#include "comm.h"
+
 #include "rho.h"
+#include "../core/machine.h"
+#include "cmos.h"
+#include "comm.h"
+#include "delta.h"
+#include "globals.h"
+#include "macs.h"
+#include "mproc.h"
+#include "obj.h"
+#include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
+#include "text.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/RHO.ASM
@@ -46,34 +46,38 @@ void FIND_DYNA(void);
 static int RHO_TABLE[51];
 
 /*
-*----------------------------------------------------------------------------
-*RHO	(ONCOMING TRAFFIC)
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *RHO	(ONCOMING TRAFFIC)
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
-#define RHO_WEAVER 1 //DRUNK ONCOMER
+#define RHO_WEAVER 1 // DRUNK ONCOMER
 /*
-*
-*YELL B4 HIT TO PLAYER
-*/
+ *
+ *YELL B4 HIT TO PLAYER
+ */
 #define B4HIT_SIZE 6
 /* asm: B4HIT_TABLE	.word	RH_GOFORIT,RH_TAKEHIM,RH_BABESCREAM1 */
 /* asm: 	.word	RH_BABEWHOA,RH_HURRYUP,RH_GONNACRASH */
 /* asm: 	 */
 static int B4HIT_TABLE[] = {
-    RH_GOFORIT, RH_TAKEHIM, RH_BABESCREAM1,
-    RH_BABEWHOA, RH_HURRYUP, RH_GONNACRASH,
+    RH_GOFORIT,
+    RH_TAKEHIM,
+    RH_BABESCREAM1,
+    RH_BABEWHOA,
+    RH_HURRYUP,
+    RH_GONNACRASH,
 };
 /*
-*RHO FLAGS (RF_)
-*
-*
-*/
-#define RF_WEAVER 0x001 //may this become a weaver (SUICIDE)
-#define RF_LONG 0x002 //Eugenes system can't handle long vehicles under circumstances
+ *RHO FLAGS (RF_)
+ *
+ *
+ */
+#define RF_WEAVER 0x001 // may this become a weaver (SUICIDE)
+#define RF_LONG 0x002   // Eugenes system can't handle long vehicles under circumstances
 #define RT_VEHIDX 0
 #define RT_FLAG 1
 #define RT_ONSCREAM 2
@@ -113,48 +117,81 @@ int NOLONG_VEHICLES;
 /* asm: 	 */
 /* asm: 	 */
 static int RHO_TABLE[] = {
-    GTRUCK_MOD, 0, DIESEL_DOPPLER,
-    FTRUCK_MOD, RF_LONG, TRUCKHORN_BLAST,
-    CBUS_MOD, RF_LONG, BUSDOPL,
-    COPCAR_MOD, 0, CARDOPL2,
-    MUSCLE_MOD, RF_WEAVER, CARDOPL3,
-    CARAVAN_MOD, 0, CARDOPL3,
-    SBUS_MOD, RF_LONG, BUSDOPL,
-    PTRUCKG_MOD, 0, SEMIDOPL,
-    MUSTANG_MOD, 0, CARDOPL2,
-    JEEP_MOD, 0, CARDOPL1,
-    GTRUCK_MOD, 0, DIESEL_DOPPLER,
+    GTRUCK_MOD,
+    0,
+    DIESEL_DOPPLER,
+    FTRUCK_MOD,
+    RF_LONG,
+    TRUCKHORN_BLAST,
+    CBUS_MOD,
+    RF_LONG,
+    BUSDOPL,
+    COPCAR_MOD,
+    0,
+    CARDOPL2,
+    MUSCLE_MOD,
+    RF_WEAVER,
+    CARDOPL3,
+    CARAVAN_MOD,
+    0,
+    CARDOPL3,
+    SBUS_MOD,
+    RF_LONG,
+    BUSDOPL,
+    PTRUCKG_MOD,
+    0,
+    SEMIDOPL,
+    MUSTANG_MOD,
+    0,
+    CARDOPL2,
+    JEEP_MOD,
+    0,
+    CARDOPL1,
+    GTRUCK_MOD,
+    0,
+    DIESEL_DOPPLER,
     // 	.word	CBUS_MOD,RF_LONG,BUSDOPL
-    COPCAR_MOD, 0, CARDOPL2,
-    MUSCLE_MOD, RF_WEAVER, CARDOPL3,
-    CARAVAN_MOD, 0, CARDOPL3,
-    PTRUCKG_MOD, 0, SEMIDOPL,
-    MUSTANG_MOD, 0, CARDOPL2,
+    COPCAR_MOD,
+    0,
+    CARDOPL2,
+    MUSCLE_MOD,
+    RF_WEAVER,
+    CARDOPL3,
+    CARAVAN_MOD,
+    0,
+    CARDOPL3,
+    PTRUCKG_MOD,
+    0,
+    SEMIDOPL,
+    MUSTANG_MOD,
+    0,
+    CARDOPL2,
     // 	.word	SBUS_MOD,RF_LONG,BUSDOPL
-    JEEP_MOD, 0, CARDOPL1,
+    JEEP_MOD,
+    0,
+    CARDOPL1,
     // ----------------------------------------------------------------------------
     // RHO DRONE	ONCOMING TRAFFIC DRONE
-    // 
+    //
     // allocated standard drone
-    // 
+    //
     // starting position = end of the current universe (up ahead)
-    // 
+    //
     // in lane 0 or 1 accelerate past the player
     // when rho has reached the begining of the universe
-    // 
-    // 
+    //
+    //
     // RHO may be allocated as a suicide vehicle
     // but in general plays a straight game as an
     // oncomer.
-    // 
+    //
 };
 /* asm: RHOFLAG	.bss	RHOFLAG,1 */
 int RHOFLAG;
 /* asm: RHOPAL	.bss	RHOPAL,1 */
 int RHOPAL;
 
-void RHO_DRONE(void)
-{
+void RHO_DRONE(void) {
     // asm 00009790: 	LDI	0,R5
     // asm 00009791: 	STI	R5,@RHOFLAG
     // asm 00009792: 	RANDN	RHO_TABLE_LENGTH	;INDEX #
@@ -283,16 +320,15 @@ RHOLL1:
 }
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*----------------------------------------------------------------------------
-*
-*
-*
-*/
-static void RHO_LP(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *----------------------------------------------------------------------------
+ *
+ *
+ *
+ */
+static void RHO_LP(void) {
     // asm 000097FE: 	LDI	@SUSPEND_MODE,R0
     // asm 000097FF: 	CMPI	SM_HALT,R0
     // asm 00009800: 	BEQ	RHO_SLP
@@ -552,15 +588,14 @@ RHO_SLP:
 }
 
 /*
-*----------------------------------------------------------------------------
-*
-*CHECK IF OFF THE UNIVERSE
-*RET EQ (R0=0) IF OFF UNIVERSE, NE (R0=1) IF IN BOUNDS
-*AR7=DRONE PROCESS
-*
-*/
-static void CKCAROFF(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *CHECK IF OFF THE UNIVERSE
+ *RET EQ (R0=0) IF OFF UNIVERSE, NE (R0=1) IF IN BOUNDS
+ *AR7=DRONE PROCESS
+ *
+ */
+static void CKCAROFF(void) {
     // asm 000098BC: 	LDI	*+AR7(DELTA_TPIECE),R0
     // asm 000098BD: 	LDI	@DYNALIST_TRUEBEGIN,AR0
     // asm 000098BE: 	CMPI	AR0,R0
@@ -584,14 +619,13 @@ CKCXPASS:
 }
 
 /*
-*----------------------------------------------------------------------------
-*FREE UP THE ALLOCATED STRUCTURES, DELINK THE LINKS, AND
-*KILL THE PROCESS
-*
-*/
+ *----------------------------------------------------------------------------
+ *FREE UP THE ALLOCATED STRUCTURES, DELINK THE LINKS, AND
+ *KILL THE PROCESS
+ *
+ */
 
-void RHO_DIE(void)
-{
+void RHO_DIE(void) {
     // asm 000098CC: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 000098CD: 	BZ	RHO_DIE1 		;NO, BLOW OUT...
     // asm 000098CE: 	CALL	COMPTRAK
@@ -646,8 +680,7 @@ NODYNALEAN:
 ;COLTABI	.word	COLTAB
 ;COLTAB	.word	SCOLLA,SCOLLB,SCOLLC
 */
-static void RHO_ISHIT(void)
-{
+static void RHO_ISHIT(void) {
     // asm 000098E4: 	LDI	*+AR4(OID),R0
     // asm 000098E5: 	ANDN	TYPE_M,R0
     // asm 000098E6: 	OR	DEAD_VEH_T,R0
@@ -704,16 +737,15 @@ RHOISHIT_SLP:
 // *----------------------------------------------------------------------------
 
 /*
-*
-*TRANSFER CAR TO OTHER MACHINE
-*AR4=CAR
-*AR5=CAR BLOCK
-*AR7=PROCESS
-*
-*/
+ *
+ *TRANSFER CAR TO OTHER MACHINE
+ *AR4=CAR
+ *AR5=CAR BLOCK
+ *AR7=PROCESS
+ *
+ */
 
-static void SEND_RHO_XSFER(void)
-{
+static void SEND_RHO_XSFER(void) {
     // asm 0000990F: 	LDI	CB_RHO_XSFER,R0 	;MESSAGE HEADER
     // *SEND MESSAGE HEADER
     // asm 00009910: 	LDI	@COMMQ_TMP_BUFFI,AR2
@@ -743,8 +775,7 @@ static void SEND_RHO_XSFER(void)
     UNIMPL();
 }
 
-void DECODE_RHO_XSFER(void)
-{
+void DECODE_RHO_XSFER(void) {
     // asm 0000991D: 	LDI	@IGNORE_UPDATES,R0	;RACE OVER?
     // asm 0000991E: 	BNZ	DECRHOX2		;YES, NO UPDATES ALLOWED...
     // asm 0000991F: 	CALL	FIND_DRONE  		;FIND CAR ID #
@@ -771,8 +802,7 @@ DECRHOX:
     UNIMPL();
 }
 
-static void RHO_ACTIVE_XSFER(void)
-{
+static void RHO_ACTIVE_XSFER(void) {
     // asm 0000992E: 	LDI	0,R0
     // asm 0000992F: 	STI	R0,*+AR5(CAR_OM)		;CAR BELONGS TO ME NOW!!!
     // asm 00009930: 	LDI	*+AR5(CARTRACK_ID),R2		;GET TRACK ID
@@ -815,8 +845,7 @@ static void RHO_ACTIVE_XSFER(void)
     UNIMPL();
 }
 
-static void SEND_RHO_KILL(void)
-{
+static void SEND_RHO_KILL(void) {
     // asm 0000994F: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00009950: 	LDI	CB_RHO_KILL,R1
     // asm 00009951: 	STI	R1,*AR2
@@ -831,8 +860,7 @@ static void SEND_RHO_KILL(void)
     UNIMPL();
 }
 
-void DECODE_RHO_KILL(void)
-{
+void DECODE_RHO_KILL(void) {
     // asm 00009956: 	LDI	@IGNORE_UPDATES,R0
     // asm 00009957: 	BNZ	DRKXX
     // asm 00009958: 	CALL	FIND_DRONE  		;GET DRONE OBJ IN AR0

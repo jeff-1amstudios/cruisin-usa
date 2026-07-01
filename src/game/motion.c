@@ -1,5 +1,5 @@
 #include "motion.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "cmos.h"
 #include "diag.h"
@@ -1308,7 +1308,7 @@ void LEVEL_THE_MOTION(void) {
     // asm 00004876:         CALL    WAIT_ACK
     // asm 00004877: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LEVEL_THE_MOTION", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

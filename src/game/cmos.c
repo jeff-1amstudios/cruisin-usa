@@ -1,5 +1,5 @@
 #include "cmos.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "c30.h"
 #include "globals.h"
@@ -132,7 +132,8 @@ int VALIDATE_CMOS(void) {
     hstd_ok = VALIDATE_HSTD_TABLES();
     VERIFY_ADJUSTMENTS_ACCURACY();
 
-    return hstd_ok ? 0 : 1;
+    // CLRC
+    return 0;
 }
 
 // *----------------------------------------------------------------------------

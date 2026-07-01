@@ -3782,7 +3782,7 @@ def render_module(
     symbol_table = collect_module_symbol_table(src_path, address_map, effective_type_overrides, predeclared_define_names)
     exported_function_names = set(collect_module_globl_function_names(lines, symbol_table))
     out: list[str] = []
-    out.append('#include "../core/cpu.h"')
+    out.append('')
     out.append('#include "../core/machine.h"')
     for header in headers:
         out.append(f'#include "{header}"')

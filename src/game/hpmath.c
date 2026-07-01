@@ -1,4 +1,4 @@
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 
 /*
@@ -21,8 +21,7 @@ static float CONST[7];
 * FUNCTION DEF : _HPsin
 ******************************************************
 */
-void _HPsin(void)
-{
+void _HPsin(void) {
     // asm 0000B04A: 	PUSH	R4
     // *
     // * R2	assigned to parameter x
@@ -72,8 +71,7 @@ LL3:
     UNIMPL();
 }
 
-static void EPI0_1(void)
-{
+static void EPI0_1(void) {
     // asm 0000B070: 	POP	R4
     // asm 0000B071: 	RETS
     // ******************************************************
@@ -83,8 +81,7 @@ static void EPI0_1(void)
     UNIMPL();
 }
 
-void _HPcos(void)
-{
+void _HPcos(void) {
     // asm 0000B072: 	PUSH	R4
     // *
     // * R2	assigned to variable  xn
@@ -134,8 +131,7 @@ void _HPcos(void)
     UNIMPL();
 }
 
-static void EPI0_2(void)
-{
+static void EPI0_2(void) {
     // asm 0000B099: 	POP	R4
     // asm 0000B09A: 	RETS
     // ******************************************************
@@ -155,12 +151,12 @@ static void EPI0_2(void)
 /* asm: 	.float	1.57079632679489661923;6 */
 static float CONST[] = {
     3.1830988618379067154e-1f, // 0
-    9.67653589793e-4f, // 1
-    2.601903036e-6f, // 2
-    -1.980741872e-4f, // 3
-    8.333025139e-3f, // 4
-    -1.666665668e-1f, // 5
-    1.57079632679489661923f, // 6
+    9.67653589793e-4f,         // 1
+    2.601903036e-6f,           // 2
+    -1.980741872e-4f,          // 3
+    8.333025139e-3f,           // 4
+    -1.666665668e-1f,          // 5
+    1.57079632679489661923f,   // 6
     // *****************************************************
     // UNDEFINED REFERENCES                               *
     // *****************************************************

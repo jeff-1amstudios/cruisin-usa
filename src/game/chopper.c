@@ -1,18 +1,18 @@
-#include "../core/cpu.h"
+
+#include "chopper.h"
 #include "../core/machine.h"
+#include "cmos.h"
+#include "delta.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "delta.h"
-#include "chopper.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/CHOPPER.ASM
@@ -32,49 +32,49 @@ static void HELI_SND(void);
 void GET_CLOSEST_TRAK(void);
 
 /*
-*----------------------------------------------------------------------------
-*CHOPPER IN THE SKY
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *CHOPPER IN THE SKY
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /* asm: HELI_ABORT	.bss	HELI_ABORT,1 */
 int HELI_ABORT;
 /*
-*
-*	!!!!NO JSRPing!!!!
-*
-*/
+ *
+ *	!!!!NO JSRPing!!!!
+ *
+ */
 
 // *LOCALS  (AFTER DELTA EQUATES)
-#define CD_ANIPROC (PDATA+18)
-#define CD_MODE (PDATA+19)
-#define CD_ACC (PDATA+20) //acceleration
-#define CD_SPEED (PDATA+21) //current speed
-#define CD_BOMBTIK (PDATA+22) //bomb pause
-#define CD_TSPEED (PDATA+23) //true speed (x/y/z)
-#define CD_TSPEED_OLD (PDATA+24) //old true speed (x/y/z)
-#define CD_FLYTDIR (PDATA+25) //breakaway theta
-#define CD_DHEIGHT (PDATA+26) //FL desired height value
-#define CD_ODHEIGHT (PDATA+27) //FL old desired height value
-#define CD_CLOSEROAD (PDATA+28) //UD closest road object
-#define CD_AHEADP (PDATA+29) //UD	flag ahead of player?
-#define CD_PASS_COUNT (PDATA+30)
-#define CD_BOMB_COUNT (PDATA+31)
-#define CD_MAX_PASSES (PDATA+32)
-#define CD_MAX_BOMBS (PDATA+33)
-#define CD_LASTPASS (PDATA+34) //P
-#define CD_DOATTACK (PDATA+35) //P
+#define CD_ANIPROC (PDATA + 18)
+#define CD_MODE (PDATA + 19)
+#define CD_ACC (PDATA + 20)        // acceleration
+#define CD_SPEED (PDATA + 21)      // current speed
+#define CD_BOMBTIK (PDATA + 22)    // bomb pause
+#define CD_TSPEED (PDATA + 23)     // true speed (x/y/z)
+#define CD_TSPEED_OLD (PDATA + 24) // old true speed (x/y/z)
+#define CD_FLYTDIR (PDATA + 25)    // breakaway theta
+#define CD_DHEIGHT (PDATA + 26)    // FL desired height value
+#define CD_ODHEIGHT (PDATA + 27)   // FL old desired height value
+#define CD_CLOSEROAD (PDATA + 28)  // UD closest road object
+#define CD_AHEADP (PDATA + 29)     // UD	flag ahead of player?
+#define CD_PASS_COUNT (PDATA + 30)
+#define CD_BOMB_COUNT (PDATA + 31)
+#define CD_MAX_PASSES (PDATA + 32)
+#define CD_MAX_BOMBS (PDATA + 33)
+#define CD_LASTPASS (PDATA + 34) // P
+#define CD_DOATTACK (PDATA + 35) // P
 // *NO MORE UNLESS NOT JSRPing
 
 // *CHOPPER MODE
-#define CM_CU 1 //CATCH UP
-#define CM_DB 2 //DROP BOMBS
-#define CM_FA 3 //FLY AWAY
+#define CM_CU 1 // CATCH UP
+#define CM_DB 2 // DROP BOMBS
+#define CM_FA 3 // FLY AWAY
 #define CRADZ OUSR1
-#define MAX_SPEED 667 //about 180 mph
+#define MAX_SPEED 667 // about 180 mph
 // *----------------------------------------------------------------------------
 /* asm: CHOPPERDYNA */
 /* asm: 	.word	1		;#OF DYNAS-1 */
@@ -91,27 +91,30 @@ int HELI_ABORT;
 /* asm: 	 */
 static int CHOPPERDYNA[] = {
     1, // #OF DYNAS-1
-    0, -206, 14, // blades
-    3, // VERTS-1
-    1, // DYNAFLAG
-    0, 0, 0, // main body
+    0,
+    -206,
+    14, // blades
+    3,  // VERTS-1
+    1,  // DYNAFLAG
+    0,
+    0,
+    0,  // main body
     94, // VERTS-1
-    1, // DYNAFLAG
+    1,  // DYNAFLAG
     // ----------------------------------------------------------------------------
 };
 
 /*
-*---------------------------------------------------------------------------
-*
-*go straight for the plyrs car
-*
-*(already close by)
-*branched to from oncoming buzz
-*
-*
-*/
-static void DIRECT_ATTACK(void)
-{
+ *---------------------------------------------------------------------------
+ *
+ *go straight for the plyrs car
+ *
+ *(already close by)
+ *branched to from oncoming buzz
+ *
+ *
+ */
+static void DIRECT_ATTACK(void) {
     // 	;
     // 	;DEBUG	only attack player when he is in the first position
     // 	;
@@ -212,15 +215,14 @@ LLK28:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*Take the helicopter, and buzz (@ 200 MPH) right over the players car
-*exit when start of the world is hit
-*
-*
-*
-*/
-static void ONCOMMING_BUZZ(void)
-{
+ *----------------------------------------------------------------------------
+ *Take the helicopter, and buzz (@ 200 MPH) right over the players car
+ *exit when start of the world is hit
+ *
+ *
+ *
+ */
+static void ONCOMMING_BUZZ(void) {
     // asm 00007CBF: 	LDF	0,R0
     // asm 00007CC0: 	STF	R0,*+AR4(ORADX)
     // asm 00007CC1: 	STF	R0,*+AR4(ORADY)
@@ -572,23 +574,22 @@ LLK2:
 */
 
 /*
-*----------------------------------------------------------------------------
-*CHOPPER SEQUENCE:
-*
-*
-*	come from behind and overhead and zoom ahead of player
-*	rotate tilted forward (moving with player)
-*	radio noise and such
-*	zoom off to left or right
-*	pull obj and sleep for awhile
-*	reinsert objects and redo sequence
-*
-*
-*
-*
-*/
-void CHOPPER(void)
-{
+ *----------------------------------------------------------------------------
+ *CHOPPER SEQUENCE:
+ *
+ *
+ *	come from behind and overhead and zoom ahead of player
+ *	rotate tilted forward (moving with player)
+ *	radio noise and such
+ *	zoom off to left or right
+ *	pull obj and sleep for awhile
+ *	reinsert objects and redo sequence
+ *
+ *
+ *
+ *
+ */
+void CHOPPER(void) {
     // 	;BEGIN INITIALIZATION CODE
     // 	;
     // asm 00007D33: 	LDI	@(_plyr1+PLY_PROC),AR2	;FIRST SETUP THAT WE FOLLOW THE PLAYERS PROC
@@ -656,8 +657,7 @@ DOTHEMOVE:
     UNIMPL();
 }
 
-static void FORWARD_BUZZ(void)
-{
+static void FORWARD_BUZZ(void) {
     // 	;FORWARD BUZZ INIT. CODE
     // 	;
     // asm 00007D6E: 	RANDN	20
@@ -903,8 +903,7 @@ CHOPPER_SLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FLYAWAY(void)
-{
+static void FLYAWAY(void) {
     // asm 00007E41: 	CLRI	AR6			;flag
     // asm 00007E42: 	LDI	100,AR5
     // asm 00007E43: 	LDF	-10,R7
@@ -948,8 +947,7 @@ KKUU:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CHOPPER_DIE(void)
-{
+static void CHOPPER_DIE(void) {
     // asm 00007E62: 	LDI	*+AR4(OCARBLK),AR2
     // asm 00007E63: 	CALL	DELCAR
     // asm 00007E64: 	LDI	AR4,AR2
@@ -967,14 +965,13 @@ static void CHOPPER_DIE(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR4	OBJECT
-*
-*/
-static void FIND_YX_MATRIX(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	AR4	OBJECT
+ *
+ */
+static void FIND_YX_MATRIX(void) {
     // asm 00007E6B: 	LDF	*+AR4(ORADY),R2
     // asm 00007E6C: 	LDI	AR4,AR2
     // asm 00007E6D: 	ADDI	OMATRIX,AR2
@@ -995,8 +992,7 @@ static void FIND_YX_MATRIX(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SETDYNAOBJ(void)
-{
+static void SETDYNAOBJ(void) {
     // asm 00007E78: 	LDI	O_DYNAMIC,R0	 	;MAKE PARENT OBJECT DYNAMIC
     // asm 00007E79: 	OR	*+AR4(OFLAGS),R0
     // asm 00007E7A: 	STI	R0,*+AR4(OFLAGS)
@@ -1042,8 +1038,7 @@ CHOPLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CHOPPERANI(void)
-{
+static void CHOPPERANI(void) {
     // asm 00007E9C: 	LONGROUT
     // asm: 	CLRF	R6
 CANILP:
@@ -1068,16 +1063,15 @@ CANILP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*FSL_MOVE	Frictionless Movement
-*
-*PARAMETERS
-*	R2	THETA DELTA (CHANGE IN THETA)
-*	R3	SPEED
-*
-*/
-static void FSL_MOVE(void)
-{
+ *----------------------------------------------------------------------------
+ *FSL_MOVE	Frictionless Movement
+ *
+ *PARAMETERS
+ *	R2	THETA DELTA (CHANGE IN THETA)
+ *	R3	SPEED
+ *
+ */
+static void FSL_MOVE(void) {
     // ;	LDP	@NFRAMES
     // ;	FLOAT	@NFRAMES,R0
     // ;	MPYF	R0,R3
@@ -1417,8 +1411,7 @@ static void FSL_MOVE(void)
 */
 
 // *----------------------------------------------------------------------------
-static void HELI_SND(void)
-{
+static void HELI_SND(void) {
     // asm 00007EFF: 	LDI	HELI_SNDLP,AR2		;may want to add in volume effects
     // asm 00007F00: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 00007F01: 	BEQ	IS_T1
@@ -1470,14 +1463,13 @@ HEND:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*RETURNS
-*	AR0	ROAD OBJECT
-*
-*/
-void GET_CLOSEST_TRAK(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *RETURNS
+ *	AR0	ROAD OBJECT
+ *
+ */
+void GET_CLOSEST_TRAK(void) {
     // asm 00007F22: 	LDI	@DRIVE_LIST,R0
     // asm 00007F23: 	BZ	GETRKX  		;NULL LIST DUDES
     // asm 00007F24: 	LDI	0,AR0			;CLOSEST ROAD SEGMENT INDEX

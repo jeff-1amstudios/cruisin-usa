@@ -1,17 +1,17 @@
-#include "../core/cpu.h"
+
+#include "audits.h"
 #include "../core/machine.h"
 #include "c30.h"
-#include "macs.h"
-#include "vunit.h"
 #include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "text.h"
-#include "dirq.h"
 #include "diag.h"
+#include "dirq.h"
 #include "error.h"
-#include "audits.h"
+#include "globals.h"
+#include "macs.h"
+#include "sys.h"
+#include "sysid.h"
+#include "text.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/AUDITS.ASM
@@ -34,27 +34,26 @@ extern const char EXPIRED[];
 */
 
 /*
-*----------------------------------------------------------------------------
-*DISPLAYABLE AUDITS
-*
-*	.word	AUDIT_#,string
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *DISPLAYABLE AUDITS
+ *
+ *	.word	AUDIT_#,string
+ *
+ *
+ */
 
 #define AUD_ROUTINE 0x5A
 #define AUD_ROUTINEH 0x5A0000
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*RETURN
-*	R0	VALUE
-*
-*/
-static void COMPUTE_FREEGAMES_PRCNT(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *RETURN
+ *	R0	VALUE
+ *
+ */
+static void COMPUTE_FREEGAMES_PRCNT(void) {
     // asm 00001419: 	READAUD	AUD_GAMES_CONTINUES
     // asm 0000141B: 	LDI	R0,R1
     // asm 0000141C: 	READAUD	AUD_GAMES_START
@@ -73,15 +72,14 @@ static void COMPUTE_FREEGAMES_PRCNT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*RETURN
-*	R0	VALUE
-*
-*/
-static void COMPUTE_GAMETIME(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *RETURN
+ *	R0	VALUE
+ *
+ */
+static void COMPUTE_GAMETIME(void) {
     // asm 00001426: 	READAUD	AUD_GAMES_CONTINUES
     // asm 00001428: 	LDI	R0,R1
     // asm 00001429: 	READAUD	AUD_GAMES_START
@@ -183,15 +181,14 @@ static int AUDIT_LIST;
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*AUDITS DISPLAY
-*
-*/
+ *----------------------------------------------------------------------------
+ *AUDITS DISPLAY
+ *
+ */
 /* asm: OLDDIP	.bss	OLDDIP,1 */
 int OLDDIP;
 
-void AUDIT_DISPLAY(void)
-{
+void AUDIT_DISPLAY(void) {
     // asm 000014D0: 	CALL	SETUP_DIAG_SCREEN
     // asm 000014D1: 	CLRI	AR4			;page index
     // asm 000014D2: 	LDI	DEFAULT_COLOR,RC

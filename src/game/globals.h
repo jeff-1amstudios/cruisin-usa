@@ -192,13 +192,10 @@ extern int DELTA;
 extern int TRANSMISSION_ACTIVE;
 
 // asm:  .globl PLY2CAR
-extern int PLY2CAR;
+extern OBJ* PLY2CAR;
 
 // asm:  .globl OM_POSITION
 extern int OM_POSITION;
-
-// asm:  .globl SAVED_PLY2CAR
-extern int SAVED_PLY2CAR;
 
 // asm:  .globl OM_DIFF
 extern int OM_DIFF;
@@ -923,7 +920,7 @@ void INSERT_MORE_COINS(void);
 void COIN_COUNTER(void);
 
 // asm:  .globl GETCOINTXT
-void GETCOINTXT(void);
+char** GETCOINTXT(void);
 
 // asm:  .globl INIT_CUSTOM_COIN
 void INIT_CUSTOM_COIN(void);
@@ -1155,7 +1152,7 @@ void _HPsin(void);
 
 // hstdp.asm
 // asm:  .globl DISPLAY_HIGH_SCORES
-void DISPLAY_HIGH_SCORES(void);
+void DISPLAY_HIGH_SCORES(PROC* p);
 
 // asm:  .globl ENTERTEXT
 void ENTERTEXT(void);
@@ -1544,7 +1541,7 @@ void DIV_I30(void);
 void DIV_U30(void);
 
 // asm:         .globl INV_F30
-void INV_F30(void);
+float INV_F30(float);
 
 // asm:  .globl MOD_I30
 void MOD_I30(void);
@@ -1781,7 +1778,7 @@ void RANDPER(void);
 void INIT_LINKED_LIST(void* start_addr /*AR2*/, void** free_list /*R2*/, void** active_list /*R3*/, int length_minus_1 /*RC*/, int size /*RS*/);
 
 // asm:  .globl GET_LLIST,ALLOC_LLIST
-void GET_LLIST(void);
+void* GET_LLIST(void** free_list, void** active_list);
 
 void ALLOC_LLIST(void);
 

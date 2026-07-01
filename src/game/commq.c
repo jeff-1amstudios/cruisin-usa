@@ -1,5 +1,5 @@
 #include "commq.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "cmos.h"
 #include "comm.h"
@@ -169,7 +169,7 @@ int OM_POSITION;
 /* asm: HEAD2HEAD_ON	pbss	HEAD2HEAD_ON,1 */
 int HEAD2HEAD_ON;
 /* asm: SAVED_PLY2CAR	.bss	SAVED_PLY2CAR,1 */
-int SAVED_PLY2CAR;
+OBJ* SAVED_PLY2CAR;
 
 void CLEAR_LINK(void) {
     int i;
@@ -234,7 +234,7 @@ ISDONE:
     // asm 00007695: 	STI	R0,@RBUFF_LEN
     // asm 00007696: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BUFFER", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -357,7 +357,7 @@ void COMMQ_PACKET_INIT(void) {
     // asm 000076BF: 	POP	R0
     // asm 000076C0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMMQ_PACKET_INIT", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -384,7 +384,7 @@ void COMMQ_READY_TO_SEND(void) {
     // asm 000076C8: 	POP	R0
     // asm 000076C9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMMQ_READY_TO_SEND", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

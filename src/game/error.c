@@ -1,18 +1,18 @@
-#include "../core/cpu.h"
+
+#include "error.h"
 #include "../core/machine.h"
+#include "cmos.h"
+#include "diag.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "diag.h"
-#include "error.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/ERROR.ASM
@@ -24,13 +24,13 @@ void ERROR_LOG_DISPLAY(void);
 extern const char NO[];
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 #define ERR_SIZE 16
 #define MAX_LOGS 30
@@ -47,8 +47,7 @@ extern const char NO[];
 #define PSS_R0 10
 
 // *----------------------------------------------------------------------------
-void ERROR_LOG(void)
-{
+void ERROR_LOG(void) {
     // asm 0000AB4A: 	PUSH	R1
     // asm 0000AB4B: 	PUSH	R2
     // asm 0000AB4C: 	PUSH	R3
@@ -151,16 +150,15 @@ ERROR_X:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*TO BE REACHED VIA THE CONSOLE (NO SWITCHES)
-*
-*	ONCE ENTERED, USER MUST SCROLL THROUGH ALL
-*	OF THE LOGS.  ROUTINE THEN RETURNS.
-*
-*
-*/
-void ERROR_LOG_DISPLAY(void)
-{
+ *----------------------------------------------------------------------------
+ *TO BE REACHED VIA THE CONSOLE (NO SWITCHES)
+ *
+ *	ONCE ENTERED, USER MUST SCROLL THROUGH ALL
+ *	OF THE LOGS.  ROUTINE THEN RETURNS.
+ *
+ *
+ */
+void ERROR_LOG_DISPLAY(void) {
     // asm 0000ABA9: 	CALL	CLRSCRN
     // asm 0000ABAA: 	CALL	SETPAGE0
     // asm 0000ABAB: 	LDIL	SCREEN0,R0		;set active screen to 1 (writeable)

@@ -49,10 +49,10 @@ tPALETTE_CODE PAL_ALLOC(u32 pal_index);
 tPALETTE_CODE PAL_ALLOC_RAW(tPAL* palette_source);
 
 // asm: 	.globl	PAL_FIND
-void PAL_FIND(void);
+int PAL_FIND(u32 pal_index);
 
 // asm: 	.globl	PAL_FIND_RAW
-void PAL_FIND_RAW(void);
+int PAL_FIND_RAW(const tPAL* palette_source);
 
 // asm: 	.globl	PAL_SET
 void PAL_SET(uint32_t* src, uint32_t destPaletteColor, uint32_t count);

@@ -1,16 +1,16 @@
-#include "../core/cpu.h"
-#include "../core/machine.h"
-#include "macs.h"
-#include "obj.h"
-#include "mproc.h"
-#include "vunit.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
-#include "pall.h"
-#include "text.h"
+
 #include "map.h"
+#include "../core/machine.h"
+#include "globals.h"
+#include "macs.h"
+#include "mproc.h"
+#include "obj.h"
+#include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
+#include "text.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/MAP.ASM
@@ -32,23 +32,23 @@ void RADAR_PLOT(void);
 #define tmp_bufferI tmp_buffer
 
 /*
-*----------------------------------------------------------------------------
-*OVERHEAD MAP
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *OVERHEAD MAP
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*
-*
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *
+ *
+ *
+ *
+ */
 #define MAP_ITERATIONS 30
 // 	;INITIAL THETAs
 #define M1ST (-HALFPI)
@@ -56,9 +56,9 @@ void RADAR_PLOT(void);
 #define M3ST (-HALFPI)
 #define M4ST HALFPI
 // 	;THETA DELTAs
-#define M1STD 0.052359877 //HALFPI/30
+#define M1STD 0.052359877    // HALFPI/30
 #define M2STD (-0.052359877) //-HALFPI/30
-#define M3STD 0.052359877 //HALFPI/30
+#define M3STD 0.052359877    // HALFPI/30
 #define M4STD (-0.052359877) //-HALFPI/30
 /* asm: M3STDI	.float	M1STD */
 /* asm: 	 */
@@ -68,41 +68,39 @@ static float M3STDI = M1STD;
 /* asm: 	 */
 static float M4STDI = M2STD;
 // 	;PROCESS DATA DEFINEs
-#define MAP1OBJ (PDATA+0)
-#define MAP2OBJ (PDATA+1)
-#define MAP3OBJ (PDATA+2)
-#define MAP4OBJ (PDATA+3)
-#define MAPLPX (PDATA+4) //MAP LEAD POSITION X
-#define MAPLPY (PDATA+5) //MAP LEAD POSITION Y
-#define MAPLPZ (PDATA+6) //MAP LEAD POSITION Z
-#define MAP1T (PDATA+7) //MAP 1 THETA
-#define MAP2T (PDATA+8) //MAP 2 THETA
-#define MAP3T (PDATA+9) //MAP 3 THETA
-#define MAP4T (PDATA+10) //MAP 4 THETA
-#define MAPLTX (PDATA+11) //MAP LEAD THETA
-#define MAPLMAT (PDATA+12) //MAP LEAD MATRIX
-#define MAPLMATEND (PDATA+20)
-#define MAPXD (PDATA+21)
-#define MAPYD (PDATA+22)
+#define MAP1OBJ (PDATA + 0)
+#define MAP2OBJ (PDATA + 1)
+#define MAP3OBJ (PDATA + 2)
+#define MAP4OBJ (PDATA + 3)
+#define MAPLPX (PDATA + 4)   // MAP LEAD POSITION X
+#define MAPLPY (PDATA + 5)   // MAP LEAD POSITION Y
+#define MAPLPZ (PDATA + 6)   // MAP LEAD POSITION Z
+#define MAP1T (PDATA + 7)    // MAP 1 THETA
+#define MAP2T (PDATA + 8)    // MAP 2 THETA
+#define MAP3T (PDATA + 9)    // MAP 3 THETA
+#define MAP4T (PDATA + 10)   // MAP 4 THETA
+#define MAPLTX (PDATA + 11)  // MAP LEAD THETA
+#define MAPLMAT (PDATA + 12) // MAP LEAD MATRIX
+#define MAPLMATEND (PDATA + 20)
+#define MAPXD (PDATA + 21)
+#define MAPYD (PDATA + 22)
 
 /*
-*
-*
-*
-*
-*
-*
-*/
-void UNFOLDMAP(void)
-{
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+void UNFOLDMAP(void) {
     // asm 00005E0B: 	CALL	MAPPAL_ILLUM_INIT
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "UNFOLDMAP", 0, 0);
     UNIMPL();
 }
 
-void UNFOLDMAP_NOPAL(void)
-{
+void UNFOLDMAP_NOPAL(void) {
     // asm 00005E0C: 	LDIL	O_3DROT,R6
     // asm 00005E0F: 	OR	O_NOUROT|O_NOUNIV,R6
     // asm 00005E10: 	LDI	@EPALL,AR2
@@ -364,13 +362,12 @@ void UNFOLDMAP_NOPAL(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*
-*/
-void FOLDMAP(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *
+ */
+void FOLDMAP(void) {
     // asm 00005EEB: 	SONDFX	WIPE4
     // *ELP CHANGE
     // asm 00005EED: 	CALL	MAPPAL_ILLUM_INIT
@@ -616,8 +613,7 @@ void FOLDMAP(void)
 
 // *----------------------------------------------------------------------------
 
-void CLEAR_MAP_PALS(void)
-{
+void CLEAR_MAP_PALS(void) {
     // asm 00005FCC: 	LDI	@EPALL,AR2
     // asm 00005FCD: 	CALL	PAL_FIND_RAW
 #if DEBUG
@@ -643,8 +639,7 @@ IBOIBO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void MAPPAL_ILLUM_INIT(void)
-{
+static void MAPPAL_ILLUM_INIT(void) {
     // asm 00005FD7: 	LDI	@EPALR,AR0	;LOAD PALETTES AT
     // asm 00005FD8: 	LDI	@EPALL,AR1	;THE SAME TIME
     // asm 00005FD9: 	LDI	map1_p,AR3
@@ -697,8 +692,7 @@ L342:
 /* asm: FORMULA1	.float	0.318309886 */
 static float FORMULA1 = 0.318309886f;
 
-static void MAP_ILLUM_COMPUTE(void)
-{
+static void MAP_ILLUM_COMPUTE(void) {
     // asm 00005FED: 	LDF	*+AR7(MAP1T),R0
     // asm 00005FEE: 	ADDF	HALFPI,R0
     // asm 00005FEF: 	MPYF	@FORMULA1,R0
@@ -727,8 +721,7 @@ int MAPPAL13;
 /* asm: MAPPAL24	.bss	MAPPAL24,1 */
 int MAPPAL24;
 
-static void MAPPAL_ILLUM(void)
-{
+static void MAPPAL_ILLUM(void) {
     // asm 00005FFD: 	PUSH	AR0
     // asm 00005FFE: 	PUSH	AR1
     // asm 00005FFF: 	PUSH	AR2
@@ -947,28 +940,27 @@ int STOPWATCH;
 int STOPWATCH_CNTL;
 static const char COLON[] = ":";
 /*
-*----------------------------------------------------------------------------
-*RETURNS
-*	AR2	POINTING TO LAP BUFFER
-*
-*/
+ *----------------------------------------------------------------------------
+ *RETURNS
+ *	AR2	POINTING TO LAP BUFFER
+ *
+ */
 /* asm: lap_buffer	.bss	lap_buffer,4 */
 int lap_buffer[4];
 /* asm: tmp_buffer	.bss	tmp_buffer,2 */
 int tmp_buffer[2];
 
 /*
-*----------------------------------------------------------------------------
-*TIME2STR	CONVERT TIME CODE TO STRING
-*
-*
-*PARAMETERS
-*	R0	TIME (IN 1/60 SECONDS)
-*	AR2	STRING SPACE
-*
-*/
-void TIME2STR(void)
-{
+ *----------------------------------------------------------------------------
+ *TIME2STR	CONVERT TIME CODE TO STRING
+ *
+ *
+ *PARAMETERS
+ *	R0	TIME (IN 1/60 SECONDS)
+ *	AR2	STRING SPACE
+ *
+ */
+void TIME2STR(void) {
     // asm 000060C4: 	PUSH	R0
     // asm 000060C5: 	PUSH	R1
     // asm 000060C6: 	PUSH	R2
@@ -1009,18 +1001,18 @@ void TIME2STR(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CVTTIME	CVT TIMECODE TO COMPONENTS
-*
-*PARAMETERS
-*	R0
-*
-*RETURNS
-*	R0	(INT) HUNDERTHS
-*	R1	(INT) SECONDS
-*	R2	(INT) MINUTES
-*
-*/
+ *----------------------------------------------------------------------------
+ *CVTTIME	CVT TIMECODE TO COMPONENTS
+ *
+ *PARAMETERS
+ *	R0
+ *
+ *RETURNS
+ *	R0	(INT) HUNDERTHS
+ *	R1	(INT) SECONDS
+ *	R2	(INT) MINUTES
+ *
+ */
 /* asm: MINFACT	.FLOAT	0.000303030303		;1/(55*60) */
 static float MINFACT = 0.000303030303f;
 /* asm: SECFACT	.FLOAT	0.018181818		;1/55 */
@@ -1029,8 +1021,7 @@ static float SECFACT = 0.018181818f;
 /* asm: 	 */
 static float HUNFACT = 1.818181818f;
 
-void CVTTIME(void)
-{
+void CVTTIME(void) {
     // asm 000060E8: 	PUSH	R3
     // asm 000060E9: 	PUSHF	R3
     // asm 000060EA: 	FLOAT	R0,R3
@@ -1085,10 +1076,10 @@ void CVTTIME(void)
 
 #define RADAR_XMIN 460
 #define RADAR_XMAX 500
-#define RADAR_XCNTR (((RADAR_XMAX-RADAR_XMIN)/2)+RADAR_XMIN)
+#define RADAR_XCNTR (((RADAR_XMAX - RADAR_XMIN) / 2) + RADAR_XMIN)
 #define RADAR_YMIN 100
 #define RADAR_YMAX 200
-#define RADAR_YCNTR (((RADAR_YMAX-RADAR_YMIN)/2)+RADAR_YMIN)
+#define RADAR_YCNTR (((RADAR_YMAX - RADAR_YMIN) / 2) + RADAR_YMIN)
 #define BLIPSIZE_X 4
 #define BLIPSIZE_Y 4
 #define BLIPSIZE_XH 2
@@ -1097,8 +1088,7 @@ void CVTTIME(void)
 int THIS_MACHINE_AHEAD;
 
 // *----------------------------------------------------------------------------
-void RADAR_PLOT(void)
-{
+void RADAR_PLOT(void) {
     // asm 0000610A: 	PUSH	AR4
     // asm 0000610B: 	LDI	@PLYCAR,AR4
     // 	;background

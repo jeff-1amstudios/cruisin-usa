@@ -1,21 +1,21 @@
-#include "../core/cpu.h"
+
+#include "plyr.h"
 #include "../core/machine.h"
 #include "c30.h"
-#include "obj.h"
+#include "cmos.h"
+#include "comm.h"
+#include "delta.h"
+#include "dirq.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
+#include "obj.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "dirq.h"
-#include "delta.h"
-#include "comm.h"
-#include "plyr.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/PLYR.ASM
@@ -112,11 +112,11 @@ static float GEARACTAB[5];
 static float ENGACTAB[20];
 
 /*
-*----------------------------------------------------------------------------
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 #define JARVK 0
 // *THESE ARE EDGE VARIABLES AND SHOULD NOT BE MESSED WITH
@@ -187,11 +187,11 @@ int CHEAT;
 #define PLYPOS3Y (-700)
 #endif
 // ;PLYPOS3Y	.set	-2700	;good heli height
-#define ZOOMRATIO 0.05 //1/ZOOMTIME FOR VIEW CHANGE
+#define ZOOMRATIO 0.05 // 1/ZOOMTIME FOR VIEW CHANGE
 // *SWITCH BIT VALUES
 
-#define SHIFT 4 //LO-HI SHIFT LEVER
-#define BRAKE 1 //BRAKE PEDAL
+#define SHIFT 4 // LO-HI SHIFT LEVER
+#define BRAKE 1 // BRAKE PEDAL
 // *RAM VARIABLES
 
 /* asm: PLMSAV	.bss	PLMSAV,15 */
@@ -221,48 +221,47 @@ static float SPINFRICI = 0.015f;
 #define NUM_RPM 47.0
 #define OVERREV 51.0
 /*
-*----------------------------------------------------------------------------
-*PLAYER CAR SPECIALIZED PARAMETER TABLE
-*
-*ACCELERATION, TRACTION (0=total traction), ONROAD DAMPING, OFFROAD DAMPING
-*
-*/
+ *----------------------------------------------------------------------------
+ *PLAYER CAR SPECIALIZED PARAMETER TABLE
+ *
+ *ACCELERATION, TRACTION (0=total traction), ONROAD DAMPING, OFFROAD DAMPING
+ *
+ */
 /*
-*STDARD .float	0.82,1.00,0.0028,0.010
-*NEWSTD	.float	0.82,0.90,0.0028,0.0060
-*/
+ *STDARD .float	0.82,1.00,0.0028,0.010
+ *NEWSTD	.float	0.82,0.90,0.0028,0.0060
+ */
 static tCARPARAM CARPARAMTAB[] = {
     // #0 MUSCLE CAR
-    { 0.91, 0.60, 0.0028, 0.010}, // ALL AROUND
+    { 0.91, 0.60, 0.0028, 0.010 }, // ALL AROUND
     // #1 XXX
-    { 0.98, 0.50, 0.0032, 0.0042}, // ACCEL
+    { 0.98, 0.50, 0.0032, 0.0042 }, // ACCEL
     // #2 MISSILE
-    { 0.88, 0.70, 0.0026, 0.010}, // TOP SPEED
+    { 0.88, 0.70, 0.0026, 0.010 }, // TOP SPEED
     // #3 FERRARI
-    { 0.89, 0.50, 0.0028, 0.010}, // HANDLING
+    { 0.89, 0.50, 0.0028, 0.010 }, // HANDLING
     // HIDDEN VEHICLES
     // #4 jeep
-    { 0.95, 0.60, 0.0030, 0.0039},
+    { 0.95, 0.60, 0.0030, 0.0039 },
     // #5 sbusp
-    { 0.89, 0.50, 0.0028, 0.010},
+    { 0.89, 0.50, 0.0028, 0.010 },
     // #6 copcar
-    { 0.91, 0.65, 0.0028, 0.0050},
+    { 0.91, 0.65, 0.0028, 0.0050 },
     // #7 gtruck
-    { 0.89, 0.50, 0.0028, 0.010},
+    { 0.89, 0.50, 0.0028, 0.010 },
 };
-#define CARPARAMTABL (CARPARAMTAB1-CARPARAMTAB) //LENGTH OF ENTRY
+#define CARPARAMTABL (CARPARAMTAB1 - CARPARAMTAB) // LENGTH OF ENTRY
 
 /*
-*----------------------------------------------------------------------------
-*GET CAR PARAMETERS FOR PLAYER
-*PARAMETERS
-*	R0	CAR # 0-3
-*	AR0	CAR BLOCK INDEX
-*LOADS PARAMETERS INTO CAR BLOCK
-*TRASHES R0,AR2
-*/
-static void GETCARPARAM(void)
-{
+ *----------------------------------------------------------------------------
+ *GET CAR PARAMETERS FOR PLAYER
+ *PARAMETERS
+ *	R0	CAR # 0-3
+ *	AR0	CAR BLOCK INDEX
+ *LOADS PARAMETERS INTO CAR BLOCK
+ *TRASHES R0,AR2
+ */
+static void GETCARPARAM(void) {
     // asm 00002939: 	LDI	@CARPARAMTABI,AR2
     // asm 0000293A: 	MPYI	CARPARAMTABL,R0
     // asm 0000293B: 	ADDI	R0,AR2
@@ -280,19 +279,18 @@ static void GETCARPARAM(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*INIT CAR 3 POINT SUSPENSION DATA STRUCTURE
-*PARAMETERS
-*	AR4	OBJECT BLOCK
-*	R0	VEHICLE #
-*RETURNS	AR0	POINTS TO CARBLOCK
-*
-*	NO CARRY ON FAILURE TO ALLOCATE CAR BLOCK
-*
-*TRASHED	R1-R7
-*/
-void _CARV0(void)
-{
+ *----------------------------------------------------------------------------
+ *INIT CAR 3 POINT SUSPENSION DATA STRUCTURE
+ *PARAMETERS
+ *	AR4	OBJECT BLOCK
+ *	R0	VEHICLE #
+ *RETURNS	AR0	POINTS TO CARBLOCK
+ *
+ *	NO CARRY ON FAILURE TO ALLOCATE CAR BLOCK
+ *
+ *TRASHED	R1-R7
+ */
+void _CARV0(void) {
     // asm 00002945: 	PUSH	R0
     // asm 00002946: 	PUSH	AR1
     // asm 00002947: 	CALL	GETCAR
@@ -347,8 +345,7 @@ CARV_ERR:
     UNIMPL();
 }
 
-void BONUS_WAIT_LOOP(void)
-{
+void BONUS_WAIT_LOOP(void) {
     // asm 00002976: 	LDI	@DID_TIMED_OUT,R0
     // asm 00002977: 	BNZ	BWLX
     // asm 00002978: 	LDI	@PLYCAR,AR2
@@ -372,8 +369,7 @@ BONUS_WAIT_LP:
     UNIMPL();
 }
 
-void PLYR_CAR_INIT(void)
-{
+void PLYR_CAR_INIT(void) {
     // asm 00002987: 	STI	AR4,@PLYCAR		;INIT CAR PLAYER STRUCT
     // asm 00002988: 	STI	AR7,@PLYPROC
     // asm 00002989: 	LDI	@CHOOSENCAR,AR1
@@ -429,12 +425,11 @@ DOGENRLB:
 }
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS
-*	AR4	CAR OBJECT
-*/
-void PLYR_INTRO_ENTER(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS
+ *	AR4	CAR OBJECT
+ */
+void PLYR_INTRO_ENTER(void) {
     // asm 000029B8: 	LDI	*+AR4(OCARBLK),AR5
     // asm 000029B9: 	LDI	0,R0		 	;NEUTRAL, PLEASE
     // asm 000029BA: 	STI	R0,*+AR5(CARGEAR)
@@ -503,8 +498,7 @@ void PLYR_INTRO_ENTER(void)
 }
 
 // *----------------------------------------------------------------------------
-void _PLYR(void)
-{
+void _PLYR(void) {
 PLYR_ENTER:
     // asm 000029EE: 	CALL	OBJ_GET			;INIT PLAYER OBJECT
     // asm 000029EF: 	LDI	AR0,AR4
@@ -987,18 +981,17 @@ static float DISTCON = 0.000001f;
 static float SPDCON = 0.00333f;
 
 /*
-*----------------------------------------------------------------------------
-*CAMERA CHECK
-*
-*PARAMETERS
-*	R0	CAMERA ANGLE
-*	AR0	CAMERA POSITION XYZ POINTER
-*	AR4	PLAYER CAR
-*RETURNS
-*	CARRY SET	COLLIDE WITH ROAD
-*/
-static void CAMCHKL(void)
-{
+ *----------------------------------------------------------------------------
+ *CAMERA CHECK
+ *
+ *PARAMETERS
+ *	R0	CAMERA ANGLE
+ *	AR0	CAMERA POSITION XYZ POINTER
+ *	AR4	PLAYER CAR
+ *RETURNS
+ *	CARRY SET	COLLIDE WITH ROAD
+ */
+static void CAMCHKL(void) {
     // asm 00002B93: 	FLOAT	-170,R1	    		;GET LEFT CORNER DIST
     // asm 00002B94: 	B	CAMCHK0
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1006,8 +999,7 @@ static void CAMCHKL(void)
     UNIMPL();
 }
 
-static void CAMCHKR(void)
-{
+static void CAMCHKR(void) {
     // asm 00002B95: 	FLOAT	170,R1	    		;GET RIGHT CORNER DIST
 CAMCHK0:
     // asm 00002B96: 	PUSHF	R0
@@ -1043,21 +1035,20 @@ CAMCHK0:
 }
 
 /*
-*----------------------------------------------------------------------------
-*CAMCHKLR
-*PARAMETERS
-*	AR0	CAMERA POSITION XYZ POINTER
-*	AR4	PLAYER CAR
-*RETURNS
-*	R3=0 CAMERA O.K.,
-*	R0=1 LEFT OFF,
-*	R0=2 RIGHT OFF,
-*	R0=3 BOTH OFF
-*RETURNS
-*	Z=1 CAMERA O.K.
-*/
-static void CAMCHKLR(void)
-{
+ *----------------------------------------------------------------------------
+ *CAMCHKLR
+ *PARAMETERS
+ *	AR0	CAMERA POSITION XYZ POINTER
+ *	AR4	PLAYER CAR
+ *RETURNS
+ *	R3=0 CAMERA O.K.,
+ *	R0=1 LEFT OFF,
+ *	R0=2 RIGHT OFF,
+ *	R0=3 BOTH OFF
+ *RETURNS
+ *	Z=1 CAMERA O.K.
+ */
+static void CAMCHKLR(void) {
     // asm 00002BAF: 	CALL	CAMCHKL
     // asm 00002BB0: 	LDINC	1,R3
     // asm 00002BB1: 	LDIC	0,R3
@@ -1071,22 +1062,21 @@ static void CAMCHKLR(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*CAMERA	CHECKER
-*PARAMETERS
-*	R0	ANGLE
-*	AR4	PLAYER CAR
-*	AR5	CAR BLOCK
-*RETURNS
-*	R3=0 CAMERA O.K.
-*	R0=1 LEFT OFF,
-*	R0=2 RIGHT OFF,
-*	R0=3 BOTH OFF
-*RETURNS
-*	Z=1 CAMERA O.K.
-*/
-static void CAMCHK(void)
-{
+ *----------------------------------------------------------------------------
+ *CAMERA	CHECKER
+ *PARAMETERS
+ *	R0	ANGLE
+ *	AR4	PLAYER CAR
+ *	AR5	CAR BLOCK
+ *RETURNS
+ *	R3=0 CAMERA O.K.
+ *	R0=1 LEFT OFF,
+ *	R0=2 RIGHT OFF,
+ *	R0=3 BOTH OFF
+ *RETURNS
+ *	Z=1 CAMERA O.K.
+ */
+static void CAMCHK(void) {
     // asm 00002BB7: 	PUSH	AR0
     // asm 00002BB8: 	CALL	GETCAMPOS
     // asm 00002BB9: 	LDI	AR3,AR0
@@ -1098,17 +1088,16 @@ static void CAMCHK(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*CAMERA	ROTATER
-*PARAMETERS
-*	R0	CURRENT ANGLE
-*	AR4	PLAYER CAR
-*	AR5	CAR BLOCK
-*RETURNS
-*	R0	ADJUSTED ANGLE
-*/
-static void CAMROT(void)
-{
+ *----------------------------------------------------------------------------
+ *CAMERA	ROTATER
+ *PARAMETERS
+ *	R0	CURRENT ANGLE
+ *	AR4	PLAYER CAR
+ *	AR5	CAR BLOCK
+ *RETURNS
+ *	R0	ADJUSTED ANGLE
+ */
+static void CAMROT(void) {
     // asm 00002BBD: PUSH	AR0
     // asm 00002BBE:  	PUSH	AR2
     // asm 00002BBF: 	LDF	R0,R3
@@ -1134,16 +1123,15 @@ CAMROT2:
 }
 
 /*
-*----------------------------------------------------------------------------
-*GET NEW CAMERA POSITION
-*PARAMETERS
-*	R0	CAMERARAD
-*	AR4	PLAYER CAR
-*RETURNS
-*	AR3=VECTORA=CAMERAPOS X,Y,Z
-*/
-static void GETCAMPOS(void)
-{
+ *----------------------------------------------------------------------------
+ *GET NEW CAMERA POSITION
+ *PARAMETERS
+ *	R0	CAMERARAD
+ *	AR4	PLAYER CAR
+ *RETURNS
+ *	AR3=VECTORA=CAMERAPOS X,Y,Z
+ */
+static void GETCAMPOS(void) {
     // asm 00002BCF: 	PUSHF	R0
     // asm 00002BD0: 	PUSH	AR2
     // asm 00002BD1: 	LDI	@MATRIXAI,AR2		;GET SOURCE MATRIX
@@ -1171,14 +1159,13 @@ static void GETCAMPOS(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*CAMERA ADJUST - KEEP IT OUT OF THE GROUND AND BUILDINGS
-*PARAMETERS
-*	AR0	CAMERA POSITION XYZ POINTER
-*	AR4	PLAYER CAR
-*/
-void CAMYADJ(void)
-{
+ *----------------------------------------------------------------------------
+ *CAMERA ADJUST - KEEP IT OUT OF THE GROUND AND BUILDINGS
+ *PARAMETERS
+ *	AR0	CAMERA POSITION XYZ POINTER
+ *	AR4	PLAYER CAR
+ */
+void CAMYADJ(void) {
     // *ADJUST CAMERA Y
     // asm 00002BE5: 	PUSH	AR4
     // asm 00002BE6: 	LDI	AR0,AR4			;POINT TO XYZ OF CAMERA
@@ -1202,14 +1189,13 @@ CAM1XX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*PUT PLAYER ON ROAD
-*PARAMETERS
-*	AR4	PLAYER OBJECT
-*	AR5	PLAYER CAR
-*/
-static void PLYONRD(void)
-{
+ *----------------------------------------------------------------------------
+ *PUT PLAYER ON ROAD
+ *PARAMETERS
+ *	AR4	PLAYER OBJECT
+ *	AR5	PLAYER CAR
+ */
+static void PLYONRD(void) {
     // asm 00002BF5: 	LDF	0,R0
     // asm 00002BF6: 	STF	R0,*+AR5(CARSPRAD)
     // asm 00002BF7: 	STF	R0,*+AR5(CARDROT)
@@ -1250,22 +1236,21 @@ static void PLYONRD(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*DRONE LOOP
-*PARAMETERS
-*	R2	CURRENT STEERING DELTA ANGLE
-*	AR4	CAR OBJECT
-*	AR5	CAR DATA BLOCK
-*		CARBLK STUFF TO LOAD
-*		CARTURN      	;ANGLE OF FRONT WHEELS 		(FLOAT)
-*		CARTRACTION  	;TRACTION COEFFICIENT OF TIRES	(FLOAT)
-*		CARMAXACCEL  	;MAXIMUM ACCEL (PIX/16 MSEC)	(FLOAT)
-*		CARTHROTTLE  	;THROTTLE VALUE 0-1.0 		(FLOAT)
-*		CARBRAKE	;BRAKING FRICTION (0-1.0)	(FLOAT)
-*
-*/
-void DRONEGO(void)
-{
+ *----------------------------------------------------------------------------
+ *DRONE LOOP
+ *PARAMETERS
+ *	R2	CURRENT STEERING DELTA ANGLE
+ *	AR4	CAR OBJECT
+ *	AR5	CAR DATA BLOCK
+ *		CARBLK STUFF TO LOAD
+ *		CARTURN      	;ANGLE OF FRONT WHEELS 		(FLOAT)
+ *		CARTRACTION  	;TRACTION COEFFICIENT OF TIRES	(FLOAT)
+ *		CARMAXACCEL  	;MAXIMUM ACCEL (PIX/16 MSEC)	(FLOAT)
+ *		CARTHROTTLE  	;THROTTLE VALUE 0-1.0 		(FLOAT)
+ *		CARBRAKE	;BRAKING FRICTION (0-1.0)	(FLOAT)
+ *
+ */
+void DRONEGO(void) {
     // asm 00002C18: 	PUSHF	R2
     // asm 00002C19: 	CALL	GETAUTO			;GET AUTO TRANS VALUE
     // asm 00002C1A: 	STI	R0,*+AR5(CARGEAR) 	;DO THE GEAR
@@ -1313,8 +1298,7 @@ DAIRB:
     UNIMPL();
 }
 
-void DRONESTOP(void)
-{
+void DRONESTOP(void) {
     // asm 00002C39: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
     // asm 00002C3A: 	CALL	CAR_ROAD_COLL
     // *GET CAR MATRIX
@@ -1337,25 +1321,28 @@ void DRONESTOP(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GEAR RATIO TABLE
-*/
+ *----------------------------------------------------------------------------
+ *GEAR RATIO TABLE
+ */
 /* asm: GEARTAB		.float	0.0,0.60,0.35,0.21,0.15 */
 static float GEARTAB[] = {
-    0.0f, 0.60f, 0.35f, 0.21f, 0.15f,
+    0.0f,
+    0.60f,
+    0.35f,
+    0.21f,
+    0.15f,
 };
 /* asm: ENGVOL	.BSS	ENGVOL,1 */
 int ENGVOL;
 
 /*
-*----------------------------------------------------------------------------
-*GET REV FOR PLAYER CAR
-*PARAMETERS
-*	AR4	PLAYER CAR OBJECT
-*	AR5	PLAYER CAR STRUCTURE
-*/
-static void GETREV(void)
-{
+ *----------------------------------------------------------------------------
+ *GET REV FOR PLAYER CAR
+ *PARAMETERS
+ *	AR4	PLAYER CAR OBJECT
+ *	AR5	PLAYER CAR STRUCTURE
+ */
+static void GETREV(void) {
     // asm 00002C4C: 	LDI	@_MODE,R1	       	;ON STARTING LINE?
     // asm 00002C4D: 	TSTB	MGO,R1
     // asm 00002C4E: 	BZ	REV0			;YES, NEUTRAL GEAR
@@ -1448,14 +1435,13 @@ REV5:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GETRPM	FOR DRONE CAR
-*PARAMETERS
-*	AR4	CAR OBJECT
-*	AR5	CAR STRUCTURE
-*/
-void GETRPM(void)
-{
+ *----------------------------------------------------------------------------
+ *GETRPM	FOR DRONE CAR
+ *PARAMETERS
+ *	AR4	CAR OBJECT
+ *	AR5	CAR STRUCTURE
+ */
+void GETRPM(void) {
     // asm 00002C92: 	LDI	@GEARTABI,AR0
     // asm 00002C93: 	ADDI	*+AR5(CARGEAR),AR0
     // asm 00002C94: 	LDF	*+AR5(CARSPEED),R0	;GET SPEED
@@ -1471,17 +1457,16 @@ void GETRPM(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*GET SKID FACTOR
-*PARAMETERS
-*	AR4	CAR
-*	AR5	CAR BLOCK
-*RETURNS
-*	R0	SKID FACTOR
-*	0=NOSKID, 1.0=FULL SKID
-*/
-static void GETSKID(void)
-{
+ *----------------------------------------------------------------------------
+ *GET SKID FACTOR
+ *PARAMETERS
+ *	AR4	CAR
+ *	AR5	CAR BLOCK
+ *RETURNS
+ *	R0	SKID FACTOR
+ *	0=NOSKID, 1.0=FULL SKID
+ */
+static void GETSKID(void) {
     // *CHECK SPIN OUT
     // asm 00002C9C: 	LDI	*+AR5(CAR_SPIN),R0  	;FULL SKID ON SPIN-OUT
     // asm 00002C9D: 	BEQ	GETSK00
@@ -1556,15 +1541,14 @@ GETSKXX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*CHECK FOR OFFROAD TIMEOUT
-*PARAMETERS
-*	AR5	PLAYER CAR STRUCTURE
-*RETURNS
-*	R0	RETURNED WITH OFFROAD TIMER
-*/
-static void CKOFRD(void)
-{
+ *----------------------------------------------------------------------------
+ *CHECK FOR OFFROAD TIMEOUT
+ *PARAMETERS
+ *	AR5	PLAYER CAR STRUCTURE
+ *RETURNS
+ *	R0	RETURNED WITH OFFROAD TIMER
+ */
+static void CKOFRD(void) {
     // asm 00002CD3: 	LDI	AR5,AR3		       	;CHECK FOR ALL WHEELS OFF
     // asm 00002CD4: 	ADDI	CARPCOL,AR3
     // asm 00002CD5: 	LDI	0,R3
@@ -1597,20 +1581,19 @@ NOTOFFX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*GETDIR-->GET CAR DIRECTION
-*PARAMETERS
-*	R0	NEW STEERING DELTA
-*	AR4	CAR OBJECT
-*       AR5	CAR BLOCK POINTER
-*RETURNS
-*	R0	NET STEERING CHANGE
-*	CARYROT,CARVROT,CARDROT SET
-*CLOBBERED
-*	R1,R2,R3,R4,R5
-*/
-static void GETDIR(void)
-{
+ *----------------------------------------------------------------------------
+ *GETDIR-->GET CAR DIRECTION
+ *PARAMETERS
+ *	R0	NEW STEERING DELTA
+ *	AR4	CAR OBJECT
+ *       AR5	CAR BLOCK POINTER
+ *RETURNS
+ *	R0	NET STEERING CHANGE
+ *	CARYROT,CARVROT,CARDROT SET
+ *CLOBBERED
+ *	R1,R2,R3,R4,R5
+ */
+static void GETDIR(void) {
     // asm 00002CEB: 	LDI	*+AR5(CAR_AIRF),R1
     // asm 00002CEC: 	BZ	GETDIR1
     // asm 00002CED: 	LDF	0,R0			;NO STEERING IN AIR
@@ -1662,8 +1645,7 @@ GETDIR2:
     UNIMPL();
 }
 
-static void CARSPIN(void)
-{
+static void CARSPIN(void) {
     // asm 00002D10: 	LDI	@NFRAMES,AR3
     // asm 00002D11: 	SUBI	1,AR3			;CUT DOWN COUNT
     // asm 00002D12: 	CMPI	2,R1 			;TIMED SPIN?
@@ -1738,11 +1720,10 @@ SPINREC:
 }
 
 /*
-*----------------------------------------------------------------------------
-*GETCARROT- GET OVERROTATION
-*/
-static void GETCARROT(void)
-{
+ *----------------------------------------------------------------------------
+ *GETCARROT- GET OVERROTATION
+ */
+static void GETCARROT(void) {
     // asm 00002D4A: 	PUSH	R3
     // asm 00002D4B: 	LDF	*+AR5(CARROT),R0      	;GET PREVIOUS VALUE
     // asm 00002D4C: 	LDF	*+AR5(CARTURN),R1
@@ -1777,16 +1758,20 @@ GETC1:
 }
 
 /*
-*----------------------------------------------------------------------------
-*ENGINE ACCEL MULTIPLIER TABLE
-*
-*/
+ *----------------------------------------------------------------------------
+ *ENGINE ACCEL MULTIPLIER TABLE
+ *
+ */
 /* asm: GEARACTABI	.word	GEARACTAB */
 #define GEARACTABI GEARACTAB
 /* asm: GEARACTAB */
 /* asm: 	.float	0.0,1.7,1.5,1.4,1.2  		;POWER FACTOR GEAR(0-4) */
 static float GEARACTAB[] = {
-    0.0f, 1.7f, 1.5f, 1.4f, 1.2f, // POWER FACTOR GEAR(0-4)
+    0.0f,
+    1.7f,
+    1.5f,
+    1.4f,
+    1.2f, // POWER FACTOR GEAR(0-4)
 };
 /* asm: ENGACTABI	.word	ENGACTAB */
 #define ENGACTABI ENGACTAB
@@ -1797,29 +1782,48 @@ static float GEARACTAB[] = {
 /* asm: 	.float	0.80,0.40,0.20,0.00,0.00	;4500,4800,5100,5400,5700 */
 /* asm: 	 */
 static float ENGACTAB[] = {
-    1.20f, 1.20f, 0.50f, 0.60f, 0.70f, // 0000,0300,0600,0900,1200
-    0.80f, 0.90f, 1.00f, 1.00f, 1.00f, // 1500,1800,2100,2400,2700
-    1.00f, 1.00f, 1.00f, 1.00f, 0.90f, // 3000,3300,3600,3900,4200
-    0.80f, 0.40f, 0.20f, 0.00f, 0.00f, // 4500,4800,5100,5400,5700
+    1.20f,
+    1.20f,
+    0.50f,
+    0.60f,
+    0.70f, // 0000,0300,0600,0900,1200
+    0.80f,
+    0.90f,
+    1.00f,
+    1.00f,
+    1.00f, // 1500,1800,2100,2400,2700
+    1.00f,
+    1.00f,
+    1.00f,
+    1.00f,
+    0.90f, // 3000,3300,3600,3900,4200
+    0.80f,
+    0.40f,
+    0.20f,
+    0.00f,
+    0.00f, // 4500,4800,5100,5400,5700
 };
 // *ENGINE FRICTION
 /* asm: ENGFR  	.float	0.000,0.005,0.003,0.001,0.000  	;GEAR(0-4) ENGINE FRICTION */
 /* asm: 	 */
 static float ENGFR[] = {
-    0.000f, 0.005f, 0.003f, 0.001f, 0.000f, // GEAR(0-4) ENGINE FRICTION
+    0.000f,
+    0.005f,
+    0.003f,
+    0.001f,
+    0.000f, // GEAR(0-4) ENGINE FRICTION
 };
 
 /*
-*----------------------------------------------------------------------------
-*GET NEW CAR SPEED
-*
-*PARAMETERS
-*	AR4	CAR OBJECT
-*	AR5	CAR BLOCK
-*
-*/
-void GETSPD(void)
-{
+ *----------------------------------------------------------------------------
+ *GET NEW CAR SPEED
+ *
+ *PARAMETERS
+ *	AR4	CAR OBJECT
+ *	AR5	CAR BLOCK
+ *
+ */
+void GETSPD(void) {
     // asm 00002D83: 	LDI	*+AR5(CAR_AIRB),R0
     // asm 00002D84: 	BZ	GETSPD1	      		;NO AIR DUDE...
     // *AIRBORNE CASE
@@ -1994,8 +1998,7 @@ GSL0:
     UNIMPL();
 }
 
-static void GETBRAKE(void)
-{
+static void GETBRAKE(void) {
     // asm 00002E0C: 	FLOATP	@_pot2,R0
     // asm 00002E0D: 	NEGF	@BRAKEMN,R1
     // asm 00002E0E: 	ADDF	R1,R0
@@ -2033,16 +2036,15 @@ GETBX:
 // *----------------------------------------------------------------------------
 
 /*
-*
-*TURN ON/OFF BRAKE LIGHTS
-*
-*PALSET- SETUP PALETTE TRANSFER
-*AR2=SOURCE DATA ADDRESSS
-*R2 =DEST PALETTE(B8-15), DEST COLOR(B0-7)
-*R3 =COUNT
-*/
-void _off_brake(void)
-{
+ *
+ *TURN ON/OFF BRAKE LIGHTS
+ *
+ *PALSET- SETUP PALETTE TRANSFER
+ *AR2=SOURCE DATA ADDRESSS
+ *R2 =DEST PALETTE(B8-15), DEST COLOR(B0-7)
+ *R3 =COUNT
+ */
+void _off_brake(void) {
     // asm 00002E31: 	PUSH	AR0
     // asm 00002E32: 	PUSH	AR2
     // asm 00002E33: 	PUSH	R2
@@ -2058,8 +2060,7 @@ void _off_brake(void)
     UNIMPL();
 }
 
-void _on_brake(void)
-{
+void _on_brake(void) {
     // asm 00002E3B: 	PUSH	AR0
     // asm 00002E3C: 	PUSH	AR2
     // asm 00002E3D: 	PUSH	R2
@@ -2101,12 +2102,11 @@ NO_COLORS:
 }
 
 /*
-*----------------------------------------------------------------------------
-*GET GAS PEDAL
-*RET R0=GAS PEDAL 0-1 FRACTION
-*/
-static void GETPEDAL(void)
-{
+ *----------------------------------------------------------------------------
+ *GET GAS PEDAL
+ *RET R0=GAS PEDAL 0-1 FRACTION
+ */
+static void GETPEDAL(void) {
     // asm 00002E57: 	FLOATP	@_pot1,R0
     // asm 00002E58: 	NEGF	@PEDALMN,R1
     // asm 00002E59: 	ADDF	R1,R0
@@ -2126,8 +2126,7 @@ static void GETPEDAL(void)
     UNIMPL();
 }
 
-static void GETGEAR(void)
-{
+static void GETGEAR(void) {
     // asm 00002E61: 	LDI	*+AR5(CARTRANS),R0
     // asm 00002E62: 	BNZ	GETMAN
     // asm 00002E63: 	LDI	@SUSPEND_MODE,R0	;SUSPEND MODE?
@@ -2140,8 +2139,7 @@ static void GETGEAR(void)
     UNIMPL();
 }
 
-static void GETMAN(void)
-{
+static void GETMAN(void) {
     // asm 00002E68: 	LDI	0,R0
     // asm 00002E69: 	LDI	@SWITCHBUTS,R1
     // asm 00002E6A: 	TSTB	SW_4TH,R1
@@ -2162,8 +2160,7 @@ static void GETMAN(void)
     UNIMPL();
 }
 
-void GETAUTO(void)
-{
+void GETAUTO(void) {
     // asm 00002E73: 	LDI	0,R2
     // asm 00002E74: 	LDF	*+AR5(CARTHROTTLE),R3	;TORQUE SENSOR FOR DOWNSHIFT
     // asm 00002E75: 	CMPF	1.0,R3
@@ -2193,13 +2190,12 @@ void GETAUTO(void)
 float STEERI = -0.0013f;
 
 /*
-*GET STEERING ANGLE
-*AR5=CAR STRUCTURE
-*RET R0= STEERING ANGLE
-*	 SETS CARTURN VALUE
-*/
-static void GETSTEER(void)
-{
+ *GET STEERING ANGLE
+ *AR5=CAR STRUCTURE
+ *RET R0= STEERING ANGLE
+ *	 SETS CARTURN VALUE
+ */
+static void GETSTEER(void) {
     // asm 00002E88: 	LDI	ADJ_STEERING_SENSITIVITY,AR2		;GET DIFFICULTY	ADJUST
     // asm 00002E89: 	CALL	ADJUSTMENT_READ		;R0  = 0-5 (int)
     // asm 00002E8A: 	FLOAT	R0,R4
@@ -2254,8 +2250,7 @@ static void GETSTEER(void)
     UNIMPL();
 }
 
-void _VIEW0(void)
-{
+void _VIEW0(void) {
     // asm 00002EB4: 	FLOAT	PLYPOS1Z,R4	;Z DIST
     // asm 00002EB5: 	FLOAT	PLYPOS1Y,R5	;Y DIST
     // asm 00002EB6: 	LDI	0,R2		;CAMVIEW STATUS
@@ -2266,8 +2261,7 @@ void _VIEW0(void)
     UNIMPL();
 }
 
-void _VIEW1(void)
-{
+void _VIEW1(void) {
     // asm 00002EB9: 	FLOAT	PLYPOS2Z,R4	;Z DIST
     // asm 00002EBA: 	FLOAT	PLYPOS2Y,R5	;Y DIST
     // asm 00002EBB: 	LDI	1,R2		;CAMVIEW STATUS
@@ -2278,8 +2272,7 @@ void _VIEW1(void)
     UNIMPL();
 }
 
-void _VIEW2(void)
-{
+void _VIEW2(void) {
     // asm 00002EBE: 	FLOAT	PLYPOS3Z,R4	;Z DIST
     // asm 00002EBF: 	FLOAT	PLYPOS3Y,R5	;Y DIST
     // asm 00002EC0: 	LDI	2,R2		;CAMVIEW STATUS
@@ -2332,11 +2325,10 @@ ZOOMX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*UPDATE YOUR ZOOM JIVE
-*/
-static void ZOOMUP(void)
-{
+ *----------------------------------------------------------------------------
+ *UPDATE YOUR ZOOM JIVE
+ */
+static void ZOOMUP(void) {
     // asm 00002EE6: 	LDF	@ZOOMDD,R2
     // asm 00002EE7: 	BZ	ZOOMUPX		;NO ACTIVE ZOOM, SKIP IT
     // asm 00002EE8: 	BND	ZOOMUP1
@@ -2371,18 +2363,17 @@ ZOOMUPX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*GETTRAK	GET NEAREST TRACK SECTION
-*PARAMETERS
-*	AR4	OBJECT
-*	AR5	STRUCTURE
-*RETURNS
-*	AR0	TRACK SEGMENT STORED IN AR5(CARTRAK)
-*CLOBBERS
-*	AR2,R0,R3,R4
-*/
-void GETTRAK(void)
-{
+ *----------------------------------------------------------------------------
+ *GETTRAK	GET NEAREST TRACK SECTION
+ *PARAMETERS
+ *	AR4	OBJECT
+ *	AR5	STRUCTURE
+ *RETURNS
+ *	AR0	TRACK SEGMENT STORED IN AR5(CARTRAK)
+ *CLOBBERS
+ *	AR2,R0,R3,R4
+ */
+void GETTRAK(void) {
     // asm 00002EFD: 	LDI	0,AR0			;CLOSEST ROAD SEGMENT INDEX
     // asm 00002EFE: 	LDI	@DYNALIST_BEGIN,R0
     // asm 00002EFF: 	BZ	GETRKX  			;NULL LIST DUDES
@@ -2418,14 +2409,13 @@ GETRKX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*CHECK IF DRIVING BACKWARDS
-*PARAMETERS
-*	AR4	CAR
-*	AR5	CAR STRUCTURE
-*/
-static void BACKCK(void)
-{
+ *----------------------------------------------------------------------------
+ *CHECK IF DRIVING BACKWARDS
+ *PARAMETERS
+ *	AR4	CAR
+ *	AR5	CAR STRUCTURE
+ */
+static void BACKCK(void) {
     // asm 00002F17: 	LDI	*+AR5(CAR_SPIN),R0
     // asm 00002F18: 	BNE	BACKCKX
     // asm 00002F19: 	LDF	*+AR5(CARSPEED),R4	;MUST BE MOVING SOMEWHAT
@@ -2455,20 +2445,19 @@ BACKCKX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*CHECK OUT OF BOUNDS
-*PARAMETERS
-*	AR4	CAR
-*	AR5	CAR DATA BLOCK
-*RETURNS
-*	CS IF ANY WHEEL OUT OF BOUNDS
-*	NC IN BOUNDS
-*R0	0 = ONROAD
-*	NE= OFFROAD
-*TRASHES R0,R1,RC
-*/
-static void CKBND(void)
-{
+ *----------------------------------------------------------------------------
+ *CHECK OUT OF BOUNDS
+ *PARAMETERS
+ *	AR4	CAR
+ *	AR5	CAR DATA BLOCK
+ *RETURNS
+ *	CS IF ANY WHEEL OUT OF BOUNDS
+ *	NC IN BOUNDS
+ *R0	0 = ONROAD
+ *	NE= OFFROAD
+ *TRASHES R0,R1,RC
+ */
+static void CKBND(void) {
     // asm 00002F2C: 	PUSH	AR3
     // asm 00002F2D: 	PUSH	AR0
     // asm 00002F2E: 	LDI	CARVNUM-2,RC	  	;CHECK ALL WHEELS
@@ -2499,14 +2488,13 @@ CURBCKX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*CHECK CRAWL UP TUNNEL WALLS
-*PARAMETERS
-*	AR4	CAR OBJECT
-*	AR5	CAR BLOCK
-*/
-static void TUNCHK(void)
-{
+ *----------------------------------------------------------------------------
+ *CHECK CRAWL UP TUNNEL WALLS
+ *PARAMETERS
+ *	AR4	CAR OBJECT
+ *	AR5	CAR BLOCK
+ */
+static void TUNCHK(void) {
     // asm 00002F43: 	LDI	@_MODE,R0     		;IN TUNNEL?
     // asm 00002F44: 	TSTB	MINTUNNEL,R0
     // asm 00002F45: 	RETSZ				;NO, EXIT
@@ -2545,15 +2533,14 @@ static void TUNCHK(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*CHECK CURB COLLISION
-*KEEP ON ROAD
-*PARAMETERS
-*	AR4	CAR
-*	AR5	CAR DATA BLOCK
-*/
-void INBOUNDZ(void)
-{
+ *----------------------------------------------------------------------------
+ *CHECK CURB COLLISION
+ *KEEP ON ROAD
+ *PARAMETERS
+ *	AR4	CAR
+ *	AR5	CAR DATA BLOCK
+ */
+void INBOUNDZ(void) {
     // asm 00002F63: 	LDI	@_MODE,R1		;WAITING FOR START?
     // asm 00002F64: 	TSTB	MGO,R1
     // asm 00002F65: 	BZ	CURBCLX			;YES, EXIT
@@ -2568,14 +2555,13 @@ void INBOUNDZ(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*KEEP DRONE INBOUNDS
-*PARAMETERS
-*	AR4	CAR
-*	AR5	CAR DATA BLOCK
-*/
-void DRONINBZ(void)
-{
+ *----------------------------------------------------------------------------
+ *KEEP DRONE INBOUNDS
+ *PARAMETERS
+ *	AR4	CAR
+ *	AR5	CAR DATA BLOCK
+ */
+void DRONINBZ(void) {
     // asm 00002F6B:  	LDI	*+AR4(ODIST),R0
     // asm 00002F6C: 	ASH	-1,R0
     // asm 00002F6D: 	CMPI	32000,R0		;IS DUDE CLOSE?
@@ -2592,12 +2578,11 @@ DRONINBX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*WE HIT A CURB DUDES
-*HARD WALL REFLECT SPIN-OUT
-*/
-static void CURBCOL0(void)
-{
+ *----------------------------------------------------------------------------
+ *WE HIT A CURB DUDES
+ *HARD WALL REFLECT SPIN-OUT
+ */
+static void CURBCOL0(void) {
     // asm 00002F75: 	LDI	*+AR4(OID),R0		;PLAYER?
     // asm 00002F76: 	AND	CLASS_M,R0
     // asm 00002F77: 	CMPI	PLYR_C,R0
@@ -2694,8 +2679,7 @@ CURBCOL2:
 }
 
 // *----------------------------------------------------------------------------
-static void CURBSPIN(void)
-{
+static void CURBSPIN(void) {
     // asm 00002FC4: 	ADDF	R0,R2
     // asm 00002FC5: 	STF	R2,*+AR5(CARVROT)
     // asm 00002FC6: 	LDF	R0,R2
@@ -2727,11 +2711,10 @@ CURBCLX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*SHORT CORRECTION SPIN
-*/
-static void CURBSPN(void)
-{
+ *----------------------------------------------------------------------------
+ *SHORT CORRECTION SPIN
+ */
+static void CURBSPN(void) {
     // asm 00002FDC: 	ADDF	R0,R2
     // asm 00002FDD: 	STF	R2,*+AR5(CARVROT)
     // asm 00002FDE: 	LDF	R0,R2
@@ -2749,12 +2732,11 @@ static void CURBSPN(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*SOFT CURB HIT
-*
-*/
-static void SOFTCURB(void)
-{
+ *----------------------------------------------------------------------------
+ *SOFT CURB HIT
+ *
+ */
+static void SOFTCURB(void) {
     // asm 00002FE8: 	CALL	ROADIR
     // asm 00002FE9: 	LDF	R0,R1
     // asm 00002FEA: 	CALL	GETNXTRDIR    		;DIRECTION CAR TO NEXT ROAD SEG.
@@ -2844,12 +2826,11 @@ SOFTVELX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*GET DIRECTION TO NEXT ROAD SEGMENT FROM CAR
-*
-*/
-void GETNXTRDIR(void)
-{
+ *----------------------------------------------------------------------------
+ *GET DIRECTION TO NEXT ROAD SEGMENT FROM CAR
+ *
+ */
+void GETNXTRDIR(void) {
     // asm 00003031: 	LDI	*+AR5(CARTRAK),AR2	;GET CLOSEST TRACK PIECE
     // asm 00003032: 	LDI	*+AR2(OLINK4),AR0	;GET NEXT ONE
     // asm 00003033: 	LDI	AR4,AR2
@@ -2864,8 +2845,7 @@ void GETNXTRDIR(void)
     UNIMPL();
 }
 
-static void GETRDCAR(void)
-{
+static void GETRDCAR(void) {
     // asm 00003035: 	LDI	AR4,AR0
     // asm 00003036: 	B 	GETRD1
     // *GET ROAD DIRECTION
@@ -2877,8 +2857,7 @@ static void GETRDCAR(void)
     UNIMPL();
 }
 
-void ROADIR(void)
-{
+void ROADIR(void) {
     // asm 00003037: 	LDI	*+AR5(CARTRAK),R0	;GET CLOSEST TRACK PIECE
     // asm 00003038: 	BZ	ROADIRX			;NO TRACK PIECE, EXIT
     // asm 00003039: 	LDI	R0,AR2
@@ -2891,8 +2870,7 @@ void ROADIR(void)
     UNIMPL();
 }
 
-void GETRDIR(void)
-{
+void GETRDIR(void) {
     // asm 0000303A: 	LDI	*+AR2(OLINK4),AR0
 GETRD1:
     // asm 0000303B: PUSH	R2
@@ -2922,13 +2900,12 @@ int WHLTIM;
 int WHLOLD;
 
 /*
-*PLAYER WHEEL ROUTINE
-*PARAMETERS
-*	AR4	OBJECT
-*	AR5	CAR STRUCTURE
-*/
-static void PLYRWHL(void)
-{
+ *PLAYER WHEEL ROUTINE
+ *PARAMETERS
+ *	AR4	OBJECT
+ *	AR5	CAR STRUCTURE
+ */
+static void PLYRWHL(void) {
     // asm 0000304A: 	LDF	@STEERCT,R4		;STEERING CENTER
     // asm 0000304B: 	LDI	@WHLTIM,R3
     // asm 0000304C: 	LDI	@WHLOLD,R5
@@ -3003,34 +2980,42 @@ WHLOFFX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*SOUND TABLES
-*PLAYER COLLISION SOUND TABLE
-*/
+ *----------------------------------------------------------------------------
+ *SOUND TABLES
+ *PLAYER COLLISION SOUND TABLE
+ */
 /* asm: SCOLLTAB	.word	SCOLLA,SCOLLB,SCOLLC */
 static int SCOLLTAB[] = {
-    SCOLLA, SCOLLB, SCOLLC,
+    SCOLLA,
+    SCOLLB,
+    SCOLLC,
 };
 // *WALL HIT SOUND TABLE
 /* asm: WALLHITAB	.word	WALLHITA,WALLHITB,WALLHITC */
 static int WALLHITAB[] = {
-    WALLHITA, WALLHITB, WALLHITC,
+    WALLHITA,
+    WALLHITB,
+    WALLHITC,
 };
 // *SKID SOUND TABLE
 /* asm: SKIDTAB		.word	SKIDB,SKIDC */
 /* asm: 	 */
 static int SKIDTAB[] = {
-    SKIDB, SKIDC,
+    SKIDB,
+    SKIDC,
 };
 /* asm: PLAIRSND	.word 	RH_BABEWHOA,GL_WOOLAUGH,CHICKSCREAM */
 /* asm: 	 */
 static int PLAIRSND[] = {
-    RH_BABEWHOA, GL_WOOLAUGH, CHICKSCREAM,
+    RH_BABEWHOA,
+    GL_WOOLAUGH,
+    CHICKSCREAM,
 };
 /* asm: REVSNDTAB	.word	SINGLEREV5,SINGLEREV6 */
 /* asm: 	 */
 static int REVSNDTAB[] = {
-    SINGLEREV5, SINGLEREV6,
+    SINGLEREV5,
+    SINGLEREV6,
 };
 
 /*
@@ -3046,8 +3031,7 @@ static int REVSNDTAB[] = {
 *	AR4	PLYR CAR OBJECT
 *	AR5	CAR BLOCK
 */
-static void PLYR_SNDS(void)
-{
+static void PLYR_SNDS(void) {
     // asm 00003097: 	LDI	@_MODE,R0
     // asm 00003098: 	AND	MMODE,R0
     // asm 00003099: 	CMPI	MGAME,R0
@@ -3252,13 +3236,12 @@ GRAVX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*MAKE PLAYER EFFECTS SOUND
-*PARAMETERS
-*	AR2	SOUND
-*/
-void MKFXSND(void)
-{
+ *----------------------------------------------------------------------------
+ *MAKE PLAYER EFFECTS SOUND
+ *PARAMETERS
+ *	AR2	SOUND
+ */
+void MKFXSND(void) {
     // asm 00003143: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 00003144: 	RETSZ
     // asm 00003145: 	CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
@@ -3270,14 +3253,13 @@ void MKFXSND(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*MAKE PLAYER VOLUME EFFECTS BACKGROUND SOUND
-*PARAMETERS
-*	AR2	SOUND
-*	 R0	VOLUME
-*/
-static void MKVFXSND(void)
-{
+ *----------------------------------------------------------------------------
+ *MAKE PLAYER VOLUME EFFECTS BACKGROUND SOUND
+ *PARAMETERS
+ *	AR2	SOUND
+ *	 R0	VOLUME
+ */
+static void MKVFXSND(void) {
     // asm 00003148: 	LDI	R0,R1				;SAVE VOLUME
     // asm 00003149: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 0000314A: 	BNZ	MKVFX1
@@ -3302,15 +3284,14 @@ MKVFX1:
 }
 
 /*
-*----------------------------------------------------------------------------
-*RANDOM SOUND ROUTINE
-*PARAMETERS
-*	R0	RANDOM RANGE (0->R0-1)
-*	AR2	TABLE ADDR	OF SOUNDS
-*TRASHED R0
-*/
-void RANDSND(void)
-{
+ *----------------------------------------------------------------------------
+ *RANDOM SOUND ROUTINE
+ *PARAMETERS
+ *	R0	RANDOM RANGE (0->R0-1)
+ *	AR2	TABLE ADDR	OF SOUNDS
+ *TRASHED R0
+ */
+void RANDSND(void) {
     // asm 00003159: 	PUSH	AR2
     // asm 0000315A: 	LDI	R0,AR2
     // asm 0000315B: 	CALL	RANDU0
@@ -3329,8 +3310,7 @@ void RANDSND(void)
     UNIMPL();
 }
 
-void RANDVSND(void)
-{
+void RANDVSND(void) {
     // asm 00003160: 	PUSH	AR2
     // asm 00003161: 	LDI	R0,AR2
     // asm 00003162: 	CALL	RANDU0
@@ -3351,8 +3331,7 @@ void RANDVSND(void)
     UNIMPL();
 }
 
-void DRONESND(void)
-{
+void DRONESND(void) {
     // asm 00003168: 	PUSH	AR2
     // asm 00003169: 	LDI	R0,AR2
     // asm 0000316A: 	CALL	RANDU0
@@ -3364,8 +3343,7 @@ void DRONESND(void)
     UNIMPL();
 }
 
-void DRONESND1(void)
-{
+void DRONESND1(void) {
     // asm 0000316E: 	FLOAT	*+AR4(ODIST),R0
     // asm 0000316F: 	RETSN				;BEHIND PLAYER NO SOUND
     // asm 00003170: 	FLOAT	10000,R1
@@ -3385,12 +3363,12 @@ void DRONESND1(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*STEERING WHEEL AND GAS PEDAL PARAMETERS
-*(VALUES ARE READ FROM CMOS AND COPIED INTO RAM FOR EASY ACCESS)
-*(COPIED AT THE START OF EACH GAME)
-*ALL FLOATS
-*/
+ *----------------------------------------------------------------------------
+ *STEERING WHEEL AND GAS PEDAL PARAMETERS
+ *(VALUES ARE READ FROM CMOS AND COPIED INTO RAM FOR EASY ACCESS)
+ *(COPIED AT THE START OF EACH GAME)
+ *ALL FLOATS
+ */
 /* asm: PEDALMN	.bss	PEDALMN,1 */
 int PEDALMN;
 /* asm: PEDALMX	.bss	PEDALMX,1 */
@@ -3416,8 +3394,7 @@ int STEERFR;
 #define ADJ_BRAKEMIN 6
 #define ADJ_BRAKEMAX 7
 
-void GETCMOS_VALUES(void)
-{
+void GETCMOS_VALUES(void) {
     // asm 0000317C: 	PUSH	AR3
     // asm 0000317D: 	LDI	@PEDALMNI,AR3
     // asm 0000317E: 	LDI	ADJ_GASMIN,AR2
@@ -3440,11 +3417,10 @@ CMOSALP:
 }
 
 /*
-*----------------------------------------------------------------------------
-*PUSH CAMERA MATRIX
-*/
-static void CAMMATSAV(void)
-{
+ *----------------------------------------------------------------------------
+ *PUSH CAMERA MATRIX
+ */
+static void CAMMATSAV(void) {
     // asm 0000318C: 	POP	BK
     // asm 0000318D:      	LDI	SP,AR0
     // asm 0000318E: 	ADDI	9,SP
@@ -3463,11 +3439,10 @@ static void CAMMATSAV(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CAMERA MATRIX AVERAGE
-*/
-static void CAMMATAVG(void)
-{
+ *----------------------------------------------------------------------------
+ *CAMERA MATRIX AVERAGE
+ */
+static void CAMMATAVG(void) {
     // asm 00003195: 	POP	BK
     // asm 00003196: 	LDI	*+AR5(CAR_SPIN),R0	;DONT AVG IN SPIN DUDES
     // asm 00003197: 	CMPI	1,R0

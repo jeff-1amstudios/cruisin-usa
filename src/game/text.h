@@ -55,13 +55,13 @@ extern int TEXT_FREEZE;
 void TEXT_INIT(void);
 
 // asm: 	.globl	TEXT_ADDDS
-void TEXT_ADDDS(void);
+tSHADOW_TEXT TEXT_ADDDS(const char* text, float x, float y, int ticks);
 
 // asm: 	.globl	TEXT_ADD1
 void TEXT_ADD1(void);
 
 // asm: 	.globl	TEXT_ADD
-void TEXT_ADD(void);
+tTEXT* TEXT_ADD(const char* text, float x, float y, int ticks);
 
 // asm: 	.globl	TEXT_OUTPUT
 void TEXT_OUTPUT(void);
@@ -73,39 +73,39 @@ void STRCPY(void);
 void STRCAT(void);
 
 // asm: 	.globl	SETFIXEDFONTDS,SETFIXEDFONT
-void SETFIXEDFONTDS(void);
+void SETFIXEDFONTDS(tSHADOW_TEXT* t);
 
-void SETFIXEDFONT(void);
+void SETFIXEDFONT(tTEXT* t);
 
 // asm: 	.globl	SET18FONT,SET18FONTDS
-void SET18FONT(void);
+void SET18FONT(tTEXT* t);
 
-void SET18FONTDS(void);
+void SET18FONTDS(tSHADOW_TEXT* t);
 
 // asm: 	.globl	SET40FONT,SET40FONTDS
-void SET40FONT(void);
+void SET40FONT(tTEXT* t);
 
-void SET40FONTDS(void);
+void SET40FONTDS(tSHADOW_TEXT* t);
 
 // asm: 	.globl	SET12FONT,SET12FONTDS
-void SET12FONT(void);
+void SET12FONT(tTEXT* t);
 
-void SET12FONTDS(void);
+void SET12FONTDS(tSHADOW_TEXT* t);
 
 // asm: 	.globl	SETN43FONT,SETN43FONTDS
-void SETN43FONT(void);
+void SETN43FONT(tTEXT* t);
 
-void SETN43FONTDS(void);
+void SETN43FONTDS(tSHADOW_TEXT* t);
 
 // asm: 	.globl	SETLGDIGITFONT,SETLGDIGITFONTDS
-void SETLGDIGITFONT(void);
+void SETLGDIGITFONT(tTEXT* t);
 
-void SETLGDIGITFONTDS(void);
+void SETLGDIGITFONTDS(tSHADOW_TEXT* t);
 
 // asm: 	.globl	SETSMDIGITFONT,SETSMDIGITFONTDS
-void SETSMDIGITFONT(void);
+void SETSMDIGITFONT(tTEXT* t);
 
-void SETSMDIGITFONTDS(void);
+void SETSMDIGITFONTDS(tSHADOW_TEXT* t);
 
 // asm: 	.globl	HIGHLIGHTN
 void HIGHLIGHTN(void);

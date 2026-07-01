@@ -1,6 +1,6 @@
 #include "cusa.h"
 #include "../core/config.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "../core/port.h"
 #include "../core/validator.h"
@@ -50,7 +50,6 @@ void FIFO_RESET(void);
 void TIMER_RESET(void);
 void TIMER_READ(void);
 static void TIMERESET(void);
-static void TIMEREC(void);
 static void MESSAGE1(void);
 static void MSG1(void);
 static void MSG2(void);
@@ -63,6 +62,7 @@ void FAKEDIAG(void);
 void FEED_WATCHDOG(void);
 void FEED_WATCHDOG_HARD(void);
 void VERIFY_CODE_INTEGRITY(void);
+static float TIMEREC(void);
 
 #define SWRAMI SWRAM
 #define SWTABI SWTAB
@@ -520,14 +520,14 @@ DR1:
 
     FIFO_RESET();
 
-    IE = INT0_M | INT3_M | COMMINTM;
-    IF = 0;
+    // IE = INT0_M | INT3_M | COMMINTM;
+    // IF = 0;
     ENABLEGIE();
 
-    if (READAUD(AUD_VERSION) != VERSION_ID) {
-        VERSION_UPDATE();
-        return;
-    }
+    // if (READAUD(AUD_VERSION) != VERSION_ID) {
+    //     VERSION_UPDATE();
+    //     return;
+    // }
 
     if (VALIDATE_CMOS()) {
         CMOS_ERROR();
@@ -550,101 +550,124 @@ DR1:
 
 // *----------------------------------------------------------------------------
 void MAINLOOP(void) {
-    // asm 00004BD1: 	FIFO_CLRP	R0		;IS THE FIFO CLEAR
-    // asm 00004BD6: 	DMA_WT		R0
-    // asm 00004BDB: 	CALL	FIFO_RESET
-    // asm 00004BDC: 	CALL	TIMEREC
-    // asm 00004BDD: 	CALL	DECOMPRESS_PROC
-    // asm 00004BDE: 	CALL	TIMEREC
-MWAIT0:
-    // asm 00004BDF: LDI	@INFRAMES,R0
-    // asm 00004BE0: 	CMPI	@FRAMRATE,R0		;1 FRAME MINIMUM
-    // asm 00004BE1: 	BLT	MWAIT0
-    // asm 00004BE2: 	CALL	TIMEREC
-    // asm 00004BE3: 	CALL	ZSORTWT			;WAIT FOR PAGE WHILE SORTING
-    // asm 00004BE4: 	CALL	TIMEREC
-MWAIT:
-    // asm 00004BE5: LDI	@CLEARRDY,R0		;DONE WHEN INT SIGNALS PAGE SWAPPED
-    // asm 00004BE6: 	BNZ	MWAIT
-ENTER2:
-    // 	;COMMUNICATION XFER
-    // 	;
-    // asm 00004BE7: 	CALL	COMM_ROUTINE
-    // asm 00004BE8: 	CALL	COMMQ_PACKET_INIT
-    // asm 00004BE9: 	CALL	DECODE_BUFFER
-    // asm 00004BEA: 	LDI	@INFRAMES,R0
-    // asm 00004BEB: 	CLRI	R1
-    // asm 00004BEC: 	STI	R1,@INFRAMES		;CLEAR INTERRUPT COUNTER
-    // asm 00004BED: 	STI	R0,@NFRAMES		;SAVE FOR ALL CURRENT PROCESSES
-    // asm 00004BEE: 	CALL	TIMEREC
-    // asm 00004BEF: 	STF	R0,@FRAMETIME		;SAVE THE FRAMETIME
-    // asm 00004BF0: 	CALL	TIMERESET
-    // asm 00004BF1: 	LDI	@_MODE,R4		;FILL FIFO STUFF
-    // asm 00004BF2: 	TSTB	MINFIN,R4		;
-    // asm 00004BF3: 	CALLNZ	INFINITY
-    // asm 00004BF4: 	CALL	TIMEREC
-    // asm 00004BF5: 	LDI	@COMM_DRONE_PTR,R0
-    // asm 00004BF6: 	CALLNZ	COMM_DRONE_PTR_SORT
-    // asm 00004BF7: 	CALL	DIRQ			;DISPLAY THE POLYGONS
-    // asm 00004BF8: 	CALL	TIMEREC
-    // asm 00004BF9: 	LDI	@_MODE,R4		;FILL FIFO STUFF
-    // asm 00004BFA: 	TSTB	MHUD,R4
-    // asm 00004BFB: 	BZ	NHUD
-    // asm 00004BFC: 	AND	MMODE,R4
-    // asm 00004BFD: 	CMPI	MGAME,R4
-    // asm 00004BFE: 	BEQ	DOIT8
-    // asm 00004BFF: 	CMPI	MBONUS,R4
-    // asm 00004C00: 	BNE	NHUD
-DOIT8:
-    // asm 00004C01: CALL	HUD			;HEADS UP DISPLAY (GAME MODE ONLY)
-NHUD:
-    // asm 00004C02: 	CALL	TIMEREC
-    // asm 00004C03: 	LDI	@_MODE,R4
-    // asm 00004C04: 	AND	MMODE,R4		;THIS MASK IS IMPORTANT!!!!
-    // asm 00004C05: 	CMPI	MATTR,R4
-    // asm 00004C06: 	CALLEQ	INSERT_COINS
-    // asm 00004C07: 	CALL	VOLUME_DISPLAY
-    // asm 00004C08: 	CALL	TIMEREC
-    // asm 00004C09: 	LDI	@_MODE,R0		;MOTION CABINET LEVELING
-    // asm 00004C0A: 	AND	MMODE,R4		;IF NOT IN GAME
-    // asm 00004C0B: 	CMPI	MGAME,R4
-    // asm 00004C0C: 	BEQ	NODO555
-    // asm 00004C0D: 	CALL	LEVEL_THE_MOTION
-NODO555:
-    // asm 00004C0E: 	CALL	CHECKDIAG		;JUMP TO DIAGNOSTICS?
-    // asm 00004C0F: 	CALL	SWDISP			;DISPATCH ANY SWITCH PROCESSES
-    // asm 00004C10: 	CALL	COLSCC
-    // asm 00004C11: 	CLRI	R0
-    // asm 00004C12: 	LDP	@MPROC_TIK
-    // asm 00004C13: 	STI	R0,@MPROC_TIK
-    // asm 00004C14: 	SETDP
-    // asm 00004C15: 	CALL	PRC_DISPATCH		;EXECUTE PROCESSES
-    // asm 00004C16: 	CALL	COMMQ_READY_TO_SEND
-    // asm 00004C17: 	CALL	TEXT_OUTPUT		;END FILL FIFO STUFF
-    // asm 00004C18: 	CALL	TIMEREC
-    // asm 00004C19: 	LDI	@_MODE,R0
-    // asm 00004C1A: 	AND	MMODE,R0
-    // asm 00004C1B: 	CMPI	MATTR,R0
-    // asm 00004C1C: 	BNE	MAINLOOP
-    // 	;we are in attract mode, set appropriately
-    // asm 00004C1D: 	LDI	@DIPRAM,R0
-    // asm 00004C1E: 	TSTB	CMDP_MASTER,R0
-    // asm 00004C1F: 	BZ	MAINLOOP
-    // asm 00004C20: 	LDI	@OM_ATTR_MODE,AR2
-    // asm 00004C21: 	CMPI	@OLD_OM_ATTR_MODE,AR2
-    // asm 00004C22: 	BEQ	MAINLOOP
-    // asm 00004C23: 	CMPI	-2,AR2		;WE MAY ONLY SYNC ON THE MIDWAY SPIN
-    // asm 00004C24: 	BNE	MAINLOOP
-    // asm 00004C25: 	STI	AR2,@OM_ATTR_MODE
-    // asm 00004C26: 	STI	AR2,@_ATTR_MODE
-    // asm 00004C27: 	CALL	SILENT
-    // asm 00004C28:         LDI	@FASTSTKI,SP		;GET PAGE OF STORED ADDRESS
-    // asm 00004C29: 	LDI	@_ATTR_MODE,AR2		;AND INTO FP TOO
-    // asm 00004C2A: 	CALL	WAVE
-    // asm 00004C2B: 	BU	COLD_ENTER
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAINLOOP", 0, 0);
-    UNIMPL();
+    // for (;;) {
+    //  FIFO_CLRP(); // IS THE FIFO CLEAR
+    //  DMA_WT();
+    FIFO_RESET();
+
+    TIMEREC();
+    DECOMPRESS_PROC();
+    TIMEREC();
+
+    // while (INFRAMES < FRAMRATE) {
+    //     // 1 FRAME MINIMUM
+    // }
+
+    TIMEREC();
+    ZSORTWT(); // WAIT FOR PAGE WHILE SORTING
+    TIMEREC();
+
+    // while (CLEARRDY != 0) {
+    //     // DONE WHEN INT SIGNALS PAGE SWAPPED
+    // }
+
+    // COMMUNICATION XFER
+    COMM_ROUTINE();
+    COMMQ_PACKET_INIT();
+    DECODE_BUFFER();
+
+    NFRAMES = INFRAMES; // SAVE FOR ALL CURRENT PROCESSES
+    INFRAMES = 0;       // CLEAR INTERRUPT COUNTER
+
+    FRAMETIME = TIMEREC(); // SAVE THE FRAMETIME
+
+    TIMERESET();
+
+    // FILL FIFO STUFF
+    if (_MODE & MINFIN) {
+        INFINITY();
+    }
+
+    TIMEREC();
+
+    if (COMM_DRONE_PTR) {
+        COMM_DRONE_PTR_SORT();
+    }
+
+    DIRQ(); // DISPLAY THE POLYGONS
+
+    TIMEREC();
+
+    // FILL FIFO STUFF
+    if (_MODE & MHUD) {
+        switch (_MODE & MMODE) {
+        case MGAME:
+        case MBONUS:
+            HUD(); // HEADS UP DISPLAY (GAME MODE ONLY)
+            break;
+        }
+    }
+
+    TIMEREC();
+
+    switch (_MODE & MMODE) { // THIS MASK IS IMPORTANT!!!!
+    case MATTR:
+        INSERT_COINS();
+        break;
+    }
+
+    VOLUME_DISPLAY();
+
+    TIMEREC();
+
+    // MOTION CABINET LEVELING
+    if ((_MODE & MMODE) != MGAME) { // IF NOT IN GAME
+        LEVEL_THE_MOTION();
+    }
+
+    CHECKDIAG(); // JUMP TO DIAGNOSTICS?
+    SWDISP();    // DISPATCH ANY SWITCH PROCESSES
+
+    COLSCC();
+
+    MPROC_TIK = 0;
+
+    PRC_DISPATCH(); // EXECUTE PROCESSES
+
+    COMMQ_READY_TO_SEND();
+
+    TEXT_OUTPUT(); // END FILL FIFO STUFF
+
+    TIMEREC();
+
+    if ((_MODE & MMODE) != MATTR) {
+        return;
+    }
+
+    // we are in attract mode, set appropriately
+    if ((DIPRAM & CMDP_MASTER) == 0) {
+        return;
+    }
+
+    if (OM_ATTR_MODE == OLD_OM_ATTR_MODE) {
+        return;
+    }
+
+    // WE MAY ONLY SYNC ON THE MIDWAY SPIN
+    if (OM_ATTR_MODE != -2) {
+        return;
+    }
+
+    OM_ATTR_MODE = OM_ATTR_MODE;
+    _ATTR_MODE = OM_ATTR_MODE;
+
+    SILENT();
+
+    WAVE(_ATTR_MODE);
+
+    COLD_ENTER();
+    // return;
+    //}
 }
 
 // *----------------------------------------------------------------------------
@@ -1167,7 +1190,7 @@ NOGPROC:
 SWSTX:
     // asm 00004E0A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SWDISP", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1263,7 +1286,7 @@ void CHECKDIAG(void) {
     // ;	RETS
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKDIAG", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1606,68 +1629,70 @@ void TIMER_READ(void) {
 /* asm: TIMEFRAME	.bss	TIMEFRAME,1 */
 int TIMEFRAME;
 /* asm: TIMEX	.bss	TIMEX,1 */
-int TIMEX;
+float* TIMEX;
 /* asm: TIMECLR	.bss	TIMECLR,1 */
 int TIMECLR;
 /* asm: TIMERAM	.bss	TIMERAM,50 */
-int TIMERAM[50];
+float TIMERAM[50];
 
 // *----------------------------------------------------------------------------
 static void TIMERESET(void) {
-    // asm 00004F19: 	PUSH	DP
-    // asm 00004F1A: 	CALL	TIMER_RESET
-    // asm 00004F1B: 	SETDP
-    // asm 00004F1C: 	LDI	@TIMERAMI,AR0
-    // asm 00004F1D: 	STI	AR0,@TIMEX
-    // asm 00004F1E: 	LDI	@TIMECLR,R0
-    // asm 00004F1F: 	BNZ	TIMEL1
-    // asm 00004F20: 	LDF	@TIMEFRAME,R0
-    // asm 00004F21: 	ADDF	1,R0
-    // asm 00004F22: 	STF	R0,@TIMEFRAME
-    // asm 00004F23: 	CALL	INV_F30
-    // asm 00004F24: 	LDI	@TIMERAMI,AR0
-    // asm 00004F25: 	STI	AR0,@TIMEX
-    // asm 00004F26: 	LDI	15,RC
-    // asm 00004F27: 	RPTB	TIMELP
-    // asm 00004F28: 	LDF	*AR0++,R1
-    // asm 00004F29: 	ADDF	*+AR0(15),R1
-    // asm 00004F2A: 	STF	R1,*+AR0(15)
-    // asm 00004F2B:  	MPYF	R0,R1
-TIMELP:
-    // asm 00004F2C: STF	R1,*+AR0(31)
-    // asm 00004F2D: 	POP	DP
-    // asm 00004F2E: 	RETS
-TIMEL1:
-    // asm 00004F2F: 	LDI	0,R0
-    // asm 00004F30: 	STI	R0,@TIMECLR
-    // asm 00004F31: 	LDF	0,R0
-    // asm 00004F32: 	STF	R0,@TIMEFRAME
-    // asm 00004F33: 	LDI	@TIMERAMI,AR0
-    // asm 00004F34: 	RPTS	47	 		;CLEAR OUT COUNT AREA
-    // asm 00004F35: 	STF	R0,*AR0++
-    // asm 00004F36: 	POP	DP
-    // asm 00004F37: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMERESET", 0, 0);
-    UNIMPL();
+    TIMER_RESET();
+
+    TIMEX = TIMERAM;
+
+    if (TIMECLR != 0) {
+        TIMECLR = 0;
+        TIMEFRAME = 0.0f;
+
+        /*
+         * CLEAR OUT COUNT AREA
+         */
+        for (int i = 0; i < 48; i++) {
+            TIMERAM[i] = 0.0f;
+        }
+
+        return;
+    }
+
+    TIMEFRAME += 1.0f;
+
+    float inv_frame = INV_F30(TIMEFRAME);
+
+    TIMEX = TIMERAM;
+
+    for (int i = 0; i < 16; i++) {
+        float t = TIMERAM[i];
+
+        /*
+         * This corresponds to:
+         *   LDF  *AR0++,R1
+         *   ADDF *+AR0(15),R1
+         *   STF  R1,*+AR0(15)
+         *   MPYF R0,R1
+         *   STF  R1,*+AR0(31)
+         *
+         * Because AR0 post-increments before the +15/+31 offsets,
+         * this updates TIMERAM[i + 16] and TIMERAM[i + 32].
+         */
+        TIMERAM[i + 16] += t;
+        TIMERAM[i + 32] = TIMERAM[i + 16] * inv_frame;
+    }
+
+    // TIMERAM[0..15]   // current frame timing records
+    // TIMERAM[16..31]  // accumulated totals
+    // TIMERAM[32..47]  // averaged/scaled timing values
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void TIMEREC(void) {
-    // asm 00004F38: 	PUSH	DP
-    // asm 00004F39: 	PUSH	AR0
-    // asm 00004F3A: 	LDP	@TIMER_CNTR1
-    // asm 00004F3B: 	FLOAT	@TIMER_CNTR1,R0
-    // asm 00004F3C: 	LDP	@TIMEX
-    // asm 00004F3D: 	LDI	@TIMEX,AR0
-    // asm 00004F3E: 	STF	R0,*AR0++ 	;SAVE THE INDEX
-    // asm 00004F3F: 	STI	AR0,@TIMEX
-    // asm 00004F40: 	POP	AR0
-    // asm 00004F41: 	POP	DP
-    // asm 00004F42: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMEREC", 0, 0);
-    UNIMPL();
+static float TIMEREC(void) {
+    float t;
+
+    t = (float)TIMER_CNTR1;
+    *TIMEX++ = t; // SAVE THE INDEX
+    return t;
 }
 
 // *----------------------------------------------------------------------------
@@ -1958,11 +1983,11 @@ void FEED_WATCHDOG(void) {
     // asm 00005054: 	STI	R0,@CPU_WS
     // asm 00005055: 	LDP	@SYSCNTL
     // asm 00005056: 	LDI	@SYSCNTL,R0
-    R0.s = SYSCNTL;
+
     // asm 00005057: 	XOR	WDOG,R0
-    R0.u ^= WDOG;
+
     // asm 00005058: 	STI	R0,@SYSCNTL
-    SYSCNTL = R0.s;
+    SYSCNTL = SYSCNTL ^ WDOG;
     // asm 00005059: 	LDP	@SYSCNTLR
     // asm 0000505A: 	STI	R0,@SYSCNTLR
     // asm 0000505B: 	POP	R0

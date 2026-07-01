@@ -270,7 +270,7 @@ void OBJ_DELETE(void);
 void OBJ_DELETE_CLASS(void);
 
 // asm: 	.globl	OBJ_PULL
-void OBJ_PULL(void);
+void OBJ_PULL(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_FREE
 void OBJ_FREE(void);

@@ -7,7 +7,7 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - First, determine the function prototype - args and return value. Use developer comments along with the code to help understand and name the arguments.
 - Correctness is your number 1 job. You must not invent anything except translating the assembly code into C.
 - You can introduce new function variables (declare at top of function)
-- Dont invent new functions
+- Dont invent new functions, other that to avoid large duplication (eg if 2 functions are branching to the same code tail)
 - Dont invent new global/module level variables
 - Ignore DP and CPU wait state related instructions. Ignore push/pop.
 - Do not write register-based translation. Look at `_outtextxyc` as an example
@@ -24,6 +24,9 @@ We put our types in types.h. If the asm function for example uses AR2 as an inpu
 } <FUNCTIONNAME>_ARG
 ```
 and prototype the function as FUNCTIONNAME(FUNCTIONNAME_ARG x /*AR2*/) { .. }
+
+## Warnings
+Be careful of asm lines like `// 	;---->	BUD	NXTGRP`. It is a comment so doesn't occupy/consume an original code ROM address.
 
 
 <!-- ## Validation

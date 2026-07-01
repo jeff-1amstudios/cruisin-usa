@@ -14,6 +14,7 @@
 static FILE* g_validate_log;
 static int g_validate_maps_loaded;
 static int print_oks = 0;
+static int abort_on_error = 1;
 
 typedef struct VALIDATE_SYMBOL_ENTRY {
     uintptr_t address;
@@ -43,19 +44,8 @@ typedef struct VALIDATE_ENTRY {
     char file_path[260];
 } VALIDATE_ENTRY;
 
-static FILE* open_validate_log(void) {
-    if (g_validate_log != NULL) {
-        return g_validate_log;
-    }
-
-    g_validate_log = fopen("mame_validate/mame.log", "r");
-    if (g_validate_log == NULL) {
-        fprintf(stderr, "validate_word: failed to open mame.log\n");
-        fflush(stderr);
-        abort();
-    }
-
-    return g_validate_log;
+void mame_validate_abort_on_error(int abort) {
+    abort_on_error = abort;
 }
 
 void mame_validate_print_oks_on(void) {
@@ -65,12 +55,33 @@ void mame_validate_print_oks_off(void) {
     print_oks = 0;
 }
 
+static void fail() {
+    if (abort_on_error) {
+        abort();
+    }
+}
+
+static FILE* open_validate_log(void) {
+    if (g_validate_log != NULL) {
+        return g_validate_log;
+    }
+
+    g_validate_log = fopen("mame_validate/mame.log", "r");
+    if (g_validate_log == NULL) {
+        fprintf(stderr, "validate_word: failed to open mame.log\n");
+        fflush(stderr);
+        fail();
+    }
+
+    return g_validate_log;
+}
+
 static VALIDATE_SYMBOL_ENTRY* reserve_symbol_entry(VALIDATE_SYMBOL_MAP* map) {
     VALIDATE_SYMBOL_ENTRY* grown_entries = realloc(map->entries, (map->count + 1) * sizeof(VALIDATE_SYMBOL_ENTRY));
     if (grown_entries == NULL) {
         fprintf(stderr, "validator: failed to grow symbol map\n");
         fflush(stderr);
-        abort();
+        fail();
     }
     map->entries = grown_entries;
     return &map->entries[map->count++];
@@ -170,12 +181,12 @@ static void load_validate_maps(void) {
     if (g_port_map.count == 0 || g_port_map.link_base == 0) {
         fprintf(stderr, "validator: failed to load port.map symbols\n");
         fflush(stderr);
-        abort();
+        fail();
     }
     if (g_address_map.count == 0) {
         fprintf(stderr, "validator: failed to load tools/ida/address.map symbols\n");
         fflush(stderr);
-        abort();
+        fail();
     }
 
     g_validate_maps_loaded = 1;
@@ -189,6 +200,23 @@ static const char* lookup_map_name_by_address(const VALIDATE_SYMBOL_MAP* map, ui
         }
     }
     return NULL;
+}
+
+static int lookup_map_address_by_name(const VALIDATE_SYMBOL_MAP* map, const char* name, uint32_t* out_address) {
+    size_t index;
+
+    if (name == NULL || out_address == NULL) {
+        return 0;
+    }
+
+    for (index = 0; index < map->count; ++index) {
+        if (strcmp(map->entries[index].name, name) == 0) {
+            *out_address = (uint32_t)map->entries[index].address;
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 static const char* lookup_port_symbol_name(const void* ptr) {
@@ -208,6 +236,33 @@ static const char* lookup_port_symbol_name(const void* ptr) {
 static const char* lookup_rom_symbol_name(uint32_t address) {
     load_validate_maps();
     return lookup_map_name_by_address(&g_address_map, address);
+}
+
+static int lookup_rom_symbol_address(const char* name, uint32_t* out_address) {
+    load_validate_maps();
+    return lookup_map_address_by_name(&g_address_map, name, out_address);
+}
+
+static int lookup_function_rom_address(const void* address, uint32_t* out_address) {
+    Dl_info info;
+    const char* symbol_name;
+    const char* normalized_name;
+
+    if (address == NULL || out_address == NULL) {
+        return 0;
+    }
+
+    if (dladdr(address, &info) == 0 || info.dli_sname == NULL) {
+        return 0;
+    }
+
+    symbol_name = info.dli_sname;
+    normalized_name = strip_macho_prefix(symbol_name);
+    return lookup_rom_symbol_address(normalized_name, out_address);
+}
+
+static int lookup_caller_breakpoint_address(const void* return_address, uint32_t* out_address) {
+    return lookup_function_rom_address(return_address, out_address);
 }
 
 static int lookup_rom_word_address(const void* ptr, uint32_t* out_address) {
@@ -255,7 +310,7 @@ static noreturn void validate_fail(
         expected,
         actual);
     fflush(stderr);
-    abort();
+    fail();
 }
 
 static noreturn void validate_fail_with_detail(
@@ -289,7 +344,7 @@ static noreturn void validate_fail_with_detail(
             actual);
     }
     fflush(stderr);
-    abort();
+    fail();
 }
 
 static void validate_pass_word(const char* name, uint32_t value) {
@@ -317,6 +372,10 @@ static void validate_pass_arg_rom(const char* reg_name, uint32_t rom_address) {
         }
         fflush(stderr);
     }
+}
+
+static void format_float_reg_name(const char* reg_name, char* out_name, size_t out_name_size) {
+    snprintf(out_name, out_name_size, "%sF", reg_name);
 }
 
 static int read_next_validate_line(char* out_name, size_t out_name_size, VALIDATE_ENTRY* out_entry) {
@@ -382,6 +441,10 @@ static int read_next_validate_line(char* out_name, size_t out_name_size, VALIDAT
             matched = sscanf(line, "\xEF\xBB\xBFvalidate %127[^:]: file=%259s", name_buf, file_buf);
         }
         if (matched == 2) {
+            char* comma = strchr(file_buf, ',');
+            if (comma != NULL) {
+                *comma = '\0';
+            }
             snprintf(out_name, out_name_size, "%s", name_buf);
             out_entry->kind = VALIDATE_KIND_FILE;
             out_entry->word_value = 0;
@@ -392,6 +455,87 @@ static int read_next_validate_line(char* out_name, size_t out_name_size, VALIDAT
     }
 
     return 0;
+}
+
+static void read_next_validate_reg_word(
+    const char* caller_file,
+    int caller_line,
+    const char* failure_name,
+    const char* expected_reg_name,
+    VALIDATE_ENTRY* out_entry) {
+    char actual_name[128];
+    char expected_buf[128];
+    char actual_buf[128];
+
+    if (!read_next_validate_line(actual_name, sizeof(actual_name), out_entry)) {
+        validate_fail(
+            caller_file,
+            caller_line,
+            failure_name,
+            "reached end of mame.log before next validate line",
+            "<validate line>",
+            "<eof>");
+    }
+
+    if (strcmp(actual_name, expected_reg_name) != 0) {
+        snprintf(expected_buf, sizeof(expected_buf), "%s", expected_reg_name);
+        snprintf(actual_buf, sizeof(actual_buf), "%s", actual_name);
+        validate_fail(caller_file, caller_line, failure_name, "register name mismatch", expected_buf, actual_buf);
+    }
+
+    if (out_entry->kind != VALIDATE_KIND_WORD) {
+        validate_fail(caller_file, caller_line, failure_name, "validate line kind mismatch", "<word>", "<non-word>");
+    }
+}
+
+static void validate_reg_word_value_impl(
+    const char* caller_file,
+    int caller_line,
+    const char* failure_name,
+    const char* expected_reg_name,
+    const void* ptr) {
+    VALIDATE_ENTRY entry;
+    char expected_buf[32];
+    char actual_buf[32];
+    uint32_t expected_value = 0;
+
+    memcpy(&expected_value, ptr, sizeof(expected_value));
+    read_next_validate_reg_word(caller_file, caller_line, failure_name, expected_reg_name, &entry);
+
+    if (entry.word_value != expected_value) {
+        snprintf(expected_buf, sizeof(expected_buf), "0x%08" PRIX32, entry.word_value);
+        snprintf(actual_buf, sizeof(actual_buf), "0x%08" PRIX32, expected_value);
+        validate_fail(caller_file, caller_line, failure_name, "value mismatch", expected_buf, actual_buf);
+    }
+
+    validate_pass_word(expected_reg_name, expected_value);
+}
+
+static void validate_reg_float_value_impl(
+    const char* caller_file,
+    int caller_line,
+    const char* failure_name,
+    const char* expected_reg_name,
+    const void* ptr) {
+    VALIDATE_ENTRY entry;
+    char expected_buf[64];
+    char actual_buf[64];
+    float expected_value = 0.0f;
+    float actual_value = 0.0f;
+
+    read_next_validate_reg_word(caller_file, caller_line, failure_name, expected_reg_name, &entry);
+    memcpy(&expected_value, &entry.word_value, sizeof(expected_value));
+    memcpy(&actual_value, ptr, sizeof(actual_value));
+
+    if (expected_value != actual_value) {
+        snprintf(expected_buf, sizeof(expected_buf), "%g (0x%08" PRIX32 ")", expected_value, entry.word_value);
+        memcpy(&entry.word_value, &actual_value, sizeof(actual_value));
+        snprintf(actual_buf, sizeof(actual_buf), "%g (0x%08" PRIX32 ")", actual_value, entry.word_value);
+        validate_fail(caller_file, caller_line, failure_name, "value mismatch", expected_buf, actual_buf);
+    }
+
+    memcpy(&entry.word_value, &actual_value, sizeof(actual_value));
+    validate_pass_word(expected_reg_name, entry.word_value);
 }
 
 static uint8_t* read_validate_dump(const char* path, size_t* out_size) {
@@ -655,7 +799,7 @@ void mame_validate_word_impl(const char* caller_file, int caller_line, const cha
     validate_pass_word(name, expected_value);
 }
 
-void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
+void mame_validate_arg_sym_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
     char actual_name[128];
     char expected_buf[128];
     char actual_buf[128];
@@ -710,37 +854,58 @@ void mame_validate_arg_impl(const char* caller_file, int caller_line, const char
     validate_pass_arg(name, expected_symbol);
 }
 
+void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
+    uint32_t breakpoint_address = 0;
+    void* return_address = __builtin_return_address(0);
+    char actual_buf[64];
+
+    if (!lookup_caller_breakpoint_address(return_address, &breakpoint_address)) {
+        snprintf(actual_buf, sizeof(actual_buf), "%p", return_address);
+        validate_fail(
+            caller_file,
+            caller_line,
+            name,
+            "caller function address not found in address.map",
+            "<mapped function symbol>",
+            actual_buf);
+    }
+
+    mame_validate_reg_at_addr_impl(caller_file, caller_line, breakpoint_address, name, ptr);
+}
+
+void mame_validate_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
+    uint32_t breakpoint_address = 0;
+    void* return_address = __builtin_return_address(0);
+    char actual_buf[64];
+
+    if (!lookup_caller_breakpoint_address(return_address, &breakpoint_address)) {
+        snprintf(actual_buf, sizeof(actual_buf), "%p", return_address);
+        validate_fail(
+            caller_file,
+            caller_line,
+            name,
+            "caller function address not found in address.map",
+            "<mapped function symbol>",
+            actual_buf);
+    }
+
+    mame_validate_reg_at_addr_float_impl(caller_file, caller_line, breakpoint_address, name, ptr);
+}
+
 void mame_validate_reg_at_addr_impl(
     const char* caller_file, int caller_line, uint32_t breakpoint_address, const char* reg_name, const void* ptr) {
-    char actual_name[128];
-    char expected_buf[32];
-    char actual_buf[32];
-    VALIDATE_ENTRY entry;
-    uint32_t expected_value = *(const uint32_t*)ptr;
+    (void)breakpoint_address;
+    validate_reg_word_value_impl(caller_file, caller_line, reg_name, reg_name, ptr);
+}
+
+void mame_validate_reg_at_addr_float_impl(
+    const char* caller_file, int caller_line, uint32_t breakpoint_address, const char* reg_name, const void* ptr) {
+    char float_reg_name[128];
 
     (void)breakpoint_address;
 
-    if (!read_next_validate_line(actual_name, sizeof(actual_name), &entry)) {
-        validate_fail(caller_file, caller_line, reg_name, "reached end of mame.log before next validate line", "<validate line>", "<eof>");
-    }
-
-    if (strcmp(actual_name, reg_name) != 0) {
-        snprintf(expected_buf, sizeof(expected_buf), "%s", reg_name);
-        snprintf(actual_buf, sizeof(actual_buf), "%s", actual_name);
-        validate_fail(caller_file, caller_line, reg_name, "register name mismatch", expected_buf, actual_buf);
-    }
-
-    if (entry.kind != VALIDATE_KIND_WORD) {
-        validate_fail(caller_file, caller_line, reg_name, "validate line kind mismatch", "<word>", "<non-word>");
-    }
-
-    if (entry.word_value != expected_value) {
-        snprintf(expected_buf, sizeof(expected_buf), "0x%08" PRIX32, entry.word_value);
-        snprintf(actual_buf, sizeof(actual_buf), "0x%08" PRIX32, expected_value);
-        validate_fail(caller_file, caller_line, reg_name, "value mismatch", expected_buf, actual_buf);
-    }
-
-    validate_pass_word(reg_name, expected_value);
+    format_float_reg_name(reg_name, float_reg_name, sizeof(float_reg_name));
+    validate_reg_float_value_impl(caller_file, caller_line, reg_name, float_reg_name, ptr);
 }
 
 void mame_validate_region_at_addr_impl(

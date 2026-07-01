@@ -1,6 +1,6 @@
 // NOEDIT
 #include "texttab.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "../core/port.h"
 #include "macs.h"

@@ -1,11 +1,11 @@
-#include "../core/cpu.h"
+
+#include "effects.h"
 #include "../core/machine.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
 #include "sysid.h"
-#include "globals.h"
-#include "effects.h"
 
 /*
  * Source module: asm/EFFECTS.ASM
@@ -25,47 +25,47 @@ static void MEMCPY(void);
 #define MONKEYOBJLHI mnklh
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /*
-*----------------------------------------------------------------------------
-*ADVANCED FEATURES
-*
-*it would be best to do open and close via the same process
-*also, sideways wipes  //  or \\  up, down, left or right can be specified
-*via on word ala:
-*
-*	SCW_OPEN	.set	0
-*	SCW_CLOSE	.set	1
-*	SCW_L		.set	10h	;these specifiy the
-*	SCW_R		.set	20h	;single panels
-*	SCW_T		.set	40h	;
-*	SCW_B		.set	80h	;
-*
-*for convience:
-*	SCW_OPEN_H	.set	030h
-*	SCW_CLOSE_H	.set	031h
-*	SCW_OPEN_V	.set	0C0h
-*	SCW_CLOSE_V	.set	0C1h
-*
-*also can be added:	(S = straight instead of diagonal)
-*
-*	SCW_LS		.set	12h	;these specifiy the
-*	SCW_RS		.set	22h	;single panels
-*	SCW_TS		.set	42h	;
-*	SCW_BS		.set	82h	;
-*
-*
-*these parameters would be encoded into AR2 when calling SCREEN_WIPE
-*and from there it would be moved to AR6, and checked each tik.
-*
-*/
+ *----------------------------------------------------------------------------
+ *ADVANCED FEATURES
+ *
+ *it would be best to do open and close via the same process
+ *also, sideways wipes  //  or \\  up, down, left or right can be specified
+ *via on word ala:
+ *
+ *	SCW_OPEN	.set	0
+ *	SCW_CLOSE	.set	1
+ *	SCW_L		.set	10h	;these specifiy the
+ *	SCW_R		.set	20h	;single panels
+ *	SCW_T		.set	40h	;
+ *	SCW_B		.set	80h	;
+ *
+ *for convience:
+ *	SCW_OPEN_H	.set	030h
+ *	SCW_CLOSE_H	.set	031h
+ *	SCW_OPEN_V	.set	0C0h
+ *	SCW_CLOSE_V	.set	0C1h
+ *
+ *also can be added:	(S = straight instead of diagonal)
+ *
+ *	SCW_LS		.set	12h	;these specifiy the
+ *	SCW_RS		.set	22h	;single panels
+ *	SCW_TS		.set	42h	;
+ *	SCW_BS		.set	82h	;
+ *
+ *
+ *these parameters would be encoded into AR2 when calling SCREEN_WIPE
+ *and from there it would be moved to AR6, and checked each tik.
+ *
+ */
 
 /* asm: MONKEYOBJRVI	.word	mnkrv */
 #define MONKEYOBJRVI mnkrv
@@ -82,8 +82,7 @@ static void MEMCPY(void);
 int SCREENWIPE_DONE;
 
 // *----------------------------------------------------------------------------
-void SCREENWIPE_OPEN(void)
-{
+void SCREENWIPE_OPEN(void) {
     // asm 0000B09F: 	CLRI	R0
     // asm 0000B0A0: 	STPI	R0,@SCREENWIPE_DONE
     // asm 0000B0A1: 	CREATEC	SCREENWIPE_OPEN_PRC,UTIL_C|MONKEY_T
@@ -95,8 +94,7 @@ void SCREENWIPE_OPEN(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SCREENWIPE_CLOSE(void)
-{
+void SCREENWIPE_CLOSE(void) {
     // asm 0000B0A5: 	CLRI	R0
     // asm 0000B0A6: 	STPI	R0,@SCREENWIPE_DONE
     // asm 0000B0A7: 	CREATE	SCREENWIPE_CLOSE_PRC,UTIL_C|MONKEY_T
@@ -108,8 +106,7 @@ void SCREENWIPE_CLOSE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SCREENWIPE_OPEN_PRC_FAST(void)
-{
+void SCREENWIPE_OPEN_PRC_FAST(void) {
     // asm 0000B0AB: 	LONGROUT
     // asm: 	LDF	1.9,R0
     // asm: 	BR	L55
@@ -118,8 +115,7 @@ void SCREENWIPE_OPEN_PRC_FAST(void)
     UNIMPL();
 }
 
-void SCREENWIPE_OPEN_PRC(void)
-{
+void SCREENWIPE_OPEN_PRC(void) {
     // asm 0000B0AC: 	LONGROUT
     // asm: 	LDF	1.1,R0
 L55:
@@ -217,8 +213,7 @@ L55:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SCREENWIPE_CLOSE_PRC(void)
-{
+void SCREENWIPE_CLOSE_PRC(void) {
     // asm 0000B0AD: 	LONGROUT
     // asm: 	CALL	GET_EFFECTS_OBJS
     // asm: 	LDI	100,AR5
@@ -297,8 +292,7 @@ void SCREENWIPE_CLOSE_PRC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void GET_EFFECTS_OBJS(void)
-{
+static void GET_EFFECTS_OBJS(void) {
     // asm 0000B0AE: 	LONGROUT
     // asm: 	LDI	@MONKEYOBJRVI,AR1
     // asm: 	CALL	OBJ_GET
@@ -376,17 +370,16 @@ static void GET_EFFECTS_OBJS(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*MEMCPY
-*
-*PARAMETERS
-*	AR0	SOURCE POINTER
-*	AR1	DEST POINTER
-*	RC	LENGTH -1
-*
-*/
-static void MEMCPY(void)
-{
+ *----------------------------------------------------------------------------
+ *MEMCPY
+ *
+ *PARAMETERS
+ *	AR0	SOURCE POINTER
+ *	AR1	DEST POINTER
+ *	RC	LENGTH -1
+ *
+ */
+static void MEMCPY(void) {
     // asm 0000B0AF: 	LONGROUT
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR1

@@ -1,14 +1,14 @@
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
-#include "mproc.h"
-#include "macs.h"
-#include "obj.h"
+#include "cmos.h"
 #include "globals.h"
+#include "macs.h"
+#include "mproc.h"
+#include "obj.h"
+#include "sndtab.h"
 #include "sys.h"
 #include "text.h"
 #include "vunit.h"
-#include "cmos.h"
-#include "sndtab.h"
 
 /*
  * Source module: asm/ATTRACTA.ASM
@@ -27,29 +27,28 @@ static void DEMOTHANKS(void);
 static uintptr_t DEMOTHANKS_LIST[];
 
 /*
-*----------------------------------------------------------------------------
-*ATTRACT MODE
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *ATTRACT MODE
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ *
+ */
 
 #define NOVANITY 1
 // *----------------------------------------------------------------------------
-#define startthey 4.18894205 //-deg(10)
-#define startthez 0.087266462 //deg(5)
-#define CREATED_DCS (PDATA+1)
-#define DECOMP_COUNT (PDATA+1)
+#define startthey 4.18894205  //-deg(10)
+#define startthez 0.087266462 // deg(5)
+#define CREATED_DCS (PDATA + 1)
+#define DECOMP_COUNT (PDATA + 1)
 
 /*
-*----------------------------------------------------------------------------
-*AR6 is set by the creator of this routine. 0= play dcs logo sound 1=don't play
-*
-*/
-void _MIDWAYSPIN(void)
-{
+ *----------------------------------------------------------------------------
+ *AR6 is set by the creator of this routine. 0= play dcs logo sound 1=don't play
+ *
+ */
+void _MIDWAYSPIN(void) {
     // asm 0000A966: 	LDI	0,AR6
     // asm 0000A967: 	LDI	@_ATTR_MODE,R0
     // asm 0000A968: 	CMPI	-2,R0
@@ -143,8 +142,7 @@ MSLP1:
     UNIMPL();
 }
 
-static void MSLP_CHECK(void)
-{
+static void MSLP_CHECK(void) {
     // asm 0000A9B6: 	SUBI	@NFRAMES,AR6
     // asm 0000A9B7: 	LDI	@DECOMP_ACTIVE,R0
     // asm 0000A9B8: 	CMPI	0,R0
@@ -174,8 +172,7 @@ MSLP4:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void MIDWAYSPINENTER(void)
-{
+void MIDWAYSPINENTER(void) {
     // asm 0000A9C6: 	LDL	midway,AR2
     // asm 0000A9C7: 	CALL	OBJ_GETE
 #if DEBUG
@@ -235,11 +232,13 @@ void MIDWAYSPINENTER(void)
 
 /* asm: SPIN_CARTAB	.word	missle,hotrod,testor,cvette */
 static int SPIN_CARTAB[] = {
-    missle_ROM, hotrod_ROM, testor_ROM, cvette_ROM,
+    missle_ROM,
+    hotrod_ROM,
+    testor_ROM,
+    cvette_ROM,
 };
 
-void SPIN_CAR(void)
-{
+void SPIN_CAR(void) {
     // asm 0000A9F8: 	LDI	0,R0
     // asm 0000A9F9: 	STI	R0,*+AR7(DECOMP_COUNT)
     // asm 0000A9FA: 	LDIL	logo,AR2
@@ -307,11 +306,10 @@ SPIN_CARLP:
 }
 
 /*
-*----------------------------------------------------------------------------
-*
-*/
-static void TEXTTOGET(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ */
+static void TEXTTOGET(void) {
     // asm 0000AA37: 	SLEEP	75
     // asm 0000AA39: 	LDI	@TEXT_ACTIVEI,AR0
     // asm 0000AA3A: 	CLRF	R1
@@ -344,13 +342,15 @@ static const char DT1[] = "THANK YOU FOR PLAYING";
 static const char DT2[] = "CRUISIN USA";
 static const char DT3[] = "SNEAK PREVIEW";
 static uintptr_t DEMOTHANKS_LIST[] = {
-    140, (uintptr_t)&DT1,
-    180, (uintptr_t)&DT2,
-    220, (uintptr_t)&DT3,
+    140,
+    (uintptr_t)&DT1,
+    180,
+    (uintptr_t)&DT2,
+    220,
+    (uintptr_t)&DT3,
 };
 
-static void DEMOTHANKS(void)
-{
+static void DEMOTHANKS(void) {
     // asm 0000AA4A: 	LDI	1,R0
     // asm 0000AA4B: 	STI	R0,@COINOFF
     // asm 0000AA4C: 	CLRI	R0

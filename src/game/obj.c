@@ -29,7 +29,7 @@ void OBJ_FREE_DRIVE(void);
 void OBJ_FREE_PROC(void);
 void OBJ_DELETE(void);
 void OBJ_DELETE_CLASS(void);
-void OBJ_PULL(void);
+void OBJ_PULL(OBJ* obj /*AR2*/);
 void OBJ_FREE(void);
 void ZSORTWT(void);
 static void PLYRDLINK(void);
@@ -78,6 +78,9 @@ int OMAX_OBJECTS;
 OBJ OBJSTR[NUM_OBJECTS];
 /* asm: COMM_DRONE_PTR	.bss	COMM_DRONE_PTR,1 */
 OBJ* COMM_DRONE_PTR;
+
+/* asm: PLYRTEMP	.BSS	PLYRTEMP,1 */
+OBJ* PLYRTEMP;
 
 /*
  *----------------------------------------------------------------------------
@@ -723,7 +726,12 @@ ODCX:
  *	AR2	OBJECT
  *
  */
-void OBJ_PULL(void) {
+void OBJ_PULL(OBJ* obj /*AR2*/) {
+    OBJ** list;
+    OBJ* current;
+    OBJ** prev;
+    u32 flags;
+
     // asm 0000718A: 	PUSH	R0
     // asm 0000718B: 	PUSH	R1
     // asm 0000718C: 	PUSH	AR1
@@ -731,22 +739,49 @@ void OBJ_PULL(void) {
     // asm 0000718E: 	LDI	*+AR2(OFLAGS),R0
     // asm 0000718F: 	AND	O_LIST_M,R0
     // asm 00007190: 	LDI	@OACTIVEI,R1		;we must find dead object to link around
+    flags = obj->flags & O_LIST_M;
+    list = &OACTIVE;
+
     // asm 00007191: 	CMPI	O_LIST2,R0
     // asm 00007192: 	LDIEQ	@IDLE_LISTI,R1		;we must find dead object to link around
+    if (flags == O_LIST2) {
+        list = &IDLE_LIST;
+    }
+
     // asm 00007193: 	CMPI	O_LIST3,R0
     // asm 00007194: 	LDIEQ	@OACTIVE_PRIORITYI,R1	;we must find dead object to link around
+    if (flags == O_LIST3) {
+        list = &OACTIVE_PRIORITY;
+    }
+
 PULLP:
     // asm 00007195: 	LDI	R1,AR1
     // asm 00007196: 	LDI	*AR1,R1
     // asm 00007197: 	ERRON	Z,EC_OBJ|4
     // asm 0000719F: 	BZ	PULOBJ_X
+    prev = list;
+    current = *prev;
+    if (current == NULL) {
+        ERRON(EC_OBJ | 4);
+        goto PULOBJ_X;
+    }
+    list = &current->link;
+
     // asm 000071A0: 	CMPI	R1,AR2
     // asm 000071A1: 	BNE	PULLP
+    if (current != obj) {
+        goto PULLP;
+    }
+
     // asm 000071A2: 	LDI	*AR2,R1
     // asm 000071A3: 	STI	R1,*AR1			;LINK AROUND
+    *prev = obj->link;
+
     // asm 000071A4: 	LDI	*+AR2(OFLAGS),R0
     // asm 000071A5: 	ANDN	O_LIST_M,R0
     // asm 000071A6: 	STI	R0,*+AR2(OFLAGS)
+    obj->flags &= ~O_LIST_M;
+
 PULOBJ_X:
     // asm 000071A7: 	POP	AR2
     // asm 000071A8: 	POP	AR1
@@ -782,72 +817,80 @@ void OBJ_FREE(void) {
 // *----------------------------------------------------------------------------
 
 /*
- *----------------------------------------------------------------------------
- *SORT OBJECTS BY CURRENT Z
- *WAIT FOR NEXT INTERRUPT
+ * SORT OBJECTS BY CURRENT Z
+ * WAIT FOR NEXT INTERRUPT
  *
- *CLOBBERS
- *	R0-R4,AR0-AR5,DP,etc.
- *CALL BY MAINLINE CODE
- *
+ * CLOBBERS
+ *      R0-R4,AR0-AR5,DP,etc.
+ * CALL BY MAINLINE CODE
  */
 void ZSORTWT(void) {
-    // asm 000071B2: 	LDI	1,R0
-    // asm 000071B3: 	STI	R0,@CLEARRDY	  	;READY FOR INTERRUPT
-ZSORTWL:
-    // asm 000071B4: 	CLRI	R6			;FLAG FOR SORT (NOTHING SORTED YET)
-    // asm 000071B5: 	LDI	@OACTIVEI,AR0		;INSERT TO HEAD OF PROCESS ACTIVE LIST
-    // asm 000071B6: 	LDI	*AR0,AR1		;GET FIRST ELEMENT
-    // asm 000071B7: 	LDI	AR1,R1	  		;BOGUS TEST AR REG'S DON'T SET FLAGS
-    // asm 000071B8: 	BZ	ZSWTX	     		;NULL LIST
-    // asm 000071B9: 	LDI	*AR1,AR2		;GET NEXT ELEMENT
-    // asm 000071BA: 	LDI	AR2,R1
-    // asm 000071BB: 	BZ	ZSWTX			;ONLY ONE ELEMENT ON LIST
-ZSWTLP:
-    // asm 000071BC: 	LDI	@CLEARRDY,R0		;DONE WHEN IN SIGNALS FRAME IS DONE
-    // asm 000071BD: 	BZD	ZSWTXX
-    // asm 000071BE: 	LDI	*+AR1(ODIST),R0
-    // asm 000071BF: 	LDI	*+AR2(ODIST),R1
-    // asm 000071C0: 	CMPI	R1,R0
-    // 	;------>BNZD	ZSWTXX
-    // asm 000071C1: 	BGE	ZWPRIOK 		;PRIORITY IS O.K.  (AR1 is further than AR2)
-    // asm 000071C2: DOSWAP
-    // 	;SWAP EM DUDES
-    // asm 000071C2: 	LDI	1,R6			;the list has changed
-    // asm 000071C3: 	STI	AR2,*AR0		;POINT N-1 TO N+1
-    // asm 000071C4: 	LDI	*AR2,R1			;GET N+2
-    // asm 000071C5: 	STI	R1,*AR1			;POINT N TO N+2
-    // asm 000071C6: 	STI	AR1,*AR2		;POINT N+1 TO N
-    // asm 000071C7: 	BNZD	ZSWTLP
-    // asm 000071C8: 	LDI	AR2,AR0		  	;NEW PREVIOUS(N-1)
-    // asm 000071C9: 	LDI	R1,AR2			;NEW NEXT(N+1)
-    // asm 000071CA: 	LDI	R1,R1
-    // 	;---->	BNZD	ZSWTLP
-    // asm 000071CB: 	LDI	R6,R6			;ANY SWAPS?
-    // asm 000071CC: 	BZ	ZSWTXX			;NO DONE...
-    // asm 000071CD: 	B	ZSORTWL	      		;START OVER AT THE BEGINNING
-ZWPRIOK:
-    // asm 000071CE: 	LDI	*AR2,R1			;NEW NEXT LINK
-    // asm 000071CF: 	BNZD	ZSWTLP
-    // asm 000071D0: 	LDI	AR1,AR0			;AR4=PREVIOUS-1 LINK
-    // asm 000071D1: 	LDI	AR2,AR1			;AR0=PREVIOUS
-    // asm 000071D2: 	LDI	R1,AR2
-    // 	;---->	BNZD	ZSWTLP
-    // asm 000071D3: 	BR	ZSORTWL			;START OVER AT THE BEGINNING
-ZSWTX:
-ZSWTXX:
-    // asm 000071D4: 	LDI	@_MODE,R0
-    // asm 000071D5: 	AND	MHS,R0
-    // asm 000071D6: 	RETSNZ				;Don't do player and drones in HIGH SCORE MODE
-    // asm 000071D7: 	CALL	PLYRDLINK     		;DELINK PLAYER
-    // asm 000071D8: 	CALL	DRONESORT
-    // asm 000071D9: 	CALL	DEBRIS_SORT
-    // asm 000071DA: 	CALL	PLYRSORT		;LINK IN PLAYER
-    // asm 000071DB: 	CALL	SORT_SMOKE
-    // asm 000071DC: 	CALL	FLAMESORT
-    // asm 000071DD: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZSORTWT", 0, 0);
-    UNIMPL();
+    CLEARRDY = 1; /* READY FOR INTERRUPT */
+
+restart_sort: {
+    int changed = 0; /* FLAG FOR SORT (NOTHING SORTED YET) */
+
+    OBJ** prev_link = &OACTIVE;
+    OBJ* a = *prev_link; /* GET FIRST ELEMENT */
+
+    if (a == NULL) {
+        goto done_sort; /* NULL LIST */
+    }
+
+    OBJ* b = a->link; /* GET NEXT ELEMENT */
+
+    if (b == NULL) {
+        goto done_sort; /* ONLY ONE ELEMENT ON LIST */
+    }
+
+    while (b != NULL) {
+        if (CLEARRDY == 0) {
+            goto done_sort; /* DONE WHEN INT SIGNALS FRAME IS DONE */
+        }
+
+        /*
+         * PRIORITY IS O.K.  (a is further than b)
+         */
+        if (a->dist >= b->dist) {
+            prev_link = &a->link;
+            a = b;
+            b = b->link;
+            continue;
+        }
+
+        /*
+         * SWAP EM DUDES
+         */
+        changed = 1; /* the list has changed */
+
+        *prev_link = b; /* POINT N-1 TO N+1 */
+
+        OBJ* next = b->link; /* GET N+2 */
+        a->link = next;      /* POINT N TO N+2 */
+        b->link = a;         /* POINT N+1 TO N */
+
+        prev_link = &b->link; /* NEW PREVIOUS(N-1) */
+        b = next;             /* NEW NEXT(N+1) */
+    }
+
+    if (!changed) {     /* ANY SWAPS? */
+        goto done_sort; /* NO DONE... */
+    }
+
+    goto restart_sort; /* START OVER AT THE BEGINNING */
+}
+
+done_sort:
+    if (_MODE & MHS) {
+        return; /* Don't do player and drones in HIGH SCORE MODE */
+    }
+
+    PLYRDLINK(); /* DELINK PLAYER */
+    DRONESORT();
+    DEBRIS_SORT();
+    PLYRSORT(); /* LINK IN PLAYER */
+    SORT_SMOKE();
+    FLAMESORT();
 }
 
 // *-----------------------------------------------------------------------------
@@ -860,31 +903,26 @@ ZSWTXX:
  *
  */
 static void PLYRDLINK(void) {
-    // asm 000071DE: 	LDI	@OACTIVEI,AR1		;GET OBJECT LIST POINTER
-PSORTNXT:
-    // asm 000071DF: 	LDI	*AR1,R0
-    // asm 000071E0: 	BZD	PDLINKX			;NOBODY HOME
-    // asm 000071E1: 	LDI	AR1,AR0
-    // asm 000071E2: 	LDI	R0,AR1
-    // asm 000071E3: 	LDI	*+AR1(OID),R1
-    // 	;------>BZD	PSORTX
-    // asm 000071E4: PSORTL
-    // asm 000071E4: 	CMPI	PLYR_C,R1
-    // asm 000071E5: 	BNE	PSORTNXT
-    // *FOUND THE PLYR, DELINK 'EM
-    // asm 000071E6: 	LDI	*AR1,R0			;GET POINTER TO NEXT ELEMENT
-    // asm 000071E7: 	STI	R0,*AR0			;LINK AROUND THE DUDE
-PDLINKX:
-    // asm 000071E8: 	STI	AR1,@PLYRTEMP		;SAVE THE DUDE
-    // asm 000071E9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRDLINK", 0, 0);
-    UNIMPL();
+    OBJ** prev_link = &OACTIVE; /* GET OBJECT LIST POINTER */
+    OBJ* obj;
+
+    while ((obj = *prev_link) != NULL) {
+        if (obj->id == PLYR_C) {
+            /* FOUND THE PLYR, DELINK 'EM */
+
+            *prev_link = obj->link; /* LINK AROUND THE DUDE */
+            PLYRTEMP = obj;         /* SAVE THE DUDE */
+            return;
+        }
+
+        prev_link = &obj->link;
+    }
+
+    /* NOBODY HOME */
+    PLYRTEMP = NULL;
 }
 
 // *-----------------------------------------------------------------------------
-
-/* asm: PLYRTEMP	.BSS	PLYRTEMP,1 */
-int PLYRTEMP;
 
 /*
  *-----------------------------------------------------------------------------

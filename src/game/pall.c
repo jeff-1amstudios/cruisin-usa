@@ -1,5 +1,5 @@
 #include "pall.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "../core/validator.h"
 #include "error.h"
@@ -18,8 +18,8 @@
 void PAL_INIT(void);
 void PAL_XFER(void);
 void PAL_OVERWRITE(void);
-void PAL_FIND(void);
-void PAL_FIND_RAW(void);
+int PAL_FIND(u32 pal_index);
+int PAL_FIND_RAW(const tPAL* palette_source);
 void PAL_DELETE_RAW(void);
 static void PALXFER_INIT(void);
 static PALXFER* PALXFER_GET(void);
@@ -242,7 +242,7 @@ void PAL_OVERWRITE(void) {
  *	CARRY SET IF PALETTE NOT FOUND
  *
  */
-void PAL_FIND(void) {
+int PAL_FIND(u32 pal_index) {
     // asm 00009EF8: 	PUSH	AR2
     // asm 00009EF9: 	SETC		 	;ASSUME PALETTE NOT FOUND
     // asm 00009EFA: 	LDP	@PALLISTI
@@ -255,14 +255,19 @@ void PAL_FIND(void) {
     // asm 00009F01: FPLX
     // asm 00009F01: 	POP	AR2
     // asm 00009F02: 	RETS
-FPLXEX:
     // ;edbg
     // ;	BU	$
     // asm 00009F03: 	SETC
     // asm 00009F04: 	POP	AR2
     // asm 00009F05: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_FIND", 0, 0);
-    UNIMPL();
+    int ref_count_and_pal_code;
+
+    ref_count_and_pal_code = PALLISTI[pal_index].ref_count_and_pal_code;
+    if (ref_count_and_pal_code == 0) {
+        return -1;
+    }
+
+    return (ref_count_and_pal_code >> 16) << 8;
 }
 
 // *----------------------------------------------------------------------------
@@ -285,12 +290,11 @@ FPLXEX:
  *		R0	PALLETTE CODE
  *
  */
-void PAL_FIND_RAW(void) {
+int PAL_FIND_RAW(const tPAL* palette_source) {
     // asm 00009F06: 	PUSH	AR0
     // asm 00009F07: 	LDI	-1,R0
     // asm 00009F08: 	LDP	@RAWLOCSI
     // asm 00009F09: 	LDI	@RAWLOCSI,AR0
-FINDRLP:
     // asm 00009F0A: ADDI	1,R0
     // asm 00009F0B: 	CMPI	AR2,*AR0++
     // asm 00009F0C: 	BEQ	FOUNDRAW
@@ -305,13 +309,17 @@ FINDRLP:
     // asm 00009F10: 	CLRC
     // asm 00009F11: 	POP	AR0
     // asm 00009F12: 	RETS
-FOUNDRAW:
     // asm 00009F13: 	LSH	8,R0
     // asm 00009F14: 	SETC
     // asm 00009F15: 	POP	AR0
     // asm 00009F16: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_FIND_RAW", 0, 0);
-    UNIMPL();
+    for (int slot = 0; slot < PALNUM; slot++) {
+        if (RAWLOCSI[slot] == palette_source) {
+            return slot << 8;
+        }
+    }
+
+    return -1;
 }
 
 // *----------------------------------------------------------------------------
@@ -428,7 +436,7 @@ tPALETTE_CODE PAL_ALLOC(u32 pal_index) {
 tPALETTE_CODE PAL_ALLOC_RAW(tPAL* palette_source) {
     int slot = -1;
 
-    mame_validate_arg("AR2", palette_source);
+    // mame_validate_arg("AR2", palette_source);
 
     for (int i = 0; i < PALNUM; i++) {
         if (PALRAMI[i] == 0) {
@@ -448,7 +456,7 @@ tPALETTE_CODE PAL_ALLOC_RAW(tPAL* palette_source) {
     // First word of source is the transfer count.
     uint32_t count = palette_source->flags_and_count;
 
-    mame_validate_reg_at_addr(0x00009F76, "R3", &count);
+    // mame_validate_reg_at_addr(0x00009F76, "R3", &count);
 
     // Hardware palette destination is slot in bits 8-15, color index 0 in bits 0-7.
     uint32_t palette_code = (uint32_t)slot << 8;
@@ -458,7 +466,7 @@ tPALETTE_CODE PAL_ALLOC_RAW(tPAL* palette_source) {
     // Remember the original raw palette record pointer, including count header.
     RAWLOCSI[slot] = palette_source;
 
-    mame_validate_reg_at_addr(0x00009F86, "R0", &palette_code);
+    // mame_validate_reg_at_addr(0x00009F86, "R0", &palette_code);
 
     return palette_code;
 }

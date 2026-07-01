@@ -1,15 +1,15 @@
-#include "../core/cpu.h"
+
+#include "memtest.h"
 #include "../core/machine.h"
 #include "c30.h"
-#include "vunit.h"
+#include "checksum.h"
+#include "cksum.h"
 #include "cmos.h"
+#include "diag.h"
+#include "globals.h"
 #include "macs.h"
 #include "sys.h"
-#include "diag.h"
-#include "cksum.h"
-#include "globals.h"
-#include "checksum.h"
-#include "memtest.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/MEMTEST.ASM
@@ -61,24 +61,24 @@ void FEED_WATCHDOG_HARD(void);
 static int CHIPTEST_TABLE;
 
 /*
-*----------------------------------------------------------------------------
-*MEMTEST.ASM
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*CHIP TEST ROUTINES
-*
-*
-*MEMORY WAIT STATE ACCESS NOTES
-*
-*NORMAL=WAIT STATES SET TO SW=2 OR HARDWARE WHICHEVER RELEASES FIRST
-*FOR COLOR RAM SET T0 SW=1 OR HARDWARE WHICHEVER RELEASES FIRST
-*FOR BITMAP OR WAVERAM MODE HARDWARE ONLY
-*AFTER BITMAP READ, READ 0 AFTERWARD TO RESET HDWE.
-*FOR A-D SET WAIT TO SW=4 ONLY
-*
-*/
+ *----------------------------------------------------------------------------
+ *MEMTEST.ASM
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ *CHIP TEST ROUTINES
+ *
+ *
+ *MEMORY WAIT STATE ACCESS NOTES
+ *
+ *NORMAL=WAIT STATES SET TO SW=2 OR HARDWARE WHICHEVER RELEASES FIRST
+ *FOR COLOR RAM SET T0 SW=1 OR HARDWARE WHICHEVER RELEASES FIRST
+ *FOR BITMAP OR WAVERAM MODE HARDWARE ONLY
+ *AFTER BITMAP READ, READ 0 AFTERWARD TO RESET HDWE.
+ *FOR A-D SET WAIT TO SW=4 ONLY
+ *
+ */
 
 // 			;CHECKSUM_GEN	.set	1
 
@@ -91,182 +91,352 @@ static int RANDI = 0x5A5A5A5A;
 // ;EPROM
 /* asm: RTU26	.word	0E00000h,080000h,0000000FFh,0,CHKSUME00 */
 static int RTU26[] = {
-    0x0E00000, 0x080000, 0x0000000FF, 0, CHKSUME00,
+    0x0E00000,
+    0x080000,
+    0x0000000FF,
+    0,
+    CHKSUME00,
 };
 /* asm: RTU22	.word	0D80000h,080000h,0000000FFh,0,CHKSUMD80 */
 static int RTU22[] = {
-    0x0D80000, 0x080000, 0x0000000FF, 0, CHKSUMD80,
+    0x0D80000,
+    0x080000,
+    0x0000000FF,
+    0,
+    CHKSUMD80,
 };
 /* asm: RTU18	.word	0D00000h,080000h,0000000FFh,0,CHKSUMD00 */
 static int RTU18[] = {
-    0x0D00000, 0x080000, 0x0000000FF, 0, CHKSUMD00,
+    0x0D00000,
+    0x080000,
+    0x0000000FF,
+    0,
+    CHKSUMD00,
 };
 /* asm: RTU14	.word	0C80000h,080000h,0000000FFh,0,CHKSUMC80 */
 static int RTU14[] = {
-    0x0C80000, 0x080000, 0x0000000FF, 0, CHKSUMC80,
+    0x0C80000,
+    0x080000,
+    0x0000000FF,
+    0,
+    CHKSUMC80,
 };
 /* asm: RTU10	.word	0C00000h,080000h,0000000FFh,0,CHKSUMC00 */
 /* asm: 	 */
 static int RTU10[] = {
-    0x0C00000, 0x080000, 0x0000000FF, 0, CHKSUMC00,
+    0x0C00000,
+    0x080000,
+    0x0000000FF,
+    0,
+    CHKSUMC00,
 };
 /* asm: RTU27	.word	0E00000h,080000h,00000FF00h,-8,CHKSUME01 */
 static int RTU27[] = {
-    0x0E00000, 0x080000, 0x00000FF00, -8, CHKSUME01,
+    0x0E00000,
+    0x080000,
+    0x00000FF00,
+    -8,
+    CHKSUME01,
 };
 /* asm: RTU23	.word	0D80000h,080000h,00000FF00h,-8,CHKSUMD81 */
 static int RTU23[] = {
-    0x0D80000, 0x080000, 0x00000FF00, -8, CHKSUMD81,
+    0x0D80000,
+    0x080000,
+    0x00000FF00,
+    -8,
+    CHKSUMD81,
 };
 /* asm: RTU19	.word	0D00000h,080000h,00000FF00h,-8,CHKSUMD01 */
 static int RTU19[] = {
-    0x0D00000, 0x080000, 0x00000FF00, -8, CHKSUMD01,
+    0x0D00000,
+    0x080000,
+    0x00000FF00,
+    -8,
+    CHKSUMD01,
 };
 /* asm: RTU15	.word	0C80000h,080000h,00000FF00h,-8,CHKSUMC81 */
 static int RTU15[] = {
-    0x0C80000, 0x080000, 0x00000FF00, -8, CHKSUMC81,
+    0x0C80000,
+    0x080000,
+    0x00000FF00,
+    -8,
+    CHKSUMC81,
 };
 /* asm: RTU11	.word	0C00000h,080000h,00000FF00h,-8,CHKSUMC01 */
 /* asm: 	 */
 static int RTU11[] = {
-    0x0C00000, 0x080000, 0x00000FF00, -8, CHKSUMC01,
+    0x0C00000,
+    0x080000,
+    0x00000FF00,
+    -8,
+    CHKSUMC01,
 };
 /* asm: RTU28	.word	0E00000h,080000h,000FF0000h,-16,CHKSUME02 */
 static int RTU28[] = {
-    0x0E00000, 0x080000, 0x000FF0000, -16, CHKSUME02,
+    0x0E00000,
+    0x080000,
+    0x000FF0000,
+    -16,
+    CHKSUME02,
 };
 /* asm: RTU24	.word	0D80000h,080000h,000FF0000h,-16,CHKSUMD82 */
 static int RTU24[] = {
-    0x0D80000, 0x080000, 0x000FF0000, -16, CHKSUMD82,
+    0x0D80000,
+    0x080000,
+    0x000FF0000,
+    -16,
+    CHKSUMD82,
 };
 /* asm: RTU20	.word	0D00000h,080000h,000FF0000h,-16,CHKSUMD02 */
 static int RTU20[] = {
-    0x0D00000, 0x080000, 0x000FF0000, -16, CHKSUMD02,
+    0x0D00000,
+    0x080000,
+    0x000FF0000,
+    -16,
+    CHKSUMD02,
 };
 /* asm: RTU16	.word	0C80000h,080000h,000FF0000h,-16,CHKSUMC82 */
 static int RTU16[] = {
-    0x0C80000, 0x080000, 0x000FF0000, -16, CHKSUMC82,
+    0x0C80000,
+    0x080000,
+    0x000FF0000,
+    -16,
+    CHKSUMC82,
 };
 /* asm: RTU12	.word	0C00000h,080000h,000FF0000h,-16,CHKSUMC02 */
 /* asm: 	 */
 static int RTU12[] = {
-    0x0C00000, 0x080000, 0x000FF0000, -16, CHKSUMC02,
+    0x0C00000,
+    0x080000,
+    0x000FF0000,
+    -16,
+    CHKSUMC02,
 };
 /* asm: RTU29	.word	0E00000h,080000h,0FF000000h,-24,CHKSUME03 */
 static int RTU29[] = {
-    0x0E00000, 0x080000, 0x0FF000000, -24, CHKSUME03,
+    0x0E00000,
+    0x080000,
+    0x0FF000000,
+    -24,
+    CHKSUME03,
 };
 /* asm: RTU25	.word	0D80000h,080000h,0FF000000h,-24,CHKSUMD83 */
 static int RTU25[] = {
-    0x0D80000, 0x080000, 0x0FF000000, -24, CHKSUMD83,
+    0x0D80000,
+    0x080000,
+    0x0FF000000,
+    -24,
+    CHKSUMD83,
 };
 /* asm: RTU21	.word	0D00000h,080000h,0FF000000h,-24,CHKSUMD03 */
 static int RTU21[] = {
-    0x0D00000, 0x080000, 0x0FF000000, -24, CHKSUMD03,
+    0x0D00000,
+    0x080000,
+    0x0FF000000,
+    -24,
+    CHKSUMD03,
 };
 /* asm: RTU17	.word	0C80000h,080000h,0FF000000h,-24,CHKSUMC83 */
 static int RTU17[] = {
-    0x0C80000, 0x080000, 0x0FF000000, -24, CHKSUMC83,
+    0x0C80000,
+    0x080000,
+    0x0FF000000,
+    -24,
+    CHKSUMC83,
 };
 /* asm: RTU13	.word	0C00000h,080000h,0FF000000h,-24,CHKSUMC03 */
 static int RTU13[] = {
-    0x0C00000, 0x080000, 0x0FF000000, -24, CHKSUMC03,
+    0x0C00000,
+    0x080000,
+    0x0FF000000,
+    -24,
+    CHKSUMC03,
 };
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*RAM CHIP DEFINES
-*	.word	START_ADDR,LENGTH,MASK,REPETITIONS,WAIT_STATE_MODE,PRINTABLE?,UNUMBER
-*/
+ *----------------------------------------------------------------------------
+ *RAM CHIP DEFINES
+ *	.word	START_ADDR,LENGTH,MASK,REPETITIONS,WAIT_STATE_MODE,PRINTABLE?,UNUMBER
+ */
 
 // ;WAVE RAM
 /* asm: RTU72	.word	0A00000h,080000h,00000000Fh,1,1000h,2 */
 static int RTU72[] = {
-    0x0A00000, 0x080000, 0x00000000F, 1, 0x1000, 2,
+    0x0A00000,
+    0x080000,
+    0x00000000F,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU69	.word	0A00000h,080000h,0000000F0h,1,1000h,2 */
 static int RTU69[] = {
-    0x0A00000, 0x080000, 0x0000000F0, 1, 0x1000, 2,
+    0x0A00000,
+    0x080000,
+    0x0000000F0,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU70	.word	0A00000h,080000h,000000F00h,1,1000h,2 */
 static int RTU70[] = {
-    0x0A00000, 0x080000, 0x000000F00, 1, 0x1000, 2,
+    0x0A00000,
+    0x080000,
+    0x000000F00,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU71	.word	0A00000h,080000h,00000F000h,1,1000h,2 */
 /* asm: 	 */
 static int RTU71[] = {
-    0x0A00000, 0x080000, 0x00000F000, 1, 0x1000, 2,
+    0x0A00000,
+    0x080000,
+    0x00000F000,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU76	.word	0A00001h,080000h,00000000Fh,1,1000h,2 */
 static int RTU76[] = {
-    0x0A00001, 0x080000, 0x00000000F, 1, 0x1000, 2,
+    0x0A00001,
+    0x080000,
+    0x00000000F,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU73	.word	0A00001h,080000h,0000000F0h,1,1000h,2 */
 static int RTU73[] = {
-    0x0A00001, 0x080000, 0x0000000F0, 1, 0x1000, 2,
+    0x0A00001,
+    0x080000,
+    0x0000000F0,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU74	.word	0A00001h,080000h,000000F00h,1,1000h,2 */
 static int RTU74[] = {
-    0x0A00001, 0x080000, 0x000000F00, 1, 0x1000, 2,
+    0x0A00001,
+    0x080000,
+    0x000000F00,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU75	.word	0A00001h,080000h,00000F000h,1,1000h,2 */
 /* asm: 	 */
 static int RTU75[] = {
-    0x0A00001, 0x080000, 0x00000F000, 1, 0x1000, 2,
+    0x0A00001,
+    0x080000,
+    0x00000F000,
+    1,
+    0x1000,
+    2,
 };
 // ;COLOR RAM
 /* asm: RTU85	.word	09E0000h,08000h,000FF00h,1,SOFT_WS,1 */
 static int RTU85[] = {
-    0x09E0000, 0x08000, 0x000FF00, 1, SOFT_WS, 1,
+    0x09E0000,
+    0x08000,
+    0x000FF00,
+    1,
+    SOFT_WS,
+    1,
 };
 /* asm: RTU87	.word	09E0000h,08000h,00000FFh,1,SOFT_WS,1 */
 /* asm: 	 */
 static int RTU87[] = {
-    0x09E0000, 0x08000, 0x00000FF, 1, SOFT_WS, 1,
+    0x09E0000,
+    0x08000,
+    0x00000FF,
+    1,
+    SOFT_WS,
+    1,
 };
 // ;VIDEO RAM
 /* asm: RTU102	.word	0900000h,020000h,0000000FFh,1,1000h,2 */
 static int RTU102[] = {
-    0x0900000, 0x020000, 0x0000000FF, 1, 0x1000, 2,
+    0x0900000,
+    0x020000,
+    0x0000000FF,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU95	.word	0900000h,020000h,00000FF00h,1,1000h,2 */
 static int RTU95[] = {
-    0x0900000, 0x020000, 0x00000FF00, 1, 0x1000, 2,
+    0x0900000,
+    0x020000,
+    0x00000FF00,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU94	.word	0900001h,020000h,0000000FFh,1,1000h,2 */
 static int RTU94[] = {
-    0x0900001, 0x020000, 0x0000000FF, 1, 0x1000, 2,
+    0x0900001,
+    0x020000,
+    0x0000000FF,
+    1,
+    0x1000,
+    2,
 };
 /* asm: RTU101	.word	0900001h,020000h,00000FF00h,1,1000h,2 */
 /* asm: 	 */
 static int RTU101[] = {
-    0x0900001, 0x020000, 0x00000FF00, 1, 0x1000, 2,
+    0x0900001,
+    0x020000,
+    0x00000FF00,
+    1,
+    0x1000,
+    2,
 };
 // ;FAST RAM
 /* asm: RTU57	.word	0400000h,020000h,00000FF00h,1,SOFT_WS,1 */
 static int RTU57[] = {
-    0x0400000, 0x020000, 0x00000FF00, 1, SOFT_WS, 1,
+    0x0400000,
+    0x020000,
+    0x00000FF00,
+    1,
+    SOFT_WS,
+    1,
 };
 /* asm: RTU56	.word	0400000h,020000h,0000000FFh,1,SOFT_WS,1 */
 static int RTU56[] = {
-    0x0400000, 0x020000, 0x0000000FF, 1, SOFT_WS, 1,
+    0x0400000,
+    0x020000,
+    0x0000000FF,
+    1,
+    SOFT_WS,
+    1,
 };
 /* asm: RTU60	.word	0400000h,020000h,0FF000000h,1,SOFT_WS,1 */
 static int RTU60[] = {
-    0x0400000, 0x020000, 0x0FF000000, 1, SOFT_WS, 1,
+    0x0400000,
+    0x020000,
+    0x0FF000000,
+    1,
+    SOFT_WS,
+    1,
 };
 /* asm: RTU59	.word	0400000h,020000h,000FF0000h,1,SOFT_WS,1 */
 static int RTU59[] = {
-    0x0400000, 0x020000, 0x000FF0000, 1, SOFT_WS, 1,
+    0x0400000,
+    0x020000,
+    0x000FF0000,
+    1,
+    SOFT_WS,
+    1,
 };
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*VECTOR PTR,XmYm,XM,YM,U_NUM
-*
-*/
+ *----------------------------------------------------------------------------
+ *VECTOR PTR,XmYm,XM,YM,U_NUM
+ *
+ */
 
 #define ISRAM 0
 #define ISROM 1
@@ -323,8 +493,7 @@ static int TESTING_CHIPS;
 /* asm: CHIPMC	RTU31,130,120,40,18,"U31",ISROM		;CMOS CHIP */
 static int CMOS_CHIP;
 
-void TEST_STATIC_CHIPS(void)
-{
+void TEST_STATIC_CHIPS(void) {
     // asm 00006300: 	DINT
     // asm 00006306: 	SETDP
     // asm 00006307: 	CALL	COPY_RAMTEST
@@ -362,8 +531,7 @@ void TEST_STATIC_CHIPS(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void GET_AR4_DIGITS(void)
-{
+static void GET_AR4_DIGITS(void) {
     // asm 00006322: 	LDI	*+AR4(CTT_U),AR0
     // asm 00006323: 	LDI	*AR0,AR0
     // asm 00006324: 	LDI	AR0,R1
@@ -396,8 +564,7 @@ NZERO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void BLINK_AND_CONTINUE(void)
-{
+static void BLINK_AND_CONTINUE(void) {
     // asm 00006338: 	PUSH	RS
     // asm 00006339: 	PUSH	RE
     // asm 0000633A: 	PUSH	RC
@@ -422,8 +589,7 @@ static void BLINK_AND_CONTINUE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void IS_STATIC_ERROR(void)
-{
+static void IS_STATIC_ERROR(void) {
     // asm 00006349: 	CALL	GET_AR4_DIGITS
 ELOOP:
     // asm 0000634A: 	CALL	BLINK_DIGITS
@@ -436,18 +602,17 @@ ELOOP:
 // *----------------------------------------------------------------------------
 
 /*
-*
-*THIS ROUTINE TAKES OVER THE CPU, AND RETURNS
-*
-*PARAMETERS
-*	R1 DIGIT 1
-*	R2 DIGIT 2
-*	R3 DIGIT 3
-*
-*
-*/
-static void LLED_ON(void)
-{
+ *
+ *THIS ROUTINE TAKES OVER THE CPU, AND RETURNS
+ *
+ *PARAMETERS
+ *	R1 DIGIT 1
+ *	R2 DIGIT 2
+ *	R3 DIGIT 3
+ *
+ *
+ */
+static void LLED_ON(void) {
     // asm 0000634C: 	LDI	@SYSCNTL,R0		;if the system hangs and the LED
     // asm 0000634D: 	ANDN	LED_OFF,R0		;is on we were in this routine
     // asm 0000634E: 	STI	R0,@SYSCNTL		;when it happened
@@ -459,8 +624,7 @@ static void LLED_ON(void)
     UNIMPL();
 }
 
-static void LLED_OFF(void)
-{
+static void LLED_OFF(void) {
     // asm 00006353: 	LDI	@SYSCNTL,R0
     // asm 00006354: 	OR	LED_OFF,R0
     // asm 00006355: 	STI	R0,@SYSCNTL
@@ -472,8 +636,7 @@ static void LLED_OFF(void)
     UNIMPL();
 }
 
-static void BLINK_DIGITS(void)
-{
+static void BLINK_DIGITS(void) {
     // asm 0000635A: 	PUSH	R0
     // asm 0000635B: 	PUSH	R1
     // asm 0000635C: 	PUSH	R2
@@ -548,8 +711,7 @@ BDL3X:
 
 // *----------------------------------------------------------------------------
 
-void TEST_CHIPS(void)
-{
+void TEST_CHIPS(void) {
     // asm 000063AC: 	PUSH	DP
     // asm 000063AD: 	LDP	@9E0000h
     // asm 000063AE: 	CLRI	R0			;set background to 0
@@ -641,8 +803,7 @@ TEST_CHIPSX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void PLOT_OUTLINE_OF_CHIPS(void)
-{
+static void PLOT_OUTLINE_OF_CHIPS(void) {
     // asm 000063FD: 	LDI	@CHIPTEST_TABLEI,AR4
 POOCL:
     // asm 000063FE: 	LDI	*+AR4(CTT_MINX),AR2
@@ -677,8 +838,7 @@ POOCL:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CMOS_CHIP_DISPLAY(void)
-{
+static void CMOS_CHIP_DISPLAY(void) {
     // asm 00006417: 	LDL	CMOS_CHIP,AR4
     // asm 00006418: 	LDI	*+AR4(CTT_MINX),AR2
     // asm 00006419: 	LDI	*+AR4(CTT_MINY),R2
@@ -709,8 +869,7 @@ static void CMOS_CHIP_DISPLAY(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CMOS_CHIP_TEST(void)
-{
+static void CMOS_CHIP_TEST(void) {
     // asm 0000642E: 	PUSH	AR4
     // asm 0000642F: 	PUSH	R0
     // asm 00006430: 	PUSH	R1
@@ -797,21 +956,20 @@ KKJJ:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*FOR THE DISPLAY TO WORK WE MUST HAVE OPERATING PROPERLY:
-*	VIDEO RAM (8 CHIPS)
-*	COLOR RAM (2 CHIPS)
-*SO, WE TEST THESE (NOT PLOTTING TO THE SCREEN), AND SAVE THE RESULTS,
-*THEN WE BEGIN PLOTTING THE SCREEN, INITIALIZATING THESE SPACES WITH THE
-*RESULTS.
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *FOR THE DISPLAY TO WORK WE MUST HAVE OPERATING PROPERLY:
+ *	VIDEO RAM (8 CHIPS)
+ *	COLOR RAM (2 CHIPS)
+ *SO, WE TEST THESE (NOT PLOTTING TO THE SCREEN), AND SAVE THE RESULTS,
+ *THEN WE BEGIN PLOTTING THE SCREEN, INITIALIZATING THESE SPACES WITH THE
+ *RESULTS.
+ *
+ *
+ */
 /* asm: BASICS_RAM	fbss	BASICS_RAM,10 */
 int BASICS_RAM[10];
 
-static void TEST_BASICS(void)
-{
+static void TEST_BASICS(void) {
     // asm 00006478: 	LDL	BASICS_RAM,AR5
     // asm 00006479: 	LDI	5,AR6
     // asm 0000647A: 	LDL	CHIPTEST_TABLE,AR4
@@ -931,33 +1089,32 @@ static void TEST_BASICS(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*TEST RAM AREA
-*CALLING PARAMETERS
-*
-*PARAMETERS
-*	AR2	START ADDR
-*	R2	LENGTH WORDS
-*	R3	MASK (FOR BYTE WIDE CHIPS)
-*	RC	# OF PASSES
-*	RS	WAIT STATE CODE
-*	BK	INCREMENT (USUALLY 1)
-*
-*RETURNS
-*	R0	1 ON ERROR
-*	R0	0 ON NO ERROR
-*
-*CLOBBERS
-*	DP,RS,RE,RC
-*	R0,R1,R2,R3,R4,R5
-*	AR0,AR1,AR2,AR3
-*USES
-*	AR6	WATCHDOG FEEDER
-*
-*
-*/
-static void RAMTEST(void)
-{
+ *----------------------------------------------------------------------------
+ *TEST RAM AREA
+ *CALLING PARAMETERS
+ *
+ *PARAMETERS
+ *	AR2	START ADDR
+ *	R2	LENGTH WORDS
+ *	R3	MASK (FOR BYTE WIDE CHIPS)
+ *	RC	# OF PASSES
+ *	RS	WAIT STATE CODE
+ *	BK	INCREMENT (USUALLY 1)
+ *
+ *RETURNS
+ *	R0	1 ON ERROR
+ *	R0	0 ON NO ERROR
+ *
+ *CLOBBERS
+ *	DP,RS,RE,RC
+ *	R0,R1,R2,R3,R4,R5
+ *	AR0,AR1,AR2,AR3
+ *USES
+ *	AR6	WATCHDOG FEEDER
+ *
+ *
+ */
+static void RAMTEST(void) {
     // asm 00006527: 	LDL	BLOWLIST,R0
     // asm 00006528: 	BU	R0
     // 		;THIS IS THE ACTUAL ROUTINE, BUT IT MUST
@@ -968,8 +1125,7 @@ static void RAMTEST(void)
     UNIMPL();
 }
 
-static void RAMTEST_REAL(void)
-{
+static void RAMTEST_REAL(void) {
     // asm 00006529: 	PUSH	DP
     // asm 0000652A: 	PUSH	R6
     // asm 0000652B: 	PUSH	AR6
@@ -1050,8 +1206,7 @@ ENDING:
     UNIMPL();
 }
 
-static void RAMERR(void)
-{
+static void RAMERR(void) {
     // asm 00006571: 	LDI	1,R0		;IS BAD RAM
     // asm 00006572: 	BU	ENDING
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1059,8 +1214,7 @@ static void RAMERR(void)
     UNIMPL();
 }
 
-static void RAMTEST_END(void)
-{
+static void RAMTEST_END(void) {
     /* no executable asm lines detected */
     UNIMPL();
 }
@@ -1068,8 +1222,7 @@ static void RAMTEST_END(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void COPY_RAMTEST(void)
-{
+static void COPY_RAMTEST(void) {
     // asm 00006573: 	LDL	RAMTEST_END,AR0
     // asm 00006574: 	LDL	RAMTEST_REAL,AR1
     // asm 00006575: 	SUBI	AR1,AR0			;GET LENGTH
@@ -1088,24 +1241,23 @@ BBCP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GENERATE_CHECKSUM
-*
-*GENERATES A 16 BIT CHECKSUM
-*
-*
-*PARAMETERS
-*	AR2	START ADDR
-*	RC	LENGTH WORDS
-*	R2	MASK
-*	R3	SHIFT
-*
-*RETURNS
-*	R0	PART CHECKSUM
-*
-*/
-static void GENERATE_CHECKSUM(void)
-{
+ *----------------------------------------------------------------------------
+ *GENERATE_CHECKSUM
+ *
+ *GENERATES A 16 BIT CHECKSUM
+ *
+ *
+ *PARAMETERS
+ *	AR2	START ADDR
+ *	RC	LENGTH WORDS
+ *	R2	MASK
+ *	R3	SHIFT
+ *
+ *RETURNS
+ *	R0	PART CHECKSUM
+ *
+ */
+static void GENERATE_CHECKSUM(void) {
     // asm 0000657D: 	PUSH	R1
     // asm 0000657E: 	PUSH	RC
     // asm 0000657F: 	PUSH	AR2
@@ -1131,10 +1283,10 @@ CHKSUMG:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*ROM CHIP CHECKSUMS
-*
-*/
+ *----------------------------------------------------------------------------
+ *ROM CHIP CHECKSUMS
+ *
+ */
 
 #if CHECKSUM_GEN
 /* asm: CHKSUMC00	.word	-1 */

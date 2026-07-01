@@ -55,10 +55,13 @@ def test_renders_expected_debugger_command() -> None:
 
         entries = collect_breakpoints(tmp, parse_address_map(sample_map))
         assert len(entries) == 1
-        assert entries[0].format_mame() == 'bpset 00001234, 1, { logerror "validate VALUE: 0x%08X\\n", d@00800010; g }'
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00001234, 1, { logerror "validate VALUE: 0x%08X, sample.c:3\\n", d@00800010; g }'
+        )
 
         rendered = render_output(entries)
-        assert 'bpset 00001234, 1, { logerror "validate VALUE: 0x%08X\\n", d@00800010; g }' in rendered
+        assert 'bpset 00001234, 1, { logerror "validate VALUE: 0x%08X, sample.c:3\\n", d@00800010; g }' in rendered
 
 
 def test_small_array_uses_printf_once() -> None:
@@ -88,7 +91,7 @@ def test_small_array_uses_printf_once() -> None:
         assert entries[0].array_length == 3
         assert (
             entries[0].format_mame()
-            == 'bpset 00002002, 1, { logerror "validate SWRAM[3]: 0x%08X 0x%08X 0x%08X\\n", d@00800100, d@00800101, d@00800102; g }'
+            == 'bpset 00002002, 1, { logerror "validate SWRAM[3]: 0x%08X 0x%08X 0x%08X, sample.c:4\\n", d@00800100, d@00800101, d@00800102; g }'
         )
 
 
@@ -118,7 +121,7 @@ def test_large_array_uses_save() -> None:
         rendered = render_output(entries)
         assert (
             'bpset 00009F80, 1, { save 00009F80-0.bin, 0000CA3D, 0x80; '
-            'logerror "validate RAWLOCS: file=00009F80-0.bin\\n"; g }'
+            'logerror "validate RAWLOCS: file=00009F80-0.bin, sample.c:4\\n"; g }'
         ) in rendered
 
 
@@ -157,10 +160,10 @@ def test_shared_hook_address_is_collapsed() -> None:
         assert rendered.count("bpset 00009EBE, 1, {") == 1
         assert (
             'bpset 00009EBE, 1, { '
-            'save 00009EBE-0.bin, 0000CABD, 0x180; logerror "validate PTTRAM: file=00009EBE-0.bin\\n"; '
-            'save 00009EBE-1.bin, 0000C9BD, 0x80; logerror "validate PALRAM: file=00009EBE-1.bin\\n"; '
-            'save 00009EBE-2.bin, 0000CA3D, 0x80; logerror "validate RAWLOCS: file=00009EBE-2.bin\\n"; '
-            'save 00009EBE-3.bin, 0000EA7C, 0x100; logerror "validate _PALLIST: file=00009EBE-3.bin\\n"; '
+            'save 00009EBE-0.bin, 0000CABD, 0x180; logerror "validate PTTRAM: file=00009EBE-0.bin, sample.c:7\\n"; '
+            'save 00009EBE-1.bin, 0000C9BD, 0x80; logerror "validate PALRAM: file=00009EBE-1.bin, sample.c:8\\n"; '
+            'save 00009EBE-2.bin, 0000CA3D, 0x80; logerror "validate RAWLOCS: file=00009EBE-2.bin, sample.c:9\\n"; '
+            'save 00009EBE-3.bin, 0000EA7C, 0x100; logerror "validate _PALLIST: file=00009EBE-3.bin, sample.c:10\\n"; '
             'g }'
         ) in rendered
 
@@ -219,7 +222,64 @@ def test_mame_validate_arg_uses_function_entry_and_register() -> None:
         entries = collect_breakpoints(tmp, parse_address_map(sample_map))
         assert len(entries) == 1
         assert entries[0].instruction_address == 0x00009F5A
-        assert entries[0].format_mame() == 'bpset 00009F5A, 1, { logerror "validate AR2: 0x%08X\\n", ar2; g }'
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00009F5A, 1, { logerror "validate AR2: 0x%08X, sample.c:2\\n", ar2; g }'
+        )
+
+
+def test_mame_validate_arg_sym_uses_function_entry_and_register() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                uint32_t PAL_ALLOC_RAW(void* palette_source) {
+                    mame_validate_arg_sym("AR2", palette_source);
+                    return 0;
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text(" 0000:00009F5A       PAL_ALLOC_RAW\n")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x00009F5A
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00009F5A, 1, { logerror "validate AR2: 0x%08X, sample.c:2\\n", ar2; g }'
+        )
+
+
+def test_mame_validate_arg_float_uses_function_entry_and_float_register_label() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                uint32_t TEXT_ADDDS(const char* text, float x, float y, int ticks) {
+                    mame_validate_arg_float("R3", &y);
+                    return 0;
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text(" 0000:00007A81       TEXT_ADDDS\n")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x00007A81
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00007A81, 1, { logerror "validate R3F: 0x%08X, sample.c:2\\n", r3f; g }'
+        )
 
 
 def test_mame_validate_reg_at_addr_uses_explicit_breakpoint() -> None:
@@ -242,7 +302,64 @@ def test_mame_validate_reg_at_addr_uses_explicit_breakpoint() -> None:
         entries = collect_breakpoints(tmp, parse_address_map(sample_map))
         assert len(entries) == 1
         assert entries[0].instruction_address == 0x00009F86
-        assert entries[0].format_mame() == 'bpset 00009F86, 1, { logerror "validate R0: 0x%08X\\n", r0; g }'
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00009F86, 1, { logerror "validate R0: 0x%08X, sample.c:2\\n", r0; g }'
+        )
+
+
+def test_mame_validate_reg_at_addr_accepts_indexed_address_expr() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                uint32_t _AIVI[4];
+
+                void test(void) {
+                    mame_validate_reg_at_addr(0x00007AB2, "R0", &_AIVI[0]);
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text("")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x00007AB2
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00007AB2, 1, { logerror "validate R0: 0x%08X, sample.c:4\\n", r0; g }'
+        )
+
+
+def test_mame_validate_reg_at_addr_float_uses_float_register_label() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                void test(float x) {
+                    mame_validate_reg_at_addr_float(0x00007A81, "R2", &x);
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text("")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x00007A81
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00007A81, 1, { logerror "validate R2F: 0x%08X, sample.c:2\\n", r2f; g }'
+        )
 
 
 def test_mame_validate_region_at_addr_uses_explicit_breakpoint_and_region() -> None:
@@ -273,7 +390,7 @@ def test_mame_validate_region_at_addr_uses_explicit_breakpoint_and_region() -> N
         assert entries[0].array_length == 16
         assert (
             entries[0].format_mame()
-            == 'bpset 00009F90, 1, { save 00009F90-0.bin, 00900000, 0x10; logerror "validate SCREEN0: file=00009F90-0.bin\\n"; g }'
+            == 'bpset 00009F90, 1, { save 00009F90-0.bin, 00900000, 0x10; logerror "validate SCREEN0: file=00009F90-0.bin, sample.c:4\\n"; g }'
         )
 
 
@@ -304,8 +421,8 @@ def test_mame_validate_region_at_addr_groups_with_other_validations() -> None:
         rendered = render_output(collect_breakpoints(tmp, parse_address_map(sample_map)))
         assert rendered.count("bpset 00009F90, 1, {") == 1
         assert (
-            'bpset 00009F90, 1, { save 00009F90-0.bin, 00900000, 0x8; logerror "validate SCREEN0: file=00009F90-0.bin\\n"; '
-            'logerror "validate R0: 0x%08X\\n", r0; g }'
+            'bpset 00009F90, 1, { save 00009F90-0.bin, 00900000, 0x8; logerror "validate SCREEN0: file=00009F90-0.bin, sample.c:6\\n"; '
+            'logerror "validate R0: 0x%08X, sample.c:7\\n", r0; g }'
         ) in rendered
 
 
@@ -330,9 +447,9 @@ def test_same_breakpoint_address_preserves_source_line_order() -> None:
 
         rendered = render_output(collect_breakpoints(tmp, parse_address_map(sample_map)))
         assert (
-            'bpset 00004B89, 1, { logerror "validate R0: 0x%08X\\n", r0; '
-            'logerror "validate HARD_SECTION_LOAD: 0x%08X\\n", hard_section_load; '
-            'save 00004B89-0.bin, 00D00000, 0x3E8; logerror "validate _SECshared-compressed: file=00004B89-0.bin\\n"; '
+            'bpset 00004B89, 1, { logerror "validate R0: 0x%08X, sample.c:2\\n", r0; '
+            'logerror "validate HARD_SECTION_LOAD: 0x%08X, sample.c:3\\n", hard_section_load; '
+            'save 00004B89-0.bin, 00D00000, 0x3E8; logerror "validate _SECshared-compressed: file=00004B89-0.bin, sample.c:4\\n"; '
             'g }'
         ) in rendered
 
@@ -352,8 +469,16 @@ def main() -> int:
     print("ok: commented-out mame_validate_word lines are ignored")
     test_mame_validate_arg_uses_function_entry_and_register()
     print("ok: mame_validate_arg emits a function-entry register breakpoint")
+    test_mame_validate_arg_sym_uses_function_entry_and_register()
+    print("ok: mame_validate_arg_sym emits a function-entry register breakpoint")
+    test_mame_validate_arg_float_uses_function_entry_and_float_register_label()
+    print("ok: mame_validate_arg_float emits a function-entry float register breakpoint")
     test_mame_validate_reg_at_addr_uses_explicit_breakpoint()
     print("ok: mame_validate_reg_at_addr emits an explicit-address register breakpoint")
+    test_mame_validate_reg_at_addr_accepts_indexed_address_expr()
+    print("ok: mame_validate_reg_at_addr accepts indexed address expressions")
+    test_mame_validate_reg_at_addr_float_uses_float_register_label()
+    print("ok: mame_validate_reg_at_addr_float emits an explicit-address float register breakpoint")
     test_mame_validate_region_at_addr_uses_explicit_breakpoint_and_region()
     print("ok: mame_validate_region_at_addr emits an explicit-address region dump")
     test_mame_validate_region_at_addr_groups_with_other_validations()

@@ -1,4 +1,4 @@
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 
 /*
@@ -8,15 +8,15 @@
 int _font1[399];
 
 /*
-*----------------------------------------------------------------------------
-*FONT.ASM
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*SLOW ROM
-*
-*/
+ *----------------------------------------------------------------------------
+ *FONT.ASM
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ *SLOW ROM
+ *
+ */
 
 /* asm: _font1 */
 /* asm: 	.word	0001100b */

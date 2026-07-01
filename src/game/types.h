@@ -28,6 +28,11 @@ typedef float f32;
 typedef u32 word_addr_t;
 typedef u32 tPALETTE_CODE;
 
+struct CARBLK;
+struct PROC;
+typedef void (*PROC_FUNC)(struct PROC*);
+struct PROC_CONTEXT;
+
 typedef struct tVIEWLIST_entry {
     void* init;
     int arg;
@@ -169,25 +174,29 @@ typedef struct ADJUSTMENT_RANGE {
 
 typedef struct tTEXT {
     struct tTEXT* link;
-    u32 text_ptr;
+    char* ptr;
     u32 font;
-    f32 pos_x;
-    f32 pos_y;
-    f32 vel_x;
-    f32 vel_y;
+    f32 posx;
+    f32 posy;
+    f32 velx;
+    f32 vely;
     u32 tiks;
-    u32 color_and_flags;
+    u32 color;
     u32 height;
-    u32 text_addr;
+    FONTENTRY* text_addr;
     u32 image_addr;
     u32 palette;
 } tTEXT;
 
+typedef struct tSHADOW_TEXT {
+    tTEXT *front, *shadow;
+} tSHADOW_TEXT;
+
 typedef struct OBJ {
     struct OBJ* link;
-    f32 pos_x;
-    f32 pos_y;
-    f32 pos_z;
+    f32 posx;
+    f32 posy;
+    f32 posz;
 
     /* 3x3 rotation matrix laid out exactly as OMAT00..OMAT22 in OBJ.EQU. */
     f32 mat00;
@@ -216,19 +225,15 @@ typedef struct OBJ {
     u32 process_link; /* OPLINK / OBLINK4 alias */
     u32 degrade_rom;
     u32 degrade_rom2;
-    u32 romdata2;         /* OROMDATA2 / ODYNALIST alias */
-    u32 carblk;           /* OCARBLK / OANIBLK alias */
-    s32 dist_from_camera; /* ODIST */
-    s32 radius;           /* ORAD */
+    u32 romdata2;          /* OROMDATA2 / ODYNALIST alias */
+    struct CARBLK* carblk; /* OCARBLK / OANIBLK alias */
+    s32 dist;              /* ODIST */
+    s32 radius;            /* ORAD */
     u32 usr1;
     u32 link2; /* OUSR2 alias */
     u32 link3; /* OUSR3 alias */
     u32 link4;
 } OBJ;
-
-struct PROC;
-typedef void (*PROC_FUNC)(struct PROC*);
-struct PROC_CONTEXT;
 
 typedef struct PROC {
     struct PROC* link;
@@ -469,6 +474,34 @@ typedef struct RACER_DISPATCH {
     f32 rel;
     u32 palette;
 } RACER_DISPATCH;
+
+typedef struct COINTAB_ENTRY {
+    // Word 0
+    uint8_t coin[4]; // coin1, coin2, coin3, coin4
+
+    // Word 1
+    uint8_t units_per_credit;
+    uint8_t units_for_bonus;
+    uint8_t min_units;
+    uint8_t credits_to_start;
+
+    // Word 2
+    uint8_t credits_to_continue;
+    uint8_t show_partial_credits;
+    uint8_t unused0;
+    uint8_t unused1;
+
+    // Words 3-9
+    char* message_lines[3]; // line 1 required; line 2/3 may be 0
+
+    char* coin1_denom_string; // 0 = NULL$
+    char* coin2_denom_string; // 0 = NULL$
+    char* coin3_denom_string; // 0 = NULL$
+    char* coin4_denom_string; // 0 = NULL$
+
+    // Word 10
+    uint8_t coin_denom[4]; // coin1_denom, coin2_denom, coin3_denom, coin4_denom
+} COINTAB_ENTRY;
 
 typedef struct tDEMO_THANKS {
     int unk1;

@@ -1,16 +1,16 @@
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
+#include "cmos.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/FLAME.ASM
@@ -29,11 +29,11 @@ static int FLAMEANI[10];
 static int FLAME_POS[21];
 
 /*
-*----------------------------------------------------------------------------
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*/
+ *----------------------------------------------------------------------------
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ */
 
 /* asm: FLAME_POS */
 /* asm: 	.word	180,87,-450		;Vette */
@@ -45,32 +45,53 @@ static int FLAME_POS[21];
 /* asm: 	.word	160,155,-500		;COPCAR */
 /* asm: 	 */
 static int FLAME_POS[] = {
-    180, 87, -450, // Vette
-    130, 105, -586, // Coope
-    140, 107, -460, // Missle
-    160, 70, -460, // Ferrari
-    180, 87, -450, // JEEP
-    190, 87, -650, // SBUSP
-    160, 155, -500, // COPCAR
+    180,
+    87,
+    -450, // Vette
+    130,
+    105,
+    -586, // Coope
+    140,
+    107,
+    -460, // Missle
+    160,
+    70,
+    -460, // Ferrari
+    180,
+    87,
+    -450, // JEEP
+    190,
+    87,
+    -650, // SBUSP
+    160,
+    155,
+    -500, // COPCAR
 };
 /* asm: FLAMEANI */
 /* asm: 	.word	sparc1,sparc3,sparc5,sparc7,sparc9,sparc7 */
 /* asm: 	.word	sparc5,sparc3,sparc1,-1 */
 /* asm: 	 */
 static int FLAMEANI[] = {
-    sparc1_ROM, sparc3_ROM, sparc5_ROM, sparc7_ROM, sparc9_ROM, sparc7_ROM,
-    sparc5_ROM, sparc3_ROM, sparc1_ROM, -1,
+    sparc1_ROM,
+    sparc3_ROM,
+    sparc5_ROM,
+    sparc7_ROM,
+    sparc9_ROM,
+    sparc7_ROM,
+    sparc5_ROM,
+    sparc3_ROM,
+    sparc1_ROM,
+    -1,
 };
 /*
-*----------------------------------------------------------------------------
-* FLAME	PROC
-*
-*/
-#define FRAME_ON (PDATA+1)
-#define CARBODY_MATRIX (PDATA+2)
+ *----------------------------------------------------------------------------
+ * FLAME	PROC
+ *
+ */
+#define FRAME_ON (PDATA + 1)
+#define CARBODY_MATRIX (PDATA + 2)
 
-void FLAME_PRC(void)
-{
+void FLAME_PRC(void) {
     // asm 0000ADC3: 	LDI	PLYR_C|PLYR_FLAMES_S,AR2
     // asm 0000ADC4: 	CALL	OBJ_FIND_FIRST
     // asm 0000ADC5: 	BC	FLAME_DIE		;Only one set of flames at a time
@@ -158,20 +179,19 @@ FLAME_DIE:
 }
 
 /*
-*----------------------------------------------------------------------------
-*Input
-*	AR0 = object to position and ani
-*	    OVELX/Y/Z = offset from parent
-*	AR6 = object to position reletive to
-*	AR1 = Animation list
-*	IR0  = Frame on
-*OUTPUT
-*	IR0  = Next frame
-*TRASHES	AR2,R1,R2,R3
-*/
+ *----------------------------------------------------------------------------
+ *Input
+ *	AR0 = object to position and ani
+ *	    OVELX/Y/Z = offset from parent
+ *	AR6 = object to position reletive to
+ *	AR1 = Animation list
+ *	IR0  = Frame on
+ *OUTPUT
+ *	IR0  = Next frame
+ *TRASHES	AR2,R1,R2,R3
+ */
 
-static void animate_child(void)
-{
+static void animate_child(void) {
     // ;Set the Frame
 set_frame:
     // asm 0000AE10: 	LDI	*+AR1(IR0),R1
@@ -217,13 +237,12 @@ set_frame:
 }
 
 /*
-*----------------------------------------------------------------------------
-*CALLED BY ZSORTWT in obj.asm just after the players car is linked in.
-*PUTS THE FLAMES JUST BEHIND THE PLAYERS CAR
-*/
+ *----------------------------------------------------------------------------
+ *CALLED BY ZSORTWT in obj.asm just after the players car is linked in.
+ *PUTS THE FLAMES JUST BEHIND THE PLAYERS CAR
+ */
 
-void FLAMESORT(void)
-{
+void FLAMESORT(void) {
     // asm 0000AE35: 	LDI	@OACTIVE,AR0
     // asm 0000AE36: 	CMPI	0,AR0
     // asm 0000AE37: 	BEQ	FLMSORTX		;NO LIST... NO GO
@@ -257,15 +276,14 @@ FLMSORTX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*FIND THE MATRIX IN THE DYNALIST OF THE CAR POINTED TO BY AR2
-*INPUT	AR2 = CARS OBJECT
-*OUTPUT AR0 = MATRIX OF THE BODY
-* SCRAMBLES R0,R1
-*/
+ *----------------------------------------------------------------------------
+ *FIND THE MATRIX IN THE DYNALIST OF THE CAR POINTED TO BY AR2
+ *INPUT	AR2 = CARS OBJECT
+ *OUTPUT AR0 = MATRIX OF THE BODY
+ * SCRAMBLES R0,R1
+ */
 
-void GETCARBODY(void)
-{
+void GETCARBODY(void) {
     // asm 0000AE4F: 	LDI	*+AR2(ODYNALIST),R0
     // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
 FBLOOP:
@@ -281,8 +299,7 @@ FOUND_BODY:
     UNIMPL();
 }
 
-void FIND_NEXT_OBJ(void)
-{
+void FIND_NEXT_OBJ(void) {
     // asm 0000AE57: 	PUSH	R0
     // asm 0000AE58: 	PUSHF	R0
     // asm 0000AE59: 	PUSH	AR5

@@ -1,10 +1,10 @@
-#include "../core/cpu.h"
-#include "../core/machine.h"
-#include "macs.h"
-#include "vunit.h"
-#include "sys.h"
-#include "globals.h"
+
 #include "leg.h"
+#include "../core/machine.h"
+#include "globals.h"
+#include "macs.h"
+#include "sys.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/LEG.ASM
@@ -23,52 +23,52 @@ static void GENERATE_LINEAR_DISTANCE(void);
 #define LEGLLI LEGLL
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 #define USEFIXED 1
 #define USEEXTENDED 0
 /* asm: FINISH_ID	.bss	FINISH_ID,1 */
 int FINISH_ID;
 /*
-*----------------------------------------------------------------------------
-* USEAGE:
-*
-*
-*FOR EACH LEG IN THE SYSTEM THE LEG_GENERATE_MAP ROUTINE IS
-*CALLED TO GENERATE THE LEG MAP.
-*THIS MAP IS IDENTICAL TO HOW THE OBJECTS WILL BE ALLOCATED ON
-*THE DYNAMIC LIST.
-*
-*THE LIST STARTS AT LEGMAP (located in hibss space)
-*AND HAS THE FOLLOWING STRUCTURE:
-*
-*
-*LEG_SIZE	.set	4	;SI
-*	.globl	LEG_MAP	;RAM SPACE
-*MAX_LEG_ELEMENTS	.set	1200
-*
-*THE LAST ENTRY IN THE MAP HAS ALL FIELDS AS
-*0FFFF FFFFh
-*
-*DRONES ON STARTING GRID MUST USE:
-*	.bss	RACER_GRID_START
-*AS THE STARTING INDEX TO ASSUME THE PLAYER
-*WILL BE LOCATED AT.
-*
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ * USEAGE:
+ *
+ *
+ *FOR EACH LEG IN THE SYSTEM THE LEG_GENERATE_MAP ROUTINE IS
+ *CALLED TO GENERATE THE LEG MAP.
+ *THIS MAP IS IDENTICAL TO HOW THE OBJECTS WILL BE ALLOCATED ON
+ *THE DYNAMIC LIST.
+ *
+ *THE LIST STARTS AT LEGMAP (located in hibss space)
+ *AND HAS THE FOLLOWING STRUCTURE:
+ *
+ *
+ *LEG_SIZE	.set	4	;SI
+ *	.globl	LEG_MAP	;RAM SPACE
+ *MAX_LEG_ELEMENTS	.set	1200
+ *
+ *THE LAST ENTRY IN THE MAP HAS ALL FIELDS AS
+ *0FFFF FFFFh
+ *
+ *DRONES ON STARTING GRID MUST USE:
+ *	.bss	RACER_GRID_START
+ *AS THE STARTING INDEX TO ASSUME THE PLAYER
+ *WILL BE LOCATED AT.
+ *
+ *
+ *
+ */
 
 /* asm: LEG_ELEMENTS	.bss	LEG_ELEMENTS,1 */
 int LEG_ELEMENTS;
 /* asm: LEG_MAP	hibss	LEG_MAP,MAX_LEG_ELEMENTS*LEG_SIZE */
-int LEG_MAP[MAX_LEG_ELEMENTS*LEG_SIZE];
+int LEG_MAP[MAX_LEG_ELEMENTS * LEG_SIZE];
 /* asm: LAST_END_CACHE	.bss	LAST_END_CACHE,1 */
 int LAST_END_CACHE;
 /* asm: LAST_END_INDEX	.bss	LAST_END_INDEX,1 */
@@ -77,16 +77,15 @@ int LAST_END_INDEX;
 static int LAST_ORIENTATION;
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*THIS INITIALIZATION IS FOR EACH GAME, NOT
-*EACH LEG
-*
-*
-*/
-void LEG_INIT(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *THIS INITIALIZATION IS FOR EACH GAME, NOT
+ *EACH LEG
+ *
+ *
+ */
+void LEG_INIT(void) {
     // asm 0000AA60: 	PUSH	R0
     // asm 0000AA61: 	CLRI	R0
     // asm 0000AA62: 	STI	R0,@LEG_ELEMENTS
@@ -105,23 +104,22 @@ void LEG_INIT(void)
 // *----------------------------------------------------------------------------
 #define MINILL_SIZE 60
 /* asm: LEG_SSLL	hibss	LEG_SSLL,MINILL_SIZE*(LEG_SIZE+1) */
-int LEG_SSLL[MINILL_SIZE*(LEG_SIZE+1)];
+int LEG_SSLL[MINILL_SIZE * (LEG_SIZE + 1)];
 /* asm: LEGFREE	.bss	LEGFREE,1 */
 int LEGFREE;
 /* asm: LEGLL	.bss	LEGLL,1 */
 int LEGLL;
 
 /*
-*
-*NOT A TRUE LINKED LIST, BECAUSE THERE IS NO DYNAMIC
-*DEALLOCATION (TO ALLOW REALLOCATION)  THE SYSTEM IS
-*RESET WHEN PIECES ARE REALLOCATED.
-*
-*THIS IS FOR THE SAKE OF SPEED
-*
-*/
-static void ELEMENT_INIT(void)
-{
+ *
+ *NOT A TRUE LINKED LIST, BECAUSE THERE IS NO DYNAMIC
+ *DEALLOCATION (TO ALLOW REALLOCATION)  THE SYSTEM IS
+ *RESET WHEN PIECES ARE REALLOCATED.
+ *
+ *THIS IS FOR THE SAKE OF SPEED
+ *
+ */
+static void ELEMENT_INIT(void) {
     // asm 0000AA69: 	PUSH	R0
     // asm 0000AA6A: 	LDL	LEG_SSLL,R0
     // asm 0000AA6B: 	STI	R0,@LEGFREE
@@ -139,14 +137,13 @@ static void ELEMENT_INIT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*RETURNS
-*	AR3	PTR TO ELEMENT
-*
-*/
-static void ELEMENT_GET(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *RETURNS
+ *	AR3	PTR TO ELEMENT
+ *
+ */
+static void ELEMENT_GET(void) {
     // asm 0000AA70: 	PUSH	AR0
 #if DEBUG
     // asm: 	LDI	@DBG_LEGCNT,AR0		;CHECK TO SEE IF WE ARE ALLOCATING TO MANY
@@ -168,17 +165,16 @@ static void ELEMENT_GET(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR3	LIST ELEMENT
-*
-*INSERT LOWEST TO HIGHEST ONTO LEGLL
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	AR3	LIST ELEMENT
+ *
+ *INSERT LOWEST TO HIGHEST ONTO LEGLL
+ *
+ */
 
-static void ELEMENT_ADD(void)
-{
+static void ELEMENT_ADD(void) {
     // asm 0000AA78: 	LDI	*+AR3(1+LEG_ID),R0
     // asm 0000AA79: 	LDI	@LEGLLI,AR0
 R65:
@@ -200,14 +196,13 @@ QT:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR3	PTR TO LEG MAP ENTRY
-*
-*/
-static void ELEMENT_DUMP_INTO_LEGMAP(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	AR3	PTR TO LEG MAP ENTRY
+ *
+ */
+static void ELEMENT_DUMP_INTO_LEGMAP(void) {
     // asm 0000AA84: 	PUSH	R0
     // asm 0000AA85: 	PUSH	AR0
     // asm 0000AA86: 	PUSH	AR1
@@ -236,16 +231,15 @@ ENDIT:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR0	START INDEX
-*	AR1	END INDEX
-*
-*
-*/
-void LEG_GENERATE_MAP(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	AR0	START INDEX
+ *	AR1	END INDEX
+ *
+ *
+ */
+void LEG_GENERATE_MAP(void) {
     // asm 0000AA96: 	LDI	AR1,R1
     // asm 0000AA97: 	ADDI	2,R1
     // asm 0000AA98: 	STI	R1,@FINISH_ID
@@ -352,19 +346,18 @@ int LEG_RADY;
 int LEG_SECTIONIDX;
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*
-*PARAMETERS
-*	AR2	PTR TO TYCO ROM ENTRY
-*	AR3	PTR TO LEG MAP ENTRY
-*	AR4	INDEX
-*
-*
-*/
-static void LEG_ADD_GROUP(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *
+ *PARAMETERS
+ *	AR2	PTR TO TYCO ROM ENTRY
+ *	AR3	PTR TO LEG MAP ENTRY
+ *	AR4	INDEX
+ *
+ *
+ */
+static void LEG_ADD_GROUP(void) {
     // asm 0000AACD: 	PUSH	R4
     // asm 0000AACE: 	PUSH	R5
     // asm 0000AACF: 	PUSH	R6
@@ -520,15 +513,14 @@ NOTDYNAROAD:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*POST PROCESS LEG MAP
-*
-*
-*
-*
-*/
-static void GENERATE_LINEAR_DISTANCE(void)
-{
+ *----------------------------------------------------------------------------
+ *POST PROCESS LEG MAP
+ *
+ *
+ *
+ *
+ */
+static void GENERATE_LINEAR_DISTANCE(void) {
 #if USEEXTENDED
     // asm: 	LDL	LEG_MAP,AR2
     // asm: 	FLOAT	*+AR2(LEG_POSX),R6	;STARTING POSITION

@@ -1,9 +1,9 @@
-#include "../core/cpu.h"
+
+#include "wheel.h"
 #include "../core/machine.h"
+#include "globals.h"
 #include "macs.h"
 #include "sys.h"
-#include "globals.h"
-#include "wheel.h"
 
 /*
  * Source module: asm/WHEEL.ASM
@@ -13,13 +13,13 @@ void NUWHEEL(void);
 void TOWHEEL(void);
 
 /*
-*----------------------------------------------------------------------------
-*FORCE FEEDBACK WHEEL CODE
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *FORCE FEEDBACK WHEEL CODE
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 #define WHEEL_KILL 0
 #define WHEEL 0x0995000
@@ -41,16 +41,15 @@ int WHEELVEL;
 int DAMPPWR;
 
 /*
-*----------------------------------------------------------------------------
-*WHEEL HANDLER
-*
-*PARAMETERS
-*	WHEELPWR	FORCE
-*	WHEELPOS	POSITION DESIRED
-*
-*/
-void NUWHEEL(void)
-{
+ *----------------------------------------------------------------------------
+ *WHEEL HANDLER
+ *
+ *PARAMETERS
+ *	WHEELPWR	FORCE
+ *	WHEELPOS	POSITION DESIRED
+ *
+ */
+void NUWHEEL(void) {
     // asm 0000AFF2: 	LDI	@_MODE,R0
     // asm 0000AFF3: 	AND	MMODE,R0
     // asm 0000AFF4: 	LDF	0,R1	   		;DEFAULT POSITION POWER MULTIPLIER
@@ -139,17 +138,16 @@ NUWHL:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*THIS IS THE ONLY ROUTINE WHICH WRITES TO THE WHEEL
-*
-*
-*PARAMETERS
-*	R0	BYTE TO SEND TO WHEEL
-*
-*
-*/
-void TOWHEEL(void)
-{
+ *----------------------------------------------------------------------------
+ *THIS IS THE ONLY ROUTINE WHICH WRITES TO THE WHEEL
+ *
+ *
+ *PARAMETERS
+ *	R0	BYTE TO SEND TO WHEEL
+ *
+ *
+ */
+void TOWHEEL(void) {
     // asm 0000B031: 	PUSH	DP
     // asm 0000B032: 	PUSHM	R0,R1
     // asm 0000B034: 	PUSH	R0

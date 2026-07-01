@@ -1,17 +1,17 @@
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
-#include "macs.h"
-#include "obj.h"
-#include "mproc.h"
-#include "vunit.h"
 #include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
-#include "pall.h"
-#include "text.h"
 #include "delta.h"
+#include "globals.h"
+#include "macs.h"
+#include "mproc.h"
+#include "obj.h"
+#include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
+#include "text.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/SIGMA.ASM
@@ -26,13 +26,13 @@ static void SIGMA_DIE(void);
 static int SIGMA_LIST[32];
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 // *SIGMA_STARTUP STRUCT
 #define SS_MODEL 0
@@ -73,37 +73,52 @@ static int SIGMA_LIST[32];
 /* asm: 	 */
 /* asm: 	 */
 static int SIGMA_LIST[] = {
-    GTRUCK_MOD, 0,
-    CBUS_MOD, SS_LONG,
-    COPCAR_MOD, SS_COPCAR,
-    MUSTANG_MOD, 0,
-    MUSCLE_MOD, 0,
-    CARAVAN_MOD, 0,
-    SBUS_MOD, SS_LONG,
-    PTRUCKG_MOD, 0,
-    JEEP_MOD, 0,
-    GTRUCK_MOD, 0,
-    COPCAR_MOD, SS_COPCAR,
-    MUSTANG_MOD, 0,
-    MUSCLE_MOD, 0,
-    CARAVAN_MOD, 0,
-    PTRUCKG_MOD, 0,
-    JEEP_MOD, 0,
+    GTRUCK_MOD,
+    0,
+    CBUS_MOD,
+    SS_LONG,
+    COPCAR_MOD,
+    SS_COPCAR,
+    MUSTANG_MOD,
+    0,
+    MUSCLE_MOD,
+    0,
+    CARAVAN_MOD,
+    0,
+    SBUS_MOD,
+    SS_LONG,
+    PTRUCKG_MOD,
+    0,
+    JEEP_MOD,
+    0,
+    GTRUCK_MOD,
+    0,
+    COPCAR_MOD,
+    SS_COPCAR,
+    MUSTANG_MOD,
+    0,
+    MUSCLE_MOD,
+    0,
+    CARAVAN_MOD,
+    0,
+    PTRUCKG_MOD,
+    0,
+    JEEP_MOD,
+    0,
 };
 #define SIGMA_PSYCHO 1
 
 /*
-*----------------------------------------------------------------------------
-*SIGMA IS A BIG FAT PIG THAT STARTS UP AHEAD OF THE PLAYER
-*AND MOVES RATHER SLOWLY AKIN TO A CTA BUS, OR A COMBINE VEHICLE.
-*IN ANY INSTANCE THE DRONE DISAPPEARS ONCE IT IS TRACKING BENEATH THE WORLD.
-*THERE CAN ONLY BE ONE SIGMA IN THE UNIVERSE AT ONCE.
-*SIGMA TRAVELS IN THE SAME DIRECTION AS THE PLAYER.
-*
-*
-*/
-void SIGMA_DRONE(void)
-{
+ *----------------------------------------------------------------------------
+ *SIGMA IS A BIG FAT PIG THAT STARTS UP AHEAD OF THE PLAYER
+ *AND MOVES RATHER SLOWLY AKIN TO A CTA BUS, OR A COMBINE VEHICLE.
+ *IN ANY INSTANCE THE DRONE DISAPPEARS ONCE IT IS TRACKING BENEATH THE WORLD.
+ *THERE CAN ONLY BE ONE SIGMA IN THE UNIVERSE AT ONCE.
+ *SIGMA TRAVELS IN THE SAME DIRECTION AS THE PLAYER.
+ *
+ *
+ */
+void SIGMA_DRONE(void) {
     // asm 0000A42A: 	LDI	@DD_MAX_DRONES,R0
     // asm 0000A42B: 	BNZ	GOAHEAD
     // asm 0000A42C: 	SLEEP	1
@@ -408,16 +423,15 @@ SIGMASLP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*In the case of a 'breakdown' we simply wait until the universe has passed
-*us up, and then goto SIGMA_DIE.
-*
-*
-*/
-static void BREAKDOWN(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *In the case of a 'breakdown' we simply wait until the universe has passed
+ *us up, and then goto SIGMA_DIE.
+ *
+ *
+ */
+static void BREAKDOWN(void) {
     // ;	LDI	*+AR4(OID),R0
     // ;	ANDN	TYPE_M,R0
     // ;	OR	DEAD_VEH_T,R0
@@ -456,8 +470,7 @@ BREAKDNSLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SIGMA_DIE(void)
-{
+static void SIGMA_DIE(void) {
     // asm 0000A533: 	BU	RHO_DIE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DIE", 0, 0);

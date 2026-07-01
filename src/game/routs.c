@@ -1,4 +1,4 @@
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 
 /*
@@ -10,7 +10,6 @@ void DIV_F30(void);
 #define DIV_I DIV_I30
 void DIV_I30(void);
 void DIV_U30(void);
-void INV_F30(void);
 void MOD_I30(void);
 void MOD_U30(void);
 void SQRT(void);
@@ -19,65 +18,64 @@ void SQRT(void);
 #define DIV_I DIV_I30
 
 /*
-*----------------------------------------------------------------------------
-*RUNTIME SYSTEM ROUTINES
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*
-*THIS FILE CONTAINS THE RUNTIME SOURCE CODE TO C ORIENTED OPERATIONS
-*
-*CONTAINED IN THIS FILE ARE THE FOLLOWING FUNCTIONS
-*
-*	DIV_F		divide floating
-*	DIV_I		divide integer
-*	DIV_U30		divide unsigned
-*	INV_F30		inverse floating
-*	MOD_I30		modulus integer
-*	MOD_U30		modulus unsigned
-*	SQRT		C callable sqrt()
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *RUNTIME SYSTEM ROUTINES
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ *
+ *THIS FILE CONTAINS THE RUNTIME SOURCE CODE TO C ORIENTED OPERATIONS
+ *
+ *CONTAINED IN THIS FILE ARE THE FOLLOWING FUNCTIONS
+ *
+ *	DIV_F		divide floating
+ *	DIV_I		divide integer
+ *	DIV_U30		divide unsigned
+ *	INV_F30		inverse floating
+ *	MOD_I30		modulus integer
+ *	MOD_U30		modulus unsigned
+ *	SQRT		C callable sqrt()
+ *
+ *
+ */
 
 /*
-*----------------------------------------------------------------------------
-*DIVF	Floating point divide function
-*
-*PARAMETERS	u in R0, v in R1
-*	R0	FL u
-*	R1	FL v
-*RETURNS
-*	R0	FL R0/R1
-*STATUS		Set from result in R0
-*OPERATION	Result = (1/v) * u.
-*
-*CLOBBERS	R0,R1,BK
-*
-*----------------------------------------------------------------------------
-*	DIV_F - Floating point division
-*
-*	Algorithm:
-*	Given v = a * 2**e
-*	x[0] = 1.0 * 2**(-e-1)
-*	for (i = 1; i <= 5; i++)
-*	 x[i] = x[i-1] * (2.0 - v * x[i-1])
-*
-*	The single-precision floating-point format is accurate to 6.9
-*	decimal places.	The single-precision format is accurate to
-*	2**-23 = 1.192E-7, so we would like to have that much accuracy
-*	in the final result.
-*
-*	The algorithm's error at an iteration i (e[i]) is defined as
-*		e[i] = 1 - v * x[i]
-*	It can also be shown that e[i+1] = e[i] * e[i].
-*
-*	Cycles: 40
-*
-*/
-void DIV_F30(void)
-{
+ *----------------------------------------------------------------------------
+ *DIVF	Floating point divide function
+ *
+ *PARAMETERS	u in R0, v in R1
+ *	R0	FL u
+ *	R1	FL v
+ *RETURNS
+ *	R0	FL R0/R1
+ *STATUS		Set from result in R0
+ *OPERATION	Result = (1/v) * u.
+ *
+ *CLOBBERS	R0,R1,BK
+ *
+ *----------------------------------------------------------------------------
+ *	DIV_F - Floating point division
+ *
+ *	Algorithm:
+ *	Given v = a * 2**e
+ *	x[0] = 1.0 * 2**(-e-1)
+ *	for (i = 1; i <= 5; i++)
+ *	 x[i] = x[i-1] * (2.0 - v * x[i-1])
+ *
+ *	The single-precision floating-point format is accurate to 6.9
+ *	decimal places.	The single-precision format is accurate to
+ *	2**-23 = 1.192E-7, so we would like to have that much accuracy
+ *	in the final result.
+ *
+ *	The algorithm's error at an iteration i (e[i]) is defined as
+ *		e[i] = 1 - v * x[i]
+ *	It can also be shown that e[i+1] = e[i] * e[i].
+ *
+ *	Cycles: 40
+ *
+ */
+void DIV_F30(void) {
     // asm 0000A534: 	POP	BK	;Pop return address
     // asm 0000A535: 	PUSH	R2	;Save R2: integer part
     // asm 0000A536: 	PUSHF	R2	;Save R2: floating point part
@@ -154,8 +152,7 @@ void DIV_F30(void)
 
 // *----------------------------------------------------------------------------
 
-void DIV_I30(void)
-{
+void DIV_I30(void) {
     // 	;
     // 	;Determine sign of result.	Get absolute value of operands.
     // 	;
@@ -219,8 +216,7 @@ zero:
 
 // *----------------------------------------------------------------------------
 
-void DIV_U30(void)
-{
+void DIV_U30(void) {
     // asm 0000A57F: 	CMPI	R0,R1		;divisor > dividend ?
     // asm 0000A580: 	BHI	zerob		;	if so, return 0
     // asm 0000A581: 	LDI	R1,V		;move divisor to AR1
@@ -329,110 +325,45 @@ zerob:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INVF	Floating point inverse function
-*
-*
-*PARAMETERS		v in R0
-*RETURNS		1/v in R0
-*Status			Not set from result (!!!)
-*Registers used		R0, R1, BK
-*
-*	Algorithm:
-*	Given v = a * 2**e
-*	x[0] = 1.0 * 2**(-e-1)
-*	for (i = 1;i <= 5;i++)
-*	 x[i] = x[i-1] * (2.0 - v * x[i-1])
-*
-*	The single-precision floating-point format is accurate to 6.9
-*	Given v = a * 2**e
-*	x[0] = 1.0 * 2**(-e-1)
-*	for (i = 1;i <= 5;i++)
-*	 x[i] = x[i-1] * (2.0 - v * x[i-1])
-*
-*	The single-precision floating-point format is accurate to 6.9
-*	decimal places.	The single-precision format is accurate to
-*	2**-23 = 1.192E-7, so we would like to have that much accuracy
-*	in the final result.
-*
-*	The algorithm's error at an iteration i (e[i]) is defined as
-*		e[i] = 1 - v * x[i]
-*	It can also be shown that e[i+1] = e[i] * e[i].
-*	Cycles: 36
-*
-*/
-void INV_F30(void)
-{
-    // asm 0000A5B0: 	POP	BK		;Pop return address
-    // asm 0000A5B1: 	PUSH	R2		;Save R2: integer part
-    // asm 0000A5B2: 	PUSHF	R2		;Save R2: floating point part
-    // asm 0000A5B3: 	PUSHF	R0
-    // asm 0000A5B4: 	ABSF	R0		;The algorithm uses v = |v|.
-    // 	;
-    // 	;	Extract the exponent of v.
-    // 	;
-    // asm 0000A5B5: 	PUSHF	R0
-    // asm 0000A5B6: 	POP	R1
-    // asm 0000A5B7: 	ASH	-24,R1		;The 8 LSBs of R1 contain the exponent of v.
-    // ;
-    // ;A few comments on boundary conditions.	If e = -128, then v = 0.	The
-    // ;following x[0] calculation yields R1 = --128 - 1 = 127 and the algorithm will
-    // ;overflow and saturate since x[0] is large.	This seems reasonable.	If e =
-    // ;127, the R1 = -127 - 1 = -128.	Thus x[0] = 0 and this will cause the
-    // ;algorithm to yield zero.	Since the mantissa of v is always between 1 and 2,
-    // ;this is also reasonable.	As a result, boundary conditions are handled
-    // ;automatically in a reasonable fashion.
-    // ;
-    // ;	x[0] formation given the exponent of v.
-    // ;
-    // asm 0000A5B8: 	NEGI	R1
-    // asm 0000A5B9: 	SUBI	1,R1		;Now we have -e-1, the exponent of x[0].
-    // asm 0000A5BA: 	ASH	24,R1
-    // asm 0000A5BB: 	PUSH	R1
-    // asm 0000A5BC: 	POPF	R1		;Now R1 = x[0] = 1.0 * 2**(-e-1).
-    // 	;
-    // 	;Now the iterations begin.
-    // 	;
-    // asm 0000A5BD: 	MPYF	R1,R0,R2	;R2 = v * x[0]
-    // asm 0000A5BE: 	SUBRF	2.0,R2		;R2 = 2.0 - v * x[0]
-    // asm 0000A5BF: 	MPYF	R2,R1		;R1 = x[1] = x[0] * (2.0 - v * x[0])
-    // asm 0000A5C0: 	MPYF	R1,R0,R2	;R2 = v * x[1]
-    // asm 0000A5C1: 	SUBRF	2.0,R2		;R2 = 2.0 - v * x[1]
-    // asm 0000A5C2: 	MPYF	R2,R1		;R1 = x[2] = x[1] * (2.0 - v * x[1])
-    // asm 0000A5C3: 	MPYF	R1,R0,R2	;R2 = v * x[2]
-    // asm 0000A5C4: 	SUBRF	2.0,R2		;R2 = 2.0 - v * x[2]
-    // asm 0000A5C5: 	MPYF	R2,R1		;R1 = x[3] = x[2] * (2.0 - v * x[2])
-    // asm 0000A5C6: 	MPYF	R1,R0,R2	;R2 = v * x[3]
-    // asm 0000A5C7: 	SUBRF	2.0,R2		;R2 = 2.0 - v * x[3]
-    // asm 0000A5C8: 	MPYF	R2,R1		;R1 = x[4] = x[3] * (2.0 - v * x[3])
-    // asm 0000A5C9: 	RND	R1		;This minimizes error in the LSBs.
-    // 	;
-    // 	;For the last iteration we use the formulation:
-    // 	;x[5] = (x[4] * (1.0 - (v * x[4]))) + x[4]
-    // 	;
-    // asm 0000A5CA: 	MPYF	R1,R0,R2	;R2 = v * x[4] = 1.0..01.. => 1
-    // asm 0000A5CB: 	SUBRF	1.0,R2		;R2 = 1.0 - v * x[4] = 0.0..01... => 0
-    // asm 0000A5CC: 	MPYF	R1,R2		;R2 = x[4] * (1.0 - v * x[4])
-    // asm 0000A5CD: 	ADDF	R2,R1,R0	;R0 = x[5] = (x[4]*(1.0-(v*x[4])))+x[4]
-    // 	;
-    // 	;Return (delayed). Use delay slots to negate the result if v < 0.
-    // 	;
-    // asm 0000A5CE: 	NEGF	R0,R1		;R1 = -(1/|v|)
-    // asm 0000A5CF: 	POPF	R2		;CHECK ORIGINAL SIGN DUDES... (SETS SIGN FLAG)
-    // asm 0000A5D0: 	BD	BK		;Delayed branch to return
-    // asm 0000A5D1: 	LDFN	R1,R0		;If v < 0, then R1 = -R1 (BASED ON POPF R2)
-    // asm 0000A5D2: 	POPF	R2		;Restore R2: floating point part
-    // asm 0000A5D3: 	POP	R2		;Restore R2: integer part
-    // 	;---->B	BK		;BRANCH OCCURS (RETURN)
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INV_F30", 0, 0);
-    UNIMPL();
+ *----------------------------------------------------------------------------
+ *INVF	Floating point inverse function
+ *
+ *
+ *PARAMETERS		v in R0
+ *RETURNS		1/v in R0
+ *Status			Not set from result (!!!)
+ *Registers used		R0, R1, BK
+ *
+ *	Algorithm:
+ *	Given v = a * 2**e
+ *	x[0] = 1.0 * 2**(-e-1)
+ *	for (i = 1;i <= 5;i++)
+ *	 x[i] = x[i-1] * (2.0 - v * x[i-1])
+ *
+ *	The single-precision floating-point format is accurate to 6.9
+ *	Given v = a * 2**e
+ *	x[0] = 1.0 * 2**(-e-1)
+ *	for (i = 1;i <= 5;i++)
+ *	 x[i] = x[i-1] * (2.0 - v * x[i-1])
+ *
+ *	The single-precision floating-point format is accurate to 6.9
+ *	decimal places.	The single-precision format is accurate to
+ *	2**-23 = 1.192E-7, so we would like to have that much accuracy
+ *	in the final result.
+ *
+ *	The algorithm's error at an iteration i (e[i]) is defined as
+ *		e[i] = 1 - v * x[i]
+ *	It can also be shown that e[i+1] = e[i] * e[i].
+ *	Cycles: 36
+ *
+ */
+float INV_F30(float v) {
+    return 1.0f / v;
 }
 
 // *----------------------------------------------------------------------------
 
-void MOD_I30(void)
-{
+void MOD_I30(void) {
     // 	;
     // 	;Determine sign of result.	Get absolute value of operands.
     // 	;
@@ -496,8 +427,7 @@ mod_32:
 
 // *----------------------------------------------------------------------------
 
-void MOD_U30(void)
-{
+void MOD_U30(void) {
     // asm 0000A5F4: 	CMPI	R0,R1		;divisor > dividend ?
     // asm 0000A5F5: 	BHI	zerob		;	if so, return dividend
     // asm 0000A5F6: 	LDI	R1,V		;load divisor
@@ -596,33 +526,32 @@ zeroc:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*double sqrt(double x)
-*SQRT	Square Root
-*
-*PARAMETERS
-*	R2	float	x
-*
-*RETURNS
-*	R0	float square root of x
-*		If x <= 0 returns x
-*
-*CLOBBERS
-*	R0,R1,R2,R3
-*
-*The algorithm is from the TMS320C30 User's Guide, p. 11-30
-*
-*This has been modified from the C version such that _errno
-*is not set (nor does it exist).
-*
-*
-*CYCLES
-*	52 (64 OUT OF CACHE  (PUSHES))
-*
-*/
+ *----------------------------------------------------------------------------
+ *double sqrt(double x)
+ *SQRT	Square Root
+ *
+ *PARAMETERS
+ *	R2	float	x
+ *
+ *RETURNS
+ *	R0	float square root of x
+ *		If x <= 0 returns x
+ *
+ *CLOBBERS
+ *	R0,R1,R2,R3
+ *
+ *The algorithm is from the TMS320C30 User's Guide, p. 11-30
+ *
+ *This has been modified from the C version such that _errno
+ *is not set (nor does it exist).
+ *
+ *
+ *CYCLES
+ *	52 (64 OUT OF CACHE  (PUSHES))
+ *
+ */
 
-void SQRT(void)
-{
+void SQRT(void) {
     // asm 0000A61C: 	LDF	R2,R0
     // asm 0000A61D: 	RETSLE			;return the value if <= 0
     // asm 0000A61E: 	PUSH	R1

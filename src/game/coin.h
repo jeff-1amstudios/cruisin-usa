@@ -8,20 +8,13 @@
 // COIN.ASM
 // asm: 	.bss	COINOFF,1		;T -> DONT SHOW "INSERT COINS" MESSAGE
 extern int COINOFF;
-// asm: 	.bss	CUSTOM_COINTAB,COIN_ENTRY_SIZE
-extern int CUSTOM_COINTAB[];
-// asm: 	.bss	CUSTOM_COINSTR,10
-extern int CUSTOM_COINSTR[];
+
 // asm: 	.bss	buffer,2
 extern int buffer[];
 // asm: 	.bss	FCB,1
 extern int FCB;
 // asm: 	.bss	PCB,1
 extern int PCB;
-// asm: 	.bss	CREDITBUFFER,8
-extern int CREDITBUFFER[];
-// asm: 	.bss	TOSTARTBUFFER,8
-extern int TOSTARTBUFFER[];
 // asm: 	.bss	ICF,1	;INSERT COIN FLASH
 extern int ICF;
 // asm: 	.bss	VOLUME_ACTIVE,1

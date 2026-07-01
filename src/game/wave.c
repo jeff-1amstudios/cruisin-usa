@@ -1,5 +1,5 @@
 #include "wave.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "c30.h"
 #include "cmos.h"
@@ -293,9 +293,9 @@ LD_RAM:
     PROC_CONTEXT* ctx = malloc(sizeof(PROC_CONTEXT));
     CREATE(SCAN_OBJECTS, UTIL_C, ctx);
 
-    // if (wave_index == 1) {
-    //     goto BEGIN_GAME;
-    // }
+    if (wave_index == 1) {
+        BEGIN_GAME();
+    }
 
     // ;READ HARDWARE 0=CLOSED, 1=OPEN
     // if (((~SWITCH3) & (SW_VIEW0_H | SW_VIEW1_H | SW_VIEW2_H)) == (SW_VIEW1_H | SW_VIEW2_H)) {
@@ -304,12 +304,9 @@ LD_RAM:
 
     // ((void (*)(void))_ATTR_WAVETABI[wave_index])();
     ATTR_WAVETAB_END[wave_index]();
-
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVE", 0, 0);
-    UNIMPL();
 }
 
-static void HEAD2HEADWATCH() {
+static void HEAD2HEADWATCH(PROC* p) {
     // 	SLEEP	1
     // 	LDI	@OM_MODE,R0
     // 	AND	MMODE,R0
@@ -325,6 +322,7 @@ static void HEAD2HEADWATCH() {
     // ISTRUE	LDI	-7,R0
     // 	STI	R0,@_ATTR_MODE
     // 	BR	SET_ATTR
+    UNIMPL_TODO();
 }
 
 static void HEAD2HEAD_WAIT(void) {
@@ -338,18 +336,17 @@ static void HEAD2HEAD_WAIT(void) {
 }
 
 static void HIGH_SCORE(void) {
-    // asm 0000937D: 	LDI	@BUTTON_STATUS,R0
-    // asm 0000937E: 	ANDN	BUT_VIEWS,R0
-    // asm 0000937F: 	STI	R0,@BUTTON_STATUS
-    // asm 00009380: 	LDI	-1,R0	;Kick start the light routine
-    // asm 00009381: 	STI	R0,@OLD_BUTTON_STATUS
-    // asm 00009382: 	LDI	MATTR|MHS,R0
-    // asm 00009383: 	STI	R0,@_MODE
-    // asm 00009384: 	CREATE	DISPLAY_HIGH_SCORES,UTIL_C
-    // asm 00009387: 	CREATE	HEAD2HEADWATCH,UTIL_C
-    // asm 0000938A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIGH_SCORE", 0, 0);
-    UNIMPL();
+    BUTTON_STATUS &= ~BUT_VIEWS;
+
+    /* Kick start the light routine */
+    OLD_BUTTON_STATUS = -1;
+
+    _MODE = MATTR | MHS;
+
+    PROC_CONTEXT* ctx = malloc(sizeof(PROC_CONTEXT));
+    CREATE(DISPLAY_HIGH_SCORES, UTIL_C, ctx);
+    ctx = malloc(sizeof(PROC_CONTEXT));
+    CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
 }
 
 static void MIDSPIN(void) {
@@ -550,11 +547,13 @@ tPAL ILLUM_PAL = {
  *
  */
 void LOAD_FIXED_PALETTES(void) {
+    tPALETTE_CODE fixed_palette_code;
+
     PAL_INIT();
 
-    PAL_ALLOC_RAW(&FIXEDPAL);
+    fixed_palette_code = PAL_ALLOC_RAW(&FIXEDPAL);
 
-    crusn_mem_wr32(COLORAM + 0xFF, R0.u);
+    crusn_mem_wr32(COLORAM + 0xFF, fixed_palette_code);
 
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(fixedfnt_tPAL_ROM));
     PAL_ALLOC_RAW(&ILLUM_PAL);

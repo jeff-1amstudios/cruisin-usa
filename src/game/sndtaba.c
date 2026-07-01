@@ -1,4 +1,4 @@
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "sys.h"
 
@@ -7,13 +7,13 @@
  */
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 #define FRAMES 0x10000
-#define SPEECH (0x0FF|ENINT|CHAN1)
+#define SPEECH (0x0FF | ENINT | CHAN1)

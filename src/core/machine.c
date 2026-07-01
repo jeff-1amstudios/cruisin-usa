@@ -147,7 +147,6 @@ void crusn_machine_decode_screen_argb8888(const crusn_machine* machine, u32* dst
 
 int crusn_machine_init(crusn_machine* machine) {
     memset(machine, 0, sizeof(*machine));
-    crusn_cpu_reset();
 
     machine->rom_words = crusn_rom_words;
     machine->rom_word_count = CRUSN_ROM_WORDS;

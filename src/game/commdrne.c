@@ -1,20 +1,20 @@
-#include "../core/cpu.h"
+#include "commdrne.h"
+
 #include "../core/machine.h"
+#include "cmos.h"
+#include "comm.h"
+#include "delta.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
-#include "text.h"
-#include "delta.h"
-#include "comm.h"
 #include "racer.h"
-#include "commdrne.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
+#include "text.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/COMMDRNE.ASM
@@ -29,22 +29,22 @@ void OM_DRONE(void);
 static float STARTUP_POS_TABLE[78];
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /*
-*----------------------------------------------------------------------------
-*Startup Position Table
-*
-*39 words per plyr (13*3)
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *Startup Position Table
+ *
+ *39 words per plyr (13*3)
+ *
+ *
+ */
 /* asm: STARTUP_POS_TABLE:	;PLYR1  (on PLYR2) */
 /* asm: 	.float	576,-180,3287			;GG */
 /* asm: 	.float	-1928700,4654,584166		;SF */
@@ -76,46 +76,97 @@ static float STARTUP_POS_TABLE[78];
 /* asm: 	 */
 /* asm: 	 */
 static float STARTUP_POS_TABLE[] = {
-    576.0f, -180.0f, 3287.0f, // GG
-    -1928700.0f, 4654.0f, 584166.0f, // SF
-    -2611877.0f, 14000.0f, -628750.0f, // H280
-    -3277335.0f, 15063.0f, -1078194.0f, // RW
-    -2257363.0f, 21013.0f, -1158765.0f, // BH
-    -2426363.0f, 10814.0f, -2164529.0f, // LA
-    -4120644.0f, 20316.0f, -3599815.0f, // DV
-    -4073652.0f, 24315.0f, -3414549.0f, // AZ
-    -2802001.0f, 12395.0f, -3353785.0f, // GC
-    -2465719.0f, 6191.0f, -4562865.0f, // IOWA
-    -3156184.0f, -9609.0f, -4101941.0f, // CH
-    -3514890.0f, -3107.0f, -3573365.0f, // IN
-    -2353033.0f, -16317.0f, -2927294.0f, // APPAL
+    576.0f,
+    -180.0f,
+    3287.0f, // GG
+    -1928700.0f,
+    4654.0f,
+    584166.0f, // SF
+    -2611877.0f,
+    14000.0f,
+    -628750.0f, // H280
+    -3277335.0f,
+    15063.0f,
+    -1078194.0f, // RW
+    -2257363.0f,
+    21013.0f,
+    -1158765.0f, // BH
+    -2426363.0f,
+    10814.0f,
+    -2164529.0f, // LA
+    -4120644.0f,
+    20316.0f,
+    -3599815.0f, // DV
+    -4073652.0f,
+    24315.0f,
+    -3414549.0f, // AZ
+    -2802001.0f,
+    12395.0f,
+    -3353785.0f, // GC
+    -2465719.0f,
+    6191.0f,
+    -4562865.0f, // IOWA
+    -3156184.0f,
+    -9609.0f,
+    -4101941.0f, // CH
+    -3514890.0f,
+    -3107.0f,
+    -3573365.0f, // IN
+    -2353033.0f,
+    -16317.0f,
+    -2927294.0f, // APPAL
     // PLYR2 (on PLYR1)
-    1728.0f, -177.0f, 2875.0f, // GG
-    -1929780.0f, 4638.0f, 583767.0f, // SF
-    -2611381.0f, 13982.0f, -627690.0f, // H280
-    -3276459.0f, 15050.0f, -1078966.0f, // RW
-    -2257834.0f, 21013.0f, -1157630.0f, // BH
-    -2426125.0f, 10798.0f, -2163396.0f, // LA
-    -4121699.0f, 20312.0f, -3600288.0f, // DV
-    -4074714.0f, 24350.0f, -3414037.0f, // AZ
-    -2802209.0f, 12410.0f, -3355048.0f, // GC
-    -2466458.0f, 6193.0f, -4563828.0f, // IOWA
-    -3157144.0f, -9607.0f, -4101204.0f, // CH
-    -3515279.0f, -3107.0f, -3574450.0f, // IN
-    -2353891.0f, -16335.0f, -2928112.0f, // APPAL
+    1728.0f,
+    -177.0f,
+    2875.0f, // GG
+    -1929780.0f,
+    4638.0f,
+    583767.0f, // SF
+    -2611381.0f,
+    13982.0f,
+    -627690.0f, // H280
+    -3276459.0f,
+    15050.0f,
+    -1078966.0f, // RW
+    -2257834.0f,
+    21013.0f,
+    -1157630.0f, // BH
+    -2426125.0f,
+    10798.0f,
+    -2163396.0f, // LA
+    -4121699.0f,
+    20312.0f,
+    -3600288.0f, // DV
+    -4074714.0f,
+    24350.0f,
+    -3414037.0f, // AZ
+    -2802209.0f,
+    12410.0f,
+    -3355048.0f, // GC
+    -2466458.0f,
+    6193.0f,
+    -4563828.0f, // IOWA
+    -3157144.0f,
+    -9607.0f,
+    -4101204.0f, // CH
+    -3515279.0f,
+    -3107.0f,
+    -3574450.0f, // IN
+    -2353891.0f,
+    -16335.0f,
+    -2928112.0f, // APPAL
 };
 /* asm: PLY2CAR	.bss	PLY2CAR,1 */
-int PLY2CAR;
+OBJ* PLY2CAR;
 
 /*
-*----------------------------------------------------------------------------
-*Communications drone
-*
-*
-*
-*/
-void COMM_DRONE(void)
-{
+ *----------------------------------------------------------------------------
+ *Communications drone
+ *
+ *
+ *
+ */
+void COMM_DRONE(void) {
 #if CDEBUG
     // asm: 	CMPI	-1,R0
     // asm: 	BEQ	$
@@ -296,57 +347,70 @@ COMMDRNE_LP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void COMM_DRONE_PTR_SORT(void)
-{
-    // asm 0000A723: 	LDI	@COMM_DRONE_PTR,AR6
-    // asm 0000A724: 	LDI	@PLY2CAR,AR4
-REGULAR:
-    // asm 0000A725: LDI	*+AR4(ODIST),IR1
-    // asm 0000A726: 	ASH	-4,IR1			;quickly divide by 16
-    // asm 0000A727: 	LDI	@INVTABI,AR2		;inverse table dedicated ptr
-    // asm 0000A728: 	LDF	*+AR2(IR1),R0
-    // asm 0000A729: 	CALL	INV_F30
-    // asm 0000A72A: 	CMPF	16,R0			;
-    // asm 0000A72B: 	LDFLT	16,R0			;
-    // asm 0000A72C: 	STF	R0,*+AR6(OMAT00)
-    // asm 0000A72D: 	STF	R0,*+AR6(OMAT11)
-    // asm 0000A72E: 	STF	R0,*+AR6(OMAT22)
-    // asm 0000A72F: 	LDF	*+AR4(OPOSX),R0
-    // asm 0000A730: 	STF	R0,*+AR6(OPOSX)
-    // asm 0000A731: 	LDF	*+AR4(OPOSY),R0
-    // asm 0000A732: 	FLOAT	35,R1
-    // asm 0000A733: 	MPYF	*+AR6(OMAT00),R1
-    // asm 0000A734: 	SUBF	R1,R0
-    // asm 0000A735: 	SUBF	20,R0
-    // asm 0000A736: 	STF	R0,*+AR6(OPOSY)
-    // asm 0000A737: 	LDF	*+AR4(OPOSZ),R0
-    // asm 0000A738: 	STF	R0,*+AR6(OPOSZ)
-    // asm 0000A739: 	LDI	AR6,AR2
-    // asm 0000A73A: 	CALL	OBJ_PULL
-    // asm 0000A73B: 	LDI	*AR4,R0
-    // asm 0000A73C: 	STI	R0,*AR6
-    // asm 0000A73D: 	STI	AR6,*AR4
-    // asm 0000A73E: 	LDI	*+AR4(OFLAGS),R0
-    // asm 0000A73F: 	AND	O_LIST_M,R0
-    // asm 0000A740: 	OR	*+AR6(OFLAGS),R0
-    // asm 0000A741: 	STI	R0,*+AR6(OFLAGS)
-    // ;
-    // ;	CALL	OBJ_INSERT
-    // asm 0000A742: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_DRONE_PTR_SORT", 0, 0);
-    UNIMPL();
+void COMM_DRONE_PTR_SORT(void) {
+    OBJ* comm_drone = COMM_DRONE_PTR;
+    OBJ* player2 = PLY2CAR;
+
+    s32 ir1 = player2->dist;
+
+    ir1 >>= 4; /* quickly divide by 16 */
+
+    /*
+     * inverse table dedicated ptr
+     *
+     * Original:
+     *   LDF *+AR2(IR1),R0
+     *   CALL INV_F30
+     *
+     * So INVTAB[ir1] is loaded, then inverted.
+     */
+    f32 scale = INV_F30(INVTAB[ir1]);
+
+    if (scale < 16.0f) {
+        scale = 16.0f;
+    }
+
+    comm_drone->mat00 = scale;
+    comm_drone->mat11 = scale;
+    comm_drone->mat22 = scale;
+
+    comm_drone->posx = player2->posx;
+
+    {
+        f32 y = player2->posy;
+        f32 offset = 35.0f * comm_drone->mat00;
+
+        y -= offset;
+        y -= 20.0f;
+
+        comm_drone->posy = y;
+    }
+
+    comm_drone->posz = player2->posz;
+
+    OBJ_PULL(comm_drone);
+
+    /*
+     * Insert comm_drone immediately after player2 in the object list.
+     */
+    comm_drone->link = player2->link;
+    player2->link = comm_drone;
+
+    /*
+     * Preserve comm_drone flags, but replace its list bits with player2's.
+     */
+    comm_drone->flags = (comm_drone->flags | (player2->flags & O_LIST_M));
 }
 
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*OTHER MACHINE DRONE LOOP
-*
-*/
-void OM_DRONE(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *OTHER MACHINE DRONE LOOP
+ *
+ */
+void OM_DRONE(void) {
     // asm 0000A743: 	LDI	1,R0			;OTHER GUYS CAR NOW....
     // asm 0000A744: 	STI	R0,*+AR5(CAR_OM)
 OM_DRONEL:

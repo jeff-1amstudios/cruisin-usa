@@ -1,10 +1,10 @@
-#include "../core/cpu.h"
-#include "../core/machine.h"
-#include "macs.h"
-#include "vunit.h"
-#include "globals.h"
-#include "pall.h"
+
 #include "totala.h"
+#include "../core/machine.h"
+#include "globals.h"
+#include "macs.h"
+#include "pall.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/TOTALA.ASM
@@ -34,21 +34,20 @@ int _AIVI[4];
 int _ADDRL;
 
 /*
-*----------------------------------------------------------------------------
-*	rdma(x1,y1,x2,y2,palette,addr)
-*
-*PARAMETERS
-*	AR2	x1
-*	R2	y1
-*	R3	x2
-*	RC	y2
-*	RS	palette
-*	RE	addr
-*
-*
-*/
-void _rdma(void)
-{
+ *----------------------------------------------------------------------------
+ *	rdma(x1,y1,x2,y2,palette,addr)
+ *
+ *PARAMETERS
+ *	AR2	x1
+ *	R2	y1
+ *	R3	x2
+ *	RC	y2
+ *	RS	palette
+ *	RE	addr
+ *
+ *
+ */
+void _rdma(void) {
     // asm 0000AEFC: 	STI	RS,@_ACMAP
     // asm 0000AEFD: 	STI	RE,@_ADDRL
     // asm 0000AEFE: 	STI	AR2,@_ARPS+0		;AX
@@ -68,13 +67,12 @@ void _rdma(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*COPY THE CONTENTS OF _ACNTL TO _ADDRL INTO THE FIFO
-*
-*/
-void _stuff_fpga(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *COPY THE CONTENTS OF _ACNTL TO _ADDRL INTO THE FIFO
+ *
+ */
+void _stuff_fpga(void) {
     // asm 0000AF06: 	PUSH	AR0
     // asm 0000AF07: 	PUSH	AR1
     // asm 0000AF08: 	PUSH	R0
@@ -138,54 +136,53 @@ LP1:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*BITBLIT MODEL AS 2D IMAGE
-*
-*LOCKUP ON
-*
-*
-*
-*Internal vertices are used to get the image parameters
-*
-*PARAMETERS
-*	AR2	MODEL POINTER
-*	R2	POS X
-*	R3	POS Y
-*	R4	CNTL
-*
-*	BLTMOD2D_NOPAL
-*		RS	PAL
-*
-*	.word	nV-1|(nP-1)<<16
-*	{
-*	.word	x,-y,z
-*	} * nV
-*	{
-*	.word	control|pal<<16
-*	.word	v1|v2<<8|v3<<16|v4<<24
-*	.word	iv01,iv23
-*	.word	addr
-*	} * NUM_POLYGONS
-*
-*	This is expected:
-*
-*	Offset	Contents
-*	0	radius
-*	1	nV|nP	== 3
-*	2	[x y z]
-*	4	[x y z]
-*	6	[x y z]
-*	8	[x y z]
-*	10	cntl|pal
-*	11	verts
-*	12	iv01
-*	13	iv23
-*	14	addr
-*
-*
-*/
-void BLTMOD2D_NOPAL(void)
-{
+ *----------------------------------------------------------------------------
+ *BITBLIT MODEL AS 2D IMAGE
+ *
+ *LOCKUP ON
+ *
+ *
+ *
+ *Internal vertices are used to get the image parameters
+ *
+ *PARAMETERS
+ *	AR2	MODEL POINTER
+ *	R2	POS X
+ *	R3	POS Y
+ *	R4	CNTL
+ *
+ *	BLTMOD2D_NOPAL
+ *		RS	PAL
+ *
+ *	.word	nV-1|(nP-1)<<16
+ *	{
+ *	.word	x,-y,z
+ *	} * nV
+ *	{
+ *	.word	control|pal<<16
+ *	.word	v1|v2<<8|v3<<16|v4<<24
+ *	.word	iv01,iv23
+ *	.word	addr
+ *	} * NUM_POLYGONS
+ *
+ *	This is expected:
+ *
+ *	Offset	Contents
+ *	0	radius
+ *	1	nV|nP	== 3
+ *	2	[x y z]
+ *	4	[x y z]
+ *	6	[x y z]
+ *	8	[x y z]
+ *	10	cntl|pal
+ *	11	verts
+ *	12	iv01
+ *	13	iv23
+ *	14	addr
+ *
+ *
+ */
+void BLTMOD2D_NOPAL(void) {
     // asm 0000AF36: 	PUSHM	R0,R1,R2,R3,R4,R5,R6,R7
     // asm 0000AF3E: 	PUSHM	AR0,AR1,AR2,AR3
     // asm 0000AF42: 	BU	SKIPPALENTRY
@@ -194,8 +191,7 @@ void BLTMOD2D_NOPAL(void)
     UNIMPL();
 }
 
-void BLTMOD2D(void)
-{
+void BLTMOD2D(void) {
     // asm 0000AF43: 	PUSHM	R0,R1,R2,R3,R4,R5,R6,R7
     // asm 0000AF4B: 	PUSHM	AR0,AR1,AR2,AR3
     // asm 0000AF4F: 	LDI	*+AR2(10),AR0		;IMAGE PAL
@@ -242,8 +238,7 @@ SKIPPALENTRY:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BLTMOD2D_DS(void)
-{
+void BLTMOD2D_DS(void) {
     // asm 0000AF78: 	PUSHM	R2,R3,R4
     // asm 0000AF7B: 	ADDI	2,R2
     // asm 0000AF7C: 	ADDI	2,R3

@@ -1,4 +1,4 @@
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 
 /*
@@ -10,7 +10,6 @@ static void EPI0_1(void);
 void _line(int x0, int y0, int x1, int y1, int color);
 static void EPI0_2(void);
 
-void INV_F30(void);
 void _pixel(int x, int y, int color);
 
 #define FP AR3
@@ -20,16 +19,14 @@ void _pixel(int x, int y, int color);
 * FUNCTION DEF : _rectangle
 ******************************************************
 */
-void _rectangle(int x1, int y1, int x2, int y2, int color)
-{
+void _rectangle(int x1, int y1, int x2, int y2, int color) {
     _line(x1, y1, x2, y1, color);
     _line(x1, y2, x2, y2, color);
     _line(x1, y1, x1, y2, color);
     _line(x2, y1, x2, y2, color);
 }
 
-static void EPI0_1(void)
-{
+static void EPI0_1(void) {
     // asm 0000AC4D: 	LDI	*-FP(1),R1
     // asm 0000AC4E: 	LDI	*FP,FP
     // asm 0000AC4F: 	BD	R1
@@ -45,8 +42,7 @@ static void EPI0_1(void)
     UNIMPL();
 }
 
-void _line(int x0, int y0, int x1, int y1, int color)
-{
+void _line(int x0, int y0, int x1, int y1, int color) {
     int dx;
     int dy;
     int sx;
@@ -76,8 +72,7 @@ LINE_LOOP:
     goto LINE_LOOP;
 }
 
-static void EPI0_2(void)
-{
+static void EPI0_2(void) {
     // asm 0000ACF2: 	LDI	*-FP(1),R1
     // asm 0000ACF3: 	LDI	*FP,FP
     // asm 0000ACF4: 	POPF	R7

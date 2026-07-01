@@ -1,5 +1,5 @@
 #include "util.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "c30.h"
 #include "cmos.h"
@@ -42,7 +42,7 @@ void RANDU(void);
 void SRAND(void);
 void RANDPER(void);
 void INIT_LINKED_LIST(void* start_addr /*AR2*/, void** free_list /*R2*/, void** active_list /*R3*/, int length_minus_1 /*RC*/, int size /*RS*/);
-void GET_LLIST(void);
+void* GET_LLIST(void** free_list, void** active_list);
 void ALLOC_LLIST(void);
 void FREE_LLIST(void);
 void DEL_LLIST(void);
@@ -122,28 +122,25 @@ static void TVBPX(void) {
  *
  */
 void SETPAGE0(void) {
-    crusn_reg32 saved_r0;
+    u32 dma_setup;
 
     // ;	.if	DEBUG
     // asm 00008E76: 	LDI	@PAGEWORD,R0
     // asm 00008E77: 	BNE	P1
     // ;	.endif
     // asm 00008E78: 	LDI	@SCREEN1I,R0		;set active screen to 1 (writeable)
-    R0.s = SCREEN1I;
     // asm 00008E79: 	STI	R0,@ACTIVE_SCREEN
-    ACTIVE_SCREEN = R0.s;
+    ACTIVE_SCREEN = SCREEN1I;
     // asm 00008E7A: 	LDP	@DMA_SETUP
     // asm 00008E7B: 	LDI	@DMA_SETUP,R0
-    saved_r0 = R0;
-    R0.u = DMA_SETUP_SHADOW;
+    dma_setup = DMA_SETUP_SHADOW;
     // asm 00008E7C: 	ANDN	DMA_VIDEO_PAG_DISPLAYED,R0
-    R0.u &= ~DMA_VIDEO_PAG_DISPLAYED;
+    dma_setup &= ~DMA_VIDEO_PAG_DISPLAYED;
     // asm 00008E7D: 	OR	DMA_DMA_WRITE_PAGE,R0
-    R0.u |= DMA_DMA_WRITE_PAGE;
+    dma_setup |= DMA_DMA_WRITE_PAGE;
     // asm 00008E7E: 	STI	R0,@DMA_SETUP
-    DMA_SETUP_SHADOW = R0.u;
+    DMA_SETUP_SHADOW = dma_setup;
     // asm 00008E7F: 	SETDP
-    R0 = saved_r0;
     // asm 00008E80: 	RETS
 }
 
@@ -562,32 +559,24 @@ void INIT_LINKED_LIST(void* start_addr /*AR2*/, void** free_list /*R2*/, void** 
  *		CARRY CLEAR
  *
  */
-void GET_LLIST(void) {
-    // asm 00008F29: 	PUSH	R1
-    // asm 00008F2A: 	PUSH	AR1
-    // asm 00008F2B: 	LDI	*AR2,R0
-    // asm: 	SLOCKON	Z,"GET_LLIST  out of elements"
-    // asm 00008F2C: 	BZ	GETLL_ERR
-    // asm 00008F2D: 	LDI	R0,AR0
-    // asm 00008F2E: 	LDI	*AR0,AR0
-    // asm 00008F2F: 	STI	AR0,*AR2		;and update free list
-    // 	;insert into the active list
-    // asm 00008F30: 	LDI	R2,AR1			;get ptr to active
-    // asm 00008F31: 	LDI	R0,AR0			;get ptr to element
-    // asm 00008F32: 	LDI	*AR1,R1			;get 1st element in active
-    // asm 00008F33: 	STI	R1,*AR0			;link element into element
-    // asm 00008F34: 	STI	AR0,*AR1		;store element into active
-    // asm 00008F35: 	SETC
-GETLL_X:
-    // asm 00008F36: 	POP	AR1
-    // asm 00008F37: 	POP	R1
-    // asm 00008F38: 	RETS
-GETLL_ERR:
-    // asm 00008F39: 	CLRC
-    // asm 00008F3A: 	BU	GETLL_X
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LLIST", 0, 0);
-    UNIMPL();
+void* GET_LLIST(void** free_list, void** active_list) {
+    void* elem;
+    void* next;
+
+    elem = *free_list;
+    if (elem == NULL) {
+        SLOCKON("GET_LLIST  out of elements");
+        return NULL;
+    }
+
+    next = *(void**)elem;
+    *free_list = next; /* and update free list */
+
+    /* insert into the active list */
+    *(void**)elem = *active_list;
+    *active_list = elem;
+
+    return elem;
 }
 
 // *----------------------------------------------------------------------------

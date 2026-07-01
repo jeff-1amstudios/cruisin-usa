@@ -70,12 +70,10 @@ extern int BUTTON_STATUS;
 extern int OLD_BUTTON_STATUS;
 // asm: 	.bss	TIMEFRAME,1
 extern int TIMEFRAME;
-// asm: 	.bss	TIMEX,1
-extern int TIMEX;
 // asm: 	.bss	TIMECLR,1
 extern int TIMECLR;
 // asm: 	.bss	TIMERAM,50
-extern int TIMERAM[];
+extern float TIMERAM[];
 // asm: 		.bss	STATE_NUM,1
 extern int STATE_NUM;
 // asm: 		.bss	STATE_TIK,1

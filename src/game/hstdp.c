@@ -1,17 +1,17 @@
-#include "../core/cpu.h"
+#include "hstdp.h"
+
 #include "../core/machine.h"
-#include "mproc.h"
-#include "macs.h"
-#include "obj.h"
+#include "cmos.h"
 #include "globals.h"
+#include "macs.h"
+#include "mproc.h"
+#include "obj.h"
+#include "pall.h"
+#include "sndtab.h"
 #include "sys.h"
+#include "sysid.h"
 #include "text.h"
 #include "vunit.h"
-#include "cmos.h"
-#include "sndtab.h"
-#include "pall.h"
-#include "sysid.h"
-#include "hstdp.h"
 
 /*
  * Source module: asm/HSTDP.ASM
@@ -56,7 +56,6 @@ static void FORMAT_NUM(void);
 static void CREATE_LETTERS(void);
 static void ASCII_TO_OBJ(void);
 static void PRINT3D(void);
-void DISPLAY_HIGH_SCORES(void);
 static void DISPLAY_HS(void);
 static void FLASH_LETTERS_PROC(void);
 static void FLASH_LETTERS(void);
@@ -85,88 +84,156 @@ static int SCROLLBTAB[38];
 static int FLASH_PALS[5];
 
 /*
-*----------------------------------------------------------------------------
-*HSTD PROCESSES
-*
-*COPYRIGHT (C) 1994  BY TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *HSTD PROCESSES
+ *
+ *COPYRIGHT (C) 1994  BY TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
-#define FLASH_ON 1 //TURN THIS OFF TO LOOSE FLASHING
+#define FLASH_ON 1 // TURN THIS OFF TO LOOSE FLASHING
 // ;These are for the license plate and pressing of the plate
 
-#define PRESS_DIAM 271 //NOTE: The plate is on the bottom surface
+#define PRESS_DIAM 271 // NOTE: The plate is on the bottom surface
 #define PRESS_RADX 1.5708
 #define ROLLER_ZOFF 620
 #define PRESS_STARTZ (-1300)
 #define PRESS_LASTZ (-2100) //-1900
-#define PRESS_TRAVELZ (PRESS_LASTZ-PRESS_STARTZ)
+#define PRESS_TRAVELZ (PRESS_LASTZ - PRESS_STARTZ)
 // ;PRESS_STARTY	.set	-30
 #define PRESS_STARTY (-45)
 #define PRESS_LASTY (-100)
-#define PRESS_TRAVELY (PRESS_LASTY-PRESS_STARTY)
+#define PRESS_TRAVELY (PRESS_LASTY - PRESS_STARTY)
 #define HIGH_SCORE_GROUP 0x200
 /* asm: NUMTAB		.word	dzero,done,dtwo,dthree,dfour,dfive,dsix,dseven,deight,dnine */
 /* asm: 	 */
 static int NUMTAB[] = {
-    dzero_ROM, done_ROM, dtwo_ROM, dthree_ROM, dfour_ROM, dfive_ROM, dsix_ROM, dseven_ROM, deight_ROM, dnine_ROM,
+    dzero_ROM,
+    done_ROM,
+    dtwo_ROM,
+    dthree_ROM,
+    dfour_ROM,
+    dfive_ROM,
+    dsix_ROM,
+    dseven_ROM,
+    deight_ROM,
+    dnine_ROM,
 };
 /* asm: THREED_LETTERS	.word	ma,mb,mc,md,me,mf,mg,mh,mi,mj,mk,ml,mm,mn,mo,mp,mq,mr */
 /* asm: 	.word	ms,mt,mu,mv,mw,mx,my,mz */
 static int THREED_LETTERS[] = {
-    ma_ROM, mb_ROM, mc_ROM, md_ROM, me_ROM, mf_ROM, mg_ROM, mh_ROM, mi_ROM, mj_ROM, mk_ROM, ml_ROM, mm_ROM, mn_ROM, mo_ROM, mp_ROM, mq_ROM, mr_ROM,
-    ms_ROM, mt_ROM, mu_ROM, mv_ROM, mw_ROM, mx_ROM, my_ROM, mz_ROM,
+    ma_ROM,
+    mb_ROM,
+    mc_ROM,
+    md_ROM,
+    me_ROM,
+    mf_ROM,
+    mg_ROM,
+    mh_ROM,
+    mi_ROM,
+    mj_ROM,
+    mk_ROM,
+    ml_ROM,
+    mm_ROM,
+    mn_ROM,
+    mo_ROM,
+    mp_ROM,
+    mq_ROM,
+    mr_ROM,
+    ms_ROM,
+    mt_ROM,
+    mu_ROM,
+    mv_ROM,
+    mw_ROM,
+    mx_ROM,
+    my_ROM,
+    mz_ROM,
 };
-#define THREED_END ($-THREED_LETTERS)
-#define RUB ('Z'-'A'+1)
+#define THREED_END ($ - THREED_LETTERS)
+#define RUB ('Z' - 'A' + 1)
 /* asm: PLATE_LETTERS	.word	pa,pb,pc,pd,pe,pf,pg,ph,pi,pj,pk,pl,pm,pn,po,pp,pq,pr */
 /* asm: 	.word	ps,pt,pu,pv,pw,px,py,pz,arrow,p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,pend */
 static int PLATE_LETTERS[] = {
-    pa_ROM, pb_ROM, pc_ROM, pd_ROM, pe_ROM, pf_ROM, pg_ROM, ph_ROM, pi_ROM, pj_ROM, pk_ROM, pl_ROM, pm_ROM, pn_ROM, po_ROM, pp_ROM, pq_ROM, pr_ROM,
-    ps_ROM, pt_ROM, pu_ROM, pv_ROM, pw_ROM, px_ROM, py_ROM, pz_ROM, arrow_ROM, p0_ROM, p1_ROM, p2_ROM, p3_ROM, p4_ROM, p5_ROM, p6_ROM, p7_ROM, p8_ROM, p9_ROM, pend_ROM,
+    pa_ROM,
+    pb_ROM,
+    pc_ROM,
+    pd_ROM,
+    pe_ROM,
+    pf_ROM,
+    pg_ROM,
+    ph_ROM,
+    pi_ROM,
+    pj_ROM,
+    pk_ROM,
+    pl_ROM,
+    pm_ROM,
+    pn_ROM,
+    po_ROM,
+    pp_ROM,
+    pq_ROM,
+    pr_ROM,
+    ps_ROM,
+    pt_ROM,
+    pu_ROM,
+    pv_ROM,
+    pw_ROM,
+    px_ROM,
+    py_ROM,
+    pz_ROM,
+    arrow_ROM,
+    p0_ROM,
+    p1_ROM,
+    p2_ROM,
+    p3_ROM,
+    p4_ROM,
+    p5_ROM,
+    p6_ROM,
+    p7_ROM,
+    p8_ROM,
+    p9_ROM,
+    pend_ROM,
 };
-#define LASTCHAR (LAST_LETTER-PLATE_LETTERS-1)
+#define LASTCHAR (LAST_LETTER - PLATE_LETTERS - 1)
 static const char EIP[] = "ENTER INITIALS";
 // *----------------------------------------------------------------------------
-#define LETTER0 (PDATA+3)
-#define LETTER1 (PDATA+4)
-#define LETTER2 (PDATA+5)
-#define darkp_pal (PDATA+6)
-#define medp_pal (PDATA+7)
-#define lightp_pal (PDATA+8)
-#define lightp1_pal (PDATA+9)
-#define INIT0 PDATA //ptr to obj 0 (1st char)
-#define INIT1 (PDATA+1) //1
-#define INIT2 (PDATA+2) //2
-#define STRFREE (PDATA+3) //steering wheel amount of free spin
-#define STRSTRT (PDATA+4) //steering wheel minimum
-#define PEDTRIG (PDATA+5) //middle of pedal (pedal trigger)
-#define OLDPOT0 (PDATA+6)
-#define FLASH_PROC (PDATA+6) //Not used at the same time as OLDPOT0
-#define INITI0 (PDATA+7) //initial index
-#define INITI1 (PDATA+8) //initial index
-#define INITI2 (PDATA+9) //initial index
-#define PLATEOBJ (PDATA+10)
-#define PRESSOBJ (PDATA+11)
-#define BPRESSOBJ (PDATA+12)
-#define SCROLLBOBJ (PDATA+13)
-#define FRAMEOBJ (PDATA+14) //No longer used
-#define MISPLATEOBJ (PDATA+15)
-#define HSPOINTER (PDATA+16)
-#define PLACE (PDATA+17)
-#define WHITE_PAL (PDATA+18)
-#define ARMSOBJ (PDATA+19)
-#define TEMP_STR (PDATA+20) //10 long
-#define CAMX (PDATA+30)
-#define CAMY (PDATA+31)
-#define CAMZ (PDATA+32)
-#define RACE_NUMBER (PDATA+33)
-#define GREY_PAL (PDATA+34)
+#define LETTER0 (PDATA + 3)
+#define LETTER1 (PDATA + 4)
+#define LETTER2 (PDATA + 5)
+#define darkp_pal (PDATA + 6)
+#define medp_pal (PDATA + 7)
+#define lightp_pal (PDATA + 8)
+#define lightp1_pal (PDATA + 9)
+#define INIT0 PDATA         // ptr to obj 0 (1st char)
+#define INIT1 (PDATA + 1)   // 1
+#define INIT2 (PDATA + 2)   // 2
+#define STRFREE (PDATA + 3) // steering wheel amount of free spin
+#define STRSTRT (PDATA + 4) // steering wheel minimum
+#define PEDTRIG (PDATA + 5) // middle of pedal (pedal trigger)
+#define OLDPOT0 (PDATA + 6)
+#define FLASH_PROC (PDATA + 6) // Not used at the same time as OLDPOT0
+#define INITI0 (PDATA + 7)     // initial index
+#define INITI1 (PDATA + 8)     // initial index
+#define INITI2 (PDATA + 9)     // initial index
+#define PLATEOBJ (PDATA + 10)
+#define PRESSOBJ (PDATA + 11)
+#define BPRESSOBJ (PDATA + 12)
+#define SCROLLBOBJ (PDATA + 13)
+#define FRAMEOBJ (PDATA + 14) // No longer used
+#define MISPLATEOBJ (PDATA + 15)
+#define HSPOINTER (PDATA + 16)
+#define PLACE (PDATA + 17)
+#define WHITE_PAL (PDATA + 18)
+#define ARMSOBJ (PDATA + 19)
+#define TEMP_STR (PDATA + 20) // 10 long
+#define CAMX (PDATA + 30)
+#define CAMY (PDATA + 31)
+#define CAMZ (PDATA + 32)
+#define RACE_NUMBER (PDATA + 33)
+#define GREY_PAL (PDATA + 34)
 
 // *----------------------------------------------------------------------------
-void ENTER_INITIALS(void)
-{
+void ENTER_INITIALS(void) {
     // asm 000031A6: 	CALL	INTO_TABLE_P
     // asm 000031A7: 	BC	GOODENOUGH
     // asm 000031A8: 	RETP		;NOPE, didn't make it
@@ -313,8 +380,7 @@ MSLPX:
 
 // ;This does a back space
 
-static void PEDALWT(void)
-{
+static void PEDALWT(void) {
     // ;	LDI	@_countdown,R0
     // ;	BLE	EIML
     // ;
@@ -349,11 +415,10 @@ DE1:
 }
 
 /*
-*----------------------------------------------------------------------------
-*This proc slides in the WORDS "ENTER INITIALS"
-*/
-void ENTERTEXT(void)
-{
+ *----------------------------------------------------------------------------
+ *This proc slides in the WORDS "ENTER INITIALS"
+ */
+void ENTERTEXT(void) {
     // asm 000032B2: 	FLOAT	616,R2			;XPOS
     // asm 000032B3: 	CALL	CREATE_ENTERTEXT
     // asm 000032B4: 	LDF	-6,R0
@@ -375,11 +440,10 @@ ET0:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PARAMETERS	R2 = XPOS
-*/
-static void CREATE_ENTERTEXT(void)
-{
+ *----------------------------------------------------------------------------
+ *PARAMETERS	R2 = XPOS
+ */
+static void CREATE_ENTERTEXT(void) {
     // asm 000032C1: 	LDI	@EIPI,AR2		;enter initials	string
     // asm 000032C2: 	FLOAT	254,R3			;YPOS
     // asm 000032C3: 	LDI	9999,RC			;JIFFYS TO DISPLAY (INDEFINATLY)
@@ -391,8 +455,7 @@ static void CREATE_ENTERTEXT(void)
 }
 
 // *----------------------------------------------------------------------------
-static void MAKE_CENTER(void)
-{
+static void MAKE_CENTER(void) {
     // asm 000032C7: 	LDI	AR0,AR4
     // asm 000032C8: 	LDI	AR1,AR5
     // asm 000032C9: 	ORM	TXT_CENTER,*+AR4(TEXT_COLOR)
@@ -403,8 +466,7 @@ static void MAKE_CENTER(void)
 }
 
 // *----------------------------------------------------------------------------
-static void HSTD_TIMER(void)
-{
+static void HSTD_TIMER(void) {
     // asm 000032D0: 	LDI	@_countdown,R2
     // asm 000032D1: 	LDI	@COUNTDOWN_BUFI,AR2
     // asm 000032D2: 	CALL	_itoa
@@ -423,8 +485,7 @@ static void HSTD_TIMER(void)
 }
 
 // *----------------------------------------------------------------------------
-static void INSERT_INITS(void)
-{
+static void INSERT_INITS(void) {
     // asm 000032DD: 	LDI	@SCORE,R0
     // asm 000032DE: 	LDI	*+AR7(INITI0),R1
     // asm 000032DF: 	LDI	*+AR7(INITI1),R2
@@ -440,14 +501,13 @@ static void INSERT_INITS(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-* USES BONUS_WAVE and GAMETRAKI to determine...
-*
-*RETURNS C = 1 PLAYER WILL MAKE IT INTO THE HS TABLE
-*	 C = 0 PLAYER WILL NOT MAKE IT
-*/
-void INTO_TABLE_P(void)
-{
+ *----------------------------------------------------------------------------
+ * USES BONUS_WAVE and GAMETRAKI to determine...
+ *
+ *RETURNS C = 1 PLAYER WILL MAKE IT INTO THE HS TABLE
+ *	 C = 0 PLAYER WILL NOT MAKE IT
+ */
+void INTO_TABLE_P(void) {
     // asm 000032E7: 	CALL	VALIDATE_HSTD_TABLES
     // 	;check check score if good enough to enter
     // 	;the hstd table
@@ -478,14 +538,13 @@ ITP2:
 }
 
 /*
-*----------------------------------------------------------------------------
-*RETURNS C = 1 PLAYER HAS ALLREADY ENTERED INITS
-*	 C = 0 PLAYER HAS NOT ENTERED INITS
-*SETS PLAYER LETTERS IF FOUND
-* INITI0-INITI2
-*/
-static void CHECK_FIRST_TIME(void)
-{
+ *----------------------------------------------------------------------------
+ *RETURNS C = 1 PLAYER HAS ALLREADY ENTERED INITS
+ *	 C = 0 PLAYER HAS NOT ENTERED INITS
+ *SETS PLAYER LETTERS IF FOUND
+ * INITI0-INITI2
+ */
+static void CHECK_FIRST_TIME(void) {
     // asm 000032FB: 	READADJ	ADJ_INITIALS
     // asm 000032FD: 	CMPI	-1,R0
     // asm 000032FE: 	BNE	NOT_FIRST_TIME
@@ -512,20 +571,19 @@ NFTX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*Below Is code only used for the plate stamping sequence
-*
-*
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*R0 = total elapsed time
-*R0 = 0, did not finish
-*/
-static void CALC_TOTAL_ELAPSED(void)
-{
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *Below Is code only used for the plate stamping sequence
+ *
+ *
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *R0 = total elapsed time
+ *R0 = 0, did not finish
+ */
+static void CALC_TOTAL_ELAPSED(void) {
     // asm 0000330E: 	PUSH	R1
     // asm 0000330F: 	PUSH	R2
     // asm 00003310: 	PUSH	AR0
@@ -550,24 +608,23 @@ CTEX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*	This routine is branched to from within a proccess
-*	It will stamp the letters on the plate then put the plate onto the wall
-*
-*/
-#define PRESS_FRAMES 60 //120
+ *----------------------------------------------------------------------------
+ *	This routine is branched to from within a proccess
+ *	It will stamp the letters on the plate then put the plate onto the wall
+ *
+ */
+#define PRESS_FRAMES 60 // 120
 #define PLACE_FRAMES 40
-#define ROLLER_TRAVEL 12.7117 //2*PI = 1 revolution PI = 3.14
-#define ARM_FRAMES 10 //20
+#define ROLLER_TRAVEL 12.7117 // 2*PI = 1 revolution PI = 3.14
+#define ARM_FRAMES 10         // 20
 #define ARM_START 0
-#define ARM_BOTTOM (ARM_START+240)
-#define ARM_TRAVEL (ARM_BOTTOM-ARM_START)
+#define ARM_BOTTOM (ARM_START + 240)
+#define ARM_TRAVEL (ARM_BOTTOM - ARM_START)
 #define STAMP_FRAMES 4
 #define STAMP_SHAKE 7
 #define ARMS2 0x8A
 
-static void PRESS_CODE_ENTRY(void)
-{
+static void PRESS_CODE_ENTRY(void) {
     // ;Put the letters on the bottom of the press
     // asm 0000331F: 	LDI	*+AR7(WHITE_PAL),R4
     // asm 00003320: 	FLOAT	-LETTER_SIZEX-LETTER_SIZEX/4,R5	;Position of the first letter
@@ -1230,10 +1287,9 @@ PRESSCODEX2:
 #define ARMS 0x89
 #define PLATE 0x8B
 #define MARQLET 0x8C
-#define PLATE_ZOFF (ROLLER_ZOFF-140)
+#define PLATE_ZOFF (ROLLER_ZOFF - 140)
 
-static void INIT_PRESS_OBJECTS(void)
-{
+static void INIT_PRESS_OBJECTS(void) {
     // asm 0000355D: 	LDI	9h,R1
     // asm 0000355E: 	CALL	OBJ_FIND
     // asm 0000355F: 	LDI	AR0,AR2
@@ -1313,12 +1369,11 @@ FPOX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*This proc prints the name of the location on the marque
-*/
+ *----------------------------------------------------------------------------
+ *This proc prints the name of the location on the marque
+ */
 
-static void MAKE_NEW_MARQ(void)
-{
+static void MAKE_NEW_MARQ(void) {
     // ;	LDI	5,R1
     // ;	CALL	OBJ_FIND
     // ;	RETSC
@@ -1367,8 +1422,7 @@ static void MAKE_NEW_MARQ(void)
     UNIMPL();
 }
 
-static void MOVE_PRESSB(void)
-{
+static void MOVE_PRESSB(void) {
     // asm 000035A4: 	LDI	*+AR7(PRESSOBJ),AR0
     // asm 000035A5: 	LDI	*+AR7(BPRESSOBJ),AR2		;The PRESS OWNS the plate
     // asm 000035A6: 	LDF	*+AR0(ORADX),R2		;Get rotation of the PRESS
@@ -1405,8 +1459,7 @@ static void MOVE_PRESSB(void)
     UNIMPL();
 }
 
-static void MOVE_BIGLET_PRESS(void)
-{
+static void MOVE_BIGLET_PRESS(void) {
     // asm 000035C4: 	LDI	*+AR7(PRESSOBJ),AR0
     // asm 000035C5: 	LDI	*+AR7(INIT0),AR2
     // asm 000035C6: 	LDF	*+AR0(ORADX),R2		;Get rotation of the PRESS
@@ -1462,11 +1515,11 @@ MPB:
 }
 
 /*
-*----------------------------------------------------------------------------
-* This positions the bar of letters during the Name Entry
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ * This positions the bar of letters during the Name Entry
+ *
+ *
+ */
 
 /* asm: SCROLLBTAB	;	A    B	  C   D	  E   F	  G   H	  I   J	  K   L	  M   N	  O */
 /* asm: 	.word	1057,1010,960,911,855,803,753,696,648,598,546,494,426,367,307 */
@@ -1474,15 +1527,49 @@ MPB:
 /* asm: 	.word	-633,-697,-757,-820,-880,-945,-1007,-1063 */
 /* asm: 	 */
 static int SCROLLBTAB[] = {
-    1057, 1010, 960, 911, 855, 803, 753, 696, 648, 598, 546, 494, 426, 367, 307,
+    1057,
+    1010,
+    960,
+    911,
+    855,
+    803,
+    753,
+    696,
+    648,
+    598,
+    546,
+    494,
+    426,
+    367,
+    307,
     //       P   Q   R   S  T  U   V    W    X    Y    Z	RUB 0    1    2
-    252, 193, 138, 82, 24, -35, -97, -161, -230, -292, -347, -401, -465, -517, -573,
+    252,
+    193,
+    138,
+    82,
+    24,
+    -35,
+    -97,
+    -161,
+    -230,
+    -292,
+    -347,
+    -401,
+    -465,
+    -517,
+    -573,
     // 	3	4   5   6   7     8    9     END
-    -633, -697, -757, -820, -880, -945, -1007, -1063,
+    -633,
+    -697,
+    -757,
+    -820,
+    -880,
+    -945,
+    -1007,
+    -1063,
 };
 
-static void POS_SCROLLB(void)
-{
+static void POS_SCROLLB(void) {
     // asm 0000361B: 	LDI	*+AR7(SCROLLBOBJ),AR2
     // asm 0000361C: 	LDI	@POSE,R2		;POSITION of the STEERING WHEEL
     // asm 0000361D: 	CMPI	LASTCHAR,R2
@@ -1507,16 +1594,15 @@ POSBX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*ADJUST_ROLLERS	This routine places the rollers in a arc so that there
-*		priorities are correct.
-*IO = NONE
-*
-*/
+ *----------------------------------------------------------------------------
+ *ADJUST_ROLLERS	This routine places the rollers in a arc so that there
+ *		priorities are correct.
+ *IO = NONE
+ *
+ */
 #define ROLLER_GROUP 0x400
 
-static void ADJUST_ROLLERS(void)
-{
+static void ADJUST_ROLLERS(void) {
     // asm 0000362E: 	LDP	@_CAMERAPOS
     // asm 0000362F: 	LDF	@_CAMERAPOS,R4
     // asm 00003630: 	SETDP
@@ -1547,14 +1633,13 @@ ADJRL:
 }
 
 /*
-*----------------------------------------------------------------------------
-*FIND_ROLLER Finds the roller with XPOS closest to R2
-*	PARAMETERS	R2 = XPOS to look for
-*	 RETURNS	AR2 points to closest roller
-*/
+ *----------------------------------------------------------------------------
+ *FIND_ROLLER Finds the roller with XPOS closest to R2
+ *	PARAMETERS	R2 = XPOS to look for
+ *	 RETURNS	AR2 points to closest roller
+ */
 
-static void FIND_ROLLER(void)
-{
+static void FIND_ROLLER(void) {
     // asm 00003646: 	PUSH	R3			;R3 is used by the routine that calls this
     // asm 00003647: 	PUSHF	R3
     // asm 00003648: 	LDI	ROLLER_GROUP,R1			;Roller Group
@@ -1582,8 +1667,7 @@ FRL:
 // *----------------------------------------------------------------------------
 #define ROLLER_DIAM 111
 
-static void SPIN_ROLLERS(void)
-{
+static void SPIN_ROLLERS(void) {
     // asm 00003657: 	LDI	ROLLER_GROUP,R1		;Roller group
     // asm 00003658: 	CALL	OBJ_GFIND
 SR0:
@@ -1610,14 +1694,13 @@ SR0:
 }
 
 /*
-*----------------------------------------------------------------------------
-*Moves the LEtters on the plate being stamped
-*PARAMETERS	R0 = X distance to move the letters
-*
-*/
+ *----------------------------------------------------------------------------
+ *Moves the LEtters on the plate being stamped
+ *PARAMETERS	R0 = X distance to move the letters
+ *
+ */
 
-static void MOVE_PLAYERS_LETTERS(void)
-{
+static void MOVE_PLAYERS_LETTERS(void) {
     // asm 00003669: 	PUSH	R6
     // asm 0000366A: 	PUSHF	R6
     // asm 0000366B: 	LDI	*+AR7(PLACE),R2
@@ -1657,8 +1740,7 @@ MPLX:
 }
 
 // *----------------------------------------------------------------------------
-static void MAKE_PLAYERS_PLATE(void)
-{
+static void MAKE_PLAYERS_PLATE(void) {
     // asm 00003688: 	LDI	*+AR7(RACE_NUMBER),R6			;Race number
     // asm 00003689: 	LDI	*+AR7(PLACE),R7				;Entry number
     // asm 0000368A: 	CALL	GET_TABLE_ADDR
@@ -1679,8 +1761,7 @@ static void MAKE_PLAYERS_PLATE(void)
 // *----------------------------------------------------------------------------
 #define FIRST_BOLT 0x30
 
-static void INI_PLAYERS_BOLTS(void)
-{
+static void INI_PLAYERS_BOLTS(void) {
     // asm 00003695: 	LDI	*+AR7(PLACE),R1	;Calculate the first bolts object number
     // asm 00003696: 	MPYI	4,R1
     // asm 00003697: 	ADDI	FIRST_BOLT,R1
@@ -1699,12 +1780,11 @@ IPBX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*PROC 	FLY BOLT
-*
-*/
-static void FLY_BOLT(void)
-{
+ *----------------------------------------------------------------------------
+ *PROC 	FLY BOLT
+ *
+ */
+static void FLY_BOLT(void) {
     // asm 000036A0: 	SONDFX	DD2
     // asm 000036A2: 	LDI	15,AR5
     // asm 000036A3: FBL
@@ -1729,29 +1809,28 @@ static void FLY_BOLT(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*Below Is code That is shared by both the High score entry and display
-*
-*
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*/
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *Below Is code That is shared by both the High score entry and display
+ *
+ *
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ */
 
 /*
-*----------------------------------------------------------------------------
-*	OBJ_FIND	Finds the object in the Active list
-*	PARAMETERS
-*	R1 =	ID of the object
-*	RETURNS
-*	AR0		Points to the first object in the list with that ID
-*	CARRY = SET if not found
-*/
+ *----------------------------------------------------------------------------
+ *	OBJ_FIND	Finds the object in the Active list
+ *	PARAMETERS
+ *	R1 =	ID of the object
+ *	RETURNS
+ *	AR0		Points to the first object in the list with that ID
+ *	CARRY = SET if not found
+ */
 
-static void OBJ_FIND(void)
-{
+static void OBJ_FIND(void) {
     // asm 000036B3: 	PUSH	R0
     // asm 000036B4: 	PUSHF	R0
     // asm 000036B5: 	PUSH	AR5
@@ -1781,17 +1860,16 @@ OH_NO:
 }
 
 /*
-*----------------------------------------------------------------------------
-*	OBJ_FIND_NEXT	Find the next instance of the object
-*	PARAMETERS
-*	AR0		The First instance of the object.
-*	RETURNS
-*	AR0		Points to the next object in the list with that ID
-*	CARRY = SET if not found
-*/
+ *----------------------------------------------------------------------------
+ *	OBJ_FIND_NEXT	Find the next instance of the object
+ *	PARAMETERS
+ *	AR0		The First instance of the object.
+ *	RETURNS
+ *	AR0		Points to the next object in the list with that ID
+ *	CARRY = SET if not found
+ */
 
-static void OBJ_FIND_NEXT(void)
-{
+static void OBJ_FIND_NEXT(void) {
     // asm 000036C7: 	PUSH	R0
     // asm 000036C8: 	PUSHF	R0
     // asm 000036C9: 	PUSH	AR5
@@ -1820,17 +1898,16 @@ OFNX1:
 }
 
 /*
-*----------------------------------------------------------------------------
-*	OBJ_GFIND	Finds the FIRST object in the GROUP on the Active list
-*	PARAMETERS
-*	R1 =	BIT in the ID that determines the group
-*	RETURNS
-*	AR0		Points to the first object in the list with that ID
-*	CARRY = SET if not found
-*/
+ *----------------------------------------------------------------------------
+ *	OBJ_GFIND	Finds the FIRST object in the GROUP on the Active list
+ *	PARAMETERS
+ *	R1 =	BIT in the ID that determines the group
+ *	RETURNS
+ *	AR0		Points to the first object in the list with that ID
+ *	CARRY = SET if not found
+ */
 
-static void OBJ_GFIND(void)
-{
+static void OBJ_GFIND(void) {
     // asm 000036DB: 	PUSH	R0
     // asm 000036DC: 	PUSHF	R0
     // asm 000036DD: 	PUSH	AR5
@@ -1860,19 +1937,18 @@ OH_GNO:
 }
 
 /*
-*----------------------------------------------------------------------------
-*	OBJ_GFIND_NEXT	Find the next instance of the GROUP
-*	PARAMETERS
-*	AR0		The First instance of the object.
-*	R1 =	BIT in the ID that determines the group
-*
-*	RETURNS
-*	AR0		Points to the next object in the list with that ID
-*	CARRY = SET if not found
-*/
+ *----------------------------------------------------------------------------
+ *	OBJ_GFIND_NEXT	Find the next instance of the GROUP
+ *	PARAMETERS
+ *	AR0		The First instance of the object.
+ *	R1 =	BIT in the ID that determines the group
+ *
+ *	RETURNS
+ *	AR0		Points to the next object in the list with that ID
+ *	CARRY = SET if not found
+ */
 
-static void OBJ_GFIND_NEXT(void)
-{
+static void OBJ_GFIND_NEXT(void) {
     // asm 000036EF: 	PUSH	R0
     // asm 000036F0: 	PUSHF	R0
     // asm 000036F1: 	PUSH	AR5
@@ -1900,13 +1976,12 @@ OGFNX1:
 }
 
 /*
-*----------------------------------------------------------------------------
-*This code can be deleted after I can change the ID numbers for the PRESS Group
-* PARAMETERS AR3 = packed list of object ID's to tag
-*	R2  = What to tage them with. NOTE R2 will be orred with the ID
-*/
-static void OBJ_TAG(void)
-{
+ *----------------------------------------------------------------------------
+ *This code can be deleted after I can change the ID numbers for the PRESS Group
+ * PARAMETERS AR3 = packed list of object ID's to tag
+ *	R2  = What to tage them with. NOTE R2 will be orred with the ID
+ */
+static void OBJ_TAG(void) {
 OTAG0:
     // asm 00003702: 	LDI	*AR3++,R1	;Get ID looking for
     // asm 00003703: 	CMPI	0FFh,R1		;Is it a range of ID's?
@@ -1932,13 +2007,12 @@ OTAGX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*This code can be deleted after I can change the ID numbers for the PRESS Group
-*	R1 = Object looking for
-*	R2  = What to tage them with. NOTE R2 will be orred with the ID
-*/
-static void OBJ_TAGALL(void)
-{
+ *----------------------------------------------------------------------------
+ *This code can be deleted after I can change the ID numbers for the PRESS Group
+ *	R1 = Object looking for
+ *	R2  = What to tage them with. NOTE R2 will be orred with the ID
+ */
+static void OBJ_TAGALL(void) {
     // asm 00003712: 	CALL	OBJ_FIND
     // asm 00003713: 	BC	OTAX
     // asm 00003714: 	LDI	*+AR0(OID),R3
@@ -1958,14 +2032,13 @@ OTAX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*OBJ_MOVY_GROUP
-*	PARAMETERS	R1 = Bit of OID to search for
-*	PARAMETERS	R2 = FLOAT amount to move YPOS
-*
-*/
-static void OBJ_MOVY_GROUP(void)
-{
+ *----------------------------------------------------------------------------
+ *OBJ_MOVY_GROUP
+ *	PARAMETERS	R1 = Bit of OID to search for
+ *	PARAMETERS	R2 = FLOAT amount to move YPOS
+ *
+ */
+static void OBJ_MOVY_GROUP(void) {
     // asm 0000371E: 	PUSH	R3
     // asm 0000371F: 	PUSHF	R3
     // asm 00003720: 	CALL	OBJ_GFIND
@@ -1989,14 +2062,13 @@ OMYG:
 }
 
 /*
-*----------------------------------------------------------------------------
-*OBJ_DEL_GROUP
-*	PARAMETERS	R1 = Bit of OID to search for
-*
-*
-*/
-static void OBJ_DEL_GROUP(void)
-{
+ *----------------------------------------------------------------------------
+ *OBJ_DEL_GROUP
+ *	PARAMETERS	R1 = Bit of OID to search for
+ *
+ *
+ */
+static void OBJ_DEL_GROUP(void) {
     // asm 0000372E: 	CALL	OBJ_GFIND
     // asm 0000372F: 	BC	ODG
     // asm 00003730: 	LDI	AR0,AR2
@@ -2014,8 +2086,7 @@ ODG:
 }
 
 // *----------------------------------------------------------------------------
-static void FIND_ALL_PLATES(void)
-{
+static void FIND_ALL_PLATES(void) {
     // asm 00003738: 	LDI	15,R0			;HE WILL NEVER GET TO THIS PLACE
     // asm 00003739: 	STI	R0,*+AR7(PLACE)
     // asm 0000373A: 	CALL	FIND_PLATES
@@ -2025,18 +2096,17 @@ static void FIND_ALL_PLATES(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*FIND_PLATES Creates the objects for the name and the score
-*
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *FIND_PLATES Creates the objects for the name and the score
+ *
+ *
+ *
+ */
 
 #define NUM_PLATES 9
 #define FIRST_PLATE 0x20
 
-static void FIND_PLATES(void)
-{
+static void FIND_PLATES(void) {
     // asm 0000373C: 	PUSH	AR5
     // asm 0000373D: 	LDI	*+AR7(RACE_NUMBER),R6		;Race number
     // asm 0000373E: 	LDI	0,R7				;Entry number
@@ -2081,17 +2151,16 @@ MP2:
 }
 
 /*
-*----------------------------------------------------------------------------
-*MAKE_NUMBERS
-*	R0	= INTEGER SCORE
-*	AR5	= PLACE
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *MAKE_NUMBERS
+ *	R0	= INTEGER SCORE
+ *	AR5	= PLACE
+ *
+ *
+ */
 #define FIRST_NUMBER 0x10
 
-static void MAKE_NUMBERS(void)
-{
+static void MAKE_NUMBERS(void) {
     // asm 0000375F: 	LDI	R0,R2
     // asm 00003760: 	LDI	AR7,AR2
     // asm 00003761: 	ADDI	TEMP_STR,AR2
@@ -2141,8 +2210,7 @@ static void MAKE_NUMBERS(void)
 /* asm: LONGEST_TIME	.word	198000 */
 static int LONGEST_TIME = 198000;
 
-static void MAKE_TIME(void)
-{
+static void MAKE_TIME(void) {
     // asm 00003788: 	CMPI	0,R0			;Range check time for bogus values
     // asm 00003789: 	LDILT	0,R0
     // asm 0000378A: 	LDI	@LONGEST_TIME,R1
@@ -2211,12 +2279,11 @@ MT3:
 }
 
 /*
-*----------------------------------------------------------------------------
-*READS ASCI NUMBER and reformats it to 7 digit display
-*	AR2 = string
-*/
-static void FORMAT_NUM(void)
-{
+ *----------------------------------------------------------------------------
+ *READS ASCI NUMBER and reformats it to 7 digit display
+ *	AR2 = string
+ */
+static void FORMAT_NUM(void) {
     // asm 000037C2: 	LDI	0,R1
     // asm 000037C3: 	LDI	0,R2
     // asm 000037C4: 	LDI	AR2,AR1
@@ -2265,17 +2332,16 @@ FORMNX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*	PARAMETERS	AR0 = POINTER TO PLATE that owns this
-*		LETTER0-LETTER2 = THE three letters
-*		R1  = Place the player is in
-*/
+ *----------------------------------------------------------------------------
+ *	PARAMETERS	AR0 = POINTER TO PLATE that owns this
+ *		LETTER0-LETTER2 = THE three letters
+ *		R1  = Place the player is in
+ */
 #define LETTER_SIZEX 120
 #define LETTER_XOFF (-120)
 #define LETTER_YOFF (-12)
 
-static void CREATE_LETTERS(void)
-{
+static void CREATE_LETTERS(void) {
     // asm 000037E6: 	LDI	AR7,AR3
     // asm 000037E7: 	ADDI	LETTER0,AR3
     // asm 000037E8: 	ADDI	16,R1
@@ -2327,8 +2393,7 @@ CRLX:
     UNIMPL();
 }
 
-static void ASCII_TO_OBJ(void)
-{
+static void ASCII_TO_OBJ(void) {
     // asm 00003813: 	CMPI	'0',AR2
     // asm 00003814: 	LDILT	'0',AR2
     // asm 00003815: 	CMPI	'9',AR2
@@ -2353,17 +2418,16 @@ CRL1:
 }
 
 /*
-*----------------------------------------------------------------------------
-*	PARAMETERS	AR2 = POINTER TO STRING
-*		R2  = Xpos FL
-*		R3  = Ypos FL
-*		R4  = Zpos FL
-*		R6  = ID
-*/
+ *----------------------------------------------------------------------------
+ *	PARAMETERS	AR2 = POINTER TO STRING
+ *		R2  = Xpos FL
+ *		R3  = Ypos FL
+ *		R4  = Zpos FL
+ *		R6  = ID
+ */
 #define LETTER3D_SIZEX 80
 
-static void PRINT3D(void)
-{
+static void PRINT3D(void) {
     // asm 00003824: 	LDI	AR2,AR1			;I use AR2 as input for continuity with the 2d print
     // asm 00003825: 	LDI	0,R1
     // asm 00003826: 	PUSH	R1			;This will terminate the string being pulled off the stack
@@ -2430,29 +2494,28 @@ PR3DX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*Below Is code only used to display the high score and is not used during high
-*score entry
-*
-*
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*/
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *Below Is code only used to display the high score and is not used during high
+ *score entry
+ *
+ *
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ */
 
 #define HS_ZOOM 40
 #define HS_STARTY 650
 // ;HS_ENDY 	.set	-280
 #define HS_ENDY (-210)
-#define HS_YDIFF ((HS_ENDY-HS_STARTY)/HS_ZOOM)
+#define HS_YDIFF ((HS_ENDY - HS_STARTY) / HS_ZOOM)
 #define HS_STARTZ (-4200)
 #define HS_ENDZ (-1960) //-800
-#define HS_ZDIFF ((HS_ENDZ-HS_STARTZ)/HS_ZOOM)
+#define HS_ZDIFF ((HS_ENDZ - HS_STARTZ) / HS_ZOOM)
 
-void DISPLAY_HIGH_SCORES(void)
-{
+void DISPLAY_HIGH_SCORES(PROC* p) {
     // asm 00003859: 	LDL	scroll_white,AR2
     // asm 0000385A: 	CALL	PAL_ALLOC_RAW
     // asm 0000385B: 	LDL	plate_darkp,AR2
@@ -2521,8 +2584,7 @@ DHSNEXT:
     UNIMPL();
 }
 
-static void DISPLAY_HS(void)
-{
+static void DISPLAY_HS(void) {
     // asm 00003889: 	STI	AR6,*+AR7(RACE_NUMBER)		;Passed by parent proc
     // asm 0000388A: 	LDL	scroll_white,AR2
     // asm 0000388B: 	CALL	PAL_FIND_RAW
@@ -2591,20 +2653,23 @@ DHS0:
 }
 
 /*
-*----------------------------------------------------------------------------
-*PROC
-*R4 = race number
-*/
+ *----------------------------------------------------------------------------
+ *PROC
+ *R4 = race number
+ */
 /* asm: scroll_whiteI	.word	scroll_white */
 #define scroll_whiteI scroll_white_ROM
 /* asm: FLASH_PALS */
 /* asm: 	.word	plate_medp,plate_lightp,plate_lightp1,plate_lightp,-1 */
 static int FLASH_PALS[] = {
-    plate_medp_ROM, plate_lightp_ROM, plate_lightp1_ROM, plate_lightp_ROM, -1,
+    plate_medp_ROM,
+    plate_lightp_ROM,
+    plate_lightp1_ROM,
+    plate_lightp_ROM,
+    -1,
 };
 
-static void FLASH_LETTERS_PROC(void)
-{
+static void FLASH_LETTERS_PROC(void) {
 #if FLASH_ON == 1
     // asm 000038CD: 	LDI	R4,R1
     // asm 000038CE: 	CALL	CHECK_LASTHS
@@ -2637,12 +2702,11 @@ FLASH_LOCK:
 }
 
 /*
-*----------------------------------------------------------------------------
-*R0 OPAL
-*R4 OID
-*/
-static void FLASH_LETTERS(void)
-{
+ *----------------------------------------------------------------------------
+ *R0 OPAL
+ *R4 OID
+ */
+static void FLASH_LETTERS(void) {
     // asm 000038E5: 	LDI	R0,AR2
     // asm 000038E6: 	CALL	PAL_FIND_RAW
     // asm 000038E7: 	LDI	R4,AR2
@@ -2660,21 +2724,23 @@ FLASHX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*REMOVES the objects in the list of ID's
-*NOTE if the value of the ID is > FF it will eliminate the range (inclusive)
-*
-*/
+ *----------------------------------------------------------------------------
+ *REMOVES the objects in the list of ID's
+ *NOTE if the value of the ID is > FF it will eliminate the range (inclusive)
+ *
+ */
 
 /* asm: DELIST		.word	808Bh,0104h,3057h,0 */
 /* asm: 	 */
 /* asm: 	 */
 static int DELIST[] = {
-    0x808B, 0x0104, 0x3057, 0,
+    0x808B,
+    0x0104,
+    0x3057,
+    0,
 };
 
-static void DELETE_PRESS_OBJECTS(void)
-{
+static void DELETE_PRESS_OBJECTS(void) {
     // asm 000038F3: 	LDI	@DELISTI,AR3	;TAG them with 100h
     // asm 000038F4: 	LDI	100h,R2
     // asm 000038F5: 	CALL	OBJ_TAG
@@ -2686,12 +2752,11 @@ static void DELETE_PRESS_OBJECTS(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*	FIX_PLATES
-*
-*/
-static void FIX_PLATES(void)
-{
+ *----------------------------------------------------------------------------
+ *	FIX_PLATES
+ *
+ */
+static void FIX_PLATES(void) {
     // asm 000038F9: 	PUSH	AR5
     // asm 000038FA: 	FLOAT	-5000,R0		;Initial Z offset
     // asm 000038FB: 	LDI	0,AR5
@@ -2727,13 +2792,12 @@ FIXPL3:
 }
 
 /*
-*----------------------------------------------------------------------------
-*	FLY PLATES
-*	R0 = how far to move
-*	R3 = position of the last plate
-*/
-static void FLY_PLATES(void)
-{
+ *----------------------------------------------------------------------------
+ *	FLY PLATES
+ *	R0 = how far to move
+ *	R3 = position of the last plate
+ */
+static void FLY_PLATES(void) {
     // asm 00003913: 	PUSH	AR5
     // asm 00003914: 	LDI	0,AR5
     // asm 00003915: 	LDI	1h,R2
@@ -2770,12 +2834,11 @@ FLPL3:
 }
 
 /*
-*----------------------------------------------------------------------------
-*This proc prints the name of the location on the marque
-*/
+ *----------------------------------------------------------------------------
+ *This proc prints the name of the location on the marque
+ */
 
-static void DISPLAY_HSTEXT(void)
-{
+static void DISPLAY_HSTEXT(void) {
     // asm 0000392E: 	FLOAT	-910,R3
     // asm 0000392F: 	BR	RACE_TEXT
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -2783,8 +2846,7 @@ static void DISPLAY_HSTEXT(void)
     UNIMPL();
 }
 
-static void ENTER_HSTEXT(void)
-{
+static void ENTER_HSTEXT(void) {
     // asm 00003930: 	FLOAT	-910-2000,R3			;The marquee is moved up 2000
 RACE_TEXT:
     // asm 00003931: 	LDI	*+AR7(RACE_NUMBER),AR2
@@ -2801,10 +2863,9 @@ RACE_TEXT:
 
 #define LOGO_X (-250)
 #define LOGO_Y (-170)
-#define LOGO_Z (368*2)
+#define LOGO_Z (368 * 2)
 
-static void INIT_LOGO(void)
-{
+static void INIT_LOGO(void) {
     // asm 00003939: 	CALL	OBJ_GET
     // asm 0000393A: 	BC	LOGOX
     // asm 0000393B: 	LDI	AR0,AR4
@@ -2830,18 +2891,17 @@ LOGOX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*BRANCHED TO FROM RADIO_BUT IN SND.asm
-*IS A PROC
-*/
+ *----------------------------------------------------------------------------
+ *BRANCHED TO FROM RADIO_BUT IN SND.asm
+ *IS A PROC
+ */
 
 /* asm: RADIO_HS_SHADOW	.bss	RADIO_HS_SHADOW,1 */
 int RADIO_HS_SHADOW;
 /* asm: RADIO_HS_SWITCH	.bss	RADIO_HS_SWITCH,1 */
 int RADIO_HS_SWITCH;
 
-void RBMATTR_CHECK(void)
-{
+void RBMATTR_CHECK(void) {
     // asm 0000394C: 	LDI	@_MODE,R0
     // asm 0000394D: 	TSTB	MHS,R0		;IN HS DISPLAY?
     // asm 0000394E: 	BEQ	RBMCX

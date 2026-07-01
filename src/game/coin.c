@@ -1,7 +1,8 @@
 #include "coin.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "cmos.h"
+#include "cointab.h"
 #include "diag.h"
 #include "globals.h"
 #include "macs.h"
@@ -22,10 +23,10 @@ void COIN2(void);
 void COIN3(void);
 void COIN4(void);
 void SERV_COIN(void);
-static void GETCOIN(void);
+static COINTAB_ENTRY* GETCOIN(void);
 static void GET_THIS_COIN(void);
 static void GET_THIS_COINTXT(void);
-void GETCOINTXT(void);
+char** GETCOINTXT(void);
 static void GET_COIN1(void);
 static void GET_COIN2(void);
 static void GET_COIN3(void);
@@ -33,7 +34,7 @@ static void GET_COIN4(void);
 static void GET_UNITS_PER_CREDIT(void);
 static void GET_UNITS_FOR_BONUS(void);
 static void GET_MIN_UNITS(void);
-static void GET_CREDITS_TO_START(void);
+static int GET_CREDITS_TO_START(void);
 static void GET_CREDITS_TO_CONTINUE(void);
 static void GET_SHOW_PARTIAL(void);
 static void GET_COIN1_COUNTER(void);
@@ -44,14 +45,14 @@ void GETCOIN_DEFAULT(void);
 static void SET_COINAGE_ADJ(void);
 void INIT_CUSTOM_COIN(void);
 static void INICC(void);
-static void FONT18RED(void);
-static void FONT18REDDS(void);
+static void FONT18RED(tTEXT* t);
+static void FONT18REDDS(tSHADOW_TEXT* t);
 void INSERT_COINS(void);
-static void FLASH_INSERTCOINS(void);
-static void SHOW_INSERTCOINS(void);
+static void FLASH_INSERTCOINS(float posy);
+static void SHOW_INSERTCOINS(float posy);
 static void FLASH_START(void);
-static void PRINT_COINAGE(void);
-static void GET_COINAGE_HIGHT(void);
+static void PRINT_COINAGE(float x, float y);
+static float GET_COINAGE_HIGHT(void);
 static void WHITE10FNT(void);
 static void PRINT_CREDITS(void);
 static void FLASH_TO_START(void);
@@ -60,12 +61,11 @@ static void TOCONT_STRING(void);
 void VOLUME_DISPLAY(void);
 void INSERT_MORE_COINS(void);
 static void FLASH_INSERTCOINSM(void);
+static void NO_INSERTCOINS();
 static void PRINT_TOCONT(void);
 void COIN_COUNTER(void);
 static void MOTION_VALID(void);
 
-#define CUSTOM_COINTABI CUSTOM_COINTAB
-#define CUSTOM_COINSTRI CUSTOM_COINSTR
 #define bufferi buffer
 #define CTS_STRI CTS_STR
 #define CTC_STRI CTC_STR
@@ -94,6 +94,11 @@ static int SCS;
 
 /* asm: COINOFF	.bss	COINOFF,1 */
 int COINOFF;
+
+/* asm: CUSTOM_COINTAB	.bss	CUSTOM_COINTAB,COIN_ENTRY_SIZE */
+COINTAB_ENTRY CUSTOM_COINTAB;
+/* asm: CUSTOM_COINSTR	.bss	CUSTOM_COINSTR,10 */
+char CUSTOM_COINSTR[10];
 
 /*
  *----------------------------------------------------------------------------
@@ -261,21 +266,26 @@ CHECK_CREDITSX:
 }
 
 // *----------------------------------------------------------------------------
-
-static void GETCOIN(void) {
+/*
+ *RETURNS
+ *	AR0	PTR TO COIN TABLE ENTRY
+ */
+static COINTAB_ENTRY* GETCOIN(void) {
     // asm 000073CB: 	LDI	ADJ_STANDARD_PRICING,AR2
     // asm 000073CC: 	CALL	ADJUSTMENT_READ
     // asm 000073CD: 	CMPI	1,R0
     // asm 000073CE: 	BEQ	USE_STANDARD
     // asm 000073CF: 	LDI	@CUSTOM_COINTABI,AR0
     // asm 000073D0: 	RETS
+    if (ADJUSTMENT_READ(ADJ_STANDARD_PRICING) != 1) {
+        return &CUSTOM_COINTAB;
+    }
+
 USE_STANDARD:
     // asm 000073D1: 	LDI	ADJ_COINMODE,AR2
     // asm 000073D2: 	CALL	ADJUSTMENT_READ
     // asm 000073D3: 	LDI	R0,AR0
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCOIN", 0, 0);
-    UNIMPL();
+    return COIN_TABLE[ADJUSTMENT_READ(ADJ_COINMODE) & 0x7F];
 }
 
 static void GET_THIS_COIN(void) {
@@ -299,12 +309,11 @@ static void GET_THIS_COINTXT(void) {
     UNIMPL();
 }
 
-void GETCOINTXT(void) {
+char** GETCOINTXT(void) {
     // asm 000073DE: 	CALL	GETCOIN
     // asm 000073DF: 	ADDI	3,AR0		;NOTE AR0 now points to the COIN TABLE ENTRY WHERE THE MESSAGE RESIDES
     // asm 000073E0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCOINTXT", 0, 0);
-    UNIMPL();
+    return GETCOIN()->message_lines;
 }
 
 // *----------------------------------------------------------------------------
@@ -456,7 +465,7 @@ static void GET_MIN_UNITS(void) {
     UNIMPL();
 }
 
-static void GET_CREDITS_TO_START(void) {
+static int GET_CREDITS_TO_START(void) {
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -470,8 +479,7 @@ static void GET_CREDITS_TO_START(void) {
     // asm: 	POP	AR2
     // asm: 	POP	AR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_CREDITS_TO_START", 0, 0);
-    UNIMPL();
+    return GETCOIN()->credits_to_start;
 }
 
 static void GET_CREDITS_TO_CONTINUE(void) {
@@ -704,12 +712,6 @@ INICC_LP:
     UNIMPL();
 }
 
-/* asm: CUSTOM_COINTAB	.bss	CUSTOM_COINTAB,COIN_ENTRY_SIZE */
-int CUSTOM_COINTAB[COIN_ENTRY_SIZE];
-/* asm: CUSTOM_COINSTR	.bss	CUSTOM_COINSTR,10 */
-int CUSTOM_COINSTR[10];
-/* asm: bufferi	.word	buffer */
-#define bufferi buffer
 /* asm: buffer	.bss	buffer,2 */
 int buffer[2];
 static const char CTS_STR[] = " TO START";
@@ -718,14 +720,10 @@ static const char CTC_STR[] = " TO CONTINUE";
 int FCB;
 /* asm: PCB	.bss	PCB,1 */
 int PCB;
-/* asm: CREDITBUFFI	.word	CREDITBUFFER */
-#define CREDITBUFFI CREDITBUFFER
 /* asm: CREDITBUFFER	.bss	CREDITBUFFER,8 */
-int CREDITBUFFER[8];
-/* asm: TOSTARTBUFFI	.word	TOSTARTBUFFER */
-#define TOSTARTBUFFI TOSTARTBUFFER
+char CREDITBUFFER[8];
 /* asm: TOSTARTBUFFER	.bss	TOSTARTBUFFER,8 */
-int TOSTARTBUFFER[8];
+char TOSTARTBUFFER[8];
 static const char NCB[] = "@";
 static const char SPC[] = " ";
 static const char DBLSPC[] = "  ";
@@ -738,7 +736,7 @@ static int SCS;
 static const char MSG_NULL[] = "";
 // *----------------------------------------------------------------------------
 
-static void FONT18RED(void) {
+static void FONT18RED(tTEXT* t) {
     // asm 00007477: 	LDL	font18_white,AR2
     // asm 00007478: 	CALL	PAL_FIND_RAW
     // asm 00007479: 	STI	R0,*+AR0(TEXT_PAL)
@@ -747,14 +745,17 @@ static void FONT18RED(void) {
     UNIMPL();
 }
 
-static void FONT18REDDS(void) {
+static void FONT18REDDS(tSHADOW_TEXT* t) {
     // asm 0000747B: 	LDL	font18_white,AR2
     // asm 0000747C: 	CALL	PAL_FIND_RAW
     // asm 0000747D: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 0000747E: 	STI	R0,*+AR1(TEXT_PAL)
     // asm 0000747F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FONT18REDDS", 0, 0);
-    UNIMPL();
+    int palette;
+
+    palette = PAL_FIND_RAW((tPAL*)ROM_PTR(font18_white_ROM));
+    t->front->palette = palette;
+    t->shadow->palette = palette;
 }
 
 /*
@@ -769,71 +770,137 @@ static const char HITSTART[] = "PRESS START";
 int ICF;
 
 void INSERT_COINS(void) {
+    int total_credits;
+    int credits_to_start;
+    float posy;
+    tSHADOW_TEXT t;
+
     // asm 00007489: 	CALL	VOLUME_DISPLAY
+    VOLUME_DISPLAY();
+
     // asm 0000748A: 	CALL	MOTION_VALID
+    MOTION_VALID();
+
     // asm 0000748B: 	LDI	@COINOFF,R0
     // asm 0000748C: 	RETSNZ
+    if (COINOFF != 0) {
+        return;
+    }
+
     // asm 0000748D: 	READADJ	ADJ_FREE_PLAY
     // asm 0000748F: 	FLOAT	360,R3
+    posy = 360.0f;
+
     // asm 00007490: 	CMPI	1,R0
     // asm 00007491: 	BEQ	FLASH_START
+    if (READADJ(ADJ_FREE_PLAY) == 1) {
+        FLASH_START();
+        return;
+    }
+
     // asm 00007492: 	LDI	@_ATTR_MODE,R0
     // asm 00007493: 	AND	1,R0
     // asm 00007494: 	BZ	SHOW_COINAGE
-    // asm 00007495: 	READAUD	AUD_PCREDITS
-    // asm 00007497: 	PUSH	R0
-    // asm 00007498: 	READAUD	AUD_CREDITS
-    // asm 0000749A: 	POP	R2
-    // asm 0000749B: 	ADDI	R0,R2
-    // asm 0000749C: 	BZ	FLASH_INSERTCOINS
-    // 	;
-    // asm 0000749D: 	LDI	@_MODE,R0
-    // asm 0000749E: 	AND	MMODE,R0
-    // asm 0000749F: 	CMPI	MINSERT_COINS,R0
-    // asm 000074A0: 	BEQ	FLASH_INSERTCOINS
+    if ((_ATTR_MODE & 1) != 0) {
+        // asm 00007495: 	READAUD	AUD_PCREDITS
+        // asm 00007497: 	PUSH	R0
+        // asm 00007498: 	READAUD	AUD_CREDITS
+        // asm 0000749A: 	POP	R2
+        // asm 0000749B: 	ADDI	R0,R2
+        total_credits = READAUD(AUD_PCREDITS) + READAUD(AUD_CREDITS);
+
+        // asm 0000749C: 	BZ	FLASH_INSERTCOINS
+        if (total_credits == 0) {
+            FLASH_INSERTCOINS(posy);
+            return;
+        }
+
+        // 	;
+        // asm 0000749D: 	LDI	@_MODE,R0
+        // asm 0000749E: 	AND	MMODE,R0
+        // asm 0000749F: 	CMPI	MINSERT_COINS,R0
+        // asm 000074A0: 	BEQ	FLASH_INSERTCOINS
+        if ((_MODE & MMODE) == MINSERT_COINS) {
+            FLASH_INSERTCOINS(posy);
+            return;
+        }
+    }
 SHOW_COINAGE:
     // asm 000074A1: 	CALL	GET_COINAGE_HIGHT	;Sets R3
+    posy = GET_COINAGE_HIGHT();
+
     // asm 000074A2: 	ADDF	44,R3
+    posy += 44.0f;
+
     // asm 000074A3: 	MPYF	-0.5,R3
+    posy *= -0.5f;
+
     // asm 000074A4: 	FLOAT	345,R0			;Center of text hight
     // asm 000074A5: 	ADDF	R0,R3
+    posy += 345.0f; /* Center of text hight */
+
     // asm 000074A6: 	READAUD	AUD_CREDITS
     // asm 000074A8: 	CALL	GET_CREDITS_TO_START
     // asm 000074A9: 	CMPI	R1,R0
     // asm 000074AA: 	BLT	NO_START
     // asm 000074AB: 	CALLGE	FLASH_START
+    credits_to_start = GET_CREDITS_TO_START();
+    if (READAUD(AUD_CREDITS) >= credits_to_start) {
+        FLASH_START();
+    }
+
     // asm 000074AC: 	ADDF	22,R3
     // asm 000074AD: 	BU	SHOW_CREDITS
-NO_START:
-    // asm 000074AE: 	CALL	FLASH_TO_START		;FLASH THE TO START AND TO CONTINUE MESSAGES
-    // asm 000074AF: 	ADDF	22,R3
+    if (READAUD(AUD_CREDITS) < credits_to_start) {
+    NO_START:
+        // asm 000074AE: 	CALL	FLASH_TO_START		;FLASH THE TO START AND TO CONTINUE MESSAGES
+        FLASH_TO_START(); /* FLASH THE TO START AND TO CONTINUE MESSAGES */
+        // asm 000074AF: 	ADDF	22,R3
+        posy += 22.0f;
+    } else {
+        posy += 22.0f;
+    }
 SHOW_CREDITS:
     // asm 000074B0: 	READAUD	AUD_PCREDITS
     // asm 000074B2: 	PUSH	R0
     // asm 000074B3: 	READAUD	AUD_CREDITS
     // asm 000074B5: 	POP	R2
     // asm 000074B6: 	ADDI	R0,R2
+    total_credits = READAUD(AUD_PCREDITS) + READAUD(AUD_CREDITS);
+
     // asm 000074B7: 	BNZ	GODO_CREDITS
-    // asm 000074B8: 	CALL	SHOW_INSERTCOINS
-    // asm 000074B9: 	BU	DO_COINAGE
+    if (total_credits == 0) {
+        // asm 000074B8: 	CALL	SHOW_INSERTCOINS
+        SHOW_INSERTCOINS(posy);
+        // asm 000074B9: 	BU	DO_COINAGE
+        goto DO_COINAGE;
+    }
 GODO_CREDITS:
     // asm 000074BA: 	CALL	PRINT_CREDITS		;Print the credits message
+    PRINT_CREDITS(); /* Print the credits message */
+
     // asm 000074BB: 	LDI	@CREDITBUFFI,AR2
     // asm 000074BC: 	FLOAT	256,R2
     // asm 000074BD: 	LDI	1,RC
     // asm 000074BE: 	CALL	TEXT_ADDDS
+    t = TEXT_ADDDS(CREDITBUFFER, 256.0f, posy, 1);
+
     // asm 000074BF: 	CALL	FONT18REDDS
+    FONT18REDDS(&t);
+
     // asm 000074C0: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm 000074C3: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    t.front->color |= TXT_CENTER;
+    t.shadow->color |= TXT_CENTER;
 DO_COINAGE:
     // asm 000074C6: 	ADDF	22,R3
-    // asm 000074C7: 	FLOAT	256,R2
-    // ;	FLOAT	345,R3
+    posy += 22.0f;
+
     // asm 000074C8: 	CALL	PRINT_COINAGE
+    PRINT_COINAGE(256.0f, posy);
+
     // asm 000074C9: INSERT_COINSX
     // asm 000074C9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_COINS", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -842,37 +909,54 @@ DO_COINAGE:
  *
  */
 
-static void FLASH_INSERTCOINS(void) {
+static void FLASH_INSERTCOINS(float posy) {
     // asm 000074CA: 	LDI	@ICF,R0
     // asm 000074CB: 	BGT	NO_INSERTCOINS
+    if (ICF > 0) {
+        NO_INSERTCOINS();
+        return;
+    }
+
     // asm 000074CC: 	SUBI	@NFRAMES,R0
     // asm 000074CD: 	CMPI	-30,R0
     // asm 000074CE: 	LDILT	1,R0
     // asm 000074CF: 	STI	R0,@ICF
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_INSERTCOINS", 0, 0);
-    UNIMPL();
+    ICF -= NFRAMES;
+    if (ICF < -30) {
+        ICF = 1;
+    }
+
+    SHOW_INSERTCOINS(posy);
 }
 
-static void SHOW_INSERTCOINS(void) {
-    // asm 000074D0: 	LDI	@INSERTCOINSI,AR2
-    // asm 000074D1: 	FLOAT	256,R2
-    // asm 000074D2: 	LDI	1,RC
+static void SHOW_INSERTCOINS(float posy /*R3*/) {
     // asm 000074D3: 	CALL	TEXT_ADDDS
+    tSHADOW_TEXT t = TEXT_ADDDS(INSERTCOINS, 256.0f, posy, 1);
+
     // asm 000074D4: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm 000074D7: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    t.front->color |= TXT_CENTER;
+    t.shadow->color |= TXT_CENTER;
+
     // asm 000074DA: 	CALL	FONT18REDDS
+    FONT18REDDS(&t);
+
     // asm 000074DB: 	BU	FLASH_INSERTCOINSX
-NO_INSERTCOINS:
+}
+
+static void NO_INSERTCOINS() {
     // asm 000074DC: 	LDI	@ICF,R0
     // asm 000074DD: 	ADDI	@NFRAMES,R0
     // asm 000074DE: 	CMPI	30,R0
     // asm 000074DF: 	LDIGT	-1,R0
     // asm 000074E0: 	STI	R0,@ICF
+    ICF += NFRAMES;
+    if (ICF > 30) {
+        ICF = -1;
+    }
 FLASH_INSERTCOINSX:
     // asm 000074E1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_INSERTCOINS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
@@ -921,7 +1005,10 @@ FLASH_STARTX:
  */
 #define FONT10_HIGHT 17.0
 
-static void PRINT_COINAGE(void) {
+static void PRINT_COINAGE(float x, float y) {
+    COINTAB_ENTRY* coin_text;
+    tSHADOW_TEXT t;
+
     // asm 000074FC: 	CALL	GETCOINTXT
     // asm 000074FD: 	LDI	*AR0,AR2
     // asm 000074FE: 	LDI	1,RC
@@ -952,10 +1039,38 @@ static void PRINT_COINAGE(void) {
     // asm 00007521: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
     // asm 00007524: 	CALL	SET12FONTDS
     // asm 00007525: 	CALL	WHITE10FNT
+    coin_text = GETCOIN();
+
+    t = TEXT_ADDDS(coin_text->message_lines[0], x, y, 1);
+    t.front->color |= TXT_CENTER;
+    t.shadow->color |= TXT_CENTER;
+    SET12FONTDS(&t);
+    WHITE10FNT();
+
+    if (coin_text->message_lines[1] == 0) {
+        goto PRINT_COINAGEX;
+    }
+
+    y += FONT10_HIGHT;
+    t = TEXT_ADDDS(coin_text->message_lines[1], x, y, 1);
+    t.front->color |= TXT_CENTER;
+    t.shadow->color |= TXT_CENTER;
+    SET12FONTDS(&t);
+    WHITE10FNT();
+
+    if (coin_text->message_lines[2] == 0) {
+        goto PRINT_COINAGEX;
+    }
+
+    y += FONT10_HIGHT;
+    t = TEXT_ADDDS(coin_text->message_lines[2], x, y, 1);
+    t.front->color |= TXT_CENTER;
+    t.shadow->color |= TXT_CENTER;
+    SET12FONTDS(&t);
+    WHITE10FNT();
 PRINT_COINAGEX:
     // asm 00007526: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_COINAGE", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
@@ -968,25 +1083,36 @@ PRINT_COINAGEX:
  *	R3 (FLOAT)	= Y screen hight in pixels
  */
 
-static void GET_COINAGE_HIGHT(void) {
+static float GET_COINAGE_HIGHT(void) {
+    char** coin_text;
+    float height;
+
     // asm 00007527: 	PUSHF	R0
     // asm 00007528: 	PUSH	R0
     // asm 00007529: 	PUSH	AR0
     // asm 0000752A: 	CALL	GETCOINTXT
     // asm 0000752B: 	LDF	FONT10_HIGHT,R3
+    coin_text = GETCOINTXT();
+    height = FONT10_HIGHT;
+
     // asm 0000752C: 	LDI	*+AR0(1),R0
     // asm 0000752D: 	BEQ	GCHX
-    // asm 0000752E: 	ADDF	FONT10_HIGHT,R3
-    // asm 0000752F: 	LDI	*+AR0(2),R0
-    // asm 00007530: 	BEQ	GCHX
-    // asm 00007531: 	ADDF	FONT10_HIGHT,R3
+    if (coin_text[1] != 0) {
+        // asm 0000752E: 	ADDF	FONT10_HIGHT,R3
+        height += FONT10_HIGHT;
+        // asm 0000752F: 	LDI	*+AR0(2),R0
+        // asm 00007530: 	BEQ	GCHX
+        if (coin_text[2] != 0) {
+            // asm 00007531: 	ADDF	FONT10_HIGHT,R3
+            height += FONT10_HIGHT;
+        }
+    }
 GCHX:
     // asm 00007532: 	POP	AR0
     // asm 00007533: 	POP	R0
     // asm 00007534: 	POPF	R0
     // asm 00007535: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_COINAGE_HIGHT", 0, 0);
-    UNIMPL();
+    return height;
 }
 
 static void WHITE10FNT(void) {
@@ -1206,7 +1332,7 @@ void VOLUME_DISPLAY(void) {
     // asm 000075D8: 	CALL	FONT18REDDS
     // asm 000075D9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VOLUME_DISPLAY", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1403,5 +1529,5 @@ static void MOTION_VALID(void) {
     // asm 00007665: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
     // asm 00007668: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_VALID", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }

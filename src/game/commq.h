@@ -53,7 +53,7 @@ extern int OM_POSITION;
 // asm: 	pbss	HEAD2HEAD_ON,1
 extern int HEAD2HEAD_ON;
 // asm: 	.bss	SAVED_PLY2CAR,1
-extern int SAVED_PLY2CAR;
+extern OBJ* SAVED_PLY2CAR;
 // asm: 	.bss	COINDROP,1
 extern int COINDROP;
 // asm: 	fbss	OM_DIAGVALUE,1

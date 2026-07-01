@@ -1,5 +1,5 @@
 #include "comm.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "c30.h"
 #include "cmos.h"
@@ -234,7 +234,7 @@ COMM_HOLDFORA2D:
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_ROUTINE", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void COMM_MASTER(void) {

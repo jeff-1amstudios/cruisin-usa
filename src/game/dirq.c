@@ -238,7 +238,7 @@ void DIRQ(void) {
     // asm 0000008F: 	POP	R4
     // asm 00000090: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIRQ", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

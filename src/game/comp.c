@@ -557,7 +557,7 @@ DECOMPRESSX:
                 if (PACIFY_COUNT >= PACIFY_MOMENT) {
                     if (HARD_SECTION_LOAD != 0) {
                         if (BOOT_PACIFY_SCREEN_P != 0) {
-                            // BOOT_PACIFY_SCREEN();
+                            BOOT_PACIFY_SCREEN();
                         }
                     } else {
                         SAVE_DECOMP_REGS(&state);
@@ -739,7 +739,12 @@ int DELTA = 1;
 
 // *----------------------------------------------------------------------------
 static void BOOT_PACIFY_SCREEN(void) {
+    DECOMP_STATE state;
+    int x;
+
     // asm 0000A3D0: 	CALL	SAVE_DECOMP_REGS
+    SAVE_DECOMP_REGS(&state);
+
     // asm 0000A3D1: 	LDI	@PREVX,R6
     // asm 0000A3D2: 	LDI	R6,AR2
     // asm 0000A3D3: 	LDI	R6,R3
@@ -750,28 +755,45 @@ static void BOOT_PACIFY_SCREEN(void) {
     // ;	LDIGT	11,RS
     // asm 0000A3D6: 	LDI	0,RS
     // asm 0000A3D7: 	CALL	_line
+    _line(PREVX, 111, PREVX, 116, 0);
+
     // asm 0000A3D8: 	LDI	@PREVX,R6
     // asm 0000A3D9: 	LDI	@DELTA,R7
     // asm 0000A3DA: 	ADDI	R7,R6
     // asm 0000A3DB: 	STI	R6,@PREVX
+    x = PREVX + DELTA;
+    PREVX = x;
+
     // asm 0000A3DC: 	LDI	R6,AR2
     // asm 0000A3DD: 	LDI	R6,R3
     // asm 0000A3DE: 	LDI	111,R2
     // asm 0000A3DF: 	LDI	116,RC
     // asm 0000A3E0: 	LDI	3,RS
     // asm 0000A3E1: 	CALL	_line
+    _line(x, 111, x, 116, 3);
+
     // asm 0000A3E2: 	LDI	@PREVX,R6
     // asm 0000A3E3: 	CMPI	MIN_X,R6
     // asm 0000A3E4: 	BGT	LL
     // asm 0000A3E5: 	LDI	1,R7
     // asm 0000A3E6: 	STPI	R7,@DELTA
+    if (x <= MIN_X) {
+        DELTA = 1;
+    }
 LL:
     // asm 0000A3E7: 	CMPI	MAX_X,R6
     // asm 0000A3E8: 	BLT	LLL
     // asm 0000A3E9: 	LDI	-1,R7
     // asm 0000A3EA: 	STPI	R7,@DELTA
+    if (x >= MAX_X) {
+        DELTA = -1;
+    }
 LLL:
     // asm 0000A3EB: 	CALL	RESTORE_DECOMP_REGS
+    RESTORE_DECOMP_REGS(&state);
+
+    crusn_yield_display_interrupt();
+
     // asm 0000A3EC: 	RETS
     return;
 }

@@ -19,7 +19,7 @@ if(NOT SDL2_FOUND)
 endif()
 
 set(CRUSN_SOURCES
-  src/core/cpu.c
+
   src/core/config.c
   src/core/machine.c
   src/core/memory.c
@@ -117,6 +117,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
   target_compile_options(crusn PRIVATE
     $<$<CONFIG:Debug>:-fsanitize=address>
     $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
+    -Werror=return-type
   )
   target_link_options(crusn PRIVATE $<$<CONFIG:Debug>:-fsanitize=address>)
 endif()

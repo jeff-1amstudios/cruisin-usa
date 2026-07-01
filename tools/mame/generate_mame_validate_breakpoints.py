@@ -16,13 +16,19 @@ VALIDATE_RE = re.compile(
     r'mame_validate_word\(\s*"(?P<label>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
 )
 VALIDATE_ARG_RE = re.compile(
-    r'mame_validate_arg\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
+    r'mame_validate_arg(?:_sym)?\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
+)
+VALIDATE_ARG_FLOAT_RE = re.compile(
+    r'mame_validate_arg_float\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_REGION_AT_ADDR_RE = re.compile(
     r'mame_validate_region_at_addr\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
 )
 VALIDATE_REG_AT_ADDR_RE = re.compile(
-    r'mame_validate_reg_at_addr\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*\)\s*;'
+    r'mame_validate_reg_at_addr\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
+)
+VALIDATE_REG_AT_ADDR_FLOAT_RE = re.compile(
+    r'mame_validate_reg_at_addr_float\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
 )
 ASM_ADDR_RE = re.compile(r"^\s*//\s*asm\s+(?P<addr>[0-9A-Fa-f]{8}):")
 ADDRESS_MAP_RE = re.compile(r"^\s*[0-9A-Fa-f]{4}:([0-9A-Fa-f]{8})\s+(.+?)\s*$")
@@ -50,8 +56,11 @@ class BreakpointEntry:
     source_line: int
     command_override: Optional[str] = None
 
+    def _format_source_suffix(self) -> str:
+        return f", {self.source_path.name}:{self.source_line}"
+
     def _format_scalar_command(self) -> str:
-        return f'logerror "validate {self.label}: 0x%08X\\n", d@{self.variable_address:08X}'
+        return f'logerror "validate {self.label}: 0x%08X{self._format_source_suffix()}\\n", d@{self.variable_address:08X}'
 
     def _format_small_array_command(self) -> str:
         assert self.array_length is not None
@@ -59,14 +68,14 @@ class BreakpointEntry:
         reads = ", ".join(
             f"d@{self.variable_address + index:08X}" for index in range(self.array_length)
         )
-        return f'logerror "validate {self.variable_name}[{self.array_length}]: {fmt}\\n", {reads}'
+        return f'logerror "validate {self.variable_name}[{self.array_length}]: {fmt}{self._format_source_suffix()}\\n", {reads}'
 
     def _format_large_array_command(self, save_index: int) -> str:
         assert self.array_length is not None
         dump_name = f"{self.instruction_address:08X}-{save_index}.bin"
         return (
             f'save {dump_name}, {self.variable_address:08X}, 0x{self.array_length:X}; '
-            f'logerror "validate {self.variable_name}: file={dump_name}\\n"'
+            f'logerror "validate {self.variable_name}: file={dump_name}{self._format_source_suffix()}\\n"'
         )
 
     def format_command(self, save_index: int = 0) -> str:
@@ -263,7 +272,35 @@ def collect_breakpoints_for_file(
                 source_path=path,
                 source_line=index + 1,
                 command_override=(
-                    f'logerror "validate {match.group("label")}: 0x%08X\\n", {match.group("label").lower()}'
+                    f'logerror "validate {match.group("label")}: 0x%08X, {path.name}:{index + 1}\\n", {match.group("label").lower()}'
+                ),
+            )
+        )
+
+    for index, line in enumerate(lines):
+        match = VALIDATE_ARG_FLOAT_RE.search(strip_cpp_line_comment(line))
+        if not match:
+            continue
+
+        function_name = find_containing_function_name(lines, index)
+        if function_name is None:
+            raise ValueError(f"{path}:{index + 1}: could not find containing function for mame_validate_arg_float")
+
+        instruction_address = lookup_label_address(function_name, address_map)
+        if instruction_address is None:
+            raise ValueError(f"{path}:{index + 1}: function {function_name!r} not found in address map")
+
+        entries.append(
+            BreakpointEntry(
+                label=f'{match.group("label")}F',
+                variable_name=match.group("expr").strip(),
+                variable_address=0,
+                instruction_address=instruction_address,
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+                command_override=(
+                    f'logerror "validate {match.group("label")}F: 0x%08X, {path.name}:{index + 1}\\n", {match.group("label").lower()}f'
                 ),
             )
         )
@@ -305,6 +342,26 @@ def collect_breakpoints_for_file(
         )
 
     for index, line in enumerate(lines):
+        match = VALIDATE_REG_AT_ADDR_FLOAT_RE.search(strip_cpp_line_comment(line))
+        if not match:
+            continue
+
+        entries.append(
+            BreakpointEntry(
+                label=f'{match.group("reg")}F',
+                variable_name=match.group("var"),
+                variable_address=0,
+                instruction_address=int(match.group("addr"), 0),
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+                command_override=(
+                    f'logerror "validate {match.group("reg")}F: 0x%08X, {path.name}:{index + 1}\\n", {match.group("reg").lower()}f'
+                ),
+            )
+        )
+
+    for index, line in enumerate(lines):
         match = VALIDATE_REG_AT_ADDR_RE.search(strip_cpp_line_comment(line))
         if not match:
             continue
@@ -318,7 +375,9 @@ def collect_breakpoints_for_file(
                 array_length=None,
                 source_path=path,
                 source_line=index + 1,
-                command_override=f'logerror "validate {match.group("reg")}: 0x%08X\\n", {match.group("reg").lower()}',
+                command_override=(
+                    f'logerror "validate {match.group("reg")}: 0x%08X, {path.name}:{index + 1}\\n", {match.group("reg").lower()}'
+                ),
             )
         )
 

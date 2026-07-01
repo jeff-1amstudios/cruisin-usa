@@ -1,21 +1,21 @@
-#include "../core/cpu.h"
+
+#include "intro.h"
 #include "../core/machine.h"
+#include "cmos.h"
+#include "comm.h"
+#include "delta.h"
+#include "error.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
-#include "text.h"
-#include "delta.h"
-#include "error.h"
-#include "comm.h"
 #include "racer.h"
-#include "intro.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
+#include "text.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/INTRO.ASM
@@ -124,8 +124,7 @@ int CHECKPOINT_NUM;
 int H2H_FLAGSTATE;
 static const char JINOW[] = "JOIN IN NOW";
 
-void HEAD2HEAD_LOGO_WAIT(void)
-{
+void HEAD2HEAD_LOGO_WAIT(void) {
     // asm 0000154D: 	LDI	1,AR6
     // asm 0000154E: 	BU	H2HLE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -133,8 +132,7 @@ void HEAD2HEAD_LOGO_WAIT(void)
     UNIMPL();
 }
 
-void HEAD2HEAD_LOGO(void)
-{
+void HEAD2HEAD_LOGO(void) {
     // asm 0000154F: 	CLRI	AR6
 H2HLE:
     // asm 00001550: 	LDI	2,R0
@@ -279,12 +277,11 @@ KABOSH:
 // *----------------------------------------------------------------------------
 
 /*
-*RETURNS CARRY SET ON KABOSH THIS MESS
-*
-*
-*/
-static void KABOSHP(void)
-{
+ *RETURNS CARRY SET ON KABOSH THIS MESS
+ *
+ *
+ */
+static void KABOSHP(void) {
     // asm 000015D4: 	LDI	@TRANSMISSION_ACTIVE,R0
     // asm 000015D5: 	BZ	TKABOSH
     // asm 000015D6: 	LDI	@OM_MODE,R0
@@ -309,8 +306,7 @@ TKABOSH:
     UNIMPL();
 }
 
-static void JINMSG(void)
-{
+static void JINMSG(void) {
     // asm 000015E6: 	CMPI	1,AR6
     // asm 000015E7: 	BNE	NOJINMSG
     // asm 000015E8: 	LDL	JINOW,AR2
@@ -327,8 +323,7 @@ NOJINMSG:
 }
 
 // *----------------------------------------------------------------------------
-static void THROBIT(void)
-{
+static void THROBIT(void) {
     // asm 000015F2: 	LDI	1,AR5
     // asm 000015F3: THROBLP1
     // asm 000015F3: 	LDF	*+AR4(OPOSZ),R0
@@ -377,11 +372,10 @@ static const char WFCHAL3[] = "HOLD RADIO OR VIEW3 TO CANCEL";
 int FRAMELAG;
 
 /*
-*
-*
-*/
-void WAIT_FOR_CHALLENGER(void)
-{
+ *
+ *
+ */
+void WAIT_FOR_CHALLENGER(void) {
     // asm 00001617: 	LDI	5,R0
     // asm 00001618: 	STI	R0,@FRAMELAG
     // asm 00001619: 	CLRI	R0
@@ -529,18 +523,17 @@ WAITX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*an issue start game has been called and
-*it has been determined that the other machine
-*is either in MBONUS or MINIT.  at that point
-*we will wait for the other machine to enter
-*MATTR, or MINTRO
-*
-*
-*
-*/
-static void CHECK_ENDBONUS(void)
-{
+ *----------------------------------------------------------------------------
+ *an issue start game has been called and
+ *it has been determined that the other machine
+ *is either in MBONUS or MINIT.  at that point
+ *we will wait for the other machine to enter
+ *MATTR, or MINTRO
+ *
+ *
+ *
+ */
+static void CHECK_ENDBONUS(void) {
     // asm 0000168C: 	LDI	@TRANSMISSION_ACTIVE,R0
     // asm 0000168D: 	BZ	CEBT
     // asm 0000168E: 	LDI	@OM_BONUS_WAITFLAG,R0
@@ -567,8 +560,7 @@ int BONUS_WAITFLAG;
 /* asm: OM_BONUS_WAITFLAG	pbss	OM_BONUS_WAITFLAG,1 */
 int OM_BONUS_WAITFLAG;
 
-static void WAIT_FOR_ENDBONUS(void)
-{
+static void WAIT_FOR_ENDBONUS(void) {
     // asm 0000169C: 	PUSHP	R6
     // asm 0000169F: 	SLEEP	2
     // asm 000016A1: 	CALL	CHECK_ENDBONUS
@@ -685,8 +677,7 @@ IURENDFL:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void ISSUE_STARTGAME_TSEL(void)
-{
+void ISSUE_STARTGAME_TSEL(void) {
     // asm 00001720: 	LDI	1,R6
     // asm 00001721: 	BU	LKAS534
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -694,8 +685,7 @@ void ISSUE_STARTGAME_TSEL(void)
     UNIMPL();
 }
 
-void ISSUE_STARTGAME(void)
-{
+void ISSUE_STARTGAME(void) {
     // asm 00001722: 	CLRI	R6
 LKAS534:
     // asm 00001723: 	LDI	@TRANSMISSION_ACTIVE,R0
@@ -827,8 +817,7 @@ NOGAME:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void PLYR_INTRO(void)
-{
+void PLYR_INTRO(void) {
     // asm 00001775: 	LDI	RM_SINGLE,R0
     // asm 00001776: 	STI	R0,@RACE_MODE
     // asm 00001777: 	LDI	MINTRO|MGO,R0
@@ -956,8 +945,7 @@ int START_NOW_P;
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CHOOSE_NEXT_RACE(void)
-{
+void CHOOSE_NEXT_RACE(void) {
     // asm 0000180C: 	CALL	TEXT_INIT
     // asm 0000180D: 	LDI	UTIL_C|TEXTP_T,R0
     // asm 0000180E: 	LDI	-1,R1
@@ -986,8 +974,7 @@ void CHOOSE_NEXT_RACE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void LOAD_NEW_SELECTION(void)
-{
+static void LOAD_NEW_SELECTION(void) {
     // asm 0000181F: 	LDI	@CHOSEN_RACE,AR0
     // asm 00001820: 	ADDI	@FULLSETUP_TABLEI,AR0
     // asm 00001821: 	LDI	*AR0,R0
@@ -1032,14 +1019,13 @@ static void LOAD_NEW_SELECTION(void)
 #define PLYPOS2ZL 2200
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR4	PLYRS CAR
-*
-*/
-static void WATCH_PLYRS_CAR(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	AR4	PLYRS CAR
+ *
+ */
+static void WATCH_PLYRS_CAR(void) {
     // asm 00001841: 	LDF	@START_RADY,R2
     // asm 00001842: 	LDI	@MATRIXAI,AR2
     // asm 00001843: 	CALL	FIND_YMATRIX
@@ -1071,8 +1057,7 @@ static void WATCH_PLYRS_CAR(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void INIT_GAMELEG(void)
-{
+void INIT_GAMELEG(void) {
     // asm 00001859: 	CLRI	R0
     // asm 0000185A: 	STI	R0,@SMOKE_COUNT
     // asm 0000185B: 	STI	R0,@DID_TIMED_OUT
@@ -1124,20 +1109,20 @@ BABA66:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CHOOSECAR
-*
-*/
+ *----------------------------------------------------------------------------
+ *CHOOSECAR
+ *
+ */
 static const char CCT[] = "CHOOSE CAR";
 /*
-	;all Y's were 0
-	;
+        ;all Y's were 0
+        ;
 */
 static tCHOOSE_CAR_ENTRY CCTAB[] = {
     { -1384, -164, -4708, cvettem_ROM, PI, 0x0481 },
-    {  -448, -200, -4708, hotrodm_ROM, PI, 0x0482 },
-    {   464, -177, -4708, misslem_ROM, PI, 0x0483 },
-    {  1424, -147, -4708, testorm_ROM, PI, 0x0484 },
+    { -448, -200, -4708, hotrodm_ROM, PI, 0x0482 },
+    { 464, -177, -4708, misslem_ROM, PI, 0x0483 },
+    { 1424, -147, -4708, testorm_ROM, PI, 0x0484 },
 };
 /* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
 int CHOOSENCAR;
@@ -1158,30 +1143,29 @@ int CHOOSENCAR;
 /* asm: 	.word	L_LEG14_BEGIN+1 */
 int RACE_STARTING_POINTS[] = {
     0,
-    L_LEG2_BEGIN+1,
-    L_LEG3_BEGIN+1,
-    L_LEG4_BEGIN+1,
-    L_LEG5_BEGIN+1,
-    L_LEG6_BEGIN+1,
-    L_LEG7_BEGIN+1,
-    L_LEG8_BEGIN+1,
-    L_LEG9_BEGIN+1,
-    L_LEG10_BEGIN+1,
-    L_LEG11_BEGIN+1,
-    L_LEG12_BEGIN+1,
-    L_LEG13_BEGIN+1,
-    L_LEG14_BEGIN+1,
+    L_LEG2_BEGIN + 1,
+    L_LEG3_BEGIN + 1,
+    L_LEG4_BEGIN + 1,
+    L_LEG5_BEGIN + 1,
+    L_LEG6_BEGIN + 1,
+    L_LEG7_BEGIN + 1,
+    L_LEG8_BEGIN + 1,
+    L_LEG9_BEGIN + 1,
+    L_LEG10_BEGIN + 1,
+    L_LEG11_BEGIN + 1,
+    L_LEG12_BEGIN + 1,
+    L_LEG13_BEGIN + 1,
+    L_LEG14_BEGIN + 1,
 };
 
 /*
-*
-*CAMERA POSITION IS ASSUMED TO BE SET BY THE TIME
-*THIS ROUTINE IS REACHED.
-*
-*
-*/
-static void CHOOSECAR(void)
-{
+ *
+ *CAMERA POSITION IS ASSUMED TO BE SET BY THE TIME
+ *THIS ROUTINE IS REACHED.
+ *
+ *
+ */
+static void CHOOSECAR(void) {
     // asm 000018A6: 	LDI	@CHOSEN_RACE,AR0
     // asm 000018A7: 	ADDI	@FULLSETUP_TABLEI,AR0
     // asm 000018A8: 	LDI	*AR0,R0
@@ -1337,8 +1321,7 @@ JAJAKKA:
 /* asm: CAR_CHOICE_GOTTEN	.bss	CAR_CHOICE_GOTTEN,1 */
 int CAR_CHOICE_GOTTEN;
 
-void THE_CAR_CHOICE_PROC(void)
-{
+void THE_CAR_CHOICE_PROC(void) {
     // ;	SLEEP	15
     // asm 00001942: 	CLRI	R0
     // asm 00001943: 	STI	R0,@CAR_CHOICE_GOTTEN
@@ -1384,14 +1367,13 @@ CCLPX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*CAR IS CHOOSEN, THEN RAISE THE GARAGE DOOR
-*
-*
-*
-*/
-static void RAISE_DOOR(void)
-{
+ *----------------------------------------------------------------------------
+ *CAR IS CHOOSEN, THEN RAISE THE GARAGE DOOR
+ *
+ *
+ *
+ */
+static void RAISE_DOOR(void) {
     // asm 0000195D: 	SOND1	GOPEN
     // asm 0000195F: 	LDI	49,AR5
     // asm 00001960: 	LDI	@CHOSEN_VEHICLE,AR2
@@ -1413,24 +1395,23 @@ static void RAISE_DOOR(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*THIS PROCESS:
-*	1)	MOVES THE CAMERA TO THE VEHICLE
-*	2)	LOWERS VEHICLE TO GROUND
-*	3)	TURNS VEHICLE TO FACING OUT
-*	4)	DRIVES VEHICLE FORWARD (WHILE TRACKING
-*		WITH CAMERA)
-*	5)	INITIALIZES AS PLAYERS CAR
-*	6)	TRANSFERS CONTROL TO THE PLYRS
-*		MAIN ROUTINE
-*
-*
-*
-*/
-void ZOOMTOCAR(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *THIS PROCESS:
+ *	1)	MOVES THE CAMERA TO THE VEHICLE
+ *	2)	LOWERS VEHICLE TO GROUND
+ *	3)	TURNS VEHICLE TO FACING OUT
+ *	4)	DRIVES VEHICLE FORWARD (WHILE TRACKING
+ *		WITH CAMERA)
+ *	5)	INITIALIZES AS PLAYERS CAR
+ *	6)	TRANSFERS CONTROL TO THE PLYRS
+ *		MAIN ROUTINE
+ *
+ *
+ *
+ */
+void ZOOMTOCAR(void) {
     // asm 0000196B: 	CLRI	R0
     // asm 0000196C: 	STI	R0,@START_NOW_P
     // asm 0000196D: 	LDI	@CHOSEN_VEHICLE,AR2
@@ -1656,8 +1637,7 @@ BABADUY4:
 /* asm: CAR_ARRAY	.bss	CAR_ARRAY,4 */
 int CAR_ARRAY[4];
 
-void GETTHECARS(void)
-{
+void GETTHECARS(void) {
     // asm 00001A27: 	LDF	@START_RADY,R2
     // asm 00001A28: 	LDI	@MATRIXAI,AR2
     // asm 00001A29: 	CALL	FIND_YMATRIX
@@ -1714,21 +1694,23 @@ LISTLP:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*SHOW CAR STATISTICS
-*
-*USES
-*	AR4,AR5,AR6,R4,R5
-*
-*/
+ *----------------------------------------------------------------------------
+ *SHOW CAR STATISTICS
+ *
+ *USES
+ *	AR4,AR5,AR6,R4,R5
+ *
+ */
 /* asm: SCS_TAB		.float	10,70,170,230 */
 /* asm: 	 */
 static float SCS_TAB[] = {
-    10.0f, 70.0f, 170.0f, 230.0f,
+    10.0f,
+    70.0f,
+    170.0f,
+    230.0f,
 };
 
-void SHOW_CAR_STATISTICS(void)
-{
+void SHOW_CAR_STATISTICS(void) {
     // asm 00001A5C: 	LDI	@DCALL,R0
     // asm 00001A5D: 	RETSZ
     // asm 00001A5E: 	PUSH	AR3
@@ -1790,23 +1772,28 @@ int CAR3PAL[129];
 /* asm: CAR4PAL	.bss	CAR4PAL,129 */
 int CAR4PAL[129];
 /* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
-static int *CARPAL_TABLE[] = {
-    CAR1PAL, CAR2PAL, CAR3PAL, CAR4PAL,
+static int* CARPAL_TABLE[] = {
+    CAR1PAL,
+    CAR2PAL,
+    CAR3PAL,
+    CAR4PAL,
 };
 /* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
 static int CARSRCPAL_TAB[] = {
-    cvette_p, hotrod_p, missle_p, testor_p,
+    cvette_p,
+    hotrod_p,
+    missle_p,
+    testor_p,
 };
 
 /*
-*----------------------------------------------------------------------------
-*
-*(AND OVERHEAD LIGHT CLEANUP)
-*
-*
-*/
-static void CLEANUP_DIMCAR_PALS(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *(AND OVERHEAD LIGHT CLEANUP)
+ *
+ *
+ */
+static void CLEANUP_DIMCAR_PALS(void) {
     // asm 00001A8A: 	LDL	flour_lghtof,AR2
     // asm 00001A8B: 	CALL	PAL_FIND_RAW
     // asm 00001A8C: 	LDI	R0,AR2
@@ -1839,46 +1826,45 @@ static void CLEANUP_DIMCAR_PALS(void)
 *GENERAL PURPOSE CHOOSE CAR LOOP ROUTINE
 *
 *
-	;THE CAR
+        ;THE CAR
 */
-#define RNDR_C1_DYH (PDATA+1) //desired Y height
-#define RNDR_C1_SYH (PDATA+2) //starting y height
-#define RNDR_C2_DYH (PDATA+3)
-#define RNDR_C2_SYH (PDATA+4)
-#define RNDR_C3_DYH (PDATA+5)
-#define RNDR_C3_SYH (PDATA+6)
-#define RNDR_C4_DYH (PDATA+7)
-#define RNDR_C4_SYH (PDATA+8)
+#define RNDR_C1_DYH (PDATA + 1) // desired Y height
+#define RNDR_C1_SYH (PDATA + 2) // starting y height
+#define RNDR_C2_DYH (PDATA + 3)
+#define RNDR_C2_SYH (PDATA + 4)
+#define RNDR_C3_DYH (PDATA + 5)
+#define RNDR_C3_SYH (PDATA + 6)
+#define RNDR_C4_DYH (PDATA + 7)
+#define RNDR_C4_SYH (PDATA + 8)
 // 	;THE LIFT
-#define RNDR_L1_DYH (PDATA+9) //desired Y height
-#define RNDR_L1_SYH (PDATA+10) //starting y height
-#define RNDR_L2_DYH (PDATA+11)
-#define RNDR_L2_SYH (PDATA+12)
-#define RNDR_L3_DYH (PDATA+13)
-#define RNDR_L3_SYH (PDATA+14)
-#define RNDR_L4_DYH (PDATA+15)
-#define RNDR_L4_SYH (PDATA+16)
+#define RNDR_L1_DYH (PDATA + 9)  // desired Y height
+#define RNDR_L1_SYH (PDATA + 10) // starting y height
+#define RNDR_L2_DYH (PDATA + 11)
+#define RNDR_L2_SYH (PDATA + 12)
+#define RNDR_L3_DYH (PDATA + 13)
+#define RNDR_L3_SYH (PDATA + 14)
+#define RNDR_L4_DYH (PDATA + 15)
+#define RNDR_L4_SYH (PDATA + 16)
 #define CDYH 0
 #define CSYH 1
 #define C_SIZE 2
-#define C_STRT (PDATA+1)
+#define C_STRT (PDATA + 1)
 #define C_OFF2LIFT 8
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*
-*
-*PARAMETERS
-*	AR2	RAW PALETTE	CAR1PAL
-*	AR3	ID OF VEHICLE
-*	IR0	RNDR_C1_DYH
-*	IR1	INDEX OF VEHCILE
-*
-*/
-static void GETTHECAR(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *
+ *
+ *PARAMETERS
+ *	AR2	RAW PALETTE	CAR1PAL
+ *	AR3	ID OF VEHICLE
+ *	IR0	RNDR_C1_DYH
+ *	IR1	INDEX OF VEHCILE
+ *
+ */
+static void GETTHECAR(void) {
     // asm 00001A9F: 	LDI	1,R0
     // asm 00001AA0: 	STI	R0,*AR2
     // asm 00001AA1: 	CALL	PAL_ALLOC_RAW
@@ -1903,12 +1889,11 @@ static void GETTHECAR(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*/
-void ROUNDER(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ */
+void ROUNDER(void) {
     // asm 00001AB0: 	LDL	CAR1PAL,AR2
     // asm 00001AB1: 	LDI	481h,AR3
     // asm 00001AB2: 	LDI	RNDR_C1_DYH,IR0
@@ -2017,21 +2002,20 @@ RLL:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*AFFECT CARS
-*
-*
-*PARAMETERS
-*	INDEX OF CAR
-*
-*
-*OPERATION
-*	RAISE VEHICLE AND SPIN
-*
-*
-*/
-static void AFFECT_THE_CARS(void)
-{
+ *----------------------------------------------------------------------------
+ *AFFECT CARS
+ *
+ *
+ *PARAMETERS
+ *	INDEX OF CAR
+ *
+ *
+ *OPERATION
+ *	RAISE VEHICLE AND SPIN
+ *
+ *
+ */
+static void AFFECT_THE_CARS(void) {
     // asm 00001B13: 	LDI	481h,AR2
     // asm 00001B14: 	LDI	RNDR_C1_DYH,IR0
     // asm 00001B15: 	LDI	0,IR1
@@ -2056,23 +2040,25 @@ static void AFFECT_THE_CARS(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*HIDDEN VEHICLES
-*
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *HIDDEN VEHICLES
+ *
+ *
+ *
+ */
 /* asm: IS_HIDDEN	.bss	IS_HIDDEN,1 */
 int IS_HIDDEN;
 /* asm: HIDDEN_TABLE	.word	jeepm,sbuspm,copcar,gtruck */
 /* asm: 	 */
 /* asm: 	 */
 static int HIDDEN_TABLE[] = {
-    jeepm_ROM, sbuspm_ROM, copcar_ROM, gtruck_ROM,
+    jeepm_ROM,
+    sbuspm_ROM,
+    copcar_ROM,
+    gtruck_ROM,
 };
 
-static void HIDDEN_VEHICLES(void)
-{
+static void HIDDEN_VEHICLES(void) {
     // asm 00001B29: 	LDI	-1,R0
     // asm 00001B2A: 	STI	R0,@IS_HIDDEN
 HIDDEN_VEHICLES_LP:
@@ -2122,8 +2108,7 @@ SETAS_ORIGINALS:
     UNIMPL();
 }
 
-static void RESET_ORIGINAL(void)
-{
+static void RESET_ORIGINAL(void) {
     // 	;insert code here to set the old vehicle
     // 	;as
     // 	;
@@ -2150,18 +2135,17 @@ static void RESET_ORIGINAL(void)
 int SPINCURR;
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*PARAMETERS
-*	AR2	ID
-*	IR0	DESIRED HEIGHT OFFSET of AR7
-*	IR1	IDX OF CAR
-*
-*
-*/
-static void AFFECTED_CAR(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *PARAMETERS
+ *	AR2	ID
+ *	IR0	DESIRED HEIGHT OFFSET of AR7
+ *	IR1	IDX OF CAR
+ *
+ *
+ */
+static void AFFECTED_CAR(void) {
     // asm 00001B59: 	CALL	OBJ_FIND_FIRST
     // asm 00001B5A: 	LDF	*+AR0(OPOSY),R0
     // asm 00001B5B: 	LDF	*+AR7(IR0),R1
@@ -2239,15 +2223,14 @@ N12:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR0	CAR INDEX
-*	R0	(FL) DIMMER VALUE
-*
-*/
-static void CAR_DIMMER(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	AR0	CAR INDEX
+ *	R0	(FL) DIMMER VALUE
+ *
+ */
+static void CAR_DIMMER(void) {
     // asm 00001B9D: 	LDI	AR0,AR1
     // asm 00001B9E: 	ADDI	@CARPAL_TABLEI,AR1
     // asm 00001B9F: 	LDI	*AR1,AR1		;NOW HOLDS RAM LOCATION
@@ -2264,8 +2247,7 @@ static void CAR_DIMMER(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void LIGHT_INIT(void)
-{
+static void LIGHT_INIT(void) {
     // asm 00001C27: 	PUSH	AR2
     // asm 00001C28: 	LDL	flour_lghtof,AR2
     // asm 00001C29: 	CALL	PAL_ALLOC_RAW
@@ -2286,15 +2268,14 @@ static void LIGHT_INIT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*PARAMETERS
-*	AR2	INDEX  (0 to 3)
-*
-*/
-static void LIGHT_OFF(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *PARAMETERS
+ *	AR2	INDEX  (0 to 3)
+ *
+ */
+static void LIGHT_OFF(void) {
     // asm 00001C34: 	PUSH	R0
     // asm 00001C35: 	PUSH	AR0
     // asm 00001C36: 	PUSH	AR2
@@ -2324,13 +2305,12 @@ static void LIGHT_OFF(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*as above
-*
-*/
-static void LIGHT_ON(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *as above
+ *
+ */
+static void LIGHT_ON(void) {
     // asm 00001C4A: 	PUSH	R0
     // asm 00001C4B: 	PUSH	AR0
     // asm 00001C4C: 	PUSH	AR2
@@ -2355,13 +2335,12 @@ static void LIGHT_ON(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*USES
-*	R5	AS A DEDICATED REG
-*
-*/
-void INIT_PEDALCHK(void)
-{
+ *----------------------------------------------------------------------------
+ *USES
+ *	R5	AS A DEDICATED REG
+ *
+ */
+void INIT_PEDALCHK(void) {
     // asm 00001C5B: 	CLRI	R5				;FLAG : HAS THE PEDAL BEEN RELEASEDP
     // asm 00001C5C: 	LDI	@_pot1,R0
     // asm 00001C5D: 	FIX	@PEDALMN,R1
@@ -2376,8 +2355,7 @@ void INIT_PEDALCHK(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void GETCHOICE(void)
-{
+void GETCHOICE(void) {
     // asm 00001C62: 	PUSHF	R4
     // asm 00001C63: 	PUSH	R4
     // asm 00001C64: 	LDI	@_MODE,R4
@@ -2423,16 +2401,15 @@ GETCHX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*USES
-*	R5	see above
-*RETURNS
-*	NC	FALSE
-*	C	TRUE
-*
-*/
-void PEDALCHK(void)
-{
+ *----------------------------------------------------------------------------
+ *USES
+ *	R5	see above
+ *RETURNS
+ *	NC	FALSE
+ *	C	TRUE
+ *
+ */
+void PEDALCHK(void) {
     // asm 00001C85: 	LDI	@_pot1,R0			;set in main IRQ
     // asm 00001C86: 	LDP	@PEDALMN
     // asm 00001C87: 	FIX	@PEDALMN,R1
@@ -2462,21 +2439,26 @@ static const char T_CHALLENG[] = "CHALLENGE RACE";
 /* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
 /* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
 static uintptr_t TLIST[] = {
-    (uintptr_t)&T_READY, (uintptr_t)(CHICK_READY), (uintptr_t)SEND_WAVEFL_READY,
-    (uintptr_t)&T_SET, (uintptr_t)(CHICK_SET), (uintptr_t)SEND_WAVEFL_SET,
+    (uintptr_t)&T_READY,
+    (uintptr_t)(CHICK_READY),
+    (uintptr_t)SEND_WAVEFL_READY,
+    (uintptr_t)&T_SET,
+    (uintptr_t)(CHICK_SET),
+    (uintptr_t)SEND_WAVEFL_SET,
 };
 /* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
 /* asm: 	 */
 static uintptr_t TLGO[] = {
-    (uintptr_t)&T_GO, (uintptr_t)(CHICK_GO), (uintptr_t)SEND_WAVEFL_GO,
+    (uintptr_t)&T_GO,
+    (uintptr_t)(CHICK_GO),
+    (uintptr_t)SEND_WAVEFL_GO,
 };
 /* asm: BABE_CONTROL	.bss	BABE_CONTROL,1 */
 int BABE_CONTROL;
 /* asm: CURR_FLAGSTATE	.bss	CURR_FLAGSTATE,1 */
 int CURR_FLAGSTATE;
 
-void WAVEFLAG(void)
-{
+void WAVEFLAG(void) {
     // asm 00001C9B: 	LDP	@STOPWATCH_CNTL
     // asm 00001C9C: 	CLRI	R0
     // asm 00001C9D: 	STI	R0,@STOPWATCH_CNTL
@@ -2644,8 +2626,7 @@ NOTHHHH:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RACESEL_TIMER(void)
-{
+void RACESEL_TIMER(void) {
     // asm 00001D38: 	LDI	@_countdown,R2
     // asm 00001D39: 	LDI	@COUNTDOWN_BUFI,AR2
     // asm 00001D3A: 	CALL	_itoa
@@ -2660,8 +2641,7 @@ void RACESEL_TIMER(void)
 }
 
 // *----------------------------------------------------------------------------
-static void WAITINTROTIMER(void)
-{
+static void WAITINTROTIMER(void) {
     // asm 00001D3F: 	FLOAT	215,R3
     // asm 00001D40: 	BU	LKJAFSD
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -2669,8 +2649,7 @@ static void WAITINTROTIMER(void)
     UNIMPL();
 }
 
-void INTROTIMER(void)
-{
+void INTROTIMER(void) {
     // asm 00001D41: 	FLOAT	350,R3
 LKJAFSD:
     // asm 00001D42: 	PUSHF	R3
@@ -2695,17 +2674,16 @@ IT_E2:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*DIAL ROUT
-*
-*SET THE PROPER OBJECT COLOR CYCLING
-*
-*/
+ *----------------------------------------------------------------------------
+ *DIAL ROUT
+ *
+ *SET THE PROPER OBJECT COLOR CYCLING
+ *
+ */
 /* asm: LASTCHOICE	.bss	LASTCHOICE,1 */
 int LASTCHOICE;
 
-void DIAL_ROUT(void)
-{
+void DIAL_ROUT(void) {
     // asm 00001D52: 	LDI	@POSE,AR2
     // asm 00001D53: 	CMPI	0,AR2
     // asm 00001D54: 	LDILT	0,AR2
@@ -2720,19 +2698,18 @@ void DIAL_ROUT(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*END OF PLAYERS GAME
-*
-*	COMPUTE TIME
-*	SHOW STATISTICS
-*	IDENTIFY GAME OVER
-*	HSTD IF NESSESARY
-*	GOTO ATTRACT MODE
-*
-*
-*/
-void ENDPLAYER(void)
-{
+ *----------------------------------------------------------------------------
+ *END OF PLAYERS GAME
+ *
+ *	COMPUTE TIME
+ *	SHOW STATISTICS
+ *	IDENTIFY GAME OVER
+ *	HSTD IF NESSESARY
+ *	GOTO ATTRACT MODE
+ *
+ *
+ */
+void ENDPLAYER(void) {
     // asm 00001D59: 	CLRI	R2
     // asm 00001D5A: 	SETAUD	AUD_BCREDITS
     // asm 00001D5C: 	LDI	AUD_NUM_UNFINISHED,AR2
@@ -2784,16 +2761,15 @@ KK5:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*GAME AVAILABLE P
-*RETURNS
-*	CARRY SET  CREDIT ENTER - GAME IS AVAILABLE
-*	CARRY CLR  NO CREDIT AVAILABLE
-*	R0	CREDITS AVAILABLE
-*
-*/
-static void GAME_AVAILABLEP(void)
-{
+ *----------------------------------------------------------------------------
+ *GAME AVAILABLE P
+ *RETURNS
+ *	CARRY SET  CREDIT ENTER - GAME IS AVAILABLE
+ *	CARRY CLR  NO CREDIT AVAILABLE
+ *	R0	CREDITS AVAILABLE
+ *
+ */
+static void GAME_AVAILABLEP(void) {
     // asm 00001D7F: 	PUSH	R2
     // asm 00001D80: 	PUSH	AR2
     // asm 00001D81: 	READADJ	ADJ_FREE_PLAY
@@ -2820,13 +2796,12 @@ GA_FALSE:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*START BUTTON
-*
-*
-*/
-void _start(void)
-{
+ *----------------------------------------------------------------------------
+ *START BUTTON
+ *
+ *
+ */
+void _start(void) {
     // asm 00001D92: 	LDI	@_MODE,R0
     // asm 00001D93: 	AND	MMODE,R0
     // asm 00001D94: 	CMPI	MCT,R0
@@ -2911,15 +2886,14 @@ _startX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	AR4	OBJECT
-*
-*
-*/
-static void ULTRA_PROC(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	AR4	OBJECT
+ *
+ *
+ */
+static void ULTRA_PROC(void) {
     // asm 00001DC3: 	CLRF	R6
 UPLP:
     // asm 00001DC4: LDF	0.0349078,R0
@@ -2940,8 +2914,7 @@ UPLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void ULTRA_LOGO(void)
-{
+void ULTRA_LOGO(void) {
     // asm 00001DCF: 	CALL	OBJ_GET
     // asm 00001DD0: 	RETSC
     // asm 00001DD1: 	LDIL	nintendo,R0
@@ -2971,8 +2944,7 @@ void ULTRA_LOGO(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void LOGO_SMALL(void)
-{
+void LOGO_SMALL(void) {
     // asm 00001DE9: 	LDI	@DIPRAM,R0
     // asm 00001DEA: 	TSTB 	DIP_COMMP,R0
     // asm 00001DEB: 	RETSNZ
@@ -3026,14 +2998,13 @@ void LOGO_SMALL(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*STRAIGHT LINE CODE, SYSTEM SHUTDOWN
-*THIS ROUTINE IS BRANCHED TO, NOT CALLED!
-*
-*
-*/
-void SET_ATTR(void)
-{
+ *----------------------------------------------------------------------------
+ *STRAIGHT LINE CODE, SYSTEM SHUTDOWN
+ *THIS ROUTINE IS BRANCHED TO, NOT CALLED!
+ *
+ *
+ */
+void SET_ATTR(void) {
     // asm 00001E17: 	CALL	SILENT
     // asm 00001E18:         LDI	@FASTSTKI,SP		;GET PAGE OF STORED ADDRESS
     // asm 00001E19: 	LDI	@_ATTR_MODE,AR2		;AND INTO FP TOO
@@ -3045,8 +3016,7 @@ CYCLE_ATTR:
     UNIMPL();
 }
 
-void _debug(void)
-{
+void _debug(void) {
     // asm 00001E1C: 	CALL	SILENT
     // asm 00001E1D: 	CALL	LOAD_FIXED_PALETTES
     // asm 00001E1E:         LDI	@FASTSTKI,SP		;GET PAGE OF STORED ADDRESS
@@ -3065,16 +3035,15 @@ void _debug(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*ATTRACT MODE TIMEOUT MECHANISM
-*SLEEP _timer TIKS THEN JUMP TO CYCLE_ATTR
-*
-*/
+ *----------------------------------------------------------------------------
+ *ATTRACT MODE TIMEOUT MECHANISM
+ *SLEEP _timer TIKS THEN JUMP TO CYCLE_ATTR
+ *
+ */
 /* asm: _timer	.bss	_timer,1 */
 int _timer;
 
-void _timeout(void)
-{
+void _timeout(void) {
     // asm 00001E26: 	LDI	@_timer,AR2
     // asm 00001E27: 	CALL	SLEEP
     // asm 00001E28: 	BU	CYCLE_ATTR
@@ -3086,13 +3055,13 @@ void _timeout(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*INSERT COINS ROUTINES
-*
-*	INSMORE		JSRPed FROM PLYR.ASM
-*	COIN_CNTDOWN	CREATED, KILLED
-*
-*/
+ *----------------------------------------------------------------------------
+ *INSERT COINS ROUTINES
+ *
+ *	INSMORE		JSRPed FROM PLYR.ASM
+ *	COIN_CNTDOWN	CREATED, KILLED
+ *
+ */
 /* asm: TROI	SPTR	"INSERT COINS" */
 static const char TROI[] = "INSERT COINS";
 /* asm: ICCI	SPTR	"TO CONTINUE" */
@@ -3102,8 +3071,7 @@ static const char PSCI[] = "PRESS START";
 /* asm: SAVEDMODE	.bss	SAVEDMODE,1 */
 int SAVEDMODE;
 
-void INSMORE(void)
-{
+void INSMORE(void) {
     // asm 00001E2C: 	LDI	@_MODE,R0
     // asm 00001E2D: 	STI	R0,@SAVEDMODE
     // asm 00001E2E: 	CALL	CHECK_MOTION_DIP
@@ -3297,13 +3265,12 @@ RETURNTOPLYR:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*PLACE THE COUNTDOWN TIMER
-*
-*
-*/
-static void COIN_CNTDOWN(void)
-{
+ *----------------------------------------------------------------------------
+ *PLACE THE COUNTDOWN TIMER
+ *
+ *
+ */
+static void COIN_CNTDOWN(void) {
     // asm 00001EE0: 	LDI	@_countdown,R4
 COIN_CNTDOWN_LP:
     // asm 00001EE1: 	LDI	@_countdown,R2
@@ -3331,8 +3298,7 @@ COIN_CNTDOWN_LP:
 /* asm: DIRTY_SHARED	.bss	DIRTY_SHARED,1 */
 int DIRTY_SHARED;
 
-void LOAD_SHARED(void)
-{
+void LOAD_SHARED(void) {
     // asm 00001EF2: 	CLRI	R0
     // asm 00001EF3: 	STI	R0,@DIRTY_SHARED
     // asm 00001EF4: 	LDL	_SECshared,AR2
@@ -3353,8 +3319,7 @@ void LOAD_SHARED(void)
 
 // *----------------------------------------------------------------------------
 
-void TRAFFIC_LIGHT(void)
-{
+void TRAFFIC_LIGHT(void) {
     // asm 00001F0F: 	SLEEP	20
     // asm 00001F11: 	LDL	TRAFFIC_LL,AR5
 TLT_LP:
@@ -3384,13 +3349,18 @@ CCC:
 /* asm: 	 */
 /* asm: 	 */
 static int TRAFFIC_LL[] = {
-    light_yellowon, 10, light_redon, 32, light_greenon, 32, -1,
+    light_yellowon,
+    10,
+    light_redon,
+    32,
+    light_greenon,
+    32,
+    -1,
     // ----------------------------------------------------------------------------
 };
 
 // *----------------------------------------------------------------------------
-void CPOINT_LIGHT(void)
-{
+void CPOINT_LIGHT(void) {
     // asm 00001F2A: 	LDI	@RGBTAB_CPI,AR4
     // asm 00001F2B: 	INC	AR4
     // asm 00001F2C: 	LDI	checks_p,AR2
@@ -3432,18 +3402,24 @@ static int RGBTAB_CP[] = {
     RGB(212, 212, 0),
     RGB(212, 212, 0),
     RGB(212, 212, 0),
-    0, 0,
+    0,
+    0,
     2,
     RGB(255, 255, 0),
     RGB(255, 255, 0),
     RGB(255, 255, 0),
-    0, 0,
+    0,
+    0,
     4,
-    0, 0, 0,
+    0,
+    0,
+    0,
     RGB(212, 212, 0),
     RGB(212, 212, 0),
     2,
-    0, 0, 0,
+    0,
+    0,
+    0,
     RGB(255, 255, 0),
     RGB(255, 255, 0),
     -1,
@@ -3451,14 +3427,13 @@ static int RGBTAB_CP[] = {
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*
-*
-*/
-static void SHOW_RACE_NAME(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *
+ *
+ */
+static void SHOW_RACE_NAME(void) {
     // asm 00001F56: 	LDI	@BONUS_WAVE,AR2
     // asm 00001F57: 	ADDI	@LEG_NAMESI,AR2
     // asm 00001F58: 	LDI	*AR2,AR2

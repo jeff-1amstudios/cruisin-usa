@@ -1,20 +1,20 @@
-#include "../core/cpu.h"
+
+#include "attrdrne.h"
 #include "../core/machine.h"
 #include "c30.h"
+#include "cmos.h"
+#include "delta.h"
+#include "dirq.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
 #include "obj.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "dirq.h"
-#include "delta.h"
-#include "attrdrne.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/ATTRDRNE.ASM
@@ -65,7 +65,7 @@ void LOAD_ATTR_LEG(void);
 #define VIEWLISTI VIEWLIST
 #define ATTR_WAVETABI ATTR_WAVETAB
 
-static uintptr_t *VIEWLIST[];
+static uintptr_t* VIEWLIST[];
 static int ATTR_WAVETAB[16];
 static uintptr_t GGPARK_LIST[];
 static uintptr_t BEVHILL_LIST[];
@@ -73,47 +73,46 @@ static uintptr_t GCANYON_LIST[];
 static uintptr_t CHICAGO_LIST[];
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /* asm: ATTRWAVE	pbss	ATTRWAVE,1 */
 int ATTRWAVE;
 /*
-*----------------------------------------------------------------------------
-* CAMERA variable space
-*
-*/
+ *----------------------------------------------------------------------------
+ * CAMERA variable space
+ *
+ */
 
-#define CUT_PAN (PDATA+1)
-#define ZOOMVEL (PDATA+2)
-#define CAMERA_XYZR (PDATA+3) //4 long
-#define NEWCAMERA_XYZR (PDATA+7) //4 long
-#define NEW_POSX (PDATA+11)
-#define NEW_POSY (PDATA+12)
-#define NEW_POSZ (PDATA+13)
-#define NEW_RADX (PDATA+14)
-#define NEW_RADY (PDATA+15)
-#define NEW_RADZ (PDATA+16)
-#define NEW_MATRIX (PDATA+17) //9 long
-#define CAMERA_VIEW (PDATA+26)
-#define CAMERA_VEL (PDATA+27)
-#define CAROBJ (PDATA+28)
-#define CARDIS (PDATA+29)
-#define CAMERA_ACCEL (PDATA+30)
-#define CAMERA_INFIN (PDATA+31)
-#define TEMP_DATA (PDATA+32) //10 long
-#define LIST_NUM (PDATA+42)
-#define CAMERA_LANE (PDATA+43)
-#define OBJINS (PDATA+44)
-#define CAMYOFF (PDATA+45)
+#define CUT_PAN (PDATA + 1)
+#define ZOOMVEL (PDATA + 2)
+#define CAMERA_XYZR (PDATA + 3)    // 4 long
+#define NEWCAMERA_XYZR (PDATA + 7) // 4 long
+#define NEW_POSX (PDATA + 11)
+#define NEW_POSY (PDATA + 12)
+#define NEW_POSZ (PDATA + 13)
+#define NEW_RADX (PDATA + 14)
+#define NEW_RADY (PDATA + 15)
+#define NEW_RADZ (PDATA + 16)
+#define NEW_MATRIX (PDATA + 17) // 9 long
+#define CAMERA_VIEW (PDATA + 26)
+#define CAMERA_VEL (PDATA + 27)
+#define CAROBJ (PDATA + 28)
+#define CARDIS (PDATA + 29)
+#define CAMERA_ACCEL (PDATA + 30)
+#define CAMERA_INFIN (PDATA + 31)
+#define TEMP_DATA (PDATA + 32) // 10 long
+#define LIST_NUM (PDATA + 42)
+#define CAMERA_LANE (PDATA + 43)
+#define OBJINS (PDATA + 44)
+#define CAMYOFF (PDATA + 45)
 
-void ATTRACT_DELTA(void)
-{
+void ATTRACT_DELTA(void) {
     // asm 000055C3: 	LDI	0,R0
     // asm 000055C4: 	STI	R0,*+AR7(OBJINS)
     // asm 000055C5: 	LDI	@ATTRWAVE,R4
@@ -184,21 +183,20 @@ NO_OBJINS:
 }
 
 /*
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*CREATE THE OBJECT 'CRUISIN USA' FOR OVERLAY DURING ATTRACT MODE
-*
-*/
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *CREATE THE OBJECT 'CRUISIN USA' FOR OVERLAY DURING ATTRACT MODE
+ *
+ */
 #define LOGO_STARTZ 10000
 #define LOGO_ENDX (-120)
 #define LOGO_ENDY (-85)
 #define LOGO_ENDZ 368
 #define LOGO_FLYIN_FRAMES 125
 #define LOGO_WHOOSH_FRAMES 462
-#define LOGO_SPINZ 18.85 //3 revolutions
+#define LOGO_SPINZ 18.85 // 3 revolutions
 
-void LOGO_PROC(void)
-{
+void LOGO_PROC(void) {
     // asm 000055FF: 	CALL	OBJ_GET
     // asm 00005600: 	BC	LOGOX
     // asm 00005601: 	LDI	AR0,AR4
@@ -275,8 +273,7 @@ LOGOX:
 }
 
 // *----------------------------------------------------------------------------
-static void GET_LIST_ADDR(void)
-{
+static void GET_LIST_ADDR(void) {
     // asm 00005645: 	LDI	*+AR7(LIST_NUM),AR6
     // asm 00005646: 	ADDI	@VIEWLISTI,AR6
     // asm 00005647: 	LDI	*AR6,AR6
@@ -297,7 +294,7 @@ static void GET_LIST_ADDR(void)
 /* asm: 	.word	GCANYON_LIST */
 /* asm: 	.word	CHICAGO_LIST */
 /* asm: 	 */
-static uintptr_t *VIEWLIST[] = {
+static uintptr_t* VIEWLIST[] = {
     GGPARK_LIST,
     BEVHILL_LIST,
     GCANYON_LIST,
@@ -318,13 +315,27 @@ static uintptr_t *VIEWLIST[] = {
 /* asm: 	 */
 static uintptr_t GGPARK_LIST[] = {
     // THE first call is to intialize
-    (uintptr_t)INIT_STARTING, 70, (uintptr_t)ROAD_VIEW,
-    (uintptr_t)INIT_LEAD, 80, (uintptr_t)LEAD_VIEW,
-    (uintptr_t)INIT_WATCH, 0x1214, 240, (uintptr_t)WATCH_VIEW,
-    (uintptr_t)CUT_TO_VIEW2, 0x1404, (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INITVIEW1_VIEW, 0x17FB, (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INIT_LEAD, 80, (uintptr_t)LEAD_VIEW,
-    0, 0,
+    (uintptr_t)INIT_STARTING,
+    70,
+    (uintptr_t)ROAD_VIEW,
+    (uintptr_t)INIT_LEAD,
+    80,
+    (uintptr_t)LEAD_VIEW,
+    (uintptr_t)INIT_WATCH,
+    0x1214,
+    240,
+    (uintptr_t)WATCH_VIEW,
+    (uintptr_t)CUT_TO_VIEW2,
+    0x1404,
+    (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INITVIEW1_VIEW,
+    0x17FB,
+    (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INIT_LEAD,
+    80,
+    (uintptr_t)LEAD_VIEW,
+    0,
+    0,
 };
 /* asm: BEVHILL_LIST */
 /* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
@@ -336,11 +347,20 @@ static uintptr_t GGPARK_LIST[] = {
 /* asm: 	 */
 static uintptr_t BEVHILL_LIST[] = {
     // THE first call is to intialize
-    (uintptr_t)INIT_STARTING, 80, (uintptr_t)ROAD_VIEW,
-    (uintptr_t)CUT_TO_VIEW2, 0x14AFB, (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INITVIEW1_VIEW, 0x14DF3, (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INIT_STARTING, 100, (uintptr_t)ROAD_VIEW,
-    0, 0,
+    (uintptr_t)INIT_STARTING,
+    80,
+    (uintptr_t)ROAD_VIEW,
+    (uintptr_t)CUT_TO_VIEW2,
+    0x14AFB,
+    (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INITVIEW1_VIEW,
+    0x14DF3,
+    (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INIT_STARTING,
+    100,
+    (uintptr_t)ROAD_VIEW,
+    0,
+    0,
 };
 /* asm: GCANYON_LIST */
 /* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
@@ -353,13 +373,28 @@ static uintptr_t BEVHILL_LIST[] = {
 /* asm: 	 */
 static uintptr_t GCANYON_LIST[] = {
     // THE first call is to intialize
-    (uintptr_t)INIT_STARTING, 70, (uintptr_t)ROAD_VIEW,
-    (uintptr_t)INIT_WATCH, 0x2E20A, 220, (uintptr_t)WATCH_VIEW,
-    (uintptr_t)CUT_TO_VIEW2, 0x2E800, (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INITVIEW1_VIEW, 0x2EC00, (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INIT_WATCH, 0x2EF00, 240, (uintptr_t)WATCH_VIEW,
-    (uintptr_t)CUT_TO_VIEW2, 0x30000, (uintptr_t)SMOOTH_VIEW,
-    0, 0,
+    (uintptr_t)INIT_STARTING,
+    70,
+    (uintptr_t)ROAD_VIEW,
+    (uintptr_t)INIT_WATCH,
+    0x2E20A,
+    220,
+    (uintptr_t)WATCH_VIEW,
+    (uintptr_t)CUT_TO_VIEW2,
+    0x2E800,
+    (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INITVIEW1_VIEW,
+    0x2EC00,
+    (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INIT_WATCH,
+    0x2EF00,
+    240,
+    (uintptr_t)WATCH_VIEW,
+    (uintptr_t)CUT_TO_VIEW2,
+    0x30000,
+    (uintptr_t)SMOOTH_VIEW,
+    0,
+    0,
 };
 /* asm: CHICAGO_LIST */
 /* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
@@ -372,18 +407,31 @@ static uintptr_t GCANYON_LIST[] = {
 /* asm: 	 */
 static uintptr_t CHICAGO_LIST[] = {
     // THE first call is to intialize
-    (uintptr_t)INIT_STARTING, 80, (uintptr_t)ROAD_VIEW,
-    (uintptr_t)INIT_REVERS_CUP, 60, (uintptr_t)REV_ROAD_VIEW,
-    (uintptr_t)CUT_TO_VIEW2, 0x3AA0E, (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INITVIEW1_VIEW, 0x3C00A, (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INIT_WATCH, 0x3C5F5, 240, (uintptr_t)WATCH_VIEW,
-    (uintptr_t)INIT_LEAD, 80, (uintptr_t)LEAD_VIEW,
-    0, 0,
+    (uintptr_t)INIT_STARTING,
+    80,
+    (uintptr_t)ROAD_VIEW,
+    (uintptr_t)INIT_REVERS_CUP,
+    60,
+    (uintptr_t)REV_ROAD_VIEW,
+    (uintptr_t)CUT_TO_VIEW2,
+    0x3AA0E,
+    (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INITVIEW1_VIEW,
+    0x3C00A,
+    (uintptr_t)SMOOTH_VIEW,
+    (uintptr_t)INIT_WATCH,
+    0x3C5F5,
+    240,
+    (uintptr_t)WATCH_VIEW,
+    (uintptr_t)INIT_LEAD,
+    80,
+    (uintptr_t)LEAD_VIEW,
+    0,
+    0,
 };
 
 // *----------------------------------------------------------------------------
-static void INIT_STARTING(void)
-{
+static void INIT_STARTING(void) {
     // asm 00005649: 	LDI	-350,R0
     // asm 0000564A: 	FLOAT	R0,R1
     // asm 0000564B: 	STF	R1,*+AR7(CAMYOFF)
@@ -404,8 +452,7 @@ static void INIT_STARTING(void)
 }
 
 // *----------------------------------------------------------------------------
-static void INIT_WATCH(void)
-{
+static void INIT_WATCH(void) {
     // asm 00005658: 	LDI	1,R0
     // asm 00005659: 	STI	R0,*+AR7(CUT_PAN)
     // asm 0000565A: 	LDF	0,R0
@@ -475,8 +522,7 @@ INIW2:
 }
 
 // *----------------------------------------------------------------------------
-static void INIT_REVERS_CUP(void)
-{
+static void INIT_REVERS_CUP(void) {
     // asm 00005696: 	LDI	-350,R0
     // asm 00005697: 	FLOAT	R0,R1
     // asm 00005698: 	STF	R1,*+AR7(CAMYOFF)
@@ -497,8 +543,7 @@ static void INIT_REVERS_CUP(void)
 }
 
 // *----------------------------------------------------------------------------
-static void INIT_CATCHUP(void)
-{
+static void INIT_CATCHUP(void) {
     // asm 000056A5: 	LDI	-350,R0
     // asm 000056A6: 	FLOAT	R0,R1
     // asm 000056A7: 	STF	R1,*+AR7(CAMYOFF)
@@ -519,8 +564,7 @@ static void INIT_CATCHUP(void)
 }
 
 // *----------------------------------------------------------------------------
-static void INIT_LEAD(void)
-{
+static void INIT_LEAD(void) {
     // asm 000056B4: 	LDI	-300,R0
     // asm 000056B5: 	FLOAT	R0,R1
     // asm 000056B6: 	STF	R1,*+AR7(CAMYOFF)
@@ -541,8 +585,7 @@ static void INIT_LEAD(void)
 }
 
 // *----------------------------------------------------------------------------
-static void INITROAD_VIEW(void)
-{
+static void INITROAD_VIEW(void) {
     // asm 000056C3: 	STI	R0,*+AR7(CAMERA_XYZR)
     // asm 000056C4: 	STI	R1,*+AR7(CAMERA_XYZR+1)
     // asm 000056C5: 	STI	R2,*+AR7(CAMERA_XYZR+2)
@@ -589,8 +632,7 @@ OK_FOUNDIT:
 }
 
 // *----------------------------------------------------------------------------
-static void WATCH_VIEW(void)
-{
+static void WATCH_VIEW(void) {
     // asm 000056EA: 	LDI	*+AR7(CAROBJ),AR0
     // asm 000056EB: 	LDF	*+AR0(OPOSX),R2		;Get the direction of the car relative to
     // asm 000056EC: 	SUBF	*+AR7(NEW_POSX),R2	;the direction the camera is moving in.
@@ -629,8 +671,7 @@ NO_WHOOSH:
 }
 
 // *----------------------------------------------------------------------------
-static void REV_ROAD_VIEW(void)
-{
+static void REV_ROAD_VIEW(void) {
     // asm 0000570B: 	LDI	*+AR7(CAROBJ),AR0
     // asm 0000570C: 	LDI	*+AR0(OCARBLK),AR1
     // asm 0000570D: 	LDF	*+AR1(CARSPEED),R0
@@ -647,8 +688,7 @@ static void REV_ROAD_VIEW(void)
 /* asm: ACCEL_RATE	.float	0.000002 */
 static float ACCEL_RATE = 0.000002f;
 
-static void ROAD_VIEW(void)
-{
+static void ROAD_VIEW(void) {
     // asm 00005714: 	CALL	FIND_CLOSEST_RACER
     // asm 00005715: 	CMPI	0,AR1
     // asm 00005716: 	LDIZ	0,AR5		;PASSED FIRST PLACE CHANGE MODES (AR5 = frame to switch)
@@ -690,8 +730,7 @@ RV1:
 }
 
 // *----------------------------------------------------------------------------
-static void LEAD_VIEW(void)
-{
+static void LEAD_VIEW(void) {
     // asm 00005735: 	LDI	*+AR7(CAROBJ),AR0
     // asm 00005736: 	LDI	*+AR0(OCARBLK),AR1
     // asm 00005737: 	LDF	*+AR1(CARSPEED),R0
@@ -706,8 +745,7 @@ static void LEAD_VIEW(void)
 }
 
 // *----------------------------------------------------------------------------
-static void MOVE_ROAD_CAMERA(void)
-{
+static void MOVE_ROAD_CAMERA(void) {
     // asm 0000573E: 	LDI	@NOSWAP,R0	;If noswap is on definatly do it
     // asm 0000573F: 	BNE	MRC1
     // asm 00005740: 	LDI	@SUSPEND_MODE,R0	;This stops the shimmer at the start of bevhills
@@ -803,16 +841,15 @@ MRCX:
 }
 
 /*
-*---------------------------------------------------------------------------
-* Updates AR4 to point to the road segment that the camera is on
-* NOTE: uses Stealth mode
-* INPUT	AR4 = segment on
-* OUTPUT AR4 = segment on (updated)
-*
-*/
+ *---------------------------------------------------------------------------
+ * Updates AR4 to point to the road segment that the camera is on
+ * NOTE: uses Stealth mode
+ * INPUT	AR4 = segment on
+ * OUTPUT AR4 = segment on (updated)
+ *
+ */
 
-static void NEXT_ROAD(void)
-{
+static void NEXT_ROAD(void) {
     // asm 00005793: 	FLOAT	*+AR4(X),R0
     // asm 00005794: 	SUBF	*+AR7(NEW_POSX),R0
     // asm 00005795: 	MPYF	R0,R0
@@ -849,15 +886,14 @@ fcrx:
 }
 
 /*
-*---------------------------------------------------------------------------
-* Sets the cameras RADY based on the next track segments reletive position
-* NOTE: uses stealth mode
-* No I/O
-*	Sets CAMERA_RADY = (CAMERA_XYZR+3)+ RAD to next track section
-*/
+ *---------------------------------------------------------------------------
+ * Sets the cameras RADY based on the next track segments reletive position
+ * NOTE: uses stealth mode
+ * No I/O
+ *	Sets CAMERA_RADY = (CAMERA_XYZR+3)+ RAD to next track section
+ */
 
-static void GETCAMDIR(void)
-{
+static void GETCAMDIR(void) {
     // asm 000057A9: 	LDF	*+AR7(CAMERA_VEL),R0	;Adjust the smothing factor to speed
     // asm 000057AA: 	FLOAT	@NFRAMES,R1
     // asm 000057AB: 	MPYF	R1,R0
@@ -905,11 +941,10 @@ static void GETCAMDIR(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*INPUT R2 = FL smoothing
-*/
-static void SET_LANE(void)
-{
+ *----------------------------------------------------------------------------
+ *INPUT R2 = FL smoothing
+ */
+static void SET_LANE(void) {
     // asm 000057D3: 	LDI	*+AR7(CAROBJ),AR0
     // asm 000057D4: 	LDI	*+AR0(OPLINK),AR0
     // asm 000057D5: 	FLOAT	1000,R1			;Offset to center of right lanes
@@ -935,8 +970,7 @@ SL2:
 }
 
 // *----------------------------------------------------------------------------
-static void INIT_LANE(void)
-{
+static void INIT_LANE(void) {
     // asm 000057E4: 	LDF	*+AR7(CAMERA_LANE),R3
     // asm 000057E5: 	CALL	DO_LANE_POS
     // asm 000057E6: 	RETS
@@ -945,13 +979,12 @@ static void INIT_LANE(void)
 }
 
 /*
-*---------------------------------------------------------------------------
-*INPUT	R2 = RADIANS to offset for doing the lanes
-*	R3 = Distance from center +/-
-*/
+ *---------------------------------------------------------------------------
+ *INPUT	R2 = RADIANS to offset for doing the lanes
+ *	R3 = Distance from center +/-
+ */
 
-static void DO_LANE_POS(void)
-{
+static void DO_LANE_POS(void) {
     // asm 000057E7: 	PUSHF	R3
     // asm 000057E8: 	LDI	AR4,AR1
     // asm 000057E9: 	ADDI	4*2,AR1
@@ -982,12 +1015,11 @@ static void DO_LANE_POS(void)
 }
 
 /*
-*---------------------------------------------------------------------------
-*INPUT	AR4 = POINTER to LEG_MAP where road is
-*OUTPUT	R0 = DIRECTION of road
-*/
-static void GET_ROAD_RADY(void)
-{
+ *---------------------------------------------------------------------------
+ *INPUT	AR4 = POINTER to LEG_MAP where road is
+ *OUTPUT	R0 = DIRECTION of road
+ */
+static void GET_ROAD_RADY(void) {
     // asm 00005800: 	PUSH	AR1
     // asm 00005801: 	PUSH	R2
     // asm 00005802: 	PUSHF	R2
@@ -1014,16 +1046,15 @@ static void GET_ROAD_RADY(void)
 }
 
 /*
-*---------------------------------------------------------------------------
-*This algorithm is based on a bubble sort
-*Find the RACER DRONE IN FIRST PLACE based on position in LEG_MAP
-*INPUT R2 = Position to find
-*OUTPUT AR4 = OBJ of the racer
-*
-*
-*/
-static void FIND_RACER(void)
-{
+ *---------------------------------------------------------------------------
+ *This algorithm is based on a bubble sort
+ *Find the RACER DRONE IN FIRST PLACE based on position in LEG_MAP
+ *INPUT R2 = Position to find
+ *OUTPUT AR4 = OBJ of the racer
+ *
+ *
+ */
+static void FIND_RACER(void) {
     // asm 00005815: 	LDI	AR7,AR3			;clear the list
     // asm 00005816: 	ADDI	TEMP_DATA,AR3
     // asm 00005817: 	LDI	0,R0
@@ -1081,17 +1112,16 @@ FRXX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*This algorithm is based on a single pass bubble sort
-*OUTPUT
-*	R0	=	Distance to the closest Racer Drone
-*	AR1	=	Pointer to the Closest Racer Drone in front of the camera
-*	AR1	=	0, If no Racer Drones in front of the camera
-*
-*/
+ *----------------------------------------------------------------------------
+ *This algorithm is based on a single pass bubble sort
+ *OUTPUT
+ *	R0	=	Distance to the closest Racer Drone
+ *	AR1	=	Pointer to the Closest Racer Drone in front of the camera
+ *	AR1	=	0, If no Racer Drones in front of the camera
+ *
+ */
 
-static void FIND_CLOSEST_RACER(void)
-{
+static void FIND_CLOSEST_RACER(void) {
     // asm 00005843: 	FLOAT	30000,R5
     // asm 00005844: 	MPYF	R5,R5
     // asm 00005845: 	MPYF	R5,R5
@@ -1140,15 +1170,14 @@ FCRX:
 }
 
 /*
-*---------------------------------------------------------------------------
-*
-*GET OBJECT POINTER TO ROAD SEG ID IN R2
-*INPUTS  R2=OUSR1
-*OUPTUTS AR2=POINTER TO OBJECT
-*	  AR2=0 not found
-*/
-static void FIND_TRACK(void)
-{
+ *---------------------------------------------------------------------------
+ *
+ *GET OBJECT POINTER TO ROAD SEG ID IN R2
+ *INPUTS  R2=OUSR1
+ *OUPTUTS AR2=POINTER TO OBJECT
+ *	  AR2=0 not found
+ */
+static void FIND_TRACK(void) {
     // asm 0000586C: 	LDI	@DYNALIST_TRUEBEGIN,AR2
 FDL:
     // asm 0000586D: 	LDI	*+AR2(OUSR1),R0
@@ -1164,16 +1193,15 @@ FDLX:
 }
 
 /*
-*---------------------------------------------------------------------------
-*
-*GET POINTER TO MAP_LEG, FOR THE CAR IN AR4
-*INPUTS  AR0=POINTER TO CARBLK
-*OUPTUTS AR4=POINTER TO place in LEG_MAP
-*SETS CAROBJ IF GET_MAP_SEGMENT is called
-*/
+ *---------------------------------------------------------------------------
+ *
+ *GET POINTER TO MAP_LEG, FOR THE CAR IN AR4
+ *INPUTS  AR0=POINTER TO CARBLK
+ *OUPTUTS AR4=POINTER TO place in LEG_MAP
+ *SETS CAROBJ IF GET_MAP_SEGMENT is called
+ */
 
-static void GET_MAP_CARBLK(void)
-{
+static void GET_MAP_CARBLK(void) {
     // asm 00005874: 	PUSH	R2
     // asm 00005875: 	LDI	*+AR0(OPLINK),AR2
     // asm 00005876: 	LDI	*+AR2(DELTA_SPTR),AR4
@@ -1191,15 +1219,14 @@ GMSX:
 }
 
 /*
-*---------------------------------------------------------------------------
-*
-*GET POINTER TO MAP_LEG, ID IN R2
-*INPUTS  R2=OUSR1
-*OUPTUTS AR4=POINTER TO place in LEG_MAP
-*/
+ *---------------------------------------------------------------------------
+ *
+ *GET POINTER TO MAP_LEG, ID IN R2
+ *INPUTS  R2=OUSR1
+ *OUPTUTS AR4=POINTER TO place in LEG_MAP
+ */
 
-static void FIND_MAP(void)
-{
+static void FIND_MAP(void) {
     // asm 0000587F: 	LDI	@LEG_MAPI,AR4		;FIND THE POSITION IN THE MAP
     // asm 00005880: 	ADDI	3,AR4				;OFFSET TO ID
 FIND_LP:
@@ -1213,8 +1240,7 @@ FIND_LP:
     UNIMPL();
 }
 
-static void INITVIEW1_VIEW(void)
-{
+static void INITVIEW1_VIEW(void) {
     // asm 00005886: 	LDI	0,R1
     // asm 00005887: 	STI	R0,*+AR7(CAMERA_VIEW)
     // asm 00005888: 	LDI	@PLYCAR,AR4
@@ -1228,8 +1254,7 @@ static void INITVIEW1_VIEW(void)
     UNIMPL();
 }
 
-static void CUT_TO_VIEW2(void)
-{
+static void CUT_TO_VIEW2(void) {
     // asm 0000588E: 	LDI	1,R0			;Don't smooth while spinning
     // asm 0000588F: 	STI	R0,*+AR7(CUT_PAN)
     // asm 00005890: 	LDI	4,R2		;FOLOW 3rd place
@@ -1245,8 +1270,7 @@ static void CUT_TO_VIEW2(void)
     UNIMPL();
 }
 
-static void INITVIEW2_VIEW(void)
-{
+static void INITVIEW2_VIEW(void) {
     // asm 00005899: 	LDI	@PLYCAR,AR4
     // asm 0000589A: 	LDI	1,R0
     // asm 0000589B: 	STI	R0,*+AR7(CAMERA_VIEW)
@@ -1260,8 +1284,7 @@ static void INITVIEW2_VIEW(void)
     UNIMPL();
 }
 
-static void INITVIEW3_VIEW(void)
-{
+static void INITVIEW3_VIEW(void) {
     // asm 000058A1: 	LDI	BUT_VIEW3,R1
     // asm 000058A2: 	STI	R0,*+AR7(CAMERA_VIEW)
     // asm 000058A3: 	LDF	0,R0
@@ -1274,8 +1297,7 @@ static void INITVIEW3_VIEW(void)
     UNIMPL();
 }
 
-static void FACE_FRONT(void)
-{
+static void FACE_FRONT(void) {
     // asm 000058A8: 	PUSH	AR5
     // asm 000058A9: 	LDI	*+AR4(OCARBLK),AR5
     // asm 000058AA: 	LDI	*+AR4(OFLAGS),R0	;CHECK IF CAR IS DISPLAYED
@@ -1366,16 +1388,15 @@ FFX:
 }
 
 /*
-*----------------------------------------------------------------------------
-*Does averaging
-*INPUT
-*		R2 = average	0.20
-*		R0 = difference between the two angles
-*OUTPUT
-*		R0 = SMOOTHED difference
-*/
-static void SMOOTH_VECTOR(void)
-{
+ *----------------------------------------------------------------------------
+ *Does averaging
+ *INPUT
+ *		R2 = average	0.20
+ *		R0 = difference between the two angles
+ *OUTPUT
+ *		R0 = SMOOTHED difference
+ */
+static void SMOOTH_VECTOR(void) {
     // asm 000058F5: 	CALL	NORM_VECTOR
     // asm 000058F6: 	LDI	*+AR5(CAR_SPIN),R3	;SPINNING?
     // asm 000058F7: 	CMPI	1,R3
@@ -1395,8 +1416,7 @@ SVX:
     UNIMPL();
 }
 
-static void SERIOUSLY_NORMALIZE(void)
-{
+static void SERIOUSLY_NORMALIZE(void) {
     // asm 00005902: 	ABSF	R0,R1
     // asm 00005903: 	CMPF	@TWOPII,R1
     // asm 00005904: 	BLT	NORM_VECTOR
@@ -1422,8 +1442,7 @@ NORM_VECTOR:
 
 // *----------------------------------------------------------------------------
 
-static void SET_SMOOTH_VIEW(void)
-{
+static void SET_SMOOTH_VIEW(void) {
     // asm 00005914: 	LDI	0,AR5			;Set AR5 for init
     // asm 00005915: 	STF	R0,*+AR7(NEWCAMERA_XYZR)
     // asm 00005916: 	STF	R1,*+AR7(NEWCAMERA_XYZR+1)
@@ -1443,8 +1462,7 @@ static void SET_SMOOTH_VIEW(void)
     UNIMPL();
 }
 
-static void SMOOTH_VIEW(void)
-{
+static void SMOOTH_VIEW(void) {
     // asm 00005921: 	CALL	ZOOM_CAMERA
     // asm 00005922: 	CALL	FACE_FRONT
     // asm 00005923: 	LDI	AR7,AR2
@@ -1486,8 +1504,7 @@ SMOOTH_VIEWX:
 /* asm: 	 */
 static float ZOOMACCEL = 0.006f;
 
-static void ZOOM_CAMERA(void)
-{
+static void ZOOM_CAMERA(void) {
     // asm 0000593F: 	LDI	*+AR7(CUT_PAN),R0
     // asm 00005940: 	BNE	ZOOMX
     // asm 00005941: 	LDF	*+AR7(ZOOMVEL),R0
@@ -1539,14 +1556,13 @@ ZOOMX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-* UPDATE_CAMERA
-*	INPUT	NEW_POSx/y/z,NEW_RADx/y/z,NEW_MATRIX
-*	OUTPUT	_CAMERAPOS,_CAMERAMATRIX,_CAMERARAD
-*
-*/
-static void UPDATE_CAMERA(void)
-{
+ *----------------------------------------------------------------------------
+ * UPDATE_CAMERA
+ *	INPUT	NEW_POSx/y/z,NEW_RADx/y/z,NEW_MATRIX
+ *	OUTPUT	_CAMERAPOS,_CAMERAMATRIX,_CAMERARAD
+ *
+ */
+static void UPDATE_CAMERA(void) {
     // asm 00005968: 	LDI	@_CAMERAPOSI,AR0
     // asm 00005969: 	LDF	*+AR7(NEW_POSX),R0
     // asm 0000596A: 	STF	R0,*AR0
@@ -1632,8 +1648,7 @@ UPCAMX:
 }
 
 // *----------------------------------------------------------------------------
-static void CAMERA_HORIZON_PROJECTION(void)
-{
+static void CAMERA_HORIZON_PROJECTION(void) {
     // asm 0000598D: 	LDF	*+AR7(NEW_RADX),R2
     // asm 0000598E: 	CALL	_SINE
     // asm 0000598F: 	FLOAT	512,R1
@@ -1656,19 +1671,26 @@ static void CAMERA_HORIZON_PROJECTION(void)
 /* asm: 	.word	L_LEG11_BEGIN+1,10 */
 /* asm: 	 */
 static int ATTR_WAVETAB[] = {
-    0, 0,
-    L_LEG5_BEGIN+1, 4,
-    L_LEG9_BEGIN+1, 8,
-    L_LEG11_BEGIN+1, 10,
-    0, 0,
-    L_LEG5_BEGIN+1, 4,
-    L_LEG9_BEGIN+1, 8,
-    L_LEG11_BEGIN+1, 10,
+    0,
+    0,
+    L_LEG5_BEGIN + 1,
+    4,
+    L_LEG9_BEGIN + 1,
+    8,
+    L_LEG11_BEGIN + 1,
+    10,
+    0,
+    0,
+    L_LEG5_BEGIN + 1,
+    4,
+    L_LEG9_BEGIN + 1,
+    8,
+    L_LEG11_BEGIN + 1,
+    10,
 };
-#define ATTR_WAVETAB_LEN ($-ATTR_WAVETAB-1)
+#define ATTR_WAVETAB_LEN ($ - ATTR_WAVETAB - 1)
 
-static void INIT_ATTR_LEG(void)
-{
+static void INIT_ATTR_LEG(void) {
     // asm 00005994: 	LDI	@ATTRWAVE,R0
     // asm 00005995: 	BNE	NO_MUSIC
     // 	;Wed Mar 8 11:02:10 1995
@@ -1756,8 +1778,7 @@ NO_MUSIC:
 }
 
 // *----------------------------------------------------------------------------
-static void ATTR_INIT_GAMELEG(void)
-{
+static void ATTR_INIT_GAMELEG(void) {
     // asm 000059DA: 	CREATE	RHO_DISPATCHER,SPAWNER_C|TRAFFIC_T
     // asm 000059DD: 	CREATE	SIGMA_DISPATCHER,SPAWNER_C|TRAFFIC_T
     // asm 000059E0: 	CREATE	CPOINT_LIGHT,SPAWNER_C|COLORCYC_T
@@ -1790,8 +1811,7 @@ static void ATTR_INIT_GAMELEG(void)
     UNIMPL();
 }
 
-void LOAD_ATTR_LEG(void)
-{
+void LOAD_ATTR_LEG(void) {
     // asm 00005A0E: 	LDI	@ATTRWAVE,AR0
     // asm 00005A0F: 	ADDI	@ATTR_WAVETABI,AR0
     // asm 00005A10: 	LDI	*+AR0(1),AR0
@@ -1810,10 +1830,10 @@ void LOAD_ATTR_LEG(void)
 }
 
 /*
-*----------------------------------------------------------------------------
-*----------------------------------------------------------------------------
-*OLD CODE THAT I DEARLY LIKE TO REFFERENCE
-*/
+ *----------------------------------------------------------------------------
+ *----------------------------------------------------------------------------
+ *OLD CODE THAT I DEARLY LIKE TO REFFERENCE
+ */
 
 /*
 ;*----------------------------------------------------------------------------

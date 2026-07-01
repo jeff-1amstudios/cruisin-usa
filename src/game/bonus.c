@@ -1,19 +1,19 @@
-#include "../core/cpu.h"
+
+#include "bonus.h"
 #include "../core/machine.h"
+#include "cmos.h"
+#include "comm.h"
+#include "delta.h"
+#include "globals.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
-#include "vunit.h"
-#include "cmos.h"
-#include "sysid.h"
-#include "sys.h"
-#include "globals.h"
-#include "sndtab.h"
 #include "pall.h"
+#include "sndtab.h"
+#include "sys.h"
+#include "sysid.h"
 #include "text.h"
-#include "delta.h"
-#include "comm.h"
-#include "bonus.h"
+#include "vunit.h"
 
 /*
  * Source module: asm/BONUS.ASM
@@ -104,13 +104,13 @@ static int FLAG_POS_TABLE[28];
 static const char NULLSTR5[];
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+ *ALL RIGHTS RESERVED
+ *
+ */
 
 /* asm: MAXMPH	.bss	MAXMPH,1 */
 int MAXMPH;
@@ -130,8 +130,21 @@ int DO_FOLDFLAG;
 /* asm: 	 */
 /* asm: 	 */
 uintptr_t LEG_NAMES[] = {
-    (uintptr_t)&LEG1, (uintptr_t)&LEG2, (uintptr_t)&LEG3, (uintptr_t)&LEG4, (uintptr_t)&LEG5, (uintptr_t)&LEG6, (uintptr_t)&LEG7, (uintptr_t)&LEG8,
-    (uintptr_t)&LEG9, (uintptr_t)&LEG10, (uintptr_t)&LEG11, (uintptr_t)&LEG12, (uintptr_t)&LEG13, (uintptr_t)&LEG14, (uintptr_t)&LEG_USA,
+    (uintptr_t)&LEG1,
+    (uintptr_t)&LEG2,
+    (uintptr_t)&LEG3,
+    (uintptr_t)&LEG4,
+    (uintptr_t)&LEG5,
+    (uintptr_t)&LEG6,
+    (uintptr_t)&LEG7,
+    (uintptr_t)&LEG8,
+    (uintptr_t)&LEG9,
+    (uintptr_t)&LEG10,
+    (uintptr_t)&LEG11,
+    (uintptr_t)&LEG12,
+    (uintptr_t)&LEG13,
+    (uintptr_t)&LEG14,
+    (uintptr_t)&LEG_USA,
 };
 static const char LEG1[] = "GOLDEN GATE PARK";
 static const char LEG2[] = "SAN FRANCISCO";
@@ -152,20 +165,20 @@ static const char WINT1[] = "FREE GAME FOR";
 static const char WINT2[] = "1ST PLACE";
 static const char EXPIRED[] = "EXPIRED";
 /*
-*STATISTICAL STRUCTURE FOR THE GAME LEGS <NERD DATA>
-*
-*
-*
-*/
+ *STATISTICAL STRUCTURE FOR THE GAME LEGS <NERD DATA>
+ *
+ *
+ *
+ */
 
-int GAMETRAK[NUM_LEGS*sizeof(tagGAMETRAK)];
+int GAMETRAK[NUM_LEGS * sizeof(tagGAMETRAK)];
 /* asm: ETIME	.bss	ETIME,1 */
 int ETIME;
 // ;etime,#,maxmph
 /* asm: BUFFERSI	.word	BIGBUFFER */
 #define BUFFERSI BIGBUFFER
 /* asm: BIGBUFFER	.bss	BIGBUFFER,(4+1+2+2)*NUM_LEGS */
-static int BIGBUFFER[(4+1+2+2)*NUM_LEGS];
+static int BIGBUFFER[(4 + 1 + 2 + 2) * NUM_LEGS];
 /* asm: BONUS_POSTLAUNCH */
 /* asm: 	.word	BONUS_GGATE,BONUS_SANFRAN,BONUSNULL,BONUSNULL */
 /* asm: 	.word	BONUS_BEVHILLS,BONUSNULL,BONUSNULL */
@@ -173,16 +186,26 @@ static int BIGBUFFER[(4+1+2+2)*NUM_LEGS];
 /* asm: 	.word	BONUSNULL,BONUSNULL,BONUSNULL */
 /* asm: 	.word	BONUSNULL,BONUSNULL,BONUSNULL */
 static uintptr_t BONUS_POSTLAUNCH[] = {
-    (uintptr_t)BONUS_GGATE, (uintptr_t)BONUS_SANFRAN, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
-    (uintptr_t)BONUS_BEVHILLS, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
-    (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
-    (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
-    (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL, (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUS_GGATE,
+    (uintptr_t)BONUS_SANFRAN,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUS_BEVHILLS,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
+    (uintptr_t)BONUSNULL,
 };
 
 // *----------------------------------------------------------------------------
-static void BONUS_SANFRAN(void)
-{
+static void BONUS_SANFRAN(void) {
     // asm 00003966: 	CREATE	TRAFFIC_LIGHT,SPAWNER_C|COLORCYC_T
     // asm 00003969: 	FLOAT	-35,R0
     // asm 0000396A: 	STF	R0,@INFIN_CORRECT
@@ -191,8 +214,7 @@ static void BONUS_SANFRAN(void)
     UNIMPL();
 }
 
-static void BONUS_BEVHILLS(void)
-{
+static void BONUS_BEVHILLS(void) {
     // asm 0000396B: 	LDI	@_MODE,R0
     // asm 0000396C: 	OR	MWATER,R0
     // asm 0000396D: 	STI	R0,@_MODE
@@ -201,8 +223,7 @@ static void BONUS_BEVHILLS(void)
     UNIMPL();
 }
 
-static void BONUSNULL(void)
-{
+static void BONUSNULL(void) {
     // asm 0000396E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUSNULL", 0, 0);
     UNIMPL();
@@ -214,19 +235,29 @@ static void BONUSNULL(void)
 /* asm: 	.word	BONUS6,BONUS7,BONUS8,BONUS9,BONUS10 */
 /* asm: 	.word	BONUS11,BONUS12,BONUS13,BONUS14 */
 static void (*BONUS_TABLE[])(void) = {
-    BONUS1, BONUS2, BONUS3, BONUS4, BONUS5,
-    BONUS6, BONUS7, BONUS8, BONUS9, BONUS10,
-    BONUS11, BONUS12, BONUS13, BONUS14,
+    BONUS1,
+    BONUS2,
+    BONUS3,
+    BONUS4,
+    BONUS5,
+    BONUS6,
+    BONUS7,
+    BONUS8,
+    BONUS9,
+    BONUS10,
+    BONUS11,
+    BONUS12,
+    BONUS13,
+    BONUS14,
 };
 
 /*
-*----------------------------------------------------------------------------
-*ROUTINES FOR OVERLAY.ASM
-*
-*
-*/
-void BONUS14(void)
-{
+ *----------------------------------------------------------------------------
+ *ROUTINES FOR OVERLAY.ASM
+ *
+ *
+ */
+void BONUS14(void) {
     // asm 00003970: 	LDI	14,R1
     // asm 00003971: 	BU	LK
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -234,8 +265,7 @@ void BONUS14(void)
     UNIMPL();
 }
 
-void BONUS13(void)
-{
+void BONUS13(void) {
     // asm 00003972: LDI	L_LEG14_BEGIN+1,R0
     // asm 00003973: 	LDI	13,R1
     // asm 00003974: 	BU	LK
@@ -244,8 +274,7 @@ void BONUS13(void)
     UNIMPL();
 }
 
-void BONUS12(void)
-{
+void BONUS12(void) {
     // asm 00003975: LDI	L_LEG13_BEGIN+1,R0
     // asm 00003976: 	LDI	12,R1
     // asm 00003977: 	BU	LK
@@ -254,8 +283,7 @@ void BONUS12(void)
     UNIMPL();
 }
 
-void BONUS11(void)
-{
+void BONUS11(void) {
     // asm 00003978: LDI	L_LEG12_BEGIN+1,R0
     // asm 00003979: 	LDI	11,R1
     // asm 0000397A: 	BU	LK
@@ -264,8 +292,7 @@ void BONUS11(void)
     UNIMPL();
 }
 
-void BONUS10(void)
-{
+void BONUS10(void) {
     // asm 0000397B: LDI	L_LEG11_BEGIN+1,R0
     // asm 0000397C: 	LDI	10,R1
     // asm 0000397D: 	BU	LK
@@ -274,8 +301,7 @@ void BONUS10(void)
     UNIMPL();
 }
 
-void BONUS9(void)
-{
+void BONUS9(void) {
     // asm 0000397E: LDI	L_LEG10_BEGIN+1,R0
     // asm 0000397F: 	LDI	9,R1
     // asm 00003980: 	BU	LK
@@ -284,8 +310,7 @@ void BONUS9(void)
     UNIMPL();
 }
 
-void BONUS8(void)
-{
+void BONUS8(void) {
     // asm 00003981: LDI	L_LEG9_BEGIN+1,R0
     // asm 00003982: 	LDI	8,R1
     // asm 00003983: 	BU	LK
@@ -294,8 +319,7 @@ void BONUS8(void)
     UNIMPL();
 }
 
-void BONUS7(void)
-{
+void BONUS7(void) {
     // asm 00003984: LDI	L_LEG8_BEGIN+1,R0
     // asm 00003985: 	LDI	7,R1
     // asm 00003986: 	BU	LK
@@ -304,8 +328,7 @@ void BONUS7(void)
     UNIMPL();
 }
 
-void BONUS6(void)
-{
+void BONUS6(void) {
     // asm 00003987: LDI	L_LEG7_BEGIN+1,R0
     // asm 00003988: 	LDI	6,R1
     // asm 00003989: 	BU	LK
@@ -314,8 +337,7 @@ void BONUS6(void)
     UNIMPL();
 }
 
-void BONUS5(void)
-{
+void BONUS5(void) {
     // asm 0000398A: LDI	L_LEG6_BEGIN+1,R0
     // asm 0000398B: 	LDI	5,R1
     // asm 0000398C: 	BU	LK
@@ -324,8 +346,7 @@ void BONUS5(void)
     UNIMPL();
 }
 
-void BONUS4(void)
-{
+void BONUS4(void) {
     // asm 0000398D: LDI	L_LEG5_BEGIN+1,R0
     // asm 0000398E: 	LDI	4,R1
     // asm 0000398F: 	BU	LK
@@ -334,8 +355,7 @@ void BONUS4(void)
     UNIMPL();
 }
 
-void BONUS3(void)
-{
+void BONUS3(void) {
     // asm 00003990: LDI	L_LEG4_BEGIN+1,R0
     // asm 00003991: 	LDI	3,R1
     // asm 00003992: 	BU	LK
@@ -344,8 +364,7 @@ void BONUS3(void)
     UNIMPL();
 }
 
-void BONUS2(void)
-{
+void BONUS2(void) {
     // asm 00003993: LDI	L_LEG3_BEGIN+1,R0
     // asm 00003994: 	LDI	2,R1
     // asm 00003995: 	BU	LK
@@ -354,8 +373,7 @@ void BONUS2(void)
     UNIMPL();
 }
 
-void BONUS1(void)
-{
+void BONUS1(void) {
     // asm 00003996: LDI	L_LEG2_BEGIN+1,R0
     // asm 00003997: 	LDI	1,R1
 LK:
@@ -408,8 +426,7 @@ LK:
 
 // *----------------------------------------------------------------------------
 
-static void JSUB(void)
-{
+static void JSUB(void) {
     // asm 000039BF: 	LDL	BHDDFAS,AR2
     // asm 000039C0: 	FLOAT	256,R2
     // asm 000039C1: 	FLOAT	278,R3
@@ -430,8 +447,7 @@ static void JSUB(void)
     UNIMPL();
 }
 
-static void DISPLAY_H2H_WINNER(void)
-{
+static void DISPLAY_H2H_WINNER(void) {
     // asm 000039CF: 	LDI	@WAS_HEAD2HEAD_ON,R0
     // asm 000039D0: 	BZ	DODIE
     // asm 000039D1: 	LDI	@OM_POSITION,R0
@@ -532,8 +548,7 @@ DODIE:
 
 // *----------------------------------------------------------------------------
 
-static void OBJ_DELETE_HIGH_PRIORITY(void)
-{
+static void OBJ_DELETE_HIGH_PRIORITY(void) {
     // asm 00003A2C: 	PUSH	R0
     // asm 00003A2D: 	PUSH	R1
     // asm 00003A2E: 	PUSH	AR1
@@ -569,14 +584,13 @@ DELOBJX:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ */
 /* asm: SAVED_COUNTDOWN	.bss	SAVED_COUNTDOWN,1 */
 int SAVED_COUNTDOWN;
 
-static void BONUS_SCREEN(void)
-{
+static void BONUS_SCREEN(void) {
     // asm 00003A46: 	LDI	@BGNDCOLA,R0
     // asm 00003A47: 	STI	R0,*+AR7(PDATA)
     // asm 00003A48: 	LDI	@_countdown,R0
@@ -613,12 +627,11 @@ static void BONUS_SCREEN(void)
 static int SPEEDHIT;
 
 /*
-*
-*
-*
-*/
-static void BONSCRN2(void)
-{
+ *
+ *
+ *
+ */
+static void BONSCRN2(void) {
     // asm 00003A64: 	LDI	@DID_TIMED_OUT,R0
     // asm 00003A65: 	BZ	DOREG3A
     // asm 00003A66: 	LDI	0,R0		;ELAPSED TIME OF 0 = DID NOT FINISH
@@ -1007,15 +1020,14 @@ FINFIN:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*entered into from above (process)
-*
-*
-*
-*
-*/
-static void CLINTON_SHOW(void)
-{
+ *----------------------------------------------------------------------------
+ *entered into from above (process)
+ *
+ *
+ *
+ *
+ */
+static void CLINTON_SHOW(void) {
     // asm 00003BDB: 	LDI	RM_SINGLE,R0
     // asm 00003BDC: 	STI	R0,@RACE_MODE
     // asm 00003BDD: 	LDI	1,R0
@@ -1094,8 +1106,7 @@ JAJD:
 
 // *----------------------------------------------------------------------------
 
-void BLINK_FREEBE(void)
-{
+void BLINK_FREEBE(void) {
     // asm 00003C2A: 	SLEEP	5
     // asm 00003C2C: 	LDI	5*18,AR5
     // asm 00003C2D: BFLP1
@@ -1146,12 +1157,11 @@ void BLINK_FREEBE(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*/
-static void BACKUP_CAMERA(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ */
+static void BACKUP_CAMERA(void) {
     // asm 00003C5B: 	LDI	@PLYCBLK,AR0
     // asm 00003C5C: 	LDI	*+AR0(CARTRAK),AR2
     // asm 00003C5D: 	LDI	*+AR2(OLINK4),AR0
@@ -1202,8 +1212,7 @@ static void BACKUP_CAMERA(void)
 int DID_TIMED_OUT;
 
 // *----------------------------------------------------------------------------
-void TIMED_OUT(void)
-{
+void TIMED_OUT(void) {
     // asm 00003C82: 	LDI	1,R0
     // asm 00003C83: 	STI	R0,@DID_TIMED_OUT
     // asm 00003C84: 	INCAUD	AUD_GAMES_EXPIRED
@@ -1219,8 +1228,7 @@ void TIMED_OUT(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void KILL_PLYR_SOUNDS(void)
-{
+static void KILL_PLYR_SOUNDS(void) {
     // asm 00003C8B: 	LDI	1000,AR2		;ENGINE RPM IDLE
     // asm 00003C8C: 	CALL	SENDSND
     // asm 00003C8D: 	LDI	SKIDB,AR2 		;KILL LOOPERS WHILE SUSPENDED
@@ -1247,11 +1255,13 @@ static const char FRA2[] = "FREE RACE";
 /* asm: 	 */
 /* asm: 	 */
 static int CONGRAT_SPEECH[] = {
-    GL_WOOLAUGH, GL_YEAH, GL_YES, GL_YOUDIDIT,
+    GL_WOOLAUGH,
+    GL_YEAH,
+    GL_YES,
+    GL_YOUDIDIT,
 };
 
-static void FREE_RACE_ANNOUNCE(void)
-{
+static void FREE_RACE_ANNOUNCE(void) {
     // asm 00003CC4: 	SOND1	GETREADYTUNE
     // asm 00003CC6: 	LDI	CONGRATS,AR2
     // asm 00003CC7: 	CALL	RANDU0
@@ -1296,24 +1306,23 @@ ISFREE:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *
+ */
 static const char LCTS[] = "RACE COMPLETED:";
 static const char LNLS[] = "NEXT RACE:";
 /*
-*
-*
-*/
-#define SHOWLEG_TIME (20+20+50)
+ *
+ *
+ */
+#define SHOWLEG_TIME (20 + 20 + 50)
 
 /*
-*
-*
-*/
-static void SHOWLEG_PROC(void)
-{
+ *
+ *
+ */
+static void SHOWLEG_PROC(void) {
     // asm 00003CF0: 	LDI	@BONUS_WAVE,AR2
     // asm 00003CF1: 	DEC	AR2
     // asm 00003CF2: 	ADDI	@LEG_NAMESI,AR2
@@ -1397,8 +1406,7 @@ SLLP1A:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SHOWNEXTLEG_PROC(void)
-{
+static void SHOWNEXTLEG_PROC(void) {
     // asm 00003D42: 	SLEEP	20
     // asm 00003D44: 	LDI	@BONUS_WAVE,AR2
     // asm 00003D45: 	ADDI	@LEG_NAMESI,AR2
@@ -1483,13 +1491,13 @@ SLLP2A:
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*PARAMETERS
-*	R4	INDEX
-*
-*
-*/
+ *----------------------------------------------------------------------------
+ *
+ *PARAMETERS
+ *	R4	INDEX
+ *
+ *
+ */
 /* asm: FLAG_POS_TABLE */
 /* asm: 	.word	 36,133	;GGpark */
 /* asm: 	.word	 39,147	;Sanfran */
@@ -1506,32 +1514,45 @@ SLLP2A:
 /* asm: 	.word	412,129	;Appalachia */
 /* asm: 	.word	434,140	;Washington */
 static int FLAG_POS_TABLE[] = {
-    36, 133, // GGpark
-    39, 147, // Sanfran
-    40, 156, // I101
-    43, 166, // Redwds
-    63, 192, // BeverlyHils
-    76, 200, // LA freeway
-    88, 190, // Deathvalley
-    128, 198, // Arizona
-    257, 106, // Mount Rush
-    302, 125, // Iowa
-    334, 125, // Chicago
-    358, 134, // Indiana
-    412, 129, // Appalachia
-    434, 140, // Washington
+    36,
+    133, // GGpark
+    39,
+    147, // Sanfran
+    40,
+    156, // I101
+    43,
+    166, // Redwds
+    63,
+    192, // BeverlyHils
+    76,
+    200, // LA freeway
+    88,
+    190, // Deathvalley
+    128,
+    198, // Arizona
+    257,
+    106, // Mount Rush
+    302,
+    125, // Iowa
+    334,
+    125, // Chicago
+    358,
+    134, // Indiana
+    412,
+    129, // Appalachia
+    434,
+    140, // Washington
 };
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*PARAMETERS
-*	R4	INDEX
-*
-*/
-static void PLACE_FLAG(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *PARAMETERS
+ *	R4	INDEX
+ *
+ */
+static void PLACE_FLAG(void) {
     // asm 00003D96: 	PUSH	AR0
     // asm 00003D97: 	PUSH	AR4
     // asm 00003D98: 	PUSH	R2
@@ -1578,17 +1599,16 @@ static void PLACE_FLAG(void)
 // *----------------------------------------------------------------------------
 
 /*
-*----------------------------------------------------------------------------
-*
-*
-*PARAMETERS
-*	AR4	OBJECT
-*	AR4	*+(OVEL) POSITION TO ACHIEVE
-*
-*
-*/
-static void PLACE_FLAG_PROC(void)
-{
+ *----------------------------------------------------------------------------
+ *
+ *
+ *PARAMETERS
+ *	AR4	OBJECT
+ *	AR4	*+(OVEL) POSITION TO ACHIEVE
+ *
+ *
+ */
+static void PLACE_FLAG_PROC(void) {
     // asm 00003DC2: 	LDI	12,AR5
     // asm 00003DC3: PFPLP
     // asm 00003DC3: 	LDF	*+AR4(OVELX),R0
@@ -1630,8 +1650,7 @@ ALLDN7:
 static const char BT1[] = "AVERAGE MPH:";
 static const char BT1A[] = "AVERAGE KPH:";
 
-static void BONS_MAXMPH(void)
-{
+static void BONS_MAXMPH(void) {
     // asm 00003DE0: 	LDL	BT1,R6
     // asm 00003DE1: 	LDL	BT1A,R7
     // asm 00003DE2: 	READAUD	ADJ_MPHORKPM
@@ -1769,8 +1788,7 @@ KKL:
 
 static const char RT2[] = "RECORD TIME:";
 
-static void BONS_RECORDTIME(void)
-{
+static void BONS_RECORDTIME(void) {
     // asm 00003E60: 	SLEEP	5
     // asm 00003E62: 	LDL	RT2,AR2
     // asm 00003E63: 	FLOAT	0,R2
@@ -1837,8 +1855,7 @@ static void BONS_RECORDTIME(void)
 static const char HH1[] = "NEW RECORD TIME";
 static const char HH2[] = "NEW HOT TIME";
 
-static void BONS_HOTTIME_REC(void)
-{
+static void BONS_HOTTIME_REC(void) {
     // asm 00003E93: 	CLRI	R4			;ON OFF TOGGLE
     // asm 00003E94: 	SLEEP	5
     // asm 00003E96: 	LDL	HH1,AR2
@@ -1848,8 +1865,7 @@ static void BONS_HOTTIME_REC(void)
     UNIMPL();
 }
 
-static void BONS_HOTTIME(void)
-{
+static void BONS_HOTTIME(void) {
     // asm 00003E98: 	CLRI	R4			;ON OFF TOGGLE
     // asm 00003E99: 	SLEEP	5
     // asm 00003E9B: 	LDL	HH2,AR2
@@ -1928,8 +1944,7 @@ BADA:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void TEXTTOG(void)
-{
+static void TEXTTOG(void) {
     // asm 00003EDD: 	ADDI	@NFRAMES,R4
     // asm 00003EDE: 	CMPI	30,R4
     // asm 00003EDF: 	BLT	ISOFF
@@ -1954,8 +1969,7 @@ static const char NULLSTR5[] = " ";
 
 static const char BT2[] = "ELAPSED TIME:";
 
-static void BONS_ETIME(void)
-{
+static void BONS_ETIME(void) {
     // asm 00003EE9: 	SLEEP	5
     // asm 00003EEB: 	LDL	BT2,AR2
     // asm 00003EEC: 	FLOAT	0,R2
@@ -2007,8 +2021,7 @@ LREG3:
 
 static const char BT3[] = "POSITION:";
 
-static void BONS_POSITION(void)
-{
+static void BONS_POSITION(void) {
     // asm 00003F12: 	LDI	@POSITION,AR4
     // asm 00003F13: 	DEC	AR4
     // asm 00003F14: 	MPYI	3,AR4
@@ -2082,8 +2095,7 @@ BPL2:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void KILL_THEM(void)
-{
+void KILL_THEM(void) {
     // 	;KILL ALL DRONES
     // asm 00003F53: 	LDI	DRONE_C,R0
     // asm 00003F54: 	LDI	CLASS_M,R1
@@ -2109,8 +2121,7 @@ void KILL_THEM(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FIND_AND_REACTIVATE(void)
-{
+static void FIND_AND_REACTIVATE(void) {
     // asm 00003F61: 	PUSH	AR0
     // asm 00003F62: 	PUSH	AR4
     // asm 00003F63: 	LDI	@OACTIVE,AR0
@@ -2141,8 +2152,7 @@ FARX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void KILL_THE_REANIMATORS(void)
-{
+static void KILL_THE_REANIMATORS(void) {
     // asm 00003F75: 	LDI	SPAWNER_C|ANIMATION_T|7,R0
     // asm 00003F76: 	LDI	-1,R1
     // asm 00003F77: 	CALL	PRC_KILLALL
