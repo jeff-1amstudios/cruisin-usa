@@ -139,6 +139,13 @@ LP1:
     int y3 = _ARPS[7];
     int x4 = _ARPS[9];
     int y4 = _ARPS[10];
+    int uv0 = _AIVI[0];
+    int uv1 = _AIVI[1];
+    int uv2 = _AIVI[2];
+    int uv3 = _AIVI[3];
+    int texture_base = _ADDRL;
+    int palette_base = _ACMAP;
+    int control = _ACNTL;
 
     // asm 0000AEFE: 	STI	AR2,@_ARPS+0		;AX
     // asm 0000AEFF: 	STI	AR2,@_ARPS+9		;DX
@@ -149,7 +156,7 @@ LP1:
     // asm 0000AF04: 	STI	RC,@_ARPS+7		;CY
     // asm 0000AF05: 	STI	RC,@_ARPS+10		;DY
 
-    crusn_machine_drawrect(x1, y1, x2, y2, x3, y3, x4, y4);
+    crusn_machine_draw_fpga(x1, y1, x2, y2, x3, y3, x4, y4, uv0, uv1, uv2, uv3, texture_base, palette_base, control);
 
     MAME_VALIDATE_EXIT();
 }

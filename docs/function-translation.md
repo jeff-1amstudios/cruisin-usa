@@ -7,6 +7,10 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - First, determine the function prototype - args and return value. Use developer comments along with the code to help understand and name the arguments.
 - Correctness is your number 1 job. You must not invent anything except translating the assembly code into C.
 - You can introduce new function variables (declare at top of function)
+- Do not preserve assembly register names as C locals by default.
+- Only introduce a local variable when it represents real intermediate state needed for correctness, readability, or control flow.
+- If an instruction sequence only reads, transforms, and writes a single C variable, collapse it to direct operations on that variable instead of inventing `r0`, `r1`, etc.
+- Register-shaped locals like `r0`, `r1`, `ar2` should be rare, and only used when the value must be preserved separately from the source variable or when it materially clarifies the dataflow.
 - Dont invent new functions, other that to avoid large duplication (eg if 2 functions are branching to the same code tail)
 - Dont invent new global/module level variables
 - Ignore DP and CPU wait state related instructions. Ignore push/pop.
@@ -26,6 +30,25 @@ and prototype the function as FUNCTIONNAME(FUNCTIONNAME_ARG x /*AR2*/) { .. }
 
 ## Examples
 - The `STRLEN` function in `text.c` is a great example to follow
+- Prefer collapsing simple read/modify/write register sequences into direct C updates of the real variable, for example:
+
+```c
+OFFROAD_TMR -= 1;
+if (OFFROAD_TMR < 0) {
+    OFFROAD_TMR = 0;
+}
+```
+
+instead of:
+
+```c
+r0 = OFFROAD_TMR;
+r0 -= 1;
+if (r0 < 0) {
+    r0 = 0;
+}
+OFFROAD_TMR = r0;
+```
 
 <!-- ## Validation
 1. Add a mame_validate_word("var_name", &var, 0xORIGINAL_ADDRESS) macro call after each store/set in C code. Dont worry that we havent defined the macro implementation yet. -->

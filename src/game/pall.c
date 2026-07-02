@@ -23,7 +23,7 @@ int PAL_FIND_RAW(const tPAL* palette_source);
 void PAL_DELETE_RAW(void);
 static void PALXFER_INIT(void);
 static PALXFER* PALXFER_GET(void);
-static void PALXFER_DEL(void);
+static void PALXFER_DEL(PALXFER* target);
 void PAL_DELETE(void);
 void PAL_DIMMER(void);
 
@@ -117,40 +117,74 @@ static int PALSXFER;
 
 void PAL_XFER(void)
 {
+    int r7;
+    PALXFER* ar0;
+    intptr_t r0;
+    u32* ar1;
+    u32* ar2;
+    int rc;
+
     // asm 00009EC2: 	CLRI	R7
+    r7 = 0;
     // asm 00009EC3: 	LDP	@PALXFER_ACTIVE
     // asm 00009EC4: 	LDI	@PALXFER_ACTIVE,R0
+    r0 = (intptr_t)PALXFER_ACTIVE;
     // asm 00009EC5: 	BNE	NOTCLR
+    if (r0 != 0) {
+        goto NOTCLR;
+    }
     // 	;NONE LEFT TO TRANSFER
     // asm 00009EC6: 	STI	R0,@PALXFER_AVAILABLE_P
+    PALXFER_AVAILABLE_P = r0;
     // asm 00009EC7: 	RETS
+    return;
 NOTCLR:
     // asm 00009EC8: 	LDI	@PALXFER_ACTIVE,R0
+    r0 = (intptr_t)PALXFER_ACTIVE;
     // asm 00009EC9: 	B	I889
+    goto I889;
 PALTR0:
     // asm 00009ECA: 	INC	R7
+    r7++;
     // asm 00009ECB: 	CMPI	12,R7
+    if (r7 > 12) {
+        goto PALTRX;
+    }
     // asm 00009ECC: 	BGT	PALTRX
     // asm 00009ECD: 	LDI	*AR0,R0		;NEXT XFER BLOCK
+    r0 = (intptr_t)ar0->link;
     // asm 00009ECE: 	CALL	PALXFER_DEL
+    PALXFER_DEL(ar0);
 I889:
     // asm 00009ECF: LDI	R0,AR0
+    ar0 = (PALXFER*)r0;
     // asm 00009ED0: 	CMPI	0,AR0
+    if (ar0 == NULL) {
+        goto PALTRX;
+    }
     // asm 00009ED1: 	BZ	PALTRX
     // asm 00009ED2: 	LDI	*+AR0(PALX_COUNT),R0
+    r0 = (int)ar0->count;
     // ;	BZ	PALTRX		;COUNT=0,GAME OVER DONE
     // asm 00009ED3: 	BNN	NOT_PACKED_PAL
+    if (r0 >= 0) {
+        goto NOT_PACKED_PAL;
+    }
     // 	;THIS IS A PACKED PALETTE STORED AS:  16BITS|(16BITS<<16)
     // 	;UNPACK ON THE FLY
     // asm 00009ED4: 	LS	1,R0		;remove high bit
+    r0 <<= 1;
     // asm 00009ED5: 	RS	2,R0		;divide by 2
+    r0 = (int)((u32)r0 >> 2);
 #if DEBUG
     // asm: 	CMPI	256,R0
     // asm: 	SLOCKON	GT,"PALL\PALTRANS  more than 256 entries?"
 #endif
     // ;	STI	R1,*AR0++		;CLEAR OUT COUNT
     // asm 00009ED6: 	LDI	*+AR0(PALX_SADDR),AR1	;GET SOURCE
+    ar1 = ar0->source_addr;
     // asm 00009ED7: 	LDI	*+AR0(PALX_DADDR),AR2	;GET DESTINATION
+    ar2 = ar0->dest_addr;
     // ;	LDI	*AR0++,AR1		;GET SOURCE
     // ;	LDI	*AR0++,AR2		;GET DESTINATION
 #if DEBUG
@@ -162,18 +196,33 @@ COLRAML:
     // asm: 	SLOCKON	GT,"PALL\PALTRANS SETUP XFER OUT OF CRAM GT"
 #endif
     // asm 00009ED8: 	SUBI	1,R0		;DEC COUNT BY 1
+    r0 -= 1;
     // asm 00009ED9: 	LDI	R0,RC
+    rc = r0;
     // asm 00009EDA: 	RPTB	PACBLK
     // asm 00009EDB: 	LDI	*AR1++,R2
     // asm 00009EDC: 	STI	R2,*AR2++	;FIRST COLOR
     // asm 00009EDD: 	RS	16,R2
+    while (1) {
+        u32 r2 = *ar1++;
+
+        *ar2++ = r2 & 0xffffu;
+        r2 >>= 16;
 PACBLK:
-    // asm 00009EDE: STI	R2,*AR2++	;SECOND COLOR
+        // asm 00009EDE: STI	R2,*AR2++	;SECOND COLOR
+        *ar2++ = r2;
+        if (rc-- <= 0) {
+            break;
+        }
+    }
     // asm 00009EDF: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
+    goto PALTR0;
 NOT_PACKED_PAL:
     // ;	STI	R1,*AR0++	;CLEAR OUT COUNT
     // asm 00009EE0: 	LDI	*+AR0(PALX_SADDR),AR1	;GET SOURCE
+    ar1 = ar0->source_addr;
     // asm 00009EE1: 	LDI	*+AR0(PALX_DADDR),AR2	;GET DESTINATION
+    ar2 = ar0->dest_addr;
     // ;	LDI	*AR0++,AR1	;GET SOURCE
     // ;	LDI	*AR0++,AR2	;GET DESTINATION
 #if DEBUG
@@ -183,21 +232,40 @@ NOT_PACKED_PAL:
     // asm: 	SLOCKON	GT,"PALL\PALTRANS SETUP XFER OUT OF CRAM GT 2"
 #endif
     // asm 00009EE2: 	SUBI	2,R0		;DEC COUNT BY 1
+    r0 -= 2;
     // asm 00009EE3: 	BNN	REGDOIT
+    if (r0 >= 0) {
+        goto REGDOIT;
+    }
     // asm 00009EE4: 	LDI	*AR1++,R2	;single case
+    r0 = (int)*ar1++;
     // asm 00009EE5: 	STI	R2,*AR2++
+    *ar2++ = (u32)r0;
     // asm 00009EE6: 	B	PALTR0
+    goto PALTR0;
 REGDOIT:
     // asm 00009EE7: 	LDI	*AR1++,R2
+    {
+        u32 r2 = *ar1++;
+
     // asm 00009EE8: 	RPTS	R0
     // asm 00009EE9: 	LDI	*AR1++,R2
     // asm 00009EE9:  ||	STI	R2,*AR2++
     // asm 00009EEA: 	STI	R2,*AR2++
+        while (r0-- >= 0) {
+            *ar2++ = r2;
+            r2 = *ar1++;
+        }
+        *ar2++ = r2;
+    }
     // asm 00009EEB: 	B     	PALTR0		;LOOK FOR NEXT TRANSFER
+    goto PALTR0;
 PALTRX:
     // asm 00009EEC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_XFER", 0, 0);
-    UNIMPL();
+    if (PALXFER_ACTIVE == NULL) {
+        PALXFER_AVAILABLE_P = 0;
+    }
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -577,31 +645,49 @@ static PALXFER* PALXFER_GET(void) {
  *	AR0	PTR TO XFER BLOCK TO FREE
  *
  */
-static void PALXFER_DEL(void)
+static void PALXFER_DEL(PALXFER* target)
 {
+    PALXFER** r1p;
+    PALXFER* r1;
+    PALXFER** ar1;
+
     // asm 00009FBA: 	PUSH	R0
     // asm 00009FBB: 	PUSH	AR1
     // asm 00009FBC: 	LDI	@PALXFER_ACTIVEI,R1
+    r1p = &PALXFER_ACTIVEI;
 PXFLP:
     // asm 00009FBD: LDI	R1,AR1
+    ar1 = r1p;
     // asm 00009FBE: 	LDI	*AR1,R1
+    r1 = *ar1;
 #if DEBUG
     // asm: 	BZ	$
 #endif
     // asm 00009FBF: 	BZ	PXXX
+    if (r1 == NULL) {
+        goto PXXX;
+    }
     // asm 00009FC0: 	CMPI	R1,AR0
+    if (r1 != target) {
+        r1p = &r1->link;
+        goto PXFLP;
+    }
     // asm 00009FC1: 	BNE	PXFLP
     // asm 00009FC2: 	LDI	*AR0,R1
+    r1 = target->link;
     // asm 00009FC3: 	STI	R1,*AR1			;LINK AROUND
+    *ar1 = r1;
     // asm 00009FC4: 	LDI	@PALXFER_FREE,R1
+    r1 = PALXFER_FREE;
     // asm 00009FC5: 	STI	R1,*AR0
+    target->link = r1;
     // asm 00009FC6: 	STI	AR0,@PALXFER_FREE
+    PALXFER_FREE = target;
 PXXX:
     // asm 00009FC7: 	POP	AR1
     // asm 00009FC8: 	POP	R0
     // asm 00009FC9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PALXFER_DEL", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------

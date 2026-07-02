@@ -84,7 +84,7 @@ static const char IAMSLAVE[];
 static const char TPALI[];
 static const char TPALNI[];
 
-int dest[0x280000];
+#define FLOAT_TIK 0.000292397f
 
 /*
  *----------------------------------------------------------------------------
@@ -189,7 +189,7 @@ int BGNDCOLA;
 /* asm: DIAG_ACTIVE	.bss	DIAG_ACTIVE,1 */
 int DIAG_ACTIVE;
 /* asm: GAME_TIMER	.bss	GAME_TIMER,1 */
-int GAME_TIMER;
+float GAME_TIMER;
 /* asm: SYSCNTL	pbss	SYSCNTL,1 */
 int SYSCNTL;
 /* asm: _pot0	pbss	_pot0,1 */
@@ -724,6 +724,11 @@ void ENABLEGIE(void) {
 }
 
 void INT0(void) {
+    int r0;
+    int r1;
+    int r5;
+    float float_tik;
+
     // asm 00004C45: 	PUSH	ST
     // asm 00004C46: 	LDI	INT1_M,IE	;disable everything except TV30 interrupt & comm int
     // asm 00004C47: 	ANDN	INT0_M,IF	;we wont irq ourself
@@ -767,27 +772,46 @@ void INT0(void) {
     // asm 00004C6D: 	PUSH	AR7
     // asm 00004C6E: 	SETDP
     // asm 00004C6F: 	CALL	PAL_XFER		;TRANSFER QUEUED PALETTES
+    PAL_XFER();
     // asm 00004C70: 	LDI	@BGNDCOLA,R0		;SET BACKGROUND COLOR
+    r0 = BGNDCOLA;
     // asm 00004C71: 	LDP	@COLORAM
     // asm 00004C72: 	STI	R0,@COLORAM
+    crusn_mem_wr32(COLORAM, (u32)r0);
     // asm 00004C73: 	SETDP				;RESET DP
     // asm 00004C74: 	CALL	COMM_MASTER_SEND_SYNC
+    COMM_MASTER_SEND_SYNC();
     // asm 00004C75: 	CALL	ENABLEGIE
+    ENABLEGIE();
     // asm 00004C76: 	LDI	@_MODE,R0
+    r0 = _MODE;
     // asm 00004C77: 	AND	MMODE,R0
+    r0 &= MMODE;
     // asm 00004C78: 	CMPI	MDIAG,R0
+    if (r0 == MDIAG) {
+        goto NTEST;
+    }
     // asm 00004C79: 	BEQ	NTEST
     // asm 00004C7A: 	LDP	@MPROC_TIK
     // asm 00004C7B: 	LDI	@MPROC_TIK,R0
+    r0 = MPROC_TIK;
     // asm 00004C7C: 	SETDP
     // asm 00004C7D: 	INC	R0
+    r0 += 1;
     // asm 00004C7E: 	CMPI	300,R0
+    if (r0 <= 300) {
+        goto REGIT;
+    }
     // asm 00004C7F: 	BLE	REGIT
     // asm 00004C80: 	ERRON	U,EC_WATCHDOG2
+    ERRON(EC_WATCHDOG2);
     // asm 00004C88: 	BU	_c_int00
+    _c_int00();
+    return;
 REGIT:
     // asm 00004C89: LDP	@MPROC_TIK
     // asm 00004C8A: 	STI	R0,@MPROC_TIK
+    MPROC_TIK = r0;
     // asm 00004C8B: 	SETDP
 NTEST:
     // asm 00004C8C: 	CALL	FEED_WATCHDOG
@@ -839,55 +863,90 @@ NOSTOPWUPDT:
     _sectime += 1;
     // asm 00004CA8: 	CMPI	TIKS_PER_SECOND,R0
     // asm 00004CA9: 	BLT	NOTASEC
+    r0 = _sectime;
     if (_sectime >= TIKS_PER_SECOND) {
         // asm 00004CAA: 	CLRI	R0
+        r0 = 0;
         // asm 00004CAB: 	STI	R0,@_sectime
         _sectime = 0;
+        // asm 00004CAC: 	LDI	@_MODE,R5
+        r5 = _MODE;
+        // asm 00004CAD: 	AND	MMODE,R5
+        r5 &= MMODE;
+        // asm 00004CAE: 	CMPI	MDIAG,R5
+        if (r5 == MDIAG) {
+            goto JJ88;
+        }
+        // asm 00004CAF: 	BEQ	JJ88
+        // asm 00004CB0: 	INCAUD	AUD_POWERON_TIME
+        AUDIT_INC(AUD_POWERON_TIME);
+        // asm 00004CB2: 	CMPI	MATTR,R5
+        if (r5 == MATTR) {
+            goto JJ88;
+        }
+        // asm 00004CB3: 	BEQ	JJ88
+        // asm 00004CB4: 	INCAUD	AUD_GAMEON_TIME
+        AUDIT_INC(AUD_GAMEON_TIME);
+        // asm 00004CB6: 	CMPI	MGAME,R5
+        if (r5 != MGAME) {
+            goto JJ88;
+        }
+        // asm 00004CB7: 	BNE	JJ88
+        // asm 00004CB8: 	LDI	@CAMVIEW,AR2
+        // asm 00004CB9: 	ADDI	AUD_VIEW1_TIME,AR2
+        // asm 00004CBA: 	CALL	AUDIT_INC
+        AUDIT_INC(AUD_VIEW1_TIME + CAMVIEW);
     }
-    // asm 00004CAC: 	LDI	@_MODE,R5
-    // asm 00004CAD: 	AND	MMODE,R5
-    // asm 00004CAE: 	CMPI	MDIAG,R5
-    // asm 00004CAF: 	BEQ	JJ88
-    // asm 00004CB0: 	INCAUD	AUD_POWERON_TIME
-    // asm 00004CB2: 	CMPI	MATTR,R5
-    // asm 00004CB3: 	BEQ	JJ88
-    // asm 00004CB4: 	INCAUD	AUD_GAMEON_TIME
-    // asm 00004CB6: 	CMPI	MGAME,R5
-    // asm 00004CB7: 	BNE	JJ88
-    // asm 00004CB8: 	LDI	@CAMVIEW,AR2
-    // asm 00004CB9: 	ADDI	AUD_VIEW1_TIME,AR2
-    // asm 00004CBA: 	CALL	AUDIT_INC
 JJ88:
     // asm 00004CBB: 	LDI	@OFFROAD_TMR,R0	 	;OFFROAD TIMER
     // asm 00004CBC: 	SUBI	1,R0
+    OFFROAD_TMR -= 1;
     // asm 00004CBD: 	LDILT	0,R0
+    if (OFFROAD_TMR < 0) {
+        OFFROAD_TMR = 0;
+    }
     // asm 00004CBE: 	STI	R0,@OFFROAD_TMR
     // asm 00004CBF: 	LDI	@_countdown,R0		;LO DP TIME REMAINING FOR PLAYER
     // asm 00004CC0: 	BLE	NOTASEC
+    if (_countdown <= 0) {
+        goto NOTASEC;
+    }
     // asm 00004CC1: 	LDI	@_MODE,R1		;RACE MUST BE HAPPENING TO DECREMENT COUNT
     // asm 00004CC2: 	TSTB	MGO,R1
+    if ((_MODE & MGO) == 0) {
+        goto NOTASEC;
+    }
     // asm 00004CC3: 	BZ	NOTASEC
     // asm 00004CC4: 	SUBI	1,R0
     // asm 00004CC5: 	STI	R0,@_countdown
+    _countdown -= 1;
 NOTASEC:
     // asm 00004CC6: 	LDF	@FLOAT_TIK,R0
+
     // asm 00004CC7: 	ADDF	@GAME_TIMER,R0
+    GAME_TIMER += FLOAT_TIK;
     // asm 00004CC8: 	STF	R0,@GAME_TIMER
     // asm 00004CC9: NOTINGAME
     // asm 00004CC9: 	INCM	@INFRAMES		;increment number of frames passed since last screen switch
     INFRAMES += 1;
     // asm 00004CCC: 	INCMF	@IFRAMES
     IFRAMES += 1;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", (u32)DISPLAY_PAGE, (u32)ACTIVE_SCREEN);
-    return;
     // asm 00004CCF: 	CALL	NUWHEEL			;motorized wheel
+    NUWHEEL();
     // asm 00004CD0: 	CALL	SNDPROC			;sound processor
+    SNDPROC();
     // asm 00004CD1: 	CALL	READIO			;read the switches
+    READIO();
     // asm 00004CD2: 	CALL	RANDOM			;randomize further...
+    RANDOM();
     // asm 00004CD3: 	CALL	BUTTONS			;lighted buttons routine
+    BUTTONS();
     // asm 00004CD4: 	CALL	COIN_COUNTER		;coin counter routine
+    COIN_COUNTER();
     // asm 00004CD5: 	CALL	CHECK_STATE
+    CHECK_STATE();
     // asm 00004CD6: 	CALL	LATCH_ERROR		;motion error
+    LATCH_ERROR();
     // asm 00004CD7: 	ANDN	INT0_M,IF		;set 60Hz IRQ no longer pending
     // asm 00004CD8: 	POP	AR7
     // asm 00004CD9: 	POP	AR6
@@ -928,7 +987,8 @@ NOTASEC:
     // asm 00004CFC: 	POP	DP
     // asm 00004CFD: 	POP	ST
     // asm 00004CFE: 	RETI
-    UNIMPL();
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", (u32)DISPLAY_PAGE, (u32)ACTIVE_SCREEN);
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -1439,7 +1499,7 @@ FDDDA:
     // asm 00004EAA: 	NOP
     // asm 00004EAB: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BUTTONS", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void DIAG_BUTTONS(void) {
@@ -1873,7 +1933,7 @@ ABORT_STATE:
     // asm 00004FFA: 	STI	R0,@STATE_TIK
     // asm 00004FFB: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_STATE", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

@@ -49,8 +49,7 @@ int DAMPPWR;
  *	WHEELPOS	POSITION DESIRED
  *
  */
-void NUWHEEL(void)
-{
+void NUWHEEL(void) {
     // asm 0000AFF2: 	LDI	@_MODE,R0
     // asm 0000AFF3: 	AND	MMODE,R0
     // asm 0000AFF4: 	LDF	0,R1	   		;DEFAULT POSITION POWER MULTIPLIER
@@ -133,7 +132,7 @@ NUWHL:
     // asm 0000B02F: 	CALL	TOWHEEL
     // asm 0000B030: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NUWHEEL", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -148,8 +147,7 @@ NUWHL:
  *
  *
  */
-void TOWHEEL(void)
-{
+void TOWHEEL(void) {
     // asm 0000B031: 	PUSH	DP
     // asm 0000B032: 	PUSHM	R0,R1
     // asm 0000B034: 	PUSH	R0

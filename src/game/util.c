@@ -34,7 +34,7 @@ void CLR511(void);
 void SCRNFIL(void);
 word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one);
 void CLRCRAM(void);
-void RANDOM(void);
+uint32_t RANDOM(void);
 void FRAND(void);
 void SFRAND(void);
 void RANDU0(void);
@@ -101,15 +101,13 @@ static int FILWORD = 0x93093;
 static u32 DMA_SETUP_SHADOW = DMA_SETUP_INIT;
 #if DEBUG
 
-static void TVBP(void)
-{
+static void TVBP(void) {
     // asm: RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TVBP", 0, 0);
     UNIMPL();
 }
 
-static void TVBPX(void)
-{
+static void TVBPX(void) {
     // asm: RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TVBPX", 0, 0);
     UNIMPL();
@@ -154,8 +152,7 @@ void SETPAGE0(void) {
  *SET SCREEN DISPLAY TO PAGE 1	(AND WRITE PAGE TO 0)
  *
  */
-void SETPAGE1(void)
-{
+void SETPAGE1(void) {
     u32 dma_setup;
 
     // ;	.if	DEBUG
@@ -200,8 +197,7 @@ P1:
  *CALL ONLY DURING VBLANK
  *
  */
-void FASTCLR1(void)
-{
+void FASTCLR1(void) {
     word_addr_t start_addr;
 
     // asm 00008E95: 	LDI	@NOAERASE,R0
@@ -312,8 +308,7 @@ word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one) 
  *CLEAR COLOR RAM
  *
  */
-void CLRCRAM(void)
-{
+void CLRCRAM(void) {
     // asm 00008ED9: 	LDI	COLORAM>>16,AR0
     // asm 00008EDA: 	LSH	16,AR0
     // asm 00008EDB: 	LDI	0,R1
@@ -335,22 +330,32 @@ void CLRCRAM(void)
  *	R0	32 BIT RANDOM #
  *
  */
-void RANDOM(void)
-{
+uint32_t RANDOM(void) {
+    uint32_t rand_seed;
+    uint32_t r1;
+
     // asm 00008EDF: 	PUSH	R1
     // asm 00008EE0: 	LDI	@RAND,R0
+    rand_seed = (uint32_t)RAND;
     // asm 00008EE1: 	LDI	R0,R1
+    r1 = rand_seed;
     // asm 00008EE2: 	LSH	1,R0
+    rand_seed <<= 1;
     // asm 00008EE3: 	XOR	R0,R1
+    rand_seed ^= r1;
     // asm 00008EE4: 	BNN	RND2
-    // asm 00008EE5: 	OR	1,R0
+    if ((int32_t)rand_seed < 0) {
+        // asm 00008EE5: 	OR	1,R0
+        rand_seed |= 1u;
+    }
 RND2:
     // asm 00008EE6: POP	R1
     // asm 00008EE7: 	MPYI	794Fh,R0
+    rand_seed *= 0x794Fu;
     // asm 00008EE8: 	STI	R0,@RAND
+    RAND = (int)rand_seed;
     // asm 00008EE9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDOM", 0, 0);
-    UNIMPL();
+    return rand_seed;
 }
 
 // *----------------------------------------------------------------------------
@@ -365,8 +370,7 @@ RND2:
  *	R0	RANDOM NUMBER 0->N FLOATING POINT
  *
  */
-void FRAND(void)
-{
+void FRAND(void) {
     // asm 00008EEA: 	PUSH	AR2
     // asm 00008EEB: 	PUSHFL	R1
     // asm 00008EED: 	PUSHF	R0
@@ -396,8 +400,7 @@ void FRAND(void)
  *	R0	FL RANDOM NUMBER -N->+N FLOATING POINT
  *
  */
-void SFRAND(void)
-{
+void SFRAND(void) {
     // asm 00008EF9: 	PUSH	R1
     // asm 00008EFA: 	PUSHF	R1
     // asm 00008EFB: 	PUSHF	R0
@@ -424,8 +427,7 @@ void SFRAND(void)
  *	R0	RANDOM # BETWEEN 0 AND [AR2]
  *
  */
-void RANDU0(void)
-{
+void RANDU0(void) {
     // asm 00008F03: 	CALL	RANDOM
     // asm 00008F04: 	LSH	-16,R0
     // asm 00008F05: 	MPYI	AR2,R0
@@ -446,8 +448,7 @@ void RANDU0(void)
  *RETURNS
  *	R0	RANDOM # BETWEEN 1 AND N
  */
-void RANDU(void)
-{
+void RANDU(void) {
     // asm 00008F08: 	CALL	RANDU0
     // asm 00008F09: 	ADDI	1,R0
     // asm 00008F0A: 	RETS
@@ -467,8 +468,7 @@ void RANDU(void)
  *	R0	RANDOM # IN RANDGE +/- N
  *
  */
-void SRAND(void)
-{
+void SRAND(void) {
     // asm 00008F0B: 	LSH	1,AR2
     // asm 00008F0C: 	ADDI	1,AR2
     // asm 00008F0D: 	CALL	RANDU0
@@ -511,8 +511,7 @@ void SRAND(void)
  *	C=0	FOR FALSE
  *		R0	ZERO
  */
-void RANDPER(void)
-{
+void RANDPER(void) {
     // asm 00008F11: 	CALL	RANDOM
     // asm 00008F12: 	LSH	-16,R0
     // asm 00008F13: 	MPYI	1000,R0
@@ -621,8 +620,7 @@ void* GET_LLIST(void** free_list, void** active_list) {
  *	AR0	LIST ELEMENT (NOT INSERTED INTO ACTIVE LIST)
  *
  */
-void ALLOC_LLIST(void)
-{
+void ALLOC_LLIST(void) {
     // asm 00008F3B: 	PUSH	R0
     // asm 00008F3C: 	LDI	*AR2,R0
     // asm: 	SLOCKON	Z,"_allocllist  out of elements"
@@ -656,8 +654,7 @@ ALLOCLIST_ISERROR:
  *
  *
  */
-void FREE_LLIST(void)
-{
+void FREE_LLIST(void) {
     // asm 00008F47: 	PUSH	R2
     // asm 00008F48: 	PUSH	AR0
     // asm 00008F49: 	LDI	R2,AR0		;free
@@ -685,8 +682,7 @@ void FREE_LLIST(void)
  *	R3	FREE LIST
  *
  */
-void DEL_LLIST(void)
-{
+void DEL_LLIST(void) {
     // asm 00008F51: 	PUSH	R0
     // asm 00008F52: 	PUSH	R1
     // asm 00008F53: 	PUSH	AR0
@@ -730,8 +726,7 @@ DEL_LLX:
  *	AR4	CAR OBJECT
  *
  */
-void VEHICLE_ANI_INIT(void)
-{
+void VEHICLE_ANI_INIT(void) {
     // asm 00008F66: 	PUSH	AR0
     // asm 00008F67: 	PUSH	AR3
     // asm 00008F68: 	MPYI	VEHTAB_SIZE,AR2
@@ -809,8 +804,7 @@ VANIX:
  *	PDATA+2 X RADIANS FOR WHEEL SPIN
  */
 
-void CARPROC(void)
-{
+void CARPROC(void) {
     // asm 00008F90: 	LDI	*+AR4(OCARBLK),AR5
     // asm 00008F91: 	LDF	0,R6	 		;INIT SPIN RADIANS
     // asm 00008F92: 	LDF	*+AR5(CARSPEED),R0	;INIT SPEED
@@ -926,8 +920,7 @@ static float NTWOPII = -TWOPI;
  *	PDATA+1 BODY LEAN Z RADIANS
  *
  */
-void LEAN(void)
-{
+void LEAN(void) {
     // asm 00008FD6: 	LDI	AR0,AR1
     // asm 00008FD7: 	ADDI	DYNAMATRIX,AR1
     // 	;GET X LEAN (BRAKE/ACCEL)
@@ -1041,8 +1034,7 @@ void DYNAOBJ_INIT(void) {
  *
  *
  */
-void GETDYNA(void)
-{
+void GETDYNA(void) {
     // asm 00009029: 	PUSH	R0
     // ;	LDP	@DYNAFREE
     // asm 0000902A: 	LDI	@DYNAFREE,R0
@@ -1079,8 +1071,7 @@ GETDYNA_ERR:
  *
  *
  */
-void DELDYNA(void)
-{
+void DELDYNA(void) {
     // asm 00009039: 	PUSH	R0
     // ;	LDP	@DYNAFREE
     // asm 0000903A: 	LDI	@DYNAFREE,R0
@@ -1133,8 +1124,7 @@ void CARB_INIT(void) {
  *
  *
  */
-void GETCAR(void)
-{
+void GETCAR(void) {
     // asm 0000904C: 	PUSH	R0
     // ;	LDP	@CARFREE
     // asm 0000904D: 	LDI	@CARFREE,AR0
@@ -1166,8 +1156,7 @@ GETCAR_ERR:
  *	AR2	POINTER TO CAR OBJ
  *
  */
-void DELCAR(void)
-{
+void DELCAR(void) {
     // asm 0000905A: 	PUSH	R0
     // ;	LDP	@CARFREE
     // asm 0000905B: 	LDI	@CARFREE,R0
@@ -1187,8 +1176,7 @@ void DELCAR(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SCAN_OBJECTS(PROC* p)
-{
+void SCAN_OBJECTS(PROC* p) {
     // asm 00009063: 	CALL	ISCAN
     // asm 00009064: 	SLEEP	1
     // asm 00009066: 	CALL	OSCAN
@@ -1227,8 +1215,7 @@ void POPALL(void) {
  *
  *
  */
-void DISTANCE_2D(void)
-{
+void DISTANCE_2D(void) {
     // asm 0000909E: 	PUSHFL	R3
     // asm 000090A0: 	LDF	R0,R1
     // asm 000090A1: 	NEGF	R0,R3
@@ -1252,8 +1239,7 @@ void DISTANCE_2D(void)
  *	AR4	OBJECT
  *
  */
-void OVELADD(void)
-{
+void OVELADD(void) {
     // asm 000090A9: 	LDF	*+AR4(OVELX),R0
     // asm 000090AA: 	ADDF	*+AR4(OPOSX),R0
     // asm 000090AB: 	STF	R0,*+AR4(OPOSX)
@@ -1274,8 +1260,7 @@ void OVELADD(void)
  *----------------------------------------------------------------------------
  *ADD N FRAMES X VELOCITY
  */
-void OVELNADD(void)
-{
+void OVELNADD(void) {
     // asm 000090B3: 	FLOATP	@NFRAMES,R1
     // asm 000090B4: 	LDF	*+AR4(OVELX),R0
     // asm 000090B5: 	MPYF	R1,R0
@@ -1304,8 +1289,7 @@ void OVELNADD(void)
  *	R2	DIST
  *	R3	DESTINATION VECTOR
  */
-void FORWARD(void)
-{
+void FORWARD(void) {
     // asm 000090C1: 	PUSH	AR2
     // asm 000090C2: 	LDF	0,R0
     // asm 000090C3: 	PUSHF	R0

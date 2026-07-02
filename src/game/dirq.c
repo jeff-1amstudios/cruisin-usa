@@ -1,5 +1,5 @@
 #include "dirq.h"
-#include "../core/cpu.h"
+
 #include "../core/machine.h"
 #include "backgrnd.h"
 #include "c30.h"
@@ -186,8 +186,7 @@ static u32 CLIPRAM[CLIPRAML];
  *	next object
  *
  */
-void DIRQ(void)
-{
+void DIRQ(void) {
     // asm 00000064: 	PUSH	R4
     // asm 00000065: 	LDI	@SYSCNTL,R0		;if the system hangs and the LED
     // asm 00000066: 	OR	LED_OFF,R0		;is on we were in this routine

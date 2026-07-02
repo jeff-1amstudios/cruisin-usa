@@ -100,8 +100,7 @@ void COMM_INIT(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void COMM_ENABLE_INT2(void)
-{
+void COMM_ENABLE_INT2(void) {
     // 	;
     // 	;if slave then enable the interrupt 2
     // 	;(comm int 2)
@@ -127,8 +126,7 @@ BABA:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void COMM_MASTER_SEND_SYNC(void)
-{
+void COMM_MASTER_SEND_SYNC(void) {
     // asm 00007F5E: 	LDI	@COMMFLAG,R0		;DONT INTERRUPT COMMUNICATIONS
     // asm 00007F5F: 	RETSNZ
     // asm 00007F60: 	LDI	@DIPRAM,R0
@@ -155,7 +153,7 @@ void COMM_MASTER_SEND_SYNC(void)
     // asm 00007F79: 	ANDN	INT2_M,IF	   	;REMOVE ANY LATCHED INT
     // asm 00007F7A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMM_MASTER_SEND_SYNC", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /*
@@ -164,8 +162,7 @@ void COMM_MASTER_SEND_SYNC(void)
  *SET ONE PLAYER GAME (NO LINK)
  *
  */
-void SETONE(void)
-{
+void SETONE(void) {
     // asm 00007F7B: 	PUSH	R0
     // asm 00007F7C: 	PUSH	AR0
     // asm 00007F7D: 	CLRI	R0
@@ -185,8 +182,7 @@ void SETONE(void)
     UNIMPL();
 }
 
-void CLRONE(void)
-{
+void CLRONE(void) {
     // asm 00007F86: 	PUSH	R0
     // asm 00007F87: 	PUSH	AR0
     // asm 00007F88: 	LDI	1,R0
@@ -215,8 +211,7 @@ ONEX:
  */
 #define COMMPAL 0x0990000 // COMMUNICATIONS PAL
 
-void COMM_ROUTINE(void)
-{
+void COMM_ROUTINE(void) {
     // asm 00007F96: 	CLRI	AR7
     // asm 00007F97: 	LDP	@COMMPAL
     // asm 00007F98: 	LDI	@COMMPAL,R0
@@ -244,8 +239,7 @@ COMM_HOLDFORA2D:
     UNIMPL_TODO();
 }
 
-static void COMM_MASTER(void)
-{
+static void COMM_MASTER(void) {
     // asm 00007FA8: 	SETDP
     // asm 00007FA9: 	LDI	@COMM_IOI,AR5		;SETUP I/O REGISTER
     // *CHECK ONE PLAYER MODE
@@ -612,8 +606,7 @@ COMM_MASTER_ERROR:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void COMM_IRQ(void)
-{
+void COMM_IRQ(void) {
     // asm 000080C9: 	PUSH	ST
     // asm 000080CA: 	PUSH	DP
     // asm 000080CB: 	PUSH	R0
@@ -632,8 +625,7 @@ void COMM_IRQ(void)
     UNIMPL();
 }
 
-static void DO_SLAVE_SYNC(void)
-{
+static void DO_SLAVE_SYNC(void) {
     // asm 000080D5: 	PUSH	R1
     // asm 000080D6: 	PUSH	IE
     // asm 000080D7: 	LDI	INT1_M|INT2_M,IE	;disable everything except TV30 interrupt & comm int
@@ -699,8 +691,7 @@ WTLP:
  *
  *
  */
-static void COMM_SLAVE(void)
-{
+static void COMM_SLAVE(void) {
     // asm 000080FA: 	SETDP
     // asm 000080FB: 	LDI	@COMM_IOI,AR5		;AR5=COMM I/O ADDRESS
     // asm 000080FC: 	LDI	@RECEIVE_BUFFERI,AR2	;AR2=RECEIVE BUFFER

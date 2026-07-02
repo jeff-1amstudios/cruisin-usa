@@ -297,7 +297,7 @@ extern int SWITCHBUTS;
 extern int DIAG_ACTIVE;
 
 // asm:  .globl GAME_TIMER
-extern int GAME_TIMER;
+extern float GAME_TIMER;
 
 // asm:  .globl ST_POLYGONS
 extern int ST_POLYGONS;
@@ -658,7 +658,7 @@ extern int NOLONG_VEHICLES;
 extern OBJ* ROAD_DEBRIS;
 
 // asm:  .globl ROADKILL_SOUND_TIMER
-extern int ROADKILL_SOUND_TIMER;
+extern float ROADKILL_SOUND_TIMER;
 
 // asm:  .globl DIV_F,DIV_F30
 #define DIV_F DIV_F30
@@ -1759,7 +1759,7 @@ void SCRNFIL(void);
 void CLRCRAM(void);
 
 // asm:  .globl RANDOM,FRAND,SFRAND
-void RANDOM(void);
+uint32_t RANDOM(void);
 
 void FRAND(void);
 
