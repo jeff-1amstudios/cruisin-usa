@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "macs.h"
 #include "pall.h"
+#include "validator.h"
 #include "vunit.h"
 
 /*
@@ -47,8 +48,7 @@ int _ADDRL;
  *
  *
  */
-void _rdma(void)
-{
+void _rdma(void) {
     // asm 0000AEFC: 	STI	RS,@_ACMAP
     // asm 0000AEFD: 	STI	RE,@_ADDRL
     // asm 0000AEFE: 	STI	AR2,@_ARPS+0		;AX
@@ -73,8 +73,7 @@ void _rdma(void)
  *COPY THE CONTENTS OF _ACNTL TO _ADDRL INTO THE FIFO
  *
  */
-void _stuff_fpga(void)
-{
+void _stuff_fpga(void) {
     // asm 0000AF06: 	PUSH	AR0
     // asm 0000AF07: 	PUSH	AR1
     // asm 0000AF08: 	PUSH	R0
@@ -131,8 +130,28 @@ LP1:
     // asm 0000AF33: 	POP	AR1
     // asm 0000AF34: 	POP	AR0
     // asm 0000AF35: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_stuff_fpga", 0, 0);
-    UNIMPL();
+
+    int x1 = _ARPS[0];
+    int y1 = _ARPS[1];
+    int x2 = _ARPS[3];
+    int y2 = _ARPS[4];
+    int x3 = _ARPS[6];
+    int y3 = _ARPS[7];
+    int x4 = _ARPS[9];
+    int y4 = _ARPS[10];
+
+    // asm 0000AEFE: 	STI	AR2,@_ARPS+0		;AX
+    // asm 0000AEFF: 	STI	AR2,@_ARPS+9		;DX
+    // asm 0000AF00: 	STI	R2,@_ARPS+1		;AY
+    // asm 0000AF01: 	STI	R2,@_ARPS+4		;BY
+    // asm 0000AF02: 	STI	R3,@_ARPS+3		;BX
+    // asm 0000AF03: 	STI	R3,@_ARPS+6		;CX
+    // asm 0000AF04: 	STI	RC,@_ARPS+7		;CY
+    // asm 0000AF05: 	STI	RC,@_ARPS+10		;DY
+
+    crusn_machine_drawrect(x1, y1, x2, y2, x3, y3, x4, y4);
+
+    MAME_VALIDATE_EXIT();
 }
 
 // *----------------------------------------------------------------------------
@@ -184,8 +203,7 @@ LP1:
  *
  *
  */
-void BLTMOD2D_NOPAL(void)
-{
+void BLTMOD2D_NOPAL(void) {
     // asm 0000AF36: 	PUSHM	R0,R1,R2,R3,R4,R5,R6,R7
     // asm 0000AF3E: 	PUSHM	AR0,AR1,AR2,AR3
     // asm 0000AF42: 	BU	SKIPPALENTRY
@@ -194,8 +212,7 @@ void BLTMOD2D_NOPAL(void)
     UNIMPL();
 }
 
-void BLTMOD2D(void)
-{
+void BLTMOD2D(void) {
     // asm 0000AF43: 	PUSHM	R0,R1,R2,R3,R4,R5,R6,R7
     // asm 0000AF4B: 	PUSHM	AR0,AR1,AR2,AR3
     // asm 0000AF4F: 	LDI	*+AR2(10),AR0		;IMAGE PAL
@@ -242,8 +259,7 @@ SKIPPALENTRY:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BLTMOD2D_DS(void)
-{
+void BLTMOD2D_DS(void) {
     // asm 0000AF78: 	PUSHM	R2,R3,R4
     // asm 0000AF7B: 	ADDI	2,R2
     // asm 0000AF7C: 	ADDI	2,R3

@@ -142,6 +142,7 @@ void SETPAGE0(void) {
     dma_setup |= DMA_DMA_WRITE_PAGE;
     // asm 00008E7E: 	STI	R0,@DMA_SETUP
     DMA_SETUP_SHADOW = dma_setup;
+    crusn_machine_set_screen_pages(g_crusn_machine, 0, 1);
     // asm 00008E7F: 	SETDP
     // asm 00008E80: 	RETS
 }
@@ -155,6 +156,8 @@ void SETPAGE0(void) {
  */
 void SETPAGE1(void)
 {
+    u32 dma_setup;
+
     // ;	.if	DEBUG
     // asm 00008E81: 	LDI	@PAGEWORD,R0
     // asm 00008E82: 	BNE	P1
@@ -172,15 +175,19 @@ void SETPAGE1(void)
 P1:
     // asm 00008E8D: 	LDI	@SCREEN1I,R0		;set active screen to 1 (writeable)
     // asm 00008E8E: 	STI	R0,@ACTIVE_SCREEN
+    ACTIVE_SCREEN = SCREEN0I;
     // asm 00008E8F: 	LDP	@DMA_SETUP
     // asm 00008E90: 	LDI	@DMA_SETUP,R0
+    dma_setup = DMA_SETUP_SHADOW;
     // asm 00008E91: 	OR	DMA_VIDEO_PAG_DISPLAYED+DMA_DMA_WRITE_PAGE,R0
+    dma_setup |= DMA_VIDEO_PAG_DISPLAYED;
+    dma_setup &= ~DMA_DMA_WRITE_PAGE;
     // asm 00008E92: 	STI	R0,@DMA_SETUP
+    DMA_SETUP_SHADOW = dma_setup;
+    crusn_machine_set_screen_pages(g_crusn_machine, 1, 0);
     // asm 00008E93: 	SETDP
     // asm 00008E94: 	RETS
     // ;	.endif
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SETPAGE1", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -195,20 +202,30 @@ P1:
  */
 void FASTCLR1(void)
 {
+    word_addr_t start_addr;
+
     // asm 00008E95: 	LDI	@NOAERASE,R0
     // asm 00008E96: 	RETSNZ
+    if (NOAERASE != 0) {
+        return;
+    }
     // asm 00008E97: 	LDI	0,AR2		;X
     // asm 00008E98: 	STI	AR2,@_ACNTL
+    _ACNTL = 0;
     // asm 00008E99: 	LDI	0,R2		;Y
     // asm 00008E9A: 	LDI	511,R3		;X2
     // asm 00008E9B: 	LDI	399,RC		;Y2
     // asm 00008E9C: 	LDI	0,RS		;PAL
     // asm 00008E9D: 	LDI	0A0h,RE		;ADDR
     // asm 00008E9E: 	RS	16,RE
+    if (ACTIVE_SCREEN == SCREEN1I) {
+        start_addr = (word_addr_t)SCREEN1I;
+    } else {
+        start_addr = (word_addr_t)SCREEN0I;
+    }
     // asm 00008E9F: 	CALL	_rdma
+    SCREEN_FILL(start_addr, 0, (u32)SCRSIZI);
     // asm 00008EA0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FASTCLR1", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

@@ -12,6 +12,8 @@ enum {
     CRUSN_SCREEN_WIDTH = 512,
     CRUSN_SCREEN_HEIGHT = 400,
     CRUSN_SCREEN_WORDS = 0x40000,
+    CRUSN_SCREEN_PAGES = 2,
+    CRUSN_SCREEN_TOTAL_WORDS = CRUSN_SCREEN_WORDS * CRUSN_SCREEN_PAGES,
     CRUSN_CMOS_WORDS = 0x2000,
     CRUSN_COLORRAM_WORDS = 0x8000,
     CRUSN_TIMER_WORDS = 0x19,
@@ -25,6 +27,7 @@ typedef struct crusn_machine {
     u32* rom_words;
     u32* ram_words;
     u32* screen_words;
+    u32* screen_page_words[CRUSN_SCREEN_PAGES];
     u32* cmos_words;
     u32* colorram_words;
     u32* timer_words;
@@ -34,6 +37,8 @@ typedef struct crusn_machine {
     size_t cmos_word_count;
     size_t colorram_word_count;
     size_t timer_word_count;
+    int display_page_index;
+    int write_page_index;
     int frame_counter;
     u32 translation_stack[CRUSN_TRANSLATION_STACK_WORDS];
     size_t translation_stack_top;
@@ -57,7 +62,11 @@ int crusn_machine_dump_screen_bmp(
     const crusn_machine* machine, const u32* screen_words, const u32* colorram_words, const char* path);
 u32* crusn_machine_rom_addr(word_addr_t addr);
 u32* crusn_machine_colorram_addr(word_addr_t addr);
+u32* crusn_machine_screen_page(const crusn_machine* machine, int page_index);
+void crusn_machine_set_screen_pages(crusn_machine* machine, int display_page_index, int write_page_index);
+void crusn_machine_clear_screen_page(crusn_machine* machine, int page_index);
 
 void crusn_yield_display_interrupt(void);
+int crusn_machine_drawrect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 
 #endif

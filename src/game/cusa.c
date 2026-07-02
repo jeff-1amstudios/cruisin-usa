@@ -791,37 +791,59 @@ REGIT:
     // asm 00004C8B: 	SETDP
 NTEST:
     // asm 00004C8C: 	CALL	FEED_WATCHDOG
+    FEED_WATCHDOG();
     // asm 00004C8D: 	LDI	@CLEARRDY,R0
     // asm 00004C8E: 	BZ	NCLRSCR
-    // asm 00004C8F: 	LDI	0,R0
-    // asm 00004C90: 	STI	R0,@CLEARRDY		;RESET SCREEN CLEAR FLAG
-    // asm 00004C91: 	STI	R0,@IFRAMES	 	;RESET INTERRUPT FRAME COUNTER
-    // asm 00004C92: 	LDI	@MOTION_RCV_TIKS,R0	;MOTION RECEIVE ERROR
-    // asm 00004C93: 	DEC	R0
-    // asm 00004C94: 	STI	R0,@MOTION_RCV_TIKS
-    // asm 00004C95: 	LDI	@NOSWAP,R0		;PAGE SWAP?
-    // asm 00004C96: 	BNZ	NCLRSCR
-    // asm 00004C97: 	LDI	@DISPLAY_PAGE,R0	;PAGE SWAP FLAG
-    // asm 00004C98: 	XOR	1,R0
-    // asm 00004C99: 	STI	R0,@DISPLAY_PAGE
-    // asm 00004C9A: 	BNZ	PAGE1
-    // asm 00004C9B: 	CALL	SETPAGE1
-    // asm 00004C9C: 	CALL	FASTCLR0
-    // asm 00004C9D: 	B	DN_PAGE
-PAGE1:
-    // asm 00004C9E: CALL	SETPAGE0
-    // asm 00004C9F: 	CALL	FASTCLR1
+    if (CLEARRDY != 0) {
+        // asm 00004C8F: 	LDI	0,R0
+        // asm 00004C90: 	STI	R0,@CLEARRDY		;RESET SCREEN CLEAR FLAG
+        CLEARRDY = 0;
+        // asm 00004C91: 	STI	R0,@IFRAMES	 	;RESET INTERRUPT FRAME COUNTER
+        IFRAMES = 0;
+        // asm 00004C92: 	LDI	@MOTION_RCV_TIKS,R0	;MOTION RECEIVE ERROR
+        // asm 00004C93: 	DEC	R0
+        // asm 00004C94: 	STI	R0,@MOTION_RCV_TIKS
+        MOTION_RCV_TIKS -= 1;
+        // asm 00004C95: 	LDI	@NOSWAP,R0		;PAGE SWAP?
+        // asm 00004C96: 	BNZ	NCLRSCR
+        if (NOSWAP == 0) {
+            // asm 00004C97: 	LDI	@DISPLAY_PAGE,R0	;PAGE SWAP FLAG
+            // asm 00004C98: 	XOR	1,R0
+            // asm 00004C99: 	STI	R0,@DISPLAY_PAGE
+            DISPLAY_PAGE ^= 1;
+            // asm 00004C9A: 	BNZ	PAGE1
+            if (DISPLAY_PAGE == 0) {
+                // asm 00004C9B: 	CALL	SETPAGE1
+                SETPAGE1();
+                // asm 00004C9C: 	CALL	FASTCLR0
+                FASTCLR0();
+                // asm 00004C9D: 	B	DN_PAGE
+            } else {
+                // asm 00004C9E: CALL	SETPAGE0
+                SETPAGE0();
+                // asm 00004C9F: 	CALL	FASTCLR1
+                FASTCLR1();
+            }
+        }
+    }
 DN_PAGE:
 NCLRSCR:
     // asm 00004CA0: 	LDI	@STOPWATCH_CNTL,R0	;STOPWATCH TIMER
     // asm 00004CA1: 	BZ	NOSTOPWUPDT
-    // asm 00004CA2: 	INCM	@STOPWATCH
+    if (STOPWATCH_CNTL != 0) {
+        // asm 00004CA2: 	INCM	@STOPWATCH
+        STOPWATCH += 1;
+    }
 NOSTOPWUPDT:
     // asm 00004CA5: 	INCM	@_sectime		;ONE SECOND TIMER
+    _sectime += 1;
     // asm 00004CA8: 	CMPI	TIKS_PER_SECOND,R0
     // asm 00004CA9: 	BLT	NOTASEC
-    // asm 00004CAA: 	CLRI	R0
-    // asm 00004CAB: 	STI	R0,@_sectime
+    if (_sectime >= TIKS_PER_SECOND) {
+        // asm 00004CAA: 	CLRI	R0
+        // asm 00004CAB: 	STI	R0,@_sectime
+        _sectime = 0;
+    }
     // asm 00004CAC: 	LDI	@_MODE,R5
     // asm 00004CAD: 	AND	MMODE,R5
     // asm 00004CAE: 	CMPI	MDIAG,R5
@@ -853,7 +875,11 @@ NOTASEC:
     // asm 00004CC8: 	STF	R0,@GAME_TIMER
     // asm 00004CC9: NOTINGAME
     // asm 00004CC9: 	INCM	@INFRAMES		;increment number of frames passed since last screen switch
+    INFRAMES += 1;
     // asm 00004CCC: 	INCMF	@IFRAMES
+    IFRAMES += 1;
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", (u32)DISPLAY_PAGE, (u32)ACTIVE_SCREEN);
+    return;
     // asm 00004CCF: 	CALL	NUWHEEL			;motorized wheel
     // asm 00004CD0: 	CALL	SNDPROC			;sound processor
     // asm 00004CD1: 	CALL	READIO			;read the switches
@@ -902,7 +928,6 @@ NOTASEC:
     // asm 00004CFC: 	POP	DP
     // asm 00004CFD: 	POP	ST
     // asm 00004CFE: 	RETI
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INT0", 0, 0);
     UNIMPL();
 }
 

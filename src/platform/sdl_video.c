@@ -2,16 +2,14 @@
 
 #include <stdlib.h>
 
-int crusn_video_init(crusn_video *video)
-{
+int crusn_video_init(crusn_video* video) {
     video->window = SDL_CreateWindow(
         "Cruis'n USA Port",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         CRUSN_SCREEN_WIDTH * 2,
         CRUSN_SCREEN_HEIGHT * 2,
-        SDL_WINDOW_RESIZABLE
-    );
+        SDL_WINDOW_RESIZABLE);
     if (video->window == NULL) {
         return -1;
     }
@@ -27,8 +25,7 @@ int crusn_video_init(crusn_video *video)
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_STREAMING,
         CRUSN_SCREEN_WIDTH,
-        CRUSN_SCREEN_HEIGHT
-    );
+        CRUSN_SCREEN_HEIGHT);
     if (video->texture == NULL) {
         crusn_video_shutdown(video);
         return -1;
@@ -37,8 +34,7 @@ int crusn_video_init(crusn_video *video)
     return 0;
 }
 
-void crusn_video_shutdown(crusn_video *video)
-{
+void crusn_video_shutdown(crusn_video* video) {
     if (video->texture != NULL) {
         SDL_DestroyTexture(video->texture);
         video->texture = NULL;
@@ -53,12 +49,11 @@ void crusn_video_shutdown(crusn_video *video)
     }
 }
 
-int crusn_video_present(crusn_video *video, const crusn_machine *machine)
-{
-    u32 *pixels;
+int crusn_video_present(crusn_video* video, const crusn_machine* machine) {
+    u32* pixels;
     int pitch;
 
-    if (SDL_LockTexture(video->texture, NULL, (void **)&pixels, &pitch) != 0) {
+    if (SDL_LockTexture(video->texture, NULL, (void**)&pixels, &pitch) != 0) {
         return -1;
     }
 

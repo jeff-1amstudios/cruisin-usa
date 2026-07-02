@@ -13,15 +13,15 @@ void crusn_trace_event(crusn_trace* trace, const char* kind, const char* name, u
         return;
     }
 
-    fprintf(
-        trace->stream,
-        "{\"seq\":%" PRIu64 ",\"kind\":\"%s\",\"name\":\"%s\",\"a\":\"%08X\",\"b\":\"%08X\"}\n",
-        trace->event_counter++,
-        kind,
-        name,
-        a,
-        b);
-    fflush(trace->stream);
+    // fprintf(
+    //     trace->stream,
+    //     "{\"seq\":%" PRIu64 ",\"kind\":\"%s\",\"name\":\"%s\",\"a\":\"%08X\",\"b\":\"%08X\"}\n",
+    //     trace->event_counter++,
+    //     kind,
+    //     name,
+    //     a,
+    //     b);
+    // fflush(trace->stream);
 }
 
 noreturn void crusn_unimpl(const char* file, int line, const char* func) {

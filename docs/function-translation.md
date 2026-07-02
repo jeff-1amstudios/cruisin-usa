@@ -10,7 +10,6 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - Dont invent new functions, other that to avoid large duplication (eg if 2 functions are branching to the same code tail)
 - Dont invent new global/module level variables
 - Ignore DP and CPU wait state related instructions. Ignore push/pop.
-- Do not write register-based translation. Look at `_outtextxyc` as an example
 - Write your c code underneath the // asm: comment lines already in the function.
 - Retain the original developer comments in the assembly code as c comments
 
@@ -25,9 +24,8 @@ We put our types in types.h. If the asm function for example uses AR2 as an inpu
 ```
 and prototype the function as FUNCTIONNAME(FUNCTIONNAME_ARG x /*AR2*/) { .. }
 
-## Warnings
-Be careful of asm lines like `// 	;---->	BUD	NXTGRP`. It is a comment so doesn't occupy/consume an original code ROM address.
-
+## Examples
+- The `STRLEN` function in `text.c` is a great example to follow
 
 <!-- ## Validation
 1. Add a mame_validate_word("var_name", &var, 0xORIGINAL_ADDRESS) macro call after each store/set in C code. Dont worry that we havent defined the macro implementation yet. -->

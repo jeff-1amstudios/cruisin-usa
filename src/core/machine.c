@@ -28,6 +28,14 @@ static unsigned char crusn_expand_5_to_8(unsigned value) {
     return (unsigned char)((value << 3) | (value >> 2));
 }
 
+static int crusn_normalize_screen_page_index(int page_index) {
+    if (page_index <= 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
 static int crusn_load_rom_words(const char* path, u32* out_words, size_t out_word_count) {
     FILE* fp;
     unsigned char* bytes = NULL;
@@ -121,9 +129,12 @@ u32* crusn_machine_colorram_addr(word_addr_t addr) {
 void crusn_machine_decode_screen_argb8888(const crusn_machine* machine, u32* dst_pixels, size_t dst_pitch_bytes) {
     size_t y;
     size_t x;
+    const u32* display_page_words;
+
+    display_page_words = crusn_machine_screen_page(machine, machine->display_page_index);
 
     for (y = 0; y < CRUSN_SCREEN_HEIGHT; ++y) {
-        const u32* src_row = &machine->screen_words[y * CRUSN_SCREEN_WIDTH];
+        const u32* src_row = &display_page_words[y * CRUSN_SCREEN_WIDTH];
         u32* dst_row = (u32*)((unsigned char*)dst_pixels + (y * dst_pitch_bytes));
 
         for (x = 0; x < CRUSN_SCREEN_WIDTH; ++x) {
@@ -156,7 +167,7 @@ int crusn_machine_init(crusn_machine* machine) {
     }
 
     machine->ram_word_count = CRUSN_RAM_WORDS;
-    machine->screen_word_count = CRUSN_SCREEN_WORDS;
+    machine->screen_word_count = CRUSN_SCREEN_TOTAL_WORDS;
     machine->cmos_word_count = CRUSN_CMOS_WORDS;
     machine->colorram_word_count = CRUSN_COLORRAM_WORDS;
     machine->timer_word_count = CRUSN_TIMER_WORDS;
@@ -170,6 +181,11 @@ int crusn_machine_init(crusn_machine* machine) {
         crusn_machine_shutdown(machine);
         return -1;
     }
+
+    machine->screen_page_words[0] = machine->screen_words;
+    machine->screen_page_words[1] = machine->screen_words + CRUSN_SCREEN_WORDS;
+    machine->display_page_index = 0;
+    machine->write_page_index = 0;
 
     crusn_trace_init(&machine->trace, stdout);
     crusn_memory_init(
@@ -202,6 +218,8 @@ void crusn_machine_shutdown(crusn_machine* machine) {
     machine->rom_words = NULL;
     machine->ram_words = NULL;
     machine->screen_words = NULL;
+    machine->screen_page_words[0] = NULL;
+    machine->screen_page_words[1] = NULL;
     machine->cmos_words = NULL;
     machine->colorram_words = NULL;
     machine->timer_words = NULL;
@@ -216,6 +234,34 @@ void crusn_machine_shutdown(crusn_machine* machine) {
     }
 }
 
+u32* crusn_machine_screen_page(const crusn_machine* machine, int page_index) {
+    int normalized_page_index;
+
+    assert(machine != NULL);
+
+    normalized_page_index = crusn_normalize_screen_page_index(page_index);
+    return machine->screen_page_words[normalized_page_index];
+}
+
+void crusn_machine_set_screen_pages(crusn_machine* machine, int display_page_index, int write_page_index) {
+    assert(machine != NULL);
+
+    machine->display_page_index = crusn_normalize_screen_page_index(display_page_index);
+    machine->write_page_index = crusn_normalize_screen_page_index(write_page_index);
+}
+
+void crusn_machine_clear_screen_page(crusn_machine* machine, int page_index) {
+    size_t visible_words;
+    u32* screen_page_words;
+
+    assert(machine != NULL);
+    screen_page_words = crusn_machine_screen_page(machine, page_index);
+    assert(screen_page_words != NULL);
+
+    visible_words = (size_t)CRUSN_SCREEN_WIDTH * (size_t)CRUSN_SCREEN_HEIGHT;
+    memset(screen_page_words, 0, visible_words * sizeof(*screen_page_words));
+}
+
 void crusn_machine_tick(crusn_machine* machine) {
     int x;
     int y;
@@ -225,7 +271,7 @@ void crusn_machine_tick(crusn_machine* machine) {
             u32 r = (u32)((x + machine->frame_counter) & 0xFF);
             u32 g = (u32)((y + machine->frame_counter) & 0xFF);
             u32 b = (u32)((x + y + machine->frame_counter) & 0xFF);
-            machine->screen_words[(y * CRUSN_SCREEN_WIDTH) + x] = 0xFF000000u | (r << 16) | (g << 8) | b;
+            machine->screen_page_words[machine->write_page_index][(y * CRUSN_SCREEN_WIDTH) + x] = 0xFF000000u | (r << 16) | (g << 8) | b;
         }
     }
 
@@ -319,5 +365,29 @@ int crusn_machine_dump_screen_bmp(
 
     free(pixels);
     fclose(fp);
+    return 0;
+}
+
+static int col = 0x99999999;
+static int add = 0x30303030;
+int crusn_machine_drawrect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
+    u32* write_page_words;
+
+    (void)x2;
+    (void)y2;
+
+    col += add;
+    if (col > 0xffffffff || col < add) {
+        col = add;
+    }
+
+    write_page_words = crusn_machine_screen_page(g_crusn_machine, g_crusn_machine->write_page_index);
+
+    for (int y = y1; y < y4; y++) {
+        for (int x = x1; x < x3; x++) {
+            u32* src = &write_page_words[y * CRUSN_SCREEN_WIDTH] + x;
+            *src = col;
+        }
+    }
     return 0;
 }

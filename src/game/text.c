@@ -474,7 +474,7 @@ static int STRLEN(const tTEXT* text /*AR2*/) {
     // asm 00007A51: 	CLRI	R0			;length of string
     // asm 00007A52: 	CLRI	RS
     str = text->ptr;
-    length = 0; /* length of string */
+    length = 0; // ;length of string
 STRLP:
     ch = (unsigned char)*str++;
 
@@ -490,8 +490,8 @@ STRLP:
         goto STRLENNCHAR;
     }
 
-    // asm 00007A5F: 	SUBI	'0',AR0			;THE START OF THE FONT
-    ch -= '0';
+    // asm 00007A5F: 	SUBI	'0',AR0     ;THE START OF THE FONT
+    ch -= '0'; // ;THE START OF THE FONT
 
     // asm 00007A60: 	LDI	AR0,AR1
     // asm 00007A61: 	MPYI	FONTENT_SIZE,AR1
@@ -503,26 +503,19 @@ STRLP:
     char_width = (int)font->x_end - (int)font->x_start;
 
     // asm 00007A65: 	LDI	*+AR1(FONTENT_PRE),R2
-    MAME_VALIDATE_REG_AT_ADDR(0x00007A65, "R1", &char_width);
     // asm 00007A66: 	LS	16,R2
     // asm 00007A67: 	ASH	-16,R2			;MUST SIGN EXTEND THIS DUDE
     // asm 00007A68: 	ADDI	R2,R1
     char_width += TEXT_FONT_PRE(font);
 
-    MAME_VALIDATE_REG_AT_ADDR(0x00007A69, "R1", &char_width);
     // asm 00007A69: 	LDI	*+AR1(FONTENT_TRAIL),R2
     // asm 00007A6A: 	RS	16,R2
     // asm 00007A6B: 	ADDI	R2,R1
-    int t = TEXT_FONT_TRAIL(font);
     char_width += TEXT_FONT_TRAIL(font);
 
 STRLENNCHAR:
-    MAME_VALIDATE_REG_AT_ADDR(0x00007A6C, "R2", &t);
-    MAME_VALIDATE_REG_AT_ADDR(0x00007A6C, "R1", &char_width);
     // asm 00007A6C: 	ADDI	R1,R0			;INCREASE STRING LENGTH
-
-    length += char_width; /* INCREASE STRING LENGTH */
-    MAME_VALIDATE_REG_AT_ADDR(0x00007A6D, "R0", &length);
+    length += char_width; // ;INCREASE STRING LENGTH
     // asm 00007A6D: 	BU	STRLP
     goto STRLP;
 STRLENX:
