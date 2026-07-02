@@ -238,7 +238,7 @@ typedef struct OBJ {
 typedef struct PROC {
     struct PROC* link;
     // u32 stack_ptr;
-    u32 wake_state;
+    u32 state;
     u32 id;
     u32 sleep_ticks;
     PROC_FUNC func;

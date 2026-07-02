@@ -1,6 +1,7 @@
 
 #include "totala.h"
 #include "../core/machine.h"
+#include "../core/output.h"
 #include "globals.h"
 #include "macs.h"
 #include "pall.h"
@@ -156,9 +157,7 @@ LP1:
     // asm 0000AF04: 	STI	RC,@_ARPS+7		;CY
     // asm 0000AF05: 	STI	RC,@_ARPS+10		;DY
 
-    crusn_machine_draw_fpga(x1, y1, x2, y2, x3, y3, x4, y4, uv0, uv1, uv2, uv3, texture_base, palette_base, control);
-
-    MAME_VALIDATE_EXIT();
+    port_output_fpga(x1, y1, x2, y2, x3, y3, x4, y4, uv0, uv1, uv2, uv3, texture_base, palette_base, control);
 }
 
 // *----------------------------------------------------------------------------

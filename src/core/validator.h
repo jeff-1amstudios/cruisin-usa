@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-void mame_validate_word_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_validate_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_validate_arg_sym_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
@@ -21,7 +20,6 @@ void mame_validate_reg_at_addr_impl(
 void mame_validate_reg_at_addr_float_impl(
     const char* caller_file, int caller_line, uint32_t breakpoint_address, const char* reg_name, const void* ptr);
 
-#define mame_validate_word(name, ptr) mame_validate_word_impl(__FILE__, __LINE__, (name), (ptr))
 #define MAME_VALIDATE_ARG(name, ptr) mame_validate_arg_impl(__FILE__, __LINE__, (name), (ptr))
 #define MAME_VALIDATE_ARG_FLOAT(name, ptr) mame_validate_arg_float_impl(__FILE__, __LINE__, (name), (ptr))
 #define MAME_VALIDATE_EXIT() mame_validate_exit_impl(__FILE__, __LINE__)
@@ -32,6 +30,8 @@ void mame_validate_reg_at_addr_float_impl(
     mame_validate_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr))
 #define MAME_VALIDATE_REG_AT_ADDR_FLOAT(addr, reg_name, ptr) \
     mame_validate_reg_at_addr_float_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr))
+
+#define MAME_VALIDATE_FUNCTION_ENTRY()
 
 void mame_validate_print_oks_on(void);
 void mame_validate_print_oks_off(void);

@@ -1,5 +1,5 @@
 #include "cusa.h"
-#include "../core/config.h"
+#include "../core/input.h"
 
 #include "../core/machine.h"
 #include "../core/port.h"
@@ -226,7 +226,6 @@ void _c_int00(void) {
     // asm 00004AE9: 	STI	R0,@COMMINTM
     R0.s = 0;
     COMMINTM = R0.s;
-    validate_word("COMMINTM", &COMMINTM);
 
     // asm 00004AEA: 	LDP	@CPU_WS
     // asm 00004AEB: 	LDI	1068h,R0
@@ -270,7 +269,6 @@ void _c_int00(void) {
     // asm 00004B04: 	STI	R0,@WDHIT		;SAVE YOUR DOGGIE
     R0.u = crusn_mem_rd32(0x991050u);
     WDHIT = R0.s;
-    validate_word("WDHIT", &WDHIT);
 
     // asm 00004B05: 	LDP	@SYSCNTLR
     // asm 00004B06: 	LDI	SYSCNTL_INIT,R0		;INIT SYSCNTL
@@ -351,7 +349,6 @@ void _c_int00(void) {
     // asm 00004B26: 	STI	R0,@COMMINTM
     R0.s = 0;
     COMMINTM = R0.s;
-    validate_word("COMMINTM", &COMMINTM);
     // asm 00004B27: 	SETDP
 #if MEMTESTS
     // asm 00004B28: 	CALL	TEST_CHIPS		;TEST THE INSTALLABLE CHIPS
@@ -372,7 +369,6 @@ void _c_int00(void) {
     R0.s = SYSCNTL;
     R0.s &= ~0x10;
     SYSCNTL = R0.s;
-    validate_word("SYSCNTL", &SYSCNTL);
     // asm: 	LDP	@SYSCNTLR
     // asm: 	STI	R0,@SYSCNTLR
     crusn_mem_wr32(SYSCNTLR, R0.u);
@@ -400,7 +396,6 @@ void _c_int00(void) {
     R0.s = SYSCNTL;
     R0.s |= 0x10;
     SYSCNTL = R0.s;
-    validate_word("SYSCNTL", &SYSCNTL);
     // asm: 	LDP	@SYSCNTLR
     // asm: 	STI	R0,@SYSCNTLR
     crusn_mem_wr32(SYSCNTLR, R0.u);

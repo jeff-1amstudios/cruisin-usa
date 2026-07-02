@@ -20,7 +20,8 @@ endif()
 
 set(CRUSN_SOURCES
 
-  src/core/config.c
+  src/core/input.c
+  src/core/output.c
   src/core/machine.c
   src/core/memory.c
   src/core/trace.c

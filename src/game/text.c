@@ -547,6 +547,8 @@ void TEXT_OUTPUT(void) {
     int top_left;
     int y_start;
 
+    MAME_VALIDATE_FUNCTION_ENTRY();
+
     // asm 00007A75: 	PUSH	AR4
     // asm 00007A76: 	PUSH	AR5
     // asm 00007A77: 	PUSH	R4
@@ -622,7 +624,6 @@ OLP:
     // asm 00007A99: 	CMPI	' ',AR0
     // asm 00007A9A: 	BEQ	NXTCHAR
     if (ch == ' ') {
-        width = 0;
         goto NXTCHAR;
     }
 

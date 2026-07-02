@@ -51,6 +51,3 @@ void _outtextxyc(char* string /*AR2*/, int x /*R2*/, int y /*R3*/, int color /*R
 }
 ```
 
-
-<!-- ## Validation
-1. Add a mame_validate_word("var_name", &var, 0xORIGINAL_ADDRESS) macro call after each store/set in C code. Dont worry that we havent defined the macro implementation yet. -->

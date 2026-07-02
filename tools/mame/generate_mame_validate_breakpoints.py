@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# mame crusnusa -window -sound none -debug -log -skip_gameinfo -debugscript tools/mame/output/mame_validate_word_breakpoints.txt
+# mame crusnusa -window -sound none -debug -log -skip_gameinfo -debugscript tools/mame/output/mame_validate_breakpoints.txt
 from __future__ import annotations
 
 import argparse
@@ -12,14 +12,14 @@ from typing import DefaultDict, Dict, Iterable, List, Optional
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
-VALIDATE_RE = re.compile(
-    r'(?:MAME_VALIDATE_WORD|mame_validate_word)\(\s*"(?P<label>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
-)
 VALIDATE_ARG_RE = re.compile(
     r'(?:MAME_VALIDATE_ARG|mame_validate_arg)(?:_sym)?\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_ARG_FLOAT_RE = re.compile(
     r'(?:MAME_VALIDATE_ARG_FLOAT|mame_validate_arg_float)\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
+)
+VALIDATE_FUNCTION_ENTRY_RE = re.compile(
+    r'(?:MAME_VALIDATE_FUNCTION_ENTRY|mame_validate_function_entry)\(\s*\)\s*;'
 )
 VALIDATE_EXIT_RE = re.compile(r'(?:MAME_VALIDATE_EXIT|mame_validate_exit)\(\s*\)\s*;')
 VALIDATE_REGION_AT_ADDR_RE = re.compile(
@@ -31,12 +31,7 @@ VALIDATE_REG_AT_ADDR_RE = re.compile(
 VALIDATE_REG_AT_ADDR_FLOAT_RE = re.compile(
     r'(?:MAME_VALIDATE_REG_AT_ADDR_FLOAT|mame_validate_reg_at_addr_float)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
 )
-ASM_ADDR_RE = re.compile(r"^\s*//\s*asm\s+(?P<addr>[0-9A-Fa-f]{8}):")
 ADDRESS_MAP_RE = re.compile(r"^\s*[0-9A-Fa-f]{4}:([0-9A-Fa-f]{8})\s+(.+?)\s*$")
-ARRAY_DECL_RE = re.compile(
-    r"^\s*(?:extern\s+)?(?:static\s+)?(?:const\s+)?(?:[A-Za-z_][A-Za-z0-9_]*\s+)*[*\s]*(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*\[\s*(?P<size_expr>[^\]]+)\s*\]",
-    re.MULTILINE,
-)
 DEFINE_RE = re.compile(r"^\s*#define\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s+(?P<value>.+?)\s*$", re.MULTILINE)
 ENUM_VALUE_RE = re.compile(r"^\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?P<value>[^,]+)\s*,?\s*$", re.MULTILINE)
 IDENT_RE = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*\b")
@@ -121,14 +116,6 @@ def lookup_label_address(label: str, address_map: Dict[str, int]) -> Optional[in
     return folded.get(label.upper())
 
 
-def find_next_instruction_address(lines: List[str], start_index: int) -> Optional[int]:
-    for line in lines[start_index + 1 :]:
-        match = ASM_ADDR_RE.match(line)
-        if match:
-            return int(match.group("addr"), 16)
-    return None
-
-
 def find_containing_function_name(lines: List[str], start_index: int) -> Optional[str]:
     for index in range(start_index, -1, -1):
         match = FUNCTION_DEF_RE.match(lines[index])
@@ -139,6 +126,20 @@ def find_containing_function_name(lines: List[str], start_index: int) -> Optiona
 
 def strip_cpp_line_comment(line: str) -> str:
     return line.split("//", 1)[0]
+
+
+def lookup_containing_function_instruction_address(
+    lines: List[str], index: int, path: pathlib.Path, address_map: Dict[str, int], macro_name: str
+) -> tuple[str, int]:
+    function_name = find_containing_function_name(lines, index)
+    if function_name is None:
+        raise ValueError(f"{path}:{index + 1}: could not find containing function for {macro_name}")
+
+    instruction_address = lookup_label_address(function_name, address_map)
+    if instruction_address is None:
+        raise ValueError(f"{path}:{index + 1}: function {function_name!r} not found in address map")
+
+    return function_name, instruction_address
 
 
 def parse_constant_defines(source_root: pathlib.Path) -> Dict[str, int]:
@@ -192,78 +193,21 @@ def evaluate_constant_expr(expr: str, defines: Dict[str, int]) -> Optional[int]:
         return None
 
 
-def infer_array_lengths(source_root: pathlib.Path) -> Dict[str, int]:
-    defines = parse_constant_defines(source_root)
-    array_lengths: Dict[str, int] = {}
-    for path in sorted(source_root.rglob("*.[ch]")):
-        text = path.read_text(errors="ignore")
-        for match in ARRAY_DECL_RE.finditer(text):
-            var_name = match.group("var")
-            size = evaluate_constant_expr(match.group("size_expr"), defines)
-            if size is None:
-                continue
-            array_lengths[var_name] = max(array_lengths.get(var_name, 0), size)
-    return array_lengths
-
-
 def collect_breakpoints_for_file(
-    path: pathlib.Path, address_map: Dict[str, int], array_lengths: Dict[str, int], defines: Optional[Dict[str, int]] = None
+    path: pathlib.Path, address_map: Dict[str, int], defines: Optional[Dict[str, int]] = None
 ) -> List[BreakpointEntry]:
     lines = path.read_text(errors="ignore").splitlines()
     entries: List[BreakpointEntry] = []
-    seen_arrays: set[tuple[int, str]] = set()
     resolved_defines = defines or {}
-
-    for index, line in enumerate(lines):
-        match = VALIDATE_RE.search(strip_cpp_line_comment(line))
-        if not match:
-            continue
-
-        label = match.group("label")
-        variable_name = match.group("var")
-        instruction_address = find_next_instruction_address(lines, index)
-        if instruction_address is None:
-            raise ValueError(
-                f"{path}:{index + 1}: could not find next original instruction address after mame_validate_word"
-            )
-
-        variable_address = lookup_label_address(label, address_map)
-        if variable_address is None:
-            raise ValueError(f"{path}:{index + 1}: label {label!r} not found in address map")
-
-        array_length = array_lengths.get(variable_name)
-        if array_length is not None:
-            dedupe_key = (instruction_address, variable_name)
-            if dedupe_key in seen_arrays:
-                continue
-            seen_arrays.add(dedupe_key)
-
-        entries.append(
-            BreakpointEntry(
-                label=label,
-                variable_name=variable_name,
-                variable_address=variable_address,
-                instruction_address=instruction_address,
-                array_length=array_length,
-                source_path=path,
-                source_line=index + 1,
-            )
-        )
-
-        continue
 
     for index, line in enumerate(lines):
         match = VALIDATE_ARG_RE.search(strip_cpp_line_comment(line))
         if not match:
             continue
 
-        function_name = find_containing_function_name(lines, index)
-        if function_name is None:
-            raise ValueError(f"{path}:{index + 1}: could not find containing function for mame_validate_arg")
-
-        instruction_address = lookup_label_address(function_name, address_map)
-        if instruction_address is None:
-            raise ValueError(f"{path}:{index + 1}: function {function_name!r} not found in address map")
+        function_name, instruction_address = lookup_containing_function_instruction_address(
+            lines, index, path, address_map, "mame_validate_arg"
+        )
 
         entries.append(
             BreakpointEntry(
@@ -285,13 +229,9 @@ def collect_breakpoints_for_file(
         if not match:
             continue
 
-        function_name = find_containing_function_name(lines, index)
-        if function_name is None:
-            raise ValueError(f"{path}:{index + 1}: could not find containing function for mame_validate_arg_float")
-
-        instruction_address = lookup_label_address(function_name, address_map)
-        if instruction_address is None:
-            raise ValueError(f"{path}:{index + 1}: function {function_name!r} not found in address map")
+        function_name, instruction_address = lookup_containing_function_instruction_address(
+            lines, index, path, address_map, "mame_validate_arg_float"
+        )
 
         entries.append(
             BreakpointEntry(
@@ -309,17 +249,35 @@ def collect_breakpoints_for_file(
         )
 
     for index, line in enumerate(lines):
+        match = VALIDATE_FUNCTION_ENTRY_RE.search(strip_cpp_line_comment(line))
+        if not match:
+            continue
+
+        function_name, instruction_address = lookup_containing_function_instruction_address(
+            lines, index, path, address_map, "MAME_VALIDATE_FUNCTION_ENTRY"
+        )
+
+        entries.append(
+            BreakpointEntry(
+                label=f"function {function_name}",
+                variable_name=function_name,
+                variable_address=0,
+                instruction_address=instruction_address,
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+                command_override=f'logerror "function {function_name}\\n"',
+            )
+        )
+
+    for index, line in enumerate(lines):
         match = VALIDATE_EXIT_RE.search(strip_cpp_line_comment(line))
         if not match:
             continue
 
-        function_name = find_containing_function_name(lines, index)
-        if function_name is None:
-            raise ValueError(f"{path}:{index + 1}: could not find containing function for MAME_VALIDATE_EXIT")
-
-        instruction_address = lookup_label_address(function_name, address_map)
-        if instruction_address is None:
-            raise ValueError(f"{path}:{index + 1}: function {function_name!r} not found in address map")
+        function_name, instruction_address = lookup_containing_function_instruction_address(
+            lines, index, path, address_map, "MAME_VALIDATE_EXIT"
+        )
 
         entries.append(
             BreakpointEntry(
@@ -417,10 +375,9 @@ def collect_breakpoints_for_file(
 
 def collect_breakpoints(source_root: pathlib.Path, address_map: Dict[str, int]) -> List[BreakpointEntry]:
     defines = parse_constant_defines(source_root)
-    array_lengths = infer_array_lengths(source_root)
     entries: List[BreakpointEntry] = []
     for path in sorted(source_root.rglob("*.c")):
-        entries.extend(collect_breakpoints_for_file(path, address_map, array_lengths, defines))
+        entries.extend(collect_breakpoints_for_file(path, address_map, defines))
     return entries
 
 
@@ -451,7 +408,7 @@ def render_output(entries: Iterable[BreakpointEntry]) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate MAME debugger breakpoints for mame_validate_word call sites."
+        description="Generate MAME debugger breakpoints for MAME validation call sites."
     )
     parser.add_argument(
         "--source-root",
@@ -468,7 +425,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=pathlib.Path,
-        default=ROOT / "tools" / "mame" / "output" / "mame_validate_word_breakpoints.txt",
+        default=ROOT / "tools" / "mame" / "output" / "mame_validate_breakpoints.txt",
         help="Output debugger command file (default: %(default)s)",
     )
     return parser.parse_args()

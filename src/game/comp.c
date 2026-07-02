@@ -858,18 +858,25 @@ NOLOAD:
 
 // *----------------------------------------------------------------------------
 static void REQWAIT(PROC* p) {
-
-    switch (p->wake_state) {
-    case 0:
-        p->wake_state++;
-        SLEEP(1);
-
+    p->state++;
+    switch (p->state) {
     case 1:
-        if (DECOMP_ACTIVE != 0) {
-            p->wake_state = 0;
-            return;
-        }
-        LOAD_SECTION_REQ(p->ctx->REQWAIT.lsr);
-        DIE();
+        break;
+    case 2:
+        goto STATE_2;
     }
+
+    // asm 0000A402: 	SLEEP	1
+    SLEEP(1);
+STATE_2:
+    // asm 0000A404: 	LDI	@DECOMP_ACTIVE,R0
+    // asm 0000A405: 	BNZ	REQWAIT
+    if (DECOMP_ACTIVE) {
+        REENTER(REQWAIT);
+    }
+    // asm 0000A406: 	LDI	AR4,AR2
+    // asm 0000A407: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(p->ctx->REQWAIT.lsr);
+    // asm 0000A408: 	DIE
+    DIE();
 }

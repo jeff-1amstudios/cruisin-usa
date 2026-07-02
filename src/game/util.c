@@ -1184,7 +1184,7 @@ void SCAN_OBJECTS(PROC* p) {
     // asm 00009069: 	B	SCAN_OBJECTS
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SCAN_OBJECTS", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

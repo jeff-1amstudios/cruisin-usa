@@ -74,4 +74,10 @@ void PRC_SLEEP(PROC* p, int ticks);
         return;         \
     }
 
+#define REENTER(fn)   \
+    {                 \
+        p->state = 0; \
+        fn(p);        \
+    }
+
 #endif /* MPROC_H */

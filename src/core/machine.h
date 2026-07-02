@@ -66,22 +66,5 @@ void crusn_machine_set_screen_pages(crusn_machine* machine, int display_page_ind
 void crusn_machine_clear_screen_page(crusn_machine* machine, int page_index);
 
 void crusn_yield_display_interrupt(void);
-int crusn_machine_drawrect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
-int crusn_machine_draw_fpga(
-    int x1,
-    int y1,
-    int x2,
-    int y2,
-    int x3,
-    int y3,
-    int x4,
-    int y4,
-    int uv0,
-    int uv1,
-    int uv2,
-    int uv3,
-    int texture_base,
-    int palette_base,
-    int control);
 
 #endif
