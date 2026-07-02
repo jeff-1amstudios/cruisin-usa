@@ -44,7 +44,8 @@ static void DRONE_DANI_PROC(void);
  *	AR5	CAR BLOCK
  *
  */
-void DELTA_OINIT(void) {
+void DELTA_OINIT(void)
+{
     // asm 0000AE6A: 	LDI	*+AR7(DELTA_MODEL),R0
     // asm 0000AE6B: 	CALL	_CARV0			;RETURNS BLOCK PTR IN AR0
     // asm 0000AE6C: 	LDI	AR4,AR2
@@ -114,7 +115,8 @@ NODYNAX1:
  *	AR4	CAR OBJECT
  *
  */
-static void DDYNA_INIT(void) {
+static void DDYNA_INIT(void)
+{
     // asm 0000AE9A: 	PUSH	R1
     // asm 0000AE9B: 	PUSH	R2
     // asm 0000AE9C: 	PUSH	R6
@@ -212,7 +214,8 @@ VANIX:
  *
  */
 
-static void DRONE_DANI_PROC(void) {
+static void DRONE_DANI_PROC(void)
+{
     // asm 0000AED8: 	LDI	*+AR4(OCARBLK),AR5
     // asm 0000AED9: 	LDF	0,R6	 		;INIT SPIN RADIANS
     // asm 0000AEDA: 	STF	R6,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS

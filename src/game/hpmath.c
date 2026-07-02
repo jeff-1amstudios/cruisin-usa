@@ -21,7 +21,8 @@ static float CONST[7];
 * FUNCTION DEF : _HPsin
 ******************************************************
 */
-void _HPsin(void) {
+void _HPsin(void)
+{
     // asm 0000B04A: 	PUSH	R4
     // *
     // * R2	assigned to parameter x
@@ -71,7 +72,8 @@ LL3:
     UNIMPL();
 }
 
-static void EPI0_1(void) {
+static void EPI0_1(void)
+{
     // asm 0000B070: 	POP	R4
     // asm 0000B071: 	RETS
     // ******************************************************
@@ -81,7 +83,8 @@ static void EPI0_1(void) {
     UNIMPL();
 }
 
-void _HPcos(void) {
+void _HPcos(void)
+{
     // asm 0000B072: 	PUSH	R4
     // *
     // * R2	assigned to variable  xn
@@ -131,7 +134,8 @@ void _HPcos(void) {
     UNIMPL();
 }
 
-static void EPI0_2(void) {
+static void EPI0_2(void)
+{
     // asm 0000B099: 	POP	R4
     // asm 0000B09A: 	RETS
     // ******************************************************

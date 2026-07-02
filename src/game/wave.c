@@ -1,6 +1,7 @@
 #include "wave.h"
 
 #include "../core/machine.h"
+#include "../core/validator.h"
 #include "c30.h"
 #include "cmos.h"
 #include "comm.h"
@@ -347,6 +348,7 @@ static void HIGH_SCORE(void) {
     CREATE(DISPLAY_HIGH_SCORES, UTIL_C, ctx);
     ctx = malloc(sizeof(PROC_CONTEXT));
     CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
+    // MAME_VALIDATE_EXIT();
 }
 
 static void MIDSPIN(void) {
@@ -409,7 +411,13 @@ static void RACELEG(void) {
 static void THANKS(void) {
     // asm 000093BB: 	CALL	LOAD_HIGH_SCORE
     // asm 000093BC: 	BU	HIGH_SCORE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CREDITS", 0, 0);
+    // 	;these are not cycled, they are special routines
+CREDITS:
+    // asm 000093BD: 	CREATE	VANITY,UTIL_C
+    // asm 000093C0: 	LDI	-1,R0
+    // asm 000093C1: 	STI	R0,@_ATTR_MODE
+    // asm 000093C2: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "THANKS", 0, 0);
     UNIMPL();
 }
 

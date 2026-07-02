@@ -153,7 +153,8 @@ int SPINTEMP;
  *	CC = NO COLLISION FOUND
  *
  */
-void CAMSCAN(void) {
+void CAMSCAN(void)
+{
     // asm 00001F8B: 	LDPI	@DRIVE_LIST,R0
     // asm 00001F8C: 	CALL	CAMSCANS
     // asm 00001F8D: 	RETSC
@@ -166,7 +167,8 @@ void CAMSCAN(void) {
     UNIMPL();
 }
 
-static void CAMSCANS(void) {
+static void CAMSCANS(void)
+{
     // asm 00001F8F: 	BZ	CMSX  			;NULL LIST DUDES
     // asm 00001F90: 	LDI	R0,AR2
     // asm 00001F91: 	LDI	OPOSZ,IR1
@@ -221,7 +223,8 @@ CMSX:
  *RETURNS
  *	CARRY SET IF ROAD FOUND BELOW OBJECT
  */
-void OBJSCAN(void) {
+void OBJSCAN(void)
+{
     // asm 00001FB0: 	PUSH	AR4
     // asm 00001FB1: 	ADDI	OPOSX,AR4
     // asm 00001FB2: 	CALL	CAMSCAN	      		;AR4=XYZ, RET R0=HT, CS=ROAD,CC=NO ROAD
@@ -239,7 +242,8 @@ int BOXSCRAM[50];
  *CHECK ROAD OBJECTS ON ROAD LIST IN RANGE
  *
  */
-void BOXSCAN(void) {
+void BOXSCAN(void)
+{
     // asm 00001FB6: 	PUSH	AR5
     // asm 00001FB7: 	LDPI	@BOXSCRAMI,AR2
     // asm 00001FB8: 	LDI	AR4,AR0			;GET OBJ IN AR0 FOR GETBOX
@@ -277,7 +281,8 @@ BS3X:
     UNIMPL();
 }
 
-static void BOXSCSUB(void) {
+static void BOXSCSUB(void)
+{
     // asm 00001FCF: 	BZ	BSCX  			;NULL LIST DUDES
     // asm 00001FD0: 	LDI	R0,AR2
     // asm 00001FD1: 	LDI	OPOSZ,IR1
@@ -344,7 +349,8 @@ BSCX:
  *	NEED TO ADD Y RADIANS AFTERWARD
  *
  */
-void CAR_ROAD_COLL(void) {
+void CAR_ROAD_COLL(void)
+{
     // asm 00001FF6: 	PUSH	R4
     // asm 00001FF7: 	PUSH	R5
     // asm 00001FF8: 	PUSH	AR3
@@ -452,7 +458,8 @@ PC2:
  *	R3	CAR BLOCK
  *
  */
-void ROADSCAN(void) {
+void ROADSCAN(void)
+{
     // asm 00002041: 	LDI	R3,AR6			;SAVE CARVCT RAM POINTER
     // *PROJECT CAR SUSPENSION POINTS
     // asm 00002042: 	LDI	AR4,R2
@@ -547,7 +554,8 @@ PC3X:
  *	AR4	CAR OBJECT
  *
  */
-static void RDSCNSUB(void) {
+static void RDSCNSUB(void)
+{
     // asm 00002074:       	BZD	RDSCNX		  	;NULL LIST
     // asm 00002075: 	LDI	R0,AR2
     // asm 00002076: 	LDI	OPOSZ,IR1
@@ -647,7 +655,8 @@ RDSCNX:
  *		CARRY SET IF ROAD PIECE COLLISION
  *
  */
-void _coll_road(void) {
+void _coll_road(void)
+{
     // asm 000020B4: 	LDI	AR4,R2		;GET POINT INTO R2
     // asm 000020B5: 	CALL	_obj_coll
     // asm 000020B6: 	BNC	CRX		;NO COLLISION BAIL OUT WITH CARRY CLEAR
@@ -699,7 +708,8 @@ CRX:
  *AR6=CARVCT RAM AREA
  *
  */
-static void GETNMAT(void) {
+static void GETNMAT(void)
+{
     // 	;*GENERATE A (UNIT) NORMAL FOR THE PLANE
     // asm 000020D4: 	LDPI	@VLI,AR2		;rotate for universe etc.
     // asm 000020D5: 	LDPI	@TNORMI,AR0
@@ -785,7 +795,8 @@ static void GETNMAT(void) {
  *	R0,R1,R2,R3
  *
  */
-void _obj_coll(void) {
+void _obj_coll(void)
+{
     // asm 000020FF: 	PUSH	R4
     // asm 00002100: 	PUSH	R5
     // asm 00002101: 	PUSH	AR1
@@ -894,7 +905,8 @@ EOTV:
  *TRASHES
  *	R0-R2
  */
-void _makbox(void) {
+void _makbox(void)
+{
     // asm 00002185: 	PUSH	R3
     // asm 00002186: 	PUSH	R4
     // asm 00002187: 	PUSH	R5
@@ -1057,7 +1069,8 @@ void ATTR_COLLISION(void) {
  *PLAYER COLLIDE WITH DEBRIS
  *
  */
-static void PLYRDEBRIS(void) {
+static void PLYRDEBRIS(void)
+{
     // asm 000021E9: 	LDPI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000021EA: 	LDPI	@ROAD_DEBRISI,AR1
     // asm 000021EB: 	B	COLPOINT
@@ -1069,7 +1082,8 @@ static void PLYRDEBRIS(void) {
     UNIMPL();
 }
 
-static void PLYRSIGN(void) {
+static void PLYRSIGN(void)
+{
     // asm 000021EC: 	LDPI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000021ED: 	LDPI	@SIGN_LISTI,AR1
     // asm 000021EE: 	B	COLPOINT
@@ -1081,7 +1095,8 @@ static void PLYRSIGN(void) {
     UNIMPL();
 }
 
-static void DRONDEBRIS(void) {
+static void DRONDEBRIS(void)
+{
     // asm 000021EF: 	LDPI	@ROAD_DEBRISI,AR1
     // asm 000021F0: 	B	DRONEPT
     // *
@@ -1092,7 +1107,8 @@ static void DRONDEBRIS(void) {
     UNIMPL();
 }
 
-static void DRONSIGN(void) {
+static void DRONSIGN(void)
+{
     // asm 000021F1: 	LDPI	@SIGN_LISTI,AR1
 DRONEPT:
     // asm 000021F2: 	LDPI	@CAR_LIST,R0	 	;GET LIST AND CHECK NULL
@@ -1102,7 +1118,8 @@ DRONEPT:
     UNIMPL();
 }
 
-static void DRONEPTL(void) {
+static void DRONEPTL(void)
+{
     // asm 000021F5: 	LDI	*+AR0(OID),R0
     // asm 000021F6: 	CMPI	DRONE_C|HELICOPTER,R0
     // asm 000021F7: 	BEQ	DRONEPT1
@@ -1141,7 +1158,8 @@ DRONEPT1:
  *
  *
  */
-static void COLPOINT(void) {
+static void COLPOINT(void)
+{
     // asm 00002207: 	BD	CARSCL0			;GET FIRST GUY
     // asm 00002208: 	LDF	*+AR0(OPOSX),R2		;GET X COORD
     // asm 00002209: 	LDF	*+AR0(OPOSZ),R3		;GET Z COORD
@@ -1184,7 +1202,8 @@ CARSCL:
  *	AR1	POINTS TO SIGN/POLE OBJECT
  *
  */
-void COLSGCK(void) {
+void COLSGCK(void)
+{
     // asm 0000221F: 	PUSH	AR0
     // asm 00002220: 	PUSH	AR1
     // asm 00002221: 	LDPI	@BLOWLISTI,AR2
@@ -1246,7 +1265,8 @@ CSGLNEQ:
     UNIMPL();
 }
 
-static void HARDCOL(void) {
+static void HARDCOL(void)
+{
     // asm 00002243: 	LDI	*+AR1(OID),R0
     // asm 00002244: 	AND	CLASS_M|TYPE_M|SUBTYPE_M,R0
     // asm 00002245: 	CMPI	TSIGN_C|TSC_IMMOBILE|TSC_V_PALM,R0
@@ -1468,7 +1488,8 @@ FLYCOLL1:
  *	AR1	POINTS TO SIGN/POLE OBJECT
  *	AR5	CARBLOCK
  */
-static void RUNOVER(void) {
+static void RUNOVER(void)
+{
     // asm 000022FA: 	LDF	*+AR5(CARVROT),R2
     // asm 000022FB: 	LDI	AR1,AR2		 	;FORM OMATRIX POINTER
     // asm 000022FC: 	ADDI	OMATRIX,AR2		;STUFF
@@ -1545,7 +1566,8 @@ static int SAGETAB[] = {
  *
  */
 
-static void FLYCOLLP(void) {
+static void FLYCOLLP(void)
+{
     // asm 00002334: 	LDF	0.2,R0
     // asm 00002335: 	CALL	SFRAND
     // asm 00002336: 	LDF	R0,R2
@@ -1659,7 +1681,8 @@ NOT_ROADKILL:
  *KILL OFFSCREEN ROAD DEBRIS
  *
  */
-static void DEBSCAN(void) {
+static void DEBSCAN(void)
+{
     // asm 0000238C: 	LDI	@ROAD_DEBRIS,R0
     // asm 0000238D: 	B	DEBSCL1
 DEBSCL0:
@@ -1692,7 +1715,8 @@ DEBSCL1:
  *
  */
 
-static void SIGNFALL(void) {
+static void SIGNFALL(void)
+{
     // asm 0000239C: 	LDF	0,R6
 SIGNFALP:
     // asm 0000239D: 	ADDF	R7,R6 			;ACCUMULATE RADIANS
@@ -1728,7 +1752,8 @@ SIGNFALP0:
  *
  */
 
-static void TREESHAK(void) {
+static void TREESHAK(void)
+{
     // *SHAKE IT FORWARD
     // asm 000023B0: 	LDF	R7,R2
     // asm 000023B1: 	LDPI	@MATRIXAI,AR2  		;GET TEMP STORE
@@ -1778,7 +1803,8 @@ TREESHKL:
  *	AR4	OBJECT SIGN POINTER
  *	R0 IS TRASHED
  */
-static void FREESIGN(void) {
+static void FREESIGN(void)
+{
     // asm 000023D1: 	PUSH	AR1
     // ;	LDP	@SIGN_LISTI
     // asm 000023D2: 	LDPI	@SIGN_LISTI,R0
@@ -1817,7 +1843,8 @@ SFREELP:
  *	AR4	OBJECT SIGN POINTER
  *	R0 IS TRASHED
  */
-static void ADDSIGN(void) {
+static void ADDSIGN(void)
+{
     // asm 000023E5: 	LDPI	@SIGN_LIST,R0
     // asm 000023E6: 	STI	AR4,@SIGN_LIST
     // asm 000023E7: 	STI	R0,*+AR4(OLINK3)
@@ -1847,7 +1874,8 @@ static void ADDSIGN(void) {
 /* asm: 	 */
 #define CBUSI cbus_ROM
 
-static void FLYCAR(void) {
+static void FLYCAR(void)
+{
     // asm 000023EF: 	PUSH	AR0
     // asm 000023F0: 	PUSH	AR1
     // asm 000023F1: 	PUSH	AR3
@@ -2025,7 +2053,8 @@ static int DETHTAB2[] = {
  *PDATA+6=MATRIX
  *
  */
-void FLYCARP(void) {
+void FLYCARP(void)
+{
     // *GET YOUR RADIANS
     // asm 00002478: 	LDF	0.2,R0
     // asm 00002479: 	CALL	SFRAND
@@ -2376,7 +2405,8 @@ DEADLP:
     UNIMPL();
 }
 
-void SEND_FLY_KILL(void) {
+void SEND_FLY_KILL(void)
+{
     // asm 00002587: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00002588: 	LDI	CB_FLY_KILL,R1
     // asm 00002589: 	STI	R1,*AR2
@@ -2392,7 +2422,8 @@ void SEND_FLY_KILL(void) {
     UNIMPL();
 }
 
-void DECODE_FLY_KILL(void) {
+void DECODE_FLY_KILL(void)
+{
     // asm 0000258F: 	CALL	FIND_DRONE  		;GET DRONE OBJ IN AR0
     // asm 00002590: 	BNZ	DRKX
     // asm 00002591: 	LDI	*+AR0(OPLINK),AR7
@@ -2413,7 +2444,8 @@ DRKX:
  *R4=  STATE PARAMETER
  *
  */
-static void SEND_FLY_XSFER(void) {
+static void SEND_FLY_XSFER(void)
+{
     // asm 00002597: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00002598: 	LDI	CB_FLY_XSFER,R1
     // asm 00002599: 	STI	R1,*AR2++		;SEND HEADER
@@ -2445,7 +2477,8 @@ SENDP:
     UNIMPL();
 }
 
-void DECODE_FLY_XSFER(void) {
+void DECODE_FLY_XSFER(void)
+{
     // asm 000025AD: 	CALL	FIND_DRONE  		;GET DRONE OBJ IN AR0
     // asm 000025AE: 	BNZ	DFXX
     // asm 000025AF: 	LSH	R2,*AR2++,R4		;GET STATE
@@ -2506,7 +2539,8 @@ DFXX:
  *R2,R3,AR2 TRASHED
  *
  */
-void GETFLYMAT(void) {
+void GETFLYMAT(void)
+{
     // asm 000025D6: 	LDF	*+AR7(PDATA+5),R2
     // asm 000025D7: 	LDI	AR4,AR2
     // asm 000025D8: 	ADDI	OMATRIX,AR2
@@ -2561,7 +2595,8 @@ void GETFLYMAT(void) {
  *	AR1	ADDRESS OF LIST HEADER
  *
  */
-void COLSCAN(void) {
+void COLSCAN(void)
+{
     // asm 000025E8: 	BD	COLSCL0
     // asm 000025E9: 	LDI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000025EA: 	LDI	@CAR_LISTI,AR1
@@ -2621,7 +2656,8 @@ COLSCL:
  *	AR1	ADDRESS OF LIST HEADER
  *
  */
-static void CLDSCAN(void) {
+static void CLDSCAN(void)
+{
     // asm 0000260E: 	LDPI	@CAR_LIST,R0	 	;GET LIST AND CHECK NULL
     // asm 0000260F: 	BNZD	CLDSCL0
     // asm 00002610: 	LDI	R0,AR0
@@ -2685,7 +2721,8 @@ CLDSCL1:
  *FIND REPULSION AXIS
  *
  */
-static void REPELL(void) {
+static void REPELL(void)
+{
     // asm 00002633: 	LDPI	@VECTORAI,AR2		;COMPUTE REPULSION VECTOR
     // asm 00002634: 	LDF	*+AR0(OPOSX),R0
     // asm 00002635: 	SUBF	*+AR1(OPOSX),R0
@@ -2720,7 +2757,8 @@ static void REPELL(void) {
  *	*-AR3(1)	COLLISION PT
  *
  */
-static void COLDISP(void) {
+static void COLDISP(void)
+{
     // *SET COLLISION BITS
     // asm 00002645: 	LDI	*+AR0(OCARBLK),AR4
     // asm 00002646: 	LDI	*+AR1(OCARBLK),AR5
@@ -3057,7 +3095,8 @@ ZZZ1:
 int PLYRBEHIND;
 
 // *
-static void SPINROT(void) {
+static void SPINROT(void)
+{
     // asm 00002727: 	LDI	0,R2
     // asm 00002728: 	STI	R2,@PLYRBEHIND		;PLAYER HIT FROM BEHIND FLAG
     // asm 00002729: 	PUSHF	R0
@@ -3196,7 +3235,8 @@ PLBIG:
     UNIMPL();
 }
 
-static void BEHINDCK(void) {
+static void BEHINDCK(void)
+{
     // asm 0000278F: 	PUSHF	R0
     // asm 00002790: 	PUSHF	R3
     // asm 00002791: 	PUSH	AR2
@@ -3384,7 +3424,8 @@ SPINXXX:
     UNIMPL();
 }
 
-static void ANGMOM(void) {
+static void ANGMOM(void)
+{
     // asm 0000281D: 	LDI	*+AR5(CAR_SPIN),R3 	;ADD IN EXISTING INERTIA
     // asm 0000281E: 	BZ	ANGM1
     // asm 0000281F: 	LDF	*+AR5(CARDROT),R3	;GET OLD MOMENTUM
@@ -3407,7 +3448,8 @@ ANGM1:
  *R2=YROT-ROADIR
  *
  */
-static void CKBOUNCE(void) {
+static void CKBOUNCE(void)
+{
     // asm 00002824: 	CALL	ROADIR			;GET DIRECTIONAL DIFFERENCE
     // asm 00002825: 	LDF	*+AR5(CARVROT),R1
     // asm 00002826: 	SUBF	R1,R0,R2
@@ -3436,7 +3478,8 @@ CKBNCX:
     UNIMPL();
 }
 
-static void COLSND(void) {
+static void COLSND(void)
+{
     // asm 00002835: 	PUSHF	R0
     // asm 00002836: 	PUSH	AR0
     // asm 00002837: 	PUSH	AR1
@@ -3516,7 +3559,8 @@ static int SCTAB[] = {
     // BLOWLIST+120: OBJ1 PLANE EQUATIONS
 };
 
-void COLCHK(void) {
+void COLCHK(void)
+{
     // asm 00002863:  	PUSH	R2
     // asm 00002864: 	PUSH	R3
     // asm 00002865: 	PUSH	R5
@@ -3621,7 +3665,8 @@ GOTCOL:
  *TRASHES R0-R5
  *
  */
-static void GETBOX(void) {
+static void GETBOX(void)
+{
     // asm 000028A8: 	LDF	1.0,R0		;XMINUS MULT FACTOR
     // asm 000028A9: 	LDF	1.0,R1		;YMINUS MULT FACTOR
     // asm 000028AA: 	LDF	1.0,R2		;ZMINUS MULT FACTOR
@@ -3633,7 +3678,8 @@ static void GETBOX(void) {
     UNIMPL();
 }
 
-static void GETBOX0(void) {
+static void GETBOX0(void)
+{
     // asm 000028AE: 	PUSH	AR4
     // asm 000028AF: 	PUSH	AR5
     // asm 000028B0: 	PUSH	AR6

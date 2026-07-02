@@ -493,7 +493,8 @@ static int TESTING_CHIPS;
 /* asm: CHIPMC	RTU31,130,120,40,18,"U31",ISROM		;CMOS CHIP */
 static int CMOS_CHIP;
 
-void TEST_STATIC_CHIPS(void) {
+void TEST_STATIC_CHIPS(void)
+{
     // asm 00006300: 	DINT
     // asm 00006306: 	SETDP
     // asm 00006307: 	CALL	COPY_RAMTEST
@@ -531,7 +532,8 @@ void TEST_STATIC_CHIPS(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void GET_AR4_DIGITS(void) {
+static void GET_AR4_DIGITS(void)
+{
     // asm 00006322: 	LDI	*+AR4(CTT_U),AR0
     // asm 00006323: 	LDI	*AR0,AR0
     // asm 00006324: 	LDI	AR0,R1
@@ -564,7 +566,8 @@ NZERO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void BLINK_AND_CONTINUE(void) {
+static void BLINK_AND_CONTINUE(void)
+{
     // asm 00006338: 	PUSH	RS
     // asm 00006339: 	PUSH	RE
     // asm 0000633A: 	PUSH	RC
@@ -589,7 +592,8 @@ static void BLINK_AND_CONTINUE(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void IS_STATIC_ERROR(void) {
+static void IS_STATIC_ERROR(void)
+{
     // asm 00006349: 	CALL	GET_AR4_DIGITS
 ELOOP:
     // asm 0000634A: 	CALL	BLINK_DIGITS
@@ -612,7 +616,8 @@ ELOOP:
  *
  *
  */
-static void LLED_ON(void) {
+static void LLED_ON(void)
+{
     // asm 0000634C: 	LDI	@SYSCNTL,R0		;if the system hangs and the LED
     // asm 0000634D: 	ANDN	LED_OFF,R0		;is on we were in this routine
     // asm 0000634E: 	STI	R0,@SYSCNTL		;when it happened
@@ -624,7 +629,8 @@ static void LLED_ON(void) {
     UNIMPL();
 }
 
-static void LLED_OFF(void) {
+static void LLED_OFF(void)
+{
     // asm 00006353: 	LDI	@SYSCNTL,R0
     // asm 00006354: 	OR	LED_OFF,R0
     // asm 00006355: 	STI	R0,@SYSCNTL
@@ -636,7 +642,8 @@ static void LLED_OFF(void) {
     UNIMPL();
 }
 
-static void BLINK_DIGITS(void) {
+static void BLINK_DIGITS(void)
+{
     // asm 0000635A: 	PUSH	R0
     // asm 0000635B: 	PUSH	R1
     // asm 0000635C: 	PUSH	R2
@@ -711,7 +718,8 @@ BDL3X:
 
 // *----------------------------------------------------------------------------
 
-void TEST_CHIPS(void) {
+void TEST_CHIPS(void)
+{
     // asm 000063AC: 	PUSH	DP
     // asm 000063AD: 	LDP	@9E0000h
     // asm 000063AE: 	CLRI	R0			;set background to 0
@@ -803,7 +811,8 @@ TEST_CHIPSX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void PLOT_OUTLINE_OF_CHIPS(void) {
+static void PLOT_OUTLINE_OF_CHIPS(void)
+{
     // asm 000063FD: 	LDI	@CHIPTEST_TABLEI,AR4
 POOCL:
     // asm 000063FE: 	LDI	*+AR4(CTT_MINX),AR2
@@ -838,7 +847,8 @@ POOCL:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CMOS_CHIP_DISPLAY(void) {
+static void CMOS_CHIP_DISPLAY(void)
+{
     // asm 00006417: 	LDL	CMOS_CHIP,AR4
     // asm 00006418: 	LDI	*+AR4(CTT_MINX),AR2
     // asm 00006419: 	LDI	*+AR4(CTT_MINY),R2
@@ -869,7 +879,8 @@ static void CMOS_CHIP_DISPLAY(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CMOS_CHIP_TEST(void) {
+static void CMOS_CHIP_TEST(void)
+{
     // asm 0000642E: 	PUSH	AR4
     // asm 0000642F: 	PUSH	R0
     // asm 00006430: 	PUSH	R1
@@ -969,7 +980,8 @@ KKJJ:
 /* asm: BASICS_RAM	fbss	BASICS_RAM,10 */
 int BASICS_RAM[10];
 
-static void TEST_BASICS(void) {
+static void TEST_BASICS(void)
+{
     // asm 00006478: 	LDL	BASICS_RAM,AR5
     // asm 00006479: 	LDI	5,AR6
     // asm 0000647A: 	LDL	CHIPTEST_TABLE,AR4
@@ -1114,7 +1126,8 @@ static void TEST_BASICS(void) {
  *
  *
  */
-static void RAMTEST(void) {
+static void RAMTEST(void)
+{
     // asm 00006527: 	LDL	BLOWLIST,R0
     // asm 00006528: 	BU	R0
     // 		;THIS IS THE ACTUAL ROUTINE, BUT IT MUST
@@ -1125,7 +1138,8 @@ static void RAMTEST(void) {
     UNIMPL();
 }
 
-static void RAMTEST_REAL(void) {
+static void RAMTEST_REAL(void)
+{
     // asm 00006529: 	PUSH	DP
     // asm 0000652A: 	PUSH	R6
     // asm 0000652B: 	PUSH	AR6
@@ -1206,7 +1220,8 @@ ENDING:
     UNIMPL();
 }
 
-static void RAMERR(void) {
+static void RAMERR(void)
+{
     // asm 00006571: 	LDI	1,R0		;IS BAD RAM
     // asm 00006572: 	BU	ENDING
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1214,7 +1229,8 @@ static void RAMERR(void) {
     UNIMPL();
 }
 
-static void RAMTEST_END(void) {
+static void RAMTEST_END(void)
+{
     /* no executable asm lines detected */
     UNIMPL();
 }
@@ -1222,7 +1238,8 @@ static void RAMTEST_END(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void COPY_RAMTEST(void) {
+static void COPY_RAMTEST(void)
+{
     // asm 00006573: 	LDL	RAMTEST_END,AR0
     // asm 00006574: 	LDL	RAMTEST_REAL,AR1
     // asm 00006575: 	SUBI	AR1,AR0			;GET LENGTH
@@ -1257,7 +1274,8 @@ BBCP:
  *	R0	PART CHECKSUM
  *
  */
-static void GENERATE_CHECKSUM(void) {
+static void GENERATE_CHECKSUM(void)
+{
     // asm 0000657D: 	PUSH	R1
     // asm 0000657E: 	PUSH	RC
     // asm 0000657F: 	PUSH	AR2

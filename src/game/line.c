@@ -26,7 +26,8 @@ void _rectangle(int x1, int y1, int x2, int y2, int color) {
     _line(x2, y1, x2, y2, color);
 }
 
-static void EPI0_1(void) {
+static void EPI0_1(void)
+{
     // asm 0000AC4D: 	LDI	*-FP(1),R1
     // asm 0000AC4E: 	LDI	*FP,FP
     // asm 0000AC4F: 	BD	R1
@@ -72,7 +73,8 @@ LINE_LOOP:
     goto LINE_LOOP;
 }
 
-static void EPI0_2(void) {
+static void EPI0_2(void)
+{
     // asm 0000ACF2: 	LDI	*-FP(1),R1
     // asm 0000ACF3: 	LDI	*FP,FP
     // asm 0000ACF4: 	POPF	R7

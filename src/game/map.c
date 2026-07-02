@@ -93,14 +93,16 @@ static float M4STDI = M2STD;
  *
  *
  */
-void UNFOLDMAP(void) {
+void UNFOLDMAP(void)
+{
     // asm 00005E0B: 	CALL	MAPPAL_ILLUM_INIT
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "UNFOLDMAP", 0, 0);
     UNIMPL();
 }
 
-void UNFOLDMAP_NOPAL(void) {
+void UNFOLDMAP_NOPAL(void)
+{
     // asm 00005E0C: 	LDIL	O_3DROT,R6
     // asm 00005E0F: 	OR	O_NOUROT|O_NOUNIV,R6
     // asm 00005E10: 	LDI	@EPALL,AR2
@@ -367,7 +369,8 @@ void UNFOLDMAP_NOPAL(void) {
  *
  *
  */
-void FOLDMAP(void) {
+void FOLDMAP(void)
+{
     // asm 00005EEB: 	SONDFX	WIPE4
     // *ELP CHANGE
     // asm 00005EED: 	CALL	MAPPAL_ILLUM_INIT
@@ -613,7 +616,8 @@ void FOLDMAP(void) {
 
 // *----------------------------------------------------------------------------
 
-void CLEAR_MAP_PALS(void) {
+void CLEAR_MAP_PALS(void)
+{
     // asm 00005FCC: 	LDI	@EPALL,AR2
     // asm 00005FCD: 	CALL	PAL_FIND_RAW
 #if DEBUG
@@ -639,7 +643,8 @@ IBOIBO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void MAPPAL_ILLUM_INIT(void) {
+static void MAPPAL_ILLUM_INIT(void)
+{
     // asm 00005FD7: 	LDI	@EPALR,AR0	;LOAD PALETTES AT
     // asm 00005FD8: 	LDI	@EPALL,AR1	;THE SAME TIME
     // asm 00005FD9: 	LDI	map1_p,AR3
@@ -692,7 +697,8 @@ L342:
 /* asm: FORMULA1	.float	0.318309886 */
 static float FORMULA1 = 0.318309886f;
 
-static void MAP_ILLUM_COMPUTE(void) {
+static void MAP_ILLUM_COMPUTE(void)
+{
     // asm 00005FED: 	LDF	*+AR7(MAP1T),R0
     // asm 00005FEE: 	ADDF	HALFPI,R0
     // asm 00005FEF: 	MPYF	@FORMULA1,R0
@@ -721,7 +727,8 @@ int MAPPAL13;
 /* asm: MAPPAL24	.bss	MAPPAL24,1 */
 int MAPPAL24;
 
-static void MAPPAL_ILLUM(void) {
+static void MAPPAL_ILLUM(void)
+{
     // asm 00005FFD: 	PUSH	AR0
     // asm 00005FFE: 	PUSH	AR1
     // asm 00005FFF: 	PUSH	AR2
@@ -960,7 +967,8 @@ int tmp_buffer[2];
  *	AR2	STRING SPACE
  *
  */
-void TIME2STR(void) {
+void TIME2STR(void)
+{
     // asm 000060C4: 	PUSH	R0
     // asm 000060C5: 	PUSH	R1
     // asm 000060C6: 	PUSH	R2
@@ -1021,7 +1029,8 @@ static float SECFACT = 0.018181818f;
 /* asm: 	 */
 static float HUNFACT = 1.818181818f;
 
-void CVTTIME(void) {
+void CVTTIME(void)
+{
     // asm 000060E8: 	PUSH	R3
     // asm 000060E9: 	PUSHF	R3
     // asm 000060EA: 	FLOAT	R0,R3
@@ -1088,7 +1097,8 @@ void CVTTIME(void) {
 int THIS_MACHINE_AHEAD;
 
 // *----------------------------------------------------------------------------
-void RADAR_PLOT(void) {
+void RADAR_PLOT(void)
+{
     // asm 0000610A: 	PUSH	AR4
     // asm 0000610B: 	LDI	@PLYCAR,AR4
     // 	;background

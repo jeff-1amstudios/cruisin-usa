@@ -39,7 +39,8 @@ static const char POINT[] = ".";
 /* asm: ftoa_tmp	.bss	ftoa_tmp,2 */
 int ftoa_tmp[2];
 
-void _ftoa(void) {
+void _ftoa(void)
+{
     // asm 0000A75E: 	PUSH	R0
     // asm 0000A75F: 	PUSH	R2
     // asm 0000A760: 	PUSH	AR2
@@ -85,7 +86,8 @@ void _ftoa(void) {
  *
  *INTEGER TO ASCIZ WITH LEADING ZERO
  */
-void _itoaLZ(void) {
+void _itoaLZ(void)
+{
     // asm 0000A779: 	PUSH	R0			;this entry includes a leading zero
     // asm 0000A77A: 	PUSH	R1			;if the value is 9 or less
     // asm 0000A77B: 	PUSH	R2			;
@@ -111,7 +113,8 @@ void _itoaLZ(void) {
     UNIMPL();
 }
 
-void _itoa(void) {
+void _itoa(void)
+{
     // asm 0000A78D: 	PUSH	R0
     // asm 0000A78E: 	PUSH	R1
     // asm 0000A78F: 	PUSH	R2
@@ -213,7 +216,8 @@ ISZERO:
  *
  *
  */
-void HEX2ASC(void) {
+void HEX2ASC(void)
+{
     // asm 0000A7D7: 	PUSH	R0
     // asm 0000A7D8: 	PUSH	R1
     // asm 0000A7D9: 	PUSH	R2

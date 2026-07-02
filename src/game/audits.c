@@ -53,7 +53,8 @@ extern const char EXPIRED[];
  *	R0	VALUE
  *
  */
-static void COMPUTE_FREEGAMES_PRCNT(void) {
+static void COMPUTE_FREEGAMES_PRCNT(void)
+{
     // asm 00001419: 	READAUD	AUD_GAMES_CONTINUES
     // asm 0000141B: 	LDI	R0,R1
     // asm 0000141C: 	READAUD	AUD_GAMES_START
@@ -79,7 +80,8 @@ static void COMPUTE_FREEGAMES_PRCNT(void) {
  *	R0	VALUE
  *
  */
-static void COMPUTE_GAMETIME(void) {
+static void COMPUTE_GAMETIME(void)
+{
     // asm 00001426: 	READAUD	AUD_GAMES_CONTINUES
     // asm 00001428: 	LDI	R0,R1
     // asm 00001429: 	READAUD	AUD_GAMES_START
@@ -188,7 +190,8 @@ static int AUDIT_LIST;
 /* asm: OLDDIP	.bss	OLDDIP,1 */
 int OLDDIP;
 
-void AUDIT_DISPLAY(void) {
+void AUDIT_DISPLAY(void)
+{
     // asm 000014D0: 	CALL	SETUP_DIAG_SCREEN
     // asm 000014D1: 	CLRI	AR4			;page index
     // asm 000014D2: 	LDI	DEFAULT_COLOR,RC

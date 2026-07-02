@@ -149,7 +149,8 @@ static float DDACT_DIST = 15000.0f;
 static float ATTR_DDACT_DIST = 45000.0f;
 
 // *----------------------------------------------------------------------------
-void FIND_STARTING_VALUES(void) {
+void FIND_STARTING_VALUES(void)
+{
     // asm 00003F80: 	LDI	@TYCO_TRKI,AR1
     // asm 00003F81: 	LDI	@STARTSECTION,R0	;first time dont do the crime
     // asm 00003F82: 	CMPI	0,R0
@@ -197,7 +198,8 @@ NOWARP:
  *
  *
  */
-void BGD_INIT(void) {
+void BGD_INIT(void)
+{
     // asm 00003F9E: 	CLRI	R0
     // asm 00003F9F: 	STI	R0,@DGROUP_COUNT
     // asm 00003FA0: 	STI	R0,@DYNALIST_END
@@ -312,7 +314,8 @@ NOO2d:
 
 // *----------------------------------------------------------------------------
 
-static void BGD_WATCHER(void) {
+static void BGD_WATCHER(void)
+{
     // asm 00003FF4: 	LDI	@_MODE,R0
     // asm 00003FF5: 	AND	MMODE,R0
     // asm 00003FF6: 	CMPI	MGAME,R0
@@ -517,7 +520,8 @@ int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
 int SECRADY;
 
-static void BGD_ACTIVATE_TYCOGROUP(void) {
+static void BGD_ACTIVATE_TYCOGROUP(void)
+{
     // asm 0000406B: 	PUSH	R4
     // asm 0000406C: 	PUSH	R5
     // asm 0000406D: 	PUSH	AR0
@@ -913,7 +917,8 @@ NO_NEWLOAD:
  *
  *
  */
-static void ADD_TO_NEWLIST(void) {
+static void ADD_TO_NEWLIST(void)
+{
     // asm 000041A8: 	LDI	@NEW_GROUPI,AR1
     // asm 000041A9: 	LDI	*AR1,R0
     // asm 000041AA: 	BNZ	REGADD
@@ -952,7 +957,8 @@ ISZERO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FIND_SUBLIST_START_END(void) {
+static void FIND_SUBLIST_START_END(void)
+{
     // asm 000041C3: 	PUSH	R1
     // asm 000041C4: 	PUSH	AR0
     // asm 000041C5: 	LDI	@NEW_GROUP,AR0
@@ -999,7 +1005,8 @@ FSDN:
  *
  *
  */
-static void APPEND_NEWLIST(void) {
+static void APPEND_NEWLIST(void)
+{
     // asm 000041CF: 	LDI	@DYNALIST_END,R0
     // asm 000041D0: 	BZ	SHINY_NEWLIST
     // asm 000041D1: 	LDI	R0,AR0
@@ -1015,7 +1022,8 @@ static void APPEND_NEWLIST(void) {
     UNIMPL();
 }
 
-static void SHINY_NEWLIST(void) {
+static void SHINY_NEWLIST(void)
+{
     // asm 000041DA: 	LDI	@SUBLIST_END,R0
     // asm 000041DB: 	STPI	R0,@DYNALIST_END
     // asm 000041DC: 	LDI	@SUBLIST_BEGIN,R0	;new line, check it out...
@@ -1045,7 +1053,8 @@ static void SHINY_NEWLIST(void) {
  *
  *
  */
-static void GROUP_DELETE(void) {
+static void GROUP_DELETE(void)
+{
     // asm 000041E2: 	PUSH	R0
     // asm 000041E3: 	PUSH	R1
     // asm 000041E4: 	PUSH	AR0
@@ -1120,7 +1129,8 @@ NXTCHK:
  *
  *
  */
-void GET_XZ_DISTANCE(void) {
+void GET_XZ_DISTANCE(void)
+{
     // asm 00004215: 	PUSH	AR0
     // asm 00004216: 	PUSH	R3
     // asm 00004217: 	LDI	R2,AR0
@@ -1157,7 +1167,8 @@ void GET_XZ_DISTANCE(void) {
  *	ALL REGISTERS MUST BE SAVED
  *
  */
-static void BGD_OROUTINE(void) {
+static void BGD_OROUTINE(void)
+{
     // asm 00004223: 	PUSH	R0
     // asm 00004224: 	PUSH	R1
     // asm 00004225: 	PUSH	AR0
@@ -1186,7 +1197,8 @@ BGD_RFND:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void OVERCAR(void) {
+static void OVERCAR(void)
+{
     // asm 00004236: 	PUSH	R0
     // asm 00004237: 	PUSH	R2
     // asm 00004238: 	PUSH	AR2
@@ -1224,7 +1236,8 @@ static int OVERCARLIST[] = {
     dcbus_ROM,
 };
 
-static void CARFORWARD(void) {
+static void CARFORWARD(void)
+{
     // asm 00004253: 	RANDN	50
     // asm 00004255: 	CMPI	25,R0
     // asm 00004256: 	BLT	CARSUP
@@ -1304,7 +1317,8 @@ CARFORWARDLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void ROAD_DEBRIS_CREATE_55GAL(void) {
+static void ROAD_DEBRIS_CREATE_55GAL(void)
+{
     // asm 0000429D: 	PUSH	R0
     // asm 0000429E: 	CALL	ADD_RDDEBRIS
     // asm 0000429F: 	LDI	0731h,R0
@@ -1315,7 +1329,8 @@ static void ROAD_DEBRIS_CREATE_55GAL(void) {
     UNIMPL();
 }
 
-static void ROAD_DEBRIS_CREATE(void) {
+static void ROAD_DEBRIS_CREATE(void)
+{
     // asm 000042A3: 	BU	ADD_RDDEBRIS
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROAD_DEBRIS_CREATE", 0, 0);
@@ -1325,7 +1340,8 @@ static void ROAD_DEBRIS_CREATE(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SMOKE_STACK(void) {
+static void SMOKE_STACK(void)
+{
     // asm 000042A4: 	PUSH	R0
     // asm 000042A5: 	PUSH	AR0
     // asm 000042A6: 	PUSH	AR2
@@ -1341,7 +1357,8 @@ static void SMOKE_STACK(void) {
     UNIMPL();
 }
 
-static void CAR_FIRE(void) {
+static void CAR_FIRE(void)
+{
     // asm 000042AD: 	PUSH	R0
     // asm 000042AE: 	PUSH	AR0
     // asm 000042AF: 	PUSH	AR2
@@ -1409,7 +1426,8 @@ static int DC_MINIFOUNTAIN_ANI[] = {
     -1,
 };
 
-static void DC_MINIFOUNTAIN(void) {
+static void DC_MINIFOUNTAIN(void)
+{
     // asm 000042D4: 	PUSH	R0
     // asm 000042D5: 	PUSH	AR0
     // asm 000042D6: 	PUSH	AR2
@@ -1438,7 +1456,8 @@ static int DC_FOUNTAIN_ANI[] = {
     -1,
 };
 
-static void DC_FOUNTAIN(void) {
+static void DC_FOUNTAIN(void)
+{
     // asm 000042E7: 	PUSH	R0
     // asm 000042E8: 	PUSH	AR0
     // asm 000042E9: 	PUSH	AR2
@@ -1471,7 +1490,8 @@ static int WATERFALL_ANI[] = {
     -1,
 };
 
-static void WATERFALL(void) {
+static void WATERFALL(void)
+{
     // asm 000042FF: 	PUSH	R0
     // asm 00004300: 	PUSH	AR0
     // asm 00004301: 	PUSH	AR2
@@ -1511,7 +1531,8 @@ FWL1A:
  *
  *
  */
-static void WATERANI_PROC(void) {
+static void WATERANI_PROC(void)
+{
     // asm 00004319: 	LDI	AR6,AR5
 WATERANI_LP:
     // asm 0000431A: 	LDI	*AR5++,R0
@@ -1538,7 +1559,8 @@ WATERANI_LP:
  *AR4=WATERFALL OBJECT
  *
  */
-static void WATERFALL_SND(void) {
+static void WATERFALL_SND(void)
+{
     // asm 00004324: 	SLEEP	1
     // asm 00004326: 	LDI	*+AR4(ODIST),R0
     // asm 00004327: 	LDFN	4.0,R1
@@ -1586,7 +1608,8 @@ WF1:
  *	R2	VOLUME (0-255)
  *
  */
-void AMBIENCE_SOUND(void) {
+void AMBIENCE_SOUND(void)
+{
     // asm 00004341: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 00004342: 	BEQ	IS_T1
     // asm 00004343: 	CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
@@ -1681,7 +1704,8 @@ static int BABE_PALIST[] = {
     bvwall_p,
 };
 
-void HUNGH_ANI(void) {
+void HUNGH_ANI(void)
+{
     // asm 00004377: 	PUSH	R0
     // asm 00004378: 	PUSH	AR0
     // asm 00004379: 	PUSH	AR2
@@ -1728,7 +1752,8 @@ HUNGH_NOPAL:
 
 // *----------------------------------------------------------------------------
 
-static void HUNGH_ANI_REENTER(void) {
+static void HUNGH_ANI_REENTER(void)
+{
     // asm 0000439F: 	PUSH	R0
     // asm 000043A0: 	PUSH	AR0
     // asm 000043A1: 	PUSH	AR2
@@ -1749,7 +1774,8 @@ static void HUNGH_ANI_REENTER(void) {
     UNIMPL();
 }
 
-static void PLACE_ON_ROAD(void) {
+static void PLACE_ON_ROAD(void)
+{
     // asm 000043AF: 	CALL	ADD_RDDEBRIS
     // asm 000043B0: 	PUSH	AR4
     // asm 000043B1: 	ADDI	OPOSX,AR4
@@ -1770,7 +1796,8 @@ PORX:
 
 // *----------------------------------------------------------------------------
 
-void RUT_ANI(void) {
+void RUT_ANI(void)
+{
     // asm 000043BC: 	PUSH	R0
     // asm 000043BD: 	PUSH	AR0
     // asm 000043BE: 	PUSH	AR2
@@ -1796,7 +1823,8 @@ DORUT_ANI:
 }
 
 // *----------------------------------------------------------------------------
-static void PLAINANI_PROC_SLOW(void) {
+static void PLAINANI_PROC_SLOW(void)
+{
     // asm 000043D0: 	LDI	AR6,AR5
 PLAINANI_LP_SLOW:
     // asm 000043D1: 	LDI	*AR5++,R0
@@ -1817,7 +1845,8 @@ PLAINANI_LP_SLOW:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FLAGWAVE_TALL(void) {
+static void FLAGWAVE_TALL(void)
+{
     // asm 000043DC: 	PUSH	R0
     // asm 000043DD: 	PUSH	AR0
     // asm 000043DE: 	PUSH	AR2
@@ -1842,7 +1871,8 @@ static void FLAGWAVE_TALL(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FLAGWAVE(void) {
+static void FLAGWAVE(void)
+{
     // asm 000043EF: 	PUSH	R0
     // asm 000043F0: 	PUSH	AR0
     // asm 000043F1: 	PUSH	AR2
@@ -1888,7 +1918,8 @@ FWL1:
  *AR6	START OF SCRIPT
  *
  */
-static void PLAINANI_PROC(void) {
+static void PLAINANI_PROC(void)
+{
     // asm 00004412: 	LDI	AR6,AR5
 PLAINANI_LP:
     // asm 00004413: 	LDI	*AR5++,R0
@@ -1922,7 +1953,8 @@ PLAINANI_LP:
 /* asm: SINGLE_SECTION_TEMPPTR	.bss	SINGLE_SECTION_TEMPPTR,1 */
 int SINGLE_SECTION_TEMPPTR;
 
-void LOAD_SINGLE_SECTION(void) {
+void LOAD_SINGLE_SECTION(void)
+{
     // asm 0000441D: 	PUSH	R4
     // asm 0000441E: 	PUSH	R5
     // asm 0000441F: 	PUSH	AR0
@@ -2123,7 +2155,8 @@ LS_ACTIVATE_X:
 */
 
 // *----------------------------------------------------------------------------
-static void OHARE_PLANE(void) {
+static void OHARE_PLANE(void)
+{
     // asm 00004451: 	PUSH	AR0
     // asm 00004452: 	PUSH	AR2
     // asm 00004453: 	PUSH	R2
@@ -2142,7 +2175,8 @@ static void OHARE_PLANE(void) {
     UNIMPL();
 }
 
-static void PLANE_FWRD(void) {
+static void PLANE_FWRD(void)
+{
     // asm 00004462: 	FLOAT	250,R7
     // asm 00004463: 	FLOAT	32000,R6
     // asm 00004464: 	MPYF	4,R6
@@ -2187,7 +2221,8 @@ PLANE_FWL:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void TRAIN_FWRD_MAKEB(void) {
+static void TRAIN_FWRD_MAKEB(void)
+{
     // asm 00004484: 	PUSH	AR0
     // asm 00004485: 	PUSH	AR2
     // asm 00004486: 	PUSH	R2
@@ -2203,7 +2238,8 @@ static void TRAIN_FWRD_MAKEB(void) {
     UNIMPL();
 }
 
-static void TRAIN_FWRD_MAKE(void) {
+static void TRAIN_FWRD_MAKE(void)
+{
     // asm 00004490: 	PUSH	AR0
     // asm 00004491: 	PUSH	AR2
     // asm 00004492: 	PUSH	R2
@@ -2222,7 +2258,8 @@ J87:
     UNIMPL();
 }
 
-static void TRAIN_FWRDB(void) {
+static void TRAIN_FWRDB(void)
+{
     // asm 0000449F: 	LDI	*+AR4(OUSR1),R0
     // asm 000044A0: 	ADDI	5,R0			;kludge to delete later than loaded
     // asm 000044A1: 	STI	R0,*+AR4(OUSR1)
@@ -2235,7 +2272,8 @@ static void TRAIN_FWRDB(void) {
     UNIMPL();
 }
 
-static void TRAIN_FWRD(void) {
+static void TRAIN_FWRD(void)
+{
     // asm 000044A6: 	FLOAT	150,R7
     // asm 000044A7: 	FLOAT	32000,R6
     // asm 000044A8: 	MPYF	3,R6
@@ -2296,7 +2334,8 @@ TRAINX:
  *
  *
  */
-void LOAD_SINGLE_SECTION_OFFSET(void) {
+void LOAD_SINGLE_SECTION_OFFSET(void)
+{
     // asm 000044CC: 	PUSH	R4
     // asm 000044CD: 	PUSH	R5
     // asm 000044CE: 	PUSH	AR0

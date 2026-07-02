@@ -433,11 +433,11 @@ DR1:
     FEED_WATCHDOG();
 
     MESSAGE1();
-    mame_validate_region_at_addr(0x00004B5E, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
+    MAME_VALIDATE_REGION_AT_ADDR(0x00004B5E, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
     crusn_yield_display_interrupt();
     MSG1();
     crusn_yield_display_interrupt();
-    mame_validate_region_at_addr(0x00004B5F, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
+    MAME_VALIDATE_REGION_AT_ADDR(0x00004B5F, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
 
     PREVX = 240;
     DELTA = 1;
@@ -478,11 +478,11 @@ DR1:
 
     HARD_SECTION_LOAD = 1;
     LOAD_SECTION_REQ(&SECshared);
-    mame_validate_region_at_addr(0x00004B8B, "_SECshared-decompressed", 0x0A00000, SECshared.dest_addr, 0x1AB00);
+    MAME_VALIDATE_REGION_AT_ADDR(0x00004B8B, "_SECshared-decompressed", 0x0A00000, SECshared.dest_addr, 0x1AB00);
 
     HARD_SECTION_LOAD = 1;
     LOAD_SECTION_REQ(&SECskys_CUSA);
-    mame_validate_region_at_addr(0x00004B8F, "SECskys_CUSA-decompressed", 0x0A1AB00, SECskys_CUSA.dest_addr, 0x30000);
+    MAME_VALIDATE_REGION_AT_ADDR(0x00004B8F, "SECskys_CUSA-decompressed", 0x0A1AB00, SECskys_CUSA.dest_addr, 0x30000);
 
     MSG2();
 
@@ -491,19 +491,19 @@ DR1:
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SECgeneral_CUSA);
-    mame_validate_region_at_addr(0x00004B95, "SECgeneral_CUSA-decompressed", 0x0A52900, SECgeneral_CUSA.dest_addr, 0x136280);
+    MAME_VALIDATE_REGION_AT_ADDR(0x00004B95, "SECgeneral_CUSA-decompressed", 0x0A52900, SECgeneral_CUSA.dest_addr, 0x136280);
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SEChead2head);
-    mame_validate_region_at_addr(0x00004B9A, "SEChead2head-decompressed", 0x0BEFA00, SEChead2head.dest_addr, 0x1000);
+    MAME_VALIDATE_REGION_AT_ADDR(0x00004B9A, "SEChead2head-decompressed", 0x0BEFA00, SEChead2head.dest_addr, 0x1000);
 
     MSG3();
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SECpress);
-    mame_validate_region_at_addr(0x00004BA0, "SECpress-decompressed", 0x0B88B80, SECpress.dest_addr, 0x1000);
+    MAME_VALIDATE_REGION_AT_ADDR(0x00004BA0, "SECpress-decompressed", 0x0B88B80, SECpress.dest_addr, 0x1000);
 
     AUDIT_WRITE(AUD_BCREDITS, 0);
 
@@ -720,8 +720,7 @@ C_WAIT:
  */
 void ENABLEGIE(void) {
     // asm 00004C44: 	RETI
-    // TRACE_EVENT(&g_crusn_machine->trace, "function", "ENABLEGIE", 0, 0);
-    // UNIMPL();
+    UNIMPL_TODO();
 }
 
 void INT0(void) {
@@ -1276,10 +1275,6 @@ static void* SWTAB[] = {
 
 // *----------------------------------------------------------------------------
 void CHECKDIAG(void) {
-    if (DIAG_ACTIVE == 0) {
-        return;
-    }
-    abort();
     // asm 00004E2C: 	LDI	@DIAG_ACTIVE,R0
     // asm 00004E2D: 	RETSZ
     // asm 00004E2E: 	BR	ENTER_DIAG
@@ -1951,7 +1946,7 @@ static void VERSION_UPDATE(void) {
     // asm 00005044: 	BR	DIAG_RETURN
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "VERSION_UPDATE", 0, 0);
-    UNIMPL_TODO();
+    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

@@ -85,7 +85,8 @@ void INIT_RDDEBRIS(void) {
  *
  *
  */
-void ADD_RDDEBRIS(void) {
+void ADD_RDDEBRIS(void)
+{
     // asm 0000AF88: 	PUSH	R0
     // asm 0000AF89: 	LDI	@ROAD_DEBRIS,R0
 #if DEBUG
@@ -118,7 +119,8 @@ void ADD_RDDEBRIS(void) {
  *	AR2	OBJECT
  *
  */
-void FREE_RDDEBRIS(void) {
+void FREE_RDDEBRIS(void)
+{
     // asm 0000AF96: 	PUSH	R0
     // asm 0000AF97: 	PUSH	AR1
     // asm 0000AF98: 	LDPI	@ROAD_DEBRISI,R0
@@ -157,7 +159,8 @@ FREEDR_X:
 static float MAXDIST = 9999999999.0f;
 
 // *
-void DEBRIS_SORT(void) {
+void DEBRIS_SORT(void)
+{
     // 	;PULL FLYING DEBRIS FROM THE LIST
     // 	;
     // asm 0000AFA5: 	BUD	DSORTNXT

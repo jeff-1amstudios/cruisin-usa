@@ -115,7 +115,8 @@ void PAL_INIT(void) {
 /* asm: PALSXFER	.bss	PALSXFER,1 */
 static int PALSXFER;
 
-void PAL_XFER(void) {
+void PAL_XFER(void)
+{
     // asm 00009EC2: 	CLRI	R7
     // asm 00009EC3: 	LDP	@PALXFER_ACTIVE
     // asm 00009EC4: 	LDI	@PALXFER_ACTIVE,R0
@@ -211,7 +212,8 @@ PALTRX:
  *
  *
  */
-void PAL_OVERWRITE(void) {
+void PAL_OVERWRITE(void)
+{
     // asm 00009EED: 	LDI	R0,AR2
     // asm 00009EEE: 	CALL	PAL_FIND
     // asm: 	SLOCKON	C,"PALL\PAL_OVERWRITE  FINDPAL FAILURE"
@@ -334,7 +336,8 @@ int PAL_FIND_RAW(const tPAL* palette_source) {
  *		(16 BIT)
  *
  */
-void PAL_DELETE_RAW(void) {
+void PAL_DELETE_RAW(void)
+{
     // asm 00009F17: 	PUSH	AR0
     // asm 00009F18: 	RS	8,AR2
     // asm 00009F19: 	LDP	@RAWLOCSI
@@ -574,7 +577,8 @@ static PALXFER* PALXFER_GET(void) {
  *	AR0	PTR TO XFER BLOCK TO FREE
  *
  */
-static void PALXFER_DEL(void) {
+static void PALXFER_DEL(void)
+{
     // asm 00009FBA: 	PUSH	R0
     // asm 00009FBB: 	PUSH	AR1
     // asm 00009FBC: 	LDI	@PALXFER_ACTIVEI,R1
@@ -611,7 +615,8 @@ PXXX:
  *	LOCKUP ON ERROR
  *
  */
-void PAL_DELETE(void) {
+void PAL_DELETE(void)
+{
     // asm 00009FCA: 	PUSH	R0
     // asm 00009FCB: 	PUSH	AR0
     // ;edbg
@@ -667,7 +672,8 @@ DELP2:
  *
  *
  */
-void PAL_DIMMER(void) {
+void PAL_DIMMER(void)
+{
     // asm 00009FE1: 	PUSH	AR0
     // asm 00009FE2: 	PUSH	AR1
     // asm 00009FE3: 	PUSH	AR2

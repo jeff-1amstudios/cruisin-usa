@@ -96,7 +96,8 @@ static int SMOKE2ANI[] = {
 #define SMOKE_PAL (PDATA + 1)
 #define SMOKE_OBJS (PDATA + 2)
 
-void SMOKE_PROC(void) {
+void SMOKE_PROC(void)
+{
     // asm 000084B8: 	LDI	@TIRE_SMOKE_COUNT,R0
     // asm 000084B9: 	CMPI	1,R0
     // asm 000084BA: 	BGE	SMOKE_DIE
@@ -203,7 +204,8 @@ SMOKE_DIE:
  *Creates a puff of smoke
  */
 
-static void CREATE_SMOKE_OBJ(void) {
+static void CREATE_SMOKE_OBJ(void)
+{
     // asm 0000850A: 	LDI	*+AR7(NUM_SMOKES),R0
     // asm 0000850B: 	CMPI	1,R0
     // asm 0000850C: 	BLT	DO_SMOKE
@@ -269,7 +271,8 @@ NO_SMOKE:
  * SCRAMBLES R0,R1
  */
 
-static void GET_OTHER_REAR(void) {
+static void GET_OTHER_REAR(void)
+{
     // asm 0000853A: 	LDI	*AR2,R0
     // asm 0000853B: 	BR	FBLOOP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -277,7 +280,8 @@ static void GET_OTHER_REAR(void) {
     UNIMPL();
 }
 
-static void GET_REAR(void) {
+static void GET_REAR(void)
+{
     // asm 0000853C: 	LDI	*+AR2(ODYNALIST),R0
     // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
 FBLOOP:
@@ -303,7 +307,8 @@ FOUND_REAR:
  *	R5 = ZOFFSET
  */
 
-static void INIT_SMOKE(void) {
+static void INIT_SMOKE(void)
+{
     // asm 00008544: 	PUSH	AR1
     // asm 00008545: 	LDI	*+AR7(NUM_SMOKES),R0
     // asm 00008546: 	ADDI	SMOKE_OBJS,R0
@@ -362,7 +367,8 @@ INSM1:
  *
  *
  */
-void SORT_SMOKE(void) {
+void SORT_SMOKE(void)
+{
     // asm 00008574: 	LDI	PLYR_C,AR2
     // asm 00008575: 	CALL	OBJ_FIND_FIRST
     // asm 00008576: 	BNC	SORT_SMOKEX
@@ -439,7 +445,8 @@ static int SPARKANI[] = {
 #define NUM_SPARKS (PDATA + 6)
 #define SPARK_OBJS (PDATA + 7)
 
-void INIT_SPARK(void) {
+void INIT_SPARK(void)
+{
     // asm 00008593: 	CALL	PUSHALL
     // asm 00008594: 	LDI	@_MODE,R0
     // asm 00008595: 	AND	MMODE,R0
@@ -525,7 +532,8 @@ INIT_SPARKX:
  *	R7  = FL, NUMBER OF FRAMES SINCE LAST SPARK
  */
 
-static void REPLICATE_SPARK(void) {
+static void REPLICATE_SPARK(void)
+{
     // asm 000085DC: 	LDI	*+AR7(NUM_SPARKS),R0
     // asm 000085DD: 	CMPI	4,R0
     // asm 000085DE: 	BGE	REPSPARKX
@@ -605,7 +613,8 @@ REPSPARKX:
  *INPUT	PDATA = SETUP see equates at begining of file
  *Maintains several spark animations
  */
-void SPARK_PROC(void) {
+void SPARK_PROC(void)
+{
     // asm 0000861C: 	LDF	0,R7
     // asm 0000861D: 	LDI	*+AR7(CAR_BLOCK),AR5
 SSANI_LOOP:
@@ -705,7 +714,8 @@ NO_OBJ:
  *INPUT	AR0 points to proc memory
  *Creates several spark animations
  */
-static void INIT_COLLA_OBJS(void) {
+static void INIT_COLLA_OBJS(void)
+{
     // asm 0000866E: 	LDI	0,R5
 ICO_LOOP:
     // asm 0000866F: 	LDI	@SPARKANII,AR0
@@ -779,7 +789,8 @@ INIT_SPARK_KILL:
  * Creates sparks at position where the wall was hit
  */
 
-void WALL_SPARK(void) {
+void WALL_SPARK(void)
+{
     // asm 000086A7: 	CALL	PUSHALL
     // asm 000086A8: 	LDI	@_MODE,R0
     // asm 000086A9: 	AND	MMODE,R0
@@ -863,7 +874,8 @@ WALL_SPARKX:
  *
  */
 
-void IMPACT_SPARK(void) {
+void IMPACT_SPARK(void)
+{
     // asm 000086E4: 	CALL	PUSHALL
     // asm 000086E5: 	LDI	@_MODE,R0
     // asm 000086E6: 	AND	MMODE,R0
@@ -914,7 +926,8 @@ IMPACT_SPARKX:
  *
  */
 
-void ROAD_IMPACT_SPARK(void) {
+void ROAD_IMPACT_SPARK(void)
+{
     // asm 00008707: 	RETS
     // ;	CALL	PUSHALL
     // ;
@@ -954,7 +967,8 @@ void ROAD_IMPACT_SPARK(void) {
  *INPUT	AR4 = CARS OBJECT
  *	AR5 = CARBLK
  */
-void SKID_SPARK(void) {
+void SKID_SPARK(void)
+{
     // asm 00008708: 	RETS
     // ;	CALL	PUSHALL
     // ;
@@ -993,7 +1007,8 @@ void SKID_SPARK(void) {
  *		C=1 if too many
  *		C=0 if ok
  */
-static void TOO_MANY_SPARKS(void) {
+static void TOO_MANY_SPARKS(void)
+{
     // asm 00008709: 	LDI	0,R2
     // asm 0000870A: 	LDI	@PACTIVEI,R0
     // asm 0000870B: 	BZ	TMSXCC			;NULL LIST?
@@ -1021,7 +1036,8 @@ TMSXCC:
     UNIMPL();
 }
 
-void OBJ_MOVE(void) {
+void OBJ_MOVE(void)
+{
     // asm 0000871C: 	LDI	AR2,AR1
     // asm 0000871D: 	ADDI	OVELX,AR2
     // asm 0000871E: 	LDI	AR1,R2

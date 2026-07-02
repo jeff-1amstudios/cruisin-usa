@@ -213,7 +213,8 @@ int MOTION_RCV_TIKS;
  *
  *
  */
-void INITIALIZATION_MOTION_CHECK(void) {
+void INITIALIZATION_MOTION_CHECK(void)
+{
     // asm 00004541: 	CALL	CLEAR_LATCH_ERROR
     // asm 00004542: 	LDI	1,R2
     // asm 00004543: 	SETAUD	ADJ_MOTION_PRESENT
@@ -538,7 +539,8 @@ static uintptr_t MOTOFF_PROG[] = {
     0,
 };
 
-void SEND_MOTOR_OFF(void) {
+void SEND_MOTOR_OFF(void)
+{
     // asm 0000461C:         CALL    RESET_GALIL
     // asm 0000461D:         CALL    WAIT_ACK_REAL
     // 	;bong sound
@@ -555,7 +557,8 @@ void SEND_MOTOR_OFF(void) {
     UNIMPL();
 }
 
-static void SEND_MOTOR_OFF_NO_RESET(void) {
+static void SEND_MOTOR_OFF_NO_RESET(void)
+{
     // asm 00004626: 	LDL	MOTOROFF0,AR2
     // asm 00004627: 	CALL	SEND_CMD
     // asm 00004628: 	CALL    WAIT_ACK
@@ -591,7 +594,8 @@ MOTOFF_DONE:
     UNIMPL();
 }
 
-static void INIT_MOTION_ERROROUT(void) {
+static void INIT_MOTION_ERROROUT(void)
+{
     // asm 00004655: 	CALL    SEND_MOTOR_OFF_NO_RESET
     // asm 00004656: 	CLRI	R2
     // asm 00004657: 	SETAUD	ADJ_MOTION_PRESENT
@@ -697,7 +701,8 @@ static const char bbd[] = "MOTION BURNIN";
  *WAIT 500
  *
  */
-static void WAIT500(void) {
+static void WAIT500(void)
+{
     // ;	RPTS	490
     // asm 0000469A: 	RPTS	100
     // asm 0000469B: 	NOP
@@ -721,7 +726,8 @@ WT500X:
  *RET NE IF MOTION DIPSWITCH OFF
  *
  */
-void CHECK_MOTION_DIP(void) {
+void CHECK_MOTION_DIP(void)
+{
     // asm 000046A4: 	PUSH	AR2
     // asm 000046A5: 	CLRI	AR2
     // asm 000046A6: 	LDP	@DIPSW
@@ -740,7 +746,8 @@ void CHECK_MOTION_DIP(void) {
     UNIMPL();
 }
 
-void CHECK_MOTION_PRESENT(void) {
+void CHECK_MOTION_PRESENT(void)
+{
     // asm 000046AE: 	READAUD	ADJ_MOTION_PRESENT
     // asm 000046B0: 	CMPI	1,R0
     // asm 000046B1:  	RETS
@@ -748,7 +755,8 @@ void CHECK_MOTION_PRESENT(void) {
     UNIMPL();
 }
 
-void DIAG_MOTION_TESTZ(void) {
+void DIAG_MOTION_TESTZ(void)
+{
     // asm 000046B2: 	LDI	1,IR1
     // asm 000046B3: 	BU	MOTION_BURNIN_J
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -756,7 +764,8 @@ void DIAG_MOTION_TESTZ(void) {
     UNIMPL();
 }
 
-void DIAG_MOTION_TESTX(void) {
+void DIAG_MOTION_TESTX(void)
+{
     // asm 000046B4: 	LDI	2,IR1
     // asm 000046B5: 	BU	MOTION_BURNIN_J
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -764,7 +773,8 @@ void DIAG_MOTION_TESTX(void) {
     UNIMPL();
 }
 
-void DIAG_MOTION_TESTY(void) {
+void DIAG_MOTION_TESTY(void)
+{
     // asm 000046B6: 	LDI	4,IR1
     // asm 000046B7: 	BU	MOTION_BURNIN_J
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -772,7 +782,8 @@ void DIAG_MOTION_TESTY(void) {
     UNIMPL();
 }
 
-void DIAG_MOTION_BURNIN(void) {
+void DIAG_MOTION_BURNIN(void)
+{
     // asm 000046B8: 	LDI	7,IR1
 MOTION_BURNIN_J:
     // asm 000046B9: 	CALL	CHECK_MOTION_DIP
@@ -902,7 +913,8 @@ JJ7:
  *		Z=FRONT	   0=GROUND, 50000=FULL HEIGHT
  *
  */
-void PLMOTION(void) {
+void PLMOTION(void)
+{
     // asm 0000473B: 	CALL	CHECK_MOTION_DIP
     // asm 0000473C: 	RETSNZ			;RETURN IF NON MOVING
     // asm 0000473D: 	LDI	@MOTION_STOP_HIT,R0
@@ -1158,7 +1170,8 @@ NO_MOTION_ERRORS:
     UNIMPL();
 }
 
-static void MOTION_SCALE_ENTER(void) {
+static void MOTION_SCALE_ENTER(void)
+{
     // 	;NOW SCALE INTO THE RANGE USEABLE
     // 	;BY OR MOTION SYSTEM
     // 	;
@@ -1251,7 +1264,8 @@ N78:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void LEVEL_THE_MOTION(void) {
+void LEVEL_THE_MOTION(void)
+{
     // asm 00004845: 	CALL	CHECK_MOTION_DIP
     // asm 00004846: 	RETSNZ			;RETURN IF NON MOVING
     // asm 00004847: 	CALL	CHECK_MOTION_PRESENT
@@ -1443,7 +1457,8 @@ static uintptr_t THEPROGL[] = {
 };
 
 // *----------------------------------------------------------------------------
-static void DOWNLOAD_PROGRAM(void) {
+static void DOWNLOAD_PROGRAM(void)
+{
 IBO654:
     // asm 000048D5: 	LDI	*AR4++,AR2
     // asm 000048D6: 	CMPI	0,AR2
@@ -1499,7 +1514,8 @@ DNF:
  *
  *
  */
-void SEND_CMD(void) {
+void SEND_CMD(void)
+{
     // asm 000048E3: 	PUSH	R0
     // asm 000048E4: 	PUSH	R1
     // asm 000048E5: 	PUSH	R2
@@ -1560,7 +1576,8 @@ KKKII:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RESET_GALIL(void) {
+void RESET_GALIL(void)
+{
     // asm 0000491C: 	DINT
     // asm 00004922:         LDIL    SOUND,AR3
     // asm 00004925:         LDI     0FF0Ch,R0
@@ -1603,7 +1620,8 @@ void RESET_GALIL(void) {
 
 // *----------------------------------------------------------------------------
 
-void ABORT_RESET_GALIL(void) {
+void ABORT_RESET_GALIL(void)
+{
     // asm 00004947: 	DINT
     // asm 0000494D:         LDIL    SOUND,AR3
     // 	;
@@ -1637,7 +1655,8 @@ void ABORT_RESET_GALIL(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void MOTION_DLPROG(void) {
+void MOTION_DLPROG(void)
+{
     // asm 00004965: 	CALL	CHECK_MOTION_DIP
     // asm 00004966: 	RETSNZ			;RETURN IF NON MOVING
     // asm 00004967: 	CALL	CHECK_MOTION_PRESENT
@@ -1658,7 +1677,8 @@ void MOTION_DLPROG(void) {
 // *----------------------------------------------------------------------------
 
 // *MOTION NO DETECTED
-static void GALIL_ERROR(void) {
+static void GALIL_ERROR(void)
+{
     // ;	.globl	MOTION_SAFETY_SWITCHES_DIAG
     // ;	CALL	MOTION_SAFETY_SWITCHES_DIAG
     // ;	BU	ENTER_DIAG
@@ -1687,7 +1707,8 @@ static void GALIL_ERROR(void) {
     UNIMPL();
 }
 
-static void WAITMSEC(void) {
+static void WAITMSEC(void)
+{
     // asm 000049A2: 	MPYI	5000,R0
 WTMLP:
     // asm 000049A3: 	SUBI	1,R0
@@ -1712,7 +1733,8 @@ WTMLP:
 /* asm: CME_MASK	.word	0FF80h */
 static int CME_MASK = 0x0FF80;
 
-static void CHECK_MOTION_ERROR(void) {
+static void CHECK_MOTION_ERROR(void)
+{
     // asm 000049A7: 	PUSH	R0
     // asm 000049A8: 	PUSH	AR0
     // asm 000049A9: 	CLRI	AR0
@@ -1737,7 +1759,8 @@ CME_NO_MOTION_ERRORS:
 
 // *----------------------------------------------------------------------------
 
-void CLEAR_LATCH_ERROR(void) {
+void CLEAR_LATCH_ERROR(void)
+{
     // asm 000049B8: 	DINT
     // asm 000049BE: 	CLRI	R0
     // asm 000049BF: 	STI	R0,@LATCHED_ERROR
@@ -1750,7 +1773,8 @@ void CLEAR_LATCH_ERROR(void) {
 /* asm: LATCHED_ERROR	.bss	LATCHED_ERROR,1 */
 int LATCHED_ERROR;
 
-void LATCH_ERROR(void) {
+void LATCH_ERROR(void)
+{
     // asm 000049C2: 	CALL	CHECK_MOTION_DIP
     // asm 000049C3: 	RETSNZ			;RETURN IF NON MOVING
     // asm 000049C4: 	CALL	CHECK_MOTION_ERROR
@@ -1770,7 +1794,8 @@ void LATCH_ERROR(void) {
  *RET CS IF GALIL READY W/ CHAR
  *
  */
-static void G_READY(void) {
+static void G_READY(void)
+{
     // asm 000049C9:         LDIL    SOUND,AR3
     // asm 000049CC:         LDI     0FF0Ah,R0
     // asm 000049CD:         LDI     0F70ah,R1
@@ -1801,7 +1826,8 @@ static void G_READY(void) {
     UNIMPL();
 }
 
-static void G_CHAR(void) {
+static void G_CHAR(void)
+{
     // asm 000049DF: 	CALL	G_READY
     // asm 000049E0: 	RETSNC			;RETURN IF NOTHING
     // asm 000049E1: 	CALL	G_READY
@@ -1835,7 +1861,8 @@ static void G_CHAR(void) {
     UNIMPL();
 }
 
-static void G_STRING(void) {
+static void G_STRING(void)
+{
 GS0:
     // asm 000049FB: 	CALL	G_CHAR	   		;CHARACTER READY?
     // asm 000049FC: 	BNC	GSX			;NO...
@@ -1940,7 +1967,8 @@ int GALIL_STATUS_Z;
  *GET HEX STRING
  *
  */
-static void G_HEX(void) {
+static void G_HEX(void)
+{
     // asm 00004A3F: 	CALL	G_CHAR
     // asm 00004A40: 	BNC	GHX			;NO...
     // asm 00004A41: 	CMPI	'$',R1
@@ -1972,7 +2000,8 @@ GHX:
     UNIMPL();
 }
 
-static void ASCIIHEX(void) {
+static void ASCIIHEX(void)
+{
     // asm 00004A52: 	CMPI	47H,R1
     // asm 00004A53: 	BGE	ASCERR
     // asm 00004A54: 	SUBI	30H,R1
@@ -1995,7 +2024,8 @@ ASCERR:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void WAIT_ACK(void) {
+void WAIT_ACK(void)
+{
     // asm 00004A5F: 	DINT
     // asm 00004A65: 	LDI	1000,R6		;EXCESS CHARACTER TIMEOUT
 WAIT_ACK_LOOP:
@@ -2018,7 +2048,8 @@ EXITL2:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void NO_RESPONSE(void) {
+static void NO_RESPONSE(void)
+{
     // asm 00004A71: 	EINT
     // asm 00004A72: 	LDI	0,R2
     // asm 00004A73: 	SETAUD	ADJ_MOTION_PRESENT
@@ -2030,7 +2061,8 @@ static void NO_RESPONSE(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void WAIT_ACK_REAL(void) {
+static void WAIT_ACK_REAL(void)
+{
     // asm 00004A76: 	LDI	10000,R6	;NO RESPONSE TIMEOUT
 WAR0:
     // asm 00004A77: 	CALL	G_READY
@@ -2060,7 +2092,8 @@ EXITL2A:
  *
  *
  */
-static void UPPER_LIMIT_ERROR(void) {
+static void UPPER_LIMIT_ERROR(void)
+{
     // ;
     // ;	CALL	RESET_GALIL
     // ;       CALL    WAIT_ACK_REAL
@@ -2105,7 +2138,8 @@ ULL3:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void LOWER_LIMIT_ERROR(void) {
+static void LOWER_LIMIT_ERROR(void)
+{
     // ;
     // ;	CALL	RESET_GALIL
     // ;        CALL    WAIT_ACK_REAL

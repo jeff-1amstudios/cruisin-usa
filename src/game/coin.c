@@ -104,7 +104,8 @@ char CUSTOM_COINSTR[10];
  *----------------------------------------------------------------------------
  *THESE ROUTINES MUST PRESERVE R3
  */
-void COIN1(void) {
+void COIN1(void)
+{
     // asm 0000733F: 	SOND1	COININ
     // asm 00007341: 	INCAUD	AUD_COIN1
     // asm 00007343: 	CALL	SEND_COINDROP
@@ -122,7 +123,8 @@ void COIN1(void) {
     UNIMPL();
 }
 
-void COIN2(void) {
+void COIN2(void)
+{
     // asm 0000734C: 	SOND1	COININ
     // asm 0000734E: 	INCAUD	AUD_COIN2
     // asm 00007350: 	CALL	SEND_COINDROP
@@ -155,7 +157,8 @@ JAJA5:
     UNIMPL();
 }
 
-void COIN3(void) {
+void COIN3(void)
+{
     // asm 00007363: 	SOND1	COININ
     // asm 00007365: 	INCAUD	AUD_COIN2
     // asm 00007367: 	CALL	GET_COIN3_COUNTER
@@ -171,7 +174,8 @@ void COIN3(void) {
     UNIMPL();
 }
 
-void COIN4(void) {
+void COIN4(void)
+{
     // asm 0000736F: 	SOND1	COININ
     // asm 00007371: 	INCAUD	AUD_COIN4
     // asm 00007373: 	CALL	GET_COIN4_COUNTER
@@ -187,7 +191,8 @@ void COIN4(void) {
     UNIMPL();
 }
 
-void SERV_COIN(void) {
+void SERV_COIN(void)
+{
     // asm 0000737B: 	SOND1	COININ
     // asm 0000737D: 	INCAUD	AUD_SERVICE_CREDITS
     // asm 0000737F: 	READAUD	AUD_CREDITS
@@ -288,7 +293,8 @@ USE_STANDARD:
     return COIN_TABLE[ADJUSTMENT_READ(ADJ_COINMODE) & 0x7F];
 }
 
-static void GET_THIS_COIN(void) {
+static void GET_THIS_COIN(void)
+{
     // asm 000073D4: 	AND	07Fh,AR0
     // asm 000073D5: 	MPYI	COIN_ENTRY_SIZE,AR0
     // asm 000073D6: 	ADDI	@COIN_TABLEI,AR0
@@ -301,7 +307,8 @@ GETCOINX:
     UNIMPL();
 }
 
-static void GET_THIS_COINTXT(void) {
+static void GET_THIS_COINTXT(void)
+{
     // asm 000073DB: 	CALL	GET_THIS_COIN
     // asm 000073DC: 	ADDI	3,AR0		;NOTE AR0 now points to the COIN TABLE ENTRY WHERE THE MESSAGE RESIDES
     // asm 000073DD: 	RETS
@@ -335,7 +342,8 @@ char** GETCOINTXT(void) {
  */
 
 // *----------------------------------------------------------------------------
-static void GET_COIN1(void) {
+static void GET_COIN1(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -353,7 +361,8 @@ static void GET_COIN1(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_COIN2(void) {
+static void GET_COIN2(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -372,7 +381,8 @@ static void GET_COIN2(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_COIN3(void) {
+static void GET_COIN3(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -391,7 +401,8 @@ static void GET_COIN3(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_COIN4(void) {
+static void GET_COIN4(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -410,7 +421,8 @@ static void GET_COIN4(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_UNITS_PER_CREDIT(void) {
+static void GET_UNITS_PER_CREDIT(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -428,7 +440,8 @@ static void GET_UNITS_PER_CREDIT(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_UNITS_FOR_BONUS(void) {
+static void GET_UNITS_FOR_BONUS(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -447,7 +460,8 @@ static void GET_UNITS_FOR_BONUS(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_MIN_UNITS(void) {
+static void GET_MIN_UNITS(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -482,7 +496,8 @@ static int GET_CREDITS_TO_START(void) {
     return GETCOIN()->credits_to_start;
 }
 
-static void GET_CREDITS_TO_CONTINUE(void) {
+static void GET_CREDITS_TO_CONTINUE(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -500,7 +515,8 @@ static void GET_CREDITS_TO_CONTINUE(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_SHOW_PARTIAL(void) {
+static void GET_SHOW_PARTIAL(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -519,7 +535,8 @@ static void GET_SHOW_PARTIAL(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_COIN1_COUNTER(void) {
+static void GET_COIN1_COUNTER(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	CALL	GETCOIN
@@ -533,7 +550,8 @@ static void GET_COIN1_COUNTER(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_COIN2_COUNTER(void) {
+static void GET_COIN2_COUNTER(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	CALL	GETCOIN
@@ -548,7 +566,8 @@ static void GET_COIN2_COUNTER(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_COIN3_COUNTER(void) {
+static void GET_COIN3_COUNTER(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	CALL	GETCOIN
@@ -563,7 +582,8 @@ static void GET_COIN3_COUNTER(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void GET_COIN4_COUNTER(void) {
+static void GET_COIN4_COUNTER(void)
+{
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	CALL	GETCOIN
@@ -585,7 +605,8 @@ static void GET_COIN4_COUNTER(void) {
  *	R2= COINMODE NUMBER
  */
 
-void GETCOIN_DEFAULT(void) {
+void GETCOIN_DEFAULT(void)
+{
     // asm 000073E2: 	PUSH	AR2
     // asm 000073E3: 	CLRI	AR2
     // asm 000073E4: 	LDP	@DIPSW
@@ -622,7 +643,8 @@ INVBLP:
     UNIMPL();
 }
 
-static void SET_COINAGE_ADJ(void) {
+static void SET_COINAGE_ADJ(void)
+{
     // asm 00007401: 	CALL	PUSHALL		;Take no chances
     // asm 00007402: 	CALL	GET_COIN1
     // asm 00007403: 	SETADJ	ADJ_COIN1_UNITS
@@ -665,7 +687,8 @@ static void SET_COINAGE_ADJ(void) {
 }
 
 // *----------------------------------------------------------------------------
-void INIT_CUSTOM_COIN(void) {
+void INIT_CUSTOM_COIN(void)
+{
     // asm 00007434: 	LDI	3*8,R5
     // asm 00007435: 	LDI	@CUSTOM_COINTABI,AR3
     // asm 00007436: 	LDI	ADJ_COIN4_UNITS,AR2
@@ -691,10 +714,12 @@ void INIT_CUSTOM_COIN(void) {
     // asm 0000744A: 	CALL	INICC		;Set SLOT SETTINGS coin1,coin2,coin3,coin4
     // asm 0000744B: ICCX
     // asm 0000744B: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_CUSTOM_COIN", 0, 0);
     UNIMPL_TODO();
 }
 
-static void INICC(void) {
+static void INICC(void)
+{
     // asm 0000744C: 	LDI	0,R6
 INICC_LP:
     // asm 0000744D: 	PUSH	AR2
@@ -736,7 +761,8 @@ static int SCS;
 static const char MSG_NULL[] = "";
 // *----------------------------------------------------------------------------
 
-static void FONT18RED(tTEXT* t) {
+static void FONT18RED(tTEXT* t)
+{
     // asm 00007477: 	LDL	font18_white,AR2
     // asm 00007478: 	CALL	PAL_FIND_RAW
     // asm 00007479: 	STI	R0,*+AR0(TEXT_PAL)
@@ -964,7 +990,8 @@ FLASH_INSERTCOINSX:
  * This routine FLASHES THE PRESS START MESSAGE
  *
  */
-static void FLASH_START(void) {
+static void FLASH_START(void)
+{
     // asm 000074E2: 	LDI	BUT_START,R0
     // asm 000074E3: 	STI	R0,@BUTTON_STATUS
     // asm 000074E4: 	LDI	@ICF,R0
@@ -1115,7 +1142,8 @@ GCHX:
     return height;
 }
 
-static void WHITE10FNT(void) {
+static void WHITE10FNT(void)
+{
     // asm 00007536: 	LDL	osg10fnt_white,AR2
     // asm 00007537: 	CALL	PAL_FIND_RAW
     // asm 00007538: 	STI	R0,*+AR0(TEXT_PAL)
@@ -1133,7 +1161,8 @@ static void WHITE10FNT(void) {
  *
  */
 
-static void PRINT_CREDITS(void) {
+static void PRINT_CREDITS(void)
+{
     // asm 0000753B: 	CLRI	R7
     // asm 0000753C: 	STI	R7,@CREDITBUFFER	;STRING BUFFER
     // asm 0000753D: 	CALL	GET_SHOW_PARTIAL
@@ -1198,7 +1227,8 @@ NO_PCREDITS:
  *Flash the messages N CREDTIS TO START/N CREDITS TO CONTINUE MESSAGE
  */
 
-static void FLASH_TO_START(void) {
+static void FLASH_TO_START(void)
+{
     // asm 0000756F: 	LDI	@ICF,R0
     // asm 00007570: 	BGT	NO_TOSTART
     // asm 00007571: 	SUBI	@NFRAMES,R0
@@ -1235,7 +1265,8 @@ FLASH_TOSTARTX:
 }
 
 // *----------------------------------------------------------------------------
-static void TOSTART_STRING(void) {
+static void TOSTART_STRING(void)
+{
     // asm 0000758F: 	CLRI	R7
     // asm 00007590: 	STI	R7,@TOSTARTBUFFER	;STRING BUFFER
     // asm 00007591: 	CALL	GET_CREDITS_TO_START
@@ -1264,7 +1295,8 @@ static void TOSTART_STRING(void) {
 }
 
 // *----------------------------------------------------------------------------
-static void TOCONT_STRING(void) {
+static void TOCONT_STRING(void)
+{
     // asm 000075A6: 	CLRI	R7
     // asm 000075A7: 	STI	R7,@TOSTARTBUFFER	;STRING BUFFER
     // asm 000075A8: 	CALL	GET_CREDITS_TO_CONTINUE
@@ -1304,7 +1336,8 @@ int VOLUME_ACTIVE;
 int VOLUME_COUNT[4];
 static const char VOLUME_TXT[] = "VOLUME";
 
-void VOLUME_DISPLAY(void) {
+void VOLUME_DISPLAY(void)
+{
     // asm 000075BF: 	LDI	@VOLUME_ACTIVE,R0
     // asm 000075C0: 	RETSZ
     // asm 000075C1: 	DEC	R0
@@ -1345,7 +1378,8 @@ void VOLUME_DISPLAY(void) {
  *
  *
  */
-void INSERT_MORE_COINS(void) {
+void INSERT_MORE_COINS(void)
+{
     // asm 000075DA: 	PUSH	R4
     // asm 000075DB: 	READADJ	ADJ_FREE_PLAY
     // asm 000075DD: 	CMPI	1,R0
@@ -1375,7 +1409,8 @@ INSERT_COINSXM:
 }
 
 // *----------------------------------------------------------------------------
-static void FLASH_INSERTCOINSM(void) {
+static void FLASH_INSERTCOINSM(void)
+{
     // asm 000075F7: 	LDI	@ICF,R0
     // asm 000075F8: 	BGT	NO_INSERTCOINSM
     // asm 000075F9: 	SUBI	@NFRAMES,R0
@@ -1405,7 +1440,8 @@ FLASH_INSERTCOINSXM:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void PRINT_TOCONT(void) {
+static void PRINT_TOCONT(void)
+{
     // asm 0000760F: 	CALL	TOCONT_STRING
     // asm 00007610: 	LDI	@TOSTARTBUFFI,AR2
     // asm 00007611: 	FLOAT	256,R2
@@ -1451,7 +1487,8 @@ int COUNTER_MODE;
  *
  *
  */
-void COIN_COUNTER(void) {
+void COIN_COUNTER(void)
+{
     // asm 0000761C: 	LDP	@COUNTER_IDX
     // asm 0000761D: 	LDI	@COUNTER_IDX,R0
     // asm 0000761E: 	INC	R0
@@ -1515,7 +1552,8 @@ CLEARIT:
 /* asm: MOTIONDIS	SPTR	"MOTION OFF" */
 static const char MOTIONDIS[] = "MOTION OFF";
 
-static void MOTION_VALID(void) {
+static void MOTION_VALID(void)
+{
     // asm 00007659: 	CALL	CHECK_MOTION_DIP
     // asm 0000765A: 	RETSNZ			;RETURN IF NON MOVING
     // asm 0000765B: 	CALL	CHECK_MOTION_PRESENT

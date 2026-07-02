@@ -108,7 +108,8 @@ int OM_TRACK_HI;
 /* asm: 	 */
 static int GMAX = 100000;
 
-void DIFF_CHANGE(void) {
+void DIFF_CHANGE(void)
+{
     // asm 000050B5: 	CMPI	1,R0
     // asm 000050B6: 	LDFZ	0.07,R1
     // asm 000050B7: 	LDFNZ	-0.035,R1
@@ -130,7 +131,8 @@ void DIFF_CHANGE(void) {
  *GET YOUR DIFFICULTY
  *
  */
-static void GETDIFF(void) {
+static void GETDIFF(void)
+{
     // *GET DIFFICULTY	ADJUST
     // asm 000050BF: 	LDI	ADJ_DIFFICULTY,AR2		;GET DIFFICULTY	ADJUST
     // asm 000050C0: 	CALL	ADJUSTMENT_READ			;100000=1.0
@@ -224,7 +226,8 @@ static float DIFFTAB[] = {
  *	end if
  *
  */
-void RACER_DRONE(void) {
+void RACER_DRONE(void)
+{
     // asm 000050F0: 	LDF	0,R0
     // asm 000050F1: 	STF	R0,*+AR7(FINISHDIST)
     // asm 000050F2: 	LDI	0,R0
@@ -522,7 +525,8 @@ RACER_SLP:
     UNIMPL();
 }
 
-static void RACE_FIN(void) {
+static void RACE_FIN(void)
+{
     // asm 000051E7: 	LDF	*+AR7(FINISHDIST),R0
     // asm 000051E8: 	BNZ	RACFIN1
     // asm 000051E9: 	LDF	0.7,R0
@@ -586,7 +590,8 @@ RDL:
     UNIMPL();
 }
 
-static void CKPCOL(void) {
+static void CKPCOL(void)
+{
     // asm 00005219: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
     // asm 0000521A: 	LDI	*+AR2(OCARBLK),AR3
     // asm 0000521B: 	CALL	CKAHEAD
@@ -616,7 +621,8 @@ CKPX:
     UNIMPL();
 }
 
-static void HI_STEALTH(void) {
+static void HI_STEALTH(void)
+{
     // asm 0000522D: 	LDI	1,R0
     // asm 0000522E: 	STI	R0,*+AR7(STEALTHMODE)		;HI STEALTH FLAG
     // asm 0000522F: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GRAB THE LAST KNOWN VALID OID
@@ -714,7 +720,8 @@ REENTER:
     UNIMPL();
 }
 
-static void CKTRANSLO(void) {
+static void CKTRANSLO(void)
+{
     // asm 0000527A: 	CALL	COMPTRAK
     // asm 0000527B: 	BLE	CKTLX
     // asm 0000527C: 	CALL	CKRANGE
@@ -726,7 +733,8 @@ CKTLX:
     UNIMPL();
 }
 
-static void CKTRANSHI(void) {
+static void CKTRANSHI(void)
+{
     // asm 0000527F: 	CALL	COMPTRAK
     // asm 00005280: 	BGE	CKTHX
     // asm 00005281: 	CALL	CKRANGE
@@ -740,7 +748,8 @@ CKTHX:
     UNIMPL();
 }
 
-static void CKRANGE(void) {
+static void CKRANGE(void)
+{
     // asm 00005284: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
     // asm 00005285: 	CMPI	@OM_TRACK_LO,R2
     // asm 00005286: 	BLT	CKRFAIL
@@ -761,7 +770,8 @@ CKRFAIL:
     UNIMPL();
 }
 
-void COMPTRAK(void) {
+void COMPTRAK(void)
+{
     // asm 0000528D: 	LDI	@PLY2CAR,AR0
     // asm 0000528E: 	LDI	*+AR0(OCARBLK),AR1
     // asm 0000528F: 	LDI	*+AR1(CARTRACK_ID),R0
@@ -779,7 +789,8 @@ void COMPTRAK(void) {
     UNIMPL();
 }
 
-static void SEND_RACER_XSFER(void) {
+static void SEND_RACER_XSFER(void)
+{
     // asm 00005294: 	LDI	CB_RACER_XSFER,R0 	;MESSAGE HEADER
     // *SEND MESSAGE HEADER
     // asm 00005295: 	LDI	@COMMQ_TMP_BUFFI,AR2
@@ -803,7 +814,8 @@ static void SEND_RACER_XSFER(void) {
     UNIMPL();
 }
 
-void DECODE_RACER_XSFER(void) {
+void DECODE_RACER_XSFER(void)
+{
     // asm 0000529D: 	LDI	*AR2++,R0
     // asm 0000529E: 	LDI	@IGNORE_UPDATES,R1
     // asm 0000529F: 	RETSNZ
@@ -864,7 +876,8 @@ LINKRECX:
  *
  */
 
-static void ACTIVE_XSFER(void) {
+static void ACTIVE_XSFER(void)
+{
     // asm 000052CD: 	LDI	0,R0
     // asm 000052CE: 	STI	R0,*+AR7(STEALTHMODE)		;NO STEALTH INIT
     // asm 000052CF: 	LDI	*+AR4(OFLAGS),R0
@@ -939,7 +952,8 @@ STLUP1:
     UNIMPL();
 }
 
-static void GETPOWER(void) {
+static void GETPOWER(void)
+{
     // asm 00005309: 	PUSH	AR2
     // asm 0000530A: 	LDI	*+AR7(CATCHTIME),R0 	;CHECK IF TIME FOR POWER CHANGE
     // asm 0000530B: 	DEC	R0
@@ -1038,7 +1052,8 @@ POWERX:
  *	 R5	DISTANCE TRAVELLED
  *
  */
-static void GETSTSPD(void) {
+static void GETSTSPD(void)
+{
     // *GET ENGINE ACCEL
     // asm 00005350: 	LDF	*+AR7(DELTA_THROTTLE),R0	;HAS THE RACE BEGUN?
     // asm 00005351: 	LDI	@_MODE,R1
@@ -1121,7 +1136,8 @@ GSL0:
  *	AR2	POINTER TO OBJECT
  *
  */
-void FIND_DYNA(void) {
+void FIND_DYNA(void)
+{
     // asm 00005385: 	LDI	@DYNALIST_TRUEBEGIN,AR2
 FDL:
     // asm 00005386: 	LDI	*+AR2(OUSR1),R0
@@ -1158,7 +1174,8 @@ FDLX:
  *	MAP FLAGS-->*+AR7(DELTA_LAST_OID)
  *
  */
-static void FIND_MAP(void) {
+static void FIND_MAP(void)
+{
     // asm 00005391: 	LDI	@LEG_MAPI,AR0
     // asm 00005392: 	ADDI	3,AR0				;OFFSET TO ID
 FIND_LP:
@@ -1176,7 +1193,8 @@ FIND_LP:
 
 // *----------------------------------------------------------------------------
 
-void CKAHEAD(void) {
+void CKAHEAD(void)
+{
     // asm 0000539A: 	LDI	*+AR3(CARTRAK),AR0
     // asm 0000539B: 	LDI	*+AR0(OUSR1),R0
     // asm 0000539C: 	LDI	*+AR5(CARTRAK),AR0
@@ -1221,7 +1239,8 @@ int ROADOBSTAB[50];
  *	AR5	CAR STRUCTURE
  *
  */
-void CARSCAN(void) {
+void CARSCAN(void)
+{
     // asm 000053B2: 	LDI	@CAR_LIST,R0
     // asm 000053B3: 	BZ	OBSCX
 OBSCL:
@@ -1247,7 +1266,8 @@ OBSCX:
 /* asm: PLYRCLOSE	.BSS	PLYRCLOSE,1 */
 int PLYRCLOSE;
 
-void PLSCAN(void) {
+void PLSCAN(void)
+{
     // asm 000053BF: 	LDPI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
     // asm 000053C0: 	LDI	*+AR2(OCARBLK),AR3
     // asm 000053C1: 	LDI	4000H,R0
@@ -1271,7 +1291,8 @@ static int LAKEL = 0x3EF0C;
  *OBSTACLE TABLE INIT
  *
  */
-void OBSTABINIT(void) {
+void OBSTABINIT(void)
+{
     // asm 000053C7: 	LDI	0,R0
     // asm 000053C8: 	LDI	@ROADOBSTABI,AR0
     // asm 000053C9: 	RPTS	49
@@ -1358,7 +1379,8 @@ OIX:
  *TRASHES AR2
  *
  */
-void GETRDOFFSET(void) {
+void GETRDOFFSET(void)
+{
     // asm 000053FF: 	LDI	0,R6		;LFT SCAN INIT
     // asm 00005400: 	LDI	0,R7		;RT SCAN INIT
     // asm 00005401: 	NEGF	*+AR5(CARDIST2CNTR),R0
@@ -1513,7 +1535,8 @@ FAIL:
 /* asm: CARTMP1	.BSS	CARTMP1,1 */
 int CARTMP1;
 
-static void CARCHEK(void) {
+static void CARCHEK(void)
+{
     // asm 00005466: 	STI	R0,@CARTMP1   		;SAVE CAR CODE
     // asm 00005467: 	LDI	*+AR2(OCARBLK),AR3
     // asm 00005468: 	CALL	CKAHEAD
@@ -1651,7 +1674,8 @@ CARCHKX:
  *	R2	ANGLE
  *
  */
-static void GETPV(void) {
+static void GETPV(void)
+{
     // asm 000054CF: 	LDI	*+AR2(OCARBLK),AR3
     // asm 000054D0: 	PUSH	AR2
     // asm 000054D1: 	LDI	*+AR3(CARTRAK),AR2
@@ -1681,7 +1705,8 @@ static void GETPV(void) {
  *	R1	HEIGHT
  *
  */
-static void GETWIDTH(void) {
+static void GETWIDTH(void)
+{
     // asm 000054DA: 	PUSH	AR2
     // asm 000054DB: 	LDI	*+AR3(CARTRAK),AR2
     // asm 000054DC: 	CALL	GETRDIR	 		;R0= RADIANS
@@ -1719,7 +1744,8 @@ static void GETWIDTH(void) {
  *	AR5	RACER CAR STRUCT
  *
  */
-static void RPASS(void) {
+static void RPASS(void)
+{
     // asm 000054F0: 	LDI	*+AR7(PASSCNT),R0      	;INHIBIT PASSING SOUND?
     // asm 000054F1: 	BZ	RPASS1
     // asm 000054F2: 	SUBI	1,R0
@@ -1794,7 +1820,8 @@ RPASSX:
  *
  *
  */
-void SPOS_INIT(void) {
+void SPOS_INIT(void)
+{
     // asm 00005522: 	PUSH	AR5
     // asm 00005523: 	PUSH	AR6
     // asm 00005524: 	LDI	@VECTORBI,AR5
@@ -1883,7 +1910,8 @@ L874:
  *	AR7	PROCESS BLOCK
  *
  */
-void WRECKST(void) {
+void WRECKST(void)
+{
     // asm 00005568: 	PUSH	AR4
     // asm 00005569: 	PUSH	AR5
     // asm 0000556A: 	PUSH	AR7
@@ -1928,7 +1956,8 @@ WRKST1:
 
 // *----------------------------------------------------------------------------
 
-void WRECK(void) {
+void WRECK(void)
+{
     // asm 0000558C: 	CALL	GETTRAK			;KEEP UPDATING YOUR TRACKER
     // asm 0000558D: 	FLOAT	@NFRAMES,R1	 	;ADJUST MATRIX FOR FRAME COUNT
     // asm 0000558E: 	LDF	*+AR7(PDATA),R0		;ACCUMULATE X RADIANS

@@ -70,7 +70,8 @@ static const char BABA2[] = "THE UNITED STATES";
  *JSRPed from BONUS SCREEN
  *
  */
-void HOTTUB_SCENE(void) {
+void HOTTUB_SCENE(void)
+{
     // asm 000089A2: 	LDI	1,R0
     // asm 000089A3: 	STI	R0,@DO_FOLDFLAG		;whoosh the text away
     // asm 000089A4: 	CLRI	R0
@@ -242,7 +243,8 @@ HOTTT:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void HOTTUB_WATERVOL(void) {
+static void HOTTUB_WATERVOL(void)
+{
     // asm 00008A4F: 	LDI	@WATCHOBJ,AR4
     // asm 00008A50: 	LDF	*+AR4(OPOSX),R0
     // asm 00008A51: 	LDI	@CAMERAPOSI,AR0
@@ -288,7 +290,8 @@ BIBO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void PREZSPEAK(void) {
+static void PREZSPEAK(void)
+{
     // asm 00008A6F: 	SLEEP	25
     // asm 00008A71: 	SONDFX	CROWDROAR
     // asm 00008A73: 	SLEEP	25
@@ -320,7 +323,8 @@ static void PREZSPEAK(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void START_ANIMATIONS(void) {
+static void START_ANIMATIONS(void)
+{
     // asm 00008A9C: 	LDI	@OACTIVEI,AR4
 ODC:
     // asm 00008A9D: LDI	*AR4,R3
@@ -426,7 +430,8 @@ static int ANI_STAG[] = {
     -1,
 };
 
-static void HT_HUNGH(void) {
+static void HT_HUNGH(void)
+{
     // asm 00008AE4: 	PUSH	AR6
     // ;	LDI	*+AR4(OPLINK),AR2
     // ;	CALL	PRC_KILL
@@ -445,7 +450,8 @@ static void HT_HUNGH(void) {
     UNIMPL();
 }
 
-static void HT_RUT(void) {
+static void HT_RUT(void)
+{
     // asm 00008AEF: 	PUSH	AR6
     // asm 00008AF0: 	LDI	*+AR4(OPLINK),AR2
     // asm 00008AF1: 	CALL	PRC_KILL
@@ -463,7 +469,8 @@ static void HT_RUT(void) {
 /* asm: WATCHOBJ	.bss	WATCHOBJ,1 */
 int WATCHOBJ;
 
-static void HT_HILLY(void) {
+static void HT_HILLY(void)
+{
     // asm 00008AFB: 	PUSH	AR6
     // asm 00008AFC: 	LDI	@HILLANII,AR6
     // asm 00008AFD: 	CREATE	PLAINANI_PROC,SPAWNER_C|ANIMATION_T
@@ -473,7 +480,8 @@ static void HT_HILLY(void) {
     UNIMPL();
 }
 
-static void HT_GIRL(void) {
+static void HT_GIRL(void)
+{
     // asm 00008B02: 	PUSH	AR6
     // asm 00008B03: 	LDI	@GIRLANII,AR6
     // asm 00008B04: 	CREATE	PLAINANI_PROC,SPAWNER_C|ANIMATION_T
@@ -483,7 +491,8 @@ static void HT_GIRL(void) {
     UNIMPL();
 }
 
-void HT_HOTTUB(void) {
+void HT_HOTTUB(void)
+{
     // asm 00008B09: 	PUSH	AR6
     // asm 00008B0A: 	STI	AR4,@WATCHOBJ
     // asm 00008B0B: 	LDI	@ANI_HOTTUBI,AR6
@@ -494,7 +503,8 @@ void HT_HOTTUB(void) {
     UNIMPL();
 }
 
-void HT_RADAR(void) {
+void HT_RADAR(void)
+{
     // asm 00008B11: 	PUSH	AR6
     // asm 00008B12: 	LDI	@ANI_RADARI,AR6
     // asm 00008B13: 	CREATE	PLAINANI_PROC,SPAWNER_C|ANIMATION_T
@@ -504,7 +514,8 @@ void HT_RADAR(void) {
     UNIMPL();
 }
 
-void HT_STAGENT(void) {
+void HT_STAGENT(void)
+{
     // asm 00008B18: 	PUSH	AR6
     // asm 00008B19: 	LDI	@ANI_STAGI,AR6
     // asm 00008B1A: 	CREATE	AGENTANI_PROC,SPAWNER_C|ANIMATION_T
@@ -514,7 +525,8 @@ void HT_STAGENT(void) {
     UNIMPL();
 }
 
-static void PLAINANI_PROC(void) {
+static void PLAINANI_PROC(void)
+{
     // asm 00008B1F: 	LDI	AR6,AR5
 PLAINANI_LP:
     // asm 00008B20: 	LDI	*AR5++,R0
@@ -536,7 +548,8 @@ PPDD:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void AGENTANI_PROC(void) {
+static void AGENTANI_PROC(void)
+{
     // asm 00008B2C: 	RANDN	50
     // asm 00008B2E: 	LDI	R0,AR2
     // asm 00008B2F: 	ADDI	20,AR2
@@ -570,7 +583,8 @@ static const char PC1[] = "CELEBRITY IMPERSONATION";
 static const char PC2[] = "POLITICAL CARTOON";
 
 // *----------------------------------------------------------------------------
-static void POLITICAL_CARTOON_NOTICE(void) {
+static void POLITICAL_CARTOON_NOTICE(void)
+{
     // asm 00008B42: 	LDI	@PC1,AR2
     // asm 00008B43: 	LDI	15,RC
     // asm 00008B44: 	CALL	POLTXT
@@ -584,7 +598,8 @@ static void POLITICAL_CARTOON_NOTICE(void) {
     UNIMPL();
 }
 
-static void POLTXT(void) {
+static void POLTXT(void)
+{
     // asm 00008B4B: 	FLOAT	256,R2
     // asm 00008B4C: 	FLOAT	20,R3
     // asm 00008B4D: 	CALL	TEXT_ADDDS
@@ -604,7 +619,8 @@ static void POLTXT(void) {
 #define BABE_ASTRT PDATA
 
 // *----------------------------------------------------------------------------
-void CROWD_IT(void) {
+void CROWD_IT(void)
+{
     // asm 00008B59: 	LDI	255,R2
     // asm 00008B5A: 	LDI	CROWD1,AR2
     // asm 00008B5B: 	CALL	AMBIENCE_SOUND
@@ -616,7 +632,8 @@ void CROWD_IT(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BABE_TROPHY(void) {
+void BABE_TROPHY(void)
+{
     // ;	SLEEP	6
     // asm 00008B5D: 	LDI	12,AR5
 DABLP3:
@@ -699,7 +716,8 @@ BABLP3:
     UNIMPL();
 }
 
-static void BABE_IBO(void) {
+static void BABE_IBO(void)
+{
     // asm 00008BAE: 	LDI	6,AR5
     // asm 00008BAF: BABE_LP3
     // asm 00008BAF: 	LDF	*+AR4(OPOSY),R0
@@ -728,7 +746,8 @@ static void BABE_IBO(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void BABE_ANI(void) {
+static void BABE_ANI(void)
+{
     // asm 00008BC5: 	LONGROUT
 BABE_ANIKK:
     // asm: 	LDI	*AR6++,R0
@@ -797,7 +816,8 @@ static int BABE_FLAG_SCRIPT[] = {
  *
  *
  */
-void BABE_WAVEFLAG(void) {
+void BABE_WAVEFLAG(void)
+{
     // asm 00008BD5: 	READAUD	ADJ_GIRLS
     // asm 00008BD7: 	CMPI	0,R0
     // asm 00008BD8: 	BEQ	SUICIDE

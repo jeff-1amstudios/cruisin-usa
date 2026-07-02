@@ -608,7 +608,8 @@ static int DEFAULT_TABLE_TOTAL;
  *There is one byte per Race location.
  * -1 = not set by last player. 0-9 = Position in this table for that race
  */
-void INIT_LASTHS_TABLE(void) {
+void INIT_LASTHS_TABLE(void)
+{
     // asm 00009AA2: 	LDI	NUM_TABLES+1,R6
     // asm 00009AA3: 	LDI	0,R7
     // asm 00009AA4: 	CALL	GET_TABLE_ADDR
@@ -629,7 +630,8 @@ void INIT_LASTHS_TABLE(void) {
  *	R6 = RACE NUMBER
  *	R7 = ENTRY NUMBER
  */
-static void UPDATE_LASTHS(void) {
+static void UPDATE_LASTHS(void)
+{
     // asm 00009AAA: 	PUSH	AR2
     // asm 00009AAB: 	PUSH	R0
     // asm 00009AAC: 	PUSH	R2
@@ -662,7 +664,8 @@ static void UPDATE_LASTHS(void) {
  *Returns R0 = position in table of the last player that played. -1 = not in table
  */
 
-void CHECK_LASTHS(void) {
+void CHECK_LASTHS(void)
+{
     // asm 00009ABD: 	LDI	NUM_TABLES+1,R6
     // asm 00009ABE: 	LDI	0,R7
     // asm 00009ABF: 	CALL	GET_TABLE_ADDR
@@ -676,7 +679,8 @@ void CHECK_LASTHS(void) {
 
 // *----------------------------------------------------------------------------
 
-void INIT_HSTD_TABLES(void) {
+void INIT_HSTD_TABLES(void)
+{
     // asm 00009AC4: 	CLRI	R6
     // asm 00009AC5: 	LDI	15-1,AR5
     // asm 00009AC6: ITL1
@@ -737,7 +741,8 @@ int VALIDATE_HSTD_TABLES(void) {
     return 1;
 }
 
-static void RESETALL(void) {
+static void RESETALL(void)
+{
     // asm 00009AFB: 	CALL	INIT_HSTD_TABLES
     // asm 00009AFC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESETALL", 0, 0);
@@ -757,7 +762,8 @@ static void RESETALL(void) {
  *	AR2	ADDRESS
  *
  */
-void GET_TABLE_ADDR(void) {
+void GET_TABLE_ADDR(void)
+{
     // asm 00009AFD: 	PUSH	R6
     // asm 00009AFE: 	PUSH	R7
     // asm 00009AFF: 	MPYI	RACE_TABLE_SIZE,R6
@@ -786,7 +792,8 @@ void GET_TABLE_ADDR(void) {
  *
  *
  */
-static void TABLE_ENTRY_WRITE(void) {
+static void TABLE_ENTRY_WRITE(void)
+{
     // asm 00009B07: 	PUSH	R0
     // asm 00009B08: 	PUSH	R1
     // asm 00009B09: 	PUSH	R2
@@ -817,7 +824,8 @@ static void TABLE_ENTRY_WRITE(void) {
     UNIMPL();
 }
 
-static void TABLE_ENTRY_WRITE0(void) {
+static void TABLE_ENTRY_WRITE0(void)
+{
     // asm 00009B16: 	PUSH	R0
     // asm 00009B17: 	PUSH	R1
     // asm 00009B18: 	PUSH	R2
@@ -869,7 +877,8 @@ TEWL1:
  *	(AR2 INCREMENTED TO THE NEXT ENTRY)
  *
  */
-void TABLE_ENTRY_READ(void) {
+void TABLE_ENTRY_READ(void)
+{
     // asm 00009B31: 	CALL	_rd_cw
     // asm 00009B32: 	PUSH	R0
     // asm 00009B33: 	CMOS_ON
@@ -909,7 +918,8 @@ void TABLE_ENTRY_READ(void) {
  *	R0	{0...9}  = INDEX TO ENTER TABLE
  *
  */
-void CHECK_RACE_TABLE(void) {
+void CHECK_RACE_TABLE(void)
+{
     // asm 00009B43: 	PUSH	R0
     // asm 00009B44: 	LDI	R1,R6
     // asm 00009B45: 	CLRI	R7
@@ -950,7 +960,8 @@ INSERT_HERE:
  *
  *
  */
-void INSERT_TABLE_ENTRY(void) {
+void INSERT_TABLE_ENTRY(void)
+{
     // asm 00009B53: 	PUSH	R0
     // asm 00009B54: 	PUSH	R1
     // asm 00009B55: 	PUSH	R2

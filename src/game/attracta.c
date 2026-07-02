@@ -48,7 +48,8 @@ static uintptr_t DEMOTHANKS_LIST[];
  *AR6 is set by the creator of this routine. 0= play dcs logo sound 1=don't play
  *
  */
-void _MIDWAYSPIN(void) {
+void _MIDWAYSPIN(void)
+{
     // asm 0000A966: 	LDI	0,AR6
     // asm 0000A967: 	LDI	@_ATTR_MODE,R0
     // asm 0000A968: 	CMPI	-2,R0
@@ -142,7 +143,8 @@ MSLP1:
     UNIMPL();
 }
 
-static void MSLP_CHECK(void) {
+static void MSLP_CHECK(void)
+{
     // asm 0000A9B6: 	SUBI	@NFRAMES,AR6
     // asm 0000A9B7: 	LDI	@DECOMP_ACTIVE,R0
     // asm 0000A9B8: 	CMPI	0,R0
@@ -172,7 +174,8 @@ MSLP4:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void MIDWAYSPINENTER(void) {
+void MIDWAYSPINENTER(void)
+{
     // asm 0000A9C6: 	LDL	midway,AR2
     // asm 0000A9C7: 	CALL	OBJ_GETE
 #if DEBUG
@@ -238,7 +241,8 @@ static int SPIN_CARTAB[] = {
     cvette_ROM,
 };
 
-void SPIN_CAR(void) {
+void SPIN_CAR(void)
+{
     // asm 0000A9F8: 	LDI	0,R0
     // asm 0000A9F9: 	STI	R0,*+AR7(DECOMP_COUNT)
     // asm 0000A9FA: 	LDIL	logo,AR2
@@ -309,7 +313,8 @@ SPIN_CARLP:
  *----------------------------------------------------------------------------
  *
  */
-static void TEXTTOGET(void) {
+static void TEXTTOGET(void)
+{
     // asm 0000AA37: 	SLEEP	75
     // asm 0000AA39: 	LDI	@TEXT_ACTIVEI,AR0
     // asm 0000AA3A: 	CLRF	R1
@@ -350,7 +355,8 @@ static uintptr_t DEMOTHANKS_LIST[] = {
     (uintptr_t)&DT3,
 };
 
-static void DEMOTHANKS(void) {
+static void DEMOTHANKS(void)
+{
     // asm 0000AA4A: 	LDI	1,R0
     // asm 0000AA4B: 	STI	R0,@COINOFF
     // asm 0000AA4C: 	CLRI	R0

@@ -136,7 +136,8 @@ void OBJ_INIT(void) {
  *	CARRY SET
  *
  */
-void OBJ_GETE(void) {
+void OBJ_GETE(void)
+{
     // asm 00007035: 	CALL	OBJ_GET
     // asm 00007036: 	RETSC				;NO OBJECTS AVAILABLE RETURN ERROR CODE
     // asm 00007037: 	PUSH	R0
@@ -186,7 +187,8 @@ NOT_1PAL:
  *
  *
  */
-void OBJ_GET(void) {
+void OBJ_GET(void)
+{
     // asm 00007050: 	PUSH	R0
     // asm 00007051: 	LDI	@OFREE,R0
     // asm 00007052: 	LDI	R0,AR0
@@ -249,7 +251,8 @@ NOOBJ:
  *	R0	ODIST
  *		STORES IN *+AR2(ODIST)
  */
-static void GETDIST(void) {
+static void GETDIST(void)
+{
     // asm 00007083: 	PUSH	R1
     // asm 00007084: 	PUSH	R2
     // asm 00007085: 	PUSHF	R1
@@ -289,7 +292,8 @@ static void GETDIST(void) {
  *	AR2	OBJECT
  *
  */
-void OBJ_INSERTP(void) {
+void OBJ_INSERTP(void)
+{
     // asm 0000709B: 	PUSH	R0
     // asm 0000709C: 	PUSH	R1
     // asm 0000709D: 	PUSH	AR0
@@ -334,7 +338,8 @@ INS_AT_ENDP:
  *
  *
  */
-void OBJ_INSERTLP(void) {
+void OBJ_INSERTLP(void)
+{
     // asm 000070B2: 	PUSH	R0
     // asm 000070B3: 	LDI	@OLOW_PRIORITY,R0
     // asm 000070B4: 	STI	R0,*+AR2(OLINK)
@@ -358,7 +363,8 @@ void OBJ_INSERTLP(void) {
  *	AR2	OBJECT TO LINK IN
  *
  */
-void OBJ_INSERTHP(void) {
+void OBJ_INSERTHP(void)
+{
     // asm 000070B8: 	PUSH	R0
     // asm 000070B9: 	LDI	@OHIGH_PRIORITY,R0
     // asm 000070BA: 	STI	R0,*+AR2(OLINK)
@@ -379,7 +385,8 @@ void OBJ_INSERTHP(void) {
  *	AR2	OBJECT
  *
  */
-void OBJ_INSERT(void) {
+void OBJ_INSERT(void)
+{
     // asm 000070BE: 	PUSH	R0
     // asm 000070BF: 	PUSHF	R0
     // asm 000070C0: 	PUSH	R1
@@ -443,7 +450,8 @@ INSOBJX:
  *	AR0	FIRST OBJECT FOUND
  *
  */
-void OBJ_FIND_FIRST_PRIORITY(void) {
+void OBJ_FIND_FIRST_PRIORITY(void)
+{
     // asm 000070E3: 	PUSH	R0
     // asm 000070E4: 	LDI	@OACTIVE_PRIORITYI,AR0
     // asm 000070E5: 	BU	L89
@@ -452,7 +460,8 @@ void OBJ_FIND_FIRST_PRIORITY(void) {
     UNIMPL();
 }
 
-void OBJ_FIND_FIRST(void) {
+void OBJ_FIND_FIRST(void)
+{
     // asm 000070E6: 	PUSH	R0
     // asm 000070E7: 	LDI	@OACTIVEI,AR0
 L89:
@@ -479,7 +488,8 @@ FF_OK:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OBJ_FREE_GROUND(void) {
+void OBJ_FREE_GROUND(void)
+{
     // asm 000070F5: 	PUSH	R1
     // asm 000070F6: 	BUD	DELSLP
     // asm 000070F7: 	PUSH	AR1
@@ -491,7 +501,8 @@ void OBJ_FREE_GROUND(void) {
     UNIMPL();
 }
 
-void OBJ_FREE_SIGN(void) {
+void OBJ_FREE_SIGN(void)
+{
     // asm 000070FA: 	PUSH	R1
     // asm 000070FB: 	PUSH	AR1
     // asm 000070FC: 	LDI	@SIGN_LISTI,R1		;we must find dead object to link around
@@ -516,7 +527,8 @@ NOT_ON_SUPPXLIST:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OBJ_FREE_DRIVE(void) {
+void OBJ_FREE_DRIVE(void)
+{
     // asm 00007110: 	PUSH	R1
     // asm 00007111: 	PUSH	AR1
     // asm 00007112: 	LDI	@DRIVE_LISTI,R1		;we must find dead object to link around
@@ -541,7 +553,8 @@ NOT_ON_SUPPROADLIST:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OBJ_FREE_PROC(void) {
+void OBJ_FREE_PROC(void)
+{
     // asm 00007126: 	PUSH	AR2
     // asm 00007127: 	LDI	*+AR2(OPLINK),AR2
     // asm 00007128: 	CALL	PRC_KILL
@@ -566,7 +579,8 @@ void OBJ_FREE_PROC(void) {
  *	this is a speeded up version of this subroutine.
  *
  */
-void OBJ_DELETE(void) {
+void OBJ_DELETE(void)
+{
     // asm 0000712B: 	PUSH	R0
     // asm 0000712C: 	PUSH	R1
     // asm 0000712D: 	PUSH	AR1
@@ -676,7 +690,8 @@ DELOBJX:
  *	R1	MASK
  *
  */
-void OBJ_DELETE_CLASS(void) {
+void OBJ_DELETE_CLASS(void)
+{
     // asm 0000716E: 	PUSH	AR0
     // asm 0000716F: 	PUSH	AR2
     // asm 00007170: 	PUSH	R0
@@ -726,12 +741,8 @@ ODCX:
  *	AR2	OBJECT
  *
  */
-void OBJ_PULL(OBJ* obj /*AR2*/) {
-    OBJ** list;
-    OBJ* current;
-    OBJ** prev;
-    u32 flags;
-
+void OBJ_PULL(OBJ* obj /*AR2*/)
+{
     // asm 0000718A: 	PUSH	R0
     // asm 0000718B: 	PUSH	R1
     // asm 0000718C: 	PUSH	AR1
@@ -739,49 +750,22 @@ void OBJ_PULL(OBJ* obj /*AR2*/) {
     // asm 0000718E: 	LDI	*+AR2(OFLAGS),R0
     // asm 0000718F: 	AND	O_LIST_M,R0
     // asm 00007190: 	LDI	@OACTIVEI,R1		;we must find dead object to link around
-    flags = obj->flags & O_LIST_M;
-    list = &OACTIVE;
-
     // asm 00007191: 	CMPI	O_LIST2,R0
     // asm 00007192: 	LDIEQ	@IDLE_LISTI,R1		;we must find dead object to link around
-    if (flags == O_LIST2) {
-        list = &IDLE_LIST;
-    }
-
     // asm 00007193: 	CMPI	O_LIST3,R0
     // asm 00007194: 	LDIEQ	@OACTIVE_PRIORITYI,R1	;we must find dead object to link around
-    if (flags == O_LIST3) {
-        list = &OACTIVE_PRIORITY;
-    }
-
 PULLP:
     // asm 00007195: 	LDI	R1,AR1
     // asm 00007196: 	LDI	*AR1,R1
     // asm 00007197: 	ERRON	Z,EC_OBJ|4
     // asm 0000719F: 	BZ	PULOBJ_X
-    prev = list;
-    current = *prev;
-    if (current == NULL) {
-        ERRON(EC_OBJ | 4);
-        goto PULOBJ_X;
-    }
-    list = &current->link;
-
     // asm 000071A0: 	CMPI	R1,AR2
     // asm 000071A1: 	BNE	PULLP
-    if (current != obj) {
-        goto PULLP;
-    }
-
     // asm 000071A2: 	LDI	*AR2,R1
     // asm 000071A3: 	STI	R1,*AR1			;LINK AROUND
-    *prev = obj->link;
-
     // asm 000071A4: 	LDI	*+AR2(OFLAGS),R0
     // asm 000071A5: 	ANDN	O_LIST_M,R0
     // asm 000071A6: 	STI	R0,*+AR2(OFLAGS)
-    obj->flags &= ~O_LIST_M;
-
 PULOBJ_X:
     // asm 000071A7: 	POP	AR2
     // asm 000071A8: 	POP	AR1
@@ -803,7 +787,8 @@ PULOBJ_X:
  *	AR2	OBJECT
  *
  */
-void OBJ_FREE(void) {
+void OBJ_FREE(void)
+{
     // asm 000071AC: 	PUSH	R0
     // asm 000071AD: 	LDI	@OFREE,R0
     // asm 000071AE: 	STI	R0,*AR2
@@ -932,7 +917,8 @@ static void PLYRDLINK(void) {
  *IF NO DRONE CLOSER, INSERT AT END OF LIST
  *
  */
-static void PLYRSORT(void) {
+static void PLYRSORT(void)
+{
     // asm 000071EA: 	LDI	@PLYRTEMP,R0		;GET PLAYER
     // asm 000071EB: 	BZD	PSORTX	     		;NO PLAYER, HANG IT UP...
     // asm 000071EC: 	LDI	R0,AR5
@@ -996,7 +982,8 @@ PSORTX:
  *	AR4	POINTER TO DRONES
  *
  */
-static void DRONESORT(void) {
+static void DRONESORT(void)
+{
     // 	;PULL LIST OF DRONES OFF OBJECT LIST
     // asm 0000720F: 	BUD	DSORTNXT
     // asm 00007210: 	NOP
@@ -1164,7 +1151,8 @@ static int ACTIVEHI = 80000;
  *PUT DISTANT OBJECTS ON INACTIVE LIST
  *
  */
-void OSCAN(void) {
+void OSCAN(void)
+{
     // asm 0000727F: 	BUD	OSCANNXT
     // asm 00007280: 	LDI	@ACTIVEHI,R4 		;GET FAR LIMIT
     // asm 00007281: 	LDI	@IDLE_LISTI,AR5		;IN SAME PAGE
@@ -1212,7 +1200,8 @@ OSCANNXT:
  *IF ANGLE COSINE POSITIVE (+-90 DEGREES), ACTIVATE
  *
  */
-void ISCAN(void) {
+void ISCAN(void)
+{
     // asm 0000729A: 	FLOAT	ACTIVELO,R3		;GET CLOSE LIMIT
     // asm 0000729B: 	LDI	@ACTIVEHI1,R4 		;GET FAR LIMIT
     // asm 0000729C: 	LDI	@CAMERAPOSI,AR4		;POINTER TO CAMERA STRUCT
@@ -1276,7 +1265,8 @@ ISCANNXT:
  *	CAMERAPOS AND CAMERAMATRIX WITH NEW VALUES
  *
  */
-void RESCAN(void) {
+void RESCAN(void)
+{
     // asm 000072C3: 	PUSH	AR3
     // asm 000072C4: 	PUSH	AR4
     // asm 000072C5: 	PUSH	AR5
@@ -1318,7 +1308,8 @@ RESCAN1:
  *BUBBLE SORT PRIORITY LIST UNTIL DONE
  *
  */
-void ZSORTPRIOR(void) {
+void ZSORTPRIOR(void)
+{
 ZSORTA1P:
     // asm 000072DE: 	LDI	0,R2			;CLEAR EXCHANGE FLAG
     // asm 000072DF: 	LDI	@OACTIVE_PRIORITYI,AR0
@@ -1366,7 +1357,8 @@ ZSORTXP:
  *BUBBLE SORT ACTIVE LIST UNTIL DONE
  *
  */
-static void ZSORTACT(void) {
+static void ZSORTACT(void)
+{
 ZSORTA1:
     // asm 000072FD: 	LDI	0,R2			;CLEAR EXCHANGE FLAG
     // asm 000072FE: 	LDI	@OACTIVEI,AR0
@@ -1424,7 +1416,8 @@ ZSORTX:
  *
  *
  */
-void OBJ_MAKE(void) {
+void OBJ_MAKE(void)
+{
     // asm 0000731C: 	CALL	OBJ_GET
     // asm 0000731D: 	ERRON	C,EC_OBJ|5
     // asm 00007325: 	RETSC
@@ -1462,7 +1455,8 @@ void OBJ_MAKE(void) {
  *	AR0	OBJECT
  *
  */
-void OBJ_QMAKE(void) {
+void OBJ_QMAKE(void)
+{
     // asm 00007334: 	CALL	OBJ_GET
     // asm 00007335: 	RETSC
     // asm 00007336: 	STI	AR2,*+AR0(OROMDATA)

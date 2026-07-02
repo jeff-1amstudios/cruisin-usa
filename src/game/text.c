@@ -31,8 +31,8 @@ void SET18FONTDS(tSHADOW_TEXT* t);
 void SETFIXEDFONT(tTEXT* t /*AR0*/);
 void SETFIXEDFONTDS(tSHADOW_TEXT* t);
 static int STRLEN(const tTEXT* text /*AR2*/);
-static int TEXT_FONT_PRE(const FONTENTRY* font);
-static int TEXT_FONT_TRAIL(const FONTENTRY* font);
+#define TEXT_FONT_PRE(font) ((int16_t)((font)->pre_and_trail & 0xFFFF))
+#define TEXT_FONT_TRAIL(font) ((u16)((font)->pre_and_trail >> 16))
 void TEXT_OUTPUT(void);
 void STRCPY(void);
 void STRCAT(void);
@@ -119,8 +119,8 @@ tSHADOW_TEXT TEXT_ADDDS(const char* text, float x, float y, int ticks) {
     tTEXT* front;
     tTEXT* shadow;
 
-    mame_validate_arg_float("R2", &x);
-    mame_validate_arg_float("R3", &y);
+    MAME_VALIDATE_ARG_FLOAT("R2", &x);
+    MAME_VALIDATE_ARG_FLOAT("R3", &y);
 
     front = TEXT_ADD(text, x, y, ticks);
     shadow = TEXT_ADD(text, x, y, ticks);
@@ -175,7 +175,7 @@ tTEXT* TEXT_ADD(const char* text, float x, float y, int ticks) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SETSMDIGITFONT(tTEXT* t) {
+void SETSMDIGITFONT(tTEXT* t /*AR0*/) {
     // asm 000079A1: 	LDI	12,R0
     // asm 000079A2: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079A3: 	LDI	@FONTDIGITSM_A,R0
@@ -212,7 +212,7 @@ void SETSMDIGITFONTDS(tSHADOW_TEXT* t) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SETLGDIGITFONT(tTEXT* t) {
+void SETLGDIGITFONT(tTEXT* t /*AR0*/) {
     // asm 000079B9: 	LDI	22,R0
     // asm 000079BA: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079BB: 	LDI	@FONTDIGITLG_A,R0
@@ -252,7 +252,7 @@ void SETLGDIGITFONTDS(tSHADOW_TEXT* t) {
 /* asm: FONTN43_A	.word	lgnum43_I */
 static int FONTN43_A = lgnum43_I;
 
-void SETN43FONT(tTEXT* t) {
+void SETN43FONT(tTEXT* t /*AR0*/) {
     // asm 000079D2: 	LDI	40,R0
     // asm 000079D3: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079D4: 	LDI	@FONTN43_A,R0
@@ -289,7 +289,7 @@ void SETN43FONTDS(tSHADOW_TEXT* t) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SET40FONT(tTEXT* t) {
+void SET40FONT(tTEXT* t /*AR0*/) {
     // asm 000079EA: 	LDI	42,R0
     // asm 000079EB: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079EC: 	LDI	@FONT40_A,R0
@@ -327,7 +327,7 @@ void SET40FONTDS(tSHADOW_TEXT* t) {
 
 // *----------------------------------------------------------------------------
 
-void SET12FONT(tTEXT* t) {
+void SET12FONT(tTEXT* t /*AR0*/) {
     // asm 00007A03: 	LDI	12,R0
     // asm 00007A04: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A05: 	LDI	@FONT10_A,R0
@@ -405,7 +405,7 @@ void SET18FONTDS(tSHADOW_TEXT* t) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SETFIXEDFONT(tTEXT* t) {
+void SETFIXEDFONT(tTEXT* t /*AR0*/) {
     // asm 00007A33: 	LDI	6,R0
     // asm 00007A34: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A35: 	LDI	@FIXEDFONT_A,R0
@@ -477,7 +477,6 @@ static int STRLEN(const tTEXT* text /*AR2*/) {
     length = 0; /* length of string */
 STRLP:
     ch = (unsigned char)*str++;
-    printf("char '%c'\n", ch);
 
     // asm 00007A5B: 	CMPI	0,AR0
     // asm 00007A5C: 	BZ	STRLENX
@@ -487,7 +486,6 @@ STRLP:
 
     // asm 00007A5D: 	CMPI	' ',AR0
     // asm 00007A5E: 	BEQ	STRLENNCHAR
-    // char_width = 0;
     if (ch == ' ') {
         goto STRLENNCHAR;
     }
@@ -505,13 +503,13 @@ STRLP:
     char_width = (int)font->x_end - (int)font->x_start;
 
     // asm 00007A65: 	LDI	*+AR1(FONTENT_PRE),R2
-    mame_validate_reg_at_addr(0x00007A65, "R1", &char_width);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007A65, "R1", &char_width);
     // asm 00007A66: 	LS	16,R2
     // asm 00007A67: 	ASH	-16,R2			;MUST SIGN EXTEND THIS DUDE
     // asm 00007A68: 	ADDI	R2,R1
     char_width += TEXT_FONT_PRE(font);
 
-    mame_validate_reg_at_addr(0x00007A69, "R1", &char_width);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007A69, "R1", &char_width);
     // asm 00007A69: 	LDI	*+AR1(FONTENT_TRAIL),R2
     // asm 00007A6A: 	RS	16,R2
     // asm 00007A6B: 	ADDI	R2,R1
@@ -519,12 +517,12 @@ STRLP:
     char_width += TEXT_FONT_TRAIL(font);
 
 STRLENNCHAR:
-    mame_validate_reg_at_addr(0x00007A6C, "R2", &t);
-    mame_validate_reg_at_addr(0x00007A6C, "R1", &char_width);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007A6C, "R2", &t);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007A6C, "R1", &char_width);
     // asm 00007A6C: 	ADDI	R1,R0			;INCREASE STRING LENGTH
 
     length += char_width; /* INCREASE STRING LENGTH */
-    mame_validate_reg_at_addr(0x00007A6D, "R0", &length);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007A6D, "R0", &length);
     // asm 00007A6D: 	BU	STRLP
     goto STRLP;
 STRLENX:
@@ -539,15 +537,6 @@ STRLENX:
 }
 
 // *----------------------------------------------------------------------------
-
-// *----------------------------------------------------------------------------
-static int TEXT_FONT_PRE(const FONTENTRY* font) {
-    return (int16_t)(font->pre_and_trail & 0xFFFF);
-}
-
-static int TEXT_FONT_TRAIL(const FONTENTRY* font) {
-    return (u16)(font->pre_and_trail >> 16);
-}
 
 void TEXT_OUTPUT(void) {
     tTEXT* text;
@@ -573,300 +562,296 @@ void TEXT_OUTPUT(void) {
     // asm 00007A7A: 	PUSHF	R7
     // asm 00007A7B: 	NOP
     // asm 00007A7C: 	LDI	@TEXT_ACTIVEI,AR4
-    // asm 00007A7D: 	;---->	BUD	NXTGRP
+    // 	;---->	BUD	NXTGRP
     prev_link = &TEXT_ACTIVE;
     text = TEXT_ACTIVE;
 
 TEXTLP:
-    // asm 00007A7E: 	LDI	R0,AR4
+    // asm 00007A7D: 	LDI	R0,AR4
     if (text == NULL) {
         goto TXTOUT;
     }
 
-    // asm 00007A7F: 	LDI	*+AR4(TEXT_PTR),AR2
-    // asm 00007A80: 	FIX	*+AR4(TEXT_POSX),R2
-    // asm 00007A81: 	FIX	*+AR4(TEXT_POSY),R3
+    // asm 00007A7E: 	LDI	*+AR4(TEXT_PTR),AR2
+    // asm 00007A7F: 	FIX	*+AR4(TEXT_POSX),R2
+    // asm 00007A80: 	FIX	*+AR4(TEXT_POSY),R3
     str = text->ptr;
     x = (int)text->posx;
     y = (int)text->posy;
-    // mame_validate_abort_on_error(0);
-    mame_validate_reg_at_addr(0x00007A81, "R2", &x);
-    mame_validate_reg_at_addr(0x00007A81, "R3", &y);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007A81, "R2", &x);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007A81, "R3", &y);
 
-    // asm 00007A82: 	LDI	*+AR4(TEXT_COLOR),R0
-    // asm 00007A83: 	TSTB	TXT_CENTER,R0
-    // asm 00007A84: 	BZ	NO_CENTER
+    // asm 00007A81:  	LDI	*+AR4(TEXT_COLOR),R0
+    // asm 00007A82: 	TSTB	TXT_CENTER,R0
+    // asm 00007A83: 	BZ	NO_CENTER
     color = text->color;
     if (color & TXT_CENTER) {
         width = STRLEN(text);
-        // asm 00007A85: 	CALL	STRLEN
-        // asm 00007A86: 	RS	1,R0
-        mame_validate_reg_at_addr(0x00007A86, "R0", &width);
-        // asm 00007A87: 	SUBI	R0,R2
+        // asm 00007A84: 	CALL	STRLEN
+        // asm 00007A85: 	RS	1,R0
+        MAME_VALIDATE_REG_AT_ADDR(0x00007A85, "R0", &width);
+        // asm 00007A86: 	SUBI	R0,R2
         x -= width >> 1;
-        mame_validate_reg_at_addr(0x00007A87, "R2", &x);
-        // asm 00007A88: 	B	TEXT_RET
+        MAME_VALIDATE_REG_AT_ADDR(0x00007A87, "R2", &x);
+        // asm 00007A87: 	B	TEXT_RET
         goto TEXT_RET;
     }
 
 NO_CENTER:
-    // asm 00007A89: 	TSTB	TXT_RIGHT,R0
-    // asm 00007A8A: 	BZ	NO_RIGHT
+    // asm 00007A88: 	TSTB	TXT_RIGHT,R0
+    // asm 00007A89: 	BZ	NO_RIGHT
     if (color & TXT_RIGHT) {
         width = STRLEN(text);
-        // asm 00007A8B: 	CALL	STRLEN
-        // asm 00007A8C: 	SUBI	R0,R2
+        // asm 00007A8A: 	CALL	STRLEN
+        MAME_VALIDATE_REG_AT_ADDR(0x00007A8B, "R0", &width);
+        // asm 00007A8B: 	SUBI	R0,R2
         x -= width;
-        mame_validate_reg_at_addr(0x00007A8C, "R2", &x);
     }
 NO_RIGHT:
 
 TEXT_RET:
-    // asm 00007A8D: 	CLRI	RS
+    // asm 00007A8C: 	CLRI	RS
 OLP:
     ch = (unsigned char)*str++;
 
-    // asm 00007A96: 	CMPI	0,AR0
-    // asm 00007A97: 	BZ	OUCX
+    // asm 00007A95: 	CMPI	0,AR0
+    // asm 00007A96: 	BZ	OUCX
     if (ch == 0) {
         goto OUCX;
     }
 
-    // asm 00007A98: 	CMPI	'/',AR0
-    // asm 00007A99: 	LDIEQ	'@',AR0
+    // asm 00007A97: 	CMPI	'/',AR0
+    // asm 00007A98: 	LDIEQ	'@',AR0
     if (ch == '/') {
         ch = '@';
     }
 
-    // asm 00007A9A: 	CMPI	' ',AR0
-    // asm 00007A9B: 	BEQ	NXTCHAR
+    // asm 00007A99: 	CMPI	' ',AR0
+    // asm 00007A9A: 	BEQ	NXTCHAR
     if (ch == ' ') {
         width = 0;
         goto NXTCHAR;
     }
 
-    // asm 00007A9C: 	SUBI	'0',AR0			;the start of the font
+    // asm 00007A9B: 	SUBI	'0',AR0			;the start of the font
     ch -= '0';
 
-    // asm 00007AA7: 	LDI	AR0,AR1
-    // asm 00007AA8: 	MPYI	FONTENT_SIZE,AR1
-    // asm 00007AA9: 	ADDI	*+AR4(TEXT_ADDR),AR1
-    font = &text->text_addr[ch];
-
     // 	;NOW PLOT OUT THE CHARACTER
-    // asm 00007A9D:  	LDI	*+AR4(TEXT_COLOR),R0
-    // asm 00007A9E: 	TSTB	TXT_NRZ,R0
-    // asm 00007A9F: 	BZ	IBO1
+    // asm 00007A9C:  	LDI	*+AR4(TEXT_COLOR),R0
+    // asm 00007A9D: 	TSTB	TXT_NRZ,R0
+    // asm 00007A9E: 	BZ	IBO1
     color = text->color;
     if (color & TXT_NRZ) {
-        // asm 00007AA0: 	AND	0FFh,R0
-        // asm 00007AA1: 	OR	NZR|ZS|TM,R0
-        // asm 00007AA2: 	BU	IBO2
+        // asm 00007A9F: 	AND	0FFh,R0
+        // asm 00007AA0: 	OR	NZR|ZS|TM,R0
+        // asm 00007AA1: 	BU	IBO2
         _ACNTL = (color & 0xFF) | NZR | ZS | TM;
     } else {
     IBO1:
-        // asm 00007AA3: LDI	TM|ZS,R0
+        // asm 00007AA2: LDI	TM|ZS,R0
         _ACNTL = TM | ZS;
     }
 IBO2:
 
-    // asm 00007AA4: 	STI	R0,@_ACNTL
-    // asm 00007AA5: 	LDI	*+AR4(TEXT_PAL),R1
-    // asm 00007AA6: 	STI	R1,@_ACMAP
+    // asm 00007AA3: 	STI	R0,@_ACNTL
+    // asm 00007AA4: 	LDI	*+AR4(TEXT_PAL),R1
+    // asm 00007AA5: 	STI	R1,@_ACMAP
     _ACMAP = text->palette;
-    // mame_validate_reg_at_addr(0x00007AA6, "R1", &_ACMAP);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007AA6, "R1", &_ACMAP);
 
-    // asm 00007AAA: 	LDI	*+AR1(FONTENT_PRE),R0
-    // asm 00007AAB: 	LS	16,R0
-    // asm 00007AAC: 	ASH	-16,R0			;MUST SIGN EXTEND THIS DUDE
-    // asm 00007AAD: 	ADDI	R0,R2
+    // asm 00007AA6: 	LDI	AR0,AR1
+    // asm 00007AA7: 	MPYI	FONTENT_SIZE,AR1
+    // asm 00007AA8: 	ADDI	*+AR4(TEXT_ADDR),AR1
+    font = &text->text_addr[ch];
+
+    // asm 00007AA9: 	LDI	*+AR1(FONTENT_PRE),R0
+    // asm 00007AAA: 	LS	16,R0
+    // asm 00007AAB: 	ASH	-16,R0			;MUST SIGN EXTEND THIS DUDE
+    // asm 00007AAC: 	ADDI	R0,R2
     pre = TEXT_FONT_PRE(font);
-    mame_validate_reg_at_addr(0x00007AAD, "R2", &x);
-    mame_validate_reg_at_addr(0x00007AAD, "R0", &pre);
     x += pre;
+    MAME_VALIDATE_REG_AT_ADDR(0x00007AAD, "R2", &x);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007AAD, "R0", &pre);
 
-    // asm 00007AAE: 	LDI	*+AR1(FONTENT_XSTART),R0
-    // asm 00007AAF: 	LDI	*+AR1(FONTENT_YSTART),R4
-    // asm 00007AB0: 	LS	8,R4
-    // asm 00007AB1: 	OR	R4,R0
+    // asm 00007AAD: 	LDI	*+AR1(FONTENT_XSTART),R0
+    // asm 00007AAE: 	LDI	*+AR1(FONTENT_YSTART),R4
+    // asm 00007AAF: 	LS	8,R4
+    // asm 00007AB0: 	OR	R4,R0
     y_start = ((int)font->y_start) << 8;
     top_left = ((int)font->x_start) | y_start;
 
-    // asm 00007AB2: 	STI	R0,@_AIVI+0
+    // asm 00007AB1: 	STI	R0,@_AIVI+0
     _AIVI[0] = top_left;
     mame_validate_print_oks_on();
-    mame_validate_reg_at_addr(0x00007AB2, "R0", &top_left);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007AB2, "R0", &top_left);
 
-    // asm 00007AB3: 	LDI	*+AR4(TEXT_HEIGHT),R1
-    // asm 00007AB4: 	LS	8,R1
-    // asm 00007AB5: 	ADDI	R0,R1
-    // asm 00007AB6: 	STI	R1,@_AIVI+3
+    // asm 00007AB2: 	LDI	*+AR4(TEXT_HEIGHT),R1
+    // asm 00007AB3: 	LS	8,R1
+    // asm 00007AB4: 	ADDI	R0,R1
+    // asm 00007AB5: 	STI	R1,@_AIVI+3
     _AIVI[3] = top_left + (((int)text->height) << 8);
-    int xz = _AIVI[3];
-    mame_validate_reg_at_addr(0x00007AB6, "R1", &xz);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007AB6, "R1", &_AIVI[3]);
 
-    // asm 00007AB7: 	LDI	*+AR1(FONTENT_XEND),R0
-    // asm 00007AB8: 	OR	R4,R0
-    // asm 00007AB9: 	STI	R0,@_AIVI+1
+    // asm 00007AB6: 	LDI	*+AR1(FONTENT_XEND),R0
+    // asm 00007AB7: 	OR	R4,R0
+    // asm 00007AB8: 	STI	R0,@_AIVI+1
     _AIVI[1] = ((int)font->x_end) | y_start;
-    xz = _AIVI[1];
-    mame_validate_reg_at_addr(0x00007AB9, "R0", &xz);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007AB9, "R0", &_AIVI[1]);
 
-    // asm 00007ABA: 	LDI	*+AR4(TEXT_HEIGHT),R1
-    // asm 00007ABB: 	LS	8,R1
-    // asm 00007ABC: 	ADDI	R0,R1
-    // asm 00007ABD: 	STI	R1,@_AIVI+2
+    // asm 00007AB9: 	LDI	*+AR4(TEXT_HEIGHT),R1
+    // asm 00007ABA: 	LS	8,R1
+    // asm 00007ABB: 	ADDI	R0,R1
+    // asm 00007ABC: 	STI	R1,@_AIVI+2
     _AIVI[2] = _AIVI[1] + (((int)text->height) << 8);
-    xz = _AIVI[2];
-    mame_validate_reg_at_addr(0x00007ABD, "R1", &xz);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007ABD, "R1", &_AIVI[2]);
 
-    // asm 00007ABE: 	LDI	*+AR4(TEXT_IMG),R0
-    // asm 00007ABF: 	STI	R0,@_ADDRL
+    // asm 00007ABD: 	LDI	*+AR4(TEXT_IMG),R0
+    // asm 00007ABE: 	STI	R0,@_ADDRL
     _ADDRL = text->image_addr;
-    mame_validate_reg_at_addr(0x00007ABF, "R0", &_ADDRL);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007ABF, "R0", &_ADDRL);
 
-    // asm 00007AC0: 	LDI	*+AR1(FONTENT_XEND),R7
-    // asm 00007AC1: 	SUBI	*+AR1(FONTENT_XSTART),R7
+    // asm 00007ABF: 	LDI	*+AR1(FONTENT_XEND),R7
+    // asm 00007AC0: 	SUBI	*+AR1(FONTENT_XSTART),R7
     width = (int)font->x_end - (int)font->x_start;
 
-    // asm 00007AC2: 	STI	R2,@_ARPS+0
-    // asm 00007AC3: 	STI	R2,@_ARPS+9	;FP3X
+    // asm 00007AC1: 	STI	R2,@_ARPS+0
+    // asm 00007AC2: 	STI	R2,@_ARPS+9	;FP3X
     _ARPS[0] = x;
     _ARPS[9] = x;
-    mame_validate_reg_at_addr(0x00007AC3, "R2", &x);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007AC3, "R2", &x);
 
-    // asm 00007AC4: 	ADDI	R7,R2
+    // asm 00007AC3: 	ADDI	R7,R2
     x += width;
 
-    // asm 00007AC5: 	STI	R2,@_ARPS+3	;FP1X
-    // asm 00007AC6: 	STI	R2,@_ARPS+6	;FP2X
+    // asm 00007AC4: 	STI	R2,@_ARPS+3	;FP1X
+    // asm 00007AC5: 	STI	R2,@_ARPS+6	;FP2X
     _ARPS[3] = x;
     _ARPS[6] = x;
-    mame_validate_reg_at_addr(0x00007AC6, "R2", &x);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007AC6, "R2", &x);
 
-    // asm 00007AC7: 	SUBI	R7,R2
+    // asm 00007AC6: 	SUBI	R7,R2
     x -= width;
 
-    // asm 00007AC8: 	STI	R3,@_ARPS+1	;FP0Y
-    // asm 00007AC9: 	STI	R3,@_ARPS+4	;FP1Y
+    // asm 00007AC7: 	STI	R3,@_ARPS+1	;FP0Y
+    // asm 00007AC8: 	STI	R3,@_ARPS+4	;FP1Y
     _ARPS[1] = y;
     _ARPS[4] = y;
-    mame_validate_reg_at_addr(0x00007AC9, "R3", &y);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007AC9, "R3", &y);
 
-    // asm 00007ACA: 	ADDI	*+AR4(TEXT_HEIGHT),R3
+    // asm 00007AC9: 	ADDI	*+AR4(TEXT_HEIGHT),R3
     y += (int)text->height;
 
-    // asm 00007ACB: 	STI	R3,@_ARPS+7	;FP2Y
-    // asm 00007ACC: 	STI	R3,@_ARPS+10	;FP3Y
+    // asm 00007ACA: 	STI	R3,@_ARPS+7	;FP2Y
+    // asm 00007ACB: 	STI	R3,@_ARPS+10	;FP3Y
     _ARPS[7] = y;
     _ARPS[10] = y;
-    mame_validate_reg_at_addr(0x00007ACC, "R3", &y);
+    MAME_VALIDATE_REG_AT_ADDR(0x00007ACC, "R3", &y);
 
-    // asm 00007ACD: 	SUBI	*+AR4(TEXT_HEIGHT),R3
+    // asm 00007ACC: 	SUBI	*+AR4(TEXT_HEIGHT),R3
     y -= (int)text->height;
 
-    // asm 00007ACE: 	CALL	_stuff_fpga
+    // asm 00007ACD: 	CALL	_stuff_fpga
     _stuff_fpga();
 
-    // asm 00007ACF: 	LDI	*+AR1(FONTENT_TRAIL),R0
-    // asm 00007AD0: 	RS	16,R0
-    // asm 00007AD1: 	ADDI	R0,R7
+    // asm 00007ACE: 	LDI	*+AR1(FONTENT_TRAIL),R0
+    // asm 00007ACF: 	RS	16,R0
+    // asm 00007AD0: 	ADDI	R0,R7
     trail = TEXT_FONT_TRAIL(font);
     width += trail;
 
 NXTCHAR:
-    // asm 00007AD2: 	ADDI	R7,R2			;to next X position
+    // asm 00007AD1: 	ADDI	R7,R2			;to next X position
     x += width;
-    // asm 00007AD3: 	BU	OLP
+    // asm 00007AD2: 	BU	OLP
     goto OLP;
 
 OUCX:
 
-    // asm 00007AD4: 	LDI	@TEXT_FREEZE,R0
-    // asm 00007AD5: 	BNZ	ISFROZEN
+    // asm 00007AD3: 	LDI	@TEXT_FREEZE,R0
+    // asm 00007AD4: 	BNZ	ISFROZEN
     if (TEXT_FREEZE == 0) {
-        // asm 00007AD6: 	LDF	*+AR4(TEXT_POSX),R0
-        // asm 00007AD7: 	ADDF	*+AR4(TEXT_VELX),R0
-        // asm 00007AD8: 	STF	R0,*+AR4(TEXT_POSX)
+        // asm 00007AD5: 	LDF	*+AR4(TEXT_POSX),R0
+        // asm 00007AD6: 	ADDF	*+AR4(TEXT_VELX),R0
+        // asm 00007AD7: 	STF	R0,*+AR4(TEXT_POSX)
         text->posx += text->velx;
-        // asm 00007AD9: 	LDF	*+AR4(TEXT_POSY),R0
-        // asm 00007ADA: 	ADDF	*+AR4(TEXT_VELY),R0
-        // asm 00007ADB: 	STF	R0,*+AR4(TEXT_POSY)
+        // asm 00007AD8: 	LDF	*+AR4(TEXT_POSY),R0
+        // asm 00007AD9: 	ADDF	*+AR4(TEXT_VELY),R0
+        // asm 00007ADA: 	STF	R0,*+AR4(TEXT_POSY)
         text->posy += text->vely;
     }
 ISFROZEN:
 
-    // asm 00007ADC: 	LDI	*+AR4(TEXT_TIKS),R0
-    // asm 00007ADD: 	LDI	*+AR4(TEXT_COLOR),R1
-    // asm 00007ADE: 	TSTB	TXT_NOPULL,R1		;NOPULL = never decrement tik count
-    // asm 00007ADF: 	BNZ	NODELETE
+    // asm 00007ADB: 	LDI	*+AR4(TEXT_TIKS),R0
+    // asm 00007ADC: 	LDI	*+AR4(TEXT_COLOR),R1
+    // asm 00007ADD: 	TSTB	TXT_NOPULL,R1		;NOPULL = never decrement tik count
+    // asm 00007ADE: 	BNZ	NODELETE
     color = text->color;
     if (color & TXT_NOPULL) {
         goto NODELETE;
     }
 
-    // asm 00007AE0: 	SUBI	1,R0
-    // asm 00007AE1: 	BGT	NODELETE
+    // asm 00007ADF: 	SUBI	1,R0
+    // asm 00007AE0: 	BGT	NODELETE
     text->tiks -= 1;
     if ((int)text->tiks > 0) {
         goto NODELETE;
     }
 
-    // asm 00007AE2: 	LDI	*AR4,R7
+    // asm 00007AE1: 	LDI	*AR4,R7
     next_text = text->link;
 
-    // asm 00007AE3: 	LDI	@TEXT_ACTIVEI,R1	;get free list pointer
-    // asm 00007AE4: DELLP	LDI	R1,AR1
-    // asm 00007AE5: 	LDI	*AR1,R1
-    // asm 00007AE9: 	CMPI	R1,AR4
-    // asm 00007AEA: 	BNE	DELLP
-    // asm 00007AEB: 	LDI	*AR4,R1
-    // asm 00007AEC: 	STI	R1,*AR1			;LINK AROUND
+    // asm 00007AE2: 	LDI	@TEXT_ACTIVEI,R1	;get free list pointer
+    // asm 00007AE3: LDI	R1,AR1
+    // asm 00007AE4: 	LDI	*AR1,R1
+    // asm 00007AE5: 	CMPI	R1,AR4
+    // asm 00007AE6: 	BNE	DELLP
+    // asm 00007AE7: 	LDI	*AR4,R1
+    // asm 00007AE8: 	STI	R1,*AR1			;LINK AROUND
     *prev_link = next_text;
 
-    // asm 00007AED: 	LDI	@TEXT_FREE_COUNT,R1
-    // asm 00007AEE: 	INC	R1
-    // asm 00007AEF: 	STI	R1,@TEXT_FREE_COUNT
+    // asm 00007AE9: 	LDI	@TEXT_FREE_COUNT,R1
+    // asm 00007AEA: 	INC	R1
+    // asm 00007AEB: 	STI	R1,@TEXT_FREE_COUNT
     TEXT_FREE_COUNT += 1;
 
-    // asm 00007AF0: 	LDI	@TEXT_FREEI,AR1		;get free list pointer
-    // asm 00007AF1: 	LDI	*AR1,R1
-    // asm 00007AF2: 	STI	R1,*AR4
-    // asm 00007AF3: 	STI	AR4,*AR1
+    // asm 00007AEC: 	LDI	@TEXT_FREEI,AR1		;get free list pointer
+    // asm 00007AED: 	LDI	*AR1,R1
+    // asm 00007AEE: 	STI	R1,*AR4
+    // asm 00007AEF: 	STI	AR4,*AR1
     text->link = TEXT_FREE;
     TEXT_FREE = text;
 
-    // asm 00007AF4: 	LDI	R7,R0
+    // asm 00007AF0: 	LDI	R7,R0
     text = next_text;
+
+    // asm 00007AF1: 	BNZ	TEXTLP
+    if (text != NULL) {
+        goto TEXTLP;
+    }
+
+    // asm 00007AF2: 	B	TXTOUT
+    goto TXTOUT;
+
+NODELETE:
+    // asm 00007AF3: 	STI	R0,*+AR4(TEXT_TIKS)
+
+NXTGRP:
+    // asm 00007AF4: 	LDI	*AR4,R0
+    prev_link = &text->link;
+    text = text->link;
 
     // asm 00007AF5: 	BNZ	TEXTLP
     if (text != NULL) {
         goto TEXTLP;
     }
 
-    // asm 00007AF6: 	B	TXTOUT
-    goto TXTOUT;
-
-NODELETE:
-    // asm 00007AF7: 	STI	R0,*+AR4(TEXT_TIKS)
-
-NXTGRP:
-    // asm 00007AF8: 	LDI	*AR4,R0
-    prev_link = &text->link;
-    text = text->link;
-
-    // asm 00007AF9: 	BNZ	TEXTLP
-    if (text != NULL) {
-        goto TEXTLP;
-    }
-
 TXTOUT:
-    // asm 00007AFA: 	POPF	R7
-    // asm 00007AFB: 	POP	R7
-    // asm 00007AFC: 	POP	R4
-    // asm 00007AFD: 	POP	AR5
-    // asm 00007AFE: 	POP	AR4
-    // asm 00007AFF: 	RETS
+    // asm 00007AF6: 	POPF	R7
+    // asm 00007AF7: 	POP	R7
+    // asm 00007AF8: 	POP	R4
+    // asm 00007AF9: 	POP	AR5
+    // asm 00007AFA: 	POP	AR4
+    // asm 00007AFB: 	RETS
     return;
 }
 

@@ -156,7 +156,8 @@ float LANES4[] = {
 /* asm: ONCSCREEN_CARS	.bss	ONCSCREEN_CARS,1 */
 int ONCSCREEN_CARS;
 
-void POSITION_FINDER(void) {
+void POSITION_FINDER(void)
+{
     // asm 000065CA: 	LDI	@PLYCAR,AR4
     // asm 000065CB: 	LDI	@PLYCBLK,AR5
     // asm 000065CC: 	CALL	FIND_PLAYERS_POSITION
@@ -181,7 +182,8 @@ void POSITION_FINDER(void) {
  * OUTPUT:SETS @POSITION, @ONCSCREEN_CARS
  *
  */
-void FIND_PLAYERS_POSITION(void) {
+void FIND_PLAYERS_POSITION(void)
+{
     // ;	CLRI	IR0	;TEMP FLAG FOR OTHER MACHINE
     // asm 000065D0: 	LDI	1,R7		;POSITION #
     // asm 000065D1: 	CLRI	R6		;CARS CLOSE TO SCREEN
@@ -311,7 +313,8 @@ int DD_VAR;
 int DD_MAX_DRONES;
 
 // *----------------------------------------------------------------------------
-void SIGMA_DISPATCHER(void) {
+void SIGMA_DISPATCHER(void)
+{
     // asm 00006618: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00006619: 	BZ	CONTIN
     // asm 0000661A: 	DIE
@@ -398,7 +401,8 @@ NOTYET:
 /* asm: DRONENUM	.bss	DRONENUM,1 */
 int DRONENUM;
 
-void DRONE_PTR_ADD(void) {
+void DRONE_PTR_ADD(void)
+{
     // asm 00006653: 	LDI	0,R0
     // asm 00006654: 	STI	R0,*+AR5(CAR_OM)
     // asm 00006655: 	LDI	@DRONENUM,R0		;INCREMENT ID #
@@ -417,7 +421,8 @@ void DRONE_PTR_ADD(void) {
     UNIMPL();
 }
 
-void DRONE_CLR(void) {
+void DRONE_CLR(void)
+{
     // asm 00006661: 	LDI	10,R0
     // asm 00006662: 	STI	R0,@DRONENUM
     // asm 00006663: 	RETS
@@ -439,7 +444,8 @@ void DRONE_CLR(void) {
  *
  *
  */
-void RHO_DISPATCHER(void) {
+void RHO_DISPATCHER(void)
+{
     // asm 00006664: 	CALL	DRONE_CLR 	;CLEAR OUT DRONE POINTER TABLE
     // asm 00006665: 	SLEEP	30		;WAIT A SECOND
     // asm 00006667: 	LDI	@PLYCAR,AR4
@@ -522,7 +528,8 @@ DOITR:
     UNIMPL();
 }
 
-static void CK_LINK_DISP(void) {
+static void CK_LINK_DISP(void)
+{
     // asm 000066AB: 	LDI	@HEAD2HEAD_ON,R0
     // asm 000066AC: 	BZ	GODISP
     // asm 000066AD: 	CALL	COMPTRAK	;COMPARE TRACK RANKS OF PLAYERS
@@ -542,7 +549,8 @@ GODISP:
 }
 
 // *----------------------------------------------------------------------------
-void SET_DRONE_PAL(void) {
+void SET_DRONE_PAL(void)
+{
     // asm 000066B7: 	PUSH	R0
     // asm 000066B8: 	PUSH	AR2
     // asm 000066B9: 	LDI	*+AR7(DELTA_MODEL),AR2
@@ -586,7 +594,8 @@ NO_EPALS:
  *		1 - 4 lanes
  *
  */
-void GET_LANES(void) {
+void GET_LANES(void)
+{
     // asm 000066D2: 	PUSH	AR0
     // asm 000066D3: 	PUSH	AR1
     // asm 000066D4: 	LDI	*+AR2(OUSR1),R0
@@ -626,7 +635,8 @@ GL_FND:
  *	R0	FL DISTANCE TO PLAYER (IN VOXELS)
  *
  */
-void DIST_TO_PLYR(void) {
+void DIST_TO_PLYR(void)
+{
     // asm 000066E7: 	PUSH	AR3
     // asm 000066E8: 	PUSHFL	R1
     // asm 000066EA: 	PUSHFL	R2
@@ -663,7 +673,8 @@ void DIST_TO_PLYR(void) {
  *	AR2	OBJECT POINTER TO STARTING ROAD PIECE
  *
  */
-void INIT_TRACKING_PIECE(void) {
+void INIT_TRACKING_PIECE(void)
+{
     // asm 000066FB: 	PUSH	AR0
     // asm 000066FC: 	PUSH	AR1
     // asm 000066FD: 	LDI	@DYNALIST_BEGIN,AR0
@@ -706,7 +717,8 @@ LPP:
  *	MATRIXA		find Y Matrix (of Tracking Piece)
  *
  */
-void GET_TRACK_POS_RVS_XLANE(void) {
+void GET_TRACK_POS_RVS_XLANE(void)
+{
     // asm 00006706: 	PUSHFL	R1
     // asm 00006708: 	PUSHFL	R2
     // asm 0000670A: 	PUSH	AR2
@@ -718,7 +730,8 @@ void GET_TRACK_POS_RVS_XLANE(void) {
     UNIMPL();
 }
 
-void GET_TRACK_POS_RVS(void) {
+void GET_TRACK_POS_RVS(void)
+{
     // asm 0000670E: 	PUSHFL	R1
     // asm 00006710: 	PUSHFL	R2
     // asm 00006712: 	PUSH	AR2
@@ -730,7 +743,8 @@ void GET_TRACK_POS_RVS(void) {
     UNIMPL();
 }
 
-void DELTA_GET_TRACK_POS(void) {
+void DELTA_GET_TRACK_POS(void)
+{
     // asm 00006716: 	PUSHFL	R1
     // asm 00006718: 	PUSHFL	R2
     // asm 0000671A: 	PUSH	AR2
@@ -742,7 +756,8 @@ void DELTA_GET_TRACK_POS(void) {
     UNIMPL();
 }
 
-void GET_TRACK_POS(void) {
+void GET_TRACK_POS(void)
+{
     // asm 0000671E: 	PUSHFL	R1
     // asm 00006720: 	PUSHFL	R2
     // asm 00006722: 	PUSH	AR2
@@ -871,7 +886,8 @@ TRKP2:
  *	}
  *
  */
-void SUB_FUNCTION_RVS(void) {
+void SUB_FUNCTION_RVS(void)
+{
     // asm 00006733: 	PUSH	AR0
     // asm 00006734: 	PUSHFL	R0
     // asm 00006736: 	PUSHFL	R3
@@ -883,7 +899,8 @@ void SUB_FUNCTION_RVS(void) {
     UNIMPL();
 }
 
-void SUB_FUNCTION(void) {
+void SUB_FUNCTION(void)
+{
     // asm 0000673A: 	PUSH	AR0
     // asm 0000673B: 	PUSHFL	R0
     // asm 0000673D: 	PUSHFL	R3
@@ -930,7 +947,8 @@ DELTA_JOININ:
     UNIMPL();
 }
 
-void SUB_FUNCTION_RVS_XLANE(void) {
+void SUB_FUNCTION_RVS_XLANE(void)
+{
     // asm 00006764: 	PUSH	AR0
     // asm 00006765: 	PUSHFL	R0
     // asm 00006767: 	PUSHFL	R3
@@ -941,7 +959,8 @@ void SUB_FUNCTION_RVS_XLANE(void) {
     UNIMPL();
 }
 
-void DELTA_SUB_FUNCTION(void) {
+void DELTA_SUB_FUNCTION(void)
+{
     // asm 0000676B: 	PUSH	AR0
     // asm 0000676C: 	PUSHFL	R0
     // asm 0000676E: 	PUSHFL	R3
@@ -1031,7 +1050,8 @@ void INIT_DRONES(void) {
  *	AR4	OBJECT DRONE POINTER
  *
  */
-void ADD_DRONE(void) {
+void ADD_DRONE(void)
+{
     // asm 0000678D: 	PUSH	R0
     // asm 0000678E: 	LDI	@CAR_LIST,R0
     // asm 0000678F: 	STI	R0,*+AR4(OLINK3)
@@ -1054,7 +1074,8 @@ void ADD_DRONE(void) {
  *	AR4	OBJECT DRONE POINTER
  *
  */
-void FREE_DRONE(void) {
+void FREE_DRONE(void)
+{
     // asm 00006796: 	PUSH	R0
     // asm 00006797: 	PUSH	AR1
     // asm 00006798: 	PUSH	AR3
@@ -1090,7 +1111,8 @@ FREEDR_X:
  *
  *
  */
-void EXP_PUFF(void) {
+void EXP_PUFF(void)
+{
     // asm 000067A9: 	LDL	40000,R0
     // asm 000067AA: 	CMPI	*+AR4(ODIST),R0
     // asm 000067AB: 	BLT	SUICIDE
@@ -1275,7 +1297,8 @@ static int EXP_ANI[] = {
  *	CARRY CLR PATH MAINLY CLEAR
  *
  */
-void PRECOLLIDE_PLYR(void) {
+void PRECOLLIDE_PLYR(void)
+{
     // asm 000067DB: 	CALL	DIST_TO_PLYR
     // asm 000067DC: 	FLOAT	15000,R1
     // asm 000067DD: 	CMPF	R1,R0
@@ -1370,7 +1393,8 @@ NOT_IMMINENT:
  *	R0	(FL) DISTANCE TO CENTERLINE OF ROAD
  *
  */
-void DRONE_RIDE_RIGHT(void) {
+void DRONE_RIDE_RIGHT(void)
+{
     // asm 0000680E: 	PUSH	R1
     // asm 0000680F: 	PUSHFL	R2
     // asm 00006811: 	PUSH	R3
@@ -1384,7 +1408,8 @@ void DRONE_RIDE_RIGHT(void) {
     UNIMPL();
 }
 
-void PLYR_RIDE_RIGHT(void) {
+void PLYR_RIDE_RIGHT(void)
+{
     // asm 00006817: 	PUSH	R1
     // asm 00006818: 	PUSHFL	R2
     // asm 0000681A: 	PUSH	R3
@@ -1459,7 +1484,8 @@ PRR_X:
 /* asm: SMOKE_COUNT	.bss	SMOKE_COUNT,1 */
 int SMOKE_COUNT;
 
-void SMOKE_PUFF(void) {
+void SMOKE_PUFF(void)
+{
     // asm 0000684D: 	LDI	@SMOKE_COUNT,R0
     // asm 0000684E: 	CMPI	5,R0
     // asm 0000684F: 	BGE	SUICIDE
@@ -1592,7 +1618,8 @@ static int SMOKE_ANI[] = {
 /* asm: COCONUT_COUNT	.bss	COCONUT_COUNT,1 */
 int COCONUT_COUNT;
 
-void DROP_COCONUTS(void) {
+void DROP_COCONUTS(void)
+{
     // asm 00006888: 	LDI	@COCONUT_COUNT,R0
     // asm 00006889: 	CMPI	5,R0
     // asm 0000688A: 	BGE	SUICIDE
@@ -1855,7 +1882,8 @@ static const char HRS46[] = "472HP  V12 DOHC 48V";
  *	CARRY CLR ON BEHIND PLAYER
  *
  */
-void AHEAD_OF_PLAYER_P(void) {
+void AHEAD_OF_PLAYER_P(void)
+{
     // asm 0000691F: 	PUSH	AR0
     // asm 00006920: 	PUSH	AR1
     // asm 00006921: 	PUSH	R0

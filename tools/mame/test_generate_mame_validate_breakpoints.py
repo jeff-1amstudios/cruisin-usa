@@ -282,6 +282,33 @@ def test_mame_validate_arg_float_uses_function_entry_and_float_register_label() 
         )
 
 
+def test_mame_validate_exit_uses_function_entry_and_exit_action() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                uint32_t PAL_ALLOC_RAW(void* palette_source) {
+                    MAME_VALIDATE_EXIT();
+                    return 0;
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text(" 0000:00009F5A       PAL_ALLOC_RAW\n")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x00009F5A
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00009F5A, 1, { logerror "exit, sample.c:2\\n"; exit }'
+        )
+
+
 def test_mame_validate_reg_at_addr_uses_explicit_breakpoint() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = pathlib.Path(tmpdir)
@@ -473,6 +500,8 @@ def main() -> int:
     print("ok: mame_validate_arg_sym emits a function-entry register breakpoint")
     test_mame_validate_arg_float_uses_function_entry_and_float_register_label()
     print("ok: mame_validate_arg_float emits a function-entry float register breakpoint")
+    test_mame_validate_exit_uses_function_entry_and_exit_action()
+    print("ok: MAME_VALIDATE_EXIT emits a function-entry exit breakpoint")
     test_mame_validate_reg_at_addr_uses_explicit_breakpoint()
     print("ok: mame_validate_reg_at_addr emits an explicit-address register breakpoint")
     test_mame_validate_reg_at_addr_accepts_indexed_address_expr()

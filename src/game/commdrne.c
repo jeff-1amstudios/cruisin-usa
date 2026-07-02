@@ -166,7 +166,8 @@ OBJ* PLY2CAR;
  *
  *
  */
-void COMM_DRONE(void) {
+void COMM_DRONE(void)
+{
 #if CDEBUG
     // asm: 	CMPI	-1,R0
     // asm: 	BEQ	$
@@ -410,7 +411,8 @@ void COMM_DRONE_PTR_SORT(void) {
  *OTHER MACHINE DRONE LOOP
  *
  */
-void OM_DRONE(void) {
+void OM_DRONE(void)
+{
     // asm 0000A743: 	LDI	1,R0			;OTHER GUYS CAR NOW....
     // asm 0000A744: 	STI	R0,*+AR5(CAR_OM)
 OM_DRONEL:

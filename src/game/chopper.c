@@ -114,7 +114,8 @@ static int CHOPPERDYNA[] = {
  *
  *
  */
-static void DIRECT_ATTACK(void) {
+static void DIRECT_ATTACK(void)
+{
     // 	;
     // 	;DEBUG	only attack player when he is in the first position
     // 	;
@@ -222,7 +223,8 @@ LLK28:
  *
  *
  */
-static void ONCOMMING_BUZZ(void) {
+static void ONCOMMING_BUZZ(void)
+{
     // asm 00007CBF: 	LDF	0,R0
     // asm 00007CC0: 	STF	R0,*+AR4(ORADX)
     // asm 00007CC1: 	STF	R0,*+AR4(ORADY)
@@ -589,7 +591,8 @@ LLK2:
  *
  *
  */
-void CHOPPER(void) {
+void CHOPPER(void)
+{
     // 	;BEGIN INITIALIZATION CODE
     // 	;
     // asm 00007D33: 	LDI	@(_plyr1+PLY_PROC),AR2	;FIRST SETUP THAT WE FOLLOW THE PLAYERS PROC
@@ -657,7 +660,8 @@ DOTHEMOVE:
     UNIMPL();
 }
 
-static void FORWARD_BUZZ(void) {
+static void FORWARD_BUZZ(void)
+{
     // 	;FORWARD BUZZ INIT. CODE
     // 	;
     // asm 00007D6E: 	RANDN	20
@@ -903,7 +907,8 @@ CHOPPER_SLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FLYAWAY(void) {
+static void FLYAWAY(void)
+{
     // asm 00007E41: 	CLRI	AR6			;flag
     // asm 00007E42: 	LDI	100,AR5
     // asm 00007E43: 	LDF	-10,R7
@@ -947,7 +952,8 @@ KKUU:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CHOPPER_DIE(void) {
+static void CHOPPER_DIE(void)
+{
     // asm 00007E62: 	LDI	*+AR4(OCARBLK),AR2
     // asm 00007E63: 	CALL	DELCAR
     // asm 00007E64: 	LDI	AR4,AR2
@@ -971,7 +977,8 @@ static void CHOPPER_DIE(void) {
  *	AR4	OBJECT
  *
  */
-static void FIND_YX_MATRIX(void) {
+static void FIND_YX_MATRIX(void)
+{
     // asm 00007E6B: 	LDF	*+AR4(ORADY),R2
     // asm 00007E6C: 	LDI	AR4,AR2
     // asm 00007E6D: 	ADDI	OMATRIX,AR2
@@ -992,7 +999,8 @@ static void FIND_YX_MATRIX(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SETDYNAOBJ(void) {
+static void SETDYNAOBJ(void)
+{
     // asm 00007E78: 	LDI	O_DYNAMIC,R0	 	;MAKE PARENT OBJECT DYNAMIC
     // asm 00007E79: 	OR	*+AR4(OFLAGS),R0
     // asm 00007E7A: 	STI	R0,*+AR4(OFLAGS)
@@ -1038,7 +1046,8 @@ CHOPLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CHOPPERANI(void) {
+static void CHOPPERANI(void)
+{
     // asm 00007E9C: 	LONGROUT
     // asm: 	CLRF	R6
 CANILP:
@@ -1071,7 +1080,8 @@ CANILP:
  *	R3	SPEED
  *
  */
-static void FSL_MOVE(void) {
+static void FSL_MOVE(void)
+{
     // ;	LDP	@NFRAMES
     // ;	FLOAT	@NFRAMES,R0
     // ;	MPYF	R0,R3
@@ -1411,7 +1421,8 @@ static void FSL_MOVE(void) {
 */
 
 // *----------------------------------------------------------------------------
-static void HELI_SND(void) {
+static void HELI_SND(void)
+{
     // asm 00007EFF: 	LDI	HELI_SNDLP,AR2		;may want to add in volume effects
     // asm 00007F00: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 00007F01: 	BEQ	IS_T1
@@ -1469,7 +1480,8 @@ HEND:
  *	AR0	ROAD OBJECT
  *
  */
-void GET_CLOSEST_TRAK(void) {
+void GET_CLOSEST_TRAK(void)
+{
     // asm 00007F22: 	LDI	@DRIVE_LIST,R0
     // asm 00007F23: 	BZ	GETRKX  		;NULL LIST DUDES
     // asm 00007F24: 	LDI	0,AR0			;CLOSEST ROAD SEGMENT INDEX

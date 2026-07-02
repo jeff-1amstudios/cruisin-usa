@@ -85,7 +85,8 @@ static int LAST_ORIENTATION;
  *
  *
  */
-void LEG_INIT(void) {
+void LEG_INIT(void)
+{
     // asm 0000AA60: 	PUSH	R0
     // asm 0000AA61: 	CLRI	R0
     // asm 0000AA62: 	STI	R0,@LEG_ELEMENTS
@@ -119,7 +120,8 @@ int LEGLL;
  *THIS IS FOR THE SAKE OF SPEED
  *
  */
-static void ELEMENT_INIT(void) {
+static void ELEMENT_INIT(void)
+{
     // asm 0000AA69: 	PUSH	R0
     // asm 0000AA6A: 	LDL	LEG_SSLL,R0
     // asm 0000AA6B: 	STI	R0,@LEGFREE
@@ -143,7 +145,8 @@ static void ELEMENT_INIT(void) {
  *	AR3	PTR TO ELEMENT
  *
  */
-static void ELEMENT_GET(void) {
+static void ELEMENT_GET(void)
+{
     // asm 0000AA70: 	PUSH	AR0
 #if DEBUG
     // asm: 	LDI	@DBG_LEGCNT,AR0		;CHECK TO SEE IF WE ARE ALLOCATING TO MANY
@@ -174,7 +177,8 @@ static void ELEMENT_GET(void) {
  *
  */
 
-static void ELEMENT_ADD(void) {
+static void ELEMENT_ADD(void)
+{
     // asm 0000AA78: 	LDI	*+AR3(1+LEG_ID),R0
     // asm 0000AA79: 	LDI	@LEGLLI,AR0
 R65:
@@ -202,7 +206,8 @@ QT:
  *	AR3	PTR TO LEG MAP ENTRY
  *
  */
-static void ELEMENT_DUMP_INTO_LEGMAP(void) {
+static void ELEMENT_DUMP_INTO_LEGMAP(void)
+{
     // asm 0000AA84: 	PUSH	R0
     // asm 0000AA85: 	PUSH	AR0
     // asm 0000AA86: 	PUSH	AR1
@@ -239,7 +244,8 @@ ENDIT:
  *
  *
  */
-void LEG_GENERATE_MAP(void) {
+void LEG_GENERATE_MAP(void)
+{
     // asm 0000AA96: 	LDI	AR1,R1
     // asm 0000AA97: 	ADDI	2,R1
     // asm 0000AA98: 	STI	R1,@FINISH_ID
@@ -357,7 +363,8 @@ int LEG_SECTIONIDX;
  *
  *
  */
-static void LEG_ADD_GROUP(void) {
+static void LEG_ADD_GROUP(void)
+{
     // asm 0000AACD: 	PUSH	R4
     // asm 0000AACE: 	PUSH	R5
     // asm 0000AACF: 	PUSH	R6
@@ -520,7 +527,8 @@ NOTDYNAROAD:
  *
  *
  */
-static void GENERATE_LINEAR_DISTANCE(void) {
+static void GENERATE_LINEAR_DISTANCE(void)
+{
 #if USEEXTENDED
     // asm: 	LDL	LEG_MAP,AR2
     // asm: 	FLOAT	*+AR2(LEG_POSX),R6	;STARTING POSITION

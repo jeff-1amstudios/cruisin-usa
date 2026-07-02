@@ -112,7 +112,8 @@ int STATION_TIMEOUT;
 /* asm: RS_X	.bss	RS_X,1 */
 int RS_X;
 
-static void RADIO_SHOW(void) {
+static void RADIO_SHOW(void)
+{
     // asm 000090E1: 	LDI	@TUNE_IDX,AR2
     // asm 000090E2: 	ADDI	@STATION_TEXTI,AR2
     // asm 000090E3: 	LDI	*AR2,AR2
@@ -147,7 +148,8 @@ KILLME:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RADIO_BUT(void) {
+void RADIO_BUT(void)
+{
     // asm 000090FB: 	LDPI	@_MODE,R0
     // asm 000090FC: 	AND	MMODE,R0
     // asm 000090FD: 	CMPI	MGAME,R0
@@ -170,7 +172,8 @@ RBMGAME:
  *	AR2	STATION #
  *
  */
-void SET_STATION(void) {
+void SET_STATION(void)
+{
 #if DEBUG
     // asm: 	CMPI	0,AR2
     // asm: 	BLT	$
@@ -192,7 +195,8 @@ void SET_STATION(void) {
  *	NONE
  *
  */
-void CHANGE_STATION(void) {
+void CHANGE_STATION(void)
+{
     // asm 00009105: 	PUSH	R0
     // asm 00009106: 	LDI	@TUNE_IDX,R0
     // asm 00009107: 	INC	R0
@@ -217,7 +221,8 @@ int TUNE_IDX;
  *	AR2	CHANNEL
  *
  */
-void SET_TUNE_LINKED(void) {
+void SET_TUNE_LINKED(void)
+{
     // asm 0000910E: 	PUSH	AR2
     // asm 0000910F: 	PUSH	AR6
     // asm 00009110: 	LDI	1,AR6
@@ -228,7 +233,8 @@ void SET_TUNE_LINKED(void) {
     UNIMPL();
 }
 
-void SET_TUNE(void) {
+void SET_TUNE(void)
+{
     // asm 00009113: 	PUSH	AR2
     // asm 00009114: 	PUSH	AR6
     // asm 00009115: 	CLRI	AR6
@@ -239,7 +245,8 @@ void SET_TUNE(void) {
     UNIMPL();
 }
 
-void RESUME_TUNE(void) {
+void RESUME_TUNE(void)
+{
     // asm 00009118: 	PUSH	AR2
     // asm 00009119: 	PUSH	AR6
     // asm 0000911A: 	CLRI	AR6
@@ -275,7 +282,8 @@ NOOMUS:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RESUME_TUNE_NT(void) {
+void RESUME_TUNE_NT(void)
+{
     // asm 00009130: 	LDI	@TUNE_IDX,AR2
     // asm 00009131: 	CMPI	8,AR2
     // asm 00009132: 	LDIGT	0,AR2
@@ -296,7 +304,8 @@ void RESUME_TUNE_NT(void) {
  *	R1	VOL (0-255)
  *
  */
-void SET_MASTER_VOL(void) {
+void SET_MASTER_VOL(void)
+{
     // asm 00009137: 	PUSH	AR2
     // asm 00009138: 	BUD	JI1
     // asm 00009139: 	PUSH	R0
@@ -304,10 +313,12 @@ void SET_MASTER_VOL(void) {
     // asm 0000913B: 	LDI	055AAh,R0
     // 	;---->	BUD	JI1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_MASTER_VOL", 0, 0);
     UNIMPL_TODO();
 }
 
-void SET_TRACK_VOL(void) {
+void SET_TRACK_VOL(void)
+{
     // asm 0000913C: 	PUSH	AR2
     // asm 0000913D: 	PUSH	R0
     // asm 0000913E: 	PUSH	R1
@@ -415,7 +426,8 @@ WAITIT:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SILENT(void) {
+void SILENT(void)
+{
     // asm 0000918E: 	PUSH	AR2
     // asm 0000918F: 	CALL	CLRSNDDB
     // asm 00009190: 	CLRI	AR2
@@ -443,7 +455,8 @@ void SILENT(void) {
  *
  */
 
-void CLRSNDDB(void) {
+void CLRSNDDB(void)
+{
     // asm 0000919E: 	PUSH	AR0
     // asm 0000919F: 	PUSH	R0
     // asm 000091A0: 	LDI	@SNDSTRI,AR0
@@ -467,7 +480,8 @@ void CLRSNDDB(void) {
  *	AR0	CHANNEL #0-3
  *
  */
-void GETPRI(void) {
+void GETPRI(void)
+{
     // asm 000091A7: 	RS	8,AR0
     // asm 000091A8: 	AND	0Fh,AR0			;isolate channel
     // asm 000091A9: 	MPYI	SND_SIZ,AR0
@@ -490,7 +504,8 @@ void GETPRI(void) {
  *	R0	VOLUME 0-255
  *
  */
-void VOLSNDFX(void) {
+void VOLSNDFX(void)
+{
     // asm 000091AE:  	AND	0FFH,R0		;KEEP IN RANGE
     // asm 000091AF: 	B	SNDFX
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -516,7 +531,8 @@ void VOLSNDFX(void) {
  *
  *
  */
-void ONESNDFX(void) {
+void ONESNDFX(void)
+{
     // asm 000091B0: 	LDI	255,R0
     // *
     // *PARAMETERS
@@ -605,7 +621,8 @@ NOSOUND_FX:
  *RETURNS CS IF SOUND ACTUALLY KILLED, OTHERWISE CC
  *
  */
-void KILLSNDFX(void) {
+void KILLSNDFX(void)
+{
     // asm 000091E9: 	PUSH	AR2
     // asm 000091EA: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2
     // asm 000091EB: 	BNE	KILSFX1
@@ -638,7 +655,8 @@ KILSFX3:
  *
  *
  */
-void PLYR_ENGINE(void) {
+void PLYR_ENGINE(void)
+{
     // asm 000091F8: 	LS	8,R0
     // asm 000091F9: 	OR	R0,R1
     // asm 000091FA: 	LDI	1,R0
@@ -656,7 +674,8 @@ void PLYR_ENGINE(void) {
 
 // *----------------------------------------------------------------------------
 
-void HARDSND(void) {
+void HARDSND(void)
+{
     // asm 00009202: 	ADDI	@SNDTABI,AR2		;INDEX OUT TO GET ACTUAL SCRIPT
     // asm 00009203: 	LDI	*+AR2(1),AR2
     // asm 00009204: 	LS	16,AR2
@@ -679,7 +698,8 @@ void HARDSND(void) {
  *
  *
  */
-void ONESND(void) {
+void ONESND(void)
+{
     // asm 00009208: 	PUSH	R0
     // asm 00009209: 	PUSH	R1
     // asm 0000920A: 	PUSH	R2
@@ -768,7 +788,8 @@ SNDLDX:
  */
 #define SPACER 30 // # OF NOPs BETWEEN WRITES
 
-void SENDSND(void) {
+void SENDSND(void)
+{
     // asm 00009239: 	LDP	@IN_RESET_MODE
     // asm 0000923A: 	LDI	@IN_RESET_MODE,R0
     // asm 0000923B: 	SETDP
@@ -833,7 +854,8 @@ NIRM:
  *
  *
  */
-static void RESETMUNGE(void) {
+static void RESETMUNGE(void)
+{
     // asm 0000926F: 	DINT
     // asm 00009275: 	LDP	@RESET_TIMER
     // asm 00009276: 	LDI	@RESET_TIMER,R0
@@ -951,7 +973,8 @@ RESETMUNGE_X:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SND_RESET_QUIET(void) {
+void SND_RESET_QUIET(void)
+{
     // asm 000092D5: 	LDP	@RESET_TIMER
     // asm 000092D6: 	LDI	1,R0
     // asm 000092D7: 	STI	R0,@RESET_TIMER
@@ -969,7 +992,8 @@ void SND_RESET_QUIET(void) {
  *CALLED IN DISPLAY INTERRUPT (16ms)
  *
  */
-void SNDPROC(void) {
+void SNDPROC(void)
+{
     // asm 000092DB: 	LDP	@IN_RESET_MODE
     // asm 000092DC: 	LDI	@IN_RESET_MODE,R0
     // asm 000092DD: 	SETDP
@@ -1004,7 +1028,8 @@ SNDPLP:
  *	AR0	PTR TO SOUND CHANNEL RAM
  *
  */
-static void SNDUPD(void) {
+static void SNDUPD(void)
+{
     // ;this code allows for scripted sound calls.
     // ;as of now they are not used, and I don't
     // ;believe they will be before CUSA is finished.

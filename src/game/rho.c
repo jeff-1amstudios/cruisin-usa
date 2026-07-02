@@ -191,7 +191,8 @@ int RHOFLAG;
 /* asm: RHOPAL	.bss	RHOPAL,1 */
 int RHOPAL;
 
-void RHO_DRONE(void) {
+void RHO_DRONE(void)
+{
     // asm 00009790: 	LDI	0,R5
     // asm 00009791: 	STI	R5,@RHOFLAG
     // asm 00009792: 	RANDN	RHO_TABLE_LENGTH	;INDEX #
@@ -328,7 +329,8 @@ RHOLL1:
  *
  *
  */
-static void RHO_LP(void) {
+static void RHO_LP(void)
+{
     // asm 000097FE: 	LDI	@SUSPEND_MODE,R0
     // asm 000097FF: 	CMPI	SM_HALT,R0
     // asm 00009800: 	BEQ	RHO_SLP
@@ -595,7 +597,8 @@ RHO_SLP:
  *AR7=DRONE PROCESS
  *
  */
-static void CKCAROFF(void) {
+static void CKCAROFF(void)
+{
     // asm 000098BC: 	LDI	*+AR7(DELTA_TPIECE),R0
     // asm 000098BD: 	LDI	@DYNALIST_TRUEBEGIN,AR0
     // asm 000098BE: 	CMPI	AR0,R0
@@ -625,7 +628,8 @@ CKCXPASS:
  *
  */
 
-void RHO_DIE(void) {
+void RHO_DIE(void)
+{
     // asm 000098CC: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 000098CD: 	BZ	RHO_DIE1 		;NO, BLOW OUT...
     // asm 000098CE: 	CALL	COMPTRAK
@@ -680,7 +684,8 @@ NODYNALEAN:
 ;COLTABI	.word	COLTAB
 ;COLTAB	.word	SCOLLA,SCOLLB,SCOLLC
 */
-static void RHO_ISHIT(void) {
+static void RHO_ISHIT(void)
+{
     // asm 000098E4: 	LDI	*+AR4(OID),R0
     // asm 000098E5: 	ANDN	TYPE_M,R0
     // asm 000098E6: 	OR	DEAD_VEH_T,R0
@@ -745,7 +750,8 @@ RHOISHIT_SLP:
  *
  */
 
-static void SEND_RHO_XSFER(void) {
+static void SEND_RHO_XSFER(void)
+{
     // asm 0000990F: 	LDI	CB_RHO_XSFER,R0 	;MESSAGE HEADER
     // *SEND MESSAGE HEADER
     // asm 00009910: 	LDI	@COMMQ_TMP_BUFFI,AR2
@@ -775,7 +781,8 @@ static void SEND_RHO_XSFER(void) {
     UNIMPL();
 }
 
-void DECODE_RHO_XSFER(void) {
+void DECODE_RHO_XSFER(void)
+{
     // asm 0000991D: 	LDI	@IGNORE_UPDATES,R0	;RACE OVER?
     // asm 0000991E: 	BNZ	DECRHOX2		;YES, NO UPDATES ALLOWED...
     // asm 0000991F: 	CALL	FIND_DRONE  		;FIND CAR ID #
@@ -802,7 +809,8 @@ DECRHOX:
     UNIMPL();
 }
 
-static void RHO_ACTIVE_XSFER(void) {
+static void RHO_ACTIVE_XSFER(void)
+{
     // asm 0000992E: 	LDI	0,R0
     // asm 0000992F: 	STI	R0,*+AR5(CAR_OM)		;CAR BELONGS TO ME NOW!!!
     // asm 00009930: 	LDI	*+AR5(CARTRACK_ID),R2		;GET TRACK ID
@@ -845,7 +853,8 @@ static void RHO_ACTIVE_XSFER(void) {
     UNIMPL();
 }
 
-static void SEND_RHO_KILL(void) {
+static void SEND_RHO_KILL(void)
+{
     // asm 0000994F: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00009950: 	LDI	CB_RHO_KILL,R1
     // asm 00009951: 	STI	R1,*AR2
@@ -860,7 +869,8 @@ static void SEND_RHO_KILL(void) {
     UNIMPL();
 }
 
-void DECODE_RHO_KILL(void) {
+void DECODE_RHO_KILL(void)
+{
     // asm 00009956: 	LDI	@IGNORE_UPDATES,R0
     // asm 00009957: 	BNZ	DRKXX
     // asm 00009958: 	CALL	FIND_DRONE  		;GET DRONE OBJ IN AR0

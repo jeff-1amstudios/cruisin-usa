@@ -79,7 +79,8 @@ static float ATOFFTAB[16];
  *	R0	RETURN VALUE
  *
  */
-void _COSI(void) {
+void _COSI(void)
+{
     // asm 0000952D: 	LDF	R2,R0
     // asm 0000952E: 	ADDF	@HALFPII,R0	;offset for COS
     // asm 0000952F: 	B	SINE0
@@ -95,7 +96,8 @@ void _COSI(void) {
     UNIMPL();
 }
 
-void _SINE(void) {
+void _SINE(void)
+{
     // asm 00009530: 	LDF	R2,R0
 SINE0:
     // asm 00009531: PUSH	AR0
@@ -459,7 +461,8 @@ static float RADFORMI = 0.000095873f;
  *	N,Z BITS SET FOR R2
  *
  */
-void NORMITS(void) {
+void NORMITS(void)
+{
     // asm 00009556: 	MPYF	@RADFORM,R2
     // asm 00009557: 	FIX	R2
     // asm 00009558: 	LS	16,R2
@@ -486,7 +489,8 @@ NMS1:
  *	R2	IN RANGE 0 TO 2PI
  *
  */
-void NORMIT(void) {
+void NORMIT(void)
+{
     // asm 00009561: 	MPYF	@RADFORM,R2
     // asm 00009562: 	FIX	R2
     // asm 00009563: 	LS	16,R2
@@ -513,7 +517,8 @@ void NORMIT(void) {
  *	R0	RADIANS (FLOAT)
  *
  */
-void ARCTANF(void) {
+void ARCTANF(void)
+{
     // asm 00009568: _arctanf
     // asm 00009568: 	PUSH	R1
     // asm 00009569: 	PUSHF	R1
@@ -772,7 +777,8 @@ int LOCTEMPER_MAT2[12];
  *	R2	SOURCE RADIANS 1X3
  *
  */
-void FIND_MATRIX(void) {
+void FIND_MATRIX(void)
+{
     // asm 00009591: 	PUSH	R0
     // asm 00009592: 	PUSH	R1
     // asm 00009593: 	PUSH	R2
@@ -850,7 +856,8 @@ FM1:
  *	R2	SOURCE RADIANS
  *
  */
-void FIND_XMATRIX(void) {
+void FIND_XMATRIX(void)
+{
     // asm 000095C5: 	PUSH	R0
     // asm 000095C6: 	PUSHF	R0
     // asm 000095C7: 	CALL	_COSI
@@ -887,7 +894,8 @@ void FIND_XMATRIX(void) {
  *	R2	SOURCE RADIANS
  *
  */
-void _find_Ymatrix(void) {
+void _find_Ymatrix(void)
+{
     // asm 000095D8: 	PUSH	R0
     // asm 000095D9: 	PUSHF	R0
     // asm 000095DA: 	CALL	_COSI
@@ -924,7 +932,8 @@ void _find_Ymatrix(void) {
  *	R2	SOURCE RADIANS
  *
  */
-void HPFIND_YMATRIX(void) {
+void HPFIND_YMATRIX(void)
+{
     // asm 000095EB: 	PUSH	R0
     // asm 000095EC: 	PUSHF	R0
     // asm 000095ED: 	PUSH	R1
@@ -981,7 +990,8 @@ void HPFIND_YMATRIX(void) {
  *	R2	SOURCE RADIANS
  *
  */
-void FIND_ZMATRIX(void) {
+void FIND_ZMATRIX(void)
+{
     // asm 00009612: 	PUSH	R0
     // asm 00009613: 	PUSHF	R0
     // asm 00009614: 	CALL	_COSI
@@ -1042,7 +1052,8 @@ void INITMAT(MATRIX* mat /*AR0*/) {
  *	R1,R2
  *
  */
-void VECTLEN(void) {
+void VECTLEN(void)
+{
     // asm 00009636: 	LDF	*AR2++,R2
     // asm 00009637: 	MPYF	R2,R2
     // asm 00009638: 	LDF	*AR2++,R1
@@ -1069,7 +1080,8 @@ void VECTLEN(void) {
  *	R2	SOURCE MATRIX
  *
  */
-void CPYMAT(void) {
+void CPYMAT(void)
+{
     // asm 0000963F: 	PUSH	AR0
     // asm 00009640: 	PUSH	R0
     // asm 00009641: 	PUSHF	R0
@@ -1102,7 +1114,8 @@ void CPYMAT(void) {
  *
  *WARNING SOURCE CANNOT BE SAME AS DEST
  */
-void CPYIMAT(void) {
+void CPYIMAT(void)
+{
     // asm 0000964B: 	PUSH	R0
     // asm 0000964C: 	PUSHF	R0
     // asm 0000964D: 	PUSH	AR0
@@ -1140,7 +1153,8 @@ void CPYIMAT(void) {
  *CLEARS VECTOR A and RETURNS POINTER TO IT IN AR2
  *
  */
-void CLR_VECTORA(void) {
+void CLR_VECTORA(void)
+{
     // asm 00009662: 	PUSH	R0
     // asm 00009663: 	PUSHF	R0
     // asm 00009664: 	LDI	@VECTORAI,AR2
@@ -1171,7 +1185,8 @@ void CLR_VECTORA(void) {
  *NOTE SRC 1x3 and DST 1x3 may be equal
  *
  */
-void MATRIX_MUL(void) {
+void MATRIX_MUL(void)
+{
     // asm 0000966C: 	PUSH	R0
     // asm 0000966D: 	PUSHF	R0
     // asm 0000966E: 	PUSH	AR1
@@ -1217,7 +1232,8 @@ void MATRIX_MUL(void) {
  *----------------------------------------------------------------------------
  *void	normalize(VECTOR *V)
  */
-void NORMALIZE(void) {
+void NORMALIZE(void)
+{
     // asm 00009689: 	PUSH	R0
     // asm 0000968A: 	PUSH	R1
     // asm 0000968B: 	PUSHF	R0
@@ -1251,7 +1267,8 @@ void NORMALIZE(void) {
  *AR0,AR1,R0,R1,R2 TRASHED
  *
  */
-void NORMAT(void) {
+void NORMAT(void)
+{
     // 	;NORMALIZE ROWS
     // asm 0000969A: 	LDI	2,RC
     // asm 0000969B: 	RPTB	NORMROW
@@ -1300,7 +1317,8 @@ NORMROW:
  *	R0-R7,AR2
  *
  */
-void GEN_NORMAL(void) {
+void GEN_NORMAL(void)
+{
     // asm 000096B4: 	PUSH	AR0
     // asm 000096B5: 	LDI	*+AR2(1),AR0		;B
     // asm 000096B6: 	LDI	*+AR2(2),R3		;C
@@ -1352,7 +1370,8 @@ void GEN_NORMAL(void) {
  *G H I     P Q R    AP+DQ+GR BP+EQ+HR CP+FQ+IR
  *
  */
-void CONCATMATV(void) {
+void CONCATMATV(void)
+{
     // asm 000096CD: 	LDI	R2,AR0
     // asm 000096CE: 	LDI	R3,AR1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1360,7 +1379,8 @@ void CONCATMATV(void) {
     UNIMPL();
 }
 
-void CONCAT201(void) {
+void CONCAT201(void)
+{
     // asm 000096CF: 	LDI	5,IR1
     // asm 000096D0: 	LDI	3,IR0
     // asm 000096D1: 	LDI	2,RC
@@ -1410,7 +1430,8 @@ INLP2:
  *
  *
  */
-void CONCATMAT(void) {
+void CONCATMAT(void)
+{
     // asm 000096E2: 	PUSH	AR0
     // asm 000096E3: 	PUSH	AR1
     // asm 000096E4: 	PUSH	AR0
@@ -1448,7 +1469,8 @@ void CONCATMAT(void) {
  *	R0	THETA DELTA (float)
  *
  */
-void GETTHETADIFF(void) {
+void GETTHETADIFF(void)
+{
     // asm 000096F5: 	PUSHF	R1
     // asm 000096F6: 	SUBF	R2,R0
     // asm 000096F7: 	ABSF	R0,R1
@@ -1494,7 +1516,8 @@ NONEG:
  *
  *
  */
-void DIST_PT2LINE(void) {
+void DIST_PT2LINE(void)
+{
     // asm 00009702: 	PUSH	R1
     // asm 00009703: 	PUSH	R2
     // asm 00009704: 	PUSHF	R1
@@ -1537,7 +1560,8 @@ void DIST_PT2LINE(void) {
  *	AR2	VECTOR AS A B C
  *
  */
-void GETLINE_EQ_2D(void) {
+void GETLINE_EQ_2D(void)
+{
     // asm 00009717: 	PUSH	R0
     // asm 00009718: 	PUSH	R1
     // asm 00009719: 	PUSH	R2
@@ -1599,7 +1623,8 @@ void GETLINE_EQ_2D(void) {
  *
  *
  */
-void SCALE_MATRIX(void) {
+void SCALE_MATRIX(void)
+{
     // asm 00009731: 	PUSH	R3
     // asm 00009732: 	PUSHF	R3
     // asm 00009733: 	LDF	*+AR2(A00),R3

@@ -75,7 +75,8 @@ void SQRT(void);
  *	Cycles: 40
  *
  */
-void DIV_F30(void) {
+void DIV_F30(void)
+{
     // asm 0000A534: 	POP	BK	;Pop return address
     // asm 0000A535: 	PUSH	R2	;Save R2: integer part
     // asm 0000A536: 	PUSHF	R2	;Save R2: floating point part
@@ -152,7 +153,8 @@ void DIV_F30(void) {
 
 // *----------------------------------------------------------------------------
 
-void DIV_I30(void) {
+void DIV_I30(void)
+{
     // 	;
     // 	;Determine sign of result.	Get absolute value of operands.
     // 	;
@@ -216,7 +218,8 @@ zero:
 
 // *----------------------------------------------------------------------------
 
-void DIV_U30(void) {
+void DIV_U30(void)
+{
     // asm 0000A57F: 	CMPI	R0,R1		;divisor > dividend ?
     // asm 0000A580: 	BHI	zerob		;	if so, return 0
     // asm 0000A581: 	LDI	R1,V		;move divisor to AR1
@@ -363,7 +366,8 @@ float INV_F30(float v) {
 
 // *----------------------------------------------------------------------------
 
-void MOD_I30(void) {
+void MOD_I30(void)
+{
     // 	;
     // 	;Determine sign of result.	Get absolute value of operands.
     // 	;
@@ -427,7 +431,8 @@ mod_32:
 
 // *----------------------------------------------------------------------------
 
-void MOD_U30(void) {
+void MOD_U30(void)
+{
     // asm 0000A5F4: 	CMPI	R0,R1		;divisor > dividend ?
     // asm 0000A5F5: 	BHI	zerob		;	if so, return dividend
     // asm 0000A5F6: 	LDI	R1,V		;load divisor
@@ -551,7 +556,8 @@ zeroc:
  *
  */
 
-void SQRT(void) {
+void SQRT(void)
+{
     // asm 0000A61C: 	LDF	R2,R0
     // asm 0000A61D: 	RETSLE			;return the value if <= 0
     // asm 0000A61E: 	PUSH	R1

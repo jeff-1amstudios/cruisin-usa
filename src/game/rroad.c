@@ -56,7 +56,8 @@ static float COLL_DIST = 117465.0f;
 #define TRAIN_SPEED_MAX 280
 
 // *----------------------------------------------------------------------------
-void RRSTART_ENGINE(void) {
+void RRSTART_ENGINE(void)
+{
     // asm 00009B6E: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00009B6F: 	RETSNZ
     // asm 00009B70: 	LONGROUT
@@ -115,7 +116,8 @@ void RRSTART_ENGINE(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RRSTART_BOXCAR(void) {
+void RRSTART_BOXCAR(void)
+{
     // asm 00009B71: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00009B72: 	RETSNZ
     // asm 00009B73: 	LONGROUT
@@ -141,7 +143,8 @@ void RRSTART_BOXCAR(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CARFORWARD(void) {
+static void CARFORWARD(void)
+{
     // asm 00009B74: 	LDI	DRONE_C|RAILROAD|1,R0
     // asm 00009B75: 	LDI	-1,R1
     // asm 00009B76: 	CALL	PRC_FIND
@@ -152,7 +155,8 @@ static void CARFORWARD(void) {
     UNIMPL();
 }
 
-static void CARFORWARD_ENGINE(void) {
+static void CARFORWARD_ENGINE(void)
+{
     // asm 00009B79: 	LDI	*+AR4(OID),IR0
     // asm 00009B7A: 	AND	0Fh,IR0
     // asm 00009B7B: 	STI	IR0,*+AR4(OUSR1)	;SAVE INDEX
@@ -211,7 +215,8 @@ KKG:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RAMPDOWNTRAINSND(void) {
+void RAMPDOWNTRAINSND(void)
+{
     // asm 00009C15: 	CREATE	RAMPDOWNTRAINSND_PROC,UTIL_C
     // asm 00009C18: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RAMPDOWNTRAINSND", 0, 0);
@@ -221,7 +226,8 @@ void RAMPDOWNTRAINSND(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void RAMPDOWNTRAINSND_PROC(void) {
+static void RAMPDOWNTRAINSND_PROC(void)
+{
     // asm 00009C19: 	LONGROUT
     // asm: 	LDI	255,R5
 RAMPDOWNTRAINSND_LP:
@@ -259,7 +265,8 @@ RDTX:
  *	AR4	POINTS TO PLAYER CAR BLOCK
  *	AR5	POINTS TO DRONE CAR BLOCK
  */
-void FLYTRAIN(void) {
+void FLYTRAIN(void)
+{
     // asm 00009C1A: 	LONGROUT
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR1
@@ -366,7 +373,8 @@ FLY1A:
  *PDATA+6=MATRIX
  *
  */
-static void FLYTRAINP(void) {
+static void FLYTRAINP(void)
+{
     // *GET YOUR RADIANS
     // asm 00009C1C: 	LDF	0.2,R0
     // asm 00009C1D: 	CALL	SFRAND
@@ -621,7 +629,8 @@ RROAD_DIE:
  *CAR IS RIGHT SIDE UP
  *
  */
-void DEADCARA(void) {
+void DEADCARA(void)
+{
     // asm 00009CF0: 	LDI	*+AR4(OID),R0
     // asm 00009CF1: 	ANDN	TYPE_M,R0
     // asm 00009CF2: 	OR	DEAD_VEH_T,R0
@@ -670,7 +679,8 @@ DEADLPA:
  *	R2,R3,AR2
  *
  */
-void GETFLYMAT_TRAIN(void) {
+void GETFLYMAT_TRAIN(void)
+{
     // asm 00009D0A: 	LONGROUT
     // asm: 	LDI	AR4,AR2
     // asm: 	ADDI	OMATRIX,AR2

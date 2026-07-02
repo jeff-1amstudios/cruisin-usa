@@ -47,7 +47,8 @@ int _ADDRL;
  *
  *
  */
-void _rdma(void) {
+void _rdma(void)
+{
     // asm 0000AEFC: 	STI	RS,@_ACMAP
     // asm 0000AEFD: 	STI	RE,@_ADDRL
     // asm 0000AEFE: 	STI	AR2,@_ARPS+0		;AX
@@ -72,7 +73,8 @@ void _rdma(void) {
  *COPY THE CONTENTS OF _ACNTL TO _ADDRL INTO THE FIFO
  *
  */
-void _stuff_fpga(void) {
+void _stuff_fpga(void)
+{
     // asm 0000AF06: 	PUSH	AR0
     // asm 0000AF07: 	PUSH	AR1
     // asm 0000AF08: 	PUSH	R0
@@ -182,7 +184,8 @@ LP1:
  *
  *
  */
-void BLTMOD2D_NOPAL(void) {
+void BLTMOD2D_NOPAL(void)
+{
     // asm 0000AF36: 	PUSHM	R0,R1,R2,R3,R4,R5,R6,R7
     // asm 0000AF3E: 	PUSHM	AR0,AR1,AR2,AR3
     // asm 0000AF42: 	BU	SKIPPALENTRY
@@ -191,7 +194,8 @@ void BLTMOD2D_NOPAL(void) {
     UNIMPL();
 }
 
-void BLTMOD2D(void) {
+void BLTMOD2D(void)
+{
     // asm 0000AF43: 	PUSHM	R0,R1,R2,R3,R4,R5,R6,R7
     // asm 0000AF4B: 	PUSHM	AR0,AR1,AR2,AR3
     // asm 0000AF4F: 	LDI	*+AR2(10),AR0		;IMAGE PAL
@@ -238,7 +242,8 @@ SKIPPALENTRY:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BLTMOD2D_DS(void) {
+void BLTMOD2D_DS(void)
+{
     // asm 0000AF78: 	PUSHM	R2,R3,R4
     // asm 0000AF7B: 	ADDI	2,R2
     // asm 0000AF7C: 	ADDI	2,R3

@@ -13,22 +13,23 @@ from typing import DefaultDict, Dict, Iterable, List, Optional
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 VALIDATE_RE = re.compile(
-    r'mame_validate_word\(\s*"(?P<label>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
+    r'(?:MAME_VALIDATE_WORD|mame_validate_word)\(\s*"(?P<label>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
 )
 VALIDATE_ARG_RE = re.compile(
-    r'mame_validate_arg(?:_sym)?\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
+    r'(?:MAME_VALIDATE_ARG|mame_validate_arg)(?:_sym)?\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_ARG_FLOAT_RE = re.compile(
-    r'mame_validate_arg_float\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
+    r'(?:MAME_VALIDATE_ARG_FLOAT|mame_validate_arg_float)\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
+VALIDATE_EXIT_RE = re.compile(r'(?:MAME_VALIDATE_EXIT|mame_validate_exit)\(\s*\)\s*;')
 VALIDATE_REGION_AT_ADDR_RE = re.compile(
-    r'mame_validate_region_at_addr\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
+    r'(?:MAME_VALIDATE_REGION_AT_ADDR|mame_validate_region_at_addr)\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
 )
 VALIDATE_REG_AT_ADDR_RE = re.compile(
-    r'mame_validate_reg_at_addr\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
+    r'(?:MAME_VALIDATE_REG_AT_ADDR|mame_validate_reg_at_addr)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
 )
 VALIDATE_REG_AT_ADDR_FLOAT_RE = re.compile(
-    r'mame_validate_reg_at_addr_float\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
+    r'(?:MAME_VALIDATE_REG_AT_ADDR_FLOAT|mame_validate_reg_at_addr_float)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
 )
 ASM_ADDR_RE = re.compile(r"^\s*//\s*asm\s+(?P<addr>[0-9A-Fa-f]{8}):")
 ADDRESS_MAP_RE = re.compile(r"^\s*[0-9A-Fa-f]{4}:([0-9A-Fa-f]{8})\s+(.+?)\s*$")
@@ -55,6 +56,7 @@ class BreakpointEntry:
     source_path: pathlib.Path
     source_line: int
     command_override: Optional[str] = None
+    action_override: Optional[str] = None
 
     def _format_source_suffix(self) -> str:
         return f", {self.source_path.name}:{self.source_line}"
@@ -89,7 +91,8 @@ class BreakpointEntry:
 
     def format_mame(self, action: str = "g", save_index: int = 0) -> str:
         command = self.format_command(save_index=save_index)
-        return f"bpset {self.instruction_address:08X}, 1, {{ {command}; {action} }}"
+        effective_action = self.action_override or action
+        return f"bpset {self.instruction_address:08X}, 1, {{ {command}; {effective_action} }}"
 
 
 def parse_address_map(map_path: pathlib.Path) -> Dict[str, int]:
@@ -306,6 +309,33 @@ def collect_breakpoints_for_file(
         )
 
     for index, line in enumerate(lines):
+        match = VALIDATE_EXIT_RE.search(strip_cpp_line_comment(line))
+        if not match:
+            continue
+
+        function_name = find_containing_function_name(lines, index)
+        if function_name is None:
+            raise ValueError(f"{path}:{index + 1}: could not find containing function for MAME_VALIDATE_EXIT")
+
+        instruction_address = lookup_label_address(function_name, address_map)
+        if instruction_address is None:
+            raise ValueError(f"{path}:{index + 1}: function {function_name!r} not found in address map")
+
+        entries.append(
+            BreakpointEntry(
+                label="exit",
+                variable_name=function_name,
+                variable_address=0,
+                instruction_address=instruction_address,
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+                command_override=f'logerror "exit, {path.name}:{index + 1}\\n"',
+                action_override="exit",
+            )
+        )
+
+    for index, line in enumerate(lines):
         match = VALIDATE_REGION_AT_ADDR_RE.search(strip_cpp_line_comment(line))
         if not match:
             continue
@@ -406,12 +436,15 @@ def render_output(entries: Iterable[BreakpointEntry]) -> str:
     ]
     for group_index, (instruction_address, group) in enumerate(grouped_items):
         commands: List[str] = []
+        action = "g"
         for entry in group:
             save_index = save_counts[instruction_address]
             commands.append(entry.format_command(save_index=save_index))
             if entry.array_length is not None and entry.array_length > 5:
                 save_counts[instruction_address] += 1
-        rows.append(f'bpset {instruction_address:08X}, 1, {{ {"; ".join(commands)}; g }}')
+            if entry.action_override is not None:
+                action = entry.action_override
+        rows.append(f'bpset {instruction_address:08X}, 1, {{ {"; ".join(commands)}; {action} }}')
     rows.append("")
     return "\n".join(rows) + "g"
 

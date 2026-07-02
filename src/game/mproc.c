@@ -93,7 +93,8 @@ static void NEXTPRC(PROC* proc) {
 }
 
 // *----------------------------------------------------------------------------
-static void PRC_DEBUG_CHECK(void) {
+static void PRC_DEBUG_CHECK(void)
+{
 #if DEBUG
     // asm: 	PUSH	R0
     // asm: 	LDI	@NUM_PROCS_ACTIVE,R0
@@ -211,7 +212,8 @@ GETPROCX:
  *	AR0	POINTER TO PROCESS
  *
  */
-void PRC_CREATE_CHILD(void) {
+void PRC_CREATE_CHILD(void)
+{
     // asm 0000A893:     	CALL 	PRC_CREATE
     // asm 0000A894: 	RETSC
     // asm 0000A895: 	PUSH	R0
@@ -390,7 +392,8 @@ DIELP:
  *	AR2	POINTER TO PROCESS TO KILL
  *
  */
-void PRC_KILL(void) {
+void PRC_KILL(void)
+{
     // asm 0000A8D7: 	PUSH	R1
     // asm 0000A8D8: 	PUSH	AR1
     // asm 0000A8D9: 	CMPI	AR2,AR7
@@ -440,7 +443,8 @@ KILL_X:
  *	R1	MASK
  *
  */
-void PRC_KILLALL(void) {
+void PRC_KILLALL(void)
+{
     // asm 0000A8FA: 	PUSH	AR1
     // asm 0000A8FB: 	PUSH	AR2
     // asm 0000A8FC: 	AND	R1,R0
@@ -502,7 +506,8 @@ KADONE:
  *		R0=0 IF PROCESS NOT FOUND
  *
  */
-void PRC_EXISTP(void) {
+void PRC_EXISTP(void)
+{
     // asm 0000A911: 	CLRC				;CLEAR CARRY
     // asm 0000A912: 	PUSH	AR2
     // asm 0000A913: 	LDI	AR2,RC
@@ -571,7 +576,8 @@ void PRC_INIT(void) {
  *	AR1	POINTER TO ADDRESS TO WAKE UP
  *
  */
-void PRC_XFER(void) {
+void PRC_XFER(void)
+{
     // asm 0000A933: 	PUSH	AR1
 #if DEBUG
     // asm: 	CMPI	AR0,AR7				;ARE WE ATTEMPTING TO XFER OURSELVES?
@@ -609,7 +615,8 @@ void PRC_XFER(void) {
  *	AR0	POINTER TO LIST
  *
  */
-void PRC_FINDNEXT(void) {
+void PRC_FINDNEXT(void)
+{
     // asm 0000A939: 	BUD	FINDE
     // asm 0000A93A: 	PUSH	R2
     // asm 0000A93B: 	AND	R1,R0
@@ -620,7 +627,8 @@ void PRC_FINDNEXT(void) {
     UNIMPL();
 }
 
-void PRC_FIND(void) {
+void PRC_FIND(void)
+{
     // asm 0000A93D: 	BUD	FINDE
     // asm 0000A93E: 	PUSH	R2
     // asm 0000A93F: 	AND	R1,R0
@@ -656,7 +664,8 @@ FINDPROCX:
  *
  *
  */
-void PRC_FOLLOW(void) {
+void PRC_FOLLOW(void)
+{
     // asm 0000A94A: 	PUSH	R1
     // asm 0000A94B: 	PUSH	AR1
     // asm 0000A94C: 	PUSH	AR2
