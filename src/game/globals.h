@@ -417,6 +417,7 @@ extern MATRIX POSTERMATRIX;
 
 // asm:  .globl LOCTEMPER_MATI
 #define LOCTEMPER_MATI LOCTEMPER_MAT
+extern MATRIX LOCTEMPER_MAT;
 
 // asm:  .globl LIGHTIY
 extern VECTOR _LIGHT;
@@ -429,6 +430,7 @@ extern VECTOR _LIGHT;
 
 // asm:  .globl BLOWLISTI,tmpmatI,tmpmatY,INVTABI
 #define BLOWLISTI BLOWLIST
+extern f32 BLOWLIST[];
 
 #define tmpmatI TMPMAT
 

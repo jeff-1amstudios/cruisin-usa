@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import re
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -679,6 +680,51 @@ NEXTFUNC:\tRETS
         self.assertIn("P1:", section)
         self.assertIn("    // asm: \tLDI\t@SCREEN1I,R0", section)
         self.assertNotIn("int PAGEWORD", rendered)
+
+    def test_separator_before_bare_local_label_does_not_truncate_function(self) -> None:
+        asm_source = """PLOTPOLY:\tLDI\tIR0,IR1
+\tADDI\t1,IR1
+\t;---->BNZD\tPLOTILLUM\t;BR-> if it is a one palette object
+
+*----------------------------------------------------------------------------
+PLOTPOLY0
+\tCMPI\t1000,R0
+\tBGTD\tPLTPOLY
+\tCALL\tCLIPCK
+\tRETS
+
+CLIPCK:\tRETS
+"""
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_path = Path(tmpdir) / "DIRQ.ASM"
+            src_path.write_text(asm_source)
+            rendered = render_module(src_path, {}, {}, None)
+
+        section = rendered.split("void PLOTPOLY(void)\n{", 1)[1].split("\nvoid CLIPCK(void)\n{", 1)[0]
+        self.assertIn("PLOTPOLY0:", section)
+        self.assertIn("    // asm: \tCMPI\t1000,R0", section)
+        self.assertIn("    // asm: \tBGTD\tPLTPOLY", section)
+        self.assertIn("    // asm: \tCALL\tCLIPCK", section)
+        self.assertNotIn("WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION", section)
+
+    def test_generator_accepts_output_dir_outside_repo(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            outdir = Path(tmpdir) / "generated"
+            result = subprocess.run(
+                [
+                    "python3",
+                    "tools/port/gen_c_skeleton.py",
+                    "--output-dir",
+                    str(outdir),
+                ],
+                cwd=Path(__file__).resolve().parents[2],
+                capture_output=True,
+                text=True,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("generated ", result.stdout)
 
     def test_parse_discovered_defines_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

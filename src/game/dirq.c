@@ -17,6 +17,16 @@
  */
 
 void DIRQ(void);
+static void DISPLAY(OBJ* obj);
+static void TRANS2D(void);
+static void DYNAMIC_OBJECT(void);
+static void PLOTPOLY(void);
+static void CLIPCK(void);
+static void CLIP(void);
+static void PLTPOLY(void);
+static void PLOT1PAL(void);
+static void PLT1PAL(void);
+static void PLOTILLUM(void);
 
 #define OACTIVEI OACTIVE
 #define IDLE_LISTI IDLE_LIST
@@ -113,6 +123,9 @@ VECTOR _LIGHT;
 /* asm: LIGHTIY			.word	_LIGHT+1 */
 /* asm: 	 */
 // uintptr_t LIGHTIY = (uintptr_t)(_LIGHT + 1);
+
+MATRIX LOCTEMPER_MAT;
+
 /* asm: transmatrixI		.word	ROTATION_MATRIX */
 MATRIX ROTATION_MATRIX;
 #define transmatrixI ROTATION_MATRIX
@@ -167,6 +180,11 @@ VECTOR _VECTORD;
 static u32 POSTERMATRIX2D[4];
 
 static u32 CLIPRAM[CLIPRAML];
+
+// used for debugging
+OBJ* BREAKOBJ;
+
+f32 BLOWLIST[768];
 
 /*
  *----------------------------------------------------------------------------
@@ -238,51 +256,62 @@ void DIRQ(void) {
     // asm 0000008F: 	POP	R4
     // asm 00000090: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIRQ", 0, 0);
-    UNIMPL();
+    // UNIMPL();
 }
 
-// *----------------------------------------------------------------------------
+// *DISPLAY
+// *
+// *This routine displays the linked list pointed to in AR0.  Almost all
+// *registers are clobbered.
+// *
+// *In general the following registers are dedicated
+// *AR0	OBJECT POINTER
+// *AR1	ROM POINTER
+// *
+// *
+// *
+// *	int	radius
+// *	int	number_of_vertices|(number_of_polygons<<16)
+// *	struct ROM_VERTEX  {
+// *		int	X|Y<<16
+// *		int	Z
+// *	} * number_of_vertices
+// *	struct ROM_POLYGON  {
+// *		int	palnum<<16|cntl
+// *		int	(v4<<24)|(v3<<16)|(v2<<8)|(v1)
+// *		int	IV[0]|(IV[1]<<16)
+// *		int	IV[2]|(IV[3]<<16)
+// *		int	*addr_to_TM;
+// *	}
+// *
+// *NOTE	entry point is near the bottom of the routine
+// *
 
-/*
- *----------------------------------------------------------------------------
- *DISPLAY
- *
- *This routine displays the linked list pointed to in AR0.  Almost all
- *registers are clobbered.
- *
- *In general the following registers are dedicated
- *AR0	OBJECT POINTER
- *AR1	ROM POINTER
- *
- *
- *
- *	int	radius
- *	int	number_of_vertices|(number_of_polygons<<16)
- *	struct ROM_VERTEX  {
- *		int	X|Y<<16
- *		int	Z
- *	} * number_of_vertices
- *	struct ROM_POLYGON  {
- *		int	palnum<<16|cntl
- *		int	(v4<<24)|(v3<<16)|(v2<<8)|(v1)
- *		int	IV[0]|(IV[1]<<16)
- *		int	IV[2]|(IV[3]<<16)
- *		int	*addr_to_TM;
- *	}
- *
- *NOTE	entry point is near the bottom of the routine
- *
- */
-/* asm: BREAKOBJ	.bss	BREAKOBJ,1 */
-int BREAKOBJ;
+static void DISPLAY(OBJ* obj /*AR0*/) {
+    u32 flags;
+    uintptr_t* rom_ptr;
+    float trans_x;
+    float trans_y;
+    float trans_z;
 
-static void NEXTOBJ(void) {
+    // DISPLAY entry point moved from bottom of function
+    // asm 00000166: 	LDI	*AR0,R0
+    // asm 00000167: 	BNZ	NEXTOBJ
+    if (obj == NULL) {
+        goto DISPLAYX;
+    }
+NEXTOBJ:
+
     // asm 00000091: 	LDI	R0,AR0
     // asm 00000092: 	SETDP
     // asm 00000093: 	LDI	@BREAKOBJ,R1
     // asm 00000094: 	BZ	NOBREAK_CONTINUE
     // asm 00000095: 	CMPI	R1,R0
     // asm 00000096: 	BEQ	$
+    if (BREAKOBJ != NULL && obj == BREAKOBJ) {
+        // dont repro spin loop for original debugging...
+        abort();
+    }
 NOBREAK_CONTINUE:
 #if STATISTICS
     // asm: 	LDI	@ST_OBJECTS,R1
@@ -376,12 +405,12 @@ NO_DEGRADE:
     // asm 000000C5: 	LDI	*AR1++,R4		;get RADIUS of object
     // asm 000000C6: 	ADDI	R2,R4,R3
     // asm 000000C7: 	CMPI	LOW_CLIP_LEVEL,R3	;attempt to toss on Z distance
-    // asm 000000C8: 	BLTD	DISPLAY			;is it to close?
+    // asm 000000C8: 	BLTD	DISPLAY_NEXT			;is it to close?
     // asm 000000C9: 	SUBI	R4,R3
     // asm 000000CA: 	SUBI	R4,R3
     // asm 000000CB: 	CMPI	@HIGH_CLIP_LEV8,R3
     // 	;----> BLTD	DISPLAY
-    // asm 000000CC: 	BGTD	DISPLAY
+    // asm 000000CC: 	BGTD	DISPLAY_NEXT
     // asm 000000CD: 	ADDI	R4,R3
     // asm 000000CE: 	LDIN	0,R3			;KEEP IT IN RANGE
     // asm 000000CF: 	LSH	-4,R3			;quickly divide by 16
@@ -396,22 +425,22 @@ NO_DEGRADE:
     // asm 000000D7: 	MPYF	*AR6,R1,R3		;project Y position
     // asm 000000D8: 	ADDF	R4,R3,R2
     // asm 000000D9: 	ADDF	@SCRNHYI,R2
-    // asm 000000DA: 	BLTD	DISPLAY			;BR-> above the screen
+    // asm 000000DA: 	BLTD	DISPLAY_NEXT			;BR-> above the screen
     // asm 000000DB: 	NOP				;PAD FOR DELAYED BRANCH
     // asm 000000DC: 	SUBF	R4,R3
     // asm 000000DD: 	CMPF	@SCRNHYI,R3
     // 	;---->BLT DISPLAY
-    // asm 000000DE: 	BGTD	DISPLAY			;BR-> below the screen
+    // asm 000000DE: 	BGTD	DISPLAY_NEXT			;BR-> below the screen
     // asm 000000DF: 	MPYF	*-AR6(1),R1,R3	   	;project X position
     // asm 000000E0: 	ADDF	R4,R3,R2
     // asm 000000E1: 	ADDF	@SCRNHXI,R2
     // 	;---->BGT DISPLAY
-    // asm 000000E2: 	BLTD	DISPLAY			;BR-> too far to the left
+    // asm 000000E2: 	BLTD	DISPLAY_NEXT			;BR-> too far to the left
     // asm 000000E3: 	NOP			   	;PAD FOR DELAYED BRANCH
     // asm 000000E4: 	SUBF	R4,R3
     // asm 000000E5: 	CMPF	@SCRNHXI,R3
     // 	;---->BLT DISPLAY
-    // asm 000000E6: 	BGTD	DISPLAY			;BR-> too far to the right
+    // asm 000000E6: 	BGTD	DISPLAY_NEXT			;BR-> too far to the right
     // 	;***
     // 	;***	END TRIVIAL REJECTION, WE CAN PROBABLY SEE IT
     // 	;***
@@ -462,7 +491,7 @@ CHECKTHEREG:
     // asm 00000103: 	LDI	@POSTERMATI,AR5
     // asm 00000104: 	NOP
     // 	;---> BLED VT
-    // asm 00000105: 	B	DISPLAY
+    // asm 00000105: 	B	DISPLAY_NEXT
 REGULAR:
     // asm 00000106: 	LDI	@transmatrixI,AR3
     // asm 00000107: 	TSTB	O_NOROT,R6		;if this object is not self-orienting
@@ -524,10 +553,12 @@ INLP1:
     // 	;***
     // 	;***	VECTOR ROTATION/TRANSLATION
     // 	;***
+VECTOR_TRANSFORMATION:
     // asm 00000125: 	LDI	*+AR0(OFLAGS),R0
     // asm 00000126: 	TSTB	O_DYNAMIC,R0
     // asm 00000127: 	BNZ	DYNAMIC_OBJECT
-    // asm 00000128: VECTORTRANSFULL				;return on dynamic objects
+VECTORTRANSFULL: //;return on dynamic objects
+
     // asm 00000128: 	LDI	@transmatrixI,AR5	;somewhat dedicated for matrix pointer
 VT:
     // asm 00000129: 	LDI	*AR1++,RC		;get number of vertices to translate-1
@@ -627,19 +658,14 @@ POLYPOLY_ENTER:
     // asm 00000163: 	POP	BK
     // asm 00000164: 	RS	16,BK
     // asm 00000165: 	CALL	PLOTPOLY
-DISPLAY:
+DISPLAY_NEXT:
     // asm 00000166: 	LDI	*AR0,R0
     // asm 00000167: 	BNZ	NEXTOBJ
-    // asm 00000168: DISPLAYX
+DISPLAYX:
     // asm 00000168: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VECTOR_TRANSFORMATION", 0, 0);
-    UNIMPL();
-}
 
-// *----------------------------------------------------------------------------
+TRANS2D:
 
-// *----------------------------------------------------------------------------
-static void TRANS2D(void) {
     // 	;***
     // 	;***	GENERATE ROTATION MATRIX
     // 	;***
@@ -655,7 +681,7 @@ static void TRANS2D(void) {
     // asm 00000172: 	LDI	@POSTERMAT2DI,AR5
     // asm 00000173: 	NOP
     // 	;---> BLED VT2
-    // asm 00000174: 	B	DISPLAY
+    // asm 00000174: 	B	DISPLAY_NEXT
 REGULAR1:
     // *STANDARD ROTATIONAL CASE
     // *	AR4	- src1		(usually the objects matrix)
@@ -674,6 +700,7 @@ REGULAR1:
     // *02 = 2		 1
     // *22 = 8		 7
     // *
+SELF_ORIENTING2:
     // asm 00000175: 	LDI	5,IR0
     // asm 00000176: 	LDI	7,IR1
     // asm 00000177: 	MPYF	*-AR5(1),*-AR4(1),R0	;(AJ)
@@ -696,6 +723,8 @@ REGULAR1:
     // 	;***
     // 	;***	VECTOR ROTATION/TRANSLATION
     // 	;***
+
+VECTOR_TRANSFORMATION2:
     // asm 00000187: 	LDI	@transmatrixI,AR5	;somewhat dedicated for matrix pointer
 VT2:
     // asm 00000188: 	LDI	*AR1++,RC		;get number of vertices to translate-1
@@ -747,25 +776,15 @@ VTL2:
 EOVCTR2:
     // asm 000001BA: STF	R0,*AR3++(2)
     // asm 000001BB: 	BU	POLYPOLY_ENTER
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VECTOR_TRANSFORMATION2", 0, 0);
-    UNIMPL();
-}
 
-// *----------------------------------------------------------------------------
-
-/*
- *----------------------------------------------------------------------------
- *DYNAMIC OBJECT
- *
- */
-static void DYNAMIC_OBJECT(void) {
+    // *DYNAMIC OBJECT
+DYNAMIC_OBJECT:
     // ;	LDI	*+AR0(OFLAGS),R0
     // ;	TSTB	O_DEGRADE,R0
     // ;	BZ	NOTDEGRADEPOSS
     // asm 000001BC: 	LDI	*+AR0(ODIST),R0		;FORGET CLOSE DYNAMICS
     // asm 000001BD: 	CMPI	250,R0
-    // asm 000001BE: 	BLTD	DISPLAY
+    // asm 000001BE: 	BLTD	DISPLAY_NEXT
     // asm 000001BF: 	LDI	*+AR0(ODEGRADE_ROM),R0
     // asm 000001C0: 	INC	R0
     // asm 000001C1: 	CMPI	AR1,R0
@@ -1090,31 +1109,27 @@ NOSHAD:
     // asm 0000028A: 	STF	R0,*AR3++    		;STORE NULL X,Y,Z
     // asm 0000028B: 	LDI	@transmatrixI,AR5	;RESTORE MATRIX POINTER
     // asm 0000028C: 	BU	DYNALPX
+
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DYNAMIC_OBJECT", 0, 0);
     UNIMPL();
 }
 
-// *----------------------------------------------------------------------------
-
-/*
- *----------------------------------------------------------------------------
- *	PLOTPOLY
- *
- *	Polygons are already transformed, now just preform HSR,
- *	and stuff the fifo with appropriate data.
- *	Note also that this only renders a block of polygons.
- *
- *	struct ROM_POLYGON  {
- *		int	palnum<<16|cntl
- *		int	(v4<<24)|(v3<<16)|(v2<<8)|(v1)
- *		int	IV[0]|(IV[1]<<16)
- *		int	IV[2]|(IV[3]<<16)
- *		int	*addr_to_TM;
- *	}
- *
- *
- */
+// *	PLOTPOLY
+// *
+// *	Polygons are already transformed, now just preform HSR,
+// *	and stuff the fifo with appropriate data.
+// *	Note also that this only renders a block of polygons.
+// *
+// *	struct ROM_POLYGON  {
+// *		int	palnum<<16|cntl
+// *		int	(v4<<24)|(v3<<16)|(v2<<8)|(v1)
+// *		int	IV[0]|(IV[1]<<16)
+// *		int	IV[2]|(IV[3]<<16)
+// *		int	*addr_to_TM;
+// *	}
+// *
+// *
 static void PLOTPOLY(void) {
 #if STATISTICS
     // asm: 	LDI	BK,R0			;# of polygons-1
@@ -1135,44 +1150,137 @@ static void PLOTPOLY(void) {
     // asm 00000296: 	LDI	IR0,IR1
     // asm 00000297: 	ADDI	1,IR1
     // 	;---->BNZD	PLOTILLUM	;BR-> if it is a one palette object
-
+PLOTPOLY0:
+    // asm 00000298: 	CMPI	1000,R0
+    // asm 00000299: 	BGTD	PLTPOLY			;YES, NO CLIP LOOP
+    // asm 0000029A: 	LDI	@_PALLISTI,BK
+    // asm 0000029B: 	LDI	0FFH,R7			;GET MASK
+    // asm 0000029C: 	LDI	-16,R6			;SHIFT COUNT
     // 	;---->BGTD	PLTPOLY		;YES, NO CLIP LOOP
-
+    // asm 0000029D: 	PUSH 	AR0
+    // asm 0000029E: 	LDI	@CLIPRAMI,AR0
+    // asm 0000029F:  	LDI	RC,AR6			;GET POLY COUNT
+    // asm 000002A0: 	BUD	PLOTPOLYLP
+    // asm 000002A1: 	LDP	@FIFO_STATUS
+    // asm 000002A2: 	LDI	FIFO_ADDR>>16,AR7
+    // asm 000002A3: 	LSH	16,AR7
+    // asm 000002A4: 	BU	PLTPOLYLP		; jeff edited to match I450 rom
+PLOTPOLYLP:
+    // *GET EXTERNAL VERTEX INDICIES
+    // asm 000002C0: 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
+    // asm 000002C1: 	AND	R7,R3,AR4
+PLOTPOLYLP1:
+    // asm 000002C2: 	ADDI	1,IR1
+    // asm 000002C3: 	MPYI	3,AR4			;V1
+    // asm 000002C4: 	LSH	-8,R3
+    // asm 000002C5: 	AND	R7,R3,AR5
+    // asm 000002C6: 	MPYI	3,AR5			;V2
+    // asm 000002C7: 	LSH	-8,R3
+    // asm 000002C8: 	AND	R7,R3,AR2
+    // asm 000002C9: 	MPYI	3,AR2			;V3
+    // asm 000002CA: 	LSH	-8,R3
+    // asm 000002CB: 	AND	R7,R3,AR3
+    // asm 000002CC: 	MPYI	3,AR3			;V4
+    // *CHECK ALL Z'S <=0
+    // asm 000002CD: 	LDF	*+AR4(IR1),R0
+    // asm 000002CE: 	BGED	INBNDS
+    // asm 000002CF: 	AND	*+AR5(IR1),*+AR2(IR1),R0
+    // asm 000002D0: 	AND	*+AR3(IR1),R0
+    // asm 000002D1: 	SUBI	1,IR1
     // 	;------->BGED	INBNDS
-
+    // asm 000002D2: 	LSH	8,R0
+    // asm 000002D3: 	BND	POLYLP
+    // asm 000002D4: 	NOP
     // *CHECK FIFO FULL
-
+INBNDS:
+    // asm 000002D5: 	LDI	@FIFO_STATUS,R0
+    // asm 000002D6: 	AND	FIFO_STATUS_MAX_FLAG,R0
+    // 	;---->BND	POLYLP_1
+    // asm 000002D7: 	BNZD	INBNDS
     // *CHECK HIDDEN SURFACE REMOVAL
-
+    // asm 000002D8: 	SUBF	*+AR4(IR0),*+AR5(IR0),R1	;dx = ax - bx
+    // asm 000002D9: 	SUBF	*+AR4(IR1),*+AR5(IR1),R3	;dy = ay - by
+    // asm 000002DA: 	SUBF	*+AR5(IR0),*+AR2(IR0),R0	;ex = cx - bx
     // 	;------->BNZD	INBNDS
-
+    // asm 000002DB: 	MPYF	R3,R0				;ex = dy * ex
+    // asm 000002DB:   ||	SUBF	*+AR5(IR1),*+AR2(IR1),R2	;ey = cy - by
+    // asm 000002DC: 	MPYF	R2,R1				;ey = dx * ey
+    // asm 000002DD: 	SUBF	R1,R0				;ey = ey - ex
+    // asm 000002DE: 	BGTD	POLYLP				;if back facing DONT PLOT
     // *GLITCH FIX
-
+    // asm 000002DF: 	SUBF	*+AR2(IR1),*+AR3(IR1),R0
+    // asm 000002E0: 	MPYF	R3,R0
+    // asm 000002E0: ||	SUBF	*+AR3(IR1),*+AR4(IR1),R3
+    // asm 000002E1: 	CMPI	AR2,AR3
     // 	;------>BGTD	POLYLP			;if back facing DONT PLOT
-
+    // asm 000002E2: 	BZD	LOF1X
+    // asm 000002E3: 	MPYF	R3,R2
+    // asm 000002E4: 	OR	R2,R0
+    // asm 000002E5: 	LDF	R0,R0
+    // asm 000002E6: 	BGT	POLYLP
+LOF1X:
+    // *AR4,AR5,AR2,AR3 = FOUR VERTICES
+    // *IR1=PALETTE
+    // *
+    // asm 000002E7: 	CALL	CLIPCK
+    // asm 000002E8: 	BNZD	CLIPIT			;GO CLIP IT DUDES
+    // asm 000002E9: 	LDI	*AR1++(2),R2		;get control word/palette
+    // asm 000002EA: 	LSH	R6,R2,R0		;SHIFT 16 TO RIGHT
+    // asm 000002EB: 	ADDI	R0,BK,AR4
     // 	;------->BNZD	CLIPIT	  	;YES SPLIT IT UP...
-
+    // asm 000002EC: 	LSH	R6,*AR4,R0		;PALETTE->R0
+    // asm 000002EC:  ||	STI	R2,*AR7
+    // asm 000002ED:  	LSH	8,R0			;not a good way to do this fix l8r -7/14/93
     // *NO CLIP, BLOW IT OUT
-
-    /*
-    ;	LDI	*AR7,R0		 	;FIFO_INC
-            ;----> DBUD AR6,PLOTPOLYLP
-    */
-
+BLOWOUT:
+    // asm 000002EE: 	RPTS	7
+    // asm 000002EF: 	LDI	*AR0++,R0
+    // asm 000002EF:  ||	STI	R0,*AR7
+    // asm 000002F0: 	NOP	*AR0--(8)		;READJUST INDEX DUDES...
+    // asm 000002F1: 	LDI	*AR1++,R0		;2 AIV packed format Y2:X2:Y1:X1
+    // asm 000002F1:  ||	STI	R0,*AR7
+    // asm 000002F2: 	STI	R0,*AR7
+    // asm 000002F3: 	LSH	-16,R0
+    // asm 000002F4: 	LDI	*AR1++,R0		;GET Y4:X4:Y3:X3
+    // asm 000002F4:  ||	STI	R0,*AR7
+    // asm 000002F5: 	STI	R0,*AR7
+    // asm 000002F6: 	LSH	-16,R0
+    // asm 000002F7: 	DBUD	AR6,PLOTPOLYLP
+    // asm 000002F8: 	LDI	*AR1++,R0
+    // asm 000002F8:  ||	STI	R0,*AR7
+    // asm 000002F9: 	STI	R0,*AR7			;STORE THE ADDR
+    // asm 000002FA: 	LDI	@FIFO_INC,R0
+    // ;	LDI	*AR7,R0		 	;FIFO_INC
+    // 	;----> DBUD AR6,PLOTPOLYLP
+    // asm 000002FB: 	POP	AR0			;RESTORE OBJECT POINTER
+    // asm 000002FC: 	RETS
+POLYLP:
+    // asm 000002FD: 	DBUD	AR6,PLOTPOLYLP1
+    // asm 000002FE: 	LDI	*++AR1(6),R3		;read internal vertices (v4|v3|v2|v1)
+    // asm 000002FF: 	SUBI	1,AR1
+    // asm 00000300: 	AND	R7,R3,AR4
     // 	;----> DBUD AR6,PLOTPOLYLP1
+    // asm 00000301: 	POP	AR0
+    // asm 00000302: 	RETS
+    // *CLIP IT
+CLIPIT:
+    // asm 00000303: 	LSH	R6,*AR4,R0		;PALETTE->R0
+    // asm 00000304:  	LSH	8,R0			;not a good way to do this fix l8r -7/14/93
+    // asm 00000305: 	CALL 	CLIP
+    // asm 00000306: 	DBU	AR6,PLOTPOLYLP
+    // asm 00000307: 	POP	AR0
+    // asm 00000308: 	RETS
+
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTPOLY", 0, 0);
+    UNIMPL();
 }
 
-// *----------------------------------------------------------------------------
-
-/*
- *----------------------------------------------------------------------------
- *CHECK THE CLIP AND DUMP VERTICES INTO INTERNAL RAM
- *
- *
- *RETURN
- *	R5 NZ=CLIP, Z=NOCLIP
- *
- */
+// *CHECK THE CLIP AND DUMP VERTICES INTO INTERNAL RAM
+// *
+// *
+// *RETURN
+// *	R5 NZ=CLIP, Z=NOCLIP
+// *
 static void CLIPCK(void) {
     // 	;***	PRELIM CHECK
     // asm 00000309: 	FIX	*+AR4(IR0),R0		;read X value
@@ -1225,21 +1333,17 @@ CKLP:
     // asm 0000032C: 	LDIGT	1,R5
     // asm 0000032D: 	LDI	R5,R5
     // asm 0000032E: 	RETS
+
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIPCK", 0, 0);
     UNIMPL();
 }
 
-// *----------------------------------------------------------------------------
-
-/*
- *----------------------------------------------------------------------------
- *CLIP THE SUCKER
- *SPLIT INTO 4 POLYGONS UL,UR,LL,LR
- *	AR0	4 EXTERNAL VERTICES (INTS)
- *	R0 	PALETTE
- *	R2      FLAGS
- *
- */
+// *CLIP THE SUCKER
+// *SPLIT INTO 4 POLYGONS UL,UR,LL,LR
+// *	AR0	4 EXTERNAL VERTICES (INTS)
+// *	R0 	PALETTE
+// *	R2      FLAGS
+// *
 static void CLIP(void) {
     // asm 0000032F: 	PUSH	IR0
     // asm 00000330: 	PUSH	IR1
@@ -1639,22 +1743,17 @@ CLIPDONE:
     // asm 00000450: 	POP	IR1
     // asm 00000451: 	POP	IR0
     // asm 00000452: 	RETS
+    // *PLOT A DISTANT POLYGON
+    // *
+    // *R7=0FFH
+    // *IR0=BLOWLIST
+    // *IR1=BLOWLIST+1
+    // *RC=POLYGON COUNT
+    // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIP", 0, 0);
     UNIMPL();
 }
 
-// *----------------------------------------------------------------------------
-
-/*
- *----------------------------------------------------------------------------
- *PLOT A DISTANT POLYGON
- *
- *R7=0FFH
- *IR0=BLOWLIST
- *IR1=BLOWLIST+1
- *RC=POLYGON COUNT
- *
- */
 static void PLTPOLY(void) {
     // ;	PUSH	AR0
     // ;	LDI	AR6,RC
@@ -1728,7 +1827,7 @@ PLTWT:
     // asm 0000048C: 	LSH	-16,R1
     // asm 0000048D: 	STI	R1,*AR7
     // asm 0000048E:  	STI	R2,*AR7
-    // asm 0000048F: PLTPOLL
+PLTPOLL:
     // asm 0000048F: 	LDI	@FIFO_INC,R0
     // ;	POP	AR0
     // asm 00000490: 	RETS
@@ -1740,24 +1839,19 @@ PLTLP1:
     // asm 00000495: 	SUBI	1,AR1
     // asm 00000496: 	AND	R7,R3,AR4
     // 	;----> BNND PLTPOLYLP1
-    // asm 00000497: PLTXX
+PLTXX:
     // ;	POP	AR0
     // asm 00000497: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLTPOLY", 0, 0);
     UNIMPL();
 }
 
-// *----------------------------------------------------------------------------
-
-/*
- *----------------------------------------------------------------------------
- *
- *PLOT POLYGONS FOR A ONE PALETTE TEXTURE MAP OBJECT
- *
- *R0=ODIST-ORAD
- *RC=POLYGON COUNT
- *
- */
+// *
+// *PLOT POLYGONS FOR A ONE PALETTE TEXTURE MAP OBJECT
+// *
+// *R0=ODIST-ORAD
+// *RC=POLYGON COUNT
+// *
 static void PLOT1PAL(void) {
     // asm 00000498: 	CMPI	1000,R0
     // asm 00000499: 	BGTD	PLT1PAL			;YES, NO CLIP LOOP
@@ -1780,7 +1874,7 @@ PLOTPOLYLP_1:
     // *GET EXTERNAL VERTEX INDICIES
     // asm 000004C0: 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
     // asm 000004C1: 	AND	R7,R3,AR4
-    // asm 000004C2: PLOTPOLYLP1_1
+PLOTPOLYLP1_1:
     // asm 000004C2: 	ADDI	1,IR1
     // asm 000004C3: 	MPYI	3,AR4			;V1
     // asm 000004C4: 	LSH	-8,R3
@@ -1844,7 +1938,7 @@ LOF2X:
     // ;	LSH	R6,*AR4,R0		;PALETTE->R0
     // ; 	LSH	8,R0			;not a good way to do this fix l8r -7/14/93
     // *NO CLIP, BLOW IT OUT
-    // asm 000004ED: BLOWOUT_1
+BLOWOUT_1:
     // asm 000004ED: 	RPTS	7
     // asm 000004EE: 	LDI	*AR0++,R0
     // asm 000004EE:  ||	STI	R0,*AR7
@@ -1883,17 +1977,12 @@ CLIPIT_1:
     UNIMPL();
 }
 
-// *----------------------------------------------------------------------------
-
-/*
- *----------------------------------------------------------------------------
- *PLOT A DISTANT 1 PALETTE POLYGON
- *
- *IR0=BLOWLIST
- *IR1=BLOWLIST+1
- *RC=POLYGON COUNT
- *
- */
+// *PLOT A DISTANT 1 PALETTE POLYGON
+// *
+// *IR0=BLOWLIST
+// *IR1=BLOWLIST+1
+// *RC=POLYGON COUNT
+// *
 static void PLT1PAL(void) {
     // asm 00000506: 	CMPI	50,RC			;BIG OBJECT?
     // asm 00000507: 	BLTD	PLT1PAL1
@@ -1980,7 +2069,7 @@ PLTWT_2:
     // asm 0000054B: 	LSH	-16,R1
     // asm 0000054C: 	STI	R1,*AR7
     // asm 0000054D:  	STI	R2,*AR7
-    // asm 0000054E: PLTPOLL_2
+PLTPOLL_2:
     // asm 0000054E: 	LDI	@FIFO_INC,R0
     // asm 0000054F: 	RETS
 PLTLP1_2:
@@ -2073,7 +2162,7 @@ LOF4X:
     // asm 00000592: 	LSH	-16,R1
     // asm 00000593: 	STI	R1,*AR7
     // asm 00000594:  	STI	R2,*AR7
-    // asm 00000595: PLTGPOLL_2
+PLTGPOLL_2:
     // asm 00000595: 	LDI	@FIFO_INC,R0
     // asm 00000596: 	RETS
 PLTGLP1_2:
@@ -2085,29 +2174,27 @@ PLTGLP1_2:
     // asm 0000059C: 	AND	R7,R3,AR4
     // 	;----> BNND PLTGPOLYLP1_2
     // asm 0000059D: 	RETS
+
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLT1PAL", 0, 0);
     UNIMPL();
 }
 
-/*
- *----------------------------------------------------------------------------
- *PLOTILLUM
- *
- *For most purposes this routine mirrors what PLOTPOLY does,
- *except that it has been streamlined for use with ILLUMINATED
- *objects
- *
- *v4.00:	THIS IS THE ONLY SUBSYSTEM WHICH ACCEPTS NORMALS IN THE POLYGON
- *	DATA BLOCK.
- *
- *	struct ROM_ILLUM_POLYGON  {
- *		int	cntl
- *		float	Nx,Ny,Nz
- *		int	(v4<<24)|(v3<<16)|(v2<<8)|(v1)
- *	}
- *
- *
- */
+// *PLOTILLUM
+// *
+// *For most purposes this routine mirrors what PLOTPOLY does,
+// *except that it has been streamlined for use with ILLUMINATED
+// *objects
+// *
+// *v4.00:	THIS IS THE ONLY SUBSYSTEM WHICH ACCEPTS NORMALS IN THE POLYGON
+// *	DATA BLOCK.
+// *
+// *	struct ROM_ILLUM_POLYGON  {
+// *		int	cntl
+// *		float	Nx,Ny,Nz
+// *		int	(v4<<24)|(v3<<16)|(v2<<8)|(v1)
+// *	}
+// *
+// *
 static void PLOTILLUM(void) {
     // asm 0000059E: 	PUSH	AR0
     // ;	LDI	*+AR0(OFLAGS),R6
@@ -2120,7 +2207,7 @@ static void PLOTILLUM(void) {
     // asm 000005A4: 	LDI	FIFO_ADDR>>16,AR7	;FIFO ADDRESS
     // asm 000005A5: 	LS	16,AR7
     // asm 000005A6: 	LDI	BK,AR6			;# of polygons-1
-    // asm 000005A7: ILLUM_PLOTPOLYLP
+ILLUM_PLOTPOLYLP:
     // 	;CHECK HIDDEN SURFACE REMOVAL
     // asm 000005A7: 	LDI	*+AR1(4),R0		;read vertex (v4|v3|v2|v1)
     // asm 000005A8: 	LDI	R0,AR4			;
@@ -2146,7 +2233,7 @@ static void PLOTILLUM(void) {
     // *GET ILLUMINATION PALETTE TO BE USED
     // *ROTATE NORMAL VECTOR BY OBJECT/UNIVERSE RAOTATION MATRIX
     // *
-    // asm 000005BA: ILLUM1
+ILLUM1:
     // asm 000005BA: 	LDI	*AR1++,R7			;get control word
     // ;	LDP	@tmpmatY			;DP loaded with low memory area
     // asm 000005BB: 	LDI	@tmpmatY,AR3			;
@@ -2212,7 +2299,7 @@ ILLUMFF:
 LP1:
     // asm 000005E8: STI	R0,*AR7				;y[n]
     // asm 000005E9: 	LDI	*+AR0(FIFO_INC-FIFO_STATUS),R0	;FIFO_INC replacement
-    // asm 000005EA: ILLUM_POLYLP
+ILLUM_POLYLP:
     // asm 000005EA: 	DBU	AR6,ILLUM_PLOTPOLYLP
     // asm 000005EB: 	POP	AR0
     // asm 000005EC: 	RETS
@@ -2221,16 +2308,12 @@ ZCLIP:
     // asm 000005EE: 	DBU	AR6,ILLUM_PLOTPOLYLP
     // asm 000005EF: 	POP	AR0
     // asm 000005F0: 	RETS
-    // asm 000005F1: ZCLIP1
+ZCLIP1:
     // asm 000005F1: 	ADDI	5,AR1
     // asm 000005F2: 	DBU	AR6,ILLUM_PLOTPOLYLP
     // asm 000005F3: 	POP	AR0
     // asm 000005F4: 	RETS
+    // *warning moving this to top of file will crash program ask ti why
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTILLUM", 0, 0);
     UNIMPL();
 }
-
-/*
- *----------------------------------------------------------------------------
- *warning moving this to top of file will crash program ask ti why
- */

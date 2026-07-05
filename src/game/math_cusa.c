@@ -1401,6 +1401,9 @@ void CONCATMATV(void) {
     UNIMPL();
 }
 
+// *PARAMETERS
+//  *	AR0	s SOURCE MATRIX
+//  *	AR1	d  DEST MATRIX
 void CONCAT201(void) {
     // asm 000096CF: 	LDI	5,IR1
     // asm 000096D0: 	LDI	3,IR0

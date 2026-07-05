@@ -1912,7 +1912,6 @@ def collect_top_level_functions(
     for idx, raw in enumerate(lines):
         if SEPARATOR_RE.match(raw.strip()):
             seen_separator = True
-            current = None
             continue
 
         standalone_data, _next_idx = collect_standalone_labeled_data(lines, idx, branch_targets, data_only_macros)
@@ -2011,7 +2010,10 @@ def collect_top_level_functions(
             bare_label_match
             and is_flush_left(raw)
             and current is not None
-            and bare_label_match.group(1) in branch_targets
+            and (
+                bare_label_match.group(1) in branch_targets
+                or bare_label_has_code_body(lines, idx)
+            )
         ):
             label = bare_label_match.group(1)
             current.labels.add(label)
@@ -4457,8 +4459,16 @@ def main() -> int:
     skipped_log = log_dir / "skipped_data_symbols.txt"
     skipped_rows = sorted(skipped_data_symbols)
     skipped_log.write_text("".join(f"{name}\n" for name in skipped_rows))
-    print(f"generated {len(iter_module_paths(asm_dir, '*.ASM'))} C modules in {out_dir.relative_to(root)}")
-    print(f"logged {len(skipped_rows)} skipped data symbols to {skipped_log.relative_to(root)}")
+    try:
+        rendered_out_dir = out_dir.relative_to(root)
+    except ValueError:
+        rendered_out_dir = out_dir
+    try:
+        rendered_skipped_log = skipped_log.relative_to(root)
+    except ValueError:
+        rendered_skipped_log = skipped_log
+    print(f"generated {len(iter_module_paths(asm_dir, '*.ASM'))} C modules in {rendered_out_dir}")
+    print(f"logged {len(skipped_rows)} skipped data symbols to {rendered_skipped_log}")
     return 0
 
 
