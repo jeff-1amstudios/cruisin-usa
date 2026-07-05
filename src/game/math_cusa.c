@@ -12,7 +12,9 @@
 #include "sys.h"
 #include "sysid.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
+#include <math.h>
 
 /*
  * Source module: asm/MATH.ASM
@@ -24,10 +26,10 @@ void NORMITS(void);
 void NORMIT(void);
 void ARCTANF(void);
 void FIND_MATRIX(void);
-void FIND_XMATRIX(void);
+void FIND_XMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
 #define FIND_YMATRIX _find_Ymatrix
-void _find_Ymatrix(void);
-void HPFIND_YMATRIX(void);
+void _find_Ymatrix(MATRIX* dest /*AR2*/, float radians /*R2*/);
+void HPFIND_YMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
 void FIND_ZMATRIX(void);
 void INITMAT(MATRIX* mat /*AR0*/);
 void VECTLEN(void);
@@ -79,8 +81,7 @@ static float ATOFFTAB[16];
  *	R0	RETURN VALUE
  *
  */
-void _COSI(void)
-{
+void _COSI(void) {
     // asm 0000952D: 	LDF	R2,R0
     // asm 0000952E: 	ADDF	@HALFPII,R0	;offset for COS
     // asm 0000952F: 	B	SINE0
@@ -96,8 +97,7 @@ void _COSI(void)
     UNIMPL();
 }
 
-void _SINE(void)
-{
+void _SINE(void) {
     // asm 00009530: 	LDF	R2,R0
 SINE0:
     // asm 00009531: PUSH	AR0
@@ -461,8 +461,7 @@ static float RADFORMI = 0.000095873f;
  *	N,Z BITS SET FOR R2
  *
  */
-void NORMITS(void)
-{
+void NORMITS(void) {
     // asm 00009556: 	MPYF	@RADFORM,R2
     // asm 00009557: 	FIX	R2
     // asm 00009558: 	LS	16,R2
@@ -489,8 +488,7 @@ NMS1:
  *	R2	IN RANGE 0 TO 2PI
  *
  */
-void NORMIT(void)
-{
+void NORMIT(void) {
     // asm 00009561: 	MPYF	@RADFORM,R2
     // asm 00009562: 	FIX	R2
     // asm 00009563: 	LS	16,R2
@@ -517,8 +515,7 @@ void NORMIT(void)
  *	R0	RADIANS (FLOAT)
  *
  */
-void ARCTANF(void)
-{
+void ARCTANF(void) {
     // asm 00009568: _arctanf
     // asm 00009568: 	PUSH	R1
     // asm 00009569: 	PUSHF	R1
@@ -777,8 +774,7 @@ int LOCTEMPER_MAT2[12];
  *	R2	SOURCE RADIANS 1X3
  *
  */
-void FIND_MATRIX(void)
-{
+void FIND_MATRIX(void) {
     // asm 00009591: 	PUSH	R0
     // asm 00009592: 	PUSH	R1
     // asm 00009593: 	PUSH	R2
@@ -856,29 +852,35 @@ FM1:
  *	R2	SOURCE RADIANS
  *
  */
-void FIND_XMATRIX(void)
-{
+void FIND_XMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/) {
     // asm 000095C5: 	PUSH	R0
     // asm 000095C6: 	PUSHF	R0
     // asm 000095C7: 	CALL	_COSI
     // asm 000095C8: 	STF	R0,*+AR2(A11)
+    dest->a11 = cosf(radians);
     // asm 000095C9: 	STF	R0,*+AR2(A22)
+    dest->a22 = dest->a11;
     // asm 000095CA: 	CALL	_SINE
     // asm 000095CB: 	STF	R0,*+AR2(A12)
+    dest->a12 = sinf(radians);
     // asm 000095CC: 	NEGF	R0
     // asm 000095CD: 	STF	R0,*+AR2(A21)
+    dest->a21 = -dest->a12;
     // asm 000095CE: 	LDF	1,R0
     // asm 000095CF: 	STF	R0,*+AR2(A00)
+    dest->a00 = 1.0f;
     // asm 000095D0: 	CLRF	R0
     // asm 000095D1: 	STF	R0,*+AR2(A01)
+    dest->a01 = 0.0f;
     // asm 000095D2: 	STF	R0,*+AR2(A02)
+    dest->a02 = 0.0f;
     // asm 000095D3: 	STF	R0,*+AR2(A10)
+    dest->a10 = 0.0f;
     // asm 000095D4: 	STF	R0,*+AR2(A20)
+    dest->a20 = 0.0f;
     // asm 000095D5: 	POPF	R0
     // asm 000095D6: 	POP	R0
     // asm 000095D7: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_XMATRIX", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -894,29 +896,35 @@ void FIND_XMATRIX(void)
  *	R2	SOURCE RADIANS
  *
  */
-void _find_Ymatrix(void)
-{
+void _find_Ymatrix(MATRIX* dest /*AR2*/, float radians /*R2*/) {
     // asm 000095D8: 	PUSH	R0
     // asm 000095D9: 	PUSHF	R0
     // asm 000095DA: 	CALL	_COSI
     // asm 000095DB: 	STF	R0,*+AR2(A00)
+    dest->a00 = cosf(radians);
     // asm 000095DC: 	STF	R0,*+AR2(A22)
+    dest->a22 = dest->a00;
     // asm 000095DD: 	CALL	_SINE
     // asm 000095DE: 	STF	R0,*+AR2(A20)
+    dest->a20 = sinf(radians);
     // asm 000095DF: 	NEGF	R0
     // asm 000095E0: 	STF	R0,*+AR2(A02)
+    dest->a02 = -dest->a20;
     // asm 000095E1: 	LDF	1,R0
     // asm 000095E2: 	STF	R0,*+AR2(A11)
+    dest->a11 = 1.0f;
     // asm 000095E3: 	CLRF	R0
     // asm 000095E4: 	STF	R0,*+AR2(A01)
+    dest->a01 = 0.0f;
     // asm 000095E5: 	STF	R0,*+AR2(A10)
+    dest->a10 = 0.0f;
     // asm 000095E6: 	STF	R0,*+AR2(A12)
+    dest->a12 = 0.0f;
     // asm 000095E7: 	STF	R0,*+AR2(A21)
+    dest->a21 = 0.0f;
     // asm 000095E8: 	POPF	R0
     // asm 000095E9: 	POP	R0
     // asm 000095EA: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_find_Ymatrix", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -932,8 +940,12 @@ void _find_Ymatrix(void)
  *	R2	SOURCE RADIANS
  *
  */
-void HPFIND_YMATRIX(void)
-{
+void HPFIND_YMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/) {
+    float c;
+    float s;
+
+    // MAME_VALIDATE_ARG_FLOAT
+
     // asm 000095EB: 	PUSH	R0
     // asm 000095EC: 	PUSHF	R0
     // asm 000095ED: 	PUSH	R1
@@ -946,22 +958,44 @@ void HPFIND_YMATRIX(void)
     // asm 000095F4: 	PUSHF	R4
     // asm 000095F5: 	PUSH	R2
     // asm 000095F6: 	PUSHF	R2
+
     // asm 000095F7: 	CALL	_HPcos
+    c = _HPcos(radians);
+
     // asm 000095F8: 	STF	R0,*+AR2(A00)
+    dest->a00 = c;
+    MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000095F8, "R0", &c);
     // asm 000095F9: 	STF	R0,*+AR2(A22)
+    dest->a22 = c;
+
     // asm 000095FA: 	POPF	R2
     // asm 000095FB: 	POP	R2
+
     // asm 000095FC: 	CALL	_HPsin
+    s = _HPsin(radians);
+
     // asm 000095FD: 	STF	R0,*+AR2(A20)
+    dest->a20 = s;
+    MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000095FD, "R0", &s);
+
     // asm 000095FE: 	NEGF	R0
     // asm 000095FF: 	STF	R0,*+AR2(A02)
+    dest->a02 = -s;
+
     // asm 00009600: 	LDF	1,R0
     // asm 00009601: 	STF	R0,*+AR2(A11)
+    dest->a11 = 1.0f;
+
     // asm 00009602: 	CLRF	R0
     // asm 00009603: 	STF	R0,*+AR2(A01)
+    dest->a01 = 0.0f;
     // asm 00009604: 	STF	R0,*+AR2(A10)
+    dest->a10 = 0.0f;
     // asm 00009605: 	STF	R0,*+AR2(A12)
+    dest->a12 = 0.0f;
     // asm 00009606: 	STF	R0,*+AR2(A21)
+    dest->a21 = 0.0f;
+
     // asm 00009607: 	POPF	R4
     // asm 00009608: 	POP	R4
     // asm 00009609: 	POPF	R3
@@ -973,8 +1007,6 @@ void HPFIND_YMATRIX(void)
     // asm 0000960F: 	POPF	R0
     // asm 00009610: 	POP	R0
     // asm 00009611: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HPFIND_YMATRIX", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -990,8 +1022,7 @@ void HPFIND_YMATRIX(void)
  *	R2	SOURCE RADIANS
  *
  */
-void FIND_ZMATRIX(void)
-{
+void FIND_ZMATRIX(void) {
     // asm 00009612: 	PUSH	R0
     // asm 00009613: 	PUSHF	R0
     // asm 00009614: 	CALL	_COSI
@@ -1052,8 +1083,7 @@ void INITMAT(MATRIX* mat /*AR0*/) {
  *	R1,R2
  *
  */
-void VECTLEN(void)
-{
+void VECTLEN(void) {
     // asm 00009636: 	LDF	*AR2++,R2
     // asm 00009637: 	MPYF	R2,R2
     // asm 00009638: 	LDF	*AR2++,R1
@@ -1080,8 +1110,7 @@ void VECTLEN(void)
  *	R2	SOURCE MATRIX
  *
  */
-void CPYMAT(void)
-{
+void CPYMAT(void) {
     // asm 0000963F: 	PUSH	AR0
     // asm 00009640: 	PUSH	R0
     // asm 00009641: 	PUSHF	R0
@@ -1114,8 +1143,7 @@ void CPYMAT(void)
  *
  *WARNING SOURCE CANNOT BE SAME AS DEST
  */
-void CPYIMAT(void)
-{
+void CPYIMAT(void) {
     // asm 0000964B: 	PUSH	R0
     // asm 0000964C: 	PUSHF	R0
     // asm 0000964D: 	PUSH	AR0
@@ -1153,8 +1181,7 @@ void CPYIMAT(void)
  *CLEARS VECTOR A and RETURNS POINTER TO IT IN AR2
  *
  */
-void CLR_VECTORA(void)
-{
+void CLR_VECTORA(void) {
     // asm 00009662: 	PUSH	R0
     // asm 00009663: 	PUSHF	R0
     // asm 00009664: 	LDI	@VECTORAI,AR2
@@ -1185,8 +1212,7 @@ void CLR_VECTORA(void)
  *NOTE SRC 1x3 and DST 1x3 may be equal
  *
  */
-void MATRIX_MUL(void)
-{
+void MATRIX_MUL(void) {
     // asm 0000966C: 	PUSH	R0
     // asm 0000966D: 	PUSHF	R0
     // asm 0000966E: 	PUSH	AR1
@@ -1232,8 +1258,7 @@ void MATRIX_MUL(void)
  *----------------------------------------------------------------------------
  *void	normalize(VECTOR *V)
  */
-void NORMALIZE(void)
-{
+void NORMALIZE(void) {
     // asm 00009689: 	PUSH	R0
     // asm 0000968A: 	PUSH	R1
     // asm 0000968B: 	PUSHF	R0
@@ -1267,8 +1292,7 @@ void NORMALIZE(void)
  *AR0,AR1,R0,R1,R2 TRASHED
  *
  */
-void NORMAT(void)
-{
+void NORMAT(void) {
     // 	;NORMALIZE ROWS
     // asm 0000969A: 	LDI	2,RC
     // asm 0000969B: 	RPTB	NORMROW
@@ -1317,8 +1341,7 @@ NORMROW:
  *	R0-R7,AR2
  *
  */
-void GEN_NORMAL(void)
-{
+void GEN_NORMAL(void) {
     // asm 000096B4: 	PUSH	AR0
     // asm 000096B5: 	LDI	*+AR2(1),AR0		;B
     // asm 000096B6: 	LDI	*+AR2(2),R3		;C
@@ -1370,8 +1393,7 @@ void GEN_NORMAL(void)
  *G H I     P Q R    AP+DQ+GR BP+EQ+HR CP+FQ+IR
  *
  */
-void CONCATMATV(void)
-{
+void CONCATMATV(void) {
     // asm 000096CD: 	LDI	R2,AR0
     // asm 000096CE: 	LDI	R3,AR1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1379,8 +1401,7 @@ void CONCATMATV(void)
     UNIMPL();
 }
 
-void CONCAT201(void)
-{
+void CONCAT201(void) {
     // asm 000096CF: 	LDI	5,IR1
     // asm 000096D0: 	LDI	3,IR0
     // asm 000096D1: 	LDI	2,RC
@@ -1430,8 +1451,7 @@ INLP2:
  *
  *
  */
-void CONCATMAT(void)
-{
+void CONCATMAT(void) {
     // asm 000096E2: 	PUSH	AR0
     // asm 000096E3: 	PUSH	AR1
     // asm 000096E4: 	PUSH	AR0
@@ -1469,8 +1489,7 @@ void CONCATMAT(void)
  *	R0	THETA DELTA (float)
  *
  */
-void GETTHETADIFF(void)
-{
+void GETTHETADIFF(void) {
     // asm 000096F5: 	PUSHF	R1
     // asm 000096F6: 	SUBF	R2,R0
     // asm 000096F7: 	ABSF	R0,R1
@@ -1516,8 +1535,7 @@ NONEG:
  *
  *
  */
-void DIST_PT2LINE(void)
-{
+void DIST_PT2LINE(void) {
     // asm 00009702: 	PUSH	R1
     // asm 00009703: 	PUSH	R2
     // asm 00009704: 	PUSHF	R1
@@ -1560,8 +1578,7 @@ void DIST_PT2LINE(void)
  *	AR2	VECTOR AS A B C
  *
  */
-void GETLINE_EQ_2D(void)
-{
+void GETLINE_EQ_2D(void) {
     // asm 00009717: 	PUSH	R0
     // asm 00009718: 	PUSH	R1
     // asm 00009719: 	PUSH	R2
@@ -1623,8 +1640,7 @@ void GETLINE_EQ_2D(void)
  *
  *
  */
-void SCALE_MATRIX(void)
-{
+void SCALE_MATRIX(void) {
     // asm 00009731: 	PUSH	R3
     // asm 00009732: 	PUSHF	R3
     // asm 00009733: 	LDF	*+AR2(A00),R3

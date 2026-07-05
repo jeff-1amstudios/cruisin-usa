@@ -3,7 +3,7 @@
 extern tPALLIST_ENTRY _PALLIST[256];
 extern tPAL* _PALROM[];
 
-extern tSECTION_ALLOC shared_PALETTES, general_PALETTES;
+extern tSECTION_ALLOC shared_PALETTES, general_PALETTES, press_PALETTES;
 
 extern LOAD_SECTION_REQ_ARG SECshared;
 extern LOAD_SECTION_REQ_ARG SECskys_CUSA;

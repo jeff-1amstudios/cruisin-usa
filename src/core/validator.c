@@ -13,7 +13,7 @@
 
 static FILE* g_validate_log;
 static int g_validate_maps_loaded;
-static int print_oks = 1;
+static int print_oks = 0;
 static int abort_on_error = 1;
 static int fail_on_wrong_consumer = 1;
 static int g_validate_log_line_number = 0;

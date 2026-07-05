@@ -6,7 +6,7 @@
 /* Generated from asm/HPMATH.ASM. */
 
 // HPMATH.ASM
-void _HPsin(void);
-void _HPcos(void);
+float _HPsin(float x);
+float _HPcos(float x);
 
 #endif /* HPMATH_H */

@@ -49,4 +49,6 @@ void crusn_memory_init(
 u32 crusn_mem_rd32_map(const crusn_memory_map* memory, word_addr_t addr);
 void crusn_mem_wr32_map(crusn_memory_map* memory, word_addr_t addr, u32 value);
 
+void* port_malloc(size_t size);
+
 #endif

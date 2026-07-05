@@ -15,8 +15,8 @@ static void PRC_DEBUG_CHECK(void);
 static void NEXTPRC(PROC* proc);
 void PRC_CREATE_CHILD(void);
 void PRC_DISPATCH(void);
-void PRC_KILL(void);
-void PRC_KILLALL(void);
+void PRC_KILL(PROC* proc /*AR2*/);
+void PRC_KILLALL(int pid, int mask);
 void PRC_EXISTP(void);
 void PRC_INIT(void);
 void PRC_XFER(void);
@@ -169,7 +169,7 @@ GETPROC0:
 
     // asm 0000A882: 	LDI	0,R0
     // asm 0000A883: 	STI	R0,*+AR0(PTIME)		;PLACE SLEEP TIME
-    proc->state = 0;
+    proc->resume_state = 0;
     proc->sleep_ticks = 0;
 
     // asm 0000A884: 	STI	AR2,*+AR0(PWAKE)	;START ADDRESS OF PROCESS
@@ -401,42 +401,66 @@ DIELP:
  *	AR2	POINTER TO PROCESS TO KILL
  *
  */
-void PRC_KILL(void) {
+void PRC_KILL(PROC* proc /*AR2*/) {
+    PROC** linkp;
+
     // asm 0000A8D7: 	PUSH	R1
     // asm 0000A8D8: 	PUSH	AR1
     // asm 0000A8D9: 	CMPI	AR2,AR7
     // asm 0000A8DA: 	ERRON	Z,EC_PROC|ET_DELETE|3	;KILL ATTEMPTED ON SELF"
     // asm 0000A8E2: 	BEQ	SUICIDE
+    if (proc == CURRENT_PROC) {
+        ERRON(EC_PROC | ET_DELETE | 3);
+        PRC_SUICIDE(CURRENT_PROC);
+        return;
+    }
     // asm 0000A8E3: 	LDI	@PACTIVEI,R1		;WE MUST FIND DEAD PROCESS TO LINK AROUND
+    linkp = &PACTIVE;
 KILLP:
     // asm 0000A8E4: 	LDI	R1,AR1
     // asm 0000A8E5: 	LDI	*AR1,R1
     // asm 0000A8E6: 	ERRON	Z,EC_PROC|ET_DELETE|4	;LOCKUP ON END OF LIST FOUND"
     // asm 0000A8EE: 	BZ	KILL_X
+    if (*linkp == NULL) {
+        ERRON(EC_PROC | ET_DELETE | 4);
+        goto KILL_X;
+    }
     // asm 0000A8EF: 	CMPI	R1,AR2
     // asm 0000A8F0: 	BNE	KILLP
+    if (*linkp != proc) {
+        linkp = &(*linkp)->link;
+        goto KILLP;
+    }
     // asm 0000A8F1: 	LDI	*AR2,R1
     // asm 0000A8F2: 	STI	R1,*AR1			;LINK AROUND
+    *linkp = proc->link;
     // asm 0000A8F3: 	LDI	@PFREEI,AR1
     // asm 0000A8F4: 	LDI	*AR1,R1
     // asm 0000A8F5: 	STI	R1,*AR2
+    proc->link = PFREE;
     // asm 0000A8F6: 	STI	AR2,*AR1
+    PFREE = proc;
+    if (proc->ctx != NULL) {
+        free(proc->ctx);
+        proc->ctx = NULL;
+    }
 KILL_X:
 #if DEBUG
     // asm: 	PUSH	R0
     // asm: 	LDI	@NUM_PROCS_ACTIVE,R0
     // asm: 	DEC	R0
     // asm: 	STI	R0,@NUM_PROCS_ACTIVE
+    NUM_PROCS_ACTIVE -= 1;
     // asm: 	LDI	@NUM_PROCS_IDLE,R0
     // asm: 	INC	R0
     // asm: 	STI	R0,@NUM_PROCS_IDLE
+    NUM_PROCS_IDLE += 1;
     // asm: 	POP	R0
 #endif
     // asm 0000A8F7: 	POP	AR1
     // asm 0000A8F8: 	POP	R1
     // asm 0000A8F9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_KILL", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -451,48 +475,72 @@ KILL_X:
  *	R1	MASK
  *
  */
-void PRC_KILLALL(void) {
+void PRC_KILLALL(int pid, int mask) {
+    PROC** linkp;
+    PROC* proc;
+    int masked_pid;
+
     // asm 0000A8FA: 	PUSH	AR1
     // asm 0000A8FB: 	PUSH	AR2
     // asm 0000A8FC: 	AND	R1,R0
+    masked_pid = pid & mask;
     // asm 0000A8FD: 	LDI	@PACTIVEI,AR2		;WE MUST FIND DEAD PROCESS TO LINK AROUND
+    linkp = &PACTIVE;
 KILLALLP:
     // asm 0000A8FE: 	LDI	AR2,AR1
 KLP0:
     // asm 0000A8FF: 	LDI	*AR1,R2
     // asm 0000A900: 	BZ	KADONE			;WE'RE DONE
+    proc = *linkp;
+    if (proc == NULL) {
+        goto KADONE;
+    }
     // asm 0000A901: 	LDI	R2,AR2
     // asm 0000A902: 	LDI	*+AR2(PID),R2
     // asm 0000A903: 	AND	R1,R2
     // asm 0000A904: 	CMPI	R2,R0
     // asm 0000A905: 	BNZ	KILLALLP
+    if ((proc->id & mask) != masked_pid) {
+        linkp = &proc->link;
+        goto KILLALLP;
+    }
     // asm 0000A906: 	CMPI	AR7,AR2
     // asm 0000A907: 	BZ	KILLALLP		;DONT KILL YOURSELF
+    if (proc == CURRENT_PROC) {
+        linkp = &proc->link;
+        goto KILLALLP;
+    }
     // asm 0000A908: 	LDI	*AR2,R2
     // asm 0000A909: 	STI	R2,*AR1			;LINK AROUND
+    *linkp = proc->link;
     // asm 0000A90A: 	LDI	@PFREE,R2
     // asm 0000A90B: 	STI	R2,*AR2
+    proc->link = PFREE;
     // asm 0000A90C: 	STI	AR2,@PFREE
+    PFREE = proc;
 #if DEBUG
     // asm: 	PUSH	R0
     // asm: 	LDI	@NUM_PROCS_ACTIVE,R0
     // asm: 	DEC	R0
     // asm: 	STI	R0,@NUM_PROCS_ACTIVE
+    NUM_PROCS_ACTIVE -= 1;
     // asm: 	LDI	@NUM_PROCS_IDLE,R0
     // asm: 	INC	R0
     // asm: 	STI	R0,@NUM_PROCS_IDLE
+    NUM_PROCS_IDLE += 1;
     // asm: 	POP	R0
 #endif
     // asm 0000A90D: 	BR	KLP0
+    goto KLP0;
 KADONE:
 #if DEBUG
     // asm: 	CALL	PRC_DEBUG_CHECK
+    PRC_DEBUG_CHECK();
 #endif
     // asm 0000A90E: 	POP	AR2
     // asm 0000A90F: 	POP	AR1
     // asm 0000A910: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_KILLALL", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------

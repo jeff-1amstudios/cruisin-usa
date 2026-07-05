@@ -592,10 +592,7 @@ void* GET_LLIST(void** free_list, void** active_list) {
     void* next;
 
     elem = *free_list;
-    if (elem == NULL) {
-        SLOCKON("GET_LLIST  out of elements");
-        return NULL;
-    }
+    SLOCKON(elem == NULL, "GET_LLIST  out of elements");
 
     next = *(void**)elem;
     *free_list = next; /* and update free list */

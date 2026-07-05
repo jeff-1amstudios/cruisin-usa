@@ -39,10 +39,10 @@ void PRC_DISPATCH(void);
 void PRC_SUICIDE(PROC* p);
 
 // asm: 	.globl	PRC_KILL
-void PRC_KILL(void);
+void PRC_KILL(PROC* proc /*AR2*/);
 
 // asm: 	.globl	PRC_KILLALL
-void PRC_KILLALL(void);
+void PRC_KILLALL(int pid, int mask);
 
 // asm: 	.globl	PRC_EXISTP
 void PRC_EXISTP(void);
@@ -62,11 +62,11 @@ void PRC_FOLLOW(void);
 // asm: 	.globl	SLEEP
 void PRC_SLEEP(PROC* p, int ticks);
 
-#define SLEEP(t)         \
-    {                    \
-        PRC_SLEEP(p, t); \
-        return;          \
-    }
+#define SLEEP(t, resume_number)      \
+    p->resume_state = resume_number; \
+    PRC_SLEEP(p, t);                 \
+    return;                          \
+    PROC_RESUME_##resume_number:
 
 #define DIE()           \
     {                   \
@@ -74,10 +74,10 @@ void PRC_SLEEP(PROC* p, int ticks);
         return;         \
     }
 
-#define REENTER(fn)   \
-    {                 \
-        p->state = 0; \
-        fn(p);        \
+#define REENTER(fn)          \
+    {                        \
+        p->resume_state = 0; \
+        fn(p);               \
     }
 
 #endif /* MPROC_H */

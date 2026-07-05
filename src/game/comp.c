@@ -292,11 +292,8 @@ WVWRLP2:
     }
 
     // #if DEBUG
-    if (state->dest_addr < crusn_waveram) {
-        SLOCKON("COMP\\PUTC   ATTEMPT UNDER WRITE OF WAVERAM");
-    } else if (state->dest_addr > crusn_waveram + CRUSN_WAVERAM_WORDS) {
-        SLOCKON("COMP\\PUTC  ATTEMPT OVER WRITE OF WAVERAM");
-    }
+    SLOCKON(state->dest_addr < crusn_waveram, "COMP\\PUTC   ATTEMPT UNDER WRITE OF WAVERAM");
+    SLOCKON(state->dest_addr > crusn_waveram + CRUSN_WAVERAM_WORDS, "COMP\\PUTC  ATTEMPT OVER WRITE OF WAVERAM");
     // #endif
 
     PACIFY_COUNT += 64;
@@ -845,7 +842,7 @@ NOLOAD:
     // asm 0000A401: 	RETS
 
     if (DECOMP_ACTIVE != 0) {
-        PROC_CONTEXT* ctx = malloc(sizeof(PROC_CONTEXT));
+        PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
         ctx->REQWAIT.lsr = section_control;
         CREATE(REQWAIT, SPAWNER_C | LOAD_REQ_T, ctx);
         return;
@@ -858,17 +855,15 @@ NOLOAD:
 
 // *----------------------------------------------------------------------------
 static void REQWAIT(PROC* p) {
-    p->state++;
-    switch (p->state) {
-    case 1:
+    switch (p->resume_state) {
+    case 0:
         break;
-    case 2:
-        goto STATE_2;
+    case 1:
+        goto PROC_RESUME_1;
     }
 
     // asm 0000A402: 	SLEEP	1
-    SLEEP(1);
-STATE_2:
+    SLEEP(1, 1);
     // asm 0000A404: 	LDI	@DECOMP_ACTIVE,R0
     // asm 0000A405: 	BNZ	REQWAIT
     if (DECOMP_ACTIVE) {

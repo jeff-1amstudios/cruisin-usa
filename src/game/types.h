@@ -209,7 +209,7 @@ typedef struct OBJ {
     f32 mat12;
     f32 mat22;
 
-    u32 romdata;
+    void* romdata;
     u32 flags;
     u32 id;
     u32 palette;
@@ -222,23 +222,24 @@ typedef struct OBJ {
     f32 rad_y;
     f32 rad_z;
 
-    u32 process_link; /* OPLINK / OBLINK4 alias */
-    u32 degrade_rom;
-    u32 degrade_rom2;
-    u32 romdata2;          /* OROMDATA2 / ODYNALIST alias */
+    uintptr_t process_link; /* OPLINK / OBLINK4 alias */
+    void* degrade_rom;
+    void* degrade_rom2;
+    void* romdata2;        /* OROMDATA2 / ODYNALIST alias */
     struct CARBLK* carblk; /* OCARBLK / OANIBLK alias */
     s32 dist;              /* ODIST */
     s32 radius;            /* ORAD */
     u32 usr1;
-    u32 link2; /* OUSR2 alias */
-    u32 link3; /* OUSR3 alias */
-    u32 link4;
+    float usr1_as_float;
+    uintptr_t link2; /* OUSR2 alias */
+    uintptr_t link3; /* OUSR3 alias */
+    uintptr_t link4;
 } OBJ;
 
 typedef struct PROC {
     struct PROC* link;
     // u32 stack_ptr;
-    u32 state;
+    u32 resume_state;
     u32 id;
     u32 sleep_ticks;
     PROC_FUNC func;
@@ -459,10 +460,11 @@ typedef struct DELTA_PROC_DATA {
 } DELTA_PROC_DATA;
 
 typedef struct RACEENTRY {
-    u32 time[4];
-    u32 init1;
-    u32 init2;
-    u32 init3;
+    u32 time;
+    u32 pad[3];
+    s32 init1;
+    s32 init2;
+    s32 init3;
     u32 rank;
 } RACEENTRY;
 
@@ -557,8 +559,26 @@ typedef struct LOAD_SECTION_REQ_ARG {
     u32* dest_addr;
 } LOAD_SECTION_REQ_ARG;
 
+typedef struct LOAD_SINGLE_SECTION_GROUP {
+    u32 unused0;
+    u32 count;
+} LOAD_SINGLE_SECTION_GROUP;
+
 typedef struct PROC_CONTEXT {
     union {
+        struct {
+            int race_number;
+        } FLASH_LETTERS_PROC;
+        struct {
+            int race_number;
+            int white_pal;
+            struct PROC* flash_proc;
+            int zoom_count;
+        } DISPLAY_HS;
+        struct {
+            int attrwave;
+            int sleep_ticks;
+        } DISPLAY_HIGH_SCORES;
         struct {
             LOAD_SECTION_REQ_ARG* lsr;
         } REQWAIT;

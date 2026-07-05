@@ -26,10 +26,10 @@ VALIDATE_REGION_AT_ADDR_RE = re.compile(
     r'(?:MAME_VALIDATE_REGION_AT_ADDR|mame_validate_region_at_addr)\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
 )
 VALIDATE_REG_AT_ADDR_RE = re.compile(
-    r'(?:MAME_VALIDATE_REG_AT_ADDR|mame_validate_reg_at_addr)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
+    r'(?:MAME_VALIDATE_REG_AT_ADDR|mame_validate_reg_at_addr)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_REG_AT_ADDR_FLOAT_RE = re.compile(
-    r'(?:MAME_VALIDATE_REG_AT_ADDR_FLOAT|mame_validate_reg_at_addr_float)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<var>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?P<index>\d+)\])?\s*\)\s*;'
+    r'(?:MAME_VALIDATE_REG_AT_ADDR_FLOAT|mame_validate_reg_at_addr_float)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<expr>[^)]+)\)\s*;'
 )
 ADDRESS_MAP_RE = re.compile(r"^\s*[0-9A-Fa-f]{4}:([0-9A-Fa-f]{8})\s+(.+?)\s*$")
 DEFINE_RE = re.compile(r"^\s*#define\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s+(?P<value>.+?)\s*$", re.MULTILINE)
@@ -337,7 +337,7 @@ def collect_breakpoints_for_file(
         entries.append(
             BreakpointEntry(
                 label=f'{match.group("reg")}F',
-                variable_name=match.group("var"),
+                variable_name=match.group("expr").strip(),
                 variable_address=0,
                 instruction_address=int(match.group("addr"), 0),
                 array_length=None,
@@ -357,7 +357,7 @@ def collect_breakpoints_for_file(
         entries.append(
             BreakpointEntry(
                 label=match.group("reg"),
-                variable_name=match.group("var"),
+                variable_name=match.group("expr").strip(),
                 variable_address=0,
                 instruction_address=int(match.group("addr"), 0),
                 array_length=None,

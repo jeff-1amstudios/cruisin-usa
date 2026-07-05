@@ -271,6 +271,11 @@ tSECTION_ALLOC general_PALETTES = {
     0x38
 };
 
+tSECTION_ALLOC press_PALETTES = {
+    0xf6,
+    4
+};
+
 LOAD_SECTION_REQ_ARG SECshared = {
     ROM_PTR(0x0D00000),
     WAVERAM_PTR(0x0A00000)

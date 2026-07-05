@@ -10,6 +10,7 @@
 #include "sys.h"
 #include "sysid.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
 
 /*
@@ -24,7 +25,7 @@ static void MAPPAL_ILLUM_INIT(void);
 static void MAP_ILLUM_COMPUTE(void);
 static void MAPPAL_ILLUM(void);
 void TIME2STR(void);
-void CVTTIME(void);
+void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/);
 void RADAR_PLOT(void);
 
 #define COLONI COLON
@@ -1029,8 +1030,12 @@ static float SECFACT = 0.018181818f;
 /* asm: 	 */
 static float HUNFACT = 1.818181818f;
 
-void CVTTIME(void)
+void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/)
 {
+    int local_minutes;
+    int local_seconds;
+    int local_hundredths;
+
     // asm 000060E8: 	PUSH	R3
     // asm 000060E9: 	PUSHF	R3
     // asm 000060EA: 	FLOAT	R0,R3
@@ -1039,23 +1044,46 @@ void CVTTIME(void)
     // asm 000060ED: 	CEILI	99,R3
     // asm 000060EF: 	FLOORI	0,R3
     // asm 000060F1: 	LDI	R3,R2			;MINUTES
+    local_minutes = (int)((f32)time_code * MINFACT);
+    if (local_minutes < 0) {
+        local_minutes = 0;
+    }
+    MAME_VALIDATE_REG_AT_ADDR(0x000060F1, "R2", &local_minutes);
     // asm 000060F2: 	MPYI	3300,R3
     // asm 000060F3: 	SUBI 	R3,R0
     // asm 000060F4: 	LDILT	0,R0
+    time_code -= local_minutes * 3300;
+    if (time_code < 0) {
+        time_code = 0;
+    }
     // asm 000060F5: 	FLOAT	R0,R3
     // asm 000060F6: 	MPYF	@SECFACT,R3
     // asm 000060F7: 	FIX	R3,R3
     // asm 000060F8: 	CEILI	59,R3
     // asm 000060FA: 	FLOORI	0,R3
     // asm 000060FC: 	LDI	R3,R1			;SECONDS
+    local_seconds = (int)((f32)time_code * SECFACT);
+    if (local_seconds < 0) {
+        local_seconds = 0;
+    }
+    MAME_VALIDATE_REG_AT_ADDR(0x000060FC, "R1", &local_seconds);
     // asm 000060FD: 	MPYI	55,R3
     // asm 000060FE: 	SUBI 	R3,R0
     // asm 000060FF: 	LDILT	0,R0
+    time_code -= local_seconds * 55;
+    if (time_code < 0) {
+        time_code = 0;
+    }
     // asm 00006100: 	FLOAT	R0,R3
     // asm 00006101: 	MPYF	@HUNFACT,R3
     // asm 00006102: 	FIX	R3,R0			;HUNDRETHS
     // asm 00006103: 	CEILI	99,R0
     // asm 00006105: 	FLOORI	0,R0
+    local_hundredths = (int)((f32)time_code * HUNFACT);
+    if (local_hundredths < 0) {
+        local_hundredths = 0;
+    }
+    MAME_VALIDATE_REG_AT_ADDR(0x00006102, "R0", &local_hundredths);
     // asm 00006107: 	POPF	R3
     // asm 00006108: 	POP	R3
     // asm 00006109: 	RETS
@@ -1077,8 +1105,9 @@ void CVTTIME(void)
     // ;	CMPI	32000,R5
     // ;	BLT	CKLP
     // ;	B	$
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CVTTIME", 0, 0);
-    UNIMPL();
+    *hundredths = local_hundredths;
+    *seconds = local_seconds;
+    *minutes = local_minutes;
 }
 
 // *----------------------------------------------------------------------------

@@ -633,8 +633,6 @@
 //
 // TOP RACE TIMES
 //
-// asm: TE_SIZE		.set	8
-#define TE_SIZE 8
 
 // asm: NUM_RACES		.set	15
 #define NUM_RACES 15
@@ -643,7 +641,7 @@
 #define NUM_ENTRIES_PER_RACE 10
 
 // asm: RACE_TABLE_SIZE		.set	NUM_ENTRIES_PER_RACE*TE_SIZE
-#define RACE_TABLE_SIZE (NUM_ENTRIES_PER_RACE * TE_SIZE)
+#define RACE_TABLE_SIZE (NUM_ENTRIES_PER_RACE * sizeof(RACEENTRY))
 
 //
 //
@@ -697,9 +695,9 @@ void CHECK_RACE_TABLE(void);
 void INSERT_TABLE_ENTRY(void);
 
 // asm: 	.globl	TABLE_ENTRY_READ,GET_TABLE_ADDR
-void TABLE_ENTRY_READ(void);
+RACEENTRY TABLE_ENTRY_READ(word_addr_t* addr /*AR2*/);
 
-void GET_TABLE_ADDR(void);
+word_addr_t GET_TABLE_ADDR(int race_index /*R6*/, int entry_index /*R7*/);
 
 // asm: 	.globl	INIT_LASTHS_TABLE,CHECK_LASTHS
 void INIT_LASTHS_TABLE(void);

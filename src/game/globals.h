@@ -92,7 +92,7 @@ extern int TYCO_TRACK;
 // asm:  .globl TYCO_TRACK_NTL
 extern int TYCO_TRACK_NTL;
 
-extern int SINGLE_SECTION_TEMPPTR;
+extern OBJ* SINGLE_SECTION_TEMPPTR;
 
 // bssstart.asm
 // asm:  .globl BSSSTART
@@ -786,7 +786,7 @@ void LOAD_TUNNEL(void);
 void BGD_INIT(void);
 
 // asm:  .globl LOAD_SINGLE_SECTION,SINGLE_SECTION_TEMPPTR
-void LOAD_SINGLE_SECTION(void);
+OBJ* LOAD_SINGLE_SECTION(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
 
 // asm:  .globl GET_XZ_DISTANCE
 void GET_XZ_DISTANCE(void);
@@ -1124,7 +1124,7 @@ void FIND_NEXT_OBJ(void);
 void _outtextxyc(const char* string, int x, int y, int color);
 
 // asm:  .globl _itoa,_itoaLZ
-void _itoa(void);
+void _itoa(char* string_space /*AR2*/, int number /*R2*/);
 
 void _itoaLZ(void);
 
@@ -1146,9 +1146,8 @@ void HOTTUB_SCENE(void);
 
 // hpmath.c
 // asm:  .globl _HPcos,_HPsin
-void _HPcos(void);
-
-void _HPsin(void);
+float _HPsin(float x);
+float _HPcos(float x);
 
 // hstdp.asm
 // asm:  .globl DISPLAY_HIGH_SCORES
@@ -1182,7 +1181,7 @@ void MOVEOUT_HUD_EQUIP(void);
 void HARDalloc_section(tSECTION_ALLOC sec);
 
 // asm:  .globl INFINITY
-void INFINITY(void);
+void INFINITY_CUSA(void);
 
 // asm:  .globl HUD
 void HUD(void);
@@ -1245,6 +1244,7 @@ void _timeout(void);
 
 // asm:  .globl SET_ATTR,CYCLE_ATTR
 void SET_ATTR(void);
+void CYCLE_ATTR(void);
 
 // asm:  .globl INTROTIMER,RACESEL_TIMER
 void INTROTIMER(void);
@@ -1316,15 +1316,15 @@ void FIND_MATRIX(void);
 void INITMAT(MATRIX* mat /*AR0*/);
 
 // asm:  .globl FIND_XMATRIX,FIND_YMATRIX,FIND_ZMATRIX
-void FIND_XMATRIX(void);
+void FIND_XMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
 
 void FIND_ZMATRIX(void);
 
 // asm:  .globl _find_Ymatrix
-void _find_Ymatrix(void);
+void _find_Ymatrix(MATRIX* dest /*AR2*/, float radians /*R2*/);
 
 // asm:  .globl HPFIND_YMATRIX
-void HPFIND_YMATRIX(void);
+void HPFIND_YMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
 
 // asm:  .globl NORMAT,NORMALIZE
 void NORMAT(void);
@@ -1377,7 +1377,7 @@ void UNFOLDMAP(void);
 void TIME2STR(void);
 
 // asm:  .globl CVTTIME
-void CVTTIME(void);
+void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/);
 
 // asm:  .globl UNFOLDMAP_NOPAL
 void UNFOLDMAP_NOPAL(void);

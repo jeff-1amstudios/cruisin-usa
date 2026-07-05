@@ -676,7 +676,6 @@ IBO2:
 
     // asm 00007AB1: 	STI	R0,@_AIVI+0
     _AIVI[0] = top_left;
-    mame_validate_print_oks_on();
     MAME_VALIDATE_REG_AT_ADDR(0x00007AB2, "R0", &top_left);
 
     // asm 00007AB2: 	LDI	*+AR4(TEXT_HEIGHT),R1

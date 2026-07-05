@@ -221,6 +221,37 @@ def test_mame_validate_reg_at_addr_accepts_indexed_address_expr() -> None:
         )
 
 
+def test_mame_validate_reg_at_addr_accepts_pointer_member_expr() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                typedef struct Obj {
+                    int radius;
+                } Obj;
+
+                void test(Obj* obj) {
+                    mame_validate_reg_at_addr(0x0000703C, "R0", &obj->radius);
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text("")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x0000703C
+        assert entries[0].variable_name == "obj->radius"
+        assert (
+            entries[0].format_mame()
+            == 'bpset 0000703C, 1, { logerror "validate R0: 0x%08X, sample.c:6\\n", r0; g }'
+        )
+
+
 def test_mame_validate_reg_at_addr_float_uses_float_register_label() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = pathlib.Path(tmpdir)
@@ -244,6 +275,37 @@ def test_mame_validate_reg_at_addr_float_uses_float_register_label() -> None:
         assert (
             entries[0].format_mame()
             == 'bpset 00007A81, 1, { logerror "validate R2F: 0x%08X, sample.c:2\\n", r2f; g }'
+        )
+
+
+def test_mame_validate_reg_at_addr_float_accepts_pointer_member_expr() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                typedef struct Obj {
+                    float radius;
+                } Obj;
+
+                void test(Obj* obj) {
+                    mame_validate_reg_at_addr_float(0x0000703C, "R0", &obj->radius);
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text("")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x0000703C
+        assert entries[0].variable_name == "obj->radius"
+        assert (
+            entries[0].format_mame()
+            == 'bpset 0000703C, 1, { logerror "validate R0F: 0x%08X, sample.c:6\\n", r0f; g }'
         )
 
 

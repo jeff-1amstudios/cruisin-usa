@@ -66,7 +66,7 @@ set(CRUSN_SOURCES
   src/game/leg.c
   src/game/line.c
   src/game/map.c
-  src/game/math.c
+  src/game/math_cusa.c
   src/game/memtest.c
   src/game/motion.c
   src/game/mproc.c

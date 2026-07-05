@@ -469,8 +469,6 @@ DR1:
 
     SETADJ(ADJ_OUTOFDIAG, 0);
 
-    mame_validate_print_oks_off();
-
     HARD_SECTION_LOAD = 1;
     LOAD_SECTION_REQ(&SECshared);
     MAME_VALIDATE_REGION_AT_ADDR(0x00004B8B, "_SECshared-decompressed", 0x0A00000, SECshared.dest_addr, 0x1AB00);
@@ -480,8 +478,6 @@ DR1:
     MAME_VALIDATE_REGION_AT_ADDR(0x00004B8F, "SECskys_CUSA-decompressed", 0x0A1AB00, SECskys_CUSA.dest_addr, 0x30000);
 
     MSG2();
-
-    mame_validate_print_oks_on();
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
@@ -580,7 +576,7 @@ void MAINLOOP(void) {
 
     // FILL FIFO STUFF
     if (_MODE & MINFIN) {
-        INFINITY();
+        INFINITY_CUSA();
     }
 
     TIMEREC();

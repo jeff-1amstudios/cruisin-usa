@@ -240,16 +240,16 @@ void OBJ_FREE_SIGN(void);
 void OBJ_INIT(void);
 
 // asm: 	.globl	OBJ_GET
-void OBJ_GET(void);
+OBJ* OBJ_GET(void);
 
 // asm: 	.globl	OBJ_GETE
-void OBJ_GETE(void);
+OBJ* OBJ_GETE(void* romdata);
 
 // asm: 	.globl	OBJ_INSERT
-void OBJ_INSERT(void);
+void OBJ_INSERT(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_INSERTP
-void OBJ_INSERTP(void);
+void OBJ_INSERTP(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_INSERTHP
 void OBJ_INSERTHP(void);
@@ -273,7 +273,7 @@ void OBJ_DELETE_CLASS(void);
 void OBJ_PULL(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_FREE
-void OBJ_FREE(void);
+void OBJ_FREE(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_MAKE
 void OBJ_MAKE(void);

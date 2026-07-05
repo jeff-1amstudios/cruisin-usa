@@ -9,7 +9,7 @@
 // asm: 	.bss	ftoa_tmp,2
 extern int ftoa_tmp[];
 void _ftoa(void);
-void _itoa(void);
+void _itoa(char* string_space /*AR2*/, int number /*R2*/);
 void _pixel(int x, int y, int color);
 void _outtextxyc(const char* string, int x, int y, int color);
 void _fill(int x1, int y1, int x2, int y2, int color);

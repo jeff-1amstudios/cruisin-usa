@@ -142,6 +142,31 @@ u32* crusn_machine_colorram_addr(word_addr_t addr) {
     return &machine->colorram_words[offset];
 }
 
+u32 crusn_read_u32(const u32** cursor) {
+    u32 value;
+
+    assert(cursor != NULL);
+    assert(*cursor != NULL);
+
+    value = **cursor;
+    (*cursor)++;
+    return value;
+}
+
+s32 crusn_read_s32(const u32** cursor) {
+    return (s32)crusn_read_u32(cursor);
+}
+
+f32 crusn__read_f32(const u32** cursor) {
+    union {
+        u32 u;
+        f32 f;
+    } value;
+
+    value.u = crusn_read_u32(cursor);
+    return value.f;
+}
+
 void crusn_machine_decode_screen_argb8888(const crusn_machine* machine, u32* dst_pixels, size_t dst_pitch_bytes) {
     size_t y;
     size_t x;

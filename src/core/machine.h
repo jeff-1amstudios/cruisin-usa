@@ -6,6 +6,7 @@
 #include "memory.h"
 
 enum {
+
     CRUSN_ROM_WORDS = 0x280000,
     CRUSN_WAVERAM_WORDS = 0x1FFFFF,
     CRUSN_SCREEN_WIDTH = 512,
@@ -64,6 +65,9 @@ u32* crusn_machine_colorram_addr(word_addr_t addr);
 u32* crusn_machine_screen_page(const crusn_machine* machine, int page_index);
 void crusn_machine_set_screen_pages(crusn_machine* machine, int display_page_index, int write_page_index);
 void crusn_machine_clear_screen_page(crusn_machine* machine, int page_index);
+u32 crusn_read_u32(const u32** cursor);
+s32 crusn_read_s32(const u32** cursor);
+f32 crusn__read_f32(const u32** cursor);
 
 void crusn_yield_display_interrupt(void);
 

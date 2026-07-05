@@ -291,7 +291,7 @@ LD_RAM:
 
     // asm:
     // CREATE SCAN_OBJECTS,UTIL_C
-    PROC_CONTEXT* ctx = malloc(sizeof(PROC_CONTEXT));
+    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
     CREATE(SCAN_OBJECTS, UTIL_C, ctx);
 
     if (wave_index == 1) {
@@ -344,9 +344,9 @@ static void HIGH_SCORE(void) {
 
     _MODE = MATTR | MHS;
 
-    PROC_CONTEXT* ctx = malloc(sizeof(PROC_CONTEXT));
+    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
     CREATE(DISPLAY_HIGH_SCORES, UTIL_C, ctx);
-    ctx = malloc(sizeof(PROC_CONTEXT));
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
     CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
     // MAME_VALIDATE_EXIT();
 }

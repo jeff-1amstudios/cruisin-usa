@@ -57,7 +57,7 @@ extern int PASS1;
 // asm: 	.bss	SECRADY,1	;SECTION RADIAN Y
 extern int SECRADY;
 // asm: 	.bss	SINGLE_SECTION_TEMPPTR,1
-extern int SINGLE_SECTION_TEMPPTR;
+extern OBJ* SINGLE_SECTION_TEMPPTR;
 void HUNGH_ANI(void);
 void RUT_ANI(void);
 

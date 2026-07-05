@@ -13,7 +13,7 @@
  */
 
 static void FIND_HIGHEST_ROADY(void);
-void INFINITY(void);
+void INFINITY_CUSA(void);
 static void TRANS_PTS(void);
 static void WATER_INFINITY(void);
 
@@ -55,8 +55,7 @@ int HIGHEST_ROADY_X;
 /* asm: VAR_ROAD_KFACTOR	.bss	VAR_ROAD_KFACTOR,1 */
 int VAR_ROAD_KFACTOR;
 
-static void FIND_HIGHEST_ROADY(void)
-{
+static void FIND_HIGHEST_ROADY(void) {
     // asm 00008212: 	PUSH	R0
     // asm 00008213: 	PUSH	R1
     // asm 00008214: 	PUSH	R2
@@ -186,8 +185,7 @@ static float INFVAL = 80000.0f;
  *
  *
  */
-void INFINITY(void)
-{
+void INFINITY_CUSA(void) {
     // asm 00008264: 	LDI	@_MODE,R0
     // asm 00008265: 	TSTB	MINTUNNEL,R0
     // asm 00008266: 	RETSNZ
@@ -685,8 +683,7 @@ static int BLUESKY[] = {
 /* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
 int INFIN_CORRECT;
 
-static void TRANS_PTS(void)
-{
+static void TRANS_PTS(void) {
     // ;	LDF	@AMOUNT_CLIPPED,R4
     // asm 000083D4: 	LDF	@INFIN_CORRECT,R7
     // ;	FLOAT	8000,R0
@@ -769,8 +766,7 @@ LKJ25:
  *THIS MUST BE CALLED AFTER INFINITY
  *
  */
-static void WATER_INFINITY(void)
-{
+static void WATER_INFINITY(void) {
     // asm 0000840A: 	LDF	@CAMRADY,R2
     // 	;FIND HORIZON X OFFSET
     // asm 0000840B: 	MPYF	@FORMULA,R2

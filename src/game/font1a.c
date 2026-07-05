@@ -4,6 +4,7 @@
 #include "c30.h"
 #include "macs.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
 
 /*
@@ -13,7 +14,7 @@
 static void ENABLEGIE_font(void);
 void _ftoa(void);
 void _itoaLZ(void);
-void _itoa(void);
+void _itoa(char* string_space /*AR2*/, int number /*R2*/);
 void HEX2ASC(void);
 void _fill(int x1, int y1, int x2, int y2, int color);
 void _outtextxyc(const char* string, int x, int y, int color);
@@ -113,8 +114,16 @@ void _itoaLZ(void)
     UNIMPL();
 }
 
-void _itoa(void)
+void _itoa(char* string_space /*AR2*/, int number /*R2*/)
 {
+    char digits[16];
+    int digit_count = 0;
+    int is_negative = 0;
+    int pad_leading_zero = 0;
+    u32 packed_word = 0;
+    int shift = 0;
+    int digit_index;
+
     // asm 0000A78D: 	PUSH	R0
     // asm 0000A78E: 	PUSH	R1
     // asm 0000A78F: 	PUSH	R2
@@ -128,10 +137,24 @@ void _itoa(void)
     // asm 0000A797: 	CLRI	R7			;flag if negative
     // asm 0000A798: 	CMPI	0,R2
     // asm 0000A799: 	BZD	ISZERO
+    if (number == 0) {
+        // asm 0000A7D3: 	BUD	itoaX
+        // asm 0000A7D4: 	LDI	030h,R0			;case when number is zero
+        // asm 0000A7D5: 	STI	R0,*AR2
+        // asm 0000A7D6: 	LDI	8,R0
+        *(u32*)string_space = 0x00000030u; // ;case when number is zero
+        MAME_VALIDATE_REG_AT_ADDR(0x0000A7D6, "R0", &((u32){0x00000030u}));
+        return;
+    }
+
     // asm 0000A79A: 	LDILT	1,R7
     // asm 0000A79B: 	CLRI	AR7
     // asm 0000A79C: 	ABSI	R2
     // asm 0000A79D: 	CLRI	R3
+    is_negative = number < 0;
+    if (is_negative) {
+        number = -number;
+    }
 itoa1:
     // asm 0000A79E: LDI	10,R1			;this loop generates the ASCII
     // asm 0000A79F: 	LDI	R2,R0			;pieces and pushes them on the stack
@@ -144,11 +167,19 @@ itoa1:
     // asm 0000A7A6: 	CALL	DIV_I30
     // asm 0000A7A7: 	LDI	R0,R2
     // asm 0000A7A8: 	BGT	itoa1
+    while (number > 0) {
+        digits[digit_count++] = (char)('0' + (number % 10)); // ;pieces and pushes them on the stack
+        number /= 10;
+    }
+
     // asm 0000A7A9: 	CMPI	1,AR7
     // asm 0000A7AA: 	BNE	NOLEADINGZERO
     // asm 0000A7AB: 	LDI	30h,R0
     // asm 0000A7AC: 	PUSH	R0
     // asm 0000A7AD: 	INC	R3
+    if (pad_leading_zero != 0) {
+        digits[digit_count++] = '0';
+    }
 NOLEADINGZERO:
     // asm 0000A7AE: 	CLRI	R6			;this loop pops the ASCII pieces off
     // asm 0000A7AF: 	CLRI	R1			;the stack and packs them into the
@@ -156,6 +187,10 @@ NOLEADINGZERO:
     // asm 0000A7B1: 	BEQ	NOTNEG			;check sign flag
     // asm 0000A7B2: 	LDI	MINUS_CHAR,R1
     // asm 0000A7B3: 	ADDI	8,R6
+    if (is_negative) {
+        packed_word = (u32)MINUS_CHAR; // ;check sign flag
+        shift = 8;
+    }
 NOTNEG:
 LOOP2:
     // asm 0000A7B4: POP	R0
@@ -167,6 +202,16 @@ LOOP2:
     // asm 0000A7BA: 	STI	R1,*AR2++
     // asm 0000A7BB: 	CLRI	R1
     // asm 0000A7BC: 	CLRI	R6
+    for (digit_index = digit_count - 1; digit_index >= 0; --digit_index) {
+        packed_word |= (u32)(unsigned char)digits[digit_index] << shift;
+        shift += 8;
+        if (shift >= 32) {
+            *(u32*)string_space = packed_word;
+            string_space += sizeof(u32);
+            packed_word = 0;
+            shift = 0;
+        }
+    }
 DALOP:
     // asm 0000A7BD: DEC	R3
     // asm 0000A7BE: 	BGT	LOOP2
@@ -175,6 +220,8 @@ DALOP:
     // asm 0000A7C1: 	OR	R0,R1
     // asm 0000A7C2: 	STI	R1,*AR2
     // asm 0000A7C3: 	LDI	R6,R0
+    *(u32*)string_space = packed_word; // ;NULL terminator
+    MAME_VALIDATE_REG_AT_ADDR(0x0000A7C2, "R1", &packed_word);
 itoaX:
     // asm 0000A7C4: 	POP	R7
     // asm 0000A7C5: 	POP	R6
@@ -199,9 +246,6 @@ ISZERO:
     // asm 0000A7D5: 	STI	R0,*AR2
     // asm 0000A7D6: 	LDI	8,R0
     // 	;---->	BUD	itoaX
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoa", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
