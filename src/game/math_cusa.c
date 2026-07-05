@@ -33,16 +33,16 @@ void HPFIND_YMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
 void FIND_ZMATRIX(void);
 void INITMAT(MATRIX* mat /*AR0*/);
 void VECTLEN(void);
-void CPYMAT(void);
+void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
 void CPYIMAT(void);
 void CLR_VECTORA(void);
 void MATRIX_MUL(void);
 void NORMALIZE(void);
 void NORMAT(void);
 void GEN_NORMAL(void);
-void CONCATMATV(void);
-void CONCAT201(void);
-void CONCATMAT(void);
+void CONCATMATV(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
+void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/);
+void CONCATMAT(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
 void GETTHETADIFF(void);
 void DIST_PT2LINE(void);
 void GETLINE_EQ_2D(void);
@@ -1110,7 +1110,7 @@ void VECTLEN(void) {
  *	R2	SOURCE MATRIX
  *
  */
-void CPYMAT(void) {
+void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/) {
     // asm 0000963F: 	PUSH	AR0
     // asm 00009640: 	PUSH	R0
     // asm 00009641: 	PUSHF	R0
@@ -1119,13 +1119,20 @@ void CPYMAT(void) {
     // asm 00009644: 	RPTS	7
     // asm 00009645: 	LDF	*AR0++,R0
     // asm 00009645:  ||	STF	R0,*AR2++
+    dst->a00 = src->a00;
+    dst->a01 = src->a01;
+    dst->a02 = src->a02;
+    dst->a10 = src->a10;
+    dst->a11 = src->a11;
+    dst->a12 = src->a12;
+    dst->a20 = src->a20;
+    dst->a21 = src->a21;
     // asm 00009646: 	STF	R0,*AR2--(8)
+    dst->a22 = src->a22;
     // asm 00009647: 	POPF	R0
     // asm 00009648: 	POP	R0
     // asm 00009649: 	POP	AR0
     // asm 0000964A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CPYMAT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1393,18 +1400,16 @@ void GEN_NORMAL(void) {
  *G H I     P Q R    AP+DQ+GR BP+EQ+HR CP+FQ+IR
  *
  */
-void CONCATMATV(void) {
+void CONCATMATV(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/) {
     // asm 000096CD: 	LDI	R2,AR0
     // asm 000096CE: 	LDI	R3,AR1
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CONCATMATV", 0, 0);
-    UNIMPL();
+    CONCAT201(s2, s1, d);
 }
 
 // *PARAMETERS
 //  *	AR0	s SOURCE MATRIX
 //  *	AR1	d  DEST MATRIX
-void CONCAT201(void) {
+void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/) {
     // asm 000096CF: 	LDI	5,IR1
     // asm 000096D0: 	LDI	3,IR0
     // asm 000096D1: 	LDI	2,RC
@@ -1418,21 +1423,32 @@ void CONCAT201(void) {
     // asm 000096D6:   ||	ADDF3	R1,R2,R2
     // asm 000096D7: 	MPYF3	*AR0,*AR2++(IR0),R1
     // asm 000096D8: 	STF	R2,*AR1++(1)			;store MATij
+    d->a00 = s2->a00 * s1->a00 + s2->a01 * s1->a10 + s2->a02 * s1->a20;
+
     // asm 000096D9: 	MPYF3	*+AR0(1),*AR2--(IR1),R1
     // asm 000096D9:   ||	ADDF3	R0,R1,R2
     // asm 000096DA: 	MPYF3	*-AR0(1),*AR2++(IR0),R0
     // asm 000096DA:   ||	ADDF3	R1,R2,R2
     // asm 000096DB: 	MPYF3	*AR0++,*AR2++(IR0),R1
     // asm 000096DC: 	STF	R2,*AR1++(1)			;store MATij
+    d->a01 = s2->a00 * s1->a01 + s2->a01 * s1->a11 + s2->a02 * s1->a21;
+
     // asm 000096DD: 	MPYF3	*AR0++,*AR2--(IR1),R1
     // asm 000096DD:   ||	ADDF3	R0,R1,R2
     // asm 000096DE: 	ADDF	R1,R2
     // asm 000096DF: 	STF	R2,*AR1++(1)			;store MATij
+    d->a02 = s2->a00 * s1->a02 + s2->a01 * s1->a12 + s2->a02 * s1->a22;
+
+    d->a10 = s2->a10 * s1->a00 + s2->a11 * s1->a10 + s2->a12 * s1->a20;
+    d->a11 = s2->a10 * s1->a01 + s2->a11 * s1->a11 + s2->a12 * s1->a21;
+    d->a12 = s2->a10 * s1->a02 + s2->a11 * s1->a12 + s2->a12 * s1->a22;
+
 INLP2:
     // asm 000096E0: SUBI	3,AR2
+    d->a20 = s2->a20 * s1->a00 + s2->a21 * s1->a10 + s2->a22 * s1->a20;
+    d->a21 = s2->a20 * s1->a01 + s2->a21 * s1->a11 + s2->a22 * s1->a21;
+    d->a22 = s2->a20 * s1->a02 + s2->a21 * s1->a12 + s2->a22 * s1->a22;
     // asm 000096E1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CONCAT201", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1454,7 +1470,7 @@ INLP2:
  *
  *
  */
-void CONCATMAT(void) {
+void CONCATMAT(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/) {
     // asm 000096E2: 	PUSH	AR0
     // asm 000096E3: 	PUSH	AR1
     // asm 000096E4: 	PUSH	AR0
@@ -1464,9 +1480,11 @@ void CONCATMAT(void) {
     // asm 000096E8: 	PUSH	R3
     // asm 000096E9: 	LDI	@LOCTEMPER_MATI,R3	;from DIRQ
     // asm 000096EA: 	CALL	CONCATMATV
+    CONCATMATV(s1, s2, &LOCTEMPER_MAT);
     // asm 000096EB: 	POP	AR2
     // asm 000096EC: 	LDI	@LOCTEMPER_MATI,R2
     // asm 000096ED: 	CALL	CPYMAT
+    CPYMAT(d, &LOCTEMPER_MAT);
     // asm 000096EE: 	POP	R3
     // asm 000096EF: 	POP	R2
     // asm 000096F0: 	POP	R1
@@ -1474,8 +1492,6 @@ void CONCATMAT(void) {
     // asm 000096F2: 	POP	AR1
     // asm 000096F3: 	POP	AR0
     // asm 000096F4: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CONCATMAT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

@@ -1342,17 +1342,17 @@ void NORMITS(void);
 void MATRIX_MUL(void);
 
 // asm:  .globl CONCAT201
-void CONCAT201(void);
+void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/);
 
 // asm:  .globl CONCATMATV,CONCATMAT
-void CONCATMATV(void);
+void CONCATMATV(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
 
-void CONCATMAT(void);
+void CONCATMAT(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
 
 // asm:  .globl VECTLEN,DOT,CPYMAT,CPYIMAT
 void VECTLEN(void);
 
-void CPYMAT(void);
+void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
 
 void CPYIMAT(void);
 
