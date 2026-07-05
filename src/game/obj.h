@@ -258,10 +258,10 @@ void OBJ_INSERTHP(void);
 void OBJ_INSERTLP(void);
 
 // asm: 	.globl	OBJ_FIND_FIRST
-void OBJ_FIND_FIRST(void);
+OBJ* OBJ_FIND_FIRST(int oid /*AR2*/);
 
 // asm: 	.globl	OBJ_FIND_FIRST_PRIORITY
-void OBJ_FIND_FIRST_PRIORITY(void);
+OBJ* OBJ_FIND_FIRST_PRIORITY(int oid /*AR2*/);
 
 // asm: 	.globl	OBJ_DELETE
 void OBJ_DELETE(void);

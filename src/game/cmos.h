@@ -702,7 +702,7 @@ word_addr_t GET_TABLE_ADDR(int race_index /*R6*/, int entry_index /*R7*/);
 // asm: 	.globl	INIT_LASTHS_TABLE,CHECK_LASTHS
 void INIT_LASTHS_TABLE(void);
 
-void CHECK_LASTHS(void);
+int CHECK_LASTHS(int race_number /*R1*/);
 
 // asm: 	.globl	VALIDATE_HSTD_TABLES
 int VALIDATE_HSTD_TABLES(void);

@@ -35,7 +35,7 @@ int _rd_cwR(word_addr_t addr);
 void _wr_cwR(word_addr_t addr, int value);
 void INIT_LASTHS_TABLE(void);
 static void UPDATE_LASTHS(void);
-void CHECK_LASTHS(void);
+int CHECK_LASTHS(int race_number /*R1*/);
 void INIT_HSTD_TABLES(void);
 int VALIDATE_HSTD_TABLES(void);
 word_addr_t GET_TABLE_ADDR(int race_index /*R6*/, int entry_index /*R7*/);
@@ -695,16 +695,19 @@ static void UPDATE_LASTHS(void) {
  *Returns R0 = position in table of the last player that played. -1 = not in table
  */
 
-void CHECK_LASTHS(void) {
+int CHECK_LASTHS(int race_number /*R1*/) {
+    word_addr_t addr;
+
     // asm 00009ABD: 	LDI	NUM_TABLES+1,R6
     // asm 00009ABE: 	LDI	0,R7
     // asm 00009ABF: 	CALL	GET_TABLE_ADDR
+    addr = GET_TABLE_ADDR(NUM_TABLES + 1, 0);
     // asm 00009AC0: 	MPYI	4,R1		;4 bytes per word
+    addr += (word_addr_t)(race_number * 4); // ;4 bytes per word
     // asm 00009AC1: 	ADDI	R1,AR2
     // asm 00009AC2: 	CALL	_rd_cw
+    return _rd_cw(addr);
     // asm 00009AC3: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_LASTHS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

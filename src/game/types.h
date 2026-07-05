@@ -568,6 +568,8 @@ typedef struct PROC_CONTEXT {
     union {
         struct {
             int race_number;
+            int oid_group;
+            int flash_pal_index;
         } FLASH_LETTERS_PROC;
         struct {
             int race_number;

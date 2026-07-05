@@ -6,6 +6,9 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - Read the associated .ASM file for context
 - First, determine the function prototype - args and return value. Use developer comments along with the code to help understand and name the arguments.
 - Correctness is your number 1 job. You must not invent anything except translating the assembly code into C.
+- Preserve function boundaries exactly. Do not move work across caller/callee boundaries, even if the resulting C would look cleaner.
+- Do not change a function's observable contract while translating it. Inputs, outputs, side effects, and which routine performs them must stay with the original function unless the assembly itself shows otherwise.
+- In particular, do not precompute a callee's result in the caller, do not move helper calls from callee to caller (or vice versa), and do not "inline by hand" behavior across function boundaries.
 - You can introduce new function variables (declare at top of function)
 - Do not preserve assembly register names as C locals by default.
 - Only introduce a local variable when it represents real intermediate state needed for correctness, readability, or control flow.
@@ -16,6 +19,7 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - Ignore DP and CPU wait state related instructions. Ignore push/pop.
 - Write your c code underneath the // asm: comment lines already in the function.
 - Retain the original developer comments in the assembly code as c comments
+- If a translated function call in asm produces a value or side effect used by the caller, keep that call in the translated function at the same boundary. Do not replace it by passing a transformed value unless the original asm does that transformation before the call.
 
 If you get stuck, stop, and explain the problem. Don't start inventing things in order to keep progressing.
 

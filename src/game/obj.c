@@ -22,8 +22,8 @@ void OBJ_INSERTP(OBJ* obj /*AR2*/);
 void OBJ_INSERTLP(void);
 void OBJ_INSERTHP(void);
 void OBJ_INSERT(OBJ* obj /*AR2*/);
-void OBJ_FIND_FIRST_PRIORITY(void);
-void OBJ_FIND_FIRST(void);
+OBJ* OBJ_FIND_FIRST_PRIORITY(int oid /*AR2*/);
+OBJ* OBJ_FIND_FIRST(int oid /*AR2*/);
 void OBJ_FREE_GROUND(void);
 void OBJ_FREE_SIGN(void);
 void OBJ_FREE_DRIVE(void);
@@ -591,7 +591,7 @@ INS_AT_END:
     // asm 000070DB: 	STI	R1,*AR2			;LINK TO NEXT
     // asm 000070DC: 	STI	AR2,*AR0		;LINK FROM PREVIOUS
     obj->link = next_obj; // ;LINK TO NEXT
-    *list_link = obj; // ;LINK FROM PREVIOUS
+    *list_link = obj;     // ;LINK FROM PREVIOUS
 
 INSOBJX:
     return;
@@ -612,37 +612,54 @@ INSOBJX:
  *	AR0	FIRST OBJECT FOUND
  *
  */
-void OBJ_FIND_FIRST_PRIORITY(void) {
-    // asm 000070E3: 	PUSH	R0
-    // asm 000070E4: 	LDI	@OACTIVE_PRIORITYI,AR0
-    // asm 000070E5: 	BU	L89
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FIND_FIRST_PRIORITY", 0, 0);
-    UNIMPL();
-}
 
-void OBJ_FIND_FIRST(void) {
-    // asm 000070E6: 	PUSH	R0
-    // asm 000070E7: 	LDI	@OACTIVEI,AR0
+OBJ* OBJ_FIND_FIRST_tail(OBJ* start, int oid) {
+    OBJ* obj;
+
+    // obj = OACTIVE;
+    obj = start;
 L89:
     // asm 000070E8: LDI	*AR0,R0
+    if (obj == NULL) {
+        goto FF_ERR;
+    }
     // asm 000070E9: 	BZ	FF_ERR
 FF_LP:
     // asm 000070EA: 	LDI	R0,AR0
     // asm 000070EB: 	CMPI	*+AR0(OID),AR2
+    if (obj->id == (u32)oid) {
+        goto FF_OK;
+    }
     // asm 000070EC: 	BEQ	FF_OK
     // asm 000070ED: 	LDI	*AR0,R0
+    obj = obj->link;
     // asm 000070EE: 	BNZ	FF_LP
+    if (obj != NULL) {
+        goto FF_LP;
+    }
 FF_ERR:
     // asm 000070EF: 	CLRC
     // asm 000070F0: 	POP	R0
     // asm 000070F1: 	RETS
+    return NULL;
 FF_OK:
     // asm 000070F2: 	SETC
     // asm 000070F3: 	POP	R0
     // asm 000070F4: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FIND_FIRST", 0, 0);
-    UNIMPL();
+    return obj;
+}
+
+OBJ* OBJ_FIND_FIRST_PRIORITY(int oid /*AR2*/) {
+    // asm 000070E3: 	PUSH	R0
+    // asm 000070E4: 	LDI	@OACTIVE_PRIORITYI,AR0
+    // asm 000070E5: 	BU	L89
+    return OBJ_FIND_FIRST_tail(OACTIVE_PRIORITYI, oid);
+}
+
+OBJ* OBJ_FIND_FIRST(int oid /*AR2*/) {
+    // asm 000070E6: 	PUSH	R0
+    // asm 000070E7: 	LDI	@OACTIVEI,AR0
+    return OBJ_FIND_FIRST_tail(OACTIVE, oid);
 }
 
 // *----------------------------------------------------------------------------
@@ -1377,6 +1394,14 @@ OSCANNXT:
  *
  */
 void ISCAN(void) {
+    OBJ** prev_link;
+    OBJ* obj;
+    float obj_vector_x;
+    float obj_vector_y;
+    float obj_vector_z;
+    float projected_dist;
+    int obj_dist;
+
     // asm 0000729A: 	FLOAT	ACTIVELO,R3		;GET CLOSE LIMIT
     // asm 0000729B: 	LDI	@ACTIVEHI1,R4 		;GET FAR LIMIT
     // asm 0000729C: 	LDI	@CAMERAPOSI,AR4		;POINTER TO CAMERA STRUCT
@@ -1425,8 +1450,63 @@ ISCANNXT:
     // asm 000072C1: 	SUBF	*-AR4(1),*+AR1(OPOSX),R5   	;GET LENGTH OF OBJ VECTOR
     // 	;------>BNZD	ISCANL
     // asm 000072C2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISCAN", 0, 0);
-    UNIMPL();
+    prev_link = &IDLE_LIST;
+    obj = *prev_link;
+    while (obj != NULL) {
+        obj_vector_x = obj->posx - _CAMERAPOS.X; // ;GET LENGTH OF OBJ VECTOR
+
+        // asm 000072A5: 	SUBF	*AR4,*+AR1(IR0),R6	;OYPOS-CAMERAPOSY
+        obj_vector_y = obj->posy - _CAMERAPOS.Y; // ;OYPOS-CAMERAPOSY
+        // asm 000072A6: 	SUBF	*+AR4(1),*+AR1(IR1),R7	;OZPOS-CAMERAPOSZ
+        obj_vector_z = obj->posz - _CAMERAPOS.Z; // ;OZPOS-CAMERAPOSZ
+        // asm 000072A7: 	MPYF    *-AR3(1),R5,R0
+        // asm 000072A8: 	MPYF    *AR3,R6,R1
+        // asm 000072A9: 	MPYF    *+AR3(1),R7,R2
+        projected_dist = obj_vector_x * _CAMERAMATRIX.a20;
+        projected_dist += obj_vector_y * _CAMERAMATRIX.a21;
+        projected_dist += obj_vector_z * _CAMERAMATRIX.a22;
+        // asm 000072AA: 	ADDF	R1,R0
+        // asm 000072AB: 	ADDF	R2,R0
+        // asm 000072AC: 	CMPF	R3,R0
+        if (projected_dist > (float)ACTIVELO) {
+            // asm 000072AE: 	FIX	R0,R1
+            obj_dist = (int)projected_dist;
+            // asm 000072AF: 	STI	R1,*+AR1(ODIST)		;SETUP ODIST
+            obj->dist = obj_dist; // ;SETUP ODIST
+            // asm 000072B0: 	NOP
+            // 	;------>BLED	ISCANNXT
+            // asm 000072B1: 	SUBI	R4,R1
+            obj_dist -= ACTIVEHI1;
+            // asm 000072B2: 	SUBI	*+AR1(ORAD),R1		;CHECK RADIUS TO MAKE SURE
+            obj_dist -= obj->radius; // ;CHECK RADIUS TO MAKE SURE
+            // asm 000072B3: 	BGT	ISCANNXT
+            if (obj_dist <= 0) {
+                OBJ* next_obj;
+
+                // *FOUND CLOSE ELEMENT, XSFER INACTIVE TO ACTIVE
+                // asm 000072B4: ISCANACT
+                // asm 000072B4: 	LDI	*AR1,R0			;GET POINTER TO NEXT ELEMENT
+                next_obj = obj->link; // ;GET POINTER TO NEXT ELEMENT
+                // asm 000072B5: 	STI	R0,*AR6
+                *prev_link = next_obj;
+                // asm 000072B6: 	LDI	*+AR1(OFLAGS),R0	   	;SWITCH LIST FLAG
+                // asm 000072B7: 	XOR	O_LIST2+O_LIST1,R0
+                // asm 000072B8: 	STI	R0,*+AR1(OFLAGS)
+                obj->flags ^= O_LIST2 + O_LIST1;
+                // asm 000072B9: 	LDI	*AR5,R0
+                // asm 000072BA: 	STI	R0,*AR1			;LINK HIM INTO INACTIVE LIST
+                obj->link = OACTIVE; // ;LINK HIM INTO INACTIVE LIST
+                // asm 000072BB: 	STI	AR1,*AR5
+                OACTIVE = obj;
+                // asm 000072BC: 	LDI	AR6,AR1
+                obj = next_obj;
+                continue;
+            }
+        }
+
+        prev_link = &obj->link; // ;AR6=PREVIOUS-1 LINK
+        obj = obj->link;
+    }
 }
 
 // *----------------------------------------------------------------------------
@@ -1441,6 +1521,8 @@ ISCANNXT:
  *
  */
 void RESCAN(void) {
+    OBJ* obj;
+
     // asm 000072C3: 	PUSH	AR3
     // asm 000072C4: 	PUSH	AR4
     // asm 000072C5: 	PUSH	AR5
@@ -1449,6 +1531,7 @@ void RESCAN(void) {
     // asm 000072C7: 	LDI	@IDLE_LISTI,AR5
     // asm 000072C8: 	LDI	@OACTIVEI,AR1
     // asm 000072C9: 	LDI	*AR1,R0
+    obj = OACTIVE;
     // asm 000072CA: 	BZ	RESCAN1			;ACTIVE LIST NULL, FORGET IT
 RESCAN0:
     // asm 000072CB: 	LDI	R0,AR2
@@ -1463,16 +1546,29 @@ RESCAN0:
     // asm 000072D4: 	STI	R0,*AR5			;POINT INACTIVE LIST TO ACTIVE LIST
     // asm 000072D5: 	LDI	0,R0   			;CLEAR OUT ACTIVE LIST
     // asm 000072D6: 	STI	R0,*AR1
+    if (obj != NULL) {
+        do {
+            obj->flags ^= O_LIST2 + O_LIST1; // ;SWITCH LIST FLAG
+            if (obj->link == NULL) {
+                break;
+            }
+            obj = obj->link;
+        } while (1);
+
+        obj->link = IDLE_LIST; // ;LINK TO LAST ELEMENT OF ACTIVE LIST
+        IDLE_LIST = OACTIVE;   // ;POINT INACTIVE LIST TO ACTIVE LIST
+        OACTIVE = NULL;
+    }
 RESCAN1:
     // asm 000072D7: 	CALL	ISCAN			;FORM NEW ACTIVE INACTIVE LISTS
+    ISCAN(); // ;FORM NEW ACTIVE INACTIVE LISTS
     // asm 000072D8: 	CALL	ZSORTACT		;BUBBLE SORT ACTIVE LIST
+    ZSORTACT(); // ;BUBBLE SORT ACTIVE LIST
     // asm 000072D9: 	POP	AR6
     // asm 000072DA: 	POP	AR5
     // asm 000072DB: 	POP	AR4
     // asm 000072DC: 	POP	AR3
     // asm 000072DD: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RESCAN", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1531,44 +1627,78 @@ ZSORTXP:
  *
  */
 static void ZSORTACT(void) {
+    int swapped;
+    OBJ** prev_link;
+    OBJ* current;
+    OBJ* next;
+
 ZSORTA1:
     // asm 000072FD: 	LDI	0,R2			;CLEAR EXCHANGE FLAG
+    swapped = 0; // ;CLEAR EXCHANGE FLAG
     // asm 000072FE: 	LDI	@OACTIVEI,AR0
     // asm 000072FF: 	LDI	*AR0,AR1		;GET FIRST ELEMENT
+    current = OACTIVE; // ;GET FIRST ELEMENT
     // asm 00007300: 	LDI	AR1,R1
     // asm 00007301: 	BZ	ZSORTX		     	;NULL LIST
+    if (current == NULL) {
+        goto ZSORTX; // ;NULL LIST
+    }
     // asm 00007302: 	LDI	*AR1,AR2		;GET NEXT ELEMENT
+    next = current->link; // ;GET NEXT ELEMENT
     // asm 00007303: 	LDI	AR2,R1
     // asm 00007304: 	BZ	ZSORTX			;ONLY ONE ELEMENT ON LIST
+    if (next == NULL) {
+        goto ZSORTX; // ;ONLY ONE ELEMENT ON LIST
+    }
     // asm 00007305: 	LDI	*+AR1(ODIST),R0
+    prev_link = &OACTIVE;
 ZSLP:
     // asm 00007306: 	LDI	*+AR2(ODIST),R1
     // asm 00007307: 	CMPI	R1,R0
     // asm 00007308: 	BGE	PRIOK	 		;PRIORITY IS O.K.
-    // *SWAP EM DUDES
-    // asm 00007309: 	LDI	1,R2
-    // asm 0000730A: 	STI	AR2,*AR0		;POINT N-1 TO N+1
-    // asm 0000730B: 	LDI	*AR2,R1			;GET N+2
-    // asm 0000730C: 	STI	R1,*AR1			;POINT N TO N+2
-    // asm 0000730D: 	STI	AR1,*AR2		;POINT N+1 TO N
-    // asm 0000730E: 	LDI	AR2,AR0		  	;NEW PREVIOUS(N-1)
-    // asm 0000730F: 	LDI	R1,AR2			;NEW NEXT(N+1)
-    // asm 00007310: 	LDI	R1,R1
-    // asm 00007311: 	BNZ	ZSLP
-    // asm 00007312: 	BR	ZSORTX
+    if (next->dist < current->dist) {
+        // *SWAP EM DUDES
+        // asm 00007309: 	LDI	1,R2
+        swapped = 1;
+        // asm 0000730A: 	STI	AR2,*AR0		;POINT N-1 TO N+1
+        *prev_link = next;          // ;POINT N-1 TO N+1
+                                    // asm 0000730B: 	LDI	*AR2,R1			;GET N+2
+        current->link = next->link; // ;GET N+2
+                                    // asm 0000730C: 	STI	R1,*AR1			;POINT N TO N+2
+                                    // asm 0000730D: 	STI	AR1,*AR2		;POINT N+1 TO N
+        next->link = current;       // ;POINT N+1 TO N
+                                    // asm 0000730E: 	LDI	AR2,AR0		  	;NEW PREVIOUS(N-1)
+        prev_link = &next->link;    // ;NEW PREVIOUS(N-1)
+                                    // asm 0000730F: 	LDI	R1,AR2			;NEW NEXT(N+1)
+        next = current->link;       // ;NEW NEXT(N+1)
+                                    // asm 00007310: 	LDI	R1,R1
+                                    // asm 00007311: 	BNZ	ZSLP
+        if (next != NULL) {
+            goto ZSLP;
+        }
+        // asm 00007312: 	BR	ZSORTX
+        goto ZSORTX;
+    }
 PRIOK:
     // asm 00007313: 	LDI	R1,R0
     // asm 00007314: 	LDI	AR1,AR0			;AR4=PREVIOUS-1 LINK
+    prev_link = &current->link; // ;AR4=PREVIOUS-1 LINK
     // asm 00007315: 	LDI	AR2,AR1			;AR0=PREVIOUS
+    current = next; // ;AR0=PREVIOUS
     // asm 00007316: 	LDI	*AR2,R1
+    next = next->link;
     // asm 00007317: 	LDI	R1,AR2
     // asm 00007318: 	BNZ	ZSLP
+    if (next != NULL) {
+        goto ZSLP;
+    }
 ZSORTX:
     // asm 00007319: 	LDI	R2,R2
+    if (swapped != 0) {
+        goto ZSORTA1;
+    }
     // asm 0000731A: 	BNZ	ZSORTA1
     // asm 0000731B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZSORTACT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

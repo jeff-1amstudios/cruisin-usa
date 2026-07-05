@@ -20,7 +20,7 @@ void FLAME_PRC(void);
 static void animate_child(void);
 void FLAMESORT(void);
 void GETCARBODY(void);
-void FIND_NEXT_OBJ(void);
+OBJ* FIND_NEXT_OBJ(OBJ* obj /*AR0*/, int oid /*R1*/);
 
 #define FLAMEANII FLAMEANI
 #define FLAME_POSI FLAME_POS
@@ -303,23 +303,37 @@ FOUND_BODY:
     UNIMPL();
 }
 
-void FIND_NEXT_OBJ(void)
+OBJ* FIND_NEXT_OBJ(OBJ* obj /*AR0*/, int oid /*R1*/)
 {
+    OBJ* next_obj;
+
     // asm 0000AE57: 	PUSH	R0
     // asm 0000AE58: 	PUSHF	R0
     // asm 0000AE59: 	PUSH	AR5
     // asm 0000AE5A: 	LDI	*AR0,AR5
+    next_obj = obj->link;
 OFN:
     // asm 0000AE5B: LDI	AR5,R0
     // asm 0000AE5C: 	LDI	R0,AR0
+    obj = next_obj;
+    if (obj == NULL) {
+        goto OFNX; // ;NONE FOUND. This routine is passive
+    }
     // asm 0000AE5D: 	BZ	OFNX		;NONE FOUND. This routine is passive
     // asm 0000AE5E: 	LDI	*AR0,AR5
+    next_obj = obj->link;
     // asm 0000AE5F: 	LDI	*+AR0(OID),R0
     // asm 0000AE60: 	CMPI	R1,R0
+    if (obj->id != (u32)oid) {
+        goto OFN;
+    }
     // asm 0000AE61: 	BNE	OFN
 OFNX:
     // asm 0000AE62: 	CLRC
     // asm 0000AE63: 	CMPI	0,AR0
+    if (obj != NULL) {
+        goto OFNX1;
+    }
     // asm 0000AE64: 	BNE	OFNX1
     // asm 0000AE65: 	SETC
 OFNX1:
@@ -327,6 +341,6 @@ OFNX1:
     // asm 0000AE67: 	POPF	R0
     // asm 0000AE68: 	POP	R0
     // asm 0000AE69: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_NEXT_OBJ", 0, 0);
+    return obj;
     UNIMPL();
 }

@@ -1117,7 +1117,7 @@ void FLAMESORT(void);
 void GETCARBODY(void);
 
 // asm:  .globl FIND_NEXT_OBJ
-void FIND_NEXT_OBJ(void);
+OBJ* FIND_NEXT_OBJ(OBJ* obj /*AR0*/, int oid /*R1*/);
 
 // font1a.asm
 // asm:  .globl _outtextxyc
@@ -1772,7 +1772,7 @@ void RANDU(void);
 
 void SRAND(void);
 
-void RANDPER(void);
+int RANDPER(int probability /*AR2*/);
 
 // asm:  .globl INIT_LINKED_LIST
 void INIT_LINKED_LIST(void* start_addr /*AR2*/, void** free_list /*R2*/, void** active_list /*R3*/, int length_minus_1 /*RC*/, int size /*RS*/);

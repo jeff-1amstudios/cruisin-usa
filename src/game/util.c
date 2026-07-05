@@ -40,7 +40,7 @@ void SFRAND(void);
 void RANDU0(void);
 void RANDU(void);
 void SRAND(void);
-void RANDPER(void);
+int RANDPER(int probability /*AR2*/);
 void INIT_LINKED_LIST(void* start_addr /*AR2*/, void** free_list /*R2*/, void** active_list /*R3*/, int length_minus_1 /*RC*/, int size /*RS*/);
 void* GET_LLIST(void** free_list, void** active_list);
 void ALLOC_LLIST(void);
@@ -511,18 +511,26 @@ void SRAND(void) {
  *	C=0	FOR FALSE
  *		R0	ZERO
  */
-void RANDPER(void) {
+int RANDPER(int probability /*AR2*/) {
+    int value;
+
     // asm 00008F11: 	CALL	RANDOM
+    value = (int)(RANDOM() >> 16);
     // asm 00008F12: 	LSH	-16,R0
     // asm 00008F13: 	MPYI	1000,R0
+    value *= 1000;
     // asm 00008F14: 	LSH	-16,R0
+    value >>= 16;
     // asm 00008F15: 	CMPI	AR2,R0
+    if (value < probability) {
+        return value;
+    }
     // asm 00008F16: 	BC	RANDPX
     // asm 00008F17: 	LDI	0,R0
+    return 0;
 RANDPX:
     // asm 00008F18: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDPER", 0, 0);
-    UNIMPL();
+    return value;
 }
 
 // *----------------------------------------------------------------------------

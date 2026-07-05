@@ -60,7 +60,7 @@ static OBJ* ASCII_TO_OBJ(int character);
 static void PRINT3D(const char* string, float x, float y, float z, int oid);
 static void DISPLAY_HS(PROC* p);
 static void FLASH_LETTERS_PROC(PROC* p);
-static void FLASH_LETTERS(void);
+static void FLASH_LETTERS(int opal /*R0*/, int oid /*R4*/);
 static void DELETE_PRESS_OBJECTS(void);
 static void FIX_PLATES(void);
 static float FLY_PLATES(float amount /*R0*/);
@@ -3119,35 +3119,64 @@ static int FLASH_PALS[] = {
 };
 
 static void FLASH_LETTERS_PROC(PROC* p) {
+    int palette;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
 #if FLASH_ON == 1
     // asm 000038CD: 	LDI	R4,R1
     // asm 000038CE: 	CALL	CHECK_LASTHS
+    p->ctx->FLASH_LETTERS_PROC.oid_group = CHECK_LASTHS(p->ctx->FLASH_LETTERS_PROC.race_number);
     // asm 000038CF: 	CMPI	-1,R0
     // asm 000038D0: 	BEQ	FLASH_LOCK
+    if (p->ctx->FLASH_LETTERS_PROC.oid_group == -1) {
+        goto FLASH_LOCK;
+    }
     // asm 000038D1: 	ADDI	16,R0
+    p->ctx->FLASH_LETTERS_PROC.oid_group += 16;
     // asm 000038D2: 	LDI	1,R4
     // asm 000038D3: 	LSH	R0,R4
+    p->ctx->FLASH_LETTERS_PROC.oid_group = 1 << p->ctx->FLASH_LETTERS_PROC.oid_group;
     // asm 000038D4: 	OR	HIGH_SCORE_GROUP,R4		;Make this part of the High Score group
+    p->ctx->FLASH_LETTERS_PROC.oid_group |= HIGH_SCORE_GROUP; // ;Make this part of the High Score group
     // asm 000038D5: 	LDI	@FLASH_PALSI,AR6
+    p->ctx->FLASH_LETTERS_PROC.flash_pal_index = 0;
 FLASH_LOOP:
     // asm 000038D6: 	LDI	*AR6,R0
+    palette = FLASH_PALS[p->ctx->FLASH_LETTERS_PROC.flash_pal_index];
     // asm 000038D7: 	LDIN	@FLASH_PALSI,AR6
     // asm 000038D8: 	LDIN	*AR6++,R0			;THIS will increment allways
+    p->ctx->FLASH_LETTERS_PROC.flash_pal_index += 1; // ;THIS will increment allways
+    if (FLASH_PALS[p->ctx->FLASH_LETTERS_PROC.flash_pal_index] == -1) {
+        p->ctx->FLASH_LETTERS_PROC.flash_pal_index = 0;
+    }
     // asm 000038D9: 	PUSH	R0
     // asm 000038DA: 	LDI	200,AR2
     // asm 000038DB: 	CALL	RANDPER
+    if (RANDPER(200) != 0) {
     // asm 000038DC: 	POP	R0
     // asm 000038DD: 	LDIC	@scroll_whiteI,R0
+        palette = scroll_whiteI;
+    }
     // asm 000038DE: 	CALL	FLASH_LETTERS
+    FLASH_LETTERS(palette, p->ctx->FLASH_LETTERS_PROC.oid_group);
     // asm 000038DF: 	SLEEP	6
+    SLEEP(6, 1);
     // asm 000038E1: 	BR	FLASH_LOOP
+    goto FLASH_LOOP;
 #endif
 FLASH_LOCK:
     // asm 000038E2: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 000038E4: 	BR	FLASH_LOCK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_LETTERS_PROC", 0, 0);
-    UNIMPL();
+    goto FLASH_LOCK;
 }
 
 /*
@@ -3155,21 +3184,32 @@ FLASH_LOCK:
  *R0 OPAL
  *R4 OID
  */
-static void FLASH_LETTERS(void) {
+static void FLASH_LETTERS(int opal /*R0*/, int oid /*R4*/) {
+    OBJ* obj;
+    int palette_code;
+
     // asm 000038E5: 	LDI	R0,AR2
     // asm 000038E6: 	CALL	PAL_FIND_RAW
+    palette_code = PAL_FIND_RAW((tPAL*)ROM_PTR(opal));
     // asm 000038E7: 	LDI	R4,AR2
     // asm 000038E8: 	CALL	OBJ_FIND_FIRST
+    obj = OBJ_FIND_FIRST(oid);
     // asm 000038E9: 	BNC	FLASHX
+    if (obj == NULL) {
+        goto FLASHX;
+    }
 FLASH_LP:
     // asm 000038EA: 	STI	R0,*+AR0(OPAL)
+    obj->palette = palette_code;
     // asm 000038EB: 	LDI	AR2,R1
     // asm 000038EC: 	CALL	FIND_NEXT_OBJ
+    obj = FIND_NEXT_OBJ(obj, oid);
     // asm 000038ED: 	BNC	FLASH_LP
+    if (obj != NULL) {
+        goto FLASH_LP;
+    }
 FLASHX:
     // asm 000038EE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_LETTERS", 0, 0);
-    UNIMPL();
 }
 
 /*
