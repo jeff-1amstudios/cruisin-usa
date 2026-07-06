@@ -499,7 +499,9 @@ STRLP:
         goto STRLENNCHAR;
     }
 
-    // TEXT_OUTPUT remaps '/' to '@' before indexing the font table.
+    // BUGFIX:
+    // Match TEXT_OUTPUT glyph selection for '/' so centered/right-justified
+    // width calculations use the same font entry.
     if (ch == '/') {
         ch = '@';
     }

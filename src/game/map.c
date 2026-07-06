@@ -651,6 +651,8 @@ static void MAPPAL_ILLUM_INIT(void) {
     tPAL* left_palette;
     const tPAL* source_palette;
 
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAPPAL_ILLUM_INIT", 0, 0);
+
     // asm 00005FD7: 	LDI	@EPALR,AR0	;LOAD PALETTES AT
     // asm 00005FD8: 	LDI	@EPALL,AR1	;THE SAME TIME
     // asm 00005FD9: 	LDI	map1_p,AR3
@@ -663,27 +665,26 @@ static void MAPPAL_ILLUM_INIT(void) {
     // asm 00005FE0: 	AND	0FFFh,AR2
     // asm 00005FE1: 	RS	1,AR2
     // asm 00005FE2: 	SUBI	1,AR2
+    right_palette = (tPAL*)EPALR; // ;LOAD PALETTES AT / ;THE SAME TIME
+    left_palette = (tPAL*)EPALL;
+    source_palette = _PALROM[map1_p]; // ;NOW HOLDS RAM LOCATION
 L342:
     // asm 00005FE3: LDI	*AR3++,R0
     // asm 00005FE4: 	STI	R0,*AR0++
     // asm 00005FE5: 	STI	R0,*AR1++
     // asm 00005FE6: 	DBU	AR2,L342
-    // asm 00005FE7: 	LDI	@EPALR,AR2
-    // asm 00005FE8: 	CALL	PAL_ALLOC_RAW
-    // asm 00005FE9: 	LDI	@EPALL,AR2
-    // asm 00005FEA: 	CALL	PAL_ALLOC_RAW
-    // asm 00005FEB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAPPAL_ILLUM_INIT", 0, 0);
-
-    right_palette = (tPAL*)EPALR;
-    left_palette = (tPAL*)EPALL;
-    source_palette = _PALROM[map1_p];
-
     copy_packed_palette(right_palette, source_palette);
     copy_packed_palette(left_palette, source_palette);
 
+    // asm 00005FE7: 	LDI	@EPALR,AR2
+    // asm 00005FE8: 	CALL	PAL_ALLOC_RAW
     PAL_ALLOC_RAW(right_palette);
+
+    // asm 00005FE9: 	LDI	@EPALL,AR2
+    // asm 00005FEA: 	CALL	PAL_ALLOC_RAW
     PAL_ALLOC_RAW(left_palette);
+
+    // asm 00005FEB: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -847,6 +848,21 @@ static void MAPPAL_ILLUM(void) {
     // asm 0000605B: 	LDI	*AR2++,R3
     // asm 0000605C: 	LDI	R0,R2
     // asm 0000605D: 	CALL	PAL_SET
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAPPAL_ILLUM", 0, 0);
+
+    source_palette = _PALROM[map1_p];
+    left_palette = (tPAL*)EPALL;
+    right_palette = (tPAL*)EPALR;
+    word_count = packed_palette_word_count(source_palette->flags_and_count);
+
+    left_palette->flags_and_count = source_palette->flags_and_count;
+    for (int word_index = 0; word_index < word_count; word_index++) {
+        left_palette->data[word_index] = scale_packed_palette_word(source_palette->data[word_index], MAPPAL13);
+    }
+    palette_code = PAL_FIND_RAW(left_palette);
+    if (palette_code != -1) {
+        PAL_SET(left_palette->data, (u32)palette_code, (u32)left_palette->flags_and_count);
+    }
 JAJA4:
     // *
     // *
@@ -939,6 +955,14 @@ JAJA4:
     // asm 000060AE: 	LDI	*AR2++,R3
     // asm 000060AF: 	LDI	R0,R2
     // asm 000060B0: 	CALL	PAL_SET
+    right_palette->flags_and_count = source_palette->flags_and_count;
+    for (int word_index = 0; word_index < word_count; word_index++) {
+        right_palette->data[word_index] = scale_packed_palette_word(source_palette->data[word_index], MAPPAL24);
+    }
+    palette_code = PAL_FIND_RAW(right_palette);
+    if (palette_code != -1) {
+        PAL_SET(right_palette->data, (u32)palette_code, (u32)right_palette->flags_and_count);
+    }
 JAJA5:
     // asm 000060B1: 	POPFL	R6
     // asm 000060B3: 	POP	R5
@@ -954,30 +978,6 @@ JAJA5:
     // asm 000060BD: 	POP	AR1
     // asm 000060BE: 	POP	AR0
     // asm 000060BF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MAPPAL_ILLUM", 0, 0);
-
-    source_palette = _PALROM[map1_p];
-    left_palette = (tPAL*)EPALL;
-    right_palette = (tPAL*)EPALR;
-    word_count = packed_palette_word_count(source_palette->flags_and_count);
-
-    left_palette->flags_and_count = source_palette->flags_and_count;
-    for (int word_index = 0; word_index < word_count; word_index++) {
-        left_palette->data[word_index] = scale_packed_palette_word(source_palette->data[word_index], MAPPAL13);
-    }
-    palette_code = PAL_FIND_RAW(left_palette);
-    if (palette_code != -1) {
-        PAL_SET(left_palette->data, (u32)palette_code, (u32)left_palette->flags_and_count);
-    }
-
-    right_palette->flags_and_count = source_palette->flags_and_count;
-    for (int word_index = 0; word_index < word_count; word_index++) {
-        right_palette->data[word_index] = scale_packed_palette_word(source_palette->data[word_index], MAPPAL24);
-    }
-    palette_code = PAL_FIND_RAW(right_palette);
-    if (palette_code != -1) {
-        PAL_SET(right_palette->data, (u32)palette_code, (u32)right_palette->flags_and_count);
-    }
 }
 
 static int packed_palette_word_count(int flags_and_count) {

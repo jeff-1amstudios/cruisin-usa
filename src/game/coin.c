@@ -1303,6 +1303,16 @@ static void FLASH_TO_START(float posy) {
     // asm 00007574: 	STI	R0,@ICF
     // asm 00007575: 	CALL	TOSTART_STRING
     // asm 00007576: 	BU	PRINT_TOSTART
+    flash_state = ICF;
+    if (flash_state <= 0) {
+        flash_state -= NFRAMES;
+        if (flash_state < -45) {
+            flash_state = 1;
+        }
+        ICF = flash_state;
+        TOSTART_STRING();
+        goto PRINT_TOSTART;
+    }
 NO_TOSTART:
     // asm 00007577: 	LDI	@ICF,R0
     // asm 00007578: 	ADDI	@NFRAMES,R0
@@ -1316,27 +1326,6 @@ NO_TOSTART:
     // asm 00007580: 	CMPI	R0,R2
     // asm 00007581: 	BEQ	FLASH_TOSTARTX
     // asm 00007582: 	CALL	TOCONT_STRING
-PRINT_TOSTART:
-    // asm 00007583: 	LDI	@TOSTARTBUFFI,AR2
-    // asm 00007584: 	FLOAT	256,R2
-    // asm 00007585: 	LDI	1,RC
-    // asm 00007586: 	CALL	TEXT_ADDDS
-    // asm 00007587: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
-    // asm 0000758A: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
-    // asm 0000758D: 	CALL	FONT18REDDS
-FLASH_TOSTARTX:
-    // asm 0000758E: 	RETS
-    flash_state = ICF;
-    if (flash_state <= 0) {
-        flash_state -= NFRAMES;
-        if (flash_state < -45) {
-            flash_state = 1;
-        }
-        ICF = flash_state;
-        TOSTART_STRING();
-        goto FLASH_TO_START_PRINT;
-    }
-FLASH_TO_START_NO_TOSTART:
     flash_state += NFRAMES;
     if (flash_state > 45) {
         flash_state = -1;
@@ -1349,49 +1338,64 @@ FLASH_TO_START_NO_TOSTART:
         return;
     }
     TOCONT_STRING();
-FLASH_TO_START_PRINT:
+PRINT_TOSTART:
+    // asm 00007583: 	LDI	@TOSTARTBUFFI,AR2
+    // asm 00007584: 	FLOAT	256,R2
+    // asm 00007585: 	LDI	1,RC
+    // asm 00007586: 	CALL	TEXT_ADDDS
+    // asm 00007587: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    // asm 0000758A: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    // asm 0000758D: 	CALL	FONT18REDDS
     t = TEXT_ADDDS(TOSTARTBUFFER, 256.0f, posy, 1);
     t.front->color |= TXT_CENTER;
     t.shadow->color |= TXT_CENTER;
     FONT18REDDS(&t);
+FLASH_TOSTARTX:
+    // asm 0000758E: 	RETS
 }
 
 // *----------------------------------------------------------------------------
 static void TOSTART_STRING(void) {
     // asm 0000758F: 	CLRI	R7
     // asm 00007590: 	STI	R7,@TOSTARTBUFFER	;STRING BUFFER
+    TOSTARTBUFFER[0] = '\0'; // ;STRING BUFFER
+
     // asm 00007591: 	CALL	GET_CREDITS_TO_START
     // asm 00007592: 	LDI	R1,R2
     // asm 00007593: 	LDI	1,R7
     // asm 00007594: 	LDI	@FCBI,AR2
     // asm 00007595: 	CALL	_itoa
+    SCS = GET_CREDITS_TO_START();
+    _itoa((char*)&FCB, SCS);
+
     // asm 00007596: 	LDI	@TOSTARTBUFFI,AR0
     // asm 00007597: 	LDI	@FCBI,AR1
     // asm 00007598: 	CALL	STRCAT
+    STRCAT(TOSTARTBUFFER, (char*)&FCB);
+
     // asm 00007599: 	LDI	@TOSTARTBUFFI,AR0
     // asm 0000759A: 	LDI	@SPCI,AR1
     // asm 0000759B: 	CALL	STRCAT
+    STRCAT(TOSTARTBUFFER, SPCI);
+
     // asm 0000759C: 	LDI	@TOSTARTBUFFI,AR0
     // asm 0000759D: 	LDI	@CWI,AR1
     // asm 0000759E: 	CALL	GET_CREDITS_TO_START
     // asm 0000759F: 	CMPI	1,R1
     // asm 000075A0: 	LDIEQ	@CWSI,AR1		;ONLY HAVE ON CREDIT USE SINGULAR "CREDIT"
     // asm 000075A1: 	CALL	STRCAT
-    // asm 000075A2: 	LDI	@TOSTARTBUFFI,AR0
-    // asm 000075A3: 	LDI	@CTS_STRI,AR1
-    // asm 000075A4: 	CALL	STRCAT
-    // asm 000075A5: 	RETS
-    TOSTARTBUFFER[0] = '\0';
-    SCS = GET_CREDITS_TO_START();
-    _itoa((char*)&FCB, SCS);
-    STRCAT(TOSTARTBUFFER, (char*)&FCB);
-    STRCAT(TOSTARTBUFFER, SPCI);
     if (GET_CREDITS_TO_START() == 1) {
-        STRCAT(TOSTARTBUFFER, CWSI);
+        STRCAT(TOSTARTBUFFER, CWSI); // ;ONLY HAVE ON CREDIT USE SINGULAR "CREDIT"
     } else {
         STRCAT(TOSTARTBUFFER, CWI);
     }
+
+    // asm 000075A2: 	LDI	@TOSTARTBUFFI,AR0
+    // asm 000075A3: 	LDI	@CTS_STRI,AR1
+    // asm 000075A4: 	CALL	STRCAT
     STRCAT(TOSTARTBUFFER, CTS_STRI);
+
+    // asm 000075A5: 	RETS
 }
 
 // *----------------------------------------------------------------------------
