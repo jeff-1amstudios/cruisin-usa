@@ -498,8 +498,7 @@ DR1:
 
     AUDIT_WRITE(AUD_BCREDITS, 0);
 
-    READADJ(ADJ_VOLUME);
-    SET_MASTER_VOL();
+    SET_MASTER_VOL(READADJ(ADJ_VOLUME));
 
     if (WDHIT & 8)
         INCAUD(AUD_NUM_WATCHDOGS);
@@ -515,10 +514,9 @@ DR1:
     // IF = 0;
     ENABLEGIE();
 
-    // if (READAUD(AUD_VERSION) != VERSION_ID) {
-    //     VERSION_UPDATE();
-    //     return;
-    // }
+    if (READAUD(AUD_VERSION) != VERSION_ID) {
+        VERSION_UPDATE();
+    }
 
     if (VALIDATE_CMOS()) {
         CMOS_ERROR();
@@ -693,7 +691,7 @@ C_WAIT:
     // asm 00004C43: 	BR	ENTER2
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COLD_ENTER", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -2021,8 +2019,11 @@ static void VERSION_UPDATE(void) {
     // asm 00005042: 	SETAUD	AUD_VERSION
     // asm 00005044: 	BR	DIAG_RETURN
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VERSION_UPDATE", 0, 0);
-    UNIMPL();
+    RESET_ADJUSTMENTS();
+    AUDIT_WRITE(AUD_PCREDITS, 0);
+    AUDIT_WRITE(AUD_CREDITS, 0);
+    AUDIT_WRITE(AUD_BCREDITS, 0);
+    AUDIT_WRITE(AUD_VERSION, VERSION_ID);
 }
 
 // *----------------------------------------------------------------------------
@@ -2037,8 +2038,10 @@ void FAKEDIAG(void) {
     // asm 0000504B: 	LDI	MDIAG,R0		;set mode appropriate
     // asm 0000504C: 	STI	R0,@_MODE
     // asm 0000504D:  	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FAKEDIAG", 0, 0);
-    UNIMPL();
+    INIT_SYSTEM();
+    PAL_INIT();
+    BGNDCOLA = 0x4210;
+    _MODE = MDIAG;
 }
 
 // *----------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
+#include "objects.h"
 #include "pall.h"
 #include "sndtab.h"
 #include "sys.h"
@@ -27,6 +28,11 @@ static void MAPPAL_ILLUM(void);
 void TIME2STR(void);
 void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/);
 void RADAR_PLOT(void);
+
+static int packed_palette_word_count(int flags_and_count);
+static void copy_packed_palette(tPAL* dst, const tPAL* src);
+static int scale_5bit_component(int component, float multiplier);
+static u32 scale_packed_palette_word(u32 packed_word, float multiplier);
 
 #define COLONI COLON
 #define lap_bufferI lap_buffer
@@ -646,6 +652,10 @@ IBOIBO:
 // *----------------------------------------------------------------------------
 static void MAPPAL_ILLUM_INIT(void)
 {
+    tPAL* right_palette;
+    tPAL* left_palette;
+    const tPAL* source_palette;
+
     // asm 00005FD7: 	LDI	@EPALR,AR0	;LOAD PALETTES AT
     // asm 00005FD8: 	LDI	@EPALL,AR1	;THE SAME TIME
     // asm 00005FD9: 	LDI	map1_p,AR3
@@ -669,7 +679,16 @@ L342:
     // asm 00005FEA: 	CALL	PAL_ALLOC_RAW
     // asm 00005FEB: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MAPPAL_ILLUM_INIT", 0, 0);
-    UNIMPL();
+
+    right_palette = (tPAL*)EPALR;
+    left_palette = (tPAL*)EPALL;
+    source_palette = _PALROM[map1_p];
+
+    copy_packed_palette(right_palette, source_palette);
+    copy_packed_palette(left_palette, source_palette);
+
+    PAL_ALLOC_RAW(right_palette);
+    PAL_ALLOC_RAW(left_palette);
 }
 
 // *----------------------------------------------------------------------------
@@ -724,12 +743,18 @@ static void MAP_ILLUM_COMPUTE(void)
 
 // *----------------------------------------------------------------------------
 /* asm: MAPPAL13	.bss	MAPPAL13,1 */
-int MAPPAL13;
+float MAPPAL13;
 /* asm: MAPPAL24	.bss	MAPPAL24,1 */
-int MAPPAL24;
+float MAPPAL24;
 
 static void MAPPAL_ILLUM(void)
 {
+    const tPAL* source_palette;
+    tPAL* left_palette;
+    tPAL* right_palette;
+    int word_count;
+    int palette_code;
+
     // asm 00005FFD: 	PUSH	AR0
     // asm 00005FFE: 	PUSH	AR1
     // asm 00005FFF: 	PUSH	AR2
@@ -937,7 +962,79 @@ JAJA5:
     // asm 000060BE: 	POP	AR0
     // asm 000060BF: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MAPPAL_ILLUM", 0, 0);
-    UNIMPL();
+
+    source_palette = _PALROM[map1_p];
+    left_palette = (tPAL*)EPALL;
+    right_palette = (tPAL*)EPALR;
+    word_count = packed_palette_word_count(source_palette->flags_and_count);
+
+    left_palette->flags_and_count = source_palette->flags_and_count;
+    for (int word_index = 0; word_index < word_count; word_index++) {
+        left_palette->data[word_index] = scale_packed_palette_word(source_palette->data[word_index], MAPPAL13);
+    }
+    palette_code = PAL_FIND_RAW(left_palette);
+    if (palette_code != -1) {
+        PAL_SET(left_palette->data, (u32)palette_code, (u32)left_palette->flags_and_count);
+    }
+
+    right_palette->flags_and_count = source_palette->flags_and_count;
+    for (int word_index = 0; word_index < word_count; word_index++) {
+        right_palette->data[word_index] = scale_packed_palette_word(source_palette->data[word_index], MAPPAL24);
+    }
+    palette_code = PAL_FIND_RAW(right_palette);
+    if (palette_code != -1) {
+        PAL_SET(right_palette->data, (u32)palette_code, (u32)right_palette->flags_and_count);
+    }
+}
+
+static int packed_palette_word_count(int flags_and_count) {
+    return (flags_and_count & 0x0fff) >> 1;
+}
+
+static void copy_packed_palette(tPAL* dst, const tPAL* src) {
+    int word_count;
+
+    dst->flags_and_count = src->flags_and_count;
+    word_count = packed_palette_word_count(src->flags_and_count);
+    for (int word_index = 0; word_index < word_count; word_index++) {
+        dst->data[word_index] = src->data[word_index];
+    }
+}
+
+static int scale_5bit_component(int component, float multiplier) {
+    int scaled;
+
+    scaled = (int)(((float)(component << 3)) * multiplier);
+    scaled >>= 3;
+    if (scaled < 0) {
+        return 0;
+    }
+    if (scaled > 31) {
+        return 31;
+    }
+    return scaled;
+}
+
+static u32 scale_packed_palette_word(u32 packed_word, float multiplier) {
+    u32 scaled_word;
+
+    scaled_word = 0;
+    for (int half_index = 0; half_index < 2; half_index++) {
+        int shift;
+        int packed_color;
+        int red;
+        int green;
+        int blue;
+
+        shift = half_index * 16;
+        packed_color = (int)((packed_word >> shift) & 0xffff);
+        red = scale_5bit_component(packed_color & 0x1f, multiplier);
+        green = scale_5bit_component((packed_color >> 5) & 0x1f, multiplier);
+        blue = scale_5bit_component((packed_color >> 10) & 0x1f, multiplier);
+        scaled_word |= (u32)(red | (green << 5) | (blue << 10)) << shift;
+    }
+
+    return scaled_word;
 }
 
 // *----------------------------------------------------------------------------

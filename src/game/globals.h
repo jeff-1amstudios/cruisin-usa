@@ -693,13 +693,9 @@ extern int TUNE_IDX;
 extern int IN_RESET_MODE;
 
 // asm:  .globl EPALR,EPALL,EPALRR,EPALRL
-extern int* EPALR;
+extern tPAL* EPALR;
 
-extern int* EPALL;
-
-extern int EPALRR[];
-
-extern int EPALRL[];
+extern tPAL* EPALL;
 
 // asm:  .globl DOORLISTI,DOORLIST
 #define DOORLISTI DOORLIST
@@ -752,9 +748,6 @@ extern int WHEELMAX;
 extern int WHEELVEL;
 
 extern int POSE;
-
-// asm:  .globl _MIDWAYSPIN
-void _MIDWAYSPIN(void);
 
 // asm:  .globl VANITY
 void VANITY(void);
@@ -1304,15 +1297,14 @@ void _line(int x0, int y0, int x1, int y1, int color);
 void GEN_NORMAL(void);
 
 // asm:  .globl _SINE,_COSI
-void _SINE(void);
-
-void _COSI(void);
+float _COSI(float theta /*R2*/);
+float _SINE(float theta /*R2*/);
 
 // asm:  .globl ARCTANF
 void ARCTANF(void);
 
 // asm:  .globl FIND_MATRIX
-void FIND_MATRIX(void);
+void FIND_MATRIX(MATRIX* dest /*AR2*/, VECTOR* radians /*R2*/);
 
 // asm:  .globl INITMAT
 void INITMAT(MATRIX* mat /*AR0*/);
@@ -1589,7 +1581,7 @@ void SET_TUNE_LINKED(void);
 void PLYR_ENGINE(void);
 
 // asm:  .globl ONESND,ONESNDFX
-void ONESND(void);
+void ONESND(int sound_index);
 
 void ONESNDFX(void);
 
@@ -1618,9 +1610,8 @@ void SET_TUNE(void);
 void RESUME_TUNE(void);
 
 // asm:  .globl SET_TRACK_VOL,SET_MASTER_VOL
-void SET_TRACK_VOL(void);
-
-void SET_MASTER_VOL(void);
+void SET_MASTER_VOL(int volume);
+void SET_TRACK_VOL(int track, int volume);
 
 // asm:  .globl RESUME_TUNE_NT
 void RESUME_TUNE_NT(void);

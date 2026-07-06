@@ -2,6 +2,7 @@
 
 #include "../core/machine.h"
 #include "../core/validator.h"
+#include "attracta.h"
 #include "c30.h"
 #include "cmos.h"
 #include "comm.h"
@@ -105,96 +106,6 @@ static WAVE_FUNC* const ATTR_WAVETAB_END = &ATTR_WAVETAB[7];
  *
  */
 void WAVE(int wave_index) {
-    // asm 00009307: 	POP	AR7	;return addr
-    // asm 00009308: 	CALL	SILENT
-    // 	;CLEAR ALL RAM AND RELOAD CODE
-    // 	;
-    // asm 00009309: 	CLRI	R0			;CLEAR INTERNAL RAM
-    // asm 0000930A: 	LDIL	RAM0,AR0
-    // asm 0000930D: 	RPTS	2047
-    // asm 0000930E: 	STI	R0,*AR0++
-    // asm 0000930F: 	CALL	COMM_ENABLE_INT2
-    // asm 00009310: 	LDI	@COUNTER_IDX,R0
-    // asm 00009311: 	PUSH	R0
-    // asm 00009312: 	LDI	@COUNTER_MODE,R0
-    // asm 00009313: 	PUSH	R0
-    // asm 00009314: 	LDI	@COIN_COUNTER1,R0
-    // asm 00009315: 	PUSH	R0
-    // asm 00009316: 	LDI	@COIN_COUNTER2,R0
-    // asm 00009317: 	PUSH	R0
-    // asm 00009318: 	CALL	CLR_RAM			;CLEAR BSS SPACE
-    // asm 00009319: 	POP	R0
-    // asm 0000931A: 	STI	R0,@COIN_COUNTER2
-    // asm 0000931B: 	POP	R0
-    // asm 0000931C: 	STI	R0,@COIN_COUNTER1
-    // asm 0000931D: 	POP	R0
-    // asm 0000931E: 	STI	R0,@COUNTER_MODE
-    // asm 0000931F: 	POP	R0
-    // asm 00009320: 	STI	R0,@COUNTER_IDX
-    // 	;RELOAD GAME CODE
-    // asm 00009321: 	LDI	0,AR1			;SOURCE ADDRESS
-    // asm 00009322: 	LDI	4000h,AR3		;DESINATION ADDRESS
-    // asm 00009323: 	LS	8,AR3
-    // asm 00009324: 	LDI	1000h,RC		;COPY THE PROGRAM INTO
-    // asm 00009325: 	LS	4,RC			;FAST RAM
-    // asm 00009326: 	RPTB	LD_RAM
-    // asm 00009327: 	LDI	*AR1++,R0
-LD_RAM:
-    // asm 00009328: STI	R0,*AR3++
-    // asm 00009329: 	PUSH	AR7
-    // asm 0000932A: 	PUSH	AR2
-#if DEBUG
-    // asm: 	CALL	VERIFY_CODE_INTEGRITY
-#endif
-    // asm 0000932B: 	CALL	CLRONE	;CAN NOW BE DUAL PLAYER
-    // asm 0000932C: 	CALL	INIT_SYSTEM
-    // asm 0000932D: 	LDP	@_CAMERARAD
-    // asm 0000932E: 	CLRF	R0
-    // asm 0000932F: 	STF	R0,@_CAMERARAD+X
-    // asm 00009330: 	STF	R0,@_CAMERARAD+Y
-    // asm 00009331: 	STF	R0,@_CAMERARAD+Z
-    // asm 00009332: 	STF	R0,@_CAMERAPOS+X
-    // asm 00009333: 	STF	R0,@_CAMERAPOS+Y
-    // asm 00009334: 	STF	R0,@_CAMERAPOS+Z
-    // asm 00009335: 	STF	R0,@_LIGHT+Z
-    // asm 00009336: 	LDF	0.707,R0
-    // asm 00009337: 	STF	R0,@_LIGHT+X
-    // asm 00009338: 	STF	R0,@_LIGHT+Y
-    // asm 00009339: 	SETDP
-    // asm 0000933A: 	CALL	INIT_CUSTOM_COIN	;Set the CUSTOM SETUP in RAM
-    // asm 0000933B: 	LDI	@CAMERAMATRIXI,AR0
-    // asm 0000933C: 	CALL	INITMAT
-    // asm 0000933D: 	FLOAT	35,R0
-    // asm 0000933E: 	STF	R0,@INFIN_CORRECT
-    // asm 0000933F: 	LDI	1,R0
-    // asm 00009340: 	STI	R0,@CLEARRDY
-    // asm 00009341: 	READADJ	ADJ_STEERCENTER
-    // asm 00009343: 	FLOAT	R0
-    // asm 00009344: 	STF	R0,@WHEELPOS
-    // asm 00009345: 	CLRF	R0
-    // asm 00009346: 	STF	R0,@WHEELPWR
-    // asm 00009347: 	STF	R0,@WHEELVEL
-    // asm 00009348: 	CLRI	R0
-    // asm 00009349: 	STI	R0,@COINOFF
-    // asm 0000934A: 	STI	R0,@NOLONG_VEHICLES
-    // asm 0000934B: 	CALL	LOAD_FIXED_PALETTES
-    // asm 0000934C: 	CREATE	SCAN_OBJECTS,UTIL_C
-    // asm 0000934F: 	POP	AR2
-    // asm 00009350: 	CMPI	1,AR2
-    // asm 00009351: 	BEQ	BEGIN_GAME
-    // asm 00009352: 	CLRI	AR0
-    // asm 00009353: 	LDP	@SWITCH3
-    // asm 00009354: 	NOT	@SWITCH3,R0   		;READ HARDWARE 0=CLOSED, 1=OPEN
-    // asm 00009355: 	LDI	*AR0,R2			;Loff
-    // asm 00009356: 	SETDP
-    // asm 00009357: 	AND	SW_VIEW0_H|SW_VIEW1_H|SW_VIEW2_H,R0
-    // asm 00009358: 	CMPI	SW_VIEW1_H|SW_VIEW2_H,R0
-    // asm 00009359: 	BEQ	CREDITS
-    // asm 0000935A: 	LDI	AR2,AR0
-    // asm 0000935B: 	ADDI	@_ATTR_WAVETABI,AR0
-    // asm 0000935C: 	LDI	*AR0,R0
-    // asm 0000935D: 	CALLU	R0
-    // asm 0000935E: 	RETS
 
     int saved_counter_idx;
     int saved_counter_mode;
@@ -205,8 +116,7 @@ LD_RAM:
     int count;
     float f0;
 
-    // asm:
-    // CALL SILENT
+    // asm: CALL SILENT
     SILENT();
 
     // ;CLEAR ALL RAM AND RELOAD CODE
@@ -352,27 +262,42 @@ static void HIGH_SCORE(void) {
 }
 
 static void MIDSPIN(void) {
+    PROC* proc;
+
     // asm 0000938B: 	LDI	@BUTTON_STATUS,R0
     // asm 0000938C: 	ANDN	BUT_VIEWS,R0
     // asm 0000938D: 	STI	R0,@BUTTON_STATUS
+    BUTTON_STATUS &= ~BUT_VIEWS;
+
     // asm 0000938E: 	CLRI	R0
     // asm 0000938F: 	LDI	MATTR,R0
     // asm 00009390: 	STI	R0,@_MODE
+    _MODE = MATTR;
+
     // asm 00009391: 	CALL	LOAD_ATTR_LEG
+    LOAD_ATTR_LEG();
+
     // asm 00009392: 	CREATE	HEAD2HEADWATCH,UTIL_C
+    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
+
     // asm 00009395: 	LDI	@ATTRWAVE,AR6		;DCS LOGOSOUND will play only if 0
-    // ;	LDI	3,AR2
-    // ;	CALL	RANDU0
-    // ;	CMPI	0,R0
-    // ;	BEQ	BBDD
+    PROC_CONTEXT* ctx2 = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->MIDWAYSPIN.attrwave = ATTRWAVE; // ;DCS LOGOSOUND will play only if 0
+
+    // ;       LDI     3,AR2
+    // ;       CALL    RANDU0
+    // ;       CMPI    0,R0
+    // ;       BEQ     BBDD
     // ;
-    // ;	CREATE	HEAD2HEAD_LOGO,UTIL_C
-    // ;	RETS
+    // ;       CREATE  HEAD2HEAD_LOGO,UTIL_C
+    // ;       RETS
     // ;BBDD
+
     // asm 00009396: 	CREATE	_MIDWAYSPIN,UTIL_C
+    proc = CREATE(_MIDWAYSPIN, UTIL_C, ctx2);
+
     // asm 00009399: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MIDSPIN", 0, 0);
-    UNIMPL();
 }
 
 static void MIDSPINHS(void) {

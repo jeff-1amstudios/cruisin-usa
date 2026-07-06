@@ -91,8 +91,7 @@ static int FLAMEANI[] = {
 #define FRAME_ON (PDATA + 1)
 #define CARBODY_MATRIX (PDATA + 2)
 
-void FLAME_PRC(void)
-{
+void FLAME_PRC(void) {
     // asm 0000ADC3: 	LDI	PLYR_C|PLYR_FLAMES_S,AR2
     // asm 0000ADC4: 	CALL	OBJ_FIND_FIRST
     // asm 0000ADC5: 	BC	FLAME_DIE		;Only one set of flames at a time
@@ -192,8 +191,7 @@ FLAME_DIE:
  *TRASHES	AR2,R1,R2,R3
  */
 
-static void animate_child(void)
-{
+static void animate_child(void) {
     // ;Set the Frame
 set_frame:
     // asm 0000AE10: 	LDI	*+AR1(IR0),R1
@@ -244,8 +242,7 @@ set_frame:
  *PUTS THE FLAMES JUST BEHIND THE PLAYERS CAR
  */
 
-void FLAMESORT(void)
-{
+void FLAMESORT(void) {
     // asm 0000AE35: 	LDI	@OACTIVE,AR0
     // asm 0000AE36: 	CMPI	0,AR0
     // asm 0000AE37: 	BEQ	FLMSORTX		;NO LIST... NO GO
@@ -275,7 +272,7 @@ void FLAMESORT(void)
 FLMSORTX:
     // asm 0000AE4E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAMESORT", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /*
@@ -286,8 +283,7 @@ FLMSORTX:
  * SCRAMBLES R0,R1
  */
 
-void GETCARBODY(void)
-{
+void GETCARBODY(void) {
     // asm 0000AE4F: 	LDI	*+AR2(ODYNALIST),R0
     // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
 FBLOOP:
@@ -303,8 +299,7 @@ FOUND_BODY:
     UNIMPL();
 }
 
-OBJ* FIND_NEXT_OBJ(OBJ* obj /*AR0*/, int oid /*R1*/)
-{
+OBJ* FIND_NEXT_OBJ(OBJ* obj /*AR0*/, int oid /*R1*/) {
     OBJ* next_obj;
 
     // asm 0000AE57: 	PUSH	R0

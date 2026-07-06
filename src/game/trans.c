@@ -56,15 +56,16 @@ void ENGINE_COLOR(void);
  *
  */
 
+/* asm: EPALRR	.bss	EPALRR,129 */
+tPAL EPALRR;
+/* asm: EPALRL	.bss	EPALRL,129 */
+tPAL EPALRL;
+
 /* asm: EPALR	.word	EPALRR */
-int* EPALR = EPALRR;
+tPAL* EPALR = &EPALRR;
 /* asm: EPALL	.word	EPALRL */
 /* asm: 	 */
-int* EPALL = EPALRL;
-/* asm: EPALRR	.bss	EPALRR,129 */
-int EPALRR[129];
-/* asm: EPALRL	.bss	EPALRL,129 */
-int EPALRL[129];
+tPAL* EPALL = &EPALRL;
 
 /*
  *----------------------------------------------------------------------------
@@ -72,8 +73,7 @@ int EPALRL[129];
  *
  *
  */
-void CHOOSE_TRANSMISSION(void)
-{
+void CHOOSE_TRANSMISSION(void) {
     // asm 00005A17: 	CALL	CLEANUP_PALS
     // asm 00005A18: 	LDI	1,R0
     // asm 00005A19: 	STI	R0,@NOAERASE
@@ -221,8 +221,7 @@ CTLPX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void OPEN_DOOR_PROC(void)
-{
+static void OPEN_DOOR_PROC(void) {
     // asm 00005AB4: 	CREATE	THE_CAR_CHOICE_PROC,UTIL_C
     // asm 00005AB7: 	LDI	@VECTORCI,AR2
     // asm 00005AB8: 	CLRF	R0
@@ -287,8 +286,7 @@ IJH:
  *THE WHEEL AND PUSH TO CHOOSE COME FROM BELOW
  *
  */
-static void WHEEL_FROM_BELOW(void)
-{
+static void WHEEL_FROM_BELOW(void) {
     // asm 00005AEC: 	LDI	@CT_WHEEL,AR0
     // asm 00005AED: 	LDF	*+AR0(OPOSY),R0
     // asm 00005AEE: 	SUBF	8,R0
@@ -309,8 +307,7 @@ static void WHEEL_FROM_BELOW(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CENTERTHEONE(void)
-{
+static void CENTERTHEONE(void) {
     // asm 00005AF9: 	LDI	@CHOSEN_TRANSMISSION,R0
     // asm 00005AFA: 	CMPI	MANUAL_TRANSMISSION,R0
     // asm 00005AFB: 	LDIEQ	AUD_MANUAL_TRANS_SELECTED,AR2
@@ -362,8 +359,7 @@ FLYUPL:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DROPTHETURN(void)
-{
+void DROPTHETURN(void) {
     // asm 00005B24: 	LDI	@CT_TURNTOSEL,AR4
     // asm 00005B25: 	BU	J85
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -371,8 +367,7 @@ void DROPTHETURN(void)
     UNIMPL();
 }
 
-void DROPTHECYCLE(void)
-{
+void DROPTHECYCLE(void) {
     // asm 00005B26: 	LDI	@CT_PUSHTOCYCLE,AR4
     // asm 00005B27: 	BU	J85
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -380,8 +375,7 @@ void DROPTHECYCLE(void)
     UNIMPL();
 }
 
-void DROPTHEWHEEL(void)
-{
+void DROPTHEWHEEL(void) {
     // asm 00005B28: 	LDI	@CT_WHEEL,AR4
     // asm 00005B29: 	BU	J85
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -389,8 +383,7 @@ void DROPTHEWHEEL(void)
     UNIMPL();
 }
 
-void DROPTHEOTHER(void)
-{
+void DROPTHEOTHER(void) {
     // asm 00005B2A: 	LDI	@CHOSEN_TRANSMISSION,R0
     // asm 00005B2B: 	CMPI	MANUAL_TRANSMISSION,R0
     // asm 00005B2C: 	LDINE	@CT_MAN,AR4
@@ -417,8 +410,7 @@ J86:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SIDE_DOOR(void)
-{
+void SIDE_DOOR(void) {
     // asm 00005B3A: 	LDI	@DOORLISTI,AR4
     // asm 00005B3B: 	SUBI	OLINK2,AR4
 DOLS:
@@ -481,8 +473,7 @@ static float DO_RPPX = 256.0f;
  *
  *
  */
-void DOOR_OPENING(void)
-{
+void DOOR_OPENING(void) {
     // asm 00005B54: 	LDF	@DOORTHETA,R2
     // asm 00005B55: 	LDI	@MATRIXAI,AR2
     // asm 00005B56: 	CALL	FIND_YMATRIX
@@ -551,8 +542,7 @@ DOLX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SNAPCURSOR(void)
-{
+static void SNAPCURSOR(void) {
     // asm 00005B8D: 	LDI	@CT_CURSOR,AR2
     // asm 00005B8E: 	CALL	DOOR_ELEMENT_DELETE
     // asm 00005B8F: 	CALL	OBJ_DELETE
@@ -572,8 +562,7 @@ static void SNAPCURSOR(void)
 /* asm: LASTCHOICEA	.bss	LASTCHOICEA,1 */
 int LASTCHOICEA;
 
-void WHEEL_ROUT(void)
-{
+void WHEEL_ROUT(void) {
     // asm 00005B91: 	CALL	GET_UNIT_WHEEL
     // asm 00005B92: 	LDI	@CHOSEN_TRANSMISSION,R1
     // asm 00005B93: 	LDI	@CT_CURSOR,AR2
@@ -641,8 +630,7 @@ NUTHIN:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void DOOR_ELEMENT_DELETE_ALL(void)
-{
+void DOOR_ELEMENT_DELETE_ALL(void) {
     // asm 00005BC8: 	LDI	@DOORLIST,R0
 DEDL:
     // asm 00005BC9: LDI	R0,AR0
@@ -669,8 +657,7 @@ DEDX:
  *	AR2	ELEMENT TO DELETE
  *
  */
-void DOOR_ELEMENT_DELETE(void)
-{
+void DOOR_ELEMENT_DELETE(void) {
     // asm 00005BD3: 	PUSH	R0
     // asm 00005BD4: 	PUSH	AR1
     // asm 00005BD5: 	LDI	@DOORLISTI,R0
@@ -694,8 +681,7 @@ FREEDE_X:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void TRANSCHOICE(void)
-{
+void TRANSCHOICE(void) {
     // asm 00005BE1: 	CALL	GET_UNIT_WHEEL
     // asm 00005BE2: 	LDF	PI,R2
     // asm 00005BE3: 	MPYF	R0,R2
@@ -721,8 +707,7 @@ void TRANSCHOICE(void)
 /* asm: GUWP	.bss	GUWP,1 */
 int GUWP;
 
-void GET_UNIT_WHEEL(void)
-{
+void GET_UNIT_WHEEL(void) {
     // asm 00005BEA: 	FLOAT	@_pot0,R0
     // asm 00005BEB: 	LDF	@GUWP,R1
     // asm 00005BEC: 	MPYF	0.2,R0
@@ -741,8 +726,7 @@ void GET_UNIT_WHEEL(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void TILE_PIECES(void)
-{
+static void TILE_PIECES(void) {
     // asm 00005BF5: 	SLEEP	10
     // asm 00005BF7: 	LDI	29,AR5
     // asm 00005BF8: TP_LP
@@ -815,8 +799,7 @@ int TRANS_HEAD;
  *
  *
  */
-void FIX_TRANSMISSION_SCREEN(void)
-{
+void FIX_TRANSMISSION_SCREEN(void) {
     // asm 00005C16: 	LDI	-1,R6
     // asm 00005C17: 	CLRI	R0
     // asm 00005C18: 	STI	R0,@DOORLIST
@@ -1017,8 +1000,7 @@ FTSLX:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void MOVE_PUSH_BOX(void)
-{
+static void MOVE_PUSH_BOX(void) {
     // asm 00005CD0: 	LDI	@CT_TURNTOSEL,AR6
     // asm 00005CD1: 	LDI	@CT_PUSHTOCYCLE,AR4
     // asm 00005CD2: 	LDI	10,AR5
@@ -1057,8 +1039,7 @@ static int TRNTAB[] = {
     -1,
 };
 
-void TURNTO_SELECT(void)
-{
+void TURNTO_SELECT(void) {
     // asm 00005CEB: 	LDI	@TRNTABI,AR5
 TURNLP:
     // asm 00005CEC: LDI	*AR5++,R0
@@ -1086,8 +1067,7 @@ static int CYCTAB[] = {
     -1,
 };
 
-void CYCLE_PUSH(void)
-{
+void CYCLE_PUSH(void) {
     // asm 00005CFB: 	LDI	@CYCTABI,AR5
     // asm 00005CFC: 	SLEEP	16
 CYCLP:
@@ -1116,8 +1096,7 @@ CYCLP:
  *	AR0	DOOR OBJECT
  *
  */
-void ADD_TO_DOOR_LIST(void)
-{
+void ADD_TO_DOOR_LIST(void) {
     // asm 00005D08: 	LDI	@DOORLIST,R0
     // asm 00005D09: 	STI	R0,*+AR0(OLINK2)
     // asm 00005D0A: 	STI	AR0,@DOORLIST
@@ -1135,8 +1114,7 @@ void ADD_TO_DOOR_LIST(void)
  *
  *
  */
-void ENGINE_COLOR_INIT(void)
-{
+void ENGINE_COLOR_INIT(void) {
     // asm 00005D0C: 	LDI	@EPALR,AR0
     // asm 00005D0D: 	LDI	trmeng1_p,AR3
     // asm 00005D0E: 	ADDI	@PALROMI,AR3
@@ -1186,8 +1164,7 @@ L343:
  *
  *
  */
-void ENGINE_COLOR(void)
-{
+void ENGINE_COLOR(void) {
     // asm 00005D2B: 	PUSH	R5
     // asm 00005D2C: 	PUSHFL	R6
     // asm 00005D2E: 	PUSHFL	R7

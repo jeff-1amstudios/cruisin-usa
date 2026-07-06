@@ -70,7 +70,7 @@ void TEXT_OUTPUT(void);
 void STRCPY(void);
 
 // asm: 	.globl	STRCAT
-void STRCAT(void);
+void STRCAT(char* dest, const char* src);
 
 // asm: 	.globl	SETFIXEDFONTDS,SETFIXEDFONT
 void SETFIXEDFONTDS(tSHADOW_TEXT* t);

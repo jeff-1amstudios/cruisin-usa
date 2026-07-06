@@ -14,18 +14,17 @@
 #include "text.h"
 #include "validator.h"
 #include "vunit.h"
-#include <math.h>
 
 /*
  * Source module: asm/MATH.ASM
  */
 
-void _COSI(void);
-void _SINE(void);
+float _COSI(float theta /*R2*/);
+float _SINE(float theta /*R2*/);
 void NORMITS(void);
 void NORMIT(void);
 void ARCTANF(void);
-void FIND_MATRIX(void);
+void FIND_MATRIX(MATRIX* dest /*AR2*/, VECTOR* radians /*R2*/);
 void FIND_XMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
 #define FIND_YMATRIX _find_Ymatrix
 void _find_Ymatrix(MATRIX* dest /*AR2*/, float radians /*R2*/);
@@ -55,8 +54,9 @@ void SCALE_MATRIX(void);
 static float FORMULA;
 static float* ATTABV;
 static float* OFFTABV;
-static float ATTAB[129];
-static float ATOFFTAB[16];
+static float SINTABLE[];
+static float ATTAB[];
+static float ATOFFTAB[];
 
 /*
  *----------------------------------------------------------------------------
@@ -81,60 +81,81 @@ static float ATOFFTAB[16];
  *	R0	RETURN VALUE
  *
  */
-void _COSI(void) {
+float _COSI(float theta /*R2*/) {
     // asm 0000952D: 	LDF	R2,R0
     // asm 0000952E: 	ADDF	@HALFPII,R0	;offset for COS
     // asm 0000952F: 	B	SINE0
-    // *
-    // *SINE FUNCTION
-    // *
-    // *PARAMETERS
-    // *	R2	VALUE IN RADIANS 0-INFINITY
-    // *	R0	RETURN VALUE
-    // *
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_COSI", 0, 0);
-    UNIMPL();
+    return _SINE(theta + HALFPII); // ;offset for COS
 }
 
-void _SINE(void) {
+// *
+// *SINE FUNCTION
+// *
+// *PARAMETERS
+// *	R2	VALUE IN RADIANS 0-INFINITY
+// *	R0	RETURN VALUE
+// *
+float _SINE(float theta /*R2*/) {
+    int index;
+
     // asm 00009530: 	LDF	R2,R0
-SINE0:
     // asm 00009531: PUSH	AR0
+
     // asm 00009532: 	BGE	NOTNEG
     // asm 00009533: 	NEGF	R0		;fix negative case
     // asm 00009534: 	ADDF	@PII,R0
+    if (theta < 0.0f) {
+        theta = -theta + PII; // ;fix negative case
+    }
+
 NOTNEG:
     // asm 00009535: MPYF	@FORMULA,R0
     // asm 00009536: 	ADDF	0.5,R0		;ROUND THE SUCKER
     // asm 00009537: 	FIX	R0		;get a raw index
+    index = (int)(theta * FORMULA + 0.5f); // ;ROUND THE SUCKER / ;get a raw index
+
     // asm 00009538: 	AND	3FFh,R0
+    index &= 0x3ff;
+
     // asm 00009539: 	CMPI	512,R0
     // asm 0000953A: 	BLT	ALLOK
-    // asm 0000953B: 	SUBI	512,R0
-    // asm 0000953C: 	CMPI	256,R0
-    // asm 0000953D: 	BLT	PERFECT2
-    // asm 0000953E: 	SUBI	512,R0
-    // asm 0000953F: 	NEGI	R0,R0
-PERFECT2:
-    // asm 00009540: 	ADDI	@SINTABLEI,R0
-    // asm 00009541: 	LDI	R0,AR0
-    // asm 00009542: 	NEGF	*AR0,R0
-    // asm 00009543: 	POP	AR0
-    // asm 00009544: 	RETS
+    if (index >= 512) {
+        // asm 0000953B: 	SUBI	512,R0
+        index -= 512;
+
+        // asm 0000953C: 	CMPI	256,R0
+        // asm 0000953D: 	BLT	PERFECT2
+        if (index >= 256) {
+            // asm 0000953E: 	SUBI	512,R0
+            // asm 0000953F: 	NEGI	R0,R0
+            index = -(index - 512);
+        }
+
+    PERFECT2:
+        // asm 00009540: 	ADDI	@SINTABLEI,R0
+        // asm 00009541: 	LDI	R0,AR0
+        // asm 00009542: 	NEGF	*AR0,R0
+        // asm 00009543: 	POP	AR0
+        // asm 00009544: 	RETS
+        return -SINTABLE[index];
+    }
+
 ALLOK:
     // asm 00009545: 	CMPI	256,R0
     // asm 00009546: 	BLT	PERFECT
-    // asm 00009547: 	SUBI	512,R0
-    // asm 00009548: 	NEGI	R0,R0
+    if (index >= 256) {
+        // asm 00009547: 	SUBI	512,R0
+        // asm 00009548: 	NEGI	R0,R0
+        index = -(index - 512);
+    }
+
 PERFECT:
     // asm 00009549: ADDI	@SINTABLEI,R0
     // asm 0000954A: 	LDI	R0,AR0
     // asm 0000954B: 	LDF	*AR0,R0
     // asm 0000954C: 	POP	AR0
     // asm 0000954D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_SINE", 0, 0);
-    UNIMPL();
+    return SINTABLE[index];
 }
 
 // *----------------------------------------------------------------------------
@@ -763,7 +784,7 @@ static float ATTAB[] = {
 // *----------------------------------------------------------------------------
 
 /* asm: LOCTEMPER_MAT2	fbss	LOCTEMPER_MAT2,12 */
-int LOCTEMPER_MAT2[12];
+float LOCTEMPER_MAT2[12];
 
 /*
  *----------------------------------------------------------------------------
@@ -774,7 +795,13 @@ int LOCTEMPER_MAT2[12];
  *	R2	SOURCE RADIANS 1X3
  *
  */
-void FIND_MATRIX(void) {
+void FIND_MATRIX(MATRIX* dest /*AR2*/, VECTOR* radians /*R2*/) {
+    float cx, cy, cz;
+    float sx, sy, sz;
+    float sx_sy;
+    float cx_sz;
+    float cx_cz;
+
     // asm 00009591: 	PUSH	R0
     // asm 00009592: 	PUSH	R1
     // asm 00009593: 	PUSH	R2
@@ -784,47 +811,76 @@ void FIND_MATRIX(void) {
     // asm 00009597: 	PUSH	AR1
     // asm 00009598: 	PUSH	AR2
     // asm 00009599: 	PUSH	AR3
+
     // 	;GET SINES AND COSINES
     // asm 0000959A: 	LDI	@LOCTEMPER_MAT2I,AR1
     // asm 0000959B: 	LDI	R2,AR3
     // asm 0000959C: 	LDI	2,RC
     // asm 0000959D: 	RPTB	FM1
+
     // asm 0000959E: 	LDF	*AR3++,R2
     // asm 0000959F: 	CALL	_SINE
     // asm 000095A0: 	STF	R0,*+AR1(3)
     // asm 000095A1: 	CALL	_COSI
 FM1:
     // asm 000095A2: STF	R0,*AR1++
+    sx = _SINE(radians->X);
+    cx = _COSI(radians->X);
+    sy = _SINE(radians->Y);
+    cy = _COSI(radians->Y);
+    sz = _SINE(radians->Z);
+    cz = _COSI(radians->Z);
+
     // asm 000095A3: 	NOP	*--AR1(2)			;CENTER COSINE INDEX
     // asm 000095A4: 	LDI	AR1,AR3
     // asm 000095A5: 	ADDI	3,AR3				;CENTER SINE INDEX
+
     // asm 000095A6: 	MPYF	*+AR1(1),*+AR1(0),R0		;CZ*CY
     // asm 000095A7: 	STF	R0,*AR2++		 	;A(0,0)=CZ*CY
+    dest->a00 = cz * cy; // ;A(0,0)=CZ*CY
+
     // asm 000095A8: 	MPYF	*+AR3(1),*+AR1(0),R0		;SZ*CY
     // asm 000095A9: 	NEGF	*+AR3(0),R2			;-SY
     // asm 000095A9:  ||	STF	R0,*AR2++			;A(0,1)=SZ*CY
-    // asm 000095AA: 	MPYF	*-AR3(1),*+AR3(0),R0		;SX*SY
-    // asm 000095AB: 	MPYF	*+AR1(1),R0,R1			;SX*SY*CZ
+    dest->a01 = sz * cy; // ;A(0,1)=SZ*CY
+
     // asm 000095AB:  ||	STF	R2,*AR2++			;A(0,2)=-SY
+    dest->a02 = -sy; // ;A(0,2)=-SY
+
+    // asm 000095AA: 	MPYF	*-AR3(1),*+AR3(0),R0		;SX*SY
+    sx_sy = sx * sy; // ;SX*SY
+
+    // asm 000095AB: 	MPYF	*+AR1(1),R0,R1			;SX*SY*CZ
     // asm 000095AC: 	MPYF	*-AR1(1),*+AR3(1),R2		;CX*SZ
     // asm 000095AD: 	SUBF	R2,R1
+    cx_sz = cx * sz;                  // ;CX*SZ
+    dest->a10 = (sx_sy * cz) - cx_sz; // ;A(1,0)=SX*SY*CZ-CX*SZ
+
     // asm 000095AE: 	MPYF	*+AR3(1),R0,R0			;SZ*(SX*SY)
     // asm 000095AE:  ||	STF	R1,*AR2++			;A(1,0)=SX*SY*SZ-CX*SZ
     // asm 000095AF: 	MPYF	*-AR1(1),*+AR1(1),R1		;CX*CZ
     // asm 000095B0: 	ADDF	R1,R0
-    // asm 000095B1: 	STF	R0,*AR2++			;A(1,1)= SX*SY*SZ+CX*CZ
+    cx_cz = cx * cz;                  // ;CX*CZ
+    dest->a11 = (sz * sx_sy) + cx_cz; // ;A(1,1)= SX*SY*SZ+CX*CZ
+
     // asm 000095B2: 	MPYF	*-AR3(1),*+AR1(0),R0
-    // asm 000095B3: 	MPYF	*+AR3(0),R1,R1			;SY*(CX*CZ)
     // asm 000095B3:  ||	STF	R0,*AR2++			;A(1,2)= SX*CY
+    dest->a12 = sx * cy; // ;A(1,2)= SX*CY
+
+    // asm 000095B3: 	MPYF	*+AR3(0),R1,R1			;SY*(CX*CZ)
     // asm 000095B4: 	MPYF	*-AR3(1),*+AR3(1),R0		;SX*SZ
     // asm 000095B5: 	ADDF	R1,R0
+    dest->a20 = (sy * cx_cz) + (sx * sz); // ;A(2,0)= CX*SY*CZ+SX*SZ
+
     // asm 000095B6: 	MPYF	*+AR3(0),R2,R2
-    // asm 000095B6:  ||	STF	R0,*AR2++			;A(2,0)= CX*SY*CZ+SX*SZ
     // asm 000095B7: 	MPYF	*-AR3(1),*+AR1(1),R0
-    // asm 000095B8: 	MPYF	*-AR1(1),*+AR1(0),R1		;CX*CY
     // asm 000095B8:  ||	SUBF	R0,R2
-    // asm 000095B9: 	STF	R2,*AR2++			;A(2,1)= CX*SY*SZ-SX*CZ
+    dest->a21 = (sy * cx_sz) - (sx * cz); // ;A(2,1)= CX*SY*SZ-SX*CZ
+
+    // asm 000095B8: 	MPYF	*-AR1(1),*+AR1(0),R1		;CX*CY
     // asm 000095BA: 	STF	R1,*AR2--(8)			;A(2,2)= CX*CY
+    dest->a22 = cx * cy; // ;A(2,2)= CX*CY
+
     // asm 000095BB: 	POP	AR3
     // asm 000095BC: 	POP	AR2
     // asm 000095BD: 	POP	AR1
@@ -835,8 +891,6 @@ FM1:
     // asm 000095C2: 	POP	R2
     // asm 000095C3: 	POP	R1
     // asm 000095C4: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_MATRIX", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -857,12 +911,12 @@ void FIND_XMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/) {
     // asm 000095C6: 	PUSHF	R0
     // asm 000095C7: 	CALL	_COSI
     // asm 000095C8: 	STF	R0,*+AR2(A11)
-    dest->a11 = cosf(radians);
+    dest->a11 = _COSI(radians);
     // asm 000095C9: 	STF	R0,*+AR2(A22)
     dest->a22 = dest->a11;
     // asm 000095CA: 	CALL	_SINE
     // asm 000095CB: 	STF	R0,*+AR2(A12)
-    dest->a12 = sinf(radians);
+    dest->a12 = _SINE(radians);
     // asm 000095CC: 	NEGF	R0
     // asm 000095CD: 	STF	R0,*+AR2(A21)
     dest->a21 = -dest->a12;
@@ -901,12 +955,12 @@ void _find_Ymatrix(MATRIX* dest /*AR2*/, float radians /*R2*/) {
     // asm 000095D9: 	PUSHF	R0
     // asm 000095DA: 	CALL	_COSI
     // asm 000095DB: 	STF	R0,*+AR2(A00)
-    dest->a00 = cosf(radians);
+    dest->a00 = _COSI(radians);
     // asm 000095DC: 	STF	R0,*+AR2(A22)
     dest->a22 = dest->a00;
     // asm 000095DD: 	CALL	_SINE
     // asm 000095DE: 	STF	R0,*+AR2(A20)
-    dest->a20 = sinf(radians);
+    dest->a20 = _SINE(radians);
     // asm 000095DF: 	NEGF	R0
     // asm 000095E0: 	STF	R0,*+AR2(A02)
     dest->a02 = -dest->a20;

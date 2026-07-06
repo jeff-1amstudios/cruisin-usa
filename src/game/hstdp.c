@@ -2034,7 +2034,7 @@ OTAG0:
     // asm 00003706: 	AND	0FFh,R0
     // asm 00003707: 	LSH	-8,R1		;Decode the start
     range_end = oid & 0xFF; // ;YES, Decode the end
-    oid >>= 8; // ;Decode the start
+    oid >>= 8;              // ;Decode the start
 
 OTAG1:
     // asm 00003708: 	CALL	OBJ_TAGALL	;Remove the range of objects
@@ -2362,11 +2362,11 @@ MNLOOP:
         obj->posz = previous_obj->posz;
         // asm 0000377F: 	LDF	0,R2
         // asm 00003780: 	STF	R2,*+AR0(ORADX)
-        obj->rad_x = 0.0f;
+        obj->rad.X = 0.0f;
         // asm 00003781: 	LDI	AR0,AR2
         // asm 00003782: 	ADDI	OMATRIX,AR2
         // asm 00003783: 	CALL	FIND_XMATRIX
-        FIND_XMATRIX((MATRIX*)&obj->mat00, obj->rad_x);
+        FIND_XMATRIX((MATRIX*)&obj->mat00, obj->rad.X);
         // asm 00003784: 	LDI	AR0,AR2
         // asm 00003785: 	CALL	OBJ_INSERT
         OBJ_INSERT(obj);
@@ -2454,7 +2454,7 @@ MTLOOP:
         // asm 000037A6: 	CMPI	2,AR6
         // asm 000037A7: 	BNE	MT2
         if (count == 5 || count == 2) {
-MT1:
+        MT1:
             // asm 000037A8: 	LDL	dcol,AR2
             // asm 000037A9: 	CALL	OBJ_GETE
             obj = OBJ_GETE(ROM_PTR(dcol_ROM));
@@ -2465,7 +2465,7 @@ MT1:
             width = -82.0f; // ;WIDTH OF ONE COLON
             // asm 000037AB: 	BR	MT3
         } else {
-MT2:
+        MT2:
             // asm 000037AC: 	LDI	*AR4++,IR0
             // asm 000037AD: 	LDI	@NUMTABI,AR0
             // asm 000037AE: 	LDI	*+AR0(IR0),AR2
@@ -2475,7 +2475,7 @@ MT2:
                 return;
             }
         }
-MT3:
+    MT3:
         // asm 000037B0: 	LDI	HIGH_SCORE_GROUP,R0		;Make this part of the High Score group
         // asm 000037B1: 	STI	R0,*+AR0(OID)
         obj->id = HIGH_SCORE_GROUP; // ;Make this part of the High Score group
@@ -2492,11 +2492,11 @@ MT3:
         obj->posz = previous_obj->posz;
         // asm 000037B9: 	LDF	0,R2
         // asm 000037BA: 	STF	R2,*+AR0(ORADX)
-        obj->rad_x = 0.0f;
+        obj->rad.X = 0.0f;
         // asm 000037BB: 	LDI	AR0,AR2
         // asm 000037BC: 	ADDI	OMATRIX,AR2
         // asm 000037BD: 	CALL	FIND_XMATRIX
-        FIND_XMATRIX((MATRIX*)&obj->mat00, obj->rad_x);
+        FIND_XMATRIX((MATRIX*)&obj->mat00, obj->rad.X);
         // asm 000037BE: 	LDI	AR0,AR2
         // asm 000037BF: 	CALL	OBJ_INSERT
         OBJ_INSERT(obj);
@@ -2529,7 +2529,7 @@ FORMN_LOOP:
         // asm 000037C5: 	CMPI	0,R2
         // asm 000037C6: 	BNE	FORMNA
         // asm 000037C7: 	LDI	*AR2++,R0
-FORMNA:
+    FORMNA:
         // asm 000037C8: LDI	R0,R3
         // asm 000037C9: 	LSH	R2,R3
         // asm 000037CA: 	SUBI	8,R2
@@ -2551,7 +2551,7 @@ FORMNA:
         digit_stack[digit_count] = character - '0';
         // asm 000037D4: 	ADDI	1,R1
         digit_count += 1;
-FORMN:
+    FORMN:
         // asm 000037D5: 	CMPI	6,R1
         // asm 000037D6: 	BLE	FORMN_LOOP
         continue;
@@ -2653,11 +2653,11 @@ CRLLOOP:
         // asm 00003806: 	CMPI	20h,AR2		;is it a space?
         // asm 00003807: 	LDFEQ	-PI,R2
         // asm 00003808: 	STF	R2,*+AR0(ORADX)
-        obj->rad_x = character == ' ' ? -PI : 0.0f; // ;is it a space?
+        obj->rad.X = character == ' ' ? -PI : 0.0f; // ;is it a space?
         // asm 00003809: 	LDI	AR0,AR2
         // asm 0000380A: 	ADDI	OMATRIX,AR2
         // asm 0000380B: 	CALL	FIND_XMATRIX
-        FIND_XMATRIX((MATRIX*)&obj->mat00, obj->rad_x);
+        FIND_XMATRIX((MATRIX*)&obj->mat00, obj->rad.X);
         // asm 0000380C: 	POP	R2
         // asm 0000380D: 	LDI	AR0,AR2
         // asm 0000380E: 	CALL	OBJ_INSERT
@@ -2688,7 +2688,7 @@ static OBJ* ASCII_TO_OBJ(int character) {
         character += 'Z' + 2 - '0';
         // asm 00003818: 	BR	CRL1
     } else {
-CRLL:
+    CRLL:
         // asm 00003819: 	CMPI	'Z',AR2
         // asm 0000381A: 	LDIGT	'Z',AR2
         if (character > 'Z') {
@@ -3161,8 +3161,8 @@ FLASH_LOOP:
     // asm 000038DA: 	LDI	200,AR2
     // asm 000038DB: 	CALL	RANDPER
     if (RANDPER(200) != 0) {
-    // asm 000038DC: 	POP	R0
-    // asm 000038DD: 	LDIC	@scroll_whiteI,R0
+        // asm 000038DC: 	POP	R0
+        // asm 000038DD: 	LDIC	@scroll_whiteI,R0
         palette = scroll_whiteI;
     }
     // asm 000038DE: 	CALL	FLASH_LETTERS
@@ -3277,7 +3277,7 @@ FIXPL:
         // asm 00003904: 	SUBF	1,R3
         letter_z = plate_obj->posz - 1.0f;
         MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x00003904, "R3", &letter_z);
-    // asm 00003905: FIXPL1
+        // asm 00003905: FIXPL1
         // asm 00003905: 	LDI	R2,R1
         // asm 00003906: 	LSH	1,R2
         // asm 00003907: 	CALL	OBJ_GFIND
@@ -3287,7 +3287,7 @@ FIXPL:
         if (letter_obj == NULL) {
             goto FIXPL3; // ;No letters on this plate, move on. (useually hosed CMOS)
         }
-FIXPL2:
+    FIXPL2:
         // asm 00003909: 	STF	R3,*+AR0(OPOSZ)		;Now do the letters on it
         letter_obj->posz = letter_z; // ;Now do the letters on it
         // asm 0000390A: 	CALL	OBJ_GFIND_NEXT
@@ -3353,7 +3353,7 @@ FLPL:
         MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x00003920, "R3", &last_plate_z);
         // asm 00003921: 	SUBF	1,R3
         letter_z = last_plate_z - 1.0f;
-    // asm 00003922: FLPL1
+        // asm 00003922: FLPL1
         // asm 00003922: 	LDI	R2,R1
         // asm 00003923: 	LSH	1,R2
         // asm 00003924: 	CALL	OBJ_GFIND
@@ -3363,7 +3363,7 @@ FLPL:
         if (letter_obj == NULL) {
             goto FLPL3; // ;No letters ,hosed CMOS?
         }
-FLPL2:
+    FLPL2:
         // asm 00003926: 	STF	R3,*+AR0(OPOSZ)		;Now do the letters on it
         letter_obj->posz = letter_z; // ;Now do the letters on it
         // asm 00003927: 	CALL	OBJ_GFIND_NEXT

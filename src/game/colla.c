@@ -1089,7 +1089,7 @@ static void DRONDEBRIS(void) {
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONDEBRIS", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void DRONSIGN(void) {
@@ -1099,7 +1099,7 @@ DRONEPT:
     // asm 000021F3: 	LDI	R0,AR0
     // asm 000021F4: 	RETSZ
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONSIGN", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void DRONEPTL(void) {
@@ -1679,7 +1679,7 @@ DEBSCL1:
     // asm 00002399: 	BNZ	DEBSCL0
     // asm 0000239A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBSCAN", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /*
@@ -2668,7 +2668,7 @@ CLDSCL1:
     // 	;------->BNZD CLDSCL0
     // asm 00002632: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLDSCAN", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /*

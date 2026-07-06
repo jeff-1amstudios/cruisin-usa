@@ -300,11 +300,11 @@ OBJ* OBJ_GET(void) {
     // asm 00007067: 	STF	R0,*+AR0(OVELZ)
     obj->vel_z = 0.0f;
     // asm 00007068: 	STF	R0,*+AR0(ORADX)
-    obj->rad_x = 0.0f;
+    obj->rad.X = 0.0f;
     // asm 00007069: 	STF	R0,*+AR0(ORADY)		;CLEAR RADIANS TO AVOID LOCKUP
-    obj->rad_y = 0.0f; // ;CLEAR RADIANS TO AVOID LOCKUP
+    obj->rad.Y = 0.0f; // ;CLEAR RADIANS TO AVOID LOCKUP
     // asm 0000706A: 	STF	R0,*+AR0(ORADZ)
-    obj->rad_z = 0.0f;
+    obj->rad.Z = 0.0f;
 
     // asm 0000706B: 	STF	R0,*+AR0(OMATRIX+1)
     obj->mat10 = 0.0f;
@@ -415,6 +415,10 @@ static void GETDIST(OBJ* obj /*AR2*/) {
  *
  */
 void OBJ_INSERTP(OBJ* obj /*AR2*/) {
+    OBJ** list_link;
+    OBJ* next_obj;
+    int obj_dist;
+
     // asm 0000709B: 	PUSH	R0
     // asm 0000709C: 	PUSH	R1
     // asm 0000709D: 	PUSH	AR0
@@ -424,25 +428,36 @@ void OBJ_INSERTP(OBJ* obj /*AR2*/) {
     // asm 000070A0: 	LDI	*+AR2(OFLAGS),R0	;OR IN PROPER FLAG
     // asm 000070A1: 	OR	O_LIST3,R0
     // asm 000070A2: 	STI	R0,*+AR2(OFLAGS)
+    obj->flags |= O_LIST3;
     // asm 000070A3: 	LDI	@OACTIVE_PRIORITYI,AR1	;INSERT TO HEAD OF PROCESS ACTIVE LIST
     // asm 000070A4: 	LDI	*+AR2(ODIST),R0		;GET CURRENT Z COORD OF OBJECT
+    list_link = &OACTIVE_PRIORITYI;
+    obj_dist = obj->dist; // ;GET CURRENT Z COORD OF OBJECT
 INSOBJLP:
     // asm 000070A5: 	LDI	AR1,AR0			;AR0 IS PREVIOUS LINK
     // asm 000070A6: 	LDI	*AR1,R1			;CHECK END OF LIST
+    next_obj = *list_link;
     // asm 000070A7: 	BZ	INS_AT_ENDP
+    if (next_obj == NULL) {
+        goto INS_AT_ENDP;
+    }
     // asm 000070A8: 	LDI	R1,AR1
     // asm 000070A9: 	CMPI	*+AR1(ODIST),R0
     // asm 000070AA: 	BLE	INSOBJLP     		;KEEP GOING DUDE
+    if (next_obj->dist <= obj_dist) {
+        list_link = &next_obj->link;
+        goto INSOBJLP; // ;KEEP GOING DUDE
+    }
 INS_AT_ENDP:
     // asm 000070AB: 	STI	R1,*AR2			;LINK TO NEXT
     // asm 000070AC: 	STI	AR2,*AR0		;LINK FROM PREVIOUS
+    obj->link = next_obj; // ;LINK TO NEXT
+    *list_link = obj;     // ;LINK FROM PREVIOUS
     // asm 000070AD: 	POP	AR1
     // asm 000070AE: 	POP	AR0
     // asm 000070AF: 	POP	R1
     // asm 000070B0: 	POP	R0
     // asm 000070B1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_INSERTP", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1161,7 +1176,7 @@ PSRT1NXT:
 PSORTX:
     // asm 0000720E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRSORT", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *-----------------------------------------------------------------------------
@@ -1328,7 +1343,7 @@ DSDONE:
 DSORTXX:
     // asm 0000727C: 	RETS				;WE QUIT...
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESORT", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

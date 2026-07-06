@@ -33,6 +33,32 @@ struct PROC;
 typedef void (*PROC_FUNC)(struct PROC*);
 struct PROC_CONTEXT;
 
+typedef struct VECTOR {
+    f32 X;
+    f32 Y;
+    f32 Z;
+    // f32 w;
+} VECTOR;
+
+typedef struct EQUATION {
+    f32 a;
+    f32 b;
+    f32 c;
+    f32 d;
+} EQUATION;
+
+typedef struct MATRIX {
+    f32 a00;
+    f32 a01;
+    f32 a02;
+    f32 a10;
+    f32 a11;
+    f32 a12;
+    f32 a20;
+    f32 a21;
+    f32 a22;
+} MATRIX;
+
 typedef struct tVIEWLIST_entry {
     void* init;
     int arg;
@@ -218,9 +244,7 @@ typedef struct OBJ {
     f32 vel_y;
     f32 vel_z;
 
-    f32 rad_x;
-    f32 rad_y;
-    f32 rad_z;
+    struct VECTOR rad;
 
     uintptr_t process_link; /* OPLINK / OBLINK4 alias */
     void* degrade_rom;
@@ -365,32 +389,6 @@ typedef struct TYCOB {
     f32 reverse_rad_y;
     u32 over2;
 } TYCOB;
-
-typedef struct VECTOR {
-    f32 X;
-    f32 Y;
-    f32 Z;
-    // f32 w;
-} VECTOR;
-
-typedef struct EQUATION {
-    f32 a;
-    f32 b;
-    f32 c;
-    f32 d;
-} EQUATION;
-
-typedef struct MATRIX {
-    f32 a00;
-    f32 a01;
-    f32 a02;
-    f32 a10;
-    f32 a11;
-    f32 a12;
-    f32 a20;
-    f32 a21;
-    f32 a22;
-} MATRIX;
 
 typedef struct DYNAOBJ {
     struct DYNAOBJ* link;
@@ -584,6 +582,12 @@ typedef struct PROC_CONTEXT {
         struct {
             LOAD_SECTION_REQ_ARG* lsr;
         } REQWAIT;
+        struct {
+            int attrwave;
+            int decomp_count;
+            struct OBJ* obj;
+            int sound_ticks;
+        } MIDWAYSPIN;
     };
 
 } PROC_CONTEXT;

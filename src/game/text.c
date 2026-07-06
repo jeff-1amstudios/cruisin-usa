@@ -35,7 +35,7 @@ static int STRLEN(const tTEXT* text /*AR2*/);
 #define TEXT_FONT_TRAIL(font) ((u16)((font)->pre_and_trail >> 16))
 void TEXT_OUTPUT(void);
 void STRCPY(void);
-void STRCAT(void);
+void STRCAT(char* dest, const char* src);
 void HIGHLIGHTN(void);
 
 #define TEXT_FREEI TEXT_FREE
@@ -343,22 +343,31 @@ void SET12FONT(tTEXT* t /*AR0*/) {
 }
 
 void SET12FONTDS(tSHADOW_TEXT* t) {
+    int palette;
+
     // asm 00007A0D: 	LDI	12,R0
     // asm 00007A0E: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A0F: 	STI	R0,*+AR1(TEXT_HEIGHT)
+    t->front->height = 12;
+    t->shadow->height = 12;
     // asm 00007A10: 	LDI	@FONT10_A,R0
     // asm 00007A11: 	STI	R0,*+AR0(TEXT_IMG)
     // asm 00007A12: 	STI	R0,*+AR1(TEXT_IMG)
+    t->front->image_addr = FONT10_A;
+    t->shadow->image_addr = FONT10_A;
     // asm 00007A13: 	LDI	osg10fnt_p,AR2
     // asm 00007A14: 	CALL	PAL_FIND
+    palette = PAL_FIND(osg10fnt_p);
     // asm 00007A15: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 00007A16: 	STI	R0,*+AR1(TEXT_PAL)
+    t->front->palette = palette;
+    t->shadow->palette = palette;
     // asm 00007A17: 	LDI	@OGSMFONT_TABI,R0
     // asm 00007A18: 	STI	R0,*+AR0(TEXT_ADDR)
     // asm 00007A19: 	STI	R0,*+AR1(TEXT_ADDR)
+    t->front->text_addr = OGSMFONT_TAB;
+    t->shadow->text_addr = OGSMFONT_TAB;
     // asm 00007A1A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET12FONTDS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -488,6 +497,11 @@ STRLP:
     // asm 00007A5E: 	BEQ	STRLENNCHAR
     if (ch == ' ') {
         goto STRLENNCHAR;
+    }
+
+    // TEXT_OUTPUT remaps '/' to '@' before indexing the font table.
+    if (ch == '/') {
+        ch = '@';
     }
 
     // asm 00007A5F: 	SUBI	'0',AR0     ;THE START OF THE FONT
@@ -906,7 +920,17 @@ REGPLP0:
  *	AR0	ORIGINAL STRING + APPEND STRING
  *
  */
-void STRCAT(void) {
+void STRCAT(char* dest, const char* src) {
+    while (*dest != '\0') {
+        dest++;
+    }
+
+    do {
+        *dest++ = *src;
+    } while (*src++ != '\0');
+
+    return;
+
     // asm 00007B12: 	PUSH	R0
     // asm 00007B13: 	PUSH	R1
     // asm 00007B14: 	PUSH	R2
@@ -970,8 +994,6 @@ REGLP2:
     // asm 00007B47: 	POP	R1
     // asm 00007B48: 	POP	R0
     // asm 00007B49: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "STRCAT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

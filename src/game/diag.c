@@ -2774,8 +2774,11 @@ void FFRSUB(void) {
     // asm 00000DD7: 	CALL	MESSAGE_BOX
     // asm 00000DD8: 	CALL	SET_CONTROLS
     // asm 00000DD9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FFRSUB", 0, 0);
-    UNIMPL();
+    RESET_BOOKKEEPING();
+    INIT_HSTD_TABLES();
+    RESET_ADJUSTMENTS();
+    AUDIT_WRITE(AUD_PCREDITS, 0);
+    AUDIT_WRITE(AUD_CREDITS, 0);
 }
 
 /* asm: FFRST	SPTR	"FULL FACTORY RESTORE" */

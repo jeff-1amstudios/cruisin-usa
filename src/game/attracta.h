@@ -7,5 +7,6 @@
 
 // ATTRACTA.ASM
 void SPIN_CAR(void);
+void _MIDWAYSPIN(PROC* p /*AR7*/);
 
 #endif /* ATTRACTA_H */

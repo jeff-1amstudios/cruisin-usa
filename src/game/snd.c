@@ -24,8 +24,8 @@ void SET_TUNE_LINKED(void);
 void SET_TUNE(void);
 void RESUME_TUNE(void);
 void RESUME_TUNE_NT(void);
-void SET_MASTER_VOL(void);
-void SET_TRACK_VOL(void);
+void SET_MASTER_VOL(int volume);
+void SET_TRACK_VOL(int track, int volume);
 void RESET_SNDBRD(void);
 void SILENT(void);
 void CLRSNDDB(void);
@@ -35,7 +35,7 @@ void ONESNDFX(void);
 void KILLSNDFX(void);
 void PLYR_ENGINE(void);
 void HARDSND(void);
-void ONESND(void);
+void ONESND(int sound_index);
 void SENDSND(void);
 static void RESETMUNGE(void);
 void SND_RESET_QUIET(void);
@@ -296,7 +296,7 @@ void RESUME_TUNE_NT(void) {
  *	R1	VOL (0-255)
  *
  */
-void SET_MASTER_VOL(void) {
+void SET_MASTER_VOL(int volume) {
     // asm 00009137: 	PUSH	AR2
     // asm 00009138: 	BUD	JI1
     // asm 00009139: 	PUSH	R0
@@ -308,7 +308,7 @@ void SET_MASTER_VOL(void) {
     UNIMPL_TODO();
 }
 
-void SET_TRACK_VOL(void) {
+void SET_TRACK_VOL(int track, int volume) {
     // asm 0000913C: 	PUSH	AR2
     // asm 0000913D: 	PUSH	R0
     // asm 0000913E: 	PUSH	R1
@@ -680,7 +680,7 @@ void HARDSND(void) {
  *
  *
  */
-void ONESND(void) {
+void ONESND(int sound_index) {
     // asm 00009208: 	PUSH	R0
     // asm 00009209: 	PUSH	R1
     // asm 0000920A: 	PUSH	R2
@@ -744,7 +744,7 @@ SNDLDX:
     // asm 00009237: 	POP	R0
     // asm 00009238: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ONESND", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

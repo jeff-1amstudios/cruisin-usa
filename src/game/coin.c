@@ -45,7 +45,7 @@ static void GET_COIN4_COUNTER(void);
 void GETCOIN_DEFAULT(void);
 static void SET_COINAGE_ADJ(void);
 void INIT_CUSTOM_COIN(void);
-static void INICC(void);
+static u32 INICC(int adjustment_index, int shift_start);
 static void FONT18RED(tTEXT* t);
 static void FONT18REDDS(tSHADOW_TEXT* t);
 void INSERT_COINS(void);
@@ -54,9 +54,9 @@ static void SHOW_INSERTCOINS(float posy);
 static void FLASH_START(void);
 static void PRINT_COINAGE(float x, float y);
 static float GET_COINAGE_HIGHT(void);
-static void WHITE10FNT(void);
+static void WHITE10FNT(tSHADOW_TEXT* t);
 static void PRINT_CREDITS(void);
-static void FLASH_TO_START(void);
+static void FLASH_TO_START(float posy);
 static void TOSTART_STRING(void);
 static void TOCONT_STRING(void);
 void VOLUME_DISPLAY(void);
@@ -91,6 +91,7 @@ void CHECK_MOTION_DIP(void);
 void CHECK_MOTION_PRESENT(void);
 
 static const char NCB[];
+static const char MSG_NULL[];
 static int SCS;
 
 /* asm: COINOFF	.bss	COINOFF,1 */
@@ -99,7 +100,7 @@ int COINOFF;
 /* asm: CUSTOM_COINTAB	.bss	CUSTOM_COINTAB,COIN_ENTRY_SIZE */
 COINTAB_ENTRY CUSTOM_COINTAB;
 /* asm: CUSTOM_COINSTR	.bss	CUSTOM_COINSTR,10 */
-char CUSTOM_COINSTR[10];
+char CUSTOM_COINSTR[10 * 4];
 
 /*
  *----------------------------------------------------------------------------
@@ -424,8 +425,7 @@ static void GET_UNITS_PER_CREDIT(void) {
     // asm: 	POP	AR2
     // asm: 	POP	AR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_UNITS_PER_CREDIT", 0, 0);
-    UNIMPL();
+    SCS = GETCOIN()->units_per_credit;
 }
 
 // *----------------------------------------------------------------------------
@@ -496,8 +496,7 @@ static void GET_CREDITS_TO_CONTINUE(void) {
     // asm: 	POP	AR2
     // asm: 	POP	AR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_CREDITS_TO_CONTINUE", 0, 0);
-    UNIMPL();
+    SCS = GETCOIN()->credits_to_continue;
 }
 
 // *----------------------------------------------------------------------------
@@ -515,8 +514,7 @@ static void GET_SHOW_PARTIAL(void) {
     // asm: 	POP	AR2
     // asm: 	POP	AR0
     // asm: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_SHOW_PARTIAL", 0, 0);
-    UNIMPL();
+    SCS = GETCOIN()->show_partial_credits;
 }
 
 // *----------------------------------------------------------------------------
@@ -587,6 +585,13 @@ static void GET_COIN4_COUNTER(void) {
  */
 
 void GETCOIN_DEFAULT(void) {
+    unsigned int dip_value;
+    unsigned int reversed_bits;
+    int switch_index;
+    int country_index;
+    COINTAB_ENTRY* default_coin;
+    int coin_mode;
+
     // asm 000073E2: 	PUSH	AR2
     // asm 000073E3: 	CLRI	AR2
     // asm 000073E4: 	LDP	@DIPSW
@@ -619,8 +624,29 @@ INVBLP:
     // asm 000073FE: 	LDI	R0,R2
     // asm 000073FF: 	LDI	*AR2,AR2
     // asm 00007400: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCOIN_DEFAULT", 0, 0);
-    UNIMPL();
+    dip_value = crusn_mem_rd32(DIPSW);
+    dip_value = (~(dip_value >> 24)) & 0xFF;
+
+    reversed_bits = 0;
+    for (switch_index = 0; switch_index < 8; ++switch_index) {
+        reversed_bits = (reversed_bits << 1) | (dip_value & 1);
+        dip_value >>= 1;
+    }
+
+    country_index = (reversed_bits & 0x1F) * 4;
+    switch_index = (reversed_bits >> 5) & 0x03;
+
+    if (country_index >= 20 * 4) {
+        country_index = 0;
+    }
+
+    default_coin = COUNTRY_DEFAULTS[country_index + switch_index];
+    coin_mode = 0;
+    while (COIN_TABLE[coin_mode] != default_coin) {
+        coin_mode++;
+    }
+
+    ADJUSTMENT_WRITE(ADJ_COINMODE, coin_mode);
 }
 
 static void SET_COINAGE_ADJ(void) {
@@ -667,51 +693,88 @@ static void SET_COINAGE_ADJ(void) {
 
 // *----------------------------------------------------------------------------
 void INIT_CUSTOM_COIN(void) {
+    u32 packed_fields;
+
     // asm 00007434: 	LDI	3*8,R5
     // asm 00007435: 	LDI	@CUSTOM_COINTABI,AR3
     // asm 00007436: 	LDI	ADJ_COIN4_UNITS,AR2
     // asm 00007437: 	CALL	INICC		;Set SLOT SETTINGS coin1,coin2,coin3,coin4
+    packed_fields = INICC(ADJ_COIN4_UNITS, 3 * 8);
+    CUSTOM_COINTAB.coin[0] = packed_fields & 0xFF;
+    CUSTOM_COINTAB.coin[1] = (packed_fields >> 8) & 0xFF;
+    CUSTOM_COINTAB.coin[2] = (packed_fields >> 16) & 0xFF;
+    CUSTOM_COINTAB.coin[3] = (packed_fields >> 24) & 0xFF;
     // asm 00007438: 	LDI	ADJ_CREDITS_TO_START,AR2
     // asm 00007439: 	LDI	3*8,R5			;Set units per credit,units for bonus,min units,credits to start
     // asm 0000743A: 	CALL	INICC
+    packed_fields = INICC(ADJ_CREDITS_TO_START, 3 * 8);
+    CUSTOM_COINTAB.units_per_credit = packed_fields & 0xFF;
+    CUSTOM_COINTAB.units_for_bonus = (packed_fields >> 8) & 0xFF;
+    CUSTOM_COINTAB.min_units = (packed_fields >> 16) & 0xFF;
+    CUSTOM_COINTAB.credits_to_start = (packed_fields >> 24) & 0xFF;
     // asm 0000743B: 	LDI	ADJ_SHOW_FRAC,AR2
     // asm 0000743C: 	LDI	1*8,R5			;Set credits to continue,show partial credits,NOT USED,NOT USED
     // asm 0000743D: 	CALL	INICC
+    packed_fields = INICC(ADJ_SHOW_FRAC, 1 * 8);
+    CUSTOM_COINTAB.credits_to_continue = packed_fields & 0xFF;
+    CUSTOM_COINTAB.show_partial_credits = (packed_fields >> 8) & 0xFF;
+    CUSTOM_COINTAB.unused0 = 0;
+    CUSTOM_COINTAB.unused1 = 0;
     // asm 0000743E: 	LDI	@MSG_NULLI,R0		;Set pointer to the string
     // asm 0000743F: 	STI	R0,*AR3++
+    CUSTOM_COINTAB.message_lines[0] = MSG_NULLI;
     // asm 00007440: 	LDI	0,R0
     // asm 00007441: 	STI	R0,*AR3++
     // asm 00007442: 	STI	R0,*AR3++
+    CUSTOM_COINTAB.message_lines[1] = NULL;
+    CUSTOM_COINTAB.message_lines[2] = NULL;
     // asm 00007443: 	LDI	@MSG_NULLI,R0		;Point denomination messages to NULL string
     // asm 00007444: 	STI	R0,*AR3++
     // asm 00007445: 	STI	R0,*AR3++
     // asm 00007446: 	STI	R0,*AR3++
     // asm 00007447: 	STI	R0,*AR3++
+    CUSTOM_COINTAB.coin1_denom_string = MSG_NULLI;
+    CUSTOM_COINTAB.coin2_denom_string = MSG_NULLI;
+    CUSTOM_COINTAB.coin3_denom_string = MSG_NULLI;
+    CUSTOM_COINTAB.coin4_denom_string = MSG_NULLI;
     // asm 00007448: 	LDI	3*8,R5
     // asm 00007449: 	LDI	ADJ_COIN4_COUNTER,AR2
     // asm 0000744A: 	CALL	INICC		;Set SLOT SETTINGS coin1,coin2,coin3,coin4
+    packed_fields = INICC(ADJ_COIN4_COUNTER, 3 * 8);
+    CUSTOM_COINTAB.coin_denom[0] = packed_fields & 0xFF;
+    CUSTOM_COINTAB.coin_denom[1] = (packed_fields >> 8) & 0xFF;
+    CUSTOM_COINTAB.coin_denom[2] = (packed_fields >> 16) & 0xFF;
+    CUSTOM_COINTAB.coin_denom[3] = (packed_fields >> 24) & 0xFF;
     // asm 0000744B: ICCX
     // asm 0000744B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_CUSTOM_COIN", 0, 0);
-    UNIMPL_TODO();
 }
 
-static void INICC(void) {
+static u32 INICC(int adjustment_index, int shift_start) {
+    u32 packed_fields;
+    u32 adjustment_value;
+
     // asm 0000744C: 	LDI	0,R6
+    packed_fields = 0;
 INICC_LP:
     // asm 0000744D: 	PUSH	AR2
     // asm 0000744E: 	CALL	ADJUSTMENT_READ
     // asm 0000744F: 	POP	AR2
     // asm 00007450: 	NOP	*AR2--
+    adjustment_value = ADJUSTMENT_READ(adjustment_index);
+    adjustment_index -= 1;
     // asm 00007451: 	AND	0FFh,R0
     // asm 00007452: 	LSH	R5,R0
     // asm 00007453: 	OR	R0,R6
+    packed_fields |= (adjustment_value & 0xFF) << shift_start;
     // asm 00007454: 	SUBI	8,R5
+    shift_start -= 8;
     // asm 00007455: 	BGE	INICC_LP
+    if (shift_start >= 0) {
+        goto INICC_LP;
+    }
     // asm 00007456: 	STI	R6,*AR3++
     // asm 00007457: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INICC", 0, 0);
-    UNIMPL();
+    return packed_fields;
 }
 
 /* asm: buffer	.bss	buffer,2 */
@@ -723,9 +786,9 @@ int FCB;
 /* asm: PCB	.bss	PCB,1 */
 int PCB;
 /* asm: CREDITBUFFER	.bss	CREDITBUFFER,8 */
-char CREDITBUFFER[8];
+char CREDITBUFFER[8 * 4];
 /* asm: TOSTARTBUFFER	.bss	TOSTARTBUFFER,8 */
-char TOSTARTBUFFER[8];
+char TOSTARTBUFFER[8 * 4];
 static const char NCB[] = "@";
 static const char SPC[] = " ";
 static const char DBLSPC[] = "  ";
@@ -857,7 +920,7 @@ SHOW_COINAGE:
     if (READAUD(AUD_CREDITS) < credits_to_start) {
     NO_START:
         // asm 000074AE: 	CALL	FLASH_TO_START		;FLASH THE TO START AND TO CONTINUE MESSAGES
-        FLASH_TO_START(); /* FLASH THE TO START AND TO CONTINUE MESSAGES */
+        FLASH_TO_START(posy); /* FLASH THE TO START AND TO CONTINUE MESSAGES */
         // asm 000074AF: 	ADDF	22,R3
         posy += 22.0f;
     } else {
@@ -968,32 +1031,54 @@ FLASH_INSERTCOINSX:
  *
  */
 static void FLASH_START(void) {
+    tSHADOW_TEXT t;
+    int flash_state;
+
     // asm 000074E2: 	LDI	BUT_START,R0
     // asm 000074E3: 	STI	R0,@BUTTON_STATUS
+    BUTTON_STATUS = BUT_START;
     // asm 000074E4: 	LDI	@ICF,R0
+    flash_state = ICF;
     // asm 000074E5: 	BGT	START_SKIP
+    if (flash_state > 0) {
+        goto START_SKIP;
+    }
     // asm 000074E6: 	SUBI	@NFRAMES,R0
+    flash_state -= NFRAMES;
     // asm 000074E7: 	CMPI	-20,R0
     // asm 000074E8: 	LDILT	1,R0
+    if (flash_state < -20) {
+        flash_state = 1;
+    }
     // asm 000074E9: 	STI	R0,@ICF
+    ICF = flash_state;
     // asm 000074EA: 	LDI	@HITSTARTI,AR2
     // asm 000074EB: 	FLOAT	256,R2
     // asm 000074EC: 	LDI	1,RC
     // asm 000074ED: 	CALL	TEXT_ADDDS
+    t = TEXT_ADDDS(HITSTART, 256.0f, 0.0f, 1);
     // asm 000074EE: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm 000074F1: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    t.front->color |= TXT_CENTER;
+    t.shadow->color |= TXT_CENTER;
     // asm 000074F4: 	CALL	FONT18REDDS
+    FONT18REDDS(&t);
     // asm 000074F5: 	BU	FLASH_STARTX
+    goto FLASH_STARTX;
 START_SKIP:
     // asm 000074F6: 	ADDI	@NFRAMES,R0
+    flash_state += NFRAMES;
     // asm 000074F7: 	CMPI	20,R0
     // asm 000074F8: 	LDIGT	-1,R0
+    if (flash_state > 20) {
+        flash_state = -1;
+    }
     // asm 000074F9: 	STI	R0,@ICF
+    ICF = flash_state;
     // asm 000074FA: 	BU	FLASH_STARTX
 FLASH_STARTX:
     // asm 000074FB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_START", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
@@ -1048,7 +1133,7 @@ static void PRINT_COINAGE(float x, float y) {
     t.front->color |= TXT_CENTER;
     t.shadow->color |= TXT_CENTER;
     SET12FONTDS(&t);
-    WHITE10FNT();
+    WHITE10FNT(&t);
 
     if (coin_text->message_lines[1] == 0) {
         goto PRINT_COINAGEX;
@@ -1059,7 +1144,7 @@ static void PRINT_COINAGE(float x, float y) {
     t.front->color |= TXT_CENTER;
     t.shadow->color |= TXT_CENTER;
     SET12FONTDS(&t);
-    WHITE10FNT();
+    WHITE10FNT(&t);
 
     if (coin_text->message_lines[2] == 0) {
         goto PRINT_COINAGEX;
@@ -1070,7 +1155,7 @@ static void PRINT_COINAGE(float x, float y) {
     t.front->color |= TXT_CENTER;
     t.shadow->color |= TXT_CENTER;
     SET12FONTDS(&t);
-    WHITE10FNT();
+    WHITE10FNT(&t);
 PRINT_COINAGEX:
     // asm 00007526: 	RETS
     return;
@@ -1118,14 +1203,17 @@ GCHX:
     return height;
 }
 
-static void WHITE10FNT(void) {
+static void WHITE10FNT(tSHADOW_TEXT* t) {
+    int palette;
+
     // asm 00007536: 	LDL	osg10fnt_white,AR2
     // asm 00007537: 	CALL	PAL_FIND_RAW
+    palette = PAL_FIND_RAW((tPAL*)ROM_PTR(osg10fnt_white_ROM));
     // asm 00007538: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 00007539: 	STI	R0,*+AR1(TEXT_PAL)
+    t->front->palette = palette;
+    t->shadow->palette = palette;
     // asm 0000753A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WHITE10FNT", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1201,7 +1289,12 @@ NO_PCREDITS:
  *Flash the messages N CREDTIS TO START/N CREDITS TO CONTINUE MESSAGE
  */
 
-static void FLASH_TO_START(void) {
+static void FLASH_TO_START(float posy) {
+    int flash_state;
+    int credits_to_start;
+    int credits_to_continue;
+    tSHADOW_TEXT t;
+
     // asm 0000756F: 	LDI	@ICF,R0
     // asm 00007570: 	BGT	NO_TOSTART
     // asm 00007571: 	SUBI	@NFRAMES,R0
@@ -1233,8 +1326,34 @@ PRINT_TOSTART:
     // asm 0000758D: 	CALL	FONT18REDDS
 FLASH_TOSTARTX:
     // asm 0000758E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_TO_START", 0, 0);
-    UNIMPL();
+    flash_state = ICF;
+    if (flash_state <= 0) {
+        flash_state -= NFRAMES;
+        if (flash_state < -45) {
+            flash_state = 1;
+        }
+        ICF = flash_state;
+        TOSTART_STRING();
+        goto FLASH_TO_START_PRINT;
+    }
+FLASH_TO_START_NO_TOSTART:
+    flash_state += NFRAMES;
+    if (flash_state > 45) {
+        flash_state = -1;
+    }
+    ICF = flash_state;
+    credits_to_start = GET_CREDITS_TO_START();
+    GET_CREDITS_TO_CONTINUE();
+    credits_to_continue = SCS;
+    if (credits_to_continue == credits_to_start) {
+        return;
+    }
+    TOCONT_STRING();
+FLASH_TO_START_PRINT:
+    t = TEXT_ADDDS(TOSTARTBUFFER, 256.0f, posy, 1);
+    t.front->color |= TXT_CENTER;
+    t.shadow->color |= TXT_CENTER;
+    FONT18REDDS(&t);
 }
 
 // *----------------------------------------------------------------------------
@@ -1262,8 +1381,17 @@ static void TOSTART_STRING(void) {
     // asm 000075A3: 	LDI	@CTS_STRI,AR1
     // asm 000075A4: 	CALL	STRCAT
     // asm 000075A5: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TOSTART_STRING", 0, 0);
-    UNIMPL();
+    TOSTARTBUFFER[0] = '\0';
+    SCS = GET_CREDITS_TO_START();
+    _itoa((char*)&FCB, SCS);
+    STRCAT(TOSTARTBUFFER, (char*)&FCB);
+    STRCAT(TOSTARTBUFFER, SPCI);
+    if (GET_CREDITS_TO_START() == 1) {
+        STRCAT(TOSTARTBUFFER, CWSI);
+    } else {
+        STRCAT(TOSTARTBUFFER, CWI);
+    }
+    STRCAT(TOSTARTBUFFER, CTS_STRI);
 }
 
 // *----------------------------------------------------------------------------
@@ -1291,8 +1419,18 @@ static void TOCONT_STRING(void) {
     // asm 000075BA: 	LDI	@CTC_STRI,AR1
     // asm 000075BB: 	CALL	STRCAT
     // asm 000075BC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TOCONT_STRING", 0, 0);
-    UNIMPL();
+    TOSTARTBUFFER[0] = '\0';
+    GET_CREDITS_TO_CONTINUE();
+    _itoa((char*)&FCB, SCS);
+    STRCAT(TOSTARTBUFFER, (char*)&FCB);
+    STRCAT(TOSTARTBUFFER, SPCI);
+    GET_CREDITS_TO_CONTINUE();
+    if (SCS == 1) {
+        STRCAT(TOSTARTBUFFER, CWSI);
+    } else {
+        STRCAT(TOSTARTBUFFER, CWI);
+    }
+    STRCAT(TOSTARTBUFFER, CTC_STRI);
 }
 
 /*

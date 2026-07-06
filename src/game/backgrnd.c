@@ -1995,12 +1995,12 @@ LS_L12:
 
     // asm 00004438: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 00004439: 	STF	R2,*+AR4(ORADY)
-    obj->rad_y = crusn__read_f32(&rom_cursor);
+    obj->rad.Y = crusn__read_f32(&rom_cursor);
 
     // asm 0000443A: 	LDI	AR4,AR2
     // asm 0000443B: 	ADDI	OMATRIX,AR2
     // asm 0000443C: 	CALL	HPFIND_YMATRIX
-    HPFIND_YMATRIX((MATRIX*)&obj->mat00, obj->rad_y);
+    HPFIND_YMATRIX((MATRIX*)&obj->mat00, obj->rad.Y);
 
     // asm 0000443D: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
     // asm 0000443E: 	LDI	R1,R2

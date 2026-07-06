@@ -9,13 +9,14 @@
 #include "sys.h"
 #include "text.h"
 #include "vunit.h"
+#include <stdio.h>
 
 /*
  * Source module: asm/ATTRACTA.ASM
  */
 
-void _MIDWAYSPIN(void);
-static void MSLP_CHECK(void);
+void _MIDWAYSPIN(PROC* p);
+static int MSLP_CHECK(PROC* p /*AR7*/, int* sound_ticks /*AR6*/);
 void MIDWAYSPINENTER(void);
 void SPIN_CAR(void);
 static void TEXTTOGET(void);
@@ -48,134 +49,207 @@ static uintptr_t DEMOTHANKS_LIST[];
  *AR6 is set by the creator of this routine. 0= play dcs logo sound 1=don't play
  *
  */
-void _MIDWAYSPIN(void)
-{
+void _MIDWAYSPIN(PROC* p /*AR7*/) {
+    OBJ* obj;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 0000A966: 	LDI	0,AR6
+    p->ctx->MIDWAYSPIN.sound_ticks = 0;
+
     // asm 0000A967: 	LDI	@_ATTR_MODE,R0
     // asm 0000A968: 	CMPI	-2,R0
     // asm 0000A969: 	BNE	NO_NINTENDO
-    // asm 0000A96A: 	LDI	@ATTRWAVE,R0
-    // asm 0000A96B: 	BNE	NO_NINTENDO
-    // asm 0000A96C: 	READADJ	ADJ_ATTRACT_MODE_SOUND
-    // asm 0000A96E: 	CMPI	0,R0
-    // asm 0000A96F: 	BEQ	NO_NINTENDO
-    // asm 0000A970: 	READADJ	ADJ_VOLUME		;make sure volume correct
-    // asm 0000A972: 	LDI	R0,R1
-    // asm 0000A973: 	CALL	SET_MASTER_VOL
-    // 	;if COMM on and SLAVE then NO NINTENDO
-    // 	;
-    // asm 0000A974: 	LDI	@DIPRAM,R0
-    // asm 0000A975: 	TSTB	DIP_COMMP,R0
-    // asm 0000A976: 	BNZ	DOMUS
-    // asm 0000A977: 	TSTB	CMDP_MASTER,R0
-    // asm 0000A978: 	BNZ	NO_NINTENDO
-DOMUS:
-    // asm 0000A979: 	LDI	890,AR6			;Length of sound
-    // asm 0000A97A: 	SOND1	NINTENDO_SND
+    if (_ATTR_MODE == -2 && p->ctx->MIDWAYSPIN.attrwave == 0 && READADJ(ADJ_ATTRACT_MODE_SOUND) != 0) {
+        // asm 0000A970: 	READADJ	ADJ_VOLUME		;make sure volume correct
+        // asm 0000A972: 	LDI	R0,R1
+        // asm 0000A973: 	CALL	SET_MASTER_VOL
+        SET_MASTER_VOL(READADJ(ADJ_VOLUME)); // ;make sure volume correct
+
+        // asm 0000A974: 	LDI	@DIPRAM,R0
+        // asm 0000A975: 	TSTB	DIP_COMMP,R0
+        // asm 0000A976: 	BNZ	DOMUS
+        // asm 0000A977: 	TSTB	CMDP_MASTER,R0
+        // asm 0000A978: 	BNZ	NO_NINTENDO
+        if ((DIPRAM & DIP_COMMP) != 0 || (DIPRAM & CMDP_MASTER) == 0) {
+            // asm 0000A979: 	LDI	890,AR6			;Length of sound
+            p->ctx->MIDWAYSPIN.sound_ticks = 890; // ;Length of sound
+            // asm 0000A97A: 	SOND1	NINTENDO_SND
+            SOND1(NINTENDO_SND);
+        }
+    }
+
 NO_NINTENDO:
     // asm 0000A97C: 	CALL	ULTRA_LOGO
+    // ULTRA_LOGO();
+
     // asm 0000A97D: 	LDI	0,R0
     // asm 0000A97E: 	STI	R0,*+AR7(DECOMP_COUNT)
-    // ;	STI	R0,*+AR7(CREATED_DCS)
+    // ;       STI     R0,*+AR7(CREATED_DCS)
+    p->ctx->MIDWAYSPIN.decomp_count = 0;
+
     // asm 0000A97F: 	LDI	0,R0
     // asm 0000A980: 	STI	R0,@BGNDCOLA
+    BGNDCOLA = 0;
+
     // asm 0000A981: 	LDP	@_CAMERAPOS+Y
     // asm 0000A982: 	FLOAT	-2780,R0
     // asm 0000A983: 	STF	R0,@_CAMERAPOS+Y
+    _CAMERAPOS.Y = -2780.0f;
+
     // asm 0000A984: 	SETDP
     // asm 0000A985: 	LDL	midway,AR2
     // asm 0000A986: 	CALL	OBJ_GETE
+    obj = OBJ_GETE(ROM_PTR(midway_ROM));
+    p->ctx->MIDWAYSPIN.obj = obj;
+
 #if DEBUG
     // asm: 	BC	$
+    if (obj == NULL) {
+        for (;;) {
+        }
+    }
 #endif
-    // asm 0000A987: 	LDI	AR0,AR4
+
     // asm 0000A988: 	CLRF	R0
     // asm 0000A989: 	STF	R0,*+AR4(OPOSX)
-    // ;	FLOAT	-480,R0
+    // ;       FLOAT   -480,R0
+    obj->posx = 0.0f;
+
     // asm 0000A98A: 	FLOAT	-910,R0
     // asm 0000A98B: 	STF	R0,*+AR4(OPOSY)
+    obj->posy = -910.0f;
+
     // asm 0000A98C: 	FLOAT	5500,R0
     // asm 0000A98D: 	STF	R0,*+AR4(OPOSZ)
+    obj->posz = 5500.0f;
+
     // asm 0000A98E: 	LDI	*+AR4(OFLAGS),R0
     // asm 0000A98F: 	OR	O_ILLUM|O_NOUNIV|O_NOUROT,R0
     // asm 0000A990: 	LDI	1,R1
     // asm 0000A991: 	LS	16,R1
     // asm 0000A992: 	OR	R1,R0
     // asm 0000A993: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_ILLUM | O_NOUNIV | O_NOUROT | (1 << 16);
+
     // asm 0000A994: 	CLRF	R0
     // asm 0000A995: 	STF	R0,*+AR4(ORADX)
+    obj->rad.X = 0.0f;
+
     // asm 0000A996: 	LDF	startthey,R2
     // asm 0000A997: 	ADDF	HALFPI,R2
     // asm 0000A998: 	STF	R2,*+AR4(ORADY)
+    obj->rad.Y = startthey + HALFPI;
+
     // asm 0000A999: 	LDF	startthez,R2
     // asm 0000A99A: 	STF	R2,*+AR4(ORADZ)
+    obj->rad.Z = startthez;
+
     // asm 0000A99B: 	LDI	AR4,AR2
     // asm 0000A99C: 	ADDI	OMATRIX,AR2
     // asm 0000A99D: 	LDI	AR4,R2
     // asm 0000A99E: 	ADDI	ORADX,R2
     // asm 0000A99F: 	CALL	FIND_MATRIX
+    FIND_MATRIX((MATRIX*)&obj->mat00, &obj->rad);
+
     // asm 0000A9A0: 	LDI	AR4,AR2
     // asm 0000A9A1: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(obj);
+    fprintf(stderr,
+        "MIDWAYDBG create obj=%p rom=%p flags=%#x pos=(%.1f,%.1f,%.1f) rad=(%.3f,%.3f,%.3f) palette=%d\n",
+        (void*)obj, obj->romdata, obj->flags, obj->posx, obj->posy, obj->posz, obj->rad.X, obj->rad.Y, obj->rad.Z,
+        obj->palette);
+
     // asm 0000A9A2: 	LDF	*+AR4(ORADY),R0
     // asm 0000A9A3: 	STF	R0,*+AR4(OUSR1)
-    // ;	LDI	470,AR5
+    // ;       LDI     470,AR5
+    obj->usr1_as_float = obj->rad.Y;
+
 MSLP1:
     // asm 0000A9A4: 	LDF	0.0174539,R0
     // asm 0000A9A5: 	FLOAT	@NFRAMES,R1
     // asm 0000A9A6: 	MPYF	R1,R0
     // asm 0000A9A7: 	ADDF	*+AR4(OUSR1),R0		;ORADY
+    obj->usr1_as_float += 0.0174539f * (float)NFRAMES; // ;ORADY
+
     // asm 0000A9A8: 	STF	R0,*+AR4(OUSR1)
     // asm 0000A9A9: 	LDP	@_CAMERARAD+Y
     // asm 0000A9AA: 	SUBF	@_CAMERARAD+Y,R0
     // asm 0000A9AB: 	SETDP
     // asm 0000A9AC: 	STF	R0,*+AR4(ORADY)
+    obj->rad.Y = obj->usr1_as_float - _CAMERARAD.Y;
+
     // asm 0000A9AD: 	LDI	AR4,AR2
     // asm 0000A9AE: 	ADDI	OMATRIX,AR2
     // asm 0000A9AF: 	LDI	AR4,R2
     // asm 0000A9B0: 	ADDI	ORADX,R2
     // asm 0000A9B1: 	CALL	FIND_MATRIX
-    // asm 0000A9B2: MSLP2
+    FIND_MATRIX((MATRIX*)&obj->mat00, &obj->rad);
+
+MSLP2:
     // asm 0000A9B2: 	SLEEP	1
+    SLEEP(1, 1);
+
+    obj = p->ctx->MIDWAYSPIN.obj;
+
     // asm 0000A9B4: 	CALL	MSLP_CHECK
+    if (MSLP_CHECK(p, &p->ctx->MIDWAYSPIN.sound_ticks)) {
+        CYCLE_ATTR();
+        return;
+    }
+
     // asm 0000A9B5: 	BR	MSLP1
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_MIDWAYSPIN", 0, 0);
-    UNIMPL();
+    goto MSLP1;
 }
 
-static void MSLP_CHECK(void)
-{
+static int MSLP_CHECK(PROC* p /*AR7*/, int* sound_ticks /*AR6*/) {
     // asm 0000A9B6: 	SUBI	@NFRAMES,AR6
+    *sound_ticks -= NFRAMES;
+
     // asm 0000A9B7: 	LDI	@DECOMP_ACTIVE,R0
     // asm 0000A9B8: 	CMPI	0,R0
     // asm 0000A9B9: 	BNE	MSLP3
+    if (DECOMP_ACTIVE != 0) {
+        return 0;
+    }
+
     // asm 0000A9BA: 	LDI	*+AR7(DECOMP_COUNT),R0
     // asm 0000A9BB: 	ADDI	1,R0
     // asm 0000A9BC: 	STI	R0,*+AR7(DECOMP_COUNT)
+    p->ctx->MIDWAYSPIN.decomp_count++;
+
     // asm 0000A9BD: 	CMPI	3,R0
     // asm 0000A9BE: 	BGT	MSLP4				;Done Loading
-MSLP3:
-    // asm 0000A9BF: 	RETS
-    // ;	BR	MSLP1
+    if (p->ctx->MIDWAYSPIN.decomp_count <= 3000) {
+        return 0;
+    }
+
 MSLP4:
     // asm 0000A9C0: 	CMPI	0,AR6
     // asm 0000A9C1: 	RETSGT
-    // ;	BGT	MSLP1
-    // asm 0000A9C2: MSLPX
+    if (*sound_ticks > 0) {
+        return 0;
+    }
+
+MSLPX:
     // asm 0000A9C2: 	LDI	0,R0
     // asm 0000A9C3: 	STI	R0,@LOADED
+    LOADED = 0;
+
     // asm 0000A9C4: 	POP	BK		;POP return address
     // asm 0000A9C5: 	BR	CYCLE_ATTR
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MSLP_CHECK", 0, 0);
-    UNIMPL();
+    return 1;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void MIDWAYSPINENTER(void)
-{
+void MIDWAYSPINENTER(void) {
     // asm 0000A9C6: 	LDL	midway,AR2
     // asm 0000A9C7: 	CALL	OBJ_GETE
 #if DEBUG
@@ -241,8 +315,7 @@ static int SPIN_CARTAB[] = {
     cvette_ROM,
 };
 
-void SPIN_CAR(void)
-{
+void SPIN_CAR(void) {
     // asm 0000A9F8: 	LDI	0,R0
     // asm 0000A9F9: 	STI	R0,*+AR7(DECOMP_COUNT)
     // asm 0000A9FA: 	LDIL	logo,AR2
@@ -313,8 +386,7 @@ SPIN_CARLP:
  *----------------------------------------------------------------------------
  *
  */
-static void TEXTTOGET(void)
-{
+static void TEXTTOGET(void) {
     // asm 0000AA37: 	SLEEP	75
     // asm 0000AA39: 	LDI	@TEXT_ACTIVEI,AR0
     // asm 0000AA3A: 	CLRF	R1
@@ -355,8 +427,7 @@ static uintptr_t DEMOTHANKS_LIST[] = {
     (uintptr_t)&DT3,
 };
 
-static void DEMOTHANKS(void)
-{
+static void DEMOTHANKS(void) {
     // asm 0000AA4A: 	LDI	1,R0
     // asm 0000AA4B: 	STI	R0,@COINOFF
     // asm 0000AA4C: 	CLRI	R0

@@ -64,7 +64,7 @@ void DIAL_ROUT(void);
 void ENDPLAYER(void);
 static void GAME_AVAILABLEP(void);
 void _start(void);
-static void ULTRA_PROC(void);
+static void ULTRA_PROC(PROC* p);
 void ULTRA_LOGO(void);
 void LOGO_SMALL(void);
 void SET_ATTR(void);
@@ -2893,7 +2893,7 @@ _startX:
  *
  *
  */
-static void ULTRA_PROC(void) {
+static void ULTRA_PROC(PROC* p /*AR7*/) {
     // asm 00001DC3: 	CLRF	R6
 UPLP:
     // asm 00001DC4: LDF	0.0349078,R0
@@ -3021,18 +3021,31 @@ void _debug(void) {
 
 void CYCLE_ATTR(void) {
     // asm 00001E1C: 	CALL	SILENT
+    SILENT();
+
     // asm 00001E1D: 	CALL	LOAD_FIXED_PALETTES
+    LOAD_FIXED_PALETTES();
+
     // asm 00001E1E:         LDI	@FASTSTKI,SP		;GET PAGE OF STORED ADDRESS
+    // ignored: stack pointer restore
+
     // asm 00001E1F: 	LDI	@_ATTR_MODE,AR2		;AND INTO FP TOO
     // asm 00001E20: 	DEC	AR2
+    _ATTR_MODE--;
+
     // asm 00001E21: 	CMPI	-4,AR2
     // asm 00001E22: 	LDILT	-1,AR2
+    if (_ATTR_MODE < -4) {
+        _ATTR_MODE = -1;
+    }
+
     // asm 00001E23: 	STI	AR2,@_ATTR_MODE
+
     // asm 00001E24: 	CALL	WAVE
+    WAVE(_ATTR_MODE);
+
     // asm 00001E25: 	BU	COLD_ENTER		;RESET SYSTEM RUNNING
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_debug", 0, 0);
-    UNIMPL();
+    COLD_ENTER(); // ;RESET SYSTEM RUNNING
 }
 
 // *----------------------------------------------------------------------------

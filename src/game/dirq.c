@@ -28,7 +28,7 @@ static void CLIP(void);
 static void PLTPOLY(void);
 static void PLOT1PAL(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/);
 static void PLT1PAL(void);
-static void PLOTILLUM(void);
+static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_count_minus_one);
 
 static void dirq_load_obj_matrix(MATRIX* dst, const OBJ* obj) {
     dst->a00 = obj->mat00;
@@ -458,10 +458,17 @@ NOBREAK_CONTINUE:
 
     obj->radius = (s32)rom_ptr[0];
     if ((rotated_trans_z + (float)obj->radius) < (float)LOW_CLIP_LEVEL) {
+        if (obj->romdata == ROM_PTR(midway_ROM)) {
+            fprintf(stderr, "MIDWAYDBG zclip obj=%p tz=%.1f radius=%d low=%d\n", (void*)obj, rotated_trans_z, obj->radius,
+                    LOW_CLIP_LEVEL);
+        }
         goto DISPLAY_NEXT_IMPL;
     }
     g_dirq_debug_objects_after_z_clip += 1;
-    if ((flags & O_DYNAMIC) != 0 || (flags & O_ILLUM) != 0) {
+    if ((flags & O_DYNAMIC) != 0) {
+        if (obj->romdata == ROM_PTR(midway_ROM)) {
+            fprintf(stderr, "MIDWAYDBG dynamic-skip obj=%p flags=%#x dist=%d\n", (void*)obj, flags, obj->dist);
+        }
         goto DISPLAY_NEXT_IMPL;
     }
 
@@ -536,6 +543,10 @@ NOBREAK_CONTINUE:
     }
 
     PLOTPOLY(obj, polygons, (counts_word >> 16) & 0xffff);
+    if (obj->romdata == ROM_PTR(midway_ROM)) {
+        fprintf(stderr, "MIDWAYDBG plot obj=%p flags=%#x dist=%d trans=(%.1f,%.1f,%.1f)\n", (void*)obj, flags, obj->dist,
+                TRANSVECTOR.X, TRANSVECTOR.Y, TRANSVECTOR.Z);
+    }
 
 DISPLAY_NEXT_IMPL:
     obj = obj->link;
@@ -1508,7 +1519,7 @@ CLIPIT:
         return;
     }
     if ((obj->flags & O_ILLUM) != 0) {
-        PLOTILLUM();
+        PLOTILLUM(obj, (const ROM_ILLUM_POLYGON*)polygons, polygon_count_minus_one);
         return;
     }
 
@@ -2727,7 +2738,9 @@ PLTGLP1_2:
 // *	}
 // *
 // *
-static void PLOTILLUM(void) {
+static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_count_minus_one) {
+    int polygon_index;
+
     // asm 0000059E: 	PUSH	AR0
     // ;	LDI	*+AR0(OFLAGS),R6
     // asm 0000059F: 	LSH	-16,R6
@@ -2847,5 +2860,64 @@ ZCLIP1:
     // asm 000005F4: 	RETS
     // *warning moving this to top of file will crash program ask ti why
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTILLUM", 0, 0);
-    UNIMPL();
+
+    for (polygon_index = 0; polygon_index <= polygon_count_minus_one; polygon_index++, polygons++) {
+        int packed_vertices;
+        const float* vertex1;
+        const float* vertex2;
+        const float* vertex3;
+        const float* vertex4;
+        float dx;
+        float dy;
+        float ex;
+        float ey;
+        float rotated_normal_x;
+        float rotated_normal_y;
+        float rotated_normal_z;
+        float illumination;
+        int illumination_index;
+        int control_word;
+
+        packed_vertices = (int)polygons->vertices_4_3_2_1;
+        vertex1 = &BLOWLIST[(packed_vertices & 0xff) * 3];
+        vertex2 = &BLOWLIST[((packed_vertices >> 8) & 0xff) * 3];
+        vertex3 = &BLOWLIST[((packed_vertices >> 16) & 0xff) * 3];
+        vertex4 = &BLOWLIST[((packed_vertices >> 24) & 0xff) * 3];
+
+        dx = vertex1[0] - vertex2[0];
+        dy = vertex1[1] - vertex2[1];
+        ex = vertex3[0] - vertex2[0];
+        ey = vertex3[1] - vertex2[1];
+        if ((dx * ey) - (dy * ex) > 0.0f) {
+            continue;
+        }
+
+        rotated_normal_z = (ROTATION_MATRIX.a20 * polygons->nx) + (ROTATION_MATRIX.a21 * polygons->ny) + (ROTATION_MATRIX.a22 * polygons->nz);
+        rotated_normal_y = (ROTATION_MATRIX.a10 * polygons->nx) + (ROTATION_MATRIX.a11 * polygons->ny) + (ROTATION_MATRIX.a12 * polygons->nz);
+        rotated_normal_x = (ROTATION_MATRIX.a00 * polygons->nx) + (ROTATION_MATRIX.a01 * polygons->ny) + (ROTATION_MATRIX.a02 * polygons->nz);
+
+        illumination = (_LIGHT.X * rotated_normal_x) + (_LIGHT.Y * rotated_normal_y) + (_LIGHT.Z * rotated_normal_z);
+        illumination_index = (int)((illumination * -8.0f) + 8.0f);
+        control_word = FASTCC | illumination_index;
+
+        port_output_fpga(
+            (int)vertex1[0],
+            (int)vertex1[1],
+            (int)vertex2[0],
+            (int)vertex2[1],
+            (int)vertex3[0],
+            (int)vertex3[1],
+            (int)vertex4[0],
+            (int)vertex4[1],
+            0,
+            0,
+            0,
+            0,
+            0,
+            0x200,
+            control_word);
+    }
+
+    (void)obj;
 }
+#include <stdio.h>
