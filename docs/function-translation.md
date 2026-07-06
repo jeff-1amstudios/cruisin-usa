@@ -17,7 +17,7 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - Dont invent new functions, other that to avoid large duplication (eg if 2 functions are branching to the same code tail)
 - Dont invent new global/module level variables
 - Ignore DP and CPU wait state related instructions. Ignore push/pop.
-- Write your c code underneath the // asm: comment lines already in the function.
+- *Interleave* the translated c pieces of code underneath the // asm: comment lines already in the function.
 - Retain the original developer comments in the assembly code as c comments
 - If a translated function call in asm produces a value or side effect used by the caller, keep that call in the translated function at the same boundary. Do not replace it by passing a transformed value unless the original asm does that transformation before the call.
 

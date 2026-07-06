@@ -1304,21 +1304,21 @@ float _SINE(float theta /*R2*/);
 void ARCTANF(void);
 
 // asm:  .globl FIND_MATRIX
-void FIND_MATRIX(MATRIX* dest /*AR2*/, VECTOR* radians /*R2*/);
+void FIND_MATRIX(void* dest /*AR2*/, VECTOR* radians /*R2*/);
 
 // asm:  .globl INITMAT
 void INITMAT(MATRIX* mat /*AR0*/);
 
 // asm:  .globl FIND_XMATRIX,FIND_YMATRIX,FIND_ZMATRIX
-void FIND_XMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
+void FIND_XMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 
 void FIND_ZMATRIX(void);
 
 // asm:  .globl _find_Ymatrix
-void _find_Ymatrix(MATRIX* dest /*AR2*/, float radians /*R2*/);
+void _find_Ymatrix(void* dest /*AR2*/, float radians /*R2*/);
 
 // asm:  .globl HPFIND_YMATRIX
-void HPFIND_YMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
+void HPFIND_YMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 
 // asm:  .globl NORMAT,NORMALIZE
 void NORMAT(void);

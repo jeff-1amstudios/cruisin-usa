@@ -2,6 +2,7 @@
 
 #include "../core/machine.h"
 #include "../core/output.h"
+#include "../core/validator.h"
 #include "backgrnd.h"
 #include "c30.h"
 #include "globals.h"
@@ -31,15 +32,15 @@ static void PLT1PAL(void);
 static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_count_minus_one);
 
 static void dirq_load_obj_matrix(MATRIX* dst, const OBJ* obj) {
-    dst->a00 = obj->mat00;
-    dst->a01 = obj->mat01;
-    dst->a02 = obj->mat02;
-    dst->a10 = obj->mat10;
-    dst->a11 = obj->mat11;
-    dst->a12 = obj->mat12;
-    dst->a20 = obj->mat20;
-    dst->a21 = obj->mat21;
-    dst->a22 = obj->mat22;
+    dst->a00 = obj->omatrix.mat00;
+    dst->a01 = obj->omatrix.mat10;
+    dst->a02 = obj->omatrix.mat20;
+    dst->a10 = obj->omatrix.mat01;
+    dst->a11 = obj->omatrix.mat11;
+    dst->a12 = obj->omatrix.mat21;
+    dst->a20 = obj->omatrix.mat02;
+    dst->a21 = obj->omatrix.mat12;
+    dst->a22 = obj->omatrix.mat22;
 }
 
 #define OACTIVEI OACTIVE
@@ -375,7 +376,6 @@ void DIRQ(void) {
 
 static void DISPLAY(OBJ* obj /*AR0*/) {
     MATRIX object_matrix;
-    MATRIX rotation_matrix;
     u32 flags;
     const u32* rom_ptr;
     const MATRIX* matrix;
@@ -460,7 +460,7 @@ NOBREAK_CONTINUE:
     if ((rotated_trans_z + (float)obj->radius) < (float)LOW_CLIP_LEVEL) {
         if (obj->romdata == ROM_PTR(midway_ROM)) {
             fprintf(stderr, "MIDWAYDBG zclip obj=%p tz=%.1f radius=%d low=%d\n", (void*)obj, rotated_trans_z, obj->radius,
-                    LOW_CLIP_LEVEL);
+                LOW_CLIP_LEVEL);
         }
         goto DISPLAY_NEXT_IMPL;
     }
@@ -474,7 +474,7 @@ NOBREAK_CONTINUE:
 
     dirq_load_obj_matrix(&object_matrix, obj);
 
-    if ((flags & O_NOUROT) != 0) {
+    if ((flags & O_NOUROT) != 0 && (flags & O_ILLUM) == 0) {
         matrix = &object_matrix;
     } else if ((flags & O_POSTER) != 0) {
         if (TRANSVECTOR.Z <= (float)POSTERCLIP) {
@@ -488,8 +488,12 @@ NOBREAK_CONTINUE:
             matrix = &_CAMERAMATRIX;
         }
     } else {
-        CONCATMAT(&object_matrix, &_CAMERAMATRIX, &rotation_matrix);
-        matrix = &rotation_matrix;
+        CONCATMAT(&object_matrix, &_CAMERAMATRIX, &ROTATION_MATRIX);
+        matrix = &ROTATION_MATRIX;
+    }
+
+    if ((flags & O_ILLUM) != 0 && matrix != &ROTATION_MATRIX) {
+        ROTATION_MATRIX = *matrix;
     }
 
     counts_word = (int)rom_ptr[1];
@@ -545,7 +549,7 @@ NOBREAK_CONTINUE:
     PLOTPOLY(obj, polygons, (counts_word >> 16) & 0xffff);
     if (obj->romdata == ROM_PTR(midway_ROM)) {
         fprintf(stderr, "MIDWAYDBG plot obj=%p flags=%#x dist=%d trans=(%.1f,%.1f,%.1f)\n", (void*)obj, flags, obj->dist,
-                TRANSVECTOR.X, TRANSVECTOR.Y, TRANSVECTOR.Z);
+            TRANSVECTOR.X, TRANSVECTOR.Y, TRANSVECTOR.Z);
     }
 
 DISPLAY_NEXT_IMPL:
@@ -2741,124 +2745,6 @@ PLTGLP1_2:
 static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_count_minus_one) {
     int polygon_index;
 
-    // asm 0000059E: 	PUSH	AR0
-    // ;	LDI	*+AR0(OFLAGS),R6
-    // asm 0000059F: 	LSH	-16,R6
-    // asm 000005A0: 	AND	0FFh,R6			;get the color field out of the object flags
-    // ;	LDIL	BLOWLIST,IR0
-    // ;	LDI	IR0,IR1
-    // ;	INC	IR1
-    // asm 000005A1: 	LDIL	FIFO_STATUS,AR0		;FIFO EMPTY STATUS
-    // asm 000005A4: 	LDI	FIFO_ADDR>>16,AR7	;FIFO ADDRESS
-    // asm 000005A5: 	LS	16,AR7
-    // asm 000005A6: 	LDI	BK,AR6			;# of polygons-1
-ILLUM_PLOTPOLYLP:
-    // 	;CHECK HIDDEN SURFACE REMOVAL
-    // asm 000005A7: 	LDI	*+AR1(4),R0		;read vertex (v4|v3|v2|v1)
-    // asm 000005A8: 	LDI	R0,AR4			;
-    // asm 000005A9: 	AND	0FFh,AR4		;v1
-    // asm 000005AA: 	MPYI	3,AR4
-    // asm 000005AB: 	LDI	R0,AR5			;
-    // asm 000005AC: 	RS	8,AR5			;
-    // asm 000005AD: 	AND	0FFh,AR5		;v2
-    // asm 000005AE: 	MPYI	3,AR5
-    // asm 000005AF: 	LDI	R0,AR2			;
-    // asm 000005B0: 	RS	16,AR2			;
-    // asm 000005B1: 	AND	0FFh,AR2		;v3
-    // asm 000005B2: 	MPYI	3,AR2
-    // asm 000005B3: 	SUBF	*+AR4(IR0),*+AR5(IR0),R1	;dx = ax - bx
-    // asm 000005B4: 	SUBF	*+AR4(IR1),*+AR5(IR1),R5	;dy = ay - by
-    // asm 000005B5: 	SUBF	*+AR2(IR0),*+AR5(IR0),R0	;ex = cx - bx
-    // asm 000005B6: 	MPYF	R5,R0,R0			;ex = dy * ex
-    // asm 000005B6:   ||	SUBF	*+AR2(IR1),*+AR5(IR1),R2	;ey = cy - by
-    // asm 000005B7: 	MPYF	R1,R2			;ey = dx * ey
-    // asm 000005B8: 	SUBF	R0,R2			;ey = ey - ex
-    // asm 000005B9: 	BGT	ZCLIP		;if back facing DONT PLOT
-    // *
-    // *GET ILLUMINATION PALETTE TO BE USED
-    // *ROTATE NORMAL VECTOR BY OBJECT/UNIVERSE RAOTATION MATRIX
-    // *
-ILLUM1:
-    // asm 000005BA: 	LDI	*AR1++,R7			;get control word
-    // ;	LDP	@tmpmatY			;DP loaded with low memory area
-    // asm 000005BB: 	LDI	@tmpmatY,AR3			;
-    // asm 000005BC: 	LDI	@transmatrixI,AR5		;these are in same memory area
-    // asm 000005BD: 	LDF	*AR1++,R3			;get the NORMAL.x
-    // asm 000005BE: 	LDF	*AR1++,R4			;	       .y
-    // asm 000005BE:  ||	STF	R3,*-AR3(1)
-    // asm 000005BF: 	LDF	*AR1++,R5			;	       .z
-    // asm 000005BF:  ||	STF	R4,*AR3
-    // asm 000005C0: 	NOP 	*AR5++(8)		   	;FAST ADD TO AR5
-    // asm 000005C1: 	MPYF	*AR5--,R5,R0
-    // asm 000005C1:  ||	STF	R5,*+AR3(1)
-    // asm 000005C2: 	MPYF	*AR5--,*AR3,R1
-    // asm 000005C3: 	MPYF	*AR5--,*-AR3(1),R0
-    // asm 000005C3:  ||	ADDF	R0,R1,R2
-    // asm 000005C4: 	ADDF	R0,R2,R1
-    // ; 	BND	ZCLIP1			     	;BLOW OUT OF HERE, Z NEG IS BACKFACER
-    // asm 000005C5: 	MPYF	*AR5--,R5,R0
-    // asm 000005C6: 	MPYF	*AR5--,R4,R2
-    // asm 000005C7: 	MPYF	*AR5--,*-AR3(1),R0
-    // asm 000005C7:  ||	ADDF	R0,R2,R2
-    // asm 000005C8: 	MPYF	*AR5--,*+AR3(1),R0
-    // asm 000005C8:  ||	ADDF	R0,R2,R2
-    // asm 000005C9: 	MPYF	*AR5--,R4,R3
-    // asm 000005CA: 	MPYF	*AR5--,*-AR3(1),R0
-    // asm 000005CA:  ||	ADDF	R0,R3,R3
-    // asm 000005CB: 	ADDF	R0,R3,R3
-    // 	;R1=Z, R2=Y, R3=X ROTATED NORMAL
-    // 	;GENERATE ILLUMINATION DOT PRODUCT
-    // 	;
-    // asm 000005CC: 	LDI	@LIGHTIY,AR5			;again, DP in same memory area
-    // asm 000005CD: 	MPYF	*-AR5(1),R3,R3			;generate dot product to get
-    // asm 000005CE: 	MPYF	*AR5,R2,R2			;illumination level
-    // asm 000005CF: 	MPYF	*+AR5(1),R1,R1
-    // asm 000005D0: 	ADDF	R2,R1,R5
-    // asm 000005D1: 	ADDF	R3,R5
-    // asm 000005D2: 	MPYF	-8,R5				;actually:  R1 = (int) ((R1*.-5)+.5)*16
-    // asm 000005D3: 	ADDF	8,R5				;the 2 is because illum pals begin at PAL2
-    // asm 000005D4: 	FIX	R5				;R1 now has illumintation level index (0-15)
-    // asm 000005D5: 	LDI	FASTCC,R7				;fake it out
-    // ;	OR	R6,R7				;or in the illum color
-    // asm 000005D6: 	OR	R5,R7		;or in color spec
-    // asm 000005D7: 	LDI	200h,R5		;second palette
-ILLUMFF:
-    // asm 000005D8: LDI	*AR0,R0				;FIFO_WT replacement
-    // asm 000005D9: 	AND	FIFO_STATUS_MAX_FLAG,R0
-    // asm 000005DA: 	BNZ	ILLUMFF				;ILLUM FIFO WAIT
-    // asm 000005DB: 	STI	R7,*AR7				;CONTROL WORD from above
-    // ;	LSH	8,R5	;fix l8r
-    // asm 000005DC: 	STI	R5,*AR7				;PALETTE
-    // asm 000005DD: 	LDI	*AR1++,AR2
-    // asm 000005DE: 	CLRI	R3
-    // asm 000005DF: 	LDI	3,RC
-    // asm 000005E0: 	RPTB	LP1
-    // asm 000005E1: 	LDI	AR2,AR3
-    // asm 000005E2: 	LSH	R3,AR3
-    // asm 000005E3: 	AND	0FFh,AR3
-    // asm 000005E4: 	MPYI	3,AR3
-    // asm 000005E5: 	SUBI	8,R3
-    // asm 000005E6: 	FIX	*+AR3(IR0),R0
-    // asm 000005E7: 	FIX	*+AR3(IR1),R0
-    // asm 000005E7:  ||	STI	R0,*AR7				;x[n]
-LP1:
-    // asm 000005E8: STI	R0,*AR7				;y[n]
-    // asm 000005E9: 	LDI	*+AR0(FIFO_INC-FIFO_STATUS),R0	;FIFO_INC replacement
-ILLUM_POLYLP:
-    // asm 000005EA: 	DBU	AR6,ILLUM_PLOTPOLYLP
-    // asm 000005EB: 	POP	AR0
-    // asm 000005EC: 	RETS
-ZCLIP:
-    // asm 000005ED: 	ADDI	5,AR1
-    // asm 000005EE: 	DBU	AR6,ILLUM_PLOTPOLYLP
-    // asm 000005EF: 	POP	AR0
-    // asm 000005F0: 	RETS
-ZCLIP1:
-    // asm 000005F1: 	ADDI	5,AR1
-    // asm 000005F2: 	DBU	AR6,ILLUM_PLOTPOLYLP
-    // asm 000005F3: 	POP	AR0
-    // asm 000005F4: 	RETS
-    // *warning moving this to top of file will crash program ask ti why
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTILLUM", 0, 0);
 
     for (polygon_index = 0; polygon_index <= polygon_count_minus_one; polygon_index++, polygons++) {
@@ -2878,28 +2764,108 @@ ZCLIP1:
         int illumination_index;
         int control_word;
 
+        // asm 000005A7: 	LDI	*+AR1(4),R0		;read vertex (v4|v3|v2|v1)
         packed_vertices = (int)polygons->vertices_4_3_2_1;
+
+        // asm 000005A8: 	LDI	R0,AR4
+        // asm 000005A9: 	AND	0FFh,AR4		;v1
+        // asm 000005AA: 	MPYI	3,AR4
         vertex1 = &BLOWLIST[(packed_vertices & 0xff) * 3];
+
+        // asm 000005AB: 	LDI	R0,AR5
+        // asm 000005AC: 	RS	8,AR5
+        // asm 000005AD: 	AND	0FFh,AR5		;v2
+        // asm 000005AE: 	MPYI	3,AR5
         vertex2 = &BLOWLIST[((packed_vertices >> 8) & 0xff) * 3];
+
+        // asm 000005AF: 	LDI	R0,AR2
+        // asm 000005B0: 	RS	16,AR2
+        // asm 000005B1: 	AND	0FFh,AR2		;v3
+        // asm 000005B2: 	MPYI	3,AR2
         vertex3 = &BLOWLIST[((packed_vertices >> 16) & 0xff) * 3];
+
+        // asm: 	v4
         vertex4 = &BLOWLIST[((packed_vertices >> 24) & 0xff) * 3];
 
+        // asm 000005B3: 	SUBF	*+AR4(IR0),*+AR5(IR0),R1	;dx = ax - bx
         dx = vertex1[0] - vertex2[0];
+        // asm 000005B4: 	SUBF	*+AR4(IR1),*+AR5(IR1),R5	;dy = ay - by
         dy = vertex1[1] - vertex2[1];
+        // asm 000005B5: 	SUBF	*+AR2(IR0),*+AR5(IR0),R0	;ex = cx - bx
         ex = vertex3[0] - vertex2[0];
+        // asm 000005B6:   ||	SUBF	*+AR2(IR1),*+AR5(IR1),R2	;ey = cy - by
         ey = vertex3[1] - vertex2[1];
+        // asm 000005B6: 	MPYF	R5,R0,R0			;ex = dy * ex
+        // asm 000005B7: 	MPYF	R1,R2			;ey = dx * ey
+        // asm 000005B8: 	SUBF	R0,R2			;ey = ey - ex
+        // asm 000005B9: 	BGT	ZCLIP		;if back facing DONT PLOT
         if ((dx * ey) - (dy * ex) > 0.0f) {
             continue;
         }
 
+        // asm 000005C1: 	MPYF	*AR5--,R5,R0
+        // asm 000005C2: 	MPYF	*AR5--,*AR3,R1
+        // asm 000005C3: 	MPYF	*AR5--,*-AR3(1),R0
+        // asm 000005C3:  ||	ADDF	R0,R1,R2
+        // asm 000005C4: 	ADDF	R0,R2,R1
         rotated_normal_z = (ROTATION_MATRIX.a20 * polygons->nx) + (ROTATION_MATRIX.a21 * polygons->ny) + (ROTATION_MATRIX.a22 * polygons->nz);
+        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
+        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000005C5, "R1", &rotated_normal_z);
+        // }
+
+        // asm 000005C5: 	MPYF	*AR5--,R5,R0
+        // asm 000005C6: 	MPYF	*AR5--,R4,R2
+        // asm 000005C7: 	MPYF	*AR5--,*-AR3(1),R0
+        // asm 000005C7:  ||	ADDF	R0,R2,R2
+        // asm 000005C8: 	MPYF	*AR5--,*+AR3(1),R0
+        // asm 000005C8:  ||	ADDF	R0,R2,R2
         rotated_normal_y = (ROTATION_MATRIX.a10 * polygons->nx) + (ROTATION_MATRIX.a11 * polygons->ny) + (ROTATION_MATRIX.a12 * polygons->nz);
+        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
+        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000005C9, "R2", &rotated_normal_y);
+        // }
+
+        // asm 000005C9: 	MPYF	*AR5--,R4,R3
+        // asm 000005CA: 	MPYF	*AR5--,*-AR3(1),R0
+        // asm 000005CA:  ||	ADDF	R0,R3,R3
+        // asm 000005CB: 	ADDF	R0,R3,R3
         rotated_normal_x = (ROTATION_MATRIX.a00 * polygons->nx) + (ROTATION_MATRIX.a01 * polygons->ny) + (ROTATION_MATRIX.a02 * polygons->nz);
+        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
+        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000005CD, "R3", &rotated_normal_x);
+        // }
 
+        // asm 000005CD: 	MPYF	*-AR5(1),R3,R3
+        // asm 000005CE: 	MPYF	*AR5,R2,R2
+        // asm 000005CF: 	MPYF	*+AR5(1),R1,R1
+        // asm 000005D0: 	ADDF	R2,R1,R5
+        // asm 000005D1: 	ADDF	R3,R5
         illumination = (_LIGHT.X * rotated_normal_x) + (_LIGHT.Y * rotated_normal_y) + (_LIGHT.Z * rotated_normal_z);
-        illumination_index = (int)((illumination * -8.0f) + 8.0f);
-        control_word = FASTCC | illumination_index;
+        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
+        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000005D2, "R5", &illumination);
+        // }
 
+        // asm 000005D2: 	MPYF	-8,R5
+        // asm 000005D3: 	ADDF	8,R5
+        // asm 000005D4: 	FIX	R5
+        illumination_index = (int)(((illumination * -8.0f) + 8.0f) + 0.5f);
+        if (illumination_index < 0) {
+            illumination_index = 0;
+        } else if (illumination_index > 15) {
+            illumination_index = 15;
+        }
+        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
+        MAME_VALIDATE_REG_AT_ADDR(0x000005D5, "R5", &illumination_index);
+        // }
+
+        // asm 000005D5: 	LDI	FASTCC,R7
+        // asm 000005D6: 	OR	R5,R7
+        control_word = FASTCC | illumination_index;
+        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
+        MAME_VALIDATE_REG_AT_ADDR(0x000005D7, "R7", &control_word);
+        // }
+
+        // asm 000005D7: 	LDI	200h,R5		;second palette
+        // asm 000005DB: 	STI	R7,*AR7
+        // asm 000005DC: 	STI	R5,*AR7
         port_output_fpga(
             (int)vertex1[0],
             (int)vertex1[1],
@@ -2920,4 +2886,4 @@ ZCLIP1:
 
     (void)obj;
 }
-#include <stdio.h>
+// *warning moving this to top of file will crash program ask ti why

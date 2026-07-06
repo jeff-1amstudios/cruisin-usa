@@ -155,7 +155,7 @@ NO_NINTENDO:
     // asm 0000A99D: 	LDI	AR4,R2
     // asm 0000A99E: 	ADDI	ORADX,R2
     // asm 0000A99F: 	CALL	FIND_MATRIX
-    FIND_MATRIX((MATRIX*)&obj->mat00, &obj->rad);
+    FIND_MATRIX(&obj->omatrix, &obj->rad);
 
     // asm 0000A9A0: 	LDI	AR4,AR2
     // asm 0000A9A1: 	CALL	OBJ_INSERTP
@@ -189,7 +189,7 @@ MSLP1:
     // asm 0000A9AF: 	LDI	AR4,R2
     // asm 0000A9B0: 	ADDI	ORADX,R2
     // asm 0000A9B1: 	CALL	FIND_MATRIX
-    FIND_MATRIX((MATRIX*)&obj->mat00, &obj->rad);
+    FIND_MATRIX(&obj->omatrix, &obj->rad);
 
 MSLP2:
     // asm 0000A9B2: 	SLEEP	1

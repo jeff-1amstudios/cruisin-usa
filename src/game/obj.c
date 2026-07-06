@@ -307,25 +307,25 @@ OBJ* OBJ_GET(void) {
     obj->rad.Z = 0.0f;
 
     // asm 0000706B: 	STF	R0,*+AR0(OMATRIX+1)
-    obj->mat10 = 0.0f;
+    obj->omatrix.mat10 = 0.0f;
     // asm 0000706C: 	STF	R0,*+AR0(OMATRIX+2)
-    obj->mat20 = 0.0f;
+    obj->omatrix.mat20 = 0.0f;
     // asm 0000706D: 	STF	R0,*+AR0(OMATRIX+3)
-    obj->mat01 = 0.0f;
+    obj->omatrix.mat01 = 0.0f;
     // asm 0000706E: 	STF	R0,*+AR0(OMATRIX+5)
-    obj->mat21 = 0.0f;
+    obj->omatrix.mat21 = 0.0f;
     // asm 0000706F: 	STF	R0,*+AR0(OMATRIX+6)
-    obj->mat02 = 0.0f;
+    obj->omatrix.mat02 = 0.0f;
     // asm 00007070: 	STF	R0,*+AR0(OMATRIX+7)
-    obj->mat12 = 0.0f;
+    obj->omatrix.mat12 = 0.0f;
 
     // asm 00007071: 	LDF	1.0,R0
     // asm 00007072: 	STF	R0,*+AR0(OMATRIX+0)
-    obj->mat00 = 1.0f;
+    obj->omatrix.mat00 = 1.0f;
     // asm 00007073: 	STF	R0,*+AR0(OMATRIX+4)
-    obj->mat11 = 1.0f;
+    obj->omatrix.mat11 = 1.0f;
     // asm 00007074: 	STF	R0,*+AR0(OMATRIX+8)
-    obj->mat22 = 1.0f;
+    obj->omatrix.mat22 = 1.0f;
 
     // asm 00007075: 	CLRC
     // asm 00007076: 	POP	R0

@@ -371,15 +371,15 @@ void COMM_DRONE_PTR_SORT(void) {
         scale = 16.0f;
     }
 
-    comm_drone->mat00 = scale;
-    comm_drone->mat11 = scale;
-    comm_drone->mat22 = scale;
+    comm_drone->omatrix.mat00 = scale;
+    comm_drone->omatrix.mat11 = scale;
+    comm_drone->omatrix.mat22 = scale;
 
     comm_drone->posx = player2->posx;
 
     {
         f32 y = player2->posy;
-        f32 offset = 35.0f * comm_drone->mat00;
+        f32 offset = 35.0f * comm_drone->omatrix.mat00;
 
         y -= offset;
         y -= 20.0f;

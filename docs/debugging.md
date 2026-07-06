@@ -63,22 +63,9 @@ Common validation markers:
 - `MAME_VALIDATE_REG_AT_ADDR(...)`: validate an integer register at an explicit original instruction address.
 - `MAME_VALIDATE_REG_AT_ADDR_FLOAT(...)`: validate a float register at an explicit original instruction address.
 
-## What the runtime validator checks
 
-`src/core/validator.c` reads `mame_validate/mame.log` and consumes one validation entry at a time.
-
-It checks:
-- The next expected entry has the right kind of data for the current validation call.
-- The expected value matches the current value produced by the SDL port.
-- The writer context recorded in the MAME log matches the C callsite consuming it. This helps catch cases where execution order changed and a validation line is being consumed by the wrong place.
-
-On failure, the validator reports:
-- The current C file and line.
-- The MAME log line number.
-- The expected value from MAME.
-- The actual value produced by the port.
-
-By default, it aborts on the first error.
+## Usage
+- When using the `AT_ADDR` forms, pick the _next_ address after the register you are looking at has been set. The breakpoint fires _before_ the attached instruction is executed.
 
 ## When to refresh the MAME log
 

@@ -904,7 +904,6 @@ word_addr_t GET_TABLE_ADDR(int race_index /*R6*/, int entry_index /*R7*/) {
     // asm 00009B06: 	RETS
     addr = (word_addr_t)CMOSI + (word_addr_t)(MAX_AUDITS * 4) + (word_addr_t)(race_index * RACE_TABLE_SIZE)
         + (word_addr_t)(entry_index * TE_SIZE);
-    // MAME_VALIDATE_REG_AT_ADDR(0x00009B04, "AR2", &addr);
     return addr;
 }
 
@@ -1012,7 +1011,6 @@ RACEENTRY TABLE_ENTRY_READ(word_addr_t* addr /*AR2*/) {
     entry.time = (u32)_rd_cw(*addr);
     *addr += 4;
     // asm 00009B32: 	PUSH	R0
-    MAME_VALIDATE_REG_AT_ADDR(0x00009B32, "R0", &entry.time);
     // asm 00009B33: 	CMOS_ON
     // asm 00009B34: 	CMOS_WP_OFF
     // asm 00009B35: 	LDI	*AR2++,R1
@@ -1021,22 +1019,18 @@ RACEENTRY TABLE_ENTRY_READ(word_addr_t* addr /*AR2*/) {
     CMOS_WPOFF_C();
     entry.init1 = (crusn_mem_rd32(*addr) >> 24) & 0xffu;
     *addr += 1;
-    MAME_VALIDATE_REG_AT_ADDR(0x00009B37, "R1", &entry.init1);
     // asm 00009B37: 	LDI	*AR2++,R2
     // asm 00009B38: 	RS	24,R2
     entry.init2 = (crusn_mem_rd32(*addr) >> 24) & 0xffu;
     *addr += 1;
-    MAME_VALIDATE_REG_AT_ADDR(0x00009B39, "R2", &entry.init2);
     // asm 00009B39: 	LDI	*AR2++,R3
     // asm 00009B3A: 	RS	24,R3
     entry.init3 = (crusn_mem_rd32(*addr) >> 24) & 0xffu;
     *addr += 1;
-    MAME_VALIDATE_REG_AT_ADDR(0x00009B3B, "R3", &entry.init3);
     // asm 00009B3B: 	LDI	*AR2++,R4
     // asm 00009B3C: 	RS	24,R4
     entry.rank = (crusn_mem_rd32(*addr) >> 24) & 0xffu;
     *addr += 1;
-    MAME_VALIDATE_REG_AT_ADDR(0x00009B3D, "R4", &entry.rank);
     // asm 00009B3D: 	PUSH	R1
     // asm 00009B3E: 	CMOS_WP_ON	;This trashes register R1
     // asm 00009B3F: 	CMOS_OFF

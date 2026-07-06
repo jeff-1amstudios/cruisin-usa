@@ -59,6 +59,18 @@ typedef struct MATRIX {
     f32 a22;
 } MATRIX;
 
+typedef struct OBJ_MATRIX {
+    f32 mat00;
+    f32 mat10;
+    f32 mat20;
+    f32 mat01;
+    f32 mat11;
+    f32 mat21;
+    f32 mat02;
+    f32 mat12;
+    f32 mat22;
+} OBJ_MATRIX;
+
 typedef struct tVIEWLIST_entry {
     void* init;
     int arg;
@@ -225,15 +237,7 @@ typedef struct OBJ {
     f32 posz;
 
     /* 3x3 rotation matrix laid out exactly as OMAT00..OMAT22 in OBJ.EQU. */
-    f32 mat00;
-    f32 mat10;
-    f32 mat20;
-    f32 mat01;
-    f32 mat11;
-    f32 mat21;
-    f32 mat02;
-    f32 mat12;
-    f32 mat22;
+    OBJ_MATRIX omatrix;
 
     void* romdata;
     u32 flags;
@@ -398,15 +402,7 @@ typedef struct DYNAOBJ {
     f32 trans_x;
     f32 trans_y;
     f32 trans_z;
-    f32 mat00;
-    f32 mat10;
-    f32 mat20;
-    f32 mat01;
-    f32 mat11;
-    f32 mat21;
-    f32 mat02;
-    f32 mat12;
-    f32 mat22;
+    OBJ_MATRIX omatrix;
     u32 nverts;
     struct DYNAOBJ* parent;
     u32 flag;

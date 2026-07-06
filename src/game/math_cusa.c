@@ -24,11 +24,11 @@ float _SINE(float theta /*R2*/);
 void NORMITS(void);
 void NORMIT(void);
 void ARCTANF(void);
-void FIND_MATRIX(MATRIX* dest /*AR2*/, VECTOR* radians /*R2*/);
-void FIND_XMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
+void FIND_MATRIX(void* dest /*AR2*/, VECTOR* radians /*R2*/);
+void FIND_XMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 #define FIND_YMATRIX _find_Ymatrix
-void _find_Ymatrix(MATRIX* dest /*AR2*/, float radians /*R2*/);
-void HPFIND_YMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/);
+void _find_Ymatrix(void* dest /*AR2*/, float radians /*R2*/);
+void HPFIND_YMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 void FIND_ZMATRIX(void);
 void INITMAT(MATRIX* mat /*AR0*/);
 void VECTLEN(void);
@@ -795,7 +795,8 @@ float LOCTEMPER_MAT2[12];
  *	R2	SOURCE RADIANS 1X3
  *
  */
-void FIND_MATRIX(MATRIX* dest /*AR2*/, VECTOR* radians /*R2*/) {
+void FIND_MATRIX(void* destp /*AR2*/, VECTOR* radians /*R2*/) {
+    float* dest = destp;
     float cx, cy, cz;
     float sx, sy, sz;
     float sx_sy;
@@ -837,15 +838,15 @@ FM1:
 
     // asm 000095A6: 	MPYF	*+AR1(1),*+AR1(0),R0		;CZ*CY
     // asm 000095A7: 	STF	R0,*AR2++		 	;A(0,0)=CZ*CY
-    dest->a00 = cz * cy; // ;A(0,0)=CZ*CY
+    dest[0] = cz * cy; // ;A(0,0)=CZ*CY
 
     // asm 000095A8: 	MPYF	*+AR3(1),*+AR1(0),R0		;SZ*CY
     // asm 000095A9: 	NEGF	*+AR3(0),R2			;-SY
     // asm 000095A9:  ||	STF	R0,*AR2++			;A(0,1)=SZ*CY
-    dest->a01 = sz * cy; // ;A(0,1)=SZ*CY
+    dest[1] = sz * cy; // ;A(0,1)=SZ*CY
 
     // asm 000095AB:  ||	STF	R2,*AR2++			;A(0,2)=-SY
-    dest->a02 = -sy; // ;A(0,2)=-SY
+    dest[2] = -sy; // ;A(0,2)=-SY
 
     // asm 000095AA: 	MPYF	*-AR3(1),*+AR3(0),R0		;SX*SY
     sx_sy = sx * sy; // ;SX*SY
@@ -854,32 +855,32 @@ FM1:
     // asm 000095AC: 	MPYF	*-AR1(1),*+AR3(1),R2		;CX*SZ
     // asm 000095AD: 	SUBF	R2,R1
     cx_sz = cx * sz;                  // ;CX*SZ
-    dest->a10 = (sx_sy * cz) - cx_sz; // ;A(1,0)=SX*SY*CZ-CX*SZ
+    dest[3] = (sx_sy * cz) - cx_sz; // ;A(1,0)=SX*SY*CZ-CX*SZ
 
     // asm 000095AE: 	MPYF	*+AR3(1),R0,R0			;SZ*(SX*SY)
     // asm 000095AE:  ||	STF	R1,*AR2++			;A(1,0)=SX*SY*SZ-CX*SZ
     // asm 000095AF: 	MPYF	*-AR1(1),*+AR1(1),R1		;CX*CZ
     // asm 000095B0: 	ADDF	R1,R0
     cx_cz = cx * cz;                  // ;CX*CZ
-    dest->a11 = (sz * sx_sy) + cx_cz; // ;A(1,1)= SX*SY*SZ+CX*CZ
+    dest[4] = (sz * sx_sy) + cx_cz; // ;A(1,1)= SX*SY*SZ+CX*CZ
 
     // asm 000095B2: 	MPYF	*-AR3(1),*+AR1(0),R0
     // asm 000095B3:  ||	STF	R0,*AR2++			;A(1,2)= SX*CY
-    dest->a12 = sx * cy; // ;A(1,2)= SX*CY
+    dest[5] = sx * cy; // ;A(1,2)= SX*CY
 
     // asm 000095B3: 	MPYF	*+AR3(0),R1,R1			;SY*(CX*CZ)
     // asm 000095B4: 	MPYF	*-AR3(1),*+AR3(1),R0		;SX*SZ
     // asm 000095B5: 	ADDF	R1,R0
-    dest->a20 = (sy * cx_cz) + (sx * sz); // ;A(2,0)= CX*SY*CZ+SX*SZ
+    dest[6] = (sy * cx_cz) + (sx * sz); // ;A(2,0)= CX*SY*CZ+SX*SZ
 
     // asm 000095B6: 	MPYF	*+AR3(0),R2,R2
     // asm 000095B7: 	MPYF	*-AR3(1),*+AR1(1),R0
     // asm 000095B8:  ||	SUBF	R0,R2
-    dest->a21 = (sy * cx_sz) - (sx * cz); // ;A(2,1)= CX*SY*SZ-SX*CZ
+    dest[7] = (sy * cx_sz) - (sx * cz); // ;A(2,1)= CX*SY*SZ-SX*CZ
 
     // asm 000095B8: 	MPYF	*-AR1(1),*+AR1(0),R1		;CX*CY
     // asm 000095BA: 	STF	R1,*AR2--(8)			;A(2,2)= CX*CY
-    dest->a22 = cx * cy; // ;A(2,2)= CX*CY
+    dest[8] = cx * cy; // ;A(2,2)= CX*CY
 
     // asm 000095BB: 	POP	AR3
     // asm 000095BC: 	POP	AR2
@@ -906,32 +907,33 @@ FM1:
  *	R2	SOURCE RADIANS
  *
  */
-void FIND_XMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/) {
+void FIND_XMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
+    float* dest = destp;
     // asm 000095C5: 	PUSH	R0
     // asm 000095C6: 	PUSHF	R0
     // asm 000095C7: 	CALL	_COSI
     // asm 000095C8: 	STF	R0,*+AR2(A11)
-    dest->a11 = _COSI(radians);
+    dest[4] = _COSI(radians);
     // asm 000095C9: 	STF	R0,*+AR2(A22)
-    dest->a22 = dest->a11;
+    dest[8] = dest[4];
     // asm 000095CA: 	CALL	_SINE
     // asm 000095CB: 	STF	R0,*+AR2(A12)
-    dest->a12 = _SINE(radians);
+    dest[5] = _SINE(radians);
     // asm 000095CC: 	NEGF	R0
     // asm 000095CD: 	STF	R0,*+AR2(A21)
-    dest->a21 = -dest->a12;
+    dest[7] = -dest[5];
     // asm 000095CE: 	LDF	1,R0
     // asm 000095CF: 	STF	R0,*+AR2(A00)
-    dest->a00 = 1.0f;
+    dest[0] = 1.0f;
     // asm 000095D0: 	CLRF	R0
     // asm 000095D1: 	STF	R0,*+AR2(A01)
-    dest->a01 = 0.0f;
+    dest[1] = 0.0f;
     // asm 000095D2: 	STF	R0,*+AR2(A02)
-    dest->a02 = 0.0f;
+    dest[2] = 0.0f;
     // asm 000095D3: 	STF	R0,*+AR2(A10)
-    dest->a10 = 0.0f;
+    dest[3] = 0.0f;
     // asm 000095D4: 	STF	R0,*+AR2(A20)
-    dest->a20 = 0.0f;
+    dest[6] = 0.0f;
     // asm 000095D5: 	POPF	R0
     // asm 000095D6: 	POP	R0
     // asm 000095D7: 	RETS
@@ -950,32 +952,33 @@ void FIND_XMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/) {
  *	R2	SOURCE RADIANS
  *
  */
-void _find_Ymatrix(MATRIX* dest /*AR2*/, float radians /*R2*/) {
+void _find_Ymatrix(void* destp /*AR2*/, float radians /*R2*/) {
+    float* dest = destp;
     // asm 000095D8: 	PUSH	R0
     // asm 000095D9: 	PUSHF	R0
     // asm 000095DA: 	CALL	_COSI
     // asm 000095DB: 	STF	R0,*+AR2(A00)
-    dest->a00 = _COSI(radians);
+    dest[0] = _COSI(radians);
     // asm 000095DC: 	STF	R0,*+AR2(A22)
-    dest->a22 = dest->a00;
+    dest[8] = dest[0];
     // asm 000095DD: 	CALL	_SINE
     // asm 000095DE: 	STF	R0,*+AR2(A20)
-    dest->a20 = _SINE(radians);
+    dest[6] = _SINE(radians);
     // asm 000095DF: 	NEGF	R0
     // asm 000095E0: 	STF	R0,*+AR2(A02)
-    dest->a02 = -dest->a20;
+    dest[2] = -dest[6];
     // asm 000095E1: 	LDF	1,R0
     // asm 000095E2: 	STF	R0,*+AR2(A11)
-    dest->a11 = 1.0f;
+    dest[4] = 1.0f;
     // asm 000095E3: 	CLRF	R0
     // asm 000095E4: 	STF	R0,*+AR2(A01)
-    dest->a01 = 0.0f;
+    dest[1] = 0.0f;
     // asm 000095E5: 	STF	R0,*+AR2(A10)
-    dest->a10 = 0.0f;
+    dest[3] = 0.0f;
     // asm 000095E6: 	STF	R0,*+AR2(A12)
-    dest->a12 = 0.0f;
+    dest[5] = 0.0f;
     // asm 000095E7: 	STF	R0,*+AR2(A21)
-    dest->a21 = 0.0f;
+    dest[7] = 0.0f;
     // asm 000095E8: 	POPF	R0
     // asm 000095E9: 	POP	R0
     // asm 000095EA: 	RETS
@@ -994,7 +997,8 @@ void _find_Ymatrix(MATRIX* dest /*AR2*/, float radians /*R2*/) {
  *	R2	SOURCE RADIANS
  *
  */
-void HPFIND_YMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/) {
+void HPFIND_YMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
+    float* dest = destp;
     float c;
     float s;
 
@@ -1017,10 +1021,10 @@ void HPFIND_YMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/) {
     c = _HPcos(radians);
 
     // asm 000095F8: 	STF	R0,*+AR2(A00)
-    dest->a00 = c;
+    dest[0] = c;
     MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000095F8, "R0", &c);
     // asm 000095F9: 	STF	R0,*+AR2(A22)
-    dest->a22 = c;
+    dest[8] = c;
 
     // asm 000095FA: 	POPF	R2
     // asm 000095FB: 	POP	R2
@@ -1029,26 +1033,26 @@ void HPFIND_YMATRIX(MATRIX* dest /*AR2*/, float radians /*R2*/) {
     s = _HPsin(radians);
 
     // asm 000095FD: 	STF	R0,*+AR2(A20)
-    dest->a20 = s;
+    dest[6] = s;
     MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000095FD, "R0", &s);
 
     // asm 000095FE: 	NEGF	R0
     // asm 000095FF: 	STF	R0,*+AR2(A02)
-    dest->a02 = -s;
+    dest[2] = -s;
 
     // asm 00009600: 	LDF	1,R0
     // asm 00009601: 	STF	R0,*+AR2(A11)
-    dest->a11 = 1.0f;
+    dest[4] = 1.0f;
 
     // asm 00009602: 	CLRF	R0
     // asm 00009603: 	STF	R0,*+AR2(A01)
-    dest->a01 = 0.0f;
+    dest[1] = 0.0f;
     // asm 00009604: 	STF	R0,*+AR2(A10)
-    dest->a10 = 0.0f;
+    dest[3] = 0.0f;
     // asm 00009605: 	STF	R0,*+AR2(A12)
-    dest->a12 = 0.0f;
+    dest[5] = 0.0f;
     // asm 00009606: 	STF	R0,*+AR2(A21)
-    dest->a21 = 0.0f;
+    dest[7] = 0.0f;
 
     // asm 00009607: 	POPF	R4
     // asm 00009608: 	POP	R4

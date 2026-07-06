@@ -2000,7 +2000,7 @@ LS_L12:
     // asm 0000443A: 	LDI	AR4,AR2
     // asm 0000443B: 	ADDI	OMATRIX,AR2
     // asm 0000443C: 	CALL	HPFIND_YMATRIX
-    HPFIND_YMATRIX((MATRIX*)&obj->mat00, obj->rad.Y);
+    HPFIND_YMATRIX(&obj->omatrix, obj->rad.Y);
 
     // asm 0000443D: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
     // asm 0000443E: 	LDI	R1,R2

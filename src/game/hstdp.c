@@ -2366,7 +2366,7 @@ MNLOOP:
         // asm 00003781: 	LDI	AR0,AR2
         // asm 00003782: 	ADDI	OMATRIX,AR2
         // asm 00003783: 	CALL	FIND_XMATRIX
-        FIND_XMATRIX((MATRIX*)&obj->mat00, obj->rad.X);
+        FIND_XMATRIX(&obj->omatrix, obj->rad.X);
         // asm 00003784: 	LDI	AR0,AR2
         // asm 00003785: 	CALL	OBJ_INSERT
         OBJ_INSERT(obj);
@@ -2496,7 +2496,7 @@ MTLOOP:
         // asm 000037BB: 	LDI	AR0,AR2
         // asm 000037BC: 	ADDI	OMATRIX,AR2
         // asm 000037BD: 	CALL	FIND_XMATRIX
-        FIND_XMATRIX((MATRIX*)&obj->mat00, obj->rad.X);
+        FIND_XMATRIX(&obj->omatrix, obj->rad.X);
         // asm 000037BE: 	LDI	AR0,AR2
         // asm 000037BF: 	CALL	OBJ_INSERT
         OBJ_INSERT(obj);
@@ -2657,7 +2657,7 @@ CRLLOOP:
         // asm 00003809: 	LDI	AR0,AR2
         // asm 0000380A: 	ADDI	OMATRIX,AR2
         // asm 0000380B: 	CALL	FIND_XMATRIX
-        FIND_XMATRIX((MATRIX*)&obj->mat00, obj->rad.X);
+        FIND_XMATRIX(&obj->omatrix, obj->rad.X);
         // asm 0000380C: 	POP	R2
         // asm 0000380D: 	LDI	AR0,AR2
         // asm 0000380E: 	CALL	OBJ_INSERT
@@ -2821,7 +2821,7 @@ PR3DLOOP:
             // asm 0000384F: 	LDI	AR0,AR2
             // asm 00003850: 	ADDI	OMATRIX,AR2
             // asm 00003851: 	CALL	FIND_YMATRIX
-            FIND_YMATRIX((MATRIX*)&obj->mat00, 0.0f);
+            FIND_YMATRIX(&obj->omatrix, 0.0f);
             // asm 00003852: 	POPF	R2
             // asm 00003853: 	LDI	AR0,AR2
             // asm 00003854: 	CALL	OBJ_INSERT

@@ -329,6 +329,7 @@ static void RACELEG(void) {
     // asm 000093B4: 	CREATE	_timeout,UTIL_C
     // asm 000093B7: 	CREATE	HEAD2HEADWATCH,UTIL_C
     // asm 000093BA: 	RETS
+    MAME_VALIDATE_EXIT();
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RACELEG", 0, 0);
     UNIMPL();
 }
