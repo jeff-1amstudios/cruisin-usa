@@ -3,6 +3,7 @@
 
 #include "../core/machine.h"
 #include "../core/port.h"
+#include <math.h>
 
 /* Generated from asm/MACS.EQU. */
 
@@ -84,5 +85,25 @@ FONTENT		.MACRO	PRECEDING,XSTART,XEND,YSTART,TRAIL
 #define CREATE PRC_CREATE
 
 #define SOND1 ONESND
+
+static inline float TMS320_C3X_SINGLE_TO_FLOAT(u32 raw) {
+    int exponent;
+    u32 fraction;
+    float mantissa;
+
+    exponent = (int8_t)(raw >> 24);
+    if (exponent == -128) {
+        return 0.0f;
+    }
+
+    fraction = raw & 0x007fffffu;
+    if ((raw & 0x00800000u) == 0) {
+        mantissa = 1.0f + ((float)fraction / 8388608.0f);
+    } else {
+        mantissa = -2.0f + ((float)fraction / 8388608.0f);
+    }
+
+    return ldexpf(mantissa, exponent);
+}
 
 #endif /* MACS_H */

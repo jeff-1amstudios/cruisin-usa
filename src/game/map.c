@@ -100,16 +100,14 @@ static float M4STDI = M2STD;
  *
  *
  */
-void UNFOLDMAP(void)
-{
+void UNFOLDMAP(void) {
     // asm 00005E0B: 	CALL	MAPPAL_ILLUM_INIT
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "UNFOLDMAP", 0, 0);
     UNIMPL();
 }
 
-void UNFOLDMAP_NOPAL(void)
-{
+void UNFOLDMAP_NOPAL(void) {
     // asm 00005E0C: 	LDIL	O_3DROT,R6
     // asm 00005E0F: 	OR	O_NOUROT|O_NOUNIV,R6
     // asm 00005E10: 	LDI	@EPALL,AR2
@@ -376,8 +374,7 @@ void UNFOLDMAP_NOPAL(void)
  *
  *
  */
-void FOLDMAP(void)
-{
+void FOLDMAP(void) {
     // asm 00005EEB: 	SONDFX	WIPE4
     // *ELP CHANGE
     // asm 00005EED: 	CALL	MAPPAL_ILLUM_INIT
@@ -623,8 +620,7 @@ void FOLDMAP(void)
 
 // *----------------------------------------------------------------------------
 
-void CLEAR_MAP_PALS(void)
-{
+void CLEAR_MAP_PALS(void) {
     // asm 00005FCC: 	LDI	@EPALL,AR2
     // asm 00005FCD: 	CALL	PAL_FIND_RAW
 #if DEBUG
@@ -650,8 +646,7 @@ IBOIBO:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void MAPPAL_ILLUM_INIT(void)
-{
+static void MAPPAL_ILLUM_INIT(void) {
     tPAL* right_palette;
     tPAL* left_palette;
     const tPAL* source_palette;
@@ -717,8 +712,7 @@ L342:
 /* asm: FORMULA1	.float	0.318309886 */
 static float FORMULA1 = 0.318309886f;
 
-static void MAP_ILLUM_COMPUTE(void)
-{
+static void MAP_ILLUM_COMPUTE(void) {
     // asm 00005FED: 	LDF	*+AR7(MAP1T),R0
     // asm 00005FEE: 	ADDF	HALFPI,R0
     // asm 00005FEF: 	MPYF	@FORMULA1,R0
@@ -747,8 +741,7 @@ float MAPPAL13;
 /* asm: MAPPAL24	.bss	MAPPAL24,1 */
 float MAPPAL24;
 
-static void MAPPAL_ILLUM(void)
-{
+static void MAPPAL_ILLUM(void) {
     const tPAL* source_palette;
     tPAL* left_palette;
     tPAL* right_palette;
@@ -1065,8 +1058,7 @@ int tmp_buffer[2];
  *	AR2	STRING SPACE
  *
  */
-void TIME2STR(void)
-{
+void TIME2STR(void) {
     // asm 000060C4: 	PUSH	R0
     // asm 000060C5: 	PUSH	R1
     // asm 000060C6: 	PUSH	R2
@@ -1127,8 +1119,7 @@ static float SECFACT = 0.018181818f;
 /* asm: 	 */
 static float HUNFACT = 1.818181818f;
 
-void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/)
-{
+void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/) {
     int local_minutes;
     int local_seconds;
     int local_hundredths;
@@ -1145,7 +1136,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     if (local_minutes < 0) {
         local_minutes = 0;
     }
-    MAME_VALIDATE_REG_AT_ADDR(0x000060F1, "R2", &local_minutes);
+    MAME_VALIDATE_REG_AT_ADDR(0x000060F2, "R2", &local_minutes);
     // asm 000060F2: 	MPYI	3300,R3
     // asm 000060F3: 	SUBI 	R3,R0
     // asm 000060F4: 	LDILT	0,R0
@@ -1163,7 +1154,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     if (local_seconds < 0) {
         local_seconds = 0;
     }
-    MAME_VALIDATE_REG_AT_ADDR(0x000060FC, "R1", &local_seconds);
+    MAME_VALIDATE_REG_AT_ADDR(0x000060FD, "R1", &local_seconds);
     // asm 000060FD: 	MPYI	55,R3
     // asm 000060FE: 	SUBI 	R3,R0
     // asm 000060FF: 	LDILT	0,R0
@@ -1180,7 +1171,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     if (local_hundredths < 0) {
         local_hundredths = 0;
     }
-    MAME_VALIDATE_REG_AT_ADDR(0x00006102, "R0", &local_hundredths);
+    MAME_VALIDATE_REG_AT_ADDR(0x00006103, "R0", &local_hundredths);
     // asm 00006107: 	POPF	R3
     // asm 00006108: 	POP	R3
     // asm 00006109: 	RETS
@@ -1223,8 +1214,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
 int THIS_MACHINE_AHEAD;
 
 // *----------------------------------------------------------------------------
-void RADAR_PLOT(void)
-{
+void RADAR_PLOT(void) {
     // asm 0000610A: 	PUSH	AR4
     // asm 0000610B: 	LDI	@PLYCAR,AR4
     // 	;background

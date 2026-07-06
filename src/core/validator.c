@@ -177,13 +177,13 @@ static int validate_entry_has_wrong_consumer(const char* caller_file, int caller
     return strcmp(entry->writer_file, caller_basename) != 0 || entry->writer_line != caller_line;
 }
 
-static void validate_wrong_consumer(
+static int validate_wrong_consumer(
     const char* caller_file, int caller_line, const char* name, const VALIDATE_ENTRY* entry) {
     char expected_buf[160];
     char actual_buf[160];
 
     if (!validate_entry_has_wrong_consumer(caller_file, caller_line, entry)) {
-        return;
+        return 0;
     }
 
     snprintf(expected_buf, sizeof(expected_buf), "%s:%d", entry->writer_file, entry->writer_line);
@@ -198,7 +198,10 @@ static void validate_wrong_consumer(
             "validate line consumed by different callsite than original writer",
             expected_buf,
             actual_buf);
+        return 1;
     }
+
+    return 0;
 }
 
 static void load_port_map(VALIDATE_SYMBOL_MAP* out_map, const char* path) {
@@ -631,6 +634,10 @@ static int read_next_validate_reg_word(
         return 0;
     }
 
+    if (validate_wrong_consumer(caller_file, caller_line, failure_name, out_entry)) {
+        return 0;
+    }
+
     if (strcmp(actual_name, expected_reg_name) != 0) {
         snprintf(expected_buf, sizeof(expected_buf), "%s", expected_reg_name);
         snprintf(actual_buf, sizeof(actual_buf), "%s", actual_name);
@@ -687,6 +694,7 @@ static void validate_reg_float_value_impl(
     if (!read_next_validate_reg_word(caller_file, caller_line, failure_name, expected_reg_name, &entry)) {
         return;
     }
+
     memcpy(&expected_value, &entry.word_value, sizeof(expected_value));
     memcpy(&actual_value, ptr, sizeof(actual_value));
 
@@ -936,6 +944,10 @@ void mame_validate_arg_sym_impl(const char* caller_file, int caller_line, const 
         return;
     }
 
+    if (validate_wrong_consumer(caller_file, caller_line, name, &entry)) {
+        return;
+    }
+
     if (strcmp(actual_name, name) != 0) {
         snprintf(expected_buf, sizeof(expected_buf), "%s", name);
         snprintf(actual_buf, sizeof(actual_buf), "%s", actual_name);
@@ -1099,6 +1111,10 @@ void mame_validate_region_at_addr_impl(
 
     if (!read_next_validate_line(actual_name, sizeof(actual_name), &entry)) {
         validate_warn_log_exhausted(caller_file, caller_line, name);
+        return;
+    }
+
+    if (validate_wrong_consumer(caller_file, caller_line, name, &entry)) {
         return;
     }
 

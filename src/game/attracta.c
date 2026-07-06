@@ -160,10 +160,6 @@ NO_NINTENDO:
     // asm 0000A9A0: 	LDI	AR4,AR2
     // asm 0000A9A1: 	CALL	OBJ_INSERTP
     OBJ_INSERTP(obj);
-    fprintf(stderr,
-        "MIDWAYDBG create obj=%p rom=%p flags=%#x pos=(%.1f,%.1f,%.1f) rad=(%.3f,%.3f,%.3f) palette=%d\n",
-        (void*)obj, obj->romdata, obj->flags, obj->posx, obj->posy, obj->posz, obj->rad.X, obj->rad.Y, obj->rad.Z,
-        obj->palette);
 
     // asm 0000A9A2: 	LDF	*+AR4(ORADY),R0
     // asm 0000A9A3: 	STF	R0,*+AR4(OUSR1)

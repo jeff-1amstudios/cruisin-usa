@@ -191,9 +191,9 @@ typedef struct ROM_POLYGON {
 
 typedef struct ROM_ILLUM_POLYGON {
     u32 cntl;
-    f32 nx;
-    f32 ny;
-    f32 nz;
+    u32 nx;
+    u32 ny;
+    u32 nz;
     u32 vertices_4_3_2_1;
 } ROM_ILLUM_POLYGON;
 

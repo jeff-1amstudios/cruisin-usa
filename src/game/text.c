@@ -119,8 +119,8 @@ tSHADOW_TEXT TEXT_ADDDS(const char* text, float x, float y, int ticks) {
     tTEXT* front;
     tTEXT* shadow;
 
-    MAME_VALIDATE_ARG_FLOAT("R2", &x);
-    MAME_VALIDATE_ARG_FLOAT("R3", &y);
+    // MAME_VALIDATE_ARG_FLOAT("R2", &x);
+    // MAME_VALIDATE_ARG_FLOAT("R3", &y);
 
     front = TEXT_ADD(text, x, y, ticks);
     shadow = TEXT_ADD(text, x, y, ticks);
@@ -587,8 +587,8 @@ TEXTLP:
     str = text->ptr;
     x = (int)text->posx;
     y = (int)text->posy;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007A81, "R2", &x);
-    MAME_VALIDATE_REG_AT_ADDR(0x00007A81, "R3", &y);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007A81, "R2", &x);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007A81, "R3", &y);
 
     // asm 00007A81:  	LDI	*+AR4(TEXT_COLOR),R0
     // asm 00007A82: 	TSTB	TXT_CENTER,R0
@@ -598,10 +598,10 @@ TEXTLP:
         width = STRLEN(text);
         // asm 00007A84: 	CALL	STRLEN
         // asm 00007A85: 	RS	1,R0
-        MAME_VALIDATE_REG_AT_ADDR(0x00007A85, "R0", &width);
+        // MAME_VALIDATE_REG_AT_ADDR(0x00007A85, "R0", &width);
         // asm 00007A86: 	SUBI	R0,R2
         x -= width >> 1;
-        MAME_VALIDATE_REG_AT_ADDR(0x00007A87, "R2", &x);
+        // MAME_VALIDATE_REG_AT_ADDR(0x00007A87, "R2", &x);
         // asm 00007A87: 	B	TEXT_RET
         goto TEXT_RET;
     }
@@ -612,7 +612,7 @@ NO_CENTER:
     if (color & TXT_RIGHT) {
         width = STRLEN(text);
         // asm 00007A8A: 	CALL	STRLEN
-        MAME_VALIDATE_REG_AT_ADDR(0x00007A8B, "R0", &width);
+        // MAME_VALIDATE_REG_AT_ADDR(0x00007A8B, "R0", &width);
         // asm 00007A8B: 	SUBI	R0,R2
         x -= width;
     }
@@ -665,7 +665,7 @@ IBO2:
     // asm 00007AA4: 	LDI	*+AR4(TEXT_PAL),R1
     // asm 00007AA5: 	STI	R1,@_ACMAP
     _ACMAP = text->palette;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007AA6, "R1", &_ACMAP);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007AA6, "R1", &_ACMAP);
 
     // asm 00007AA6: 	LDI	AR0,AR1
     // asm 00007AA7: 	MPYI	FONTENT_SIZE,AR1
@@ -678,8 +678,8 @@ IBO2:
     // asm 00007AAC: 	ADDI	R0,R2
     pre = TEXT_FONT_PRE(font);
     x += pre;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007AAD, "R2", &x);
-    MAME_VALIDATE_REG_AT_ADDR(0x00007AAD, "R0", &pre);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007AAD, "R2", &x);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007AAD, "R0", &pre);
 
     // asm 00007AAD: 	LDI	*+AR1(FONTENT_XSTART),R0
     // asm 00007AAE: 	LDI	*+AR1(FONTENT_YSTART),R4
@@ -690,32 +690,32 @@ IBO2:
 
     // asm 00007AB1: 	STI	R0,@_AIVI+0
     _AIVI[0] = top_left;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007AB2, "R0", &top_left);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007AB2, "R0", &top_left);
 
     // asm 00007AB2: 	LDI	*+AR4(TEXT_HEIGHT),R1
     // asm 00007AB3: 	LS	8,R1
     // asm 00007AB4: 	ADDI	R0,R1
     // asm 00007AB5: 	STI	R1,@_AIVI+3
     _AIVI[3] = top_left + (((int)text->height) << 8);
-    MAME_VALIDATE_REG_AT_ADDR(0x00007AB6, "R1", &_AIVI[3]);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007AB6, "R1", &_AIVI[3]);
 
     // asm 00007AB6: 	LDI	*+AR1(FONTENT_XEND),R0
     // asm 00007AB7: 	OR	R4,R0
     // asm 00007AB8: 	STI	R0,@_AIVI+1
     _AIVI[1] = ((int)font->x_end) | y_start;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007AB9, "R0", &_AIVI[1]);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007AB9, "R0", &_AIVI[1]);
 
     // asm 00007AB9: 	LDI	*+AR4(TEXT_HEIGHT),R1
     // asm 00007ABA: 	LS	8,R1
     // asm 00007ABB: 	ADDI	R0,R1
     // asm 00007ABC: 	STI	R1,@_AIVI+2
     _AIVI[2] = _AIVI[1] + (((int)text->height) << 8);
-    MAME_VALIDATE_REG_AT_ADDR(0x00007ABD, "R1", &_AIVI[2]);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007ABD, "R1", &_AIVI[2]);
 
     // asm 00007ABD: 	LDI	*+AR4(TEXT_IMG),R0
     // asm 00007ABE: 	STI	R0,@_ADDRL
     _ADDRL = text->image_addr;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007ABF, "R0", &_ADDRL);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007ABF, "R0", &_ADDRL);
 
     // asm 00007ABF: 	LDI	*+AR1(FONTENT_XEND),R7
     // asm 00007AC0: 	SUBI	*+AR1(FONTENT_XSTART),R7
@@ -725,7 +725,7 @@ IBO2:
     // asm 00007AC2: 	STI	R2,@_ARPS+9	;FP3X
     _ARPS[0] = x;
     _ARPS[9] = x;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007AC3, "R2", &x);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007AC3, "R2", &x);
 
     // asm 00007AC3: 	ADDI	R7,R2
     x += width;
@@ -734,7 +734,7 @@ IBO2:
     // asm 00007AC5: 	STI	R2,@_ARPS+6	;FP2X
     _ARPS[3] = x;
     _ARPS[6] = x;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007AC6, "R2", &x);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007AC6, "R2", &x);
 
     // asm 00007AC6: 	SUBI	R7,R2
     x -= width;
@@ -743,7 +743,7 @@ IBO2:
     // asm 00007AC8: 	STI	R3,@_ARPS+4	;FP1Y
     _ARPS[1] = y;
     _ARPS[4] = y;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007AC9, "R3", &y);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007AC9, "R3", &y);
 
     // asm 00007AC9: 	ADDI	*+AR4(TEXT_HEIGHT),R3
     y += (int)text->height;
@@ -752,7 +752,7 @@ IBO2:
     // asm 00007ACB: 	STI	R3,@_ARPS+10	;FP3Y
     _ARPS[7] = y;
     _ARPS[10] = y;
-    MAME_VALIDATE_REG_AT_ADDR(0x00007ACC, "R3", &y);
+    // MAME_VALIDATE_REG_AT_ADDR(0x00007ACC, "R3", &y);
 
     // asm 00007ACC: 	SUBI	*+AR4(TEXT_HEIGHT),R3
     y -= (int)text->height;

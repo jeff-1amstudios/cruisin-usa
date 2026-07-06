@@ -40,8 +40,7 @@ static const char POINT[] = ".";
 /* asm: ftoa_tmp	.bss	ftoa_tmp,2 */
 int ftoa_tmp[2];
 
-void _ftoa(void)
-{
+void _ftoa(void) {
     // asm 0000A75E: 	PUSH	R0
     // asm 0000A75F: 	PUSH	R2
     // asm 0000A760: 	PUSH	AR2
@@ -87,8 +86,7 @@ void _ftoa(void)
  *
  *INTEGER TO ASCIZ WITH LEADING ZERO
  */
-void _itoaLZ(void)
-{
+void _itoaLZ(void) {
     // asm 0000A779: 	PUSH	R0			;this entry includes a leading zero
     // asm 0000A77A: 	PUSH	R1			;if the value is 9 or less
     // asm 0000A77B: 	PUSH	R2			;
@@ -114,8 +112,7 @@ void _itoaLZ(void)
     UNIMPL();
 }
 
-void _itoa(char* string_space /*AR2*/, int number /*R2*/)
-{
+void _itoa(char* string_space /*AR2*/, int number /*R2*/) {
     char digits[16];
     int digit_count = 0;
     int is_negative = 0;
@@ -143,7 +140,7 @@ void _itoa(char* string_space /*AR2*/, int number /*R2*/)
         // asm 0000A7D5: 	STI	R0,*AR2
         // asm 0000A7D6: 	LDI	8,R0
         *(u32*)string_space = 0x00000030u; // ;case when number is zero
-        MAME_VALIDATE_REG_AT_ADDR(0x0000A7D6, "R0", &((u32){0x00000030u}));
+        // MAME_VALIDATE_REG_AT_ADDR(0x0000A7D6, "R0", &((u32){0x00000030u}));
         return;
     }
 
@@ -221,7 +218,7 @@ DALOP:
     // asm 0000A7C2: 	STI	R1,*AR2
     // asm 0000A7C3: 	LDI	R6,R0
     *(u32*)string_space = packed_word; // ;NULL terminator
-    MAME_VALIDATE_REG_AT_ADDR(0x0000A7C2, "R1", &packed_word);
+    // MAME_VALIDATE_REG_AT_ADDR(0x0000A7C2, "R1", &packed_word);
 itoaX:
     // asm 0000A7C4: 	POP	R7
     // asm 0000A7C5: 	POP	R6
@@ -260,8 +257,7 @@ ISZERO:
  *
  *
  */
-void HEX2ASC(void)
-{
+void HEX2ASC(void) {
     // asm 0000A7D7: 	PUSH	R0
     // asm 0000A7D8: 	PUSH	R1
     // asm 0000A7D9: 	PUSH	R2

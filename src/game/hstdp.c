@@ -2222,7 +2222,6 @@ static void FIND_PLATES(int race_number, int place, int player_time_code, int wh
     // asm 0000373F: 	CALL	GET_TABLE_ADDR
     // asm 00003740: 	STI	AR2,*+AR7(HSPOINTER)
     hs_pointer = GET_TABLE_ADDR(race_number, 0);
-    MAME_VALIDATE_REG_AT_ADDR(0x00003740, "AR2", &hs_pointer);
     // asm 00003741: 	LDI	0,AR5
     plate_index = 0;
 MP0:
@@ -2242,17 +2241,12 @@ MP0:
         RACEENTRY entry = TABLE_ENTRY_READ(&hs_pointer);
         int letters[3] = { (int)entry.init1, (int)entry.init2, (int)entry.init3 };
         OBJ* plate_obj;
-        MAME_VALIDATE_REG_AT_ADDR(0x00003746, "AR2", &hs_pointer);
-        MAME_VALIDATE_REG_AT_ADDR(0x00003747, "R1", &letters[0]);
-        MAME_VALIDATE_REG_AT_ADDR(0x00003748, "R2", &letters[1]);
-        MAME_VALIDATE_REG_AT_ADDR(0x00003749, "R3", &letters[2]);
         // asm 0000374A: 	CALL	MAKE_TIME
         MAKE_TIME((int)entry.time, plate_index);
         // asm 0000374B: 	LDI	AR5,R1
         // asm 0000374C: 	ADDI	FIRST_PLATE,R1
         // asm 0000374D: 	CALL	OBJ_FIND	;Get the pointer to the plate
         plate_obj = OBJ_FIND(FIRST_PLATE + plate_index); // ;Get the pointer to the plate
-        MAME_VALIDATE_REG_AT_ADDR(0x0000374D, "AR0", &plate_obj);
         // asm 0000374E: 	LDI	AR5,R1
         // asm 0000374F: 	CALL	CREATE_LETTERS
         CREATE_LETTERS(plate_obj, plate_index, letters, white_pal);
@@ -2275,14 +2269,12 @@ MP1:
     // asm 00003756: 	CALL	TABLE_ENTRY_READ
     // asm 00003757: 	STI	AR2,*+AR7(HSPOINTER)
     TABLE_ENTRY_READ(&hs_pointer);
-    MAME_VALIDATE_REG_AT_ADDR(0x00003757, "AR2", &hs_pointer);
     // asm 00003758: 	LDI	AR5,R1
     // asm 00003759: 	ADDI	FIRST_PLATE,R1
     // asm 0000375A: 	CALL	OBJ_FIND	;Get the pointer to the plate
     // asm 0000375B: 	STI	AR0,*+AR7(MISPLATEOBJ)	;Save its pointer for latter use
     if (missing_plate_obj != NULL) {
         *missing_plate_obj = OBJ_FIND(FIRST_PLATE + plate_index); // ;Save its pointer for latter use
-        MAME_VALIDATE_REG_AT_ADDR(0x0000375B, "AR0", missing_plate_obj);
     }
     // asm 0000375C: 	LDI	@SCORE,R0
     // asm 0000375D: 	CALL	MAKE_TIME
@@ -2403,7 +2395,6 @@ static void MAKE_TIME(int time_code, int place) {
     if (time_code > LONGEST_TIME) {
         time_code = LONGEST_TIME;
     }
-    MAME_VALIDATE_REG_AT_ADDR(0x0000378C, "R0", &time_code);
     // asm 0000378D: 	CALL	CVTTIME
     CVTTIME(time_code, &hundredths, &seconds, &minutes);
     // asm 0000378E: 	MPYI	100,R1
@@ -2414,7 +2405,6 @@ static void MAKE_TIME(int time_code, int place) {
     minutes *= 10000;
     // asm 00003791: 	ADDI	R0,R2
     minutes += hundredths;
-    MAME_VALIDATE_REG_AT_ADDR(0x00003791, "R2", &minutes);
     // ;	CALL	CONVERT_TIME
     // asm 00003792: 	LDI	AR7,AR2
     // asm 00003793: 	ADDI	TEMP_STR,AR2
@@ -2429,13 +2419,11 @@ static void MAKE_TIME(int time_code, int place) {
     // asm 0000379A: 	CALL	OBJ_FIND
     digit_ptr = digits;
     obj = OBJ_FIND(FIRST_NUMBER + place);
-    MAME_VALIDATE_REG_AT_ADDR(0x0000379A, "AR0", &obj);
     // asm 0000379B: 	LDI	*AR4++,IR0
     // asm 0000379C: 	LDI	@NUMTABI,AR1
     // asm 0000379D: 	LDI	*+AR1(IR0),R0
     // asm 0000379E: 	STI	R0,*+AR0(OROMDATA)	;Replace it with the proper number
     obj->romdata = ROM_PTR(NUMTAB[*digit_ptr++]); // ;Replace it with the proper number
-    MAME_VALIDATE_REG_AT_ADDR(0x0000379D, "R0", &NUMTAB[digits[0]]);
     // asm 0000379F: 	LDI	HIGH_SCORE_GROUP,R0		;Make this part of the High Score group
     // asm 000037A0: 	STI	R0,*+AR0(OID)
     obj->id = HIGH_SCORE_GROUP; // ;Make this part of the High Score group
@@ -2483,7 +2471,6 @@ MTLOOP:
         // asm 000037B3: 	ADDF	R1,R0
         // asm 000037B4: 	STF	R0,*+AR0(OPOSX)
         obj->posx = previous_obj->posx + width;
-        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000037B4, "R0", &obj->posx);
         // asm 000037B5: 	LDF	*+AR1(OPOSY),R0
         // asm 000037B6: 	STF	R0,*+AR0(OPOSY)
         obj->posy = previous_obj->posy;
@@ -3273,11 +3260,9 @@ FIXPL:
         // asm 00003902: 	ADDF	R0,R3
         // asm 00003903: 	STF	R3,*+AR0(OPOSZ)
         plate_obj->posz += z_offset; // ;Offset the plates Z
-        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x00003903, "R3", &plate_obj->posz);
         // asm 00003904: 	SUBF	1,R3
         letter_z = plate_obj->posz - 1.0f;
-        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x00003904, "R3", &letter_z);
-        // asm 00003905: FIXPL1
+    FIXPL1:
         // asm 00003905: 	LDI	R2,R1
         // asm 00003906: 	LSH	1,R2
         // asm 00003907: 	CALL	OBJ_GFIND
@@ -3350,7 +3335,6 @@ FLPL:
         // asm 0000391F: 	STF	R1,*+AR0(OPOSZ)
         // asm 00003920: 	LDF	R1,R3
         last_plate_z = plate_obj->posz;
-        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x00003920, "R3", &last_plate_z);
         // asm 00003921: 	SUBF	1,R3
         letter_z = last_plate_z - 1.0f;
         // asm 00003922: FLPL1

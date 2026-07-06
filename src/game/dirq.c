@@ -458,17 +458,10 @@ NOBREAK_CONTINUE:
 
     obj->radius = (s32)rom_ptr[0];
     if ((rotated_trans_z + (float)obj->radius) < (float)LOW_CLIP_LEVEL) {
-        if (obj->romdata == ROM_PTR(midway_ROM)) {
-            fprintf(stderr, "MIDWAYDBG zclip obj=%p tz=%.1f radius=%d low=%d\n", (void*)obj, rotated_trans_z, obj->radius,
-                LOW_CLIP_LEVEL);
-        }
         goto DISPLAY_NEXT_IMPL;
     }
     g_dirq_debug_objects_after_z_clip += 1;
     if ((flags & O_DYNAMIC) != 0) {
-        if (obj->romdata == ROM_PTR(midway_ROM)) {
-            fprintf(stderr, "MIDWAYDBG dynamic-skip obj=%p flags=%#x dist=%d\n", (void*)obj, flags, obj->dist);
-        }
         goto DISPLAY_NEXT_IMPL;
     }
 
@@ -547,10 +540,6 @@ NOBREAK_CONTINUE:
     }
 
     PLOTPOLY(obj, polygons, (counts_word >> 16) & 0xffff);
-    if (obj->romdata == ROM_PTR(midway_ROM)) {
-        fprintf(stderr, "MIDWAYDBG plot obj=%p flags=%#x dist=%d trans=(%.1f,%.1f,%.1f)\n", (void*)obj, flags, obj->dist,
-            TRANSVECTOR.X, TRANSVECTOR.Y, TRANSVECTOR.Z);
-    }
 
 DISPLAY_NEXT_IMPL:
     obj = obj->link;
@@ -2763,10 +2752,12 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
         float illumination;
         int illumination_index;
         int control_word;
+        float normal_x;
+        float normal_y;
+        float normal_z;
 
         // asm 000005A7: 	LDI	*+AR1(4),R0		;read vertex (v4|v3|v2|v1)
         packed_vertices = (int)polygons->vertices_4_3_2_1;
-
         // asm 000005A8: 	LDI	R0,AR4
         // asm 000005A9: 	AND	0FFh,AR4		;v1
         // asm 000005AA: 	MPYI	3,AR4
@@ -2803,15 +2794,26 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
             continue;
         }
 
+        // asm 000005BA: 	LDI	*AR1++,R7			;get control word
+        control_word = (int)polygons->cntl;
+        // ;	LDP	@tmpmatY			;DP loaded with low memory area
+        // asm 000005BB: 	LDI	@tmpmatY,AR3
+        // asm 000005BC: 	LDI	@transmatrixI,AR5		;these are in same memory area
+        // asm 000005BD: 	LDF	*AR1++,R3			;get the NORMAL.x
+        normal_x = TMS320_C3X_SINGLE_TO_FLOAT(polygons->nx);
+        // asm 000005BE: 	LDF	*AR1++,R4			;	       .y
+        normal_y = TMS320_C3X_SINGLE_TO_FLOAT(polygons->ny);
+        // asm 000005BE:  ||	STF	R3,*-AR3(1)
+        // asm 000005BF: 	LDF	*AR1++,R5			;	       .z
+        normal_z = TMS320_C3X_SINGLE_TO_FLOAT(polygons->nz);
+        // asm 000005BF:  ||	STF	R4,*AR3
+        // asm 000005C0: 	NOP 	*AR5++(8)		   	;FAST ADD TO AR5
         // asm 000005C1: 	MPYF	*AR5--,R5,R0
         // asm 000005C2: 	MPYF	*AR5--,*AR3,R1
         // asm 000005C3: 	MPYF	*AR5--,*-AR3(1),R0
         // asm 000005C3:  ||	ADDF	R0,R1,R2
         // asm 000005C4: 	ADDF	R0,R2,R1
-        rotated_normal_z = (ROTATION_MATRIX.a20 * polygons->nx) + (ROTATION_MATRIX.a21 * polygons->ny) + (ROTATION_MATRIX.a22 * polygons->nz);
-        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
-        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000005C5, "R1", &rotated_normal_z);
-        // }
+        rotated_normal_z = (ROTATION_MATRIX.a20 * normal_x) + (ROTATION_MATRIX.a21 * normal_y) + (ROTATION_MATRIX.a22 * normal_z);
 
         // asm 000005C5: 	MPYF	*AR5--,R5,R0
         // asm 000005C6: 	MPYF	*AR5--,R4,R2
@@ -2819,19 +2821,13 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
         // asm 000005C7:  ||	ADDF	R0,R2,R2
         // asm 000005C8: 	MPYF	*AR5--,*+AR3(1),R0
         // asm 000005C8:  ||	ADDF	R0,R2,R2
-        rotated_normal_y = (ROTATION_MATRIX.a10 * polygons->nx) + (ROTATION_MATRIX.a11 * polygons->ny) + (ROTATION_MATRIX.a12 * polygons->nz);
-        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
-        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000005C9, "R2", &rotated_normal_y);
-        // }
+        rotated_normal_y = (ROTATION_MATRIX.a10 * normal_x) + (ROTATION_MATRIX.a11 * normal_y) + (ROTATION_MATRIX.a12 * normal_z);
 
         // asm 000005C9: 	MPYF	*AR5--,R4,R3
         // asm 000005CA: 	MPYF	*AR5--,*-AR3(1),R0
         // asm 000005CA:  ||	ADDF	R0,R3,R3
         // asm 000005CB: 	ADDF	R0,R3,R3
-        rotated_normal_x = (ROTATION_MATRIX.a00 * polygons->nx) + (ROTATION_MATRIX.a01 * polygons->ny) + (ROTATION_MATRIX.a02 * polygons->nz);
-        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
-        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000005CD, "R3", &rotated_normal_x);
-        // }
+        rotated_normal_x = (ROTATION_MATRIX.a00 * normal_x) + (ROTATION_MATRIX.a01 * normal_y) + (ROTATION_MATRIX.a02 * normal_z);
 
         // asm 000005CD: 	MPYF	*-AR5(1),R3,R3
         // asm 000005CE: 	MPYF	*AR5,R2,R2
@@ -2839,9 +2835,6 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
         // asm 000005D0: 	ADDF	R2,R1,R5
         // asm 000005D1: 	ADDF	R3,R5
         illumination = (_LIGHT.X * rotated_normal_x) + (_LIGHT.Y * rotated_normal_y) + (_LIGHT.Z * rotated_normal_z);
-        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
-        MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x000005D2, "R5", &illumination);
-        // }
 
         // asm 000005D2: 	MPYF	-8,R5
         // asm 000005D3: 	ADDF	8,R5
@@ -2852,16 +2845,9 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
         } else if (illumination_index > 15) {
             illumination_index = 15;
         }
-        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
-        MAME_VALIDATE_REG_AT_ADDR(0x000005D5, "R5", &illumination_index);
-        // }
-
         // asm 000005D5: 	LDI	FASTCC,R7
         // asm 000005D6: 	OR	R5,R7
         control_word = FASTCC | illumination_index;
-        // if (obj->romdata == ROM_PTR(midway_ROM) && polygon_index == 0) {
-        MAME_VALIDATE_REG_AT_ADDR(0x000005D7, "R7", &control_word);
-        // }
 
         // asm 000005D7: 	LDI	200h,R5		;second palette
         // asm 000005DB: 	STI	R7,*AR7
