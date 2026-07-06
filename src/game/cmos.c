@@ -903,7 +903,7 @@ word_addr_t GET_TABLE_ADDR(int race_index /*R6*/, int entry_index /*R7*/) {
     // asm 00009B05: 	POP	R6
     // asm 00009B06: 	RETS
     addr = (word_addr_t)CMOSI + (word_addr_t)(MAX_AUDITS * 4) + (word_addr_t)(race_index * RACE_TABLE_SIZE)
-        + (word_addr_t)(entry_index * sizeof(RACEENTRY));
+        + (word_addr_t)(entry_index * TE_SIZE);
     // MAME_VALIDATE_REG_AT_ADDR(0x00009B04, "AR2", &addr);
     return addr;
 }

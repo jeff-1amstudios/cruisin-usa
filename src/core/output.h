@@ -20,4 +20,8 @@ int port_output_fpga(
     int palette_base,
     int control);
 
+void crusn_debug_output_reset_frame(void);
+int crusn_debug_output_get_quad_count(void);
+int crusn_debug_output_get_pixel_count(void);
+
 #endif

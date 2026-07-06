@@ -1,6 +1,7 @@
 #include "dirq.h"
 
 #include "../core/machine.h"
+#include "../core/output.h"
 #include "backgrnd.h"
 #include "c30.h"
 #include "globals.h"
@@ -11,6 +12,7 @@
 #include "sysid.h"
 #include "totala.h"
 #include "vunit.h"
+#include <stdio.h>
 
 /*
  * Source module: asm/DIRQ.ASM
@@ -20,13 +22,25 @@ void DIRQ(void);
 static void DISPLAY(OBJ* obj);
 static void TRANS2D(void);
 static void DYNAMIC_OBJECT(void);
-static void PLOTPOLY(void);
-static void CLIPCK(void);
+static void PLOTPOLY(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/);
+static int CLIPCK(const float* vertex1 /*AR4*/, const float* vertex2 /*AR5*/, const float* vertex3 /*AR2*/, const float* vertex4 /*AR3*/, int* clipram /*AR0*/);
 static void CLIP(void);
 static void PLTPOLY(void);
-static void PLOT1PAL(void);
+static void PLOT1PAL(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/);
 static void PLT1PAL(void);
 static void PLOTILLUM(void);
+
+static void dirq_load_obj_matrix(MATRIX* dst, const OBJ* obj) {
+    dst->a00 = obj->mat00;
+    dst->a01 = obj->mat01;
+    dst->a02 = obj->mat02;
+    dst->a10 = obj->mat10;
+    dst->a11 = obj->mat11;
+    dst->a12 = obj->mat12;
+    dst->a20 = obj->mat20;
+    dst->a21 = obj->mat21;
+    dst->a22 = obj->mat22;
+}
 
 #define OACTIVEI OACTIVE
 #define IDLE_LISTI IDLE_LIST
@@ -177,7 +191,7 @@ VECTOR _VECTORD;
 /* asm: 	 */
 // static uintptr_t VECTORAYI = (uintptr_t)(_VECTORA + 1);
 /* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */
-static u32 POSTERMATRIX2D[4];
+static f32 POSTERMATRIX2D[4];
 
 static u32 CLIPRAM[CLIPRAML];
 
@@ -185,6 +199,30 @@ static u32 CLIPRAM[CLIPRAML];
 OBJ* BREAKOBJ;
 
 f32 BLOWLIST[768];
+
+static int g_dirq_debug_frame;
+static int g_dirq_debug_objects;
+static int g_dirq_debug_objects_with_rom;
+static int g_dirq_debug_objects_after_z_clip;
+static int g_dirq_debug_plotpoly_calls;
+static int g_dirq_debug_plot1pal_calls;
+static int g_dirq_debug_clipck_calls;
+static int g_dirq_debug_clipck_clipped;
+static int g_dirq_debug_plot1pal_polygons;
+static int g_dirq_debug_plot1pal_z_rejects;
+static int g_dirq_debug_plot1pal_hsr_rejects;
+static int g_dirq_debug_plot1pal_glitch_rejects;
+static int g_dirq_debug_plot1pal_clip_rejects;
+static int g_dirq_debug_plot1pal_emits;
+static int g_dirq_debug_plot1pal_first_obj_id;
+static int g_dirq_debug_plot1pal_first_poly;
+static float g_dirq_debug_plot1pal_first_ax;
+static float g_dirq_debug_plot1pal_first_ay;
+static float g_dirq_debug_plot1pal_first_bx;
+static float g_dirq_debug_plot1pal_first_by;
+static float g_dirq_debug_plot1pal_first_cx;
+static float g_dirq_debug_plot1pal_first_cy;
+static float g_dirq_debug_plot1pal_first_cross;
 
 /*
  *----------------------------------------------------------------------------
@@ -205,6 +243,8 @@ f32 BLOWLIST[768];
  *
  */
 void DIRQ(void) {
+    int syscntl;
+
     // asm 00000064: 	PUSH	R4
     // asm 00000065: 	LDI	@SYSCNTL,R0		;if the system hangs and the LED
     // asm 00000066: 	OR	LED_OFF,R0		;is on we were in this routine
@@ -256,7 +296,53 @@ void DIRQ(void) {
     // asm 0000008F: 	POP	R4
     // asm 00000090: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIRQ", 0, 0);
-    // UNIMPL();
+
+    g_dirq_debug_objects = 0;
+    g_dirq_debug_objects_with_rom = 0;
+    g_dirq_debug_objects_after_z_clip = 0;
+    g_dirq_debug_plotpoly_calls = 0;
+    g_dirq_debug_plot1pal_calls = 0;
+    g_dirq_debug_clipck_calls = 0;
+    g_dirq_debug_clipck_clipped = 0;
+    g_dirq_debug_plot1pal_polygons = 0;
+    g_dirq_debug_plot1pal_z_rejects = 0;
+    g_dirq_debug_plot1pal_hsr_rejects = 0;
+    g_dirq_debug_plot1pal_glitch_rejects = 0;
+    g_dirq_debug_plot1pal_clip_rejects = 0;
+    g_dirq_debug_plot1pal_emits = 0;
+    g_dirq_debug_plot1pal_first_obj_id = -1;
+    g_dirq_debug_plot1pal_first_poly = -1;
+    g_dirq_debug_plot1pal_first_ax = 0.0f;
+    g_dirq_debug_plot1pal_first_ay = 0.0f;
+    g_dirq_debug_plot1pal_first_bx = 0.0f;
+    g_dirq_debug_plot1pal_first_by = 0.0f;
+    g_dirq_debug_plot1pal_first_cx = 0.0f;
+    g_dirq_debug_plot1pal_first_cy = 0.0f;
+    g_dirq_debug_plot1pal_first_cross = 0.0f;
+    crusn_debug_output_reset_frame();
+
+    syscntl = SYSCNTL | LED_OFF;
+    SYSCNTL = syscntl;
+
+    FIND_YMATRIX(&POSTERMATRIX, -_CAMERARAD.Y);
+    CONCATMAT(&POSTERMATRIX, &_CAMERAMATRIX, &POSTERMATRIX);
+    POSTERMATRIX2D[0] = POSTERMATRIX.a00;
+    POSTERMATRIX2D[1] = POSTERMATRIX.a02;
+    POSTERMATRIX2D[2] = POSTERMATRIX.a20;
+    POSTERMATRIX2D[3] = POSTERMATRIX.a22;
+#if STATISTICS
+    ST_OBJECTS = 0;
+    ST_POLYGONS = 0;
+#endif
+    DISPLAY(OLOW_PRIORITY);
+    DISPLAY(OACTIVE);
+    DISPLAY(OACTIVE_PRIORITY);
+    DISPLAY(OHIGH_PRIORITY);
+
+    g_dirq_debug_frame += 1;
+
+    syscntl = SYSCNTL & ~LED_OFF;
+    SYSCNTL = syscntl;
 }
 
 // *DISPLAY
@@ -288,17 +374,27 @@ void DIRQ(void) {
 // *
 
 static void DISPLAY(OBJ* obj /*AR0*/) {
+    MATRIX object_matrix;
+    MATRIX rotation_matrix;
     u32 flags;
-    uintptr_t* rom_ptr;
+    const u32* rom_ptr;
+    const MATRIX* matrix;
+    const ROM_VERTEX* vertices;
+    const ROM_POLYGON* polygons;
+    int counts_word;
+    int vertex_count_minus_one;
     float trans_x;
     float trans_y;
     float trans_z;
+    float rotated_trans_x;
+    float rotated_trans_y;
+    float rotated_trans_z;
 
     // DISPLAY entry point moved from bottom of function
     // asm 00000166: 	LDI	*AR0,R0
     // asm 00000167: 	BNZ	NEXTOBJ
     if (obj == NULL) {
-        goto DISPLAYX;
+        return;
     }
 NEXTOBJ:
 
@@ -313,11 +409,141 @@ NEXTOBJ:
         abort();
     }
 NOBREAK_CONTINUE:
+    g_dirq_debug_objects += 1;
 #if STATISTICS
     // asm: 	LDI	@ST_OBJECTS,R1
     // asm: 	INC	R1
     // asm: 	STI	R1,@ST_OBJECTS
+    ST_OBJECTS += 1;
 #endif
+    flags = obj->flags;
+    rom_ptr = (const u32*)obj->romdata;
+    if (rom_ptr == NULL) {
+        goto DISPLAY_NEXT_IMPL;
+    }
+    g_dirq_debug_objects_with_rom += 1;
+
+    if ((flags & O_NOUNIV) != 0) {
+        trans_x = obj->posx;
+        trans_y = obj->posy;
+        trans_z = obj->posz;
+    } else {
+        trans_x = obj->posx - _CAMERAPOS.X;
+        trans_y = obj->posy - _CAMERAPOS.Y;
+        trans_z = obj->posz - _CAMERAPOS.Z;
+    }
+
+    if ((flags & O_NOUROT) != 0) {
+        rotated_trans_x = trans_x;
+        rotated_trans_y = trans_y;
+        rotated_trans_z = trans_z;
+    } else {
+        rotated_trans_x = (_CAMERAMATRIX.a00 * trans_x) + (_CAMERAMATRIX.a01 * trans_y) + (_CAMERAMATRIX.a02 * trans_z);
+        rotated_trans_y = (_CAMERAMATRIX.a10 * trans_x) + (_CAMERAMATRIX.a11 * trans_y) + (_CAMERAMATRIX.a12 * trans_z);
+        rotated_trans_z = (_CAMERAMATRIX.a20 * trans_x) + (_CAMERAMATRIX.a21 * trans_y) + (_CAMERAMATRIX.a22 * trans_z);
+    }
+    TRANSVECTOR.X = rotated_trans_x;
+    TRANSVECTOR.Y = rotated_trans_y;
+    TRANSVECTOR.Z = rotated_trans_z;
+    obj->dist = (int)rotated_trans_z;
+
+    if ((flags & O_DEGRADE) != 0) {
+        if (obj->dist > DEGRADE_DIST && obj->degrade_rom != NULL) {
+            rom_ptr = (const u32*)obj->degrade_rom;
+        }
+        if ((flags & O_DEGRADE2) != 0 && obj->dist > DEGRADE_DIST_LEVEL2 && obj->degrade_rom2 != NULL) {
+            rom_ptr = (const u32*)obj->degrade_rom2;
+        }
+    }
+
+    obj->radius = (s32)rom_ptr[0];
+    if ((rotated_trans_z + (float)obj->radius) < (float)LOW_CLIP_LEVEL) {
+        goto DISPLAY_NEXT_IMPL;
+    }
+    g_dirq_debug_objects_after_z_clip += 1;
+    if ((flags & O_DYNAMIC) != 0 || (flags & O_ILLUM) != 0) {
+        goto DISPLAY_NEXT_IMPL;
+    }
+
+    dirq_load_obj_matrix(&object_matrix, obj);
+
+    if ((flags & O_NOUROT) != 0) {
+        matrix = &object_matrix;
+    } else if ((flags & O_POSTER) != 0) {
+        if (TRANSVECTOR.Z <= (float)POSTERCLIP) {
+            goto DISPLAY_NEXT_IMPL;
+        }
+        matrix = &POSTERMATRIX;
+    } else if ((flags & O_NOROT) != 0) {
+        if ((flags & O_IROT) != 0) {
+            matrix = &object_matrix;
+        } else {
+            matrix = &_CAMERAMATRIX;
+        }
+    } else {
+        CONCATMAT(&object_matrix, &_CAMERAMATRIX, &rotation_matrix);
+        matrix = &rotation_matrix;
+    }
+
+    counts_word = (int)rom_ptr[1];
+    vertex_count_minus_one = counts_word & 0xffff;
+    vertices = (const ROM_VERTEX*)&rom_ptr[2];
+    polygons = (const ROM_POLYGON*)(vertices + (vertex_count_minus_one + 1));
+#if STATISTICS
+    ST_VERTICES += vertex_count_minus_one + 1;
+#endif
+    for (int vertex_index = 0; vertex_index <= vertex_count_minus_one; vertex_index++) {
+        int packed_xy;
+        float x;
+        float y;
+        float z;
+        float rotated_x;
+        float rotated_y;
+        float rotated_z;
+        float world_x;
+        float world_y;
+        float world_z;
+        float inverse_z;
+        int blow_index;
+        int inverse_index;
+
+        packed_xy = (int)vertices[vertex_index].x_y;
+        x = (float)(int16_t)(packed_xy & 0xffff);
+        y = (float)(int16_t)((u32)packed_xy >> 16);
+        z = (float)vertices[vertex_index].z;
+
+        rotated_x = (matrix->a00 * x) + (matrix->a01 * y) + (matrix->a02 * z);
+        rotated_y = (matrix->a10 * x) + (matrix->a11 * y) + (matrix->a12 * z);
+        rotated_z = (matrix->a20 * x) + (matrix->a21 * y) + (matrix->a22 * z);
+
+        world_x = rotated_x + TRANSVECTOR.X;
+        world_y = rotated_y + TRANSVECTOR.Y;
+        world_z = rotated_z + TRANSVECTOR.Z;
+        inverse_index = (int)world_z;
+        inverse_index >>= 4;
+        if (inverse_index > HIGH_CLIP_LEVEL) {
+            inverse_index = HIGH_CLIP_LEVEL;
+        }
+        if (inverse_index < -80) {
+            inverse_index = -80;
+        }
+        inverse_z = INVTAB[inverse_index];
+
+        blow_index = vertex_index * 3;
+        BLOWLIST[blow_index] = (world_x * inverse_z) + SCRNHX;
+        BLOWLIST[blow_index + 1] = ((world_y * inverse_z) * 1.04f) + SCRNHY;
+        BLOWLIST[blow_index + 2] = world_z;
+    }
+
+    PLOTPOLY(obj, polygons, (counts_word >> 16) & 0xffff);
+
+DISPLAY_NEXT_IMPL:
+    obj = obj->link;
+    if (obj != NULL) {
+        goto NEXTOBJ;
+    }
+    return;
+
     // *GENERATE TRANSLATION VECTOR
     // asm 00000097: 	LDI	R0,AR3			;transform the objects position
     // asm 00000098: 	LDI	*+AR0(OFLAGS),R6	;holds the OBJECTS flags
@@ -1130,7 +1356,11 @@ NOSHAD:
 // *	}
 // *
 // *
-static void PLOTPOLY(void) {
+static void PLOTPOLY(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/) {
+    int clipram[8];
+    const ROM_POLYGON* polygon;
+    int polygon_index;
+
 #if STATISTICS
     // asm: 	LDI	BK,R0			;# of polygons-1
     // asm: 	ADDI	1,R0
@@ -1270,9 +1500,146 @@ CLIPIT:
     // asm 00000306: 	DBU	AR6,PLOTPOLYLP
     // asm 00000307: 	POP	AR0
     // asm 00000308: 	RETS
-
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTPOLY", 0, 0);
-    UNIMPL();
+    g_dirq_debug_plotpoly_calls += 1;
+
+    if ((obj->flags & O_1PAL) != 0) {
+        PLOT1PAL(obj, polygons, polygon_count_minus_one);
+        return;
+    }
+    if ((obj->flags & O_ILLUM) != 0) {
+        PLOTILLUM();
+        return;
+    }
+
+    polygon = polygons;
+    for (polygon_index = 0; polygon_index <= polygon_count_minus_one; polygon_index++, polygon++) {
+        int packed_vertices;
+        int clip;
+        int* clip_vertex;
+        const float* vertex1;
+        const float* vertex2;
+        const float* vertex3;
+        const float* vertex4;
+        int v1;
+        int v2;
+        int v3;
+        int v4;
+        int base1;
+        int base2;
+        int base3;
+        int base4;
+        float z1;
+        float z2;
+        float z3;
+        float z4;
+        float dx;
+        float dy;
+        float ex;
+        float ey;
+        float glitch_dx;
+        float glitch_dy;
+        int control_word;
+        int palette_index;
+        int palette_base;
+
+        packed_vertices = (int)polygon->vertices_4_3_2_1;
+
+        // asm 000002C0: 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
+        // asm 000002C1: 	AND	R7,R3,AR4
+        v1 = packed_vertices & 0xff;
+        // asm 000002C2: 	ADDI	1,IR1
+        // asm 000002C3: 	MPYI	3,AR4			;V1
+        base1 = v1 * 3;
+        // asm 000002C4: 	LSH	-8,R3
+        // asm 000002C5: 	AND	R7,R3,AR5
+        v2 = (packed_vertices >> 8) & 0xff;
+        // asm 000002C6: 	MPYI	3,AR5			;V2
+        base2 = v2 * 3;
+        // asm 000002C7: 	LSH	-8,R3
+        // asm 000002C8: 	AND	R7,R3,AR2
+        v3 = (packed_vertices >> 16) & 0xff;
+        // asm 000002C9: 	MPYI	3,AR2			;V3
+        base3 = v3 * 3;
+        // asm 000002CA: 	LSH	-8,R3
+        // asm 000002CB: 	AND	R7,R3,AR3
+        v4 = (packed_vertices >> 24) & 0xff;
+        // asm 000002CC: 	MPYI	3,AR3			;V4
+        base4 = v4 * 3;
+        vertex1 = &BLOWLIST[base1];
+        vertex2 = &BLOWLIST[base2];
+        vertex3 = &BLOWLIST[base3];
+        vertex4 = &BLOWLIST[base4];
+
+        // *CHECK ALL Z'S <=0
+        // asm 000002CD: 	LDF	*+AR4(IR1),R0
+        z1 = vertex1[2];
+        z2 = vertex2[2];
+        z3 = vertex3[2];
+        z4 = vertex4[2];
+        if (z1 < 0.0f && z2 < 0.0f && z3 < 0.0f && z4 < 0.0f) {
+            goto DIRQ_POLYLP;
+        }
+
+        // *CHECK HIDDEN SURFACE REMOVAL
+        // asm 000002D8: 	SUBF	*+AR4(IR0),*+AR5(IR0),R1	;dx = ax - bx
+        // asm 000002D9: 	SUBF	*+AR4(IR1),*+AR5(IR1),R3	;dy = ay - by
+        // asm 000002DA: 	SUBF	*+AR5(IR0),*+AR2(IR0),R0	;ex = cx - bx
+        dx = vertex2[0] - vertex1[0];
+        dy = vertex2[1] - vertex1[1];
+        ex = vertex3[0] - vertex2[0];
+        // asm 000002DB: 	MPYF	R3,R0				;ex = dy * ex
+        // asm 000002DB:   ||	SUBF	*+AR5(IR1),*+AR2(IR1),R2	;ey = cy - by
+        ey = vertex3[1] - vertex2[1];
+        // asm 000002DC: 	MPYF	R2,R1				;ey = dx * ey
+        // asm 000002DD: 	SUBF	R1,R0				;ey = ey - ex
+        if ((dy * ex) - (dx * ey) > 0.0f) {
+            goto DIRQ_POLYLP;
+        }
+
+        // *GLITCH FIX
+        glitch_dx = vertex4[1] - vertex3[1];
+        glitch_dy = vertex1[1] - vertex4[1];
+        if (v3 != v4) {
+            if (((int)(dy * glitch_dx) | (int)(glitch_dy * ey)) > 0) {
+                goto DIRQ_POLYLP;
+            }
+        }
+
+        // asm 000002E9: 	LDI	*AR1++(2),R2		;get control word/palette
+        control_word = (int)polygon->palnum_and_cntl;
+        // asm 000002EA: 	LSH	R6,R2,R0		;SHIFT 16 TO RIGHT
+        clip = CLIPCK(vertex1, vertex2, vertex3, vertex4, clipram);
+        if (clip != 0) {
+            CLIP();
+            continue;
+        }
+        palette_index = (int)((u32)control_word >> 16);
+        // asm 000002EB: 	ADDI	R0,BK,AR4
+        // asm 000002EC: 	LSH	R6,*AR4,R0		;PALETTE->R0
+        palette_base = (_PALLIST[palette_index].ref_count_and_pal_code >> 16) << 8;
+        // asm 000002EC:  ||	STI	R2,*AR7
+        // asm 000002ED:  	LSH	8,R0			;not a good way to do this fix l8r -7/14/93
+
+        clip_vertex = clipram;
+        port_output_fpga(
+            clip_vertex[0],
+            clip_vertex[1],
+            clip_vertex[2],
+            clip_vertex[3],
+            clip_vertex[4],
+            clip_vertex[5],
+            clip_vertex[6],
+            clip_vertex[7],
+            (int)(polygon->iv_0_1 & 0xffff),
+            (int)((polygon->iv_0_1 >> 16) & 0xffff),
+            (int)(polygon->iv_2_3 & 0xffff),
+            (int)((polygon->iv_2_3 >> 16) & 0xffff),
+            (int)polygon->texture_map_addr,
+            palette_base,
+            control_word);
+    DIRQ_POLYLP:;
+    }
 }
 
 // *CHECK THE CLIP AND DUMP VERTICES INTO INTERNAL RAM
@@ -1281,7 +1648,13 @@ CLIPIT:
 // *RETURN
 // *	R5 NZ=CLIP, Z=NOCLIP
 // *
-static void CLIPCK(void) {
+static int CLIPCK(const float* vertex1 /*AR4*/, const float* vertex2 /*AR5*/, const float* vertex3 /*AR2*/, const float* vertex4 /*AR3*/, int* clipram /*AR0*/) {
+    int abs_or;
+    int i;
+    int xmax;
+    int xmin;
+    int ymax;
+    int ymin;
     // 	;***	PRELIM CHECK
     // asm 00000309: 	FIX	*+AR4(IR0),R0		;read X value
     // asm 0000030A: 	FIX	*+AR4(IR1),R0
@@ -1335,7 +1708,53 @@ CKLP:
     // asm 0000032E: 	RETS
 
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIPCK", 0, 0);
-    UNIMPL();
+    g_dirq_debug_clipck_calls += 1;
+
+    clipram[0] = (int)vertex1[0];
+    clipram[1] = (int)vertex1[1];
+    clipram[2] = (int)vertex2[0];
+    clipram[3] = (int)vertex2[1];
+    clipram[4] = (int)vertex3[0];
+    clipram[5] = (int)vertex3[1];
+    clipram[6] = (int)vertex4[0];
+    clipram[7] = (int)vertex4[1];
+
+    abs_or = abs(clipram[7]);
+    for (i = 6; i >= 0; i--) {
+        abs_or |= abs(clipram[i]);
+    }
+    abs_or >>= 10;
+    if (abs_or == 0) {
+        return 0;
+    }
+
+    xmax = clipram[0];
+    xmin = clipram[0];
+    ymax = clipram[1];
+    ymin = clipram[1];
+    for (i = 1; i <= 3; i++) {
+        if (clipram[i * 2] > xmax) {
+            xmax = clipram[i * 2];
+        }
+        if (clipram[i * 2] < xmin) {
+            xmin = clipram[i * 2];
+        }
+        if (clipram[i * 2 + 1] > ymax) {
+            ymax = clipram[i * 2 + 1];
+        }
+        if (clipram[i * 2 + 1] < ymin) {
+            ymin = clipram[i * 2 + 1];
+        }
+    }
+    if ((xmax - xmin) > 2047) {
+        g_dirq_debug_clipck_clipped += 1;
+        return 1;
+    }
+    if ((ymax - ymin) > 2047) {
+        g_dirq_debug_clipck_clipped += 1;
+        return 1;
+    }
+    return 0;
 }
 
 // *CLIP THE SUCKER
@@ -1852,7 +2271,10 @@ PLTXX:
 // *R0=ODIST-ORAD
 // *RC=POLYGON COUNT
 // *
-static void PLOT1PAL(void) {
+static void PLOT1PAL(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/) {
+    int clipram[8];
+    const ROM_POLYGON* polygon;
+    int polygon_index;
     // asm 00000498: 	CMPI	1000,R0
     // asm 00000499: 	BGTD	PLT1PAL			;YES, NO CLIP LOOP
     // asm 0000049A: 	LDI	@BLOWLISTI,IR0
@@ -1974,7 +2396,117 @@ CLIPIT_1:
     // asm 00000504: 	POP	AR0
     // asm 00000505: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOT1PAL", 0, 0);
-    UNIMPL();
+    g_dirq_debug_plot1pal_calls += 1;
+
+    polygon = polygons;
+    for (polygon_index = 0; polygon_index <= polygon_count_minus_one; polygon_index++, polygon++) {
+        int packed_vertices;
+        int clip;
+        int* clip_vertex;
+        const float* vertex1;
+        const float* vertex2;
+        const float* vertex3;
+        const float* vertex4;
+        int v1;
+        int v2;
+        int v3;
+        int v4;
+        int base1;
+        int base2;
+        int base3;
+        int base4;
+        float z1;
+        float z2;
+        float z3;
+        float z4;
+        float dx;
+        float dy;
+        float ex;
+        float ey;
+        float glitch_dx;
+        float glitch_dy;
+        int control_word;
+
+        g_dirq_debug_plot1pal_polygons += 1;
+        packed_vertices = (int)polygon->vertices_4_3_2_1;
+        v1 = packed_vertices & 0xff;
+        base1 = v1 * 3;
+        v2 = (packed_vertices >> 8) & 0xff;
+        base2 = v2 * 3;
+        v3 = (packed_vertices >> 16) & 0xff;
+        base3 = v3 * 3;
+        v4 = (packed_vertices >> 24) & 0xff;
+        base4 = v4 * 3;
+        vertex1 = &BLOWLIST[base1];
+        vertex2 = &BLOWLIST[base2];
+        vertex3 = &BLOWLIST[base3];
+        vertex4 = &BLOWLIST[base4];
+
+        z1 = vertex1[2];
+        z2 = vertex2[2];
+        z3 = vertex3[2];
+        z4 = vertex4[2];
+        if (z1 < 0.0f && z2 < 0.0f && z3 < 0.0f && z4 < 0.0f) {
+            g_dirq_debug_plot1pal_z_rejects += 1;
+            continue;
+        }
+
+        dx = vertex2[0] - vertex1[0];
+        dy = vertex2[1] - vertex1[1];
+        ex = vertex3[0] - vertex2[0];
+        ey = vertex3[1] - vertex2[1];
+        if (g_dirq_debug_plot1pal_first_obj_id < 0) {
+            g_dirq_debug_plot1pal_first_obj_id = (int)obj->id;
+            g_dirq_debug_plot1pal_first_poly = polygon_index;
+            g_dirq_debug_plot1pal_first_ax = vertex1[0];
+            g_dirq_debug_plot1pal_first_ay = vertex1[1];
+            g_dirq_debug_plot1pal_first_bx = vertex2[0];
+            g_dirq_debug_plot1pal_first_by = vertex2[1];
+            g_dirq_debug_plot1pal_first_cx = vertex3[0];
+            g_dirq_debug_plot1pal_first_cy = vertex3[1];
+            g_dirq_debug_plot1pal_first_cross = (dy * ex) - (dx * ey);
+        }
+        if ((dy * ex) - (dx * ey) > 0.0f) {
+            g_dirq_debug_plot1pal_hsr_rejects += 1;
+            continue;
+        }
+
+        glitch_dx = vertex4[1] - vertex3[1];
+        glitch_dy = vertex1[1] - vertex4[1];
+        if (v3 != v4) {
+            if (((int)(dy * glitch_dx) | (int)(glitch_dy * ey)) > 0) {
+                g_dirq_debug_plot1pal_glitch_rejects += 1;
+                continue;
+            }
+        }
+
+        clip = CLIPCK(vertex1, vertex2, vertex3, vertex4, clipram);
+        if (clip != 0) {
+            g_dirq_debug_plot1pal_clip_rejects += 1;
+            CLIP();
+            continue;
+        }
+
+        control_word = (int)polygon->palnum_and_cntl;
+        g_dirq_debug_plot1pal_emits += 1;
+        clip_vertex = clipram;
+        port_output_fpga(
+            clip_vertex[0],
+            clip_vertex[1],
+            clip_vertex[2],
+            clip_vertex[3],
+            clip_vertex[4],
+            clip_vertex[5],
+            clip_vertex[6],
+            clip_vertex[7],
+            (int)(polygon->iv_0_1 & 0xffff),
+            (int)((polygon->iv_0_1 >> 16) & 0xffff),
+            (int)(polygon->iv_2_3 & 0xffff),
+            (int)((polygon->iv_2_3 >> 16) & 0xffff),
+            (int)polygon->texture_map_addr,
+            (int)obj->palette,
+            control_word);
+    }
 }
 
 // *PLOT A DISTANT 1 PALETTE POLYGON

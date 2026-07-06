@@ -577,7 +577,7 @@ extern int CHOSEN_RACE;
 
 // invtab30.asm
 // asm:  .globl INVTAB
-extern float INVTAB[];
+extern float* INVTAB;
 
 // asm:  .globl LEG_MAP,LEG_MAPI
 extern int LEG_MAP[];
