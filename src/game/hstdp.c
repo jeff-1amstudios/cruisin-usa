@@ -2749,14 +2749,12 @@ PR3DA:
     x -= LETTER3D_SIZEX / 2.0f; // ;Correction for zero terminator
     x -= LETTER3D_SIZEX / 2.0f; // ;Correction for first letter
     // asm 00003837: 	POP	AR0			;POP the zero terminator
+    count -= 1; // ;POP the zero terminator
 PR3DLOOP:
-    if (count > 0) {
-        count -= 1; // ;POP the zero terminator / ;POP the next character
-    }
     // asm 00003838: 	POP	AR0
     // asm 00003839: 	CMPI	0,AR0			;Not stripped by loop above
     // asm 0000383A: 	BEQ	PR3DX			;String Zero terminated
-    character = chars[count];
+    character = chars[--count];
     if (character == 0) {
         goto PR3DX; // ;String Zero terminated
     }
@@ -3376,9 +3374,21 @@ FLPL3:
  */
 
 static void DISPLAY_HSTEXT(int race_number) {
+    const char* race_text;
+
     // asm 0000392E: 	FLOAT	-910,R3
     // asm 0000392F: 	BR	RACE_TEXT
-    ENTER_HSTEXT(race_number);
+    // asm 00003931: 	LDI	*+AR7(RACE_NUMBER),AR2
+    // asm 00003932: 	ADDI	@LEG_NAMESI,AR2
+    // asm 00003933: 	LDI	*AR2,AR2
+    race_text = (const char*)LEG_NAMES[race_number];
+    // asm 00003934: 	FLOAT	-4700,R2
+    // asm 00003935: 	FLOAT	-301,R4
+    // asm 00003936: 	LDI	0,R6	;ID
+    // asm 00003937: 	CALL	PRINT3D
+    PRINT3D(race_text, -4700.0f, -910.0f, -301.0f, 0);
+    // asm 00003938: 	RETS
+    return;
 }
 
 static void ENTER_HSTEXT(int race_number) {
