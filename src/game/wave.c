@@ -218,22 +218,45 @@ void WAVE(int wave_index) {
 }
 
 static void HEAD2HEADWATCH(PROC* p) {
-    // 	SLEEP	1
-    // 	LDI	@OM_MODE,R0
-    // 	AND	MMODE,R0
-    // 	CMPI	MBONUS,R0
-    // 	BEQ	ISTRUE
-    // 	CMPI	MINIT,R0
-    // 	BEQ	ISTRUE
-    // 	CMPI	MINSERT_COINS,R0
-    // 	BEQ	ISTRUE
+    int mode;
 
-    // 	LDI	@OM_LINKWAIT,R0
-    // 	BZ	HEAD2HEADWATCH
-    // ISTRUE	LDI	-7,R0
-    // 	STI	R0,@_ATTR_MODE
-    // 	BR	SET_ATTR
-    UNIMPL_TODO();
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
+    // asm 00009367: 	SLEEP	1
+    SLEEP(1, 1);
+
+    // asm 00009369: 	LDI	@OM_MODE,R0
+    // asm 0000936A: 	AND	MMODE,R0
+    mode = OM_MODE & MMODE;
+
+    // asm 0000936B: 	CMPI	MBONUS,R0
+    // asm 0000936C: 	BEQ	ISTRUE
+    // asm 0000936D: 	CMPI	MINIT,R0
+    // asm 0000936E: 	BEQ	ISTRUE
+    // asm 0000936F: 	CMPI	MINSERT_COINS,R0
+    // asm 00009370: 	BEQ	ISTRUE
+    if (mode == MBONUS || mode == MINIT || mode == MINSERT_COINS) {
+        goto ISTRUE;
+    }
+
+    // asm 00009371: 	LDI	@OM_LINKWAIT,R0
+    // asm 00009372: 	BZ	HEAD2HEADWATCH
+    if (OM_LINKWAIT == 0) {
+        REENTER(HEAD2HEADWATCH);
+    }
+
+ISTRUE:
+    // asm 00009373: LDI	-7,R0
+    // asm 00009374: 	STI	R0,@_ATTR_MODE
+    _ATTR_MODE = -7;
+
+    // asm 00009375: 	BR	SET_ATTR
+    SET_ATTR();
 }
 
 static void HEAD2HEAD_WAIT(void) {

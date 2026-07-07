@@ -1352,7 +1352,7 @@ DSORTXX:
 static int ACTIVEHI1 = 75000;
 /* asm: ACTIVEHI	.word	80000		;HI LIMIT FOR ACTIVE-INACTIVE */
 static int ACTIVEHI = 80000;
-#define ACTIVELO (-5000) // LO LIMIT INACTIVE OBJECT LIST
+#define ACTIVELO -5000.f // LO LIMIT INACTIVE OBJECT LIST
 
 /*
  *----------------------------------------------------------------------------
@@ -1361,41 +1361,72 @@ static int ACTIVEHI = 80000;
  *
  */
 void OSCAN(void) {
+    OBJ** prev_link;
+    OBJ* obj;
+    OBJ* next_obj;
+    int obj_dist;
+
     // asm 0000727F: 	BUD	OSCANNXT
     // asm 00007280: 	LDI	@ACTIVEHI,R4 		;GET FAR LIMIT
     // asm 00007281: 	LDI	@IDLE_LISTI,AR5		;IN SAME PAGE
     // asm 00007282: 	LDI	@OACTIVEI,AR1
     // 	;------>BD OSCANNXT     	;GO GET FIRST ELEMENT
+    prev_link = &OACTIVE;
+    obj = *prev_link;
+    while (obj != NULL) {
 OSCANL:
     // asm 00007283: 	LDI	*+AR1(ODIST),R0	    	;ODIST TOO NEGATIVE?
+        obj_dist = obj->dist; // ;ODIST TOO NEGATIVE?
     // asm 00007284: 	CMPI	ACTIVELO,R0
+        if (obj_dist <= (int)ACTIVELO) {
+            goto OSCANACT; // ;YES, BLOW IT OUT
+        }
     // asm 00007285: 	BLE	OSCANACT		;YES, BLOW IT OUT
     // asm 00007286: 	SUBI	R4,R0			;ODIST TOO POSITIVE
+        obj_dist -= ACTIVEHI; // ;ODIST TOO POSITIVE
     // asm 00007287: 	BLE	OSCANNXT		;NO...
-    // asm 00007288: 	SUBI	*+AR1(ORAD),R0		;CHECK RADIUS TO MAKE SURE
-    // asm 00007289: 	BLE	OSCANNXT
-    // asm 0000728A: 	NOP
-    // *FOUND DISTANT ELEMENT, XSFER ACTIVE TO INACTIVE
+        if (obj_dist > 0) {
+            // asm 00007288: 	SUBI	*+AR1(ORAD),R0		;CHECK RADIUS TO MAKE SURE
+            obj_dist -= obj->radius; // ;CHECK RADIUS TO MAKE SURE
+            // asm 00007289: 	BLE	OSCANNXT
+            if (obj_dist > 0) {
+                // asm 0000728A: 	NOP
+                // *FOUND DISTANT ELEMENT, XSFER ACTIVE TO INACTIVE
 OSCANACT:
-    // asm 0000728B: 	LDI	*AR1,R0			;GET POINTER TO NEXT ELEMENT
-    // asm 0000728C: 	STI	R0,*AR6
-    // asm 0000728D: 	LDI	*+AR1(OFLAGS),R0	;SWITCH LIST FLAG
-    // asm 0000728E: 	XOR	O_LIST2+O_LIST1,R0
-    // asm 0000728F: 	STI	R0,*+AR1(OFLAGS)
-    // asm 00007290: 	LDI	*AR5,R0
-    // asm 00007291: 	STI	R0,*AR1			;LINK HIM INTO INACTIVE LIST
-    // asm 00007292: 	STI	AR1,*AR5
-    // asm 00007293: 	LDI	AR6,AR1
+                // asm 0000728B: 	LDI	*AR1,R0			;GET POINTER TO NEXT ELEMENT
+                next_obj = obj->link; // ;GET POINTER TO NEXT ELEMENT
+                // asm 0000728C: 	STI	R0,*AR6
+                *prev_link = next_obj;
+                // asm 0000728D: 	LDI	*+AR1(OFLAGS),R0	;SWITCH LIST FLAG
+                // asm 0000728E: 	XOR	O_LIST2+O_LIST1,R0
+                // asm 0000728F: 	STI	R0,*+AR1(OFLAGS)
+                obj->flags ^= O_LIST2 + O_LIST1; // ;SWITCH LIST FLAG
+                // asm 00007290: 	LDI	*AR5,R0
+                // asm 00007291: 	STI	R0,*AR1			;LINK HIM INTO INACTIVE LIST
+                obj->link = IDLE_LIST; // ;LINK HIM INTO INACTIVE LIST
+                // asm 00007292: 	STI	AR1,*AR5
+                IDLE_LIST = obj;
+                // asm 00007293: 	LDI	AR6,AR1
+                obj = next_obj;
+                continue;
+            }
+        }
 OSCANNXT:
     // asm 00007294: 	LDI	*AR1,R0
+        next_obj = obj->link;
     // asm 00007295: 	BNZD	OSCANL
-    // asm 00007296: 	LDI	AR1,AR6			;AR6=PREVIOUS-1 LINK
-    // asm 00007297: 	LDI	R0,AR1
-    // asm 00007298: 	NOP
+        if (next_obj != NULL) {
+            // asm 00007296: 	LDI	AR1,AR6			;AR6=PREVIOUS-1 LINK
+            prev_link = &obj->link; // ;AR6=PREVIOUS-1 LINK
+            // asm 00007297: 	LDI	R0,AR1
+            obj = next_obj;
+            // asm 00007298: 	NOP
+            continue;
+        }
     // 	;------>BNZD	OSCANL
     // asm 00007299: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OSCAN", 0, 0);
-    UNIMPL();
+        break;
+    }
 }
 
 // *----------------------------------------------------------------------------
@@ -1411,6 +1442,7 @@ OSCANNXT:
 void ISCAN(void) {
     OBJ** prev_link;
     OBJ* obj;
+    OBJ* next_obj;
     float obj_vector_x;
     float obj_vector_y;
     float obj_vector_z;
@@ -1429,61 +1461,27 @@ void ISCAN(void) {
     // asm 000072A3: 	LDI	OPOSY,IR0
     // asm 000072A4: 	LDI	OPOSZ,IR1
     // 	;------>BD ISCANNXT     	;GO GET FIRST ELEMENT
-ISCANL:
-    // asm 000072A5: 	SUBF	*AR4,*+AR1(IR0),R6	;OYPOS-CAMERAPOSY
-    // asm 000072A6: 	SUBF	*+AR4(1),*+AR1(IR1),R7	;OZPOS-CAMERAPOSZ
-    // asm 000072A7: 	MPYF    *-AR3(1),R5,R0
-    // asm 000072A8: 	MPYF    *AR3,R6,R1
-    // asm 000072A9: 	MPYF    *+AR3(1),R7,R2
-    // asm 000072AA: 	ADDF	R1,R0
-    // asm 000072AB: 	ADDF	R2,R0
-    // asm 000072AC: 	CMPF	R3,R0
-    // asm 000072AD: 	BLED	ISCANNXT
-    // asm 000072AE: 	FIX	R0,R1
-    // asm 000072AF: 	STI	R1,*+AR1(ODIST)		;SETUP ODIST
-    // asm 000072B0: 	NOP
-    // 	;------>BLED	ISCANNXT
-    // asm 000072B1: 	SUBI	R4,R1
-    // asm 000072B2: 	SUBI	*+AR1(ORAD),R1		;CHECK RADIUS TO MAKE SURE
-    // asm 000072B3: 	BGT	ISCANNXT
-    // *FOUND CLOSE ELEMENT, XSFER INACTIVE TO ACTIVE
-    // asm 000072B4: ISCANACT
-    // asm 000072B4: 	LDI	*AR1,R0			;GET POINTER TO NEXT ELEMENT
-    // asm 000072B5: 	STI	R0,*AR6
-    // asm 000072B6: 	LDI	*+AR1(OFLAGS),R0	   	;SWITCH LIST FLAG
-    // asm 000072B7: 	XOR	O_LIST2+O_LIST1,R0
-    // asm 000072B8: 	STI	R0,*+AR1(OFLAGS)
-    // asm 000072B9: 	LDI	*AR5,R0
-    // asm 000072BA: 	STI	R0,*AR1			;LINK HIM INTO INACTIVE LIST
-    // asm 000072BB: 	STI	AR1,*AR5
-    // asm 000072BC: 	LDI	AR6,AR1
-ISCANNXT:
-    // asm 000072BD: 	LDI	*AR1,R0
-    // asm 000072BE: 	BNZD	ISCANL
-    // asm 000072BF: 	LDI	AR1,AR6			;AR6=PREVIOUS-1 LINK
-    // asm 000072C0: 	LDI	R0,AR1
-    // asm 000072C1: 	SUBF	*-AR4(1),*+AR1(OPOSX),R5   	;GET LENGTH OF OBJ VECTOR
-    // 	;------>BNZD	ISCANL
-    // asm 000072C2: 	RETS
     prev_link = &IDLE_LIST;
     obj = *prev_link;
     while (obj != NULL) {
+        // asm 000072C1: 	SUBF	*-AR4(1),*+AR1(OPOSX),R5   	;GET LENGTH OF OBJ VECTOR
         obj_vector_x = obj->posx - _CAMERAPOS.X; // ;GET LENGTH OF OBJ VECTOR
-
+    ISCANL:
         // asm 000072A5: 	SUBF	*AR4,*+AR1(IR0),R6	;OYPOS-CAMERAPOSY
         obj_vector_y = obj->posy - _CAMERAPOS.Y; // ;OYPOS-CAMERAPOSY
-        // asm 000072A6: 	SUBF	*+AR4(1),*+AR1(IR1),R7	;OZPOS-CAMERAPOSZ
+                                                 // asm 000072A6: 	SUBF	*+AR4(1),*+AR1(IR1),R7	;OZPOS-CAMERAPOSZ
         obj_vector_z = obj->posz - _CAMERAPOS.Z; // ;OZPOS-CAMERAPOSZ
-        // asm 000072A7: 	MPYF    *-AR3(1),R5,R0
+                                                 // asm 000072A7: 	MPYF    *-AR3(1),R5,R0
+        projected_dist = _CAMERAMATRIX.a20 * obj_vector_x;
         // asm 000072A8: 	MPYF    *AR3,R6,R1
+        projected_dist += _CAMERAMATRIX.a21 * obj_vector_y;
         // asm 000072A9: 	MPYF    *+AR3(1),R7,R2
-        projected_dist = obj_vector_x * _CAMERAMATRIX.a20;
-        projected_dist += obj_vector_y * _CAMERAMATRIX.a21;
-        projected_dist += obj_vector_z * _CAMERAMATRIX.a22;
+        projected_dist += _CAMERAMATRIX.a22 * obj_vector_z;
         // asm 000072AA: 	ADDF	R1,R0
         // asm 000072AB: 	ADDF	R2,R0
         // asm 000072AC: 	CMPF	R3,R0
-        if (projected_dist > (float)ACTIVELO) {
+        if (projected_dist > ACTIVELO) {
+            // asm 000072AD: 	BLED	ISCANNXT
             // asm 000072AE: 	FIX	R0,R1
             obj_dist = (int)projected_dist;
             // asm 000072AF: 	STI	R1,*+AR1(ODIST)		;SETUP ODIST
@@ -1496,8 +1494,6 @@ ISCANNXT:
             obj_dist -= obj->radius; // ;CHECK RADIUS TO MAKE SURE
             // asm 000072B3: 	BGT	ISCANNXT
             if (obj_dist <= 0) {
-                OBJ* next_obj;
-
                 // *FOUND CLOSE ELEMENT, XSFER INACTIVE TO ACTIVE
                 // asm 000072B4: ISCANACT
                 // asm 000072B4: 	LDI	*AR1,R0			;GET POINTER TO NEXT ELEMENT
@@ -1518,9 +1514,19 @@ ISCANNXT:
                 continue;
             }
         }
-
+    ISCANNXT:
+        // asm 000072BD: 	LDI	*AR1,R0
+        next_obj = obj->link;
+        // asm 000072BE: 	BNZD	ISCANL
+        if (next_obj == NULL) {
+            break;
+        }
+        // asm 000072BF: 	LDI	AR1,AR6			;AR6=PREVIOUS-1 LINK
         prev_link = &obj->link; // ;AR6=PREVIOUS-1 LINK
-        obj = obj->link;
+                                // asm 000072C0: 	LDI	R0,AR1
+        obj = next_obj;
+        // 	;------>BNZD	ISCANL
+        // asm 000072C2: 	RETS
     }
 }
 
@@ -1537,6 +1543,7 @@ ISCANNXT:
  */
 void RESCAN(void) {
     OBJ* obj;
+    OBJ* active_list;
 
     // asm 000072C3: 	PUSH	AR3
     // asm 000072C4: 	PUSH	AR4
@@ -1546,32 +1553,30 @@ void RESCAN(void) {
     // asm 000072C7: 	LDI	@IDLE_LISTI,AR5
     // asm 000072C8: 	LDI	@OACTIVEI,AR1
     // asm 000072C9: 	LDI	*AR1,R0
-    obj = OACTIVE;
+    active_list = OACTIVE;
+    obj = active_list;
     // asm 000072CA: 	BZ	RESCAN1			;ACTIVE LIST NULL, FORGET IT
-RESCAN0:
-    // asm 000072CB: 	LDI	R0,AR2
-    // asm 000072CC: 	LDI	*+AR2(OFLAGS),R0       	;SWITCH LIST FLAG
-    // asm 000072CD: 	XOR	O_LIST2+O_LIST1,R0
-    // asm 000072CE: 	STI	R0,*+AR2(OFLAGS)
-    // asm 000072CF: 	LDI	*AR2,R0
-    // asm 000072D0: 	BNZ	RESCAN0
-    // asm 000072D1: 	LDI	*AR5,R0			;FIRST ELEMENT INACTIVE LIST
-    // asm 000072D2: 	STI	R0,*AR2			;LINK TO LAST ELEMENT OF ACTIVE LIST
-    // asm 000072D3: 	LDI	*AR1,R0
-    // asm 000072D4: 	STI	R0,*AR5			;POINT INACTIVE LIST TO ACTIVE LIST
-    // asm 000072D5: 	LDI	0,R0   			;CLEAR OUT ACTIVE LIST
-    // asm 000072D6: 	STI	R0,*AR1
     if (obj != NULL) {
-        do {
-            obj->flags ^= O_LIST2 + O_LIST1; // ;SWITCH LIST FLAG
-            if (obj->link == NULL) {
-                break;
-            }
+RESCAN0:
+        // asm 000072CB: 	LDI	R0,AR2
+        // asm 000072CC: 	LDI	*+AR2(OFLAGS),R0       	;SWITCH LIST FLAG
+        // asm 000072CD: 	XOR	O_LIST2+O_LIST1,R0
+        // asm 000072CE: 	STI	R0,*+AR2(OFLAGS)
+        obj->flags ^= O_LIST2 + O_LIST1; // ;SWITCH LIST FLAG
+        // asm 000072CF: 	LDI	*AR2,R0
+        // asm 000072D0: 	BNZ	RESCAN0
+        if (obj->link != NULL) {
             obj = obj->link;
-        } while (1);
-
+            goto RESCAN0;
+        }
+        // asm 000072D1: 	LDI	*AR5,R0			;FIRST ELEMENT INACTIVE LIST
+        // asm 000072D2: 	STI	R0,*AR2			;LINK TO LAST ELEMENT OF ACTIVE LIST
         obj->link = IDLE_LIST; // ;LINK TO LAST ELEMENT OF ACTIVE LIST
-        IDLE_LIST = OACTIVE;   // ;POINT INACTIVE LIST TO ACTIVE LIST
+        // asm 000072D3: 	LDI	*AR1,R0
+        // asm 000072D4: 	STI	R0,*AR5			;POINT INACTIVE LIST TO ACTIVE LIST
+        IDLE_LIST = active_list; // ;POINT INACTIVE LIST TO ACTIVE LIST
+        // asm 000072D5: 	LDI	0,R0   			;CLEAR OUT ACTIVE LIST
+        // asm 000072D6: 	STI	R0,*AR1
         OACTIVE = NULL;
     }
 RESCAN1:

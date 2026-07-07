@@ -1826,7 +1826,7 @@ void LOAD_ATTR_LEG(void) {
     // asm 00005A13: 	CALLU	R0
     // asm 00005A14: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_ATTR_LEG", 0, 0);
-    UNIMPL_TODO();
+    UNIMPL();
 }
 
 /*

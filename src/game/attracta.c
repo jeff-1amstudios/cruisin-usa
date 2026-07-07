@@ -221,7 +221,7 @@ static int MSLP_CHECK(PROC* p /*AR7*/, int* sound_ticks /*AR6*/) {
 
     // asm 0000A9BD: 	CMPI	3,R0
     // asm 0000A9BE: 	BGT	MSLP4				;Done Loading
-    if (p->ctx->MIDWAYSPIN.decomp_count <= 3000) {
+    if (p->ctx->MIDWAYSPIN.decomp_count <= 3) {
         return 0;
     }
 

@@ -1182,14 +1182,24 @@ void DELCAR(void) {
 
 // *----------------------------------------------------------------------------
 void SCAN_OBJECTS(PROC* p) {
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
     // asm 00009063: 	CALL	ISCAN
+    ISCAN();
     // asm 00009064: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00009066: 	CALL	OSCAN
+    OSCAN();
     // asm 00009067: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 00009069: 	B	SCAN_OBJECTS
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SCAN_OBJECTS", 0, 0);
-    UNIMPL_TODO();
+    REENTER(SCAN_OBJECTS);
 }
 
 // *----------------------------------------------------------------------------

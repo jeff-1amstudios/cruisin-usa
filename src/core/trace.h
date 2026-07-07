@@ -23,5 +23,7 @@ noreturn void crusn_slockon(const char* file, int line, char* msg);
 
 #define UNIMPL() crusn_unimpl(__FILE__, __LINE__, __func__)
 
+#define STUB()
+
 #define UNIMPL_TODO()
 #endif

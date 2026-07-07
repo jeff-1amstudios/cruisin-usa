@@ -62,9 +62,9 @@ void PRC_FOLLOW(void);
 // asm: 	.globl	SLEEP
 void PRC_SLEEP(PROC* p, int ticks);
 
-#define SLEEP(t, resume_number)      \
+#define SLEEP(ticks, resume_number)  \
     p->resume_state = resume_number; \
-    PRC_SLEEP(p, t);                 \
+    PRC_SLEEP(p, ticks);             \
     return;                          \
     PROC_RESUME_##resume_number:
 
@@ -78,6 +78,7 @@ void PRC_SLEEP(PROC* p, int ticks);
     {                        \
         p->resume_state = 0; \
         fn(p);               \
+        return;              \
     }
 
 #endif /* MPROC_H */

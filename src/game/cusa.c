@@ -709,7 +709,6 @@ C_WAIT:
  */
 void ENABLEGIE(void) {
     // asm 00004C44: 	RETI
-    UNIMPL_TODO();
 }
 
 void INT0(void) {
