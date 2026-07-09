@@ -32,6 +32,10 @@ struct CARBLK;
 struct PROC;
 typedef void (*PROC_FUNC)(struct PROC*);
 struct PROC_CONTEXT;
+struct tDDYNA_TABLE;
+struct tCAR_PALETTE_LIST;
+struct DYNATAB;
+struct tDDYNA_TABLE;
 
 typedef struct VECTOR {
     f32 X;
@@ -148,17 +152,17 @@ typedef struct PALXFER {
 } PALXFER;
 
 typedef struct VEHTAB {
-    uintptr_t model;
-    uintptr_t model_palette;
-    uintptr_t animation;
-    uintptr_t degraded_model;
-    uintptr_t degraded_model_level2;
+    void* model;
+    int model_palette;
+    struct DYNATAB* animation;
+    void* degraded_model;
+    void* degraded_model_level2;
     u32 taillight_color_count;
     f32 mass;
-    uintptr_t passby;
-    uintptr_t backnoise;
-    uintptr_t palette_table;
-    uintptr_t drone_dyna_table;
+    int passby;
+    int backnoise;
+    struct tCAR_PALETTE_LIST* palette_table;
+    struct tDDYNA_TABLE* drone_dyna_table;
 } VEHTAB;
 
 typedef struct ROM_VERTEX {
@@ -250,17 +254,32 @@ typedef struct OBJ {
 
     struct VECTOR rad;
 
-    uintptr_t process_link; /* OPLINK / OBLINK4 alias */
+    union {
+        struct PROC* plink; /* OPLINK / OBLINK4 alias */
+        uintptr_t blink4;
+    };
     void* degrade_rom;
     void* degrade_rom2;
-    void* romdata2;        /* OROMDATA2 / ODYNALIST alias */
-    struct CARBLK* carblk; /* OCARBLK / OANIBLK alias */
-    s32 dist;              /* ODIST */
-    s32 radius;            /* ORAD */
-    u32 usr1;
+    union { /* OROMDATA2 / ODYNALIST alias */
+        void* romdata2;
+        void* dynalist;
+    };
+    union {
+        struct CARBLK* carblk; /* OCARBLK / OANIBLK alias */
+        void* aniblock;
+    };
+    s32 dist;   /* ODIST */
+    s32 radius; /* ORAD */
+    uintptr_t usr1;
     float usr1_as_float;
-    uintptr_t link2; /* OUSR2 alias */
-    uintptr_t link3; /* OUSR3 alias */
+    union {
+        uintptr_t link2;
+        uintptr_t usr2;
+    };
+    union {
+        uintptr_t link3;
+        uintptr_t usr3;
+    };
     uintptr_t link4;
 } OBJ;
 
@@ -393,6 +412,24 @@ typedef struct TYCOB {
     f32 reverse_rad_y;
     u32 over2;
 } TYCOB;
+
+typedef enum DYNAFLAG {
+    DYNAF_SHADOW = -1,
+    DYNAF_BODY = 0,
+    DYNAF_REARWHEEL = 1,
+    DYNAF_FRONTWHEEL = 2,
+} DYNAFLAG;
+
+typedef struct DYNATAB_ENTRY {
+    VECTOR center;
+    int verts_minus_1;
+    DYNAFLAG flag;
+} DYNATAB_ENTRY;
+
+typedef struct DYNATAB {
+    int count_minus_1;
+    DYNATAB_ENTRY entries[10];
+} DYNATAB;
 
 typedef struct DYNAOBJ {
     struct DYNAOBJ* link;
@@ -543,6 +580,22 @@ typedef struct tPALLIST_ENTRY {
     int ref_count_and_pal_code;
 } tPALLIST_ENTRY;
 
+typedef struct tCAR_PALETTE_LIST {
+    int count;
+    tPAL* palette_addr[10];
+} tCAR_PALETTE_LIST;
+
+typedef struct tDDYNA_TABLE_ENTRY {
+    int vertices;
+    VECTOR center;
+} tDDYNA_TABLE_ENTRY;
+
+typedef struct tDDYNA_TABLE {
+    int axles;
+    int vertices;
+    tDDYNA_TABLE_ENTRY entries[3]; // max is 3 axles
+} tDDYNA_TABLE;
+
 typedef struct tSECTION_ALLOC {
     int pal_index;
     int count;
@@ -557,6 +610,36 @@ typedef struct LOAD_SINGLE_SECTION_GROUP {
     u32 unused0;
     u32 count;
 } LOAD_SINGLE_SECTION_GROUP;
+
+typedef enum eDELTA_MODEL {
+    VETTE_MOD = 0,
+    HOTROD_MOD = 1,
+    BULLET_MOD = 2,
+    TESTOR_MOD = 3,
+    GTRUCK_MOD = 4,
+    FTRUCK_MOD = 5,
+    CBUS_MOD = 6,
+    COPCAR_MOD = 7,
+    MUSCLE_MOD = 8,
+    CARAVAN_MOD = 9,
+    SBUS_MOD = 10,
+    PTRUCKG_MOD = 11,
+    MUSTANG_MOD = 12,
+    // **reserved	.set	13
+    JEEP_MOD = 14,
+    PLYR_COPCAR_MOD = 15,
+    PLYR_GTRUCK_MOD = 16,
+    PLYR_SBUS_MOD = 17
+} eDELTA_MODEL;
+
+typedef struct RACER {
+    eDELTA_MODEL model;
+    u32 position;
+    u32 xlane;
+    f32 maxaccel;
+    f32 rel;
+    tPAL* palette;
+} RACER;
 
 typedef struct PROC_CONTEXT {
     union {
@@ -584,6 +667,52 @@ typedef struct PROC_CONTEXT {
             struct OBJ* obj;
             int sound_ticks;
         } MIDWAYSPIN;
+        struct {
+            int rank;       // R4
+            OBJ* obj;       // AR4
+            CARBLK* carblk; // AR5
+            int delta_status;
+            float delta_radydelta;
+            int delta_init;
+            float delta_throttle;
+            OBJ* delta_tpiece;
+            int delta_mode;
+            LEG* delta_sptr;
+            int delta_last_oid;
+            int delta_pstat;
+            int delta_playit;
+            float delta_lane;
+            float delta_plyrdist;
+            float delta_oplyrdist;
+            int delta_model;
+            int delta_lane_switch_tmr;
+            float delta_xlane;
+            float delta_min_throttle;
+            float delta_max_throttle;
+            int delta_update_fl;
+            float road_offset;
+            float powersurge;
+            float powercatch;
+            int surgetime;
+            int catchtime;
+            int stealthmode;
+            float relativity;
+            RACER* initindex;
+            int passcnt;
+            float finishdist;
+            float finishrot;
+        } RACER_DRONE;
+        struct {
+            int objins;
+            int list_num;
+            int cut_pan;
+            uintptr_t view_script;
+            int frames_left;
+        } ATTRACT_DELTA;
+        struct {
+            OBJ* obj;
+            float radians;
+        } ULTRA_PROC;
     };
 
 } PROC_CONTEXT;

@@ -32,7 +32,7 @@ static void RDSCNSUB(void);
 void _coll_road(void);
 static void GETNMAT(void);
 void _obj_coll(void);
-void _makbox(void);
+void _makbox(OBJ* obj /*AR4*/);
 void COLSCC(void);
 #define PLYR_VS_DEBRIS PLYRDEBRIS
 static void PLYRDEBRIS(void);
@@ -111,8 +111,8 @@ void WRECKST(void);
 extern int WRECKFLG;
 extern int CHEAT;
 void DRONINBZ(void);
-void ROADIR(void);
-void CKAHEAD(void);
+float ROADIR(OBJ* track_obj /*AR0*/);
+int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 extern const char PC2[];
 void GETNXTRDIR(void);
 void RANDSND(void);
@@ -894,7 +894,8 @@ EOTV:
  *TRASHES
  *	R0-R2
  */
-void _makbox(void) {
+void _makbox(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 00002185: 	PUSH	R3
     // asm 00002186: 	PUSH	R4
     // asm 00002187: 	PUSH	R5

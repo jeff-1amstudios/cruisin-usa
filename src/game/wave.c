@@ -44,26 +44,22 @@ static void LOAD_VARIOUS_PALETTES(void);
 extern int OLD_BUTTON_STATUS;
 void SPIN_CAR(void);
 
-static VEHTAB VEHICLE_TABLE[18];
-static int CVETTEPAL[4];
-static int HOTRODPAL[3];
-static int BULLETPAL[4];
-static int TESTORPAL[3];
-static int GTRUCKPAL[2];
-static int DDYNA_GTRUCK[14];
-static int NOPAL;
-static int DDYNA_FTRUCK[10];
-static int DDYNA_CBUS[14];
-static int DDYNA_COPCAR[10];
-static int MUSCLEPAL[3];
-static int DDYNA_MUSCLE[10];
-static int CARAVANPAL[3];
-static int DDYNA_CARAVAN[10];
-static int DDYNA_SBUS[10];
-static int PTRUCKGPAL[3];
-static int DDYNA_PTRUCKG[10];
-static int DDYNA_MUSTANG[10];
-static int JEEPPAL[3];
+VEHTAB VEHICLE_TABLE[];
+static tDDYNA_TABLE DDYNA_GTRUCK;
+static tDDYNA_TABLE DDYNA_FTRUCK;
+static tDDYNA_TABLE DDYNA_CBUS;
+static tDDYNA_TABLE DDYNA_COPCAR;
+static tCAR_PALETTE_LIST MUSCLEPAL;
+static tDDYNA_TABLE DDYNA_MUSCLE;
+static tCAR_PALETTE_LIST CARAVANPAL;
+static tDDYNA_TABLE DDYNA_CARAVAN;
+static tDDYNA_TABLE DDYNA_SBUS;
+static tCAR_PALETTE_LIST PTRUCKGPAL;
+static tDDYNA_TABLE DDYNA_PTRUCKG;
+static tDDYNA_TABLE DDYNA_MUSTANG;
+static tCAR_PALETTE_LIST JEEPPAL;
+static tCAR_PALETTE_LIST CVETTEPAL, HOTRODPAL, BULLETPAL, TESTORPAL, GTRUCKPAL;
+static tCAR_PALETTE_LIST NOPAL;
 
 /*
  *----------------------------------------------------------------------------
@@ -281,7 +277,7 @@ static void HIGH_SCORE(void) {
     CREATE(DISPLAY_HIGH_SCORES, UTIL_C, ctx);
     ctx = port_malloc(sizeof(PROC_CONTEXT));
     CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
-    // MAME_VALIDATE_EXIT();
+    // MAME_VALIDATOR_EXIT();
 }
 
 static void MIDSPIN(void) {
@@ -341,20 +337,32 @@ static void MIDSPINHS(void) {
 static void RACELEG(void) {
     // asm 000093A8: 	CLRI	R0
     // asm 000093A9: 	STI	R0,@TEASE_COUNT
+    TEASE_COUNT = 0;
+
     // asm 000093AA: 	LDI	MATTR,R0
     // asm 000093AB: 	STI	R0,@_MODE
+    _MODE = MATTR;
+
     // asm 000093AC: 	CREATE	ATTRACT_DELTA,DRONE_C|DELTA_ATTR_S
+    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(ATTRACT_DELTA, DRONE_C | DELTA_ATTR_S, ctx);
+
     // asm 000093AF: 	LDI	@ATTRWAVE,R0
     // asm 000093B0: 	CMPI	4,R0
     // asm 000093B1: 	LDIEQ	25*30,R0
     // asm 000093B2: 	LDINE	30*30,R0
     // asm 000093B3: 	STI	R0,@_timer
+    _timer = (ATTRWAVE == 4) ? (25 * 30) : (30 * 30);
+
     // asm 000093B4: 	CREATE	_timeout,UTIL_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(_timeout, UTIL_C, ctx);
+
     // asm 000093B7: 	CREATE	HEAD2HEADWATCH,UTIL_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
+
     // asm 000093BA: 	RETS
-    MAME_VALIDATE_EXIT();
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RACELEG", 0, 0);
-    UNIMPL();
 }
 
 static void THANKS(void) {
@@ -569,38 +577,16 @@ void LOAD_STARTUP_PALS(void) {
 /* asm: 	.float	0,0,0	 	;BODY XYZ CENTER OFFSET */
 /* asm: 	.word	72-1		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
-static int COPCARTAB[] = {
-    5, // #OF DYNAS-1
-    0,
-    101,
-    0,  // SHADOW
-    3,  // VERTS-1
-    -1, // DYNAFLAG
-    192,
-    101,
-    -301, // RT REAR WHEEL XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    208,
-    101,
-    371, // RT FRONT WHEEL	XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    -192,
-    101,
-    -301, // LFT REAR WHEEL	XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    -208,
-    101,
-    371, // LFT FRONT WHEEL XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    0,
-    0,
-    0,      // BODY XYZ CENTER OFFSET
-    72 - 1, // VERTS-1
-    0,      // DYNAFLAG
+static DYNATAB COPCARTAB = {
+    .count_minus_1 = 5,
+    .entries = {
+        { { 0.0f, 101.0f, 0.0f }, 3, DYNAF_SHADOW },           // SHADOW
+        { { 192.0f, 101.0f, -301.0f }, 23, DYNAF_REARWHEEL },  // RT REAR WHEEL XYZ CENTER OFFSET
+        { { 208.0f, 101.0f, 371.0f }, 23, DYNAF_FRONTWHEEL },  // RT FRONT WHEEL XYZ CENTER OFFSET
+        { { -192.0f, 101.0f, -301.0f }, 23, DYNAF_REARWHEEL }, // LFT REAR WHEEL XYZ CENTER OFFSET
+        { { -208.0f, 101.0f, 371.0f }, 23, DYNAF_FRONTWHEEL }, // LFT FRONT WHEEL XYZ CENTER OFFSET
+        { { 0.0f, 0.0f, 0.0f }, 72 - 1, DYNAF_BODY },          // BODY XYZ CENTER OFFSET
+    },
 };
 // *----------------------------------------------------------------------------
 
@@ -633,38 +619,16 @@ static int COPCARTAB[] = {
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
 /* asm: 	 */
-static int HOTRODTAB[] = {
-    5, // #OF DYNAS-1
-    0,
-    117,
-    0,  // SHADOW
-    3,  // VERTS-1
-    -1, // DYNAFLAG
-    211,
-    100,
-    -329, // RT REAR WHEEL XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    221,
-    100,
-    414, // RT FRONT WHEEL	XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    -211,
-    100,
-    -329, // LFT REAR WHEEL	XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    -221,
-    100,
-    414, // LFT FRONT WHEEL XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    0,
-    0,
-    0,   // BODY XYZ CENTER OFFSET
-    131, // VERTS-1
-    0,   // DYNAFLAG
+static DYNATAB HOTRODTAB = {
+    .count_minus_1 = 5,
+    .entries = {
+        { { 0.0f, 117.0f, 0.0f }, 3, DYNAF_SHADOW },           // SHADOW
+        { { 211.0f, 100.0f, -329.0f }, 23, DYNAF_REARWHEEL },  // RT REAR WHEEL XYZ CENTER OFFSET
+        { { 221.0f, 100.0f, 414.0f }, 23, DYNAF_FRONTWHEEL },  // RT FRONT WHEEL XYZ CENTER OFFSET
+        { { -211.0f, 100.0f, -329.0f }, 23, DYNAF_REARWHEEL }, // LFT REAR WHEEL XYZ CENTER OFFSET
+        { { -221.0f, 100.0f, 414.0f }, 23, DYNAF_FRONTWHEEL }, // LFT FRONT WHEEL XYZ CENTER OFFSET
+        { { 0.0f, 0.0f, 0.0f }, 131, DYNAF_BODY },             // BODY XYZ CENTER OFFSET
+    },
 };
 /* asm: TESTORTAB */
 /* asm: 	.word	5		;#OF DYNAS-1 */
@@ -693,38 +657,16 @@ static int HOTRODTAB[] = {
 /* asm: 	.word	59		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
-static int TESTORTAB[] = {
-    5, // #OF DYNAS-1
-    0,
-    62,
-    0,  // SHADOW
-    3,  // VERTS-1
-    -1, // DYNAFLAG
-    251,
-    62,
-    -333, // RT REAR WHEEL XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    251,
-    62,
-    285, // RT FRONT WHEEL	XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    -251,
-    62,
-    285, // LFT FRONT WHEEL XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    -251,
-    62,
-    -333, // LFT REAR WHEEL	XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    0,
-    0,
-    0,  // BODY XYZ CENTER OFFSET
-    59, // VERTS-1
-    0,  // DYNAFLAG
+static DYNATAB TESTORTAB = {
+    .count_minus_1 = 5,
+    .entries = {
+        { { 0.0f, 62.0f, 0.0f }, 3, DYNAF_SHADOW },           // SHADOW
+        { { 251.0f, 62.0f, -333.0f }, 23, DYNAF_REARWHEEL },  // RT REAR WHEEL XYZ CENTER OFFSET
+        { { 251.0f, 62.0f, 285.0f }, 23, DYNAF_FRONTWHEEL },  // RT FRONT WHEEL XYZ CENTER OFFSET
+        { { -251.0f, 62.0f, 285.0f }, 23, DYNAF_FRONTWHEEL }, // LFT FRONT WHEEL XYZ CENTER OFFSET
+        { { -251.0f, 62.0f, -333.0f }, 23, DYNAF_REARWHEEL }, // LFT REAR WHEEL XYZ CENTER OFFSET
+        { { 0.0f, 0.0f, 0.0f }, 59, DYNAF_BODY },             // BODY XYZ CENTER OFFSET
+    },
 };
 /*
  *
@@ -758,38 +700,16 @@ static int TESTORTAB[] = {
 /* asm: 	.word	62		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
-static int JEEPTAB[] = {
-    5, // #OF DYNAS-1
-    0,
-    119,
-    0,  // SHADOW
-    3,  // VERTS-1
-    -1, // DYNAFLAG
-    250,
-    131,
-    -285, // RT REAR WHEEL XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    250,
-    131,
-    355, // RT FRONT WHEEL	XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    -250,
-    131,
-    -285, // LFT REAR WHEEL	XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    -250,
-    131,
-    357, // LFT FRONT WHEEL XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    0,
-    0,
-    0,  // BODY XYZ CENTER OFFSET
-    62, // VERTS-1
-    0,  // DYNAFLAG
+static DYNATAB JEEPTAB = {
+    .count_minus_1 = 5,
+    .entries = {
+        { { 0.0f, 119.0f, 0.0f }, 3, DYNAF_SHADOW },           // SHADOW
+        { { 250.0f, 131.0f, -285.0f }, 23, DYNAF_REARWHEEL },  // RT REAR WHEEL XYZ CENTER OFFSET
+        { { 250.0f, 131.0f, 355.0f }, 23, DYNAF_FRONTWHEEL },  // RT FRONT WHEEL XYZ CENTER OFFSET
+        { { -250.0f, 131.0f, -285.0f }, 23, DYNAF_REARWHEEL }, // LFT REAR WHEEL XYZ CENTER OFFSET
+        { { -250.0f, 131.0f, 357.0f }, 23, DYNAF_FRONTWHEEL }, // LFT FRONT WHEEL XYZ CENTER OFFSET
+        { { 0.0f, 0.0f, 0.0f }, 62, DYNAF_BODY },              // BODY XYZ CENTER OFFSET
+    },
 };
 /*
  *
@@ -824,38 +744,16 @@ static int JEEPTAB[] = {
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
 /* asm: 	 */
-static int VETTTAB[] = {
-    5, // #OF DYNAS-1
-    0,
-    -164,
-    0,  // SHADOW
-    3,  // VERTS-1
-    -1, // DYNAFLAG
-    254,
-    67,
-    -296, // RT REAR WHEEL XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    228,
-    81,
-    376, // RT FRONT WHEEL	XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    -254,
-    67,
-    -296, // LFT REAR WHEEL	XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    -228,
-    81,
-    376, // LFT FRONT WHEEL XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    0,
-    0,
-    0,   // BODY XYZ CENTER OFFSET
-    114, // VERTS-1
-    0,   // DYNAFLAG
+static DYNATAB VETTTAB = {
+    .count_minus_1 = 5,
+    .entries = {
+        { { 0.0f, -164.0f, 0.0f }, 3, DYNAF_SHADOW },         // SHADOW
+        { { 254.0f, 67.0f, -296.0f }, 23, DYNAF_REARWHEEL },  // RT REAR WHEEL XYZ CENTER OFFSET
+        { { 228.0f, 81.0f, 376.0f }, 23, DYNAF_FRONTWHEEL },  // RT FRONT WHEEL XYZ CENTER OFFSET
+        { { -254.0f, 67.0f, -296.0f }, 23, DYNAF_REARWHEEL }, // LFT REAR WHEEL XYZ CENTER OFFSET
+        { { -228.0f, 81.0f, 376.0f }, 23, DYNAF_FRONTWHEEL }, // LFT FRONT WHEEL XYZ CENTER OFFSET
+        { { 0.0f, 0.0f, 0.0f }, 114, DYNAF_BODY },            // BODY XYZ CENTER OFFSET
+    },
 };
 /*
  *
@@ -890,38 +788,16 @@ static int VETTTAB[] = {
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
 /* asm: 	 */
-static int GTRUCKTABP[] = {
-    5, // #OF DYNAS-1
-    0,
-    -117,
-    0,  // SHADOW
-    3,  // VERTS-1
-    -1, // DYNAFLAG
-    259,
-    86,
-    -358, // RT REAR WHEEL XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    248,
-    90,
-    388, // RT FRONT WHEEL	XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    -259,
-    86,
-    -358, // LFT REAR WHEEL	XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    -248,
-    90,
-    388, // LFT FRONT WHEEL XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    0,
-    0,
-    0,   // BODY XYZ CENTER OFFSET
-    131, // VERTS-1
-    0,   // DYNAFLAG
+static DYNATAB GTRUCKTABP = {
+    .count_minus_1 = 5,
+    .entries = {
+        { { 0.0f, -117.0f, 0.0f }, 3, DYNAF_SHADOW },         // SHADOW
+        { { 259.0f, 86.0f, -358.0f }, 23, DYNAF_REARWHEEL },  // RT REAR WHEEL XYZ CENTER OFFSET
+        { { 248.0f, 90.0f, 388.0f }, 23, DYNAF_FRONTWHEEL },  // RT FRONT WHEEL XYZ CENTER OFFSET
+        { { -259.0f, 86.0f, -358.0f }, 23, DYNAF_REARWHEEL }, // LFT REAR WHEEL XYZ CENTER OFFSET
+        { { -248.0f, 90.0f, 388.0f }, 23, DYNAF_FRONTWHEEL }, // LFT FRONT WHEEL XYZ CENTER OFFSET
+        { { 0.0f, 0.0f, 0.0f }, 131, DYNAF_BODY },            // BODY XYZ CENTER OFFSET
+    },
 };
 /*
  *
@@ -958,38 +834,16 @@ static int GTRUCKTABP[] = {
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
 /* asm: 	 */
-static int MISSILE_TAB[] = {
-    5, // #OF DYNAS-1
-    0,
-    -117,
-    0,  // SHADOW
-    3,  // VERTS-1
-    -1, // DYNAFLAG
-    259,
-    86,
-    -358, // RT REAR WHEEL XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    248,
-    90,
-    388, // RT FRONT WHEEL	XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    -259,
-    86,
-    -358, // LFT REAR WHEEL	XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    -248,
-    90,
-    388, // LFT FRONT WHEEL XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    0,
-    0,
-    0,   // BODY XYZ CENTER OFFSET
-    131, // VERTS-1
-    0,   // DYNAFLAG
+static DYNATAB MISSILE_TAB = {
+    .count_minus_1 = 5,
+    .entries = {
+        { { 0.0f, -117.0f, 0.0f }, 3, DYNAF_SHADOW },         // SHADOW
+        { { 259.0f, 86.0f, -358.0f }, 23, DYNAF_REARWHEEL },  // RT REAR WHEEL XYZ CENTER OFFSET
+        { { 248.0f, 90.0f, 388.0f }, 23, DYNAF_FRONTWHEEL },  // RT FRONT WHEEL XYZ CENTER OFFSET
+        { { -259.0f, 86.0f, -358.0f }, 23, DYNAF_REARWHEEL }, // LFT REAR WHEEL XYZ CENTER OFFSET
+        { { -248.0f, 90.0f, 388.0f }, 23, DYNAF_FRONTWHEEL }, // LFT FRONT WHEEL XYZ CENTER OFFSET
+        { { 0.0f, 0.0f, 0.0f }, 131, DYNAF_BODY },            // BODY XYZ CENTER OFFSET
+    },
 };
 /*
  *
@@ -1024,39 +878,16 @@ static int MISSILE_TAB[] = {
 /* asm: 	.word	91		;VERTS-1 */
 /* asm: 	.word	0		;DYNAFLAG */
 /* asm: 	 */
-static int PSBUSTAB[] = {
-    5, // #OF DYNAS-1
-    0,
-    -127,
-    0,  // SHADOW
-    3,  // VERTS-1
-    -1, // DYNAFLAG
-    246,
-    127,
-    -380, // RT REAR WHEEL XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    247,
-    127,
-    573, // RT FRONT WHEEL	XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    -247,
-    127,
-    -380, // LFT REAR WHEEL	XYZ CENTER OFFSET
-    23,   // VERTS-1
-    1,    // DYNAFLAG
-    -247,
-    127,
-    573, // LFT FRONT WHEEL XYZ CENTER OFFSET
-    23,  // VERTS-1
-    2,   // DYNAFLAG
-    0,
-    0,
-    0,  // BODY XYZ CENTER OFFSET
-    91, // VERTS-1
-    0,  // DYNAFLAG
-    // ----------------------------------------------------------------------------
+static DYNATAB PSBUSTAB = {
+    .count_minus_1 = 5,
+    .entries = {
+        { { 0.0f, -127.0f, 0.0f }, 3, DYNAF_SHADOW },          // SHADOW
+        { { 246.0f, 127.0f, -380.0f }, 23, DYNAF_REARWHEEL },  // RT REAR WHEEL XYZ CENTER OFFSET
+        { { 247.0f, 127.0f, 573.0f }, 23, DYNAF_FRONTWHEEL },  // RT FRONT WHEEL XYZ CENTER OFFSET
+        { { -247.0f, 127.0f, -380.0f }, 23, DYNAF_REARWHEEL }, // LFT REAR WHEEL XYZ CENTER OFFSET
+        { { -247.0f, 127.0f, 573.0f }, 23, DYNAF_FRONTWHEEL }, // LFT FRONT WHEEL XYZ CENTER OFFSET
+        { { 0.0f, 0.0f, 0.0f }, 91, DYNAF_BODY },              // BODY XYZ CENTER OFFSET
+    },
 };
 
 /* asm: VEHICLE_TABLE: */
@@ -1189,25 +1020,25 @@ static int PSBUSTAB[] = {
 /* asm: 	.word	0 */
 /* asm: 	 */
 /* asm: 	 */
-static VEHTAB VEHICLE_TABLE[] = {
-    { cvette_ROM, cvette_p, (uintptr_t)VETTTAB, 0, 0, 1, 1.0f, SPCARPASS, 0, (uintptr_t)CVETTEPAL, 0 },
-    { hotrod_ROM, hotrod_p, (uintptr_t)HOTRODTAB, dhotrod_ROM, d2hotrod_ROM, 0, 1.0f, SPCARPASS, 0, (uintptr_t)HOTRODPAL, 0 },
-    { missle_ROM, missle_p, (uintptr_t)MISSILE_TAB, 0, 0, 1, 1.0f, FCARPASS, 0, (uintptr_t)BULLETPAL, 0 },
-    { testor_ROM, testor_p, (uintptr_t)TESTORTAB, dtestor_ROM, d2testor_ROM, 3, 1.0f, SPCARPASS, 0, (uintptr_t)TESTORPAL, 0 },
-    { gtruck_ROM, gtruck_p, 0, dgtruck_ROM, d2gtruck_ROM, 0, 1.5f, TRUCKPASS, 0, (uintptr_t)GTRUCKPAL, (uintptr_t)DDYNA_GTRUCK },
-    { ftruck_ROM, ftruck_p, 0, 0, 0, 0, 2.0f, TRUCKPASS, 0, (uintptr_t)&NOPAL, (uintptr_t)DDYNA_FTRUCK },
-    { cbus_ROM, cbus_p, 0, dcbus_ROM, d2cbus_ROM, 0, 2.0f, TRUCKPASS, 0, (uintptr_t)&NOPAL, (uintptr_t)DDYNA_CBUS },
-    { copcar_ROM, copcar_p, 0, dcopcar_ROM, d2copcar_ROM, 2, 1.0f, SPCARPASS, 0, (uintptr_t)&NOPAL, (uintptr_t)DDYNA_COPCAR },
-    { muscle_ROM, muscle_p, 0, dmuscle_ROM, d2muscle_ROM, 0, 1.0f, SPCARPASS, 0, (uintptr_t)MUSCLEPAL, (uintptr_t)DDYNA_MUSCLE },
-    { caravan_ROM, caravan_p, 0, dcaravan_ROM, d2carava_ROM, 0, 1.2f, TRUCKPASS, 0, (uintptr_t)CARAVANPAL, (uintptr_t)DDYNA_CARAVAN },
-    { sbus_ROM, sbus_p, 0, dsbus_ROM, d2sbus_ROM, 0, 2.0f, TRUCKPASS, 0, (uintptr_t)&NOPAL, (uintptr_t)DDYNA_SBUS },
-    { ptruckg_ROM, ptruckg_p, 0, dptruckg_ROM, d2ptruck_ROM, 0, 1.0f, TRUCKPASS, 0, (uintptr_t)PTRUCKGPAL, (uintptr_t)DDYNA_PTRUCKG },
-    { mustang_ROM, mustang_ROM, 0, dmustang_ROM, d2mustang_ROM, 0, 1.0f, SPCARPASS, 0, (uintptr_t)&NOPAL, (uintptr_t)DDYNA_MUSTANG },
-    { toxic_ROM, 0, 0, 0, 0, 0, 2.0f, 0, 0, (uintptr_t)&NOPAL, 0 },
-    { jeep_ROM, jeep_p, (uintptr_t)JEEPTAB, djeep_ROM, 0, 0, 1.0f, SMCARPASS, 0, (uintptr_t)JEEPPAL, 0 },
-    { copcarp_ROM, copcar_p, (uintptr_t)COPCARTAB, dcopcar_ROM, d2copcar_ROM, 2, 1.0f, SPCARPASS, 0, (uintptr_t)&NOPAL, 0 },
-    { gtruckp_ROM, gtruck_p, (uintptr_t)GTRUCKTABP, dgtruck_ROM, d2gtruck_ROM, 0, 1.5f, TRUCKPASS, 0, (uintptr_t)GTRUCKPAL, 0 },
-    { sbusp_ROM, sbus_p, (uintptr_t)PSBUSTAB, 0, 0, 0, 5.5f, TRUCKPASS, 0, (uintptr_t)&NOPAL, 0 },
+VEHTAB VEHICLE_TABLE[] = {
+    { ROM_PTR(cvette_ROM), cvette_p, &VETTTAB, 0, 0, 1, 1.0f, SPCARPASS, 0, &CVETTEPAL, 0 },
+    { ROM_PTR(hotrod_ROM), hotrod_p, &HOTRODTAB, ROM_PTR(dhotrod_ROM), ROM_PTR(d2hotrod_ROM), 0, 1.0f, SPCARPASS, 0, &HOTRODPAL, 0 },
+    { ROM_PTR(missle_ROM), missle_p, &MISSILE_TAB, 0, 0, 1, 1.0f, FCARPASS, 0, &BULLETPAL, 0 },
+    { ROM_PTR(testor_ROM), testor_p, &TESTORTAB, ROM_PTR(dtestor_ROM), ROM_PTR(d2testor_ROM), 3, 1.0f, SPCARPASS, 0, &TESTORPAL, 0 },
+    { ROM_PTR(gtruck_ROM), gtruck_p, NULL, ROM_PTR(dgtruck_ROM), ROM_PTR(d2gtruck_ROM), 0, 1.5f, TRUCKPASS, 0, &GTRUCKPAL, &DDYNA_GTRUCK },
+    { ROM_PTR(ftruck_ROM), ftruck_p, NULL, 0, 0, 0, 2.0f, TRUCKPASS, 0, &NOPAL, &DDYNA_FTRUCK },
+    { ROM_PTR(cbus_ROM), cbus_p, NULL, ROM_PTR(dcbus_ROM), ROM_PTR(d2cbus_ROM), 0, 2.0f, TRUCKPASS, 0, &NOPAL, &DDYNA_CBUS },
+    { ROM_PTR(copcar_ROM), copcar_p, NULL, ROM_PTR(dcopcar_ROM), ROM_PTR(d2copcar_ROM), 2, 1.0f, SPCARPASS, 0, &NOPAL, &DDYNA_COPCAR },
+    { ROM_PTR(muscle_ROM), muscle_p, NULL, ROM_PTR(dmuscle_ROM), ROM_PTR(d2muscle_ROM), 0, 1.0f, SPCARPASS, 0, &MUSCLEPAL, &DDYNA_MUSCLE },
+    { ROM_PTR(caravan_ROM), caravan_p, NULL, ROM_PTR(dcaravan_ROM), ROM_PTR(d2carava_ROM), 0, 1.2f, TRUCKPASS, 0, &CARAVANPAL, &DDYNA_CARAVAN },
+    { ROM_PTR(sbus_ROM), sbus_p, NULL, ROM_PTR(dsbus_ROM), ROM_PTR(d2sbus_ROM), 0, 2.0f, TRUCKPASS, 0, &NOPAL, &DDYNA_SBUS },
+    { ROM_PTR(ptruckg_ROM), ptruckg_p, NULL, ROM_PTR(dptruckg_ROM), ROM_PTR(d2ptruck_ROM), 0, 1.0f, TRUCKPASS, 0, &PTRUCKGPAL, &DDYNA_PTRUCKG },
+    { ROM_PTR(mustang_ROM), mustang_ROM, NULL, ROM_PTR(dmustang_ROM), ROM_PTR(d2mustang_ROM), 0, 1.0f, SPCARPASS, 0, &NOPAL, &DDYNA_MUSTANG },
+    { ROM_PTR(toxic_ROM), 0, NULL, 0, 0, 0, 2.0f, 0, 0, &NOPAL, 0 },
+    { ROM_PTR(jeep_ROM), jeep_p, &JEEPTAB, ROM_PTR(djeep_ROM), 0, 0, 1.0f, SMCARPASS, 0, &JEEPPAL, 0 },
+    { ROM_PTR(copcarp_ROM), copcar_p, &COPCARTAB, ROM_PTR(dcopcar_ROM), ROM_PTR(d2copcar_ROM), 2, 1.0f, SPCARPASS, 0, &NOPAL, 0 },
+    { ROM_PTR(gtruckp_ROM), gtruck_p, &GTRUCKTABP, ROM_PTR(dgtruck_ROM), ROM_PTR(d2gtruck_ROM), 0, 1.5f, TRUCKPASS, 0, &GTRUCKPAL, 0 },
+    { ROM_PTR(sbusp_ROM), sbus_p, &PSBUSTAB, 0, 0, 0, 5.5f, TRUCKPASS, 0, &NOPAL, 0 },
 };
 
 /*
@@ -1222,221 +1053,169 @@ static VEHTAB VEHICLE_TABLE[] = {
 /* asm: 	.word	8,-252,211,671 */
 /* asm: 	.word	8,-254,211,-422 */
 /* asm: 	.word	8,-254,211,-704 */
-static int DDYNA_GTRUCK[] = {
+static tDDYNA_TABLE DDYNA_GTRUCK = {
     3,
     154,
-    8,
-    -252,
-    211,
-    671,
-    8,
-    -254,
-    211,
-    -422,
-    8,
-    -254,
-    211,
-    -704,
+    {
+        { 8, { -252, 211, 671 } },
+        { 8, { -254, 211, -422 } },
+        { 8, { -254, 211, -704 } },
+    },
 };
 /* asm: DDYNA_FTRUCK */
 /* asm: 	.word	2,92 */
 /* asm: 	.word	8,-291,210,624 */
 /* asm: 	.word	8,-293,210,-605 */
-static int DDYNA_FTRUCK[] = {
+static tDDYNA_TABLE DDYNA_FTRUCK = {
     2,
     92,
-    8,
-    -291,
-    210,
-    624,
-    8,
-    -293,
-    210,
-    -605,
+    {
+        { 8, { -291, 210, 624 } },
+        { 8, { -293, 210, -605 } },
+    },
 };
 /* asm: DDYNA_CBUS */
 /* asm: 	.word	3,144 */
 /* asm: 	.word	8,-291,261,-843 */
 /* asm: 	.word	8,-294,261,-582 */
 /* asm: 	.word	8,-294,261,914 */
-static int DDYNA_CBUS[] = {
+static tDDYNA_TABLE DDYNA_CBUS = {
     // 	.word	3,120
     3,
     144,
-    8,
-    -291,
-    261,
-    -843,
-    8,
-    -294,
-    261,
-    -582,
-    8,
-    -294,
-    261,
-    914,
+    {
+        { 8, { -291, 261, -843 } },
+        { 8, { -294, 261, -582 } },
+        { 8, { -294, 261, 914 } },
+    },
 };
 /* asm: DDYNA_COPCAR */
 /* asm: 	.word	2,135 */
 /* asm: 	.word	8,0,97,369 */
 /* asm: 	.word	8,0,97,-296 */
-static int DDYNA_COPCAR[] = {
+static tDDYNA_TABLE DDYNA_COPCAR = {
     2,
     135,
-    8,
-    0,
-    97,
-    369,
-    8,
-    0,
-    97,
-    -296,
+    {
+        { 8, { 0, 97, 369 } },
+        { 8, { 0, 97, -296 } },
+    },
 };
 /* asm: DDYNA_MUSCLE */
 /* asm: 	.word	2,148 */
 /* asm: 	.word	8,244,108,441 */
 /* asm: 	.word	8,237,108,-277 */
-static int DDYNA_MUSCLE[] = {
+static tDDYNA_TABLE DDYNA_MUSCLE = {
     2,
     148,
-    8,
-    244,
-    108,
-    441,
-    8,
-    237,
-    108,
-    -277,
+    {
+        { 8, { 244, 108, 441 } },
+        { 8, { 237, 108, -277 } },
+    },
 };
 /* asm: DDYNA_CARAVAN */
 /* asm: 	.word	2,105 */
 /* asm: 	.word	8,-263,156,466 */
 /* asm: 	.word	8,263,156,-435 */
-static int DDYNA_CARAVAN[] = {
+static tDDYNA_TABLE DDYNA_CARAVAN = {
     2,
     105,
-    8,
-    -263,
-    156,
-    466,
-    8,
-    263,
-    156,
-    -435,
+    {
+        { 8, { -263, 156, 466 } },
+        { 8, { 263, 156, -435 } },
+    },
 };
 /* asm: DDYNA_SBUS */
 /* asm: 	.word	2,152 */
 /* asm: 	.word	8,316,242,830 */
 /* asm: 	.word	8,315,242,-378 */
-static int DDYNA_SBUS[] = {
+static tDDYNA_TABLE DDYNA_SBUS = {
     2,
     152,
-    8,
-    316,
-    242,
-    830,
-    8,
-    315,
-    242,
-    -378,
+    {
+        { 8, { 316, 242, 830 } },
+        { 8, { 315, 242, -378 } },
+    },
 };
 /* asm: DDYNA_PTRUCKG */
 /* asm: 	.word	2,169 */
 /* asm: 	.word	8,197,107,323 */
 /* asm: 	.word	8,196,107,-270 */
-static int DDYNA_PTRUCKG[] = {
+static tDDYNA_TABLE DDYNA_PTRUCKG = {
     2,
     169,
-    8,
-    197,
-    107,
-    323,
-    8,
-    196,
-    107,
-    -270,
+    {
+        { 8, { 197, 107, 323 } },
+        { 8, { 196, 107, -270 } },
+    },
 };
 /* asm: DDYNA_MUSTANG */
 /* asm: 	.word	2,173 */
 /* asm: 	.word	8,234,93,407 */
 /* asm: 	.word	8,233,93,-348 */
 /* asm: 	 */
-static int DDYNA_MUSTANG[] = {
+static tDDYNA_TABLE DDYNA_MUSTANG = {
     2,
     173,
-    8,
-    234,
-    93,
-    407,
-    8,
-    233,
-    93,
-    -348,
+    {
+        { 8, { 234, 93, 407 } },
+        { 8, { 233, 93, -348 } },
+    },
 };
 /* asm: NOPAL */
 /* asm: 	.word	0 */
 /* asm: 	 */
-static int NOPAL = 0;
+static tCAR_PALETTE_LIST NOPAL = { 0, {} };
 // ;TESTORPAL	.word	3,testor_blue,testor_grape,testor_gold
 /* asm: TESTORPAL	.word	2,testor_blue,testor_grape */
-static int TESTORPAL[] = {
+static tCAR_PALETTE_LIST TESTORPAL = {
     2,
-    testor_blue_ROM,
-    testor_grape_ROM,
+    { (tPAL*)ROM_PTR(testor_blue_ROM), (tPAL*)ROM_PTR(testor_grape_ROM) }
 };
 /* asm: BULLETPAL	.word	3,missle_yellow,missle_red,missle_blue */
-static int BULLETPAL[] = {
+static tCAR_PALETTE_LIST BULLETPAL = {
     3,
-    missle_yellow_ROM,
-    missle_red_ROM,
-    missle_blue_ROM,
+    { (tPAL*)ROM_PTR(missle_yellow_ROM), (tPAL*)ROM_PTR(missle_red_ROM), (tPAL*)ROM_PTR(missle_blue_ROM) }
 };
 // ;HOTRODPAL	.word	3,hotrod_yellow,hotrod_brtblue,hotrod_maroon
 /* asm: HOTRODPAL	.word	2,hotrod_yellow,hotrod_brtblue */
-static int HOTRODPAL[] = {
+static tCAR_PALETTE_LIST HOTRODPAL = {
     2,
-    hotrod_yellow_ROM,
-    hotrod_brtblue_ROM,
+    { (tPAL*)ROM_PTR(hotrod_yellow_ROM), (tPAL*)ROM_PTR(hotrod_brtblue_ROM) }
 };
 /* asm: CVETTEPAL	.word	3,cvette_blue,cvette_red,cvette_purple */
 /* asm: 	 */
-static int CVETTEPAL[] = {
+static tCAR_PALETTE_LIST CVETTEPAL = {
     3,
-    cvette_blue_ROM,
-    cvette_red_ROM,
-    cvette_purple_ROM,
+    { (tPAL*)ROM_PTR(cvette_blue_ROM), (tPAL*)ROM_PTR(cvette_red_ROM), (tPAL*)ROM_PTR(cvette_purple_ROM) }
 };
 /* asm: JEEPPAL		.word	2,jeep_red,jeep_yellow */
-static int JEEPPAL[] = {
+static tCAR_PALETTE_LIST JEEPPAL = {
     2,
-    jeep_red_ROM,
-    jeep_yellow_ROM,
+    { (tPAL*)ROM_PTR(jeep_red_ROM), (tPAL*)ROM_PTR(jeep_yellow_ROM) }
 };
 // ;GTRUCKPAL	.word	2,gtruck_yellow,gtruck_bluep
 /* asm: GTRUCKPAL	.word	1,gtruck_bluep */
-static int GTRUCKPAL[] = {
+static tCAR_PALETTE_LIST GTRUCKPAL = {
     1,
-    gtruck_bluep_ROM,
+    { (tPAL*)ROM_PTR(gtruck_bluep_ROM) }
 };
 /* asm: CARAVANPAL	.word	2,caravan_redyelo,caravan_yelogrey */
-static int CARAVANPAL[] = {
+static tCAR_PALETTE_LIST CARAVANPAL = {
     2,
-    caravan_redyelo_ROM,
-    caravan_yelogrey_ROM,
+    { (tPAL*)ROM_PTR(caravan_redyelo_ROM), (tPAL*)ROM_PTR(caravan_yelogrey_ROM) }
 };
 /* asm: MUSCLEPAL	.word	2,muscle_yellow,muscle_green */
-static int MUSCLEPAL[] = {
+static tCAR_PALETTE_LIST MUSCLEPAL = {
     2,
-    muscle_yellow_ROM,
-    muscle_green_ROM,
+    { (tPAL*)ROM_PTR(muscle_yellow_ROM), (tPAL*)ROM_PTR(muscle_green_ROM) }
 };
 /* asm: PTRUCKGPAL	.word	2,ptruckg_purple,ptruckg_yellr */
 /* asm: 	 */
 /* asm: 	 */
-static int PTRUCKGPAL[] = {
+static tCAR_PALETTE_LIST PTRUCKGPAL = {
     2,
-    ptruckg_purple_ROM,
-    ptruckg_yellr_ROM,
+    { (tPAL*)ROM_PTR(ptruckg_purple_ROM), (tPAL*)ROM_PTR(ptruckg_yellr_ROM) }
 };
 
 static void LOAD_VARIOUS_PALETTES(void) {

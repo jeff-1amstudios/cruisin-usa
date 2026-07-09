@@ -1136,7 +1136,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     if (local_minutes < 0) {
         local_minutes = 0;
     }
-    MAME_VALIDATE_REG_AT_ADDR(0x000060F2, "R2", &local_minutes);
+    MAME_ASSERT_REG_AT_ADDR(0x000060F2, "R2", &local_minutes);
     // asm 000060F2: 	MPYI	3300,R3
     // asm 000060F3: 	SUBI 	R3,R0
     // asm 000060F4: 	LDILT	0,R0
@@ -1154,7 +1154,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     if (local_seconds < 0) {
         local_seconds = 0;
     }
-    MAME_VALIDATE_REG_AT_ADDR(0x000060FD, "R1", &local_seconds);
+    MAME_ASSERT_REG_AT_ADDR(0x000060FD, "R1", &local_seconds);
     // asm 000060FD: 	MPYI	55,R3
     // asm 000060FE: 	SUBI 	R3,R0
     // asm 000060FF: 	LDILT	0,R0
@@ -1171,7 +1171,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     if (local_hundredths < 0) {
         local_hundredths = 0;
     }
-    MAME_VALIDATE_REG_AT_ADDR(0x00006103, "R0", &local_hundredths);
+    MAME_ASSERT_REG_AT_ADDR(0x00006103, "R0", &local_hundredths);
     // asm 00006107: 	POPF	R3
     // asm 00006108: 	POP	R3
     // asm 00006109: 	RETS

@@ -18,8 +18,8 @@
  * Source module: asm/DELTA.ASM
  */
 
-void DELTA_OINIT(void);
-static void DDYNA_INIT(void);
+CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/);
+static void DDYNA_INIT(tDDYNA_TABLE* table /*AR2*/, OBJ* obj /*AR4*/);
 static void DRONE_DANI_PROC(void);
 
 #define DRONE_DANI_PROCI DRONE_DANI_PROC
@@ -44,60 +44,106 @@ static void DRONE_DANI_PROC(void);
  *	AR5	CAR BLOCK
  *
  */
-void DELTA_OINIT(void)
-{
+CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/) {
+    VEHTAB* vehicle;
+    CARBLK* carblk;
+
     // asm 0000AE6A: 	LDI	*+AR7(DELTA_MODEL),R0
     // asm 0000AE6B: 	CALL	_CARV0			;RETURNS BLOCK PTR IN AR0
+    carblk = _CARV0(obj, p->ctx->RACER_DRONE.delta_model); // RETURNS BLOCK PTR IN AR0
+    if (carblk == NULL) {
+        return NULL;
+    }
+
     // asm 0000AE6C: 	LDI	AR4,AR2
     // asm 0000AE6D: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
+
     // asm 0000AE6E: 	CALL	ADD_DRONE
+    p->ctx->RACER_DRONE.obj = obj;
+    p->ctx->RACER_DRONE.carblk = carblk;
+    ADD_DRONE();
+
     // asm 0000AE6F: 	STI	AR7,*+AR4(OPLINK)
+    obj->plink = p;
+
     // asm 0000AE70: 	LDI	1,R0
     // asm 0000AE71: 	LS	O_PROC_B,R0
     // asm 0000AE72: 	OR	*+AR4(OFLAGS),R0
     // asm 0000AE73: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= 1u << O_PROC_B;
+
     // asm 0000AE74: 	LDI	DM_NORMAL,R0
     // asm 0000AE75: 	STI	R0,*+AR7(DELTA_MODE)
+    p->ctx->RACER_DRONE.delta_mode = DM_NORMAL;
+
     // asm 0000AE76: 	LDI	*+AR4(OCARBLK),AR5
+    carblk = obj->carblk;
+
     // asm 0000AE77: 	LDF	THROTTLE_INIT,R0	;INITIALIZE THROTTLE AND BRAKE
     // asm 0000AE78: 	STF	R0,*+AR5(CARTHROTTLE)
+    // INITIALIZE THROTTLE AND BRAKE
+    carblk->throttle = THROTTLE_INIT;
+
     // asm 0000AE79: 	CLRF	R0
     // asm 0000AE7A: 	STF	R0,*+AR5(CARBRAKE)
+    carblk->brake = 0.0f;
+
     // asm 0000AE7B: 	LDF	MAX_ACCEL_INIT,R0
     // asm 0000AE7C: 	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
+    carblk->max_accel = MAX_ACCEL_INIT; // SET ACCEL POWER
+
     // asm 0000AE7D: 	LDF	1.0,R0
     // asm 0000AE7E: 	STF	R0,*+AR7(DELTA_THROTTLE)
+    p->ctx->RACER_DRONE.delta_throttle = 1.0f;
+
     // asm 0000AE7F: 	LDI	0101h,R0		;SET THE STARTUP LAST KNOWN OID
     // asm 0000AE80: 	STI	R0,*+AR7(DELTA_LAST_OID)
+    p->ctx->RACER_DRONE.delta_last_oid = 0x0101; // SET THE STARTUP LAST KNOWN OID
+
     // asm 0000AE81: 	LDI	*+AR7(DELTA_MODEL),AR2
     // asm 0000AE82: 	MPYI	VEHTAB_SIZE,AR2
     // asm 0000AE83: 	ADDI	@VEHICLE_TABLEI,AR2
+    vehicle = &VEHICLE_TABLE[p->ctx->RACER_DRONE.delta_model];
+
     // asm 0000AE84: 	LDF	*+AR2(VEHTAB_MASS),R0
     // asm 0000AE85: 	STF	R0,*+AR5(CARMASS)
+    carblk->mass = vehicle->mass;
+
     // asm 0000AE86: 	LDI	*+AR2(VEHTAB_DMODEL),R0
     // asm 0000AE87: 	BZ	NOTDEGRADE
-    // asm 0000AE88: 	STI	R0,*+AR4(ODEGRADE_ROM)
-    // asm 0000AE89: 	LDI	*+AR4(OFLAGS),R0
-    // asm 0000AE8A: 	OR	O_DEGRADE,R0
-    // asm 0000AE8B: 	STI	R0,*+AR4(OFLAGS)
-    // asm 0000AE8C: 	LDI	*+AR2(VEHTAB_DMODEL2),R0
-    // asm 0000AE8D: 	BZ	NOTDEGRADE
-    // asm 0000AE8E: 	STI	R0,*+AR4(ODEGRADE_ROM2)
-    // asm 0000AE8F: 	LDI	*+AR4(OFLAGS),R0
-    // asm 0000AE90: 	OR	O_DEGRADE2,R0
-    // asm 0000AE91: 	STI	R0,*+AR4(OFLAGS)
+    if (vehicle->degraded_model != NULL) {
+        // asm 0000AE88: 	STI	R0,*+AR4(ODEGRADE_ROM)
+        obj->degrade_rom = vehicle->degraded_model;
+        // asm 0000AE89: 	LDI	*+AR4(OFLAGS),R0
+        // asm 0000AE8A: 	OR	O_DEGRADE,R0
+        // asm 0000AE8B: 	STI	R0,*+AR4(OFLAGS)
+        obj->flags |= O_DEGRADE;
+        // asm 0000AE8C: 	LDI	*+AR2(VEHTAB_DMODEL2),R0
+        // asm 0000AE8D: 	BZ	NOTDEGRADE
+        if (vehicle->degraded_model_level2 != NULL) {
+            // asm 0000AE8E: 	STI	R0,*+AR4(ODEGRADE_ROM2)
+            obj->degrade_rom2 = vehicle->degraded_model_level2;
+            // asm 0000AE8F: 	LDI	*+AR4(OFLAGS),R0
+            // asm 0000AE90: 	OR	O_DEGRADE2,R0
+            // asm 0000AE91: 	STI	R0,*+AR4(OFLAGS)
+            obj->flags |= O_DEGRADE2;
+        }
+    }
 NOTDEGRADE:
     // asm 0000AE92: 	LDI	*+AR4(OID),R0
     // asm 0000AE93: 	CMPI	DRONE_C|VEHICLE_T|DRNE_RHO,R0
     // asm 0000AE94: 	BEQ	NODYNAX1
-    // asm 0000AE95: 	LDI	*+AR2(VEHTAB_DDYNATAB),R0
-    // asm 0000AE96: 	BZ	NODYNAX1
-    // asm 0000AE97: 	LDI	R0,AR2
-    // asm 0000AE98: 	CALL	DDYNA_INIT
+    if (obj->id != (DRONE_C | VEHICLE_T | DRNE_RHO) && vehicle->drone_dyna_table != NULL) {
+        // asm 0000AE95: 	LDI	*+AR2(VEHTAB_DDYNATAB),R0
+        // asm 0000AE96: 	BZ	NODYNAX1
+        // asm 0000AE97: 	LDI	R0,AR2
+        // asm 0000AE98: 	CALL	DDYNA_INIT
+        DDYNA_INIT(vehicle->drone_dyna_table, obj);
+    }
 NODYNAX1:
     // asm 0000AE99: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DELTA_OINIT", 0, 0);
-    UNIMPL();
+    return carblk;
 }
 
 // *----------------------------------------------------------------------------
@@ -115,8 +161,9 @@ NODYNAX1:
  *	AR4	CAR OBJECT
  *
  */
-static void DDYNA_INIT(void)
-{
+static void DDYNA_INIT(tDDYNA_TABLE* table /*AR2*/, OBJ* obj /*AR4*/) {
+    (void)table;
+    (void)obj;
     // asm 0000AE9A: 	PUSH	R1
     // asm 0000AE9B: 	PUSH	R2
     // asm 0000AE9C: 	PUSH	R6
@@ -214,8 +261,7 @@ VANIX:
  *
  */
 
-static void DRONE_DANI_PROC(void)
-{
+static void DRONE_DANI_PROC(void) {
     // asm 0000AED8: 	LDI	*+AR4(OCARBLK),AR5
     // asm 0000AED9: 	LDF	0,R6	 		;INIT SPIN RADIANS
     // asm 0000AEDA: 	STF	R6,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS

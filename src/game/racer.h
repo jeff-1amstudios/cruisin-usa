@@ -79,26 +79,26 @@ extern int PLYRFIRST;
 extern float STEERI;
 
 // asm: 	.globl	SPOS_INIT
-void SPOS_INIT(void);
+float SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/);
 
-void ROADIR(void);
+float ROADIR(OBJ* track_obj /*AR0*/);
 
 // asm: 	.GLOBL	GETRPM,GETAUTO,ENGFRI,GEARACTABI,ENGACTABI,GETRDIR
 void GETRPM(void);
 
 void GETAUTO(void);
 
-void GETRDIR(void);
+float GETRDIR(OBJ* track_obj /*AR2*/);
 
 void DRONESTOP(void);
 
-void CKAHEAD(void);
+int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 // RACER.ASM
 // asm: 	.bss	FINISHNUM,1		;NUMBER OF DRONES FINISHED
 extern int FINISHNUM;
 // asm: 		.bss	RACER_PTR,10
-extern int RACER_PTR[];
+extern OBJ* RACER_PTR[];
 // asm: 	.bss	OM_TRACK_LO,1
 extern int OM_TRACK_LO;
 // asm: 	.bss	OM_TRACK_HI,1
@@ -112,7 +112,6 @@ extern int CARTMP1;
 void COMPTRAK(void);
 void FIND_DYNA(void);
 void DECODE_RACER_XSFER(void);
-void CKAHEAD(void);
 void WRECK(void);
 void WRECKST(void);
 

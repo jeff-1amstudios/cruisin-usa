@@ -1,6 +1,5 @@
 
 #include "attrdrne.h"
-#include "../core/machine.h"
 #include "c30.h"
 #include "cmos.h"
 #include "delta.h"
@@ -10,6 +9,8 @@
 #include "mproc.h"
 #include "obj.h"
 #include "pall.h"
+#include "port.h"
+#include "racer.h"
 #include "sndtab.h"
 #include "sys.h"
 #include "sysid.h"
@@ -20,9 +21,8 @@
  * Source module: asm/ATTRDRNE.ASM
  */
 
-void ATTRACT_DELTA(void);
-void LOGO_PROC(void);
-static void GET_LIST_ADDR(void);
+void LOGO_PROC(PROC* p);
+static uintptr_t* GET_LIST_ADDR(PROC* p /*AR7*/);
 static void INIT_STARTING(void);
 static void INIT_WATCH(void);
 static void INIT_REVERS_CUP(void);
@@ -71,6 +71,7 @@ static uintptr_t GGPARK_LIST[];
 static uintptr_t BEVHILL_LIST[];
 static uintptr_t GCANYON_LIST[];
 static uintptr_t CHICAGO_LIST[];
+typedef void (*ATTRACT_DELTA_STEP)(void);
 
 /*
  *----------------------------------------------------------------------------
@@ -112,52 +113,126 @@ int ATTRWAVE;
 #define OBJINS (PDATA + 44)
 #define CAMYOFF (PDATA + 45)
 
-void ATTRACT_DELTA(void) {
+void ATTRACT_DELTA(PROC* p /*AR7*/) {
+    ATTRACT_DELTA_STEP step;
+    uintptr_t* view_script;
+    OBJ* player_obj;
+    PROC* player_proc;
+
+    switch (p->resume_state) {
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
     // asm 000055C3: 	LDI	0,R0
     // asm 000055C4: 	STI	R0,*+AR7(OBJINS)
+    p->ctx->ATTRACT_DELTA.objins = 0;
+
     // asm 000055C5: 	LDI	@ATTRWAVE,R4
     // asm 000055C6: 	LSH	-1,R4
     // asm 000055C7: 	STI	R4,*+AR7(LIST_NUM)
+    p->ctx->ATTRACT_DELTA.list_num = ATTRWAVE >> 1;
+
     // asm 000055C8: 	CALL	INIT_ATTR_LEG
+    INIT_ATTR_LEG();
+
     // asm 000055C9: 	LDI	4,R0
     // asm 000055CA: 	STI	R0,@NOSWAP
+    NOSWAP = 4;
+
     // asm 000055CB: 	CREATE	LOGO_PROC,UTIL_C
+    {
+        PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+        CREATE(LOGO_PROC, UTIL_C, ctx);
+    }
+
     // asm 000055CE: 	LDI	@_MODE,R0
     // asm 000055CF: 	OR	MGO,R0
     // asm 000055D0: 	STI	R0,@_MODE
+    _MODE |= MGO;
+
     // asm 000055D1: 	LDI	-1,R0
     // asm 000055D2: 	STI	R0,*+AR7(CUT_PAN)
+    p->ctx->ATTRACT_DELTA.cut_pan = -1;
+
     // asm 000055D3: 	LDI	1,R0	    		;SET GAME FRAME RATE
     // asm 000055D4: 	STI	R0,@FRAMRATE
     // asm 000055D5: 	STI	R0,@TIMECLR
     // asm 000055D6: 	STI	R0,@DRONE_DISPATCH_P
+    // SET GAME FRAME RATE
+    FRAMRATE = 1;
+    TIMECLR = 1;
+    DRONE_DISPATCH_P = 1;
+
     // asm 000055D7: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000055D9: 	LDI	@PLYCAR,AR4
     // asm 000055DA: 	LDI	*+AR4(PAR5),AR5
     // asm 000055DB: 	LDI	*+AR4(PAR4),AR4
     // asm 000055DC: 	LDI	*+AR5(PAR5),AR0
     // asm 000055DD: 	STI	AR4,@PLYCAR
     // asm 000055DE: 	STI	AR0,@PLYCBLK
+    player_proc = (PROC*)PLYCAR;
+    player_obj = NULL;
+    if (player_proc != NULL && player_proc->ctx != NULL) {
+        player_obj = player_proc->ctx->RACER_DRONE.obj;
+        PLYCBLK = player_proc->ctx->RACER_DRONE.carblk;
+    }
+    if (player_obj != NULL) {
+        PLYCAR = player_obj;
+    }
+
     // asm 000055DF: 	LDI	90,R0
     // asm 000055E0: 	STI	R0,@_countdown
+    _countdown = 90;
+
     // asm 000055E1: 	LDI	1,R0
     // asm 000055E2: 	STI	R0,*+AR7(CUT_PAN)
+    p->ctx->ATTRACT_DELTA.cut_pan = 1;
+
     // asm 000055E3: 	CALL	GET_LIST_ADDR
+    view_script = GET_LIST_ADDR(p);
+    p->ctx->ATTRACT_DELTA.view_script = (uintptr_t)view_script;
+
     // asm 000055E4: 	BR	DELTA_LOOP_ENTRY
+    goto DELTA_LOOP_ENTRY;
+
 aDELTA_LOOP:
     // asm 000055E5: 	LDI	*AR6,AR0
     // asm 000055E6: 	CALLU	AR0
+    view_script = (uintptr_t*)p->ctx->ATTRACT_DELTA.view_script;
+    step = (ATTRACT_DELTA_STEP)*view_script;
+    step();
+
 ADELTA2:
     // asm 000055E7: 	CALL	UPDATE_CAMERA
+    UPDATE_CAMERA();
+
     // asm 000055E8: 	SLEEP	1
+    SLEEP(1, 2);
+    view_script = (uintptr_t*)p->ctx->ATTRACT_DELTA.view_script;
+
     // asm 000055EA: 	LDI	@NOSWAP,R0
     // asm 000055EB: 	BEQ	ADELTA2A
     // asm 000055EC: 	SUBI	1,R0		;OK Now we have a valid frame
     // asm 000055ED: 	STI	R0,@NOSWAP
+    if (NOSWAP != 0) {
+        // OK Now we have a valid frame
+        NOSWAP -= 1;
+    }
+
 ADELTA2A:
     // asm 000055EE: 	CMPI	0,AR5
     // asm 000055EF: 	BGT	aDELTA_LOOP
+    if (p->ctx->ATTRACT_DELTA.frames_left > 0) {
+        goto aDELTA_LOOP;
+    }
+
     // asm 000055F0: 	ADDI	1,AR6		;Advance to next mode
+    view_script += 1; // Advance to next mode
+
 DELTA_LOOP_ENTRY:
     // asm 000055F1: 	LDI	*AR6,AR0
     // asm 000055F2: 	CMPI	0,AR0
@@ -165,6 +240,10 @@ DELTA_LOOP_ENTRY:
     // ;	CALL	GET_LIST_ADDR
     // ;	BU	$
     // asm 000055F4: 	SUBI	3,AR6		;Loop on last entry
+    if (*view_script == 0) {
+        view_script -= 3; // Loop on last entry
+    }
+
 sDELTA_LOOP:
     // asm 000055F5: 	LDI	*+AR7(OBJINS),R0
     // asm 000055F6: 	BEQ	NO_OBJINS
@@ -172,14 +251,24 @@ sDELTA_LOOP:
     // asm 000055F8: 	CALL	OBJ_INSERT			;INSERT PLAYER OBJECT
     // asm 000055F9: 	LDI	0,R0
     // asm 000055FA: 	STI	R0,*+AR7(OBJINS)
+    if (p->ctx->ATTRACT_DELTA.objins != 0) {
+        OBJ_INSERT((OBJ*)(uintptr_t)p->ctx->ATTRACT_DELTA.objins); // INSERT PLAYER OBJECT
+        p->ctx->ATTRACT_DELTA.objins = 0;
+    }
+
 NO_OBJINS:
     // asm 000055FB: 	LDI	*AR6++,AR0
     // asm 000055FC: 	CALLU	AR0
+    step = (ATTRACT_DELTA_STEP)*view_script++;
+    p->ctx->ATTRACT_DELTA.view_script = (uintptr_t)view_script;
+    step();
+
     // asm 000055FD: 	LDI	*AR6++,AR5
+    p->ctx->ATTRACT_DELTA.frames_left = (int)*view_script++;
+    p->ctx->ATTRACT_DELTA.view_script = (uintptr_t)view_script;
+
     // asm 000055FE: 	B	ADELTA2
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ATTRACT_DELTA", 0, 0);
-    UNIMPL();
+    goto ADELTA2;
 }
 
 /*
@@ -196,7 +285,7 @@ NO_OBJINS:
 #define LOGO_WHOOSH_FRAMES 462
 #define LOGO_SPINZ 18.85 // 3 revolutions
 
-void LOGO_PROC(void) {
+void LOGO_PROC(PROC* p) {
     // asm 000055FF: 	CALL	OBJ_GET
     // asm 00005600: 	BC	LOGOX
     // asm 00005601: 	LDI	AR0,AR4
@@ -273,13 +362,14 @@ LOGOX:
 }
 
 // *----------------------------------------------------------------------------
-static void GET_LIST_ADDR(void) {
+static uintptr_t* GET_LIST_ADDR(PROC* p /*AR7*/) {
     // asm 00005645: 	LDI	*+AR7(LIST_NUM),AR6
     // asm 00005646: 	ADDI	@VIEWLISTI,AR6
     // asm 00005647: 	LDI	*AR6,AR6
+    uintptr_t* view_script = VIEWLIST[p->ctx->ATTRACT_DELTA.list_num];
+
     // asm 00005648: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LIST_ADDR", 0, 0);
-    UNIMPL();
+    return view_script;
 }
 
 // *----------------------------------------------------------------------------
@@ -1773,60 +1863,108 @@ NO_MUSIC:
     // asm 000059D7: 	LDIGT	0,R0
     // asm 000059D8: 	STI	R0,@ATTRWAVE
     // asm 000059D9: 	RETS
+    MAME_VALIDATOR_EXIT();
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_ATTR_LEG", 0, 0);
     UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 static void ATTR_INIT_GAMELEG(void) {
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+
     // asm 000059DA: 	CREATE	RHO_DISPATCHER,SPAWNER_C|TRAFFIC_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(RHO_DISPATCHER, SPAWNER_C | TRAFFIC_T, ctx);
     // asm 000059DD: 	CREATE	SIGMA_DISPATCHER,SPAWNER_C|TRAFFIC_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(SIGMA_DISPATCHER, SPAWNER_C | TRAFFIC_T, ctx);
     // asm 000059E0: 	CREATE	CPOINT_LIGHT,SPAWNER_C|COLORCYC_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(CPOINT_LIGHT, SPAWNER_C | COLORCYC_T, ctx);
     // asm 000059E3: 	CREATE	POSITION_FINDER,SPAWNER_C|TRAFFIC_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(POSITION_FINDER, SPAWNER_C | TRAFFIC_T, ctx);
     // asm 000059E6: 	LDI	SM_HALT,R0
     // asm 000059E7: 	STI	R0,@SUSPEND_MODE
+    SUSPEND_MODE = SM_HALT;
     // asm 000059E8: 	LDI	0,R4
     // asm 000059E9: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = 0;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059EC: 	LDI	1,R4
     // asm 000059ED: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = 1;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059F0: 	LDI	2,R4
     // asm 000059F1: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = 2;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059F4: 	LDI	3,R4
     // asm 000059F5: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = 3;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059F8: 	LDI	4,R4
     // asm 000059F9: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = 4;
+    proc = CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059FC: 	STI	AR0,@PLYCAR
+
+    // original code hack. This is not a proc, `PLYCAR` looks up the OBJ from this proc once it has executed
+    PLYCAR = (OBJ*)proc;
     // asm 000059FD: 	LDI	5,R4
     // asm 000059FE: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = 5;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00005A01: 	LDI	6,R4
     // asm 00005A02: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = 6;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00005A05: 	LDI	7,R4
     // asm 00005A06: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = 7;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00005A09: 	LDI	9,R4
     // asm 00005A0A: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = 9;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00005A0D: 	RETS
     // ;*----------------------------------------------------------------------------
     // ;
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ATTR_INIT_GAMELEG", 0, 0);
-    UNIMPL();
 }
 
 void LOAD_ATTR_LEG(void) {
     // asm 00005A0E: 	LDI	@ATTRWAVE,AR0
     // asm 00005A0F: 	ADDI	@ATTR_WAVETABI,AR0
     // asm 00005A10: 	LDI	*+AR0(1),AR0
+    int section_index = ATTR_WAVETAB[ATTRWAVE + 1];
 #if DEBUG
     // asm: 	CMPI	0,AR0
     // asm: 	LDILT	0,AR0
     // asm: 	CMPI	13,AR0
     // asm: 	LDIGT	13,AR0
+    if (section_index < 0) {
+        section_index = 0;
+    }
+    if (section_index > 13) {
+        section_index = 13;
+    }
 #endif
     // asm 00005A11: 	ADDI	@LOADSECTION_TABLEI,AR0
     // asm 00005A12: 	LDI	*AR0,R0
     // asm 00005A13: 	CALLU	R0
+    LOADSECTION_TABLE[section_index]();
     // asm 00005A14: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_ATTR_LEG", 0, 0);
-    UNIMPL();
 }
 
 /*

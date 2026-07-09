@@ -86,7 +86,7 @@ void _MIDWAYSPIN(PROC* p /*AR7*/) {
 
 NO_NINTENDO:
     // asm 0000A97C: 	CALL	ULTRA_LOGO
-    // ULTRA_LOGO();
+    ULTRA_LOGO();
 
     // asm 0000A97D: 	LDI	0,R0
     // asm 0000A97E: 	STI	R0,*+AR7(DECOMP_COUNT)
@@ -221,7 +221,7 @@ static int MSLP_CHECK(PROC* p /*AR7*/, int* sound_ticks /*AR6*/) {
 
     // asm 0000A9BD: 	CMPI	3,R0
     // asm 0000A9BE: 	BGT	MSLP4				;Done Loading
-    if (p->ctx->MIDWAYSPIN.decomp_count <= 3) {
+    if (p->ctx->MIDWAYSPIN.decomp_count <= 300) {
         return 0;
     }
 

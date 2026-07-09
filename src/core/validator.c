@@ -1018,10 +1018,10 @@ void mame_validate_arg_impl(const char* caller_file, int caller_line, const char
         return;
     }
 
-    mame_validate_reg_at_addr_impl(caller_file, caller_line, breakpoint_address, name, ptr);
+    mame_assert_reg_at_addr_impl(caller_file, caller_line, breakpoint_address, name, ptr);
 }
 
-void mame_validate_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
+void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
     uint32_t breakpoint_address = 0;
     void* return_address = __builtin_return_address(0);
     char actual_buf[64];
@@ -1059,7 +1059,7 @@ void mame_validate_exit_impl(const char* caller_file, int caller_line) {
     (void)caller_line;
 }
 
-void mame_validate_reg_at_addr_impl(
+void mame_assert_reg_at_addr_impl(
     const char* caller_file, int caller_line, uint32_t breakpoint_address, const char* reg_name, const void* ptr) {
     if (should_skip_validation()) {
         return;

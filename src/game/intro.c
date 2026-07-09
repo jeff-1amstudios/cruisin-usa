@@ -69,12 +69,10 @@ void ULTRA_LOGO(void);
 void LOGO_SMALL(void);
 void SET_ATTR(void);
 void CYCLE_ATTR(void);
-void _timeout(void);
 void INSMORE(void);
 static void COIN_CNTDOWN(void);
 void LOAD_SHARED(void);
 void TRAFFIC_LIGHT(void);
-void CPOINT_LIGHT(void);
 static void SHOW_RACE_NAME(void);
 
 #define CCTI CCT
@@ -117,7 +115,7 @@ int FIRST_RACE;
 /* asm: POSES	.bss	POSES,1 */
 int POSES;
 /* asm: GAMEDIFF	.bss	GAMEDIFF,1 */
-int GAMEDIFF;
+float GAMEDIFF;
 /* asm: CHECKPOINT_NUM	.bss	CHECKPOINT_NUM,1 */
 int CHECKPOINT_NUM;
 /* asm: H2H_FLAGSTATE	.bss	H2H_FLAGSTATE,1 */
@@ -1764,19 +1762,19 @@ GBERLP:
 // *----------------------------------------------------------------------------
 
 /* asm: CAR1PAL	.bss	CAR1PAL,129 */
-int CAR1PAL[129];
+tPAL CAR1PAL;
 /* asm: CAR2PAL	.bss	CAR2PAL,129 */
-int CAR2PAL[129];
+tPAL CAR2PAL;
 /* asm: CAR3PAL	.bss	CAR3PAL,129 */
-int CAR3PAL[129];
+tPAL CAR3PAL;
 /* asm: CAR4PAL	.bss	CAR4PAL,129 */
-int CAR4PAL[129];
+tPAL CAR4PAL;
 /* asm: CARPAL_TABLE	.word	CAR1PAL,CAR2PAL,CAR3PAL,CAR4PAL */
-static int* CARPAL_TABLE[] = {
-    CAR1PAL,
-    CAR2PAL,
-    CAR3PAL,
-    CAR4PAL,
+static tPAL* CARPAL_TABLE[] = {
+    &CAR1PAL,
+    &CAR2PAL,
+    &CAR3PAL,
+    &CAR4PAL,
 };
 /* asm: CARSRCPAL_TAB	.word	cvette_p,hotrod_p,missle_p,testor_p */
 static int CARSRCPAL_TAB[] = {
@@ -2894,51 +2892,90 @@ _startX:
  *
  */
 static void ULTRA_PROC(PROC* p /*AR7*/) {
+    OBJ* obj;
+    float radians;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00001DC3: 	CLRF	R6
+    p->ctx->ULTRA_PROC.radians = 0.0f;
+
 UPLP:
     // asm 00001DC4: LDF	0.0349078,R0
     // asm 00001DC5: 	FLOAT	@NFRAMES,R1
     // asm 00001DC6: 	MPYF	R1,R0
     // asm 00001DC7: 	SUBF	R0,R6
+    p->ctx->ULTRA_PROC.radians -= 0.0349078f * (float)NFRAMES;
+
     // asm 00001DC8: 	LDF	R6,R2
     // asm 00001DC9: 	LDI	AR4,AR2
     // asm 00001DCA: 	ADDI	OMATRIX,AR2
     // asm 00001DCB: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&p->ctx->ULTRA_PROC.obj->omatrix, p->ctx->ULTRA_PROC.radians);
+
     // asm 00001DCC: 	SLEEP	1
+    SLEEP(1, 1);
+
     // asm 00001DCE: 	BU	UPLP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ULTRA_PROC", 0, 0);
-    UNIMPL();
+    goto UPLP;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
 void ULTRA_LOGO(void) {
+    OBJ* obj;
+
     // asm 00001DCF: 	CALL	OBJ_GET
+    obj = OBJ_GET();
+
     // asm 00001DD0: 	RETSC
+    if (obj == NULL) {
+        return;
+    }
+
     // asm 00001DD1: 	LDIL	nintendo,R0
     // asm 00001DD4: 	STI	R0,*+AR0(OROMDATA)
+    obj->romdata = ROM_PTR(nintendo_ROM);
+
     // asm 00001DD5: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV,R0
     // asm 00001DD6: 	OR	*+AR0(OFLAGS),R0
     // asm 00001DD7: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV;
+
     // asm 00001DD8: 	CLRF	R0
     // asm 00001DD9: 	STF	R0,*+AR0(OPOSX)
+    obj->posx = 0.0f;
+
     // asm 00001DDA: 	FLOAT	50,R0
     // asm 00001DDB: 	STF	R0,*+AR0(OPOSY)
+    obj->posy = 50.0f;
+
     // asm 00001DDC: 	FLOAT	368,R0
     // asm 00001DDD: 	STF	R0,*+AR0(OPOSZ)
+    obj->posz = 368.0f;
+
     // asm 00001DDE: 	LDI	AR0,AR2
     // asm 00001DDF: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(obj);
+
     // asm 00001DE0: 	LDI	AR2,AR4
     // asm 00001DE1: 	PUSH	AR0
     // asm 00001DE2: 	PUSH	AR2
+
     // asm 00001DE3: 	CREATE	ULTRA_PROC,UTIL_C
+    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->ULTRA_PROC.obj = obj;
+    CREATE(ULTRA_PROC, UTIL_C, ctx);
+
     // asm 00001DE6: 	POP	AR2
     // asm 00001DE7: 	POP	AR0
     // asm 00001DE8: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ULTRA_LOGO", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -3059,13 +3096,18 @@ void CYCLE_ATTR(void) {
 /* asm: _timer	.bss	_timer,1 */
 int _timer;
 
-void _timeout(void) {
+void _timeout(PROC* p) {
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
     // asm 00001E26: 	LDI	@_timer,AR2
     // asm 00001E27: 	CALL	SLEEP
+    SLEEP(_timer, 1);
     // asm 00001E28: 	BU	CYCLE_ATTR
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_timeout", 0, 0);
-    UNIMPL();
+    CYCLE_ATTR();
 }
 
 // *----------------------------------------------------------------------------
@@ -3376,7 +3418,7 @@ static int TRAFFIC_LL[] = {
 };
 
 // *----------------------------------------------------------------------------
-void CPOINT_LIGHT(void) {
+void CPOINT_LIGHT(PROC* p) {
     // asm 00001F2A: 	LDI	@RGBTAB_CPI,AR4
     // asm 00001F2B: 	INC	AR4
     // asm 00001F2C: 	LDI	checks_p,AR2

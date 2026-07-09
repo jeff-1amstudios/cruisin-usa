@@ -140,7 +140,7 @@ void _itoa(char* string_space /*AR2*/, int number /*R2*/) {
         // asm 0000A7D5: 	STI	R0,*AR2
         // asm 0000A7D6: 	LDI	8,R0
         *(u32*)string_space = 0x00000030u; // ;case when number is zero
-        // MAME_VALIDATE_REG_AT_ADDR(0x0000A7D6, "R0", &((u32){0x00000030u}));
+        // MAME_ASSERT_REG_AT_ADDR(0x0000A7D6, "R0", &((u32){0x00000030u}));
         return;
     }
 
@@ -218,7 +218,7 @@ DALOP:
     // asm 0000A7C2: 	STI	R1,*AR2
     // asm 0000A7C3: 	LDI	R6,R0
     *(u32*)string_space = packed_word; // ;NULL terminator
-    // MAME_VALIDATE_REG_AT_ADDR(0x0000A7C2, "R1", &packed_word);
+    // MAME_ASSERT_REG_AT_ADDR(0x0000A7C2, "R1", &packed_word);
 itoaX:
     // asm 0000A7C4: 	POP	R7
     // asm 0000A7C5: 	POP	R6

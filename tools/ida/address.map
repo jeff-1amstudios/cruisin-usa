@@ -1,7 +1,7 @@
 
  Start         Length     Name                   Class
- 0000:00000000 000A00000H CODE                   
- 0002:00000000 000A00000H seg001                 
+ 0000:00000000 000A00000H CODE
+ 0002:00000000 000A00000H seg001
 
 
   Address         Publics by Value
@@ -6079,6 +6079,7 @@
  0002:00C2F4B8       x9
  0002:00C2F4C8       x10
  0002:00C2F4D8       midway
+ 0002:00C2F984       nintendo
  0002:00C2FAA6       whel1
  0002:00C2FAB6       whel2
  0002:00C2FAC6       whel3

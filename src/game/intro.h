@@ -23,7 +23,7 @@ extern int FIRST_RACE;
 // asm: 	.bss	POSES,1			;for the WHEEL
 extern int POSES;
 // asm: 	.bss	GAMEDIFF,1
-extern int GAMEDIFF;
+extern float GAMEDIFF;
 // asm: 	.bss	CHECKPOINT_NUM,1
 extern int CHECKPOINT_NUM;
 // asm: 	.bss	H2H_FLAGSTATE,1		;WAVEFLAG
@@ -46,14 +46,6 @@ extern int CHOOSENCAR;
 extern int CAR_CHOICE_GOTTEN;
 // asm: 	.bss	CAR_ARRAY,4
 extern int CAR_ARRAY[];
-// asm: 	.bss	CAR1PAL,129
-extern int CAR1PAL[];
-// asm: 	.bss	CAR2PAL,129
-extern int CAR2PAL[];
-// asm: 	.bss	CAR3PAL,129
-extern int CAR3PAL[];
-// asm: 	.bss	CAR4PAL,129
-extern int CAR4PAL[];
 // asm: 	.bss	IS_HIDDEN,1
 extern int IS_HIDDEN;
 // asm: 	.bss	SPINCURR,1

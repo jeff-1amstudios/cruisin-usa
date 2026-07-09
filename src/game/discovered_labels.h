@@ -290,6 +290,7 @@
 #define my_ROM 0x00CD18B7
 #define mz_ROM 0x00CD18C9
 #define next_ROM 0x00CBEA2D
+#define nintendo_ROM 0x00C2F984
 #define ommdfont_p_ROM 0x00000043
 #define osg10fnt_white_ROM 0x00C115BD
 #define p0_ROM 0x00CD1A7B

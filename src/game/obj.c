@@ -190,11 +190,11 @@ OBJ* OBJ_GETE(void* romdata /*AR2*/) {
     // asm 0000703A: 	LDI	*AR2,R0			;get RADIUS of object
     // asm 0000703B: 	STI	R0,*+AR0(ORAD)		;SAVE THE SILLY RADIUS
     obj->radius = *(s32*)romdata; // ;get RADIUS of object / ;SAVE THE SILLY RADIUS
-    // MAME_VALIDATE_REG_AT_ADDR(0x0000703C, "R0", &obj->radius);
+    // MAME_ASSERT_REG_AT_ADDR(0x0000703C, "R0", &obj->radius);
 
     // asm 0000703C: 	LDI	*-AR2,R0		;GET CONTROL WORD
     control_word = *((u32*)romdata - 1); // ;GET CONTROL WORD
-    // MAME_VALIDATE_REG_AT_ADDR(0x0000703D, "R0", &control_word);
+    // MAME_ASSERT_REG_AT_ADDR(0x0000703D, "R0", &control_word);
 
     // asm 0000703D: 	TSTB	EOBJ_ILLUM,R0
     // asm 0000703E: 	BZ	NOT_ILLUM
@@ -220,7 +220,7 @@ NOT_ILLUM:
         // asm 0000704A: 	BC	$
         // asm 0000704B: 	STI	R0,*+AR0(OPAL)
         obj->palette = PAL_FIND(control_word & 0x0fff);
-        // MAME_VALIDATE_REG_AT_ADDR(0x0000704B, "R0", &obj->palette);
+        // MAME_ASSERT_REG_AT_ADDR(0x0000704B, "R0", &obj->palette);
     }
 
 NOT_1PAL:
@@ -273,7 +273,7 @@ OBJ* OBJ_GET(void) {
     // asm 0000705A: 	STI	R0,*+AR0(OFLAGS)
     obj->flags = 0;
     // asm 0000705B: 	STI	R0,*+AR0(OPLINK)
-    obj->process_link = 0;
+    obj->plink = 0;
     // asm 0000705C: 	STI	R0,*+AR0(OUSR1)
     obj->usr1 = 0;
     obj->usr1_as_float = 0.0f;
@@ -1374,17 +1374,17 @@ void OSCAN(void) {
     prev_link = &OACTIVE;
     obj = *prev_link;
     while (obj != NULL) {
-OSCANL:
-    // asm 00007283: 	LDI	*+AR1(ODIST),R0	    	;ODIST TOO NEGATIVE?
+    OSCANL:
+        // asm 00007283: 	LDI	*+AR1(ODIST),R0	    	;ODIST TOO NEGATIVE?
         obj_dist = obj->dist; // ;ODIST TOO NEGATIVE?
-    // asm 00007284: 	CMPI	ACTIVELO,R0
+                              // asm 00007284: 	CMPI	ACTIVELO,R0
         if (obj_dist <= (int)ACTIVELO) {
             goto OSCANACT; // ;YES, BLOW IT OUT
         }
-    // asm 00007285: 	BLE	OSCANACT		;YES, BLOW IT OUT
-    // asm 00007286: 	SUBI	R4,R0			;ODIST TOO POSITIVE
+        // asm 00007285: 	BLE	OSCANACT		;YES, BLOW IT OUT
+        // asm 00007286: 	SUBI	R4,R0			;ODIST TOO POSITIVE
         obj_dist -= ACTIVEHI; // ;ODIST TOO POSITIVE
-    // asm 00007287: 	BLE	OSCANNXT		;NO...
+                              // asm 00007287: 	BLE	OSCANNXT		;NO...
         if (obj_dist > 0) {
             // asm 00007288: 	SUBI	*+AR1(ORAD),R0		;CHECK RADIUS TO MAKE SURE
             obj_dist -= obj->radius; // ;CHECK RADIUS TO MAKE SURE
@@ -1392,7 +1392,7 @@ OSCANL:
             if (obj_dist > 0) {
                 // asm 0000728A: 	NOP
                 // *FOUND DISTANT ELEMENT, XSFER ACTIVE TO INACTIVE
-OSCANACT:
+            OSCANACT:
                 // asm 0000728B: 	LDI	*AR1,R0			;GET POINTER TO NEXT ELEMENT
                 next_obj = obj->link; // ;GET POINTER TO NEXT ELEMENT
                 // asm 0000728C: 	STI	R0,*AR6
@@ -1411,10 +1411,10 @@ OSCANACT:
                 continue;
             }
         }
-OSCANNXT:
-    // asm 00007294: 	LDI	*AR1,R0
+    OSCANNXT:
+        // asm 00007294: 	LDI	*AR1,R0
         next_obj = obj->link;
-    // asm 00007295: 	BNZD	OSCANL
+        // asm 00007295: 	BNZD	OSCANL
         if (next_obj != NULL) {
             // asm 00007296: 	LDI	AR1,AR6			;AR6=PREVIOUS-1 LINK
             prev_link = &obj->link; // ;AR6=PREVIOUS-1 LINK
@@ -1423,8 +1423,8 @@ OSCANNXT:
             // asm 00007298: 	NOP
             continue;
         }
-    // 	;------>BNZD	OSCANL
-    // asm 00007299: 	RETS
+        // 	;------>BNZD	OSCANL
+        // asm 00007299: 	RETS
         break;
     }
 }
@@ -1557,7 +1557,7 @@ void RESCAN(void) {
     obj = active_list;
     // asm 000072CA: 	BZ	RESCAN1			;ACTIVE LIST NULL, FORGET IT
     if (obj != NULL) {
-RESCAN0:
+    RESCAN0:
         // asm 000072CB: 	LDI	R0,AR2
         // asm 000072CC: 	LDI	*+AR2(OFLAGS),R0       	;SWITCH LIST FLAG
         // asm 000072CD: 	XOR	O_LIST2+O_LIST1,R0

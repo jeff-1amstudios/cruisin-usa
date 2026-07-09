@@ -1947,7 +1947,7 @@ OBJ* LOAD_SINGLE_SECTION(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/) {
     // asm 00004429: 	LDI	*AR5++,R4		;get number of objects to load
     rom_cursor = (const u32*)rom_group + 1;
     count = (int)crusn_read_u32(&rom_cursor); // ;get number of objects to load
-    MAME_VALIDATE_REG_AT_ADDR(0x0000442A, "R4", &count);
+    MAME_ASSERT_REG_AT_ADDR(0x0000442A, "R4", &count);
 
     // asm: 	SLOCKON	LE, BACKGRND\\LOAD_SINGLE_SECTION GROUP ERROR
     SLOCKON(count <= 0, "BACKGRND\\LOAD_SINGLE_SECTION GROUP ERROR");
@@ -1981,17 +1981,17 @@ LS_L12:
     // asm 00004432: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 00004433: 	STF	R1,*+AR4(OPOSX)
     obj->posx = (f32)crusn_read_s32(&rom_cursor);
-    MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x00004433, "R1", &obj->posx);
+    MAME_ASSERT_REG_AT_ADDR_FLOAT(0x00004433, "R1", &obj->posx);
 
     // asm 00004434: 	FLOAT	*AR5++,R1		;GET Y POSITION
     // asm 00004435: 	STF	R1,*+AR4(OPOSY)
     obj->posy = (f32)crusn_read_s32(&rom_cursor);
-    MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x00004435, "R1", &obj->posy);
+    MAME_ASSERT_REG_AT_ADDR_FLOAT(0x00004435, "R1", &obj->posy);
 
     // asm 00004436: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 00004437: 	STF	R1,*+AR4(OPOSZ)
     obj->posz = (f32)crusn_read_s32(&rom_cursor);
-    MAME_VALIDATE_REG_AT_ADDR_FLOAT(0x00004437, "R1", &obj->posz);
+    MAME_ASSERT_REG_AT_ADDR_FLOAT(0x00004437, "R1", &obj->posz);
 
     // asm 00004438: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 00004439: 	STF	R2,*+AR4(ORADY)
@@ -2008,7 +2008,7 @@ LS_L12:
     // asm 00004440: 	STI	R1,*+AR4(OID)
     id = crusn_read_u32(&rom_cursor);
     obj->id = id & (CLASS_M | TYPE_M | SUBTYPE_M);
-    MAME_VALIDATE_REG_AT_ADDR(0x00004440, "R1", &obj->id);
+    MAME_ASSERT_REG_AT_ADDR(0x00004440, "R1", &obj->id);
 
     // asm 00004441: 	LDI	AR4,AR2
     // asm 00004442: 	CALL	OBJ_INSERT			;INSERT THE BABE

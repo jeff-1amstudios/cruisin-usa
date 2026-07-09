@@ -29,11 +29,11 @@ extern int WRECKFLG;
 // asm: 	.bss	REVFLG,1
 extern int REVFLG;
 // asm: 	.bss	PLYCAR,1
-extern int PLYCAR;
+extern OBJ* PLYCAR;
 // asm: 	.bss	PLYPROC,1
-extern int PLYPROC;
+extern PROC* PLYPROC;
 // asm: 	.bss	PLYCBLK,1	;End Plyr Struct
-extern int PLYCBLK;
+extern CARBLK* PLYCBLK;
 // asm: 	.bss	OLDPLYSPD,1	;OLD PLAYER SPEED
 extern int OLDPLYSPD;
 // asm: 	.bss	OLDPLYAIR,1	;OLD PLAYER AIRBORNE
@@ -70,12 +70,13 @@ extern int BRAKEMX;
 extern int STEERFR;
 void RANDSND(void);
 void RANDVSND(void);
-void ROADIR(void);
+float ROADIR(OBJ* track_obj /*AR0*/);
 void GETNXTRDIR(void);
 void DRONINBZ(void);
 void INBOUNDZ(void);
 void GETRPM(void);
 void GETAUTO(void);
+void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DRONESTOP(void);
 void BONUS_WAIT_LOOP(void);
 void PLYR_CAR_INIT(void);

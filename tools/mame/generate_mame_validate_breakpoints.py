@@ -13,23 +13,23 @@ from typing import DefaultDict, Dict, Iterable, List, Optional
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 VALIDATE_ARG_RE = re.compile(
-    r'(?:MAME_VALIDATE_ARG|mame_validate_arg)(?:_sym)?\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
+    r'(?:MAME_ASSERT_ARG|mame_validate_arg)(?:_sym)?\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_ARG_FLOAT_RE = re.compile(
-    r'(?:MAME_VALIDATE_ARG_FLOAT|mame_validate_arg_float)\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
+    r'(?:MAME_ASSERT_ARG_FLOAT|mame_validate_arg_float)\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_FUNCTION_ENTRY_RE = re.compile(
-    r'(?:MAME_VALIDATE_FUNCTION_ENTRY|mame_validate_function_entry)\(\s*\)\s*;'
+    r'(?:MAME_ASSERT_FUNCTION_ENTRY|mame_validate_function_entry)\(\s*\)\s*;'
 )
-VALIDATE_EXIT_RE = re.compile(r'(?:MAME_VALIDATE_EXIT|mame_validate_exit)\(\s*\)\s*;')
+VALIDATE_EXIT_RE = re.compile(r'(?:MAME_VALIDATOR_EXIT|mame_validate_exit)\(\s*\)\s*;')
 VALIDATE_REGION_AT_ADDR_RE = re.compile(
-    r'(?:MAME_VALIDATE_REGION_AT_ADDR|mame_validate_region_at_addr)\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
+    r'(?:MAME_ASSERT_REGION_AT_ADDR|mame_validate_region_at_addr)\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
 )
 VALIDATE_REG_AT_ADDR_RE = re.compile(
-    r'(?:MAME_VALIDATE_REG_AT_ADDR|mame_validate_reg_at_addr)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<expr>[^)]+)\)\s*;'
+    r'(?:MAME_ASSERT_REG_AT_ADDR|mame_validate_reg_at_addr)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_REG_AT_ADDR_FLOAT_RE = re.compile(
-    r'(?:MAME_VALIDATE_REG_AT_ADDR_FLOAT|mame_validate_reg_at_addr_float)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<expr>[^)]+)\)\s*;'
+    r'(?:MAME_ASSERT_REG_AT_ADDR_FLOAT|mame_validate_reg_at_addr_float)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<expr>[^)]+)\)\s*;'
 )
 ADDRESS_MAP_RE = re.compile(r"^\s*[0-9A-Fa-f]{4}:([0-9A-Fa-f]{8})\s+(.+?)\s*$")
 DEFINE_RE = re.compile(r"^\s*#define\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s+(?P<value>.+?)\s*$", re.MULTILINE)
@@ -254,7 +254,7 @@ def collect_breakpoints_for_file(
             continue
 
         function_name, instruction_address = lookup_containing_function_instruction_address(
-            lines, index, path, address_map, "MAME_VALIDATE_FUNCTION_ENTRY"
+            lines, index, path, address_map, "MAME_ASSERT_FUNCTION_ENTRY"
         )
 
         entries.append(
@@ -276,7 +276,7 @@ def collect_breakpoints_for_file(
             continue
 
         function_name, instruction_address = lookup_containing_function_instruction_address(
-            lines, index, path, address_map, "MAME_VALIDATE_EXIT"
+            lines, index, path, address_map, "MAME_ASSERT_EXIT"
         )
 
         entries.append(

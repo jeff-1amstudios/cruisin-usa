@@ -52,6 +52,8 @@ extern OBJ* SIGN_LIST;
 
 extern OBJ* GROUND_LIST;
 
+extern VEHTAB VEHICLE_TABLE[];
+
 // asm:  .globl STARTSECTION,START_POS,START_RADY
 extern int STARTSECTION;
 
@@ -198,7 +200,7 @@ extern OBJ* PLY2CAR;
 extern int OM_POSITION;
 
 // asm:  .globl OM_DIFF
-extern int OM_DIFF;
+extern float OM_DIFF;
 
 // asm:  .globl COINDROP
 extern int COINDROP;
@@ -538,7 +540,7 @@ extern int REAL_CHECKPOINTS;
 extern int FIRST_RACE;
 
 // asm:  .globl GAMEDIFF
-extern int GAMEDIFF;
+extern float GAMEDIFF;
 
 // asm:  .globl CHECKPOINT_NUM
 extern int CHECKPOINT_NUM;
@@ -634,11 +636,11 @@ extern int PEDALMN;
 // asm:  .globl PLYSTAT,PLYCAR,PLYPROC,PLYCBLK
 extern int PLYSTAT;
 
-extern int PLYCAR;
+extern OBJ* PLYCAR;
 
-extern int PLYPROC;
+extern PROC* PLYPROC;
 
-extern int PLYCBLK;
+extern CARBLK* PLYCBLK;
 
 extern int CAMVIEW;
 
@@ -652,7 +654,6 @@ extern int ZOOMD;
 
 // racer.asm
 // asm:  .globl RACER_PTRI
-#define RACER_PTRI RACER_PTR
 
 // asm:  .globl NOLONG_VEHICLES
 extern int NOLONG_VEHICLES;
@@ -676,6 +677,7 @@ extern int FREEZE_IT;
 // setups.asm
 // asm:  .globl LOADSECTION_TABLEI
 #define LOADSECTION_TABLEI LOADSECTION_TABLE
+extern void (*LOADSECTION_TABLE[])(void);
 
 extern int TIRE_SMOKE_COUNT;
 
@@ -847,7 +849,7 @@ void _wr_cw(word_addr_t addr, int value);
 int _rd_cw(word_addr_t addr);
 
 // asm:  .globl _CARV0,_CARVCT
-void _CARV0(void);
+CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/);
 
 // asm:  .globl _PLAYER_ROAD_COLL,CAR_ROAD_COLL
 void CAR_ROAD_COLL(void);
@@ -859,7 +861,7 @@ void _coll_road(void);
 void _obj_coll(void);
 
 // asm:  .globl _makbox
-void _makbox(void);
+void _makbox(OBJ* obj /*AR4*/);
 
 // asm:  .globl COLSCC
 void COLSCC(void);
@@ -1029,7 +1031,7 @@ void FIFO_RESET(void);
 void CLR_RAM(void);
 
 // asm:  .globl ATTRACT_DELTA
-void ATTRACT_DELTA(void);
+void ATTRACT_DELTA(PROC* p);
 
 // drones.asm
 // asm:  .globl DRONE_CLR
@@ -1041,7 +1043,7 @@ void DRONE_PTR_ADD(void);
 // asm:  .globl FIND_PLAYERS_POSITION,POSITION_FINDER
 void FIND_PLAYERS_POSITION(void);
 
-void POSITION_FINDER(void);
+void POSITION_FINDER(PROC* p);
 
 // asm:  .globl INIT_DRONES,ADD_DRONE,FREE_DRONE
 void INIT_DRONES(void);
@@ -1051,9 +1053,9 @@ void ADD_DRONE(void);
 void FREE_DRONE(void);
 
 // asm:  .globl PLYR_RIDE_RIGHT,DRONE_RIDE_RIGHT
-void PLYR_RIDE_RIGHT(void);
+float PLYR_RIDE_RIGHT(void);
 
-void DRONE_RIDE_RIGHT(void);
+float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 // asm:  .globl EXP_PUFF,SMOKE_PUFF,DROP_COCONUTS
 void EXP_PUFF(void);
@@ -1063,9 +1065,9 @@ void SMOKE_PUFF(void);
 void DROP_COCONUTS(void);
 
 // asm:  .globl SIGMA_DISPATCHER,RHO_DISPATCHER
-void SIGMA_DISPATCHER(void);
+void SIGMA_DISPATCHER(PROC* p);
 
-void RHO_DISPATCHER(void);
+void RHO_DISPATCHER(PROC* p);
 
 // asm:  .globl DIST_TO_PLYR
 void DIST_TO_PLYR(void);
@@ -1158,7 +1160,7 @@ void ENTER_INITIALS(void);
 void MIDWAYSPINENTER(void);
 
 // asm:  .globl LOGO_PROC
-void LOGO_PROC(void);
+void LOGO_PROC(PROC* p);
 
 // asm:  .globl RBMATTR_CHECK
 void RBMATTR_CHECK(void);
@@ -1227,7 +1229,7 @@ void PEDALCHK(void);
 void GETCHOICE(void);
 
 // asm:  .globl CPOINT_LIGHT
-void CPOINT_LIGHT(void);
+void CPOINT_LIGHT(PROC* p);
 
 // asm:  .globl _debug,_start
 void _debug(void);
@@ -1235,7 +1237,7 @@ void _debug(void);
 void _start(void);
 
 // asm:  .globl _timeout,_timer
-void _timeout(void);
+void _timeout(PROC* p);
 
 // asm:  .globl SET_ATTR,CYCLE_ATTR
 void SET_ATTR(void);
@@ -1433,7 +1435,7 @@ void OVELADD(void);
 void GETCMOS_VALUES(void);
 
 // asm:  .globl GETTRAK
-void GETTRAK(void);
+void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 // asm:  .globl CAMYADJ
 void CAMYADJ(void);
@@ -1456,13 +1458,13 @@ void OVELNADD(void);
 void MKFXSND(void);
 
 // asm:  .globl GETRDIR
-void GETRDIR(void);
+float GETRDIR(OBJ* track_obj /*AR2*/);
 
 // asm:  .globl BONUS_WAIT_LOOP
 void BONUS_WAIT_LOOP(void);
 
 // asm:  .globl RACER_DRONE
-void RACER_DRONE(void);
+void RACER_DRONE(PROC* p);
 
 // asm:  .globl CARSCAN,OBSTABINIT,PLSCAN,GETRDOFFSET
 void CARSCAN(void);
@@ -1471,7 +1473,7 @@ void OBSTABINIT(void);
 
 void PLSCAN(void);
 
-void GETRDOFFSET(void);
+float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 // asm:  .globl DIFF_CHANGE,DIFF_TRICKLE
 void DIFF_CHANGE(void);
@@ -1754,9 +1756,9 @@ void CLRCRAM(void);
 // asm:  .globl RANDOM,FRAND,SFRAND
 uint32_t RANDOM(void);
 
-void FRAND(void);
+float FRAND(float limit /*R0*/);
 
-void SFRAND(void);
+float SFRAND(float limit /*R0*/);
 
 // asm:  .globl RANDU0,RANDU,SRAND,RANDPER
 void RANDU0(void);
@@ -1798,7 +1800,7 @@ void DELDYNA(void);
 void CARB_INIT(void);
 
 // asm:  .globl GETCAR,DELCAR
-void GETCAR(void);
+CARBLK* GETCAR(void);
 
 void DELCAR(void);
 

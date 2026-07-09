@@ -182,65 +182,29 @@
 
 // MODELS
 // asm: VETTE_MOD	.set	0
-#define VETTE_MOD 0
-
 // asm: HOTROD_MOD	.set	1
-#define HOTROD_MOD 1
-
 // asm: BULLET_MOD	.set	2
-#define BULLET_MOD 2
-
 // asm: TESTOR_MOD	.set	3
-#define TESTOR_MOD 3
-
 // asm: GTRUCK_MOD	.set	4
-#define GTRUCK_MOD 4
-
 // asm: FTRUCK_MOD	.set	5
-#define FTRUCK_MOD 5
-
 // asm: CBUS_MOD	.set	6
-#define CBUS_MOD 6
-
 // asm: COPCAR_MOD	.set	7
-#define COPCAR_MOD 7
-
 // asm: MUSCLE_MOD	.set	8
-#define MUSCLE_MOD 8
-
 // asm: CARAVAN_MOD	.set	9
-#define CARAVAN_MOD 9
-
 // asm: SBUS_MOD	.set	10
-#define SBUS_MOD 10
-
 // asm: PTRUCKG_MOD	.set	11
-#define PTRUCKG_MOD 11
-
 // asm: MUSTANG_MOD	.set	12
-#define MUSTANG_MOD 12
-
 // **reserved	.set	13
 // asm: JEEP_MOD	.set	14
-#define JEEP_MOD 14
-
 // asm: PLYR_COPCAR_MOD	.set	15
-#define PLYR_COPCAR_MOD 15
-
 // asm: PLYR_GTRUCK_MOD	.set	16
-#define PLYR_GTRUCK_MOD 16
-
 // asm: PLYR_SBUS_MOD	.set	17
-#define PLYR_SBUS_MOD 17
+// see eDELTA_MODEL in types.h
 
 // asm: 	.globl	SUSPEND_MODE
 extern int SUSPEND_MODE;
 
 // ***	DELTA.ASM
-// asm: 	.globl	 RACER_PTRI,RACER_PTR
-#define RACER_PTRI RACER_PTR
-
-extern int RACER_PTR[];
 
 // asm: 	.globl	 LANEPI,LANEP,LANESI,LANES,LANES4
 #define LANEPI LANEP
@@ -258,7 +222,7 @@ extern float LANES4[];
 extern int RACER_GRID_START;
 
 // asm: 	.globl	 DELTA_OINIT
-void DELTA_OINIT(void);
+CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/);
 
 // asm: 	.globl	 GET_TRACK_POS
 void GET_TRACK_POS(void);
@@ -325,6 +289,6 @@ void FREE_DRONE(void);
 void PRECOLLIDE_PLYR(void);
 
 // asm: 	.globl	 DRONE_RIDE_RIGHT
-void DRONE_RIDE_RIGHT(void);
+float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 #endif /* DELTA_H */

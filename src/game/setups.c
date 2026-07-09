@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "macs.h"
 #include "mproc.h"
+#include "objects.h"
 #include "pall.h"
 #include "sndtab.h"
 #include "sys.h"
@@ -54,7 +55,7 @@ static void FULLSETUP_WASHINGTONDC(void);
 #define LOADSECTION_TABLEI LOADSECTION_TABLE
 
 static void (*FULLSETUP_TABLE[14])(void);
-static void (*LOADSECTION_TABLE[14])(void);
+void (*LOADSECTION_TABLE[14])(void);
 
 /*
  *----------------------------------------------------------------------------
@@ -66,8 +67,7 @@ static void (*LOADSECTION_TABLE[14])(void);
  */
 
 // *----------------------------------------------------------------------------
-void CLEANUP_PALS(void)
-{
+void CLEANUP_PALS(void) {
     // asm 00008C0C: 	LDL	CORNPAL,AR2
     // asm 00008C0D: 	CALL	PAL_FIND_RAW
     // asm 00008C0E: 	BNC	DONTDEL
@@ -153,7 +153,7 @@ static void (*FULLSETUP_TABLE[])(void) = {
 /* asm: 	.word	LOADGGPARK,LOADSANFRAN,LOADALLH280,LOADREDWOOD,LOADBEVERLY,LOADLAFREEWAY */
 /* asm: 	.word	LOADDEATHVALLEY,LOADARIZONA,LOADGCANYON,LOADIOWA,LOADCHICAGO */
 /* asm: 	.word	LOADINDIANA,LOADAPPALACHIA,LOADWASHINGTONDC */
-static void (*LOADSECTION_TABLE[])(void) = {
+void (*LOADSECTION_TABLE[])(void) = {
     LOADGGPARK,
     LOADSANFRAN,
     LOADALLH280,
@@ -170,19 +170,18 @@ static void (*LOADSECTION_TABLE[])(void) = {
     LOADWASHINGTONDC,
 };
 
-static void LOADGGPARK(void)
-{
+static void LOADGGPARK(void) {
     // asm 00008C3C: 	LDL	_SECggate,AR2
     // asm 00008C3D: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECggate_SETUPS);
     // asm 00008C3E: 	LDL	_SECcorn,AR2
     // asm 00008C3F: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECcorn);
     // asm 00008C40: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADGGPARK", 0, 0);
-    UNIMPL();
 }
 
-static void LOADSANFRAN(void)
-{
+static void LOADSANFRAN(void) {
     // asm 00008C41: 	CALL	LOAD_TUNNEL2
     // asm 00008C42: 	LDL	_SECggate,AR2
     // asm 00008C43: 	CALL	LOAD_SECTION_REQ
@@ -191,16 +190,14 @@ static void LOADSANFRAN(void)
     UNIMPL();
 }
 
-static void LOADALLH280(void)
-{
+static void LOADALLH280(void) {
     // asm 00008C45: 	CALL	LOAD_TUNNEL2
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADALLH280", 0, 0);
     UNIMPL();
 }
 
-static void LOADH280(void)
-{
+static void LOADH280(void) {
     // asm 00008C46: 	LDL	_SECdeserts,AR2
     // asm 00008C47: 	CALL	LOAD_SECTION_REQ
     // asm 00008C48: 	LDL	_SECh280,AR2
@@ -210,8 +207,7 @@ static void LOADH280(void)
     UNIMPL();
 }
 
-static void LOADREDWOOD(void)
-{
+static void LOADREDWOOD(void) {
     // asm 00008C4B: 	CALL	LOADH280
     // asm 00008C4C: 	CALL	LOAD_TUNNEL
     // asm 00008C4D: 	RETS
@@ -219,8 +215,7 @@ static void LOADREDWOOD(void)
     UNIMPL();
 }
 
-static void LOADBEVERLY(void)
-{
+static void LOADBEVERLY(void) {
     // asm 00008C4E: 	CALL	LOADH280
     // asm 00008C4F: 	CALL	LOAD_TUNNEL
     // asm 00008C50: 	LDL	_SECbevhnred,AR2
@@ -230,8 +225,7 @@ static void LOADBEVERLY(void)
     UNIMPL();
 }
 
-static void LOADLAFREEWAY(void)
-{
+static void LOADLAFREEWAY(void) {
     // asm 00008C53: 	CALL	LOAD_TUNNEL
     // asm 00008C54: 	LDL	_SEClafreeway,AR2
     // asm 00008C55: 	CALL	LOAD_SECTION_REQ
@@ -240,8 +234,7 @@ static void LOADLAFREEWAY(void)
     UNIMPL();
 }
 
-static void LOADDEATHVALLEY(void)
-{
+static void LOADDEATHVALLEY(void) {
     // asm 00008C57: 	CALL	LOAD_TUNNEL
     // asm 00008C58: 	LDL	_SECdeathvalley,AR2
     // asm 00008C59: 	CALL	LOAD_SECTION_REQ
@@ -252,8 +245,7 @@ static void LOADDEATHVALLEY(void)
     UNIMPL();
 }
 
-static void LOADARIZONA(void)
-{
+static void LOADARIZONA(void) {
     // asm 00008C5D: 	CALL	LOAD_TUNNEL
     // asm 00008C5E: 	LDL	_SECarizona,AR2
     // asm 00008C5F: 	CALL	LOAD_SECTION_REQ
@@ -264,8 +256,7 @@ static void LOADARIZONA(void)
     UNIMPL();
 }
 
-static void LOADGCANYON(void)
-{
+static void LOADGCANYON(void) {
     // asm 00008C63: 	LDL	_SECdeserts,AR2
     // asm 00008C64: 	CALL	LOAD_SECTION_REQ
     // asm 00008C65: 	LDL	_SECmtrush,AR2
@@ -275,8 +266,7 @@ static void LOADGCANYON(void)
     UNIMPL();
 }
 
-static void LOADIOWA(void)
-{
+static void LOADIOWA(void) {
     // asm 00008C68: 	LDL	_SECiowa_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008C69: 	CALL	LOAD_SECTION_REQ
     // asm 00008C6A: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
@@ -288,8 +278,7 @@ static void LOADIOWA(void)
     UNIMPL();
 }
 
-static void LOADCHICAGO(void)
-{
+static void LOADCHICAGO(void) {
     // asm 00008C6F: 	LDL	_SECthetrains,AR2
     // asm 00008C70: 	CALL	LOAD_SECTION_REQ
     // asm 00008C71: 	LDL	_SECiowa_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
@@ -303,8 +292,7 @@ static void LOADCHICAGO(void)
     UNIMPL();
 }
 
-static void LOADINDIANA(void)
-{
+static void LOADINDIANA(void) {
     // asm 00008C78: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008C79: 	CALL	LOAD_SECTION_REQ
     // asm 00008C7A: 	LDL	_SECmwest,AR2
@@ -316,8 +304,7 @@ static void LOADINDIANA(void)
     UNIMPL();
 }
 
-static void LOADAPPALACHIA(void)
-{
+static void LOADAPPALACHIA(void) {
     // asm 00008C7F: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008C80: 	CALL	LOAD_SECTION_REQ
     // asm 00008C81: 	LDL	_SECmwest_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
@@ -329,8 +316,7 @@ static void LOADAPPALACHIA(void)
     UNIMPL();
 }
 
-static void LOADWASHINGTONDC(void)
-{
+static void LOADWASHINGTONDC(void) {
     // asm 00008C86: 	LDL	_SECmwest_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008C87: 	CALL	LOAD_SECTION_REQ
     // asm 00008C88: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
@@ -344,8 +330,7 @@ static void LOADWASHINGTONDC(void)
     UNIMPL();
 }
 
-static void LOAD_TUNNEL2(void)
-{
+static void LOAD_TUNNEL2(void) {
     // asm 00008C8F: 	LDL	_SECtunnel2,AR2
     // asm 00008C90: 	CALL	LOAD_SECTION_REQ
     // asm 00008C91: 	LDL	tunnel2_PALETTES,AR2
@@ -355,8 +340,7 @@ static void LOAD_TUNNEL2(void)
     UNIMPL();
 }
 
-static void WATERON(void)
-{
+static void WATERON(void) {
     // asm 00008C94: 	LDI	@_MODE,R0
     // asm 00008C95: 	OR	MWATER,R0
     // asm 00008C96: 	STI	R0,@_MODE
@@ -365,8 +349,7 @@ static void WATERON(void)
     UNIMPL();
 }
 
-static void WATEROFF(void)
-{
+static void WATEROFF(void) {
     // asm 00008C98: 	LDI	@_MODE,R0
     // asm 00008C99: 	ANDN	MWATER,R0
     // asm 00008C9A: 	STI	R0,@_MODE
@@ -378,8 +361,7 @@ static void WATEROFF(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_GGPARK(void)
-{
+static void FULLSETUP_GGPARK(void) {
     // asm 00008C9C: 	LDL	_SECggate,AR2
     // asm 00008C9D: 	CALL	LOAD_SECTION_REQ
     // asm 00008C9E: 	LDL	_SECcorn,AR2
@@ -409,8 +391,7 @@ static void FULLSETUP_GGPARK(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_SANFRAN(void)
-{
+static void FULLSETUP_SANFRAN(void) {
     // asm 00008CB2: 	LDL	_SECggate,AR2
     // asm 00008CB3: 	CALL	LOAD_SECTION_REQ
     // asm 00008CB4: 	CALL	LOAD_TUNNEL2
@@ -452,8 +433,7 @@ static void FULLSETUP_SANFRAN(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_H280(void)
-{
+static void FULLSETUP_H280(void) {
     // asm 00008CD4: 	CALL	LOAD_TUNNEL2
     // asm 00008CD5: 	LDL	_SECh280,AR2
     // asm 00008CD6: 	CALL	LOAD_SECTION_REQ
@@ -493,8 +473,7 @@ static void FULLSETUP_H280(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_REDWOOD(void)
-{
+static void FULLSETUP_REDWOOD(void) {
     // asm 00008CF4: 	LDL	_SECdeserts,AR2
     // asm 00008CF5: 	CALL	LOAD_SECTION_REQ
     // asm 00008CF6: 	LDL	_SECh280,AR2
@@ -534,8 +513,7 @@ static void FULLSETUP_REDWOOD(void)
     UNIMPL();
 }
 
-void LOAD_TUNNEL(void)
-{
+void LOAD_TUNNEL(void) {
     // asm 00008D16: 	LDL	tunnel_PALETTES,AR2
     // asm 00008D17: 	CALL	alloc_section
     // asm 00008D18: 	LDL	_SECtunnel,AR2
@@ -548,8 +526,7 @@ void LOAD_TUNNEL(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_BEVERLY(void)
-{
+static void FULLSETUP_BEVERLY(void) {
     // asm 00008D1B: 	CALL	LOAD_TUNNEL
     // asm 00008D1C: 	LDL	_SECdeserts,AR2
     // asm 00008D1D: 	CALL	LOAD_SECTION_REQ
@@ -588,8 +565,7 @@ static void FULLSETUP_BEVERLY(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_LAFREEWAY(void)
-{
+static void FULLSETUP_LAFREEWAY(void) {
     // asm 00008D3A: 	CALL	LOAD_TUNNEL
     // asm 00008D3B: 	LDL	_SEClafreeway,AR2
     // asm 00008D3C: 	CALL	LOAD_SECTION_REQ
@@ -623,8 +599,7 @@ static void FULLSETUP_LAFREEWAY(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_DEATHVALLEY(void)
-{
+static void FULLSETUP_DEATHVALLEY(void) {
     // asm 00008D54: 	LDL	_SECdeathvalley,AR2
     // asm 00008D55: 	CALL	LOAD_SECTION_REQ
     // asm 00008D56: 	LDL	_SECthetrains,AR2
@@ -666,8 +641,7 @@ static void FULLSETUP_DEATHVALLEY(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_ARIZONA(void)
-{
+static void FULLSETUP_ARIZONA(void) {
     // asm 00008D74: 	LDL	tunnel_PALETTES,AR2
     // asm 00008D75: 	CALL	alloc_section
     // asm 00008D76: 	CALL	WATEROFF
@@ -707,8 +681,7 @@ static void FULLSETUP_ARIZONA(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_GCANYON(void)
-{
+static void FULLSETUP_GCANYON(void) {
     // asm 00008D94: 	LDL	_SECdeserts,AR2
     // asm 00008D95: 	CALL	LOAD_SECTION_REQ
     // asm 00008D96: 	LDL	_SECmtrush,AR2
@@ -748,8 +721,7 @@ static void FULLSETUP_GCANYON(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_IOWA(void)
-{
+static void FULLSETUP_IOWA(void) {
     // asm 00008DB3: 	CALL	WATEROFF
     // asm 00008DB4: 	LDI	7,R0		;BOGGIE
     // asm 00008DB5: 	STI	R0,@TUNE_IDX
@@ -795,8 +767,7 @@ static void FULLSETUP_IOWA(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_CHICAGO(void)
-{
+static void FULLSETUP_CHICAGO(void) {
     // asm 00008DDF: 	LDL	_SECthetrains,AR2
     // asm 00008DE0: 	CALL	LOAD_SECTION_REQ
     // asm 00008DE1: 	LDL	_SECchicago,AR2
@@ -833,8 +804,7 @@ static void FULLSETUP_CHICAGO(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_INDIANA(void)
-{
+static void FULLSETUP_INDIANA(void) {
     // asm 00008DFC: 	CALL	WATEROFF
     // asm 00008DFD: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008DFE: 	CALL	LOAD_SECTION_REQ
@@ -881,8 +851,7 @@ static void FULLSETUP_INDIANA(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_APPALACHIA(void)
-{
+static void FULLSETUP_APPALACHIA(void) {
     // asm 00008E28: 	CALL	WATEROFF
     // asm 00008E29: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008E2A: 	CALL	LOAD_SECTION_REQ
@@ -925,8 +894,7 @@ static void FULLSETUP_APPALACHIA(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FULLSETUP_WASHINGTONDC(void)
-{
+static void FULLSETUP_WASHINGTONDC(void) {
     // asm 00008E4B: 	CALL	WATEROFF
     // asm 00008E4C: 	LDL	_SECmwest_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008E4D: 	CALL	LOAD_SECTION_REQ

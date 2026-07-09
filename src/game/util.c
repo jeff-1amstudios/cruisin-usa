@@ -35,8 +35,8 @@ void SCRNFIL(void);
 word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one);
 void CLRCRAM(void);
 uint32_t RANDOM(void);
-void FRAND(void);
-void SFRAND(void);
+float FRAND(float limit /*R0*/);
+float SFRAND(float limit /*R0*/);
 void RANDU0(void);
 void RANDU(void);
 void SRAND(void);
@@ -53,7 +53,7 @@ void DYNAOBJ_INIT(void);
 void GETDYNA(void);
 void DELDYNA(void);
 void CARB_INIT(void);
-void GETCAR(void);
+CARBLK* GETCAR(void);
 void DELCAR(void);
 void SCAN_OBJECTS(PROC* p);
 void PUSHALL(void);
@@ -370,7 +370,7 @@ RND2:
  *	R0	RANDOM NUMBER 0->N FLOATING POINT
  *
  */
-void FRAND(void) {
+float FRAND(float limit /*R0*/) {
     // asm 00008EEA: 	PUSH	AR2
     // asm 00008EEB: 	PUSHFL	R1
     // asm 00008EED: 	PUSHF	R0
@@ -384,8 +384,7 @@ void FRAND(void) {
     // asm 00008EF5: 	POPFL	R1
     // asm 00008EF7: 	POP	AR2
     // asm 00008EF8: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FRAND", 0, 0);
-    UNIMPL();
+    return limit * ((float)((RANDOM() >> 16) & 0xFFFFu) / 65536.0f);
 }
 
 // *----------------------------------------------------------------------------
@@ -400,7 +399,7 @@ void FRAND(void) {
  *	R0	FL RANDOM NUMBER -N->+N FLOATING POINT
  *
  */
-void SFRAND(void) {
+float SFRAND(float limit /*R0*/) {
     // asm 00008EF9: 	PUSH	R1
     // asm 00008EFA: 	PUSHF	R1
     // asm 00008EFB: 	PUSHF	R0
@@ -411,8 +410,7 @@ void SFRAND(void) {
     // asm 00008F00: 	POPF	R1
     // asm 00008F01: 	POP	R1
     // asm 00008F02: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SFRAND", 0, 0);
-    UNIMPL();
+    return FRAND(limit * 2.0f) - limit;
 }
 
 // *----------------------------------------------------------------------------
@@ -1129,7 +1127,7 @@ void CARB_INIT(void) {
  *
  *
  */
-void GETCAR(void) {
+CARBLK* GETCAR(void) {
     // asm 0000904C: 	PUSH	R0
     // ;	LDP	@CARFREE
     // asm 0000904D: 	LDI	@CARFREE,AR0
@@ -1140,15 +1138,21 @@ void GETCAR(void) {
     // asm 00009051: 	STI	R0,@CARFREE
     // asm 00009052: 	INCM	@CAR_COUNT
     // asm 00009055: 	SETC
+    if (CARFREE != NULL) {
+        CARBLK* car = CARFREE;
+
+        CARFREE = car->link;
+        CAR_COUNT += 1;
+        return car;
+    }
+
 GETCAR_X:
     // asm 00009056: 	POP	R0
     // asm 00009057: 	RETS
 GETCAR_ERR:
     // asm 00009058: 	CLRC
     // asm 00009059: 	B	GETCAR_X
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAR", 0, 0);
-    UNIMPL();
+    return NULL;
 }
 
 // *----------------------------------------------------------------------------

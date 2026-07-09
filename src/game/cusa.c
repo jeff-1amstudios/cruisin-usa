@@ -428,11 +428,11 @@ DR1:
     FEED_WATCHDOG();
 
     MESSAGE1();
-    MAME_VALIDATE_REGION_AT_ADDR(0x00004B5E, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
+    MAME_ASSERT_REGION_AT_ADDR(0x00004B5E, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
     crusn_yield_display_interrupt();
     MSG1();
     crusn_yield_display_interrupt();
-    MAME_VALIDATE_REGION_AT_ADDR(0x00004B5F, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
+    MAME_ASSERT_REGION_AT_ADDR(0x00004B5F, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
 
     PREVX = 240;
     DELTA = 1;
@@ -471,30 +471,30 @@ DR1:
 
     HARD_SECTION_LOAD = 1;
     LOAD_SECTION_REQ(&SECshared);
-    MAME_VALIDATE_REGION_AT_ADDR(0x00004B8B, "_SECshared-decompressed", 0x0A00000, SECshared.dest_addr, 0x1AB00);
+    MAME_ASSERT_REGION_AT_ADDR(0x00004B8B, "_SECshared-decompressed", 0x0A00000, SECshared.dest_addr, 0x1AB00);
 
     HARD_SECTION_LOAD = 1;
     LOAD_SECTION_REQ(&SECskys_CUSA);
-    MAME_VALIDATE_REGION_AT_ADDR(0x00004B8F, "SECskys_CUSA-decompressed", 0x0A1AB00, SECskys_CUSA.dest_addr, 0x30000);
+    MAME_ASSERT_REGION_AT_ADDR(0x00004B8F, "SECskys_CUSA-decompressed", 0x0A1AB00, SECskys_CUSA.dest_addr, 0x30000);
 
     MSG2();
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SECgeneral_CUSA);
-    MAME_VALIDATE_REGION_AT_ADDR(0x00004B95, "SECgeneral_CUSA-decompressed", 0x0A52900, SECgeneral_CUSA.dest_addr, 0x136280);
+    MAME_ASSERT_REGION_AT_ADDR(0x00004B95, "SECgeneral_CUSA-decompressed", 0x0A52900, SECgeneral_CUSA.dest_addr, 0x136280);
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SEChead2head);
-    MAME_VALIDATE_REGION_AT_ADDR(0x00004B9A, "SEChead2head-decompressed", 0x0BEFA00, SEChead2head.dest_addr, 0x1000);
+    MAME_ASSERT_REGION_AT_ADDR(0x00004B9A, "SEChead2head-decompressed", 0x0BEFA00, SEChead2head.dest_addr, 0x1000);
 
     MSG3();
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SECpress);
-    MAME_VALIDATE_REGION_AT_ADDR(0x00004BA0, "SECpress-decompressed", 0x0B88B80, SECpress.dest_addr, 0x1000);
+    MAME_ASSERT_REGION_AT_ADDR(0x00004BA0, "SECpress-decompressed", 0x0B88B80, SECpress.dest_addr, 0x1000);
 
     AUDIT_WRITE(AUD_BCREDITS, 0);
 
