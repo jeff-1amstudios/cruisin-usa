@@ -21,7 +21,7 @@ void PRC_EXISTP(void);
 void PRC_INIT(void);
 void PRC_XFER(void);
 void PRC_FINDNEXT(void);
-void PRC_FIND(void);
+PROC* PRC_FIND(int pid, int mask);
 void PRC_FOLLOW(void);
 
 #define PACTIVEI PACTIVE
@@ -679,12 +679,17 @@ void PRC_FINDNEXT(void) {
     UNIMPL();
 }
 
-void PRC_FIND(void) {
+PROC* PRC_FIND(int pid, int mask) {
+    PROC* proc;
+    int masked_pid;
+
     // asm 0000A93D: 	BUD	FINDE
     // asm 0000A93E: 	PUSH	R2
     // asm 0000A93F: 	AND	R1,R0
+    masked_pid = pid & mask;
     // asm 0000A940: 	LDI	@PACTIVEI,AR0		;WE MUST FIND DEAD PROCESS TO LINK AROUND
     // 	;---->	BUD	FINDE
+    proc = PACTIVE;
 FINDLP:
     // asm 0000A941: 	CMPI	R2,R0
     // asm 0000A942: 	BEQ	FINDPROCX
@@ -695,11 +700,16 @@ FINDE:
     // asm 0000A946: 	LDI	*+AR0(PID),R2
     // asm 0000A947: 	AND	R1,R2
     // 	;---->	BNZD	FINDLP
+    while (proc != NULL) {
+        if ((proc->id & mask) == masked_pid) {
+            break;
+        }
+        proc = proc->link;
+    }
 FINDPROCX:
     // asm 0000A948: 	POP	R2
     // asm 0000A949: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_FIND", 0, 0);
-    UNIMPL();
+    return proc;
 }
 
 // *----------------------------------------------------------------------------

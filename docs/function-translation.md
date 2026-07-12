@@ -3,6 +3,7 @@
 Translate the specified assembly function into c. Where practical, keep the c code simple so its close to line for line with the assembly for ease of debugging. However, you may write the c code in idiomatic style for ease of readability.
 
 ## Rules
+- - *Interleave* the translated c pieces of code underneath the // asm: comment lines already in the function. *THIS IS NOT OPTIONAL*. It is WRONG if you do not follow this.
 - Read the associated .ASM file for context
 - First, determine the function prototype - args and return value. Use developer comments along with the code to help understand and name the arguments.
 - Correctness is your number 1 job. You must not invent anything except translating the assembly code into C.
@@ -17,7 +18,6 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - Dont invent new functions, other that to avoid large duplication (eg if 2 functions are branching to the same code tail)
 - Dont invent new global/module level variables
 - Ignore DP and CPU wait state related instructions. Ignore push/pop.
-- *Interleave* the translated c pieces of code underneath the // asm: comment lines already in the function.
 - Retain the original developer comments in the assembly code as c comments
 - If a translated function call in asm produces a value or side effect used by the caller, keep that call in the translated function at the same boundary. Do not replace it by passing a transformed value unless the original asm does that transformation before the call.
 
@@ -59,4 +59,3 @@ OFFROAD_TMR = r0;
 
 ## `PROC` functions
 Functions which take a `PROC *` argument are a executed as primitive co-routines. All local variables should be persisted in a function-specific `PROC_CONTEXT` field, and special care must be taken to make them correctly re-entrant. See `REQWAIT` in `comp.c` for an example of how to structure it.
-Resume labels should be called `PROC_STATE_<N>` to make them obviously different from the original code labels.

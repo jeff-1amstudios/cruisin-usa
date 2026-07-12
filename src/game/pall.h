@@ -58,10 +58,10 @@ int PAL_FIND_RAW(const tPAL* palette_source);
 void PAL_SET(uint32_t* src, uint32_t destPaletteColor, uint32_t count);
 
 // asm: 	.globl	PAL_DELETE
-void PAL_DELETE(void);
+void PAL_DELETE(int palette_code /*AR2*/);
 
 // asm: 	.globl	PAL_DELETE_RAW
-void PAL_DELETE_RAW(void);
+void PAL_DELETE_RAW(int actual_palette_index /*AR2*/);
 
 // asm: 	.globl	PAL_DIMMER
 void PAL_DIMMER(void);

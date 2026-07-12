@@ -25,6 +25,8 @@ typedef unsigned int u32;
 typedef unsigned short u16;
 typedef float f32;
 
+typedef void (*void_func_ptr)(void);
+
 typedef u32 word_addr_t;
 typedef u32 tPALETTE_CODE;
 
@@ -377,9 +379,7 @@ typedef struct CARBLK {
  * alternate type, but prefer LEG above from SYS.EQU for imports.
  */
 typedef struct LEG_ASM {
-    f32 pos_x;
-    f32 pos_y;
-    f32 pos_z;
+    VECTOR pos;
     u32 id;
 } LEG_ASM;
 
@@ -389,6 +389,11 @@ typedef struct LEG_MAP_ENTRY {
     u32 pos_z;
     u32 id;
 } LEG_MAP_ENTRY;
+
+typedef struct LEG_SSLL_ENTRY {
+    int leg_ssll_next_offset;
+    LEG_ASM leg;
+} LEG_SSLL_ENTRY;
 
 typedef struct STRDGROUP {
     u32 head;
@@ -641,6 +646,13 @@ typedef struct RACER {
     tPAL* palette;
 } RACER;
 
+typedef struct VIEWLIST_ENTRY {
+    void_func_ptr starting_func;
+    int track_id;
+    int frames;
+    void_func_ptr view_func;
+} VIEWLIST_ENTRY;
+
 typedef struct PROC_CONTEXT {
     union {
         struct {
@@ -703,11 +715,31 @@ typedef struct PROC_CONTEXT {
             float finishrot;
         } RACER_DRONE;
         struct {
-            int objins;
-            int list_num;
+            int background_color;
             int cut_pan;
-            uintptr_t view_script;
-            int frames_left;
+            float zoomvel;
+            u32 camera_xyzr[4];
+            u32 newcamera_xyzr[4];
+            float new_posx;
+            float new_posy;
+            float new_posz;
+            float new_radx;
+            float new_rady;
+            float new_radz;
+            MATRIX new_matrix;
+            int camera_view;
+            float camera_vel;
+            OBJ* carobj;
+            float cardis;
+            float camera_accel;
+            float camera_infin;
+            u32 temp_data[10];
+            int list_num;
+            float camera_lane;
+            OBJ* objins;
+            float camyoff;
+            uintptr_t view_script; // synthetic state used to preserve AR6 across sleeps
+            int frames_left;       // synthetic state used to preserve AR5 across sleeps
         } ATTRACT_DELTA;
         struct {
             OBJ* obj;

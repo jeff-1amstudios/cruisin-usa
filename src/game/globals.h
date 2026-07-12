@@ -110,9 +110,11 @@ extern int DO_FOLDFLAG;
 extern int DID_TIMED_OUT;
 
 // asm:  .globl FULLSETUP_TABLEI,BONUS_POSTLAUNCHI
-extern int FULLSETUP_TABLEI;
+#define FULLSETUP_TABLEI FULLSETUP_TABLE
+extern void (*FULLSETUP_TABLE[])(void);
 
 #define BONUS_POSTLAUNCHI BONUS_POSTLAUNCH
+extern void_func_ptr BONUS_POSTLAUNCH[];
 
 // asm:  .globl CHALLENGE_RACE
 extern int CHALLENGE_RACE;
@@ -136,7 +138,7 @@ extern int GAMETRAK[];
 // asm:  .globl LEG_NAMESI,LEG_NAMES
 #define LEG_NAMESI LEG_NAMES
 
-extern uintptr_t LEG_NAMES[];
+extern const char* LEG_NAMES[];
 
 // asm:  .globl HELI_ABORT
 extern int HELI_ABORT;
@@ -1184,7 +1186,7 @@ void INFINITY_CUSA(void);
 void HUD(void);
 
 // asm:  .globl dealloc_section
-void dealloc_section(void);
+void dealloc_section(tSECTION_ALLOC sec /*AR2*/);
 
 // asm:  .globl FILL_PLOT
 void FILL_PLOT(void);
@@ -1286,7 +1288,7 @@ void THE_CAR_CHOICE_PROC(void);
 void LEG_INIT(void);
 
 // asm:  .globl LEG_GENERATE_MAP
-void LEG_GENERATE_MAP(void);
+void LEG_GENERATE_MAP(int start_index /*AR0*/, int end_index /*AR1*/);
 
 // line.c
 // asm:  .globl _rectangle,_line
@@ -1333,7 +1335,7 @@ void NORMIT(void);
 void NORMITS(void);
 
 // asm:  .globl MATRIX_MUL
-void MATRIX_MUL(void);
+void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/);
 
 // asm:  .globl CONCAT201
 void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/);

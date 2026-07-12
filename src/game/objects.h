@@ -3,7 +3,29 @@
 extern tPALLIST_ENTRY _PALLIST[128];
 extern tPAL* _PALROM[];
 
-extern tSECTION_ALLOC shared_PALETTES, general_PALETTES, press_PALETTES;
+extern tSECTION_ALLOC shared_PALETTES;
+extern tSECTION_ALLOC tunnel_PALETTES;
+extern tSECTION_ALLOC tunnel2_PALETTES;
+extern tSECTION_ALLOC general_PALETTES;
+extern tSECTION_ALLOC thetrains_PALETTES;
+extern tSECTION_ALLOC deserts_PALETTES;
+extern tSECTION_ALLOC ggate_PALETTES;
+extern tSECTION_ALLOC h280_PALETTES;
+extern tSECTION_ALLOC bevhnred_PALETTES;
+extern tSECTION_ALLOC lafreeway_PALETTES;
+extern tSECTION_ALLOC deathvalley_PALETTES;
+extern tSECTION_ALLOC arizona_PALETTES;
+extern tSECTION_ALLOC mtrush_PALETTES;
+extern tSECTION_ALLOC mwest_PALETTES;
+extern tSECTION_ALLOC chicago_PALETTES;
+extern tSECTION_ALLOC appl_PALETTES;
+extern tSECTION_ALLOC crace_PALETTES;
+extern tSECTION_ALLOC ctrans_PALETTES;
+extern tSECTION_ALLOC dc_shared_PALETTES;
+extern tSECTION_ALLOC dc_PALETTES;
+extern tSECTION_ALLOC finale_PALETTES;
+extern tSECTION_ALLOC theheads_PALETTES;
+extern tSECTION_ALLOC press_PALETTES;
 
 extern LOAD_SECTION_REQ_ARG SECshared;
 extern LOAD_SECTION_REQ_ARG SECskys_CUSA;

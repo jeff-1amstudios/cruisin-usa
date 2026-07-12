@@ -35,7 +35,7 @@ void VECTLEN(void);
 void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
 void CPYIMAT(void);
 void CLR_VECTORA(void);
-void MATRIX_MUL(void);
+void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/);
 void NORMALIZE(void);
 void NORMAT(void);
 void GEN_NORMAL(void);
@@ -854,14 +854,14 @@ FM1:
     // asm 000095AB: 	MPYF	*+AR1(1),R0,R1			;SX*SY*CZ
     // asm 000095AC: 	MPYF	*-AR1(1),*+AR3(1),R2		;CX*SZ
     // asm 000095AD: 	SUBF	R2,R1
-    cx_sz = cx * sz;                  // ;CX*SZ
+    cx_sz = cx * sz;                // ;CX*SZ
     dest[3] = (sx_sy * cz) - cx_sz; // ;A(1,0)=SX*SY*CZ-CX*SZ
 
     // asm 000095AE: 	MPYF	*+AR3(1),R0,R0			;SZ*(SX*SY)
     // asm 000095AE:  ||	STF	R1,*AR2++			;A(1,0)=SX*SY*SZ-CX*SZ
     // asm 000095AF: 	MPYF	*-AR1(1),*+AR1(1),R1		;CX*CZ
     // asm 000095B0: 	ADDF	R1,R0
-    cx_cz = cx * cz;                  // ;CX*CZ
+    cx_cz = cx * cz;                // ;CX*CZ
     dest[4] = (sz * sx_sy) + cx_cz; // ;A(1,1)= SX*SY*SZ+CX*CZ
 
     // asm 000095B2: 	MPYF	*-AR3(1),*+AR1(0),R0
@@ -1002,7 +1002,7 @@ void HPFIND_YMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
     float c;
     float s;
 
-    // MAME_ASSERT_ARG_FLOAT
+    MAME_ASSERT_ARG_FLOAT("R2", &radians);
 
     // asm 000095EB: 	PUSH	R0
     // asm 000095EC: 	PUSHF	R0
@@ -1277,7 +1277,11 @@ void CLR_VECTORA(void) {
  *NOTE SRC 1x3 and DST 1x3 may be equal
  *
  */
-void MATRIX_MUL(void) {
+void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/) {
+    float out_x;
+    float out_y;
+    float out_z;
+
     // asm 0000966C: 	PUSH	R0
     // asm 0000966D: 	PUSHF	R0
     // asm 0000966E: 	PUSH	AR1
@@ -1288,33 +1292,37 @@ void MATRIX_MUL(void) {
     // asm 00009673: 	MPYF	*AR2,*AR1++,R2
     // asm 00009674: 	MPYF	*+AR2(1),*AR1++,R0
     // asm 00009674:  || 	ADDF	R0,R2
+    out_x = src->X * m3x3->a00 + src->Y * m3x3->a01 + src->Z * m3x3->a02;
     // asm 00009675: 	MPYF	*-AR2(1),*AR1++,R0
     // asm 00009675:  ||	ADDF	R0,R2
     // asm 00009676: 	PUSHF	R2
     // asm 00009677: 	MPYF	*AR2,*AR1++,R2
     // asm 00009678: 	MPYF	*+AR2(1),*AR1++,R0
     // asm 00009678:  || 	ADDF	R0,R2
+    out_y = src->X * m3x3->a10 + src->Y * m3x3->a11 + src->Z * m3x3->a12;
     // asm 00009679: 	MPYF	*-AR2(1),*AR1++,R0
     // asm 00009679:  ||	ADDF	R0,R2
     // asm 0000967A: 	PUSHF	R2
     // asm 0000967B: 	MPYF	*+AR2(1),*+AR1(1),R2
     // asm 0000967C: 	MPYF	*AR2--(1),*AR1,R0
     // asm 0000967C:  || 	ADDF	R0,R2
+    out_z = src->X * m3x3->a20 + src->Y * m3x3->a21 + src->Z * m3x3->a22;
     // asm 0000967D: 	LDI	R3,AR1
     // asm 0000967E: 	ADDF	R2,R0
     // asm 0000967F: 	POPF	R2
     // asm 00009680: 	STF	R0,*+AR1(2)
+    dst->Z = out_z;
     // asm 00009681: 	POPF	R0
     // asm 00009682: 	STF	R0,*AR1
     // asm 00009682:  ||	STF	R2,*+AR1(1)
+    dst->X = out_x;
+    dst->Y = out_y;
     // asm 00009683: 	POPF	R2
     // asm 00009684: 	POP	R2
     // asm 00009685: 	POP	AR1
     // asm 00009686: 	POPF	R0
     // asm 00009687: 	POP	R0
     // asm 00009688: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MATRIX_MUL", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

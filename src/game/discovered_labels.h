@@ -418,7 +418,8 @@
 #define trmeng1_chrome_ROM 0x00C11318
 #define tunnel2_PALETTES_ROM 0x0000A170
 #define tunnel_PALETTES_ROM 0x0000A16E
-#define TYCO_TRKI_ROM 0x0000A12E
+// #define TYCO_TRKI_ROM 0x0000A12E
+#define TYCO_TRK_ROM 0x00CD3923
 #define ungh1_blue_ROM 0x00C103A2
 #define ungh1_green_ROM 0x00C10423
 #define ungh1_silver_ROM 0x00C104A4

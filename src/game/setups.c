@@ -2,6 +2,7 @@
 #include "../core/machine.h"
 #include "cmos.h"
 #include "cornobj.h"
+#include "discovered_labels.h"
 #include "globals.h"
 #include "macs.h"
 #include "mproc.h"
@@ -54,7 +55,7 @@ static void FULLSETUP_WASHINGTONDC(void);
 
 #define LOADSECTION_TABLEI LOADSECTION_TABLE
 
-static void (*FULLSETUP_TABLE[14])(void);
+void (*FULLSETUP_TABLE[14])(void);
 void (*LOADSECTION_TABLE[14])(void);
 
 /*
@@ -125,7 +126,6 @@ DONTDEL:
 /* asm: FULLSETUP_TABLEI */
 /* asm: .word	FULLSETUP_TABLE */
 /* asm: romdata */
-int FULLSETUP_TABLEI;
 /* asm: FULLSETUP_TABLE: */
 /* asm: 	.word	FULLSETUP_GGPARK */
 /* asm: 	.word	FULLSETUP_SANFRAN,FULLSETUP_H280,FULLSETUP_REDWOOD */
@@ -133,7 +133,7 @@ int FULLSETUP_TABLEI;
 /* asm: 	.word	FULLSETUP_ARIZONA,FULLSETUP_GCANYON,FULLSETUP_IOWA */
 /* asm: 	.word	FULLSETUP_CHICAGO,FULLSETUP_INDIANA,FULLSETUP_APPALACHIA */
 /* asm: 	.word	FULLSETUP_WASHINGTONDC */
-static void (*FULLSETUP_TABLE[])(void) = {
+void (*FULLSETUP_TABLE[])(void) = {
     FULLSETUP_GGPARK,
     FULLSETUP_SANFRAN,
     FULLSETUP_H280,
@@ -345,8 +345,7 @@ static void WATERON(void) {
     // asm 00008C95: 	OR	MWATER,R0
     // asm 00008C96: 	STI	R0,@_MODE
     // asm 00008C97: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WATERON", 0, 0);
-    UNIMPL();
+    _MODE |= MWATER;
 }
 
 static void WATEROFF(void) {
@@ -354,8 +353,7 @@ static void WATEROFF(void) {
     // asm 00008C99: 	ANDN	MWATER,R0
     // asm 00008C9A: 	STI	R0,@_MODE
     // asm 00008C9B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WATEROFF", 0, 0);
-    UNIMPL();
+    _MODE &= ~MWATER;
 }
 
 // *----------------------------------------------------------------------------
@@ -364,28 +362,38 @@ static void WATEROFF(void) {
 static void FULLSETUP_GGPARK(void) {
     // asm 00008C9C: 	LDL	_SECggate,AR2
     // asm 00008C9D: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECggate_SETUPS);
     // asm 00008C9E: 	LDL	_SECcorn,AR2
     // asm 00008C9F: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECcorn);
     // asm 00008CA0: 	LDI	1,R0
     // asm 00008CA1: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008CA2: 	LDI	60,R0
     // asm 00008CA3: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 00008CA4: 	LDI	100,R0
     // asm 00008CA5: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 00008CA6: 	LDL	ggate_PALETTES,AR2
     // asm 00008CA7: 	CALL	alloc_section
+    alloc_section(ggate_PALETTES);
     // asm 00008CA8: 	LDL	CORNPAL,AR2
     // asm 00008CA9: 	CALL	PAL_ALLOC_RAW
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(CORNPAL));
     // asm 00008CAA: 	FLOAT	-15,R0
     // asm 00008CAB: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = -15.0f;
     // asm 00008CAC: 	CALL	WATERON
+    WATERON();
     // asm 00008CAD: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008CAE: 	LDI	1,AR0
     // asm 00008CAF: 	LDI	L_LEG1_END,AR1
     // asm 00008CB0: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(1, L_LEG1_END);
     // asm 00008CB1: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_GGPARK", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

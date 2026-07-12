@@ -25,7 +25,7 @@ void DECODE_BUFFER(void);
 void COMMQ_PACKET_INIT(void);
 void COMMQ_READY_TO_SEND(void);
 void MESSAGE_ADD(void);
-void MESSAGE_ADD_SB(void);
+void MESSAGE_ADD_SB(int message /*AR2*/);
 static void DECODE_NULL(void);
 void SEND_WAVEFL_READY(void);
 void SEND_WAVEFL_SET(void);
@@ -453,7 +453,7 @@ MESSADDX:
  *	AR2	MESSAGE
  *
  */
-void MESSAGE_ADD_SB(void) {
+void MESSAGE_ADD_SB(int message /*AR2*/) {
     // asm 000076E1: 	PUSH	R0
     // asm 000076E2: 	PUSH	AR0
     // asm 000076E3: 	LDI	@DIPRAM,R0
@@ -480,7 +480,15 @@ MASBX:
     // asm 000076EF: 	POP	R0
     // asm 000076F0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MESSAGE_ADD_SB", 0, 0);
-    UNIMPL();
+
+    if ((DIPRAM & DIP_COMMP) == 0) {
+        int length = SEND_BUFFER_A_LEN + 1;
+
+        if (length <= COMM_BUFFER_SIZE) {
+            SEND_BUFFER_A_LEN = length;
+            SEND_BUFFER_A[length - 1] = message;
+        }
+    }
 }
 
 // *----------------------------------------------------------------------------
@@ -499,7 +507,7 @@ void SEND_WAVEFL_READY(void) {
     // asm 000076F3: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_WAVEFL_READY", 0, 0);
-    UNIMPL();
+    MESSAGE_ADD_SB(CB_WAVEFL_READY);
 }
 
 void SEND_WAVEFL_SET(void) {
@@ -507,7 +515,7 @@ void SEND_WAVEFL_SET(void) {
     // asm 000076F5: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_WAVEFL_SET", 0, 0);
-    UNIMPL();
+    MESSAGE_ADD_SB(CB_WAVEFL_SET);
 }
 
 void SEND_WAVEFL_GO(void) {
@@ -517,7 +525,8 @@ void SEND_WAVEFL_GO(void) {
     // asm 000076F9: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_WAVEFL_GO", 0, 0);
-    UNIMPL();
+    _sectime = 0;
+    MESSAGE_ADD_SB(CB_WAVEFL_GO);
 }
 
 // *----------------------------------------------------------------------------
@@ -1612,7 +1621,10 @@ NO_MUSIC:
     // asm 00007965: 	POP	R0
     // asm 00007966: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_ATTRSND", 0, 0);
-    UNIMPL();
+
+    if (READADJ(ADJ_ATTRACT_MODE_SOUND) != 0) {
+        SOND1(ATTR_THEME);
+    }
 }
 
 // *----------------------------------------------------------------------------
@@ -1623,7 +1635,7 @@ void SEND_ATTRSND(void) {
     // asm 00007968: 	BU	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_ATTRSND", 0, 0);
-    UNIMPL();
+    MESSAGE_ADD_SB(CB_ATTRSND);
 }
 
 // *----------------------------------------------------------------------------

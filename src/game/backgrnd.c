@@ -127,7 +127,7 @@ int STARTS;
 /* asm: SECTIONIDX	.bss	SECTIONIDX,1 */
 int SECTIONIDX;
 /* asm: TYCO_TRACK	.bss	TYCO_TRACK,1 */
-int TYCO_TRACK;
+// int TYCO_TRACK;
 /* asm: TYCO_TRACK_NTL	.bss	TYCO_TRACK_NTL,1 */
 int TYCO_TRACK_NTL;
 /* asm: TYCO_NTL_IDX	.bss	TYCO_NTL_IDX,1 */

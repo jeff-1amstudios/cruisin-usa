@@ -20,11 +20,11 @@ void PAL_XFER(void);
 void PAL_OVERWRITE(void);
 int PAL_FIND(u32 pal_index);
 int PAL_FIND_RAW(const tPAL* palette_source);
-void PAL_DELETE_RAW(void);
+void PAL_DELETE_RAW(int actual_palette_index /*AR2*/);
 static void PALXFER_INIT(void);
 static PALXFER* PALXFER_GET(void);
 static void PALXFER_DEL(PALXFER* target);
-void PAL_DELETE(void);
+void PAL_DELETE(int palette_code /*AR2*/);
 void PAL_DIMMER(void);
 
 #define PALROMI _PALROM
@@ -404,15 +404,19 @@ int PAL_FIND_RAW(const tPAL* palette_source) {
  *		(16 BIT)
  *
  */
-void PAL_DELETE_RAW(void)
+void PAL_DELETE_RAW(int actual_palette_index /*AR2*/)
 {
+    int slot;
+
     // asm 00009F17: 	PUSH	AR0
     // asm 00009F18: 	RS	8,AR2
+    slot = actual_palette_index >> 8;
     // asm 00009F19: 	LDP	@RAWLOCSI
     // asm 00009F1A: 	LDI	@RAWLOCSI,AR0
     // asm 00009F1B: 	ADDI	AR2,AR0
     // asm 00009F1C: 	CLRI	R0
     // asm 00009F1D: 	STI	R0,*AR0
+    RAWLOCSI[slot] = NULL;
     // ;edbg
     // ;	CMPI	0,AR2
     // ;	BEQ	$
@@ -422,10 +426,9 @@ void PAL_DELETE_RAW(void)
     // asm 00009F20: 	ADDI	AR2,AR0
     // asm 00009F21: 	CLRI	R0
     // asm 00009F22: 	STI	R0,*AR0
+    PALRAMI[slot] = 0;
     // asm 00009F23: 	POP	AR0
     // asm 00009F24: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_DELETE_RAW", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -701,8 +704,11 @@ PXXX:
  *	LOCKUP ON ERROR
  *
  */
-void PAL_DELETE(void)
+void PAL_DELETE(int palette_code /*AR2*/)
 {
+    int entry;
+    int slot;
+
     // asm 00009FCA: 	PUSH	R0
     // asm 00009FCB: 	PUSH	AR0
     // ;edbg
@@ -714,28 +720,38 @@ void PAL_DELETE(void)
     // asm 00009FCD: 	LDI	@PALLISTI,AR0
     // asm 00009FCE: 	ADDI	AR2,AR0
     // asm 00009FCF: 	LDI	*AR0,R0
+    entry = PALLISTI[palette_code].ref_count_and_pal_code;
     // asm 00009FD0: 	BZ	DELP2
+    if (entry == 0) {
+        return;
+    }
     // asm 00009FD1: 	RS	16,R0
     // asm 00009FD2: 	LS	16,R0
     // asm 00009FD3:      	STI	R0,*AR0
+    entry &= 0xffff0000u;
+    PALLISTI[palette_code].ref_count_and_pal_code = entry;
     // asm 00009FD4: 	LDI	R0,RC
     // asm 00009FD5: 	LSH	16,R0
     // asm 00009FD6: 	BNZ	DELP2	;palette not found ignore...
+    if ((entry << 16) != 0) {
+        return;
+    }
     // 	;CLEAR OUT PALRAM, LIST ENTRY IF COUNT IS ZERO
 DELP1:
     // asm 00009FD7: LDI	0,R0
     // asm 00009FD8: 	STI	R0,*AR0		;CLEAR OUT LIST ENTRY
+    PALLISTI[palette_code].ref_count_and_pal_code = 0;
     // asm 00009FD9: 	LDP	@PALRAMI
     // asm 00009FDA: 	LDI	@PALRAMI,AR0
     // asm 00009FDB: 	LSH	-16,RC
     // asm 00009FDC: 	ADDI	RC,AR0
     // asm 00009FDD: 	STI	R0,*AR0		;ZERO OUT PALRAM AREA
+    slot = entry >> 16;
+    PALRAMI[slot] = 0;
 DELP2:
     // asm 00009FDE: 	POP	AR0
     // asm 00009FDF: 	POP	R0
     // asm 00009FE0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_DELETE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

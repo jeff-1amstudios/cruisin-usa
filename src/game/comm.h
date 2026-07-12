@@ -302,7 +302,7 @@ void SEND_CHANGE_MUSIC(void);
 // asm: 	.globl	 MESSAGE_ADD,MESSAGE_ADD_SB
 void MESSAGE_ADD(void);
 
-void MESSAGE_ADD_SB(void);
+void MESSAGE_ADD_SB(int message /*AR2*/);
 
 // asm: 	.globl	 DECODE_BUFFER,DECODE_BUFFER_SLAVE
 void DECODE_BUFFER(void);

@@ -51,7 +51,7 @@ void PRC_EXISTP(void);
 void PRC_XFER(void);
 
 // asm: 	.globl	PRC_FIND
-void PRC_FIND(void);
+PROC* PRC_FIND(int pid, int mask);
 
 // asm: 	.globl	PRC_FINDNEXT
 void PRC_FINDNEXT(void);

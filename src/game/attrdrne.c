@@ -8,6 +8,7 @@
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
+#include "objects.h"
 #include "pall.h"
 #include "port.h"
 #include "racer.h"
@@ -15,14 +16,17 @@
 #include "sys.h"
 #include "sysid.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
 
 /*
  * Source module: asm/ATTRDRNE.ASM
  */
 
+typedef struct AttractViewStep AttractViewStep;
+
 void LOGO_PROC(PROC* p);
-static uintptr_t* GET_LIST_ADDR(PROC* p /*AR7*/);
+static const AttractViewStep* GET_LIST_ADDR(PROC* p /*AR7*/);
 static void INIT_STARTING(void);
 static void INIT_WATCH(void);
 static void INIT_REVERS_CUP(void);
@@ -57,21 +61,37 @@ static void SMOOTH_VIEW(void);
 static void ZOOM_CAMERA(void);
 static void UPDATE_CAMERA(void);
 static void CAMERA_HORIZON_PROJECTION(void);
-static void INIT_ATTR_LEG(void);
+static void INIT_ATTR_LEG(PROC* p /*AR7*/);
 static void ATTR_INIT_GAMELEG(void);
 void LOAD_ATTR_LEG(void);
 
-#define _CAMERAPOSI _CAMERAPOS
-#define VIEWLISTI VIEWLIST
-#define ATTR_WAVETABI ATTR_WAVETAB
+struct AttractViewStep {
+    void_func_ptr init_func;
+    void_func_ptr run_func;
 
-static uintptr_t* VIEWLIST[];
+    union {
+        struct {
+            int32_t stop_when_zero;
+        } generic;
+        struct {
+            int32_t sections;
+        } road;
+        struct {
+            int32_t target_track_id;
+        } smooth;
+        struct {
+            int32_t frames;
+            uint32_t track_id;
+        } watch;
+    } state;
+};
+
+static const AttractViewStep* const VIEWLIST[];
 static int ATTR_WAVETAB[16];
-static uintptr_t GGPARK_LIST[];
-static uintptr_t BEVHILL_LIST[];
-static uintptr_t GCANYON_LIST[];
-static uintptr_t CHICAGO_LIST[];
-typedef void (*ATTRACT_DELTA_STEP)(void);
+static const AttractViewStep GGPARK_LIST[];
+static const AttractViewStep BEVHILL_LIST[];
+static const AttractViewStep GCANYON_LIST[];
+static const AttractViewStep CHICAGO_LIST[];
 
 /*
  *----------------------------------------------------------------------------
@@ -114,8 +134,8 @@ int ATTRWAVE;
 #define CAMYOFF (PDATA + 45)
 
 void ATTRACT_DELTA(PROC* p /*AR7*/) {
-    ATTRACT_DELTA_STEP step;
-    uintptr_t* view_script;
+    const AttractViewStep* view_script;
+    const AttractViewStep* step;
     OBJ* player_obj;
     PROC* player_proc;
 
@@ -134,13 +154,15 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055C6: 	LSH	-1,R4
     // asm 000055C7: 	STI	R4,*+AR7(LIST_NUM)
     p->ctx->ATTRACT_DELTA.list_num = ATTRWAVE >> 1;
+    MAME_ASSERT_REG_AT_ADDR(0x000055C8, "R4", &p->ctx->ATTRACT_DELTA.list_num);
 
     // asm 000055C8: 	CALL	INIT_ATTR_LEG
-    INIT_ATTR_LEG();
+    INIT_ATTR_LEG(p);
 
     // asm 000055C9: 	LDI	4,R0
     // asm 000055CA: 	STI	R0,@NOSWAP
     NOSWAP = 4;
+    MAME_ASSERT_REG_AT_ADDR(0x000055CB, "R0", &NOSWAP);
 
     // asm 000055CB: 	CREATE	LOGO_PROC,UTIL_C
     {
@@ -152,6 +174,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055CF: 	OR	MGO,R0
     // asm 000055D0: 	STI	R0,@_MODE
     _MODE |= MGO;
+    MAME_ASSERT_REG_AT_ADDR(0x000055D1, "R0", &_MODE);
 
     // asm 000055D1: 	LDI	-1,R0
     // asm 000055D2: 	STI	R0,*+AR7(CUT_PAN)
@@ -187,6 +210,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055DF: 	LDI	90,R0
     // asm 000055E0: 	STI	R0,@_countdown
     _countdown = 90;
+    MAME_ASSERT_REG_AT_ADDR(0x000055E1, "R0", &_countdown);
 
     // asm 000055E1: 	LDI	1,R0
     // asm 000055E2: 	STI	R0,*+AR7(CUT_PAN)
@@ -202,9 +226,9 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
 aDELTA_LOOP:
     // asm 000055E5: 	LDI	*AR6,AR0
     // asm 000055E6: 	CALLU	AR0
-    view_script = (uintptr_t*)p->ctx->ATTRACT_DELTA.view_script;
-    step = (ATTRACT_DELTA_STEP)*view_script;
-    step();
+    view_script = (const AttractViewStep*)p->ctx->ATTRACT_DELTA.view_script;
+    step = view_script;
+    step->run_func();
 
 ADELTA2:
     // asm 000055E7: 	CALL	UPDATE_CAMERA
@@ -212,7 +236,7 @@ ADELTA2:
 
     // asm 000055E8: 	SLEEP	1
     SLEEP(1, 2);
-    view_script = (uintptr_t*)p->ctx->ATTRACT_DELTA.view_script;
+    view_script = (const AttractViewStep*)p->ctx->ATTRACT_DELTA.view_script;
 
     // asm 000055EA: 	LDI	@NOSWAP,R0
     // asm 000055EB: 	BEQ	ADELTA2A
@@ -240,8 +264,8 @@ DELTA_LOOP_ENTRY:
     // ;	CALL	GET_LIST_ADDR
     // ;	BU	$
     // asm 000055F4: 	SUBI	3,AR6		;Loop on last entry
-    if (*view_script == 0) {
-        view_script -= 3; // Loop on last entry
+    if (view_script->init_func == NULL) {
+        view_script -= 1; // Loop on last entry
     }
 
 sDELTA_LOOP:
@@ -252,19 +276,20 @@ sDELTA_LOOP:
     // asm 000055F9: 	LDI	0,R0
     // asm 000055FA: 	STI	R0,*+AR7(OBJINS)
     if (p->ctx->ATTRACT_DELTA.objins != 0) {
-        OBJ_INSERT((OBJ*)(uintptr_t)p->ctx->ATTRACT_DELTA.objins); // INSERT PLAYER OBJECT
+        OBJ_INSERT(p->ctx->ATTRACT_DELTA.objins); // INSERT PLAYER OBJECT
         p->ctx->ATTRACT_DELTA.objins = 0;
     }
 
 NO_OBJINS:
     // asm 000055FB: 	LDI	*AR6++,AR0
     // asm 000055FC: 	CALLU	AR0
-    step = (ATTRACT_DELTA_STEP)*view_script++;
+    step = view_script++;
     p->ctx->ATTRACT_DELTA.view_script = (uintptr_t)view_script;
-    step();
+    step->init_func();
 
     // asm 000055FD: 	LDI	*AR6++,AR5
-    p->ctx->ATTRACT_DELTA.frames_left = (int)*view_script++;
+    p->ctx->ATTRACT_DELTA.frames_left = step->state.generic.stop_when_zero;
+    MAME_ASSERT_REG_AT_ADDR(0x000055FE, "AR5", &p->ctx->ATTRACT_DELTA.frames_left);
     p->ctx->ATTRACT_DELTA.view_script = (uintptr_t)view_script;
 
     // asm 000055FE: 	B	ADELTA2
@@ -362,11 +387,11 @@ LOGOX:
 }
 
 // *----------------------------------------------------------------------------
-static uintptr_t* GET_LIST_ADDR(PROC* p /*AR7*/) {
+static const AttractViewStep* GET_LIST_ADDR(PROC* p /*AR7*/) {
     // asm 00005645: 	LDI	*+AR7(LIST_NUM),AR6
     // asm 00005646: 	ADDI	@VIEWLISTI,AR6
     // asm 00005647: 	LDI	*AR6,AR6
-    uintptr_t* view_script = VIEWLIST[p->ctx->ATTRACT_DELTA.list_num];
+    const AttractViewStep* view_script = VIEWLIST[p->ctx->ATTRACT_DELTA.list_num];
 
     // asm 00005648: 	RETS
     return view_script;
@@ -384,7 +409,7 @@ static uintptr_t* GET_LIST_ADDR(PROC* p /*AR7*/) {
 /* asm: 	.word	GCANYON_LIST */
 /* asm: 	.word	CHICAGO_LIST */
 /* asm: 	 */
-static uintptr_t* VIEWLIST[] = {
+static const AttractViewStep* const VIEWLIST[] = {
     GGPARK_LIST,
     BEVHILL_LIST,
     GCANYON_LIST,
@@ -403,29 +428,14 @@ static uintptr_t* VIEWLIST[] = {
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
 /* asm: 	 */
-static uintptr_t GGPARK_LIST[] = {
-    // THE first call is to intialize
-    (uintptr_t)INIT_STARTING,
-    70,
-    (uintptr_t)ROAD_VIEW,
-    (uintptr_t)INIT_LEAD,
-    80,
-    (uintptr_t)LEAD_VIEW,
-    (uintptr_t)INIT_WATCH,
-    0x1214,
-    240,
-    (uintptr_t)WATCH_VIEW,
-    (uintptr_t)CUT_TO_VIEW2,
-    0x1404,
-    (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INITVIEW1_VIEW,
-    0x17FB,
-    (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INIT_LEAD,
-    80,
-    (uintptr_t)LEAD_VIEW,
-    0,
-    0,
+static const AttractViewStep GGPARK_LIST[] = {
+    { .init_func = INIT_STARTING, .run_func = ROAD_VIEW, .state.road = { .sections = 70 } },
+    { .init_func = INIT_LEAD, .run_func = LEAD_VIEW, .state.road = { .sections = 80 } },
+    { .init_func = INIT_WATCH, .run_func = WATCH_VIEW, .state.watch = { .frames = 240, .track_id = 0x1214 } },
+    { .init_func = CUT_TO_VIEW2, .run_func = SMOOTH_VIEW, .state.smooth = { .target_track_id = 0x1404 } },
+    { .init_func = INITVIEW1_VIEW, .run_func = SMOOTH_VIEW, .state.smooth = { .target_track_id = 0x17FB } },
+    { .init_func = INIT_LEAD, .run_func = LEAD_VIEW, .state.road = { .sections = 80 } },
+    { 0 },
 };
 /* asm: BEVHILL_LIST */
 /* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
@@ -435,22 +445,12 @@ static uintptr_t GGPARK_LIST[] = {
 /* asm: 	.word	0,0 */
 /* asm: 	 */
 /* asm: 	 */
-static uintptr_t BEVHILL_LIST[] = {
-    // THE first call is to intialize
-    (uintptr_t)INIT_STARTING,
-    80,
-    (uintptr_t)ROAD_VIEW,
-    (uintptr_t)CUT_TO_VIEW2,
-    0x14AFB,
-    (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INITVIEW1_VIEW,
-    0x14DF3,
-    (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INIT_STARTING,
-    100,
-    (uintptr_t)ROAD_VIEW,
-    0,
-    0,
+static const AttractViewStep BEVHILL_LIST[] = {
+    { .init_func = INIT_STARTING, .run_func = ROAD_VIEW, .state.road = { .sections = 80 } },
+    { .init_func = CUT_TO_VIEW2, .run_func = SMOOTH_VIEW, .state.smooth = { .target_track_id = 0x14AFB } },
+    { .init_func = INITVIEW1_VIEW, .run_func = SMOOTH_VIEW, .state.smooth = { .target_track_id = 0x14DF3 } },
+    { .init_func = INIT_STARTING, .run_func = ROAD_VIEW, .state.road = { .sections = 100 } },
+    { 0 },
 };
 /* asm: GCANYON_LIST */
 /* asm: 	.word	INIT_STARTING,70,ROAD_VIEW */
@@ -461,30 +461,14 @@ static uintptr_t BEVHILL_LIST[] = {
 /* asm: 	.word	CUT_TO_VIEW2,30000h,SMOOTH_VIEW */
 /* asm: 	.word	0,0 */
 /* asm: 	 */
-static uintptr_t GCANYON_LIST[] = {
-    // THE first call is to intialize
-    (uintptr_t)INIT_STARTING,
-    70,
-    (uintptr_t)ROAD_VIEW,
-    (uintptr_t)INIT_WATCH,
-    0x2E20A,
-    220,
-    (uintptr_t)WATCH_VIEW,
-    (uintptr_t)CUT_TO_VIEW2,
-    0x2E800,
-    (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INITVIEW1_VIEW,
-    0x2EC00,
-    (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INIT_WATCH,
-    0x2EF00,
-    240,
-    (uintptr_t)WATCH_VIEW,
-    (uintptr_t)CUT_TO_VIEW2,
-    0x30000,
-    (uintptr_t)SMOOTH_VIEW,
-    0,
-    0,
+static const AttractViewStep GCANYON_LIST[] = {
+    { .init_func = INIT_STARTING, .run_func = ROAD_VIEW, .state.road = { .sections = 70 } },
+    { .init_func = INIT_WATCH, .run_func = WATCH_VIEW, .state.watch = { .frames = 220, .track_id = 0x2E20A } },
+    { .init_func = CUT_TO_VIEW2, .run_func = SMOOTH_VIEW, .state.smooth = { .target_track_id = 0x2E800 } },
+    { .init_func = INITVIEW1_VIEW, .run_func = SMOOTH_VIEW, .state.smooth = { .target_track_id = 0x2EC00 } },
+    { .init_func = INIT_WATCH, .run_func = WATCH_VIEW, .state.watch = { .frames = 240, .track_id = 0x2EF00 } },
+    { .init_func = CUT_TO_VIEW2, .run_func = SMOOTH_VIEW, .state.smooth = { .target_track_id = 0x30000 } },
+    { 0 },
 };
 /* asm: CHICAGO_LIST */
 /* asm: 	.word	INIT_STARTING,80,ROAD_VIEW */
@@ -495,29 +479,14 @@ static uintptr_t GCANYON_LIST[] = {
 /* asm: 	.word	INIT_LEAD,80,LEAD_VIEW */
 /* asm: 	.word	0,0 */
 /* asm: 	 */
-static uintptr_t CHICAGO_LIST[] = {
-    // THE first call is to intialize
-    (uintptr_t)INIT_STARTING,
-    80,
-    (uintptr_t)ROAD_VIEW,
-    (uintptr_t)INIT_REVERS_CUP,
-    60,
-    (uintptr_t)REV_ROAD_VIEW,
-    (uintptr_t)CUT_TO_VIEW2,
-    0x3AA0E,
-    (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INITVIEW1_VIEW,
-    0x3C00A,
-    (uintptr_t)SMOOTH_VIEW,
-    (uintptr_t)INIT_WATCH,
-    0x3C5F5,
-    240,
-    (uintptr_t)WATCH_VIEW,
-    (uintptr_t)INIT_LEAD,
-    80,
-    (uintptr_t)LEAD_VIEW,
-    0,
-    0,
+static const AttractViewStep CHICAGO_LIST[] = {
+    { .init_func = INIT_STARTING, .run_func = ROAD_VIEW, .state.road = { .sections = 80 } },
+    { .init_func = INIT_REVERS_CUP, .run_func = REV_ROAD_VIEW, .state.road = { .sections = 60 } },
+    { .init_func = CUT_TO_VIEW2, .run_func = SMOOTH_VIEW, .state.smooth = { .target_track_id = 0x3AA0E } },
+    { .init_func = INITVIEW1_VIEW, .run_func = SMOOTH_VIEW, .state.smooth = { .target_track_id = 0x3C00A } },
+    { .init_func = INIT_WATCH, .run_func = WATCH_VIEW, .state.watch = { .frames = 240, .track_id = 0x3C5F5 } },
+    { .init_func = INIT_LEAD, .run_func = LEAD_VIEW, .state.road = { .sections = 80 } },
+    { 0 },
 };
 
 // *----------------------------------------------------------------------------
@@ -1778,57 +1747,88 @@ static int ATTR_WAVETAB[] = {
     L_LEG11_BEGIN + 1,
     10,
 };
-#define ATTR_WAVETAB_LEN ($ - ATTR_WAVETAB - 1)
+#define ATTR_WAVETAB_LEN ((int)(sizeof(ATTR_WAVETAB) / sizeof(ATTR_WAVETAB[0])) - 1)
 
-static void INIT_ATTR_LEG(void) {
+static void INIT_ATTR_LEG(PROC* p /*AR7*/) {
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+    int attr_wave_index;
+    int dipram;
+
     // asm 00005994: 	LDI	@ATTRWAVE,R0
     // asm 00005995: 	BNE	NO_MUSIC
-    // 	;Wed Mar 8 11:02:10 1995
-    // 	;
-    // 	;
-    // 	;if COMMP ON  && SLAVE then no music
-    // 	;if COMMP ON && MASTER then send_attrsnd
-    // 	;if COMMP OFF do regular
-    // 	;
-    // 	;
-    // asm 00005996: 	LDI	@DIPRAM,R0
-    // asm 00005997: 	TSTB	DIP_COMMP,R0
-    // asm 00005998: 	BNZ	DOTEST
-    // asm 00005999: 	TSTB	CMDP_MASTER,R0
-    // asm 0000599A: 	BNZ	NO_MUSIC
-    // asm 0000599B: 	CALL	SEND_ATTRSND
-DOTEST:
-    // 	;
-    // 	;
-    // 	;
-    // asm 0000599C: 	READADJ	ADJ_ATTRACT_MODE_SOUND
-    // asm 0000599E: 	CMPI	0,R0
-    // asm 0000599F: 	BEQ	NO_MUSIC
-    // asm 000059A0: 	SOND1	ATTR_THEME
+    if (ATTRWAVE == 0) {
+        // 	;Wed Mar 8 11:02:10 1995
+        // 	;
+        // 	;
+        // 	;if COMMP ON  && SLAVE then no music
+        // 	;if COMMP ON && MASTER then send_attrsnd
+        // 	;if COMMP OFF do regular
+        // 	;
+        // 	;
+        // asm 00005996: 	LDI	@DIPRAM,R0
+        dipram = DIPRAM;
+        // asm 00005997: 	TSTB	DIP_COMMP,R0
+        // asm 00005998: 	BNZ	DOTEST
+        // asm 00005999: 	TSTB	CMDP_MASTER,R0
+        // asm 0000599A: 	BNZ	NO_MUSIC
+        if ((dipram & DIP_COMMP) == 0 && (dipram & CMDP_MASTER) == 0) {
+            // asm 0000599B: 	CALL	SEND_ATTRSND
+            SEND_ATTRSND();
+        }
+    DOTEST:
+        // 	;
+        // 	;
+        // 	;
+        // asm 0000599C: 	READADJ	ADJ_ATTRACT_MODE_SOUND
+        // asm 0000599E: 	CMPI	0,R0
+        // asm 0000599F: 	BEQ	NO_MUSIC
+        if (READADJ(ADJ_ATTRACT_MODE_SOUND) != 0) {
+            // asm 000059A0: 	SOND1	ATTR_THEME
+            SOND1(ATTR_THEME);
+        }
+    }
 NO_MUSIC:
     // asm 000059A2: 	LDI	MATTR|MINFIN,R0
+    _MODE = MATTR | MINFIN;
     // asm 000059A3: 	STI	R0,@_MODE
     // asm 000059A4: 	LDL	press_PALETTES,AR2	;make sure these are gone
     // asm 000059A5: 	CALL	dealloc_section
+    dealloc_section(press_PALETTES); // make sure these are gone
     // asm 000059A6: 	LDI	0,R0			;NO CHALLENGE RACES IN ATTRACT MODE
+    // NO CHALLENGE RACES IN ATTRACT MODE
+    CHALLENGE_RACE = 0;
     // asm 000059A7: 	STI	R0,@CHALLENGE_RACE
     // asm 000059A8: 	LDI	@ATTR_WAVETABI,AR1
     // asm 000059A9: 	ADDI	@ATTRWAVE,AR1
+    attr_wave_index = ATTRWAVE;
     // asm 000059AA: 	LDI	*AR1++,R0
     // asm 000059AB: 	STI	R0,@NEXT_STARTUP
+    NEXT_STARTUP = ATTR_WAVETAB[attr_wave_index];
+    MAME_ASSERT_REG_AT_ADDR(0x000059AC, "R0", &NEXT_STARTUP);
     // asm 000059AC: 	LDI	*AR1,R1
+    BONUS_WAVE = ATTR_WAVETAB[attr_wave_index + 1];
     // asm 000059AD: 	STI	R1,@BONUS_WAVE
+    MAME_ASSERT_REG_AT_ADDR(0x000059AE, "R1", &BONUS_WAVE);
     // asm 000059AE: 	LDI	@BONUS_WAVE,AR0
     // asm 000059AF: 	ADDI	@FULLSETUP_TABLEI,AR0
     // asm 000059B0: 	LDI	*AR0,R0
     // asm 000059B1: 	CALLU	R0
+    FULLSETUP_TABLE[BONUS_WAVE]();
     // asm 000059B2: 	LDF	@INFIN_CORRECT,R0
+    p->ctx->ATTRACT_DELTA.camera_infin = (float)INFIN_CORRECT;
     // asm 000059B3: 	STF	R0,*+AR7(CAMERA_INFIN)
+    MAME_ASSERT_REG_AT_ADDR_FLOAT(0x000059B4, "R0", &p->ctx->ATTRACT_DELTA.camera_infin);
     // asm 000059B4: 	CALL	OBJ_INIT
+    OBJ_INIT();
     // asm 000059B5: 	CALL	INIT_DRONES	;init DRONE tracker system
+    INIT_DRONES(); // init DRONE tracker system
     // asm 000059B6: 	CALL	DYNAOBJ_INIT	;init DYNAMIC OBJECTS
+    DYNAOBJ_INIT(); // init DYNAMIC OBJECTS
     // asm 000059B7: 	CALL	CARB_INIT	;init CAR BLOCKS
+    CARB_INIT(); // init CAR BLOCKS
     // asm 000059B8: 	CALL	INIT_RDDEBRIS	;initialize ROAD DEBRIS list(s)
+    INIT_RDDEBRIS(); // initialize ROAD DEBRIS list(s)
     // 	;
     // 	;RE INITIALIZE TRACK...
     // 	;
@@ -1836,36 +1836,52 @@ NO_MUSIC:
     // asm 000059BA: 	ADDI	@BONUS_POSTLAUNCHI,AR0
     // asm 000059BB: 	LDI	*AR0,R0
     // asm 000059BC: 	CALLU	R0
+    // RE INITIALIZE TRACK...
+    BONUS_POSTLAUNCH[BONUS_WAVE]();
     // asm 000059BD: 	LDI	@NEXT_STARTUP,R0
+    STARTSECTION = NEXT_STARTUP;
     // asm 000059BE: 	STI	R0,@STARTSECTION
+    MAME_ASSERT_REG_AT_ADDR(0x000059BF, "R0", &STARTSECTION);
     // asm 000059BF: 	CALL	BGD_INIT
+    BGD_INIT();
     // asm 000059C0: 	PUSH	AR7
     // asm 000059C1: 	LDI	UTIL_C|BACKGRND_T,R0
     // asm 000059C2: 	LDI	-1,R1
     // asm 000059C3: 	CALL	PRC_FIND
+    proc = PRC_FIND(UTIL_C | BACKGRND_T, -1);
     // asm 000059C4: 	LDI	AR0,AR7
     // asm 000059C5: 	LDI	3,R0
+    proc->sleep_ticks = 3;
     // asm 000059C6: 	STI	R0,*+AR7(PTIME)
     // asm 000059C7: 	POP	AR7
     // asm 000059C8: 	LDI	*+AR7(PDATA),R0
+    BGNDCOLA = p->ctx->ATTRACT_DELTA.background_color;
     // asm 000059C9: 	STI	R0,@BGNDCOLA
     // asm 000059CA: 	LDI	1,R0
+    NOAERASE = 1;
     // asm 000059CB: 	STI	R0,@NOAERASE
     // asm 000059CC: 	CLRI	R0
+    OHIGH_PRIORITY = 0;
     // asm 000059CD: 	STI	R0,@OHIGH_PRIORITY
     // asm 000059CE: 	CREATE	WAVEFLAG,UTIL_C|MONKEY_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE((PROC_FUNC)WAVEFLAG, UTIL_C | MONKEY_T, ctx);
     // asm 000059D1: 	CALL	ATTR_INIT_GAMELEG
+    ATTR_INIT_GAMELEG();
     // asm 000059D2: 	LDI	MAX_DRONES,R0
+    DD_MAX_DRONES = MAX_DRONES;
     // asm 000059D3: 	STI	R0,@DD_MAX_DRONES
     // asm 000059D4: 	LDI	@ATTRWAVE,R0
     // asm 000059D5: 	ADDI	2,R0
+    ATTRWAVE += 2;
     // asm 000059D6: 	CMPI	ATTR_WAVETAB_LEN-1,R0
     // asm 000059D7: 	LDIGT	0,R0
+    if (ATTRWAVE > ATTR_WAVETAB_LEN - 1) {
+        ATTRWAVE = 0;
+    }
     // asm 000059D8: 	STI	R0,@ATTRWAVE
+    MAME_ASSERT_REG_AT_ADDR(0x000059D9, "R0", &ATTRWAVE);
     // asm 000059D9: 	RETS
-    MAME_VALIDATOR_EXIT();
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_ATTR_LEG", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

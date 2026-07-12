@@ -22,7 +22,7 @@
 void MOVEIN_HUD_EQUIP(void);
 void MOVEOUT_HUD_EQUIP(void);
 void HUD(void);
-void dealloc_section(void);
+void dealloc_section(tSECTION_ALLOC sec /*AR2*/);
 static void TACHOMETER_ANIMATE(void);
 void FILL_DITHER(void);
 void FILL_PLOT(void);
@@ -438,12 +438,26 @@ ISKPH:
  *
  */
 void HARDalloc_section(tSECTION_ALLOC sec) {
-    uint32_t pal = sec.pal_index;
+    int palette_code;
+    int count;
 
-    for (uint32_t i = 0; i < sec.count; i++) {
-        PAL_ALLOC(pal);
-        pal++;
+    // asm 00009E21: 	LDI	*AR2++,AR6
+    palette_code = sec.pal_index;
+    // asm 00009E22: 	LDI	*AR2,AR5
+    MAME_ASSERT_REG_AT_ADDR(0x00009E23, "AR5", &sec.count);
+    // asm 00009E23: 	DEC	AR5
+    count = sec.count - 1;
+alloc_LPA:
+    // asm 00009E24: 	LDI	AR6,AR2
+    // asm 00009E25: 	CALL	PAL_ALLOC
+    PAL_ALLOC(palette_code);
+    // asm 00009E26: 	INC	AR6
+    palette_code++;
+    // asm 00009E27: 	DBU	AR5,alloc_LPA
+    if (count-- > 0) {
+        goto alloc_LPA;
     }
+    // asm 00009E28: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -457,24 +471,33 @@ void HARDalloc_section(tSECTION_ALLOC sec) {
  *	AR2	SECTION POINTER
  *
  */
-void dealloc_section(void) {
+void dealloc_section(tSECTION_ALLOC sec /*AR2*/) {
+    int palette_code;
+    int count;
+
     // asm 00009E29: 	PUSH	AR4
     // asm 00009E2A: 	PUSH	AR5
     // asm 00009E2B: 	PUSH	AR6
     // asm 00009E2C: 	LDI	*AR2++,AR6
+    palette_code = sec.pal_index;
     // asm 00009E2D: 	LDI	*AR2,AR5
     // asm 00009E2E: 	DEC	AR5
-    // asm 00009E2F: deal_LP
+    count = sec.count - 1;
+
+deal_LP:
     // asm 00009E2F: 	LDI	AR6,AR2
     // asm 00009E30: 	CALL	PAL_DELETE
+    PAL_DELETE(palette_code);
     // asm 00009E31: 	INC	AR6
+    palette_code += 1;
     // asm 00009E32: 	DBU	AR5,deal_LP
+    if (count-- > 0) {
+        goto deal_LP;
+    }
     // asm 00009E33: 	POP	AR6
     // asm 00009E34: 	POP	AR5
     // asm 00009E35: 	POP	AR4
     // asm 00009E36: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "dealloc_section", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

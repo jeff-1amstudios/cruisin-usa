@@ -266,9 +266,109 @@ tPAL* _PALROM[] = {
 
 tSECTION_ALLOC shared_PALETTES = { 0, 5 };
 
+tSECTION_ALLOC tunnel_PALETTES = {
+    0xb,
+    3
+};
+
+tSECTION_ALLOC tunnel2_PALETTES = {
+    0xe,
+    1
+};
+
 tSECTION_ALLOC general_PALETTES = {
     0xf,
     0x38
+};
+
+tSECTION_ALLOC thetrains_PALETTES = {
+    0x47,
+    2
+};
+
+tSECTION_ALLOC deserts_PALETTES = {
+    0x49,
+    1
+};
+
+tSECTION_ALLOC ggate_PALETTES = {
+    0x4a,
+    0x16
+};
+
+tSECTION_ALLOC h280_PALETTES = {
+    0x60,
+    0xa
+};
+
+tSECTION_ALLOC bevhnred_PALETTES = {
+    0x6a,
+    0xa
+};
+
+tSECTION_ALLOC lafreeway_PALETTES = {
+    0x74,
+    8
+};
+
+tSECTION_ALLOC deathvalley_PALETTES = {
+    0x7c,
+    0x11
+};
+
+tSECTION_ALLOC arizona_PALETTES = {
+    0x8d,
+    4
+};
+
+tSECTION_ALLOC mtrush_PALETTES = {
+    0x91,
+    0xf
+};
+
+tSECTION_ALLOC mwest_PALETTES = {
+    0xa0,
+    0x15
+};
+
+tSECTION_ALLOC chicago_PALETTES = {
+    0xb5,
+    0x10
+};
+
+tSECTION_ALLOC appl_PALETTES = {
+    0xc5,
+    0xc
+};
+
+tSECTION_ALLOC crace_PALETTES = {
+    0xd1,
+    0xb
+};
+
+tSECTION_ALLOC ctrans_PALETTES = {
+    0xdc,
+    3
+};
+
+tSECTION_ALLOC dc_shared_PALETTES = {
+    0xdf,
+    1
+};
+
+tSECTION_ALLOC dc_PALETTES = {
+    0xe0,
+    0xc
+};
+
+tSECTION_ALLOC finale_PALETTES = {
+    0xec,
+    7
+};
+
+tSECTION_ALLOC theheads_PALETTES = {
+    0xf3,
+    3
 };
 
 tSECTION_ALLOC press_PALETTES = {
