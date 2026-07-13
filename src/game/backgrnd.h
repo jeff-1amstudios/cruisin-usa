@@ -9,9 +9,9 @@
 // asm: 	.bss	STARTSECTION,1		;Section index to start game at
 extern int STARTSECTION;
 // asm: 	.bss	START_POS,3   		;Section X Y Z start (if DEBUGSECTION != 0)
-extern int START_POS[];
+extern float START_POS[];
 // asm: 	.bss	START_RADY,1  		;Section Y Radian (if DEBUG SECTION != 0)
-extern int START_RADY;
+extern float START_RADY;
 // asm: 	.bss	DRIVE_LIST,1		;OBJECTs which can be driven over (road/shoulder)
 extern OBJ* DRIVE_LIST;
 // asm: 	.bss	CAR_LIST,1		;OBJECTs which are vehicles (drones/player car)
@@ -21,41 +21,41 @@ extern OBJ* SIGN_LIST;
 // asm: 	.bss	GROUND_LIST,1		;OBJECTs which define the the ground but are not ROAD_C or SHLDR_C
 extern OBJ* GROUND_LIST;
 // asm: 	.bss	NEW_GROUP,1	;TEMP PTR TO START OF NEW DGROUP LIST
-extern int NEW_GROUP;
+extern OBJ* NEW_GROUP;
 // asm: 	.bss	DGROUPS,DGRP_SIZE*MAX_DGROUPS
-extern int DGROUPS[];
+extern DGROUP_ENTRY DGROUPS[];
 // asm: 	.bss	DGROUP_COUNT,1		;NUMBER OF ACTIVE BACKGRNDS (on DYNA LIST)
 extern int DGROUP_COUNT;
 // asm: 	.bss	DGROUP_AW,1		;activate watch pointer (->TYCO.ASM)
-extern int DGROUP_AW;
+extern const u32* DGROUP_AW;
 // asm: 	.bss	DYNALIST_TRUEBEGIN,1	;FIRST ELEMENT OF DYNAFLEX LIST
-extern int DYNALIST_TRUEBEGIN;
+extern OBJ* DYNALIST_TRUEBEGIN;
 // asm: 	.bss	DYNALIST_BEGIN,1	;FIRST ELEMENT OF DYNAFLEX LIST (SECOND SET)
-extern int DYNALIST_BEGIN;
+extern OBJ* DYNALIST_BEGIN;
 // asm: 	.bss	DYNALIST_END,1		;LAST ELEMENT OF DYNAFLEX LIST
-extern int DYNALIST_END;
+extern OBJ* DYNALIST_END;
 // asm: 	.bss	SUBLIST_BEGIN,1		;FIRST ELEMENT OF SUBLIST (OLINK 3)
-extern int SUBLIST_BEGIN;
+extern OBJ* SUBLIST_BEGIN;
 // asm: 	.bss	SUBLIST_END,1		;LAST ELEMENT OF SUBLIST (OLINK 4)
-extern int SUBLIST_END;
+extern OBJ* SUBLIST_END;
 // asm: 	.bss	STARTS,1
-extern int STARTS;
+extern OBJ* STARTS;
 // asm: 	.bss	SECTIONIDX,1		;section index (of next to activate)
 extern int SECTIONIDX;
 // asm: 	.bss	TYCO_TRACK,1
-extern int TYCO_TRACK;
+extern const u32* TYCO_TRACK;
 // asm: 	.bss	TYCO_TRACK_NTL,1
-extern int TYCO_TRACK_NTL;
+extern const u32* TYCO_TRACK_NTL;
 // asm: 	.bss	TYCO_NTL_IDX,1
 extern int TYCO_NTL_IDX;
 // asm: 	.bss	NEWSUBLIST_TOPB,1	;POINTER TO TOP OF SUBLIST (OF GROUP)
-extern int NEWSUBLIST_TOPB;
+extern uintptr_t NEWSUBLIST_TOPB;
 // asm: 	.bss	TYCOFLAG,1	;CURRENT SUBLIST TYCOFLAG (FROM ROM)
 extern int TYCOFLAG;
 // asm: 	.bss	PASS1,1		;CURRENT PASS INDEX (0,1) (USED WHEN ACTIVATING AN OVERLAY)
 extern int PASS1;
 // asm: 	.bss	SECRADY,1	;SECTION RADIAN Y
-extern int SECRADY;
+extern float SECRADY;
 // asm: 	.bss	SINGLE_SECTION_TEMPPTR,1
 extern OBJ* SINGLE_SECTION_TEMPPTR;
 void HUNGH_ANI(void);

@@ -285,6 +285,14 @@ typedef struct OBJ {
     uintptr_t link4;
 } OBJ;
 
+typedef struct DGROUP_ENTRY {
+    OBJ* head;
+    const u32* bin;
+    OBJ* fstart;
+    int flag;
+    int idx;
+} DGROUP_ENTRY;
+
 typedef struct PROC {
     struct PROC* link;
     // u32 stack_ptr;

@@ -20,35 +20,35 @@
 
 void FIND_STARTING_VALUES(void);
 void BGD_INIT(void);
-static void BGD_WATCHER(void);
-static void BGD_ACTIVATE_TYCOGROUP(void);
-static void ADD_TO_NEWLIST(void);
+static void BGD_WATCHER(PROC* p);
+static OBJ* BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/);
+static void ADD_TO_NEWLIST(OBJ* obj /*AR4*/);
 static void FIND_SUBLIST_START_END(void);
 static void APPEND_NEWLIST(void);
 static void SHINY_NEWLIST(void);
 static void GROUP_DELETE(void);
 void GET_XZ_DISTANCE(void);
-static void BGD_OROUTINE(void);
-static void OVERCAR(void);
-static void CARFORWARD(void);
-static void ROAD_DEBRIS_CREATE_55GAL(void);
-static void ROAD_DEBRIS_CREATE(void);
+static void BGD_OROUTINE(OBJ* obj /*AR4*/);
+static void OVERCAR(OBJ* obj /*AR4*/);
+static void CARFORWARD(PROC* p);
+static void ROAD_DEBRIS_CREATE_55GAL(OBJ* obj /*AR4*/);
+static void ROAD_DEBRIS_CREATE(OBJ* obj /*AR4*/);
 static void SMOKE_STACK(void);
 static void CAR_FIRE(void);
 static void DC_MINIFOUNTAIN(void);
 static void DC_FOUNTAIN(void);
 static void WATERFALL(void);
-static void WATERANI_PROC(void);
-static void WATERFALL_SND(void);
+static void WATERANI_PROC(PROC* p);
+static void WATERFALL_SND(PROC* p);
 void AMBIENCE_SOUND(void);
 void HUNGH_ANI(void);
 static void HUNGH_ANI_REENTER(void);
 static void PLACE_ON_ROAD(void);
 void RUT_ANI(void);
-static void PLAINANI_PROC_SLOW(void);
+static void PLAINANI_PROC_SLOW(PROC* p);
 static void FLAGWAVE_TALL(void);
 static void FLAGWAVE(void);
-static void PLAINANI_PROC(void);
+static void PLAINANI_PROC(PROC* p);
 static void OHARE_PLANE(void);
 static void PLANE_FWRD(void);
 static void TRAIN_FWRD_MAKEB(void);
@@ -78,12 +78,30 @@ static int DC_FOUNTAIN_ANI[6];
 static int BABE_PALIST[10];
 static uintptr_t ROUTINE_TAB[];
 
+extern MATRIX _MATRIXA;
+extern VECTOR _VECTORA;
+
+enum {
+    TB_POSX = 1,
+    TB_POSY = 2,
+    TB_POSZ = 3,
+    TB_RADY = 4,
+    TB_GROUP = 5,
+    TB_GROUPOVERLAY = 6,
+    TB_REGSIZE = 7,
+    TB_RVS_POSX = 7,
+    TB_RVS_POSY = 8,
+    TB_RVS_POSZ = 9,
+    TB_RVS_RADY = 10,
+    TB_RVSSIZE = 11,
+};
+
 /* asm: STARTSECTION	.bss	STARTSECTION,1 */
 int STARTSECTION;
 /* asm: START_POS	.bss	START_POS,3 */
-int START_POS[3];
+float START_POS[3];
 /* asm: START_RADY	.bss	START_RADY,1 */
-int START_RADY;
+float START_RADY;
 /* asm: DRIVE_LIST	.bss	DRIVE_LIST,1 */
 OBJ* DRIVE_LIST;
 /* asm: CAR_LIST	.bss	CAR_LIST,1 */
@@ -104,32 +122,32 @@ OBJ* GROUND_LIST;
  *
  */
 /* asm: NEW_GROUP	.bss	NEW_GROUP,1 */
-int NEW_GROUP;
+OBJ* NEW_GROUP;
 /* asm: DGROUPS	.bss	DGROUPS,DGRP_SIZE*MAX_DGROUPS */
-int DGROUPS[DGRP_SIZE * MAX_DGROUPS];
+DGROUP_ENTRY DGROUPS[MAX_DGROUPS];
 /* asm: DGROUP_COUNT	.bss	DGROUP_COUNT,1 */
 int DGROUP_COUNT;
 /* asm: DGROUP_AW	.bss	DGROUP_AW,1 */
-int DGROUP_AW;
+const u32* DGROUP_AW;
 /* asm: DYNALIST_TRUEBEGIN	.bss	DYNALIST_TRUEBEGIN,1 */
-int DYNALIST_TRUEBEGIN;
+OBJ* DYNALIST_TRUEBEGIN;
 /* asm: DYNALIST_BEGIN	.bss	DYNALIST_BEGIN,1 */
-int DYNALIST_BEGIN;
+OBJ* DYNALIST_BEGIN;
 /* asm: DYNALIST_END	.bss	DYNALIST_END,1 */
-int DYNALIST_END;
+OBJ* DYNALIST_END;
 /* asm: SUBLIST_BEGIN	.bss	SUBLIST_BEGIN,1 */
-int SUBLIST_BEGIN;
+OBJ* SUBLIST_BEGIN;
 /* asm: SUBLIST_END	.bss	SUBLIST_END,1 */
-int SUBLIST_END;
+OBJ* SUBLIST_END;
 /* asm: STARTS	.bss	STARTS,1 */
-int STARTS;
+OBJ* STARTS;
 // *----------------------------------------------------------------------------
 /* asm: SECTIONIDX	.bss	SECTIONIDX,1 */
 int SECTIONIDX;
 /* asm: TYCO_TRACK	.bss	TYCO_TRACK,1 */
-// int TYCO_TRACK;
+const u32* TYCO_TRACK;
 /* asm: TYCO_TRACK_NTL	.bss	TYCO_TRACK_NTL,1 */
-int TYCO_TRACK_NTL;
+const u32* TYCO_TRACK_NTL;
 /* asm: TYCO_NTL_IDX	.bss	TYCO_NTL_IDX,1 */
 int TYCO_NTL_IDX;
 /* asm: ATTRACT_ACTIVATE_DIST	.float	15000 */
@@ -150,43 +168,75 @@ static float ATTR_DDACT_DIST = 45000.0f;
 
 // *----------------------------------------------------------------------------
 void FIND_STARTING_VALUES(void) {
+    const u32* tyco_ptr;
+    int start_section;
+    u32 flag;
+    int remaining_sections;
+
     // asm 00003F80: 	LDI	@TYCO_TRKI,AR1
+    MAME_ASSERT_FUNCTION_ENTRY();
+    tyco_ptr = ROM_PTR(TYCO_TRK_ROM);
     // asm 00003F81: 	LDI	@STARTSECTION,R0	;first time dont do the crime
+    start_section = STARTSECTION; // ;first time dont do the crime
     // asm 00003F82: 	CMPI	0,R0
-    // asm 00003F83: 	BEQ	NOWARP
-    // asm 00003F84: 	LDI	R0,AR0
-    // asm 00003F85: 	DEC	AR0
+    if (start_section != 0) {
+        // asm 00003F83: 	BEQ	NOWARP
+        // asm 00003F84: 	LDI	R0,AR0
+        // asm 00003F85: 	DEC	AR0
+        remaining_sections = start_section - 1;
 LPP:
-    // asm 00003F86: LDI	*AR1++(6),R1
-    // asm 00003F87: 	TSTB	1,R1
-    // asm 00003F88: 	BZ	NOOVER
-    // asm 00003F89: 	ADDI	1,AR1
+        // asm 00003F86: LDI	*AR1++(6),R1
+        flag = *tyco_ptr;
+        tyco_ptr += 6;
+        // asm 00003F87: 	TSTB	1,R1
+        // asm 00003F88: 	BZ	NOOVER
+        if ((flag & 1) != 0) {
+            // asm 00003F89: 	ADDI	1,AR1
+            tyco_ptr += 1;
+        }
 NOOVER:
-    // asm 00003F8A: TSTB	SC_REVERSE,R1
-    // asm 00003F8B: 	BZ	CNT
-    // asm 00003F8C: 	NOP	*AR1++(4)
+        // asm 00003F8A: TSTB	SC_REVERSE,R1
+        // asm 00003F8B: 	BZ	CNT
+        if ((flag & SC_REVERSE) != 0) {
+            // asm 00003F8C: 	NOP	*AR1++(4)
+            tyco_ptr += 4;
+        }
 CNT:
-    // asm 00003F8D: TSTB	SC_OVER2,R1
-    // asm 00003F8E: 	BZ	CNTN
-    // asm 00003F8F: 	NOP	*AR1++			;OVERLAY 2
+        // asm 00003F8D: TSTB	SC_OVER2,R1
+        // asm 00003F8E: 	BZ	CNTN
+        if ((flag & SC_OVER2) != 0) {
+            // asm 00003F8F: 	NOP	*AR1++			;OVERLAY 2
+            tyco_ptr += 1;
+        }
 CNTN:
-    // asm 00003F90: DBU	AR0,LPP
+        // asm 00003F90: DBU	AR0,LPP
+        if (remaining_sections-- > 0) {
+            goto LPP;
+        }
+    }
 NOWARP:
     // asm 00003F91: 	STI	AR1,@TYCO_TRACK
+    TYCO_TRACK = tyco_ptr;
     // asm 00003F92: 	STI	AR1,@DGROUP_AW
+    DGROUP_AW = tyco_ptr;
     // asm 00003F93: 	STI	R0,@SECTIONIDX
+    SECTIONIDX = start_section;
     // asm 00003F94: 	STI	R0,@TYCO_NTL_IDX
+    TYCO_NTL_IDX = start_section;
     // asm 00003F95: 	LDF	*++AR1,R0
+    START_POS[0] = TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[1]);
     // asm 00003F96: 	STF	R0,@START_POS
     // asm 00003F97: 	LDF	*++AR1,R0
+    START_POS[1] = TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[2]);
     // asm 00003F98: 	STF	R0,@START_POS+Y
     // asm 00003F99: 	LDF	*++AR1,R0
+    START_POS[2] = TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[3]);
     // asm 00003F9A: 	STF	R0,@START_POS+Z
     // asm 00003F9B: 	LDF	*++AR1,R2
+    START_RADY = TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[4]);
+    MAME_ASSERT_REG_FLOAT(0x00003F9D, "R2", &START_RADY);
     // asm 00003F9C: 	STF	R2,@START_RADY
     // asm 00003F9D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_STARTING_VALUES", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -198,12 +248,24 @@ NOWARP:
  *
  */
 void BGD_INIT(void) {
+    DGROUP_ENTRY* dgroup_ptr;
+    OBJ* dgroup_head;
+    const u32* tyco_ptr;
+    u32 flag;
+    int remaining_groups;
+
     // asm 00003F9E: 	CLRI	R0
+    MAME_ASSERT_FUNCTION_ENTRY();
     // asm 00003F9F: 	STI	R0,@DGROUP_COUNT
+    DGROUP_COUNT = 0;
     // asm 00003FA0: 	STI	R0,@DYNALIST_END
+    DYNALIST_END = NULL;
     // asm 00003FA1: 	STI	R0,@DYNALIST_BEGIN
+    DYNALIST_BEGIN = NULL;
     // asm 00003FA2: 	STI	R0,@SIGN_LIST
+    SIGN_LIST = NULL;
     // asm 00003FA3: 	STI	R0,@TYCO_NTL_IDX
+    TYCO_NTL_IDX = 0;
     // ;	LDI	@_MODE,R1
     // ;	AND	MMODE,R1
     // ;	CMPI	MATTR,R1
@@ -221,6 +283,7 @@ void BGD_INIT(void) {
     // ;L17
     // ;	.endif
     // asm 00003FA4: 	CALL	FIND_STARTING_VALUES
+    FIND_STARTING_VALUES();
     // asm 00003FA5: 	BU	KKTIL
 REGULAR_START: //;kept for attract mode only
 
@@ -237,35 +300,59 @@ REGULAR_START: //;kept for attract mode only
     // asm 00003FB0: 	STF	R0,@START_RADY
 KKTIL:
     // asm 00003FB1: 	LDI	@DGROUP_AW,AR2
+    tyco_ptr = DGROUP_AW;
     // asm 00003FB2: 	LDI	AR2,AR0
     // asm 00003FB3: 	CALL	BGD_ACTIVATE_TYCOGROUP	;returns top pointer in R0
+    dgroup_head = BGD_ACTIVATE_TYCOGROUP(tyco_ptr); // ;returns top pointer in R0
     // asm 00003FB4: 	LDI	@DGROUPSI,AR1
+    dgroup_ptr = DGROUPS;
     // asm 00003FB5: 	STI	R0,*+AR1(DGRP_HEAD)	;lead object (link by OLINK3)
+    dgroup_ptr[0].head = dgroup_head; // ;lead object (link by OLINK3)
     // asm 00003FB6: 	STI	AR0,*+AR1(DGRP_BIN)	;rom struct ptr
+    dgroup_ptr[0].bin = tyco_ptr; // ;rom struct ptr
     // asm 00003FB7: 	LDI	@STARTS,R0
     // asm 00003FB8: 	STI	R0,*+AR1(DGRP_FSTART)
+    dgroup_ptr[0].fstart = STARTS;
     // asm 00003FB9: 	LDI	@SECTIONIDX,R0
     // asm 00003FBA: 	STI	R0,*+AR1(DGRP_IDX)	;SAVE THE INDEX #
+    dgroup_ptr[0].idx = SECTIONIDX; // ;SAVE THE INDEX #
     // asm 00003FBB: 	STI	R0,@TYCO_NTL_IDX
+    TYCO_NTL_IDX = SECTIONIDX;
     // asm 00003FBC: 	LDI	@TYCOFLAG,R0
     // asm 00003FBD: 	STI	R0,*+AR1(DGRP_FLAG)	;SAVE THE TYCOFLAG
+    dgroup_ptr[0].flag = TYCOFLAG; // ;SAVE THE TYCOFLAG
     // asm 00003FBE: 	INCM	@DGROUP_COUNT
+    DGROUP_COUNT += 1;
     // asm 00003FC1: 	LDI	@DGROUP_AW,AR0
+    tyco_ptr = DGROUP_AW;
     // asm 00003FC2: 	STI	AR0,@TYCO_TRACK_NTL
+    TYCO_TRACK_NTL = tyco_ptr;
     // asm 00003FC3: 	LDI	*AR0++(6),R1
+    flag = *tyco_ptr;
+    tyco_ptr += 6;
     // asm 00003FC4: 	TSTB	1,R1
     // asm 00003FC5: 	BZ	NOOVERD
-    // asm 00003FC6: 	ADDI	1,AR0
+    if ((flag & 1) != 0) {
+        // asm 00003FC6: 	ADDI	1,AR0
+        tyco_ptr += 1;
+    }
 NOOVERD:
     // asm 00003FC7: 	TSTB	SC_REVERSE,R1
     // asm 00003FC8: 	BZ	CNT55a
-    // asm 00003FC9: 	NOP	*AR0++(4)
+    if ((flag & SC_REVERSE) != 0) {
+        // asm 00003FC9: 	NOP	*AR0++(4)
+        tyco_ptr += 4;
+    }
 CNT55a:
     // asm 00003FCA: TSTB	SC_OVER2,R1
     // asm 00003FCB: 	BZ	NOO2a
-    // asm 00003FCC: 	ADDI	1,AR0
+    if ((flag & SC_OVER2) != 0) {
+        // asm 00003FCC: 	ADDI	1,AR0
+        tyco_ptr += 1;
+    }
 NOO2a:
     // asm 00003FCD: STI	AR0,@DGROUP_AW
+    DGROUP_AW = tyco_ptr;
 #if DEBUG
     // asm: 	LDI	@DGROUP_COUNT,R0
     // asm: 	CMPI	1,R0
@@ -274,46 +361,71 @@ NOO2a:
     // asm 00003FCE: 	PUSH	AR6
     // asm 00003FCF: 	LDI	@DGROUPSI,AR1
     // asm 00003FD0: 	LDI	3,AR6
+    remaining_groups = 3;
 LPP5:
     // asm 00003FD1: 	LDI	@DGROUP_AW,AR2
+    tyco_ptr = DGROUP_AW;
     // asm 00003FD2: 	LDI	AR2,AR0
     // asm 00003FD3: 	CALL	BGD_ACTIVATE_TYCOGROUP	;returns top pointer in R0
+    dgroup_head = BGD_ACTIVATE_TYCOGROUP(tyco_ptr); // ;returns top pointer in R0
     // asm 00003FD4: 	STI	R0,*+AR1(DGRP_HEAD+DGRP_SIZE)	;lead object (link by OLINK3)
+    dgroup_ptr[1].head = dgroup_head; // ;lead object (link by OLINK3)
     // asm 00003FD5: 	STI	AR0,*+AR1(DGRP_BIN+DGRP_SIZE)	;rom struct ptr
+    dgroup_ptr[1].bin = tyco_ptr; // ;rom struct ptr
     // asm 00003FD6: 	LDI	@STARTS,R0
     // asm 00003FD7: 	STI	R0,*+AR1(DGRP_FSTART+DGRP_SIZE)
+    dgroup_ptr[1].fstart = STARTS;
     // asm 00003FD8: 	LDI	@SECTIONIDX,R0
     // asm 00003FD9: 	STI	R0,*+AR1(DGRP_IDX+DGRP_SIZE)	;SAVE THE INDEX #
+    dgroup_ptr[1].idx = SECTIONIDX; // ;SAVE THE INDEX #
     // asm 00003FDA: 	LDI	@TYCOFLAG,R0
     // asm 00003FDB: 	STI	R0,*+AR1(DGRP_FLAG+DGRP_SIZE)	;SAVE THE TYCOFLAG
+    dgroup_ptr[1].flag = TYCOFLAG; // ;SAVE THE TYCOFLAG
     // asm 00003FDC: 	INCM	@DGROUP_COUNT
+    DGROUP_COUNT += 1;
     // asm 00003FDF: 	LDI	@DGROUP_AW,AR0
+    tyco_ptr = DGROUP_AW;
     // asm 00003FE0: 	LDI	*AR0++(6),R1
+    flag = *tyco_ptr;
+    tyco_ptr += 6;
     // asm 00003FE1: 	TSTB	1,R1
     // asm 00003FE2: 	BZ	NOOVERE
-    // asm 00003FE3: 	ADDI	1,AR0
+    if ((flag & 1) != 0) {
+        // asm 00003FE3: 	ADDI	1,AR0
+        tyco_ptr += 1;
+    }
 NOOVERE:
     // asm 00003FE4: TSTB	SC_REVERSE,R1
     // asm 00003FE5: 	BZ	CNT55d
-    // asm 00003FE6: 	NOP	*AR0++(4)
+    if ((flag & SC_REVERSE) != 0) {
+        // asm 00003FE6: 	NOP	*AR0++(4)
+        tyco_ptr += 4;
+    }
 CNT55d:
     // asm 00003FE7: TSTB	SC_OVER2,R1
     // asm 00003FE8: 	BZ	NOO2d
-    // asm 00003FE9: 	ADDI	1,AR0
+    if ((flag & SC_OVER2) != 0) {
+        // asm 00003FE9: 	ADDI	1,AR0
+        tyco_ptr += 1;
+    }
 NOO2d:
     // asm 00003FEA: STI	AR0,@DGROUP_AW
+    DGROUP_AW = tyco_ptr;
     // asm 00003FEB: 	ADDI	DGRP_SIZE,AR1
+    dgroup_ptr += 1;
     // asm 00003FEC: 	DBU	AR6,LPP5
+    if (remaining_groups-- > 0) {
+        goto LPP5;
+    }
     // asm 00003FED: 	POP	AR6
     // asm 00003FEE: 	CREATE	BGD_WATCHER,UTIL_C|BACKGRND_T
+    PRC_CREATE(BGD_WATCHER, UTIL_C | BACKGRND_T, NULL);
     // asm 00003FF1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_INIT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
-static void BGD_WATCHER(void) {
+static void BGD_WATCHER(PROC* p) {
     // asm 00003FF4: 	LDI	@_MODE,R0
     // asm 00003FF5: 	AND	MMODE,R0
     // asm 00003FF6: 	CMPI	MGAME,R0
@@ -508,7 +620,7 @@ NODEACT:
 // *----------------------------------------------------------------------------
 
 /* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
-int NEWSUBLIST_TOPB;
+uintptr_t NEWSUBLIST_TOPB;
 /* asm: GROUP_RADY	.bss	GROUP_RADY,1 */
 static int GROUP_RADY;
 /* asm: TYCOFLAG	.bss	TYCOFLAG,1 */
@@ -516,9 +628,19 @@ int TYCOFLAG;
 /* asm: PASS1	.bss	PASS1,1 */
 int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
-int SECRADY;
+float SECRADY;
 
-static void BGD_ACTIVATE_TYCOGROUP(void) {
+static OBJ* BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/) {
+    const u32* section_ptr;
+    const u32* group_ptr;
+    void* romdata;
+    OBJ* obj;
+    OBJ* corn_obj;
+    u32 flag;
+    int object_count;
+    u32 raw_id;
+    u32 object_class;
+
     // asm 0000406B: 	PUSH	R4
     // asm 0000406C: 	PUSH	R5
     // asm 0000406D: 	PUSH	AR0
@@ -530,100 +652,153 @@ static void BGD_ACTIVATE_TYCOGROUP(void) {
     // asm 00004073: 	LDI	@SECTIONIDX,R0
     // asm 00004074: 	INC	R0
     // asm 00004075: 	STI	R0,@SECTIONIDX
+    SECTIONIDX += 1;
     // *CORNFLAKE CHECK
     // asm 00004076: 	CMPI	4,R0
     // asm 00004077: 	BNE	NOTCORNFLAKE
+    if (SECTIONIDX == 4) {
     // asm 00004078: 	PUSH	AR4
     // asm 00004079: 	LDL	cornpops,AR2
+        romdata = ROM_PTR(cornpops);
     // asm 0000407A: 	LDI	6700,R2
     // asm 0000407B: 	LDI	-4250,R3
     // asm 0000407C: 	LDI	32600,RC
     // asm 0000407D: 	ADDI	@LVAL,RC
     // asm 0000407E: 	CALL	OBJ_QMAKE
+        corn_obj = OBJ_QMAKE(romdata, 6700, -4250, 32600 + 151720);
+        SLOCKON(corn_obj == NULL, "BACKGRND\\ACTIVATE TYCOGROUP CORNPOPS");
     // asm 0000407F: 	LDI	AR0,AR4
+        if (corn_obj != NULL) {
     // asm 00004080: 	LDF	-0.2,R2
+            corn_obj->rad.Y = -0.2f;
     // asm 00004081: 	LDI	AR4,AR2
     // asm 00004082: 	ADDI	OMATRIX,AR2
     // asm 00004083: 	CALL	FIND_YMATRIX
+            FIND_YMATRIX(&corn_obj->omatrix, corn_obj->rad.Y);
     // asm 00004084: 	LDI	*+AR4(OFLAGS),R0
     // asm 00004085: 	OR	O_1PAL,R0
+            corn_obj->flags |= O_1PAL;
     // asm 00004086: 	STI	R0,*+AR4(OFLAGS)
     // asm 00004087: 	LDL	CORNPAL,AR2
     // asm 00004088: 	CALL	PAL_FIND_RAW
+            corn_obj->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(CORNPAL));
     // asm 00004089: 	STI	R0,*+AR4(OPAL)
     // asm 0000408A: 	LDI	AR4,AR2
     // asm 0000408B: 	CALL	OBJ_INSERT
+            OBJ_INSERT(corn_obj);
     // asm 0000408C: 	LDI	@SECTIONIDX,R0
     // asm 0000408D: 	LS	8,R0
     // asm 0000408E: 	OR	0AAh,R0
+            corn_obj->link2 = ((uintptr_t)SECTIONIDX << 8) | 0xAAu;
     // asm 0000408F: 	STI	R0,*+AR4(OLINK2)
     // asm 00004090: 	POP	AR4
+        }
+    }
 NOTCORNFLAKE:
     // *CORNFLAKE END CHECK
     // asm 00004091: 	LDI	-1,R0
     // asm 00004092: 	STI	R0,@SUBLIST_BEGIN
+    SUBLIST_BEGIN = NULL;
     // asm 00004093: 	CLRI	R0
     // asm 00004094: 	STI	R0,@PASS1
+    PASS1 = 0;
     // asm 00004095: 	STI	R0,@NEW_GROUP
+    NEW_GROUP = NULL;
     // asm 00004096: 	LDI	@TYCO_TRACK,AR2
+    TYCO_TRACK = tyco_ptr;
     // asm 00004097: 	LDI	AR2,AR7				;DEDICATED POINTER
+    section_ptr = tyco_ptr;
     // asm 00004098: 	LDI	*AR7,R0				;LOAD FLAG
+    flag = *section_ptr;
     // asm 00004099: 	STI	R0,@TYCOFLAG
+    TYCOFLAG = flag;
     // asm 0000409A: 	TSTB	SC_OVERLAY,R0
     // asm 0000409B: 	BZ	NOVRDD
-    // asm 0000409C: 	ADDI	1,AR2
+    if ((flag & SC_OVERLAY) != 0) {
+        // asm 0000409C: 	ADDI	1,AR2
+        tyco_ptr += 1;
+    }
 NOVRDD:
     // asm 0000409D: TSTB	SC_REVERSE,R0
     // asm 0000409E: 	BZD	REG_LD
     // asm 0000409F: 	NOP
     // asm 000040A0: 	ADDI	TB_REGSIZE-1,AR2
     // asm 000040A1: 	STI	AR2,@TYCO_TRACK
+    TYCO_TRACK = tyco_ptr + (TB_REGSIZE - 1);
     // 	;---->	BZD	REG_LD
     // asm 000040A2: 	ADDI	TB_RVSSIZE-TB_REGSIZE,AR2	;REVERSED SECTION HAS LARGER STRUCTURE
     // asm 000040A3: 	STI	AR2,@TYCO_TRACK
+    if ((flag & SC_REVERSE) != 0) {
+        TYCO_TRACK += TB_RVSSIZE - TB_REGSIZE; // ;REVERSED SECTION HAS LARGER STRUCTURE
+    }
 REG_LD:
     // asm 000040A4: TSTB	SC_OVER2,R0			;hopefully...
     // asm 000040A5: 	BZ	NOEXTRA
-    // asm 000040A6: 	LDI	@TYCO_TRACK,R0
-    // asm 000040A7: 	INC	R0
-    // asm 000040A8: 	STI	R0,@TYCO_TRACK
+    if ((flag & SC_OVER2) != 0) {
+        // asm 000040A6: 	LDI	@TYCO_TRACK,R0
+        // asm 000040A7: 	INC	R0
+        // asm 000040A8: 	STI	R0,@TYCO_TRACK
+        TYCO_TRACK += 1;
+    }
 NOEXTRA:
     // asm 000040A9: 	LDF	*+AR7(TB_RADY),R0
     // asm 000040AA: 	STF	R0,@SECRADY
+    SECRADY = TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RADY]);
     // asm 000040AB: 	LDI	@MATRIXAI,AR2		;Group rotation matrix
     // asm 000040AC: 	LDF	@SECRADY,R2
+    MAME_ASSERT_REG_FLOAT(0x000040AD, "R2", &SECRADY);
     // asm 000040AD: 	CALL	HPFIND_YMATRIX		;require High Precision
+    HPFIND_YMATRIX(&MATRIXAI, SECRADY);
     // asm 000040AE: 	LDI	*+AR7(TB_GROUP),AR5	;Group pointer
+    group_ptr = ROM_PTR(section_ptr[TB_GROUP]);
     // asm 000040AF: 	ADDI	1,AR5			;skip radius
+    group_ptr += 1;
     // asm 000040B0: 	LDI	@SECTIONIDX,R0
     // asm 000040B1: 	LS	8,R0
     // asm 000040B2: 	OR	0AAh,R0
     // asm 000040B3: 	STI	R0,@NEWSUBLIST_TOPB
+    NEWSUBLIST_TOPB = ((uintptr_t)SECTIONIDX << 8) | 0xAAu;
     // asm 000040B4: 	PUSH	R0
     // asm 000040B5: 	LDI	*AR5++,R4		;get number of objects to load
+    object_count = (int)*group_ptr++;
     // asm: 	SLOCKON	LE,"BACKGRND 1"
+    SLOCKON(object_count <= 0, "BACKGRND 1");
     // asm 000040B6: 	SUBI	1,R4
+    object_count -= 1;
     // asm 000040B7: 	CMPI	@OFREECNT,R4
     // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS"
+    SLOCKON(object_count > OFREECNT, "BACKGRND\\ACTIVATE TYCOGROUP OUT OF OBJECTS");
 L12:
     // asm 000040B8: 	LDI	*AR5++,AR2		;GET MODEL PTR
+    obj = OBJ_GETE(ROM_PTR(*group_ptr++));
     // asm 000040B9: 	CALL	OBJ_GETE
     // asm: 	SLOCKON	C,"BACKGRND\ACTIVATE   DANGER ERROR *FATAL*"
+    SLOCKON(obj == NULL, "BACKGRND\\ACTIVATE   DANGER ERROR *FATAL*");
     // asm 000040BA: 	BC	ACTIVATE_X
+    if (obj == NULL) {
+        goto ACTIVATE_X;
+    }
     // 					;INTERNAL LINK (FOR DEALLOCATION)
     // asm 000040BB: 	LDI	AR0,AR4			;SET OBJECT ROM PTR
     // asm 000040BC: 	POP	R0			;GET LAST BACK LINK
     // asm 000040BD: 	STI	R0,*+AR4(OLINK2)
+    obj->link2 = NEWSUBLIST_TOPB;
     // asm 000040BE: 	PUSH	R0
     // asm 000040BF: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 000040C0: 	STF	R1,*+AR4(OPOSX)
+    obj->posx = (float)(s32)*group_ptr++;
     // asm 000040C1: 	FLOAT	*AR5++,R1		;GET Y POSITION
+    obj->posy = (float)(s32)*group_ptr++;
     // asm 000040C2: 	LDI	@TYCOFLAG,R0
     // asm 000040C3: 	TSTB	SC_REVERSE,R0
     // asm 000040C4: 	BZD	NOTREVERSED
     // asm 000040C5: 	STF	R1,*+AR4(OPOSY)
     // asm 000040C6: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 000040C7: 	STF	R1,*+AR4(OPOSZ)
+    obj->posz = (float)(s32)*group_ptr++;
+    if ((TYCOFLAG & SC_REVERSE) == 0) {
+        goto NOTREVERSED;
+    }
     // 	;---->BZD	NOTREVERSED
     // 	;
     // 	;	SPECIAL REVERSED CASE
@@ -631,7 +806,10 @@ L12:
     // asm 000040C8: 	PUSH	AR7
     // asm 000040C9: 	TSTB	SC_OVERLAY,R0
     // asm 000040CA: 	BNZ	ISOVER
-    // asm 000040CB: 	DEC	AR7
+    if ((TYCOFLAG & SC_OVERLAY) == 0) {
+        // asm 000040CB: 	DEC	AR7
+        section_ptr -= 1;
+    }
 ISOVER:
     // asm 000040CC: 	LDF	*+AR7(TB_RVS_POSX),R0	;TRANSLATE BY THE NEGATIVE OFFSET
     // asm 000040CD: 	ADDF	*+AR4(OPOSX),R0		;POSITION (THIS BLOCKS ENDING POSITION)
@@ -642,12 +820,19 @@ ISOVER:
     // asm 000040D2: 	LDF	*+AR7(TB_RVS_POSZ),R0
     // asm 000040D3: 	ADDF	*+AR4(OPOSZ),R0
     // asm 000040D4: 	STF	R0,*+AR4(OPOSZ)
+    obj->posx = TMS320_C3X_STF_TO_SINGLE((double)obj->posx + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSX]));
+    obj->posy = TMS320_C3X_STF_TO_SINGLE((double)obj->posy + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSY]));
+    obj->posz = TMS320_C3X_STF_TO_SINGLE((double)obj->posz + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSZ]));
+    if ((TYCOFLAG & SC_OVERLAY) == 0) {
+        section_ptr += 1;
+    }
     // asm 000040D5: 	POP	AR7
     // asm 000040D6: 	LDI	@MATRIXAI,R2
     // asm 000040D7: 	LDI	AR4,AR2
     // asm 000040D8: 	ADDI	OPOSX,AR2
     // asm 000040D9: 	LDI	@VECTORAI,R3
     // asm 000040DA: 	CALL	MATRIX_MUL		;rotation by occurance matrix
+    MATRIX_MUL((VECTOR*)&obj->posx, &MATRIXAI, &VECTORAI); // ;rotation by occurance matrix
     // asm 000040DB: 	LDI	@VECTORAI,AR0
     // asm 000040DC: 	LDF	*AR0++,R1
     // asm 000040DD: 	ADDF	*+AR7(TB_POSX),R1
@@ -658,13 +843,19 @@ ISOVER:
     // asm 000040E2: 	LDF	*AR0++,R1
     // asm 000040E3: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040E4: 	STF	R1,*+AR4(OPOSZ)
+    obj->posx = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]));
+    obj->posy = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]));
+    obj->posz = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]));
     // asm 000040E5: 	LDF	*AR5++,R2		;GET Y ROT
     // asm 000040E6: 	ADDF	@SECRADY,R2
     // asm 000040E7: 	STF	R2,*+AR4(ORADY)
+    obj->rad.Y = TMS320_C3X_STF_TO_SINGLE((double)TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY);
     // asm 000040E8: 	LDI	AR4,AR2
     // asm 000040E9: 	ADDI	OMATRIX,AR2
     // asm 000040EA: 	CALL	HPFIND_YMATRIX
+    HPFIND_YMATRIX(&obj->omatrix, obj->rad.Y);
     // asm 000040EB: 	BU	JOIN_UP
+    goto JOIN_UP;
 NOTREVERSED:
     // asm 000040EC: 	LDI	@MATRIXAI,R2
     // asm 000040ED: 	LDI	AR4,AR2
@@ -672,6 +863,7 @@ NOTREVERSED:
     // asm 000040EF: 	LDI	R2,R3
     // asm 000040F0: 	LDI	@VECTORAI,R3
     // asm 000040F1: 	CALL	MATRIX_MUL		;ROTATION BY OCCURANCE MATRIX
+    MATRIX_MUL((VECTOR*)&obj->posx, &MATRIXAI, &VECTORAI); // ;ROTATION BY OCCURANCE MATRIX
     // asm 000040F2: 	LDI	@VECTORAI,AR0
     // asm 000040F3: 	LDF	*AR0++,R1
     // asm 000040F4: 	ADDF	*+AR7(TB_POSX),R1
@@ -682,35 +874,50 @@ NOTREVERSED:
     // asm 000040F9: 	LDF	*AR0++,R1
     // asm 000040FA: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040FB: 	STF	R1,*+AR4(OPOSZ)
+    obj->posx = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]));
+    obj->posy = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]));
+    obj->posz = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]));
     // asm 000040FC: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 000040FD: 	ADDF	@SECRADY,R2
     // asm 000040FE: 	STF	R2,*+AR4(ORADY)
+    obj->rad.Y = TMS320_C3X_STF_TO_SINGLE((double)TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY);
     // asm 000040FF: 	LDI	AR4,AR2
     // asm 00004100: 	ADDI	OMATRIX,AR2
     // asm 00004101: 	CALL	HPFIND_YMATRIX
+    HPFIND_YMATRIX(&obj->omatrix, obj->rad.Y);
 JOIN_UP:
     // asm 00004102: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
+    raw_id = *group_ptr++;
     // asm 00004103: 	LDI	R1,R2
     // asm 00004104: 	AND	CLASS_M|TYPE_M|SUBTYPE_M,R1
     // asm 00004105: 	STI	R1,*+AR4(OID)
+    obj->id = raw_id & (CLASS_M | TYPE_M | SUBTYPE_M);
     // 	;TEST TO SEE IF WE SHOULD CALL A SPECIAL ROUTINE
     // 	;OR PALETTE SHIFT
     // 	;
     // asm 00004106: 	TSTB	BGD_ROUTINE,R2
     // asm 00004107: 	CALLNZ	BGD_OROUTINE
+    if ((raw_id & BGD_ROUTINE) != 0) {
+        BGD_OROUTINE(obj);
+    }
     // asm 00004108: 	LDI	R2,R0
     // asm 00004109: 	RS	16,R2
     // asm 0000410A: 	AND	O_GENVSPEC,R2		;make sure list data is not ORed in
+    obj->flags |= ((raw_id >> 16) & O_GENVSPEC); // ;make sure list data is not ORed in
     // asm 0000410B: 	TSTB	BGD_BIGOBJ,R0		;BIG OBJECT TEST
     // asm 0000410C: 	BZ	NOTBIGOBJ
-    // asm 0000410D: 	LDI	1,R0
-    // asm 0000410E: 	LS	O_BIGOBJECT_B,R0
-    // asm 0000410F: 	OR	R0,R2
+    if ((raw_id & BGD_BIGOBJ) != 0) {
+        // asm 0000410D: 	LDI	1,R0
+        // asm 0000410E: 	LS	O_BIGOBJECT_B,R0
+        // asm 0000410F: 	OR	R0,R2
+        obj->flags |= (1u << O_BIGOBJECT_B);
+    }
 NOTBIGOBJ:
     // asm 00004110: 	OR	*+AR4(OFLAGS),R2	;or in the flags
     // asm 00004111: 	STI	R2,*+AR4(OFLAGS)
     // asm 00004112: 	LDI	AR4,AR2
     // asm 00004113: 	CALL	OBJ_INSERT			;INSERT THE BABE
+    OBJ_INSERT(obj);
     // 	;NOW FIND IF THE OBJECT BELONGS IN A SUPPLIMENTAL
     // 	;LIST.
     // 	;OID =	x3xx	-> DRIVE_SUPP
@@ -718,41 +925,61 @@ NOTBIGOBJ:
     // 	;
     // asm 00004114: 	LDI	*+AR4(OID),R0
     // asm 00004115: 	AND	CLASS_M,R0
+    object_class = obj->id & CLASS_M;
     // asm 00004116: 	CMPI	ROAD_C,R0
     // asm 00004117: 	BNE	NOTDRIVE
+    if (object_class == ROAD_C) {
     // asm 00004118: 	LDI	@DRIVE_LIST,AR0
     // asm 00004119: 	STI	AR0,*+AR4(OLINK3)
     // asm 0000411A: 	STI	AR4,@DRIVE_LIST
+        obj->link3 = (uintptr_t)DRIVE_LIST;
+        DRIVE_LIST = obj;
     // asm 0000411B: 	LDI	1,R1
     // asm 0000411C: 	BUD	DONELISTS
     // asm 0000411D: 	LS	28,R1			;O_ROAD_SUPP
     // asm 0000411E: 	OR	*+AR4(OFLAGS),R1
     // asm 0000411F: 	STI	R1,*+AR4(OFLAGS)
+        obj->flags |= (1u << O_DRIVE_SUPP_B); // ;O_ROAD_SUPP
+        goto DONELISTS;
+    }
 NOTDRIVE:
     // asm 00004120: 	CMPI	GROUND_C,R0
     // asm 00004121: 	BNE	NOTGROUND
+    if (object_class == GROUND_C) {
     // asm 00004122: 	LDI	@GROUND_LIST,AR0
     // asm 00004123: 	STI	AR0,*+AR4(OLINK3)
     // asm 00004124: 	STI	AR4,@GROUND_LIST
+        obj->link3 = (uintptr_t)GROUND_LIST;
+        GROUND_LIST = obj;
     // asm 00004125: 	LDI	1,R1
     // asm 00004126: 	LS	O_GROUND_B,R1
     // asm 00004127: 	OR	*+AR4(OFLAGS),R1
     // asm 00004128: 	STI	R1,*+AR4(OFLAGS)
+        obj->flags |= (1u << O_GROUND_B);
     // asm 00004129: 	B	DONELISTS
+        goto DONELISTS;
+    }
 NOTGROUND:
     // asm 0000412A: 	CMPI	TSIGN_C,R0
     // asm 0000412B: 	BNE	NOTSIGN
+    if (object_class == TSIGN_C) {
     // asm 0000412C: 	LDI	@SIGN_LIST,AR0
     // asm 0000412D: 	STI	AR0,*+AR4(OLINK3)
     // asm 0000412E: 	STI	AR4,@SIGN_LIST
+        obj->link3 = (uintptr_t)SIGN_LIST;
+        SIGN_LIST = obj;
     // asm 0000412F: 	LDI	1,R1
     // asm 00004130: 	LS	O_SIGN_SUPP_B,R1
     // asm 00004131: 	OR	*+AR4(OFLAGS),R1
     // asm 00004132: 	STI	R1,*+AR4(OFLAGS)
+        obj->flags |= (1u << O_SIGN_SUPP_B);
     // asm 00004133: 	B	DONELISTS
+        goto DONELISTS;
+    }
 NOTSIGN:
     // asm 00004134: 	CMPI	0B00h,R0
     // asm 00004135: 	BNE	NOTDYNAROAD
+    if (object_class == 0x0B00) {
     // 	;
     // 	;add this element to dynamic fLEX list
     // 	;
@@ -767,21 +994,37 @@ NOTSIGN:
     // asm 0000413E: NOTRVSTRK					;
     // asm 0000413E: 	OR	R1,R0
     // asm 0000413F: 	STI	R0,*+AR4(OUSR1)
+        obj->usr1 = obj->id & 0xFF;
+        if ((TYCOFLAG & SC_REVERSE) != 0) {
+            obj->usr1 = 255 - obj->usr1;
+        }
+        obj->usr1 |= (uintptr_t)(SECTIONIDX << 8);
     // asm 00004140: 	LDI	0300h,R0
     // asm 00004141: 	STI	R0,*+AR4(OID)
+        obj->id = ROAD_C;
     // asm 00004142: 	LDI	@DRIVE_LIST,AR0
     // asm 00004143: 	STI	AR0,*+AR4(OLINK3)
     // asm 00004144: 	STI	AR4,@DRIVE_LIST
+        obj->link3 = (uintptr_t)DRIVE_LIST;
+        DRIVE_LIST = obj;
     // asm 00004145: 	LDI	1,R1
     // asm 00004146: 	LS	O_DRIVE_SUPP_B,R1
     // asm 00004147: 	OR	*+AR4(OFLAGS),R1
     // asm 00004148: 	STI	R1,*+AR4(OFLAGS)
+        obj->flags |= (1u << O_DRIVE_SUPP_B);
     // asm 00004149: 	CALL	ADD_TO_NEWLIST
+        ADD_TO_NEWLIST(obj);
     // asm 0000414A: 	BU	DONELISTS
+        goto DONELISTS;
+    }
 NOTDYNAROAD:
 DONELISTS:
     // asm 0000414B: 	SUBI	1,R4
     // asm 0000414C: 	BGE	L12
+    object_count -= 1;
+    if (object_count >= 0) {
+        goto L12;
+    }
 ACTIVATE_X:
     // asm 0000414D: 	POP	AR0			;clear stack of last item
     // asm 0000414E: 	LDI	@PASS1,R0
@@ -801,6 +1044,20 @@ ACTIVATE_X:
     // asm 0000415B: 	CMPI	@OFREECNT,R4
     // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
     // asm 0000415C: 	BU	L12
+    if (PASS1 == 0) {
+        PASS1 = 1;
+        flag = *section_ptr;
+        if ((flag & SC_OVERLAY) != 0) {
+            group_ptr = ROM_PTR(section_ptr[TB_GROUPOVERLAY]);
+            group_ptr += 1;
+            object_count = (int)*group_ptr++;
+            SLOCKON(object_count <= 0, "BACKGRND  ERRONEOUS GROUP LOADED");
+            object_count -= 1;
+            SLOCKON(object_count > OFREECNT, "BACKGRND\\ACTIVATE TYCOGROUP OUT OF OBJECTS 2");
+            goto L12;
+        }
+        goto CHECK2II;
+    }
 CHECK2:
     // asm 0000415D: 	CMPI	2,R0
     // asm 0000415E: 	BEQ	NOOVERLAYGROUP
@@ -835,6 +1092,23 @@ UHNO2:
     // asm 00004179: 	CMPI	@OFREECNT,R4
     // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
     // asm 0000417A: 	BU	L12
+    if (PASS1 != 2) {
+        PASS1 = 2;
+        flag = *section_ptr;
+        if ((flag & SC_OVER2) != 0) {
+            group_ptr = ROM_PTR(section_ptr[(flag & SC_REVERSE) != 0 ? (TB_GROUPOVERLAY + 5) : (TB_GROUPOVERLAY + 1)]);
+            group_ptr += 1;
+            if ((flag & SC_REVERSE) != 0) {
+                SECRADY = TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
+            }
+            TYCOFLAG &= ~SC_REVERSE;
+            object_count = (int)*group_ptr++;
+            SLOCKON(object_count <= 0, "BACKGRND  ERRONEOUS GROUP LOADED OVER2");
+            object_count -= 1;
+            SLOCKON(object_count > OFREECNT, "BACKGRND\\ACTIVATE TYCOGROUP OUT OF OBJECTS 2");
+            goto L12;
+        }
+    }
 CHECK2II:
     // asm 0000417B: 	CMPI	2,R0
     // asm 0000417C: 	BEQ	NOOVERLAYGROUP
@@ -869,6 +1143,23 @@ UHNO:
     // asm 00004197: 	CMPI	@OFREECNT,R4
     // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
     // asm 00004198: 	BU	L12
+    if (PASS1 != 2) {
+        PASS1 = 2;
+        flag = *section_ptr;
+        if ((flag & SC_OVER2) != 0) {
+            group_ptr = ROM_PTR(section_ptr[(flag & SC_REVERSE) != 0 ? (TB_GROUPOVERLAY + 4) : TB_GROUPOVERLAY]);
+            if ((flag & SC_REVERSE) != 0) {
+                SECRADY = TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
+            }
+            group_ptr += 1;
+            TYCOFLAG &= ~SC_REVERSE;
+            object_count = (int)*group_ptr++;
+            SLOCKON(object_count <= 0, "BACKGRND  ERRONEOUS GROUP LOADED OVER2");
+            object_count -= 1;
+            SLOCKON(object_count > OFREECNT, "BACKGRND\\ACTIVATE TYCOGROUP OUT OF OBJECTS 2");
+            goto L12;
+        }
+    }
 NOOVERLAYGROUP:
     // 	;*NOW DO THE FANCY MESS OF:
     // 	;*
@@ -882,7 +1173,9 @@ NOOVERLAYGROUP:
     // asm 0000419B: 	BZ	NO_NEWLOAD
 NO_NEWLOAD:
     // asm 0000419C: 	CALL	FIND_SUBLIST_START_END
+    FIND_SUBLIST_START_END();
     // asm 0000419D: 	CALL	APPEND_NEWLIST
+    APPEND_NEWLIST();
     // asm 0000419E: 	LDI	@NEWSUBLIST_TOPB,R0		;return pointer to 1st object
     // asm 0000419F: 	POP	AR7
     // asm 000041A0: 	POP	AR5
@@ -893,8 +1186,7 @@ NO_NEWLOAD:
     // asm 000041A5: 	POP	R5
     // asm 000041A6: 	POP	R4
     // asm 000041A7: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_ACTIVATE_TYCOGROUP", 0, 0);
-    UNIMPL();
+    return STARTS;
 }
 
 // *----------------------------------------------------------------------------
@@ -914,46 +1206,73 @@ NO_NEWLOAD:
  *
  *
  */
-static void ADD_TO_NEWLIST(void) {
+static void ADD_TO_NEWLIST(OBJ* obj /*AR4*/) {
+    OBJ** link_ptr;
+    OBJ* prev_obj;
+    OBJ* next_obj;
+    uintptr_t index_value;
+
     // asm 000041A8: 	LDI	@NEW_GROUPI,AR1
     // asm 000041A9: 	LDI	*AR1,R0
-    // asm 000041AA: 	BNZ	REGADD
-    // asm 000041AB: 	STI	AR4,*AR1
-    // asm 000041AC: 	CLRI	R0
-    // asm 000041AD: 	STI	R0,*+AR4(OLINK4)
-    // asm 000041AE: 	STI	R0,*+AR4(OBLINK4)
-    // asm 000041AF: 	RETS
+    if (NEW_GROUP == NULL) {
+        // asm 000041AA: 	BNZ	REGADD
+        // asm 000041AB: 	STI	AR4,*AR1
+        NEW_GROUP = obj;
+        // asm 000041AC: 	CLRI	R0
+        // asm 000041AD: 	STI	R0,*+AR4(OLINK4)
+        obj->link4 = 0;
+        // asm 000041AE: 	STI	R0,*+AR4(OBLINK4)
+        obj->plink = NULL;
+        // asm 000041AF: 	RETS
+        return;
+    }
 REGADD:
     // asm 000041B0: 	SUBI	OLINK4,AR1
+    link_ptr = &NEW_GROUP;
     // asm 000041B1: 	LDI	AR1,AR2
+    prev_obj = NULL;
     // asm 000041B2: 	LDI	*+AR4(OUSR1),R0		;GET fLEX index number
+    index_value = obj->usr1; // ;GET fLEX index number
 ADDNOBJL:
     // asm 000041B3: 	LDI	AR1,AR0			;AR0 IS PREVIOUS LINK
     // asm 000041B4: 	LDI	*+AR1(OLINK4),R1	;CHECK END OF LIST
+    next_obj = *link_ptr;
     // asm 000041B5: 	BZ	ADDNOBJ_AT_END
-    // asm 000041B6: 	LDI	R1,AR1
-    // asm 000041B7: 	CMPI	*+AR1(OUSR1),R0
-    // asm 000041B8: 	BGT	ADDNOBJL
+    if (next_obj != NULL && next_obj->usr1 < index_value) {
+        // asm 000041B6: 	LDI	R1,AR1
+        prev_obj = next_obj;
+        // asm 000041B7: 	CMPI	*+AR1(OUSR1),R0
+        // asm 000041B8: 	BGT	ADDNOBJL
+        link_ptr = (OBJ**)&next_obj->link4;
+        goto ADDNOBJL;
+    }
 ADDNOBJ_AT_END:
     // asm 000041B9: 	STI	R1,*+AR4(OLINK4)	;LINK TO NEXT (SUBLIST LINK)
+    obj->link4 = (uintptr_t)next_obj; // ;LINK TO NEXT (SUBLIST LINK)
     // asm 000041BA: 	STI	AR4,*+AR0(OLINK4)	;LINK FROM PREVIOUS (SUBLIST LINK)
+    *link_ptr = obj; // ;LINK FROM PREVIOUS (SUBLIST LINK)
     // asm 000041BB: 	CMPI	AR2,AR0			;IS IT THE HEAD OF LIST WE LOAD AT
     // asm 000041BC: 	LDIEQ	0,AR0
     // asm 000041BD: 	STI	AR0,*+AR4(OBLINK4)	;BACK LINK
+    obj->blink4 = (uintptr_t)prev_obj; // ;BACK LINK
     // asm 000041BE: 	CMPI	0,R1			;IS THE NEXT ELEMENT NULL
     // asm 000041BF: 	BEQ	ISZERO
-    // asm 000041C0: 	LDI	R1,AR0			;IF NOT THE NEXT ELEMENTS BACK LINK
-    // asm 000041C1: 	STI	AR4,*+AR0(OBLINK4)	;  MUST POINT TO NEW ELEMENT
+    if (next_obj != NULL) {
+        // asm 000041C0: 	LDI	R1,AR0			;IF NOT THE NEXT ELEMENTS BACK LINK
+        // asm 000041C1: 	STI	AR4,*+AR0(OBLINK4)	;  MUST POINT TO NEW ELEMENT
+        next_obj->blink4 = (uintptr_t)obj; // ;  MUST POINT TO NEW ELEMENT
+    }
 ISZERO:
+    ;
     // asm 000041C2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADD_TO_NEWLIST", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
 static void FIND_SUBLIST_START_END(void) {
+    OBJ* obj;
+
     // asm 000041C3: 	PUSH	R1
     // asm 000041C4: 	PUSH	AR0
     // asm 000041C5: 	LDI	@NEW_GROUP,AR0
@@ -962,18 +1281,23 @@ static void FIND_SUBLIST_START_END(void) {
     // asm: 	SLOCKON	EQ,"BACKGRND\FIND_SUBLIST_START_END"
 #endif
     // asm 000041C6: 	STPI	AR0,@SUBLIST_BEGIN
+    obj = NEW_GROUP;
+    SUBLIST_BEGIN = obj;
 FSLP:
     // asm 000041C7: 	LDI	*+AR0(OLINK4),R1	;CHECK END OF LIST
     // asm 000041C8: 	BZ	FSDN
-    // asm 000041C9: 	LDI	R1,AR0
-    // asm 000041CA: 	BU	FSLP
+    if ((OBJ*)obj->link4 != NULL) {
+        // asm 000041C9: 	LDI	R1,AR0
+        obj = (OBJ*)obj->link4;
+        // asm 000041CA: 	BU	FSLP
+        goto FSLP;
+    }
 FSDN:
     // asm 000041CB: 	STPI	AR0,@SUBLIST_END	;ALWAYS NAME IT AS THE END
+    SUBLIST_END = obj; // ;ALWAYS NAME IT AS THE END
     // asm 000041CC: 	POP	AR0
     // asm 000041CD: 	POP	R1
     // asm 000041CE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_SUBLIST_START_END", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1001,33 +1325,44 @@ FSDN:
  *
  */
 static void APPEND_NEWLIST(void) {
+    OBJ* old_end;
+
     // asm 000041CF: 	LDI	@DYNALIST_END,R0
-    // asm 000041D0: 	BZ	SHINY_NEWLIST
+    if (DYNALIST_END == NULL) {
+        // asm 000041D0: 	BZ	SHINY_NEWLIST
+        SHINY_NEWLIST();
+        return;
+    }
     // asm 000041D1: 	LDI	R0,AR0
+    old_end = DYNALIST_END;
     // asm 000041D2: 	LDI	@SUBLIST_BEGIN,R0
     // asm 000041D3: 	STI	R0,*+AR0(OLINK4)
+    old_end->link4 = (uintptr_t)SUBLIST_BEGIN;
     // asm 000041D4: 	LDI	@SUBLIST_END,AR1
     // asm 000041D5: 	STPI	AR1,@DYNALIST_END
+    DYNALIST_END = SUBLIST_END;
     // asm 000041D6: 	LDI	R0,AR1
     // asm 000041D7: 	STI	AR0,*+AR1(OBLINK4)
+    SUBLIST_BEGIN->blink4 = (uintptr_t)old_end;
     // asm 000041D8: 	STPI	R0,@STARTS
+    STARTS = SUBLIST_BEGIN;
     // asm 000041D9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "APPEND_NEWLIST", 0, 0);
-    UNIMPL();
 }
 
 static void SHINY_NEWLIST(void) {
     // asm 000041DA: 	LDI	@SUBLIST_END,R0
     // asm 000041DB: 	STPI	R0,@DYNALIST_END
+    DYNALIST_END = SUBLIST_END;
     // asm 000041DC: 	LDI	@SUBLIST_BEGIN,R0	;new line, check it out...
     // asm 000041DD: 	STPI	R0,@DYNALIST_TRUEBEGIN
+    DYNALIST_TRUEBEGIN = SUBLIST_BEGIN;
     // asm 000041DE: 	LDI	@SUBLIST_BEGIN,R0
     // asm: 	SLOCKON	Z,"BACKGRND\SHINY_NEWLIST"
     // asm 000041DF: 	STPI	R0,@DYNALIST_BEGIN
+    DYNALIST_BEGIN = SUBLIST_BEGIN;
     // asm 000041E0: 	STPI	R0,@STARTS
+    STARTS = SUBLIST_BEGIN;
     // asm 000041E1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHINY_NEWLIST", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1158,36 +1493,37 @@ void GET_XZ_DISTANCE(void) {
  *	ALL REGISTERS MUST BE SAVED
  *
  */
-static void BGD_OROUTINE(void) {
+static void BGD_OROUTINE(OBJ* obj /*AR4*/) {
     // asm 00004223: 	PUSH	R0
     // asm 00004224: 	PUSH	R1
     // asm 00004225: 	PUSH	AR0
     // asm 00004226: 	LDI	*+AR4(OID),R0
     // asm 00004227: 	LDI	@ROUTINE_TABI,AR0
-BGDORLP:
-    // asm 00004228: CMPI	*AR0,R0
-    // asm 00004229: 	BEQ	BGD_RFND
-    // asm 0000422A: 	LDI	*AR0++(2),R1
-    // asm 0000422B: 	BNZ	BGDORLP
-    // asm 0000422C: 	POP	AR0
-    // asm 0000422D: 	POP	R1
-    // asm 0000422E: 	POP	R0
-    // asm 0000422F: 	RETS
-BGD_RFND:
-    // asm 00004230: 	LDI	*+AR0,R0
-    // asm 00004231: 	CALLU	R0
-    // asm 00004232: 	POP	AR0
-    // asm 00004233: 	POP	R1
-    // asm 00004234: 	POP	R0
+    switch (obj->id) {
+    case 0x460:
+        ROAD_DEBRIS_CREATE(obj);
+        break;
+    case 0x461:
+    case 0x462:
+    case 0x463:
+        ROAD_DEBRIS_CREATE_55GAL(obj);
+        break;
+    case 0x467:
+        WATERFALL();
+        break;
+    case 0x469:
+        OVERCAR(obj);
+        break;
+    default:
+        break;
+    }
     // asm 00004235: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_OROUTINE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void OVERCAR(void) {
+static void OVERCAR(OBJ* obj /*AR4*/) {
     // asm 00004236: 	PUSH	R0
     // asm 00004237: 	PUSH	R2
     // asm 00004238: 	PUSH	AR2
@@ -1225,7 +1561,7 @@ static int OVERCARLIST[] = {
     dcbus_ROM,
 };
 
-static void CARFORWARD(void) {
+static void CARFORWARD(PROC* p) {
     // asm 00004253: 	RANDN	50
     // asm 00004255: 	CMPI	25,R0
     // asm 00004256: 	BLT	CARSUP
@@ -1305,7 +1641,7 @@ CARFORWARDLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void ROAD_DEBRIS_CREATE_55GAL(void) {
+static void ROAD_DEBRIS_CREATE_55GAL(OBJ* obj /*AR4*/) {
     // asm 0000429D: 	PUSH	R0
     // asm 0000429E: 	CALL	ADD_RDDEBRIS
     // asm 0000429F: 	LDI	0731h,R0
@@ -1316,7 +1652,7 @@ static void ROAD_DEBRIS_CREATE_55GAL(void) {
     UNIMPL();
 }
 
-static void ROAD_DEBRIS_CREATE(void) {
+static void ROAD_DEBRIS_CREATE(OBJ* obj /*AR4*/) {
     // asm 000042A3: 	BU	ADD_RDDEBRIS
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROAD_DEBRIS_CREATE", 0, 0);
@@ -1512,7 +1848,7 @@ FWL1A:
  *
  *
  */
-static void WATERANI_PROC(void) {
+static void WATERANI_PROC(PROC* p) {
     // asm 00004319: 	LDI	AR6,AR5
 WATERANI_LP:
     // asm 0000431A: 	LDI	*AR5++,R0
@@ -1539,7 +1875,7 @@ WATERANI_LP:
  *AR4=WATERFALL OBJECT
  *
  */
-static void WATERFALL_SND(void) {
+static void WATERFALL_SND(PROC* p) {
     // asm 00004324: 	SLEEP	1
     // asm 00004326: 	LDI	*+AR4(ODIST),R0
     // asm 00004327: 	LDFN	4.0,R1
@@ -1797,7 +2133,7 @@ DORUT_ANI:
 }
 
 // *----------------------------------------------------------------------------
-static void PLAINANI_PROC_SLOW(void) {
+static void PLAINANI_PROC_SLOW(PROC* p) {
     // asm 000043D0: 	LDI	AR6,AR5
 PLAINANI_LP_SLOW:
     // asm 000043D1: 	LDI	*AR5++,R0
@@ -1889,7 +2225,7 @@ FWL1:
  *AR6	START OF SCRIPT
  *
  */
-static void PLAINANI_PROC(void) {
+static void PLAINANI_PROC(PROC* p) {
     // asm 00004412: 	LDI	AR6,AR5
 PLAINANI_LP:
     // asm 00004413: 	LDI	*AR5++,R0

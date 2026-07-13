@@ -275,6 +275,6 @@ void OBJ_FREE(OBJ* obj /*AR2*/);
 void OBJ_MAKE(void);
 
 // asm: 	.globl	OBJ_QMAKE
-void OBJ_QMAKE(void);
+OBJ* OBJ_QMAKE(void* romdata /*AR2*/, int posx /*R2*/, int posy /*R3*/, int posz /*RC*/);
 
 #endif /* OBJ_H */

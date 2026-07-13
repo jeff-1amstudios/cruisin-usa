@@ -57,42 +57,42 @@ extern VEHTAB VEHICLE_TABLE[];
 // asm:  .globl STARTSECTION,START_POS,START_RADY
 extern int STARTSECTION;
 
-extern int START_POS[];
+extern float START_POS[];
 
-extern int START_RADY;
+extern float START_RADY;
 
 // asm:  .globl DGROUPSI
 #define DGROUPSI DGROUPS
 
 // asm:  .globl DGROUPS
-extern int DGROUPS[];
+extern DGROUP_ENTRY DGROUPS[];
 
 // asm:  .globl DGROUP_COUNT
 extern int DGROUP_COUNT;
 
 // asm:  .globl DGROUP_AW
-extern int DGROUP_AW;
+extern const u32* DGROUP_AW;
 
 // asm:  .globl DYNALIST_TRUEBEGIN
-extern int DYNALIST_TRUEBEGIN;
+extern OBJ* DYNALIST_TRUEBEGIN;
 
 // asm:  .globl DYNALIST_BEGIN
-extern int DYNALIST_BEGIN;
+extern OBJ* DYNALIST_BEGIN;
 
 // asm:  .globl DYNALIST_END
-extern int DYNALIST_END;
+extern OBJ* DYNALIST_END;
 
 // asm:  .globl STARTS
-extern int STARTS;
+extern OBJ* STARTS;
 
 // asm:  .globl SECTIONIDX
 extern int SECTIONIDX;
 
 // asm:  .globl TYCO_TRACK
-extern int TYCO_TRACK;
+extern const u32* TYCO_TRACK;
 
 // asm:  .globl TYCO_TRACK_NTL
-extern int TYCO_TRACK_NTL;
+extern const u32* TYCO_TRACK_NTL;
 
 extern OBJ* SINGLE_SECTION_TEMPPTR;
 

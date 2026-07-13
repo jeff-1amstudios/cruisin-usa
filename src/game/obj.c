@@ -42,7 +42,7 @@ void RESCAN(void);
 void ZSORTPRIOR(void);
 static void ZSORTACT(void);
 void OBJ_MAKE(void);
-void OBJ_QMAKE(void);
+OBJ* OBJ_QMAKE(void* romdata /*AR2*/, int posx /*R2*/, int posy /*R3*/, int posz /*RC*/);
 
 #define OFREEI OFREE
 #define OBJSTRI OBJSTR
@@ -1773,18 +1773,27 @@ void OBJ_MAKE(void) {
  *	AR0	OBJECT
  *
  */
-void OBJ_QMAKE(void) {
+OBJ* OBJ_QMAKE(void* romdata /*AR2*/, int posx /*R2*/, int posy /*R3*/, int posz /*RC*/) {
+    OBJ* obj;
+
     // asm 00007334: 	CALL	OBJ_GET
+    obj = OBJ_GET();
     // asm 00007335: 	RETSC
+    if (obj == NULL) {
+        return NULL;
+    }
     // asm 00007336: 	STI	AR2,*+AR0(OROMDATA)
+    obj->romdata = romdata;
     // asm 00007337: 	FLOAT	R2
     // asm 00007338: 	STF	R2,*+AR0(OPOSX)
+    obj->posx = (float)posx;
     // asm 00007339: 	FLOAT	R3
     // asm 0000733A: 	STF	R3,*+AR0(OPOSY)
+    obj->posy = (float)posy;
     // asm 0000733B: 	FLOAT	RC,R2
     // asm 0000733C: 	STF	R2,*+AR0(OPOSZ)
+    obj->posz = (float)posz;
     // asm 0000733D: 	CLRC
     // asm 0000733E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_QMAKE", 0, 0);
-    UNIMPL();
+    return obj;
 }

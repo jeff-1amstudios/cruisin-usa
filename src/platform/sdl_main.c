@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "../core/machine.h"
+#include "../core/validator.h"
 #include "../game/globals.h"
 #include "sdl_video.h"
 
@@ -54,6 +55,8 @@ int main(void) {
     g_display_machine = &machine;
     g_display_video = &video;
     g_display_running = &running;
+
+    mame_validate_fail_on_wrong_consumer(1);
 
     _c_int00();
 
