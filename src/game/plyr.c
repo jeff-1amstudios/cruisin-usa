@@ -154,7 +154,7 @@ PROC* PLYPROC;
 /* asm: PLYCBLK	.bss	PLYCBLK,1 */
 CARBLK* PLYCBLK;
 /* asm: OLDPLYSPD	.bss	OLDPLYSPD,1 */
-int OLDPLYSPD;
+float OLDPLYSPD;
 /* asm: OLDPLYAIR	.bss	OLDPLYAIR,1 */
 int OLDPLYAIR;
 /* asm: PLYRFIRST	.bss	PLYRFIRST,1 */
@@ -3436,7 +3436,7 @@ int PEDALMX;
 /* asm: STEERMN	.bss	STEERMN,1 */
 int STEERMN;
 /* asm: STEERMX	.bss	STEERMX,1 */
-int STEERMX;
+float STEERMX;
 /* asm: STEERCT	.bss	STEERCT,1 */
 int STEERCT;
 /* asm: BRAKEMN	.bss	BRAKEMN,1 */
@@ -3444,7 +3444,7 @@ int BRAKEMN;
 /* asm: BRAKEMX	.bss	BRAKEMX,1 */
 int BRAKEMX;
 /* asm: STEERFR	.bss	STEERFR,1 */
-int STEERFR;
+float STEERFR = 1.0f;
 #define ADJ_COINMODE 0
 #define ADJ_GASMIN 1
 #define ADJ_GASMAX 2

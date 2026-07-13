@@ -6,7 +6,7 @@
  */
 
 #define DIV_F DIV_F30
-void DIV_F30(void);
+float DIV_F30(float u, float v);
 #define DIV_I DIV_I30
 void DIV_I30(void);
 void DIV_U30(void);
@@ -71,53 +71,11 @@ void SQRT(void);
  *	Cycles: 40
  *
  */
-void DIV_F30(void)
+float DIV_F30(float u, float v)
 {
-    // asm 0000A534: 	POP	BK	;Pop return address
-    // asm 0000A535: 	PUSH	R2	;Save R2: integer part
-    // asm 0000A536: 	PUSHF	R2	;Save R2: floating point part
-    // asm 0000A537: 	PUSHF	R1	;SAVE THE SIGN
-    // asm 0000A538: 	PUSHF	R0	;Save u (dividend)
-    // ;	LDI	R1,AR0	;Save mantissa of v to remember sign
-    // asm 0000A539: 	ABSF	R1	;The algorithm uses v = |v|.
-    // 	;
-    // 	;	Extract the exponent of v.
-    // 	;
-    // asm 0000A53A: 	PUSHF	R1
-    // asm 0000A53B: 	POP	R2
-    // asm 0000A53C: 	ASH	-24,R2	;The 8 LSBs of R2 contain the exponent of v.
-    // ;
-    // ;A few comments on boundary conditions.	If e = -128, then v = 0.  The
-    // ;following x[0] calculation yields R2 = --128 - 1 = 127 and the algorithm will
-    // ;overflow and saturate since x[0] is large.  This seems reasonable.  If e =
-    // ;127, the R2 = -127 - 1 = -128.	Thus x[0] = 0 and this will cause the
-    // ;algorithm to yield zero.  Since the mantissa of v is always between 1 and 2,
-    // ;this is also reasonable.  As a result, boundary conditions are handled
-    // ;automatically in a reasonable fashion.
-    // ;
-    // ;	x[0] formation given the exponent of v.
-    // ;
-    // asm 0000A53D: 	NEGI	R2
-    // asm 0000A53E: 	SUBI	1,R2		;Now we have -e-1, the exponent of x[0].
-    // asm 0000A53F: 	ASH	24,R2
-    // asm 0000A540: 	PUSH	R2
-    // asm 0000A541: 	POPF	R2		;Now R2 = x[0] = 1.0 * 2**(-e-1).
-    // 	;
-    // 	;Now the iterations begin.
-    // 	;
-    // asm 0000A542: 	MPYF	R2,R1,R0	;R0 = v * x[0]
-    // asm 0000A543: 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[0]
-    // asm 0000A544: 	MPYF	R0,R2		;R2 = x[1] = x[0] * (2.0 - v * x[0])
-    // asm 0000A545: 	MPYF	R2,R1,R0	;R0 = v * x[1]
-    // asm 0000A546: 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[1]
-    // asm 0000A547: 	MPYF	R0,R2		;R2 = x[2] = x[1] * (2.0 - v * x[1])
-    // asm 0000A548: 	MPYF	R2,R1,R0	;R0 = v * x[2]
-    // asm 0000A549: 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[2]
-    // asm 0000A54A: 	MPYF	R0,R2		;R2 = x[3] = x[2] * (2.0 - v * x[2])
-    // asm 0000A54B: 	MPYF	R2,R1,R0	;R0 = v * x[3]
-    // asm 0000A54C: 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[3]
-    // asm 0000A54D: 	MPYF	R0,R2		;R2 = x[4] = x[3] * (2.0 - v * x[3])
-    // asm 0000A54E: 	RND	R2		;This minimizes error in the LSBs.
+    // asm PARAMETERS: u in R0, v in R1
+    // asm RETURNS: R0 = u / v
+    return u / v;
     // 	;
     // 	;For the last iteration we use the formulation:
     // 	;x[5] = (x[4] * (1.0 - (v * x[4]))) + x[4]

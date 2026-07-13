@@ -15,7 +15,7 @@ extern int WHEELPWR;
 // asm: 	.bss	WHEELPOS,1
 extern int WHEELPOS;
 // asm: 	.bss	WHEELOUT,1
-extern int WHEELOUT;
+extern float WHEELOUT;
 // asm: 	.bss	WHEELMAX,1
 extern int WHEELMAX;
 // asm: 	pbss	WHEELVEL,1

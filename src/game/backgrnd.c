@@ -21,7 +21,7 @@
 void FIND_STARTING_VALUES(void);
 void BGD_INIT(void);
 static void BGD_WATCHER(PROC* p);
-static OBJ* BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/);
+static u32 BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/);
 static void ADD_TO_NEWLIST(OBJ* obj /*AR4*/);
 static void FIND_SUBLIST_START_END(void);
 static void APPEND_NEWLIST(void);
@@ -184,7 +184,7 @@ void FIND_STARTING_VALUES(void) {
         // asm 00003F84: 	LDI	R0,AR0
         // asm 00003F85: 	DEC	AR0
         remaining_sections = start_section - 1;
-LPP:
+    LPP:
         // asm 00003F86: LDI	*AR1++(6),R1
         flag = *tyco_ptr;
         tyco_ptr += 6;
@@ -194,21 +194,21 @@ LPP:
             // asm 00003F89: 	ADDI	1,AR1
             tyco_ptr += 1;
         }
-NOOVER:
+    NOOVER:
         // asm 00003F8A: TSTB	SC_REVERSE,R1
         // asm 00003F8B: 	BZ	CNT
         if ((flag & SC_REVERSE) != 0) {
             // asm 00003F8C: 	NOP	*AR1++(4)
             tyco_ptr += 4;
         }
-CNT:
+    CNT:
         // asm 00003F8D: TSTB	SC_OVER2,R1
         // asm 00003F8E: 	BZ	CNTN
         if ((flag & SC_OVER2) != 0) {
             // asm 00003F8F: 	NOP	*AR1++			;OVERLAY 2
             tyco_ptr += 1;
         }
-CNTN:
+    CNTN:
         // asm 00003F90: DBU	AR0,LPP
         if (remaining_sections-- > 0) {
             goto LPP;
@@ -249,7 +249,7 @@ NOWARP:
  */
 void BGD_INIT(void) {
     DGROUP_ENTRY* dgroup_ptr;
-    OBJ* dgroup_head;
+    u32 dgroup_head;
     const u32* tyco_ptr;
     u32 flag;
     int remaining_groups;
@@ -304,6 +304,7 @@ KKTIL:
     // asm 00003FB2: 	LDI	AR2,AR0
     // asm 00003FB3: 	CALL	BGD_ACTIVATE_TYCOGROUP	;returns top pointer in R0
     dgroup_head = BGD_ACTIVATE_TYCOGROUP(tyco_ptr); // ;returns top pointer in R0
+    MAME_ASSERT_REG(0x00003FB4, "R0", &dgroup_head);
     // asm 00003FB4: 	LDI	@DGROUPSI,AR1
     dgroup_ptr = DGROUPS;
     // asm 00003FB5: 	STI	R0,*+AR1(DGRP_HEAD)	;lead object (link by OLINK3)
@@ -368,6 +369,7 @@ LPP5:
     // asm 00003FD2: 	LDI	AR2,AR0
     // asm 00003FD3: 	CALL	BGD_ACTIVATE_TYCOGROUP	;returns top pointer in R0
     dgroup_head = BGD_ACTIVATE_TYCOGROUP(tyco_ptr); // ;returns top pointer in R0
+    MAME_ASSERT_REG(0x00003FD4, "R0", &dgroup_head);
     // asm 00003FD4: 	STI	R0,*+AR1(DGRP_HEAD+DGRP_SIZE)	;lead object (link by OLINK3)
     dgroup_ptr[1].head = dgroup_head; // ;lead object (link by OLINK3)
     // asm 00003FD5: 	STI	AR0,*+AR1(DGRP_BIN+DGRP_SIZE)	;rom struct ptr
@@ -620,7 +622,7 @@ NODEACT:
 // *----------------------------------------------------------------------------
 
 /* asm: NEWSUBLIST_TOPB	.bss	NEWSUBLIST_TOPB,1 */
-uintptr_t NEWSUBLIST_TOPB;
+u32 NEWSUBLIST_TOPB;
 /* asm: GROUP_RADY	.bss	GROUP_RADY,1 */
 static int GROUP_RADY;
 /* asm: TYCOFLAG	.bss	TYCOFLAG,1 */
@@ -630,13 +632,15 @@ int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
 float SECRADY;
 
-static OBJ* BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/) {
+static u32 BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/) {
     const u32* section_ptr;
     const u32* group_ptr;
     void* romdata;
     OBJ* obj;
     OBJ* corn_obj;
     u32 flag;
+    u32 flags;
+    uintptr_t usr1;
     int object_count;
     u32 raw_id;
     u32 object_class;
@@ -657,41 +661,41 @@ static OBJ* BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/) {
     // asm 00004076: 	CMPI	4,R0
     // asm 00004077: 	BNE	NOTCORNFLAKE
     if (SECTIONIDX == 4) {
-    // asm 00004078: 	PUSH	AR4
-    // asm 00004079: 	LDL	cornpops,AR2
+        // asm 00004078: 	PUSH	AR4
+        // asm 00004079: 	LDL	cornpops,AR2
         romdata = ROM_PTR(cornpops);
-    // asm 0000407A: 	LDI	6700,R2
-    // asm 0000407B: 	LDI	-4250,R3
-    // asm 0000407C: 	LDI	32600,RC
-    // asm 0000407D: 	ADDI	@LVAL,RC
-    // asm 0000407E: 	CALL	OBJ_QMAKE
+        // asm 0000407A: 	LDI	6700,R2
+        // asm 0000407B: 	LDI	-4250,R3
+        // asm 0000407C: 	LDI	32600,RC
+        // asm 0000407D: 	ADDI	@LVAL,RC
+        // asm 0000407E: 	CALL	OBJ_QMAKE
         corn_obj = OBJ_QMAKE(romdata, 6700, -4250, 32600 + 151720);
         SLOCKON(corn_obj == NULL, "BACKGRND\\ACTIVATE TYCOGROUP CORNPOPS");
-    // asm 0000407F: 	LDI	AR0,AR4
+        // asm 0000407F: 	LDI	AR0,AR4
         if (corn_obj != NULL) {
-    // asm 00004080: 	LDF	-0.2,R2
+            // asm 00004080: 	LDF	-0.2,R2
             corn_obj->rad.Y = -0.2f;
-    // asm 00004081: 	LDI	AR4,AR2
-    // asm 00004082: 	ADDI	OMATRIX,AR2
-    // asm 00004083: 	CALL	FIND_YMATRIX
+            // asm 00004081: 	LDI	AR4,AR2
+            // asm 00004082: 	ADDI	OMATRIX,AR2
+            // asm 00004083: 	CALL	FIND_YMATRIX
             FIND_YMATRIX(&corn_obj->omatrix, corn_obj->rad.Y);
-    // asm 00004084: 	LDI	*+AR4(OFLAGS),R0
-    // asm 00004085: 	OR	O_1PAL,R0
+            // asm 00004084: 	LDI	*+AR4(OFLAGS),R0
+            // asm 00004085: 	OR	O_1PAL,R0
             corn_obj->flags |= O_1PAL;
-    // asm 00004086: 	STI	R0,*+AR4(OFLAGS)
-    // asm 00004087: 	LDL	CORNPAL,AR2
-    // asm 00004088: 	CALL	PAL_FIND_RAW
+            // asm 00004086: 	STI	R0,*+AR4(OFLAGS)
+            // asm 00004087: 	LDL	CORNPAL,AR2
+            // asm 00004088: 	CALL	PAL_FIND_RAW
             corn_obj->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(CORNPAL));
-    // asm 00004089: 	STI	R0,*+AR4(OPAL)
-    // asm 0000408A: 	LDI	AR4,AR2
-    // asm 0000408B: 	CALL	OBJ_INSERT
+            // asm 00004089: 	STI	R0,*+AR4(OPAL)
+            // asm 0000408A: 	LDI	AR4,AR2
+            // asm 0000408B: 	CALL	OBJ_INSERT
             OBJ_INSERT(corn_obj);
-    // asm 0000408C: 	LDI	@SECTIONIDX,R0
-    // asm 0000408D: 	LS	8,R0
-    // asm 0000408E: 	OR	0AAh,R0
+            // asm 0000408C: 	LDI	@SECTIONIDX,R0
+            // asm 0000408D: 	LS	8,R0
+            // asm 0000408E: 	OR	0AAh,R0
             corn_obj->link2 = ((uintptr_t)SECTIONIDX << 8) | 0xAAu;
-    // asm 0000408F: 	STI	R0,*+AR4(OLINK2)
-    // asm 00004090: 	POP	AR4
+            // asm 0000408F: 	STI	R0,*+AR4(OLINK2)
+            // asm 00004090: 	POP	AR4
         }
     }
 NOTCORNFLAKE:
@@ -750,6 +754,7 @@ NOEXTRA:
     // asm 000040AD: 	CALL	HPFIND_YMATRIX		;require High Precision
     HPFIND_YMATRIX(&MATRIXAI, SECRADY);
     // asm 000040AE: 	LDI	*+AR7(TB_GROUP),AR5	;Group pointer
+    MAME_ASSERT_REG(0x000040AF, "AR5", &section_ptr[TB_GROUP]);
     group_ptr = ROM_PTR(section_ptr[TB_GROUP]);
     // asm 000040AF: 	ADDI	1,AR5			;skip radius
     group_ptr += 1;
@@ -757,10 +762,11 @@ NOEXTRA:
     // asm 000040B1: 	LS	8,R0
     // asm 000040B2: 	OR	0AAh,R0
     // asm 000040B3: 	STI	R0,@NEWSUBLIST_TOPB
-    NEWSUBLIST_TOPB = ((uintptr_t)SECTIONIDX << 8) | 0xAAu;
+    NEWSUBLIST_TOPB = ((u32)SECTIONIDX << 8) | 0xAAu;
     // asm 000040B4: 	PUSH	R0
     // asm 000040B5: 	LDI	*AR5++,R4		;get number of objects to load
     object_count = (int)*group_ptr++;
+    MAME_ASSERT_REG(0x000040B6, "R4", &object_count);
     // asm: 	SLOCKON	LE,"BACKGRND 1"
     SLOCKON(object_count <= 0, "BACKGRND 1");
     // asm 000040B6: 	SUBI	1,R4
@@ -787,8 +793,10 @@ L12:
     // asm 000040BF: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 000040C0: 	STF	R1,*+AR4(OPOSX)
     obj->posx = (float)(s32)*group_ptr++;
+    MAME_ASSERT_REG_FLOAT(0x000040C0, "R1", &obj->posx);
     // asm 000040C1: 	FLOAT	*AR5++,R1		;GET Y POSITION
     obj->posy = (float)(s32)*group_ptr++;
+    MAME_ASSERT_REG_FLOAT(0x000040C5, "R1", &obj->posy);
     // asm 000040C2: 	LDI	@TYCOFLAG,R0
     // asm 000040C3: 	TSTB	SC_REVERSE,R0
     // asm 000040C4: 	BZD	NOTREVERSED
@@ -796,6 +804,7 @@ L12:
     // asm 000040C6: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 000040C7: 	STF	R1,*+AR4(OPOSZ)
     obj->posz = (float)(s32)*group_ptr++;
+    MAME_ASSERT_REG_FLOAT(0x000040C7, "R1", &obj->posz);
     if ((TYCOFLAG & SC_REVERSE) == 0) {
         goto NOTREVERSED;
     }
@@ -820,9 +829,9 @@ ISOVER:
     // asm 000040D2: 	LDF	*+AR7(TB_RVS_POSZ),R0
     // asm 000040D3: 	ADDF	*+AR4(OPOSZ),R0
     // asm 000040D4: 	STF	R0,*+AR4(OPOSZ)
-    obj->posx = TMS320_C3X_STF_TO_SINGLE((double)obj->posx + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSX]));
-    obj->posy = TMS320_C3X_STF_TO_SINGLE((double)obj->posy + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSY]));
-    obj->posz = TMS320_C3X_STF_TO_SINGLE((double)obj->posz + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSZ]));
+    obj->posx += TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSX]);
+    obj->posy += TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSY]);
+    obj->posz += TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSZ]);
     if ((TYCOFLAG & SC_OVERLAY) == 0) {
         section_ptr += 1;
     }
@@ -843,13 +852,13 @@ ISOVER:
     // asm 000040E2: 	LDF	*AR0++,R1
     // asm 000040E3: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040E4: 	STF	R1,*+AR4(OPOSZ)
-    obj->posx = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]));
-    obj->posy = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]));
-    obj->posz = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]));
+    obj->posx = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]);
+    obj->posy = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]);
+    obj->posz = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]);
     // asm 000040E5: 	LDF	*AR5++,R2		;GET Y ROT
     // asm 000040E6: 	ADDF	@SECRADY,R2
     // asm 000040E7: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = TMS320_C3X_STF_TO_SINGLE((double)TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY);
+    obj->rad.Y = TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY;
     // asm 000040E8: 	LDI	AR4,AR2
     // asm 000040E9: 	ADDI	OMATRIX,AR2
     // asm 000040EA: 	CALL	HPFIND_YMATRIX
@@ -874,13 +883,13 @@ NOTREVERSED:
     // asm 000040F9: 	LDF	*AR0++,R1
     // asm 000040FA: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040FB: 	STF	R1,*+AR4(OPOSZ)
-    obj->posx = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]));
-    obj->posy = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]));
-    obj->posz = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]));
+    obj->posx = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]);
+    obj->posy = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]);
+    obj->posz = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]);
     // asm 000040FC: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 000040FD: 	ADDF	@SECRADY,R2
     // asm 000040FE: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = TMS320_C3X_STF_TO_SINGLE((double)TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY);
+    obj->rad.Y = TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY;
     // asm 000040FF: 	LDI	AR4,AR2
     // asm 00004100: 	ADDI	OMATRIX,AR2
     // asm 00004101: 	CALL	HPFIND_YMATRIX
@@ -903,18 +912,19 @@ JOIN_UP:
     // asm 00004108: 	LDI	R2,R0
     // asm 00004109: 	RS	16,R2
     // asm 0000410A: 	AND	O_GENVSPEC,R2		;make sure list data is not ORed in
-    obj->flags |= ((raw_id >> 16) & O_GENVSPEC); // ;make sure list data is not ORed in
+    flags = ((raw_id >> 16) & O_GENVSPEC); // ;make sure list data is not ORed in
     // asm 0000410B: 	TSTB	BGD_BIGOBJ,R0		;BIG OBJECT TEST
     // asm 0000410C: 	BZ	NOTBIGOBJ
     if ((raw_id & BGD_BIGOBJ) != 0) {
         // asm 0000410D: 	LDI	1,R0
         // asm 0000410E: 	LS	O_BIGOBJECT_B,R0
         // asm 0000410F: 	OR	R0,R2
-        obj->flags |= (1u << O_BIGOBJECT_B);
+        flags |= (1u << O_BIGOBJECT_B);
     }
 NOTBIGOBJ:
     // asm 00004110: 	OR	*+AR4(OFLAGS),R2	;or in the flags
     // asm 00004111: 	STI	R2,*+AR4(OFLAGS)
+    obj->flags |= flags; // ;or in the flags
     // asm 00004112: 	LDI	AR4,AR2
     // asm 00004113: 	CALL	OBJ_INSERT			;INSERT THE BABE
     OBJ_INSERT(obj);
@@ -929,16 +939,16 @@ NOTBIGOBJ:
     // asm 00004116: 	CMPI	ROAD_C,R0
     // asm 00004117: 	BNE	NOTDRIVE
     if (object_class == ROAD_C) {
-    // asm 00004118: 	LDI	@DRIVE_LIST,AR0
-    // asm 00004119: 	STI	AR0,*+AR4(OLINK3)
-    // asm 0000411A: 	STI	AR4,@DRIVE_LIST
+        // asm 00004118: 	LDI	@DRIVE_LIST,AR0
+        // asm 00004119: 	STI	AR0,*+AR4(OLINK3)
+        // asm 0000411A: 	STI	AR4,@DRIVE_LIST
         obj->link3 = (uintptr_t)DRIVE_LIST;
         DRIVE_LIST = obj;
-    // asm 0000411B: 	LDI	1,R1
-    // asm 0000411C: 	BUD	DONELISTS
-    // asm 0000411D: 	LS	28,R1			;O_ROAD_SUPP
-    // asm 0000411E: 	OR	*+AR4(OFLAGS),R1
-    // asm 0000411F: 	STI	R1,*+AR4(OFLAGS)
+        // asm 0000411B: 	LDI	1,R1
+        // asm 0000411C: 	BUD	DONELISTS
+        // asm 0000411D: 	LS	28,R1			;O_ROAD_SUPP
+        // asm 0000411E: 	OR	*+AR4(OFLAGS),R1
+        // asm 0000411F: 	STI	R1,*+AR4(OFLAGS)
         obj->flags |= (1u << O_DRIVE_SUPP_B); // ;O_ROAD_SUPP
         goto DONELISTS;
     }
@@ -946,75 +956,76 @@ NOTDRIVE:
     // asm 00004120: 	CMPI	GROUND_C,R0
     // asm 00004121: 	BNE	NOTGROUND
     if (object_class == GROUND_C) {
-    // asm 00004122: 	LDI	@GROUND_LIST,AR0
-    // asm 00004123: 	STI	AR0,*+AR4(OLINK3)
-    // asm 00004124: 	STI	AR4,@GROUND_LIST
+        // asm 00004122: 	LDI	@GROUND_LIST,AR0
+        // asm 00004123: 	STI	AR0,*+AR4(OLINK3)
+        // asm 00004124: 	STI	AR4,@GROUND_LIST
         obj->link3 = (uintptr_t)GROUND_LIST;
         GROUND_LIST = obj;
-    // asm 00004125: 	LDI	1,R1
-    // asm 00004126: 	LS	O_GROUND_B,R1
-    // asm 00004127: 	OR	*+AR4(OFLAGS),R1
-    // asm 00004128: 	STI	R1,*+AR4(OFLAGS)
+        // asm 00004125: 	LDI	1,R1
+        // asm 00004126: 	LS	O_GROUND_B,R1
+        // asm 00004127: 	OR	*+AR4(OFLAGS),R1
+        // asm 00004128: 	STI	R1,*+AR4(OFLAGS)
         obj->flags |= (1u << O_GROUND_B);
-    // asm 00004129: 	B	DONELISTS
+        // asm 00004129: 	B	DONELISTS
         goto DONELISTS;
     }
 NOTGROUND:
     // asm 0000412A: 	CMPI	TSIGN_C,R0
     // asm 0000412B: 	BNE	NOTSIGN
     if (object_class == TSIGN_C) {
-    // asm 0000412C: 	LDI	@SIGN_LIST,AR0
-    // asm 0000412D: 	STI	AR0,*+AR4(OLINK3)
-    // asm 0000412E: 	STI	AR4,@SIGN_LIST
+        // asm 0000412C: 	LDI	@SIGN_LIST,AR0
+        // asm 0000412D: 	STI	AR0,*+AR4(OLINK3)
+        // asm 0000412E: 	STI	AR4,@SIGN_LIST
         obj->link3 = (uintptr_t)SIGN_LIST;
         SIGN_LIST = obj;
-    // asm 0000412F: 	LDI	1,R1
-    // asm 00004130: 	LS	O_SIGN_SUPP_B,R1
-    // asm 00004131: 	OR	*+AR4(OFLAGS),R1
-    // asm 00004132: 	STI	R1,*+AR4(OFLAGS)
+        // asm 0000412F: 	LDI	1,R1
+        // asm 00004130: 	LS	O_SIGN_SUPP_B,R1
+        // asm 00004131: 	OR	*+AR4(OFLAGS),R1
+        // asm 00004132: 	STI	R1,*+AR4(OFLAGS)
         obj->flags |= (1u << O_SIGN_SUPP_B);
-    // asm 00004133: 	B	DONELISTS
+        // asm 00004133: 	B	DONELISTS
         goto DONELISTS;
     }
 NOTSIGN:
     // asm 00004134: 	CMPI	0B00h,R0
     // asm 00004135: 	BNE	NOTDYNAROAD
     if (object_class == 0x0B00) {
-    // 	;
-    // 	;add this element to dynamic fLEX list
-    // 	;
-    // asm 00004136: 	LDI	@SECTIONIDX,R1
-    // asm 00004137: 	LS	8,R1
-    // asm 00004138: 	LDI	*+AR4(OID),R0
-    // asm 00004139: 	AND	0FFh,R0
-    // asm 0000413A: 	LDI	@TYCOFLAG,R2			;in the case of reversed track
-    // asm 0000413B: 	TSTB	SC_REVERSE,R2			;we say the index value is
-    // asm 0000413C: 	BZ	NOTRVSTRK			;255 - index
-    // asm 0000413D: 	SUBRI	255,R0				;
-    // asm 0000413E: NOTRVSTRK					;
-    // asm 0000413E: 	OR	R1,R0
-    // asm 0000413F: 	STI	R0,*+AR4(OUSR1)
-        obj->usr1 = obj->id & 0xFF;
+        // 	;
+        // 	;add this element to dynamic fLEX list
+        // 	;
+        // asm 00004136: 	LDI	@SECTIONIDX,R1
+        // asm 00004137: 	LS	8,R1
+        // asm 00004138: 	LDI	*+AR4(OID),R0
+        // asm 00004139: 	AND	0FFh,R0
+        // asm 0000413A: 	LDI	@TYCOFLAG,R2			;in the case of reversed track
+        // asm 0000413B: 	TSTB	SC_REVERSE,R2			;we say the index value is
+        // asm 0000413C: 	BZ	NOTRVSTRK			;255 - index
+        // asm 0000413D: 	SUBRI	255,R0				;
+        usr1 = obj->id & 0xFF;
         if ((TYCOFLAG & SC_REVERSE) != 0) {
-            obj->usr1 = 255 - obj->usr1;
+            usr1 = 255 - usr1;
         }
-        obj->usr1 |= (uintptr_t)(SECTIONIDX << 8);
-    // asm 00004140: 	LDI	0300h,R0
-    // asm 00004141: 	STI	R0,*+AR4(OID)
+    NOTRVSTRK:
+        // asm 0000413E: 	OR	R1,R0
+        // asm 0000413F: 	STI	R0,*+AR4(OUSR1)
+        usr1 |= (uintptr_t)(SECTIONIDX << 8);
+        obj->usr1 = usr1;
+        // asm 00004140: 	LDI	0300h,R0
+        // asm 00004141: 	STI	R0,*+AR4(OID)
         obj->id = ROAD_C;
-    // asm 00004142: 	LDI	@DRIVE_LIST,AR0
-    // asm 00004143: 	STI	AR0,*+AR4(OLINK3)
-    // asm 00004144: 	STI	AR4,@DRIVE_LIST
+        // asm 00004142: 	LDI	@DRIVE_LIST,AR0
+        // asm 00004143: 	STI	AR0,*+AR4(OLINK3)
+        // asm 00004144: 	STI	AR4,@DRIVE_LIST
         obj->link3 = (uintptr_t)DRIVE_LIST;
         DRIVE_LIST = obj;
-    // asm 00004145: 	LDI	1,R1
-    // asm 00004146: 	LS	O_DRIVE_SUPP_B,R1
-    // asm 00004147: 	OR	*+AR4(OFLAGS),R1
-    // asm 00004148: 	STI	R1,*+AR4(OFLAGS)
+        // asm 00004145: 	LDI	1,R1
+        // asm 00004146: 	LS	O_DRIVE_SUPP_B,R1
+        // asm 00004147: 	OR	*+AR4(OFLAGS),R1
+        // asm 00004148: 	STI	R1,*+AR4(OFLAGS)
         obj->flags |= (1u << O_DRIVE_SUPP_B);
-    // asm 00004149: 	CALL	ADD_TO_NEWLIST
+        // asm 00004149: 	CALL	ADD_TO_NEWLIST
         ADD_TO_NEWLIST(obj);
-    // asm 0000414A: 	BU	DONELISTS
+        // asm 0000414A: 	BU	DONELISTS
         goto DONELISTS;
     }
 NOTDYNAROAD:
@@ -1029,31 +1040,31 @@ ACTIVATE_X:
     // asm 0000414D: 	POP	AR0			;clear stack of last item
     // asm 0000414E: 	LDI	@PASS1,R0
     // asm 0000414F: 	BNZ	CHECK2
-    // asm 00004150: 	LDI	1,R0
-    // asm 00004151: 	STI	R0,@PASS1
-    // asm 00004152: 	LDI	*AR7,R0			;load flag
-    // asm 00004153: 	TSTB	SC_OVERLAY,R0
-    // asm 00004154: 	BZ	CHECK2II
-    // asm 00004155: 	LDI	*+AR7(TB_GROUPOVERLAY),AR5	;Group pointer
-    // asm 00004156: 	ADDI	1,AR5			;skip radius
-    // asm 00004157: 	LDI	@NEWSUBLIST_TOPB,R0
-    // asm 00004158: 	PUSH	R0
-    // asm 00004159: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED"
-    // asm 0000415A: 	SUBI	1,R4
-    // asm 0000415B: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
-    // asm 0000415C: 	BU	L12
     if (PASS1 == 0) {
+        // asm 00004150: 	LDI	1,R0
+        // asm 00004151: 	STI	R0,@PASS1
         PASS1 = 1;
+        // asm 00004152: 	LDI	*AR7,R0			;load flag
         flag = *section_ptr;
+        // asm 00004153: 	TSTB	SC_OVERLAY,R0
+        // asm 00004154: 	BZ	CHECK2II
         if ((flag & SC_OVERLAY) != 0) {
+            // asm 00004155: 	LDI	*+AR7(TB_GROUPOVERLAY),AR5	;Group pointer
             group_ptr = ROM_PTR(section_ptr[TB_GROUPOVERLAY]);
+            // asm 00004156: 	ADDI	1,AR5			;skip radius
             group_ptr += 1;
+            // asm 00004157: 	LDI	@NEWSUBLIST_TOPB,R0
+            // asm 00004158: 	PUSH	R0
+            // asm 00004159: 	LDI	*AR5++,R4		;get number of objects to load
             object_count = (int)*group_ptr++;
+            // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED"
             SLOCKON(object_count <= 0, "BACKGRND  ERRONEOUS GROUP LOADED");
+            // asm 0000415A: 	SUBI	1,R4
             object_count -= 1;
+            // asm 0000415B: 	CMPI	@OFREECNT,R4
+            // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
             SLOCKON(object_count > OFREECNT, "BACKGRND\\ACTIVATE TYCOGROUP OUT OF OBJECTS 2");
+            // asm 0000415C: 	BU	L12
             goto L12;
         }
         goto CHECK2II;
@@ -1061,102 +1072,102 @@ ACTIVATE_X:
 CHECK2:
     // asm 0000415D: 	CMPI	2,R0
     // asm 0000415E: 	BEQ	NOOVERLAYGROUP
-    // asm 0000415F: 	LDI	2,R0
-    // asm 00004160: 	STI	R0,@PASS1
-    // asm 00004161: 	LDI	*AR7,R0			;load flag
-    // asm 00004162: 	TSTB	SC_OVER2,R0
-    // asm 00004163: 	BZ	NOOVERLAYGROUP
-    // asm 00004164: 	PUSH	IR0
-    // asm 00004165: 	TSTB	SC_REVERSE,R0
-    // asm 00004166: 	LDIZ	TB_GROUPOVERLAY+1,IR0
-    // asm 00004167: 	LDINZ	TB_GROUPOVERLAY+5,IR0
-    // asm 00004168: 	LDI	*+AR7(IR0),AR5	;Group pointer
-    // asm 00004169: 	ADDI	1,AR5			;skip radius
-    // asm 0000416A: 	TSTB	SC_REVERSE,R0
-    // asm 0000416B: 	BZ	UHNO2
-    // asm 0000416C: 	TSTB	SC_OVERLAY,R0
-    // asm 0000416D: 	LDIZ	TB_RVS_RADY-1,IR0
-    // asm 0000416E: 	LDINZ	TB_RVS_RADY,IR0
-    // asm 0000416F: 	LDF	*+AR7(IR0),R0
-    // asm 00004170: 	STPF	R0,@SECRADY
-UHNO2:
-    // asm 00004171: 	POP	IR0
-    // asm 00004172: 	LDI	@TYCOFLAG,R0		;overlay 2 is not reversed - EVER!
-    // asm 00004173: 	ANDN	SC_REVERSE,R0
-    // asm 00004174: 	STI	R0,@TYCOFLAG
-    // asm 00004175: 	LDI	@NEWSUBLIST_TOPB,R0
-    // asm 00004176: 	PUSH	R0
-    // asm 00004177: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED OVER2"
-    // asm 00004178: 	SUBI	1,R4
-    // asm 00004179: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
-    // asm 0000417A: 	BU	L12
     if (PASS1 != 2) {
+        // asm 0000415F: 	LDI	2,R0
+        // asm 00004160: 	STI	R0,@PASS1
         PASS1 = 2;
+        // asm 00004161: 	LDI	*AR7,R0			;load flag
         flag = *section_ptr;
+        // asm 00004162: 	TSTB	SC_OVER2,R0
+        // asm 00004163: 	BZ	NOOVERLAYGROUP
         if ((flag & SC_OVER2) != 0) {
+            // asm 00004164: 	PUSH	IR0
+            // asm 00004165: 	TSTB	SC_REVERSE,R0
+            // asm 00004166: 	LDIZ	TB_GROUPOVERLAY+1,IR0
+            // asm 00004167: 	LDINZ	TB_GROUPOVERLAY+5,IR0
+            // asm 00004168: 	LDI	*+AR7(IR0),AR5	;Group pointer
             group_ptr = ROM_PTR(section_ptr[(flag & SC_REVERSE) != 0 ? (TB_GROUPOVERLAY + 5) : (TB_GROUPOVERLAY + 1)]);
+            // asm 00004169: 	ADDI	1,AR5			;skip radius
             group_ptr += 1;
+            // asm 0000416A: 	TSTB	SC_REVERSE,R0
+            // asm 0000416B: 	BZ	UHNO2
             if ((flag & SC_REVERSE) != 0) {
+                // asm 0000416C: 	TSTB	SC_OVERLAY,R0
+                // asm 0000416D: 	LDIZ	TB_RVS_RADY-1,IR0
+                // asm 0000416E: 	LDINZ	TB_RVS_RADY,IR0
+                // asm 0000416F: 	LDF	*+AR7(IR0),R0
+                // asm 00004170: 	STPF	R0,@SECRADY
                 SECRADY = TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
             }
+        UHNO2:
+            // asm 00004171: 	POP	IR0
+            // asm 00004172: 	LDI	@TYCOFLAG,R0		;overlay 2 is not reversed - EVER!
+            // asm 00004173: 	ANDN	SC_REVERSE,R0
+            // asm 00004174: 	STI	R0,@TYCOFLAG
             TYCOFLAG &= ~SC_REVERSE;
+            // asm 00004175: 	LDI	@NEWSUBLIST_TOPB,R0
+            // asm 00004176: 	PUSH	R0
+            // asm 00004177: 	LDI	*AR5++,R4		;get number of objects to load
             object_count = (int)*group_ptr++;
+            // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED OVER2"
             SLOCKON(object_count <= 0, "BACKGRND  ERRONEOUS GROUP LOADED OVER2");
+            // asm 00004178: 	SUBI	1,R4
             object_count -= 1;
+            // asm 00004179: 	CMPI	@OFREECNT,R4
+            // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
             SLOCKON(object_count > OFREECNT, "BACKGRND\\ACTIVATE TYCOGROUP OUT OF OBJECTS 2");
+            // asm 0000417A: 	BU	L12
             goto L12;
         }
     }
 CHECK2II:
     // asm 0000417B: 	CMPI	2,R0
     // asm 0000417C: 	BEQ	NOOVERLAYGROUP
-    // asm 0000417D: 	LDI	2,R0
-    // asm 0000417E: 	STI	R0,@PASS1
-    // asm 0000417F: 	LDI	*AR7,R0			;load flag
-    // asm 00004180: 	TSTB	SC_OVER2,R0
-    // asm 00004181: 	BZ	NOOVERLAYGROUP
-    // asm 00004182: 	PUSH	IR0
-    // asm 00004183: 	TSTB	SC_REVERSE,R0
-    // asm 00004184: 	LDIZ	TB_GROUPOVERLAY,IR0
-    // asm 00004185: 	LDINZ	TB_GROUPOVERLAY+4,IR0
-    // asm 00004186: 	LDI	*+AR7(IR0),AR5		;Group pointer
-    // asm 00004187: 	TSTB	SC_REVERSE,R0
-    // asm 00004188: 	BZ	UHNO
-    // asm 00004189: 	TSTB	SC_OVERLAY,R0
-    // asm 0000418A: 	LDIZ	TB_RVS_RADY-1,IR0
-    // asm 0000418B: 	LDINZ	TB_RVS_RADY,IR0
-    // asm 0000418C: 	LDF	*+AR7(IR0),R0
-    // asm 0000418D: 	STPF	R0,@SECRADY
-UHNO:
-    // asm 0000418E: 	POP	IR0
-    // asm 0000418F: 	ADDI	1,AR5			;skip radius
-    // asm 00004190: 	LDI	@TYCOFLAG,R0		;overlay 2 is not reversed - EVER!
-    // asm 00004191: 	ANDN	SC_REVERSE,R0
-    // asm 00004192: 	STI	R0,@TYCOFLAG
-    // asm 00004193: 	LDI	@NEWSUBLIST_TOPB,R0
-    // asm 00004194: 	PUSH	R0
-    // asm 00004195: 	LDI	*AR5++,R4		;get number of objects to load
-    // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED OVER2"
-    // asm 00004196: 	SUBI	1,R4
-    // asm 00004197: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
-    // asm 00004198: 	BU	L12
     if (PASS1 != 2) {
+        // asm 0000417D: 	LDI	2,R0
+        // asm 0000417E: 	STI	R0,@PASS1
         PASS1 = 2;
+        // asm 0000417F: 	LDI	*AR7,R0			;load flag
         flag = *section_ptr;
+        // asm 00004180: 	TSTB	SC_OVER2,R0
+        // asm 00004181: 	BZ	NOOVERLAYGROUP
         if ((flag & SC_OVER2) != 0) {
+            // asm 00004182: 	PUSH	IR0
+            // asm 00004183: 	TSTB	SC_REVERSE,R0
+            // asm 00004184: 	LDIZ	TB_GROUPOVERLAY,IR0
+            // asm 00004185: 	LDINZ	TB_GROUPOVERLAY+4,IR0
+            // asm 00004186: 	LDI	*+AR7(IR0),AR5		;Group pointer
             group_ptr = ROM_PTR(section_ptr[(flag & SC_REVERSE) != 0 ? (TB_GROUPOVERLAY + 4) : TB_GROUPOVERLAY]);
+            // asm 00004187: 	TSTB	SC_REVERSE,R0
+            // asm 00004188: 	BZ	UHNO
             if ((flag & SC_REVERSE) != 0) {
+                // asm 00004189: 	TSTB	SC_OVERLAY,R0
+                // asm 0000418A: 	LDIZ	TB_RVS_RADY-1,IR0
+                // asm 0000418B: 	LDINZ	TB_RVS_RADY,IR0
+                // asm 0000418C: 	LDF	*+AR7(IR0),R0
+                // asm 0000418D: 	STPF	R0,@SECRADY
                 SECRADY = TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
             }
+        UHNO:
+            // asm 0000418E: 	POP	IR0
+            // asm 0000418F: 	ADDI	1,AR5			;skip radius
             group_ptr += 1;
+            // asm 00004190: 	LDI	@TYCOFLAG,R0		;overlay 2 is not reversed - EVER!
+            // asm 00004191: 	ANDN	SC_REVERSE,R0
+            // asm 00004192: 	STI	R0,@TYCOFLAG
             TYCOFLAG &= ~SC_REVERSE;
+            // asm 00004193: 	LDI	@NEWSUBLIST_TOPB,R0
+            // asm 00004194: 	PUSH	R0
+            // asm 00004195: 	LDI	*AR5++,R4		;get number of objects to load
             object_count = (int)*group_ptr++;
+            // asm: 	SLOCKON	LE,"BACKGRND  ERRONEOUS GROUP LOADED OVER2"
             SLOCKON(object_count <= 0, "BACKGRND  ERRONEOUS GROUP LOADED OVER2");
+            // asm 00004196: 	SUBI	1,R4
             object_count -= 1;
+            // asm 00004197: 	CMPI	@OFREECNT,R4
+            // asm: 	SLOCKON	GT,"BACKGRND\ACTIVATE TYCOGROUP OUT OF OBJECTS 2"
             SLOCKON(object_count > OFREECNT, "BACKGRND\\ACTIVATE TYCOGROUP OUT OF OBJECTS 2");
+            // asm 00004198: 	BU	L12
             goto L12;
         }
     }
@@ -1186,7 +1197,7 @@ NO_NEWLOAD:
     // asm 000041A5: 	POP	R5
     // asm 000041A6: 	POP	R4
     // asm 000041A7: 	RETS
-    return STARTS;
+    return NEWSUBLIST_TOPB;
 }
 
 // *----------------------------------------------------------------------------
@@ -1262,8 +1273,7 @@ ADDNOBJ_AT_END:
         // asm 000041C1: 	STI	AR4,*+AR0(OBLINK4)	;  MUST POINT TO NEW ELEMENT
         next_obj->blink4 = (uintptr_t)obj; // ;  MUST POINT TO NEW ELEMENT
     }
-ISZERO:
-    ;
+ISZERO:;
     // asm 000041C2: 	RETS
 }
 

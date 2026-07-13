@@ -35,7 +35,7 @@ extern PROC* PLYPROC;
 // asm: 	.bss	PLYCBLK,1	;End Plyr Struct
 extern CARBLK* PLYCBLK;
 // asm: 	.bss	OLDPLYSPD,1	;OLD PLAYER SPEED
-extern int OLDPLYSPD;
+extern float OLDPLYSPD;
 // asm: 	.bss	OLDPLYAIR,1	;OLD PLAYER AIRBORNE
 extern int OLDPLYAIR;
 // asm: 	.bss	PLYRFIRST,1	;TICKS PLAYER IN 1ST PLACE
@@ -59,7 +59,7 @@ extern int PEDALMX;
 // asm: 	.bss	STEERMN,1		;STEERING MIN	      2
 extern int STEERMN;
 // asm: 	.bss	STEERMX,1		;STEERING MAX	      3
-extern int STEERMX;
+extern float STEERMX;
 // asm: 	.bss	STEERCT,1		;STEERING CENTER      4
 extern int STEERCT;
 // asm: 	.bss	BRAKEMN,1		;BRAKE PEDAL MIN      5
@@ -67,7 +67,7 @@ extern int BRAKEMN;
 // asm: 	.bss	BRAKEMX,1		;BRAKE PEDAL MAX      6
 extern int BRAKEMX;
 // asm: 	.bss	STEERFR,1		;STEERING FREE
-extern int STEERFR;
+extern float STEERFR;
 void RANDSND(void);
 void RANDVSND(void);
 float ROADIR(OBJ* track_obj /*AR0*/);

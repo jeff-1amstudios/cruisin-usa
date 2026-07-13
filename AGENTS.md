@@ -6,3 +6,6 @@ Follow docs/function-translation.md for guidance on how to translate a function
 
 ## Debugging
 We can validate behavior through MAME instrumentation. Read docs/debugging.md
+
+## TMS320c3 docs
+See docs/tms320 folder

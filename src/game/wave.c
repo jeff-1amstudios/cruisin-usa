@@ -268,7 +268,6 @@ static void HIGH_SCORE(void) {
     CREATE(DISPLAY_HIGH_SCORES, UTIL_C, ctx);
     ctx = port_malloc(sizeof(PROC_CONTEXT));
     CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
-    // MAME_VALIDATOR_EXIT();
 }
 
 static void MIDSPIN(void) {

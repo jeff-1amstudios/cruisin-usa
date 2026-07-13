@@ -546,16 +546,16 @@ ISOVER:
     // asm 0000AAF5: 	LDF	*+AR7(TB_RVS_POSX),R0	;TRANSLATE BY THE NEGATIVE OFFSET
     // asm 0000AAF6: 	ADDF	*+AR3(LEG_POSX),R0	;POSITION (THIS BLOCKS ENDING POSITION)
     // asm 0000AAF7: 	STF	R0,*+AR3(LEG_POSX)
-    leg->as_float.pos.X = TMS320_C3X_STF_TO_SINGLE((double)leg->as_float.pos.X + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[7]));
+    leg->as_float.pos.X = leg->as_float.pos.X + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[7]);
     MAME_ASSERT_REG_FLOAT(0x0000AAF7, "R0", &leg->as_float.pos.X);
     // asm 0000AAF8: 	LDF	*+AR7(TB_RVS_POSY),R0
     // asm 0000AAF9: 	ADDF	*+AR3(LEG_POSY),R0
     // asm 0000AAFA: 	STF	R0,*+AR3(LEG_POSY)
-    leg->as_float.pos.Y = TMS320_C3X_STF_TO_SINGLE((double)leg->as_float.pos.Y + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[8]));
+    leg->as_float.pos.Y = leg->as_float.pos.Y + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[8]);
     // asm 0000AAFB: 	LDF	*+AR7(TB_RVS_POSZ),R0
     // asm 0000AAFC: 	ADDF	*+AR3(LEG_POSZ),R0
     // asm 0000AAFD: 	STF	R0,*+AR3(LEG_POSZ)
-    leg->as_float.pos.Z = TMS320_C3X_STF_TO_SINGLE((double)leg->as_float.pos.Z + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[9]));
+    leg->as_float.pos.Z = leg->as_float.pos.Z + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[9]);
     if ((flag & SC_OVERLAY) == 0) {
         tyco_ptr += 1;
     }
@@ -571,16 +571,16 @@ ISOVERA:
     // asm 0000AB05: 	LDF	*AR0++,R1
     // asm 0000AB06: 	ADDF	*+AR7(TB_POSX),R1
     // asm 0000AB07: 	STF	R1,*+AR3(LEG_POSX)
-    leg->as_float.pos.X = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[1]));
+    leg->as_float.pos.X = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[1]);
     MAME_ASSERT_REG_FLOAT(0x0000AB08, "R1", &leg->as_float.pos.X);
     // asm 0000AB08: 	LDF	*AR0++,R1
     // asm 0000AB09: 	ADDF	*+AR7(TB_POSY),R1
     // asm 0000AB0A: 	STF	R1,*+AR3(LEG_POSY)
-    leg->as_float.pos.Y = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[2]));
+    leg->as_float.pos.Y = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[2]);
     // asm 0000AB0B: 	LDF	*AR0++,R1
     // asm 0000AB0C: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 0000AB0D: 	STF	R1,*+AR3(LEG_POSZ)
-    leg->as_float.pos.Z = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[3]));
+    leg->as_float.pos.Z = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[3]);
     // asm 0000AB0E: 	BU	JOIN_UP
     goto JOIN_UP;
 NOTREVERSED:
@@ -595,16 +595,16 @@ NOTREVERSED:
     // asm 0000AB16: 	LDF	*AR0++,R1
     // asm 0000AB17: 	ADDF	*+AR7(TB_POSX),R1
     // asm 0000AB18: 	STF	R1,*+AR3(LEG_POSX)
-    leg->as_float.pos.X = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[1]));
+    leg->as_float.pos.X = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[1]);
     MAME_ASSERT_REG_FLOAT(0x0000AB19, "R1", &leg->as_float.pos.X);
     //  asm 0000AB19: 	LDF	*AR0++,R1
     //  asm 0000AB1A: 	ADDF	*+AR7(TB_POSY),R1
     //  asm 0000AB1B: 	STF	R1,*+AR3(LEG_POSY)
-    leg->as_float.pos.Y = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[2]));
+    leg->as_float.pos.Y = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[2]);
     // asm 0000AB1C: 	LDF	*AR0++,R1
     // asm 0000AB1D: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 0000AB1E: 	STF	R1,*+AR3(LEG_POSZ)
-    leg->as_float.pos.Z = TMS320_C3X_STF_TO_SINGLE((double)VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[3]));
+    leg->as_float.pos.Z = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[3]);
 JOIN_UP:
     // asm 0000AB1F: LDF	*AR5++,R2		;LOAD OBJECTS RADIANS
     object_radians = TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++);

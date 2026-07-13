@@ -22,7 +22,7 @@
 float _COSI(float theta /*R2*/);
 float _SINE(float theta /*R2*/);
 void NORMITS(void);
-void NORMIT(void);
+float NORMIT(float radians /*R2*/);
 void ARCTANF(void);
 void FIND_MATRIX(void* dest /*AR2*/, VECTOR* radians /*R2*/);
 void FIND_XMATRIX(void* dest /*AR2*/, float radians /*R2*/);
@@ -43,8 +43,8 @@ void CONCATMATV(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
 void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/);
 void CONCATMAT(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
 void GETTHETADIFF(void);
-void DIST_PT2LINE(void);
-void GETLINE_EQ_2D(void);
+float DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/);
+LINE2D* GETLINE_EQ_2D(VECTOR* p1 /*AR0*/, VECTOR* p2 /*AR1*/, LINE2D* line /*AR2*/);
 void SCALE_MATRIX(void);
 
 #define FIND_YMATRIX _find_Ymatrix
@@ -506,17 +506,19 @@ NMS1:
  *	R2	IN RANGE 0 TO 2PI
  *
  */
-void NORMIT(void) {
+float NORMIT(float radians /*R2*/) {
     // asm 00009561: 	MPYF	@RADFORM,R2
+    radians *= RADFORM;
     // asm 00009562: 	FIX	R2
+    radians = (float)(int)radians;
     // asm 00009563: 	LS	16,R2
     // asm 00009564: 	RS	16,R2
     // asm 00009565: 	FLOAT	R2
     // asm 00009566: 	MPYF	@RADFORMI,R2
+    radians *= RADFORMI;
     // asm 00009567: NORMCHKL
     // asm 00009567: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NORMIT", 0, 0);
-    UNIMPL();
+    return radians;
 }
 
 // *----------------------------------------------------------------------------
@@ -1617,30 +1619,41 @@ NONEG:
  *
  *
  */
-void DIST_PT2LINE(void) {
+float DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/) {
+    float numerator;
+    float denominator;
+
     // asm 00009702: 	PUSH	R1
     // asm 00009703: 	PUSH	R2
     // asm 00009704: 	PUSHF	R1
     // asm 00009705: 	PUSHF	R2
     // asm 00009706: 	MPYF	*+AR1(X),*+AR0(A),R0
+    numerator = point->X * line->a;
     // asm 00009707: 	MPYF	*+AR1(Y),*+AR0(B),R1
+    numerator += point->Y * line->b;
     // asm 00009708: 	ADDF	R0,R1
     // asm 00009709: 	ADDF	*+AR0(C),R1
+    numerator += line->c;
     // asm 0000970A: 	MPYF	*+AR0(A),*+AR0(A),R0
+    denominator = line->a * line->a;
     // asm 0000970B: 	MPYF	*+AR0(B),*+AR0(B),R2
+    denominator += line->b * line->b;
     // asm 0000970C: 	ADDF	R0,R2
     // asm 0000970D: 	CALL	SQRT
+    denominator = sqrtf(denominator);
     // asm 0000970E: 	LDF	R0,R2
     // asm 0000970F: 	LDF	R1,R0
     // asm 00009710: 	LDF	R2,R1
     // asm 00009711: 	CALL	DIV_F
+    if (denominator == 0.0f) {
+        return 0.0f;
+    }
     // asm 00009712: 	POPF	R2
     // asm 00009713: 	POPF	R1
     // asm 00009714: 	POP	R2
     // asm 00009715: 	POP	R1
     // asm 00009716: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIST_PT2LINE", 0, 0);
-    UNIMPL();
+    return numerator / denominator;
 }
 
 // *----------------------------------------------------------------------------
@@ -1660,7 +1673,10 @@ void DIST_PT2LINE(void) {
  *	AR2	VECTOR AS A B C
  *
  */
-void GETLINE_EQ_2D(void) {
+LINE2D* GETLINE_EQ_2D(VECTOR* p1 /*AR0*/, VECTOR* p2 /*AR1*/, LINE2D* line /*AR2*/) {
+    float dx;
+    float dy;
+
     // asm 00009717: 	PUSH	R0
     // asm 00009718: 	PUSH	R1
     // asm 00009719: 	PUSH	R2
@@ -1670,13 +1686,18 @@ void GETLINE_EQ_2D(void) {
     // asm 0000971D: 	PUSHF	R2
     // asm 0000971E: 	PUSHF	R3
     // asm 0000971F: 	SUBF	*+AR1(X),*+AR0(X),R0
+    dx = p1->X - p2->X;
     // asm 00009720: 	SUBF	*+AR1(Y),*+AR0(Y),R1
+    dy = p1->Y - p2->Y;
     // asm 00009721: 	MPYF	R0,*+AR1(X),R2
     // asm 00009722: 	MPYF	R1,*+AR1(Y),R3
     // asm 00009723: 	ADDF	R3,R2
     // asm 00009724: 	NEGF	R2
+    line->c = -((dx * p2->X) + (dy * p2->Y));
     // asm 00009725: 	STF	R0,*+AR2(A)
+    line->a = dx;
     // asm 00009726: 	STF	R1,*+AR2(B)
+    line->b = dy;
     // asm 00009727: 	STF	R2,*+AR2(C)
     // asm 00009728: 	POPF	R3
     // asm 00009729: 	POPF	R2
@@ -1687,8 +1708,7 @@ void GETLINE_EQ_2D(void) {
     // asm 0000972E: 	POP	R1
     // asm 0000972F: 	POP	R0
     // asm 00009730: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETLINE_EQ_2D", 0, 0);
-    UNIMPL();
+    return line;
 }
 
 // *----------------------------------------------------------------------------

@@ -340,9 +340,6 @@ extern int NOSWAP;
 // asm:  .globl FRAMRATE,TIMECLR
 extern int TIMECLR;
 
-// asm:  .globl FRAMETIME,HISCAN
-extern int FRAMETIME;
-
 // asm:  .globl VERSION_STAMP
 extern const char VERSION_STAMP[];
 
@@ -521,7 +518,7 @@ extern int _MPH;
 extern float INFIN_CORRECT;
 
 // asm:  .globl VAR_ROAD_KFACTOR
-extern int VAR_ROAD_KFACTOR;
+extern float VAR_ROAD_KFACTOR;
 
 // asm:  .globl MAXMPH_COUNT
 extern int MAXMPH_COUNT;
@@ -623,13 +620,13 @@ extern int CHECKPOINT_TIME_BONUS;
 extern int _plyr1;
 
 // asm:  .globl STEERMX,STEERMN,STEERCT,STEERFR,PEDALMX,PEDALMN
-extern int STEERMX;
+extern float STEERMX;
 
 extern int STEERMN;
 
 extern int STEERCT;
 
-extern int STEERFR;
+extern float STEERFR;
 
 extern int PEDALMX;
 
@@ -1330,7 +1327,7 @@ void NORMAT(void);
 void NORMALIZE(void);
 
 // asm:  .globl NORMIT,NORMITS
-void NORMIT(void);
+float NORMIT(float radians /*R2*/);
 
 void NORMITS(void);
 
@@ -1356,9 +1353,9 @@ void CPYIMAT(void);
 void GETTHETADIFF(void);
 
 // asm:  .globl DIST_PT2LINE,GETLINE_EQ_2D
-void DIST_PT2LINE(void);
+float DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/);
 
-void GETLINE_EQ_2D(void);
+LINE2D* GETLINE_EQ_2D(VECTOR* p1 /*AR0*/, VECTOR* p2 /*AR1*/, LINE2D* line /*AR2*/);
 
 // asm:  .globl CLR_VECTORA
 void CLR_VECTORA(void);
@@ -1531,7 +1528,7 @@ void COW_SPAWNER_PROC(void);
 // asm:  .globl SQRT
 void SQRT(void);
 
-void DIV_F30(void);
+float DIV_F30(float u, float v);
 
 void DIV_I30(void);
 
@@ -1833,7 +1830,7 @@ void LOAD_FIXED_PALETTES(void);
 void LOAD_STARTUP_PALS(void);
 
 // asm:  .globl WAVEFLAG
-void WAVEFLAG(void);
+void WAVEFLAG(PROC* p);
 
 // asm:  .globl NUWHEEL,POSE
 void NUWHEEL(void);

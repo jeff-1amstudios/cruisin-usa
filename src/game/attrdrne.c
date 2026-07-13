@@ -615,6 +615,7 @@ static void INIT_CATCHUP(void) {
 
 // *----------------------------------------------------------------------------
 static void INIT_LEAD(void) {
+    // MAME_VALIDATOR_EXIT();
     // asm 000056B4: 	LDI	-300,R0
     // asm 000056B5: 	FLOAT	R0,R1
     // asm 000056B6: 	STF	R1,*+AR7(CAMYOFF)
@@ -739,6 +740,7 @@ static void REV_ROAD_VIEW(void) {
 static float ACCEL_RATE = 0.000002f;
 
 static void ROAD_VIEW(void) {
+    MAME_VALIDATOR_EXIT();
     // asm 00005714: 	CALL	FIND_CLOSEST_RACER
     // asm 00005715: 	CMPI	0,AR1
     // asm 00005716: 	LDIZ	0,AR5		;PASSED FIRST PLACE CHANGE MODES (AR5 = frame to switch)
@@ -1842,21 +1844,21 @@ NO_MUSIC:
     proc = PRC_FIND(UTIL_C | BACKGRND_T, -1);
     // asm 000059C4: 	LDI	AR0,AR7
     // asm 000059C5: 	LDI	3,R0
-    proc->sleep_ticks = 3;
     // asm 000059C6: 	STI	R0,*+AR7(PTIME)
+    proc->sleep_ticks = 3;
     // asm 000059C7: 	POP	AR7
     // asm 000059C8: 	LDI	*+AR7(PDATA),R0
-    BGNDCOLA = p->ctx->ATTRACT_DELTA.background_color;
     // asm 000059C9: 	STI	R0,@BGNDCOLA
+    BGNDCOLA = p->ctx->ATTRACT_DELTA.background_color;
     // asm 000059CA: 	LDI	1,R0
-    NOAERASE = 1;
     // asm 000059CB: 	STI	R0,@NOAERASE
+    NOAERASE = 1;
     // asm 000059CC: 	CLRI	R0
     OHIGH_PRIORITY = 0;
     // asm 000059CD: 	STI	R0,@OHIGH_PRIORITY
     // asm 000059CE: 	CREATE	WAVEFLAG,UTIL_C|MONKEY_T
     ctx = port_malloc(sizeof(PROC_CONTEXT));
-    CREATE((PROC_FUNC)WAVEFLAG, UTIL_C | MONKEY_T, ctx);
+    CREATE(WAVEFLAG, UTIL_C | MONKEY_T, ctx);
     // asm 000059D1: 	CALL	ATTR_INIT_GAMELEG
     ATTR_INIT_GAMELEG();
     // asm 000059D2: 	LDI	MAX_DRONES,R0
@@ -1879,8 +1881,6 @@ NO_MUSIC:
 static void ATTR_INIT_GAMELEG(void) {
     PROC_CONTEXT* ctx;
     PROC* proc;
-
-    MAME_VALIDATOR_EXIT();
 
     // asm 000059DA: 	CREATE	RHO_DISPATCHER,SPAWNER_C|TRAFFIC_T
     ctx = port_malloc(sizeof(PROC_CONTEXT));
@@ -1923,9 +1923,9 @@ static void ATTR_INIT_GAMELEG(void) {
     ctx->RACER_DRONE.rank = 4;
     proc = CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059FC: 	STI	AR0,@PLYCAR
-
     // original code hack. This is not a proc, `PLYCAR` looks up the OBJ from this proc once it has executed
     PLYCAR = (OBJ*)proc;
+
     // asm 000059FD: 	LDI	5,R4
     // asm 000059FE: 	CREATE	RACER_DRONE,DRONE_C
     ctx = port_malloc(sizeof(PROC_CONTEXT));

@@ -29,7 +29,7 @@ int WHEELPWR;
 /* asm: WHEELPOS	.bss	WHEELPOS,1 */
 int WHEELPOS;
 /* asm: WHEELOUT	.bss	WHEELOUT,1 */
-int WHEELOUT;
+float WHEELOUT;
 /* asm: WHEELMAX	.bss	WHEELMAX,1 */
 int WHEELMAX;
 /* asm: WHEELVEL	pbss	WHEELVEL,1 */

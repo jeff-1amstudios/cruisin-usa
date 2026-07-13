@@ -55,7 +55,7 @@ OFFROAD_TMR = r0;
 ```
 
 ## Emulated hardware
-`core/input.h` and `core/output.h` are what we use to replace direct reads of MMIO memory addresses like `@SWITCH1`, `@COMMPAL`.
+`core/input.h` and `core/output.h` are what we should use to replace direct reads/writte of MMIO memory addresses like `@SWITCH1`, `@COMMPAL`, `@FIFO_ADDR`
 
 ## `PROC` functions
 Functions which take a `PROC *` argument are a executed as primitive co-routines. All local variables should be persisted in a function-specific `PROC_CONTEXT` field, and special care must be taken to make them correctly re-entrant. See `REQWAIT` in `comp.c` for an example of how to structure it.

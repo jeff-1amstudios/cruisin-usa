@@ -22,8 +22,7 @@ extern int IFRAMES;
 extern int ERRORN;
 // asm: 	.bss	ERRORO,1
 extern int ERRORO;
-// asm: 	.bss	FRAMETIME,1	;TMR_FRAME
-extern int FRAMETIME;
+
 // asm: 	.bss	SWITCHBUTS,1
 extern int SWITCHBUTS;
 // asm: 	.bss	BGNDCOLA,1	;color 0 in COLORRAM

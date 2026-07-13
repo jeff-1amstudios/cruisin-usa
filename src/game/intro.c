@@ -56,7 +56,6 @@ static void LIGHT_ON(void);
 void INIT_PEDALCHK(void);
 void GETCHOICE(void);
 void PEDALCHK(void);
-void WAVEFLAG(void);
 void RACESEL_TIMER(void);
 static void WAITINTROTIMER(void);
 void INTROTIMER(void);
@@ -2455,7 +2454,7 @@ int BABE_CONTROL;
 /* asm: CURR_FLAGSTATE	.bss	CURR_FLAGSTATE,1 */
 int CURR_FLAGSTATE;
 
-void WAVEFLAG(void) {
+void WAVEFLAG(PROC* p) {
     // asm 00001C9B: 	LDP	@STOPWATCH_CNTL
     // asm 00001C9C: 	CLRI	R0
     // asm 00001C9D: 	STI	R0,@STOPWATCH_CNTL

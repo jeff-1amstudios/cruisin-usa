@@ -53,6 +53,12 @@ typedef struct EQUATION {
     f32 d;
 } EQUATION;
 
+typedef struct LINE2D {
+    f32 a;
+    f32 b;
+    f32 c;
+} LINE2D;
+
 typedef struct MATRIX {
     f32 a00;
     f32 a01;
@@ -286,7 +292,7 @@ typedef struct OBJ {
 } OBJ;
 
 typedef struct DGROUP_ENTRY {
-    OBJ* head;
+    u32 head;
     const u32* bin;
     OBJ* fstart;
     int flag;

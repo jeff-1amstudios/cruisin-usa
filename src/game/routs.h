@@ -7,7 +7,7 @@
 
 // ROUTS.ASM
 void SQRT(void);
-void DIV_F30(void);
+float DIV_F30(float u, float v);
 void DIV_I30(void);
 void DIV_U30(void);
 float INV_F30(float);

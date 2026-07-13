@@ -176,7 +176,7 @@ int ERRORN;
 /* asm: ERRORO	.bss	ERRORO,1 */
 int ERRORO;
 /* asm: FRAMETIME	.bss	FRAMETIME,1 */
-int FRAMETIME;
+float FRAMETIME;
 /* asm: SWITCHBUTS	.bss	SWITCHBUTS,1 */
 int SWITCHBUTS;
 /* asm: BGNDCOLA	.bss	BGNDCOLA,1 */

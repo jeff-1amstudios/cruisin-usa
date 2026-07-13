@@ -701,7 +701,7 @@ void TRANSCHOICE(void) {
  *
  */
 /* asm: GUWP	.bss	GUWP,1 */
-int GUWP;
+float GUWP = 1.0f;
 
 void GET_UNIT_WHEEL(void) {
     // asm 00005BEA: 	FLOAT	@_pot0,R0

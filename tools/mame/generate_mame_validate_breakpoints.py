@@ -401,7 +401,7 @@ def collect_breakpoints_for_file(
                 source_path=path,
                 source_line=index + 1,
                 command_override=f'logerror "exit, {path.name}:{index + 1}\\n"',
-                action_override="exit",
+                action_override="exit; g",
             )
         )
 
