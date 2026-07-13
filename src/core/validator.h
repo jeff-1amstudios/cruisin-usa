@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+typedef enum MAME_VALIDATE_REG_KIND {
+    MAME_VALIDATE_REG_KIND_WORD,
+    MAME_VALIDATE_REG_KIND_FLOAT,
+} MAME_VALIDATE_REG_KIND;
+
 void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_validate_arg_sym_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
@@ -16,9 +21,12 @@ void mame_validate_region_at_addr_impl(
     const void* ptr,
     uint32_t word_count);
 void mame_assert_reg_at_addr_impl(
-    const char* caller_file, int caller_line, uint32_t breakpoint_address, const char* reg_name, const void* ptr);
-void mame_validate_reg_at_addr_float_impl(
-    const char* caller_file, int caller_line, uint32_t breakpoint_address, const char* reg_name, const void* ptr);
+    const char* caller_file,
+    int caller_line,
+    uint32_t breakpoint_address,
+    const char* reg_name,
+    const void* ptr,
+    MAME_VALIDATE_REG_KIND reg_kind);
 
 #define mame_validate_arg_sym(name, ptr) mame_validate_arg_sym_impl(__FILE__, __LINE__, (name), (ptr))
 
@@ -27,10 +35,12 @@ void mame_validate_reg_at_addr_float_impl(
 #define MAME_VALIDATOR_EXIT() mame_validate_exit_impl(__FILE__, __LINE__)
 #define MAME_ASSERT_REGION_AT_ADDR(addr, name, region_addr, ptr, word_count) \
     mame_validate_region_at_addr_impl(__FILE__, __LINE__, (addr), (name), (region_addr), (ptr), (word_count))
-#define MAME_ASSERT_REG_AT_ADDR(addr, reg_name, ptr) \
-    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr))
-#define MAME_ASSERT_REG_AT_ADDR_FLOAT(addr, reg_name, ptr) \
-    mame_validate_reg_at_addr_float_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr))
+#define MAME_ASSERT_REG(addr, reg_name, ptr) \
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_WORD)
+#define MAME_ASSERT_REG_FLOAT(addr, reg_name, ptr) \
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_FLOAT)
+#define MAME_ASSERT_MEM(addr, mem_addr, ptr) \
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_WORD)
 
 #define MAME_ASSERT_FUNCTION_ENTRY()
 

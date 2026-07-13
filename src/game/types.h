@@ -374,25 +374,25 @@ typedef struct CARBLK {
     u32 updated_this_frame;
 } CARBLK;
 
-/*
- * LEG.ASM also documents a float-based leg layout; keep that as a separate
- * alternate type, but prefer LEG above from SYS.EQU for imports.
- */
-typedef struct LEG_ASM {
-    VECTOR pos;
-    u32 id;
-} LEG_ASM;
+typedef struct LEG_PAYLOAD {
+    union {
+        struct {
+            VECTOR pos;
+            u32 id;
+        } as_float;
 
-typedef struct LEG_MAP_ENTRY {
-    u32 pos_x;
-    u32 pos_y_with_lane_flag;
-    u32 pos_z;
-    u32 id;
-} LEG_MAP_ENTRY;
+        struct {
+            int pos_x;
+            int pos_y_with_lane_flag;
+            int pos_z;
+            u32 id;
+        } as_fixed;
+    };
+} LEG_PAYLOAD;
 
 typedef struct LEG_SSLL_ENTRY {
-    int leg_ssll_next_offset;
-    LEG_ASM leg;
+    struct LEG_SSLL_ENTRY* leg_ssll_next_offset;
+    LEG_PAYLOAD leg;
 } LEG_SSLL_ENTRY;
 
 typedef struct STRDGROUP {

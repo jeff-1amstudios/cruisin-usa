@@ -154,7 +154,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055C6: 	LSH	-1,R4
     // asm 000055C7: 	STI	R4,*+AR7(LIST_NUM)
     p->ctx->ATTRACT_DELTA.list_num = ATTRWAVE >> 1;
-    MAME_ASSERT_REG_AT_ADDR(0x000055C8, "R4", &p->ctx->ATTRACT_DELTA.list_num);
+    MAME_ASSERT_REG(0x000055C8, "R4", &p->ctx->ATTRACT_DELTA.list_num);
 
     // asm 000055C8: 	CALL	INIT_ATTR_LEG
     INIT_ATTR_LEG(p);
@@ -162,7 +162,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055C9: 	LDI	4,R0
     // asm 000055CA: 	STI	R0,@NOSWAP
     NOSWAP = 4;
-    MAME_ASSERT_REG_AT_ADDR(0x000055CB, "R0", &NOSWAP);
+    MAME_ASSERT_REG(0x000055CB, "R0", &NOSWAP);
 
     // asm 000055CB: 	CREATE	LOGO_PROC,UTIL_C
     {
@@ -174,7 +174,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055CF: 	OR	MGO,R0
     // asm 000055D0: 	STI	R0,@_MODE
     _MODE |= MGO;
-    MAME_ASSERT_REG_AT_ADDR(0x000055D1, "R0", &_MODE);
+    MAME_ASSERT_REG(0x000055D1, "R0", &_MODE);
 
     // asm 000055D1: 	LDI	-1,R0
     // asm 000055D2: 	STI	R0,*+AR7(CUT_PAN)
@@ -210,7 +210,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055DF: 	LDI	90,R0
     // asm 000055E0: 	STI	R0,@_countdown
     _countdown = 90;
-    MAME_ASSERT_REG_AT_ADDR(0x000055E1, "R0", &_countdown);
+    MAME_ASSERT_REG(0x000055E1, "R0", &_countdown);
 
     // asm 000055E1: 	LDI	1,R0
     // asm 000055E2: 	STI	R0,*+AR7(CUT_PAN)
@@ -289,7 +289,7 @@ NO_OBJINS:
 
     // asm 000055FD: 	LDI	*AR6++,AR5
     p->ctx->ATTRACT_DELTA.frames_left = step->state.generic.stop_when_zero;
-    MAME_ASSERT_REG_AT_ADDR(0x000055FE, "AR5", &p->ctx->ATTRACT_DELTA.frames_left);
+    MAME_ASSERT_REG(0x000055FE, "AR5", &p->ctx->ATTRACT_DELTA.frames_left);
     p->ctx->ATTRACT_DELTA.view_script = (uintptr_t)view_script;
 
     // asm 000055FE: 	B	ADELTA2
@@ -1805,11 +1805,11 @@ NO_MUSIC:
     // asm 000059AA: 	LDI	*AR1++,R0
     // asm 000059AB: 	STI	R0,@NEXT_STARTUP
     NEXT_STARTUP = ATTR_WAVETAB[attr_wave_index];
-    MAME_ASSERT_REG_AT_ADDR(0x000059AC, "R0", &NEXT_STARTUP);
+    MAME_ASSERT_REG(0x000059AC, "R0", &NEXT_STARTUP);
     // asm 000059AC: 	LDI	*AR1,R1
     BONUS_WAVE = ATTR_WAVETAB[attr_wave_index + 1];
     // asm 000059AD: 	STI	R1,@BONUS_WAVE
-    MAME_ASSERT_REG_AT_ADDR(0x000059AE, "R1", &BONUS_WAVE);
+    MAME_ASSERT_REG(0x000059AE, "R1", &BONUS_WAVE);
     // asm 000059AE: 	LDI	@BONUS_WAVE,AR0
     // asm 000059AF: 	ADDI	@FULLSETUP_TABLEI,AR0
     // asm 000059B0: 	LDI	*AR0,R0
@@ -1818,7 +1818,7 @@ NO_MUSIC:
     // asm 000059B2: 	LDF	@INFIN_CORRECT,R0
     p->ctx->ATTRACT_DELTA.camera_infin = (float)INFIN_CORRECT;
     // asm 000059B3: 	STF	R0,*+AR7(CAMERA_INFIN)
-    MAME_ASSERT_REG_AT_ADDR_FLOAT(0x000059B4, "R0", &p->ctx->ATTRACT_DELTA.camera_infin);
+    MAME_ASSERT_REG_FLOAT(0x000059B4, "R0", &p->ctx->ATTRACT_DELTA.camera_infin);
     // asm 000059B4: 	CALL	OBJ_INIT
     OBJ_INIT();
     // asm 000059B5: 	CALL	INIT_DRONES	;init DRONE tracker system
@@ -1841,7 +1841,7 @@ NO_MUSIC:
     // asm 000059BD: 	LDI	@NEXT_STARTUP,R0
     STARTSECTION = NEXT_STARTUP;
     // asm 000059BE: 	STI	R0,@STARTSECTION
-    MAME_ASSERT_REG_AT_ADDR(0x000059BF, "R0", &STARTSECTION);
+    MAME_ASSERT_REG(0x000059BF, "R0", &STARTSECTION);
     // asm 000059BF: 	CALL	BGD_INIT
     BGD_INIT();
     // asm 000059C0: 	PUSH	AR7
@@ -1880,7 +1880,7 @@ NO_MUSIC:
         ATTRWAVE = 0;
     }
     // asm 000059D8: 	STI	R0,@ATTRWAVE
-    MAME_ASSERT_REG_AT_ADDR(0x000059D9, "R0", &ATTRWAVE);
+    MAME_ASSERT_REG(0x000059D9, "R0", &ATTRWAVE);
     // asm 000059D9: 	RETS
 }
 

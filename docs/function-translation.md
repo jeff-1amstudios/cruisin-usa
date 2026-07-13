@@ -3,7 +3,7 @@
 Translate the specified assembly function into c. Where practical, keep the c code simple so its close to line for line with the assembly for ease of debugging. However, you may write the c code in idiomatic style for ease of readability.
 
 ## Rules
-- - *Interleave* the translated c pieces of code underneath the // asm: comment lines already in the function. *THIS IS NOT OPTIONAL*. It is WRONG if you do not follow this.
+- - *Interleave* the translated c pieces of code _underneath_ each relevant // asm: comment line. *THIS IS NOT OPTIONAL*. It is WRONG if you do not follow this.
 - Read the associated .ASM file for context
 - First, determine the function prototype - args and return value. Use developer comments along with the code to help understand and name the arguments.
 - Correctness is your number 1 job. You must not invent anything except translating the assembly code into C.

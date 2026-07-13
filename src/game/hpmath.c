@@ -1,178 +1,118 @@
-
-#include "../core/machine.h"
+// From asm/HPMATH.C
 #include <math.h>
 
-/*
- * Source module: asm/HPMATH.ASM
+#define BITS 23          /* There are 23 bits in the mantissa     */
+#define MAXX 88.72283906 /* ln(HUGE_VAL)                          */
+#define MAXH 89.41598624 /* ln(HUGE_VAL) + ln(2)                  */
+#define TWO23 8388608    /* 2 ^ BITS                              */
+#define XBIG 8.664339757 /* (BITS/2 + 1) * ln(2)                  */
+
+/* macros used in sin and cos */
+
+#define INVSPI 0.31830988618379067154
+#define HALFPI 1.57079632679489661923
+
+#define C1 3.140625
+#define C2 9.67653589793e-4
+
+#define R1 -0.1666665668e+0
+#define R2 0.8333025139e-2
+#define R3 -0.1980741872e-3
+#define R4 0.2601903036e-5
+
+/*	HPsin() - High Precision sine
+ *
+ *	Based on the algorithm from "Software Manual for the Elementary
+ *	Functions", Cody and Waite, Prentice Hall 1980, chapter 8.
+ *
+ *	N = round(x / PI)
+ *	f = x - N * PI
+ *	g = f * f
+ *	R = polynomial expansion
+ *
+ *	result = f + f * R
+ *
+ *	if x < 0, result = - result
+ *	if N is even, result = - result
+ *
+ *	This will return the wrong result for x >= MAXINT * PI
  */
-
-float _HPsin(float x);
-float _HPcos(float x);
-
-static float CONST[7];
-
-/*
-******************************************************
-* FUNCTION DEF : _HPsin
-******************************************************
-*/
-float _HPsin(float x /*R2*/) {
-    float sgn;
-    float xn;
-    float y;
+float _HPsin(float x) {
+    float d, y, xn, f, g, rg;
+    float sgn = (x < 0) ? -1.0 : 1.0;
     int n;
 
-    // asm 0000B04A: 	PUSH	R4
-    // *
-    // * R2	assigned to parameter x
-    // * R3	assigned to variable  sgn
-    // * R4	assigned to variable  xn
-    // *
-
-    // asm 0000B04B: 	CMPF	0,R2
-    // asm 0000B04C: 	LDFLT	-1.0,R3
-    // asm 0000B04D: 	LDFGE	1.0,R3
-    sgn = (x < 0.0f) ? -1.0f : 1.0f;
-
-    // asm 0000B04E: 	ABSF	R2
-    x = fabsf(x);
-
-    // asm 0000B04F: 	LDP	@CONST+0
-    // asm 0000B050: 	LDF	@CONST+0,R0
-    // asm 0000B051: 	MPYF	R0,R2,R1
-    // asm 0000B052: 	ADDF	5.0e-1,R1
-    // asm 0000B053: 	FIX	R1,RC
-    n = (int)(CONST[0] * x + 0.5f);
-
-    // asm 0000B054: 	FLOAT	RC,R4
+    x = fabs(x);
+    n = (int)((x * INVSPI) + 0.5);
     xn = (float)n;
 
-    // asm 0000B055: 	LDI	RC,R0
-    // asm 0000B056: 	LDI	2,R1
-    // asm 0000B057: 	CALL	MOD_I30
-    // asm 0000B058: 	BZ	LL3
-    if ((n % 2) != 0) {
-        // asm 0000B059: 	NEGF	R3
+    /*
+     * if n is odd, negate the sign
+     */
+    if (n % 2)
         sgn = -sgn;
-    }
 
-LL3:
-    // asm 0000B05A: 	LDF	3.140625,R0
-    // asm 0000B05B: 	MPYF	R0,R4,R1
-    // asm 0000B05C: 	SUBF	R1,R2,R1
-    // asm 0000B05D: 	LDP	@CONST+1
-    // asm 0000B05E: 	MPYF	@CONST+1,R4
-    // asm 0000B05F: 	SUBF	R4,R1,R4
-    xn = x - (3.140625f * xn) - (CONST[1] * xn);
+    /*
+     * f = x - xn * PI (but mathematically more stable)
+     */
+    f = (x - xn * C1) - xn * C2;
 
-    // asm 0000B060: 	MPYF	R4,R4,R2
-    y = xn * xn;
+    /*
+     * determine polynomial expression
+     */
+    g = f * f;
 
-    // asm 0000B061: 	LDP	@CONST+2
-    // asm 0000B062: 	LDF	@CONST+2,R1
-    // asm 0000B063: 	MPYF	R1,R2,R0
-    // asm 0000B064: 	LDP	@CONST+3
-    // asm 0000B065: 	ADDF	@CONST+3,R0
-    // asm 0000B066: 	MPYF	R2,R0
-    // asm 0000B067: 	LDP	@CONST+4
-    // asm 0000B068: 	ADDF	@CONST+4,R0
-    // asm 0000B069: 	MPYF	R2,R0
-    // asm 0000B06A: 	LDP	@CONST+5
-    // asm 0000B06B: 	ADDF	@CONST+5,R0
-    // asm 0000B06C: 	MPYF	R2,R0
-    // asm 0000B06D: 	MPYF	R4,R0
-    // asm 0000B06E: 	ADDF	R4,R0
-    // asm 0000B06F: 	MPYF	R3,R0
-    // asm 0000B070: 	POP	R4
-    // asm 0000B071: 	RETS
-    return sgn * (xn + xn * y * (((CONST[2] * y + CONST[3]) * y + CONST[4]) * y + CONST[5]));
+    rg = (((R4 * g + R3) * g + R2) * g + R1) * g;
+
+    return (sgn * (f + f * rg));
 }
 
-float _HPcos(float x /*R2*/) {
-    float xn;
-    float sgn;
-    float y;
+/*	HPcos() - High Precision Cosine
+ *
+ *	Based on the algorithm from "Software Manual for the Elementary
+ *	Functions", Cody and Waite, Prentice Hall 1980, chapter 8.
+ *
+ *	N = round(x / PI + 1/2) - 0.5
+ *	f = x - N * PI
+ *	g = f * f
+ *	R = polynomial expression
+ *
+ *	result = f + f * R
+ *	if N is even, result = - result
+ *
+ *	This will return the wrong result for x >= MAXINT * PI
+ */
+float _HPcos(float x) {
+    float sgn; /* the sign of the result */
+    float xn, f, g, rg;
     int n;
 
-    // asm 0000B072: 	PUSH	R4
-    // *
-    // * R2	assigned to variable  xn
-    // * R3	assigned to variable  x
-    // * R4	assigned to variable  sgn
-    // *
+    /*
+     * cos(x) = cos(-x)
+     */
+    x = fabs(x);
 
-    // asm 0000B073: 	ABSF	R2,R3
-    x = fabsf(x);
+    /*
+     * n = round(x/PI + 1/2) (can be rounded this way, since positive number)
+     */
+    n = (int)(((x + HALFPI) * INVSPI) + 0.5);
+    xn = (float)n - 0.5;
 
-    // asm 0000B074: 	LDP	@CONST+6
-    // asm 0000B075: 	LDF	@CONST+6,R0
-    // asm 0000B076: 	ADDF	R0,R3,R1
-    // asm 0000B077: 	LDP	@CONST+0
-    // asm 0000B078: 	MPYF	@CONST+0,R1
-    // asm 0000B079: 	LDF	5.0e-1,R2
-    // asm 0000B07A: 	ADDF	R2,R1
-    // asm 0000B07B: 	FIX	R1,RC
-    n = (int)(CONST[0] * (x + CONST[6]) + 0.5f);
+    /*
+     * if n is odd, negate the sign
+     */
+    sgn = (n % 2) ? -1.0 : 1.0;
 
-    // asm 0000B07C: 	FLOAT	RC,R1
-    // asm 0000B07D: 	SUBF	R2,R1,R2
-    xn = (float)n - 0.5f;
+    /*
+     * f = x - xn * PI (but more mathematically stable)
+     */
+    f = (x - xn * C1) - xn * C2;
 
-    // asm 0000B07E: 	LDI	RC,R0
-    // asm 0000B07F: 	LDI	2,R1
-    // asm 0000B080: 	CALL	MOD_I30
-    // asm 0000B081: 	LDFNZ	-1.0,R4
-    // asm 0000B082: 	LDFZ	1.0,R4
-    sgn = ((n % 2) != 0) ? -1.0f : 1.0f;
+    /*
+     * determine polynomial expression
+     */
+    g = f * f;
 
-    // asm 0000B083: 	LDF	3.140625,R0
-    // asm 0000B084: 	MPYF	R0,R2,R1
-    // asm 0000B085: 	SUBF	R1,R3
-    // asm 0000B086: 	LDP	@CONST+1
-    // asm 0000B087: 	MPYF	@CONST+1,R2
-    // asm 0000B088: 	SUBF	R2,R3
-    x = x - (3.140625f * xn) - (CONST[1] * xn);
-
-    // asm 0000B089: 	MPYF	R3,R3,R2
-    y = x * x;
-
-    // asm 0000B08A: 	LDP	@CONST+2
-    // asm 0000B08B: 	LDF	@CONST+2,R1
-    // asm 0000B08C: 	MPYF	R1,R2,R0
-    // asm 0000B08D: 	LDP	@CONST+3
-    // asm 0000B08E: 	ADDF	@CONST+3,R0
-    // asm 0000B08F: 	MPYF	R2,R0
-    // asm 0000B090: 	LDP	@CONST+4
-    // asm 0000B091: 	ADDF	@CONST+4,R0
-    // asm 0000B092: 	MPYF	R2,R0
-    // asm 0000B093: 	LDP	@CONST+5
-    // asm 0000B094: 	ADDF	@CONST+5,R0
-    // asm 0000B095: 	MPYF	R2,R0
-    // asm 0000B096: 	MPYF	R3,R0
-    // asm 0000B097: 	ADDF	R3,R0
-    // asm 0000B098: 	MPYF	R4,R0
-    // asm 0000B099: 	POP	R4
-    // asm 0000B09A: 	RETS
-    return sgn * (x + x * y * (((CONST[2] * y + CONST[3]) * y + CONST[4]) * y + CONST[5]));
+    rg = (((R4 * g + R3) * g + R2) * g + R1) * g;
+    return (sgn * (f + f * rg));
 }
-
-/* asm: CONST: */
-/* asm: 	.float	3.1830988618379067154e-1;0 */
-/* asm: 	.float	9.67653589793e-4 ;1 */
-/* asm: 	.float	2.601903036e-6   ;2 */
-/* asm: 	.float	-1.980741872e-4  ;3 */
-/* asm: 	.float	8.333025139e-3   ;4 */
-/* asm: 	.float	-1.666665668e-1  ;5 */
-/* asm: 	.float	1.57079632679489661923;6 */
-static float CONST[] = {
-    3.1830988618379067154e-1f, // 0
-    9.67653589793e-4f,         // 1
-    2.601903036e-6f,           // 2
-    -1.980741872e-4f,          // 3
-    8.333025139e-3f,           // 4
-    -1.666665668e-1f,          // 5
-    1.57079632679489661923f,   // 6
-    // *****************************************************
-    // UNDEFINED REFERENCES                               *
-    // *****************************************************
-};

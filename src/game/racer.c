@@ -289,7 +289,7 @@ void RACER_DRONE(PROC* p) {
     // asm 000050F7: 	LDI	R4,AR0
     rank = p->ctx->RACER_DRONE.rank;
     p->ctx->RACER_DRONE.delta_init = rank;
-    MAME_ASSERT_REG_AT_ADDR(0x000050F7, "R4", &rank);
+    MAME_ASSERT_REG(0x000050F7, "R4", &rank);
     // asm 000050F8: 	MPYI	RD_SIZE,AR0
     // asm 000050F9: 	ADDI	@RACER_DRONE_INITTABI,AR0
     // asm 000050FA: 	STI	AR0,*+AR7(INITINDEX)
@@ -313,7 +313,7 @@ NOTLINKED:
 JJKK:
     // asm 00005102: STI	R0,*+AR7(DELTA_MODEL)
     p->ctx->RACER_DRONE.delta_model = init->model;
-    MAME_ASSERT_REG_AT_ADDR(0x00005102, "R0", &init->model);
+    MAME_ASSERT_REG(0x00005102, "R0", &init->model);
     // asm 00005103: 	LDI	R0,AR2
     // asm 00005104: 	LDI	R0,AR5
     // asm 00005105: 	MPYI	VEHTAB_SIZE,AR2
@@ -368,14 +368,14 @@ NOOTHERPAL:
     // asm 00005120: 	STF	R0,*+AR7(ROADOFFSET)
     p->ctx->RACER_DRONE.delta_xlane = init->xlane;
     p->ctx->RACER_DRONE.road_offset = init->xlane;
-    MAME_ASSERT_REG_AT_ADDR(0x00005120, "R0", &init->xlane);
+    MAME_ASSERT_REG(0x00005120, "R0", &init->xlane);
     // asm 00005121: 	LDI	2,R2		  	;SET LANE STATUS
     // asm 00005122: 	FLOAT	600,R1
     // asm 00005123: 	CMPF	R1,R0
     // asm 00005124: 	LDIGT	3,R2
     // asm 00005125: 	STI	R2,*+AR7(DELTA_STATUS)
     p->ctx->RACER_DRONE.delta_status = init->xlane > 600.0f ? 3 : 2;
-    MAME_ASSERT_REG_AT_ADDR(0x00005125, "R2", &p->ctx->RACER_DRONE.delta_status);
+    MAME_ASSERT_REG(0x00005125, "R2", &p->ctx->RACER_DRONE.delta_status);
     // asm 00005126: 	LDI	@_MODE,R1
     // asm 00005127: 	AND	MMODE,R1
     // asm 00005128: 	CMPI	MATTR,R1
@@ -385,7 +385,7 @@ NOOTHERPAL:
     // asm 0000512B: 	MPYF	*+AR0(RD_MAXACCEL),R0
     // asm 0000512C: 	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
     carblk->max_accel = init->maxaccel * difficulty;
-    MAME_ASSERT_REG_AT_ADDR(0x0000512C, "R0", &carblk->max_accel);
+    MAME_ASSERT_REG(0x0000512C, "R0", &carblk->max_accel);
     // asm 0000512D: 	LDF	*+AR0(RD_REL),R0
     // asm 0000512E: 	STF	R0,*+AR7(RELATIVITY)	;SET RELATIVITY COEFFICIENT
     p->ctx->RACER_DRONE.relativity = init->rel;

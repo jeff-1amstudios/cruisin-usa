@@ -420,6 +420,6 @@ extern int RACE_MODE;
 extern int FIRST_RACE;
 
 // asm: 	.globl	LEG_MAP	;RAM SPACE
-extern int LEG_MAP[];
+extern LEG_PAYLOAD LEG_MAP[];
 
 #endif /* SYS_H */

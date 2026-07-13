@@ -679,6 +679,23 @@ static void validate_reg_word_value_impl(
     validate_pass_word(caller_file, caller_line, expected_reg_name, expected_value, &entry);
 }
 
+static uint32_t float_to_ordered_u32(float value) {
+    uint32_t bits;
+
+    memcpy(&bits, &value, sizeof(bits));
+    if ((bits & 0x80000000u) != 0) {
+        return ~bits;
+    }
+    return bits | 0x80000000u;
+}
+
+static uint32_t float_ulp_diff(float a, float b) {
+    uint32_t ao = float_to_ordered_u32(a);
+    uint32_t bo = float_to_ordered_u32(b);
+
+    return ao > bo ? (ao - bo) : (bo - ao);
+}
+
 static void validate_reg_float_value_impl(
     const char* caller_file,
     int caller_line,
@@ -699,11 +716,13 @@ static void validate_reg_float_value_impl(
     memcpy(&actual_value, ptr, sizeof(actual_value));
 
     if (expected_value != actual_value) {
-        snprintf(expected_buf, sizeof(expected_buf), "%g (0x%08" PRIX32 ")", expected_value, entry.word_value);
-        memcpy(&entry.word_value, &actual_value, sizeof(actual_value));
-        snprintf(actual_buf, sizeof(actual_buf), "%g (0x%08" PRIX32 ")", actual_value, entry.word_value);
-        validate_fail(caller_file, caller_line, entry.line_number, failure_name, "value mismatch", expected_buf, actual_buf);
-        return;
+        if (float_ulp_diff(expected_value, actual_value) > 2) {
+            snprintf(expected_buf, sizeof(expected_buf), "%g (0x%08" PRIX32 ")", expected_value, entry.word_value);
+            memcpy(&entry.word_value, &actual_value, sizeof(actual_value));
+            snprintf(actual_buf, sizeof(actual_buf), "%g (0x%08" PRIX32 ")", actual_value, entry.word_value);
+            validate_fail(caller_file, caller_line, entry.line_number, failure_name, "value mismatch", expected_buf, actual_buf);
+            return;
+        }
     }
 
     memcpy(&entry.word_value, &actual_value, sizeof(actual_value));
@@ -1018,7 +1037,7 @@ void mame_validate_arg_impl(const char* caller_file, int caller_line, const char
         return;
     }
 
-    mame_assert_reg_at_addr_impl(caller_file, caller_line, breakpoint_address, name, ptr);
+    mame_assert_reg_at_addr_impl(caller_file, caller_line, breakpoint_address, name, ptr, MAME_VALIDATE_REG_KIND_WORD);
 }
 
 void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
@@ -1045,7 +1064,7 @@ void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const 
         return;
     }
 
-    mame_validate_reg_at_addr_float_impl(caller_file, caller_line, breakpoint_address, name, ptr);
+    mame_assert_reg_at_addr_impl(caller_file, caller_line, breakpoint_address, name, ptr, MAME_VALIDATE_REG_KIND_FLOAT);
 }
 
 void mame_validate_exit_impl(const char* caller_file, int caller_line) {
@@ -1060,19 +1079,12 @@ void mame_validate_exit_impl(const char* caller_file, int caller_line) {
 }
 
 void mame_assert_reg_at_addr_impl(
-    const char* caller_file, int caller_line, uint32_t breakpoint_address, const char* reg_name, const void* ptr) {
-    if (should_skip_validation()) {
-        return;
-    }
-
-    validate_current_call_failed = 0;
-
-    (void)breakpoint_address;
-    validate_reg_word_value_impl(caller_file, caller_line, reg_name, reg_name, ptr);
-}
-
-void mame_validate_reg_at_addr_float_impl(
-    const char* caller_file, int caller_line, uint32_t breakpoint_address, const char* reg_name, const void* ptr) {
+    const char* caller_file,
+    int caller_line,
+    uint32_t breakpoint_address,
+    const char* reg_name,
+    const void* ptr,
+    MAME_VALIDATE_REG_KIND reg_kind) {
     char float_reg_name[128];
 
     if (should_skip_validation()) {
@@ -1083,8 +1095,13 @@ void mame_validate_reg_at_addr_float_impl(
 
     (void)breakpoint_address;
 
-    format_float_reg_name(reg_name, float_reg_name, sizeof(float_reg_name));
-    validate_reg_float_value_impl(caller_file, caller_line, reg_name, float_reg_name, ptr);
+    if (reg_kind == MAME_VALIDATE_REG_KIND_FLOAT) {
+        format_float_reg_name(reg_name, float_reg_name, sizeof(float_reg_name));
+        validate_reg_float_value_impl(caller_file, caller_line, reg_name, float_reg_name, ptr);
+        return;
+    }
+
+    validate_reg_word_value_impl(caller_file, caller_line, reg_name, reg_name, ptr);
 }
 
 void mame_validate_region_at_addr_impl(

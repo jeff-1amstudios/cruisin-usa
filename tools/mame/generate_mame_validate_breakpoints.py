@@ -19,17 +19,11 @@ VALIDATE_ARG_FLOAT_RE = re.compile(
     r'(?:MAME_ASSERT_ARG_FLOAT|mame_validate_arg_float)\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_FUNCTION_ENTRY_RE = re.compile(
-    r'(?:MAME_ASSERT_FUNCTION_ENTRY|mame_validate_function_entry)\(\s*\)\s*;'
+    r'(?:MAME_ASSERT_FUNCTION_ENTRY|MAME_VALIDATE_FUNCTION_ENTRY|mame_validate_function_entry)\(\s*\)\s*;'
 )
-VALIDATE_EXIT_RE = re.compile(r'(?:MAME_VALIDATOR_EXIT|mame_validate_exit)\(\s*\)\s*;')
+VALIDATE_EXIT_RE = re.compile(r'(?:MAME_VALIDATOR_EXIT|MAME_VALIDATE_EXIT|mame_validate_exit)\(\s*\)\s*;')
 VALIDATE_REGION_AT_ADDR_RE = re.compile(
     r'(?:MAME_ASSERT_REGION_AT_ADDR|mame_validate_region_at_addr)\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
-)
-VALIDATE_REG_AT_ADDR_RE = re.compile(
-    r'(?:MAME_ASSERT_REG_AT_ADDR|mame_validate_reg_at_addr)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<expr>[^)]+)\)\s*;'
-)
-VALIDATE_REG_AT_ADDR_FLOAT_RE = re.compile(
-    r'(?:MAME_ASSERT_REG_AT_ADDR_FLOAT|mame_validate_reg_at_addr_float)\(\s*(?P<addr>0x[0-9A-Fa-f]+|\d+)\s*,\s*"(?P<reg>[^"]+)"\s*,\s*&(?P<expr>[^)]+)\)\s*;'
 )
 ADDRESS_MAP_RE = re.compile(r"^\s*[0-9A-Fa-f]{4}:([0-9A-Fa-f]{8})\s+(.+?)\s*$")
 DEFINE_RE = re.compile(r"^\s*#define\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s+(?P<value>.+?)\s*$", re.MULTILINE)
@@ -39,6 +33,7 @@ HEX_RE = re.compile(r"\b0[xX][0-9A-Fa-f]+\b")
 FUNCTION_DEF_RE = re.compile(
     r"^\s*.*?(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\([^;{}]*\)\s*\{\s*$"
 )
+MACRO_NAME_RE = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*\s*\(")
 
 
 @dataclass(frozen=True)
@@ -126,6 +121,123 @@ def find_containing_function_name(lines: List[str], start_index: int) -> Optiona
 
 def strip_cpp_line_comment(line: str) -> str:
     return line.split("//", 1)[0]
+
+
+def find_matching_paren(text: str, open_index: int) -> Optional[int]:
+    depth = 0
+    in_string = False
+    escape = False
+
+    for index in range(open_index, len(text)):
+        ch = text[index]
+        if in_string:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_string = False
+            continue
+
+        if ch == '"':
+            in_string = True
+        elif ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                return index
+
+    return None
+
+
+def split_top_level_args(text: str) -> List[str]:
+    args: List[str] = []
+    start = 0
+    paren_depth = 0
+    bracket_depth = 0
+    brace_depth = 0
+    in_string = False
+    escape = False
+
+    for index, ch in enumerate(text):
+        if in_string:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_string = False
+            continue
+
+        if ch == '"':
+            in_string = True
+        elif ch == "(":
+            paren_depth += 1
+        elif ch == ")":
+            paren_depth -= 1
+        elif ch == "[":
+            bracket_depth += 1
+        elif ch == "]":
+            bracket_depth -= 1
+        elif ch == "{":
+            brace_depth += 1
+        elif ch == "}":
+            brace_depth -= 1
+        elif ch == "," and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0:
+            args.append(text[start:index].strip())
+            start = index + 1
+
+    tail = text[start:].strip()
+    if tail:
+        args.append(tail)
+    return args
+
+
+def parse_macro_invocation_args(line: str, macro_names: List[str], expected_count: int) -> Optional[List[str]]:
+    stripped = strip_cpp_line_comment(line)
+
+    for macro_name in macro_names:
+        match = re.search(rf"\b{re.escape(macro_name)}\s*\(", stripped)
+        if not match:
+            continue
+
+        open_index = stripped.find("(", match.start())
+        close_index = find_matching_paren(stripped, open_index)
+        if close_index is None:
+            continue
+
+        trailing = stripped[close_index + 1 :].strip()
+        if trailing != ";":
+            continue
+
+        args = split_top_level_args(stripped[open_index + 1 : close_index])
+        if len(args) != expected_count:
+            raise ValueError(
+                f"could not parse {macro_name} argument list from line: {line.strip()}"
+            )
+        return args
+
+    return None
+
+
+def parse_explicit_value_validation(
+    line: str, macro_names: List[str]
+) -> Optional[tuple[str, str, str]]:
+    args = parse_macro_invocation_args(line, macro_names, 3)
+    if args is None:
+        return None
+
+    addr_expr, label_expr, value_expr = args
+    label_match = re.fullmatch(r'"([^"]+)"', label_expr.strip())
+    if label_match is None:
+        raise ValueError(f"expected quoted label/expression argument, got {label_expr!r}")
+
+    value_expr = value_expr.strip()
+    if not value_expr.startswith("&"):
+        raise ValueError(f"expected address-of value expression, got {value_expr!r}")
+
+    return addr_expr.strip(), label_match.group(1), value_expr[1:].strip()
 
 
 def lookup_containing_function_instruction_address(
@@ -330,41 +442,80 @@ def collect_breakpoints_for_file(
         )
 
     for index, line in enumerate(lines):
-        match = VALIDATE_REG_AT_ADDR_FLOAT_RE.search(strip_cpp_line_comment(line))
-        if not match:
+        parsed = parse_explicit_value_validation(
+            line, ["MAME_ASSERT_REG_FLOAT", "MAME_ASSERT_REG_AT_ADDR_FLOAT", "mame_validate_reg_at_addr_float"]
+        )
+        if parsed is None:
             continue
+
+        instruction_expr, reg_name, value_expr = parsed
+        instruction_address = evaluate_constant_expr(instruction_expr, resolved_defines)
+        if instruction_address is None:
+            raise ValueError(f"{path}:{index + 1}: could not resolve instruction address {instruction_expr!r}")
 
         entries.append(
             BreakpointEntry(
-                label=f'{match.group("reg")}F',
-                variable_name=match.group("expr").strip(),
+                label=f"{reg_name}F",
+                variable_name=value_expr,
                 variable_address=0,
-                instruction_address=int(match.group("addr"), 0),
+                instruction_address=instruction_address,
                 array_length=None,
                 source_path=path,
                 source_line=index + 1,
                 command_override=(
-                    f'logerror "validate {match.group("reg")}F: 0x%08X, {path.name}:{index + 1}\\n", {match.group("reg").lower()}f'
+                    f'logerror "validate {reg_name}F: 0x%08X, {path.name}:{index + 1}\\n", {reg_name.lower()}f'
                 ),
             )
         )
 
     for index, line in enumerate(lines):
-        match = VALIDATE_REG_AT_ADDR_RE.search(strip_cpp_line_comment(line))
-        if not match:
+        parsed = parse_explicit_value_validation(
+            line, ["MAME_ASSERT_REG", "MAME_ASSERT_REG_AT_ADDR", "mame_validate_reg_at_addr"]
+        )
+        if parsed is None:
             continue
+
+        instruction_expr, reg_name, value_expr = parsed
+        instruction_address = evaluate_constant_expr(instruction_expr, resolved_defines)
+        if instruction_address is None:
+            raise ValueError(f"{path}:{index + 1}: could not resolve instruction address {instruction_expr!r}")
 
         entries.append(
             BreakpointEntry(
-                label=match.group("reg"),
-                variable_name=match.group("expr").strip(),
+                label=reg_name,
+                variable_name=value_expr,
                 variable_address=0,
-                instruction_address=int(match.group("addr"), 0),
+                instruction_address=instruction_address,
                 array_length=None,
                 source_path=path,
                 source_line=index + 1,
                 command_override=(
-                    f'logerror "validate {match.group("reg")}: 0x%08X, {path.name}:{index + 1}\\n", {match.group("reg").lower()}'
+                    f'logerror "validate {reg_name}: 0x%08X, {path.name}:{index + 1}\\n", {reg_name.lower()}'
+                ),
+            )
+        )
+
+    for index, line in enumerate(lines):
+        parsed = parse_explicit_value_validation(line, ["MAME_ASSERT_MEM", "mame_validate_mem_at_addr"])
+        if parsed is None:
+            continue
+
+        instruction_expr, mem_expr, value_expr = parsed
+        instruction_address = evaluate_constant_expr(instruction_expr, resolved_defines)
+        if instruction_address is None:
+            raise ValueError(f"{path}:{index + 1}: could not resolve instruction address {instruction_expr!r}")
+
+        entries.append(
+            BreakpointEntry(
+                label=mem_expr,
+                variable_name=value_expr,
+                variable_address=0,
+                instruction_address=instruction_address,
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+                command_override=(
+                    f'logerror "validate {mem_expr}: 0x%08X, {path.name}:{index + 1}\\n", {mem_expr}'
                 ),
             )
         )

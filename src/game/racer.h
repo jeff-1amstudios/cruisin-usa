@@ -63,7 +63,7 @@
 // asm: 	.GLOBL	FINISH_ID,LEG_MAP,ROADIR,LEG_MAPI
 extern int FINISH_ID;
 
-extern int LEG_MAP[];
+extern LEG_PAYLOAD LEG_MAP[];
 
 #define LEG_MAPI LEG_MAP
 

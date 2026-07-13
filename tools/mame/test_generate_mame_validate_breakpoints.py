@@ -193,6 +193,32 @@ def test_mame_validate_reg_at_addr_uses_explicit_breakpoint() -> None:
         )
 
 
+def test_mame_assert_reg_uses_explicit_breakpoint() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                void test(uint32_t palette_code) {
+                    MAME_ASSERT_REG(0x00009F86, "R0", &palette_code);
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text("")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x00009F86
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00009F86, 1, { logerror "validate R0: 0x%08X, sample.c:2\\n", r0; g }'
+        )
+
+
 def test_mame_validate_reg_at_addr_accepts_indexed_address_expr() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = pathlib.Path(tmpdir)
@@ -306,6 +332,33 @@ def test_mame_validate_reg_at_addr_float_accepts_pointer_member_expr() -> None:
         assert (
             entries[0].format_mame()
             == 'bpset 0000703C, 1, { logerror "validate R0F: 0x%08X, sample.c:6\\n", r0f; g }'
+        )
+
+
+def test_mame_assert_mem_uses_verbatim_mame_expression() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                void test(uint32_t my_val) {
+                    MAME_ASSERT_MEM(0x00000001, "d@(ar3+5)", &my_val);
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text("")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x00000001
+        assert entries[0].variable_name == "my_val"
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00000001, 1, { logerror "validate d@(ar3+5): 0x%08X, sample.c:2\\n", d@(ar3+5); g }'
         )
 
 
@@ -442,10 +495,14 @@ def main() -> int:
     print("ok: MAME_VALIDATE_EXIT emits a function-entry exit breakpoint")
     test_mame_validate_reg_at_addr_uses_explicit_breakpoint()
     print("ok: mame_validate_reg_at_addr emits an explicit-address register breakpoint")
+    test_mame_assert_reg_uses_explicit_breakpoint()
+    print("ok: MAME_ASSERT_REG emits an explicit-address register breakpoint")
     test_mame_validate_reg_at_addr_accepts_indexed_address_expr()
     print("ok: mame_validate_reg_at_addr accepts indexed address expressions")
     test_mame_validate_reg_at_addr_float_uses_float_register_label()
     print("ok: mame_validate_reg_at_addr_float emits an explicit-address float register breakpoint")
+    test_mame_assert_mem_uses_verbatim_mame_expression()
+    print("ok: MAME_ASSERT_MEM emits a verbatim explicit-address MAME expression")
     test_mame_validate_region_at_addr_uses_explicit_breakpoint_and_region()
     print("ok: mame_validate_region_at_addr emits an explicit-address region dump")
     test_mame_validate_region_at_addr_groups_with_other_validations()

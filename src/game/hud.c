@@ -444,7 +444,7 @@ void HARDalloc_section(tSECTION_ALLOC sec) {
     // asm 00009E21: 	LDI	*AR2++,AR6
     palette_code = sec.pal_index;
     // asm 00009E22: 	LDI	*AR2,AR5
-    MAME_ASSERT_REG_AT_ADDR(0x00009E23, "AR5", &sec.count);
+    MAME_ASSERT_REG(0x00009E23, "AR5", &sec.count);
     // asm 00009E23: 	DEC	AR5
     count = sec.count - 1;
 alloc_LPA:

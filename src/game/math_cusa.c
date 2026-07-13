@@ -1022,7 +1022,7 @@ void HPFIND_YMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
 
     // asm 000095F8: 	STF	R0,*+AR2(A00)
     dest[0] = c;
-    MAME_ASSERT_REG_AT_ADDR_FLOAT(0x000095F8, "R0", &c);
+    MAME_ASSERT_REG_FLOAT(0x000095F8, "R0", &c);
     // asm 000095F9: 	STF	R0,*+AR2(A22)
     dest[8] = c;
 
@@ -1034,7 +1034,7 @@ void HPFIND_YMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
 
     // asm 000095FD: 	STF	R0,*+AR2(A20)
     dest[6] = s;
-    MAME_ASSERT_REG_AT_ADDR_FLOAT(0x000095FD, "R0", &s);
+    MAME_ASSERT_REG_FLOAT(0x000095FD, "R0", &s);
 
     // asm 000095FE: 	NEGF	R0
     // asm 000095FF: 	STF	R0,*+AR2(A02)
