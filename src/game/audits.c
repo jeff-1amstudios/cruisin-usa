@@ -24,16 +24,6 @@ void AUDIT_DISPLAY(void);
 extern const char EXPIRED[];
 
 /*
-;	.FILE	"AUDITS.ASM"
-*----------------------------------------------------------------------------
-*
-*
-*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-*ALL RIGHTS RESERVED
-*
-*/
-
-/*
  *----------------------------------------------------------------------------
  *DISPLAYABLE AUDITS
  *

@@ -518,7 +518,7 @@ extern int _MPH;
 #define COUNTDOWN_BUFI COUNTDOWN_BUF
 
 // asm:  .globl INFIN_CORRECT
-extern int INFIN_CORRECT;
+extern float INFIN_CORRECT;
 
 // asm:  .globl VAR_ROAD_KFACTOR
 extern int VAR_ROAD_KFACTOR;
@@ -1260,7 +1260,7 @@ void INSMORE(void);
 void LOAD_SHARED(void);
 
 // asm:  .globl TRAFFIC_LIGHT
-void TRAFFIC_LIGHT(void);
+void TRAFFIC_LIGHT(PROC* p);
 
 // asm:  .globl TRANSCHOICE
 void TRANSCHOICE(void);

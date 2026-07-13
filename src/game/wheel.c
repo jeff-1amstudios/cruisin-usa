@@ -16,9 +16,6 @@ void TOWHEEL(void);
  *----------------------------------------------------------------------------
  *FORCE FEEDBACK WHEEL CODE
  *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 #define WHEEL_KILL 0

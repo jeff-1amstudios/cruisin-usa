@@ -28,9 +28,6 @@ static void DRONE_DANI_PROC(void);
  *----------------------------------------------------------------------------
  *DELTA DRONE
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 /*

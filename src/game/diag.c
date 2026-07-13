@@ -276,9 +276,6 @@ static int MOTION_SAFETY_CODES;
  *----------------------------------------------------------------------------
  *DIAGNOSTIC AND BOOK KEEPING ROUTINES
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 // *WAIT FOR ENTER BUTTON ON

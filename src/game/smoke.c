@@ -39,15 +39,6 @@ static int SMOKEANI[9];
 static int SMOKE2ANI[16];
 static int SPARKANI[11];
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 /* asm: TIRE_SMOKE_COUNT	.bss	TIRE_SMOKE_COUNT,1 */
 int TIRE_SMOKE_COUNT;
 /* asm: SMOKEANI */

@@ -10,15 +10,6 @@
  * Hand-maintained translation of asm/TEXTTAB.ASM.
  */
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 // asm: FONTDIGLGI	.word	FONTDIGLG
 FONTENTRY* FONTDIGLGI = FONTDIGLG;
 

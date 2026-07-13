@@ -34,10 +34,6 @@ void GET_CLOSEST_TRAK(void);
 /*
  *----------------------------------------------------------------------------
  *CHOPPER IN THE SKY
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 /* asm: HELI_ABORT	.bss	HELI_ABORT,1 */

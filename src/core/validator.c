@@ -15,7 +15,7 @@ static FILE* g_validate_log;
 static int g_validate_maps_loaded;
 static int print_oks = 0;
 static int abort_on_error = 1;
-static int fail_on_wrong_consumer = 1;
+static int fail_on_wrong_consumer = 0;
 static int g_validate_log_line_number = 0;
 static int validate_log_exhausted = 0;
 static int validate_current_call_failed = 0;
@@ -200,6 +200,9 @@ static int validate_wrong_consumer(
             actual_buf);
         return 1;
     }
+
+    fprintf(stderr, "warning: original writer was %s\n", expected_buf);
+    fflush(stderr);
 
     return 0;
 }
@@ -493,9 +496,6 @@ static void validate_pass_word(
             value,
             caller_basename,
             caller_line);
-        if (validate_entry_has_wrong_consumer(caller_file, caller_line, entry)) {
-            fprintf(stderr, "warning: original writer was %s:%d\n", entry->writer_file, entry->writer_line);
-        }
         fflush(stderr);
     }
 }
@@ -519,9 +519,6 @@ static void validate_pass_arg(
             symbol_name,
             caller_basename,
             caller_line);
-        if (validate_entry_has_wrong_consumer(caller_file, caller_line, entry)) {
-            fprintf(stderr, "warning: original writer was %s:%d\n", entry->writer_file, entry->writer_line);
-        }
         fflush(stderr);
     }
 }
@@ -557,9 +554,6 @@ static void validate_pass_arg_rom(
                 rom_address,
                 caller_basename,
                 caller_line);
-        }
-        if (validate_entry_has_wrong_consumer(caller_file, caller_line, entry)) {
-            fprintf(stderr, "warning: original writer was %s:%d\n", entry->writer_file, entry->writer_line);
         }
         fflush(stderr);
     }

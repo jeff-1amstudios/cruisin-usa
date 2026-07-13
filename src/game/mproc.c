@@ -32,10 +32,6 @@ void PRC_FOLLOW(void);
  *----------------------------------------------------------------------------
  *MULTIPROCESS SYSTEM
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- *
  */
 
 #if DEBUG

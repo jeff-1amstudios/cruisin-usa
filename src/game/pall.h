@@ -6,10 +6,6 @@
 /* Generated from asm/PALL.EQU. */
 
 // PALL.EQU
-//
-// COPYRIGHT (C) 1994  BY TV GAMES, INC.
-// ALL RIGHTS RESERVED
-//
 // ROUTINES
 
 //

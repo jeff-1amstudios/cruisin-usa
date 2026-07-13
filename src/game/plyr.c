@@ -114,9 +114,6 @@ static float ENGACTAB[20];
 
 /*
  *----------------------------------------------------------------------------
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 #define JARVK 0

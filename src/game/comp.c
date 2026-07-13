@@ -61,9 +61,6 @@ static void REQWAIT(PROC* p);
  *----------------------------------------------------------------------------
  *DECOMPRESSION SYSTEM
  *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 /* asm: PADDING	.bss	PADDING,50 */

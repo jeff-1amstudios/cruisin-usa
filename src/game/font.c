@@ -11,9 +11,6 @@ int _font1[399];
  *----------------------------------------------------------------------------
  *FONT.ASM
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  *SLOW ROM
  *
  */

@@ -57,14 +57,6 @@ void GETFLYMAT(void);
 
 static float DIFFTAB[14];
 
-/*
- *----------------------------------------------------------------------------
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 #define RDIM(MODEL, POS, LANEOFF, MAXACCEL, REL, PAL) \
     {                                                 \
         .model = (MODEL),                             \

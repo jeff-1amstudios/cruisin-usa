@@ -6,10 +6,6 @@
 /* Generated from asm/CMOS.EQU. */
 
 // CMOS.EQU
-//
-// COPYRIGHT (C) 1994  BY TV GAMES, INC.
-// ALL RIGHTS RESERVED
-//
 // ----------------------------------------------------------------------------
 // CMOS DEFINES
 //

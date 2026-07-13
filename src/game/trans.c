@@ -50,10 +50,6 @@ void ENGINE_COLOR(void);
 /*
  *----------------------------------------------------------------------------
  *CHOOSE TRANSMISSION AND RELATED ROUTINES
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 /* asm: EPALRR	.bss	EPALRR,129 */

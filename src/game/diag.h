@@ -6,9 +6,6 @@
 /* Generated from asm/DIAG.EQU. */
 
 // DIAG.EQU
-//
-// COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-// ALL RIGHTS RESERVED
 
 // asm: COL_WHITE	.set	1
 #define COL_WHITE 1

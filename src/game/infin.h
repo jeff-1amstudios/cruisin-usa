@@ -17,6 +17,6 @@ extern int VAR_ROAD_KFACTOR;
 // asm: 		.bss	AMOUNT_CLIPPED,1
 extern int AMOUNT_CLIPPED;
 // asm: 	.bss	INFIN_CORRECT,1
-extern int INFIN_CORRECT;
+extern float INFIN_CORRECT;
 
 #endif /* INFIN_H */

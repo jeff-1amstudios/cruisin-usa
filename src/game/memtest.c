@@ -64,9 +64,6 @@ static int CHIPTEST_TABLE;
  *----------------------------------------------------------------------------
  *MEMTEST.ASM
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  *CHIP TEST ROUTINES
  *
  *

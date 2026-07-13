@@ -105,15 +105,6 @@ extern int OM_TRACK_HI;
 
 static uintptr_t DECODE_BLOCK[];
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 /* asm: IGNORE_UPDATES	.bss	IGNORE_UPDATES,1 */
 int IGNORE_UPDATES;
 /* asm: COMMQ_TMP_BUFF	fbss	COMMQ_TMP_BUFF,80 */

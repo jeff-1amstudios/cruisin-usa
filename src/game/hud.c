@@ -39,9 +39,6 @@ extern int CHEAT;
  *----------------------------------------------------------------------------
  *HEADS UP DISPLAY ROUTINES
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 #define SECTION_COUNTER 0 // 1 = TURN ON UL CRNR

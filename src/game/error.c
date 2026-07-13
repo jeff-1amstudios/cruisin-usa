@@ -23,15 +23,6 @@ void ERROR_LOG_DISPLAY(void);
 
 extern const char NO[];
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 #define ERR_SIZE 16
 #define MAX_LOGS 30
 #define PSS_AR7 0
@@ -47,8 +38,7 @@ extern const char NO[];
 #define PSS_R0 10
 
 // *----------------------------------------------------------------------------
-void ERROR_LOG(void)
-{
+void ERROR_LOG(void) {
     // asm 0000AB4A: 	PUSH	R1
     // asm 0000AB4B: 	PUSH	R2
     // asm 0000AB4C: 	PUSH	R3
@@ -159,8 +149,7 @@ ERROR_X:
  *
  *
  */
-void ERROR_LOG_DISPLAY(void)
-{
+void ERROR_LOG_DISPLAY(void) {
     // asm 0000ABA9: 	CALL	CLRSCRN
     // asm 0000ABAA: 	CALL	SETPAGE0
     // asm 0000ABAB: 	LDIL	SCREEN0,R0		;set active screen to 1 (writeable)

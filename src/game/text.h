@@ -6,10 +6,6 @@
 /* Generated from asm/TEXT.EQU. */
 
 // TEXT.EQU
-//
-// COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-// ALL RIGHTS RESERVED
-//
 // ROUTINES
 
 // ----------------------------------------------------------------------------

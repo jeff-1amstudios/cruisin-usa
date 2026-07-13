@@ -25,15 +25,6 @@ static void SIGMA_DIE(void);
 
 static int SIGMA_LIST[32];
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 // *SIGMA_STARTUP STRUCT
 #define SS_MODEL 0
 #define SS_FLAG 1
@@ -118,8 +109,7 @@ static int SIGMA_LIST[] = {
  *
  *
  */
-void SIGMA_DRONE(void)
-{
+void SIGMA_DRONE(void) {
     // asm 0000A42A: 	LDI	@DD_MAX_DRONES,R0
     // asm 0000A42B: 	BNZ	GOAHEAD
     // asm 0000A42C: 	SLEEP	1
@@ -432,8 +422,7 @@ SIGMASLP:
  *
  *
  */
-static void BREAKDOWN(void)
-{
+static void BREAKDOWN(void) {
     // ;	LDI	*+AR4(OID),R0
     // ;	ANDN	TYPE_M,R0
     // ;	OR	DEAD_VEH_T,R0
@@ -472,8 +461,7 @@ BREAKDNSLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SIGMA_DIE(void)
-{
+static void SIGMA_DIE(void) {
     // asm 0000A533: 	BU	RHO_DIE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DIE", 0, 0);

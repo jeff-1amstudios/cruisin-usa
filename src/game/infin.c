@@ -24,15 +24,6 @@ static float* INFINITY_POINTS;
 static float INFINPOINTS[102];
 static float WATERPOS[78];
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 /* asm: CAMRADY	.bss	CAMRADY,1 */
 int CAMRADY;
 /*
@@ -681,7 +672,7 @@ static int BLUESKY[] = {
     //
 };
 /* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
-int INFIN_CORRECT;
+float INFIN_CORRECT;
 
 static void TRANS_PTS(void) {
     // ;	LDF	@AMOUNT_CLIPPED,R4

@@ -77,10 +77,6 @@ static void dirq_load_obj_matrix(MATRIX* dst, const OBJ* obj) {
  *----------------------------------------------------------------------------
  *DISPLAY/TRANSFORMATION SYSTEM
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- *
  *	Eric L Pribyl
  *	Eugene P. Jarvis
  *

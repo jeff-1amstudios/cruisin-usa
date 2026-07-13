@@ -49,9 +49,6 @@ static int RHO_TABLE[51];
  *----------------------------------------------------------------------------
  *RHO	(ONCOMING TRAFFIC)
  *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 #define RHO_WEAVER 1 // DRUNK ONCOMER

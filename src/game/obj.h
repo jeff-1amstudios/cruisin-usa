@@ -6,10 +6,6 @@
 /* Generated from asm/OBJ.EQU. */
 
 // OBJ.EQU
-//
-// COPYRIGHT (C) 1994  BY TV GAMES, INC.
-// ALL RIGHTS RESERVED
-//
 // ROUTINES
 
 // asm: NUM_OBJECTS	.set	1100

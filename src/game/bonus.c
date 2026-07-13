@@ -87,15 +87,6 @@ static int CONGRAT_SPEECH[4];
 static int FLAG_POS_TABLE[28];
 static const char NULLSTR5[];
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 /* asm: MAXMPH	.bss	MAXMPH,1 */
 int MAXMPH;
 /* asm: CHALLENGE_RACE	.bss	CHALLENGE_RACE,1 */
@@ -193,26 +184,24 @@ void_func_ptr BONUS_POSTLAUNCH[] = {
 // *----------------------------------------------------------------------------
 static void BONUS_SANFRAN(void) {
     // asm 00003966: 	CREATE	TRAFFIC_LIGHT,SPAWNER_C|COLORCYC_T
+    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(TRAFFIC_LIGHT, SPAWNER_C | COLORCYC_T, ctx);
     // asm 00003969: 	FLOAT	-35,R0
     // asm 0000396A: 	STF	R0,@INFIN_CORRECT
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS_SANFRAN", 0, 0);
-    UNIMPL();
+    INFIN_CORRECT = -35.0f;
+
+    // fallthrough into BONUS_BEVHILLS
+    BONUS_BEVHILLS();
 }
 
 static void BONUS_BEVHILLS(void) {
     // asm 0000396B: 	LDI	@_MODE,R0
     // asm 0000396C: 	OR	MWATER,R0
     // asm 0000396D: 	STI	R0,@_MODE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS_BEVHILLS", 0, 0);
-    UNIMPL();
+    _MODE |= MWATER;
 }
 
 static void BONUSNULL(void) {
-    // asm 0000396E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUSNULL", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

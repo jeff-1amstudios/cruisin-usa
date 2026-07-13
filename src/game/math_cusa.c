@@ -62,9 +62,6 @@ static float ATOFFTAB[];
  *----------------------------------------------------------------------------
  *MATH ROUTINES
  *
- *COPYRIGHT (C) 1994 BY TV GAMES,INC.
- *ALL RIGHTS RESERVED
- *
  *See also:	ROUTS.ASM	Divide,Invert,Modulus
  *		HPMATH.C	higher precision functions
  *

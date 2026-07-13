@@ -50,9 +50,6 @@ static int FIXEDFONT;
  *----------------------------------------------------------------------------
  *TEXT ROUTINES
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 tTEXT TEXT_LIST[NUM_TEXTS];

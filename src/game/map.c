@@ -42,9 +42,6 @@ static u32 scale_packed_palette_word(u32 packed_word, float multiplier);
  *----------------------------------------------------------------------------
  *OVERHEAD MAP
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 /*

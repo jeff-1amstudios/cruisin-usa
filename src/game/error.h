@@ -6,9 +6,6 @@
 /* Generated from asm/ERROR.EQU. */
 
 // ERROR.EQU
-//
-// COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-// ALL RIGHTS RESERVED
 
 // ERROR CODE IDS
 //

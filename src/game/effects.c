@@ -26,15 +26,6 @@ static void MEMCPY(void);
 
 /*
  *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
-/*
- *----------------------------------------------------------------------------
  *ADVANCED FEATURES
  *
  *it would be best to do open and close via the same process
@@ -82,8 +73,7 @@ static void MEMCPY(void);
 int SCREENWIPE_DONE;
 
 // *----------------------------------------------------------------------------
-void SCREENWIPE_OPEN(void)
-{
+void SCREENWIPE_OPEN(void) {
     // asm 0000B09F: 	CLRI	R0
     // asm 0000B0A0: 	STPI	R0,@SCREENWIPE_DONE
     // asm 0000B0A1: 	CREATEC	SCREENWIPE_OPEN_PRC,UTIL_C|MONKEY_T
@@ -95,8 +85,7 @@ void SCREENWIPE_OPEN(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SCREENWIPE_CLOSE(void)
-{
+void SCREENWIPE_CLOSE(void) {
     // asm 0000B0A5: 	CLRI	R0
     // asm 0000B0A6: 	STPI	R0,@SCREENWIPE_DONE
     // asm 0000B0A7: 	CREATE	SCREENWIPE_CLOSE_PRC,UTIL_C|MONKEY_T
@@ -108,8 +97,7 @@ void SCREENWIPE_CLOSE(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SCREENWIPE_OPEN_PRC_FAST(void)
-{
+void SCREENWIPE_OPEN_PRC_FAST(void) {
     // asm 0000B0AB: 	LONGROUT
     // asm: 	LDF	1.9,R0
     // asm: 	BR	L55
@@ -118,8 +106,7 @@ void SCREENWIPE_OPEN_PRC_FAST(void)
     UNIMPL();
 }
 
-void SCREENWIPE_OPEN_PRC(void)
-{
+void SCREENWIPE_OPEN_PRC(void) {
     // asm 0000B0AC: 	LONGROUT
     // asm: 	LDF	1.1,R0
 L55:
@@ -217,8 +204,7 @@ L55:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SCREENWIPE_CLOSE_PRC(void)
-{
+void SCREENWIPE_CLOSE_PRC(void) {
     // asm 0000B0AD: 	LONGROUT
     // asm: 	CALL	GET_EFFECTS_OBJS
     // asm: 	LDI	100,AR5
@@ -297,8 +283,7 @@ void SCREENWIPE_CLOSE_PRC(void)
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void GET_EFFECTS_OBJS(void)
-{
+static void GET_EFFECTS_OBJS(void) {
     // asm 0000B0AE: 	LONGROUT
     // asm: 	LDI	@MONKEYOBJRVI,AR1
     // asm: 	CALL	OBJ_GET
@@ -385,8 +370,7 @@ static void GET_EFFECTS_OBJS(void)
  *	RC	LENGTH -1
  *
  */
-static void MEMCPY(void)
-{
+static void MEMCPY(void) {
     // asm 0000B0AF: 	LONGROUT
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR1

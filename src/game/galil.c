@@ -15,14 +15,5 @@
  * Source module: asm/GALIL.ASM
  */
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 /* asm: GALIL_RESPONSE	.bss	GALIL_RESPONSE,80 */
 static int GALIL_RESPONSE[80];

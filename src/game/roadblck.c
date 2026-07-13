@@ -26,15 +26,6 @@ void DEBRIS_SORT(void);
 
 /*
  *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
-/*
- *----------------------------------------------------------------------------
  *RDDEBRIS_C
  *
  *THIS FILE HANDLES THE RDDEBRIS (Road Debris) CLASS

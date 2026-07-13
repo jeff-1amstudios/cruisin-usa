@@ -58,15 +58,6 @@ static void FULLSETUP_WASHINGTONDC(void);
 void (*FULLSETUP_TABLE[14])(void);
 void (*LOADSECTION_TABLE[14])(void);
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 // *----------------------------------------------------------------------------
 void CLEANUP_PALS(void) {
     // asm 00008C0C: 	LDL	CORNPAL,AR2

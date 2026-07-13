@@ -35,15 +35,6 @@ static void COMM_SLAVE(void);
 
 static int COMM_SLAVE_NREADY;
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 #define TIME_DELAY 18
 /* asm: COMM_MASTER_ERROR_CNT	fbss	COMM_MASTER_ERROR_CNT,1 */
 int COMM_MASTER_ERROR_CNT;

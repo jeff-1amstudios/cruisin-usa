@@ -6,10 +6,6 @@
 /* Generated from asm/MPROC.EQU. */
 
 // MPROC.EQU
-//
-// COPYRIGHT (C) 1994  BY TV GAMES, INC.
-// ALL RIGHTS RESERVED
-//
 // ROUTINES
 
 // PSADDR		.set	5	;UH	STARTUP ADDRESS

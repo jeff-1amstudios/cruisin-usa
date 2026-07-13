@@ -6,10 +6,6 @@
 /* Generated from asm/C30.EQU. */
 
 // C30.EQU
-//
-// COPYRIGHT (C) 1994  BY TV GAMES, INC.
-// ALL RIGHTS RESERVED
-//
 // ----------------------------------------------------------------------------
 // STATUS WORD FLAGS
 

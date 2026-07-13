@@ -89,9 +89,6 @@ static int FLASH_PALS[5];
  *----------------------------------------------------------------------------
  *HSTD PROCESSES
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 #define FLASH_ON 1 // TURN THIS OFF TO LOOSE FLASHING

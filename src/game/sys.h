@@ -6,10 +6,6 @@
 /* Generated from asm/SYS.EQU. */
 
 // SYS.EQU
-//
-// COPYRIGHT (C) 1994  BY TV GAMES, INC.
-// ALL RIGHTS RESERVED
-//
 // RACE_MODE tells us what type of race we are having
 // are we doing the A to Z continuous (RM_USA)
 // or are we in a single race so that we must check

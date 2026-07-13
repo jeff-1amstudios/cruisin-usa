@@ -53,9 +53,6 @@ static int ACTIVEHI;
  *----------------------------------------------------------------------------
  *OBJECT SYSTEM
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 /* asm: OACTIVE	.bss	OACTIVE,1 */

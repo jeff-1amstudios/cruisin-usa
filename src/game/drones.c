@@ -95,11 +95,6 @@ static const char HRS46[];
 /*
  *----------------------------------------------------------------------------
  *COMMON DRONE ROUTINES
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
  */
 
 /*

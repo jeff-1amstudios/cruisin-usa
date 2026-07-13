@@ -93,15 +93,6 @@ static const AttractViewStep BEVHILL_LIST[];
 static const AttractViewStep GCANYON_LIST[];
 static const AttractViewStep CHICAGO_LIST[];
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 /* asm: ATTRWAVE	pbss	ATTRWAVE,1 */
 int ATTRWAVE;
 /*
@@ -1888,6 +1879,8 @@ NO_MUSIC:
 static void ATTR_INIT_GAMELEG(void) {
     PROC_CONTEXT* ctx;
     PROC* proc;
+
+    MAME_VALIDATOR_EXIT();
 
     // asm 000059DA: 	CREATE	RHO_DISPATCHER,SPAWNER_C|TRAFFIC_T
     ctx = port_malloc(sizeof(PROC_CONTEXT));

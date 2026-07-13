@@ -31,8 +31,6 @@ static int FLAME_POS[21];
 /*
  *----------------------------------------------------------------------------
  *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
  */
 
 /* asm: FLAME_POS */

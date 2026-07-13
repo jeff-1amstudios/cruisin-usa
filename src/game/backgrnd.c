@@ -198,8 +198,6 @@ NOWARP:
  *
  */
 void BGD_INIT(void) {
-
-    MAME_VALIDATOR_EXIT();
     // asm 00003F9E: 	CLRI	R0
     // asm 00003F9F: 	STI	R0,@DGROUP_COUNT
     // asm 00003FA0: 	STI	R0,@DYNALIST_END
@@ -224,7 +222,8 @@ void BGD_INIT(void) {
     // ;	.endif
     // asm 00003FA4: 	CALL	FIND_STARTING_VALUES
     // asm 00003FA5: 	BU	KKTIL
-    // asm 00003FA6: REGULAR_START				;kept for attract mode only
+REGULAR_START: //;kept for attract mode only
+
     // asm 00003FA6: 	CLRI	R0
     // asm 00003FA7: 	STI	R0,@SECTIONIDX
     // asm 00003FA8: 	STI	R0,@TYCO_NTL_IDX
@@ -275,7 +274,7 @@ NOO2a:
     // asm 00003FCE: 	PUSH	AR6
     // asm 00003FCF: 	LDI	@DGROUPSI,AR1
     // asm 00003FD0: 	LDI	3,AR6
-    // asm 00003FD1: LPP5
+LPP5:
     // asm 00003FD1: 	LDI	@DGROUP_AW,AR2
     // asm 00003FD2: 	LDI	AR2,AR0
     // asm 00003FD3: 	CALL	BGD_ACTIVATE_TYCOGROUP	;returns top pointer in R0

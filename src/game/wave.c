@@ -61,15 +61,6 @@ static tCAR_PALETTE_LIST JEEPPAL;
 static tCAR_PALETTE_LIST CVETTEPAL, HOTRODPAL, BULLETPAL, TESTORPAL, GTRUCKPAL;
 static tCAR_PALETTE_LIST NOPAL;
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 /* asm: TEASE_COUNT	pbss	TEASE_COUNT,1 */
 int TEASE_COUNT;
 /* asm: ATTR_MODEL	pbss	ATTR_MODEL,1 */

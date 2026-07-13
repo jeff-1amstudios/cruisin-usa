@@ -6,9 +6,6 @@
 /* Generated from asm/VUNIT.EQU. */
 
 // VUNIT.EQU
-//
-// COPYRIGHT (C) 1994  BY TV GAMES, INC.
-// ALL RIGHTS RESERVED
 
 // asm: DEBUG		.set	0	;0 = NO DEBUG CODE
 #define DEBUG 0 // 0 = NO DEBUG CODE

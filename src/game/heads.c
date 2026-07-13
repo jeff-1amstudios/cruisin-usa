@@ -26,20 +26,10 @@ static void GETT(void);
 static void CENTEREM(void);
 static void RIGHTEM(void);
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 #define HEADTYPE 0x88D0
 
 // *----------------------------------------------------------------------------
-static void TEXTDELER(void)
-{
+static void TEXTDELER(void) {
     // asm 0000A1A4: 	LDI	@TEXT_ACTIVEI,AR4
 TEXTDELERLP:
     // asm 0000A1A5: 	LDI	*AR4,R0
@@ -115,8 +105,7 @@ static int HEADS[] = {
  *
  *
  */
-static void VANITY_HEADS(void)
-{
+static void VANITY_HEADS(void) {
     // asm 0000A1CC: 	SETDP
     // asm 0000A1CD: 	LDI	@CAMERAPOSI,AR6
     // asm 0000A1CE: 	CLRF	R0
@@ -192,8 +181,7 @@ VOSLP:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SET18FONTDS_WHITE(void)
-{
+static void SET18FONTDS_WHITE(void) {
     // asm 0000A20F: 	CALL	SET18FONTDS
     // asm 0000A210: 	LDL	font18_white,AR2
     // asm 0000A211: 	CALL	PAL_FIND_RAW
@@ -209,8 +197,7 @@ static void SET18FONTDS_WHITE(void)
 /* asm: YINCREMENT	.bss	YINCREMENT,1 */
 int YINCREMENT;
 
-void VANITY(void)
-{
+void VANITY(void) {
     // asm 0000A215: 	JSRP	VANITY_SUB
     // asm 0000A21B: 	BR	CYCLE_ATTR
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -218,8 +205,7 @@ void VANITY(void)
     UNIMPL();
 }
 
-void VANITY_SUB(void)
-{
+void VANITY_SUB(void) {
     // asm 0000A21C: 	LDI	MATTR,R0
     // asm 0000A21D: 	STI	R0,@_MODE
     // asm 0000A21E: 	LDI	1,R0
@@ -415,8 +401,7 @@ int FONTUSED;
 ;	LDL	SET18FONTDS
 ;	LDL	SETFIXEDFONTDS
 */
-static void GETT(void)
-{
+static void GETT(void) {
     // asm 0000A2C0: 	LDI	9999,RC
     // asm 0000A2C1: 	CALL	TEXT_ADDDS
     // asm 0000A2C2: 	LDF	-1,R0
@@ -429,8 +414,7 @@ static void GETT(void)
     UNIMPL();
 }
 
-static void CENTEREM(void)
-{
+static void CENTEREM(void) {
     // asm 0000A2C8: 	LDI	*+AR0(TEXT_COLOR),R0
     // asm 0000A2C9: 	OR	TXT_CENTER,R0
     // asm 0000A2CA: 	STI	R0,*+AR0(TEXT_COLOR)
@@ -442,8 +426,7 @@ static void CENTEREM(void)
     UNIMPL();
 }
 
-static void RIGHTEM(void)
-{
+static void RIGHTEM(void) {
     // asm 0000A2CF: 	LDI	*+AR0(TEXT_COLOR),R0
     // asm 0000A2D0: 	OR	TXT_RIGHT,R0
     // asm 0000A2D1: 	STI	R0,*+AR0(TEXT_COLOR)

@@ -31,15 +31,6 @@ enum {
     LEG_ENTRY_WORD = 1,
 };
 
-/*
- *----------------------------------------------------------------------------
- *
- *
- *COPYRIGHT (C) 1994 BY  TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- */
-
 #define USEFIXED 1
 #define USEEXTENDED 0
 /* asm: FINISH_ID	.bss	FINISH_ID,1 */

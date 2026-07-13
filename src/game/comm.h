@@ -6,9 +6,6 @@
 /* Generated from asm/COMM.EQU. */
 
 // COMM.EQU
-//
-// COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-// ALL RIGHTS RESERVED
 
 // asm: CDEBUG		.set	0
 #define CDEBUG 0

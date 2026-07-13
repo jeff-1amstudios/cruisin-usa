@@ -72,7 +72,6 @@ void CYCLE_ATTR(void);
 void INSMORE(void);
 static void COIN_CNTDOWN(void);
 void LOAD_SHARED(void);
-void TRAFFIC_LIGHT(void);
 static void SHOW_RACE_NAME(void);
 
 #define CCTI CCT
@@ -3377,7 +3376,7 @@ void LOAD_SHARED(void) {
 
 // *----------------------------------------------------------------------------
 
-void TRAFFIC_LIGHT(void) {
+void TRAFFIC_LIGHT(PROC* p) {
     // asm 00001F0F: 	SLEEP	20
     // asm 00001F11: 	LDL	TRAFFIC_LL,AR5
 TLT_LP:

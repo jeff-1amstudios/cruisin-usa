@@ -31,10 +31,6 @@ static uintptr_t DEMOTHANKS_LIST[];
  *----------------------------------------------------------------------------
  *ATTRACT MODE
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- *
  */
 
 #define NOVANITY 1

@@ -6,9 +6,6 @@
 /* Generated from asm/DELTA.EQU. */
 
 // DELTA.EQU
-//
-// COPYRIGHT (C) 1994 BY  TV GAMES, INC.
-// ALL RIGHTS RESERVED
 
 // asm: DELTA_SAFETYWIDTH	.set	850
 #define DELTA_SAFETYWIDTH 850

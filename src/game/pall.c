@@ -40,10 +40,6 @@ void PAL_DIMMER(void);
  *----------------------------------------------------------------------------
  *PALETTE ALLOCATION SYSTEM
  *
- *COPYRIGHT (C) 1994  BY TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- *
  *PALETTE MANAGEMENT ROUTINES
  *PALETTES ARE ALLOCATED IN 128 BLOCKS OF 256 COLORS
  *

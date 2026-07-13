@@ -23,12 +23,11 @@ This is especially useful when translating a function from asm to C or when fixi
 The system has two sides: a MAME-side trace generator and a port-side validator.
 
 1. Add validation macros in the translated C code.
-2. Run `tools/mame/generate_mame_validate_breakpoints.py` to scan those macros and generate a MAME debugger script.
-3. Run MAME with that debugger script against the original game.
-4. MAME hits the generated breakpoints and writes `logerror` lines, and sometimes binary dumps, describing the original code's state at those points.
-5. Save that output in `mame_validate/mame.log`.
-6. Run the SDL port. `src/core/validator.c` opens `mame_validate/mame.log` and consumes entries in order as the port reaches each validation call.
-7. If the current port value does not match the next expected MAME value, the validator reports the mismatch and usually aborts immediately.
+2. Run `tools/mame/instrument.sh`.
+3. The script regenerates `tools/mame/output/mame_validate_breakpoints.txt`, runs MAME with that debugger script, and collects `error.log` plus any binary dumps.
+4. The script writes the captured log to `mame_validate/mame.log` and moves any dumped `.bin` files into `mame_validate/`.
+5. Run the SDL port. `src/core/validator.c` opens `mame_validate/mame.log` and consumes entries in order as the port reaches each validation call.
+6. If the current port value does not match the next expected MAME value, the validator reports the mismatch and usually aborts immediately.
 
 The key point is that the validator is not recomputing anything itself. It is replaying a previously captured trace from the original game and checking that the port reaches the same observable state in the same order.
 
@@ -37,8 +36,8 @@ The key point is that the validator is not recomputing anything itself. It is re
 `tools/mame/generate_mame_validate_breakpoints.py` scans the C sources for validation macros and turns them into debugger breakpoints.
 
 It uses two main ways to place those breakpoints:
-- Function-entry validations such as `MAME_VALIDATE_ARG(...)`, `MAME_VALIDATE_ARG_FLOAT(...)`, `MAME_VALIDATE_FUNCTION_ENTRY()`, and `MAME_VALIDATE_EXIT()` use the containing C function name and look up its original address in `tools/ida/address.map`.
-- Explicit-address validations such as `MAME_VALIDATE_REGION_AT_ADDR(...)`, `MAME_VALIDATE_REG_AT_ADDR(...)`, and `MAME_VALIDATE_REG_AT_ADDR_FLOAT(...)` use the address passed in the macro call.
+- Function-entry validations such as `MAME_ASSERT_ARG(...)`, `MAME_ASSERT_ARG_FLOAT(...)`, `MAME_ASSERT_FUNCTION_ENTRY()`, and `MAME_VALIDATOR_EXIT()` use the containing C function name and look up its original address in `tools/ida/address.map`.
+- Explicit-address validations such as `MAME_ASSERT_REGION_AT_ADDR(...)`, `MAME_ASSERT_REG(...)`, `MAME_ASSERT_REG_FLOAT(...)`, and `MAME_ASSERT_MEM(...)` use the address passed in the macro call.
 
 The generated MAME script emits lines such as:
 ```text
@@ -54,27 +53,28 @@ For larger validations, the generator may emit `save` commands instead of printi
 
 ## Validation macros
 
-Common validation markers:
-- `MAME_VALIDATE_ARG(name, ptr)`: validate an integer register argument at original function entry.
-- `MAME_VALIDATE_ARG_FLOAT(name, ptr)`: validate a float register argument at original function entry.
-- `MAME_VALIDATE_FUNCTION_ENTRY()`: emit a `function <NAME>` marker at the original function entry in the MAME log.
-- `MAME_VALIDATE_EXIT()`: emit an exit breakpoint when you want MAME to stop at that function entry.
-- `MAME_VALIDATE_REGION_AT_ADDR(...)`: validate a memory region at an explicit original instruction address.
-- `MAME_VALIDATE_REG_AT_ADDR(...)`: validate an integer register at an explicit original instruction address.
-- `MAME_VALIDATE_REG_AT_ADDR_FLOAT(...)`: validate a float register at an explicit original instruction address.
+Canonical validation markers:
+- `MAME_ASSERT_ARG(name, ptr)`: validate an integer register argument at original function entry.
+- `MAME_ASSERT_ARG_FLOAT(name, ptr)`: validate a float register argument at original function entry.
+- `mame_validate_arg_sym(name, ptr)`: validate a symbol-valued argument at original function entry.
+- `MAME_ASSERT_FUNCTION_ENTRY()`: emit a `function <NAME>` marker at the original function entry in the MAME log.
+- `MAME_VALIDATOR_EXIT()`: emit an exit breakpoint when you want MAME to stop at that function entry.
+- `MAME_ASSERT_REGION_AT_ADDR(...)`: validate a memory region at an explicit original instruction address.
+- `MAME_ASSERT_REG(...)`: validate an integer register at an explicit original instruction address.
+- `MAME_ASSERT_REG_FLOAT(...)`: validate a float register at an explicit original instruction address.
+- `MAME_ASSERT_MEM(...)`: validate an arbitrary MAME memory expression at an explicit original instruction address.
 
+The generator still accepts some older `mame_validate_*` and `MAME_VALIDATE_*` spellings, but new code should use the names above.
 
 ## Usage
-- When using the `AT_ADDR` forms, pick the _next_ address after the register you are looking at has been set. The breakpoint fires _before_ the attached instruction is executed.
+
+- When using the explicit-address forms, pick the _next_ address after the register or memory value you are looking at has been set. The breakpoint fires _before_ the attached instruction is executed.
+- `tools/mame/instrument.sh` currently runs `mame crusnusa -window -sound none -debug -log -skip_gameinfo -debugscript tools/mame/output/mame_validate_breakpoints.txt`, so your local MAME install needs a `crusnusa` machine configured and available on `PATH`.
 
 ## When to refresh the MAME log
 
-You need a fresh MAME run whenever you add, remove, reorder, or materially change `mame_validate_*` callsites.
+You need a fresh MAME run whenever you add, remove, reorder, or materially change validation callsites.
 
 That is because the validator consumes `mame_validate/mame.log` in runtime order. If the callsites change, the old log may no longer line up with the port's validation sequence even if the underlying gameplay code is unchanged.
 
-## Manual hand over
-
-You can add extra debugging `printf` lines to trace the C code, but if you need to add or edit a `mame_validate(...)` call, you'll have to stop and ask me to re-run MAME to generate a new `mame.log` to run against.
-
-I'll now give you more context on the specific bug.
+In practice, after changing validation instrumentation, just rerun `tools/mame/instrument.sh` yourself before rerunning the SDL port.

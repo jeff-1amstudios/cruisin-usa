@@ -165,11 +165,6 @@ static int ENDED;
  *----------------------------------------------------------------------------
  *
  *
- *COPYRIGHT (C) 1994 BY	TV GAMES, INC.
- *ALL RIGHTS RESERVED
- *
- *
- *
  *Misc Notes:
  *
  *	The Galil board is unreliable under conditions of abort, and can
