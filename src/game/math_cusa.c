@@ -29,7 +29,7 @@ void FIND_XMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 #define FIND_YMATRIX _find_Ymatrix
 void _find_Ymatrix(void* dest /*AR2*/, float radians /*R2*/);
 void HPFIND_YMATRIX(void* dest /*AR2*/, float radians /*R2*/);
-void FIND_ZMATRIX(void);
+void FIND_ZMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 void INITMAT(MATRIX* mat /*AR0*/);
 void VECTLEN(void);
 void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
@@ -1079,28 +1079,42 @@ void HPFIND_YMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
  *	R2	SOURCE RADIANS
  *
  */
-void FIND_ZMATRIX(void) {
+void FIND_ZMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
+    MATRIX* dest = destp;
+
     // asm 00009612: 	PUSH	R0
     // asm 00009613: 	PUSHF	R0
     // asm 00009614: 	CALL	_COSI
     // asm 00009615: 	STF	R0,*+AR2(A00)
     // asm 00009616: 	STF	R0,*+AR2(A11)
+    dest->a00 = _COSI(radians);
+    dest->a11 = dest->a00;
+
     // asm 00009617: 	CALL	_SINE
     // asm 00009618: 	STF	R0,*+AR2(A01)
     // asm 00009619: 	NEGF	R0
     // asm 0000961A: 	STF	R0,*+AR2(A10)
+    dest->a01 = _SINE(radians);
+    dest->a10 = -dest->a01;
+
     // asm 0000961B: 	LDF	1,R0
     // asm 0000961C: 	STF	R0,*+AR2(A22)
+    dest->a22 = 1.0f;
+
     // asm 0000961D: 	CLRF	R0
     // asm 0000961E: 	STF	R0,*+AR2(A02)
     // asm 0000961F: 	STF	R0,*+AR2(A12)
     // asm 00009620: 	STF	R0,*+AR2(A20)
     // asm 00009621: 	STF	R0,*+AR2(A21)
+    dest->a02 = 0.0f;
+    dest->a12 = 0.0f;
+    dest->a20 = 0.0f;
+    dest->a21 = 0.0f;
+
     // asm 00009622: 	POPF	R0
     // asm 00009623: 	POP	R0
     // asm 00009624: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_ZMATRIX", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------

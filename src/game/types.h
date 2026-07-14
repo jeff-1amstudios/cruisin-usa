@@ -757,6 +757,11 @@ typedef struct PROC_CONTEXT {
         } ATTRACT_DELTA;
         struct {
             OBJ* obj;
+            float speed_factor;
+            int frames_left;
+        } LOGO_PROC;
+        struct {
+            OBJ* obj;
             float radians;
         } ULTRA_PROC;
     };

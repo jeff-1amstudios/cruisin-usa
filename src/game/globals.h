@@ -1313,7 +1313,7 @@ void INITMAT(MATRIX* mat /*AR0*/);
 // asm:  .globl FIND_XMATRIX,FIND_YMATRIX,FIND_ZMATRIX
 void FIND_XMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 
-void FIND_ZMATRIX(void);
+void FIND_ZMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 
 // asm:  .globl _find_Ymatrix
 void _find_Ymatrix(void* dest /*AR2*/, float radians /*R2*/);

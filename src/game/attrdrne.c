@@ -302,49 +302,108 @@ NO_OBJINS:
 #define LOGO_SPINZ 18.85 // 3 revolutions
 
 void LOGO_PROC(PROC* p) {
+    OBJ* obj;
+    float nframes;
+    float value;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 000055FF: 	CALL	OBJ_GET
+    obj = OBJ_GET();
+
     // asm 00005600: 	BC	LOGOX
+    if (obj == NULL) {
+        goto LOGOX;
+    }
+
     // asm 00005601: 	LDI	AR0,AR4
+    p->ctx->LOGO_PROC.obj = obj;
+
     // asm 00005602: 	LDIL	logo,R0
     // asm 00005605: 	STI	R0,*+AR0(OROMDATA)
+    obj->romdata = ROM_PTR(logo_ROM);
+
     // asm 00005606: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV,R0
     // asm 00005607: 	OR	*+AR0(OFLAGS),R0
     // asm 00005608: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV;
+
     // asm 00005609: 	LDI	UTIL_C|LOGO_T,R0
     // asm 0000560A: 	STI	R0,*+AR0(OID)
+    obj->id = UTIL_C | LOGO_T;
+
     // asm 0000560B: 	FLOAT	LOGO_STARTZ,R0
     // asm 0000560C: 	STF	R0,*+AR0(OPOSZ)
+    obj->posz = (float)LOGO_STARTZ;
+
     // asm 0000560D: 	LDI	AR0,AR2
     // asm 0000560E: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(obj);
+
     // asm 0000560F: 	LDF	LOGO_SPINZ,R0
     // asm 00005610: 	STF	R0,*+AR4(ORADX)
+    obj->rad.X = (float)LOGO_SPINZ;
+
     // asm 00005611: 	LDF	0,R7		;SPEED FACTOR
+    p->ctx->LOGO_PROC.speed_factor = 0.0f; // SPEED FACTOR
+
     // asm 00005612: 	LDI	LOGO_FLYIN_FRAMES,AR5
+    p->ctx->LOGO_PROC.frames_left = LOGO_FLYIN_FRAMES;
+
 LOGO_LOOP1:
     // asm 00005613: 	SLEEP	1
+    SLEEP(1, 1);
+
+    obj = p->ctx->LOGO_PROC.obj;
+
     // asm 00005615: 	FLOAT	@NFRAMES,R6
+    nframes = (float)NFRAMES;
+
     // asm 00005616: 	FLOAT	LOGO_ENDY,R0
     // asm 00005617: 	CMPF	*+AR4(OPOSY),R0
     // asm 00005618: 	BEQ	LOGO2
-    // asm 00005619: 	FLOAT	LOGO_ENDX,R0
-    // asm 0000561A: 	SUBF	*+AR4(OPOSX),R0
-    // asm 0000561B: 	MPYF	R7,R0
-    // asm 0000561C: 	MPYF	R6,R0
-    // asm 0000561D: 	ADDF	*+AR4(OPOSX),R0
-    // asm 0000561E: 	FLOAT	LOGO_ENDX,R1
-    // asm 0000561F: 	CMPF	R1,R0
-    // asm 00005620: 	LDFLT	R1,R0
-    // asm 00005621: 	STF	R0,*+AR4(OPOSX)
-    // asm 00005622: 	FLOAT	LOGO_ENDY,R0
-    // asm 00005623: 	SUBF	*+AR4(OPOSY),R0
-    // asm 00005624: 	MPYF	R7,R0
-    // asm 00005625: 	MPYF	R6,R0
-    // asm 00005626: 	ADDF	*+AR4(OPOSY),R0
-    // asm 00005627: 	FLOAT	LOGO_ENDY,R1
-    // asm 00005628: 	CMPF	R1,R0
-    // asm 00005629: 	LDFLT	R1,R0
-    // asm 0000562A: 	STF	R0,*+AR4(OPOSY)
-    // asm 0000562B: 	ADDF	0.03,R7
+    if (obj->posy != (float)LOGO_ENDY) {
+        // asm 00005619: 	FLOAT	LOGO_ENDX,R0
+        // asm 0000561A: 	SUBF	*+AR4(OPOSX),R0
+        // asm 0000561B: 	MPYF	R7,R0
+        // asm 0000561C: 	MPYF	R6,R0
+        // asm 0000561D: 	ADDF	*+AR4(OPOSX),R0
+        // asm 0000561E: 	FLOAT	LOGO_ENDX,R1
+        // asm 0000561F: 	CMPF	R1,R0
+        // asm 00005620: 	LDFLT	R1,R0
+        // asm 00005621: 	STF	R0,*+AR4(OPOSX)
+        value = ((float)LOGO_ENDX - obj->posx) * p->ctx->LOGO_PROC.speed_factor;
+        value = value * nframes + obj->posx;
+        if (value < (float)LOGO_ENDX) {
+            value = (float)LOGO_ENDX;
+        }
+        obj->posx = value;
+
+        // asm 00005622: 	FLOAT	LOGO_ENDY,R0
+        // asm 00005623: 	SUBF	*+AR4(OPOSY),R0
+        // asm 00005624: 	MPYF	R7,R0
+        // asm 00005625: 	MPYF	R6,R0
+        // asm 00005626: 	ADDF	*+AR4(OPOSY),R0
+        // asm 00005627: 	FLOAT	LOGO_ENDY,R1
+        // asm 00005628: 	CMPF	R1,R0
+        // asm 00005629: 	LDFLT	R1,R0
+        // asm 0000562A: 	STF	R0,*+AR4(OPOSY)
+        value = ((float)LOGO_ENDY - obj->posy) * p->ctx->LOGO_PROC.speed_factor;
+        value = value * nframes + obj->posy;
+        if (value < (float)LOGO_ENDY) {
+            value = (float)LOGO_ENDY;
+        }
+        obj->posy = value;
+
+        // asm 0000562B: 	ADDF	0.03,R7
+        p->ctx->LOGO_PROC.speed_factor += 0.03f;
+    }
+
 LOGO2:
     // asm 0000562C: 	FLOAT	LOGO_ENDZ-LOGO_STARTZ,R0
     // asm 0000562D: 	FLOAT	LOGO_FLYIN_FRAMES,R1
@@ -356,6 +415,13 @@ LOGO2:
     // asm 00005633: 	CMPF	R1,R0
     // asm 00005634: 	LDFLT	R1,R0
     // asm 00005635: 	STF	R0,*+AR4(OPOSZ)
+    value = DIV_F((float)(LOGO_ENDZ - LOGO_STARTZ), (float)LOGO_FLYIN_FRAMES);
+    value = value * nframes + obj->posz;
+    if (value < (float)LOGO_ENDZ) {
+        value = (float)LOGO_ENDZ;
+    }
+    obj->posz = value;
+
     // asm 00005636: 	LDF	LOGO_SPINZ,R0
     // asm 00005637: 	FLOAT	LOGO_FLYIN_FRAMES,R1
     // asm 00005638: 	CALL	DIV_F
@@ -364,17 +430,29 @@ LOGO2:
     // asm 0000563B: 	SUBF	R0,R2
     // asm 0000563C: 	LDFN	0,R2
     // asm 0000563D: 	STF	R2,*+AR4(ORADX)
+    value = DIV_F((float)LOGO_SPINZ, (float)LOGO_FLYIN_FRAMES) * nframes;
+    obj->rad.X -= value;
+    if (obj->rad.X > 0.0f) {
+        obj->rad.X = 0.0f;
+    }
+
     // asm 0000563E: 	LDI	AR4,AR2
     // asm 0000563F: 	ADDI	OMATRIX,AR2
     // asm 00005640: 	CALL	FIND_ZMATRIX
+    FIND_ZMATRIX(&obj->omatrix, obj->rad.X);
+
     // asm 00005641: 	SUBI	@NFRAMES,AR5
+    p->ctx->LOGO_PROC.frames_left -= NFRAMES;
+
     // asm 00005642: 	CMPI	0,AR5
     // asm 00005643: 	BP	LOGO_LOOP1
+    if (p->ctx->LOGO_PROC.frames_left > 0) {
+        goto LOGO_LOOP1;
+    }
+
 LOGOX:
     // asm 00005644: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOGO_PROC", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------

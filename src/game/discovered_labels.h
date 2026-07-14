@@ -256,6 +256,7 @@
 #define mhop4_ROM 0x00CBE2C2
 #define mi_ROM 0x00CD1797
 #define midway_ROM 0x00C2F4D8
+#define logo_ROM 0x00C2F8F3
 #define missle_ROM 0x00C28DF4
 #define misslem_ROM 0x00C29323
 #define missle_blue_ROM 0x00C11D2D
