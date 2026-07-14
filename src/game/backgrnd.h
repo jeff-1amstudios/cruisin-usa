@@ -58,7 +58,7 @@ extern int PASS1;
 extern float SECRADY;
 // asm: 	.bss	SINGLE_SECTION_TEMPPTR,1
 extern OBJ* SINGLE_SECTION_TEMPPTR;
-void HUNGH_ANI(void);
-void RUT_ANI(void);
+void HUNGH_ANI(OBJ* obj /*AR4*/);
+void RUT_ANI(OBJ* obj /*AR4*/);
 
 #endif /* BACKGRND_H */

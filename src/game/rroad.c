@@ -18,8 +18,8 @@
  * Source module: asm/RROAD.ASM
  */
 
-void RRSTART_ENGINE(void);
-void RRSTART_BOXCAR(void);
+void RRSTART_ENGINE(OBJ* obj /*AR4*/);
+void RRSTART_BOXCAR(OBJ* obj /*AR4*/);
 static void CARFORWARD(void);
 static void CARFORWARD_ENGINE(void);
 void RAMPDOWNTRAINSND(void);
@@ -47,7 +47,7 @@ static float COLL_DIST = 117465.0f;
 #define TRAIN_SPEED_MAX 280
 
 // *----------------------------------------------------------------------------
-void RRSTART_ENGINE(void) {
+void RRSTART_ENGINE(OBJ* obj /*AR4*/) {
     // asm 00009B6E: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00009B6F: 	RETSNZ
     // asm 00009B70: 	LONGROUT
@@ -106,7 +106,7 @@ void RRSTART_ENGINE(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RRSTART_BOXCAR(void) {
+void RRSTART_BOXCAR(OBJ* obj /*AR4*/) {
     // asm 00009B71: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00009B72: 	RETSNZ
     // asm 00009B73: 	LONGROUT

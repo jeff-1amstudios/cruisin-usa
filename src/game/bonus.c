@@ -79,7 +79,7 @@ void MOTION_SCREWED(void);
 void CLEAR_MAP_PALS(void);
 void VANITY_SUB(void);
 extern uintptr_t ISOFF;
-void RUT_ANI(void);
+void RUT_ANI(OBJ* obj /*AR4*/);
 void HUNGH_ANI_REENTER(void);
 
 // static uintptr_t BONUS_POSTLAUNCH[];

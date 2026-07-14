@@ -33,23 +33,23 @@ static void OVERCAR(OBJ* obj /*AR4*/);
 static void CARFORWARD(PROC* p);
 static void ROAD_DEBRIS_CREATE_55GAL(OBJ* obj /*AR4*/);
 static void ROAD_DEBRIS_CREATE(OBJ* obj /*AR4*/);
-static void SMOKE_STACK(void);
-static void CAR_FIRE(void);
-static void DC_MINIFOUNTAIN(void);
-static void DC_FOUNTAIN(void);
-static void WATERFALL(void);
+static void SMOKE_STACK(OBJ* obj /*AR4*/);
+static void CAR_FIRE(OBJ* obj /*AR4*/);
+static void DC_MINIFOUNTAIN(OBJ* obj /*AR4*/);
+static void DC_FOUNTAIN(OBJ* obj /*AR4*/);
+static void WATERFALL(OBJ* obj /*AR4*/);
 static void WATERANI_PROC(PROC* p);
 static void WATERFALL_SND(PROC* p);
 void AMBIENCE_SOUND(void);
-void HUNGH_ANI(void);
+void HUNGH_ANI(OBJ* obj /*AR4*/);
 static void HUNGH_ANI_REENTER(void);
 static void PLACE_ON_ROAD(void);
-void RUT_ANI(void);
+void RUT_ANI(OBJ* obj /*AR4*/);
 static void PLAINANI_PROC_SLOW(PROC* p);
-static void FLAGWAVE_TALL(void);
-static void FLAGWAVE(void);
+static void FLAGWAVE_TALL(OBJ* obj /*AR4*/);
+static void FLAGWAVE(OBJ* obj /*AR4*/);
 static void PLAINANI_PROC(PROC* p);
-static void OHARE_PLANE(void);
+static void OHARE_PLANE(OBJ* obj /*AR4*/);
 static void PLANE_FWRD(void);
 static void TRAIN_FWRD_MAKEB(void);
 static void TRAIN_FWRD_MAKE(void);
@@ -72,11 +72,16 @@ void LOAD_SINGLE_SECTION_OFFSET(void);
 #define BABE_PALISTI BABE_PALIST
 #define ROUTINE_TABI ROUTINE_TAB
 
+typedef struct BGD_OROUTINE_ENTRY {
+    u32 object_id;
+    void (*func)(OBJ* obj);
+} BGD_OROUTINE_ENTRY;
+
 static int CAR_FIRE_ANI[13];
 static int DC_MINIFOUNTAIN_ANI[7];
 static int DC_FOUNTAIN_ANI[6];
 static int BABE_PALIST[10];
-static uintptr_t ROUTINE_TAB[];
+static const BGD_OROUTINE_ENTRY ROUTINE_TAB[];
 
 extern MATRIX _MATRIXA;
 extern VECTOR _VECTORA;
@@ -1509,23 +1514,17 @@ static void BGD_OROUTINE(OBJ* obj /*AR4*/) {
     // asm 00004225: 	PUSH	AR0
     // asm 00004226: 	LDI	*+AR4(OID),R0
     // asm 00004227: 	LDI	@ROUTINE_TABI,AR0
-    switch (obj->id) {
-    case 0x460:
-        ROAD_DEBRIS_CREATE(obj);
-        break;
-    case 0x461:
-    case 0x462:
-    case 0x463:
-        ROAD_DEBRIS_CREATE_55GAL(obj);
-        break;
-    case 0x467:
-        WATERFALL();
-        break;
-    case 0x469:
-        OVERCAR(obj);
-        break;
-    default:
-        break;
+    for (const BGD_OROUTINE_ENTRY* entry = ROUTINE_TABI; entry->object_id != 0; entry++) {
+        // asm 00004228: BGDORLP	CMPI	*AR0,R0
+        if (entry->object_id == obj->id) {
+            // asm 0000422D: BGD_RFND	LDI	*+AR0,R0
+            // asm 0000422E: 	CALLU	R0
+            entry->func(obj);
+            break;
+        }
+
+        // asm 0000422A: 	LDI	*AR0++(2),R1
+        // asm 0000422B: 	BNZ	BGDORLP
     }
     // asm 00004235: 	RETS
 }
@@ -1672,7 +1671,8 @@ static void ROAD_DEBRIS_CREATE(OBJ* obj /*AR4*/) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SMOKE_STACK(void) {
+static void SMOKE_STACK(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 000042A4: 	PUSH	R0
     // asm 000042A5: 	PUSH	AR0
     // asm 000042A6: 	PUSH	AR2
@@ -1688,7 +1688,8 @@ static void SMOKE_STACK(void) {
     UNIMPL();
 }
 
-static void CAR_FIRE(void) {
+static void CAR_FIRE(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 000042AD: 	PUSH	R0
     // asm 000042AE: 	PUSH	AR0
     // asm 000042AF: 	PUSH	AR2
@@ -1756,7 +1757,8 @@ static int DC_MINIFOUNTAIN_ANI[] = {
     -1,
 };
 
-static void DC_MINIFOUNTAIN(void) {
+static void DC_MINIFOUNTAIN(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 000042D4: 	PUSH	R0
     // asm 000042D5: 	PUSH	AR0
     // asm 000042D6: 	PUSH	AR2
@@ -1785,7 +1787,8 @@ static int DC_FOUNTAIN_ANI[] = {
     -1,
 };
 
-static void DC_FOUNTAIN(void) {
+static void DC_FOUNTAIN(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 000042E7: 	PUSH	R0
     // asm 000042E8: 	PUSH	AR0
     // asm 000042E9: 	PUSH	AR2
@@ -1818,7 +1821,8 @@ static int WATERFALL_ANI[] = {
     -1,
 };
 
-static void WATERFALL(void) {
+static void WATERFALL(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 000042FF: 	PUSH	R0
     // asm 00004300: 	PUSH	AR0
     // asm 00004301: 	PUSH	AR2
@@ -2028,7 +2032,8 @@ static int BABE_PALIST[] = {
     bvwall_p,
 };
 
-void HUNGH_ANI(void) {
+void HUNGH_ANI(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 00004377: 	PUSH	R0
     // asm 00004378: 	PUSH	AR0
     // asm 00004379: 	PUSH	AR2
@@ -2117,7 +2122,8 @@ PORX:
 
 // *----------------------------------------------------------------------------
 
-void RUT_ANI(void) {
+void RUT_ANI(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 000043BC: 	PUSH	R0
     // asm 000043BD: 	PUSH	AR0
     // asm 000043BE: 	PUSH	AR2
@@ -2164,7 +2170,8 @@ PLAINANI_LP_SLOW:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FLAGWAVE_TALL(void) {
+static void FLAGWAVE_TALL(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 000043DC: 	PUSH	R0
     // asm 000043DD: 	PUSH	AR0
     // asm 000043DE: 	PUSH	AR2
@@ -2189,7 +2196,8 @@ static void FLAGWAVE_TALL(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FLAGWAVE(void) {
+static void FLAGWAVE(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 000043EF: 	PUSH	R0
     // asm 000043F0: 	PUSH	AR0
     // asm 000043F1: 	PUSH	AR2
@@ -2525,7 +2533,8 @@ LS_ACTIVATE_X:
 */
 
 // *----------------------------------------------------------------------------
-static void OHARE_PLANE(void) {
+static void OHARE_PLANE(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 00004451: 	PUSH	AR0
     // asm 00004452: 	PUSH	AR2
     // asm 00004453: 	PUSH	R2
@@ -2805,62 +2814,39 @@ LS_ACTIVATE_XO:
 /* asm: 	.word	4A1h,DC_FOUNTAIN */
 /* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
 /* asm: 	.word	0	;END OF TABLE ID */
-static uintptr_t ROUTINE_TAB[] = {
-    0x40A,
-    (uintptr_t)FLAGWAVE,
-    0x460,
-    (uintptr_t)ROAD_DEBRIS_CREATE,
-    0x461,
-    (uintptr_t)ROAD_DEBRIS_CREATE_55GAL,
-    0x462,
-    (uintptr_t)ROAD_DEBRIS_CREATE_55GAL, // actually TOXIC
-    0x463,
-    (uintptr_t)ROAD_DEBRIS_CREATE_55GAL, // actually CONE
-    0x465,
-    (uintptr_t)FLAGWAVE, // short flag
-    0x466,
-    (uintptr_t)FLAGWAVE_TALL, // tall flag
+static const BGD_OROUTINE_ENTRY ROUTINE_TAB[] = {
+    {0x40A, FLAGWAVE},
+    {0x460, ROAD_DEBRIS_CREATE},
+    {0x461, ROAD_DEBRIS_CREATE_55GAL},
+    {0x462, ROAD_DEBRIS_CREATE_55GAL}, // actually TOXIC
+    {0x463, ROAD_DEBRIS_CREATE_55GAL}, // actually CONE
+    {0x465, FLAGWAVE},                                 // short flag
+    {0x466, FLAGWAVE_TALL},                            // tall flag
     //
-    0x467,
-    (uintptr_t)WATERFALL,
-    0x469,
-    (uintptr_t)OVERCAR, // LA & CHICAGO, FREEWAY OVERPASS CAR
-    0x470,
-    (uintptr_t)RRSTART_ENGINE,
-    0x471,
-    (uintptr_t)RRSTART_BOXCAR,
-    0x472,
-    (uintptr_t)RRSTART_BOXCAR,
-    0x473,
-    (uintptr_t)RRSTART_BOXCAR,
-    0x474,
-    (uintptr_t)RRSTART_BOXCAR,
-    0x475,
-    (uintptr_t)RRSTART_BOXCAR,
-    0x476,
-    (uintptr_t)RRSTART_BOXCAR,
+    {0x467, WATERFALL},
+    {0x469, OVERCAR}, // LA & CHICAGO, FREEWAY OVERPASS CAR
+    {0x470, RRSTART_ENGINE},
+    {0x471, RRSTART_BOXCAR},
+    {0x472, RRSTART_BOXCAR},
+    {0x473, RRSTART_BOXCAR},
+    {0x474, RRSTART_BOXCAR},
+    {0x475, RRSTART_BOXCAR},
+    {0x476, RRSTART_BOXCAR},
     //
-    0x481,
-    (uintptr_t)SMOKE_STACK,
-    0x482,
-    (uintptr_t)CAR_FIRE,
+    {0x481, SMOKE_STACK},
+    {0x482, CAR_FIRE},
     //
     // 	.word	485h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR (BRIDGE)
     // 	.word	486h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE (BRIDGE)
     // 	.word	487h,OIL_PUMP		;RUSHMORE OIL PUMP
     // 	.word	495h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR
     // 	.word	496h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE
-    0x498,
-    (uintptr_t)OHARE_PLANE, // CHICAGO AIRPLANE
+    {0x498, OHARE_PLANE}, // CHICAGO AIRPLANE
     //
-    0x741,
-    (uintptr_t)RUT_ANI,
-    0x742,
-    (uintptr_t)HUNGH_ANI,
-    0x4A1,
-    (uintptr_t)DC_FOUNTAIN,
-    0x4A2,
-    (uintptr_t)DC_MINIFOUNTAIN,
-    0, // END OF TABLE ID
+    {0x741, RUT_ANI},
+    {0x742, HUNGH_ANI},
+    {0x4A1, DC_FOUNTAIN},
+    {0x4A2, DC_MINIFOUNTAIN},
+    {0, 0}, // END OF TABLE ID
     // ----------------------------------------------------------------------------
 };

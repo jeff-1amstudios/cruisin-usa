@@ -1551,9 +1551,9 @@ void GETFLYMAT_TRAIN(void);
 void FLYTRAIN(void);
 
 // asm:  .globl RRSTART_ENGINE,RRSTART_FLATBED,RRSTART_BOXCAR
-void RRSTART_ENGINE(void);
+void RRSTART_ENGINE(OBJ* obj /*AR4*/);
 
-void RRSTART_BOXCAR(void);
+void RRSTART_BOXCAR(OBJ* obj /*AR4*/);
 
 // asm:  .globl FLYCARP,CARSMASH,FLYTRAIN
 void FLYCARP(void);
