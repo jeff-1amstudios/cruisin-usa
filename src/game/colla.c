@@ -895,7 +895,22 @@ EOTV:
  *	R0-R2
  */
 void _makbox(OBJ* obj /*AR4*/) {
-    (void)obj;
+    CARBLK* carblk;
+    const OROMDATA* rom;
+    const ROM_VERTEX* vertices;
+    int vertex_count;
+    int i;
+    float x_plus;
+    float x_minus;
+    float y_plus;
+    float y_minus;
+    float z_plus;
+    float z_minus;
+    int packed_xy;
+    float x;
+    float y;
+    float z;
+
     // asm 00002185: 	PUSH	R3
     // asm 00002186: 	PUSH	R4
     // asm 00002187: 	PUSH	R5
@@ -907,6 +922,9 @@ void _makbox(OBJ* obj /*AR4*/) {
     // asm 0000218D: 	LDI	*AR0++,RC     		;GET VERTEX COUNT
     // asm 0000218E: 	AND	0FFh,RC
     // asm 0000218F: 	SUBI	1,RC
+    rom = (const OROMDATA*)obj->romdata;
+    vertices = (const ROM_VERTEX*)((const u32*)rom + 2);
+    vertex_count = (int)rom->vertex_count;
     // asm 00002190: 	LDI	*AR0++,R3		;GET Y:X
     // asm 00002191: 	LDI	R3,R4
     // asm 00002192: 	LS	16,R3
@@ -914,61 +932,118 @@ void _makbox(OBJ* obj /*AR4*/) {
     // asm 00002194: 	ASH	-16,R4			;UNPACK Y  Y1->R4 OYPLUS
     // asm 00002195: 	FLOAT	R3
     // asm 00002196: 	FLOAT	R4
+    packed_xy = (int)vertices[0].x_y;
+    x_plus = (float)(int16_t)(packed_xy & 0xFFFF);
+    y_plus = (float)(int16_t)(packed_xy >> 16);
     // asm 00002197: 	FLOAT	*AR0++,R5		;Z1->R5 OZPLUS
     // asm 00002198: 	LDF	R3,R0			;X1->R0 OXMINUS
     // asm 00002199: 	LDF	R4,R1			;Y1->R1 OYMINUS
     // asm 0000219A: 	LDF	R5,R2			;Z1->R2 OZMINUS
+    z_plus = (float)vertices[0].z;
+    x_minus = x_plus;
+    y_minus = y_plus;
+    z_minus = z_plus;
     // asm 0000219B: 	RPTB	MBVL
+    for (i = 1; i < vertex_count; ++i) {
     // asm 0000219C: 	LDI	*AR0,R6			;GET Y:X
     // asm 0000219D: 	LS	16,R6
     // asm 0000219E: 	ASH	-16,R6			;UNPACK X
     // asm 0000219F: 	FLOAT	R6
+        packed_xy = (int)vertices[i].x_y;
+        x = (float)(int16_t)(packed_xy & 0xFFFF);
     // asm 000021A0: 	CMPF	R3,R6			;CHECK X(N) > XPLUS
     // asm 000021A1: 	LDFGT	R6,R3
+        if (x > x_plus) {
+            x_plus = x;
+        }
     // asm 000021A2: 	CMPF	R0,R6			;CHECK X(N) < XMINUS
     // asm 000021A3: 	LDFLT	R6,R0
+        if (x < x_minus) {
+            x_minus = x;
+        }
     // asm 000021A4: 	LDI	*AR0++,R6		;GET Y:X
     // asm 000021A5: 	ASH	-16,R6			;UNPACK Y
     // asm 000021A6: 	FLOAT	R6
+        y = (float)(int16_t)(packed_xy >> 16);
     // asm 000021A7: 	CMPF	R4,R6			;CHECK Y(N) > YPLUS
     // asm 000021A8: 	LDFGT	R6,R4
+        if (y > y_plus) {
+            y_plus = y;
+        }
     // asm 000021A9: 	CMPF	R1,R6			;CHECK Y(N) < YMINUS
     // asm 000021AA: 	LDFLT	R6,R1
+        if (y < y_minus) {
+            y_minus = y;
+        }
     // asm 000021AB: 	FLOAT	*AR0++,R6		;XN
     // asm 000021AC: 	CMPF	R5,R6			;CHECK Z(N) > ZPLUS
     // asm 000021AD: 	LDFGT	R6,R5
+        z = (float)vertices[i].z;
+        if (z > z_plus) {
+            z_plus = z;
+        }
     // asm 000021AE: 	CMPF	R2,R6			;CHECK Z(N) < ZMINUS
 MBVL:
     // asm 000021AF: LDFLT	R6,R2
+        if (z < z_minus) {
+            z_minus = z;
+        }
+    }
     // asm 000021B0: 	LDI	*+AR4(OCARBLK),AR0
+    carblk = obj->carblk;
     // *STORE WHEEL OFFSET TABLE
     // asm 000021B1: 	LDF	0,R6
+    carblk->wheel_scan_offsets[0].X = 0.0f;
     // asm 000021B2: 	STF	R6,*+AR0(CARWHLTAB+0) 		;CENTER POINT BOTTOM
     // asm 000021B3: 	STF	R4,*+AR0(CARWHLTAB+1)
     // asm 000021B4: 	STF	R6,*+AR0(CARWHLTAB+2)
+    carblk->wheel_scan_offsets[0].Y = y_plus;
+    carblk->wheel_scan_offsets[0].Z = 0.0f;
     // asm 000021B5: 	STF	R3,*+AR0(CARWHLTAB+3)		;RT FRONT BOTTOM
     // asm 000021B6: 	STF	R4,*+AR0(CARWHLTAB+4)
     // asm 000021B7: 	STF	R5,*+AR0(CARWHLTAB+5)
+    carblk->wheel_scan_offsets[1].X = x_plus;
+    MAME_ASSERT_REG_FLOAT(0x000021B6, "R3", &carblk->wheel_scan_offsets[1].X);
+    carblk->wheel_scan_offsets[1].Y = y_plus;
+    carblk->wheel_scan_offsets[1].Z = z_plus;
     // asm 000021B8: 	STF	R0,*+AR0(CARWHLTAB+6)		;LFT FRONT BOTTOM
     // asm 000021B9: 	STF	R4,*+AR0(CARWHLTAB+7)
     // asm 000021BA: 	STF	R5,*+AR0(CARWHLTAB+8)
+    carblk->wheel_scan_offsets[2].X = x_minus;
+    carblk->wheel_scan_offsets[2].Y = y_plus;
+    carblk->wheel_scan_offsets[2].Z = z_plus;
     // asm 000021BB: 	STF	R0,*+AR0(CARWHLTAB+9)	  	;LFT REAR BOTTOM
     // asm 000021BC: 	STF	R4,*+AR0(CARWHLTAB+10)
     // asm 000021BD: 	STF	R2,*+AR0(CARWHLTAB+11)
+    carblk->wheel_scan_offsets[3].X = x_minus;
+    carblk->wheel_scan_offsets[3].Y = y_plus;
+    carblk->wheel_scan_offsets[3].Z = z_minus;
+    MAME_ASSERT_REG_FLOAT(0x000021BE, "R2", &carblk->wheel_scan_offsets[3].Z);
     // asm 000021BE: 	STF	R3,*+AR0(CARWHLTAB+12)		;RT REAR BOTTOM
     // asm 000021BF: 	STF	R4,*+AR0(CARWHLTAB+13)
     // asm 000021C0: 	STF	R2,*+AR0(CARWHLTAB+14)
+    carblk->wheel_scan_offsets[4].X = x_plus;
+    carblk->wheel_scan_offsets[4].Y = y_plus;
+    carblk->wheel_scan_offsets[4].Z = z_minus;
     // *STORE XYZ PLUS/MINUS
     // asm 000021C1: 	ADDF	25.0,R0			;MAKE IT A LITTLE SMALLER
     // asm 000021C2: 	STF	R0,*+AR0(CARXMINUS)
+    x_minus += 25.0f;
+    carblk->x_minus = x_minus;
     // asm 000021C3: 	STF	R1,*+AR0(CARYMINUS)
+    carblk->y_minus = y_minus;
     // ;	ADDF	15.0,R2			;MAKE IT A LITTLE SMALLER
     // asm 000021C4: 	STF	R2,*+AR0(CARZMINUS)
+    carblk->z_minus = z_minus;
     // asm 000021C5: 	ADDF	-25.0,R3		;MAKE IT A LITTLE SMALLER
     // asm 000021C6: 	STF	R3,*+AR0(CARXPLUS)
+    x_plus += -25.0f;
+    carblk->x_plus = x_plus;
     // asm 000021C7: 	STF	R4,*+AR0(CARYPLUS)
+    carblk->y_plus = y_plus;
     // ;	ADDF	-15.0,R5		;MAKE IT A LITTLE SMALLER
     // asm 000021C8: 	STF	R5,*+AR0(CARZPLUS)
+    carblk->z_plus = z_plus;
     // asm 000021C9: 	POP	AR0
     // asm 000021CA: 	POPF	R6
     // asm 000021CB: 	POP	R6
@@ -976,8 +1051,6 @@ MBVL:
     // asm 000021CD: 	POP	R4
     // asm 000021CE: 	POP	R3
     // asm 000021CF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_makbox", 0, 0);
-    UNIMPL();
 }
 
 /*

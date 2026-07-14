@@ -1782,16 +1782,16 @@ void FREE_LLIST(void);
 void DEL_LLIST(void);
 
 // asm:  .globl VEHICLE_ANI_INIT,CARPROC,LEAN
-void VEHICLE_ANI_INIT(void);
+void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/);
 
-void CARPROC(void);
+void CARPROC(PROC* p);
 
 void LEAN(void);
 
 // asm:  .globl DYNAOBJ_INIT,GETDYNA,DELDYNA
 void DYNAOBJ_INIT(void);
 
-void GETDYNA(void);
+DYNAOBJ* GETDYNA(void);
 
 void DELDYNA(void);
 

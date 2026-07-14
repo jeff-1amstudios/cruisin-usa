@@ -329,7 +329,7 @@ JJKK:
     RACER_PTR[rank] = obj;
     // asm 0000510E: 	LDI	AR5,AR2
     // asm 0000510F: 	CALL	VEHICLE_ANI_INIT
-    VEHICLE_ANI_INIT();
+    VEHICLE_ANI_INIT(init->model, obj);
     // asm 00005110: 	CALL	DELTA_OINIT
     carblk = DELTA_OINIT(p, obj);
     if (carblk == NULL) {

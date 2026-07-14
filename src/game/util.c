@@ -14,6 +14,7 @@
 #include "sys.h"
 #include "sysid.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
 
 /*
@@ -46,11 +47,11 @@ void* GET_LLIST(void** free_list, void** active_list);
 void ALLOC_LLIST(void);
 void FREE_LLIST(void);
 void DEL_LLIST(void);
-void VEHICLE_ANI_INIT(void);
-void CARPROC(void);
+void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/);
+void CARPROC(PROC* p);
 void LEAN(void);
 void DYNAOBJ_INIT(void);
-void GETDYNA(void);
+DYNAOBJ* GETDYNA(void);
 void DELDYNA(void);
 void CARB_INIT(void);
 CARBLK* GETCAR(void);
@@ -729,54 +730,82 @@ DEL_LLX:
  *	AR4	CAR OBJECT
  *
  */
-void VEHICLE_ANI_INIT(void) {
+void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/) {
+    DYNATAB* table;
+    DYNAOBJ** link;
+    DYNAOBJ* dyna;
+    PROC* proc;
+    int i;
+
     // asm 00008F66: 	PUSH	AR0
     // asm 00008F67: 	PUSH	AR3
     // asm 00008F68: 	MPYI	VEHTAB_SIZE,AR2
     // asm 00008F69: 	ADDI	@VEHICLE_TABLEI,AR2
     // asm 00008F6A: 	LDI	*+AR2(VEHTAB_ANI),AR2
+    table = VEHICLE_TABLE[vehicle_index].animation;
     // asm 00008F6B: 	CMPI	0,AR2			;COULD BE A NULL ENTRY (NO ANIMATION)
     // asm 00008F6C: 	BEQ	VANIX
+    if (table == NULL) {
+        return;
+    }
     // asm 00008F6D: 	LDI	O_DYNAMIC,R0	 	;MAKE PARENT OBJECT DYNAMIC
     // asm 00008F6E: 	OR	*+AR4(OFLAGS),R0
     // asm 00008F6F: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_DYNAMIC;
     // *INITIALIZE CENTERXYZ,TRANSXYZ,VERTS
     // asm 00008F70: 	LDI	AR4,AR3
     // asm 00008F71: 	ADDI	ODYNALIST,AR3
+    link = (DYNAOBJ**)&obj->dynalist;
     // asm 00008F72: 	LDI	*AR2++,RC		;GET DYNAMIC OBJECT COUNT
     // asm 00008F73: 	RPTB	WHEELLP
+    for (i = 0; i <= table->count_minus_1; ++i) {
     // asm 00008F74:  	CALL	GETDYNA	     		;LINK HIM INTO LIST
+        dyna = GETDYNA();
     // asm 00008F75: 	STI	AR0,*AR3
+        *link = dyna;
     // asm 00008F76: 	LDF	*AR2++,R0
     // asm 00008F77: 	STF	R0,*+AR0(DYNACENTERX)
     // asm 00008F78: 	STF	R0,*+AR0(DYNATRANSX)
+        dyna->center_x = table->entries[i].center.X;
+        dyna->trans_x = table->entries[i].center.X;
     // asm 00008F79: 	LDF	*AR2++,R0
     // asm 00008F7A: 	STF	R0,*+AR0(DYNACENTERY)
     // asm 00008F7B: 	STF	R0,*+AR0(DYNATRANSY)
+        dyna->center_y = table->entries[i].center.Y;
+        dyna->trans_y = table->entries[i].center.Y;
     // asm 00008F7C: 	LDF	*AR2++,R0
     // asm 00008F7D: 	STF	R0,*+AR0(DYNACENTERZ)
     // asm 00008F7E: 	STF	R0,*+AR0(DYNATRANSZ)
+        dyna->center_z = table->entries[i].center.Z;
+        dyna->trans_z = table->entries[i].center.Z;
     // asm 00008F7F: 	LDI	*AR2++,R0
     // asm 00008F80: 	STI	R0,*+AR0(DYNANVERTS)
+        dyna->nverts = table->entries[i].verts_minus_1;
     // asm 00008F81: 	LDI	*AR2++,R0
     // asm 00008F82: 	STI	R0,*+AR0(DYNAFLAG)
+        dyna->flag = table->entries[i].flag;
+        MAME_ASSERT_REG(0x00008F82, "R0", &dyna->flag);
     // asm 00008F83: 	STI	AR4,*+AR0(DYNAPARENT)
+        dyna->parent = obj;
 WHEELLP:
     // asm 00008F84: LDI	AR0,AR3
+        link = &dyna->link;
+    }
     // asm 00008F85: 	LDI	0,R0
     // asm 00008F86: 	STI	R0,*AR3			;LAST LINK IS ZERO, DUDES
+    *link = NULL;
     // *GET A CAR PROCESS
     // asm 00008F87: 	LDI	*AR2++,R0		;GET PROCESS POINTER
     // asm 00008F88: 	LDI	@CARPROCI,AR2
     // asm 00008F89: 	LDI	DRONE_C|ANI_T,R2	;PID
     // asm 00008F8A: 	CALL	PRC_CREATE_CHILD
+    proc = PRC_CREATE_CHILD(CARPROCI, DRONE_C | ANI_T, NULL);
     // asm 00008F8B: 	STI	AR0,*+AR4(ORADZ)	;DOUBLING AS A PROC PTR
+    obj->radz_ptr = (uintptr_t)proc;
 VANIX:
     // asm 00008F8C: 	POP	AR3
     // asm 00008F8D: 	POP	AR0
     // asm 00008F8E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VEHICLE_ANI_INIT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -807,7 +836,7 @@ VANIX:
  *	PDATA+2 X RADIANS FOR WHEEL SPIN
  */
 
-void CARPROC(void) {
+void CARPROC(PROC* p) {
     // asm 00008F90: 	LDI	*+AR4(OCARBLK),AR5
     // asm 00008F91: 	LDF	0,R6	 		;INIT SPIN RADIANS
     // asm 00008F92: 	LDF	*+AR5(CARSPEED),R0	;INIT SPEED
@@ -1018,7 +1047,7 @@ void DYNAOBJ_INIT(void) {
         (void**)&DYNAFREE,   /* R2 */
         (void**)&DYNAACTIVE, /* R3 */
         NUM_DYNAS - 1,       /* RC */
-        DYNASIZE             /* RS */
+        sizeof(DYNAOBJ)      /* RS */
     );
 }
 
@@ -1037,30 +1066,39 @@ void DYNAOBJ_INIT(void) {
  *
  *
  */
-void GETDYNA(void) {
+DYNAOBJ* GETDYNA(void) {
+    DYNAOBJ* dyna;
+
     // asm 00009029: 	PUSH	R0
     // ;	LDP	@DYNAFREE
     // asm 0000902A: 	LDI	@DYNAFREE,R0
     // asm 0000902B: 	LDI	R0,AR0
     // asm: 	SLOCKON	Z,"UTIL\GETDYNA   out of dynamic objects"
     // asm 0000902C: 	BZ	GETDYNA_ERR
+    dyna = DYNAFREE;
+    if (dyna == NULL) {
+        return NULL;
+    }
     // asm 0000902D: 	LDI	*AR0,R0
     // asm 0000902E: 	STI	R0,@DYNAFREE
+    DYNAFREE = dyna->link;
     // asm 0000902F: 	ADDI	DYNAMATRIX,AR0		;INIT YOUR MATRIX FOLKS
     // asm 00009030: 	CALL	INITMAT
     // asm 00009031: 	SUBI	DYNAMATRIX,AR0
+    INITMAT((MATRIX*)&dyna->omatrix);
     // asm 00009032: 	CLRI	R0
     // asm 00009033: 	STI	R0,*+AR0(DYNAFLAG)
+    dyna->flag = 0;
     // asm 00009034: 	SETC
 GETDYNA_X:
     // asm 00009035: 	POP	R0
     // asm 00009036: 	RETS
+    return dyna;
 GETDYNA_ERR:
     // asm 00009037: 	CLRC
     // asm 00009038: 	B	GETDYNA_X
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDYNA", 0, 0);
-    UNIMPL();
+    return NULL;
 }
 
 // *----------------------------------------------------------------------------

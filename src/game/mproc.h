@@ -26,7 +26,7 @@ void PRC_INIT(void);
 PROC* PRC_CREATE(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx);
 
 // asm: 	.globl	PRC_CREATE_CHILD
-void PRC_CREATE_CHILD(void);
+PROC* PRC_CREATE_CHILD(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx);
 
 // asm: 	.globl	PRC_DISPATCH
 void PRC_DISPATCH(void);

@@ -260,7 +260,17 @@ typedef struct OBJ {
     f32 vel_y;
     f32 vel_z;
 
-    struct VECTOR rad;
+    union {
+        struct VECTOR rad;
+        struct {
+            f32 radx;
+            f32 rady;
+            union {
+                f32 radz;
+                uintptr_t radz_ptr;
+            };
+        };
+    };
 
     union {
         struct PROC* plink; /* OPLINK / OBLINK4 alias */
@@ -379,8 +389,7 @@ typedef struct CARBLK {
     f32 road_friction;
     f32 offroad_friction;
     f32 dist_to_center;
-    f32 wheel_scan_offsets;
-    u32 reserved_72_85[14];
+    VECTOR wheel_scan_offsets[5];
     u32 transmission;
     u32 track_id;
     u32 other_machine_controls;
@@ -460,7 +469,7 @@ typedef struct DYNAOBJ {
     f32 trans_z;
     OBJ_MATRIX omatrix;
     u32 nverts;
-    struct DYNAOBJ* parent;
+    struct OBJ* parent;
     u32 flag;
 } DYNAOBJ;
 

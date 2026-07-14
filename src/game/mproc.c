@@ -13,7 +13,7 @@
 
 static void PRC_DEBUG_CHECK(void);
 static void NEXTPRC(PROC* proc);
-void PRC_CREATE_CHILD(void);
+PROC* PRC_CREATE_CHILD(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx);
 void PRC_DISPATCH(void);
 void PRC_KILL(PROC* proc /*AR2*/);
 void PRC_KILLALL(int pid, int mask);
@@ -217,19 +217,29 @@ GETPROCX:
  *	AR0	POINTER TO PROCESS
  *
  */
-void PRC_CREATE_CHILD(void) {
+PROC* PRC_CREATE_CHILD(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx) {
+    PROC* proc;
+
     // asm 0000A893:     	CALL 	PRC_CREATE
+    proc = PRC_CREATE(func, pid, ctx);
     // asm 0000A894: 	RETSC
+    if (proc == NULL) {
+        return NULL;
+    }
     // asm 0000A895: 	PUSH	R0
     // asm 0000A896: 	LDI	*AR0,R0			;PULL HIM FROM FRONT OF LIST
     // asm 0000A897: 	STI	R0,@PACTIVE
+    PACTIVE = proc->link;
     // asm 0000A898: 	LDI	*AR7,R0			;PUT HIM AFTER CREATING PROCESS
     // asm 0000A899: 	STI	R0,*AR0
     // asm 0000A89A: 	STI	AR0,*AR7
+    if (CURRENT_PROC != NULL) {
+        proc->link = CURRENT_PROC->link;
+        CURRENT_PROC->link = proc;
+    }
     // asm 0000A89B: 	POP	R0
     // asm 0000A89C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_CREATE_CHILD", 0, 0);
-    UNIMPL();
+    return proc;
 }
 
 // *----------------------------------------------------------------------------
