@@ -189,8 +189,8 @@ typedef struct ROM_VERTEX {
  */
 typedef struct OROMDATA {
     u32 radius;
-    u16 polygon_count;
     u16 vertex_count;
+    u16 polygon_count;
 } OROMDATA;
 
 typedef struct ROM_POLYGON {

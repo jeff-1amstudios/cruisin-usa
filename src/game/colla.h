@@ -7,7 +7,7 @@
 
 // COLLA.ASM
 // asm: 	.bss	VL,4
-extern int VL[];
+extern struct VECTOR* VL[];
 // asm: 	.bss	TNORM,3
 extern int TNORM[];
 // asm: 	.bss	TVECT1,3

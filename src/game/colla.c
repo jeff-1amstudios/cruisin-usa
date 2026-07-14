@@ -16,6 +16,7 @@
 #include "sysid.h"
 #include "text.h"
 #include "vunit.h"
+#include <math.h>
 
 /*
  * Source module: asm/COLLA.ASM
@@ -26,12 +27,12 @@ static void CAMSCANS(void);
 void OBJSCAN(void);
 void BOXSCAN(void);
 static void BOXSCSUB(void);
-void CAR_ROAD_COLL(void);
-void ROADSCAN(void);
-static void RDSCNSUB(void);
-void _coll_road(void);
-static void GETNMAT(void);
-void _obj_coll(void);
+void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
+void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
+static void RDSCNSUB(OBJ* scan_obj /*AR4*/, CARBLK* carblk /*AR6*/, OBJ* list /*R0*/);
+int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, float* out_road_delta /*R0*/);
+static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/);
+int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/);
 void _makbox(OBJ* obj /*AR4*/);
 void COLSCC(void);
 #define PLYR_VS_DEBRIS PLYRDEBRIS
@@ -125,7 +126,7 @@ static f32* EQTAB[];
 static f32* LEQTAB[];
 
 /* asm: VL	.bss	VL,4 */
-int VL[4];
+VECTOR* VL[4];
 /* asm: TNORM	.bss	TNORM,3 */
 int TNORM[3];
 /* asm: TVECT1	.bss	TVECT1,3 */
@@ -344,7 +345,14 @@ BSCX:
  *	NEED TO ADD Y RADIANS AFTERWARD
  *
  */
-void CAR_ROAD_COLL(void) {
+void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
+    CAR_POINT* car_point;
+    float gravity;
+    float next_y_velocity;
+    int rear_airborne;
+    int front_airborne;
+    int i;
+
     // asm 00001FF6: 	PUSH	R4
     // asm 00001FF7: 	PUSH	R5
     // asm 00001FF8: 	PUSH	AR3
@@ -352,6 +360,7 @@ void CAR_ROAD_COLL(void) {
     // asm 00001FFA: 	PUSH	AR5
     // asm 00001FFB: 	PUSH	AR6
     // asm 00001FFC: 	CALL	ROADSCAN 		;GET POINT HEIGHTS
+    ROADSCAN(obj, carblk); // ;GET POINT HEIGHTS
     // ****************************************************
     // *WE HAVE FOUND HEIGHT FOR ALL SUSPENSION POINTS
     // *GET NEW PLAYER MATRIX
@@ -362,16 +371,23 @@ void CAR_ROAD_COLL(void) {
     // asm 00002000: 	LDI	*+AR0(OID),R0
     // asm 00002001: 	AND	CLASS_M+TYPE_M,R0
     // asm 00002002: 	STI	R0,*+AR6(CAR_ONROAD)	;XXX OID->ONROAD FLAG
+    if (carblk->center.collided_road_object != 0) {
+        carblk->on_road = ((OBJ*)(uintptr_t)carblk->center.collided_road_object)->id & (CLASS_M + TYPE_M);
+    }
 PC1X0:
     // asm 00002003: 	LDI	AR6,AR0			;GET CARVCT SUSPENSION POINTS
     // asm 00002004: 	FLOATP	@NFRAMES,R2
     // asm 00002005: 	MPYF	4,R2			;FRAME ADJUSTED GRAVITY
     // ;	MPYF	8,R2			;FRAME ADJUSTED GRAVITY
+    gravity = (float)NFRAMES * 4.0f;
+    car_point = &carblk->center;
     // asm 00002006: 	LDI	CARVNUM-1,RC 		;LOOP FOR ALL GROUND TOUCHERS
     // asm 00002007: 	RPTB	PC2
+    for (i = 0; i < CARVNUM; i++, car_point++) {
     // asm 00002008: 	LDF	*+AR0(CARPRDYD),R0	;LOAD DELTA HEIGHT
     // asm 00002009: 	CMPF	-9,R0
     // asm 0000200A: 	BGT	PC1A			;WE ARE ABOVE ROAD
+        if (car_point->road_delta_y <= -9.0f) {
     // *BELOW ROAD CASE
     // asm 0000200B: 	ADDF	-9,R0
     // asm 0000200C: 	ADDF	*+AR0(CARPY),R0		;WE ARE BELOW ROAD
@@ -380,10 +396,15 @@ PC1X0:
     // asm 0000200F: 	LDF	0,R0
     // asm 00002010: 	STF	R0,*+AR0(CARPYV)	;STORE NEW VELOCITY
     // 	;-------->B	PC2
+            car_point->y += car_point->road_delta_y - 9.0f;
+            car_point->y_velocity = 0.0f;
+        } else {
     // *ABOVE ROAD CASE
 PC1A:
+            ;
     // asm 00002011: 	LDF	*+AR0(CARPYV),R1	;GRAVITY ACCELERATES Y VEL
     // asm 00002012: 	ADDF	R2,R1
+            next_y_velocity = car_point->y_velocity + gravity; // ;GRAVITY ACCELERATES Y VEL
     // asm 00002013: 	LDI	*+AR0(CARPCOL),R4	;CHECK GRAVITY TYPE
     // asm 00002014: 	BZ	PC1B
     // asm 00002015: 	LDI	R4,AR3
@@ -397,32 +418,60 @@ PC1A:
     // asm 0000201A: 	LDF	R2,R4
     // asm 0000201B: 	MPYF	4,R4			;NO, GRAV X 4
     // asm 0000201C: 	ADDF	R4,R1
+            if (car_point->collided_road_object != 0) {
+                OBJ* collided_road_object = (OBJ*)(uintptr_t)car_point->collided_road_object;
+
+                if ((collided_road_object->id & (CLASS_M + TYPE_M)) != (ROAD_C + LOGRAV_T)) {
+                    next_y_velocity += gravity * 4.0f; // ;NO, GRAV X 4
+                }
+            }
 PC1B:
     // asm 0000201D: 	CMPF	R1,R0	    		;VEL GT HEIGHT?
     // asm 0000201E: 	BGT	PC2A			;NO
     // asm 0000201F: 	LDF	R0,R1			;YES LIMIT VELOCITY
+            if (next_y_velocity <= car_point->road_delta_y) {
+                next_y_velocity = car_point->road_delta_y; // ;YES LIMIT VELOCITY
+            }
 PC2A:
     // asm 00002020: 	STF	R1,*+AR0(CARPYV)	;ADD VELOCITY TO HEIGHT
     // asm 00002021: PC2B
     // asm 00002021: 	ADDF	*+AR0(CARPY),R1
     // asm 00002022: 	STF	R1,*+AR0(CARPY)
+            car_point->y_velocity = next_y_velocity;
+            car_point->y += next_y_velocity;
+        }
 PC2:
+        ;
     // asm 00002023: NOP 	*AR0++(CARVSIZ)
+    }
     // *SET AIRBORNE FLAGS
     // asm 00002024: 	LDI	AR6,AR0		;GET CARVCT SUSPENSION POINTS
     // asm 00002025: 	LDI	1,R0   		;ASSUME AIRBORNE
     // asm 00002026: 	LDI	1,R1
+    rear_airborne = 1; // ;ASSUME AIRBORNE
+    front_airborne = 1;
     // asm 00002027: 	LDF	*+AR0(3),R2	;LOAD DELTA HEIGHT
     // asm 00002028:       	CMPF	72,R2		;1 FOOT OFF GROUND?
     // asm 00002029: 	LDILT	0,R0		;NO
+    if (carblk->center.road_delta_y < 72.0f) {
+        rear_airborne = 0; // ;NO
+    }
     // asm 0000202A: 	LDF	*+AR0(9),R2
     // asm 0000202B:       	CMPF	72,R2		;1 FOOT OFF GROUND?
     // asm 0000202C: 	LDILT	0,R1		;NO
+    if (carblk->left_front.road_delta_y < 72.0f) {
+        front_airborne = 0; // ;NO
+    }
     // asm 0000202D: 	LDF	*+AR0(15),R2
     // asm 0000202E:       	CMPF	72,R2		;1 FOOT OFF GROUND?
     // asm 0000202F: 	LDILT	0,R1		;NO
+    if (carblk->left_rear.road_delta_y < 72.0f) {
+        front_airborne = 0; // ;NO
+    }
     // asm 00002030: 	STI	R0,*+AR6(CAR_AIRB)
     // asm 00002031: 	STI	R1,*+AR6(CAR_AIRF)
+    carblk->rear_airborne = rear_airborne;
+    carblk->front_airborne = front_airborne;
     // asm 00002032: 	LDI	AR6,R0		     	;get suspension points in ram
     // asm 00002033: 	LDPI	@VLI,AR0		;rotate for universe etc.
     // asm 00002034: 	STI	R0,*AR0++
@@ -431,6 +480,7 @@ PC2:
     // asm 00002037: 	ADDI	CARVSIZ,R0
     // asm 00002038: 	STI	R0,*AR0++
     // asm 00002039: 	CALL	GETNMAT			;GET NEW MATRIX
+    GETNMAT(obj, carblk); // ;GET NEW MATRIX
     // asm 0000203A: PCOLLX
     // asm 0000203A: 	POP	AR6
     // asm 0000203B: 	POP	AR5
@@ -439,8 +489,6 @@ PC2:
     // asm 0000203E: 	POP	R5
     // asm 0000203F: 	POP	R4
     // asm 00002040: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAR_ROAD_COLL", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -452,41 +500,61 @@ PC2:
  *	R3	CAR BLOCK
  *
  */
-void ROADSCAN(void) {
+void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
+    CAR_POINT* car_point;
+    int missing_wheel;
+    int i;
+
     // asm 00002041: 	LDI	R3,AR6			;SAVE CARVCT RAM POINTER
     // *PROJECT CAR SUSPENSION POINTS
     // asm 00002042: 	LDI	AR4,R2
     // asm 00002043: 	ADDI	OMATRIX,R2		;POINT TO CAR MATRIX
     // asm 00002044: 	LDI	AR6,AR2
     // asm 00002045: 	ADDI	CARWHLTAB,AR2
+    car_point = &carblk->center;
     // asm 00002046: 	LDF	*+AR4(OPOSX),R1		;GET Y OBJECT OFFSET
     // asm 00002047: 	LDF	*+AR4(OPOSY),R4		;GET Y OBJECT OFFSET
     // asm 00002048: 	LDF	*+AR4(OPOSZ),R5		;GET Z OBJECT OFFSET
+    MAME_ASSERT_REG_FLOAT(0x00002047, "R1", &obj->posx);
+    MAME_ASSERT_REG_FLOAT(0x00002048, "R4", &obj->posy);
+    MAME_ASSERT_REG_FLOAT(0x00002049, "R5", &obj->posz);
     // asm 00002049: 	LDI	2,IR0
     // asm 0000204A: 	LDI	CARVNUM-1,RC		;LOOP FOR ALL POINTS
     // asm 0000204B: 	RPTB	LOOP
-    // asm 0000204C: 	LDI	R3,AR3
-    // asm 0000204D: 	CALL	MATRIX_MUL
-    // *ADD IN X,Z OFFSETS
-    // asm 0000204E: 	ADDF	R1,*AR3,R0
-    // asm 0000204F: 	ADDF	R4,*+AR3(1),R0
-    // asm 0000204F: ||	STF	R0,*AR3
-    // asm 00002050: 	STF	R0,*+AR3(1)
-    // ;	NEGF	R0			;DEFAULT COLLISION DELTA = - HEIGHT
-    // asm 00002051: 	LDF	0,R0			;CLEAR DEFAULT HEIGHT
-    // asm 00002052: 	STF	R0,*+AR3(3)
-    // asm 00002053: 	LDI	0,R0
-    // asm 00002054: 	STI	R0,*+AR3(5)		;CLEAR COLLISION OBJECT
-    // asm 00002055: 	ADDF	R5,*+AR3(IR0),R0
-    // asm 00002056: 	STF	R0,*+AR3(2)
-    // asm 00002057: 	ADDI	3,AR2
+    for (i = 0; i < CARVNUM; i++, car_point++) {
+        // asm 0000204C: 	LDI	R3,AR3
+        // asm 0000204D: 	CALL	MATRIX_MUL
+        MATRIX_MUL((VECTOR*)&carblk->wheel_scan_offsets[i], (MATRIX*)&obj->omatrix, (VECTOR*)car_point);
+        // *ADD IN X,Z OFFSETS
+        // asm 0000204E: 	ADDF	R1,*AR3,R0
+        car_point->x += obj->posx;
+        // asm 0000204F: 	ADDF	R4,*+AR3(1),R0
+        // asm 0000204F: ||	STF	R0,*AR3
+        // asm 00002050: 	STF	R0,*+AR3(1)
+        car_point->y += obj->posy;
+        MAME_ASSERT_REG_FLOAT(0x00002050, "R0", &car_point->y);
+        // ;	NEGF	R0			;DEFAULT COLLISION DELTA = - HEIGHT
+        // asm 00002051: 	LDF	0,R0			;CLEAR DEFAULT HEIGHT
+        // asm 00002052: 	STF	R0,*+AR3(3)
+        car_point->road_delta_y = 0.0f; // ;CLEAR DEFAULT HEIGHT
+        // asm 00002053: 	LDI	0,R0
+        // asm 00002054: 	STI	R0,*+AR3(5)		;CLEAR COLLISION OBJECT
+        car_point->collided_road_object = 0; // ;CLEAR COLLISION OBJECT
+        // asm 00002055: 	ADDF	R5,*+AR3(IR0),R0
+        // asm 00002056: 	STF	R0,*+AR3(2)
+        car_point->z += obj->posz;
+        // asm 00002057: 	ADDI	3,AR2
 LOOP:
+        ;
+    }
     // asm 00002058: ADDI	6,R3
     // asm 00002059: 	CLRI	R0
     // asm 0000205A: 	STI	R0,*+AR6(CAR_ONROAD)
+    carblk->on_road = 0;
     // *CHECK ROAD OBJECTS ON ROAD LIST IN RANGE
     // asm 0000205B: 	LDPI	@DRIVE_LIST,R0
     // asm 0000205C: 	CALL	RDSCNSUB
+    RDSCNSUB(obj, carblk, DRIVE_LIST);
     // *WE HAVE SCANNED ROADLIST
     // *IF INCOMPLETE SCAN DO GROUND LIST
     // asm 0000205D: 	LDI	*+AR6(CT_PCOL),R0	;CHECK COLLISION...
@@ -496,28 +564,47 @@ LOOP:
     // asm 00002061: 	OR	*+AR6(LR_PCOL),R0	;CHECK COLLISION...
     // asm 00002062: 	LDINZ	1,R0
     // asm 00002063: 	STI	R0,*+AR6(CAR_ONROAD)	;ANY WHEEL ON IS ONROAD
+    carblk->on_road = ((carblk->center.collided_road_object | carblk->left_front.collided_road_object |
+                        carblk->right_front.collided_road_object | carblk->right_rear.collided_road_object |
+                        carblk->left_rear.collided_road_object) != 0); // ;ANY WHEEL ON IS ONROAD
     // asm 00002064: 	LDI	0,R1
+    missing_wheel = 0;
     // asm 00002065: 	LDI	*+AR6(CT_PCOL),R0	;CHECK COLLISION...
     // asm 00002066: 	LDIZ	1,R1			;SET FLAG IF NONE
-    // ;       BZ	PC3A
+    if (carblk->center.collided_road_object == 0) {
+        missing_wheel = 1; // ;SET FLAG IF NONE
+    }
     // asm 00002067: 	LDI	*+AR6(LF_PCOL),R0	;CHECK COLLISION...
     // asm 00002068: 	LDIZ	2,R1
-    // ;	BZ	PC3A
+    if (carblk->left_front.collided_road_object == 0) {
+        missing_wheel = 2;
+    }
     // asm 00002069: 	LDI	*+AR6(RF_PCOL),R0	;CHECK COLLISION...
     // asm 0000206A: 	LDIZ	3,R1
-    // ;	BZ	PC3A
+    if (carblk->right_front.collided_road_object == 0) {
+        missing_wheel = 3;
+    }
     // asm 0000206B: 	LDI	*+AR6(RR_PCOL),R0	;CHECK COLLISION...
     // asm 0000206C: 	LDIZ	4,R1
-    // ;	BZ	PC3A
+    if (carblk->right_rear.collided_road_object == 0) {
+        missing_wheel = 4;
+    }
     // asm 0000206D: 	LDI	*+AR6(LR_PCOL),R0	;CHECK COLLISION...
     // asm 0000206E: 	LDIZ	5,R1
-    // ;	BZ	PC3A
+    if (carblk->left_rear.collided_road_object == 0) {
+        missing_wheel = 5;
+    }
     // asm 0000206F: 	LDI	R1,R1			;ALL WHEELS ON ROAD?
     // asm 00002070: 	BZ	PC3X			;YES...WERE DONE
+    if (missing_wheel == 0) {
+        return;
+    }
     // *OFF ROAD- CHECK OUT GROUND LIST
     // asm 00002071: PC3A
     // asm 00002071: 	LDPI	@GROUND_LIST,R0
     // asm 00002072: 	CALL	RDSCNSUB
+PC3A:
+    RDSCNSUB(obj, carblk, GROUND_LIST);
     // ;	LDI	0,R1
     // ;	LDI	*+AR6(CT_PCOL),R0	;CHECK COLLISION...
     // ;	LDIZ	1,R1			;SET FLAG IF NONE
@@ -534,8 +621,6 @@ LOOP:
     // ;	NOP				;TRAP HERE
 PC3X:
     // asm 00002073: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROADSCAN", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -547,80 +632,138 @@ PC3X:
  *	AR4	CAR OBJECT
  *
  */
-static void RDSCNSUB(void) {
+static void RDSCNSUB(OBJ* scan_obj /*AR4*/, CARBLK* carblk /*AR6*/, OBJ* list /*R0*/) {
+    OBJ* road_obj;
+    CAR_POINT* car_point;
+    float scan_radius;
+    float obj_z;
+    int i;
+
     // asm 00002074:       	BZD	RDSCNX		  	;NULL LIST
+    if (list == NULL) {
+        return;
+    }
     // asm 00002075: 	LDI	R0,AR2
+    road_obj = list;
     // asm 00002076: 	LDI	OPOSZ,IR1
     // asm 00002077: 	FLOAT	*+AR4(ORAD),R0		;GET BOX RADIUS
+    scan_radius = (float)scan_obj->radius; // ;GET BOX RADIUS
     //       	;------>BZD	RDSCNX		;NULL LIST
     // asm 00002078: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
+    obj_z = scan_obj->posz; // ;GET OBJECT Z
 RS0:
     // asm 00002079: 	LDF	*+AR4(OPOSX),R3		;GET OBJECT X
 RS1:
-    // asm 0000207A: 	SUBF	*+AR2(OPOSX),R3,R2
-    // asm 0000207B: 	SUBF	*+AR2(IR1),R4,R1
-    // asm 0000207C: 	MPYF	R1,R1
-    // asm 0000207D: 	MPYF	R2,R2
-    // asm 0000207E: 	ADDF	R1,R2
-    // asm 0000207F: 	FLOAT	*+AR2(ORAD),R1	 	;GET ROAD RADIUS
-    // asm 00002080: 	ADDF	R0,R1			;ADD AND SQUARE
-    // asm 00002081: 	MPYF	R1,R1
-    // asm 00002082: 	CMPF	R1,R2	  		;TEST TRUE RADIUS
-    // asm 00002083: 	BLT	RS2			;CHECK IT OUT !
-    // asm 00002084: RS1L
-    // asm 00002084: 	LDI	*+AR2(OLINK3),AR2
-    // asm 00002085: 	LDI	AR2,R1
-    // asm 00002086: 	BNZD	RS1
-    // asm 00002087: 	SUBF	*+AR2(OPOSX),R3,R2
-    // asm 00002088: 	SUBF	*+AR2(IR1),R4,R1
-    // asm 00002089: 	MPYF	R1,R1
-    // 	;---->	BNZ	RS1
-    // asm 0000208A: 	RETS
-    // *CHECK OUT ROAD COLLISION
+    while (road_obj != NULL) {
+        float dx;
+        float dz;
+        float radius_sum;
+
+        // asm 0000207A: 	SUBF	*+AR2(OPOSX),R3,R2
+        dx = scan_obj->posx - road_obj->posx;
+        // asm 0000207B: 	SUBF	*+AR2(IR1),R4,R1
+        dz = obj_z - road_obj->posz;
+        // asm 0000207C: 	MPYF	R1,R1
+        // asm 0000207D: 	MPYF	R2,R2
+        // asm 0000207E: 	ADDF	R1,R2
+        // asm 0000207F: 	FLOAT	*+AR2(ORAD),R1	 	;GET ROAD RADIUS
+        radius_sum = scan_radius + (float)road_obj->radius; // ;GET ROAD RADIUS
+        // asm 00002080: 	ADDF	R0,R1			;ADD AND SQUARE
+        // asm 00002081: 	MPYF	R1,R1
+        // asm 00002082: 	CMPF	R1,R2	  		;TEST TRUE RADIUS
+        // asm 00002083: 	BLT	RS2			;CHECK IT OUT !
+        if ((dx * dx) + (dz * dz) < (radius_sum * radius_sum)) {
+            float road_delta_y;
+
+            // *CHECK OUT ROAD COLLISION
 RS2:
-    // asm 0000208B: 	PUSH	AR4
-    // asm 0000208C: 	LDI	AR6,AR4
-    // asm 0000208D: 	LDI	CARVNUM-1,AR5		;LOOP ALL POINTS
-    // asm 0000208E: RS3LP
-    // asm 0000208E: 	LDI	*+AR4(CARPCOL),R1	;CHECK PRIOR COLLISION...
-    // asm 0000208F: 	BZ	RS300			;NOPE, SCAN ON...
-    // asm 00002090: 	ABSF	*+AR4(CARPRDYD),R1
-    // asm 00002091: 	FLOAT	2000,R2
-    // asm 00002092: 	CMPF	R2,R1
-    // asm 00002093: 	BLT	RS30			;ALREADY CLOSE, NO RESCAN...
-    // asm 00002094: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
-    // asm 00002095: 	BNC	RS30			;NOPE...
-    // asm 00002096: 	LDF	*+AR4(CARPRDYD),R1
-    // asm 00002097: 	BNN	RS297
-    // asm 00002098:      	LDF	R0,R0
-    // asm 00002099: 	BNN	RS301			;OLD=NEG, NEW=POS, GO W/ POS
-    // *BOTH NEGATIVE CASE
-    // asm 0000209A: 	CMPF	R0,R1
-    // asm 0000209B: 	BGT	RS30
-    // asm 0000209C: 	B	RS301
-    // *OLD IS POSITIVE
+            // asm 0000208B: 	PUSH	AR4
+            // asm 0000208C: 	LDI	AR6,AR4
+            // asm 0000208D: 	LDI	CARVNUM-1,AR5		;LOOP ALL POINTS
+            car_point = &carblk->center;
+            for (i = 0; i < CARVNUM; i++, car_point++) {
+                // asm 0000208E: RS3LP
+                // asm 0000208E: 	LDI	*+AR4(CARPCOL),R1	;CHECK PRIOR COLLISION...
+                if (car_point->collided_road_object != 0) {
+                    // asm 00002090: 	ABSF	*+AR4(CARPRDYD),R1
+                    // asm 00002091: 	FLOAT	2000,R2
+                    // asm 00002092: 	CMPF	R2,R1
+                    // asm 00002093: 	BLT	RS30			;ALREADY CLOSE, NO RESCAN...
+                    if (fabsf(car_point->road_delta_y) < 2000.0f) {
+                        goto RS30;
+                    }
+                    // asm 00002094: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
+                    // asm 00002095: 	BNC	RS30			;NOPE...
+                    if (!_coll_road(road_obj, (VECTOR*)car_point, &road_delta_y)) {
+                        goto RS30;
+                    }
+                    // asm 00002096: 	LDF	*+AR4(CARPRDYD),R1
+                    // asm 00002097: 	BNN	RS297
+                    if (car_point->road_delta_y < 0.0f) {
+                        // asm 00002098:      	LDF	R0,R0
+                        // asm 00002099: 	BNN	RS301			;OLD=NEG, NEW=POS, GO W/ POS
+                        if (road_delta_y >= 0.0f) {
+                            goto RS301; // ;OLD=NEG, NEW=POS, GO W/ POS
+                        }
+                        // *BOTH NEGATIVE CASE
+                        // asm 0000209A: 	CMPF	R0,R1
+                        // asm 0000209B: 	BGT	RS30
+                        if (car_point->road_delta_y > road_delta_y) {
+                            goto RS30;
+                        }
+                        // asm 0000209C: 	B	RS301
+                    } else {
+                        // *OLD IS POSITIVE
 RS297:
-    // asm 0000209D: 	LDF	R0,R0
-    // asm 0000209E: 	BNN	RS299
-    // *OLD IS POS, NEW IS NEG
-    // asm 0000209F: 	FLOAT	-1000,R2
-    // asm 000020A0: 	CMPF	R2,R0
-    // asm 000020A1: 	BGT	RS301
-    // asm 000020A2: 	B	RS30
-    // *BOTH POSITIVE CASE
+                        // asm 0000209D: 	LDF	R0,R0
+                        // asm 0000209E: 	BNN	RS299
+                        if (road_delta_y < 0.0f) {
+                            // *OLD IS POS, NEW IS NEG
+                            // asm 0000209F: 	FLOAT	-1000,R2
+                            // asm 000020A0: 	CMPF	R2,R0
+                            // asm 000020A1: 	BGT	RS301
+                            if (road_delta_y > -1000.0f) {
+                                goto RS301;
+                            }
+                            // asm 000020A2: 	B	RS30
+                            goto RS30;
+                        }
+                        // *BOTH POSITIVE CASE
 RS299:
-    // asm 000020A3: 	CMPF	R0,R1			;TAKE LEAST POSITIVE
-    // asm 000020A4: 	BLT	RS30
-    // asm 000020A5: 	B	RS301
+                        // asm 000020A3: 	CMPF	R0,R1			;TAKE LEAST POSITIVE
+                        // asm 000020A4: 	BLT	RS30
+                        if (car_point->road_delta_y < road_delta_y) {
+                            goto RS30; // ;TAKE LEAST POSITIVE
+                        }
+                        // asm 000020A5: 	B	RS301
+                    }
+                } else {
 RS300:
-    // asm 000020A6: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
-    // asm 000020A7: 	BNC	RS30			;NOPE...
+                    // asm 000020A6: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
+                    // asm 000020A7: 	BNC	RS30			;NOPE...
+                    if (!_coll_road(road_obj, (VECTOR*)car_point, &road_delta_y)) {
+                        goto RS30;
+                    }
+                }
 RS301:
-    // asm 000020A8: 	STF	R0,*+AR4(CARPRDYD)		;SAVE ROAD Y DELTA
-    // asm 000020A9: 	STI	AR2,*+AR4(CARPCOL) 	;SAVE COLLISION OBJECT
+                // asm 000020A8: 	STF	R0,*+AR4(CARPRDYD)		;SAVE ROAD Y DELTA
+                car_point->road_delta_y = road_delta_y; // ;SAVE ROAD Y DELTA
+                MAME_ASSERT_REG_FLOAT(0x000020A9, "R0", &car_point->road_delta_y);
+                // asm 000020A9: 	STI	AR2,*+AR4(CARPCOL) 	;SAVE COLLISION OBJECT
+                car_point->collided_road_object = (u32)(uintptr_t)road_obj; // ;SAVE COLLISION OBJECT
 RS30:
-    // asm 000020AA: 	NOP	*AR4++(CARVSIZ)
-    // asm 000020AB: 	DB	AR5,RS3LP
+                // asm 000020AA: 	NOP	*AR4++(CARVSIZ)
+                ;
+            }
+        }
+        // asm 00002084: RS1L
+        // asm 00002084: 	LDI	*+AR2(OLINK3),AR2
+RS1L:
+        road_obj = (OBJ*)road_obj->link3;
+        // asm 00002085: 	LDI	AR2,R1
+        // asm 00002086: 	BNZD	RS1
+    }
+    // asm 0000208A: 	RETS
     // asm 000020AC: 	POP	AR4
     // asm 000020AD: RS3L
     // asm 000020AD: 	LDI	*+AR2(OLINK3),AR2
@@ -632,8 +775,6 @@ RS30:
     // 	;---->	BNZ	RS0
 RDSCNX:
     // asm 000020B3: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RDSCNSUB", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -647,10 +788,18 @@ RDSCNX:
  *		CARRY SET IF ROAD PIECE COLLISION
  *
  */
-void _coll_road(void) {
+int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, float* out_road_delta /*R0*/) {
+    VECTOR* vertex0;
+    VECTOR* vertex1;
+    VECTOR* vertex2;
+    VECTOR normal;
+
     // asm 000020B4: 	LDI	AR4,R2		;GET POINT INTO R2
     // asm 000020B5: 	CALL	_obj_coll
     // asm 000020B6: 	BNC	CRX		;NO COLLISION BAIL OUT WITH CARRY CLEAR
+    if (!_obj_coll(road_obj, point)) {
+        return 0; // ;NO COLLISION BAIL OUT WITH CARRY CLEAR
+    }
     // *
     // *WE HAVE A COLLISION
     // *FIND Y HEIGHT RETURN IN R0
@@ -666,6 +815,15 @@ void _coll_road(void) {
     // asm 000020BE: 	LDPI	@VLI,AR2		;rotate for universe etc.
     // asm 000020BF: 	LDPI	@TNORMI,AR0
     // asm 000020C0: 	CALL	GEN_NORMAL		;gen_normal(&A,&B,&C,&N);
+    vertex0 = VL[0];
+    vertex1 = VL[1];
+    vertex2 = VL[2];
+    normal.X = (vertex1->Y - vertex0->Y) * (vertex2->Z - vertex1->Z) -
+               (vertex1->Z - vertex0->Z) * (vertex2->Y - vertex1->Y);
+    normal.Y = (vertex1->Z - vertex0->Z) * (vertex2->X - vertex1->X) -
+               (vertex1->X - vertex0->X) * (vertex2->Z - vertex1->Z);
+    normal.Z = (vertex1->X - vertex0->X) * (vertex2->Y - vertex1->Y) -
+               (vertex1->Y - vertex0->Y) * (vertex2->X - vertex1->X);
     // asm 000020C1: 	LDPI	@VLI,AR1
     // asm 000020C2: 	LDI	*AR1,AR1
     // asm 000020C3: 	MPYF	*AR1++,*AR0++,R0
@@ -676,6 +834,8 @@ void _coll_road(void) {
     // asm 000020C8: 	ADDF	R2,R0			;       N.z * bufferz[vert[0]]);
     // asm 000020C9: 	NEGF	R0			;D = ((D/(-N.y)));
     // asm 000020CA: 	CALL	DIV_F30			;(R0/R1)->R0 clobbers r0,r1,ar0,ar1
+    *out_road_delta = -((vertex0->X * normal.X) + (vertex0->Y * normal.Y) + (vertex0->Z * normal.Z)) / (-normal.Y);
+    MAME_ASSERT_REG_FLOAT(0x000020D3, "R0", &*out_road_delta);
     // asm 000020CB: 	POPF	R7
     // asm 000020CC: 	POP	R7
     // asm 000020CD: 	POPF	R6
@@ -686,8 +846,7 @@ void _coll_road(void) {
     // asm 000020D2: 	SETC				;WE GOT ONE
 CRX:
     // asm 000020D3: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_coll_road", 0, 0);
-    UNIMPL();
+    return 1;
 }
 
 /*
@@ -699,29 +858,75 @@ CRX:
  *AR6=CARVCT RAM AREA
  *
  */
-static void GETNMAT(void) {
+static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
+    VECTOR* center;
+    VECTOR* right_front;
+    VECTOR* left_front;
+    VECTOR d;
+    VECTOR e;
+    VECTOR* normal;
+    MATRIX* matrix;
+    float length;
+
     // 	;*GENERATE A (UNIT) NORMAL FOR THE PLANE
     // asm 000020D4: 	LDPI	@VLI,AR2		;rotate for universe etc.
     // asm 000020D5: 	LDPI	@TNORMI,AR0
     // asm 000020D6: 	CALL	GEN_NORMAL		;gen_normal(&A,&B,&C,&N);
+    center = (VECTOR*)&carblk->center;
+    right_front = (VECTOR*)&carblk->right_front;
+    left_front = (VECTOR*)&carblk->left_front;
+    normal = (VECTOR*)TNORM;
+    matrix = (MATRIX*)TMATRIX;
+
+    d.X = right_front->X - center->X;
+    d.Y = right_front->Y - center->Y;
+    d.Z = right_front->Z - center->Z;
+    e.X = left_front->X - right_front->X;
+    e.Y = left_front->Y - right_front->Y;
+    e.Z = left_front->Z - right_front->Z;
+    normal->X = d.Y * e.Z - d.Z * e.Y;
+    normal->Y = d.Z * e.X - d.X * e.Z;
+    normal->Z = d.X * e.Y - d.Y * e.X;
     // asm 000020D7: 	LDI	AR0,AR2
     // asm 000020D8: 	CALL	NORMALIZE		;normalize(&N);
+    length = sqrtf(normal->X * normal->X + normal->Y * normal->Y + normal->Z * normal->Z);
+    if (length != 0.0f) {
+        float inv_length = 1.0f / length;
+
+        normal->X *= inv_length;
+        normal->Y *= inv_length;
+        normal->Z *= inv_length;
+    }
     // asm 000020D9: 	LDPI	@TMATRIXI,AR3
     // *LOAD 2ND COLUMN OF ROTATION MATRIX (Y AXIS)
     // asm 000020DA: 	LDF	*AR2,R0		     	;2ND COLUMN ROT MATRIX IS NORMAL VECTOR
     // asm 000020DB: 	STF	R0,*+AR3(3)
+    matrix->a10 = normal->X; // ;2ND COLUMN ROT MATRIX IS NORMAL VECTOR
     // asm 000020DC: 	LDF	*+AR2(1),R1
     // asm 000020DD: 	STF	R1,*+AR3(4)
+    matrix->a11 = normal->Y;
     // asm 000020DE: 	LDF	*+AR2(2),R2
     // asm 000020DF: 	STF	R2,*+AR3(5)
+    matrix->a12 = normal->Z;
     // *LOAD 1ST COLUMN OF ROTATION MATRIX (X AXIS)
     // asm 000020E0: 	LDI	AR3,AR2
     // asm 000020E1: 	STF	R1,*AR2			;X
+    matrix->a00 = normal->Y; // ;X
     // asm 000020E2: 	NEGF	R0			;-N2
     // asm 000020E3: 	STF	R0,*+AR2(1)		;Y
+    matrix->a01 = -normal->X; // ;Y
     // asm 000020E4: 	CLRF	R1
     // asm 000020E5: 	STF	R1,*+AR2(2)		;Z
+    matrix->a02 = 0.0f; // ;Z
     // asm 000020E6: 	CALL	NORMALIZE		;normalize(&N);
+    length = sqrtf(matrix->a00 * matrix->a00 + matrix->a01 * matrix->a01 + matrix->a02 * matrix->a02);
+    if (length != 0.0f) {
+        float inv_length = 1.0f / length;
+
+        matrix->a00 *= inv_length;
+        matrix->a01 *= inv_length;
+        matrix->a02 *= inv_length;
+    }
     // *LOAD 3RD COLUMN OF ROTATION MATRIX (Z AXIS)
     // ;	LDI	AR3,AR2
     // ;	ADDI	6,AR2			;POINT AR2 TO THIRD COLUMN OF MATRIX
@@ -743,28 +948,48 @@ static void GETNMAT(void) {
     // asm 000020EA: 	MPYF	*+AR3(IR0),*+AR2(1),R1	;U3*V2
     // asm 000020EB: 	SUBF	R1,R0
     // asm 000020EC: 	STF	R0,*+AR3(6)
+    matrix->a20 = matrix->a01 * matrix->a12 - matrix->a02 * matrix->a11;
     // asm 000020ED: 	MPYF	*+AR3(IR0),*AR2,R0	;U3*V1
     // asm 000020EE: 	MPYF	*AR3,*+AR2(IR0),R1	;U1*V3
     // asm 000020EF: 	SUBF	R1,R0
     // asm 000020F0: 	STF	R0,*+AR3(7)
+    matrix->a21 = matrix->a02 * matrix->a10 - matrix->a00 * matrix->a12;
     // asm 000020F1: 	MPYF	*AR3,*+AR2(1),R0	;U1*V2
     // asm 000020F2: 	MPYF	*+AR3(1),*AR2,R1	;U2*V1
     // asm 000020F3: 	SUBF	R1,R0
     // asm 000020F4: 	STF	R0,*+AR3(8)
+    matrix->a22 = matrix->a00 * matrix->a11 - matrix->a01 * matrix->a10;
     // asm 000020F5: 	ADDI	3,AR2
     // asm 000020F6: 	CALL	NORMALIZE		;normalize(&N);
+    length = sqrtf(matrix->a20 * matrix->a20 + matrix->a21 * matrix->a21 + matrix->a22 * matrix->a22);
+    if (length != 0.0f) {
+        float inv_length = 1.0f / length;
+
+        matrix->a20 *= inv_length;
+        matrix->a21 *= inv_length;
+        matrix->a22 *= inv_length;
+    }
     // *INVERT MATRIX AND STORE IN OBJECT
     // asm 000020F7: 	LDI	AR3,R2
     // asm 000020F8: 	LDI	AR4,AR2
     // asm 000020F9: 	ADDI	OMATRIX,AR2
     // asm 000020FA: 	CALL	CPYIMAT     		;invert matrix and stuff in object
+    obj->omatrix.mat00 = matrix->a00;
+    obj->omatrix.mat10 = matrix->a01;
+    obj->omatrix.mat20 = matrix->a02;
+    obj->omatrix.mat01 = matrix->a10;
+    obj->omatrix.mat11 = matrix->a11;
+    obj->omatrix.mat21 = matrix->a12;
+    obj->omatrix.mat02 = matrix->a20;
+    obj->omatrix.mat12 = matrix->a21;
+    obj->omatrix.mat22 = matrix->a22;
     // ***GET CAR HEIGHT AND LOAD IT INTO CAR
     // asm 000020FB: 	LDF	*+AR6(1),R0		;GET Y HEIGHT FIRST POINT
     // asm 000020FC: 	SUBF	*+AR6(CARWHLTAB+1),R0
     // asm 000020FD: 	STF	R0,*+AR4(OPOSY)
+    obj->posy = carblk->center.y - carblk->wheel_scan_offsets[0].Y;
+    MAME_ASSERT_REG_FLOAT(0x000020FE, "R0", &obj->posy);
     // asm 000020FE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETNMAT", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -785,7 +1010,22 @@ static void GETNMAT(void) {
  *	R0,R1,R2,R3
  *
  */
-void _obj_coll(void) {
+int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
+    const OROMDATA* rom;
+    const ROM_VERTEX* vertices;
+    const ROM_POLYGON* polygons;
+    VECTOR translation;
+    VECTOR temp_vertex;
+    int vertex_count;
+    int polygon_count;
+    int v1_index;
+    int v2_index;
+    int v3_index;
+    int i;
+    const float* hit_vertex1;
+    const float* hit_vertex2;
+    const float* hit_vertex3;
+
     // asm 000020FF: 	PUSH	R4
     // asm 00002100: 	PUSH	R5
     // asm 00002101: 	PUSH	AR1
@@ -796,6 +1036,14 @@ void _obj_coll(void) {
     // asm 00002106: 	PUSH	AR7
     // asm 00002107: 	LDI	*+AR2(OROMDATA),AR4
     // asm 00002108: 	ADDI	1,AR4			;skip object diameter
+    rom = (const OROMDATA*)obj->romdata;
+    vertices = (const ROM_VERTEX*)((const u32*)rom + 2);
+    vertex_count = (int)rom->vertex_count + 1;
+    polygon_count = (int)rom->polygon_count + 1;
+    polygons = (const ROM_POLYGON*)(vertices + vertex_count);
+    hit_vertex1 = NULL;
+    hit_vertex2 = NULL;
+    hit_vertex3 = NULL;
     // asm 00002109: 	LDI	AR2,AR5
     // asm 0000210A: 	ADDI	OMATRIX,AR5		;rotational matrix
     // asm 0000210B: 	LDPI	@BLOWLISTI,AR3		;blowlist pointer = AR3
@@ -805,54 +1053,47 @@ void _obj_coll(void) {
     // asm 0000210F: 	LDI	R2,AR1			;create translation (TRANS = OBJPOS - COLLPOS)
     // asm 00002110: 	LDF	*+AR2(OPOSX),R0
     // asm 00002111: 	SUBF	*AR1++,R0
-    // asm 00002112: 	STF	R0,*-AR6(1)		;transvector.x
+    translation.X = obj->posx - point->X; // ;transvector.x
     // asm 00002113: 	LDF	*+AR2(OPOSY),R0
     // asm 00002114: 	SUBF	*AR1++,R0
-    // asm 00002115: 	STF	R0,*AR6			;transvector.y
+    translation.Y = obj->posy - point->Y; // ;transvector.y
     // asm 00002116: 	LDF	*+AR2(OPOSZ),R0
     // asm 00002117: 	SUBF	*AR1,R0
     // asm 00002118: 	STF	R0,*+AR6(1)		;transvector.z
+    translation.Z = obj->posz - point->Z; // ;transvector.z
     // asm 00002119: 	LDI	*AR4++,RC
     // asm 0000211A: 	LDI	RC,BK
     // asm 0000211B: 	AND	0FFh,RC
     // asm 0000211C: 	RPTB	EOTV
-    // asm 0000211D: 	LDI	*AR4++,R4
-    // asm 0000211E: 	LDI	R4,R3
-    // asm 0000211F: 	ASH	-16,R4
-    // asm 00002120: 	LS	16,R3
-    // asm 00002121: 	ASH	-16,R3
-    // asm 00002122: 	FLOAT	R3
-    // asm 00002123: 	FLOAT	R4
-    // asm 00002124:  	STF	R3,*-AR7(1)
-    // asm 00002125: 	FLOAT	*AR4++,R2		;get z element of source 1
-    // asm 00002125:  ||	STF	R4,*AR7
-    // *
-    // *MULTIPLY BY ROTATION MATRIX
-    // *AND ADD TRANSLATION (IN THAT ORDER)
-    // *
-    // asm 00002126: 	MPYF3	*AR5++,R3,R0
-    // asm 00002126:  ||	STF	R2,*+AR7(1)  		;STORE OUT Z ELEMENT
-    // asm 00002127: 	MPYF3	*AR5++,R4,R1
-    // asm 00002128: 	MPYF3	*AR5++,*+AR7(1),R1
-    // asm 00002128:  ||	ADDF3	R0,R1,R2
-    // asm 00002129: 	MPYF3	*AR5++,*-AR7(1),R0
-    // asm 00002129:  ||	ADDF3	R1,R2,R2
-    // asm 0000212A: 	ADDF	*-AR6(1),R2		;*blowlist++   += translation[X]
-    // asm 0000212B: 	MPYF3	*AR5++,R4,R1
-    // asm 0000212B:  ||	STF	R2,*AR3++ 		;STORE ROTATED X
-    // asm 0000212C: 	MPYF3	*AR5++,*+AR7(1),R1
-    // asm 0000212C:  ||	ADDF3	R0,R1,R2
-    // asm 0000212D: 	MPYF3	*AR5++,*-AR7(1),R0
-    // asm 0000212D:  ||	ADDF3	R1,R2,R3
-    // asm 0000212E: 	ADDF	*AR6,R3			;*blowlist++   += translation[Y]
-    // asm 0000212F: 	MPYF3	*AR5++,R4,R1
-    // asm 0000212F:  ||	STF	R3,*AR3++		;STORE ROTATED Y
-    // asm 00002130: 	MPYF3	*AR5--(IR0),*+AR7(1),R1
-    // asm 00002130:  ||	ADDF3	R0,R1,R2
-    // asm 00002131: 	ADDF	R1,R2			;FORM ROTATED Z
-    // asm 00002132: 	ADDF	*+AR6(1),R2		;ADD IN TRANSLATION Z
+    for (i = 0; i < vertex_count; i++) {
+        int packed_xy;
+
+        // asm 0000211D: 	LDI	*AR4++,R4
+        // asm 0000211E: 	LDI	R4,R3
+        // asm 0000211F: 	ASH	-16,R4
+        // asm 00002120: 	LS	16,R3
+        // asm 00002121: 	ASH	-16,R3
+        // asm 00002122: 	FLOAT	R3
+        // asm 00002123: 	FLOAT	R4
+        packed_xy = (int)vertices[i].x_y;
+        temp_vertex.X = (float)(int16_t)(packed_xy & 0xFFFF);
+        temp_vertex.Y = (float)(int16_t)(packed_xy >> 16);
+        // asm 00002124:  	STF	R3,*-AR7(1)
+        // asm 00002125: 	FLOAT	*AR4++,R2		;get z element of source 1
+        // asm 00002125:  ||	STF	R4,*AR7
+        temp_vertex.Z = (float)vertices[i].z;
+        // *
+        // *MULTIPLY BY ROTATION MATRIX
+        // *AND ADD TRANSLATION (IN THAT ORDER)
+        // *
+        MATRIX_MUL(&temp_vertex, (MATRIX*)&obj->omatrix, (VECTOR*)&BLOWLIST[i * 3]);
+        BLOWLIST[(i * 3) + 0] += translation.X; // ;STORE ROTATED X
+        BLOWLIST[(i * 3) + 1] += translation.Y; // ;STORE ROTATED Y
+        BLOWLIST[(i * 3) + 2] += translation.Z; // ;STORE Z
 EOTV:
-    // asm 00002133: STF	R2,*AR3++		;STORE Z
+        // asm 00002133: STF	R2,*AR3++		;STORE Z
+        ;
+    }
     // asm 00002134: 	LDPI	@BLOWLISTI,IR1		;blowlist pointer = IR1
     // asm 00002135: 	LDI	IR1,IR0
     // asm 00002136: 	ADDI	2,IR0
@@ -863,9 +1104,131 @@ EOTV:
     // asm 0000213A: 	LDI	BK,RC
     // asm 0000213B: 	RS	16,RC
     // 	;----->BD	VLINST
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_obj_coll", 0, 0);
-    UNIMPL();
+    for (i = 0; i < polygon_count; i++) {
+        int packed_vertices;
+        int v4_index;
+        const float* vertex1;
+        const float* vertex2;
+        const float* vertex3;
+        const float* vertex4;
+        float edge_a;
+        float edge_b;
+        float edge_c;
+
+VLINST:
+        // asm 0000213C: VLINST
+        // asm 0000213C: 	LDI	*AR4++(5),R1
+        packed_vertices = (int)polygons[i].vertices_4_3_2_1;
+        // asm 0000213D: 	RPTB	VLINLP
+        // asm 0000213E: 	AND	R1,R4,AR1
+        // asm 0000213F: 	MPYI	3,AR1 		;FIRST INDEX
+        v1_index = (packed_vertices & 0xFF) * 3;
+        // asm 00002140: 	RS	8,R1
+        // asm 00002141: 	AND	R1,R4,AR3
+        // asm 00002142: 	MPYI	3,AR3		;SECOND INDEX
+        v2_index = ((packed_vertices >> 8) & 0xFF) * 3;
+        // asm 00002143: 	RS	8,R1
+        // asm 00002144: 	AND	R1,R4,AR5
+        // asm 00002145: 	MPYI	3,AR5		;THIRD INDEX
+        v3_index = ((packed_vertices >> 16) & 0xFF) * 3;
+        // asm 00002146: 	LSH	R5,R1,AR6
+        // asm 00002147: 	MPYI	3,AR6		;FOURTH INDEX
+        v4_index = ((packed_vertices >> 24) & 0xFF) * 3;
+        vertex1 = &BLOWLIST[v1_index];
+        vertex2 = &BLOWLIST[v2_index];
+        vertex3 = &BLOWLIST[v3_index];
+        vertex4 = &BLOWLIST[v4_index];
+
+        // asm 00002148: 	CMPI	AR5,AR6		;CHECK FOR QUAD OR TRIANGLE
+        // asm 00002149: 	BZD	VLTRI
+        if (v3_index != v4_index) {
+            // asm 0000214A: VLQUAD
+            // asm 0000214A: 	SUBF	*+AR5(IR0),*+AR6(IR0),R0	;-A
+            edge_a = vertex4[2] - vertex3[2];
+            // asm 0000214B: 	SUBF	*+AR6(IR1),*+AR5(IR1),R1	;-B
+            edge_b = vertex3[0] - vertex4[0];
+            // asm 0000214C: 	MPYF	R0,*+AR5(IR1),R2		;-AX1
+            // asm 0000214D: 	MPYF	R1,*+AR5(IR0),R3		;-BY1
+            // asm 0000214E: 	ADDF	R3,R2				;C
+            edge_c = (edge_a * vertex3[0]) + (edge_b * vertex3[2]);
+            // asm 0000214F: 	ABSF	R1
+            // asm 00002150: 	CMPF	R1,R2
+            // asm 00002151: 	BGTD	VLINLP	   			;FAIL
+            if (edge_c > fabsf(edge_b)) {
+                continue;
+            }
+        }
+
+VLTRI:
+        // asm 00002152: VLTRI
+        // asm 00002152: 	SUBF	*+AR6(IR0),*+AR1(IR0),R0	;-A
+        edge_a = vertex1[2] - vertex4[2];
+        // asm 00002153: 	SUBF	*+AR1(IR1),*+AR6(IR1),R1	;-B
+        edge_b = vertex4[0] - vertex1[0];
+        // asm 00002154: 	MPYF	R0,*+AR6(IR1),R2		;-AX1
+        // asm 00002155: 	MPYF	R1,*+AR6(IR0),R3		;-BY1
+        // asm 00002156: 	ADDF	R3,R2				;C
+        edge_c = (edge_a * vertex4[0]) + (edge_b * vertex4[2]);
+        // asm 00002157: 	ABSF	R1
+        // asm 00002158: 	CMPF	R1,R2
+        // asm 00002159: 	BGTD	VLINLP	   			;FAIL
+        if (edge_c > fabsf(edge_b)) {
+            continue;
+        }
+
+        // asm 0000215A: 	SUBF	*+AR1(IR0),*+AR3(IR0),R0	;-A
+        edge_a = vertex2[2] - vertex1[2];
+        // asm 0000215B: 	SUBF	*+AR3(IR1),*+AR1(IR1),R1	;-B
+        edge_b = vertex1[0] - vertex2[0];
+        // asm 0000215C: 	MPYF	R0,*+AR1(IR1),R2		;-AX1
+        // asm 0000215D: 	MPYF	R1,*+AR1(IR0),R3		;-BY1
+        // asm 0000215E: 	ADDF	R3,R2				;C
+        edge_c = (edge_a * vertex1[0]) + (edge_b * vertex1[2]);
+        // asm 0000215F: 	ABSF	R1
+        // asm 00002160: 	CMPF	R1,R2
+        // asm 00002161: 	BGTD	VLINLP	   			;FAIL
+        if (edge_c > fabsf(edge_b)) {
+            continue;
+        }
+
+        // asm 00002162: 	SUBF	*+AR3(IR0),*+AR5(IR0),R0	;-A
+        edge_a = vertex3[2] - vertex2[2];
+        // asm 00002163: 	SUBF	*+AR5(IR1),*+AR3(IR1),R1	;-B
+        edge_b = vertex2[0] - vertex3[0];
+        // asm 00002164: 	MPYF	R0,*+AR3(IR1),R2		;-AX1
+        // asm 00002165: 	MPYF	R1,*+AR3(IR0),R3		;-BY1
+        // asm 00002166: 	ADDF	R3,R2				;C
+        edge_c = (edge_a * vertex2[0]) + (edge_b * vertex2[2]);
+        // asm 00002167: 	ABSF	R1
+        // asm 00002168: 	CMPF	R1,R2
+        // asm 00002169: 	BLE	VLCOLL				;GOT ONE...
+        if (edge_c <= fabsf(edge_b)) {
+            hit_vertex1 = vertex1;
+            hit_vertex2 = vertex2;
+            hit_vertex3 = vertex3;
+            goto VLCOLL;
+        }
+
+VLINLP:
+        // asm 0000216A: VLINLP
+        // asm 0000216A: 	LDI	*AR4++(5),R1
+        // asm 0000216B: 	CLRC
+        ;
+    }
+    return 0;
+
+VLCOLL:
+    // VLCOLL						;FOUND ONE!
+    // asm 0000216C: 	ADDI	IR1,AR1
+    // asm 0000216D: 	ADDI	IR1,AR3
+    // asm 0000216E: 	ADDI	IR1,AR5
+    // asm 0000216F: 	STI	AR1,@VL
+    // asm 00002170: 	STI	AR3,@VL+1
+    // asm 00002171: 	STI	AR5,@VL+2
+        VL[0] = (VECTOR*)hit_vertex1;
+        VL[1] = (VECTOR*)hit_vertex2;
+        VL[2] = (VECTOR*)hit_vertex3;
+        return 1;
 }
 
 /*
@@ -924,7 +1287,7 @@ void _makbox(OBJ* obj /*AR4*/) {
     // asm 0000218F: 	SUBI	1,RC
     rom = (const OROMDATA*)obj->romdata;
     vertices = (const ROM_VERTEX*)((const u32*)rom + 2);
-    vertex_count = (int)rom->vertex_count;
+    vertex_count = (int)rom->vertex_count + 1;
     // asm 00002190: 	LDI	*AR0++,R3		;GET Y:X
     // asm 00002191: 	LDI	R3,R4
     // asm 00002192: 	LS	16,R3
@@ -998,6 +1361,7 @@ MBVL:
     // asm 000021B3: 	STF	R4,*+AR0(CARWHLTAB+1)
     // asm 000021B4: 	STF	R6,*+AR0(CARWHLTAB+2)
     carblk->wheel_scan_offsets[0].Y = y_plus;
+    MAME_ASSERT_REG_FLOAT(0x000021B3, "R4", &carblk->wheel_scan_offsets[0].Y);
     carblk->wheel_scan_offsets[0].Z = 0.0f;
     // asm 000021B5: 	STF	R3,*+AR0(CARWHLTAB+3)		;RT FRONT BOTTOM
     // asm 000021B6: 	STF	R4,*+AR0(CARWHLTAB+4)

@@ -859,11 +859,13 @@ ISOVER:
     // asm 000040E4: 	STF	R1,*+AR4(OPOSZ)
     obj->posx = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]);
     obj->posy = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]);
+    MAME_ASSERT_REG_FLOAT(0x000040E1, "R1", &obj->posy);
     obj->posz = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]);
     // asm 000040E5: 	LDF	*AR5++,R2		;GET Y ROT
     // asm 000040E6: 	ADDF	@SECRADY,R2
     // asm 000040E7: 	STF	R2,*+AR4(ORADY)
     obj->rad.Y = TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY;
+    MAME_ASSERT_REG_FLOAT(0x000040E8, "R2", &obj->rad.Y);
     // asm 000040E8: 	LDI	AR4,AR2
     // asm 000040E9: 	ADDI	OMATRIX,AR2
     // asm 000040EA: 	CALL	HPFIND_YMATRIX
@@ -890,11 +892,13 @@ NOTREVERSED:
     // asm 000040FB: 	STF	R1,*+AR4(OPOSZ)
     obj->posx = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]);
     obj->posy = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]);
+    MAME_ASSERT_REG_FLOAT(0x000040F8, "R1", &obj->posy);
     obj->posz = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]);
     // asm 000040FC: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 000040FD: 	ADDF	@SECRADY,R2
     // asm 000040FE: 	STF	R2,*+AR4(ORADY)
     obj->rad.Y = TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY;
+    MAME_ASSERT_REG_FLOAT(0x000040FF, "R2", &obj->rad.Y);
     // asm 000040FF: 	LDI	AR4,AR2
     // asm 00004100: 	ADDI	OMATRIX,AR2
     // asm 00004101: 	CALL	HPFIND_YMATRIX

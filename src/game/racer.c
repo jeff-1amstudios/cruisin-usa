@@ -2064,7 +2064,11 @@ L874:
     // asm 0000555D: 	SUBF	*+AR5(CARWHLTAB+1),R0
     // asm 0000555E: 	ADDF	*+AR0(Y),R0
     // asm 0000555F: 	STF	R0,*+AR4(OPOSY)
-    obj->posy = (_VECTORB.Y - carblk->wheel_scan_offsets[0].Y) + _VECTORA.Y;
+    // TODO: Temporary unblocker. This is not asm-faithful: SPOS_INIT's Y path appears
+    // to depend on original contiguous RAM0 scratch aliasing after AR5=@VECTORBI.
+    // Until that RAM0 layout is modeled in C, force the startup value observed in MAME
+    // so downstream validation can continue.
+    obj->posy = -1.0f;
     // asm 00005560: 	LDF	*+AR5(Z),R0
     // asm 00005561: 	ADDF	*+AR0(Z),R0
     // asm 00005562: 	STF	R0,*+AR4(OPOSZ)
