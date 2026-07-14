@@ -278,7 +278,7 @@ void SUB_FUNCTION_RVS_XLANE(void);
 // asm: 	.globl	 INIT_DRONES,ADD_DRONE,FREE_DRONE
 void INIT_DRONES(void);
 
-void ADD_DRONE(void);
+void ADD_DRONE(OBJ* obj /*AR4*/);
 
 void FREE_DRONE(void);
 

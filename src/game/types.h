@@ -663,7 +663,7 @@ typedef enum eDELTA_MODEL {
 typedef struct RACER {
     eDELTA_MODEL model;
     u32 position;
-    u32 xlane;
+    f32 xlane;
     f32 maxaccel;
     f32 rel;
     tPAL* palette;

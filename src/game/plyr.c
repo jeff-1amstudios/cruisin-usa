@@ -18,6 +18,8 @@
 #include "vunit.h"
 #include <string.h>
 
+extern MATRIX _MATRIXA;
+
 /*
  * Source module: asm/PLYR.ASM
  */
@@ -37,7 +39,7 @@ static void GETCAMPOS(void);
 void CAMYADJ(void);
 static void PLYONRD(void);
 void DRONEGO(void);
-void DRONESTOP(void);
+void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void GETREV(void);
 void GETRPM(void);
 static void GETSKID(void);
@@ -1334,24 +1336,29 @@ DAIRB:
     UNIMPL();
 }
 
-void DRONESTOP(void) {
+void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00002C39: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
+    (void)carblk;
     // asm 00002C3A: 	CALL	CAR_ROAD_COLL
+    CAR_ROAD_COLL();
     // *GET CAR MATRIX
     // asm 00002C3B: 	LDF	*+AR5(CARYROT),R2
     // asm 00002C3C: 	STF	R2,*+AR4(ORADY)		;STORE CAR OBJECT RADY
+    obj->rad.Y = carblk->y_rotation;
     // asm 00002C3D: 	LDI	@MATRIXAI,AR2
     // asm 00002C3E: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&_MATRIXA, carblk->y_rotation);
     // *FORM NEW ROTATION MATRIX FOR CAR
     // asm 00002C3F: 	LDI	AR4,R2
     // asm 00002C40: 	ADDI	OMATRIX,R2
     // asm 00002C41: 	LDI	R2,R3
     // asm 00002C42: 	CALL	CONCATMAT
+    CONCATMAT((MATRIX*)&obj->omatrix, &_MATRIXA, (MATRIX*)&obj->omatrix);
     // asm 00002C43: 	CALL	DRONE_RIDE_RIGHT	;GET DISTANCE TO CENTER OF LANE
+    carblk->dist_to_center = DRONE_RIDE_RIGHT(obj, carblk);
     // asm 00002C44: 	STF	R0,*+AR5(CARDIST2CNTR)
+    // stored above
     // asm 00002C45: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESTOP", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

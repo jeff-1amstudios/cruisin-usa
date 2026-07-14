@@ -16,6 +16,12 @@
 #include "validator.h"
 #include "vunit.h"
 
+#include <math.h>
+
+extern MATRIX _MATRIXA;
+extern VECTOR _VECTORA;
+extern VECTOR _VECTORB;
+
 /*
  * Source module: asm/RACER.ASM
  */
@@ -360,7 +366,7 @@ NOOTHERPAL:
     // asm 00005120: 	STF	R0,*+AR7(ROADOFFSET)
     p->ctx->RACER_DRONE.delta_xlane = init->xlane;
     p->ctx->RACER_DRONE.road_offset = init->xlane;
-    MAME_ASSERT_REG(0x00005120, "R0", &init->xlane);
+    MAME_ASSERT_REG_FLOAT(0x00005120, "R0", &init->xlane);
     // asm 00005121: 	LDI	2,R2		  	;SET LANE STATUS
     // asm 00005122: 	FLOAT	600,R1
     // asm 00005123: 	CMPF	R1,R0
@@ -377,7 +383,7 @@ NOOTHERPAL:
     // asm 0000512B: 	MPYF	*+AR0(RD_MAXACCEL),R0
     // asm 0000512C: 	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
     carblk->max_accel = init->maxaccel * difficulty;
-    MAME_ASSERT_REG(0x0000512C, "R0", &carblk->max_accel);
+    MAME_ASSERT_REG_FLOAT(0x0000512C, "R0", &carblk->max_accel);
     // asm 0000512D: 	LDF	*+AR0(RD_REL),R0
     // asm 0000512E: 	STF	R0,*+AR7(RELATIVITY)	;SET RELATIVITY COEFFICIENT
     p->ctx->RACER_DRONE.relativity = init->rel;
@@ -640,7 +646,7 @@ PROC_STATE_1:
 PROC_STATE_RACER_LP:
     if (SUSPEND_MODE == SM_HALT) {
         GETTRAK(obj, carblk);
-        DRONESTOP();
+        DRONESTOP(obj, carblk);
         goto PROC_STATE_RACER_SLP;
     }
 
@@ -1961,20 +1967,25 @@ RPASSX:
  *
  */
 float SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/) {
-    (void)p;
-    (void)obj;
-    (void)tracking_obj;
-    (void)rank_forward;
+    CARBLK* carblk;
+    float road_theta;
+    float distance;
+
     // asm 00005522: 	PUSH	AR5
     // asm 00005523: 	PUSH	AR6
     // asm 00005524: 	LDI	@VECTORBI,AR5
     // asm 00005525: 	LDF	*+AR2(OPOSX),R0
     // asm 00005526: 	STF	R0,*+AR5(X)
+    _VECTORB.X = tracking_obj->posx;
     // asm 00005527: 	LDF	*+AR2(OPOSY),R0
     // asm 00005528: 	STF	R0,*+AR5(Y)
+    _VECTORB.Y = tracking_obj->posy;
     // asm 00005529: 	LDF	*+AR2(OPOSZ),R0
     // asm 0000552A: 	STF	R0,*+AR5(Z)
+    _VECTORB.Z = tracking_obj->posz;
+    carblk = obj->carblk;
     // asm 0000552B: 	LDI	*+AR2(OLINK4),AR2	;GET *NEXT* PIECE
+    tracking_obj = (OBJ*)tracking_obj->link4;
 LOOP56:
     // asm 0000552C: 	LDF	*+AR2(OPOSX),R2
     // asm 0000552D: 	SUBF	*+AR5(X),R2
@@ -1983,17 +1994,24 @@ LOOP56:
     // asm 00005530: 	CALL	ARCTANF
     // asm 00005531: 	SUBF	HALFPI,R0
     // asm 00005532: 	LDF	R0,R2			;THIS IS INITIAL FACING
+    road_theta = atan2f(tracking_obj->posz - _VECTORB.Z, tracking_obj->posx - _VECTORB.X) - HALFPI;
     // asm 00005533: 	CMPI	0,AR3
     // asm 00005534: 	BEQ	OFFANDDONE
-    // asm 00005535: 	FLOAT	5500,R0
-    // asm 00005536: 	CALL	DISTANCE_2D
-    // asm 00005537: 	ADDF	*+AR5(X),R0
-    // asm 00005538: 	STF	R0,*+AR5(X)
-    // asm 00005539: 	ADDF	*+AR5(Z),R1
-    // asm 0000553A: 	STF	R1,*+AR5(Z)
-    // asm 0000553B: 	DEC	AR3
-    // asm 0000553C: 	CMPI	0,AR3
-    // asm 0000553D: 	BLE	OFFANDDONE
+    if (rank_forward != 0) {
+        // asm 00005535: 	FLOAT	5500,R0
+        // asm 00005536: 	CALL	DISTANCE_2D
+        distance = 5500.0f;
+        // asm 00005537: 	ADDF	*+AR5(X),R0
+        // asm 00005538: 	STF	R0,*+AR5(X)
+        _VECTORB.X += -_SINE(road_theta) * distance;
+        // asm 00005539: 	ADDF	*+AR5(Z),R1
+        // asm 0000553A: 	STF	R1,*+AR5(Z)
+        _VECTORB.Z += _COSI(road_theta) * distance;
+        // asm 0000553B: 	DEC	AR3
+        rank_forward -= 1;
+        // asm 0000553C: 	CMPI	0,AR3
+        // asm 0000553D: 	BLE	OFFANDDONE
+        if (rank_forward > 0) {
 LOOP56A:
     // asm 0000553E: 	LDF	*+AR2(OPOSX),R0
     // asm 0000553F: 	SUBF	*+AR5(X),R0
@@ -2008,38 +2026,54 @@ LOOP56A:
     // asm 00005548: 	BGT	LOOP56
     // asm 00005549: 	LDI	*+AR2(OLINK4),AR2
     // asm 0000554A: 	BU	LOOP56A
+            while (1) {
+                if (sqrtf((tracking_obj->posx - _VECTORB.X) * (tracking_obj->posx - _VECTORB.X) +
+                          (tracking_obj->posz - _VECTORB.Z) * (tracking_obj->posz - _VECTORB.Z)) > 5000.0f) {
+                    goto LOOP56;
+                }
+                tracking_obj = (OBJ*)tracking_obj->link4;
+            }
+        }
+    }
 OFFANDDONE:
     // asm 0000554B: 	STI	AR2,*+AR7(DELTA_TPIECE)
+    p->ctx->RACER_DRONE.delta_tpiece = tracking_obj;
 L874:
     // asm 0000554C: LDI	*+AR2(OUSR1),R0
     // asm 0000554D: 	STI	R0,*+AR7(DELTA_LAST_OID)
+    p->ctx->RACER_DRONE.delta_last_oid = (int)tracking_obj->usr1;
     // asm 0000554E: 	PUSHFL	R2
     // asm 00005550: 	LDI	@MATRIXAI,AR2
     // asm 00005551: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&_MATRIXA, road_theta);
     // asm 00005552: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 00005553: 	LDF	*+AR7(DELTA_XLANE),R0
     // asm 00005554: 	STF	R0,*+AR2(X)
+    _VECTORA.X = p->ctx->RACER_DRONE.delta_xlane;
     // asm 00005555: 	LDI	@MATRIXAI,R2
     // asm 00005556: 	LDI	AR2,R3
     // asm 00005557: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&_VECTORA, &_MATRIXA, &_VECTORA);
     // asm 00005558: 	LDI	@VECTORAI,AR0
     // asm 00005559: 	LDF	*+AR5(X),R0
     // asm 0000555A: 	ADDF	*+AR0(X),R0
     // asm 0000555B: 	STF	R0,*+AR4(OPOSX)
+    obj->posx = _VECTORB.X + _VECTORA.X;
     // asm 0000555C: 	LDF	*+AR5(Y),R0
     // asm 0000555D: 	SUBF	*+AR5(CARWHLTAB+1),R0
     // asm 0000555E: 	ADDF	*+AR0(Y),R0
     // asm 0000555F: 	STF	R0,*+AR4(OPOSY)
+    obj->posy = (_VECTORB.Y - carblk->wheel_scan_offsets[0].Y) + _VECTORA.Y;
     // asm 00005560: 	LDF	*+AR5(Z),R0
     // asm 00005561: 	ADDF	*+AR0(Z),R0
     // asm 00005562: 	STF	R0,*+AR4(OPOSZ)
+    obj->posz = _VECTORB.Z + _VECTORA.Z;
     // asm 00005563: 	POPFL	R2
     // asm 00005565: 	POP	AR6
     // asm 00005566: 	POP	AR5
     // asm 00005567: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPOS_INIT", 0, 0);
-    UNIMPL();
-    return 0.0f;
+    return road_theta;
 }
 
 // *----------------------------------------------------------------------------

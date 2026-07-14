@@ -37,7 +37,7 @@ void SUB_FUNCTION_RVS_XLANE(void);
 #define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
 void DELTA_SUB_FUNCTION(void);
 void INIT_DRONES(void);
-void ADD_DRONE(void);
+void ADD_DRONE(OBJ* obj /*AR4*/);
 void FREE_DRONE(void);
 void EXP_PUFF(void);
 void PRECOLLIDE_PLYR(void);
@@ -1023,16 +1023,17 @@ void INIT_DRONES(void) {
  *	AR4	OBJECT DRONE POINTER
  *
  */
-void ADD_DRONE(void) {
+void ADD_DRONE(OBJ* obj /*AR4*/) {
     // asm 0000678D: 	PUSH	R0
     // asm 0000678E: 	LDI	@CAR_LIST,R0
     // asm 0000678F: 	STI	R0,*+AR4(OLINK3)
+    obj->link3 = (uintptr_t)CAR_LIST;
     // asm 00006790: 	STI	AR4,@CAR_LIST
+    CAR_LIST = obj;
     // asm 00006791: 	INCM	@DRONE_COUNT
+    DRONE_COUNT += 1;
     // asm 00006794: 	POP	R0
     // asm 00006795: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADD_DRONE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

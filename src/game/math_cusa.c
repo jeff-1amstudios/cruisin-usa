@@ -15,6 +15,10 @@
 #include "validator.h"
 #include "vunit.h"
 
+#include <math.h>
+
+extern VECTOR _VECTORA;
+
 /*
  * Source module: asm/MATH.ASM
  */
@@ -1267,11 +1271,12 @@ void CLR_VECTORA(void) {
     // asm 00009666: 	STF	R0,*AR2
     // asm 00009667: 	STF	R0,*+AR2(1)
     // asm 00009668: 	STF	R0,*+AR2(2)
+    _VECTORA.X = 0.0f;
+    _VECTORA.Y = 0.0f;
+    _VECTORA.Z = 0.0f;
     // asm 00009669: 	POPF	R0
     // asm 0000966A: 	POP	R0
     // asm 0000966B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLR_VECTORA", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

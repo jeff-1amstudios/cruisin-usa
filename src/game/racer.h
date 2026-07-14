@@ -86,7 +86,7 @@ void GETAUTO(void);
 
 float GETRDIR(OBJ* track_obj /*AR2*/);
 
-void DRONESTOP(void);
+void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 

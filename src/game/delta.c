@@ -59,7 +59,7 @@ CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/) {
     // asm 0000AE6E: 	CALL	ADD_DRONE
     p->ctx->RACER_DRONE.obj = obj;
     p->ctx->RACER_DRONE.carblk = carblk;
-    ADD_DRONE();
+    ADD_DRONE(obj);
 
     // asm 0000AE6F: 	STI	AR7,*+AR4(OPLINK)
     obj->plink = p;

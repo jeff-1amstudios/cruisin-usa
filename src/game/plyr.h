@@ -77,7 +77,7 @@ void INBOUNDZ(void);
 void GETRPM(void);
 void GETAUTO(void);
 void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-void DRONESTOP(void);
+void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void BONUS_WAIT_LOOP(void);
 void PLYR_CAR_INIT(void);
 void DRONESND(void);
