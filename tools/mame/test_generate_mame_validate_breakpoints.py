@@ -219,6 +219,32 @@ def test_mame_assert_reg_uses_explicit_breakpoint() -> None:
         )
 
 
+def test_mame_assert_reg_wiggle_uses_explicit_breakpoint() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                void test(uint32_t palette_code) {
+                    MAME_ASSERT_REG_WIGGLE(0x00009F86, "R0", &palette_code, 4);
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+        sample_map = tmp / "address.map"
+        sample_map.write_text("")
+
+        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x00009F86
+        assert (
+            entries[0].format_mame()
+            == 'bpset 00009F86, 1, { logerror "validate R0: 0x%08X, sample.c:2\\n", r0; g }'
+        )
+
+
 def test_mame_validate_reg_at_addr_accepts_indexed_address_expr() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = pathlib.Path(tmpdir)
@@ -497,6 +523,8 @@ def main() -> int:
     print("ok: mame_validate_reg_at_addr emits an explicit-address register breakpoint")
     test_mame_assert_reg_uses_explicit_breakpoint()
     print("ok: MAME_ASSERT_REG emits an explicit-address register breakpoint")
+    test_mame_assert_reg_wiggle_uses_explicit_breakpoint()
+    print("ok: MAME_ASSERT_REG_WIGGLE emits an explicit-address register breakpoint")
     test_mame_validate_reg_at_addr_accepts_indexed_address_expr()
     print("ok: mame_validate_reg_at_addr accepts indexed address expressions")
     test_mame_validate_reg_at_addr_float_uses_float_register_label()

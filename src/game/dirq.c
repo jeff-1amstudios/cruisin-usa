@@ -25,7 +25,7 @@ static void TRANS2D(void);
 static void DYNAMIC_OBJECT(void);
 static void PLOTPOLY(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/);
 static int CLIPCK(const float* vertex1 /*AR4*/, const float* vertex2 /*AR5*/, const float* vertex3 /*AR2*/, const float* vertex4 /*AR3*/, int* clipram /*AR0*/);
-static void CLIP(void);
+static void CLIP(int* clipram /*AR0*/, int palette_base /*R0*/, int control_word /*R2*/, const ROM_POLYGON* polygon /*AR1*/);
 static void PLTPOLY(void);
 static void PLOT1PAL(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/);
 static void PLT1PAL(void);
@@ -1357,7 +1357,7 @@ NOSHAD:
 // *
 // *
 static void PLOTPOLY(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/) {
-    int clipram[8];
+    int* clipram;
     const ROM_POLYGON* polygon;
     int polygon_index;
 
@@ -1512,6 +1512,7 @@ CLIPIT:
         return;
     }
 
+    clipram = (int*)CLIPRAM;
     polygon = polygons;
     for (polygon_index = 0; polygon_index <= polygon_count_minus_one; polygon_index++, polygon++) {
         int packed_vertices;
@@ -1611,7 +1612,10 @@ CLIPIT:
         // asm 000002EA: 	LSH	R6,R2,R0		;SHIFT 16 TO RIGHT
         clip = CLIPCK(vertex1, vertex2, vertex3, vertex4, clipram);
         if (clip != 0) {
-            CLIP();
+            control_word = (int)polygon->palnum_and_cntl;
+            palette_index = (int)((u32)control_word >> 16);
+            palette_base = (_PALLIST[palette_index].ref_count_and_pal_code >> 16) << 8;
+            CLIP(clipram, palette_base, control_word, polygon);
             continue;
         }
         palette_index = (int)((u32)control_word >> 16);
@@ -1763,13 +1767,35 @@ CKLP:
 // *	R0 	PALETTE
 // *	R2      FLAGS
 // *
-static void CLIP(void) {
+static void CLIP(int* clipram /*AR0*/, int palette_base /*R0*/, int control_word /*R2*/, const ROM_POLYGON* polygon /*AR1*/) {
+    int entry_count;
+    int current_index;
+    int* entry;
+    int i;
+    int x_max;
+    int x_min;
+    int y_max;
+    int y_min;
+    int x_mid_12;
+    int y_mid_12;
+    int x_mid_23;
+    int y_mid_23;
+    int x_mid_34;
+    int y_mid_34;
+    int x_mid_41;
+    int y_mid_41;
+    int x_mid_center;
+    int y_mid_center;
+
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIP", 0, 0);
+
     // asm 0000032F: 	PUSH	IR0
     // asm 00000330: 	PUSH	IR1
     // asm 00000331: 	LDI	2,IR0
     // asm 00000332: 	LDI	3,IR1
     // asm 00000333: 	LDI	R2,AR3		     	;SAVE FLAGS
     // asm 00000334: 	LDI	R0,R4			;SAVE PALETTE
+    entry_count = 0;
     // ;	LDIL	CLIPRAM,R0		;LOAD UP SCRATCH AREA
     // ;	CMPI	R0,AR0
     // ;	BNE	$
@@ -1780,6 +1806,9 @@ static void CLIP(void) {
     // asm 00000336: 	AND	*+AR0(4),R0
     // asm 00000337: 	AND	*+AR0(6),R0
     // asm 00000338: 	BND	CLIPX	    		;ALL X <0 REJECT
+    if ((clipram[0] & clipram[2] & clipram[4] & clipram[6]) < 0) {
+        goto CLIPX;
+    }
     // *X ALL POSTIVE CASE
     // asm 00000339: 	LDI	511,R1
     // asm 0000033A: 	SUBI	*AR0,R1,R2
@@ -1792,6 +1821,9 @@ static void CLIP(void) {
     // asm 00000340: 	SUBI	*+AR0(6),R1
     // asm 00000341: 	AND	R1,R2
     // asm 00000342: 	BND	CLIPX			;ALL X >511 REJECT
+    if (((511 - clipram[0]) & (511 - clipram[2]) & (511 - clipram[4]) & (511 - clipram[6])) < 0) {
+        goto CLIPX;
+    }
     // *Y ALL POSTIVE CASE
     // asm 00000343: 	LDI	399,R1
     // asm 00000344: 	SUBI	*+AR0(1),R1,R2
@@ -1804,12 +1836,18 @@ static void CLIP(void) {
     // asm 0000034A: 	SUBI	*+AR0(7),R1
     // asm 0000034B: 	AND	R1,R2
     // asm 0000034C: 	BND	CLIPX			;ALL Y >511 REJECT
+    if (((399 - clipram[1]) & (399 - clipram[3]) & (511 - clipram[5]) & (399 - clipram[7])) < 0) {
+        goto CLIPX;
+    }
     // *Y ALL NEGATIVE CASE
     // asm 0000034D: 	AND	*+AR0(1),*+AR0(IR1),R0
     // asm 0000034E: 	AND	*+AR0(5),R0
     // asm 0000034F: 	AND	*+AR0(7),R0
     // 	;------->BND	CLIPX	    	;ALL X >511 REJECT
     // asm 00000350: 	BN	CLIPX			;ALL Y >511 REJECT
+    if ((clipram[1] & clipram[3] & clipram[5] & clipram[7]) < 0) {
+        goto CLIPX;
+    }
     // *
     // *COMPUTE YOUR INTERNAL VERTICES
     // *AR0-POINTER TO POLY STACK
@@ -1841,11 +1879,23 @@ static void CLIP(void) {
     // asm 00000367: 	LSH	-8,R0
     // asm 00000368: 	AND	R2,R0,R1
     // asm 00000369: 	STI	R1,*+AR0(15)
+    clipram[8] = (int)(polygon->iv_0_1 & 0xff);
+    clipram[9] = (int)((polygon->iv_0_1 >> 8) & 0xff);
+    clipram[10] = (int)((polygon->iv_0_1 >> 16) & 0xff);
+    clipram[11] = (int)((polygon->iv_0_1 >> 24) & 0xff);
+    clipram[12] = (int)(polygon->iv_2_3 & 0xff);
+    clipram[13] = (int)((polygon->iv_2_3 >> 8) & 0xff);
+    clipram[14] = (int)((polygon->iv_2_3 >> 16) & 0xff);
+    clipram[15] = (int)((polygon->iv_2_3 >> 24) & 0xff);
+    MAME_ASSERT_REG(0x0000036A, "R1", &clipram[15]);
     // asm 0000036A: 	LDI	AR0,R6
     // asm 0000036B:  	BD	BUSTUP
     // asm 0000036C: 	LDI	R6,R7
     // asm 0000036D: 	ADDI	CLIPRAML-80,R7	     	;GET LENGTH LIMIT
     // asm 0000036E: 	LDI	*AR1++,R5		;GET TEXTURE MAP ADDR
+    current_index = 0;
+    entry = clipram;
+    goto BUSTUP;
     //  	;------->BD	BUSTUP
     // *
     // *POP STACK
@@ -1860,6 +1910,12 @@ static void CLIP(void) {
     // *	R5	TEXTURE MAP ADDR
 CLIPOP:
     // asm 0000036F: 	NOP	*AR0--(16)		;POP OFF OLD ENTRY
+    if (entry_count <= 0) {
+        goto CLIPDONE;
+    }
+    current_index = entry_count - 1;
+    entry = &clipram[current_index * 16];
+    entry_count = current_index;
     // ;	LDI	AR0,R1
     // ;	AND	0FH,R1
     // ;	CMPI	0DH,R1
@@ -1888,6 +1944,12 @@ CLIP0:
     // asm 00000374: 	AND	*+AR0(6),R0
     // 	;-------->BGTD	CLIPDONE  	;YES...EXIT
     // asm 00000375: 	BND	CLIPOP	    		;ALL X <0 REJECT
+    if ((entry[0] & entry[2] & entry[4] & entry[6]) < 0) {
+        if (entry_count <= 0) {
+            goto CLIPDONE;
+        }
+        goto CLIPOP;
+    }
     // *X ALL POSTIVE CASE
     // asm 00000376: 	LDI	511,R1
     // asm 00000377: 	SUBI	*AR0,R1,R2
@@ -1900,6 +1962,12 @@ CLIP0:
     // asm 0000037D: 	SUBI	*+AR0(6),R1
     // asm 0000037E: 	AND	R1,R2
     // asm 0000037F: 	BND	CLIPOP			;ALL X >511 REJECT
+    if (((511 - entry[0]) & (511 - entry[2]) & (511 - entry[4]) & (511 - entry[6])) < 0) {
+        if (entry_count <= 0) {
+            goto CLIPDONE;
+        }
+        goto CLIPOP;
+    }
     // *Y ALL POSTIVE CASE
     // asm 00000380: 	LDI	399,R1
     // asm 00000381: 	SUBI	*+AR0(1),R1,R2
@@ -1912,12 +1980,24 @@ CLIP0:
     // asm 00000387: 	SUBI	*+AR0(7),R1
     // asm 00000388: 	AND	R1,R2
     // asm 00000389: 	BND	CLIPOP			;ALL Y >511 REJECT
+    if (((399 - entry[1]) & (399 - entry[3]) & (511 - entry[5]) & (399 - entry[7])) < 0) {
+        if (entry_count <= 0) {
+            goto CLIPDONE;
+        }
+        goto CLIPOP;
+    }
     // *Y ALL NEGATIVE CASE
     // asm 0000038A: 	AND	*+AR0(1),*+AR0(IR1),R0
     // asm 0000038B: 	AND	*+AR0(5),R0
     // asm 0000038C: 	AND	*+AR0(7),R0
     // 	;------->BND	CLIPOP	    	;ALL X >511 REJECT
     // asm 0000038D: 	BND	CLIPOP		    	;ALL Y <0 REJECT
+    if ((entry[1] & entry[3] & entry[5] & entry[7]) < 0) {
+        if (entry_count <= 0) {
+            goto CLIPDONE;
+        }
+        goto CLIPOP;
+    }
     // *CHECK OVERSIZE OBJECT
     // asm 0000038E: 	LDI	*AR0,R0			;XMAX
     // asm 0000038E:  ||	LDI	*AR0,R1			;XMIN
@@ -1943,6 +2023,27 @@ CLCKLP:
     // asm 0000039F: 	CMPI	2047,R2
     // 	;------->BGTD	BUSTUP
     // asm 000003A0: 	BGT	BUSTUP
+    x_max = entry[0];
+    x_min = entry[0];
+    y_max = entry[1];
+    y_min = entry[1];
+    for (i = 1; i <= 3; i++) {
+        if (entry[i * 2] > x_max) {
+            x_max = entry[i * 2];
+        }
+        if (entry[i * 2] < x_min) {
+            x_min = entry[i * 2];
+        }
+        if (entry[i * 2 + 1] > y_max) {
+            y_max = entry[i * 2 + 1];
+        }
+        if (entry[i * 2 + 1] < y_min) {
+            y_min = entry[i * 2 + 1];
+        }
+    }
+    if ((x_max - x_min) > 2047 || (y_max - y_min) > 2047) {
+        goto BUSTUP;
+    }
     // *POLYGON IS O.K. OUTPUT IT
 PCOUT:
 PCWT:
@@ -1978,11 +2079,31 @@ PCWT:
     // asm 000003B9: 	STI	R5,*AR7 		;STORE TEXTURE MAP ADDR
     // asm 000003BA: 	LDI	@FIFO_INC,R0		;INC YOUR FIFO
     // asm 000003BB: 	NOP	*AR0--(32)		;READJUST INDEX
+    port_output_fpga(
+        entry[0],
+        entry[1],
+        entry[2],
+        entry[3],
+        entry[4],
+        entry[5],
+        entry[6],
+        entry[7],
+        entry[8] + (entry[9] << 8),
+        entry[10] + (entry[11] << 8),
+        entry[12] + (entry[13] << 8),
+        entry[14] + (entry[15] << 8),
+        (int)polygon->texture_map_addr,
+        palette_base,
+        control_word);
     //  ;	LDI	AR0,R1
     //  ;	AND	0FH,R1
     //  ;	CMPI	0DH,R1
     //  ;	BNE	$
     // asm 000003BC: 	B 	CLIP0			;GET NEXT POLYGON
+    if (entry_count <= 0) {
+        goto CLIPDONE;
+    }
+    goto CLIPOP;
     // *BUSTUP A POLYGON INTO 4 OTHERS, PUT ON STACK
     // *AR0=CURRENT STACK ENTRY
 BUSTUP:
@@ -1999,6 +2120,9 @@ BUSTUP:
     // asm 000003BD: 	CMPI	R7,AR0			;STACK TOO HIGH?
     // asm 000003BE: 	BLT	BUSTUP0
     // asm 000003BF: 	B	PCOUT			;YES, JUST DO IT...
+    if ((current_index * 16) >= (CLIPRAML - 80)) {
+        goto PCOUT;
+    }
     // *COMPUTE YOUR EXTERNAL VERTICES
 BUSTUP0:
     // asm 000003C0: 	LDI	AR0,AR2
@@ -2014,40 +2138,70 @@ BUSTUP0:
     // asm 000003C9: 	STI	R0,*+AR2(36H)
     // asm 000003CA: 	LDI	*+AR0(7),R0		;Y4
     // asm 000003CB: 	STI	R0,*+AR2(37H)
+    entry[18] = entry[2];
+    entry[19] = entry[3];
+    entry[36] = entry[4];
+    entry[37] = entry[5];
+    entry[54] = entry[6];
+    entry[55] = entry[7];
     // asm 000003CC: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 000003CD: 	ASH	-1,R0			;X1+X2/2=X5
     // asm 000003CE: 	STI	R0,*+AR2(42H)
     // asm 000003CF: 	STI	R0,*+AR2(10H)
+    x_mid_12 = (entry[0] + entry[2]) >> 1;
+    entry[66] = x_mid_12;
+    entry[16] = x_mid_12;
     // asm 000003D0: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 000003D1: 	ASH	-1,R0			;Y1+Y2/2=Y5
     // asm 000003D2: 	STI	R0,*+AR2(43H)
     // asm 000003D3: 	STI	R0,*+AR2(11H)
+    y_mid_12 = (entry[1] + entry[3]) >> 1;
+    entry[67] = y_mid_12;
+    entry[17] = y_mid_12;
     // asm 000003D4: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 000003D5: 	ASH	-1,R0		       	;X2+X3/2=X6
     // asm 000003D6: 	STI	R0,*+AR2(14H)
     // asm 000003D7: 	STI	R0,*+AR2(22H)
+    x_mid_23 = (entry[2] + entry[4]) >> 1;
+    entry[20] = x_mid_23;
+    entry[34] = x_mid_23;
     // asm 000003D8: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 000003D9: 	ASH	-1,R0			;Y2+Y3/2=Y6
     // asm 000003DA: 	STI	R0,*+AR2(15H)
     // asm 000003DB: 	STI	R0,*+AR2(23H)
+    y_mid_23 = (entry[3] + entry[5]) >> 1;
+    entry[21] = y_mid_23;
+    entry[35] = y_mid_23;
     // asm 000003DC: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 000003DD: 	ASH	-1,R0			;X3+X4/2=X7
     // asm 000003DE: 	STI	R0,*+AR2(26H)
     // asm 000003DF: 	STI	R0,*+AR2(34H)
+    x_mid_34 = (entry[4] + entry[6]) >> 1;
+    entry[38] = x_mid_34;
+    entry[52] = x_mid_34;
     // asm 000003E0: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 000003E1: 	ASH	-1,R0			;Y3+Y4/2=Y7
     // asm 000003E2: 	STI	R0,*+AR2(27H)
     // asm 000003E3: 	STI	R0,*+AR2(35H)
+    y_mid_34 = (entry[5] + entry[7]) >> 1;
+    entry[39] = y_mid_34;
+    entry[53] = y_mid_34;
     // asm 000003E4: 	LDI	*--AR0(6),R0
     // asm 000003E5: 	ADDI	*+AR0(6),R0
     // asm 000003E6: 	ASH	-1,R0			;X1+X4/2=X8
     // asm 000003E7: 	STI	R0,*+AR2(46H)
     // asm 000003E8: 	STI	R0,*+AR2(30H)
+    x_mid_41 = (entry[0] + entry[6]) >> 1;
+    entry[70] = x_mid_41;
+    entry[48] = x_mid_41;
     // asm 000003E9: 	LDI	*+AR0(1),R0
     // asm 000003EA: 	ADDI	*+AR0(7),R0
     // asm 000003EB: 	ASH	-1,R0			;Y1+Y4/2=Y8
     // asm 000003EC: 	STI	R0,*+AR2(47H)
     // asm 000003ED: 	STI	R0,*+AR2(31H)
+    y_mid_41 = (entry[1] + entry[7]) >> 1;
+    entry[71] = y_mid_41;
+    entry[49] = y_mid_41;
     // asm 000003EE: 	ADDI	*AR0,*+AR0(IR0),R0
     // asm 000003EF: 	ADDI	*+AR0(4),R0
     // asm 000003F0: 	ADDI	*+AR0(6),R0
@@ -2056,6 +2210,12 @@ BUSTUP0:
     // asm 000003F3: 	STI	R0,*+AR2(16H)
     // asm 000003F4: 	STI	R0,*+AR2(20H)
     // asm 000003F5: 	STI	R0,*+AR2(32H)
+    x_mid_center = (entry[0] + entry[2] + entry[4] + entry[6]) >> 2;
+    entry[68] = x_mid_center;
+    entry[22] = x_mid_center;
+    entry[32] = x_mid_center;
+    entry[50] = x_mid_center;
+    MAME_ASSERT_REG_WIGGLE(0x000003F2, "R0", &x_mid_center, 2);
     // asm 000003F6: 	LDI	*+AR0(1),R0
     // asm 000003F7: 	ADDI	*+AR0(3),R0
     // asm 000003F8: 	ADDI	*+AR0(5),R0
@@ -2065,6 +2225,11 @@ BUSTUP0:
     // asm 000003FC: 	STI	R0,*+AR2(17H)
     // asm 000003FD: 	STI	R0,*+AR2(21H)
     // asm 000003FE: 	STI	R0,*+AR2(33H)
+    y_mid_center = (entry[1] + entry[3] + entry[5] + entry[7]) >> 2;
+    entry[69] = y_mid_center;
+    entry[23] = y_mid_center;
+    entry[33] = y_mid_center;
+    entry[51] = y_mid_center;
     // *COMPUTE YOUR INTERNAL VERTICES
     // asm 000003FF: 	NOP	*AR0++(8)
     // asm 00000400: 	LDI	*AR0,R0			;X1
@@ -2083,40 +2248,72 @@ BUSTUP0:
     // asm 0000040B: 	STI	R0,*+AR2(3EH)
     // asm 0000040C: 	LDI	*+AR0(7),R0		;Y4
     // asm 0000040D: 	STI	R0,*+AR2(3FH)
+    entry[72] = entry[8];
+    entry[73] = entry[9];
+    entry[26] = entry[10];
+    entry[27] = entry[11];
+    entry[44] = entry[12];
+    entry[45] = entry[13];
+    entry[62] = entry[14];
+    entry[63] = entry[15];
     // asm 0000040E: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 0000040F: 	ASH	-1,R0			;X1+X2/2=X5
     // asm 00000410: 	STI	R0,*+AR2(4AH)
     // asm 00000411: 	STI	R0,*+AR2(18H)
+    x_mid_12 = (entry[8] + entry[10]) >> 1;
+    entry[74] = x_mid_12;
+    entry[24] = x_mid_12;
     // asm 00000412: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 00000413: 	ASH	-1,R0			;Y1+Y2/2=Y5
     // asm 00000414: 	STI	R0,*+AR2(4BH)
     // asm 00000415: 	STI	R0,*+AR2(19H)
+    y_mid_12 = (entry[9] + entry[11]) >> 1;
+    entry[75] = y_mid_12;
+    entry[25] = y_mid_12;
     // asm 00000416: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 00000417: 	ASH	-1,R0		       	;X2+X3/2=X6
     // asm 00000418: 	STI	R0,*+AR2(1CH)
     // asm 00000419: 	STI	R0,*+AR2(2AH)
+    x_mid_23 = (entry[10] + entry[12]) >> 1;
+    entry[28] = x_mid_23;
+    entry[42] = x_mid_23;
     // asm 0000041A: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 0000041B: 	ASH	-1,R0			;Y2+Y3/2=Y6
     // asm 0000041C: 	STI	R0,*+AR2(1DH)
     // asm 0000041D: 	STI	R0,*+AR2(2BH)
+    y_mid_23 = (entry[11] + entry[13]) >> 1;
+    entry[29] = y_mid_23;
+    entry[43] = y_mid_23;
     // asm 0000041E: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 0000041F: 	ASH	-1,R0			;X3+X4/2=X7
     // asm 00000420: 	STI	R0,*+AR2(2EH)
     // asm 00000421: 	STI	R0,*+AR2(3CH)
+    x_mid_34 = (entry[12] + entry[14]) >> 1;
+    entry[46] = x_mid_34;
+    entry[60] = x_mid_34;
     // asm 00000422: 	ADDI	*AR0++,*+AR0(IR0),R0
     // asm 00000423: 	ASH	-1,R0			;Y3+Y4/2=Y7
     // asm 00000424: 	STI	R0,*+AR2(2FH)
     // asm 00000425: 	STI	R0,*+AR2(3DH)
+    y_mid_34 = (entry[13] + entry[15]) >> 1;
+    entry[47] = y_mid_34;
+    entry[61] = y_mid_34;
     // asm 00000426: 	LDI	*--AR0(6),R0
     // asm 00000427: 	ADDI	*+AR0(6),R0
     // asm 00000428: 	ASH	-1,R0			;X1+X4/2=X8
     // asm 00000429: 	STI	R0,*+AR2(4EH)
     // asm 0000042A: 	STI	R0,*+AR2(38H)
+    x_mid_41 = (entry[8] + entry[14]) >> 1;
+    entry[78] = x_mid_41;
+    entry[56] = x_mid_41;
     // asm 0000042B: 	LDI	*+AR0(1),R0
     // asm 0000042C: 	ADDI	*+AR0(7),R0
     // asm 0000042D: 	ASH	-1,R0			;Y1+Y4/2=Y8
     // asm 0000042E: 	STI	R0,*+AR2(4FH)
     // asm 0000042F: 	STI	R0,*+AR2(39H)
+    y_mid_41 = (entry[9] + entry[15]) >> 1;
+    entry[79] = y_mid_41;
+    entry[57] = y_mid_41;
     // asm 00000430: 	ADDI	*AR0,*+AR0(IR0),R0
     // asm 00000431: 	ADDI	*+AR0(4),R0
     // asm 00000432: 	ADDI	*+AR0(6),R0
@@ -2125,6 +2322,11 @@ BUSTUP0:
     // asm 00000435: 	STI	R0,*+AR2(1EH)
     // asm 00000436: 	STI	R0,*+AR2(28H)
     // asm 00000437: 	STI	R0,*+AR2(3AH)
+    x_mid_center = (entry[8] + entry[10] + entry[12] + entry[14]) >> 2;
+    entry[76] = x_mid_center;
+    entry[30] = x_mid_center;
+    entry[40] = x_mid_center;
+    entry[58] = x_mid_center;
     // asm 00000438: 	LDI	*+AR0(1),R0
     // asm 00000439: 	ADDI	*+AR0(3),R0
     // asm 0000043A: 	ADDI	*+AR0(5),R0
@@ -2134,6 +2336,12 @@ BUSTUP0:
     // asm 0000043E: 	STI	R0,*+AR2(1FH)
     // asm 0000043F: 	STI	R0,*+AR2(29H)
     // asm 00000440: 	STI	R0,*+AR2(3BH)
+    y_mid_center = (entry[9] + entry[11] + entry[13] + entry[15]) >> 2;
+    entry[77] = y_mid_center;
+    entry[31] = y_mid_center;
+    entry[41] = y_mid_center;
+    entry[59] = y_mid_center;
+    MAME_ASSERT_REG(0x0000043D, "R0", &y_mid_center);
     // *TRANSFER LAST ENTRY INTO FIRST ONE
     // asm 00000441: 	NOP	*AR2++(42H)
     // asm 00000442: 	NOP	*AR0--(6)		;POINT TO X2,Y2
@@ -2142,19 +2350,26 @@ BUSTUP0:
     // asm 00000445: 	LDI	*AR2++,R0
     // asm 00000445:  ||	STI	R0,*AR0++
     // asm 00000446: 	STI	R0,*AR0++(31H)		;STORE LAST ONE, RESET INDEX TO TOS
+    for (i = 0; i < 14; i++) {
+        entry[2 + i] = entry[66 + i];
+    }
+    entry_count = current_index + 4;
     // ;	LDI	AR0,R1
     // ;	AND	0FH,R1
     // ;	CMPI	0DH,R1
     // ;	BNE	$
     // asm 00000447: 	B	CLIPOP
+    goto CLIPOP;
 CLIPX:
     // asm 00000448: 	NOP	*AR0--(16)		;RESTORE AR0
     // asm 00000449: 	ADDI	3,AR1			;SKIP THE INTERNAL VERTS AND TM CRAP
+    goto CLIPDONE;
 CLIPDONE:
     // asm 0000044A: 	LDI	-16,R6			;RESTORE R6
     // asm 0000044B: 	LDI	0FFH,R7			;RESTORE R7
     // asm 0000044C: 	NOP	*AR0++(16)		;RESTORE AR0
     // asm 0000044D: 	LDIL	CLIPRAM,R0		;LOAD UP SCRATCH AREA
+    clipram = (int*)CLIPRAM;
 #if DEBUG
     // asm: 	CMPI	R0,AR0
     // asm: 	BNE	$
@@ -2162,17 +2377,16 @@ CLIPDONE:
     // asm 00000450: 	POP	IR1
     // asm 00000451: 	POP	IR0
     // asm 00000452: 	RETS
-    // *PLOT A DISTANT POLYGON
-    // *
-    // *R7=0FFH
-    // *IR0=BLOWLIST
-    // *IR1=BLOWLIST+1
-    // *RC=POLYGON COUNT
-    // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLIP", 0, 0);
-    UNIMPL();
+    return;
 }
 
+// *PLOT A DISTANT POLYGON
+// *
+// *R7=0FFH
+// *IR0=BLOWLIST
+// *IR1=BLOWLIST+1
+// *RC=POLYGON COUNT
+// *
 static void PLTPOLY(void) {
     // ;	PUSH	AR0
     // ;	LDI	AR6,RC
@@ -2272,7 +2486,7 @@ PLTXX:
 // *RC=POLYGON COUNT
 // *
 static void PLOT1PAL(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/) {
-    int clipram[8];
+    int* clipram;
     const ROM_POLYGON* polygon;
     int polygon_index;
     // asm 00000498: 	CMPI	1000,R0
@@ -2398,6 +2612,7 @@ CLIPIT_1:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOT1PAL", 0, 0);
     g_dirq_debug_plot1pal_calls += 1;
 
+    clipram = (int*)CLIPRAM;
     polygon = polygons;
     for (polygon_index = 0; polygon_index <= polygon_count_minus_one; polygon_index++, polygon++) {
         int packed_vertices;
@@ -2483,7 +2698,8 @@ CLIPIT_1:
         clip = CLIPCK(vertex1, vertex2, vertex3, vertex4, clipram);
         if (clip != 0) {
             g_dirq_debug_plot1pal_clip_rejects += 1;
-            CLIP();
+            control_word = (int)polygon->palnum_and_cntl;
+            CLIP(clipram, (int)obj->palette, control_word, polygon);
             continue;
         }
 

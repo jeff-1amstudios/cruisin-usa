@@ -194,7 +194,9 @@ def split_top_level_args(text: str) -> List[str]:
     return args
 
 
-def parse_macro_invocation_args(line: str, macro_names: List[str], expected_count: int) -> Optional[List[str]]:
+def parse_macro_invocation_args(
+    line: str, macro_names: List[str], expected_counts: List[int]
+) -> Optional[List[str]]:
     stripped = strip_cpp_line_comment(line)
 
     for macro_name in macro_names:
@@ -212,7 +214,7 @@ def parse_macro_invocation_args(line: str, macro_names: List[str], expected_coun
             continue
 
         args = split_top_level_args(stripped[open_index + 1 : close_index])
-        if len(args) != expected_count:
+        if len(args) not in expected_counts:
             raise ValueError(
                 f"could not parse {macro_name} argument list from line: {line.strip()}"
             )
@@ -222,13 +224,16 @@ def parse_macro_invocation_args(line: str, macro_names: List[str], expected_coun
 
 
 def parse_explicit_value_validation(
-    line: str, macro_names: List[str]
+    line: str, macro_names: List[str], expected_counts: Optional[List[int]] = None
 ) -> Optional[tuple[str, str, str]]:
-    args = parse_macro_invocation_args(line, macro_names, 3)
+    if expected_counts is None:
+        expected_counts = [3]
+
+    args = parse_macro_invocation_args(line, macro_names, expected_counts)
     if args is None:
         return None
 
-    addr_expr, label_expr, value_expr = args
+    addr_expr, label_expr, value_expr = args[:3]
     label_match = re.fullmatch(r'"([^"]+)"', label_expr.strip())
     if label_match is None:
         raise ValueError(f"expected quoted label/expression argument, got {label_expr!r}")
@@ -470,7 +475,9 @@ def collect_breakpoints_for_file(
 
     for index, line in enumerate(lines):
         parsed = parse_explicit_value_validation(
-            line, ["MAME_ASSERT_REG", "MAME_ASSERT_REG_AT_ADDR", "mame_validate_reg_at_addr"]
+            line,
+            ["MAME_ASSERT_REG", "MAME_ASSERT_REG_WIGGLE", "MAME_ASSERT_REG_AT_ADDR", "mame_validate_reg_at_addr"],
+            [3, 4],
         )
         if parsed is None:
             continue

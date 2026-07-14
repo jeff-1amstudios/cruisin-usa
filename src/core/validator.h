@@ -26,7 +26,8 @@ void mame_assert_reg_at_addr_impl(
     uint32_t breakpoint_address,
     const char* reg_name,
     const void* ptr,
-    MAME_VALIDATE_REG_KIND reg_kind);
+    MAME_VALIDATE_REG_KIND reg_kind,
+    uint32_t wiggle_room);
 
 #define mame_validate_arg_sym(name, ptr) mame_validate_arg_sym_impl(__FILE__, __LINE__, (name), (ptr))
 
@@ -36,11 +37,13 @@ void mame_assert_reg_at_addr_impl(
 #define MAME_ASSERT_REGION_AT_ADDR(addr, name, region_addr, ptr, word_count) \
     mame_validate_region_at_addr_impl(__FILE__, __LINE__, (addr), (name), (region_addr), (ptr), (word_count))
 #define MAME_ASSERT_REG(addr, reg_name, ptr) \
-    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_WORD)
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_WORD, 0)
+#define MAME_ASSERT_REG_WIGGLE(addr, reg_name, ptr, wiggle_room) \
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_WORD, (wiggle_room))
 #define MAME_ASSERT_REG_FLOAT(addr, reg_name, ptr) \
-    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_FLOAT)
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_FLOAT, 0)
 #define MAME_ASSERT_MEM(addr, mem_addr, ptr) \
-    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_WORD)
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_WORD, 0)
 
 #define MAME_ASSERT_FUNCTION_ENTRY()
 
