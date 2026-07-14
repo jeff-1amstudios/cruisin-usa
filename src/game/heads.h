@@ -7,7 +7,7 @@
 
 // HEADS.ASM
 // asm: 	.bss	YINCREMENT,1
-extern int YINCREMENT;
+extern float YINCREMENT;
 // asm: 	.bss	FONTUSED,1
 extern int FONTUSED;
 void VANITY(void);

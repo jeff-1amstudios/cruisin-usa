@@ -17,11 +17,11 @@ extern int TVECT2[];
 // asm: 	.bss	TMATRIX,9
 extern int TMATRIX[];
 // asm: 	.bss	COLVEL,1	;RELATIVE COLLISION VELOCITY
-extern float COLVEL = 1.0f;
+extern float COLVEL;
 // asm: 	.bss	PMULT,1  	;PLAYER SLOW COLLISION VELOCITY MULTIPLIER
-extern int PMULT;
+extern float PMULT;
 // asm: 	.bss	SPINTEMP,1
-extern int SPINTEMP;
+extern float SPINTEMP;
 // asm: 	FBSS	BOXSCRAM,50
 extern int BOXSCRAM[];
 // asm: 	.BSS	PLYRBEHIND,1

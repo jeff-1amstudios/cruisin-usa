@@ -124,17 +124,17 @@ int OFFROAD_TMR;
 /* asm: ZOOMRAM	.bss	ZOOMRAM,0 */
 static int ZOOMRAM;
 /* asm: ZOOMD	.bss	ZOOMD,1 */
-int ZOOMD;
+float ZOOMD = 1.0f;
 /* asm: ZOOMDD	.bss	ZOOMDD,1 */
-int ZOOMDD;
+float ZOOMDD = 1.0f;
 /* asm: ZOOMDG	.bss	ZOOMDG,1 */
-int ZOOMDG;
+float ZOOMDG = 1.0f;
 /* asm: ZOOMH	.bss	ZOOMH,1 */
 int ZOOMH;
 /* asm: ZOOMHD	.bss	ZOOMHD,1 */
-int ZOOMHD;
+float ZOOMHD = 1.0f;
 /* asm: ZOOMHG	.bss	ZOOMHG,1 */
-int ZOOMHG;
+float ZOOMHG = 1.0f;
 /* asm: CAMVIEW	.bss	CAMVIEW,1 */
 int CAMVIEW;
 /* asm: BRAKEON	.bss	BRAKEON,1 */
@@ -154,7 +154,7 @@ PROC* PLYPROC;
 /* asm: PLYCBLK	.bss	PLYCBLK,1 */
 CARBLK* PLYCBLK;
 /* asm: OLDPLYSPD	.bss	OLDPLYSPD,1 */
-float OLDPLYSPD;
+float OLDPLYSPD = 1.0f;
 /* asm: OLDPLYAIR	.bss	OLDPLYAIR,1 */
 int OLDPLYAIR;
 /* asm: PLYRFIRST	.bss	PLYRFIRST,1 */
@@ -164,7 +164,7 @@ int PLAIRTIM;
 /* asm: CHEATACC	.bss	CHEATACC,1 */
 int CHEATACC;
 /* asm: CHEAT	.bss	CHEAT,1 */
-int CHEAT;
+float CHEAT = 1.0f;
 // *PLAYER 1ST, 2ND, 3RD POSTION COORDS:
 
 #define PLYPOS1Z 0
@@ -3430,19 +3430,19 @@ void DRONESND1(void) {
  *ALL FLOATS
  */
 /* asm: PEDALMN	.bss	PEDALMN,1 */
-int PEDALMN;
+float PEDALMN = 1.0f;
 /* asm: PEDALMX	.bss	PEDALMX,1 */
-int PEDALMX;
+float PEDALMX = 1.0f;
 /* asm: STEERMN	.bss	STEERMN,1 */
-int STEERMN;
+float STEERMN = 1.0f;
 /* asm: STEERMX	.bss	STEERMX,1 */
-float STEERMX;
+float STEERMX = 1.0f;
 /* asm: STEERCT	.bss	STEERCT,1 */
-int STEERCT;
+float STEERCT = 1.0f;
 /* asm: BRAKEMN	.bss	BRAKEMN,1 */
-int BRAKEMN;
+float BRAKEMN = 1.0f;
 /* asm: BRAKEMX	.bss	BRAKEMX,1 */
-int BRAKEMX;
+float BRAKEMX = 1.0f;
 /* asm: STEERFR	.bss	STEERFR,1 */
 float STEERFR = 1.0f;
 #define ADJ_COINMODE 0

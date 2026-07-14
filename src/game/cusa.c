@@ -176,7 +176,7 @@ int ERRORN;
 /* asm: ERRORO	.bss	ERRORO,1 */
 int ERRORO;
 /* asm: FRAMETIME	.bss	FRAMETIME,1 */
-float FRAMETIME;
+float FRAMETIME = 1.0f;
 /* asm: SWITCHBUTS	.bss	SWITCHBUTS,1 */
 int SWITCHBUTS;
 /* asm: BGNDCOLA	.bss	BGNDCOLA,1 */
@@ -184,7 +184,7 @@ int BGNDCOLA;
 /* asm: DIAG_ACTIVE	.bss	DIAG_ACTIVE,1 */
 int DIAG_ACTIVE;
 /* asm: GAME_TIMER	.bss	GAME_TIMER,1 */
-float GAME_TIMER;
+float GAME_TIMER = 1.0f;
 /* asm: SYSCNTL	pbss	SYSCNTL,1 */
 int SYSCNTL;
 /* asm: _pot0	pbss	_pot0,1 */
@@ -1690,7 +1690,7 @@ void TIMER_READ(void) {
 // *----------------------------------------------------------------------------
 
 /* asm: TIMEFRAME	.bss	TIMEFRAME,1 */
-int TIMEFRAME;
+float TIMEFRAME = 1.0f;
 /* asm: TIMEX	.bss	TIMEX,1 */
 float* TIMEX;
 /* asm: TIMECLR	.bss	TIMECLR,1 */

@@ -735,9 +735,9 @@ static void MAP_ILLUM_COMPUTE(void) {
 
 // *----------------------------------------------------------------------------
 /* asm: MAPPAL13	.bss	MAPPAL13,1 */
-float MAPPAL13;
+float MAPPAL13 = 1.0f;
 /* asm: MAPPAL24	.bss	MAPPAL24,1 */
-float MAPPAL24;
+float MAPPAL24 = 1.0f;
 
 static void MAPPAL_ILLUM(void) {
     const tPAL* source_palette;

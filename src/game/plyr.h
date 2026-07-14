@@ -9,17 +9,17 @@
 // asm: 	.bss	OFFROAD_TMR,1
 extern int OFFROAD_TMR;
 // asm: 	.bss	ZOOMD,1		;CURRENT ZOOM DISTANCE
-extern int ZOOMD;
+extern float ZOOMD;
 // asm: 	.bss	ZOOMDD,1
-extern int ZOOMDD;
+extern float ZOOMDD;
 // asm: 	.bss	ZOOMDG,1	;ZOOM DIST GOAL
-extern int ZOOMDG;
+extern float ZOOMDG;
 // asm: 	.bss	ZOOMH,1		;CURRENT ZOOM HEIGHT
 extern int ZOOMH;
 // asm: 	.bss	ZOOMHD,1
-extern int ZOOMHD;
+extern float ZOOMHD;
 // asm: 	.bss	ZOOMHG,1	;ZOOM HEIGHT GOAL
-extern int ZOOMHG;
+extern float ZOOMHG;
 // asm: 	.bss	CAMVIEW,1	;CAMERA VIEW 1=THIRD PERSON
 extern int CAMVIEW;
 // asm: 	.bss	BRAKEON,1	;1=BRAKE PEDAL ON
@@ -45,7 +45,7 @@ extern int PLAIRTIM;
 // asm: 	.bss	CHEATACC,1
 extern int CHEATACC;
 // asm: 	.bss	CHEAT,1
-extern int CHEAT;
+extern float CHEAT;
 // asm: 	.BSS	ENGVOL,1
 extern int ENGVOL;
 // asm: 	.bss	WHLTIM,1
@@ -53,19 +53,19 @@ extern int WHLTIM;
 // asm: 	.bss	WHLOLD,1
 extern int WHLOLD;
 // asm: 	.bss	PEDALMN,1		;GAS PEDAL MIN	 CMOS 0
-extern int PEDALMN;
+extern float PEDALMN;
 // asm: 	.bss	PEDALMX,1		;GAS PEDAL MAX	      1
-extern int PEDALMX;
+extern float PEDALMX;
 // asm: 	.bss	STEERMN,1		;STEERING MIN	      2
-extern int STEERMN;
+extern float STEERMN;
 // asm: 	.bss	STEERMX,1		;STEERING MAX	      3
 extern float STEERMX;
 // asm: 	.bss	STEERCT,1		;STEERING CENTER      4
-extern int STEERCT;
+extern float STEERCT;
 // asm: 	.bss	BRAKEMN,1		;BRAKE PEDAL MIN      5
-extern int BRAKEMN;
+extern float BRAKEMN;
 // asm: 	.bss	BRAKEMX,1		;BRAKE PEDAL MAX      6
-extern int BRAKEMX;
+extern float BRAKEMX;
 // asm: 	.bss	STEERFR,1		;STEERING FREE
 extern float STEERFR;
 void RANDSND(void);

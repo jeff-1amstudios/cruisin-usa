@@ -36,7 +36,7 @@ int FREEZE_IT;
 /* asm: COLL_POS	.bss	COLL_POS,3 */
 static int COLL_POS[3];
 /* asm: THE_TRAIN_SPEED	.bss	THE_TRAIN_SPEED,1 */
-int THE_TRAIN_SPEED;
+float THE_TRAIN_SPEED = 1.0f;
 /* asm: KILL_TRAIN	.bss	KILL_TRAIN,1 */
 int KILL_TRAIN;
 /* asm: COLL_DIST	.float	117465.0	;distance to collision from engine start */

@@ -37,7 +37,7 @@ static float INFINPOINTS[102];
 static float WATERPOS[78];
 
 /* asm: CAMRADY	.bss	CAMRADY,1 */
-float CAMRADY;
+float CAMRADY = 1.0f;
 /*
  *----------------------------------------------------------------------------
  *SEARCH THE ROAD OBJECTS AND FIND THE HIGHEST POSITIONED OBJECT.
@@ -52,11 +52,11 @@ float CAMRADY;
  */
 #define HIGH_CLIP_LEVEL ((5000 - 1)) // ACTUAL # OF ENTRIES
 /* asm: HIGHEST_ROADY	.bss	HIGHEST_ROADY,1 */
-float HIGHEST_ROADY;
+float HIGHEST_ROADY = 1.0f;
 /* asm: HIGHEST_ROADY_X	.bss	HIGHEST_ROADY_X,1 */
-float HIGHEST_ROADY_X;
+float HIGHEST_ROADY_X = 1.0f;
 /* asm: VAR_ROAD_KFACTOR	.bss	VAR_ROAD_KFACTOR,1 */
-float VAR_ROAD_KFACTOR;
+float VAR_ROAD_KFACTOR = 1.0f;
 
 static void FIND_HIGHEST_ROADY(void) {
     OBJ* obj;
@@ -163,10 +163,10 @@ FHRYLP:
         }
         // asm 00008248: 	MPYF	*AR1,R2
         screen_y = (rotated_y * inverse_z) + SCRNHYI;
-    // asm 00008249: 	ADDF	@SCRNHYI,R2		;this is the clip level (in Y)
-    // asm 0000824A: 	CMPF	R2,R6
-    // asm 0000824B: 	LDFGT	R2,R6
-    // asm 0000824C: 	LDFGT	R3,R7			;SAVE X VALUE
+        // asm 00008249: 	ADDF	@SCRNHYI,R2		;this is the clip level (in Y)
+        // asm 0000824A: 	CMPF	R2,R6
+        // asm 0000824B: 	LDFGT	R2,R6
+        // asm 0000824C: 	LDFGT	R3,R7			;SAVE X VALUE
         if (highest_roady > screen_y) {
             highest_roady = screen_y;
             highest_roady_x = screen_x; // ;SAVE X VALUE
@@ -252,6 +252,7 @@ void INFINITY_CUSA(void) {
     int palette_code;
     int loop_count;
     float* blow_ptr;
+    INFINITY_POLYGON_ENTRY* polygon_ptr;
     LINE2D line;
     float dist_to_line;
     int clip_pixels;
@@ -368,6 +369,7 @@ OK554:
     // asm 00008297: 	LDP	@FIFO_ADDR,AR5
     // asm 00008298: 	LS	16,AR5
     // asm 00008299: 	LDI	@INFIN_POLYGONSI,AR0
+    polygon_ptr = BLUESKY;
     // asm 0000829A: 	LDI	0FE00h,R4			;AIVI[0] = 0xff00
     // asm 0000829B: 	LDI	00000h,R5			;AIVI[1] = 0x3800
     // asm 0000829C: 	LDI	000FFh,R6			;AIVI[2] = 0x38FF
@@ -394,7 +396,7 @@ LOOP:
     // asm 000082A9: 	LDI	*AR0++,AR2
     // asm 000082AA: 	CALL	PAL_FIND
     // asm 000082AB: 	STI	R0,*AR5       			;ACMAP
-    palette_code = PAL_FIND(BLUESKY[11 - loop_count].palette_code);
+    palette_code = PAL_FIND(polygon_ptr->palette_code);
     MAME_ASSERT_REG(0x000082AB, "R0", &palette_code);
     _ACMAP = palette_code;
     // 	;ORDER:  0,1,3,2
@@ -540,7 +542,7 @@ LOOP:
         _AIVI[3] = aiv3;
         // asm 000082FC: 	LDI	*AR0++,R0
         // asm 000082FD: 	STI	R0,*AR5				;ADDR
-        _ADDRL = BLUESKY[11 - loop_count].texture_addr;
+        _ADDRL = polygon_ptr->texture_addr;
         // asm 000082FE: 	LDP	@FIFO_INC
         // asm 000082FF: 	LDI	@FIFO_INC,R0
         // asm 00008300: 	LDI	*AR1,R0	  		;ML FIX
@@ -551,6 +553,7 @@ LOOP:
         // asm 00008304: 	DBU	AR4,LOOP
         // asm 00008305: 	BU	PLOT_CONSTANTS
         blow_ptr += 6;
+        polygon_ptr++;
         if (loop_count-- > 0) {
             goto LOOP;
         }
@@ -596,7 +599,7 @@ NOCLIPPING:
     _AIVI[3] = 0xFEFFu;
     // asm 0000831B: 	LDI	*AR0++,R0
     // asm 0000831C: 	STI	R0,*AR5				;ADDR
-    _ADDRL = BLUESKY[11 - loop_count].texture_addr;
+    _ADDRL = polygon_ptr->texture_addr;
     // asm 0000831D: 	LDP	@FIFO_INC
     // asm 0000831E: 	LDI	@FIFO_INC,R0
     // asm 0000831F: 	LDI	*AR1,R0	  		;ML FIX
@@ -606,6 +609,7 @@ NOCLIPPING:
     // asm 00008322: 	SETDP
     // asm 00008323: 	DBU	AR4,LOOP
     blow_ptr += 6;
+    polygon_ptr++;
     if (loop_count-- > 0) {
         goto LOOP;
     }
@@ -618,6 +622,7 @@ PLOT_CONSTANTS:
     // asm 00008326: 	LDI	R0,AR2
     palette_code = PAL_FIND(sky1_p);
     // asm 00008327: 	LDI	@INFIN_POLYGONSI,AR0
+    polygon_ptr = BLUESKY;
     // asm 00008328: 	LDI	2,AR4
     loop_count = 2;
     // asm 00008329: 	LDI	@BLOWLISTI,AR6
@@ -673,7 +678,7 @@ LOOP1:
     _AIVI[3] = 0xFEFFu;
     // asm 00008349: 	LDI	*AR0++,R0
     // asm 0000834A: 	STI	R0,*AR5			;ADDR
-    _ADDRL = BLUESKY[12 + (2 - loop_count)].texture_addr;
+    _ADDRL = polygon_ptr->texture_addr;
     // asm 0000834B: 	LDP	@FIFO_INC
     // asm 0000834C: 	LDI	@FIFO_INC,R0
     // asm 0000834D: 	LDI	*AR1,R0	  		;ML FIX
@@ -681,6 +686,7 @@ LOOP1:
     // asm 0000834E: 	SETDP
     // asm 0000834F: 	DBU	AR4,LOOP1A
     blow_ptr += 6;
+    polygon_ptr++;
     if (loop_count-- > 0) {
         goto LOOP1A;
     }
@@ -866,7 +872,7 @@ static INFINITY_POLYGON_ENTRY BLUESKY[] = {
     { sky1_p, sky6_I },
 };
 /* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
-float INFIN_CORRECT;
+float INFIN_CORRECT = 1.0f;
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -1121,7 +1127,7 @@ LOOPA:
     _AIVI[3] = 0xADFFu;
     // asm 0000845D: 	LDIL	wtra_I,R0
     // asm 00008460: 	STI	R0,*AR5				;ADDR
-    _ADDRL = 0;
+    _ADDRL = wtra_I;
     // asm 00008461: 	LDP	@FIFO_INC
     // asm 00008462: 	LDI	@FIFO_INC,R0
     // asm 00008463: 	LDI	*AR1,R0	  			;ML FIX (BOGUS READ)

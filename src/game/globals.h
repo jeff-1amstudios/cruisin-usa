@@ -622,15 +622,15 @@ extern int _plyr1;
 // asm:  .globl STEERMX,STEERMN,STEERCT,STEERFR,PEDALMX,PEDALMN
 extern float STEERMX;
 
-extern int STEERMN;
+extern float STEERMN;
 
-extern int STEERCT;
+extern float STEERCT;
 
 extern float STEERFR;
 
-extern int PEDALMX;
+extern float PEDALMX;
 
-extern int PEDALMN;
+extern float PEDALMN;
 
 // asm:  .globl PLYSTAT,PLYCAR,PLYPROC,PLYCBLK
 extern int PLYSTAT;
@@ -649,7 +649,7 @@ extern int OFFROAD_TMR;
 // asm:  .globl ZOOM,ZOOMI,ZOOMD
 #define ZOOMI ZOOMRAM
 
-extern int ZOOMD;
+extern float ZOOMD;
 
 // racer.asm
 // asm:  .globl RACER_PTRI
@@ -744,7 +744,7 @@ extern int WHEELPWR;
 
 extern int WHEELPOS;
 
-extern int WHEELMAX;
+extern float WHEELMAX;
 
 extern int WHEELVEL;
 

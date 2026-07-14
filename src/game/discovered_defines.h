@@ -79,6 +79,7 @@
 #define tower_p 76
 #define trmeng1_p 221
 #define wtra_p 49
+#define wtra_I 0x000025F9
 // #define _PALLIST 60028
 // #define _PALROM 41008
 

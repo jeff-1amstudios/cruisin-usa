@@ -101,7 +101,7 @@ int STARTSECTION;
 /* asm: START_POS	.bss	START_POS,3 */
 float START_POS[3];
 /* asm: START_RADY	.bss	START_RADY,1 */
-float START_RADY;
+float START_RADY = 1.0f;
 /* asm: DRIVE_LIST	.bss	DRIVE_LIST,1 */
 OBJ* DRIVE_LIST;
 /* asm: CAR_LIST	.bss	CAR_LIST,1 */
@@ -630,7 +630,7 @@ int TYCOFLAG;
 /* asm: PASS1	.bss	PASS1,1 */
 int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
-float SECRADY;
+float SECRADY = 1.0f;
 
 static u32 BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/) {
     const u32* section_ptr;

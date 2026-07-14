@@ -135,11 +135,11 @@ int TVECT2[3];
 /* asm: TMATRIX	.bss	TMATRIX,9 */
 int TMATRIX[9];
 /* asm: COLVEL	.bss	COLVEL,1 */
-float COLVEL;
+float COLVEL = 1.0f;
 /* asm: PMULT	.bss	PMULT,1 */
-int PMULT;
+float PMULT = 1.0f;
 /* asm: SPINTEMP	.bss	SPINTEMP,1 */
-int SPINTEMP;
+float SPINTEMP = 1.0f;
 
 /*
  *----------------------------------------------------------------------------

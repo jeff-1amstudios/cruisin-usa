@@ -231,7 +231,7 @@ RKFPX:
 /* asm: SOUNDTIME	.float	0.00204678	;7(1/60)/57 of a minute */
 static float SOUNDTIME = 0.00204678f;
 /* asm: ROADKILL_SOUND_TIMER	.bss	ROADKILL_SOUND_TIMER,1 */
-float ROADKILL_SOUND_TIMER;
+float ROADKILL_SOUND_TIMER = 1.0f;
 
 void ROADKILL_HIT(void)
 {

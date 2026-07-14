@@ -440,7 +440,7 @@ CNTNB2:
 /* asm: LEG_FLAG	.bss	LEG_FLAG,1 */
 static int LEG_FLAG;
 /* asm: LEG_RADY	.bss	LEG_RADY,1 */
-float LEG_RADY;
+float LEG_RADY = 1.0f;
 /* asm: LEG_SECTIONIDX	.bss	LEG_SECTIONIDX,1 */
 int LEG_SECTIONIDX;
 

@@ -68,7 +68,7 @@ extern int BUTTON_STATUS;
 // asm: 	.bss	OLD_BUTTON_STATUS,1
 extern int OLD_BUTTON_STATUS;
 // asm: 	.bss	TIMEFRAME,1
-extern int TIMEFRAME;
+extern float TIMEFRAME;
 // asm: 	.bss	TIMECLR,1
 extern int TIMECLR;
 // asm: 	.bss	TIMERAM,50

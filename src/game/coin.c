@@ -80,7 +80,6 @@ static void MOTION_VALID(void);
 #define CWI CW
 #define CWSI CWS
 #define SCI SCS
-#define MSG_NULLI MSG_NULL
 #define INSERTCOINSI INSERTCOINS
 #define HITSTARTI HITSTART
 
@@ -91,7 +90,7 @@ void CHECK_MOTION_DIP(void);
 void CHECK_MOTION_PRESENT(void);
 
 static const char NCB[];
-static const char MSG_NULL[];
+static char MSG_NULL[];
 static int SCS;
 
 /* asm: COINOFF	.bss	COINOFF,1 */
@@ -722,7 +721,7 @@ void INIT_CUSTOM_COIN(void) {
     CUSTOM_COINTAB.unused1 = 0;
     // asm 0000743E: 	LDI	@MSG_NULLI,R0		;Set pointer to the string
     // asm 0000743F: 	STI	R0,*AR3++
-    CUSTOM_COINTAB.message_lines[0] = MSG_NULLI;
+    CUSTOM_COINTAB.message_lines[0] = MSG_NULL;
     // asm 00007440: 	LDI	0,R0
     // asm 00007441: 	STI	R0,*AR3++
     // asm 00007442: 	STI	R0,*AR3++
@@ -733,10 +732,10 @@ void INIT_CUSTOM_COIN(void) {
     // asm 00007445: 	STI	R0,*AR3++
     // asm 00007446: 	STI	R0,*AR3++
     // asm 00007447: 	STI	R0,*AR3++
-    CUSTOM_COINTAB.coin1_denom_string = MSG_NULLI;
-    CUSTOM_COINTAB.coin2_denom_string = MSG_NULLI;
-    CUSTOM_COINTAB.coin3_denom_string = MSG_NULLI;
-    CUSTOM_COINTAB.coin4_denom_string = MSG_NULLI;
+    CUSTOM_COINTAB.coin1_denom_string = MSG_NULL;
+    CUSTOM_COINTAB.coin2_denom_string = MSG_NULL;
+    CUSTOM_COINTAB.coin3_denom_string = MSG_NULL;
+    CUSTOM_COINTAB.coin4_denom_string = MSG_NULL;
     // asm 00007448: 	LDI	3*8,R5
     // asm 00007449: 	LDI	ADJ_COIN4_COUNTER,AR2
     // asm 0000744A: 	CALL	INICC		;Set SLOT SETTINGS coin1,coin2,coin3,coin4
@@ -798,7 +797,7 @@ static const char CWS[] = "CREDIT";
 #define SCI SCS
 /* asm: SCS	.bss	SCS,1 */
 static int SCS;
-static const char MSG_NULL[] = "";
+static char MSG_NULL[] = "";
 // *----------------------------------------------------------------------------
 
 static void FONT18RED(tTEXT* t) {
