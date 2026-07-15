@@ -37,12 +37,12 @@ void FIND_ZMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 void INITMAT(MATRIX* mat /*AR0*/);
 void VECTLEN(void);
 void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
-void CPYIMAT(void);
+void CPYIMAT(OBJ_MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
 void CLR_VECTORA(void);
 void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/);
-void NORMALIZE(void);
+void NORMALIZE(VECTOR* vector /*AR2*/);
 void NORMAT(void);
-void GEN_NORMAL(void);
+void GEN_NORMAL(VECTOR** points /*AR2*/, VECTOR* normal /*AR0*/);
 void CONCATMATV(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
 void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/);
 void CONCATMAT(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
@@ -1225,7 +1225,7 @@ void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/) {
  *
  *WARNING SOURCE CANNOT BE SAME AS DEST
  */
-void CPYIMAT(void) {
+void CPYIMAT(OBJ_MATRIX* dst /*AR2*/, MATRIX* src /*R2*/) {
     // asm 0000964B: 	PUSH	R0
     // asm 0000964C: 	PUSHF	R0
     // asm 0000964D: 	PUSH	AR0
@@ -1252,8 +1252,15 @@ void CPYIMAT(void) {
     // asm 0000965F: 	POPF	R0
     // asm 00009660: 	POP	R0
     // asm 00009661: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CPYIMAT", 0, 0);
-    UNIMPL();
+    dst->mat00 = src->a00;
+    dst->mat10 = src->a01;
+    dst->mat20 = src->a02;
+    dst->mat01 = src->a10;
+    dst->mat11 = src->a11;
+    dst->mat21 = src->a12;
+    dst->mat02 = src->a20;
+    dst->mat12 = src->a21;
+    dst->mat22 = src->a22;
 }
 
 // *----------------------------------------------------------------------------
@@ -1349,7 +1356,9 @@ void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/) {
  *----------------------------------------------------------------------------
  *void	normalize(VECTOR *V)
  */
-void NORMALIZE(void) {
+void NORMALIZE(VECTOR* vector /*AR2*/) {
+    float length;
+
     // asm 00009689: 	PUSH	R0
     // asm 0000968A: 	PUSH	R1
     // asm 0000968B: 	PUSHF	R0
@@ -1367,8 +1376,15 @@ void NORMALIZE(void) {
     // asm 00009697: 	POP	R1
     // asm 00009698: 	POP	R0
     // asm 00009699: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "NORMALIZE", 0, 0);
-    UNIMPL();
+    length = sqrtf(vector->X * vector->X + vector->Y * vector->Y + vector->Z * vector->Z);
+    if (length != 0.0f) {
+        float inverse_length;
+
+        inverse_length = 1.0f / length;
+        vector->X *= inverse_length;
+        vector->Y *= inverse_length;
+        vector->Z *= inverse_length;
+    }
 }
 
 // *----------------------------------------------------------------------------
@@ -1432,7 +1448,13 @@ NORMROW:
  *	R0-R7,AR2
  *
  */
-void GEN_NORMAL(void) {
+void GEN_NORMAL(VECTOR** points /*AR2*/, VECTOR* normal /*AR0*/) {
+    VECTOR* a;
+    VECTOR* b;
+    VECTOR* c;
+    VECTOR d;
+    VECTOR e;
+
     // asm 000096B4: 	PUSH	AR0
     // asm 000096B5: 	LDI	*+AR2(1),AR0		;B
     // asm 000096B6: 	LDI	*+AR2(2),R3		;C
@@ -1458,8 +1480,18 @@ void GEN_NORMAL(void) {
     // asm 000096CA: 	SUBF	R7,R6
     // asm 000096CB: 	STF	R6,*+AR0(2)
     // asm 000096CC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GEN_NORMAL", 0, 0);
-    UNIMPL();
+    b = points[1];
+    c = points[2];
+    a = points[0];
+    d.X = b->X - a->X;
+    d.Y = b->Y - a->Y;
+    d.Z = b->Z - a->Z;
+    e.X = c->X - b->X;
+    e.Y = c->Y - b->Y;
+    e.Z = c->Z - b->Z;
+    normal->X = d.Y * e.Z - d.Z * e.Y;
+    normal->Y = d.Z * e.X - d.X * e.Z;
+    normal->Z = d.X * e.Y - d.Y * e.X;
 }
 
 // *----------------------------------------------------------------------------

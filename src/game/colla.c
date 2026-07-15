@@ -881,11 +881,8 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     VECTOR* center;
     VECTOR* right_front;
     VECTOR* left_front;
-    VECTOR d;
-    VECTOR e;
     VECTOR* normal;
     MATRIX* matrix;
-    float length;
 
     // 	;*GENERATE A (UNIT) NORMAL FOR THE PLANE
     // asm 000020D4: 	LDPI	@VLI,AR2		;rotate for universe etc.
@@ -896,26 +893,13 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     left_front = (VECTOR*)&carblk->left_front;
     normal = (VECTOR*)TNORM;
     matrix = (MATRIX*)TMATRIX;
-
-    d.X = right_front->X - center->X;
-    d.Y = right_front->Y - center->Y;
-    d.Z = right_front->Z - center->Z;
-    e.X = left_front->X - right_front->X;
-    e.Y = left_front->Y - right_front->Y;
-    e.Z = left_front->Z - right_front->Z;
-    normal->X = d.Y * e.Z - d.Z * e.Y;
-    normal->Y = d.Z * e.X - d.X * e.Z;
-    normal->Z = d.X * e.Y - d.Y * e.X;
+    VL[0] = center;
+    VL[1] = right_front;
+    VL[2] = left_front;
+    GEN_NORMAL(VL, normal);
     // asm 000020D7: 	LDI	AR0,AR2
     // asm 000020D8: 	CALL	NORMALIZE		;normalize(&N);
-    length = sqrtf(normal->X * normal->X + normal->Y * normal->Y + normal->Z * normal->Z);
-    if (length != 0.0f) {
-        float inv_length = 1.0f / length;
-
-        normal->X *= inv_length;
-        normal->Y *= inv_length;
-        normal->Z *= inv_length;
-    }
+    NORMALIZE(normal);
     // asm 000020D9: 	LDPI	@TMATRIXI,AR3
     // *LOAD 2ND COLUMN OF ROTATION MATRIX (Y AXIS)
     // asm 000020DA: 	LDF	*AR2,R0		     	;2ND COLUMN ROT MATRIX IS NORMAL VECTOR
@@ -938,14 +922,7 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // asm 000020E5: 	STF	R1,*+AR2(2)		;Z
     matrix->a02 = 0.0f; // ;Z
     // asm 000020E6: 	CALL	NORMALIZE		;normalize(&N);
-    length = sqrtf(matrix->a00 * matrix->a00 + matrix->a01 * matrix->a01 + matrix->a02 * matrix->a02);
-    if (length != 0.0f) {
-        float inv_length = 1.0f / length;
-
-        matrix->a00 *= inv_length;
-        matrix->a01 *= inv_length;
-        matrix->a02 *= inv_length;
-    }
+    NORMALIZE((VECTOR*)&matrix->a00);
     // *LOAD 3RD COLUMN OF ROTATION MATRIX (Z AXIS)
     // ;	LDI	AR3,AR2
     // ;	ADDI	6,AR2			;POINT AR2 TO THIRD COLUMN OF MATRIX
@@ -980,28 +957,13 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     matrix->a22 = matrix->a00 * matrix->a11 - matrix->a01 * matrix->a10;
     // asm 000020F5: 	ADDI	3,AR2
     // asm 000020F6: 	CALL	NORMALIZE		;normalize(&N);
-    length = sqrtf(matrix->a20 * matrix->a20 + matrix->a21 * matrix->a21 + matrix->a22 * matrix->a22);
-    if (length != 0.0f) {
-        float inv_length = 1.0f / length;
-
-        matrix->a20 *= inv_length;
-        matrix->a21 *= inv_length;
-        matrix->a22 *= inv_length;
-    }
+    NORMALIZE((VECTOR*)&matrix->a20);
     // *INVERT MATRIX AND STORE IN OBJECT
     // asm 000020F7: 	LDI	AR3,R2
     // asm 000020F8: 	LDI	AR4,AR2
     // asm 000020F9: 	ADDI	OMATRIX,AR2
     // asm 000020FA: 	CALL	CPYIMAT     		;invert matrix and stuff in object
-    obj->omatrix.mat00 = matrix->a00;
-    obj->omatrix.mat10 = matrix->a01;
-    obj->omatrix.mat20 = matrix->a02;
-    obj->omatrix.mat01 = matrix->a10;
-    obj->omatrix.mat11 = matrix->a11;
-    obj->omatrix.mat21 = matrix->a12;
-    obj->omatrix.mat02 = matrix->a20;
-    obj->omatrix.mat12 = matrix->a21;
-    obj->omatrix.mat22 = matrix->a22;
+    CPYIMAT(&obj->omatrix, matrix);
     // ***GET CAR HEIGHT AND LOAD IT INTO CAR
     // asm 000020FB: 	LDF	*+AR6(1),R0		;GET Y HEIGHT FIRST POINT
     // asm 000020FC: 	SUBF	*+AR6(CARWHLTAB+1),R0

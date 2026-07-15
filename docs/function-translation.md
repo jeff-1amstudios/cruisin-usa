@@ -58,3 +58,7 @@ OFFROAD_TMR = r0;
 
 ## `PROC` functions
 Functions which take a `PROC *` argument are a executed as primitive co-routines. All local variables should be persisted in a function-specific `PROC_CONTEXT` field, and special care must be taken to make them correctly re-entrant. See `REQWAIT` in `comp.c` for an example of how to structure it.
+
+
+## Verification
+After implementing a significant function, if possible, add a mame assertion to catch any drift from the original code. See `debugging.md`.

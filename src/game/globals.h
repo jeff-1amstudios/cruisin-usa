@@ -1295,7 +1295,7 @@ void _line(int x0, int y0, int x1, int y1, int color);
 
 // math.asm
 // asm:  .globl GEN_NORMAL
-void GEN_NORMAL(void);
+void GEN_NORMAL(VECTOR** points /*AR2*/, VECTOR* normal /*AR0*/);
 
 // asm:  .globl _SINE,_COSI
 float _COSI(float theta /*R2*/);
@@ -1324,7 +1324,7 @@ void HPFIND_YMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 // asm:  .globl NORMAT,NORMALIZE
 void NORMAT(void);
 
-void NORMALIZE(void);
+void NORMALIZE(VECTOR* vector /*AR2*/);
 
 // asm:  .globl NORMIT,NORMITS
 float NORMIT(float radians /*R2*/);
@@ -1347,7 +1347,7 @@ void VECTLEN(void);
 
 void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
 
-void CPYIMAT(void);
+void CPYIMAT(OBJ_MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
 
 // asm:  .globl GETTHETADIFF
 void GETTHETADIFF(void);
