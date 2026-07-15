@@ -338,7 +338,7 @@ typedef struct CAR_POINT {
     f32 z;
     f32 road_delta_y;
     f32 y_velocity;
-    u32 collided_road_object;
+    uintptr_t collided_road_object;
 } CAR_POINT;
 
 typedef struct CARBLK {
@@ -373,7 +373,7 @@ typedef struct CARBLK {
     s32 track_piece_position;
     f32 track_piece_distance;
     u32 track_piece_rank;
-    u32 closest_track_piece;
+    uintptr_t closest_track_piece;
     u32 gear;
     f32 rpm_x100;
     f32 x_plus;

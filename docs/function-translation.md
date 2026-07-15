@@ -7,13 +7,12 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - Read the associated .ASM file for context
 - First, determine the function prototype - args and return value. Use developer comments along with the code to help understand and name the arguments.
 - Correctness is your number 1 job. You must not invent anything except translating the assembly code into C.
+- You must NEVER re-order or remove the commented asm lines.
 - Preserve function boundaries exactly. Do not move work across caller/callee boundaries, even if the resulting C would look cleaner.
-- Do not change a function's observable contract while translating it. Inputs, outputs, side effects, and which routine performs them must stay with the original function unless the assembly itself shows otherwise.
-- In particular, do not precompute a callee's result in the caller, do not move helper calls from callee to caller (or vice versa), and do not "inline by hand" behavior across function boundaries.
+- Do not precompute a callee's result in the caller, do not move helper calls from callee to caller (or vice versa), and do not "inline by hand" behavior across function boundaries.
 - You can introduce new function variables (declare at top of function)
 - Do not preserve assembly register names as C locals by default.
-- Only introduce a local variable when it represents real intermediate state needed for correctness, readability, or control flow.
-- If an instruction sequence only reads, transforms, and writes a single C variable, collapse it to direct operations on that variable instead of inventing `r0`, `r1`, etc.
+- Only introduce a local variable when it represents real intermediate state needed for correctness, readability, or control flow. If an instruction sequence only reads, transforms, and writes a single C variable, collapse it to direct operations on that variable instead of inventing `r0`, `r1`, etc.
 - Register-shaped locals like `r0`, `r1`, `ar2` should be rare, and only used when the value must be preserved separately from the source variable or when it materially clarifies the dataflow.
 - Dont invent new functions, other that to avoid large duplication (eg if 2 functions are branching to the same code tail)
 - Dont invent new global/module level variables

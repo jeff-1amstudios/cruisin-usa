@@ -4,7 +4,7 @@ We are translating the original TMS320C30 asm source code into portable C. At th
 
 Validation exists so we can compare the port's behavior against values produced by MAME running the original game. The validator lives in `src/core/validator`.
 
-You can build and run with `SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy SDL_RENDER_DRIVER=software`. When validation fails, you will usually see output like `/Users/j.harris/code/cruisin-usa/src/game/text.c:692: validation(R0) failed; expected 0x00000050 but was 0x00000059`.
+When validation fails, you will usually see output like `/Users/j.harris/code/cruisin-usa/src/game/text.c:692: validation(R0) failed; expected 0x00000050 but was 0x00000059`.
 
 ## What MAME validation is for
 
@@ -18,16 +18,23 @@ It helps answer questions like:
 
 This is especially useful when translating a function from asm to C or when fixing a translated function that is close to correct but still produces wrong state later in execution.
 
+## How to
+
+1. This works best for validating scalar register and memory values
+2. You cannot compare pointer addresses - addresses are not comparable between MAME and our port
+
+## Memory reading
+- You must use hex offsets when adding to registers - example `MAME_ASSERT_MEM(0x000020A9, "d@(ar2+f)", &road_obj->id);`
+
 ## Validation flow
 
 The system has two sides: a MAME-side trace generator and a port-side validator.
 
-1. Add validation macros in the translated C code.
-2. Run `tools/mame/instrument.sh`.
-3. The script regenerates `tools/mame/output/mame_validate_breakpoints.txt`, runs MAME with that debugger script, and collects `error.log` plus any binary dumps.
-4. The script writes the captured log to `mame_validate/mame.log` and moves any dumped `.bin` files into `mame_validate/`.
-5. Run the SDL port. `src/core/validator.c` opens `mame_validate/mame.log` and consumes entries in order as the port reaches each validation call.
-6. If the current port value does not match the next expected MAME value, the validator reports the mismatch and usually aborts immediately.
+1. Fix code / add validation macros in the translated C code.
+2. Run `tools/debug.sh`.
+  -  `tools/mame/output/mame_validate_breakpoints.txt` is updated and MAME runs with that debugger script
+  - Our port is build and run. `src/core/validator.c` opens `mame_validate/mame.log` and consumes entries in order as the port reaches each validation call.
+  - If the current port value does not match the next expected MAME value, the validator reports the mismatch and usually aborts immediately.
 
 The key point is that the validator is not recomputing anything itself. It is replaying a previously captured trace from the original game and checking that the port reaches the same observable state in the same order.
 
@@ -69,12 +76,3 @@ The generator still accepts some older `mame_validate_*` and `MAME_VALIDATE_*` s
 ## Usage
 
 - When using the explicit-address forms, pick the _next_ address after the register or memory value you are looking at has been set. The breakpoint fires _before_ the attached instruction is executed.
-- `tools/mame/instrument.sh` currently runs `mame crusnusa -window -sound none -debug -log -skip_gameinfo -debugscript tools/mame/output/mame_validate_breakpoints.txt`, so your local MAME install needs a `crusnusa` machine configured and available on `PATH`.
-
-## When to refresh the MAME log
-
-You need a fresh MAME run whenever you add, remove, reorder, or materially change validation callsites.
-
-That is because the validator consumes `mame_validate/mame.log` in runtime order. If the callsites change, the old log may no longer line up with the port's validation sequence even if the underlying gameplay code is unchanged.
-
-In practice, after changing validation instrumentation, just rerun `tools/mame/instrument.sh` yourself before rerunning the SDL port.

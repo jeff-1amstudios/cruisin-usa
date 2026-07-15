@@ -851,13 +851,13 @@ int _rd_cw(word_addr_t addr);
 CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/);
 
 // asm:  .globl _PLAYER_ROAD_COLL,CAR_ROAD_COLL
-void CAR_ROAD_COLL(void);
+void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
 
 // asm:  .globl _coll_road
-void _coll_road(void);
+int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, float* out_road_delta /*R0*/);
 
 // asm:  .globl _obj_coll,COLLIDE
-void _obj_coll(void);
+int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/);
 
 // asm:  .globl _makbox
 void _makbox(OBJ* obj /*AR4*/);
@@ -881,14 +881,14 @@ void CAMSCAN(void);
 void COLCHK(void);
 
 // asm:  .globl ROADSCAN,DRONESND,DRONESND1,FLYCAR1,SCOLLTABI
-void ROADSCAN(void);
+void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
 
 void DRONESND(void);
 
 void DRONESND1(void);
 
 // asm:  .globl COLSGCK
-void COLSGCK(void);
+void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/);
 
 // asm:  .globl SERV_COIN
 void SERV_COIN(void);

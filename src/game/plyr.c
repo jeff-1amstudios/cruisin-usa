@@ -1340,7 +1340,7 @@ void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00002C39: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
     (void)carblk;
     // asm 00002C3A: 	CALL	CAR_ROAD_COLL
-    CAR_ROAD_COLL();
+    CAR_ROAD_COLL(obj, carblk);
     // *GET CAR MATRIX
     // asm 00002C3B: 	LDF	*+AR5(CARYROT),R2
     // asm 00002C3C: 	STF	R2,*+AR4(ORADY)		;STORE CAR OBJECT RADY
@@ -2463,7 +2463,7 @@ GETRK:
         goto GETRK;
     }
     // asm 00002F14: 	STI	AR0,*+AR5(CARTRAK)	;SAVE TRACK SECTION
-    carblk->closest_track_piece = (u32)(uintptr_t)closest_track_obj;
+    carblk->closest_track_piece = (uintptr_t)closest_track_obj;
 GETRKX:
     // asm 00002F16: 	RETS
 }
