@@ -697,6 +697,15 @@ typedef struct PROC_CONTEXT {
             LOAD_SECTION_REQ_ARG* lsr;
         } REQWAIT;
         struct {
+            OBJ* obj;               // AR4
+            CARBLK* carblk;         // AR5
+            float body_x_radians;   // R6
+            float old_car_speed;    // R7
+            float old_orady;        // PDATA
+            float body_z_radians;   // PDATA+1 / R5
+            float wheel_x_radians;  // PDATA+2
+        } CARPROC;
+        struct {
             int attrwave;
             int decomp_count;
             struct OBJ* obj;

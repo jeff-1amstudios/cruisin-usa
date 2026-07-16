@@ -49,7 +49,7 @@ void FREE_LLIST(void);
 void DEL_LLIST(void);
 void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/);
 void CARPROC(PROC* p);
-void LEAN(void);
+void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk);
 void DYNAOBJ_INIT(void);
 DYNAOBJ* GETDYNA(void);
 void DELDYNA(void);
@@ -74,6 +74,9 @@ void FORWARD(void);
 #define CARFREEI CARFREE
 
 extern int FILSIZI;
+extern MATRIX _MATRIXA;
+extern MATRIX _MATRIXB;
+extern MATRIX _MATRIXC;
 
 /* asm: RAND	pbss	RAND,1 */
 int RAND;
@@ -735,7 +738,10 @@ void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/) {
     DYNAOBJ** link;
     DYNAOBJ* dyna;
     PROC* proc;
+    PROC_CONTEXT* ctx;
     int i;
+
+    MAME_ASSERT_MEM(0x00008F66, "d@(AR4+1d)", &obj->radius);
 
     // asm 00008F66: 	PUSH	AR0
     // asm 00008F67: 	PUSH	AR3
@@ -759,36 +765,36 @@ void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/) {
     // asm 00008F72: 	LDI	*AR2++,RC		;GET DYNAMIC OBJECT COUNT
     // asm 00008F73: 	RPTB	WHEELLP
     for (i = 0; i <= table->count_minus_1; ++i) {
-    // asm 00008F74:  	CALL	GETDYNA	     		;LINK HIM INTO LIST
+        // asm 00008F74:  	CALL	GETDYNA	     		;LINK HIM INTO LIST
         dyna = GETDYNA();
-    // asm 00008F75: 	STI	AR0,*AR3
+        // asm 00008F75: 	STI	AR0,*AR3
         *link = dyna;
-    // asm 00008F76: 	LDF	*AR2++,R0
-    // asm 00008F77: 	STF	R0,*+AR0(DYNACENTERX)
-    // asm 00008F78: 	STF	R0,*+AR0(DYNATRANSX)
+        // asm 00008F76: 	LDF	*AR2++,R0
+        // asm 00008F77: 	STF	R0,*+AR0(DYNACENTERX)
+        // asm 00008F78: 	STF	R0,*+AR0(DYNATRANSX)
         dyna->center_x = table->entries[i].center.X;
         dyna->trans_x = table->entries[i].center.X;
-    // asm 00008F79: 	LDF	*AR2++,R0
-    // asm 00008F7A: 	STF	R0,*+AR0(DYNACENTERY)
-    // asm 00008F7B: 	STF	R0,*+AR0(DYNATRANSY)
+        // asm 00008F79: 	LDF	*AR2++,R0
+        // asm 00008F7A: 	STF	R0,*+AR0(DYNACENTERY)
+        // asm 00008F7B: 	STF	R0,*+AR0(DYNATRANSY)
         dyna->center_y = table->entries[i].center.Y;
         dyna->trans_y = table->entries[i].center.Y;
-    // asm 00008F7C: 	LDF	*AR2++,R0
-    // asm 00008F7D: 	STF	R0,*+AR0(DYNACENTERZ)
-    // asm 00008F7E: 	STF	R0,*+AR0(DYNATRANSZ)
+        // asm 00008F7C: 	LDF	*AR2++,R0
+        // asm 00008F7D: 	STF	R0,*+AR0(DYNACENTERZ)
+        // asm 00008F7E: 	STF	R0,*+AR0(DYNATRANSZ)
         dyna->center_z = table->entries[i].center.Z;
         dyna->trans_z = table->entries[i].center.Z;
-    // asm 00008F7F: 	LDI	*AR2++,R0
-    // asm 00008F80: 	STI	R0,*+AR0(DYNANVERTS)
+        // asm 00008F7F: 	LDI	*AR2++,R0
+        // asm 00008F80: 	STI	R0,*+AR0(DYNANVERTS)
         dyna->nverts = table->entries[i].verts_minus_1;
-    // asm 00008F81: 	LDI	*AR2++,R0
-    // asm 00008F82: 	STI	R0,*+AR0(DYNAFLAG)
+        // asm 00008F81: 	LDI	*AR2++,R0
+        // asm 00008F82: 	STI	R0,*+AR0(DYNAFLAG)
         dyna->flag = table->entries[i].flag;
         MAME_ASSERT_REG(0x00008F82, "R0", &dyna->flag);
-    // asm 00008F83: 	STI	AR4,*+AR0(DYNAPARENT)
+        // asm 00008F83: 	STI	AR4,*+AR0(DYNAPARENT)
         dyna->parent = obj;
-WHEELLP:
-    // asm 00008F84: LDI	AR0,AR3
+    WHEELLP:
+        // asm 00008F84: LDI	AR0,AR3
         link = &dyna->link;
     }
     // asm 00008F85: 	LDI	0,R0
@@ -799,7 +805,9 @@ WHEELLP:
     // asm 00008F88: 	LDI	@CARPROCI,AR2
     // asm 00008F89: 	LDI	DRONE_C|ANI_T,R2	;PID
     // asm 00008F8A: 	CALL	PRC_CREATE_CHILD
-    proc = PRC_CREATE_CHILD(CARPROCI, DRONE_C | ANI_T, NULL);
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->CARPROC.obj = obj;
+    proc = PRC_CREATE_CHILD(CARPROC, DRONE_C | ANI_T, ctx);
     // asm 00008F8B: 	STI	AR0,*+AR4(ORADZ)	;DOUBLING AS A PROC PTR
     obj->radz_ptr = (uintptr_t)proc;
 VANIX:
@@ -837,18 +845,43 @@ VANIX:
  */
 
 void CARPROC(PROC* p) {
+    OBJ* obj;
+    CARBLK* carblk;
+    MATRIX* front_wheel_matrix;
+    MATRIX* rear_wheel_matrix;
+    DYNAOBJ* dyna;
+    int sleep_ticks;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00008F90: 	LDI	*+AR4(OCARBLK),AR5
+    obj = p->ctx->CARPROC.obj;
+    carblk = obj->carblk;
+    p->ctx->CARPROC.carblk = carblk;
     // asm 00008F91: 	LDF	0,R6	 		;INIT SPIN RADIANS
+    p->ctx->CARPROC.body_x_radians = 0.0f;
     // asm 00008F92: 	LDF	*+AR5(CARSPEED),R0	;INIT SPEED
     // asm 00008F93: 	LDF	R0,R7
+    p->ctx->CARPROC.old_car_speed = carblk->speed;
     // asm 00008F94: 	LDF	*+AR4(ORADY),R0
     // asm 00008F95: 	STF	R0,*+AR7(PDATA)		;INIT OLD ORADY
+    p->ctx->CARPROC.old_orady = obj->rady;
     // asm 00008F96: 	CLRF	R5			;INITIALIZE BODY Z RADIANS
     // asm 00008F97: 	STF	R5,*+AR7(PDATA+1)	;SAVE Z RADIANS
+    p->ctx->CARPROC.body_z_radians = 0.0f;
     // asm 00008F98: 	LDF	0,R0			;INITIALIZE WHEEL X RADIANS
     // asm 00008F99: 	STF	R0,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
+    p->ctx->CARPROC.wheel_x_radians = 0.0f;
 CARPROCL:
+    obj = p->ctx->CARPROC.obj;
+    carblk = p->ctx->CARPROC.carblk;
     // asm 00008F9A: 	LDI	3,AR2	  		;SLEEP TIME
+    sleep_ticks = 3;
     // asm 00008F9B: 	LDI	@_MODE,R0
     // asm 00008F9C: 	AND	MMODE,R0
     // asm 00008F9D: 	CMPI	MINTRO,R0
@@ -861,40 +894,65 @@ CARPROCL:
     // asm 00008FA4: 	BNE	NCS
     // asm 00008FA5: 	LDF	*+AR5(CARSPEED),R7	;UPDATE OLD SPEED TO AVOID JERK
     // asm 00008FA6: 	B	CARSLP
+    if (((_MODE & MMODE) != MINTRO) && ((_MODE & MSLINE) == 0) && SUSPEND_MODE == SM_HALT) {
+        p->ctx->CARPROC.old_car_speed = carblk->speed;
+        goto CARSLP;
+    }
 NCS:
     // asm 00008FA7: 	LDI	*+AR4(ODIST),R0
     // asm 00008FA8: 	CMPI	20000,R0		;FAR OFF JUST SLEEP
     // asm 00008FA9: 	BGT	CARSLP
+    if (obj->dist > 20000) {
+        goto CARSLP;
+    }
     // *GET FRONT WHEEL STEER MATRIX
     // asm 00008FAA: 	LDF	*+AR5(CARTURN),R2
     // asm 00008FAB: 	MPYF	1.5,R2			;BOOST TURN A LITTLE
     // asm 00008FAC: 	LDI	@MATRIXAI,AR2
     // asm 00008FAD: 	CALL	FIND_YMATRIX
     // asm 00008FAE: 	LDI	AR2,AR0
+    FIND_YMATRIX(&MATRIXAI, carblk->turn * 1.5f);
     // *GET WHEEL SPIN MATRIX
     // asm 00008FAF: 	LDF	*+AR5(CARSPEED),R2
     // asm 00008FB0: 	MPYF	0.02,R2   		;FUDGE FACTOR
     // asm 00008FB1: 	ADDF	*+AR7(PDATA+2),R2
     // asm 00008FB2: 	STF	R2,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
+    p->ctx->CARPROC.wheel_x_radians += carblk->speed * 0.02f;
     // asm 00008FB3: 	LDI	@MATRIXBI,AR2		;GET X SPIN IN MATRIXB
     // asm 00008FB4: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&MATRIXBI, p->ctx->CARPROC.wheel_x_radians);
     // *CONCAT FOR FRONT WHEELS
     // asm 00008FB5: 	LDI	@MATRIXCI,AR1		;A X B = C
     // asm 00008FB6: 	LDI	AR1,AR6			;SAVE FRONT WHEEL MATRIX PTR
     // asm 00008FB7: 	LDI	AR2,AR3			;SAVE REAR WHEEL MATRIX PTR
     // asm 00008FB8: 	CALL	CONCAT201    		;CONCAT YOUR MATRICES INTO DYNOBJ
+    CONCAT201(&MATRIXAI, &MATRIXBI, &MATRIXCI);
+    front_wheel_matrix = &MATRIXCI;
+    rear_wheel_matrix = &MATRIXBI;
     // *STUFF YOUR DYNAMIC MATRICES
     // asm 00008FB9: 	LDI	*+AR4(ODYNALIST),R0
+    dyna = obj->dynalist;
     // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
+    SLOCKON(dyna == NULL, "UTIL\\CARPROC   dynamic objects not found");
+
 CDTOP:
     // asm 00008FBA: 	LDI	R0,AR0
     // asm 00008FBB: 	LDI	*+AR0(DYNAFLAG),R0
     // asm 00008FBC: 	BN	CDLP			;SHADOW...CONTINUE
     // asm 00008FBD: 	BZ	CARBODY			;HANDLE BODY
+    if (dyna->flag < 0) {
+        goto CDLP;
+    }
+    if (dyna->flag == 0) {
+        goto CARBODY;
+    }
     // asm 00008FBE: 	LDI	AR0,AR2
     // asm 00008FBF: 	ADDI	DYNAMATRIX,AR2
     // asm 00008FC0: 	CMPI	1,R0
     // asm 00008FC1: 	BZ	CARRWHL			;REAR WHEEL
+    if (dyna->flag == 1) {
+        goto CARRWHL;
+    }
     // *STUFF FRONT WHEEL
     // asm 00008FC2: 	LDF	*AR6++,R0
     // asm 00008FC3: 	RPTS	7
@@ -903,6 +961,8 @@ CDTOP:
     // asm 00008FC5:  	STF	R0,*AR2++
     // asm 00008FC6: 	NOP	*AR6--(9)
     // asm 00008FC7: 	B	CDLP
+    dyna->omatrix = *(OBJ_MATRIX*)front_wheel_matrix;
+    goto CDLP;
     // *STUFF REAR WHEEL
 CARRWHL:
     // asm 00008FC8: 	LDF	*AR3++,R0
@@ -911,22 +971,32 @@ CARRWHL:
     // asm 00008FCA:  ||	STF	R0,*AR2++
     // asm 00008FCB:  	STF	R0,*AR2++
     // asm 00008FCC: 	NOP	*AR3--(9)
+    dyna->omatrix = *(OBJ_MATRIX*)rear_wheel_matrix;
 CDLP:
     // asm 00008FCD: 	LDI	*AR0,R0
+    dyna = dyna->link;
     // asm 00008FCE: 	BNZ	CDTOP
+    if (dyna != NULL) {
+        goto CDTOP;
+    }
     // asm 00008FCF: 	LDI	3,AR2	  		;SLEEP TIME
+    sleep_ticks = 3;
     // asm 00008FD0: 	B	CARSLP
+    goto CARSLP;
+
     // *HANDLE BODY
     // *BODY MUST BE LAST
 CARBODY:
     // asm 00008FD1: 	CALL	LEAN
+    LEAN(p, dyna, obj, carblk);
     // asm 00008FD2: 	LDI	1,AR2
+    sleep_ticks = 1;
 CARSLP:
     // asm 00008FD3: 	CALL	SLEEP
+    SLEEP(sleep_ticks, 1);
+
     // asm 00008FD4: 	B 	CARPROCL
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARPROC", 0, 0);
-    UNIMPL();
+    goto CARPROCL;
 }
 
 // *----------------------------------------------------------------------------
@@ -952,7 +1022,15 @@ static float NTWOPII = -TWOPI;
  *	PDATA+1 BODY LEAN Z RADIANS
  *
  */
-void LEAN(void) {
+void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
+    MATRIX* body_x_matrix;
+    float delta_speed;
+    float x_lean;
+    float new_speed;
+    float delta_rady;
+    float wrap_adjust;
+    float z_lean;
+
     // asm 00008FD6: 	LDI	AR0,AR1
     // asm 00008FD7: 	ADDI	DYNAMATRIX,AR1
     // 	;GET X LEAN (BRAKE/ACCEL)
@@ -960,69 +1038,125 @@ void LEAN(void) {
     // asm 00008FD8: 	LDF	R7,R0
     // asm 00008FD9: 	LDF	*+AR5(CARSPEED),R7	;GET NEW SPEED
     // asm 00008FDA: 	SUBF	R0,R7,R0
+    new_speed = carblk->speed;
+    delta_speed = new_speed - p->ctx->CARPROC.old_car_speed;
     // asm 00008FDB: 	MPYF	0.06,R0			;CONVERT TO RADIANS
     // asm 00008FDC: 	ADDF	R0,R6
+    p->ctx->CARPROC.body_x_radians += delta_speed * 0.06f;
     // asm 00008FDD: 	MPYF	0.25,R6
     // asm 00008FDE: 	NEGF	R6,R2
+    x_lean = -(p->ctx->CARPROC.body_x_radians * 0.25f);
     // asm 00008FDF: 	LDI	*+AR5(CAR_AIRF),R0
     // asm 00008FE0: 	OR	*+AR5(CAR_AIRB),R0
     // asm 00008FE1: 	LDFNZ	0,R2 			;ZERO OUT WHEN IN AIR FOLKS
+    if (carblk->front_airborne != 0 || carblk->rear_airborne != 0) {
+        x_lean = 0.0f;
+    }
     // asm 00008FE2: 	LDF	R2,R2			;AMPLIFY ACCELERATION ONLY
     // asm 00008FE3: 	LDFGT	1,R1
     // asm 00008FE4: 	LDFLT	2,R1
     // asm 00008FE5: 	MPYF	R1,R2
+    if (x_lean > 0.0f) {
+        x_lean *= 1.0f;
+    } else if (x_lean < 0.0f) {
+        x_lean *= 2.0f;
+    }
     // asm 00008FE6: 	LDF	*+AR5(CARRPM),R0      	;REV FACTOR
     // asm 00008FE7: 	MPYF	0.01,R0
     // asm 00008FE8: 	MPYF	-0.05,R0
     // asm 00008FE9: 	ADDF	R0,R2
+    x_lean += (carblk->rpm_x100 * 0.01f) * -0.05f;
     // asm 00008FEA: 	CMPF	0.1,R2			;LIMIT CHECK
     // asm 00008FEB: 	LDFGT	0.1,R2
     // asm 00008FEC: 	CMPF	-0.1,R2
     // asm 00008FED: 	LDFLT	-0.1,R2
+    if (x_lean > 0.1f) {
+        x_lean = 0.1f;
+    }
+    if (x_lean < -0.1f) {
+        x_lean = -0.1f;
+    }
     // asm 00008FEE: 	STF	R2,*+AR5(CARXLEAN)
+    carblk->x_lean = x_lean;
     // asm 00008FEF: 	LDI	@MATRIXBI,AR2
     // asm 00008FF0: 	CALL	FIND_XMATRIX
     // asm 00008FF1: 	LDI	AR2,AR0			;SAVE MATRIX PTR
+    FIND_XMATRIX(&MATRIXBI, x_lean);
+    body_x_matrix = &MATRIXBI;
+    p->ctx->CARPROC.old_car_speed = new_speed;
     // 	;GET YOUR Z LEAN (CORNERING)
     // 	;
     // asm 00008FF2: 	LDF	*+AR7(PDATA),R4		;OLD ORADY
     // asm 00008FF3: 	LDF	*+AR7(PDATA+1),R5	;Z RADIANS
     // asm 00008FF4: 	LDF	*+AR4(ORADY),R0
+    delta_rady = obj->rady - p->ctx->CARPROC.old_orady;
     // asm 00008FF5: 	STF	R0,*+AR7(PDATA)		;SAVE NEW OLD ORADY
+    p->ctx->CARPROC.old_orady = obj->rady;
     // asm 00008FF6: 	SUBF	R4,R0			;DELTA ORADY
     // asm 00008FF7: 	LDF	0,R1
+    wrap_adjust = 0.0f;
     // asm 00008FF8: 	CMPF	3.14,R0
     // asm 00008FF9: 	LDFGT	@NTWOPII,R1
+    if (delta_rady > 3.14f) {
+        wrap_adjust = NTWOPII;
+    }
     // asm 00008FFA: 	CMPF	-3.14,R0
     // asm 00008FFB: 	LDFLT	@TWOPII,R1
+    if (delta_rady < -3.14f) {
+        wrap_adjust = TWOPII;
+    }
     // asm 00008FFC: 	ADDI	R1,R0			;HANDLE RADIAN WRAPAROUND
+    delta_rady += wrap_adjust;
     // asm 00008FFD: 	MPYF	R7,R0			;MULTIPLY BY SPEED FACTOR
+    delta_rady *= p->ctx->CARPROC.old_car_speed;
     // asm 00008FFE: 	MPYF	0.06,R0			;CONVERT TO RADIANS
     // asm 00008FFF: 	MPYF	0.1,R0			;CONVERT TO RADIANS
+    delta_rady *= 0.06f;
+    delta_rady *= 0.1f;
     // asm 00009000: 	ADDF	R0,R5
+    p->ctx->CARPROC.body_z_radians += delta_rady;
     // asm 00009001: 	MPYF	0.5,R5
+    p->ctx->CARPROC.body_z_radians *= 0.5f;
     // asm 00009002: 	STF	R5,*+AR7(PDATA+1)	;SAVE NEW Z RADIANS
     // asm 00009003: 	NEGF	R5,R2
+    z_lean = -p->ctx->CARPROC.body_z_radians;
     // asm 00009004: 	LDI	*+AR5(CAR_AIRF),R0
     // asm 00009005: 	OR	*+AR5(CAR_AIRB),R0
     // asm 00009006: 	LDFNZ	0,R2 			;ZERO OUT WHEN IN AIR FOLKS
+    if (carblk->front_airborne != 0 || carblk->rear_airborne != 0) {
+        z_lean = 0.0f;
+    }
     // asm 00009007: 	CMPF	0.1,R2			;LIMIT CHECK
     // asm 00009008: 	LDFGT	0.1,R2
     // asm 00009009: 	CMPF	-0.1,R2
     // asm 0000900A: 	LDFLT	-0.1,R2
+    if (z_lean > 0.1f) {
+        z_lean = 0.1f;
+    }
+    if (z_lean < -0.1f) {
+        z_lean = -0.1f;
+    }
     // asm 0000900B: 	STF	R2,*+AR5(CARZLEAN)    	;SAVE IT
+    carblk->z_lean = z_lean;
     // ;	MPYF	3,R2			;PUMP IT UP
     // asm 0000900C: 	MPYF	2.2,R2			;PUMP IT UP
+    z_lean *= 2.2f;
     // asm 0000900D: 	CMPF	0.1,R2			;LIMIT CHECK
     // asm 0000900E: 	LDFGT	0.1,R2
     // asm 0000900F: 	CMPF	-0.1,R2
     // asm 00009010: 	LDFLT	-0.1,R2
+    if (z_lean > 0.1f) {
+        z_lean = 0.1f;
+    }
+    if (z_lean < -0.1f) {
+        z_lean = -0.1f;
+    }
     // asm 00009011: 	LDI	@MATRIXAI,AR2		;GET Z IN TEMP THING
     // asm 00009012: 	CALL	FIND_ZMATRIX
+    FIND_ZMATRIX(&MATRIXAI, z_lean);
     // asm 00009013: 	CALL	CONCAT201    		;CONCAT YOUR MATRICES INTO DYNOBJ
+    CONCAT201(body_x_matrix, &MATRIXAI, (MATRIX*)&dyna->omatrix);
     // asm 00009014: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LEAN", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

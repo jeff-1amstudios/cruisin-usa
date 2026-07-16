@@ -1786,7 +1786,7 @@ void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/);
 
 void CARPROC(PROC* p);
 
-void LEAN(void);
+void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk);
 
 // asm:  .globl DYNAOBJ_INIT,GETDYNA,DELDYNA
 void DYNAOBJ_INIT(void);
