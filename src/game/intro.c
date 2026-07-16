@@ -96,6 +96,13 @@ void GET_CREDITS_TO_CONTINUE(void);
 static tCHOOSE_CAR_ENTRY CCTAB[];
 static int TRAFFIC_LL[7];
 
+typedef struct CPOINT_LIGHT_STEP {
+    int delay;
+    uint32_t colors[5];
+} CPOINT_LIGHT_STEP;
+
+static const CPOINT_LIGHT_STEP RGBTAB_CP[4];
+
 /* asm: START_HIT	.bss	START_HIT,1 */
 int START_HIT;
 /* asm: CHOSEN_VEHICLE	.bss	CHOSEN_VEHICLE,1 */
@@ -3417,12 +3424,24 @@ static int TRAFFIC_LL[] = {
 
 // *----------------------------------------------------------------------------
 void CPOINT_LIGHT(PROC* p) {
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00001F2A: 	LDI	@RGBTAB_CPI,AR4
     // asm 00001F2B: 	INC	AR4
+    p->ctx->CPOINT_LIGHT.step_index = 0;
     // asm 00001F2C: 	LDI	checks_p,AR2
     // asm 00001F2D: 	CALL	PAL_FIND
+    p->ctx->CPOINT_LIGHT.palette_code = PAL_FIND(checks_p);
     // asm 00001F2E: 	BNC	SDASDFA
-    // asm 00001F2F: 	BR	SUICIDE
+    if (p->ctx->CPOINT_LIGHT.palette_code == -1) {
+        // asm 00001F2F: 	BR	SUICIDE
+        DIE();
+    }
 SDASDFA:
     // asm 00001F30: 	LDI	R0,AR6
 CPL_LP:
@@ -3431,16 +3450,22 @@ CPL_LP:
     // asm 00001F33: 	ADDI	251,R2
     // asm 00001F34: 	LDI	5,R3
     // asm 00001F35: 	CALL	PAL_SET
+    PAL_SET((uint32_t*)RGBTAB_CP[p->ctx->CPOINT_LIGHT.step_index].colors,
+        (uint32_t)(p->ctx->CPOINT_LIGHT.palette_code + 251),
+        5);
     // asm 00001F36: 	LDI	*++AR4(5),R0
+    p->ctx->CPOINT_LIGHT.step_index += 1;
     // asm 00001F37: 	BNN	CNT
-    // asm 00001F38: 	LDI	@RGBTAB_CPI,AR4
+    if (p->ctx->CPOINT_LIGHT.step_index >= LEN(RGBTAB_CP)) {
+        // asm 00001F38: 	LDI	@RGBTAB_CPI,AR4
+        p->ctx->CPOINT_LIGHT.step_index = 0;
+    }
 CNT:
     // asm 00001F39: 	LDI	*AR4++,AR2
     // asm 00001F3A: 	CALL	SLEEP
+    SLEEP(RGBTAB_CP[p->ctx->CPOINT_LIGHT.step_index].delay, 1);
     // asm 00001F3B: 	B	CPL_LP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CPOINT_LIGHT", 0, 0);
-    UNIMPL();
+    goto CPL_LP;
 }
 
 // *----------------------------------------------------------------------------
@@ -3453,32 +3478,11 @@ CNT:
 /* asm: RGB	212,212,0 */
 /* asm: RGB	212,212,0 */
 /* asm: RGB	212,212,0 */
-static int RGBTAB_CP[] = {
-    4,
-    RGB(212, 212, 0),
-    RGB(212, 212, 0),
-    RGB(212, 212, 0),
-    0,
-    0,
-    2,
-    RGB(255, 255, 0),
-    RGB(255, 255, 0),
-    RGB(255, 255, 0),
-    0,
-    0,
-    4,
-    0,
-    0,
-    0,
-    RGB(212, 212, 0),
-    RGB(212, 212, 0),
-    2,
-    0,
-    0,
-    0,
-    RGB(255, 255, 0),
-    RGB(255, 255, 0),
-    -1,
+static const CPOINT_LIGHT_STEP RGBTAB_CP[4] = {
+    { 4, { RGB(212, 212, 0), RGB(212, 212, 0), RGB(212, 212, 0), 0, 0 } },
+    { 2, { RGB(255, 255, 0), RGB(255, 255, 0), RGB(255, 255, 0), 0, 0 } },
+    { 4, { 0, 0, 0, RGB(212, 212, 0), RGB(212, 212, 0) } },
+    { 2, { 0, 0, 0, RGB(255, 255, 0), RGB(255, 255, 0) } },
 };
 // *----------------------------------------------------------------------------
 

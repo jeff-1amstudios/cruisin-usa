@@ -68,6 +68,8 @@ FONTENT		.MACRO	PRECEDING,XSTART,XEND,YSTART,TRAIL
 #define FONTENT(PRECEDING, XSTART, XEND, YSTART, TRAIL) \
     { ((((u32)(PRECEDING)) & 0xFFFFu) | (((u32)(TRAIL)) << 16)), (u32)(XSTART), (u32)(XEND), (u32)(YSTART) }
 
+#define LEN(x) (sizeof(x) / sizeof((x)[0]))
+
 #define ERRON(x) abort()
 #define SLOCKON(cond, msg)                      \
     if (cond) {                                 \

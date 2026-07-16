@@ -697,6 +697,10 @@ typedef struct PROC_CONTEXT {
             LOAD_SECTION_REQ_ARG* lsr;
         } REQWAIT;
         struct {
+            int palette_code;
+            int step_index;
+        } CPOINT_LIGHT;
+        struct {
             OBJ* obj;               // AR4
             CARBLK* carblk;         // AR5
             float body_x_radians;   // R6
