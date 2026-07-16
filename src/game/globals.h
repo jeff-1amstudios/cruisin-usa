@@ -1040,7 +1040,7 @@ void DRONE_CLR(void);
 void DRONE_PTR_ADD(void);
 
 // asm:  .globl FIND_PLAYERS_POSITION,POSITION_FINDER
-void FIND_PLAYERS_POSITION(void);
+void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*/);
 
 void POSITION_FINDER(PROC* p);
 

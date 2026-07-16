@@ -373,7 +373,7 @@ typedef struct CARBLK {
     s32 track_piece_position;
     f32 track_piece_distance;
     u32 track_piece_rank;
-    uintptr_t closest_track_piece;
+    struct OBJ* closest_track_piece;
     u32 gear;
     f32 rpm_x100;
     f32 x_plus;

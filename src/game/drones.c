@@ -13,13 +13,14 @@
 #include "sys.h"
 #include "sysid.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
 
 /*
  * Source module: asm/DRONES.ASM
  */
 
-void FIND_PLAYERS_POSITION(void);
+void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*/);
 void DRONE_PTR_ADD(void);
 void DRONE_CLR(void);
 static void CK_LINK_DISP(void);
@@ -149,14 +150,20 @@ float LANES4[] = {
 int ONCSCREEN_CARS;
 
 void POSITION_FINDER(PROC* p) {
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
     // asm 000065CA: 	LDI	@PLYCAR,AR4
     // asm 000065CB: 	LDI	@PLYCBLK,AR5
     // asm 000065CC: 	CALL	FIND_PLAYERS_POSITION
+    FIND_PLAYERS_POSITION(PLYCAR, PLYCBLK);
     // asm 000065CD: 	SLEEP	14
+    SLEEP(14, 1);
     // asm 000065CF: 	BU	POSITION_FINDER
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "POSITION_FINDER", 0, 0);
-    UNIMPL();
+    REENTER(POSITION_FINDER);
 }
 
 // *----------------------------------------------------------------------------
@@ -173,33 +180,76 @@ void POSITION_FINDER(PROC* p) {
  * OUTPUT:SETS @POSITION, @ONCSCREEN_CARS
  *
  */
-void FIND_PLAYERS_POSITION(void) {
+void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*/) {
+    OBJ* player_track_obj;
+    int player_track_id;
+    OBJ* obj;
+    int position;
+    int on_screen_cars;
+    int rank_increment;
+    CARBLK* carblk;
+    PROC* proc;
+    OBJ* track_obj;
+    OBJ* next_track_obj;
+    float other_dist_sq;
+    float player_dist_sq;
+
     // ;	CLRI	IR0	;TEMP FLAG FOR OTHER MACHINE
     // asm 000065D0: 	LDI	1,R7		;POSITION #
+    position = 1;
     // asm 000065D1: 	CLRI	R6		;CARS CLOSE TO SCREEN
-    // asm 000065D2: 	LDI	*+AR5(CARTRAK),AR6
-    // asm 000065D3: 	LDI	*+AR6(OUSR1),R1
+    on_screen_cars = 0;
+
+    // bugfix. Added null check. the first call `player_carblk` is null and the original game reads
+    // junk track_id data
+    if (player_carblk == NULL) {
+        player_track_id = -1;
+    } else {
+        // asm 000065D2: 	LDI	*+AR5(CARTRAK),AR6
+        player_track_obj = player_carblk->closest_track_piece;
+        // asm 000065D3: 	LDI	*+AR6(OUSR1),R1
+        player_track_id = (int)player_track_obj->usr1;
+    }
+
     // asm 000065D4: 	LDI	@CAR_LIST,AR0
+    obj = CAR_LIST;
     // asm 000065D5: 	CMPI	0,AR0
     // asm 000065D6: 	BZ	FPPX
+    if (obj == NULL) {
+        goto FPPX;
+    }
 FPPLP:
     // asm 000065D7: 	LDI	0,R5
+    rank_increment = 0;
     // asm 000065D8: 	LDI	*+AR0(ODIST),R0
     // asm 000065D9: 	CMPI	30000,R0
     // asm 000065DA: 	BGT	NNEG
     // asm 000065DB: 	CMPI	-5000,R0
     // asm 000065DC: 	BLT	NNEG
     // asm 000065DD: 	INC	R6
+    if (obj->dist <= 30000 && obj->dist >= -5000) {
+        on_screen_cars += 1;
+    }
 NNEG:
     // asm 000065DE: 	LDI	*+AR0(OID),R0
     // asm 000065DF: 	CMPI	DRONE_C|VEHICLE_T|DRNE_RACER,R0
     // asm 000065E0: 	BNE	NXTLP
+    if (obj->id != (DRONE_C | VEHICLE_T | DRNE_RACER)) {
+        goto NXTLP;
+    }
     // asm 000065E1: 	LDI	*+AR0(OCARBLK),AR3
+    carblk = obj->carblk;
     // asm 000065E2: 	LDI	*+AR3(CAR_OM),R0  	;OTHER MACHINES CAR?
     // asm 000065E3: 	BZ	FPP1			;NO...
+    if (carblk->other_machine_controls == 0) {
+        goto FPP1;
+    }
     // asm 000065E4: 	LDI	*+AR3(CARTRACK_ID),R0	;CHECK IF AHEAD OR BEHIND
     // asm 000065E5: 	CMPI	R1,R0
     // asm 000065E6: 	BNE	NXTLP1
+    if ((int)carblk->track_id != player_track_id) {
+        goto NXTLP1;
+    }
     // ;	BEQ	FURTHER
     // ;	BLT	ISBLAMP
     // ;
@@ -219,6 +269,7 @@ NNEG:
     // asm 000065E8: 	LDIEQ	1,IR0
     // ;	LDI	1,IR0
     // asm 000065E9: 	STI	AR6,*+AR3(CARTRAK)  	;CALC CARDIST2CNTR DUDE
+    carblk->closest_track_piece = player_track_obj;
     // asm 000065EA: 	LDI	AR6,AR2
     // asm 000065EB: 	PUSH	AR4
     // asm 000065EC: 	PUSH	AR5
@@ -226,41 +277,59 @@ NNEG:
     // asm 000065EE: 	LDI	AR3,AR5
     // asm 000065EF: 	CALL	DRONE_RIDE_RIGHT
     // asm 000065F0: 	STF	R0,*+AR5(CARDIST2CNTR)	;STORE DIST TO CENTER
+    carblk->dist_to_center = DRONE_RIDE_RIGHT(obj, carblk);
     // asm 000065F1: 	POP	AR5
     // asm 000065F2: 	POP	AR4
     // asm 000065F3: 	B	FPP2
+    track_obj = player_track_obj;
+    goto FPP2;
 FPP1:
     // asm 000065F4: 	LDI	*+AR0(OPLINK),AR2
+    proc = obj->plink;
     // asm 000065F5: 	LDI	*+AR2(STEALTHMODE),R0  	;0=ONSCRN,-1=BEHIND ST, 1=AHEAD STEALTH
     // asm 000065F6: 	BNE	NXTLP1
+    if (proc == NULL || proc->ctx->RACER_DRONE.stealthmode != 0) {
+        goto NXTLP1;
+    }
     // asm 000065F7: 	LDI	*+AR0(OCARBLK),AR3
     // asm 000065F8: 	LDI	*+AR3(CARTRAK),AR2
+    track_obj = carblk->closest_track_piece;
     // asm 000065F9: 	LDI	*+AR2(OUSR1),R0
     // asm 000065FA: 	CMPI	R1,R0
     // asm 000065FB: 	BNE	NXTLP1
+    if (track_obj == NULL || (int)track_obj->usr1 != player_track_id) {
+        goto NXTLP1;
+    }
     // *
     // *ON SAME TRACK SEGMENT
     // *
 FPP2:
     // asm 000065FC: 	LDI	*+AR2(OLINK4),AR2		;get the next road piece
+    next_track_obj = (OBJ*)(uintptr_t)track_obj->link4;
     // asm 000065FD: 	SUBF	*+AR0(OPOSX),*+AR2(OPOSX),R0
     // asm 000065FE: 	MPYF	R0,R0
     // asm 000065FF: 	LDF	*+AR0(OPOSZ),R3
     // asm 00006600: 	SUBF	*+AR2(OPOSZ),R3
     // asm 00006601: 	MPYF	R3,R3
     // asm 00006602: 	ADDF	R0,R3,R4
+    other_dist_sq = (next_track_obj->posx - obj->posx) * (next_track_obj->posx - obj->posx);
+    other_dist_sq += (obj->posz - next_track_obj->posz) * (obj->posz - next_track_obj->posz);
     // asm 00006603: 	LDF	*+AR3(CARDIST2CNTR),R0		;CORRECT FOR NOT CENTERED
     // asm 00006604: 	MPYF	R0,R0
     // asm 00006605: 	SUBF	R0,R4
+    other_dist_sq -= carblk->dist_to_center * carblk->dist_to_center;
     // asm 00006606: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R0
     // asm 00006607: 	MPYF	R0,R0
     // asm 00006608: 	LDF	*+AR4(OPOSZ),R3
     // asm 00006609: 	SUBF	*+AR2(OPOSZ),R3
     // asm 0000660A: 	MPYF	R3,R3
     // asm 0000660B: 	ADDF	R0,R3
+    player_dist_sq = (next_track_obj->posx - player_obj->posx) * (next_track_obj->posx - player_obj->posx);
+    player_dist_sq += (player_obj->posz - next_track_obj->posz) * (player_obj->posz - next_track_obj->posz);
     // asm 0000660C: 	LDF	*+AR5(CARDIST2CNTR),R0		;CORRECT FOR NOT CENTERED
     // asm 0000660D: 	MPYF	R0,R0
     // asm 0000660E: 	SUBF	R0,R3
+    player_dist_sq -= player_carblk->dist_to_center * player_carblk->dist_to_center;
     // 	;CHECK FOR LAMP
     // ;	CMPI	0,IR0
     // ;	BEQ	KKDKA
@@ -272,19 +341,29 @@ FPP2:
     // asm 0000660F: KKDKA
     // 	;END CHECK LAMP
     // asm 0000660F: 	CMPF	R4,R3
+    if (player_dist_sq > other_dist_sq) {
+        rank_increment = 1;
+    }
 NXTLP1:
     // asm 00006610: 	LDIGT	1,R5
     // asm 00006611: 	ADDI	R5,R7
+    position += rank_increment;
 NXTLP:
     // asm 00006612: 	LDI	*+AR0(OLINK3),AR0
+    obj = (OBJ*)(uintptr_t)obj->link3;
     // asm 00006613: 	CMPI	0,AR0
     // asm 00006614: 	BNE	FPPLP
+    if (obj != NULL) {
+        goto FPPLP;
+    }
 FPPX:
     // asm 00006615: 	STI	R7,@POSITION
+    POSITION = position;
+    MAME_ASSERT_REG(0x00006616, "R7", &POSITION);
     // asm 00006616: 	STI	R6,@ONCSCREEN_CARS
+    ONCSCREEN_CARS = on_screen_cars;
+    MAME_ASSERT_REG(0x00006617, "R6", &ONCSCREEN_CARS);
     // asm 00006617: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_PLAYERS_POSITION", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1380,7 +1459,7 @@ float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00006814: 	PUSH	AR4
     // asm 00006815: 	PUSH	AR5
     // asm 00006816: 	BU	RIDE_RIGHT_JOININ
-    track_obj = (OBJ*)(uintptr_t)carblk->closest_track_piece;
+    track_obj = carblk->closest_track_piece;
     if (track_obj == NULL) {
         return 0.0f;
     }

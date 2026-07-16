@@ -2463,7 +2463,7 @@ GETRK:
         goto GETRK;
     }
     // asm 00002F14: 	STI	AR0,*+AR5(CARTRAK)	;SAVE TRACK SECTION
-    carblk->closest_track_piece = (uintptr_t)closest_track_obj;
+    carblk->closest_track_piece = closest_track_obj;
 GETRKX:
     // asm 00002F16: 	RETS
 }
