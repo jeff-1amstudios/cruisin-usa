@@ -1,0 +1,1 @@
+bpset 00004AEA, 1, { logerror "VAR_NAME: %d", d@0x008099DF; }

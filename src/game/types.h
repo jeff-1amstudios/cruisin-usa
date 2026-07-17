@@ -671,6 +671,8 @@ typedef struct VIEWLIST_ENTRY {
     void_func_ptr view_func;
 } VIEWLIST_ENTRY;
 
+struct WAVEFLAG_ENTRY;
+
 typedef struct PROC_CONTEXT {
     union {
         struct {
@@ -695,6 +697,25 @@ typedef struct PROC_CONTEXT {
             int palette_code;
             int step_index;
         } CPOINT_LIGHT;
+        struct {
+            tTEXT* front_text;
+            tTEXT* shadow_text;
+            float posx;
+            int loop_count;
+        } SHOW_RACE_NAME;
+        struct {
+            int loop_count;
+        } BLINK_FREEBE;
+        struct {
+            OBJ* obj;
+            int loop_count;
+            int script_index;
+        } BABE_WAVEFLAG;
+        struct {
+            int saved_mode;
+            const struct WAVEFLAG_ENTRY* list_ptr;
+            int list_count;
+        } WAVEFLAG;
         struct {
             struct PROC* sigma_proc;
         } SIGMA_DISPATCHER;
@@ -772,6 +793,7 @@ typedef struct PROC_CONTEXT {
             float camera_lane;
             OBJ* objins;
             float camyoff;
+            LEG_PAYLOAD* road_obj;  // synthetic state used to preserve AR4 road segment across calls
             uintptr_t view_script; // synthetic state used to preserve AR6 across sleeps
             int frames_left;       // synthetic state used to preserve AR5 across sleeps
         } ATTRACT_DELTA;

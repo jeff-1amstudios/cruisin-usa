@@ -375,11 +375,15 @@ RND2:
  *
  */
 float FRAND(float limit /*R0*/) {
+    int value;
+
     // asm 00008EEA: 	PUSH	AR2
     // asm 00008EEB: 	PUSHFL	R1
     // asm 00008EED: 	PUSHF	R0
     // asm 00008EEE: 	LDI	10000,AR2
+    value = 10000;
     // asm 00008EEF: 	CALL	RANDU0
+    value = RANDU0(value);
     // asm 00008EF0: 	FLOAT	R0
     // asm 00008EF1: 	MPYF	0.01,R0
     // asm 00008EF2: 	MPYF	0.01,R0
@@ -388,7 +392,7 @@ float FRAND(float limit /*R0*/) {
     // asm 00008EF5: 	POPFL	R1
     // asm 00008EF7: 	POP	AR2
     // asm 00008EF8: 	RETS
-    return limit * ((float)((RANDOM() >> 16) & 0xFFFFu) / 65536.0f);
+    return limit * ((float)value * 0.0001f);
 }
 
 // *----------------------------------------------------------------------------
@@ -435,6 +439,7 @@ int RANDU0(int range /*AR2*/) {
     // asm 00008F03: 	CALL	RANDOM
     value = (int)(RANDOM() >> 16);
     // asm 00008F04: 	LSH	-16,R0
+    MAME_ASSERT_ARG("AR2", &range);
     // asm 00008F05: 	MPYI	AR2,R0
     value *= range;
     // asm 00008F06: 	LSH	-16,R0

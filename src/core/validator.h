@@ -44,6 +44,8 @@ void mame_assert_reg_at_addr_impl(
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_FLOAT, 0)
 #define MAME_ASSERT_MEM(addr, mem_addr, ptr) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_WORD, 0)
+#define MAME_ASSERT_MEM_FLOAT(addr, mem_addr, ptr) \
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_FLOAT, 0)
 
 #define MAME_ASSERT_FUNCTION_ENTRY()
 

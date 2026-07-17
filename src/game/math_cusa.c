@@ -27,7 +27,7 @@ float _COSI(float theta /*R2*/);
 float _SINE(float theta /*R2*/);
 void NORMITS(void);
 float NORMIT(float radians /*R2*/);
-void ARCTANF(void);
+float ARCTANF(float x /*R2*/, float y /*R3*/);
 void FIND_MATRIX(void* dest /*AR2*/, VECTOR* radians /*R2*/);
 void FIND_XMATRIX(void* dest /*AR2*/, float radians /*R2*/);
 #define FIND_YMATRIX _find_Ymatrix
@@ -539,7 +539,7 @@ float NORMIT(float radians /*R2*/) {
  *	R0	RADIANS (FLOAT)
  *
  */
-void ARCTANF(void) {
+float ARCTANF(float x /*R2*/, float y /*R3*/) {
     // asm 00009568: _arctanf
     // asm 00009568: 	PUSH	R1
     // asm 00009569: 	PUSHF	R1
@@ -585,7 +585,7 @@ AT1:
     // asm 0000958C:       	POP	R1
     // asm 0000958D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ARCTANF", 0, 0);
-    UNIMPL();
+    return atan2f(y, x);
 }
 
 /* asm: ATTABV	.word	ATTAB */

@@ -31,7 +31,6 @@ void SILENT(void);
 void CLRSNDDB(void);
 void GETPRI(void);
 void VOLSNDFX(void);
-void ONESNDFX(void);
 void KILLSNDFX(void);
 void PLYR_ENGINE(void);
 void HARDSND(void);
@@ -284,7 +283,7 @@ void RESUME_TUNE_NT(void) {
     // asm 00009135: 	CALL	ONESND
     // asm 00009136: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESUME_TUNE_NT", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -517,7 +516,7 @@ void VOLSNDFX(void) {
  *
  *
  */
-void ONESNDFX(void) {
+void ONESNDFX(int sound_index) {
     // asm 000091B0: 	LDI	255,R0
     // *
     // *PARAMETERS
@@ -587,7 +586,7 @@ NOSOUND_FX:
     // asm 000091E8: 	BU	L88
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ONESNDFX", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

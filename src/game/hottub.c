@@ -36,7 +36,7 @@ void CROWD_IT(void);
 void BABE_TROPHY(void);
 static void BABE_IBO(void);
 static void BABE_ANI(void);
-void BABE_WAVEFLAG(void);
+void BABE_WAVEFLAG(PROC* p);
 
 #define ANI_HOTTUBI ANI_HOTTUB
 #define HILLANII HILLANI
@@ -788,63 +788,123 @@ static int BABE_FLAG_SCRIPT[] = {
  *
  *
  */
-void BABE_WAVEFLAG(void) {
+void BABE_WAVEFLAG(PROC* p) {
+    int romdata;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    case 5:
+        goto PROC_RESUME_5;
+    }
+
     // asm 00008BD5: 	READAUD	ADJ_GIRLS
     // asm 00008BD7: 	CMPI	0,R0
     // asm 00008BD8: 	BEQ	SUICIDE
+    if (READAUD(ADJ_GIRLS) == 0) {
+        DIE();
+    }
     // asm 00008BD9: 	CALL	OBJ_GET
+    p->ctx->BABE_WAVEFLAG.obj = OBJ_GET();
     // asm 00008BDA: 	LDI	AR0,AR4
     // asm 00008BDB: 	FLOAT	-350,R0
+    p->ctx->BABE_WAVEFLAG.obj->pos.X = -350.0f;
     // asm 00008BDC: 	STF	R0,*+AR4(OPOSX)
     // asm 00008BDD: 	FLOAT	40,R0
+    p->ctx->BABE_WAVEFLAG.obj->pos.Y = 40.0f;
     // asm 00008BDE: 	STF	R0,*+AR4(OPOSY)
     // asm 00008BDF: 	FLOAT	368,R0
+    p->ctx->BABE_WAVEFLAG.obj->pos.Z = 368.0f;
     // asm 00008BE0: 	STF	R0,*+AR4(OPOSZ)
     // asm 00008BE1: 	LDI	*+AR4(OFLAGS),R0
     // asm 00008BE2: 	OR	O_POSTER|O_NOUROT|O_NOUNIV,R0
+    p->ctx->BABE_WAVEFLAG.obj->flags |= O_POSTER | O_NOUROT | O_NOUNIV;
     // asm 00008BE3: 	STI	R0,*+AR4(OFLAGS)
     // asm 00008BE4: 	LDL	flag1,R0
+    p->ctx->BABE_WAVEFLAG.obj->romdata = ROM_PTR(flag1_ROM);
     // asm 00008BE5: 	STI	R0,*+AR4(OROMDATA)
     // asm 00008BE6: 	LDI	AR4,AR2
     // asm 00008BE7: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(p->ctx->BABE_WAVEFLAG.obj);
 BABEWTLP:
     // asm 00008BE8: 	LDI	@BABE_CONTROL,R0
     // asm 00008BE9: 	BNZ	BABEGO
+    if (BABE_CONTROL != 0) {
+        goto BABEGO;
+    }
     // asm 00008BEA: 	LDF	*+AR4(OPOSX),R0
     // asm 00008BEB: 	FLOAT	-200,R1
     // asm 00008BEC: 	CMPF	R1,R0
     // asm 00008BED: 	BGE	IBO2
-    // asm 00008BEE: 	ADDF	5,R0
-    // asm 00008BEF: 	STF	R0,*+AR4(OPOSX)
+    if (p->ctx->BABE_WAVEFLAG.obj->pos.X < -200.0f) {
+        // asm 00008BEE: 	ADDF	5,R0
+        p->ctx->BABE_WAVEFLAG.obj->pos.X += 5.0f;
+        // asm 00008BEF: 	STF	R0,*+AR4(OPOSX)
+    }
 IBO2:
     // asm 00008BF0: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00008BF2: 	BU	BABEWTLP
+    goto BABEWTLP;
 BABEGO:
     // asm 00008BF3: 	LDI	17,AR5
+    p->ctx->BABE_WAVEFLAG.loop_count = 17;
 BABERST:
     // asm 00008BF4: 	LDL	BABE_FLAG_SCRIPT,AR6
+    p->ctx->BABE_WAVEFLAG.script_index = 0;
     // asm 00008BF5: BABE_LPWF
+BABE_LPWF:
     // asm 00008BF5: 	LDI	*AR6++,R0
+    romdata = BABE_FLAG_SCRIPT[p->ctx->BABE_WAVEFLAG.script_index];
+    p->ctx->BABE_WAVEFLAG.script_index += 1;
     // asm 00008BF6: 	BN	BABERST
+    if (romdata < 0) {
+        goto BABERST;
+    }
     // asm 00008BF7: 	STI	R0,*+AR4(OROMDATA)
+    p->ctx->BABE_WAVEFLAG.obj->romdata = ROM_PTR((word_addr_t)romdata);
     // asm 00008BF8: 	SLEEP	2
+    SLEEP(2, 2);
     // asm 00008BFA: 	DBU	AR5,BABE_LPWF
+    p->ctx->BABE_WAVEFLAG.loop_count -= 1;
+    if (p->ctx->BABE_WAVEFLAG.loop_count >= 0) {
+        goto BABE_LPWF;
+    }
     // asm 00008BFB: 	SLEEP	5
+    SLEEP(5, 3);
     // asm 00008BFD: 	LDI	16,AR5
+    p->ctx->BABE_WAVEFLAG.loop_count = 16;
     // asm 00008BFE: BABEOFF
+BABEOFF:
     // asm 00008BFE: 	LDF	*+AR4(OPOSX),R0
     // asm 00008BFF: 	SUBF	6,R0
+    p->ctx->BABE_WAVEFLAG.obj->pos.X -= 6.0f;
     // asm 00008C00: 	STF	R0,*+AR4(OPOSX)
     // asm 00008C01: 	SLEEP	1
+    SLEEP(1, 4);
     // asm 00008C03: 	LDF	*+AR4(OPOSX),R0
     // asm 00008C04: 	SUBF	6,R0
+    p->ctx->BABE_WAVEFLAG.obj->pos.X -= 6.0f;
     // asm 00008C05: 	STF	R0,*+AR4(OPOSX)
     // asm 00008C06: 	SLEEP	1
+    SLEEP(1, 5);
     // asm 00008C08: 	DBU	AR5,BABEOFF
+    p->ctx->BABE_WAVEFLAG.loop_count -= 1;
+    if (p->ctx->BABE_WAVEFLAG.loop_count >= 0) {
+        goto BABEOFF;
+    }
     // asm 00008C09: 	LDI	AR4,AR2
     // asm 00008C0A: 	CALL	OBJ_DELETE
+    OBJ_PULL(p->ctx->BABE_WAVEFLAG.obj);
+    OBJ_FREE(p->ctx->BABE_WAVEFLAG.obj);
     // asm 00008C0B: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_WAVEFLAG", 0, 0);
-    UNIMPL();
+    DIE();
 }

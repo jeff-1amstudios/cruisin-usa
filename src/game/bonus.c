@@ -43,7 +43,7 @@ static void OBJ_DELETE_HIGH_PRIORITY(void);
 static void BONUS_SCREEN(void);
 static void BONSCRN2(void);
 static void CLINTON_SHOW(void);
-void BLINK_FREEBE(void);
+void BLINK_FREEBE(PROC* p);
 static void BACKUP_CAMERA(void);
 void TIMED_OUT(void);
 static void KILL_PLYR_SOUNDS(void);
@@ -1081,52 +1081,90 @@ JAJD:
 
 // *----------------------------------------------------------------------------
 
-void BLINK_FREEBE(void) {
+void BLINK_FREEBE(PROC* p) {
+    int mode;
+    int posx;
+    int posy;
+    int palette;
+    tSHADOW_TEXT text;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
     // asm 00003C2A: 	SLEEP	5
+    SLEEP(5, 1);
     // asm 00003C2C: 	LDI	5*18,AR5
+    p->ctx->BLINK_FREEBE.loop_count = 5 * 18;
     // asm 00003C2D: BFLP1
+BFLP1:
     // asm 00003C2D: 	LDI	@_MODE,R4
     // asm 00003C2E: 	AND	MMODE,R4
+    mode = _MODE & MMODE;
     // asm 00003C2F: 	CMPI	MATTR,R4
     // asm 00003C30: 	LDINE	70,R3
     // asm 00003C31: 	LDIEQ	125,R3
+    posy = mode != MATTR ? 70 : 125;
     // asm 00003C32: 	LDINE	256,R2
     // asm 00003C33: 	LDIEQ	365,R2
+    posx = mode != MATTR ? 256 : 365;
     // asm 00003C34: 	FLOAT	R2
     // asm 00003C35: 	FLOAT	R3
     // asm 00003C36: 	LDI	1,RC
     // asm 00003C37: 	LDL	WINT1,AR2
     // asm 00003C38: 	CALL	TEXT_ADDDS
+    text = TEXT_ADDDS(WINT1, (float)posx, (float)posy, 1);
     // asm 00003C39: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text.front->color |= TXT_CENTER;
     // asm 00003C3C: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    text.shadow->color |= TXT_CENTER;
     // asm 00003C3F: 	LDL	font18_white,AR2
     // asm 00003C40: 	CALL	PAL_FIND_RAW
+    palette = PAL_FIND_RAW((tPAL*)ROM_PTR(font18_white_ROM));
     // asm 00003C41: 	STI	R0,*+AR0(TEXT_PAL)
+    text.front->palette = (u32)palette;
     // asm 00003C42: 	STI	R0,*+AR1(TEXT_PAL)
+    text.shadow->palette = (u32)palette;
     // asm 00003C43: 	CMPI	MATTR,R4
     // asm 00003C44: 	LDINE	90,R3
     // asm 00003C45: 	LDIEQ	150,R3
+    posy = mode != MATTR ? 90 : 150;
     // asm 00003C46: 	LDINE	256,R2
     // asm 00003C47: 	LDIEQ	365,R2
+    posx = mode != MATTR ? 256 : 365;
     // asm 00003C48: 	FLOAT	R2
     // asm 00003C49: 	FLOAT	R3
     // asm 00003C4A: 	LDI	1,RC
     // asm 00003C4B: 	LDL	WINT2,AR2
     // asm 00003C4C: 	CALL	TEXT_ADDDS
+    text = TEXT_ADDDS(WINT2, (float)posx, (float)posy, 1);
     // asm 00003C4D: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text.front->color |= TXT_CENTER;
     // asm 00003C50: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    text.shadow->color |= TXT_CENTER;
     // asm 00003C53: 	LDL	font18_white,AR2
     // asm 00003C54: 	CALL	PAL_FIND_RAW
+    palette = PAL_FIND_RAW((tPAL*)ROM_PTR(font18_white_ROM));
     // asm 00003C55: 	STI	R0,*+AR0(TEXT_PAL)
+    text.front->palette = (u32)palette;
     // asm 00003C56: 	STI	R0,*+AR1(TEXT_PAL)
+    text.shadow->palette = (u32)palette;
     // ;insert frame rate equalizer
     // ;
     // asm 00003C57: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 00003C59: 	DBU	AR5,BFLP1
+    p->ctx->BLINK_FREEBE.loop_count -= 1;
+    if (p->ctx->BLINK_FREEBE.loop_count >= 0) {
+        goto BFLP1;
+    }
     // asm 00003C5A: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BLINK_FREEBE", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------

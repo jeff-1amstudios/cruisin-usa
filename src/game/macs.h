@@ -105,6 +105,71 @@ static inline float TMS320_C3X_SINGLE_TO_FLOAT(u32 raw) {
     return ldexpf(mantissa, exponent);
 }
 
+static inline float TMS320_C3X_SHORT_FLOAT_TO_FLOAT(uint16_t raw) {
+    int exponent;
+    uint16_t fraction;
+    float mantissa;
+
+    exponent = (int8_t)((raw & 0xF000u) >> 8) >> 4;
+    if (exponent == -8 && (raw & 0x0FFFu) == 0) {
+        return 0.0f;
+    }
+
+    fraction = raw & 0x07FFu;
+    if ((raw & 0x0800u) == 0) {
+        mantissa = 1.0f + ((float)fraction / 2048.0f);
+    } else {
+        mantissa = -2.0f + ((float)fraction / 2048.0f);
+    }
+
+    return ldexpf(mantissa, exponent);
+}
+
+static inline uint16_t TMS320_C3X_FLOAT_TO_SHORT_FLOAT_RAW(double value) {
+    int exponent;
+    double mantissa;
+    double fraction;
+    int fraction_bits;
+    uint16_t sign_bits;
+
+    if (value == 0.0) {
+        return 0x8000u;
+    }
+
+    mantissa = frexp(value, &exponent);
+    mantissa = ldexp(mantissa, 1);
+    exponent -= 1;
+
+    if (value > 0.0) {
+        fraction = (mantissa - 1.0) * 2048.0;
+        fraction_bits = (int)floor(fraction + 0.5);
+        sign_bits = 0x0000u;
+    } else {
+        fraction = (mantissa + 2.0) * 2048.0;
+        fraction_bits = (int)floor(fraction + 0.5);
+        sign_bits = 0x0800u;
+    }
+
+    if (fraction_bits >= 2048) {
+        fraction_bits = 0;
+        exponent += 1;
+    }
+
+    if (exponent < -7) {
+        return 0x8000u;
+    }
+    if (exponent > 7) {
+        exponent = 7;
+        fraction_bits = 0x07FF;
+    }
+
+    return (uint16_t)((((uint16_t)exponent) & 0x000Fu) << 12) | sign_bits | ((uint16_t)fraction_bits & 0x07FFu);
+}
+
+static inline float TMS320_C3X_SHORT_FLOAT(double value) {
+    return TMS320_C3X_SHORT_FLOAT_TO_FLOAT(TMS320_C3X_FLOAT_TO_SHORT_FLOAT_RAW(value));
+}
+
 // static inline u32 TMS320_C3X_DOUBLE_TO_SINGLE_RAW_TRUNC(double value) {
 //     int exponent;
 //     double mantissa;

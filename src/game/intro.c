@@ -1,5 +1,6 @@
 
 #include "intro.h"
+#include "../core/input.h"
 #include "../core/machine.h"
 #include "cmos.h"
 #include "comm.h"
@@ -7,6 +8,7 @@
 #include "error.h"
 #include "globals.h"
 #include "macs.h"
+#include "motion.h"
 #include "mproc.h"
 #include "obj.h"
 #include "pall.h"
@@ -71,7 +73,13 @@ void CYCLE_ATTR(void);
 void INSMORE(void);
 static void COIN_CNTDOWN(void);
 void LOAD_SHARED(void);
-static void SHOW_RACE_NAME(void);
+static void SHOW_RACE_NAME(PROC* p);
+
+typedef struct WAVEFLAG_ENTRY {
+    const char* text;
+    int sound;
+    void (*send_state)(void);
+} WAVEFLAG_ENTRY;
 
 #define CCTI CCT
 #define CCTABI CCTAB
@@ -81,14 +89,15 @@ static void SHOW_RACE_NAME(void);
 #define CARSRCPAL_TABI CARSRCPAL_TAB
 #define HIDDEN_TABLEI HIDDEN_TABLE
 #define RGBTAB_CPI RGBTAB_CP
+#define MOTION_ERROR_TIKS (57 * 5)
 
 extern int BOILEROBJ;
 void BOILERPLATE_INIT(void);
-void CHECK_MOTION_DIP(void);
-void CHECK_MOTION_PRESENT(void);
+int CHECK_MOTION_DIP(void);
+int CHECK_MOTION_PRESENT(void);
 void ABORT_RESET_GALIL(void);
 extern const char XQ[];
-void SEND_CMD(void);
+void SEND_CMD(char* cmd);
 void WAIT_ACK(void);
 void GET_CREDITS_TO_START(void);
 void GET_CREDITS_TO_CONTINUE(void);
@@ -2441,20 +2450,14 @@ static const char T_GO[] = "GO";
 static const char T_CHALLENG[] = "CHALLENGE RACE";
 /* asm: TLIST	.word	T_READY,CHICK_READY,SEND_WAVEFL_READY */
 /* asm: 	.word	T_SET,CHICK_SET,SEND_WAVEFL_SET */
-static uintptr_t TLIST[] = {
-    (uintptr_t)&T_READY,
-    (uintptr_t)(CHICK_READY),
-    (uintptr_t)SEND_WAVEFL_READY,
-    (uintptr_t)&T_SET,
-    (uintptr_t)(CHICK_SET),
-    (uintptr_t)SEND_WAVEFL_SET,
+static const WAVEFLAG_ENTRY TLIST[] = {
+    { T_READY, CHICK_READY, SEND_WAVEFL_READY },
+    { T_SET, CHICK_SET, SEND_WAVEFL_SET },
 };
 /* asm: TLGO	.word	T_GO,CHICK_GO,SEND_WAVEFL_GO */
 /* asm: 	 */
-static uintptr_t TLGO[] = {
-    (uintptr_t)&T_GO,
-    (uintptr_t)(CHICK_GO),
-    (uintptr_t)SEND_WAVEFL_GO,
+static const WAVEFLAG_ENTRY TLGO[] = {
+    { T_GO, CHICK_GO, SEND_WAVEFL_GO },
 };
 /* asm: BABE_CONTROL	.bss	BABE_CONTROL,1 */
 int BABE_CONTROL;
@@ -2462,84 +2465,153 @@ int BABE_CONTROL;
 int CURR_FLAGSTATE;
 
 void WAVEFLAG(PROC* p) {
+    const WAVEFLAG_ENTRY* entry;
+    tTEXT* text;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    case 5:
+        goto PROC_RESUME_5;
+    case 6:
+        goto PROC_RESUME_6;
+    }
+
     // asm 00001C9B: 	LDP	@STOPWATCH_CNTL
     // asm 00001C9C: 	CLRI	R0
     // asm 00001C9D: 	STI	R0,@STOPWATCH_CNTL
+    STOPWATCH_CNTL = 0;
     // asm 00001C9E: 	STI	R0,@BABE_CONTROL
+    BABE_CONTROL = 0;
     // asm 00001C9F: 	LDP	@STOPWATCH
     // asm 00001CA0: 	STI	R0,@STOPWATCH
+    STOPWATCH = 0;
     // asm 00001CA1: 	LDI	@_MODE,R0
     // asm 00001CA2: 	LDI	R0,R5
+    p->ctx->WAVEFLAG.saved_mode = _MODE;
     // asm 00001CA3: 	OR	MHUD|MSLINE,R0
+    _MODE |= MHUD | MSLINE;
     // asm 00001CA4: 	STI	R0,@_MODE
     // asm 00001CA5: 	READADJ	ADJ_FREEGAME
     // asm 00001CA7: 	CMPI	0,R0
     // asm 00001CA8: 	BEQ	FGLL
-    // asm 00001CA9: 	CREATE	BLINK_FREEBE,UTIL_C
-    // asm 00001CAC: 	LDI	@_MODE,R0
-    // asm 00001CAD: 	AND	MMODE,R0
-    // asm 00001CAE: 	CMPI	MATTR,R0
-    // asm 00001CAF: 	BEQ	FGLL
-    // asm 00001CB0: 	CREATE	SHOW_RACE_NAME,UTIL_C
+    if (READADJ(ADJ_FREEGAME) != 0) {
+        PROC_CONTEXT* ctx;
+
+        // asm 00001CA9: 	CREATE	BLINK_FREEBE,UTIL_C
+        ctx = port_malloc(sizeof(PROC_CONTEXT));
+        CREATE(BLINK_FREEBE, UTIL_C, ctx);
+        // asm 00001CAC: 	LDI	@_MODE,R0
+        // asm 00001CAD: 	AND	MMODE,R0
+        // asm 00001CAE: 	CMPI	MATTR,R0
+        // asm 00001CAF: 	BEQ	FGLL
+        if ((_MODE & MMODE) != MATTR) {
+            // asm 00001CB0: 	CREATE	SHOW_RACE_NAME,UTIL_C
+            ctx = port_malloc(sizeof(PROC_CONTEXT));
+            CREATE(SHOW_RACE_NAME, UTIL_C, ctx);
+        }
+    }
 FGLL:
     // ;	LDI	@HEAD2HEAD_ON,R0
     // ;	CALLNZ	SEND_BSYNC0
     // asm 00001CB3: 	SLEEP	5
+    SLEEP(5, 1);
     // asm 00001CB5: 	LDI	@_MODE,R0
     // asm 00001CB6: 	AND	MMODE,R0
     // asm 00001CB7: 	CMPI	MATTR,R0
     // asm 00001CB8: 	BEQ	NOBABE
-    // asm 00001CB9: 	CREATEC	BABE_WAVEFLAG,UTIL_C
+    if ((_MODE & MMODE) != MATTR) {
+        // asm 00001CB9: 	CREATEC	BABE_WAVEFLAG,UTIL_C
+        PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+        CREATE(BABE_WAVEFLAG, UTIL_C, ctx);
+    }
 NOBABE:
     // asm 00001CBC: 	CLRI	R0
     // asm 00001CBD: 	STI	R0,@CURR_FLAGSTATE
+    CURR_FLAGSTATE = 0;
     // asm 00001CBE: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00001CBF: 	BZ	NOHEAD2HEAD
-    // asm 00001CC0: 	CLRI	R0
-    // asm 00001CC1: 	STI	R0,@OM_BSYNC
-H2HWTLP:
-    // asm 00001CC2: 	SLEEP	1
-    // asm 00001CC4: 	CALL	SEND_BSYNC3
-    // asm 00001CC5: 	LDI	@OM_BSYNC,R0
-    // asm 00001CC6: 	CMPI	3,R0
-    // asm 00001CC7: 	BNE	H2HWTLP
+    if (HEAD2HEAD_ON != 0) {
+        // asm 00001CC0: 	CLRI	R0
+        // asm 00001CC1: 	STI	R0,@OM_BSYNC
+        OM_BSYNC = 0;
+    H2HWTLP:
+        // asm 00001CC2: 	SLEEP	1
+        SLEEP(1, 2);
+        // asm 00001CC4: 	CALL	SEND_BSYNC3
+        SEND_BSYNC3();
+        // asm 00001CC5: 	LDI	@OM_BSYNC,R0
+        // asm 00001CC6: 	CMPI	3,R0
+        // asm 00001CC7: 	BNE	H2HWTLP
+        if (OM_BSYNC != 3) {
+            goto H2HWTLP;
+        }
+    }
 NOHEAD2HEAD:
     // 	;-----------------------------------
     // 	;	-----------------------------------
     // 	;		-----------------------------------
     // asm 00001CC8: 	SONDFX	STARTLINEREVS2
+    ONESNDFX(STARTLINEREVS2);
     // asm 00001CCA: 	LDI	2,AR5
+    p->ctx->WAVEFLAG.list_count = 2;
     // asm 00001CCB: 	LDL	TLIST,AR6
+    p->ctx->WAVEFLAG.list_ptr = TLIST;
 WAVEFLAGLP:
     // asm 00001CCC: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00001CCD: 	BZ	JDJFF
     // asm 00001CCE: 	LDI	@DIPRAM,R0
     // asm 00001CCF: 	TSTB	CMDP_MASTER,R0
     // asm 00001CD0: 	BZ	JDJFF
-JFF:
-    // asm 00001CD1: LDI	@CURR_FLAGSTATE,R0
-    // asm 00001CD2: 	CMPI	3,R0
-    // asm 00001CD3: 	BEQ	JUMPOUT
-    // asm 00001CD4: 	CMPI	@H2H_FLAGSTATE,R0
-    // asm 00001CD5: 	BLT	NXTSTAT
-    // asm 00001CD6: 	SLEEP	1
-    // asm 00001CD8: 	BU	JFF
-NXTSTAT:
-    // asm 00001CD9: LDI	@H2H_FLAGSTATE,R0
-    // asm 00001CDA: 	STI	R0,@CURR_FLAGSTATE
-    // asm 00001CDB: 	BU	KKLFF
-JDJFF:
-    // asm 00001CDC: 	SLEEP	20
+    if (HEAD2HEAD_ON != 0 && (DIPRAM & CMDP_MASTER) != 0) {
+    JFF:
+        // asm 00001CD1: LDI	@CURR_FLAGSTATE,R0
+        // asm 00001CD2: 	CMPI	3,R0
+        // asm 00001CD3: 	BEQ	JUMPOUT
+        if (CURR_FLAGSTATE == 3) {
+            goto JUMPOUT;
+        }
+        // asm 00001CD4: 	CMPI	@H2H_FLAGSTATE,R0
+        // asm 00001CD5: 	BLT	NXTSTAT
+        if (CURR_FLAGSTATE >= H2H_FLAGSTATE) {
+            // asm 00001CD6: 	SLEEP	1
+            SLEEP(1, 3);
+            // asm 00001CD8: 	BU	JFF
+            goto JFF;
+        }
+    NXTSTAT:
+        // asm 00001CD9: LDI	@H2H_FLAGSTATE,R0
+        // asm 00001CDA: 	STI	R0,@CURR_FLAGSTATE
+        CURR_FLAGSTATE = H2H_FLAGSTATE;
+        // asm 00001CDB: 	BU	KKLFF
+    } else {
+    JDJFF:
+        // asm 00001CDC: 	SLEEP	20
+        SLEEP(20, 4);
+    }
 KKLFF:
+    entry = p->ctx->WAVEFLAG.list_ptr;
     // asm 00001CDE: 	LDI	*AR6++,AR2
     // asm 00001CDF: 	FLOAT	256,R2
     // asm 00001CE0: 	FLOAT	160,R3
     // asm 00001CE1: 	LDI	20,RC
     // asm 00001CE2: 	CALL	TEXT_ADD
+    text = TEXT_ADD(entry->text, 256.0f, 160.0f, 20);
     // asm 00001CE3: 	CALL	SET40FONT
+    SET40FONT(text);
     // asm 00001CE4: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 00001CE7: 	LDI	*AR6++,AR2
     // asm 00001CE8: 	CALL	ONESNDFX
+    ONESNDFX(entry->sound);
     // 	;if H2H_ON && MASTER
     // 	;then  SEND_STATE
     // 	;
@@ -2548,43 +2620,73 @@ KKLFF:
     // asm 00001CEB: 	LDI	@DIPRAM,R0
     // asm 00001CEC: 	TSTB	CMDP_MASTER,R0
     // asm 00001CED: 	BNZ	BABAD
-    // asm 00001CEE: 	LDI	*AR6,R0
-    // asm 00001CEF: 	CALLU	R0
+    if (HEAD2HEAD_ON != 0 && (DIPRAM & CMDP_MASTER) == 0) {
+        // asm 00001CEE: 	LDI	*AR6,R0
+        // asm 00001CEF: 	CALLU	R0
+        entry->send_state();
+    }
 BABAD:
     // asm 00001CF0: ADDI	1,AR6
+    p->ctx->WAVEFLAG.list_ptr += 1;
     // asm 00001CF1: 	DEC	AR5
+    p->ctx->WAVEFLAG.list_count -= 1;
     // asm 00001CF2: 	CMPI	0,AR5
     // asm 00001CF3: 	BGT	WAVEFLAGLP
+    if (p->ctx->WAVEFLAG.list_count > 0) {
+        goto WAVEFLAGLP;
+    }
 JUMPOUT:
     // asm 00001CF4: LDL	TLGO,AR6
+    p->ctx->WAVEFLAG.list_ptr = TLGO;
     // asm 00001CF5: 	SLEEP	15
+    SLEEP(15, 5);
     // asm 00001CF7: 	LDI	1,R0
     // asm 00001CF8: 	STI	R0,@BABE_CONTROL
+    BABE_CONTROL = 1;
     // asm 00001CF9: 	SLEEP	5
+    SLEEP(5, 6);
     // asm 00001CFB: 	LDI	*AR6++,AR2
     // asm 00001CFC: 	FLOAT	256,R2
     // asm 00001CFD: 	FLOAT	160,R3
     // asm 00001CFE: 	LDI	20,RC
     // asm 00001CFF: 	CALL	TEXT_ADD
+    entry = p->ctx->WAVEFLAG.list_ptr;
+    text = TEXT_ADD(entry->text, 256.0f, 160.0f, 20);
     // asm 00001D00: 	CALL	SET40FONT
+    SET40FONT(text);
     // asm 00001D01: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 00001D04: 	LDI	*AR6++,AR2
     // asm 00001D05: 	CALL	ONESNDFX
+    ONESNDFX(entry->sound);
     // asm 00001D06: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00001D07: 	BZ	BABAD666
     // asm 00001D08: 	LDI	@DIPRAM,R0
     // asm 00001D09: 	TSTB	CMDP_MASTER,R0
     // asm 00001D0A: 	BNZ	BABAD666
-    // asm 00001D0B: 	CALL	SEND_WAVEFL_GO
+    if (HEAD2HEAD_ON != 0 && (DIPRAM & CMDP_MASTER) == 0) {
+        // asm 00001D0B: 	CALL	SEND_WAVEFL_GO
+        SEND_WAVEFL_GO();
+    }
 BABAD666:
     // asm 00001D0C: 	OR	MGO,R5			;SAVED MODE
+    p->ctx->WAVEFLAG.saved_mode |= MGO; /* SAVED MODE */
     // asm 00001D0D: 	ANDN	MSLINE,R5
+    p->ctx->WAVEFLAG.saved_mode &= ~MSLINE;
     // asm 00001D0E: 	STI	R5,@_MODE
+    _MODE = p->ctx->WAVEFLAG.saved_mode;
     // asm 00001D0F: 	STI	R5,@STOPWATCH_CNTL	;STOPWATCH TIMER
+    STOPWATCH_CNTL = p->ctx->WAVEFLAG.saved_mode; /* STOPWATCH TIMER */
     // asm 00001D10: 	CALL	CHECK_MOTION_DIP
-    // asm 00001D11: 	BNZ	NANAD			;RETURN IF NON MOVING
+    if (CHECK_MOTION_DIP() != 0) {
+        // asm 00001D11: 	BNZ	NANAD			;RETURN IF NON MOVING
+        goto NANAD; /* RETURN IF NON MOVING */
+    }
     // asm 00001D12: 	CALL	CHECK_MOTION_PRESENT
-    // asm 00001D13: 	BNE	NANAD
+    if (CHECK_MOTION_PRESENT() != 0) {
+        // asm 00001D13: 	BNE	NANAD
+        goto NANAD;
+    }
     // asm 00001D14: 	CLRI	AR2
     // asm 00001D15: 	LDP	@991030h
     // asm 00001D16: 	LDI	@991030h,R2
@@ -2593,37 +2695,54 @@ BABAD666:
     // asm 00001D19: 	LDL	0FF80h,R1
     // asm 00001D1A: 	AND	R1,R2
     // asm 00001D1B: 	BZ	NANAD
+    if ((port_get_switch3() & 0x0000FF80) == 0) {
+        goto NANAD;
+    }
     // asm 00001D1C: 	LDI	MOTION_ERROR_TIKS,R1
     // asm 00001D1D: 	STI	R1,@WAITTIK
+    WAITTIK = MOTION_ERROR_TIKS;
     // asm 00001D1E: 	BU	NANAD
+    goto NANAD;
+
     // asm 00001D1F: 	CALL	ABORT_RESET_GALIL
+    ABORT_RESET_GALIL();
     // asm 00001D20: 	LDL	XQ,AR2				;tell galil to continue executing program
     // asm 00001D21: 	CALL	SEND_CMD
+    SEND_CMD("");
     // asm 00001D22: 	CALL	WAIT_ACK
+    WAIT_ACK();
+
 NANAD:
     // asm 00001D23: 	LDI	SM_GO,R0
     // asm 00001D24: 	STI	R0,@SUSPEND_MODE
+    SUSPEND_MODE = SM_GO;
     // asm 00001D25: 	SONDFX	PEELOUT
+    ONESNDFX(PEELOUT);
     // asm 00001D27: 	READAUD	ADJ_TIME_TO_START
     // asm 00001D29: 	MPYI	5,R0
     // asm 00001D2A: 	ADDI	60,R0
     // asm 00001D2B: 	STI	R0,@_countdown
+    _countdown = READAUD(ADJ_TIME_TO_START) * 5 + 60;
     // asm 00001D2C: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00001D2D: 	BZ	NOTHHHH
     // asm 00001D2E: 	LDI	@OM_RACE_MODE,R0
     // asm 00001D2F: 	CMPI	RM_USA,R0
     // asm 00001D30: 	BNE	NOTHHHH
-    // asm 00001D31: 	LDI	RM_USA,R0
-    // asm 00001D32: 	STI	R0,@RACE_MODE
+    if (HEAD2HEAD_ON != 0 && OM_RACE_MODE == RM_USA) {
+        // asm 00001D31: 	LDI	RM_USA,R0
+        // asm 00001D32: 	STI	R0,@RACE_MODE
+        RACE_MODE = RM_USA;
+    }
 NOTHHHH:
     // asm 00001D33: 	LDI	@_MODE,R0	   	;MAKE SURE MODE IS IN GAME
     // asm 00001D34: 	AND	MMODE,R0
     // asm 00001D35: 	CMPI	MATTR,R0
     // asm 00001D36: 	CALLNE	RESUME_TUNE_NT
+    if ((_MODE & MMODE) != MATTR) {
+        RESUME_TUNE_NT();
+    }
     // asm 00001D37:  	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAVEFLAG", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------
@@ -3493,7 +3612,21 @@ static const CPOINT_LIGHT_STEP RGBTAB_CP[4] = {
  *
  *
  */
-static void SHOW_RACE_NAME(void) {
+static void SHOW_RACE_NAME(PROC* p) {
+    tSHADOW_TEXT text;
+    float x;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    }
+
     // asm 00001F56: 	LDI	@BONUS_WAVE,AR2
     // asm 00001F57: 	ADDI	@LEG_NAMESI,AR2
     // asm 00001F58: 	LDI	*AR2,AR2
@@ -3501,47 +3634,78 @@ static void SHOW_RACE_NAME(void) {
     // asm 00001F5A: 	FLOAT	360,R3
     // asm 00001F5B: 	LDI	340,RC
     // asm 00001F5C: 	CALL	TEXT_ADDDS
+    text = TEXT_ADDDS(LEG_NAMESI[BONUS_WAVE], 256.0f, 360.0f, 340);
     // asm 00001F5D: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text.front->color |= TXT_CENTER;
     // asm 00001F60: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    text.shadow->color |= TXT_CENTER;
     // asm 00001F63: 	LDI	AR0,AR4
+    p->ctx->SHOW_RACE_NAME.front_text = text.front;
     // asm 00001F64: 	LDI	AR1,AR5
+    p->ctx->SHOW_RACE_NAME.shadow_text = text.shadow;
     // asm 00001F65: 	FLOAT	-100,R6
+    p->ctx->SHOW_RACE_NAME.posx = -100.0f;
     // asm 00001F66: 	LDI	20,AR6
+    p->ctx->SHOW_RACE_NAME.loop_count = 20;
 SLLP1:
     // asm 00001F67: FLOAT	256,R0
     // asm 00001F68: 	SUBF	R6,R0
     // asm 00001F69: 	MPYF	0.2,R0
     // asm 00001F6A: 	ADDF	R0,R6
+    x = (256.0f - p->ctx->SHOW_RACE_NAME.posx) * 0.2f;
+    p->ctx->SHOW_RACE_NAME.posx += x;
     // asm 00001F6B: 	STF	R6,*+AR5(TEXT_POSX)
+    p->ctx->SHOW_RACE_NAME.shadow_text->posx = p->ctx->SHOW_RACE_NAME.posx;
     // asm 00001F6C: 	LDF	R6,R0
     // asm 00001F6D: 	ADDF	3,R0
+    x = p->ctx->SHOW_RACE_NAME.posx + 3.0f;
     // asm 00001F6E: 	STF	R0,*+AR4(TEXT_POSX)
+    p->ctx->SHOW_RACE_NAME.front_text->posx = x;
     // asm 00001F6F: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00001F71: 	DBU	AR6,SLLP1
+    p->ctx->SHOW_RACE_NAME.loop_count -= 1;
+    if (p->ctx->SHOW_RACE_NAME.loop_count >= 0) {
+        goto SLLP1;
+    }
     // 	;CENTER IT
     // 	;
     // asm 00001F72: 	FLOAT	256,R6
+    p->ctx->SHOW_RACE_NAME.posx = 256.0f;
     // asm 00001F73: 	STF	R6,*+AR5(TEXT_POSX)
+    p->ctx->SHOW_RACE_NAME.shadow_text->posx = p->ctx->SHOW_RACE_NAME.posx;
     // asm 00001F74: 	LDF	R6,R0
     // asm 00001F75: 	ADDF	3,R0
+    x = p->ctx->SHOW_RACE_NAME.posx + 3.0f;
     // asm 00001F76: 	STF	R0,*+AR4(TEXT_POSX)
+    p->ctx->SHOW_RACE_NAME.front_text->posx = x;
     // asm 00001F77: 	SLEEP	50
+    SLEEP(50, 2);
     // asm 00001F79: 	LDI	20,AR6
+    p->ctx->SHOW_RACE_NAME.loop_count = 20;
 SLLP1A:
     // asm 00001F7A: FLOAT	-100,R0
     // asm 00001F7B: 	SUBF	R6,R0
     // asm 00001F7C: 	MPYF	0.2,R0
     // asm 00001F7D: 	ADDF	R0,R6
+    x = (-100.0f - p->ctx->SHOW_RACE_NAME.posx) * 0.2f;
+    p->ctx->SHOW_RACE_NAME.posx += x;
     // asm 00001F7E: 	STF	R6,*+AR5(TEXT_POSX)
+    p->ctx->SHOW_RACE_NAME.shadow_text->posx = p->ctx->SHOW_RACE_NAME.posx;
     // asm 00001F7F: 	LDF	R6,R0
     // asm 00001F80: 	ADDF	3,R0
+    x = p->ctx->SHOW_RACE_NAME.posx + 3.0f;
     // asm 00001F81: 	STF	R0,*+AR4(TEXT_POSX)
+    p->ctx->SHOW_RACE_NAME.front_text->posx = x;
     // asm 00001F82: 	SLEEP	1
+    SLEEP(1, 3);
     // asm 00001F84: 	DBU	AR6,SLLP1A
+    p->ctx->SHOW_RACE_NAME.loop_count -= 1;
+    if (p->ctx->SHOW_RACE_NAME.loop_count >= 0) {
+        goto SLLP1A;
+    }
     // asm 00001F85: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_RACE_NAME", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------

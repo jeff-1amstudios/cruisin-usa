@@ -1,0 +1,597 @@
+BSS float-one candidate analysis
+repo: /Users/j.harris/code/cruisin-usa
+
+Summary
+  candidates: 14
+  raw review (non-float C): 19
+  excluded non-single-word: 76
+  excluded non-*F reads: 33
+  excluded STI writes: 279
+  excluded no reads or writes: 16
+  needs review: 6
+
+Candidates (14)
+===============
+
+- CAMRADY [yes]
+  asm: asm/INFIN.ASM:18  .bss	CAMRADY,1  	;NORMALIZED 0-2PI CAMERA RAD
+  size: expr=1 words=1
+  c: src/game/infin.c:40  float CAMRADY;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/INFIN.ASM:235 NEGF  NEGF	@CAMRADY,R2		;concatmat(&MATRIXA, &CAMERAMATRIX, &MATRIXA);
+    asm/INFIN.ASM:726 LDF  LDF	@CAMRADY,R2
+    asm/INFIN.ASM:751 NEGF  NEGF	@CAMRADY,R2		;find_Ymatrix(&MATRIXA, -CAMERARAD.y);
+  writes:
+    asm/INFIN.ASM:209 STF  STF	R2,@CAMRADY
+
+- COLVEL [yes]
+  asm: asm/COLLA.ASM:46  .bss	COLVEL,1	;RELATIVE COLLISION VELOCITY
+  size: expr=1 words=1
+  c: src/game/colla.c:138  float COLVEL;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/COLLA.ASM:3758 LDF  LDF	@COLVEL,R0
+  writes:
+    asm/COLLA.ASM:3530 STF  STF	R3,@COLVEL		;COLLISION RELATIVE VELOCITY
+
+- GAME_TIMER [yes]
+  asm: asm/CUSA.ASM:134  .bss	GAME_TIMER,1	;FL	minutes since last buyin
+  size: expr=1 words=1
+  c: src/game/cusa.c:187  float GAME_TIMER;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/CUSA.ASM:836 ADDF  ADDF	@GAME_TIMER,R0
+    asm/INTRO.ASM:3399 LDF  LDF	@GAME_TIMER,R2
+    asm/RHO.ASM:224 LDF  LDF	@GAME_TIMER,R0		;first minute - dont swerve
+    asm/ROADKILL.ASM:198 LDF  LDF	@GAME_TIMER,R0
+    asm/ROADKILL.ASM:202 LDF  LDF	@GAME_TIMER,R0
+  writes:
+    asm/CUSA.ASM:837 STF  STF	R0,@GAME_TIMER
+    asm/INTRO.ASM:1005 STF  STF	R0,@GAME_TIMER
+    asm/INTRO.ASM:3635 STPF  STPF	R0,@GAME_TIMER
+
+- GUWP [yes]
+  asm: asm/TRANS.ASM:750  .bss	GUWP,1
+  size: expr=1 words=1
+  c: src/game/trans.c:704  float GUWP = 1.0f;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/TRANS.ASM:753 LDF  LDF	@GUWP,R1
+  writes:
+    asm/TRANS.ASM:109 STF  STF	R0,@GUWP
+    asm/TRANS.ASM:757 STF  STF	R0,@GUWP
+
+- HIGHEST_ROADY [yes]
+  asm: asm/INFIN.ASM:34  .bss	HIGHEST_ROADY,1		;FL	CLIP LEVEL IN Y
+  size: expr=1 words=1
+  c: src/game/infin.c:55  float HIGHEST_ROADY;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/INFIN.ASM:244 LDF  LDF	@HIGHEST_ROADY,R0
+    asm/INFIN.ASM:348 LDF  LDF	@HIGHEST_ROADY,R0
+  writes:
+    asm/INFIN.ASM:50 STPF  STPF	R6,@HIGHEST_ROADY
+    asm/INFIN.ASM:144 STPF  STPF	R6,@HIGHEST_ROADY
+
+- HIGHEST_ROADY_X [yes]
+  asm: asm/INFIN.ASM:35  .bss	HIGHEST_ROADY_X,1	;FL	CLIP LEVEL IN Y
+  size: expr=1 words=1
+  c: src/game/infin.c:57  float HIGHEST_ROADY_X;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/INFIN.ASM:346 LDF  LDF	@HIGHEST_ROADY_X,R0
+  writes:
+    asm/INFIN.ASM:145 STPF  STPF	R7,@HIGHEST_ROADY_X	;SAVE X VALUE
+
+- INFIN_CORRECT [yes]
+  asm: asm/INFIN.ASM:627  .bss	INFIN_CORRECT,1
+  size: expr=1 words=1
+  c: src/game/infin.c:869  float INFIN_CORRECT;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/ATTRDRNE.ASM:1601 LDF  LDF	@INFIN_CORRECT,R0
+    asm/INFIN.ASM:246 LDF  LDF	@INFIN_CORRECT,R1
+    asm/INFIN.ASM:630 LDF  LDF	@INFIN_CORRECT,R7
+  writes:
+    asm/ATTRDRNE.ASM:1529 STF  STF	R0,@INFIN_CORRECT
+    asm/BONUS.ASM:107 STF  STF	R0,@INFIN_CORRECT
+    asm/HOTTUB.ASM:53 STF  STF	R0,@INFIN_CORRECT
+    asm/HSTDP.ASM:141 STF  STF	R0,@INFIN_CORRECT
+    asm/OVERLAY.ASM:269 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:285 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:310 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:374 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:422 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:476 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:508 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:549 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:608 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:653 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:689 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:751 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:798 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:865 STF  STF	R0,@INFIN_CORRECT
+    asm/SETUPS.ASM:908 STF  STF	R0,@INFIN_CORRECT
+    asm/WAVE.ASM:125 STF  STF	R0,@INFIN_CORRECT
+
+- MAPPAL13 [yes]
+  asm: asm/MAP.ASM:833  .bss	MAPPAL13,1	;FL multiplier
+  size: expr=1 words=1
+  c: src/game/map.c:738  float MAPPAL13;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/MAP.ASM:187 LDF  LDF	@MAPPAL13,R0
+    asm/MAP.ASM:852 LDF  LDF	@MAPPAL13,R6	;1st multiplier
+  writes:
+    asm/MAP.ASM:176 STF  STF	R0,@MAPPAL13
+    asm/MAP.ASM:189 STF  STF	R0,@MAPPAL13
+    asm/MAP.ASM:816 STF  STF	R0,@MAPPAL13
+
+- MAPPAL24 [yes]
+  asm: asm/MAP.ASM:834  .bss	MAPPAL24,1	;FL multiplier
+  size: expr=1 words=1
+  c: src/game/map.c:740  float MAPPAL24;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/MAP.ASM:184 LDF  LDF	@MAPPAL24,R0
+    asm/MAP.ASM:959 LDF  LDF	@MAPPAL24,R6	;2nd multiplier
+  writes:
+    asm/MAP.ASM:174 STF  STF	R0,@MAPPAL24
+    asm/MAP.ASM:186 STF  STF	R0,@MAPPAL24
+    asm/MAP.ASM:824 STF  STF	R0,@MAPPAL24
+
+- ROADKILL_SOUND_TIMER [yes]
+  asm: asm/ROADKILL.ASM:190  .bss	ROADKILL_SOUND_TIMER,1
+  size: expr=1 words=1
+  c: src/game/roadkill.c:234  float ROADKILL_SOUND_TIMER;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/ROADKILL.ASM:199 SUBF  SUBF	@ROADKILL_SOUND_TIMER,R0
+  writes:
+    asm/INTRO.ASM:1187 STF  STF	R0,@ROADKILL_SOUND_TIMER
+    asm/ROADKILL.ASM:203 STF  STF	R0,@ROADKILL_SOUND_TIMER
+
+- SECRADY [yes]
+  asm: asm/BACKGRND.ASM:512  .bss	SECRADY,1	;SECTION RADIAN Y
+  size: expr=1 words=1
+  c: src/game/backgrnd.c:633  float SECRADY;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/BACKGRND.ASM:606 LDF  LDF	@SECRADY,R2
+    asm/BACKGRND.ASM:695 ADDF  ADDF	@SECRADY,R2
+    asm/BACKGRND.ASM:725 ADDF  ADDF	@SECRADY,R2
+  writes:
+    asm/BACKGRND.ASM:602 STF  STF	R0,@SECRADY
+    asm/BACKGRND.ASM:911 STPF  STPF	R0,@SECRADY
+    asm/BACKGRND.ASM:961 STPF  STPF	R0,@SECRADY
+
+- START_RADY [yes]
+  asm: asm/BACKGRND.ASM:26  .bss	START_RADY,1  		;Section Y Radian (if DEBUG SECTION != 0)
+  size: expr=1 words=1
+  c: src/game/backgrnd.c:104  float START_RADY;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/BACKGRND.ASM:2341 LDF  LDF	@START_RADY,R2
+    asm/BACKGRND.ASM:2383 ADDF  ADDF	@START_RADY,R2
+    asm/INTRO.ASM:1142 LDF  LDF	@START_RADY,R2
+    asm/INTRO.ASM:1375 LDF  LDF	@START_RADY,R2
+    asm/INTRO.ASM:1621 LDF  LDF	@START_RADY,R2
+    asm/INTRO.ASM:1631 LDF  LDF	@START_RADY,R2
+    asm/INTRO.ASM:1674 LDF  LDF	@START_RADY,R2
+    asm/INTRO.ASM:1754 LDF  LDF	@START_RADY,R0
+    asm/INTRO.ASM:1797 LDF  LDF	@START_RADY,R6
+    asm/INTRO.ASM:1904 LDF  LDF	@START_RADY,R2
+    asm/INTRO.ASM:1950 ADDF  ADDF	@START_RADY,R2
+    asm/INTRO.ASM:2465 ADDF  ADDF	@START_RADY,R0
+    asm/PLYR.ASM:376 LDF  LDF	@START_RADY,R2		;SETUP MATRIX
+    asm/PLYR.ASM:391 LDF  LDF	@START_RADY,R2		;SETUP MATRIX
+    asm/TRANS.ASM:155 LDF  LDF	@START_RADY,R2
+    asm/TRANS.ASM:194 NEGF  NEGF	@START_RADY,R2
+  writes:
+    asm/BACKGRND.ASM:120 STF  STF	R2,@START_RADY
+    asm/BACKGRND.ASM:174 STF  STF	R0,@START_RADY
+
+- STEERFR [yes]
+  asm: asm/PLYR.ASM:3489  .bss	STEERFR,1		;STEERING FREE
+  size: expr=1 words=1
+  c: src/game/plyr.c:3447  float STEERFR = 1.0f;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/INTRO.ASM:2641 LDF  LDF	@STEERFR,R0
+    asm/PLYR.ASM:2354 LDF  LDF	@STEERFR,R1
+  writes:
+    asm/PLYR.ASM:3515 STF  STF	R0,@STEERFR
+
+- VAR_ROAD_KFACTOR [yes]
+  asm: asm/INFIN.ASM:37  .bss	VAR_ROAD_KFACTOR,1	;FL	CLIPPING OVERSHOOT FACTOR
+  size: expr=1 words=1
+  c: src/game/infin.c:59  float VAR_ROAD_KFACTOR;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: candidates
+  reads:
+    asm/INFIN.ASM:140 ADDF  ADDF	@VAR_ROAD_KFACTOR,R6			;pixels UNDER (overshoot)
+  writes:
+    asm/OVERLAY.ASM:267 STF  STF	R0,@VAR_ROAD_KFACTOR			;pixels UNDER (overshoot)
+
+Raw Review: Non-Float C (19)
+============================
+
+- BRAKEMN [no]
+  asm: asm/PLYR.ASM:3487  .bss	BRAKEMN,1		;BRAKE PEDAL MIN      5
+  size: expr=1 words=1
+  c: src/game/plyr.c:3443  int BRAKEMN;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/PLYR.ASM:2161 NEGF  NEGF	@BRAKEMN,R1
+  writes:
+    none
+
+- BRAKEMX [no]
+  asm: asm/PLYR.ASM:3488  .bss	BRAKEMX,1		;BRAKE PEDAL MAX      6
+  size: expr=1 words=1
+  c: src/game/plyr.c:3445  int BRAKEMX;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/PLYR.ASM:2167 ADDF  ADDF	@BRAKEMX,R1	;ALL DP RAM IN SAME PAGE
+  writes:
+    none
+
+- CHEAT [no]
+  asm: asm/PLYR.ASM:61  .bss	CHEAT,1
+  size: expr=1 words=1
+  c: src/game/plyr.c:167  int CHEAT;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/COLLA.ASM:2085 MPYF  MPYF	@CHEAT,R0		;BOOST SPEED ON CHEAT
+    asm/COLLA.ASM:2086 MPYF  MPYF	@CHEAT,R0		;BOOST SPEED ON CHEAT
+    asm/COLLA.ASM:3158 MPYF  MPYF	@CHEAT,R1		;BOOST MASS ON CHEAT
+    asm/COLLA.ASM:3159 MPYF  MPYF	@CHEAT,R1
+    asm/COLLA.ASM:3160 MPYF  MPYF	@CHEAT,R1
+    asm/HUD.ASM:494 MPYF  MPYF	@CHEAT,R2		;DO THE CHEAT THING !!!
+    asm/PLYR.ASM:750 SUBF  SUBF	@CHEAT,R1
+    asm/PLYR.ASM:805 MPYF  MPYF	@CHEAT,R2		;DO THE CHEAT THING !!!
+    asm/PLYR.ASM:1070 ADDF  ADDF	@CHEAT,R1
+    asm/PLYR.ASM:2064 LDF  LDF	@CHEAT,R1
+  writes:
+    asm/PLYR.ASM:613 STF  STF	R0,@CHEAT
+    asm/PLYR.ASM:1103 STF  STF	R1,@CHEAT
+
+- DAMPPWR [no]
+  asm: asm/WHEEL.ASM:26  .bss	DAMPPWR,1
+  size: expr=1 words=1
+  c: src/game/wheel.c:38  int DAMPPWR;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/WHEEL.ASM:116 MPYF  MPYF	@DAMPPWR,R2
+  writes:
+    asm/WHEEL.ASM:91 STF  STF	R3,@DAMPPWR
+
+- PEDALMX [no]
+  asm: asm/PLYR.ASM:3483  .bss	PEDALMX,1		;GAS PEDAL MAX	      1
+  size: expr=1 words=1
+  c: src/game/plyr.c:3435  int PEDALMX;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/HSTDP.ASM:275 LDF  LDF	@PEDALMX,R1
+    asm/PLYR.ASM:2273 ADDF  ADDF	@PEDALMX,R1
+  writes:
+    none
+
+- PMULT [no]
+  asm: asm/COLLA.ASM:47  .bss	PMULT,1  	;PLAYER SLOW COLLISION VELOCITY MULTIPLIER
+  size: expr=1 words=1
+  c: src/game/colla.c:140  int PMULT;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/COLLA.ASM:3311 MPYF  MPYF	@PMULT,R2	       	;SLOW SPEED MULTIPLIER
+    asm/COLLA.ASM:3312 MPYF  MPYF	@PMULT,R3
+  writes:
+    asm/COLLA.ASM:2879 STF  STF	R0,@PMULT		;SPEED MULTIPLIER
+
+- SPINTEMP [no]
+  asm: asm/COLLA.ASM:48  .bss	SPINTEMP,1
+  size: expr=1 words=1
+  c: src/game/colla.c:142  int SPINTEMP;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/COLLA.ASM:3669 ABSF  ABSF	@SPINTEMP,R2     	;GET SPIN MAGNITUDE
+    asm/COLLA.ASM:3679 LDF  LDF	@SPINTEMP,R0		;GET SIGN (SPIN DIRECTION)
+    asm/COLLA.ASM:3704 ABSF  ABSF	@SPINTEMP,R2     	;GET SPIN MAGNITUDE
+    asm/COLLA.ASM:3711 LDF  LDF	@SPINTEMP,R0		;GET SIGN (SPIN DIRECTION)
+    asm/COLLA.ASM:3744 LDF  LDF	@SPINTEMP,R2
+  writes:
+    asm/COLLA.ASM:3521 STF  STF	R0,@SPINTEMP		;SPIN TIME TEMP
+
+- STEERCT [no]
+  asm: asm/PLYR.ASM:3486  .bss	STEERCT,1		;STEERING CENTER      4
+  size: expr=1 words=1
+  c: src/game/plyr.c:3441  int STEERCT;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/BONUS.ASM:757 LDF  LDF	@STEERCT,R0		;STEERING CENTER
+    asm/BONUS.ASM:1085 LDF  LDF	@STEERCT,R0		;STEERING CENTER
+    asm/HSTDP.ASM:264 LDF  LDF	@STEERCT,R0
+    asm/PLYR.ASM:338 LDF  LDF	@STEERCT,R0		;STEERING CENTER
+    asm/PLYR.ASM:2352 SUBF  SUBF	@STEERCT,R0		;SUBTRACT CENTER VALUE
+    asm/PLYR.ASM:3038 LDF  LDF	@STEERCT,R4		;STEERING CENTER
+    asm/PLYR.ASM:3089 LDF  LDF	@STEERCT,R4		;STEERING CENTER
+  writes:
+    none
+
+- STEERMN [no]
+  asm: asm/PLYR.ASM:3484  .bss	STEERMN,1		;STEERING MIN	      2
+  size: expr=1 words=1
+  c: src/game/plyr.c:3437  int STEERMN;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/INTRO.ASM:2650 ADDF  ADDF	@STEERMN,R2		;ADD IN MINIMUM
+    asm/PLYR.ASM:3514 SUBF  SUBF	@STEERMN,R0
+    asm/TRANS.ASM:643 LDF  LDF	@STEERMN,R1
+    asm/TRANS.ASM:758 SUBF  SUBF	@STEERMN,R0
+    asm/TRANS.ASM:760 SUBF  SUBF	@STEERMN,R1
+  writes:
+    none
+
+- STEERMX [no]
+  asm: asm/PLYR.ASM:3485  .bss	STEERMX,1		;STEERING MAX	      3
+  size: expr=1 words=1
+  c: src/game/plyr.c:3439  int STEERMX;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/PLYR.ASM:3513 LDF  LDF	@STEERMX,R0
+    asm/TRANS.ASM:644 LDF  LDF	@STEERMX,R2
+    asm/TRANS.ASM:759 LDF  LDF	@STEERMX,R1
+  writes:
+    none
+
+- THE_TRAIN_SPEED [no]
+  asm: asm/RROAD.ASM:27  .bss	THE_TRAIN_SPEED,1	;FL
+  size: expr=1 words=1
+  c: src/game/rroad.c:39  int THE_TRAIN_SPEED;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/RROAD.ASM:271 LDF  LDF	@THE_TRAIN_SPEED,R1
+    asm/RROAD.ASM:284 MPYF  MPYF	@THE_TRAIN_SPEED,R0
+    asm/RROAD.ASM:293 LDF  LDF	@THE_TRAIN_SPEED,R0
+    asm/RROAD.ASM:323 LDF  LDF	@THE_TRAIN_SPEED,R0
+    asm/RROAD.ASM:360 LDF  LDF	@THE_TRAIN_SPEED,R0
+  writes:
+    asm/RROAD.ASM:98 STF  STF	R0,@THE_TRAIN_SPEED
+    asm/RROAD.ASM:289 STF  STF	R0,@THE_TRAIN_SPEED
+    asm/RROAD.ASM:299 STF  STF	R0,@THE_TRAIN_SPEED
+
+- TIMEFRAME [no]
+  asm: asm/CUSA.ASM:1792  .bss	TIMEFRAME,1
+  size: expr=1 words=1
+  c: src/game/cusa.c:1693  int TIMEFRAME;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/CUSA.ASM:1812 LDF  LDF	@TIMEFRAME,R0
+  writes:
+    asm/CUSA.ASM:1814 STF  STF	R0,@TIMEFRAME
+    asm/CUSA.ASM:1838 STF  STF	R0,@TIMEFRAME
+
+- WHEELMAX [no]
+  asm: asm/WHEEL.ASM:24  .bss	WHEELMAX,1
+  size: expr=1 words=1
+  c: src/game/wheel.c:34  int WHEELMAX;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/WHEEL.ASM:120 LDF  LDF	@WHEELMAX,R1	  	;MAX OUTPUT LEVEL
+  writes:
+    asm/WHEEL.ASM:90 STF  STF	R2,@WHEELMAX
+
+- YINCREMENT [no]
+  asm: asm/HEADS.ASM:203  .bss	YINCREMENT,1
+  size: expr=1 words=1
+  c: src/game/heads.c:198  int YINCREMENT;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/HEADS.ASM:252 ADDF  ADDF	@YINCREMENT,R6		;ADDF	24,R6
+  writes:
+    asm/HEADS.ASM:246 STF  STF	R0,@YINCREMENT
+    asm/HEADS.ASM:270 STF  STF	R0,@YINCREMENT
+
+- ZOOMD [no]
+  asm: asm/PLYR.ASM:37  .bss	ZOOMD,1		;CURRENT ZOOM DISTANCE
+  size: expr=1 words=1
+  c: src/game/plyr.c:127  int ZOOMD;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/BONUS.ASM:1190 ADDF  ADDF	@ZOOMD,R0
+    asm/PLYR.ASM:995 NEGF  NEGF	@ZOOMD,R2		;GET ZOOM DISTANCE
+    asm/PLYR.ASM:1269 NEGF  NEGF	@ZOOMD,R2		;GET ZOOM DISTANCE
+    asm/PLYR.ASM:2447 SUBF  SUBF	@ZOOMD,R4
+    asm/PLYR.ASM:2483 ADDF  ADDF	@ZOOMD,R2
+  writes:
+    asm/PLYR.ASM:583 STF  STF	R0,@ZOOMD
+    asm/PLYR.ASM:2505 STF  STF	R2,@ZOOMD
+
+- ZOOMDD [no]
+  asm: asm/PLYR.ASM:38  .bss	ZOOMDD,1
+  size: expr=1 words=1
+  c: src/game/plyr.c:129  int ZOOMDD;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/PLYR.ASM:2477 LDF  LDF	@ZOOMDD,R2
+  writes:
+    asm/PLYR.ASM:577 STF  STF	R0,@ZOOMDD
+    asm/PLYR.ASM:2460 STF  STF	R4,@ZOOMDD
+    asm/PLYR.ASM:2500 STF  STF	R0,@ZOOMDD	;CLEAR OUT VELOCITIES
+
+- ZOOMDG [no]
+  asm: asm/PLYR.ASM:39  .bss	ZOOMDG,1	;ZOOM DIST GOAL
+  size: expr=1 words=1
+  c: src/game/plyr.c:131  int ZOOMDG;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/PLYR.ASM:2486 CMPF  CMPF	@ZOOMDG,R2
+    asm/PLYR.ASM:2490 CMPF  CMPF	@ZOOMDG,R2
+    asm/PLYR.ASM:2502 LDF  LDF	@ZOOMDG,R2
+  writes:
+    asm/PLYR.ASM:584 STF  STF	R0,@ZOOMDG
+    asm/PLYR.ASM:2444 STF  STF	R4,@ZOOMDG		;STORE GOAL X
+
+- ZOOMHD [no]
+  asm: asm/PLYR.ASM:41  .bss	ZOOMHD,1
+  size: expr=1 words=1
+  c: src/game/plyr.c:135  int ZOOMHD;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/PLYR.ASM:2482 ADDF  ADDF	@ZOOMHD,R1
+  writes:
+    asm/PLYR.ASM:578 STF  STF	R0,@ZOOMHD
+    asm/PLYR.ASM:2461 STF  STF	R5,@ZOOMHD
+    asm/PLYR.ASM:2501 STF  STF	R0,@ZOOMHD
+
+- ZOOMHG [no]
+  asm: asm/PLYR.ASM:42  .bss	ZOOMHG,1	;ZOOM HEIGHT GOAL
+  size: expr=1 words=1
+  c: src/game/plyr.c:137  int ZOOMHG;  (non_float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: raw_review_non_float_c
+  notes: matching C declaration is non_float_scalar
+  reads:
+    asm/PLYR.ASM:2503 LDF  LDF	@ZOOMHG,R1
+  writes:
+    asm/PLYR.ASM:581 STF  STF	R0,@ZOOMHG
+    asm/PLYR.ASM:2445 STF  STF	R5,@ZOOMHG	 	;STORE GOAL Y
+
+Needs Review (6)
+================
+
+
+- FRAMETIME [no]
+  asm: asm/CUSA.ASM:129  .bss	FRAMETIME,1	;TMR_FRAME
+  size: expr=1 words=1
+  c: src/game/cusa.c:179  float FRAMETIME;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: needs_review
+  notes: no asm read sites found
+  reads:
+    none
+  writes:
+    asm/CUSA.ASM:531 STF  STF	R0,@FRAMETIME		;SAVE THE FRAMETIME
+
+- LEG_RADY [no]
+  asm: asm/LEG.ASM:333  .bss	LEG_RADY,1	;FL
+  size: expr=1 words=1
+  c: src/game/leg.c:443  float LEG_RADY;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: needs_review
+  notes: no asm read sites found
+  reads:
+    none
+  writes:
+    asm/LEG.ASM:377 STF  STF	R2,@LEG_RADY
+
+- OLDPLYSPD [no]
+  asm: asm/PLYR.ASM:54  .bss	OLDPLYSPD,1	;OLD PLAYER SPEED
+  size: expr=1 words=1
+  c: src/game/plyr.c:157  float OLDPLYSPD;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: needs_review
+  notes: no asm read sites found
+  reads:
+    none
+  writes:
+    asm/PLYR.ASM:317 STF  STF	R0,@OLDPLYSPD
+
+- WHEELOUT [no]
+  asm: asm/WHEEL.ASM:23  .bss	WHEELOUT,1
+  size: expr=1 words=1
+  c: src/game/wheel.c:32  float WHEELOUT;  (float_scalar)
+  has_non_float_reads: False
+  has_sti_writes: False
+  final_bucket: needs_review
+  notes: no asm read sites found
+  reads:
+    none
+  writes:
+    asm/WHEEL.ASM:127 STF  STF	R0,@WHEELOUT		;SAVE OUTPUT NUMBER

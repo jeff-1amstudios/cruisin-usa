@@ -527,6 +527,31 @@ def collect_breakpoints_for_file(
             )
         )
 
+    for index, line in enumerate(lines):
+        parsed = parse_explicit_value_validation(line, ["MAME_ASSERT_MEM_FLOAT", "mame_validate_mem_at_addr_float"])
+        if parsed is None:
+            continue
+
+        instruction_expr, mem_expr, value_expr = parsed
+        instruction_address = evaluate_constant_expr(instruction_expr, resolved_defines)
+        if instruction_address is None:
+            raise ValueError(f"{path}:{index + 1}: could not resolve instruction address {instruction_expr!r}")
+
+        entries.append(
+            BreakpointEntry(
+                label=f"{mem_expr}F",
+                variable_name=value_expr,
+                variable_address=0,
+                instruction_address=instruction_address,
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+                command_override=(
+                    f'logerror "validate {mem_expr}F: 0x%08X, {path.name}:{index + 1}\\n", {mem_expr}'
+                ),
+            )
+        )
+
     entries.sort(key=lambda entry: (entry.source_line, entry.label, entry.variable_name))
     return entries
 

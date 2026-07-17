@@ -22,8 +22,8 @@ void SEND_MOTOR_OFF(void);
 static void SEND_MOTOR_OFF_NO_RESET(void);
 static void INIT_MOTION_ERROROUT(void);
 static void WAIT500(void);
-void CHECK_MOTION_DIP(void);
-void CHECK_MOTION_PRESENT(void);
+int CHECK_MOTION_DIP(void);
+int CHECK_MOTION_PRESENT(void);
 void DIAG_MOTION_TESTZ(void);
 void DIAG_MOTION_TESTX(void);
 void DIAG_MOTION_TESTY(void);
@@ -32,7 +32,7 @@ void PLMOTION(void);
 static void MOTION_SCALE_ENTER(void);
 void LEVEL_THE_MOTION(void);
 static void DOWNLOAD_PROGRAM(void);
-void SEND_CMD(void);
+void SEND_CMD(char* cmd);
 void RESET_GALIL(void);
 void ABORT_RESET_GALIL(void);
 void MOTION_DLPROG(void);
@@ -195,6 +195,8 @@ int MOTION_NOT_ON;
 int MOTION_STOP_HIT;
 /* asm: MOTION_RCV_TIKS	.bss	MOTION_RCV_TIKS,1 */
 int MOTION_RCV_TIKS;
+/* asm: WAITTIK	.bss	WAITTIK,1 */
+int WAITTIK;
 
 /*
  *----------------------------------------------------------------------------
@@ -716,7 +718,7 @@ WT500X:
  *RET NE IF MOTION DIPSWITCH OFF
  *
  */
-void CHECK_MOTION_DIP(void) {
+int CHECK_MOTION_DIP(void) {
     // asm 000046A4: 	PUSH	AR2
     // asm 000046A5: 	CLRI	AR2
     // asm 000046A6: 	LDP	@DIPSW
@@ -731,16 +733,16 @@ void CHECK_MOTION_DIP(void) {
     // *CHECK IF MOTION PRESENT
     // *RET NE IF MOTION NOT PRESENT
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_MOTION_DIP", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
+    return 0;
 }
 
-void CHECK_MOTION_PRESENT(void) {
+int CHECK_MOTION_PRESENT(void) {
     // asm 000046AE: 	READAUD	ADJ_MOTION_PRESENT
     // asm 000046B0: 	CMPI	1,R0
     // asm 000046B1:  	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_MOTION_PRESENT", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
+    return 0;
 }
 
 void DIAG_MOTION_TESTZ(void) {
@@ -1494,7 +1496,7 @@ DNF:
  *
  *
  */
-void SEND_CMD(void) {
+void SEND_CMD(char* cmd) {
     // asm 000048E3: 	PUSH	R0
     // asm 000048E4: 	PUSH	R1
     // asm 000048E5: 	PUSH	R2

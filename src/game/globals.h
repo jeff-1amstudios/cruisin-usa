@@ -767,7 +767,7 @@ void CROWD_IT(void);
 void BABE_TROPHY(void);
 
 // asm:  .globl BABE_WAVEFLAG
-void BABE_WAVEFLAG(void);
+void BABE_WAVEFLAG(PROC* p);
 
 // asm:  .globl LOAD_SINGLE_SECTION_OFFSET
 void LOAD_SINGLE_SECTION_OFFSET(void);
@@ -794,7 +794,7 @@ void AMBIENCE_SOUND(void);
 void KILL_THEM(void);
 
 // asm:  .globl BLINK_FREEBE
-void BLINK_FREEBE(void);
+void BLINK_FREEBE(PROC* p);
 
 // asm:  .globl TIMED_OUT
 void TIMED_OUT(void);
@@ -1302,7 +1302,7 @@ float _COSI(float theta /*R2*/);
 float _SINE(float theta /*R2*/);
 
 // asm:  .globl ARCTANF
-void ARCTANF(void);
+float ARCTANF(float x /*R2*/, float y /*R3*/);
 
 // asm:  .globl FIND_MATRIX
 void FIND_MATRIX(void* dest /*AR2*/, VECTOR* radians /*R2*/);
@@ -1584,7 +1584,7 @@ void PLYR_ENGINE(void);
 // asm:  .globl ONESND,ONESNDFX
 void ONESND(int sound_index);
 
-void ONESNDFX(void);
+void ONESNDFX(int sound_index);
 
 // asm:  .globl SNDPROC
 void SNDPROC(void);

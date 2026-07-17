@@ -38,10 +38,10 @@ extern int GALIL_STATUS_X;
 extern int GALIL_STATUS_Y;
 // asm: 	.bss	GALIL_STATUS_Z,1
 extern int GALIL_STATUS_Z;
-void CHECK_MOTION_DIP(void);
-void CHECK_MOTION_PRESENT(void);
+int CHECK_MOTION_DIP(void);
+int CHECK_MOTION_PRESENT(void);
 void SEND_MOTOR_OFF(void);
-void SEND_CMD(void);
+void SEND_CMD(char* cmd);
 void WAIT_ACK(void);
 void ABORT_RESET_GALIL(void);
 void DIAG_MOTION_TESTX(void);
