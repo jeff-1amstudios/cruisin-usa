@@ -101,15 +101,15 @@ FHRYLP:
         // asm 00008224: 	LDP	@_CAMERAPOS+X
         // asm 00008225: 	LDF	*+AR2(OPOSX),R0
         // asm 00008226: 	SUBF	@_CAMERAPOS+X,R0
-        VECTORAI.X = obj->posx - _CAMERAPOS.X;
+        VECTORAI.X = obj->pos.X - _CAMERAPOS.X;
         // asm 00008227: 	STF	R0,*+AR1(X)
         // asm 00008228: 	LDF	*+AR2(OPOSY),R0
         // asm 00008229: 	SUBF	@_CAMERAPOS+Y,R0
-        VECTORAI.Y = obj->posy - _CAMERAPOS.Y;
+        VECTORAI.Y = obj->pos.Y - _CAMERAPOS.Y;
         // asm 0000822A: 	STF	R0,*+AR1(Y)
         // asm 0000822B: 	LDF	*+AR2(OPOSZ),R0
         // asm 0000822C: 	SUBF	@_CAMERAPOS+Z,R0
-        VECTORAI.Z = obj->posz - _CAMERAPOS.Z;
+        VECTORAI.Z = obj->pos.Z - _CAMERAPOS.Z;
         // asm 0000822D: 	STF	R0,*+AR1(Z)
         // asm 0000822E: 	SETDP
         // asm 0000822F: 	LDI	AR1,AR0

@@ -2444,8 +2444,8 @@ GETRK:
     // asm 00002F0C: 	CMPF	R1,R2
     // asm 00002F0D: 	LDIGT	AR2,AR0
     // asm 00002F0E: 	LDFGT	R1,R2
-    dx = obj->posx - track_obj->posx;
-    dz = obj->posz - track_obj->posz;
+    dx = obj->pos.X - track_obj->pos.X;
+    dz = obj->pos.Z - track_obj->pos.Z;
     dist2 = (dx * dx) + (dz * dz);
     if (dist2 < closest_dist2) {
         closest_track_obj = track_obj;
@@ -2957,7 +2957,7 @@ GETRD1:
     // asm 00003048: 	SUBF	HALFPI,R0
 ROADIRX:
     // asm 00003049: RETS
-    return atan2f(next_track_obj->posz - track_obj->posz, next_track_obj->posx - track_obj->posx) - HALFPI;
+    return atan2f(next_track_obj->pos.Z - track_obj->pos.Z, next_track_obj->pos.X - track_obj->pos.X) - HALFPI;
 }
 
 // *----------------------------------------------------------------------------

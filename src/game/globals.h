@@ -71,7 +71,7 @@ extern DGROUP_ENTRY DGROUPS[];
 extern int DGROUP_COUNT;
 
 // asm:  .globl DGROUP_AW
-extern const u32* DGROUP_AW;
+extern tyco_stream_t DGROUP_AW;
 
 // asm:  .globl DYNALIST_TRUEBEGIN
 extern OBJ* DYNALIST_TRUEBEGIN;
@@ -89,10 +89,10 @@ extern OBJ* STARTS;
 extern int SECTIONIDX;
 
 // asm:  .globl TYCO_TRACK
-extern const u32* TYCO_TRACK;
+extern tyco_stream_t TYCO_TRACK;
 
 // asm:  .globl TYCO_TRACK_NTL
-extern const u32* TYCO_TRACK_NTL;
+extern tyco_stream_t TYCO_TRACK_NTL;
 
 extern OBJ* SINGLE_SECTION_TEMPPTR;
 
@@ -785,7 +785,7 @@ void BGD_INIT(void);
 OBJ* LOAD_SINGLE_SECTION(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
 
 // asm:  .globl GET_XZ_DISTANCE
-void GET_XZ_DISTANCE(void);
+float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/);
 
 // asm:  .globl AMBIENCE_SOUND
 void AMBIENCE_SOUND(void);
@@ -1760,11 +1760,11 @@ float FRAND(float limit /*R0*/);
 float SFRAND(float limit /*R0*/);
 
 // asm:  .globl RANDU0,RANDU,SRAND,RANDPER
-void RANDU0(void);
+int RANDU0(int range /*AR2*/);
 
-void RANDU(void);
+int RANDU(int range /*AR2*/);
 
-void SRAND(void);
+int SRAND(int range /*AR2*/);
 
 int RANDPER(int probability /*AR2*/);
 

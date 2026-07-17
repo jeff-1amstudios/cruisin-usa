@@ -24,6 +24,7 @@ set(CRUSN_SOURCES
   src/core/output.c
   src/core/machine.c
   src/core/memory.c
+  src/core/romreader.c
   src/core/trace.c
   src/core/validator.c
   src/game/attrdrne.c

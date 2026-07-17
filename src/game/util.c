@@ -38,9 +38,9 @@ void CLRCRAM(void);
 uint32_t RANDOM(void);
 float FRAND(float limit /*R0*/);
 float SFRAND(float limit /*R0*/);
-void RANDU0(void);
-void RANDU(void);
-void SRAND(void);
+int RANDU0(int range /*AR2*/);
+int RANDU(int range /*AR2*/);
+int SRAND(int range /*AR2*/);
 int RANDPER(int probability /*AR2*/);
 void INIT_LINKED_LIST(void* start_addr /*AR2*/, void** free_list /*R2*/, void** active_list /*R3*/, int length_minus_1 /*RC*/, int size /*RS*/);
 void* GET_LLIST(void** free_list, void** active_list);
@@ -429,14 +429,18 @@ float SFRAND(float limit /*R0*/) {
  *	R0	RANDOM # BETWEEN 0 AND [AR2]
  *
  */
-void RANDU0(void) {
+int RANDU0(int range /*AR2*/) {
+    int value;
+
     // asm 00008F03: 	CALL	RANDOM
+    value = (int)(RANDOM() >> 16);
     // asm 00008F04: 	LSH	-16,R0
     // asm 00008F05: 	MPYI	AR2,R0
+    value *= range;
     // asm 00008F06: 	LSH	-16,R0
+    value >>= 16;
     // asm 00008F07: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDU0", 0, 0);
-    UNIMPL();
+    return value;
 }
 
 // *----------------------------------------------------------------------------
@@ -450,12 +454,13 @@ void RANDU0(void) {
  *RETURNS
  *	R0	RANDOM # BETWEEN 1 AND N
  */
-void RANDU(void) {
+int RANDU(int range /*AR2*/) {
     // asm 00008F08: 	CALL	RANDU0
+    int value = RANDU0(range);
     // asm 00008F09: 	ADDI	1,R0
+    value += 1;
     // asm 00008F0A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDU", 0, 0);
-    UNIMPL();
+    return value;
 }
 
 // *----------------------------------------------------------------------------
@@ -470,15 +475,22 @@ void RANDU(void) {
  *	R0	RANDOM # IN RANDGE +/- N
  *
  */
-void SRAND(void) {
+int SRAND(int range /*AR2*/) {
+    int doubled_range;
+    int value;
+
     // asm 00008F0B: 	LSH	1,AR2
+    doubled_range = range << 1;
     // asm 00008F0C: 	ADDI	1,AR2
+    doubled_range += 1;
     // asm 00008F0D: 	CALL	RANDU0
+    value = RANDU0(doubled_range);
     // asm 00008F0E: 	LSH	-1,AR2
+    doubled_range >>= 1;
     // asm 00008F0F: 	SUBI	AR2,R0
+    value -= doubled_range;
     // asm 00008F10: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SRAND", 0, 0);
-    UNIMPL();
+    return value;
 }
 
 // *----------------------------------------------------------------------------

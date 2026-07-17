@@ -1,6 +1,9 @@
 #include "backgrnd.h"
 
+#include <math.h>
+
 #include "../core/machine.h"
+#include "../core/romreader.h"
 #include "cmos.h"
 #include "cornobj.h"
 #include "globals.h"
@@ -21,13 +24,13 @@
 void FIND_STARTING_VALUES(void);
 void BGD_INIT(void);
 static void BGD_WATCHER(PROC* p);
-static u32 BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/);
+static u32 BGD_ACTIVATE_TYCOGROUP(tyco_stream_t tyco_ptr /*AR2*/);
 static void ADD_TO_NEWLIST(OBJ* obj /*AR4*/);
 static void FIND_SUBLIST_START_END(void);
 static void APPEND_NEWLIST(void);
 static void SHINY_NEWLIST(void);
 static void GROUP_DELETE(void);
-void GET_XZ_DISTANCE(void);
+float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/);
 static void BGD_OROUTINE(OBJ* obj /*AR4*/);
 static void OVERCAR(OBJ* obj /*AR4*/);
 static void CARFORWARD(PROC* p);
@@ -133,7 +136,7 @@ DGROUP_ENTRY DGROUPS[MAX_DGROUPS];
 /* asm: DGROUP_COUNT	.bss	DGROUP_COUNT,1 */
 int DGROUP_COUNT;
 /* asm: DGROUP_AW	.bss	DGROUP_AW,1 */
-const u32* DGROUP_AW;
+tyco_stream_t DGROUP_AW;
 /* asm: DYNALIST_TRUEBEGIN	.bss	DYNALIST_TRUEBEGIN,1 */
 OBJ* DYNALIST_TRUEBEGIN;
 /* asm: DYNALIST_BEGIN	.bss	DYNALIST_BEGIN,1 */
@@ -150,9 +153,9 @@ OBJ* STARTS;
 /* asm: SECTIONIDX	.bss	SECTIONIDX,1 */
 int SECTIONIDX;
 /* asm: TYCO_TRACK	.bss	TYCO_TRACK,1 */
-const u32* TYCO_TRACK;
+tyco_stream_t TYCO_TRACK;
 /* asm: TYCO_TRACK_NTL	.bss	TYCO_TRACK_NTL,1 */
-const u32* TYCO_TRACK_NTL;
+tyco_stream_t TYCO_TRACK_NTL;
 /* asm: TYCO_NTL_IDX	.bss	TYCO_NTL_IDX,1 */
 int TYCO_NTL_IDX;
 /* asm: ATTRACT_ACTIVATE_DIST	.float	15000 */
@@ -173,14 +176,14 @@ static float ATTR_DDACT_DIST = 45000.0f;
 
 // *----------------------------------------------------------------------------
 void FIND_STARTING_VALUES(void) {
-    const u32* tyco_ptr;
+    tyco_stream_t tyco_ptr;
     int start_section;
     u32 flag;
     int remaining_sections;
 
     // asm 00003F80: 	LDI	@TYCO_TRKI,AR1
     MAME_ASSERT_FUNCTION_ENTRY();
-    tyco_ptr = ROM_PTR(TYCO_TRK_ROM);
+    tyco_ptr = (tyco_stream_t)ROM_PTR(TYCO_TRK_ROM);
     // asm 00003F81: 	LDI	@STARTSECTION,R0	;first time dont do the crime
     start_section = STARTSECTION; // ;first time dont do the crime
     // asm 00003F82: 	CMPI	0,R0
@@ -229,18 +232,19 @@ NOWARP:
     // asm 00003F94: 	STI	R0,@TYCO_NTL_IDX
     TYCO_NTL_IDX = start_section;
     // asm 00003F95: 	LDF	*++AR1,R0
-    START_POS[0] = TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[1]);
     // asm 00003F96: 	STF	R0,@START_POS
+    START_POS[0] = ROM_ConsumeFloat(&tyco_ptr);
     // asm 00003F97: 	LDF	*++AR1,R0
-    START_POS[1] = TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[2]);
     // asm 00003F98: 	STF	R0,@START_POS+Y
+    START_POS[1] = ROM_ConsumeFloat(&tyco_ptr);
     // asm 00003F99: 	LDF	*++AR1,R0
-    START_POS[2] = TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[3]);
     // asm 00003F9A: 	STF	R0,@START_POS+Z
+    START_POS[2] = ROM_ConsumeFloat(&tyco_ptr);
     // asm 00003F9B: 	LDF	*++AR1,R2
-    START_RADY = TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[4]);
-    MAME_ASSERT_REG_FLOAT(0x00003F9D, "R2", &START_RADY);
     // asm 00003F9C: 	STF	R2,@START_RADY
+    START_RADY = ROM_ConsumeFloat(&tyco_ptr);
+
+    MAME_ASSERT_REG_FLOAT(0x00003F9D, "R2", &START_RADY);
     // asm 00003F9D: 	RETS
 }
 
@@ -255,7 +259,7 @@ NOWARP:
 void BGD_INIT(void) {
     DGROUP_ENTRY* dgroup_ptr;
     u32 dgroup_head;
-    const u32* tyco_ptr;
+    tyco_stream_t tyco_ptr;
     u32 flag;
     int remaining_groups;
 
@@ -637,9 +641,9 @@ int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
 float SECRADY = 1.0f;
 
-static u32 BGD_ACTIVATE_TYCOGROUP(const u32* tyco_ptr /*AR2*/) {
-    const u32* section_ptr;
-    const u32* group_ptr;
+static u32 BGD_ACTIVATE_TYCOGROUP(tyco_stream_t tyco_ptr /*AR2*/) {
+    tyco_stream_t section_ptr;
+    const s32* group_ptr;
     void* romdata;
     OBJ* obj;
     OBJ* corn_obj;
@@ -752,7 +756,7 @@ REG_LD:
 NOEXTRA:
     // asm 000040A9: 	LDF	*+AR7(TB_RADY),R0
     // asm 000040AA: 	STF	R0,@SECRADY
-    SECRADY = TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RADY]);
+    SECRADY = ROM_ParseFloat(section_ptr[TB_RADY]);
     // asm 000040AB: 	LDI	@MATRIXAI,AR2		;Group rotation matrix
     // asm 000040AC: 	LDF	@SECRADY,R2
     MAME_ASSERT_REG_FLOAT(0x000040AD, "R2", &SECRADY);
@@ -770,7 +774,7 @@ NOEXTRA:
     NEWSUBLIST_TOPB = ((u32)SECTIONIDX << 8) | 0xAAu;
     // asm 000040B4: 	PUSH	R0
     // asm 000040B5: 	LDI	*AR5++,R4		;get number of objects to load
-    object_count = (int)*group_ptr++;
+    object_count = *group_ptr++;
     MAME_ASSERT_REG(0x000040B6, "R4", &object_count);
     // asm: 	SLOCKON	LE,"BACKGRND 1"
     SLOCKON(object_count <= 0, "BACKGRND 1");
@@ -797,19 +801,19 @@ L12:
     // asm 000040BE: 	PUSH	R0
     // asm 000040BF: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 000040C0: 	STF	R1,*+AR4(OPOSX)
-    obj->posx = (float)(s32)*group_ptr++;
-    MAME_ASSERT_REG_FLOAT(0x000040C0, "R1", &obj->posx);
+    obj->pos.X = (float)*group_ptr++;
+    MAME_ASSERT_REG_FLOAT(0x000040C0, "R1", &obj->pos.X);
     // asm 000040C1: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    obj->posy = (float)(s32)*group_ptr++;
-    MAME_ASSERT_REG_FLOAT(0x000040C5, "R1", &obj->posy);
+    obj->pos.Y = (float)*group_ptr++;
+    MAME_ASSERT_REG_FLOAT(0x000040C5, "R1", &obj->pos.Y);
     // asm 000040C2: 	LDI	@TYCOFLAG,R0
     // asm 000040C3: 	TSTB	SC_REVERSE,R0
     // asm 000040C4: 	BZD	NOTREVERSED
     // asm 000040C5: 	STF	R1,*+AR4(OPOSY)
     // asm 000040C6: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 000040C7: 	STF	R1,*+AR4(OPOSZ)
-    obj->posz = (float)(s32)*group_ptr++;
-    MAME_ASSERT_REG_FLOAT(0x000040C7, "R1", &obj->posz);
+    obj->pos.Z = (float)*group_ptr++;
+    MAME_ASSERT_REG_FLOAT(0x000040C7, "R1", &obj->pos.Z);
     if ((TYCOFLAG & SC_REVERSE) == 0) {
         goto NOTREVERSED;
     }
@@ -828,15 +832,15 @@ ISOVER:
     // asm 000040CC: 	LDF	*+AR7(TB_RVS_POSX),R0	;TRANSLATE BY THE NEGATIVE OFFSET
     // asm 000040CD: 	ADDF	*+AR4(OPOSX),R0		;POSITION (THIS BLOCKS ENDING POSITION)
     // asm 000040CE: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X += ROM_ParseFloat(section_ptr[TB_RVS_POSX]);
     // asm 000040CF: 	LDF	*+AR7(TB_RVS_POSY),R0
     // asm 000040D0: 	ADDF	*+AR4(OPOSY),R0
     // asm 000040D1: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y += ROM_ParseFloat(section_ptr[TB_RVS_POSY]);
     // asm 000040D2: 	LDF	*+AR7(TB_RVS_POSZ),R0
     // asm 000040D3: 	ADDF	*+AR4(OPOSZ),R0
     // asm 000040D4: 	STF	R0,*+AR4(OPOSZ)
-    obj->posx += TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSX]);
-    obj->posy += TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSY]);
-    obj->posz += TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_RVS_POSZ]);
+    obj->pos.Z += ROM_ParseFloat(section_ptr[TB_RVS_POSZ]);
     if ((TYCOFLAG & SC_OVERLAY) == 0) {
         section_ptr += 1;
     }
@@ -846,25 +850,25 @@ ISOVER:
     // asm 000040D8: 	ADDI	OPOSX,AR2
     // asm 000040D9: 	LDI	@VECTORAI,R3
     // asm 000040DA: 	CALL	MATRIX_MUL		;rotation by occurance matrix
-    MATRIX_MUL((VECTOR*)&obj->posx, &MATRIXAI, &VECTORAI); // ;rotation by occurance matrix
+    MATRIX_MUL(&obj->pos, &MATRIXAI, &VECTORAI); // ;rotation by occurance matrix
     // asm 000040DB: 	LDI	@VECTORAI,AR0
     // asm 000040DC: 	LDF	*AR0++,R1
     // asm 000040DD: 	ADDF	*+AR7(TB_POSX),R1
     // asm 000040DE: 	STF	R1,*+AR4(OPOSX)
+    obj->pos.X = VECTORAI.X + ROM_ParseFloat(section_ptr[TB_POSX]);
     // asm 000040DF: 	LDF	*AR0++,R1
     // asm 000040E0: 	ADDF	*+AR7(TB_POSY),R1
     // asm 000040E1: 	STF	R1,*+AR4(OPOSY)
+    obj->pos.Y = VECTORAI.Y + ROM_ParseFloat(section_ptr[TB_POSY]);
+    MAME_ASSERT_REG_FLOAT(0x000040E1, "R1", &obj->pos.Y);
     // asm 000040E2: 	LDF	*AR0++,R1
     // asm 000040E3: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040E4: 	STF	R1,*+AR4(OPOSZ)
-    obj->posx = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]);
-    obj->posy = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]);
-    MAME_ASSERT_REG_FLOAT(0x000040E1, "R1", &obj->posy);
-    obj->posz = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]);
+    obj->pos.Z = VECTORAI.Z + ROM_ParseFloat(section_ptr[TB_POSZ]);
     // asm 000040E5: 	LDF	*AR5++,R2		;GET Y ROT
     // asm 000040E6: 	ADDF	@SECRADY,R2
     // asm 000040E7: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY;
+    obj->rad.Y = ROM_ParseFloat(*group_ptr++) + SECRADY;
     MAME_ASSERT_REG_FLOAT(0x000040E8, "R2", &obj->rad.Y);
     // asm 000040E8: 	LDI	AR4,AR2
     // asm 000040E9: 	ADDI	OMATRIX,AR2
@@ -879,25 +883,25 @@ NOTREVERSED:
     // asm 000040EF: 	LDI	R2,R3
     // asm 000040F0: 	LDI	@VECTORAI,R3
     // asm 000040F1: 	CALL	MATRIX_MUL		;ROTATION BY OCCURANCE MATRIX
-    MATRIX_MUL((VECTOR*)&obj->posx, &MATRIXAI, &VECTORAI); // ;ROTATION BY OCCURANCE MATRIX
+    MATRIX_MUL(&obj->pos, &MATRIXAI, &VECTORAI); // ;ROTATION BY OCCURANCE MATRIX
     // asm 000040F2: 	LDI	@VECTORAI,AR0
     // asm 000040F3: 	LDF	*AR0++,R1
     // asm 000040F4: 	ADDF	*+AR7(TB_POSX),R1
     // asm 000040F5: 	STF	R1,*+AR4(OPOSX)
+    obj->pos.X = VECTORAI.X + ROM_ParseFloat(section_ptr[TB_POSX]);
     // asm 000040F6: 	LDF	*AR0++,R1
     // asm 000040F7: 	ADDF	*+AR7(TB_POSY),R1
     // asm 000040F8: 	STF	R1,*+AR4(OPOSY)
+    obj->pos.Y = VECTORAI.Y + ROM_ParseFloat(section_ptr[TB_POSY]);
+    MAME_ASSERT_REG_FLOAT(0x000040F8, "R1", &obj->pos.Y);
     // asm 000040F9: 	LDF	*AR0++,R1
     // asm 000040FA: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040FB: 	STF	R1,*+AR4(OPOSZ)
-    obj->posx = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSX]);
-    obj->posy = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSY]);
-    MAME_ASSERT_REG_FLOAT(0x000040F8, "R1", &obj->posy);
-    obj->posz = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[TB_POSZ]);
+    obj->pos.Z = VECTORAI.Z + ROM_ParseFloat(section_ptr[TB_POSZ]);
     // asm 000040FC: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 000040FD: 	ADDF	@SECRADY,R2
     // asm 000040FE: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++) + SECRADY;
+    obj->rad.Y = ROM_ParseFloat(*group_ptr++) + SECRADY;
     MAME_ASSERT_REG_FLOAT(0x000040FF, "R2", &obj->rad.Y);
     // asm 000040FF: 	LDI	AR4,AR2
     // asm 00004100: 	ADDI	OMATRIX,AR2
@@ -1475,23 +1479,33 @@ NXTCHK:
  *
  *
  */
-void GET_XZ_DISTANCE(void) {
+float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
+    float delta_z;
+    float delta_x;
+
     // asm 00004215: 	PUSH	AR0
     // asm 00004216: 	PUSH	R3
     // asm 00004217: 	LDI	R2,AR0
     // asm 00004218: 	LDF	*AR0++(2),R3
+    delta_z = v2->Z;
     // asm 00004219: 	SUBF	*AR2++(2),R3
+    delta_z -= v1->Z;
     // asm 0000421A: 	LDF	*AR0++,R2
+    delta_x = v2->X;
     // asm 0000421B: 	SUBF	*AR2++,R2
+    delta_x -= v1->X;
     // asm 0000421C: 	MPYF	R3,R3
+    delta_z *= delta_z;
     // asm 0000421D: 	MPYF	R2,R2
+    delta_x *= delta_x;
     // asm 0000421E: 	ADDF	R3,R2
+    delta_x += delta_z;
     // asm 0000421F: 	CALL	SQRT
+    MAME_ASSERT_REG_FLOAT(0x0000421F, "R0", &delta_x);
     // asm 00004220: 	POP	R3
     // asm 00004221: 	POP	AR0
     // asm 00004222: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_XZ_DISTANCE", 0, 0);
-    UNIMPL();
+    return sqrtf(delta_x);
 }
 
 // *----------------------------------------------------------------------------
@@ -2339,18 +2353,18 @@ LS_L12:
 
     // asm 00004432: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 00004433: 	STF	R1,*+AR4(OPOSX)
-    obj->posx = (f32)crusn_read_s32(&rom_cursor);
-    MAME_ASSERT_REG_FLOAT(0x00004433, "R1", &obj->posx);
+    obj->pos.X = (f32)crusn_read_s32(&rom_cursor);
+    MAME_ASSERT_REG_FLOAT(0x00004433, "R1", &obj->pos.X);
 
     // asm 00004434: 	FLOAT	*AR5++,R1		;GET Y POSITION
     // asm 00004435: 	STF	R1,*+AR4(OPOSY)
-    obj->posy = (f32)crusn_read_s32(&rom_cursor);
-    MAME_ASSERT_REG_FLOAT(0x00004435, "R1", &obj->posy);
+    obj->pos.Y = (f32)crusn_read_s32(&rom_cursor);
+    MAME_ASSERT_REG_FLOAT(0x00004435, "R1", &obj->pos.Y);
 
     // asm 00004436: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 00004437: 	STF	R1,*+AR4(OPOSZ)
-    obj->posz = (f32)crusn_read_s32(&rom_cursor);
-    MAME_ASSERT_REG_FLOAT(0x00004437, "R1", &obj->posz);
+    obj->pos.Z = (f32)crusn_read_s32(&rom_cursor);
+    MAME_ASSERT_REG_FLOAT(0x00004437, "R1", &obj->pos.Z);
 
     // asm 00004438: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 00004439: 	STF	R2,*+AR4(ORADY)
@@ -2819,38 +2833,38 @@ LS_ACTIVATE_XO:
 /* asm: 	.word	4A2h,DC_MINIFOUNTAIN */
 /* asm: 	.word	0	;END OF TABLE ID */
 static const BGD_OROUTINE_ENTRY ROUTINE_TAB[] = {
-    {0x40A, FLAGWAVE},
-    {0x460, ROAD_DEBRIS_CREATE},
-    {0x461, ROAD_DEBRIS_CREATE_55GAL},
-    {0x462, ROAD_DEBRIS_CREATE_55GAL}, // actually TOXIC
-    {0x463, ROAD_DEBRIS_CREATE_55GAL}, // actually CONE
-    {0x465, FLAGWAVE},                                 // short flag
-    {0x466, FLAGWAVE_TALL},                            // tall flag
+    { 0x40A, FLAGWAVE },
+    { 0x460, ROAD_DEBRIS_CREATE },
+    { 0x461, ROAD_DEBRIS_CREATE_55GAL },
+    { 0x462, ROAD_DEBRIS_CREATE_55GAL }, // actually TOXIC
+    { 0x463, ROAD_DEBRIS_CREATE_55GAL }, // actually CONE
+    { 0x465, FLAGWAVE },                 // short flag
+    { 0x466, FLAGWAVE_TALL },            // tall flag
     //
-    {0x467, WATERFALL},
-    {0x469, OVERCAR}, // LA & CHICAGO, FREEWAY OVERPASS CAR
-    {0x470, RRSTART_ENGINE},
-    {0x471, RRSTART_BOXCAR},
-    {0x472, RRSTART_BOXCAR},
-    {0x473, RRSTART_BOXCAR},
-    {0x474, RRSTART_BOXCAR},
-    {0x475, RRSTART_BOXCAR},
-    {0x476, RRSTART_BOXCAR},
+    { 0x467, WATERFALL },
+    { 0x469, OVERCAR }, // LA & CHICAGO, FREEWAY OVERPASS CAR
+    { 0x470, RRSTART_ENGINE },
+    { 0x471, RRSTART_BOXCAR },
+    { 0x472, RRSTART_BOXCAR },
+    { 0x473, RRSTART_BOXCAR },
+    { 0x474, RRSTART_BOXCAR },
+    { 0x475, RRSTART_BOXCAR },
+    { 0x476, RRSTART_BOXCAR },
     //
-    {0x481, SMOKE_STACK},
-    {0x482, CAR_FIRE},
+    { 0x481, SMOKE_STACK },
+    { 0x482, CAR_FIRE },
     //
     // 	.word	485h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR (BRIDGE)
     // 	.word	486h,TRAIN_FWRD_MAKEB	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE (BRIDGE)
     // 	.word	487h,OIL_PUMP		;RUSHMORE OIL PUMP
     // 	.word	495h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE BOXCAR
     // 	.word	496h,TRAIN_FWRD_MAKE	;CHICAGO TRAIN FORWARD SPECIFIED DISTANCE ENGINE
-    {0x498, OHARE_PLANE}, // CHICAGO AIRPLANE
+    { 0x498, OHARE_PLANE }, // CHICAGO AIRPLANE
     //
-    {0x741, RUT_ANI},
-    {0x742, HUNGH_ANI},
-    {0x4A1, DC_FOUNTAIN},
-    {0x4A2, DC_MINIFOUNTAIN},
-    {0, 0}, // END OF TABLE ID
+    { 0x741, RUT_ANI },
+    { 0x742, HUNGH_ANI },
+    { 0x4A1, DC_FOUNTAIN },
+    { 0x4A2, DC_MINIFOUNTAIN },
+    { 0, 0 }, // END OF TABLE ID
     // ----------------------------------------------------------------------------
 };

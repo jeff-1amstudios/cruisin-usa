@@ -2955,15 +2955,15 @@ void ULTRA_LOGO(void) {
 
     // asm 00001DD8: 	CLRF	R0
     // asm 00001DD9: 	STF	R0,*+AR0(OPOSX)
-    obj->posx = 0.0f;
+    obj->pos.X = 0.0f;
 
     // asm 00001DDA: 	FLOAT	50,R0
     // asm 00001DDB: 	STF	R0,*+AR0(OPOSY)
-    obj->posy = 50.0f;
+    obj->pos.Y = 50.0f;
 
     // asm 00001DDC: 	FLOAT	368,R0
     // asm 00001DDD: 	STF	R0,*+AR0(OPOSZ)
-    obj->posz = 368.0f;
+    obj->pos.Z = 368.0f;
 
     // asm 00001DDE: 	LDI	AR0,AR2
     // asm 00001DDF: 	CALL	OBJ_INSERTP

@@ -2127,7 +2127,7 @@ static void OBJ_MOVY_GROUP(int oid_group_bit /*R1*/, float y_amount /*R2*/) {
     if (obj == NULL) {
         goto OMYG;
     }
-    obj->posy += y_amount;
+    obj->pos.Y += y_amount;
 OMYG1:
     // asm 00003725: 	CALL	OBJ_GFIND_NEXT
     // asm 00003726: 	BC	OMYG
@@ -2138,7 +2138,7 @@ OMYG1:
     if (obj == NULL) {
         goto OMYG;
     }
-    obj->posy += y_amount;
+    obj->pos.Y += y_amount;
     // asm 0000372A: 	BR	OMYG1
     goto OMYG1;
 OMYG:
@@ -2342,13 +2342,13 @@ MNLOOP:
         // asm 00003778: 	FLOAT	-145,R1			;WIDTH OF ONE NUMBER
         // asm 00003779: 	ADDF	R1,R0
         // asm 0000377A: 	STF	R0,*+AR0(OPOSX)
-        obj->posx = previous_obj->posx - 145.0f; // ;WIDTH OF ONE NUMBER
+        obj->pos.X = previous_obj->pos.X - 145.0f; // ;WIDTH OF ONE NUMBER
         // asm 0000377B: 	LDF	*+AR1(OPOSY),R0
         // asm 0000377C: 	STF	R0,*+AR0(OPOSY)
-        obj->posy = previous_obj->posy;
+        obj->pos.Y = previous_obj->pos.Y;
         // asm 0000377D: 	LDF	*+AR1(OPOSZ),R0
         // asm 0000377E: 	STF	R0,*+AR0(OPOSZ)
-        obj->posz = previous_obj->posz;
+        obj->pos.Z = previous_obj->pos.Z;
         // asm 0000377F: 	LDF	0,R2
         // asm 00003780: 	STF	R2,*+AR0(ORADX)
         obj->rad.X = 0.0f;
@@ -2467,13 +2467,13 @@ MTLOOP:
         // asm 000037B2: 	LDF	*+AR1(OPOSX),R0
         // asm 000037B3: 	ADDF	R1,R0
         // asm 000037B4: 	STF	R0,*+AR0(OPOSX)
-        obj->posx = previous_obj->posx + width;
+        obj->pos.X = previous_obj->pos.X + width;
         // asm 000037B5: 	LDF	*+AR1(OPOSY),R0
         // asm 000037B6: 	STF	R0,*+AR0(OPOSY)
-        obj->posy = previous_obj->posy;
+        obj->pos.Y = previous_obj->pos.Y;
         // asm 000037B7: 	LDF	*+AR1(OPOSZ),R0
         // asm 000037B8: 	STF	R0,*+AR0(OPOSZ)
-        obj->posz = previous_obj->posz;
+        obj->pos.Z = previous_obj->pos.Z;
         // asm 000037B9: 	LDF	0,R2
         // asm 000037BA: 	STF	R2,*+AR0(ORADX)
         obj->rad.X = 0.0f;
@@ -2617,15 +2617,15 @@ CRLLOOP:
         // asm 000037F7: 	ADDF	R1,R0
         // asm 000037F8: 	ADDF	*+AR1(OPOSX),R0
         // asm 000037F9: 	STF	R0,*+AR0(OPOSX)
-        obj->posx = plate_obj->posx + LETTER_XOFF + (LETTER_SIZEX * index);
+        obj->pos.X = plate_obj->pos.X + LETTER_XOFF + (LETTER_SIZEX * index);
         // asm 000037FA: 	FLOAT	LETTER_YOFF,R0
         // asm 000037FB: 	ADDF	*+AR1(OPOSY),R0
         // asm 000037FC: 	STF	R0,*+AR0(OPOSY)
-        obj->posy = plate_obj->posy + LETTER_YOFF;
+        obj->pos.Y = plate_obj->pos.Y + LETTER_YOFF;
         // asm 000037FD: 	LDF	*+AR1(OPOSZ),R0
         // asm 000037FE: 	SUBF	1,R0			;Make sure that it is on top of the plate
         // asm 000037FF: 	STF	R0,*+AR0(OPOSZ)
-        obj->posz = plate_obj->posz - 1.0f; // ;Make sure that it is on top of the plate
+        obj->pos.Z = plate_obj->pos.Z - 1.0f; // ;Make sure that it is on top of the plate
         // asm 00003800: 	LDI	*+AR7(WHITE_PAL),R0
         // asm 00003801: 	STI	R0,*+AR0(OPAL)
         obj->palette = white_pal;
@@ -2791,11 +2791,11 @@ PR3DLOOP:
             // asm: 	BC	$
 #endif
             // asm 00003849: 	STF	R2,*+AR0(OPOSX)
-            obj->posx = x;
+            obj->pos.X = x;
             // asm 0000384A: 	STF	R3,*+AR0(OPOSY)
-            obj->posy = y;
+            obj->pos.Y = y;
             // asm 0000384B: 	STF	R4,*+AR0(OPOSZ)
-            obj->posz = z;
+            obj->pos.Z = z;
             // asm 0000384C: 	STI	R6,*+AR0(OID)
             obj->id = oid;
             // asm 0000384D: 	PUSHF	R2
@@ -3254,9 +3254,9 @@ FIXPL:
         // asm 00003901: 	LDF	*+AR0(OPOSZ),R3		;Offset the plates Z
         // asm 00003902: 	ADDF	R0,R3
         // asm 00003903: 	STF	R3,*+AR0(OPOSZ)
-        plate_obj->posz += z_offset; // ;Offset the plates Z
+        plate_obj->pos.Z += z_offset; // ;Offset the plates Z
         // asm 00003904: 	SUBF	1,R3
-        letter_z = plate_obj->posz - 1.0f;
+        letter_z = plate_obj->pos.Z - 1.0f;
     FIXPL1:
         // asm 00003905: 	LDI	R2,R1
         // asm 00003906: 	LSH	1,R2
@@ -3269,7 +3269,7 @@ FIXPL:
         }
     FIXPL2:
         // asm 00003909: 	STF	R3,*+AR0(OPOSZ)		;Now do the letters on it
-        letter_obj->posz = letter_z; // ;Now do the letters on it
+        letter_obj->pos.Z = letter_z; // ;Now do the letters on it
         // asm 0000390A: 	CALL	OBJ_GFIND_NEXT
         // asm 0000390B: 	BNC	FIXPL2			;do as many as there are
         letter_obj = OBJ_GFIND_NEXT(letter_obj, group_bit);
@@ -3320,16 +3320,16 @@ FLPL:
 
         // asm 0000391A: 	LDF	*+AR0(OPOSZ),R1
         // asm 0000391B: 	ADDF	R0,R1
-        plate_obj->posz += amount;
+        plate_obj->pos.Z += amount;
         // asm 0000391C: 	FLOAT	1000,R3
         // asm 0000391D: 	CMPF	R3,R1		;BLEW by destination?
         // asm 0000391E: 	LDFGT	R3,R1
-        if (plate_obj->posz > 1000.0f) {
-            plate_obj->posz = 1000.0f; // ;BLEW by destination?
+        if (plate_obj->pos.Z > 1000.0f) {
+            plate_obj->pos.Z = 1000.0f; // ;BLEW by destination?
         }
         // asm 0000391F: 	STF	R1,*+AR0(OPOSZ)
         // asm 00003920: 	LDF	R1,R3
-        last_plate_z = plate_obj->posz;
+        last_plate_z = plate_obj->pos.Z;
         // asm 00003921: 	SUBF	1,R3
         letter_z = last_plate_z - 1.0f;
         // asm 00003922: FLPL1
@@ -3344,7 +3344,7 @@ FLPL:
         }
     FLPL2:
         // asm 00003926: 	STF	R3,*+AR0(OPOSZ)		;Now do the letters on it
-        letter_obj->posz = letter_z; // ;Now do the letters on it
+        letter_obj->pos.Z = letter_z; // ;Now do the letters on it
         // asm 00003927: 	CALL	OBJ_GFIND_NEXT
         // asm 00003928: 	BNC	FLPL2			;do as many as there are
         letter_obj = OBJ_GFIND_NEXT(letter_obj, group_bit);

@@ -285,11 +285,11 @@ OBJ* OBJ_GET(void) {
 
     // asm 00007061: 	CLRF	R0
     // asm 00007062: 	STF	R0,*+AR0(OPOSX)
-    obj->posx = 0.0f;
+    obj->pos.X = 0.0f;
     // asm 00007063: 	STF	R0,*+AR0(OPOSY)
-    obj->posy = 0.0f;
+    obj->pos.Y = 0.0f;
     // asm 00007064: 	STF	R0,*+AR0(OPOSZ)
-    obj->posz = 0.0f;
+    obj->pos.Z = 0.0f;
     // asm 00007065: 	STF	R0,*+AR0(OVELX)
     obj->vel_x = 0.0f;
     // asm 00007066: 	STF	R0,*+AR0(OVELY)
@@ -364,9 +364,9 @@ static void GETDIST(OBJ* obj /*AR2*/) {
     // asm 00007087: 	LDF	*+AR2(OPOSX),R0
     // asm 00007088: 	LDF	*+AR2(OPOSY),R1
     // asm 00007089: 	LDF	*+AR2(OPOSZ),R2
-    posx = obj->posx;
-    posy = obj->posy;
-    posz = obj->posz;
+    posx = obj->pos.X;
+    posy = obj->pos.Y;
+    posz = obj->pos.Z;
 
     // asm 0000708A: 	LDP	@_CAMERAPOS
     // asm 0000708B: 	SUBF	@_CAMERAPOS,R0	  	;ADJUST FOR UNIVERSE RELATIVE
@@ -1462,12 +1462,12 @@ void ISCAN(void) {
     obj = *prev_link;
     while (obj != NULL) {
         // asm 000072C1: 	SUBF	*-AR4(1),*+AR1(OPOSX),R5   	;GET LENGTH OF OBJ VECTOR
-        obj_vector_x = obj->posx - _CAMERAPOS.X; // ;GET LENGTH OF OBJ VECTOR
+        obj_vector_x = obj->pos.X - _CAMERAPOS.X; // ;GET LENGTH OF OBJ VECTOR
     ISCANL:
         // asm 000072A5: 	SUBF	*AR4,*+AR1(IR0),R6	;OYPOS-CAMERAPOSY
-        obj_vector_y = obj->posy - _CAMERAPOS.Y; // ;OYPOS-CAMERAPOSY
+        obj_vector_y = obj->pos.Y - _CAMERAPOS.Y; // ;OYPOS-CAMERAPOSY
                                                  // asm 000072A6: 	SUBF	*+AR4(1),*+AR1(IR1),R7	;OZPOS-CAMERAPOSZ
-        obj_vector_z = obj->posz - _CAMERAPOS.Z; // ;OZPOS-CAMERAPOSZ
+        obj_vector_z = obj->pos.Z - _CAMERAPOS.Z; // ;OZPOS-CAMERAPOSZ
                                                  // asm 000072A7: 	MPYF    *-AR3(1),R5,R0
         projected_dist = _CAMERAMATRIX.a20 * obj_vector_x;
         // asm 000072A8: 	MPYF    *AR3,R6,R1
@@ -1786,13 +1786,13 @@ OBJ* OBJ_QMAKE(void* romdata /*AR2*/, int posx /*R2*/, int posy /*R3*/, int posz
     obj->romdata = romdata;
     // asm 00007337: 	FLOAT	R2
     // asm 00007338: 	STF	R2,*+AR0(OPOSX)
-    obj->posx = (float)posx;
+    obj->pos.X = (float)posx;
     // asm 00007339: 	FLOAT	R3
     // asm 0000733A: 	STF	R3,*+AR0(OPOSY)
-    obj->posy = (float)posy;
+    obj->pos.Y = (float)posy;
     // asm 0000733B: 	FLOAT	RC,R2
     // asm 0000733C: 	STF	R2,*+AR0(OPOSZ)
-    obj->posz = (float)posz;
+    obj->pos.Z = (float)posz;
     // asm 0000733D: 	CLRC
     // asm 0000733E: 	RETS
     return obj;

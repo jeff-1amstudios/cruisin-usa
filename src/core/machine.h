@@ -45,8 +45,8 @@ typedef struct crusn_machine {
 } crusn_machine;
 
 extern crusn_machine* g_crusn_machine;
-extern u32 crusn_rom_words[CRUSN_ROM_WORDS];
-extern u32 crusn_waveram[CRUSN_WAVERAM_WORDS];
+extern s32 crusn_rom_words[CRUSN_ROM_WORDS];
+extern s32 crusn_waveram[CRUSN_WAVERAM_WORDS];
 
 #define crusn_mem_rd32(ADDR) crusn_mem_rd32_map(&g_crusn_machine->memory, (ADDR))
 #define crusn_mem_wr32(ADDR, VALUE) crusn_mem_wr32_map(&g_crusn_machine->memory, (ADDR), (VALUE))

@@ -420,13 +420,13 @@ NOBREAK_CONTINUE:
     g_dirq_debug_objects_with_rom += 1;
 
     if ((flags & O_NOUNIV) != 0) {
-        trans_x = obj->posx;
-        trans_y = obj->posy;
-        trans_z = obj->posz;
+        trans_x = obj->pos.X;
+        trans_y = obj->pos.Y;
+        trans_z = obj->pos.Z;
     } else {
-        trans_x = obj->posx - _CAMERAPOS.X;
-        trans_y = obj->posy - _CAMERAPOS.Y;
-        trans_z = obj->posz - _CAMERAPOS.Z;
+        trans_x = obj->pos.X - _CAMERAPOS.X;
+        trans_y = obj->pos.Y - _CAMERAPOS.Y;
+        trans_z = obj->pos.Z - _CAMERAPOS.Z;
     }
 
     if ((flags & O_NOUROT) != 0) {

@@ -554,8 +554,8 @@ CKSTEALTH:
     // asm 0000517B: 	MPYF	R1,R1
     // asm 0000517C: 	ADDF	R1,R2
     tracking_obj = p->ctx->RACER_DRONE.delta_tpiece;
-    delta_x = tracking_obj->posx - obj->posx;
-    delta_z = tracking_obj->posz - obj->posz;
+    delta_x = tracking_obj->pos.X - obj->pos.X;
+    delta_z = tracking_obj->pos.Z - obj->pos.Z;
     tracking_distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
     // asm 0000517D: 	FLOAT	5000,R1				;TO THE NEXT ROADPIECE
     // asm 0000517E: 	MPYF	R1,R1
@@ -577,8 +577,8 @@ CKSTEALTH:
     // asm 00005187: 	MPYF	R0,R0
     // asm 00005188: 	MPYF	R1,R1
     // asm 00005189: 	ADDF	R0,R1
-    delta_x = next_tracking_obj->posx - obj->posx;
-    delta_z = next_tracking_obj->posz - obj->posz;
+    delta_x = next_tracking_obj->pos.X - obj->pos.X;
+    delta_z = next_tracking_obj->pos.Z - obj->pos.Z;
     next_tracking_distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
     // asm 0000518A: 	CMPF	R2,R1	       			;DIST TRACK CLOSER?
     // asm 0000518B: 	BGT	ONTRACK				;NO, WERE ON TRACK
@@ -645,7 +645,7 @@ ROADTRAK1:
     // asm 000051A9: 	SUBF	*+AR2(OPOSZ),R3
     // asm 000051AA: 	CALL	ARCTANF
     // asm 000051AB: 	SUBF	HALFPI,R0
-    desired_theta = atan2f(next_tracking_obj->posz - tracking_obj->posz, next_tracking_obj->posx - tracking_obj->posx) - HALFPI;
+    desired_theta = atan2f(next_tracking_obj->pos.Z - tracking_obj->pos.Z, next_tracking_obj->pos.X - tracking_obj->pos.X) - HALFPI;
     // asm 000051AC: 	LDF	R0,R2		      	;FIND THETA
     // asm 000051AD: 	CALL	_SINE
     // asm 000051AE: 	LDF	R0,R1
@@ -654,11 +654,11 @@ ROADTRAK1:
     // asm 000051B1: 	MPYF	*+AR7(ROADOFFSET),R1	;Z LANE OFFSET
     // asm 000051B2: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R2
     // asm 000051B3: 	ADDF	R0,R2
-    delta_x = (tracking_obj->posx - obj->posx) + (_SINE(desired_theta) * p->ctx->RACER_DRONE.road_offset);
+    delta_x = (tracking_obj->pos.X - obj->pos.X) + (_SINE(desired_theta) * p->ctx->RACER_DRONE.road_offset);
     // asm 000051B4: 	LDF	*+AR2(OPOSZ),R3		;COMPUTE DELTA Z TO GOAL
     // asm 000051B5: 	SUBF	*+AR4(OPOSZ),R3
     // asm 000051B6: 	ADDF	R1,R3
-    delta_z = (tracking_obj->posz - obj->posz) + (_COSI(desired_theta) * p->ctx->RACER_DRONE.road_offset);
+    delta_z = (tracking_obj->pos.Z - obj->pos.Z) + (_COSI(desired_theta) * p->ctx->RACER_DRONE.road_offset);
     // 	;POSITION TRACKING
     // 	;
     // 	;Set steering, trottle, gear, and brake
@@ -2080,13 +2080,13 @@ float SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, in
     // asm 00005524: 	LDI	@VECTORBI,AR5
     // asm 00005525: 	LDF	*+AR2(OPOSX),R0
     // asm 00005526: 	STF	R0,*+AR5(X)
-    _VECTORB.X = tracking_obj->posx;
+    _VECTORB.X = tracking_obj->pos.X;
     // asm 00005527: 	LDF	*+AR2(OPOSY),R0
     // asm 00005528: 	STF	R0,*+AR5(Y)
-    _VECTORB.Y = tracking_obj->posy;
+    _VECTORB.Y = tracking_obj->pos.Y;
     // asm 00005529: 	LDF	*+AR2(OPOSZ),R0
     // asm 0000552A: 	STF	R0,*+AR5(Z)
-    _VECTORB.Z = tracking_obj->posz;
+    _VECTORB.Z = tracking_obj->pos.Z;
     carblk = obj->carblk;
     // asm 0000552B: 	LDI	*+AR2(OLINK4),AR2	;GET *NEXT* PIECE
     tracking_obj = (OBJ*)tracking_obj->link4;
@@ -2098,7 +2098,7 @@ LOOP56:
     // asm 00005530: 	CALL	ARCTANF
     // asm 00005531: 	SUBF	HALFPI,R0
     // asm 00005532: 	LDF	R0,R2			;THIS IS INITIAL FACING
-    road_theta = atan2f(tracking_obj->posz - _VECTORB.Z, tracking_obj->posx - _VECTORB.X) - HALFPI;
+    road_theta = atan2f(tracking_obj->pos.Z - _VECTORB.Z, tracking_obj->pos.X - _VECTORB.X) - HALFPI;
     // asm 00005533: 	CMPI	0,AR3
     // asm 00005534: 	BEQ	OFFANDDONE
     if (rank_forward != 0) {
@@ -2131,7 +2131,7 @@ LOOP56:
             // asm 00005549: 	LDI	*+AR2(OLINK4),AR2
             // asm 0000554A: 	BU	LOOP56A
             while (1) {
-                if (sqrtf((tracking_obj->posx - _VECTORB.X) * (tracking_obj->posx - _VECTORB.X) + (tracking_obj->posz - _VECTORB.Z) * (tracking_obj->posz - _VECTORB.Z)) > 5000.0f) {
+                if (sqrtf((tracking_obj->pos.X - _VECTORB.X) * (tracking_obj->pos.X - _VECTORB.X) + (tracking_obj->pos.Z - _VECTORB.Z) * (tracking_obj->pos.Z - _VECTORB.Z)) > 5000.0f) {
                     goto LOOP56;
                 }
                 tracking_obj = (OBJ*)tracking_obj->link4;
@@ -2162,7 +2162,7 @@ L874:
     // asm 00005559: 	LDF	*+AR5(X),R0
     // asm 0000555A: 	ADDF	*+AR0(X),R0
     // asm 0000555B: 	STF	R0,*+AR4(OPOSX)
-    obj->posx = _VECTORB.X + _VECTORA.X;
+    obj->pos.X = _VECTORB.X + _VECTORA.X;
     // asm 0000555C: 	LDF	*+AR5(Y),R0
     // asm 0000555D: 	SUBF	*+AR5(CARWHLTAB+1),R0
     // asm 0000555E: 	ADDF	*+AR0(Y),R0
@@ -2171,11 +2171,11 @@ L874:
     // to depend on original contiguous RAM0 scratch aliasing after AR5=@VECTORBI.
     // Until that RAM0 layout is modeled in C, force the startup value observed in MAME
     // so downstream validation can continue.
-    obj->posy = -1.0f;
+    obj->pos.Y = -1.0f;
     // asm 00005560: 	LDF	*+AR5(Z),R0
     // asm 00005561: 	ADDF	*+AR0(Z),R0
     // asm 00005562: 	STF	R0,*+AR4(OPOSZ)
-    obj->posz = _VECTORB.Z + _VECTORA.Z;
+    obj->pos.Z = _VECTORB.Z + _VECTORA.Z;
     // asm 00005563: 	POPFL	R2
     // asm 00005565: 	POP	AR6
     // asm 00005566: 	POP	AR5

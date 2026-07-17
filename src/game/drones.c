@@ -1,6 +1,7 @@
 #include "drones.h"
 
 #include "../core/machine.h"
+#include "../core/romreader.h"
 #include "c30.h"
 #include "cmos.h"
 #include "delta.h"
@@ -312,8 +313,8 @@ FPP2:
     // asm 00006600: 	SUBF	*+AR2(OPOSZ),R3
     // asm 00006601: 	MPYF	R3,R3
     // asm 00006602: 	ADDF	R0,R3,R4
-    other_dist_sq = (next_track_obj->posx - obj->posx) * (next_track_obj->posx - obj->posx);
-    other_dist_sq += (obj->posz - next_track_obj->posz) * (obj->posz - next_track_obj->posz);
+    other_dist_sq = (next_track_obj->pos.X - obj->pos.X) * (next_track_obj->pos.X - obj->pos.X);
+    other_dist_sq += (obj->pos.Z - next_track_obj->pos.Z) * (obj->pos.Z - next_track_obj->pos.Z);
     // asm 00006603: 	LDF	*+AR3(CARDIST2CNTR),R0		;CORRECT FOR NOT CENTERED
     // asm 00006604: 	MPYF	R0,R0
     // asm 00006605: 	SUBF	R0,R4
@@ -324,8 +325,8 @@ FPP2:
     // asm 00006609: 	SUBF	*+AR2(OPOSZ),R3
     // asm 0000660A: 	MPYF	R3,R3
     // asm 0000660B: 	ADDF	R0,R3
-    player_dist_sq = (next_track_obj->posx - player_obj->posx) * (next_track_obj->posx - player_obj->posx);
-    player_dist_sq += (player_obj->posz - next_track_obj->posz) * (player_obj->posz - next_track_obj->posz);
+    player_dist_sq = (next_track_obj->pos.X - player_obj->pos.X) * (next_track_obj->pos.X - player_obj->pos.X);
+    player_dist_sq += (player_obj->pos.Z - next_track_obj->pos.Z) * (player_obj->pos.Z - next_track_obj->pos.Z);
     // asm 0000660C: 	LDF	*+AR5(CARDIST2CNTR),R0		;CORRECT FOR NOT CENTERED
     // asm 0000660D: 	MPYF	R0,R0
     // asm 0000660E: 	SUBF	R0,R3
@@ -383,73 +384,152 @@ int DD_MAX_DRONES;
 
 // *----------------------------------------------------------------------------
 void SIGMA_DISPATCHER(PROC* p) {
+    PROC* sigma_proc;
+    OBJ* sigma_obj;
+    PROC_CONTEXT* sigma_ctx;
+    TYCOHEADER dgroup_header;
+    int sleep_ticks;
+    int position;
+    int random_percent;
+    float sigma_distance;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    }
+
     // asm 00006618: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00006619: 	BZ	CONTIN
     // asm 0000661A: 	DIE
+    if (HEAD2HEAD_ON != 0) {
+        DIE();
+    }
 CONTIN:
     // asm 0000661B: 	SLEEP	30*20
+    SLEEP(30 * 20, 1);
 SIGDSP_LP:
     // asm 0000661D: 	LDI	@DD_VAR,AR2
     // asm 0000661E: 	CALL	RANDU0
+    sleep_ticks = RANDU0(DD_VAR);
     // asm 0000661F: 	ADDI	@DD_SLP,R0
+    sleep_ticks += DD_SLP;
     // asm 00006620: 	MPYI	2,R0
+    sleep_ticks *= 2;
     // asm 00006621: 	LDI	R0,AR2
 SG_DISP_S:
     // asm 00006622: 	CALL	SLEEP
+    SLEEP(sleep_ticks, 2);
     // asm 00006623: 	LDI	1,AR2
     // asm 00006624: 	LDI	@DRONE_DISPATCH_P,R0
     // asm 00006625: 	BZ	SG_DISP_S
+    if (DRONE_DISPATCH_P == 0) {
+        sleep_ticks = 1;
+        goto SG_DISP_S;
+    }
     // asm 00006626: 	LDI	@SUSPEND_MODE,R0
     // asm 00006627: 	CMPI	SM_HALT,R0
     // asm 00006628: 	BEQ	SIGDSP_LP	;->STRAIGHT TO SLEEP
+    if (SUSPEND_MODE == SM_HALT) {
+        goto SIGDSP_LP;
+    }
     // asm 00006629: 	LDI	@DRONE_COUNT,R0
     // asm 0000662A: 	SUBI	1,R0
     // asm 0000662B: 	CMPI	@DD_MAX_DRONES,R0
     // asm 0000662C: 	BGT	SIGDSP_LP
+    if ((DRONE_COUNT - 1) > DD_MAX_DRONES) {
+        goto SIGDSP_LP;
+    }
     // asm 0000662D: 	LDI	@POSITION,R1
     // asm 0000662E: 	CMPI	1,R1
     // asm 0000662F: 	BLE	DOIT
+    position = POSITION;
+    if (position <= 1) {
+        goto DOIT;
+    }
     // asm 00006630: 	RANDN	100		;R0 <- rand %%
+    random_percent = RANDU0(100);
     // asm 00006632: 	CMPI	4,R1
     // asm 00006633: 	BGT	OV1
-    // asm 00006634: 	CMPI	70,R0
-    // asm 00006635: 	BLT	DOIT
-    // asm 00006636: 	BGT	SIGDSP_LP
+    if (position <= 4) {
+        // asm 00006634: 	CMPI	70,R0
+        // asm 00006635: 	BLT	DOIT
+        // asm 00006636: 	BGT	SIGDSP_LP
+        if (random_percent < 70) {
+            goto DOIT;
+        }
+        goto SIGDSP_LP;
+    }
 OV1:
     // asm 00006637: CMPI	7,R1
     // asm 00006638: 	BGT	OV2
-    // asm 00006639: 	CMPI	60,R0
-    // asm 0000663A: 	BLT	DOIT
-    // asm 0000663B: 	BGT	SIGDSP_LP
+    if (position <= 7) {
+        // asm 00006639: 	CMPI	60,R0
+        // asm 0000663A: 	BLT	DOIT
+        // asm 0000663B: 	BGT	SIGDSP_LP
+        if (random_percent < 60) {
+            goto DOIT;
+        }
+        goto SIGDSP_LP;
+    }
 OV2:
     // asm 0000663C: CMPI	35,R0
     // asm 0000663D: 	BGT	SIGDSP_LP
+    if (random_percent > 35) {
+        goto SIGDSP_LP;
+    }
 DOIT:
     // ;	CALL	COP_ACTIVE	;NO SIGMAS MIXED WITH COPS
     // ;	BC	SIGDSP_LP
     // asm 0000663E: 	CREATE	SIGMA_DRONE,DRONE_C|VEHICLE_T|DRNE_SIGMA
+    sigma_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    sigma_proc = CREATE(SIGMA_DRONE, DRONE_C | VEHICLE_T | DRNE_SIGMA, sigma_ctx);
     // asm 00006641: 	BC	SIGDSP_LP
+    if (sigma_proc == NULL) {
+        goto SIGDSP_LP;
+    }
     // asm 00006642: 	LDI	AR0,AR5
+    p->ctx->SIGMA_DISPATCHER.sigma_proc = sigma_proc;
 NOTYET:
     // asm 00006643: SLEEP	1
+    SLEEP(1, 3);
     // asm 00006645: 	LDI	*+AR5(PAR4),AR4
+    sigma_proc = p->ctx->SIGMA_DISPATCHER.sigma_proc;
+    if (sigma_proc == NULL || sigma_proc->ctx == NULL) {
+        goto SIGDSP_LP;
+    }
+    sigma_obj = sigma_proc->ctx->RACER_DRONE.obj;
+    if (sigma_obj == NULL) {
+        goto NOTYET;
+    }
     // asm 00006646: 	LDI	*+AR4(OID),R0
     // asm 00006647: 	CMPI	DRONE_C|VEHICLE_T|DRNE_SIGMA,R0
     // asm 00006648: 	BNE	SIGDSP_LP
+    if (sigma_obj->id != (DRONE_C | VEHICLE_T | DRNE_SIGMA)) {
+        goto SIGDSP_LP;
+    }
     // asm 00006649: 	LDI	@DGROUP_AW,AR0
     // asm 0000664A: 	LDI	AR0,AR2
     // asm 0000664B: 	ADDI	1,AR2
+    ROM_ReadTYCOHEADER(DGROUP_AW, &dgroup_header);
     // asm 0000664C: 	LDI	AR4,R2
     // asm 0000664D: 	ADDI	OPOSX,R2
     // asm 0000664E: 	CALL	GET_XZ_DISTANCE
+    sigma_distance = GET_XZ_DISTANCE(&dgroup_header.pos, &sigma_obj->pos);
     // ;	FLOAT	15000,R1
     // asm 0000664F: 	FLOAT	25000,R1
     // asm 00006650: 	CMPF	R1,R0
     // asm 00006651: 	BLT	NOTYET
+    if (sigma_distance < 25000.0f) {
+        goto NOTYET;
+    }
     // asm 00006652: 	BU	SIGDSP_LP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGMA_DISPATCHER", 0, 0);
-    UNIMPL();
+    REENTER(SIGMA_DISPATCHER);
 }
 
 // *----------------------------------------------------------------------------
@@ -590,7 +670,7 @@ DOITR:
     // asm 000066AA: 	BU	RHO_DLP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DISPATCHER", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void CK_LINK_DISP(void) {
@@ -1473,17 +1553,17 @@ float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
 
     // asm 00006827: 	LDF	*+AR2(OPOSZ),R0
     // asm 00006828: 	SUBF	*+AR0(OPOSZ),R0		;A = Uy - Vy
-    a = track_obj->posz - next_track_obj->posz;
+    a = track_obj->pos.Z - next_track_obj->pos.Z;
     // asm 00006829: 	LDF	*+AR0(OPOSX),R1
     // asm 0000682A: 	SUBF	*+AR2(OPOSX),R1		;B = Vx - Ux
-    b = next_track_obj->posx - track_obj->posx;
+    b = next_track_obj->pos.X - track_obj->pos.X;
 
     // asm 0000682B..0000682F
-    c = -((a * track_obj->posx) + (b * track_obj->posz));
+    c = -((a * track_obj->pos.X) + (b * track_obj->pos.Z));
 
     // asm 00006832..00006839
     denominator = sqrtf((a * a) + (b * b));
-    dist = ((a * obj->posx) + (b * obj->posz) + c) / denominator;
+    dist = ((a * obj->pos.X) + (b * obj->pos.Z) + c) / denominator;
 
     return dist;
 }

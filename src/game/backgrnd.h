@@ -27,7 +27,7 @@ extern DGROUP_ENTRY DGROUPS[];
 // asm: 	.bss	DGROUP_COUNT,1		;NUMBER OF ACTIVE BACKGRNDS (on DYNA LIST)
 extern int DGROUP_COUNT;
 // asm: 	.bss	DGROUP_AW,1		;activate watch pointer (->TYCO.ASM)
-extern const u32* DGROUP_AW;
+extern tyco_stream_t DGROUP_AW;
 // asm: 	.bss	DYNALIST_TRUEBEGIN,1	;FIRST ELEMENT OF DYNAFLEX LIST
 extern OBJ* DYNALIST_TRUEBEGIN;
 // asm: 	.bss	DYNALIST_BEGIN,1	;FIRST ELEMENT OF DYNAFLEX LIST (SECOND SET)
@@ -43,9 +43,9 @@ extern OBJ* STARTS;
 // asm: 	.bss	SECTIONIDX,1		;section index (of next to activate)
 extern int SECTIONIDX;
 // asm: 	.bss	TYCO_TRACK,1
-extern const u32* TYCO_TRACK;
+extern tyco_stream_t TYCO_TRACK;
 // asm: 	.bss	TYCO_TRACK_NTL,1
-extern const u32* TYCO_TRACK_NTL;
+extern tyco_stream_t TYCO_TRACK_NTL;
 // asm: 	.bss	TYCO_NTL_IDX,1
 extern int TYCO_NTL_IDX;
 // asm: 	.bss	NEWSUBLIST_TOPB,1	;POINTER TO TOP OF SUBLIST (OF GROUP)

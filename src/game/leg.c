@@ -20,7 +20,7 @@ static LEG_SSLL_ENTRY* ELEMENT_GET(void);
 static void ELEMENT_ADD(LEG_SSLL_ENTRY* element_entry);
 static LEG_PAYLOAD* ELEMENT_DUMP_INTO_LEGMAP(LEG_PAYLOAD* map_entry);
 void LEG_GENERATE_MAP(int start_index /*AR0*/, int end_index /*AR1*/);
-static LEG_PAYLOAD* LEG_ADD_GROUP(u32* tyco, LEG_PAYLOAD* map_entry, int section_index);
+static LEG_PAYLOAD* LEG_ADD_GROUP(tyco_stream_t tyco, LEG_PAYLOAD* map_entry, int section_index);
 static void GENERATE_LINEAR_DISTANCE(void);
 
 extern MATRIX _MATRIXA;
@@ -70,7 +70,7 @@ int LEG_ELEMENTS;
 /* asm: LEG_MAP	hibss	LEG_MAP,MAX_LEG_ELEMENTS*LEG_SIZE */
 LEG_PAYLOAD LEG_MAP[MAX_LEG_ELEMENTS];
 /* asm: LAST_END_CACHE	.bss	LAST_END_CACHE,1 */
-u32* LAST_END_CACHE;
+tyco_stream_t LAST_END_CACHE;
 /* asm: LAST_END_INDEX	.bss	LAST_END_INDEX,1 */
 int LAST_END_INDEX;
 /* asm: LAST_ORIENTATION	.bss	LAST_ORIENTATION,1 */
@@ -96,7 +96,7 @@ void LEG_INIT(void) {
     LAST_END_INDEX = 1;
     // asm 0000AA65: 	LDI	@TYCO_TRKI,R0
     // asm 0000AA66: 	STI	R0,@LAST_END_CACHE
-    LAST_END_CACHE = ROM_PTR(TYCO_TRK_ROM);
+    LAST_END_CACHE = (tyco_stream_t)ROM_PTR(TYCO_TRK_ROM);
     // asm 0000AA67: 	POP	R0
     // asm 0000AA68: 	RETS
 }
@@ -271,7 +271,7 @@ ENDIT:
  *
  */
 void LEG_GENERATE_MAP(int start_index /*AR0*/, int end_index /*AR1*/) {
-    u32* tyco_ptr;
+    tyco_stream_t tyco_ptr;
     int section_index;
     LEG_PAYLOAD* map_entry;
     u32 flag;
@@ -456,7 +456,7 @@ int LEG_SECTIONIDX;
  *
  *
  */
-static LEG_PAYLOAD* LEG_ADD_GROUP(u32* tyco_ptr /*AR2*/, LEG_PAYLOAD* map_entry /*AR3*/, int section_index /*AR4*/) {
+static LEG_PAYLOAD* LEG_ADD_GROUP(tyco_stream_t tyco_ptr /*AR2*/, LEG_PAYLOAD* map_entry /*AR3*/, int section_index /*AR4*/) {
     u32 flag;
     int lane_count;
     word_addr_t group_addr;

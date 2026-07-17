@@ -365,19 +365,19 @@ void COMM_DRONE_PTR_SORT(void) {
     comm_drone->omatrix.mat11 = scale;
     comm_drone->omatrix.mat22 = scale;
 
-    comm_drone->posx = player2->posx;
+    comm_drone->pos.X = player2->pos.X;
 
     {
-        f32 y = player2->posy;
+        f32 y = player2->pos.Y;
         f32 offset = 35.0f * comm_drone->omatrix.mat00;
 
         y -= offset;
         y -= 20.0f;
 
-        comm_drone->posy = y;
+        comm_drone->pos.Y = y;
     }
 
-    comm_drone->posz = player2->posz;
+    comm_drone->pos.Z = player2->pos.Z;
 
     OBJ_PULL(comm_drone);
 

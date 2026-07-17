@@ -13,7 +13,7 @@ extern int LEG_ELEMENTS;
 // asm: 	hibss	LEG_MAP,MAX_LEG_ELEMENTS*LEG_SIZE
 extern LEG_PAYLOAD LEG_MAP[];
 // asm: 	.bss	LAST_END_CACHE,1
-extern u32* LAST_END_CACHE;
+extern tyco_stream_t LAST_END_CACHE;
 // asm: 	.bss	LAST_END_INDEX,1
 extern int LAST_END_INDEX;
 // asm: 	hibss	LEG_SSLL,MINILL_SIZE*(LEG_SIZE+1)

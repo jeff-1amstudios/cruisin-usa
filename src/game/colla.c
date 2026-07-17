@@ -512,9 +512,9 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     // asm 00002046: 	LDF	*+AR4(OPOSX),R1		;GET Y OBJECT OFFSET
     // asm 00002047: 	LDF	*+AR4(OPOSY),R4		;GET Y OBJECT OFFSET
     // asm 00002048: 	LDF	*+AR4(OPOSZ),R5		;GET Z OBJECT OFFSET
-    MAME_ASSERT_REG_FLOAT(0x00002047, "R1", &obj->posx);
-    MAME_ASSERT_REG_FLOAT(0x00002048, "R4", &obj->posy);
-    MAME_ASSERT_REG_FLOAT(0x00002049, "R5", &obj->posz);
+    MAME_ASSERT_REG_FLOAT(0x00002047, "R1", &obj->pos.X);
+    MAME_ASSERT_REG_FLOAT(0x00002048, "R4", &obj->pos.Y);
+    MAME_ASSERT_REG_FLOAT(0x00002049, "R5", &obj->pos.Z);
     // asm 00002049: 	LDI	2,IR0
     // asm 0000204A: 	LDI	CARVNUM-1,RC		;LOOP FOR ALL POINTS
     // asm 0000204B: 	RPTB	LOOP
@@ -524,11 +524,11 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
         MATRIX_MUL((VECTOR*)&carblk->wheel_scan_offsets[i], (MATRIX*)&obj->omatrix, (VECTOR*)car_point);
         // *ADD IN X,Z OFFSETS
         // asm 0000204E: 	ADDF	R1,*AR3,R0
-        car_point->x += obj->posx;
+        car_point->x += obj->pos.X;
         // asm 0000204F: 	ADDF	R4,*+AR3(1),R0
         // asm 0000204F: ||	STF	R0,*AR3
         // asm 00002050: 	STF	R0,*+AR3(1)
-        car_point->y += obj->posy;
+        car_point->y += obj->pos.Y;
         MAME_ASSERT_REG_FLOAT(0x00002050, "R0", &car_point->y);
         // ;	NEGF	R0			;DEFAULT COLLISION DELTA = - HEIGHT
         // asm 00002051: 	LDF	0,R0			;CLEAR DEFAULT HEIGHT
@@ -539,7 +539,7 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
         car_point->collided_road_object = 0; // ;CLEAR COLLISION OBJECT
         // asm 00002055: 	ADDF	R5,*+AR3(IR0),R0
         // asm 00002056: 	STF	R0,*+AR3(2)
-        car_point->z += obj->posz;
+        car_point->z += obj->pos.Z;
         // asm 00002057: 	ADDI	3,AR2
     LOOP:;
     }
@@ -649,15 +649,15 @@ static void RDSCNSUB(OBJ* scan_obj /*AR4*/, CARBLK* carblk /*AR6*/, OBJ* list /*
     scan_radius = (float)scan_obj->radius; // ;GET BOX RADIUS
     //       	;------>BZD	RDSCNX		;NULL LIST
     // asm 00002078: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
-    scan_obj_z = scan_obj->posz; // ;GET OBJECT Z
+    scan_obj_z = scan_obj->pos.Z; // ;GET OBJECT Z
 RS0:
     // asm 00002079: 	LDF	*+AR4(OPOSX),R3		;GET OBJECT X
-    scan_obj_x = scan_obj->posx; // ;GET OBJECT X
+    scan_obj_x = scan_obj->pos.X; // ;GET OBJECT X
 RS1:
     // asm 0000207A: 	SUBF	*+AR2(OPOSX),R3,R2
-    delta_x = scan_obj_x - road_obj->posx;
+    delta_x = scan_obj_x - road_obj->pos.X;
     // asm 0000207B: 	SUBF	*+AR2(IR1),R4,R1
-    delta_z = scan_obj_z - road_obj->posz;
+    delta_z = scan_obj_z - road_obj->pos.Z;
     // asm 0000207C: 	MPYF	R1,R1
     delta_z *= delta_z;
     // asm 0000207D: 	MPYF	R2,R2
@@ -789,7 +789,7 @@ RS3L:
         // asm 000020B1: 	FLOAT	*+AR4(ORAD),R0		;GET BOX RADIUS
         scan_radius = (float)scan_obj->radius; // ;GET BOX RADIUS
         // asm 000020B2: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
-        scan_obj_z = scan_obj->posz; // ;GET OBJECT Z
+        scan_obj_z = scan_obj->pos.Z; // ;GET OBJECT Z
         // 	;---->	BNZ	RS0
         goto RS0;
     }
@@ -968,8 +968,8 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // asm 000020FB: 	LDF	*+AR6(1),R0		;GET Y HEIGHT FIRST POINT
     // asm 000020FC: 	SUBF	*+AR6(CARWHLTAB+1),R0
     // asm 000020FD: 	STF	R0,*+AR4(OPOSY)
-    obj->posy = carblk->center.y - carblk->wheel_scan_offsets[0].Y;
-    MAME_ASSERT_REG_FLOAT(0x000020FE, "R0", &obj->posy);
+    obj->pos.Y = carblk->center.y - carblk->wheel_scan_offsets[0].Y;
+    MAME_ASSERT_REG_FLOAT(0x000020FE, "R0", &obj->pos.Y);
     // asm 000020FE: 	RETS
 }
 
@@ -1036,14 +1036,14 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
     // asm 0000210F: 	LDI	R2,AR1			;create translation (TRANS = OBJPOS - COLLPOS)
     // asm 00002110: 	LDF	*+AR2(OPOSX),R0
     // asm 00002111: 	SUBF	*AR1++,R0
-    translation.X = obj->posx - point->X; // ;transvector.x
+    translation.X = obj->pos.X - point->X; // ;transvector.x
     // asm 00002113: 	LDF	*+AR2(OPOSY),R0
     // asm 00002114: 	SUBF	*AR1++,R0
-    translation.Y = obj->posy - point->Y; // ;transvector.y
+    translation.Y = obj->pos.Y - point->Y; // ;transvector.y
     // asm 00002116: 	LDF	*+AR2(OPOSZ),R0
     // asm 00002117: 	SUBF	*AR1,R0
     // asm 00002118: 	STF	R0,*+AR6(1)		;transvector.z
-    translation.Z = obj->posz - point->Z; // ;transvector.z
+    translation.Z = obj->pos.Z - point->Z; // ;transvector.z
     // asm 00002119: 	LDI	*AR4++,RC
     // asm 0000211A: 	LDI	RC,BK
     // asm 0000211B: 	AND	0FFh,RC
@@ -1574,8 +1574,8 @@ static void COLPOINT(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/) {
     // asm 00002209: 	LDF	*+AR0(OPOSZ),R3		;GET Z COORD
     // asm 0000220A: 	SUBI	OLINK3,AR1		;SETUP INDEXING
     // 	;------->BU CARSCL0
-    car_x = car_obj->posx; // ;GET X COORD
-    car_z = car_obj->posz; // ;GET Z COORD
+    car_x = car_obj->pos.X; // ;GET X COORD
+    car_z = car_obj->pos.Z; // ;GET Z COORD
     sign_obj = *list_head;
 CARSCLP0:
     // asm 0000220B: 	MPYF	R4,R4
@@ -1593,8 +1593,8 @@ CARSCLP0:
         }
         // asm 00002213: 	LDF	*+AR0(OPOSX),R2		;GET X COORD
         // asm 00002214: 	LDF	*+AR0(OPOSZ),R3		;GET Z COORD
-        car_x = car_obj->posx; // ;GET X COORD
-        car_z = car_obj->posz; // ;GET Z COORD
+        car_x = car_obj->pos.X; // ;GET X COORD
+        car_z = car_obj->pos.Z; // ;GET Z COORD
     }
 CARSCL0:
     // asm 00002215: 	FLOAT	*+AR0(ORAD),R5	 	;GET CAR RADIUS
@@ -1612,8 +1612,8 @@ CARSCL:
     // asm 0000221B: 	SUBF	*+AR1(OPOSX),R2,R0
     // asm 0000221C: 	MPYF	R0,R0
     // asm 0000221D: 	SUBF	*+AR1(IR0),R3,R4
-    dx = car_x - sign_obj->posx;
-    dz = car_z - sign_obj->posz;
+    dx = car_x - sign_obj->pos.X;
+    dz = car_z - sign_obj->pos.Z;
     // ********BNZD	CARSCLP0
     sign_obj = (OBJ*)sign_obj->link3;
     goto CARSCLP0;
@@ -1650,7 +1650,7 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
         float a = point1[1] - point0[1];
         float b = point0[-1] - point1[-1];
         float c = -((a * point0[-1]) + (b * point0[1]));
-        float eval = (a * sign_obj->posx) + (b * sign_obj->posz) + c;
+        float eval = (a * sign_obj->pos.X) + (b * sign_obj->pos.Z) + c;
 
         if (eval <= 0.0f) {
             goto COLSGCX;
@@ -1682,8 +1682,8 @@ NOTCOCONUT:
     }
 DOREPEL:
     repulsion_magnitude = REPELL(car_obj, sign_obj, &repulsion_vector);
-    car_obj->posx += repulsion_vector.X * repulsion_magnitude;
-    car_obj->posz += repulsion_vector.Z * repulsion_magnitude;
+    car_obj->pos.X += repulsion_vector.X * repulsion_magnitude;
+    car_obj->pos.Z += repulsion_vector.Z * repulsion_magnitude;
     carblk->speed *= 0.6f;
     if (carblk->speed < 37.0f) {
         carblk->speed = 37.0f;
@@ -1744,7 +1744,7 @@ ROADKILL:
     ROADKILL_FLYERP();
     goto COLSGCX;
 FLYCOLL:
-    if (fabsf(car_obj->posy - sign_obj->posy) > 250.0f) {
+    if (fabsf(car_obj->pos.Y - sign_obj->pos.Y) > 250.0f) {
         goto COLSGCX;
     }
     angle_delta = SFRAND(0.10f) + carblk->y_velocity_rotation;
@@ -2987,14 +2987,14 @@ static float REPELL(OBJ* obj0, OBJ* obj1, VECTOR* repulsion_vector) {
     // asm 00002634: 	LDF	*+AR0(OPOSX),R0
     // asm 00002635: 	SUBF	*+AR1(OPOSX),R0
     // asm 00002636: 	STF	R0,*AR2
-    repulsion_vector->X = obj0->posx - obj1->posx;
+    repulsion_vector->X = obj0->pos.X - obj1->pos.X;
     // asm 00002637: 	LDF	0,R0
     // asm 00002638: 	STF	R0,*+AR2(1)
     repulsion_vector->Y = 0.0f;
     // asm 00002639: 	LDF	*+AR0(OPOSZ),R0
     // asm 0000263A: 	SUBF	*+AR1(OPOSZ),R0
     // asm 0000263B: 	STF	R0,*+AR2(2)
-    repulsion_vector->Z = obj0->posz - obj1->posz;
+    repulsion_vector->Z = obj0->pos.Z - obj1->pos.Z;
     // asm 0000263C: 	CALL	NORMALIZE		;NORMALIZE IT
     length = sqrtf((repulsion_vector->X * repulsion_vector->X) + (repulsion_vector->Z * repulsion_vector->Z));
     if (length != 0.0f) {
@@ -4064,9 +4064,9 @@ EOCV:
         storage[(i * 3) + 1] = corners[i].Y;
         storage[(i * 3) + 2] = corners[i].Z;
         MATRIX_MUL(&corners[i], (MATRIX*)&obj->omatrix, (VECTOR*)&storage[24 + (i * 3)]);
-        storage[24 + (i * 3) + 0] += obj->posx;
-        storage[24 + (i * 3) + 1] += obj->posy;
-        storage[24 + (i * 3) + 2] += obj->posz;
+        storage[24 + (i * 3) + 0] += obj->pos.X;
+        storage[24 + (i * 3) + 1] += obj->pos.Y;
+        storage[24 + (i * 3) + 2] += obj->pos.Z;
     }
 
     return storage + 48;

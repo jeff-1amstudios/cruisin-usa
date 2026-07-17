@@ -115,15 +115,15 @@ NO_NINTENDO:
     // asm 0000A988: 	CLRF	R0
     // asm 0000A989: 	STF	R0,*+AR4(OPOSX)
     // ;       FLOAT   -480,R0
-    obj->posx = 0.0f;
+    obj->pos.X = 0.0f;
 
     // asm 0000A98A: 	FLOAT	-910,R0
     // asm 0000A98B: 	STF	R0,*+AR4(OPOSY)
-    obj->posy = -910.0f;
+    obj->pos.Y = -910.0f;
 
     // asm 0000A98C: 	FLOAT	5500,R0
     // asm 0000A98D: 	STF	R0,*+AR4(OPOSZ)
-    obj->posz = 5500.0f;
+    obj->pos.Z = 5500.0f;
 
     // asm 0000A98E: 	LDI	*+AR4(OFLAGS),R0
     // asm 0000A98F: 	OR	O_ILLUM|O_NOUNIV|O_NOUROT,R0

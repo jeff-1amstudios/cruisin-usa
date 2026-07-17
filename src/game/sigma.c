@@ -17,7 +17,7 @@
  * Source module: asm/SIGMA.ASM
  */
 
-void SIGMA_DRONE(void);
+void SIGMA_DRONE(PROC* p);
 static void BREAKDOWN(void);
 static void SIGMA_DIE(void);
 
@@ -109,7 +109,7 @@ static int SIGMA_LIST[] = {
  *
  *
  */
-void SIGMA_DRONE(void) {
+void SIGMA_DRONE(PROC* p) {
     // asm 0000A42A: 	LDI	@DD_MAX_DRONES,R0
     // asm 0000A42B: 	BNZ	GOAHEAD
     // asm 0000A42C: 	SLEEP	1

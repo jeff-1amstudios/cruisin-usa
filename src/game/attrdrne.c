@@ -339,7 +339,7 @@ void LOGO_PROC(PROC* p) {
 
     // asm 0000560B: 	FLOAT	LOGO_STARTZ,R0
     // asm 0000560C: 	STF	R0,*+AR0(OPOSZ)
-    obj->posz = (float)LOGO_STARTZ;
+    obj->pos.Z = (float)LOGO_STARTZ;
 
     // asm 0000560D: 	LDI	AR0,AR2
     // asm 0000560E: 	CALL	OBJ_INSERTP
@@ -367,7 +367,7 @@ LOGO_LOOP1:
     // asm 00005616: 	FLOAT	LOGO_ENDY,R0
     // asm 00005617: 	CMPF	*+AR4(OPOSY),R0
     // asm 00005618: 	BEQ	LOGO2
-    if (obj->posy != (float)LOGO_ENDY) {
+    if (obj->pos.Y != (float)LOGO_ENDY) {
         // asm 00005619: 	FLOAT	LOGO_ENDX,R0
         // asm 0000561A: 	SUBF	*+AR4(OPOSX),R0
         // asm 0000561B: 	MPYF	R7,R0
@@ -377,12 +377,12 @@ LOGO_LOOP1:
         // asm 0000561F: 	CMPF	R1,R0
         // asm 00005620: 	LDFLT	R1,R0
         // asm 00005621: 	STF	R0,*+AR4(OPOSX)
-        value = ((float)LOGO_ENDX - obj->posx) * p->ctx->LOGO_PROC.speed_factor;
-        value = value * nframes + obj->posx;
+        value = ((float)LOGO_ENDX - obj->pos.X) * p->ctx->LOGO_PROC.speed_factor;
+        value = value * nframes + obj->pos.X;
         if (value < (float)LOGO_ENDX) {
             value = (float)LOGO_ENDX;
         }
-        obj->posx = value;
+        obj->pos.X = value;
 
         // asm 00005622: 	FLOAT	LOGO_ENDY,R0
         // asm 00005623: 	SUBF	*+AR4(OPOSY),R0
@@ -393,12 +393,12 @@ LOGO_LOOP1:
         // asm 00005628: 	CMPF	R1,R0
         // asm 00005629: 	LDFLT	R1,R0
         // asm 0000562A: 	STF	R0,*+AR4(OPOSY)
-        value = ((float)LOGO_ENDY - obj->posy) * p->ctx->LOGO_PROC.speed_factor;
-        value = value * nframes + obj->posy;
+        value = ((float)LOGO_ENDY - obj->pos.Y) * p->ctx->LOGO_PROC.speed_factor;
+        value = value * nframes + obj->pos.Y;
         if (value < (float)LOGO_ENDY) {
             value = (float)LOGO_ENDY;
         }
-        obj->posy = value;
+        obj->pos.Y = value;
 
         // asm 0000562B: 	ADDF	0.03,R7
         p->ctx->LOGO_PROC.speed_factor += 0.03f;
@@ -416,11 +416,11 @@ LOGO2:
     // asm 00005634: 	LDFLT	R1,R0
     // asm 00005635: 	STF	R0,*+AR4(OPOSZ)
     value = DIV_F((float)(LOGO_ENDZ - LOGO_STARTZ), (float)LOGO_FLYIN_FRAMES);
-    value = value * nframes + obj->posz;
+    value = value * nframes + obj->pos.Z;
     if (value < (float)LOGO_ENDZ) {
         value = (float)LOGO_ENDZ;
     }
-    obj->posz = value;
+    obj->pos.Z = value;
 
     // asm 00005636: 	LDF	LOGO_SPINZ,R0
     // asm 00005637: 	FLOAT	LOGO_FLYIN_FRAMES,R1

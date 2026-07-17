@@ -238,7 +238,7 @@ void DELTA_SUB_FUNCTION(void);
 
 // ***	SIGMA.ASM
 // asm: 	.globl	 SIGMA_DRONE
-void SIGMA_DRONE(void);
+void SIGMA_DRONE(PROC* p);
 
 // ***	RHO.ASM
 // asm: 	.globl	 RHO_DRONE

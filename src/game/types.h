@@ -25,6 +25,8 @@ typedef unsigned int u32;
 typedef unsigned short u16;
 typedef float f32;
 
+typedef s32* tyco_stream_t;
+
 typedef void (*void_func_ptr)(void);
 
 typedef u32 word_addr_t;
@@ -244,9 +246,10 @@ typedef struct tSHADOW_TEXT {
 
 typedef struct OBJ {
     struct OBJ* link;
-    f32 posx;
-    f32 posy;
-    f32 posz;
+    // f32 posx;
+    // f32 posy;
+    // f32 posz;
+    VECTOR pos;
 
     /* 3x3 rotation matrix laid out exactly as OMAT00..OMAT22 in OBJ.EQU. */
     OBJ_MATRIX omatrix;
@@ -303,7 +306,7 @@ typedef struct OBJ {
 
 typedef struct DGROUP_ENTRY {
     u32 head;
-    const u32* bin;
+    tyco_stream_t bin;
     OBJ* fstart;
     int flag;
     int idx;
@@ -426,20 +429,12 @@ typedef struct STRDGROUP {
     u32 index;
 } STRDGROUP;
 
-typedef struct TYCOB {
+typedef struct TYCOHEADER {
     u32 flag;
-    f32 pos_x;
-    f32 pos_y;
-    f32 pos_z;
+    VECTOR pos;
     f32 rad_y;
     u32 group;
-    u32 group_overlay;
-    f32 reverse_pos_x;
-    f32 reverse_pos_y;
-    f32 reverse_pos_z;
-    f32 reverse_rad_y;
-    u32 over2;
-} TYCOB;
+} TYCOHEADER;
 
 typedef enum DYNAFLAG {
     DYNAF_SHADOW = -1,
@@ -701,13 +696,16 @@ typedef struct PROC_CONTEXT {
             int step_index;
         } CPOINT_LIGHT;
         struct {
-            OBJ* obj;               // AR4
-            CARBLK* carblk;         // AR5
-            float body_x_radians;   // R6
-            float old_car_speed;    // R7
-            float old_orady;        // PDATA
-            float body_z_radians;   // PDATA+1 / R5
-            float wheel_x_radians;  // PDATA+2
+            struct PROC* sigma_proc;
+        } SIGMA_DISPATCHER;
+        struct {
+            OBJ* obj;              // AR4
+            CARBLK* carblk;        // AR5
+            float body_x_radians;  // R6
+            float old_car_speed;   // R7
+            float old_orady;       // PDATA
+            float body_z_radians;  // PDATA+1 / R5
+            float wheel_x_radians; // PDATA+2
         } CARPROC;
         struct {
             int attrwave;
