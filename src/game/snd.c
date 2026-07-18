@@ -30,7 +30,7 @@ void RESET_SNDBRD(void);
 void SILENT(void);
 void CLRSNDDB(void);
 void GETPRI(void);
-void VOLSNDFX(void);
+void VOLSNDFX(int sound_index /*AR2*/, int volume /*R0*/);
 void KILLSNDFX(void);
 void PLYR_ENGINE(void);
 void HARDSND(void);
@@ -490,12 +490,14 @@ void GETPRI(void) {
  *	R0	VOLUME 0-255
  *
  */
-void VOLSNDFX(void) {
+void VOLSNDFX(int sound_index /*AR2*/, int volume /*R0*/) {
     // asm 000091AE:  	AND	0FFH,R0		;KEEP IN RANGE
+    volume &= 0xff;
     // asm 000091AF: 	B	SNDFX
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "VOLSNDFX", 0, 0);
-    UNIMPL();
+    (void)sound_index;
+    (void)volume;
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

@@ -24,10 +24,11 @@ void OBJ_INSERTHP(void);
 void OBJ_INSERT(OBJ* obj /*AR2*/);
 OBJ* OBJ_FIND_FIRST_PRIORITY(int oid /*AR2*/);
 OBJ* OBJ_FIND_FIRST(int oid /*AR2*/);
-void OBJ_FREE_GROUND(void);
-void OBJ_FREE_SIGN(void);
-void OBJ_FREE_DRIVE(void);
-void OBJ_FREE_PROC(void);
+void OBJ_FREE_GROUND(OBJ* obj /*AR2*/);
+void OBJ_FREE_SIGN(OBJ* obj /*AR2*/);
+void OBJ_FREE_DRIVE(OBJ* obj /*AR2*/);
+void OBJ_FREE_PROC(OBJ* obj /*AR2*/);
+static void OBJ_FREE_SUPPLEMENTAL(OBJ* obj, OBJ** list_head, int error_code);
 void OBJ_DELETE(void);
 void OBJ_DELETE_CLASS(void);
 void OBJ_PULL(OBJ* obj /*AR2*/);
@@ -677,76 +678,111 @@ OBJ* OBJ_FIND_FIRST(int oid /*AR2*/) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OBJ_FREE_GROUND(void) {
+void OBJ_FREE_GROUND(OBJ* obj /*AR2*/) {
     // asm 000070F5: 	PUSH	R1
     // asm 000070F6: 	BUD	DELSLP
     // asm 000070F7: 	PUSH	AR1
     // asm 000070F8: 	LDI	@GROUND_LISTI,R1		;we must find dead object to link around
     // asm 000070F9: 	SUBI	OLINK3,R1
     // 	;---->	BUD	DELSLP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FREE_GROUND", 0, 0);
-    UNIMPL();
+    OBJ_FREE_SUPPLEMENTAL(obj, &GROUND_LISTI, EC_OBJ | 1);
 }
 
-void OBJ_FREE_SIGN(void) {
+void OBJ_FREE_SIGN(OBJ* obj /*AR2*/) {
     // asm 000070FA: 	PUSH	R1
     // asm 000070FB: 	PUSH	AR1
     // asm 000070FC: 	LDI	@SIGN_LISTI,R1		;we must find dead object to link around
     // asm 000070FD: 	SUBI	OLINK3,R1
+    OBJ_FREE_SUPPLEMENTAL(obj, &SIGN_LISTI, EC_OBJ | 1);
+}
+
+static void OBJ_FREE_SUPPLEMENTAL(OBJ* obj, OBJ** list_head, int error_code) {
+    OBJ* current = *list_head;
+    OBJ* previous = NULL;
+
 DELSLP:
     // asm 000070FE: LDI	R1,AR1
     // asm 000070FF: 	LDI	*+AR1(OLINK3),R1
     // asm 00007100: 	ERRON	Z,EC_OBJ|1		;lockup on end of list found
+    if (current == NULL) {
+        ERRON(error_code);
+        goto NOT_ON_SUPPXLIST;
+    }
     // asm 00007108: 	BZ	NOT_ON_SUPPXLIST
     // asm 00007109: 	CMPI	R1,AR2
     // asm 0000710A: 	BNE	DELSLP
+    if (current != obj) {
+        previous = current;
+        current = (OBJ*)current->link3;
+        goto DELSLP;
+    }
     // asm 0000710B: 	LDI	*+AR2(OLINK3),R1
     // asm 0000710C: 	STI	R1,*+AR1(OLINK3)	;LINK AROUND
+    if (previous == NULL) {
+        *list_head = (OBJ*)obj->link3;
+    } else {
+        previous->link3 = obj->link3;
+    }
 NOT_ON_SUPPXLIST:
     // asm 0000710D: 	POP	AR1
     // asm 0000710E: 	POP	R1
     // asm 0000710F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FREE_SIGN", 0, 0);
-    UNIMPL();
+    ;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OBJ_FREE_DRIVE(void) {
+void OBJ_FREE_DRIVE(OBJ* obj /*AR2*/) {
+    OBJ* current;
+    OBJ* previous;
+
     // asm 00007110: 	PUSH	R1
     // asm 00007111: 	PUSH	AR1
     // asm 00007112: 	LDI	@DRIVE_LISTI,R1		;we must find dead object to link around
+    current = DRIVE_LISTI;
+    previous = NULL;
     // asm 00007113: 	SUBI	OLINK3,R1
 DELRLP:
     // asm 00007114: LDI	R1,AR1
     // asm 00007115: 	LDI	*+AR1(OLINK3),R1
     // asm 00007116: 	ERRON	Z,EC_OBJ|2		;lockup on end of list found
+    if (current == NULL) {
+        ERRON(EC_OBJ | 2);
+        goto NOT_ON_SUPPROADLIST;
+    }
     // asm 0000711E: 	BZ	NOT_ON_SUPPROADLIST
     // asm 0000711F: 	CMPI	R1,AR2
     // asm 00007120: 	BNE	DELRLP
+    if (current != obj) {
+        previous = current;
+        current = (OBJ*)current->link3;
+        goto DELRLP;
+    }
     // asm 00007121: 	LDI	*+AR2(OLINK3),R1
     // asm 00007122: 	STI	R1,*+AR1(OLINK3)	;LINK AROUND
+    if (previous == NULL) {
+        DRIVE_LISTI = (OBJ*)obj->link3;
+    } else {
+        previous->link3 = obj->link3;
+    }
 NOT_ON_SUPPROADLIST:
     // asm 00007123: 	POP	AR1
     // asm 00007124: 	POP	R1
     // asm 00007125: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FREE_DRIVE", 0, 0);
-    UNIMPL();
+    ;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void OBJ_FREE_PROC(void) {
+void OBJ_FREE_PROC(OBJ* obj /*AR2*/) {
     // asm 00007126: 	PUSH	AR2
     // asm 00007127: 	LDI	*+AR2(OPLINK),AR2
     // asm 00007128: 	CALL	PRC_KILL
+    PRC_KILL(obj->plink);
     // asm 00007129: 	POP	AR2
     // asm 0000712A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_FREE_PROC", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

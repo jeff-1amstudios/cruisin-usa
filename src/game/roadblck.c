@@ -19,7 +19,7 @@
 
 void INIT_RDDEBRIS(void);
 void ADD_RDDEBRIS(void);
-void FREE_RDDEBRIS(void);
+void FREE_RDDEBRIS(OBJ* obj /*AR2*/);
 void DEBRIS_SORT(void);
 
 #define ROAD_DEBRISI ROAD_DEBRIS
@@ -109,10 +109,15 @@ void ADD_RDDEBRIS(void) {
  *	AR2	OBJECT
  *
  */
-void FREE_RDDEBRIS(void) {
+void FREE_RDDEBRIS(OBJ* obj /*AR2*/) {
+    OBJ* current;
+    OBJ* previous;
+
     // asm 0000AF96: 	PUSH	R0
     // asm 0000AF97: 	PUSH	AR1
     // asm 0000AF98: 	LDPI	@ROAD_DEBRISI,R0
+    current = ROAD_DEBRISI;
+    previous = NULL;
     // asm 0000AF99: 	SUBI	OLINK3,R0		;(we are offset pointing)
 FREELP:
     // asm 0000AF9A: LDI	R0,AR1
@@ -121,16 +126,28 @@ FREELP:
     // asm: 	BZ	$			;lockup on end of list found
 #endif
     // asm 0000AF9C: 	BZ	FREEDR_X
+    if (current == NULL) {
+        goto FREEDR_X;
+    }
     // asm 0000AF9D: 	CMPI	R0,AR2
     // asm 0000AF9E: 	BNE	FREELP
+    if (current != obj) {
+        previous = current;
+        current = (OBJ*)current->link3;
+        goto FREELP;
+    }
     // asm 0000AF9F: 	LDI	*+AR2(OLINK3),R0
     // asm 0000AFA0: 	STI	R0,*+AR1(OLINK3)	;LINK AROUND
+    if (previous == NULL) {
+        ROAD_DEBRISI = (OBJ*)obj->link3;
+    } else {
+        previous->link3 = obj->link3;
+    }
 FREEDR_X:
     // asm 0000AFA1: 	POP	AR1
     // asm 0000AFA2: 	POP	R0
     // asm 0000AFA3: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FREE_RDDEBRIS", 0, 0);
-    UNIMPL();
+    ;
 }
 
 // *----------------------------------------------------------------------------

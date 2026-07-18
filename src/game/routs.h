@@ -6,7 +6,7 @@
 /* Generated from asm/ROUTS.ASM. */
 
 // ROUTS.ASM
-void SQRT(void);
+float SQRT(float x /*R2*/);
 float DIV_F30(float u, float v);
 void DIV_I30(void);
 void DIV_U30(void);

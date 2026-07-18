@@ -221,16 +221,16 @@ void ISCAN(void);
 void ZSORTPRIOR(void);
 
 // asm: 	.globl	OBJ_FREE_PROC
-void OBJ_FREE_PROC(void);
+void OBJ_FREE_PROC(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_FREE_DRIVE
-void OBJ_FREE_DRIVE(void);
+void OBJ_FREE_DRIVE(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_FREE_GROUND
-void OBJ_FREE_GROUND(void);
+void OBJ_FREE_GROUND(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_FREE_SIGN
-void OBJ_FREE_SIGN(void);
+void OBJ_FREE_SIGN(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_INIT
 void OBJ_INIT(void);

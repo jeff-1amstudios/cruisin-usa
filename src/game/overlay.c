@@ -19,7 +19,7 @@
  * Source module: asm/OVERLAY.ASM
  */
 
-void SECTION_ROUTINE(void);
+void SECTION_ROUTINE(int routine_index /*AR0*/);
 static void OVERLOCK(void);
 void CHECKPOINT_HIT_R(void);
 void CHECKPOINT_HIT(void);
@@ -70,15 +70,21 @@ static uintptr_t ROUTINE_TABLE[];
  *CLOBBERS	AR0
  *
  */
-void SECTION_ROUTINE(void) {
+void SECTION_ROUTINE(int routine_index /*AR0*/) {
+    void (*routine)(void);
+
     // asm 0000ACFA: 	CMPI	0,AR0
     // asm 0000ACFB: 	RETSEQ
+    MAME_ASSERT_ARG("AR0", &routine_index);
+    if (routine_index == 0) {
+        return;
+    }
     // asm 0000ACFC: 	ADDI	@ROUTINE_TABLEI,AR0
     // asm 0000ACFD: 	LDI	*AR0,AR0
+    routine = (void (*)(void))ROUTINE_TABLEI[routine_index];
     // asm 0000ACFE: 	CALLU	AR0
+    routine();
     // asm 0000ACFF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SECTION_ROUTINE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

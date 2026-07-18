@@ -259,7 +259,7 @@ void AHEAD_OF_PLAYER_P(void);
 void SET_DRONE_PAL(void);
 
 // asm: 	.globl	 TRAFFIC,GET_LANES,DIST_TO_PLYR
-void GET_LANES(void);
+int GET_LANES(OBJ* obj /*AR2*/);
 
 void DIST_TO_PLYR(void);
 

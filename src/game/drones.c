@@ -26,7 +26,7 @@ void DRONE_PTR_ADD(void);
 void DRONE_CLR(void);
 static void CK_LINK_DISP(void);
 void SET_DRONE_PAL(void);
-void GET_LANES(void);
+int GET_LANES(OBJ* obj /*AR2*/);
 void DIST_TO_PLYR(void);
 void INIT_TRACKING_PIECE(void);
 void GET_TRACK_POS_RVS_XLANE(void);
@@ -233,10 +233,16 @@ FPPLP:
     }
 NNEG:
     // asm 000065DE: 	LDI	*+AR0(OID),R0
+    MAME_ASSERT_REG(0x000065DF, "R0", &obj->id);
     // asm 000065DF: 	CMPI	DRONE_C|VEHICLE_T|DRNE_RACER,R0
     // asm 000065E0: 	BNE	NXTLP
     if (obj->id != (DRONE_C | VEHICLE_T | DRNE_RACER)) {
         goto NXTLP;
+    }
+    // The startup call has no player car block. Preserve its screen count without deriving
+    // rank from the placeholder track ID used by the null-pointer bugfix above.
+    if (player_carblk == NULL) {
+        goto NXTLP1;
     }
     // asm 000065E1: 	LDI	*+AR0(OCARBLK),AR3
     carblk = obj->carblk;
@@ -249,6 +255,7 @@ NNEG:
     // asm 000065E5: 	CMPI	R1,R0
     // asm 000065E6: 	BNE	NXTLP1
     if ((int)carblk->track_id != player_track_id) {
+        rank_increment = (int)carblk->track_id > player_track_id;
         goto NXTLP1;
     }
     // ;	BEQ	FURTHER
@@ -290,6 +297,9 @@ FPP1:
     // asm 000065F5: 	LDI	*+AR2(STEALTHMODE),R0  	;0=ONSCRN,-1=BEHIND ST, 1=AHEAD STEALTH
     // asm 000065F6: 	BNE	NXTLP1
     if (proc == NULL || proc->ctx->RACER_DRONE.stealthmode != 0) {
+        if (proc != NULL) {
+            rank_increment = proc->ctx->RACER_DRONE.stealthmode > 0;
+        }
         goto NXTLP1;
     }
     // asm 000065F7: 	LDI	*+AR0(OCARBLK),AR3
@@ -299,6 +309,9 @@ FPP1:
     // asm 000065FA: 	CMPI	R1,R0
     // asm 000065FB: 	BNE	NXTLP1
     if (track_obj == NULL || (int)track_obj->usr1 != player_track_id) {
+        if (track_obj != NULL) {
+            rank_increment = (int)track_obj->usr1 > player_track_id;
+        }
         goto NXTLP1;
     }
     // *
@@ -347,6 +360,7 @@ FPP2:
     }
 NXTLP1:
     // asm 00006610: 	LDIGT	1,R5
+    MAME_ASSERT_REG(0x00006611, "R5", &rank_increment);
     // asm 00006611: 	ADDI	R5,R7
     position += rank_increment;
 NXTLP:
@@ -737,32 +751,50 @@ NO_EPALS:
  *		1 - 4 lanes
  *
  */
-void GET_LANES(void) {
+int GET_LANES(OBJ* obj /*AR2*/) {
+    int section_index;
+    int lane_mode;
+    int i;
+
     // asm 000066D2: 	PUSH	AR0
     // asm 000066D3: 	PUSH	AR1
     // asm 000066D4: 	LDI	*+AR2(OUSR1),R0
+    section_index = (int)obj->usr1;
     // asm 000066D5: 	RS	8,R0
+    section_index >>= 8;
+    MAME_ASSERT_REG(0x000066D6, "R0", &section_index);
     // asm 000066D6: 	LDI	@DGROUP_COUNT,AR0
     // asm 000066D7: 	INC	AR0
     // asm 000066D8: 	LDI	@DGROUPSI,AR1
 GL_LP:
     // asm 000066D9: CMPI	*+AR1(DGRP_IDX),R0
+    for (i = 0; i <= DGROUP_COUNT + 1; i++) {
+        if (section_index == DGROUPSI[i].idx) {
+            goto GL_FND;
+        }
     // asm 000066DA: 	BEQ	GL_FND
     // asm 000066DB: 	ADDI	DGRP_SIZE,AR1
     // asm 000066DC: 	DBU	AR0,GL_LP
+    }
     // asm 000066DD: 	CLRI	R0
+    lane_mode = 0;
+    MAME_ASSERT_REG(0x000066DE, "R0", &lane_mode);
     // asm 000066DE: 	POP	AR1
     // asm 000066DF: 	POP	AR0
     // asm 000066E0: 	RETS
+    return lane_mode;
 GL_FND:
     // asm 000066E1: 	LDI	*+AR1(DGRP_FLAG),R0
+    lane_mode = DGROUPSI[i].flag;
     // asm 000066E2: 	RS	7,R0
+    lane_mode >>= 7;
     // asm 000066E3: 	AND	1,R0
+    lane_mode &= 1;
+    MAME_ASSERT_REG(0x000066E4, "R0", &lane_mode);
     // asm 000066E4: 	POP	AR1
     // asm 000066E5: 	POP	AR0
     // asm 000066E6: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_LANES", 0, 0);
-    UNIMPL();
+    return lane_mode;
 }
 
 // *----------------------------------------------------------------------------

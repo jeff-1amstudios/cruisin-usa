@@ -1,6 +1,7 @@
 #include "backgrnd.h"
 
 #include <math.h>
+#include <string.h>
 
 #include "../core/machine.h"
 #include "../core/romreader.h"
@@ -29,7 +30,7 @@ static void ADD_TO_NEWLIST(OBJ* obj /*AR4*/);
 static void FIND_SUBLIST_START_END(void);
 static void APPEND_NEWLIST(void);
 static void SHINY_NEWLIST(void);
-static void GROUP_DELETE(void);
+static void GROUP_DELETE(u32 group_id /*AR2*/);
 float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/);
 static void BGD_OROUTINE(OBJ* obj /*AR4*/);
 static void OVERCAR(OBJ* obj /*AR4*/);
@@ -437,12 +438,34 @@ NOO2d:
 // *----------------------------------------------------------------------------
 
 static void BGD_WATCHER(PROC* p) {
+    TYCOHEADER section_header;
+    DGROUP_ENTRY* dgroup;
+    tyco_stream_t tyco_ptr;
+    const s32* group_ptr;
+    OBJ* closest_track_piece;
+    u32 dgroup_head;
+    u32 flag;
+    int mode;
+    int routine_index;
+    float distance;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00003FF4: 	LDI	@_MODE,R0
     // asm 00003FF5: 	AND	MMODE,R0
+    mode = _MODE & MMODE;
     // asm 00003FF6: 	CMPI	MGAME,R0
     // asm 00003FF7: 	BEQ	LLKK
     // asm 00003FF8: 	CMPI	MATTR,R0
     // asm 00003FF9: 	BNE	BGD_SLP
+    if (mode != MGAME && mode != MATTR) {
+        goto BGD_SLP;
+    }
 LLKK:
     // 	;--------------------------------------------------------------------
     // 	;CHECK #1:	HAVE WE CROSSED A THRESHOLD?
@@ -460,38 +483,65 @@ LLKK:
     // asm 00003FFB: 	AND	MMODE,R0
     // asm 00003FFC: 	CMPI	MGAME,R0
     // asm 00003FFD: 	BNE	NO_ACTIVATION
+    if ((_MODE & MMODE) != MGAME) {
+        goto NO_ACTIVATION;
+    }
     // asm 00003FFE: 	LDI	@PLYCBLK,AR0
     // asm 00003FFF: 	LDI	*+AR0(CARTRAK),AR0
+    closest_track_piece = OBJREF_TO_PTR(PLYCBLK->closest_track_piece);
     // asm 00004000: 	LDI	*+AR0(OUSR1),R0
     // asm 00004001: 	LDI	@TYCO_NTL_IDX,R1
     // asm 00004002: 	LS	8,R1
     // asm 00004003: 	CMPI	R1,R0
     // asm 00004004: 	BLT	NO_ACTIVATION
+    if ((u32)closest_track_piece->usr1 < ((u32)TYCO_NTL_IDX << 8)) {
+        goto NO_ACTIVATION;
+    }
     // 	;blah.asm
     // asm 00004005: 	LDI	@TYCO_TRACK_NTL,AR2
+    tyco_ptr = TYCO_TRACK_NTL;
     // asm 00004006: 	LDI	*AR2,AR0
     // asm 00004007: 	RS	16,AR0
     // asm 00004008: 	AND	0FFh,AR0
     // asm 00004009: 	LDI	AR0,R0
+    flag = (u32)*tyco_ptr;
+    routine_index = (int)((flag >> 16) & 0xFFu);
     // asm 0000400A: 	CALLNZ	SECTION_ROUTINE
+    if (routine_index != 0) {
+        SECTION_ROUTINE(routine_index);
+    }
     // asm 0000400B: 	LDI	@TYCO_NTL_IDX,R0
     // asm 0000400C:  	INC	R0
     // asm 0000400D: 	STI	R0,@TYCO_NTL_IDX
+    TYCO_NTL_IDX += 1;
     // asm 0000400E: 	LDI	@TYCO_TRACK_NTL,AR1
     // asm 0000400F: 	LDI	*AR1++(6),R1
+    tyco_ptr = TYCO_TRACK_NTL;
+    flag = (u32)*tyco_ptr;
+    tyco_ptr += 6;
     // asm 00004010: 	TSTB	1,R1
     // asm 00004011: 	BZ	NOOVERA
     // asm 00004012: 	ADDI	1,AR1
+    if ((flag & SC_OVERLAY) != 0) {
+        tyco_ptr += 1;
+    }
 NOOVERA:
     // asm 00004013: TSTB	SC_REVERSE,R1
     // asm 00004014: 	BZ	CNTFF
     // asm 00004015: 	NOP	*AR1++(4)
+    if ((flag & SC_REVERSE) != 0) {
+        tyco_ptr += 4;
+    }
 CNTFF:
     // asm 00004016: TSTB	SC_OVER2,R1
     // asm 00004017: 	BZ	NOO2FF
     // asm 00004018: 	ADDI	1,AR1
+    if ((flag & SC_OVER2) != 0) {
+        tyco_ptr += 1;
+    }
 NOO2FF:
     // asm 00004019: STI	AR1,@TYCO_TRACK_NTL
+    TYCO_TRACK_NTL = tyco_ptr;
     // 	;in the end we probably want this check to insure we dont
     // 	;continue trying to allocated beyond the end of the defined game
     // 	;although this can also be done by a routine...
@@ -512,41 +562,70 @@ NO_ACTIVATION:
     // 	;
     // 	;
     // asm 0000401A: 	LDI	@DGROUP_AW,AR0
+    tyco_ptr = DGROUP_AW;
     // asm 0000401B: 	LDI	AR0,AR2
     // asm 0000401C: 	ADDI	1,AR2
+    ROM_ReadTYCOHEADER(tyco_ptr, &section_header);
     // asm 0000401D: 	LDI	@CAMERAPOSI,R2
     // asm 0000401E: 	CALL	GET_XZ_DISTANCE
+    distance = GET_XZ_DISTANCE(&section_header.pos, &CAMERAPOSI);
+    MAME_ASSERT_REG_FLOAT(0x0000401F, "R0", &distance);
     // asm 0000401F: 	CMPF	@DACT_DIST,R0
     // asm 00004020: 	BGT	NOACT
+    if (distance > DACT_DIST) {
+        goto NOACT;
+    }
     // asm 00004021: 	LDI	AR0,AR2
     // asm 00004022: 	CALL	BGD_ACTIVATE_TYCOGROUP	;returns top pointer in R0
+    dgroup_head = BGD_ACTIVATE_TYCOGROUP(tyco_ptr); // ;returns top pointer in R0
+    MAME_ASSERT_REG(0x00004023, "R0", &dgroup_head);
     // asm 00004023: 	LDI	@DGROUP_COUNT,AR1
     // asm 00004024: 	MPYI	DGRP_SIZE,AR1
     // asm 00004025: 	ADDI	@DGROUPSI,AR1
+    dgroup = &DGROUPSI[DGROUP_COUNT];
     // asm 00004026: 	STI	R0,*+AR1(DGRP_HEAD)	;lead object (link by OLINK3)
+    dgroup->head = dgroup_head; // ;lead object (link by OLINK3)
     // asm 00004027: 	STI	AR0,*+AR1(DGRP_BIN)	;rom struct ptr
+    dgroup->bin = tyco_ptr; // ;rom struct ptr
     // asm 00004028: 	LDI	@SECTIONIDX,R0
     // asm 00004029: 	STI	R0,*+AR1(DGRP_IDX)	;SAVE THE INDEX #
+    dgroup->idx = SECTIONIDX; // ;SAVE THE INDEX #
     // asm 0000402A: 	LDI	@TYCOFLAG,R0
     // asm 0000402B: 	STI	R0,*+AR1(DGRP_FLAG)	;SAVE THE TYCOFLAG
+    dgroup->flag = TYCOFLAG; // ;SAVE THE TYCOFLAG
     // asm 0000402C: 	LDI	@STARTS,R0
     // asm 0000402D: 	STI	R0,*+AR1(DGRP_FSTART)
+    dgroup->fstart = STARTS;
     // asm 0000402E: 	INCM	@DGROUP_COUNT
+    DGROUP_COUNT += 1;
     // asm 00004031: 	LDI	*AR0++(6),R1
+    flag = (u32)*tyco_ptr;
+    tyco_ptr += 6;
     // asm 00004032: 	TSTB	1,R1
     // asm 00004033: 	BZ	NOOVERB
     // asm 00004034: 	ADDI	1,AR0
+    if ((flag & SC_OVERLAY) != 0) {
+        tyco_ptr += 1;
+    }
 NOOVERB:
     // asm 00004035: TSTB	SC_REVERSE,R1
     // asm 00004036: 	BZ	CNT55
     // asm 00004037: 	NOP	*AR0++(4)
+    if ((flag & SC_REVERSE) != 0) {
+        tyco_ptr += 4;
+    }
 CNT55:
     // asm 00004038: TSTB	SC_OVER2,R1
     // asm 00004039: 	BZ	NOO2
     // asm 0000403A: 	ADDI	1,AR0
+    if ((flag & SC_OVER2) != 0) {
+        tyco_ptr += 1;
+    }
 NOO2:
     // asm 0000403B: STPI	AR0,@DGROUP_AW
+    DGROUP_AW = tyco_ptr;
     // asm 0000403C: NOACT	;end of activation routine
+NOACT:
     // 	;--------------------------------------------------------------------
     // 	;CHECK #3:	SHOULD THE OLDEST SECTION BE DEACTIVATED?
     // 	;
@@ -558,30 +637,52 @@ NOO2:
     // 	;
     // 	;
     // asm 0000403C: 	LDI	@(DGROUPS+DGRP_BIN),AR2
+    tyco_ptr = DGROUPS[0].bin;
     // asm 0000403D: 	INC	AR2
+    ROM_ReadTYCOHEADER(tyco_ptr, &section_header);
     // asm 0000403E: 	LDI	@CAMERAPOSI,R2
     // asm 0000403F: 	CALL	GET_XZ_DISTANCE
+    distance = GET_XZ_DISTANCE(&section_header.pos, &CAMERAPOSI);
+    MAME_ASSERT_REG_FLOAT(0x00004040, "R0", &distance);
     // asm 00004040: 	LDI	@(DGROUPS+DGRP_BIN),AR0
     // asm 00004041: 	LDI	*+AR0(TB_GROUP),AR0
+    group_ptr = ROM_PTR(tyco_ptr[TB_GROUP]);
     // asm 00004042: 	SUBF	*AR0,R0
+    distance -= ROM_ParseFloat(*group_ptr);
+    MAME_ASSERT_REG_FLOAT(0x00004043, "R0", &distance);
     // asm 00004043: 	LDI	@_MODE,R1
     // asm 00004044: 	AND	MMODE,R1
     // asm 00004045: 	CMPI	MATTR,R1
     // asm 00004046: 	BNE	GAMECHK
+    mode = _MODE & MMODE;
+    if (mode != MATTR) {
+        goto GAMECHK;
+    }
     // asm 00004047: 	CMPF	@ATTR_DDACT_DIST,R0
     // asm 00004048: 	BLT	NODEACT
+    if (distance < ATTR_DDACT_DIST) {
+        goto NODEACT;
+    }
     // asm 00004049: 	BU	DO_DEL
+    goto DO_DEL;
 GAMECHK:
     // asm 0000404A: CMPF	@DDACT_DIST,R0
     // asm 0000404B: 	BLT	NODEACT
+    if (distance < DDACT_DIST) {
+        goto NODEACT;
+    }
 DO_DEL:
     // asm 0000404C: 	LDI	@(DGROUPS+DGRP_HEAD),AR2
     // asm 0000404D: 	CALL	GROUP_DELETE
+    GROUP_DELETE(DGROUPS[0].head);
     // asm 0000404E: 	LDI	@(DGROUPS+DGRP_SIZE+DGRP_FSTART),AR2
     // asm 0000404F: 	STI	AR2,@DYNALIST_BEGIN
+    DYNALIST_BEGIN = DGROUPS[1].fstart;
     // asm 00004050: 	STI	AR2,@DYNALIST_TRUEBEGIN
+    DYNALIST_TRUEBEGIN = DYNALIST_BEGIN;
     // asm 00004051: 	CLRI	R0
     // asm 00004052: 	STI	R0,*+AR2(OBLINK4)	;NULL TERMINATE BACK LINK ON LIST
+    DYNALIST_BEGIN->blink4 = 0; // ;NULL TERMINATE BACK LINK ON LIST
     // 	;REPACK DGROUP SECTIONS
     // 	;
     // 	;for i = 1 to dgroup_count
@@ -592,6 +693,7 @@ DO_DEL:
 #if DEBUG
     // asm: 	CMPI	0,RC
     // asm: 	SLOCKON	LT,"BACKGRND\LBACK_WATCH ERROR"
+    SLOCKON(DGROUP_COUNT - 2 < 0, "BACKGRND\\BACK_WATCH ERROR");
 #endif
     // asm 00004055: 	BLT	SHIFT1
     // asm 00004056: 	LDI	@DGROUPSI,AR0
@@ -610,7 +712,9 @@ SHIFT1:
     // asm 00004062: 	LDI	*AR1++,R0
 LL45:
     // asm 00004063: STI	R0,*AR0++
+    memmove(DGROUPSI, DGROUPSI + 1, (size_t)(DGROUP_COUNT - 1) * sizeof(DGROUPSI[0]));
     // asm 00004064: 	DECM	@DGROUP_COUNT
+    DGROUP_COUNT -= 1;
 NODEACT:
 #if DEBUG
     // 	;DEBUGGING CHECK TO VERIFY THAT WE NEVER EXCEED
@@ -618,14 +722,16 @@ NODEACT:
     // 	;
     // asm: 	LDI	@DGROUP_COUNT,R0
     // asm: 	SLOCKON	LE,"BACKGRND\LBACK_WATCH ERRONEOUS DGROUP_COUNT LE"
+    SLOCKON(DGROUP_COUNT <= 0, "BACKGRND\\BACK_WATCH ERRONEOUS DGROUP_COUNT LE");
     // asm: 	CMPI	MAX_DGROUPS,R0
     // asm: 	SLOCKON	GE,"BACKGRND\LBACK_WATCH ERRONEOUS DGROUP_COUNT GE"
+    SLOCKON(DGROUP_COUNT >= MAX_DGROUPS, "BACKGRND\\BACK_WATCH ERRONEOUS DGROUP_COUNT GE");
 #endif
+BGD_SLP:
     // asm 00004067: 	SLEEP	3
+    SLEEP(3, 1);
     // asm 00004069: 	B	BGD_WATCHER
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BGD_WATCHER", 0, 0);
-    UNIMPL();
+    REENTER(BGD_WATCHER);
 }
 
 // *----------------------------------------------------------------------------
@@ -1404,29 +1510,52 @@ static void SHINY_NEWLIST(void) {
  *
  *
  */
-static void GROUP_DELETE(void) {
+static void GROUP_DELETE(u32 group_id /*AR2*/) {
+    OBJ** list_link;
+    OBJ* obj;
+    int list_index;
+
     // asm 000041E2: 	PUSH	R0
     // asm 000041E3: 	PUSH	R1
     // asm 000041E4: 	PUSH	AR0
     // asm 000041E5: 	PUSH	AR1
+    MAME_ASSERT_ARG("AR2", &group_id);
     // asm 000041E6: 	LDI	@OACTIVEI,R1
     // asm 000041E7: 	CALL	DELLP
+    list_link = &OACTIVEI;
+    list_index = 0;
+    goto DELLP;
+AFTER_ACTIVE_DELETE:
     // asm 000041E8: 	LDI	@IDLE_LISTI,R1
     // asm 000041E9: 	CALL	DELLP
+    list_link = &IDLE_LISTI;
+    list_index = 1;
+    goto DELLP;
+AFTER_IDLE_DELETE:
     // asm 000041EA: 	POP	AR1
     // asm 000041EB: 	POP	AR0
     // asm 000041EC: 	POP	R1
     // asm 000041ED: 	POP	R0
     // asm 000041EE: 	RETS
+    goto GROUP_DELETE_RETURN;
 DELLP:
     // asm 000041EF: LDI	R1,AR1			;WE MUST FIND DEAD OBJECT TO LINK AROUND
     // asm 000041F0: 	LDI	*AR1,R1
+    obj = *list_link;
     // asm 000041F1: 	BZ	NXTCHK
+    if (obj == NULL) {
+        goto NXTCHK;
+    }
     // asm 000041F2: 	LDI	R1,AR0
     // asm 000041F3: 	CMPI	*+AR0(OLINK2),AR2
     // asm 000041F4: 	BNE	DELLP
+    if (obj->link2 != group_id) {
+        list_link = &obj->link;
+        goto DELLP;
+    }
     // asm 000041F5: 	LDI	*AR0,R0			;find link from delete-e
     // asm 000041F6: 	STI	R0,*AR1			;LINK AROUND
+    *list_link = obj->link;
     // asm 000041F7: 	PUSH	AR2
     // asm 000041F8: 	LDI	AR0,AR2
     // 	;Mirror these checks in OBJ.ASM
@@ -1435,34 +1564,58 @@ DELLP:
     // asm 000041F9: 	LDI	*+AR2(OFLAGS),R0	;KILL PROC ASSOCIATED WITH OBJ
     // asm 000041FA: 	RS	(O_DEBRIS_B+1),R0
     // asm 000041FB: 	CALLC	FREE_RDDEBRIS
+    if ((obj->flags & O_DEBRIS) != 0) {
+        FREE_RDDEBRIS(obj);
+    }
     // asm 000041FC: 	LDI	*+AR2(OFLAGS),R0	;KILL PROC ASSOCIATED WITH OBJ
     // asm 000041FD: 	RS	(O_PROC_B+1),R0
     // asm 000041FE: 	CALLC	OBJ_FREE_PROC
+    if ((obj->flags & O_PROC) != 0) {
+        OBJ_FREE_PROC(obj);
+    }
     // asm 000041FF: 	LDI	*+AR2(OFLAGS),R0	;DELINK IN CASE OF DRIVE LIST
     // asm 00004200: 	RS	(O_DRIVE_SUPP_B+1),R0
     // asm 00004201: 	CALLC	OBJ_FREE_DRIVE
+    if ((obj->flags & O_DRIVE_SUPP) != 0) {
+        OBJ_FREE_DRIVE(obj);
+    }
     // asm 00004202: 	LDI	*+AR2(OFLAGS),R0	;DELINK IN CASE OF GROUND LIST
     // asm 00004203: 	RS	(O_GROUND_B+1),R0
     // asm 00004204: 	CALLC	OBJ_FREE_GROUND
+    if ((obj->flags & O_GROUND) != 0) {
+        OBJ_FREE_GROUND(obj);
+    }
     // asm 00004205: 	LDI	*+AR2(OFLAGS),R0	;DELINK IN CASE OF SIGN LIST
     // asm 00004206: 	RS	(O_SIGN_SUPP_B+1),R0
     // asm 00004207: 	CALLC	OBJ_FREE_SIGN
+    if ((obj->flags & O_SIGN_SUPP) != 0) {
+        OBJ_FREE_SIGN(obj);
+    }
     // asm 00004208: 	POP	AR2
     // asm 00004209: 	CLRI	R0
     // asm 0000420A: 	STI	R0,*+AR0(OLINK2)	;CLEAR SEARCH ID
+    obj->link2 = 0;
     // asm 0000420B: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags = 0;
     // asm 0000420C: 	LDI	@OFREE,R0
     // asm 0000420D: 	STI	R0,*AR0			;place delete-e on free
+    obj->link = OFREE;
     // asm 0000420E: 	STI	AR0,@OFREE
+    OFREE = obj;
     // asm 0000420F: 	LDI	@OFREECNT,R0		;INCREMENT FREE OBJECT COUNT
     // asm 00004210: 	ADDI	1,R0
     // asm 00004211: 	STI	R0,@OFREECNT
+    OFREECNT += 1;
     // asm 00004212: 	LDI	AR1,R1
     // asm 00004213: 	BU	DELLP
+    goto DELLP;
 NXTCHK:
     // asm 00004214: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GROUP_DELETE", 0, 0);
-    UNIMPL();
+    if (list_index == 0) {
+        goto AFTER_ACTIVE_DELETE;
+    }
+    goto AFTER_IDLE_DELETE;
+GROUP_DELETE_RETURN:;
 }
 
 // *----------------------------------------------------------------------------
@@ -1480,32 +1633,34 @@ NXTCHK:
  *
  */
 float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
-    float delta_z;
     float delta_x;
+    float delta_z;
 
     // asm 00004215: 	PUSH	AR0
     // asm 00004216: 	PUSH	R3
     // asm 00004217: 	LDI	R2,AR0
     // asm 00004218: 	LDF	*AR0++(2),R3
-    delta_z = v2->Z;
-    // asm 00004219: 	SUBF	*AR2++(2),R3
-    delta_z -= v1->Z;
-    // asm 0000421A: 	LDF	*AR0++,R2
     delta_x = v2->X;
-    // asm 0000421B: 	SUBF	*AR2++,R2
+    // asm 00004219: 	SUBF	*AR2++(2),R3
     delta_x -= v1->X;
+    MAME_ASSERT_REG_FLOAT(0x0000421A, "R3", &delta_x);
+    // asm 0000421A: 	LDF	*AR0++,R2
+    delta_z = v2->Z;
+    // asm 0000421B: 	SUBF	*AR2++,R2
+    delta_z -= v1->Z;
+    MAME_ASSERT_REG_FLOAT(0x0000421C, "R2", &delta_z);
     // asm 0000421C: 	MPYF	R3,R3
-    delta_z *= delta_z;
-    // asm 0000421D: 	MPYF	R2,R2
     delta_x *= delta_x;
+    // asm 0000421D: 	MPYF	R2,R2
+    delta_z *= delta_z;
     // asm 0000421E: 	ADDF	R3,R2
-    delta_x += delta_z;
+    delta_z += delta_x;
     // asm 0000421F: 	CALL	SQRT
-    MAME_ASSERT_REG_FLOAT(0x0000421F, "R0", &delta_x);
+    MAME_ASSERT_REG_FLOAT(0x0000421F, "R2", &delta_z);
     // asm 00004220: 	POP	R3
     // asm 00004221: 	POP	AR0
     // asm 00004222: 	RETS
-    return sqrtf(delta_x);
+    return SQRT(delta_z);
 }
 
 // *----------------------------------------------------------------------------

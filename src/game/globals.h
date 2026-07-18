@@ -1410,7 +1410,7 @@ void RESET_GALIL(void);
 void CHECKPOINT_HIT_R(void);
 
 // asm:  .globl SECTION_ROUTINE
-void SECTION_ROUTINE(void);
+void SECTION_ROUTINE(int routine_index /*AR0*/);
 
 // asm:  .globl CHECKPOINT_HIT
 void CHECKPOINT_HIT(void);
@@ -1468,7 +1468,7 @@ void RACER_DRONE(PROC* p);
 // asm:  .globl CARSCAN,OBSTABINIT,PLSCAN,GETRDOFFSET
 void CARSCAN(void);
 
-void OBSTABINIT(void);
+void OBSTABINIT(PROC* p /*AR7*/);
 
 void PLSCAN(void);
 
@@ -1483,7 +1483,7 @@ void INIT_RDDEBRIS(void);
 
 void ADD_RDDEBRIS(void);
 
-void FREE_RDDEBRIS(void);
+void FREE_RDDEBRIS(OBJ* obj /*AR2*/);
 
 // asm:  .globl DEBRIS_SORT
 void DEBRIS_SORT(void);
@@ -1526,7 +1526,7 @@ void COW_SPAWNER_PROC(void);
 
 // routs.asm
 // asm:  .globl SQRT
-void SQRT(void);
+float SQRT(float x /*R2*/);
 
 float DIV_F30(float u, float v);
 
@@ -1633,7 +1633,7 @@ void RADIO_BUT(void);
 void KILLSNDFX(void);
 
 // asm:  .globl VOLSNDFX
-void VOLSNDFX(void);
+void VOLSNDFX(int sound_index, int volume);
 
 // spark.asm
 // asm:  .globl SPARK_PROC,SPARK_COLLA_PROC,OBJ_MOVE,WALL_SPARK,IMPACT_SPARK

@@ -287,18 +287,26 @@ void SETN43FONTDS(tSHADOW_TEXT* t) {
 
 // *----------------------------------------------------------------------------
 void SET40FONT(tTEXT* t /*AR0*/) {
+    int palette;
+
     // asm 000079EA: 	LDI	42,R0
+    MAME_ASSERT_REG(0x000079EB, "R0", &((int){42}));
     // asm 000079EB: 	STI	R0,*+AR0(TEXT_HEIGHT)
+    t->height = 42;
     // asm 000079EC: 	LDI	@FONT40_A,R0
+    MAME_ASSERT_REG(0x000079ED, "R0", &FONT40_A);
     // asm 000079ED: 	STI	R0,*+AR0(TEXT_IMG)
+    t->image_addr = FONT40_A;
     // asm 000079EE: 	LDL	ommdfont_p,AR2
     // asm 000079EF: 	CALL	PAL_FIND
+    palette = PAL_FIND(ommdfont_p_ROM);
+    MAME_ASSERT_REG(0x000079F0, "R0", &palette);
     // asm 000079F0: 	STI	R0,*+AR0(TEXT_PAL)
+    t->palette = palette;
     // asm 000079F1: 	LDI	@FONT40TABI,R0
     // asm 000079F2: 	STI	R0,*+AR0(TEXT_ADDR)
+    t->text_addr = FONT40TABI;
     // asm 000079F3: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET40FONT", 0, 0);
-    UNIMPL();
 }
 
 void SET40FONTDS(tSHADOW_TEXT* t) {
