@@ -207,7 +207,7 @@ void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*
         player_track_id = -1;
     } else {
         // asm 000065D2: 	LDI	*+AR5(CARTRAK),AR6
-        player_track_obj = player_carblk->closest_track_piece;
+        player_track_obj = OBJREF_TO_PTR(player_carblk->closest_track_piece);
         // asm 000065D3: 	LDI	*+AR6(OUSR1),R1
         player_track_id = (int)player_track_obj->usr1;
     }
@@ -270,7 +270,7 @@ NNEG:
     // asm 000065E8: 	LDIEQ	1,IR0
     // ;	LDI	1,IR0
     // asm 000065E9: 	STI	AR6,*+AR3(CARTRAK)  	;CALC CARDIST2CNTR DUDE
-    carblk->closest_track_piece = player_track_obj;
+    carblk->closest_track_piece = OBJ_TO_REF(player_track_obj);
     // asm 000065EA: 	LDI	AR6,AR2
     // asm 000065EB: 	PUSH	AR4
     // asm 000065EC: 	PUSH	AR5
@@ -294,7 +294,7 @@ FPP1:
     }
     // asm 000065F7: 	LDI	*+AR0(OCARBLK),AR3
     // asm 000065F8: 	LDI	*+AR3(CARTRAK),AR2
-    track_obj = carblk->closest_track_piece;
+    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 000065F9: 	LDI	*+AR2(OUSR1),R0
     // asm 000065FA: 	CMPI	R1,R0
     // asm 000065FB: 	BNE	NXTLP1
@@ -1539,7 +1539,7 @@ float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00006814: 	PUSH	AR4
     // asm 00006815: 	PUSH	AR5
     // asm 00006816: 	BU	RIDE_RIGHT_JOININ
-    track_obj = carblk->closest_track_piece;
+    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     if (track_obj == NULL) {
         return 0.0f;
     }

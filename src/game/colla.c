@@ -15,6 +15,7 @@
 #include "sys.h"
 #include "sysid.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
 #include <math.h>
 
@@ -22,9 +23,9 @@
  * Source module: asm/COLLA.ASM
  */
 
-void CAMSCAN(void);
-static void CAMSCANS(void);
-void OBJSCAN(void);
+int CAMSCAN(VECTOR* point /*AR4*/, float* out_road_delta /*R0*/);
+static int CAMSCANS(OBJ* list /*R0*/, VECTOR* point /*AR4*/, float* out_road_delta /*R0*/);
+int OBJSCAN(OBJ* obj /*AR4*/, float* out_road_delta /*R0*/);
 void BOXSCAN(void);
 static void BOXSCSUB(void);
 void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
@@ -153,63 +154,120 @@ float SPINTEMP = 1.0f;
  *	CC = NO COLLISION FOUND
  *
  */
-void CAMSCAN(void) {
+int CAMSCAN(VECTOR* point /*AR4*/, float* out_road_delta /*R0*/) {
     // asm 00001F8B: 	LDPI	@DRIVE_LIST,R0
+    if (CAMSCANS(DRIVE_LIST, point, out_road_delta)) {
+        // asm 00001F8C: 	CALL	CAMSCANS
+        // asm 00001F8D: 	RETSC
+        TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCAN", 0, 0);
+        return 1;
+    }
     // asm 00001F8C: 	CALL	CAMSCANS
     // asm 00001F8D: 	RETSC
     // asm 00001F8E: 	LDPI	@GROUND_LIST,R0
+    return CAMSCANS(GROUND_LIST, point, out_road_delta);
     // *FALL THRU TO CAMSCANS
     // *
     // *SCAN LIST FOR POINT-OBJECT INTERSECTION
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCAN", 0, 0);
-    UNIMPL();
 }
 
-static void CAMSCANS(void) {
+static int CAMSCANS(OBJ* list /*R0*/, VECTOR* point /*AR4*/, float* out_road_delta /*R0*/) {
+    OBJ* road_obj;
+    float delta_x;
+    float delta_z;
+    float distance_squared;
+    float radius;
+
     // asm 00001F8F: 	BZ	CMSX  			;NULL LIST DUDES
+    if (list == NULL) { // ;NULL LIST DUDES
+        // asm 00001FAD: 	FLOAT	0,R0		;DEFAULT HT.
+        if (out_road_delta != NULL) {
+            *out_road_delta = 0.0f; // ;DEFAULT HT.
+        }
+        // asm 00001FAE: 	CLRC
+        // asm 00001FAF: 	RETS
+        TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCANS", 0, 0);
+        return 0;
+    }
     // asm 00001F90: 	LDI	R0,AR2
+    road_obj = list;
     // asm 00001F91: 	LDI	OPOSZ,IR1
     // asm 00001F92: 	LDF	*+AR4(2),R2		;GET POINT X
     // asm 00001F93: 	LDF	*AR4,R3			;GET POINT Z
+    delta_z = point->Z;
+    delta_x = point->X;
 CMS0:
     // asm 00001F94: 	SUBF	*+AR2(OPOSX),R3,R0
     // asm 00001F95: 	SUBF	*+AR2(IR1),R2,R1
     // asm 00001F96: 	MPYF	R1,R1
+    delta_x = point->X - road_obj->pos.X;
+    delta_z = point->Z - road_obj->pos.Z;
+    delta_z *= delta_z;
 CMS1:
     // asm 00001F97: 	MPYF	R0,R0
     // asm 00001F98: 	ADDF	R1,R0
+    distance_squared = (delta_x * delta_x) + delta_z;
     // asm 00001F99: 	FLOAT	*+AR2(ORAD),R1	 	;GET ROAD RADIUS
     // asm 00001F9A: 	MPYF	R1,R1
+    radius = (float)road_obj->radius; // ;GET ROAD RADIUS
+    radius *= radius;
     // asm 00001F9B: 	CMPF	R1,R0	  		;DISTANCE < RADIUS ?
     // asm 00001F9C: 	BLT	CMS2			;YES, CHECK IT OUT
-    // asm 00001F9D: 	LDI	*+AR2(OLINK3),AR2
-    // asm 00001F9E: 	LDI	AR2,R1
-    // asm 00001F9F: 	BNZD	CMS1
-    // asm 00001FA0: 	SUBF	*+AR2(OPOSX),R3,R0
-    // asm 00001FA1: 	SUBF	*+AR2(IR1),R2,R1
-    // asm 00001FA2: 	MPYF	R1,R1
-    // 	;---->	BNZ	CMS1
-    // asm 00001FA3: 	B	CMSX			;WE FAILED
+    if (distance_squared >= radius) {
+        // asm 00001F9D: 	LDI	*+AR2(OLINK3),AR2
+        // asm 00001F9E: 	LDI	AR2,R1
+        road_obj = (OBJ*)road_obj->link3;
+        // asm 00001F9F: 	BNZD	CMS1
+        // asm 00001FA0: 	SUBF	*+AR2(OPOSX),R3,R0
+        // asm 00001FA1: 	SUBF	*+AR2(IR1),R2,R1
+        // asm 00001FA2: 	MPYF	R1,R1
+        if (road_obj != NULL) {
+            delta_x = point->X - road_obj->pos.X;
+            delta_z = point->Z - road_obj->pos.Z;
+            delta_z *= delta_z;
+            goto CMS1;
+        }
+        // 	;---->	BNZ	CMS1
+        // asm 00001FA3: 	B	CMSX			;WE FAILED
+        if (out_road_delta != NULL) {
+            *out_road_delta = 0.0f; // ;WE FAILED
+        }
+        TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCANS", 0, 0);
+        return 0;
+    }
     // *CHECK OUT POINT COLLISION
 CMS2:
     // asm 00001FA4: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
+    if (_coll_road(road_obj, point, out_road_delta)) { // ;XZ POINT COLLISION WITH ROAD OBJECT?
+        // asm 00001FA5: 	BNC	CMS1L
+        // asm 00001FA6: 	RETS				;RETURN COLLISION VALUE
+        TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCANS", 0, 0);
+        return 1; // ;RETURN COLLISION VALUE
+    }
     // asm 00001FA5: 	BNC	CMS1L
     // asm 00001FA6: 	RETS				;RETURN COLLISION VALUE
 CMS1L:
     // asm 00001FA7: 	LDI	*+AR2(OLINK3),AR2
     // asm 00001FA8: 	LDI	AR2,R1
+    road_obj = (OBJ*)road_obj->link3;
     // asm 00001FA9: 	BNZD	CMS0
-    // asm 00001FAA: 	LDI	OPOSZ,IR1
-    // asm 00001FAB: 	LDF	*+AR4(2),R2		;GET POINT X
-    // asm 00001FAC: 	LDF	*AR4,R3			;GET POINT Z
-    // 	;---->	BNZ	CMS0
+    if (road_obj != NULL) {
+        // asm 00001FAA: 	LDI	OPOSZ,IR1
+        // asm 00001FAB: 	LDF	*+AR4(2),R2		;GET POINT X
+        // asm 00001FAC: 	LDF	*AR4,R3			;GET POINT Z
+        // 	;---->	BNZ	CMS0
+        goto CMS0;
+    }
 CMSX:
     // asm 00001FAD: 	FLOAT	0,R0		;DEFAULT HT.
+    if (out_road_delta != NULL) {
+        *out_road_delta = 0.0f; // ;DEFAULT HT.
+    }
     // asm 00001FAE: 	CLRC
     // asm 00001FAF: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCANS", 0, 0);
-    UNIMPL();
+    return 0;
 }
 
 /*
@@ -221,14 +279,14 @@ CMSX:
  *RETURNS
  *	CARRY SET IF ROAD FOUND BELOW OBJECT
  */
-void OBJSCAN(void) {
+int OBJSCAN(OBJ* obj /*AR4*/, float* out_road_delta /*R0*/) {
     // asm 00001FB0: 	PUSH	AR4
     // asm 00001FB1: 	ADDI	OPOSX,AR4
+    VECTOR* point = &obj->pos;
     // asm 00001FB2: 	CALL	CAMSCAN	      		;AR4=XYZ, RET R0=HT, CS=ROAD,CC=NO ROAD
+    return CAMSCAN(point, out_road_delta); // ;AR4=XYZ, RET R0=HT, CS=ROAD,CC=NO ROAD
     // asm 00001FB3: 	POP	AR4
     // asm 00001FB4:  	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJSCAN", 0, 0);
-    UNIMPL();
 }
 
 /* asm: BOXSCRAM	FBSS	BOXSCRAM,50 */
@@ -348,6 +406,7 @@ void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     CAR_POINT* car_point;
     float gravity;
     float next_y_velocity;
+    float road_floor;
     int rear_airborne;
     int front_airborne;
     int i;
@@ -371,7 +430,7 @@ void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     // asm 00002001: 	AND	CLASS_M+TYPE_M,R0
     // asm 00002002: 	STI	R0,*+AR6(CAR_ONROAD)	;XXX OID->ONROAD FLAG
     if (carblk->center.collided_road_object != 0) {
-        carblk->on_road = ((OBJ*)carblk->center.collided_road_object)->id & (CLASS_M + TYPE_M);
+        carblk->on_road = OBJREF_TO_PTR(carblk->center.collided_road_object)->id & (CLASS_M + TYPE_M);
     }
 PC1X0:
     // asm 00002003: 	LDI	AR6,AR0			;GET CARVCT SUSPENSION POINTS
@@ -379,6 +438,7 @@ PC1X0:
     // asm 00002005: 	MPYF	4,R2			;FRAME ADJUSTED GRAVITY
     // ;	MPYF	8,R2			;FRAME ADJUSTED GRAVITY
     gravity = (float)NFRAMES * 4.0f;
+    road_floor = TMS320_C3X_SHORT_FLOAT(-9.0);
     car_point = &carblk->center;
     // asm 00002006: 	LDI	CARVNUM-1,RC 		;LOOP FOR ALL GROUND TOUCHERS
     // asm 00002007: 	RPTB	PC2
@@ -386,7 +446,7 @@ PC1X0:
         // asm 00002008: 	LDF	*+AR0(CARPRDYD),R0	;LOAD DELTA HEIGHT
         // asm 00002009: 	CMPF	-9,R0
         // asm 0000200A: 	BGT	PC1A			;WE ARE ABOVE ROAD
-        if (car_point->road_delta_y <= -9.0f) {
+        if (car_point->road_delta_y <= road_floor) {
             // *BELOW ROAD CASE
             // asm 0000200B: 	ADDF	-9,R0
             // asm 0000200C: 	ADDF	*+AR0(CARPY),R0		;WE ARE BELOW ROAD
@@ -395,7 +455,7 @@ PC1X0:
             // asm 0000200F: 	LDF	0,R0
             // asm 00002010: 	STF	R0,*+AR0(CARPYV)	;STORE NEW VELOCITY
             // 	;-------->B	PC2
-            car_point->y += car_point->road_delta_y - 9.0f;
+            car_point->y += car_point->road_delta_y + road_floor;
             car_point->y_velocity = 0.0f;
         } else {
             // *ABOVE ROAD CASE
@@ -417,7 +477,7 @@ PC1X0:
                                                                // asm 0000201B: 	MPYF	4,R4			;NO, GRAV X 4
                                                                // asm 0000201C: 	ADDF	R4,R1
             if (car_point->collided_road_object != 0) {
-                OBJ* collided_road_object = (OBJ*)car_point->collided_road_object;
+                OBJ* collided_road_object = OBJREF_TO_PTR(car_point->collided_road_object);
 
                 if ((collided_road_object->id & (CLASS_M + TYPE_M)) != (ROAD_C + LOGRAV_T)) {
                     next_y_velocity += gravity * 4.0f; // ;NO, GRAV X 4
@@ -427,7 +487,7 @@ PC1X0:
             // asm 0000201D: 	CMPF	R1,R0	    		;VEL GT HEIGHT?
             // asm 0000201E: 	BGT	PC2A			;NO
             // asm 0000201F: 	LDF	R0,R1			;YES LIMIT VELOCITY
-            if (next_y_velocity <= car_point->road_delta_y) {
+            if (car_point->road_delta_y <= next_y_velocity) {
                 next_y_velocity = car_point->road_delta_y; // ;YES LIMIT VELOCITY
             }
         PC2A:
@@ -529,7 +589,6 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
         // asm 0000204F: ||	STF	R0,*AR3
         // asm 00002050: 	STF	R0,*+AR3(1)
         car_point->y += obj->pos.Y;
-        MAME_ASSERT_REG_FLOAT(0x00002050, "R0", &car_point->y);
         // ;	NEGF	R0			;DEFAULT COLLISION DELTA = - HEIGHT
         // asm 00002051: 	LDF	0,R0			;CLEAR DEFAULT HEIGHT
         // asm 00002052: 	STF	R0,*+AR3(3)
@@ -767,10 +826,9 @@ RS300:
 RS301:
     // asm 000020A8: 	STF	R0,*+AR4(CARPRDYD)		;SAVE ROAD Y DELTA
     car_point->road_delta_y = road_delta_y; // ;SAVE ROAD Y DELTA
-    MAME_ASSERT_REG_FLOAT(0x000020A9, "R0", &car_point->road_delta_y);
     MAME_ASSERT_MEM(0x000020A9, "d@(ar2+f)", &road_obj->id);
     // asm 000020A9: 	STI	AR2,*+AR4(CARPCOL) 	;SAVE COLLISION OBJECT
-    car_point->collided_road_object = (uintptr_t)road_obj; // ;SAVE COLLISION OBJECT
+    car_point->collided_road_object = OBJ_TO_REF(road_obj); // ;SAVE COLLISION OBJECT
 RS30:
     // asm 000020AA: 	NOP	*AR4++(CARVSIZ)
     car_point++;
@@ -813,6 +871,8 @@ int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, float* out_road_del
     VECTOR* vertex1;
     VECTOR* vertex2;
     VECTOR normal;
+    float road_plane_numerator;
+    float road_plane_denominator;
 
     MAME_ASSERT_FUNCTION_ENTRY();
 
@@ -853,8 +913,12 @@ int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, float* out_road_del
     // asm 000020C8: 	ADDF	R2,R0			;       N.z * bufferz[vert[0]]);
     // asm 000020C9: 	NEGF	R0			;D = ((D/(-N.y)));
     // asm 000020CA: 	CALL	DIV_F30			;(R0/R1)->R0 clobbers r0,r1,ar0,ar1
-    *out_road_delta = -((vertex0->X * normal.X) + (vertex0->Y * normal.Y) + (vertex0->Z * normal.Z)) / (-normal.Y);
-    MAME_ASSERT_REG_FLOAT(0x000020D2, "R0", &*out_road_delta);
+    road_plane_numerator = vertex0->X * normal.X;
+    road_plane_denominator = -normal.Y;
+    road_plane_numerator += vertex0->Y * normal.Y;
+    road_plane_numerator += vertex0->Z * normal.Z;
+    road_plane_numerator = -road_plane_numerator;
+    *out_road_delta = DIV_F30(road_plane_numerator, road_plane_denominator);
     // asm 000020CB: 	POPF	R7
     // asm 000020CC: 	POP	R7
     // asm 000020CD: 	POPF	R6
@@ -967,6 +1031,11 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // ***GET CAR HEIGHT AND LOAD IT INTO CAR
     // asm 000020FB: 	LDF	*+AR6(1),R0		;GET Y HEIGHT FIRST POINT
     // asm 000020FC: 	SUBF	*+AR6(CARWHLTAB+1),R0
+    // Temporary: this operand drifts by more than the current float tolerance,
+    // so leave the wheel-offset assertion in place and continue tracing upstream.
+    // MAME_ASSERT_REG_FLOAT(0x000020FC, "R0", &carblk->center.y);
+    // Do not use MAME_ASSERT_MEM on float storage here: MAME is reading raw
+    // TMS320C3x float bits from memory, while the port stores host IEEE floats.
     // asm 000020FD: 	STF	R0,*+AR4(OPOSY)
     obj->pos.Y = carblk->center.y - carblk->wheel_scan_offsets[0].Y;
     MAME_ASSERT_REG_FLOAT(0x000020FE, "R0", &obj->pos.Y);

@@ -872,10 +872,10 @@ void COLSCAN(void);
 void BOXSCAN(void);
 
 // asm:  .globl OBJSCAN
-void OBJSCAN(void);
+int OBJSCAN(OBJ* obj /*AR4*/, float* out_road_delta /*R0*/);
 
 // asm:  .globl CAMSCAN
-void CAMSCAN(void);
+int CAMSCAN(VECTOR* point /*AR4*/, float* out_road_delta /*R0*/);
 
 // asm:  .globl COLCHK
 void COLCHK(void);

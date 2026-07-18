@@ -170,44 +170,62 @@ static inline float TMS320_C3X_SHORT_FLOAT(double value) {
     return TMS320_C3X_SHORT_FLOAT_TO_FLOAT(TMS320_C3X_FLOAT_TO_SHORT_FLOAT_RAW(value));
 }
 
-// static inline u32 TMS320_C3X_DOUBLE_TO_SINGLE_RAW_TRUNC(double value) {
-//     int exponent;
-//     double mantissa;
-//     double fraction;
-//     u32 mantissa_bits;
-//     uint64_t extended_fraction;
+static inline u32 TMS320_C3X_DOUBLE_TO_SINGLE_RAW_TRUNC(double value) {
+    int exponent;
+    double mantissa;
+    double fraction;
+    u32 mantissa_bits;
+    uint64_t extended_fraction;
 
-//     if (value == 0.0) {
-//         return 0x80000000u;
-//     }
+    if (value == 0.0) {
+        return 0x80000000u;
+    }
 
-//     mantissa = frexp(value, &exponent);
-//     mantissa = ldexp(mantissa, 1);
-//     exponent -= 1;
+    mantissa = frexp(value, &exponent);
+    mantissa = ldexp(mantissa, 1);
+    exponent -= 1;
 
-//     if (exponent < -127) {
-//         return 0x80000000u;
-//     }
-//     if (exponent > 127) {
-//         return ((u32)(uint8_t)127 << 24) | (value < 0.0 ? 0x00FFFFFFu : 0x007FFFFFu);
-//     }
+    if (exponent < -127) {
+        return 0x80000000u;
+    }
+    if (exponent > 127) {
+        return ((u32)(uint8_t)127 << 24) | (value < 0.0 ? 0x00FFFFFFu : 0x007FFFFFu);
+    }
 
-//     if (mantissa >= 0.0) {
-//         fraction = (mantissa - 1.0) * 2147483648.0;
-//         extended_fraction = (uint64_t)floor(fraction);
-//         mantissa_bits = (u32)(extended_fraction >> 8);
-//     } else {
-//         fraction = (mantissa + 2.0) * 2147483648.0;
-//         extended_fraction = (uint64_t)floor(fraction);
-//         mantissa_bits = 0x00800000u | ((u32)(extended_fraction >> 8) & 0x007FFFFFu);
-//     }
+    if (mantissa >= 0.0) {
+        fraction = (mantissa - 1.0) * 2147483648.0;
+        extended_fraction = (uint64_t)floor(fraction);
+        mantissa_bits = (u32)(extended_fraction >> 8);
+    } else {
+        fraction = (mantissa + 2.0) * 2147483648.0;
+        extended_fraction = (uint64_t)floor(fraction);
+        mantissa_bits = 0x00800000u | ((u32)(extended_fraction >> 8) & 0x007FFFFFu);
+    }
 
-//     return ((u32)(uint8_t)(int8_t)exponent << 24) | mantissa_bits;
-// }
+    return ((u32)(uint8_t)(int8_t)exponent << 24) | mantissa_bits;
+}
 
-// static inline float TMS320_C3X_STF_TO_SINGLE(double value) {
-//     return TMS320_C3X_SINGLE_TO_FLOAT(TMS320_C3X_DOUBLE_TO_SINGLE_RAW_TRUNC(value));
-// }
+static inline u32 TMS320_C3X_DOUBLE_TO_SINGLE_RAW_ROUND(double value) {
+    int exponent;
+    double rounded_value;
+
+    if (value == 0.0) {
+        return 0x80000000u;
+    }
+
+    frexp(value, &exponent);
+    exponent -= 1;
+    rounded_value = value + ldexp(1.0, exponent - 24);
+    return TMS320_C3X_DOUBLE_TO_SINGLE_RAW_TRUNC(rounded_value);
+}
+
+static inline float TMS320_C3X_STF_TO_SINGLE(double value) {
+    return TMS320_C3X_SINGLE_TO_FLOAT(TMS320_C3X_DOUBLE_TO_SINGLE_RAW_TRUNC(value));
+}
+
+static inline float TMS320_C3X_RND_TO_SINGLE(double value) {
+    return TMS320_C3X_SINGLE_TO_FLOAT(TMS320_C3X_DOUBLE_TO_SINGLE_RAW_ROUND(value));
+}
 
 static inline int TMS320_C3X_FIX_TO_INT(float value) {
     return (int)floorf(value);

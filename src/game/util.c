@@ -1283,6 +1283,14 @@ CARBLK* CARFREE;
 /* asm: CAR_COUNT	.bss	CAR_COUNT,1 */
 int CAR_COUNT;
 
+static CARBLK* carblk_freelist_next(CARBLK* car) {
+    return *(CARBLK**)car;
+}
+
+static void carblk_freelist_set_next(CARBLK* car, CARBLK* next) {
+    *(CARBLK**)car = next;
+}
+
 // *----------------------------------------------------------------------------
 void CARB_INIT(void) {
     CARBLK* car;
@@ -1294,7 +1302,7 @@ void CARB_INIT(void) {
 
     for (i = 0; i < NUM_CARS - 1; i++) {
         *freep = &CARLIST[i];
-        freep = &CARLIST[i].link;
+        freep = (CARBLK**)&CARLIST[i];
     }
 
     *freep = NULL;
@@ -1330,7 +1338,7 @@ CARBLK* GETCAR(void) {
     if (CARFREE != NULL) {
         CARBLK* car = CARFREE;
 
-        CARFREE = car->link;
+        CARFREE = carblk_freelist_next(car);
         CAR_COUNT += 1;
         return car;
     }

@@ -322,6 +322,7 @@ CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/) {
     // asm 00002953: 	STI	R0,*+AR4(ORAD)		;GET OBJECT RADIUS
     romdata = obj->romdata;
     obj->radius = (int)(1.1f * (float)romdata->radius); // GET OBJECT RADIUS
+    MAME_ASSERT_REG(0x00002954, "R0", &obj->radius);
 
     // asm 00002954: 	LDI	0,R0 			;INIT FLAGS
     // asm 00002955: 	STI	R0,*+AR0(CAR_SPIN)
@@ -2463,7 +2464,7 @@ GETRK:
         goto GETRK;
     }
     // asm 00002F14: 	STI	AR0,*+AR5(CARTRAK)	;SAVE TRACK SECTION
-    carblk->closest_track_piece = closest_track_obj;
+    carblk->closest_track_piece = OBJ_TO_REF(closest_track_obj);
 GETRKX:
     // asm 00002F16: 	RETS
 }

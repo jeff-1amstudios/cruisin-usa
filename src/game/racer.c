@@ -514,7 +514,7 @@ RACE_ON:
     // asm 00005167: 	LSH	-8,R0
     // asm 00005168: 	CMPI	@FINISH_ID,R0
     // asm 00005169: 	CALLGE	RACE_FIN
-    tracking_obj = carblk->closest_track_piece;
+    tracking_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     if (((int)tracking_obj->usr1 >> 8) >= FINISH_ID) {
         RACE_FIN();
     }

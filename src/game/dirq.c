@@ -374,6 +374,7 @@ static void DISPLAY(OBJ* obj /*AR0*/) {
     MATRIX object_matrix;
     u32 flags;
     const u32* rom_ptr;
+    s32 clip_radius;
     const MATRIX* matrix;
     const ROM_VERTEX* vertices;
     const ROM_POLYGON* polygons;
@@ -452,8 +453,8 @@ NOBREAK_CONTINUE:
         }
     }
 
-    obj->radius = (s32)rom_ptr[0];
-    if ((rotated_trans_z + (float)obj->radius) < (float)LOW_CLIP_LEVEL) {
+    clip_radius = (s32)rom_ptr[0];
+    if ((rotated_trans_z + (float)clip_radius) < (float)LOW_CLIP_LEVEL) {
         goto DISPLAY_NEXT_IMPL;
     }
     g_dirq_debug_objects_after_z_clip += 1;

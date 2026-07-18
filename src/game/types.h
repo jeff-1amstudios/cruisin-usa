@@ -304,6 +304,24 @@ typedef struct OBJ {
     uintptr_t link4;
 } OBJ;
 
+extern OBJ OBJSTR[];
+
+typedef u32 OBJREF;
+
+static inline OBJREF OBJ_TO_REF(const OBJ* obj) {
+    if (obj == 0) {
+        return 0;
+    }
+    return (OBJREF)((obj - OBJSTR) + 1);
+}
+
+static inline OBJ* OBJREF_TO_PTR(OBJREF ref) {
+    if (ref == 0) {
+        return 0;
+    }
+    return &OBJSTR[ref - 1];
+}
+
 typedef struct DGROUP_ENTRY {
     u32 head;
     tyco_stream_t bin;
@@ -341,11 +359,10 @@ typedef struct CAR_POINT {
     f32 z;
     f32 road_delta_y;
     f32 y_velocity;
-    uintptr_t collided_road_object;
+    OBJREF collided_road_object;
 } CAR_POINT;
 
 typedef struct CARBLK {
-    struct CARBLK* link; // jeffh added, previously center.x was re-used as the link pointer
     CAR_POINT center;
     CAR_POINT right_front;
     CAR_POINT left_front;
@@ -376,7 +393,7 @@ typedef struct CARBLK {
     s32 track_piece_position;
     f32 track_piece_distance;
     u32 track_piece_rank;
-    struct OBJ* closest_track_piece;
+    OBJREF closest_track_piece;
     u32 gear;
     f32 rpm_x100;
     f32 x_plus;

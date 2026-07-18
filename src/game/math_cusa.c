@@ -1303,6 +1303,7 @@ void CLR_VECTORA(void) {
  *
  */
 void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/) {
+    float* matrix;
     float out_x;
     float out_y;
     float out_z;
@@ -1313,25 +1314,26 @@ void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/) {
     // asm 0000966F: 	LDI	R2,AR1	    		;AR1 IS 3X3 MATRIX
     // asm 00009670: 	PUSH	R2
     // asm 00009671: 	PUSHF	R2
+    matrix = (float*)m3x3;
     // asm 00009672: 	MPYF	*AR2++,*AR1++,R0
     // asm 00009673: 	MPYF	*AR2,*AR1++,R2
     // asm 00009674: 	MPYF	*+AR2(1),*AR1++,R0
     // asm 00009674:  || 	ADDF	R0,R2
-    out_x = src->X * m3x3->a00 + src->Y * m3x3->a01 + src->Z * m3x3->a02;
+    out_x = src->X * matrix[0] + src->Y * matrix[1] + src->Z * matrix[2];
     // asm 00009675: 	MPYF	*-AR2(1),*AR1++,R0
     // asm 00009675:  ||	ADDF	R0,R2
     // asm 00009676: 	PUSHF	R2
     // asm 00009677: 	MPYF	*AR2,*AR1++,R2
     // asm 00009678: 	MPYF	*+AR2(1),*AR1++,R0
     // asm 00009678:  || 	ADDF	R0,R2
-    out_y = src->X * m3x3->a10 + src->Y * m3x3->a11 + src->Z * m3x3->a12;
+    out_y = src->X * matrix[3] + src->Y * matrix[4] + src->Z * matrix[5];
     // asm 00009679: 	MPYF	*-AR2(1),*AR1++,R0
     // asm 00009679:  ||	ADDF	R0,R2
     // asm 0000967A: 	PUSHF	R2
     // asm 0000967B: 	MPYF	*+AR2(1),*+AR1(1),R2
     // asm 0000967C: 	MPYF	*AR2--(1),*AR1,R0
     // asm 0000967C:  || 	ADDF	R0,R2
-    out_z = src->X * m3x3->a20 + src->Y * m3x3->a21 + src->Z * m3x3->a22;
+    out_z = src->X * matrix[6] + src->Y * matrix[7] + src->Z * matrix[8];
     // asm 0000967D: 	LDI	R3,AR1
     // asm 0000967E: 	ADDF	R2,R0
     // asm 0000967F: 	POPF	R2
@@ -1358,6 +1360,7 @@ void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/) {
  */
 void NORMALIZE(VECTOR* vector /*AR2*/) {
     float length;
+    float inverse_length;
 
     // asm 00009689: 	PUSH	R0
     // asm 0000968A: 	PUSH	R1
@@ -1378,9 +1381,7 @@ void NORMALIZE(VECTOR* vector /*AR2*/) {
     // asm 00009699: 	RETS
     length = sqrtf(vector->X * vector->X + vector->Y * vector->Y + vector->Z * vector->Z);
     if (length != 0.0f) {
-        float inverse_length;
-
-        inverse_length = 1.0f / length;
+        inverse_length = INV_F30(length);
         vector->X *= inverse_length;
         vector->Y *= inverse_length;
         vector->Z *= inverse_length;
@@ -1483,9 +1484,9 @@ void GEN_NORMAL(VECTOR** points /*AR2*/, VECTOR* normal /*AR0*/) {
     b = points[1];
     c = points[2];
     a = points[0];
-    d.X = b->X - a->X;
-    d.Y = b->Y - a->Y;
-    d.Z = b->Z - a->Z;
+    d.X = a->X - b->X;
+    d.Y = a->Y - b->Y;
+    d.Z = a->Z - b->Z;
     e.X = c->X - b->X;
     e.Y = c->Y - b->Y;
     e.Z = c->Z - b->Z;
