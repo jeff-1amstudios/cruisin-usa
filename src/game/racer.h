@@ -80,9 +80,9 @@ float SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, in
 float ROADIR(OBJ* track_obj /*AR0*/);
 
 // asm: 	.GLOBL	GETRPM,GETAUTO,ENGFRI,GEARACTABI,ENGACTABI,GETRDIR
-void GETRPM(void);
+void GETRPM(CARBLK* carblk /*AR5*/);
 
-void GETAUTO(void);
+int GETAUTO(CARBLK* carblk /*AR5*/);
 
 float GETRDIR(OBJ* track_obj /*AR2*/);
 

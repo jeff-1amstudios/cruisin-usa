@@ -8,6 +8,8 @@ typedef enum MAME_VALIDATE_REG_KIND {
     MAME_VALIDATE_REG_KIND_FLOAT,
 } MAME_VALIDATE_REG_KIND;
 
+extern int mame_validate_disabled;
+
 void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_validate_arg_sym_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
@@ -42,6 +44,8 @@ void mame_assert_reg_at_addr_impl(
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_WORD, (wiggle_room))
 #define MAME_ASSERT_REG_FLOAT(addr, reg_name, ptr) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_FLOAT, 0)
+#define MAME_ASSERT_REG_FLOAT_WIGGLE(addr, reg_name, ptr, wiggle_room) \
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_FLOAT, (wiggle_room))
 #define MAME_ASSERT_MEM(addr, mem_addr, ptr) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_WORD, 0)
 #define MAME_ASSERT_MEM_FLOAT(addr, mem_addr, ptr) \

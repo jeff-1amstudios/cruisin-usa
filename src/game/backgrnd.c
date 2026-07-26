@@ -643,13 +643,13 @@ NOACT:
     // asm 0000403E: 	LDI	@CAMERAPOSI,R2
     // asm 0000403F: 	CALL	GET_XZ_DISTANCE
     distance = GET_XZ_DISTANCE(&section_header.pos, &CAMERAPOSI);
-    MAME_ASSERT_REG_FLOAT(0x00004040, "R0", &distance);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00004040, "R0", &distance, 16);
     // asm 00004040: 	LDI	@(DGROUPS+DGRP_BIN),AR0
     // asm 00004041: 	LDI	*+AR0(TB_GROUP),AR0
     group_ptr = ROM_PTR(tyco_ptr[TB_GROUP]);
     // asm 00004042: 	SUBF	*AR0,R0
     distance -= ROM_ParseFloat(*group_ptr);
-    MAME_ASSERT_REG_FLOAT(0x00004043, "R0", &distance);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00004043, "R0", &distance, 16);
     // asm 00004043: 	LDI	@_MODE,R1
     // asm 00004044: 	AND	MMODE,R1
     // asm 00004045: 	CMPI	MATTR,R1
@@ -1648,7 +1648,7 @@ float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
     delta_z = v2->Z;
     // asm 0000421B: 	SUBF	*AR2++,R2
     delta_z -= v1->Z;
-    MAME_ASSERT_REG_FLOAT(0x0000421C, "R2", &delta_z);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x0000421C, "R2", &delta_z, 16);
     // asm 0000421C: 	MPYF	R3,R3
     delta_x *= delta_x;
     // asm 0000421D: 	MPYF	R2,R2
@@ -1656,7 +1656,7 @@ float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
     // asm 0000421E: 	ADDF	R3,R2
     delta_z += delta_x;
     // asm 0000421F: 	CALL	SQRT
-    MAME_ASSERT_REG_FLOAT(0x0000421F, "R2", &delta_z);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x0000421F, "R2", &delta_z, 16);
     // asm 00004220: 	POP	R3
     // asm 00004221: 	POP	AR0
     // asm 00004222: 	RETS

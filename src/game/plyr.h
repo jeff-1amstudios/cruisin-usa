@@ -43,7 +43,7 @@ extern int PLYRFIRST;
 // asm: 	.bss	PLAIRTIM,1	;TIMER FOR AIR SOUND DISABLE
 extern int PLAIRTIM;
 // asm: 	.bss	CHEATACC,1
-extern int CHEATACC;
+extern float CHEATACC;
 // asm: 	.bss	CHEAT,1
 extern float CHEAT;
 // asm: 	.BSS	ENGVOL,1
@@ -72,10 +72,10 @@ void RANDSND(void);
 void RANDVSND(void);
 float ROADIR(OBJ* track_obj /*AR0*/);
 void GETNXTRDIR(void);
-void DRONINBZ(void);
+void DRONINBZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void INBOUNDZ(void);
-void GETRPM(void);
-void GETAUTO(void);
+void GETRPM(CARBLK* carblk /*AR5*/);
+int GETAUTO(CARBLK* carblk /*AR5*/);
 void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void BONUS_WAIT_LOOP(void);

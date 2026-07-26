@@ -546,7 +546,7 @@ LOOP:
         // asm 000082FE: 	LDP	@FIFO_INC
         // asm 000082FF: 	LDI	@FIFO_INC,R0
         // asm 00008300: 	LDI	*AR1,R0	  		;ML FIX
-        port_output_fpga(_ARPS[0], _ARPS[1], _ARPS[3], _ARPS[4], _ARPS[6], _ARPS[7], _ARPS[9], _ARPS[10], _AIVI[0], _AIVI[1], _AIVI[2], _AIVI[3], _ADDRL, _ACMAP, _ACNTL);
+        port_output_fpga(_ARPS[0], _ARPS[1], _ARPS[3], _ARPS[4], _ARPS[9], _ARPS[10], _ARPS[6], _ARPS[7], _AIVI[0], _AIVI[1], _AIVI[2], _AIVI[3], _ADDRL, _ACMAP, _ACNTL);
         // asm 00008301: 	RPTS	4
         // asm 00008302: 	NOP
         // asm 00008303: 	SETDP
@@ -603,7 +603,7 @@ NOCLIPPING:
     // asm 0000831D: 	LDP	@FIFO_INC
     // asm 0000831E: 	LDI	@FIFO_INC,R0
     // asm 0000831F: 	LDI	*AR1,R0	  		;ML FIX
-    port_output_fpga(_ARPS[0], _ARPS[1], _ARPS[3], _ARPS[4], _ARPS[6], _ARPS[7], _ARPS[9], _ARPS[10], _AIVI[0], _AIVI[1], _AIVI[2], _AIVI[3], _ADDRL, _ACMAP, _ACNTL);
+    port_output_fpga(_ARPS[0], _ARPS[1], _ARPS[3], _ARPS[4], _ARPS[9], _ARPS[10], _ARPS[6], _ARPS[7], _AIVI[0], _AIVI[1], _AIVI[2], _AIVI[3], _ADDRL, _ACMAP, _ACNTL);
     // asm 00008320: 	RPTS	4
     // asm 00008321: 	NOP
     // asm 00008322: 	SETDP
@@ -682,7 +682,7 @@ LOOP1:
     // asm 0000834B: 	LDP	@FIFO_INC
     // asm 0000834C: 	LDI	@FIFO_INC,R0
     // asm 0000834D: 	LDI	*AR1,R0	  		;ML FIX
-    port_output_fpga(_ARPS[0], _ARPS[1], _ARPS[3], _ARPS[4], _ARPS[6], _ARPS[7], _ARPS[9], _ARPS[10], _AIVI[0], _AIVI[1], _AIVI[2], _AIVI[3], _ADDRL, _ACMAP, _ACNTL);
+    port_output_fpga(_ARPS[0], _ARPS[1], _ARPS[3], _ARPS[4], _ARPS[9], _ARPS[10], _ARPS[6], _ARPS[7], _AIVI[0], _AIVI[1], _AIVI[2], _AIVI[3], _ADDRL, _ACMAP, _ACNTL);
     // asm 0000834E: 	SETDP
     // asm 0000834F: 	DBU	AR4,LOOP1A
     blow_ptr += 6;
@@ -996,6 +996,7 @@ static void WATER_INFINITY(void) {
     float horizon_xf;
     float water_y;
     float infinity_height;
+    float camera_y_vector_y;
     int palette_code;
     int loop_count;
     float* blow_ptr;
@@ -1046,7 +1047,9 @@ ok24a:
     // asm 00008424: 	LDF	@_CAMERAMATRIX+7,R2  		;GET ZVECT(Y)
     // asm 00008425: 	LDF	@_CAMERAMATRIX+4,R1  		;GET YVECT(Y)
     // asm 00008426: 	SETDP
-    infinity_height = _MATRIXA.a12 * 512.0f;
+    infinity_height = _MATRIXA.a12;
+    infinity_height *= 64.0f;
+    infinity_height *= 8.0f;
     // asm 00008427: 	LDP	@INFVAL
     // asm 00008428: 	MPYF	@INFVAL,R0
     // asm 00008429: 	CALL	DIV_F
@@ -1054,7 +1057,10 @@ ok24a:
     // asm 0000842B: 	MPYF	@INFPROJ,R0
     // asm 0000842C: 	LDF	R0,R7
     // asm 0000842D: 	NEGF	R7
-    water_y = -(DIV_F(infinity_height * INFVAL, _CAMERAMATRIX.a11) * INFPROJ);
+    camera_y_vector_y = _CAMERAMATRIX.a11;
+    water_y = DIV_F(infinity_height * INFVAL, camera_y_vector_y);
+    water_y *= INFPROJ;
+    water_y = -water_y;
     MAME_ASSERT_REG_FLOAT(0x0000842E, "R7", &water_y);
     // 	;ROTATE INFINITY PLANE COORDS
     // asm 0000842E: 	LDI	@WATERPOSI,AR5
@@ -1131,7 +1137,7 @@ LOOPA:
     // asm 00008461: 	LDP	@FIFO_INC
     // asm 00008462: 	LDI	@FIFO_INC,R0
     // asm 00008463: 	LDI	*AR1,R0	  			;ML FIX (BOGUS READ)
-    port_output_fpga(_ARPS[0], _ARPS[1], _ARPS[3], _ARPS[4], _ARPS[6], _ARPS[7], _ARPS[9], _ARPS[10], _AIVI[0], _AIVI[1], _AIVI[2], _AIVI[3], _ADDRL, _ACMAP, _ACNTL);
+    port_output_fpga(_ARPS[0], _ARPS[1], _ARPS[3], _ARPS[4], _ARPS[9], _ARPS[10], _ARPS[6], _ARPS[7], _AIVI[0], _AIVI[1], _AIVI[2], _AIVI[3], _ADDRL, _ACMAP, _ACNTL);
     // asm 00008464: 	SETDP
     // asm 00008465: 	RPTS	4
     // asm 00008466: 	NOP

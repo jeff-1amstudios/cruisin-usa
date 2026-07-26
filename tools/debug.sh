@@ -7,6 +7,9 @@ BREAKPOINT_HASH_FILE="$ROOT_DIR/tools/mame/output/mame_validate_breakpoints.md5"
 BUILD_DIR="$ROOT_DIR/build"
 GAME_BIN="$BUILD_DIR/crusn"
 
+: "${CRUSN_VALIDATE_SINGLE_FRAME:=1}"
+export CRUSN_VALIDATE_SINGLE_FRAME
+
 hash_file() {
     local file_path="$1"
 

@@ -1,6 +1,8 @@
 #include "cusa.h"
 #include "../core/input.h"
 
+#include <stdlib.h>
+
 #include "../core/machine.h"
 #include "../core/port.h"
 #include "../core/validator.h"
@@ -58,6 +60,8 @@ static void CHECK_STATE(void);
 static void DASHLIGHT(void);
 static void CMOS_ERROR(void);
 static void VERSION_UPDATE(void);
+static void SYNC_BOOT_RANDOM_ADVANCE(void);
+static int VALIDATE_SINGLE_FRAME(void);
 void FAKEDIAG(void);
 void FEED_WATCHDOG(void);
 void FEED_WATCHDOG_HARD(void);
@@ -437,7 +441,7 @@ DR1:
 
     // clear_timer_ram_48_floats();
 
-    RAND = 0x5A5A5A5A;
+    RAND = 0;
 
     LOAD_FIXED_PALETTES();
     INIT_SYSTEM();
@@ -490,6 +494,7 @@ DR1:
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SECpress);
     MAME_ASSERT_REGION_AT_ADDR(0x00004BA0, "SECpress-decompressed", 0x0B88B80, SECpress.dest_addr, 0x1000);
+    SYNC_BOOT_RANDOM_ADVANCE();
 
     AUDIT_WRITE(AUD_BCREDITS, 0);
 
@@ -560,7 +565,11 @@ void MAINLOOP(void) {
     COMMQ_PACKET_INIT();
     DECODE_BUFFER();
 
-    NFRAMES = INFRAMES; // SAVE FOR ALL CURRENT PROCESSES
+    if (VALIDATE_SINGLE_FRAME()) {
+        NFRAMES = 1; // SAVE FOR ALL CURRENT PROCESSES
+    } else {
+        NFRAMES = INFRAMES; // SAVE FOR ALL CURRENT PROCESSES
+    }
     INFRAMES = 0;       // CLEAR INTERRUPT COUNTER
 
     FRAMETIME = TIMEREC(); // SAVE THE FRAMETIME
@@ -1756,6 +1765,27 @@ static float TIMEREC(void) {
     t = (float)TIMER_CNTR1;
     *TIMEX++ = t; // SAVE THE INDEX
     return t;
+}
+
+// *----------------------------------------------------------------------------
+
+static void SYNC_BOOT_RANDOM_ADVANCE(void) {
+    int i;
+
+    // The original board keeps servicing the 60 Hz IRQ during the boot hard
+    // section loads above. INT0 calls RANDOM once per frame, but the port does
+    // those loads synchronously, so advance the seed to the same point before
+    // gameplay code starts consuming FRAND/SFRAND values.
+    for (i = 0; i < 331; i++) {
+        RANDOM();
+    }
+}
+
+// *----------------------------------------------------------------------------
+
+static int VALIDATE_SINGLE_FRAME(void) {
+    const char* value = getenv("CRUSN_VALIDATE_SINGLE_FRAME");
+    return value != NULL && value[0] == '1' && value[1] == '\0';
 }
 
 // *----------------------------------------------------------------------------

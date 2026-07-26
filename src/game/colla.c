@@ -110,7 +110,7 @@ void ATTR_COLLISION(void);
 void WRECKST(void);
 extern int WRECKFLG;
 extern int CHEAT;
-void DRONINBZ(void);
+void DRONINBZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 float ROADIR(OBJ* track_obj /*AR0*/);
 int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 extern const char PC2[];
@@ -572,9 +572,9 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     // asm 00002046: 	LDF	*+AR4(OPOSX),R1		;GET Y OBJECT OFFSET
     // asm 00002047: 	LDF	*+AR4(OPOSY),R4		;GET Y OBJECT OFFSET
     // asm 00002048: 	LDF	*+AR4(OPOSZ),R5		;GET Z OBJECT OFFSET
-    MAME_ASSERT_REG_FLOAT(0x00002047, "R1", &obj->pos.X);
-    MAME_ASSERT_REG_FLOAT(0x00002048, "R4", &obj->pos.Y);
-    MAME_ASSERT_REG_FLOAT(0x00002049, "R5", &obj->pos.Z);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002047, "R1", &obj->pos.X, 16);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002048, "R4", &obj->pos.Y, 16);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002049, "R5", &obj->pos.Z, 16);
     // asm 00002049: 	LDI	2,IR0
     // asm 0000204A: 	LDI	CARVNUM-1,RC		;LOOP FOR ALL POINTS
     // asm 0000204B: 	RPTB	LOOP

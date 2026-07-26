@@ -15,10 +15,13 @@
 #include "sys.h"
 #include "sysid.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
+#include <math.h>
 #include <string.h>
 
 extern MATRIX _MATRIXA;
+extern MATRIX _MATRIXB;
 
 /*
  * Source module: asm/PLYR.ASM
@@ -38,23 +41,23 @@ static void CAMROT(void);
 static void GETCAMPOS(void);
 void CAMYADJ(void);
 static void PLYONRD(void);
-void DRONEGO(void);
+void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, float steering_delta /*R2*/);
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void GETREV(void);
-void GETRPM(void);
-static void GETSKID(void);
+void GETRPM(CARBLK* carblk /*AR5*/);
+static void GETSKID(CARBLK* carblk /*AR5*/);
 static void CKOFRD(void);
-static void GETDIR(void);
+static float GETDIR(float steering_delta /*R0*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void CARSPIN(void);
 static void GETCARROT(void);
-void GETSPD(void);
+void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void GETBRAKE(void);
 void _off_brake(void);
 void _on_brake(void);
 static void GETPEDAL(void);
 static void GETGEAR(void);
 static void GETMAN(void);
-void GETAUTO(void);
+int GETAUTO(CARBLK* carblk /*AR5*/);
 static void GETSTEER(void);
 void _VIEW0(void);
 void _VIEW1(void);
@@ -62,10 +65,10 @@ void _VIEW2(void);
 static void ZOOMUP(void);
 void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void BACKCK(void);
-static void CKBND(void);
+static int CKBND(CARBLK* carblk /*AR5*/);
 static void TUNCHK(void);
 void INBOUNDZ(void);
-void DRONINBZ(void);
+void DRONINBZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void CURBCOL0(void);
 static void CURBSPIN(void);
 static void CURBSPN(void);
@@ -164,7 +167,7 @@ int PLYRFIRST;
 /* asm: PLAIRTIM	.bss	PLAIRTIM,1 */
 int PLAIRTIM;
 /* asm: CHEATACC	.bss	CHEATACC,1 */
-int CHEATACC;
+float CHEATACC = 1.0f;
 /* asm: CHEAT	.bss	CHEAT,1 */
 float CHEAT = 1.0f;
 // *PLAYER 1ST, 2ND, 3RD POSTION COORDS:
@@ -667,6 +670,8 @@ L883:
     // asm 00002A56: 	LDF	1.0,R0			;INITIALIZE THE CHEAT
     // asm 00002A57: 	STF	R0,@CHEATACC
     // asm 00002A58:  	STF	R0,@CHEAT
+    CHEATACC = 1.0f;
+    CHEAT = 1.0f;
     // asm 00002A59: 	LDI	@_MODE,R0
     // asm 00002A5A: 	OR	MHUD,R0
     // asm 00002A5B: 	STI	R0,@_MODE
@@ -1289,52 +1294,77 @@ static void PLYONRD(void) {
  *		CARBRAKE	;BRAKING FRICTION (0-1.0)	(FLOAT)
  *
  */
-void DRONEGO(void) {
+void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, float steering_delta /*R2*/) {
+    float velocity_delta;
+    VECTOR forward_vector;
+
     // asm 00002C18: 	PUSHF	R2
     // asm 00002C19: 	CALL	GETAUTO			;GET AUTO TRANS VALUE
+    carblk->gear = GETAUTO(carblk);
     // asm 00002C1A: 	STI	R0,*+AR5(CARGEAR) 	;DO THE GEAR
+    MAME_ASSERT_REG(0x00002C1B, "R0", &carblk->gear);
     // ;	LDF	1.0,R0
     // ;	STF	R0,@DRAFTVAL		;NO DRAFTING FOR DRONES...
     // asm 00002C1B: 	CALL	GETSPD
+    GETSPD(obj, carblk);
     // asm 00002C1C: 	CALL 	GETSKID
+    GETSKID(carblk);
     // asm 00002C1D: 	CALL	GETRPM			;GET YOUR REVS
+    GETRPM(carblk);
     // *GET CAR DIRECTION DELTA RADIANS
     // asm 00002C1E: 	POPF	R0			;GET STEERIN ANGLE
     // asm 00002C1F: 	CALL	GETDIR
+    steering_delta = GETDIR(steering_delta, obj, carblk);
     // asm 00002C20: 	PUSHF	R0
     // asm 00002C21: 	CALL	DRONINBZ
+    DRONINBZ(obj, carblk);
     // asm 00002C22: 	POPF	R2
     // *GET INCREMENTAL ROTATION MATRIX
     // asm 00002C23: 	LDI	@MATRIXAI,AR2
+    MAME_ASSERT_REG_FLOAT(0x00002C24, "R2", &steering_delta);
     // asm 00002C24: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, steering_delta);
     // *FORM NEW ROTATION MATRIX
     // asm 00002C25: 	LDI	AR4,R2
     // asm 00002C26: 	ADDI	OMATRIX,R2
     // asm 00002C27: 	LDI	R2,R3
     // asm 00002C28: 	CALL	CONCATMAT
+    CONCATMAT(&MATRIXAI, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
     // *FORM NEW VELOCITY MATRIX
     // asm 00002C29: 	LDF	*+AR5(CARVROT),R2    	;GET VELOCITY MATRIX
+    velocity_delta = carblk->y_velocity_rotation;
     // asm 00002C2A: 	SUBF	*+AR5(CARYROT),R2
+    velocity_delta -= carblk->y_rotation;
     // asm 00002C2B: 	LDI	@MATRIXBI,AR2
     // asm 00002C2C: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXBI, velocity_delta);
     // asm 00002C2D: 	LDI	AR4,R2
     // asm 00002C2E: 	ADDI	OMATRIX,R2
     // asm 00002C2F: 	LDI	AR2,R3
     // asm 00002C30: 	CALL	CONCATMAT
+    CONCATMAT(&MATRIXBI, (MATRIX*)&obj->omatrix, &MATRIXBI);
     // asm 00002C31: 	LDF  	*+AR5(CARDIST),R2	;GET DISTANCE
+    forward_vector.X = 0.0f;
+    forward_vector.Y = 0.0f;
+    forward_vector.Z = carblk->dist;
     // asm 00002C32: 	LDI	@MATRIXBI,AR2
     // asm 00002C33: 	LDI	*+AR5(CAR_AIRB),R0
     // asm 00002C34: 	BNZ	DAIRB	    		;WERE FLYING
+    if (carblk->rear_airborne != 0) {
+        goto DAIRB;
+    }
     // *MOVE CAR FORWARD
     // asm 00002C35: 	LDI	AR4,R3
     // asm 00002C36: 	ADDI	OVELX,R3
     // asm 00002C37: 	CALL	FORWARD
+    FORWARD(&forward_vector, &MATRIXBI, (VECTOR*)&obj->vel_x);
 DAIRB:
     // asm 00002C38: 	CALL	OVELADD
+    OVELADD(obj);
     // *GET ROAD MATRIX
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONEGO", 0, 0);
-    UNIMPL();
+    DRONESTOP(obj, carblk);
 }
 
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
@@ -1485,19 +1515,26 @@ REV5:
  *	AR4	CAR OBJECT
  *	AR5	CAR STRUCTURE
  */
-void GETRPM(void) {
+void GETRPM(CARBLK* carblk /*AR5*/) {
     // asm 00002C92: 	LDI	@GEARTABI,AR0
     // asm 00002C93: 	ADDI	*+AR5(CARGEAR),AR0
     // asm 00002C94: 	LDF	*+AR5(CARSPEED),R0	;GET SPEED
+    carblk->rpm_x100 = carblk->speed;
     // asm 00002C95: 	MPYF	*AR0,R0			;MULTIPLY BY GEAR RATIO
+    carblk->rpm_x100 *= GEARTABI[carblk->gear];
     // asm 00002C96: 	CMPF	NUM_RPM,R0		;LIMIT TO RANGE
     // asm 00002C97: 	LDFGT	NUM_RPM,R0
+    if (carblk->rpm_x100 > NUM_RPM) {
+        carblk->rpm_x100 = NUM_RPM;
+    }
     // asm 00002C98: 	CMPI	0,R0
     // asm 00002C99: 	LDILT	0,R0
+    if (carblk->rpm_x100 < 0.0f) {
+        carblk->rpm_x100 = 0.0f;
+    }
     // asm 00002C9A: 	STF	R0,*+AR5(CARRPM)
     // asm 00002C9B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETRPM", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1510,78 +1547,146 @@ void GETRPM(void) {
  *	R0	SKID FACTOR
  *	0=NOSKID, 1.0=FULL SKID
  */
-static void GETSKID(void) {
+static void GETSKID(CARBLK* carblk /*AR5*/) {
+    float skid;
+    float rotational_difference;
+    float factor;
+
     // *CHECK SPIN OUT
     // asm 00002C9C: 	LDI	*+AR5(CAR_SPIN),R0  	;FULL SKID ON SPIN-OUT
     // asm 00002C9D: 	BEQ	GETSK00
+    if (carblk->spin_flag == 0) {
+        goto GETSK00;
+    }
     // asm 00002C9E:        	LDF	1.00,R0
+    skid = 1.0f;
     // asm 00002C9F: 	B	GETSKXX
+    goto GETSKXX;
     // *CHECK OVERREV
 GETSK00:
     // asm 00002CA0: 	LDI	*+AR5(CARGEAR),R0	;HI GEAR?
     // asm 00002CA1: 	CMPI	4,R0
     // asm 00002CA2: 	BZ	GETSK0			;YES, NO OVERREV...
+    if (carblk->gear == 4) {
+        goto GETSK0;
+    }
     // asm 00002CA3: 	LDF	*+AR5(CARRPM),R0
     // asm 00002CA4: 	CMPF	OVERREV,R0 		;OVERREV:
     // asm 00002CA5: 	BLT	GETSK0
+    if (carblk->rpm_x100 < OVERREV) {
+        goto GETSK0;
+    }
     // asm 00002CA6:        	LDF	0.80,R0			;YES DO A SKID
+    skid = 0.80f;
     // asm 00002CA7: 	B	GETSKXX
+    goto GETSKXX;
     // *GET STEERING-SPEED SKID
 GETSK0:
     // asm 00002CA8: 	LDF	*+AR5(CARYROT),R2
+    rotational_difference = carblk->y_rotation;
     // asm 00002CA9: 	SUBF	*+AR5(CARVROT),R2
+    rotational_difference -= carblk->y_velocity_rotation;
     // asm 00002CAA: 	CALL	NORMITS
+    rotational_difference = NORMIT(rotational_difference);
     // asm 00002CAB: 	CMPF	1.2,R2			;KEEP IN RANGE
     // asm 00002CAC: 	LDFGT	1.2,R2
+    if (rotational_difference > 1.2f) {
+        rotational_difference = 1.2f;
+    }
     // asm 00002CAD: 	CMPF	-1.2,R2
     // asm 00002CAE: 	LDFLT	-1.2,R2
+    if (rotational_difference < -1.2f) {
+        rotational_difference = -1.2f;
+    }
     // asm 00002CAF: 	LDF	R2,R0
+    skid = rotational_difference;
     // asm 00002CB0: 	MPYF	0.2,R0		  	;ADJUST IT DUDE
+    skid *= 0.2f;
     // asm 00002CB1: 	ADDF	*+AR5(CARTURN),R0
+    skid += carblk->turn;
     // asm 00002CB2: 	ABSF	R0
+    skid = fabsf(skid);
     // asm 00002CB3: 	CMPF	0.3,R0
     // asm 00002CB4: 	LDFGT	0.3,R0			;MAX IT OUT
+    if (skid > 0.3f) {
+        skid = 0.3f;
+    }
     // asm 00002CB5: 	MPYF	*+AR5(CARSPEED),R0
+    skid *= carblk->speed;
     // *GET LOW SPEED RIPOUT
     // asm 00002CB6: 	LDF	*+AR5(CARTHROTTLE),R1	;FULL THROTTLE?
     // asm 00002CB7: 	CMPF	0.90,R1
     // asm 00002CB8: 	BLT	GETSK1			;NO
+    if (carblk->throttle < 0.90f) {
+        goto GETSK1;
+    }
     // asm 00002CB9: 	LDI	*+AR5(CARGEAR),R1	;FULL THROTTLE?
     // asm 00002CBA: 	BZ	GETSK1
+    if (carblk->gear == 0) {
+        goto GETSK1;
+    }
     // asm 00002CBB: 	CMPI	2,R1
     // asm 00002CBC: 	BGT	GETSK1			;ONLY FIRST GEAR...
+    if (carblk->gear > 2) {
+        goto GETSK1;
+    }
     // asm 00002CBD: 	LDF	*+AR5(CARSPEED),R1
+    factor = carblk->speed;
     // ;	SUBF	65,R1
     // asm 00002CBE: 	SUBF	100,R1
+    factor -= 100.0f;
     // asm 00002CBF: 	LDFGT	0,R1
+    if (factor > 0.0f) {
+        factor = 0.0f;
+    }
     // asm 00002CC0: 	ABSF	R1
+    factor = fabsf(factor);
     // asm 00002CC1: 	MPYF	1.1,R1
+    factor *= 1.1f;
     // asm 00002CC2: 	ADDF	R1,R0
+    skid += factor;
 GETSK1:
     // *GET BRAKE FACTOR
     // asm 00002CC3: 	LDF	*+AR5(CARBRAKE),R1
+    factor = carblk->brake;
     // asm 00002CC4: 	MPYF	1.0,R1
+    factor *= 1.0f;
     // asm 00002CC5: 	ADDF	1.0,R1
+    factor += 1.0f;
     // asm 00002CC6: 	MPYF	R1,R0			;DOUBLE IT FOR BRAKE DUDE!!!
+    skid *= factor;
     // *GET THROTTLE FACTOR
     // asm 00002CC7: 	LDF	*+AR5(CARTHROTTLE),R1
+    factor = carblk->throttle;
     // asm 00002CC8: 	MPYF	0.25,R1
+    factor *= 0.25f;
     // asm 00002CC9: 	ADDF	1.0,R1
+    factor += 1.0f;
     // asm 00002CCA: 	MPYF	R1,R0			;25% BOOST FOR THROTTLE ON
+    skid *= factor;
     // asm 00002CCB: 	SUBF	22,R0
+    skid -= 22.0f;
     // ;	SUBF	15,R0
     // asm 00002CCC: 	LDFLT	0,R0   			;NO SKID
+    if (skid < 0.0f) {
+        skid = 0.0f;
+    }
     // ;	MPYF	0.05,R0			;DIVIDE BY 25
     // asm 00002CCD: 	MPYF	0.045,R0 		;DIVIDE BY 25
+    skid *= 0.045f;
     // asm 00002CCE: GETSKX
     // asm 00002CCE: 	CMPF	1.0,R0
     // asm 00002CCF: 	LDFGT	1.0,R0
+    if (skid > 1.0f) {
+        skid = 1.0f;
+    }
     // asm 00002CD0: 	MPYF	*+AR5(CARTRACTION),R0	;GET TRACTION COEFF.
+    skid *= carblk->traction;
 GETSKXX:
     // asm 00002CD1: 	STF	R0,*+AR5(CARSKID) 	;NEW SKID FACTOR
+    carblk->skid = skid;
     // asm 00002CD2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSKID", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1637,56 +1742,102 @@ NOTOFFX:
  *CLOBBERED
  *	R1,R2,R3,R4,R5
  */
-static void GETDIR(void) {
+static float GETDIR(float steering_delta /*R0*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    float body_rotation;
+    float velocity_rotation;
+    float rotational_difference;
+    float skid_factor;
+    float grip_factor;
+
+    (void)obj;
     // asm 00002CEB: 	LDI	*+AR5(CAR_AIRF),R1
     // asm 00002CEC: 	BZ	GETDIR1
+    if (carblk->front_airborne == 0) {
+        goto GETDIR1;
+    }
     // asm 00002CED: 	LDF	0,R0			;NO STEERING IN AIR
+    steering_delta = 0.0f;
     // asm 00002CEE: 	LDF	*+AR5(CARDROT),R1
+    body_rotation = carblk->last_y_rotation;
     // asm 00002CEF: 	ADDF	*+AR5(CARYROT),R1
+    body_rotation += carblk->y_rotation;
     // asm 00002CF0: 	B	GETDIR2
+    goto GETDIR2;
 GETDIR1:
     // asm 00002CF1: 	LDI	*+AR5(CAR_SPIN),R1	;CHECK SPINOUT...
     // asm 00002CF2: 	BNZ	CARSPIN
+    if (carblk->spin_flag != 0) {
+        CARSPIN();
+        return 0.0f;
+    }
     // *GET SKID FACTOR
     // asm 00002CF3: 	LDF	*+AR5(CARSKID),R4	;R4=SKID FACTOR
+    skid_factor = carblk->skid;
     // asm 00002CF4: 	LDF	1.0,R5
+    grip_factor = 1.0f;
     // asm 00002CF5: 	SUBF	R4,R5			;R5=1-SKID FACTOR
+    grip_factor -= skid_factor;
     // asm 00002CF6: 	MPYF	0.75,R5
+    grip_factor *= 0.75f;
     // asm 00002CF7: 	ADDF	0.25,R5			;ADJUST STEER BY .5-1.0 (.5=MAX SKID)
+    grip_factor += 0.25f;
     // asm 00002CF8: 	MPYF	R5,R0			;SKID ADJUSTED STEERING
+    steering_delta *= grip_factor;
     // *GET SLIDE DELTA ANGLE
     // asm 00002CF9: 	LDF	*+AR5(CARVROT),R3  	;VELOCITY ROTATION
+    velocity_rotation = carblk->y_velocity_rotation;
     // asm 00002CFA: 	LDF	*+AR5(CARYROT),R1	;BODY ROTATION
+    body_rotation = carblk->y_rotation;
     // asm 00002CFB: 	SUBF	R3,R1,R2		;ROTATIONAL DIFFERENCE
+    rotational_difference = body_rotation - velocity_rotation;
     // asm 00002CFC: 	CALL	NORMITS			;NORMALIZE DIFFERENCE
+    rotational_difference = NORMIT(rotational_difference);
     // *GET RECOVERY FACTOR
     // asm 00002CFD: 	MPYF	0.095,R2
+    rotational_difference *= 0.095f;
     // asm 00002CFE: 	NEGF	R2,R5
+    grip_factor = -rotational_difference;
     // asm 00002CFF: 	MPYF	0.5,R5
+    grip_factor *= 0.5f;
     // asm 00002D00: 	ADDF	R5,R1
+    body_rotation += grip_factor;
     // *GET NEW CARVROT
     // asm 00002D01: 	ADDF	R2,R3			;ADD IN RECOVERY FACTOR
+    velocity_rotation += rotational_difference;
     // asm 00002D02: 	ADDF	R0,R3			;ADD IN STEERING FACTOR
+    velocity_rotation += steering_delta;
     // asm 00002D03: 	STF	R3,*+AR5(CARVROT)  	;VELOCITY DIRECTION
+    carblk->y_velocity_rotation = velocity_rotation;
     // *GET DELTA BODY MOMENTUM
     // asm 00002D04: 	MPYF	*+AR5(CARDROT),R4	;BODY DELTA MOMENTUM ON SKID
+    skid_factor *= carblk->last_y_rotation;
     // asm 00002D05: 	MPYF	0.7,R4
+    skid_factor *= 0.7f;
     // asm 00002D06: 	LDF	*+AR5(CARTHROTTLE),R5
+    grip_factor = carblk->throttle;
     // asm 00002D07: 	MPYF	0.5,R5
+    grip_factor *= 0.5f;
     // asm 00002D08: 	ADDF	0.5,R5
+    grip_factor += 0.5f;
     // asm 00002D09: 	MPYF	1.2,R5
+    grip_factor *= 1.2f;
     // asm 00002D0A: 	MPYF	R5,R4			;PUMP UP BODY SLIDE...
+    skid_factor *= grip_factor;
     // asm 00002D0B: 	ADDF	R4,R0
+    steering_delta += skid_factor;
     // asm 00002D0C: 	STF	R0,*+AR5(CARDROT)	;BODY DELTA
+    carblk->last_y_rotation = steering_delta;
     // asm 00002D0D: 	ADDF	R0,R1			;ADD CARDROT TO CARYROT
+    body_rotation += steering_delta;
 GETDIR2:
     // asm 00002D0E: 	STF	R1,*+AR5(CARYROT)	;BODY DIRECTION
+    carblk->y_rotation = body_rotation;
     // asm 00002D0F: 	RETS
     // *
     // *CAR SPINOUT
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETDIR", 0, 0);
-    UNIMPL();
+    return steering_delta;
 }
 
 static void CARSPIN(void) {
@@ -1867,179 +2018,336 @@ static float ENGFR[] = {
  *	AR5	CAR BLOCK
  *
  */
-void GETSPD(void) {
+void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    CAR_POINT* points;
+    float accel;
+    float speed;
+    float friction;
+    float power_low;
+    float power_high;
+    float factor;
+    float skid_friction;
+    float brake_friction;
+    float speed_distance;
+    int index;
+    int frames;
+    int i;
+
     // asm 00002D83: 	LDI	*+AR5(CAR_AIRB),R0
     // asm 00002D84: 	BZ	GETSPD1	      		;NO AIR DUDE...
+    if (carblk->rear_airborne == 0) {
+        goto GETSPD1;
+    }
     // *AIRBORNE CASE
     // asm 00002D85: 	FLOATP	@NFRAMES,R0
+    accel = (float)NFRAMES;
     // asm 00002D86: 	MPYF	4,R0 			;GET GRAVITATIONAL ACCEL
+    accel *= TMS320_C3X_SHORT_FLOAT(4.0);
     // asm 00002D87: 	ADDF	*+AR4(OVELY),R0
+    accel += obj->vel_y;
     // asm 00002D88: 	STF	R0,*+AR4(OVELY)
+    obj->vel_y = accel;
     // asm 00002D89: 	LDF	0,R0			;SET ACCEL, FRICT TO ZERO
+    accel = 0.0f;
     // asm 00002D8A: 	LDF	0,R3
+    friction = 0.0f;
     // asm 00002D8B: 	BR	GETSPD2
+    goto GETSPD2;
     // *CHECK SPIN OUT
 GETSPD1:
     // asm 00002D8C: 	LDI	*+AR5(CAR_SPIN),R0
     // asm 00002D8D: 	BZ	GETSPD10       		;NO SPINOUT...
+    if (carblk->spin_flag == 0) {
+        goto GETSPD10;
+    }
     // asm 00002D8E: 	LDF	0,R0			;SET ACCEL TO ZERO
+    accel = 0.0f;
     // asm 00002D8F: 	LDF	@SPINFRICI,R3
+    friction = SPINFRICI;
     // asm 00002D90: 	BR	GETSPD2
+    goto GETSPD2;
     // *GET ENGINE ACCEL
 GETSPD10:
     // asm 00002D91: 	LDF	*+AR5(CARTHROTTLE),R0
+    accel = carblk->throttle;
     // asm 00002D92: 	MPYF	*+AR5(CARMAXACCEL),R0
+    accel *= carblk->max_accel;
     // asm 00002D93: 	CMPI	@PLYCAR,AR4	    	;CHEAT ACCEL
     // asm 00002D94: 	LDFNZ	1.0,R1
     // asm 00002D95: 	LDFZ	@CHEATACC,R1
+    factor = (obj != PLYCAR) ? TMS320_C3X_SHORT_FLOAT(1.0) : (float)CHEATACC;
     // asm 00002D96: 	MPYF	R1,R0
+    accel *= factor;
     // asm 00002D97: 	LDF	*+AR5(CARRPM),R1
+    factor = carblk->rpm_x100;
     // asm 00002D98: 	MPYF	0.333,R1
+    factor *= TMS320_C3X_SHORT_FLOAT(0.333);
     // asm 00002D99: 	FIX	R1,IR0		   	;GET TABLE INDEX
+    index = (int)factor;
     // asm 00002D9A: 	CMPI	18,IR0
     // asm 00002D9B: 	LDIGT	18,IR0			;KEEP INDEX IN RANGE
+    if (index > 18) {
+        index = 18;
+    }
     // asm 00002D9C: 	LDI	@ENGACTABI,AR0
     // asm 00002D9D: 	LDF	*+AR0(IR0),R2		;GET LO POWER FACTOR FOR GEAR
+    power_low = ENGACTABI[index];
     // asm 00002D9E: 	ADDI	1,IR0
+    index += 1;
     // asm 00002D9F: 	LDF	*+AR0(IR0),R3		;GET HI POWER FACTOR FOR GEAR
+    power_high = ENGACTABI[index];
     // asm 00002DA0: 	FLOAT	IR0,R4
     // asm 00002DA1: 	SUBF	R1,R4,R1
+    factor = (float)index - factor;
     // asm 00002DA2: 	LDFLT	0,R1  			;KEEP FACTOR IN BOUNDS
+    if (factor < 0.0f) {
+        factor = 0.0f;
+    }
     // asm 00002DA3: 	CMPF	1.0,R1
     // asm 00002DA4: 	LDFGT	1.0,R1
+    if (factor > TMS320_C3X_SHORT_FLOAT(1.0)) {
+        factor = TMS320_C3X_SHORT_FLOAT(1.0);
+    }
     // asm 00002DA5: 	MPYF	R1,R2			;INTERPOLATE !!!
+    power_low *= factor;
     // asm 00002DA6: 	SUBRF	1.0,R1
+    factor = TMS320_C3X_SHORT_FLOAT(1.0) - factor;
     // asm 00002DA7: 	MPYF	R1,R3
+    power_high *= factor;
     // asm 00002DA8: 	ADDF	R2,R3,R1
+    factor = power_low + power_high;
     // asm 00002DA9: 	LDI	*+AR5(CARGEAR),IR0	;GEAR MULTIPLIER
+    index = carblk->gear;
     // asm 00002DAA: 	LDI	@GEARACTABI,AR0
     // asm 00002DAB: 	MPYF	*+AR0(IR0),R1
+    factor *= GEARACTABI[index];
     // asm 00002DAC: 	LDF	1.0,R2
+    power_low = TMS320_C3X_SHORT_FLOAT(1.0);
     // asm 00002DAD: 	LDI	*+AR5(CARTRANS),R3
     // asm 00002DAE: 	LDFZ	0.96,R2			;4% POWER LOSS AUTOMATIC
+    if (carblk->transmission == 0) {
+        power_low = TMS320_C3X_SHORT_FLOAT(0.96);
+    }
     // asm 00002DAF: 	MPYF	R2,R1
+    factor *= power_low;
     // *CUT ACCEL ON SKID
     // asm 00002DB0: 	MPYF	R1,R0
+    accel *= factor;
     // asm 00002DB1: 	LDF	*+AR5(CARSKID),R1    	;CUT DOWN ACCEL ON SKID
+    factor = carblk->skid;
     // asm 00002DB2: 	MPYF	0.25,R1			;ONLY 25% CUT
+    factor *= TMS320_C3X_SHORT_FLOAT(0.25);
     // asm 00002DB3: 	SUBRF	1.0,R1
+    factor = TMS320_C3X_SHORT_FLOAT(1.0) - factor;
     // asm 00002DB4: 	MPYF	R1,R0			;R0=ENGINE ACCEL
+    accel *= factor;
     // *GET GRAVITY ACCEL
     // asm 00002DB5: 	LDF	*+AR4(OMAT21),R1	;ADD IN YOUR GRAVITY ACTION
+    factor = obj->omatrix.mat21;
     // asm 00002DB6: 	LDF	2,R3			;DEFAULT CONSTANT
+    friction = TMS320_C3X_SHORT_FLOAT(2.0);
     // asm 00002DB7: 	LDI	@_countdown,R2		;TIMEOUT?
     // asm 00002DB8: 	LDFZ	0,R3			;YES, NO GRAVITY
+    if (_countdown == 0) {
+        friction = 0.0f;
+    }
     // asm 00002DB9: 	LDI	@_MODE,R2		;ON START LINE?
     // asm 00002DBA: 	TSTB	MGO,R2
     // asm 00002DBB: 	LDFZ	0,R3			;YIP, NO GRAVITY
+    if ((_MODE & MGO) == 0) {
+        friction = 0.0f;
+    }
     // asm 00002DBC: 	LDF	*+AR5(CARBRAKE),R2	;BRAKE ON?
     // asm 00002DBD: 	CMPF	0.5,R2
     // asm 00002DBE: 	LDFGT	0,R3			;YES, NO GRAV
+    if (carblk->brake > TMS320_C3X_SHORT_FLOAT(0.5)) {
+        friction = 0.0f;
+    }
     // asm 00002DBF: 	MPYF	R3,R1			;MULTIPLY BY CONSTANT
+    factor *= friction;
     // asm 00002DC0: 	ADDF	R1,R0
+    accel += factor;
     // *GET TOTAL FRICTION
     // *GET ROAD FRICTION
     // asm 00002DC1: 	LDI	AR5,AR3
     // asm 00002DC2: 	ADDI	CARPCOL,AR3
+    points = &carblk->center;
     // asm 00002DC3: 	LDF	0,R3
+    friction = 0.0f;
     // asm 00002DC4: 	LDI	4,RC
     // asm 00002DC5: 	RPTB	FRICLP
-    // asm 00002DC6: 	LDI	*AR3++(CARVSIZ),AR0 	;GET ROAD OBJECT INTERSECTING
-    // asm 00002DC7: 	LDI	*+AR0(OID),R1		;CHECK OID
-    // asm 00002DC8: 	AND	CLASS_M+TYPE_M,R1
-    // asm 00002DC9: 	CMPI	ROAD_C,R1
-    // asm 00002DCA: 	LDFZ	*+AR5(CARRDFR),R2    	;GET ROAD FRICTION
-    // asm 00002DCB: 	LDFNZ	*+AR5(CAROFRDFR),R2	;GET OFF ROAD FRICTION
-    // ;	MPYF	@DRAFTVAL,R2		;ADJUST FOR DRAFT
-FRICLP:
-    // asm 00002DCC: ADDF	R2,R3
+    for (i = 0; i < 5; i++) {
+        OBJ* road_obj;
+
+        // asm 00002DC6: 	LDI	*AR3++(CARVSIZ),AR0 	;GET ROAD OBJECT INTERSECTING
+        road_obj = OBJREF_TO_PTR(points[i].collided_road_object);
+        // asm 00002DC7: 	LDI	*+AR0(OID),R1		;CHECK OID
+        // asm 00002DC8: 	AND	CLASS_M+TYPE_M,R1
+        // asm 00002DC9: 	CMPI	ROAD_C,R1
+        // asm 00002DCA: 	LDFZ	*+AR5(CARRDFR),R2    	;GET ROAD FRICTION
+        // asm 00002DCB: 	LDFNZ	*+AR5(CAROFRDFR),R2	;GET OFF ROAD FRICTION
+        factor = (road_obj != NULL && (road_obj->id & (CLASS_M + TYPE_M)) == ROAD_C) ? carblk->road_friction : carblk->offroad_friction;
+        // ;	MPYF	@DRAFTVAL,R2		;ADJUST FOR DRAFT
+    FRICLP:
+        // asm 00002DCC: ADDF	R2,R3
+        friction += factor;
+    }
     // asm 00002DCD: 	MPYF	0.20,R3			;TAKE AVERAGE BASED ON WHEELS OFF
+    friction *= TMS320_C3X_SHORT_FLOAT(0.20);
     // *JARV CHANGE
     // asm 00002DCE: 	CMPI	@PLYCAR,AR4
     // asm 00002DCF: 	BNE	FRL1
+    if (obj != PLYCAR) {
+        goto FRL1;
+    }
     // asm 00002DD0: 	LDF	@CHEAT,R1
     // asm 00002DD1: 	CMPF	1.09,R1
     // asm 00002DD2: 	BLE	FRL1
+    if (CHEAT <= TMS320_C3X_SHORT_FLOAT(1.09)) {
+        goto FRL1;
+    }
     // asm 00002DD3: 	ADDF	*+AR5(CARRDFR),R3 	;CUT DOWN OFF ROAD FRIC IF BEHIND
+    friction += carblk->road_friction;
     // asm 00002DD4: 	MPYF	0.5,R3
+    friction *= TMS320_C3X_SHORT_FLOAT(0.5);
 FRL1:
     // *JARV ENDCHANGE
     // *GET SKID FRICTION
     // asm 00002DD5: 	LDF	*+AR5(CARSKID),R4    	;ADD IN SKID FACTOR
+    skid_friction = carblk->skid;
     // asm 00002DD6: 	LDF	@SKIDFRICI,R1
     // asm 00002DD7: 	MPYF	R1,R4,R5
+    brake_friction = SKIDFRICI * skid_friction;
     // asm 00002DD8: 	LDF	*+AR5(CARSPEED),R2	;CUT SKID FRICTION FOR LOW SPEED BURNOUT
     // asm 00002DD9: 	CMPF	100,R2
     // asm 00002DDA: 	BGT	FRIC0
+    if (carblk->speed > TMS320_C3X_SHORT_FLOAT(100.0)) {
+        goto FRIC0;
+    }
     // asm 00002DDB: 	LDF	*+AR5(CARTHROTTLE),R2	;FULL THROTTLE?
     // asm 00002DDC: 	CMPF	0.90,R2
     // asm 00002DDD: 	BLT	FRIC0
+    if (carblk->throttle < TMS320_C3X_SHORT_FLOAT(0.90)) {
+        goto FRIC0;
+    }
     // asm 00002DDE: 	LDI	*+AR5(CARGEAR),R2
     // asm 00002DDF: 	CMPI	2,R2
     // asm 00002DE0: 	BLE	FRIC1			;LOW SPEED BURNOUT, NO FRICTION111
+    if (carblk->gear <= 2) {
+        goto FRIC1;
+    }
     // ;	BZ	FRIC1			;LOW SPEED BURNOUT, NO FRICTION111
 FRIC0:
     // asm 00002DE1: 	ADDF	R5,R3
+    friction += brake_friction;
     // *GET BRAKE FRICTION
 FRIC1:
     // asm 00002DE2: 	LDF	*+AR5(CARBRAKE),R5   	;ADD IN BRAKE FRICTION
+    brake_friction = carblk->brake;
     // asm 00002DE3: 	MPYF	@BRAKFRICI,R5
+    brake_friction *= BRAKFRICI;
     // asm 00002DE4: 	NEGF	R4
+    skid_friction = -skid_friction;
     // asm 00002DE5: 	ADDF	1.0,R4			;BRAKE LOSES EFFECT IN SKID
+    skid_friction += TMS320_C3X_SHORT_FLOAT(1.0);
     // asm 00002DE6: 	MPYF	R4,R5
+    brake_friction *= skid_friction;
     // asm 00002DE7: 	LDF	1.0,R4			;INCREASE BRAKE EFFECTIVENESS AT LO SPD
+    factor = TMS320_C3X_SHORT_FLOAT(1.0);
     // asm 00002DE8: 	LDF	*+AR5(CARSPEED),R1
     // asm 00002DE9: 	CMPF	40,R1
     // asm 00002DEA: 	LDFLT	1.5,R4
+    if (carblk->speed < TMS320_C3X_SHORT_FLOAT(40.0)) {
+        factor = TMS320_C3X_SHORT_FLOAT(1.5);
+    }
     // asm 00002DEB: 	CMPF	20,R1
     // asm 00002DEC: 	LDFLT	2.0,R4
+    if (carblk->speed < TMS320_C3X_SHORT_FLOAT(20.0)) {
+        factor = TMS320_C3X_SHORT_FLOAT(2.0);
+    }
     // asm 00002DED: 	MPYF	R4,R5
+    brake_friction *= factor;
     // asm 00002DEE: 	ADDF	R5,R3		     	;TOTAL FRICTION
+    friction += brake_friction;
     // *GET ENGINE FRICTION
     // asm 00002DEF: 	LDI	*+AR5(CARGEAR),IR0
+    index = carblk->gear;
     // asm 00002DF0: 	LDI	@ENGFRI,AR0
     // asm 00002DF1: 	LDF	*+AR0(IR0),R4
+    factor = ENGFRI[index];
     // asm 00002DF2: 	LDF	*+AR5(CARRPM),R5	;MORE REVS MORE FRICTION
+    brake_friction = carblk->rpm_x100;
     // asm 00002DF3: 	SUBF	42,R5			;HEAVY FRICTION ABOVE 3900
+    brake_friction -= TMS320_C3X_SHORT_FLOAT(42.0);
     // asm 00002DF4: 	LDFLT	0,R5
+    if (brake_friction < 0.0f) {
+        brake_friction = 0.0f;
+    }
     // asm 00002DF5: 	MPYF	0.04,R5
+    brake_friction *= TMS320_C3X_SHORT_FLOAT(0.04);
     // asm 00002DF6: 	ADDF	1.0,R5			;APPROX RANGE 1-2
+    brake_friction += TMS320_C3X_SHORT_FLOAT(1.0);
     // asm 00002DF7: 	MPYF	R4,R5
+    brake_friction *= factor;
     // asm 00002DF8: GETSP22
     // asm 00002DF8: 	ADDF	R5,R3
+    friction += brake_friction;
     // *CALC NEW SPEED
 GETSPD2:
     // asm 00002DF9: 	LDF	0,R5
+    speed_distance = 0.0f;
     // asm 00002DFA: 	LDF	*+AR5(CARSPEED),R1
+    speed = carblk->speed;
     // asm 00002DFB: 	LDI	@NFRAMES,RC
+    frames = NFRAMES;
     // asm 00002DFC: 	CMPI	6,RC	 		;MAX IT OUT TO BE SAFE
     // asm 00002DFD: 	LDIGT	6,RC
+    if (frames > 6) {
+        frames = 6;
+    }
     // asm 00002DFE: 	SUBI	1,RC
+    frames -= 1;
     // *R0=ACCEL
     // *R1=SPEED
     // *R3=TOTAL FRICTION
     // *R5=DISTANCE
     // *R7=ENGINE FRICTION
     // asm 00002DFF: 	RPTB	GSL0
-    // asm 00002E00: 	MPYF 	R1,R3,R4	     	;BRAKE/ROAD/ENGINE FRICTION
-    // asm 00002E01: 	SUBF	R4,R1			;SUBTRACT FRICTION
-    // asm 00002E02: 	ADDF	R0,R1			;ADD ACCEL
-GSL0:
-    // asm 00002E03: ADDF	R1,R5			;ADD TO DISTANCE
+    for (i = 0; i <= frames; i++) {
+        // asm 00002E00: 	MPYF 	R1,R3,R4	     	;BRAKE/ROAD/ENGINE FRICTION
+        factor = speed * friction;
+        // asm 00002E01: 	SUBF	R4,R1			;SUBTRACT FRICTION
+        speed -= factor;
+        // asm 00002E02: 	ADDF	R0,R1			;ADD ACCEL
+        speed += accel;
+    GSL0:
+        // asm 00002E03: ADDF	R1,R5			;ADD TO DISTANCE
+        speed_distance += speed;
+    }
     // asm 00002E04: 	CMPF	0.5,R5	      		;MINIMUM SPEED
     // asm 00002E05: 	LDFLT	0,R5
+    if (speed_distance < TMS320_C3X_SHORT_FLOAT(0.5)) {
+        speed_distance = 0.0f;
+    }
     // asm 00002E06: 	CMPF	0,R1			;NO NEGATIVE SPEED
     // asm 00002E07: 	LDFLT	0,R1
+    if (speed < 0.0f) {
+        speed = 0.0f;
+    }
     // asm 00002E08: 	MPYF	1.5,R5			;SPEEDFUDGE
+    speed_distance *= TMS320_C3X_SHORT_FLOAT(1.5);
     // asm 00002E09: 	STF	R5,*+AR5(CARDIST)	;SAVE YOUR DISTANCE
+    carblk->dist = speed_distance;
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E09, "R5", &carblk->dist, 512);
     // asm 00002E0A: 	STF	R1,*+AR5(CARSPEED)	;NEW SPEED
+    carblk->speed = speed;
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E0A, "R1", &carblk->speed, 512);
     // asm 00002E0B: 	RETS
     // *
     // *GET BRAKE PEDAL
     // *RETURNS R0=BRAKE VALUE 0-1 (FLOAT)
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSPD", 0, 0);
-    UNIMPL();
 }
 
 static void GETBRAKE(void) {
@@ -2204,29 +2512,58 @@ static void GETMAN(void) {
     UNIMPL();
 }
 
-void GETAUTO(void) {
+int GETAUTO(CARBLK* carblk /*AR5*/) {
+    int shift_delta;
+    float torque_sensor;
+    int gear;
+    int rpm;
+
     // asm 00002E73: 	LDI	0,R2
+    shift_delta = 0;
     // asm 00002E74: 	LDF	*+AR5(CARTHROTTLE),R3	;TORQUE SENSOR FOR DOWNSHIFT
+    torque_sensor = carblk->throttle;
     // asm 00002E75: 	CMPF	1.0,R3
     // asm 00002E76: 	LDFGT	1.0,R3
+    if (torque_sensor > 1.0f) {
+        torque_sensor = 1.0f;
+    }
     // asm 00002E77: 	MPYF	11,R3
+    torque_sensor *= 11.0f;
     // asm 00002E78: 	FIX	R3
+    rpm = (int)torque_sensor;
     // asm 00002E79: 	ADDI	12,R3
+    rpm += 12;
     // asm 00002E7A: 	LDI	*+AR5(CARGEAR),R0
+    gear = carblk->gear;
     // asm 00002E7B: 	FIX	*+AR5(CARRPM),R1
+    torque_sensor = (float)((int)carblk->rpm_x100);
     // asm 00002E7C: 	CMPI	R3,R1
     // asm 00002E7D: 	LDILT	-1,R2	 		;DOWNSHIFT
+    if ((int)torque_sensor < rpm) {
+        shift_delta = -1;
+    }
     // asm 00002E7E: 	ADDI	18,R3
+    rpm += 18;
     // asm 00002E7F: 	CMPI	R3,R1
     // asm 00002E80: 	LDIGT	1,R2			;UPSHIFT
+    if ((int)torque_sensor > rpm) {
+        shift_delta = 1;
+    }
     // asm 00002E81: 	ADDI	R2,R0
+    gear += shift_delta;
     // asm 00002E82: 	CMPI	1,R0
     // asm 00002E83: 	LDILT	1,R0
+    if (gear < 1) {
+        gear = 1;
+    }
     // asm 00002E84: 	CMPI	4,R0
     // asm 00002E85: 	LDIGT	4,R0			;MAX OUT AT 4TH
+    if (gear > 4) {
+        gear = 4;
+    }
     // asm 00002E86: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETAUTO", 0, 0);
-    UNIMPL();
+    return gear;
 }
 
 // *----------------------------------------------------------------------------
@@ -2518,34 +2855,53 @@ BACKCKX:
  *	NE= OFFROAD
  *TRASHES R0,R1,RC
  */
-static void CKBND(void) {
+static int CKBND(CARBLK* carblk /*AR5*/) {
+    CAR_POINT* car_point;
+    int offroad;
+    int i;
+
     // asm 00002F2C: 	PUSH	AR3
     // asm 00002F2D: 	PUSH	AR0
     // asm 00002F2E: 	LDI	CARVNUM-2,RC	  	;CHECK ALL WHEELS
     // asm 00002F2F: 	LDI	AR5,AR3
     // asm 00002F30: 	ADDI	CARPCOL+CARVSIZ,AR3
+    car_point = &carblk->right_front;
     // asm 00002F31: 	LDI	0,R1
+    offroad = 0;
     // asm 00002F32: 	RPTB	CURBCKL
-    // asm 00002F33: 	LDI	*AR3++(CARVSIZ),R0 	;GET ROAD OBJECT INTERSECTING
-    // asm 00002F34: 	BZ	CURBCKX			;WE GOT NOTHING, COLLIDE 'EM
-    // asm 00002F35: 	LDI	R0,AR0
-    // asm 00002F36: 	LDI	*+AR0(OID),R0		;CHECK OID
-    // asm 00002F37: 	AND	CLASS_M,R0
-    // asm 00002F38: 	CMPI	ROAD_C,R0		;ROAD/SHOULDER TYPE?
-CURBCKL:
-    // asm 00002F39: LDINZ	1,R1
+    for (i = 0; i < 4; i++, car_point++) {
+        OBJ* road_obj;
+
+        // asm 00002F33: 	LDI	*AR3++(CARVSIZ),R0 	;GET ROAD OBJECT INTERSECTING
+        road_obj = OBJREF_TO_PTR(car_point->collided_road_object);
+        // asm 00002F34: 	BZ	CURBCKX			;WE GOT NOTHING, COLLIDE 'EM
+        if (road_obj == NULL) {
+            goto CURBCKX;
+        }
+        // asm 00002F35: 	LDI	R0,AR0
+        // asm 00002F36: 	LDI	*+AR0(OID),R0		;CHECK OID
+        // asm 00002F37: 	AND	CLASS_M,R0
+        // asm 00002F38: 	CMPI	ROAD_C,R0		;ROAD/SHOULDER TYPE?
+    CURBCKL:
+        // asm 00002F39: LDINZ	1,R1
+        if ((road_obj->id & CLASS_M) != ROAD_C) {
+            offroad = 1;
+        }
+    }
     // asm 00002F3A: 	CLRC
     // asm 00002F3B: 	POP	AR0
     // asm 00002F3C: 	POP	AR3
     // asm 00002F3D: 	LDI	R1,R1
     // asm 00002F3E: 	RETS
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKBND", 0, 0);
+    return offroad;
 CURBCKX:
     // asm 00002F3F: 	SETC
     // asm 00002F40: 	POP	AR0
     // asm 00002F41: 	POP	AR3
     // asm 00002F42: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CKBND", 0, 0);
-    UNIMPL();
+    return 2;
 }
 
 /*
@@ -2622,20 +2978,31 @@ void INBOUNDZ(void) {
  *	AR4	CAR
  *	AR5	CAR DATA BLOCK
  */
-void DRONINBZ(void) {
+void DRONINBZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    int boundary_status;
+
     // asm 00002F6B:  	LDI	*+AR4(ODIST),R0
     // asm 00002F6C: 	ASH	-1,R0
     // asm 00002F6D: 	CMPI	32000,R0		;IS DUDE CLOSE?
     // asm 00002F6E: 	BGT	DRONINBX		;NO, FORGET IT
+    if ((obj->dist >> 1) > 32000) {
+        goto DRONINBX;
+    }
     // asm 00002F6F: 	LDI	@_MODE,R1		;WAITING FOR START?
     // asm 00002F70: 	TSTB	MGO,R1
     // asm 00002F71: 	BZ	DRONINBX		;YES, EXIT
+    if ((_MODE & MGO) == 0) {
+        goto DRONINBX;
+    }
     // asm 00002F72: 	CALL	CKBND
+    boundary_status = CKBND(carblk);
     // asm 00002F73: 	BC	CURBCOL0		;OUT OF BOUNDS
+    if (boundary_status == 2) {
+        CURBCOL0();
+    }
 DRONINBX:
     // asm 00002F74: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONINBZ", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -2736,7 +3103,7 @@ CURBCOL2:
     // asm 00002FC2: 	STF	R2,*+AR5(CARYROT)	;ADJUST YROT <--- CARVROT
     // asm 00002FC3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CURBCOL0", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

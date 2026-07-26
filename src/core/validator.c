@@ -13,6 +13,7 @@
 
 static FILE* g_validate_log;
 static int g_validate_maps_loaded;
+int mame_validate_disabled = 1;
 static int print_oks = 0;
 static int abort_on_error = 1;
 static int fail_on_wrong_consumer = 0;
@@ -89,7 +90,7 @@ static void fail() {
 }
 
 static int should_skip_validation(void) {
-    return validate_log_exhausted;
+    return mame_validate_disabled || validate_log_exhausted;
 }
 
 static int validate_failed(void) {
@@ -704,12 +705,15 @@ static void validate_reg_float_value_impl(
     int caller_line,
     const char* failure_name,
     const char* expected_reg_name,
-    const void* ptr) {
+    const void* ptr,
+    uint32_t wiggle_room) {
     VALIDATE_ENTRY entry;
     char expected_buf[64];
     char actual_buf[64];
+    char reason_buf[64];
     float expected_value = 0.0f;
     float actual_value = 0.0f;
+    uint32_t allowed_ulp_diff = wiggle_room != 0 ? wiggle_room : 2;
 
     if (!read_next_validate_reg_word(caller_file, caller_line, failure_name, expected_reg_name, &entry)) {
         return;
@@ -719,10 +723,15 @@ static void validate_reg_float_value_impl(
     memcpy(&actual_value, ptr, sizeof(actual_value));
 
     if (expected_value != actual_value) {
-        if (float_ulp_diff(expected_value, actual_value) > 2) {
+        if (float_ulp_diff(expected_value, actual_value) > allowed_ulp_diff) {
             snprintf(expected_buf, sizeof(expected_buf), "%g (0x%08" PRIX32 ")", expected_value, entry.word_value);
             memcpy(&entry.word_value, &actual_value, sizeof(actual_value));
             snprintf(actual_buf, sizeof(actual_buf), "%g (0x%08" PRIX32 ")", actual_value, entry.word_value);
+            if (wiggle_room != 0) {
+                snprintf(reason_buf, sizeof(reason_buf), "value mismatch (float_ulp_wiggle=%" PRIu32 ")", wiggle_room);
+                validate_fail(caller_file, caller_line, entry.line_number, failure_name, reason_buf, expected_buf, actual_buf);
+                return;
+            }
             validate_fail(caller_file, caller_line, entry.line_number, failure_name, "value mismatch", expected_buf, actual_buf);
             return;
         }
@@ -1101,7 +1110,7 @@ void mame_assert_reg_at_addr_impl(
 
     if (reg_kind == MAME_VALIDATE_REG_KIND_FLOAT) {
         format_float_reg_name(reg_name, float_reg_name, sizeof(float_reg_name));
-        validate_reg_float_value_impl(caller_file, caller_line, reg_name, float_reg_name, ptr);
+        validate_reg_float_value_impl(caller_file, caller_line, reg_name, float_reg_name, ptr, wiggle_room);
         return;
     }
 

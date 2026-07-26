@@ -61,8 +61,8 @@ int main(void) {
     _c_int00();
 
     while (running) {
-        MAINLOOP();
         INT0();
+        MAINLOOP();
         crusn_yield_display_interrupt();
     }
 

@@ -40,13 +40,13 @@ void COMPTRAK(void);
 static void SEND_RACER_XSFER(void);
 void DECODE_RACER_XSFER(void);
 static void ACTIVE_XSFER(void);
-static void GETPOWER(void);
+static void GETPOWER(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static float GETSTSPD(PROC* p /*AR7*/, CARBLK* carblk /*AR5*/);
 void FIND_DYNA(void);
 static LEG* FIND_MAP(PROC* p /*AR7*/, int coded_id /*R2*/);
 int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-void CARSCAN(void);
-void PLSCAN(void);
+void CARSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
+void PLSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void OBSTABINIT(PROC* p /*AR7*/);
 float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static int CARCHEK(OBJ* obstacle_obj /*AR2*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, int table_code /*R0*/);
@@ -280,10 +280,16 @@ void RACER_DRONE(PROC* p) {
     float frames_to_piece;
     float desired_theta;
     float theta_delta;
+    float current_theta;
+    float frames_to_piece_divisor;
     float steering_value;
+    float steering_delta_for_drone;
     float turn_limit;
+    float initial_powercatch;
     float delta_x;
     float delta_z;
+    float lane_offset_x;
+    float lane_offset_z;
     int rank;
     int other_machine_controls;
 
@@ -451,9 +457,11 @@ NOOTHERPAL:
     p->ctx->RACER_DRONE.powersurge = 1.0f;
     // asm 00005146: 	LDF	0.05,R0
     // asm 00005147: 	CALL	FRAND
+    initial_powercatch = FRAND(TMS320_C3X_SHORT_FLOAT(0.05));
     // asm 00005148: 	ADDF	1.20,R0
+    initial_powercatch = TMS320_C3X_STF_TO_SINGLE((double)initial_powercatch + TMS320_C3X_SHORT_FLOAT(1.20));
     // asm 00005149: 	STF	R0,*+AR7(POWERCATCH)	;BLAST FROM START RANDOM TIME
-    p->ctx->RACER_DRONE.powercatch = FRAND(0.05f) + 1.20f;
+    p->ctx->RACER_DRONE.powercatch = initial_powercatch;
     // asm 0000514A: 	LDI	120,R0	   		;WAIT A LITTLE BEFORE UPDATE
     // asm 0000514B: 	STI	R0,*+AR7(SURGETIME)
     // asm 0000514C: 	STI	R0,*+AR7(CATCHTIME)
@@ -625,9 +633,9 @@ ONTRACK:
     // asm 0000519C: 	CALL	OBSTABINIT   		;CLEAR ROAD OBSTACLE MAP
     OBSTABINIT(p);
     // asm 0000519D: 	CALL	CARSCAN
-    CARSCAN();
+    CARSCAN(obj, carblk);
     // asm 0000519E: 	CALL	PLSCAN	      		;TEST TO SCAN PLAYER ON TRACK
-    PLSCAN();
+    PLSCAN(obj, carblk);
     // asm 0000519F: 	CALL	GETRDOFFSET
     // asm 000051A0: 	STF	R0,*+AR7(ROADOFFSET)
     p->ctx->RACER_DRONE.road_offset = GETRDOFFSET(p, obj, carblk);
@@ -646,7 +654,8 @@ ROADTRAK1:
     // asm 000051A9: 	SUBF	*+AR2(OPOSZ),R3
     // asm 000051AA: 	CALL	ARCTANF
     // asm 000051AB: 	SUBF	HALFPI,R0
-    desired_theta = atan2f(next_tracking_obj->pos.Z - tracking_obj->pos.Z, next_tracking_obj->pos.X - tracking_obj->pos.X) - HALFPI;
+    desired_theta = ARCTANF(next_tracking_obj->pos.X - tracking_obj->pos.X, next_tracking_obj->pos.Z - tracking_obj->pos.Z) -
+                    HALFPI;
     // asm 000051AC: 	LDF	R0,R2		      	;FIND THETA
     // asm 000051AD: 	CALL	_SINE
     // asm 000051AE: 	LDF	R0,R1
@@ -655,11 +664,15 @@ ROADTRAK1:
     // asm 000051B1: 	MPYF	*+AR7(ROADOFFSET),R1	;Z LANE OFFSET
     // asm 000051B2: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R2
     // asm 000051B3: 	ADDF	R0,R2
-    delta_x = (tracking_obj->pos.X - obj->pos.X) + (_SINE(desired_theta) * p->ctx->RACER_DRONE.road_offset);
+    lane_offset_x = _COSI(desired_theta) * p->ctx->RACER_DRONE.road_offset;
+    delta_x = tracking_obj->pos.X - obj->pos.X;
+    delta_x += lane_offset_x;
     // asm 000051B4: 	LDF	*+AR2(OPOSZ),R3		;COMPUTE DELTA Z TO GOAL
     // asm 000051B5: 	SUBF	*+AR4(OPOSZ),R3
     // asm 000051B6: 	ADDF	R1,R3
-    delta_z = (tracking_obj->pos.Z - obj->pos.Z) + (_COSI(desired_theta) * p->ctx->RACER_DRONE.road_offset);
+    lane_offset_z = _SINE(desired_theta) * p->ctx->RACER_DRONE.road_offset;
+    delta_z = tracking_obj->pos.Z - obj->pos.Z;
+    delta_z += lane_offset_z;
     // 	;POSITION TRACKING
     // 	;
     // 	;Set steering, trottle, gear, and brake
@@ -669,10 +682,11 @@ ROADTRAK1:
     // *GET XZ ANGLE TO GOAL
     // asm 000051B7: 	CALL	ARCTANF
     // asm 000051B8: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
-    desired_theta = atan2f(delta_z, delta_x) - HALFPI;
+    desired_theta = ARCTANF(delta_x, delta_z) - HALFPI;
     // asm 000051B9:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 000051BA: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
-    theta_delta = desired_theta - obj->rad.Y;
+    current_theta = obj->rad.Y;
+    theta_delta = desired_theta - current_theta;
     if (fabsf(theta_delta) >= PI) {
         theta_delta += theta_delta < 0.0f ? TWOPI : -TWOPI;
     }
@@ -682,14 +696,15 @@ ROADTRAK1:
     // asm 000051BE: 	SUBF	1,R1			;DBG
     // asm 000051BF: 	BZ	NODIV
     // asm 000051C0: 	CALL	DIV_F			;-> R0
-    if ((int)frames_to_piece != 1) {
-        theta_delta = DIV_F(theta_delta, (float)((int)frames_to_piece) - 1.0f);
+    frames_to_piece_divisor = (float)((int)frames_to_piece) - 1.0f;
+    if (frames_to_piece_divisor != 0.0f) {
+        theta_delta = DIV_F(theta_delta, frames_to_piece_divisor);
     }
 NODIV:
     // *THROTTLE ONLY IF RACE IS ON
     // asm 000051C1: 	PUSHF	R0
     // asm 000051C2: 	CALL	GETPOWER			;UPDATE POWER STUFF
-    GETPOWER();
+    GETPOWER(p, obj, carblk);
     // asm 000051C3: 	LDF	*+AR7(DELTA_THROTTLE),R0	;HAS THE RACE BEGUN?
     // asm 000051C4: 	LDI	@_MODE,R1
     // asm 000051C5: 	TSTB	MGO,R1
@@ -710,6 +725,7 @@ NODIV:
         steering_value = -0.09f;
     }
     // asm 000051CE: 	PUSHF	R0				;save steering value
+    steering_delta_for_drone = steering_value;
     // asm 000051CF: 	FLOAT	@NFRAMES,R1
     // asm 000051D0: 	MPYF	*+AR5(CARSPEED),R1
     turn_limit = (float)NFRAMES * carblk->speed;
@@ -743,9 +759,10 @@ NOTURN:
     // asm 000051DD: 	CALL	GETTRAK
     GETTRAK(obj, carblk);
     // asm 000051DE: 	POPF	R2
-    p->ctx->RACER_DRONE.delta_radydelta = steering_value;
+    p->ctx->RACER_DRONE.delta_radydelta = steering_delta_for_drone;
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000051DF, "R2", &steering_delta_for_drone, 64);
     // asm 000051DF: 	CALL	DRONEGO
-    DRONEGO();
+    DRONEGO(obj, carblk, steering_delta_for_drone);
     // asm 000051E0: 	NEGF	*+AR5(CARTURN),R0		;FIX CARTURN SIGN
     // asm 000051E1: 	STF	R0,*+AR5(CARTURN)
     carblk->turn = -carblk->turn;
@@ -840,6 +857,9 @@ static void CKPCOL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00005219: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
     player_obj = PLYCAR;
     // asm 0000521A: 	LDI	*+AR2(OCARBLK),AR3
+    if (player_obj == NULL) {
+        goto CKPX;
+    }
     player_carblk = player_obj->carblk;
     // asm 0000521B: 	CALL	CKAHEAD
     ahead_result = CKAHEAD(player_obj, player_carblk, obj, carblk);
@@ -857,7 +877,7 @@ static void CKPCOL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00005221: 	MPYF	R7,R7,R2
     // asm 00005222: 	ADDF	R1,R2			;distance^2
     distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
-    MAME_ASSERT_REG_FLOAT(0x00005223, "R2", &distance_sq);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00005223, "R2", &distance_sq, 64);
     // asm 00005223: 	FLOAT	3000,R0
     // asm 00005224: 	MPYF	R0,R0
     // asm 00005225: 	CMPF	R2,R0
@@ -1207,89 +1227,168 @@ STLUP1:
     UNIMPL();
 }
 
-static void GETPOWER(void) {
+static void GETPOWER(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    OBJ* player_obj;
+    CARBLK* player_carblk;
+    OBJ* player_track_obj;
+    OBJ* track_obj;
+    float delta_x;
+    float delta_z;
+    float player_distance;
+    int player_track_id;
+    int track_id;
+    float catch_power;
+    float first_place_boost;
+
     // asm 00005309: 	PUSH	AR2
     // asm 0000530A: 	LDI	*+AR7(CATCHTIME),R0 	;CHECK IF TIME FOR POWER CHANGE
     // asm 0000530B: 	DEC	R0
+    p->ctx->RACER_DRONE.catchtime -= 1;
     // asm 0000530C: 	STI	R0,*+AR7(CATCHTIME)
+    MAME_ASSERT_REG(0x0000530D, "R0", &p->ctx->RACER_DRONE.catchtime);
     // asm 0000530D: 	BNN	GETSURGE		;NOPE
+    if (p->ctx->RACER_DRONE.catchtime >= 0) {
+        goto GETSURGE;
+    }
     // *GET NEW UPDATE TIMER
     // asm 0000530E: 	LDI	35,AR2
     // asm 0000530F: 	CALL	RANDU
     // asm 00005310: 	ADDI	10,R0
     // asm 00005311: 	STI	R0,*+AR7(CATCHTIME)
+    p->ctx->RACER_DRONE.catchtime = RANDU(35) + 10;
     // *GET DISTANCE TO PLAYER
     // asm 00005312: 	LDI	@PLYCAR,AR0
+    player_obj = PLYCAR;
     // asm 00005313: 	SUBF	*+AR4(OPOSX),*+AR0(OPOSX),R1
+    delta_x = player_obj->pos.X - obj->pos.X;
     // asm 00005314: 	LDF	*+AR0(OPOSZ),R2
     // asm 00005315: 	SUBF	*+AR4(OPOSZ),R2
+    delta_z = player_obj->pos.Z - obj->pos.Z;
     // asm 00005316: 	MPYF	R1,R1
     // asm 00005317: 	MPYF	R2,R2
     // asm 00005318: 	ADDF	R1,R2
+    player_distance = (delta_x * delta_x) + (delta_z * delta_z);
     // asm 00005319: 	CALL	SQRT
+    player_distance = SQRT(player_distance);
     // asm 0000531A: 	LDI	*+AR7(STEALTHMODE),R3		;HI,LO OR NO STEALTH?
     // asm 0000531B: 	BZ	PDIST
+    if (p->ctx->RACER_DRONE.stealthmode == 0) {
+        goto PDIST;
+    }
     // asm 0000531C: 	LDI	R3,R1
+    track_id = p->ctx->RACER_DRONE.stealthmode;
     // asm 0000531D: 	LDI	0,R2
+    player_track_id = 0;
     // asm 0000531E: 	B	PDIST1
+    goto PDIST1;
 PDIST:
     // asm 0000531F: 	LDI	*+AR0(OCARBLK),AR1
+    player_carblk = player_obj->carblk;
     // asm 00005320: 	LDI	*+AR1(CARTRAK),AR2
+    player_track_obj = OBJREF_TO_PTR(player_carblk->closest_track_piece);
     // asm 00005321: 	LDI	*+AR2(OUSR1),R2
+    player_track_id = (int)player_track_obj->usr1;
     // asm 00005322: 	LDI	*+AR5(CARTRAK),AR3
+    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 00005323: 	LDI	*+AR3(OUSR1),R1
+    track_id = (int)track_obj->usr1;
 PDIST1:
     // asm 00005324: 	MPYF	0.01,R0
     // asm 00005325: 	MPYF	0.01,R0
     // asm 00005326: 	MPYF	0.07,R0
+    player_distance *= 0.01f;
+    player_distance *= 0.01f;
+    player_distance *= 0.07f;
     // asm 00005327: 	CMPF	0.4,R0			;MAX OUT AT +-60%
     // asm 00005328: 	LDFGT	0.4,R0
+    if (player_distance > 0.4f) {
+        player_distance = 0.4f;
+    }
     // asm 00005329: 	LDF	1.0,R3			;SIGN
+    catch_power = 1.0f; // ;SIGN
     // asm 0000532A: 	CMPI	R2,R1
     // asm 0000532B: 	LDFZ	0,R3			;EVEN RACE
+    if (track_id == player_track_id) {
+        catch_power = 0.0f; // ;EVEN RACE
+    }
     // asm 0000532C: 	LDFGT	-1.0,R3
+    if (track_id > player_track_id) {
+        catch_power = -1.0f;
+    }
     // asm 0000532D: 	BLE	PDIST1A
+    if (track_id <= player_track_id) {
+        goto PDIST1A;
+    }
     // asm 0000532E: 	CMPF	0.1,R0
     // asm 0000532F: 	LDFLT	0.1,R0			;MINIMUM IF AHEAD
+    if (player_distance < 0.1f) {
+        player_distance = 0.1f; // ;MINIMUM IF AHEAD
+    }
     // asm 00005330: 	B	PDIST1B
+    goto PDIST1B;
 PDIST1A:
     // asm 00005331: 	CMPF	0.2,R0
     // asm 00005332: 	LDFLT	0.2,R0			;MINIMUM IF BEHIND
+    if (player_distance < 0.2f) {
+        player_distance = 0.2f; // ;MINIMUM IF BEHIND
+    }
 PDIST1B:
     // asm 00005333: 	MPYF	R3,R0,R3		;DO THE SIGN
+    catch_power *= player_distance; // ;DO THE SIGN
     // asm 00005334: 	FLOAT	@PLYRFIRST,R0	  	;TIME IN FIRST
     // asm 00005335: 	BZ	PDIST2
+    if (PLYRFIRST == 0) {
+        goto PDIST2;
+    }
     // asm 00005336: 	MPYF	0.01,R0
     // asm 00005337: 	MPYF	0.15,R0
+    first_place_boost = (float)PLYRFIRST * 0.01f * 0.15f;
     // asm 00005338: 	CALL	FRAND
+    first_place_boost = FRAND(first_place_boost);
     // asm 00005339: 	CMPF	0.15,R0
     // asm 0000533A: 	LDFGT	0.15,R0			;BOOST FOR LONG TIME FIRST
+    if (first_place_boost > 0.15f) {
+        first_place_boost = 0.15f; // ;BOOST FOR LONG TIME FIRST
+    }
     // asm 0000533B:        	ADDF	R0,R3			;A LITTLE BOOST IF PLAYER = #1
+    catch_power += first_place_boost; // ;A LITTLE BOOST IF PLAYER = #1
 PDIST2:
     // asm 0000533C: 	MPYF	*+AR7(RELATIVITY),R3	;ADJUST FOR RELATIVITY
+    catch_power *= p->ctx->RACER_DRONE.relativity; // ;ADJUST FOR RELATIVITY
     // asm 0000533D: 	ADDF	1.0,R3
+    catch_power += 1.0f;
     // asm 0000533E: 	STF	R3,*+AR7(POWERCATCH)
+    p->ctx->RACER_DRONE.powercatch = catch_power;
 GETSURGE:
     // asm 0000533F: 	LDI	*+AR7(SURGETIME),R0 	;CHECK IF TIME FOR POWER CHANGE
     // asm 00005340: 	DEC	R0
+    p->ctx->RACER_DRONE.surgetime -= 1;
     // asm 00005341: 	STI	R0,*+AR7(SURGETIME)
+    MAME_ASSERT_REG(0x00005342, "R0", &p->ctx->RACER_DRONE.surgetime);
     // asm 00005342: 	BNN	POWERX
+    if (p->ctx->RACER_DRONE.surgetime >= 0) {
+        goto POWERX;
+    }
     // asm 00005343: 	LDI 	90,AR2			;GET NEW TIME
     // asm 00005344: 	CALL	RANDU
+    p->ctx->RACER_DRONE.surgetime = RANDU(90);
     // asm 00005345: 	ADDI	30,AR2
     // asm 00005346: 	STI	R0,*+AR7(SURGETIME)
     // asm 00005347: 	LDF	0.12,R0	       		;GET NEW POWERSURGE
     // asm 00005348: 	CALL	SFRAND
+    p->ctx->RACER_DRONE.powersurge = SFRAND(TMS320_C3X_SHORT_FLOAT(0.12));
     // asm 00005349: 	ADDF	1.0,R0
+    p->ctx->RACER_DRONE.powersurge += 1.0f;
     // asm 0000534A: 	STF	R0,*+AR7(POWERSURGE)
 POWERX:
     // asm 0000534B: 	LDF	*+AR7(POWERSURGE),R0
     // asm 0000534C: 	MPYF	*+AR7(POWERCATCH),R0
     // asm 0000534D: 	STF	R0,*+AR7(DELTA_THROTTLE)
+    p->ctx->RACER_DRONE.delta_throttle = p->ctx->RACER_DRONE.powersurge * p->ctx->RACER_DRONE.powercatch;
+    MAME_ASSERT_REG_FLOAT(0x0000534E, "R0", &p->ctx->RACER_DRONE.delta_throttle);
     // asm 0000534E: 	POP	AR2
     // asm 0000534F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPOWER", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -1460,13 +1559,22 @@ int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4
     float other_distance_sq;
 
     // asm 0000539A: 	LDI	*+AR3(CARTRAK),AR0
+    if (other_carblk == NULL || carblk == NULL) {
+        return -1;
+    }
     other_track_obj = OBJREF_TO_PTR(other_carblk->closest_track_piece);
     // asm 0000539B: 	LDI	*+AR0(OUSR1),R0
+    if (other_track_obj == NULL) {
+        return -1;
+    }
     other_track_id = (int)other_track_obj->usr1;
     // asm 0000539C: 	LDI	*+AR5(CARTRAK),AR0
     track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     MAME_ASSERT_REG(0x0000539D, "R0", &other_track_id);
     // asm 0000539D: 	CMPI	*+AR0(OUSR1),R0
+    if (track_obj == NULL) {
+        return -1;
+    }
     track_id = (int)track_obj->usr1;
     // asm 0000539E: 	RETSNZ				;RETURN VALUE IF NOT THE SAME
     if (other_track_id < track_id) {
@@ -1503,8 +1611,8 @@ int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4
     // asm 000053AE: 	ADDF	R2,R1
     other_distance_sq = (track_obj->pos.X - other_obj->pos.X) * (track_obj->pos.X - other_obj->pos.X);
     other_distance_sq += (track_obj->pos.Z - other_obj->pos.Z) * (track_obj->pos.Z - other_obj->pos.Z);
-    MAME_ASSERT_REG_FLOAT(0x000053AF, "R0", &obj_distance_sq);
-    MAME_ASSERT_REG_FLOAT(0x000053AF, "R1", &other_distance_sq);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000053AF, "R0", &obj_distance_sq, 256);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000053AF, "R1", &other_distance_sq, 256);
     // asm 000053AF: 	CMPF	R1,R0			;WHO IS CLOSER?
     // asm 000053B0: 	RETS
     if (obj_distance_sq < other_distance_sq) {
@@ -1533,25 +1641,44 @@ int ROADOBSTAB[50];
  *	AR5	CAR STRUCTURE
  *
  */
-void CARSCAN(void) {
+void CARSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    OBJ* obstacle_obj;
+    int close_time;
+
+    (void)carblk;
     // asm 000053B2: 	LDI	@CAR_LIST,R0
+    obstacle_obj = CAR_LIST;
     // asm 000053B3: 	BZ	OBSCX
+    if (obstacle_obj == NULL) {
+        goto OBSCX;
+    }
 OBSCL:
     // asm 000053B4: 	LDI	R0,AR2
     // asm 000053B5: 	CMPI	AR2,AR4
     // asm 000053B6: 	BZ	OBSCLP			;BR -> DONT COMPARE AGAINST OURSELF
+    if (obstacle_obj == obj) {
+        goto OBSCLP;
+    }
     // asm 000053B7: 	LDI	*+AR2(OFLAGS),R0	;STEALTH MODE?
     // asm 000053B8: 	TSTB	O_NOCOLL,R0		;check non-collide flag
     // asm 000053B9: 	BNZ	OBSCLP		    	;YES, DONT BOTHER
+    if ((obstacle_obj->flags & O_NOCOLL) != 0) {
+        goto OBSCLP;
+    }
     // asm 000053BA: 	LDI	2000H,R0
     // asm 000053BB: 	CALL	CARCHEK
+    close_time = CARCHEK(obstacle_obj, obj, carblk, 0x2000);
+    (void)close_time;
 OBSCLP:
     // asm 000053BC: 	LDI	*+AR2(OLINK3),R0
+    obstacle_obj = (OBJ*)(uintptr_t)obstacle_obj->link3;
     // asm 000053BD: 	BNZ	OBSCL
+    if (obstacle_obj != NULL) {
+        goto OBSCL;
+    }
 OBSCX:
     // asm 000053BE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARSCAN", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *GO FOR OPEN PATH
@@ -1560,15 +1687,23 @@ OBSCX:
 /* asm: PLYRCLOSE	.BSS	PLYRCLOSE,1 */
 int PLYRCLOSE;
 
-void PLSCAN(void) {
+void PLSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    OBJ* player_obj;
+    CARBLK* player_carblk;
+    int close_time;
+
     // asm 000053BF: 	LDPI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
+    player_obj = PLYCAR;
     // asm 000053C0: 	LDI	*+AR2(OCARBLK),AR3
+    player_carblk = player_obj->carblk;
     // asm 000053C1: 	LDI	4000H,R0
     // asm 000053C2: 	CALL	CARCHEK
+    close_time = CARCHEK(player_obj, obj, carblk, 0x4000);
     // asm 000053C3: 	STI	R0,@PLYRCLOSE
+    PLYRCLOSE = close_time;
     // asm 000053C4: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLSCAN", 0, 0);
-    UNIMPL();
+    (void)player_carblk;
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -1730,108 +1865,217 @@ OIX:
  *
  */
 float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
-    (void)p;
+    int right_gap;
+    int left_gap;
+    int table_index;
+    int gap_bits;
+    int player_time;
+    float player_speed_delta;
+    float brake_factor;
+    int scan_count;
+    int overrun;
+    int sequence_count;
+    int current_gap_index;
+    int right_delta;
+    int left_delta;
+    int current_offset_index;
+    float new_offset;
+    int i;
+
     (void)obj;
-    (void)carblk;
     // asm 000053FF: 	LDI	0,R6		;LFT SCAN INIT
+    right_gap = 0;
     // asm 00005400: 	LDI	0,R7		;RT SCAN INIT
+    left_gap = 0;
     // asm 00005401: 	NEGF	*+AR5(CARDIST2CNTR),R0
     // asm 00005402: 	MPYF	0.01,R0		;DIVIDE BY 100
+    new_offset = -carblk->dist_to_center * 0.01f; // ;DIVIDE BY 100
     // asm 00005403: 	FIX	R0
+    table_index = (int)new_offset;
     // asm 00005404: 	ADDI	21,R0	     	;LEFT EDGE OF ZONE
+    table_index += 21; // ;LEFT EDGE OF ZONE
     // asm 00005405: 	CMPI	41,R0		;MIN AND MAXES
     // asm 00005406: 	LDIGT	41,R0
+    if (table_index > 41) {
+        table_index = 41;
+    }
     // asm 00005407: 	CMPI	0,R0		;MIN AND MAXES
     // asm 00005408: 	LDILT	0,R0
+    if (table_index < 0) {
+        table_index = 0;
+    }
     // asm 00005409: 	LDI	@ROADOBSTABI,AR0
     // asm 0000540A: 	ADDI	R0,AR0
     // *CHECK CURRENT GAP
     // asm 0000540B: 	LDI	*AR0++,R1
+    gap_bits = ROADOBSTAB[table_index];
     // asm 0000540C: 	RPTS	6
     // asm 0000540D: 	OR	*AR0++,R1
+    for (i = 1; i <= 7; i++) {
+        gap_bits |= ROADOBSTAB[table_index + i];
+    }
     // asm 0000540E: 	BZ	OK			;WERE O.K.
+    if (gap_bits == 0) {
+        goto OK;
+    }
     // *CHECK FOR PLAYER
     // asm 0000540F: 	CMPI	4000H,R1  		;PLAYER PRESENT?
     // asm 00005410: 	BLT	S000			;NO
+    if (gap_bits < 0x4000) {
+        goto S000;
+    }
     // asm 00005411: 	AND	0FFFH,R1       		;BRAKE IF REAL CLOSE...
+    player_time = gap_bits & 0x0FFF; // ;BRAKE IF REAL CLOSE...
     // asm 00005412: 	CMPI	20,R1
     // asm 00005413: 	BGT	S00			;NOT REAL CLOSE
+    if (player_time > 20) {
+        goto S00;
+    }
     // ;Check for COPCAR
     // asm 00005414: 	LDI	*+AR5(CAR_ID),R2
     // asm 00005415: 	CMPI	DRONE_C|VEHICLE_T|DRNE_COPCAR,R2
     // asm 00005416: 	BEQ	S000			;COPCARS DON'T SLOW DOWN FOR THE PLAYER
+    if (carblk->debug_car_id == (DRONE_C | VEHICLE_T | DRNE_COPCAR)) {
+        goto S000;
+    }
     // asm 00005417: 	LDI	@PLYCBLK,AR2		;GET PLAYER CAR OBJECT
     // asm 00005418: 	LDF	*+AR2(CARSPEED),R2	;PLAYER SPEED
     // asm 00005419: 	SUBF	*+AR5(CARSPEED),R2
+    player_speed_delta = PLYCBLK->speed - carblk->speed;
     // asm 0000541A: 	CMPF	10,R2
     // asm 0000541B: 	BGT	S000			;DONT BRAKE, PLAYER SPEED GREATER
+    if (player_speed_delta > 10.0f) {
+        goto S000;
+    }
     // asm 0000541C: 	FLOAT	R1
     // asm 0000541D: 	MPYF	0.01,R1			;BRAKE FACTOR CALC
     // asm 0000541E: 	ADDF	0.80,R1
+    brake_factor = ((float)player_time * 0.01f) + 0.80f; // ;BRAKE FACTOR CALC
     // asm 0000541F: 	MPYF	*+AR5(CARSPEED),R1
+    brake_factor *= carblk->speed;
     // asm 00005420: 	STF	R1,*+AR5(CARSPEED)	;CUT SPEED
+    carblk->speed = brake_factor; // ;CUT SPEED
 S00:
 S000:
     // *WE HAVE AN OBSTACLE
     // *SCAN RIGHT 0--->49
     // *ADJUST COUNT FOR END
     // asm 00005421: 	LDI	R0,R3
+    current_gap_index = table_index;
     // asm 00005422: 	LDI	30,R2		;SEARCH 20 SPACES RIGHT
+    scan_count = 30; // ;SEARCH 20 SPACES RIGHT
     // asm 00005423: 	ADDI	R2,R3
     // asm 00005424: 	SUBI	49,R3
+    overrun = current_gap_index + scan_count - 49;
     // asm 00005425: 	BLE	SR00
     // asm 00005426: 	SUBI	R3,R2		;DECREASE COUNT TO AVOID OVERSCAN
+    if (overrun > 0) {
+        scan_count -= overrun; // ;DECREASE COUNT TO AVOID OVERSCAN
+    }
 SR00:
     // asm 00005427: 	LDI	@ROADOBSTABI,AR0
     // asm 00005428: 	ADDI	R0,AR0
     // asm 00005429: 	LDI	0,R1		;SEQUENCE COUNT
+    sequence_count = 0; // ;SEQUENCE COUNT
 SR0:
-    // asm 0000542A: 	LDI	*AR0++,R0
-    // asm 0000542B: 	LDINZ	0,R1 		;NON ZERO RESET COUNT
-    // asm 0000542C: 	ADDI	1,R1
-    // asm 0000542D: 	CMPI	8,R1
-    // asm 0000542E: 	BGT	FOUNDR	 	;FOUND A GAP
-    // asm 0000542F: 	SUBI	1,R2
-    // asm 00005430: 	BNZ	SR0
+    while (scan_count > 0) {
+        // asm 0000542A: 	LDI	*AR0++,R0
+        // asm 0000542B: 	LDINZ	0,R1 		;NON ZERO RESET COUNT
+        if (ROADOBSTAB[current_gap_index] != 0) {
+            sequence_count = 0; // ;NON ZERO RESET COUNT
+        }
+        // asm 0000542C: 	ADDI	1,R1
+        sequence_count += 1;
+        // asm 0000542D: 	CMPI	8,R1
+        // asm 0000542E: 	BGT	FOUNDR	 	;FOUND A GAP
+        if (sequence_count > 8) {
+            current_gap_index += 1;
+            goto FOUNDR;
+        }
+        // asm 0000542F: 	SUBI	1,R2
+        scan_count -= 1;
+        // asm 00005430: 	BNZ	SR0
+        if (scan_count == 0) {
+            break;
+        }
+        current_gap_index += 1;
+    }
     // asm 00005431:       	B 	LEFTSCAN	;FOUND NOTHING
+    goto LEFTSCAN;
 FOUNDR:
     // asm 00005432: 	SUBI	4,AR0		;GET CENTER INDEX
+    current_gap_index -= 4; // ;GET CENTER INDEX
     // asm 00005433: 	LDI	AR0,R6		;SAVE VALUE
+    right_gap = current_gap_index;
     // *WE HAVE AN OBSTACLE
     // *SCAN LEFT 49--->0
 LEFTSCAN:
     // asm 00005434: 	NEGF	*+AR5(CARDIST2CNTR),R0
     // asm 00005435: 	MPYF	0.01,R0		;DIVIDE BY 100
+    new_offset = -carblk->dist_to_center * 0.01f; // ;DIVIDE BY 100
     // asm 00005436: 	FIX	R0
+    table_index = (int)new_offset;
     // asm 00005437: 	ADDI	29,R0	     	;RT EDGE OF ZONE
+    table_index += 29; // ;RT EDGE OF ZONE
     // asm 00005438: 	CMPI	49,R0		;MIN AND MAXES
     // asm 00005439: 	LDIGT	49,R0
+    if (table_index > 49) {
+        table_index = 49;
+    }
     // asm 0000543A: 	CMPI	7,R0		;MIN AND MAXES
     // asm 0000543B: 	BLT	DONE		;NOT ENOUGH ROOM ON THE LEFT
+    if (table_index < 7) {
+        goto DONE;
+    }
     // asm 0000543C: 	LDI	@ROADOBSTABI,AR0
     // asm 0000543D: 	ADDI	R0,AR0
     // asm 0000543E: 	LDI	30,R2		;COUNT
+    scan_count = 30; // ;COUNT
     // asm 0000543F: 	SUBI	R2,R0
+    overrun = table_index - scan_count;
     // asm 00005440: 	BGT	SL00
     // asm 00005441: 	ADDI	R0,R2		;DECREASE COUNT TO AVOID OVERSCAN
+    if (overrun <= 0) {
+        scan_count += overrun; // ;DECREASE COUNT TO AVOID OVERSCAN
+    }
 SL00:
     // asm 00005442: 	LDI	0,R1		;SEQUENCE COUNT
+    sequence_count = 0; // ;SEQUENCE COUNT
+    current_gap_index = table_index;
 SL0:
-    // asm 00005443: 	LDI	*AR0--,R0
-    // asm 00005444: 	LDINZ	0,R1 		;NON ZERO RESET COUNT
-    // asm 00005445: 	ADDI	1,R1
-    // asm 00005446: 	CMPI	8,R1
-    // asm 00005447: 	BGT	FOUNDL	 	;FOUND A GAP
-    // asm 00005448: 	SUBI	1,R2
-    // asm 00005449: 	BNZ	SL0
+    while (scan_count > 0) {
+        // asm 00005443: 	LDI	*AR0--,R0
+        // asm 00005444: 	LDINZ	0,R1 		;NON ZERO RESET COUNT
+        if (ROADOBSTAB[current_gap_index] != 0) {
+            sequence_count = 0; // ;NON ZERO RESET COUNT
+        }
+        // asm 00005445: 	ADDI	1,R1
+        sequence_count += 1;
+        // asm 00005446: 	CMPI	8,R1
+        // asm 00005447: 	BGT	FOUNDL	 	;FOUND A GAP
+        if (sequence_count > 8) {
+            current_gap_index -= 1;
+            goto FOUNDL;
+        }
+        // asm 00005448: 	SUBI	1,R2
+        scan_count -= 1;
+        // asm 00005449: 	BNZ	SL0
+        if (scan_count == 0) {
+            break;
+        }
+        current_gap_index -= 1;
+    }
     // asm 0000544A: 	B 	DONE
+    goto DONE;
     // *
     // *FOUND A GAP ON THE LEFT
     // *AR0 HAS GAP
     // *
 FOUNDL:
     // asm 0000544B: 	ADDI	4,AR0
+    current_gap_index += 4;
     // asm 0000544C: 	LDI	AR0,R7
+    left_gap = current_gap_index;
     // *
     // *FOUND A GAP
     // *R6=LEFT GAP, R7=RIGHT GAP
@@ -1839,35 +2083,55 @@ FOUNDL:
 DONE:
     // asm 0000544D: 	ADDI	R6,R7,R0
     // asm 0000544E: 	BZ	FAIL			;NO GAP FOUND, GO WITH OLDIE
+    if ((right_gap + left_gap) == 0) {
+        goto FAIL;
+    }
     // asm 0000544F: 	LDI	R6,R6			;CHECK LFT FAIL
     // asm 00005450: 	LDIZ	R7,R6
+    if (right_gap == 0) {
+        right_gap = left_gap;
+    }
     // asm 00005451: 	LDI	R7,R7			;CHECK RT FAIL
     // asm 00005452: 	LDIZ	R6,R7
+    if (left_gap == 0) {
+        left_gap = right_gap;
+    }
     // asm 00005453: 	SUBI	@ROADOBSTABI,R6		;FIND CLOSEST DIRECTION
     // asm 00005454: 	SUBI	@ROADOBSTABI,R7
     // asm 00005455: 	LDF	*+AR7(ROADOFFSET),R0
     // asm 00005456: 	MPYF	0.01,R0			;DIVIDE BY 100
+    new_offset = p->ctx->RACER_DRONE.road_offset * 0.01f; // ;DIVIDE BY 100
     // asm 00005457: 	FIX	R0
+    current_offset_index = (int)new_offset;
     // asm 00005458: 	SUBI	R6,R0,R2		;FIND CLOSEST RT OR LFT
+    right_delta = current_offset_index - right_gap; // ;FIND CLOSEST RT OR LFT
     // asm 00005459: 	SUBI	R7,R0,R3
+    left_delta = current_offset_index - left_gap;
     // asm 0000545A: 	ABSI	R2
+    right_delta = abs(right_delta);
     // asm 0000545B: 	ABSI	R3
+    left_delta = abs(left_delta);
     // asm 0000545C: 	CMPI	R2,R3
     // asm 0000545D: 	LDILT	R7,R0
     // asm 0000545E: 	LDIGE	R6,R0
+    table_index = right_delta < left_delta ? left_gap : right_gap;
     // asm 0000545F: 	SUBI	25,R0
+    table_index -= 25;
     // asm 00005460: 	FLOAT	R0
     // asm 00005461: 	MPYF	100,R0	    		;NEW OFFSET
+    new_offset = (float)table_index * 100.0f; // ;NEW OFFSET
     // asm 00005462: ROXX
     // asm 00005462: 	RETS
+    MAME_ASSERT_REG_FLOAT(0x00005462, "R0", &new_offset);
+    return new_offset;
 FAIL:
     // asm 00005463: 	NOP
-    // asm 00005464: OK					;CURRENT OFFSET IS O.K.
+OK: // ;CURRENT OFFSET IS O.K.
     // asm 00005464: 	LDF	*+AR7(ROADOFFSET),R0
+    new_offset = p->ctx->RACER_DRONE.road_offset;
     // asm 00005465: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETRDOFFSET", 0, 0);
-    UNIMPL();
-    return 0.0f;
+    MAME_ASSERT_REG_FLOAT(0x00005465, "R0", &new_offset);
+    return new_offset;
 }
 
 // *----------------------------------------------------------------------------
@@ -1889,43 +2153,87 @@ FAIL:
 int CARTMP1;
 
 static int CARCHEK(OBJ* obstacle_obj /*AR2*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, int table_code /*R0*/) {
-    (void)obstacle_obj;
-    (void)obj;
-    (void)carblk;
-    (void)table_code;
+    CARBLK* obstacle_carblk;
+    float delta_x;
+    float delta_z;
+    float distance_sq;
+    float side_clearance_sq;
+    float road_offset_delta;
+    float current_distance;
+    float next_distance;
+    float closing_delta;
+    float closing_rate;
+    float adjusted_delta_x;
+    float adjusted_delta_z;
+    float adjusted_distance;
+    float closing_frames;
+    float perpendicular_velocity;
+    float projected_offset;
+    float width;
+    float height;
+    float angle;
+    int close_time;
+    int table_index;
+    int width_count;
+    int store_value;
+    int i;
+
     // asm 00005466: 	STI	R0,@CARTMP1   		;SAVE CAR CODE
+    CARTMP1 = table_code;
     // asm 00005467: 	LDI	*+AR2(OCARBLK),AR3
+    obstacle_carblk = obstacle_obj->carblk;
     // asm 00005468: 	CALL	CKAHEAD
     // asm 00005469: 	BN	CARCHKX 		;CAR BEHIND, IGNORE
+    if (CKAHEAD(obstacle_obj, obstacle_carblk, obj, carblk) < 0) {
+        goto CARCHKX;
+    }
     // *GET CURRENT DISTANCE
     // asm 0000546A: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R6
+    delta_x = obstacle_obj->pos.X - obj->pos.X;
     // asm 0000546B: 	LDF	*+AR2(OPOSZ),R7
     // asm 0000546C: 	SUBF	*+AR4(OPOSZ),R7
+    delta_z = obstacle_obj->pos.Z - obj->pos.Z;
     // asm 0000546D: 	MPYF	R6,R6,R1
     // asm 0000546E: 	MPYF	R7,R7,R2
     // asm 0000546F: 	ADDF	R1,R2			;distance^2
+    distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
     // asm 00005470: 	FLOAT	30000,R0
     // asm 00005471: 	MPYF	R0,R0
     // asm 00005472: 	CMPF	R2,R0
     // asm 00005473: 	BLT	CARCHKX			;TOO FAR AWAY
+    if ((30000.0f * 30000.0f) < distance_sq) {
+        goto CARCHKX;
+    }
     // *CHECK IF CAR BLOCKING THE SIDE
     // asm 00005474: 	LDF	*+AR3(CARZPLUS),R1
     // asm 00005475: 	ADDF	*+AR5(CARZPLUS),R1
     // asm 00005476: 	ADDF	200,R1			;LEAVE A LITTLE ROOM
     // asm 00005477: 	MPYF	R1,R1			;GET 1/2 Z1+Z2 SQUARED
+    side_clearance_sq = obstacle_carblk->z_plus + carblk->z_plus + 200.0f; // ;LEAVE A LITTLE ROOM
+    side_clearance_sq *= side_clearance_sq;                                // ;GET 1/2 Z1+Z2 SQUARED
     // asm 00005478: 	CMPF	R1,R2			;CLOSE ENOUGH ?
     // asm 00005479: 	BGT	SIDECKX			;NO...
+    if (distance_sq > side_clearance_sq) {
+        goto SIDECKX;
+    }
     // asm 0000547A: 	LDF     *+AR5(CARDIST2CNTR),R1
     // asm 0000547B: 	SUBF	*+AR3(CARDIST2CNTR),R1
     // asm 0000547C: 	ABSF	R1
+    road_offset_delta = fabsf(carblk->dist_to_center - obstacle_carblk->dist_to_center);
     // asm 0000547D: 	FLOAT	400,R3
     // asm 0000547E: 	CMPF	R3,R1
     // asm 0000547F: 	BLT	SIDECKX			;OFFSET TOO CLOSE
+    if (road_offset_delta < 400.0f) {
+        goto SIDECKX;
+    }
     // asm 00005480: 	LDF	10,R0
+    closing_frames = 10.0f;
     // asm 00005481: 	PUSHF	R0
     // asm 00005482: 	B	GOTONE
+    goto GOTONE;
 SIDECKX:
     // asm 00005483: 	CALL	SQRT
+    current_distance = SQRT(distance_sq);
     // asm 00005484: 	LDF	R0,R5
     // *GET DISTANCE T+1
     // *CAR 0 T+1
@@ -1937,7 +2245,9 @@ SIDECKX:
     // asm 0000548A: 	CALL	_COSI
     // asm 0000548B: 	MPYF	R0,R1,R4
     // asm 0000548C: 	SUBF	R3,R6
+    delta_x -= (-_SINE(carblk->y_velocity_rotation) * carblk->speed);
     // asm 0000548D: 	SUBF	R4,R7
+    delta_z -= (_COSI(carblk->y_velocity_rotation) * carblk->speed);
     // *CAR 1 T+1
     // asm 0000548E: 	LDF	*+AR3(CARSPEED),R1
     // asm 0000548F: 	LDF	*+AR3(CARVROT),R2
@@ -1947,73 +2257,122 @@ SIDECKX:
     // asm 00005493: 	CALL	_COSI
     // asm 00005494: 	MPYF	R0,R1,R4
     // asm 00005495: 	ADDF	R3,R6
+    delta_x += (-_SINE(obstacle_carblk->y_velocity_rotation) * obstacle_carblk->speed);
     // asm 00005496: 	ADDF	R4,R7
+    delta_z += (_COSI(obstacle_carblk->y_velocity_rotation) * obstacle_carblk->speed);
     // asm 00005497: 	MPYF	R6,R6,R1
     // asm 00005498: 	MPYF	R7,R7,R2
     // asm 00005499: 	ADDF	R1,R2			;distance^2
+    distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
     // asm 0000549A: 	CALL	SQRT			;DISTANCE T+1
+    next_distance = SQRT(distance_sq); // ;DISTANCE T+1
     // asm 0000549B: 	SUBF	R5,R0
+    closing_delta = next_distance - current_distance;
     // asm 0000549C: 	BGE	CARCHKX			;MOVING APART
+    if (closing_delta >= 0.0f) {
+        goto CARCHKX;
+    }
     // *FIND CLOSING RATE
     // asm 0000549D: 	ABSF	R0,R1
     // asm 0000549E:  	MPYF	1.5,R1			;VELOCITY FUDGE FACTOR
+    closing_rate = fabsf(closing_delta) * 1.5f; // ;VELOCITY FUDGE FACTOR
     // asm 0000549F: 	ABSF	R6    			;ADJUST DELTA X FOR CAR	THICKNESS
     // asm 000054A0: 	FLOAT	400,R0
     // asm 000054A1: 	SUBF	R0,R6
     // asm 000054A2: 	LDFLT	0,R6
+    adjusted_delta_x = fabsf(delta_x) - 400.0f; // ;ADJUST DELTA X FOR CAR	THICKNESS
+    if (adjusted_delta_x < 0.0f) {
+        adjusted_delta_x = 0.0f;
+    }
     // asm 000054A3: 	ABSF	R7    			;ADJUST DELTA Z FOR CAR THICKNESS
     // asm 000054A4: 	FLOAT	1000,R0
     // asm 000054A5: 	SUBF	R0,R7
     // asm 000054A6: 	LDFLT	0,R7
+    adjusted_delta_z = fabsf(delta_z) - 1000.0f; // ;ADJUST DELTA Z FOR CAR THICKNESS
+    if (adjusted_delta_z < 0.0f) {
+        adjusted_delta_z = 0.0f;
+    }
     // asm 000054A7: 	MPYF	R6,R6,R0
     // asm 000054A8: 	MPYF	R7,R7,R2
     // asm 000054A9: 	ADDF	R0,R2			;distance^2
+    adjusted_distance = (adjusted_delta_x * adjusted_delta_x) + (adjusted_delta_z * adjusted_delta_z);
     // asm 000054AA: 	CALL	SQRT			;DISTANCE T+1
+    adjusted_distance = SQRT(adjusted_distance); // ;DISTANCE T+1
     // asm 000054AB: 	CALL	DIV_F			;CLOSING FRAMES
+    closing_frames = DIV_F(adjusted_distance, closing_rate); // ;CLOSING FRAMES
     // asm 000054AC: 	CMPF	200,R0
     // asm 000054AD: 	BGT	CARCHKX			;TOO FAR AWAY
+    if (closing_frames > 200.0f) {
+        goto CARCHKX;
+    }
     // asm 000054AE: 	PUSHF	R0
     // *GOT A LIVE ONE
     // *BLANK OUT TABLE SPACE
 GOTONE:
     // asm 000054AF: 	CALL	GETPV 			;GET PERPENDICULAR VELOCITY
+    perpendicular_velocity = GETPV(obstacle_obj, obstacle_carblk, &angle); // ;GET PERPENDICULAR VELOCITY
     // asm 000054B0: 	POPF	R1
     // asm 000054B1: 	MPYF	R1,R0,R2		;PROJECTED OFFSET
+    projected_offset = closing_frames * perpendicular_velocity; // ;PROJECTED OFFSET
     // asm 000054B2: 	FIX	R1,IR1			;SAVE TIME
+    close_time = (int)closing_frames; // ;SAVE TIME
     // asm 000054B3: 	SUBF	*+AR3(CARDIST2CNTR),R2
+    projected_offset -= obstacle_carblk->dist_to_center;
     // asm 000054B4: 	MPYF	0.01,R2
+    projected_offset *= 0.01f;
     // asm 000054B5: 	FIX	R2,IR0
     // asm 000054B6: 	ADDI	25,IR0			;ADJUST FOR ROAD CENTER (25), CAR THICKNESS (4)
+    table_index = (int)projected_offset;
+    table_index += 25; // ;ADJUST FOR ROAD CENTER (25), CAR THICKNESS (4)
     // asm 000054B7: 	CALL	GETWIDTH		;GET CAR WIDTH
+    GETWIDTH(obstacle_obj, obstacle_carblk, &width, &height); // ;GET CAR WIDTH
     // asm 000054B8: 	MPYF	0.01,R0
+    width *= 0.01f;
     // asm 000054B9: 	ABSF	R0
+    width = fabsf(width);
     // asm 000054BA: 	CMPF	20,R0
     // asm 000054BB: 	LDFGT	20,R0
+    if (width > 20.0f) {
+        width = 20.0f;
+    }
     // asm 000054BC: 	FIX	R0,R0
     // asm 000054BD: 	ADDI	3,R0
+    width_count = (int)width + 3;
     // asm 000054BE: 	LDI	R0,RC			;WIDTH COUNT
     // asm 000054BF: 	LSH	-1,R0			;DIVIDE BY 2
     // asm 000054C0: 	SUBI	R0,IR0			;CENTER UP CAR AREA
+    table_index -= width_count >> 1; // ;CENTER UP CAR AREA
     // asm 000054C1: 	LDI	@ROADOBSTABI,AR0
     // asm 000054C2: 	LDI	@CARTMP1,R1		;GET CODE TO STORE
     // asm 000054C3: 	ADDI	IR1,R1			;ADD IN THE TIME
+    store_value = CARTMP1 + close_time; // ;ADD IN THE TIME
     // asm 000054C4: 	RPTB	LOADLP
-    // asm 000054C5: 	CMPI	0,IR0
-    // asm 000054C6: 	BLT	LOADLP
-    // asm 000054C7: 	CMPI	49,IR0
-    // asm 000054C8: 	BGT	LOADLPX
-    // asm 000054C9: 	STI	R1,*+AR0(IR0)  		;PUT IN ENTRY IN TABLE
-LOADLP:
-    // asm 000054CA: ADDI	1,IR0
+    for (i = 0; i <= width_count; i++) {
+        // asm 000054C5: 	CMPI	0,IR0
+        // asm 000054C6: 	BLT	LOADLP
+        if (table_index < 0) {
+            goto LOADLP;
+        }
+        // asm 000054C7: 	CMPI	49,IR0
+        // asm 000054C8: 	BGT	LOADLPX
+        if (table_index > 49) {
+            goto LOADLPX;
+        }
+        // asm 000054C9: 	STI	R1,*+AR0(IR0)  		;PUT IN ENTRY IN TABLE
+        ROADOBSTAB[table_index] = store_value;
+    LOADLP:
+        // asm 000054CA: ADDI	1,IR0
+        table_index += 1;
+    }
 LOADLPX:
     // asm 000054CB: 	LDI	IR1,R0			;RETURN TIME DUDES
+    MAME_ASSERT_REG(0x000054CC, "R0", &close_time);
     // asm 000054CC: 	RETS
+    return close_time;
 CARCHKX:
     // asm 000054CD: 	LDI	800H,R0		;FOUND NO CLOSING TIME
     // asm 000054CE:        	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARCHEK", 0, 0);
-    UNIMPL();
-    return 0;
+    return 0x800;
 }
 
 // *----------------------------------------------------------------------------
@@ -2032,25 +2391,32 @@ CARCHKX:
  *
  */
 static float GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* angle_out /*R2*/) {
-    (void)obj;
-    (void)carblk;
-    if (angle_out != NULL) {
-        *angle_out = 0.0f;
-    }
+    OBJ* track_obj;
+    float angle;
+    float perpendicular_velocity;
+
     // asm 000054CF: 	LDI	*+AR2(OCARBLK),AR3
+    carblk = obj->carblk;
     // asm 000054D0: 	PUSH	AR2
     // asm 000054D1: 	LDI	*+AR3(CARTRAK),AR2
+    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 000054D2: 	CALL	GETRDIR	 		;R0= RADIANS
+    angle = GETRDIR(track_obj); // ;R0= RADIANS
     // asm 000054D3: 	SUBF	*+AR3(CARVROT),R0
+    angle -= carblk->y_velocity_rotation;
     // asm 000054D4: 	LDF	R0,R2
+    if (angle_out != NULL) {
+        *angle_out = angle;
+    }
     // asm 000054D5: 	CALL	_SINE
+    perpendicular_velocity = _SINE(angle);
     // asm 000054D6: 	MPYF	*+AR3(CARSPEED),R0
+    perpendicular_velocity *= carblk->speed;
     // asm 000054D7: 	MPYF	1.5,R0
+    perpendicular_velocity *= 1.5f;
     // asm 000054D8: 	POP	AR2
     // asm 000054D9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPV", 0, 0);
-    UNIMPL();
-    return 0.0f;
+    return perpendicular_velocity;
 }
 
 // *----------------------------------------------------------------------------
@@ -2068,38 +2434,56 @@ static float GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* angle_out /*
  *
  */
 static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* width_out /*R0*/, float* height_out /*R1*/) {
+    OBJ* track_obj;
+    float angle;
+    float sine;
+    float cosine;
+    float x_width;
+    float z_width;
+    float width;
+    float height;
+
     (void)obj;
-    (void)carblk;
-    if (width_out != NULL) {
-        *width_out = 0.0f;
-    }
-    if (height_out != NULL) {
-        *height_out = 0.0f;
-    }
     // asm 000054DA: 	PUSH	AR2
     // asm 000054DB: 	LDI	*+AR3(CARTRAK),AR2
+    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 000054DC: 	CALL	GETRDIR	 		;R0= RADIANS
+    angle = GETRDIR(track_obj); // ;R0= RADIANS
     // asm 000054DD: 	POP	AR2
     // asm 000054DE: 	SUBF	*+AR3(CARVROT),R0
+    angle -= carblk->y_velocity_rotation;
     // asm 000054DF: 	LDF	R0,R2
     // asm 000054E0: 	CALL	_SINE
+    sine = _SINE(angle);
     // asm 000054E1: 	LDF	R0,R1
     // asm 000054E2: 	CALL	_COSI
+    cosine = _COSI(angle);
     // asm 000054E3: 	LDF	*+AR3(CARXPLUS),R2
     // asm 000054E4: 	SUBF	*+AR3(CARXMINUS),R2
+    x_width = carblk->x_plus - carblk->x_minus;
     // asm 000054E5: 	LDF	*+AR3(CARZPLUS),R3
     // asm 000054E6: 	SUBF	*+AR3(CARZMINUS),R3
+    z_width = carblk->z_plus - carblk->z_minus;
     // asm 000054E7: 	ABSF	R0
+    cosine = fabsf(cosine);
     // asm 000054E8: 	ABSF	R1
+    sine = fabsf(sine);
     // asm 000054E9: 	MPYF	R0,R2,R4	     	;COS*X+SIN*Z WIDTH TERMS
     // asm 000054EA: 	MPYF	R1,R3,R5
+    width = (cosine * x_width) + (sine * z_width); // ;COS*X+SIN*Z WIDTH TERMS
     // asm 000054EB: 	MPYF	R1,R2,R2		;SIN*X+COS*Z HEIGHT TERMS
     // asm 000054EC: 	MPYF	R0,R3,R3
+    height = (sine * x_width) + (cosine * z_width); // ;SIN*X+COS*Z HEIGHT TERMS
     // asm 000054ED: 	ADDF	R4,R5,R0 		;WIDTH
+    if (width_out != NULL) {
+        *width_out = width;
+    }
     // asm 000054EE: 	ADDF	R2,R3,R1		;HEIGHT
+    if (height_out != NULL) {
+        *height_out = height;
+    }
     // asm 000054EF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETWIDTH", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -2143,7 +2527,6 @@ RPASS1:
     // asm 000054F8: 	LDF	*+AR5(CARSPEED),R3	;SPEED GREATER?
     // asm 000054F9: 	SUBF	*+AR3(CARSPEED),R3
     speed_difference = carblk->speed - player_carblk->speed;
-    MAME_ASSERT_REG_FLOAT(0x000054FA, "R3", &speed_difference);
     // asm 000054FA: 	CMPF	40,R3
     // asm 000054FB: 	BGT	RPASS2
     if (speed_difference > 40.0f) {
@@ -2357,6 +2740,7 @@ L874:
     // asm 00005561: 	ADDF	*+AR0(Z),R0
     // asm 00005562: 	STF	R0,*+AR4(OPOSZ)
     obj->pos.Z = _VECTORB.Z + _VECTORA.Z;
+    MAME_ASSERT_REG_FLOAT(0x00005562, "R0", &obj->pos.Z);
     // asm 00005563: 	POPFL	R2
     // asm 00005565: 	POP	AR6
     // asm 00005566: 	POP	AR5

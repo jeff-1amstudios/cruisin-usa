@@ -1424,11 +1424,11 @@ void PLYR_INTRO_ENTER(void);
 // asm:  .globl _PLYR,DRONEGO,GETSPD,OVELADD
 void _PLYR(void);
 
-void DRONEGO(void);
+void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, float steering_delta /*R2*/);
 
-void GETSPD(void);
+void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
-void OVELADD(void);
+void OVELADD(OBJ* obj /*AR4*/);
 
 // asm:  .globl GETCMOS_VALUES
 void GETCMOS_VALUES(void);
@@ -1466,11 +1466,11 @@ void BONUS_WAIT_LOOP(void);
 void RACER_DRONE(PROC* p);
 
 // asm:  .globl CARSCAN,OBSTABINIT,PLSCAN,GETRDOFFSET
-void CARSCAN(void);
+void CARSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 void OBSTABINIT(PROC* p /*AR7*/);
 
-void PLSCAN(void);
+void PLSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
@@ -1815,7 +1815,7 @@ void POPALL(void);
 void DISTANCE_2D(void);
 
 // asm:  .globl FORWARD
-void FORWARD(void);
+void FORWARD(VECTOR* src /*AR2*/, MATRIX* matrix /*R2*/, VECTOR* dst /*R3*/);
 
 // asm:  .globl WAVE
 void WAVE(int wave_index);

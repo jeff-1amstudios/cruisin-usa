@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import os
 import pathlib
 import re
 from dataclasses import dataclass
@@ -448,7 +449,9 @@ def collect_breakpoints_for_file(
 
     for index, line in enumerate(lines):
         parsed = parse_explicit_value_validation(
-            line, ["MAME_ASSERT_REG_FLOAT", "MAME_ASSERT_REG_AT_ADDR_FLOAT", "mame_validate_reg_at_addr_float"]
+            line,
+            ["MAME_ASSERT_REG_FLOAT", "MAME_ASSERT_REG_FLOAT_WIGGLE", "MAME_ASSERT_REG_AT_ADDR_FLOAT", "mame_validate_reg_at_addr_float"],
+            [3, 4],
         )
         if parsed is None:
             continue
@@ -585,6 +588,11 @@ def render_output(entries: Iterable[BreakpointEntry]) -> str:
             if entry.action_override is not None:
                 action = entry.action_override
         rows.append(f'bpset {instruction_address:08X}, 1, {{ {"; ".join(commands)}; {action} }}')
+    if os.environ.get("CRUSN_VALIDATE_FORCE_FULL_ZSORT") == "1":
+        rows.append('bpset 000071BC, 1, { d@0000C96F=1; g }')
+    if os.environ.get("CRUSN_VALIDATE_SINGLE_FRAME") == "1":
+        rows.append('bpset 00004BED, 1, { r0=1; g }')
+    rows.append('bpset 00008EE1, 1, { r0=0; g }')
     rows.append("")
     return "\n".join(rows) + "g"
 

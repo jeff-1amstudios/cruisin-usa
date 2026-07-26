@@ -19,6 +19,7 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - Ignore DP and CPU wait state related instructions. Ignore push/pop.
 - Retain the original developer comments in the assembly code as c comments
 - If a translated function call in asm produces a value or side effect used by the caller, keep that call in the translated function at the same boundary. Do not replace it by passing a transformed value unless the original asm does that transformation before the call.
+- Treat floating-point immediates in instructions like `LDF 0.05`, `ADDF 1.20`, and `MPYF 0.01` as TMS320C30 short-immediate floats, not native C literals; use helpers such as `TMS320_C3X_SHORT_FLOAT(...)` and preserve per-instruction rounding with `TMS320_C3X_STF_TO_SINGLE(...)` when assertion-level fidelity matters.
 
 If you get stuck, stop, and explain the problem. Don't start inventing things in order to keep progressing.
 

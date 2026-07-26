@@ -60,9 +60,9 @@ void SCAN_OBJECTS(PROC* p);
 void PUSHALL(void);
 void POPALL(void);
 void DISTANCE_2D(void);
-void OVELADD(void);
+void OVELADD(OBJ* obj /*AR4*/);
 void OVELNADD(void);
-void FORWARD(void);
+void FORWARD(VECTOR* src /*AR2*/, MATRIX* matrix /*R2*/, VECTOR* dst /*R3*/);
 
 #define FASTCLR0 FASTCLR1
 #define SCREEN0I SCREEN0
@@ -337,6 +337,7 @@ void CLRCRAM(void) {
 uint32_t RANDOM(void) {
     uint32_t rand_seed;
     uint32_t r1;
+    int32_t mpy_src;
 
     // asm 00008EDF: 	PUSH	R1
     // asm 00008EE0: 	LDI	@RAND,R0
@@ -346,16 +347,20 @@ uint32_t RANDOM(void) {
     // asm 00008EE2: 	LSH	1,R0
     rand_seed <<= 1;
     // asm 00008EE3: 	XOR	R0,R1
-    rand_seed ^= r1;
+    r1 ^= rand_seed;
     // asm 00008EE4: 	BNN	RND2
-    if ((int32_t)rand_seed < 0) {
+    if ((int32_t)r1 < 0) {
         // asm 00008EE5: 	OR	1,R0
         rand_seed |= 1u;
     }
 RND2:
     // asm 00008EE6: POP	R1
     // asm 00008EE7: 	MPYI	794Fh,R0
-    rand_seed *= 0x794Fu;
+    mpy_src = (int32_t)(rand_seed & 0x00FFFFFFu);
+    if ((mpy_src & 0x00800000) != 0) {
+        mpy_src |= (int32_t)0xFF000000u;
+    }
+    rand_seed = (uint32_t)(mpy_src * 0x794F);
     // asm 00008EE8: 	STI	R0,@RAND
     RAND = (int)rand_seed;
     // asm 00008EE9: 	RETS
@@ -376,6 +381,8 @@ RND2:
  */
 float FRAND(float limit /*R0*/) {
     int value;
+    float random_float;
+    float scale;
 
     // asm 00008EEA: 	PUSH	AR2
     // asm 00008EEB: 	PUSHFL	R1
@@ -385,14 +392,19 @@ float FRAND(float limit /*R0*/) {
     // asm 00008EEF: 	CALL	RANDU0
     value = RANDU0(value);
     // asm 00008EF0: 	FLOAT	R0
+    random_float = (float)value;
     // asm 00008EF1: 	MPYF	0.01,R0
+    scale = TMS320_C3X_SHORT_FLOAT(0.01);
+    random_float = TMS320_C3X_STF_TO_SINGLE((double)random_float * scale);
     // asm 00008EF2: 	MPYF	0.01,R0
+    random_float = TMS320_C3X_STF_TO_SINGLE((double)random_float * scale);
     // asm 00008EF3: 	POPF	R1
     // asm 00008EF4: 	MPYF	R1,R0
+    random_float = TMS320_C3X_STF_TO_SINGLE((double)limit * random_float);
     // asm 00008EF5: 	POPFL	R1
     // asm 00008EF7: 	POP	AR2
     // asm 00008EF8: 	RETS
-    return limit * ((float)value * 0.0001f);
+    return random_float;
 }
 
 // *----------------------------------------------------------------------------
@@ -1455,19 +1467,21 @@ void DISTANCE_2D(void) {
  *	AR4	OBJECT
  *
  */
-void OVELADD(void) {
+void OVELADD(OBJ* obj /*AR4*/) {
     // asm 000090A9: 	LDF	*+AR4(OVELX),R0
     // asm 000090AA: 	ADDF	*+AR4(OPOSX),R0
+    obj->pos.X += obj->vel_x;
     // asm 000090AB: 	STF	R0,*+AR4(OPOSX)
     // asm 000090AC: 	LDF	*+AR4(OVELY),R0
     // asm 000090AD: 	ADDF	*+AR4(OPOSY),R0
+    obj->pos.Y += obj->vel_y;
     // asm 000090AE: 	STF	R0,*+AR4(OPOSY)
     // asm 000090AF: 	LDF	*+AR4(OVELZ),R0
     // asm 000090B0: 	ADDF	*+AR4(OPOSZ),R0
+    obj->pos.Z += obj->vel_z;
     // asm 000090B1: 	STF	R0,*+AR4(OPOSZ)
     // asm 000090B2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OVELADD", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1505,7 +1519,7 @@ void OVELNADD(void) {
  *	R2	DIST
  *	R3	DESTINATION VECTOR
  */
-void FORWARD(void) {
+void FORWARD(VECTOR* src /*AR2*/, MATRIX* matrix /*R2*/, VECTOR* dst /*R3*/) {
     // asm 000090C1: 	PUSH	AR2
     // asm 000090C2: 	LDF	0,R0
     // asm 000090C3: 	PUSHF	R0
@@ -1515,10 +1529,10 @@ void FORWARD(void) {
     // asm 000090C7: 	LDI	SP,AR2
     // asm 000090C8: 	SUBI	2,AR2
     // asm 000090C9: 	CALL	MATRIX_MUL
+    MATRIX_MUL(src, matrix, dst);
     // asm 000090CA: 	POPF	R2
     // asm 000090CB: 	SUBI	2,SP
     // asm 000090CC: 	POP	AR2
     // asm 000090CD: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FORWARD", 0, 0);
-    UNIMPL();
 }
