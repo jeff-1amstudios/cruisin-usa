@@ -162,7 +162,7 @@ FREEDR_X:
  *
  */
 /* asm: MAXDIST	.FLOAT	9999999999.0  		;A VERY LARGE NUMBER */
-static float MAXDIST = 9999999999.0f;
+static c3x_reg_t MAXDIST = C3X_INIT(9999999999.0f, 0x211502f900ull);
 
 // *
 void DEBRIS_SORT(void) {

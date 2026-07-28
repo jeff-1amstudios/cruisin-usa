@@ -440,7 +440,7 @@ CNTNB2:
 /* asm: LEG_FLAG	.bss	LEG_FLAG,1 */
 static int LEG_FLAG;
 /* asm: LEG_RADY	.bss	LEG_RADY,1 */
-float LEG_RADY = 1.0f;
+c3x_reg_t LEG_RADY = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: LEG_SECTIONIDX	.bss	LEG_SECTIONIDX,1 */
 int LEG_SECTIONIDX;
 
@@ -464,7 +464,7 @@ static LEG_PAYLOAD* LEG_ADD_GROUP(tyco_stream_t tyco_ptr /*AR2*/, LEG_PAYLOAD* m
     int object_count;
     LEG_SSLL_ENTRY* ssll_entry;
     LEG_PAYLOAD* leg;
-    float object_radians;
+    c3x_reg_t object_radians;
     u32 object_id;
     u32 object_type;
 
@@ -496,7 +496,7 @@ static LEG_PAYLOAD* LEG_ADD_GROUP(tyco_stream_t tyco_ptr /*AR2*/, LEG_PAYLOAD* m
     // asm 0000AADF: 	AND	1,R6			;THIS IS THE LANES
     // asm 0000AAE0: 	LDF	*+AR7(TB_RADY),R2
     // asm 0000AAE1: 	STF	R2,@LEG_RADY
-    LEG_RADY = TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[4]);
+    LEG_RADY = C3X_LOAD(tyco_ptr[4]);
     MAME_ASSERT_REG_FLOAT(0x0000AAE1, "R2", &LEG_RADY);
     // asm 0000AAE2: 	LDI	@MATRIXAI,AR2		;Group rotation matrix
     // asm 0000AAE3: 	CALL	HPFIND_YMATRIX		;require High Precision
@@ -518,16 +518,16 @@ L12:
 
     leg = &ssll_entry->leg;
     // asm 0000AAEA: 	STF	R1,*+AR3(LEG_POSX)
-    leg->as_float.pos.X = (float)*group_ptr++;
+    leg->as_float.pos.X = C3X_FROM_INT(*group_ptr++);
     // asm 0000AAEB: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    leg->as_float.pos.Y = (float)*group_ptr++;
+    leg->as_float.pos.Y = C3X_FROM_INT(*group_ptr++);
     // asm 0000AAEC: 	TSTB	SC_REVERSE,R5
     LEG_FLAG = flag & SC_REVERSE;
     MAME_ASSERT_REG(0x0000AAED, "R5", &flag);
     // asm 0000AAED: 	BZD	NOTREVERSED
     // asm 0000AAEE: 	STF	R1,*+AR3(LEG_POSY)
     // asm 0000AAEF: 	FLOAT	*AR5++,R1		;GET Z POSITION
-    leg->as_float.pos.Z = (float)*group_ptr++;
+    leg->as_float.pos.Z = C3X_FROM_INT(*group_ptr++);
     // asm 0000AAF0: 	STF	R1,*+AR3(LEG_POSZ)
     if ((flag & SC_REVERSE) == 0) {
         goto NOTREVERSED;
@@ -546,16 +546,16 @@ ISOVER:
     // asm 0000AAF5: 	LDF	*+AR7(TB_RVS_POSX),R0	;TRANSLATE BY THE NEGATIVE OFFSET
     // asm 0000AAF6: 	ADDF	*+AR3(LEG_POSX),R0	;POSITION (THIS BLOCKS ENDING POSITION)
     // asm 0000AAF7: 	STF	R0,*+AR3(LEG_POSX)
-    leg->as_float.pos.X = leg->as_float.pos.X + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[7]);
+    leg->as_float.pos.X = C3X_STF(C3X_ADD(leg->as_float.pos.X, C3X_LOAD(tyco_ptr[7])));
     MAME_ASSERT_REG_FLOAT(0x0000AAF7, "R0", &leg->as_float.pos.X);
     // asm 0000AAF8: 	LDF	*+AR7(TB_RVS_POSY),R0
     // asm 0000AAF9: 	ADDF	*+AR3(LEG_POSY),R0
     // asm 0000AAFA: 	STF	R0,*+AR3(LEG_POSY)
-    leg->as_float.pos.Y = leg->as_float.pos.Y + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[8]);
+    leg->as_float.pos.Y = C3X_STF(C3X_ADD(leg->as_float.pos.Y, C3X_LOAD(tyco_ptr[8])));
     // asm 0000AAFB: 	LDF	*+AR7(TB_RVS_POSZ),R0
     // asm 0000AAFC: 	ADDF	*+AR3(LEG_POSZ),R0
     // asm 0000AAFD: 	STF	R0,*+AR3(LEG_POSZ)
-    leg->as_float.pos.Z = leg->as_float.pos.Z + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[9]);
+    leg->as_float.pos.Z = C3X_STF(C3X_ADD(leg->as_float.pos.Z, C3X_LOAD(tyco_ptr[9])));
     if ((flag & SC_OVERLAY) == 0) {
         tyco_ptr += 1;
     }
@@ -571,16 +571,16 @@ ISOVERA:
     // asm 0000AB05: 	LDF	*AR0++,R1
     // asm 0000AB06: 	ADDF	*+AR7(TB_POSX),R1
     // asm 0000AB07: 	STF	R1,*+AR3(LEG_POSX)
-    leg->as_float.pos.X = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[1]);
+    leg->as_float.pos.X = C3X_STF(C3X_ADD(VECTORAI.X, C3X_LOAD(tyco_ptr[1])));
     MAME_ASSERT_REG_FLOAT(0x0000AB08, "R1", &leg->as_float.pos.X);
     // asm 0000AB08: 	LDF	*AR0++,R1
     // asm 0000AB09: 	ADDF	*+AR7(TB_POSY),R1
     // asm 0000AB0A: 	STF	R1,*+AR3(LEG_POSY)
-    leg->as_float.pos.Y = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[2]);
+    leg->as_float.pos.Y = C3X_STF(C3X_ADD(VECTORAI.Y, C3X_LOAD(tyco_ptr[2])));
     // asm 0000AB0B: 	LDF	*AR0++,R1
     // asm 0000AB0C: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 0000AB0D: 	STF	R1,*+AR3(LEG_POSZ)
-    leg->as_float.pos.Z = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[3]);
+    leg->as_float.pos.Z = C3X_STF(C3X_ADD(VECTORAI.Z, C3X_LOAD(tyco_ptr[3])));
     // asm 0000AB0E: 	BU	JOIN_UP
     goto JOIN_UP;
 NOTREVERSED:
@@ -595,19 +595,19 @@ NOTREVERSED:
     // asm 0000AB16: 	LDF	*AR0++,R1
     // asm 0000AB17: 	ADDF	*+AR7(TB_POSX),R1
     // asm 0000AB18: 	STF	R1,*+AR3(LEG_POSX)
-    leg->as_float.pos.X = VECTORAI.X + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[1]);
+    leg->as_float.pos.X = C3X_STF(C3X_ADD(VECTORAI.X, C3X_LOAD(tyco_ptr[1])));
     MAME_ASSERT_REG_FLOAT(0x0000AB19, "R1", &leg->as_float.pos.X);
     //  asm 0000AB19: 	LDF	*AR0++,R1
     //  asm 0000AB1A: 	ADDF	*+AR7(TB_POSY),R1
     //  asm 0000AB1B: 	STF	R1,*+AR3(LEG_POSY)
-    leg->as_float.pos.Y = VECTORAI.Y + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[2]);
+    leg->as_float.pos.Y = C3X_STF(C3X_ADD(VECTORAI.Y, C3X_LOAD(tyco_ptr[2])));
     // asm 0000AB1C: 	LDF	*AR0++,R1
     // asm 0000AB1D: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 0000AB1E: 	STF	R1,*+AR3(LEG_POSZ)
-    leg->as_float.pos.Z = VECTORAI.Z + TMS320_C3X_SINGLE_TO_FLOAT(tyco_ptr[3]);
+    leg->as_float.pos.Z = C3X_STF(C3X_ADD(VECTORAI.Z, C3X_LOAD(tyco_ptr[3])));
 JOIN_UP:
     // asm 0000AB1F: LDF	*AR5++,R2		;LOAD OBJECTS RADIANS
-    object_radians = TMS320_C3X_SINGLE_TO_FLOAT(*group_ptr++);
+    object_radians = C3X_LOAD(*group_ptr++);
     MAME_ASSERT_REG_FLOAT(0x0000AB20, "R2", &object_radians);
     // asm 0000AB20: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
     object_id = *group_ptr++;

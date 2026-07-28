@@ -31,8 +31,8 @@ void RADAR_PLOT(void);
 
 static int packed_palette_word_count(int flags_and_count);
 static void copy_packed_palette(tPAL* dst, const tPAL* src);
-static int scale_5bit_component(int component, float multiplier);
-static u32 scale_packed_palette_word(u32 packed_word, float multiplier);
+static int scale_5bit_component(int component, c3x_reg_t multiplier);
+static u32 scale_packed_palette_word(u32 packed_word, c3x_reg_t multiplier);
 
 #define COLONI COLON
 #define lap_bufferI lap_buffer
@@ -60,17 +60,17 @@ static u32 scale_packed_palette_word(u32 packed_word, float multiplier);
 #define M3ST (-HALFPI)
 #define M4ST HALFPI
 // 	;THETA DELTAs
-#define M1STD 0.052359877    // HALFPI/30
-#define M2STD (-0.052359877) //-HALFPI/30
+#define M1STD C3X_INIT(0.052359877f, 0xFB56774F75ull)    // HALFPI/30
+#define M2STD C3X_INIT(-0.052359877f, 0xFBA988B08Aull) //-HALFPI/30
 #define M3STD 0.052359877    // HALFPI/30
 #define M4STD (-0.052359877) //-HALFPI/30
 /* asm: M3STDI	.float	M1STD */
 /* asm: 	 */
-static float M3STDI = M1STD;
+static c3x_reg_t M3STDI = M1STD;
 /* asm: M4STDI	.float	M2STD */
 /* asm: 	 */
 /* asm: 	 */
-static float M4STDI = M2STD;
+static c3x_reg_t M4STDI = M2STD;
 // 	;PROCESS DATA DEFINEs
 #define MAP1OBJ (PDATA + 0)
 #define MAP2OBJ (PDATA + 1)
@@ -708,7 +708,7 @@ L342:
 
 // *----------------------------------------------------------------------------
 /* asm: FORMULA1	.float	0.318309886 */
-static float FORMULA1 = 0.318309886f;
+static c3x_reg_t FORMULA1 = C3X_INIT(0.318309886f, 0xFE22F9836Cull);
 
 static void MAP_ILLUM_COMPUTE(void) {
     // asm 00005FED: 	LDF	*+AR7(MAP1T),R0
@@ -735,9 +735,9 @@ static void MAP_ILLUM_COMPUTE(void) {
 
 // *----------------------------------------------------------------------------
 /* asm: MAPPAL13	.bss	MAPPAL13,1 */
-float MAPPAL13 = 1.0f;
+c3x_reg_t MAPPAL13 = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: MAPPAL24	.bss	MAPPAL24,1 */
-float MAPPAL24 = 1.0f;
+c3x_reg_t MAPPAL24 = C3X_INIT(1.0f, 0x0000000000ull);
 
 static void MAPPAL_ILLUM(void) {
     const tPAL* source_palette;
@@ -991,10 +991,10 @@ static void copy_packed_palette(tPAL* dst, const tPAL* src) {
     }
 }
 
-static int scale_5bit_component(int component, float multiplier) {
+static int scale_5bit_component(int component, c3x_reg_t multiplier) {
     int scaled;
 
-    scaled = (int)(((float)(component << 3)) * multiplier);
+    scaled = FIX(C3X_MUL(C3X_FROM_INT(component << 3), multiplier));
     scaled >>= 3;
     if (scaled < 0) {
         return 0;
@@ -1005,7 +1005,7 @@ static int scale_5bit_component(int component, float multiplier) {
     return scaled;
 }
 
-static u32 scale_packed_palette_word(u32 packed_word, float multiplier) {
+static u32 scale_packed_palette_word(u32 packed_word, c3x_reg_t multiplier) {
     u32 scaled_word;
 
     scaled_word = 0;
@@ -1109,12 +1109,12 @@ void TIME2STR(void) {
  *
  */
 /* asm: MINFACT	.FLOAT	0.000303030303		;1/(55*60) */
-static float MINFACT = 0.000303030303f;
+static c3x_reg_t MINFACT = C3X_INIT(0.000303030303f, 0xF41EE00A00ull);
 /* asm: SECFACT	.FLOAT	0.018181818		;1/55 */
-static float SECFACT = 0.018181818f;
+static c3x_reg_t SECFACT = C3X_INIT(0.018181818f, 0xFA14F20936ull);
 /* asm: HUNFACT	.FLOAT	1.818181818		;100/55 */
 /* asm: 	 */
-static float HUNFACT = 1.818181818f;
+static c3x_reg_t HUNFACT = C3X_INIT(1.818181818f, 0x0068BA2F00ull);
 
 void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/) {
     int local_minutes;
@@ -1129,7 +1129,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     // asm 000060ED: 	CEILI	99,R3
     // asm 000060EF: 	FLOORI	0,R3
     // asm 000060F1: 	LDI	R3,R2			;MINUTES
-    local_minutes = (int)((f32)time_code * MINFACT);
+    local_minutes = FIX(C3X_MUL(C3X_FROM_INT(time_code), MINFACT));
     if (local_minutes < 0) {
         local_minutes = 0;
     }
@@ -1147,7 +1147,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     // asm 000060F8: 	CEILI	59,R3
     // asm 000060FA: 	FLOORI	0,R3
     // asm 000060FC: 	LDI	R3,R1			;SECONDS
-    local_seconds = (int)((f32)time_code * SECFACT);
+    local_seconds = FIX(C3X_MUL(C3X_FROM_INT(time_code), SECFACT));
     if (local_seconds < 0) {
         local_seconds = 0;
     }
@@ -1164,7 +1164,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     // asm 00006102: 	FIX	R3,R0			;HUNDRETHS
     // asm 00006103: 	CEILI	99,R0
     // asm 00006105: 	FLOORI	0,R0
-    local_hundredths = (int)((f32)time_code * HUNFACT);
+    local_hundredths = FIX(C3X_MUL(C3X_FROM_INT(time_code), HUNFACT));
     if (local_hundredths < 0) {
         local_hundredths = 0;
     }

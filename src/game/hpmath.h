@@ -6,7 +6,7 @@
 /* Generated from asm/HPMATH.ASM. */
 
 // HPMATH.ASM
-float _HPsin(float x);
-float _HPcos(float x);
+c3x_reg_t _HPsin(c3x_reg_t x);
+c3x_reg_t _HPcos(c3x_reg_t x);
 
 #endif /* HPMATH_H */

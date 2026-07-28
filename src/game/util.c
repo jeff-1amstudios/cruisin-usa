@@ -36,8 +36,8 @@ void SCRNFIL(void);
 word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one);
 void CLRCRAM(void);
 uint32_t RANDOM(void);
-float FRAND(float limit /*R0*/);
-float SFRAND(float limit /*R0*/);
+c3x_reg_t FRAND(c3x_reg_t limit /*R0*/);
+c3x_reg_t SFRAND(c3x_reg_t limit /*R0*/);
 int RANDU0(int range /*AR2*/);
 int RANDU(int range /*AR2*/);
 int SRAND(int range /*AR2*/);
@@ -379,10 +379,10 @@ RND2:
  *	R0	RANDOM NUMBER 0->N FLOATING POINT
  *
  */
-float FRAND(float limit /*R0*/) {
+c3x_reg_t FRAND(c3x_reg_t limit /*R0*/) {
     int value;
-    float random_float;
-    float scale;
+    c3x_reg_t random_float;
+    c3x_reg_t scale;
 
     // asm 00008EEA: 	PUSH	AR2
     // asm 00008EEB: 	PUSHFL	R1
@@ -392,15 +392,15 @@ float FRAND(float limit /*R0*/) {
     // asm 00008EEF: 	CALL	RANDU0
     value = RANDU0(value);
     // asm 00008EF0: 	FLOAT	R0
-    random_float = (float)value;
+    random_float = C3X_FROM_INT(value);
     // asm 00008EF1: 	MPYF	0.01,R0
-    scale = TMS320_C3X_SHORT_FLOAT(0.01);
-    random_float = TMS320_C3X_STF_TO_SINGLE((double)random_float * scale);
+    scale = C3X_IMM_F32(0.01);
+    random_float = C3X_MUL(random_float, scale);
     // asm 00008EF2: 	MPYF	0.01,R0
-    random_float = TMS320_C3X_STF_TO_SINGLE((double)random_float * scale);
+    random_float = C3X_MUL(random_float, scale);
     // asm 00008EF3: 	POPF	R1
     // asm 00008EF4: 	MPYF	R1,R0
-    random_float = TMS320_C3X_STF_TO_SINGLE((double)limit * random_float);
+    random_float = C3X_MUL(limit, random_float);
     // asm 00008EF5: 	POPFL	R1
     // asm 00008EF7: 	POP	AR2
     // asm 00008EF8: 	RETS
@@ -419,7 +419,7 @@ float FRAND(float limit /*R0*/) {
  *	R0	FL RANDOM NUMBER -N->+N FLOATING POINT
  *
  */
-float SFRAND(float limit /*R0*/) {
+c3x_reg_t SFRAND(c3x_reg_t limit /*R0*/) {
     // asm 00008EF9: 	PUSH	R1
     // asm 00008EFA: 	PUSHF	R1
     // asm 00008EFB: 	PUSHF	R0
@@ -430,7 +430,7 @@ float SFRAND(float limit /*R0*/) {
     // asm 00008F00: 	POPF	R1
     // asm 00008F01: 	POP	R1
     // asm 00008F02: 	RETS
-    return FRAND(limit * 2.0f) - limit;
+    return C3X_SUB(FRAND(C3X_MUL(limit, C3X_FROM_INT(2))), limit);
 }
 
 // *----------------------------------------------------------------------------
@@ -893,7 +893,7 @@ void CARPROC(PROC* p) {
     carblk = obj->carblk;
     p->ctx->CARPROC.carblk = carblk;
     // asm 00008F91: 	LDF	0,R6	 		;INIT SPIN RADIANS
-    p->ctx->CARPROC.body_x_radians = 0.0f;
+    p->ctx->CARPROC.body_x_radians = C3X_FROM_INT(0);
     // asm 00008F92: 	LDF	*+AR5(CARSPEED),R0	;INIT SPEED
     // asm 00008F93: 	LDF	R0,R7
     p->ctx->CARPROC.old_car_speed = carblk->speed;
@@ -902,10 +902,10 @@ void CARPROC(PROC* p) {
     p->ctx->CARPROC.old_orady = obj->rady;
     // asm 00008F96: 	CLRF	R5			;INITIALIZE BODY Z RADIANS
     // asm 00008F97: 	STF	R5,*+AR7(PDATA+1)	;SAVE Z RADIANS
-    p->ctx->CARPROC.body_z_radians = 0.0f;
+    p->ctx->CARPROC.body_z_radians = C3X_FROM_INT(0);
     // asm 00008F98: 	LDF	0,R0			;INITIALIZE WHEEL X RADIANS
     // asm 00008F99: 	STF	R0,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
-    p->ctx->CARPROC.wheel_x_radians = 0.0f;
+    p->ctx->CARPROC.wheel_x_radians = C3X_FROM_INT(0);
 CARPROCL:
     obj = p->ctx->CARPROC.obj;
     carblk = p->ctx->CARPROC.carblk;
@@ -940,13 +940,14 @@ NCS:
     // asm 00008FAC: 	LDI	@MATRIXAI,AR2
     // asm 00008FAD: 	CALL	FIND_YMATRIX
     // asm 00008FAE: 	LDI	AR2,AR0
-    FIND_YMATRIX(&MATRIXAI, carblk->turn * 1.5f);
+    FIND_YMATRIX(&MATRIXAI, C3X_MUL(carblk->turn, C3X_IMM_F32(1.5f)));
     // *GET WHEEL SPIN MATRIX
     // asm 00008FAF: 	LDF	*+AR5(CARSPEED),R2
     // asm 00008FB0: 	MPYF	0.02,R2   		;FUDGE FACTOR
     // asm 00008FB1: 	ADDF	*+AR7(PDATA+2),R2
     // asm 00008FB2: 	STF	R2,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
-    p->ctx->CARPROC.wheel_x_radians += carblk->speed * 0.02f;
+    p->ctx->CARPROC.wheel_x_radians =
+        C3X_ADD(p->ctx->CARPROC.wheel_x_radians, C3X_MUL(carblk->speed, C3X_IMM_F32(0.02f)));
     // asm 00008FB3: 	LDI	@MATRIXBI,AR2		;GET X SPIN IN MATRIXB
     // asm 00008FB4: 	CALL	FIND_XMATRIX
     FIND_XMATRIX(&MATRIXBI, p->ctx->CARPROC.wheel_x_radians);
@@ -1032,7 +1033,7 @@ CARSLP:
 
 // *----------------------------------------------------------------------------
 /* asm: NTWOPII	.float	-TWOPI */
-static float NTWOPII = -TWOPI;
+static c3x_reg_t NTWOPII = C3X_INIT(-6.283185307f, 0x02B6F0255Dull);
 
 /*
  *
@@ -1053,12 +1054,12 @@ static float NTWOPII = -TWOPI;
  */
 void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     MATRIX* body_x_matrix;
-    float delta_speed;
-    float x_lean;
-    float new_speed;
-    float delta_rady;
-    float wrap_adjust;
-    float z_lean;
+    c3x_reg_t delta_speed;
+    c3x_reg_t x_lean;
+    c3x_reg_t new_speed;
+    c3x_reg_t delta_rady;
+    c3x_reg_t wrap_adjust;
+    c3x_reg_t z_lean;
 
     // asm 00008FD6: 	LDI	AR0,AR1
     // asm 00008FD7: 	ADDI	DYNAMATRIX,AR1
@@ -1068,42 +1069,43 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     // asm 00008FD9: 	LDF	*+AR5(CARSPEED),R7	;GET NEW SPEED
     // asm 00008FDA: 	SUBF	R0,R7,R0
     new_speed = carblk->speed;
-    delta_speed = new_speed - p->ctx->CARPROC.old_car_speed;
+    delta_speed = C3X_SUB(new_speed, p->ctx->CARPROC.old_car_speed);
     // asm 00008FDB: 	MPYF	0.06,R0			;CONVERT TO RADIANS
     // asm 00008FDC: 	ADDF	R0,R6
-    p->ctx->CARPROC.body_x_radians += delta_speed * 0.06f;
+    p->ctx->CARPROC.body_x_radians =
+        C3X_ADD(p->ctx->CARPROC.body_x_radians, C3X_MUL(delta_speed, C3X_IMM_F32(0.06f)));
     // asm 00008FDD: 	MPYF	0.25,R6
     // asm 00008FDE: 	NEGF	R6,R2
-    x_lean = -(p->ctx->CARPROC.body_x_radians * 0.25f);
+    x_lean = C3X_NEG(C3X_MUL(p->ctx->CARPROC.body_x_radians, C3X_IMM_F32(0.25f)));
     // asm 00008FDF: 	LDI	*+AR5(CAR_AIRF),R0
     // asm 00008FE0: 	OR	*+AR5(CAR_AIRB),R0
     // asm 00008FE1: 	LDFNZ	0,R2 			;ZERO OUT WHEN IN AIR FOLKS
     if (carblk->front_airborne != 0 || carblk->rear_airborne != 0) {
-        x_lean = 0.0f;
+        x_lean = C3X_FROM_INT(0);
     }
     // asm 00008FE2: 	LDF	R2,R2			;AMPLIFY ACCELERATION ONLY
     // asm 00008FE3: 	LDFGT	1,R1
     // asm 00008FE4: 	LDFLT	2,R1
     // asm 00008FE5: 	MPYF	R1,R2
-    if (x_lean > 0.0f) {
-        x_lean *= 1.0f;
-    } else if (x_lean < 0.0f) {
-        x_lean *= 2.0f;
+    if (C3X_GT(x_lean, C3X_FROM_INT(0))) {
+        x_lean = C3X_MUL(x_lean, C3X_FROM_INT(1));
+    } else if (C3X_LT(x_lean, C3X_FROM_INT(0))) {
+        x_lean = C3X_MUL(x_lean, C3X_FROM_INT(2));
     }
     // asm 00008FE6: 	LDF	*+AR5(CARRPM),R0      	;REV FACTOR
     // asm 00008FE7: 	MPYF	0.01,R0
     // asm 00008FE8: 	MPYF	-0.05,R0
     // asm 00008FE9: 	ADDF	R0,R2
-    x_lean += (carblk->rpm_x100 * 0.01f) * -0.05f;
+    x_lean = C3X_ADD(x_lean, C3X_MUL(C3X_MUL(carblk->rpm_x100, C3X_IMM_F32(0.01f)), C3X_IMM_F32(-0.05f)));
     // asm 00008FEA: 	CMPF	0.1,R2			;LIMIT CHECK
     // asm 00008FEB: 	LDFGT	0.1,R2
     // asm 00008FEC: 	CMPF	-0.1,R2
     // asm 00008FED: 	LDFLT	-0.1,R2
-    if (x_lean > 0.1f) {
-        x_lean = 0.1f;
+    if (C3X_GT(x_lean, C3X_IMM_F32(0.1f))) {
+        x_lean = C3X_IMM_F32(0.1f);
     }
-    if (x_lean < -0.1f) {
-        x_lean = -0.1f;
+    if (C3X_LT(x_lean, C3X_IMM_F32(-0.1f))) {
+        x_lean = C3X_IMM_F32(-0.1f);
     }
     // asm 00008FEE: 	STF	R2,*+AR5(CARXLEAN)
     carblk->x_lean = x_lean;
@@ -1118,67 +1120,67 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     // asm 00008FF2: 	LDF	*+AR7(PDATA),R4		;OLD ORADY
     // asm 00008FF3: 	LDF	*+AR7(PDATA+1),R5	;Z RADIANS
     // asm 00008FF4: 	LDF	*+AR4(ORADY),R0
-    delta_rady = obj->rady - p->ctx->CARPROC.old_orady;
+    delta_rady = C3X_SUB(obj->rady, p->ctx->CARPROC.old_orady);
     // asm 00008FF5: 	STF	R0,*+AR7(PDATA)		;SAVE NEW OLD ORADY
     p->ctx->CARPROC.old_orady = obj->rady;
     // asm 00008FF6: 	SUBF	R4,R0			;DELTA ORADY
     // asm 00008FF7: 	LDF	0,R1
-    wrap_adjust = 0.0f;
+    wrap_adjust = C3X_FROM_INT(0);
     // asm 00008FF8: 	CMPF	3.14,R0
     // asm 00008FF9: 	LDFGT	@NTWOPII,R1
-    if (delta_rady > 3.14f) {
+    if (C3X_GT(delta_rady, C3X_IMM_F32(3.14f))) {
         wrap_adjust = NTWOPII;
     }
     // asm 00008FFA: 	CMPF	-3.14,R0
     // asm 00008FFB: 	LDFLT	@TWOPII,R1
-    if (delta_rady < -3.14f) {
+    if (C3X_LT(delta_rady, C3X_IMM_F32(-3.14f))) {
         wrap_adjust = TWOPII;
     }
     // asm 00008FFC: 	ADDI	R1,R0			;HANDLE RADIAN WRAPAROUND
-    delta_rady += wrap_adjust;
+    delta_rady = C3X_ADD(delta_rady, wrap_adjust);
     // asm 00008FFD: 	MPYF	R7,R0			;MULTIPLY BY SPEED FACTOR
-    delta_rady *= p->ctx->CARPROC.old_car_speed;
+    delta_rady = C3X_MUL(delta_rady, p->ctx->CARPROC.old_car_speed);
     // asm 00008FFE: 	MPYF	0.06,R0			;CONVERT TO RADIANS
     // asm 00008FFF: 	MPYF	0.1,R0			;CONVERT TO RADIANS
-    delta_rady *= 0.06f;
-    delta_rady *= 0.1f;
+    delta_rady = C3X_MUL(delta_rady, C3X_IMM_F32(0.06f));
+    delta_rady = C3X_MUL(delta_rady, C3X_IMM_F32(0.1f));
     // asm 00009000: 	ADDF	R0,R5
-    p->ctx->CARPROC.body_z_radians += delta_rady;
+    p->ctx->CARPROC.body_z_radians = C3X_ADD(p->ctx->CARPROC.body_z_radians, delta_rady);
     // asm 00009001: 	MPYF	0.5,R5
-    p->ctx->CARPROC.body_z_radians *= 0.5f;
+    p->ctx->CARPROC.body_z_radians = C3X_MUL(p->ctx->CARPROC.body_z_radians, C3X_IMM_F32(0.5f));
     // asm 00009002: 	STF	R5,*+AR7(PDATA+1)	;SAVE NEW Z RADIANS
     // asm 00009003: 	NEGF	R5,R2
-    z_lean = -p->ctx->CARPROC.body_z_radians;
+    z_lean = C3X_NEG(p->ctx->CARPROC.body_z_radians);
     // asm 00009004: 	LDI	*+AR5(CAR_AIRF),R0
     // asm 00009005: 	OR	*+AR5(CAR_AIRB),R0
     // asm 00009006: 	LDFNZ	0,R2 			;ZERO OUT WHEN IN AIR FOLKS
     if (carblk->front_airborne != 0 || carblk->rear_airborne != 0) {
-        z_lean = 0.0f;
+        z_lean = C3X_FROM_INT(0);
     }
     // asm 00009007: 	CMPF	0.1,R2			;LIMIT CHECK
     // asm 00009008: 	LDFGT	0.1,R2
     // asm 00009009: 	CMPF	-0.1,R2
     // asm 0000900A: 	LDFLT	-0.1,R2
-    if (z_lean > 0.1f) {
-        z_lean = 0.1f;
+    if (C3X_GT(z_lean, C3X_IMM_F32(0.1f))) {
+        z_lean = C3X_IMM_F32(0.1f);
     }
-    if (z_lean < -0.1f) {
-        z_lean = -0.1f;
+    if (C3X_LT(z_lean, C3X_IMM_F32(-0.1f))) {
+        z_lean = C3X_IMM_F32(-0.1f);
     }
     // asm 0000900B: 	STF	R2,*+AR5(CARZLEAN)    	;SAVE IT
     carblk->z_lean = z_lean;
     // ;	MPYF	3,R2			;PUMP IT UP
     // asm 0000900C: 	MPYF	2.2,R2			;PUMP IT UP
-    z_lean *= 2.2f;
+    z_lean = C3X_MUL(z_lean, C3X_IMM_F32(2.2f));
     // asm 0000900D: 	CMPF	0.1,R2			;LIMIT CHECK
     // asm 0000900E: 	LDFGT	0.1,R2
     // asm 0000900F: 	CMPF	-0.1,R2
     // asm 00009010: 	LDFLT	-0.1,R2
-    if (z_lean > 0.1f) {
-        z_lean = 0.1f;
+    if (C3X_GT(z_lean, C3X_IMM_F32(0.1f))) {
+        z_lean = C3X_IMM_F32(0.1f);
     }
-    if (z_lean < -0.1f) {
-        z_lean = -0.1f;
+    if (C3X_LT(z_lean, C3X_IMM_F32(-0.1f))) {
+        z_lean = C3X_IMM_F32(-0.1f);
     }
     // asm 00009011: 	LDI	@MATRIXAI,AR2		;GET Z IN TEMP THING
     // asm 00009012: 	CALL	FIND_ZMATRIX
@@ -1470,15 +1472,17 @@ void DISTANCE_2D(void) {
 void OVELADD(OBJ* obj /*AR4*/) {
     // asm 000090A9: 	LDF	*+AR4(OVELX),R0
     // asm 000090AA: 	ADDF	*+AR4(OPOSX),R0
-    obj->pos.X += obj->vel_x;
+    obj->pos.X = C3X_STF(C3X_ADD(obj->pos.X, obj->vel_x));
     // asm 000090AB: 	STF	R0,*+AR4(OPOSX)
     // asm 000090AC: 	LDF	*+AR4(OVELY),R0
     // asm 000090AD: 	ADDF	*+AR4(OPOSY),R0
-    obj->pos.Y += obj->vel_y;
+    obj->pos.Y = C3X_STF(C3X_ADD(obj->pos.Y, obj->vel_y));
     // asm 000090AE: 	STF	R0,*+AR4(OPOSY)
     // asm 000090AF: 	LDF	*+AR4(OVELZ),R0
+    MAME_ASSERT_REG_FLOAT(0x000090B0, "R0", &obj->vel_z);
     // asm 000090B0: 	ADDF	*+AR4(OPOSZ),R0
-    obj->pos.Z += obj->vel_z;
+    obj->pos.Z = C3X_STF(C3X_ADD(obj->pos.Z, obj->vel_z));
+    MAME_ASSERT_REG_FLOAT(0x000090B1, "R0", &obj->pos.Z);
     // asm 000090B1: 	STF	R0,*+AR4(OPOSZ)
     // asm 000090B2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OVELADD", 0, 0);

@@ -206,11 +206,11 @@ extern int SUSPEND_MODE;
 // asm: 	.globl	 LANEPI,LANEP,LANESI,LANES,LANES4
 #define LANEPI LANEP
 
-extern float* LANEP[];
+extern c3x_f32_t* LANEP[];
 
-extern float LANES[];
+extern c3x_f32_t LANES[];
 
-extern float LANES4[];
+extern c3x_f32_t LANES4[];
 
 // asm: 	.globl	 SUB_FUNCTION_XLANE
 #define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
@@ -286,6 +286,6 @@ void FREE_DRONE(void);
 void PRECOLLIDE_PLYR(void);
 
 // asm: 	.globl	 DRONE_RIDE_RIGHT
-float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
+c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 #endif /* DELTA_H */

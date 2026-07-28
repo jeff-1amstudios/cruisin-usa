@@ -23,7 +23,7 @@ extern LEG_SSLL_ENTRY* LEGFREE;
 // asm: 	.bss	LEGLL,1
 extern LEG_SSLL_ENTRY* LEGLL;
 // asm: 	.bss	LEG_RADY,1	;FL
-extern float LEG_RADY;
+extern c3x_reg_t LEG_RADY;
 // asm: 	.bss	LEG_SECTIONIDX,1	;UH
 extern int LEG_SECTIONIDX;
 

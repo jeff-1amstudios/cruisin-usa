@@ -23,17 +23,17 @@ extern VECTOR _VECTORA;
  * Source module: asm/MATH.ASM
  */
 
-float _COSI(float theta /*R2*/);
-float _SINE(float theta /*R2*/);
+c3x_reg_t _COSI(c3x_reg_t theta /*R2*/);
+c3x_reg_t _SINE(c3x_reg_t theta /*R2*/);
 void NORMITS(void);
-float NORMIT(float radians /*R2*/);
-float ARCTANF(float x /*R2*/, float y /*R3*/);
+c3x_reg_t NORMIT(c3x_reg_t radians /*R2*/);
+c3x_reg_t ARCTANF(c3x_reg_t x /*R2*/, c3x_reg_t y /*R3*/);
 void FIND_MATRIX(void* dest /*AR2*/, VECTOR* radians /*R2*/);
-void FIND_XMATRIX(void* dest /*AR2*/, float radians /*R2*/);
+void FIND_XMATRIX(void* dest /*AR2*/, c3x_reg_t radians /*R2*/);
 #define FIND_YMATRIX _find_Ymatrix
-void _find_Ymatrix(void* dest /*AR2*/, float radians /*R2*/);
-void HPFIND_YMATRIX(void* dest /*AR2*/, float radians /*R2*/);
-void FIND_ZMATRIX(void* dest /*AR2*/, float radians /*R2*/);
+void _find_Ymatrix(void* dest /*AR2*/, c3x_reg_t radians /*R2*/);
+void HPFIND_YMATRIX(void* dest /*AR2*/, c3x_reg_t radians /*R2*/);
+void FIND_ZMATRIX(void* dest /*AR2*/, c3x_reg_t radians /*R2*/);
 void INITMAT(MATRIX* mat /*AR0*/);
 void VECTLEN(void);
 void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
@@ -47,7 +47,7 @@ void CONCATMATV(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
 void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/);
 void CONCATMAT(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
 void GETTHETADIFF(void);
-float DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/);
+c3x_reg_t DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/);
 LINE2D* GETLINE_EQ_2D(VECTOR* p1 /*AR0*/, VECTOR* p2 /*AR1*/, LINE2D* line /*AR2*/);
 void SCALE_MATRIX(void);
 
@@ -55,12 +55,20 @@ void SCALE_MATRIX(void);
 #define SINTABLEI SINTABLE
 #define LOCTEMPER_MAT2I LOCTEMPER_MAT2
 
-static float FORMULA;
-static float* ATTABV;
-static float* OFFTABV;
-static float SINTABLE[];
-static float ATTAB[];
-static float ATOFFTAB[];
+static c3x_reg_t FORMULA;
+static c3x_f32_t* ATTABV;
+static c3x_f32_t* OFFTABV;
+static c3x_f32_t SINTABLE[];
+static c3x_f32_t ATTAB[];
+static c3x_f32_t ATOFFTAB[];
+
+static c3x_reg_t DOT3(c3x_reg_t a0, c3x_reg_t b0, c3x_reg_t a1, c3x_reg_t b1, c3x_reg_t a2, c3x_reg_t b2) {
+    return C3X_STF(C3X_ADD(C3X_ADD(C3X_MUL(a0, b0), C3X_MUL(a1, b1)), C3X_MUL(a2, b2)));
+}
+
+static c3x_reg_t STF_F32(c3x_reg_t value) {
+    return C3X_STF(value);
+}
 
 /*
  *----------------------------------------------------------------------------
@@ -82,11 +90,11 @@ static float ATOFFTAB[];
  *	R0	RETURN VALUE
  *
  */
-float _COSI(float theta /*R2*/) {
+c3x_reg_t _COSI(c3x_reg_t theta /*R2*/) {
     // asm 0000952D: 	LDF	R2,R0
     // asm 0000952E: 	ADDF	@HALFPII,R0	;offset for COS
     // asm 0000952F: 	B	SINE0
-    return _SINE(theta + HALFPII); // ;offset for COS
+    return _SINE(C3X_ADD(theta, HALFPII)); // ;offset for COS
 }
 
 // *
@@ -96,7 +104,7 @@ float _COSI(float theta /*R2*/) {
 // *	R2	VALUE IN RADIANS 0-INFINITY
 // *	R0	RETURN VALUE
 // *
-float _SINE(float theta /*R2*/) {
+c3x_reg_t _SINE(c3x_reg_t theta /*R2*/) {
     int index;
 
     // asm 00009530: 	LDF	R2,R0
@@ -105,15 +113,15 @@ float _SINE(float theta /*R2*/) {
     // asm 00009532: 	BGE	NOTNEG
     // asm 00009533: 	NEGF	R0		;fix negative case
     // asm 00009534: 	ADDF	@PII,R0
-    if (theta < 0.0f) {
-        theta = -theta + PII; // ;fix negative case
+    if (C3X_LT(theta, C3X_FROM_INT(0))) {
+        theta = C3X_ADD(C3X_NEG(theta), PII); // ;fix negative case
     }
 
 NOTNEG:
     // asm 00009535: MPYF	@FORMULA,R0
     // asm 00009536: 	ADDF	0.5,R0		;ROUND THE SUCKER
     // asm 00009537: 	FIX	R0		;get a raw index
-    index = (int)(theta * FORMULA + 0.5f); // ;ROUND THE SUCKER / ;get a raw index
+    index = FIX(C3X_ADD(C3X_MUL(theta, FORMULA), C3X_IMM_F32(0.5f))); // ;ROUND THE SUCKER / ;get a raw index
 
     // asm 00009538: 	AND	3FFh,R0
     index &= 0x3ff;
@@ -138,7 +146,7 @@ NOTNEG:
         // asm 00009542: 	NEGF	*AR0,R0
         // asm 00009543: 	POP	AR0
         // asm 00009544: 	RETS
-        return -SINTABLE[index];
+        return C3X_NEG(C3X_LDF(SINTABLE[index]));
     }
 
 ALLOK:
@@ -156,7 +164,7 @@ PERFECT:
     // asm 0000954B: 	LDF	*AR0,R0
     // asm 0000954C: 	POP	AR0
     // asm 0000954D: 	RETS
-    return SINTABLE[index];
+    return C3X_LDF(SINTABLE[index]);
 }
 
 // *----------------------------------------------------------------------------
@@ -195,284 +203,284 @@ PERFECT:
 /* asm: 	.float	0.995185,0.995768,0.996313,0.996821,0.997291,0.997723,0.998118,0.998476 */
 /* asm: 	.float	0.998796,0.999078,0.999322,0.999529,0.999699,0.999831,0.999925,0.999981 */
 /* asm: 	.float	1.0 */
-static float SINTABLE[] = {
-    0.000000f,
-    0.006136f,
-    0.012272f,
-    0.018407f,
-    0.024541f,
-    0.030675f,
-    0.036807f,
-    0.042938f,
-    0.049068f,
-    0.055195f,
-    0.061321f,
-    0.067444f,
-    0.073565f,
-    0.079682f,
-    0.085797f,
-    0.091909f,
-    0.098017f,
-    0.104122f,
-    0.110222f,
-    0.116319f,
-    0.122411f,
-    0.128498f,
-    0.134581f,
-    0.140658f,
-    0.146730f,
-    0.152797f,
-    0.158858f,
-    0.164913f,
-    0.170962f,
-    0.177004f,
-    0.183040f,
-    0.189069f,
-    0.195090f,
-    0.201105f,
-    0.207111f,
-    0.213110f,
-    0.219101f,
-    0.225084f,
-    0.231058f,
-    0.237024f,
-    0.242980f,
-    0.248928f,
-    0.254866f,
-    0.260794f,
-    0.266713f,
-    0.272621f,
-    0.278520f,
-    0.284408f,
-    0.290285f,
-    0.296151f,
-    0.302006f,
-    0.307850f,
-    0.313682f,
-    0.319502f,
-    0.325310f,
-    0.331106f,
-    0.336890f,
-    0.342661f,
-    0.348419f,
-    0.354163f,
-    0.359895f,
-    0.365613f,
-    0.371317f,
-    0.377007f,
-    0.382683f,
-    0.388345f,
-    0.393992f,
-    0.399624f,
-    0.405241f,
-    0.410843f,
-    0.416429f,
-    0.422000f,
-    0.427555f,
-    0.433094f,
-    0.438616f,
-    0.444122f,
-    0.449611f,
-    0.455083f,
-    0.460538f,
-    0.465976f,
-    0.471396f,
-    0.476799f,
-    0.482183f,
-    0.487550f,
-    0.492898f,
-    0.498227f,
-    0.503538f,
-    0.508830f,
-    0.514102f,
-    0.519356f,
-    0.524589f,
-    0.529803f,
-    0.534997f,
-    0.540171f,
-    0.545325f,
-    0.550458f,
-    0.555570f,
-    0.560661f,
-    0.565732f,
-    0.570781f,
-    0.575808f,
-    0.580814f,
-    0.585798f,
-    0.590760f,
-    0.595699f,
-    0.600616f,
-    0.605511f,
-    0.610383f,
-    0.615232f,
-    0.620057f,
-    0.624860f,
-    0.629638f,
-    0.634393f,
-    0.639125f,
-    0.643832f,
-    0.648515f,
-    0.653173f,
-    0.657807f,
-    0.662416f,
-    0.667000f,
-    0.671559f,
-    0.676093f,
-    0.680601f,
-    0.685084f,
-    0.689541f,
-    0.693972f,
-    0.698376f,
-    0.702755f,
-    0.707107f,
-    0.711432f,
-    0.715731f,
-    0.720003f,
-    0.724247f,
-    0.728465f,
-    0.732655f,
-    0.736817f,
-    0.740951f,
-    0.745058f,
-    0.749137f,
-    0.753187f,
-    0.757209f,
-    0.761203f,
-    0.765168f,
-    0.769104f,
-    0.773011f,
-    0.776889f,
-    0.780738f,
-    0.784557f,
-    0.788347f,
-    0.792107f,
-    0.795837f,
-    0.799538f,
-    0.803208f,
-    0.806848f,
-    0.810458f,
-    0.814037f,
-    0.817585f,
-    0.821103f,
-    0.824590f,
-    0.828046f,
-    0.831470f,
-    0.834863f,
-    0.838225f,
-    0.841555f,
-    0.844854f,
-    0.848121f,
-    0.851356f,
-    0.854559f,
-    0.857729f,
-    0.860867f,
-    0.863973f,
-    0.867047f,
-    0.870088f,
-    0.873096f,
-    0.876071f,
-    0.879013f,
-    0.881922f,
-    0.884798f,
-    0.887640f,
-    0.890449f,
-    0.893225f,
-    0.895967f,
-    0.898675f,
-    0.901349f,
-    0.903990f,
-    0.906596f,
-    0.909169f,
-    0.911707f,
-    0.914210f,
-    0.916680f,
-    0.919114f,
-    0.921515f,
-    0.923880f,
-    0.926211f,
-    0.928507f,
-    0.930767f,
-    0.932993f,
-    0.935184f,
-    0.937340f,
-    0.939460f,
-    0.941545f,
-    0.943594f,
-    0.945608f,
-    0.947586f,
-    0.949529f,
-    0.951436f,
-    0.953307f,
-    0.955142f,
-    0.956941f,
-    0.958704f,
-    0.960431f,
-    0.962122f,
-    0.963777f,
-    0.965395f,
-    0.966977f,
-    0.968523f,
-    0.970032f,
-    0.971504f,
-    0.972940f,
-    0.974340f,
-    0.975703f,
-    0.977029f,
-    0.978318f,
-    0.979570f,
-    0.980786f,
-    0.981964f,
-    0.983106f,
-    0.984210f,
-    0.985278f,
-    0.986308f,
-    0.987302f,
-    0.988258f,
-    0.989177f,
-    0.990059f,
-    0.990903f,
-    0.991710f,
-    0.992480f,
-    0.993212f,
-    0.993907f,
-    0.994565f,
-    0.995185f,
-    0.995768f,
-    0.996313f,
-    0.996821f,
-    0.997291f,
-    0.997723f,
-    0.998118f,
-    0.998476f,
-    0.998796f,
-    0.999078f,
-    0.999322f,
-    0.999529f,
-    0.999699f,
-    0.999831f,
-    0.999925f,
-    0.999981f,
-    1.0f,
+static c3x_f32_t SINTABLE[] = {
+    C3X_F32_INIT(0.000000f),
+    C3X_F32_INIT(0.006136f),
+    C3X_F32_INIT(0.012272f),
+    C3X_F32_INIT(0.018407f),
+    C3X_F32_INIT(0.024541f),
+    C3X_F32_INIT(0.030675f),
+    C3X_F32_INIT(0.036807f),
+    C3X_F32_INIT(0.042938f),
+    C3X_F32_INIT(0.049068f),
+    C3X_F32_INIT(0.055195f),
+    C3X_F32_INIT(0.061321f),
+    C3X_F32_INIT(0.067444f),
+    C3X_F32_INIT(0.073565f),
+    C3X_F32_INIT(0.079682f),
+    C3X_F32_INIT(0.085797f),
+    C3X_F32_INIT(0.091909f),
+    C3X_F32_INIT(0.098017f),
+    C3X_F32_INIT(0.104122f),
+    C3X_F32_INIT(0.110222f),
+    C3X_F32_INIT(0.116319f),
+    C3X_F32_INIT(0.122411f),
+    C3X_F32_INIT(0.128498f),
+    C3X_F32_INIT(0.134581f),
+    C3X_F32_INIT(0.140658f),
+    C3X_F32_INIT(0.146730f),
+    C3X_F32_INIT(0.152797f),
+    C3X_F32_INIT(0.158858f),
+    C3X_F32_INIT(0.164913f),
+    C3X_F32_INIT(0.170962f),
+    C3X_F32_INIT(0.177004f),
+    C3X_F32_INIT(0.183040f),
+    C3X_F32_INIT(0.189069f),
+    C3X_F32_INIT(0.195090f),
+    C3X_F32_INIT(0.201105f),
+    C3X_F32_INIT(0.207111f),
+    C3X_F32_INIT(0.213110f),
+    C3X_F32_INIT(0.219101f),
+    C3X_F32_INIT(0.225084f),
+    C3X_F32_INIT(0.231058f),
+    C3X_F32_INIT(0.237024f),
+    C3X_F32_INIT(0.242980f),
+    C3X_F32_INIT(0.248928f),
+    C3X_F32_INIT(0.254866f),
+    C3X_F32_INIT(0.260794f),
+    C3X_F32_INIT(0.266713f),
+    C3X_F32_INIT(0.272621f),
+    C3X_F32_INIT(0.278520f),
+    C3X_F32_INIT(0.284408f),
+    C3X_F32_INIT(0.290285f),
+    C3X_F32_INIT(0.296151f),
+    C3X_F32_INIT(0.302006f),
+    C3X_F32_INIT(0.307850f),
+    C3X_F32_INIT(0.313682f),
+    C3X_F32_INIT(0.319502f),
+    C3X_F32_INIT(0.325310f),
+    C3X_F32_INIT(0.331106f),
+    C3X_F32_INIT(0.336890f),
+    C3X_F32_INIT(0.342661f),
+    C3X_F32_INIT(0.348419f),
+    C3X_F32_INIT(0.354163f),
+    C3X_F32_INIT(0.359895f),
+    C3X_F32_INIT(0.365613f),
+    C3X_F32_INIT(0.371317f),
+    C3X_F32_INIT(0.377007f),
+    C3X_F32_INIT(0.382683f),
+    C3X_F32_INIT(0.388345f),
+    C3X_F32_INIT(0.393992f),
+    C3X_F32_INIT(0.399624f),
+    C3X_F32_INIT(0.405241f),
+    C3X_F32_INIT(0.410843f),
+    C3X_F32_INIT(0.416429f),
+    C3X_F32_INIT(0.422000f),
+    C3X_F32_INIT(0.427555f),
+    C3X_F32_INIT(0.433094f),
+    C3X_F32_INIT(0.438616f),
+    C3X_F32_INIT(0.444122f),
+    C3X_F32_INIT(0.449611f),
+    C3X_F32_INIT(0.455083f),
+    C3X_F32_INIT(0.460538f),
+    C3X_F32_INIT(0.465976f),
+    C3X_F32_INIT(0.471396f),
+    C3X_F32_INIT(0.476799f),
+    C3X_F32_INIT(0.482183f),
+    C3X_F32_INIT(0.487550f),
+    C3X_F32_INIT(0.492898f),
+    C3X_F32_INIT(0.498227f),
+    C3X_F32_INIT(0.503538f),
+    C3X_F32_INIT(0.508830f),
+    C3X_F32_INIT(0.514102f),
+    C3X_F32_INIT(0.519356f),
+    C3X_F32_INIT(0.524589f),
+    C3X_F32_INIT(0.529803f),
+    C3X_F32_INIT(0.534997f),
+    C3X_F32_INIT(0.540171f),
+    C3X_F32_INIT(0.545325f),
+    C3X_F32_INIT(0.550458f),
+    C3X_F32_INIT(0.555570f),
+    C3X_F32_INIT(0.560661f),
+    C3X_F32_INIT(0.565732f),
+    C3X_F32_INIT(0.570781f),
+    C3X_F32_INIT(0.575808f),
+    C3X_F32_INIT(0.580814f),
+    C3X_F32_INIT(0.585798f),
+    C3X_F32_INIT(0.590760f),
+    C3X_F32_INIT(0.595699f),
+    C3X_F32_INIT(0.600616f),
+    C3X_F32_INIT(0.605511f),
+    C3X_F32_INIT(0.610383f),
+    C3X_F32_INIT(0.615232f),
+    C3X_F32_INIT(0.620057f),
+    C3X_F32_INIT(0.624860f),
+    C3X_F32_INIT(0.629638f),
+    C3X_F32_INIT(0.634393f),
+    C3X_F32_INIT(0.639125f),
+    C3X_F32_INIT(0.643832f),
+    C3X_F32_INIT(0.648515f),
+    C3X_F32_INIT(0.653173f),
+    C3X_F32_INIT(0.657807f),
+    C3X_F32_INIT(0.662416f),
+    C3X_F32_INIT(0.667000f),
+    C3X_F32_INIT(0.671559f),
+    C3X_F32_INIT(0.676093f),
+    C3X_F32_INIT(0.680601f),
+    C3X_F32_INIT(0.685084f),
+    C3X_F32_INIT(0.689541f),
+    C3X_F32_INIT(0.693972f),
+    C3X_F32_INIT(0.698376f),
+    C3X_F32_INIT(0.702755f),
+    C3X_F32_INIT(0.707107f),
+    C3X_F32_INIT(0.711432f),
+    C3X_F32_INIT(0.715731f),
+    C3X_F32_INIT(0.720003f),
+    C3X_F32_INIT(0.724247f),
+    C3X_F32_INIT(0.728465f),
+    C3X_F32_INIT(0.732655f),
+    C3X_F32_INIT(0.736817f),
+    C3X_F32_INIT(0.740951f),
+    C3X_F32_INIT(0.745058f),
+    C3X_F32_INIT(0.749137f),
+    C3X_F32_INIT(0.753187f),
+    C3X_F32_INIT(0.757209f),
+    C3X_F32_INIT(0.761203f),
+    C3X_F32_INIT(0.765168f),
+    C3X_F32_INIT(0.769104f),
+    C3X_F32_INIT(0.773011f),
+    C3X_F32_INIT(0.776889f),
+    C3X_F32_INIT(0.780738f),
+    C3X_F32_INIT(0.784557f),
+    C3X_F32_INIT(0.788347f),
+    C3X_F32_INIT(0.792107f),
+    C3X_F32_INIT(0.795837f),
+    C3X_F32_INIT(0.799538f),
+    C3X_F32_INIT(0.803208f),
+    C3X_F32_INIT(0.806848f),
+    C3X_F32_INIT(0.810458f),
+    C3X_F32_INIT(0.814037f),
+    C3X_F32_INIT(0.817585f),
+    C3X_F32_INIT(0.821103f),
+    C3X_F32_INIT(0.824590f),
+    C3X_F32_INIT(0.828046f),
+    C3X_F32_INIT(0.831470f),
+    C3X_F32_INIT(0.834863f),
+    C3X_F32_INIT(0.838225f),
+    C3X_F32_INIT(0.841555f),
+    C3X_F32_INIT(0.844854f),
+    C3X_F32_INIT(0.848121f),
+    C3X_F32_INIT(0.851356f),
+    C3X_F32_INIT(0.854559f),
+    C3X_F32_INIT(0.857729f),
+    C3X_F32_INIT(0.860867f),
+    C3X_F32_INIT(0.863973f),
+    C3X_F32_INIT(0.867047f),
+    C3X_F32_INIT(0.870088f),
+    C3X_F32_INIT(0.873096f),
+    C3X_F32_INIT(0.876071f),
+    C3X_F32_INIT(0.879013f),
+    C3X_F32_INIT(0.881922f),
+    C3X_F32_INIT(0.884798f),
+    C3X_F32_INIT(0.887640f),
+    C3X_F32_INIT(0.890449f),
+    C3X_F32_INIT(0.893225f),
+    C3X_F32_INIT(0.895967f),
+    C3X_F32_INIT(0.898675f),
+    C3X_F32_INIT(0.901349f),
+    C3X_F32_INIT(0.903990f),
+    C3X_F32_INIT(0.906596f),
+    C3X_F32_INIT(0.909169f),
+    C3X_F32_INIT(0.911707f),
+    C3X_F32_INIT(0.914210f),
+    C3X_F32_INIT(0.916680f),
+    C3X_F32_INIT(0.919114f),
+    C3X_F32_INIT(0.921515f),
+    C3X_F32_INIT(0.923880f),
+    C3X_F32_INIT(0.926211f),
+    C3X_F32_INIT(0.928507f),
+    C3X_F32_INIT(0.930767f),
+    C3X_F32_INIT(0.932993f),
+    C3X_F32_INIT(0.935184f),
+    C3X_F32_INIT(0.937340f),
+    C3X_F32_INIT(0.939460f),
+    C3X_F32_INIT(0.941545f),
+    C3X_F32_INIT(0.943594f),
+    C3X_F32_INIT(0.945608f),
+    C3X_F32_INIT(0.947586f),
+    C3X_F32_INIT(0.949529f),
+    C3X_F32_INIT(0.951436f),
+    C3X_F32_INIT(0.953307f),
+    C3X_F32_INIT(0.955142f),
+    C3X_F32_INIT(0.956941f),
+    C3X_F32_INIT(0.958704f),
+    C3X_F32_INIT(0.960431f),
+    C3X_F32_INIT(0.962122f),
+    C3X_F32_INIT(0.963777f),
+    C3X_F32_INIT(0.965395f),
+    C3X_F32_INIT(0.966977f),
+    C3X_F32_INIT(0.968523f),
+    C3X_F32_INIT(0.970032f),
+    C3X_F32_INIT(0.971504f),
+    C3X_F32_INIT(0.972940f),
+    C3X_F32_INIT(0.974340f),
+    C3X_F32_INIT(0.975703f),
+    C3X_F32_INIT(0.977029f),
+    C3X_F32_INIT(0.978318f),
+    C3X_F32_INIT(0.979570f),
+    C3X_F32_INIT(0.980786f),
+    C3X_F32_INIT(0.981964f),
+    C3X_F32_INIT(0.983106f),
+    C3X_F32_INIT(0.984210f),
+    C3X_F32_INIT(0.985278f),
+    C3X_F32_INIT(0.986308f),
+    C3X_F32_INIT(0.987302f),
+    C3X_F32_INIT(0.988258f),
+    C3X_F32_INIT(0.989177f),
+    C3X_F32_INIT(0.990059f),
+    C3X_F32_INIT(0.990903f),
+    C3X_F32_INIT(0.991710f),
+    C3X_F32_INIT(0.992480f),
+    C3X_F32_INIT(0.993212f),
+    C3X_F32_INIT(0.993907f),
+    C3X_F32_INIT(0.994565f),
+    C3X_F32_INIT(0.995185f),
+    C3X_F32_INIT(0.995768f),
+    C3X_F32_INIT(0.996313f),
+    C3X_F32_INIT(0.996821f),
+    C3X_F32_INIT(0.997291f),
+    C3X_F32_INIT(0.997723f),
+    C3X_F32_INIT(0.998118f),
+    C3X_F32_INIT(0.998476f),
+    C3X_F32_INIT(0.998796f),
+    C3X_F32_INIT(0.999078f),
+    C3X_F32_INIT(0.999322f),
+    C3X_F32_INIT(0.999529f),
+    C3X_F32_INIT(0.999699f),
+    C3X_F32_INIT(0.999831f),
+    C3X_F32_INIT(0.999925f),
+    C3X_F32_INIT(0.999981f),
+    C3X_F32_INIT(1.0f),
 };
 /* asm: FORMULA	.float	162.9746617		;256/(PI/2) */
 /* asm: 	 */
-static float FORMULA = 162.9746617f;
+static c3x_reg_t FORMULA = C3X_INIT(162.9746617f, 0x0722F9836Dull);
 /* asm: HALFPII	.float	HALFPI */
-float HALFPII = HALFPI;
+c3x_reg_t HALFPII = C3X_INIT(1.570796327f, 0x00490FDAA2ull);
 /* asm: PII	.float	PI */
-float PII = PI;
+c3x_reg_t PII = C3X_INIT(3.141592654f, 0x01490FDAA2ull);
 /* asm: TWOPII	.float	TWOPI */
-float TWOPII = TWOPI;
+c3x_reg_t TWOPII = C3X_INIT(6.283185307f, 0x02490FDAA2ull);
 /* asm: INVFORM	.float	0.012265625	;1/FORMULA */
-static float INVFORM = 0.012265625f;
+static c3x_reg_t INVFORM = C3X_INIT(0.012265625f, 0xF948F5C28Full);
 // *----------------------------------------------------------------------------
 
 /* asm: RADFORM		.float	10430.37835	;65535/(2PI) */
-static float RADFORM = 10430.37835f;
+static c3x_reg_t RADFORM = C3X_INIT(10430.37835f, 0x0D22F9836Eull);
 /* asm: RADFORMI	.float	0.000095873	;1/(65535/(2PI)) */
 /* asm: 	 */
 /* asm: 	 */
-static float RADFORMI = 0.000095873f;
+static c3x_reg_t RADFORMI = C3X_INIT(0.000095873f, 0xF2490F6CC9ull);
 
 /*
  *----------------------------------------------------------------------------
@@ -510,16 +518,20 @@ NMS1:
  *	R2	IN RANGE 0 TO 2PI
  *
  */
-float NORMIT(float radians /*R2*/) {
+c3x_reg_t NORMIT(c3x_reg_t radians /*R2*/) {
+    int fixed_radians;
+
     // asm 00009561: 	MPYF	@RADFORM,R2
-    radians *= RADFORM;
+    radians = C3X_MUL(radians, RADFORM);
     // asm 00009562: 	FIX	R2
-    radians = (float)(int)radians;
+    fixed_radians = FIX(radians);
     // asm 00009563: 	LS	16,R2
     // asm 00009564: 	RS	16,R2
+    fixed_radians = (int16_t)(uint16_t)fixed_radians;
     // asm 00009565: 	FLOAT	R2
+    radians = C3X_FROM_INT(fixed_radians);
     // asm 00009566: 	MPYF	@RADFORMI,R2
-    radians *= RADFORMI;
+    radians = C3X_MUL(radians, RADFORMI);
     // asm 00009567: NORMCHKL
     // asm 00009567: 	RETS
     return radians;
@@ -539,7 +551,13 @@ float NORMIT(float radians /*R2*/) {
  *	R0	RADIANS (FLOAT)
  *
  */
-float ARCTANF(float x /*R2*/, float y /*R3*/) {
+c3x_reg_t ARCTANF(c3x_reg_t x /*R2*/, c3x_reg_t y /*R3*/) {
+    int octant;
+    c3x_reg_t numerator;
+    c3x_reg_t denominator;
+    c3x_reg_t ratio;
+    int table_index;
+
     // asm 00009568: _arctanf
     // asm 00009568: 	PUSH	R1
     // asm 00009569: 	PUSHF	R1
@@ -584,14 +602,34 @@ AT1:
     // asm 0000958B:       	POPF	R1
     // asm 0000958C:       	POP	R1
     // asm 0000958D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ARCTANF", 0, 0);
-    return atan2f(y, x);
+    octant = 0;
+    if (C3X_LT(x, C3X_FROM_INT(0))) {
+        octant += 2;
+    }
+    if (C3X_LT(y, C3X_FROM_INT(0))) {
+        octant += 4;
+    }
+    if (C3X_LT(C3X_ABS(y), C3X_ABS(x))) {
+        numerator = y;
+        denominator = x;
+    } else {
+        numerator = x;
+        denominator = y;
+        octant += 1;
+    }
+    ratio = C3X_ABS(DIV_F(numerator, denominator));
+    table_index = FIX(C3X_MUL(ratio, C3X_FROM_INT(128)));
+    return C3X_ADD(
+        C3X_MUL(
+            C3X_LDF(ATOFFTAB[octant * 2]),
+            C3X_LDF(ATTAB[table_index])),
+        C3X_LDF(ATOFFTAB[octant * 2 + 1]));
 }
 
 /* asm: ATTABV	.word	ATTAB */
-static float* ATTABV = ATTAB;
+static c3x_f32_t* ATTABV = ATTAB;
 /* asm: OFFTABV	.word	ATOFFTAB */
-static float* OFFTABV = ATOFFTAB;
+static c3x_f32_t* OFFTABV = ATOFFTAB;
 /* asm: ATOFFTAB */
 /* asm: 	.float	1		;0-45 */
 /* asm: 	.float	0 */
@@ -610,23 +648,23 @@ static float* OFFTABV = ATOFFTAB;
 /* asm: 	.float	-1		;225-270 */
 /* asm: 	.float	4.7123 */
 /* asm: 	 */
-static float ATOFFTAB[] = {
-    1.0f, // 0-45
-    0.0f,
-    -1.0f, // 45-90
-    1.5707f,
-    -1.0f, // 135-180
-    3.1416f,
-    1.0f, // 90-135
-    1.5707f,
-    -1.0f, // 315-360
-    6.2831f,
-    1.0f, // 270-315
-    4.7123f,
-    1.0f, // 180-225
-    3.1416f,
-    -1.0f, // 225-270
-    4.7123f,
+static c3x_f32_t ATOFFTAB[] = {
+    C3X_F32_INIT(1.0f),
+    C3X_F32_INIT(0.0f),
+    C3X_F32_INIT(-1.0f),
+    C3X_F32_INIT(1.5707f),
+    C3X_F32_INIT(-1.0f),
+    C3X_F32_INIT(3.1416f),
+    C3X_F32_INIT(1.0f),
+    C3X_F32_INIT(1.5707f),
+    C3X_F32_INIT(-1.0f),
+    C3X_F32_INIT(6.2831f),
+    C3X_F32_INIT(1.0f),
+    C3X_F32_INIT(4.7123f),
+    C3X_F32_INIT(1.0f),
+    C3X_F32_INIT(3.1416f),
+    C3X_F32_INIT(-1.0f),
+    C3X_F32_INIT(4.7123f),
 };
 /*
  *
@@ -653,141 +691,141 @@ static float ATOFFTAB[] = {
 /* asm: 	.float	0.718830,0.723238,0.727611,0.731951,0.736257,0.740530,0.744770 */
 /* asm: 	.float	0.748977,0.753151,0.757293,0.761403,0.765480,0.769526,0.773541 */
 /* asm: 	.float	0.777524,0.781477,0.785398 */
-static float ATTAB[] = {
-    0.000000f,
-    0.007812f,
-    0.015624f,
-    0.023433f,
-    0.031240f,
-    0.039043f,
-    0.046841f,
-    0.054633f,
-    0.062419f,
-    0.070197f,
-    0.077967f,
-    0.085727f,
-    0.093477f,
-    0.101215f,
-    0.108942f,
-    0.116655f,
-    0.124355f,
-    0.132040f,
-    0.139709f,
-    0.147361f,
-    0.154997f,
-    0.162614f,
-    0.170212f,
-    0.177790f,
-    0.185348f,
-    0.192884f,
-    0.200399f,
-    0.207890f,
-    0.215358f,
-    0.222801f,
-    0.230220f,
-    0.237612f,
-    0.244979f,
-    0.252318f,
-    0.259630f,
-    0.266913f,
-    0.274167f,
-    0.281392f,
-    0.288587f,
-    0.295752f,
-    0.302885f,
-    0.309986f,
-    0.317056f,
-    0.324092f,
-    0.331096f,
-    0.338066f,
-    0.345002f,
-    0.351904f,
-    0.358771f,
-    0.365602f,
-    0.372398f,
-    0.379159f,
-    0.385883f,
-    0.392570f,
-    0.399221f,
-    0.405834f,
-    0.412410f,
-    0.418949f,
-    0.425450f,
-    0.431912f,
-    0.438337f,
-    0.444722f,
-    0.451070f,
-    0.457378f,
-    0.463648f,
-    0.469878f,
-    0.476069f,
-    0.482221f,
-    0.488334f,
-    0.494407f,
-    0.500441f,
-    0.506435f,
-    0.512389f,
-    0.518304f,
-    0.524180f,
-    0.530015f,
-    0.535811f,
-    0.541568f,
-    0.547284f,
-    0.552962f,
-    0.558599f,
-    0.564198f,
-    0.569756f,
-    0.575276f,
-    0.580756f,
-    0.586198f,
-    0.591600f,
-    0.596963f,
-    0.602287f,
-    0.607573f,
-    0.612820f,
-    0.618029f,
-    0.623199f,
-    0.628332f,
-    0.633426f,
-    0.638482f,
-    0.643501f,
-    0.648482f,
-    0.653426f,
-    0.658333f,
-    0.663203f,
-    0.668036f,
-    0.672833f,
-    0.677593f,
-    0.682317f,
-    0.687005f,
-    0.691657f,
-    0.696273f,
-    0.700854f,
-    0.705400f,
-    0.709912f,
-    0.714388f,
-    0.718830f,
-    0.723238f,
-    0.727611f,
-    0.731951f,
-    0.736257f,
-    0.740530f,
-    0.744770f,
-    0.748977f,
-    0.753151f,
-    0.757293f,
-    0.761403f,
-    0.765480f,
-    0.769526f,
-    0.773541f,
-    0.777524f,
-    0.781477f,
-    0.785398f,
+static c3x_f32_t ATTAB[] = {
+    C3X_F32_INIT(0.000000f),
+    C3X_F32_INIT(0.007812f),
+    C3X_F32_INIT(0.015624f),
+    C3X_F32_INIT(0.023433f),
+    C3X_F32_INIT(0.031240f),
+    C3X_F32_INIT(0.039043f),
+    C3X_F32_INIT(0.046841f),
+    C3X_F32_INIT(0.054633f),
+    C3X_F32_INIT(0.062419f),
+    C3X_F32_INIT(0.070197f),
+    C3X_F32_INIT(0.077967f),
+    C3X_F32_INIT(0.085727f),
+    C3X_F32_INIT(0.093477f),
+    C3X_F32_INIT(0.101215f),
+    C3X_F32_INIT(0.108942f),
+    C3X_F32_INIT(0.116655f),
+    C3X_F32_INIT(0.124355f),
+    C3X_F32_INIT(0.132040f),
+    C3X_F32_INIT(0.139709f),
+    C3X_F32_INIT(0.147361f),
+    C3X_F32_INIT(0.154997f),
+    C3X_F32_INIT(0.162614f),
+    C3X_F32_INIT(0.170212f),
+    C3X_F32_INIT(0.177790f),
+    C3X_F32_INIT(0.185348f),
+    C3X_F32_INIT(0.192884f),
+    C3X_F32_INIT(0.200399f),
+    C3X_F32_INIT(0.207890f),
+    C3X_F32_INIT(0.215358f),
+    C3X_F32_INIT(0.222801f),
+    C3X_F32_INIT(0.230220f),
+    C3X_F32_INIT(0.237612f),
+    C3X_F32_INIT(0.244979f),
+    C3X_F32_INIT(0.252318f),
+    C3X_F32_INIT(0.259630f),
+    C3X_F32_INIT(0.266913f),
+    C3X_F32_INIT(0.274167f),
+    C3X_F32_INIT(0.281392f),
+    C3X_F32_INIT(0.288587f),
+    C3X_F32_INIT(0.295752f),
+    C3X_F32_INIT(0.302885f),
+    C3X_F32_INIT(0.309986f),
+    C3X_F32_INIT(0.317056f),
+    C3X_F32_INIT(0.324092f),
+    C3X_F32_INIT(0.331096f),
+    C3X_F32_INIT(0.338066f),
+    C3X_F32_INIT(0.345002f),
+    C3X_F32_INIT(0.351904f),
+    C3X_F32_INIT(0.358771f),
+    C3X_F32_INIT(0.365602f),
+    C3X_F32_INIT(0.372398f),
+    C3X_F32_INIT(0.379159f),
+    C3X_F32_INIT(0.385883f),
+    C3X_F32_INIT(0.392570f),
+    C3X_F32_INIT(0.399221f),
+    C3X_F32_INIT(0.405834f),
+    C3X_F32_INIT(0.412410f),
+    C3X_F32_INIT(0.418949f),
+    C3X_F32_INIT(0.425450f),
+    C3X_F32_INIT(0.431912f),
+    C3X_F32_INIT(0.438337f),
+    C3X_F32_INIT(0.444722f),
+    C3X_F32_INIT(0.451070f),
+    C3X_F32_INIT(0.457378f),
+    C3X_F32_INIT(0.463648f),
+    C3X_F32_INIT(0.469878f),
+    C3X_F32_INIT(0.476069f),
+    C3X_F32_INIT(0.482221f),
+    C3X_F32_INIT(0.488334f),
+    C3X_F32_INIT(0.494407f),
+    C3X_F32_INIT(0.500441f),
+    C3X_F32_INIT(0.506435f),
+    C3X_F32_INIT(0.512389f),
+    C3X_F32_INIT(0.518304f),
+    C3X_F32_INIT(0.524180f),
+    C3X_F32_INIT(0.530015f),
+    C3X_F32_INIT(0.535811f),
+    C3X_F32_INIT(0.541568f),
+    C3X_F32_INIT(0.547284f),
+    C3X_F32_INIT(0.552962f),
+    C3X_F32_INIT(0.558599f),
+    C3X_F32_INIT(0.564198f),
+    C3X_F32_INIT(0.569756f),
+    C3X_F32_INIT(0.575276f),
+    C3X_F32_INIT(0.580756f),
+    C3X_F32_INIT(0.586198f),
+    C3X_F32_INIT(0.591600f),
+    C3X_F32_INIT(0.596963f),
+    C3X_F32_INIT(0.602287f),
+    C3X_F32_INIT(0.607573f),
+    C3X_F32_INIT(0.612820f),
+    C3X_F32_INIT(0.618029f),
+    C3X_F32_INIT(0.623199f),
+    C3X_F32_INIT(0.628332f),
+    C3X_F32_INIT(0.633426f),
+    C3X_F32_INIT(0.638482f),
+    C3X_F32_INIT(0.643501f),
+    C3X_F32_INIT(0.648482f),
+    C3X_F32_INIT(0.653426f),
+    C3X_F32_INIT(0.658333f),
+    C3X_F32_INIT(0.663203f),
+    C3X_F32_INIT(0.668036f),
+    C3X_F32_INIT(0.672833f),
+    C3X_F32_INIT(0.677593f),
+    C3X_F32_INIT(0.682317f),
+    C3X_F32_INIT(0.687005f),
+    C3X_F32_INIT(0.691657f),
+    C3X_F32_INIT(0.696273f),
+    C3X_F32_INIT(0.700854f),
+    C3X_F32_INIT(0.705400f),
+    C3X_F32_INIT(0.709912f),
+    C3X_F32_INIT(0.714388f),
+    C3X_F32_INIT(0.718830f),
+    C3X_F32_INIT(0.723238f),
+    C3X_F32_INIT(0.727611f),
+    C3X_F32_INIT(0.731951f),
+    C3X_F32_INIT(0.736257f),
+    C3X_F32_INIT(0.740530f),
+    C3X_F32_INIT(0.744770f),
+    C3X_F32_INIT(0.748977f),
+    C3X_F32_INIT(0.753151f),
+    C3X_F32_INIT(0.757293f),
+    C3X_F32_INIT(0.761403f),
+    C3X_F32_INIT(0.765480f),
+    C3X_F32_INIT(0.769526f),
+    C3X_F32_INIT(0.773541f),
+    C3X_F32_INIT(0.777524f),
+    C3X_F32_INIT(0.781477f),
+    C3X_F32_INIT(0.785398f),
 };
 // *----------------------------------------------------------------------------
 
 /* asm: LOCTEMPER_MAT2	fbss	LOCTEMPER_MAT2,12 */
-float LOCTEMPER_MAT2[12];
+c3x_reg_t LOCTEMPER_MAT2[12];
 
 /*
  *----------------------------------------------------------------------------
@@ -799,12 +837,12 @@ float LOCTEMPER_MAT2[12];
  *
  */
 void FIND_MATRIX(void* destp /*AR2*/, VECTOR* radians /*R2*/) {
-    float* dest = destp;
-    float cx, cy, cz;
-    float sx, sy, sz;
-    float sx_sy;
-    float cx_sz;
-    float cx_cz;
+    c3x_reg_t* dest = destp;
+    c3x_reg_t cx, cy, cz;
+    c3x_reg_t sx, sy, sz;
+    c3x_reg_t sx_sy;
+    c3x_reg_t cx_sz;
+    c3x_reg_t cx_cz;
 
     // asm 00009591: 	PUSH	R0
     // asm 00009592: 	PUSH	R1
@@ -841,49 +879,49 @@ FM1:
 
     // asm 000095A6: 	MPYF	*+AR1(1),*+AR1(0),R0		;CZ*CY
     // asm 000095A7: 	STF	R0,*AR2++		 	;A(0,0)=CZ*CY
-    dest[0] = cz * cy; // ;A(0,0)=CZ*CY
+    dest[0] = STF_F32(C3X_MUL(cz, cy)); // ;A(0,0)=CZ*CY
 
     // asm 000095A8: 	MPYF	*+AR3(1),*+AR1(0),R0		;SZ*CY
     // asm 000095A9: 	NEGF	*+AR3(0),R2			;-SY
     // asm 000095A9:  ||	STF	R0,*AR2++			;A(0,1)=SZ*CY
-    dest[1] = sz * cy; // ;A(0,1)=SZ*CY
+    dest[1] = STF_F32(C3X_MUL(sz, cy)); // ;A(0,1)=SZ*CY
 
     // asm 000095AB:  ||	STF	R2,*AR2++			;A(0,2)=-SY
-    dest[2] = -sy; // ;A(0,2)=-SY
+    dest[2] = STF_F32(C3X_NEG(sy)); // ;A(0,2)=-SY
 
     // asm 000095AA: 	MPYF	*-AR3(1),*+AR3(0),R0		;SX*SY
-    sx_sy = sx * sy; // ;SX*SY
+    sx_sy = C3X_MUL(sx, sy); // ;SX*SY
 
     // asm 000095AB: 	MPYF	*+AR1(1),R0,R1			;SX*SY*CZ
     // asm 000095AC: 	MPYF	*-AR1(1),*+AR3(1),R2		;CX*SZ
     // asm 000095AD: 	SUBF	R2,R1
-    cx_sz = cx * sz;                // ;CX*SZ
-    dest[3] = (sx_sy * cz) - cx_sz; // ;A(1,0)=SX*SY*CZ-CX*SZ
+    cx_sz = C3X_MUL(cx, sz);                       // ;CX*SZ
+    dest[3] = STF_F32(C3X_SUB(C3X_MUL(sx_sy, cz), cx_sz)); // ;A(1,0)=SX*SY*CZ-CX*SZ
 
     // asm 000095AE: 	MPYF	*+AR3(1),R0,R0			;SZ*(SX*SY)
     // asm 000095AE:  ||	STF	R1,*AR2++			;A(1,0)=SX*SY*SZ-CX*SZ
     // asm 000095AF: 	MPYF	*-AR1(1),*+AR1(1),R1		;CX*CZ
     // asm 000095B0: 	ADDF	R1,R0
-    cx_cz = cx * cz;                // ;CX*CZ
-    dest[4] = (sz * sx_sy) + cx_cz; // ;A(1,1)= SX*SY*SZ+CX*CZ
+    cx_cz = C3X_MUL(cx, cz);                       // ;CX*CZ
+    dest[4] = STF_F32(C3X_ADD(C3X_MUL(sz, sx_sy), cx_cz)); // ;A(1,1)= SX*SY*SZ+CX*CZ
 
     // asm 000095B2: 	MPYF	*-AR3(1),*+AR1(0),R0
     // asm 000095B3:  ||	STF	R0,*AR2++			;A(1,2)= SX*CY
-    dest[5] = sx * cy; // ;A(1,2)= SX*CY
+    dest[5] = STF_F32(C3X_MUL(sx, cy)); // ;A(1,2)= SX*CY
 
     // asm 000095B3: 	MPYF	*+AR3(0),R1,R1			;SY*(CX*CZ)
     // asm 000095B4: 	MPYF	*-AR3(1),*+AR3(1),R0		;SX*SZ
     // asm 000095B5: 	ADDF	R1,R0
-    dest[6] = (sy * cx_cz) + (sx * sz); // ;A(2,0)= CX*SY*CZ+SX*SZ
+    dest[6] = STF_F32(C3X_ADD(C3X_MUL(sy, cx_cz), C3X_MUL(sx, sz))); // ;A(2,0)= CX*SY*CZ+SX*SZ
 
     // asm 000095B6: 	MPYF	*+AR3(0),R2,R2
     // asm 000095B7: 	MPYF	*-AR3(1),*+AR1(1),R0
     // asm 000095B8:  ||	SUBF	R0,R2
-    dest[7] = (sy * cx_sz) - (sx * cz); // ;A(2,1)= CX*SY*SZ-SX*CZ
+    dest[7] = STF_F32(C3X_SUB(C3X_MUL(sy, cx_sz), C3X_MUL(sx, cz))); // ;A(2,1)= CX*SY*SZ-SX*CZ
 
     // asm 000095B8: 	MPYF	*-AR1(1),*+AR1(0),R1		;CX*CY
     // asm 000095BA: 	STF	R1,*AR2--(8)			;A(2,2)= CX*CY
-    dest[8] = cx * cy; // ;A(2,2)= CX*CY
+    dest[8] = STF_F32(C3X_MUL(cx, cy)); // ;A(2,2)= CX*CY
 
     // asm 000095BB: 	POP	AR3
     // asm 000095BC: 	POP	AR2
@@ -910,33 +948,33 @@ FM1:
  *	R2	SOURCE RADIANS
  *
  */
-void FIND_XMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
-    float* dest = destp;
+void FIND_XMATRIX(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
+    c3x_reg_t* dest = destp;
     // asm 000095C5: 	PUSH	R0
     // asm 000095C6: 	PUSHF	R0
     // asm 000095C7: 	CALL	_COSI
     // asm 000095C8: 	STF	R0,*+AR2(A11)
-    dest[4] = _COSI(radians);
+    dest[4] = STF_F32(_COSI(radians));
     // asm 000095C9: 	STF	R0,*+AR2(A22)
     dest[8] = dest[4];
     // asm 000095CA: 	CALL	_SINE
     // asm 000095CB: 	STF	R0,*+AR2(A12)
-    dest[5] = _SINE(radians);
+    dest[5] = STF_F32(_SINE(radians));
     // asm 000095CC: 	NEGF	R0
     // asm 000095CD: 	STF	R0,*+AR2(A21)
-    dest[7] = -dest[5];
+    dest[7] = STF_F32(C3X_NEG(dest[5]));
     // asm 000095CE: 	LDF	1,R0
     // asm 000095CF: 	STF	R0,*+AR2(A00)
-    dest[0] = 1.0f;
+    dest[0] = C3X_FROM_INT(1);
     // asm 000095D0: 	CLRF	R0
     // asm 000095D1: 	STF	R0,*+AR2(A01)
-    dest[1] = 0.0f;
+    dest[1] = C3X_FROM_INT(0);
     // asm 000095D2: 	STF	R0,*+AR2(A02)
-    dest[2] = 0.0f;
+    dest[2] = C3X_FROM_INT(0);
     // asm 000095D3: 	STF	R0,*+AR2(A10)
-    dest[3] = 0.0f;
+    dest[3] = C3X_FROM_INT(0);
     // asm 000095D4: 	STF	R0,*+AR2(A20)
-    dest[6] = 0.0f;
+    dest[6] = C3X_FROM_INT(0);
     // asm 000095D5: 	POPF	R0
     // asm 000095D6: 	POP	R0
     // asm 000095D7: 	RETS
@@ -955,33 +993,33 @@ void FIND_XMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
  *	R2	SOURCE RADIANS
  *
  */
-void _find_Ymatrix(void* destp /*AR2*/, float radians /*R2*/) {
-    float* dest = destp;
+void _find_Ymatrix(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
+    c3x_reg_t* dest = destp;
     // asm 000095D8: 	PUSH	R0
     // asm 000095D9: 	PUSHF	R0
     // asm 000095DA: 	CALL	_COSI
     // asm 000095DB: 	STF	R0,*+AR2(A00)
-    dest[0] = _COSI(radians);
+    dest[0] = STF_F32(_COSI(radians));
     // asm 000095DC: 	STF	R0,*+AR2(A22)
     dest[8] = dest[0];
     // asm 000095DD: 	CALL	_SINE
     // asm 000095DE: 	STF	R0,*+AR2(A20)
-    dest[6] = _SINE(radians);
+    dest[6] = STF_F32(_SINE(radians));
     // asm 000095DF: 	NEGF	R0
     // asm 000095E0: 	STF	R0,*+AR2(A02)
-    dest[2] = -dest[6];
+    dest[2] = STF_F32(C3X_NEG(dest[6]));
     // asm 000095E1: 	LDF	1,R0
     // asm 000095E2: 	STF	R0,*+AR2(A11)
-    dest[4] = 1.0f;
+    dest[4] = C3X_FROM_INT(1);
     // asm 000095E3: 	CLRF	R0
     // asm 000095E4: 	STF	R0,*+AR2(A01)
-    dest[1] = 0.0f;
+    dest[1] = C3X_FROM_INT(0);
     // asm 000095E5: 	STF	R0,*+AR2(A10)
-    dest[3] = 0.0f;
+    dest[3] = C3X_FROM_INT(0);
     // asm 000095E6: 	STF	R0,*+AR2(A12)
-    dest[5] = 0.0f;
+    dest[5] = C3X_FROM_INT(0);
     // asm 000095E7: 	STF	R0,*+AR2(A21)
-    dest[7] = 0.0f;
+    dest[7] = C3X_FROM_INT(0);
     // asm 000095E8: 	POPF	R0
     // asm 000095E9: 	POP	R0
     // asm 000095EA: 	RETS
@@ -1000,10 +1038,10 @@ void _find_Ymatrix(void* destp /*AR2*/, float radians /*R2*/) {
  *	R2	SOURCE RADIANS
  *
  */
-void HPFIND_YMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
-    float* dest = destp;
-    float c;
-    float s;
+void HPFIND_YMATRIX(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
+    c3x_reg_t* dest = destp;
+    c3x_reg_t c;
+    c3x_reg_t s;
 
     MAME_ASSERT_ARG_FLOAT("R2", &radians);
 
@@ -1024,7 +1062,7 @@ void HPFIND_YMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
     c = _HPcos(radians);
 
     // asm 000095F8: 	STF	R0,*+AR2(A00)
-    dest[0] = c;
+    dest[0] = STF_F32(c);
     MAME_ASSERT_REG_FLOAT(0x000095F8, "R0", &c);
     // asm 000095F9: 	STF	R0,*+AR2(A22)
     dest[8] = c;
@@ -1036,26 +1074,26 @@ void HPFIND_YMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
     s = _HPsin(radians);
 
     // asm 000095FD: 	STF	R0,*+AR2(A20)
-    dest[6] = s;
+    dest[6] = STF_F32(s);
     MAME_ASSERT_REG_FLOAT(0x000095FD, "R0", &s);
 
     // asm 000095FE: 	NEGF	R0
     // asm 000095FF: 	STF	R0,*+AR2(A02)
-    dest[2] = -s;
+    dest[2] = STF_F32(C3X_NEG(s));
 
     // asm 00009600: 	LDF	1,R0
     // asm 00009601: 	STF	R0,*+AR2(A11)
-    dest[4] = 1.0f;
+    dest[4] = C3X_FROM_INT(1);
 
     // asm 00009602: 	CLRF	R0
     // asm 00009603: 	STF	R0,*+AR2(A01)
-    dest[1] = 0.0f;
+    dest[1] = C3X_FROM_INT(0);
     // asm 00009604: 	STF	R0,*+AR2(A10)
-    dest[3] = 0.0f;
+    dest[3] = C3X_FROM_INT(0);
     // asm 00009605: 	STF	R0,*+AR2(A12)
-    dest[5] = 0.0f;
+    dest[5] = C3X_FROM_INT(0);
     // asm 00009606: 	STF	R0,*+AR2(A21)
-    dest[7] = 0.0f;
+    dest[7] = C3X_FROM_INT(0);
 
     // asm 00009607: 	POPF	R4
     // asm 00009608: 	POP	R4
@@ -1083,7 +1121,7 @@ void HPFIND_YMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
  *	R2	SOURCE RADIANS
  *
  */
-void FIND_ZMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
+void FIND_ZMATRIX(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
     MATRIX* dest = destp;
 
     // asm 00009612: 	PUSH	R0
@@ -1091,29 +1129,29 @@ void FIND_ZMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
     // asm 00009614: 	CALL	_COSI
     // asm 00009615: 	STF	R0,*+AR2(A00)
     // asm 00009616: 	STF	R0,*+AR2(A11)
-    dest->a00 = _COSI(radians);
+    dest->a00 = STF_F32(_COSI(radians));
     dest->a11 = dest->a00;
 
     // asm 00009617: 	CALL	_SINE
     // asm 00009618: 	STF	R0,*+AR2(A01)
     // asm 00009619: 	NEGF	R0
     // asm 0000961A: 	STF	R0,*+AR2(A10)
-    dest->a01 = _SINE(radians);
-    dest->a10 = -dest->a01;
+    dest->a01 = STF_F32(_SINE(radians));
+    dest->a10 = STF_F32(C3X_NEG(dest->a01));
 
     // asm 0000961B: 	LDF	1,R0
     // asm 0000961C: 	STF	R0,*+AR2(A22)
-    dest->a22 = 1.0f;
+    dest->a22 = C3X_FROM_INT(1);
 
     // asm 0000961D: 	CLRF	R0
     // asm 0000961E: 	STF	R0,*+AR2(A02)
     // asm 0000961F: 	STF	R0,*+AR2(A12)
     // asm 00009620: 	STF	R0,*+AR2(A20)
     // asm 00009621: 	STF	R0,*+AR2(A21)
-    dest->a02 = 0.0f;
-    dest->a12 = 0.0f;
-    dest->a20 = 0.0f;
-    dest->a21 = 0.0f;
+    dest->a02 = C3X_FROM_INT(0);
+    dest->a12 = C3X_FROM_INT(0);
+    dest->a20 = C3X_FROM_INT(0);
+    dest->a21 = C3X_FROM_INT(0);
 
     // asm 00009622: 	POPF	R0
     // asm 00009623: 	POP	R0
@@ -1132,16 +1170,16 @@ void FIND_ZMATRIX(void* destp /*AR2*/, float radians /*R2*/) {
  *
  */
 void INITMAT(MATRIX* mat /*AR0*/) {
-    mat->a00 = 1.0f;
-    mat->a11 = 1.0f;
-    mat->a22 = 1.0f;
+    mat->a00 = C3X_FROM_INT(1);
+    mat->a11 = C3X_FROM_INT(1);
+    mat->a22 = C3X_FROM_INT(1);
 
-    mat->a01 = 0.0f;
-    mat->a02 = 0.0f;
-    mat->a10 = 0.0f;
-    mat->a12 = 0.0f;
-    mat->a20 = 0.0f;
-    mat->a21 = 0.0f;
+    mat->a01 = C3X_FROM_INT(0);
+    mat->a02 = C3X_FROM_INT(0);
+    mat->a10 = C3X_FROM_INT(0);
+    mat->a12 = C3X_FROM_INT(0);
+    mat->a20 = C3X_FROM_INT(0);
+    mat->a21 = C3X_FROM_INT(0);
 }
 
 // *----------------------------------------------------------------------------
@@ -1252,15 +1290,15 @@ void CPYIMAT(OBJ_MATRIX* dst /*AR2*/, MATRIX* src /*R2*/) {
     // asm 0000965F: 	POPF	R0
     // asm 00009660: 	POP	R0
     // asm 00009661: 	RETS
-    dst->mat00 = src->a00;
-    dst->mat10 = src->a01;
-    dst->mat20 = src->a02;
-    dst->mat01 = src->a10;
-    dst->mat11 = src->a11;
-    dst->mat21 = src->a12;
-    dst->mat02 = src->a20;
-    dst->mat12 = src->a21;
-    dst->mat22 = src->a22;
+    dst->mat00 = STF_F32(src->a00);
+    dst->mat10 = STF_F32(src->a01);
+    dst->mat20 = STF_F32(src->a02);
+    dst->mat01 = STF_F32(src->a10);
+    dst->mat11 = STF_F32(src->a11);
+    dst->mat21 = STF_F32(src->a12);
+    dst->mat02 = STF_F32(src->a20);
+    dst->mat12 = STF_F32(src->a21);
+    dst->mat22 = STF_F32(src->a22);
 }
 
 // *----------------------------------------------------------------------------
@@ -1278,9 +1316,9 @@ void CLR_VECTORA(void) {
     // asm 00009666: 	STF	R0,*AR2
     // asm 00009667: 	STF	R0,*+AR2(1)
     // asm 00009668: 	STF	R0,*+AR2(2)
-    _VECTORA.X = 0.0f;
-    _VECTORA.Y = 0.0f;
-    _VECTORA.Z = 0.0f;
+    _VECTORA.X = C3X_FROM_INT(0);
+    _VECTORA.Y = C3X_FROM_INT(0);
+    _VECTORA.Z = C3X_FROM_INT(0);
     // asm 00009669: 	POPF	R0
     // asm 0000966A: 	POP	R0
     // asm 0000966B: 	RETS
@@ -1303,10 +1341,11 @@ void CLR_VECTORA(void) {
  *
  */
 void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/) {
-    float* matrix;
-    float out_x;
-    float out_y;
-    float out_z;
+    c3x_reg_t* matrix;
+    c3x_reg_t out_x;
+    c3x_reg_t out_y;
+    c3x_reg_t out_z;
+    c3x_reg_t partial;
 
     // asm 0000966C: 	PUSH	R0
     // asm 0000966D: 	PUSHF	R0
@@ -1314,36 +1353,39 @@ void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/) {
     // asm 0000966F: 	LDI	R2,AR1	    		;AR1 IS 3X3 MATRIX
     // asm 00009670: 	PUSH	R2
     // asm 00009671: 	PUSHF	R2
-    matrix = (float*)m3x3;
+    matrix = (c3x_reg_t*)m3x3;
     // asm 00009672: 	MPYF	*AR2++,*AR1++,R0
     // asm 00009673: 	MPYF	*AR2,*AR1++,R2
     // asm 00009674: 	MPYF	*+AR2(1),*AR1++,R0
     // asm 00009674:  || 	ADDF	R0,R2
-    out_x = src->X * matrix[0] + src->Y * matrix[1] + src->Z * matrix[2];
+    partial = C3X_ADD(C3X_MUL(src->Y, matrix[1]), C3X_MUL(src->X, matrix[0]));
+    out_x = C3X_ADD(partial, C3X_MUL(src->Z, matrix[2]));
     // asm 00009675: 	MPYF	*-AR2(1),*AR1++,R0
     // asm 00009675:  ||	ADDF	R0,R2
     // asm 00009676: 	PUSHF	R2
     // asm 00009677: 	MPYF	*AR2,*AR1++,R2
     // asm 00009678: 	MPYF	*+AR2(1),*AR1++,R0
     // asm 00009678:  || 	ADDF	R0,R2
-    out_y = src->X * matrix[3] + src->Y * matrix[4] + src->Z * matrix[5];
+    partial = C3X_ADD(C3X_MUL(src->Y, matrix[4]), C3X_MUL(src->X, matrix[3]));
+    out_y = C3X_ADD(partial, C3X_MUL(src->Z, matrix[5]));
     // asm 00009679: 	MPYF	*-AR2(1),*AR1++,R0
     // asm 00009679:  ||	ADDF	R0,R2
     // asm 0000967A: 	PUSHF	R2
     // asm 0000967B: 	MPYF	*+AR2(1),*+AR1(1),R2
     // asm 0000967C: 	MPYF	*AR2--(1),*AR1,R0
     // asm 0000967C:  || 	ADDF	R0,R2
-    out_z = src->X * matrix[6] + src->Y * matrix[7] + src->Z * matrix[8];
+    partial = C3X_ADD(C3X_MUL(src->Z, matrix[8]), C3X_MUL(src->X, matrix[6]));
+    out_z = C3X_ADD(C3X_MUL(src->Y, matrix[7]), partial);
     // asm 0000967D: 	LDI	R3,AR1
     // asm 0000967E: 	ADDF	R2,R0
     // asm 0000967F: 	POPF	R2
     // asm 00009680: 	STF	R0,*+AR1(2)
-    dst->Z = out_z;
+    dst->Z = C3X_STF(out_z);
     // asm 00009681: 	POPF	R0
     // asm 00009682: 	STF	R0,*AR1
     // asm 00009682:  ||	STF	R2,*+AR1(1)
-    dst->X = out_x;
-    dst->Y = out_y;
+    dst->X = C3X_STF(out_x);
+    dst->Y = C3X_STF(out_y);
     // asm 00009683: 	POPF	R2
     // asm 00009684: 	POP	R2
     // asm 00009685: 	POP	AR1
@@ -1359,8 +1401,8 @@ void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/) {
  *void	normalize(VECTOR *V)
  */
 void NORMALIZE(VECTOR* vector /*AR2*/) {
-    float length;
-    float inverse_length;
+    c3x_reg_t length;
+    c3x_reg_t inverse_length;
 
     // asm 00009689: 	PUSH	R0
     // asm 0000968A: 	PUSH	R1
@@ -1379,12 +1421,14 @@ void NORMALIZE(VECTOR* vector /*AR2*/) {
     // asm 00009697: 	POP	R1
     // asm 00009698: 	POP	R0
     // asm 00009699: 	RETS
-    length = sqrtf(vector->X * vector->X + vector->Y * vector->Y + vector->Z * vector->Z);
-    if (length != 0.0f) {
+    length = SQRT(C3X_ADD(
+        C3X_ADD(C3X_MUL(vector->X, vector->X), C3X_MUL(vector->Y, vector->Y)),
+        C3X_MUL(vector->Z, vector->Z)));
+    if (C3X_NE(length, C3X_FROM_INT(0))) {
         inverse_length = INV_F30(length);
-        vector->X *= inverse_length;
-        vector->Y *= inverse_length;
-        vector->Z *= inverse_length;
+        vector->X = STF_F32(C3X_MUL(vector->X, inverse_length));
+        vector->Y = STF_F32(C3X_MUL(vector->Y, inverse_length));
+        vector->Z = STF_F32(C3X_MUL(vector->Z, inverse_length));
     }
 }
 
@@ -1484,15 +1528,15 @@ void GEN_NORMAL(VECTOR** points /*AR2*/, VECTOR* normal /*AR0*/) {
     b = points[1];
     c = points[2];
     a = points[0];
-    d.X = a->X - b->X;
-    d.Y = a->Y - b->Y;
-    d.Z = a->Z - b->Z;
-    e.X = c->X - b->X;
-    e.Y = c->Y - b->Y;
-    e.Z = c->Z - b->Z;
-    normal->X = d.Y * e.Z - d.Z * e.Y;
-    normal->Y = d.Z * e.X - d.X * e.Z;
-    normal->Z = d.X * e.Y - d.Y * e.X;
+    d.X = C3X_SUB(a->X, b->X);
+    d.Y = C3X_SUB(a->Y, b->Y);
+    d.Z = C3X_SUB(a->Z, b->Z);
+    e.X = C3X_SUB(c->X, b->X);
+    e.Y = C3X_SUB(c->Y, b->Y);
+    e.Z = C3X_SUB(c->Z, b->Z);
+    normal->X = STF_F32(C3X_SUB(C3X_MUL(d.Y, e.Z), C3X_MUL(d.Z, e.Y)));
+    normal->Y = STF_F32(C3X_SUB(C3X_MUL(d.Z, e.X), C3X_MUL(d.X, e.Z)));
+    normal->Z = STF_F32(C3X_SUB(C3X_MUL(d.X, e.Y), C3X_MUL(d.Y, e.X)));
 }
 
 // *----------------------------------------------------------------------------
@@ -1540,7 +1584,7 @@ void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/) {
     // asm 000096D6:   ||	ADDF3	R1,R2,R2
     // asm 000096D7: 	MPYF3	*AR0,*AR2++(IR0),R1
     // asm 000096D8: 	STF	R2,*AR1++(1)			;store MATij
-    d->a00 = s2->a00 * s1->a00 + s2->a01 * s1->a10 + s2->a02 * s1->a20;
+    d->a00 = DOT3(s2->a00, s1->a00, s2->a01, s1->a10, s2->a02, s1->a20);
 
     // asm 000096D9: 	MPYF3	*+AR0(1),*AR2--(IR1),R1
     // asm 000096D9:   ||	ADDF3	R0,R1,R2
@@ -1548,23 +1592,23 @@ void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/) {
     // asm 000096DA:   ||	ADDF3	R1,R2,R2
     // asm 000096DB: 	MPYF3	*AR0++,*AR2++(IR0),R1
     // asm 000096DC: 	STF	R2,*AR1++(1)			;store MATij
-    d->a01 = s2->a00 * s1->a01 + s2->a01 * s1->a11 + s2->a02 * s1->a21;
+    d->a01 = DOT3(s2->a00, s1->a01, s2->a01, s1->a11, s2->a02, s1->a21);
 
     // asm 000096DD: 	MPYF3	*AR0++,*AR2--(IR1),R1
     // asm 000096DD:   ||	ADDF3	R0,R1,R2
     // asm 000096DE: 	ADDF	R1,R2
     // asm 000096DF: 	STF	R2,*AR1++(1)			;store MATij
-    d->a02 = s2->a00 * s1->a02 + s2->a01 * s1->a12 + s2->a02 * s1->a22;
+    d->a02 = DOT3(s2->a00, s1->a02, s2->a01, s1->a12, s2->a02, s1->a22);
 
-    d->a10 = s2->a10 * s1->a00 + s2->a11 * s1->a10 + s2->a12 * s1->a20;
-    d->a11 = s2->a10 * s1->a01 + s2->a11 * s1->a11 + s2->a12 * s1->a21;
-    d->a12 = s2->a10 * s1->a02 + s2->a11 * s1->a12 + s2->a12 * s1->a22;
+    d->a10 = DOT3(s2->a10, s1->a00, s2->a11, s1->a10, s2->a12, s1->a20);
+    d->a11 = DOT3(s2->a10, s1->a01, s2->a11, s1->a11, s2->a12, s1->a21);
+    d->a12 = DOT3(s2->a10, s1->a02, s2->a11, s1->a12, s2->a12, s1->a22);
 
 INLP2:
     // asm 000096E0: SUBI	3,AR2
-    d->a20 = s2->a20 * s1->a00 + s2->a21 * s1->a10 + s2->a22 * s1->a20;
-    d->a21 = s2->a20 * s1->a01 + s2->a21 * s1->a11 + s2->a22 * s1->a21;
-    d->a22 = s2->a20 * s1->a02 + s2->a21 * s1->a12 + s2->a22 * s1->a22;
+    d->a20 = DOT3(s2->a20, s1->a00, s2->a21, s1->a10, s2->a22, s1->a20);
+    d->a21 = DOT3(s2->a20, s1->a01, s2->a21, s1->a11, s2->a22, s1->a21);
+    d->a22 = DOT3(s2->a20, s1->a02, s2->a21, s1->a12, s2->a22, s1->a22);
     // asm 000096E1: 	RETS
 }
 
@@ -1671,41 +1715,41 @@ NONEG:
  *
  *
  */
-float DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/) {
-    float numerator;
-    float denominator;
+c3x_reg_t DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/) {
+    c3x_reg_t numerator;
+    c3x_reg_t denominator;
 
     // asm 00009702: 	PUSH	R1
     // asm 00009703: 	PUSH	R2
     // asm 00009704: 	PUSHF	R1
     // asm 00009705: 	PUSHF	R2
     // asm 00009706: 	MPYF	*+AR1(X),*+AR0(A),R0
-    numerator = point->X * line->a;
+    numerator = C3X_MUL(point->X, line->a);
     // asm 00009707: 	MPYF	*+AR1(Y),*+AR0(B),R1
-    numerator += point->Y * line->b;
+    numerator = C3X_ADD(numerator, C3X_MUL(point->Y, line->b));
     // asm 00009708: 	ADDF	R0,R1
     // asm 00009709: 	ADDF	*+AR0(C),R1
-    numerator += line->c;
+    numerator = C3X_ADD(numerator, line->c);
     // asm 0000970A: 	MPYF	*+AR0(A),*+AR0(A),R0
-    denominator = line->a * line->a;
+    denominator = C3X_MUL(line->a, line->a);
     // asm 0000970B: 	MPYF	*+AR0(B),*+AR0(B),R2
-    denominator += line->b * line->b;
+    denominator = C3X_ADD(denominator, C3X_MUL(line->b, line->b));
     // asm 0000970C: 	ADDF	R0,R2
     // asm 0000970D: 	CALL	SQRT
-    denominator = sqrtf(denominator);
+    denominator = SQRT(denominator);
     // asm 0000970E: 	LDF	R0,R2
     // asm 0000970F: 	LDF	R1,R0
     // asm 00009710: 	LDF	R2,R1
     // asm 00009711: 	CALL	DIV_F
-    if (denominator == 0.0f) {
-        return 0.0f;
+    if (C3X_EQ(denominator, C3X_FROM_INT(0))) {
+        return C3X_FROM_INT(0);
     }
     // asm 00009712: 	POPF	R2
     // asm 00009713: 	POPF	R1
     // asm 00009714: 	POP	R2
     // asm 00009715: 	POP	R1
     // asm 00009716: 	RETS
-    return numerator / denominator;
+    return DIV_F(numerator, denominator);
 }
 
 // *----------------------------------------------------------------------------
@@ -1726,8 +1770,8 @@ float DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/) {
  *
  */
 LINE2D* GETLINE_EQ_2D(VECTOR* p1 /*AR0*/, VECTOR* p2 /*AR1*/, LINE2D* line /*AR2*/) {
-    float dx;
-    float dy;
+    c3x_reg_t dx;
+    c3x_reg_t dy;
 
     // asm 00009717: 	PUSH	R0
     // asm 00009718: 	PUSH	R1
@@ -1738,14 +1782,14 @@ LINE2D* GETLINE_EQ_2D(VECTOR* p1 /*AR0*/, VECTOR* p2 /*AR1*/, LINE2D* line /*AR2
     // asm 0000971D: 	PUSHF	R2
     // asm 0000971E: 	PUSHF	R3
     // asm 0000971F: 	SUBF	*+AR1(X),*+AR0(X),R0
-    dx = p1->X - p2->X;
+    dx = C3X_SUB(p1->X, p2->X);
     // asm 00009720: 	SUBF	*+AR1(Y),*+AR0(Y),R1
-    dy = p1->Y - p2->Y;
+    dy = C3X_SUB(p1->Y, p2->Y);
     // asm 00009721: 	MPYF	R0,*+AR1(X),R2
     // asm 00009722: 	MPYF	R1,*+AR1(Y),R3
     // asm 00009723: 	ADDF	R3,R2
     // asm 00009724: 	NEGF	R2
-    line->c = -((dx * p2->X) + (dy * p2->Y));
+    line->c = C3X_NEG(C3X_ADD(C3X_MUL(dx, p2->X), C3X_MUL(dy, p2->Y)));
     // asm 00009725: 	STF	R0,*+AR2(A)
     line->a = dx;
     // asm 00009726: 	STF	R1,*+AR2(B)

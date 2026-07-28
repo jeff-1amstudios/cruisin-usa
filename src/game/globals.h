@@ -57,9 +57,9 @@ extern VEHTAB VEHICLE_TABLE[];
 // asm:  .globl STARTSECTION,START_POS,START_RADY
 extern int STARTSECTION;
 
-extern float START_POS[];
+extern c3x_reg_t START_POS[];
 
-extern float START_RADY;
+extern c3x_reg_t START_RADY;
 
 // asm:  .globl DGROUPSI
 #define DGROUPSI DGROUPS
@@ -202,7 +202,7 @@ extern OBJ* PLY2CAR;
 extern int OM_POSITION;
 
 // asm:  .globl OM_DIFF
-extern float OM_DIFF;
+extern c3x_reg_t OM_DIFF;
 
 // asm:  .globl COINDROP
 extern int COINDROP;
@@ -301,7 +301,7 @@ extern int SWITCHBUTS;
 extern int DIAG_ACTIVE;
 
 // asm:  .globl GAME_TIMER
-extern float GAME_TIMER;
+extern c3x_reg_t GAME_TIMER;
 
 // asm:  .globl ST_POLYGONS
 extern int ST_POLYGONS;
@@ -371,7 +371,7 @@ extern int DRONE_DISPATCH_P;
 // asm:  .globl MODELTABI,TEXTTABSI,TABING
 #define MODELTABI MODELTAB
 
-extern float TABING[];
+extern c3x_f32_t TABING[];
 
 // asm:  .globl COCONUT_COUNT
 extern int COCONUT_COUNT;
@@ -431,7 +431,7 @@ extern VECTOR _LIGHT;
 
 // asm:  .globl BLOWLISTI,tmpmatI,tmpmatY,INVTABI
 #define BLOWLISTI BLOWLIST
-extern f32 BLOWLIST[];
+extern c3x_reg_t BLOWLIST[];
 
 #define tmpmatI TMPMAT
 
@@ -440,9 +440,9 @@ extern f32 BLOWLIST[];
 #define INVTABI INVTAB
 
 // asm:  .globl SCRNHXI,SCRNHYI
-extern float SCRNHXI;
+extern c3x_reg_t SCRNHXI;
 
-extern float SCRNHYI;
+extern c3x_reg_t SCRNHYI;
 
 // asm:  .globl LOW_TOSS_LEVELI,LOW_CLIP_LEVELI,HIGH_CLIP_LEVELI,HIGH_CLIP_LEV8,MAXZI
 extern int HIGH_CLIP_LEV8;
@@ -515,10 +515,10 @@ extern int _MPH;
 #define COUNTDOWN_BUFI COUNTDOWN_BUF
 
 // asm:  .globl INFIN_CORRECT
-extern float INFIN_CORRECT;
+extern c3x_reg_t INFIN_CORRECT;
 
 // asm:  .globl VAR_ROAD_KFACTOR
-extern float VAR_ROAD_KFACTOR;
+extern c3x_reg_t VAR_ROAD_KFACTOR;
 
 // asm:  .globl MAXMPH_COUNT
 extern int MAXMPH_COUNT;
@@ -539,7 +539,7 @@ extern int REAL_CHECKPOINTS;
 extern int FIRST_RACE;
 
 // asm:  .globl GAMEDIFF
-extern float GAMEDIFF;
+extern c3x_reg_t GAMEDIFF;
 
 // asm:  .globl CHECKPOINT_NUM
 extern int CHECKPOINT_NUM;
@@ -578,7 +578,7 @@ extern int CHOSEN_RACE;
 
 // invtab30.asm
 // asm:  .globl INVTAB
-extern float* INVTAB;
+extern c3x_f32_t* INVTAB;
 
 // asm:  .globl LEG_MAP,LEG_MAPI
 extern LEG_PAYLOAD LEG_MAP[];
@@ -589,11 +589,11 @@ extern LEG_PAYLOAD LEG_MAP[];
 extern int FINISH_ID;
 
 // asm:  .globl HALFPII,PII,TWOPII
-extern float HALFPII;
+extern c3x_reg_t HALFPII;
 
-extern float PII;
+extern c3x_reg_t PII;
 
-extern float TWOPII;
+extern c3x_reg_t TWOPII;
 
 #define FIND_YMATRIX _find_Ymatrix
 
@@ -620,17 +620,17 @@ extern int CHECKPOINT_TIME_BONUS;
 extern int _plyr1;
 
 // asm:  .globl STEERMX,STEERMN,STEERCT,STEERFR,PEDALMX,PEDALMN
-extern float STEERMX;
+extern c3x_reg_t STEERMX;
 
-extern float STEERMN;
+extern c3x_reg_t STEERMN;
 
-extern float STEERCT;
+extern c3x_reg_t STEERCT;
 
-extern float STEERFR;
+extern c3x_reg_t STEERFR;
 
-extern float PEDALMX;
+extern c3x_reg_t PEDALMX;
 
-extern float PEDALMN;
+extern c3x_reg_t PEDALMN;
 
 // asm:  .globl PLYSTAT,PLYCAR,PLYPROC,PLYCBLK
 extern int PLYSTAT;
@@ -649,7 +649,7 @@ extern int OFFROAD_TMR;
 // asm:  .globl ZOOM,ZOOMI,ZOOMD
 #define ZOOMI ZOOMRAM
 
-extern float ZOOMD;
+extern c3x_reg_t ZOOMD;
 
 // racer.asm
 // asm:  .globl RACER_PTRI
@@ -660,7 +660,7 @@ extern int NOLONG_VEHICLES;
 extern OBJ* ROAD_DEBRIS;
 
 // asm:  .globl ROADKILL_SOUND_TIMER
-extern float ROADKILL_SOUND_TIMER;
+extern c3x_reg_t ROADKILL_SOUND_TIMER;
 
 // asm:  .globl DIV_F,DIV_F30
 #define DIV_F DIV_F30
@@ -744,7 +744,7 @@ extern int WHEELPWR;
 
 extern int WHEELPOS;
 
-extern float WHEELMAX;
+extern c3x_reg_t WHEELMAX;
 
 extern int WHEELVEL;
 
@@ -785,7 +785,7 @@ void BGD_INIT(void);
 OBJ* LOAD_SINGLE_SECTION(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
 
 // asm:  .globl GET_XZ_DISTANCE
-float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/);
+c3x_reg_t GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/);
 
 // asm:  .globl AMBIENCE_SOUND
 void AMBIENCE_SOUND(void);
@@ -854,7 +854,7 @@ CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/);
 void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
 
 // asm:  .globl _coll_road
-int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, float* out_road_delta /*R0*/);
+int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
 
 // asm:  .globl _obj_coll,COLLIDE
 int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/);
@@ -872,10 +872,10 @@ void COLSCAN(void);
 void BOXSCAN(void);
 
 // asm:  .globl OBJSCAN
-int OBJSCAN(OBJ* obj /*AR4*/, float* out_road_delta /*R0*/);
+int OBJSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
 
 // asm:  .globl CAMSCAN
-int CAMSCAN(VECTOR* point /*AR4*/, float* out_road_delta /*R0*/);
+int CAMSCAN(VECTOR* point /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
 
 // asm:  .globl COLCHK
 void COLCHK(void);
@@ -1052,9 +1052,9 @@ void ADD_DRONE(OBJ* obj /*AR4*/);
 void FREE_DRONE(void);
 
 // asm:  .globl PLYR_RIDE_RIGHT,DRONE_RIDE_RIGHT
-float PLYR_RIDE_RIGHT(void);
+c3x_reg_t PLYR_RIDE_RIGHT(void);
 
-float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
+c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 // asm:  .globl EXP_PUFF,SMOKE_PUFF,DROP_COCONUTS
 void EXP_PUFF(void);
@@ -1142,8 +1142,8 @@ void HOTTUB_SCENE(void);
 
 // hpmath.c
 // asm:  .globl _HPcos,_HPsin
-float _HPsin(float x);
-float _HPcos(float x);
+c3x_reg_t _HPsin(c3x_reg_t x);
+c3x_reg_t _HPcos(c3x_reg_t x);
 
 // hstdp.asm
 // asm:  .globl DISPLAY_HIGH_SCORES
@@ -1298,11 +1298,11 @@ void _line(int x0, int y0, int x1, int y1, int color);
 void GEN_NORMAL(VECTOR** points /*AR2*/, VECTOR* normal /*AR0*/);
 
 // asm:  .globl _SINE,_COSI
-float _COSI(float theta /*R2*/);
-float _SINE(float theta /*R2*/);
+c3x_reg_t _COSI(c3x_reg_t theta /*R2*/);
+c3x_reg_t _SINE(c3x_reg_t theta /*R2*/);
 
 // asm:  .globl ARCTANF
-float ARCTANF(float x /*R2*/, float y /*R3*/);
+c3x_reg_t ARCTANF(c3x_reg_t x /*R2*/, c3x_reg_t y /*R3*/);
 
 // asm:  .globl FIND_MATRIX
 void FIND_MATRIX(void* dest /*AR2*/, VECTOR* radians /*R2*/);
@@ -1311,15 +1311,15 @@ void FIND_MATRIX(void* dest /*AR2*/, VECTOR* radians /*R2*/);
 void INITMAT(MATRIX* mat /*AR0*/);
 
 // asm:  .globl FIND_XMATRIX,FIND_YMATRIX,FIND_ZMATRIX
-void FIND_XMATRIX(void* dest /*AR2*/, float radians /*R2*/);
+void FIND_XMATRIX(void* dest /*AR2*/, c3x_reg_t radians /*R2*/);
 
-void FIND_ZMATRIX(void* dest /*AR2*/, float radians /*R2*/);
+void FIND_ZMATRIX(void* dest /*AR2*/, c3x_reg_t radians /*R2*/);
 
 // asm:  .globl _find_Ymatrix
-void _find_Ymatrix(void* dest /*AR2*/, float radians /*R2*/);
+void _find_Ymatrix(void* dest /*AR2*/, c3x_reg_t radians /*R2*/);
 
 // asm:  .globl HPFIND_YMATRIX
-void HPFIND_YMATRIX(void* dest /*AR2*/, float radians /*R2*/);
+void HPFIND_YMATRIX(void* dest /*AR2*/, c3x_reg_t radians /*R2*/);
 
 // asm:  .globl NORMAT,NORMALIZE
 void NORMAT(void);
@@ -1327,7 +1327,7 @@ void NORMAT(void);
 void NORMALIZE(VECTOR* vector /*AR2*/);
 
 // asm:  .globl NORMIT,NORMITS
-float NORMIT(float radians /*R2*/);
+c3x_reg_t NORMIT(c3x_reg_t radians /*R2*/);
 
 void NORMITS(void);
 
@@ -1353,7 +1353,7 @@ void CPYIMAT(OBJ_MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
 void GETTHETADIFF(void);
 
 // asm:  .globl DIST_PT2LINE,GETLINE_EQ_2D
-float DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/);
+c3x_reg_t DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/);
 
 LINE2D* GETLINE_EQ_2D(VECTOR* p1 /*AR0*/, VECTOR* p2 /*AR1*/, LINE2D* line /*AR2*/);
 
@@ -1424,7 +1424,7 @@ void PLYR_INTRO_ENTER(void);
 // asm:  .globl _PLYR,DRONEGO,GETSPD,OVELADD
 void _PLYR(void);
 
-void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, float steering_delta /*R2*/);
+void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta /*R2*/);
 
 void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
@@ -1457,7 +1457,7 @@ void OVELNADD(void);
 void MKFXSND(void);
 
 // asm:  .globl GETRDIR
-float GETRDIR(OBJ* track_obj /*AR2*/);
+c3x_reg_t GETRDIR(OBJ* track_obj /*AR2*/);
 
 // asm:  .globl BONUS_WAIT_LOOP
 void BONUS_WAIT_LOOP(void);
@@ -1472,7 +1472,7 @@ void OBSTABINIT(PROC* p /*AR7*/);
 
 void PLSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
-float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
+c3x_reg_t GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 // asm:  .globl DIFF_CHANGE,DIFF_TRICKLE
 void DIFF_CHANGE(void);
@@ -1526,9 +1526,9 @@ void COW_SPAWNER_PROC(void);
 
 // routs.asm
 // asm:  .globl SQRT
-float SQRT(float x /*R2*/);
+c3x_reg_t SQRT(c3x_reg_t x /*R2*/);
 
-float DIV_F30(float u, float v);
+c3x_reg_t DIV_F30(c3x_reg_t u, c3x_reg_t v);
 
 void DIV_I30(void);
 
@@ -1536,7 +1536,7 @@ void DIV_I30(void);
 void DIV_U30(void);
 
 // asm:         .globl INV_F30
-float INV_F30(float);
+c3x_reg_t INV_F30(c3x_reg_t);
 
 // asm:  .globl MOD_I30
 void MOD_I30(void);
@@ -1755,9 +1755,9 @@ void CLRCRAM(void);
 // asm:  .globl RANDOM,FRAND,SFRAND
 uint32_t RANDOM(void);
 
-float FRAND(float limit /*R0*/);
+c3x_reg_t FRAND(c3x_reg_t limit /*R0*/);
 
-float SFRAND(float limit /*R0*/);
+c3x_reg_t SFRAND(c3x_reg_t limit /*R0*/);
 
 // asm:  .globl RANDU0,RANDU,SRAND,RANDPER
 int RANDU0(int range /*AR2*/);

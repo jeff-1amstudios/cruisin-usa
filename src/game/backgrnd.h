@@ -9,9 +9,9 @@
 // asm: 	.bss	STARTSECTION,1		;Section index to start game at
 extern int STARTSECTION;
 // asm: 	.bss	START_POS,3   		;Section X Y Z start (if DEBUGSECTION != 0)
-extern float START_POS[];
+extern c3x_reg_t START_POS[];
 // asm: 	.bss	START_RADY,1  		;Section Y Radian (if DEBUG SECTION != 0)
-extern float START_RADY;
+extern c3x_reg_t START_RADY;
 // asm: 	.bss	DRIVE_LIST,1		;OBJECTs which can be driven over (road/shoulder)
 extern OBJ* DRIVE_LIST;
 // asm: 	.bss	CAR_LIST,1		;OBJECTs which are vehicles (drones/player car)
@@ -55,7 +55,7 @@ extern int TYCOFLAG;
 // asm: 	.bss	PASS1,1		;CURRENT PASS INDEX (0,1) (USED WHEN ACTIVATING AN OVERLAY)
 extern int PASS1;
 // asm: 	.bss	SECRADY,1	;SECTION RADIAN Y
-extern float SECRADY;
+extern c3x_reg_t SECRADY;
 // asm: 	.bss	SINGLE_SECTION_TEMPPTR,1
 extern OBJ* SINGLE_SECTION_TEMPPTR;
 void HUNGH_ANI(OBJ* obj /*AR4*/);

@@ -19,7 +19,7 @@ extern int RBUFF_LEN;
 // asm: 	phibss	RECEIVE_BUFFER,COMM_BUFFER_SIZE
 extern int RECEIVE_BUFFER[];
 // asm: 	pbss	OM_DIFF,1
-extern float OM_DIFF;
+extern c3x_reg_t OM_DIFF;
 // asm: 	pbss	OM_MODE,1
 extern int OM_MODE;
 // asm: 	pbss	OM_CHOSEN_RACE,1

@@ -29,13 +29,13 @@ int WHEELPWR;
 /* asm: WHEELPOS	.bss	WHEELPOS,1 */
 int WHEELPOS;
 /* asm: WHEELOUT	.bss	WHEELOUT,1 */
-float WHEELOUT = 1.0f;
+c3x_reg_t WHEELOUT = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: WHEELMAX	.bss	WHEELMAX,1 */
-float WHEELMAX = 1.0f;
+c3x_reg_t WHEELMAX = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: WHEELVEL	pbss	WHEELVEL,1 */
 int WHEELVEL;
 /* asm: DAMPPWR	.bss	DAMPPWR,1 */
-float DAMPPWR = 1.0f;
+c3x_reg_t DAMPPWR = C3X_INIT(1.0f, 0x0000000000ull);
 
 /*
  *----------------------------------------------------------------------------

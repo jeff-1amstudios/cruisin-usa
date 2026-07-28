@@ -49,14 +49,14 @@ static u32 INICC(int adjustment_index, int shift_start);
 static void FONT18RED(tTEXT* t);
 static void FONT18REDDS(tSHADOW_TEXT* t);
 void INSERT_COINS(void);
-static void FLASH_INSERTCOINS(float posy);
-static void SHOW_INSERTCOINS(float posy);
+static void FLASH_INSERTCOINS(c3x_reg_t posy);
+static void SHOW_INSERTCOINS(c3x_reg_t posy);
 static void FLASH_START(void);
-static void PRINT_COINAGE(float x, float y);
-static float GET_COINAGE_HIGHT(void);
+static void PRINT_COINAGE(c3x_reg_t x, c3x_reg_t y);
+static c3x_reg_t GET_COINAGE_HIGHT(void);
 static void WHITE10FNT(tSHADOW_TEXT* t);
 static void PRINT_CREDITS(void);
-static void FLASH_TO_START(float posy);
+static void FLASH_TO_START(c3x_reg_t posy);
 static void TOSTART_STRING(void);
 static void TOCONT_STRING(void);
 void VOLUME_DISPLAY(void);
@@ -836,7 +836,7 @@ int ICF;
 void INSERT_COINS(void) {
     int total_credits;
     int credits_to_start;
-    float posy;
+    c3x_reg_t posy;
     tSHADOW_TEXT t;
     MAME_ASSERT_FUNCTION_ENTRY();
 
@@ -854,7 +854,7 @@ void INSERT_COINS(void) {
 
     // asm 0000748D: 	READADJ	ADJ_FREE_PLAY
     // asm 0000748F: 	FLOAT	360,R3
-    posy = 360.0f;
+    posy = C3X_FROM_INT(360);
 
     // asm 00007490: 	CMPI	1,R0
     // asm 00007491: 	BEQ	FLASH_START
@@ -895,14 +895,14 @@ SHOW_COINAGE:
     posy = GET_COINAGE_HIGHT();
 
     // asm 000074A2: 	ADDF	44,R3
-    posy += 44.0f;
+    posy = C3X_ADD(posy, C3X_FROM_INT(44));
 
     // asm 000074A3: 	MPYF	-0.5,R3
-    posy *= -0.5f;
+    posy = C3X_MUL(posy, C3X_IMM_F32(-0.5));
 
     // asm 000074A4: 	FLOAT	345,R0			;Center of text hight
     // asm 000074A5: 	ADDF	R0,R3
-    posy += 345.0f; /* Center of text hight */
+    posy = C3X_ADD(posy, C3X_FROM_INT(345)); /* Center of text hight */
 
     // asm 000074A6: 	READAUD	AUD_CREDITS
     // asm 000074A8: 	CALL	GET_CREDITS_TO_START
@@ -921,9 +921,9 @@ SHOW_COINAGE:
         // asm 000074AE: 	CALL	FLASH_TO_START		;FLASH THE TO START AND TO CONTINUE MESSAGES
         FLASH_TO_START(posy); /* FLASH THE TO START AND TO CONTINUE MESSAGES */
         // asm 000074AF: 	ADDF	22,R3
-        posy += 22.0f;
+        posy = C3X_ADD(posy, C3X_FROM_INT(22));
     } else {
-        posy += 22.0f;
+        posy = C3X_ADD(posy, C3X_FROM_INT(22));
     }
 SHOW_CREDITS:
     // asm 000074B0: 	READAUD	AUD_PCREDITS
@@ -948,7 +948,7 @@ GODO_CREDITS:
     // asm 000074BC: 	FLOAT	256,R2
     // asm 000074BD: 	LDI	1,RC
     // asm 000074BE: 	CALL	TEXT_ADDDS
-    t = TEXT_ADDDS(CREDITBUFFER, 256.0f, posy, 1);
+    t = TEXT_ADDDS(CREDITBUFFER, C3X_FROM_INT(256), posy, 1);
 
     // asm 000074BF: 	CALL	FONT18REDDS
     FONT18REDDS(&t);
@@ -959,10 +959,10 @@ GODO_CREDITS:
     t.shadow->color |= TXT_CENTER;
 DO_COINAGE:
     // asm 000074C6: 	ADDF	22,R3
-    posy += 22.0f;
+    posy = C3X_ADD(posy, C3X_FROM_INT(22));
 
     // asm 000074C8: 	CALL	PRINT_COINAGE
-    PRINT_COINAGE(256.0f, posy);
+    PRINT_COINAGE(C3X_FROM_INT(256), posy);
 
     // asm 000074C9: INSERT_COINSX
     // asm 000074C9: 	RETS
@@ -974,7 +974,7 @@ DO_COINAGE:
  *
  */
 
-static void FLASH_INSERTCOINS(float posy) {
+static void FLASH_INSERTCOINS(c3x_reg_t posy) {
     // asm 000074CA: 	LDI	@ICF,R0
     // asm 000074CB: 	BGT	NO_INSERTCOINS
     if (ICF > 0) {
@@ -994,9 +994,9 @@ static void FLASH_INSERTCOINS(float posy) {
     SHOW_INSERTCOINS(posy);
 }
 
-static void SHOW_INSERTCOINS(float posy /*R3*/) {
+static void SHOW_INSERTCOINS(c3x_reg_t posy /*R3*/) {
     // asm 000074D3: 	CALL	TEXT_ADDDS
-    tSHADOW_TEXT t = TEXT_ADDDS(INSERTCOINS, 256.0f, posy, 1);
+    tSHADOW_TEXT t = TEXT_ADDDS(INSERTCOINS, C3X_FROM_INT(256), posy, 1);
 
     // asm 000074D4: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm 000074D7: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
@@ -1055,7 +1055,7 @@ static void FLASH_START(void) {
     // asm 000074EB: 	FLOAT	256,R2
     // asm 000074EC: 	LDI	1,RC
     // asm 000074ED: 	CALL	TEXT_ADDDS
-    t = TEXT_ADDDS(HITSTART, 256.0f, 0.0f, 1);
+    t = TEXT_ADDDS(HITSTART, C3X_FROM_INT(256), C3X_FROM_INT(0), 1);
     // asm 000074EE: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm 000074F1: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
     t.front->color |= TXT_CENTER;
@@ -1092,7 +1092,7 @@ FLASH_STARTX:
  */
 #define FONT10_HIGHT 17.0
 
-static void PRINT_COINAGE(float x, float y) {
+static void PRINT_COINAGE(c3x_reg_t x, c3x_reg_t y) {
     COINTAB_ENTRY* coin_text;
     tSHADOW_TEXT t;
 
@@ -1138,7 +1138,7 @@ static void PRINT_COINAGE(float x, float y) {
         goto PRINT_COINAGEX;
     }
 
-    y += FONT10_HIGHT;
+    y = C3X_ADD(y, C3X_IMM_F32(FONT10_HIGHT));
     t = TEXT_ADDDS(coin_text->message_lines[1], x, y, 1);
     t.front->color |= TXT_CENTER;
     t.shadow->color |= TXT_CENTER;
@@ -1149,7 +1149,7 @@ static void PRINT_COINAGE(float x, float y) {
         goto PRINT_COINAGEX;
     }
 
-    y += FONT10_HIGHT;
+    y = C3X_ADD(y, C3X_IMM_F32(FONT10_HIGHT));
     t = TEXT_ADDDS(coin_text->message_lines[2], x, y, 1);
     t.front->color |= TXT_CENTER;
     t.shadow->color |= TXT_CENTER;
@@ -1170,9 +1170,9 @@ PRINT_COINAGEX:
  *	R3 (FLOAT)	= Y screen hight in pixels
  */
 
-static float GET_COINAGE_HIGHT(void) {
+static c3x_reg_t GET_COINAGE_HIGHT(void) {
     char** coin_text;
-    float height;
+    c3x_reg_t height;
 
     // asm 00007527: 	PUSHF	R0
     // asm 00007528: 	PUSH	R0
@@ -1180,18 +1180,18 @@ static float GET_COINAGE_HIGHT(void) {
     // asm 0000752A: 	CALL	GETCOINTXT
     // asm 0000752B: 	LDF	FONT10_HIGHT,R3
     coin_text = GETCOINTXT();
-    height = FONT10_HIGHT;
+    height = C3X_IMM_F32(FONT10_HIGHT);
 
     // asm 0000752C: 	LDI	*+AR0(1),R0
     // asm 0000752D: 	BEQ	GCHX
     if (coin_text[1] != 0) {
         // asm 0000752E: 	ADDF	FONT10_HIGHT,R3
-        height += FONT10_HIGHT;
+        height = C3X_ADD(height, C3X_IMM_F32(FONT10_HIGHT));
         // asm 0000752F: 	LDI	*+AR0(2),R0
         // asm 00007530: 	BEQ	GCHX
         if (coin_text[2] != 0) {
             // asm 00007531: 	ADDF	FONT10_HIGHT,R3
-            height += FONT10_HIGHT;
+            height = C3X_ADD(height, C3X_IMM_F32(FONT10_HIGHT));
         }
     }
 GCHX:
@@ -1288,7 +1288,7 @@ NO_PCREDITS:
  *Flash the messages N CREDTIS TO START/N CREDITS TO CONTINUE MESSAGE
  */
 
-static void FLASH_TO_START(float posy) {
+static void FLASH_TO_START(c3x_reg_t posy) {
     int flash_state;
     int credits_to_start;
     int credits_to_continue;
@@ -1345,7 +1345,7 @@ PRINT_TOSTART:
     // asm 00007587: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm 0000758A: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
     // asm 0000758D: 	CALL	FONT18REDDS
-    t = TEXT_ADDDS(TOSTARTBUFFER, 256.0f, posy, 1);
+    t = TEXT_ADDDS(TOSTARTBUFFER, C3X_FROM_INT(256), posy, 1);
     t.front->color |= TXT_CENTER;
     t.shadow->color |= TXT_CENTER;
     FONT18REDDS(&t);

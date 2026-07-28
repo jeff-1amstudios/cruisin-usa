@@ -10,13 +10,13 @@
  */
 
 #define DIV_F DIV_F30
-float DIV_F30(float u, float v);
+c3x_reg_t DIV_F30(c3x_reg_t u, c3x_reg_t v);
 #define DIV_I DIV_I30
 void DIV_I30(void);
 void DIV_U30(void);
 void MOD_I30(void);
 void MOD_U30(void);
-float SQRT(float x /*R2*/);
+c3x_reg_t SQRT(c3x_reg_t x /*R2*/);
 
 #define DIV_F DIV_F30
 #define DIV_I DIV_I30
@@ -75,124 +75,9 @@ float SQRT(float x /*R2*/);
  *	Cycles: 40
  *
  */
-float DIV_F30(float u, float v)
+c3x_reg_t DIV_F30(c3x_reg_t u, c3x_reg_t v)
 {
-    float abs_v;
-    int exponent;
-    double r0;
-    double r1;
-    double r2;
-    union {
-        float f;
-        u32 u;
-    } u_bits, v_bits;
-
-    // asm PARAMETERS: u in R0, v in R1
-    // asm RETURNS: R0 = u / v
-    // asm 0000A52A: 	POP	BK	;Pop return address
-    // asm 0000A52B: 	PUSH	R2	;Save R2: integer part
-    // asm 0000A52C: 	PUSHF	R2	;Save R2: floating point part
-    u_bits.f = u;
-    v_bits.f = v;
-    // TODO: Remove these hardcoded checks and returns once DIV_F30 reproduces
-    // the TMS320C3x rounding behavior for these operands.
-    // Temporary trace-preserving override: these exact operands should produce
-    // integer results in the original code path, but the current port is still
-    // 1 ULP low and flips the downstream suspension branch.
-    if (u_bits.u == 0x4D24BE00u && v_bits.u == 0xC96FA000u) {
-        return -176.0f;
-    }
-    if (u_bits.u == 0x4D278CE0u && v_bits.u == 0xC96FA000u) {
-        return -179.0f;
-    }
-
-    // asm 0000A52D: 	PUSHF	R1	;SAVE THE SIGN
-    // asm 0000A52E: 	PUSHF	R0	;Save u (dividend)
-    // asm 0000A52F: 	ABSF	R1	;The algorithm uses v = |v|.
-    abs_v = fabsf(v);
-
-    // asm 0000A530: 	PUSHF	R1
-    // asm 0000A531: 	POP	R2
-    // asm 0000A532: 	ASH	-24,R2	;The 8 LSBs of R2 contain the exponent of v.
-    if (abs_v == 0.0f) {
-        exponent = -128;
-    } else {
-        frexpf(abs_v, &exponent);
-    }
-
-    // asm 0000A533: 	NEGI	R2
-    // asm 0000A534: 	SUBI	1,R2		;Now we have -e-1, the exponent of x[0].
-    // asm 0000A535: 	ASH	24,R2
-    // asm 0000A536: 	PUSH	R2
-    // asm 0000A537: 	POPF	R2		;Now R2 = x[0] = 1.0 * 2**(-e-1).
-    r2 = ldexp(1.0, -exponent);
-
-    // asm 0000A538: 	MPYF	R2,R1,R0	;R0 = v * x[0]
-    // asm 0000A539: 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[0]
-    // asm 0000A53A: 	MPYF	R0,R2		;R2 = x[1] = x[0] * (2.0 - v * x[0])
-    r0 = (double)abs_v * r2;
-    r0 = 2.0 - r0;
-    r2 = r0 * r2;
-
-    // asm 0000A53B: 	MPYF	R2,R1,R0	;R0 = v * x[1]
-    // asm 0000A53C: 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[1]
-    // asm 0000A53D: 	MPYF	R0,R2		;R2 = x[2] = x[1] * (2.0 - v * x[1])
-    r0 = (double)abs_v * r2;
-    r0 = 2.0 - r0;
-    r2 = r0 * r2;
-
-    // asm 0000A53E: 	MPYF	R2,R1,R0	;R0 = v * x[2]
-    // asm 0000A53F: 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[2]
-    // asm 0000A540: 	MPYF	R0,R2		;R2 = x[3] = x[2] * (2.0 - v * x[2])
-    r0 = (double)abs_v * r2;
-    r0 = 2.0 - r0;
-    r2 = r0 * r2;
-
-    // asm 0000A541: 	MPYF	R2,R1,R0	;R0 = v * x[3]
-    // asm 0000A542: 	SUBRF	2.0,R0		;R0 = 2.0 - v * x[3]
-    // asm 0000A543: 	MPYF	R0,R2		;R2 = x[4] = x[3] * (2.0 - v * x[3])
-    r0 = (double)abs_v * r2;
-    r0 = 2.0 - r0;
-    r2 = r0 * r2;
-
-    // asm 0000A544: 	RND	R2		;This minimizes error in the LSBs.
-    r2 = TMS320_C3X_RND_TO_SINGLE(r2);
-
-    // 	;
-    // 	;For the last iteration we use the formulation:
-    // 	;x[5] = (x[4] * (1.0 - (v * x[4]))) + x[4]
-    // 	;
-    // asm 0000A54F: 	MPYF	R2,R1,R0	;R0 = v * x[4] = 1.0..01.. => 1
-    // asm 0000A550: 	SUBRF	1.0,R0		;R0 = 1.0 - v * x[4] = 0.0..01... => 0
-    // asm 0000A551: 	MPYF	R2,R0		;R0 = x[4] * (1.0 - v * x[4])
-    // asm 0000A552: 	ADDF	R0,R2,R1	;R0 = x[5] = (x[4]*(1.0-(v*x[4])))+x[4]
-    r0 = (double)abs_v * r2;
-    r0 = 1.0 - r0;
-    r0 = r2 * r0;
-    r1 = r0 + r2;
-    // 	;
-    // 	;R1 contains 1/v.	Multiply by u to get result.
-    // 	;
-    // asm 0000A553: 	RND	R1		;Round since this is follow by a MPYF.
-    r1 = TMS320_C3X_RND_TO_SINGLE(r1);
-    // asm 0000A554: 	POPF	R0		;Pop u
-    // asm 0000A555: 	MPYF	R1,R0		;Result = u * (1/v)
-    r0 = r1 * (double)u;
-    // 	;
-    // 	;Branch (delayed) return.	Use delay slots to negate the result if v < 0.
-    // 	;
-    // asm 0000A556: 	NEGF	R0,R1		;R1 = -(1/|v|)
-    // asm 0000A557: 	POPF	R2		;CHECK ORIGINAL SIGN DUDES... (SETS SIGN FLAG)
-    // asm 0000A558: 	BD	BK		;Delayed branch to return
-    // asm 0000A559: 	LDFN	R1,R0		;If v < 0, then R1 = -R1 (BASED ON POPF R2)
-    // asm 0000A55A: 	POPF	R2		;Restore R2: floating point part
-    // asm 0000A55B: 	POP	R2		;Restore R2: integer part
-    // 	;---->B	BK		;BRANCH OCCURS (RETURN)
-    r1 = -r0;
-    if (v < 0.0f) {
-        r0 = r1;
-    }
-    return (float)r0;
+    return C3X_DIV(u, v);
 }
 
 // *----------------------------------------------------------------------------
@@ -404,63 +289,8 @@ zerob:
  *	Cycles: 36
  *
  */
-float INV_F30(float v) {
-    float abs_v;
-    int exponent;
-    double r0;
-    double r1;
-
-    // asm 0000A58A: 	POP	BK		;Pop return address
-    // asm 0000A58B: 	PUSH	R2		;Save R2: integer part
-    // asm 0000A58C: 	PUSHF	R2		;Save R2: floating point part
-    // asm 0000A58D: 	PUSHF	R0
-    // asm 0000A58E: 	ABSF	R0		;The algorithm uses v = |v|.
-    abs_v = fabsf(v);
-
-    // asm 0000A58F: 	PUSHF	R0
-    // asm 0000A590: 	POP	R1
-    // asm 0000A591: 	ASH	-24,R1		;The 8 LSBs of R1 contain the exponent of v.
-    if (abs_v == 0.0f) {
-        exponent = -128;
-    } else {
-        frexpf(abs_v, &exponent);
-    }
-
-    // asm 0000A592: 	NEGI	R1
-    // asm 0000A593: 	SUBI	1,R1		;Now we have -e-1, the exponent of x[0].
-    // asm 0000A594: 	ASH	24,R1
-    // asm 0000A595: 	PUSH	R1
-    // asm 0000A596: 	POPF	R1		;Now R1 = x[0] = 1.0 * 2**(-e-1).
-    r1 = ldexp(1.0, -exponent);
-
-    // asm 0000A597..0000A5A3
-    r0 = (double)abs_v * r1;
-    r0 = 2.0 - r0;
-    r1 = r0 * r1;
-    r0 = (double)abs_v * r1;
-    r0 = 2.0 - r0;
-    r1 = r0 * r1;
-    r0 = (double)abs_v * r1;
-    r0 = 2.0 - r0;
-    r1 = r0 * r1;
-    r0 = (double)abs_v * r1;
-    r0 = 2.0 - r0;
-    r1 = r0 * r1;
-
-    // asm 0000A5A4: 	RND	R1		;This minimizes error in the LSBs.
-    r1 = TMS320_C3X_RND_TO_SINGLE(r1);
-
-    // asm 0000A5A5..0000A5A8
-    r0 = (double)abs_v * r1;
-    r0 = 1.0 - r0;
-    r0 = r1 * r0;
-    r0 = r0 + r1;
-
-    // asm 0000A5A9..0000A5AE
-    if (v < 0.0f) {
-        r0 = -r0;
-    }
-    return (float)r0;
+c3x_reg_t INV_F30(c3x_reg_t v) {
+    return C3X_DIV(C3X_FROM_INT(1), v);
 }
 
 // *----------------------------------------------------------------------------
@@ -655,104 +485,91 @@ zeroc:
  *
  */
 
-float SQRT(float x /*R2*/)
+c3x_reg_t SQRT(c3x_reg_t x /*R2*/)
 {
-    double r0;
-    double r1;
-    double r2;
-    int exponent;
-    int half_exponent;
+    c3x_reg_t r0;
+    c3x_reg_t r1;
+    c3x_reg_t r2;
+    int32_t exponent_half;
+    uint32_t initial_raw;
 
     // asm 0000A61C: 	LDF	R2,R0
     // asm 0000A61D: 	RETSLE			;return the value if <= 0
-    if (x <= 0.0f) {
+    if (C3X_LE(x, C3X_FROM_INT(0))) {
         return x;
     }
-    // asm 0000A61E: 	PUSH	R1
-    // asm 0000A61F: 	PUSHF	R1
-    // asm 0000A620: 	PUSH	R2
-    // asm 0000A621: 	PUSHF	R2
-    // asm 0000A622: 	MPYF	2.0,R2		;add a rounding bit in exponent
-    r2 = (double)x * 2.0;
-    // asm 0000A623: 	PUSHF	R2		;push x as float
-    // asm 0000A624: 	POP	R1		;pop as int
-    // asm 0000A625: 	ASH	-25,R1		;e = exponent(x) / 2
-    frexp(r2, &exponent);
-    exponent -= 1;
-    half_exponent = ((int8_t)exponent) >> 1;
-    // 	;
-    // 	;determine initial estimate .25 * 2**(-e/2)
-    // 	;
-    // asm 0000A626: 	NEGI	R1		;negate exponent
-    // asm 0000A627: 	ASH	24,R1	 	;shift into place
-    // asm 0000A628: 	PUSH	R1		;push as int
-    // asm 0000A629: 	POPF	R1		;pop as float
-    r1 = ldexp(1.0, -half_exponent);
-    // asm 0000A62A: 	MPYF	0.25,R2		;remove rounding bit
-    r2 *= 0.25;
-    // 	;
-    // 	;iterate 5 times
-    // 	;
-    // asm 0000A62B: 	MPYF	R1,R1,R0	;R0 = x[0] * x[0]
-    // asm 0000A62C: 	MPYF	R2,R0	 	;R0 = (v/2) * x[0] * x[0]
-    // asm 0000A62D: 	SUBRF	1.5,R0		;R0 = 1.5 - (v/2) * x[0] * x[0]
-    // asm 0000A62E: 	MPYF	R0,R1		;x[1] = x[0] * (1.5 - v/2 * x[0] * x[0])
-    r0 = r1 * r1;
-    r0 = r2 * r0;
-    r0 = 1.5 - r0;
-    r1 = r0 * r1;
-    // 	;2
-    // asm 0000A62F: 	RND	R1
-    r1 = TMS320_C3X_RND_TO_SINGLE(r1);
-    // asm 0000A630: 	MPYF	R1,R1,R0	;R0 = x[1] * x[1]
-    // asm 0000A631: 	MPYF	R2,R0	 	;R0 = (v/2) * x[1] * x[1]
-    // asm 0000A632: 	SUBRF	1.5,R0		;R0 = 1.5 - (v/2) * x[1] * x[1]
-    // asm 0000A633: 	MPYF	R0,R1		;x[2] = x[1] * (1.5 - v/2 * x[1] * x[1])
-    r0 = r1 * r1;
-    r0 = r2 * r0;
-    r0 = 1.5 - r0;
-    r1 = r0 * r1;
-    // 	;3
-    // asm 0000A634: 	RND	R1
-    r1 = TMS320_C3X_RND_TO_SINGLE(r1);
-    // asm 0000A635: 	MPYF	R1,R1,R0	;R0 = x[2] * x[2]
-    // asm 0000A636: 	MPYF	R2,R0	 	;R0 = (v/2) * x[2] * x[2]
-    // asm 0000A637: 	SUBRF	1.5,R0		;R0 = 1.5 - (v/2) * x[2] * x[2]
-    // asm 0000A638: 	MPYF	R0,R1		;x[3] = x[2] * (1.5 - v/2 * x[2] * x[2])
-    r0 = r1 * r1;
-    r0 = r2 * r0;
-    r0 = 1.5 - r0;
-    r1 = r0 * r1;
-    // 	;4
-    // asm 0000A639: 	RND	R1
-    r1 = TMS320_C3X_RND_TO_SINGLE(r1);
-    // asm 0000A63A: 	MPYF	R1,R1,R0	;R0 = x[3] * x[3]
-    // asm 0000A63B: 	MPYF	R2,R0	 	;R0 = (v/2) * x[3] * x[3]
-    // asm 0000A63C: 	SUBRF	1.5,R0		;R0 = 1.5 - (v/2) * x[3] * x[3]
-    // asm 0000A63D: 	MPYF	R0,R1		;x[4] = x[3] * (1.5 - v/2 * x[3] * x[3])
-    r0 = r1 * r1;
-    r0 = r2 * r0;
-    r0 = 1.5 - r0;
-    r1 = r0 * r1;
-    // 	;5
-    // asm 0000A63E: 	RND	R1
-    r1 = TMS320_C3X_RND_TO_SINGLE(r1);
-    // asm 0000A63F: 	MPYF	R1,R1,R0	;R0 = x[4] * x[4]
-    // asm 0000A640: 	MPYF	R2,R0	 	;R0 = (v/2) * x[4] * x[4]
-    // asm 0000A641: 	SUBRF	1.5,R0		;R0 = 1.5 - (v/2) * x[4] * x[4]
-    // asm 0000A642: 	MPYF	R0,R1		;x[5] = x[4] * (1.5 - v/2 * x[4] * x[4])
-    r0 = r1 * r1;
-    r0 = r2 * r0;
-    r0 = 1.5 - r0;
-    r1 = r0 * r1;
-    // asm 0000A643: 	RND	R1
-    r1 = TMS320_C3X_RND_TO_SINGLE(r1);
-    // asm 0000A644: 	POPF	R2
-    // asm 0000A645: 	POP	R2
-    // asm 0000A646: 	MPYF	R2,R1,R0	;sqrt(x) = x * sqrt(1/x)
-    r0 = (double)x * r1;
-    // asm 0000A647: 	POPF	R1
-    // asm 0000A648: 	POP	R1
-    // asm 0000A649: 	RETS
-    return (float)r0;
+
+    // asm 0000A623: 	MPYF	2.0,R2		;add a rounding bit in exponent
+    r2 = C3X_MUL(x, C3X_FROM_INT(2));
+    // asm 0000A624: 	PUSHF	R2		;push x as float
+    // asm 0000A625: 	POP	R1		;pop as int
+    // asm 0000A626: 	ASH	-25,R1		;e = exponent(x) / 2
+    exponent_half = (int32_t)C3X_STORE(r2) >> 25;
+    // asm 0000A627: 	NEGI	R1		;negate exponent
+    // asm 0000A628: 	ASH	24,R1	 	;shift into place
+    // asm 0000A629: 	PUSH	R1		;push as int
+    // asm 0000A62A: 	POPF	R1		;pop as float
+    initial_raw = (uint32_t)(-exponent_half) << 24;
+    r1 = C3X_LOAD(initial_raw);
+    // asm 0000A62B: 	MPYF	0.25,R2		;remove rounding bit
+    r2 = C3X_MUL(r2, C3X_IMM_F32(0.25));
+
+    // asm 0000A62C: 	MPYF	R1,R1,R0
+    // asm 0000A62D: 	MPYF	R2,R0
+    // asm 0000A62E: 	SUBRF	1.5,R0
+    // asm 0000A62F: 	MPYF	R0,R1
+    r0 = C3X_MUL(r1, r1);
+    r0 = C3X_MUL(r0, r2);
+    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r1 = C3X_MUL(r1, r0);
+
+    // asm 0000A630: 	RND	R1
+    // asm 0000A631: 	MPYF	R1,R1,R0
+    // asm 0000A632: 	MPYF	R2,R0
+    // asm 0000A633: 	SUBRF	1.5,R0
+    // asm 0000A634: 	MPYF	R0,R1
+    r1 = C3X_RND(r1);
+    r0 = C3X_MUL(r1, r1);
+    r0 = C3X_MUL(r0, r2);
+    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r1 = C3X_MUL(r1, r0);
+
+    // asm 0000A635: 	RND	R1
+    // asm 0000A636: 	MPYF	R1,R1,R0
+    // asm 0000A637: 	MPYF	R2,R0
+    // asm 0000A638: 	SUBRF	1.5,R0
+    // asm 0000A639: 	MPYF	R0,R1
+    r1 = C3X_RND(r1);
+    r0 = C3X_MUL(r1, r1);
+    r0 = C3X_MUL(r0, r2);
+    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r1 = C3X_MUL(r1, r0);
+
+    // asm 0000A63A: 	RND	R1
+    // asm 0000A63B: 	MPYF	R1,R1,R0
+    // asm 0000A63C: 	MPYF	R2,R0
+    // asm 0000A63D: 	SUBRF	1.5,R0
+    // asm 0000A63E: 	MPYF	R0,R1
+    r1 = C3X_RND(r1);
+    r0 = C3X_MUL(r1, r1);
+    r0 = C3X_MUL(r0, r2);
+    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r1 = C3X_MUL(r1, r0);
+
+    // asm 0000A63F: 	RND	R1
+    // asm 0000A640: 	MPYF	R1,R1,R0
+    // asm 0000A641: 	MPYF	R2,R0
+    // asm 0000A642: 	SUBRF	1.5,R0
+    // asm 0000A643: 	MPYF	R0,R1
+    r1 = C3X_RND(r1);
+    r0 = C3X_MUL(r1, r1);
+    r0 = C3X_MUL(r0, r2);
+    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r1 = C3X_MUL(r1, r0);
+
+    // asm 0000A644: 	RND	R1
+    r1 = C3X_RND(r1);
+
+    // asm 0000A649: 	MPYF	R2,R1,R0	;sqrt(x) = x * sqrt(1/x)
+    return C3X_MUL(x, r1);
 }

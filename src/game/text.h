@@ -51,13 +51,13 @@ extern int TEXT_FREEZE;
 void TEXT_INIT(void);
 
 // asm: 	.globl	TEXT_ADDDS
-tSHADOW_TEXT TEXT_ADDDS(const char* text, float x, float y, int ticks);
+tSHADOW_TEXT TEXT_ADDDS(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks);
 
 // asm: 	.globl	TEXT_ADD1
 void TEXT_ADD1(void);
 
 // asm: 	.globl	TEXT_ADD
-tTEXT* TEXT_ADD(const char* text, float x, float y, int ticks);
+tTEXT* TEXT_ADD(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks);
 
 // asm: 	.globl	TEXT_OUTPUT
 void TEXT_OUTPUT(void);

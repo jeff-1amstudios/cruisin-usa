@@ -229,9 +229,9 @@ RKFPX:
 }
 
 /* asm: SOUNDTIME	.float	0.00204678	;7(1/60)/57 of a minute */
-static float SOUNDTIME = 0.00204678f;
+static c3x_reg_t SOUNDTIME = C3X_INIT(0.00204678f, 0xf706234500ull);
 /* asm: ROADKILL_SOUND_TIMER	.bss	ROADKILL_SOUND_TIMER,1 */
-float ROADKILL_SOUND_TIMER = 1.0f;
+c3x_reg_t ROADKILL_SOUND_TIMER = C3X_INIT(1.0f, 0x0000000000ull);
 
 void ROADKILL_HIT(void)
 {
@@ -654,7 +654,7 @@ INIT_DEERX:
 
 /* asm: SPINSPEEDF	.float	0.0002 */
 /* asm: 	 */
-static float SPINSPEEDF = 0.0002f;
+static c3x_reg_t SPINSPEEDF = C3X_INIT(0.0002f, 0xf351b71700ull);
 /* asm: COW_PARTS */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
@@ -1006,10 +1006,10 @@ static int GEESEANI[] = {
     -1,
 };
 static tGEESE_DIR_ENTRY GEESE_DIR[] = {
-    { 250, 1, 0.0f },
-    { 150, -1, 0.0f },
-    { 150, -1, -0.13f },
-    { 250, 1, -0.13f },
+    { 250, 1, C3X_INIT(0.0f, 0x8000000000ull) },
+    { 150, -1, C3X_INIT(0.0f, 0x8000000000ull) },
+    { 150, -1, C3X_INIT(-0.13f, 0xFDFAE147AEull) },
+    { 250, 1, C3X_INIT(-0.13f, 0xFDFAE147AEull) },
 };
 // *----------------------------------------------------------------------------
 #define SPEED PDATA

@@ -13,7 +13,7 @@ extern int DOORLIST;
 // asm: 	.bss	LASTCHOICEA,1
 extern int LASTCHOICEA;
 // asm: 	.bss	GUWP,1
-extern float GUWP;
+extern c3x_reg_t GUWP;
 // asm: 	.bss	CT_CURSOR,1
 extern int CT_CURSOR;
 // asm: 	.bss	CT_WHEEL,1

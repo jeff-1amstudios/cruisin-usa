@@ -274,7 +274,7 @@ OBJ* OBJ_GET(void) {
     obj->plink = 0;
     // asm 0000705C: 	STI	R0,*+AR0(OUSR1)
     obj->usr1 = 0;
-    obj->usr1_as_float = 0.0f;
+    obj->usr1_as_float = C3X_FROM_INT(0);
     // asm 0000705D: 	STI	R0,*+AR0(OID)
     obj->id = 0;
     // asm 0000705E: 	STI	R0,*+AR0(OLINK2)
@@ -286,44 +286,44 @@ OBJ* OBJ_GET(void) {
 
     // asm 00007061: 	CLRF	R0
     // asm 00007062: 	STF	R0,*+AR0(OPOSX)
-    obj->pos.X = 0.0f;
+    obj->pos.X = C3X_FROM_INT(0);
     // asm 00007063: 	STF	R0,*+AR0(OPOSY)
-    obj->pos.Y = 0.0f;
+    obj->pos.Y = C3X_FROM_INT(0);
     // asm 00007064: 	STF	R0,*+AR0(OPOSZ)
-    obj->pos.Z = 0.0f;
+    obj->pos.Z = C3X_FROM_INT(0);
     // asm 00007065: 	STF	R0,*+AR0(OVELX)
-    obj->vel_x = 0.0f;
+    obj->vel_x = C3X_FROM_INT(0);
     // asm 00007066: 	STF	R0,*+AR0(OVELY)
-    obj->vel_y = 0.0f;
+    obj->vel_y = C3X_FROM_INT(0);
     // asm 00007067: 	STF	R0,*+AR0(OVELZ)
-    obj->vel_z = 0.0f;
+    obj->vel_z = C3X_FROM_INT(0);
     // asm 00007068: 	STF	R0,*+AR0(ORADX)
-    obj->rad.X = 0.0f;
+    obj->rad.X = C3X_FROM_INT(0);
     // asm 00007069: 	STF	R0,*+AR0(ORADY)		;CLEAR RADIANS TO AVOID LOCKUP
-    obj->rad.Y = 0.0f; // ;CLEAR RADIANS TO AVOID LOCKUP
+    obj->rad.Y = C3X_FROM_INT(0); // ;CLEAR RADIANS TO AVOID LOCKUP
     // asm 0000706A: 	STF	R0,*+AR0(ORADZ)
-    obj->rad.Z = 0.0f;
+    obj->rad.Z = C3X_FROM_INT(0);
 
     // asm 0000706B: 	STF	R0,*+AR0(OMATRIX+1)
-    obj->omatrix.mat10 = 0.0f;
+    obj->omatrix.mat10 = C3X_FROM_INT(0);
     // asm 0000706C: 	STF	R0,*+AR0(OMATRIX+2)
-    obj->omatrix.mat20 = 0.0f;
+    obj->omatrix.mat20 = C3X_FROM_INT(0);
     // asm 0000706D: 	STF	R0,*+AR0(OMATRIX+3)
-    obj->omatrix.mat01 = 0.0f;
+    obj->omatrix.mat01 = C3X_FROM_INT(0);
     // asm 0000706E: 	STF	R0,*+AR0(OMATRIX+5)
-    obj->omatrix.mat21 = 0.0f;
+    obj->omatrix.mat21 = C3X_FROM_INT(0);
     // asm 0000706F: 	STF	R0,*+AR0(OMATRIX+6)
-    obj->omatrix.mat02 = 0.0f;
+    obj->omatrix.mat02 = C3X_FROM_INT(0);
     // asm 00007070: 	STF	R0,*+AR0(OMATRIX+7)
-    obj->omatrix.mat12 = 0.0f;
+    obj->omatrix.mat12 = C3X_FROM_INT(0);
 
     // asm 00007071: 	LDF	1.0,R0
     // asm 00007072: 	STF	R0,*+AR0(OMATRIX+0)
-    obj->omatrix.mat00 = 1.0f;
+    obj->omatrix.mat00 = C3X_FROM_INT(1);
     // asm 00007073: 	STF	R0,*+AR0(OMATRIX+4)
-    obj->omatrix.mat11 = 1.0f;
+    obj->omatrix.mat11 = C3X_FROM_INT(1);
     // asm 00007074: 	STF	R0,*+AR0(OMATRIX+8)
-    obj->omatrix.mat22 = 1.0f;
+    obj->omatrix.mat22 = C3X_FROM_INT(1);
 
     // asm 00007075: 	CLRC
     // asm 00007076: 	POP	R0
@@ -354,9 +354,9 @@ NOOBJ:
  *		STORES IN *+AR2(ODIST)
  */
 static void GETDIST(OBJ* obj /*AR2*/) {
-    f32 posx;
-    f32 posy;
-    f32 posz;
+    c3x_reg_t posx;
+    c3x_reg_t posy;
+    c3x_reg_t posz;
 
     // asm 00007083: 	PUSH	R1
     // asm 00007084: 	PUSH	R2
@@ -373,27 +373,27 @@ static void GETDIST(OBJ* obj /*AR2*/) {
     // asm 0000708B: 	SUBF	@_CAMERAPOS,R0	  	;ADJUST FOR UNIVERSE RELATIVE
     // asm 0000708C: 	SUBF	@_CAMERAPOS+1,R1
     // asm 0000708D: 	SUBF	@_CAMERAPOS+2,R2
-    posx -= _CAMERAPOS.X; // ;ADJUST FOR UNIVERSE RELATIVE
-    posy -= _CAMERAPOS.Y;
-    posz -= _CAMERAPOS.Z;
+    posx = C3X_SUB(posx, _CAMERAPOS.X); // ;ADJUST FOR UNIVERSE RELATIVE
+    posy = C3X_SUB(posy, _CAMERAPOS.Y);
+    posz = C3X_SUB(posz, _CAMERAPOS.Z);
 
     // 	;MULTIPLY BY ROTATION MATRIX TO FIND Z TERM
     // asm 0000708E: 	MPYF	@_CAMERAMATRIX+6,R0	;LAST COLUMN ONLY NEEDED
     // asm 0000708F: 	MPYF	@_CAMERAMATRIX+7,R1
     // asm 00007090: 	MPYF	@_CAMERAMATRIX+8,R2
-    posx *= _CAMERAMATRIX.a20; // ;LAST COLUMN ONLY NEEDED
-    posy *= _CAMERAMATRIX.a21;
-    posz *= _CAMERAMATRIX.a22;
+    posx = C3X_MUL(posx, _CAMERAMATRIX.a20); // ;LAST COLUMN ONLY NEEDED
+    posy = C3X_MUL(posy, _CAMERAMATRIX.a21);
+    posz = C3X_MUL(posz, _CAMERAMATRIX.a22);
 
     // asm 00007091: 	SETDP
     // asm 00007092: 	ADDF	R0,R1
     // asm 00007093: 	ADDF	R1,R2
-    posy += posx;
-    posz += posy;
+    posy = C3X_ADD(posy, posx);
+    posz = C3X_ADD(posz, posy);
 
     // asm 00007094: 	FIX	R2,R0
     // asm 00007095: 	STI	R0,*+AR2(ODIST)
-    obj->dist = (s32)posz;
+    obj->dist = FIX(posz);
 
     // asm 00007096: 	POPF	R2
     // asm 00007097: 	POPF	R1
@@ -1385,7 +1385,7 @@ DSORTXX:
 static int ACTIVEHI1 = 75000;
 /* asm: ACTIVEHI	.word	80000		;HI LIMIT FOR ACTIVE-INACTIVE */
 static int ACTIVEHI = 80000;
-#define ACTIVELO -5000.f // LO LIMIT INACTIVE OBJECT LIST
+#define ACTIVELO -5000 // LO LIMIT INACTIVE OBJECT LIST
 
 /*
  *----------------------------------------------------------------------------
@@ -1476,10 +1476,10 @@ void ISCAN(void) {
     OBJ** prev_link;
     OBJ* obj;
     OBJ* next_obj;
-    float obj_vector_x;
-    float obj_vector_y;
-    float obj_vector_z;
-    float projected_dist;
+    c3x_reg_t obj_vector_x;
+    c3x_reg_t obj_vector_y;
+    c3x_reg_t obj_vector_z;
+    c3x_reg_t projected_dist;
     int obj_dist;
 
     // asm 0000729A: 	FLOAT	ACTIVELO,R3		;GET CLOSE LIMIT
@@ -1498,25 +1498,25 @@ void ISCAN(void) {
     obj = *prev_link;
     while (obj != NULL) {
         // asm 000072C1: 	SUBF	*-AR4(1),*+AR1(OPOSX),R5   	;GET LENGTH OF OBJ VECTOR
-        obj_vector_x = obj->pos.X - _CAMERAPOS.X; // ;GET LENGTH OF OBJ VECTOR
+        obj_vector_x = C3X_SUB(obj->pos.X, _CAMERAPOS.X); // ;GET LENGTH OF OBJ VECTOR
     ISCANL:
         // asm 000072A5: 	SUBF	*AR4,*+AR1(IR0),R6	;OYPOS-CAMERAPOSY
-        obj_vector_y = obj->pos.Y - _CAMERAPOS.Y; // ;OYPOS-CAMERAPOSY
+        obj_vector_y = C3X_SUB(obj->pos.Y, _CAMERAPOS.Y); // ;OYPOS-CAMERAPOSY
                                                  // asm 000072A6: 	SUBF	*+AR4(1),*+AR1(IR1),R7	;OZPOS-CAMERAPOSZ
-        obj_vector_z = obj->pos.Z - _CAMERAPOS.Z; // ;OZPOS-CAMERAPOSZ
+        obj_vector_z = C3X_SUB(obj->pos.Z, _CAMERAPOS.Z); // ;OZPOS-CAMERAPOSZ
                                                  // asm 000072A7: 	MPYF    *-AR3(1),R5,R0
-        projected_dist = _CAMERAMATRIX.a20 * obj_vector_x;
+        projected_dist = C3X_MUL(_CAMERAMATRIX.a20, obj_vector_x);
         // asm 000072A8: 	MPYF    *AR3,R6,R1
-        projected_dist += _CAMERAMATRIX.a21 * obj_vector_y;
+        projected_dist = C3X_ADD(projected_dist, C3X_MUL(_CAMERAMATRIX.a21, obj_vector_y));
         // asm 000072A9: 	MPYF    *+AR3(1),R7,R2
-        projected_dist += _CAMERAMATRIX.a22 * obj_vector_z;
+        projected_dist = C3X_ADD(projected_dist, C3X_MUL(_CAMERAMATRIX.a22, obj_vector_z));
         // asm 000072AA: 	ADDF	R1,R0
         // asm 000072AB: 	ADDF	R2,R0
         // asm 000072AC: 	CMPF	R3,R0
-        if (projected_dist > ACTIVELO) {
+        if (C3X_GT(projected_dist, C3X_FROM_INT(ACTIVELO))) {
             // asm 000072AD: 	BLED	ISCANNXT
             // asm 000072AE: 	FIX	R0,R1
-            obj_dist = (int)projected_dist;
+            obj_dist = FIX(projected_dist);
             // asm 000072AF: 	STI	R1,*+AR1(ODIST)		;SETUP ODIST
             obj->dist = obj_dist; // ;SETUP ODIST
             // asm 000072B0: 	NOP
@@ -1822,13 +1822,13 @@ OBJ* OBJ_QMAKE(void* romdata /*AR2*/, int posx /*R2*/, int posy /*R3*/, int posz
     obj->romdata = romdata;
     // asm 00007337: 	FLOAT	R2
     // asm 00007338: 	STF	R2,*+AR0(OPOSX)
-    obj->pos.X = (float)posx;
+    obj->pos.X = C3X_FROM_INT(posx);
     // asm 00007339: 	FLOAT	R3
     // asm 0000733A: 	STF	R3,*+AR0(OPOSY)
-    obj->pos.Y = (float)posy;
+    obj->pos.Y = C3X_FROM_INT(posy);
     // asm 0000733B: 	FLOAT	RC,R2
     // asm 0000733C: 	STF	R2,*+AR0(OPOSZ)
-    obj->pos.Z = (float)posz;
+    obj->pos.Z = C3X_FROM_INT(posz);
     // asm 0000733D: 	CLRC
     // asm 0000733E: 	RETS
     return obj;

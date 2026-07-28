@@ -1,4 +1,8 @@
 // From asm/HPMATH.C
+#include "hpmath.h"
+
+// c3x-lint: allow-c3x-f32 -- polynomial coefficients require register precision.
+
 #include <math.h>
 
 #define BITS 23          /* There are 23 bits in the mantissa     */
@@ -37,34 +41,34 @@
  *
  *	This will return the wrong result for x >= MAXINT * PI
  */
-float _HPsin(float x) {
-    float d, y, xn, f, g, rg;
-    float sgn = (x < 0) ? -1.0 : 1.0;
+c3x_reg_t _HPsin(c3x_reg_t x) {
+    c3x_reg_t d, y, xn, f, g, rg;
+    c3x_reg_t sgn = C3X_LT(x, C3X_FROM_INT(0)) ? C3X_FROM_INT(-1) : C3X_FROM_INT(1);
     int n;
 
-    x = fabs(x);
-    n = (int)((x * INVSPI) + 0.5);
-    xn = (float)n;
+    x = C3X_ABS(x);
+    n = c3x_fix(C3X_ADD(C3X_MUL(x, C3X_F32(INVSPI)), C3X_F32(0.5)));
+    xn = C3X_FROM_INT(n);
 
     /*
      * if n is odd, negate the sign
      */
     if (n % 2)
-        sgn = -sgn;
+        sgn = C3X_NEG(sgn);
 
     /*
      * f = x - xn * PI (but mathematically more stable)
      */
-    f = (x - xn * C1) - xn * C2;
+    f = C3X_SUB(C3X_SUB(x, C3X_MUL(xn, C3X_F32(C1))), C3X_MUL(xn, C3X_F32(C2)));
 
     /*
      * determine polynomial expression
      */
-    g = f * f;
+    g = C3X_MUL(f, f);
 
-    rg = (((R4 * g + R3) * g + R2) * g + R1) * g;
+    rg = C3X_MUL(C3X_ADD(C3X_MUL(C3X_ADD(C3X_MUL(C3X_ADD(C3X_MUL(C3X_F32(R4), g), C3X_F32(R3)), g), C3X_F32(R2)), g), C3X_F32(R1)), g);
 
-    return (sgn * (f + f * rg));
+    return C3X_MUL(sgn, C3X_ADD(f, C3X_MUL(f, rg)));
 }
 
 /*	HPcos() - High Precision Cosine
@@ -82,37 +86,47 @@ float _HPsin(float x) {
  *
  *	This will return the wrong result for x >= MAXINT * PI
  */
-float _HPcos(float x) {
-    float sgn; /* the sign of the result */
-    float xn, f, g, rg;
+c3x_reg_t _HPcos(c3x_reg_t x) {
+    c3x_reg_t sgn; /* the sign of the result */
+    c3x_reg_t xn, f, g, rg;
+    c3x_reg_t rounded_index;
     int n;
 
     /*
      * cos(x) = cos(-x)
      */
-    x = fabs(x);
+    x = C3X_ABS(x);
 
     /*
      * n = round(x/PI + 1/2) (can be rounded this way, since positive number)
      */
-    n = (int)(((x + HALFPI) * INVSPI) + 0.5);
-    xn = (float)n - 0.5;
+    rounded_index = C3X_ADD(C3X_MUL(C3X_ADD(x, C3X_F32(HALFPI)), C3X_F32(INVSPI)), C3X_F32(0.5));
+    n = c3x_fix(rounded_index);
+    xn = C3X_SUB(C3X_FROM_INT(n), C3X_F32(0.5));
 
     /*
      * if n is odd, negate the sign
      */
-    sgn = (n % 2) ? -1.0 : 1.0;
+    sgn = (n % 2) ? C3X_FROM_INT(-1) : C3X_FROM_INT(1);
 
     /*
      * f = x - xn * PI (but more mathematically stable)
      */
-    f = (x - xn * C1) - xn * C2;
+    f = C3X_SUB(C3X_SUB(x, C3X_MUL(xn, C3X_F32(C1))), C3X_MUL(xn, C3X_F32(C2)));
 
     /*
      * determine polynomial expression
      */
-    g = f * f;
+    g = C3X_MUL(f, f);
 
-    rg = (((R4 * g + R3) * g + R2) * g + R1) * g;
-    return (sgn * (f + f * rg));
+    rg = C3X_MUL(C3X_F32(R4), g);
+    rg = C3X_ADD(rg, C3X_F32(R3));
+    rg = C3X_MUL(g, rg);
+    rg = C3X_ADD(rg, C3X_F32(R2));
+    rg = C3X_MUL(g, rg);
+    rg = C3X_ADD(rg, C3X_F32(R1));
+    rg = C3X_MUL(g, rg);
+    rg = C3X_MUL(f, rg);
+    f = C3X_ADD(f, rg);
+    return C3X_MUL(sgn, f);
 }

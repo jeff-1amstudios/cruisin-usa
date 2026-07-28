@@ -26,7 +26,7 @@ void OM_DRONE(void);
 
 #define STARTUP_POS_TABLEI STARTUP_POS_TABLE
 
-static float STARTUP_POS_TABLE[78];
+static c3x_f32_t STARTUP_POS_TABLE[78];
 
 /*
  *----------------------------------------------------------------------------
@@ -66,86 +66,85 @@ static float STARTUP_POS_TABLE[78];
 /* asm: 	.float	-2353891,-16335,-2928112	;APPAL */
 /* asm: 	 */
 /* asm: 	 */
-static float STARTUP_POS_TABLE[] = {
-    576.0f,
-    -180.0f,
-    3287.0f, // GG
-    -1928700.0f,
-    4654.0f,
-    584166.0f, // SF
-    -2611877.0f,
-    14000.0f,
-    -628750.0f, // H280
-    -3277335.0f,
-    15063.0f,
-    -1078194.0f, // RW
-    -2257363.0f,
-    21013.0f,
-    -1158765.0f, // BH
-    -2426363.0f,
-    10814.0f,
-    -2164529.0f, // LA
-    -4120644.0f,
-    20316.0f,
-    -3599815.0f, // DV
-    -4073652.0f,
-    24315.0f,
-    -3414549.0f, // AZ
-    -2802001.0f,
-    12395.0f,
-    -3353785.0f, // GC
-    -2465719.0f,
-    6191.0f,
-    -4562865.0f, // IOWA
-    -3156184.0f,
-    -9609.0f,
-    -4101941.0f, // CH
-    -3514890.0f,
-    -3107.0f,
-    -3573365.0f, // IN
-    -2353033.0f,
-    -16317.0f,
-    -2927294.0f, // APPAL
-    // PLYR2 (on PLYR1)
-    1728.0f,
-    -177.0f,
-    2875.0f, // GG
-    -1929780.0f,
-    4638.0f,
-    583767.0f, // SF
-    -2611381.0f,
-    13982.0f,
-    -627690.0f, // H280
-    -3276459.0f,
-    15050.0f,
-    -1078966.0f, // RW
-    -2257834.0f,
-    21013.0f,
-    -1157630.0f, // BH
-    -2426125.0f,
-    10798.0f,
-    -2163396.0f, // LA
-    -4121699.0f,
-    20312.0f,
-    -3600288.0f, // DV
-    -4074714.0f,
-    24350.0f,
-    -3414037.0f, // AZ
-    -2802209.0f,
-    12410.0f,
-    -3355048.0f, // GC
-    -2466458.0f,
-    6193.0f,
-    -4563828.0f, // IOWA
-    -3157144.0f,
-    -9607.0f,
-    -4101204.0f, // CH
-    -3515279.0f,
-    -3107.0f,
-    -3574450.0f, // IN
-    -2353891.0f,
-    -16335.0f,
-    -2928112.0f, // APPAL
+static c3x_f32_t STARTUP_POS_TABLE[] = {
+    C3X_F32_INIT(576.0f),
+    C3X_F32_INIT(-180.0f),
+    C3X_F32_INIT(3287.0f), // GG
+    C3X_F32_INIT(-1928700.0f),
+    C3X_F32_INIT(4654.0f),
+    C3X_F32_INIT(584166.0f), // SF
+    C3X_F32_INIT(-2611877.0f),
+    C3X_F32_INIT(14000.0f),
+    C3X_F32_INIT(-628750.0f), // H280
+    C3X_F32_INIT(-3277335.0f),
+    C3X_F32_INIT(15063.0f),
+    C3X_F32_INIT(-1078194.0f), // RW
+    C3X_F32_INIT(-2257363.0f),
+    C3X_F32_INIT(21013.0f),
+    C3X_F32_INIT(-1158765.0f), // BH
+    C3X_F32_INIT(-2426363.0f),
+    C3X_F32_INIT(10814.0f),
+    C3X_F32_INIT(-2164529.0f), // LA
+    C3X_F32_INIT(-4120644.0f),
+    C3X_F32_INIT(20316.0f),
+    C3X_F32_INIT(-3599815.0f), // DV
+    C3X_F32_INIT(-4073652.0f),
+    C3X_F32_INIT(24315.0f),
+    C3X_F32_INIT(-3414549.0f), // AZ
+    C3X_F32_INIT(-2802001.0f),
+    C3X_F32_INIT(12395.0f),
+    C3X_F32_INIT(-3353785.0f), // GC
+    C3X_F32_INIT(-2465719.0f),
+    C3X_F32_INIT(6191.0f),
+    C3X_F32_INIT(-4562865.0f), // IOWA
+    C3X_F32_INIT(-3156184.0f),
+    C3X_F32_INIT(-9609.0f),
+    C3X_F32_INIT(-4101941.0f), // CH
+    C3X_F32_INIT(-3514890.0f),
+    C3X_F32_INIT(-3107.0f),
+    C3X_F32_INIT(-3573365.0f), // IN
+    C3X_F32_INIT(-2353033.0f),
+    C3X_F32_INIT(-16317.0f),
+    C3X_F32_INIT(-2927294.0f), // APPAL
+    C3X_F32_INIT(1728.0f),
+    C3X_F32_INIT(-177.0f),
+    C3X_F32_INIT(2875.0f), // GG
+    C3X_F32_INIT(-1929780.0f),
+    C3X_F32_INIT(4638.0f),
+    C3X_F32_INIT(583767.0f), // SF
+    C3X_F32_INIT(-2611381.0f),
+    C3X_F32_INIT(13982.0f),
+    C3X_F32_INIT(-627690.0f), // H280
+    C3X_F32_INIT(-3276459.0f),
+    C3X_F32_INIT(15050.0f),
+    C3X_F32_INIT(-1078966.0f), // RW
+    C3X_F32_INIT(-2257834.0f),
+    C3X_F32_INIT(21013.0f),
+    C3X_F32_INIT(-1157630.0f), // BH
+    C3X_F32_INIT(-2426125.0f),
+    C3X_F32_INIT(10798.0f),
+    C3X_F32_INIT(-2163396.0f), // LA
+    C3X_F32_INIT(-4121699.0f),
+    C3X_F32_INIT(20312.0f),
+    C3X_F32_INIT(-3600288.0f), // DV
+    C3X_F32_INIT(-4074714.0f),
+    C3X_F32_INIT(24350.0f),
+    C3X_F32_INIT(-3414037.0f), // AZ
+    C3X_F32_INIT(-2802209.0f),
+    C3X_F32_INIT(12410.0f),
+    C3X_F32_INIT(-3355048.0f), // GC
+    C3X_F32_INIT(-2466458.0f),
+    C3X_F32_INIT(6193.0f),
+    C3X_F32_INIT(-4563828.0f), // IOWA
+    C3X_F32_INIT(-3157144.0f),
+    C3X_F32_INIT(-9607.0f),
+    C3X_F32_INIT(-4101204.0f), // CH
+    C3X_F32_INIT(-3515279.0f),
+    C3X_F32_INIT(-3107.0f),
+    C3X_F32_INIT(-3574450.0f), // IN
+    C3X_F32_INIT(-2353891.0f),
+    C3X_F32_INIT(-16335.0f),
+    C3X_F32_INIT(-2928112.0f), // APPAL
 };
 /* asm: PLY2CAR	.bss	PLY2CAR,1 */
 OBJ* PLY2CAR;
@@ -355,10 +354,10 @@ void COMM_DRONE_PTR_SORT(void) {
      *
      * So INVTAB[ir1] is loaded, then inverted.
      */
-    f32 scale = INV_F30(INVTAB[ir1]);
+    c3x_reg_t scale = INV_F30(C3X_LDF(INVTAB[ir1]));
 
-    if (scale < 16.0f) {
-        scale = 16.0f;
+    if (C3X_LT(scale, C3X_FROM_INT(16))) {
+        scale = C3X_FROM_INT(16);
     }
 
     comm_drone->omatrix.mat00 = scale;
@@ -368,11 +367,11 @@ void COMM_DRONE_PTR_SORT(void) {
     comm_drone->pos.X = player2->pos.X;
 
     {
-        f32 y = player2->pos.Y;
-        f32 offset = 35.0f * comm_drone->omatrix.mat00;
+        c3x_reg_t y = player2->pos.Y;
+        c3x_reg_t offset = C3X_MUL(C3X_FROM_INT(35), comm_drone->omatrix.mat00);
 
-        y -= offset;
-        y -= 20.0f;
+        y = C3X_SUB(y, offset);
+        y = C3X_SUB(y, C3X_FROM_INT(20));
 
         comm_drone->pos.Y = y;
     }

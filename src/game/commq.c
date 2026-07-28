@@ -127,7 +127,7 @@ int RECEIVE_BUFFER[COMM_BUFFER_SIZE];
         ;
 */
 /* asm: OM_DIFF	pbss	OM_DIFF,1 */
-float OM_DIFF;
+c3x_reg_t OM_DIFF;
 /* asm: OM_MODE	pbss	OM_MODE,1 */
 int OM_MODE;
 /* asm: OM_CHOSEN_RACE	pbss	OM_CHOSEN_RACE,1 */
@@ -1149,10 +1149,10 @@ void SEND_RHO_CREATE(void) {
 
 // *MATRIX DECODE CONSTANT
 /* asm: MATCON	.FLOAT	0.00003125		;1/32000 */
-static float MATCON = 0.00003125f;
+static c3x_reg_t MATCON = C3X_INIT(0.00003125f, 0xF103126E97ull);
 /* asm: RADCON	.FLOAT	0.001			;1/1000 */
 /* asm: 	 */
-static float RADCON = 0.001f;
+static c3x_reg_t RADCON = C3X_INIT(0.001f, 0xF603126E97ull);
 /*
  *
  *FIND DRONE CAR

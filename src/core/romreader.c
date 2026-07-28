@@ -2,8 +2,8 @@
 
 #include "../game/macs.h"
 
-float ROM_ConsumeFloat(tyco_stream_t* ptr) {
-    float value = TMS320_C3X_SINGLE_TO_FLOAT((u32) * *ptr);
+c3x_reg_t ROM_ConsumeFloat(tyco_stream_t* ptr) {
+    c3x_reg_t value = C3X_LOAD((u32)**ptr);
     *ptr += 1;
     return value;
 }
@@ -14,8 +14,8 @@ s32 ROM_ConsumeS32(tyco_stream_t* ptr) {
     return value;
 }
 
-float ROM_ParseFloat(s32 val) {
-    return TMS320_C3X_SINGLE_TO_FLOAT((u32)val);
+c3x_reg_t ROM_ParseFloat(s32 val) {
+    return C3X_LOAD((u32)val);
 }
 
 u32 ROM_ReadU32(s32* ptr) {

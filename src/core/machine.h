@@ -67,7 +67,7 @@ void crusn_machine_set_screen_pages(crusn_machine* machine, int display_page_ind
 void crusn_machine_clear_screen_page(crusn_machine* machine, int page_index);
 u32 crusn_read_u32(const u32** cursor);
 s32 crusn_read_s32(const u32** cursor);
-f32 crusn__read_f32(const u32** cursor);
+c3x_reg_t crusn__read_f32(const u32** cursor);
 
 void crusn_yield_display_interrupt(void);
 

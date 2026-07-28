@@ -129,7 +129,7 @@ int FIRST_RACE;
 /* asm: POSES	.bss	POSES,1 */
 int POSES;
 /* asm: GAMEDIFF	.bss	GAMEDIFF,1 */
-float GAMEDIFF;
+c3x_reg_t GAMEDIFF;
 /* asm: CHECKPOINT_NUM	.bss	CHECKPOINT_NUM,1 */
 int CHECKPOINT_NUM;
 /* asm: H2H_FLAGSTATE	.bss	H2H_FLAGSTATE,1 */
@@ -1133,10 +1133,10 @@ static const char CCT[] = "CHOOSE CAR";
         ;
 */
 static tCHOOSE_CAR_ENTRY CCTAB[] = {
-    { -1384, -164, -4708, cvettem_ROM, PI, 0x0481 },
-    { -448, -200, -4708, hotrodm_ROM, PI, 0x0482 },
-    { 464, -177, -4708, misslem_ROM, PI, 0x0483 },
-    { 1424, -147, -4708, testorm_ROM, PI, 0x0484 },
+    { -1384, -164, -4708, cvettem_ROM, C3X_INIT(3.141592654f, 0x01490FDAA2ull), 0x0481 },
+    { -448, -200, -4708, hotrodm_ROM, C3X_INIT(3.141592654f, 0x01490FDAA2ull), 0x0482 },
+    { 464, -177, -4708, misslem_ROM, C3X_INIT(3.141592654f, 0x01490FDAA2ull), 0x0483 },
+    { 1424, -147, -4708, testorm_ROM, C3X_INIT(3.141592654f, 0x01490FDAA2ull), 0x0484 },
 };
 /* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
 int CHOOSENCAR;
@@ -1717,11 +1717,11 @@ LISTLP:
  */
 /* asm: SCS_TAB		.float	10,70,170,230 */
 /* asm: 	 */
-static float SCS_TAB[] = {
-    10.0f,
-    70.0f,
-    170.0f,
-    230.0f,
+static c3x_f32_t SCS_TAB[] = {
+    C3X_F32_INIT(10.0f),
+    C3X_F32_INIT(70.0f),
+    C3X_F32_INIT(170.0f),
+    C3X_F32_INIT(230.0f),
 };
 
 void SHOW_CAR_STATISTICS(void) {
@@ -2606,7 +2606,7 @@ KKLFF:
     // asm 00001CE0: 	FLOAT	160,R3
     // asm 00001CE1: 	LDI	20,RC
     // asm 00001CE2: 	CALL	TEXT_ADD
-    text = TEXT_ADD(entry->text, 256.0f, 160.0f, 20);
+    text = TEXT_ADD(entry->text, C3X_FROM_INT(256), C3X_FROM_INT(160), 20);
     // asm 00001CE3: 	CALL	SET40FONT
     SET40FONT(text);
     // asm 00001CE4: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
@@ -2653,7 +2653,7 @@ JUMPOUT:
     // asm 00001CFE: 	LDI	20,RC
     // asm 00001CFF: 	CALL	TEXT_ADD
     entry = p->ctx->WAVEFLAG.list_ptr;
-    text = TEXT_ADD(entry->text, 256.0f, 160.0f, 20);
+    text = TEXT_ADD(entry->text, C3X_FROM_INT(256), C3X_FROM_INT(160), 20);
     // asm 00001D00: 	CALL	SET40FONT
     SET40FONT(text);
     // asm 00001D01: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
@@ -3019,7 +3019,7 @@ _startX:
  */
 static void ULTRA_PROC(PROC* p /*AR7*/) {
     OBJ* obj;
-    float radians;
+    c3x_reg_t radians;
 
     switch (p->resume_state) {
     case 0:
@@ -3029,14 +3029,16 @@ static void ULTRA_PROC(PROC* p /*AR7*/) {
     }
 
     // asm 00001DC3: 	CLRF	R6
-    p->ctx->ULTRA_PROC.radians = 0.0f;
+    p->ctx->ULTRA_PROC.radians = C3X_FROM_INT(0);
 
 UPLP:
     // asm 00001DC4: LDF	0.0349078,R0
     // asm 00001DC5: 	FLOAT	@NFRAMES,R1
     // asm 00001DC6: 	MPYF	R1,R0
     // asm 00001DC7: 	SUBF	R0,R6
-    p->ctx->ULTRA_PROC.radians -= 0.0349078f * (float)NFRAMES;
+    p->ctx->ULTRA_PROC.radians = C3X_SUB(
+        p->ctx->ULTRA_PROC.radians,
+        C3X_MUL(C3X_IMM_F32(0.0349078f), C3X_FROM_INT(NFRAMES)));
 
     // asm 00001DC8: 	LDF	R6,R2
     // asm 00001DC9: 	LDI	AR4,AR2
@@ -3076,15 +3078,15 @@ void ULTRA_LOGO(void) {
 
     // asm 00001DD8: 	CLRF	R0
     // asm 00001DD9: 	STF	R0,*+AR0(OPOSX)
-    obj->pos.X = 0.0f;
+    obj->pos.X = C3X_FROM_INT(0);
 
     // asm 00001DDA: 	FLOAT	50,R0
     // asm 00001DDB: 	STF	R0,*+AR0(OPOSY)
-    obj->pos.Y = 50.0f;
+    obj->pos.Y = C3X_FROM_INT(50);
 
     // asm 00001DDC: 	FLOAT	368,R0
     // asm 00001DDD: 	STF	R0,*+AR0(OPOSZ)
-    obj->pos.Z = 368.0f;
+    obj->pos.Z = C3X_FROM_INT(368);
 
     // asm 00001DDE: 	LDI	AR0,AR2
     // asm 00001DDF: 	CALL	OBJ_INSERTP
@@ -3616,7 +3618,7 @@ static const CPOINT_LIGHT_STEP RGBTAB_CP[4] = {
  */
 static void SHOW_RACE_NAME(PROC* p) {
     tSHADOW_TEXT text;
-    float x;
+    c3x_reg_t x;
 
     switch (p->resume_state) {
     case 0:
@@ -3636,7 +3638,7 @@ static void SHOW_RACE_NAME(PROC* p) {
     // asm 00001F5A: 	FLOAT	360,R3
     // asm 00001F5B: 	LDI	340,RC
     // asm 00001F5C: 	CALL	TEXT_ADDDS
-    text = TEXT_ADDDS(LEG_NAMESI[BONUS_WAVE], 256.0f, 360.0f, 340);
+    text = TEXT_ADDDS(LEG_NAMESI[BONUS_WAVE], C3X_FROM_INT(256), C3X_FROM_INT(360), 340);
     // asm 00001F5D: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     text.front->color |= TXT_CENTER;
     // asm 00001F60: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
@@ -3646,7 +3648,7 @@ static void SHOW_RACE_NAME(PROC* p) {
     // asm 00001F64: 	LDI	AR1,AR5
     p->ctx->SHOW_RACE_NAME.shadow_text = text.shadow;
     // asm 00001F65: 	FLOAT	-100,R6
-    p->ctx->SHOW_RACE_NAME.posx = -100.0f;
+    p->ctx->SHOW_RACE_NAME.posx = C3X_FROM_INT(-100);
     // asm 00001F66: 	LDI	20,AR6
     p->ctx->SHOW_RACE_NAME.loop_count = 20;
 SLLP1:
@@ -3654,13 +3656,13 @@ SLLP1:
     // asm 00001F68: 	SUBF	R6,R0
     // asm 00001F69: 	MPYF	0.2,R0
     // asm 00001F6A: 	ADDF	R0,R6
-    x = (256.0f - p->ctx->SHOW_RACE_NAME.posx) * 0.2f;
-    p->ctx->SHOW_RACE_NAME.posx += x;
+    x = C3X_MUL(C3X_SUB(C3X_FROM_INT(256), p->ctx->SHOW_RACE_NAME.posx), C3X_IMM_F32(0.2f));
+    p->ctx->SHOW_RACE_NAME.posx = C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, x);
     // asm 00001F6B: 	STF	R6,*+AR5(TEXT_POSX)
     p->ctx->SHOW_RACE_NAME.shadow_text->posx = p->ctx->SHOW_RACE_NAME.posx;
     // asm 00001F6C: 	LDF	R6,R0
     // asm 00001F6D: 	ADDF	3,R0
-    x = p->ctx->SHOW_RACE_NAME.posx + 3.0f;
+    x = C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, C3X_FROM_INT(3));
     // asm 00001F6E: 	STF	R0,*+AR4(TEXT_POSX)
     p->ctx->SHOW_RACE_NAME.front_text->posx = x;
     // asm 00001F6F: 	SLEEP	1
@@ -3673,12 +3675,12 @@ SLLP1:
     // 	;CENTER IT
     // 	;
     // asm 00001F72: 	FLOAT	256,R6
-    p->ctx->SHOW_RACE_NAME.posx = 256.0f;
+    p->ctx->SHOW_RACE_NAME.posx = C3X_FROM_INT(256);
     // asm 00001F73: 	STF	R6,*+AR5(TEXT_POSX)
     p->ctx->SHOW_RACE_NAME.shadow_text->posx = p->ctx->SHOW_RACE_NAME.posx;
     // asm 00001F74: 	LDF	R6,R0
     // asm 00001F75: 	ADDF	3,R0
-    x = p->ctx->SHOW_RACE_NAME.posx + 3.0f;
+    x = C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, C3X_FROM_INT(3));
     // asm 00001F76: 	STF	R0,*+AR4(TEXT_POSX)
     p->ctx->SHOW_RACE_NAME.front_text->posx = x;
     // asm 00001F77: 	SLEEP	50
@@ -3690,13 +3692,13 @@ SLLP1A:
     // asm 00001F7B: 	SUBF	R6,R0
     // asm 00001F7C: 	MPYF	0.2,R0
     // asm 00001F7D: 	ADDF	R0,R6
-    x = (-100.0f - p->ctx->SHOW_RACE_NAME.posx) * 0.2f;
-    p->ctx->SHOW_RACE_NAME.posx += x;
+    x = C3X_MUL(C3X_SUB(C3X_FROM_INT(-100), p->ctx->SHOW_RACE_NAME.posx), C3X_IMM_F32(0.2f));
+    p->ctx->SHOW_RACE_NAME.posx = C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, x);
     // asm 00001F7E: 	STF	R6,*+AR5(TEXT_POSX)
     p->ctx->SHOW_RACE_NAME.shadow_text->posx = p->ctx->SHOW_RACE_NAME.posx;
     // asm 00001F7F: 	LDF	R6,R0
     // asm 00001F80: 	ADDF	3,R0
-    x = p->ctx->SHOW_RACE_NAME.posx + 3.0f;
+    x = C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, C3X_FROM_INT(3));
     // asm 00001F81: 	STF	R0,*+AR4(TEXT_POSX)
     p->ctx->SHOW_RACE_NAME.front_text->posx = x;
     // asm 00001F82: 	SLEEP	1

@@ -72,19 +72,19 @@ extern LEG_PAYLOAD LEG_MAP[];
 // asm: 	.GLOBL	PLYRFIRST,DRONESTOP,PLYRDRAFT,PLDRAFTVAL,CKAHEAD,STEERI
 extern int PLYRFIRST;
 
-extern float STEERI;
+extern c3x_reg_t STEERI;
 
 // asm: 	.globl	SPOS_INIT
-float SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/);
+c3x_reg_t SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/);
 
-float ROADIR(OBJ* track_obj /*AR0*/);
+c3x_reg_t ROADIR(OBJ* track_obj /*AR0*/);
 
 // asm: 	.GLOBL	GETRPM,GETAUTO,ENGFRI,GEARACTABI,ENGACTABI,GETRDIR
 void GETRPM(CARBLK* carblk /*AR5*/);
 
 int GETAUTO(CARBLK* carblk /*AR5*/);
 
-float GETRDIR(OBJ* track_obj /*AR2*/);
+c3x_reg_t GETRDIR(OBJ* track_obj /*AR2*/);
 
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 

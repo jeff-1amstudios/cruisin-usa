@@ -195,7 +195,7 @@ static void SET18FONTDS_WHITE(void) {
 // *----------------------------------------------------------------------------
 
 /* asm: YINCREMENT	.bss	YINCREMENT,1 */
-float YINCREMENT = 1.0f;
+c3x_reg_t YINCREMENT = C3X_INIT(1.0f, 0x0000000000ull);
 
 void VANITY(void) {
     // asm 0000A215: 	JSRP	VANITY_SUB

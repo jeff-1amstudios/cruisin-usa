@@ -48,7 +48,7 @@ static OBJ* OBJ_GFIND(int oid_group_bit /*R1*/);
 static OBJ* OBJ_GFIND_NEXT(OBJ* obj, int oid_group_bit /*R1*/);
 static void OBJ_TAG(const int* oid_list /*AR3*/, int tag_bits /*R2*/);
 static void OBJ_TAGALL(int oid /*R1*/, int tag_bits /*R2*/);
-static void OBJ_MOVY_GROUP(int oid_group_bit /*R1*/, float y_amount /*R2*/);
+static void OBJ_MOVY_GROUP(int oid_group_bit /*R1*/, c3x_reg_t y_amount /*R2*/);
 static void OBJ_DEL_GROUP(int oid_group_bit /*R1*/);
 static void FIND_ALL_PLATES(int race_number, int white_pal);
 static void FIND_PLATES(int race_number, int place, int player_time_code, int white_pal, OBJ** missing_plate_obj);
@@ -57,13 +57,13 @@ static void MAKE_TIME(int time_code, int place);
 static void FORMAT_NUM(const char* ascii_digits, int* digits_out);
 static void CREATE_LETTERS(OBJ* plate_obj, int place, const int* letters, int white_pal);
 static OBJ* ASCII_TO_OBJ(int character);
-static void PRINT3D(const char* string, float x, float y, float z, int oid);
+static void PRINT3D(const char* string, c3x_reg_t x, c3x_reg_t y, c3x_reg_t z, int oid);
 static void DISPLAY_HS(PROC* p);
 static void FLASH_LETTERS_PROC(PROC* p);
 static void FLASH_LETTERS(int opal /*R0*/, int oid /*R4*/);
 static void DELETE_PRESS_OBJECTS(void);
 static void FIX_PLATES(void);
-static float FLY_PLATES(float amount /*R0*/);
+static c3x_reg_t FLY_PLATES(c3x_reg_t amount /*R0*/);
 static void DISPLAY_HSTEXT(int race_number);
 static void ENTER_HSTEXT(int race_number);
 static void INIT_LOGO(void);
@@ -2113,7 +2113,7 @@ OTAX:
  *	PARAMETERS	R2 = FLOAT amount to move YPOS
  *
  */
-static void OBJ_MOVY_GROUP(int oid_group_bit /*R1*/, float y_amount /*R2*/) {
+static void OBJ_MOVY_GROUP(int oid_group_bit /*R1*/, c3x_reg_t y_amount /*R2*/) {
     OBJ* obj;
 
     // asm 0000371E: 	PUSH	R3
@@ -2127,7 +2127,7 @@ static void OBJ_MOVY_GROUP(int oid_group_bit /*R1*/, float y_amount /*R2*/) {
     if (obj == NULL) {
         goto OMYG;
     }
-    obj->pos.Y += y_amount;
+    obj->pos.Y = C3X_ADD(obj->pos.Y, y_amount);
 OMYG1:
     // asm 00003725: 	CALL	OBJ_GFIND_NEXT
     // asm 00003726: 	BC	OMYG
@@ -2138,7 +2138,7 @@ OMYG1:
     if (obj == NULL) {
         goto OMYG;
     }
-    obj->pos.Y += y_amount;
+    obj->pos.Y = C3X_ADD(obj->pos.Y, y_amount);
     // asm 0000372A: 	BR	OMYG1
     goto OMYG1;
 OMYG:
@@ -2342,7 +2342,7 @@ MNLOOP:
         // asm 00003778: 	FLOAT	-145,R1			;WIDTH OF ONE NUMBER
         // asm 00003779: 	ADDF	R1,R0
         // asm 0000377A: 	STF	R0,*+AR0(OPOSX)
-        obj->pos.X = previous_obj->pos.X - 145.0f; // ;WIDTH OF ONE NUMBER
+        obj->pos.X = C3X_SUB(previous_obj->pos.X, C3X_FROM_INT(145)); // ;WIDTH OF ONE NUMBER
         // asm 0000377B: 	LDF	*+AR1(OPOSY),R0
         // asm 0000377C: 	STF	R0,*+AR0(OPOSY)
         obj->pos.Y = previous_obj->pos.Y;
@@ -2351,7 +2351,7 @@ MNLOOP:
         obj->pos.Z = previous_obj->pos.Z;
         // asm 0000377F: 	LDF	0,R2
         // asm 00003780: 	STF	R2,*+AR0(ORADX)
-        obj->rad.X = 0.0f;
+        obj->rad.X = C3X_FROM_INT(0);
         // asm 00003781: 	LDI	AR0,AR2
         // asm 00003782: 	ADDI	OMATRIX,AR2
         // asm 00003783: 	CALL	FIND_XMATRIX
@@ -2431,7 +2431,7 @@ MTLOOP:
     // asm 000037A2: 	LDI	AR0,AR1
     {
         OBJ* previous_obj = obj;
-        f32 width = -145.0f; // ;WIDTH OF ONE NUMBER
+        c3x_reg_t width = C3X_FROM_INT(-145); // ;WIDTH OF ONE NUMBER
 
         // asm 000037A3: 	FLOAT	-145,R1			;WIDTH OF ONE NUMBER
         // asm 000037A4: 	CMPI	5,AR6
@@ -2447,7 +2447,7 @@ MTLOOP:
                 return;
             }
             // asm 000037AA: 	FLOAT	-82,R1			;WIDTH OF ONE COLON
-            width = -82.0f; // ;WIDTH OF ONE COLON
+            width = C3X_FROM_INT(-82); // ;WIDTH OF ONE COLON
             // asm 000037AB: 	BR	MT3
         } else {
         MT2:
@@ -2467,7 +2467,7 @@ MTLOOP:
         // asm 000037B2: 	LDF	*+AR1(OPOSX),R0
         // asm 000037B3: 	ADDF	R1,R0
         // asm 000037B4: 	STF	R0,*+AR0(OPOSX)
-        obj->pos.X = previous_obj->pos.X + width;
+        obj->pos.X = C3X_ADD(previous_obj->pos.X, width);
         // asm 000037B5: 	LDF	*+AR1(OPOSY),R0
         // asm 000037B6: 	STF	R0,*+AR0(OPOSY)
         obj->pos.Y = previous_obj->pos.Y;
@@ -2476,7 +2476,7 @@ MTLOOP:
         obj->pos.Z = previous_obj->pos.Z;
         // asm 000037B9: 	LDF	0,R2
         // asm 000037BA: 	STF	R2,*+AR0(ORADX)
-        obj->rad.X = 0.0f;
+        obj->rad.X = C3X_FROM_INT(0);
         // asm 000037BB: 	LDI	AR0,AR2
         // asm 000037BC: 	ADDI	OMATRIX,AR2
         // asm 000037BD: 	CALL	FIND_XMATRIX
@@ -2582,7 +2582,7 @@ FORMNX:
 
 static void CREATE_LETTERS(OBJ* plate_obj, int place, const int* letters, int white_pal) {
     int oid = HIGH_SCORE_GROUP | (1 << (place + 16));
-    f32 index = 0.0f;
+    c3x_reg_t index = C3X_FROM_INT(0);
     int letter_index = 0;
 
     // asm 000037E6: 	LDI	AR7,AR3
@@ -2617,15 +2617,15 @@ CRLLOOP:
         // asm 000037F7: 	ADDF	R1,R0
         // asm 000037F8: 	ADDF	*+AR1(OPOSX),R0
         // asm 000037F9: 	STF	R0,*+AR0(OPOSX)
-        obj->pos.X = plate_obj->pos.X + LETTER_XOFF + (LETTER_SIZEX * index);
+        obj->pos.X = C3X_ADD(C3X_ADD(plate_obj->pos.X, C3X_FROM_INT(LETTER_XOFF)), C3X_MUL(C3X_FROM_INT(LETTER_SIZEX), index));
         // asm 000037FA: 	FLOAT	LETTER_YOFF,R0
         // asm 000037FB: 	ADDF	*+AR1(OPOSY),R0
         // asm 000037FC: 	STF	R0,*+AR0(OPOSY)
-        obj->pos.Y = plate_obj->pos.Y + LETTER_YOFF;
+        obj->pos.Y = C3X_ADD(plate_obj->pos.Y, C3X_FROM_INT(LETTER_YOFF));
         // asm 000037FD: 	LDF	*+AR1(OPOSZ),R0
         // asm 000037FE: 	SUBF	1,R0			;Make sure that it is on top of the plate
         // asm 000037FF: 	STF	R0,*+AR0(OPOSZ)
-        obj->pos.Z = plate_obj->pos.Z - 1.0f; // ;Make sure that it is on top of the plate
+        obj->pos.Z = C3X_SUB(plate_obj->pos.Z, C3X_FROM_INT(1)); // ;Make sure that it is on top of the plate
         // asm 00003800: 	LDI	*+AR7(WHITE_PAL),R0
         // asm 00003801: 	STI	R0,*+AR0(OPAL)
         obj->palette = white_pal;
@@ -2637,7 +2637,7 @@ CRLLOOP:
         // asm 00003806: 	CMPI	20h,AR2		;is it a space?
         // asm 00003807: 	LDFEQ	-PI,R2
         // asm 00003808: 	STF	R2,*+AR0(ORADX)
-        obj->rad.X = character == ' ' ? -PI : 0.0f; // ;is it a space?
+        obj->rad.X = character == ' ' ? C3X_NEG(C3X_IMM_F32(PI)) : C3X_FROM_INT(0); // ;is it a space?
         // asm 00003809: 	LDI	AR0,AR2
         // asm 0000380A: 	ADDI	OMATRIX,AR2
         // asm 0000380B: 	CALL	FIND_XMATRIX
@@ -2647,11 +2647,11 @@ CRLLOOP:
         // asm 0000380E: 	CALL	OBJ_INSERT
         OBJ_INSERT(obj);
         // asm 0000380F: 	ADDF	1,R4
-        index += 1.0f;
+        index = C3X_ADD(index, C3X_FROM_INT(1));
         letter_index += 1;
         // asm 00003810: 	CMPF	2,R4
         // asm 00003811: 	BLE	CRLLOOP
-        if (index <= 2.0f) {
+        if (C3X_LE(index, C3X_FROM_INT(2))) {
             goto CRLLOOP;
         }
     }
@@ -2709,7 +2709,7 @@ CRL1:
  */
 #define LETTER3D_SIZEX 80
 
-static void PRINT3D(const char* string, float x, float y, float z, int oid) {
+static void PRINT3D(const char* string, c3x_reg_t x, c3x_reg_t y, c3x_reg_t z, int oid) {
     const char* cursor = string;
     int chars[64];
     int count = 0;
@@ -2739,12 +2739,12 @@ PR3DA:
     do {
         character = *cursor++ & 0x7f; // ;Count the number of letters in this group
         chars[count++] = character;
-        x += LETTER3D_SIZEX / 2.0f; // ;Center the text's Xpos
+        x = C3X_ADD(x, C3X_FROM_INT(LETTER3D_SIZEX / 2)); // ;Center the text's Xpos
     } while (character != 0);
     // asm 00003835: 	SUBF	R5,R2			;Correction for zero terminator
     // asm 00003836: 	SUBF	R5,R2			;Correction for first letter
-    x -= LETTER3D_SIZEX / 2.0f; // ;Correction for zero terminator
-    x -= LETTER3D_SIZEX / 2.0f; // ;Correction for first letter
+    x = C3X_SUB(x, C3X_FROM_INT(LETTER3D_SIZEX / 2)); // ;Correction for zero terminator
+    x = C3X_SUB(x, C3X_FROM_INT(LETTER3D_SIZEX / 2)); // ;Correction for first letter
     // asm 00003837: 	POP	AR0			;POP the zero terminator
     count -= 1; // ;POP the zero terminator
 PR3DLOOP:
@@ -2803,7 +2803,7 @@ PR3DLOOP:
             // asm 0000384F: 	LDI	AR0,AR2
             // asm 00003850: 	ADDI	OMATRIX,AR2
             // asm 00003851: 	CALL	FIND_YMATRIX
-            FIND_YMATRIX(&obj->omatrix, 0.0f);
+            FIND_YMATRIX(&obj->omatrix, C3X_FROM_INT(0));
             // asm 00003852: 	POPF	R2
             // asm 00003853: 	LDI	AR0,AR2
             // asm 00003854: 	CALL	OBJ_INSERT
@@ -2813,7 +2813,7 @@ PR3DLOOP:
 PR3DNEXT:
     // asm 00003855: 	FLOAT	LETTER3D_SIZEX,R0
     // asm 00003856: 	SUBF	R0,R2
-    x -= LETTER3D_SIZEX;
+    x = C3X_SUB(x, C3X_FROM_INT(LETTER3D_SIZEX));
     // asm 00003857: 	BR	PR3DLOOP
     goto PR3DLOOP;
 PR3DX:
@@ -2990,16 +2990,16 @@ static void DISPLAY_HS(PROC* p) {
     NOAERASE = 0;
     // asm 0000388F: 	LDP	@_CAMERAPOS+X		;Set the initial camera position
     // asm 00003890: 	FLOAT	-4700,R0
-    _CAMERAPOS.X = -4700.0f;
+    _CAMERAPOS.X = C3X_FROM_INT(-4700);
     // asm 00003891: 	STF	R0,@_CAMERAPOS+X
     // asm 00003892: 	FLOAT	HS_STARTY,R0
-    _CAMERAPOS.Y = HS_STARTY;
+    _CAMERAPOS.Y = C3X_FROM_INT(HS_STARTY);
     // asm 00003893: 	STF	R0,@_CAMERAPOS+Y
     // asm 00003894: 	FLOAT	HS_STARTZ,R0
-    _CAMERAPOS.Z = HS_STARTZ;
+    _CAMERAPOS.Z = C3X_FROM_INT(HS_STARTZ);
     // asm 00003895: 	STF	R0,@_CAMERAPOS+Z
     // asm 00003896: 	CLRF	R2
-    _CAMERARAD.Y = 0.0f;
+    _CAMERARAD.Y = C3X_FROM_INT(0);
     // asm 00003897: 	STF	R2,@_CAMERARAD+Y
     // asm 00003898: 	SETDP
     // asm 00003899: 	LDI	@CAMERAMATRIXI,AR2
@@ -3017,7 +3017,7 @@ static void DISPLAY_HS(PROC* p) {
     // asm 000038A0: 	FLOAT	120,R2			;Adjust the plates y position for the new Marqee
     // asm 000038A1: 	LDI	HIGH_SCORE_GROUP,R1		;High score group
     // asm 000038A2: 	CALL	OBJ_MOVY_GROUP
-    OBJ_MOVY_GROUP(HIGH_SCORE_GROUP, 120.0f);
+    OBJ_MOVY_GROUP(HIGH_SCORE_GROUP, C3X_FROM_INT(120));
     // asm 000038A3: 	LDI	9h,R1
     // asm 000038A4: 	CALL	OBJ_FIND
     obj = OBJ_FIND(0x09);
@@ -3041,7 +3041,7 @@ DHS0:
     SLEEP(1, 1);
     // asm 000038B0: 	FLOAT	250,R0
     // asm 000038B1: 	CALL	FLY_PLATES		;Fly the plates onto the back wall
-    if (FLY_PLATES(250.0f) < 998.0f) {
+    if (C3X_LT(FLY_PLATES(C3X_FROM_INT(250)), C3X_FROM_INT(998))) {
         goto DHS0;
     }
     // asm 000038B2: 	FLOAT	998,R1
@@ -3060,12 +3060,12 @@ DHS1:
     // asm 000038BC: 	FLOAT	HS_YDIFF,R1		;Pan the y so that the marqee is at the top
     // asm 000038BD: 	LDF	@_CAMERAPOS+Y,R0
     // asm 000038BE: 	ADDF	R1,R0
-    _CAMERAPOS.Y += HS_YDIFF;
+    _CAMERAPOS.Y = C3X_ADD(_CAMERAPOS.Y, C3X_FROM_INT(HS_YDIFF));
     // asm 000038BF: 	STF	R0,@_CAMERAPOS+Y
     // asm 000038C0: 	FLOAT	HS_ZDIFF,R1
     // asm 000038C1: 	LDF	@_CAMERAPOS+Z,R0
     // asm 000038C2: 	ADDF	R1,R0
-    _CAMERAPOS.Z += HS_ZDIFF;
+    _CAMERAPOS.Z = C3X_ADD(_CAMERAPOS.Z, C3X_FROM_INT(HS_ZDIFF));
     // asm 000038C3: 	STF	R0,@_CAMERAPOS+Z
     // asm 000038C4: 	SETDP
     // asm 000038C5: 	DBU	AR6,DHS1
@@ -3231,7 +3231,7 @@ static void DELETE_PRESS_OBJECTS(void) {
  *
  */
 static void FIX_PLATES(void) {
-    f32 z_offset = -5000.0f;
+    c3x_reg_t z_offset = C3X_FROM_INT(-5000);
     int plate_index = 0;
     int oid_group_bit = 1 << 16;
 
@@ -3248,15 +3248,15 @@ FIXPL:
     {
         OBJ* plate_obj = OBJ_FIND(FIRST_PLATE + plate_index);
         OBJ* letter_obj;
-        f32 letter_z;
+        c3x_reg_t letter_z;
         int group_bit = oid_group_bit;
 
         // asm 00003901: 	LDF	*+AR0(OPOSZ),R3		;Offset the plates Z
         // asm 00003902: 	ADDF	R0,R3
         // asm 00003903: 	STF	R3,*+AR0(OPOSZ)
-        plate_obj->pos.Z += z_offset; // ;Offset the plates Z
+        plate_obj->pos.Z = C3X_ADD(plate_obj->pos.Z, z_offset); // ;Offset the plates Z
         // asm 00003904: 	SUBF	1,R3
-        letter_z = plate_obj->pos.Z - 1.0f;
+        letter_z = C3X_SUB(plate_obj->pos.Z, C3X_FROM_INT(1));
     FIXPL1:
         // asm 00003905: 	LDI	R2,R1
         // asm 00003906: 	LSH	1,R2
@@ -3280,7 +3280,7 @@ FIXPL:
 FIXPL3:
     // asm 0000390C: 	FLOAT	-500,R1			;PLate to plate offset
     // asm 0000390D: 	ADDF	R1,R0
-    z_offset += -500.0f; // ;PLate to plate offset
+    z_offset = C3X_ADD(z_offset, C3X_FROM_INT(-500)); // ;PLate to plate offset
     // asm 0000390E: 	ADDI	1,AR5
     plate_index += 1;
     // asm 0000390F: 	CMPI	9,AR5
@@ -3299,10 +3299,10 @@ FIXPL3:
  *	R0 = how far to move
  *	R3 = position of the last plate
  */
-static float FLY_PLATES(float amount /*R0*/) {
+static c3x_reg_t FLY_PLATES(c3x_reg_t amount /*R0*/) {
     int plate_index = 0;
     int oid_group_bit = 1 << 16;
-    f32 last_plate_z = 0.0f;
+    c3x_reg_t last_plate_z = C3X_FROM_INT(0);
 
     // asm 00003913: 	PUSH	AR5
     // asm 00003914: 	LDI	0,AR5
@@ -3315,23 +3315,23 @@ FLPL:
     {
         OBJ* plate_obj = OBJ_FIND(FIRST_PLATE + plate_index);
         OBJ* letter_obj;
-        f32 letter_z;
+        c3x_reg_t letter_z;
         int group_bit = oid_group_bit;
 
         // asm 0000391A: 	LDF	*+AR0(OPOSZ),R1
         // asm 0000391B: 	ADDF	R0,R1
-        plate_obj->pos.Z += amount;
+        plate_obj->pos.Z = C3X_ADD(plate_obj->pos.Z, amount);
         // asm 0000391C: 	FLOAT	1000,R3
         // asm 0000391D: 	CMPF	R3,R1		;BLEW by destination?
         // asm 0000391E: 	LDFGT	R3,R1
-        if (plate_obj->pos.Z > 1000.0f) {
-            plate_obj->pos.Z = 1000.0f; // ;BLEW by destination?
+        if (C3X_GT(plate_obj->pos.Z, C3X_FROM_INT(1000))) {
+            plate_obj->pos.Z = C3X_FROM_INT(1000); // ;BLEW by destination?
         }
         // asm 0000391F: 	STF	R1,*+AR0(OPOSZ)
         // asm 00003920: 	LDF	R1,R3
         last_plate_z = plate_obj->pos.Z;
         // asm 00003921: 	SUBF	1,R3
-        letter_z = last_plate_z - 1.0f;
+        letter_z = C3X_SUB(last_plate_z, C3X_FROM_INT(1));
         // asm 00003922: FLPL1
         // asm 00003922: 	LDI	R2,R1
         // asm 00003923: 	LSH	1,R2
@@ -3383,7 +3383,7 @@ static void DISPLAY_HSTEXT(int race_number) {
     // asm 00003935: 	FLOAT	-301,R4
     // asm 00003936: 	LDI	0,R6	;ID
     // asm 00003937: 	CALL	PRINT3D
-    PRINT3D(race_text, -4700.0f, -910.0f, -301.0f, 0);
+    PRINT3D(race_text, C3X_FROM_INT(-4700), C3X_FROM_INT(-910), C3X_FROM_INT(-301), 0);
     // asm 00003938: 	RETS
     return;
 }
@@ -3401,7 +3401,7 @@ RACE_TEXT:
     // asm 00003935: 	FLOAT	-301,R4
     // asm 00003936: 	LDI	0,R6	;ID
     // asm 00003937: 	CALL	PRINT3D
-    PRINT3D(race_text, -4700.0f, -2910.0f, -301.0f, 0);
+    PRINT3D(race_text, C3X_FROM_INT(-4700), C3X_FROM_INT(-2910), C3X_FROM_INT(-301), 0);
     // asm 00003938: 	RETS
     return;
 }

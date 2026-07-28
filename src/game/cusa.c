@@ -66,7 +66,7 @@ void FAKEDIAG(void);
 void FEED_WATCHDOG(void);
 void FEED_WATCHDOG_HARD(void);
 void VERIFY_CODE_INTEGRITY(void);
-static float TIMEREC(void);
+static c3x_reg_t TIMEREC(void);
 
 #define SWRAMI SWRAM
 #define SWTABI SWTAB
@@ -88,7 +88,7 @@ static const char IAMSLAVE[];
 static const char TPALI[];
 static const char TPALNI[];
 
-#define FLOAT_TIK 0.000292397f
+#define FLOAT_TIK C3X_F32(0.000292397f) // c3x-lint: full-precision -- loaded from .float data
 
 /*
  *----------------------------------------------------------------------------
@@ -180,7 +180,7 @@ int ERRORN;
 /* asm: ERRORO	.bss	ERRORO,1 */
 int ERRORO;
 /* asm: FRAMETIME	.bss	FRAMETIME,1 */
-float FRAMETIME = 1.0f;
+c3x_reg_t FRAMETIME = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: SWITCHBUTS	.bss	SWITCHBUTS,1 */
 int SWITCHBUTS;
 /* asm: BGNDCOLA	.bss	BGNDCOLA,1 */
@@ -188,7 +188,7 @@ int BGNDCOLA;
 /* asm: DIAG_ACTIVE	.bss	DIAG_ACTIVE,1 */
 int DIAG_ACTIVE;
 /* asm: GAME_TIMER	.bss	GAME_TIMER,1 */
-float GAME_TIMER = 1.0f;
+c3x_reg_t GAME_TIMER = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: SYSCNTL	pbss	SYSCNTL,1 */
 int SYSCNTL;
 /* asm: _pot0	pbss	_pot0,1 */
@@ -719,7 +719,7 @@ void INT0(void) {
     int r0;
     int r1;
     int r5;
-    float float_tik;
+    c3x_reg_t float_tik;
 
     // asm 00004C45: 	PUSH	ST
     // asm 00004C46: 	LDI	INT1_M,IE	;disable everything except TV30 interrupt & comm int
@@ -916,7 +916,7 @@ NOTASEC:
     // asm 00004CC6: 	LDF	@FLOAT_TIK,R0
 
     // asm 00004CC7: 	ADDF	@GAME_TIMER,R0
-    GAME_TIMER += FLOAT_TIK;
+    GAME_TIMER = C3X_ADD(GAME_TIMER, FLOAT_TIK);
     // asm 00004CC8: 	STF	R0,@GAME_TIMER
     // asm 00004CC9: NOTINGAME
     // asm 00004CC9: 	INCM	@INFRAMES		;increment number of frames passed since last screen switch
@@ -1699,13 +1699,13 @@ void TIMER_READ(void) {
 // *----------------------------------------------------------------------------
 
 /* asm: TIMEFRAME	.bss	TIMEFRAME,1 */
-float TIMEFRAME = 1.0f;
+c3x_reg_t TIMEFRAME = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: TIMEX	.bss	TIMEX,1 */
-float* TIMEX;
+c3x_reg_t* TIMEX;
 /* asm: TIMECLR	.bss	TIMECLR,1 */
 int TIMECLR;
 /* asm: TIMERAM	.bss	TIMERAM,50 */
-float TIMERAM[50];
+c3x_reg_t TIMERAM[50];
 
 // *----------------------------------------------------------------------------
 static void TIMERESET(void) {
@@ -1715,26 +1715,26 @@ static void TIMERESET(void) {
 
     if (TIMECLR != 0) {
         TIMECLR = 0;
-        TIMEFRAME = 0.0f;
+        TIMEFRAME = C3X_FROM_INT(0);
 
         /*
          * CLEAR OUT COUNT AREA
          */
         for (int i = 0; i < 48; i++) {
-            TIMERAM[i] = 0.0f;
+            TIMERAM[i] = C3X_FROM_INT(0);
         }
 
         return;
     }
 
-    TIMEFRAME += 1.0f;
+    TIMEFRAME = C3X_ADD(TIMEFRAME, C3X_FROM_INT(1));
 
-    float inv_frame = INV_F30(TIMEFRAME);
+    c3x_reg_t inv_frame = INV_F30(TIMEFRAME);
 
     TIMEX = TIMERAM;
 
     for (int i = 0; i < 16; i++) {
-        float t = TIMERAM[i];
+        c3x_reg_t t = TIMERAM[i];
 
         /*
          * This corresponds to:
@@ -1747,8 +1747,8 @@ static void TIMERESET(void) {
          * Because AR0 post-increments before the +15/+31 offsets,
          * this updates TIMERAM[i + 16] and TIMERAM[i + 32].
          */
-        TIMERAM[i + 16] += t;
-        TIMERAM[i + 32] = TIMERAM[i + 16] * inv_frame;
+        TIMERAM[i + 16] = C3X_ADD(TIMERAM[i + 16], t);
+        TIMERAM[i + 32] = C3X_MUL(TIMERAM[i + 16], inv_frame);
     }
 
     // TIMERAM[0..15]   // current frame timing records
@@ -1759,10 +1759,10 @@ static void TIMERESET(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static float TIMEREC(void) {
-    float t;
+static c3x_reg_t TIMEREC(void) {
+    c3x_reg_t t;
 
-    t = (float)TIMER_CNTR1;
+    t = C3X_FROM_INT(TIMER_CNTR1);
     *TIMEX++ = t; // SAVE THE INDEX
     return t;
 }

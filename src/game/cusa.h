@@ -30,7 +30,7 @@ extern int BGNDCOLA;
 // asm: 	.bss	DIAG_ACTIVE,1
 extern int DIAG_ACTIVE;
 // asm: 	.bss	GAME_TIMER,1	;FL	minutes since last buyin
-extern float GAME_TIMER;
+extern c3x_reg_t GAME_TIMER;
 // asm: 	pbss	SYSCNTL,1	;shadow location
 extern int SYSCNTL;
 // asm: 	pbss	_pot0,1		;steering wheel
@@ -68,11 +68,11 @@ extern int BUTTON_STATUS;
 // asm: 	.bss	OLD_BUTTON_STATUS,1
 extern int OLD_BUTTON_STATUS;
 // asm: 	.bss	TIMEFRAME,1
-extern float TIMEFRAME;
+extern c3x_reg_t TIMEFRAME;
 // asm: 	.bss	TIMECLR,1
 extern int TIMECLR;
 // asm: 	.bss	TIMERAM,50
-extern float TIMERAM[];
+extern c3x_reg_t TIMERAM[];
 // asm: 		.bss	STATE_NUM,1
 extern int STATE_NUM;
 // asm: 		.bss	STATE_TIK,1

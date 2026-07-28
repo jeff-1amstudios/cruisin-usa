@@ -459,11 +459,11 @@ int DOORLIST;
  *
  */
 /* asm: DO_LPPX	.float	-256 */
-static float DO_LPPX = -256.0f;
+static c3x_reg_t DO_LPPX = C3X_INIT(-256.0f, 0x0780000000ull);
 /* asm: DO_PPZ	.float	368 */
-static float DO_PPZ = 368.0f;
+static c3x_reg_t DO_PPZ = C3X_INIT(368.0f, 0x0838000000ull);
 /* asm: DO_RPPX	.float	256 */
-static float DO_RPPX = 256.0f;
+static c3x_reg_t DO_RPPX = C3X_INIT(256.0f, 0x0800000000ull);
 
 /*
  *
@@ -701,7 +701,7 @@ void TRANSCHOICE(void) {
  *
  */
 /* asm: GUWP	.bss	GUWP,1 */
-float GUWP = 1.0f;
+c3x_reg_t GUWP = C3X_INIT(1.0f, 0x0000000000ull);
 
 void GET_UNIT_WHEEL(void) {
     // asm 00005BEA: 	FLOAT	@_pot0,R0

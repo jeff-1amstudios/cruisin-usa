@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(cruisin_usa_port C)
 
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -11,6 +13,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 option(CRUSN_TRACE "Enable native trace logging" ON)
+option(C3X_USE_HOST_FLOAT "Use native host floating point for translated C3x float operations" OFF)
 
 find_package(SDL2 CONFIG QUIET)
 if(NOT SDL2_FOUND)
@@ -33,6 +36,7 @@ set(CRUSN_SOURCES
   src/game/backgrnd.c
   src/game/bonus.c
   src/game/bssstart.c
+  src/core/c3x_float.c
   src/game/chopper.c
   src/game/cksum.c
   src/game/cmos.c
@@ -102,6 +106,13 @@ set(CRUSN_SOURCES
 add_executable(crusn)
 target_sources(crusn PRIVATE ${CRUSN_SOURCES})
 
+add_custom_target(check-c3x-translation
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/check_c3x_translation.py
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMENT "Checking translated C3X floating-point operations"
+  VERBATIM
+)
+
 target_include_directories(crusn PRIVATE src src/core src/platform src/game)
 
 if(TARGET SDL2::SDL2)
@@ -113,6 +124,10 @@ endif()
 
 if(CRUSN_TRACE)
   target_compile_definitions(crusn PRIVATE CRUSN_TRACE=1)
+endif()
+
+if(C3X_USE_HOST_FLOAT)
+  target_compile_definitions(crusn PRIVATE C3X_USE_HOST_FLOAT=1)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")

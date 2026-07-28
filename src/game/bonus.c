@@ -188,7 +188,7 @@ static void BONUS_SANFRAN(void) {
     CREATE(TRAFFIC_LIGHT, SPAWNER_C | COLORCYC_T, ctx);
     // asm 00003969: 	FLOAT	-35,R0
     // asm 0000396A: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = -35.0f;
+    INFIN_CORRECT = C3X_FROM_INT(-35);
 
     // fallthrough into BONUS_BEVHILLS
     BONUS_BEVHILLS();
@@ -1118,7 +1118,7 @@ BFLP1:
     // asm 00003C36: 	LDI	1,RC
     // asm 00003C37: 	LDL	WINT1,AR2
     // asm 00003C38: 	CALL	TEXT_ADDDS
-    text = TEXT_ADDDS(WINT1, (float)posx, (float)posy, 1);
+    text = TEXT_ADDDS(WINT1, C3X_FROM_INT(posx), C3X_FROM_INT(posy), 1);
     // asm 00003C39: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     text.front->color |= TXT_CENTER;
     // asm 00003C3C: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
@@ -1142,7 +1142,7 @@ BFLP1:
     // asm 00003C4A: 	LDI	1,RC
     // asm 00003C4B: 	LDL	WINT2,AR2
     // asm 00003C4C: 	CALL	TEXT_ADDDS
-    text = TEXT_ADDDS(WINT2, (float)posx, (float)posy, 1);
+    text = TEXT_ADDDS(WINT2, C3X_FROM_INT(posx), C3X_FROM_INT(posy), 1);
     // asm 00003C4D: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     text.front->color |= TXT_CENTER;
     // asm 00003C50: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)

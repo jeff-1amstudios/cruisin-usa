@@ -43,8 +43,8 @@ void ADD_DRONE(OBJ* obj /*AR4*/);
 void FREE_DRONE(void);
 void EXP_PUFF(void);
 void PRECOLLIDE_PLYR(void);
-float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-float PLYR_RIDE_RIGHT(void);
+c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
+c3x_reg_t PLYR_RIDE_RIGHT(void);
 void SMOKE_PUFF(void);
 void DROP_COCONUTS(void);
 void AHEAD_OF_PLAYER_P(void);
@@ -125,26 +125,26 @@ int MIN_TRACK_TIME;
 /* asm: PSYCHO_RHO	.bss	PSYCHO_RHO,1 */
 static int PSYCHO_RHO;
 /* asm: LANEP	.word	LANES,LANES4 */
-float* LANEP[] = {
+c3x_f32_t* LANEP[] = {
     LANES,
     LANES4,
 };
 /* asm: LANES	.float	-576.0,-576.0,576.0,576.0	;TWO & 2/2 LANE */
-float LANES[] = {
-    -576.0f,
-    -576.0f,
-    576.0f,
-    576.0f, // TWO & 2/2 LANE
+c3x_f32_t LANES[] = {
+    C3X_F32_INIT(-576.0f),
+    C3X_F32_INIT(-576.0f),
+    C3X_F32_INIT(576.0f),
+    C3X_F32_INIT(576.0f), // TWO & 2/2 LANE
 };
 /* asm: LANES4	.float	-1728.0,-576.0,576.0,1728.0	;TWO & 2/2 LANE */
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-float LANES4[] = {
-    -1728.0f,
-    -576.0f,
-    576.0f,
-    1728.0f, // TWO & 2/2 LANE
+c3x_f32_t LANES4[] = {
+    C3X_F32_INIT(-1728.0f),
+    C3X_F32_INIT(-576.0f),
+    C3X_F32_INIT(576.0f),
+    C3X_F32_INIT(1728.0f), // TWO & 2/2 LANE
     // ----------------------------------------------------------------------------
 };
 /* asm: ONCSCREEN_CARS	.bss	ONCSCREEN_CARS,1 */
@@ -192,8 +192,8 @@ void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*
     PROC* proc;
     OBJ* track_obj;
     OBJ* next_track_obj;
-    float other_dist_sq;
-    float player_dist_sq;
+    c3x_reg_t other_dist_sq;
+    c3x_reg_t player_dist_sq;
 
     // ;	CLRI	IR0	;TEMP FLAG FOR OTHER MACHINE
     // asm 000065D0: 	LDI	1,R7		;POSITION #
@@ -326,24 +326,24 @@ FPP2:
     // asm 00006600: 	SUBF	*+AR2(OPOSZ),R3
     // asm 00006601: 	MPYF	R3,R3
     // asm 00006602: 	ADDF	R0,R3,R4
-    other_dist_sq = (next_track_obj->pos.X - obj->pos.X) * (next_track_obj->pos.X - obj->pos.X);
-    other_dist_sq += (obj->pos.Z - next_track_obj->pos.Z) * (obj->pos.Z - next_track_obj->pos.Z);
+    other_dist_sq = C3X_MUL(C3X_SUB(next_track_obj->pos.X, obj->pos.X), C3X_SUB(next_track_obj->pos.X, obj->pos.X));
+    other_dist_sq = C3X_ADD(other_dist_sq, C3X_MUL(C3X_SUB(obj->pos.Z, next_track_obj->pos.Z), C3X_SUB(obj->pos.Z, next_track_obj->pos.Z)));
     // asm 00006603: 	LDF	*+AR3(CARDIST2CNTR),R0		;CORRECT FOR NOT CENTERED
     // asm 00006604: 	MPYF	R0,R0
     // asm 00006605: 	SUBF	R0,R4
-    other_dist_sq -= carblk->dist_to_center * carblk->dist_to_center;
+    other_dist_sq = C3X_SUB(other_dist_sq, C3X_MUL(carblk->dist_to_center, carblk->dist_to_center));
     // asm 00006606: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R0
     // asm 00006607: 	MPYF	R0,R0
     // asm 00006608: 	LDF	*+AR4(OPOSZ),R3
     // asm 00006609: 	SUBF	*+AR2(OPOSZ),R3
     // asm 0000660A: 	MPYF	R3,R3
     // asm 0000660B: 	ADDF	R0,R3
-    player_dist_sq = (next_track_obj->pos.X - player_obj->pos.X) * (next_track_obj->pos.X - player_obj->pos.X);
-    player_dist_sq += (player_obj->pos.Z - next_track_obj->pos.Z) * (player_obj->pos.Z - next_track_obj->pos.Z);
+    player_dist_sq = C3X_MUL(C3X_SUB(next_track_obj->pos.X, player_obj->pos.X), C3X_SUB(next_track_obj->pos.X, player_obj->pos.X));
+    player_dist_sq = C3X_ADD(player_dist_sq, C3X_MUL(C3X_SUB(player_obj->pos.Z, next_track_obj->pos.Z), C3X_SUB(player_obj->pos.Z, next_track_obj->pos.Z)));
     // asm 0000660C: 	LDF	*+AR5(CARDIST2CNTR),R0		;CORRECT FOR NOT CENTERED
     // asm 0000660D: 	MPYF	R0,R0
     // asm 0000660E: 	SUBF	R0,R3
-    player_dist_sq -= player_carblk->dist_to_center * player_carblk->dist_to_center;
+    player_dist_sq = C3X_SUB(player_dist_sq, C3X_MUL(player_carblk->dist_to_center, player_carblk->dist_to_center));
     // 	;CHECK FOR LAMP
     // ;	CMPI	0,IR0
     // ;	BEQ	KKDKA
@@ -355,7 +355,7 @@ FPP2:
     // asm 0000660F: KKDKA
     // 	;END CHECK LAMP
     // asm 0000660F: 	CMPF	R4,R3
-    if (player_dist_sq > other_dist_sq) {
+    if (C3X_GT(player_dist_sq, other_dist_sq)) {
         rank_increment = 1;
     }
 NXTLP1:
@@ -405,7 +405,7 @@ void SIGMA_DISPATCHER(PROC* p) {
     int sleep_ticks;
     int position;
     int random_percent;
-    float sigma_distance;
+    c3x_reg_t sigma_distance;
 
     switch (p->resume_state) {
     case 0:
@@ -539,7 +539,7 @@ NOTYET:
     // asm 0000664F: 	FLOAT	25000,R1
     // asm 00006650: 	CMPF	R1,R0
     // asm 00006651: 	BLT	NOTYET
-    if (sigma_distance < 25000.0f) {
+    if (C3X_LT(sigma_distance, C3X_FROM_INT(25000))) {
         goto NOTYET;
     }
     // asm 00006652: 	BU	SIGDSP_LP
@@ -1554,14 +1554,14 @@ NOT_IMMINENT:
  *	R0	(FL) DISTANCE TO CENTERLINE OF ROAD
  *
  */
-float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     OBJ* track_obj;
     OBJ* next_track_obj;
-    float a;
-    float b;
-    float c;
-    float denominator;
-    float dist;
+    c3x_reg_t a;
+    c3x_reg_t b;
+    c3x_reg_t c;
+    c3x_reg_t denominator;
+    c3x_reg_t dist;
 
     // asm 0000680E: 	PUSH	R1
     // asm 0000680F: 	PUSHFL	R2
@@ -1573,36 +1573,36 @@ float DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00006816: 	BU	RIDE_RIGHT_JOININ
     track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     if (track_obj == NULL) {
-        return 0.0f;
+        return C3X_FROM_INT(0);
     }
 
     // asm 00006823: 	LDI	*+AR5(CARTRAK),AR2
     // asm 00006824: 	LDI	*+AR2(OLINK4),R0
     next_track_obj = (OBJ*)track_obj->link4;
     if (next_track_obj == NULL) {
-        return 0.0f;
+        return C3X_FROM_INT(0);
     }
 
     // asm 00006827: 	LDF	*+AR2(OPOSZ),R0
     // asm 00006828: 	SUBF	*+AR0(OPOSZ),R0		;A = Uy - Vy
-    a = track_obj->pos.Z - next_track_obj->pos.Z;
+    a = C3X_SUB(track_obj->pos.Z, next_track_obj->pos.Z);
     // asm 00006829: 	LDF	*+AR0(OPOSX),R1
     // asm 0000682A: 	SUBF	*+AR2(OPOSX),R1		;B = Vx - Ux
-    b = next_track_obj->pos.X - track_obj->pos.X;
+    b = C3X_SUB(next_track_obj->pos.X, track_obj->pos.X);
 
     // asm 0000682B..0000682F
-    c = -((a * track_obj->pos.X) + (b * track_obj->pos.Z));
+    c = C3X_NEG(C3X_ADD(C3X_MUL(a, track_obj->pos.X), C3X_MUL(b, track_obj->pos.Z)));
 
     // asm 00006832..00006839
-    denominator = sqrtf((a * a) + (b * b));
-    dist = ((a * obj->pos.X) + (b * obj->pos.Z) + c) / denominator;
+    denominator = SQRT(C3X_ADD(C3X_MUL(a, a), C3X_MUL(b, b)));
+    dist = C3X_DIV(C3X_ADD(C3X_ADD(C3X_MUL(a, obj->pos.X), C3X_MUL(b, obj->pos.Z)), c), denominator);
 
     return dist;
 }
 
-float PLYR_RIDE_RIGHT(void) {
+c3x_reg_t PLYR_RIDE_RIGHT(void) {
     if (PLYCAR == NULL || PLYCAR->carblk == NULL) {
-        return 0.0f;
+        return C3X_FROM_INT(0);
     }
 
     // asm 00006817: 	PUSH	R1
@@ -2027,13 +2027,13 @@ static const char HRT16[] = "POWER:";
 /* asm: TABING	.float	60,220,220,220,220,220 */
 /* asm: 	 */
 /* asm: 	 */
-float TABING[] = {
-    60.0f,
-    220.0f,
-    220.0f,
-    220.0f,
-    220.0f,
-    220.0f,
+c3x_f32_t TABING[] = {
+    C3X_F32_INIT(60.0f),
+    C3X_F32_INIT(220.0f),
+    C3X_F32_INIT(220.0f),
+    C3X_F32_INIT(220.0f),
+    C3X_F32_INIT(220.0f),
+    C3X_F32_INIT(220.0f),
 };
 static const char HRS11[] = "63 MUSCLE CAR";
 static const char HRS12[] = "145 MPH@233 KPH";

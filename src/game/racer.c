@@ -28,7 +28,7 @@ extern VECTOR _VECTORB;
  */
 
 void DIFF_CHANGE(void);
-static float GETDIFF(void);
+static c3x_reg_t GETDIFF(void);
 void RACER_DRONE(PROC* p);
 static void RACE_FIN(void);
 static void CKPCOL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
@@ -41,19 +41,19 @@ static void SEND_RACER_XSFER(void);
 void DECODE_RACER_XSFER(void);
 static void ACTIVE_XSFER(void);
 static void GETPOWER(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-static float GETSTSPD(PROC* p /*AR7*/, CARBLK* carblk /*AR5*/);
+static c3x_reg_t GETSTSPD(PROC* p /*AR7*/, CARBLK* carblk /*AR5*/);
 void FIND_DYNA(void);
 static LEG* FIND_MAP(PROC* p /*AR7*/, int coded_id /*R2*/);
 int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void CARSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void PLSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void OBSTABINIT(PROC* p /*AR7*/);
-float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
+c3x_reg_t GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static int CARCHEK(OBJ* obstacle_obj /*AR2*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, int table_code /*R0*/);
-static float GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* angle_out /*R2*/);
-static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* width_out /*R0*/, float* height_out /*R1*/);
+static c3x_reg_t GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, c3x_reg_t* angle_out /*R2*/);
+static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, c3x_reg_t* width_out /*R0*/, c3x_reg_t* height_out /*R1*/);
 static void RPASS(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-float SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/);
+c3x_reg_t SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/);
 void WRECKST(void);
 void WRECK(void);
 
@@ -62,29 +62,29 @@ void SEND_RACER_POS(void);
 extern int WRECKFLG;
 void GETFLYMAT(void);
 
-static float DIFFTAB[14];
+static c3x_f32_t DIFFTAB[14];
 
 #define RDIM(MODEL, POS, LANEOFF, MAXACCEL, REL, PAL) \
     {                                                 \
         .model = (MODEL),                             \
         .position = (POS),                            \
-        .xlane = (LANEOFF),                           \
-        .maxaccel = (MAXACCEL),                       \
-        .rel = (REL),                                 \
+        .xlane = LANEOFF,                             \
+        .maxaccel = MAXACCEL,                         \
+        .rel = REL,                                   \
         .palette = (PAL)                              \
     }
 
 static RACER RACER_DRONE_INITTAB[] = {
-    RDIM(VETTE_MOD, 4, 572.0f, 0.90f, 1.00f, (tPAL*)ROM_PTR(cvette_blue_ROM)),
-    RDIM(HOTROD_MOD, 4, 1724.0f, 0.87f, 1.00f, (tPAL*)ROM_PTR(hotrod_yellow_ROM)),
-    RDIM(TESTOR_MOD, 3, 572.0f, 0.84f, 1.00f, (tPAL*)ROM_PTR(testor_grape_ROM)),
-    RDIM(BULLET_MOD, 3, 1724.0f, 0.81f, 1.00f, (tPAL*)ROM_PTR(missle_red_ROM)),
-    RDIM(VETTE_MOD, 2, 572.0f, 0.78f, 1.00f, (tPAL*)ROM_PTR(cvette_purple_ROM)),
-    RDIM(BULLET_MOD, 2, 1724.0f, 0.78f, 0.35f, (tPAL*)ROM_PTR(missle_blue_ROM)),
-    RDIM(VETTE_MOD, 1, 1724.0f, 0.74f, 1.00f, (tPAL*)ROM_PTR(cvette_red_ROM)),
-    RDIM(TESTOR_MOD, 1, 572.0f, 0.70f, 0.30f, (tPAL*)ROM_PTR(testor_blue_ROM)),
-    RDIM(HOTROD_MOD, 0, 572.0f, 0.66f, 1.00f, (tPAL*)ROM_PTR(hotrod_brtblue_ROM)),
-    RDIM(BULLET_MOD, 0, 1724.0f, 0.62f, 1.00f, (tPAL*)ROM_PTR(missle_yellow_ROM)),
+    RDIM(VETTE_MOD, 4, C3X_INIT(572.0f, 0x090F000000ull), C3X_INIT(0.90f, 0xFF66666666ull), C3X_INIT(1.00f, 0x0000000000ull), (tPAL*)ROM_PTR(cvette_blue_ROM)),
+    RDIM(HOTROD_MOD, 4, C3X_INIT(1724.0f, 0x0A57800000ull), C3X_INIT(0.87f, 0xFF5EB85200ull), C3X_INIT(1.00f, 0x0000000000ull), (tPAL*)ROM_PTR(hotrod_yellow_ROM)),
+    RDIM(TESTOR_MOD, 3, C3X_INIT(572.0f, 0x090F000000ull), C3X_INIT(0.84f, 0xFF570A3D70ull), C3X_INIT(1.00f, 0x0000000000ull), (tPAL*)ROM_PTR(testor_grape_ROM)),
+    RDIM(BULLET_MOD, 3, C3X_INIT(1724.0f, 0x0A57800000ull), C3X_INIT(0.81f, 0xFF4F5C2900ull), C3X_INIT(1.00f, 0x0000000000ull), (tPAL*)ROM_PTR(missle_red_ROM)),
+    RDIM(VETTE_MOD, 2, C3X_INIT(572.0f, 0x090F000000ull), C3X_INIT(0.78f, 0xFF47AE147Aull), C3X_INIT(1.00f, 0x0000000000ull), (tPAL*)ROM_PTR(cvette_purple_ROM)),
+    RDIM(BULLET_MOD, 2, C3X_INIT(1724.0f, 0x0A57800000ull), C3X_INIT(0.78f, 0xFF47AE147Aull), C3X_INIT(0.35f, 0xFE33333333ull), (tPAL*)ROM_PTR(missle_blue_ROM)),
+    RDIM(VETTE_MOD, 1, C3X_INIT(1724.0f, 0x0A57800000ull), C3X_INIT(0.74f, 0xFF3D70A400ull), C3X_INIT(1.00f, 0x0000000000ull), (tPAL*)ROM_PTR(cvette_red_ROM)),
+    RDIM(TESTOR_MOD, 1, C3X_INIT(572.0f, 0x090F000000ull), C3X_INIT(0.70f, 0xFF33333333ull), C3X_INIT(0.30f, 0xFE19999A00ull), (tPAL*)ROM_PTR(testor_blue_ROM)),
+    RDIM(HOTROD_MOD, 0, C3X_INIT(572.0f, 0x090F000000ull), C3X_INIT(0.66f, 0xFF28F5C300ull), C3X_INIT(1.00f, 0x0000000000ull), (tPAL*)ROM_PTR(hotrod_brtblue_ROM)),
+    RDIM(BULLET_MOD, 0, C3X_INIT(1724.0f, 0x0A57800000ull), C3X_INIT(0.62f, 0xFF1EB85200ull), C3X_INIT(1.00f, 0x0000000000ull), (tPAL*)ROM_PTR(missle_yellow_ROM)),
 };
 /* asm: FINISHNUM	.bss	FINISHNUM,1 */
 int FINISHNUM;
@@ -129,9 +129,9 @@ void DIFF_CHANGE(void) {
  *GET YOUR DIFFICULTY
  *
  */
-static float GETDIFF(void) {
-    float difficulty;
-    float game_difficulty;
+static c3x_reg_t GETDIFF(void) {
+    c3x_reg_t difficulty;
+    c3x_reg_t game_difficulty;
     int race_index;
 
     // *GET DIFFICULTY	ADJUST
@@ -140,7 +140,9 @@ static float GETDIFF(void) {
     // asm 000050C1: 	FLOAT	R0
     // asm 000050C2: 	MPYF	0.04,R0
     // asm 000050C3: 	ADDF	0.80,R0	      			;GLOBAL DIFF 0.80-1.16
-    difficulty = 0.80f + (0.04f * (float)ADJUSTMENT_READ(ADJ_DIFFICULTY)); // GLOBAL DIFF 0.80-1.16
+    difficulty = C3X_ADD(
+        C3X_MUL(C3X_IMM_F32(0.04f), C3X_FROM_INT(ADJUSTMENT_READ(ADJ_DIFFICULTY))),
+        C3X_IMM_F32(0.80f)); // GLOBAL DIFF 0.80-1.16
 
     // *GET GAME DIFFICULTY
     // asm 000050C4: 	LDI	@HEAD2HEAD_ON,R1
@@ -156,13 +158,13 @@ static float GETDIFF(void) {
     // asm 000050CC: 	ADDF	@GAMEDIFF,R1
     // asm 000050CD: 	MPYF	0.5,R1
     if (HEAD2HEAD_ON != 0) {
-        if (game_difficulty > 1.16f) {
-            game_difficulty = 1.16f;
+        if (C3X_GT(game_difficulty, C3X_IMM_F32(1.16f))) {
+            game_difficulty = C3X_IMM_F32(1.16f);
         }
-        if (game_difficulty < 0.8f) {
-            game_difficulty = 0.8f;
+        if (C3X_LT(game_difficulty, C3X_IMM_F32(0.8f))) {
+            game_difficulty = C3X_IMM_F32(0.8f);
         }
-        game_difficulty = 0.5f * (game_difficulty + GAMEDIFF);
+        game_difficulty = C3X_MUL(C3X_IMM_F32(0.5f), C3X_ADD(game_difficulty, GAMEDIFF));
     }
 GD1:
     // asm 000050CE: 	CMPF	1.16,R1
@@ -170,13 +172,13 @@ GD1:
     // asm 000050D0: 	CMPF	0.8,R1
     // asm 000050D1: 	LDFLT	0.8,R1
     // asm 000050D2: 	SUBF	1.0,R1
-    if (game_difficulty > 1.16f) {
-        game_difficulty = 1.16f;
+    if (C3X_GT(game_difficulty, C3X_IMM_F32(1.16f))) {
+        game_difficulty = C3X_IMM_F32(1.16f);
     }
-    if (game_difficulty < 0.8f) {
-        game_difficulty = 0.8f;
+    if (C3X_LT(game_difficulty, C3X_IMM_F32(0.8f))) {
+        game_difficulty = C3X_IMM_F32(0.8f);
     }
-    game_difficulty -= 1.0f;
+    game_difficulty = C3X_SUB(game_difficulty, C3X_FROM_INT(1));
 
     // *GET TRACK DIFFICULTY
     // *GET CURRENT RACE
@@ -197,19 +199,19 @@ GD1:
     // asm 000050D9: 	LDF	*AR2,R2
     // asm 000050DA: 	ADDF	R1,R0
     // asm 000050DB: 	ADDF	R2,R0
-    difficulty += game_difficulty;
-    difficulty += DIFFTAB[race_index];
+    difficulty = C3X_ADD(difficulty, game_difficulty);
+    difficulty = C3X_ADD(difficulty, C3X_LDF(DIFFTAB[race_index]));
 
     // asm 000050DC: 	CMPF	0.75,R0
     // asm 000050DD: 	LDFLT	0.75,R0
     // asm 000050DE: 	CMPF	1.25,R0
     // asm 000050DF: 	LDFGT	1.25,R0				;ABSOLUTE MAX/MINS
     // asm 000050E0: 	RETS
-    if (difficulty < 0.75f) {
-        difficulty = 0.75f;
+    if (C3X_LT(difficulty, C3X_IMM_F32(0.75f))) {
+        difficulty = C3X_IMM_F32(0.75f);
     }
-    if (difficulty > 1.25f) {
-        difficulty = 1.25f; // ABSOLUTE MAX/MINS
+    if (C3X_GT(difficulty, C3X_IMM_F32(1.25f))) {
+        difficulty = C3X_IMM_F32(1.25f); // ABSOLUTE MAX/MINS
     }
     return difficulty;
 }
@@ -231,21 +233,21 @@ GD1:
 /* asm: 	.float	-0.02 		;IND */
 /* asm: 	.float	-0.02 		;APP */
 /* asm: 	.float	0 		;DC */
-static float DIFFTAB[] = {
-    0.0f,   // GG
-    -0.03f, // SF
-    -0.02f, // 101
-    -0.03f, // REDWD
-    -0.03f, // BEVH
-    0.0f,   // LA
-    -0.03f, // DV
-    -0.01f, // AZ
-    -0.02f, // GCAN
-    -0.03f, // IOWA
-    -0.03f, // CHI
-    -0.02f, // IND
-    -0.02f, // APP
-    0.0f,   // DC
+static c3x_f32_t DIFFTAB[] = {
+    C3X_F32_INIT(0.0f),
+    C3X_F32_INIT(-0.03f),
+    C3X_F32_INIT(-0.02f),
+    C3X_F32_INIT(-0.03f),
+    C3X_F32_INIT(-0.03f),
+    C3X_F32_INIT(0.0f),
+    C3X_F32_INIT(-0.03f),
+    C3X_F32_INIT(-0.01f),
+    C3X_F32_INIT(-0.02f),
+    C3X_F32_INIT(-0.03f),
+    C3X_F32_INIT(-0.03f),
+    C3X_F32_INIT(-0.02f),
+    C3X_F32_INIT(-0.02f),
+    C3X_F32_INIT(0.0f),
 };
 
 /*
@@ -271,25 +273,25 @@ void RACER_DRONE(PROC* p) {
     CARBLK* carblk;
     OBJ* tracking_obj;
     OBJ* next_tracking_obj;
-    float difficulty;
-    float road_theta;
-    float tracking_distance_sq;
-    float next_tracking_distance_sq;
-    float tracking_distance;
-    float speed;
-    float frames_to_piece;
-    float desired_theta;
-    float theta_delta;
-    float current_theta;
-    float frames_to_piece_divisor;
-    float steering_value;
-    float steering_delta_for_drone;
-    float turn_limit;
-    float initial_powercatch;
-    float delta_x;
-    float delta_z;
-    float lane_offset_x;
-    float lane_offset_z;
+    c3x_reg_t difficulty;
+    c3x_reg_t road_theta;
+    c3x_reg_t tracking_distance_sq;
+    c3x_reg_t next_tracking_distance_sq;
+    c3x_reg_t tracking_distance;
+    c3x_reg_t speed;
+    c3x_reg_t frames_to_piece;
+    c3x_reg_t desired_theta;
+    c3x_reg_t theta_delta;
+    c3x_reg_t current_theta;
+    c3x_reg_t frames_to_piece_divisor;
+    c3x_reg_t steering_value;
+    c3x_reg_t steering_delta_for_drone;
+    c3x_reg_t turn_limit;
+    c3x_reg_t initial_powercatch;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t lane_offset_x;
+    c3x_reg_t lane_offset_z;
     int rank;
     int other_machine_controls;
 
@@ -302,7 +304,7 @@ void RACER_DRONE(PROC* p) {
 
     // asm 000050F0: 	LDF	0,R0
     // asm 000050F1: 	STF	R0,*+AR7(FINISHDIST)
-    p->ctx->RACER_DRONE.finishdist = 0.0f;
+    p->ctx->RACER_DRONE.finishdist = C3X_FROM_INT(0);
     // asm 000050F2: 	LDI	0,R0
     // asm 000050F3: 	STI	R0,@FINISHNUM		;INITIALIZE FINISH COUNT
     FINISHNUM = 0;
@@ -385,7 +387,7 @@ NOOTHERPAL:
     // asm 0000511A: 	LDF	*+AR5(CARRDFR),R0
     // asm 0000511B: 	MPYF	1.5,R0			;OFFROAD = 1.5X ONROAD
     // asm 0000511C: 	STF	R0,*+AR5(CAROFRDFR)
-    carblk->offroad_friction = carblk->road_friction * 1.5f;
+    carblk->offroad_friction = C3X_MUL(carblk->road_friction, C3X_IMM_F32(1.5f));
     // asm 0000511D: 	LDI	*+AR7(INITINDEX),AR0
     // asm 0000511E: 	LDF	*+AR0(RD_XLANE),R0
     // asm 0000511F: 	STF	R0,*+AR7(DELTA_XLANE)
@@ -398,17 +400,17 @@ NOOTHERPAL:
     // asm 00005123: 	CMPF	R1,R0
     // asm 00005124: 	LDIGT	3,R2
     // asm 00005125: 	STI	R2,*+AR7(DELTA_STATUS)
-    p->ctx->RACER_DRONE.delta_status = init->xlane > 600.0f ? 3 : 2;
+    p->ctx->RACER_DRONE.delta_status = C3X_GT(init->xlane, C3X_FROM_INT(600)) ? 3 : 2;
     MAME_ASSERT_REG(0x00005125, "R2", &p->ctx->RACER_DRONE.delta_status);
     // asm 00005126: 	LDI	@_MODE,R1
     // asm 00005127: 	AND	MMODE,R1
     // asm 00005128: 	CMPI	MATTR,R1
     // asm 00005129: 	LDFZ	1.0,R0	   		;FOR ATTRACT ALWAYS 1 DIFFICULTY
     // asm 0000512A: 	CALLNZ	GETDIFF
-    difficulty = ((_MODE & MMODE) == MATTR) ? 1.0f : GETDIFF();
+    difficulty = ((_MODE & MMODE) == MATTR) ? C3X_FROM_INT(1) : GETDIFF();
     // asm 0000512B: 	MPYF	*+AR0(RD_MAXACCEL),R0
     // asm 0000512C: 	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
-    carblk->max_accel = init->maxaccel * difficulty;
+    carblk->max_accel = C3X_STF(C3X_MUL(C3X_STF(init->maxaccel), difficulty));
     MAME_ASSERT_REG_FLOAT(0x0000512C, "R0", &carblk->max_accel);
     // asm 0000512D: 	LDF	*+AR0(RD_REL),R0
     // asm 0000512E: 	STF	R0,*+AR7(RELATIVITY)	;SET RELATIVITY COEFFICIENT
@@ -446,20 +448,20 @@ NOOTHERPAL:
     // *INIT THROTTLE AND BRAKE
     // asm 0000513F: 	CLRF	R0
     // asm 00005140: 	STF	R0,*+AR5(CARBRAKE)
-    carblk->brake = 0.0f;
+    carblk->brake = C3X_FROM_INT(0);
     // asm 00005141: 	LDF	0.44,R0
     // asm 00005142: 	STF	R0,*+AR5(CARTRACTION)
-    carblk->traction = 0.44f;
+    carblk->traction = C3X_STF(C3X_IMM_F32(0.44));
     // asm 00005143: 	LDF	1.0,R0
     // asm 00005144: 	STF	R0,*+AR7(DELTA_THROTTLE)
     // asm 00005145: 	STF	R0,*+AR7(POWERSURGE)
-    p->ctx->RACER_DRONE.delta_throttle = 1.0f;
-    p->ctx->RACER_DRONE.powersurge = 1.0f;
+    p->ctx->RACER_DRONE.delta_throttle = C3X_FROM_INT(1);
+    p->ctx->RACER_DRONE.powersurge = C3X_FROM_INT(1);
     // asm 00005146: 	LDF	0.05,R0
     // asm 00005147: 	CALL	FRAND
-    initial_powercatch = FRAND(TMS320_C3X_SHORT_FLOAT(0.05));
+    initial_powercatch = FRAND(C3X_IMM_F32(0.05));
     // asm 00005148: 	ADDF	1.20,R0
-    initial_powercatch = TMS320_C3X_STF_TO_SINGLE((double)initial_powercatch + TMS320_C3X_SHORT_FLOAT(1.20));
+    initial_powercatch = C3X_ADD(initial_powercatch, C3X_IMM_F32(1.20));
     // asm 00005149: 	STF	R0,*+AR7(POWERCATCH)	;BLAST FROM START RANDOM TIME
     p->ctx->RACER_DRONE.powercatch = initial_powercatch;
     // asm 0000514A: 	LDI	120,R0	   		;WAIT A LITTLE BEFORE UPDATE
@@ -563,14 +565,14 @@ CKSTEALTH:
     // asm 0000517B: 	MPYF	R1,R1
     // asm 0000517C: 	ADDF	R1,R2
     tracking_obj = p->ctx->RACER_DRONE.delta_tpiece;
-    delta_x = tracking_obj->pos.X - obj->pos.X;
-    delta_z = tracking_obj->pos.Z - obj->pos.Z;
-    tracking_distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
+    delta_x = C3X_SUB(tracking_obj->pos.X, obj->pos.X);
+    delta_z = C3X_SUB(tracking_obj->pos.Z, obj->pos.Z);
+    tracking_distance_sq = C3X_ADD(C3X_MUL(delta_x, delta_x), C3X_MUL(delta_z, delta_z));
     // asm 0000517D: 	FLOAT	5000,R1				;TO THE NEXT ROADPIECE
     // asm 0000517E: 	MPYF	R1,R1
     // asm 0000517F: 	CMPF	R1,R2				;DISTANCE LT 5000 ?
     // asm 00005180: 	BLT	NUTRACK				;NO...KEEP ON TRUCKIN'
-    if (tracking_distance_sq < (5000.0f * 5000.0f)) {
+    if (C3X_LT(tracking_distance_sq, C3X_MUL(C3X_FROM_INT(5000), C3X_FROM_INT(5000)))) {
         goto NUTRACK;
     }
     // asm 00005181: 	LDI	*+AR2(OLINK4),R0		;Get link to NEXT piece
@@ -586,13 +588,13 @@ CKSTEALTH:
     // asm 00005187: 	MPYF	R0,R0
     // asm 00005188: 	MPYF	R1,R1
     // asm 00005189: 	ADDF	R0,R1
-    delta_x = next_tracking_obj->pos.X - obj->pos.X;
-    delta_z = next_tracking_obj->pos.Z - obj->pos.Z;
-    next_tracking_distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
+    delta_x = C3X_SUB(next_tracking_obj->pos.X, obj->pos.X);
+    delta_z = C3X_SUB(next_tracking_obj->pos.Z, obj->pos.Z);
+    next_tracking_distance_sq = C3X_ADD(C3X_MUL(delta_x, delta_x), C3X_MUL(delta_z, delta_z));
     // asm 0000518A: 	CMPF	R2,R1	       			;DIST TRACK CLOSER?
     // asm 0000518B: 	BGT	ONTRACK				;NO, WERE ON TRACK
     // asm 0000518C: 	NOP
-    if (next_tracking_distance_sq > tracking_distance_sq) {
+    if (C3X_GT(next_tracking_distance_sq, tracking_distance_sq)) {
         goto ONTRACK;
     }
 NUTRACK:
@@ -615,17 +617,17 @@ NUTRACK:
     // *AR2=TRACKING PIECE
 ONTRACK:
     // asm 00005194: 	CALL	SQRT		      	;GET ACTUAL DISTANCE
-    tracking_distance = sqrtf(tracking_distance_sq);
+    tracking_distance = SQRT(tracking_distance_sq);
     // asm 00005195: 	LDF	*+AR5(CARSPEED),R1
     speed = carblk->speed;
     // asm 00005196: 	LDFLE	30,R1			;if 0 or less assume 30 mph
-    if (speed <= 0.0f) {
-        speed = 30.0f;
+    if (C3X_LE(speed, C3X_FROM_INT(0))) {
+        speed = C3X_FROM_INT(30);
     }
     // asm 00005197: 	FLOATP	@NFRAMES,R2
     // asm 00005198: 	MPYF	R2,R1
     // asm 00005199: 	CALL	DIV_F			;R0/R1 (distance to piece/speed) -> # frames to achieve
-    frames_to_piece = DIV_F(tracking_distance, (float)NFRAMES * speed);
+    frames_to_piece = DIV_F(tracking_distance, C3X_MUL(C3X_FROM_INT(NFRAMES), speed));
     // asm 0000519A: 	PUSHF	R0
     // *GET TRACKING GOAL
     // asm 0000519B: 	CALL	CKPCOL			;CHECK PLAYER COLLISION
@@ -654,8 +656,9 @@ ROADTRAK1:
     // asm 000051A9: 	SUBF	*+AR2(OPOSZ),R3
     // asm 000051AA: 	CALL	ARCTANF
     // asm 000051AB: 	SUBF	HALFPI,R0
-    desired_theta = ARCTANF(next_tracking_obj->pos.X - tracking_obj->pos.X, next_tracking_obj->pos.Z - tracking_obj->pos.Z) -
-                    HALFPI;
+    desired_theta = C3X_SUB(
+        ARCTANF(C3X_SUB(next_tracking_obj->pos.X, tracking_obj->pos.X), C3X_SUB(next_tracking_obj->pos.Z, tracking_obj->pos.Z)),
+        HALFPII);
     // asm 000051AC: 	LDF	R0,R2		      	;FIND THETA
     // asm 000051AD: 	CALL	_SINE
     // asm 000051AE: 	LDF	R0,R1
@@ -664,15 +667,15 @@ ROADTRAK1:
     // asm 000051B1: 	MPYF	*+AR7(ROADOFFSET),R1	;Z LANE OFFSET
     // asm 000051B2: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R2
     // asm 000051B3: 	ADDF	R0,R2
-    lane_offset_x = _COSI(desired_theta) * p->ctx->RACER_DRONE.road_offset;
-    delta_x = tracking_obj->pos.X - obj->pos.X;
-    delta_x += lane_offset_x;
+    lane_offset_x = C3X_MUL(_COSI(desired_theta), p->ctx->RACER_DRONE.road_offset);
+    delta_x = C3X_SUB(tracking_obj->pos.X, obj->pos.X);
+    delta_x = C3X_ADD(delta_x, lane_offset_x);
     // asm 000051B4: 	LDF	*+AR2(OPOSZ),R3		;COMPUTE DELTA Z TO GOAL
     // asm 000051B5: 	SUBF	*+AR4(OPOSZ),R3
     // asm 000051B6: 	ADDF	R1,R3
-    lane_offset_z = _SINE(desired_theta) * p->ctx->RACER_DRONE.road_offset;
-    delta_z = tracking_obj->pos.Z - obj->pos.Z;
-    delta_z += lane_offset_z;
+    lane_offset_z = C3X_MUL(_SINE(desired_theta), p->ctx->RACER_DRONE.road_offset);
+    delta_z = C3X_SUB(tracking_obj->pos.Z, obj->pos.Z);
+    delta_z = C3X_ADD(delta_z, lane_offset_z);
     // 	;POSITION TRACKING
     // 	;
     // 	;Set steering, trottle, gear, and brake
@@ -682,13 +685,13 @@ ROADTRAK1:
     // *GET XZ ANGLE TO GOAL
     // asm 000051B7: 	CALL	ARCTANF
     // asm 000051B8: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
-    desired_theta = ARCTANF(delta_x, delta_z) - HALFPI;
+    desired_theta = C3X_SUB(ARCTANF(delta_x, delta_z), HALFPII);
     // asm 000051B9:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 000051BA: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
     current_theta = obj->rad.Y;
-    theta_delta = desired_theta - current_theta;
-    if (fabsf(theta_delta) >= PI) {
-        theta_delta += theta_delta < 0.0f ? TWOPI : -TWOPI;
+    theta_delta = C3X_SUB(desired_theta, current_theta);
+    if (C3X_GE(C3X_ABS(theta_delta), PII)) {
+        theta_delta = C3X_ADD(theta_delta, C3X_LT(theta_delta, C3X_FROM_INT(0)) ? TWOPII : C3X_NEG(TWOPII));
     }
     // asm 000051BB: 	POPF	R1   			;GET TIME
     // asm 000051BC: 	FIX	R1
@@ -696,8 +699,8 @@ ROADTRAK1:
     // asm 000051BE: 	SUBF	1,R1			;DBG
     // asm 000051BF: 	BZ	NODIV
     // asm 000051C0: 	CALL	DIV_F			;-> R0
-    frames_to_piece_divisor = (float)((int)frames_to_piece) - 1.0f;
-    if (frames_to_piece_divisor != 0.0f) {
+    frames_to_piece_divisor = C3X_SUB(C3X_FROM_INT(FIX(frames_to_piece)), C3X_FROM_INT(1));
+    if (C3X_NE(frames_to_piece_divisor, C3X_FROM_INT(0))) {
         theta_delta = DIV_F(theta_delta, frames_to_piece_divisor);
     }
 NODIV:
@@ -710,28 +713,28 @@ NODIV:
     // asm 000051C5: 	TSTB	MGO,R1
     // asm 000051C6: 	LDFZ	0,R0				;N -> THROTTLE = 0
     // asm 000051C7: 	STF	R0,*+AR5(CARTHROTTLE)
-    carblk->throttle = ((_MODE & MGO) != 0) ? p->ctx->RACER_DRONE.delta_throttle : 0.0f;
+    carblk->throttle = ((_MODE & MGO) != 0) ? p->ctx->RACER_DRONE.delta_throttle : C3X_FROM_INT(0);
     // asm 000051C8: 	POPF	R0
     // asm 000051C9: 	MPYF	2.5,R0				;OVERSTEERing EFFECT
-    steering_value = theta_delta * 2.5f;
+    steering_value = C3X_MUL(theta_delta, C3X_IMM_F32(2.5f));
     // asm 000051CA: 	CMPF	0.09,R0
     // asm 000051CB: 	LDFGT	0.09,R0
-    if (steering_value > 0.09f) {
-        steering_value = 0.09f;
+    if (C3X_GT(steering_value, C3X_IMM_F32(0.09f))) {
+        steering_value = C3X_IMM_F32(0.09f);
     }
     // asm 000051CC: 	CMPF	-0.09,R0
     // asm 000051CD: 	LDFLT	-0.09,R0
-    if (steering_value < -0.09f) {
-        steering_value = -0.09f;
+    if (C3X_LT(steering_value, C3X_IMM_F32(-0.09f))) {
+        steering_value = C3X_IMM_F32(-0.09f);
     }
     // asm 000051CE: 	PUSHF	R0				;save steering value
     steering_delta_for_drone = steering_value;
     // asm 000051CF: 	FLOAT	@NFRAMES,R1
     // asm 000051D0: 	MPYF	*+AR5(CARSPEED),R1
-    turn_limit = (float)NFRAMES * carblk->speed;
+    turn_limit = C3X_MUL(C3X_FROM_INT(NFRAMES), carblk->speed);
     // asm 000051D1: 	BZD	NOTURN
-    if (turn_limit == 0.0f) {
-        steering_value = 0.0f;
+    if (C3X_EQ(turn_limit, C3X_FROM_INT(0))) {
+        steering_value = C3X_FROM_INT(0);
         goto NOTURN;
     }
     // asm 000051D2: 	LDFZ	0,R0
@@ -739,16 +742,16 @@ NODIV:
     // asm 000051D4: 	MPYF	@STEERI,R1
     // 	;---->	BZD	NOTURN
     // asm 000051D5: 	CALL	DIV_F
-    steering_value = DIV_F(steering_value, (0.416f * turn_limit) * STEERI);
+    steering_value = DIV_F(steering_value, C3X_MUL(C3X_MUL(C3X_IMM_F32(0.416f), turn_limit), STEERI));
     // asm 000051D6: 	CMPF	-0.3,R0 		;LIMIT CHECK
     // asm 000051D7: 	LDFLT	-0.3,R0
-    if (steering_value < -0.3f) {
-        steering_value = -0.3f;
+    if (C3X_LT(steering_value, C3X_IMM_F32(-0.3f))) {
+        steering_value = C3X_IMM_F32(-0.3f);
     }
     // asm 000051D8: 	CMPF	0.3,R0 			;LIMIT CHECK
     // asm 000051D9: 	LDFGT	0.3,R0
-    if (steering_value > 0.3f) {
-        steering_value = 0.3f;
+    if (C3X_GT(steering_value, C3X_IMM_F32(0.3f))) {
+        steering_value = C3X_IMM_F32(0.3f);
     }
 NOTURN:
     // asm 000051DA: 	STF	R0,*+AR5(CARTURN)
@@ -760,12 +763,12 @@ NOTURN:
     GETTRAK(obj, carblk);
     // asm 000051DE: 	POPF	R2
     p->ctx->RACER_DRONE.delta_radydelta = steering_delta_for_drone;
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000051DF, "R2", &steering_delta_for_drone, 64);
+    MAME_ASSERT_REG_FLOAT(0x000051DF, "R2", &steering_delta_for_drone);
     // asm 000051DF: 	CALL	DRONEGO
     DRONEGO(obj, carblk, steering_delta_for_drone);
     // asm 000051E0: 	NEGF	*+AR5(CARTURN),R0		;FIX CARTURN SIGN
     // asm 000051E1: 	STF	R0,*+AR5(CARTURN)
-    carblk->turn = -carblk->turn;
+    carblk->turn = C3X_NEG(carblk->turn);
 RACER_SLP:
     // asm 000051E2: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 000051E3: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
@@ -848,10 +851,10 @@ RDL:
 static void CKPCOL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     OBJ* player_obj;
     CARBLK* player_carblk;
-    float delta_x;
-    float delta_z;
-    float distance_sq;
-    float speed_difference;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t distance_sq;
+    c3x_reg_t speed_difference;
     int ahead_result;
 
     // asm 00005219: 	LDI	@PLYCAR,AR2		;GET PLAYER CAR OBJECT
@@ -869,29 +872,29 @@ static void CKPCOL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     }
     // *GET CURRENT DISTANCE
     // asm 0000521D: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R6
-    delta_x = player_obj->pos.X - obj->pos.X;
+    delta_x = C3X_SUB(player_obj->pos.X, obj->pos.X);
     // asm 0000521E: 	LDF	*+AR2(OPOSZ),R7
     // asm 0000521F: 	SUBF	*+AR4(OPOSZ),R7
-    delta_z = player_obj->pos.Z - obj->pos.Z;
+    delta_z = C3X_SUB(player_obj->pos.Z, obj->pos.Z);
     // asm 00005220: 	MPYF	R6,R6,R1
     // asm 00005221: 	MPYF	R7,R7,R2
     // asm 00005222: 	ADDF	R1,R2			;distance^2
-    distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00005223, "R2", &distance_sq, 64);
+    distance_sq = C3X_ADD(C3X_MUL(delta_x, delta_x), C3X_MUL(delta_z, delta_z));
+    MAME_ASSERT_REG_FLOAT(0x00005223, "R2", &distance_sq);
     // asm 00005223: 	FLOAT	3000,R0
     // asm 00005224: 	MPYF	R0,R0
     // asm 00005225: 	CMPF	R2,R0
     // asm 00005226: 	BLT	CARCHKX			;TOO FAR AWAY
-    if ((3000.0f * 3000.0f) < distance_sq) {
+    if (C3X_LT(C3X_MUL(C3X_FROM_INT(3000), C3X_FROM_INT(3000)), distance_sq)) {
         return;
     }
     // asm 00005227: 	LDF	*+AR5(CARSPEED),R0
     // asm 00005228: 	SUBF	*+AR3(CARSPEED),R0
-    speed_difference = carblk->speed - player_carblk->speed;
+    speed_difference = C3X_SUB(carblk->speed, player_carblk->speed);
     MAME_ASSERT_REG_FLOAT(0x00005229, "R0", &speed_difference);
     // asm 00005229: 	CMPF	30,R0
     // asm 0000522A: 	BLT	CKPX
-    if (speed_difference < 30.0f) {
+    if (C3X_LT(speed_difference, C3X_FROM_INT(30))) {
         goto CKPX;
     }
     // asm 0000522B: 	NOP
@@ -1232,13 +1235,13 @@ static void GETPOWER(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) 
     CARBLK* player_carblk;
     OBJ* player_track_obj;
     OBJ* track_obj;
-    float delta_x;
-    float delta_z;
-    float player_distance;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t player_distance;
     int player_track_id;
     int track_id;
-    float catch_power;
-    float first_place_boost;
+    c3x_reg_t catch_power;
+    c3x_reg_t first_place_boost;
 
     // asm 00005309: 	PUSH	AR2
     // asm 0000530A: 	LDI	*+AR7(CATCHTIME),R0 	;CHECK IF TIME FOR POWER CHANGE
@@ -1260,14 +1263,14 @@ static void GETPOWER(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) 
     // asm 00005312: 	LDI	@PLYCAR,AR0
     player_obj = PLYCAR;
     // asm 00005313: 	SUBF	*+AR4(OPOSX),*+AR0(OPOSX),R1
-    delta_x = player_obj->pos.X - obj->pos.X;
+    delta_x = C3X_SUB(player_obj->pos.X, obj->pos.X);
     // asm 00005314: 	LDF	*+AR0(OPOSZ),R2
     // asm 00005315: 	SUBF	*+AR4(OPOSZ),R2
-    delta_z = player_obj->pos.Z - obj->pos.Z;
+    delta_z = C3X_SUB(player_obj->pos.Z, obj->pos.Z);
     // asm 00005316: 	MPYF	R1,R1
     // asm 00005317: 	MPYF	R2,R2
     // asm 00005318: 	ADDF	R1,R2
-    player_distance = (delta_x * delta_x) + (delta_z * delta_z);
+    player_distance = C3X_ADD(C3X_MUL(delta_x, delta_x), C3X_MUL(delta_z, delta_z));
     // asm 00005319: 	CALL	SQRT
     player_distance = SQRT(player_distance);
     // asm 0000531A: 	LDI	*+AR7(STEALTHMODE),R3		;HI,LO OR NO STEALTH?
@@ -1296,24 +1299,24 @@ PDIST1:
     // asm 00005324: 	MPYF	0.01,R0
     // asm 00005325: 	MPYF	0.01,R0
     // asm 00005326: 	MPYF	0.07,R0
-    player_distance *= 0.01f;
-    player_distance *= 0.01f;
-    player_distance *= 0.07f;
+    player_distance = C3X_MUL(player_distance, C3X_IMM_F32(0.01f));
+    player_distance = C3X_MUL(player_distance, C3X_IMM_F32(0.01f));
+    player_distance = C3X_MUL(player_distance, C3X_IMM_F32(0.07f));
     // asm 00005327: 	CMPF	0.4,R0			;MAX OUT AT +-60%
     // asm 00005328: 	LDFGT	0.4,R0
-    if (player_distance > 0.4f) {
-        player_distance = 0.4f;
+    if (C3X_GT(player_distance, C3X_IMM_F32(0.4f))) {
+        player_distance = C3X_IMM_F32(0.4f);
     }
     // asm 00005329: 	LDF	1.0,R3			;SIGN
-    catch_power = 1.0f; // ;SIGN
+    catch_power = C3X_FROM_INT(1); // ;SIGN
     // asm 0000532A: 	CMPI	R2,R1
     // asm 0000532B: 	LDFZ	0,R3			;EVEN RACE
     if (track_id == player_track_id) {
-        catch_power = 0.0f; // ;EVEN RACE
+        catch_power = C3X_FROM_INT(0); // ;EVEN RACE
     }
     // asm 0000532C: 	LDFGT	-1.0,R3
     if (track_id > player_track_id) {
-        catch_power = -1.0f;
+        catch_power = C3X_FROM_INT(-1);
     }
     // asm 0000532D: 	BLE	PDIST1A
     if (track_id <= player_track_id) {
@@ -1321,20 +1324,20 @@ PDIST1:
     }
     // asm 0000532E: 	CMPF	0.1,R0
     // asm 0000532F: 	LDFLT	0.1,R0			;MINIMUM IF AHEAD
-    if (player_distance < 0.1f) {
-        player_distance = 0.1f; // ;MINIMUM IF AHEAD
+    if (C3X_LT(player_distance, C3X_IMM_F32(0.1f))) {
+        player_distance = C3X_IMM_F32(0.1f); // ;MINIMUM IF AHEAD
     }
     // asm 00005330: 	B	PDIST1B
     goto PDIST1B;
 PDIST1A:
     // asm 00005331: 	CMPF	0.2,R0
     // asm 00005332: 	LDFLT	0.2,R0			;MINIMUM IF BEHIND
-    if (player_distance < 0.2f) {
-        player_distance = 0.2f; // ;MINIMUM IF BEHIND
+    if (C3X_LT(player_distance, C3X_IMM_F32(0.2f))) {
+        player_distance = C3X_IMM_F32(0.2f); // ;MINIMUM IF BEHIND
     }
 PDIST1B:
     // asm 00005333: 	MPYF	R3,R0,R3		;DO THE SIGN
-    catch_power *= player_distance; // ;DO THE SIGN
+    catch_power = C3X_MUL(catch_power, player_distance); // ;DO THE SIGN
     // asm 00005334: 	FLOAT	@PLYRFIRST,R0	  	;TIME IN FIRST
     // asm 00005335: 	BZ	PDIST2
     if (PLYRFIRST == 0) {
@@ -1342,21 +1345,21 @@ PDIST1B:
     }
     // asm 00005336: 	MPYF	0.01,R0
     // asm 00005337: 	MPYF	0.15,R0
-    first_place_boost = (float)PLYRFIRST * 0.01f * 0.15f;
+    first_place_boost = C3X_MUL(C3X_MUL(C3X_FROM_INT(PLYRFIRST), C3X_IMM_F32(0.01f)), C3X_IMM_F32(0.15f));
     // asm 00005338: 	CALL	FRAND
     first_place_boost = FRAND(first_place_boost);
     // asm 00005339: 	CMPF	0.15,R0
     // asm 0000533A: 	LDFGT	0.15,R0			;BOOST FOR LONG TIME FIRST
-    if (first_place_boost > 0.15f) {
-        first_place_boost = 0.15f; // ;BOOST FOR LONG TIME FIRST
+    if (C3X_GT(first_place_boost, C3X_IMM_F32(0.15f))) {
+        first_place_boost = C3X_IMM_F32(0.15f); // ;BOOST FOR LONG TIME FIRST
     }
     // asm 0000533B:        	ADDF	R0,R3			;A LITTLE BOOST IF PLAYER = #1
-    catch_power += first_place_boost; // ;A LITTLE BOOST IF PLAYER = #1
+    catch_power = C3X_ADD(catch_power, first_place_boost); // ;A LITTLE BOOST IF PLAYER = #1
 PDIST2:
     // asm 0000533C: 	MPYF	*+AR7(RELATIVITY),R3	;ADJUST FOR RELATIVITY
-    catch_power *= p->ctx->RACER_DRONE.relativity; // ;ADJUST FOR RELATIVITY
+    catch_power = C3X_MUL(catch_power, p->ctx->RACER_DRONE.relativity); // ;ADJUST FOR RELATIVITY
     // asm 0000533D: 	ADDF	1.0,R3
-    catch_power += 1.0f;
+    catch_power = C3X_ADD(catch_power, C3X_FROM_INT(1));
     // asm 0000533E: 	STF	R3,*+AR7(POWERCATCH)
     p->ctx->RACER_DRONE.powercatch = catch_power;
 GETSURGE:
@@ -1376,15 +1379,15 @@ GETSURGE:
     // asm 00005346: 	STI	R0,*+AR7(SURGETIME)
     // asm 00005347: 	LDF	0.12,R0	       		;GET NEW POWERSURGE
     // asm 00005348: 	CALL	SFRAND
-    p->ctx->RACER_DRONE.powersurge = SFRAND(TMS320_C3X_SHORT_FLOAT(0.12));
+    p->ctx->RACER_DRONE.powersurge = SFRAND(C3X_IMM_F32(0.12));
     // asm 00005349: 	ADDF	1.0,R0
-    p->ctx->RACER_DRONE.powersurge += 1.0f;
+    p->ctx->RACER_DRONE.powersurge = C3X_ADD(p->ctx->RACER_DRONE.powersurge, C3X_FROM_INT(1));
     // asm 0000534A: 	STF	R0,*+AR7(POWERSURGE)
 POWERX:
     // asm 0000534B: 	LDF	*+AR7(POWERSURGE),R0
     // asm 0000534C: 	MPYF	*+AR7(POWERCATCH),R0
     // asm 0000534D: 	STF	R0,*+AR7(DELTA_THROTTLE)
-    p->ctx->RACER_DRONE.delta_throttle = p->ctx->RACER_DRONE.powersurge * p->ctx->RACER_DRONE.powercatch;
+    p->ctx->RACER_DRONE.delta_throttle = C3X_MUL(p->ctx->RACER_DRONE.powersurge, p->ctx->RACER_DRONE.powercatch);
     MAME_ASSERT_REG_FLOAT(0x0000534E, "R0", &p->ctx->RACER_DRONE.delta_throttle);
     // asm 0000534E: 	POP	AR2
     // asm 0000534F: 	RETS
@@ -1405,7 +1408,7 @@ POWERX:
  *	 R5	DISTANCE TRAVELLED
  *
  */
-static float GETSTSPD(PROC* p /*AR7*/, CARBLK* carblk /*AR5*/) {
+static c3x_reg_t GETSTSPD(PROC* p /*AR7*/, CARBLK* carblk /*AR5*/) {
     (void)p;
     (void)carblk;
     // *GET ENGINE ACCEL
@@ -1476,7 +1479,7 @@ GSL0:
     // asm 00005384: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSTSPD", 0, 0);
     UNIMPL();
-    return 0.0f;
+    return C3X_FROM_INT(0);
 }
 
 // *----------------------------------------------------------------------------
@@ -1555,8 +1558,10 @@ int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4
     OBJ* next_track_obj;
     int other_track_id;
     int track_id;
-    float obj_distance_sq;
-    float other_distance_sq;
+    c3x_reg_t obj_distance_sq;
+    c3x_reg_t other_distance_sq;
+    c3x_reg_t dx;
+    c3x_reg_t dz;
 
     // asm 0000539A: 	LDI	*+AR3(CARTRAK),AR0
     if (other_carblk == NULL || carblk == NULL) {
@@ -1601,24 +1606,26 @@ int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4
     // asm 000053A6: 	SUBF	*+AR4(OPOSZ),R1
     // asm 000053A7: 	MPYF	R1,R1
     // asm 000053A8: 	ADDF	R1,R0
-    obj_distance_sq = (track_obj->pos.X - obj->pos.X) * (track_obj->pos.X - obj->pos.X);
-    obj_distance_sq += (track_obj->pos.Z - obj->pos.Z) * (track_obj->pos.Z - obj->pos.Z);
+    dx = C3X_SUB(track_obj->pos.X, obj->pos.X);
+    dz = C3X_SUB(track_obj->pos.Z, obj->pos.Z);
+    obj_distance_sq = C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz));
     // asm 000053A9: 	SUBF	*+AR2(OPOSX),*+AR0(OPOSX),R2
     // asm 000053AA: 	MPYF	R2,R2
     // asm 000053AB: 	LDF	*+AR0(OPOSZ),R1
     // asm 000053AC: 	SUBF	*+AR2(OPOSZ),R1
     // asm 000053AD: 	MPYF	R1,R1
     // asm 000053AE: 	ADDF	R2,R1
-    other_distance_sq = (track_obj->pos.X - other_obj->pos.X) * (track_obj->pos.X - other_obj->pos.X);
-    other_distance_sq += (track_obj->pos.Z - other_obj->pos.Z) * (track_obj->pos.Z - other_obj->pos.Z);
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000053AF, "R0", &obj_distance_sq, 256);
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000053AF, "R1", &other_distance_sq, 256);
+    dx = C3X_SUB(track_obj->pos.X, other_obj->pos.X);
+    dz = C3X_SUB(track_obj->pos.Z, other_obj->pos.Z);
+    other_distance_sq = C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz));
+    MAME_ASSERT_REG_FLOAT(0x000053AF, "R0", &obj_distance_sq);
+    MAME_ASSERT_REG_FLOAT(0x000053AF, "R1", &other_distance_sq);
     // asm 000053AF: 	CMPF	R1,R0			;WHO IS CLOSER?
     // asm 000053B0: 	RETS
-    if (obj_distance_sq < other_distance_sq) {
+    if (C3X_LT(obj_distance_sq, other_distance_sq)) {
         return -1;
     }
-    if (obj_distance_sq > other_distance_sq) {
+    if (C3X_GT(obj_distance_sq, other_distance_sq)) {
         return 1;
     }
     return 0;
@@ -1864,14 +1871,14 @@ OIX:
  *TRASHES AR2
  *
  */
-float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+c3x_reg_t GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     int right_gap;
     int left_gap;
     int table_index;
     int gap_bits;
     int player_time;
-    float player_speed_delta;
-    float brake_factor;
+    c3x_reg_t player_speed_delta;
+    c3x_reg_t brake_factor;
     int scan_count;
     int overrun;
     int sequence_count;
@@ -1879,7 +1886,7 @@ float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     int right_delta;
     int left_delta;
     int current_offset_index;
-    float new_offset;
+    c3x_reg_t new_offset;
     int i;
 
     (void)obj;
@@ -1889,9 +1896,9 @@ float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     left_gap = 0;
     // asm 00005401: 	NEGF	*+AR5(CARDIST2CNTR),R0
     // asm 00005402: 	MPYF	0.01,R0		;DIVIDE BY 100
-    new_offset = -carblk->dist_to_center * 0.01f; // ;DIVIDE BY 100
+    new_offset = C3X_MUL(C3X_NEG(carblk->dist_to_center), C3X_IMM_F32(0.01f)); // ;DIVIDE BY 100
     // asm 00005403: 	FIX	R0
-    table_index = (int)new_offset;
+    table_index = FIX(new_offset);
     // asm 00005404: 	ADDI	21,R0	     	;LEFT EDGE OF ZONE
     table_index += 21; // ;LEFT EDGE OF ZONE
     // asm 00005405: 	CMPI	41,R0		;MIN AND MAXES
@@ -1941,18 +1948,18 @@ float GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00005417: 	LDI	@PLYCBLK,AR2		;GET PLAYER CAR OBJECT
     // asm 00005418: 	LDF	*+AR2(CARSPEED),R2	;PLAYER SPEED
     // asm 00005419: 	SUBF	*+AR5(CARSPEED),R2
-    player_speed_delta = PLYCBLK->speed - carblk->speed;
+    player_speed_delta = C3X_SUB(PLYCBLK->speed, carblk->speed);
     // asm 0000541A: 	CMPF	10,R2
     // asm 0000541B: 	BGT	S000			;DONT BRAKE, PLAYER SPEED GREATER
-    if (player_speed_delta > 10.0f) {
+    if (C3X_GT(player_speed_delta, C3X_FROM_INT(10))) {
         goto S000;
     }
     // asm 0000541C: 	FLOAT	R1
     // asm 0000541D: 	MPYF	0.01,R1			;BRAKE FACTOR CALC
     // asm 0000541E: 	ADDF	0.80,R1
-    brake_factor = ((float)player_time * 0.01f) + 0.80f; // ;BRAKE FACTOR CALC
+    brake_factor = C3X_ADD(C3X_MUL(C3X_FROM_INT(player_time), C3X_IMM_F32(0.01f)), C3X_IMM_F32(0.80f)); // ;BRAKE FACTOR CALC
     // asm 0000541F: 	MPYF	*+AR5(CARSPEED),R1
-    brake_factor *= carblk->speed;
+    brake_factor = C3X_MUL(brake_factor, carblk->speed);
     // asm 00005420: 	STF	R1,*+AR5(CARSPEED)	;CUT SPEED
     carblk->speed = brake_factor; // ;CUT SPEED
 S00:
@@ -2012,9 +2019,9 @@ FOUNDR:
 LEFTSCAN:
     // asm 00005434: 	NEGF	*+AR5(CARDIST2CNTR),R0
     // asm 00005435: 	MPYF	0.01,R0		;DIVIDE BY 100
-    new_offset = -carblk->dist_to_center * 0.01f; // ;DIVIDE BY 100
+    new_offset = C3X_MUL(C3X_NEG(carblk->dist_to_center), C3X_IMM_F32(0.01f)); // ;DIVIDE BY 100
     // asm 00005436: 	FIX	R0
-    table_index = (int)new_offset;
+    table_index = FIX(new_offset);
     // asm 00005437: 	ADDI	29,R0	     	;RT EDGE OF ZONE
     table_index += 29; // ;RT EDGE OF ZONE
     // asm 00005438: 	CMPI	49,R0		;MIN AND MAXES
@@ -2100,9 +2107,9 @@ DONE:
     // asm 00005454: 	SUBI	@ROADOBSTABI,R7
     // asm 00005455: 	LDF	*+AR7(ROADOFFSET),R0
     // asm 00005456: 	MPYF	0.01,R0			;DIVIDE BY 100
-    new_offset = p->ctx->RACER_DRONE.road_offset * 0.01f; // ;DIVIDE BY 100
+    new_offset = C3X_MUL(p->ctx->RACER_DRONE.road_offset, C3X_IMM_F32(0.01f)); // ;DIVIDE BY 100
     // asm 00005457: 	FIX	R0
-    current_offset_index = (int)new_offset;
+    current_offset_index = FIX(new_offset);
     // asm 00005458: 	SUBI	R6,R0,R2		;FIND CLOSEST RT OR LFT
     right_delta = current_offset_index - right_gap; // ;FIND CLOSEST RT OR LFT
     // asm 00005459: 	SUBI	R7,R0,R3
@@ -2119,7 +2126,7 @@ DONE:
     table_index -= 25;
     // asm 00005460: 	FLOAT	R0
     // asm 00005461: 	MPYF	100,R0	    		;NEW OFFSET
-    new_offset = (float)table_index * 100.0f; // ;NEW OFFSET
+    new_offset = C3X_MUL(C3X_FROM_INT(table_index), C3X_FROM_INT(100)); // ;NEW OFFSET
     // asm 00005462: ROXX
     // asm 00005462: 	RETS
     MAME_ASSERT_REG_FLOAT(0x00005462, "R0", &new_offset);
@@ -2154,24 +2161,24 @@ int CARTMP1;
 
 static int CARCHEK(OBJ* obstacle_obj /*AR2*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, int table_code /*R0*/) {
     CARBLK* obstacle_carblk;
-    float delta_x;
-    float delta_z;
-    float distance_sq;
-    float side_clearance_sq;
-    float road_offset_delta;
-    float current_distance;
-    float next_distance;
-    float closing_delta;
-    float closing_rate;
-    float adjusted_delta_x;
-    float adjusted_delta_z;
-    float adjusted_distance;
-    float closing_frames;
-    float perpendicular_velocity;
-    float projected_offset;
-    float width;
-    float height;
-    float angle;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t distance_sq;
+    c3x_reg_t side_clearance_sq;
+    c3x_reg_t road_offset_delta;
+    c3x_reg_t current_distance;
+    c3x_reg_t next_distance;
+    c3x_reg_t closing_delta;
+    c3x_reg_t closing_rate;
+    c3x_reg_t adjusted_delta_x;
+    c3x_reg_t adjusted_delta_z;
+    c3x_reg_t adjusted_distance;
+    c3x_reg_t closing_frames;
+    c3x_reg_t perpendicular_velocity;
+    c3x_reg_t projected_offset;
+    c3x_reg_t width;
+    c3x_reg_t height;
+    c3x_reg_t angle;
     int close_time;
     int table_index;
     int width_count;
@@ -2189,19 +2196,19 @@ static int CARCHEK(OBJ* obstacle_obj /*AR2*/, OBJ* obj /*AR4*/, CARBLK* carblk /
     }
     // *GET CURRENT DISTANCE
     // asm 0000546A: 	SUBF	*+AR4(OPOSX),*+AR2(OPOSX),R6
-    delta_x = obstacle_obj->pos.X - obj->pos.X;
+    delta_x = C3X_SUB(obstacle_obj->pos.X, obj->pos.X);
     // asm 0000546B: 	LDF	*+AR2(OPOSZ),R7
     // asm 0000546C: 	SUBF	*+AR4(OPOSZ),R7
-    delta_z = obstacle_obj->pos.Z - obj->pos.Z;
+    delta_z = C3X_SUB(obstacle_obj->pos.Z, obj->pos.Z);
     // asm 0000546D: 	MPYF	R6,R6,R1
     // asm 0000546E: 	MPYF	R7,R7,R2
     // asm 0000546F: 	ADDF	R1,R2			;distance^2
-    distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
+    distance_sq = C3X_ADD(C3X_MUL(delta_x, delta_x), C3X_MUL(delta_z, delta_z));
     // asm 00005470: 	FLOAT	30000,R0
     // asm 00005471: 	MPYF	R0,R0
     // asm 00005472: 	CMPF	R2,R0
     // asm 00005473: 	BLT	CARCHKX			;TOO FAR AWAY
-    if ((30000.0f * 30000.0f) < distance_sq) {
+    if (C3X_LT(C3X_MUL(C3X_FROM_INT(30000), C3X_FROM_INT(30000)), distance_sq)) {
         goto CARCHKX;
     }
     // *CHECK IF CAR BLOCKING THE SIDE
@@ -2209,25 +2216,25 @@ static int CARCHEK(OBJ* obstacle_obj /*AR2*/, OBJ* obj /*AR4*/, CARBLK* carblk /
     // asm 00005475: 	ADDF	*+AR5(CARZPLUS),R1
     // asm 00005476: 	ADDF	200,R1			;LEAVE A LITTLE ROOM
     // asm 00005477: 	MPYF	R1,R1			;GET 1/2 Z1+Z2 SQUARED
-    side_clearance_sq = obstacle_carblk->z_plus + carblk->z_plus + 200.0f; // ;LEAVE A LITTLE ROOM
-    side_clearance_sq *= side_clearance_sq;                                // ;GET 1/2 Z1+Z2 SQUARED
+    side_clearance_sq = C3X_ADD(C3X_ADD(obstacle_carblk->z_plus, carblk->z_plus), C3X_FROM_INT(200)); // ;LEAVE A LITTLE ROOM
+    side_clearance_sq = C3X_MUL(side_clearance_sq, side_clearance_sq);                                // ;GET 1/2 Z1+Z2 SQUARED
     // asm 00005478: 	CMPF	R1,R2			;CLOSE ENOUGH ?
     // asm 00005479: 	BGT	SIDECKX			;NO...
-    if (distance_sq > side_clearance_sq) {
+    if (C3X_GT(distance_sq, side_clearance_sq)) {
         goto SIDECKX;
     }
     // asm 0000547A: 	LDF     *+AR5(CARDIST2CNTR),R1
     // asm 0000547B: 	SUBF	*+AR3(CARDIST2CNTR),R1
     // asm 0000547C: 	ABSF	R1
-    road_offset_delta = fabsf(carblk->dist_to_center - obstacle_carblk->dist_to_center);
+    road_offset_delta = C3X_ABS(C3X_SUB(carblk->dist_to_center, obstacle_carblk->dist_to_center));
     // asm 0000547D: 	FLOAT	400,R3
     // asm 0000547E: 	CMPF	R3,R1
     // asm 0000547F: 	BLT	SIDECKX			;OFFSET TOO CLOSE
-    if (road_offset_delta < 400.0f) {
+    if (C3X_LT(road_offset_delta, C3X_FROM_INT(400))) {
         goto SIDECKX;
     }
     // asm 00005480: 	LDF	10,R0
-    closing_frames = 10.0f;
+    closing_frames = C3X_FROM_INT(10);
     // asm 00005481: 	PUSHF	R0
     // asm 00005482: 	B	GOTONE
     goto GOTONE;
@@ -2245,9 +2252,9 @@ SIDECKX:
     // asm 0000548A: 	CALL	_COSI
     // asm 0000548B: 	MPYF	R0,R1,R4
     // asm 0000548C: 	SUBF	R3,R6
-    delta_x -= (-_SINE(carblk->y_velocity_rotation) * carblk->speed);
+    delta_x = C3X_SUB(delta_x, C3X_MUL(C3X_NEG(_SINE(carblk->y_velocity_rotation)), carblk->speed));
     // asm 0000548D: 	SUBF	R4,R7
-    delta_z -= (_COSI(carblk->y_velocity_rotation) * carblk->speed);
+    delta_z = C3X_SUB(delta_z, C3X_MUL(_COSI(carblk->y_velocity_rotation), carblk->speed));
     // *CAR 1 T+1
     // asm 0000548E: 	LDF	*+AR3(CARSPEED),R1
     // asm 0000548F: 	LDF	*+AR3(CARVROT),R2
@@ -2257,52 +2264,52 @@ SIDECKX:
     // asm 00005493: 	CALL	_COSI
     // asm 00005494: 	MPYF	R0,R1,R4
     // asm 00005495: 	ADDF	R3,R6
-    delta_x += (-_SINE(obstacle_carblk->y_velocity_rotation) * obstacle_carblk->speed);
+    delta_x = C3X_ADD(delta_x, C3X_MUL(C3X_NEG(_SINE(obstacle_carblk->y_velocity_rotation)), obstacle_carblk->speed));
     // asm 00005496: 	ADDF	R4,R7
-    delta_z += (_COSI(obstacle_carblk->y_velocity_rotation) * obstacle_carblk->speed);
+    delta_z = C3X_ADD(delta_z, C3X_MUL(_COSI(obstacle_carblk->y_velocity_rotation), obstacle_carblk->speed));
     // asm 00005497: 	MPYF	R6,R6,R1
     // asm 00005498: 	MPYF	R7,R7,R2
     // asm 00005499: 	ADDF	R1,R2			;distance^2
-    distance_sq = (delta_x * delta_x) + (delta_z * delta_z);
+    distance_sq = C3X_ADD(C3X_MUL(delta_x, delta_x), C3X_MUL(delta_z, delta_z));
     // asm 0000549A: 	CALL	SQRT			;DISTANCE T+1
     next_distance = SQRT(distance_sq); // ;DISTANCE T+1
     // asm 0000549B: 	SUBF	R5,R0
-    closing_delta = next_distance - current_distance;
+    closing_delta = C3X_SUB(next_distance, current_distance);
     // asm 0000549C: 	BGE	CARCHKX			;MOVING APART
-    if (closing_delta >= 0.0f) {
+    if (C3X_GE(closing_delta, C3X_FROM_INT(0))) {
         goto CARCHKX;
     }
     // *FIND CLOSING RATE
     // asm 0000549D: 	ABSF	R0,R1
     // asm 0000549E:  	MPYF	1.5,R1			;VELOCITY FUDGE FACTOR
-    closing_rate = fabsf(closing_delta) * 1.5f; // ;VELOCITY FUDGE FACTOR
+    closing_rate = C3X_MUL(C3X_ABS(closing_delta), C3X_IMM_F32(1.5f)); // ;VELOCITY FUDGE FACTOR
     // asm 0000549F: 	ABSF	R6    			;ADJUST DELTA X FOR CAR	THICKNESS
     // asm 000054A0: 	FLOAT	400,R0
     // asm 000054A1: 	SUBF	R0,R6
     // asm 000054A2: 	LDFLT	0,R6
-    adjusted_delta_x = fabsf(delta_x) - 400.0f; // ;ADJUST DELTA X FOR CAR	THICKNESS
-    if (adjusted_delta_x < 0.0f) {
-        adjusted_delta_x = 0.0f;
+    adjusted_delta_x = C3X_SUB(C3X_ABS(delta_x), C3X_FROM_INT(400)); // ;ADJUST DELTA X FOR CAR	THICKNESS
+    if (C3X_LT(adjusted_delta_x, C3X_FROM_INT(0))) {
+        adjusted_delta_x = C3X_FROM_INT(0);
     }
     // asm 000054A3: 	ABSF	R7    			;ADJUST DELTA Z FOR CAR THICKNESS
     // asm 000054A4: 	FLOAT	1000,R0
     // asm 000054A5: 	SUBF	R0,R7
     // asm 000054A6: 	LDFLT	0,R7
-    adjusted_delta_z = fabsf(delta_z) - 1000.0f; // ;ADJUST DELTA Z FOR CAR THICKNESS
-    if (adjusted_delta_z < 0.0f) {
-        adjusted_delta_z = 0.0f;
+    adjusted_delta_z = C3X_SUB(C3X_ABS(delta_z), C3X_FROM_INT(1000)); // ;ADJUST DELTA Z FOR CAR THICKNESS
+    if (C3X_LT(adjusted_delta_z, C3X_FROM_INT(0))) {
+        adjusted_delta_z = C3X_FROM_INT(0);
     }
     // asm 000054A7: 	MPYF	R6,R6,R0
     // asm 000054A8: 	MPYF	R7,R7,R2
     // asm 000054A9: 	ADDF	R0,R2			;distance^2
-    adjusted_distance = (adjusted_delta_x * adjusted_delta_x) + (adjusted_delta_z * adjusted_delta_z);
+    adjusted_distance = C3X_ADD(C3X_MUL(adjusted_delta_x, adjusted_delta_x), C3X_MUL(adjusted_delta_z, adjusted_delta_z));
     // asm 000054AA: 	CALL	SQRT			;DISTANCE T+1
     adjusted_distance = SQRT(adjusted_distance); // ;DISTANCE T+1
     // asm 000054AB: 	CALL	DIV_F			;CLOSING FRAMES
     closing_frames = DIV_F(adjusted_distance, closing_rate); // ;CLOSING FRAMES
     // asm 000054AC: 	CMPF	200,R0
     // asm 000054AD: 	BGT	CARCHKX			;TOO FAR AWAY
-    if (closing_frames > 200.0f) {
+    if (C3X_GT(closing_frames, C3X_FROM_INT(200))) {
         goto CARCHKX;
     }
     // asm 000054AE: 	PUSHF	R0
@@ -2313,31 +2320,31 @@ GOTONE:
     perpendicular_velocity = GETPV(obstacle_obj, obstacle_carblk, &angle); // ;GET PERPENDICULAR VELOCITY
     // asm 000054B0: 	POPF	R1
     // asm 000054B1: 	MPYF	R1,R0,R2		;PROJECTED OFFSET
-    projected_offset = closing_frames * perpendicular_velocity; // ;PROJECTED OFFSET
+    projected_offset = C3X_MUL(closing_frames, perpendicular_velocity); // ;PROJECTED OFFSET
     // asm 000054B2: 	FIX	R1,IR1			;SAVE TIME
-    close_time = (int)closing_frames; // ;SAVE TIME
+    close_time = FIX(closing_frames); // ;SAVE TIME
     // asm 000054B3: 	SUBF	*+AR3(CARDIST2CNTR),R2
-    projected_offset -= obstacle_carblk->dist_to_center;
+    projected_offset = C3X_SUB(projected_offset, obstacle_carblk->dist_to_center);
     // asm 000054B4: 	MPYF	0.01,R2
-    projected_offset *= 0.01f;
+    projected_offset = C3X_MUL(projected_offset, C3X_IMM_F32(0.01f));
     // asm 000054B5: 	FIX	R2,IR0
     // asm 000054B6: 	ADDI	25,IR0			;ADJUST FOR ROAD CENTER (25), CAR THICKNESS (4)
-    table_index = (int)projected_offset;
+    table_index = FIX(projected_offset);
     table_index += 25; // ;ADJUST FOR ROAD CENTER (25), CAR THICKNESS (4)
     // asm 000054B7: 	CALL	GETWIDTH		;GET CAR WIDTH
     GETWIDTH(obstacle_obj, obstacle_carblk, &width, &height); // ;GET CAR WIDTH
     // asm 000054B8: 	MPYF	0.01,R0
-    width *= 0.01f;
+    width = C3X_MUL(width, C3X_IMM_F32(0.01f));
     // asm 000054B9: 	ABSF	R0
-    width = fabsf(width);
+    width = C3X_ABS(width);
     // asm 000054BA: 	CMPF	20,R0
     // asm 000054BB: 	LDFGT	20,R0
-    if (width > 20.0f) {
-        width = 20.0f;
+    if (C3X_GT(width, C3X_FROM_INT(20))) {
+        width = C3X_FROM_INT(20);
     }
     // asm 000054BC: 	FIX	R0,R0
     // asm 000054BD: 	ADDI	3,R0
-    width_count = (int)width + 3;
+    width_count = FIX(width) + 3;
     // asm 000054BE: 	LDI	R0,RC			;WIDTH COUNT
     // asm 000054BF: 	LSH	-1,R0			;DIVIDE BY 2
     // asm 000054C0: 	SUBI	R0,IR0			;CENTER UP CAR AREA
@@ -2390,10 +2397,10 @@ CARCHKX:
  *	R2	ANGLE
  *
  */
-static float GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* angle_out /*R2*/) {
+static c3x_reg_t GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, c3x_reg_t* angle_out /*R2*/) {
     OBJ* track_obj;
-    float angle;
-    float perpendicular_velocity;
+    c3x_reg_t angle;
+    c3x_reg_t perpendicular_velocity;
 
     // asm 000054CF: 	LDI	*+AR2(OCARBLK),AR3
     carblk = obj->carblk;
@@ -2403,7 +2410,7 @@ static float GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* angle_out /*
     // asm 000054D2: 	CALL	GETRDIR	 		;R0= RADIANS
     angle = GETRDIR(track_obj); // ;R0= RADIANS
     // asm 000054D3: 	SUBF	*+AR3(CARVROT),R0
-    angle -= carblk->y_velocity_rotation;
+    angle = C3X_SUB(angle, carblk->y_velocity_rotation);
     // asm 000054D4: 	LDF	R0,R2
     if (angle_out != NULL) {
         *angle_out = angle;
@@ -2411,9 +2418,9 @@ static float GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* angle_out /*
     // asm 000054D5: 	CALL	_SINE
     perpendicular_velocity = _SINE(angle);
     // asm 000054D6: 	MPYF	*+AR3(CARSPEED),R0
-    perpendicular_velocity *= carblk->speed;
+    perpendicular_velocity = C3X_MUL(perpendicular_velocity, carblk->speed);
     // asm 000054D7: 	MPYF	1.5,R0
-    perpendicular_velocity *= 1.5f;
+    perpendicular_velocity = C3X_MUL(perpendicular_velocity, C3X_IMM_F32(1.5f));
     // asm 000054D8: 	POP	AR2
     // asm 000054D9: 	RETS
     return perpendicular_velocity;
@@ -2433,15 +2440,15 @@ static float GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* angle_out /*
  *	R1	HEIGHT
  *
  */
-static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* width_out /*R0*/, float* height_out /*R1*/) {
+static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, c3x_reg_t* width_out /*R0*/, c3x_reg_t* height_out /*R1*/) {
     OBJ* track_obj;
-    float angle;
-    float sine;
-    float cosine;
-    float x_width;
-    float z_width;
-    float width;
-    float height;
+    c3x_reg_t angle;
+    c3x_reg_t sine;
+    c3x_reg_t cosine;
+    c3x_reg_t x_width;
+    c3x_reg_t z_width;
+    c3x_reg_t width;
+    c3x_reg_t height;
 
     (void)obj;
     // asm 000054DA: 	PUSH	AR2
@@ -2451,7 +2458,7 @@ static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* width_out 
     angle = GETRDIR(track_obj); // ;R0= RADIANS
     // asm 000054DD: 	POP	AR2
     // asm 000054DE: 	SUBF	*+AR3(CARVROT),R0
-    angle -= carblk->y_velocity_rotation;
+    angle = C3X_SUB(angle, carblk->y_velocity_rotation);
     // asm 000054DF: 	LDF	R0,R2
     // asm 000054E0: 	CALL	_SINE
     sine = _SINE(angle);
@@ -2460,20 +2467,20 @@ static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* width_out 
     cosine = _COSI(angle);
     // asm 000054E3: 	LDF	*+AR3(CARXPLUS),R2
     // asm 000054E4: 	SUBF	*+AR3(CARXMINUS),R2
-    x_width = carblk->x_plus - carblk->x_minus;
+    x_width = C3X_SUB(carblk->x_plus, carblk->x_minus);
     // asm 000054E5: 	LDF	*+AR3(CARZPLUS),R3
     // asm 000054E6: 	SUBF	*+AR3(CARZMINUS),R3
-    z_width = carblk->z_plus - carblk->z_minus;
+    z_width = C3X_SUB(carblk->z_plus, carblk->z_minus);
     // asm 000054E7: 	ABSF	R0
-    cosine = fabsf(cosine);
+    cosine = C3X_ABS(cosine);
     // asm 000054E8: 	ABSF	R1
-    sine = fabsf(sine);
+    sine = C3X_ABS(sine);
     // asm 000054E9: 	MPYF	R0,R2,R4	     	;COS*X+SIN*Z WIDTH TERMS
     // asm 000054EA: 	MPYF	R1,R3,R5
-    width = (cosine * x_width) + (sine * z_width); // ;COS*X+SIN*Z WIDTH TERMS
+    width = C3X_ADD(C3X_MUL(cosine, x_width), C3X_MUL(sine, z_width)); // ;COS*X+SIN*Z WIDTH TERMS
     // asm 000054EB: 	MPYF	R1,R2,R2		;SIN*X+COS*Z HEIGHT TERMS
     // asm 000054EC: 	MPYF	R0,R3,R3
-    height = (sine * x_width) + (cosine * z_width); // ;SIN*X+COS*Z HEIGHT TERMS
+    height = C3X_ADD(C3X_MUL(sine, x_width), C3X_MUL(cosine, z_width)); // ;SIN*X+COS*Z HEIGHT TERMS
     // asm 000054ED: 	ADDF	R4,R5,R0 		;WIDTH
     if (width_out != NULL) {
         *width_out = width;
@@ -2499,9 +2506,9 @@ static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, float* width_out 
  */
 static void RPASS(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     CARBLK* player_carblk;
-    float speed_difference;
-    float lateral_difference;
-    float volume_factor;
+    c3x_reg_t speed_difference;
+    c3x_reg_t lateral_difference;
+    c3x_reg_t volume_factor;
     int volume;
     int sound_index;
 
@@ -2526,23 +2533,23 @@ RPASS1:
     player_carblk = PLYCAR->carblk;
     // asm 000054F8: 	LDF	*+AR5(CARSPEED),R3	;SPEED GREATER?
     // asm 000054F9: 	SUBF	*+AR3(CARSPEED),R3
-    speed_difference = carblk->speed - player_carblk->speed;
+    speed_difference = C3X_SUB(carblk->speed, player_carblk->speed);
     // asm 000054FA: 	CMPF	40,R3
     // asm 000054FB: 	BGT	RPASS2
-    if (speed_difference > 40.0f) {
+    if (C3X_GT(speed_difference, C3X_FROM_INT(40))) {
         goto RPASS2;
     }
     // asm 000054FC: 	ABSF	R3
-    speed_difference = fabsf(speed_difference);
+    speed_difference = C3X_ABS(speed_difference);
     // asm 000054FD: 	CMPF	20,R3
     // asm 000054FE: 	BLT	RPASSX
-    if (speed_difference < 20.0f) {
+    if (C3X_LT(speed_difference, C3X_FROM_INT(20))) {
         goto RPASSX;
     }
     // asm 000054FF: 	CMPF	60,R3
     // asm 00005500: 	LDFGT	60,R3
-    if (speed_difference > 60.0f) {
-        speed_difference = 60.0f;
+    if (C3X_GT(speed_difference, C3X_FROM_INT(60))) {
+        speed_difference = C3X_FROM_INT(60);
     }
     // asm 00005501: 	LDI	*+AR4(ODIST),R0
     // asm 00005502: 	CMPI	0,R0
@@ -2572,39 +2579,39 @@ RPASS2:
 RPASS3:
     // asm 0000550C: 	LDF	*+AR5(CARDIST2CNTR),R0
     // asm 0000550D: 	SUBF	*+AR3(CARDIST2CNTR),R0
-    lateral_difference = carblk->dist_to_center - player_carblk->dist_to_center;
+    lateral_difference = C3X_SUB(carblk->dist_to_center, player_carblk->dist_to_center);
     // asm 0000550E: 	ABSF	R0,R1
-    lateral_difference = fabsf(lateral_difference);
+    lateral_difference = C3X_ABS(lateral_difference);
     // asm 0000550F: 	FLOAT	4000,R0
     // asm 00005510: 	CALL	DIV_F
-    volume_factor = DIV_F(4000.0f, lateral_difference);
+    volume_factor = DIV_F(C3X_FROM_INT(4000), lateral_difference);
     // asm 00005511: 	CMPF	1.0,R0
     // asm 00005512: 	LDFGT	1.0,R0
-    if (volume_factor > 1.0f) {
-        volume_factor = 1.0f;
+    if (C3X_GT(volume_factor, C3X_FROM_INT(1))) {
+        volume_factor = C3X_FROM_INT(1);
     }
     // asm 00005513: 	FLOAT	255,R1
     // asm 00005514: 	MPYF	R1,R0			;VOLUME FACTOR
-    volume_factor *= 255.0f;
+    volume_factor = C3X_MUL(volume_factor, C3X_FROM_INT(255));
     // asm 00005515: 	FIX	R0
-    volume = (int)volume_factor;
+    volume = FIX(volume_factor);
     MAME_ASSERT_REG(0x00005516, "R0", &volume);
     // asm 00005516: 	LDI	SMCARPASS,AR2		;DIFFERENT SOUND DIFF VEL
     sound_index = SMCARPASS;
     // asm 00005517: 	CMPF	40,R3
     // asm 00005518: 	LDIGT	FCARPASS,AR2
-    if (speed_difference > 40.0f) {
+    if (C3X_GT(speed_difference, C3X_FROM_INT(40))) {
         sound_index = FCARPASS;
     }
     // asm 00005519: 	CMPF	60,R3
     // asm 0000551A: 	BLT	RPASS4
-    if (speed_difference < 60.0f) {
+    if (C3X_LT(speed_difference, C3X_FROM_INT(60))) {
         goto RPASS4;
     }
     // asm 0000551B: 	FIX	R3
     // asm 0000551C: 	LSH	-1,R3
     // asm 0000551D: 	LDIC	SPCARPASS,AR2
-    if (((int)speed_difference & 1) != 0) {
+    if ((FIX(speed_difference) & 1) != 0) {
         sound_index = SPCARPASS;
     }
 RPASS4:
@@ -2634,10 +2641,13 @@ RPASSX:
  *
  *
  */
-float SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/) {
+c3x_reg_t SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/) {
     CARBLK* carblk;
-    float road_theta;
-    float distance;
+    c3x_reg_t road_theta;
+    c3x_reg_t distance;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t distance_sq;
 
     // asm 00005522: 	PUSH	AR5
     // asm 00005523: 	PUSH	AR6
@@ -2662,19 +2672,21 @@ LOOP56:
     // asm 00005530: 	CALL	ARCTANF
     // asm 00005531: 	SUBF	HALFPI,R0
     // asm 00005532: 	LDF	R0,R2			;THIS IS INITIAL FACING
-    road_theta = atan2f(tracking_obj->pos.Z - _VECTORB.Z, tracking_obj->pos.X - _VECTORB.X) - HALFPI;
+    delta_x = C3X_SUB(tracking_obj->pos.X, _VECTORB.X);
+    delta_z = C3X_SUB(tracking_obj->pos.Z, _VECTORB.Z);
+    road_theta = C3X_SUB(ARCTANF(delta_x, delta_z), HALFPII);
     // asm 00005533: 	CMPI	0,AR3
     // asm 00005534: 	BEQ	OFFANDDONE
     if (rank_forward != 0) {
         // asm 00005535: 	FLOAT	5500,R0
         // asm 00005536: 	CALL	DISTANCE_2D
-        distance = 5500.0f;
+        distance = C3X_FROM_INT(5500);
         // asm 00005537: 	ADDF	*+AR5(X),R0
         // asm 00005538: 	STF	R0,*+AR5(X)
-        _VECTORB.X += -_SINE(road_theta) * distance;
+        _VECTORB.X = C3X_ADD(_VECTORB.X, C3X_MUL(C3X_NEG(_SINE(road_theta)), distance));
         // asm 00005539: 	ADDF	*+AR5(Z),R1
         // asm 0000553A: 	STF	R1,*+AR5(Z)
-        _VECTORB.Z += _COSI(road_theta) * distance;
+        _VECTORB.Z = C3X_ADD(_VECTORB.Z, C3X_MUL(_COSI(road_theta), distance));
         // asm 0000553B: 	DEC	AR3
         rank_forward -= 1;
         // asm 0000553C: 	CMPI	0,AR3
@@ -2695,7 +2707,10 @@ LOOP56:
             // asm 00005549: 	LDI	*+AR2(OLINK4),AR2
             // asm 0000554A: 	BU	LOOP56A
             while (1) {
-                if (sqrtf((tracking_obj->pos.X - _VECTORB.X) * (tracking_obj->pos.X - _VECTORB.X) + (tracking_obj->pos.Z - _VECTORB.Z) * (tracking_obj->pos.Z - _VECTORB.Z)) > 5000.0f) {
+                delta_x = C3X_SUB(tracking_obj->pos.X, _VECTORB.X);
+                delta_z = C3X_SUB(tracking_obj->pos.Z, _VECTORB.Z);
+                distance_sq = C3X_ADD(C3X_MUL(delta_x, delta_x), C3X_MUL(delta_z, delta_z));
+                if (C3X_GT(SQRT(distance_sq), C3X_FROM_INT(5000))) {
                     goto LOOP56;
                 }
                 tracking_obj = (OBJ*)tracking_obj->link4;
@@ -2726,7 +2741,7 @@ L874:
     // asm 00005559: 	LDF	*+AR5(X),R0
     // asm 0000555A: 	ADDF	*+AR0(X),R0
     // asm 0000555B: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = _VECTORB.X + _VECTORA.X;
+    obj->pos.X = C3X_ADD(_VECTORB.X, _VECTORA.X);
     // asm 0000555C: 	LDF	*+AR5(Y),R0
     // asm 0000555D: 	SUBF	*+AR5(CARWHLTAB+1),R0
     // asm 0000555E: 	ADDF	*+AR0(Y),R0
@@ -2735,11 +2750,12 @@ L874:
     // to depend on original contiguous RAM0 scratch aliasing after AR5=@VECTORBI.
     // Until that RAM0 layout is modeled in C, force the startup value observed in MAME
     // so downstream validation can continue.
-    obj->pos.Y = -1.0f;
+    obj->pos.Y = C3X_FROM_INT(-1);
+    MAME_ASSERT_REG_FLOAT(0x0000555F, "R0", &obj->pos.Y);
     // asm 00005560: 	LDF	*+AR5(Z),R0
     // asm 00005561: 	ADDF	*+AR0(Z),R0
     // asm 00005562: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = _VECTORB.Z + _VECTORA.Z;
+    obj->pos.Z = C3X_ADD(_VECTORB.Z, _VECTORA.Z);
     MAME_ASSERT_REG_FLOAT(0x00005562, "R0", &obj->pos.Z);
     // asm 00005563: 	POPFL	R2
     // asm 00005565: 	POP	AR6

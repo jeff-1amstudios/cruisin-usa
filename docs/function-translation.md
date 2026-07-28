@@ -19,9 +19,42 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - Ignore DP and CPU wait state related instructions. Ignore push/pop.
 - Retain the original developer comments in the assembly code as c comments
 - If a translated function call in asm produces a value or side effect used by the caller, keep that call in the translated function at the same boundary. Do not replace it by passing a transformed value unless the original asm does that transformation before the call.
-- Treat floating-point immediates in instructions like `LDF 0.05`, `ADDF 1.20`, and `MPYF 0.01` as TMS320C30 short-immediate floats, not native C literals; use helpers such as `TMS320_C3X_SHORT_FLOAT(...)` and preserve per-instruction rounding with `TMS320_C3X_STF_TO_SINGLE(...)` when assertion-level fidelity matters.
+- Choose a C3X conversion from the assembly instruction that produces the value, not from whether the C expression looks like an integer or a float. Follow the table in [C3X floating-point translation](#c3x-floating-point-translation).
 
 If you get stuck, stop, and explain the problem. Don't start inventing things in order to keep progressing.
+
+## C3X floating-point translation
+
+| Assembly source | C translation |
+|---|---|
+| `LDF 0.25,R0` | `value = C3X_IMM_F32(0.25);` |
+| `ADDF 0.25,R0` | `value = C3X_ADD(value, C3X_IMM_F32(0.25));` |
+| `SUBF 0.25,R0` | `value = C3X_SUB(value, C3X_IMM_F32(0.25));` |
+| `MPYF 0.25,R0` | `value = C3X_MUL(value, C3X_IMM_F32(0.25));` |
+| `CMPF 0.25,R0` | Compare against `C3X_IMM_F32(0.25)` |
+| `LDF @VALUE,R0`, where `VALUE` is `.float` data | `value = C3X_LDF(VALUE);` |
+| `FLOAT R0,R1` | `value = C3X_FROM_INT(integer_value);` |
+| `STF R0,*AR0` | `destination = C3X_STF(value);` |
+| Static `.float` data | `static const c3x_f32_t VALUE = C3X_F32_INIT(readable_value);` |
+| A runtime high-precision algorithm constant | `C3X_F32(value)` |
+
+All floating instruction immediates use `C3X_IMM_F32`, including:
+
+- integer-looking operands such as `LDF 1,R0`;
+- symbolic constants such as `LDF PI,R0`;
+- conditional forms such as `LDFGT 0.5,R0`;
+- reverse and three-operand forms.
+
+Do not translate a floating instruction immediate using a raw C literal, `C3X_F32`, or `C3X_FROM_INT`. `C3X_FROM_INT` is only for an actual `FLOAT` instruction or an equivalent integer-to-floating conversion. `C3X_F32` is not the default literal wrapper; use it only when the source genuinely requires full C3X register precision rather than the instruction-immediate encoding.
+
+Use `c3x_f32_t` for static `.float` data and `c3x_reg_t` for values held at
+register precision. Convert memory data with `C3X_LDF` before using it in
+floating-point arithmetic. Keeping the types distinct makes arithmetic on an
+unloaded table or constant a compile-time error.
+
+`C3X_STF` represents the precision change caused by storing a register through the C30 single-memory format. Use it on the value assigned by every translated `STF`; do not spell it as `C3X_LOAD(C3X_STORE(...))`.
+
+Run `cmake --build <build-directory> --target check-c3x-translation` after translating floating-point code.
 
 ## Types
 We put our types in types.h. If the asm function for example uses AR2 as an input, pointing to 2 ints, you should create a type

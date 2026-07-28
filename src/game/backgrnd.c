@@ -31,7 +31,7 @@ static void FIND_SUBLIST_START_END(void);
 static void APPEND_NEWLIST(void);
 static void SHINY_NEWLIST(void);
 static void GROUP_DELETE(u32 group_id /*AR2*/);
-float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/);
+c3x_reg_t GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/);
 static void BGD_OROUTINE(OBJ* obj /*AR4*/);
 static void OVERCAR(OBJ* obj /*AR4*/);
 static void CARFORWARD(PROC* p);
@@ -108,9 +108,9 @@ enum {
 /* asm: STARTSECTION	.bss	STARTSECTION,1 */
 int STARTSECTION;
 /* asm: START_POS	.bss	START_POS,3 */
-float START_POS[3];
+c3x_reg_t START_POS[3];
 /* asm: START_RADY	.bss	START_RADY,1 */
-float START_RADY = 1.0f;
+c3x_reg_t START_RADY = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: DRIVE_LIST	.bss	DRIVE_LIST,1 */
 OBJ* DRIVE_LIST;
 /* asm: CAR_LIST	.bss	CAR_LIST,1 */
@@ -160,20 +160,20 @@ tyco_stream_t TYCO_TRACK_NTL;
 /* asm: TYCO_NTL_IDX	.bss	TYCO_NTL_IDX,1 */
 int TYCO_NTL_IDX;
 /* asm: ATTRACT_ACTIVATE_DIST	.float	15000 */
-static float ATTRACT_ACTIVATE_DIST = 15000.0f;
+static const c3x_f32_t ATTRACT_ACTIVATE_DIST = C3X_F32_INIT(15000.0f);
 /* asm: ACTIVATE_DIST		.float	5000	;to activate */
 /* asm: 	 */
-static float ACTIVATE_DIST = 5000.0f;
+static const c3x_f32_t ACTIVATE_DIST = C3X_F32_INIT(5000.0f);
 /* asm: DACT_DIST		.float	80000	;dynamic activate distance */
-static float DACT_DIST = 80000.0f;
+static const c3x_f32_t DACT_DIST = C3X_F32_INIT(80000.0f);
 /* asm: DDACT_DIST		.float	15000	;dynamic activate distance (+ radius) */
-static float DDACT_DIST = 15000.0f;
+static const c3x_f32_t DDACT_DIST = C3X_F32_INIT(15000.0f);
 // ;ATTR_DDACT_DIST		.float	35000	;dynamic deactivate distance (+ radius)
 /* asm: ATTR_DDACT_DIST		.float	45000	;dynamic deactivate distance (+ radius) */
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-static float ATTR_DDACT_DIST = 45000.0f;
+static const c3x_f32_t ATTR_DDACT_DIST = C3X_F32_INIT(45000.0f);
 
 // *----------------------------------------------------------------------------
 void FIND_STARTING_VALUES(void) {
@@ -447,7 +447,7 @@ static void BGD_WATCHER(PROC* p) {
     u32 flag;
     int mode;
     int routine_index;
-    float distance;
+    c3x_reg_t distance;
 
     switch (p->resume_state) {
     case 0:
@@ -572,7 +572,7 @@ NO_ACTIVATION:
     MAME_ASSERT_REG_FLOAT(0x0000401F, "R0", &distance);
     // asm 0000401F: 	CMPF	@DACT_DIST,R0
     // asm 00004020: 	BGT	NOACT
-    if (distance > DACT_DIST) {
+    if (C3X_GT(distance, C3X_LDF(DACT_DIST))) {
         goto NOACT;
     }
     // asm 00004021: 	LDI	AR0,AR2
@@ -643,13 +643,13 @@ NOACT:
     // asm 0000403E: 	LDI	@CAMERAPOSI,R2
     // asm 0000403F: 	CALL	GET_XZ_DISTANCE
     distance = GET_XZ_DISTANCE(&section_header.pos, &CAMERAPOSI);
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00004040, "R0", &distance, 16);
+    MAME_ASSERT_REG_FLOAT(0x00004040, "R0", &distance);
     // asm 00004040: 	LDI	@(DGROUPS+DGRP_BIN),AR0
     // asm 00004041: 	LDI	*+AR0(TB_GROUP),AR0
     group_ptr = ROM_PTR(tyco_ptr[TB_GROUP]);
     // asm 00004042: 	SUBF	*AR0,R0
-    distance -= ROM_ParseFloat(*group_ptr);
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00004043, "R0", &distance, 16);
+    distance = C3X_SUB(distance, ROM_ParseFloat(*group_ptr));
+    MAME_ASSERT_REG_FLOAT(0x00004043, "R0", &distance);
     // asm 00004043: 	LDI	@_MODE,R1
     // asm 00004044: 	AND	MMODE,R1
     // asm 00004045: 	CMPI	MATTR,R1
@@ -660,7 +660,7 @@ NOACT:
     }
     // asm 00004047: 	CMPF	@ATTR_DDACT_DIST,R0
     // asm 00004048: 	BLT	NODEACT
-    if (distance < ATTR_DDACT_DIST) {
+    if (C3X_LT(distance, C3X_LDF(ATTR_DDACT_DIST))) {
         goto NODEACT;
     }
     // asm 00004049: 	BU	DO_DEL
@@ -668,7 +668,7 @@ NOACT:
 GAMECHK:
     // asm 0000404A: CMPF	@DDACT_DIST,R0
     // asm 0000404B: 	BLT	NODEACT
-    if (distance < DDACT_DIST) {
+    if (C3X_LT(distance, C3X_LDF(DDACT_DIST))) {
         goto NODEACT;
     }
 DO_DEL:
@@ -745,7 +745,7 @@ int TYCOFLAG;
 /* asm: PASS1	.bss	PASS1,1 */
 int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
-float SECRADY = 1.0f;
+c3x_reg_t SECRADY = C3X_INIT(1.0f, 0x0000000000ull);
 
 static u32 BGD_ACTIVATE_TYCOGROUP(tyco_stream_t tyco_ptr /*AR2*/) {
     tyco_stream_t section_ptr;
@@ -789,7 +789,7 @@ static u32 BGD_ACTIVATE_TYCOGROUP(tyco_stream_t tyco_ptr /*AR2*/) {
         // asm 0000407F: 	LDI	AR0,AR4
         if (corn_obj != NULL) {
             // asm 00004080: 	LDF	-0.2,R2
-            corn_obj->rad.Y = -0.2f;
+            corn_obj->rad.Y = C3X_IMM_F32(-0.2f);
             // asm 00004081: 	LDI	AR4,AR2
             // asm 00004082: 	ADDI	OMATRIX,AR2
             // asm 00004083: 	CALL	FIND_YMATRIX
@@ -907,10 +907,10 @@ L12:
     // asm 000040BE: 	PUSH	R0
     // asm 000040BF: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 000040C0: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = (float)*group_ptr++;
+    obj->pos.X = C3X_FROM_INT(*group_ptr++);
     MAME_ASSERT_REG_FLOAT(0x000040C0, "R1", &obj->pos.X);
     // asm 000040C1: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    obj->pos.Y = (float)*group_ptr++;
+    obj->pos.Y = C3X_FROM_INT(*group_ptr++);
     MAME_ASSERT_REG_FLOAT(0x000040C5, "R1", &obj->pos.Y);
     // asm 000040C2: 	LDI	@TYCOFLAG,R0
     // asm 000040C3: 	TSTB	SC_REVERSE,R0
@@ -918,7 +918,7 @@ L12:
     // asm 000040C5: 	STF	R1,*+AR4(OPOSY)
     // asm 000040C6: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 000040C7: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = (float)*group_ptr++;
+    obj->pos.Z = C3X_FROM_INT(*group_ptr++);
     MAME_ASSERT_REG_FLOAT(0x000040C7, "R1", &obj->pos.Z);
     if ((TYCOFLAG & SC_REVERSE) == 0) {
         goto NOTREVERSED;
@@ -938,15 +938,15 @@ ISOVER:
     // asm 000040CC: 	LDF	*+AR7(TB_RVS_POSX),R0	;TRANSLATE BY THE NEGATIVE OFFSET
     // asm 000040CD: 	ADDF	*+AR4(OPOSX),R0		;POSITION (THIS BLOCKS ENDING POSITION)
     // asm 000040CE: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X += ROM_ParseFloat(section_ptr[TB_RVS_POSX]);
+    obj->pos.X = C3X_ADD(obj->pos.X, ROM_ParseFloat(section_ptr[TB_RVS_POSX]));
     // asm 000040CF: 	LDF	*+AR7(TB_RVS_POSY),R0
     // asm 000040D0: 	ADDF	*+AR4(OPOSY),R0
     // asm 000040D1: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y += ROM_ParseFloat(section_ptr[TB_RVS_POSY]);
+    obj->pos.Y = C3X_ADD(obj->pos.Y, ROM_ParseFloat(section_ptr[TB_RVS_POSY]));
     // asm 000040D2: 	LDF	*+AR7(TB_RVS_POSZ),R0
     // asm 000040D3: 	ADDF	*+AR4(OPOSZ),R0
     // asm 000040D4: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z += ROM_ParseFloat(section_ptr[TB_RVS_POSZ]);
+    obj->pos.Z = C3X_ADD(obj->pos.Z, ROM_ParseFloat(section_ptr[TB_RVS_POSZ]));
     if ((TYCOFLAG & SC_OVERLAY) == 0) {
         section_ptr += 1;
     }
@@ -961,20 +961,20 @@ ISOVER:
     // asm 000040DC: 	LDF	*AR0++,R1
     // asm 000040DD: 	ADDF	*+AR7(TB_POSX),R1
     // asm 000040DE: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = VECTORAI.X + ROM_ParseFloat(section_ptr[TB_POSX]);
+    obj->pos.X = C3X_ADD(VECTORAI.X, ROM_ParseFloat(section_ptr[TB_POSX]));
     // asm 000040DF: 	LDF	*AR0++,R1
     // asm 000040E0: 	ADDF	*+AR7(TB_POSY),R1
     // asm 000040E1: 	STF	R1,*+AR4(OPOSY)
-    obj->pos.Y = VECTORAI.Y + ROM_ParseFloat(section_ptr[TB_POSY]);
+    obj->pos.Y = C3X_ADD(VECTORAI.Y, ROM_ParseFloat(section_ptr[TB_POSY]));
     MAME_ASSERT_REG_FLOAT(0x000040E1, "R1", &obj->pos.Y);
     // asm 000040E2: 	LDF	*AR0++,R1
     // asm 000040E3: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040E4: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = VECTORAI.Z + ROM_ParseFloat(section_ptr[TB_POSZ]);
+    obj->pos.Z = C3X_ADD(VECTORAI.Z, ROM_ParseFloat(section_ptr[TB_POSZ]));
     // asm 000040E5: 	LDF	*AR5++,R2		;GET Y ROT
     // asm 000040E6: 	ADDF	@SECRADY,R2
     // asm 000040E7: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = ROM_ParseFloat(*group_ptr++) + SECRADY;
+    obj->rad.Y = C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY);
     MAME_ASSERT_REG_FLOAT(0x000040E8, "R2", &obj->rad.Y);
     // asm 000040E8: 	LDI	AR4,AR2
     // asm 000040E9: 	ADDI	OMATRIX,AR2
@@ -994,20 +994,20 @@ NOTREVERSED:
     // asm 000040F3: 	LDF	*AR0++,R1
     // asm 000040F4: 	ADDF	*+AR7(TB_POSX),R1
     // asm 000040F5: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = VECTORAI.X + ROM_ParseFloat(section_ptr[TB_POSX]);
+    obj->pos.X = C3X_ADD(VECTORAI.X, ROM_ParseFloat(section_ptr[TB_POSX]));
     // asm 000040F6: 	LDF	*AR0++,R1
     // asm 000040F7: 	ADDF	*+AR7(TB_POSY),R1
     // asm 000040F8: 	STF	R1,*+AR4(OPOSY)
-    obj->pos.Y = VECTORAI.Y + ROM_ParseFloat(section_ptr[TB_POSY]);
+    obj->pos.Y = C3X_ADD(VECTORAI.Y, ROM_ParseFloat(section_ptr[TB_POSY]));
     MAME_ASSERT_REG_FLOAT(0x000040F8, "R1", &obj->pos.Y);
     // asm 000040F9: 	LDF	*AR0++,R1
     // asm 000040FA: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040FB: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = VECTORAI.Z + ROM_ParseFloat(section_ptr[TB_POSZ]);
+    obj->pos.Z = C3X_ADD(VECTORAI.Z, ROM_ParseFloat(section_ptr[TB_POSZ]));
     // asm 000040FC: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 000040FD: 	ADDF	@SECRADY,R2
     // asm 000040FE: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = ROM_ParseFloat(*group_ptr++) + SECRADY;
+    obj->rad.Y = C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY);
     MAME_ASSERT_REG_FLOAT(0x000040FF, "R2", &obj->rad.Y);
     // asm 000040FF: 	LDI	AR4,AR2
     // asm 00004100: 	ADDI	OMATRIX,AR2
@@ -1216,7 +1216,7 @@ CHECK2:
                 // asm 0000416E: 	LDINZ	TB_RVS_RADY,IR0
                 // asm 0000416F: 	LDF	*+AR7(IR0),R0
                 // asm 00004170: 	STPF	R0,@SECRADY
-                SECRADY = TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
+                SECRADY = C3X_LOAD(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
             }
         UHNO2:
             // asm 00004171: 	POP	IR0
@@ -1265,7 +1265,7 @@ CHECK2II:
                 // asm 0000418B: 	LDINZ	TB_RVS_RADY,IR0
                 // asm 0000418C: 	LDF	*+AR7(IR0),R0
                 // asm 0000418D: 	STPF	R0,@SECRADY
-                SECRADY = TMS320_C3X_SINGLE_TO_FLOAT(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
+                SECRADY = C3X_LOAD(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
             }
         UHNO:
             // asm 0000418E: 	POP	IR0
@@ -1632,9 +1632,9 @@ GROUP_DELETE_RETURN:;
  *
  *
  */
-float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
-    float delta_x;
-    float delta_z;
+c3x_reg_t GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
 
     // asm 00004215: 	PUSH	AR0
     // asm 00004216: 	PUSH	R3
@@ -1642,21 +1642,21 @@ float GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
     // asm 00004218: 	LDF	*AR0++(2),R3
     delta_x = v2->X;
     // asm 00004219: 	SUBF	*AR2++(2),R3
-    delta_x -= v1->X;
+    delta_x = C3X_SUB(delta_x, v1->X);
     MAME_ASSERT_REG_FLOAT(0x0000421A, "R3", &delta_x);
     // asm 0000421A: 	LDF	*AR0++,R2
     delta_z = v2->Z;
     // asm 0000421B: 	SUBF	*AR2++,R2
-    delta_z -= v1->Z;
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x0000421C, "R2", &delta_z, 16);
+    delta_z = C3X_SUB(delta_z, v1->Z);
+    MAME_ASSERT_REG_FLOAT(0x0000421C, "R2", &delta_z);
     // asm 0000421C: 	MPYF	R3,R3
-    delta_x *= delta_x;
+    delta_x = C3X_MUL(delta_x, delta_x);
     // asm 0000421D: 	MPYF	R2,R2
-    delta_z *= delta_z;
+    delta_z = C3X_MUL(delta_z, delta_z);
     // asm 0000421E: 	ADDF	R3,R2
-    delta_z += delta_x;
+    delta_z = C3X_ADD(delta_z, delta_x);
     // asm 0000421F: 	CALL	SQRT
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x0000421F, "R2", &delta_z, 16);
+    MAME_ASSERT_REG_FLOAT(0x0000421F, "R2", &delta_z);
     // asm 00004220: 	POP	R3
     // asm 00004221: 	POP	AR0
     // asm 00004222: 	RETS
@@ -2508,17 +2508,17 @@ LS_L12:
 
     // asm 00004432: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 00004433: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = (f32)crusn_read_s32(&rom_cursor);
+    obj->pos.X = C3X_FROM_INT(crusn_read_s32(&rom_cursor));
     MAME_ASSERT_REG_FLOAT(0x00004433, "R1", &obj->pos.X);
 
     // asm 00004434: 	FLOAT	*AR5++,R1		;GET Y POSITION
     // asm 00004435: 	STF	R1,*+AR4(OPOSY)
-    obj->pos.Y = (f32)crusn_read_s32(&rom_cursor);
+    obj->pos.Y = C3X_FROM_INT(crusn_read_s32(&rom_cursor));
     MAME_ASSERT_REG_FLOAT(0x00004435, "R1", &obj->pos.Y);
 
     // asm 00004436: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 00004437: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = (f32)crusn_read_s32(&rom_cursor);
+    obj->pos.Z = C3X_FROM_INT(crusn_read_s32(&rom_cursor));
     MAME_ASSERT_REG_FLOAT(0x00004437, "R1", &obj->pos.Z);
 
     // asm 00004438: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT

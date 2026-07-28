@@ -15,12 +15,12 @@ extern int WHEELPWR;
 // asm: 	.bss	WHEELPOS,1
 extern int WHEELPOS;
 // asm: 	.bss	WHEELOUT,1
-extern float WHEELOUT;
+extern c3x_reg_t WHEELOUT;
 // asm: 	.bss	WHEELMAX,1
-extern float WHEELMAX;
+extern c3x_reg_t WHEELMAX;
 // asm: 	pbss	WHEELVEL,1
 extern int WHEELVEL;
 // asm: 	.bss	DAMPPWR,1
-extern float DAMPPWR;
+extern c3x_reg_t DAMPPWR;
 
 #endif /* WHEEL_H */

@@ -13,9 +13,9 @@
  */
 
 void TEXT_INIT(void);
-tSHADOW_TEXT TEXT_ADDDS(const char* text, float x, float y, int ticks);
+tSHADOW_TEXT TEXT_ADDDS(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks);
 void TEXT_ADD1(void);
-tTEXT* TEXT_ADD(const char* text, float x, float y, int ticks);
+tTEXT* TEXT_ADD(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks);
 void SETSMDIGITFONT(tTEXT* t /*AR0*/);
 void SETSMDIGITFONTDS(tSHADOW_TEXT* t);
 void SETLGDIGITFONT(tTEXT* t /*AR0*/);
@@ -112,7 +112,7 @@ void TEXT_INIT(void) {
  *
  *
  */
-tSHADOW_TEXT TEXT_ADDDS(const char* text, float x, float y, int ticks) {
+tSHADOW_TEXT TEXT_ADDDS(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks) {
     tTEXT* front;
     tTEXT* shadow;
 
@@ -122,8 +122,8 @@ tSHADOW_TEXT TEXT_ADDDS(const char* text, float x, float y, int ticks) {
     front = TEXT_ADD(text, x, y, ticks);
     shadow = TEXT_ADD(text, x, y, ticks);
     shadow->color = TXT_NRZ;
-    shadow->posx = x + 2.0f;
-    shadow->posy = y + 2.0f;
+    shadow->posx = C3X_ADD(x, C3X_FROM_INT(2));
+    shadow->posy = C3X_ADD(y, C3X_FROM_INT(2));
 
     tSHADOW_TEXT ret;
     ret.front = front;
@@ -138,7 +138,7 @@ void TEXT_ADD1(void) {
     UNIMPL();
 }
 
-tTEXT* TEXT_ADD(const char* text, float x, float y, int ticks) {
+tTEXT* TEXT_ADD(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks) {
     tTEXT* t;
 
     t = GET_LLIST((void**)&TEXT_FREE, (void**)&TEXT_ACTIVE);
@@ -161,8 +161,8 @@ tTEXT* TEXT_ADD(const char* text, float x, float y, int ticks) {
 
     t->color = 0; /* clear the flags */
 
-    t->velx = 0.0f;
-    t->vely = 0.0f;
+    t->velx = C3X_FROM_INT(0);
+    t->vely = C3X_FROM_INT(0);
 
     /* set default font */
     SET18FONT(t);
@@ -592,8 +592,8 @@ TEXTLP:
     // asm 00007A7F: 	FIX	*+AR4(TEXT_POSX),R2
     // asm 00007A80: 	FIX	*+AR4(TEXT_POSY),R3
     str = text->ptr;
-    x = (int)text->posx;
-    y = (int)text->posy;
+    x = FIX(text->posx);
+    y = FIX(text->posy);
     // MAME_ASSERT_REG_AT_ADDR(0x00007A81, "R2", &x);
     // MAME_ASSERT_REG_AT_ADDR(0x00007A81, "R3", &y);
 
@@ -787,11 +787,11 @@ OUCX:
         // asm 00007AD5: 	LDF	*+AR4(TEXT_POSX),R0
         // asm 00007AD6: 	ADDF	*+AR4(TEXT_VELX),R0
         // asm 00007AD7: 	STF	R0,*+AR4(TEXT_POSX)
-        text->posx += text->velx;
+        text->posx = C3X_ADD(text->posx, text->velx);
         // asm 00007AD8: 	LDF	*+AR4(TEXT_POSY),R0
         // asm 00007AD9: 	ADDF	*+AR4(TEXT_VELY),R0
         // asm 00007ADA: 	STF	R0,*+AR4(TEXT_POSY)
-        text->posy += text->vely;
+        text->posy = C3X_ADD(text->posy, text->vely);
     }
 ISFROZEN:
 

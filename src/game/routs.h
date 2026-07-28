@@ -6,11 +6,11 @@
 /* Generated from asm/ROUTS.ASM. */
 
 // ROUTS.ASM
-float SQRT(float x /*R2*/);
-float DIV_F30(float u, float v);
+c3x_reg_t SQRT(c3x_reg_t x /*R2*/);
+c3x_reg_t DIV_F30(c3x_reg_t u, c3x_reg_t v);
 void DIV_I30(void);
 void DIV_U30(void);
-float INV_F30(float);
+c3x_reg_t INV_F30(c3x_reg_t);
 void MOD_I30(void);
 void MOD_U30(void);
 
