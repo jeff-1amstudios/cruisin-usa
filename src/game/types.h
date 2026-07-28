@@ -44,47 +44,47 @@ struct DYNATAB;
 struct tDDYNA_TABLE;
 
 typedef struct VECTOR {
-    c3x_reg_t X;
-    c3x_reg_t Y;
-    c3x_reg_t Z;
-    // c3x_reg_t w;
+    c3x_f32_t X;
+    c3x_f32_t Y;
+    c3x_f32_t Z;
+    // c3x_f32_t w;
 } VECTOR;
 
 typedef struct EQUATION {
-    c3x_reg_t a;
-    c3x_reg_t b;
-    c3x_reg_t c;
-    c3x_reg_t d;
+    c3x_f32_t a;
+    c3x_f32_t b;
+    c3x_f32_t c;
+    c3x_f32_t d;
 } EQUATION;
 
 typedef struct LINE2D {
-    c3x_reg_t a;
-    c3x_reg_t b;
-    c3x_reg_t c;
+    c3x_f32_t a;
+    c3x_f32_t b;
+    c3x_f32_t c;
 } LINE2D;
 
 typedef struct MATRIX {
-    c3x_reg_t a00;
-    c3x_reg_t a01;
-    c3x_reg_t a02;
-    c3x_reg_t a10;
-    c3x_reg_t a11;
-    c3x_reg_t a12;
-    c3x_reg_t a20;
-    c3x_reg_t a21;
-    c3x_reg_t a22;
+    c3x_f32_t a00;
+    c3x_f32_t a01;
+    c3x_f32_t a02;
+    c3x_f32_t a10;
+    c3x_f32_t a11;
+    c3x_f32_t a12;
+    c3x_f32_t a20;
+    c3x_f32_t a21;
+    c3x_f32_t a22;
 } MATRIX;
 
 typedef struct OBJ_MATRIX {
-    c3x_reg_t mat00;
-    c3x_reg_t mat10;
-    c3x_reg_t mat20;
-    c3x_reg_t mat01;
-    c3x_reg_t mat11;
-    c3x_reg_t mat21;
-    c3x_reg_t mat02;
-    c3x_reg_t mat12;
-    c3x_reg_t mat22;
+    c3x_f32_t mat00;
+    c3x_f32_t mat10;
+    c3x_f32_t mat20;
+    c3x_f32_t mat01;
+    c3x_f32_t mat11;
+    c3x_f32_t mat21;
+    c3x_f32_t mat02;
+    c3x_f32_t mat12;
+    c3x_f32_t mat22;
 } OBJ_MATRIX;
 
 typedef struct tVIEWLIST_entry {
@@ -170,7 +170,7 @@ typedef struct VEHTAB {
     void* degraded_model;
     void* degraded_model_level2;
     u32 taillight_color_count;
-    c3x_reg_t mass;
+    c3x_f32_t mass;
     int passby;
     int backnoise;
     struct tCAR_PALETTE_LIST* palette_table;
@@ -230,10 +230,10 @@ typedef struct tTEXT {
     struct tTEXT* link;
     char* ptr;
     u32 font;
-    c3x_reg_t posx;
-    c3x_reg_t posy;
-    c3x_reg_t velx;
-    c3x_reg_t vely;
+    c3x_f32_t posx;
+    c3x_f32_t posy;
+    c3x_f32_t velx;
+    c3x_f32_t vely;
     u32 tiks;
     u32 color;
     u32 height;
@@ -248,9 +248,9 @@ typedef struct tSHADOW_TEXT {
 
 typedef struct OBJ {
     struct OBJ* link;
-    // c3x_reg_t posx;
-    // c3x_reg_t posy;
-    // c3x_reg_t posz;
+    // c3x_f32_t posx;
+    // c3x_f32_t posy;
+    // c3x_f32_t posz;
     VECTOR pos;
 
     /* 3x3 rotation matrix laid out exactly as OMAT00..OMAT22 in OBJ.EQU. */
@@ -261,17 +261,17 @@ typedef struct OBJ {
     u32 id;
     u32 palette;
 
-    c3x_reg_t vel_x;
-    c3x_reg_t vel_y;
-    c3x_reg_t vel_z;
+    c3x_f32_t vel_x;
+    c3x_f32_t vel_y;
+    c3x_f32_t vel_z;
 
     union {
         struct VECTOR rad;
         struct {
-            c3x_reg_t radx;
-            c3x_reg_t rady;
+            c3x_f32_t radx;
+            c3x_f32_t rady;
             union {
-                c3x_reg_t radz;
+                c3x_f32_t radz;
                 uintptr_t radz_ptr;
             };
         };
@@ -294,7 +294,7 @@ typedef struct OBJ {
     s32 dist;   /* ODIST */
     s32 radius; /* ORAD */
     uintptr_t usr1;
-    c3x_reg_t usr1_as_float;
+    c3x_f32_t usr1_as_float;
     union {
         uintptr_t link2;
         uintptr_t usr2;
@@ -341,8 +341,8 @@ typedef struct PROC {
     PROC_FUNC func;
     // u32 r4;
     // u32 r5;
-    // c3x_reg_t r6;
-    // c3x_reg_t r7;
+    // c3x_f32_t r6;
+    // c3x_f32_t r7;
     // u32 ar4;
     // u32 ar5;
     // u32 ar6;
@@ -356,11 +356,11 @@ typedef struct TRACKSEL {
 } TRACKSEL;
 
 typedef struct CAR_POINT {
-    c3x_reg_t x;
-    c3x_reg_t y;
-    c3x_reg_t z;
-    c3x_reg_t road_delta_y;
-    c3x_reg_t y_velocity;
+    c3x_f32_t x;
+    c3x_f32_t y;
+    c3x_f32_t z;
+    c3x_f32_t road_delta_y;
+    c3x_f32_t y_velocity;
     OBJREF collided_road_object;
 } CAR_POINT;
 
@@ -373,44 +373,44 @@ typedef struct CARBLK {
     u32 on_road;
     u32 front_airborne;
     u32 rear_airborne;
-    c3x_reg_t turn;
-    c3x_reg_t traction;
-    c3x_reg_t max_accel;
-    c3x_reg_t throttle;
-    c3x_reg_t skid;
-    c3x_reg_t speed;
-    c3x_reg_t dist;
-    c3x_reg_t x_momentum;
-    c3x_reg_t y_momentum;
-    c3x_reg_t z_momentum;
-    c3x_reg_t brake;
-    c3x_reg_t y_rotation;
-    c3x_reg_t y_velocity_rotation;
-    c3x_reg_t last_y_rotation;
-    c3x_reg_t over_rotation;
-    c3x_reg_t mass;
+    c3x_f32_t turn;
+    c3x_f32_t traction;
+    c3x_f32_t max_accel;
+    c3x_f32_t throttle;
+    c3x_f32_t skid;
+    c3x_f32_t speed;
+    c3x_f32_t dist;
+    c3x_f32_t x_momentum;
+    c3x_f32_t y_momentum;
+    c3x_f32_t z_momentum;
+    c3x_f32_t brake;
+    c3x_f32_t y_rotation;
+    c3x_f32_t y_velocity_rotation;
+    c3x_f32_t last_y_rotation;
+    c3x_f32_t over_rotation;
+    c3x_f32_t mass;
     u32 spin_flag;
-    c3x_reg_t spin_radians;
+    c3x_f32_t spin_radians;
     u32 bump_flag;
     s32 track_piece_position;
-    c3x_reg_t track_piece_distance;
+    c3x_f32_t track_piece_distance;
     u32 track_piece_rank;
     OBJREF closest_track_piece;
     u32 gear;
-    c3x_reg_t rpm_x100;
-    c3x_reg_t x_plus;
-    c3x_reg_t x_minus;
-    c3x_reg_t y_plus;
-    c3x_reg_t y_minus;
-    c3x_reg_t z_plus;
-    c3x_reg_t z_minus;
+    c3x_f32_t rpm_x100;
+    c3x_f32_t x_plus;
+    c3x_f32_t x_minus;
+    c3x_f32_t y_plus;
+    c3x_f32_t y_minus;
+    c3x_f32_t z_plus;
+    c3x_f32_t z_minus;
     u32 debug_car_id;
     u32 shadow_flag;
-    c3x_reg_t x_lean;
-    c3x_reg_t z_lean;
-    c3x_reg_t road_friction;
-    c3x_reg_t offroad_friction;
-    c3x_reg_t dist_to_center;
+    c3x_f32_t x_lean;
+    c3x_f32_t z_lean;
+    c3x_f32_t road_friction;
+    c3x_f32_t offroad_friction;
+    c3x_f32_t dist_to_center;
     VECTOR wheel_scan_offsets[5];
     u32 transmission;
     u32 track_id;
@@ -451,7 +451,7 @@ typedef struct STRDGROUP {
 typedef struct TYCOHEADER {
     u32 flag;
     VECTOR pos;
-    c3x_reg_t rad_y;
+    c3x_f32_t rad_y;
     u32 group;
 } TYCOHEADER;
 
@@ -475,12 +475,12 @@ typedef struct DYNATAB {
 
 typedef struct DYNAOBJ {
     struct DYNAOBJ* link;
-    c3x_reg_t center_x;
-    c3x_reg_t center_y;
-    c3x_reg_t center_z;
-    c3x_reg_t trans_x;
-    c3x_reg_t trans_y;
-    c3x_reg_t trans_z;
+    c3x_f32_t center_x;
+    c3x_f32_t center_y;
+    c3x_f32_t center_z;
+    c3x_f32_t trans_x;
+    c3x_f32_t trans_y;
+    c3x_f32_t trans_z;
     OBJ_MATRIX omatrix;
     u32 nverts;
     struct OBJ* parent;
@@ -514,21 +514,21 @@ typedef struct DELTA_PROC_DATA {
     u32 status;
     u32 rady_delta;
     s32 init;
-    c3x_reg_t throttle;
+    c3x_f32_t throttle;
     u32 tracked_piece;
     u32 mode;
     u32 stealth_ptr;
     u32 last_oid;
     u32 player_status;
     u32 playit;
-    c3x_reg_t lane;
-    c3x_reg_t player_dist;
-    c3x_reg_t old_player_dist;
+    c3x_f32_t lane;
+    c3x_f32_t player_dist;
+    c3x_f32_t old_player_dist;
     u32 model;
     u32 lane_switch_timer;
     u32 xlane;
-    c3x_reg_t min_throttle;
-    c3x_reg_t max_throttle;
+    c3x_f32_t min_throttle;
+    c3x_f32_t max_throttle;
     u32 update_flag;
 } DELTA_PROC_DATA;
 
@@ -544,9 +544,9 @@ typedef struct RACEENTRY {
 typedef struct RACER_DISPATCH {
     u32 model;
     u32 position;
-    c3x_reg_t xlane;
-    c3x_reg_t max_accel;
-    c3x_reg_t rel;
+    c3x_f32_t xlane;
+    c3x_f32_t max_accel;
+    c3x_f32_t rel;
     u32 palette;
 } RACER_DISPATCH;
 
@@ -588,29 +588,29 @@ typedef struct tCHOOSE_CAR_ENTRY {
     s32 y;
     s32 z;
     u32 romdata;
-    c3x_reg_t rady;
+    c3x_f32_t rady;
     u32 oid;
 } tCHOOSE_CAR_ENTRY;
 
 typedef struct tCARPARAM {
-    c3x_reg_t max_accel;
-    c3x_reg_t traction;
-    c3x_reg_t road_friction;
-    c3x_reg_t offroad_friction;
+    c3x_f32_t max_accel;
+    c3x_f32_t traction;
+    c3x_f32_t road_friction;
+    c3x_f32_t offroad_friction;
 } tCARPARAM;
 
 typedef struct tROADKILL_TAB_ENTRY {
     uintptr_t death_romdata;
     int hit_sound;
     uintptr_t parts_list;
-    c3x_reg_t width_left;
-    c3x_reg_t width_right;
+    c3x_f32_t width_left;
+    c3x_f32_t width_right;
 } tROADKILL_TAB_ENTRY;
 
 typedef struct tGEESE_DIR_ENTRY {
     int speed;
     int direction;
-    c3x_reg_t dir_rad;
+    c3x_f32_t dir_rad;
 } tGEESE_DIR_ENTRY;
 
 typedef struct tPAL {
@@ -677,9 +677,9 @@ typedef enum eDELTA_MODEL {
 typedef struct RACER {
     eDELTA_MODEL model;
     u32 position;
-    c3x_reg_t xlane;
-    c3x_reg_t maxaccel;
-    c3x_reg_t rel;
+    c3x_f32_t xlane;
+    c3x_f32_t maxaccel;
+    c3x_f32_t rel;
     tPAL* palette;
 } RACER;
 
@@ -719,7 +719,7 @@ typedef struct PROC_CONTEXT {
         struct {
             tTEXT* front_text;
             tTEXT* shadow_text;
-            c3x_reg_t posx;
+            c3x_f32_t posx;
             int loop_count;
         } SHOW_RACE_NAME;
         struct {
@@ -741,11 +741,11 @@ typedef struct PROC_CONTEXT {
         struct {
             OBJ* obj;              // AR4
             CARBLK* carblk;        // AR5
-            c3x_reg_t body_x_radians;  // R6
-            c3x_reg_t old_car_speed;   // R7
-            c3x_reg_t old_orady;       // PDATA
-            c3x_reg_t body_z_radians;  // PDATA+1 / R5
-            c3x_reg_t wheel_x_radians; // PDATA+2
+            c3x_f32_t body_x_radians;  // R6
+            c3x_f32_t old_car_speed;   // R7
+            c3x_f32_t old_orady;       // PDATA
+            c3x_f32_t body_z_radians;  // PDATA+1 / R5
+            c3x_f32_t wheel_x_radians; // PDATA+2
         } CARPROC;
         struct {
             int attrwave;
@@ -758,72 +758,72 @@ typedef struct PROC_CONTEXT {
             OBJ* obj;       // AR4
             CARBLK* carblk; // AR5
             int delta_status;
-            c3x_reg_t delta_radydelta;
+            c3x_f32_t delta_radydelta;
             int delta_init;
-            c3x_reg_t delta_throttle;
+            c3x_f32_t delta_throttle;
             OBJ* delta_tpiece;
             int delta_mode;
             LEG* delta_sptr;
             int delta_last_oid;
             int delta_pstat;
             int delta_playit;
-            c3x_reg_t delta_lane;
-            c3x_reg_t delta_plyrdist;
-            c3x_reg_t delta_oplyrdist;
+            c3x_f32_t delta_lane;
+            c3x_f32_t delta_plyrdist;
+            c3x_f32_t delta_oplyrdist;
             int delta_model;
             int delta_lane_switch_tmr;
-            c3x_reg_t delta_xlane;
-            c3x_reg_t delta_min_throttle;
-            c3x_reg_t delta_max_throttle;
+            c3x_f32_t delta_xlane;
+            c3x_f32_t delta_min_throttle;
+            c3x_f32_t delta_max_throttle;
             int delta_update_fl;
-            c3x_reg_t road_offset;
-            c3x_reg_t powersurge;
-            c3x_reg_t powercatch;
+            c3x_f32_t road_offset;
+            c3x_f32_t powersurge;
+            c3x_f32_t powercatch;
             int surgetime;
             int catchtime;
             int stealthmode;
-            c3x_reg_t relativity;
+            c3x_f32_t relativity;
             RACER* initindex;
             int passcnt;
-            c3x_reg_t finishdist;
-            c3x_reg_t finishrot;
+            c3x_f32_t finishdist;
+            c3x_f32_t finishrot;
         } RACER_DRONE;
         struct {
             int background_color;
             int cut_pan;
-            c3x_reg_t zoomvel;
+            c3x_f32_t zoomvel;
             u32 camera_xyzr[4];
             u32 newcamera_xyzr[4];
-            c3x_reg_t new_posx;
-            c3x_reg_t new_posy;
-            c3x_reg_t new_posz;
-            c3x_reg_t new_radx;
-            c3x_reg_t new_rady;
-            c3x_reg_t new_radz;
+            c3x_f32_t new_posx;
+            c3x_f32_t new_posy;
+            c3x_f32_t new_posz;
+            c3x_f32_t new_radx;
+            c3x_f32_t new_rady;
+            c3x_f32_t new_radz;
             MATRIX new_matrix;
             int camera_view;
-            c3x_reg_t camera_vel;
+            c3x_f32_t camera_vel;
             OBJ* carobj;
-            c3x_reg_t cardis;
-            c3x_reg_t camera_accel;
-            c3x_reg_t camera_infin;
+            c3x_f32_t cardis;
+            c3x_f32_t camera_accel;
+            c3x_f32_t camera_infin;
             u32 temp_data[10];
             int list_num;
-            c3x_reg_t camera_lane;
+            c3x_f32_t camera_lane;
             OBJ* objins;
-            c3x_reg_t camyoff;
+            c3x_f32_t camyoff;
             LEG_PAYLOAD* road_obj;  // synthetic state used to preserve AR4 road segment across calls
             uintptr_t view_script; // synthetic state used to preserve AR6 across sleeps
             int frames_left;       // synthetic state used to preserve AR5 across sleeps
         } ATTRACT_DELTA;
         struct {
             OBJ* obj;
-            c3x_reg_t speed_factor;
+            c3x_f32_t speed_factor;
             int frames_left;
         } LOGO_PROC;
         struct {
             OBJ* obj;
-            c3x_reg_t radians;
+            c3x_f32_t radians;
         } ULTRA_PROC;
     };
 

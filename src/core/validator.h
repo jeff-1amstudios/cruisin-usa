@@ -1,11 +1,14 @@
 #ifndef CRUSN_VALIDATOR_H
 #define CRUSN_VALIDATOR_H
 
+#include "c3x_float.h"
+
 #include <stdint.h>
 
 typedef enum MAME_VALIDATE_REG_KIND {
     MAME_VALIDATE_REG_KIND_WORD,
     MAME_VALIDATE_REG_KIND_FLOAT,
+    MAME_VALIDATE_REG_KIND_STORED_FLOAT,
 } MAME_VALIDATE_REG_KIND;
 
 extern int mame_validate_disabled;
@@ -43,13 +46,16 @@ void mame_assert_reg_at_addr_impl(
 #define MAME_ASSERT_REG_WIGGLE(addr, reg_name, ptr, wiggle_room) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_WORD, (wiggle_room))
 #define MAME_ASSERT_REG_FLOAT(addr, reg_name, ptr) \
-    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_FLOAT, 0)
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), \
+        _Generic(*(ptr), c3x_f32_t: MAME_VALIDATE_REG_KIND_STORED_FLOAT, default: MAME_VALIDATE_REG_KIND_FLOAT), 0)
 #define MAME_ASSERT_REG_FLOAT_WIGGLE(addr, reg_name, ptr, wiggle_room) \
-    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), MAME_VALIDATE_REG_KIND_FLOAT, (wiggle_room))
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), \
+        _Generic(*(ptr), c3x_f32_t: MAME_VALIDATE_REG_KIND_STORED_FLOAT, default: MAME_VALIDATE_REG_KIND_FLOAT), (wiggle_room))
 #define MAME_ASSERT_MEM(addr, mem_addr, ptr) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_WORD, 0)
 #define MAME_ASSERT_MEM_FLOAT(addr, mem_addr, ptr) \
-    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_FLOAT, 0)
+    mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), \
+        _Generic(*(ptr), c3x_f32_t: MAME_VALIDATE_REG_KIND_STORED_FLOAT, default: MAME_VALIDATE_REG_KIND_FLOAT), 0)
 
 #define MAME_ASSERT_FUNCTION_ENTRY()
 

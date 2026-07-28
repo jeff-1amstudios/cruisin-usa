@@ -1006,10 +1006,10 @@ static int GEESEANI[] = {
     -1,
 };
 static tGEESE_DIR_ENTRY GEESE_DIR[] = {
-    { 250, 1, C3X_INIT(0.0f, 0x8000000000ull) },
-    { 150, -1, C3X_INIT(0.0f, 0x8000000000ull) },
-    { 150, -1, C3X_INIT(-0.13f, 0xFDFAE147AEull) },
-    { 250, 1, C3X_INIT(-0.13f, 0xFDFAE147AEull) },
+    { 250, 1, C3X_F32_INIT(0.0f) },
+    { 150, -1, C3X_F32_INIT(0.0f) },
+    { 150, -1, C3X_F32_INIT(-0.13f) },
+    { 250, 1, C3X_F32_INIT(-0.13f) },
 };
 // *----------------------------------------------------------------------------
 #define SPEED PDATA

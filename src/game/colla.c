@@ -72,8 +72,8 @@ static void ANGMOM(void);
 static void CKBOUNCE(void);
 static void COLSND(void);
 void COLCHK(void);
-static c3x_reg_t* GETBOX(OBJ* obj /*AR0*/, c3x_reg_t* storage /*AR2*/);
-static c3x_reg_t* GETBOX0(OBJ* obj /*AR0*/, c3x_reg_t* storage /*AR2*/, c3x_reg_t xminus_mult /*R0*/, c3x_reg_t yminus_mult /*R1*/, c3x_reg_t zminus_mult /*R2*/, c3x_reg_t xplus_mult /*R3*/, c3x_reg_t yplus_mult /*R4*/, c3x_reg_t zplus_mult /*R5*/);
+static c3x_f32_t* GETBOX(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/);
+static c3x_f32_t* GETBOX0(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/, c3x_reg_t xminus_mult /*R0*/, c3x_reg_t yminus_mult /*R1*/, c3x_reg_t zminus_mult /*R2*/, c3x_reg_t xplus_mult /*R3*/, c3x_reg_t yplus_mult /*R4*/, c3x_reg_t zplus_mult /*R5*/);
 void ATTR_COLLISION(void);
 
 #define PLYR_VS_DEBRIS PLYRDEBRIS
@@ -121,8 +121,8 @@ void OM_DRONE(void);
 void FIND_DRONE(void);
 void RANDVSND(void);
 
-static c3x_reg_t* EQTAB[];
-static c3x_reg_t* LEQTAB[];
+static c3x_f32_t* EQTAB[];
+static c3x_f32_t* LEQTAB[];
 static int SAGETAB[];
 
 /* asm: VL	.bss	VL,4 */
@@ -195,8 +195,8 @@ static int CAMSCANS(OBJ* list /*R0*/, VECTOR* point /*AR4*/, c3x_reg_t* out_road
     // asm 00001F91: 	LDI	OPOSZ,IR1
     // asm 00001F92: 	LDF	*+AR4(2),R2		;GET POINT X
     // asm 00001F93: 	LDF	*AR4,R3			;GET POINT Z
-    delta_z = point->Z;
-    delta_x = point->X;
+    delta_z = C3X_LDF(point->Z);
+    delta_x = C3X_LDF(point->X);
 CMS0:
     // asm 00001F94: 	SUBF	*+AR2(OPOSX),R3,R0
     // asm 00001F95: 	SUBF	*+AR2(IR1),R2,R1
@@ -455,8 +455,8 @@ PC1X0:
             // asm 0000200F: 	LDF	0,R0
             // asm 00002010: 	STF	R0,*+AR0(CARPYV)	;STORE NEW VELOCITY
             // 	;-------->B	PC2
-            car_point->y = C3X_ADD(car_point->y, C3X_ADD(car_point->road_delta_y, road_floor));
-            car_point->y_velocity = C3X_FROM_INT(0);
+            car_point->y = C3X_STF(C3X_REG(C3X_ADD(car_point->y, C3X_ADD(car_point->road_delta_y, road_floor))));
+            car_point->y_velocity = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
         } else {
             // *ABOVE ROAD CASE
         PC1A:;
@@ -488,15 +488,15 @@ PC1X0:
             // asm 0000201E: 	BGT	PC2A			;NO
             // asm 0000201F: 	LDF	R0,R1			;YES LIMIT VELOCITY
             if (C3X_LE(car_point->road_delta_y, next_y_velocity)) {
-                next_y_velocity = car_point->road_delta_y; // ;YES LIMIT VELOCITY
+                next_y_velocity = C3X_LDF(car_point->road_delta_y); // ;YES LIMIT VELOCITY
             }
         PC2A:
             // asm 00002020: 	STF	R1,*+AR0(CARPYV)	;ADD VELOCITY TO HEIGHT
             // asm 00002021: PC2B
             // asm 00002021: 	ADDF	*+AR0(CARPY),R1
             // asm 00002022: 	STF	R1,*+AR0(CARPY)
-            car_point->y_velocity = next_y_velocity;
-            car_point->y = C3X_ADD(car_point->y, next_y_velocity);
+            car_point->y_velocity = C3X_STF(C3X_REG(next_y_velocity));
+            car_point->y = C3X_STF(C3X_REG(C3X_ADD(car_point->y, next_y_velocity)));
         }
     PC2:;
         // asm 00002023: NOP 	*AR0++(CARVSIZ)
@@ -584,21 +584,21 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
         MATRIX_MUL((VECTOR*)&carblk->wheel_scan_offsets[i], (MATRIX*)&obj->omatrix, (VECTOR*)car_point);
         // *ADD IN X,Z OFFSETS
         // asm 0000204E: 	ADDF	R1,*AR3,R0
-        car_point->x = C3X_STF(C3X_ADD(car_point->x, obj->pos.X));
+        car_point->x =C3X_STF(C3X_ADD(car_point->x, obj->pos.X));
         // asm 0000204F: 	ADDF	R4,*+AR3(1),R0
         // asm 0000204F: ||	STF	R0,*AR3
         // asm 00002050: 	STF	R0,*+AR3(1)
-        car_point->y = C3X_STF(C3X_ADD(car_point->y, obj->pos.Y));
+        car_point->y =C3X_STF(C3X_ADD(car_point->y, obj->pos.Y));
         // ;	NEGF	R0			;DEFAULT COLLISION DELTA = - HEIGHT
         // asm 00002051: 	LDF	0,R0			;CLEAR DEFAULT HEIGHT
         // asm 00002052: 	STF	R0,*+AR3(3)
-        car_point->road_delta_y = C3X_FROM_INT(0); // ;CLEAR DEFAULT HEIGHT
+        car_point->road_delta_y = C3X_STF(C3X_REG(C3X_FROM_INT(0))); // ;CLEAR DEFAULT HEIGHT
         // asm 00002053: 	LDI	0,R0
         // asm 00002054: 	STI	R0,*+AR3(5)		;CLEAR COLLISION OBJECT
         car_point->collided_road_object = 0; // ;CLEAR COLLISION OBJECT
         // asm 00002055: 	ADDF	R5,*+AR3(IR0),R0
         // asm 00002056: 	STF	R0,*+AR3(2)
-        car_point->z = C3X_STF(C3X_ADD(car_point->z, obj->pos.Z));
+        car_point->z =C3X_STF(C3X_ADD(car_point->z, obj->pos.Z));
         // asm 00002057: 	ADDI	3,AR2
     LOOP:;
     }
@@ -707,10 +707,10 @@ static void RDSCNSUB(OBJ* scan_obj /*AR4*/, CARBLK* carblk /*AR6*/, OBJ* list /*
     scan_radius = C3X_FROM_INT(scan_obj->radius); // ;GET BOX RADIUS
     //       	;------>BZD	RDSCNX		;NULL LIST
     // asm 00002078: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
-    scan_obj_z = scan_obj->pos.Z; // ;GET OBJECT Z
+    scan_obj_z = C3X_LDF(scan_obj->pos.Z); // ;GET OBJECT Z
 RS0:
     // asm 00002079: 	LDF	*+AR4(OPOSX),R3		;GET OBJECT X
-    scan_obj_x = scan_obj->pos.X; // ;GET OBJECT X
+    scan_obj_x = C3X_LDF(scan_obj->pos.X); // ;GET OBJECT X
 RS1:
     // asm 0000207A: 	SUBF	*+AR2(OPOSX),R3,R2
     delta_x = C3X_SUB(scan_obj_x, road_obj->pos.X);
@@ -823,7 +823,7 @@ RS300:
     }
 RS301:
     // asm 000020A8: 	STF	R0,*+AR4(CARPRDYD)		;SAVE ROAD Y DELTA
-    car_point->road_delta_y = road_delta_y; // ;SAVE ROAD Y DELTA
+    car_point->road_delta_y = C3X_STF(C3X_REG(road_delta_y)); // ;SAVE ROAD Y DELTA
     MAME_ASSERT_MEM(0x000020A9, "d@(ar2+f)", &road_obj->id);
     // asm 000020A9: 	STI	AR2,*+AR4(CARPCOL) 	;SAVE COLLISION OBJECT
     car_point->collided_road_object = OBJ_TO_REF(road_obj); // ;SAVE COLLISION OBJECT
@@ -845,7 +845,7 @@ RS3L:
         // asm 000020B1: 	FLOAT	*+AR4(ORAD),R0		;GET BOX RADIUS
         scan_radius = C3X_FROM_INT(scan_obj->radius); // ;GET BOX RADIUS
         // asm 000020B2: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
-        scan_obj_z = scan_obj->pos.Z; // ;GET OBJECT Z
+        scan_obj_z = C3X_LDF(scan_obj->pos.Z); // ;GET OBJECT Z
         // 	;---->	BNZ	RS0
         goto RS0;
     }
@@ -898,15 +898,15 @@ int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, c3x_reg_t* out_road
     vertex0 = VL[0];
     vertex1 = VL[1];
     vertex2 = VL[2];
-    normal.X = C3X_SUB(
+    normal.X = C3X_STF(C3X_REG(C3X_SUB(
         C3X_MUL(C3X_SUB(vertex1->Y, vertex0->Y), C3X_SUB(vertex2->Z, vertex1->Z)),
-        C3X_MUL(C3X_SUB(vertex1->Z, vertex0->Z), C3X_SUB(vertex2->Y, vertex1->Y)));
-    normal.Y = C3X_SUB(
+        C3X_MUL(C3X_SUB(vertex1->Z, vertex0->Z), C3X_SUB(vertex2->Y, vertex1->Y)))));
+    normal.Y = C3X_STF(C3X_REG(C3X_SUB(
         C3X_MUL(C3X_SUB(vertex1->Z, vertex0->Z), C3X_SUB(vertex2->X, vertex1->X)),
-        C3X_MUL(C3X_SUB(vertex1->X, vertex0->X), C3X_SUB(vertex2->Z, vertex1->Z)));
-    normal.Z = C3X_SUB(
+        C3X_MUL(C3X_SUB(vertex1->X, vertex0->X), C3X_SUB(vertex2->Z, vertex1->Z)))));
+    normal.Z = C3X_STF(C3X_REG(C3X_SUB(
         C3X_MUL(C3X_SUB(vertex1->X, vertex0->X), C3X_SUB(vertex2->Y, vertex1->Y)),
-        C3X_MUL(C3X_SUB(vertex1->Y, vertex0->Y), C3X_SUB(vertex2->X, vertex1->X)));
+        C3X_MUL(C3X_SUB(vertex1->Y, vertex0->Y), C3X_SUB(vertex2->X, vertex1->X)))));
     // asm 000020C1: 	LDPI	@VLI,AR1
     // asm 000020C2: 	LDI	*AR1,AR1
     // asm 000020C3: 	MPYF	*AR1++,*AR0++,R0
@@ -972,23 +972,23 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // *LOAD 2ND COLUMN OF ROTATION MATRIX (Y AXIS)
     // asm 000020DA: 	LDF	*AR2,R0		     	;2ND COLUMN ROT MATRIX IS NORMAL VECTOR
     // asm 000020DB: 	STF	R0,*+AR3(3)
-    matrix->a10 = C3X_STF(normal->X); // ;2ND COLUMN ROT MATRIX IS NORMAL VECTOR
+    matrix->a10 = normal->X; // ;2ND COLUMN ROT MATRIX IS NORMAL VECTOR
     // asm 000020DC: 	LDF	*+AR2(1),R1
     // asm 000020DD: 	STF	R1,*+AR3(4)
-    matrix->a11 = C3X_STF(normal->Y);
+    matrix->a11 = normal->Y;
     // asm 000020DE: 	LDF	*+AR2(2),R2
     // asm 000020DF: 	STF	R2,*+AR3(5)
-    matrix->a12 = C3X_STF(normal->Z);
+    matrix->a12 = normal->Z;
     // *LOAD 1ST COLUMN OF ROTATION MATRIX (X AXIS)
     // asm 000020E0: 	LDI	AR3,AR2
     // asm 000020E1: 	STF	R1,*AR2			;X
-    matrix->a00 = C3X_STF(normal->Y); // ;X
+    matrix->a00 = normal->Y; // ;X
     // asm 000020E2: 	NEGF	R0			;-N2
     // asm 000020E3: 	STF	R0,*+AR2(1)		;Y
-    matrix->a01 = C3X_STF(C3X_NEG(normal->X)); // ;Y
+    matrix->a01 =C3X_STF(C3X_NEG(normal->X)); // ;Y
     // asm 000020E4: 	CLRF	R1
     // asm 000020E5: 	STF	R1,*+AR2(2)		;Z
-    matrix->a02 = C3X_FROM_INT(0); // ;Z
+    matrix->a02 = C3X_STF(C3X_REG(C3X_FROM_INT(0))); // ;Z
     // asm 000020E6: 	CALL	NORMALIZE		;normalize(&N);
     NORMALIZE((VECTOR*)&matrix->a00);
     // *LOAD 3RD COLUMN OF ROTATION MATRIX (Z AXIS)
@@ -1012,17 +1012,17 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // asm 000020EA: 	MPYF	*+AR3(IR0),*+AR2(1),R1	;U3*V2
     // asm 000020EB: 	SUBF	R1,R0
     // asm 000020EC: 	STF	R0,*+AR3(6)
-    matrix->a20 = C3X_STF(C3X_SUB(C3X_MUL(matrix->a01, matrix->a12), C3X_MUL(matrix->a02, matrix->a11)));
+    matrix->a20 =C3X_STF(C3X_SUB(C3X_MUL(matrix->a01, matrix->a12), C3X_MUL(matrix->a02, matrix->a11)));
     // asm 000020ED: 	MPYF	*+AR3(IR0),*AR2,R0	;U3*V1
     // asm 000020EE: 	MPYF	*AR3,*+AR2(IR0),R1	;U1*V3
     // asm 000020EF: 	SUBF	R1,R0
     // asm 000020F0: 	STF	R0,*+AR3(7)
-    matrix->a21 = C3X_STF(C3X_SUB(C3X_MUL(matrix->a02, matrix->a10), C3X_MUL(matrix->a00, matrix->a12)));
+    matrix->a21 =C3X_STF(C3X_SUB(C3X_MUL(matrix->a02, matrix->a10), C3X_MUL(matrix->a00, matrix->a12)));
     // asm 000020F1: 	MPYF	*AR3,*+AR2(1),R0	;U1*V2
     // asm 000020F2: 	MPYF	*+AR3(1),*AR2,R1	;U2*V1
     // asm 000020F3: 	SUBF	R1,R0
     // asm 000020F4: 	STF	R0,*+AR3(8)
-    matrix->a22 = C3X_STF(C3X_SUB(C3X_MUL(matrix->a00, matrix->a11), C3X_MUL(matrix->a01, matrix->a10)));
+    matrix->a22 =C3X_STF(C3X_SUB(C3X_MUL(matrix->a00, matrix->a11), C3X_MUL(matrix->a01, matrix->a10)));
     // asm 000020F5: 	ADDI	3,AR2
     // asm 000020F6: 	CALL	NORMALIZE		;normalize(&N);
     NORMALIZE((VECTOR*)&matrix->a20);
@@ -1041,7 +1041,7 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // Do not use MAME_ASSERT_MEM on float storage here: MAME is reading raw
     // TMS320C3x float bits from memory, while the port stores host IEEE floats.
     // asm 000020FD: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_SUB(carblk->center.y, carblk->wheel_scan_offsets[0].Y));
+    obj->pos.Y =C3X_STF(C3X_SUB(carblk->center.y, carblk->wheel_scan_offsets[0].Y));
     MAME_ASSERT_REG_FLOAT(0x000020FE, "R0", &obj->pos.Y);
     // asm 000020FE: 	RETS
 }
@@ -1076,9 +1076,9 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
     int v2_index;
     int v3_index;
     int i;
-    const c3x_reg_t* hit_vertex1;
-    const c3x_reg_t* hit_vertex2;
-    const c3x_reg_t* hit_vertex3;
+    const c3x_f32_t* hit_vertex1;
+    const c3x_f32_t* hit_vertex2;
+    const c3x_f32_t* hit_vertex3;
 
     MAME_ASSERT_FUNCTION_ENTRY();
 
@@ -1109,14 +1109,14 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
     // asm 0000210F: 	LDI	R2,AR1			;create translation (TRANS = OBJPOS - COLLPOS)
     // asm 00002110: 	LDF	*+AR2(OPOSX),R0
     // asm 00002111: 	SUBF	*AR1++,R0
-    translation.X = C3X_SUB(obj->pos.X, point->X); // ;transvector.x
+    translation.X = C3X_STF(C3X_REG(C3X_SUB(obj->pos.X, point->X))); // ;transvector.x
     // asm 00002113: 	LDF	*+AR2(OPOSY),R0
     // asm 00002114: 	SUBF	*AR1++,R0
-    translation.Y = C3X_SUB(obj->pos.Y, point->Y); // ;transvector.y
+    translation.Y = C3X_STF(C3X_REG(C3X_SUB(obj->pos.Y, point->Y))); // ;transvector.y
     // asm 00002116: 	LDF	*+AR2(OPOSZ),R0
     // asm 00002117: 	SUBF	*AR1,R0
     // asm 00002118: 	STF	R0,*+AR6(1)		;transvector.z
-    translation.Z = C3X_SUB(obj->pos.Z, point->Z); // ;transvector.z
+    translation.Z = C3X_STF(C3X_REG(C3X_SUB(obj->pos.Z, point->Z))); // ;transvector.z
     // asm 00002119: 	LDI	*AR4++,RC
     // asm 0000211A: 	LDI	RC,BK
     // asm 0000211B: 	AND	0FFh,RC
@@ -1132,12 +1132,12 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
         // asm 00002122: 	FLOAT	R3
         // asm 00002123: 	FLOAT	R4
         packed_xy = (int)vertices[i].x_y;
-        temp_vertex.X = C3X_FROM_INT((int16_t)(packed_xy & 0xFFFF));
-        temp_vertex.Y = C3X_FROM_INT((int16_t)(packed_xy >> 16));
+        temp_vertex.X = C3X_STF(C3X_REG(C3X_FROM_INT((int16_t)(packed_xy & 0xFFFF))));
+        temp_vertex.Y = C3X_STF(C3X_REG(C3X_FROM_INT((int16_t)(packed_xy >> 16))));
         // asm 00002124:  	STF	R3,*-AR7(1)
         // asm 00002125: 	FLOAT	*AR4++,R2		;get z element of source 1
         // asm 00002125:  ||	STF	R4,*AR7
-        temp_vertex.Z = C3X_FROM_INT(vertices[i].z);
+        temp_vertex.Z = C3X_STF(C3X_REG(C3X_FROM_INT(vertices[i].z)));
         // *
         // *MULTIPLY BY ROTATION MATRIX
         // *AND ADD TRANSLATION (IN THAT ORDER)
@@ -1163,10 +1163,10 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
     for (i = 0; i < polygon_count; i++) {
         int packed_vertices;
         int v4_index;
-        const c3x_reg_t* vertex1;
-        const c3x_reg_t* vertex2;
-        const c3x_reg_t* vertex3;
-        const c3x_reg_t* vertex4;
+        const c3x_f32_t* vertex1;
+        const c3x_f32_t* vertex2;
+        const c3x_f32_t* vertex3;
+        const c3x_f32_t* vertex4;
         c3x_reg_t edge_a;
         c3x_reg_t edge_b;
         c3x_reg_t edge_c;
@@ -1412,58 +1412,58 @@ void _makbox(OBJ* obj /*AR4*/) {
     carblk = obj->carblk;
     // *STORE WHEEL OFFSET TABLE
     // asm 000021B1: 	LDF	0,R6
-    carblk->wheel_scan_offsets[0].X = C3X_FROM_INT(0);
+    carblk->wheel_scan_offsets[0].X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 000021B2: 	STF	R6,*+AR0(CARWHLTAB+0) 		;CENTER POINT BOTTOM
     // asm 000021B3: 	STF	R4,*+AR0(CARWHLTAB+1)
     // asm 000021B4: 	STF	R6,*+AR0(CARWHLTAB+2)
-    carblk->wheel_scan_offsets[0].Y = y_plus;
+    carblk->wheel_scan_offsets[0].Y = C3X_STF(C3X_REG(y_plus));
     MAME_ASSERT_REG_FLOAT(0x000021B3, "R4", &carblk->wheel_scan_offsets[0].Y);
-    carblk->wheel_scan_offsets[0].Z = C3X_FROM_INT(0);
+    carblk->wheel_scan_offsets[0].Z = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 000021B5: 	STF	R3,*+AR0(CARWHLTAB+3)		;RT FRONT BOTTOM
     // asm 000021B6: 	STF	R4,*+AR0(CARWHLTAB+4)
     // asm 000021B7: 	STF	R5,*+AR0(CARWHLTAB+5)
-    carblk->wheel_scan_offsets[1].X = x_plus;
+    carblk->wheel_scan_offsets[1].X = C3X_STF(C3X_REG(x_plus));
     MAME_ASSERT_REG_FLOAT(0x000021B6, "R3", &carblk->wheel_scan_offsets[1].X);
-    carblk->wheel_scan_offsets[1].Y = y_plus;
-    carblk->wheel_scan_offsets[1].Z = z_plus;
+    carblk->wheel_scan_offsets[1].Y = C3X_STF(C3X_REG(y_plus));
+    carblk->wheel_scan_offsets[1].Z = C3X_STF(C3X_REG(z_plus));
     // asm 000021B8: 	STF	R0,*+AR0(CARWHLTAB+6)		;LFT FRONT BOTTOM
     // asm 000021B9: 	STF	R4,*+AR0(CARWHLTAB+7)
     // asm 000021BA: 	STF	R5,*+AR0(CARWHLTAB+8)
-    carblk->wheel_scan_offsets[2].X = x_minus;
-    carblk->wheel_scan_offsets[2].Y = y_plus;
-    carblk->wheel_scan_offsets[2].Z = z_plus;
+    carblk->wheel_scan_offsets[2].X = C3X_STF(C3X_REG(x_minus));
+    carblk->wheel_scan_offsets[2].Y = C3X_STF(C3X_REG(y_plus));
+    carblk->wheel_scan_offsets[2].Z = C3X_STF(C3X_REG(z_plus));
     // asm 000021BB: 	STF	R0,*+AR0(CARWHLTAB+9)	  	;LFT REAR BOTTOM
     // asm 000021BC: 	STF	R4,*+AR0(CARWHLTAB+10)
     // asm 000021BD: 	STF	R2,*+AR0(CARWHLTAB+11)
-    carblk->wheel_scan_offsets[3].X = x_minus;
-    carblk->wheel_scan_offsets[3].Y = y_plus;
-    carblk->wheel_scan_offsets[3].Z = z_minus;
+    carblk->wheel_scan_offsets[3].X = C3X_STF(C3X_REG(x_minus));
+    carblk->wheel_scan_offsets[3].Y = C3X_STF(C3X_REG(y_plus));
+    carblk->wheel_scan_offsets[3].Z = C3X_STF(C3X_REG(z_minus));
     MAME_ASSERT_REG_FLOAT(0x000021BE, "R2", &carblk->wheel_scan_offsets[3].Z);
     // asm 000021BE: 	STF	R3,*+AR0(CARWHLTAB+12)		;RT REAR BOTTOM
     // asm 000021BF: 	STF	R4,*+AR0(CARWHLTAB+13)
     // asm 000021C0: 	STF	R2,*+AR0(CARWHLTAB+14)
-    carblk->wheel_scan_offsets[4].X = x_plus;
-    carblk->wheel_scan_offsets[4].Y = y_plus;
-    carblk->wheel_scan_offsets[4].Z = z_minus;
+    carblk->wheel_scan_offsets[4].X = C3X_STF(C3X_REG(x_plus));
+    carblk->wheel_scan_offsets[4].Y = C3X_STF(C3X_REG(y_plus));
+    carblk->wheel_scan_offsets[4].Z = C3X_STF(C3X_REG(z_minus));
     // *STORE XYZ PLUS/MINUS
     // asm 000021C1: 	ADDF	25.0,R0			;MAKE IT A LITTLE SMALLER
     // asm 000021C2: 	STF	R0,*+AR0(CARXMINUS)
     x_minus = C3X_ADD(x_minus, C3X_IMM_F32(25.0f));
-    carblk->x_minus = x_minus;
+    carblk->x_minus = C3X_STF(C3X_REG(x_minus));
     // asm 000021C3: 	STF	R1,*+AR0(CARYMINUS)
-    carblk->y_minus = y_minus;
+    carblk->y_minus = C3X_STF(C3X_REG(y_minus));
     // ;	ADDF	15.0,R2			;MAKE IT A LITTLE SMALLER
     // asm 000021C4: 	STF	R2,*+AR0(CARZMINUS)
-    carblk->z_minus = z_minus;
+    carblk->z_minus = C3X_STF(C3X_REG(z_minus));
     // asm 000021C5: 	ADDF	-25.0,R3		;MAKE IT A LITTLE SMALLER
     // asm 000021C6: 	STF	R3,*+AR0(CARXPLUS)
     x_plus = C3X_ADD(x_plus, C3X_IMM_F32(-25.0f));
-    carblk->x_plus = x_plus;
+    carblk->x_plus = C3X_STF(C3X_REG(x_plus));
     // asm 000021C7: 	STF	R4,*+AR0(CARYPLUS)
-    carblk->y_plus = y_plus;
+    carblk->y_plus = C3X_STF(C3X_REG(y_plus));
     // ;	ADDF	-15.0,R5		;MAKE IT A LITTLE SMALLER
     // asm 000021C8: 	STF	R5,*+AR0(CARZPLUS)
-    carblk->z_plus = z_plus;
+    carblk->z_plus = C3X_STF(C3X_REG(z_plus));
     // asm 000021C9: 	POP	AR0
     // asm 000021CA: 	POPF	R6
     // asm 000021CB: 	POP	R6
@@ -1647,8 +1647,8 @@ static void COLPOINT(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/) {
     // asm 00002209: 	LDF	*+AR0(OPOSZ),R3		;GET Z COORD
     // asm 0000220A: 	SUBI	OLINK3,AR1		;SETUP INDEXING
     // 	;------->BU CARSCL0
-    car_x = car_obj->pos.X; // ;GET X COORD
-    car_z = car_obj->pos.Z; // ;GET Z COORD
+    car_x = C3X_LDF(car_obj->pos.X); // ;GET X COORD
+    car_z = C3X_LDF(car_obj->pos.Z); // ;GET Z COORD
     sign_obj = *list_head;
 CARSCLP0:
     // asm 0000220B: 	MPYF	R4,R4
@@ -1666,8 +1666,8 @@ CARSCLP0:
         }
         // asm 00002213: 	LDF	*+AR0(OPOSX),R2		;GET X COORD
         // asm 00002214: 	LDF	*+AR0(OPOSZ),R3		;GET Z COORD
-        car_x = car_obj->pos.X; // ;GET X COORD
-        car_z = car_obj->pos.Z; // ;GET Z COORD
+        car_x = C3X_LDF(car_obj->pos.X); // ;GET X COORD
+        car_z = C3X_LDF(car_obj->pos.Z); // ;GET Z COORD
     }
 CARSCL0:
     // asm 00002215: 	FLOAT	*+AR0(ORAD),R5	 	;GET CAR RADIUS
@@ -1718,8 +1718,8 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
     GETBOX(car_obj, BLOWLIST);
 
     for (i = 0; i < 4; i++) {
-        c3x_reg_t* point0 = LEQTAB[i];
-        c3x_reg_t* point1 = LEQTAB[i + 1];
+        c3x_f32_t* point0 = LEQTAB[i];
+        c3x_f32_t* point1 = LEQTAB[i + 1];
         c3x_reg_t a = C3X_SUB(point1[1], point0[1]);
         c3x_reg_t b = C3X_SUB(point0[-1], point1[-1]);
         c3x_reg_t c = C3X_NEG(C3X_ADD(C3X_MUL(a, point0[-1]), C3X_MUL(b, point0[1])));
@@ -1755,11 +1755,11 @@ NOTCOCONUT:
     }
 DOREPEL:
     repulsion_magnitude = REPELL(car_obj, sign_obj, &repulsion_vector);
-    car_obj->pos.X = C3X_ADD(car_obj->pos.X, C3X_MUL(repulsion_vector.X, repulsion_magnitude));
-    car_obj->pos.Z = C3X_ADD(car_obj->pos.Z, C3X_MUL(repulsion_vector.Z, repulsion_magnitude));
-    carblk->speed = C3X_MUL(carblk->speed, C3X_IMM_F32(0.6));
+    car_obj->pos.X = C3X_STF(C3X_REG(C3X_ADD(car_obj->pos.X, C3X_MUL(repulsion_vector.X, repulsion_magnitude))));
+    car_obj->pos.Z = C3X_STF(C3X_REG(C3X_ADD(car_obj->pos.Z, C3X_MUL(repulsion_vector.Z, repulsion_magnitude))));
+    carblk->speed = C3X_STF(C3X_REG(C3X_MUL(carblk->speed, C3X_IMM_F32(0.6))));
     if (C3X_LT(carblk->speed, C3X_FROM_INT(37))) {
-        carblk->speed = C3X_FROM_INT(37);
+        carblk->speed = C3X_STF(C3X_REG(C3X_FROM_INT(37)));
         MAME_ASSERT_REG_FLOAT(0x0000226A, "R2", &carblk->speed);
         goto HARDCOL00;
     }
@@ -1776,14 +1776,14 @@ HARDCOL00:
     while (C3X_LE(angle_delta, C3X_NEG(PII))) {
         angle_delta = C3X_ADD(angle_delta, TWOPII);
     }
-    carblk->over_rotation = C3X_GT(angle_delta, C3X_FROM_INT(0)) ? C3X_IMM_F32(0.02) : C3X_IMM_F32(-0.02);
+    carblk->over_rotation = C3X_STF(C3X_REG(C3X_GT(angle_delta, C3X_FROM_INT(0)) ? C3X_IMM_F32(0.02) : C3X_IMM_F32(-0.02)));
     goto HARDCOL2;
 HARDCOL1:
     carblk->spin_flag = 1;
-    carblk->spin_radians = C3X_IMM_F32(3.14);
-    carblk->over_rotation = C3X_IMM_F32(0.1);
+    carblk->spin_radians = C3X_STF(C3X_REG(C3X_IMM_F32(3.14)));
+    carblk->over_rotation = C3X_STF(C3X_REG(C3X_IMM_F32(0.1)));
 HARDCOL2:
-    angle_delta = C3X_SUB(ARCTANF(repulsion_vector.Z, repulsion_vector.X), C3X_IMM_F32(1.57));
+    angle_delta = C3X_SUB(ARCTANF(C3X_LDF(repulsion_vector.Z), C3X_LDF(repulsion_vector.X)), C3X_IMM_F32(1.57));
     angle_delta = C3X_SUB(angle_delta, carblk->y_velocity_rotation);
     while (C3X_GT(angle_delta, PII)) {
         angle_delta = C3X_SUB(angle_delta, TWOPII);
@@ -1794,13 +1794,13 @@ HARDCOL2:
     if (C3X_LT(C3X_ABS(angle_delta), C3X_IMM_F32(1.57))) {
         goto HARDCOL3;
     }
-    old_velocity_rotation = carblk->y_velocity_rotation;
-    carblk->y_velocity_rotation = C3X_ADD(carblk->y_velocity_rotation, C3X_IMM_F32(3.14));
+    old_velocity_rotation = C3X_LDF(carblk->y_velocity_rotation);
+    carblk->y_velocity_rotation = C3X_STF(C3X_REG(C3X_ADD(carblk->y_velocity_rotation, C3X_IMM_F32(3.14))));
     while (C3X_GT(carblk->y_velocity_rotation, PII)) {
-        carblk->y_velocity_rotation = C3X_SUB(carblk->y_velocity_rotation, TWOPII);
+        carblk->y_velocity_rotation = C3X_STF(C3X_REG(C3X_SUB(carblk->y_velocity_rotation, TWOPII)));
     }
     while (C3X_LE(carblk->y_velocity_rotation, C3X_NEG(PII))) {
-        carblk->y_velocity_rotation = C3X_ADD(carblk->y_velocity_rotation, TWOPII);
+        carblk->y_velocity_rotation = C3X_STF(C3X_REG(C3X_ADD(carblk->y_velocity_rotation, TWOPII)));
     }
     if ((sign_id & TYPE_M) != TSC_HARD) {
         FIND_YMATRIX(&sign_obj->omatrix, old_velocity_rotation);
@@ -1822,13 +1822,13 @@ FLYCOLL:
     }
     angle_delta = C3X_ADD(SFRAND(C3X_IMM_F32(0.10)), carblk->y_velocity_rotation);
     hit_speed = C3X_MUL(C3X_MUL(C3X_ADD(FRAND(C3X_IMM_F32(0.65)), C3X_IMM_F32(0.8)), C3X_IMM_F32(1.5)), carblk->speed);
-    sign_obj->vel_x = C3X_MUL(C3X_NEG(_SINE(angle_delta)), hit_speed);
+    sign_obj->vel_x = C3X_STF(C3X_REG(C3X_MUL(C3X_NEG(_SINE(angle_delta)), hit_speed)));
     MAME_ASSERT_REG_FLOAT(0x000022C7, "R3", &sign_obj->vel_x);
-    sign_obj->vel_z = C3X_MUL(_COSI(angle_delta), hit_speed);
+    sign_obj->vel_z = C3X_STF(C3X_REG(C3X_MUL(_COSI(angle_delta), hit_speed)));
     MAME_ASSERT_REG_FLOAT(0x000022C8, "R0", &sign_obj->vel_z);
-    sign_obj->vel_y = C3X_MUL(C3X_MUL(C3X_SUB(FRAND(C3X_IMM_F32(-0.3)), C3X_IMM_F32(0.2)), C3X_IMM_F32(1.5)), carblk->speed);
+    sign_obj->vel_y = C3X_STF(C3X_REG(C3X_MUL(C3X_MUL(C3X_SUB(FRAND(C3X_IMM_F32(-0.3)), C3X_IMM_F32(0.2)), C3X_IMM_F32(1.5)), carblk->speed)));
     if (C3X_LT(sign_obj->vel_y, C3X_FROM_INT(-65))) {
-        sign_obj->vel_y = C3X_FROM_INT(-65);
+        sign_obj->vel_y = C3X_STF(C3X_REG(C3X_FROM_INT(-65)));
     }
     MAME_ASSERT_REG_FLOAT(0x000022D0, "R0", &sign_obj->vel_y);
     if ((sign_obj->flags & (1u << O_PROC_B)) != 0 && sign_obj->plink != NULL) {
@@ -1856,9 +1856,9 @@ FLYCOLL1:
     ONESND((sign_subtype == RDD_55GAL) ? DRMBNCE : DSIGNSND);
     goto COLSGCX0;
 RUNOVER:
-    FIND_YMATRIX(&sign_obj->omatrix, carblk->y_velocity_rotation);
+    FIND_YMATRIX(&sign_obj->omatrix, C3X_LDF(carblk->y_velocity_rotation));
     sign_obj->flags &= ~O_POSTER;
-    hit_speed = carblk->speed;
+    hit_speed = C3X_LDF(carblk->speed);
     speed_delta = C3X_MUL(hit_speed, C3X_IMM_F32(0.2));
     if (C3X_LT(speed_delta, C3X_FROM_INT(10))) {
         speed_delta = C3X_FROM_INT(10);
@@ -1866,7 +1866,7 @@ RUNOVER:
     if (C3X_LT(hit_speed, speed_delta)) {
         speed_delta = hit_speed;
     }
-    carblk->speed = C3X_SUB(hit_speed, speed_delta);
+    carblk->speed = C3X_STF(C3X_REG(C3X_SUB(hit_speed, speed_delta)));
     MAME_ASSERT_REG_FLOAT(0x0000230C, "R5", &carblk->speed);
     FREESIGN();
     PRC_CREATE_CHILD((PROC_FUNC)SIGNFALLI, DRONE_C | FLYER_T, NULL);
@@ -3060,19 +3060,19 @@ static c3x_reg_t REPELL(OBJ* obj0, OBJ* obj1, VECTOR* repulsion_vector) {
     // asm 00002634: 	LDF	*+AR0(OPOSX),R0
     // asm 00002635: 	SUBF	*+AR1(OPOSX),R0
     // asm 00002636: 	STF	R0,*AR2
-    repulsion_vector->X = C3X_SUB(obj0->pos.X, obj1->pos.X);
+    repulsion_vector->X = C3X_STF(C3X_REG(C3X_SUB(obj0->pos.X, obj1->pos.X)));
     // asm 00002637: 	LDF	0,R0
     // asm 00002638: 	STF	R0,*+AR2(1)
-    repulsion_vector->Y = C3X_FROM_INT(0);
+    repulsion_vector->Y = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00002639: 	LDF	*+AR0(OPOSZ),R0
     // asm 0000263A: 	SUBF	*+AR1(OPOSZ),R0
     // asm 0000263B: 	STF	R0,*+AR2(2)
-    repulsion_vector->Z = C3X_SUB(obj0->pos.Z, obj1->pos.Z);
+    repulsion_vector->Z = C3X_STF(C3X_REG(C3X_SUB(obj0->pos.Z, obj1->pos.Z)));
     // asm 0000263C: 	CALL	NORMALIZE		;NORMALIZE IT
     length = SQRT(C3X_ADD(C3X_MUL(repulsion_vector->X, repulsion_vector->X), C3X_MUL(repulsion_vector->Z, repulsion_vector->Z)));
     if (C3X_NE(length, C3X_FROM_INT(0))) {
-        repulsion_vector->X = C3X_DIV(repulsion_vector->X, length);
-        repulsion_vector->Z = C3X_DIV(repulsion_vector->Z, length);
+        repulsion_vector->X = C3X_STF(C3X_REG(C3X_DIV(repulsion_vector->X, length)));
+        repulsion_vector->Z = C3X_STF(C3X_REG(C3X_DIV(repulsion_vector->Z, length)));
     }
     // *FIND RELATIVE VELOCITY MAGNITUDE
     // asm 0000263D: 	LDF	*+AR0(OVELX),R0
@@ -3999,7 +3999,7 @@ GOTCOL:
  *TRASHES R0-R5
  *
  */
-static c3x_reg_t* GETBOX(OBJ* obj /*AR0*/, c3x_reg_t* storage /*AR2*/) {
+static c3x_f32_t* GETBOX(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/) {
     // asm 000028A8: 	LDF	1.0,R0		;XMINUS MULT FACTOR
     // asm 000028A9: 	LDF	1.0,R1		;YMINUS MULT FACTOR
     // asm 000028AA: 	LDF	1.0,R2		;ZMINUS MULT FACTOR
@@ -4009,7 +4009,7 @@ static c3x_reg_t* GETBOX(OBJ* obj /*AR0*/, c3x_reg_t* storage /*AR2*/) {
     return GETBOX0(obj, storage, C3X_IMM_F32(1.0f), C3X_IMM_F32(1.0f), C3X_IMM_F32(1.0f), C3X_IMM_F32(1.0f), C3X_IMM_F32(1.0f), C3X_IMM_F32(1.0f));
 }
 
-static c3x_reg_t* GETBOX0(OBJ* obj /*AR0*/, c3x_reg_t* storage /*AR2*/, c3x_reg_t xminus_mult /*R0*/, c3x_reg_t yminus_mult /*R1*/, c3x_reg_t zminus_mult /*R2*/, c3x_reg_t xplus_mult /*R3*/, c3x_reg_t yplus_mult /*R4*/, c3x_reg_t zplus_mult /*R5*/) {
+static c3x_f32_t* GETBOX0(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/, c3x_reg_t xminus_mult /*R0*/, c3x_reg_t yminus_mult /*R1*/, c3x_reg_t zminus_mult /*R2*/, c3x_reg_t xplus_mult /*R3*/, c3x_reg_t yplus_mult /*R4*/, c3x_reg_t zplus_mult /*R5*/) {
     CARBLK* carblk = obj->carblk;
     VECTOR corners[8];
     int i;
@@ -4107,39 +4107,39 @@ EOCV:
     // asm 000028E4: 	POP	AR5
     // asm 000028E5: 	POP	AR4
     // asm 000028E6: 	RETS
-    corners[0].X = C3X_MUL(carblk->x_minus, xminus_mult);
-    corners[0].Y = C3X_MUL(carblk->y_minus, yminus_mult);
-    corners[0].Z = C3X_MUL(carblk->z_minus, zminus_mult);
-    corners[1].X = C3X_MUL(carblk->x_plus, xplus_mult);
-    corners[1].Y = C3X_MUL(carblk->y_minus, yminus_mult);
-    corners[1].Z = C3X_MUL(carblk->z_minus, zminus_mult);
-    corners[2].X = C3X_MUL(carblk->x_minus, xminus_mult);
-    corners[2].Y = C3X_MUL(carblk->y_plus, yplus_mult);
-    corners[2].Z = C3X_MUL(carblk->z_minus, zminus_mult);
-    corners[3].X = C3X_MUL(carblk->x_plus, xplus_mult);
-    corners[3].Y = C3X_MUL(carblk->y_plus, yplus_mult);
-    corners[3].Z = C3X_MUL(carblk->z_minus, zminus_mult);
-    corners[4].X = C3X_MUL(carblk->x_minus, xminus_mult);
-    corners[4].Y = C3X_MUL(carblk->y_minus, yminus_mult);
-    corners[4].Z = C3X_MUL(carblk->z_plus, zplus_mult);
-    corners[5].X = C3X_MUL(carblk->x_plus, xplus_mult);
-    corners[5].Y = C3X_MUL(carblk->y_minus, yminus_mult);
-    corners[5].Z = C3X_MUL(carblk->z_plus, zplus_mult);
-    corners[6].X = C3X_MUL(carblk->x_minus, xminus_mult);
-    corners[6].Y = C3X_MUL(carblk->y_plus, yplus_mult);
-    corners[6].Z = C3X_MUL(carblk->z_plus, zplus_mult);
-    corners[7].X = C3X_MUL(carblk->x_plus, xplus_mult);
-    corners[7].Y = C3X_MUL(carblk->y_plus, yplus_mult);
-    corners[7].Z = C3X_MUL(carblk->z_plus, zplus_mult);
+    corners[0].X = C3X_STF(C3X_REG(C3X_MUL(carblk->x_minus, xminus_mult)));
+    corners[0].Y = C3X_STF(C3X_REG(C3X_MUL(carblk->y_minus, yminus_mult)));
+    corners[0].Z = C3X_STF(C3X_REG(C3X_MUL(carblk->z_minus, zminus_mult)));
+    corners[1].X = C3X_STF(C3X_REG(C3X_MUL(carblk->x_plus, xplus_mult)));
+    corners[1].Y = C3X_STF(C3X_REG(C3X_MUL(carblk->y_minus, yminus_mult)));
+    corners[1].Z = C3X_STF(C3X_REG(C3X_MUL(carblk->z_minus, zminus_mult)));
+    corners[2].X = C3X_STF(C3X_REG(C3X_MUL(carblk->x_minus, xminus_mult)));
+    corners[2].Y = C3X_STF(C3X_REG(C3X_MUL(carblk->y_plus, yplus_mult)));
+    corners[2].Z = C3X_STF(C3X_REG(C3X_MUL(carblk->z_minus, zminus_mult)));
+    corners[3].X = C3X_STF(C3X_REG(C3X_MUL(carblk->x_plus, xplus_mult)));
+    corners[3].Y = C3X_STF(C3X_REG(C3X_MUL(carblk->y_plus, yplus_mult)));
+    corners[3].Z = C3X_STF(C3X_REG(C3X_MUL(carblk->z_minus, zminus_mult)));
+    corners[4].X = C3X_STF(C3X_REG(C3X_MUL(carblk->x_minus, xminus_mult)));
+    corners[4].Y = C3X_STF(C3X_REG(C3X_MUL(carblk->y_minus, yminus_mult)));
+    corners[4].Z = C3X_STF(C3X_REG(C3X_MUL(carblk->z_plus, zplus_mult)));
+    corners[5].X = C3X_STF(C3X_REG(C3X_MUL(carblk->x_plus, xplus_mult)));
+    corners[5].Y = C3X_STF(C3X_REG(C3X_MUL(carblk->y_minus, yminus_mult)));
+    corners[5].Z = C3X_STF(C3X_REG(C3X_MUL(carblk->z_plus, zplus_mult)));
+    corners[6].X = C3X_STF(C3X_REG(C3X_MUL(carblk->x_minus, xminus_mult)));
+    corners[6].Y = C3X_STF(C3X_REG(C3X_MUL(carblk->y_plus, yplus_mult)));
+    corners[6].Z = C3X_STF(C3X_REG(C3X_MUL(carblk->z_plus, zplus_mult)));
+    corners[7].X = C3X_STF(C3X_REG(C3X_MUL(carblk->x_plus, xplus_mult)));
+    corners[7].Y = C3X_STF(C3X_REG(C3X_MUL(carblk->y_plus, yplus_mult)));
+    corners[7].Z = C3X_STF(C3X_REG(C3X_MUL(carblk->z_plus, zplus_mult)));
 
     for (i = 0; i < 8; i++) {
         storage[(i * 3) + 0] = corners[i].X;
         storage[(i * 3) + 1] = corners[i].Y;
         storage[(i * 3) + 2] = corners[i].Z;
         MATRIX_MUL(&corners[i], (MATRIX*)&obj->omatrix, (VECTOR*)&storage[24 + (i * 3)]);
-        storage[24 + (i * 3) + 0] = C3X_ADD(storage[24 + (i * 3) + 0], obj->pos.X);
-        storage[24 + (i * 3) + 1] = C3X_ADD(storage[24 + (i * 3) + 1], obj->pos.Y);
-        storage[24 + (i * 3) + 2] = C3X_ADD(storage[24 + (i * 3) + 2], obj->pos.Z);
+        storage[24 + (i * 3) + 0] = C3X_STF(C3X_ADD(storage[24 + (i * 3) + 0], obj->pos.X));
+        storage[24 + (i * 3) + 1] = C3X_STF(C3X_ADD(storage[24 + (i * 3) + 1], obj->pos.Y));
+        storage[24 + (i * 3) + 2] = C3X_STF(C3X_ADD(storage[24 + (i * 3) + 2], obj->pos.Z));
     }
 
     return storage + 48;
@@ -4168,7 +4168,7 @@ EOCV:
 /* asm: 	.WORD	VCTO1+(3*1),VCTO1+(3*3),VCTO1+(3*7)	;RSIDE */
 /* asm: 	.WORD	VCTO1+(3*7),VCTO1+(3*6),VCTO1+(3*4)	;BACK */
 /* asm: 	 */
-static c3x_reg_t* EQTAB[] = {
+static c3x_f32_t* EQTAB[] = {
     // OBJECT 0
     VCTO + (3 * 0),
     VCTO + (3 * 2),
@@ -4215,7 +4215,7 @@ static c3x_reg_t* EQTAB[] = {
 /* asm: LEQTAB */
 /* asm: 	.WORD	VCTO+(3*2)+1,VCTO+(3*6)+1,VCTO+(3*7)+1 */
 /* asm: 	.WORD	VCTO+(3*3)+1,VCTO+(3*2)+1 */
-static c3x_reg_t* LEQTAB[] = {
+static c3x_f32_t* LEQTAB[] = {
     VCTO + (3 * 2) + 1,
     VCTO + (3 * 6) + 1,
     VCTO + (3 * 7) + 1,

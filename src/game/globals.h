@@ -431,7 +431,7 @@ extern VECTOR _LIGHT;
 
 // asm:  .globl BLOWLISTI,tmpmatI,tmpmatY,INVTABI
 #define BLOWLISTI BLOWLIST
-extern c3x_reg_t BLOWLIST[];
+extern c3x_f32_t BLOWLIST[];
 
 #define tmpmatI TMPMAT
 

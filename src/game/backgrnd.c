@@ -789,11 +789,11 @@ static u32 BGD_ACTIVATE_TYCOGROUP(tyco_stream_t tyco_ptr /*AR2*/) {
         // asm 0000407F: 	LDI	AR0,AR4
         if (corn_obj != NULL) {
             // asm 00004080: 	LDF	-0.2,R2
-            corn_obj->rad.Y = C3X_IMM_F32(-0.2f);
+            corn_obj->rad.Y = C3X_STF(C3X_REG(C3X_IMM_F32(-0.2f)));
             // asm 00004081: 	LDI	AR4,AR2
             // asm 00004082: 	ADDI	OMATRIX,AR2
             // asm 00004083: 	CALL	FIND_YMATRIX
-            FIND_YMATRIX(&corn_obj->omatrix, corn_obj->rad.Y);
+            FIND_YMATRIX(&corn_obj->omatrix, C3X_LDF(corn_obj->rad.Y));
             // asm 00004084: 	LDI	*+AR4(OFLAGS),R0
             // asm 00004085: 	OR	O_1PAL,R0
             corn_obj->flags |= O_1PAL;
@@ -907,10 +907,10 @@ L12:
     // asm 000040BE: 	PUSH	R0
     // asm 000040BF: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 000040C0: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = C3X_FROM_INT(*group_ptr++);
+    obj->pos.X = C3X_STF(C3X_REG(C3X_FROM_INT(*group_ptr++)));
     MAME_ASSERT_REG_FLOAT(0x000040C0, "R1", &obj->pos.X);
     // asm 000040C1: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    obj->pos.Y = C3X_FROM_INT(*group_ptr++);
+    obj->pos.Y = C3X_STF(C3X_REG(C3X_FROM_INT(*group_ptr++)));
     MAME_ASSERT_REG_FLOAT(0x000040C5, "R1", &obj->pos.Y);
     // asm 000040C2: 	LDI	@TYCOFLAG,R0
     // asm 000040C3: 	TSTB	SC_REVERSE,R0
@@ -918,7 +918,7 @@ L12:
     // asm 000040C5: 	STF	R1,*+AR4(OPOSY)
     // asm 000040C6: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 000040C7: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_FROM_INT(*group_ptr++);
+    obj->pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(*group_ptr++)));
     MAME_ASSERT_REG_FLOAT(0x000040C7, "R1", &obj->pos.Z);
     if ((TYCOFLAG & SC_REVERSE) == 0) {
         goto NOTREVERSED;
@@ -938,15 +938,15 @@ ISOVER:
     // asm 000040CC: 	LDF	*+AR7(TB_RVS_POSX),R0	;TRANSLATE BY THE NEGATIVE OFFSET
     // asm 000040CD: 	ADDF	*+AR4(OPOSX),R0		;POSITION (THIS BLOCKS ENDING POSITION)
     // asm 000040CE: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_ADD(obj->pos.X, ROM_ParseFloat(section_ptr[TB_RVS_POSX]));
+    obj->pos.X = C3X_STF(C3X_REG(C3X_ADD(obj->pos.X, ROM_ParseFloat(section_ptr[TB_RVS_POSX]))));
     // asm 000040CF: 	LDF	*+AR7(TB_RVS_POSY),R0
     // asm 000040D0: 	ADDF	*+AR4(OPOSY),R0
     // asm 000040D1: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_ADD(obj->pos.Y, ROM_ParseFloat(section_ptr[TB_RVS_POSY]));
+    obj->pos.Y = C3X_STF(C3X_REG(C3X_ADD(obj->pos.Y, ROM_ParseFloat(section_ptr[TB_RVS_POSY]))));
     // asm 000040D2: 	LDF	*+AR7(TB_RVS_POSZ),R0
     // asm 000040D3: 	ADDF	*+AR4(OPOSZ),R0
     // asm 000040D4: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_ADD(obj->pos.Z, ROM_ParseFloat(section_ptr[TB_RVS_POSZ]));
+    obj->pos.Z = C3X_STF(C3X_REG(C3X_ADD(obj->pos.Z, ROM_ParseFloat(section_ptr[TB_RVS_POSZ]))));
     if ((TYCOFLAG & SC_OVERLAY) == 0) {
         section_ptr += 1;
     }
@@ -961,25 +961,25 @@ ISOVER:
     // asm 000040DC: 	LDF	*AR0++,R1
     // asm 000040DD: 	ADDF	*+AR7(TB_POSX),R1
     // asm 000040DE: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = C3X_ADD(VECTORAI.X, ROM_ParseFloat(section_ptr[TB_POSX]));
+    obj->pos.X = C3X_STF(C3X_REG(C3X_ADD(VECTORAI.X, ROM_ParseFloat(section_ptr[TB_POSX]))));
     // asm 000040DF: 	LDF	*AR0++,R1
     // asm 000040E0: 	ADDF	*+AR7(TB_POSY),R1
     // asm 000040E1: 	STF	R1,*+AR4(OPOSY)
-    obj->pos.Y = C3X_ADD(VECTORAI.Y, ROM_ParseFloat(section_ptr[TB_POSY]));
+    obj->pos.Y = C3X_STF(C3X_REG(C3X_ADD(VECTORAI.Y, ROM_ParseFloat(section_ptr[TB_POSY]))));
     MAME_ASSERT_REG_FLOAT(0x000040E1, "R1", &obj->pos.Y);
     // asm 000040E2: 	LDF	*AR0++,R1
     // asm 000040E3: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040E4: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_ADD(VECTORAI.Z, ROM_ParseFloat(section_ptr[TB_POSZ]));
+    obj->pos.Z = C3X_STF(C3X_REG(C3X_ADD(VECTORAI.Z, ROM_ParseFloat(section_ptr[TB_POSZ]))));
     // asm 000040E5: 	LDF	*AR5++,R2		;GET Y ROT
     // asm 000040E6: 	ADDF	@SECRADY,R2
     // asm 000040E7: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY);
+    obj->rad.Y = C3X_STF(C3X_REG(C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY)));
     MAME_ASSERT_REG_FLOAT(0x000040E8, "R2", &obj->rad.Y);
     // asm 000040E8: 	LDI	AR4,AR2
     // asm 000040E9: 	ADDI	OMATRIX,AR2
     // asm 000040EA: 	CALL	HPFIND_YMATRIX
-    HPFIND_YMATRIX(&obj->omatrix, obj->rad.Y);
+    HPFIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rad.Y));
     // asm 000040EB: 	BU	JOIN_UP
     goto JOIN_UP;
 NOTREVERSED:
@@ -994,25 +994,25 @@ NOTREVERSED:
     // asm 000040F3: 	LDF	*AR0++,R1
     // asm 000040F4: 	ADDF	*+AR7(TB_POSX),R1
     // asm 000040F5: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = C3X_ADD(VECTORAI.X, ROM_ParseFloat(section_ptr[TB_POSX]));
+    obj->pos.X = C3X_STF(C3X_REG(C3X_ADD(VECTORAI.X, ROM_ParseFloat(section_ptr[TB_POSX]))));
     // asm 000040F6: 	LDF	*AR0++,R1
     // asm 000040F7: 	ADDF	*+AR7(TB_POSY),R1
     // asm 000040F8: 	STF	R1,*+AR4(OPOSY)
-    obj->pos.Y = C3X_ADD(VECTORAI.Y, ROM_ParseFloat(section_ptr[TB_POSY]));
+    obj->pos.Y = C3X_STF(C3X_REG(C3X_ADD(VECTORAI.Y, ROM_ParseFloat(section_ptr[TB_POSY]))));
     MAME_ASSERT_REG_FLOAT(0x000040F8, "R1", &obj->pos.Y);
     // asm 000040F9: 	LDF	*AR0++,R1
     // asm 000040FA: 	ADDF	*+AR7(TB_POSZ),R1
     // asm 000040FB: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_ADD(VECTORAI.Z, ROM_ParseFloat(section_ptr[TB_POSZ]));
+    obj->pos.Z = C3X_STF(C3X_REG(C3X_ADD(VECTORAI.Z, ROM_ParseFloat(section_ptr[TB_POSZ]))));
     // asm 000040FC: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 000040FD: 	ADDF	@SECRADY,R2
     // asm 000040FE: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY);
+    obj->rad.Y = C3X_STF(C3X_REG(C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY)));
     MAME_ASSERT_REG_FLOAT(0x000040FF, "R2", &obj->rad.Y);
     // asm 000040FF: 	LDI	AR4,AR2
     // asm 00004100: 	ADDI	OMATRIX,AR2
     // asm 00004101: 	CALL	HPFIND_YMATRIX
-    HPFIND_YMATRIX(&obj->omatrix, obj->rad.Y);
+    HPFIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rad.Y));
 JOIN_UP:
     // asm 00004102: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
     raw_id = *group_ptr++;
@@ -1640,12 +1640,12 @@ c3x_reg_t GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
     // asm 00004216: 	PUSH	R3
     // asm 00004217: 	LDI	R2,AR0
     // asm 00004218: 	LDF	*AR0++(2),R3
-    delta_x = v2->X;
+    delta_x = C3X_LDF(v2->X);
     // asm 00004219: 	SUBF	*AR2++(2),R3
     delta_x = C3X_SUB(delta_x, v1->X);
     MAME_ASSERT_REG_FLOAT(0x0000421A, "R3", &delta_x);
     // asm 0000421A: 	LDF	*AR0++,R2
-    delta_z = v2->Z;
+    delta_z = C3X_LDF(v2->Z);
     // asm 0000421B: 	SUBF	*AR2++,R2
     delta_z = C3X_SUB(delta_z, v1->Z);
     MAME_ASSERT_REG_FLOAT(0x0000421C, "R2", &delta_z);
@@ -2508,27 +2508,27 @@ LS_L12:
 
     // asm 00004432: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 00004433: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = C3X_FROM_INT(crusn_read_s32(&rom_cursor));
+    obj->pos.X = C3X_STF(C3X_REG(C3X_FROM_INT(crusn_read_s32(&rom_cursor))));
     MAME_ASSERT_REG_FLOAT(0x00004433, "R1", &obj->pos.X);
 
     // asm 00004434: 	FLOAT	*AR5++,R1		;GET Y POSITION
     // asm 00004435: 	STF	R1,*+AR4(OPOSY)
-    obj->pos.Y = C3X_FROM_INT(crusn_read_s32(&rom_cursor));
+    obj->pos.Y = C3X_STF(C3X_REG(C3X_FROM_INT(crusn_read_s32(&rom_cursor))));
     MAME_ASSERT_REG_FLOAT(0x00004435, "R1", &obj->pos.Y);
 
     // asm 00004436: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 00004437: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_FROM_INT(crusn_read_s32(&rom_cursor));
+    obj->pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(crusn_read_s32(&rom_cursor))));
     MAME_ASSERT_REG_FLOAT(0x00004437, "R1", &obj->pos.Z);
 
     // asm 00004438: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 00004439: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = crusn__read_f32(&rom_cursor);
+    obj->rad.Y = C3X_STF(C3X_REG(crusn__read_f32(&rom_cursor)));
 
     // asm 0000443A: 	LDI	AR4,AR2
     // asm 0000443B: 	ADDI	OMATRIX,AR2
     // asm 0000443C: 	CALL	HPFIND_YMATRIX
-    HPFIND_YMATRIX(&obj->omatrix, obj->rad.Y);
+    HPFIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rad.Y));
 
     // asm 0000443D: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
     // asm 0000443E: 	LDI	R1,R2

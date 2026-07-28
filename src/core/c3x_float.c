@@ -621,8 +621,8 @@ c3x_reg_t c3x_from_short_double(double value) {
     return c3x_load_short(c3x_double_to_short_raw(value));
 }
 
-c3x_reg_t c3x_stf(c3x_reg_t value) {
-    return c3x_load(c3x_store(value));
+c3x_f32_t c3x_stf(c3x_reg_t value) {
+    return (c3x_f32_t){ c3x_single_raw_to_float(c3x_store(value)) };
 }
 
 c3x_reg_t c3x_ldf(c3x_f32_t value) {

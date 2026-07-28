@@ -360,23 +360,23 @@ void COMM_DRONE_PTR_SORT(void) {
         scale = C3X_FROM_INT(16);
     }
 
-    comm_drone->omatrix.mat00 = scale;
-    comm_drone->omatrix.mat11 = scale;
-    comm_drone->omatrix.mat22 = scale;
+    comm_drone->omatrix.mat00 = C3X_STF(C3X_REG(scale));
+    comm_drone->omatrix.mat11 = C3X_STF(C3X_REG(scale));
+    comm_drone->omatrix.mat22 = C3X_STF(C3X_REG(scale));
 
-    comm_drone->pos.X = player2->pos.X;
+    comm_drone->pos.X = C3X_STF(C3X_REG(player2->pos.X));
 
     {
-        c3x_reg_t y = player2->pos.Y;
+        c3x_reg_t y = C3X_LDF(player2->pos.Y);
         c3x_reg_t offset = C3X_MUL(C3X_FROM_INT(35), comm_drone->omatrix.mat00);
 
         y = C3X_SUB(y, offset);
         y = C3X_SUB(y, C3X_FROM_INT(20));
 
-        comm_drone->pos.Y = y;
+        comm_drone->pos.Y = C3X_STF(C3X_REG(y));
     }
 
-    comm_drone->pos.Z = player2->pos.Z;
+    comm_drone->pos.Z = C3X_STF(C3X_REG(player2->pos.Z));
 
     OBJ_PULL(comm_drone);
 

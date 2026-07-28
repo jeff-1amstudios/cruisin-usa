@@ -16,7 +16,7 @@
 
 static void FIND_HIGHEST_ROADY(void);
 void INFINITY_CUSA(void);
-static void TRANS_PTS(int vertex_count /*AR4*/, const c3x_f32_t* src /*AR5*/, c3x_reg_t* dst /*AR6*/, c3x_reg_t x_offset /*R6*/, c3x_reg_t y_offset /*R7*/);
+static void TRANS_PTS(int vertex_count /*AR4*/, const c3x_f32_t* src /*AR5*/, c3x_f32_t* dst /*AR6*/, c3x_reg_t x_offset /*R6*/, c3x_reg_t y_offset /*R7*/);
 static void WATER_INFINITY(void);
 
 typedef struct INFINITY_POLYGON_ENTRY {
@@ -101,15 +101,15 @@ FHRYLP:
         // asm 00008224: 	LDP	@_CAMERAPOS+X
         // asm 00008225: 	LDF	*+AR2(OPOSX),R0
         // asm 00008226: 	SUBF	@_CAMERAPOS+X,R0
-        VECTORAI.X = C3X_SUB(obj->pos.X, _CAMERAPOS.X);
+        VECTORAI.X = C3X_STF(C3X_REG(C3X_SUB(obj->pos.X, _CAMERAPOS.X)));
         // asm 00008227: 	STF	R0,*+AR1(X)
         // asm 00008228: 	LDF	*+AR2(OPOSY),R0
         // asm 00008229: 	SUBF	@_CAMERAPOS+Y,R0
-        VECTORAI.Y = C3X_SUB(obj->pos.Y, _CAMERAPOS.Y);
+        VECTORAI.Y = C3X_STF(C3X_REG(C3X_SUB(obj->pos.Y, _CAMERAPOS.Y)));
         // asm 0000822A: 	STF	R0,*+AR1(Y)
         // asm 0000822B: 	LDF	*+AR2(OPOSZ),R0
         // asm 0000822C: 	SUBF	@_CAMERAPOS+Z,R0
-        VECTORAI.Z = C3X_SUB(obj->pos.Z, _CAMERAPOS.Z);
+        VECTORAI.Z = C3X_STF(C3X_REG(C3X_SUB(obj->pos.Z, _CAMERAPOS.Z)));
         // asm 0000822D: 	STF	R0,*+AR1(Z)
         // asm 0000822E: 	SETDP
         // asm 0000822F: 	LDI	AR1,AR0
@@ -251,7 +251,7 @@ void INFINITY_CUSA(void) {
     c3x_reg_t clip_amount;
     int palette_code;
     int loop_count;
-    c3x_reg_t* blow_ptr;
+    c3x_f32_t* blow_ptr;
     INFINITY_POLYGON_ENTRY* polygon_ptr;
     LINE2D line;
     c3x_reg_t dist_to_line;
@@ -279,7 +279,7 @@ void INFINITY_CUSA(void) {
     // 	;KEEP CAMERARAD Y IN RANGE +-2 PI
     // asm 0000826A: 	LDP	@_CAMERARAD
     // asm 0000826B: 	LDF	@_CAMERARAD+Y,R2
-    camera_rady = _CAMERARAD.Y;
+    camera_rady = C3X_LDF(_CAMERARAD.Y);
     // asm 0000826C: 	SETDP
     // asm 0000826D: 	BLT	INFF0
     // asm 0000826E: 	CMPF	@TWOPII,R2
@@ -291,7 +291,7 @@ void INFINITY_CUSA(void) {
         camera_rady = NORMIT(camera_rady); // ;SAVE TRUNCATED VERSION
                                            // asm 00008272: 	LDP	@_CAMERARAD
                                            // asm 00008273: 	STF	R2,@_CAMERARAD+Y
-        _CAMERARAD.Y = camera_rady;
+        _CAMERARAD.Y = C3X_STF(C3X_REG(camera_rady));
         // asm 00008274: 	SETDP
     }
 INFF1:
@@ -441,8 +441,8 @@ LOOP:
         // asm 000082BF: 	LDF	@HIGHEST_ROADY,R0
         // asm 000082C0: 	STF	R0,*+AR1(Y)
         // asm 000082C1: 	CALL	DIST_PT2LINE
-        VECTORCI.X = HIGHEST_ROADY_X;
-        VECTORCI.Y = HIGHEST_ROADY;
+        VECTORCI.X = C3X_STF(C3X_REG(HIGHEST_ROADY_X));
+        VECTORCI.Y = C3X_STF(C3X_REG(HIGHEST_ROADY));
         dist_to_line = DIST_PT2LINE(&line, &VECTORCI);
         MAME_ASSERT_REG_FLOAT(0x000082C2, "R0", &dist_to_line);
         // asm 000082C2: 	POP	BK
@@ -885,7 +885,7 @@ c3x_reg_t INFIN_CORRECT = C3X_INIT(1.0f, 0x0000000000ull);
 //
 //
 //
-static void TRANS_PTS(int vertex_count /*AR4*/, const c3x_f32_t* src /*AR5*/, c3x_reg_t* dst /*AR6*/, c3x_reg_t x_offset /*R6*/, c3x_reg_t y_offset /*R7*/) {
+static void TRANS_PTS(int vertex_count /*AR4*/, const c3x_f32_t* src /*AR5*/, c3x_f32_t* dst /*AR6*/, c3x_reg_t x_offset /*R6*/, c3x_reg_t y_offset /*R7*/) {
 TRANS_LP:
     // ;	LDF	@AMOUNT_CLIPPED,R4
     // asm 000083D4: 	LDF	@INFIN_CORRECT,R7
@@ -904,21 +904,21 @@ TRANS_LP:
     // asm 000083D5: 	LDI	@VECTORAI,AR2
     // asm 000083D6: 	LDF	*AR5++,R0			;load src [X Y Z]
     // asm 000083D7: 	ADDF	R6,R0				;add in X offset
-    VECTORAI.X = C3X_ADD(C3X_LDF(*src++), x_offset);
+    VECTORAI.X = C3X_STF(C3X_REG(C3X_ADD(C3X_LDF(*src++), x_offset)));
     // asm 000083D8: 	LDP	@HIGHVAL
     // asm 000083D9: 	CMPF	@HIGHVAL,R0
     // asm 000083DA: 	BLT	LKJ2
     if (C3X_GE(VECTORAI.X, HIGHVAL)) {
         // asm 000083DB: 	SUBF	@HIGHVAL,R0
-        VECTORAI.X = C3X_SUB(VECTORAI.X, HIGHVAL);
+        VECTORAI.X = C3X_STF(C3X_REG(C3X_SUB(VECTORAI.X, HIGHVAL)));
     }
 LKJ2:
     // asm 000083DC: 	STF	R0,*AR2++
     // asm 000083DD: 	ADDF	R7,*AR5++,R0	 		;ADD IN HEIGHT DUDES !!!
-    VECTORAI.Y = C3X_ADD(C3X_LDF(*src++), y_offset);
+    VECTORAI.Y = C3X_STF(C3X_REG(C3X_ADD(C3X_LDF(*src++), y_offset)));
     // asm 000083DE: 	STF	R0,*AR2++
     // asm 000083DF: 	LDF	*AR5++,R0
-    VECTORAI.Z = C3X_LDF(*src++);
+    VECTORAI.Z = C3X_STF(C3X_REG(C3X_LDF(*src++)));
     // asm 000083E0: 	STF	R0,*AR2--(2)
     // asm 000083E1: 	LDI	AR6,R3
     // asm 000083E2: 	LDP	@MATRIXAI
@@ -928,13 +928,13 @@ LKJ2:
     // asm 000083E5: 	LDF	*AR6,R0
     // asm 000083E6: 	LDP	@SCRNHXI
     // asm 000083E7: 	ADDF	@SCRNHXI,R0
-    dst[0] = C3X_ADD(dst[0], SCRNHXI);
+    dst[0] = C3X_STF(C3X_ADD(dst[0], SCRNHXI));
     // asm 000083E8: 	STF	R0,*AR6++
     // asm 000083E9: 	LDF	*AR6,R0
     // asm 000083EA: 	MPYF	1.04,R0
     // asm 000083EB: 	LDP	@SCRNHYI
     // asm 000083EC: 	ADDF	@SCRNHYI,R0
-    dst[1] = C3X_ADD(C3X_MUL(dst[1], C3X_IMM_F32(1.04f)), SCRNHYI);
+    dst[1] = C3X_STF(C3X_ADD(C3X_MUL(dst[1], C3X_IMM_F32(1.04f)), SCRNHYI));
     // asm 000083ED: 	STF	R0,*AR6++(2)
     dst += 3;
     // asm 000083EE: 	DEC	AR4
@@ -942,21 +942,21 @@ LKJ2:
     // asm 000083EF: 	LDI	@VECTORAI,AR2
     // asm 000083F0: 	LDF	*AR5++,R0			;load src [X Y Z]
     // asm 000083F1: 	ADDF	R6,R0				;add in module offset
-    VECTORAI.X = C3X_ADD(C3X_LDF(*src++), x_offset);
+    VECTORAI.X = C3X_STF(C3X_REG(C3X_ADD(C3X_LDF(*src++), x_offset)));
     // asm 000083F2: 	LDP	@HIGHVAL
     // asm 000083F3: 	CMPF	@HIGHVAL,R0
     // asm 000083F4: 	BLT	LKJ25
     if (C3X_GE(VECTORAI.X, HIGHVAL)) {
         // asm 000083F5: 	SUBF	@HIGHVAL,R0
-        VECTORAI.X = C3X_SUB(VECTORAI.X, HIGHVAL);
+        VECTORAI.X = C3X_STF(C3X_REG(C3X_SUB(VECTORAI.X, HIGHVAL)));
     }
 LKJ25:
     // asm 000083F6: 	STF	R0,*AR2++
     // asm 000083F7: 	ADDF	R7,*AR5++,R0	 		;ADD IN HEIGHT DUDES !!!
-    VECTORAI.Y = C3X_ADD(C3X_LDF(*src++), y_offset);
+    VECTORAI.Y = C3X_STF(C3X_REG(C3X_ADD(C3X_LDF(*src++), y_offset)));
     // asm 000083F8: 	STF	R0,*AR2++
     // asm 000083F9: 	LDF	*AR5++,R0
-    VECTORAI.Z = C3X_LDF(*src++);
+    VECTORAI.Z = C3X_STF(C3X_REG(C3X_LDF(*src++)));
     // asm 000083FA: 	STF	R0,*AR2--(2)
     // asm 000083FB: 	LDI	AR6,R3
     // asm 000083FC: 	LDP	@MATRIXAI
@@ -966,13 +966,13 @@ LKJ25:
     // asm 000083FF: 	LDF	*AR6,R0
     // asm 00008400: 	LDP	@SCRNHXI
     // asm 00008401: 	ADDF	@SCRNHXI,R0
-    dst[0] = C3X_ADD(dst[0], SCRNHXI);
+    dst[0] = C3X_STF(C3X_ADD(dst[0], SCRNHXI));
     // asm 00008402: 	STF	R0,*AR6++
     // asm 00008403: 	LDF	*AR6,R0
     // asm 00008404: 	MPYF	1.04,R0
     // asm 00008405: 	LDP	@SCRNHYI
     // asm 00008406: 	ADDF	@SCRNHYI,R0
-    dst[1] = C3X_ADD(C3X_MUL(dst[1], C3X_IMM_F32(1.04f)), SCRNHYI);
+    dst[1] = C3X_STF(C3X_ADD(C3X_MUL(dst[1], C3X_IMM_F32(1.04f)), SCRNHYI));
     // asm 00008407: 	STF	R0,*AR6++(2)
     dst += 3;
     // asm 00008408: 	DBU	AR4,TRANS_LP
@@ -999,7 +999,7 @@ static void WATER_INFINITY(void) {
     c3x_reg_t camera_y_vector_y;
     int palette_code;
     int loop_count;
-    c3x_reg_t* blow_ptr;
+    c3x_f32_t* blow_ptr;
 
     // asm 0000840A: 	LDF	@CAMRADY,R2
     // 	;FIND HORIZON X OFFSET
@@ -1047,7 +1047,7 @@ ok24a:
     // asm 00008424: 	LDF	@_CAMERAMATRIX+7,R2  		;GET ZVECT(Y)
     // asm 00008425: 	LDF	@_CAMERAMATRIX+4,R1  		;GET YVECT(Y)
     // asm 00008426: 	SETDP
-    infinity_height = _MATRIXA.a12;
+    infinity_height = C3X_LDF(_MATRIXA.a12);
     infinity_height = C3X_MUL(infinity_height, C3X_FROM_INT(64));
     infinity_height = C3X_MUL(infinity_height, C3X_FROM_INT(8));
     // asm 00008427: 	LDP	@INFVAL
@@ -1057,7 +1057,7 @@ ok24a:
     // asm 0000842B: 	MPYF	@INFPROJ,R0
     // asm 0000842C: 	LDF	R0,R7
     // asm 0000842D: 	NEGF	R7
-    camera_y_vector_y = _CAMERAMATRIX.a11;
+    camera_y_vector_y = C3X_LDF(_CAMERAMATRIX.a11);
     water_y = DIV_F(C3X_MUL(infinity_height, INFVAL), camera_y_vector_y);
     water_y = C3X_MUL(water_y, INFPROJ);
     water_y = C3X_NEG(water_y);

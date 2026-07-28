@@ -24,9 +24,9 @@ u32 ROM_ReadU32(s32* ptr) {
 
 void ROM_ReadTYCOHEADER(tyco_stream_t ptr, TYCOHEADER* header) {
     header->flag = ptr[0];
-    header->pos.X = ROM_ParseFloat(ptr[1]);
-    header->pos.Y = ROM_ParseFloat(ptr[2]);
-    header->pos.Z = ROM_ParseFloat(ptr[3]);
-    header->rad_y = ROM_ParseFloat(ptr[4]);
+    header->pos.X = C3X_STF(C3X_REG(ROM_ParseFloat(ptr[1])));
+    header->pos.Y = C3X_STF(C3X_REG(ROM_ParseFloat(ptr[2])));
+    header->pos.Z = C3X_STF(C3X_REG(ROM_ParseFloat(ptr[3])));
+    header->rad_y = C3X_STF(C3X_REG(ROM_ParseFloat(ptr[4])));
     header->group = ptr[5];
 }

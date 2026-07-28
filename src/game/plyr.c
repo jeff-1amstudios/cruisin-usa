@@ -235,14 +235,14 @@ static c3x_reg_t SPINFRICI = C3X_INIT(0.015f, 0xF975C28F5Cull);
  *NEWSTD	.float	0.82,0.90,0.0028,0.0060
  */
 static tCARPARAM CARPARAMTAB[] = {
-    { C3X_INIT(0.91f, 0xFF68F5C28Full), C3X_INIT(0.60f, 0xFF19999999ull), C3X_INIT(0.0028f, 0xF73780346Dull), C3X_INIT(0.010f, 0xF923D70A3Dull) }, // ALL AROUND
-    { C3X_INIT(0.98f, 0xFF7AE147AEull), C3X_INIT(0.50f, 0xFF00000000ull), C3X_INIT(0.0032f, 0xF751B71758ull), C3X_INIT(0.0042f, 0xF809A02752ull) }, // ACCEL
-    { C3X_INIT(0.88f, 0xFF6147AE14ull), C3X_INIT(0.70f, 0xFF33333333ull), C3X_INIT(0.0026f, 0xF72A64C2F8ull), C3X_INIT(0.010f, 0xF923D70A3Dull) }, // TOP SPEED
-    { C3X_INIT(0.89f, 0xFF63D70A3Dull), C3X_INIT(0.50f, 0xFF00000000ull), C3X_INIT(0.0028f, 0xF73780346Dull), C3X_INIT(0.010f, 0xF923D70A3Dull) }, // HANDLING
-    { C3X_INIT(0.95f, 0xFF73333333ull), C3X_INIT(0.60f, 0xFF19999999ull), C3X_INIT(0.0030f, 0xF7449BA5E3ull), C3X_INIT(0.0039f, 0xF77F972474ull) },
-    { C3X_INIT(0.89f, 0xFF63D70A3Dull), C3X_INIT(0.50f, 0xFF00000000ull), C3X_INIT(0.0028f, 0xF73780346Dull), C3X_INIT(0.010f, 0xF923D70A3Dull) },
-    { C3X_INIT(0.91f, 0xFF68F5C28Full), C3X_INIT(0.65f, 0xFF26666666ull), C3X_INIT(0.0028f, 0xF73780346Dull), C3X_INIT(0.0050f, 0xF823D70A3Dull) },
-    { C3X_INIT(0.89f, 0xFF63D70A3Dull), C3X_INIT(0.50f, 0xFF00000000ull), C3X_INIT(0.0028f, 0xF73780346Dull), C3X_INIT(0.010f, 0xF923D70A3Dull) },
+    { C3X_F32_INIT(0.91f), C3X_F32_INIT(0.60f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.010f) }, // ALL AROUND
+    { C3X_F32_INIT(0.98f), C3X_F32_INIT(0.50f), C3X_F32_INIT(0.0032f), C3X_F32_INIT(0.0042f) }, // ACCEL
+    { C3X_F32_INIT(0.88f), C3X_F32_INIT(0.70f), C3X_F32_INIT(0.0026f), C3X_F32_INIT(0.010f) }, // TOP SPEED
+    { C3X_F32_INIT(0.89f), C3X_F32_INIT(0.50f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.010f) }, // HANDLING
+    { C3X_F32_INIT(0.95f), C3X_F32_INIT(0.60f), C3X_F32_INIT(0.0030f), C3X_F32_INIT(0.0039f) },
+    { C3X_F32_INIT(0.89f), C3X_F32_INIT(0.50f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.010f) },
+    { C3X_F32_INIT(0.91f), C3X_F32_INIT(0.65f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.0050f) },
+    { C3X_F32_INIT(0.89f), C3X_F32_INIT(0.50f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.010f) },
 };
 #define CARPARAMTABL (CARPARAMTAB1 - CARPARAMTAB) // LENGTH OF ENTRY
 
@@ -279,65 +279,65 @@ static void CLEAR_CARBLK(CARBLK* car) {
     memset(car, 0, sizeof(*car));
     zero = C3X_FROM_INT(0);
 
-    car->center.x = zero;
-    car->center.y = zero;
-    car->center.z = zero;
-    car->center.road_delta_y = zero;
-    car->center.y_velocity = zero;
-    car->right_front.x = zero;
-    car->right_front.y = zero;
-    car->right_front.z = zero;
-    car->right_front.road_delta_y = zero;
-    car->right_front.y_velocity = zero;
-    car->left_front.x = zero;
-    car->left_front.y = zero;
-    car->left_front.z = zero;
-    car->left_front.road_delta_y = zero;
-    car->left_front.y_velocity = zero;
-    car->left_rear.x = zero;
-    car->left_rear.y = zero;
-    car->left_rear.z = zero;
-    car->left_rear.road_delta_y = zero;
-    car->left_rear.y_velocity = zero;
-    car->right_rear.x = zero;
-    car->right_rear.y = zero;
-    car->right_rear.z = zero;
-    car->right_rear.road_delta_y = zero;
-    car->right_rear.y_velocity = zero;
-    car->turn = zero;
-    car->traction = zero;
-    car->max_accel = zero;
-    car->throttle = zero;
-    car->skid = zero;
-    car->speed = zero;
-    car->dist = zero;
-    car->x_momentum = zero;
-    car->y_momentum = zero;
-    car->z_momentum = zero;
-    car->brake = zero;
-    car->y_rotation = zero;
-    car->y_velocity_rotation = zero;
-    car->last_y_rotation = zero;
-    car->over_rotation = zero;
-    car->mass = zero;
-    car->spin_radians = zero;
-    car->track_piece_distance = zero;
-    car->rpm_x100 = zero;
-    car->x_plus = zero;
-    car->x_minus = zero;
-    car->y_plus = zero;
-    car->y_minus = zero;
-    car->z_plus = zero;
-    car->z_minus = zero;
-    car->x_lean = zero;
-    car->z_lean = zero;
-    car->road_friction = zero;
-    car->offroad_friction = zero;
-    car->dist_to_center = zero;
+    car->center.x = C3X_STF(C3X_REG(zero));
+    car->center.y = C3X_STF(C3X_REG(zero));
+    car->center.z = C3X_STF(C3X_REG(zero));
+    car->center.road_delta_y = C3X_STF(C3X_REG(zero));
+    car->center.y_velocity = C3X_STF(C3X_REG(zero));
+    car->right_front.x = C3X_STF(C3X_REG(zero));
+    car->right_front.y = C3X_STF(C3X_REG(zero));
+    car->right_front.z = C3X_STF(C3X_REG(zero));
+    car->right_front.road_delta_y = C3X_STF(C3X_REG(zero));
+    car->right_front.y_velocity = C3X_STF(C3X_REG(zero));
+    car->left_front.x = C3X_STF(C3X_REG(zero));
+    car->left_front.y = C3X_STF(C3X_REG(zero));
+    car->left_front.z = C3X_STF(C3X_REG(zero));
+    car->left_front.road_delta_y = C3X_STF(C3X_REG(zero));
+    car->left_front.y_velocity = C3X_STF(C3X_REG(zero));
+    car->left_rear.x = C3X_STF(C3X_REG(zero));
+    car->left_rear.y = C3X_STF(C3X_REG(zero));
+    car->left_rear.z = C3X_STF(C3X_REG(zero));
+    car->left_rear.road_delta_y = C3X_STF(C3X_REG(zero));
+    car->left_rear.y_velocity = C3X_STF(C3X_REG(zero));
+    car->right_rear.x = C3X_STF(C3X_REG(zero));
+    car->right_rear.y = C3X_STF(C3X_REG(zero));
+    car->right_rear.z = C3X_STF(C3X_REG(zero));
+    car->right_rear.road_delta_y = C3X_STF(C3X_REG(zero));
+    car->right_rear.y_velocity = C3X_STF(C3X_REG(zero));
+    car->turn = C3X_STF(C3X_REG(zero));
+    car->traction = C3X_STF(C3X_REG(zero));
+    car->max_accel = C3X_STF(C3X_REG(zero));
+    car->throttle = C3X_STF(C3X_REG(zero));
+    car->skid = C3X_STF(C3X_REG(zero));
+    car->speed = C3X_STF(C3X_REG(zero));
+    car->dist = C3X_STF(C3X_REG(zero));
+    car->x_momentum = C3X_STF(C3X_REG(zero));
+    car->y_momentum = C3X_STF(C3X_REG(zero));
+    car->z_momentum = C3X_STF(C3X_REG(zero));
+    car->brake = C3X_STF(C3X_REG(zero));
+    car->y_rotation = C3X_STF(C3X_REG(zero));
+    car->y_velocity_rotation = C3X_STF(C3X_REG(zero));
+    car->last_y_rotation = C3X_STF(C3X_REG(zero));
+    car->over_rotation = C3X_STF(C3X_REG(zero));
+    car->mass = C3X_STF(C3X_REG(zero));
+    car->spin_radians = C3X_STF(C3X_REG(zero));
+    car->track_piece_distance = C3X_STF(C3X_REG(zero));
+    car->rpm_x100 = C3X_STF(C3X_REG(zero));
+    car->x_plus = C3X_STF(C3X_REG(zero));
+    car->x_minus = C3X_STF(C3X_REG(zero));
+    car->y_plus = C3X_STF(C3X_REG(zero));
+    car->y_minus = C3X_STF(C3X_REG(zero));
+    car->z_plus = C3X_STF(C3X_REG(zero));
+    car->z_minus = C3X_STF(C3X_REG(zero));
+    car->x_lean = C3X_STF(C3X_REG(zero));
+    car->z_lean = C3X_STF(C3X_REG(zero));
+    car->road_friction = C3X_STF(C3X_REG(zero));
+    car->offroad_friction = C3X_STF(C3X_REG(zero));
+    car->dist_to_center = C3X_STF(C3X_REG(zero));
     for (i = 0; i < 5; i++) {
-        car->wheel_scan_offsets[i].X = zero;
-        car->wheel_scan_offsets[i].Y = zero;
-        car->wheel_scan_offsets[i].Z = zero;
+        car->wheel_scan_offsets[i].X = C3X_STF(C3X_REG(zero));
+        car->wheel_scan_offsets[i].Y = C3X_STF(C3X_REG(zero));
+        car->wheel_scan_offsets[i].Z = C3X_STF(C3X_REG(zero));
     }
 }
 
@@ -408,7 +408,7 @@ CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/) {
 
     // asm 00002961: 	LDF	0,R0
     // asm 00002962: 	STF	R0,*+AR0(CARRPM)
-    car->rpm_x100 = C3X_FROM_INT(0);
+    car->rpm_x100 = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
 
     // asm 00002963: 	LDI	1,R0
     // asm 00002964: 	STI	R0,*+AR0(CARSHAD)	;SHADOW ON
@@ -419,17 +419,17 @@ CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/) {
     // asm 00002967: 	LDF	@OFRDFRICI,R0
     // asm 00002968: 	STF	R0,*+AR0(CAROFRDFR)
     // FRICTION COEFFICIENTS
-    car->road_friction = C3X_STF(ROADFRICI);
-    car->offroad_friction = C3X_STF(OFRDFRICI);
+    car->road_friction =C3X_STF(ROADFRICI);
+    car->offroad_friction =C3X_STF(OFRDFRICI);
 
     // asm 00002969: 	LDF	0.82,R0
     // asm 0000296A: 	STF	R0,*+AR0(CARMAXACCEL)	;SET ACCEL POWER
     // asm 0000296B: 	LDF	1.0,R0
     // asm 0000296C: 	STF	R0,*+AR0(CARMASS)	;DEFAULT CAR MASS
     // asm 0000296D: 	STF	R0,*+AR0(CARTRACTION)	;DEFAULT TRACTION COEFFICIENT
-    car->max_accel = C3X_LOAD(0xFF1EB852u); // SET ACCEL POWER
-    car->mass = C3X_STF(C3X_FROM_INT(1));     // DEFAULT CAR MASS
-    car->traction = C3X_STF(C3X_FROM_INT(1)); // DEFAULT TRACTION COEFFICIENT
+    car->max_accel = C3X_STF(C3X_REG(C3X_LOAD(0xFF1EB852u))); // SET ACCEL POWER
+    car->mass =C3X_STF(C3X_FROM_INT(1));     // DEFAULT CAR MASS
+    car->traction =C3X_STF(C3X_FROM_INT(1)); // DEFAULT TRACTION COEFFICIENT
 
     // asm 0000296E: 	LDI	1,R0
     // asm 0000296F: 	LS	O_3DROT_B,R0
@@ -1392,7 +1392,7 @@ void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta 
     CONCATMAT(&MATRIXAI, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
     // *FORM NEW VELOCITY MATRIX
     // asm 00002C29: 	LDF	*+AR5(CARVROT),R2    	;GET VELOCITY MATRIX
-    velocity_delta = carblk->y_velocity_rotation;
+    velocity_delta = C3X_LDF(carblk->y_velocity_rotation);
     // asm 00002C2A: 	SUBF	*+AR5(CARYROT),R2
     velocity_delta = C3X_SUB(velocity_delta, carblk->y_rotation);
     // asm 00002C2B: 	LDI	@MATRIXBI,AR2
@@ -1404,9 +1404,9 @@ void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta 
     // asm 00002C30: 	CALL	CONCATMAT
     CONCATMAT(&MATRIXBI, (MATRIX*)&obj->omatrix, &MATRIXBI);
     // asm 00002C31: 	LDF  	*+AR5(CARDIST),R2	;GET DISTANCE
-    forward_vector.X = C3X_FROM_INT(0);
-    forward_vector.Y = C3X_FROM_INT(0);
-    forward_vector.Z = carblk->dist;
+    forward_vector.X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    forward_vector.Y = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    forward_vector.Z = C3X_STF(C3X_REG(carblk->dist));
     // asm 00002C32: 	LDI	@MATRIXBI,AR2
     // asm 00002C33: 	LDI	*+AR5(CAR_AIRB),R0
     // asm 00002C34: 	BNZ	DAIRB	    		;WERE FLYING
@@ -1435,10 +1435,10 @@ void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // *GET CAR MATRIX
     // asm 00002C3B: 	LDF	*+AR5(CARYROT),R2
     // asm 00002C3C: 	STF	R2,*+AR4(ORADY)		;STORE CAR OBJECT RADY
-    obj->rad.Y = C3X_STF(carblk->y_rotation);
+    obj->rad.Y = carblk->y_rotation;
     // asm 00002C3D: 	LDI	@MATRIXAI,AR2
     // asm 00002C3E: 	CALL	FIND_YMATRIX
-    FIND_YMATRIX(&_MATRIXA, carblk->y_rotation);
+    FIND_YMATRIX(&_MATRIXA, C3X_LDF(carblk->y_rotation));
     // *FORM NEW ROTATION MATRIX FOR CAR
     // asm 00002C3F: 	LDI	AR4,R2
     // asm 00002C40: 	ADDI	OMATRIX,R2
@@ -1446,7 +1446,7 @@ void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00002C42: 	CALL	CONCATMAT
     CONCATMAT((MATRIX*)&obj->omatrix, &_MATRIXA, (MATRIX*)&obj->omatrix);
     // asm 00002C43: 	CALL	DRONE_RIDE_RIGHT	;GET DISTANCE TO CENTER OF LANE
-    carblk->dist_to_center = DRONE_RIDE_RIGHT(obj, carblk);
+    carblk->dist_to_center = C3X_STF(C3X_REG(DRONE_RIDE_RIGHT(obj, carblk)));
     // asm 00002C44: 	STF	R0,*+AR5(CARDIST2CNTR)
     // stored above
     // asm 00002C45: 	RETS
@@ -1576,26 +1576,28 @@ REV5:
  *	AR5	CAR STRUCTURE
  */
 void GETRPM(CARBLK* carblk /*AR5*/) {
+    c3x_reg_t rpm_x100;
+
     // asm 00002C92: 	LDI	@GEARTABI,AR0
     // asm 00002C93: 	ADDI	*+AR5(CARGEAR),AR0
     // asm 00002C94: 	LDF	*+AR5(CARSPEED),R0	;GET SPEED
-    carblk->rpm_x100 = carblk->speed;
-    MAME_ASSERT_REG(0x00002C95, "R0", &carblk->rpm_x100);
+    rpm_x100 = C3X_LDF(carblk->speed);
+    MAME_ASSERT_REG(0x00002C95, "R0", &rpm_x100);
     // asm 00002C95: 	MPYF	*AR0,R0			;MULTIPLY BY GEAR RATIO
-    carblk->rpm_x100 = C3X_MUL(carblk->rpm_x100, C3X_LDF(GEARTABI[carblk->gear]));
-    MAME_ASSERT_REG(0x00002C96, "R0", &carblk->rpm_x100);
+    rpm_x100 = C3X_MUL(rpm_x100, C3X_LDF(GEARTABI[carblk->gear]));
+    MAME_ASSERT_REG(0x00002C96, "R0", &rpm_x100);
     // asm 00002C96: 	CMPF	NUM_RPM,R0		;LIMIT TO RANGE
     // asm 00002C97: 	LDFGT	NUM_RPM,R0
-    if (C3X_GT(carblk->rpm_x100, C3X_FROM_INT((int)NUM_RPM))) {
-        carblk->rpm_x100 = C3X_FROM_INT((int)NUM_RPM);
+    if (C3X_GT(rpm_x100, C3X_FROM_INT((int)NUM_RPM))) {
+        rpm_x100 = C3X_FROM_INT((int)NUM_RPM);
     }
     // asm 00002C98: 	CMPI	0,R0
     // asm 00002C99: 	LDILT	0,R0
-    if (C3X_LT(carblk->rpm_x100, C3X_FROM_INT(0))) {
-        carblk->rpm_x100 = C3X_FROM_INT(0);
+    if (C3X_LT(rpm_x100, C3X_FROM_INT(0))) {
+        rpm_x100 = C3X_FROM_INT(0);
     }
     // asm 00002C9A: 	STF	R0,*+AR5(CARRPM)
-    carblk->rpm_x100 = C3X_STF(carblk->rpm_x100);
+    carblk->rpm_x100 = C3X_STF(rpm_x100);
     // asm 00002C9B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETRPM", 0, 0);
 }
@@ -1646,7 +1648,7 @@ GETSK00:
     // *GET STEERING-SPEED SKID
 GETSK0:
     // asm 00002CA8: 	LDF	*+AR5(CARYROT),R2
-    rotational_difference = carblk->y_rotation;
+    rotational_difference = C3X_LDF(carblk->y_rotation);
     // asm 00002CA9: 	SUBF	*+AR5(CARVROT),R2
     rotational_difference = C3X_SUB(rotational_difference, carblk->y_velocity_rotation);
     // asm 00002CAA: 	CALL	NORMITS
@@ -1694,7 +1696,7 @@ GETSK0:
         goto GETSK1;
     }
     // asm 00002CBD: 	LDF	*+AR5(CARSPEED),R1
-    factor = carblk->speed;
+    factor = C3X_LDF(carblk->speed);
     // ;	SUBF	65,R1
     // asm 00002CBE: 	SUBF	100,R1
     factor = C3X_SUB(factor, C3X_FROM_INT(100));
@@ -1711,7 +1713,7 @@ GETSK0:
 GETSK1:
     // *GET BRAKE FACTOR
     // asm 00002CC3: 	LDF	*+AR5(CARBRAKE),R1
-    factor = carblk->brake;
+    factor = C3X_LDF(carblk->brake);
     // asm 00002CC4: 	MPYF	1.0,R1
     factor = C3X_MUL(factor, C3X_FROM_INT(1));
     // asm 00002CC5: 	ADDF	1.0,R1
@@ -1720,7 +1722,7 @@ GETSK1:
     skid = C3X_MUL(skid, factor);
     // *GET THROTTLE FACTOR
     // asm 00002CC7: 	LDF	*+AR5(CARTHROTTLE),R1
-    factor = carblk->throttle;
+    factor = C3X_LDF(carblk->throttle);
     // asm 00002CC8: 	MPYF	0.25,R1
     factor = C3X_MUL(factor, C3X_IMM_F32(0.25));
     // asm 00002CC9: 	ADDF	1.0,R1
@@ -1747,7 +1749,7 @@ GETSK1:
     skid = C3X_MUL(skid, carblk->traction);
 GETSKXX:
     // asm 00002CD1: 	STF	R0,*+AR5(CARSKID) 	;NEW SKID FACTOR
-    carblk->skid = skid;
+    carblk->skid = C3X_STF(C3X_REG(skid));
     // asm 00002CD2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSKID", 0, 0);
 }
@@ -1821,7 +1823,7 @@ static c3x_reg_t GETDIR(c3x_reg_t steering_delta /*R0*/, OBJ* obj /*AR4*/, CARBL
     // asm 00002CED: 	LDF	0,R0			;NO STEERING IN AIR
     steering_delta = C3X_FROM_INT(0);
     // asm 00002CEE: 	LDF	*+AR5(CARDROT),R1
-    body_rotation = carblk->last_y_rotation;
+    body_rotation = C3X_LDF(carblk->last_y_rotation);
     // asm 00002CEF: 	ADDF	*+AR5(CARYROT),R1
     body_rotation = C3X_ADD(body_rotation, carblk->y_rotation);
     // asm 00002CF0: 	B	GETDIR2
@@ -1835,7 +1837,7 @@ GETDIR1:
     }
     // *GET SKID FACTOR
     // asm 00002CF3: 	LDF	*+AR5(CARSKID),R4	;R4=SKID FACTOR
-    skid_factor = carblk->skid;
+    skid_factor = C3X_LDF(carblk->skid);
     // asm 00002CF4: 	LDF	1.0,R5
     grip_factor = C3X_FROM_INT(1);
     // asm 00002CF5: 	SUBF	R4,R5			;R5=1-SKID FACTOR
@@ -1848,9 +1850,9 @@ GETDIR1:
     steering_delta = C3X_MUL(steering_delta, grip_factor);
     // *GET SLIDE DELTA ANGLE
     // asm 00002CF9: 	LDF	*+AR5(CARVROT),R3  	;VELOCITY ROTATION
-    velocity_rotation = carblk->y_velocity_rotation;
+    velocity_rotation = C3X_LDF(carblk->y_velocity_rotation);
     // asm 00002CFA: 	LDF	*+AR5(CARYROT),R1	;BODY ROTATION
-    body_rotation = carblk->y_rotation;
+    body_rotation = C3X_LDF(carblk->y_rotation);
     // asm 00002CFB: 	SUBF	R3,R1,R2		;ROTATIONAL DIFFERENCE
     rotational_difference = C3X_SUB(body_rotation, velocity_rotation);
     // asm 00002CFC: 	CALL	NORMITS			;NORMALIZE DIFFERENCE
@@ -1870,14 +1872,14 @@ GETDIR1:
     // asm 00002D02: 	ADDF	R0,R3			;ADD IN STEERING FACTOR
     velocity_rotation = C3X_ADD(velocity_rotation, steering_delta);
     // asm 00002D03: 	STF	R3,*+AR5(CARVROT)  	;VELOCITY DIRECTION
-    carblk->y_velocity_rotation = velocity_rotation;
+    carblk->y_velocity_rotation = C3X_STF(C3X_REG(velocity_rotation));
     // *GET DELTA BODY MOMENTUM
     // asm 00002D04: 	MPYF	*+AR5(CARDROT),R4	;BODY DELTA MOMENTUM ON SKID
     skid_factor = C3X_MUL(skid_factor, carblk->last_y_rotation);
     // asm 00002D05: 	MPYF	0.7,R4
     skid_factor = C3X_MUL(skid_factor, C3X_IMM_F32(0.7f));
     // asm 00002D06: 	LDF	*+AR5(CARTHROTTLE),R5
-    grip_factor = carblk->throttle;
+    grip_factor = C3X_LDF(carblk->throttle);
     // asm 00002D07: 	MPYF	0.5,R5
     grip_factor = C3X_MUL(grip_factor, C3X_IMM_F32(0.5f));
     // asm 00002D08: 	ADDF	0.5,R5
@@ -1889,12 +1891,12 @@ GETDIR1:
     // asm 00002D0B: 	ADDF	R4,R0
     steering_delta = C3X_ADD(steering_delta, skid_factor);
     // asm 00002D0C: 	STF	R0,*+AR5(CARDROT)	;BODY DELTA
-    carblk->last_y_rotation = steering_delta;
+    carblk->last_y_rotation = C3X_STF(C3X_REG(steering_delta));
     // asm 00002D0D: 	ADDF	R0,R1			;ADD CARDROT TO CARYROT
     body_rotation = C3X_ADD(body_rotation, steering_delta);
 GETDIR2:
     // asm 00002D0E: 	STF	R1,*+AR5(CARYROT)	;BODY DIRECTION
-    carblk->y_rotation = body_rotation;
+    carblk->y_rotation = C3X_STF(C3X_REG(body_rotation));
     // asm 00002D0F: 	RETS
     // *
     // *CAR SPINOUT
@@ -2109,7 +2111,7 @@ void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00002D87: 	ADDF	*+AR4(OVELY),R0
     accel = C3X_ADD(accel, obj->vel_y);
     // asm 00002D88: 	STF	R0,*+AR4(OVELY)
-    obj->vel_y = accel;
+    obj->vel_y = C3X_STF(C3X_REG(accel));
     // asm 00002D89: 	LDF	0,R0			;SET ACCEL, FRICT TO ZERO
     accel = C3X_FROM_INT(0);
     // asm 00002D8A: 	LDF	0,R3
@@ -2126,13 +2128,13 @@ GETSPD1:
     // asm 00002D8E: 	LDF	0,R0			;SET ACCEL TO ZERO
     accel = C3X_FROM_INT(0);
     // asm 00002D8F: 	LDF	@SPINFRICI,R3
-    friction = C3X_STF(SPINFRICI);
+    friction = C3X_LDF(C3X_STF(SPINFRICI));
     // asm 00002D90: 	BR	GETSPD2
     goto GETSPD2;
     // *GET ENGINE ACCEL
 GETSPD10:
     // asm 00002D91: 	LDF	*+AR5(CARTHROTTLE),R0
-    accel = carblk->throttle;
+    accel = C3X_LDF(carblk->throttle);
     // asm 00002D92: 	MPYF	*+AR5(CARMAXACCEL),R0
     accel = C3X_MUL(accel, carblk->max_accel);
     MAME_ASSERT_REG_FLOAT(0x00002D93, "R0", &accel);
@@ -2143,7 +2145,7 @@ GETSPD10:
     // asm 00002D96: 	MPYF	R1,R0
     accel = C3X_MUL(accel, factor);
     // asm 00002D97: 	LDF	*+AR5(CARRPM),R1
-    factor = carblk->rpm_x100;
+    factor = C3X_LDF(carblk->rpm_x100);
     MAME_ASSERT_REG(0x00002D98, "R1", &factor);
     // asm 00002D98: 	MPYF	0.333,R1
     factor = C3X_MUL(factor, C3X_IMM_F32(0.333));
@@ -2216,7 +2218,7 @@ GETSPD10:
     accel = C3X_MUL(accel, factor);
     MAME_ASSERT_REG_FLOAT(0x00002DB1, "R0", &accel);
     // asm 00002DB1: 	LDF	*+AR5(CARSKID),R1    	;CUT DOWN ACCEL ON SKID
-    factor = carblk->skid;
+    factor = C3X_LDF(carblk->skid);
     // asm 00002DB2: 	MPYF	0.25,R1			;ONLY 25% CUT
     factor = C3X_MUL(factor, C3X_IMM_F32(0.25));
     // asm 00002DB3: 	SUBRF	1.0,R1
@@ -2226,7 +2228,7 @@ GETSPD10:
     MAME_ASSERT_REG_FLOAT(0x00002DB5, "R0", &accel);
     // *GET GRAVITY ACCEL
     // asm 00002DB5: 	LDF	*+AR4(OMAT21),R1	;ADD IN YOUR GRAVITY ACTION
-    factor = obj->omatrix.mat21;
+    factor = C3X_LDF(obj->omatrix.mat21);
     // asm 00002DB6: 	LDF	2,R3			;DEFAULT CONSTANT
     friction = C3X_IMM_F32(2.0);
     // asm 00002DB7: 	LDI	@_countdown,R2		;TIMEOUT?
@@ -2270,7 +2272,7 @@ GETSPD10:
         // asm 00002DC9: 	CMPI	ROAD_C,R1
         // asm 00002DCA: 	LDFZ	*+AR5(CARRDFR),R2    	;GET ROAD FRICTION
         // asm 00002DCB: 	LDFNZ	*+AR5(CAROFRDFR),R2	;GET OFF ROAD FRICTION
-        factor = (road_obj != NULL && (road_obj->id & (CLASS_M + TYPE_M)) == ROAD_C) ? carblk->road_friction : carblk->offroad_friction;
+        factor = C3X_LDF((road_obj != NULL && (road_obj->id & (CLASS_M + TYPE_M)) == ROAD_C) ? carblk->road_friction : carblk->offroad_friction);
         // ;	MPYF	@DRAFTVAL,R2		;ADJUST FOR DRAFT
     FRICLP:
         // asm 00002DCC: ADDF	R2,R3
@@ -2298,7 +2300,7 @@ FRL1:
     // *JARV ENDCHANGE
     // *GET SKID FRICTION
     // asm 00002DD5: 	LDF	*+AR5(CARSKID),R4    	;ADD IN SKID FACTOR
-    skid_friction = carblk->skid;
+    skid_friction = C3X_LDF(carblk->skid);
     // asm 00002DD6: 	LDF	@SKIDFRICI,R1
     // asm 00002DD7: 	MPYF	R1,R4,R5
     brake_friction = C3X_MUL(C3X_STF(SKIDFRICI), skid_friction);
@@ -2327,7 +2329,7 @@ FRIC0:
     // *GET BRAKE FRICTION
 FRIC1:
     // asm 00002DE2: 	LDF	*+AR5(CARBRAKE),R5   	;ADD IN BRAKE FRICTION
-    brake_friction = carblk->brake;
+    brake_friction = C3X_LDF(carblk->brake);
     // asm 00002DE3: 	MPYF	@BRAKFRICI,R5
     brake_friction = C3X_MUL(brake_friction, C3X_STF(BRAKFRICI));
     // asm 00002DE4: 	NEGF	R4
@@ -2360,7 +2362,7 @@ FRIC1:
     // asm 00002DF1: 	LDF	*+AR0(IR0),R4
     factor = C3X_LDF(ENGFRI[index]);
     // asm 00002DF2: 	LDF	*+AR5(CARRPM),R5	;MORE REVS MORE FRICTION
-    brake_friction = carblk->rpm_x100;
+    brake_friction = C3X_LDF(carblk->rpm_x100);
     // asm 00002DF3: 	SUBF	42,R5			;HEAVY FRICTION ABOVE 3900
     brake_friction = C3X_SUB(brake_friction, C3X_IMM_F32(42.0));
     // asm 00002DF4: 	LDFLT	0,R5
@@ -2381,7 +2383,7 @@ GETSPD2:
     // asm 00002DF9: 	LDF	0,R5
     speed_distance = C3X_FROM_INT(0);
     // asm 00002DFA: 	LDF	*+AR5(CARSPEED),R1
-    speed = carblk->speed;
+    speed = C3X_LDF(carblk->speed);
     // asm 00002DFB: 	LDI	@NFRAMES,RC
     frames = NFRAMES;
     // asm 00002DFC: 	CMPI	6,RC	 		;MAX IT OUT TO BE SAFE
@@ -2425,10 +2427,10 @@ GETSPD2:
     speed_distance = C3X_MUL(speed_distance, C3X_IMM_F32(1.5));
     MAME_ASSERT_REG_FLOAT(0x00002E09, "R1", &speed);
     // asm 00002E09: 	STF	R5,*+AR5(CARDIST)	;SAVE YOUR DISTANCE
-    carblk->dist = C3X_STF(speed_distance);
+    carblk->dist =C3X_STF(speed_distance);
     MAME_ASSERT_REG_FLOAT(0x00002E09, "R5", &speed_distance);
     // asm 00002E0A: 	STF	R1,*+AR5(CARSPEED)	;NEW SPEED
-    carblk->speed = C3X_STF(speed);
+    carblk->speed =C3X_STF(speed);
     MAME_ASSERT_REG_FLOAT(0x00002E0A, "R1", &speed);
     // asm 00002E0B: 	RETS
     // *
@@ -2610,7 +2612,7 @@ int GETAUTO(CARBLK* carblk /*AR5*/) {
     // asm 00002E73: 	LDI	0,R2
     shift_delta = 0;
     // asm 00002E74: 	LDF	*+AR5(CARTHROTTLE),R3	;TORQUE SENSOR FOR DOWNSHIFT
-    torque_sensor = carblk->throttle;
+    torque_sensor = C3X_LDF(carblk->throttle);
     // asm 00002E75: 	CMPF	1.0,R3
     // asm 00002E76: 	LDFGT	1.0,R3
     if (C3X_GT(torque_sensor, C3X_FROM_INT(1))) {

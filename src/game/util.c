@@ -801,18 +801,18 @@ void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/) {
         // asm 00008F76: 	LDF	*AR2++,R0
         // asm 00008F77: 	STF	R0,*+AR0(DYNACENTERX)
         // asm 00008F78: 	STF	R0,*+AR0(DYNATRANSX)
-        dyna->center_x = table->entries[i].center.X;
-        dyna->trans_x = table->entries[i].center.X;
+        dyna->center_x = C3X_STF(C3X_REG(table->entries[i].center.X));
+        dyna->trans_x = C3X_STF(C3X_REG(table->entries[i].center.X));
         // asm 00008F79: 	LDF	*AR2++,R0
         // asm 00008F7A: 	STF	R0,*+AR0(DYNACENTERY)
         // asm 00008F7B: 	STF	R0,*+AR0(DYNATRANSY)
-        dyna->center_y = table->entries[i].center.Y;
-        dyna->trans_y = table->entries[i].center.Y;
+        dyna->center_y = C3X_STF(C3X_REG(table->entries[i].center.Y));
+        dyna->trans_y = C3X_STF(C3X_REG(table->entries[i].center.Y));
         // asm 00008F7C: 	LDF	*AR2++,R0
         // asm 00008F7D: 	STF	R0,*+AR0(DYNACENTERZ)
         // asm 00008F7E: 	STF	R0,*+AR0(DYNATRANSZ)
-        dyna->center_z = table->entries[i].center.Z;
-        dyna->trans_z = table->entries[i].center.Z;
+        dyna->center_z = C3X_STF(C3X_REG(table->entries[i].center.Z));
+        dyna->trans_z = C3X_STF(C3X_REG(table->entries[i].center.Z));
         // asm 00008F7F: 	LDI	*AR2++,R0
         // asm 00008F80: 	STI	R0,*+AR0(DYNANVERTS)
         dyna->nverts = table->entries[i].verts_minus_1;
@@ -893,19 +893,19 @@ void CARPROC(PROC* p) {
     carblk = obj->carblk;
     p->ctx->CARPROC.carblk = carblk;
     // asm 00008F91: 	LDF	0,R6	 		;INIT SPIN RADIANS
-    p->ctx->CARPROC.body_x_radians = C3X_FROM_INT(0);
+    p->ctx->CARPROC.body_x_radians = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00008F92: 	LDF	*+AR5(CARSPEED),R0	;INIT SPEED
     // asm 00008F93: 	LDF	R0,R7
-    p->ctx->CARPROC.old_car_speed = carblk->speed;
+    p->ctx->CARPROC.old_car_speed = C3X_STF(C3X_REG(carblk->speed));
     // asm 00008F94: 	LDF	*+AR4(ORADY),R0
     // asm 00008F95: 	STF	R0,*+AR7(PDATA)		;INIT OLD ORADY
-    p->ctx->CARPROC.old_orady = obj->rady;
+    p->ctx->CARPROC.old_orady = C3X_STF(C3X_REG(obj->rady));
     // asm 00008F96: 	CLRF	R5			;INITIALIZE BODY Z RADIANS
     // asm 00008F97: 	STF	R5,*+AR7(PDATA+1)	;SAVE Z RADIANS
-    p->ctx->CARPROC.body_z_radians = C3X_FROM_INT(0);
+    p->ctx->CARPROC.body_z_radians = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00008F98: 	LDF	0,R0			;INITIALIZE WHEEL X RADIANS
     // asm 00008F99: 	STF	R0,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
-    p->ctx->CARPROC.wheel_x_radians = C3X_FROM_INT(0);
+    p->ctx->CARPROC.wheel_x_radians = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
 CARPROCL:
     obj = p->ctx->CARPROC.obj;
     carblk = p->ctx->CARPROC.carblk;
@@ -924,7 +924,7 @@ CARPROCL:
     // asm 00008FA5: 	LDF	*+AR5(CARSPEED),R7	;UPDATE OLD SPEED TO AVOID JERK
     // asm 00008FA6: 	B	CARSLP
     if (((_MODE & MMODE) != MINTRO) && ((_MODE & MSLINE) == 0) && SUSPEND_MODE == SM_HALT) {
-        p->ctx->CARPROC.old_car_speed = carblk->speed;
+        p->ctx->CARPROC.old_car_speed = C3X_STF(C3X_REG(carblk->speed));
         goto CARSLP;
     }
 NCS:
@@ -947,10 +947,10 @@ NCS:
     // asm 00008FB1: 	ADDF	*+AR7(PDATA+2),R2
     // asm 00008FB2: 	STF	R2,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
     p->ctx->CARPROC.wheel_x_radians =
-        C3X_ADD(p->ctx->CARPROC.wheel_x_radians, C3X_MUL(carblk->speed, C3X_IMM_F32(0.02f)));
+        C3X_STF(C3X_REG(C3X_ADD(p->ctx->CARPROC.wheel_x_radians, C3X_MUL(carblk->speed, C3X_IMM_F32(0.02f)))));
     // asm 00008FB3: 	LDI	@MATRIXBI,AR2		;GET X SPIN IN MATRIXB
     // asm 00008FB4: 	CALL	FIND_XMATRIX
-    FIND_XMATRIX(&MATRIXBI, p->ctx->CARPROC.wheel_x_radians);
+    FIND_XMATRIX(&MATRIXBI, C3X_LDF(p->ctx->CARPROC.wheel_x_radians));
     // *CONCAT FOR FRONT WHEELS
     // asm 00008FB5: 	LDI	@MATRIXCI,AR1		;A X B = C
     // asm 00008FB6: 	LDI	AR1,AR6			;SAVE FRONT WHEEL MATRIX PTR
@@ -1068,12 +1068,12 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     // asm 00008FD8: 	LDF	R7,R0
     // asm 00008FD9: 	LDF	*+AR5(CARSPEED),R7	;GET NEW SPEED
     // asm 00008FDA: 	SUBF	R0,R7,R0
-    new_speed = carblk->speed;
+    new_speed = C3X_LDF(carblk->speed);
     delta_speed = C3X_SUB(new_speed, p->ctx->CARPROC.old_car_speed);
     // asm 00008FDB: 	MPYF	0.06,R0			;CONVERT TO RADIANS
     // asm 00008FDC: 	ADDF	R0,R6
     p->ctx->CARPROC.body_x_radians =
-        C3X_ADD(p->ctx->CARPROC.body_x_radians, C3X_MUL(delta_speed, C3X_IMM_F32(0.06f)));
+        C3X_STF(C3X_REG(C3X_ADD(p->ctx->CARPROC.body_x_radians, C3X_MUL(delta_speed, C3X_IMM_F32(0.06f)))));
     // asm 00008FDD: 	MPYF	0.25,R6
     // asm 00008FDE: 	NEGF	R6,R2
     x_lean = C3X_NEG(C3X_MUL(p->ctx->CARPROC.body_x_radians, C3X_IMM_F32(0.25f)));
@@ -1108,13 +1108,13 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
         x_lean = C3X_IMM_F32(-0.1f);
     }
     // asm 00008FEE: 	STF	R2,*+AR5(CARXLEAN)
-    carblk->x_lean = x_lean;
+    carblk->x_lean = C3X_STF(C3X_REG(x_lean));
     // asm 00008FEF: 	LDI	@MATRIXBI,AR2
     // asm 00008FF0: 	CALL	FIND_XMATRIX
     // asm 00008FF1: 	LDI	AR2,AR0			;SAVE MATRIX PTR
     FIND_XMATRIX(&MATRIXBI, x_lean);
     body_x_matrix = &MATRIXBI;
-    p->ctx->CARPROC.old_car_speed = new_speed;
+    p->ctx->CARPROC.old_car_speed = C3X_STF(C3X_REG(new_speed));
     // 	;GET YOUR Z LEAN (CORNERING)
     // 	;
     // asm 00008FF2: 	LDF	*+AR7(PDATA),R4		;OLD ORADY
@@ -1122,7 +1122,7 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     // asm 00008FF4: 	LDF	*+AR4(ORADY),R0
     delta_rady = C3X_SUB(obj->rady, p->ctx->CARPROC.old_orady);
     // asm 00008FF5: 	STF	R0,*+AR7(PDATA)		;SAVE NEW OLD ORADY
-    p->ctx->CARPROC.old_orady = obj->rady;
+    p->ctx->CARPROC.old_orady = C3X_STF(C3X_REG(obj->rady));
     // asm 00008FF6: 	SUBF	R4,R0			;DELTA ORADY
     // asm 00008FF7: 	LDF	0,R1
     wrap_adjust = C3X_FROM_INT(0);
@@ -1145,9 +1145,9 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     delta_rady = C3X_MUL(delta_rady, C3X_IMM_F32(0.06f));
     delta_rady = C3X_MUL(delta_rady, C3X_IMM_F32(0.1f));
     // asm 00009000: 	ADDF	R0,R5
-    p->ctx->CARPROC.body_z_radians = C3X_ADD(p->ctx->CARPROC.body_z_radians, delta_rady);
+    p->ctx->CARPROC.body_z_radians = C3X_STF(C3X_REG(C3X_ADD(p->ctx->CARPROC.body_z_radians, delta_rady)));
     // asm 00009001: 	MPYF	0.5,R5
-    p->ctx->CARPROC.body_z_radians = C3X_MUL(p->ctx->CARPROC.body_z_radians, C3X_IMM_F32(0.5f));
+    p->ctx->CARPROC.body_z_radians = C3X_STF(C3X_REG(C3X_MUL(p->ctx->CARPROC.body_z_radians, C3X_IMM_F32(0.5f))));
     // asm 00009002: 	STF	R5,*+AR7(PDATA+1)	;SAVE NEW Z RADIANS
     // asm 00009003: 	NEGF	R5,R2
     z_lean = C3X_NEG(p->ctx->CARPROC.body_z_radians);
@@ -1168,7 +1168,7 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
         z_lean = C3X_IMM_F32(-0.1f);
     }
     // asm 0000900B: 	STF	R2,*+AR5(CARZLEAN)    	;SAVE IT
-    carblk->z_lean = z_lean;
+    carblk->z_lean = C3X_STF(C3X_REG(z_lean));
     // ;	MPYF	3,R2			;PUMP IT UP
     // asm 0000900C: 	MPYF	2.2,R2			;PUMP IT UP
     z_lean = C3X_MUL(z_lean, C3X_IMM_F32(2.2f));
@@ -1472,16 +1472,16 @@ void DISTANCE_2D(void) {
 void OVELADD(OBJ* obj /*AR4*/) {
     // asm 000090A9: 	LDF	*+AR4(OVELX),R0
     // asm 000090AA: 	ADDF	*+AR4(OPOSX),R0
-    obj->pos.X = C3X_STF(C3X_ADD(obj->pos.X, obj->vel_x));
+    obj->pos.X =C3X_STF(C3X_ADD(obj->pos.X, obj->vel_x));
     // asm 000090AB: 	STF	R0,*+AR4(OPOSX)
     // asm 000090AC: 	LDF	*+AR4(OVELY),R0
     // asm 000090AD: 	ADDF	*+AR4(OPOSY),R0
-    obj->pos.Y = C3X_STF(C3X_ADD(obj->pos.Y, obj->vel_y));
+    obj->pos.Y =C3X_STF(C3X_ADD(obj->pos.Y, obj->vel_y));
     // asm 000090AE: 	STF	R0,*+AR4(OPOSY)
     // asm 000090AF: 	LDF	*+AR4(OVELZ),R0
     MAME_ASSERT_REG_FLOAT(0x000090B0, "R0", &obj->vel_z);
     // asm 000090B0: 	ADDF	*+AR4(OPOSZ),R0
-    obj->pos.Z = C3X_STF(C3X_ADD(obj->pos.Z, obj->vel_z));
+    obj->pos.Z =C3X_STF(C3X_ADD(obj->pos.Z, obj->vel_z));
     MAME_ASSERT_REG_FLOAT(0x000090B1, "R0", &obj->pos.Z);
     // asm 000090B1: 	STF	R0,*+AR4(OPOSZ)
     // asm 000090B2: 	RETS

@@ -24,7 +24,7 @@ static void DISPLAY(OBJ* obj);
 static void TRANS2D(void);
 static void DYNAMIC_OBJECT(void);
 static void PLOTPOLY(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/);
-static int CLIPCK(const c3x_reg_t* vertex1 /*AR4*/, const c3x_reg_t* vertex2 /*AR5*/, const c3x_reg_t* vertex3 /*AR2*/, const c3x_reg_t* vertex4 /*AR3*/, int* clipram /*AR0*/);
+static int CLIPCK(const c3x_f32_t* vertex1 /*AR4*/, const c3x_f32_t* vertex2 /*AR5*/, const c3x_f32_t* vertex3 /*AR2*/, const c3x_f32_t* vertex4 /*AR3*/, int* clipram /*AR0*/);
 static void CLIP(int* clipram /*AR0*/, int palette_base /*R0*/, int control_word /*R2*/, const ROM_POLYGON* polygon /*AR1*/);
 static void PLTPOLY(void);
 static void PLOT1PAL(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/);
@@ -32,15 +32,15 @@ static void PLT1PAL(void);
 static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_count_minus_one);
 
 static void dirq_load_obj_matrix(MATRIX* dst, const OBJ* obj) {
-    dst->a00 = obj->omatrix.mat00;
-    dst->a01 = obj->omatrix.mat10;
-    dst->a02 = obj->omatrix.mat20;
-    dst->a10 = obj->omatrix.mat01;
-    dst->a11 = obj->omatrix.mat11;
-    dst->a12 = obj->omatrix.mat21;
-    dst->a20 = obj->omatrix.mat02;
-    dst->a21 = obj->omatrix.mat12;
-    dst->a22 = obj->omatrix.mat22;
+    dst->a00 = C3X_STF(C3X_REG(obj->omatrix.mat00));
+    dst->a01 = C3X_STF(C3X_REG(obj->omatrix.mat10));
+    dst->a02 = C3X_STF(C3X_REG(obj->omatrix.mat20));
+    dst->a10 = C3X_STF(C3X_REG(obj->omatrix.mat01));
+    dst->a11 = C3X_STF(C3X_REG(obj->omatrix.mat11));
+    dst->a12 = C3X_STF(C3X_REG(obj->omatrix.mat21));
+    dst->a20 = C3X_STF(C3X_REG(obj->omatrix.mat02));
+    dst->a21 = C3X_STF(C3X_REG(obj->omatrix.mat12));
+    dst->a22 = C3X_STF(C3X_REG(obj->omatrix.mat22));
 }
 
 #define OACTIVEI OACTIVE
@@ -188,14 +188,14 @@ VECTOR _VECTORD;
 /* asm: 	 */
 // static uintptr_t VECTORAYI = (uintptr_t)(_VECTORA + 1);
 /* asm: POSTERMATRIX2D	fbss	POSTERMATRIX2D,4 */
-static c3x_reg_t POSTERMATRIX2D[4];
+static c3x_f32_t POSTERMATRIX2D[4];
 
 static u32 CLIPRAM[CLIPRAML];
 
 // used for debugging
 OBJ* BREAKOBJ;
 
-c3x_reg_t BLOWLIST[768];
+c3x_f32_t BLOWLIST[768];
 
 static int g_dirq_debug_frame;
 static int g_dirq_debug_objects;
@@ -421,9 +421,9 @@ NOBREAK_CONTINUE:
     g_dirq_debug_objects_with_rom += 1;
 
     if ((flags & O_NOUNIV) != 0) {
-        trans_x = obj->pos.X;
-        trans_y = obj->pos.Y;
-        trans_z = obj->pos.Z;
+        trans_x = C3X_LDF(obj->pos.X);
+        trans_y = C3X_LDF(obj->pos.Y);
+        trans_z = C3X_LDF(obj->pos.Z);
     } else {
         trans_x = C3X_SUB(obj->pos.X, _CAMERAPOS.X);
         trans_y = C3X_SUB(obj->pos.Y, _CAMERAPOS.Y);
@@ -439,9 +439,9 @@ NOBREAK_CONTINUE:
         rotated_trans_y = C3X_ADD(C3X_ADD(C3X_MUL(_CAMERAMATRIX.a10, trans_x), C3X_MUL(_CAMERAMATRIX.a11, trans_y)), C3X_MUL(_CAMERAMATRIX.a12, trans_z));
         rotated_trans_z = C3X_ADD(C3X_ADD(C3X_MUL(_CAMERAMATRIX.a20, trans_x), C3X_MUL(_CAMERAMATRIX.a21, trans_y)), C3X_MUL(_CAMERAMATRIX.a22, trans_z));
     }
-    TRANSVECTOR.X = rotated_trans_x;
-    TRANSVECTOR.Y = rotated_trans_y;
-    TRANSVECTOR.Z = rotated_trans_z;
+    TRANSVECTOR.X = C3X_STF(C3X_REG(rotated_trans_x));
+    TRANSVECTOR.Y = C3X_STF(C3X_REG(rotated_trans_y));
+    TRANSVECTOR.Z = C3X_STF(C3X_REG(rotated_trans_z));
     obj->dist = FIX(rotated_trans_z);
 
     if ((flags & O_DEGRADE) != 0) {
@@ -531,9 +531,9 @@ NOBREAK_CONTINUE:
         inverse_z = C3X_LDF(INVTAB[inverse_index]);
 
         blow_index = vertex_index * 3;
-        BLOWLIST[blow_index] = C3X_ADD(C3X_MUL(world_x, inverse_z), SCRNHXI);
-        BLOWLIST[blow_index + 1] = C3X_ADD(C3X_MUL(C3X_MUL(world_y, inverse_z), C3X_IMM_F32(1.04)), SCRNHYI);
-        BLOWLIST[blow_index + 2] = world_z;
+        BLOWLIST[blow_index] = C3X_STF(C3X_ADD(C3X_MUL(world_x, inverse_z), SCRNHXI));
+        BLOWLIST[blow_index + 1] = C3X_STF(C3X_ADD(C3X_MUL(C3X_MUL(world_y, inverse_z), C3X_IMM_F32(1.04)), SCRNHYI));
+        BLOWLIST[blow_index + 2] = C3X_STF(world_z);
     }
 
     PLOTPOLY(obj, polygons, (counts_word >> 16) & 0xffff);
@@ -1519,10 +1519,10 @@ CLIPIT:
         int packed_vertices;
         int clip;
         int* clip_vertex;
-        const c3x_reg_t* vertex1;
-        const c3x_reg_t* vertex2;
-        const c3x_reg_t* vertex3;
-        const c3x_reg_t* vertex4;
+        const c3x_f32_t* vertex1;
+        const c3x_f32_t* vertex2;
+        const c3x_f32_t* vertex3;
+        const c3x_f32_t* vertex4;
         int v1;
         int v2;
         int v3;
@@ -1575,10 +1575,10 @@ CLIPIT:
 
         // *CHECK ALL Z'S <=0
         // asm 000002CD: 	LDF	*+AR4(IR1),R0
-        z1 = vertex1[2];
-        z2 = vertex2[2];
-        z3 = vertex3[2];
-        z4 = vertex4[2];
+    z1 = C3X_LDF(vertex1[2]);
+    z2 = C3X_LDF(vertex2[2]);
+    z3 = C3X_LDF(vertex3[2]);
+    z4 = C3X_LDF(vertex4[2]);
         if (C3X_LT(z1, C3X_FROM_INT(0)) && C3X_LT(z2, C3X_FROM_INT(0)) && C3X_LT(z3, C3X_FROM_INT(0)) && C3X_LT(z4, C3X_FROM_INT(0))) {
             goto DIRQ_POLYLP;
         }
@@ -1653,7 +1653,7 @@ CLIPIT:
 // *RETURN
 // *	R5 NZ=CLIP, Z=NOCLIP
 // *
-static int CLIPCK(const c3x_reg_t* vertex1 /*AR4*/, const c3x_reg_t* vertex2 /*AR5*/, const c3x_reg_t* vertex3 /*AR2*/, const c3x_reg_t* vertex4 /*AR3*/, int* clipram /*AR0*/) {
+static int CLIPCK(const c3x_f32_t* vertex1 /*AR4*/, const c3x_f32_t* vertex2 /*AR5*/, const c3x_f32_t* vertex3 /*AR2*/, const c3x_f32_t* vertex4 /*AR3*/, int* clipram /*AR0*/) {
     int abs_or;
     int i;
     int xmax;
@@ -2619,10 +2619,10 @@ CLIPIT_1:
         int packed_vertices;
         int clip;
         int* clip_vertex;
-        const c3x_reg_t* vertex1;
-        const c3x_reg_t* vertex2;
-        const c3x_reg_t* vertex3;
-        const c3x_reg_t* vertex4;
+        const c3x_f32_t* vertex1;
+        const c3x_f32_t* vertex2;
+        const c3x_f32_t* vertex3;
+        const c3x_f32_t* vertex4;
         int v1;
         int v2;
         int v3;
@@ -2658,10 +2658,10 @@ CLIPIT_1:
         vertex3 = &BLOWLIST[base3];
         vertex4 = &BLOWLIST[base4];
 
-        z1 = vertex1[2];
-        z2 = vertex2[2];
-        z3 = vertex3[2];
-        z4 = vertex4[2];
+    z1 = C3X_LDF(vertex1[2]);
+    z2 = C3X_LDF(vertex2[2]);
+    z3 = C3X_LDF(vertex3[2]);
+    z4 = C3X_LDF(vertex4[2]);
         if (C3X_LT(z1, C3X_FROM_INT(0)) && C3X_LT(z2, C3X_FROM_INT(0)) && C3X_LT(z3, C3X_FROM_INT(0)) && C3X_LT(z4, C3X_FROM_INT(0))) {
             g_dirq_debug_plot1pal_z_rejects += 1;
             continue;
@@ -2674,12 +2674,12 @@ CLIPIT_1:
         if (g_dirq_debug_plot1pal_first_obj_id < 0) {
             g_dirq_debug_plot1pal_first_obj_id = (int)obj->id;
             g_dirq_debug_plot1pal_first_poly = polygon_index;
-            g_dirq_debug_plot1pal_first_ax = vertex1[0];
-            g_dirq_debug_plot1pal_first_ay = vertex1[1];
-            g_dirq_debug_plot1pal_first_bx = vertex2[0];
-            g_dirq_debug_plot1pal_first_by = vertex2[1];
-            g_dirq_debug_plot1pal_first_cx = vertex3[0];
-            g_dirq_debug_plot1pal_first_cy = vertex3[1];
+    g_dirq_debug_plot1pal_first_ax = C3X_LDF(vertex1[0]);
+    g_dirq_debug_plot1pal_first_ay = C3X_LDF(vertex1[1]);
+    g_dirq_debug_plot1pal_first_bx = C3X_LDF(vertex2[0]);
+    g_dirq_debug_plot1pal_first_by = C3X_LDF(vertex2[1]);
+    g_dirq_debug_plot1pal_first_cx = C3X_LDF(vertex3[0]);
+    g_dirq_debug_plot1pal_first_cy = C3X_LDF(vertex3[1]);
             g_dirq_debug_plot1pal_first_cross = C3X_SUB(C3X_MUL(dy, ex), C3X_MUL(dx, ey));
         }
         if (C3X_GT(C3X_SUB(C3X_MUL(dy, ex), C3X_MUL(dx, ey)), C3X_FROM_INT(0))) {
@@ -2951,10 +2951,10 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
 
     for (polygon_index = 0; polygon_index <= polygon_count_minus_one; polygon_index++, polygons++) {
         int packed_vertices;
-        const c3x_reg_t* vertex1;
-        const c3x_reg_t* vertex2;
-        const c3x_reg_t* vertex3;
-        const c3x_reg_t* vertex4;
+        const c3x_f32_t* vertex1;
+        const c3x_f32_t* vertex2;
+        const c3x_f32_t* vertex3;
+        const c3x_f32_t* vertex4;
         c3x_reg_t dx;
         c3x_reg_t dy;
         c3x_reg_t ex;

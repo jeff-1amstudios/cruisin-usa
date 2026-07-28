@@ -96,7 +96,7 @@ NO_NINTENDO:
     // asm 0000A981: 	LDP	@_CAMERAPOS+Y
     // asm 0000A982: 	FLOAT	-2780,R0
     // asm 0000A983: 	STF	R0,@_CAMERAPOS+Y
-    _CAMERAPOS.Y = C3X_FROM_INT(-2780);
+    _CAMERAPOS.Y = C3X_STF(C3X_REG(C3X_FROM_INT(-2780)));
 
     // asm 0000A984: 	SETDP
     // asm 0000A985: 	LDL	midway,AR2
@@ -115,15 +115,15 @@ NO_NINTENDO:
     // asm 0000A988: 	CLRF	R0
     // asm 0000A989: 	STF	R0,*+AR4(OPOSX)
     // ;       FLOAT   -480,R0
-    obj->pos.X = C3X_FROM_INT(0);
+    obj->pos.X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
 
     // asm 0000A98A: 	FLOAT	-910,R0
     // asm 0000A98B: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_FROM_INT(-910);
+    obj->pos.Y = C3X_STF(C3X_REG(C3X_FROM_INT(-910)));
 
     // asm 0000A98C: 	FLOAT	5500,R0
     // asm 0000A98D: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_FROM_INT(5500);
+    obj->pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(5500)));
 
     // asm 0000A98E: 	LDI	*+AR4(OFLAGS),R0
     // asm 0000A98F: 	OR	O_ILLUM|O_NOUNIV|O_NOUROT,R0
@@ -135,16 +135,16 @@ NO_NINTENDO:
 
     // asm 0000A994: 	CLRF	R0
     // asm 0000A995: 	STF	R0,*+AR4(ORADX)
-    obj->rad.X = C3X_FROM_INT(0);
+    obj->rad.X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
 
     // asm 0000A996: 	LDF	startthey,R2
     // asm 0000A997: 	ADDF	HALFPI,R2
     // asm 0000A998: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = C3X_ADD(C3X_IMM_F32(startthey), C3X_IMM_F32(HALFPI));
+    obj->rad.Y = C3X_STF(C3X_REG(C3X_ADD(C3X_IMM_F32(startthey), C3X_IMM_F32(HALFPI))));
 
     // asm 0000A999: 	LDF	startthez,R2
     // asm 0000A99A: 	STF	R2,*+AR4(ORADZ)
-    obj->rad.Z = C3X_IMM_F32(startthez);
+    obj->rad.Z = C3X_STF(C3X_REG(C3X_IMM_F32(startthez)));
 
     // asm 0000A99B: 	LDI	AR4,AR2
     // asm 0000A99C: 	ADDI	OMATRIX,AR2
@@ -160,21 +160,21 @@ NO_NINTENDO:
     // asm 0000A9A2: 	LDF	*+AR4(ORADY),R0
     // asm 0000A9A3: 	STF	R0,*+AR4(OUSR1)
     // ;       LDI     470,AR5
-    obj->usr1_as_float = obj->rad.Y;
+    obj->usr1_as_float = C3X_STF(C3X_REG(obj->rad.Y));
 
 MSLP1:
     // asm 0000A9A4: 	LDF	0.0174539,R0
     // asm 0000A9A5: 	FLOAT	@NFRAMES,R1
     // asm 0000A9A6: 	MPYF	R1,R0
     // asm 0000A9A7: 	ADDF	*+AR4(OUSR1),R0		;ORADY
-    obj->usr1_as_float = C3X_ADD(obj->usr1_as_float, C3X_MUL(C3X_IMM_F32(0.0174539), C3X_FROM_INT(NFRAMES))); // ;ORADY
+    obj->usr1_as_float = C3X_STF(C3X_REG(C3X_ADD(obj->usr1_as_float, C3X_MUL(C3X_IMM_F32(0.0174539), C3X_FROM_INT(NFRAMES))))); // ;ORADY
 
     // asm 0000A9A8: 	STF	R0,*+AR4(OUSR1)
     // asm 0000A9A9: 	LDP	@_CAMERARAD+Y
     // asm 0000A9AA: 	SUBF	@_CAMERARAD+Y,R0
     // asm 0000A9AB: 	SETDP
     // asm 0000A9AC: 	STF	R0,*+AR4(ORADY)
-    obj->rad.Y = C3X_SUB(obj->usr1_as_float, _CAMERARAD.Y);
+    obj->rad.Y = C3X_STF(C3X_REG(C3X_SUB(obj->usr1_as_float, _CAMERARAD.Y)));
 
     // asm 0000A9AD: 	LDI	AR4,AR2
     // asm 0000A9AE: 	ADDI	OMATRIX,AR2

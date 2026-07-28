@@ -274,7 +274,7 @@ OBJ* OBJ_GET(void) {
     obj->plink = 0;
     // asm 0000705C: 	STI	R0,*+AR0(OUSR1)
     obj->usr1 = 0;
-    obj->usr1_as_float = C3X_FROM_INT(0);
+    obj->usr1_as_float = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 0000705D: 	STI	R0,*+AR0(OID)
     obj->id = 0;
     // asm 0000705E: 	STI	R0,*+AR0(OLINK2)
@@ -286,44 +286,44 @@ OBJ* OBJ_GET(void) {
 
     // asm 00007061: 	CLRF	R0
     // asm 00007062: 	STF	R0,*+AR0(OPOSX)
-    obj->pos.X = C3X_FROM_INT(0);
+    obj->pos.X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00007063: 	STF	R0,*+AR0(OPOSY)
-    obj->pos.Y = C3X_FROM_INT(0);
+    obj->pos.Y = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00007064: 	STF	R0,*+AR0(OPOSZ)
-    obj->pos.Z = C3X_FROM_INT(0);
+    obj->pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00007065: 	STF	R0,*+AR0(OVELX)
-    obj->vel_x = C3X_FROM_INT(0);
+    obj->vel_x = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00007066: 	STF	R0,*+AR0(OVELY)
-    obj->vel_y = C3X_FROM_INT(0);
+    obj->vel_y = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00007067: 	STF	R0,*+AR0(OVELZ)
-    obj->vel_z = C3X_FROM_INT(0);
+    obj->vel_z = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00007068: 	STF	R0,*+AR0(ORADX)
-    obj->rad.X = C3X_FROM_INT(0);
+    obj->rad.X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00007069: 	STF	R0,*+AR0(ORADY)		;CLEAR RADIANS TO AVOID LOCKUP
-    obj->rad.Y = C3X_FROM_INT(0); // ;CLEAR RADIANS TO AVOID LOCKUP
+    obj->rad.Y = C3X_STF(C3X_REG(C3X_FROM_INT(0))); // ;CLEAR RADIANS TO AVOID LOCKUP
     // asm 0000706A: 	STF	R0,*+AR0(ORADZ)
-    obj->rad.Z = C3X_FROM_INT(0);
+    obj->rad.Z = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
 
     // asm 0000706B: 	STF	R0,*+AR0(OMATRIX+1)
-    obj->omatrix.mat10 = C3X_FROM_INT(0);
+    obj->omatrix.mat10 = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 0000706C: 	STF	R0,*+AR0(OMATRIX+2)
-    obj->omatrix.mat20 = C3X_FROM_INT(0);
+    obj->omatrix.mat20 = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 0000706D: 	STF	R0,*+AR0(OMATRIX+3)
-    obj->omatrix.mat01 = C3X_FROM_INT(0);
+    obj->omatrix.mat01 = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 0000706E: 	STF	R0,*+AR0(OMATRIX+5)
-    obj->omatrix.mat21 = C3X_FROM_INT(0);
+    obj->omatrix.mat21 = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 0000706F: 	STF	R0,*+AR0(OMATRIX+6)
-    obj->omatrix.mat02 = C3X_FROM_INT(0);
+    obj->omatrix.mat02 = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
     // asm 00007070: 	STF	R0,*+AR0(OMATRIX+7)
-    obj->omatrix.mat12 = C3X_FROM_INT(0);
+    obj->omatrix.mat12 = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
 
     // asm 00007071: 	LDF	1.0,R0
     // asm 00007072: 	STF	R0,*+AR0(OMATRIX+0)
-    obj->omatrix.mat00 = C3X_FROM_INT(1);
+    obj->omatrix.mat00 = C3X_STF(C3X_REG(C3X_FROM_INT(1)));
     // asm 00007073: 	STF	R0,*+AR0(OMATRIX+4)
-    obj->omatrix.mat11 = C3X_FROM_INT(1);
+    obj->omatrix.mat11 = C3X_STF(C3X_REG(C3X_FROM_INT(1)));
     // asm 00007074: 	STF	R0,*+AR0(OMATRIX+8)
-    obj->omatrix.mat22 = C3X_FROM_INT(1);
+    obj->omatrix.mat22 = C3X_STF(C3X_REG(C3X_FROM_INT(1)));
 
     // asm 00007075: 	CLRC
     // asm 00007076: 	POP	R0
@@ -365,9 +365,9 @@ static void GETDIST(OBJ* obj /*AR2*/) {
     // asm 00007087: 	LDF	*+AR2(OPOSX),R0
     // asm 00007088: 	LDF	*+AR2(OPOSY),R1
     // asm 00007089: 	LDF	*+AR2(OPOSZ),R2
-    posx = obj->pos.X;
-    posy = obj->pos.Y;
-    posz = obj->pos.Z;
+    posx = C3X_LDF(obj->pos.X);
+    posy = C3X_LDF(obj->pos.Y);
+    posz = C3X_LDF(obj->pos.Z);
 
     // asm 0000708A: 	LDP	@_CAMERAPOS
     // asm 0000708B: 	SUBF	@_CAMERAPOS,R0	  	;ADJUST FOR UNIVERSE RELATIVE
@@ -1822,13 +1822,13 @@ OBJ* OBJ_QMAKE(void* romdata /*AR2*/, int posx /*R2*/, int posy /*R3*/, int posz
     obj->romdata = romdata;
     // asm 00007337: 	FLOAT	R2
     // asm 00007338: 	STF	R2,*+AR0(OPOSX)
-    obj->pos.X = C3X_FROM_INT(posx);
+    obj->pos.X = C3X_STF(C3X_REG(C3X_FROM_INT(posx)));
     // asm 00007339: 	FLOAT	R3
     // asm 0000733A: 	STF	R3,*+AR0(OPOSY)
-    obj->pos.Y = C3X_FROM_INT(posy);
+    obj->pos.Y = C3X_STF(C3X_REG(C3X_FROM_INT(posy)));
     // asm 0000733B: 	FLOAT	RC,R2
     // asm 0000733C: 	STF	R2,*+AR0(OPOSZ)
-    obj->pos.Z = C3X_FROM_INT(posz);
+    obj->pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(posz)));
     // asm 0000733D: 	CLRC
     // asm 0000733E: 	RETS
     return obj;

@@ -742,6 +742,17 @@ static void validate_reg_float_value_impl(
     validate_pass_word(caller_file, caller_line, expected_reg_name, actual_word, &entry);
 }
 
+static void validate_stored_float_value_impl(
+    const char* caller_file,
+    int caller_line,
+    const char* failure_name,
+    const char* expected_reg_name,
+    const void* ptr,
+    uint32_t wiggle_room) {
+    c3x_reg_t value = C3X_LDF(*(const c3x_f32_t*)ptr);
+    validate_reg_float_value_impl(caller_file, caller_line, failure_name, expected_reg_name, &value, wiggle_room);
+}
+
 static uint8_t* read_validate_dump(const char* path, size_t* out_size) {
     FILE* dump = fopen(path, "rb");
     uint8_t* buffer;
@@ -1109,9 +1120,13 @@ void mame_assert_reg_at_addr_impl(
 
     (void)breakpoint_address;
 
-    if (reg_kind == MAME_VALIDATE_REG_KIND_FLOAT) {
+    if (reg_kind == MAME_VALIDATE_REG_KIND_FLOAT || reg_kind == MAME_VALIDATE_REG_KIND_STORED_FLOAT) {
         format_float_reg_name(reg_name, float_reg_name, sizeof(float_reg_name));
-        validate_reg_float_value_impl(caller_file, caller_line, reg_name, float_reg_name, ptr, wiggle_room);
+        if (reg_kind == MAME_VALIDATE_REG_KIND_STORED_FLOAT) {
+            validate_stored_float_value_impl(caller_file, caller_line, reg_name, float_reg_name, ptr, wiggle_room);
+        } else {
+            validate_reg_float_value_impl(caller_file, caller_line, reg_name, float_reg_name, ptr, wiggle_room);
+        }
         return;
     }
 
