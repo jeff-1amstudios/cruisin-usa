@@ -1481,7 +1481,7 @@ void DIFF_CHANGE(void);
 // asm:  .globl INIT_RDDEBRIS,ADD_RDDEBRIS,FREE_RDDEBRIS
 void INIT_RDDEBRIS(void);
 
-void ADD_RDDEBRIS(void);
+void ADD_RDDEBRIS(OBJ* obj /*AR4*/);
 
 void FREE_RDDEBRIS(OBJ* obj /*AR2*/);
 

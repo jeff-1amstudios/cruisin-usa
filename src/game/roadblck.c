@@ -18,7 +18,7 @@
  */
 
 void INIT_RDDEBRIS(void);
-void ADD_RDDEBRIS(void);
+void ADD_RDDEBRIS(OBJ* obj /*AR4*/);
 void FREE_RDDEBRIS(OBJ* obj /*AR2*/);
 void DEBRIS_SORT(void);
 
@@ -76,27 +76,31 @@ void INIT_RDDEBRIS(void) {
  *
  *
  */
-void ADD_RDDEBRIS(void) {
+void ADD_RDDEBRIS(OBJ* obj /*AR4*/) {
     // asm 0000AF88: 	PUSH	R0
     // asm 0000AF89: 	LDI	@ROAD_DEBRIS,R0
 #if DEBUG
     // asm: 	CMPI	AR4,R0
     // asm: 	BEQ	$			;Linking to ones self is not good
+    SLOCKON(obj == ROAD_DEBRIS, "ADD_RDDEBRIS: linking object to itself");
 #endif
     // asm 0000AF8A: 	STI	R0,*+AR4(OLINK3)
+    obj->link3 = (uintptr_t)ROAD_DEBRIS;
     // asm 0000AF8B: 	STI	AR4,@ROAD_DEBRIS
+    ROAD_DEBRIS = obj;
     // asm 0000AF8C: 	LDI	1,R0
     // asm 0000AF8D: 	LS	O_DEBRIS_B,R0
     // asm 0000AF8E: 	OR	*+AR4(OFLAGS),R0
     // asm 0000AF8F: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= 1u << O_DEBRIS_B;
     // asm 0000AF90: 	LDI	RDDEBRIS_C|TSC_FLYING,R0
     // asm 0000AF91: 	STI	R0,*+AR4(OID)
+    obj->id = RDDEBRIS_C | TSC_FLYING;
     // asm 0000AF92: 	LDI	0,R0
     // asm 0000AF93: 	STI	R0,*+AR4(OUSR1)
+    obj->usr1 = 0;
     // asm 0000AF94: 	POP	R0
     // asm 0000AF95: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ADD_RDDEBRIS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

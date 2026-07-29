@@ -1836,9 +1836,8 @@ static void ROAD_DEBRIS_CREATE_55GAL(OBJ* obj /*AR4*/) {
 
 static void ROAD_DEBRIS_CREATE(OBJ* obj /*AR4*/) {
     // asm 000042A3: 	BU	ADD_RDDEBRIS
+    ADD_RDDEBRIS(obj);
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROAD_DEBRIS_CREATE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
