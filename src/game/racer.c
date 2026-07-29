@@ -2121,12 +2121,12 @@ DONE:
     // asm 0000545C: 	CMPI	R2,R3
     // asm 0000545D: 	LDILT	R7,R0
     // asm 0000545E: 	LDIGE	R6,R0
-    table_index = right_delta < left_delta ? left_gap : right_gap;
+    table_index = left_delta < right_delta ? left_gap : right_gap;
     // asm 0000545F: 	SUBI	25,R0
     table_index -= 25;
     // asm 00005460: 	FLOAT	R0
     // asm 00005461: 	MPYF	100,R0	    		;NEW OFFSET
-    new_offset = C3X_MUL(C3X_FROM_INT(table_index), C3X_FROM_INT(100)); // ;NEW OFFSET
+    new_offset = C3X_MUL(C3X_FROM_INT(table_index), C3X_IMM_F32(100)); // ;NEW OFFSET
     // asm 00005462: ROXX
     // asm 00005462: 	RETS
     MAME_ASSERT_REG_FLOAT(0x00005462, "R0", &new_offset);

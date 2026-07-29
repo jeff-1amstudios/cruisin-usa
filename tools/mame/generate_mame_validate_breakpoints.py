@@ -592,6 +592,16 @@ def render_output(entries: Iterable[BreakpointEntry]) -> str:
         rows.append('bpset 000071BC, 1, { d@0000C96F=1; g }')
     if os.environ.get("CRUSN_VALIDATE_SINGLE_FRAME") == "1":
         rows.append('bpset 00004BED, 1, { r0=1; g }')
+    if os.environ.get("CRUSN_VALIDATE_CLEAR_WATER_R0") == "1":
+        # WATER_INFINITY consumes R0 as a float even though its current value
+        # came from unrelated integer work. Clear the full extended register
+        # immediately before that multiply.
+        rows.append('bpset 00008428, 1, { r0f=0; g }')
+    if os.environ.get("CRUSN_VALIDATE_FREEZE_COUNTDOWN") == "1":
+        # INT0 can occur at different points relative to process dispatch in
+        # MAME and the portable loop. Keep timer-dependent process behavior
+        # deterministic by presenting the same nonzero value at dispatch.
+        rows.append('bpset 0000A89D, 1, { d@0000E634=4B; g }')
     rows.append('bpset 00008EE1, 1, { r0=0; g }')
     rows.append("")
     return "\n".join(rows) + "g"

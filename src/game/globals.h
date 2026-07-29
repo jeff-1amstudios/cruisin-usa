@@ -1329,7 +1329,7 @@ void NORMALIZE(VECTOR* vector /*AR2*/);
 // asm:  .globl NORMIT,NORMITS
 c3x_reg_t NORMIT(c3x_reg_t radians /*R2*/);
 
-void NORMITS(void);
+c3x_reg_t NORMITS(c3x_reg_t radians /*R2*/);
 
 // asm:  .globl MATRIX_MUL
 void MATRIX_MUL(VECTOR* src /*AR2*/, MATRIX* m3x3 /*R2*/, VECTOR* dst /*R3*/);

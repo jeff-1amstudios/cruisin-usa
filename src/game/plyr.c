@@ -108,7 +108,7 @@ void WRECK(void);
 void WRECKST(void);
 void COMPTRAK(void);
 
-extern c3x_reg_t STEERI;
+extern c3x_f32_t STEERI;
 static tCARPARAM CARPARAMTAB[];
 static c3x_reg_t AHEAD;
 static c3x_reg_t CATCHUP;
@@ -1582,10 +1582,10 @@ void GETRPM(CARBLK* carblk /*AR5*/) {
     // asm 00002C93: 	ADDI	*+AR5(CARGEAR),AR0
     // asm 00002C94: 	LDF	*+AR5(CARSPEED),R0	;GET SPEED
     rpm_x100 = C3X_LDF(carblk->speed);
-    MAME_ASSERT_REG(0x00002C95, "R0", &rpm_x100);
+    MAME_ASSERT_REG_FLOAT(0x00002C95, "R0", &rpm_x100);
     // asm 00002C95: 	MPYF	*AR0,R0			;MULTIPLY BY GEAR RATIO
     rpm_x100 = C3X_MUL(rpm_x100, C3X_LDF(GEARTABI[carblk->gear]));
-    MAME_ASSERT_REG(0x00002C96, "R0", &rpm_x100);
+    MAME_ASSERT_REG_FLOAT(0x00002C96, "R0", &rpm_x100);
     // asm 00002C96: 	CMPF	NUM_RPM,R0		;LIMIT TO RANGE
     // asm 00002C97: 	LDFGT	NUM_RPM,R0
     if (C3X_GT(rpm_x100, C3X_FROM_INT((int)NUM_RPM))) {
@@ -1652,7 +1652,7 @@ GETSK0:
     // asm 00002CA9: 	SUBF	*+AR5(CARVROT),R2
     rotational_difference = C3X_SUB(rotational_difference, carblk->y_velocity_rotation);
     // asm 00002CAA: 	CALL	NORMITS
-    rotational_difference = NORMIT(rotational_difference);
+    rotational_difference = NORMITS(rotational_difference);
     // asm 00002CAB: 	CMPF	1.2,R2			;KEEP IN RANGE
     // asm 00002CAC: 	LDFGT	1.2,R2
     if (C3X_GT(rotational_difference, C3X_IMM_F32(1.2))) {
@@ -1839,7 +1839,7 @@ GETDIR1:
     // asm 00002CF3: 	LDF	*+AR5(CARSKID),R4	;R4=SKID FACTOR
     skid_factor = C3X_LDF(carblk->skid);
     // asm 00002CF4: 	LDF	1.0,R5
-    grip_factor = C3X_FROM_INT(1);
+    grip_factor = C3X_IMM_F32(1.0f);
     // asm 00002CF5: 	SUBF	R4,R5			;R5=1-SKID FACTOR
     grip_factor = C3X_SUB(grip_factor, skid_factor);
     // asm 00002CF6: 	MPYF	0.75,R5
@@ -2146,10 +2146,10 @@ GETSPD10:
     accel = C3X_MUL(accel, factor);
     // asm 00002D97: 	LDF	*+AR5(CARRPM),R1
     factor = C3X_LDF(carblk->rpm_x100);
-    MAME_ASSERT_REG(0x00002D98, "R1", &factor);
+    MAME_ASSERT_REG_FLOAT(0x00002D98, "R1", &factor);
     // asm 00002D98: 	MPYF	0.333,R1
     factor = C3X_MUL(factor, C3X_IMM_F32(0.333));
-    MAME_ASSERT_REG(0x00002D99, "R1", &factor);
+    MAME_ASSERT_REG_FLOAT(0x00002D99, "R1", &factor);
     // asm 00002D99: 	FIX	R1,IR0		   	;GET TABLE INDEX
     index = FIX(factor);
     // asm 00002D9A: 	CMPI	18,IR0
@@ -2160,7 +2160,7 @@ GETSPD10:
     // asm 00002D9C: 	LDI	@ENGACTABI,AR0
     // asm 00002D9D: 	LDF	*+AR0(IR0),R2		;GET LO POWER FACTOR FOR GEAR
     power_low = C3X_LDF(ENGACTABI[index]);
-    MAME_ASSERT_REG(0x00002D9E, "R2", &power_low);
+    MAME_ASSERT_REG_FLOAT(0x00002D9E, "R2", &power_low);
     // asm 00002D9E: 	ADDI	1,IR0
     index += 1;
     // asm 00002D9F: 	LDF	*+AR0(IR0),R3		;GET HI POWER FACTOR FOR GEAR
@@ -2168,7 +2168,7 @@ GETSPD10:
     // asm 00002DA0: 	FLOAT	IR0,R4
     // asm 00002DA1: 	SUBF	R1,R4,R1
     factor = C3X_SUB(C3X_FROM_INT(index), factor);
-    MAME_ASSERT_REG(0x00002DA2, "R1", &factor);
+    MAME_ASSERT_REG_FLOAT(0x00002DA2, "R1", &factor);
     // asm 00002DA2: 	LDFLT	0,R1  			;KEEP FACTOR IN BOUNDS
     if (C3X_LT(factor, C3X_FROM_INT(0))) {
         factor = C3X_FROM_INT(0);
@@ -2178,25 +2178,23 @@ GETSPD10:
     if (C3X_GT(factor, C3X_IMM_F32(1.0))) {
         factor = C3X_IMM_F32(1.0);
     }
-    MAME_ASSERT_REG(0x00002DA5, "R1", &factor);
+    MAME_ASSERT_REG_FLOAT(0x00002DA5, "R1", &factor);
     // asm 00002DA5: 	MPYF	R1,R2			;INTERPOLATE !!!
     power_low = C3X_MUL(power_low, factor);
-    MAME_ASSERT_REG(0x00002DA6, "R2", &power_low);
+    MAME_ASSERT_REG_FLOAT(0x00002DA6, "R2", &power_low);
     // asm 00002DA6: 	SUBRF	1.0,R1
     factor = C3X_SUB(C3X_IMM_F32(1.0), factor);
     // asm 00002DA7: 	MPYF	R1,R3
     power_high = C3X_MUL(power_high, factor);
-    MAME_ASSERT_REG(0x00002DA8, "R3", &power_high);
+    MAME_ASSERT_REG_FLOAT(0x00002DA8, "R3", &power_high);
     // asm 00002DA8: 	ADDF	R2,R3,R1
     factor = C3X_ADD(power_low, power_high);
-    MAME_ASSERT_REG(0x00002DA9, "R1", &factor);
     MAME_ASSERT_REG_FLOAT(0x00002DA9, "R1", &factor);
     // asm 00002DA9: 	LDI	*+AR5(CARGEAR),IR0	;GEAR MULTIPLIER
     index = carblk->gear;
     // asm 00002DAA: 	LDI	@GEARACTABI,AR0
     // asm 00002DAB: 	MPYF	*+AR0(IR0),R1
     factor = C3X_MUL(factor, C3X_LDF(GEARACTABI[index]));
-    MAME_ASSERT_REG(0x00002DAC, "R1", &factor);
     MAME_ASSERT_REG_FLOAT(0x00002DAC, "R1", &factor);
     // asm 00002DAC: 	LDF	1.0,R2
     power_low = C3X_IMM_F32(1.0);
@@ -2205,13 +2203,10 @@ GETSPD10:
     if (carblk->transmission == 0) {
         power_low = C3X_IMM_F32(0.96);
     }
-    MAME_ASSERT_REG(0x00002DAF, "R1", &factor);
-    MAME_ASSERT_REG(0x00002DAF, "R2", &power_low);
     MAME_ASSERT_REG_FLOAT(0x00002DAF, "R1", &factor);
     MAME_ASSERT_REG_FLOAT(0x00002DAF, "R2", &power_low);
     // asm 00002DAF: 	MPYF	R2,R1
     factor = C3X_MUL(factor, power_low);
-    MAME_ASSERT_REG(0x00002DB0, "R1", &factor);
     MAME_ASSERT_REG_FLOAT(0x00002DB0, "R1", &factor);
     // *CUT ACCEL ON SKID
     // asm 00002DB0: 	MPYF	R1,R0
@@ -2659,7 +2654,7 @@ int GETAUTO(CARBLK* carblk /*AR5*/) {
 
 // *----------------------------------------------------------------------------
 /* asm: STEERI	.float	-0.0013 */
-c3x_reg_t STEERI = C3X_INIT(-0.0013f, 0xF6D59B3D07ull);
+c3x_f32_t STEERI = C3X_F32_INIT(-0.0013f);
 
 /*
  *GET STEERING ANGLE

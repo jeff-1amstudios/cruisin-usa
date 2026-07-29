@@ -48,9 +48,10 @@ void mame_assert_reg_at_addr_impl(
 #define MAME_ASSERT_REG_FLOAT(addr, reg_name, ptr) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), \
         _Generic(*(ptr), c3x_f32_t: MAME_VALIDATE_REG_KIND_STORED_FLOAT, default: MAME_VALIDATE_REG_KIND_FLOAT), 0)
-#define MAME_ASSERT_REG_FLOAT_WIGGLE(addr, reg_name, ptr, wiggle_room) \
+#define MAME_ASSERT_REG_FLOAT_WIGGLE(addr, reg_name, ptr, decimal_places) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (reg_name), (ptr), \
-        _Generic(*(ptr), c3x_f32_t: MAME_VALIDATE_REG_KIND_STORED_FLOAT, default: MAME_VALIDATE_REG_KIND_FLOAT), (wiggle_room))
+        _Generic(*(ptr), c3x_f32_t: MAME_VALIDATE_REG_KIND_STORED_FLOAT, default: MAME_VALIDATE_REG_KIND_FLOAT), \
+        (decimal_places) + 1)
 #define MAME_ASSERT_MEM(addr, mem_addr, ptr) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_WORD, 0)
 #define MAME_ASSERT_MEM_FLOAT(addr, mem_addr, ptr) \

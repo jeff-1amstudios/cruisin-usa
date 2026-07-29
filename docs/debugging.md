@@ -69,7 +69,20 @@ Canonical validation markers:
 - `MAME_ASSERT_REGION_AT_ADDR(...)`: validate a memory region at an explicit original instruction address.
 - `MAME_ASSERT_REG(...)`: validate an integer register at an explicit original instruction address.
 - `MAME_ASSERT_REG_FLOAT(...)`: validate a float register at an explicit original instruction address.
+- `MAME_ASSERT_REG_FLOAT_WIGGLE(...)`: validate a float using an absolute
+  tolerance at the specified number of decimal places.
 - `MAME_ASSERT_MEM(...)`: validate an arbitrary MAME memory expression at an explicit original instruction address.
+
+Float validation allows the MAME and port values to differ by one unit at two
+decimal places (`0.01`) by default. Using an absolute decimal tolerance avoids
+false failures when two nearly identical values happen to fall on opposite sides
+of a rounding boundary. This intentionally ignores insignificant differences in
+the least-significant bits while still catching gameplay-scale divergence.
+Values within two host-float ULPs also pass, which prevents a one-bit difference
+at large magnitudes from failing merely because one ULP spans a decimal boundary.
+Use `MAME_ASSERT_REG_FLOAT_WIGGLE(...)` only when a particular assertion needs
+a different number of decimal places. Integer, raw-register, and memory
+validations remain exact unless they explicitly use an integer wiggle macro.
 
 The generator still accepts some older `mame_validate_*` and `MAME_VALIDATE_*` spellings, but new code should use the names above.
 

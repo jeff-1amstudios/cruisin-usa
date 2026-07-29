@@ -72,7 +72,7 @@ extern LEG_PAYLOAD LEG_MAP[];
 // asm: 	.GLOBL	PLYRFIRST,DRONESTOP,PLYRDRAFT,PLDRAFTVAL,CKAHEAD,STEERI
 extern int PLYRFIRST;
 
-extern c3x_reg_t STEERI;
+extern c3x_f32_t STEERI;
 
 // asm: 	.globl	SPOS_INIT
 c3x_reg_t SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/);

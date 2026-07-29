@@ -4,6 +4,7 @@
 
 #include <dlfcn.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -684,23 +685,6 @@ static void validate_reg_word_value_impl(
     validate_pass_word(caller_file, caller_line, expected_reg_name, expected_value, &entry);
 }
 
-static uint32_t float_to_ordered_u32(float value) {
-    uint32_t bits;
-
-    memcpy(&bits, &value, sizeof(bits));
-    if ((bits & 0x80000000u) != 0) {
-        return ~bits;
-    }
-    return bits | 0x80000000u;
-}
-
-static uint32_t float_ulp_diff(float a, float b) {
-    uint32_t ao = float_to_ordered_u32(a);
-    uint32_t bo = float_to_ordered_u32(b);
-
-    return ao > bo ? (ao - bo) : (bo - ao);
-}
-
 static void validate_reg_float_value_impl(
     const char* caller_file,
     int caller_line,
@@ -711,11 +695,13 @@ static void validate_reg_float_value_impl(
     VALIDATE_ENTRY entry;
     char expected_buf[64];
     char actual_buf[64];
-    char reason_buf[64];
+    char reason_buf[96];
     float expected_value = 0.0f;
     float actual_value = 0.0f;
     uint32_t actual_word = 0;
-    uint32_t allowed_ulp_diff = wiggle_room != 0 ? wiggle_room : 2;
+    uint32_t decimal_places = wiggle_room != 0 ? wiggle_room - 1 : 2;
+    double decimal_scale;
+    double allowed_difference;
 
     if (!read_next_validate_reg_word(caller_file, caller_line, failure_name, expected_reg_name, &entry)) {
         return;
@@ -725,18 +711,31 @@ static void validate_reg_float_value_impl(
     actual_value = C3X_TO_FLOAT(*(const c3x_reg_t*)ptr);
     memcpy(&actual_word, &actual_value, sizeof(actual_word));
 
-    if (entry.word_value != actual_word) {
-        if (float_ulp_diff(expected_value, actual_value) > allowed_ulp_diff) {
-            snprintf(expected_buf, sizeof(expected_buf), "%g (0x%08" PRIX32 ")", expected_value, entry.word_value);
-            snprintf(actual_buf, sizeof(actual_buf), "%g (0x%08" PRIX32 ")", actual_value, actual_word);
-            if (wiggle_room != 0) {
-                snprintf(reason_buf, sizeof(reason_buf), "value mismatch (float_ulp_wiggle=%" PRIu32 ")", wiggle_room);
-                validate_fail(caller_file, caller_line, entry.line_number, failure_name, reason_buf, expected_buf, actual_buf);
-                return;
-            }
-            validate_fail(caller_file, caller_line, entry.line_number, failure_name, "value mismatch", expected_buf, actual_buf);
-            return;
-        }
+    decimal_scale = pow(10.0, (double)decimal_places);
+    allowed_difference = 1.0 / decimal_scale;
+
+    uint32_t expected_ordered = (entry.word_value & 0x80000000u) != 0
+        ? ~entry.word_value
+        : entry.word_value | 0x80000000u;
+    uint32_t actual_ordered = (actual_word & 0x80000000u) != 0
+        ? ~actual_word
+        : actual_word | 0x80000000u;
+    uint32_t ulp_diff = expected_ordered > actual_ordered
+        ? expected_ordered - actual_ordered
+        : actual_ordered - expected_ordered;
+
+    if ((!isfinite(expected_value) || !isfinite(actual_value))
+            ? expected_value != actual_value
+            : fabs((double)actual_value - (double)expected_value) > allowed_difference && ulp_diff > 2) {
+        snprintf(expected_buf, sizeof(expected_buf), "%g (0x%08" PRIX32 ")", expected_value, entry.word_value);
+        snprintf(actual_buf, sizeof(actual_buf), "%g (0x%08" PRIX32 ")", actual_value, actual_word);
+        snprintf(
+            reason_buf,
+            sizeof(reason_buf),
+            "value mismatch at %" PRIu32 " decimal places",
+            decimal_places);
+        validate_fail(caller_file, caller_line, entry.line_number, failure_name, reason_buf, expected_buf, actual_buf);
+        return;
     }
 
     validate_pass_word(caller_file, caller_line, expected_reg_name, actual_word, &entry);

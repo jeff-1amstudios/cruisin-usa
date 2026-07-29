@@ -25,7 +25,7 @@ extern VECTOR _VECTORA;
 
 c3x_reg_t _COSI(c3x_reg_t theta /*R2*/);
 c3x_reg_t _SINE(c3x_reg_t theta /*R2*/);
-void NORMITS(void);
+c3x_reg_t NORMITS(c3x_reg_t radians /*R2*/);
 c3x_reg_t NORMIT(c3x_reg_t radians /*R2*/);
 c3x_reg_t ARCTANF(c3x_reg_t x /*R2*/, c3x_reg_t y /*R3*/);
 void FIND_MATRIX(void* dest /*AR2*/, VECTOR* radians /*R2*/);
@@ -492,21 +492,28 @@ static c3x_reg_t RADFORMI = C3X_INIT(0.000095873f, 0xF2490F6CC9ull);
  *	N,Z BITS SET FOR R2
  *
  */
-void NORMITS(void) {
+c3x_reg_t NORMITS(c3x_reg_t radians /*R2*/) {
+    int fixed_radians;
+
     // asm 00009556: 	MPYF	@RADFORM,R2
+    radians = C3X_MUL(radians, RADFORM);
     // asm 00009557: 	FIX	R2
+    fixed_radians = FIX(radians);
     // asm 00009558: 	LS	16,R2
     // asm 00009559: 	RS	16,R2
+    fixed_radians = (int16_t)(uint16_t)fixed_radians;
     // asm 0000955A: 	CMPI	7FFFH,R2
     // asm 0000955B: 	BLT	NMS1
     // asm 0000955C: 	ADDI	8000H,R2
     // asm 0000955D: 	ADDI	8000H,R2
 NMS1:
     // asm 0000955E: 	FLOAT	R2
+    radians = C3X_FROM_INT(fixed_radians);
     // asm 0000955F: 	MPYF	@RADFORMI,R2
+    radians = C3X_MUL(radians, RADFORMI);
     // asm 00009560: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NORMITS", 0, 0);
-    UNIMPL();
+    return radians;
 }
 
 // *----------------------------------------------------------------------------
@@ -528,7 +535,7 @@ c3x_reg_t NORMIT(c3x_reg_t radians /*R2*/) {
     fixed_radians = FIX(radians);
     // asm 00009563: 	LS	16,R2
     // asm 00009564: 	RS	16,R2
-    fixed_radians = (int16_t)(uint16_t)fixed_radians;
+    fixed_radians = (uint16_t)fixed_radians;
     // asm 00009565: 	FLOAT	R2
     radians = C3X_FROM_INT(fixed_radians);
     // asm 00009566: 	MPYF	@RADFORMI,R2
@@ -1292,13 +1299,13 @@ void CPYIMAT(OBJ_MATRIX* dst /*AR2*/, MATRIX* src /*R2*/) {
     // asm 00009660: 	POP	R0
     // asm 00009661: 	RETS
     dst->mat00 = C3X_STF(STF_F32(C3X_LDF(src->a00)));
-    dst->mat10 = C3X_STF(STF_F32(C3X_LDF(src->a01)));
-    dst->mat20 = C3X_STF(STF_F32(C3X_LDF(src->a02)));
-    dst->mat01 = C3X_STF(STF_F32(C3X_LDF(src->a10)));
+    dst->mat10 = C3X_STF(STF_F32(C3X_LDF(src->a10)));
+    dst->mat20 = C3X_STF(STF_F32(C3X_LDF(src->a20)));
+    dst->mat01 = C3X_STF(STF_F32(C3X_LDF(src->a01)));
     dst->mat11 = C3X_STF(STF_F32(C3X_LDF(src->a11)));
-    dst->mat21 = C3X_STF(STF_F32(C3X_LDF(src->a12)));
-    dst->mat02 = C3X_STF(STF_F32(C3X_LDF(src->a20)));
-    dst->mat12 = C3X_STF(STF_F32(C3X_LDF(src->a21)));
+    dst->mat21 = C3X_STF(STF_F32(C3X_LDF(src->a21)));
+    dst->mat02 = C3X_STF(STF_F32(C3X_LDF(src->a02)));
+    dst->mat12 = C3X_STF(STF_F32(C3X_LDF(src->a12)));
     dst->mat22 = C3X_STF(STF_F32(C3X_LDF(src->a22)));
 }
 

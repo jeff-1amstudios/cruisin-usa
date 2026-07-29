@@ -77,7 +77,64 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/);
  */
 c3x_reg_t DIV_F30(c3x_reg_t u, c3x_reg_t v)
 {
-    return C3X_DIV(u, v);
+    c3x_reg_t reciprocal;
+    c3x_reg_t correction;
+    c3x_reg_t negative_reciprocal;
+    int exponent;
+    int i;
+
+    // asm: 	PUSHF	R1	;SAVE THE SIGN
+    // asm: 	PUSHF	R0	;Save u (dividend)
+    u = C3X_LDF(C3X_STF(u));
+    // asm: 	ABSF	R1
+    c3x_reg_t divisor = C3X_ABS(v);
+
+    // asm: 	PUSHF	R1
+    // asm: 	POP	R2
+    // asm: 	ASH	-24,R2
+    (void)frexpf(C3X_TO_FLOAT(divisor), &exponent);
+    exponent -= 1;
+    // asm: 	NEGI	R2
+    // asm: 	SUBI	1,R2
+    // asm: 	ASH	24,R2
+    // asm: 	PUSH	R2
+    // asm: 	POPF	R2
+    reciprocal = C3X_F32(ldexp(1.0, -exponent - 1)); // c3x-lint: full-precision -- constructs an extended register exponent
+
+    for (i = 0; i < 4; i++) {
+        // asm: 	MPYF	R2,R1,R0
+        correction = C3X_MUL(divisor, reciprocal);
+        // asm: 	SUBRF	2.0,R0
+        correction = C3X_SUB(C3X_IMM_F32(2.0), correction);
+        // asm: 	MPYF	R0,R2
+        reciprocal = C3X_MUL(reciprocal, correction);
+    }
+
+    // asm: 	RND	R2
+    reciprocal = C3X_RND(reciprocal);
+
+    // asm: 	MPYF	R2,R1,R0
+    correction = C3X_MUL(divisor, reciprocal);
+    // asm: 	SUBRF	1.0,R0
+    correction = C3X_SUB(C3X_IMM_F32(1.0), correction);
+    // asm: 	MPYF	R2,R0
+    correction = C3X_MUL(reciprocal, correction);
+    // asm: 	ADDF	R0,R2,R1
+    reciprocal = C3X_ADD(correction, reciprocal);
+
+    // asm: 	RND	R1
+    reciprocal = C3X_RND(reciprocal);
+    // asm: 	MPYF	R1,R0
+    u = C3X_MUL(u, reciprocal);
+
+    // asm: 	NEGF	R0,R1
+    negative_reciprocal = C3X_NEG(u);
+    // asm: 	LDFN	R1,R0
+    if (C3X_LT(v, C3X_FROM_INT(0))) {
+        u = negative_reciprocal;
+    }
+
+    return u;
 }
 
 // *----------------------------------------------------------------------------
@@ -290,7 +347,26 @@ zerob:
  *
  */
 c3x_reg_t INV_F30(c3x_reg_t v) {
-    return C3X_DIV(C3X_FROM_INT(1), v);
+    c3x_reg_t magnitude = C3X_ABS(v);
+    c3x_reg_t estimate;
+    c3x_reg_t correction;
+    c3x_reg_t result;
+    int exponent = (int8_t)(C3X_STORE(magnitude) >> 24);
+    uint32_t initial_raw = (uint32_t)(int8_t)(-exponent - 1) << 24;
+
+    // x[0] = 1.0 * 2**(-e-1), followed by four Newton iterations.
+    estimate = C3X_LOAD(initial_raw);
+    for (int i = 0; i < 4; i++) {
+        correction = C3X_SUB(C3X_IMM_F32(2.0), C3X_MUL(estimate, magnitude));
+        estimate = C3X_MUL(estimate, correction);
+    }
+
+    // The assembly rounds x[4], then uses a less cancellation-prone final
+    // iteration: x[5] = x[4] * (1 - v*x[4]) + x[4].
+    estimate = C3X_RND(estimate);
+    correction = C3X_SUB(C3X_IMM_F32(1.0), C3X_MUL(estimate, magnitude));
+    result = C3X_ADD(C3X_MUL(estimate, correction), estimate);
+    return C3X_LT(v, C3X_FROM_INT(0)) ? C3X_NEG(result) : result;
 }
 
 // *----------------------------------------------------------------------------

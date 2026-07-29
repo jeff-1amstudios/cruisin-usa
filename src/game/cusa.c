@@ -625,6 +625,9 @@ void MAINLOOP(void) {
 
     MPROC_TIK = 0;
 
+    if (getenv("CRUSN_VALIDATE_FREEZE_COUNTDOWN") != NULL) {
+        _countdown = 75;
+    }
     PRC_DISPATCH(); // EXECUTE PROCESSES
 
     COMMQ_READY_TO_SEND();
