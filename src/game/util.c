@@ -840,6 +840,7 @@ void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/) {
     // asm 00008F8B: 	STI	AR0,*+AR4(ORADZ)	;DOUBLING AS A PROC PTR
     obj->radz_ptr = (uintptr_t)proc;
 VANIX:
+    ;
     // asm 00008F8C: 	POP	AR3
     // asm 00008F8D: 	POP	AR0
     // asm 00008F8E: 	RETS

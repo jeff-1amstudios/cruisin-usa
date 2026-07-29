@@ -484,7 +484,7 @@ typedef struct DYNAOBJ {
     OBJ_MATRIX omatrix;
     u32 nverts;
     struct OBJ* parent;
-    u32 flag;
+    DYNAFLAG flag;
 } DYNAOBJ;
 
 typedef struct SOUNDSTR {

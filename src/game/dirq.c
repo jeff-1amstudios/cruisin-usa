@@ -22,7 +22,7 @@
 void DIRQ(void);
 static void DISPLAY(OBJ* obj);
 static void TRANS2D(void);
-static void DYNAMIC_OBJECT(void);
+static void DYNAMIC_OBJECT(OBJ* obj, const u32* rom_ptr, const MATRIX* object_camera_matrix);
 static void PLOTPOLY(OBJ* obj /*AR0*/, const ROM_POLYGON* polygons /*AR1*/, int polygon_count_minus_one /*BK*/);
 static int CLIPCK(const c3x_f32_t* vertex1 /*AR4*/, const c3x_f32_t* vertex2 /*AR5*/, const c3x_f32_t* vertex3 /*AR2*/, const c3x_f32_t* vertex4 /*AR3*/, int* clipram /*AR0*/);
 static void CLIP(int* clipram /*AR0*/, int palette_base /*R0*/, int control_word /*R2*/, const ROM_POLYGON* polygon /*AR1*/);
@@ -458,10 +458,6 @@ NOBREAK_CONTINUE:
         goto DISPLAY_NEXT_IMPL;
     }
     g_dirq_debug_objects_after_z_clip += 1;
-    if ((flags & O_DYNAMIC) != 0) {
-        goto DISPLAY_NEXT_IMPL;
-    }
-
     dirq_load_obj_matrix(&object_matrix, obj);
 
     if ((flags & O_NOUROT) != 0 && (flags & O_ILLUM) == 0) {
@@ -484,6 +480,12 @@ NOBREAK_CONTINUE:
 
     if ((flags & O_ILLUM) != 0 && matrix != &ROTATION_MATRIX) {
         ROTATION_MATRIX = *matrix;
+    }
+
+    if ((flags & O_DYNAMIC) != 0
+        && rom_ptr == (const u32*)obj->romdata) {
+        DYNAMIC_OBJECT(obj, rom_ptr, matrix);
+        goto DISPLAY_NEXT_IMPL;
     }
 
     counts_word = (int)rom_ptr[1];
@@ -1001,17 +1003,36 @@ VTL2:
     // asm 000001B8: 	MPYF	1.04,R0			; below 1.0 shrinks Y, above expands Y
     // asm 000001B9: 	ADDF	@SCRNHYI,R0		;    + SCRNHY	       ;(screen half y)
 EOVCTR2:
+    ;
     // asm 000001BA: STF	R0,*AR3++(2)
     // asm 000001BB: 	BU	POLYPOLY_ENTER
 
+}
+
     // *DYNAMIC OBJECT
-DYNAMIC_OBJECT:
+static void DYNAMIC_OBJECT(OBJ* obj, const u32* rom_ptr, const MATRIX* object_camera_matrix) {
+    DYNAOBJ* dyna;
+    MATRIX dyna_matrix;
+    MATRIX combined_matrix;
+    const ROM_VERTEX* vertices;
+    const ROM_POLYGON* polygons;
+    int counts_word;
+    int total_vertex_count;
+    int vertex_cursor;
+    int part_vertex_count;
+    c3x_reg_t part_trans_x;
+    c3x_reg_t part_trans_y;
+    c3x_reg_t part_trans_z;
+
     // ;	LDI	*+AR0(OFLAGS),R0
     // ;	TSTB	O_DEGRADE,R0
     // ;	BZ	NOTDEGRADEPOSS
     // asm 000001BC: 	LDI	*+AR0(ODIST),R0		;FORGET CLOSE DYNAMICS
     // asm 000001BD: 	CMPI	250,R0
     // asm 000001BE: 	BLTD	DISPLAY_NEXT
+    if (obj->dist < 250) {
+        return;
+    }
     // asm 000001BF: 	LDI	*+AR0(ODEGRADE_ROM),R0
     // asm 000001C0: 	INC	R0
     // asm 000001C1: 	CMPI	AR1,R0
@@ -1041,10 +1062,16 @@ DYNAMIC_OBJECT:
     // 	;R7	screen half y
     // asm 000001C7: 	PUSH	AR0
     // asm 000001C8: 	LDI	*+AR0(ODYNALIST),AR0
+    dyna = obj->dynalist;
     // asm 000001C9: 	LDI	@BLOWLISTI,AR3		;blowlist pointer = AR3
     // ;	LDI	@transvectorYI,AR6	;dst 1x3
     // asm 000001CA: 	LDI	@VECTORAYI,AR7
     // asm 000001CB: 	LDI	*AR1++,BK		;VERTEX CNT & POLYGON CNT
+    counts_word = (int)rom_ptr[1];
+    total_vertex_count = (counts_word & 0xff) + 1;
+    vertices = (const ROM_VERTEX*)&rom_ptr[2];
+    polygons = (const ROM_POLYGON*)(vertices + total_vertex_count);
+    vertex_cursor = 0;
 #if STATISTICS
     // asm: 	LDI	BK,R0
     // asm: 	AND	0FFh,R0
@@ -1058,15 +1085,25 @@ DYNAMIC_OBJECT:
     // asm 000001CC: 	FLOAT	SCREENHX,R6		;screen half x
     // asm 000001CD: 	FLOAT	SCREENHY,R7		;screen half x
 DYNALOOP:
+    if (dyna == NULL) {
+        PLOTPOLY(obj, polygons, (counts_word >> 16) & 0xffff);
+        return;
+    }
     // asm 000001CE: 	LDI	*+AR0(DYNAFLAG),R0
     // asm 000001CF: 	BND	DYNASHD			;GO DO A SHADOW...
+    if (dyna->flag < 0) {
+        goto DYNASHD;
+    }
 DYNREG:
     // asm 000001D0: 	LDI	@tmpmatI,AR4		;trans = object_pos + univ_pos
     // asm 000001D1: 	LDI	@transmatrixI,AR5	;somewhat dedicated for matrix pointer
     // asm 000001D2: 	LDF	*+AR0(DYNATRANSX),R2
+    part_trans_x = C3X_LDF(dyna->trans_x);
     // 	;------>BND	DYNASHD		;GO DO A SHADOW...
     // asm 000001D3: 	LDF	*+AR0(DYNATRANSY),R3
+    part_trans_y = C3X_LDF(dyna->trans_y);
     // asm 000001D4: 	LDF	*+AR0(DYNATRANSZ),R4
+    part_trans_z = C3X_LDF(dyna->trans_z);
     // *
     // *ROTATE TRANSLATION VECTOR BY OBJ-UNIV MATRIX AND ADD TO OBJECT TRANSLATION
     // *
@@ -1093,11 +1130,41 @@ DYNREG:
     // asm 000001DF:   ||	ADDF	R1,R2,R2
     // asm 000001E0: 	ADDF	R1,R2
     // asm 000001E1: 	STF	R2,*+AR7(1)		;(TRANSVECTOR.z) R2 = Z value of object
+    part_trans_x = C3X_ADD(
+        C3X_ADD(
+            C3X_ADD(
+                C3X_MUL(object_camera_matrix->a00, C3X_LDF(dyna->trans_x)),
+                C3X_MUL(object_camera_matrix->a01, C3X_LDF(dyna->trans_y))),
+            C3X_MUL(object_camera_matrix->a02, C3X_LDF(dyna->trans_z))),
+        TRANSVECTOR.X);
+    part_trans_y = C3X_ADD(
+        C3X_ADD(
+            C3X_ADD(
+                C3X_MUL(object_camera_matrix->a10, C3X_LDF(dyna->trans_x)),
+                C3X_MUL(object_camera_matrix->a11, C3X_LDF(dyna->trans_y))),
+            C3X_MUL(object_camera_matrix->a12, C3X_LDF(dyna->trans_z))),
+        TRANSVECTOR.Y);
+    part_trans_z = C3X_ADD(
+        C3X_ADD(
+            C3X_ADD(
+                C3X_MUL(object_camera_matrix->a20, C3X_LDF(dyna->trans_x)),
+                C3X_MUL(object_camera_matrix->a21, C3X_LDF(dyna->trans_y))),
+            C3X_MUL(object_camera_matrix->a22, C3X_LDF(dyna->trans_z))),
+        TRANSVECTOR.Z);
     // asm 000001E2: 	SUBI	9,AR5	       		;RESTORE AR5 OBJ-UNIV MAT
     // *CONCAT UNIV*OBJ MATRIX WITH DYNAMIC MATRIX
     // asm 000001E3: 	LDI	@MATRIXAI,AR2
     // asm 000001E4: 	LDI	AR0,AR4
     // asm 000001E5: 	ADDI	DYNAMATRIX,AR4
+    dyna_matrix.a00 = C3X_STF(C3X_LDF(dyna->omatrix.mat00));
+    dyna_matrix.a01 = C3X_STF(C3X_LDF(dyna->omatrix.mat10));
+    dyna_matrix.a02 = C3X_STF(C3X_LDF(dyna->omatrix.mat20));
+    dyna_matrix.a10 = C3X_STF(C3X_LDF(dyna->omatrix.mat01));
+    dyna_matrix.a11 = C3X_STF(C3X_LDF(dyna->omatrix.mat11));
+    dyna_matrix.a12 = C3X_STF(C3X_LDF(dyna->omatrix.mat21));
+    dyna_matrix.a20 = C3X_STF(C3X_LDF(dyna->omatrix.mat02));
+    dyna_matrix.a21 = C3X_STF(C3X_LDF(dyna->omatrix.mat12));
+    dyna_matrix.a22 = C3X_STF(C3X_LDF(dyna->omatrix.mat22));
     // *	AR4	- src1		(usually the objects matrix)
     // *	AR5	- src2		(usually the Cameras matrix)
     // *	AR2	- dst		(the GRM - general rotational matrix)
@@ -1129,6 +1196,7 @@ DYNREG:
     // asm 000001F6: 	STF	R2,*AR2++(1)			;store MATij
 DYNLP1:
     // asm 000001F7: NOP	*--AR4(3)
+    CONCATMAT(&dyna_matrix, (MATRIX*)object_camera_matrix, &combined_matrix);
     // asm 000001F8: 	LDI	@tmpmatY,AR4		;TEMP VECTOR STORE
     // asm 000001F9: 	LDI	@INVTABI,AR2		;inverse table dedicated ptr
     // asm 000001FA: 	LDI	8,IR0
@@ -1139,6 +1207,7 @@ DYNLP1:
     // asm 000001FF: 	LDF	*-AR7(1),R4		;GET X TRANS
     // asm 00000200: 	LDF	*AR7,R5			;GET Y TRANS
     // asm 00000201: 	LDI	*+AR0(DYNANVERTS),RC	;number of vertices to process -1
+    part_vertex_count = (int)dyna->nverts + 1;
     // asm 00000202: 	BU	DYNALP			; jeff edited to match I450 rom
     // 	;;MATRIX MULTIPLY 1x3 * 3x3 -> blowspace
     // 	;AR0	object ptr		PRELOADED *SAVE*
@@ -1158,6 +1227,46 @@ DYNLP1:
     // 	;R7	Y SCREEN CENTER
 DYNALP:
     // asm 00000220: 	RPTB	EODVCTR
+    for (int part_vertex = 0; part_vertex < part_vertex_count; ++part_vertex) {
+        int vertex_index = vertex_cursor + part_vertex;
+        int packed_xy = (int)vertices[vertex_index].x_y;
+        c3x_reg_t x = C3X_SUB(
+            C3X_FROM_INT((int16_t)(packed_xy & 0xffff)),
+            C3X_LDF(dyna->center_x));
+        c3x_reg_t y = C3X_SUB(
+            C3X_FROM_INT((int16_t)((u32)packed_xy >> 16)),
+            C3X_LDF(dyna->center_y));
+        c3x_reg_t z = C3X_SUB(
+            C3X_FROM_INT(vertices[vertex_index].z),
+            C3X_LDF(dyna->center_z));
+        c3x_reg_t rotated_x = C3X_ADD(
+            C3X_ADD(C3X_MUL(combined_matrix.a00, x), C3X_MUL(combined_matrix.a01, y)),
+            C3X_MUL(combined_matrix.a02, z));
+        c3x_reg_t rotated_y = C3X_ADD(
+            C3X_ADD(C3X_MUL(combined_matrix.a10, x), C3X_MUL(combined_matrix.a11, y)),
+            C3X_MUL(combined_matrix.a12, z));
+        c3x_reg_t rotated_z = C3X_ADD(
+            C3X_ADD(C3X_MUL(combined_matrix.a20, x), C3X_MUL(combined_matrix.a21, y)),
+            C3X_MUL(combined_matrix.a22, z));
+        c3x_reg_t world_x = C3X_ADD(rotated_x, part_trans_x);
+        c3x_reg_t world_y = C3X_ADD(rotated_y, part_trans_y);
+        c3x_reg_t world_z = C3X_ADD(rotated_z, part_trans_z);
+        int inverse_index = FIX(world_z) >> 4;
+        int blow_index = vertex_index * 3;
+
+        if (inverse_index > HIGH_CLIP_LEVEL) {
+            inverse_index = HIGH_CLIP_LEVEL;
+        }
+        if (inverse_index < -80) {
+            inverse_index = -80;
+        }
+
+        c3x_reg_t inverse_z = C3X_LDF(INVTAB[inverse_index]);
+        BLOWLIST[blow_index] = C3X_STF(C3X_ADD(C3X_MUL(world_x, inverse_z), SCRNHXI));
+        BLOWLIST[blow_index + 1] =
+            C3X_STF(C3X_ADD(C3X_MUL(C3X_MUL(world_y, inverse_z), C3X_IMM_F32(1.04)), SCRNHYI));
+        BLOWLIST[blow_index + 2] = C3X_STF(world_z);
+    }
     // asm 00000221: 	LDI	*AR1++,R3
     // asm 00000222: 	LDI	R3,R2
     // asm 00000223: 	ASH	-16,R2
@@ -1219,8 +1328,11 @@ EODVCTR:
     // asm 00000246: STF	R0,*AR3++(2)
 DYNALPX:
     // asm 00000247: 	LDI	*AR0,AR0
+    vertex_cursor += part_vertex_count;
+    dyna = dyna->link;
     // asm 00000248: 	LDI	AR0,R0
     // asm 00000249: 	BNZ	DYNALOOP
+    goto DYNALOOP;
     // ;	POP	BK
     // asm 0000024A: 	POP	AR0
     // asm 0000024B: 	RS	16,BK
@@ -1253,16 +1365,29 @@ DYNASHD:
     // asm 00000252: 	LDI	*+AR0(DYNAPARENT),AR4	;GET POINTER TO PARENT
     // asm 00000253: 	LDI	*+AR4(OCARBLK),AR4
     // asm 00000254: 	ADDI	CARVSIZ,AR4
+    if (dyna->parent == NULL || dyna->parent->carblk == NULL) {
+        goto NOSHAD;
+    }
     // *CHECK SHADOW TYPE
     // asm 00000255: 	LDI	*+AR4(CARSHAD-CARVSIZ),R0	;SHADOW ACTIVE
     // asm 00000256: 	BZ	NOSHAD				;NO...BLOW IT OUT
+    if (dyna->parent->carblk->shadow_flag == 0) {
+        goto NOSHAD;
+    }
     // *IF NOT AIRBORNE DO REGULAR
     // asm 00000257: 	LDI	*+AR4(CAR_AIRF-CARVSIZ),R0
     // asm 00000258: 	OR	*+AR4(CAR_AIRB-CARVSIZ),R0
     // asm 00000259: 	BZ	DYNREG
+    if (dyna->parent->carblk->front_airborne == 0
+        && dyna->parent->carblk->rear_airborne == 0) {
+        goto DYNREG;
+    }
     // asm 0000025A: 	LDI	@_MODE,R4	       	;NO FLYING SHADOWS IN TUNNEL
     // asm 0000025B: 	TSTB	MINTUNNEL,R4
     // asm 0000025C: 	BNZ	DYNREG
+    if ((_MODE & MINTUNNEL) != 0) {
+        goto DYNREG;
+    }
     // asm 0000025D: 	LDI	8,IR0
     // ;	LDI	*+AR0(DYNANVERTS),RC	;number of vertices to process -1
     // ;	LDI	RC,R0
@@ -1272,6 +1397,43 @@ DYNASHD:
     // asm 0000025E: 	LDI	3,RC
     // asm 0000025F: 	ADDI	8,AR1			;SKIP 4 SHADOW VERTICES
     // asm 00000260: 	RPTB	EOSVCTR
+    for (int shadow_vertex = 0; shadow_vertex < 4; ++shadow_vertex) {
+        CAR_POINT* point = &dyna->parent->carblk->right_front + shadow_vertex;
+        c3x_reg_t relative_x = C3X_SUB(point->x, _CAMERAPOS.X);
+        c3x_reg_t relative_y =
+            C3X_ADD(C3X_SUB(point->y, _CAMERAPOS.Y), C3X_LDF(point->road_delta_y));
+        c3x_reg_t relative_z = C3X_SUB(point->z, _CAMERAPOS.Z);
+        c3x_reg_t rotated_x = C3X_ADD(
+            C3X_ADD(
+                C3X_MUL(_CAMERAMATRIX.a00, relative_x),
+                C3X_MUL(_CAMERAMATRIX.a01, relative_y)),
+            C3X_MUL(_CAMERAMATRIX.a02, relative_z));
+        c3x_reg_t rotated_y = C3X_ADD(
+            C3X_ADD(
+                C3X_MUL(_CAMERAMATRIX.a10, relative_x),
+                C3X_MUL(_CAMERAMATRIX.a11, relative_y)),
+            C3X_MUL(_CAMERAMATRIX.a12, relative_z));
+        c3x_reg_t rotated_z = C3X_ADD(
+            C3X_ADD(
+                C3X_MUL(_CAMERAMATRIX.a20, relative_x),
+                C3X_MUL(_CAMERAMATRIX.a21, relative_y)),
+            C3X_MUL(_CAMERAMATRIX.a22, relative_z));
+        int inverse_index = FIX(rotated_z) >> 4;
+        int blow_index = (vertex_cursor + shadow_vertex) * 3;
+
+        if (inverse_index > HIGH_CLIP_LEVEL) {
+            inverse_index = HIGH_CLIP_LEVEL;
+        }
+        if (inverse_index < -80) {
+            inverse_index = -80;
+        }
+
+        c3x_reg_t inverse_z = C3X_LDF(INVTAB[inverse_index]);
+        BLOWLIST[blow_index] = C3X_STF(C3X_ADD(C3X_MUL(rotated_x, inverse_z), SCRNHXI));
+        BLOWLIST[blow_index + 1] =
+            C3X_STF(C3X_ADD(C3X_MUL(C3X_MUL(rotated_y, inverse_z), C3X_IMM_F32(1.04)), SCRNHYI));
+        BLOWLIST[blow_index + 2] = C3X_STF(rotated_z);
+    }
     // *GET COORDS IN ORDER, ADD IN ROAD DIFF
     // asm 00000261: 	LDI	@CAMERAPOSI,AR2
     // asm 00000262: 	LDF	*AR4++,R3		;GET X COORD OF CAR POINT
@@ -1326,6 +1488,8 @@ EOSVCTR:
     // asm 00000282: STF	R0,*AR3++(2)
     // asm 00000283: 	LDI	@transmatrixI,AR5	;RESTORE MATRIX POINTER
     // asm 00000284: 	BU	DYNALPX
+    part_vertex_count = 4;
+    goto DYNALPX;
     // *NO SHADOW KLUDGE
 NOSHAD:
     // asm 00000285: 	LDF	0,R0
@@ -1334,12 +1498,19 @@ NOSHAD:
     // asm 00000288: 	ADDI	8,AR1			;SKIP 4 SHADOW VERTICES
     // asm 00000289: 	RPTS	11
     // asm 0000028A: 	STF	R0,*AR3++    		;STORE NULL X,Y,Z
+    for (int shadow_vertex = 0; shadow_vertex < 4; ++shadow_vertex) {
+        int blow_index = (vertex_cursor + shadow_vertex) * 3;
+        BLOWLIST[blow_index] = C3X_STF(C3X_FROM_INT(-1000));
+        BLOWLIST[blow_index + 1] = C3X_STF(C3X_FROM_INT(-1000));
+        BLOWLIST[blow_index + 2] = C3X_STF(C3X_FROM_INT(-1000));
+    }
     // asm 0000028B: 	LDI	@transmatrixI,AR5	;RESTORE MATRIX POINTER
     // asm 0000028C: 	BU	DYNALPX
+    part_vertex_count = 4;
+    goto DYNALPX;
 
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DYNAMIC_OBJECT", 0, 0);
-    UNIMPL();
 }
 
 // *	PLOTPOLY

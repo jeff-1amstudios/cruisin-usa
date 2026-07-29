@@ -1162,54 +1162,103 @@ static void PLYRDLINK(void) {
  *
  */
 static void PLYRSORT(void) {
+    OBJ* player;
+    OBJ* current;
+    OBJ* next;
+    OBJ* player_tail;
+    OBJ** previous_link;
+    OBJ** scan_link;
+    int player_dist;
+    c3x_reg_t player_x;
+    c3x_reg_t x_distance;
+
     // asm 000071EA: 	LDI	@PLYRTEMP,R0		;GET PLAYER
+    player = PLYRTEMP;
     // asm 000071EB: 	BZD	PSORTX	     		;NO PLAYER, HANG IT UP...
+    if (player == NULL) {
+        goto PSORTX;
+    }
     // asm 000071EC: 	LDI	R0,AR5
     // asm 000071ED: 	LDI	*+AR5(ODIST),R2	     	;GET PLAYER DISTANCE
+    player_dist = player->dist;
     // asm 000071EE: 	LDF	*+AR5(OPOSX),R3	     	;GET PLAYER X COORD
+    player_x = C3X_LDF(player->pos.X);
     // 	;-----> BZD	PSORTX	       	;NO PLAYER, HANG IT UP...
     // asm 000071EF: 	LDI	0,R0
     // asm 000071F0: 	STI	R0,*AR5			;ZERO OUT PLAYERS LINK
+    player->link = NULL;
     // asm 000071F1: 	LDI	@OACTIVEI,AR1		;GET OBJECT LIST POINTER
+    scan_link = &OACTIVE;
     // asm 000071F2: 	BR	PSRT1NXT
+    goto PSRT1NXT;
 PSRT1L:
     // asm 000071F3: 	AND	CLASS_M|TYPE_M,R1	;CHECK FOR A DRONE
     // asm 000071F4: 	CMPI	DRONE_C|VEHICLE_T,R1
     // asm 000071F5: 	BNE	PSRT1NXT
+    if ((current->id & (CLASS_M | TYPE_M)) != (DRONE_C | VEHICLE_T)) {
+        goto PSRT1NXT;
+    }
     // *FOUND A DRONE, COMPARE ODIST
     // asm 000071F6: 	CMPI	*+AR1(ODIST),R2	     	;GET DRONE DISTANCE
     // asm 000071F7: 	BLT	PSRT1NXT		;DRONE IN BACK, IGNORE HIM
+    if (player_dist < current->dist) {
+        goto PSRT1NXT;
+    }
     // asm 000071F8: 	LDF	*+AR1(OPOSX),R1
     // asm 000071F9: 	SUBF	R3,R1
+    x_distance = C3X_SUB(C3X_LDF(current->pos.X), player_x);
     // asm 000071FA: 	ABSF	R1
+    x_distance = C3X_ABS(x_distance);
     // asm 000071FB: 	FIX	R1
     // asm 000071FC: 	CMPI	2000,R1			;MUST BE WITHIN X LIMIT (NOT OFFSCREEN)
     // asm 000071FD: 	BGT	PSRT1NXT		;DRONE IN FRONT, WERE DONE
+    if (FIX(x_distance) > 2000) {
+        goto PSRT1NXT;
+    }
     // asm 000071FE: 	LDI	AR5,AR2
+    player_tail = player;
 PSRT2A:
     // asm 000071FF: 	LDI	*AR2,R1			;DRONE IN FRONT, LINK EM INTO CHAIN
     // asm 00007200: 	BZ	PSRT2
+    if (player_tail->link == NULL) {
+        goto PSRT2;
+    }
     // asm 00007201: 	LDI	R1,AR2
+    player_tail = player_tail->link;
     // asm 00007202: 	BR	PSRT2A
+    goto PSRT2A;
 PSRT2:
     // asm 00007203: 	LDI	*AR1,R0			;REMOVE DRONE FORM OBJECT LIST
+    next = current->link;
     // asm 00007204: 	STI	R0,*AR0
+    *previous_link = next;
     // asm 00007205: 	STI	AR1,*AR2		;LINK DRONE TO TEMP PLAYER LIST
+    player_tail->link = current;
     // asm 00007206: 	STI	R1,*AR1			;ZERO OUT LAST LINK
+    current->link = NULL;
     // asm 00007207: 	LDI	AR0,AR1
+    scan_link = previous_link;
 PSRT1NXT:
     // asm 00007208: 	LDI	*AR1,R0
+    current = *scan_link;
     // asm 00007209: 	BNZD	PSRT1L
     // asm 0000720A: 	LDI	AR1,AR0			;AR4=PREVIOUS-1 LINK
+    previous_link = scan_link;
     // asm 0000720B: 	LDI	R0,AR1
+    if (current != NULL) {
+        scan_link = &current->link;
+    }
     // asm 0000720C: 	LDI	*+AR1(OID),R1
     // 	;------>BNZD	PSRT1L
+    if (current != NULL) {
+        goto PSRT1L;
+    }
     // *INSERT HIM
     // asm 0000720D: 	STI	AR5,*AR0		;LINK IN PLAYER CHAIN
+    *previous_link = player;
 PSORTX:
     // asm 0000720E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRSORT", 0, 0);
-    UNIMPL_TODO();
 }
 
 // *-----------------------------------------------------------------------------
@@ -1226,30 +1275,60 @@ PSORTX:
  *
  */
 static void DRONESORT(void) {
+    OBJ* drone_list;
+    OBJ** list_link;
+    OBJ* obj;
+    OBJ* next;
+    OBJ* drone;
+    OBJ* next_drone;
+    OBJ* road_objects[5];
+    OBJ* target_road;
+    OBJ* candidate;
+    OBJ** insertion_link;
+    CARBLK* carblk;
+    int target_dist;
+    int drone_dist;
+    u32 candidate_id;
+
     // 	;PULL LIST OF DRONES OFF OBJECT LIST
     // asm 0000720F: 	BUD	DSORTNXT
     // asm 00007210: 	NOP
     // ;	PUSH	R2
     // asm 00007211: 	LDI	0,AR4			;INIT DRONE LIST HEADER
+    drone_list = NULL;
     // asm 00007212: 	LDI	@OACTIVEI,AR1		;GET OBJECT LIST POINTER
+    list_link = &OACTIVE;
     // 	;------>BD DSORTNXT     	;GO GET FIRST ELEMENT
+    goto DSORTNXT;
 DSORTL:
     // asm 00007213: 	AND	CLASS_M,R1
     // asm 00007214: 	CMPI	DRONE_C,R1
     // asm 00007215: 	BNE	DSORTNXT
+    if ((obj->id & CLASS_M) != DRONE_C) {
+        list_link = &obj->link;
+        goto DSORTNXT;
+    }
     // *FOUND A DRONE, DELINK 'EM
     // asm 00007216: 	LDI	*AR1,R0			;GET POINTER TO NEXT ELEMENT
+    next = obj->link;
     // asm 00007217: 	STI	R0,*AR0
+    *list_link = next;
     // asm 00007218: 	STI	AR4,*AR1		;LINK HIM INTO TEMP LIST
+    obj->link = drone_list;
     // asm 00007219: 	LDI	AR1,AR4
+    drone_list = obj;
     // asm 0000721A: 	LDI	AR0,AR1
 DSORTNXT:
     // asm 0000721B: 	LDI	*AR1,R0
+    obj = *list_link;
     // asm 0000721C: 	BNZD	DSORTL
     // asm 0000721D: 	LDI	AR1,AR0			;AR4=PREVIOUS-1 LINK
     // asm 0000721E: 	LDI	R0,AR1
     // asm 0000721F: 	LDI	*+AR1(OID),R1
     // 	;------>BNZD	DSORTL
+    if (obj != NULL) {
+        goto DSORTL;
+    }
     // ;	LDI	R0,R0
     // ;	BNZ	DSORTL
     // asm 00007220: DSORTX
@@ -1257,18 +1336,29 @@ DSORTNXT:
     // *FOR EACH DRONE PUT IT AFTER HIGHEST PRIORITY ROAD SEG INTERSECTED
     // asm 00007220: 	LDI	AR4,R0	    		;NULL LIST?
     // asm 00007221: 	BZ	DSORTXX			;YES, QUIT
+    if (drone_list == NULL) {
+        goto DSORTXX;
+    }
 NXTDRONE:
     // *GET ROAD COLLISION POINTERS
     // asm 00007222: 	LDI	AR4,AR5
+    drone = drone_list;
     // asm 00007223: 	LDI	*AR4,AR4		;MOVE TO NEXT DRONE
+    next_drone = drone->link;
     // asm 00007224: 	PUSH	AR4
     // asm 00007225: 	PUSH	AR5
     // asm 00007226: 	LDI	*+AR5(OCARBLK),AR0
+    carblk = drone->carblk;
     // asm 00007227: 	LDI	*+AR0(CARPCOL),AR1		;ROAD COLL CNT
+    road_objects[0] = carblk != NULL ? OBJREF_TO_PTR(carblk->center.collided_road_object) : NULL;
     // asm 00007228: 	LDI	*+AR0(CARVSIZ+CARPCOL),AR2	;ROAD COLL RF
+    road_objects[1] = carblk != NULL ? OBJREF_TO_PTR(carblk->right_front.collided_road_object) : NULL;
     // asm 00007229: 	LDI	*+AR0((2*CARVSIZ)+CARPCOL),AR3	;ROAD COLL LF
+    road_objects[2] = carblk != NULL ? OBJREF_TO_PTR(carblk->left_front.collided_road_object) : NULL;
     // asm 0000722A: 	LDI	*+AR0((3*CARVSIZ)+CARPCOL),AR4	;ROAD COLL LR
+    road_objects[3] = carblk != NULL ? OBJREF_TO_PTR(carblk->left_rear.collided_road_object) : NULL;
     // asm 0000722B: 	LDI	*+AR0((4*CARVSIZ)+CARPCOL),AR5	;ROAD COLL RR
+    road_objects[4] = carblk != NULL ? OBJREF_TO_PTR(carblk->right_rear.collided_road_object) : NULL;
     // asm 0000722C: 	LDI	*+AR1(ODIST),R1
     // asm 0000722D: 	LDI	*+AR2(ODIST),R2
     // asm 0000722E: 	LDI	*+AR3(ODIST),R3
@@ -1286,6 +1376,14 @@ NXTDRONE:
     // asm 0000723A: 	LDIZ	R6,R4
     // asm 0000723B: 	LDI	AR5,R0
     // asm 0000723C: 	LDIZ	R6,R5
+    target_road = NULL;
+    target_dist = 0x7fff0000;
+    for (int road_index = 0; road_index < 5; ++road_index) {
+        if (road_objects[road_index] != NULL && road_objects[road_index]->dist < target_dist) {
+            target_road = road_objects[road_index];
+            target_dist = road_objects[road_index]->dist;
+        }
+    }
     // asm 0000723D: 	CMPI	R1,R2
     // asm 0000723E: 	LDIGT	AR1,AR2
     // asm 0000723F: 	LDIGT	R1,R2
@@ -1301,22 +1399,42 @@ NXTDRONE:
     // asm 00007249: 	POP	AR5
     // asm 0000724A: 	POP	AR4
     // asm 0000724B: 	LDI	@OACTIVEI,AR1		;GET OBJECT LIST POINTER
+    insertion_link = &OACTIVE;
     // asm 0000724C: 	LDI	AR3,R3		 	;CHECK NULL
     // asm 0000724D: 	BZ	DSORTL1X	 	;NULL DUDE, Z SORT ONLY
+    if (target_road == NULL) {
+        goto DSORTL1X;
+    }
 DSORTL1:
     // asm 0000724E: 	LDI	*AR1,R0			;CHECK END OF LIST
+    candidate = *insertion_link;
     // asm 0000724F: 	BNZ	DSORTL2
+    if (candidate != NULL) {
+        goto DSORTL2;
+    }
 DSORTL1X:
     // asm 00007250: 	LDI	@OACTIVEI,AR1		;CANT FIND TRACK PIECE, Z SORT FROM TOP
+    insertion_link = &OACTIVE;
     // asm 00007251: 	LDI	AR1,R1
     // asm 00007252: 	BNZ	DZSORTUP		;LIST NOT NULL
+    if (OACTIVE != NULL) {
+        goto DZSORTUP;
+    }
     // asm 00007253: 	LDI	*AR2,R2
     // asm 00007254: 	STI	R2,*AR3			;OBJECT LIST IS NULL, PUT CAR AT HEAD
     // asm 00007255: 	STI	AR3,*AR2
+    drone->link = OACTIVE;
+    OACTIVE = drone;
+    goto DSORTLLL;
 DSORTL2:
     // asm 00007256: 	LDI	R0,AR1
     // asm 00007257: 	CMPI	R0,R3
     // asm 00007258: 	BNZ	DSORTL1
+    if (candidate != target_road) {
+        insertion_link = &candidate->link;
+        goto DSORTL1;
+    }
+    insertion_link = &candidate->link;
     // *
     // *SORT PAST SHOULDER PIECES
     // *AR1=OBJECT TO INSERT AFTER IN OBJECT LIST
@@ -1327,56 +1445,96 @@ DZSORTUP:
     // asm 0000725A: 	LDI	*+AR3(OID),R0
     // asm 0000725B: 	CMPI	0300H,R0
     // asm 0000725C: 	BNZ	DZSORTUP1		;NOPE, FORGET SHOULDER JIVE
+    if (road_objects[0] == NULL || road_objects[0]->id != 0x0300) {
+        goto DZSORTUP1;
+    }
     // asm 0000725D: 	LDI	*+AR5(ODIST),R1	     	;GET DRONE DISTANCE
+    drone_dist = drone->dist;
     // asm 0000725E: 	LDI	ROAD_C+SHLDR_T,R2	;GET SOULDER ID
     // asm 0000725F: 	LDI	CLASS_M,R3
     // asm 00007260: 	BU	DSL11
+    goto DSL11;
 DSLP1:
     // asm 00007261: 	BGT	DSL000	 		;ROAD OR CAR, CHECK IT OUT..
+    if ((ROAD_C + SHLDR_T) > candidate_id) {
+        goto DSL000;
+    }
     // asm 00007262: 	AND	R3,R4,R5
     // asm 00007263: 	CMPI	TSIGN_C,R5		;SIGN OR TREE, NEED TO CHECK PRIORITY ?
     // asm 00007264: 	BNZ	DSL00			;NOPE, BLOW IT OFF...
+    if ((candidate_id & CLASS_M) != TSIGN_C) {
+        goto DSL00;
+    }
 DSL000:
     // asm 00007265: 	CMPI	*+AR2(ODIST),R1
     // asm 00007266: 	BGE	DSDONE	 		;PRIORITY IS O.K., WERE DONE WITH DRONE
+    if (drone_dist >= candidate->dist) {
+        goto DSDONE;
+    }
 DSL00:
     // asm 00007267: 	LDI	AR2,AR1
+    insertion_link = &candidate->link;
 DSL11:
     // asm 00007268: 	LDI	*AR1,R0
+    candidate = *insertion_link;
     // asm 00007269: 	BNZD	DSLP1
     // asm 0000726A: 	LDI	R0,AR2
     // asm 0000726B: 	LDI	*+AR2(OID),R4
+    if (candidate != NULL) {
+        candidate_id = candidate->id;
+    }
     // asm 0000726C: 	CMPI	R4,R2
     // 	;----->	BNZD	DSLP1
+    if (candidate != NULL) {
+        goto DSLP1;
+    }
     // asm 0000726D: 	B	DSDONE
+    goto DSDONE;
     // *Z SORT IT UPWARDS
     // *AR1=OBJECT TO INSERT AFTER IN OBJECT LIST
     // *AR5=DRONE
 DZSORTUP1:
     // asm 0000726E: 	LDI	*+AR5(ODIST),R1	     	;GET DRONE DISTANCE
+    drone_dist = drone->dist;
     // asm 0000726F: 	BU	DSL1
+    goto DSL1;
 DSLP:
     // asm 00007270: 	BGE	DSDONE	 		;PRIORITY IS O.K., WERE DONE WITH DRONE
+    if (drone_dist >= candidate->dist) {
+        goto DSDONE;
+    }
     // asm 00007271: 	LDI	AR2,AR1
+    insertion_link = &candidate->link;
 DSL1:
     // asm 00007272: 	LDI	*AR1,R0
+    candidate = *insertion_link;
     // asm 00007273: 	BNZD	DSLP
     // asm 00007274: 	LDI	R0,AR2
     // asm 00007275: 	CMPI	*+AR2(ODIST),R1
     // asm 00007276: 	NOP
     // 	;----->	BNZD	DSLP
+    if (candidate != NULL) {
+        goto DSLP;
+    }
 DSDONE:
     // asm 00007277:         LDI	*AR1,R0			;WERE DONE... INSERT THE SUCKA
+    next = *insertion_link;
     // asm 00007278: 	STI	AR5,*AR1
+    *insertion_link = drone;
     // asm 00007279: 	STI	R0,*AR5
+    drone->link = next;
     // *GET NEXT DRONE DUDES
+DSORTLLL:
     // asm 0000727A: DSORTLLL
     // asm 0000727A:        	LDI	AR4,R0
     // asm 0000727B: 	BNZ	NXTDRONE
+    drone_list = next_drone;
+    if (drone_list != NULL) {
+        goto NXTDRONE;
+    }
 DSORTXX:
     // asm 0000727C: 	RETS				;WE QUIT...
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESORT", 0, 0);
-    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

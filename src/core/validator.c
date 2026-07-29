@@ -22,6 +22,7 @@ static int fail_on_wrong_consumer = 0;
 static int g_validate_log_line_number = 0;
 static int validate_log_exhausted = 0;
 static int validate_current_call_failed = 0;
+static int g_validate_environment_checked = 0;
 
 static void validate_fail(
     const char* caller_file,
@@ -92,6 +93,13 @@ static void fail() {
 }
 
 static int should_skip_validation(void) {
+    if (!g_validate_environment_checked) {
+        if (getenv("CRUSN_DISABLE_MAME_VALIDATION") != NULL) {
+            mame_validate_disabled = 1;
+        }
+        g_validate_environment_checked = 1;
+    }
+
     return mame_validate_disabled || validate_log_exhausted;
 }
 

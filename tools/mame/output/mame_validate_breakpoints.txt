@@ -65,9 +65,9 @@ bpset 00004B8F, 1, { save 00004B8F-0.bin, 00A1AB00, 0x30000; logerror "validate 
 bpset 00004B95, 1, { save 00004B95-0.bin, 00A52900, 0x136280; logerror "validate SECgeneral_CUSA-decompressed: file=00004B95-0.bin, cusa.c:484\n"; g }
 bpset 00004B9A, 1, { save 00004B9A-0.bin, 00BEFA00, 0x1000; logerror "validate SEChead2head-decompressed: file=00004B9A-0.bin, cusa.c:489\n"; g }
 bpset 00004BA0, 1, { save 00004BA0-0.bin, 00B88B80, 0x1000; logerror "validate SECpress-decompressed: file=00004BA0-0.bin, cusa.c:496\n"; g }
-bpset 0000036A, 1, { logerror "validate R1: 0x%08X, dirq.c:1891\n", r1; g }
-bpset 000003F2, 1, { logerror "validate R0: 0x%08X, dirq.c:2219\n", r0; g }
-bpset 0000043D, 1, { logerror "validate R0: 0x%08X, dirq.c:2345\n", r0; g }
+bpset 0000036A, 1, { logerror "validate R1: 0x%08X, dirq.c:2062\n", r1; g }
+bpset 000003F2, 1, { logerror "validate R0: 0x%08X, dirq.c:2390\n", r0; g }
+bpset 0000043D, 1, { logerror "validate R0: 0x%08X, dirq.c:2516\n", r0; g }
 bpset 000065DF, 1, { logerror "validate R0: 0x%08X, drones.c:236\n", r0; g }
 bpset 00006611, 1, { logerror "validate R5: 0x%08X, drones.c:363\n", r5; g }
 bpset 00006616, 1, { logerror "validate R7: 0x%08X, drones.c:377\n", r7; g }
