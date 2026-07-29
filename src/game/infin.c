@@ -889,6 +889,7 @@ static void TRANS_PTS(int vertex_count /*AR4*/, const c3x_f32_t* src /*AR5*/, c3
 TRANS_LP:
     // ;	LDF	@AMOUNT_CLIPPED,R4
     // asm 000083D4: 	LDF	@INFIN_CORRECT,R7
+    y_offset = INFIN_CORRECT;
     // ;	FLOAT	8000,R0
     // ;	MPYF	10,R0
     // ;	LDP	@_CAMERARAD
