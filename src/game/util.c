@@ -894,7 +894,7 @@ void CARPROC(PROC* p) {
     carblk = obj->carblk;
     p->ctx->CARPROC.carblk = carblk;
     // asm 00008F91: 	LDF	0,R6	 		;INIT SPIN RADIANS
-    p->ctx->CARPROC.body_x_radians = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    p->ctx->CARPROC.body_x_radians = C3X_STF(C3X_FROM_INT(0));
     // asm 00008F92: 	LDF	*+AR5(CARSPEED),R0	;INIT SPEED
     // asm 00008F93: 	LDF	R0,R7
     p->ctx->CARPROC.old_car_speed = C3X_STF(C3X_REG(carblk->speed));
@@ -903,10 +903,10 @@ void CARPROC(PROC* p) {
     p->ctx->CARPROC.old_orady = C3X_STF(C3X_REG(obj->rady));
     // asm 00008F96: 	CLRF	R5			;INITIALIZE BODY Z RADIANS
     // asm 00008F97: 	STF	R5,*+AR7(PDATA+1)	;SAVE Z RADIANS
-    p->ctx->CARPROC.body_z_radians = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    p->ctx->CARPROC.body_z_radians = C3X_STF(C3X_FROM_INT(0));
     // asm 00008F98: 	LDF	0,R0			;INITIALIZE WHEEL X RADIANS
     // asm 00008F99: 	STF	R0,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
-    p->ctx->CARPROC.wheel_x_radians = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    p->ctx->CARPROC.wheel_x_radians = C3X_STF(C3X_FROM_INT(0));
 CARPROCL:
     obj = p->ctx->CARPROC.obj;
     carblk = p->ctx->CARPROC.carblk;
@@ -948,7 +948,7 @@ NCS:
     // asm 00008FB1: 	ADDF	*+AR7(PDATA+2),R2
     // asm 00008FB2: 	STF	R2,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
     p->ctx->CARPROC.wheel_x_radians =
-        C3X_STF(C3X_REG(C3X_ADD(p->ctx->CARPROC.wheel_x_radians, C3X_MUL(carblk->speed, C3X_IMM_F32(0.02f)))));
+        C3X_STF(C3X_ADD(p->ctx->CARPROC.wheel_x_radians, C3X_MUL(carblk->speed, C3X_IMM_F32(0.02f))));
     // asm 00008FB3: 	LDI	@MATRIXBI,AR2		;GET X SPIN IN MATRIXB
     // asm 00008FB4: 	CALL	FIND_XMATRIX
     FIND_XMATRIX(&MATRIXBI, C3X_LDF(p->ctx->CARPROC.wheel_x_radians));
@@ -1074,7 +1074,7 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     // asm 00008FDB: 	MPYF	0.06,R0			;CONVERT TO RADIANS
     // asm 00008FDC: 	ADDF	R0,R6
     p->ctx->CARPROC.body_x_radians =
-        C3X_STF(C3X_REG(C3X_ADD(p->ctx->CARPROC.body_x_radians, C3X_MUL(delta_speed, C3X_IMM_F32(0.06f)))));
+        C3X_STF(C3X_ADD(p->ctx->CARPROC.body_x_radians, C3X_MUL(delta_speed, C3X_IMM_F32(0.06f))));
     // asm 00008FDD: 	MPYF	0.25,R6
     // asm 00008FDE: 	NEGF	R6,R2
     x_lean = C3X_NEG(C3X_MUL(p->ctx->CARPROC.body_x_radians, C3X_IMM_F32(0.25f)));
@@ -1109,13 +1109,13 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
         x_lean = C3X_IMM_F32(-0.1f);
     }
     // asm 00008FEE: 	STF	R2,*+AR5(CARXLEAN)
-    carblk->x_lean = C3X_STF(C3X_REG(x_lean));
+    carblk->x_lean = C3X_STF(x_lean);
     // asm 00008FEF: 	LDI	@MATRIXBI,AR2
     // asm 00008FF0: 	CALL	FIND_XMATRIX
     // asm 00008FF1: 	LDI	AR2,AR0			;SAVE MATRIX PTR
     FIND_XMATRIX(&MATRIXBI, x_lean);
     body_x_matrix = &MATRIXBI;
-    p->ctx->CARPROC.old_car_speed = C3X_STF(C3X_REG(new_speed));
+    p->ctx->CARPROC.old_car_speed = C3X_STF(new_speed);
     // 	;GET YOUR Z LEAN (CORNERING)
     // 	;
     // asm 00008FF2: 	LDF	*+AR7(PDATA),R4		;OLD ORADY
@@ -1146,9 +1146,9 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     delta_rady = C3X_MUL(delta_rady, C3X_IMM_F32(0.06f));
     delta_rady = C3X_MUL(delta_rady, C3X_IMM_F32(0.1f));
     // asm 00009000: 	ADDF	R0,R5
-    p->ctx->CARPROC.body_z_radians = C3X_STF(C3X_REG(C3X_ADD(p->ctx->CARPROC.body_z_radians, delta_rady)));
+    p->ctx->CARPROC.body_z_radians = C3X_STF(C3X_ADD(p->ctx->CARPROC.body_z_radians, delta_rady));
     // asm 00009001: 	MPYF	0.5,R5
-    p->ctx->CARPROC.body_z_radians = C3X_STF(C3X_REG(C3X_MUL(p->ctx->CARPROC.body_z_radians, C3X_IMM_F32(0.5f))));
+    p->ctx->CARPROC.body_z_radians = C3X_STF(C3X_MUL(p->ctx->CARPROC.body_z_radians, C3X_IMM_F32(0.5f)));
     // asm 00009002: 	STF	R5,*+AR7(PDATA+1)	;SAVE NEW Z RADIANS
     // asm 00009003: 	NEGF	R5,R2
     z_lean = C3X_NEG(p->ctx->CARPROC.body_z_radians);
@@ -1169,7 +1169,7 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
         z_lean = C3X_IMM_F32(-0.1f);
     }
     // asm 0000900B: 	STF	R2,*+AR5(CARZLEAN)    	;SAVE IT
-    carblk->z_lean = C3X_STF(C3X_REG(z_lean));
+    carblk->z_lean = C3X_STF(z_lean);
     // ;	MPYF	3,R2			;PUMP IT UP
     // asm 0000900C: 	MPYF	2.2,R2			;PUMP IT UP
     z_lean = C3X_MUL(z_lean, C3X_IMM_F32(2.2f));

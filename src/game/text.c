@@ -122,8 +122,8 @@ tSHADOW_TEXT TEXT_ADDDS(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks) {
     front = TEXT_ADD(text, x, y, ticks);
     shadow = TEXT_ADD(text, x, y, ticks);
     shadow->color = TXT_NRZ;
-    shadow->posx = C3X_STF(C3X_REG(C3X_ADD(x, C3X_FROM_INT(2))));
-    shadow->posy = C3X_STF(C3X_REG(C3X_ADD(y, C3X_FROM_INT(2))));
+    shadow->posx = C3X_STF(C3X_ADD(x, C3X_FROM_INT(2)));
+    shadow->posy = C3X_STF(C3X_ADD(y, C3X_FROM_INT(2)));
 
     tSHADOW_TEXT ret;
     ret.front = front;
@@ -154,15 +154,15 @@ tTEXT* TEXT_ADD(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks) {
     TEXT_FREE_COUNT--;
 
     t->ptr = text;
-    t->posx = C3X_STF(C3X_REG(x));
-    t->posy = C3X_STF(C3X_REG(y));
+    t->posx = C3X_STF(x);
+    t->posy = C3X_STF(y);
 
     t->tiks = ticks;
 
     t->color = 0; /* clear the flags */
 
-    t->velx = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
-    t->vely = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    t->velx = C3X_STF(C3X_FROM_INT(0));
+    t->vely = C3X_STF(C3X_FROM_INT(0));
 
     /* set default font */
     SET18FONT(t);
@@ -787,11 +787,11 @@ OUCX:
         // asm 00007AD5: 	LDF	*+AR4(TEXT_POSX),R0
         // asm 00007AD6: 	ADDF	*+AR4(TEXT_VELX),R0
         // asm 00007AD7: 	STF	R0,*+AR4(TEXT_POSX)
-        text->posx = C3X_STF(C3X_REG(C3X_ADD(text->posx, text->velx)));
+        text->posx = C3X_STF(C3X_ADD(text->posx, text->velx));
         // asm 00007AD8: 	LDF	*+AR4(TEXT_POSY),R0
         // asm 00007AD9: 	ADDF	*+AR4(TEXT_VELY),R0
         // asm 00007ADA: 	STF	R0,*+AR4(TEXT_POSY)
-        text->posy = C3X_STF(C3X_REG(C3X_ADD(text->posy, text->vely)));
+        text->posy = C3X_STF(C3X_ADD(text->posy, text->vely));
     }
 ISFROZEN:
 

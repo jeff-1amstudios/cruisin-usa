@@ -149,7 +149,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055C3: 	LDI	0,R0
     // asm 000055C4: 	STI	R0,*+AR7(OBJINS)
     p->ctx->ATTRACT_DELTA.objins = 0;
-    p->ctx->ATTRACT_DELTA.cardis = C3X_STF(C3X_REG(C3X_IMM_F32(1.0f)));
+    p->ctx->ATTRACT_DELTA.cardis = C3X_STF(C3X_IMM_F32(1.0f));
 
     // asm 000055C5: 	LDI	@ATTRWAVE,R4
     // asm 000055C6: 	LSH	-1,R4
@@ -350,7 +350,7 @@ void LOGO_PROC(PROC* p) {
 
     // asm 0000560B: 	FLOAT	LOGO_STARTZ,R0
     // asm 0000560C: 	STF	R0,*+AR0(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(LOGO_STARTZ)));
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(LOGO_STARTZ));
 
     // asm 0000560D: 	LDI	AR0,AR2
     // asm 0000560E: 	CALL	OBJ_INSERTP
@@ -358,10 +358,10 @@ void LOGO_PROC(PROC* p) {
 
     // asm 0000560F: 	LDF	LOGO_SPINZ,R0
     // asm 00005610: 	STF	R0,*+AR4(ORADX)
-    obj->rad.X = C3X_STF(C3X_REG(C3X_FROM_INT(LOGO_SPINZ)));
+    obj->rad.X = C3X_STF(C3X_FROM_INT(LOGO_SPINZ));
 
     // asm 00005611: 	LDF	0,R7		;SPEED FACTOR
-    p->ctx->LOGO_PROC.speed_factor = C3X_STF(C3X_REG(C3X_FROM_INT(0))); // SPEED FACTOR
+    p->ctx->LOGO_PROC.speed_factor = C3X_STF(C3X_FROM_INT(0)); // SPEED FACTOR
 
     // asm 00005612: 	LDI	LOGO_FLYIN_FRAMES,AR5
     p->ctx->LOGO_PROC.frames_left = LOGO_FLYIN_FRAMES;
@@ -393,7 +393,7 @@ LOGO_LOOP1:
         if (C3X_LT(value, C3X_FROM_INT(LOGO_ENDX))) {
             value = C3X_FROM_INT(LOGO_ENDX);
         }
-        obj->pos.X = C3X_STF(C3X_REG(value));
+        obj->pos.X = C3X_STF(value);
 
         // asm 00005622: 	FLOAT	LOGO_ENDY,R0
         // asm 00005623: 	SUBF	*+AR4(OPOSY),R0
@@ -409,10 +409,10 @@ LOGO_LOOP1:
         if (C3X_LT(value, C3X_FROM_INT(LOGO_ENDY))) {
             value = C3X_FROM_INT(LOGO_ENDY);
         }
-        obj->pos.Y = C3X_STF(C3X_REG(value));
+        obj->pos.Y = C3X_STF(value);
 
         // asm 0000562B: 	ADDF	0.03,R7
-        p->ctx->LOGO_PROC.speed_factor = C3X_STF(C3X_REG(C3X_ADD(p->ctx->LOGO_PROC.speed_factor, C3X_IMM_F32(0.03))));
+        p->ctx->LOGO_PROC.speed_factor = C3X_STF(C3X_ADD(p->ctx->LOGO_PROC.speed_factor, C3X_IMM_F32(0.03)));
     }
 
 LOGO2:
@@ -431,7 +431,7 @@ LOGO2:
     if (C3X_LT(value, C3X_FROM_INT(LOGO_ENDZ))) {
         value = C3X_FROM_INT(LOGO_ENDZ);
     }
-    obj->pos.Z = C3X_STF(C3X_REG(value));
+    obj->pos.Z = C3X_STF(value);
 
     // asm 00005636: 	LDF	LOGO_SPINZ,R0
     // asm 00005637: 	FLOAT	LOGO_FLYIN_FRAMES,R1
@@ -442,9 +442,9 @@ LOGO2:
     // asm 0000563C: 	LDFN	0,R2
     // asm 0000563D: 	STF	R2,*+AR4(ORADX)
     value = C3X_MUL(DIV_F(C3X_FROM_INT(LOGO_SPINZ), C3X_FROM_INT(LOGO_FLYIN_FRAMES)), nframes);
-    obj->rad.X = C3X_STF(C3X_REG(C3X_SUB(obj->rad.X, value)));
+    obj->rad.X = C3X_STF(C3X_SUB(obj->rad.X, value));
     if (C3X_GT(obj->rad.X, C3X_FROM_INT(0))) {
-        obj->rad.X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+        obj->rad.X = C3X_STF(C3X_FROM_INT(0));
     }
 
     // asm 0000563E: 	LDI	AR4,AR2
@@ -577,7 +577,7 @@ static void INIT_STARTING(void) {
     // asm 00005649: 	LDI	-350,R0
     // asm 0000564A: 	FLOAT	R0,R1
     // asm 0000564B: 	STF	R1,*+AR7(CAMYOFF)
-    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_REG(C3X_FROM_INT(-350)));
+    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_FROM_INT(-350));
     // asm 0000564C: 	LDI	4,R0		;direction to search in
     // asm 0000564D: 	LDI	1,R1		;distance to start with
     // asm 0000564E: 	LDI	8,R2		;Position to follow
@@ -677,7 +677,7 @@ static void INIT_REVERS_CUP(void) {
     // asm 00005696: 	LDI	-350,R0
     // asm 00005697: 	FLOAT	R0,R1
     // asm 00005698: 	STF	R1,*+AR7(CAMYOFF)
-    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_REG(C3X_FROM_INT(-350)));
+    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_FROM_INT(-350));
     // asm 00005699: 	LDI	4,R0		;direction to search in
     // asm 0000569A: 	LDI	1,R1		;distance to start with
     // asm 0000569B: 	LDI	5,R2		;Position to follow
@@ -707,7 +707,7 @@ static void INIT_CATCHUP(void) {
     // asm 000056A5: 	LDI	-350,R0
     // asm 000056A6: 	FLOAT	R0,R1
     // asm 000056A7: 	STF	R1,*+AR7(CAMYOFF)
-    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_REG(C3X_FROM_INT(-350)));
+    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_FROM_INT(-350));
     // asm 000056A8: 	LDI	4,R0		;direction to search in
     // asm 000056A9: 	LDI	1,R1		;distance to start with
     // asm 000056AA: 	LDI	5,R2		;Position to follow
@@ -738,7 +738,7 @@ static void INIT_LEAD(void) {
     // asm 000056B4: 	LDI	-300,R0
     // asm 000056B5: 	FLOAT	R0,R1
     // asm 000056B6: 	STF	R1,*+AR7(CAMYOFF)
-    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_REG(C3X_FROM_INT(-300)));
+    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_FROM_INT(-300));
     // asm 000056B7: 	LDI	-4,R0
     // asm 000056B8: 	LDI	1,R1
     // asm 000056B9: 	LDI	0,R2
@@ -780,7 +780,7 @@ static void INITROAD_VIEW(int direction_to_search /*R0*/, int distance_to_start_
     memcpy(&ctx->ATTRACT_DELTA.camera_xyzr[3], &rady_offset, sizeof(rady_offset));
     // asm 000056C7: 	LDF	0,R0
     // asm 000056C8: 	STF	R0,*+AR7(CAMERA_ACCEL)
-    ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_FROM_INT(0));
     // asm 000056C9: 	LDI	1,R0
     // asm 000056CA: 	STI	R0,*+AR7(CUT_PAN)
     ctx->ATTRACT_DELTA.cut_pan = 1;
@@ -894,7 +894,7 @@ static void REV_ROAD_VIEW(void) {
     car_speed = carblk != NULL ? C3X_LDF(carblk->speed) : C3X_FROM_INT(0);
     // asm 0000570E: 	MPYF	1.8,R0
     // asm 0000570F: 	STF	R0,*+AR7(CAMERA_VEL)	;Set initial camera velocity
-    ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_REG(C3X_MUL(car_speed, C3X_IMM_F32(1.8)))); // ;Set initial camera velocity
+    ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_MUL(car_speed, C3X_IMM_F32(1.8))); // ;Set initial camera velocity
     // asm 00005710: 	LDF	0.6,R2
     // asm 00005711: 	CALL	SET_LANE
     SET_LANE(C3X_IMM_F32(0.6));
@@ -929,7 +929,7 @@ static void ROAD_VIEW(void) {
         if (ctx->ATTRACT_DELTA.carobj != closest_racer) {
             // asm 0000571A: 	LDF	0,R2
             // asm 0000571B: 	STF	R2,*+AR7(CAMERA_ACCEL)
-            ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+            ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_FROM_INT(0));
             // asm 0000571C: 	STI	AR1,*+AR7(CAROBJ)	;FOUND a NEW CAR
             // asm 0000571D: 	STI	AR1,@PLYCAR
             ctx->ATTRACT_DELTA.carobj = closest_racer; // ;FOUND a NEW CAR
@@ -938,7 +938,7 @@ static void ROAD_VIEW(void) {
             // asm 0000571F: 	STI	AR0,@PLYCBLK
             PLYCBLK = closest_racer->carblk;
             // asm 00005720: 	STF	R0,*+AR7(CARDIS)
-            ctx->ATTRACT_DELTA.cardis = C3X_STF(C3X_REG(distance));
+            ctx->ATTRACT_DELTA.cardis = C3X_STF(distance);
         }
 RV1A:
         // asm 00005721: 	LDF	@ACCEL_RATE,R3
@@ -957,9 +957,9 @@ RV1B:
         // asm 00005728: 	ADDF	R3,R2
         // asm 00005729: 	LDFLT	0,R2
         // asm 0000572A: 	STF	R2,*+AR7(CAMERA_ACCEL)
-        ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_REG(C3X_ADD(ctx->ATTRACT_DELTA.camera_accel, accel_step)));
+        ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_ADD(ctx->ATTRACT_DELTA.camera_accel, accel_step));
         if (C3X_LT(ctx->ATTRACT_DELTA.camera_accel, C3X_FROM_INT(0))) {
-            ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+            ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_FROM_INT(0));
         }
         // asm 0000572B: 	MPYF	R0,R2			;Factor in overall distance
         // asm 0000572C: 	ADDF	1.6,R2
@@ -970,7 +970,7 @@ RV1B:
         car_speed = carblk != NULL ? C3X_LDF(carblk->speed) : C3X_FROM_INT(0);
         // asm 0000572F: 	MPYF	R2,R0
         // asm 00005730: 	STF	R0,*+AR7(CAMERA_VEL)	;Set initial camera velocity
-        ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_REG(C3X_MUL(car_speed, lane_target))); // ;Set initial camera velocity
+        ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_MUL(car_speed, lane_target)); // ;Set initial camera velocity
     }
 RV1:
     // asm 00005731: 	LDF	0.6,R2
@@ -997,7 +997,7 @@ static void LEAD_VIEW(void) {
     car_speed = carblk != NULL ? C3X_LDF(carblk->speed) : C3X_FROM_INT(0);
     // asm 00005738: 	MPYF	1.51,R0
     // asm 00005739: 	STF	R0,*+AR7(CAMERA_VEL)	;Set initial camera velocity
-    ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_REG(C3X_MUL(car_speed, C3X_IMM_F32(1.51)))); // ;Set initial camera velocity
+    ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_MUL(car_speed, C3X_IMM_F32(1.51))); // ;Set initial camera velocity
     // asm 0000573A: 	LDF	0.6,R2
     // asm 0000573B: 	CALL	SET_LANE
     SET_LANE(C3X_IMM_F32(0.6));
@@ -1061,7 +1061,7 @@ MRC1:
     // asm 00005756: 	FLOAT	@NFRAMES,R1
     // asm 00005757: 	MPYF	R1,R0
     // asm 00005758: 	STF	R0,*+AR2(Z)
-    VECTORAI.Z = C3X_STF(C3X_REG(C3X_MUL(ctx->ATTRACT_DELTA.camera_vel, C3X_FROM_INT(NFRAMES))));
+    VECTORAI.Z = C3X_STF(C3X_MUL(ctx->ATTRACT_DELTA.camera_vel, C3X_FROM_INT(NFRAMES)));
     VECTORAI.Z = VECTORAI.Z;
     // asm 00005759: 	LDI	@VECTORBI,R3
     // asm 0000575A: 	LDI	@MATRIXAI,R2
@@ -1127,7 +1127,7 @@ USE_SLOPE:
     // asm 00005782: 	MPYF	R1,R0
     // asm 00005783: 	ADDF	*+AR7(NEW_POSY),R0
     // asm 00005784: 	STF	R0,*+AR7(NEW_POSY)
-    ctx->ATTRACT_DELTA.new_posy = C3X_STF(C3X_REG(C3X_ADD(ctx->ATTRACT_DELTA.new_posy, C3X_MUL(slope_y, VECTORAI.Z))));
+    ctx->ATTRACT_DELTA.new_posy = C3X_STF(C3X_ADD(ctx->ATTRACT_DELTA.new_posy, C3X_MUL(slope_y, VECTORAI.Z)));
     // asm 00005785: 	LDI	-400,R1		;at 1000 above the road
     // asm 00005786: 	ADDI	*+AR4(Y),R1
     // asm 00005787: 	FLOAT	R1
@@ -1136,9 +1136,9 @@ USE_SLOPE:
     // asm 0000578A: 	ADDF	*+AR7(NEW_POSY),R1
     // asm 0000578B: 	STF	R1,*+AR7(NEW_POSY)
     ctx->ATTRACT_DELTA.new_posy =
-        C3X_STF(C3X_REG(C3X_ADD(ctx->ATTRACT_DELTA.new_posy,
+        C3X_STF(C3X_ADD(ctx->ATTRACT_DELTA.new_posy,
                 C3X_MUL(C3X_SUB(C3X_FROM_INT(road_obj->as_fixed.pos_y_with_lane_flag - 400), ctx->ATTRACT_DELTA.new_posy),
-                        C3X_IMM_F32(0.04)))));
+                        C3X_IMM_F32(0.04))));
 NO_SLOPE:
     // asm 0000578C: 	LDI	AR7,R2
     // asm 0000578D: 	ADDI	NEW_RADX,R2
@@ -1314,12 +1314,12 @@ static void GETCAMDIR(void) {
     camera_rady = SMOOTH_VECTOR(camera_rady, smoothing);
     // asm 000057CD: 	ADDF	*+AR7(NEW_RADY),R0
     // asm 000057CE: 	STF	R0,*+AR7(NEW_RADY)
-    ctx->ATTRACT_DELTA.new_rady = C3X_STF(C3X_REG(C3X_ADD(ctx->ATTRACT_DELTA.new_rady, camera_rady)));
+    ctx->ATTRACT_DELTA.new_rady = C3X_STF(C3X_ADD(ctx->ATTRACT_DELTA.new_rady, camera_rady));
     // asm 000057CF: 	LDF	0,R0
     // asm 000057D0: 	STF	R0,*+AR7(NEW_RADX)
     // asm 000057D1: 	STF	R0,*+AR7(NEW_RADZ)
-    ctx->ATTRACT_DELTA.new_radx = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
-    ctx->ATTRACT_DELTA.new_radz = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    ctx->ATTRACT_DELTA.new_radx = C3X_STF(C3X_FROM_INT(0));
+    ctx->ATTRACT_DELTA.new_radz = C3X_STF(C3X_FROM_INT(0));
     // asm 000057D2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAMDIR", 0, 0);
 }
@@ -1367,7 +1367,7 @@ SL1:
     }
 SL2:
     // asm 000057E2: 	STF	R0,*+AR7(CAMERA_LANE)
-    ctx->ATTRACT_DELTA.camera_lane = C3X_STF(C3X_REG(lane_offset));
+    ctx->ATTRACT_DELTA.camera_lane = C3X_STF(lane_offset);
     // asm 000057E3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_LANE", 0, 0);
 }
@@ -1412,8 +1412,8 @@ static void DO_LANE_POS(c3x_reg_t lane_offset /*R3*/) {
     // asm 000057F0: 	LDF	0,R0
     // asm 000057F1: 	STF	R0,*+AR2(Y)
     // asm 000057F2: 	STF	R0,*+AR2(Z)
-    VECTORAI.Y = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
-    VECTORAI.Z = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
     // asm 000057F3: 	POPF	R0
     // asm 000057F4: 	STF	R0,*+AR2(X)
     VECTORAI.X =C3X_STF(lane_offset);
@@ -2344,7 +2344,7 @@ NO_MUSIC:
     // asm 000059B1: 	CALLU	R0
     FULLSETUP_TABLE[BONUS_WAVE]();
     // asm 000059B2: 	LDF	@INFIN_CORRECT,R0
-    p->ctx->ATTRACT_DELTA.camera_infin = C3X_STF(C3X_REG((c3x_reg_t)INFIN_CORRECT));
+    p->ctx->ATTRACT_DELTA.camera_infin = C3X_STF((c3x_reg_t)INFIN_CORRECT);
     // asm 000059B3: 	STF	R0,*+AR7(CAMERA_INFIN)
     // asm 000059B4: 	CALL	OBJ_INIT
     OBJ_INIT();

@@ -84,7 +84,7 @@ CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/) {
 
     // asm 0000AE79: 	CLRF	R0
     // asm 0000AE7A: 	STF	R0,*+AR5(CARBRAKE)
-    carblk->brake = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    carblk->brake = C3X_STF(C3X_FROM_INT(0));
 
     // asm 0000AE7B: 	LDF	MAX_ACCEL_INIT,R0
     // asm 0000AE7C: 	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
@@ -92,7 +92,7 @@ CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/) {
 
     // asm 0000AE7D: 	LDF	1.0,R0
     // asm 0000AE7E: 	STF	R0,*+AR7(DELTA_THROTTLE)
-    p->ctx->RACER_DRONE.delta_throttle = C3X_STF(C3X_REG(C3X_IMM_F32(1.0f)));
+    p->ctx->RACER_DRONE.delta_throttle = C3X_STF(C3X_IMM_F32(1.0f));
 
     // asm 0000AE7F: 	LDI	0101h,R0		;SET THE STARTUP LAST KNOWN OID
     // asm 0000AE80: 	STI	R0,*+AR7(DELTA_LAST_OID)

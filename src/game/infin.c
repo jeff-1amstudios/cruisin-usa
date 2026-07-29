@@ -101,15 +101,15 @@ FHRYLP:
         // asm 00008224: 	LDP	@_CAMERAPOS+X
         // asm 00008225: 	LDF	*+AR2(OPOSX),R0
         // asm 00008226: 	SUBF	@_CAMERAPOS+X,R0
-        VECTORAI.X = C3X_STF(C3X_REG(C3X_SUB(obj->pos.X, _CAMERAPOS.X)));
+        VECTORAI.X = C3X_STF(C3X_SUB(obj->pos.X, _CAMERAPOS.X));
         // asm 00008227: 	STF	R0,*+AR1(X)
         // asm 00008228: 	LDF	*+AR2(OPOSY),R0
         // asm 00008229: 	SUBF	@_CAMERAPOS+Y,R0
-        VECTORAI.Y = C3X_STF(C3X_REG(C3X_SUB(obj->pos.Y, _CAMERAPOS.Y)));
+        VECTORAI.Y = C3X_STF(C3X_SUB(obj->pos.Y, _CAMERAPOS.Y));
         // asm 0000822A: 	STF	R0,*+AR1(Y)
         // asm 0000822B: 	LDF	*+AR2(OPOSZ),R0
         // asm 0000822C: 	SUBF	@_CAMERAPOS+Z,R0
-        VECTORAI.Z = C3X_STF(C3X_REG(C3X_SUB(obj->pos.Z, _CAMERAPOS.Z)));
+        VECTORAI.Z = C3X_STF(C3X_SUB(obj->pos.Z, _CAMERAPOS.Z));
         // asm 0000822D: 	STF	R0,*+AR1(Z)
         // asm 0000822E: 	SETDP
         // asm 0000822F: 	LDI	AR1,AR0
@@ -291,7 +291,7 @@ void INFINITY_CUSA(void) {
         camera_rady = NORMIT(camera_rady); // ;SAVE TRUNCATED VERSION
                                            // asm 00008272: 	LDP	@_CAMERARAD
                                            // asm 00008273: 	STF	R2,@_CAMERARAD+Y
-        _CAMERARAD.Y = C3X_STF(C3X_REG(camera_rady));
+        _CAMERARAD.Y = C3X_STF(camera_rady);
         // asm 00008274: 	SETDP
     }
 INFF1:
@@ -441,8 +441,8 @@ LOOP:
         // asm 000082BF: 	LDF	@HIGHEST_ROADY,R0
         // asm 000082C0: 	STF	R0,*+AR1(Y)
         // asm 000082C1: 	CALL	DIST_PT2LINE
-        VECTORCI.X = C3X_STF(C3X_REG(HIGHEST_ROADY_X));
-        VECTORCI.Y = C3X_STF(C3X_REG(HIGHEST_ROADY));
+        VECTORCI.X = C3X_STF(HIGHEST_ROADY_X);
+        VECTORCI.Y = C3X_STF(HIGHEST_ROADY);
         dist_to_line = DIST_PT2LINE(&line, &VECTORCI);
         MAME_ASSERT_REG_FLOAT(0x000082C2, "R0", &dist_to_line);
         // asm 000082C2: 	POP	BK
@@ -905,21 +905,21 @@ TRANS_LP:
     // asm 000083D5: 	LDI	@VECTORAI,AR2
     // asm 000083D6: 	LDF	*AR5++,R0			;load src [X Y Z]
     // asm 000083D7: 	ADDF	R6,R0				;add in X offset
-    VECTORAI.X = C3X_STF(C3X_REG(C3X_ADD(C3X_LDF(*src++), x_offset)));
+    VECTORAI.X = C3X_STF(C3X_ADD(C3X_LDF(*src++), x_offset));
     // asm 000083D8: 	LDP	@HIGHVAL
     // asm 000083D9: 	CMPF	@HIGHVAL,R0
     // asm 000083DA: 	BLT	LKJ2
     if (C3X_GE(VECTORAI.X, HIGHVAL)) {
         // asm 000083DB: 	SUBF	@HIGHVAL,R0
-        VECTORAI.X = C3X_STF(C3X_REG(C3X_SUB(VECTORAI.X, HIGHVAL)));
+        VECTORAI.X = C3X_STF(C3X_SUB(VECTORAI.X, HIGHVAL));
     }
 LKJ2:
     // asm 000083DC: 	STF	R0,*AR2++
     // asm 000083DD: 	ADDF	R7,*AR5++,R0	 		;ADD IN HEIGHT DUDES !!!
-    VECTORAI.Y = C3X_STF(C3X_REG(C3X_ADD(C3X_LDF(*src++), y_offset)));
+    VECTORAI.Y = C3X_STF(C3X_ADD(C3X_LDF(*src++), y_offset));
     // asm 000083DE: 	STF	R0,*AR2++
     // asm 000083DF: 	LDF	*AR5++,R0
-    VECTORAI.Z = C3X_STF(C3X_REG(C3X_LDF(*src++)));
+    VECTORAI.Z = C3X_STF(C3X_LDF(*src++));
     // asm 000083E0: 	STF	R0,*AR2--(2)
     // asm 000083E1: 	LDI	AR6,R3
     // asm 000083E2: 	LDP	@MATRIXAI
@@ -943,21 +943,21 @@ LKJ2:
     // asm 000083EF: 	LDI	@VECTORAI,AR2
     // asm 000083F0: 	LDF	*AR5++,R0			;load src [X Y Z]
     // asm 000083F1: 	ADDF	R6,R0				;add in module offset
-    VECTORAI.X = C3X_STF(C3X_REG(C3X_ADD(C3X_LDF(*src++), x_offset)));
+    VECTORAI.X = C3X_STF(C3X_ADD(C3X_LDF(*src++), x_offset));
     // asm 000083F2: 	LDP	@HIGHVAL
     // asm 000083F3: 	CMPF	@HIGHVAL,R0
     // asm 000083F4: 	BLT	LKJ25
     if (C3X_GE(VECTORAI.X, HIGHVAL)) {
         // asm 000083F5: 	SUBF	@HIGHVAL,R0
-        VECTORAI.X = C3X_STF(C3X_REG(C3X_SUB(VECTORAI.X, HIGHVAL)));
+        VECTORAI.X = C3X_STF(C3X_SUB(VECTORAI.X, HIGHVAL));
     }
 LKJ25:
     // asm 000083F6: 	STF	R0,*AR2++
     // asm 000083F7: 	ADDF	R7,*AR5++,R0	 		;ADD IN HEIGHT DUDES !!!
-    VECTORAI.Y = C3X_STF(C3X_REG(C3X_ADD(C3X_LDF(*src++), y_offset)));
+    VECTORAI.Y = C3X_STF(C3X_ADD(C3X_LDF(*src++), y_offset));
     // asm 000083F8: 	STF	R0,*AR2++
     // asm 000083F9: 	LDF	*AR5++,R0
-    VECTORAI.Z = C3X_STF(C3X_REG(C3X_LDF(*src++)));
+    VECTORAI.Z = C3X_STF(C3X_LDF(*src++));
     // asm 000083FA: 	STF	R0,*AR2--(2)
     // asm 000083FB: 	LDI	AR6,R3
     // asm 000083FC: 	LDP	@MATRIXAI

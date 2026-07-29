@@ -285,7 +285,7 @@ NNEG:
     // asm 000065EE: 	LDI	AR3,AR5
     // asm 000065EF: 	CALL	DRONE_RIDE_RIGHT
     // asm 000065F0: 	STF	R0,*+AR5(CARDIST2CNTR)	;STORE DIST TO CENTER
-    carblk->dist_to_center = C3X_STF(C3X_REG(DRONE_RIDE_RIGHT(obj, carblk)));
+    carblk->dist_to_center = C3X_STF(DRONE_RIDE_RIGHT(obj, carblk));
     // asm 000065F1: 	POP	AR5
     // asm 000065F2: 	POP	AR4
     // asm 000065F3: 	B	FPP2

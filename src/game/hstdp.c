@@ -2127,7 +2127,7 @@ static void OBJ_MOVY_GROUP(int oid_group_bit /*R1*/, c3x_reg_t y_amount /*R2*/) 
     if (obj == NULL) {
         goto OMYG;
     }
-    obj->pos.Y = C3X_STF(C3X_REG(C3X_ADD(obj->pos.Y, y_amount)));
+    obj->pos.Y = C3X_STF(C3X_ADD(obj->pos.Y, y_amount));
 OMYG1:
     // asm 00003725: 	CALL	OBJ_GFIND_NEXT
     // asm 00003726: 	BC	OMYG
@@ -2138,7 +2138,7 @@ OMYG1:
     if (obj == NULL) {
         goto OMYG;
     }
-    obj->pos.Y = C3X_STF(C3X_REG(C3X_ADD(obj->pos.Y, y_amount)));
+    obj->pos.Y = C3X_STF(C3X_ADD(obj->pos.Y, y_amount));
     // asm 0000372A: 	BR	OMYG1
     goto OMYG1;
 OMYG:
@@ -2342,7 +2342,7 @@ MNLOOP:
         // asm 00003778: 	FLOAT	-145,R1			;WIDTH OF ONE NUMBER
         // asm 00003779: 	ADDF	R1,R0
         // asm 0000377A: 	STF	R0,*+AR0(OPOSX)
-        obj->pos.X = C3X_STF(C3X_REG(C3X_SUB(previous_obj->pos.X, C3X_FROM_INT(145)))); // ;WIDTH OF ONE NUMBER
+        obj->pos.X = C3X_STF(C3X_SUB(previous_obj->pos.X, C3X_FROM_INT(145))); // ;WIDTH OF ONE NUMBER
         // asm 0000377B: 	LDF	*+AR1(OPOSY),R0
         // asm 0000377C: 	STF	R0,*+AR0(OPOSY)
         obj->pos.Y = C3X_STF(C3X_REG(previous_obj->pos.Y));
@@ -2351,7 +2351,7 @@ MNLOOP:
         obj->pos.Z = C3X_STF(C3X_REG(previous_obj->pos.Z));
         // asm 0000377F: 	LDF	0,R2
         // asm 00003780: 	STF	R2,*+AR0(ORADX)
-        obj->rad.X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+        obj->rad.X = C3X_STF(C3X_FROM_INT(0));
         // asm 00003781: 	LDI	AR0,AR2
         // asm 00003782: 	ADDI	OMATRIX,AR2
         // asm 00003783: 	CALL	FIND_XMATRIX
@@ -2467,7 +2467,7 @@ MTLOOP:
         // asm 000037B2: 	LDF	*+AR1(OPOSX),R0
         // asm 000037B3: 	ADDF	R1,R0
         // asm 000037B4: 	STF	R0,*+AR0(OPOSX)
-        obj->pos.X = C3X_STF(C3X_REG(C3X_ADD(previous_obj->pos.X, width)));
+        obj->pos.X = C3X_STF(C3X_ADD(previous_obj->pos.X, width));
         // asm 000037B5: 	LDF	*+AR1(OPOSY),R0
         // asm 000037B6: 	STF	R0,*+AR0(OPOSY)
         obj->pos.Y = C3X_STF(C3X_REG(previous_obj->pos.Y));
@@ -2476,7 +2476,7 @@ MTLOOP:
         obj->pos.Z = C3X_STF(C3X_REG(previous_obj->pos.Z));
         // asm 000037B9: 	LDF	0,R2
         // asm 000037BA: 	STF	R2,*+AR0(ORADX)
-        obj->rad.X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+        obj->rad.X = C3X_STF(C3X_FROM_INT(0));
         // asm 000037BB: 	LDI	AR0,AR2
         // asm 000037BC: 	ADDI	OMATRIX,AR2
         // asm 000037BD: 	CALL	FIND_XMATRIX
@@ -2617,15 +2617,15 @@ CRLLOOP:
         // asm 000037F7: 	ADDF	R1,R0
         // asm 000037F8: 	ADDF	*+AR1(OPOSX),R0
         // asm 000037F9: 	STF	R0,*+AR0(OPOSX)
-        obj->pos.X = C3X_STF(C3X_REG(C3X_ADD(C3X_ADD(plate_obj->pos.X, C3X_FROM_INT(LETTER_XOFF)), C3X_MUL(C3X_FROM_INT(LETTER_SIZEX), index))));
+        obj->pos.X = C3X_STF(C3X_ADD(C3X_ADD(plate_obj->pos.X, C3X_FROM_INT(LETTER_XOFF)), C3X_MUL(C3X_FROM_INT(LETTER_SIZEX), index)));
         // asm 000037FA: 	FLOAT	LETTER_YOFF,R0
         // asm 000037FB: 	ADDF	*+AR1(OPOSY),R0
         // asm 000037FC: 	STF	R0,*+AR0(OPOSY)
-        obj->pos.Y = C3X_STF(C3X_REG(C3X_ADD(plate_obj->pos.Y, C3X_FROM_INT(LETTER_YOFF))));
+        obj->pos.Y = C3X_STF(C3X_ADD(plate_obj->pos.Y, C3X_FROM_INT(LETTER_YOFF)));
         // asm 000037FD: 	LDF	*+AR1(OPOSZ),R0
         // asm 000037FE: 	SUBF	1,R0			;Make sure that it is on top of the plate
         // asm 000037FF: 	STF	R0,*+AR0(OPOSZ)
-        obj->pos.Z = C3X_STF(C3X_REG(C3X_SUB(plate_obj->pos.Z, C3X_FROM_INT(1)))); // ;Make sure that it is on top of the plate
+        obj->pos.Z = C3X_STF(C3X_SUB(plate_obj->pos.Z, C3X_FROM_INT(1))); // ;Make sure that it is on top of the plate
         // asm 00003800: 	LDI	*+AR7(WHITE_PAL),R0
         // asm 00003801: 	STI	R0,*+AR0(OPAL)
         obj->palette = white_pal;
@@ -2637,7 +2637,7 @@ CRLLOOP:
         // asm 00003806: 	CMPI	20h,AR2		;is it a space?
         // asm 00003807: 	LDFEQ	-PI,R2
         // asm 00003808: 	STF	R2,*+AR0(ORADX)
-        obj->rad.X = C3X_STF(C3X_REG(character == ' ' ? C3X_NEG(C3X_IMM_F32(PI)) : C3X_FROM_INT(0))); // ;is it a space?
+        obj->rad.X = C3X_STF(character == ' ' ? C3X_NEG(C3X_IMM_F32(PI)) : C3X_FROM_INT(0)); // ;is it a space?
         // asm 00003809: 	LDI	AR0,AR2
         // asm 0000380A: 	ADDI	OMATRIX,AR2
         // asm 0000380B: 	CALL	FIND_XMATRIX
@@ -2791,11 +2791,11 @@ PR3DLOOP:
             // asm: 	BC	$
 #endif
             // asm 00003849: 	STF	R2,*+AR0(OPOSX)
-            obj->pos.X = C3X_STF(C3X_REG(x));
+            obj->pos.X = C3X_STF(x);
             // asm 0000384A: 	STF	R3,*+AR0(OPOSY)
-            obj->pos.Y = C3X_STF(C3X_REG(y));
+            obj->pos.Y = C3X_STF(y);
             // asm 0000384B: 	STF	R4,*+AR0(OPOSZ)
-            obj->pos.Z = C3X_STF(C3X_REG(z));
+            obj->pos.Z = C3X_STF(z);
             // asm 0000384C: 	STI	R6,*+AR0(OID)
             obj->id = oid;
             // asm 0000384D: 	PUSHF	R2
@@ -2990,16 +2990,16 @@ static void DISPLAY_HS(PROC* p) {
     NOAERASE = 0;
     // asm 0000388F: 	LDP	@_CAMERAPOS+X		;Set the initial camera position
     // asm 00003890: 	FLOAT	-4700,R0
-    _CAMERAPOS.X = C3X_STF(C3X_REG(C3X_FROM_INT(-4700)));
+    _CAMERAPOS.X = C3X_STF(C3X_FROM_INT(-4700));
     // asm 00003891: 	STF	R0,@_CAMERAPOS+X
     // asm 00003892: 	FLOAT	HS_STARTY,R0
-    _CAMERAPOS.Y = C3X_STF(C3X_REG(C3X_FROM_INT(HS_STARTY)));
+    _CAMERAPOS.Y = C3X_STF(C3X_FROM_INT(HS_STARTY));
     // asm 00003893: 	STF	R0,@_CAMERAPOS+Y
     // asm 00003894: 	FLOAT	HS_STARTZ,R0
-    _CAMERAPOS.Z = C3X_STF(C3X_REG(C3X_FROM_INT(HS_STARTZ)));
+    _CAMERAPOS.Z = C3X_STF(C3X_FROM_INT(HS_STARTZ));
     // asm 00003895: 	STF	R0,@_CAMERAPOS+Z
     // asm 00003896: 	CLRF	R2
-    _CAMERARAD.Y = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    _CAMERARAD.Y = C3X_STF(C3X_FROM_INT(0));
     // asm 00003897: 	STF	R2,@_CAMERARAD+Y
     // asm 00003898: 	SETDP
     // asm 00003899: 	LDI	@CAMERAMATRIXI,AR2
@@ -3060,12 +3060,12 @@ DHS1:
     // asm 000038BC: 	FLOAT	HS_YDIFF,R1		;Pan the y so that the marqee is at the top
     // asm 000038BD: 	LDF	@_CAMERAPOS+Y,R0
     // asm 000038BE: 	ADDF	R1,R0
-    _CAMERAPOS.Y = C3X_STF(C3X_REG(C3X_ADD(_CAMERAPOS.Y, C3X_FROM_INT(HS_YDIFF))));
+    _CAMERAPOS.Y = C3X_STF(C3X_ADD(_CAMERAPOS.Y, C3X_FROM_INT(HS_YDIFF)));
     // asm 000038BF: 	STF	R0,@_CAMERAPOS+Y
     // asm 000038C0: 	FLOAT	HS_ZDIFF,R1
     // asm 000038C1: 	LDF	@_CAMERAPOS+Z,R0
     // asm 000038C2: 	ADDF	R1,R0
-    _CAMERAPOS.Z = C3X_STF(C3X_REG(C3X_ADD(_CAMERAPOS.Z, C3X_FROM_INT(HS_ZDIFF))));
+    _CAMERAPOS.Z = C3X_STF(C3X_ADD(_CAMERAPOS.Z, C3X_FROM_INT(HS_ZDIFF)));
     // asm 000038C3: 	STF	R0,@_CAMERAPOS+Z
     // asm 000038C4: 	SETDP
     // asm 000038C5: 	DBU	AR6,DHS1
@@ -3254,7 +3254,7 @@ FIXPL:
         // asm 00003901: 	LDF	*+AR0(OPOSZ),R3		;Offset the plates Z
         // asm 00003902: 	ADDF	R0,R3
         // asm 00003903: 	STF	R3,*+AR0(OPOSZ)
-        plate_obj->pos.Z = C3X_STF(C3X_REG(C3X_ADD(plate_obj->pos.Z, z_offset))); // ;Offset the plates Z
+        plate_obj->pos.Z = C3X_STF(C3X_ADD(plate_obj->pos.Z, z_offset)); // ;Offset the plates Z
         // asm 00003904: 	SUBF	1,R3
         letter_z = C3X_SUB(plate_obj->pos.Z, C3X_FROM_INT(1));
     FIXPL1:
@@ -3269,7 +3269,7 @@ FIXPL:
         }
     FIXPL2:
         // asm 00003909: 	STF	R3,*+AR0(OPOSZ)		;Now do the letters on it
-        letter_obj->pos.Z = C3X_STF(C3X_REG(letter_z)); // ;Now do the letters on it
+        letter_obj->pos.Z = C3X_STF(letter_z); // ;Now do the letters on it
         // asm 0000390A: 	CALL	OBJ_GFIND_NEXT
         // asm 0000390B: 	BNC	FIXPL2			;do as many as there are
         letter_obj = OBJ_GFIND_NEXT(letter_obj, group_bit);
@@ -3320,12 +3320,12 @@ FLPL:
 
         // asm 0000391A: 	LDF	*+AR0(OPOSZ),R1
         // asm 0000391B: 	ADDF	R0,R1
-        plate_obj->pos.Z = C3X_STF(C3X_REG(C3X_ADD(plate_obj->pos.Z, amount)));
+        plate_obj->pos.Z = C3X_STF(C3X_ADD(plate_obj->pos.Z, amount));
         // asm 0000391C: 	FLOAT	1000,R3
         // asm 0000391D: 	CMPF	R3,R1		;BLEW by destination?
         // asm 0000391E: 	LDFGT	R3,R1
         if (C3X_GT(plate_obj->pos.Z, C3X_FROM_INT(1000))) {
-            plate_obj->pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(1000))); // ;BLEW by destination?
+            plate_obj->pos.Z = C3X_STF(C3X_FROM_INT(1000)); // ;BLEW by destination?
         }
         // asm 0000391F: 	STF	R1,*+AR0(OPOSZ)
         // asm 00003920: 	LDF	R1,R3
@@ -3344,7 +3344,7 @@ FLPL:
         }
     FLPL2:
         // asm 00003926: 	STF	R3,*+AR0(OPOSZ)		;Now do the letters on it
-        letter_obj->pos.Z = C3X_STF(C3X_REG(letter_z)); // ;Now do the letters on it
+        letter_obj->pos.Z = C3X_STF(letter_z); // ;Now do the letters on it
         // asm 00003927: 	CALL	OBJ_GFIND_NEXT
         // asm 00003928: 	BNC	FLPL2			;do as many as there are
         letter_obj = OBJ_GFIND_NEXT(letter_obj, group_bit);

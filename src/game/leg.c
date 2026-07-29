@@ -518,16 +518,16 @@ L12:
 
     leg = &ssll_entry->leg;
     // asm 0000AAEA: 	STF	R1,*+AR3(LEG_POSX)
-    leg->as_float.pos.X = C3X_STF(C3X_REG(C3X_FROM_INT(*group_ptr++)));
+    leg->as_float.pos.X = C3X_STF(C3X_FROM_INT(*group_ptr++));
     // asm 0000AAEB: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    leg->as_float.pos.Y = C3X_STF(C3X_REG(C3X_FROM_INT(*group_ptr++)));
+    leg->as_float.pos.Y = C3X_STF(C3X_FROM_INT(*group_ptr++));
     // asm 0000AAEC: 	TSTB	SC_REVERSE,R5
     LEG_FLAG = flag & SC_REVERSE;
     MAME_ASSERT_REG(0x0000AAED, "R5", &flag);
     // asm 0000AAED: 	BZD	NOTREVERSED
     // asm 0000AAEE: 	STF	R1,*+AR3(LEG_POSY)
     // asm 0000AAEF: 	FLOAT	*AR5++,R1		;GET Z POSITION
-    leg->as_float.pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(*group_ptr++)));
+    leg->as_float.pos.Z = C3X_STF(C3X_FROM_INT(*group_ptr++));
     // asm 0000AAF0: 	STF	R1,*+AR3(LEG_POSZ)
     if ((flag & SC_REVERSE) == 0) {
         goto NOTREVERSED;

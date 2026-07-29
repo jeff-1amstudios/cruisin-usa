@@ -3029,16 +3029,16 @@ static void ULTRA_PROC(PROC* p /*AR7*/) {
     }
 
     // asm 00001DC3: 	CLRF	R6
-    p->ctx->ULTRA_PROC.radians = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    p->ctx->ULTRA_PROC.radians = C3X_STF(C3X_FROM_INT(0));
 
 UPLP:
     // asm 00001DC4: LDF	0.0349078,R0
     // asm 00001DC5: 	FLOAT	@NFRAMES,R1
     // asm 00001DC6: 	MPYF	R1,R0
     // asm 00001DC7: 	SUBF	R0,R6
-    p->ctx->ULTRA_PROC.radians = C3X_STF(C3X_REG(C3X_SUB(
+    p->ctx->ULTRA_PROC.radians = C3X_STF(C3X_SUB(
         p->ctx->ULTRA_PROC.radians,
-        C3X_MUL(C3X_IMM_F32(0.0349078f), C3X_FROM_INT(NFRAMES)))));
+        C3X_MUL(C3X_IMM_F32(0.0349078f), C3X_FROM_INT(NFRAMES))));
 
     // asm 00001DC8: 	LDF	R6,R2
     // asm 00001DC9: 	LDI	AR4,AR2
@@ -3078,15 +3078,15 @@ void ULTRA_LOGO(void) {
 
     // asm 00001DD8: 	CLRF	R0
     // asm 00001DD9: 	STF	R0,*+AR0(OPOSX)
-    obj->pos.X = C3X_STF(C3X_REG(C3X_FROM_INT(0)));
+    obj->pos.X = C3X_STF(C3X_FROM_INT(0));
 
     // asm 00001DDA: 	FLOAT	50,R0
     // asm 00001DDB: 	STF	R0,*+AR0(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_REG(C3X_FROM_INT(50)));
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(50));
 
     // asm 00001DDC: 	FLOAT	368,R0
     // asm 00001DDD: 	STF	R0,*+AR0(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(368)));
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
 
     // asm 00001DDE: 	LDI	AR0,AR2
     // asm 00001DDF: 	CALL	OBJ_INSERTP
@@ -3648,7 +3648,7 @@ static void SHOW_RACE_NAME(PROC* p) {
     // asm 00001F64: 	LDI	AR1,AR5
     p->ctx->SHOW_RACE_NAME.shadow_text = text.shadow;
     // asm 00001F65: 	FLOAT	-100,R6
-    p->ctx->SHOW_RACE_NAME.posx = C3X_STF(C3X_REG(C3X_FROM_INT(-100)));
+    p->ctx->SHOW_RACE_NAME.posx = C3X_STF(C3X_FROM_INT(-100));
     // asm 00001F66: 	LDI	20,AR6
     p->ctx->SHOW_RACE_NAME.loop_count = 20;
 SLLP1:
@@ -3657,14 +3657,14 @@ SLLP1:
     // asm 00001F69: 	MPYF	0.2,R0
     // asm 00001F6A: 	ADDF	R0,R6
     x = C3X_MUL(C3X_SUB(C3X_FROM_INT(256), p->ctx->SHOW_RACE_NAME.posx), C3X_IMM_F32(0.2f));
-    p->ctx->SHOW_RACE_NAME.posx = C3X_STF(C3X_REG(C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, x)));
+    p->ctx->SHOW_RACE_NAME.posx = C3X_STF(C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, x));
     // asm 00001F6B: 	STF	R6,*+AR5(TEXT_POSX)
     p->ctx->SHOW_RACE_NAME.shadow_text->posx = C3X_STF(C3X_REG(p->ctx->SHOW_RACE_NAME.posx));
     // asm 00001F6C: 	LDF	R6,R0
     // asm 00001F6D: 	ADDF	3,R0
     x = C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, C3X_FROM_INT(3));
     // asm 00001F6E: 	STF	R0,*+AR4(TEXT_POSX)
-    p->ctx->SHOW_RACE_NAME.front_text->posx = C3X_STF(C3X_REG(x));
+    p->ctx->SHOW_RACE_NAME.front_text->posx = C3X_STF(x);
     // asm 00001F6F: 	SLEEP	1
     SLEEP(1, 1);
     // asm 00001F71: 	DBU	AR6,SLLP1
@@ -3675,14 +3675,14 @@ SLLP1:
     // 	;CENTER IT
     // 	;
     // asm 00001F72: 	FLOAT	256,R6
-    p->ctx->SHOW_RACE_NAME.posx = C3X_STF(C3X_REG(C3X_FROM_INT(256)));
+    p->ctx->SHOW_RACE_NAME.posx = C3X_STF(C3X_FROM_INT(256));
     // asm 00001F73: 	STF	R6,*+AR5(TEXT_POSX)
     p->ctx->SHOW_RACE_NAME.shadow_text->posx = C3X_STF(C3X_REG(p->ctx->SHOW_RACE_NAME.posx));
     // asm 00001F74: 	LDF	R6,R0
     // asm 00001F75: 	ADDF	3,R0
     x = C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, C3X_FROM_INT(3));
     // asm 00001F76: 	STF	R0,*+AR4(TEXT_POSX)
-    p->ctx->SHOW_RACE_NAME.front_text->posx = C3X_STF(C3X_REG(x));
+    p->ctx->SHOW_RACE_NAME.front_text->posx = C3X_STF(x);
     // asm 00001F77: 	SLEEP	50
     SLEEP(50, 2);
     // asm 00001F79: 	LDI	20,AR6
@@ -3693,14 +3693,14 @@ SLLP1A:
     // asm 00001F7C: 	MPYF	0.2,R0
     // asm 00001F7D: 	ADDF	R0,R6
     x = C3X_MUL(C3X_SUB(C3X_FROM_INT(-100), p->ctx->SHOW_RACE_NAME.posx), C3X_IMM_F32(0.2f));
-    p->ctx->SHOW_RACE_NAME.posx = C3X_STF(C3X_REG(C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, x)));
+    p->ctx->SHOW_RACE_NAME.posx = C3X_STF(C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, x));
     // asm 00001F7E: 	STF	R6,*+AR5(TEXT_POSX)
     p->ctx->SHOW_RACE_NAME.shadow_text->posx = C3X_STF(C3X_REG(p->ctx->SHOW_RACE_NAME.posx));
     // asm 00001F7F: 	LDF	R6,R0
     // asm 00001F80: 	ADDF	3,R0
     x = C3X_ADD(p->ctx->SHOW_RACE_NAME.posx, C3X_FROM_INT(3));
     // asm 00001F81: 	STF	R0,*+AR4(TEXT_POSX)
-    p->ctx->SHOW_RACE_NAME.front_text->posx = C3X_STF(C3X_REG(x));
+    p->ctx->SHOW_RACE_NAME.front_text->posx = C3X_STF(x);
     // asm 00001F82: 	SLEEP	1
     SLEEP(1, 3);
     // asm 00001F84: 	DBU	AR6,SLLP1A

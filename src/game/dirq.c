@@ -439,9 +439,9 @@ NOBREAK_CONTINUE:
         rotated_trans_y = C3X_ADD(C3X_ADD(C3X_MUL(_CAMERAMATRIX.a10, trans_x), C3X_MUL(_CAMERAMATRIX.a11, trans_y)), C3X_MUL(_CAMERAMATRIX.a12, trans_z));
         rotated_trans_z = C3X_ADD(C3X_ADD(C3X_MUL(_CAMERAMATRIX.a20, trans_x), C3X_MUL(_CAMERAMATRIX.a21, trans_y)), C3X_MUL(_CAMERAMATRIX.a22, trans_z));
     }
-    TRANSVECTOR.X = C3X_STF(C3X_REG(rotated_trans_x));
-    TRANSVECTOR.Y = C3X_STF(C3X_REG(rotated_trans_y));
-    TRANSVECTOR.Z = C3X_STF(C3X_REG(rotated_trans_z));
+    TRANSVECTOR.X = C3X_STF(rotated_trans_x);
+    TRANSVECTOR.Y = C3X_STF(rotated_trans_y);
+    TRANSVECTOR.Z = C3X_STF(rotated_trans_z);
     obj->dist = FIX(rotated_trans_z);
 
     if ((flags & O_DEGRADE) != 0) {

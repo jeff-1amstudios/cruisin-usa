@@ -816,13 +816,13 @@ void BABE_WAVEFLAG(PROC* p) {
     p->ctx->BABE_WAVEFLAG.obj = OBJ_GET();
     // asm 00008BDA: 	LDI	AR0,AR4
     // asm 00008BDB: 	FLOAT	-350,R0
-    p->ctx->BABE_WAVEFLAG.obj->pos.X = C3X_STF(C3X_REG(C3X_FROM_INT(-350)));
+    p->ctx->BABE_WAVEFLAG.obj->pos.X = C3X_STF(C3X_FROM_INT(-350));
     // asm 00008BDC: 	STF	R0,*+AR4(OPOSX)
     // asm 00008BDD: 	FLOAT	40,R0
-    p->ctx->BABE_WAVEFLAG.obj->pos.Y = C3X_STF(C3X_REG(C3X_FROM_INT(40)));
+    p->ctx->BABE_WAVEFLAG.obj->pos.Y = C3X_STF(C3X_FROM_INT(40));
     // asm 00008BDE: 	STF	R0,*+AR4(OPOSY)
     // asm 00008BDF: 	FLOAT	368,R0
-    p->ctx->BABE_WAVEFLAG.obj->pos.Z = C3X_STF(C3X_REG(C3X_FROM_INT(368)));
+    p->ctx->BABE_WAVEFLAG.obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
     // asm 00008BE0: 	STF	R0,*+AR4(OPOSZ)
     // asm 00008BE1: 	LDI	*+AR4(OFLAGS),R0
     // asm 00008BE2: 	OR	O_POSTER|O_NOUROT|O_NOUNIV,R0
@@ -846,7 +846,7 @@ BABEWTLP:
     // asm 00008BED: 	BGE	IBO2
     if (C3X_LT(p->ctx->BABE_WAVEFLAG.obj->pos.X, C3X_FROM_INT(-200))) {
         // asm 00008BEE: 	ADDF	5,R0
-        p->ctx->BABE_WAVEFLAG.obj->pos.X = C3X_STF(C3X_REG(C3X_ADD(p->ctx->BABE_WAVEFLAG.obj->pos.X, C3X_FROM_INT(5))));
+        p->ctx->BABE_WAVEFLAG.obj->pos.X = C3X_STF(C3X_ADD(p->ctx->BABE_WAVEFLAG.obj->pos.X, C3X_FROM_INT(5)));
         // asm 00008BEF: 	STF	R0,*+AR4(OPOSX)
     }
 IBO2:
@@ -886,13 +886,13 @@ BABE_LPWF:
 BABEOFF:
     // asm 00008BFE: 	LDF	*+AR4(OPOSX),R0
     // asm 00008BFF: 	SUBF	6,R0
-    p->ctx->BABE_WAVEFLAG.obj->pos.X = C3X_STF(C3X_REG(C3X_SUB(p->ctx->BABE_WAVEFLAG.obj->pos.X, C3X_FROM_INT(6))));
+    p->ctx->BABE_WAVEFLAG.obj->pos.X = C3X_STF(C3X_SUB(p->ctx->BABE_WAVEFLAG.obj->pos.X, C3X_FROM_INT(6)));
     // asm 00008C00: 	STF	R0,*+AR4(OPOSX)
     // asm 00008C01: 	SLEEP	1
     SLEEP(1, 4);
     // asm 00008C03: 	LDF	*+AR4(OPOSX),R0
     // asm 00008C04: 	SUBF	6,R0
-    p->ctx->BABE_WAVEFLAG.obj->pos.X = C3X_STF(C3X_REG(C3X_SUB(p->ctx->BABE_WAVEFLAG.obj->pos.X, C3X_FROM_INT(6))));
+    p->ctx->BABE_WAVEFLAG.obj->pos.X = C3X_STF(C3X_SUB(p->ctx->BABE_WAVEFLAG.obj->pos.X, C3X_FROM_INT(6)));
     // asm 00008C05: 	STF	R0,*+AR4(OPOSX)
     // asm 00008C06: 	SLEEP	1
     SLEEP(1, 5);
