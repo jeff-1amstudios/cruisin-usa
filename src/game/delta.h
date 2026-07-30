@@ -222,7 +222,7 @@ extern int RACER_GRID_START;
 CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/);
 
 // asm: 	.globl	 GET_TRACK_POS
-void GET_TRACK_POS(void);
+c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj);
 
 // asm: 	.globl	 GET_TRACK_POS_RVS
 void GET_TRACK_POS_RVS(void);
@@ -253,15 +253,15 @@ void CHOPPER(void);
 
 // ***	COPCAR.ASM
 // asm: 	.globl	 AHEAD_OF_PLAYER_P
-void AHEAD_OF_PLAYER_P(void);
+int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk);
 
 // asm: 	.globl	 SET_DRONE_PAL
-void SET_DRONE_PAL(void);
+void SET_DRONE_PAL(PROC* p, OBJ* obj);
 
 // asm: 	.globl	 TRAFFIC,GET_LANES,DIST_TO_PLYR
 int GET_LANES(OBJ* obj /*AR2*/);
 
-void DIST_TO_PLYR(void);
+c3x_reg_t DIST_TO_PLYR(OBJ* obj);
 
 // asm: 	.globl	 INIT_TRACKING_PIECE,GET_TRACK_POS_RVS,GET_TRACK_POS,GET_TRACK_POS_RVS_XLANE
 void INIT_TRACKING_PIECE(void);
@@ -270,7 +270,7 @@ void INIT_TRACKING_PIECE(void);
 // asm: 	.globl	 SUB_FUNCTION_RVS,SUB_FUNCTION,SUB_FUNCTION_RVS_XLANE
 void SUB_FUNCTION_RVS(void);
 
-void SUB_FUNCTION(void);
+c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece);
 
 void SUB_FUNCTION_RVS_XLANE(void);
 
@@ -283,7 +283,7 @@ void ADD_DRONE(OBJ* obj /*AR4*/);
 void FREE_DRONE(void);
 
 // asm: 	.globl	 PRECOLLIDE_PLYR
-void PRECOLLIDE_PLYR(void);
+int PRECOLLIDE_PLYR(OBJ* obj, CARBLK* carblk);
 
 // asm: 	.globl	 DRONE_RIDE_RIGHT
 c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);

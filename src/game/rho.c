@@ -38,7 +38,7 @@ void DECODE_RHO_KILL(void);
 void OM_DRONE(void);
 void SEND_RHO_CREATE(void);
 void SEND_RHO_POS(void);
-void COMPTRAK(void);
+int COMPTRAK(void);
 void DECODE_RACER_XSFER(void);
 void FIND_DRONE(void);
 void FIND_DYNA(void);

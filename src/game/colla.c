@@ -116,7 +116,7 @@ int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4
 extern const char PC2[];
 void GETNXTRDIR(void);
 void RANDSND(void);
-void COMPTRAK(void);
+int COMPTRAK(void);
 void OM_DRONE(void);
 void FIND_DRONE(void);
 void RANDVSND(void);

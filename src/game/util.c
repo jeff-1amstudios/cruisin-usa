@@ -1076,8 +1076,10 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     p->ctx->CARPROC.body_x_radians =
         C3X_STF(C3X_ADD(p->ctx->CARPROC.body_x_radians, C3X_MUL(delta_speed, C3X_IMM_F32(0.06f))));
     // asm 00008FDD: 	MPYF	0.25,R6
+    p->ctx->CARPROC.body_x_radians =
+        C3X_STF(C3X_MUL(p->ctx->CARPROC.body_x_radians, C3X_IMM_F32(0.25f)));
     // asm 00008FDE: 	NEGF	R6,R2
-    x_lean = C3X_NEG(C3X_MUL(p->ctx->CARPROC.body_x_radians, C3X_IMM_F32(0.25f)));
+    x_lean = C3X_NEG(p->ctx->CARPROC.body_x_radians);
     // asm 00008FDF: 	LDI	*+AR5(CAR_AIRF),R0
     // asm 00008FE0: 	OR	*+AR5(CAR_AIRB),R0
     // asm 00008FE1: 	LDFNZ	0,R2 			;ZERO OUT WHEN IN AIR FOLKS

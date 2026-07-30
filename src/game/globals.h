@@ -1057,9 +1057,9 @@ c3x_reg_t PLYR_RIDE_RIGHT(void);
 c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 // asm:  .globl EXP_PUFF,SMOKE_PUFF,DROP_COCONUTS
-void EXP_PUFF(void);
+void EXP_PUFF(PROC* p);
 
-void SMOKE_PUFF(void);
+void SMOKE_PUFF(PROC* p);
 
 void DROP_COCONUTS(void);
 
@@ -1069,7 +1069,7 @@ void SIGMA_DISPATCHER(PROC* p);
 void RHO_DISPATCHER(PROC* p);
 
 // asm:  .globl DIST_TO_PLYR
-void DIST_TO_PLYR(void);
+c3x_reg_t DIST_TO_PLYR(OBJ* obj);
 
 // dirq.asm
 // asm:  .globl DIRQ

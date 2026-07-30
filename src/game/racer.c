@@ -36,7 +36,7 @@ static void HI_STEALTH(int stealthmode);
 static void CKTRANSLO(void);
 static void CKTRANSHI(void);
 static void CKRANGE(void);
-void COMPTRAK(void);
+int COMPTRAK(void);
 static void SEND_RACER_XSFER(void);
 void DECODE_RACER_XSFER(void);
 static void ACTIVE_XSFER(void);
@@ -1052,22 +1052,28 @@ CKRFAIL:
     UNIMPL();
 }
 
-void COMPTRAK(void) {
+int COMPTRAK(void) {
+    CARBLK* other_player_carblk;
+    u32 other_track_id;
+    u32 our_track_id;
+
     // asm 0000528D: 	LDI	@PLY2CAR,AR0
     // asm 0000528E: 	LDI	*+AR0(OCARBLK),AR1
+    other_player_carblk = PLY2CAR->carblk;
     // asm 0000528F: 	LDI	*+AR1(CARTRACK_ID),R0
+    other_track_id = other_player_carblk->track_id;
     // asm 00005290: 	LDI	@PLYCBLK,AR1
     // asm 00005291: 	LDI	*+AR1(CARTRACK_ID),R1
+    our_track_id = PLYCBLK->track_id;
     // asm 00005292: 	CMPI	R0,R1
     // asm 00005293: 	RETS
+    return (our_track_id > other_track_id) - (our_track_id < other_track_id);
     // *
     // *TRANSFER CAR TO OTHER MACHINE
     // *AR4=CAR
     // *AR5=CAR BLOCK
     // *AR7=PROCESS
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COMPTRAK", 0, 0);
-    UNIMPL();
 }
 
 static void SEND_RACER_XSFER(void) {

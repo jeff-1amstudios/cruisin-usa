@@ -24,30 +24,30 @@
 void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*/);
 void DRONE_PTR_ADD(void);
 void DRONE_CLR(void);
-static void CK_LINK_DISP(void);
-void SET_DRONE_PAL(void);
+static int CK_LINK_DISP(void);
+void SET_DRONE_PAL(PROC* p, OBJ* obj);
 int GET_LANES(OBJ* obj /*AR2*/);
-void DIST_TO_PLYR(void);
+c3x_reg_t DIST_TO_PLYR(OBJ* obj);
 void INIT_TRACKING_PIECE(void);
 void GET_TRACK_POS_RVS_XLANE(void);
 void GET_TRACK_POS_RVS(void);
 void DELTA_GET_TRACK_POS(void);
-void GET_TRACK_POS(void);
+c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj);
 void SUB_FUNCTION_RVS(void);
-void SUB_FUNCTION(void);
+c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece);
 void SUB_FUNCTION_RVS_XLANE(void);
 #define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
 void DELTA_SUB_FUNCTION(void);
 void INIT_DRONES(void);
 void ADD_DRONE(OBJ* obj /*AR4*/);
 void FREE_DRONE(void);
-void EXP_PUFF(void);
-void PRECOLLIDE_PLYR(void);
+void EXP_PUFF(PROC* p);
+int PRECOLLIDE_PLYR(OBJ* obj, CARBLK* carblk);
 c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 c3x_reg_t PLYR_RIDE_RIGHT(void);
-void SMOKE_PUFF(void);
+void SMOKE_PUFF(PROC* p);
 void DROP_COCONUTS(void);
-void AHEAD_OF_PLAYER_P(void);
+int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk);
 
 #define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
 #define LANEPI LANEP
@@ -56,10 +56,16 @@ void AHEAD_OF_PLAYER_P(void);
 #define MODELTABI MODELTAB
 #define TEXTTABSI TEXTTABS
 
-void COMPTRAK(void);
+int COMPTRAK(void);
+
+typedef struct SMOKE_ANI_ENTRY {
+    int model;
+    int ticks;
+    c3x_f32_t y_delta;
+} SMOKE_ANI_ENTRY;
 
 static int EXP_ANI[12];
-static int SMOKE_ANI[28];
+static const SMOKE_ANI_ENTRY SMOKE_ANI[10];
 static const char* VETETXT[6];
 static const char* RODRTXT[6];
 static const char* BULLTXT[6];
@@ -93,6 +99,9 @@ static const char HRS43[];
 static const char HRS44[];
 static const char HRS45[];
 static const char HRS46[];
+
+extern MATRIX _MATRIXA;
+extern VECTOR _VECTORA;
 
 /*
  *----------------------------------------------------------------------------
@@ -442,18 +451,21 @@ SG_DISP_S:
     // asm 00006623: 	LDI	1,AR2
     // asm 00006624: 	LDI	@DRONE_DISPATCH_P,R0
     // asm 00006625: 	BZ	SG_DISP_S
+    MAME_ASSERT_REG(0x00006625, "R0", &DRONE_DISPATCH_P);
     if (DRONE_DISPATCH_P == 0) {
         sleep_ticks = 1;
         goto SG_DISP_S;
     }
     // asm 00006626: 	LDI	@SUSPEND_MODE,R0
     // asm 00006627: 	CMPI	SM_HALT,R0
+    MAME_ASSERT_REG(0x00006627, "R0", &SUSPEND_MODE);
     // asm 00006628: 	BEQ	SIGDSP_LP	;->STRAIGHT TO SLEEP
     if (SUSPEND_MODE == SM_HALT) {
         goto SIGDSP_LP;
     }
     // asm 00006629: 	LDI	@DRONE_COUNT,R0
     // asm 0000662A: 	SUBI	1,R0
+    MAME_ASSERT_REG(0x0000662A, "R0", &DRONE_COUNT);
     // asm 0000662B: 	CMPI	@DD_MAX_DRONES,R0
     // asm 0000662C: 	BGT	SIGDSP_LP
     if ((DRONE_COUNT - 1) > DD_MAX_DRONES) {
@@ -461,6 +473,7 @@ SG_DISP_S:
     }
     // asm 0000662D: 	LDI	@POSITION,R1
     // asm 0000662E: 	CMPI	1,R1
+    MAME_ASSERT_REG(0x0000662E, "R1", &POSITION);
     // asm 0000662F: 	BLE	DOIT
     position = POSITION;
     if (position <= 1) {
@@ -543,7 +556,7 @@ NOTYET:
         goto NOTYET;
     }
     // asm 00006652: 	BU	SIGDSP_LP
-    REENTER(SIGMA_DISPATCHER);
+    goto SIGDSP_LP;
 }
 
 // *----------------------------------------------------------------------------
@@ -585,9 +598,8 @@ void DRONE_PTR_ADD(void) {
 void DRONE_CLR(void) {
     // asm 00006661: 	LDI	10,R0
     // asm 00006662: 	STI	R0,@DRONENUM
+    DRONENUM = 10;
     // asm 00006663: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONE_CLR", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -605,139 +617,265 @@ void DRONE_CLR(void) {
  *
  */
 void RHO_DISPATCHER(PROC* p) {
+    OBJ* player_obj;
+    PROC_CONTEXT* rho_ctx;
+    int sleep_ticks;
+    int random_percent;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t distance;
+
+    rho_ctx = p->ctx;
+    switch (p->resume_state) {
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    default:
+        break;
+    }
+
     // asm 00006664: 	CALL	DRONE_CLR 	;CLEAR OUT DRONE POINTER TABLE
+    DRONE_CLR();
     // asm 00006665: 	SLEEP	30		;WAIT A SECOND
+    SLEEP(30, 1);
     // asm 00006667: 	LDI	@PLYCAR,AR4
+    player_obj = PLYCAR;
+    rho_ctx->RHO_DISPATCHER.player_obj = player_obj;
     // asm 00006668: 	LDF	*+AR4(OPOSX),R6
+    rho_ctx->RHO_DISPATCHER.initial_x = player_obj->pos.X;
     // asm 00006669: 	LDF	*+AR4(OPOSZ),R7	;GRAB THE 'INITIAL' LOCATION
+    rho_ctx->RHO_DISPATCHER.initial_z = player_obj->pos.Z;
     // asm 0000666A: 	SLEEP	30*20		;WAIT LIKE 20 SECONDS ANYWAY...
+    SLEEP(30 * 20, 2);
+    player_obj = rho_ctx->RHO_DISPATCHER.player_obj;
     // asm 0000666C: 	LDI	@_MODE,R0
     // asm 0000666D: 	AND	MMODE,R0
     // asm 0000666E: 	CMPI	MATTR,R0
     // asm 0000666F: 	BEQ	BEGIN_RELEASING
+    if ((_MODE & MMODE) == MATTR) {
+        goto BEGIN_RELEASING;
+    }
 #if DEBUG
     // asm: 	CMPI	@PLYCAR,AR4
     // asm: 	BNE	$
 #endif
 RHOPSL:
     // asm 00006670: 	LDF	R6,R0
+    delta_x = C3X_LDF(rho_ctx->RHO_DISPATCHER.initial_x);
     // asm 00006671: 	LDF	R7,R2
+    delta_z = C3X_LDF(rho_ctx->RHO_DISPATCHER.initial_z);
     // asm 00006672: 	SUBF	*+AR4(OPOSX),R0
+    delta_x = C3X_SUB(delta_x, C3X_LDF(player_obj->pos.X));
     // asm 00006673: 	SUBF	*+AR4(OPOSZ),R2
+    delta_z = C3X_SUB(delta_z, C3X_LDF(player_obj->pos.Z));
     // asm 00006674: 	MPYF	R0,R0
+    delta_x = C3X_MUL(delta_x, delta_x);
     // asm 00006675: 	MPYF	R2,R2
+    delta_z = C3X_MUL(delta_z, delta_z);
     // asm 00006676: 	ADDF	R0,R2
+    distance = C3X_ADD(delta_z, delta_x);
     // asm 00006677: 	CALL	SQRT
+    distance = SQRT(distance);
     // asm 00006678: 	FLOAT	11000,R1
+    delta_x = C3X_FROM_INT(11000);
     // asm 00006679: 	CMPF	R1,R0
     // asm 0000667A: 	BGT	BEGIN_RELEASING
+    if (C3X_GT(distance, delta_x)) {
+        goto BEGIN_RELEASING;
+    }
     // asm 0000667B: 	SLEEP	1
+    SLEEP(1, 4);
     // asm 0000667D: 	BU	RHOPSL
+    player_obj = rho_ctx->RHO_DISPATCHER.player_obj;
+    goto RHOPSL;
 BEGIN_RELEASING:
 RHO_DLP:
     // asm 0000667E: 	LDI	@POSITION,R0
     // asm 0000667F: 	CMPI	2,R0
     // asm 00006680: 	BGT	NKLD
+    if (POSITION > 2) {
+        goto NKLD;
+    }
     // asm 00006681: 	LDI	50,AR2
+    sleep_ticks = 50;
     // asm 00006682: 	BU	TF_DISP_S
+    goto TF_DISP_S;
 NKLD:
     // asm 00006683: 	LDI	@DD_VAR,AR2
     // asm 00006684: 	CALL	RANDU0
+    sleep_ticks = RANDU0(DD_VAR);
     // asm 00006685: 	ADDI	@DD_SLP,R0
+    sleep_ticks += DD_SLP;
     // asm 00006686: 	LDI	R0,AR2
 TF_DISP_S:
     // asm 00006687: 	CALL	SLEEP
+    rho_ctx->RHO_DISPATCHER.sleep_ticks = sleep_ticks;
+    SLEEP(sleep_ticks, 3);
+    sleep_ticks = rho_ctx->RHO_DISPATCHER.sleep_ticks;
     // asm 00006688: 	LDI	1,AR2
     // asm 00006689: 	LDI	@DRONE_DISPATCH_P,R0
     // asm 0000668A: 	BZ	TF_DISP_S
+    if (DRONE_DISPATCH_P == 0) {
+        sleep_ticks = 1;
+        goto TF_DISP_S;
+    }
     // asm 0000668B: 	LDI	@SUSPEND_MODE,R0
     // asm 0000668C: 	CMPI	SM_HALT,R0
     // asm 0000668D: 	BEQ	RHO_DLP
+    if (SUSPEND_MODE == SM_HALT) {
+        goto RHO_DLP;
+    }
     // asm 0000668E: 	LDI	@DRONE_COUNT,R0
     // asm 0000668F: 	CMPI	@DD_MAX_DRONES,R0
     // asm 00006690: 	BGT	RHO_DLP
+    if (DRONE_COUNT > DD_MAX_DRONES) {
+        goto RHO_DLP;
+    }
     // asm 00006691: 	LDI	@POSITION,R1
     // asm 00006692: 	CMPI	2,R1
     // asm 00006693: 	BLE	DOITR
+    if (POSITION <= 2) {
+        goto DOITR;
+    }
     // asm 00006694: 	RANDN	100		;R0 <- rand %%
+    random_percent = RANDU0(100);
     // asm 00006696: 	CMPI	4,R1
     // asm 00006697: 	BGT	OV1R
+    if (POSITION > 4) {
+        goto OV1R;
+    }
     // asm 00006698: 	CMPI	75,R0
     // asm 00006699: 	BLT	DOITR
+    if (random_percent < 75) {
+        goto DOITR;
+    }
     // asm 0000669A: 	BGT	RHO_DLP
+    goto RHO_DLP;
 OV1R:
     // asm 0000669B: CMPI	7,R1
     // asm 0000669C: 	BGT	OV2R
+    if (POSITION > 7) {
+        goto OV2R;
+    }
     // asm 0000669D: 	CMPI	60,R0
     // asm 0000669E: 	BLT	DOITR
+    if (random_percent < 60) {
+        goto DOITR;
+    }
     // asm 0000669F: 	BGT	RHO_DLP
+    goto RHO_DLP;
 OV2R:
     // asm 000066A0: CMPI	35,R0
     // asm 000066A1: 	BGT	RHO_DLP
+    if (random_percent > 35) {
+        goto RHO_DLP;
+    }
 DOITR:
     // asm 000066A2: 	LDI	@ONCSCREEN_CARS,R0
     // asm 000066A3: 	CMPI	8,R0
     // asm 000066A4: 	BGT	RHO_DLP
+    if (ONCSCREEN_CARS > 8) {
+        goto RHO_DLP;
+    }
     // asm 000066A5: 	CALL	CK_LINK_DISP
     // asm 000066A6: 	BZ	RHO_DLP			;NOT DISPATCHING, BEHIND IN LINK
+    if (!CK_LINK_DISP()) {
+        goto RHO_DLP;
+    }
     // asm 000066A7: 	CREATE	RHO_DRONE,DRONE_C|VEHICLE_T|DRNE_RHO
+    CREATE((PROC_FUNC)RHO_DRONE, DRONE_C | VEHICLE_T | DRNE_RHO, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 000066AA: 	BU	RHO_DLP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RHO_DISPATCHER", 0, 0);
-    UNIMPL_TODO();
+    goto RHO_DLP;
 }
 
-static void CK_LINK_DISP(void) {
+static int CK_LINK_DISP(void) {
+    int track_comparison;
+
     // asm 000066AB: 	LDI	@HEAD2HEAD_ON,R0
     // asm 000066AC: 	BZ	GODISP
+    if (HEAD2HEAD_ON == 0) {
+        goto GODISP;
+    }
     // asm 000066AD: 	CALL	COMPTRAK	;COMPARE TRACK RANKS OF PLAYERS
+    track_comparison = COMPTRAK();
     // asm 000066AE: 	BLT	NOGO		;WERE BEHIND, NO DISPATCH
+    if (track_comparison < 0) {
+        goto NOGO;
+    }
     // asm 000066AF: 	BGT	GODISP
+    if (track_comparison > 0) {
+        goto GODISP;
+    }
     // asm 000066B0: 	NOT	@DIPRAM,R0	;CHECK MASTER
+    track_comparison = ~DIPRAM;
     // asm 000066B1: 	TSTB	CMDP_MASTER,R0
     // asm 000066B2: 	BNZ	GODISP		;ITS A MASTER...
+    if ((track_comparison & CMDP_MASTER) != 0) {
+        goto GODISP;
+    }
 NOGO:
     // asm 000066B3: 	LDI	0,R0
     // asm 000066B4: 	RETS
+    return 0;
 GODISP:
     // asm 000066B5: 	LDI	1,R0
     // asm 000066B6: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CK_LINK_DISP", 0, 0);
-    UNIMPL();
+    return 1;
 }
 
 // *----------------------------------------------------------------------------
-void SET_DRONE_PAL(void) {
+void SET_DRONE_PAL(PROC* p, OBJ* obj) {
+    tCAR_PALETTE_LIST* palette_table;
+    int selection;
+    int palette;
     // asm 000066B7: 	PUSH	R0
     // asm 000066B8: 	PUSH	AR2
     // asm 000066B9: 	LDI	*+AR7(DELTA_MODEL),AR2
     // asm 000066BA: 	MPYI	VEHTAB_SIZE,AR2
     // asm 000066BB: 	ADDI	@VEHICLE_TABLEI,AR2
     // asm 000066BC: 	LDI	*+AR2(VEHTAB_PALTAB),AR2
+    palette_table = VEHICLE_TABLE[p->ctx->RACER_DRONE.delta_model].palette_table;
     // asm 000066BD: 	LDI	*AR2++,R0
     // asm 000066BE: 	BZ	NO_EPALS
+    if (palette_table == NULL || palette_table->count == 0) {
+        goto NO_EPALS;
+    }
     // asm 000066BF: 	PUSH	AR2
     // asm 000066C0: 	INC	R0
     // asm 000066C1: 	LDI	R0,AR2
     // asm 000066C2: 	CALL	RANDU0
+    selection = RANDU0(palette_table->count + 1);
     // asm 000066C3: 	POP	AR2
     // asm 000066C4: 	CMPI	0,R0
     // asm 000066C5: 	BEQ	NO_EPALS
+    if (selection == 0) {
+        goto NO_EPALS;
+    }
     // asm 000066C6: 	DEC	R0
     // asm 000066C7: 	ADDI	R0,AR2
     // asm 000066C8: 	LDI	*AR2,AR2
     // asm 000066C9: 	CALL	PAL_FIND_RAW
+    palette = PAL_FIND_RAW(palette_table->palette_addr[selection - 1]);
     // asm 000066CA: 	BNC	NO_EPALS
+    if (palette < 0) {
+        goto NO_EPALS;
+    }
     // asm 000066CB: 	STI	R0,*+AR4(OPAL)
+    obj->palette = (u32)palette;
     // asm 000066CC: 	LDI	*+AR4(OFLAGS),R0
     // asm 000066CD: 	OR	O_1PAL,R0
     // asm 000066CE: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_1PAL;
 NO_EPALS:
     // asm 000066CF: 	POP	AR2
     // asm 000066D0: 	POP	R0
     // asm 000066D1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_DRONE_PAL", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -809,19 +947,24 @@ GL_FND:
  *	R0	FL DISTANCE TO PLAYER (IN VOXELS)
  *
  */
-void DIST_TO_PLYR(void) {
+ c3x_reg_t DIST_TO_PLYR(OBJ* obj) {
+    c3x_reg_t dx;
+    c3x_reg_t dz;
     // asm 000066E7: 	PUSH	AR3
     // asm 000066E8: 	PUSHFL	R1
     // asm 000066EA: 	PUSHFL	R2
     // asm 000066EC: 	LDPI	@PLYCAR,AR3
     // asm 000066ED: 	LDF	*+AR4(OPOSX),R2
     // asm 000066EE: 	SUBF	*+AR3(OPOSX),R2
+    dx = C3X_SUB(C3X_LDF(obj->pos.X), C3X_LDF(PLYCAR->pos.X));
     // asm 000066EF: 	LDF	*+AR4(OPOSZ),R1
     // asm 000066F0: 	SUBF	*+AR3(OPOSZ),R1
+    dz = C3X_SUB(C3X_LDF(obj->pos.Z), C3X_LDF(PLYCAR->pos.Z));
     // asm 000066F1: 	MPYF	R1,R1
     // asm 000066F2: 	MPYF	R2,R2
     // asm 000066F3: 	ADDF	R1,R2
     // asm 000066F4: 	CALL	SQRT
+    dx = SQRT(C3X_ADD(C3X_MUL(dz, dz), C3X_MUL(dx, dx)));
 #if DEBUG
     // asm: 	CMPI	0,DP
     // asm: 	BNE	$
@@ -830,8 +973,7 @@ void DIST_TO_PLYR(void) {
     // asm 000066F7: 	POPFL	R1
     // asm 000066F9: 	POP	AR3
     // asm 000066FA: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIST_TO_PLYR", 0, 0);
-    UNIMPL();
+    return dx;
 }
 
 // *----------------------------------------------------------------------------
@@ -925,13 +1067,18 @@ void DELTA_GET_TRACK_POS(void) {
     UNIMPL();
 }
 
-void GET_TRACK_POS(void) {
+c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj) {
+    OBJ* piece;
+    c3x_reg_t dx;
+    c3x_reg_t dz;
     // asm 0000671E: 	PUSHFL	R1
     // asm 00006720: 	PUSHFL	R2
     // asm 00006722: 	PUSH	AR2
     // asm 00006723: 	LDI	*+AR7(DELTA_TPIECE),AR2
+    piece = p->ctx->RACER_DRONE.delta_tpiece;
     // asm 00006724: TRACK_PIECE
     // asm 00006724: 	CALL	SUB_FUNCTION		;GET LANE OFFSET (VECTOR A)
+    SUB_FUNCTION(p, piece);
 TRKP2:
 #if DEBUG
     // asm: 	LDI	*+AR2(OUSR1),R1
@@ -939,20 +1086,22 @@ TRKP2:
 #endif
     // asm 00006725: 	LDF	*+AR2(OPOSX),R2		;X
     // asm 00006726: 	SUBF	*+AR4(OPOSX),R2
+    dx = C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(obj->pos.X));
     // asm 00006727: 	LDF	*+AR2(OPOSZ),R1		;Z
     // asm 00006728: 	SUBF	*+AR4(OPOSZ),R1
+    dz = C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(obj->pos.Z));
     // asm 00006729: 	MPYF	R2,R2
     // asm 0000672A: 	MPYF	R1,R1
     // asm 0000672B: 	ADDF	R1,R2
     // asm 0000672C: 	CALL	SQRT
+    dx = SQRT(C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz)));
     // 	;R0 now has distance to next check
     // asm 0000672D: DISTANCE_OK
     // asm 0000672D: 	POP	AR2
     // asm 0000672E: 	POPFL	R2
     // asm 00006730: 	POPFL	R1
     // asm 00006732: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TRACK_POS", 0, 0);
-    UNIMPL();
+    return dx;
 }
 
 // *----------------------------------------------------------------------------
@@ -1066,12 +1215,18 @@ void SUB_FUNCTION_RVS(void) {
     UNIMPL();
 }
 
-void SUB_FUNCTION(void) {
+c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece) {
+    OBJ* next_piece;
+    c3x_reg_t theta;
+    int lane_mode;
+    int lane;
     // asm 0000673A: 	PUSH	AR0
     // asm 0000673B: 	PUSHFL	R0
     // asm 0000673D: 	PUSHFL	R3
     // asm 0000673F: 	LDI	*+AR2(OLINK4),R0
+    next_piece = (OBJ*)piece->link4;
     // asm: 	SLOCKON	Z,"DRONES\SUB_FUNCTION  OLINK4 to NULL"
+    SLOCKON(next_piece == NULL, "DRONES\\SUB_FUNCTION OLINK4 to NULL");
 SF_ENTER2:
     // asm 00006740: 	LDI	R0,AR0
     // asm 00006741: 	LDF	*+AR0(OPOSX),R2
@@ -1080,37 +1235,47 @@ SF_ENTER2:
     // asm 00006744: 	SUBF	*+AR2(OPOSZ),R3
     // asm 00006745: 	CALL	ARCTANF
     // asm 00006746: 	SUBF	HALFPI,R0
+    theta = C3X_SUB(
+        ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
+                 C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
+        HALFPII);
     // asm 00006747: 	LDF	R0,R2				;FIND THETA
     // asm 00006748: 	PUSHF	R2
     // asm 00006749: 	CALL	GET_LANES
+    lane_mode = GET_LANES(piece);
     // asm 0000674A: 	PUSH	AR2
     // asm 0000674B: 	LDI	@MATRIXAI,AR2
     // asm 0000674C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
+    FIND_YMATRIX(&MATRIXAI, theta);
     // asm 0000674D: 	LDI	*+AR7(DELTA_STATUS),AR0
     // asm 0000674E: 	AND	DELTA_STATUS_LANE,AR0
+    lane = p->ctx->RACER_DRONE.delta_status & DELTA_STATUS_LANE;
     // ;	LDPI	@LANEPI,AR1
     // asm 0000674F: 	LDI	@LANEPI,AR1
     // asm 00006750: 	ADDI	R0,AR1		;4 or 2 lane map?
     // asm 00006751: 	LDI	*AR1,R0
     // asm 00006752: 	ADDI	R0,AR0		;which lane?
     // asm 00006753: 	LDF	*AR0,R0
+    VECTORAI.X = C3X_STF(C3X_LDF(LANEP[lane_mode][lane]));
 DELTA_JOININ:
     // asm 00006754: 	LDI	@VECTORAI,AR2
     // asm 00006755: 	STF	R0,*+AR2(X)
     // asm 00006756: 	CLRF	R0
     // asm 00006757: 	STF	R0,*+AR2(Y)
     // asm 00006758: 	STF	R0,*+AR2(Z)
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
     // asm 00006759: 	LDI	AR2,R3
     // asm 0000675A: 	LDI	@MATRIXAI,R2
     // asm 0000675B: 	CALL	MATRIX_MUL			;COMPUTE THE LANE OFFSET IN VECTORA
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // asm 0000675C: 	POP	AR2
     // asm 0000675D: 	POPF	R2
     // asm 0000675E: 	POPFL	R3
     // asm 00006760: 	POPFL	R0
     // asm 00006762: 	POP	AR0
     // asm 00006763: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SUB_FUNCTION", 0, 0);
-    UNIMPL();
+    return theta;
 }
 
 void SUB_FUNCTION_RVS_XLANE(void) {
@@ -1274,58 +1439,98 @@ FREEDR_X:
  *
  *
  */
-void EXP_PUFF(void) {
+void EXP_PUFF(PROC* p) {
+    OBJ* source_obj;
+    OBJ* obj;
+    int model;
+
+    switch (p->resume_state) {
+        case 1:
+            goto PROC_RESUME_1;
+        default:
+            break;
+    }
+
+    source_obj = p->ctx->PUFF_PROC.source_obj;
     // asm 000067A9: 	LDL	40000,R0
     // asm 000067AA: 	CMPI	*+AR4(ODIST),R0
     // asm 000067AB: 	BLT	SUICIDE
+    if (source_obj->dist > 40000) {
+        DIE();
+    }
     // asm 000067AC: 	LDI	AR4,AR6
     // asm 000067AD: 	CALL	OBJ_GET
+    obj = OBJ_GET();
     // asm 000067AE: 	BC	SUICIDE
+    if (obj == NULL) {
+        DIE();
+    }
     // asm 000067AF: 	LDI	AR0,AR4
     // asm 000067B0: 	LDI	@EXP_ANII,AR5
     // asm 000067B1: 	LDI	*AR5,AR0
     // asm 000067B2: 	STI	AR0,*+AR4(OROMDATA)
+    p->ctx->PUFF_PROC.obj = obj;
+    p->ctx->PUFF_PROC.script_index = 0;
+    obj->romdata = ROM_PTR(EXP_ANI[0]);
     // asm 000067B3: 	LDF	*+AR6(OPOSX),R0
     // asm 000067B4: 	STF	R0,*+AR4(OPOSX)
     // asm 000067B5: 	LDF	*+AR6(OPOSY),R0
     // asm 000067B6: 	STF	R0,*+AR4(OPOSY)
     // asm 000067B7: 	LDF	*+AR6(OPOSZ),R0
     // asm 000067B8: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos = source_obj->pos;
     // asm 000067B9: 	ORM	O_POSTER,*+AR4(OFLAGS)
+    obj->flags |= O_POSTER;
     // asm 000067BC: 	LDI	AR4,AR2
     // asm 000067BD: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
     // asm 000067BE: 	LDF	6,R0
     // asm 000067BF: 	CALL	SFRAND
     // asm 000067C0: 	LDF	R0,R6
+    p->ctx->PUFF_PROC.velocity_x = C3X_STF(SFRAND(C3X_IMM_F32(6)));
     // asm 000067C1: 	LDF	6,R0
     // asm 000067C2: 	CALL	SFRAND
     // asm 000067C3: 	LDF	R0,R7
+    p->ctx->PUFF_PROC.velocity_z = C3X_STF(SFRAND(C3X_IMM_F32(6)));
 EXP_PUFFLP:
+    obj = p->ctx->PUFF_PROC.obj;
     // asm 000067C4: 	LDL	40000,R0
     // asm 000067C5: 	CMPI	*+AR4(ODIST),R0
     // asm 000067C6: 	BLT	EXP_DIE
+    if (obj->dist > 40000) {
+        goto EXP_DIE;
+    }
     // asm 000067C7: 	LDF	*+AR4(OPOSX),R0
     // asm 000067C8: 	ADDF	R6,R0
     // asm 000067C9: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx->PUFF_PROC.velocity_x)));
     // asm 000067CA: 	LDF	*+AR4(OPOSZ),R0
     // asm 000067CB: 	ADDF	R7,R0
     // asm 000067CC: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx->PUFF_PROC.velocity_z)));
     // asm 000067CD: 	LDI	*AR5++,AR0
     // asm 000067CE: 	CMPI	-1,AR0
     // asm 000067CF: 	BEQ	EXP_DIE
+    model = EXP_ANI[p->ctx->PUFF_PROC.script_index++];
+    if (model == -1) {
+        goto EXP_DIE;
+    }
     // asm 000067D0: 	STI	AR0,*+AR4(OROMDATA)
+    obj->romdata = ROM_PTR(model);
     // asm 000067D1: 	LDF	*+AR4(OPOSY),R0
     // asm 000067D2: 	SUBF	10,R0
     // asm 000067D3: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(obj->pos.Y), C3X_IMM_F32(10)));
     // asm 000067D4: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000067D6: 	BU	EXP_PUFFLP
 EXP_DIE:
     // asm 000067D7: 	LDI	AR4,AR2
     // asm 000067D8: 	CALL	OBJ_DELETE
+    OBJ_PULL(obj);
+    OBJ_FREE(obj);
     // asm 000067D9: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "EXP_PUFF", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------
@@ -1459,11 +1664,21 @@ static int EXP_ANI[] = {
  *	CARRY CLR PATH MAINLY CLEAR
  *
  */
-void PRECOLLIDE_PLYR(void) {
+int PRECOLLIDE_PLYR(OBJ* obj, CARBLK* carblk) {
+    c3x_reg_t a;
+    c3x_reg_t b;
+    c3x_reg_t c;
+    c3x_reg_t denominator;
+    c3x_reg_t distance;
+
     // asm 000067DB: 	CALL	DIST_TO_PLYR
+    distance = DIST_TO_PLYR(obj);
     // asm 000067DC: 	FLOAT	15000,R1
     // asm 000067DD: 	CMPF	R1,R0
     // asm 000067DE: 	BGT	NOT_IMMINENT
+    if (C3X_GT(distance, C3X_FROM_INT(15000))) {
+        goto NOT_IMMINENT;
+    }
     // 	;
     // 	;project ahead 5 frames
     // 	;
@@ -1472,21 +1687,28 @@ void PRECOLLIDE_PLYR(void) {
     // asm 000067E1: 	MPYF	@NFRAMES,R0
     // asm 000067E2: 	MPYF	5,R0
     // asm 000067E3: 	STF	R0,*+AR3(Z)
+    VECTORAI.Z = C3X_STF(C3X_MUL(C3X_MUL(C3X_LDF(carblk->speed), C3X_FROM_INT(NFRAMES)), C3X_IMM_F32(5)));
     // asm 000067E4: 	CLRF	R0
     // asm 000067E5: 	STF	R0,*+AR3(X)
     // asm 000067E6: 	STF	R0,*+AR3(Y)
+    VECTORAI.X = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
     // asm 000067E7: 	LDI	@MATRIXAI,AR2
     // asm 000067E8: 	LDF	*+AR5(CARVROT),R2
     // asm 000067E9: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_LDF(carblk->y_velocity_rotation));
     // asm 000067EA: 	LDI	AR2,R2
     // asm 000067EB: 	LDI	AR3,AR2
     // asm 000067EC: 	LDI	AR3,R3
     // asm 000067ED: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // 	;generate the line equation
     // 	;
     // asm 000067EE: 	LDP	@_VECTORA
     // asm 000067EF: 	NEGF	@_VECTORA+Z,R6		;A = Uy - Vy
     // asm 000067F0: 	LDF	@_VECTORA+X,R7		;B = Vx - Ux
+    a = C3X_NEG(C3X_LDF(VECTORAI.Z));
+    b = C3X_LDF(VECTORAI.X);
     // asm 000067F1: 	SETDP
     // asm 000067F2: 	LDF	*+AR4(OPOSX),R5
     // asm 000067F3: 	MPYF	R6,R5
@@ -1494,6 +1716,7 @@ void PRECOLLIDE_PLYR(void) {
     // asm 000067F5: 	MPYF	R7,R3
     // asm 000067F6: 	ADDF	R3,R5
     // asm 000067F7: 	NEGF	R5			;C = -(A Ux + B Uy)
+    c = C3X_NEG(C3X_ADD(C3X_MUL(a, C3X_LDF(obj->pos.X)), C3X_MUL(b, C3X_LDF(obj->pos.Z))));
     // ;	LDPI	@CAR_LISTI,AR1
     // 	;now find the distance of a point to a line
     // 	;
@@ -1501,6 +1724,7 @@ void PRECOLLIDE_PLYR(void) {
     // asm 000067F9: 	MPYF	R7,R7,R3
     // asm 000067FA: 	ADDF	R3,R2
     // asm 000067FB: 	CALL	SQRT
+    denominator = SQRT(C3X_ADD(C3X_MUL(a, a), C3X_MUL(b, b)));
     // asm 000067FC: 	LDF	R0,R1
     // asm 000067FD: 	LDPI	@PLYCAR,AR2
     // asm 000067FE: 	LDF	*+AR2(OPOSX),R2
@@ -1512,17 +1736,23 @@ void PRECOLLIDE_PLYR(void) {
     // asm 00006804: 	LDF	R2,R0
     // asm 00006805: 	CALL	DIV_F
     // asm 00006806: 	ABSF	R0
+    distance = C3X_ABS(DIV_F(
+        C3X_ADD(C3X_ADD(C3X_MUL(a, C3X_LDF(PLYCAR->pos.X)), C3X_MUL(b, C3X_LDF(PLYCAR->pos.Z))), c),
+        denominator));
     // asm 00006807: 	FLOAT	400,R1
     // asm 00006808: 	CMPF	R1,R0
     // asm 00006809: 	BGT	NOT_IMMINENT
+    if (C3X_GT(distance, C3X_FROM_INT(400))) {
+        goto NOT_IMMINENT;
+    }
     // asm 0000680A: IS_IMMINENT
     // asm 0000680A: 	SETC
     // asm 0000680B: 	RETS
+    return 1;
 NOT_IMMINENT:
     // asm 0000680C: 	CLRC
     // asm 0000680D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRECOLLIDE_PLYR", 0, 0);
-    UNIMPL();
+    return 0;
 }
 
 // *----------------------------------------------------------------------------
@@ -1678,57 +1908,107 @@ PRR_X:
 /* asm: SMOKE_COUNT	.bss	SMOKE_COUNT,1 */
 int SMOKE_COUNT;
 
-void SMOKE_PUFF(void) {
+void SMOKE_PUFF(PROC* p) {
+    OBJ* source_obj;
+    OBJ* obj;
+    int model;
+    int sleep_ticks;
+    c3x_f32_t y_delta;
+
+    switch (p->resume_state) {
+        case 1:
+            goto PROC_RESUME_1;
+        default:
+            break;
+    }
+
     // asm 0000684D: 	LDI	@SMOKE_COUNT,R0
     // asm 0000684E: 	CMPI	5,R0
     // asm 0000684F: 	BGE	SUICIDE
+    if (SMOKE_COUNT >= 5) {
+        DIE();
+    }
     // asm 00006850: 	INC	R0
     // asm 00006851: 	STI	R0,@SMOKE_COUNT
+    SMOKE_COUNT += 1;
+    p->ctx->PUFF_PROC.smoke_counted = 1;
+    source_obj = p->ctx->PUFF_PROC.source_obj;
     // asm 00006852: 	LDL	40000,R0
     // asm 00006853: 	CMPI	*+AR4(ODIST),R0
     // asm 00006854: 	BLT	SUICIDE
+    if (source_obj->dist > 40000) {
+        DIE();
+    }
     // asm 00006855: 	LDI	AR4,AR6
     // asm 00006856: 	CALL	OBJ_GET
+    obj = OBJ_GET();
     // asm 00006857: 	BC	SUICIDE
+    if (obj == NULL) {
+        DIE();
+    }
     // asm 00006858: 	LDI	AR0,AR4
     // asm 00006859: 	LDI	@SMOKE_ANII,AR5
     // asm 0000685A: 	LDI	*AR5,AR0
     // asm 0000685B: 	STI	AR0,*+AR4(OROMDATA)
+    p->ctx->PUFF_PROC.obj = obj;
+    p->ctx->PUFF_PROC.script_index = 0;
+    obj->romdata = ROM_PTR(SMOKE_ANI[0].model);
     // asm 0000685C: 	LDI	UTIL_C|SMOKE_T,R0
     // asm 0000685D: 	STI	R0,*+AR4(OID)
+    obj->id = UTIL_C | SMOKE_T;
     // asm 0000685E: 	LDL	bnout1_smoke,AR2
     // asm 0000685F: 	CALL	PAL_FIND_RAW
     // asm 00006860: 	STI	R0,*+AR4(OPAL)
+    obj->palette = (u32)PAL_FIND_RAW((tPAL*)ROM_PTR(bnout1_smoke_ROM));
     // asm 00006861: 	LDF	*+AR6(OPOSX),R0
     // asm 00006862: 	STF	R0,*+AR4(OPOSX)
     // asm 00006863: 	LDF	*+AR6(OPOSY),R0
     // asm 00006864: 	STF	R0,*+AR4(OPOSY)
     // asm 00006865: 	LDF	*+AR6(OPOSZ),R0
     // asm 00006866: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos = source_obj->pos;
     // asm 00006867: 	ORM	O_POSTER|O_1PAL,*+AR4(OFLAGS)
+    obj->flags |= O_POSTER | O_1PAL;
     // asm 0000686A: 	LDI	AR4,AR2
     // asm 0000686B: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
 SMOKE_PUFFLP:
+    obj = p->ctx->PUFF_PROC.obj;
     // asm 0000686C: 	LDL	40000,R0
     // asm 0000686D: 	CMPI	*+AR4(ODIST),R0
     // asm 0000686E: 	BLT	SMOKE_DIE
+    if (obj->dist > 40000) {
+        goto SMOKE_DIE;
+    }
     // asm 0000686F: 	LDF	6,R0
     // asm 00006870: 	CALL	SFRAND
     // asm 00006871: 	ADDF	*+AR4(OPOSX),R0
     // asm 00006872: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), SFRAND(C3X_IMM_F32(6))));
     // asm 00006873: 	LDF	6,R0
     // asm 00006874: 	CALL	SFRAND
     // asm 00006875: 	ADDF	*+AR4(OPOSZ),R0
     // asm 00006876: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), SFRAND(C3X_IMM_F32(6))));
     // asm 00006877: 	LDI	*AR5++,AR0
     // asm 00006878: 	CMPI	-1,AR0
     // asm 00006879: 	BEQ	SMOKE_DIE
+    model = SMOKE_ANI[p->ctx->PUFF_PROC.script_index].model;
+    if (model == -1) {
+        goto SMOKE_DIE;
+    }
     // asm 0000687A: 	STI	AR0,*+AR4(OROMDATA)
+    obj->romdata = ROM_PTR(model);
     // asm 0000687B: 	LDI	*AR5++,AR2
+    sleep_ticks = SMOKE_ANI[p->ctx->PUFF_PROC.script_index].ticks;
     // asm 0000687C: 	LDF	*+AR4(OPOSY),R0
     // asm 0000687D: 	SUBF	*AR5++,R0
+    y_delta = SMOKE_ANI[p->ctx->PUFF_PROC.script_index].y_delta;
+    p->ctx->PUFF_PROC.script_index += 1;
     // asm 0000687E: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(obj->pos.Y), C3X_LDF(y_delta)));
     // asm 0000687F: 	CALL	SLEEP
+    SLEEP(sleep_ticks, 1);
     // asm 00006880: 	BU	SMOKE_PUFFLP
 SMOKE_DIE:
     // asm 00006881: 	LDI	@SMOKE_COUNT,R0
@@ -1737,12 +2017,18 @@ SMOKE_DIE:
     // asm: 	BLT	$
 #endif
     // asm 00006883: 	STI	R0,@SMOKE_COUNT
+    if (p->ctx->PUFF_PROC.smoke_counted) {
+        SMOKE_COUNT -= 1;
+        p->ctx->PUFF_PROC.smoke_counted = 0;
+    }
     // asm 00006884: 	LDI	AR4,AR2
     // asm 00006885: 	CALL	OBJ_DELETE
+    if (p->ctx->PUFF_PROC.obj != NULL) {
+        OBJ_PULL(p->ctx->PUFF_PROC.obj);
+        OBJ_FREE(p->ctx->PUFF_PROC.obj);
+    }
     // asm 00006886: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_PUFF", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------
@@ -1769,35 +2055,17 @@ SMOKE_DIE:
 /* asm: 	.float	45 */
 /* asm: 	.word	-1 */
 /* asm: 	 */
-static int SMOKE_ANI[] = {
-    bnout1_ROM,
-    1,
-    10,
-    bnout2_ROM,
-    2,
-    12,
-    bnout3_ROM,
-    1,
-    16,
-    bnout4_ROM,
-    1,
-    20,
-    bnout5_ROM,
-    1,
-    24,
-    bnout6_ROM,
-    1,
-    30,
-    bnout7_ROM,
-    1,
-    35,
-    bnout8_ROM,
-    1,
-    40,
-    bnout9_ROM,
-    1,
-    45,
-    -1,
+static const SMOKE_ANI_ENTRY SMOKE_ANI[] = {
+    { bnout1_ROM, 1, C3X_F32_INIT(10) },
+    { bnout2_ROM, 2, C3X_F32_INIT(12) },
+    { bnout3_ROM, 1, C3X_F32_INIT(16) },
+    { bnout4_ROM, 1, C3X_F32_INIT(20) },
+    { bnout5_ROM, 1, C3X_F32_INIT(24) },
+    { bnout6_ROM, 1, C3X_F32_INIT(30) },
+    { bnout7_ROM, 1, C3X_F32_INIT(35) },
+    { bnout8_ROM, 1, C3X_F32_INIT(40) },
+    { bnout9_ROM, 1, C3X_F32_INIT(45) },
+    { -1, 0, C3X_F32_INIT(0) },
 };
 // *----------------------------------------------------------------------------
 
@@ -2074,19 +2342,54 @@ static const char HRS46[] = "472HP  V12 DOHC 48V";
  *	CARRY CLR ON BEHIND PLAYER
  *
  */
-void AHEAD_OF_PLAYER_P(void) {
+int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk) {
+    OBJ* player_track;
+    OBJ* drone_track;
+    OBJ* reference_piece;
+    c3x_reg_t drone_distance_sq;
+    c3x_reg_t player_distance_sq;
+    u32 player_track_is_null;
+    u32 drone_track_is_null;
     // asm 0000691F: 	PUSH	AR0
     // asm 00006920: 	PUSH	AR1
     // asm 00006921: 	PUSH	R0
     // asm 00006922: 	LDI	@PLYCBLK,AR0
+    /*
+     * Sigma can reach this routine before the portable scheduler has
+     * populated both cars' track state.  Carry clear ("behind") is the
+     * conservative result until those assembly preconditions hold.
+     */
+    if (PLYCBLK == NULL || PLYCAR == NULL || obj == NULL || carblk == NULL) {
+        goto ISBEHIND;
+    }
     // asm 00006923: 	LDI	*+AR0(CARTRAK),AR0
+    player_track = OBJREF_TO_PTR(PLYCBLK->closest_track_piece);
+    player_track_is_null = player_track == NULL;
+    MAME_ASSERT_MEM(0x00006924, "ar0==0", &player_track_is_null);
     // asm 00006924: 	LDI	*+AR0(OUSR1),R0
     // asm 00006925: 	LDI	*+AR5(CARTRAK),AR1
+    drone_track = OBJREF_TO_PTR(carblk->closest_track_piece);
+    drone_track_is_null = drone_track == NULL;
+    MAME_ASSERT_MEM(0x00006926, "ar1==0", &drone_track_is_null);
+    if (player_track == NULL || drone_track == NULL) {
+        goto ISBEHIND;
+    }
     // asm 00006926: 	CMPI	*+AR1(OUSR1),R0
     // asm 00006927: 	BLT	AHEADOF
+    if ((int)player_track->usr1 < (int)drone_track->usr1) {
+        goto AHEADOF;
+    }
     // asm 00006928: 	BGT	ISBEHIND
+    if ((int)player_track->usr1 > (int)drone_track->usr1) {
+        goto ISBEHIND;
+    }
     // asm 00006929: 	LDI	*+AR0(OLINK4),AR0	;GET NEXT OBJECT
     // asm 0000692A: 	LDI	*+AR0(OLINK4),AR0	;GET NEXT OBJECT
+    reference_piece = (OBJ*)player_track->link4;
+    reference_piece = reference_piece != NULL ? (OBJ*)reference_piece->link4 : NULL;
+    if (reference_piece == NULL) {
+        goto ISBEHIND;
+    }
     // asm 0000692B: 	LDF	*+AR0(OPOSX),R0
     // asm 0000692C: 	SUBF	*+AR4(OPOSX),R0
     // asm 0000692D: 	MPYF	R0,R0
@@ -2094,6 +2397,11 @@ void AHEAD_OF_PLAYER_P(void) {
     // asm 0000692F: 	SUBF	*+AR4(OPOSZ),R1
     // asm 00006930: 	MPYF	R1,R1
     // asm 00006931: 	ADDF	R1,R0
+    drone_distance_sq = C3X_ADD(
+        C3X_MUL(C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(obj->pos.X)),
+                C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(obj->pos.X))),
+        C3X_MUL(C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(obj->pos.Z)),
+                C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(obj->pos.Z))));
     // asm 00006932: 	LDI	@(_plyr1+PLY_CAR),AR1
     // asm 00006933: 	LDF	*+AR0(OPOSX),R2
     // asm 00006934: 	SUBF	*+AR1(OPOSX),R2
@@ -2102,20 +2410,28 @@ void AHEAD_OF_PLAYER_P(void) {
     // asm 00006937: 	SUBF	*+AR1(OPOSZ),R1
     // asm 00006938: 	MPYF	R1,R1
     // asm 00006939: 	ADDF	R2,R1
+    player_distance_sq = C3X_ADD(
+        C3X_MUL(C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(PLYCAR->pos.X)),
+                C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(PLYCAR->pos.X))),
+        C3X_MUL(C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(PLYCAR->pos.Z)),
+                C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(PLYCAR->pos.Z))));
     // asm 0000693A: 	CMPF	R1,R0	;WHO IS CLOSER?
     // asm 0000693B: 	BLT	AHEADOF
+    if (C3X_LT(drone_distance_sq, player_distance_sq)) {
+        goto AHEADOF;
+    }
 ISBEHIND:
     // asm 0000693C: 	CLRC
     // asm 0000693D: 	POP	R0
     // asm 0000693E: 	POP	AR1
     // asm 0000693F: 	POP	AR0
     // asm 00006940: 	RETS
+    return 0;
 AHEADOF:
     // asm 00006941: 	SETC
     // asm 00006942: 	POP	R0
     // asm 00006943: 	POP	AR1
     // asm 00006944: 	POP	AR0
     // asm 00006945: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AHEAD_OF_PLAYER_P", 0, 0);
-    UNIMPL();
+    return 1;
 }

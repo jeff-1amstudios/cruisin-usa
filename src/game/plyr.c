@@ -106,7 +106,7 @@ static void CAMMATAVG(void);
 
 void WRECK(void);
 void WRECKST(void);
-void COMPTRAK(void);
+int COMPTRAK(void);
 
 extern c3x_f32_t STEERI;
 static tCARPARAM CARPARAMTAB[];
@@ -1381,7 +1381,7 @@ void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta 
     // asm 00002C22: 	POPF	R2
     // *GET INCREMENTAL ROTATION MATRIX
     // asm 00002C23: 	LDI	@MATRIXAI,AR2
-    MAME_ASSERT_REG_FLOAT(0x00002C24, "R2", &steering_delta);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002C24, "R2", &steering_delta, 5);
     // asm 00002C24: 	CALL	FIND_YMATRIX
     FIND_YMATRIX(&MATRIXAI, steering_delta);
     // *FORM NEW ROTATION MATRIX
@@ -1395,6 +1395,7 @@ void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta 
     velocity_delta = C3X_LDF(carblk->y_velocity_rotation);
     // asm 00002C2A: 	SUBF	*+AR5(CARYROT),R2
     velocity_delta = C3X_SUB(velocity_delta, carblk->y_rotation);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002C2B, "R2", &velocity_delta, 5);
     // asm 00002C2B: 	LDI	@MATRIXBI,AR2
     // asm 00002C2C: 	CALL	FIND_YMATRIX
     FIND_YMATRIX(&MATRIXBI, velocity_delta);
@@ -1407,6 +1408,7 @@ void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta 
     forward_vector.X = C3X_STF(C3X_FROM_INT(0));
     forward_vector.Y = C3X_STF(C3X_FROM_INT(0));
     forward_vector.Z = C3X_STF(C3X_REG(carblk->dist));
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002C32, "R2", &carblk->dist, 5);
     // asm 00002C32: 	LDI	@MATRIXBI,AR2
     // asm 00002C33: 	LDI	*+AR5(CAR_AIRB),R0
     // asm 00002C34: 	BNZ	DAIRB	    		;WERE FLYING
@@ -1444,7 +1446,7 @@ void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00002C40: 	ADDI	OMATRIX,R2
     // asm 00002C41: 	LDI	R2,R3
     // asm 00002C42: 	CALL	CONCATMAT
-    CONCATMAT((MATRIX*)&obj->omatrix, &_MATRIXA, (MATRIX*)&obj->omatrix);
+    CONCATMAT(&_MATRIXA, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
     // asm 00002C43: 	CALL	DRONE_RIDE_RIGHT	;GET DISTANCE TO CENTER OF LANE
     carblk->dist_to_center = C3X_STF(DRONE_RIDE_RIGHT(obj, carblk));
     // asm 00002C44: 	STF	R0,*+AR5(CARDIST2CNTR)
@@ -2137,7 +2139,7 @@ GETSPD10:
     accel = C3X_LDF(carblk->throttle);
     // asm 00002D92: 	MPYF	*+AR5(CARMAXACCEL),R0
     accel = C3X_MUL(accel, carblk->max_accel);
-    MAME_ASSERT_REG_FLOAT(0x00002D93, "R0", &accel);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002D93, "R0", &accel, 5);
     // asm 00002D93: 	CMPI	@PLYCAR,AR4	    	;CHEAT ACCEL
     // asm 00002D94: 	LDFNZ	1.0,R1
     // asm 00002D95: 	LDFZ	@CHEATACC,R1
@@ -2211,7 +2213,7 @@ GETSPD10:
     // *CUT ACCEL ON SKID
     // asm 00002DB0: 	MPYF	R1,R0
     accel = C3X_MUL(accel, factor);
-    MAME_ASSERT_REG_FLOAT(0x00002DB1, "R0", &accel);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DB1, "R0", &accel, 5);
     // asm 00002DB1: 	LDF	*+AR5(CARSKID),R1    	;CUT DOWN ACCEL ON SKID
     factor = C3X_LDF(carblk->skid);
     // asm 00002DB2: 	MPYF	0.25,R1			;ONLY 25% CUT
@@ -2220,10 +2222,11 @@ GETSPD10:
     factor = C3X_SUB(C3X_IMM_F32(1.0), factor);
     // asm 00002DB4: 	MPYF	R1,R0			;R0=ENGINE ACCEL
     accel = C3X_MUL(accel, factor);
-    MAME_ASSERT_REG_FLOAT(0x00002DB5, "R0", &accel);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DB5, "R0", &accel, 5);
     // *GET GRAVITY ACCEL
     // asm 00002DB5: 	LDF	*+AR4(OMAT21),R1	;ADD IN YOUR GRAVITY ACTION
     factor = C3X_LDF(obj->omatrix.mat21);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DB6, "R1", &factor, 5);
     // asm 00002DB6: 	LDF	2,R3			;DEFAULT CONSTANT
     friction = C3X_IMM_F32(2.0);
     // asm 00002DB7: 	LDI	@_countdown,R2		;TIMEOUT?
@@ -2245,9 +2248,10 @@ GETSPD10:
     }
     // asm 00002DBF: 	MPYF	R3,R1			;MULTIPLY BY CONSTANT
     factor = C3X_MUL(factor, friction);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DC0, "R1", &factor, 5);
     // asm 00002DC0: 	ADDF	R1,R0
     accel = C3X_ADD(accel, factor);
-    MAME_ASSERT_REG_FLOAT(0x00002DC1, "R0", &accel);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DC1, "R0", &accel, 5);
     // *GET TOTAL FRICTION
     // *GET ROAD FRICTION
     // asm 00002DC1: 	LDI	AR5,AR3
@@ -2388,9 +2392,9 @@ GETSPD2:
     }
     // asm 00002DFE: 	SUBI	1,RC
     frames -= 1;
-    MAME_ASSERT_REG_FLOAT(0x00002DFF, "R0", &accel);
-    MAME_ASSERT_REG_FLOAT(0x00002DFF, "R1", &speed);
-    MAME_ASSERT_REG_FLOAT(0x00002DFF, "R3", &friction);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R0", &accel, 5);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R1", &speed, 5);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R3", &friction, 5);
     // *R0=ACCEL
     // *R1=SPEED
     // *R3=TOTAL FRICTION
@@ -2420,13 +2424,13 @@ GETSPD2:
     }
     // asm 00002E08: 	MPYF	1.5,R5			;SPEEDFUDGE
     speed_distance = C3X_MUL(speed_distance, C3X_IMM_F32(1.5));
-    MAME_ASSERT_REG_FLOAT(0x00002E09, "R1", &speed);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E09, "R1", &speed, 5);
     // asm 00002E09: 	STF	R5,*+AR5(CARDIST)	;SAVE YOUR DISTANCE
     carblk->dist =C3X_STF(speed_distance);
-    MAME_ASSERT_REG_FLOAT(0x00002E09, "R5", &speed_distance);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E09, "R5", &speed_distance, 5);
     // asm 00002E0A: 	STF	R1,*+AR5(CARSPEED)	;NEW SPEED
     carblk->speed =C3X_STF(speed);
-    MAME_ASSERT_REG_FLOAT(0x00002E0A, "R1", &speed);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E0A, "R1", &speed, 5);
     // asm 00002E0B: 	RETS
     // *
     // *GET BRAKE PEDAL

@@ -629,7 +629,11 @@ typedef struct tCAR_PALETTE_LIST {
 
 typedef struct tDDYNA_TABLE_ENTRY {
     int vertices;
-    VECTOR center;
+    struct {
+        int X;
+        int Y;
+        int Z;
+    } center;
 } tDDYNA_TABLE_ENTRY;
 
 typedef struct tDDYNA_TABLE {
@@ -739,6 +743,12 @@ typedef struct PROC_CONTEXT {
             struct PROC* sigma_proc;
         } SIGMA_DISPATCHER;
         struct {
+            OBJ* player_obj;
+            c3x_f32_t initial_x;
+            c3x_f32_t initial_z;
+            int sleep_ticks;
+        } RHO_DISPATCHER;
+        struct {
             OBJ* obj;              // AR4
             CARBLK* carblk;        // AR5
             c3x_f32_t body_x_radians;  // R6
@@ -747,6 +757,14 @@ typedef struct PROC_CONTEXT {
             c3x_f32_t body_z_radians;  // PDATA+1 / R5
             c3x_f32_t wheel_x_radians; // PDATA+2
         } CARPROC;
+        struct {
+            OBJ* source_obj;
+            OBJ* obj;
+            int script_index;
+            c3x_f32_t velocity_x;
+            c3x_f32_t velocity_z;
+            int smoke_counted;
+        } PUFF_PROC;
         struct {
             int attrwave;
             int decomp_count;
@@ -787,6 +805,13 @@ typedef struct PROC_CONTEXT {
             int passcnt;
             c3x_f32_t finishdist;
             c3x_f32_t finishrot;
+            int sigma_once;
+            int sigma_yell;
+            int sigma_flag;
+            int breakdown_count;
+            int breakdown;
+            int breakdown_smoke_started;
+            int breakdown_count_initialized;
         } RACER_DRONE;
         struct {
             int background_color;

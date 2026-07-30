@@ -105,7 +105,7 @@ extern int ROADOBSTAB[];
 extern int PLYRCLOSE;
 // asm: 	.BSS	CARTMP1,1
 extern int CARTMP1;
-void COMPTRAK(void);
+int COMPTRAK(void);
 void FIND_DYNA(void);
 void DECODE_RACER_XSFER(void);
 void WRECK(void);
