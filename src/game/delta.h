@@ -225,10 +225,10 @@ CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/);
 c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj);
 
 // asm: 	.globl	 GET_TRACK_POS_RVS
-void GET_TRACK_POS_RVS(void);
+c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj);
 
 // asm: 	.globl	 GET_TRACK_POS_RVS_XLANE
-void GET_TRACK_POS_RVS_XLANE(void);
+c3x_reg_t GET_TRACK_POS_RVS_XLANE(PROC* p, OBJ* obj);
 
 // asm: 	.globl	 DELTA_GET_TRACK_POS
 void DELTA_GET_TRACK_POS(void);
@@ -242,10 +242,10 @@ void SIGMA_DRONE(PROC* p);
 
 // ***	RHO.ASM
 // asm: 	.globl	 RHO_DRONE
-void RHO_DRONE(void);
+void RHO_DRONE(PROC* p);
 
 // asm: 	.globl	 RHO_DIE		;generalized drone die routine
-void RHO_DIE(void);
+void RHO_DIE(PROC* p);
 
 // ***	CHOPPER.ASM
 // asm: 	.globl	 CHOPPER
@@ -268,11 +268,11 @@ void INIT_TRACKING_PIECE(void);
 
 // .globl	 GET_STEALTH_POS
 // asm: 	.globl	 SUB_FUNCTION_RVS,SUB_FUNCTION,SUB_FUNCTION_RVS_XLANE
-void SUB_FUNCTION_RVS(void);
+c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece);
 
 c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece);
 
-void SUB_FUNCTION_RVS_XLANE(void);
+c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece);
 
 // .globl	 FIND_MAPENTRY
 // asm: 	.globl	 INIT_DRONES,ADD_DRONE,FREE_DRONE
@@ -280,7 +280,7 @@ void INIT_DRONES(void);
 
 void ADD_DRONE(OBJ* obj /*AR4*/);
 
-void FREE_DRONE(void);
+void FREE_DRONE(OBJ* obj);
 
 // asm: 	.globl	 PRECOLLIDE_PLYR
 int PRECOLLIDE_PLYR(OBJ* obj, CARBLK* carblk);

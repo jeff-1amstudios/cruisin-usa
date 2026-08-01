@@ -29,7 +29,7 @@ void OBJ_FREE_SIGN(OBJ* obj /*AR2*/);
 void OBJ_FREE_DRIVE(OBJ* obj /*AR2*/);
 void OBJ_FREE_PROC(OBJ* obj /*AR2*/);
 static void OBJ_FREE_SUPPLEMENTAL(OBJ* obj, OBJ** list_head, int error_code);
-void OBJ_DELETE(void);
+void OBJ_DELETE(OBJ* obj);
 void OBJ_DELETE_CLASS(void);
 void OBJ_PULL(OBJ* obj /*AR2*/);
 void OBJ_FREE(OBJ* obj /*AR2*/);
@@ -800,7 +800,10 @@ void OBJ_FREE_PROC(OBJ* obj /*AR2*/) {
  *	this is a speeded up version of this subroutine.
  *
  */
-void OBJ_DELETE(void) {
+void OBJ_DELETE(OBJ* obj) {
+    DYNAOBJ* dyna;
+    DYNAOBJ* next_dyna;
+    OBJ** list_link;
     // asm 0000712B: 	PUSH	R0
     // asm 0000712C: 	PUSH	R1
     // asm 0000712D: 	PUSH	AR1
@@ -817,15 +820,25 @@ void OBJ_DELETE(void) {
     // asm 0000712F: 	LDI	*+AR2(OFLAGS),R0
     // asm 00007130: 	TSTB	O_DYNAMIC,R0
     // asm 00007131: 	BZ	NOTDYNAMIC
+    if ((obj->flags & O_DYNAMIC) == 0) {
+        goto NOTDYNAMIC;
+    }
     // asm 00007132: 	PUSH	AR2
     // asm 00007133: 	LDI	*+AR2(ODYNALIST),AR0
+    dyna = obj->dynalist;
 DYNDEL:
     // asm 00007134: LDI	*AR0,R0			;LINK TO NEXT
+    next_dyna = dyna->link;
     // asm 00007135: 	LDI	AR0,AR2
     // asm 00007136: 	CALL	DELDYNA
+    DELDYNA(dyna);
     // asm 00007137: 	LDI	R0,AR0
+    dyna = next_dyna;
     // asm 00007138: 	CMPI	0,AR0
     // asm 00007139: 	BNE	DYNDEL
+    if (dyna != NULL) {
+        goto DYNDEL;
+    }
     // asm 0000713A: 	POP	AR2
     // ;	PUSH	AR2
     // ;	LDI	*+AR2(ORADZ),AR2
@@ -846,54 +859,88 @@ NOTDYNAMIC:
     // asm 0000713B: 	LDI	*+AR2(OFLAGS),R0	;KILL PROC ASSOCIATED WITH OBJ
     // asm 0000713C: 	RS	(O_DEBRIS_B+1),R0
     // asm 0000713D: 	CALLC	FREE_RDDEBRIS
+    if ((obj->flags & (1u << O_DEBRIS_B)) != 0) {
+        FREE_RDDEBRIS(obj);
+    }
     // asm 0000713E: 	LDI	*+AR2(OFLAGS),R0	;KILL PROC ASSOCIATED WITH OBJ
     // asm 0000713F: 	RS	(O_PROC_B+1),R0
     // asm 00007140: 	CALLC	OBJ_FREE_PROC
+    if ((obj->flags & (1u << O_PROC_B)) != 0) {
+        OBJ_FREE_PROC(obj);
+    }
     // asm 00007141: 	LDI	*+AR2(OFLAGS),R0	;DELINK IN CASE OF DRIVE LIST
     // asm 00007142: 	RS	(O_DRIVE_SUPP_B+1),R0
     // asm 00007143: 	CALLC	OBJ_FREE_DRIVE
+    if ((obj->flags & (1u << O_DRIVE_SUPP_B)) != 0) {
+        OBJ_FREE_DRIVE(obj);
+    }
     // asm 00007144: 	LDI	*+AR2(OFLAGS),R0	;DELINK IN CASE OF GROUND LIST
     // asm 00007145: 	RS	(O_GROUND_B+1),R0
     // asm 00007146: 	CALLC	OBJ_FREE_GROUND
+    if ((obj->flags & (1u << O_GROUND_B)) != 0) {
+        OBJ_FREE_GROUND(obj);
+    }
     // asm 00007147: 	LDI	*+AR2(OFLAGS),R0	;DELINK IN CASE OF SIGN LIST
     // asm 00007148: 	RS	(O_SIGN_SUPP_B+1),R0
     // asm 00007149: 	CALLC	OBJ_FREE_SIGN
+    if ((obj->flags & (1u << O_SIGN_SUPP_B)) != 0) {
+        OBJ_FREE_SIGN(obj);
+    }
     // 	;THE OBJECT CAN BE EITHER ON THE ACTIVE LIST, THE IDLE LIST,
     // 	;OR THE ACTIVE PRIORITY LIST.  ANYTHING ELSE IS AN ERROR.
     // 	;
     // asm 0000714A: 	LDI	*+AR2(OFLAGS),R0
     // asm 0000714B: 	AND	O_LIST_M,R0
     // asm 0000714C: 	LDI	@OACTIVEI,R1
+    list_link = &OACTIVE;
     // asm 0000714D: 	CMPI	O_LIST2,R0
     // asm 0000714E: 	LDIEQ	@IDLE_LISTI,R1
+    if ((obj->flags & O_LIST_M) == O_LIST2) {
+        list_link = &IDLE_LIST;
+    }
     // asm 0000714F: 	CMPI	O_LIST3,R0
     // asm 00007150: 	LDIEQ	@OACTIVE_PRIORITYI,R1
+    if ((obj->flags & O_LIST_M) == O_LIST3) {
+        list_link = &OACTIVE_PRIORITY;
+    }
 DELLP:
     // asm 00007151: LDI	R1,AR1		;WE MUST FIND DEAD OBJECT TO LINK AROUND
     // asm 00007152: 	LDI	*AR1,R1
     // asm 00007153: 	ERRON	Z,EC_OBJ|ET_DELETE
     // asm 0000715B: 	BZ	DELOBJX
+    if (*list_link == NULL) {
+        ERRON(EC_OBJ | ET_DELETE);
+        goto DELOBJX;
+    }
     // asm 0000715C: 	CMPI	R1,AR2
     // asm 0000715D: 	BNE	DELLP
+    if (*list_link != obj) {
+        list_link = &(*list_link)->link;
+        goto DELLP;
+    }
     // asm 0000715E: 	LDI	*AR2,R1
     // asm 0000715F: 	STI	R1,*AR1			;LINK AROUND
+    *list_link = obj->link;
     // asm 00007160: 	LDI	@OFREE,R1
     // asm 00007161: 	STI	R1,*AR2
     // asm 00007162: 	STI	AR2,@OFREE
+    obj->link = OFREE;
+    OFREE = obj;
     // asm 00007163: 	LDI	@OFREECNT,R0		;INCREMENT FREE OBJECT COUNT
     // asm 00007164: 	ADDI	1,R0
     // asm 00007165: 	STI	R0,@OFREECNT
+    OFREECNT += 1;
     // asm 00007166: 	CLRI	R0
     // asm 00007167: 	STI	R0,*+AR2(OLINK2)	;CLEAR SEARCH ID
+    obj->link2 = 0;
     // asm 00007168: 	STI	R0,*+AR2(OFLAGS)
+    obj->flags = 0;
 DELOBJX:
     // asm 00007169: 	POP	AR2
     // asm 0000716A: 	POP	AR1
     // asm 0000716B: 	POP	R1
     // asm 0000716C: 	POP	R0
     // asm 0000716D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_DELETE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

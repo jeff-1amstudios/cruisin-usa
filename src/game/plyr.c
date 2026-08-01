@@ -48,7 +48,7 @@ void GETRPM(CARBLK* carblk /*AR5*/);
 static void GETSKID(CARBLK* carblk /*AR5*/);
 static void CKOFRD(void);
 static c3x_reg_t GETDIR(c3x_reg_t steering_delta /*R0*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-static void CARSPIN(void);
+static c3x_reg_t CARSPIN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, int spin_state /*R1*/);
 static void GETCARROT(void);
 void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void GETBRAKE(void);
@@ -81,10 +81,10 @@ static void PLYRWHL(void);
 static void PLYR_SNDS(void);
 void MKFXSND(void);
 static void MKVFXSND(void);
-void RANDSND(void);
-void RANDVSND(void);
-void DRONESND(void);
-void DRONESND1(void);
+void RANDSND(const int* sounds /*AR2*/, int range /*R0*/);
+void RANDVSND(const int* sounds /*AR2*/, int range /*R0*/, int volume /*R1*/);
+void DRONESND(OBJ* obj /*AR4*/, const int* sounds /*AR2*/, int range /*R0*/);
+void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/);
 void GETCMOS_VALUES(void);
 static void CAMMATSAV(void);
 static void CAMMATAVG(void);
@@ -114,8 +114,8 @@ static c3x_reg_t AHEAD;
 static c3x_reg_t CATCHUP;
 static c3x_reg_t DISTCON;
 static c3x_reg_t SPDCON;
-static c3x_f32_t GEARACTAB[5];
-static c3x_f32_t ENGACTAB[20];
+c3x_f32_t GEARACTAB[5];
+c3x_f32_t ENGACTAB[20];
 
 /*
  *----------------------------------------------------------------------------
@@ -235,10 +235,10 @@ static c3x_reg_t SPINFRICI = C3X_INIT(0.015f, 0xF975C28F5Cull);
  *NEWSTD	.float	0.82,0.90,0.0028,0.0060
  */
 static tCARPARAM CARPARAMTAB[] = {
-    { C3X_F32_INIT(0.91f), C3X_F32_INIT(0.60f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.010f) }, // ALL AROUND
+    { C3X_F32_INIT(0.91f), C3X_F32_INIT(0.60f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.010f) },  // ALL AROUND
     { C3X_F32_INIT(0.98f), C3X_F32_INIT(0.50f), C3X_F32_INIT(0.0032f), C3X_F32_INIT(0.0042f) }, // ACCEL
-    { C3X_F32_INIT(0.88f), C3X_F32_INIT(0.70f), C3X_F32_INIT(0.0026f), C3X_F32_INIT(0.010f) }, // TOP SPEED
-    { C3X_F32_INIT(0.89f), C3X_F32_INIT(0.50f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.010f) }, // HANDLING
+    { C3X_F32_INIT(0.88f), C3X_F32_INIT(0.70f), C3X_F32_INIT(0.0026f), C3X_F32_INIT(0.010f) },  // TOP SPEED
+    { C3X_F32_INIT(0.89f), C3X_F32_INIT(0.50f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.010f) },  // HANDLING
     { C3X_F32_INIT(0.95f), C3X_F32_INIT(0.60f), C3X_F32_INIT(0.0030f), C3X_F32_INIT(0.0039f) },
     { C3X_F32_INIT(0.89f), C3X_F32_INIT(0.50f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.010f) },
     { C3X_F32_INIT(0.91f), C3X_F32_INIT(0.65f), C3X_F32_INIT(0.0028f), C3X_F32_INIT(0.0050f) },
@@ -419,8 +419,8 @@ CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/) {
     // asm 00002967: 	LDF	@OFRDFRICI,R0
     // asm 00002968: 	STF	R0,*+AR0(CAROFRDFR)
     // FRICTION COEFFICIENTS
-    car->road_friction =C3X_STF(ROADFRICI);
-    car->offroad_friction =C3X_STF(OFRDFRICI);
+    car->road_friction = C3X_STF(ROADFRICI);
+    car->offroad_friction = C3X_STF(OFRDFRICI);
 
     // asm 00002969: 	LDF	0.82,R0
     // asm 0000296A: 	STF	R0,*+AR0(CARMAXACCEL)	;SET ACCEL POWER
@@ -428,8 +428,8 @@ CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/) {
     // asm 0000296C: 	STF	R0,*+AR0(CARMASS)	;DEFAULT CAR MASS
     // asm 0000296D: 	STF	R0,*+AR0(CARTRACTION)	;DEFAULT TRACTION COEFFICIENT
     car->max_accel = C3X_STF(C3X_LOAD(0xFF1EB852u)); // SET ACCEL POWER
-    car->mass =C3X_STF(C3X_FROM_INT(1));     // DEFAULT CAR MASS
-    car->traction =C3X_STF(C3X_FROM_INT(1)); // DEFAULT TRACTION COEFFICIENT
+    car->mass = C3X_STF(C3X_FROM_INT(1));            // DEFAULT CAR MASS
+    car->traction = C3X_STF(C3X_FROM_INT(1));        // DEFAULT TRACTION COEFFICIENT
 
     // asm 0000296E: 	LDI	1,R0
     // asm 0000296F: 	LS	O_3DROT_B,R0
@@ -1408,7 +1408,7 @@ void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta 
     forward_vector.X = C3X_STF(C3X_FROM_INT(0));
     forward_vector.Y = C3X_STF(C3X_FROM_INT(0));
     forward_vector.Z = C3X_STF(C3X_REG(carblk->dist));
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002C32, "R2", &carblk->dist, 5);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002C32, "R2", &carblk->dist, 4);
     // asm 00002C32: 	LDI	@MATRIXBI,AR2
     // asm 00002C33: 	LDI	*+AR5(CAR_AIRB),R0
     // asm 00002C34: 	BNZ	DAIRB	    		;WERE FLYING
@@ -1590,8 +1590,8 @@ void GETRPM(CARBLK* carblk /*AR5*/) {
     MAME_ASSERT_REG_FLOAT(0x00002C96, "R0", &rpm_x100);
     // asm 00002C96: 	CMPF	NUM_RPM,R0		;LIMIT TO RANGE
     // asm 00002C97: 	LDFGT	NUM_RPM,R0
-    if (C3X_GT(rpm_x100, C3X_FROM_INT((int)NUM_RPM))) {
-        rpm_x100 = C3X_FROM_INT((int)NUM_RPM);
+    if (C3X_GT(rpm_x100, C3X_IMM_F32(NUM_RPM))) {
+        rpm_x100 = C3X_IMM_F32(NUM_RPM);
     }
     // asm 00002C98: 	CMPI	0,R0
     // asm 00002C99: 	LDILT	0,R0
@@ -1640,7 +1640,7 @@ GETSK00:
     // asm 00002CA3: 	LDF	*+AR5(CARRPM),R0
     // asm 00002CA4: 	CMPF	OVERREV,R0 		;OVERREV:
     // asm 00002CA5: 	BLT	GETSK0
-    if (C3X_LT(carblk->rpm_x100, C3X_FROM_INT((int)OVERREV))) {
+    if (C3X_LT(carblk->rpm_x100, C3X_IMM_F32(OVERREV))) {
         goto GETSK0;
     }
     // asm 00002CA6:        	LDF	0.80,R0			;YES DO A SKID
@@ -1816,7 +1816,6 @@ static c3x_reg_t GETDIR(c3x_reg_t steering_delta /*R0*/, OBJ* obj /*AR4*/, CARBL
     c3x_reg_t skid_factor;
     c3x_reg_t grip_factor;
 
-    (void)obj;
     // asm 00002CEB: 	LDI	*+AR5(CAR_AIRF),R1
     // asm 00002CEC: 	BZ	GETDIR1
     if (carblk->front_airborne == 0) {
@@ -1834,8 +1833,7 @@ GETDIR1:
     // asm 00002CF1: 	LDI	*+AR5(CAR_SPIN),R1	;CHECK SPINOUT...
     // asm 00002CF2: 	BNZ	CARSPIN
     if (carblk->spin_flag != 0) {
-        CARSPIN();
-        return C3X_FROM_INT(0);
+        return CARSPIN(obj, carblk, carblk->spin_flag);
     }
     // *GET SKID FACTOR
     // asm 00002CF3: 	LDF	*+AR5(CARSKID),R4	;R4=SKID FACTOR
@@ -1858,7 +1856,7 @@ GETDIR1:
     // asm 00002CFB: 	SUBF	R3,R1,R2		;ROTATIONAL DIFFERENCE
     rotational_difference = C3X_SUB(body_rotation, velocity_rotation);
     // asm 00002CFC: 	CALL	NORMITS			;NORMALIZE DIFFERENCE
-    rotational_difference = NORMIT(rotational_difference);
+    rotational_difference = NORMITS(rotational_difference);
     // *GET RECOVERY FACTOR
     // asm 00002CFD: 	MPYF	0.095,R2
     rotational_difference = C3X_MUL(rotational_difference, C3X_IMM_F32(0.095f));
@@ -1907,78 +1905,157 @@ GETDIR2:
     return steering_delta;
 }
 
-static void CARSPIN(void) {
+static c3x_reg_t CARSPIN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, int spin_state /*R1*/) {
+    int frame_count;
+    c3x_reg_t rotation_delta;
+    c3x_reg_t body_rotation;
+    c3x_reg_t remaining_rotation;
+    c3x_reg_t road_direction;
+    c3x_reg_t difference;
+
     // asm 00002D10: 	LDI	@NFRAMES,AR3
+    frame_count = NFRAMES;
     // asm 00002D11: 	SUBI	1,AR3			;CUT DOWN COUNT
+    frame_count -= 1;
+    MAME_ASSERT_REG(0x00002D12, "AR3", &frame_count);
+    MAME_ASSERT_REG(0x00002D12, "R1", &spin_state);
     // asm 00002D12: 	CMPI	2,R1 			;TIMED SPIN?
     // asm 00002D13: 	BLT	SPINL0			;NO...
+    if (spin_state < 2) {
+        goto SPINL0;
+    }
     // *TIMED SPIN
     // asm 00002D14: 	SUBI	1,R1			;DECREMENT TIME
+    spin_state -= 1;
     // asm 00002D15: 	SUBI	AR3,R1
+    spin_state -= frame_count;
+    MAME_ASSERT_REG(0x00002D16, "R1", &spin_state);
     // asm 00002D16: 	CMPI	2,R1
     // asm 00002D17: 	BLE	SPINREC			;TIMES UP RECOVER
+    if (spin_state <= 2) {
+        goto SPINREC;
+    }
     // asm 00002D18: 	STI	R1,*+AR5(CAR_SPIN)
+    carblk->spin_flag = spin_state;
     // asm 00002D19: 	LDF	*+AR5(CARDROT),R1	;ROTATE THE DUDE
+    body_rotation = C3X_LDF(carblk->last_y_rotation);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002D1A, "R1", &body_rotation, 5);
     // asm 00002D1A: 	ADDF	*+AR5(CARYROT),R1
+    body_rotation = C3X_ADD(body_rotation, carblk->y_rotation);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002D1B, "R1", &body_rotation, 5);
     // asm 00002D1B: 	STF	R1,*+AR5(CARYROT)	;BODY DIRECTION
+    carblk->y_rotation = C3X_STF(body_rotation);
     // asm 00002D1C:       	B	SPINLX
+    goto SPINLX;
     // *ANGULAR SPIN
 SPINL0:
     // asm 00002D1D: 	LDF	*+AR5(CARDROT),R1	;ROTATE THE DUDE
+    rotation_delta = C3X_LDF(carblk->last_y_rotation);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002D1E, "R1", &rotation_delta, 5);
     // asm 00002D1E: 	LDF	*+AR5(CARYROT),R2  	;VELOCITY ROTATION
+    body_rotation = C3X_LDF(carblk->y_rotation);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002D1F, "R2", &body_rotation, 5);
     // asm 00002D1F: 	ADDF	R1,R2,R3
+    body_rotation = C3X_ADD(body_rotation, rotation_delta);
     // asm 00002D20: 	STF	R3,*+AR5(CARYROT)	;BODY DIRECTION
+    carblk->y_rotation = C3X_STF(body_rotation);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002D21, "R3", &body_rotation, 5);
     // asm 00002D21: 	ABSF	R1,R3
+    remaining_rotation = C3X_ABS(rotation_delta);
     // asm 00002D22: 	SUBRF	*+AR5(CARSPRAD),R3	;READY FOR RECOVERY?
+    remaining_rotation = C3X_SUB(C3X_LDF(carblk->spin_radians), remaining_rotation);
     // asm 00002D23: 	STF	R3,*+AR5(CARSPRAD)
+    carblk->spin_radians = C3X_STF(remaining_rotation);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002D24, "R3", &remaining_rotation, 5);
     // asm 00002D24: 	BNN	SPINL			;SPIN NOT OVER YET...
+    if (C3X_GE(remaining_rotation, C3X_IMM_F32(0))) {
+        goto SPINL;
+    }
     // asm 00002D25: 	CALL	ROADIR			;GET NEAREST TRACK PIECE ANGLE IN R0
+    road_direction = ROADIR(OBJREF_TO_PTR(carblk->closest_track_piece));
     // *CHECK FOR DRONE
     // asm 00002D26: 	LDI	*+AR4(OID),R1
     // asm 00002D27: 	AND	CLASS_M+SUBTYPE_M,R1
     // asm 00002D28: 	CMPI	DRONE_C+DRNE_RHO,R1
     // asm 00002D29: 	BNE	REGSPIN
+    if ((obj->id & (CLASS_M | SUBTYPE_M)) != (DRONE_C | DRNE_RHO)) {
+        goto REGSPIN;
+    }
     // asm 00002D2A: 	LDI	*+AR4(OID),R1
     // asm 00002D2B: 	AND	TYPE_M,R1
     // asm 00002D2C: 	CMPI	DEAD_VEH_T,R1		;CHECK FOR DEAD DRONE
     // asm 00002D2D: 	BNE	DRONESPIN      		;NOT DEAD
+    if ((obj->id & TYPE_M) != DEAD_VEH_T) {
+        goto DRONESPIN;
+    }
     // asm 00002D2E: 	LDF	*+AR5(CARDROT),R0	;DECAY SPIN FOR DEAD GUY...
+    rotation_delta = C3X_LDF(carblk->last_y_rotation);
     // asm 00002D2F: 	MPYF	0.98,R0
+    rotation_delta = C3X_MUL(rotation_delta, C3X_IMM_F32(0.98));
     // asm 00002D30: 	ABSF	R0,R1
+    difference = C3X_ABS(rotation_delta);
     // asm 00002D31: 	CMPF	0.04,R1
     // asm 00002D32: 	LDFLT	0,R0
+    if (C3X_LT(difference, C3X_IMM_F32(0.04))) {
+        rotation_delta = C3X_IMM_F32(0);
+    }
     // asm 00002D33: 	STF	R0,*+AR5(CARDROT)
+    carblk->last_y_rotation = C3X_STF(rotation_delta);
     // asm 00002D34: 	B	SPINL
+    goto SPINL;
 DRONESPIN:
     // asm 00002D35: 	ADDF	3.14,R0			;ADJUST FOR TRAFFIC GOING AGAINST ROAD
+    road_direction = C3X_ADD(road_direction, C3X_IMM_F32(3.14));
 REGSPIN:
     // asm 00002D36: 	LDF	R0,R2
+    difference = road_direction;
     // asm 00002D37: 	SUBF	*+AR5(CARYROT),R2  	;VELOCITY ROTATION
+    difference = C3X_SUB(difference, carblk->y_rotation);
     // asm 00002D38: 	CALL 	NORMITS			;NORMALIZE DIFFERENCE
+    difference = NORMITS(difference);
     // asm 00002D39: 	ABSF	R2
+    difference = C3X_ABS(difference);
     // asm 00002D3A: 	CMPF	0.2,R2			;ROTATIONS CLOSE?
     // asm 00002D3B: 	BLT	SPINREC0		;DO THE RECOVERY...
+    if (C3X_LT(difference, C3X_IMM_F32(0.2))) {
+        goto SPINREC0;
+    }
 SPINL:
     // asm 00002D3C: 	DB	AR3,SPINL0
+    frame_count -= 1;
+    if (frame_count >= 0) {
+        goto SPINL0;
+    }
 SPINLX:
     // asm 00002D3D: 	LDF	0,R0			;NO STEERING SPIN
+    road_direction = C3X_IMM_F32(0);
     // asm 00002D3E: 	RETS
+    return road_direction;
     // *RECOVER FROM SPIN DUDE
 SPINREC0:
     // asm 00002D3F: 	STF	R0,*+AR5(CARYROT)	;LOAD ROAD DIRECTION
+    carblk->y_rotation = C3X_STF(road_direction);
 SPINREC:
     // asm 00002D40: 	LDF	*+AR5(CARYROT),R2
+    body_rotation = C3X_LDF(carblk->y_rotation);
     // asm 00002D41: 	CALL 	NORMIT
+    body_rotation = NORMIT(body_rotation);
     // asm 00002D42: 	STF	R2,*+AR5(CARYROT)	;BODY DIRECTION
+    carblk->y_rotation = C3X_STF(body_rotation);
     // asm 00002D43: 	STF	R2,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(body_rotation);
     // asm 00002D44: 	LDI	0,R2
+    spin_state = 0;
     // asm 00002D45: 	STI	R2,*+AR5(CAR_SPIN)  	;CLEAR SPIN FLAG
+    carblk->spin_flag = spin_state;
     // asm 00002D46: 	LDF	0,R0
+    road_direction = C3X_IMM_F32(0);
     // asm 00002D47: 	STF	R0,*+AR5(CARSPRAD)     	;CLEAR SPIN RADIANS
+    carblk->spin_radians = C3X_STF(road_direction);
     // asm 00002D48: 	STF	R0,*+AR5(CARDROT)	;BODY DELTA
+    carblk->last_y_rotation = C3X_STF(road_direction);
     // asm 00002D49: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARSPIN", 0, 0);
-    UNIMPL();
+    return road_direction;
 }
 
 /*
@@ -2028,7 +2105,7 @@ GETC1:
 #define GEARACTABI GEARACTAB
 /* asm: GEARACTAB */
 /* asm: 	.float	0.0,1.7,1.5,1.4,1.2  		;POWER FACTOR GEAR(0-4) */
-static c3x_f32_t GEARACTAB[] = {
+c3x_f32_t GEARACTAB[] = {
     C3X_F32_INIT(0.0f),
     C3X_F32_INIT(1.7f),
     C3X_F32_INIT(1.5f),
@@ -2043,7 +2120,7 @@ static c3x_f32_t GEARACTAB[] = {
 /* asm: 	.float	1.00,1.00,1.00,1.00,0.90	;3000,3300,3600,3900,4200 */
 /* asm: 	.float	0.80,0.40,0.20,0.00,0.00	;4500,4800,5100,5400,5700 */
 /* asm: 	 */
-static c3x_f32_t ENGACTAB[] = {
+c3x_f32_t ENGACTAB[] = {
     C3X_F32_INIT(1.20f),
     C3X_F32_INIT(1.20f),
     C3X_F32_INIT(0.50f),
@@ -2068,7 +2145,7 @@ static c3x_f32_t ENGACTAB[] = {
 // *ENGINE FRICTION
 /* asm: ENGFR  	.float	0.000,0.005,0.003,0.001,0.000  	;GEAR(0-4) ENGINE FRICTION */
 /* asm: 	 */
-static c3x_f32_t ENGFR[] = {
+c3x_f32_t ENGFR[] = {
     C3X_F32_INIT(0.000f),
     C3X_F32_INIT(0.005f),
     C3X_F32_INIT(0.003f),
@@ -2393,7 +2470,7 @@ GETSPD2:
     // asm 00002DFE: 	SUBI	1,RC
     frames -= 1;
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R0", &accel, 5);
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R1", &speed, 5);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R1", &speed, 4);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R3", &friction, 5);
     // *R0=ACCEL
     // *R1=SPEED
@@ -2424,13 +2501,13 @@ GETSPD2:
     }
     // asm 00002E08: 	MPYF	1.5,R5			;SPEEDFUDGE
     speed_distance = C3X_MUL(speed_distance, C3X_IMM_F32(1.5));
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E09, "R1", &speed, 5);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E09, "R1", &speed, 4);
     // asm 00002E09: 	STF	R5,*+AR5(CARDIST)	;SAVE YOUR DISTANCE
-    carblk->dist =C3X_STF(speed_distance);
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E09, "R5", &speed_distance, 5);
+    carblk->dist = C3X_STF(speed_distance);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E09, "R5", &speed_distance, 4);
     // asm 00002E0A: 	STF	R1,*+AR5(CARSPEED)	;NEW SPEED
-    carblk->speed =C3X_STF(speed);
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E0A, "R1", &speed, 5);
+    carblk->speed = C3X_STF(speed);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E0A, "R1", &speed, 4);
     // asm 00002E0B: 	RETS
     // *
     // *GET BRAKE PEDAL
@@ -2872,8 +2949,8 @@ GETRK:
     // asm 00002F0C: 	CMPF	R1,R2
     // asm 00002F0D: 	LDIGT	AR2,AR0
     // asm 00002F0E: 	LDFGT	R1,R2
-    dx = C3X_SUB(obj->pos.X, track_obj->pos.X);
-    dz = C3X_SUB(obj->pos.Z, track_obj->pos.Z);
+    dx = C3X_SUB(C3X_LDF(obj->pos.X), C3X_LDF(track_obj->pos.X));
+    dz = C3X_SUB(C3X_LDF(obj->pos.Z), C3X_LDF(track_obj->pos.Z));
     dist2 = C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz));
     if (C3X_LT(dist2, closest_dist2)) {
         closest_track_obj = track_obj;
@@ -3417,7 +3494,7 @@ ROADIRX:
     // asm 00003049: RETS
     return C3X_SUB(
         ARCTANF(C3X_SUB(next_track_obj->pos.X, track_obj->pos.X), C3X_SUB(next_track_obj->pos.Z, track_obj->pos.Z)),
-        HALFPII);
+        C3X_IMM_F32(HALFPI));
 }
 
 // *----------------------------------------------------------------------------
@@ -3818,14 +3895,17 @@ MKVFX1:
  *	AR2	TABLE ADDR	OF SOUNDS
  *TRASHED R0
  */
-void RANDSND(void) {
+void RANDSND(const int* sounds /*AR2*/, int range /*R0*/) {
     // asm 00003159: 	PUSH	AR2
     // asm 0000315A: 	LDI	R0,AR2
     // asm 0000315B: 	CALL	RANDU0
+    range = RANDU0(range);
     // asm 0000315C: 	POP	AR2
     // asm 0000315D: 	ADDI	R0,AR2
     // asm 0000315E: 	LDI	*AR2,AR2
+    range = sounds[range];
     // asm 0000315F: 	B	ONESNDFX
+    ONESNDFX(range);
     // *RANDOM VOLUME SOUND ROUTINE
     // *PARAMETERS
     // *	R0	RANDOM RANGE (0->R0-1)
@@ -3833,19 +3913,20 @@ void RANDSND(void) {
     // *	AR2	TABLE ADDR	OF SOUNDS
     // *TRASHED R0,AR2
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDSND", 0, 0);
-    UNIMPL();
 }
 
-void RANDVSND(void) {
+void RANDVSND(const int* sounds /*AR2*/, int range /*R0*/, int volume /*R1*/) {
     // asm 00003160: 	PUSH	AR2
     // asm 00003161: 	LDI	R0,AR2
     // asm 00003162: 	CALL	RANDU0
+    range = RANDU0(range);
     // asm 00003163: 	POP	AR2
     // asm 00003164: 	ADDI	R0,AR2
     // asm 00003165: 	LDI	*AR2,AR2
+    range = sounds[range];
     // asm 00003166: 	LDI	R1,R0
     // asm 00003167: 	B	VOLSNDFX     		;R0=VOLUME, AR2=SOUND
+    VOLSNDFX(range, volume);
     // *DRONE SOUND ROUTINE
     // *PARAMETERS
     // *	R0	RANDOM RANGE (0->R0-1)
@@ -3854,39 +3935,60 @@ void RANDVSND(void) {
     // *COMPUTES VOLUME BASED ON DISTANCE
     // *TRASHED R0
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RANDVSND", 0, 0);
-    UNIMPL();
 }
 
-void DRONESND(void) {
+void DRONESND(OBJ* obj /*AR4*/, const int* sounds /*AR2*/, int range /*R0*/) {
     // asm 00003168: 	PUSH	AR2
     // asm 00003169: 	LDI	R0,AR2
     // asm 0000316A: 	CALL	RANDU0
+    range = RANDU0(range);
     // asm 0000316B: 	POP	AR2
     // asm 0000316C: 	ADDI	R0,AR2
     // asm 0000316D: 	LDI	*AR2,AR2
+    range = sounds[range];
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESND", 0, 0);
-    UNIMPL();
+    DRONESND1(obj, range);
 }
 
-void DRONESND1(void) {
+void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/) {
+    c3x_reg_t distance;
+    c3x_reg_t volume_factor;
+    int volume;
+
     // asm 0000316E: 	FLOAT	*+AR4(ODIST),R0
+    distance = C3X_FROM_INT(obj->dist);
     // asm 0000316F: 	RETSN				;BEHIND PLAYER NO SOUND
+    if (C3X_LT(distance, C3X_FROM_INT(0))) {
+        return; // BEHIND PLAYER NO SOUND
+    }
     // asm 00003170: 	FLOAT	10000,R1
+    MAME_ASSERT_REG_FLOAT(0x00003170, "R0", &distance);
+    volume_factor = C3X_FROM_INT(10000);
     // asm 00003171: 	MPYF	5,R1
+    volume_factor = C3X_MUL(volume_factor, C3X_IMM_F32(5));
     // asm 00003172: 	CALL	DIV_F
+    volume_factor = DIV_F(distance, volume_factor);
     // asm 00003173: 	SUBRF	1,R0
+    volume_factor = C3X_SUB(C3X_IMM_F32(1), volume_factor);
     // asm 00003174: 	RETSN
+    if (C3X_LT(volume_factor, C3X_FROM_INT(0))) {
+        return;
+    }
     // asm 00003175: 	FLOAT	220,R1
     // asm 00003176: 	MPYF	R1,R0
+    volume_factor = C3X_MUL(C3X_FROM_INT(220), volume_factor);
     // asm 00003177: 	FIX	R0
+    volume = FIX(volume_factor);
     // asm 00003178: 	CMPI	220,R0
     // asm 00003179: 	LDIGT	220,R0
+    if (volume > 220) {
+        volume = 220;
+    }
     // asm 0000317A: 	B	VOLSNDFX     		;R0=VOLUME, AR2=SOUND
+    MAME_ASSERT_REG(0x0000317A, "R0", &volume);
+    MAME_ASSERT_REG(0x0000317A, "AR2", &sound_index);
+    VOLSNDFX(sound_index, volume); // R0=VOLUME, AR2=SOUND
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONESND1", 0, 0);
-    UNIMPL();
 }
 
 /*

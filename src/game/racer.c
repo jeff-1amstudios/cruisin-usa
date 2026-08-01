@@ -30,20 +30,20 @@ extern VECTOR _VECTORB;
 void DIFF_CHANGE(void);
 static c3x_reg_t GETDIFF(void);
 void RACER_DRONE(PROC* p);
-static void RACE_FIN(void);
+static void RACE_FIN(PROC* p /*AR7*/);
 static void CKPCOL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-static void HI_STEALTH(int stealthmode);
-static void CKTRANSLO(void);
-static void CKTRANSHI(void);
-static void CKRANGE(void);
+static void CKTRANSLO(PROC* p /*AR7*/);
+static void CKTRANSHI(PROC* p /*AR7*/);
+static int CKRANGE(PROC* p /*AR7*/);
 int COMPTRAK(void);
-static void SEND_RACER_XSFER(void);
+static void SEND_RACER_XSFER(PROC* p /*AR7*/);
 void DECODE_RACER_XSFER(void);
 static void ACTIVE_XSFER(void);
+static int STEALTH_UPDATE(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void GETPOWER(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static c3x_reg_t GETSTSPD(PROC* p /*AR7*/, CARBLK* carblk /*AR5*/);
-void FIND_DYNA(void);
-static LEG* FIND_MAP(PROC* p /*AR7*/, int coded_id /*R2*/);
+OBJ* FIND_DYNA(int coded_id /*R2*/);
+static LEG_PAYLOAD* FIND_MAP(PROC* p /*AR7*/, int coded_id /*R2*/);
 int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void CARSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void PLSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
@@ -57,7 +57,7 @@ c3x_reg_t SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/
 void WRECKST(void);
 void WRECK(void);
 
-void OM_DRONE(void);
+void OM_DRONE(PROC* p);
 void SEND_RACER_POS(void);
 extern int WRECKFLG;
 void GETFLYMAT(void);
@@ -300,6 +300,12 @@ void RACER_DRONE(PROC* p) {
         break;
     case 1:
         goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
     }
 
     // asm 000050F0: 	LDF	0,R0
@@ -499,7 +505,7 @@ NOOTHERPAL:
         other_machine_controls ^= ((rank >> 1) & 1);
         carblk->other_machine_controls = other_machine_controls;
         if (other_machine_controls != 0) {
-            OM_DRONE();
+            OM_DRONE(p);
             return;
         }
     }
@@ -527,7 +533,10 @@ RACE_ON:
     // asm 00005169: 	CALLGE	RACE_FIN
     tracking_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     if (((int)tracking_obj->usr1 >> 8) >= FINISH_ID) {
-        RACE_FIN();
+        RACE_FIN(p);
+        if (p->func != RACER_DRONE) {
+            return;
+        }
     }
     // asm 0000516A: 	CALL	RPASS	 			;CHECK FOR PASSING SOUND
     RPASS(p, obj, carblk);
@@ -546,15 +555,13 @@ CKSTEALTH:
     // asm 00005172: 	CMPI	R0,R2
     // asm 00005173: 	BLT	LO_STEALTH
     if (p->ctx->RACER_DRONE.delta_last_oid < (int)tracking_obj->usr1) {
-        HI_STEALTH(-1);
-        return;
+        goto LO_STEALTH;
     }
     // asm 00005174: 	CMPI	R1,R2				;LAST REAL SEGMENT
     // asm 00005175: 	BGE	HI_STEALTH
     tracking_obj = (OBJ*)(uintptr_t)DYNALIST_END;
     if (p->ctx->RACER_DRONE.delta_last_oid >= (int)tracking_obj->usr1) {
-        HI_STEALTH(1);
-        return;
+        goto HI_STEALTH;
     }
     // *CHECK DISTANCE TO TRACKING PIECE
     // asm 00005176: 	LDI	*+AR7(DELTA_TPIECE),AR2		;Get tracking piece
@@ -602,8 +609,7 @@ NUTRACK:
     next_tracking_obj = (OBJ*)tracking_obj->link4;
     // asm 0000518E: 	BZ	HI_STEALTH
     if (next_tracking_obj == NULL) {
-        HI_STEALTH(1);
-        return;
+        goto HI_STEALTH;
     }
     // asm 0000518F: 	STI	R0,*+AR7(DELTA_TPIECE)		;save ptr
     p->ctx->RACER_DRONE.delta_tpiece = next_tracking_obj;
@@ -658,7 +664,7 @@ ROADTRAK1:
     // asm 000051AB: 	SUBF	HALFPI,R0
     desired_theta = C3X_SUB(
         ARCTANF(C3X_SUB(next_tracking_obj->pos.X, tracking_obj->pos.X), C3X_SUB(next_tracking_obj->pos.Z, tracking_obj->pos.Z)),
-        HALFPII);
+        C3X_IMM_F32(HALFPI));
     // asm 000051AC: 	LDF	R0,R2		      	;FIND THETA
     // asm 000051AD: 	CALL	_SINE
     // asm 000051AE: 	LDF	R0,R1
@@ -685,7 +691,7 @@ ROADTRAK1:
     // *GET XZ ANGLE TO GOAL
     // asm 000051B7: 	CALL	ARCTANF
     // asm 000051B8: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
-    desired_theta = C3X_SUB(ARCTANF(delta_x, delta_z), HALFPII);
+    desired_theta = C3X_SUB(ARCTANF(delta_x, delta_z), C3X_IMM_F32(HALFPI));
     // asm 000051B9:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 000051BA: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
     current_theta = C3X_LDF(obj->rad.Y);
@@ -782,70 +788,299 @@ NOTLINKED4:
     carblk = p->ctx->RACER_DRONE.carblk;
     // asm 000051E6: 	B	RACER_LP
     goto RACER_LP;
+
+    // *
+    // *ENTER DISTANT STEALTH MODE
+    // *
+HI_STEALTH:
+    // asm 0000522D: 	LDI	1,R0
+    // asm 0000522E: 	STI	R0,*+AR7(STEALTHMODE)		;HI STEALTH FLAG
+    p->ctx->RACER_DRONE.stealthmode = 1;
+    MAME_ASSERT_REG(0x0000522F, "R0", &p->ctx->RACER_DRONE.stealthmode);
+    // asm 0000522F: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GRAB THE LAST KNOWN VALID OID
+    // asm 00005230: 	CALL	FIND_MAP			;*+AR7(DELTA_SPTR),*+AR7(DELTA_LAST_OID)
+    FIND_MAP(p, p->ctx->RACER_DRONE.delta_last_oid);
+    // asm 00005231: 	LDI	*+AR4(OFLAGS),R0
+    // asm 00005232: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
+    // asm 00005233: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_NOCOLL; // SET NON COLLIDE FLAG
+HI_STLP:
+    // *CHECK FINISH LINE
+    // asm 00005234: 	LDI	*+AR7(DELTA_LAST_OID),R0	;CHECK TO SEE IF IT IS IN THE RANGE
+    // asm 00005235: 	LSH	-8,R0
+    // asm 00005236: 	CMPI	@FINISH_ID,R0
+    // asm 00005237: 	CALLGE	RACE_FIN
+    if ((p->ctx->RACER_DRONE.delta_last_oid >> 8) >= FINISH_ID) {
+        RACE_FIN(p);
+        if (p->func != RACER_DRONE) {
+            return;
+        }
+    }
+    // *CHECK IF CURRENT SECTION ON TRACK LIST
+    // asm 00005238: 	LDI	@DYNALIST_END,AR2		;GET FURTHEST ROAD ID
+    // asm 00005239: 	LDI	*+AR2(OUSR1),R1
+    // asm 0000523A: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
+    // asm 0000523B: 	CMPI	R1,R2
+    // asm 0000523C: 	BLT	REENTER				;WERE OFF ACTIVE TRACK
+    if (DYNALIST_END != NULL &&
+        p->ctx->RACER_DRONE.delta_last_oid < (int)DYNALIST_END->usr1) {
+        goto REENTER;
+    }
+    // asm 0000523D: 	LDI	@HEAD2HEAD_ON,R0
+    // asm 0000523E: 	CALLNZ	CKTRANSHI
+    if (HEAD2HEAD_ON != 0) {
+        CKTRANSHI(p);
+    }
+    // asm 0000523F: 	CALL	STEALTH_UPDATE
+    if (!STEALTH_UPDATE(p, obj, carblk)) {
+        goto HI_ST_END;
+    }
+    // asm 00005240: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
+    // asm 00005241: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
+    if (HEAD2HEAD_ON != 0) {
+        SEND_RACER_POS();
+    }
+    // asm 00005242: 	SLEEP	1
+    SLEEP(1, 2);
+    obj = p->ctx->RACER_DRONE.obj;
+    carblk = p->ctx->RACER_DRONE.carblk;
+    // asm 00005244: 	B	HI_STLP
+    goto HI_STLP;
+HI_ST_END:
+    // asm 00005245: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
+    // asm 00005246: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
+    if (HEAD2HEAD_ON != 0) {
+        SEND_RACER_POS();
+    }
+    // ;	SLEEP	10
+    // asm 00005247: 	SLEEP	1
+    SLEEP(1, 3);
+    obj = p->ctx->RACER_DRONE.obj;
+    carblk = p->ctx->RACER_DRONE.carblk;
+    // asm 00005249: 	B	HI_ST_END
+    goto HI_ST_END;
+    // *
+    // *ENTER CLOSE STEALTH MODE
+    // *
+LO_STEALTH:
+    // asm 0000524A: 	LDI	-1,R0
+    // asm 0000524B: 	STI	R0,*+AR7(STEALTHMODE)		;LO STEALTH FLAG
+    p->ctx->RACER_DRONE.stealthmode = -1;
+    MAME_ASSERT_REG(0x0000524C, "R0", &p->ctx->RACER_DRONE.stealthmode);
+    // asm 0000524C: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GET POINTER TO STEALTH MAP
+    // asm 0000524D: 	CALL	FIND_MAP			;
+    FIND_MAP(p, p->ctx->RACER_DRONE.delta_last_oid);
+    // asm 0000524E: 	LDI	*+AR4(OFLAGS),R0
+    // asm 0000524F: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
+    // asm 00005250: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_NOCOLL; // SET NON COLLIDE FLAG
+LO_STLP:
+    // asm 00005251: 	LDI	@DYNALIST_TRUEBEGIN,AR2		;GET CLOSEST ROAD ID
+    // asm 00005252: 	LDI	*+AR2(OLINK4),AR2
+    // asm 00005253: 	LDI	*+AR2(OLINK4),AR2
+    // asm 00005254: 	LDI	*+AR2(OLINK4),AR2
+    tracking_obj = DYNALIST_TRUEBEGIN;
+    tracking_obj = tracking_obj != NULL ? (OBJ*)tracking_obj->link4 : NULL;
+    tracking_obj = tracking_obj != NULL ? (OBJ*)tracking_obj->link4 : NULL;
+    tracking_obj = tracking_obj != NULL ? (OBJ*)tracking_obj->link4 : NULL;
+    // asm 00005255: 	LDI	*+AR2(OUSR1),R0
+    // asm 00005256: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
+    // asm 00005257: 	CMPI	R0,R2
+    // asm 00005258: 	BGT	REENTER				;REENTER THE SYSTEM DUDES...
+    if (tracking_obj != NULL &&
+        p->ctx->RACER_DRONE.delta_last_oid > (int)tracking_obj->usr1) {
+        goto REENTER;
+    }
+    // asm 00005259: 	LDI	@HEAD2HEAD_ON,R0
+    // asm 0000525A: 	CALLNZ	CKTRANSLO
+    if (HEAD2HEAD_ON != 0) {
+        CKTRANSLO(p);
+    }
+    // asm 0000525B: 	CALL	STEALTH_UPDATE
+    if (!STEALTH_UPDATE(p, obj, carblk)) {
+        goto HI_ST_END;
+    }
+    // asm 0000525C: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
+    // asm 0000525D: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
+    if (HEAD2HEAD_ON != 0) {
+        SEND_RACER_POS();
+    }
+    // asm 0000525E: 	SLEEP	1
+    SLEEP(1, 4);
+    obj = p->ctx->RACER_DRONE.obj;
+    carblk = p->ctx->RACER_DRONE.carblk;
+    // asm 00005260: 	B	LO_STLP
+    goto LO_STLP;
+    // *
+    // *REENTER REGULAR SYSTEM
+    // *R2=OID OF SECTION BEING TRACKED
+    // *
+REENTER:
+    // asm 00005261: 	LDI	0,R0
+    // asm 00005262: 	STI	R0,*+AR7(STEALTHMODE)	;NO STEALTH INIT
+    p->ctx->RACER_DRONE.stealthmode = 0;
+    // asm 00005263: 	LDI	*+AR4(OFLAGS),R0
+    // asm 00005264: 	ANDN	O_NOCOLL,R0		;CLEAR NON-COLLIDE FLAG
+    // asm 00005265: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags &= ~O_NOCOLL; // CLEAR NON-COLLIDE FLAG
+    // asm 00005266: 	CALL	FIND_DYNA		;GET TRACKING PIECE POINTER
+    // asm 00005267: 	STI	AR2,*+AR7(DELTA_TPIECE)
+    tracking_obj = FIND_DYNA(p->ctx->RACER_DRONE.delta_last_oid);
+    if (tracking_obj == NULL) {
+        DIE();
+    }
+    p->ctx->RACER_DRONE.delta_tpiece = tracking_obj;
+    // asm 00005268: 	CALL	GETTRAK	      		;GET CLOSEST ROAD SECT ->AR0
+    GETTRAK(obj, carblk);
+    tracking_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
+    // asm 00005269: 	CALL	ROADIR			;GET RADIANS FOR ORIENTATION
+    // asm 0000526A: 	LDF	R0,R2
+    road_theta = ROADIR(tracking_obj);
+    // asm 0000526B: 	STF	R2,*+AR4(ORADY)
+    obj->rad.Y = C3X_STF(road_theta);
+    // asm 0000526C: 	STF	R2,*+AR5(CARYROT)
+    carblk->y_rotation = C3X_STF(road_theta);
+    // asm 0000526D: 	STF	R2,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(road_theta);
+    // asm 0000526E: 	LDF	0,R0
+    // asm 0000526F: 	STF	R0,*+AR5(CARDROT)	;CLEAN UP REENTRY
+    carblk->last_y_rotation = C3X_STF(C3X_IMM_F32(0)); // CLEAN UP REENTRY
+    // asm 00005270: 	STF	R0,*+AR5(CARSPRAD)
+    carblk->spin_radians = C3X_STF(C3X_IMM_F32(0));
+    // asm 00005271: 	STF	R0,*+AR5(CARSKID)
+    carblk->skid = C3X_STF(C3X_IMM_F32(0));
+    // asm 00005272: 	LDI	0,R0
+    // asm 00005273: 	STI	R0,*+AR5(CAR_SPIN)
+    carblk->spin_flag = 0;
+    // asm 00005274: 	LDI	AR4,AR2	  		;GET NEW MATRIX
+    // asm 00005275: 	ADDI	OMATRIX,AR2
+    // asm 00005276: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&obj->omatrix, road_theta);
+    // asm 00005277: 	FLOAT	1000,R0			;PUT DUDE DOWN INTO ROAD
+    speed = C3X_FROM_INT(1000);
+    // asm 00005278: 	ADDF	*+AR4(OPOSY),R0
+    speed = C3X_ADD(C3X_LDF(obj->pos.Y), speed);
+    // asm 00005279: 	B	RACER_LP
+    goto RACER_LP;
 }
 
-static void RACE_FIN(void) {
+static void RACE_FIN(PROC* p /*AR7*/) {
+    OBJ* obj;
+    CARBLK* carblk;
+    OBJ* track_obj;
+    c3x_reg_t finish_distance;
+    c3x_reg_t road_theta;
+
+    obj = p->ctx->RACER_DRONE.obj;
+    carblk = p->ctx->RACER_DRONE.carblk;
+    if (p->func == RACE_FIN) {
+        switch (p->resume_state) {
+        case 0:
+            break;
+        case 1:
+            goto PROC_RESUME_1;
+        }
+    }
+
     // asm 000051E7: 	LDF	*+AR7(FINISHDIST),R0
     // asm 000051E8: 	BNZ	RACFIN1
+    finish_distance = C3X_LDF(p->ctx->RACER_DRONE.finishdist);
+    if (C3X_NE(finish_distance, C3X_FROM_INT(0))) {
+        goto RACFIN1;
+    }
     // asm 000051E9: 	LDF	0.7,R0
     // asm 000051EA: 	CALL	SFRAND
     // asm 000051EB: 	STF	R0,*+AR7(FINISHROT)
+    p->ctx->RACER_DRONE.finishrot = C3X_STF(SFRAND(C3X_IMM_F32(0.7f)));
     // asm 000051EC: 	LDI	@FINISHNUM,R0
     // asm 000051ED: 	ADDI	1,R0
     // asm 000051EE: 	STI	R0,@FINISHNUM
+    FINISHNUM += 1;
     // asm 000051EF: 	SUBRI	10,R0
     // asm 000051F0: 	MPYI	2800,R0
     // asm 000051F1: 	ADDI	3500,R0
     // asm 000051F2: 	FLOAT	R0
+    finish_distance = C3X_FROM_INT((10 - FINISHNUM) * 2800 + 3500);
 RACFIN1:
     // asm 000051F3: 	LDF	*+AR5(CARSPEED),R2
     // asm 000051F4: 	FLOAT	@NFRAMES,R1
     // asm 000051F5: 	MPYF	R1,R2
     // asm 000051F6: 	SUBF	R2,R0
+    finish_distance = C3X_SUB(
+        finish_distance,
+        C3X_MUL(C3X_FROM_INT(NFRAMES), C3X_LDF(carblk->speed)));
     // asm 000051F7: 	STF	R0,*+AR7(FINISHDIST)
+    p->ctx->RACER_DRONE.finishdist = C3X_STF(finish_distance);
     // asm 000051F8: 	BLT	RACEDONE
     // asm 000051F9:    	RETS
+    if (C3X_GE(finish_distance, C3X_FROM_INT(0))) {
+        return;
+    }
 RACEDONE:
     // asm 000051FA: 	LDI	*+AR7(STEALTHMODE),R0		;CHECK STEALTH
     // asm 000051FB: 	BZ	RD0
+    if (p->ctx->RACER_DRONE.stealthmode == 0) {
+        goto RD0;
+    }
     // asm 000051FC:    	LDF	*+AR5(CARSPEED),R0
     // asm 000051FD: 	BZ	RD0
+    if (C3X_EQ(C3X_LDF(carblk->speed), C3X_FROM_INT(0))) {
+        goto RD0;
+    }
     // asm 000051FE: 	FLOAT	300,R0	      			;ONE TIME RANDOM ADD
     // asm 000051FF: 	CALL 	SFRAND
     // asm 00005200: 	ADDF	*+AR4(OPOSX),R0
     // asm 00005201: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), SFRAND(C3X_FROM_INT(300))));
     // asm 00005202: 	FLOAT	300,R0
     // asm 00005203: 	CALL 	SFRAND
     // asm 00005204: 	ADDF	*+AR4(OPOSZ),R0
     // asm 00005205: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), SFRAND(C3X_FROM_INT(300))));
 RD0:
     // asm 00005206: 	LDF	0,R0
     // asm 00005207: 	STF	R0,*+AR5(CARSPEED)
+    carblk->speed = C3X_STF(C3X_IMM_F32(0));
     // asm 00005208: 	STF	R0,*+AR5(CARMAXACCEL)
+    carblk->max_accel = C3X_STF(C3X_IMM_F32(0));
     // asm 00005209: 	LDI	*+AR7(STEALTHMODE),R0		;CHECK STEALTH
     // asm 0000520A: 	RETSNZ					;YES, KEEP WAITING
+    if (p->ctx->RACER_DRONE.stealthmode != 0) {
+        return;
+    }
     // asm 0000520B: 	POP	R0				;CAN CALL
     // asm 0000520C: 	LDI	*+AR4(OFLAGS),R0
     // asm 0000520D: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
     // asm 0000520E: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_NOCOLL; // SET NON COLLIDE FLAG
+    p->func = RACE_FIN;
 RDL:
     // asm 0000520F: 	CALL	GETTRAK
+    GETTRAK(obj, carblk);
+    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 00005210: 	CALL	ROADIR
     // asm 00005211: 	ADDF	*+AR7(FINISHROT),R0
     // asm 00005212: 	STF	R0,*+AR5(CARYROT)
+    road_theta = ROADIR(track_obj);
+    carblk->y_rotation = C3X_STF(C3X_ADD(road_theta, C3X_LDF(p->ctx->RACER_DRONE.finishrot)));
     // asm 00005213: 	CALL	DRONESTOP
+    DRONESTOP(obj, carblk);
     // asm 00005214: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 00005215: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
+    if (HEAD2HEAD_ON != 0) {
+        SEND_RACER_POS();
+    }
     // asm 00005216: 	SLEEP	1    			;JUST HANG THERE
+    SLEEP(1, 1);
+    obj = p->ctx->RACER_DRONE.obj;
+    carblk = p->ctx->RACER_DRONE.carblk;
     // ;	SLEEP	10    			;JUST HANG THERE
     // asm 00005218: 	B	RDL
+    goto RDL;
     // *
     // *CHECK PLAYER COLLISION
     // *AR4=DRONE CAR
     // *
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RACE_FIN", 0, 0);
-    UNIMPL();
 }
 
 static void CKPCOL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
@@ -880,7 +1115,6 @@ static void CKPCOL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00005221: 	MPYF	R7,R7,R2
     // asm 00005222: 	ADDF	R1,R2			;distance^2
     distance_sq = C3X_ADD(C3X_MUL(delta_x, delta_x), C3X_MUL(delta_z, delta_z));
-    MAME_ASSERT_REG_FLOAT(0x00005223, "R2", &distance_sq);
     // asm 00005223: 	FLOAT	3000,R0
     // asm 00005224: 	MPYF	R0,R0
     // asm 00005225: 	CMPF	R2,R0
@@ -906,139 +1140,63 @@ CKPX:
     // *
 }
 
-static void HI_STEALTH(int stealthmode) {
-    (void)stealthmode;
-    // asm 0000522D: 	LDI	1,R0
-    // asm 0000522E: 	STI	R0,*+AR7(STEALTHMODE)		;HI STEALTH FLAG
-    // asm 0000522F: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GRAB THE LAST KNOWN VALID OID
-    // asm 00005230: 	CALL	FIND_MAP			;*+AR7(DELTA_SPTR),*+AR7(DELTA_LAST_OID)
-    // asm 00005231: 	LDI	*+AR4(OFLAGS),R0
-    // asm 00005232: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
-    // asm 00005233: 	STI	R0,*+AR4(OFLAGS)
-HI_STLP:
-    // *CHECK FINISH LINE
-    // asm 00005234: 	LDI	*+AR7(DELTA_LAST_OID),R0	;CHECK TO SEE IF IT IS IN THE RANGE
-    // asm 00005235: 	LSH	-8,R0
-    // asm 00005236: 	CMPI	@FINISH_ID,R0
-    // asm 00005237: 	CALLGE	RACE_FIN
-    // *CHECK IF CURRENT SECTION ON TRACK LIST
-    // asm 00005238: 	LDI	@DYNALIST_END,AR2		;GET FURTHEST ROAD ID
-    // asm 00005239: 	LDI	*+AR2(OUSR1),R1
-    // asm 0000523A: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
-    // asm 0000523B: 	CMPI	R1,R2
-    // asm 0000523C: 	BLT	REENTER				;WERE OFF ACTIVE TRACK
-    // asm 0000523D: 	LDI	@HEAD2HEAD_ON,R0
-    // asm 0000523E: 	CALLNZ	CKTRANSHI
-    // asm 0000523F: 	CALL	STEALTH_UPDATE
-    // asm 00005240: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
-    // asm 00005241: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
-    // asm 00005242: 	SLEEP	1
-    // asm 00005244: 	B	HI_STLP
-HI_ST_END:
-    // asm 00005245: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
-    // asm 00005246: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
-    // ;	SLEEP	10
-    // asm 00005247: 	SLEEP	1
-    // asm 00005249: 	B	HI_ST_END
-    // *
-    // *ENTER CLOSE STEALTH MODE
-    // *
-LO_STEALTH:
-    // asm 0000524A: 	LDI	-1,R0
-    // asm 0000524B: 	STI	R0,*+AR7(STEALTHMODE)		;LO STEALTH FLAG
-    // asm 0000524C: 	LDI	*+AR7(DELTA_LAST_OID),R2	;GET POINTER TO STEALTH MAP
-    // asm 0000524D: 	CALL	FIND_MAP			;
-    // asm 0000524E: 	LDI	*+AR4(OFLAGS),R0
-    // asm 0000524F: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
-    // asm 00005250: 	STI	R0,*+AR4(OFLAGS)
-LO_STLP:
-    // asm 00005251: 	LDI	@DYNALIST_TRUEBEGIN,AR2		;GET CLOSEST ROAD ID
-    // asm 00005252: 	LDI	*+AR2(OLINK4),AR2
-    // asm 00005253: 	LDI	*+AR2(OLINK4),AR2
-    // asm 00005254: 	LDI	*+AR2(OLINK4),AR2
-    // asm 00005255: 	LDI	*+AR2(OUSR1),R0
-    // asm 00005256: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
-    // asm 00005257: 	CMPI	R0,R2
-    // asm 00005258: 	BGT	REENTER				;REENTER THE SYSTEM DUDES...
-    // asm 00005259: 	LDI	@HEAD2HEAD_ON,R0
-    // asm 0000525A: 	CALLNZ	CKTRANSLO
-    // asm 0000525B: 	CALL	STEALTH_UPDATE
-    // asm 0000525C: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
-    // asm 0000525D: 	CALLNZ	SEND_RACER_POS		;SEND YOUR POSITION TO LINKED GAME
-    // asm 0000525E: 	SLEEP	1
-    // asm 00005260: 	B	LO_STLP
-    // *
-    // *REENTER REGULAR SYSTEM
-    // *R2=OID OF SECTION BEING TRACKED
-    // *
-REENTER:
-    // asm 00005261: 	LDI	0,R0
-    // asm 00005262: 	STI	R0,*+AR7(STEALTHMODE)	;NO STEALTH INIT
-    // asm 00005263: 	LDI	*+AR4(OFLAGS),R0
-    // asm 00005264: 	ANDN	O_NOCOLL,R0		;CLEAR NON-COLLIDE FLAG
-    // asm 00005265: 	STI	R0,*+AR4(OFLAGS)
-    // asm 00005266: 	CALL	FIND_DYNA		;GET TRACKING PIECE POINTER
-    // asm 00005267: 	STI	AR2,*+AR7(DELTA_TPIECE)
-    // asm 00005268: 	CALL	GETTRAK	      		;GET CLOSEST ROAD SECT ->AR0
-    // asm 00005269: 	CALL	ROADIR			;GET RADIANS FOR ORIENTATION
-    // asm 0000526A: 	LDF	R0,R2
-    // asm 0000526B: 	STF	R2,*+AR4(ORADY)
-    // asm 0000526C: 	STF	R2,*+AR5(CARYROT)
-    // asm 0000526D: 	STF	R2,*+AR5(CARVROT)
-    // asm 0000526E: 	LDF	0,R0
-    // asm 0000526F: 	STF	R0,*+AR5(CARDROT)	;CLEAN UP REENTRY
-    // asm 00005270: 	STF	R0,*+AR5(CARSPRAD)
-    // asm 00005271: 	STF	R0,*+AR5(CARSKID)
-    // asm 00005272: 	LDI	0,R0
-    // asm 00005273: 	STI	R0,*+AR5(CAR_SPIN)
-    // asm 00005274: 	LDI	AR4,AR2	  		;GET NEW MATRIX
-    // asm 00005275: 	ADDI	OMATRIX,AR2
-    // asm 00005276: 	CALL	FIND_YMATRIX
-    // asm 00005277: 	FLOAT	1000,R0			;PUT DUDE DOWN INTO ROAD
-    // asm 00005278: 	ADDF	*+AR4(OPOSY),R0
-    // asm 00005279: 	B	RACER_LP
-    // *
-    // *CHECK TRANSFER TO OTHER MACHINE ON LINK
-    // *LO STEALTH CASE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HI_STEALTH", 0, 0);
-    UNIMPL();
-}
-
-static void CKTRANSLO(void) {
+// *
+// *CHECK TRANSFER TO OTHER MACHINE ON LINK
+// *LO STEALTH CASE
+static void CKTRANSLO(PROC* p /*AR7*/) {
     // asm 0000527A: 	CALL	COMPTRAK
     // asm 0000527B: 	BLE	CKTLX
+    if (COMPTRAK() <= 0) {
+        goto CKTLX;
+    }
     // asm 0000527C: 	CALL	CKRANGE
     // asm 0000527D: 	BZ	SEND_RACER_XSFER
+    if (CKRANGE(p) == 0) {
+        SEND_RACER_XSFER(p);
+    }
 CKTLX:
     // asm 0000527E: 	RETS
     // *HI STEALTH CASE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKTRANSLO", 0, 0);
-    UNIMPL();
+    return;
 }
 
-static void CKTRANSHI(void) {
+static void CKTRANSHI(PROC* p /*AR7*/) {
     // asm 0000527F: 	CALL	COMPTRAK
     // asm 00005280: 	BGE	CKTHX
+    if (COMPTRAK() >= 0) {
+        goto CKTHX;
+    }
     // asm 00005281: 	CALL	CKRANGE
     // asm 00005282: 	BZ	SEND_RACER_XSFER
+    if (CKRANGE(p) == 0) {
+        SEND_RACER_XSFER(p);
+    }
 CKTHX:
     // asm 00005283: 	RETS
     // *
     // *CHECK IF CAR TRACK ID IS IN OTHER PLAYERS RANGE
     // *RETURNS EQ =IN RANGE, NE=OUT OF RANGE
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKTRANSHI", 0, 0);
-    UNIMPL();
+    return;
 }
 
-static void CKRANGE(void) {
+static int CKRANGE(PROC* p /*AR7*/) {
+    int track_id;
+
     // asm 00005284: 	LDI	*+AR7(DELTA_LAST_OID),R2	;CHECK TO SEE IF IT IS IN THE RANGE
+    track_id = p->ctx->RACER_DRONE.delta_last_oid;
     // asm 00005285: 	CMPI	@OM_TRACK_LO,R2
     // asm 00005286: 	BLT	CKRFAIL
+    if (track_id < OM_TRACK_LO) {
+        goto CKRFAIL;
+    }
     // asm 00005287: 	CMPI	@OM_TRACK_HI,R2
     // asm 00005288: 	BGT	CKRFAIL
+    if (track_id > OM_TRACK_HI) {
+        goto CKRFAIL;
+    }
     // asm 00005289: 	LDI	0,R0
     // asm 0000528A: 	RETS
+    return 0;
 CKRFAIL:
     // asm 0000528B: 	LDI	1,R0
     // asm 0000528C: 	RETS
@@ -1048,8 +1206,7 @@ CKRFAIL:
     // *R0=OTHER PLAYER TRACK ID, R1= OUR TRACK ID
     // *DESTROYS AR0,AR1
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKRANGE", 0, 0);
-    UNIMPL();
+    return 1;
 }
 
 int COMPTRAK(void) {
@@ -1076,7 +1233,8 @@ int COMPTRAK(void) {
     // *
 }
 
-static void SEND_RACER_XSFER(void) {
+static void SEND_RACER_XSFER(PROC* p /*AR7*/) {
+    (void)p;
     // asm 00005294: 	LDI	CB_RACER_XSFER,R0 	;MESSAGE HEADER
     // *SEND MESSAGE HEADER
     // asm 00005295: 	LDI	@COMMQ_TMP_BUFFI,AR2
@@ -1097,7 +1255,7 @@ static void SEND_RACER_XSFER(void) {
     // *NOTE SHOULD ADD IN FUTURE: CAR_SPIN,CARSPRAD,CARGEAR,CARRPM,CARSKID
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RACER_XSFER", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 void DECODE_RACER_XSFER(void) {
@@ -1182,58 +1340,95 @@ static void ACTIVE_XSFER(void) {
     // *UPDATE STEALTH POSITION
     // *LINEAR TRACK TO NEXT TRACK SEGMENT
     // *
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "ACTIVE_XSFER", 0, 0);
+    UNIMPL();
+}
+
+static int STEALTH_UPDATE(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    LEG_PAYLOAD* map_entry;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t distance_sq;
+    c3x_reg_t distance;
+
 STEALTH_UPDATE:
     // asm 000052DD: 	LDI	*+AR7(DELTA_SPTR),AR0  		;STEP TO NEXT PIECE?
+    map_entry = (LEG_PAYLOAD*)p->ctx->RACER_DRONE.delta_sptr;
     // asm 000052DE: 	FLOAT  	*+AR0(X),R2
     // asm 000052DF: 	SUBF	*+AR4(OPOSX),R2
+    delta_x = C3X_SUB(C3X_FROM_INT(map_entry->as_fixed.pos_x), C3X_LDF(obj->pos.X));
     // asm 000052E0: 	FLOAT  	*+AR0(Z),R3
     // asm 000052E1: 	SUBF	*+AR4(OPOSZ),R3
+    delta_z = C3X_SUB(C3X_FROM_INT(map_entry->as_fixed.pos_z), C3X_LDF(obj->pos.Z));
     // asm 000052E2: 	MPYF	R2,R2,R0
     // asm 000052E3: 	MPYF	R3,R3,R1
     // asm 000052E4: 	ADDF	R1,R0
+    distance_sq = C3X_ADD(C3X_MUL(delta_x, delta_x), C3X_MUL(delta_z, delta_z));
     // asm 000052E5: 	FLOAT	5000,R1				;TO THE NEXT PIECE
     // asm 000052E6: 	MPYF	R1,R1
     // asm 000052E7: 	CMPF	R1,R0
     // asm 000052E8: 	BGT	STLUP1
+    if (C3X_GT(distance_sq, C3X_MUL(C3X_FROM_INT(5000), C3X_FROM_INT(5000)))) {
+        goto STLUP1;
+    }
     // asm 000052E9: 	ADDI	4,AR0
+    map_entry++;
     // asm 000052EA: 	STI	AR0,*+AR7(DELTA_SPTR)
+    p->ctx->RACER_DRONE.delta_sptr = (LEG*)map_entry;
     // asm 000052EB: 	LDI	*+AR0(3),R0
     // asm 000052EC: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
+    p->ctx->RACER_DRONE.delta_last_oid = (int)map_entry->as_fixed.id;
     // asm 000052ED: 	CMPI	-1,R0				;CHECK END OF THE LINE
     // asm 000052EE:       	BNZ	STEALTH_UPDATE
+    if (p->ctx->RACER_DRONE.delta_last_oid != -1) {
+        goto STEALTH_UPDATE;
+    }
     // asm 000052EF: 	POP	R0				;END OF LINE JUST SLEEP
     // asm 000052F0: 	B	HI_ST_END
+    return 0;
 STLUP1:
     // asm 000052F1: 	FLOAT	*+AR0(Y),R0	       		;GET Y POSITION SET
     // ;	LDF	*+AR0(Y),R0	       		;GET Y POSITION SET
     // asm 000052F2: 	FLOAT	250,R1
     // asm 000052F3: 	SUBF	R1,R0
     // asm 000052F4: 	STF	R0,*+AR4(OPOSY)			;ADJUST YOUR Y
+    obj->pos.Y = C3X_STF(C3X_SUB(C3X_FROM_INT(map_entry->as_fixed.pos_y_with_lane_flag), C3X_FROM_INT(250)));
     // asm 000052F5: 	LDI	@VECTORAI,AR2 			;GET DIRECTIONAL VELOCITY
     // asm 000052F6: 	STF	R2,*AR2	  			;DELTA X
+    VECTORAI.X = C3X_STF(delta_x);
     // asm 000052F7: 	LDF	0,R0				;DELTA Y
     // asm 000052F8: 	STF	R0,*+AR2(1)
+    VECTORAI.Y = C3X_STF(C3X_IMM_F32(0));
     // asm 000052F9: 	STF	R3,*+AR2(2)			;DELTA Z
+    VECTORAI.Z = C3X_STF(delta_z);
     // asm 000052FA: 	CALL	NORMALIZE
+    NORMALIZE(&VECTORAI);
     // asm 000052FB: 	CALL	GETRPM
+    GETRPM(carblk);
     // asm 000052FC: 	CALL	GETAUTO
     // asm 000052FD: 	STI	R0,*+AR5(CARGEAR)	 	;DO THE GEAR
+    carblk->gear = GETAUTO(carblk); // DO THE GEAR
     // asm 000052FE: 	LDI	*+AR7(DELTA_SPTR),R0  		;STEP TO NEXT PIECE?
     // asm 000052FF: 	STI	R0,*+AR5(CARTRAK)		;PUT THIS INTO CARTRAK FOR NOW
+    carblk->closest_track_piece = (OBJREF)((map_entry - LEG_MAP) + 1); // PUT THIS INTO CARTRAK FOR NOW
     // asm 00005300: 	CALL	GETPOWER			;UPDATE POWER STUFF
+    GETPOWER(p, obj, carblk);
     // asm 00005301: 	CALL	GETSTSPD			;GET STEALTH SPEED
+    distance = GETSTSPD(p, carblk);
     // asm 00005302: 	MPYF	*AR2,R5,R0		 	;X DELTA
     // asm 00005303: 	ADDF	*+AR4(OPOSX),R0
     // asm 00005304: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_MUL(C3X_LDF(VECTORAI.X), distance)));
     // asm 00005305: 	MPYF	*+AR2(2),R5			;Z DELTA
     // asm 00005306: 	ADDF	*+AR4(OPOSZ),R5
     // asm 00005307: 	STF	R5,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_MUL(C3X_LDF(VECTORAI.Z), distance)));
+    MAME_ASSERT_REG_FLOAT(0x00005308, "R5", &obj->pos.Z);
     // asm 00005308: 	RETS
     // *
     // *GET RACER POWER
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ACTIVE_XSFER", 0, 0);
-    UNIMPL();
+    return 1;
 }
 
 static void GETPOWER(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
@@ -1415,57 +1610,114 @@ POWERX:
  *
  */
 static c3x_reg_t GETSTSPD(PROC* p /*AR7*/, CARBLK* carblk /*AR5*/) {
-    (void)p;
-    (void)carblk;
+    c3x_reg_t acceleration;
+    c3x_reg_t rpm_index_value;
+    c3x_reg_t interpolation;
+    c3x_reg_t power_low;
+    c3x_reg_t power_high;
+    c3x_reg_t power_factor;
+    c3x_reg_t road_friction;
+    c3x_reg_t engine_friction;
+    c3x_reg_t engine_friction_scale;
+    c3x_reg_t total_friction;
+    c3x_reg_t speed;
+    c3x_reg_t distance;
+    c3x_reg_t friction;
+    int table_index;
+    int gear;
+    int frame;
+
     // *GET ENGINE ACCEL
     // asm 00005350: 	LDF	*+AR7(DELTA_THROTTLE),R0	;HAS THE RACE BEGUN?
     // asm 00005351: 	LDI	@_MODE,R1
     // asm 00005352: 	TSTB	MGO,R1
     // asm 00005353: 	LDFZ	0,R0				;N -> THROTTLE = 0
+    acceleration = C3X_LDF(p->ctx->RACER_DRONE.delta_throttle);
+    if ((_MODE & MGO) == 0) {
+        acceleration = C3X_IMM_F32(0);
+    }
     // asm 00005354: 	STF	R0,*+AR5(CARTHROTTLE)
+    carblk->throttle = C3X_STF(acceleration);
     // asm 00005355: 	MPYF	*+AR5(CARMAXACCEL),R0
+    acceleration = C3X_MUL(C3X_LDF(carblk->max_accel), acceleration);
     // asm 00005356: 	LDF	*+AR5(CARRPM),R1
     // asm 00005357: 	MPYF	0.333,R1
+    rpm_index_value = C3X_MUL(C3X_LDF(carblk->rpm_x100), C3X_IMM_F32(0.333f));
     // asm 00005358: 	FIX	R1,IR0		   	;GET TABLE INDEX
+    table_index = FIX(rpm_index_value);
     // asm 00005359: 	CMPI	18,IR0
     // asm 0000535A: 	LDIGT	18,IR0			;KEEP INDEX IN RANGE
+    if (table_index > 18) {
+        table_index = 18;
+    }
     // asm 0000535B: 	LDI	@ENGACTABI,AR0
     // asm 0000535C: 	LDF	*+AR0(IR0),R2		;GET LO POWER FACTOR FOR GEAR
+    power_low = C3X_LDF(ENGACTABI[table_index]);
     // asm 0000535D: 	ADDI	1,IR0
+    table_index += 1;
     // asm 0000535E: 	LDF	*+AR0(IR0),R3		;GET HI POWER FACTOR FOR GEAR
+    power_high = C3X_LDF(ENGACTABI[table_index]);
     // asm 0000535F: 	FLOAT	IR0,R4
     // asm 00005360: 	SUBF	R1,R4,R1
+    interpolation = C3X_SUB(C3X_FROM_INT(table_index), rpm_index_value);
     // asm 00005361: 	LDFLT	0,R1  			;KEEP FACTOR IN BOUNDS
+    if (C3X_LT(interpolation, C3X_FROM_INT(0))) {
+        interpolation = C3X_IMM_F32(0);
+    }
     // asm 00005362: 	CMPF	1.0,R1
     // asm 00005363: 	LDFGT	1.0,R1
+    if (C3X_GT(interpolation, C3X_IMM_F32(1.0f))) {
+        interpolation = C3X_IMM_F32(1.0f);
+    }
     // asm 00005364: 	MPYF	R1,R2			;INTERPOLATE !!!
+    power_low = C3X_MUL(interpolation, power_low);
     // asm 00005365: 	SUBRF	1.0,R1
+    interpolation = C3X_SUB(C3X_IMM_F32(1.0f), interpolation);
     // asm 00005366: 	MPYF	R1,R3
+    power_high = C3X_MUL(interpolation, power_high);
     // asm 00005367: 	ADDF	R2,R3,R1
+    power_factor = C3X_ADD(power_low, power_high);
     // asm 00005368: 	LDI	*+AR5(CARGEAR),IR0	;GEAR MULTIPLIER
+    gear = (int)carblk->gear;
     // asm 00005369: 	LDI	@GEARACTABI,AR0
     // asm 0000536A: 	MPYF	*+AR0(IR0),R1
+    power_factor = C3X_MUL(C3X_LDF(GEARACTABI[gear]), power_factor);
     // asm 0000536B: 	MPYF	0.97,R1			;3% POWER LOSS AUTO
+    power_factor = C3X_MUL(C3X_IMM_F32(0.97f), power_factor);
     // asm 0000536C: 	MPYF	R1,R0
+    acceleration = C3X_MUL(power_factor, acceleration);
     // *GET TOTAL FRICTION
     // *GET ROAD FRICTION
     // asm 0000536D: 	LDF	*+AR5(CARRDFR),R3    	;GET ROAD FRICTION
+    road_friction = C3X_LDF(carblk->road_friction);
     // *GET ENGINE FRICTION
     // asm 0000536E: 	LDI	*+AR5(CARGEAR),IR0
+    gear = (int)carblk->gear;
     // asm 0000536F: 	LDI	@ENGFRI,AR0
     // asm 00005370: 	LDF	*+AR0(IR0),R4
+    engine_friction = C3X_LDF(ENGFRI[gear]);
     // asm 00005371: 	LDF	*+AR5(CARRPM),R5	;MORE REVS MORE FRICTION
     // asm 00005372: 	SUBF	42,R5			;HEAVY FRICTION ABOVE 3900
+    engine_friction_scale = C3X_SUB(C3X_LDF(carblk->rpm_x100), C3X_FROM_INT(42));
     // asm 00005373: 	LDFLT	0,R5
+    if (C3X_LT(engine_friction_scale, C3X_FROM_INT(0))) {
+        engine_friction_scale = C3X_IMM_F32(0);
+    }
     // asm 00005374: 	MPYF	0.04,R5
+    engine_friction_scale = C3X_MUL(C3X_IMM_F32(0.04f), engine_friction_scale);
     // asm 00005375: 	ADDF	1.0,R5			;APPROX RANGE 1-2
+    engine_friction_scale = C3X_ADD(engine_friction_scale, C3X_IMM_F32(1.0f));
     // asm 00005376: 	MPYF	R4,R5
+    engine_friction_scale = C3X_MUL(engine_friction, engine_friction_scale);
     // asm 00005377: GETSP22
     // asm 00005377: 	ADDF	R5,R3
+    total_friction = C3X_ADD(engine_friction_scale, road_friction);
     // *CALC NEW SPEED
     // asm 00005378: GETSPD2
     // asm 00005378: 	LDF	0,R5
+    distance = C3X_IMM_F32(0);
     // asm 00005379: 	LDF	*+AR5(CARSPEED),R1
+    speed = C3X_LDF(carblk->speed);
     // asm 0000537A: 	LDPI	@NFRAMES,RC
     // asm 0000537B: 	SUBI	1,RC
     // *R0=ACCEL
@@ -1475,17 +1727,26 @@ static c3x_reg_t GETSTSPD(PROC* p /*AR7*/, CARBLK* carblk /*AR5*/) {
     // *R7=ENGINE FRICTION
     // asm 0000537C: 	RPTB	GSL0
     // asm 0000537D: 	MPYF 	R1,R3,R4	     	;BRAKE/ROAD/ENGINE FRICTION
+    for (frame = 0; frame < NFRAMES; frame++) {
+        friction = C3X_MUL(speed, total_friction); // BRAKE/ROAD/ENGINE FRICTION
     // asm 0000537E: 	SUBF	R4,R1			;SUBTRACT FRICTION
+        speed = C3X_SUB(speed, friction); // SUBTRACT FRICTION
     // asm 0000537F: 	ADDF	R0,R1			;ADD ACCEL
+        speed = C3X_ADD(speed, acceleration); // ADD ACCEL
 GSL0:
     // asm 00005380: ADDF	R1,R5			;ADD TO DISTANCE
+        distance = C3X_ADD(distance, speed); // ADD TO DISTANCE
+    }
     // asm 00005381: 	MPYF	1.5,R5			;SPEEDFUDGE
+    distance = C3X_MUL(C3X_IMM_F32(1.5f), distance); // SPEEDFUDGE
     // asm 00005382: 	STF	R5,*+AR5(CARDIST)	;SAVE YOUR DISTANCE
+    carblk->dist = C3X_STF(distance); // SAVE YOUR DISTANCE
     // asm 00005383: 	STF	R1,*+AR5(CARSPEED)	;NEW SPEED
+    carblk->speed = C3X_STF(speed); // NEW SPEED
+    MAME_ASSERT_REG_FLOAT(0x00005384, "R5", &distance);
+    MAME_ASSERT_REG_FLOAT(0x00005384, "R1", &speed);
     // asm 00005384: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETSTSPD", 0, 0);
-    UNIMPL();
-    return C3X_FROM_INT(0);
+    return distance;
 }
 
 // *----------------------------------------------------------------------------
@@ -1500,22 +1761,33 @@ GSL0:
  *	AR2	POINTER TO OBJECT
  *
  */
-void FIND_DYNA(void) {
+OBJ* FIND_DYNA(int coded_id /*R2*/) {
+    OBJ* track_obj;
+
     // asm 00005385: 	LDI	@DYNALIST_TRUEBEGIN,AR2
+    track_obj = DYNALIST_TRUEBEGIN;
 FDL:
     // asm 00005386: 	LDI	*+AR2(OUSR1),R0
     // asm 00005387: 	CMPI	R0,R2
     // asm 00005388: 	BZ	FDLX
+    if (track_obj != NULL && coded_id == (int)track_obj->usr1) {
+        goto FDLX;
+    }
     // asm 00005389: 	LDI	*+AR2(OLINK4),AR2
+    track_obj = track_obj != NULL ? (OBJ*)track_obj->link4 : NULL;
     // asm 0000538A: 	CMPI	0,AR2			;CHECK END OF THE LINE
     // asm 0000538B: 	BNZ	FDL
+    if (track_obj != NULL) {
+        goto FDL;
+    }
     // asm 0000538C: 	LOCKUP				;ERROR COULDN'T FIND THE SUCKER
+    SLOCKON(1, "FIND_DYNA couldn't find road segment");
     // asm 0000538E: 	POP	R0
     // asm 0000538F: 	DIE
+    return NULL;
 FDLX:
     // asm 00005390: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_DYNA", 0, 0);
-    UNIMPL();
+    return track_obj;
 }
 
 // *----------------------------------------------------------------------------
@@ -1537,23 +1809,28 @@ FDLX:
  *	MAP FLAGS-->*+AR7(DELTA_LAST_OID)
  *
  */
-static LEG* FIND_MAP(PROC* p /*AR7*/, int coded_id /*R2*/) {
-    (void)p;
-    (void)coded_id;
+static LEG_PAYLOAD* FIND_MAP(PROC* p /*AR7*/, int coded_id /*R2*/) {
+    LEG_PAYLOAD* map_entry;
+
     // asm 00005391: 	LDI	@LEG_MAPI,AR0
     // asm 00005392: 	ADDI	3,AR0				;OFFSET TO ID
+    map_entry = LEG_MAP;
 FIND_LP:
     // asm 00005393: 	LDI	*AR0++(4),R0
     // asm 00005394: 	CMPI	R2,R0
     // asm 00005395: 	BLT	FIND_LP
+    while ((int)map_entry->as_fixed.id < coded_id) {
+        map_entry++;
+    }
     // asm 00005396: FINDX
     // asm 00005396: 	SUBI	7,AR0
     // asm 00005397: 	STI	AR0,*+AR7(DELTA_SPTR)
+    p->ctx->RACER_DRONE.delta_sptr = (LEG*)map_entry;
     // asm 00005398: 	STI	R0,*+AR7(DELTA_LAST_OID)	;save road id
+    p->ctx->RACER_DRONE.delta_last_oid = (int)map_entry->as_fixed.id;
+    MAME_ASSERT_REG(0x00005399, "R0", &p->ctx->RACER_DRONE.delta_last_oid);
     // asm 00005399: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_MAP", 0, 0);
-    UNIMPL();
-    return NULL;
+    return map_entry;
 }
 
 // *----------------------------------------------------------------------------
@@ -1581,7 +1858,6 @@ int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4
     other_track_id = (int)other_track_obj->usr1;
     // asm 0000539C: 	LDI	*+AR5(CARTRAK),AR0
     track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
-    MAME_ASSERT_REG(0x0000539D, "R0", &other_track_id);
     // asm 0000539D: 	CMPI	*+AR0(OUSR1),R0
     if (track_obj == NULL) {
         return -1;
@@ -1624,8 +1900,6 @@ int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4
     dx = C3X_SUB(track_obj->pos.X, other_obj->pos.X);
     dz = C3X_SUB(track_obj->pos.Z, other_obj->pos.Z);
     other_distance_sq = C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz));
-    MAME_ASSERT_REG_FLOAT(0x000053AF, "R0", &obj_distance_sq);
-    MAME_ASSERT_REG_FLOAT(0x000053AF, "R1", &other_distance_sq);
     // asm 000053AF: 	CMPF	R1,R0			;WHO IS CLOSER?
     // asm 000053B0: 	RETS
     if (C3X_LT(obj_distance_sq, other_distance_sq)) {
@@ -1839,6 +2113,7 @@ OI4:
     tracking_obj = p->ctx->RACER_DRONE.delta_tpiece;
     // asm 000053F5: 	CALL	GET_LANES	 	;GET # OF LANES
     lane_mode = GET_LANES(tracking_obj);
+    MAME_ASSERT_REG(0x000053F6, "R0", &lane_mode);
     // asm 000053F6: 	LDI	R0,R0
     // asm 000053F7: 	BNZ	OIX			;FOUR LANE CASE
     if (lane_mode != 0) {
@@ -1846,6 +2121,7 @@ OI4:
     }
     // asm 000053F8: 	LDI	1000H,R0	  	;BLOCK OUT LANES 2 LANE CASE
     block_value = 0x1000;
+    MAME_ASSERT_REG(0x000053F9, "R0", &block_value);
     // asm 000053F9: 	LDI	@ROADOBSTABI,AR0
     // asm 000053FA: 	LDI	11,RC
     // asm 000053FB: 	RPTB	OILP
@@ -1857,7 +2133,7 @@ OILP:
         ROADOBSTAB[i] = block_value;
     }
 OIX:
-    MAME_ASSERT_REGION_AT_ADDR(0x000053FE, "ROADOBSTAB", 0x0000E8DF, ROADOBSTAB, 50);
+    MAME_ASSERT_MEM(0x000053FE, "d@e8df", &ROADOBSTAB[0]);
     // asm 000053FE: 	RETS
     return;
 }
@@ -2680,7 +2956,7 @@ LOOP56:
     // asm 00005532: 	LDF	R0,R2			;THIS IS INITIAL FACING
     delta_x = C3X_SUB(tracking_obj->pos.X, _VECTORB.X);
     delta_z = C3X_SUB(tracking_obj->pos.Z, _VECTORB.Z);
-    road_theta = C3X_SUB(ARCTANF(delta_x, delta_z), HALFPII);
+    road_theta = C3X_SUB(ARCTANF(delta_x, delta_z), C3X_IMM_F32(HALFPI));
     // asm 00005533: 	CMPI	0,AR3
     // asm 00005534: 	BEQ	OFFANDDONE
     if (rank_forward != 0) {

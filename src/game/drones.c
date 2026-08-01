@@ -22,25 +22,25 @@
  */
 
 void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*/);
-void DRONE_PTR_ADD(void);
+int DRONE_PTR_ADD(CARBLK* carblk);
 void DRONE_CLR(void);
 static int CK_LINK_DISP(void);
 void SET_DRONE_PAL(PROC* p, OBJ* obj);
 int GET_LANES(OBJ* obj /*AR2*/);
 c3x_reg_t DIST_TO_PLYR(OBJ* obj);
 void INIT_TRACKING_PIECE(void);
-void GET_TRACK_POS_RVS_XLANE(void);
-void GET_TRACK_POS_RVS(void);
+c3x_reg_t GET_TRACK_POS_RVS_XLANE(PROC* p, OBJ* obj);
+c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj);
 void DELTA_GET_TRACK_POS(void);
 c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj);
-void SUB_FUNCTION_RVS(void);
+c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece);
 c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece);
-void SUB_FUNCTION_RVS_XLANE(void);
+c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece);
 #define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
 void DELTA_SUB_FUNCTION(void);
 void INIT_DRONES(void);
 void ADD_DRONE(OBJ* obj /*AR4*/);
-void FREE_DRONE(void);
+void FREE_DRONE(OBJ* obj);
 void EXP_PUFF(PROC* p);
 int PRECOLLIDE_PLYR(OBJ* obj, CARBLK* carblk);
 c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
@@ -576,13 +576,18 @@ NOTYET:
 /* asm: DRONENUM	.bss	DRONENUM,1 */
 int DRONENUM;
 
-void DRONE_PTR_ADD(void) {
+int DRONE_PTR_ADD(CARBLK* carblk) {
     // asm 00006653: 	LDI	0,R0
     // asm 00006654: 	STI	R0,*+AR5(CAR_OM)
+    carblk->other_machine_controls = 0;
     // asm 00006655: 	LDI	@DRONENUM,R0		;INCREMENT ID #
     // asm 00006656: 	ADDI	1,R0
+    DRONENUM += 1;
     // asm 00006657: 	CMPI	127,R0
     // asm 00006658: 	LDIGT	10,R0			;RESET TO 10
+    if (DRONENUM > 127) {
+        DRONENUM = 10;
+    }
     // asm 00006659: 	STI	R0,@DRONENUM
     // asm 0000665A: 	LDI	@DIPRAM,R1
     // asm 0000665B: 	TSTB	CMDP_MASTER,R1		;CHECK MASTER
@@ -590,9 +595,9 @@ void DRONE_PTR_ADD(void) {
     // asm 0000665D: 	LDINZ	0,R1
     // asm 0000665E: 	OR	R1,R0
     // asm 0000665F: 	STI	R0,*+AR5(CARNUM)
+    carblk->car_num = DRONENUM | (((DIPRAM & CMDP_MASTER) == 0) ? 0x80 : 0);
     // asm 00006660: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DRONE_PTR_ADD", 0, 0);
-    UNIMPL();
+    return (int)carblk->car_num;
 }
 
 void DRONE_CLR(void) {
@@ -916,7 +921,6 @@ GL_LP:
     }
     // asm 000066DD: 	CLRI	R0
     lane_mode = 0;
-    MAME_ASSERT_REG(0x000066DE, "R0", &lane_mode);
     // asm 000066DE: 	POP	AR1
     // asm 000066DF: 	POP	AR0
     // asm 000066E0: 	RETS
@@ -928,7 +932,6 @@ GL_FND:
     lane_mode >>= 7;
     // asm 000066E3: 	AND	1,R0
     lane_mode &= 1;
-    MAME_ASSERT_REG(0x000066E4, "R0", &lane_mode);
     // asm 000066E4: 	POP	AR1
     // asm 000066E5: 	POP	AR0
     // asm 000066E6: 	RETS
@@ -1031,28 +1034,66 @@ LPP:
  *	MATRIXA		find Y Matrix (of Tracking Piece)
  *
  */
-void GET_TRACK_POS_RVS_XLANE(void) {
+c3x_reg_t GET_TRACK_POS_RVS_XLANE(PROC* p, OBJ* obj) {
+    OBJ* piece;
+    c3x_reg_t dx;
+    c3x_reg_t dz;
     // asm 00006706: 	PUSHFL	R1
     // asm 00006708: 	PUSHFL	R2
     // asm 0000670A: 	PUSH	AR2
     // asm 0000670B: 	LDI	*+AR7(DELTA_TPIECE),AR2
+    piece = p->ctx->RACER_DRONE.delta_tpiece;
     // asm 0000670C: 	CALL	SUB_FUNCTION_RVS_XLANE		;GET LANE OFFSET (VECTOR A)
+    SUB_FUNCTION_RVS_XLANE(p, piece);
     // asm 0000670D: 	BU	TRKP2
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TRACK_POS_RVS_XLANE", 0, 0);
-    UNIMPL();
+    // asm 00006725: 	LDF	*+AR2(OPOSX),R2		;X
+    // asm 00006726: 	SUBF	*+AR4(OPOSX),R2
+    dx = C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(obj->pos.X));
+    // asm 00006727: 	LDF	*+AR2(OPOSZ),R1		;Z
+    // asm 00006728: 	SUBF	*+AR4(OPOSZ),R1
+    dz = C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(obj->pos.Z));
+    // asm 00006729: 	MPYF	R2,R2
+    // asm 0000672A: 	MPYF	R1,R1
+    // asm 0000672B: 	ADDF	R1,R2
+    // asm 0000672C: 	CALL	SQRT
+    dx = SQRT(C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz)));
+    // asm 0000672D: DISTANCE_OK
+    // asm 0000672D: 	POP	AR2
+    // asm 0000672E: 	POPFL	R2
+    // asm 00006730: 	POPFL	R1
+    // asm 00006732: 	RETS
+    return dx;
 }
 
-void GET_TRACK_POS_RVS(void) {
+c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj) {
+    OBJ* piece;
+    c3x_reg_t dx;
+    c3x_reg_t dz;
     // asm 0000670E: 	PUSHFL	R1
     // asm 00006710: 	PUSHFL	R2
     // asm 00006712: 	PUSH	AR2
     // asm 00006713: 	LDI	*+AR7(DELTA_TPIECE),AR2
+    piece = p->ctx->RACER_DRONE.delta_tpiece;
     // asm 00006714: 	CALL	SUB_FUNCTION_RVS
+    SUB_FUNCTION_RVS(p, piece);
     // asm 00006715: 	BU	TRKP2
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_TRACK_POS_RVS", 0, 0);
-    UNIMPL();
+    // asm 00006725: 	LDF	*+AR2(OPOSX),R2		;X
+    // asm 00006726: 	SUBF	*+AR4(OPOSX),R2
+    dx = C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(obj->pos.X));
+    // asm 00006727: 	LDF	*+AR2(OPOSZ),R1		;Z
+    // asm 00006728: 	SUBF	*+AR4(OPOSZ),R1
+    dz = C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(obj->pos.Z));
+    // asm 00006729: 	MPYF	R2,R2
+    // asm 0000672A: 	MPYF	R1,R1
+    // asm 0000672B: 	ADDF	R1,R2
+    // asm 0000672C: 	CALL	SQRT
+    dx = SQRT(C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz)));
+    // asm 0000672D: DISTANCE_OK
+    // asm 0000672D: 	POP	AR2
+    // asm 0000672E: 	POPFL	R2
+    // asm 00006730: 	POPFL	R1
+    // asm 00006732: 	RETS
+    return dx;
 }
 
 void DELTA_GET_TRACK_POS(void) {
@@ -1203,16 +1244,66 @@ TRKP2:
  *	}
  *
  */
-void SUB_FUNCTION_RVS(void) {
+c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece) {
+    OBJ* next_piece;
+    c3x_reg_t theta;
+    int lane_mode;
+    int lane;
     // asm 00006733: 	PUSH	AR0
     // asm 00006734: 	PUSHFL	R0
     // asm 00006736: 	PUSHFL	R3
     // asm 00006738: 	LDI	*+AR2(OBLINK4),R0
+    next_piece = (OBJ*)piece->blink4;
     // asm: 	SLOCKON	Z,"DRONES\SUB_FUNCTION_RVS  OBLINK4 to NULL"
+    SLOCKON(next_piece == NULL, "DRONES\\SUB_FUNCTION_RVS OBLINK4 to NULL");
     // asm 00006739: 	BU	SF_ENTER2
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SUB_FUNCTION_RVS", 0, 0);
-    UNIMPL();
+    // asm 00006740: 	LDI	R0,AR0
+    // asm 00006741: 	LDF	*+AR0(OPOSX),R2
+    // asm 00006742: 	SUBF	*+AR2(OPOSX),R2
+    // asm 00006743: 	LDF	*+AR0(OPOSZ),R3
+    // asm 00006744: 	SUBF	*+AR2(OPOSZ),R3
+    // asm 00006745: 	CALL	ARCTANF
+    // asm 00006746: 	SUBF	HALFPI,R0
+    theta = C3X_SUB(
+        ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
+                 C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
+        C3X_IMM_F32(HALFPI));
+    // asm 00006747: 	LDF	R0,R2				;FIND THETA
+    // asm 00006748: 	PUSHF	R2
+    // asm 00006749: 	CALL	GET_LANES
+    lane_mode = GET_LANES(piece);
+    // asm 0000674A: 	PUSH	AR2
+    // asm 0000674B: 	LDI	@MATRIXAI,AR2
+    // asm 0000674C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
+    FIND_YMATRIX(&MATRIXAI, theta);
+    // asm 0000674D: 	LDI	*+AR7(DELTA_STATUS),AR0
+    // asm 0000674E: 	AND	DELTA_STATUS_LANE,AR0
+    lane = p->ctx->RACER_DRONE.delta_status & DELTA_STATUS_LANE;
+    // ;	LDPI	@LANEPI,AR1
+    // asm 0000674F: 	LDI	@LANEPI,AR1
+    // asm 00006750: 	ADDI	R0,AR1		;4 or 2 lane map?
+    // asm 00006751: 	LDI	*AR1,R0
+    // asm 00006752: 	ADDI	R0,AR0		;which lane?
+    // asm 00006753: 	LDF	*AR0,R0
+    VECTORAI.X = C3X_STF(C3X_LDF(LANEP[lane_mode][lane]));
+    // asm 00006754: 	LDI	@VECTORAI,AR2
+    // asm 00006755: 	STF	R0,*+AR2(X)
+    // asm 00006756: 	CLRF	R0
+    // asm 00006757: 	STF	R0,*+AR2(Y)
+    // asm 00006758: 	STF	R0,*+AR2(Z)
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
+    // asm 00006759: 	LDI	AR2,R3
+    // asm 0000675A: 	LDI	@MATRIXAI,R2
+    // asm 0000675B: 	CALL	MATRIX_MUL			;COMPUTE THE LANE OFFSET IN VECTORA
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
+    // asm 0000675C: 	POP	AR2
+    // asm 0000675D: 	POPF	R2
+    // asm 0000675E: 	POPFL	R3
+    // asm 00006760: 	POPFL	R0
+    // asm 00006762: 	POP	AR0
+    // asm 00006763: 	RETS
+    return theta;
 }
 
 c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece) {
@@ -1238,7 +1329,7 @@ SF_ENTER2:
     theta = C3X_SUB(
         ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
                  C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
-        HALFPII);
+        C3X_IMM_F32(HALFPI));
     // asm 00006747: 	LDF	R0,R2				;FIND THETA
     // asm 00006748: 	PUSHF	R2
     // asm 00006749: 	CALL	GET_LANES
@@ -1278,15 +1369,54 @@ DELTA_JOININ:
     return theta;
 }
 
-void SUB_FUNCTION_RVS_XLANE(void) {
+c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece) {
+    OBJ* next_piece;
+    c3x_reg_t theta;
     // asm 00006764: 	PUSH	AR0
     // asm 00006765: 	PUSHFL	R0
     // asm 00006767: 	PUSHFL	R3
     // asm 00006769: 	LDI	*+AR2(OBLINK4),R0
+    next_piece = (OBJ*)piece->blink4;
+    SLOCKON(next_piece == NULL, "DRONES\\SUB_FUNCTION_RVS_XLANE OBLINK4 to NULL");
     // asm 0000676A: 	BU	SFENTER66
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SUB_FUNCTION_RVS_XLANE", 0, 0);
-    UNIMPL();
+    // asm 00006771: 	LDI	R0,AR0
+    // asm 00006772: 	LDF	*+AR0(OPOSX),R2
+    // asm 00006773: 	SUBF	*+AR2(OPOSX),R2
+    // asm 00006774: 	LDF	*+AR0(OPOSZ),R3
+    // asm 00006775: 	SUBF	*+AR2(OPOSZ),R3
+    // asm 00006776: 	CALL	ARCTANF
+    // asm 00006777: 	SUBF	HALFPI,R0
+    theta = C3X_SUB(
+        ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
+                 C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
+        C3X_IMM_F32(HALFPI));
+    // asm 00006778: 	LDF	R0,R2				;FIND THETA
+    // asm 00006779: 	PUSHF	R2
+    // asm 0000677A: 	PUSH	AR2
+    // asm 0000677B: 	LDI	@MATRIXAI,AR2
+    // asm 0000677C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
+    FIND_YMATRIX(&MATRIXAI, theta);
+    // asm 0000677D: 	LDF	*+AR7(DELTA_XLANE),R0
+    VECTORAI.X = C3X_STF(C3X_LDF(p->ctx->RACER_DRONE.delta_xlane));
+    // asm 0000677E: 	BU	DELTA_JOININ
+    // asm 00006754: 	LDI	@VECTORAI,AR2
+    // asm 00006755: 	STF	R0,*+AR2(X)
+    // asm 00006756: 	CLRF	R0
+    // asm 00006757: 	STF	R0,*+AR2(Y)
+    // asm 00006758: 	STF	R0,*+AR2(Z)
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
+    // asm 00006759: 	LDI	AR2,R3
+    // asm 0000675A: 	LDI	@MATRIXAI,R2
+    // asm 0000675B: 	CALL	MATRIX_MUL			;COMPUTE THE LANE OFFSET IN VECTORA
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
+    // asm 0000675C: 	POP	AR2
+    // asm 0000675D: 	POPF	R2
+    // asm 0000675E: 	POPFL	R3
+    // asm 00006760: 	POPFL	R0
+    // asm 00006762: 	POP	AR0
+    // asm 00006763: 	RETS
+    return theta;
 }
 
 void DELTA_SUB_FUNCTION(void) {
@@ -1403,22 +1533,40 @@ void ADD_DRONE(OBJ* obj /*AR4*/) {
  *	AR4	OBJECT DRONE POINTER
  *
  */
-void FREE_DRONE(void) {
+void FREE_DRONE(OBJ* obj) {
+    OBJ* current;
+    OBJ* previous;
     // asm 00006796: 	PUSH	R0
     // asm 00006797: 	PUSH	AR1
     // asm 00006798: 	PUSH	AR3
     // asm 00006799: 	LDI	@CAR_LISTI,R0
     // asm 0000679A: 	SUBI	OLINK3,R0		;(we are offset pointing)
+    current = CAR_LIST;
+    previous = NULL;
 FREELP:
     // asm 0000679B: LDI	R0,AR1
     // asm 0000679C: 	LDI	*+AR1(OLINK3),R0
     // asm: 	SLOCKON	Z,"DRONES\FREE_DRONE  end of list found"
     // asm 0000679D: 	BZ	FREEDR_X
+    if (current == NULL) {
+        goto FREEDR_X;
+    }
     // asm 0000679E: 	CMPI	R0,AR4
     // asm 0000679F: 	BNE	FREELP
+    if (current != obj) {
+        previous = current;
+        current = (OBJ*)current->link3;
+        goto FREELP;
+    }
     // asm 000067A0: 	LDI	*+AR4(OLINK3),R0
     // asm 000067A1: 	STI	R0,*+AR1(OLINK3)	;LINK AROUND
+    if (previous == NULL) {
+        CAR_LIST = (OBJ*)obj->link3;
+    } else {
+        previous->link3 = obj->link3;
+    }
     // asm 000067A2: 	DECM	@DRONE_COUNT
+    DRONE_COUNT -= 1;
 #if DEBUG
     // asm: 	CMPI	0,R0
     // asm: 	SLOCKON	LT,"DRONES\FREE_DRONE  DRONE_COUNT INVALID"
@@ -1428,8 +1576,6 @@ FREEDR_X:
     // asm 000067A6: 	POP	AR1
     // asm 000067A7: 	POP	R0
     // asm 000067A8: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FREE_DRONE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2348,8 +2494,6 @@ int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk) {
     OBJ* reference_piece;
     c3x_reg_t drone_distance_sq;
     c3x_reg_t player_distance_sq;
-    u32 player_track_is_null;
-    u32 drone_track_is_null;
     // asm 0000691F: 	PUSH	AR0
     // asm 00006920: 	PUSH	AR1
     // asm 00006921: 	PUSH	R0
@@ -2364,13 +2508,9 @@ int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk) {
     }
     // asm 00006923: 	LDI	*+AR0(CARTRAK),AR0
     player_track = OBJREF_TO_PTR(PLYCBLK->closest_track_piece);
-    player_track_is_null = player_track == NULL;
-    MAME_ASSERT_MEM(0x00006924, "ar0==0", &player_track_is_null);
     // asm 00006924: 	LDI	*+AR0(OUSR1),R0
     // asm 00006925: 	LDI	*+AR5(CARTRAK),AR1
     drone_track = OBJREF_TO_PTR(carblk->closest_track_piece);
-    drone_track_is_null = drone_track == NULL;
-    MAME_ASSERT_MEM(0x00006926, "ar1==0", &drone_track_is_null);
     if (player_track == NULL || drone_track == NULL) {
         goto ISBEHIND;
     }

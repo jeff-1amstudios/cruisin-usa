@@ -56,7 +56,7 @@ static void DECODE_TIMECODE(void);
 void SEND_RHO_POS(void);
 void SEND_RACER_POS(void);
 void SEND_PLAYERS_POS(void);
-void SEND_RHO_CREATE(void);
+void SEND_RHO_CREATE(OBJ* obj, int car_id, int vehicle_index);
 void FIND_DRONE(void);
 #define DECODE_FLY_UPDATE DECODE_RHO_UPDATE
 static void DECODE_RHO_UPDATE(void);
@@ -1126,7 +1126,10 @@ MATLP:
     UNIMPL_TODO();
 }
 
-void SEND_RHO_CREATE(void) {
+void SEND_RHO_CREATE(OBJ* obj, int car_id, int vehicle_index) {
+    (void)obj;
+    (void)car_id;
+    (void)vehicle_index;
     // asm 00007857: 	LDI	@HEAD2HEAD_ON,R1
     // asm 00007858: 	RETSZ
     // asm 00007859: 	LDI	CB_RHO_CREATE,R1	;GET MESSAGE HEADER

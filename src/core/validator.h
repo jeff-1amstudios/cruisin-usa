@@ -16,6 +16,7 @@ extern int mame_validate_disabled;
 void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_validate_arg_sym_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
+void mame_assert_function_entry_impl(const char* caller_file, int caller_line, const char* function_name);
 void mame_validate_exit_impl(const char* caller_file, int caller_line);
 void mame_validate_region_at_addr_impl(
     const char* caller_file,
@@ -58,7 +59,7 @@ void mame_assert_reg_at_addr_impl(
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), \
         _Generic(*(ptr), c3x_f32_t: MAME_VALIDATE_REG_KIND_STORED_FLOAT, default: MAME_VALIDATE_REG_KIND_FLOAT), 0)
 
-#define MAME_ASSERT_FUNCTION_ENTRY()
+#define MAME_ASSERT_FUNCTION_ENTRY() mame_assert_function_entry_impl(__FILE__, __LINE__, __func__)
 
 void mame_validate_print_oks_on(void);
 void mame_validate_print_oks_off(void);

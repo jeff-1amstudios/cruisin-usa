@@ -24,7 +24,7 @@ static void CARFORWARD(void);
 static void CARFORWARD_ENGINE(void);
 void RAMPDOWNTRAINSND(void);
 static void RAMPDOWNTRAINSND_PROC(void);
-void FLYTRAIN(void);
+void FLYTRAIN(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 static void FLYTRAINP(void);
 void DEADCARA(void);
 void GETFLYMAT_TRAIN(void);
@@ -250,7 +250,7 @@ RDTX:
  *	AR4	POINTS TO PLAYER CAR BLOCK
  *	AR5	POINTS TO DRONE CAR BLOCK
  */
-void FLYTRAIN(void) {
+void FLYTRAIN(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/) {
     // asm 00009C1A: 	LONGROUT
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR1

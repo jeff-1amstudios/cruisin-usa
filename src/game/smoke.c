@@ -23,12 +23,12 @@ void SORT_SMOKE(void);
 void INIT_SPARK(void);
 static void REPLICATE_SPARK(void);
 void SPARK_PROC(void);
-static void INIT_COLLA_OBJS(void);
+static void INIT_COLLA_OBJS(PROC* p /*AR7*/);
 void WALL_SPARK(void);
-void IMPACT_SPARK(void);
+void IMPACT_SPARK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 void ROAD_IMPACT_SPARK(void);
 void SKID_SPARK(void);
-static void TOO_MANY_SPARKS(void);
+static int TOO_MANY_SPARKS(void);
 void OBJ_MOVE(void);
 
 #define SMOKEANII SMOKEANI
@@ -696,7 +696,7 @@ NO_OBJ:
  *INPUT	AR0 points to proc memory
  *Creates several spark animations
  */
-static void INIT_COLLA_OBJS(void) {
+static void INIT_COLLA_OBJS(PROC* p /*AR7*/) {
     // asm 0000866E: 	LDI	0,R5
 ICO_LOOP:
     // asm 0000866F: 	LDI	@SPARKANII,AR0
@@ -854,47 +854,84 @@ WALL_SPARKX:
  *
  */
 
-void IMPACT_SPARK(void) {
+void IMPACT_SPARK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/) {
+    OBJ* player_obj;
+    CARBLK* player_carblk;
+    PROC* spark_proc;
+    PROC_CONTEXT* spark_ctx;
+    c3x_reg_t collision_offset;
+
     // asm 000086E4: 	CALL	PUSHALL
     // asm 000086E5: 	LDI	@_MODE,R0
     // asm 000086E6: 	AND	MMODE,R0
     // asm 000086E7: 	CMPI	MATTR,R0
     // asm 000086E8: 	BEQ	IMPACT_SPARKX
+    if ((_MODE & MMODE) == MATTR) {
+        goto IMPACT_SPARKX;
+    }
     // asm 000086E9: 	CMPI	@PLYCAR,AR0
     // asm 000086EA: 	LDIEQ	AR0,AR4
     // asm 000086EB: 	BEQ	IMPACTED_PLAYER
+    if (obj0 == PLYCAR) {
+        player_obj = obj0;
+        goto IMPACTED_PLAYER;
+    }
     // asm 000086EC: 	CMPI	@PLYCAR,AR1
     // asm 000086ED: 	LDIEQ	AR1,AR4
     // asm 000086EE: 	BNE	IMPACT_SPARKX		;Only work for the players car
+    if (obj1 != PLYCAR) {
+        goto IMPACT_SPARKX;
+    }
+    player_obj = obj1;
 IMPACTED_PLAYER:
     // asm 000086EF: 	LDI	*+AR4(OCARBLK),AR5
+    player_carblk = player_obj->carblk;
     // asm 000086F0: 	LDI	*+AR5(CARTRAK),R0
     // asm 000086F1: 	BZ	IMPACT_SPARKX		;DUDE IS NOT ON THE ROAD
+    if (player_carblk->closest_track_piece == 0) {
+        goto IMPACT_SPARKX;
+    }
     // asm 000086F2: 	CALL	TOO_MANY_SPARKS
     // asm 000086F3: 	BC	IMPACT_SPARKX
+    if (TOO_MANY_SPARKS()) {
+        goto IMPACT_SPARKX;
+    }
     // asm 000086F4: 	LDI	@PLYPROC,AR7
     // asm 000086F5: 	CREATEC	SPARK_PROC,UTIL_C|SPARK_T
+    spark_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    spark_proc = PRC_CREATE_CHILD((PROC_FUNC)SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
     // asm 000086F8: 	BC	IMPACT_SPARKX
+    if (spark_proc == NULL) {
+        goto IMPACT_SPARKX;
+    }
     // asm 000086F9: 	LDI	AR0,AR7
     // asm 000086FA: 	STI	AR4,*+AR7(CAR_OBJ)
+    spark_ctx->SPARK_PROC.car_obj = player_obj;
     // asm 000086FB: 	STI	AR5,*+AR7(CAR_BLOCK)
+    spark_ctx->SPARK_PROC.carblk = player_carblk;
     // asm 000086FC: 	LDF	*-AR3(1),R0
     // asm 000086FD: 	SUBF	*+AR4(OPOSX),R0		;Make offset from the car
+    collision_offset = C3X_SUB(C3X_LDF(collision_point->X), C3X_LDF(player_obj->pos.X));
     // asm 000086FE: 	STF	R0,*+AR7(COLL_X)
+    spark_ctx->SPARK_PROC.collision_offset.X = C3X_STF(collision_offset);
     // ;	LDF	*AR3,R0
     // ;	SUBF	60,R0
     // ;	SUBF	*+AR4(OPOSY),R0		;Make offset from the car
     // asm 000086FF: 	LDF	-80,R0
+    collision_offset = C3X_IMM_F32(-80);
     // asm 00008700: 	STF	R0,*+AR7(COLL_Y)
+    spark_ctx->SPARK_PROC.collision_offset.Y = C3X_STF(collision_offset);
     // asm 00008701: 	LDF	*+AR3(1),R0
     // asm 00008702: 	SUBF	*+AR4(OPOSZ),R0		;Make offset from the car
+    collision_offset = C3X_SUB(C3X_LDF(collision_point->Z), C3X_LDF(player_obj->pos.Z));
     // asm 00008703: 	STF	R0,*+AR0(COLL_Z)
+    spark_ctx->SPARK_PROC.collision_offset.Z = C3X_STF(collision_offset);
     // asm 00008704: 	CALL	INIT_COLLA_OBJS
+    INIT_COLLA_OBJS(spark_proc);
 IMPACT_SPARKX:
     // asm 00008705: 	CALL	POPALL
     // asm 00008706: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "IMPACT_SPARK", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
@@ -984,7 +1021,7 @@ void SKID_SPARK(void) {
  *		C=1 if too many
  *		C=0 if ok
  */
-static void TOO_MANY_SPARKS(void) {
+static int TOO_MANY_SPARKS(void) {
     // asm 00008709: 	LDI	0,R2
     // asm 0000870A: 	LDI	@PACTIVEI,R0
     // asm 0000870B: 	BZ	TMSXCC			;NULL LIST?
@@ -1010,6 +1047,7 @@ TMSXCC:
     // asm 0000871B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TOO_MANY_SPARKS", 0, 0);
     UNIMPL();
+    return 0;
 }
 
 void OBJ_MOVE(void) {

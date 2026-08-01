@@ -229,14 +229,16 @@ PROC* PRC_CREATE_CHILD(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx
     // asm 0000A895: 	PUSH	R0
     // asm 0000A896: 	LDI	*AR0,R0			;PULL HIM FROM FRONT OF LIST
     // asm 0000A897: 	STI	R0,@PACTIVE
-    PACTIVE = proc->link;
     // asm 0000A898: 	LDI	*AR7,R0			;PUT HIM AFTER CREATING PROCESS
     // asm 0000A899: 	STI	R0,*AR0
     // asm 0000A89A: 	STI	AR0,*AR7
     if (CURRENT_PROC != NULL) {
+        PACTIVE = proc->link;
         proc->link = CURRENT_PROC->link;
         CURRENT_PROC->link = proc;
     }
+    // With the root sentinel (CURRENT_PROC == NULL), PRC_CREATE already placed
+    // the child at PACTIVE, which is exactly where the assembly reinserts it.
     // asm 0000A89B: 	POP	R0
     // asm 0000A89C: 	RETS
     return proc;

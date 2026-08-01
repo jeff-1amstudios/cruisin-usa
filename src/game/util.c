@@ -52,10 +52,10 @@ void CARPROC(PROC* p);
 void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk);
 void DYNAOBJ_INIT(void);
 DYNAOBJ* GETDYNA(void);
-void DELDYNA(void);
+void DELDYNA(DYNAOBJ* dyna);
 void CARB_INIT(void);
 CARBLK* GETCAR(void);
-void DELCAR(void);
+void DELCAR(CARBLK* carblk);
 void SCAN_OBJECTS(PROC* p);
 void PUSHALL(void);
 void POPALL(void);
@@ -554,14 +554,14 @@ int RANDPER(int probability /*AR2*/) {
     value >>= 16;
     // asm 00008F15: 	CMPI	AR2,R0
     if (value < probability) {
-        return value;
+        return 1;
     }
     // asm 00008F16: 	BC	RANDPX
     // asm 00008F17: 	LDI	0,R0
     return 0;
 RANDPX:
     // asm 00008F18: 	RETS
-    return value;
+    return 1;
 }
 
 // *----------------------------------------------------------------------------
@@ -1280,16 +1280,16 @@ GETDYNA_ERR:
  *
  *
  */
-void DELDYNA(void) {
+void DELDYNA(DYNAOBJ* dyna) {
     // asm 00009039: 	PUSH	R0
     // ;	LDP	@DYNAFREE
     // asm 0000903A: 	LDI	@DYNAFREE,R0
     // asm 0000903B: 	STI	R0,*AR2
     // asm 0000903C: 	STI	AR2,@DYNAFREE
+    dyna->link = DYNAFREE;
+    DYNAFREE = dyna;
     // asm 0000903D: 	POP	R0
     // asm 0000903E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DELDYNA", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1379,21 +1379,23 @@ GETCAR_ERR:
  *	AR2	POINTER TO CAR OBJ
  *
  */
-void DELCAR(void) {
+void DELCAR(CARBLK* carblk) {
     // asm 0000905A: 	PUSH	R0
     // ;	LDP	@CARFREE
     // asm 0000905B: 	LDI	@CARFREE,R0
     // asm 0000905C: 	STI	R0,*AR2
     // asm 0000905D: 	STI	AR2,@CARFREE
+    carblk_freelist_set_next(carblk, CARFREE);
+    CARFREE = carblk;
     // ;	LDP	@CAR_COUNT
     // asm 0000905E: 	LDI	@CAR_COUNT,R0
     // asm 0000905F: 	DEC	R0
     // asm: 	SLOCKON	LT,"UTIL\DELCAR   erroneous CAR_COUNT"
     // asm 00009060: 	STI	R0,@CAR_COUNT
+    CAR_COUNT -= 1;
+    SLOCKON(CAR_COUNT < 0, "UTIL\\DELCAR erroneous CAR_COUNT");
     // asm 00009061: 	POP	R0
     // asm 00009062: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DELCAR", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

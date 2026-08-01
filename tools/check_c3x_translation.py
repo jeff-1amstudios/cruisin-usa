@@ -17,6 +17,12 @@ C3X_ARITHMETIC = re.compile(r"\bC3X_(?:ADD|SUB|MUL|DIV|EQ|NE|LT|LE|GT|GE)\s*\(")
 ALLOWED_VALUE = re.compile(
     r"\bC3X_(?:IMM_F32|F32|F32_INIT|INIT|LDF|FROM_INT)\s*\((?:[^()]|\([^()]*\))*\)"
 )
+ASM_FLOAT_SYMBOL = re.compile(
+    r"//\s*asm\b.*\b(?:"
+    r"LDF|ADDF|SUBF|SUBRF|MPYF|CMPF"
+    r")[A-Z]*\s+([+-]?[A-Za-z_.$][A-Za-z0-9_.$]*)\s*(?:,|$)"
+)
+ASM_REGISTER = re.compile(r"^(?:A?R\d+|IR\d+|BK|RC|RS|RE)$", re.IGNORECASE)
 
 
 def strip_comments_and_strings(text: str) -> str:
@@ -58,6 +64,50 @@ def check_file(path: Path, errors: list[str]) -> None:
                     "C3X_F32 requires an explicit full-precision lint annotation; "
                     "instruction immediates use C3X_IMM_F32",
                 )
+
+    # A word-like floating instruction operand without '@' is an instruction
+    # immediate. This applies to every assembler symbol, not just well-known
+    # constants such as HALFPI. If translated code in the following asm block
+    # uses that symbol (or its conventional memory-storage alias with a trailing
+    # I), it must do so through C3X_IMM_F32.
+    lines = original.splitlines()
+    for index, source_line in enumerate(lines):
+        match = ASM_FLOAT_SYMBOL.search(source_line)
+        if match is None:
+            continue
+        operand = match.group(1)
+        symbol = operand.lstrip("+-")
+        if ASM_REGISTER.fullmatch(symbol):
+            continue
+
+        following: list[str] = []
+        asm_count = 0
+        for candidate in lines[index + 1 : index + 41]:
+            if re.search(r"//\s*asm\b", candidate):
+                asm_count += 1
+            if asm_count >= 12:
+                break
+            following.append(candidate)
+        translated = strip_comments_and_strings("\n".join(following))
+        if not translated.strip() or not re.search(r"[;{}]", translated):
+            continue
+
+        immediate = re.compile(
+            rf"\bC3X_IMM_F32\s*\(\s*{re.escape(operand)}\s*\)"
+        )
+        symbol_use = re.compile(rf"(?<![\w.]){re.escape(operand)}(?![\w.])")
+        storage_alias_use = re.compile(
+            rf"(?<![\w.]){re.escape(operand)}I(?![\w.])"
+        )
+        masked = immediate.sub("", translated)
+        if symbol_use.search(masked) or storage_alias_use.search(masked):
+            report(
+                errors,
+                path,
+                index + 1,
+                f"assembly {operand} is a floating instruction immediate; "
+                f"use C3X_IMM_F32({operand})",
+            )
 
     # Examine complete semicolon-terminated statements so multiline arithmetic
     # expressions are covered. Mask explicit constructors before looking for a

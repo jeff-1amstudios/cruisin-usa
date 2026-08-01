@@ -19,6 +19,8 @@
 #include "vunit.h"
 #include <math.h>
 
+extern MATRIX _MATRIXA;
+
 /*
  * Source module: asm/COLLA.ASM
  */
@@ -53,7 +55,7 @@ static void SIGNFALL(void);
 static void TREESHAK(void);
 static void FREESIGN(void);
 static void ADDSIGN(void);
-static void FLYCAR(void);
+static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 void FLYCARP(void);
 void SEND_FLY_KILL(void);
 void DECODE_FLY_KILL(void);
@@ -65,13 +67,14 @@ void COLSCAN(void);
 #define DRONES_VS_DRONES CLDSCAN
 static void CLDSCAN(void);
 static c3x_reg_t REPELL(OBJ* obj0, OBJ* obj1, VECTOR* repulsion_vector);
-static void COLDISP(void);
-static void SPINROT(void);
-static void BEHINDCK(void);
-static void ANGMOM(void);
-static void CKBOUNCE(void);
-static void COLSND(void);
-void COLCHK(void);
+static void COLDISP(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
+static void SPINROT(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/, VECTOR* collision_point /*AR3*/, c3x_reg_t relative_x /*R0*/, c3x_reg_t relative_z /*R1*/);
+static void BEHINDCK(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/);
+static c3x_reg_t ANGMOM(CARBLK* carblk /*AR5*/, c3x_reg_t momentum /*R2*/);
+static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_direction_difference /*R2*/);
+static void SPINROT_FINISH(OBJ* hitter_obj, OBJ* obj, CARBLK* carblk, int entry, c3x_reg_t direction_difference);
+static void COLSND(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, c3x_reg_t impact_speed /*R0*/);
+int COLCHK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR** out_collision_point /*AR3*/);
 static c3x_f32_t* GETBOX(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/);
 static c3x_f32_t* GETBOX0(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/, c3x_reg_t xminus_mult /*R0*/, c3x_reg_t yminus_mult /*R1*/, c3x_reg_t zminus_mult /*R2*/, c3x_reg_t xplus_mult /*R3*/, c3x_reg_t yplus_mult /*R4*/, c3x_reg_t zplus_mult /*R5*/);
 void ATTR_COLLISION(void);
@@ -109,21 +112,23 @@ void ATTR_COLLISION(void);
 
 void WRECKST(void);
 extern int WRECKFLG;
-extern int CHEAT;
+extern c3x_reg_t CHEAT;
 void DRONINBZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 c3x_reg_t ROADIR(OBJ* track_obj /*AR0*/);
 int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 extern const char PC2[];
 void GETNXTRDIR(void);
-void RANDSND(void);
+void RANDSND(const int* sounds /*AR2*/, int range /*R0*/);
 int COMPTRAK(void);
-void OM_DRONE(void);
+void OM_DRONE(PROC* p);
 void FIND_DRONE(void);
-void RANDVSND(void);
+void RANDVSND(const int* sounds /*AR2*/, int range /*R0*/, int volume /*R1*/);
 
 static c3x_f32_t* EQTAB[];
 static c3x_f32_t* LEQTAB[];
 static int SAGETAB[];
+static int SCUPDTAB[];
+static int SCTAB[];
 
 /* asm: VL	.bss	VL,4 */
 VECTOR* VL[4];
@@ -136,11 +141,19 @@ c3x_reg_t TVECT2[3];
 /* asm: TMATRIX	.bss	TMATRIX,9 */
 c3x_reg_t TMATRIX[9];
 /* asm: COLVEL	.bss	COLVEL,1 */
-c3x_reg_t COLVEL = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t COLVEL = C3X_F32_INIT(1.0f);
 /* asm: PMULT	.bss	PMULT,1 */
 c3x_reg_t PMULT = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: SPINTEMP	.bss	SPINTEMP,1 */
-c3x_reg_t SPINTEMP = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t SPINTEMP = C3X_F32_INIT(1.0f);
+
+enum {
+    SPINROT_ENTRY_BOUNCE,
+    SPINROT_ENTRY_DRONE,
+    SPINROT_ENTRY_PSPINNIT,
+    SPINROT_ENTRY_SPINNIT,
+    SPINROT_ENTRY_BUMP,
+};
 
 /*
  *----------------------------------------------------------------------------
@@ -201,8 +214,8 @@ CMS0:
     // asm 00001F94: 	SUBF	*+AR2(OPOSX),R3,R0
     // asm 00001F95: 	SUBF	*+AR2(IR1),R2,R1
     // asm 00001F96: 	MPYF	R1,R1
-    delta_x = C3X_SUB(point->X, road_obj->pos.X);
-    delta_z = C3X_SUB(point->Z, road_obj->pos.Z);
+    delta_x = C3X_SUB(C3X_LDF(point->X), C3X_LDF(road_obj->pos.X));
+    delta_z = C3X_SUB(C3X_LDF(point->Z), C3X_LDF(road_obj->pos.Z));
     delta_z = C3X_MUL(delta_z, delta_z);
 CMS1:
     // asm 00001F97: 	MPYF	R0,R0
@@ -223,8 +236,8 @@ CMS1:
         // asm 00001FA1: 	SUBF	*+AR2(IR1),R2,R1
         // asm 00001FA2: 	MPYF	R1,R1
         if (road_obj != NULL) {
-            delta_x = C3X_SUB(point->X, road_obj->pos.X);
-            delta_z = C3X_SUB(point->Z, road_obj->pos.Z);
+            delta_x = C3X_SUB(C3X_LDF(point->X), C3X_LDF(road_obj->pos.X));
+            delta_z = C3X_SUB(C3X_LDF(point->Z), C3X_LDF(road_obj->pos.Z));
             delta_z = C3X_MUL(delta_z, delta_z);
             goto CMS1;
         }
@@ -1538,7 +1551,7 @@ void ATTR_COLLISION(void) {
      * Original:
      *   AR7 = &PACTIVE
      */
-    // CURRENT_PROC = NULL;
+    CURRENT_PROC = NULL;
 
     CLDSCAN();    /* DRONES VS. DRONES */
     DRONSIGN();   /* DRONES VS. SIGNS, POLES, TREES */
@@ -1638,6 +1651,7 @@ static void COLPOINT(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/) {
     c3x_reg_t car_z;
     c3x_reg_t car_radius_squared;
     OBJ* sign_obj;
+    OBJ* next_sign_obj;
     c3x_reg_t dx;
     c3x_reg_t dz;
     c3x_reg_t distance_squared;
@@ -1649,7 +1663,8 @@ static void COLPOINT(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/) {
     // 	;------->BU CARSCL0
     car_x = C3X_LDF(car_obj->pos.X); // ;GET X COORD
     car_z = C3X_LDF(car_obj->pos.Z); // ;GET Z COORD
-    sign_obj = *list_head;
+    next_sign_obj = *list_head;
+    goto CARSCL0;
 CARSCLP0:
     // asm 0000220B: 	MPYF	R4,R4
     // asm 0000220C: 	ADDF	R0,R4
@@ -1677,6 +1692,8 @@ CARSCL0:
     car_radius_squared = C3X_MUL(car_radius_squared, car_radius_squared);
 CARSCL:
     // asm 00002218: 	LDI	*+AR1(OLINK3),AR1
+    sign_obj = next_sign_obj;
+    next_sign_obj = sign_obj != NULL ? (OBJ*)sign_obj->link3 : NULL;
     // asm 00002219: 	LDI	AR1,R0
     // asm 0000221A: 	BNZD	CARSCLP0
     if (sign_obj == NULL) {
@@ -1688,7 +1705,6 @@ CARSCL:
     dx = C3X_SUB(car_x, sign_obj->pos.X);
     dz = C3X_SUB(car_z, sign_obj->pos.Z);
     // ********BNZD	CARSCLP0
-    sign_obj = (OBJ*)sign_obj->link3;
     goto CARSCLP0;
     // asm 0000221E: 	RETS
 }
@@ -1710,6 +1726,7 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
     c3x_reg_t old_velocity_rotation;
     c3x_reg_t hit_speed;
     c3x_reg_t speed_delta;
+    c3x_reg_t height_delta;
     int sign_id;
     int sign_type;
     int sign_subtype;
@@ -1724,7 +1741,6 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
         c3x_reg_t b = C3X_SUB(point0[-1], point1[-1]);
         c3x_reg_t c = C3X_NEG(C3X_ADD(C3X_MUL(a, point0[-1]), C3X_MUL(b, point0[1])));
         c3x_reg_t eval = C3X_ADD(C3X_ADD(C3X_MUL(a, sign_obj->pos.X), C3X_MUL(b, sign_obj->pos.Z)), c);
-
         if (C3X_LE(eval, C3X_FROM_INT(0))) {
             goto COLSGCX;
         }
@@ -1776,12 +1792,12 @@ HARDCOL00:
     while (C3X_LE(angle_delta, C3X_NEG(PII))) {
         angle_delta = C3X_ADD(angle_delta, TWOPII);
     }
-    carblk->over_rotation = C3X_STF(C3X_GT(angle_delta, C3X_FROM_INT(0)) ? C3X_IMM_F32(0.02) : C3X_IMM_F32(-0.02));
+    carblk->last_y_rotation = C3X_STF(C3X_GT(angle_delta, C3X_FROM_INT(0)) ? C3X_IMM_F32(0.02) : C3X_IMM_F32(-0.02));
     goto HARDCOL2;
 HARDCOL1:
     carblk->spin_flag = 1;
     carblk->spin_radians = C3X_STF(C3X_IMM_F32(3.14));
-    carblk->over_rotation = C3X_STF(C3X_IMM_F32(0.1));
+    carblk->last_y_rotation = C3X_STF(C3X_IMM_F32(0.1));
 HARDCOL2:
     angle_delta = C3X_SUB(ARCTANF(C3X_LDF(repulsion_vector.Z), C3X_LDF(repulsion_vector.X)), C3X_IMM_F32(1.57));
     angle_delta = C3X_SUB(angle_delta, carblk->y_velocity_rotation);
@@ -1817,7 +1833,9 @@ ROADKILL:
     ROADKILL_FLYERP();
     goto COLSGCX;
 FLYCOLL:
-    if (C3X_GT(C3X_ABS(C3X_SUB(car_obj->pos.Y, sign_obj->pos.Y)), C3X_FROM_INT(250))) {
+    height_delta = C3X_ABS(C3X_SUB(car_obj->pos.Y, sign_obj->pos.Y));
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000022B5, "R0", &height_delta, 5);
+    if (C3X_GT(height_delta, C3X_FROM_INT(250))) {
         goto COLSGCX;
     }
     angle_delta = C3X_ADD(SFRAND(C3X_IMM_F32(0.10)), carblk->y_velocity_rotation);
@@ -1853,7 +1871,7 @@ KLFD:
         goto COLSGCX;
     }
 FLYCOLL1:
-    ONESND((sign_subtype == RDD_55GAL) ? DRMBNCE : DSIGNSND);
+    sign_id = (sign_subtype == RDD_55GAL) ? DRMBNCE : DSIGNSND;
     goto COLSGCX0;
 RUNOVER:
     FIND_YMATRIX(&sign_obj->omatrix, C3X_LDF(carblk->y_velocity_rotation));
@@ -1873,7 +1891,7 @@ RUNOVER:
     sign_subtype = sign_obj->id & SUBTYPE_M;
     sign_id = SIGNSND;
     if (sign_subtype == TSC_R_SAGE) {
-        sign_id = SAGETAB[((RANDOM() >> 16) % 5)];
+        sign_id = SAGETAB[RANDU0(5)];
         goto RUNOV00;
     }
 RUNOV0:
@@ -1890,7 +1908,7 @@ RUNOV00:
     ONESND(sign_id);
     goto COLSGCX;
 COLSGCX0:
-    DRONESND1();
+    DRONESND1(sign_obj, sign_id);
 SIGN_IGNORE:
 COLSGCX:
 }
@@ -2026,26 +2044,43 @@ NOT_ROADKILL:
  *
  */
 static void DEBSCAN(void) {
+    OBJ* debris;
+    OBJ* next_debris;
+
     // asm 0000238C: 	LDI	@ROAD_DEBRIS,R0
+    next_debris = ROAD_DEBRIS;
     // asm 0000238D: 	B	DEBSCL1
+    goto DEBSCL1;
 DEBSCL0:
     // asm 0000238E: 	LDI	*+AR2(OLINK2),R0 	;IN BACKGROUND GROUP?
     // asm 0000238F: 	BNZ	DEBSCL			;YES, SKIP IT...
+    if (debris->link2 != 0) {
+        goto DEBSCL;
+    }
     // asm 00002390: 	LDI	*+AR2(OFLAGS),R0
     // asm 00002391: 	AND	O_LIST_M,R0
     // asm 00002392: 	CMPI	O_LIST2,R0		;OBJECT ACTIVE?
     // asm 00002393: 	BNZ	DEBSCL			;YES, FAGIT ABOUDIT
+    if ((debris->flags & O_LIST_M) != O_LIST2) {
+        goto DEBSCL;
+    }
     // asm 00002394: 	LDI	*+AR2(OLINK3),R0
+    next_debris = (OBJ*)debris->link3;
     // asm 00002395: 	CALL	OBJ_DELETE			;OBJECT INACTIVE, CAN IT + PROCESS
+    OBJ_DELETE(debris);
     // asm 00002396: 	B	DEBSCL1
+    goto DEBSCL1;
 DEBSCL:
     // asm 00002397: 	LDI	*+AR2(OLINK3),R0
+    next_debris = (OBJ*)debris->link3;
 DEBSCL1:
     // asm 00002398: 	LDI	R0,AR2
+    debris = next_debris;
     // asm 00002399: 	BNZ	DEBSCL0
+    if (debris != NULL) {
+        goto DEBSCL0;
+    }
     // asm 0000239A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBSCAN", 0, 0);
-    UNIMPL_TODO();
 }
 
 /*
@@ -2213,7 +2248,7 @@ static void ADDSIGN(void) {
 /* asm: 	 */
 #define CBUSI cbus_ROM
 
-static void FLYCAR(void) {
+static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/) {
     // asm 000023EF: 	PUSH	AR0
     // asm 000023F0: 	PUSH	AR1
     // asm 000023F1: 	PUSH	AR3
@@ -2988,53 +3023,96 @@ COLSCL:
  *
  */
 static void CLDSCAN(void) {
+    OBJ* obj0;
+    OBJ* obj1;
+    VECTOR* collision_point;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t distance_sq;
+    c3x_reg_t combined_radius;
+    c3x_reg_t radius_sq;
+
     // asm 0000260E: 	LDPI	@CAR_LIST,R0	 	;GET LIST AND CHECK NULL
+    obj0 = CAR_LIST;
     // asm 0000260F: 	BNZD	CLDSCL0
     // asm 00002610: 	LDI	R0,AR0
     // asm 00002611: 	LDI	R0,AR1
+    obj1 = obj0;
     // asm 00002612: 	NOP
     // 	;------->BNZD CLDSCL0
+    if (obj0 != NULL) {
+        goto CLDSCL0;
+    }
     // asm 00002613: 	RETS
+    return;
 CLDSCLP0:
     // asm 00002614: 	BNZD	CLDSCL			;NOCOL BIT SET
+    if ((obj1->flags & O_NOCOLL) != 0) {
+        goto CLDSCL;
+    }
     // asm 00002615: 	SUBF	*+AR1(OPOSX),R2,R0
+    delta_x = C3X_SUB(C3X_LDF(obj0->pos.X), C3X_LDF(obj1->pos.X));
     // asm 00002616: 	MPYF	R0,R0
+    delta_x = C3X_MUL(delta_x, delta_x);
     // asm 00002617: 	SUBF	*+AR1(IR0),R3,R4
+    delta_z = C3X_SUB(C3X_LDF(obj0->pos.Z), C3X_LDF(obj1->pos.Z));
     // 	;---->  BNZD	CLDSCL		;NOCOL BIT SET
     // asm 00002618: 	MPYF	R4,R4
+    delta_z = C3X_MUL(delta_z, delta_z);
     // asm 00002619: 	ADDF	R0,R4
+    distance_sq = C3X_ADD(delta_z, delta_x);
     // asm 0000261A: 	FLOAT	*+AR1(ORAD),R1
+    combined_radius = C3X_FROM_INT(obj1->radius);
     // asm 0000261B: 	ADDF	R5,R1
+    combined_radius = C3X_ADD(combined_radius, C3X_FROM_INT(obj0->radius));
     // asm 0000261C: 	MPYF	R1,R1			;SQUARE THE RADIUS LENGTH
+    radius_sq = C3X_MUL(combined_radius, combined_radius);
     // asm 0000261D: 	CMPF	R1,R4	 		;ARE WE WITHIN RADIUS?
     // asm 0000261E: 	BGT	CLDSCL
+    if (C3X_GT(distance_sq, radius_sq)) {
+        goto CLDSCL;
+    }
     // asm 0000261F: 	CALL	COLCHK			;CHECK OUT COLLISION FURTHER
-    // asm 00002620: 	BC	COLDISP
+    if (COLCHK(obj0, obj1, &collision_point)) {
+        // asm 00002620: 	BC	COLDISP
+        COLDISP(obj0, obj1, collision_point);
+        return;
+    }
 CLDSCL0:
     // asm 00002621: 	LDI	*+AR0(OFLAGS),R0
     // asm 00002622: 	TSTB	O_NOCOLL,R0		;check non-collide flag
     // asm 00002623: 	BNZ	CLDSCL1			;NON COLLIDABLE STEALTH OBJECT
+    if ((obj0->flags & O_NOCOLL) != 0) {
+        goto CLDSCL1;
+    }
     // asm 00002624: 	LDF	*+AR0(OPOSX),R2		;GET X COORD
     // asm 00002625: 	LDF	*+AR0(OPOSZ),R3		;GET Z COORD
     // asm 00002626: 	LDI	OPOSZ,IR0
     // asm 00002627: 	FLOAT	*+AR0(ORAD),R5		;GET SUCKERS RADIUS
 CLDSCL:
     // asm 00002628: 	LDI	*+AR1(OLINK3),R0
+    obj1 = (OBJ*)obj1->link3;
     // asm 00002629: 	BNZD	CLDSCLP0
     // asm 0000262A: 	LDI	R0,AR1
     // asm 0000262B: 	LDI	*+AR1(OFLAGS),R0
     // asm 0000262C: 	TSTB	O_NOCOLL,R0		;check non-collide flag
     // 	;------->BNZD	CLDSCLP0
+    if (obj1 != NULL) {
+        goto CLDSCLP0;
+    }
 CLDSCL1:
     // asm 0000262D: 	LDI	*+AR0(OLINK3),R0    	;GET NEXT LIST
+    obj0 = (OBJ*)obj0->link3;
     // asm 0000262E: 	BNZD	CLDSCL0
     // asm 0000262F: 	LDI	R0,AR1
+    obj1 = obj0;
     // asm 00002630: 	LDI	R0,AR0
     // asm 00002631: 	NOP
     // 	;------->BNZD CLDSCL0
+    if (obj0 != NULL) {
+        goto CLDSCL0;
+    }
     // asm 00002632: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLDSCAN", 0, 0);
-    UNIMPL_TODO();
 }
 
 /*
@@ -3098,67 +3176,139 @@ static c3x_reg_t REPELL(OBJ* obj0, OBJ* obj1, VECTOR* repulsion_vector) {
  *	*-AR3(1)	COLLISION PT
  *
  */
-static void COLDISP(void) {
+static void COLDISP(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/) {
+    CARBLK* car0;
+    CARBLK* car1;
+    VECTOR repulsion_vector;
+    c3x_f32_t* collision_values = (c3x_f32_t*)&MATRIXAI;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_y;
+    c3x_reg_t delta_z;
+    c3x_reg_t distance;
+    c3x_reg_t repulsion_magnitude;
+    c3x_reg_t repulsion_x;
+    c3x_reg_t repulsion_z;
+    c3x_reg_t velocity1_x;
+    c3x_reg_t velocity1_z;
+    c3x_reg_t velocity2_x;
+    c3x_reg_t velocity2_z;
+    c3x_reg_t velocity_x;
+    c3x_reg_t velocity_z;
+    c3x_reg_t mass1;
+    c3x_reg_t mass2;
+    c3x_reg_t mass_sum;
+    c3x_reg_t inelastic_x;
+    c3x_reg_t inelastic_z;
+    c3x_reg_t coefficient;
+    c3x_reg_t angle1;
+    c3x_reg_t angle2;
+    c3x_reg_t speed;
+    int probability;
+
     // *SET COLLISION BITS
     // asm 00002645: 	LDI	*+AR0(OCARBLK),AR4
+    car0 = obj0->carblk;
     // asm 00002646: 	LDI	*+AR1(OCARBLK),AR5
+    car1 = obj1->carblk;
     // *check vs helicopter -> not a normal collision
     // asm 00002647: 	LDI	*+AR1(OID),R2
     // asm 00002648: 	CMPI	DRONE_C|HELICOPTER,R2
     // asm 00002649: 	BNE	NOTHELI
+    if (obj1->id != (DRONE_C | HELICOPTER)) {
+        goto NOTHELI;
+    }
     // asm 0000264A: 	SUBF	*+AR1(OPOSX),*+AR0(OPOSX),R0
+    delta_x = C3X_SUB(C3X_LDF(obj0->pos.X), C3X_LDF(obj1->pos.X));
     // asm 0000264B: 	MPYF	R0,R0
+    delta_x = C3X_MUL(delta_x, delta_x);
     // asm 0000264C: 	LDF	*+AR0(OPOSY),R2
     // asm 0000264D: 	SUBF	*+AR1(OPOSY),R2
+    delta_y = C3X_SUB(C3X_LDF(obj0->pos.Y), C3X_LDF(obj1->pos.Y));
     // asm 0000264E: 	MPYF	R2,R2
+    delta_y = C3X_MUL(delta_y, delta_y);
     // asm 0000264F: 	ADDF	R0,R2
+    distance = C3X_ADD(delta_y, delta_x);
     // asm 00002650: 	LDF	*+AR0(OPOSZ),R0
     // asm 00002651: 	SUBF	*+AR1(OPOSZ),R0
+    delta_z = C3X_SUB(C3X_LDF(obj0->pos.Z), C3X_LDF(obj1->pos.Z));
     // asm 00002652: 	MPYF	R0,R0
+    delta_z = C3X_MUL(delta_z, delta_z);
     // asm 00002653: 	ADDF	R0,R2
+    distance = C3X_ADD(delta_z, distance);
     // asm 00002654: 	CALL	SQRT
+    distance = SQRT(distance);
     // asm 00002655: 	LDF	*+AR1(ORAD),R1
+    speed = C3X_LOAD((uint32_t)obj1->radius);
     // asm 00002656: 	MPYF	0.5,R1
+    speed = C3X_MUL(speed, C3X_IMM_F32(0.5));
     // asm 00002657: 	CMPF	R1,R0
     // asm 00002658: 	RETSGT
+    if (C3X_GT(distance, speed)) {
+        return;
+    }
 NOTHELI:
     // asm 00002659: 	LDI	*+AR0(OID),R2
     // asm 0000265A: 	AND	CLASS_M|TYPE_M,R2
     // asm 0000265B: 	CMPI	DRONE_C|RAILROAD,R2
     // asm 0000265C: 	BNE	NTRN
+    if ((obj0->id & (CLASS_M | TYPE_M)) != (DRONE_C | RAILROAD)) {
+        goto NTRN;
+    }
     // asm 0000265D: 	CMPI	*+AR1(OID),R2
     // asm 0000265E: 	RETSEQ
+    if ((obj0->id & (CLASS_M | TYPE_M)) == obj1->id) {
+        return;
+    }
 NTRN:
     // asm 0000265F: 	LDF	*+AR0(OPOSY),R0		;MAKE SURE HEIGHT IS CLOSE
     // asm 00002660: 	SUBF	*+AR1(OPOSY),R0
+    distance = C3X_SUB(C3X_LDF(obj0->pos.Y), C3X_LDF(obj1->pos.Y));
     // asm 00002661: 	ABSF	R0
+    distance = C3X_ABS(distance);
     // asm 00002662: 	FLOAT	750,R1
     // asm 00002663: 	CMPF	R1,R0
     // asm 00002664: 	RETSGT				;IF HEIGHT TO FAR AWAY, FORGET IT...
+    if (C3X_GT(distance, C3X_FROM_INT(750))) {
+        return;
+    }
     // asm 00002665: 	CALL	IMPACT_SPARK
+    IMPACT_SPARK(obj0, obj1, collision_point);
     // *REPELL CARS
     // asm 00002666: 	CALL	REPELL	  		;R0=REPULSION MAGNITUDE
+    repulsion_magnitude = REPELL(obj0, obj1, &repulsion_vector);
     // asm 00002667: 	CALL	COLSND			;MAKE YOUR SOUND...
+    COLSND(obj0, obj1, repulsion_magnitude);
     // asm 00002668: 	MPYF	0.5,R0	   		;ADJUST MAGNITUDE FOR 1/2 EACH OBJECT
+    repulsion_magnitude = C3X_MUL(repulsion_magnitude, C3X_IMM_F32(0.5));
     // asm 00002669: 	LDF	R0,R1
     // asm 0000266A: 	MPYF	*AR2,R0			;MULTIPLY BY X,Z DIRECTIONAL VECTOR
+    repulsion_x = C3X_MUL(repulsion_magnitude, C3X_LDF(repulsion_vector.X));
     // asm 0000266B: 	MPYF	*+AR2(2),R1
+    repulsion_z = C3X_MUL(repulsion_magnitude, C3X_LDF(repulsion_vector.Z));
     // asm 0000266C: 	LDF	*+AR0(OPOSX),R2		;REPELL THE SUCKER (AR0)
     // asm 0000266D: 	LDF	*+AR0(OPOSZ),R3
     // asm 0000266E: 	ADDF	R0,R2
     // asm 0000266F: 	ADDF	R1,R3
     // asm 00002670: 	STF	R2,*+AR0(OPOSX)
+    obj0->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj0->pos.X), repulsion_x));
     // asm 00002671: 	STF	R3,*+AR0(OPOSZ)
+    obj0->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj0->pos.Z), repulsion_z));
     // asm 00002672: 	LDI	*+AR1(OID),R2
     // asm 00002673: 	AND	CLASS_M|TYPE_M,R2
     // asm 00002674: 	CMPI	DRONE_C|RAILROAD,R2
     // asm 00002675: 	BEQ	FLYTRAIN
+    if ((obj1->id & (CLASS_M | TYPE_M)) == (DRONE_C | RAILROAD)) {
+        FLYTRAIN(obj0, obj1, collision_point);
+        return;
+    }
     // asm 00002676: 	LDF	*+AR1(OPOSX),R2		;REPELL THE SUCKER (AR1)
     // asm 00002677: 	LDF	*+AR1(OPOSZ),R3
     // asm 00002678: 	SUBF	R0,R2
     // asm 00002679: 	SUBF	R1,R3
     // asm 0000267A: 	STF	R2,*+AR1(OPOSX)
+    obj1->pos.X = C3X_STF(C3X_SUB(C3X_LDF(obj1->pos.X), repulsion_x));
     // asm 0000267B: 	STF	R3,*+AR1(OPOSZ)
+    obj1->pos.Z = C3X_STF(C3X_SUB(C3X_LDF(obj1->pos.Z), repulsion_z));
     // *
     // *ELASTIC COLLSION IN X AND Z
     // *FIND X AND Z VELOCITIES OF OBJ AR0
@@ -3169,30 +3319,45 @@ NTRN:
     // *		R6=XV2
     // *		R7=ZV2
     // asm 0000267C: 	LDI	*+AR0(OCARBLK),AR4
+    car0 = obj0->carblk;
     // asm 0000267D: 	LDF	*+AR4(CARVROT),R2
+    angle1 = C3X_LDF(car0->y_velocity_rotation);
     // ;	STF	R2,@CAR1VROTI
     // asm 0000267E: 	ADDF	@HALFPII,R2	 	;CORRECT FOR 90 DEGREE ERROR
+    angle1 = C3X_ADD(angle1, HALFPII);
     // asm 0000267F: 	CALL	_SINE
     // asm 00002680: 	LDF	*+AR4(CARSPEED),R3
+    speed = C3X_LDF(car0->speed);
     // ;	STF	R3,@CAR1SPEEDI
     // asm 00002681: 	MPYF	R3,R0,R5		;V1Zi (INIT ZV OBJECT 1)
+    velocity1_z = C3X_MUL(speed, _SINE(angle1));
     // asm 00002682: 	CALL	_COSI
     // asm 00002683: 	MPYF	R3,R0,R4		;V1Xi (INIT XV OBJECT 1)
+    velocity1_x = C3X_MUL(speed, _COSI(angle1));
     // *FIND X AND Z VELOCITIES OF OBJ AR1
     // *AR5=OCARBLK OBJECT AR1
     // asm 00002684: 	LDI	*+AR1(OCARBLK),AR5
+    car1 = obj1->carblk;
     // asm 00002685: 	LDF	*+AR5(CARVROT),R2
+    angle2 = C3X_LDF(car1->y_velocity_rotation);
     // ;	STF	R2,@CAR2VROTI
     // asm 00002686: 	ADDF	@HALFPII,R2	   	;CORRECT FOR 90 DEGREE ERROR
+    angle2 = C3X_ADD(angle2, HALFPII);
     // asm 00002687: 	CALL	_SINE
     // asm 00002688: 	LDF	*+AR5(CARSPEED),R3
+    speed = C3X_LDF(car1->speed);
     // ;	STF	R3,@CAR2SPEEDI
     // asm 00002689: 	MPYF	R3,R0,R7		;V2Zi (INIT ZV OBJECT 2)
+    velocity2_z = C3X_MUL(speed, _SINE(angle2));
     // asm 0000268A: 	CALL	_COSI
     // asm 0000268B: 	MPYF	R3,R0,R6		;V2Xi (INIT XV OBJECT 2)
+    velocity2_x = C3X_MUL(speed, _COSI(angle2));
     // *CHECK FOR FLYING COLLISION
     // asm 0000268C: 	CMPI	@PLYCAR,AR0		;PLAYERS CAR?
     // asm 0000268D: 	BNZ	COLDISP0	  	;NO
+    if (obj0 != PLYCAR) {
+        goto COLDISP0;
+    }
     // ***************
     // ;	LDF	*+AR4(CARSPEED),R0	;PLAYER SPEED HIGH ENOUGH
     // ;	CMPF	60,R0
@@ -3200,99 +3365,174 @@ NTRN:
     // ;	B 	COLDISP0
     // ******************
     // asm 0000268E: 	SUBF	R4,R6,R0
+    velocity_x = C3X_SUB(velocity2_x, velocity1_x);
     // asm 0000268F: 	MPYF	R0,R0
+    velocity_x = C3X_MUL(velocity_x, velocity_x);
     // asm 00002690: 	SUBF	R5,R7,R1
+    velocity_z = C3X_SUB(velocity2_z, velocity1_z);
     // asm 00002691: 	MPYF	R1,R1
+    velocity_z = C3X_MUL(velocity_z, velocity_z);
     // asm 00002692: 	ADDF	R1,R0			;FIND CLOSING SPEED SQUARED
+    speed = C3X_ADD(velocity_x, velocity_z);
     // asm 00002693: 	FLOAT	20000,R1 		;BIG MAGNITUDE ?
+    distance = C3X_FROM_INT(20000);
     // asm 00002694: 	MPYF	2,R1			;2X30000=60000
+    distance = C3X_MUL(distance, C3X_IMM_F32(2));
     // asm 00002695: 	CMPF	R1,R0
     // asm 00002696: 	BLT	COLDISP0		;NOT A FLYER
+    if (C3X_LT(speed, distance)) {
+        goto COLDISP0;
+    }
     // asm 00002697: 	PUSH	AR2			;SAVE REPULSION VECTOR DUDES...
     // asm 00002698: 	FLOAT	70,R1	   		;GET PROBABILITY FUNCTION
+    distance = C3X_FROM_INT(70);
     // asm 00002699: 	CALL	DIV_F
+    speed = DIV_F(speed, distance);
     // asm 0000269A: 	FIX	R0,AR2
+    probability = FIX(speed);
     // asm 0000269B: 	CALL	RANDPER
     // asm 0000269C: 	POP	AR2
     // asm 0000269D: 	BNC	COLDISP0      		;NOT A FLYER
+    if (!RANDPER(probability)) {
+        goto COLDISP0;
+    }
     // asm 0000269E: 	LDF	*+AR4(CARSPEED),R0	;PLAYER SPEED HIGH ENOUGH
+    speed = C3X_LDF(car0->speed);
     // asm 0000269F: 	FLOAT	160,R1
     // asm 000026A0: 	CMPF	R1,R0
     // asm 000026A1: 	BGT	FLYCAR		   	;FLY THE SUCKER...
+    if (C3X_GT(speed, C3X_FROM_INT(160))) {
+        FLYCAR(obj0, obj1, collision_point);
+        return;
+    }
 COLDISP0:
     // asm 000026A2: 	PUSH	AR3	 		;SAVE COLLISION POINT
     // asm 000026A3: 	LDPI	@MATRIXAI,AR3  		;GET TEMP STORE
     // *COMPUTE INELASTIC VELOCITY
     // asm 000026A4: 	LDF	*+AR4(CARMASS),R1	;GET MASS1
+    mass1 = C3X_LDF(car0->mass);
     // asm 000026A5: 	CMPI	@PLYCAR,AR0
     // asm 000026A6: 	BNE	COLIN1
+    if (obj0 != PLYCAR) {
+        goto COLIN1;
+    }
     // asm 000026A7: 	MPYF	@CHEAT,R1		;BOOST MASS ON CHEAT
+    mass1 = C3X_MUL(mass1, CHEAT);
     // asm 000026A8: 	MPYF	@CHEAT,R1
+    mass1 = C3X_MUL(mass1, CHEAT);
     // asm 000026A9: 	MPYF	@CHEAT,R1
+    mass1 = C3X_MUL(mass1, CHEAT);
 COLIN1:
     // asm 000026AA: 	PUSHF	R1
     // asm 000026AB: 	MPYF	R4,R1,R2		;M1XV1
+    inelastic_x = C3X_MUL(velocity1_x, mass1);
     // asm 000026AC: 	MPYF	R5,R1,R3		;M1ZV1
+    inelastic_z = C3X_MUL(velocity1_z, mass1);
     // asm 000026AD: 	LDF	*+AR5(CARMASS),R0	;GET MASS2
+    mass2 = C3X_LDF(car1->mass);
     // asm 000026AE: 	MPYF	R6,R0,R1		;M2XV2
+    speed = C3X_MUL(velocity2_x, mass2);
     // asm 000026AF: 	ADDF	R1,R2
+    inelastic_x = C3X_ADD(inelastic_x, speed);
     // asm 000026B0: 	MPYF	R7,R0,R1		;M2ZV2
+    speed = C3X_MUL(velocity2_z, mass2);
     // asm 000026B1: 	ADDF	R1,R3
+    inelastic_z = C3X_ADD(inelastic_z, speed);
     // asm 000026B2: 	POPF	R1
     // asm 000026B3: 	ADDF	R1,R0			;GET M1+M2
+    mass_sum = C3X_ADD(mass2, mass1);
     // ;	ADDF	*+AR4(CARMASS),R0	;GET M1+M2
     // asm 000026B4: 	CALL	INV_F30
+    coefficient = INV_F30(mass_sum);
     // asm 000026B5: 	MPYF	R0,R2			;INELASTIC XV
+    inelastic_x = C3X_MUL(coefficient, inelastic_x);
     // asm 000026B6: 	MPYF	R0,R3			;INELASTIC ZV
+    inelastic_z = C3X_MUL(coefficient, inelastic_z);
     // asm 000026B7: 	STF	R2,*+AR3(4)	  	;SAVE INELASTIC XV
+    collision_values[4] = C3X_STF(inelastic_x);
     // asm 000026B8: 	STF	R3,*+AR3(5)	  	;SAVE INELASTIC ZV
+    collision_values[5] = C3X_STF(inelastic_z);
     // *COMPUTE (M1-M2)/(M1+M2)
     // asm 000026B9: 	LDF	*+AR4(CARMASS),R1
     // asm 000026BA: 	ADDF	*+AR5(CARMASS),R1
+    mass_sum = C3X_ADD(C3X_LDF(car0->mass), C3X_LDF(car1->mass));
     // asm 000026BB: 	STF	R1,*+AR3(3)	  	;SAVE M1+M2
+    collision_values[3] = C3X_STF(mass_sum);
     // asm 000026BC: 	LDF	*+AR4(CARMASS),R0
     // asm 000026BD: 	SUBF	*+AR5(CARMASS),R0
+    coefficient = C3X_SUB(C3X_LDF(car0->mass), C3X_LDF(car1->mass));
     // asm 000026BE: 	CALL	DIV_F
+    coefficient = DIV_F(coefficient, mass_sum);
     // asm 000026BF: 	STF	R0,*AR3
+    collision_values[0] = C3X_STF(coefficient);
     // *COMPUTE 2*M2/(M1+M2)
     // asm 000026C0: 	LDF	*+AR3(3),R1
     // asm 000026C1: 	LDF	*+AR5(CARMASS),R0
+    coefficient = C3X_LDF(car1->mass);
     // asm 000026C2: 	MPYF	2,R0
+    coefficient = C3X_MUL(coefficient, C3X_IMM_F32(2));
     // asm 000026C3: 	CALL	DIV_F
+    coefficient = DIV_F(coefficient, C3X_LDF(collision_values[3]));
     // asm 000026C4: 	STF	R0,*+AR3(1)
+    collision_values[1] = C3X_STF(coefficient);
     // *COMPUTE 2*M1/(M1+M2)
     // asm 000026C5: 	LDF	*+AR3(3),R1
     // asm 000026C6: 	LDF	*+AR4(CARMASS),R0
+    coefficient = C3X_LDF(car0->mass);
     // asm 000026C7: 	MPYF	2,R0
+    coefficient = C3X_MUL(coefficient, C3X_IMM_F32(2));
     // asm 000026C8: 	CALL	DIV_F
+    coefficient = DIV_F(coefficient, C3X_LDF(collision_values[3]));
     // asm 000026C9: 	STF	R0,*+AR3(2)  		;SAVE 2*M1/(M1+M2)
+    collision_values[2] = C3X_STF(coefficient);
     // *X VELOCITY CASE OBJECT 1
     // asm 000026CA: 	MPYF	*AR3,R4,R0		;V1Xf = V1Xi(M1-M2)/(M1+M2)
+    velocity_x = C3X_MUL(C3X_LDF(collision_values[0]), velocity1_x);
     // asm 000026CB: 	MPYF	*+AR3(1),R6,R1		;       + V2Xi(2*M2)/(M1+M2)
+    speed = C3X_MUL(C3X_LDF(collision_values[1]), velocity2_x);
     // asm 000026CC: 	ADDF	R1,R0,R2		;V1XF
+    velocity_x = C3X_ADD(speed, velocity_x);
     // *Z VELOCITY CASE OBJECT 1
     // asm 000026CD: 	MPYF	*AR3,R5,R0		;V1Zf = V1Zi(M1-M2)/(M1+M2)
+    velocity_z = C3X_MUL(C3X_LDF(collision_values[0]), velocity1_z);
     // asm 000026CE: 	MPYF	*+AR3(1),R7,R1		;       + V2Zi(2*M2)/(M1+M2)
+    speed = C3X_MUL(C3X_LDF(collision_values[1]), velocity2_z);
     // asm 000026CF: 	ADDF	R1,R0,R3		;V1ZF
+    velocity_z = C3X_ADD(speed, velocity_z);
     // *ADD INELASTIC VELOCITY OBJECT 1
     // asm 000026D0: 	LDF	*+AR3(4),R0
+    inelastic_x = C3X_LDF(collision_values[4]);
     // asm 000026D1: 	LDF	*+AR3(5),R1
+    inelastic_z = C3X_LDF(collision_values[5]);
     // asm 000026D2: 	MPYF	0.75,R0
+    inelastic_x = C3X_MUL(inelastic_x, C3X_IMM_F32(0.75));
     // asm 000026D3: 	MPYF	0.75,R1
+    inelastic_z = C3X_MUL(inelastic_z, C3X_IMM_F32(0.75));
     // asm 000026D4: 	MPYF	0.25,R2
+    velocity_x = C3X_MUL(velocity_x, C3X_IMM_F32(0.25));
     // asm 000026D5: 	MPYF	0.25,R3
+    velocity_z = C3X_MUL(velocity_z, C3X_IMM_F32(0.25));
     // asm 000026D6:   	ADDF	R0,R2
+    velocity_x = C3X_ADD(inelastic_x, velocity_x);
     // asm 000026D7: 	ADDF	R1,R3
+    velocity_z = C3X_ADD(inelastic_z, velocity_z);
     // *ADD REPULSION VELOCITY	OBJECT 1
     // asm 000026D8: 	LDF	10.0,R0    		;VELOCITY REPULSION CONSTANT
+    speed = C3X_IMM_F32(10.0);
     // ;	LDF	*+AR4(CARMASS),R1	;DIVIDE BY MASS
     // ;	CALL	DIV_F
     // asm 000026D9: 	LDF	*AR2,R1		  	;X REPULSION VELOCITY
+    repulsion_magnitude = C3X_LDF(repulsion_vector.X);
     // asm 000026DA: 	MPYF	R0,R1
+    repulsion_magnitude = C3X_MUL(speed, repulsion_magnitude);
     // asm 000026DB: 	ADDF	R1,R2
+    velocity_x = C3X_ADD(repulsion_magnitude, velocity_x);
     // asm 000026DC: 	LDF	*+AR2(2),R1		;Z REPULSION VELOCITY
+    repulsion_magnitude = C3X_LDF(repulsion_vector.Z);
     // asm 000026DD: 	MPYF	R0,R1
+    repulsion_magnitude = C3X_MUL(speed, repulsion_magnitude);
     // asm 000026DE: 	ADDF	R1,R3
+    velocity_z = C3X_ADD(repulsion_magnitude, velocity_z);
     // **********debugging stuff
     // ;	STF	R4,@CAR1XVI	      	;SAVE YOUR VELOCITIES
     // ;	STF	R5,@CAR1ZVI
@@ -3300,74 +3540,124 @@ COLIN1:
     // ;	STF	R7,@CAR2ZVI
     // *************************end debug stuff
     // asm 000026DF: 	CALL	ARCTANF
+    angle1 = ARCTANF(velocity_x, velocity_z);
     // asm 000026E0: 	SUBPF	@HALFPII,R0
+    angle1 = C3X_SUB(angle1, HALFPII);
     // *STORE VEL THETA, SPEED
     // asm 000026E1: 	PUSHF	R0
     // ;	STF	R0,*+AR4(CARVROT)
     // asm 000026E2: 	MPYF	R2,R2
+    speed = C3X_MUL(velocity_x, velocity_x);
     // asm 000026E3: 	MPYF	R3,R3
+    distance = C3X_MUL(velocity_z, velocity_z);
     // asm 000026E4: 	ADDF	R3,R2
+    speed = C3X_ADD(distance, speed);
     // asm 000026E5: 	CALL	SQRT
+    speed = SQRT(speed);
     // asm 000026E6: 	STF	R0,*+AR4(CARSPEED)
+    car0->speed = C3X_STF(speed);
     // ;	STF	R0,@CAR1SPEEDF		;SAVE FOR DEBUG
     // *X VELOCITY CASE OBJECT 2
     // asm 000026E7: 	NEGF	*AR3,R0			;(M2-M1)/(M1+M2)
+    coefficient = C3X_NEG(C3X_LDF(collision_values[0]));
     // asm 000026E8: 	STF	R0,*AR3
+    collision_values[0] = C3X_STF(coefficient);
     // asm 000026E9: 	MPYF	*AR3,R6,R0		;V2Xf = V2Xi(M1-M2)/(M1+M2)
+    velocity_x = C3X_MUL(C3X_LDF(collision_values[0]), velocity2_x);
     // asm 000026EA: 	LDF	*+AR3(2),R3
+    coefficient = C3X_LDF(collision_values[2]);
     // asm 000026EB: 	MPYF	R3,R4,R1		;       + V1Xi(2*M1)/(M1+M2)
+    speed = C3X_MUL(coefficient, velocity1_x);
     // asm 000026EC: 	ADDF	R1,R0,R2		;V2XF
+    velocity_x = C3X_ADD(speed, velocity_x);
     // *Z VELOCITY CASE OBJECT 2
     // asm 000026ED: 	MPYF	*AR3,R7,R0		;V1Zf = V1Zi(M1-M2)/(M1+M2)
+    velocity_z = C3X_MUL(C3X_LDF(collision_values[0]), velocity2_z);
     // asm 000026EE: 	MPYF	R3,R5,R1		;       + V2Zi(2*M2)/(M1+M2)
+    speed = C3X_MUL(coefficient, velocity1_z);
     // asm 000026EF: 	ADDF	R1,R0,R3		;V2ZF
+    velocity_z = C3X_ADD(speed, velocity_z);
     // *ADD INELASTIC VELOCITY OBJECT 2
     // asm 000026F0: 	LDF	*+AR3(4),R0
+    inelastic_x = C3X_LDF(collision_values[4]);
     // asm 000026F1: 	LDF	*+AR3(5),R1
+    inelastic_z = C3X_LDF(collision_values[5]);
     // asm 000026F2: 	MPYF	0.75,R0
+    inelastic_x = C3X_MUL(inelastic_x, C3X_IMM_F32(0.75));
     // asm 000026F3: 	MPYF	0.75,R1
+    inelastic_z = C3X_MUL(inelastic_z, C3X_IMM_F32(0.75));
     // asm 000026F4: 	MPYF	0.25,R2
+    velocity_x = C3X_MUL(velocity_x, C3X_IMM_F32(0.25));
     // asm 000026F5: 	MPYF	0.25,R3
+    velocity_z = C3X_MUL(velocity_z, C3X_IMM_F32(0.25));
     // asm 000026F6: 	ADDF	R0,R2
+    velocity_x = C3X_ADD(inelastic_x, velocity_x);
     // asm 000026F7: 	ADDF	R1,R3
+    velocity_z = C3X_ADD(inelastic_z, velocity_z);
     // asm 000026F8: 	CMPI	@PLYCAR,AR0		;HIT BY PLAYERS CAR?
     // asm 000026F9: 	BNE	ZZZ1
+    if (obj0 != PLYCAR) {
+        goto ZZZ1;
+    }
     // asm 000026FA: 	MPYF	@PMULT,R2	       	;SLOW SPEED MULTIPLIER
+    velocity_x = C3X_MUL(PMULT, velocity_x);
     // asm 000026FB: 	MPYF	@PMULT,R3
+    velocity_z = C3X_MUL(PMULT, velocity_z);
 ZZZ1:
     // *ADD REPULSION VELOCITY	OBJECT 2
     // asm 000026FC: 	LDF	-10.0,R0    		;VELOCITY REPULSION CONSTANT
+    speed = C3X_IMM_F32(-10.0);
     //  ;	LDF	*+AR5(CARMASS),R1	;DIVIDE BY MASS
     //  ;	CALL	DIV_F
     // asm 000026FD: 	LDF	*AR2,R1		  	;X REPULSION VELOCITY
+    repulsion_magnitude = C3X_LDF(repulsion_vector.X);
     // asm 000026FE: 	MPYF	R0,R1
+    repulsion_magnitude = C3X_MUL(speed, repulsion_magnitude);
     // asm 000026FF: 	ADDF	R1,R2			;ADD TO XV
+    velocity_x = C3X_ADD(repulsion_magnitude, velocity_x);
     // asm 00002700: 	LDF	*+AR2(2),R1		;Z REPULSION VELOCITY
+    repulsion_magnitude = C3X_LDF(repulsion_vector.Z);
     // asm 00002701: 	MPYF	R0,R1
+    repulsion_magnitude = C3X_MUL(speed, repulsion_magnitude);
     // asm 00002702: 	ADDF	R1,R3			;ADD TO ZV
+    velocity_z = C3X_ADD(repulsion_magnitude, velocity_z);
     // asm 00002703: 	CALL	ARCTANF
+    angle2 = ARCTANF(velocity_x, velocity_z);
     // asm 00002704: 	LDP	HALFPII
     // asm 00002705: 	SUBF	@HALFPII,R0
+    angle2 = C3X_SUB(angle2, HALFPII);
     // *STORE VEL THETA, SPEED
     // asm 00002706: 	PUSHF	R0	 		;SAVE NEW CARVROT
     // asm 00002707: 	MPYF	R2,R2
+    speed = C3X_MUL(velocity_x, velocity_x);
     // asm 00002708: 	MPYF	R3,R3
+    distance = C3X_MUL(velocity_z, velocity_z);
     // asm 00002709: 	ADDF	R3,R2
+    speed = C3X_ADD(distance, speed);
     // asm 0000270A: 	CALL	SQRT
+    speed = SQRT(speed);
     // asm 0000270B: 	STF	R0,*+AR5(CARSPEED)
+    car1->speed = C3X_STF(speed);
     // ;	STF	R0,@CAR2SPEEDF		;SAVE FOR DEBUG
     // *NORMALIZE VELOCITY ROTATIONS OBJECT 2
     // asm 0000270C:   	POPF	R2
     // asm 0000270D: 	LDF	0.333,R0		;ADD A LITTLE RANDOM DIRECTION
+    speed = C3X_IMM_F32(0.333);
     // asm 0000270E: 	CALL	SFRAND
+    speed = SFRAND(speed);
     // asm 0000270F: 	ADDF	R0,R2
+    angle2 = C3X_ADD(speed, angle2);
     // asm 00002710: 	CALL	NORMITS
+    angle2 = NORMITS(angle2);
     // asm 00002711: 	STF	R2,*+AR5(CARVROT)
+    car1->y_velocity_rotation = C3X_STF(angle2);
     // ;	STF	R2,@CAR2VROTF		;SAVE FOR DEBUG
     // *NORMALIZE VELOCITY ROTATIONS OBJECT 1
     // asm 00002712:   	POPF	R2
     // asm 00002713: 	CALL	NORMITS
+    angle1 = NORMITS(angle1);
     // asm 00002714: 	STF	R2,*+AR4(CARVROT)
+    car0->y_velocity_rotation = C3X_STF(angle1);
     // ;	STF	R2,@CAR1VROTF		;SAVE FOR DEBUG
     // asm 00002715: 	POP	AR3
     // *
@@ -3389,8 +3679,13 @@ ZZZ1:
     // *CHECK FOR SPIN
     // *
     // asm 00002716: 	SUBF   	R6,R4,R0	;GET RELATIVE XV
+    velocity_x = C3X_SUB(velocity1_x, velocity2_x);
     // asm 00002717: 	SUBF   	R7,R5,R1
+    velocity_z = C3X_SUB(velocity1_z, velocity2_z);
     // asm 00002718: 	CALL	SPINROT
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002718, "R0", &velocity_x, 5);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002718, "R1", &velocity_z, 5);
+    SPINROT(obj0, obj1, collision_point, velocity_x, velocity_z);
     // asm 00002719: COLDSP30
     // asm 00002719: 	PUSH	AR1
     // asm 0000271A: 	PUSH	AR0
@@ -3401,14 +3696,18 @@ ZZZ1:
     // asm 0000271F: 	LDI	AR0,AR1
     // asm 00002720: 	POP	AR0		;SWAP AR0,AR1
     // asm 00002721: 	SUBF  	R4,R6,R0	;GET RELATIVE XV
+    velocity_x = C3X_SUB(velocity2_x, velocity1_x);
     // asm 00002722: 	SUBF  	R5,R7,R1	;GET RELATIVE ZV
+    velocity_z = C3X_SUB(velocity2_z, velocity1_z);
     // asm 00002723: 	CALL	SPINROT
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002723, "R0", &velocity_x, 5);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002723, "R1", &velocity_z, 5);
+    SPINROT(obj1, obj0, collision_point, velocity_x, velocity_z);
     // asm 00002724: 	POP	AR0
     // asm 00002725: 	POP	AR1
     // asm 00002726: COLDSPX
     // asm 00002726: 	RETS	       	       	;FOR NOW DUDES
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLDISP", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
@@ -3435,85 +3734,152 @@ ZZZ1:
 int PLYRBEHIND;
 
 // *
-static void SPINROT(void) {
+static void SPINROT(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/, VECTOR* collision_point /*AR3*/, c3x_reg_t relative_x /*R0*/, c3x_reg_t relative_z /*R1*/) {
+    CARBLK* carblk = obj->carblk;
+    c3x_f32_t vectors[4];
+    c3x_reg_t intensity;
+    c3x_reg_t radius_length;
+    c3x_reg_t impact_length;
+    c3x_reg_t inverse_length;
+    c3x_reg_t impact_x;
+    c3x_reg_t impact_z;
+    c3x_reg_t cross_product;
+    c3x_reg_t dot_product;
+    c3x_reg_t rotation_speed;
+    c3x_reg_t mass_adjustment;
+    c3x_reg_t direction_difference = C3X_FROM_INT(0);
+    int probability;
+
     // asm 00002727: 	LDI	0,R2
+    MAME_ASSERT_MEM(0x00002727, "d@(ar5+31)", &carblk->spin_flag);
     // asm 00002728: 	STI	R2,@PLYRBEHIND		;PLAYER HIT FROM BEHIND FLAG
+    PLYRBEHIND = 0;
     // asm 00002729: 	PUSHF	R0
     // asm 0000272A: 	PUSHF	R1
     // asm 0000272B: 	MPYF	R0,R0	   		;GET INTENSITY OF RELATIVE SPEED
+    intensity = C3X_MUL(relative_x, relative_x);
     // asm 0000272C: 	MPYF	R1,R1
+    impact_length = C3X_MUL(relative_z, relative_z);
     // asm 0000272D: 	ADDF	R0,R1,R2
+    intensity = C3X_ADD(intensity, impact_length);
     // asm 0000272E: 	CALL	SQRT
+    intensity = SQRT(intensity);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x0000272F, "R0", &intensity, 5);
     // asm 0000272F: 	LDF	R0,R3			;SAVE INTENSITY
     // asm 00002730: 	CMPF	20,R0			;SET BUMP FLAG FOR BIGGIE
     // asm 00002731: 	LDIGT	1,R2
     // asm 00002732: 	LDILE	0,R2
     // asm 00002733: 	STI	R2,*+AR5(CAR_BUMP)
+    carblk->bump_flag = C3X_GT(intensity, C3X_IMM_F32(20)) ? 1 : 0;
     // asm 00002734: 	POPF	R1
     // asm 00002735: 	POPF	R0
     // asm 00002736: 	PUSHF	R3	      		;SAVE INTENSITY
     // asm 00002737: 	LDPI	@VECTORAI,AR2
     // asm 00002738: 	LDF	*+AR1(OPOSX),R2	   	;GET OBJECT2 XZ CENTER ORIGIN
     // asm 00002739: 	SUBF3	R2,*-AR3(1),R2		;GET RELATIVE POSITION OF COLLISION PT.
+    radius_length = C3X_SUB(C3X_LDF(collision_point->X), C3X_LDF(obj->pos.X));
     // asm 0000273A: 	STF	R2,*AR2
+    vectors[0] = C3X_STF(radius_length);
     // asm 0000273B: 	LDF	*+AR1(OPOSZ),R2
     // asm 0000273C:  	SUBF3	R2,*+AR3(1),R2
+    radius_length = C3X_SUB(C3X_LDF(collision_point->Z), C3X_LDF(obj->pos.Z));
     // asm 0000273D: 	STF	R2,*+AR2(1)
+    vectors[1] = C3X_STF(radius_length);
     // *GET RELATIVE VELOCITY OBJECT AR1 PERSPECTIVE
     // asm 0000273E: 	MPYF	0.5,R0		;MAKE THIS SMALL
+    relative_x = C3X_MUL(relative_x, C3X_IMM_F32(0.5));
     // asm 0000273F: 	ADDF	*AR2,R0
+    impact_x = C3X_ADD(C3X_LDF(vectors[0]), relative_x);
     // asm 00002740: 	STF	R0,*+AR2(2)
+    vectors[2] = C3X_STF(impact_x);
     // asm 00002741: 	MPYF	0.5,R1		;MAKE THIS SMALL
+    relative_z = C3X_MUL(relative_z, C3X_IMM_F32(0.5));
     // asm 00002742: 	ADDF	*+AR2(1),R1
+    impact_z = C3X_ADD(C3X_LDF(vectors[1]), relative_z);
     // asm 00002743: 	STF	R1,*+AR2(3)
+    vectors[3] = C3X_STF(impact_z);
     // *COMPUTE CROSS PRODUCT
     // asm 00002744: 	MPYF	*AR2,R1,R1
+    cross_product = C3X_MUL(C3X_LDF(vectors[0]), impact_z);
     // asm 00002745: 	MPYF	*+AR2(1),R0,R0
+    dot_product = C3X_MUL(C3X_LDF(vectors[1]), impact_x);
     // asm 00002746: 	SUBF	R0,R1 			;THIS CROSS PRODUCT SIGN
+    cross_product = C3X_SUB(cross_product, dot_product);
     // asm 00002747: 	PUSHF	R1			;SAVE THE SIGN DUDES
     // *GET ROTATIONAL INTENSITY
     // *NORMALIZE VECTORS
     // *NORMALIZE RADIUS VECTOR
     // asm 00002748: 	MPYF	*AR2,*AR2,R3
+    radius_length = C3X_MUL(C3X_LDF(vectors[0]), C3X_LDF(vectors[0]));
     // asm 00002749: 	MPYF	*+AR2(1),*+AR2(1),R1
+    impact_length = C3X_MUL(C3X_LDF(vectors[1]), C3X_LDF(vectors[1]));
     // asm 0000274A: 	ADDF	R1,R3,R2
+    radius_length = C3X_ADD(impact_length, radius_length);
     // asm 0000274B: 	CALL	SQRT
+    radius_length = SQRT(radius_length);
     // asm 0000274C: 	PUSHF	R0			;SAVE THE RADIUS LENGTH
     // asm 0000274D: 	CALL	INV_F30
+    inverse_length = INV_F30(radius_length);
     // asm 0000274E: 	MPYF	*AR2,R0,R1
+    impact_length = C3X_MUL(C3X_LDF(vectors[0]), inverse_length);
     // asm 0000274F: 	STF	R1,*AR2
+    vectors[0] = C3X_STF(impact_length);
     // asm 00002750: 	MPYF	*+AR2(1),R0,R1
+    impact_length = C3X_MUL(C3X_LDF(vectors[1]), inverse_length);
     // asm 00002751: 	STF	R1,*+AR2(1)
+    vectors[1] = C3X_STF(impact_length);
     // *NORMALIZE IMPACT VECTOR
     // asm 00002752: 	LDF	*+AR2(2),R1
     // asm 00002753: 	MPYF	R1,R1,R3
+    impact_length = C3X_MUL(C3X_LDF(vectors[2]), C3X_LDF(vectors[2]));
     // asm 00002754: 	LDF	*+AR2(3),R1
     // asm 00002755: 	MPYF	R1,R1
+    dot_product = C3X_MUL(C3X_LDF(vectors[3]), C3X_LDF(vectors[3]));
     // asm 00002756: 	ADDF	R1,R3,R2
+    impact_length = C3X_ADD(dot_product, impact_length);
     // asm 00002757: 	CALL	SQRT
+    impact_length = SQRT(impact_length);
     // asm 00002758: 	CALL	INV_F30
+    inverse_length = INV_F30(impact_length);
     // asm 00002759: 	LDF	R0,R1
     // asm 0000275A: 	MPYF	*+AR2(2),R0
+    impact_x = C3X_MUL(C3X_LDF(vectors[2]), inverse_length);
     // asm 0000275B: 	MPYF	*+AR2(3),R1
+    impact_z = C3X_MUL(C3X_LDF(vectors[3]), inverse_length);
     // *COMPUTE DOT PRODUCT TO GET ANGLE
     // *COSINE=DOT PRODUCT
     // asm 0000275C: 	MPYF	*AR2,R0
+    impact_x = C3X_MUL(C3X_LDF(vectors[0]), impact_x);
     // asm 0000275D: 	MPYF	*+AR2(1),R1
+    impact_z = C3X_MUL(C3X_LDF(vectors[1]), impact_z);
     // asm 0000275E: 	ADDF	R0,R1			;R3=DOT PRODUCT
+    dot_product = C3X_ADD(impact_x, impact_z);
     // asm 0000275F: 	ABSF	R1
+    dot_product = C3X_ABS(dot_product);
     // asm 00002760: 	SUBRF	1.0,R1
+    dot_product = C3X_SUB(C3X_IMM_F32(1.0), dot_product);
     // asm 00002761: 	POPF	R0			;GET RADIUS LENGTH
     // asm 00002762: 	MPYF	R0,R1
+    rotation_speed = C3X_MUL(radius_length, dot_product);
     // asm 00002763: 	MPYF	2,R1			;FUDGE FACTOR
+    rotation_speed = C3X_MUL(rotation_speed, C3X_IMM_F32(2));
     // asm 00002764: 	POPF	R0			;GET SIGN
     // asm 00002765:        	LDFN	-15.0,R0		;LOAD FUDGE FACTOR
     // asm 00002766:        	LDFNN	15.0,R0
+    dot_product = C3X_LT(cross_product, C3X_FROM_INT(0)) ? C3X_IMM_F32(-15.0) : C3X_IMM_F32(15.0);
     // asm 00002767: 	MPYF	R1,R0			;DO IT DUDE
+    rotation_speed = C3X_MUL(rotation_speed, dot_product);
     // asm 00002768: 	LDF	*+AR5(CARMASS),R1	;ADJUST FOR MASS
+    mass_adjustment = C3X_LDF(carblk->mass);
     // asm 00002769: 	CMPF	2.0,R1
     // asm 0000276A: 	LDFGE	10.0,R1			;HEAVY MASS ADJUSTMENT
+    if (C3X_GE(mass_adjustment, C3X_IMM_F32(2.0))) {
+        mass_adjustment = C3X_IMM_F32(10.0);
+    }
     // asm 0000276B: 	CALL	DIV_F
+    rotation_speed = DIV_F(rotation_speed, mass_adjustment);
     // asm 0000276C: 	STF	R0,@SPINTEMP		;SPIN TIME TEMP
+    SPINTEMP = C3X_STF(rotation_speed);
     // *
     // *GET THE SPIN TIME
     // *
@@ -3523,11 +3889,21 @@ static void SPINROT(void) {
     // *
     // asm 0000276D: 	POPF	R3			;GET INTENSITY OF COLLISION
     // asm 0000276E: 	STF	R3,@COLVEL		;COLLISION RELATIVE VELOCITY
+    COLVEL = C3X_STF(intensity);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x0000276F, "R3", &intensity, 5);
     // asm 0000276F: 	LDI	*+AR5(CAR_SPIN),R1	;CHECK IF ALREADY SPINNING
     // asm 00002770: 	CMPI	1,R1
     // asm 00002771: 	BZ	SPINNIT			;YES...
+    if (carblk->spin_flag == 1) {
+        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_SPINNIT, direction_difference);
+        return;
+    }
     // asm 00002772: 	CMPI	@PLYCAR,AR1		;PLAYERS CAR?
     // asm 00002773: 	BNZ	DRONESPIN
+    if (obj != PLYCAR) {
+        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_DRONE, direction_difference);
+        return;
+    }
     // *PLAYER SPIN
     // *
     // *R0	ROTATION SPEED (FLOAT)
@@ -3537,19 +3913,39 @@ static void SPINROT(void) {
     // *
     // asm 00002774: PLYRSPIN
     // asm 00002774: 	CALL	BEHINDCK		;CHECK IF PLAYER HIT FROM BEHIND
+    BEHINDCK(hitter_obj, obj);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002775, "R3", &intensity, 5);
     // asm 00002775: 	CMPF	50,R3
     // asm 00002776: 	BGT	PLSPIN1			;BIG BUMP...
+    if (C3X_GT(intensity, C3X_IMM_F32(50))) {
+        goto PLSPIN1;
+    }
     // asm 00002777: 	CALL	CKBOUNCE
+    probability = CKBOUNCE(obj, carblk, &direction_difference);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002778, "R3", &intensity, 5);
     // asm 00002778: 	BNC	SPINBUMP
     // asm 00002779: 	B	SPINBOUNCE
+    SPINROT_FINISH(hitter_obj, obj, carblk, probability ? SPINROT_ENTRY_BOUNCE : SPINROT_ENTRY_BUMP, direction_difference);
+    return;
 PLSPIN1:
     // asm 0000277A: 	CMPF	100,R3
     // asm 0000277B: 	BGT	PLBIG			;SPIN, RELATIVE VELOCITY LARGE
+    if (C3X_GT(intensity, C3X_IMM_F32(100))) {
+        goto PLBIG;
+    }
     // asm 0000277C: 	LDI	500,AR2			;SPIN PROBABILITY
     // asm 0000277D: 	CALL	RANDPER
     // asm 0000277E: 	BC	PLSPIN2	      		;NORMAL SPIN
+    if (RANDPER(500)) {
+        goto PLSPIN2;
+    }
     // asm 0000277F: 	CALL	CKBOUNCE
+    probability = CKBOUNCE(obj, carblk, &direction_difference);
     // asm 00002780: 	BC	SPINBOUNCE	   	;DO A BOUNCE
+    if (probability) {
+        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_BOUNCE, direction_difference);
+        return;
+    }
 PLSPIN2:
     // asm 00002781: 	LDI	@CAMVIEW,R2
     // asm 00002782: 	LDINZ	150,AR2
@@ -3557,24 +3953,34 @@ PLSPIN2:
     // asm 00002784: 	CALL	RANDPER
     // asm 00002785: 	BC	PSPINNIT       		;NORMAL SPIN
     // asm 00002786: 	B	SPINBUMP
+    SPINROT_FINISH(hitter_obj, obj, carblk, RANDPER(CAMVIEW != 0 ? 150 : 100) ? SPINROT_ENTRY_PSPINNIT : SPINROT_ENTRY_BUMP, direction_difference);
+    return;
 PLBIG:
     // asm 00002787: 	LDI	@CAMVIEW,R2
     // asm 00002788: 	LDINZ	500,AR2
     // asm 00002789: 	LDIZ	250,AR2			;LESS SPIN 1ST PERSON
     // asm 0000278A: 	CALL	RANDPER
     // asm 0000278B: 	BC	PSPINNIT       		;NORMAL SPIN
+    if (RANDPER(CAMVIEW != 0 ? 500 : 250)) {
+        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_PSPINNIT, direction_difference);
+        return;
+    }
     // asm 0000278C: 	CALL	CKBOUNCE
+    probability = CKBOUNCE(obj, carblk, &direction_difference);
     // asm 0000278D: 	BC	SPINBOUNCE	   	;DO A BOUNCE
     // asm 0000278E: 	B	SPINBUMP
+    SPINROT_FINISH(hitter_obj, obj, carblk, probability ? SPINROT_ENTRY_BOUNCE : SPINROT_ENTRY_BUMP, direction_difference);
+    return;
     // *
     // *CHECK IF PLAYER HIT FROM BEHIND
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPINROT", 0, 0);
-    UNIMPL();
 }
 
-static void BEHINDCK(void) {
+static void BEHINDCK(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/) {
+    CARBLK* hitter_carblk = hitter_obj->carblk;
+    CARBLK* carblk = obj->carblk;
+
     // asm 0000278F: 	PUSHF	R0
     // asm 00002790: 	PUSHF	R3
     // asm 00002791: 	PUSH	AR2
@@ -3585,6 +3991,7 @@ static void BEHINDCK(void) {
     // asm 00002796: 	LDI	AR4,AR3
     // asm 00002797:       	LDI	AR1,AR4
     // asm 00002798: 	CALL	CKAHEAD	       		;IS PLAYER AHEAD?
+    PLYRBEHIND = CKAHEAD(hitter_obj, hitter_carblk, obj, carblk) < 0 ? 1 : 0;
     // asm 00002799: 	LDIGE	0,R0			;NO
     // asm 0000279A: 	LDILT	1,R0			;YES
     // asm 0000279B: 	STI	R0,@PLYRBEHIND
@@ -3595,184 +4002,353 @@ static void BEHINDCK(void) {
     // asm 000027A0: 	POPF	R3
     // asm 000027A1: 	POPF	R0
     // asm 000027A2: 	RETS
+    return;
+}
+
+static void SPINROT_FINISH(OBJ* hitter_obj, OBJ* obj, CARBLK* carblk, int entry, c3x_reg_t direction_difference) {
+    c3x_reg_t rotation_speed;
+    c3x_reg_t collision_intensity = C3X_LDF(COLVEL);
+    c3x_reg_t spin_radians = C3X_FROM_INT(0);
+    c3x_reg_t value;
+    int spin_time;
+    int probability;
+
+    switch (entry) {
+        case SPINROT_ENTRY_BOUNCE: goto SPINBOUNCE;
+        case SPINROT_ENTRY_DRONE: goto DRONESPIN;
+        case SPINROT_ENTRY_PSPINNIT: goto PSPINNIT;
+        case SPINROT_ENTRY_SPINNIT: goto SPINNIT;
+        default: goto SPINBUMP;
+    }
+
     // *
     // *CHECK PLAYER SPINNOUT
     // *
 PSPINNIT:
     // asm 000027A3: 	LDI	@PLYRBEHIND,R2
     // asm 000027A4: 	BNE	SPINBUMP		;YES, JUST BUMP THE DUDE
+    if (PLYRBEHIND != 0) {
+        goto SPINBUMP;
+    }
     // asm 000027A5: 	B 	SPINNIT			;NO, SPIN 'EM OUT
+    goto SPINNIT;
 SPINBOUNCE:
     // asm 000027A6: 	LDF	*+AR5(CARSPEED),R4
+    value = C3X_LDF(carblk->speed);
     // asm 000027A7: 	CMPF	20,R4		      	;MINIMUM SPEED VALUE
     // asm 000027A8: 	LDFLT	20,R4
+    if (C3X_LT(value, C3X_IMM_F32(20))) {
+        value = C3X_IMM_F32(20);
+    }
     // asm 000027A9: 	STF	R4,*+AR5(CARSPEED)    	;REVERSE SPEED
+    carblk->speed = C3X_STF(value);
     // asm 000027AA: 	MPYF	1.5,R4
+    value = C3X_MUL(value, C3X_IMM_F32(1.5));
     // asm 000027AB: 	FIX	R4,R0			;BOUNCE TIME
+    spin_time = FIX(value);
     // asm 000027AC: 	CMPI	60,R0
     // asm 000027AD: 	LDIGT	60,R0			;MAX AT 40
+    if (spin_time > 60) {
+        spin_time = 60;
+    }
     // asm 000027AE: 	STI	R0,*+AR5(CAR_SPIN)
+    carblk->spin_flag = spin_time;
     // asm 000027AF: 	FLOAT	R0,R1
+    value = C3X_FROM_INT(spin_time);
     // asm 000027B0: 	LDF	R2,R0	  		;MOVE TO MIDDLE
     // asm 000027B1: 	CALL	DIV_F
+    rotation_speed = DIV_F(direction_difference, value);
     // asm 000027B2: 	MPYF	-6.0,R0
+    rotation_speed = C3X_MUL(rotation_speed, C3X_IMM_F32(-6.0));
     // ;	LDF	R2,R2			;CORRECTION FACTOR
     // ;	LDFGT	-0.04,R0
     // ;	LDFLE	0.04,R0
     // ;;	LDF	0,R0
     // asm 000027B3: 	STF	R0,*+AR5(CARDROT)
+    carblk->last_y_rotation = C3X_STF(rotation_speed);
     // asm 000027B4: 	LDF	0,R1			;CARSPRAD
+    spin_radians = C3X_IMM_F32(0);
     // asm 000027B5: 	B	SPINXX
+    goto SPINXX;
     // *DRONE SPIN
     // *R0	ROTATION SPEED (FLOAT)
     // *R3	COLLSION RELATIVE SPEED
 DRONESPIN:
     // asm 000027B6: 	ABSF	R0,R1	     		;COMPUTE SPIN PROBABILITY
+    rotation_speed = C3X_ABS(C3X_LDF(SPINTEMP));
     // asm 000027B7: 	CMPF	0.1,R1
     // asm 000027B8: 	BLT	SPINBUMP		;NO SPIN, TOO SMALL
+    if (C3X_LT(rotation_speed, C3X_IMM_F32(0.1))) {
+        goto SPINBUMP;
+    }
     // asm 000027B9: 	CMPF	30,R3
     // asm 000027BA: 	BLT	SPINBUMP		;NO SPIN, RELATIVE VELOCITY SMALL
+    if (C3X_LT(collision_intensity, C3X_IMM_F32(30))) {
+        goto SPINBUMP;
+    }
     // asm 000027BB: 	CMPF	140,R3
     // asm 000027BC: 	BGT	DSPIN			;SPIN, RELATIVE VELOCITY LARGE
+    if (C3X_GT(collision_intensity, C3X_IMM_F32(140))) {
+        goto DSPIN;
+    }
     // asm 000027BD: 	FIX	R3,AR2			;GET SPIN PROBABILITY
+    probability = FIX(collision_intensity);
     // asm 000027BE: 	SUBI	30,AR2
+    probability -= 30;
     // asm 000027BF: 	MPYI	6,AR2
+    probability *= 6;
     // asm 000027C0: 	ADDI	160,AR2
+    probability += 160;
     // asm 000027C1: 	CALL	RANDPER
     // asm 000027C2: 	BNC	SPINBUMP
+    if (!RANDPER(probability)) {
+        goto SPINBUMP;
+    }
     // *
     // *DRONE TOTAL SPINOUT
     // *
 DSPIN:
     // asm 000027C3: 	ABSF	@SPINTEMP,R2     	;GET SPIN MAGNITUDE
+    rotation_speed = C3X_ABS(C3X_LDF(SPINTEMP));
     // asm 000027C4: 	CMPF	10,R2
     // asm 000027C5: 	LDFGT	10,R2
+    if (C3X_GT(rotation_speed, C3X_IMM_F32(10))) {
+        rotation_speed = C3X_IMM_F32(10);
+    }
     // asm 000027C6: 	MPYF	0.1,R2
+    rotation_speed = C3X_MUL(rotation_speed, C3X_IMM_F32(0.1));
     // asm 000027C7: 	MPYF	0.08,R2
+    rotation_speed = C3X_MUL(rotation_speed, C3X_IMM_F32(0.08));
     // asm 000027C8: 	LDF	0.06,R0	     		;GET SOME RANDOMNESS IN SPIN RATE
+    value = C3X_IMM_F32(0.06);
     // asm 000027C9: 	CALL	FRAND
+    value = FRAND(value);
     // asm 000027CA: 	ADDF	0.04,R0
+    value = C3X_ADD(value, C3X_IMM_F32(0.04));
     // asm 000027CB: 	ADDF	R0,R2
+    rotation_speed = C3X_ADD(value, rotation_speed);
     // asm 000027CC: 	LDF	@SPINTEMP,R0		;GET SIGN (SPIN DIRECTION)
     // asm 000027CD: 	BNN	DSPIN1
     // asm 000027CE: 	NEGF	R2
+    if (C3X_LT(C3X_LDF(SPINTEMP), C3X_FROM_INT(0))) {
+        rotation_speed = C3X_NEG(rotation_speed);
+    }
 DSPIN1:
     // asm 000027CF: 	LDF	6.28,R0			;ONCE OR TWICE AROUND
+    value = C3X_IMM_F32(6.28);
     // asm 000027D0: 	CALL	FRAND
+    value = FRAND(value);
     // asm 000027D1: 	LDF	3.14,R1			;CARSPRAD
+    spin_radians = C3X_IMM_F32(3.14);
     // asm 000027D2: 	ADDF	R0,R1
+    spin_radians = C3X_ADD(value, spin_radians);
     // asm 000027D3: 	LDF	*+AR5(CARMASS),R0  	;HEAVY MASS ?
     // asm 000027D4: 	CMPF	2.0,R0
     // asm 000027D5: 	BLT	DSPIN0			;NOPE
+    if (C3X_LT(C3X_LDF(carblk->mass), C3X_IMM_F32(2.0))) {
+        goto DSPIN0;
+    }
     // asm 000027D6: 	MPYF	0.5,R2			;CUT DOWN SPIN SPEED
+    rotation_speed = C3X_MUL(rotation_speed, C3X_IMM_F32(0.5));
     // asm 000027D7: 	LDF	3.14,R1			;CARSPRAD
+    spin_radians = C3X_IMM_F32(3.14);
 DSPIN0:
     // asm 000027D8: 	CALL	ANGMOM
+    rotation_speed = ANGMOM(carblk, rotation_speed);
     // asm 000027D9: 	STF	R2,*+AR5(CARDROT)
+    carblk->last_y_rotation = C3X_STF(rotation_speed);
     // asm 000027DA: 	LDI	1,R0   			;SET RADIAN SPIN FLAG
+    spin_time = 1;
     // asm 000027DB: 	B	SPINX
+    goto SPINX;
     // *
     // * SPINNIT: TOTAL SPINOUT
     // *SET RANGE TO .08 -.12 DUDES
     // *
 SPINNIT:
     // asm 000027DC: 	ABSF	@SPINTEMP,R2     	;GET SPIN MAGNITUDE
+    rotation_speed = C3X_ABS(C3X_LDF(SPINTEMP));
     // asm 000027DD: 	CMPF	10,R2
     // asm 000027DE: 	LDFGT	10,R2
+    if (C3X_GT(rotation_speed, C3X_IMM_F32(10))) {
+        rotation_speed = C3X_IMM_F32(10);
+    }
     // asm 000027DF: 	MPYF	0.1,R2
+    rotation_speed = C3X_MUL(rotation_speed, C3X_IMM_F32(0.1));
     // asm 000027E0: 	MPYF	0.08,R2
+    rotation_speed = C3X_MUL(rotation_speed, C3X_IMM_F32(0.08));
     // asm 000027E1: 	ADDF	0.1,R2
+    rotation_speed = C3X_ADD(rotation_speed, C3X_IMM_F32(0.1));
     // asm 000027E2: 	LDF	@SPINTEMP,R0		;GET SIGN (SPIN DIRECTION)
     // asm 000027E3: 	BNN	SPINTM0
     // asm 000027E4: 	NEGF	R2
+    if (C3X_LT(C3X_LDF(SPINTEMP), C3X_FROM_INT(0))) {
+        rotation_speed = C3X_NEG(rotation_speed);
+    }
 SPINTM0:
     // asm 000027E5: 	CALL	ANGMOM
+    rotation_speed = ANGMOM(carblk, rotation_speed);
     // asm 000027E6: 	CMPI	@PLYCAR,AR1		;PLAYERS CAR?
     // asm 000027E7: 	LDFZ	0.08,R1			;PLAYER MIN
     // asm 000027E8: 	LDFNZ	0.02,R1			;DRONE MIN
+    value = obj == PLYCAR ? C3X_IMM_F32(0.08) : C3X_IMM_F32(0.02);
     // asm 000027E9: 	ABSF	R2,R0  			;MINIMUM SPIN RATE FOR PLAYER
     // asm 000027EA: 	CMPF	R1,R0
     // asm 000027EB: 	BGT	SPINTM1
+    if (C3X_GT(C3X_ABS(rotation_speed), value)) {
+        goto SPINTM1;
+    }
     // asm 000027EC: 	LDF	R2,R2
     // asm 000027ED: 	LDFLT	-1,R2
     // asm 000027EE: 	LDFGE	1,R2
+    rotation_speed = C3X_LT(rotation_speed, C3X_FROM_INT(0)) ? C3X_IMM_F32(-1) : C3X_IMM_F32(1);
     // asm 000027EF: 	MPYF	R1,R2
+    rotation_speed = C3X_MUL(value, rotation_speed);
 SPINTM1:
     // asm 000027F0: 	STF	R2,*+AR5(CARDROT)
+    carblk->last_y_rotation = C3X_STF(rotation_speed);
     // asm 000027F1: 	LDI	*+AR5(CAR_SPIN),R1	;CHECK IF ALREADY SPINNING
     // asm 000027F2: 	CMPI	1,R1
     // asm 000027F3: 	LDFZ	*+AR5(CARSPRAD),R1	;YES...	SAVE CARSPRAD
     // asm 000027F4: 	LDFNZ	3.14,R1			;NO NEW CARSPRAD
+    spin_radians = carblk->spin_flag == 1 ? C3X_LDF(carblk->spin_radians) : C3X_IMM_F32(3.14);
     // asm 000027F5: 	LDI	1,R0
+    spin_time = 1;
     // asm 000027F6: 	B	SPINX
+    goto SPINX;
     // *
     // *MOMENTARY BUMP SPIN
     // *R3=RELATIVE VELOCITY OF HIT
     // *
 SPINBUMP:
     // asm 000027F7: 	LDF	@SPINTEMP,R2
+    rotation_speed = C3X_LDF(SPINTEMP);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000027F8, "R2", &rotation_speed, 5);
     // asm 000027F8: 	CMPF	0.05,R2
     // asm 000027F9: 	LDFGT	0.05,R2
+    if (C3X_GT(rotation_speed, C3X_IMM_F32(0.05))) {
+        rotation_speed = C3X_IMM_F32(0.05);
+    }
     // asm 000027FA: 	CMPF	-0.05,R2
     // asm 000027FB: 	LDFLT	-0.05,R2
+    if (C3X_LT(rotation_speed, C3X_IMM_F32(-0.05))) {
+        rotation_speed = C3X_IMM_F32(-0.05);
+    }
     // asm 000027FC: 	CALL	ANGMOM			;ADJUST ANGULAR MOMENTUM
+    rotation_speed = ANGMOM(carblk, rotation_speed);
+    if (carblk->spin_flag == 0) {
+        int exponent;
+        (void)frexp(C3X_TO_FLOAT(C3X_ABS(collision_intensity)), &exponent);
+        collision_intensity = C3X_F32(ldexp(1.0, exponent - 1)); // c3x-lint: full-precision -- preserves the extended register exponent across LDI
+    } else {
+        collision_intensity = C3X_MUL(C3X_LDF(carblk->last_y_rotation), C3X_IMM_F32(0.5));
+    }
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000027FD, "R2", &rotation_speed, 5);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x000027FD, "R3", &collision_intensity, 5);
     // asm 000027FD: 	CMPF	80,R3
     // asm 000027FE: 	LDFGT	80,R3
+    if (C3X_GT(collision_intensity, C3X_IMM_F32(80))) {
+        collision_intensity = C3X_IMM_F32(80);
+    }
     // asm 000027FF: 	MPYF	0.0125,R3		;ADJUST	ROTATE FOR REL VEL
+    collision_intensity = C3X_MUL(collision_intensity, C3X_IMM_F32(0.0125));
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002800, "R3", &collision_intensity, 5);
     // asm 00002800: 	MPYF	R3,R2
+    rotation_speed = C3X_MUL(collision_intensity, rotation_speed);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002801, "R2", &rotation_speed, 5);
     // asm 00002801: 	LDF	@COLVEL,R0
+    value = C3X_LDF(COLVEL);
     // asm 00002802: 	MPYF	0.4,R0
+    value = C3X_MUL(value, C3X_IMM_F32(0.4));
     // asm 00002803: 	CMPF	35,R0
     // asm 00002804: 	LDFGT	35,R0
+    if (C3X_GT(value, C3X_IMM_F32(35))) {
+        value = C3X_IMM_F32(35);
+    }
     // asm 00002805: 	CALL	FRAND
+    value = FRAND(value);
     // asm 00002806: 	CMPI	@PLYCAR,AR1		;ARE WE PLAYERS CAR?
     // asm 00002807: 	BNE	SPINB0
     // asm 00002808: 	MPYF	0.7,R0			;LESS SPIN FOR PLAYER
+    if (obj == PLYCAR) {
+        value = C3X_MUL(value, C3X_IMM_F32(0.7));
+    }
 SPINB0:
     // asm 00002809: 	CMPF	8,R0
     // asm 0000280A: 	LDFLT	8,R0
+    if (C3X_LT(value, C3X_IMM_F32(8))) {
+        value = C3X_IMM_F32(8);
+    }
     // asm 0000280B: 	FIX	R0
+    spin_time = FIX(value);
     // asm 0000280C: 	CMPI	@PLYCAR,AR0		;HIT BY PLAYERS CAR?
     // asm 0000280D: 	BNZ	SPINBUMP1		;NO
     // asm 0000280E: 	ADDI	5,R0			;YES, BOOST SPIN TIME
+    if (hitter_obj == PLYCAR) {
+        spin_time += 5;
+    }
 SPINBUMP1:
     // asm 0000280F: 	LDI	@PLYRBEHIND,R1		;REDUCE FOR PLAYER HIT BEHIND
     // asm 00002810: 	BZ	SPINBX
+    if (PLYRBEHIND == 0) {
+        goto SPINBX;
+    }
     // asm 00002811: 	CMPI	14,R0			;MAX TIME AT 14
     // asm 00002812: 	LDIGT	14,R0
+    if (spin_time > 14) {
+        spin_time = 14;
+    }
     // asm 00002813: 	LSH	-1,R0			;DIVIDE TIME BY 1/2
+    spin_time >>= 1;
 SPINBX:
     // asm 00002814: 	STF	R2,*+AR5(CARDROT)
+    carblk->last_y_rotation = C3X_STF(rotation_speed);
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002815, "R2", &rotation_speed, 5);
     // asm 00002815: 	LDF	0,R1			;CARSPRAD
+    spin_radians = C3X_IMM_F32(0);
 SPINX:
     // asm 00002816: 	STI	R0,*+AR5(CAR_SPIN)
+    carblk->spin_flag = spin_time;
 SPINXX:
     // asm 00002817: 	STF	R1,*+AR5(CARSPRAD)
+    carblk->spin_radians = C3X_STF(spin_radians);
     // asm 00002818: 	LDF	*+AR1(OMAT11),R0	;IF CAR FLIPPED, REVERSE CARDROT
     // asm 00002819: 	BGE	SPINXXX
+    if (C3X_GE(C3X_LDF(obj->omatrix.mat11), C3X_FROM_INT(0))) {
+        goto SPINXXX;
+    }
     // asm 0000281A: 	NEGF	*+AR5(CARDROT),R0
     // asm 0000281B: 	STF	R0,*+AR5(CARDROT)
+    carblk->last_y_rotation = C3X_STF(C3X_NEG(C3X_LDF(carblk->last_y_rotation)));
 SPINXXX:
     // asm 0000281C: 	RETS
     // *
     // *ANGULAR MOMENTUM
     // *R2=NEW ANGULAR MOMENTUM
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BEHINDCK", 0, 0);
-    UNIMPL();
+    return;
 }
 
-static void ANGMOM(void) {
+static c3x_reg_t ANGMOM(CARBLK* carblk /*AR5*/, c3x_reg_t momentum /*R2*/) {
+    c3x_reg_t old_momentum;
+
     // asm 0000281D: 	LDI	*+AR5(CAR_SPIN),R3 	;ADD IN EXISTING INERTIA
     // asm 0000281E: 	BZ	ANGM1
+    if (carblk->spin_flag == 0) {
+        goto ANGM1;
+    }
     // asm 0000281F: 	LDF	*+AR5(CARDROT),R3	;GET OLD MOMENTUM
+    old_momentum = C3X_LDF(carblk->last_y_rotation);
     // asm 00002820: 	MPYF	0.5,R3	     		;FUDGE FACTOR
+    old_momentum = C3X_MUL(old_momentum, C3X_IMM_F32(0.5));
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002821, "R3", &old_momentum, 5);
     // asm 00002821: 	ADDF	R3,R2
+    momentum = C3X_ADD(old_momentum, momentum);
     // asm 00002822: 	MPYF	0.67,R2
+    momentum = C3X_MUL(momentum, C3X_IMM_F32(0.67));
 ANGM1:
     // asm 00002823: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ANGMOM", 0, 0);
-    UNIMPL();
+    return momentum;
 }
 
 /*
@@ -3785,22 +4361,39 @@ ANGM1:
  *R2=YROT-ROADIR
  *
  */
-static void CKBOUNCE(void) {
+static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_direction_difference /*R2*/) {
+    OBJ* track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
+    c3x_reg_t road_direction;
+    c3x_reg_t direction_difference;
+
     // asm 00002824: 	CALL	ROADIR			;GET DIRECTIONAL DIFFERENCE
+    road_direction = ROADIR(track_obj);
     // asm 00002825: 	LDF	*+AR5(CARVROT),R1
     // asm 00002826: 	SUBF	R1,R0,R2
+    direction_difference = C3X_SUB(road_direction, C3X_LDF(carblk->y_velocity_rotation));
     // asm 00002827: 	CALL	NORMITS
+    direction_difference = NORMITS(direction_difference);
     // asm 00002828: 	ABSF	R2,R3			;VELOCITY BACKWARDS?
     // asm 00002829: 	CMPF	1.75,R3
+    if (C3X_LT(C3X_ABS(direction_difference), C3X_IMM_F32(1.75))) {
+        goto CKBNCX;
+    }
     // asm 0000282A: 	BLT	CKBNCX		      	;NO...
     // asm 0000282B: 	LDF	*+AR5(CARYROT),R2	;JUST BOUNCE HIM WITH TIMED SPIN
     // asm 0000282C: 	SUBF	R0,R2
+    direction_difference = C3X_SUB(C3X_LDF(carblk->y_rotation), road_direction);
     // asm 0000282D: 	CALL	NORMITS
+    direction_difference = NORMITS(direction_difference);
     // asm 0000282E: 	ABSF	R2,R3
     // asm 0000282F: 	CMPF	1.4,R3
+    if (C3X_GT(C3X_ABS(direction_difference), C3X_IMM_F32(1.4))) {
+        goto CKBNCX;
+    }
     // asm 00002830: 	BGT	CKBNCX			;DIRECTION OUT OF RANGE
     // asm 00002831: 	SETC
     // asm 00002832: 	RETS
+    *out_direction_difference = direction_difference;
+    return 1;
 CKBNCX:
     // asm 00002833: 	CLRC
     // asm 00002834: 	RETS
@@ -3810,43 +4403,72 @@ CKBNCX:
     // *AR1=VEHICLE #2
     // *R0=IMPACT SPEED
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CKBOUNCE", 0, 0);
-    UNIMPL();
+    (void)obj;
+    return 0;
 }
 
-static void COLSND(void) {
+static void COLSND(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, c3x_reg_t impact_speed /*R0*/) {
+    const int* sounds;
+    c3x_reg_t volume_factor;
+    int range;
+    int volume;
+
     // asm 00002835: 	PUSHF	R0
     // asm 00002836: 	PUSH	AR0
     // asm 00002837: 	PUSH	AR1
     // asm 00002838: 	PUSH	AR2
     // asm 00002839: 	FLOAT	@NFRAMES,R1
+    volume_factor = C3X_FROM_INT(NFRAMES);
     // asm 0000283A: 	CALL	DIV_F			;ADJUST IMPACT FOR FRAME RATE
+    impact_speed = DIV_F(impact_speed, volume_factor);
     // asm 0000283B: 	LDF	R0,R1
+    volume_factor = impact_speed;
     // asm 0000283C: 	MPYF	0.01,R1
+    volume_factor = C3X_MUL(volume_factor, C3X_IMM_F32(0.01));
     // asm 0000283D: 	MPYF	0.7,R1
+    volume_factor = C3X_MUL(volume_factor, C3X_IMM_F32(0.7));
     // asm 0000283E: 	CMPF	1,R1
     // asm 0000283F: 	LDFGT	1,R1
+    if (C3X_GT(volume_factor, C3X_IMM_F32(1))) {
+        volume_factor = C3X_IMM_F32(1);
+    }
     // asm 00002840: 	MPYF	128,R1
+    volume_factor = C3X_MUL(volume_factor, C3X_IMM_F32(128));
     // asm 00002841: 	ADDF	127,R1
+    volume_factor = C3X_ADD(volume_factor, C3X_IMM_F32(127));
     // asm 00002842: 	FIX	R1	   		;VOLUME ADJUSTER
+    volume = FIX(volume_factor);
     // asm 00002843: 	LDF	*+AR1(OMAT11),R0	;IS DRONE FLIPPED?
     // asm 00002844: 	LDILT	@SCUPDTABI,AR2		;UPSIDE DOWN HIT SOUND
     // asm 00002845: 	LDILT	4,R0			;FOUR TABLE ENTRIES
     // asm 00002846: 	BLT	COLSND1
+    if (C3X_LT(C3X_LDF(obj1->omatrix.mat11), C3X_FROM_INT(0))) {
+        sounds = SCUPDTAB;
+        range = 4;
+        goto COLSND1;
+    }
     // asm 00002847: 	LDI	@SCTABI,AR2
+    sounds = SCTAB;
     // asm 00002848: 	CMPI	220,R1
     // asm 00002849: 	LDILT	5,R0
     // asm 0000284A: 	LDIGE	3,R0
+    range = volume < 220 ? 5 : 3;
 COLSND1:
     // asm 0000284B: 	CMPI	@PLYCAR,AR0		;PLAYERS CAR?
     // asm 0000284C: 	BNZ	DRCOLSND		;NO, DO DRONE SOUND
+    if (obj0 != PLYCAR) {
+        goto DRCOLSND;
+    }
     // asm 0000284D: 	CALL	RANDVSND       		;DO COLLISION SOUND+EXIT
+    RANDVSND(sounds, range, volume);
     // asm 0000284E: 	B	COLSNDX
+    goto COLSNDX;
     // * DRONE VS. DRONE
 DRCOLSND:
     // asm 0000284F: 	PUSH	AR4
     // asm 00002850: 	LDI	AR0,AR4
     // asm 00002851: 	CALL	DRONESND
+    DRONESND(obj0, sounds, range);
     // asm 00002852: 	POP	AR4
 COLSNDX:
     // asm 00002853: 	POP	AR2
@@ -3854,8 +4476,7 @@ COLSNDX:
     // asm 00002855: 	POP	AR0
     // asm 00002856: 	POPF	R0
     // asm 00002857: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLSND", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /* asm: SCUPDTAB	.word	SCOLLF,SCOLLF,SCOLLG,SCOLLH */
@@ -3894,7 +4515,19 @@ static int SCTAB[] = {
     // BLOWLIST+120: OBJ1 PLANE EQUATIONS
 };
 
-void COLCHK(void) {
+int COLCHK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR** out_collision_point /*AR3*/) {
+    c3x_f32_t* equation_storage;
+    c3x_f32_t* equation;
+    c3x_f32_t* point;
+    VECTOR* normal;
+    VECTOR** face_points;
+    c3x_reg_t product_x;
+    c3x_reg_t product_y;
+    c3x_reg_t product_z;
+    c3x_reg_t dot_product;
+    int equation_index;
+    int point_index;
+
     // asm 00002863:  	PUSH	R2
     // asm 00002864: 	PUSH	R3
     // asm 00002865: 	PUSH	R5
@@ -3903,8 +4536,10 @@ void COLCHK(void) {
     // asm 00002868: 	PUSH	AR1
     // asm 00002869: 	LDPI	@BLOWLISTI,AR2
     // asm 0000286A: 	CALL	GETBOX			;GET BOX POINTS FOR OBJECT 1
+    equation_storage = GETBOX(obj0, BLOWLIST);
     // asm 0000286B: 	LDI	AR1,AR0
     // asm 0000286C: 	CALL	GETBOX			;GET BOX POINTS FOR OBJECT 2
+    equation_storage = GETBOX(obj1, equation_storage);
     // *GET 6 EQUATIONS FOR BOX
     // *GET PLANE EQUATION
     // *4 COEFFICIENTS PER EQUATION
@@ -3913,62 +4548,111 @@ void COLCHK(void) {
     // asm 0000286D: 	LDI	AR2,AR0			;STORE NORMAL VECTORS HERE
     // asm 0000286E: 	LDPI	@EQTABI,AR2
     // asm 0000286F: 	LDI	11,RC 			;DO 2 X 6 EQUATIONS
+    for (equation_index = 0; equation_index < 12; equation_index++) {
     // asm 00002870: 	RPTB	PLANEQ
     // asm 00002871: 	PUSH	AR2
     // asm 00002872: 	CALL	GEN_NORMAL		;GETS NORMAL VECTOR
+        face_points = (VECTOR**)&EQTAB[equation_index * 3];
+        normal = (VECTOR*)equation_storage;
+        GEN_NORMAL(face_points, normal);
     // asm 00002873: 	POP	AR2
     // asm 00002874: 	LDI	*AR2++(3),AR3		;GET FIRST POINT
+        point = EQTAB[equation_index * 3];
     // asm 00002875: 	MPYF	*AR0++,*AR3++,R0   	;COMPUTE DOT PRODUCT
+        product_x = C3X_MUL(C3X_LDF(normal->X), C3X_LDF(point[0]));
     // asm 00002876: 	MPYF	*AR0++,*AR3++,R1
+        product_y = C3X_MUL(C3X_LDF(normal->Y), C3X_LDF(point[1]));
     // asm 00002877: 	MPYF	*AR0++,*AR3++,R0
+        product_z = C3X_MUL(C3X_LDF(normal->Z), C3X_LDF(point[2]));
     // asm 00002877: ||	ADDF	R0,R1,R2
+        dot_product = C3X_ADD(product_x, product_y);
     // asm 00002878: 	ADDF	R0,R2
+        dot_product = C3X_ADD(dot_product, product_z);
 PLANEQ:
     // asm 00002879: STF	R2,*AR0++		;SAVE DOT PRODUCT
+        equation_storage[3] = C3X_STF(dot_product);
+        equation_storage += 4;
+    }
     // *CHECK POINTS OBJ1 VS EQ OBJ0
     // asm 0000287A: 	SUBI	48,AR0			;GET OBJ 0 EQUATION BASE ADDR
+    equation = &BLOWLIST[96];
     // asm 0000287B: 	LDI	AR0,AR3
     // asm 0000287C: 	SUBI	23,AR3			;GET INDEX PROJ POINTS OBJ 1+1
+    point = &BLOWLIST[72];
     // asm 0000287D: 	LDI	7,AR4 			;DO 8 POINTS
+    for (point_index = 0; point_index < 8; point_index++) {
     // asm 0000287E: PNTCKL0
     // asm 0000287E: 	LDI	AR0,AR2
+        equation = &BLOWLIST[96];
     // asm 0000287F: 	LDI	5,RC 			;DO 6 EQUATIONS
+        for (equation_index = 0; equation_index < 6; equation_index++) {
     // asm 00002880: 	RPTB	EQCHK0
     // asm 00002881: 	MPYF	*AR2++,*-AR3(1),R0
+            product_x = C3X_MUL(C3X_LDF(equation[0]), C3X_LDF(point[0]));
     // asm 00002882: 	MPYF	*AR2++,*AR3,R1
+            product_y = C3X_MUL(C3X_LDF(equation[1]), C3X_LDF(point[1]));
     // asm 00002883: 	MPYF	*AR2++,*+AR3(1),R0
+            product_z = C3X_MUL(C3X_LDF(equation[2]), C3X_LDF(point[2]));
     // asm 00002883: ||	ADDF	R0,R1,R2
+            dot_product = C3X_ADD(product_x, product_y);
     // asm 00002884: 	ADDF	R0,R2
+            dot_product = C3X_ADD(dot_product, product_z);
     // asm 00002885: 	CMPF	*AR2++,R2
     // asm 00002886: 	BLT	PNTNXT0			;THIS POINT FAILED, GET A NEW ONE
+            if (C3X_LT(dot_product, C3X_LDF(equation[3]))) {
+                goto PNTNXT0;
+            }
+            equation += 4;
+        }
 EQCHK0:
     // asm 00002887: NOP
     // asm 00002888: 	BU	GOTCOL			;GOT A COLLISION
+        goto GOTCOL;
 PNTNXT0:
     // asm 00002889: 	NOP	*AR3++(3)
+        point += 3;
     // asm 0000288A: 	DBU	AR4,PNTCKL0
+    }
     // *CHECK POINTS OBJ0 VS EQ OBJ1
     // asm 0000288B: 	ADDI	24,AR0			;GET OBJ1 EQUATION BASE
+    equation = &BLOWLIST[120];
     // asm 0000288C: 	LDI	AR0,AR3
     // asm 0000288D: 	SUBI	95,AR3			;GET INDEX PROJ POINTS OBJ 1+1
+    point = &BLOWLIST[24];
     // asm 0000288E: 	LDI	7,AR4 			;DO 8 POINTS
+    for (point_index = 0; point_index < 8; point_index++) {
     // asm 0000288F: PNTCKL1
     // asm 0000288F: 	LDI	AR0,AR2
+        equation = &BLOWLIST[120];
     // asm 00002890: 	LDI	5,RC 			;DO 6 EQUATIONS
+        for (equation_index = 0; equation_index < 6; equation_index++) {
     // asm 00002891: 	RPTB	EQCHK1
     // asm 00002892: 	MPYF	*AR2++,*-AR3(1),R0
+            product_x = C3X_MUL(C3X_LDF(equation[0]), C3X_LDF(point[0]));
     // asm 00002893: 	MPYF	*AR2++,*AR3,R1
+            product_y = C3X_MUL(C3X_LDF(equation[1]), C3X_LDF(point[1]));
     // asm 00002894: 	MPYF	*AR2++,*+AR3(1),R0
+            product_z = C3X_MUL(C3X_LDF(equation[2]), C3X_LDF(point[2]));
     // asm 00002894: ||	ADDF	R0,R1,R2
+            dot_product = C3X_ADD(product_x, product_y);
     // asm 00002895: 	ADDF	R0,R2
+            dot_product = C3X_ADD(dot_product, product_z);
     // asm 00002896: 	CMPF	*AR2++,R2
     // asm 00002897: 	BLT	PNTNXT1			;THIS POINT FAILED, GET A NEW ONE
+            if (C3X_LT(dot_product, C3X_LDF(equation[3]))) {
+                goto PNTNXT1;
+            }
+            equation += 4;
+        }
 EQCHK1:
     // asm 00002898: NOP
     // asm 00002899: 	BU	GOTCOL			;GOT A COLLISION
+        goto GOTCOL;
 PNTNXT1:
     // asm 0000289A: 	NOP	*AR3++(3)
+        point += 3;
     // asm 0000289B: 	DBU	AR4,PNTCKL1
+    }
     // asm 0000289C: 	CLRC				;NO COLLISION
     // asm 0000289D: 	POP	AR1
     // asm 0000289E: 	POP	AR0
@@ -3978,14 +4662,15 @@ COLCHKX:
     // asm 000028A1: 	POP	R3
     // asm 000028A2:  	POP	R2
     // asm 000028A3: 	RETS
+    return 0;
 GOTCOL:
     // asm 000028A4: 	POP	AR1  			;GET COLLIDING OBJECTS
     // asm 000028A5: 	POP	AR0
     // asm 000028A6: 	SETC
     // asm 000028A7: 	BU	COLCHKX
+    *out_collision_point = (VECTOR*)point;
+    return 1;
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLCHK", 0, 0);
-    UNIMPL();
 }
 
 /*

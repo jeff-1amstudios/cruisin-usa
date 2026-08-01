@@ -58,7 +58,7 @@ validate R1: 0x00000002, text.c:699
 function STRLEN
 ```
 
-The `function ...` lines are trace markers for readability. They make the MAME log easier to scan when several validations share function-entry breakpoints.
+The `function ...` lines are ordered validation events. `MAME_ASSERT_FUNCTION_ENTRY()` consumes the next function event during port replay and fails if the function is missing, extra, or out of order.
 
 For larger validations, the generator may emit `save` commands instead of printing all words inline. In that case the log references a dumped file and the validator compares against that file-backed data.
 
@@ -68,7 +68,7 @@ Canonical validation markers:
 - `MAME_ASSERT_ARG(name, ptr)`: validate an integer register argument at original function entry.
 - `MAME_ASSERT_ARG_FLOAT(name, ptr)`: validate a float register argument at original function entry.
 - `mame_validate_arg_sym(name, ptr)`: validate a symbol-valued argument at original function entry.
-- `MAME_ASSERT_FUNCTION_ENTRY()`: emit a `function <NAME>` marker at the original function entry in the MAME log.
+- `MAME_ASSERT_FUNCTION_ENTRY()`: validate that the next ordered replay event is entry to the same function.
 - `MAME_VALIDATOR_EXIT()`: emit an exit breakpoint when you want MAME to stop at that function entry.
 - `MAME_ASSERT_REGION_AT_ADDR(...)`: validate a memory region at an explicit original instruction address.
 - `MAME_ASSERT_REG(...)`: validate an integer register at an explicit original instruction address.

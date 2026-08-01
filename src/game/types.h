@@ -766,6 +766,14 @@ typedef struct PROC_CONTEXT {
             int smoke_counted;
         } PUFF_PROC;
         struct {
+            VECTOR collision_offset; // PDATA..PDATA+2
+            int frame_on;             // PDATA+3
+            OBJ* car_obj;             // PDATA+4
+            CARBLK* carblk;           // PDATA+5
+            int num_sparks;           // PDATA+6
+            OBJ* spark_objs[6];       // PDATA+7..
+        } SPARK_PROC;
+        struct {
             int attrwave;
             int decomp_count;
             struct OBJ* obj;
@@ -808,6 +816,14 @@ typedef struct PROC_CONTEXT {
             int sigma_once;
             int sigma_yell;
             int sigma_flag;
+            int rho_noise;
+            int rho_yell;
+            int rho_init;
+            c3x_f32_t rho_theta;
+            c3x_f32_t rho_theta_delta;
+            c3x_f32_t rho_amp;
+            c3x_f32_t rho_xhead;
+            int rho_hit_smoke_count;
             int breakdown_count;
             int breakdown;
             int breakdown_smoke_started;

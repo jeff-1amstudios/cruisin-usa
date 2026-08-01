@@ -205,6 +205,7 @@ int _sectime;
 int CLEARRDY;
 /* asm: NOAERASE	.bss	NOAERASE,1 */
 int NOAERASE;
+static int COLD_ENTER_RESTART;
 /* asm: NOSWAP	.bss	NOSWAP,1 */
 int NOSWAP;
 /* asm: DISPLAY_PAGE	.bss	DISPLAY_PAGE,1 */
@@ -560,6 +561,7 @@ void MAINLOOP(void) {
     //     // DONE WHEN INT SIGNALS PAGE SWAPPED
     // }
 
+ENTER2:
     // COMMUNICATION XFER
     COMM_ROUTINE();
     COMMQ_PACKET_INIT();
@@ -630,6 +632,11 @@ void MAINLOOP(void) {
     }
     PRC_DISPATCH(); // EXECUTE PROCESSES
 
+    if (COLD_ENTER_RESTART) {
+        COLD_ENTER_RESTART = 0;
+        goto ENTER2;
+    }
+
     COMMQ_READY_TO_SEND();
 
     TEXT_OUTPUT(); // END FILL FIFO STUFF
@@ -662,8 +669,10 @@ void MAINLOOP(void) {
     WAVE(_ATTR_MODE);
 
     COLD_ENTER();
-    // return;
-    //}
+    if (COLD_ENTER_RESTART) {
+        COLD_ENTER_RESTART = 0;
+        goto ENTER2;
+    }
 }
 
 // *----------------------------------------------------------------------------
@@ -697,8 +706,17 @@ C_WAIT:
     // asm 00004C42: 	CALL	COMMQ_READY_TO_SEND
     // asm 00004C43: 	BR	ENTER2
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COLD_ENTER", 0, 0);
-    UNIMPL_TODO();
+    FIFO_RESET();
+    CLEARRDY = 1;
+    NOAERASE = 0;
+    COMMQ_READY_TO_SEND();
+    COMM_ROUTINE();
+    COMMQ_PACKET_INIT();
+    DECODE_BUFFER();
+    CURRENT_PROC = NULL;
+    PRC_DISPATCH();
+    COMMQ_READY_TO_SEND();
+    COLD_ENTER_RESTART = 1;
 }
 
 // *----------------------------------------------------------------------------

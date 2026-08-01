@@ -234,6 +234,11 @@ DONTWORRY:
     }
     // asm 0000A457: 	STI	AR2,*+AR7(DELTA_TPIECE)
     p->ctx->RACER_DRONE.delta_tpiece = tracking_piece;
+    /*
+     * SIGMA_LP immediately asks AHEAD_OF_PLAYER_P to inspect CARTRAK,
+     * before the normal tracking update has run.
+     */
+    carblk->closest_track_piece = OBJ_TO_REF(tracking_piece);
     // asm 0000A458: 	LDI	*+AR2(OUSR1),R0
     // asm 0000A459: 	STI	R0,*+AR7(DELTA_LAST_OID)
     p->ctx->RACER_DRONE.delta_last_oid = (int)tracking_piece->usr1;
@@ -533,6 +538,7 @@ CHECK_DIST:
     p->ctx->RACER_DRONE.delta_tpiece = next_piece;
     p->ctx->RACER_DRONE.delta_last_oid = (int)next_piece->usr1;
     // asm 0000A4E9: 	BU	CHECK_DIST
+    goto CHECK_DIST;
 THIS_PIECE:
     // asm 0000A4EA: 	LDF	*+AR5(CARSPEED),R1
     // asm 0000A4EB: 	LDFLE	30,R1			;if 0 or less assume 30 mph
@@ -562,7 +568,7 @@ THIS_PIECE:
     desired_theta = C3X_SUB(
         ARCTANF(C3X_ADD(C3X_SUB(C3X_LDF(tracking_piece->pos.X), C3X_LDF(obj->pos.X)), C3X_LDF(VECTORAI.X)),
                  C3X_ADD(C3X_SUB(C3X_LDF(tracking_piece->pos.Z), C3X_LDF(obj->pos.Z)), C3X_LDF(VECTORAI.Z))),
-        HALFPII);
+        C3X_IMM_F32(HALFPI));
     // asm 0000A4FB:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 0000A4FC: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
     theta_delta = C3X_SUB(desired_theta, C3X_LDF(obj->rad.Y));
@@ -707,6 +713,6 @@ BREAKDNSLP:
 // *----------------------------------------------------------------------------
 static void SIGMA_DIE(PROC* p) {
     // asm 0000A533: 	BU	RHO_DIE
-    RHO_DIE();
+    RHO_DIE(p);
     DIE();
 }

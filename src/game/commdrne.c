@@ -22,7 +22,7 @@
 
 void COMM_DRONE(void);
 void COMM_DRONE_PTR_SORT(void);
-void OM_DRONE(void);
+void OM_DRONE(PROC* p);
 
 #define STARTUP_POS_TABLEI STARTUP_POS_TABLE
 
@@ -400,7 +400,8 @@ void COMM_DRONE_PTR_SORT(void) {
  *OTHER MACHINE DRONE LOOP
  *
  */
-void OM_DRONE(void) {
+void OM_DRONE(PROC* p) {
+    (void)p;
     // asm 0000A743: 	LDI	1,R0			;OTHER GUYS CAR NOW....
     // asm 0000A744: 	STI	R0,*+AR5(CAR_OM)
 OM_DRONEL:

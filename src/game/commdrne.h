@@ -8,6 +8,6 @@
 // COMMDRNE.ASM
 // asm: 	.bss	PLY2CAR,1
 extern OBJ* PLY2CAR;
-void OM_DRONE(void);
+void OM_DRONE(PROC* p);
 
 #endif /* COMMDRNE_H */

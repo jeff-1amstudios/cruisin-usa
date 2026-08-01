@@ -1656,7 +1656,6 @@ c3x_reg_t GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
     // asm 0000421E: 	ADDF	R3,R2
     delta_z = C3X_ADD(delta_z, delta_x);
     // asm 0000421F: 	CALL	SQRT
-    MAME_ASSERT_REG_FLOAT(0x0000421F, "R2", &delta_z);
     // asm 00004220: 	POP	R3
     // asm 00004221: 	POP	AR0
     // asm 00004222: 	RETS

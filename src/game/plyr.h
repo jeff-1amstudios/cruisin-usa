@@ -68,8 +68,8 @@ extern c3x_reg_t BRAKEMN;
 extern c3x_reg_t BRAKEMX;
 // asm: 	.bss	STEERFR,1		;STEERING FREE
 extern c3x_reg_t STEERFR;
-void RANDSND(void);
-void RANDVSND(void);
+void RANDSND(const int* sounds /*AR2*/, int range /*R0*/);
+void RANDVSND(const int* sounds /*AR2*/, int range /*R0*/, int volume /*R1*/);
 c3x_reg_t ROADIR(OBJ* track_obj /*AR0*/);
 void GETNXTRDIR(void);
 void DRONINBZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
@@ -80,7 +80,7 @@ void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void BONUS_WAIT_LOOP(void);
 void PLYR_CAR_INIT(void);
-void DRONESND(void);
-void DRONESND1(void);
+void DRONESND(OBJ* obj /*AR4*/, const int* sounds /*AR2*/, int range /*R0*/);
+void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/);
 
 #endif /* PLYR_H */

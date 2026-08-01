@@ -62,7 +62,7 @@ extern int OM_DIAGVALUE;
 extern int DIAGVALUE;
 void SEND_RACER_POS(void);
 void SEND_RHO_POS(void);
-void SEND_RHO_CREATE(void);
+void SEND_RHO_CREATE(OBJ* obj, int car_id, int vehicle_index);
 void FIND_DRONE(void);
 void SEND_OM_TRACK(void);
 

@@ -358,7 +358,7 @@ void LOGO_PROC(PROC* p) {
 
     // asm 0000560F: 	LDF	LOGO_SPINZ,R0
     // asm 00005610: 	STF	R0,*+AR4(ORADX)
-    obj->rad.X = C3X_STF(C3X_FROM_INT(LOGO_SPINZ));
+    obj->rad.X = C3X_STF(C3X_IMM_F32(LOGO_SPINZ));
 
     // asm 00005611: 	LDF	0,R7		;SPEED FACTOR
     p->ctx->LOGO_PROC.speed_factor = C3X_STF(C3X_FROM_INT(0)); // SPEED FACTOR
@@ -441,7 +441,7 @@ LOGO2:
     // asm 0000563B: 	SUBF	R0,R2
     // asm 0000563C: 	LDFN	0,R2
     // asm 0000563D: 	STF	R2,*+AR4(ORADX)
-    value = C3X_MUL(DIV_F(C3X_FROM_INT(LOGO_SPINZ), C3X_FROM_INT(LOGO_FLYIN_FRAMES)), nframes);
+    value = C3X_MUL(DIV_F(C3X_IMM_F32(LOGO_SPINZ), C3X_FROM_INT(LOGO_FLYIN_FRAMES)), nframes);
     obj->rad.X = C3X_STF(C3X_SUB(obj->rad.X, value));
     if (C3X_GT(obj->rad.X, C3X_FROM_INT(0))) {
         obj->rad.X = C3X_STF(C3X_FROM_INT(0));

@@ -260,7 +260,7 @@ OBJ* OBJ_FIND_FIRST(int oid /*AR2*/);
 OBJ* OBJ_FIND_FIRST_PRIORITY(int oid /*AR2*/);
 
 // asm: 	.globl	OBJ_DELETE
-void OBJ_DELETE(void);
+void OBJ_DELETE(OBJ* obj);
 
 // asm: 	.globl	OBJ_DELETE_CLASS
 void OBJ_DELETE_CLASS(void);

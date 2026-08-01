@@ -73,6 +73,9 @@ extern LEG_PAYLOAD LEG_MAP[];
 extern int PLYRFIRST;
 
 extern c3x_f32_t STEERI;
+extern c3x_f32_t GEARACTAB[5];
+extern c3x_f32_t ENGACTAB[20];
+extern c3x_f32_t ENGFR[5];
 
 // asm: 	.globl	SPOS_INIT
 c3x_reg_t SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/);
@@ -106,7 +109,7 @@ extern int PLYRCLOSE;
 // asm: 	.BSS	CARTMP1,1
 extern int CARTMP1;
 int COMPTRAK(void);
-void FIND_DYNA(void);
+OBJ* FIND_DYNA(int coded_id /*R2*/);
 void DECODE_RACER_XSFER(void);
 void WRECK(void);
 void WRECKST(void);

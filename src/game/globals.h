@@ -878,14 +878,14 @@ int OBJSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
 int CAMSCAN(VECTOR* point /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
 
 // asm:  .globl COLCHK
-void COLCHK(void);
+int COLCHK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR** out_collision_point /*AR3*/);
 
 // asm:  .globl ROADSCAN,DRONESND,DRONESND1,FLYCAR1,SCOLLTABI
 void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
 
-void DRONESND(void);
+void DRONESND(OBJ* obj /*AR4*/, const int* sounds /*AR2*/, int range /*R0*/);
 
-void DRONESND1(void);
+void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/);
 
 // asm:  .globl COLSGCK
 void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/);
@@ -1037,7 +1037,7 @@ void ATTRACT_DELTA(PROC* p);
 void DRONE_CLR(void);
 
 // asm:  .globl DRONE_PTR_ADD
-void DRONE_PTR_ADD(void);
+int DRONE_PTR_ADD(CARBLK* carblk);
 
 // asm:  .globl FIND_PLAYERS_POSITION,POSITION_FINDER
 void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*/);
@@ -1049,7 +1049,7 @@ void INIT_DRONES(void);
 
 void ADD_DRONE(OBJ* obj /*AR4*/);
 
-void FREE_DRONE(void);
+void FREE_DRONE(OBJ* obj);
 
 // asm:  .globl PLYR_RIDE_RIGHT,DRONE_RIDE_RIGHT
 c3x_reg_t PLYR_RIDE_RIGHT(void);
@@ -1548,7 +1548,7 @@ void MOD_U30(void);
 // asm:  .globl GETFLYMAT_TRAIN,FLYTRAINPI,FLYTRAIN
 void GETFLYMAT_TRAIN(void);
 
-void FLYTRAIN(void);
+void FLYTRAIN(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 
 // asm:  .globl RRSTART_ENGINE,RRSTART_FLATBED,RRSTART_BOXCAR
 void RRSTART_ENGINE(OBJ* obj /*AR4*/);
@@ -1643,7 +1643,7 @@ void OBJ_MOVE(void);
 
 void WALL_SPARK(void);
 
-void IMPACT_SPARK(void);
+void IMPACT_SPARK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 
 // asm:  .globl SKID_SPARK,ROAD_IMPACT_SPARK,INIT_SPARK
 void SKID_SPARK(void);
@@ -1793,7 +1793,7 @@ void DYNAOBJ_INIT(void);
 
 DYNAOBJ* GETDYNA(void);
 
-void DELDYNA(void);
+void DELDYNA(DYNAOBJ* dyna);
 
 // asm:  .globl CARB_INIT
 void CARB_INIT(void);
@@ -1801,7 +1801,7 @@ void CARB_INIT(void);
 // asm:  .globl GETCAR,DELCAR
 CARBLK* GETCAR(void);
 
-void DELCAR(void);
+void DELCAR(CARBLK* carblk);
 
 // asm:  .globl SCAN_OBJECTS
 void SCAN_OBJECTS(PROC* p);
