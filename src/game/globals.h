@@ -474,6 +474,7 @@ extern int _ACNTL;
 #define VECTORAI _VECTORA
 
 #define VECTORBI _VECTORB
+extern u32 CLIPRAM[320];
 
 #define VECTORCI _VECTORC
 
@@ -589,11 +590,11 @@ extern LEG_PAYLOAD LEG_MAP[];
 extern int FINISH_ID;
 
 // asm:  .globl HALFPII,PII,TWOPII
-extern c3x_reg_t HALFPII;
+extern c3x_f32_t HALFPII;
 
-extern c3x_reg_t PII;
+extern c3x_f32_t PII;
 
-extern c3x_reg_t TWOPII;
+extern c3x_f32_t TWOPII;
 
 #define FIND_YMATRIX _find_Ymatrix
 
@@ -1451,7 +1452,7 @@ void _VIEW1(void);
 
 void _VIEW2(void);
 
-void OVELNADD(void);
+void OVELNADD(OBJ* obj /*AR4*/);
 
 // asm:  .globl MKFXSND
 void MKFXSND(void);

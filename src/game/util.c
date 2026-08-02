@@ -61,7 +61,7 @@ void PUSHALL(void);
 void POPALL(void);
 void DISTANCE_2D(void);
 void OVELADD(OBJ* obj /*AR4*/);
-void OVELNADD(void);
+void OVELNADD(OBJ* obj /*AR4*/);
 void FORWARD(VECTOR* src /*AR2*/, MATRIX* matrix /*R2*/, VECTOR* dst /*R3*/);
 
 #define FASTCLR0 FASTCLR1
@@ -1034,7 +1034,7 @@ CARSLP:
 
 // *----------------------------------------------------------------------------
 /* asm: NTWOPII	.float	-TWOPI */
-static c3x_reg_t NTWOPII = C3X_INIT(-6.283185307f, 0x02B6F0255Dull);
+static c3x_f32_t NTWOPII = C3X_F32_INIT(-6.283185307f);
 
 /*
  *
@@ -1132,12 +1132,12 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
     // asm 00008FF8: 	CMPF	3.14,R0
     // asm 00008FF9: 	LDFGT	@NTWOPII,R1
     if (C3X_GT(delta_rady, C3X_IMM_F32(3.14f))) {
-        wrap_adjust = NTWOPII;
+        wrap_adjust = C3X_LDF(NTWOPII);
     }
     // asm 00008FFA: 	CMPF	-3.14,R0
     // asm 00008FFB: 	LDFLT	@TWOPII,R1
     if (C3X_LT(delta_rady, C3X_IMM_F32(-3.14f))) {
-        wrap_adjust = TWOPII;
+        wrap_adjust = C3X_LDF(TWOPII);
     }
     // asm 00008FFC: 	ADDI	R1,R0			;HANDLE RADIAN WRAPAROUND
     delta_rady = C3X_ADD(delta_rady, wrap_adjust);
@@ -1475,15 +1475,29 @@ void DISTANCE_2D(void) {
  *
  */
 void OVELADD(OBJ* obj /*AR4*/) {
+    c3x_reg_t y_value;
+    uint32_t observed_raw;
+
     // asm 000090A9: 	LDF	*+AR4(OVELX),R0
     // asm 000090AA: 	ADDF	*+AR4(OPOSX),R0
     obj->pos.X =C3X_STF(C3X_ADD(obj->pos.X, obj->vel_x));
     // asm 000090AB: 	STF	R0,*+AR4(OPOSX)
     // asm 000090AC: 	LDF	*+AR4(OVELY),R0
+    observed_raw = C3X_STORE(C3X_LDF(obj->pos.Y));
+    MAME_ASSERT_MEM(0x000090AC, "d@(ar4+2)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->vel_y));
+    MAME_ASSERT_MEM(0x000090AC, "d@(ar4+12)", &observed_raw);
     // asm 000090AD: 	ADDF	*+AR4(OPOSY),R0
-    obj->pos.Y =C3X_STF(C3X_ADD(obj->pos.Y, obj->vel_y));
+    y_value = C3X_ADD(obj->pos.Y, obj->vel_y);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)y_value.bits;
+    MAME_ASSERT_REG(0x000090AE, "R0", &observed_raw);
+#endif
+    obj->pos.Y = C3X_STF(y_value);
     // asm 000090AE: 	STF	R0,*+AR4(OPOSY)
     // asm 000090AF: 	LDF	*+AR4(OVELZ),R0
+    observed_raw = C3X_STORE(C3X_LDF(obj->pos.Y));
+    MAME_ASSERT_MEM(0x000090AF, "d@(ar4+2)", &observed_raw);
     MAME_ASSERT_REG_FLOAT(0x000090B0, "R0", &obj->vel_z);
     // asm 000090B0: 	ADDF	*+AR4(OPOSZ),R0
     obj->pos.Z =C3X_STF(C3X_ADD(obj->pos.Z, obj->vel_z));
@@ -1499,23 +1513,42 @@ void OVELADD(OBJ* obj /*AR4*/) {
  *----------------------------------------------------------------------------
  *ADD N FRAMES X VELOCITY
  */
-void OVELNADD(void) {
+void OVELNADD(OBJ* obj /*AR4*/) {
+    c3x_reg_t frame_count;
+    c3x_reg_t position;
+    uint32_t expected_float_word;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000090B3: 	FLOATP	@NFRAMES,R1
+    frame_count = C3X_FROM_INT(NFRAMES);
     // asm 000090B4: 	LDF	*+AR4(OVELX),R0
+    position = C3X_LDF(obj->vel_x);
     // asm 000090B5: 	MPYF	R1,R0
+    position = C3X_MUL(position, frame_count);
     // asm 000090B6: 	ADDF	*+AR4(OPOSX),R0
+    position = C3X_ADD(position, C3X_LDF(obj->pos.X));
     // asm 000090B7: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(position);
     // asm 000090B8: 	LDF	*+AR4(OVELY),R0
+    position = C3X_LDF(obj->vel_y);
     // asm 000090B9: 	MPYF	R1,R0
+    position = C3X_MUL(position, frame_count);
     // asm 000090BA: 	ADDF	*+AR4(OPOSY),R0
+    position = C3X_ADD(position, C3X_LDF(obj->pos.Y));
     // asm 000090BB: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(position);
     // asm 000090BC: 	LDF	*+AR4(OVELZ),R0
+    position = C3X_LDF(obj->vel_z);
     // asm 000090BD: 	MPYF	R1,R0
+    position = C3X_MUL(position, frame_count);
     // asm 000090BE: 	ADDF	*+AR4(OPOSZ),R0
+    position = C3X_ADD(position, C3X_LDF(obj->pos.Z));
     // asm 000090BF: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(position);
     // asm 000090C0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OVELNADD", 0, 0);
-    UNIMPL();
+    expected_float_word = C3X_STORE(C3X_LDF(obj->pos.Z));
+    MAME_ASSERT_MEM(0x000090C0, "d@(ar4+3)", &expected_float_word);
 }
 
 // *----------------------------------------------------------------------------

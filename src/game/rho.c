@@ -721,7 +721,7 @@ THIS_PIECE:
     if (C3X_GE(C3X_ABS(theta_delta), PII)) {
         theta_delta = C3X_ADD(
             theta_delta,
-            C3X_LT(theta_delta, C3X_FROM_INT(0)) ? TWOPII : C3X_NEG(TWOPII));
+            C3X_LT(theta_delta, C3X_FROM_INT(0)) ? C3X_LDF(TWOPII) : C3X_NEG(C3X_LDF(TWOPII)));
     }
     // asm 00009875: 	FLOAT	R7,R1			;theta / number of turns to achieve
     // asm 00009876: 	SUBF	1,R1	;DBG

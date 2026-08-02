@@ -55,7 +55,7 @@ void SCALE_MATRIX(void);
 #define SINTABLEI SINTABLE
 #define LOCTEMPER_MAT2I LOCTEMPER_MAT2
 
-static c3x_reg_t FORMULA;
+static c3x_f32_t FORMULA;
 static c3x_f32_t* ATTABV;
 static c3x_f32_t* OFFTABV;
 static c3x_f32_t SINTABLE[];
@@ -465,23 +465,23 @@ static c3x_f32_t SINTABLE[] = {
 };
 /* asm: FORMULA	.float	162.9746617		;256/(PI/2) */
 /* asm: 	 */
-static c3x_reg_t FORMULA = C3X_INIT(162.9746617f, 0x0722F9836Dull);
+static c3x_f32_t FORMULA = C3X_F32_INIT(162.9746551513672f);
 /* asm: HALFPII	.float	HALFPI */
-c3x_reg_t HALFPII = C3X_INIT(1.570796327f, 0x00490FDAA2ull);
+c3x_f32_t HALFPII = C3X_F32_INIT(1.5707963705062866f);
 /* asm: PII	.float	PI */
-c3x_reg_t PII = C3X_INIT(3.141592654f, 0x01490FDAA2ull);
+c3x_f32_t PII = C3X_F32_INIT(3.141592502593994f);
 /* asm: TWOPII	.float	TWOPI */
-c3x_reg_t TWOPII = C3X_INIT(6.283185307f, 0x02490FDAA2ull);
+c3x_f32_t TWOPII = C3X_F32_INIT(6.283185005187988f);
 /* asm: INVFORM	.float	0.012265625	;1/FORMULA */
-static c3x_reg_t INVFORM = C3X_INIT(0.012265625f, 0xF948F5C28Full);
+static c3x_f32_t INVFORM = C3X_F32_INIT(0.012265624478459358f);
 // *----------------------------------------------------------------------------
 
 /* asm: RADFORM		.float	10430.37835	;65535/(2PI) */
-static c3x_reg_t RADFORM = C3X_INIT(10430.37835f, 0x0D22F9836Eull);
+static c3x_f32_t RADFORM = C3X_F32_INIT(10430.3779296875f);
 /* asm: RADFORMI	.float	0.000095873	;1/(65535/(2PI)) */
 /* asm: 	 */
 /* asm: 	 */
-static c3x_reg_t RADFORMI = C3X_INIT(0.000095873f, 0xF2490F6CC9ull);
+static c3x_f32_t RADFORMI = C3X_F32_INIT(0.00009587300155544654f);
 
 /*
  *----------------------------------------------------------------------------
@@ -1505,8 +1505,15 @@ void GEN_NORMAL(VECTOR** points /*AR2*/, VECTOR* normal /*AR0*/) {
     VECTOR* a;
     VECTOR* b;
     VECTOR* c;
-    VECTOR d;
-    VECTOR e;
+    c3x_reg_t dx;
+    c3x_reg_t dy;
+    c3x_reg_t dz;
+    c3x_reg_t ex;
+    c3x_reg_t ey;
+    c3x_reg_t ez;
+    c3x_reg_t product0;
+    c3x_reg_t product1;
+    c3x_reg_t normal_x;
 
     // asm 000096B4: 	PUSH	AR0
     // asm 000096B5: 	LDI	*+AR2(1),AR0		;B
@@ -1536,15 +1543,18 @@ void GEN_NORMAL(VECTOR** points /*AR2*/, VECTOR* normal /*AR0*/) {
     b = points[1];
     c = points[2];
     a = points[0];
-    d.X = C3X_STF(C3X_SUB(a->X, b->X));
-    d.Y = C3X_STF(C3X_SUB(a->Y, b->Y));
-    d.Z = C3X_STF(C3X_SUB(a->Z, b->Z));
-    e.X = C3X_STF(C3X_SUB(c->X, b->X));
-    e.Y = C3X_STF(C3X_SUB(c->Y, b->Y));
-    e.Z = C3X_STF(C3X_SUB(c->Z, b->Z));
-    normal->X = C3X_STF(STF_F32(C3X_SUB(C3X_MUL(d.Y, e.Z), C3X_MUL(d.Z, e.Y))));
-    normal->Y = C3X_STF(STF_F32(C3X_SUB(C3X_MUL(d.Z, e.X), C3X_MUL(d.X, e.Z))));
-    normal->Z = C3X_STF(STF_F32(C3X_SUB(C3X_MUL(d.X, e.Y), C3X_MUL(d.Y, e.X))));
+    dx = C3X_SUB(a->X, b->X);
+    dy = C3X_SUB(a->Y, b->Y);
+    dz = C3X_SUB(a->Z, b->Z);
+    ex = C3X_SUB(c->X, b->X);
+    ey = C3X_SUB(c->Y, b->Y);
+    ez = C3X_SUB(c->Z, b->Z);
+    product0 = C3X_MUL(dy, ez);
+    product1 = C3X_MUL(dz, ey);
+    normal_x = C3X_SUB(product0, product1);
+    normal->X = C3X_STF(normal_x);
+    normal->Y = C3X_STF(C3X_SUB(C3X_MUL(dz, ex), C3X_MUL(dx, ez)));
+    normal->Z = C3X_STF(C3X_SUB(C3X_MUL(dx, ey), C3X_MUL(dy, ex)));
 }
 
 // *----------------------------------------------------------------------------

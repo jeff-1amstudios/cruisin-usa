@@ -697,7 +697,8 @@ ROADTRAK1:
     current_theta = C3X_LDF(obj->rad.Y);
     theta_delta = C3X_SUB(desired_theta, current_theta);
     if (C3X_GE(C3X_ABS(theta_delta), PII)) {
-        theta_delta = C3X_ADD(theta_delta, C3X_LT(theta_delta, C3X_FROM_INT(0)) ? TWOPII : C3X_NEG(TWOPII));
+        theta_delta = C3X_ADD(theta_delta,
+            C3X_LT(theta_delta, C3X_FROM_INT(0)) ? C3X_LDF(TWOPII) : C3X_NEG(C3X_LDF(TWOPII)));
     }
     // asm 000051BB: 	POPF	R1   			;GET TIME
     // asm 000051BC: 	FIX	R1
@@ -2930,6 +2931,7 @@ c3x_reg_t SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/
     c3x_reg_t delta_x;
     c3x_reg_t delta_z;
     c3x_reg_t distance_sq;
+    c3x_reg_t y_position;
 
     // asm 00005522: 	PUSH	AR5
     // asm 00005523: 	PUSH	AR6
@@ -3028,11 +3030,11 @@ L874:
     // asm 0000555D: 	SUBF	*+AR5(CARWHLTAB+1),R0
     // asm 0000555E: 	ADDF	*+AR0(Y),R0
     // asm 0000555F: 	STF	R0,*+AR4(OPOSY)
-    // TODO: Temporary unblocker. This is not asm-faithful: SPOS_INIT's Y path appears
-    // to depend on original contiguous RAM0 scratch aliasing after AR5=@VECTORBI.
-    // Until that RAM0 layout is modeled in C, force the startup value observed in MAME
-    // so downstream validation can continue.
-    obj->pos.Y = C3X_STF(C3X_FROM_INT(-1));
+    // AR5 still points at _VECTORB here. CARWHLTAB+1 aliases RAM0+162,
+    // which is CLIPRAM[25] in the original contiguous scratch RAM.
+    y_position = C3X_SUB(C3X_LDF(_VECTORB.Y), C3X_LOAD(CLIPRAM[25]));
+    y_position = C3X_ADD(y_position, C3X_LDF(_VECTORA.Y));
+    obj->pos.Y = C3X_STF(y_position);
     MAME_ASSERT_REG_FLOAT(0x0000555F, "R0", &obj->pos.Y);
     // asm 00005560: 	LDF	*+AR5(Z),R0
     // asm 00005561: 	ADDF	*+AR0(Z),R0

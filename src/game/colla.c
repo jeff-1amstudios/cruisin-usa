@@ -49,7 +49,7 @@ static void DRONSIGN(void);
 static void DRONEPTL(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/);
 static void COLPOINT(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/);
 void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/);
-static void FLYCOLLP(void);
+static void FLYCOLLP(PROC* p /*AR7*/);
 static void DEBSCAN(void);
 static void SIGNFALL(void);
 static void TREESHAK(void);
@@ -420,9 +420,11 @@ void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     c3x_reg_t gravity;
     c3x_reg_t next_y_velocity;
     c3x_reg_t road_floor;
+    c3x_reg_t updated_y;
     int rear_airborne;
     int front_airborne;
     int i;
+    uint32_t observed_raw;
 
     // asm 00001FF6: 	PUSH	R4
     // asm 00001FF7: 	PUSH	R5
@@ -432,6 +434,8 @@ void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     // asm 00001FFB: 	PUSH	AR6
     // asm 00001FFC: 	CALL	ROADSCAN 		;GET POINT HEIGHTS
     ROADSCAN(obj, carblk); // ;GET POINT HEIGHTS
+    observed_raw = C3X_STORE(C3X_LDF(carblk->center.y));
+    MAME_ASSERT_MEM(0x00001FFD, "d@(ar6+1)", &observed_raw);
     // ****************************************************
     // *WE HAVE FOUND HEIGHT FOR ALL SUSPENSION POINTS
     // *GET NEW PLAYER MATRIX
@@ -456,6 +460,12 @@ PC1X0:
     // asm 00002006: 	LDI	CARVNUM-1,RC 		;LOOP FOR ALL GROUND TOUCHERS
     // asm 00002007: 	RPTB	PC2
     for (i = 0; i < CARVNUM; i++, car_point++) {
+        observed_raw = C3X_STORE(C3X_LDF(car_point->y));
+        MAME_ASSERT_MEM(0x00002008, "d@(ar0+1)", &observed_raw);
+        observed_raw = C3X_STORE(C3X_LDF(car_point->road_delta_y));
+        MAME_ASSERT_MEM(0x00002008, "d@(ar0+3)", &observed_raw);
+        observed_raw = C3X_STORE(C3X_LDF(car_point->y_velocity));
+        MAME_ASSERT_MEM(0x00002008, "d@(ar0+4)", &observed_raw);
         // asm 00002008: 	LDF	*+AR0(CARPRDYD),R0	;LOAD DELTA HEIGHT
         // asm 00002009: 	CMPF	-9,R0
         // asm 0000200A: 	BGT	PC1A			;WE ARE ABOVE ROAD
@@ -468,7 +478,13 @@ PC1X0:
             // asm 0000200F: 	LDF	0,R0
             // asm 00002010: 	STF	R0,*+AR0(CARPYV)	;STORE NEW VELOCITY
             // 	;-------->B	PC2
-            car_point->y = C3X_STF(C3X_ADD(car_point->y, C3X_ADD(car_point->road_delta_y, road_floor)));
+            updated_y = C3X_ADD(car_point->road_delta_y, road_floor);
+            updated_y = C3X_ADD(car_point->y, updated_y);
+#ifndef C3X_USE_HOST_FLOAT
+            observed_raw = (uint32_t)updated_y.bits;
+            MAME_ASSERT_REG(0x0000200E, "R0", &observed_raw);
+#endif
+            car_point->y = C3X_STF(updated_y);
             car_point->y_velocity = C3X_STF(C3X_FROM_INT(0));
         } else {
             // *ABOVE ROAD CASE
@@ -514,6 +530,8 @@ PC1X0:
     PC2:;
         // asm 00002023: NOP 	*AR0++(CARVSIZ)
     }
+    observed_raw = C3X_STORE(C3X_LDF(carblk->center.y));
+    MAME_ASSERT_MEM(0x00002024, "d@(ar6+1)", &observed_raw);
     // *SET AIRBORNE FLAGS
     // asm 00002024: 	LDI	AR6,AR0		;GET CARVCT SUSPENSION POINTS
     // asm 00002025: 	LDI	1,R0   		;ASSUME AIRBORNE
@@ -572,8 +590,10 @@ PC1X0:
  */
 void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     CAR_POINT* car_point;
+    c3x_reg_t y_value;
     int missing_wheel;
     int i;
+    uint32_t observed_raw;
 
     // asm 00002041: 	LDI	R3,AR6			;SAVE CARVCT RAM POINTER
     // *PROJECT CAR SUSPENSION POINTS
@@ -586,8 +606,14 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     // asm 00002047: 	LDF	*+AR4(OPOSY),R4		;GET Y OBJECT OFFSET
     // asm 00002048: 	LDF	*+AR4(OPOSZ),R5		;GET Z OBJECT OFFSET
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002047, "R1", &obj->pos.X, 0);
+    observed_raw = C3X_STORE(C3X_LDF(obj->pos.Y));
+    MAME_ASSERT_MEM(0x00002047, "d@(ar4+2)", &observed_raw);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002048, "R4", &obj->pos.Y, 0);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002049, "R5", &obj->pos.Z, 0);
+    observed_raw = C3X_STORE(C3X_LDF(carblk->wheel_scan_offsets[1].X));
+    MAME_ASSERT_MEM(0x00002049, "d@(ar2+3)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(carblk->wheel_scan_offsets[2].X));
+    MAME_ASSERT_MEM(0x00002049, "d@(ar2+6)", &observed_raw);
     // asm 00002049: 	LDI	2,IR0
     // asm 0000204A: 	LDI	CARVNUM-1,RC		;LOOP FOR ALL POINTS
     // asm 0000204B: 	RPTB	LOOP
@@ -595,13 +621,26 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
         // asm 0000204C: 	LDI	R3,AR3
         // asm 0000204D: 	CALL	MATRIX_MUL
         MATRIX_MUL((VECTOR*)&carblk->wheel_scan_offsets[i], (MATRIX*)&obj->omatrix, (VECTOR*)car_point);
+        observed_raw = C3X_STORE(C3X_LDF(car_point->x));
+        MAME_ASSERT_MEM(0x0000204E, "d@(ar3)", &observed_raw);
+        observed_raw = C3X_STORE(C3X_LDF(car_point->y));
+        MAME_ASSERT_MEM(0x0000204E, "d@(ar3+1)", &observed_raw);
         // *ADD IN X,Z OFFSETS
         // asm 0000204E: 	ADDF	R1,*AR3,R0
         car_point->x =C3X_STF(C3X_ADD(car_point->x, obj->pos.X));
+        observed_raw = C3X_STORE(C3X_LDF(car_point->x));
+        MAME_ASSERT_MEM(0x00002050, "d@(ar3)", &observed_raw);
         // asm 0000204F: 	ADDF	R4,*+AR3(1),R0
         // asm 0000204F: ||	STF	R0,*AR3
         // asm 00002050: 	STF	R0,*+AR3(1)
-        car_point->y =C3X_STF(C3X_ADD(car_point->y, obj->pos.Y));
+        y_value = C3X_ADD(car_point->y, obj->pos.Y);
+#ifndef C3X_USE_HOST_FLOAT
+        observed_raw = (uint32_t)y_value.bits;
+        MAME_ASSERT_REG(0x00002050, "R0", &observed_raw);
+#endif
+        car_point->y = C3X_STF(y_value);
+        observed_raw = C3X_STORE(C3X_LDF(car_point->y));
+        MAME_ASSERT_MEM(0x00002051, "d@(ar3+1)", &observed_raw);
         // ;	NEGF	R0			;DEFAULT COLLISION DELTA = - HEIGHT
         // asm 00002051: 	LDF	0,R0			;CLEAR DEFAULT HEIGHT
         // asm 00002052: 	STF	R0,*+AR3(3)
@@ -836,7 +875,17 @@ RS300:
     }
 RS301:
     // asm 000020A8: 	STF	R0,*+AR4(CARPRDYD)		;SAVE ROAD Y DELTA
+#ifndef C3X_USE_HOST_FLOAT
+    {
+        uint32_t observed_result = (uint32_t)road_delta_y.bits;
+        MAME_ASSERT_REG(0x000020A8, "R0", &observed_result);
+    }
+#endif
     car_point->road_delta_y = C3X_STF(road_delta_y); // ;SAVE ROAD Y DELTA
+    {
+        uint32_t observed_result = C3X_STORE(C3X_LDF(car_point->road_delta_y));
+        MAME_ASSERT_MEM(0x000020A9, "d@(ar4+3)", &observed_result);
+    }
     MAME_ASSERT_MEM(0x000020A9, "d@(ar2+f)", &road_obj->id);
     // asm 000020A9: 	STI	AR2,*+AR4(CARPCOL) 	;SAVE COLLISION OBJECT
     car_point->collided_road_object = OBJ_TO_REF(road_obj); // ;SAVE COLLISION OBJECT
@@ -911,15 +960,25 @@ int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, c3x_reg_t* out_road
     vertex0 = VL[0];
     vertex1 = VL[1];
     vertex2 = VL[2];
-    normal.X = C3X_STF(C3X_SUB(
-        C3X_MUL(C3X_SUB(vertex1->Y, vertex0->Y), C3X_SUB(vertex2->Z, vertex1->Z)),
-        C3X_MUL(C3X_SUB(vertex1->Z, vertex0->Z), C3X_SUB(vertex2->Y, vertex1->Y))));
-    normal.Y = C3X_STF(C3X_SUB(
-        C3X_MUL(C3X_SUB(vertex1->Z, vertex0->Z), C3X_SUB(vertex2->X, vertex1->X)),
-        C3X_MUL(C3X_SUB(vertex1->X, vertex0->X), C3X_SUB(vertex2->Z, vertex1->Z))));
-    normal.Z = C3X_STF(C3X_SUB(
-        C3X_MUL(C3X_SUB(vertex1->X, vertex0->X), C3X_SUB(vertex2->Y, vertex1->Y)),
-        C3X_MUL(C3X_SUB(vertex1->Y, vertex0->Y), C3X_SUB(vertex2->X, vertex1->X))));
+    GEN_NORMAL(VL, &normal);
+    {
+        uint32_t observed_raw;
+        observed_raw = C3X_STORE(C3X_LDF(vertex0->X));
+        MAME_ASSERT_MEM(0x000020CA, "d@(ar1-3)", &observed_raw);
+        observed_raw = C3X_STORE(C3X_LDF(vertex0->Y));
+        MAME_ASSERT_MEM(0x000020CA, "d@(ar1-2)", &observed_raw);
+        observed_raw = C3X_STORE(C3X_LDF(vertex0->Z));
+        MAME_ASSERT_MEM(0x000020CA, "d@(ar1-1)", &observed_raw);
+    }
+    {
+        uint32_t observed_raw;
+        observed_raw = C3X_STORE(C3X_LDF(normal.X));
+        MAME_ASSERT_MEM(0x000020CA, "d@(ar0-3)", &observed_raw);
+        observed_raw = C3X_STORE(C3X_LDF(normal.Y));
+        MAME_ASSERT_MEM(0x000020CA, "d@(ar0-2)", &observed_raw);
+        observed_raw = C3X_STORE(C3X_LDF(normal.Z));
+        MAME_ASSERT_MEM(0x000020CA, "d@(ar0-1)", &observed_raw);
+    }
     // asm 000020C1: 	LDPI	@VLI,AR1
     // asm 000020C2: 	LDI	*AR1,AR1
     // asm 000020C3: 	MPYF	*AR1++,*AR0++,R0
@@ -935,7 +994,21 @@ int _coll_road(OBJ* road_obj /*AR2*/, VECTOR* point /*AR4*/, c3x_reg_t* out_road
     road_plane_numerator = C3X_ADD(road_plane_numerator, C3X_MUL(vertex0->Y, normal.Y));
     road_plane_numerator = C3X_ADD(road_plane_numerator, C3X_MUL(vertex0->Z, normal.Z));
     road_plane_numerator = C3X_NEG(road_plane_numerator);
+#ifndef C3X_USE_HOST_FLOAT
+    {
+        uint32_t observed_result = (uint32_t)road_plane_numerator.bits;
+        MAME_ASSERT_REG(0x000020CA, "R0", &observed_result);
+        observed_result = (uint32_t)road_plane_denominator.bits;
+        MAME_ASSERT_REG(0x000020CA, "R1", &observed_result);
+    }
+#endif
     *out_road_delta = DIV_F30(road_plane_numerator, road_plane_denominator);
+#ifndef C3X_USE_HOST_FLOAT
+    {
+        uint32_t observed_result = (uint32_t)out_road_delta->bits;
+        MAME_ASSERT_REG(0x000020CB, "R0", &observed_result);
+    }
+#endif
     // asm 000020CB: 	POPF	R7
     // asm 000020CC: 	POP	R7
     // asm 000020CD: 	POPF	R6
@@ -964,6 +1037,7 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     VECTOR* left_front;
     VECTOR* normal;
     MATRIX* matrix;
+    uint32_t observed_raw;
 
     // 	;*GENERATE A (UNIT) NORMAL FOR THE PLANE
     // asm 000020D4: 	LDPI	@VLI,AR2		;rotate for universe etc.
@@ -977,10 +1051,40 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     VL[0] = center;
     VL[1] = right_front;
     VL[2] = left_front;
+    observed_raw = C3X_STORE(C3X_LDF(center->X));
+    MAME_ASSERT_MEM(0x000020D4, "d@(ar6)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(center->Y));
+    MAME_ASSERT_MEM(0x000020D4, "d@(ar6+1)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(center->Z));
+    MAME_ASSERT_MEM(0x000020D4, "d@(ar6+2)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(right_front->X));
+    MAME_ASSERT_MEM(0x000020D4, "d@(ar6+6)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(right_front->Y));
+    MAME_ASSERT_MEM(0x000020D4, "d@(ar6+7)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(right_front->Z));
+    MAME_ASSERT_MEM(0x000020D4, "d@(ar6+8)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(left_front->X));
+    MAME_ASSERT_MEM(0x000020D4, "d@(ar6+c)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(left_front->Y));
+    MAME_ASSERT_MEM(0x000020D4, "d@(ar6+d)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(left_front->Z));
+    MAME_ASSERT_MEM(0x000020D4, "d@(ar6+e)", &observed_raw);
     GEN_NORMAL(VL, normal);
+    observed_raw = C3X_STORE(C3X_LDF(normal->X));
+    MAME_ASSERT_MEM(0x000020D7, "d@(ar0)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(normal->Y));
+    MAME_ASSERT_MEM(0x000020D7, "d@(ar0+1)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(normal->Z));
+    MAME_ASSERT_MEM(0x000020D7, "d@(ar0+2)", &observed_raw);
     // asm 000020D7: 	LDI	AR0,AR2
     // asm 000020D8: 	CALL	NORMALIZE		;normalize(&N);
     NORMALIZE(normal);
+    observed_raw = C3X_STORE(C3X_LDF(normal->X));
+    MAME_ASSERT_MEM(0x000020D9, "d@(ar2)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(normal->Y));
+    MAME_ASSERT_MEM(0x000020D9, "d@(ar2+1)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(normal->Z));
+    MAME_ASSERT_MEM(0x000020D9, "d@(ar2+2)", &observed_raw);
     // asm 000020D9: 	LDPI	@TMATRIXI,AR3
     // *LOAD 2ND COLUMN OF ROTATION MATRIX (Y AXIS)
     // asm 000020DA: 	LDF	*AR2,R0		     	;2ND COLUMN ROT MATRIX IS NORMAL VECTOR
@@ -1031,6 +1135,8 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // asm 000020EF: 	SUBF	R1,R0
     // asm 000020F0: 	STF	R0,*+AR3(7)
     matrix->a21 =C3X_STF(C3X_SUB(C3X_MUL(matrix->a02, matrix->a10), C3X_MUL(matrix->a00, matrix->a12)));
+    observed_raw = C3X_STORE(C3X_LDF(matrix->a21));
+    MAME_ASSERT_MEM(0x000020F1, "d@(ar3+7)", &observed_raw);
     // asm 000020F1: 	MPYF	*AR3,*+AR2(1),R0	;U1*V2
     // asm 000020F2: 	MPYF	*+AR3(1),*AR2,R1	;U2*V1
     // asm 000020F3: 	SUBF	R1,R0
@@ -1039,12 +1145,32 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // asm 000020F5: 	ADDI	3,AR2
     // asm 000020F6: 	CALL	NORMALIZE		;normalize(&N);
     NORMALIZE((VECTOR*)&matrix->a20);
+    observed_raw = C3X_STORE(C3X_LDF(matrix->a21));
+    MAME_ASSERT_MEM(0x000020F7, "d@(ar3+7)", &observed_raw);
     // *INVERT MATRIX AND STORE IN OBJECT
     // asm 000020F7: 	LDI	AR3,R2
     // asm 000020F8: 	LDI	AR4,AR2
     // asm 000020F9: 	ADDI	OMATRIX,AR2
     // asm 000020FA: 	CALL	CPYIMAT     		;invert matrix and stuff in object
     CPYIMAT(&obj->omatrix, matrix);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat00));
+    MAME_ASSERT_MEM(0x000020FB, "d@(ar4+4)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat01));
+    MAME_ASSERT_MEM(0x000020FB, "d@(ar4+7)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat02));
+    MAME_ASSERT_MEM(0x000020FB, "d@(ar4+a)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat10));
+    MAME_ASSERT_MEM(0x000020FB, "d@(ar4+5)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat11));
+    MAME_ASSERT_MEM(0x000020FB, "d@(ar4+8)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat12));
+    MAME_ASSERT_MEM(0x000020FB, "d@(ar4+b)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat20));
+    MAME_ASSERT_MEM(0x000020FB, "d@(ar4+6)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat21));
+    MAME_ASSERT_MEM(0x000020FB, "d@(ar4+9)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat22));
+    MAME_ASSERT_MEM(0x000020FB, "d@(ar4+c)", &observed_raw);
     // ***GET CAR HEIGHT AND LOAD IT INTO CAR
     // asm 000020FB: 	LDF	*+AR6(1),R0		;GET Y HEIGHT FIRST POINT
     // asm 000020FC: 	SUBF	*+AR6(CARWHLTAB+1),R0
@@ -1081,8 +1207,13 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
     const OROMDATA* rom;
     const ROM_VERTEX* vertices;
     const ROM_POLYGON* polygons;
+    c3x_f32_t* matrix;
     VECTOR translation;
     VECTOR temp_vertex;
+    c3x_reg_t partial;
+    c3x_reg_t rotated_x;
+    c3x_reg_t rotated_y;
+    c3x_reg_t rotated_z;
     int vertex_count;
     int polygon_count;
     int v1_index;
@@ -1106,6 +1237,7 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
     // asm 00002107: 	LDI	*+AR2(OROMDATA),AR4
     // asm 00002108: 	ADDI	1,AR4			;skip object diameter
     rom = (const OROMDATA*)obj->romdata;
+    matrix = (c3x_f32_t*)&obj->omatrix;
     vertices = (const ROM_VERTEX*)((const u32*)rom + 2);
     vertex_count = (int)rom->vertex_count + 1;
     polygon_count = (int)rom->polygon_count + 1;
@@ -1155,10 +1287,21 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
         // *MULTIPLY BY ROTATION MATRIX
         // *AND ADD TRANSLATION (IN THAT ORDER)
         // *
-        MATRIX_MUL(&temp_vertex, (MATRIX*)&obj->omatrix, (VECTOR*)&BLOWLIST[i * 3]);
-        BLOWLIST[(i * 3) + 0] = C3X_STF(C3X_ADD(BLOWLIST[(i * 3) + 0], translation.X)); // ;STORE ROTATED X
-        BLOWLIST[(i * 3) + 1] = C3X_STF(C3X_ADD(BLOWLIST[(i * 3) + 1], translation.Y)); // ;STORE ROTATED Y
-        BLOWLIST[(i * 3) + 2] = C3X_STF(C3X_ADD(BLOWLIST[(i * 3) + 2], translation.Z)); // ;STORE Z
+        partial = C3X_ADD(C3X_MUL(temp_vertex.Y, matrix[1]), C3X_MUL(temp_vertex.X, matrix[0]));
+        rotated_x = C3X_ADD(partial, C3X_MUL(temp_vertex.Z, matrix[2]));
+        partial = C3X_ADD(C3X_MUL(temp_vertex.Y, matrix[4]), C3X_MUL(temp_vertex.X, matrix[3]));
+        rotated_y = C3X_ADD(partial, C3X_MUL(temp_vertex.Z, matrix[5]));
+        partial = C3X_ADD(C3X_MUL(temp_vertex.Z, matrix[8]), C3X_MUL(temp_vertex.X, matrix[6]));
+        rotated_z = C3X_ADD(C3X_MUL(temp_vertex.Y, matrix[7]), partial);
+        BLOWLIST[(i * 3) + 0] = C3X_STF(C3X_ADD(rotated_x, translation.X)); // ;STORE ROTATED X
+        BLOWLIST[(i * 3) + 1] = C3X_STF(C3X_ADD(rotated_y, translation.Y)); // ;STORE ROTATED Y
+        BLOWLIST[(i * 3) + 2] = C3X_STF(C3X_ADD(rotated_z, translation.Z)); // ;STORE Z
+        {
+            uint32_t observed_raw = C3X_STORE(C3X_LDF(BLOWLIST[(i * 3) + 0]));
+            MAME_ASSERT_MEM(0x00002133, "d@(ar3-2)", &observed_raw);
+            observed_raw = C3X_STORE(C3X_LDF(BLOWLIST[(i * 3) + 1]));
+            MAME_ASSERT_MEM(0x00002133, "d@(ar3-1)", &observed_raw);
+        }
     EOTV:
         // asm 00002133: STF	R2,*AR3++		;STORE Z
         ;
@@ -1731,6 +1874,7 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
     int sign_type;
     int sign_subtype;
     int i;
+    PROC_CONTEXT* fly_ctx;
 
     GETBOX(car_obj, BLOWLIST);
 
@@ -1853,7 +1997,9 @@ FLYCOLL:
         PRC_KILL(sign_obj->plink);
     }
 CLLL1:
-    sign_obj->plink = PRC_CREATE_CHILD((PROC_FUNC)FLYCOLLPI, DRONE_C | FLYER_T, NULL);
+    fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    fly_ctx->FLYCOLLP.obj = sign_obj;
+    sign_obj->plink = PRC_CREATE_CHILD(FLYCOLLPI, DRONE_C | FLYER_T, fly_ctx);
     if (sign_obj->plink == NULL) {
         goto COLSGCX;
     }
@@ -1929,23 +2075,51 @@ static int SAGETAB[] = {
  *
  */
 
-static void FLYCOLLP(void) {
+static void FLYCOLLP(PROC* p /*AR7*/) {
+    OBJ* obj;
+    c3x_reg_t angle;
+    c3x_reg_t road_delta;
+    c3x_reg_t ground_height;
+    c3x_reg_t vertical_velocity;
+    c3x_reg_t volume_factor;
+    c3x_reg_t bounce_speed;
+    int frame_count;
+    int volume;
+    int sound_index;
+
+    switch (p->resume_state)
+    {
+        case 0:
+            MAME_ASSERT_FUNCTION_ENTRY();
+            break;
+        case 1:
+            goto PROC_RESUME_1;
+    }
+
+    obj = p->ctx->FLYCOLLP.obj;
+
     // asm 00002334: 	LDF	0.2,R0
     // asm 00002335: 	CALL	SFRAND
+    angle = SFRAND(C3X_IMM_F32(0.2));
     // asm 00002336: 	LDF	R0,R2
     // asm 00002337: 	LDI	AR7,AR2
     // asm 00002338: 	ADDI	PDATA+2,AR2		;STORE MATRIX PDATA+2
     // asm 00002339: 	CALL    FIND_XMATRIX
+    FIND_XMATRIX(&p->ctx->FLYCOLLP.rotation, angle);
     // asm 0000233A: 	LDPI	@MATRIXAI,AR2
     // asm 0000233B: 	LDF	0.1,R0
     // asm 0000233C: 	CALL	SFRAND
+    angle = SFRAND(C3X_IMM_F32(0.1));
     // asm 0000233D: 	LDF	R0,R2
     // asm 0000233E: 	CALL    FIND_YMATRIX
+    FIND_YMATRIX(&_MATRIXA, angle);
     // asm 0000233F: 	LDI	AR7,R2	  		;ROTATE THE SUCKER
     // asm 00002340: 	ADDI	PDATA+2,R2
     // asm 00002341: 	LDI	R2,R3
     // asm 00002342: 	CALL	CONCATMAT
+    CONCATMAT(&p->ctx->FLYCOLLP.rotation, &_MATRIXA, &p->ctx->FLYCOLLP.rotation);
 FLYCOLP0:
+    obj = p->ctx->FLYCOLLP.obj;
     // ;	LDI	*+AR4(OFLAGS),R0	;CHECK IF OBJECT ACTIVE, EXISTS
     // ;	AND	O_LIST_M,R0
     // ;	CMPI	O_LIST0,R0
@@ -1954,6 +2128,7 @@ FLYCOLP0:
     // ;	BZ	FLYSTOP
     // asm 00002343: 	LDPI	@NFRAMES,AR6	 	;ADJUST MATRIX FOR FRAME COUNT
     // asm 00002344: 	SUBI	1,AR6
+    frame_count = NFRAMES;
     // asm 00002345: FLYCOLPL
     // asm 00002345: 	LDI	AR7,R2	  		;ROTATE THE SUCKER
     // asm 00002346: 	ADDI	PDATA+2,R2
@@ -1962,79 +2137,138 @@ FLYCOLP0:
     // asm 00002349: 	LDI	AR2,R3
     // asm 0000234A: 	CALL	CONCATMAT
     // asm 0000234B: 	DBU	AR6,FLYCOLPL
+    while (frame_count-- > 0) {
+        CONCATMAT(&p->ctx->FLYCOLLP.rotation, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
+    }
     // asm 0000234C: 	CALL	OVELNADD		;UPDATE VELOCITIES
+    OVELNADD(obj);
     // asm 0000234D: 	LDI	0,R0
     // asm 0000234E: 	STI	R0,*+AR4(OUSR1)		;INDICATE IN MOTION, RE-SORT
+    obj->usr1 = 0;
     // asm 0000234F: 	FLOATP	@NFRAMES,R2
+    vertical_velocity = C3X_FROM_INT(NFRAMES);
     // asm 00002350: 	MPYF	2,R2			;FRAME ADJUSTED GRAVITY
+    vertical_velocity = C3X_MUL(vertical_velocity, C3X_IMM_F32(2));
     // asm 00002351: 	ADDF	*+AR4(OVELY),R2
+    vertical_velocity = C3X_ADD(vertical_velocity, C3X_LDF(obj->vel_y));
     // asm 00002352: 	STF	R2,*+AR4(OVELY)
+    obj->vel_y = C3X_STF(vertical_velocity);
     // asm 00002353: 	CMPF	100,R2
     // asm 00002354: 	BGT	FLYSTOP
+    if (C3X_GT(vertical_velocity, C3X_IMM_F32(100))) {
+        goto FLYSTOP;
+    }
     // asm 00002355: 	CALL	OBJSCAN
+    if (!OBJSCAN(obj, &road_delta)) {
+        goto FLYCSLP;
+    }
     // asm 00002356: 	BNC	FLYCSLP			;OFF THE MAP
     // *WERE OVER THE ROAD
     // asm 00002357: FLYROAD
     // asm 00002357: 	FLOAT	155,R1 			;HT OF DRUM/SAWHORSE
+    ground_height = C3X_FROM_INT(155);
     // asm 00002358: 	LDI	*+AR4(OID),R2		;ROADKILL DOESN'T BOUNCE
     // asm 00002359: 	CMPI	RDDEBRIS_C|TSC_ROADKILL,R2
     // asm 0000235A: 	LDFEQ	35,R1
+    if (obj->id == (RDDEBRIS_C | TSC_ROADKILL)) {
+        ground_height = C3X_IMM_F32(35);
+    }
     // asm 0000235B:  	CMPF	R1,R0
     // asm 0000235C: 	BGT	FLYCSLP			;WERE ABOVE GROUND
+    if (C3X_GT(road_delta, ground_height)) {
+        goto FLYCSLP;
+    }
     // *WE HIT THE GROUND DUDES
     // asm 0000235D: 	LDF	*+AR4(OVELY),R2		;GET VERTICAL VELOCITY
+    vertical_velocity = C3X_LDF(obj->vel_y);
     // asm 0000235E: 	BN	FLYCSLP			;WERE GOING UP IGNORE IT
+    if (C3X_LT(vertical_velocity, C3X_FROM_INT(0))) {
+        goto FLYCSLP;
+    }
     // asm 0000235F: 	SUBRF	R1,R0			;SET HIM ON THE GROUND
+    road_delta = C3X_SUB(ground_height, road_delta);
     // asm 00002360: 	ADDF	*+AR4(OPOSY),R0
+    road_delta = C3X_ADD(road_delta, C3X_LDF(obj->pos.Y));
     // asm 00002361: 	CMPF	20,R2          		;CHECK FOR MINIMUM
     // asm 00002362: 	BLT	FLYSTOP			;TIME TO STOP
+    if (C3X_LT(vertical_velocity, C3X_IMM_F32(20))) {
+        goto FLYSTOP;
+    }
     // asm 00002363: 	MPYF	-0.5,R2
+    vertical_velocity = C3X_MUL(vertical_velocity, C3X_IMM_F32(-0.5));
     // asm 00002364: 	STF	R2,*+AR4(OVELY)
+    obj->vel_y = C3X_STF(vertical_velocity);
     // asm 00002365: 	LDF	*+AR4(OVELX),R0		;CUT DOWN VELOCITIES
     // asm 00002366: 	MPYF	0.5,R0
     // asm 00002367: 	STF	R0,*+AR4(OVELX)
+    obj->vel_x = C3X_STF(C3X_MUL(C3X_LDF(obj->vel_x), C3X_IMM_F32(0.5)));
     // asm 00002368: 	LDF	*+AR4(OVELZ),R1		;CUT DOWN VELOCITIES
     // asm 00002369: 	MPYF	0.5,R1
     // asm 0000236A: 	STF	R1,*+AR4(OVELZ)
+    obj->vel_z = C3X_STF(C3X_MUL(C3X_LDF(obj->vel_z), C3X_IMM_F32(0.5)));
     // *MAKE BOUNCE SOUND
     // asm 0000236B: 	FLOAT	*+AR4(ODIST),R0
+    volume_factor = C3X_FROM_INT(obj->dist);
     // asm 0000236C: 	BN	FLYCSLP			;BEHIND PLAYER NO SOUND
+    if (C3X_LT(volume_factor, C3X_FROM_INT(0))) {
+        goto FLYCSLP;
+    }
     // asm 0000236D: 	CALL	INV_F30
+    volume_factor = INV_F30(volume_factor);
     // asm 0000236E: 	FLOAT	5000,R1
+    bounce_speed = C3X_FROM_INT(5000);
     // asm 0000236F: 	MPYF	R1,R0
+    volume_factor = C3X_MUL(bounce_speed, volume_factor);
     // asm 00002370: 	ABSF	*+AR4(OVELY),R2	       	;SOUND PROPORTIONAL TO VERT VELOCITY
+    bounce_speed = C3X_ABS(C3X_LDF(obj->vel_y));
     // asm 00002371: 	CMPF	30,R2
     // asm 00002372: 	LDFGT	30,R2
+    if (C3X_GT(bounce_speed, C3X_IMM_F32(30))) {
+        bounce_speed = C3X_IMM_F32(30);
+    }
     // asm 00002373: 	MPYF	5.0,R2
+    bounce_speed = C3X_MUL(bounce_speed, C3X_IMM_F32(5.0));
     // asm 00002374: 	MPYF	R2,R0
+    volume_factor = C3X_MUL(bounce_speed, volume_factor);
     // asm 00002375: 	FIX	R0
+    volume = FIX(volume_factor);
     // asm 00002376: 	CMPI	140,R0
     // asm 00002377: 	LDIGT	140,R0
+    if (volume > 140) {
+        volume = 140;
+    }
     // asm 00002378: 	LDI	*+AR4(OID),R1
     // asm 00002379: 	AND	SUBTYPE_M,R1
     // asm 0000237A: 	CMPI	RDD_55GAL,R1
     // asm 0000237B: 	LDIEQ	DRMBNCE,AR2
     // asm 0000237C: 	LDINE	SAWBNCE,AR2
+    sound_index = ((obj->id & SUBTYPE_M) == RDD_55GAL) ? DRMBNCE : SAWBNCE;
     // asm 0000237D: 	CALL	VOLSNDFX
+    VOLSNDFX(sound_index, volume);
 FLYCSLP:
     // asm 0000237E: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00002380: 	B	FLYCOLP0
+    goto FLYCOLP0;
 FLYSTOP:
     // asm 00002381: 	LDI	1,R0
     // asm 00002382: 	LSH	O_PROC_B,R0		;CLEAR PROCESS BIT
     // asm 00002383: 	NOT	R0
     // asm 00002384: 	AND	*+AR4(OFLAGS),R0
     // asm 00002385: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags &= ~(1u << O_PROC_B);
     // asm 00002386: 	LDI	*+AR4(OID),R0
     // asm 00002387: 	CMPI	RDDEBRIS_C|TSC_ROADKILL,R0
     // asm 00002388: 	BNE	NOT_ROADKILL
     // asm 00002389: 	LDI	AR4,AR2
     // asm 0000238A: 	CALL	OBJ_DELETE
+    if (obj->id == (RDDEBRIS_C | TSC_ROADKILL)) {
+        OBJ_DELETE(obj);
+    }
 NOT_ROADKILL:
     // asm 0000238B: 	BR 	SUICIDE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCOLLP", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 /*
@@ -3132,7 +3366,6 @@ CLDSCL1:
 static c3x_reg_t REPELL(OBJ* obj0, OBJ* obj1, VECTOR* repulsion_vector) {
     c3x_reg_t relative_velocity_x;
     c3x_reg_t relative_velocity_z;
-    c3x_reg_t length;
 
     // asm 00002633: 	LDPI	@VECTORAI,AR2		;COMPUTE REPULSION VECTOR
     // asm 00002634: 	LDF	*+AR0(OPOSX),R0
@@ -3147,11 +3380,7 @@ static c3x_reg_t REPELL(OBJ* obj0, OBJ* obj1, VECTOR* repulsion_vector) {
     // asm 0000263B: 	STF	R0,*+AR2(2)
     repulsion_vector->Z = C3X_STF(C3X_SUB(obj0->pos.Z, obj1->pos.Z));
     // asm 0000263C: 	CALL	NORMALIZE		;NORMALIZE IT
-    length = SQRT(C3X_ADD(C3X_MUL(repulsion_vector->X, repulsion_vector->X), C3X_MUL(repulsion_vector->Z, repulsion_vector->Z)));
-    if (C3X_NE(length, C3X_FROM_INT(0))) {
-        repulsion_vector->X = C3X_STF(C3X_DIV(repulsion_vector->X, length));
-        repulsion_vector->Z = C3X_STF(C3X_DIV(repulsion_vector->Z, length));
-    }
+    NORMALIZE(repulsion_vector);
     // *FIND RELATIVE VELOCITY MAGNITUDE
     // asm 0000263D: 	LDF	*+AR0(OVELX),R0
     // asm 0000263E: 	SUBF	*+AR1(OVELX),R0
@@ -3202,6 +3431,7 @@ static void COLDISP(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_poin
     c3x_reg_t coefficient;
     c3x_reg_t angle1;
     c3x_reg_t angle2;
+    c3x_reg_t trig_value;
     c3x_reg_t speed;
     int probability;
 
@@ -3326,14 +3556,16 @@ NTRN:
     // asm 0000267E: 	ADDF	@HALFPII,R2	 	;CORRECT FOR 90 DEGREE ERROR
     angle1 = C3X_ADD(angle1, HALFPII);
     // asm 0000267F: 	CALL	_SINE
+    trig_value = _SINE(angle1);
     // asm 00002680: 	LDF	*+AR4(CARSPEED),R3
     speed = C3X_LDF(car0->speed);
     // ;	STF	R3,@CAR1SPEEDI
     // asm 00002681: 	MPYF	R3,R0,R5		;V1Zi (INIT ZV OBJECT 1)
-    velocity1_z = C3X_MUL(speed, _SINE(angle1));
+    velocity1_z = C3X_MUL(speed, trig_value);
     // asm 00002682: 	CALL	_COSI
+    trig_value = _COSI(angle1);
     // asm 00002683: 	MPYF	R3,R0,R4		;V1Xi (INIT XV OBJECT 1)
-    velocity1_x = C3X_MUL(speed, _COSI(angle1));
+    velocity1_x = C3X_MUL(speed, trig_value);
     // *FIND X AND Z VELOCITIES OF OBJ AR1
     // *AR5=OCARBLK OBJECT AR1
     // asm 00002684: 	LDI	*+AR1(OCARBLK),AR5
@@ -3344,14 +3576,16 @@ NTRN:
     // asm 00002686: 	ADDF	@HALFPII,R2	   	;CORRECT FOR 90 DEGREE ERROR
     angle2 = C3X_ADD(angle2, HALFPII);
     // asm 00002687: 	CALL	_SINE
+    trig_value = _SINE(angle2);
     // asm 00002688: 	LDF	*+AR5(CARSPEED),R3
     speed = C3X_LDF(car1->speed);
     // ;	STF	R3,@CAR2SPEEDI
     // asm 00002689: 	MPYF	R3,R0,R7		;V2Zi (INIT ZV OBJECT 2)
-    velocity2_z = C3X_MUL(speed, _SINE(angle2));
+    velocity2_z = C3X_MUL(speed, trig_value);
     // asm 0000268A: 	CALL	_COSI
+    trig_value = _COSI(angle2);
     // asm 0000268B: 	MPYF	R3,R0,R6		;V2Xi (INIT XV OBJECT 2)
-    velocity2_x = C3X_MUL(speed, _COSI(angle2));
+    velocity2_x = C3X_MUL(speed, trig_value);
     // *CHECK FOR FLYING COLLISION
     // asm 0000268C: 	CMPI	@PLYCAR,AR0		;PLAYERS CAR?
     // asm 0000268D: 	BNZ	COLDISP0	  	;NO
@@ -3545,6 +3779,7 @@ COLIN1:
     angle1 = C3X_SUB(angle1, HALFPII);
     // *STORE VEL THETA, SPEED
     // asm 000026E1: 	PUSHF	R0
+    angle1 = C3X_LDF(C3X_STF(angle1));
     // ;	STF	R0,*+AR4(CARVROT)
     // asm 000026E2: 	MPYF	R2,R2
     speed = C3X_MUL(velocity_x, velocity_x);
@@ -3628,6 +3863,7 @@ ZZZ1:
     angle2 = C3X_SUB(angle2, HALFPII);
     // *STORE VEL THETA, SPEED
     // asm 00002706: 	PUSHF	R0	 		;SAVE NEW CARVROT
+    angle2 = C3X_LDF(C3X_STF(angle2));
     // asm 00002707: 	MPYF	R2,R2
     speed = C3X_MUL(velocity_x, velocity_x);
     // asm 00002708: 	MPYF	R3,R3
@@ -4696,7 +4932,12 @@ static c3x_f32_t* GETBOX(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/) {
 
 static c3x_f32_t* GETBOX0(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/, c3x_reg_t xminus_mult /*R0*/, c3x_reg_t yminus_mult /*R1*/, c3x_reg_t zminus_mult /*R2*/, c3x_reg_t xplus_mult /*R3*/, c3x_reg_t yplus_mult /*R4*/, c3x_reg_t zplus_mult /*R5*/) {
     CARBLK* carblk = obj->carblk;
+    c3x_f32_t* matrix = (c3x_f32_t*)&obj->omatrix;
     VECTOR corners[8];
+    c3x_reg_t partial;
+    c3x_reg_t rotated_x;
+    c3x_reg_t rotated_y;
+    c3x_reg_t rotated_z;
     int i;
 
     // asm 000028AE: 	PUSH	AR4
@@ -4821,10 +5062,19 @@ EOCV:
         storage[(i * 3) + 0] = corners[i].X;
         storage[(i * 3) + 1] = corners[i].Y;
         storage[(i * 3) + 2] = corners[i].Z;
-        MATRIX_MUL(&corners[i], (MATRIX*)&obj->omatrix, (VECTOR*)&storage[24 + (i * 3)]);
-        storage[24 + (i * 3) + 0] = C3X_STF(C3X_ADD(storage[24 + (i * 3) + 0], obj->pos.X));
-        storage[24 + (i * 3) + 1] = C3X_STF(C3X_ADD(storage[24 + (i * 3) + 1], obj->pos.Y));
-        storage[24 + (i * 3) + 2] = C3X_STF(C3X_ADD(storage[24 + (i * 3) + 2], obj->pos.Z));
+        partial = C3X_ADD(C3X_MUL(corners[i].Y, matrix[1]), C3X_MUL(corners[i].X, matrix[0]));
+        rotated_x = C3X_ADD(partial, C3X_MUL(corners[i].Z, matrix[2]));
+        partial = C3X_ADD(C3X_MUL(corners[i].Y, matrix[4]), C3X_MUL(corners[i].X, matrix[3]));
+        rotated_y = C3X_ADD(partial, C3X_MUL(corners[i].Z, matrix[5]));
+        partial = C3X_ADD(C3X_MUL(corners[i].Z, matrix[8]), C3X_MUL(corners[i].X, matrix[6]));
+        rotated_z = C3X_ADD(C3X_MUL(corners[i].Y, matrix[7]), partial);
+        storage[24 + (i * 3) + 0] = C3X_STF(C3X_ADD(rotated_x, obj->pos.X));
+        storage[24 + (i * 3) + 1] = C3X_STF(C3X_ADD(rotated_y, obj->pos.Y));
+        storage[24 + (i * 3) + 2] = C3X_STF(C3X_ADD(rotated_z, obj->pos.Z));
+        {
+            uint32_t observed_raw = C3X_STORE(C3X_LDF(storage[24 + (i * 3) + 1]));
+            MAME_ASSERT_MEM(0x000028E2, "d@(ar2-1)", &observed_raw);
+        }
     }
 
     return storage + 48;

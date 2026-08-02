@@ -207,17 +207,17 @@ static int PMSAV[9];
 #define ZOOMI ZOOMRAM
 #define GRAVITY 1.20
 /* asm: ROADFRICI	.float	0.0028 */
-static c3x_reg_t ROADFRICI = C3X_INIT(0.0028f, 0xF73780346Dull);
+static c3x_f32_t ROADFRICI = C3X_F32_INIT(0.0028f);
 /* asm: OFRDFRICI	.float	0.010 */
-static c3x_reg_t OFRDFRICI = C3X_INIT(0.010f, 0xF923D70A3Dull);
+static c3x_f32_t OFRDFRICI = C3X_F32_INIT(0.010f);
 /* asm: BRAKFRICI	.float	0.020 */
-static c3x_reg_t BRAKFRICI = C3X_INIT(0.020f, 0xFA23D70A3Dull);
+static c3x_f32_t BRAKFRICI = C3X_F32_INIT(0.020f);
 /* asm: SKIDFRICI	.float	0.003 */
-static c3x_reg_t SKIDFRICI = C3X_INIT(0.003f, 0xF7449BA5E3ull);
+static c3x_f32_t SKIDFRICI = C3X_F32_INIT(0.003f);
 /* asm: SPINFRICI	.float	0.015	;SPINOUT FRICTION */
 /* asm: 	 */
 /* asm: 	 */
-static c3x_reg_t SPINFRICI = C3X_INIT(0.015f, 0xF975C28F5Cull);
+static c3x_f32_t SPINFRICI = C3X_F32_INIT(0.015f);
 // *RPM MAX
 
 #define NUM_RPMS 47
@@ -419,8 +419,8 @@ CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/) {
     // asm 00002967: 	LDF	@OFRDFRICI,R0
     // asm 00002968: 	STF	R0,*+AR0(CAROFRDFR)
     // FRICTION COEFFICIENTS
-    car->road_friction = C3X_STF(ROADFRICI);
-    car->offroad_friction = C3X_STF(OFRDFRICI);
+    car->road_friction = ROADFRICI;
+    car->offroad_friction = OFRDFRICI;
 
     // asm 00002969: 	LDF	0.82,R0
     // asm 0000296A: 	STF	R0,*+AR0(CARMAXACCEL)	;SET ACCEL POWER
@@ -1357,6 +1357,7 @@ static void PLYONRD(void) {
 void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta /*R2*/) {
     c3x_reg_t velocity_delta;
     VECTOR forward_vector;
+    uint32_t observed_raw;
 
     // asm 00002C18: 	PUSHF	R2
     // asm 00002C19: 	CALL	GETAUTO			;GET AUTO TRANS VALUE
@@ -1390,6 +1391,8 @@ void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta 
     // asm 00002C27: 	LDI	R2,R3
     // asm 00002C28: 	CALL	CONCATMAT
     CONCATMAT(&MATRIXAI, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat21));
+    MAME_ASSERT_MEM(0x00002C29, "d@(ar4+9)", &observed_raw);
     // *FORM NEW VELOCITY MATRIX
     // asm 00002C29: 	LDF	*+AR5(CARVROT),R2    	;GET VELOCITY MATRIX
     velocity_delta = C3X_LDF(carblk->y_velocity_rotation);
@@ -1430,10 +1433,14 @@ DAIRB:
 }
 
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    uint32_t observed_raw;
+
     // asm 00002C39: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
     (void)carblk;
     // asm 00002C3A: 	CALL	CAR_ROAD_COLL
     CAR_ROAD_COLL(obj, carblk);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat21));
+    MAME_ASSERT_MEM(0x00002C3B, "d@(ar4+9)", &observed_raw);
     // *GET CAR MATRIX
     // asm 00002C3B: 	LDF	*+AR5(CARYROT),R2
     // asm 00002C3C: 	STF	R2,*+AR4(ORADY)		;STORE CAR OBJECT RADY
@@ -1447,6 +1454,8 @@ void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00002C41: 	LDI	R2,R3
     // asm 00002C42: 	CALL	CONCATMAT
     CONCATMAT(&_MATRIXA, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
+    observed_raw = C3X_STORE(C3X_LDF(obj->omatrix.mat21));
+    MAME_ASSERT_MEM(0x00002C43, "d@(ar4+9)", &observed_raw);
     // asm 00002C43: 	CALL	DRONE_RIDE_RIGHT	;GET DISTANCE TO CENTER OF LANE
     carblk->dist_to_center = C3X_STF(DRONE_RIDE_RIGHT(obj, carblk));
     // asm 00002C44: 	STF	R0,*+AR5(CARDIST2CNTR)
@@ -2173,11 +2182,13 @@ void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     c3x_reg_t skid_friction;
     c3x_reg_t brake_friction;
     c3x_reg_t speed_distance;
+    uint32_t observed_raw;
     int index;
     int frames;
     int i;
 
     // asm 00002D83: 	LDI	*+AR5(CAR_AIRB),R0
+    MAME_ASSERT_MEM(0x00002D83, "d@(ar5+20)", &carblk->rear_airborne);
     // asm 00002D84: 	BZ	GETSPD1	      		;NO AIR DUDE...
     if (carblk->rear_airborne == 0) {
         goto GETSPD1;
@@ -2200,6 +2211,7 @@ void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // *CHECK SPIN OUT
 GETSPD1:
     // asm 00002D8C: 	LDI	*+AR5(CAR_SPIN),R0
+    MAME_ASSERT_MEM(0x00002D8C, "d@(ar5+31)", &carblk->spin_flag);
     // asm 00002D8D: 	BZ	GETSPD10       		;NO SPINOUT...
     if (carblk->spin_flag == 0) {
         goto GETSPD10;
@@ -2207,7 +2219,7 @@ GETSPD1:
     // asm 00002D8E: 	LDF	0,R0			;SET ACCEL TO ZERO
     accel = C3X_FROM_INT(0);
     // asm 00002D8F: 	LDF	@SPINFRICI,R3
-    friction = C3X_LDF(C3X_STF(SPINFRICI));
+    friction = C3X_LDF(SPINFRICI);
     // asm 00002D90: 	BR	GETSPD2
     goto GETSPD2;
     // *GET ENGINE ACCEL
@@ -2217,12 +2229,20 @@ GETSPD10:
     // asm 00002D92: 	MPYF	*+AR5(CARMAXACCEL),R0
     accel = C3X_MUL(accel, carblk->max_accel);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002D93, "R0", &accel, 5);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)accel.bits;
+    MAME_ASSERT_REG(0x00002D93, "R0", &observed_raw);
+#endif
     // asm 00002D93: 	CMPI	@PLYCAR,AR4	    	;CHEAT ACCEL
     // asm 00002D94: 	LDFNZ	1.0,R1
     // asm 00002D95: 	LDFZ	@CHEATACC,R1
     factor = (obj != PLYCAR) ? C3X_IMM_F32(1.0) : CHEATACC;
     // asm 00002D96: 	MPYF	R1,R0
     accel = C3X_MUL(accel, factor);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)accel.bits;
+    MAME_ASSERT_REG(0x00002D97, "R0", &observed_raw);
+#endif
     // asm 00002D97: 	LDF	*+AR5(CARRPM),R1
     factor = C3X_LDF(carblk->rpm_x100);
     MAME_ASSERT_REG_FLOAT(0x00002D98, "R1", &factor);
@@ -2287,10 +2307,18 @@ GETSPD10:
     // asm 00002DAF: 	MPYF	R2,R1
     factor = C3X_MUL(factor, power_low);
     MAME_ASSERT_REG_FLOAT(0x00002DB0, "R1", &factor);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)factor.bits;
+    MAME_ASSERT_REG(0x00002DB0, "R1", &observed_raw);
+#endif
     // *CUT ACCEL ON SKID
     // asm 00002DB0: 	MPYF	R1,R0
     accel = C3X_MUL(accel, factor);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DB1, "R0", &accel, 5);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)accel.bits;
+    MAME_ASSERT_REG(0x00002DB1, "R0", &observed_raw);
+#endif
     // asm 00002DB1: 	LDF	*+AR5(CARSKID),R1    	;CUT DOWN ACCEL ON SKID
     factor = C3X_LDF(carblk->skid);
     // asm 00002DB2: 	MPYF	0.25,R1			;ONLY 25% CUT
@@ -2300,6 +2328,10 @@ GETSPD10:
     // asm 00002DB4: 	MPYF	R1,R0			;R0=ENGINE ACCEL
     accel = C3X_MUL(accel, factor);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DB5, "R0", &accel, 5);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)accel.bits;
+    MAME_ASSERT_REG(0x00002DB5, "R0", &observed_raw);
+#endif
     // *GET GRAVITY ACCEL
     // asm 00002DB5: 	LDF	*+AR4(OMAT21),R1	;ADD IN YOUR GRAVITY ACTION
     factor = C3X_LDF(obj->omatrix.mat21);
@@ -2326,9 +2358,19 @@ GETSPD10:
     // asm 00002DBF: 	MPYF	R3,R1			;MULTIPLY BY CONSTANT
     factor = C3X_MUL(factor, friction);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DC0, "R1", &factor, 5);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)accel.bits;
+    MAME_ASSERT_REG(0x00002DC0, "R0", &observed_raw);
+    observed_raw = (uint32_t)factor.bits;
+    MAME_ASSERT_REG(0x00002DC0, "R1", &observed_raw);
+#endif
     // asm 00002DC0: 	ADDF	R1,R0
     accel = C3X_ADD(accel, factor);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DC1, "R0", &accel, 5);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)accel.bits;
+    MAME_ASSERT_REG(0x00002DC1, "R0", &observed_raw);
+#endif
     // *GET TOTAL FRICTION
     // *GET ROAD FRICTION
     // asm 00002DC1: 	LDI	AR5,AR3
@@ -2356,6 +2398,10 @@ GETSPD10:
     }
     // asm 00002DCD: 	MPYF	0.20,R3			;TAKE AVERAGE BASED ON WHEELS OFF
     friction = C3X_MUL(friction, C3X_IMM_F32(0.20));
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)friction.bits;
+    MAME_ASSERT_REG(0x00002DCE, "R3", &observed_raw);
+#endif
     // *JARV CHANGE
     // asm 00002DCE: 	CMPI	@PLYCAR,AR4
     // asm 00002DCF: 	BNE	FRL1
@@ -2378,8 +2424,15 @@ FRL1:
     // asm 00002DD5: 	LDF	*+AR5(CARSKID),R4    	;ADD IN SKID FACTOR
     skid_friction = C3X_LDF(carblk->skid);
     // asm 00002DD6: 	LDF	@SKIDFRICI,R1
+    factor = C3X_LDF(SKIDFRICI);
     // asm 00002DD7: 	MPYF	R1,R4,R5
-    brake_friction = C3X_MUL(C3X_STF(SKIDFRICI), skid_friction);
+    #ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)factor.bits;
+    MAME_ASSERT_REG(0x00002DD7, "R1", &observed_raw);
+    observed_raw = (uint32_t)skid_friction.bits;
+    MAME_ASSERT_REG(0x00002DD7, "R4", &observed_raw);
+    #endif
+    brake_friction = C3X_MUL(factor, skid_friction);
     // asm 00002DD8: 	LDF	*+AR5(CARSPEED),R2	;CUT SKID FRICTION FOR LOW SPEED BURNOUT
     // asm 00002DD9: 	CMPF	100,R2
     // asm 00002DDA: 	BGT	FRIC0
@@ -2401,13 +2454,23 @@ FRL1:
     // ;	BZ	FRIC1			;LOW SPEED BURNOUT, NO FRICTION111
 FRIC0:
     // asm 00002DE1: 	ADDF	R5,R3
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)friction.bits;
+    MAME_ASSERT_REG(0x00002DE1, "R3", &observed_raw);
+    observed_raw = (uint32_t)brake_friction.bits;
+    MAME_ASSERT_REG(0x00002DE1, "R5", &observed_raw);
+#endif
     friction = C3X_ADD(friction, brake_friction);
     // *GET BRAKE FRICTION
 FRIC1:
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)friction.bits;
+    MAME_ASSERT_REG(0x00002DE2, "R3", &observed_raw);
+#endif
     // asm 00002DE2: 	LDF	*+AR5(CARBRAKE),R5   	;ADD IN BRAKE FRICTION
     brake_friction = C3X_LDF(carblk->brake);
     // asm 00002DE3: 	MPYF	@BRAKFRICI,R5
-    brake_friction = C3X_MUL(brake_friction, C3X_STF(BRAKFRICI));
+    brake_friction = C3X_MUL(brake_friction, BRAKFRICI);
     // asm 00002DE4: 	NEGF	R4
     skid_friction = C3X_NEG(skid_friction);
     // asm 00002DE5: 	ADDF	1.0,R4			;BRAKE LOSES EFFECT IN SKID
@@ -2432,6 +2495,10 @@ FRIC1:
     // asm 00002DEE: 	ADDF	R5,R3		     	;TOTAL FRICTION
     friction = C3X_ADD(friction, brake_friction);
     // *GET ENGINE FRICTION
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)friction.bits;
+    MAME_ASSERT_REG(0x00002DEF, "R3", &observed_raw);
+#endif
     // asm 00002DEF: 	LDI	*+AR5(CARGEAR),IR0
     index = carblk->gear;
     // asm 00002DF0: 	LDI	@ENGFRI,AR0
@@ -2452,10 +2519,20 @@ FRIC1:
     // asm 00002DF7: 	MPYF	R4,R5
     brake_friction = C3X_MUL(brake_friction, factor);
     // asm 00002DF8: GETSP22
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)friction.bits;
+    MAME_ASSERT_REG(0x00002DF8, "R3", &observed_raw);
+    observed_raw = (uint32_t)brake_friction.bits;
+    MAME_ASSERT_REG(0x00002DF8, "R5", &observed_raw);
+#endif
     // asm 00002DF8: 	ADDF	R5,R3
     friction = C3X_ADD(friction, brake_friction);
     // *CALC NEW SPEED
 GETSPD2:
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)friction.bits;
+    MAME_ASSERT_REG(0x00002DF9, "R3", &observed_raw);
+#endif
     // asm 00002DF9: 	LDF	0,R5
     speed_distance = C3X_FROM_INT(0);
     // asm 00002DFA: 	LDF	*+AR5(CARSPEED),R1
@@ -2472,6 +2549,14 @@ GETSPD2:
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R0", &accel, 5);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R1", &speed, 4);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DFF, "R3", &friction, 5);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)accel.bits;
+    MAME_ASSERT_REG(0x00002DFF, "R0", &observed_raw);
+    observed_raw = (uint32_t)speed.bits;
+    MAME_ASSERT_REG(0x00002DFF, "R1", &observed_raw);
+    observed_raw = (uint32_t)friction.bits;
+    MAME_ASSERT_REG(0x00002DFF, "R3", &observed_raw);
+#endif
     // *R0=ACCEL
     // *R1=SPEED
     // *R3=TOTAL FRICTION
@@ -2481,10 +2566,22 @@ GETSPD2:
     for (i = 0; i <= frames; i++) {
         // asm 00002E00: 	MPYF 	R1,R3,R4	     	;BRAKE/ROAD/ENGINE FRICTION
         factor = C3X_MUL(speed, friction);
+#ifndef C3X_USE_HOST_FLOAT
+        observed_raw = (uint32_t)factor.bits;
+        MAME_ASSERT_REG(0x00002E01, "R4", &observed_raw);
+#endif
         // asm 00002E01: 	SUBF	R4,R1			;SUBTRACT FRICTION
         speed = C3X_SUB(speed, factor);
+#ifndef C3X_USE_HOST_FLOAT
+        observed_raw = (uint32_t)speed.bits;
+        MAME_ASSERT_REG(0x00002E02, "R1", &observed_raw);
+#endif
         // asm 00002E02: 	ADDF	R0,R1			;ADD ACCEL
         speed = C3X_ADD(speed, accel);
+#ifndef C3X_USE_HOST_FLOAT
+        observed_raw = (uint32_t)speed.bits;
+        MAME_ASSERT_REG(0x00002E03, "R1", &observed_raw);
+#endif
     GSL0:
         // asm 00002E03: ADDF	R1,R5			;ADD TO DISTANCE
         speed_distance = C3X_ADD(speed_distance, speed);
@@ -2508,6 +2605,12 @@ GETSPD2:
     // asm 00002E0A: 	STF	R1,*+AR5(CARSPEED)	;NEW SPEED
     carblk->speed = C3X_STF(speed);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002E0A, "R1", &speed, 4);
+#ifndef C3X_USE_HOST_FLOAT
+    observed_raw = (uint32_t)speed.bits;
+    MAME_ASSERT_REG(0x00002E0A, "R1", &observed_raw);
+#endif
+    observed_raw = C3X_STORE(C3X_LDF(carblk->speed));
+    MAME_ASSERT_MEM(0x00002E0B, "d@(ar5+26)", &observed_raw);
     // asm 00002E0B: 	RETS
     // *
     // *GET BRAKE PEDAL

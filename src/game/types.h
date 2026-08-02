@@ -774,6 +774,10 @@ typedef struct PROC_CONTEXT {
             OBJ* spark_objs[6];       // PDATA+7..
         } SPARK_PROC;
         struct {
+            OBJ* obj;       // AR4
+            MATRIX rotation; // PDATA+2..
+        } FLYCOLLP;
+        struct {
             int attrwave;
             int decomp_count;
             struct OBJ* obj;
