@@ -12,7 +12,7 @@ static int* g_display_running;
 
 extern void MAINLOOP(void);
 
-void crusn_yield_display_interrupt(void) {
+static void crusn_pump_events(void) {
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
@@ -20,6 +20,10 @@ void crusn_yield_display_interrupt(void) {
             *g_display_running = 0;
         }
     }
+}
+
+void crusn_yield_display_interrupt(void) {
+    crusn_pump_events();
 
     if (crusn_video_present(g_display_video, g_display_machine) != 0) {
         fprintf(stderr, "Failed to present frame: %s\n", SDL_GetError());
@@ -60,10 +64,28 @@ int main(void) {
 
     _c_int00();
 
+    const double int0_period = 1.0 / 60.0;
+    const double counter_frequency = (double)SDL_GetPerformanceFrequency();
+    Uint64 previous_counter = SDL_GetPerformanceCounter();
+    double int0_accumulator = int0_period;
+
     while (running) {
-        INT0();
-        MAINLOOP();
-        crusn_yield_display_interrupt();
+        Uint64 current_counter = SDL_GetPerformanceCounter();
+        int0_accumulator += (double)(current_counter - previous_counter) / counter_frequency;
+        previous_counter = current_counter;
+
+        while (int0_accumulator >= int0_period) {
+            INT0();
+            int0_accumulator -= int0_period;
+        }
+
+        if (INFRAMES >= FRAMRATE) {
+            MAINLOOP();
+            crusn_yield_display_interrupt();
+        } else {
+            crusn_pump_events();
+            SDL_Delay(1);
+        }
     }
 
     crusn_video_shutdown(&video);
