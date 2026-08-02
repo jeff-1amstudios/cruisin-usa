@@ -42,7 +42,6 @@ static void LOAD_VARIOUS_PALETTES(void);
 #define VEHICLE_TABLEI VEHICLE_TABLE
 
 extern int OLD_BUTTON_STATUS;
-void SPIN_CAR(void);
 
 VEHTAB VEHICLE_TABLE[];
 static tDDYNA_TABLE DDYNA_GTRUCK;
@@ -310,18 +309,30 @@ static void MIDSPIN(void) {
 }
 
 static void MIDSPINHS(void) {
+    PROC_CONTEXT* ctx;
+
     // asm 0000939A: 	LDI	@BUTTON_STATUS,R0
     // asm 0000939B: 	ANDN	BUT_VIEWS,R0
     // asm 0000939C: 	STI	R0,@BUTTON_STATUS
+    BUTTON_STATUS &= ~BUT_VIEWS;
+
     // asm 0000939D: 	LDL	_SECpress,AR2
     // asm 0000939E: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECpress);
+
     // asm 0000939F: 	LDI	MATTR,R0
     // asm 000093A0: 	STI	R0,@_MODE
+    _MODE = MATTR;
+
     // asm 000093A1: 	CREATE	SPIN_CAR,UTIL_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(SPIN_CAR, UTIL_C, ctx);
+
     // asm 000093A4: 	CREATE	HEAD2HEADWATCH,UTIL_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
+
     // asm 000093A7: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MIDSPINHS", 0, 0);
-    UNIMPL();
 }
 
 static void RACELEG(void) {

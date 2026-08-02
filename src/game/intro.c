@@ -3110,54 +3110,94 @@ void ULTRA_LOGO(void) {
 
 // *----------------------------------------------------------------------------
 void LOGO_SMALL(void) {
+    OBJ* obj;
+
     // asm 00001DE9: 	LDI	@DIPRAM,R0
     // asm 00001DEA: 	TSTB 	DIP_COMMP,R0
     // asm 00001DEB: 	RETSNZ
+    if ((DIPRAM & DIP_COMMP) != 0) {
+        return;
+    }
+
     // asm 00001DEC: 	LDL	redhd1,AR2	;red (bottom)
     // asm 00001DED: 	LDI	230,R2
     // asm 00001DEE: 	LDI	-190-60,R3
     // asm 00001DEF: 	LDI	926,RC	;368*2
     // asm 00001DF0: 	CALL	OBJ_QMAKE
+    obj = OBJ_QMAKE(ROM_PTR(redhd1_ROM), 230, -190 - 60, 926); // ;red (bottom) / ;368*2
+
     // asm 00001DF1: 	RETSC
+    if (obj == NULL) {
+        return;
+    }
+
     // asm 00001DF2: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV|O_1PAL,R0
     // asm 00001DF3: 	OR	*+AR0(OFLAGS),R0
     // asm 00001DF4: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV | O_1PAL;
+
     // asm 00001DF5: 	LDI	AR0,AR2
     // asm 00001DF6: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
+
     // asm 00001DF7: 	LDL	H2HPAL2,AR2
     // asm 00001DF8: 	CALL	PAL_FIND_RAW
     // asm 00001DF9: 	STI	R0,*+AR0(OPAL)
+    obj->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(H2HPAL2_ROM));
+
     // asm 00001DFA: 	LDL	yelhd1,AR2	;top
     // asm 00001DFB: 	LDI	230,R2
     // asm 00001DFC: 	LDI	-190+60,R3
     // asm 00001DFD: 	LDI	926,RC	;368*2
     // asm 00001DFE: 	CALL	OBJ_QMAKE
+    obj = OBJ_QMAKE(ROM_PTR(yelhd1_ROM), 230, -190 + 60, 926); // ;top / ;368*2
+
     // asm 00001DFF: 	RETSC
+    if (obj == NULL) {
+        return;
+    }
+
     // asm 00001E00: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV|O_1PAL,R0
     // asm 00001E01: 	OR	*+AR0(OFLAGS),R0
     // asm 00001E02: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV | O_1PAL;
+
     // asm 00001E03: 	LDI	AR0,AR2
     // asm 00001E04: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
+
     // asm 00001E05: 	LDL	H2HPAL2,AR2
     // asm 00001E06: 	CALL	PAL_FIND_RAW
     // asm 00001E07: 	STI	R0,*+AR0(OPAL)
+    obj->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(H2HPAL2_ROM));
+
     // asm 00001E08: 	LDL	big2,AR2
     // asm 00001E09: 	LDI	230,R2
     // asm 00001E0A: 	LDI	-190,R3
     // asm 00001E0B: 	LDI	924,RC	;(368*2)-2
     // asm 00001E0C: 	CALL	OBJ_QMAKE
+    obj = OBJ_QMAKE(ROM_PTR(big2_ROM), 230, -190, 924); // ;(368*2)-2
+
     // asm 00001E0D: 	RETSC
+    if (obj == NULL) {
+        return;
+    }
+
     // asm 00001E0E: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV|O_1PAL,R0
     // asm 00001E0F: 	OR	*+AR0(OFLAGS),R0
     // asm 00001E10: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV | O_1PAL;
+
     // asm 00001E11: 	LDI	AR0,AR2
     // asm 00001E12: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
+
     // asm 00001E13: 	LDL	H2HPAL3,AR2
     // asm 00001E14: 	CALL	PAL_FIND_RAW
     // asm 00001E15: 	STI	R0,*+AR0(OPAL)
+    obj->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(H2HPAL3_ROM));
+
     // asm 00001E16: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOGO_SMALL", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

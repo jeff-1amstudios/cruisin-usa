@@ -6,7 +6,7 @@
 /* Generated from asm/ATTRACTA.ASM. */
 
 // ATTRACTA.ASM
-void SPIN_CAR(void);
+void SPIN_CAR(PROC* p /*AR7*/);
 void _MIDWAYSPIN(PROC* p /*AR7*/);
 
 #endif /* ATTRACTA_H */

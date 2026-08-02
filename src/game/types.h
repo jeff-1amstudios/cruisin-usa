@@ -778,11 +778,19 @@ typedef struct PROC_CONTEXT {
             MATRIX rotation; // PDATA+2..
         } FLYCOLLP;
         struct {
-            int attrwave;
             int decomp_count;
+            int attrwave;
             struct OBJ* obj;
             int sound_ticks;
         } MIDWAYSPIN;
+        struct {
+            int decomp_count;
+        } MSLP_CHECK;
+        struct {
+            int decomp_count;
+            struct OBJ* obj;
+            int ticks;
+        } SPIN_CAR;
         struct {
             int rank;       // R4
             OBJ* obj;       // AR4

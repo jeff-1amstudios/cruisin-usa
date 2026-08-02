@@ -18,7 +18,7 @@
 void _MIDWAYSPIN(PROC* p);
 static int MSLP_CHECK(PROC* p /*AR7*/, int* sound_ticks /*AR6*/);
 void MIDWAYSPINENTER(void);
-void SPIN_CAR(void);
+void SPIN_CAR(PROC* p /*AR7*/);
 static void TEXTTOGET(void);
 static void DEMOTHANKS(void);
 
@@ -213,11 +213,11 @@ static int MSLP_CHECK(PROC* p /*AR7*/, int* sound_ticks /*AR6*/) {
     // asm 0000A9BA: 	LDI	*+AR7(DECOMP_COUNT),R0
     // asm 0000A9BB: 	ADDI	1,R0
     // asm 0000A9BC: 	STI	R0,*+AR7(DECOMP_COUNT)
-    p->ctx->MIDWAYSPIN.decomp_count++;
+    p->ctx->MSLP_CHECK.decomp_count++;
 
     // asm 0000A9BD: 	CMPI	3,R0
     // asm 0000A9BE: 	BGT	MSLP4				;Done Loading
-    if (p->ctx->MIDWAYSPIN.decomp_count <= 3) {
+    if (p->ctx->MSLP_CHECK.decomp_count <= 3) {
         return 0;
     }
 
@@ -307,23 +307,50 @@ static int SPIN_CARTAB[] = {
     cvette_ROM,
 };
 
-void SPIN_CAR(void) {
+void SPIN_CAR(PROC* p /*AR7*/) {
+    OBJ* obj;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
     // asm 0000A9F8: 	LDI	0,R0
     // asm 0000A9F9: 	STI	R0,*+AR7(DECOMP_COUNT)
+    p->ctx->SPIN_CAR.decomp_count = 0;
+
     // asm 0000A9FA: 	LDIL	logo,AR2
     // asm 0000A9FD: 	CALL	OBJ_GETE
+    obj = OBJ_GETE(ROM_PTR(logo_ROM));
+
     // asm 0000A9FE: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV,R0
     // asm 0000A9FF: 	OR	*+AR0(OFLAGS),R0
     // asm 0000AA00: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV;
+
     // asm 0000AA01: 	FLOAT	-150,R0
     // asm 0000AA02: 	STF	R0,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(C3X_FROM_INT(-150));
+
     // asm 0000AA03: 	FLOAT	-110,R0
     // asm 0000AA04: 	STF	R0,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(-110));
+
     // asm 0000AA05: 	FLOAT	436,R0
     // asm 0000AA06: 	STF	R0,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(436));
+
     // asm 0000AA07: 	LDI	AR0,AR2
     // asm 0000AA08: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
+
     // asm 0000AA09: 	CALL	LOGO_SMALL
+    LOGO_SMALL();
+
     // asm 0000AA0A: 	LDI	@ATTRWAVE,AR2
     // asm 0000AA0B: 	LSH	-1,AR2
     // asm 0000AA0C: 	SUBI	1,AR2
@@ -331,47 +358,88 @@ void SPIN_CAR(void) {
     // asm 0000AA0E: 	ADDI	@SPIN_CARTABI,AR2
     // asm 0000AA0F: 	LDI	*AR2,AR2
     // asm 0000AA10: 	CALL	OBJ_GETE
+    obj = OBJ_GETE(ROM_PTR(SPIN_CARTAB[((ATTRWAVE >> 1) - 1) & 3]));
+
     // asm 0000AA11: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV,R0
     // asm 0000AA12: 	OR	*+AR0(OFLAGS),R0
     // asm 0000AA13: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV;
+
     // asm 0000AA14: 	FLOAT	1368,R0
     // asm 0000AA15: 	STF	R0,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(1368));
+
     // asm 0000AA16: 	LDI	AR0,AR4
+    p->ctx->SPIN_CAR.obj = obj;
+
     // asm 0000AA17: 	LDF	-0.196,R2
     // asm 0000AA18: 	STF	R2,*+AR4(ORADX)
+    obj->rad.X = C3X_STF(C3X_IMM_F32(-0.196));
+
     // asm 0000AA19: 	LDF	3.534,R2
     // asm 0000AA1A: 	STF	R2,*+AR4(ORADY)
+    obj->rad.Y = C3X_STF(C3X_IMM_F32(3.534));
+
     // asm 0000AA1B: 	LDI	AR4,AR2
     // asm 0000AA1C: 	ADDI	OMATRIX,AR2
     // asm 0000AA1D: 	LDI	AR4,R2
     // asm 0000AA1E: 	ADDI	ORADX,R2
     // asm 0000AA1F: 	CALL	FIND_MATRIX
+    FIND_MATRIX(&obj->omatrix, &obj->rad);
+
     // asm 0000AA20: 	LDI	AR4,AR2
     // asm 0000AA21: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(obj);
+
     // asm 0000AA22: 	LDI	16,AR6
+    p->ctx->SPIN_CAR.ticks = 16;
+
 SPIN_CAR_WAIT:
     // asm 0000AA23: 	SLEEP	1
+    SLEEP(1, 1);
+
+    obj = p->ctx->SPIN_CAR.obj;
+
     // asm 0000AA25: 	SUBI	1,AR6
+    p->ctx->SPIN_CAR.ticks--;
+
     // asm 0000AA26: 	CMPI	0,AR6
     // asm 0000AA27: 	BGT	SPIN_CAR_WAIT
+    if (p->ctx->SPIN_CAR.ticks > 0) {
+        goto SPIN_CAR_WAIT;
+    }
+
     // asm 0000AA28: 	LDI	550,AR6
+    p->ctx->SPIN_CAR.ticks = 550;
+
 SPIN_CARLP:
     // asm 0000AA29: 	LDF	*+AR4(ORADY),R2
     // asm 0000AA2A: 	FLOAT	@NFRAMES,R0
     // asm 0000AA2B: 	MPYF	0.018,R0
     // asm 0000AA2C: 	ADDF	R0,R2
     // asm 0000AA2D: 	STF	R2,*+AR4(ORADY)
+    obj->rad.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->rad.Y), C3X_MUL(C3X_FROM_INT(NFRAMES), C3X_IMM_F32(0.018))));
+
     // asm 0000AA2E: 	LDI	AR4,R2
     // asm 0000AA2F: 	ADDI	ORADX,R2
     // asm 0000AA30: 	LDI	AR4,AR2
     // asm 0000AA31: 	ADDI	OMATRIX,AR2
     // asm 0000AA32: 	CALL	FIND_MATRIX
+    FIND_MATRIX(&obj->omatrix, &obj->rad);
+
     // asm 0000AA33: 	SLEEP	1
+    SLEEP(1, 2);
+
+    obj = p->ctx->SPIN_CAR.obj;
+
     // asm 0000AA35: 	CALL	MSLP_CHECK
+    if (MSLP_CHECK(p, &p->ctx->SPIN_CAR.ticks)) {
+        CYCLE_ATTR();
+        return;
+    }
+
     // asm 0000AA36: 	BU	SPIN_CARLP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPIN_CAR", 0, 0);
-    UNIMPL();
+    goto SPIN_CARLP;
 }
 
 /*
