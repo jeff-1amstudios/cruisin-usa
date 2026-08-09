@@ -203,6 +203,7 @@ void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*
     OBJ* next_track_obj;
     c3x_reg_t other_dist_sq;
     c3x_reg_t player_dist_sq;
+    int player_pending;
 
     // ;	CLRI	IR0	;TEMP FLAG FOR OTHER MACHINE
     // asm 000065D0: 	LDI	1,R7		;POSITION #
@@ -210,9 +211,11 @@ void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*
     // asm 000065D1: 	CLRI	R6		;CARS CLOSE TO SCREEN
     on_screen_cars = 0;
 
-    // bugfix. Added null check. the first call `player_carblk` is null and the original game reads
-    // junk track_id data
-    if (player_carblk == NULL) {
+    // The original temporarily stores the rank-4 process in PLYCAR while a new attract leg starts.
+    // Do not interpret that process as an OBJ; preserve the original call's zero rank increments.
+    player_pending = player_carblk == NULL ||
+        ((uintptr_t)player_obj >= (uintptr_t)&PRCSTR[0] && (uintptr_t)player_obj < (uintptr_t)&PRCSTR[NUMPROC]);
+    if (player_pending) {
         player_track_id = -1;
     } else {
         // asm 000065D2: 	LDI	*+AR5(CARTRAK),AR6
@@ -242,15 +245,15 @@ FPPLP:
     }
 NNEG:
     // asm 000065DE: 	LDI	*+AR0(OID),R0
+
     MAME_ASSERT_REG(0x000065DF, "R0", &obj->id);
     // asm 000065DF: 	CMPI	DRONE_C|VEHICLE_T|DRNE_RACER,R0
     // asm 000065E0: 	BNE	NXTLP
     if (obj->id != (DRONE_C | VEHICLE_T | DRNE_RACER)) {
         goto NXTLP;
     }
-    // The startup call has no player car block. Preserve its screen count without deriving
-    // rank from the placeholder track ID used by the null-pointer bugfix above.
-    if (player_carblk == NULL) {
+    // Preserve the screen count while the player object is not ready.
+    if (player_pending) {
         goto NXTLP1;
     }
     // asm 000065E1: 	LDI	*+AR0(OCARBLK),AR3

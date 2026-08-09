@@ -191,11 +191,12 @@ static void LOADALLH280(void) {
 static void LOADH280(void) {
     // asm 00008C46: 	LDL	_SECdeserts,AR2
     // asm 00008C47: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeserts_SETUPS);
     // asm 00008C48: 	LDL	_SECh280,AR2
     // asm 00008C49: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECh280_SETUPS);
     // asm 00008C4A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADH280", 0, 0);
-    UNIMPL();
 }
 
 static void LOADREDWOOD(void) {
@@ -207,17 +208,15 @@ static void LOADREDWOOD(void) {
 }
 
 static void LOADBEVERLY(void) {
-    MAME_VALIDATOR_EXIT();
-    if (crusn_measure_attract_end()) {
-        return;
-    }
     // asm 00008C4E: 	CALL	LOADH280
+    LOADH280();
     // asm 00008C4F: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008C50: 	LDL	_SECbevhnred,AR2
     // asm 00008C51: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECbevhnred_SETUPS);
     // asm 00008C52: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADBEVERLY", 0, 0);
-    UNIMPL();
 }
 
 static void LOADLAFREEWAY(void) {
@@ -519,11 +518,12 @@ static void FULLSETUP_REDWOOD(void) {
 void LOAD_TUNNEL(void) {
     // asm 00008D16: 	LDL	tunnel_PALETTES,AR2
     // asm 00008D17: 	CALL	alloc_section
+    alloc_section(tunnel_PALETTES);
     // asm 00008D18: 	LDL	_SECtunnel,AR2
     // asm 00008D19: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECtunnel_SETUPS);
     // asm 00008D1A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_TUNNEL", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -531,38 +531,53 @@ void LOAD_TUNNEL(void) {
 // *----------------------------------------------------------------------------
 static void FULLSETUP_BEVERLY(void) {
     // asm 00008D1B: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008D1C: 	LDL	_SECdeserts,AR2
     // asm 00008D1D: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeserts_SETUPS);
     // asm 00008D1E: 	LDL	_SECbevhnred,AR2
     // asm 00008D1F: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECbevhnred_SETUPS);
     // asm 00008D20: 	LDI	60,R0
     // asm 00008D21: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 00008D22: 	LDI	100,R0
     // asm 00008D23: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 00008D24: 	LDL	bevhnred_PALETTES,AR2
     // asm 00008D25: 	CALL	alloc_section
+    alloc_section(bevhnred_PALETTES);
     // asm 00008D26: 	LDL	deserts_PALETTES,AR2
     // asm 00008D27: 	CALL	alloc_section
+    alloc_section(deserts_PALETTES);
     // asm 00008D28: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008D29: 	LDI	5,R0		;STRAIGHT 2 4
     // asm 00008D2A: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 5;
     // asm 00008D2B: 	LDI	0,R0
     // asm 00008D2C: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 0;
     // asm 00008D2D: 	STI	R0,@COCONUT_COUNT
+    COCONUT_COUNT = 0;
     // asm 00008D2E: 	LDI	1,R0
     // asm 00008D2F: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008D30: 	FLOAT	45,R0
     // asm 00008D31: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_FROM_INT(45);
     // asm 00008D32: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008D33: 	LDI	L_LEG5_BEGIN,AR0
     // asm 00008D34: 	LS	8,AR0
     // asm 00008D35: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG5_BEGIN << 8;
     // asm 00008D36: 	RS	8,AR0
     // asm 00008D37: 	LDI	L_LEG5_END,AR1
     // asm 00008D38: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG5_BEGIN, L_LEG5_END);
     // asm 00008D39: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_BEVERLY", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

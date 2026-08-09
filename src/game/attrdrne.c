@@ -2271,7 +2271,7 @@ SMOOTH_VIEWX:
 
 /* asm: ZOOMACCEL	.float	0.006 */
 /* asm: 	 */
-static c3x_reg_t ZOOMACCEL = C3X_INIT(0.006f, 0xF8449BA5E3ull);
+static const c3x_f32_t ZOOMACCEL = C3X_F32_INIT(0.006f);
 
 static void ZOOM_CAMERA(void) {
     PROC_CONTEXT* ctx = CURRENT_PROC->ctx;
@@ -2289,7 +2289,7 @@ static void ZOOM_CAMERA(void) {
     // asm 00005941: 	LDF	*+AR7(ZOOMVEL),R0
     zoom_velocity = C3X_LDF(ctx->ATTRACT_DELTA.zoomvel);
     // asm 00005942: 	ADDF	@ZOOMACCEL,R0
-    zoom_velocity = C3X_ADD(zoom_velocity, ZOOMACCEL);
+    zoom_velocity = C3X_ADD(zoom_velocity, C3X_LDF(ZOOMACCEL));
     // asm 00005943: 	CMPF	0.2,R0
     // asm 00005944: 	LDFGT	0.2,R0
     if (C3X_GT(zoom_velocity, C3X_IMM_F32(0.2))) {
@@ -2350,10 +2350,10 @@ ZOOM1:
     // asm 00005964: 	CALL	OBJ_INSERT			;INSERT PLAYER OBJECT
     if ((car_obj->flags & O_LIST_M) == 0) {
         OBJ_INSERT(car_obj); // ;INSERT PLAYER OBJECT
-    }
     // asm 00005965: 	LDI	1,R0
     // asm 00005966: 	STI	R0,*+AR7(CUT_PAN)
-    ctx->ATTRACT_DELTA.cut_pan = 1;
+        ctx->ATTRACT_DELTA.cut_pan = 1;
+    }
 ZOOMX:
     // asm 00005967: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOM_CAMERA", 0, 0);

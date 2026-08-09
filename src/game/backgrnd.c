@@ -234,16 +234,16 @@ NOWARP:
     TYCO_NTL_IDX = start_section;
     // asm 00003F95: 	LDF	*++AR1,R0
     // asm 00003F96: 	STF	R0,@START_POS
-    START_POS[0] = ROM_ConsumeFloat(&tyco_ptr);
+    START_POS[0] = ROM_ParseFloat(*++tyco_ptr);
     // asm 00003F97: 	LDF	*++AR1,R0
     // asm 00003F98: 	STF	R0,@START_POS+Y
-    START_POS[1] = ROM_ConsumeFloat(&tyco_ptr);
+    START_POS[1] = ROM_ParseFloat(*++tyco_ptr);
     // asm 00003F99: 	LDF	*++AR1,R0
     // asm 00003F9A: 	STF	R0,@START_POS+Z
-    START_POS[2] = ROM_ConsumeFloat(&tyco_ptr);
+    START_POS[2] = ROM_ParseFloat(*++tyco_ptr);
     // asm 00003F9B: 	LDF	*++AR1,R2
     // asm 00003F9C: 	STF	R2,@START_RADY
-    START_RADY = ROM_ConsumeFloat(&tyco_ptr);
+    START_RADY = ROM_ParseFloat(*++tyco_ptr);
 
     MAME_ASSERT_REG_FLOAT(0x00003F9D, "R2", &START_RADY);
     // asm 00003F9D: 	RETS

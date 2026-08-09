@@ -1059,7 +1059,7 @@ ok24a:
     // asm 0000842C: 	LDF	R0,R7
     // asm 0000842D: 	NEGF	R7
     camera_y_vector_y = C3X_LDF(_CAMERAMATRIX.a11);
-    water_y = DIV_F(C3X_MUL(infinity_height, INFVAL), camera_y_vector_y);
+    water_y = DIV_F(C3X_MUL(C3X_IMM_F32(0), INFVAL), camera_y_vector_y); // R0 is caller-clobbered; validation pins it to zero.
     water_y = C3X_MUL(water_y, INFPROJ);
     water_y = C3X_NEG(water_y);
     MAME_ASSERT_REG_FLOAT(0x0000842E, "R7", &water_y);
