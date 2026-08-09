@@ -178,6 +178,46 @@ c3x_reg_t c3x_abs(c3x_reg_t value) {
     return (c3x_reg_t){ fabsf(value.value) };
 }
 
+static uint32_t c3x_host_mantissa_bits(float value, int* exponent) {
+    double mantissa;
+
+    if (value == 0.0f) {
+        *exponent = -128;
+        return 0;
+    }
+
+    mantissa = frexp((double)value, exponent);
+    mantissa = ldexp(mantissa, 1);
+    *exponent -= 1;
+    if (mantissa >= 0.0) {
+        return (uint32_t)floor((mantissa - 1.0) * 2147483648.0);
+    }
+    if (mantissa == -1.0) {
+        mantissa = -2.0;
+        *exponent -= 1;
+    }
+    return 0x80000000u | ((uint32_t)floor((mantissa + 2.0) * 2147483648.0) & 0x7fffffffu);
+}
+
+c3x_reg_t c3x_addi(c3x_reg_t dst, c3x_reg_t src) {
+    int dst_exponent;
+    int ignored_src_exponent;
+    uint32_t result_bits;
+    double result_mantissa;
+
+    result_bits = c3x_host_mantissa_bits(dst.value, &dst_exponent)
+        + c3x_host_mantissa_bits(src.value, &ignored_src_exponent);
+    if (dst_exponent == -128) {
+        return (c3x_reg_t){ 0.0f };
+    }
+    if ((result_bits & 0x80000000u) == 0) {
+        result_mantissa = 1.0 + ((double)(result_bits & 0x7fffffffu) / 2147483648.0);
+    } else {
+        result_mantissa = -2.0 + ((double)(result_bits & 0x7fffffffu) / 2147483648.0);
+    }
+    return (c3x_reg_t){ (float)ldexp(result_mantissa, dst_exponent) };
+}
+
 int c3x_cmp(c3x_reg_t a, c3x_reg_t b) {
     return (a.value > b.value) - (a.value < b.value);
 }
@@ -602,6 +642,11 @@ c3x_reg_t c3x_abs(c3x_reg_t value) {
     }
 
     return c3x_from_double_trunc(fabs(c3x_to_double(value)));
+}
+
+c3x_reg_t c3x_addi(c3x_reg_t dst, c3x_reg_t src) {
+    /* Integer instructions operate on the mantissas and preserve dst's exponent. */
+    return c3x_pack(c3x_exponent(dst), c3x_mantissa(dst) + c3x_mantissa(src));
 }
 
 int c3x_cmp(c3x_reg_t a, c3x_reg_t b) {

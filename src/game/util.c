@@ -1140,7 +1140,7 @@ void LEAN(PROC* p, DYNAOBJ* dyna, OBJ* obj, CARBLK* carblk) {
         wrap_adjust = C3X_LDF(TWOPII);
     }
     // asm 00008FFC: 	ADDI	R1,R0			;HANDLE RADIAN WRAPAROUND
-    delta_rady = C3X_ADD(delta_rady, wrap_adjust);
+    C3X_ADDI(wrap_adjust, delta_rady);
     // asm 00008FFD: 	MPYF	R7,R0			;MULTIPLY BY SPEED FACTOR
     delta_rady = C3X_MUL(delta_rady, p->ctx->CARPROC.old_car_speed);
     // asm 00008FFE: 	MPYF	0.06,R0			;CONVERT TO RADIANS
