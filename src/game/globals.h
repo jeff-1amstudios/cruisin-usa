@@ -1438,7 +1438,7 @@ void GETCMOS_VALUES(void);
 void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 // asm:  .globl CAMYADJ
-void CAMYADJ(void);
+void CAMYADJ(VECTOR* camera_pos /*AR0*/);
 
 // asm:  .globl _on_brake,_off_brake
 void _on_brake(void);

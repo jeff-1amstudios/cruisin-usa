@@ -51,9 +51,9 @@ static void COLPOINT(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/);
 void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/);
 static void FLYCOLLP(PROC* p /*AR7*/);
 static void DEBSCAN(void);
-static void SIGNFALL(void);
+static void SIGNFALL(PROC* p /*AR7*/);
 static void TREESHAK(void);
-static void FREESIGN(void);
+static void FREESIGN(OBJ* sign_obj /*AR4*/);
 static void ADDSIGN(void);
 static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 void FLYCARP(void);
@@ -1869,6 +1869,7 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
     c3x_reg_t old_velocity_rotation;
     c3x_reg_t hit_speed;
     c3x_reg_t speed_delta;
+    c3x_reg_t fall_rate;
     c3x_reg_t height_delta;
     int sign_id;
     int sign_type;
@@ -2032,8 +2033,20 @@ RUNOVER:
     }
     carblk->speed = C3X_STF(C3X_SUB(hit_speed, speed_delta));
     MAME_ASSERT_REG_FLOAT(0x0000230C, "R5", &carblk->speed);
-    FREESIGN();
-    PRC_CREATE_CHILD((PROC_FUNC)SIGNFALLI, DRONE_C | FLYER_T, NULL);
+    fall_rate = C3X_MUL(hit_speed, C3X_IMM_F32(0.03));
+    if (C3X_LT(fall_rate, C3X_IMM_F32(0.1))) {
+        fall_rate = C3X_IMM_F32(0.1);
+    }
+    if (C3X_GT(fall_rate, C3X_IMM_F32(0.7))) {
+        fall_rate = C3X_IMM_F32(0.7);
+    }
+    MAME_ASSERT_REG_FLOAT(0x00002312, "R7", &fall_rate);
+    FREESIGN(sign_obj);
+    fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    fly_ctx->SIGNFALL.obj = sign_obj;
+    fly_ctx->SIGNFALL.rotation_delta = C3X_STF(fall_rate);
+    fly_ctx->SIGNFALL.accumulated = C3X_STF(C3X_IMM_F32(0));
+    PRC_CREATE_CHILD(SIGNFALLI, DRONE_C | FLYER_T, fly_ctx);
     sign_subtype = sign_obj->id & SUBTYPE_M;
     sign_id = SIGNSND;
     if (sign_subtype == TSC_R_SAGE) {
@@ -2327,30 +2340,64 @@ DEBSCL1:
  *
  */
 
-static void SIGNFALL(void) {
+static void SIGNFALL(PROC* p /*AR7*/) {
+    OBJ* sign_obj;
+    c3x_reg_t accumulated;
+    c3x_reg_t rotation_delta;
+
+    switch (p->resume_state) {
+    case 1:
+        goto PROC_RESUME_1;
+    default:
+        break;
+    }
+
+    sign_obj = p->ctx->SIGNFALL.obj;
+    rotation_delta = C3X_LDF(p->ctx->SIGNFALL.rotation_delta);
     // asm 0000239C: 	LDF	0,R6
+    accumulated = C3X_IMM_F32(0);
 SIGNFALP:
     // asm 0000239D: 	ADDF	R7,R6 			;ACCUMULATE RADIANS
+    accumulated = C3X_ADD(accumulated, rotation_delta); // ;ACCUMULATE RADIANS
     // asm 0000239E: 	CMPF	1.5,R6			;CHECK DONE
     // asm 0000239F: 	BLT	SIGNFALP0		;NOPE...
+    if (C3X_LT(accumulated, C3X_IMM_F32(1.5))) {
+        goto SIGNFALP0;
+    }
     // asm 000023A0: 	SUBF	1.5,R6			;SUBTRACT OUT EXCESS
+    accumulated = C3X_SUB(accumulated, C3X_IMM_F32(1.5)); // ;SUBTRACT OUT EXCESS
     // asm 000023A1: 	SUBF	R6,R7
+    rotation_delta = C3X_SUB(rotation_delta, accumulated);
     // asm 000023A2: 	LDF	1.6,R6			;SIGNAL WERE DONE
+    accumulated = C3X_IMM_F32(1.6); // ;SIGNAL WERE DONE
 SIGNFALP0:
+    MAME_ASSERT_REG_FLOAT(0x000023A3, "R6", &accumulated);
+    MAME_ASSERT_REG_FLOAT(0x000023A3, "R7", &rotation_delta);
     // asm 000023A3: 	LDF	R7,R2
     // asm 000023A4: 	LDPI	@MATRIXAI,AR2  		;GET TEMP STORE
     // asm 000023A5: 	CALL    FIND_XMATRIX		;NEW MATRIX
+    FIND_XMATRIX(&MATRIXAI, rotation_delta); // ;NEW MATRIX
     // asm 000023A6: 	LDI	AR4,R2
     // asm 000023A7: 	ADDI	OMATRIX,R2
     // asm 000023A8: 	LDI	R2,R3
     // asm 000023A9: 	CALL	CONCATMAT
+    CONCATMAT(&MATRIXAI, (MATRIX*)&sign_obj->omatrix, (MATRIX*)&sign_obj->omatrix);
     // asm 000023AA: 	SLEEP	1
+    p->ctx->SIGNFALL.rotation_delta = C3X_STF(rotation_delta);
+    p->ctx->SIGNFALL.accumulated = C3X_STF(accumulated);
+    SLEEP(1, 1);
+    sign_obj = p->ctx->SIGNFALL.obj;
+    rotation_delta = C3X_LDF(p->ctx->SIGNFALL.rotation_delta);
+    accumulated = C3X_LDF(p->ctx->SIGNFALL.accumulated);
     // asm 000023AC: 	CMPF	1.5,R6
     // asm 000023AD: 	BLT	SIGNFALP   		;LOOP TIL DONE
+    if (C3X_LT(accumulated, C3X_IMM_F32(1.5))) {
+        goto SIGNFALP;
+    }
     // asm 000023AE: 	BR	SUICIDE
+    DIE();
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SIGNFALL", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -2413,23 +2460,40 @@ TREESHKL:
  *	AR4	OBJECT SIGN POINTER
  *	R0 IS TRASHED
  */
-static void FREESIGN(void) {
+static void FREESIGN(OBJ* sign_obj /*AR4*/) {
+    OBJ** previous_link;
+    OBJ* current;
+
     // asm 000023D1: 	PUSH	AR1
     // ;	LDP	@SIGN_LISTI
     // asm 000023D2: 	LDPI	@SIGN_LISTI,R0
     // asm 000023D3: 	SUBI	OLINK3,R0		;(we are offset pointing)
+    previous_link = &SIGN_LIST; // ;(we are offset pointing)
 SFREELP:
     // asm 000023D4: LDI	R0,AR1
     // asm 000023D5: 	LDI	*+AR1(OLINK3),R0
+    current = *previous_link;
 #if DEBUG
     // asm: 	BZ	$			;lockup on end of list found
+    if (current == NULL) {
+        for (;;) {
+        }
+    }
 #else
     // asm 000023D6: 	RETSZ
+    if (current == NULL) {
+        return;
+    }
 #endif
     // asm 000023D7: 	CMPI	R0,AR4
     // asm 000023D8: 	BNE	SFREELP
+    if (current != sign_obj) {
+        previous_link = (OBJ**)&current->link3;
+        goto SFREELP;
+    }
     // asm 000023D9: 	LDI	*+AR4(OLINK3),R0
     // asm 000023DA: 	STI	R0,*+AR1(OLINK3)	;LINK AROUND
+    *previous_link = (OBJ*)sign_obj->link3; // ;LINK AROUND
     // asm 000023DB: 	LDI	1,R1
     // asm 000023DC: 	LS	O_SIGN_SUPP_B,R1
     // asm 000023DD: 	LDI	*+AR4(OFLAGS),R0
@@ -2438,10 +2502,10 @@ SFREELP:
     // asm 000023E0: 	LS	O_3DROT_B,R1
     // asm 000023E1: 	OR	R1,R0
     // asm 000023E2: 	STI	R0,*+AR4(OFLAGS)
+    sign_obj->flags = (sign_obj->flags & ~O_SIGN_SUPP) | O_3DROT; // ;TURN OFF SUPP LIST FLAGS
     // asm 000023E3: 	POP	AR1
     // asm 000023E4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FREESIGN", 0, 0);
-    UNIMPL();
 }
 
 /*

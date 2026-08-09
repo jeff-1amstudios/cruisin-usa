@@ -1670,11 +1670,11 @@ EXP_PUFFLP:
     // asm 000067D4: 	SLEEP	1
     SLEEP(1, 1);
     // asm 000067D6: 	BU	EXP_PUFFLP
+    goto EXP_PUFFLP;
 EXP_DIE:
     // asm 000067D7: 	LDI	AR4,AR2
     // asm 000067D8: 	CALL	OBJ_DELETE
-    OBJ_PULL(obj);
-    OBJ_FREE(obj);
+    OBJ_DELETE(obj);
     // asm 000067D9: 	DIE
     DIE();
 }
@@ -2156,6 +2156,7 @@ SMOKE_PUFFLP:
     // asm 0000687F: 	CALL	SLEEP
     SLEEP(sleep_ticks, 1);
     // asm 00006880: 	BU	SMOKE_PUFFLP
+    goto SMOKE_PUFFLP;
 SMOKE_DIE:
     // asm 00006881: 	LDI	@SMOKE_COUNT,R0
     // asm 00006882: 	DEC	R0
@@ -2170,8 +2171,7 @@ SMOKE_DIE:
     // asm 00006884: 	LDI	AR4,AR2
     // asm 00006885: 	CALL	OBJ_DELETE
     if (p->ctx->PUFF_PROC.obj != NULL) {
-        OBJ_PULL(p->ctx->PUFF_PROC.obj);
-        OBJ_FREE(p->ctx->PUFF_PROC.obj);
+        OBJ_DELETE(p->ctx->PUFF_PROC.obj);
     }
     // asm 00006886: 	DIE
     DIE();

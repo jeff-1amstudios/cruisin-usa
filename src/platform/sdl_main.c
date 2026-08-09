@@ -9,8 +9,32 @@
 static crusn_machine* g_display_machine;
 static crusn_video* g_display_video;
 static int* g_display_running;
+static Uint64 g_attract_start_counter;
+static int g_measure_attract_timing;
 
 extern void MAINLOOP(void);
+
+void crusn_measure_attract_start(void) {
+    if (getenv("CRUSN_MEASURE_ATTRACT_TIMING") == NULL) {
+        return;
+    }
+
+    g_measure_attract_timing = 1;
+    g_attract_start_counter = SDL_GetPerformanceCounter();
+    fprintf(stderr, "ATTRACT_DELTA timing start\n");
+}
+
+int crusn_measure_attract_end(void) {
+    if (!g_measure_attract_timing) {
+        return 0;
+    }
+
+    Uint64 elapsed_counter = SDL_GetPerformanceCounter() - g_attract_start_counter;
+    double elapsed_ms = (double)elapsed_counter * 1000.0 / (double)SDL_GetPerformanceFrequency();
+    fprintf(stderr, "LOADBEVERLY after %.3f ms\n", elapsed_ms);
+    *g_display_running = 0;
+    return 1;
+}
 
 static void crusn_pump_events(void) {
     SDL_Event event;

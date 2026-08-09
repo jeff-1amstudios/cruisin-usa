@@ -1830,7 +1830,7 @@ static void ROAD_DEBRIS_CREATE_55GAL(OBJ* obj /*AR4*/) {
     // asm 000042A1: 	POP	R0
     // asm 000042A2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROAD_DEBRIS_CREATE_55GAL", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void ROAD_DEBRIS_CREATE(OBJ* obj /*AR4*/) {
@@ -2368,7 +2368,10 @@ static void FLAGWAVE_TALL(OBJ* obj /*AR4*/) {
 
 // *----------------------------------------------------------------------------
 static void FLAGWAVE(OBJ* obj /*AR4*/) {
-    (void)obj;
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+    int script_index;
+
     // asm 000043EF: 	PUSH	R0
     // asm 000043F0: 	PUSH	AR0
     // asm 000043F1: 	PUSH	AR2
@@ -2379,21 +2382,42 @@ static void FLAGWAVE(OBJ* obj /*AR4*/) {
     // asm 000043F6: 	LDI	*+AR4(OFLAGS),R0
     // asm 000043F7: 	ANDN	O_1PAL,R0
     // asm 000043F8: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags &= ~O_1PAL;
     // asm 000043F9: 	RANDN	7
+    script_index = RANDU0(7);
     // asm 000043FB: 	LDI	AR6,AR5
     // asm 000043FC: 	ADDI	R0,AR5
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->BACKGRND_PLAINANI_PROC.obj = obj;
+    ctx->BACKGRND_PLAINANI_PROC.script = FLAGANII;
+    ctx->BACKGRND_PLAINANI_PROC.script_index = script_index;
     // asm 000043FD: 	CREATE	PLAINANI_LP,SPAWNER_C|ANIMATION_T
+    proc = CREATE(PLAINANI_PROC, SPAWNER_C | ANIMATION_T, ctx);
     // asm 00004400: 	BC	FWL1
+    if (proc == NULL) {
+        goto FWL1;
+    }
     // asm 00004401: 	BU	J2
+    goto J2;
 MAKEPPP:
     // asm 00004402: 	CREATE	PLAINANI_PROC,SPAWNER_C|ANIMATION_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->BACKGRND_PLAINANI_PROC.obj = obj;
+    ctx->BACKGRND_PLAINANI_PROC.script = FLAGANII;
+    ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
+    proc = CREATE(PLAINANI_PROC, SPAWNER_C | ANIMATION_T, ctx);
     // asm 00004405: 	BC	FWL1
+    if (proc == NULL) {
+        goto FWL1;
+    }
 J2:
     // asm 00004406: STI	AR0,*+AR4(OPLINK)
+    obj->plink = proc;
     // asm 00004407: 	LDI	1,R0
     // asm 00004408: 	LS	O_PROC_B,R0
     // asm 00004409: 	OR	*+AR4(OFLAGS),R0
     // asm 0000440A: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= 1u << O_PROC_B;
 FWL1:
     // asm 0000440B: POP	R2
     // asm 0000440C: 	POP	AR6
@@ -2402,8 +2426,7 @@ FWL1:
     // asm 0000440F: 	POP	AR0
     // asm 00004410: 	POP	R0
     // asm 00004411: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAGWAVE", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -2415,20 +2438,38 @@ FWL1:
  *
  */
 static void PLAINANI_PROC(PROC* p) {
+    PROC_CONTEXT* ctx = p->ctx;
+    int frame;
+    int sleep_ticks;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00004412: 	LDI	AR6,AR5
 PLAINANI_LP:
     // asm 00004413: 	LDI	*AR5++,R0
+    frame = ctx->BACKGRND_PLAINANI_PROC.script[ctx->BACKGRND_PLAINANI_PROC.script_index++];
     // asm 00004414: 	BLT	PLAINANI_PROC
+    if (frame < 0) {
+        ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
+        goto PLAINANI_LP;
+    }
     // asm 00004415: 	STI	R0,*+AR4(OROMDATA)
+    ctx->BACKGRND_PLAINANI_PROC.obj->romdata = ROM_PTR((word_addr_t)frame);
     // asm 00004416: 	RANDN	4
+    sleep_ticks = RANDU0(4);
     // asm 00004418: 	LDI	R0,R0
     // asm 00004419: 	LDIZ	1,AR2
     // asm 0000441A: 	LDINZ	2,AR2
+    sleep_ticks = sleep_ticks == 0 ? 1 : 2;
     // asm 0000441B: 	CALL	PRC_SLEEP
+    SLEEP(sleep_ticks, 1);
     // asm 0000441C: 	BU	PLAINANI_LP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLAINANI_PROC", 0, 0);
-    UNIMPL();
+    goto PLAINANI_LP;
 }
 
 // *----------------------------------------------------------------------------

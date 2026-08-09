@@ -39,7 +39,7 @@ static void CAMCHKLR(void);
 static void CAMCHK(void);
 static void CAMROT(void);
 static void GETCAMPOS(void);
-void CAMYADJ(void);
+void CAMYADJ(VECTOR* camera_pos /*AR0*/);
 static void PLYONRD(void);
 void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta /*R2*/);
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
@@ -1269,27 +1269,41 @@ static void GETCAMPOS(void) {
  *	AR0	CAMERA POSITION XYZ POINTER
  *	AR4	PLAYER CAR
  */
-void CAMYADJ(void) {
+void CAMYADJ(VECTOR* camera_pos /*AR0*/) {
+    c3x_reg_t road_height;
+    c3x_reg_t adjustment;
+
     // *ADJUST CAMERA Y
     // asm 00002BE5: 	PUSH	AR4
     // asm 00002BE6: 	LDI	AR0,AR4			;POINT TO XYZ OF CAMERA
     // asm 00002BE7: 	CALL	CAMSCAN
+    if (!CAMSCAN(camera_pos, &road_height)) {
+        goto CAM1XX;
+    }
     // asm 00002BE8: 	LDI	AR4,AR0
     // asm 00002BE9: 	POP	AR4
     // asm 00002BEA: 	BNC	CAM1XX			;NO COLLISION, SKIP IT...
     // asm 00002BEB: 	FLOAT	133,R1
     // asm 00002BEC: 	SUBF	R0,R1
+    adjustment = C3X_SUB(C3X_FROM_INT(133), road_height);
     // asm 00002BED: 	BLE	CAM1XX
+    if (C3X_LE(adjustment, C3X_FROM_INT(0))) {
+        goto CAM1XX;
+    }
     // asm 00002BEE: 	FLOAT	500,R0		 	;OVERPASS BYPASS
     // asm 00002BEF: 	CMPF	R0,R1
     // asm 00002BF0: 	BGT	CAM1XX
+    if (C3X_GT(adjustment, C3X_FROM_INT(500))) { // ;OVERPASS BYPASS
+        goto CAM1XX;
+    }
     // asm 00002BF1: 	NEGF	R1
+    adjustment = C3X_NEG(adjustment);
     // asm 00002BF2: 	ADDF	*+AR0(1),R1
     // asm 00002BF3: 	STF	R1,*+AR0(1)		;CAMERA Y COORD
+    camera_pos->Y = C3X_STF(C3X_ADD(C3X_LDF(camera_pos->Y), adjustment)); // ;CAMERA Y COORD
 CAM1XX:
     // asm 00002BF4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMYADJ", 0, 0);
-    UNIMPL();
 }
 
 /*

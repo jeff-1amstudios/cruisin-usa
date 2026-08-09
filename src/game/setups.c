@@ -207,6 +207,10 @@ static void LOADREDWOOD(void) {
 }
 
 static void LOADBEVERLY(void) {
+    MAME_VALIDATOR_EXIT();
+    if (crusn_measure_attract_end()) {
+        return;
+    }
     // asm 00008C4E: 	CALL	LOADH280
     // asm 00008C4F: 	CALL	LOAD_TUNNEL
     // asm 00008C50: 	LDL	_SECbevhnred,AR2

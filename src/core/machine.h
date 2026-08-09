@@ -70,5 +70,7 @@ s32 crusn_read_s32(const u32** cursor);
 c3x_reg_t crusn__read_f32(const u32** cursor);
 
 void crusn_yield_display_interrupt(void);
+void crusn_measure_attract_start(void);
+int crusn_measure_attract_end(void);
 
 #endif

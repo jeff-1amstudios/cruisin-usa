@@ -778,6 +778,16 @@ typedef struct PROC_CONTEXT {
             MATRIX rotation; // PDATA+2..
         } FLYCOLLP;
         struct {
+            OBJ* obj;                 // AR4
+            c3x_f32_t rotation_delta; // R7
+            c3x_f32_t accumulated;    // R6
+        } SIGNFALL;
+        struct {
+            OBJ* obj;          // AR4
+            const int* script; // AR6
+            int script_index;  // AR5 - AR6
+        } BACKGRND_PLAINANI_PROC;
+        struct {
             int decomp_count;
             int attrwave;
             struct OBJ* obj;
@@ -868,6 +878,7 @@ typedef struct PROC_CONTEXT {
             LEG_PAYLOAD* road_obj;  // synthetic state used to preserve AR4 road segment across calls
             uintptr_t view_script; // synthetic state used to preserve AR6 across sleeps
             int frames_left;       // synthetic state used to preserve AR5 across sleeps
+            c3x_f32_t watch_rady;  // synthetic state used to preserve R6 across WATCH_VIEW calls
         } ATTRACT_DELTA;
         struct {
             OBJ* obj;

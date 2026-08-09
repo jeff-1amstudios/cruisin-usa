@@ -715,5 +715,4 @@ BREAKDNSLP:
 static void SIGMA_DIE(PROC* p) {
     // asm 0000A533: 	BU	RHO_DIE
     RHO_DIE(p);
-    DIE();
 }

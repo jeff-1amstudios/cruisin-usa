@@ -1,19 +1,34 @@
-bpset 000055C8, 1, { logerror "validate R4: 0x%08X, attrdrne.c:158\n", r4; g }
-bpset 000055CB, 1, { logerror "validate R0: 0x%08X, attrdrne.c:166\n", r0; g }
-bpset 000055D1, 1, { logerror "validate R0: 0x%08X, attrdrne.c:178\n", r0; g }
-bpset 000055E1, 1, { logerror "validate R0: 0x%08X, attrdrne.c:214\n", r0; g }
-bpset 000055EF, 1, { logerror "validate AR5: 0x%08X, attrdrne.c:254\n", ar5; g }
-bpset 000055FE, 1, { logerror "validate AR5: 0x%08X, attrdrne.c:294\n", ar5; g }
-bpset 000056E0, 1, { logerror "validate d@(ar4+3): 0x%08X, attrdrne.c:827\n", d@(ar4+3); g }
-bpset 00005735, 1, { logerror "exit, attrdrne.c:992\n"; exit; g }
-bpset 000057A6, 1, { logerror "validate d@(ar4+3): 0x%08X, attrdrne.c:1213\n", d@(ar4+3); g }
-bpset 000057A7, 1, { logerror "validate AR5: 0x%08X, attrdrne.c:1224\n", ar5; g }
-bpset 000057AF, 1, { logerror "validate d@(ar4+3): 0x%08X, attrdrne.c:1269\n", d@(ar4+3); g }
-bpset 000057EA, 1, { logerror "validate d@(ar4+3): 0x%08X, attrdrne.c:1405\n", d@(ar4+3); g }
-bpset 000059AC, 1, { logerror "validate R0: 0x%08X, attrdrne.c:2336\n", r0; g }
-bpset 000059AE, 1, { logerror "validate R1: 0x%08X, attrdrne.c:2340\n", r1; g }
-bpset 000059BF, 1, { logerror "validate R0: 0x%08X, attrdrne.c:2371\n", r0; g }
-bpset 000059D9, 1, { logerror "validate R0: 0x%08X, attrdrne.c:2410\n", r0; g }
+bpset 000055C8, 1, { logerror "validate R4: 0x%08X, attrdrne.c:161\n", r4; g }
+bpset 000055CB, 1, { logerror "validate R0: 0x%08X, attrdrne.c:169\n", r0; g }
+bpset 000055D1, 1, { logerror "validate R0: 0x%08X, attrdrne.c:181\n", r0; g }
+bpset 000055E1, 1, { logerror "validate R0: 0x%08X, attrdrne.c:217\n", r0; g }
+bpset 000055EF, 1, { logerror "validate AR5: 0x%08X, attrdrne.c:257\n", ar5; g }
+bpset 000055FE, 1, { logerror "validate AR5: 0x%08X, attrdrne.c:297\n", ar5; g }
+bpset 000056E0, 1, { logerror "validate d@(ar4+3): 0x%08X, attrdrne.c:883\n", d@(ar4+3); g }
+bpset 000056E2, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:887\n", r0f; g }
+bpset 00005746, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:1121\n", r0f; g }
+bpset 00005748, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:1125\n", r0f; g }
+bpset 0000574A, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:1129\n", r0f; g }
+bpset 0000574E, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:1138\n", r0f; g }
+bpset 00005759, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:1154\n", r0f; g }
+bpset 0000575E, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:1161\n", r0f; g }
+bpset 00005761, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:1166\n", r0f; g }
+bpset 00005766, 1, { logerror "validate d@(ar4): 0x%08X, attrdrne.c:1176\n", d@(ar4); logerror "validate d@(ar4+2): 0x%08X, attrdrne.c:1178\n", d@(ar4+2); g }
+bpset 000057A6, 1, { logerror "validate d@(ar4+3): 0x%08X, attrdrne.c:1308\n", d@(ar4+3); g }
+bpset 000057A7, 1, { logerror "validate AR5: 0x%08X, attrdrne.c:1319\n", ar5; g }
+bpset 000057AF, 1, { logerror "validate d@(ar4+3): 0x%08X, attrdrne.c:1364\n", d@(ar4+3); g }
+bpset 000057EA, 1, { logerror "validate d@(ar4+3): 0x%08X, attrdrne.c:1500\n", d@(ar4+3); g }
+bpset 000058F2, 1, { logerror "validate d@(ar0): 0x%08X, attrdrne.c:2067\n", d@(ar0); logerror "validate d@(ar0+1): 0x%08X, attrdrne.c:2069\n", d@(ar0+1); logerror "validate d@(ar0+2): 0x%08X, attrdrne.c:2071\n", d@(ar0+2); g }
+bpset 0000596A, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:2380\n", r0f; g }
+bpset 0000596C, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:2384\n", r0f; g }
+bpset 0000596E, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:2388\n", r0f; g }
+bpset 00005971, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:2393\n", r0f; g }
+bpset 00005973, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:2397\n", r0f; g }
+bpset 00005975, 1, { logerror "validate R0F: 0x%08X, attrdrne.c:2401\n", r0f; g }
+bpset 000059AC, 1, { logerror "validate R0: 0x%08X, attrdrne.c:2586\n", r0; g }
+bpset 000059AE, 1, { logerror "validate R1: 0x%08X, attrdrne.c:2590\n", r1; g }
+bpset 000059BF, 1, { logerror "validate R0: 0x%08X, attrdrne.c:2621\n", r0; g }
+bpset 000059D9, 1, { logerror "validate R0: 0x%08X, attrdrne.c:2660\n", r0; g }
 bpset 00003F80, 1, { logerror "function FIND_STARTING_VALUES\n"; g }
 bpset 00003F9D, 1, { logerror "validate R2F: 0x%08X, backgrnd.c:248\n", r2f; g }
 bpset 00003F9E, 1, { logerror "function BGD_INIT\n"; g }
@@ -36,11 +51,11 @@ bpset 000040FF, 1, { logerror "validate R2F: 0x%08X, backgrnd.c:1011\n", r2f; g 
 bpset 000041E2, 1, { logerror "validate AR2: 0x%08X, backgrnd.c:1522\n", ar2; g }
 bpset 0000421A, 1, { logerror "validate R3F: 0x%08X, backgrnd.c:1646\n", r3f; g }
 bpset 0000421C, 1, { logerror "validate R2F: 0x%08X, backgrnd.c:1651\n", r2f; g }
-bpset 0000442A, 1, { logerror "validate R4: 0x%08X, backgrnd.c:2476\n", r4; g }
-bpset 00004433, 1, { logerror "validate R1F: 0x%08X, backgrnd.c:2510\n", r1f; g }
-bpset 00004435, 1, { logerror "validate R1F: 0x%08X, backgrnd.c:2515\n", r1f; g }
-bpset 00004437, 1, { logerror "validate R1F: 0x%08X, backgrnd.c:2520\n", r1f; g }
-bpset 00004440, 1, { logerror "validate R1: 0x%08X, backgrnd.c:2537\n", r1; g }
+bpset 0000442A, 1, { logerror "validate R4: 0x%08X, backgrnd.c:2517\n", r4; g }
+bpset 00004433, 1, { logerror "validate R1F: 0x%08X, backgrnd.c:2551\n", r1f; g }
+bpset 00004435, 1, { logerror "validate R1F: 0x%08X, backgrnd.c:2556\n", r1f; g }
+bpset 00004437, 1, { logerror "validate R1F: 0x%08X, backgrnd.c:2561\n", r1f; g }
+bpset 00004440, 1, { logerror "validate R1: 0x%08X, backgrnd.c:2578\n", r1; g }
 bpset 00007489, 1, { logerror "function INSERT_COINS\n"; g }
 bpset 00001FFD, 1, { logerror "validate d@(ar6+1): 0x%08X, colla.c:438\n", d@(ar6+1); g }
 bpset 00002008, 1, { logerror "validate d@(ar0+1): 0x%08X, colla.c:464\n", d@(ar0+1); logerror "validate d@(ar0+3): 0x%08X, colla.c:466\n", d@(ar0+3); logerror "validate d@(ar0+4): 0x%08X, colla.c:468\n", d@(ar0+4); g }
@@ -69,27 +84,29 @@ bpset 00002133, 1, { logerror "validate d@(ar3-2): 0x%08X, colla.c:1301\n", d@(a
 bpset 000021B3, 1, { logerror "validate R4F: 0x%08X, colla.c:1576\n", r4f; g }
 bpset 000021B6, 1, { logerror "validate R3F: 0x%08X, colla.c:1582\n", r3f; g }
 bpset 000021BE, 1, { logerror "validate R2F: 0x%08X, colla.c:1597\n", r2f; g }
-bpset 0000226A, 1, { logerror "validate R2F: 0x%08X, colla.c:1923\n", r2f; logerror "validate R2F: 0x%08X, colla.c:1926\n", r2f; g }
-bpset 000022B5, 1, { logerror "validate R0F: 0x%08X, colla.c:1981\n", r0f; g }
-bpset 000022C7, 1, { logerror "validate R3F: 0x%08X, colla.c:1988\n", r3f; g }
-bpset 000022C8, 1, { logerror "validate R0F: 0x%08X, colla.c:1990\n", r0f; g }
-bpset 000022D0, 1, { logerror "validate R0F: 0x%08X, colla.c:1995\n", r0f; g }
-bpset 0000230C, 1, { logerror "validate R5F: 0x%08X, colla.c:2034\n", r5f; g }
+bpset 0000226A, 1, { logerror "validate R2F: 0x%08X, colla.c:1924\n", r2f; logerror "validate R2F: 0x%08X, colla.c:1927\n", r2f; g }
+bpset 000022B5, 1, { logerror "validate R0F: 0x%08X, colla.c:1982\n", r0f; g }
+bpset 000022C7, 1, { logerror "validate R3F: 0x%08X, colla.c:1989\n", r3f; g }
+bpset 000022C8, 1, { logerror "validate R0F: 0x%08X, colla.c:1991\n", r0f; g }
+bpset 000022D0, 1, { logerror "validate R0F: 0x%08X, colla.c:1996\n", r0f; g }
+bpset 0000230C, 1, { logerror "validate R5F: 0x%08X, colla.c:2035\n", r5f; g }
+bpset 00002312, 1, { logerror "validate R7F: 0x%08X, colla.c:2043\n", r7f; g }
 bpset 00002334, 1, { logerror "function FLYCOLLP\n"; g }
-bpset 00002718, 1, { logerror "validate R0F: 0x%08X, colla.c:3922\n", r0f; logerror "validate R1F: 0x%08X, colla.c:3923\n", r1f; g }
-bpset 00002723, 1, { logerror "validate R0F: 0x%08X, colla.c:3939\n", r0f; logerror "validate R1F: 0x%08X, colla.c:3940\n", r1f; g }
-bpset 00002727, 1, { logerror "validate d@(ar5+31): 0x%08X, colla.c:3990\n", d@(ar5+31); g }
-bpset 0000272F, 1, { logerror "validate R0F: 0x%08X, colla.c:4003\n", r0f; g }
-bpset 0000276F, 1, { logerror "validate R3F: 0x%08X, colla.c:4129\n", r3f; g }
-bpset 00002775, 1, { logerror "validate R3F: 0x%08X, colla.c:4153\n", r3f; g }
-bpset 00002778, 1, { logerror "validate R3F: 0x%08X, colla.c:4161\n", r3f; g }
-bpset 000027F8, 1, { logerror "validate R2F: 0x%08X, colla.c:4462\n", r2f; g }
-bpset 000027FD, 1, { logerror "validate R2F: 0x%08X, colla.c:4482\n", r2f; logerror "validate R3F: 0x%08X, colla.c:4483\n", r3f; g }
-bpset 00002800, 1, { logerror "validate R3F: 0x%08X, colla.c:4491\n", r3f; g }
-bpset 00002801, 1, { logerror "validate R2F: 0x%08X, colla.c:4494\n", r2f; g }
-bpset 00002815, 1, { logerror "validate R2F: 0x%08X, colla.c:4542\n", r2f; g }
-bpset 00002821, 1, { logerror "validate R3F: 0x%08X, colla.c:4580\n", r3f; g }
-bpset 000028E2, 1, { logerror "validate d@(ar2-1): 0x%08X, colla.c:5076\n", d@(ar2-1); g }
+bpset 000023A3, 1, { logerror "validate R6F: 0x%08X, colla.c:2374\n", r6f; logerror "validate R7F: 0x%08X, colla.c:2375\n", r7f; g }
+bpset 00002718, 1, { logerror "validate R0F: 0x%08X, colla.c:3986\n", r0f; logerror "validate R1F: 0x%08X, colla.c:3987\n", r1f; g }
+bpset 00002723, 1, { logerror "validate R0F: 0x%08X, colla.c:4003\n", r0f; logerror "validate R1F: 0x%08X, colla.c:4004\n", r1f; g }
+bpset 00002727, 1, { logerror "validate d@(ar5+31): 0x%08X, colla.c:4054\n", d@(ar5+31); g }
+bpset 0000272F, 1, { logerror "validate R0F: 0x%08X, colla.c:4067\n", r0f; g }
+bpset 0000276F, 1, { logerror "validate R3F: 0x%08X, colla.c:4193\n", r3f; g }
+bpset 00002775, 1, { logerror "validate R3F: 0x%08X, colla.c:4217\n", r3f; g }
+bpset 00002778, 1, { logerror "validate R3F: 0x%08X, colla.c:4225\n", r3f; g }
+bpset 000027F8, 1, { logerror "validate R2F: 0x%08X, colla.c:4526\n", r2f; g }
+bpset 000027FD, 1, { logerror "validate R2F: 0x%08X, colla.c:4546\n", r2f; logerror "validate R3F: 0x%08X, colla.c:4547\n", r3f; g }
+bpset 00002800, 1, { logerror "validate R3F: 0x%08X, colla.c:4555\n", r3f; g }
+bpset 00002801, 1, { logerror "validate R2F: 0x%08X, colla.c:4558\n", r2f; g }
+bpset 00002815, 1, { logerror "validate R2F: 0x%08X, colla.c:4606\n", r2f; g }
+bpset 00002821, 1, { logerror "validate R3F: 0x%08X, colla.c:4644\n", r3f; g }
+bpset 000028E2, 1, { logerror "validate d@(ar2-1): 0x%08X, colla.c:5140\n", d@(ar2-1); g }
 bpset 00004B5E, 1, { save 00004B5E-0.bin, 00900000, 0x40000; logerror "validate SCREEN0: file=00004B5E-0.bin, cusa.c:431\n"; g }
 bpset 00004B5F, 1, { save 00004B5F-0.bin, 00900000, 0x40000; logerror "validate SCREEN0: file=00004B5F-0.bin, cusa.c:435\n"; g }
 bpset 00004B8B, 1, { save 00004B8B-0.bin, 00A00000, 0x1AB00; logerror "validate _SECshared-decompressed: file=00004B8B-0.bin, cusa.c:474\n"; g }
@@ -143,59 +160,59 @@ bpset 000095FD, 1, { logerror "validate R0F: 0x%08X, math_cusa.c:1086\n", r0f; g
 bpset 0000A89D, 1, { logerror "function PRC_DISPATCH\n"; g }
 bpset 0000ACFA, 1, { logerror "validate AR0: 0x%08X, overlay.c:78\n", ar0; g }
 bpset 00002954, 1, { logerror "validate R0: 0x%08X, plyr.c:388\n", r0; g }
-bpset 00002C1B, 1, { logerror "validate R0: 0x%08X, plyr.c:1366\n", r0; g }
-bpset 00002C24, 1, { logerror "validate R2F: 0x%08X, plyr.c:1385\n", r2f; g }
-bpset 00002C29, 1, { logerror "validate d@(ar4+9): 0x%08X, plyr.c:1395\n", d@(ar4+9); g }
-bpset 00002C2B, 1, { logerror "validate R2F: 0x%08X, plyr.c:1401\n", r2f; g }
-bpset 00002C32, 1, { logerror "validate R2F: 0x%08X, plyr.c:1414\n", r2f; g }
-bpset 00002C3B, 1, { logerror "validate d@(ar4+9): 0x%08X, plyr.c:1443\n", d@(ar4+9); g }
-bpset 00002C43, 1, { logerror "validate d@(ar4+9): 0x%08X, plyr.c:1458\n", d@(ar4+9); g }
-bpset 00002C95, 1, { logerror "validate R0F: 0x%08X, plyr.c:1596\n", r0f; g }
-bpset 00002C96, 1, { logerror "validate R0F: 0x%08X, plyr.c:1599\n", r0f; g }
-bpset 00002D12, 1, { logerror "validate AR3: 0x%08X, plyr.c:1929\n", ar3; logerror "validate R1: 0x%08X, plyr.c:1930\n", r1; g }
-bpset 00002D16, 1, { logerror "validate R1: 0x%08X, plyr.c:1941\n", r1; g }
-bpset 00002D1A, 1, { logerror "validate R1F: 0x%08X, plyr.c:1951\n", r1f; g }
-bpset 00002D1B, 1, { logerror "validate R1F: 0x%08X, plyr.c:1954\n", r1f; g }
-bpset 00002D1E, 1, { logerror "validate R1F: 0x%08X, plyr.c:1963\n", r1f; g }
-bpset 00002D1F, 1, { logerror "validate R2F: 0x%08X, plyr.c:1966\n", r2f; g }
-bpset 00002D21, 1, { logerror "validate R3F: 0x%08X, plyr.c:1971\n", r3f; g }
-bpset 00002D24, 1, { logerror "validate R3F: 0x%08X, plyr.c:1978\n", r3f; g }
-bpset 00002D83, 1, { logerror "validate d@(ar5+20): 0x%08X, plyr.c:2191\n", d@(ar5+20); g }
-bpset 00002D8C, 1, { logerror "validate d@(ar5+31): 0x%08X, plyr.c:2214\n", d@(ar5+31); g }
-bpset 00002D93, 1, { logerror "validate R0F: 0x%08X, plyr.c:2231\n", r0f; logerror "validate R0: 0x%08X, plyr.c:2234\n", r0; g }
-bpset 00002D97, 1, { logerror "validate R0: 0x%08X, plyr.c:2244\n", r0; g }
-bpset 00002D98, 1, { logerror "validate R1F: 0x%08X, plyr.c:2248\n", r1f; g }
-bpset 00002D99, 1, { logerror "validate R1F: 0x%08X, plyr.c:2251\n", r1f; g }
-bpset 00002D9E, 1, { logerror "validate R2F: 0x%08X, plyr.c:2262\n", r2f; g }
-bpset 00002DA2, 1, { logerror "validate R1F: 0x%08X, plyr.c:2270\n", r1f; g }
-bpset 00002DA5, 1, { logerror "validate R1F: 0x%08X, plyr.c:2280\n", r1f; g }
-bpset 00002DA6, 1, { logerror "validate R2F: 0x%08X, plyr.c:2283\n", r2f; g }
-bpset 00002DA8, 1, { logerror "validate R3F: 0x%08X, plyr.c:2288\n", r3f; g }
-bpset 00002DA9, 1, { logerror "validate R1F: 0x%08X, plyr.c:2291\n", r1f; g }
-bpset 00002DAC, 1, { logerror "validate R1F: 0x%08X, plyr.c:2297\n", r1f; g }
-bpset 00002DAF, 1, { logerror "validate R1F: 0x%08X, plyr.c:2305\n", r1f; logerror "validate R2F: 0x%08X, plyr.c:2306\n", r2f; g }
-bpset 00002DB0, 1, { logerror "validate R1F: 0x%08X, plyr.c:2309\n", r1f; logerror "validate R1: 0x%08X, plyr.c:2312\n", r1; g }
-bpset 00002DB1, 1, { logerror "validate R0F: 0x%08X, plyr.c:2317\n", r0f; logerror "validate R0: 0x%08X, plyr.c:2320\n", r0; g }
-bpset 00002DB5, 1, { logerror "validate R0F: 0x%08X, plyr.c:2330\n", r0f; logerror "validate R0: 0x%08X, plyr.c:2333\n", r0; g }
-bpset 00002DB6, 1, { logerror "validate R1F: 0x%08X, plyr.c:2338\n", r1f; g }
-bpset 00002DC0, 1, { logerror "validate R1F: 0x%08X, plyr.c:2360\n", r1f; logerror "validate R0: 0x%08X, plyr.c:2363\n", r0; logerror "validate R1: 0x%08X, plyr.c:2365\n", r1; g }
-bpset 00002DC1, 1, { logerror "validate R0F: 0x%08X, plyr.c:2369\n", r0f; logerror "validate R0: 0x%08X, plyr.c:2372\n", r0; g }
-bpset 00002DCE, 1, { logerror "validate R3: 0x%08X, plyr.c:2403\n", r3; g }
-bpset 00002DD7, 1, { logerror "validate R1: 0x%08X, plyr.c:2431\n", r1; logerror "validate R4: 0x%08X, plyr.c:2433\n", r4; g }
-bpset 00002DE1, 1, { logerror "validate R3: 0x%08X, plyr.c:2459\n", r3; logerror "validate R5: 0x%08X, plyr.c:2461\n", r5; g }
-bpset 00002DE2, 1, { logerror "validate R3: 0x%08X, plyr.c:2468\n", r3; g }
-bpset 00002DEF, 1, { logerror "validate R3: 0x%08X, plyr.c:2500\n", r3; g }
-bpset 00002DF8, 1, { logerror "validate R3: 0x%08X, plyr.c:2524\n", r3; logerror "validate R5: 0x%08X, plyr.c:2526\n", r5; g }
-bpset 00002DF9, 1, { logerror "validate R3: 0x%08X, plyr.c:2534\n", r3; g }
-bpset 00002DFF, 1, { logerror "validate R0F: 0x%08X, plyr.c:2549\n", r0f; logerror "validate R1F: 0x%08X, plyr.c:2550\n", r1f; logerror "validate R3F: 0x%08X, plyr.c:2551\n", r3f; logerror "validate R0: 0x%08X, plyr.c:2554\n", r0; logerror "validate R1: 0x%08X, plyr.c:2556\n", r1; logerror "validate R3: 0x%08X, plyr.c:2558\n", r3; g }
-bpset 00002E01, 1, { logerror "validate R4: 0x%08X, plyr.c:2571\n", r4; g }
-bpset 00002E02, 1, { logerror "validate R1: 0x%08X, plyr.c:2577\n", r1; g }
-bpset 00002E03, 1, { logerror "validate R1: 0x%08X, plyr.c:2583\n", r1; g }
-bpset 00002E09, 1, { logerror "validate R1F: 0x%08X, plyr.c:2601\n", r1f; logerror "validate R5F: 0x%08X, plyr.c:2604\n", r5f; g }
-bpset 00002E0A, 1, { logerror "validate R1F: 0x%08X, plyr.c:2607\n", r1f; logerror "validate R1: 0x%08X, plyr.c:2610\n", r1; g }
-bpset 00002E0B, 1, { logerror "validate d@(ar5+26): 0x%08X, plyr.c:2613\n", d@(ar5+26); g }
-bpset 00003170, 1, { logerror "validate R0F: 0x%08X, plyr.c:4068\n", r0f; g }
-bpset 0000317A, 1, { logerror "validate R0: 0x%08X, plyr.c:4091\n", r0; logerror "validate AR2: 0x%08X, plyr.c:4092\n", ar2; g }
+bpset 00002C1B, 1, { logerror "validate R0: 0x%08X, plyr.c:1380\n", r0; g }
+bpset 00002C24, 1, { logerror "validate R2F: 0x%08X, plyr.c:1399\n", r2f; g }
+bpset 00002C29, 1, { logerror "validate d@(ar4+9): 0x%08X, plyr.c:1409\n", d@(ar4+9); g }
+bpset 00002C2B, 1, { logerror "validate R2F: 0x%08X, plyr.c:1415\n", r2f; g }
+bpset 00002C32, 1, { logerror "validate R2F: 0x%08X, plyr.c:1428\n", r2f; g }
+bpset 00002C3B, 1, { logerror "validate d@(ar4+9): 0x%08X, plyr.c:1457\n", d@(ar4+9); g }
+bpset 00002C43, 1, { logerror "validate d@(ar4+9): 0x%08X, plyr.c:1472\n", d@(ar4+9); g }
+bpset 00002C95, 1, { logerror "validate R0F: 0x%08X, plyr.c:1610\n", r0f; g }
+bpset 00002C96, 1, { logerror "validate R0F: 0x%08X, plyr.c:1613\n", r0f; g }
+bpset 00002D12, 1, { logerror "validate AR3: 0x%08X, plyr.c:1943\n", ar3; logerror "validate R1: 0x%08X, plyr.c:1944\n", r1; g }
+bpset 00002D16, 1, { logerror "validate R1: 0x%08X, plyr.c:1955\n", r1; g }
+bpset 00002D1A, 1, { logerror "validate R1F: 0x%08X, plyr.c:1965\n", r1f; g }
+bpset 00002D1B, 1, { logerror "validate R1F: 0x%08X, plyr.c:1968\n", r1f; g }
+bpset 00002D1E, 1, { logerror "validate R1F: 0x%08X, plyr.c:1977\n", r1f; g }
+bpset 00002D1F, 1, { logerror "validate R2F: 0x%08X, plyr.c:1980\n", r2f; g }
+bpset 00002D21, 1, { logerror "validate R3F: 0x%08X, plyr.c:1985\n", r3f; g }
+bpset 00002D24, 1, { logerror "validate R3F: 0x%08X, plyr.c:1992\n", r3f; g }
+bpset 00002D83, 1, { logerror "validate d@(ar5+20): 0x%08X, plyr.c:2205\n", d@(ar5+20); g }
+bpset 00002D8C, 1, { logerror "validate d@(ar5+31): 0x%08X, plyr.c:2228\n", d@(ar5+31); g }
+bpset 00002D93, 1, { logerror "validate R0F: 0x%08X, plyr.c:2245\n", r0f; logerror "validate R0: 0x%08X, plyr.c:2248\n", r0; g }
+bpset 00002D97, 1, { logerror "validate R0: 0x%08X, plyr.c:2258\n", r0; g }
+bpset 00002D98, 1, { logerror "validate R1F: 0x%08X, plyr.c:2262\n", r1f; g }
+bpset 00002D99, 1, { logerror "validate R1F: 0x%08X, plyr.c:2265\n", r1f; g }
+bpset 00002D9E, 1, { logerror "validate R2F: 0x%08X, plyr.c:2276\n", r2f; g }
+bpset 00002DA2, 1, { logerror "validate R1F: 0x%08X, plyr.c:2284\n", r1f; g }
+bpset 00002DA5, 1, { logerror "validate R1F: 0x%08X, plyr.c:2294\n", r1f; g }
+bpset 00002DA6, 1, { logerror "validate R2F: 0x%08X, plyr.c:2297\n", r2f; g }
+bpset 00002DA8, 1, { logerror "validate R3F: 0x%08X, plyr.c:2302\n", r3f; g }
+bpset 00002DA9, 1, { logerror "validate R1F: 0x%08X, plyr.c:2305\n", r1f; g }
+bpset 00002DAC, 1, { logerror "validate R1F: 0x%08X, plyr.c:2311\n", r1f; g }
+bpset 00002DAF, 1, { logerror "validate R1F: 0x%08X, plyr.c:2319\n", r1f; logerror "validate R2F: 0x%08X, plyr.c:2320\n", r2f; g }
+bpset 00002DB0, 1, { logerror "validate R1F: 0x%08X, plyr.c:2323\n", r1f; logerror "validate R1: 0x%08X, plyr.c:2326\n", r1; g }
+bpset 00002DB1, 1, { logerror "validate R0F: 0x%08X, plyr.c:2331\n", r0f; logerror "validate R0: 0x%08X, plyr.c:2334\n", r0; g }
+bpset 00002DB5, 1, { logerror "validate R0F: 0x%08X, plyr.c:2344\n", r0f; logerror "validate R0: 0x%08X, plyr.c:2347\n", r0; g }
+bpset 00002DB6, 1, { logerror "validate R1F: 0x%08X, plyr.c:2352\n", r1f; g }
+bpset 00002DC0, 1, { logerror "validate R1F: 0x%08X, plyr.c:2374\n", r1f; logerror "validate R0: 0x%08X, plyr.c:2377\n", r0; logerror "validate R1: 0x%08X, plyr.c:2379\n", r1; g }
+bpset 00002DC1, 1, { logerror "validate R0F: 0x%08X, plyr.c:2383\n", r0f; logerror "validate R0: 0x%08X, plyr.c:2386\n", r0; g }
+bpset 00002DCE, 1, { logerror "validate R3: 0x%08X, plyr.c:2417\n", r3; g }
+bpset 00002DD7, 1, { logerror "validate R1: 0x%08X, plyr.c:2445\n", r1; logerror "validate R4: 0x%08X, plyr.c:2447\n", r4; g }
+bpset 00002DE1, 1, { logerror "validate R3: 0x%08X, plyr.c:2473\n", r3; logerror "validate R5: 0x%08X, plyr.c:2475\n", r5; g }
+bpset 00002DE2, 1, { logerror "validate R3: 0x%08X, plyr.c:2482\n", r3; g }
+bpset 00002DEF, 1, { logerror "validate R3: 0x%08X, plyr.c:2514\n", r3; g }
+bpset 00002DF8, 1, { logerror "validate R3: 0x%08X, plyr.c:2538\n", r3; logerror "validate R5: 0x%08X, plyr.c:2540\n", r5; g }
+bpset 00002DF9, 1, { logerror "validate R3: 0x%08X, plyr.c:2548\n", r3; g }
+bpset 00002DFF, 1, { logerror "validate R0F: 0x%08X, plyr.c:2563\n", r0f; logerror "validate R1F: 0x%08X, plyr.c:2564\n", r1f; logerror "validate R3F: 0x%08X, plyr.c:2565\n", r3f; logerror "validate R0: 0x%08X, plyr.c:2568\n", r0; logerror "validate R1: 0x%08X, plyr.c:2570\n", r1; logerror "validate R3: 0x%08X, plyr.c:2572\n", r3; g }
+bpset 00002E01, 1, { logerror "validate R4: 0x%08X, plyr.c:2585\n", r4; g }
+bpset 00002E02, 1, { logerror "validate R1: 0x%08X, plyr.c:2591\n", r1; g }
+bpset 00002E03, 1, { logerror "validate R1: 0x%08X, plyr.c:2597\n", r1; g }
+bpset 00002E09, 1, { logerror "validate R1F: 0x%08X, plyr.c:2615\n", r1f; logerror "validate R5F: 0x%08X, plyr.c:2618\n", r5f; g }
+bpset 00002E0A, 1, { logerror "validate R1F: 0x%08X, plyr.c:2621\n", r1f; logerror "validate R1: 0x%08X, plyr.c:2624\n", r1; g }
+bpset 00002E0B, 1, { logerror "validate d@(ar5+26): 0x%08X, plyr.c:2627\n", d@(ar5+26); g }
+bpset 00003170, 1, { logerror "validate R0F: 0x%08X, plyr.c:4082\n", r0f; g }
+bpset 0000317A, 1, { logerror "validate R0: 0x%08X, plyr.c:4105\n", r0; logerror "validate AR2: 0x%08X, plyr.c:4106\n", ar2; g }
 bpset 000050F7, 1, { logerror "validate R4: 0x%08X, racer.c:324\n", r4; g }
 bpset 00005102, 1, { logerror "validate R0: 0x%08X, racer.c:348\n", r0; g }
 bpset 00005120, 1, { logerror "validate R0F: 0x%08X, racer.c:403\n", r0f; g }
@@ -227,6 +244,7 @@ bpset 0000555F, 1, { logerror "validate R0F: 0x%08X, racer.c:3038\n", r0f; g }
 bpset 00005562, 1, { logerror "validate R0F: 0x%08X, racer.c:3043\n", r0f; g }
 bpset 00009794, 1, { logerror "validate R0: 0x%08X, rho.c:210\n", r0; g }
 bpset 000097C1, 1, { logerror "validate R2F: 0x%08X, rho.c:299\n", r2f; g }
+bpset 00008C4E, 1, { logerror "exit, setups.c:210\n"; exit; g }
 bpset 0000A434, 1, { logerror "validate R0: 0x%08X, sigma.c:162\n", r0; g }
 bpset 0000A512, 1, { logerror "validate R2F: 0x%08X, sigma.c:621\n", r2f; g }
 bpset 000079EB, 1, { logerror "validate R0: 0x%08X, text.c:293\n", r0; g }
