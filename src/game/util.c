@@ -1483,6 +1483,8 @@ void OVELADD(OBJ* obj /*AR4*/) {
     obj->pos.X =C3X_STF(C3X_ADD(obj->pos.X, obj->vel_x));
     // asm 000090AB: 	STF	R0,*+AR4(OPOSX)
     // asm 000090AC: 	LDF	*+AR4(OVELY),R0
+    observed_raw = C3X_STORE(C3X_LDF(obj->pos.X));
+    MAME_ASSERT_MEM(0x000090AC, "d@(ar4+1)", &observed_raw);
     observed_raw = C3X_STORE(C3X_LDF(obj->pos.Y));
     MAME_ASSERT_MEM(0x000090AC, "d@(ar4+2)", &observed_raw);
     observed_raw = C3X_STORE(C3X_LDF(obj->vel_y));
@@ -1503,6 +1505,8 @@ void OVELADD(OBJ* obj /*AR4*/) {
     obj->pos.Z =C3X_STF(C3X_ADD(obj->pos.Z, obj->vel_z));
     MAME_ASSERT_REG_FLOAT(0x000090B1, "R0", &obj->pos.Z);
     // asm 000090B1: 	STF	R0,*+AR4(OPOSZ)
+    observed_raw = C3X_STORE(C3X_LDF(obj->pos.Z));
+    MAME_ASSERT_MEM(0x000090B2, "d@(ar4+3)", &observed_raw);
     // asm 000090B2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OVELADD", 0, 0);
 }

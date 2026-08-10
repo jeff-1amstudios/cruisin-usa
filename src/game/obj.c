@@ -1718,14 +1718,14 @@ void ISCAN(void) {
         // asm 000072AA: 	ADDF	R1,R0
         // asm 000072AB: 	ADDF	R2,R0
         // asm 000072AC: 	CMPF	R3,R0
+        // asm 000072AD: 	BLED	ISCANNXT
+        // asm 000072AE: 	FIX	R0,R1
+        obj_dist = FIX(projected_dist);
+        // asm 000072AF: 	STI	R1,*+AR1(ODIST)		;SETUP ODIST
+        obj->dist = obj_dist; // ;SETUP ODIST
+        // asm 000072B0: 	NOP
+        // 	;------>BLED	ISCANNXT
         if (C3X_GT(projected_dist, C3X_FROM_INT(ACTIVELO))) {
-            // asm 000072AD: 	BLED	ISCANNXT
-            // asm 000072AE: 	FIX	R0,R1
-            obj_dist = FIX(projected_dist);
-            // asm 000072AF: 	STI	R1,*+AR1(ODIST)		;SETUP ODIST
-            obj->dist = obj_dist; // ;SETUP ODIST
-            // asm 000072B0: 	NOP
-            // 	;------>BLED	ISCANNXT
             // asm 000072B1: 	SUBI	R4,R1
             obj_dist -= ACTIVEHI1;
             // asm 000072B2: 	SUBI	*+AR1(ORAD),R1		;CHECK RADIUS TO MAKE SURE
