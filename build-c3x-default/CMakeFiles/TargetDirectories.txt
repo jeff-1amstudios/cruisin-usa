@@ -1,0 +1,4 @@
+/Users/j.harris/code/cruisin-usa/build-c3x-default/CMakeFiles/crusn.dir
+/Users/j.harris/code/cruisin-usa/build-c3x-default/CMakeFiles/check-c3x-translation.dir
+/Users/j.harris/code/cruisin-usa/build-c3x-default/CMakeFiles/edit_cache.dir
+/Users/j.harris/code/cruisin-usa/build-c3x-default/CMakeFiles/rebuild_cache.dir

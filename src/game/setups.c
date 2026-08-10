@@ -12,6 +12,7 @@
 #include "sys.h"
 #include "sysid.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
 
 /*
@@ -174,18 +175,20 @@ static void LOADGGPARK(void) {
 
 static void LOADSANFRAN(void) {
     // asm 00008C41: 	CALL	LOAD_TUNNEL2
+    LOAD_TUNNEL2();
     // asm 00008C42: 	LDL	_SECggate,AR2
     // asm 00008C43: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECggate_SETUPS);
     // asm 00008C44: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADSANFRAN", 0, 0);
-    UNIMPL();
 }
 
 static void LOADALLH280(void) {
     // asm 00008C45: 	CALL	LOAD_TUNNEL2
+    LOAD_TUNNEL2();
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    LOADH280();
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADALLH280", 0, 0);
-    UNIMPL();
 }
 
 static void LOADH280(void) {
@@ -201,10 +204,11 @@ static void LOADH280(void) {
 
 static void LOADREDWOOD(void) {
     // asm 00008C4B: 	CALL	LOADH280
+    LOADH280();
     // asm 00008C4C: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008C4D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADREDWOOD", 0, 0);
-    UNIMPL();
 }
 
 static void LOADBEVERLY(void) {
@@ -221,117 +225,138 @@ static void LOADBEVERLY(void) {
 
 static void LOADLAFREEWAY(void) {
     // asm 00008C53: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008C54: 	LDL	_SEClafreeway,AR2
     // asm 00008C55: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SEClafreeway_SETUPS);
     // asm 00008C56: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADLAFREEWAY", 0, 0);
-    UNIMPL();
 }
 
 static void LOADDEATHVALLEY(void) {
     // asm 00008C57: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008C58: 	LDL	_SECdeathvalley,AR2
     // asm 00008C59: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeathvalley_SETUPS);
     // asm 00008C5A: 	LDL	_SECthetrains,AR2
     // asm 00008C5B: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECthetrains_SETUPS);
     // asm 00008C5C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADDEATHVALLEY", 0, 0);
-    UNIMPL();
 }
 
 static void LOADARIZONA(void) {
     // asm 00008C5D: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008C5E: 	LDL	_SECarizona,AR2
     // asm 00008C5F: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECarizona_SETUPS);
     // asm 00008C60: 	LDL	_SECdeserts,AR2
     // asm 00008C61: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeserts_SETUPS);
     // asm 00008C62: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADARIZONA", 0, 0);
-    UNIMPL();
 }
 
-static void LOADGCANYON(void) {
+static void LOADGCANYON(void) { // (MOUNT RUSHMORE)
     // asm 00008C63: 	LDL	_SECdeserts,AR2
     // asm 00008C64: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeserts_SETUPS);
     // asm 00008C65: 	LDL	_SECmtrush,AR2
     // asm 00008C66: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmtrush_SETUPS);
     // asm 00008C67: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADGCANYON", 0, 0);
-    UNIMPL();
 }
 
 static void LOADIOWA(void) {
     // asm 00008C68: 	LDL	_SECiowa_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008C69: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_bottom_SETUPS);
     // asm 00008C6A: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008C6B: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_b2_SETUPS);
     // asm 00008C6C: 	LDL	_SECmwest,AR2
     // asm 00008C6D: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_SETUPS);
     // asm 00008C6E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADIOWA", 0, 0);
-    UNIMPL();
 }
 
 static void LOADCHICAGO(void) {
     // asm 00008C6F: 	LDL	_SECthetrains,AR2
     // asm 00008C70: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECthetrains_SETUPS);
     // asm 00008C71: 	LDL	_SECiowa_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008C72: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_bottom_SETUPS);
     // asm 00008C73: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008C74: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_b2_SETUPS);
     // asm 00008C75: 	LDL	_SECchicago,AR2
     // asm 00008C76: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECchicago_SETUPS);
     // asm 00008C77: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADCHICAGO", 0, 0);
-    UNIMPL();
+
+    MAME_VALIDATOR_EXIT();
 }
 
 static void LOADINDIANA(void) {
     // asm 00008C78: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008C79: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_b2_SETUPS);
     // asm 00008C7A: 	LDL	_SECmwest,AR2
     // asm 00008C7B: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_SETUPS);
     // asm 00008C7C: 	LDL	_SECmwest_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008C7D: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_bottom_SETUPS);
     // asm 00008C7E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADINDIANA", 0, 0);
-    UNIMPL();
 }
 
 static void LOADAPPALACHIA(void) {
     // asm 00008C7F: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008C80: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_b2_SETUPS);
     // asm 00008C81: 	LDL	_SECmwest_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008C82: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_bottom_SETUPS);
     // asm 00008C83: 	LDL	_SECappl,AR2
     // asm 00008C84: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECappl_SETUPS);
     // asm 00008C85: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADAPPALACHIA", 0, 0);
-    UNIMPL();
 }
 
 static void LOADWASHINGTONDC(void) {
     // asm 00008C86: 	LDL	_SECmwest_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008C87: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_bottom_SETUPS);
     // asm 00008C88: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008C89: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_b2_SETUPS);
     // asm 00008C8A: 	LDL	_SECdc,AR2
     // asm 00008C8B: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdc_SETUPS);
     // asm 00008C8C: 	LDL	_SECdc_shared,AR2
     // asm 00008C8D: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdc_shared);
     // asm 00008C8E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADWASHINGTONDC", 0, 0);
-    UNIMPL();
 }
 
 static void LOAD_TUNNEL2(void) {
     // asm 00008C8F: 	LDL	_SECtunnel2,AR2
     // asm 00008C90: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECtunnel2_SETUPS);
     // asm 00008C91: 	LDL	tunnel2_PALETTES,AR2
     // asm 00008C92: 	CALL	alloc_section
+    alloc_section(tunnel2_PALETTES);
     // asm 00008C93: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_TUNNEL2", 0, 0);
-    UNIMPL();
 }
 
 static void WATERON(void) {
@@ -700,40 +725,56 @@ static void FULLSETUP_ARIZONA(void) {
 
 // *----------------------------------------------------------------------------
 static void FULLSETUP_GCANYON(void) {
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00008D94: 	LDL	_SECdeserts,AR2
     // asm 00008D95: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeserts_SETUPS);
     // asm 00008D96: 	LDL	_SECmtrush,AR2
     // asm 00008D97: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmtrush_SETUPS);
     // asm 00008D98: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008D99: 	LDL	deserts_PALETTES,AR2
     // asm 00008D9A: 	CALL	alloc_section
+    alloc_section(deserts_PALETTES);
     // asm 00008D9B: 	LDL	_SECdeserts,AR2
     // asm 00008D9C: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeserts_SETUPS);
     // 	;(MOUNT RUSHMORE)
     // asm 00008D9D: 	LDI	3,R0		;SPAGETTI
     // asm 00008D9E: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 3;
     // asm 00008D9F: 	LDI	1,R0
     // asm 00008DA0: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 1;
     // asm 00008DA1: 	LDI	0,R0
     // asm 00008DA2: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 0;
     // asm 00008DA3: 	FLOAT	55,R0
     // asm 00008DA4: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(55)));
     // asm 00008DA5: 	LDL	mtrush_PALETTES,AR2
     // asm 00008DA6: 	CALL	alloc_section
+    alloc_section(mtrush_PALETTES);
     // asm 00008DA7: 	LDI	75,R0
     // asm 00008DA8: 	STI	R0,@DD_SLP
+    DD_SLP = 75;
     // asm 00008DA9: 	LDI	125,R0
     // asm 00008DAA: 	STI	R0,@DD_VAR
+    DD_VAR = 125;
     // asm 00008DAB: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008DAC: 	LDI	L_LEG9_BEGIN,AR0
     // asm 00008DAD: 	LS	8,AR0
     // asm 00008DAE: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG9_BEGIN << 8;
     // asm 00008DAF: 	RS	8,AR0
     // asm 00008DB0: 	LDI	L_LEG9_END,AR1
     // asm 00008DB1: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG9_BEGIN, L_LEG9_END);
     // asm 00008DB2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_GCANYON", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

@@ -1,0 +1,8 @@
+temp0=0
+temp1=0
+bpset 000055C3,1,{ temp0=0; temp1=1; logerror "ATTRACT_DELTA timing start\n"; time; g }
+bpset 00004C45,temp1,{ temp0++; g }
+bpset 00008EE1,1,{ r0=0; g }
+bpset 00008C4E,1,{ logerror "LOADBEVERLY after %d INT0 ticks (%d ms)\n",temp0,temp0*$3E8/$3C; time; g }
+bpset 00008C4F,1,{ quit }
+g

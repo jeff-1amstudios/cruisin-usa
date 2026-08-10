@@ -294,6 +294,7 @@ void RACER_DRONE(PROC* p) {
     c3x_reg_t lane_offset_z;
     int rank;
     int other_machine_controls;
+    int no_turn;
 
     switch (p->resume_state) {
     case 0:
@@ -695,11 +696,7 @@ ROADTRAK1:
     // asm 000051B9:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 000051BA: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
     current_theta = C3X_LDF(obj->rad.Y);
-    theta_delta = C3X_SUB(desired_theta, current_theta);
-    if (C3X_GE(C3X_ABS(theta_delta), PII)) {
-        theta_delta = C3X_ADD(theta_delta,
-            C3X_LT(theta_delta, C3X_FROM_INT(0)) ? C3X_LDF(TWOPII) : C3X_NEG(C3X_LDF(TWOPII)));
-    }
+    theta_delta = GETTHETADIFF(desired_theta, current_theta);
     // asm 000051BB: 	POPF	R1   			;GET TIME
     // asm 000051BC: 	FIX	R1
     // asm 000051BD:  	FLOAT	R1
@@ -713,6 +710,7 @@ ROADTRAK1:
 NODIV:
     // *THROTTLE ONLY IF RACE IS ON
     // asm 000051C1: 	PUSHF	R0
+    theta_delta = C3X_LDF(C3X_STF(theta_delta));
     // asm 000051C2: 	CALL	GETPOWER			;UPDATE POWER STUFF
     GETPOWER(p, obj, carblk);
     // asm 000051C3: 	LDF	*+AR7(DELTA_THROTTLE),R0	;HAS THE RACE BEGUN?
@@ -735,21 +733,26 @@ NODIV:
         steering_value = C3X_IMM_F32(-0.09f);
     }
     // asm 000051CE: 	PUSHF	R0				;save steering value
-    steering_delta_for_drone = steering_value;
+    steering_delta_for_drone = C3X_LDF(C3X_STF(steering_value));
     // asm 000051CF: 	FLOAT	@NFRAMES,R1
     // asm 000051D0: 	MPYF	*+AR5(CARSPEED),R1
     turn_limit = C3X_MUL(C3X_FROM_INT(NFRAMES), carblk->speed);
     // asm 000051D1: 	BZD	NOTURN
-    if (C3X_EQ(turn_limit, C3X_FROM_INT(0))) {
+    no_turn = C3X_EQ(turn_limit, C3X_FROM_INT(0));
+    if (no_turn) {
         steering_value = C3X_FROM_INT(0);
-        goto NOTURN;
     }
     // asm 000051D2: 	LDFZ	0,R0
     // asm 000051D3: 	MPYF	0.416,R1
+    turn_limit = C3X_MUL(C3X_IMM_F32(0.416f), turn_limit);
     // asm 000051D4: 	MPYF	@STEERI,R1
+    turn_limit = C3X_MUL(turn_limit, STEERI);
+    if (no_turn) {
+        goto NOTURN;
+    }
     // 	;---->	BZD	NOTURN
     // asm 000051D5: 	CALL	DIV_F
-    steering_value = DIV_F(steering_value, C3X_MUL(C3X_MUL(C3X_IMM_F32(0.416f), turn_limit), STEERI));
+    steering_value = DIV_F(steering_value, turn_limit);
     // asm 000051D6: 	CMPF	-0.3,R0 		;LIMIT CHECK
     // asm 000051D7: 	LDFLT	-0.3,R0
     if (C3X_LT(steering_value, C3X_IMM_F32(-0.3f))) {

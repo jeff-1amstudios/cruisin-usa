@@ -1351,7 +1351,7 @@ void CPYMAT(MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
 void CPYIMAT(OBJ_MATRIX* dst /*AR2*/, MATRIX* src /*R2*/);
 
 // asm:  .globl GETTHETADIFF
-void GETTHETADIFF(void);
+c3x_reg_t GETTHETADIFF(c3x_reg_t desired_theta /*R0*/, c3x_reg_t current_theta /*R2*/);
 
 // asm:  .globl DIST_PT2LINE,GETLINE_EQ_2D
 c3x_reg_t DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/);

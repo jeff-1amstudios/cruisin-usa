@@ -1,0 +1,2 @@
+# Hashes of file build rules.
+5be8262f6e7a4125b524a1dcadd8b6ab CMakeFiles/check-c3x-translation

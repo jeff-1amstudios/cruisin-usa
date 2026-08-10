@@ -46,7 +46,7 @@ void GEN_NORMAL(VECTOR** points /*AR2*/, VECTOR* normal /*AR0*/);
 void CONCATMATV(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
 void CONCAT201(MATRIX* s2 /*AR0*/, MATRIX* s1 /*AR2*/, MATRIX* d /*AR1*/);
 void CONCATMAT(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/);
-void GETTHETADIFF(void);
+c3x_reg_t GETTHETADIFF(c3x_reg_t desired_theta /*R0*/, c3x_reg_t current_theta /*R2*/);
 c3x_reg_t DIST_PT2LINE(LINE2D* line /*AR0*/, VECTOR* point /*AR1*/);
 LINE2D* GETLINE_EQ_2D(VECTOR* p1 /*AR0*/, VECTOR* p2 /*AR1*/, LINE2D* line /*AR2*/);
 void SCALE_MATRIX(void);
@@ -469,9 +469,9 @@ static c3x_f32_t FORMULA = C3X_F32_INIT(162.9746551513672f);
 /* asm: HALFPII	.float	HALFPI */
 c3x_f32_t HALFPII = C3X_F32_INIT(1.5707963705062866f);
 /* asm: PII	.float	PI */
-c3x_f32_t PII = C3X_F32_INIT(3.141592502593994f);
+c3x_f32_t PII = C3X_F32_INIT(3.1415927410125732f);
 /* asm: TWOPII	.float	TWOPI */
-c3x_f32_t TWOPII = C3X_F32_INIT(6.283185005187988f);
+c3x_f32_t TWOPII = C3X_F32_INIT(6.2831854820251465f);
 /* asm: INVFORM	.float	0.012265625	;1/FORMULA */
 static c3x_f32_t INVFORM = C3X_F32_INIT(0.012265624478459358f);
 // *----------------------------------------------------------------------------
@@ -1687,24 +1687,39 @@ void CONCATMAT(MATRIX* s1 /*AR2*/, MATRIX* s2 /*R2*/, MATRIX* d /*R3*/) {
  *	R0	THETA DELTA (float)
  *
  */
-void GETTHETADIFF(void) {
+c3x_reg_t GETTHETADIFF(c3x_reg_t desired_theta /*R0*/, c3x_reg_t current_theta /*R2*/) {
+    c3x_reg_t theta_delta;
+    c3x_reg_t magnitude;
+
     // asm 000096F5: 	PUSHF	R1
     // asm 000096F6: 	SUBF	R2,R0
+    theta_delta = C3X_SUB(desired_theta, current_theta);
     // asm 000096F7: 	ABSF	R0,R1
+    magnitude = C3X_ABS(theta_delta);
     // asm 000096F8: 	CMPF	@PII,R1
     // asm 000096F9: 	BLT	NONEG
+    if (C3X_LT(magnitude, C3X_LDF(PII))) {
+        goto NONEG;
+    }
     // asm 000096FA: 	LDF	R0,R0
     // asm 000096FB: 	BN	ISNEG
+    if (C3X_LT(theta_delta, C3X_FROM_INT(0))) {
+        goto ISNEG;
+    }
     // asm 000096FC: 	SUBF	@TWOPII,R0
+    theta_delta = C3X_SUB(theta_delta, C3X_LDF(TWOPII));
     // asm 000096FD: 	POPF	R1
     // asm 000096FE: 	RETS
+    goto RETURN;
 ISNEG:
     // asm 000096FF: ADDF	@TWOPII,R0
+    theta_delta = C3X_ADD(theta_delta, C3X_LDF(TWOPII));
 NONEG:
     // asm 00009700: POPF	R1
     // asm 00009701: 	RETS
+RETURN:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETTHETADIFF", 0, 0);
-    UNIMPL();
+    return theta_delta;
 }
 
 // *----------------------------------------------------------------------------

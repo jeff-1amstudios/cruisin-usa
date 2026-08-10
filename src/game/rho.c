@@ -717,12 +717,7 @@ THIS_PIECE:
         C3X_IMM_F32(HALFPI));
     // asm 00009873:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 00009874: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
-    theta_delta = C3X_SUB(desired_theta, C3X_LDF(obj->rad.Y));
-    if (C3X_GE(C3X_ABS(theta_delta), PII)) {
-        theta_delta = C3X_ADD(
-            theta_delta,
-            C3X_LT(theta_delta, C3X_FROM_INT(0)) ? C3X_LDF(TWOPII) : C3X_NEG(C3X_LDF(TWOPII)));
-    }
+    theta_delta = GETTHETADIFF(desired_theta, C3X_LDF(obj->rad.Y));
     // asm 00009875: 	FLOAT	R7,R1			;theta / number of turns to achieve
     // asm 00009876: 	SUBF	1,R1	;DBG
     // asm 00009877: 	BZ	NODIV
