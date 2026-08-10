@@ -1,8 +1,12 @@
 #include <SDL.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "../core/input.h"
 #include "../core/machine.h"
 #include "../core/validator.h"
+#include "../game/cmos.h"
 #include "../game/globals.h"
 #include "sdl_video.h"
 
@@ -13,6 +17,19 @@ static Uint64 g_attract_start_counter;
 static int g_measure_attract_timing;
 
 extern void MAINLOOP(void);
+
+static int crusn_free_play_requested(int argc, char* argv[]) {
+    const char* env_value = getenv("CRUSN_FREE_PLAY");
+    int enabled = env_value != NULL && strcmp(env_value, "0") != 0;
+
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--free-play") == 0) {
+            enabled = 1;
+        }
+    }
+
+    return enabled;
+}
 
 void crusn_measure_attract_start(void) {
     if (getenv("CRUSN_MEASURE_ATTRACT_TIMING") == NULL) {
@@ -44,6 +61,8 @@ static void crusn_pump_events(void) {
             *g_display_running = 0;
         }
     }
+
+    port_handle_input();
 }
 
 void crusn_yield_display_interrupt(void) {
@@ -57,10 +76,11 @@ void crusn_yield_display_interrupt(void) {
     // SDL_Delay(100);
 }
 
-int main(void) {
+int main(int argc, char* argv[]) {
     crusn_machine machine;
     crusn_video video = { 0 };
     int running = 1;
+    int free_play = crusn_free_play_requested(argc, argv);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS) != 0) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
@@ -87,6 +107,10 @@ int main(void) {
     mame_validate_fail_on_wrong_consumer(1);
 
     _c_int00();
+
+    if (free_play) {
+        ADJUSTMENT_WRITE(ADJ_FREE_PLAY, 1);
+    }
 
     const double int0_period = 1.0 / 60.0;
     const double counter_frequency = (double)SDL_GetPerformanceFrequency();

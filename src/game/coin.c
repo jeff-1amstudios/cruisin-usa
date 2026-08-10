@@ -19,11 +19,11 @@
  * Source module: asm/COIN.ASM
  */
 
-void COIN1(void);
-void COIN2(void);
-void COIN3(void);
-void COIN4(void);
-void SERV_COIN(void);
+void COIN1(PROC* p);
+void COIN2(PROC* p);
+void COIN3(PROC* p);
+void COIN4(PROC* p);
+void SERV_COIN(PROC* p);
 static COINTAB_ENTRY* GETCOIN(void);
 static void GET_THIS_COIN(void);
 static void GET_THIS_COINTXT(void);
@@ -51,7 +51,7 @@ static void FONT18REDDS(tSHADOW_TEXT* t);
 void INSERT_COINS(void);
 static void FLASH_INSERTCOINS(c3x_reg_t posy);
 static void SHOW_INSERTCOINS(c3x_reg_t posy);
-static void FLASH_START(void);
+static void FLASH_START(c3x_reg_t posy /*R3*/);
 static void PRINT_COINAGE(c3x_reg_t x, c3x_reg_t y);
 static c3x_reg_t GET_COINAGE_HIGHT(void);
 static void WHITE10FNT(tSHADOW_TEXT* t);
@@ -105,7 +105,7 @@ char CUSTOM_COINSTR[10 * 4];
  *----------------------------------------------------------------------------
  *THESE ROUTINES MUST PRESERVE R3
  */
-void COIN1(void) {
+void COIN1(PROC* p) {
     // asm 0000733F: 	SOND1	COININ
     // asm 00007341: 	INCAUD	AUD_COIN1
     // asm 00007343: 	CALL	SEND_COINDROP
@@ -123,7 +123,7 @@ void COIN1(void) {
     UNIMPL();
 }
 
-void COIN2(void) {
+void COIN2(PROC* p) {
     // asm 0000734C: 	SOND1	COININ
     // asm 0000734E: 	INCAUD	AUD_COIN2
     // asm 00007350: 	CALL	SEND_COINDROP
@@ -156,7 +156,7 @@ JAJA5:
     UNIMPL();
 }
 
-void COIN3(void) {
+void COIN3(PROC* p) {
     // asm 00007363: 	SOND1	COININ
     // asm 00007365: 	INCAUD	AUD_COIN2
     // asm 00007367: 	CALL	GET_COIN3_COUNTER
@@ -172,7 +172,7 @@ void COIN3(void) {
     UNIMPL();
 }
 
-void COIN4(void) {
+void COIN4(PROC* p) {
     // asm 0000736F: 	SOND1	COININ
     // asm 00007371: 	INCAUD	AUD_COIN4
     // asm 00007373: 	CALL	GET_COIN4_COUNTER
@@ -188,7 +188,7 @@ void COIN4(void) {
     UNIMPL();
 }
 
-void SERV_COIN(void) {
+void SERV_COIN(PROC* p) {
     // asm 0000737B: 	SOND1	COININ
     // asm 0000737D: 	INCAUD	AUD_SERVICE_CREDITS
     // asm 0000737F: 	READAUD	AUD_CREDITS
@@ -859,7 +859,7 @@ void INSERT_COINS(void) {
     // asm 00007490: 	CMPI	1,R0
     // asm 00007491: 	BEQ	FLASH_START
     if (READADJ(ADJ_FREE_PLAY) == 1) {
-        FLASH_START();
+        FLASH_START(posy);
         return;
     }
 
@@ -911,7 +911,7 @@ SHOW_COINAGE:
     // asm 000074AB: 	CALLGE	FLASH_START
     credits_to_start = GET_CREDITS_TO_START();
     if (READAUD(AUD_CREDITS) >= credits_to_start) {
-        FLASH_START();
+        FLASH_START(posy);
     }
 
     // asm 000074AC: 	ADDF	22,R3
@@ -1029,7 +1029,7 @@ FLASH_INSERTCOINSX:
  * This routine FLASHES THE PRESS START MESSAGE
  *
  */
-static void FLASH_START(void) {
+static void FLASH_START(c3x_reg_t posy /*R3*/) {
     tSHADOW_TEXT t;
     int flash_state;
 
@@ -1055,7 +1055,7 @@ static void FLASH_START(void) {
     // asm 000074EB: 	FLOAT	256,R2
     // asm 000074EC: 	LDI	1,RC
     // asm 000074ED: 	CALL	TEXT_ADDDS
-    t = TEXT_ADDDS(HITSTART, C3X_FROM_INT(256), C3X_FROM_INT(0), 1);
+    t = TEXT_ADDDS(HITSTART, C3X_FROM_INT(256), posy, 1);
     // asm 000074EE: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     // asm 000074F1: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
     t.front->color |= TXT_CENTER;

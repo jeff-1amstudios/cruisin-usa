@@ -64,7 +64,7 @@ void INTROTIMER(void);
 void DIAL_ROUT(void);
 void ENDPLAYER(void);
 static void GAME_AVAILABLEP(void);
-void _start(void);
+void _start(PROC* p);
 static void ULTRA_PROC(PROC* p);
 void ULTRA_LOGO(void);
 void LOGO_SMALL(void);
@@ -2925,7 +2925,7 @@ GA_FALSE:
  *
  *
  */
-void _start(void) {
+void _start(PROC* p) {
     // asm 00001D92: 	LDI	@_MODE,R0
     // asm 00001D93: 	AND	MMODE,R0
     // asm 00001D94: 	CMPI	MCT,R0
@@ -3220,7 +3220,7 @@ void SET_ATTR(void) {
     UNIMPL();
 }
 
-void _debug(void) {
+void _debug(PROC* p) {
     CYCLE_ATTR();
 }
 

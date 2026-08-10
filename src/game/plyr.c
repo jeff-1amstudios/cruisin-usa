@@ -59,9 +59,9 @@ static void GETGEAR(void);
 static void GETMAN(void);
 int GETAUTO(CARBLK* carblk /*AR5*/);
 static void GETSTEER(void);
-void _VIEW0(void);
-void _VIEW1(void);
-void _VIEW2(void);
+void _VIEW0(PROC* p);
+void _VIEW1(PROC* p);
+void _VIEW2(PROC* p);
 static void ZOOMUP(void);
 void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void BACKCK(void);
@@ -2915,7 +2915,7 @@ static void GETSTEER(void) {
     UNIMPL();
 }
 
-void _VIEW0(void) {
+void _VIEW0(PROC* p) {
     // asm 00002EB4: 	FLOAT	PLYPOS1Z,R4	;Z DIST
     // asm 00002EB5: 	FLOAT	PLYPOS1Y,R5	;Y DIST
     // asm 00002EB6: 	LDI	0,R2		;CAMVIEW STATUS
@@ -2926,7 +2926,7 @@ void _VIEW0(void) {
     UNIMPL();
 }
 
-void _VIEW1(void) {
+void _VIEW1(PROC* p) {
     // asm 00002EB9: 	FLOAT	PLYPOS2Z,R4	;Z DIST
     // asm 00002EBA: 	FLOAT	PLYPOS2Y,R5	;Y DIST
     // asm 00002EBB: 	LDI	1,R2		;CAMVIEW STATUS
@@ -2937,7 +2937,7 @@ void _VIEW1(void) {
     UNIMPL();
 }
 
-void _VIEW2(void) {
+void _VIEW2(PROC* p) {
     // asm 00002EBE: 	FLOAT	PLYPOS3Z,R4	;Z DIST
     // asm 00002EBF: 	FLOAT	PLYPOS3Y,R5	;Y DIST
     // asm 00002EC0: 	LDI	2,R2		;CAMVIEW STATUS

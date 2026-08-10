@@ -1,5 +1,23 @@
 #include "input.h"
+#include <SDL.h>
+
 #include "../game/vunit.h"
+
+static u32 switch1 = UINT32_MAX;
+static u32 switch2 = UINT32_MAX;
+static u32 switch3 = UINT32_MAX;
+
+void port_handle_input(void) {
+    const Uint8* keyboard = SDL_GetKeyboardState(NULL);
+
+    switch1 = UINT32_MAX;
+    switch2 = UINT32_MAX;
+    switch3 = UINT32_MAX;
+
+    if (keyboard[SDL_SCANCODE_RETURN] || keyboard[SDL_SCANCODE_KP_ENTER]) {
+        switch1 &= ~SW_START;
+    }
+}
 
 u32 port_get_dipswitches(void) {
     // 2 switches
@@ -10,14 +28,14 @@ u32 port_get_commpal(void) {
     return 4;
 }
 
-u32 port_get_switch1() {
-    return 0;
+u32 port_get_switch1(void) {
+    return switch1;
 }
 
-u32 port_get_switch2() {
-    return 0;
+u32 port_get_switch2(void) {
+    return switch2;
 }
 
-u32 port_get_switch3() {
-    return 0;
+u32 port_get_switch3(void) {
+    return switch3;
 }

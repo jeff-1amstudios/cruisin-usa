@@ -892,20 +892,20 @@ void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/);
 void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/);
 
 // asm:  .globl SERV_COIN
-void SERV_COIN(void);
+void SERV_COIN(PROC* p);
 
 // asm:  .globl INSERT_COINS
 void INSERT_COINS(void);
 
 // asm:  .globl COIN1,COIN2,CHECK_CREDITS
-void COIN1(void);
+void COIN1(PROC* p);
 
-void COIN2(void);
+void COIN2(PROC* p);
 
 // asm:  .globl COIN3,COIN4
-void COIN3(void);
+void COIN3(PROC* p);
 
-void COIN4(void);
+void COIN4(PROC* p);
 
 // asm:  .globl VOLUME_DISPLAY,VOLUME_ACTIVE
 void VOLUME_DISPLAY(void);
@@ -1232,9 +1232,9 @@ void GETCHOICE(void);
 void CPOINT_LIGHT(PROC* p);
 
 // asm:  .globl _debug,_start
-void _debug(void);
+void _debug(PROC* p);
 
-void _start(void);
+void _start(PROC* p);
 
 // asm:  .globl _timeout,_timer
 void _timeout(PROC* p);
@@ -1446,11 +1446,11 @@ void _on_brake(void);
 void _off_brake(void);
 
 // asm:  .globl _VIEW0,_VIEW1,_VIEW2,CAMVIEW
-void _VIEW0(void);
+void _VIEW0(PROC* p);
 
-void _VIEW1(void);
+void _VIEW1(PROC* p);
 
-void _VIEW2(void);
+void _VIEW2(PROC* p);
 
 void OVELNADD(OBJ* obj /*AR4*/);
 
@@ -1628,7 +1628,7 @@ void SET_STATION(void);
 void CHANGE_STATION(void);
 
 // asm:  .globl RADIO_BUT
-void RADIO_BUT(void);
+void RADIO_BUT(PROC* p);
 
 // asm:  .globl KILLSNDFX
 void KILLSNDFX(void);

@@ -80,7 +80,7 @@ void SET_CONTROLS(void);
 void FFRSUB(void);
 extern int DIAGPAL[];
 
-static void* SWTAB[32];
+static PROC_FUNC SWTAB[32];
 static int CRT_REG_SETUP_STR[12];
 static const char LINKDISABLED[];
 static const char IAMMASTER[];
@@ -1020,9 +1020,118 @@ int SWRAM[3];
 int DIPRAM;
 
 static void READIO(void) {
+    u32 open_switches;
+    u32 closed_switches;
+    u32 edges;
 
+    // asm 00004D00: 	CLRI	AR0			;for Loff production board timing problem
+    // asm 00004D01: 	LDP	@DIPSW
+    // asm 00004D02: 	LDI	@DIPSW,R0
+    // asm 00004D03: 	LDI	*AR0,R2
+    // asm 00004D04: 	LDP	@DIPRAM
+    // asm 00004D05: 	RS	16,R0
+    // asm 00004D06: 	STI	R0,@DIPRAM
     DIPRAM = port_get_dipswitches() >> 16;
-    // TODO
+
+    // asm 00004D07: 	LDP	@SWITCH3
+    // asm 00004D08: 	LDI	@SWITCH3,R0   		;READ HARDWARE 0=CLOSED, 1=OPEN
+    // asm 00004D09: 	LDI	*AR0,R2			;Loff
+    // asm 00004D0A: 	LS	16,R0
+    open_switches = port_get_switch3() << 16;
+
+    // asm 00004D0B: 	LDI	@SWITCH1,R1
+    // asm 00004D0C: 	LDI	*AR0,R2			;Loff
+    // asm 00004D0D: 	LS	16,R1
+    // asm 00004D0E: 	LDP	@FASTSTKI
+    // asm 00004D0F: 	RS	16,R1
+    // asm 00004D10: 	OR	R1,R0
+    open_switches |= port_get_switch1() & 0xFFFFu;
+
+    // asm 00004D11: 	NOT	R0,R1
+    closed_switches = ~open_switches;
+
+    // asm 00004D12: 	LDI	@SWRAMI,AR0
+    // asm 00004D13: 	STI	R1,@SWITCHBUTS
+    SWITCHBUTS = (int)closed_switches;
+
+    // ;
+    // ;SCAN SWITCHES, TRIGGER ON LEADING EDGE
+    // ;
+    // asm 00004D14: 	AND	*AR0,*+AR0(1),R2	;PREVIOUS TWO OPEN
+    edges = (u32)SWRAM[0] & (u32)SWRAM[1];
+
+    // asm 00004D15: 	AND	R1,R2			;CURRENT ONE CLOSED
+    edges &= closed_switches;
+
+    // asm 00004D16: 	OR	*+AR0(2),R2		;OR INTO EDGE LIST
+    edges |= (u32)SWRAM[2];
+
+    // asm 00004D17: 	STI	R2,*+AR0(2)		;STORE EDGE WORD 1=EDGE TRIGGERED
+    SWRAM[2] = (int)edges;
+
+    // asm 00004D18: 	LDI	*AR0,R1			;GET N-1
+    // asm 00004D19: 	STI	R1,*+AR0(1)		;N-1 --> N-2
+    SWRAM[1] = SWRAM[0];
+
+    // asm 00004D1A: 	STI	R0,*AR0			;N --> N-1
+    SWRAM[0] = (int)open_switches;
+
+    // asm 00004D1B: 	PUSH	DP
+    // asm 00004D1C: 	LDI	@SYSCNTL,R0	      	;actually we signal a read of the
+    // asm 00004D1D: 	LDP	@SYSCNTLR		;have a value
+    // asm 00004D1E: 	ANDN	ATOD_WR,R0	      	;pot(s), they interrupt us when they
+    // asm 00004D1F: 	STI	R0,@SYSCNTLR		;have a value
+    // asm 00004D20: 	POP	DP
+    // asm 00004D21: 	CLRI	AR0
+    // asm 00004D22: 	LDP	@ATOD_R
+    // asm 00004D23: 	LDI	04h,R0
+    // asm 00004D24: 	LS	24,R0
+    // asm 00004D25: 	STI	R0,@ATOD_R
+    // asm 00004D26: 	LDI	*AR0,R2
+    // asm 00004D27: 	SETDP
+    // The SDL port has no asynchronous A/D converter to trigger here.
+
+    // asm 00004D28: 	CLRI	R0
+    // asm 00004D29: 	STI	R0,@RDPOT
+    RDPOT = 0;
+
+    // ;THESE ARE SPECIAL ROUTINES WHICH ARE CALLED, *NOT* CREATED
+    // ;FOR PROCESSES.
+    // ;	THIS INCLUDES:
+    // ;		VOL+
+    // ;		VOL-
+    // ;		DIAG BUTTON
+    // ;NO OTHER ROUTINES SHOULD BE HERE
+    // asm 00004D2A: 	LDI	@SWRAM+2,R0
+    // asm 00004D2B: 	TSTB	SW_DIAG,R0
+    // asm 00004D2C: 	CALLNZ	DIAG_TOGGLE
+    if ((SWRAM[2] & SW_DIAG) != 0) {
+        DIAG_TOGGLE();
+    }
+
+    // asm 00004D2D: 	LDI	@_MODE,R0
+    // asm 00004D2E: 	AND	MMODE,R0
+    // asm 00004D2F: 	CMPI	MATTR,R0
+    // asm 00004D30: 	BEQ	NIGY
+    // asm 00004D31: 	CMPI	MDIAG,R0
+    // asm 00004D32: 	BEQ	NIGY
+    if ((_MODE & MMODE) != MATTR && (_MODE & MMODE) != MDIAG) {
+        // asm 00004D33: 	LDI	@SWITCHBUTS,R0
+        // asm 00004D34: 	TSTB	SW_VOLPLUS,R0
+        // asm 00004D35: 	CALLNZ	VOL_PLUS
+        if ((SWITCHBUTS & SW_VOLPLUS) != 0) {
+            VOL_PLUS();
+        }
+
+        // asm 00004D36: 	TSTB	SW_VOLMINUS,R0
+        // asm 00004D37: 	CALLNZ	VOL_MINUS
+        if ((SWITCHBUTS & SW_VOLMINUS) != 0) {
+            VOL_MINUS();
+        }
+    }
+
+    // asm: NIGY
+    // asm 00004D38: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -1261,33 +1370,65 @@ EXITR:
  *
  */
 static void SWDISP(void) {
+    u32 edges;
+    int switch_index;
+    PROC_FUNC wakeup;
+
     // ;	LDP	@SWRAM
     // asm 00004DF7: 	LDI	@SWRAM+2,R3
+    edges = (u32)SWRAM[2];
+
     // asm 00004DF8: 	LS	4,R3 		;MASK GARBAGE
     // asm 00004DF9: 	RS	4,R3
+    edges &= 0x0FFFFFFFu;
+
     // asm 00004DFA: 	BZ	SWSTX	 	;NO EDGES ACTIVATED
+    if (edges == 0) {
+        return;
+    }
+
     // asm 00004DFB: 	LDI	0,R1
     // asm 00004DFC: 	STI	R1,@SWRAM+2	;CLEAR OUT EDGES
+    SWRAM[2] = 0;
+
     // asm 00004DFD: 	LDI	-1,R1
-SWTLP:
+    switch_index = -1;
+
+    // asm: SWTLP
     // asm 00004DFE: 	ADDI	1,R1
+    while (edges != 0) {
+        switch_index += 1;
+
     // asm 00004DFF: 	LSH	-1,R3
+        int triggered = (edges & 1u) != 0;
+        edges >>= 1;
+
     // asm 00004E00: 	BNC	SWTLP
+        if (!triggered) {
+            continue;
+        }
+
     // ;	LDP	@SWTABI
     // asm 00004E01: 	LDI	@SWTABI,AR0
     // asm 00004E02:      	ADDI	R1,AR0
     // asm 00004E03: 	LDI	*AR0,AR2	;GET WAKEUP
+        wakeup = SWTAB[switch_index];
+
     // asm 00004E04: 	CMPI	0,AR2
     // asm 00004E05: 	BEQ	NOGPROC
-    // asm 00004E06: 	LDI	SPAWNER_C|SPWN_SWITCH_T,R2
-    // asm 00004E07: 	CALL	PRC_CREATE	;R2=PID, AR2=WAKEUP ADDR
-NOGPROC:
+        if (wakeup != NULL) {
+            // asm 00004E06: 	LDI	SPAWNER_C|SPWN_SWITCH_T,R2
+            // asm 00004E07: 	CALL	PRC_CREATE	;R2=PID, AR2=WAKEUP ADDR
+            PRC_CREATE(wakeup, SPAWNER_C | SPWN_SWITCH_T, NULL);
+        }
+
+        // asm: NOGPROC
     // asm 00004E08: LDI	R3,R3
     // asm 00004E09: 	BNZ	SWTLP
-SWSTX:
+    }
+
+    // asm: SWSTX
     // asm 00004E0A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SWDISP", 0, 0);
-    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1335,7 +1476,7 @@ SWSTX:
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-static void* SWTAB[] = {
+static PROC_FUNC SWTAB[] = {
     COIN1,     // 00000001 SW_COIN1	(COIN.ASM)
     COIN2,     // 00000002 SW_COIN2 	(COIN.ASM)
     _start,    // 00000004 START		(INTRO.ASM)

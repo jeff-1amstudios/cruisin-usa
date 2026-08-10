@@ -17,7 +17,7 @@
  */
 
 static void RADIO_SHOW(void);
-void RADIO_BUT(void);
+void RADIO_BUT(PROC* p);
 void SET_STATION(void);
 void CHANGE_STATION(void);
 void SET_TUNE_LINKED(void);
@@ -146,7 +146,7 @@ KILLME:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void RADIO_BUT(void) {
+void RADIO_BUT(PROC* p) {
     // asm 000090FB: 	LDPI	@_MODE,R0
     // asm 000090FC: 	AND	MMODE,R0
     // asm 000090FD: 	CMPI	MGAME,R0
