@@ -54,11 +54,11 @@ static void FLAGWAVE_TALL(OBJ* obj /*AR4*/);
 static void FLAGWAVE(OBJ* obj /*AR4*/);
 static void PLAINANI_PROC(PROC* p);
 static void OHARE_PLANE(OBJ* obj /*AR4*/);
-static void PLANE_FWRD(void);
+static void PLANE_FWRD(PROC* p);
 static void TRAIN_FWRD_MAKEB(void);
-static void TRAIN_FWRD_MAKE(void);
+static void TRAIN_FWRD_MAKE(OBJ* obj /*AR4*/);
 static void TRAIN_FWRDB(void);
-static void TRAIN_FWRD(void);
+static void TRAIN_FWRD(PROC* p);
 void LOAD_SINGLE_SECTION_OFFSET(void);
 
 #define NEW_GROUPI NEW_GROUP
@@ -81,6 +81,7 @@ typedef struct BGD_OROUTINE_ENTRY {
     void (*func)(OBJ* obj);
 } BGD_OROUTINE_ENTRY;
 
+static int SMOKE_ANI[7];
 static int CAR_FIRE_ANI[13];
 static int DC_MINIFOUNTAIN_ANI[7];
 static int DC_FOUNTAIN_ANI[6];
@@ -1843,7 +1844,11 @@ static void ROAD_DEBRIS_CREATE(OBJ* obj /*AR4*/) {
 
 // *----------------------------------------------------------------------------
 static void SMOKE_STACK(OBJ* obj /*AR4*/) {
-    (void)obj;
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000042A4: 	PUSH	R0
     // asm 000042A5: 	PUSH	AR0
     // asm 000042A6: 	PUSH	AR2
@@ -1854,9 +1859,17 @@ static void SMOKE_STACK(OBJ* obj /*AR4*/) {
     // asm 000042AB: 	NOP
     // asm 000042AC: 	LDI	@SMOKE_ANII,AR6
     // 	;---->	BUD	MAKEPPP
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->BACKGRND_PLAINANI_PROC.obj = obj;
+    ctx->BACKGRND_PLAINANI_PROC.script = SMOKE_ANII;
+    ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
+    proc = CREATE(PLAINANI_PROC, SPAWNER_C | ANIMATION_T, ctx);
+    if (proc != NULL) {
+        obj->plink = proc;
+        obj->flags |= 1u << O_PROC_B;
+    }
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_STACK", 0, 0);
-    UNIMPL();
 }
 
 static void CAR_FIRE(OBJ* obj /*AR4*/) {
@@ -2746,65 +2759,118 @@ LS_ACTIVATE_X:
 
 // *----------------------------------------------------------------------------
 static void OHARE_PLANE(OBJ* obj /*AR4*/) {
-    (void)obj;
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00004451: 	PUSH	AR0
     // asm 00004452: 	PUSH	AR2
     // asm 00004453: 	PUSH	R2
     // asm 00004454: 	SONDFX	JETFLYBY
+    ONESNDFX(JETFLYBY);
     // asm 00004456: 	CREATE	PLANE_FWRD,UTIL_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->BACKGRND_PLANE_FWRD.obj = obj;
+    proc = CREATE(PLANE_FWRD, UTIL_C, ctx);
     // asm 00004459: 	STI	AR0,*+AR4(OPLINK)
+    obj->plink = proc;
     // asm 0000445A: 	LDI	1,R0
     // asm 0000445B: 	LS	O_PROC_B,R0
     // asm 0000445C: 	OR	*+AR4(OFLAGS),R0
     // asm 0000445D: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= 1u << O_PROC_B;
     // asm 0000445E: 	POP	R2
     // asm 0000445F: 	POP	AR2
     // asm 00004460: 	POP	AR0
     // asm 00004461: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OHARE_PLANE", 0, 0);
-    UNIMPL();
 }
 
-static void PLANE_FWRD(void) {
+static void PLANE_FWRD(PROC* p) {
+    OBJ* obj;
+    c3x_reg_t angle;
+    c3x_reg_t frame_distance;
+    c3x_reg_t remaining_distance;
+    c3x_reg_t speed;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
+    obj = p->ctx->BACKGRND_PLANE_FWRD.obj;
     // asm 00004462: 	FLOAT	250,R7
+    speed = C3X_FROM_INT(250);
     // asm 00004463: 	FLOAT	32000,R6
+    remaining_distance = C3X_FROM_INT(32000);
     // asm 00004464: 	MPYF	4,R6
+    remaining_distance = C3X_MUL(remaining_distance, C3X_IMM_F32(4));
     // *
     // *
 PLANE_FWL:
     // asm 00004465: 	LDF	*+AR4(ORADY),R2
+    angle = C3X_LDF(obj->rad.Y);
     // asm 00004466: 	ADDF	HALFPI,R2
+    angle = C3X_ADD(angle, C3X_IMM_F32(HALFPI));
     // asm 00004467: 	LDI	@MATRIXAI,AR2
     // asm 00004468: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, angle);
     // asm 00004469: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 0000446A: 	LDF	R7,R0
     // asm 0000446B: 	FLOAT	@NFRAMES,R1
     // asm 0000446C: 	MPYF	R1,R0
+    frame_distance = C3X_MUL(speed, C3X_FROM_INT(NFRAMES));
     // asm 0000446D: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(frame_distance);
     // asm 0000446E: 	LDI	@MATRIXAI,R2
     // asm 0000446F: 	LDI	AR2,R3
     // asm 00004470: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // asm 00004471: 	LDI	@VECTORAI,AR2
     // asm 00004472: 	LDF	*+AR4(OPOSX),R0
     // asm 00004473: 	ADDF	*+AR2(X),R0
     // asm 00004474: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(VECTORAI.X)));
     // asm 00004475: 	LDF	*+AR4(OPOSY),R0
     // asm 00004476: 	ADDF	*+AR2(Y),R0
     // asm 00004477: 	ADDF	50,R0
     // asm 00004478: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(
+        C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y)),
+        C3X_IMM_F32(50)));
     // asm 00004479: 	LDF	*+AR4(OPOSZ),R0
     // asm 0000447A: 	ADDF	*+AR2(Z),R0
     // asm 0000447B: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(VECTORAI.Z)));
     // asm 0000447C: 	ABSF	R7,R0
     // asm 0000447D: 	FLOAT	@NFRAMES,R1
     // asm 0000447E: 	MPYF	R1,R0
+    frame_distance = C3X_MUL(C3X_ABS(speed), C3X_FROM_INT(NFRAMES));
     // asm 0000447F: 	SUBF	R0,R6
+    remaining_distance = C3X_SUB(remaining_distance, frame_distance);
     // asm 00004480: 	BLT	TRAINX
+    if (C3X_LT(remaining_distance, C3X_FROM_INT(0))) {
+        obj->plink = NULL;
+        obj->flags &= ~(1u << O_PROC_B);
+        DIE();
+    }
     // asm 00004481: 	SLEEP	1
+    p->ctx->BACKGRND_PLANE_FWRD.speed = C3X_STF(speed);
+    p->ctx->BACKGRND_PLANE_FWRD.remaining_distance = C3X_STF(remaining_distance);
+    SLEEP(1, 1);
+    obj = p->ctx->BACKGRND_PLANE_FWRD.obj;
+    speed = C3X_LDF(p->ctx->BACKGRND_PLANE_FWRD.speed);
+    remaining_distance = C3X_LDF(p->ctx->BACKGRND_PLANE_FWRD.remaining_distance);
     // asm 00004483: 	BU	PLANE_FWL
+    goto PLANE_FWL;
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLANE_FWRD", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2826,23 +2892,32 @@ static void TRAIN_FWRD_MAKEB(void) {
     UNIMPL();
 }
 
-static void TRAIN_FWRD_MAKE(void) {
+static void TRAIN_FWRD_MAKE(OBJ* obj /*AR4*/) {
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00004490: 	PUSH	AR0
     // asm 00004491: 	PUSH	AR2
     // asm 00004492: 	PUSH	R2
     // asm 00004493: 	CREATE	TRAIN_FWRD,UTIL_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->BACKGRND_TRAIN_FWRD.obj = obj;
+    proc = CREATE(TRAIN_FWRD, UTIL_C, ctx);
     // asm 00004496: 	STI	AR0,*+AR4(OPLINK)
+    obj->plink = proc;
     // asm 00004497: 	LDI	1,R0
     // asm 00004498: 	LS	O_PROC_B,R0
     // asm 00004499: 	OR	*+AR4(OFLAGS),R0
     // asm 0000449A: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= 1u << O_PROC_B;
 J87:
     // asm 0000449B: POP	R2
     // asm 0000449C: 	POP	AR2
     // asm 0000449D: 	POP	AR0
     // asm 0000449E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAIN_FWRD_MAKE", 0, 0);
-    UNIMPL();
 }
 
 static void TRAIN_FWRDB(void) {
@@ -2858,52 +2933,91 @@ static void TRAIN_FWRDB(void) {
     UNIMPL();
 }
 
-static void TRAIN_FWRD(void) {
+static void TRAIN_FWRD(PROC* p) {
+    OBJ* obj;
+    c3x_reg_t frame_distance;
+    c3x_reg_t remaining_distance;
+    c3x_reg_t speed;
+
+    switch (p->resume_state) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
+    obj = p->ctx->BACKGRND_TRAIN_FWRD.obj;
     // asm 000044A6: 	FLOAT	150,R7
+    speed = C3X_FROM_INT(150);
     // asm 000044A7: 	FLOAT	32000,R6
+    remaining_distance = C3X_FROM_INT(32000);
     // asm 000044A8: 	MPYF	3,R6
+    remaining_distance = C3X_MUL(remaining_distance, C3X_IMM_F32(3));
 J765:
     // *
     // *
 TRAIN_FWL:
     // asm 000044A9: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 000044AA: 	LDF	R7,R0
     // asm 000044AB: 	FLOAT	@NFRAMES,R1
     // asm 000044AC: 	MPYF	R1,R0
+    frame_distance = C3X_MUL(speed, C3X_FROM_INT(NFRAMES));
     // asm 000044AD: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(frame_distance);
     // asm 000044AE: 	LDI	AR4,R2
     // asm 000044AF: 	ADDI	OMATRIX,R2
     // asm 000044B0: 	LDI	AR2,R3
     // asm 000044B1: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, (MATRIX*)&obj->omatrix, &VECTORAI);
     // asm 000044B2: 	LDI	@VECTORAI,AR2
     // asm 000044B3: 	LDF	*+AR4(OPOSX),R0
     // asm 000044B4: 	ADDF	*+AR2(X),R0
     // asm 000044B5: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(VECTORAI.X)));
     // asm 000044B6: 	LDF	*+AR4(OPOSY),R0
     // asm 000044B7: 	ADDF	*+AR2(Y),R0
     // asm 000044B8: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y)));
     // asm 000044B9: 	LDF	*+AR4(OPOSZ),R0
     // asm 000044BA: 	ADDF	*+AR2(Z),R0
     // asm 000044BB: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(VECTORAI.Z)));
     // asm 000044BC: 	ABSF	R7,R0
     // asm 000044BD: 	FLOAT	@NFRAMES,R1
     // asm 000044BE: 	MPYF	R1,R0
+    frame_distance = C3X_MUL(C3X_ABS(speed), C3X_FROM_INT(NFRAMES));
     // asm 000044BF: 	SUBF	R0,R6
+    remaining_distance = C3X_SUB(remaining_distance, frame_distance);
     // asm 000044C0: 	BLT	TRAINX
+    if (C3X_LT(remaining_distance, C3X_FROM_INT(0))) {
+        goto TRAINX;
+    }
     // asm 000044C1: 	SLEEP	1
+    p->ctx->BACKGRND_TRAIN_FWRD.speed = C3X_STF(speed);
+    p->ctx->BACKGRND_TRAIN_FWRD.remaining_distance = C3X_STF(remaining_distance);
+    SLEEP(1, 1);
+    obj = p->ctx->BACKGRND_TRAIN_FWRD.obj;
+    speed = C3X_LDF(p->ctx->BACKGRND_TRAIN_FWRD.speed);
+    remaining_distance = C3X_LDF(p->ctx->BACKGRND_TRAIN_FWRD.remaining_distance);
     // asm 000044C3: 	BU	TRAIN_FWL
+    goto TRAIN_FWL;
 TRAINX:
     // asm 000044C4: 	CLRI	R0
     // asm 000044C5: 	STI	R0,*+AR4(OPLINK)
+    obj->plink = NULL;
     // asm 000044C6: 	LDI	1,R0
     // asm 000044C7: 	LS	O_PROC_B,R0
     // asm 000044C8: 	LDI	*+AR4(OFLAGS),R1
     // asm 000044C9: 	ANDN	R0,R1
     // asm 000044CA: 	STI	R1,*+AR4(OFLAGS)
+    obj->flags &= ~(1u << O_PROC_B);
     // asm 000044CB: 	DIE
+    DIE();
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAIN_FWRD", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

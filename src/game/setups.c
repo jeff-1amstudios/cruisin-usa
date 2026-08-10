@@ -827,37 +827,52 @@ static void FULLSETUP_IOWA(void) {
 
 // *----------------------------------------------------------------------------
 static void FULLSETUP_CHICAGO(void) {
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00008DDF: 	LDL	_SECthetrains,AR2
     // asm 00008DE0: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECthetrains_SETUPS);
     // asm 00008DE1: 	LDL	_SECchicago,AR2
     // asm 00008DE2: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECchicago_SETUPS);
     // asm 00008DE3: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008DE4: 	LDI	1,R0
     // asm 00008DE5: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008DE6: 	LDI	2,R0		;DISCO DUCK
     // asm 00008DE7: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 2;
     // asm 00008DE8: 	LDI	1,R0
     // asm 00008DE9: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 1;
     // asm 00008DEA: 	FLOAT	55,R0
     // asm 00008DEB: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(55)));
     // asm 00008DEC: 	LDL	thetrains_PALETTES,AR2
     // asm 00008DED: 	CALL	alloc_section
+    alloc_section(thetrains_PALETTES);
     // asm 00008DEE: 	LDL	chicago_PALETTES,AR2
     // asm 00008DEF: 	CALL	alloc_section
+    alloc_section(chicago_PALETTES);
     // asm 00008DF0: 	LDI	60,R0
     // asm 00008DF1: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 00008DF2: 	LDI	100,R0
     // asm 00008DF3: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 00008DF4: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008DF5: 	LDI	L_LEG11_BEGIN,AR0
     // asm 00008DF6: 	LS	8,AR0
     // asm 00008DF7: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG11_BEGIN << 8;
     // asm 00008DF8: 	RS	8,AR0
     // asm 00008DF9: 	LDI	L_LEG11_END,AR1
     // asm 00008DFA: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG11_BEGIN, L_LEG11_END);
     // asm 00008DFB: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_CHICAGO", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

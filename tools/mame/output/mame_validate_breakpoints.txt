@@ -246,6 +246,7 @@ bpset 00009794, 1, { logerror "validate R0: 0x%08X, rho.c:210\n", r0; g }
 bpset 000097C1, 1, { logerror "validate R2F: 0x%08X, rho.c:299\n", r2f; g }
 bpset 00008C6F, 1, { logerror "exit, setups.c:303\n"; exit; g }
 bpset 00008D94, 1, { logerror "function FULLSETUP_GCANYON\n"; g }
+bpset 00008DDF, 1, { logerror "function FULLSETUP_CHICAGO\n"; g }
 bpset 0000A434, 1, { logerror "validate R0: 0x%08X, sigma.c:162\n", r0; g }
 bpset 0000A512, 1, { logerror "validate R2F: 0x%08X, sigma.c:617\n", r2f; g }
 bpset 000079EB, 1, { logerror "validate R0: 0x%08X, text.c:293\n", r0; g }

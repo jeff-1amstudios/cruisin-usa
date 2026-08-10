@@ -788,6 +788,16 @@ typedef struct PROC_CONTEXT {
             int script_index;  // AR5 - AR6
         } BACKGRND_PLAINANI_PROC;
         struct {
+            OBJ* obj;                        // AR4
+            c3x_f32_t speed;                 // R7
+            c3x_f32_t remaining_distance;    // R6
+        } BACKGRND_PLANE_FWRD;
+        struct {
+            OBJ* obj;                        // AR4
+            c3x_f32_t speed;                 // R7
+            c3x_f32_t remaining_distance;    // R6
+        } BACKGRND_TRAIN_FWRD;
+        struct {
             int decomp_count;
             int attrwave;
             struct OBJ* obj;
