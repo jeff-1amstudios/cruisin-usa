@@ -310,7 +310,10 @@ static void DRONE_DANI_PROC(PROC* p) {
     CARBLK* carblk;
     DYNAOBJ* dyna;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
+        case 0:
+            MAME_ASSERT_FUNCTION_ENTRY();
+            break;
         case 1:
             goto PROC_RESUME_1;
         default:

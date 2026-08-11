@@ -2100,7 +2100,7 @@ static void FLYCOLLP(PROC* p /*AR7*/) {
     int volume;
     int sound_index;
 
-    switch (p->resume_state)
+    switch (PROC_RESUME_STATE)
     {
         case 0:
             MAME_ASSERT_FUNCTION_ENTRY();
@@ -2345,7 +2345,10 @@ static void SIGNFALL(PROC* p /*AR7*/) {
     c3x_reg_t accumulated;
     c3x_reg_t rotation_delta;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
     case 1:
         goto PROC_RESUME_1;
     default:

@@ -601,6 +601,8 @@ void PLYR_INTRO_ENTER(void) {
 
 // *----------------------------------------------------------------------------
 void _PLYR(PROC* p) {
+    MAME_ASSERT_FUNCTION_ENTRY();
+    MAME_ASSERT_ORDERING("_PLYR");
 PLYR_ENTER:
     // asm 000029EE: 	CALL	OBJ_GET			;INIT PLAYER OBJECT
     // asm 000029EF: 	LDI	AR0,AR4

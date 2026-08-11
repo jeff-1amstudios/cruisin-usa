@@ -52,6 +52,7 @@ typedef enum VALIDATE_KIND {
     VALIDATE_KIND_WORD,
     VALIDATE_KIND_FILE,
     VALIDATE_KIND_FUNCTION,
+    VALIDATE_KIND_ORDERING,
 } VALIDATE_KIND;
 
 typedef struct VALIDATE_ENTRY {
@@ -588,7 +589,22 @@ static int read_next_validate_line(char* out_name, size_t out_name_size, VALIDAT
         char name_buf[128];
         char file_buf[260];
         unsigned int value = 0;
-        int matched = sscanf(line, "function %127s", name_buf);
+        int matched = sscanf(line, "ordering %127[^\r\n]", name_buf);
+        if (matched != 1) {
+            matched = sscanf(line, "\xEF\xBB\xBF" "ordering %127[^\r\n]", name_buf);
+        }
+        if (matched == 1) {
+            snprintf(out_name, out_name_size, "%s", name_buf);
+            out_entry->kind = VALIDATE_KIND_ORDERING;
+            out_entry->word_value = 0;
+            out_entry->file_path[0] = '\0';
+            out_entry->line_number = g_validate_log_line_number;
+            out_entry->writer_file[0] = '\0';
+            out_entry->writer_line = 0;
+            return 1;
+        }
+
+        matched = sscanf(line, "function %127s", name_buf);
         if (matched != 1) {
             matched = sscanf(line, "\xEF\xBB\xBF" "function %127s", name_buf);
         }
@@ -1138,6 +1154,63 @@ void mame_assert_function_entry_impl(const char* caller_file, int caller_line, c
             "mame.log:%d function %s, consumer %s:%d\n",
             entry.line_number,
             function_name,
+            basename_only(caller_file),
+            caller_line);
+        fflush(stderr);
+    }
+}
+
+void mame_assert_ordering_impl(const char* caller_file, int caller_line, const char* message) {
+    VALIDATE_ENTRY entry;
+    char actual_message[128];
+    char expected_buf[160];
+    char actual_buf[160];
+
+    if (should_skip_validation()) {
+        return;
+    }
+
+    validate_current_call_failed = 0;
+
+    if (!read_next_validate_line(actual_message, sizeof(actual_message), &entry)) {
+        validate_warn_log_exhausted(caller_file, caller_line, message);
+        return;
+    }
+
+    if (entry.kind != VALIDATE_KIND_ORDERING) {
+        snprintf(expected_buf, sizeof(expected_buf), "validate %s", actual_message);
+        snprintf(actual_buf, sizeof(actual_buf), "ordering %s", message);
+        validate_fail(
+            caller_file,
+            caller_line,
+            entry.line_number,
+            message,
+            "ordering marker consumed a different validation event",
+            expected_buf,
+            actual_buf);
+        return;
+    }
+
+    if (strcmp(actual_message, message) != 0) {
+        snprintf(expected_buf, sizeof(expected_buf), "ordering %s", actual_message);
+        snprintf(actual_buf, sizeof(actual_buf), "ordering %s", message);
+        validate_fail(
+            caller_file,
+            caller_line,
+            entry.line_number,
+            message,
+            "ordering marker mismatch",
+            expected_buf,
+            actual_buf);
+        return;
+    }
+
+    if (print_oks) {
+        fprintf(
+            stderr,
+            "mame.log:%d ordering %s, consumer %s:%d\n",
+            entry.line_number,
+            message,
             basename_only(caller_file),
             caller_line);
         fflush(stderr);

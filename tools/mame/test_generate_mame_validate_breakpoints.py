@@ -140,6 +140,31 @@ def test_mame_validate_function_entry_uses_function_entry_and_name() -> None:
         )
 
 
+def test_mame_assert_ordering_uses_next_asm_instruction_and_message() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = pathlib.Path(tmpdir)
+        sample_c = tmp / "sample.c"
+        sample_c.write_text(
+            textwrap.dedent(
+                """
+                static void SYNTHETIC_TAIL(void) {
+                    MAME_ASSERT_ORDERING("ALL_JOINUP");
+                    // asm 000017E0: LDI @_MODE,R0
+                }
+                """
+            ).strip()
+            + "\n"
+        )
+
+        entries = collect_breakpoints(tmp, {})
+        assert len(entries) == 1
+        assert entries[0].instruction_address == 0x000017E0
+        assert (
+            entries[0].format_mame()
+            == 'bpset 000017E0, 1, { logerror "ordering ALL_JOINUP\\n"; g }'
+        )
+
+
 def test_mame_validate_exit_uses_function_entry_and_exit_action() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = pathlib.Path(tmpdir)
@@ -163,7 +188,7 @@ def test_mame_validate_exit_uses_function_entry_and_exit_action() -> None:
         assert entries[0].instruction_address == 0x00009F5A
         assert (
             entries[0].format_mame()
-            == 'bpset 00009F5A, 1, { logerror "exit, sample.c:2\\n"; exit }'
+            == 'bpset 00009F5A, 1, { logerror "exit, sample.c:2\\n"; exit; g }'
         )
 
 
@@ -517,6 +542,8 @@ def main() -> int:
     print("ok: mame_validate_arg_float emits a function-entry float register breakpoint")
     test_mame_validate_function_entry_uses_function_entry_and_name()
     print("ok: MAME_VALIDATE_FUNCTION_ENTRY emits a function-entry name breakpoint")
+    test_mame_assert_ordering_uses_next_asm_instruction_and_message()
+    print("ok: MAME_ASSERT_ORDERING emits a nearest-instruction ordering breakpoint")
     test_mame_validate_exit_uses_function_entry_and_exit_action()
     print("ok: MAME_VALIDATE_EXIT emits a function-entry exit breakpoint")
     test_mame_validate_reg_at_addr_uses_explicit_breakpoint()

@@ -22,6 +22,7 @@ VALIDATE_ARG_FLOAT_RE = re.compile(
 VALIDATE_FUNCTION_ENTRY_RE = re.compile(
     r'(?:MAME_ASSERT_FUNCTION_ENTRY|MAME_VALIDATE_FUNCTION_ENTRY|mame_validate_function_entry)\(\s*\)\s*;'
 )
+VALIDATE_ORDERING_RE = re.compile(r'MAME_ASSERT_ORDERING\(\s*"(?P<message>[^"]+)"\s*\)\s*;')
 VALIDATE_EXIT_RE = re.compile(r'(?:MAME_VALIDATOR_EXIT|MAME_VALIDATE_EXIT|mame_validate_exit)\(\s*\)\s*;')
 VALIDATE_REGION_AT_ADDR_RE = re.compile(
     r'(?:MAME_ASSERT_REGION_AT_ADDR|mame_validate_region_at_addr)\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
@@ -34,6 +35,10 @@ HEX_RE = re.compile(r"\b0[xX][0-9A-Fa-f]+\b")
 FUNCTION_DEF_RE = re.compile(
     r"^\s*.*?(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\([^;{}]*\)\s*\{\s*$"
 )
+FUNCTION_SIGNATURE_RE = re.compile(
+    r"^\s*(?:static\s+)?[^;{}=]+?\b(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\([^;{}]*\)\s*$"
+)
+ASM_INSTRUCTION_RE = re.compile(r"//\s*asm\s+(?P<address>[0-9A-Fa-f]{8}):")
 MACRO_NAME_RE = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*\s*\(")
 
 
@@ -115,8 +120,12 @@ def lookup_label_address(label: str, address_map: Dict[str, int]) -> Optional[in
 def find_containing_function_name(lines: List[str], start_index: int) -> Optional[str]:
     for index in range(start_index, -1, -1):
         match = FUNCTION_DEF_RE.match(lines[index])
-        if match:
+        if match and match.group("name") not in {"for", "if", "switch", "while"}:
             return match.group("name")
+        if lines[index].strip() == "{" and index > 0:
+            match = FUNCTION_SIGNATURE_RE.match(lines[index - 1])
+            if match and match.group("name") not in {"for", "if", "switch", "while"}:
+                return match.group("name")
     return None
 
 
@@ -255,9 +264,22 @@ def lookup_containing_function_instruction_address(
 
     instruction_address = lookup_label_address(function_name, address_map)
     if instruction_address is None:
-        raise ValueError(f"{path}:{index + 1}: function {function_name!r} not found in address map")
+        instruction_address = lookup_nearest_asm_instruction_address(lines, index, path, macro_name)
 
     return function_name, instruction_address
+
+
+def lookup_nearest_asm_instruction_address(
+    lines: List[str], index: int, path: pathlib.Path, macro_name: str
+) -> int:
+    for candidate in range(index + 1, len(lines)):
+        match = ASM_INSTRUCTION_RE.search(lines[candidate])
+        if match:
+            return int(match.group("address"), 16)
+        if candidate > index + 1 and FUNCTION_DEF_RE.match(lines[candidate]):
+            break
+
+    raise ValueError(f"{path}:{index + 1}: no following asm instruction found for {macro_name}")
 
 
 def parse_constant_defines(source_root: pathlib.Path) -> Dict[str, int]:
@@ -385,6 +407,30 @@ def collect_breakpoints_for_file(
                 source_path=path,
                 source_line=index + 1,
                 command_override=f'logerror "function {function_name}\\n"',
+            )
+        )
+
+    for index, line in enumerate(lines):
+        match = VALIDATE_ORDERING_RE.search(strip_cpp_line_comment(line))
+        if not match:
+            continue
+
+        message = match.group("message")
+        instruction_address = lookup_nearest_asm_instruction_address(
+            lines, index, path, "MAME_ASSERT_ORDERING"
+        )
+        escaped_message = message.replace("\\", "\\\\").replace('"', '\\"')
+
+        entries.append(
+            BreakpointEntry(
+                label=f"ordering {message}",
+                variable_name=message,
+                variable_address=0,
+                instruction_address=instruction_address,
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+                command_override=f'logerror "ordering {escaped_message}\\n"',
             )
         )
 

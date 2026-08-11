@@ -160,8 +160,9 @@ c3x_f32_t LANES4[] = {
 int ONCSCREEN_CARS;
 
 void POSITION_FINDER(PROC* p) {
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -419,8 +420,9 @@ void SIGMA_DISPATCHER(PROC* p) {
     int random_percent;
     c3x_reg_t sigma_distance;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -634,7 +636,10 @@ void RHO_DISPATCHER(PROC* p) {
     c3x_reg_t distance;
 
     rho_ctx = p->ctx;
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
     case 1:
         goto PROC_RESUME_1;
     case 2:
@@ -1593,7 +1598,10 @@ void EXP_PUFF(PROC* p) {
     OBJ* obj;
     int model;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
+        case 0:
+            MAME_ASSERT_FUNCTION_ENTRY();
+            break;
         case 1:
             goto PROC_RESUME_1;
         default:
@@ -2064,7 +2072,10 @@ void SMOKE_PUFF(PROC* p) {
     int sleep_ticks;
     c3x_f32_t y_delta;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
+        case 0:
+            MAME_ASSERT_FUNCTION_ENTRY();
+            break;
         case 1:
             goto PROC_RESUME_1;
         default:

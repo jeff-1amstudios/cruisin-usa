@@ -20,7 +20,6 @@ extern VECTOR _VECTORA;
  */
 
 void SIGMA_DRONE(PROC* p);
-static void BREAKDOWN(PROC* p, OBJ* obj, CARBLK* carblk);
 static void SIGMA_DIE(PROC* p);
 
 #define SIGMA_LISTI SIGMA_LIST
@@ -128,11 +127,26 @@ void SIGMA_DRONE(PROC* p) {
     c3x_reg_t throttle;
     c3x_reg_t steering_delta;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
+        case 0:
+            MAME_ASSERT_FUNCTION_ENTRY();
+            break;
         case 1:
             goto PROC_RESUME_1;
         case 2:
             goto PROC_RESUME_2;
+        case 3:
+            goto PROC_RESUME_3;
+        case 4:
+            goto PROC_RESUME_4;
+        case 5:
+            goto PROC_RESUME_5;
+        case 6:
+            goto PROC_RESUME_6;
+        case 7:
+            goto PROC_RESUME_7;
+        case 8:
+            goto PROC_RESUME_8;
         default:
             break;
     }
@@ -229,7 +243,7 @@ DONTWORRY:
     tracking_piece = tracking_piece != NULL ? (OBJ*)tracking_piece->blink4 : NULL;
     tracking_piece = tracking_piece != NULL ? (OBJ*)tracking_piece->blink4 : NULL;
     if (tracking_piece == NULL) {
-        SIGMA_DIE(p);
+        PROC_CONTINUE(SIGMA_DIE, 4);
         return;
     }
     // asm 0000A457: 	STI	AR2,*+AR7(DELTA_TPIECE)
@@ -279,10 +293,6 @@ DONTWORRY:
     p->ctx->RACER_DRONE.sigma_once = 0;
     p->ctx->RACER_DRONE.sigma_yell = 0;
     p->ctx->RACER_DRONE.delta_playit = 0;
-    p->ctx->RACER_DRONE.breakdown = 0;
-    p->ctx->RACER_DRONE.breakdown_count = 0;
-    p->ctx->RACER_DRONE.breakdown_smoke_started = 0;
-    p->ctx->RACER_DRONE.breakdown_count_initialized = 0;
     // 	;Weaving SIGMA????
     // asm 0000A472: 	RANDN	10	;1 in 10 chance
     // asm 0000A474: 	CMPI	0,R0
@@ -303,10 +313,6 @@ NOTWEAVER:
 SIGMA_LP:
     obj = p->ctx->RACER_DRONE.obj;
     carblk = p->ctx->RACER_DRONE.carblk;
-    if (p->ctx->RACER_DRONE.breakdown) {
-        BREAKDOWN(p, obj, carblk);
-        return;
-    }
     // asm 0000A47C: 	LDI	@SUSPEND_MODE,R0
     // asm 0000A47D: 	CMPI	SM_HALT,R0
     // asm 0000A47E: 	BEQ	SIGMASLP
@@ -385,9 +391,7 @@ NOTPSYCHO_LP:
     // asm 0000A4A5: 	BZ	NOSL2DIE2
     // asm 0000A4A6: 	BU	BREAKDOWN
     if (!wheel_on_road && p->ctx->RACER_DRONE.sigma_once != 0) {
-        p->ctx->RACER_DRONE.breakdown = 1;
-        BREAKDOWN(p, obj, carblk);
-        return;
+        goto BREAKDOWN;
     }
     // asm 0000A4A7: NOSL2DIE
     // asm 0000A4A7: 	LDI	1,R0
@@ -408,7 +412,7 @@ NOSL2DIE2:
     // asm 0000A4AD: 	CREATEC	EXP_PUFF,SPAWNER_C
     child_ctx = port_malloc(sizeof(PROC_CONTEXT));
     child_ctx->PUFF_PROC.source_obj = obj;
-    PRC_CREATE_CHILD(EXP_PUFF, SPAWNER_C, child_ctx);
+    CREATEC(EXP_PUFF, SPAWNER_C, child_ctx);
 NOBUMP:
     // 	;it the plyr is zooming by
     // 	;
@@ -480,7 +484,7 @@ NOYELL:
     // asm 0000A4D0: 	CMPI	AR0,R0			;BR-> WE ARE ATTACKING THE START OF UNIVERSE
     // asm 0000A4D1: 	BEQ	SIGMA_DIE
     if (tracking_piece == DYNALIST_TRUEBEGIN) {
-        SIGMA_DIE(p);
+        PROC_CONTINUE(SIGMA_DIE, 5);
         return;
     }
     // asm 0000A4D2: 	LDI	*+AR2(OUSR1),R0
@@ -488,7 +492,7 @@ NOYELL:
     // asm 0000A4D4: 	CMPI	R0,R1			;BR-> WE ARE UNDER THE START OF UNIVERSE
     // asm 0000A4D5: 	BLT	SIGMA_DIE
     if (p->ctx->RACER_DRONE.delta_last_oid < (int)tracking_piece->usr1) {
-        SIGMA_DIE(p);
+        PROC_CONTINUE(SIGMA_DIE, 6);
         return;
     }
     // 	;
@@ -504,7 +508,7 @@ CHECK_DIST:
     // asm 0000A4DA: 	CMPI	R1,R0
     // asm 0000A4DB: 	BLE	SIGMA_DIE
     if ((p->ctx->RACER_DRONE.delta_last_oid >> 8) <= SECTIONIDX - DGROUP_COUNT) {
-        SIGMA_DIE(p);
+        PROC_CONTINUE(SIGMA_DIE, 7);
         return;
     }
     // asm 0000A4DC: 	LDI	*+AR7(DELTA_TPIECE),AR2
@@ -628,7 +632,6 @@ SIGMASLP:
     SLEEP(1, 2);
     // asm 0000A518: 	B	SIGMA_LP
     goto SIGMA_LP;
-}
 
 // *----------------------------------------------------------------------------
 
@@ -641,8 +644,7 @@ SIGMASLP:
  *
  *
  */
-static void BREAKDOWN(PROC* p, OBJ* obj, CARBLK* carblk) {
-    PROC_CONTEXT* child_ctx;
+BREAKDOWN:
     // ;	LDI	*+AR4(OID),R0
     // ;	ANDN	TYPE_M,R0
     // ;	OR	DEAD_VEH_T,R0
@@ -650,17 +652,11 @@ static void BREAKDOWN(PROC* p, OBJ* obj, CARBLK* carblk) {
     // ;	STI	R0,*+AR5(CAR_ID)
     // ;	STI	R0,*+AR7(PID)
     // asm 0000A519: 	CREATEC	SMOKE_PUFF,2
-    if (!p->ctx->RACER_DRONE.breakdown_smoke_started) {
-        child_ctx = port_malloc(sizeof(PROC_CONTEXT));
-        child_ctx->PUFF_PROC.source_obj = obj;
-        PRC_CREATE_CHILD(SMOKE_PUFF, 2, child_ctx);
-        p->ctx->RACER_DRONE.breakdown_smoke_started = 1;
-    }
+    child_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    child_ctx->PUFF_PROC.source_obj = obj;
+    CREATEC(SMOKE_PUFF, 2, child_ctx);
     // asm 0000A51C: 	LDI	10,AR6
-    if (!p->ctx->RACER_DRONE.breakdown_count_initialized) {
-        p->ctx->RACER_DRONE.breakdown_count = 10;
-        p->ctx->RACER_DRONE.breakdown_count_initialized = 1;
-    }
+    p->ctx->RACER_DRONE.breakdown_count = 10;
 BREAKDOWNLP:
     // asm 0000A51D: 	LDI	@SUSPEND_MODE,R0
     // asm 0000A51E: 	CMPI	SM_HALT,R0
@@ -676,7 +672,7 @@ BREAKDOWNLP:
     if (p->ctx->RACER_DRONE.breakdown_count >= 0) {
         child_ctx = port_malloc(sizeof(PROC_CONTEXT));
         child_ctx->PUFF_PROC.source_obj = obj;
-        PRC_CREATE_CHILD(SMOKE_PUFF, 2, child_ctx);
+        CREATEC(SMOKE_PUFF, 2, child_ctx);
     }
 NOSMK:
     // asm 0000A526: 	LDI	*+AR5(CARTRAK),AR0
@@ -687,7 +683,7 @@ NOSMK:
     // asm 0000A52B: 	BLT	SIGMA_DIE
     if (OBJREF_TO_PTR(carblk->closest_track_piece) != NULL &&
         ((int)OBJREF_TO_PTR(carblk->closest_track_piece)->usr1 >> 8) < DGROUPSI[DGROUP_COUNT].idx) {
-        SIGMA_DIE(p);
+        PROC_CONTINUE(SIGMA_DIE, 8);
         return;
     }
     // asm 0000A52C: 	CLRF	R2
@@ -699,16 +695,27 @@ NOSMK:
     GETTRAK(obj, carblk);
 BREAKDNSLP:
     // asm 0000A530: 	SLEEP	1
-    p->resume_state = 2;
-    PRC_SLEEP(p, 1);
+    SLEEP(1, 3);
     // asm 0000A532: 	BU	BREAKDOWNLP
-    return;
+    obj = p->ctx->RACER_DRONE.obj;
+    carblk = p->ctx->RACER_DRONE.carblk;
+    goto BREAKDOWNLP;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
 static void SIGMA_DIE(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("SIGMA_DIE");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 0000A533: 	BU	RHO_DIE
-    RHO_DIE(p);
+    PROC_CONTINUE(RHO_DIE, 1);
+    return;
 }

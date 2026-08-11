@@ -38,6 +38,8 @@ void ISSUE_STARTGAME(PROC* p);
 void PLYR_INTRO(PROC* p);
 void CHOOSE_NEXT_RACE(PROC* p);
 static void LOAD_NEW_SELECTION(PROC* p);
+static void PLYR_INTRO__CNR_ENTER_tail(PROC* p);
+static void PLYR_INTRO__ALL_JOINUP_tail(PROC* p);
 static void WATCH_PLYRS_CAR(void);
 void INIT_GAMELEG(void);
 static void CHOOSECAR(void);
@@ -703,9 +705,10 @@ void ISSUE_STARTGAME_TSEL(void) {
 }
 
 void ISSUE_STARTGAME(PROC* p) {
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
         MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("ISSUE_STARTGAME");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -943,9 +946,8 @@ NOGAME:
 void PLYR_INTRO(PROC* p) {
     int unfinished_games;
     int unfinished_games_found;
-    PROC_CONTEXT* ctx;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
         MAME_ASSERT_FUNCTION_ENTRY();
         break;
@@ -953,13 +955,6 @@ void PLYR_INTRO(PROC* p) {
         goto PROC_RESUME_1;
     case 2:
         goto PROC_RESUME_2;
-    case 3:
-        goto ALL_JOINUP;
-    case 4:
-        goto CNR_ENTER;
-    case 5:
-    case 6:
-        goto CALL_ISSUE_STARTGAME;
     }
 
     // asm 00001775: 	LDI	RM_SINGLE,R0
@@ -979,11 +974,7 @@ void PLYR_INTRO(PROC* p) {
     FIRST_RACE = 1;
 
     // asm 0000177D: 	JSRP	ISSUE_STARTGAME
-CALL_ISSUE_STARTGAME:
-    ISSUE_STARTGAME(p);
-    if (p->sleep_ticks != 0) {
-        return;
-    }
+    JSRP(ISSUE_STARTGAME, 1);
 
     // asm 00001783: 	CALL	INIT_LASTHS_TABLE		;Initialize the table for players hs entries
     INIT_LASTHS_TABLE(); // Initialize the table for players hs entries
@@ -1037,6 +1028,28 @@ NOULOG:
     // asm 000017A5: 	LDI	1,R0				;SHUFFLE DRIVIN
     // asm 000017A6: 	STI	R0,@TUNE_IDX
     TUNE_IDX = 1; // SHUFFLE DRIVIN
+
+    PROC_CONTINUE(PLYR_INTRO__CNR_ENTER_tail, 2);
+    return;
+
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+}
+
+static void PLYR_INTRO__CNR_ENTER_tail(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("CNR_ENTER");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    }
 
 CNR_ENTER:
     // asm 000017A7: 	LDP	@IN_RESET_MODE
@@ -1102,9 +1115,7 @@ CONTINUE:
     // asm 000017C5: 	LDI	@FIRST_RACE,R0
     // asm 000017C6: 	BZ	LOAD_NEW_SELECTION
     if (FIRST_RACE == 0) {
-        p->func = LOAD_NEW_SELECTION;
-        p->resume_state = 0;
-        LOAD_NEW_SELECTION(p);
+        PROC_CONTINUE(LOAD_NEW_SELECTION, 3);
         return;
     }
 
@@ -1145,7 +1156,24 @@ WFSNP:
         goto WFSNP;
     }
 
-ALL_JOINUP:
+    PROC_CONTINUE(PLYR_INTRO__ALL_JOINUP_tail, 4);
+    return;
+
+    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+}
+
+static void PLYR_INTRO__ALL_JOINUP_tail(PROC* p) {
+    PROC_CONTEXT* ctx;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("ALL_JOINUP");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 000017E0: 	LDI	@_MODE,R0
     // asm 000017E1: 	OR	MINFIN,R0
     // asm 000017E2: 	STI	R0,@_MODE
@@ -1159,7 +1187,7 @@ ALL_JOINUP:
 
     // asm 000017E8: 	CREATEC	WAVEFLAG,UTIL_C|MONKEY_T
     ctx = port_malloc(sizeof(PROC_CONTEXT));
-    PRC_CREATE_CHILD(WAVEFLAG, UTIL_C | MONKEY_T, ctx);
+    CREATEC(WAVEFLAG, UTIL_C | MONKEY_T, ctx);
 
     // asm 000017EB: 	CALL	CLEANUP_TRACKSEL_PALS
     CLEANUP_TRACKSEL_PALS();
@@ -1219,9 +1247,7 @@ ALL_JOINUP:
     // asm 00001804: 	LDI	@FIRST_RACE,R0
     // asm 00001805: 	BZ	_PLYR
     if (FIRST_RACE == 0) {
-        p->func = _PLYR;
-        p->resume_state = 0;
-        _PLYR(p);
+        PROC_CONTINUE(_PLYR, 1);
         return;
     }
 
@@ -1245,12 +1271,14 @@ int START_NOW_P;
 
 // *----------------------------------------------------------------------------
 void CHOOSE_NEXT_RACE(PROC* p) {
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
         MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
     }
 
     // asm 0000180C: 	CALL	TEXT_INIT
@@ -1293,9 +1321,7 @@ void CHOOSE_NEXT_RACE(PROC* p) {
 
     // 	;
     // asm 0000181E: 	BU	CNR_ENTER
-    p->func = PLYR_INTRO;
-    p->resume_state = 4;
-    PLYR_INTRO(p);
+    PROC_CONTINUE(PLYR_INTRO__CNR_ENTER_tail, 2);
     return;
 
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1305,12 +1331,15 @@ void CHOOSE_NEXT_RACE(PROC* p) {
 
 // *----------------------------------------------------------------------------
 static void LOAD_NEW_SELECTION(PROC* p) {
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
         MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("LOAD_NEW_SELECTION");
         break;
     case 1:
         goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
     }
 
     // asm 0000181F: 	LDI	@CHOSEN_RACE,AR0
@@ -1374,9 +1403,7 @@ static void LOAD_NEW_SELECTION(PROC* p) {
     BUTTON_STATUS = BUT_VIEW2; // BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
 
     // asm 00001840: 	BU	ALL_JOINUP
-    p->func = PLYR_INTRO;
-    p->resume_state = 3;
-    PLYR_INTRO(p);
+    PROC_CONTINUE(PLYR_INTRO__ALL_JOINUP_tail, 2);
     return;
 
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -2839,8 +2866,9 @@ void WAVEFLAG(PROC* p) {
     const WAVEFLAG_ENTRY* entry;
     tTEXT* text;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -2902,7 +2930,7 @@ FGLL:
     if ((_MODE & MMODE) != MATTR) {
         // asm 00001CB9: 	CREATEC	BABE_WAVEFLAG,UTIL_C
         PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
-        CREATE(BABE_WAVEFLAG, UTIL_C, ctx);
+        CREATEC(BABE_WAVEFLAG, UTIL_C, ctx);
     }
 NOBABE:
     // asm 00001CBC: 	CLRI	R0
@@ -3457,8 +3485,9 @@ static void ULTRA_PROC(PROC* p /*AR7*/) {
     OBJ* obj;
     c3x_reg_t radians;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -3701,8 +3730,9 @@ void CYCLE_ATTR(void) {
 int _timer;
 
 void _timeout(PROC* p) {
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -3982,6 +4012,7 @@ void LOAD_SHARED(void) {
 // *----------------------------------------------------------------------------
 
 void TRAFFIC_LIGHT(PROC* p) {
+    MAME_ASSERT_FUNCTION_ENTRY();
     // asm 00001F0F: 	SLEEP	20
     // asm 00001F11: 	LDL	TRAFFIC_LL,AR5
 TLT_LP:
@@ -4023,8 +4054,9 @@ static int TRAFFIC_LL[] = {
 
 // *----------------------------------------------------------------------------
 void CPOINT_LIGHT(PROC* p) {
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -4096,8 +4128,9 @@ static void SHOW_RACE_NAME(PROC* p) {
     tSHADOW_TEXT text;
     c3x_reg_t x;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

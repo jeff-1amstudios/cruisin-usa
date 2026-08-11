@@ -60,11 +60,27 @@ void PRC_FOLLOW(void);
 // asm: 	.globl	SLEEP
 void PRC_SLEEP(PROC* p, int ticks);
 
-#define SLEEP(ticks, resume_number)  \
-    p->resume_state = resume_number; \
-    PRC_SLEEP(p, ticks);             \
-    return;                          \
+#define PROC_RESUME_STATE (p->resume_states[p->current_resume_depth])
+
+#define SLEEP(ticks, resume_number)       \
+    PROC_RESUME_STATE = resume_number;    \
+    p->yielded = 1;                       \
+    PRC_SLEEP(p, ticks);                  \
+    return;                               \
     PROC_RESUME_##resume_number:
+
+#define JSRP(fn, resume_number)                     \
+    PROC_RESUME_STATE = resume_number;              \
+    PROC_RESUME_##resume_number:                    \
+    p->current_resume_depth += 1;                   \
+    fn(p);                                          \
+    p->current_resume_depth -= 1;                   \
+    if (p->yielded) {                               \
+        return;                                     \
+    }
+
+/* A coroutine edge introduced only by C function boundaries, not an asm JSRP. */
+#define PROC_CONTINUE(fn, resume_number) JSRP(fn, resume_number)
 
 #define DIE()           \
     {                   \
@@ -72,11 +88,11 @@ void PRC_SLEEP(PROC* p, int ticks);
         return;         \
     }
 
-#define REENTER(fn)          \
-    {                        \
-        p->resume_state = 0; \
-        fn(p);               \
-        return;              \
+#define REENTER(fn)            \
+    {                          \
+        PROC_RESUME_STATE = 0; \
+        fn(p);                 \
+        return;                \
     }
 
 #endif /* MPROC_H */

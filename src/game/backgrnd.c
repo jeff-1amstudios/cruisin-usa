@@ -450,8 +450,9 @@ static void BGD_WATCHER(PROC* p) {
     int routine_index;
     c3x_reg_t distance;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -2455,8 +2456,9 @@ static void PLAINANI_PROC(PROC* p) {
     int frame;
     int sleep_ticks;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -2794,14 +2796,13 @@ static void PLANE_FWRD(PROC* p) {
     c3x_reg_t remaining_distance;
     c3x_reg_t speed;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
     }
-
-    MAME_ASSERT_FUNCTION_ENTRY();
 
     obj = p->ctx->BACKGRND_PLANE_FWRD.obj;
     // asm 00004462: 	FLOAT	250,R7
@@ -2939,14 +2940,13 @@ static void TRAIN_FWRD(PROC* p) {
     c3x_reg_t remaining_distance;
     c3x_reg_t speed;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
     }
-
-    MAME_ASSERT_FUNCTION_ENTRY();
 
     obj = p->ctx->BACKGRND_TRAIN_FWRD.obj;
     // asm 000044A6: 	FLOAT	150,R7

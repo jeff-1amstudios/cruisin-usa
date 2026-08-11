@@ -2846,8 +2846,9 @@ PR3DX:
 void DISPLAY_HIGH_SCORES(PROC* p) {
     PROC_CONTEXT* ctx;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -2966,8 +2967,9 @@ static void DISPLAY_HS(PROC* p) {
     OBJ* obj;
     PROC_CONTEXT* flash_ctx;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -3034,7 +3036,7 @@ static void DISPLAY_HS(PROC* p) {
     // asm 000038AA: 	CREATEC	FLASH_LETTERS_PROC,UTIL_C|DISPLAYHS_T|FLASH_ST
     flash_ctx = port_malloc(sizeof(PROC_CONTEXT));
     flash_ctx->FLASH_LETTERS_PROC.race_number = p->ctx->DISPLAY_HS.race_number;
-    p->ctx->DISPLAY_HS.flash_proc = CREATE(FLASH_LETTERS_PROC, UTIL_C | DISPLAYHS_T | FLASH_ST, flash_ctx);
+    p->ctx->DISPLAY_HS.flash_proc = CREATEC(FLASH_LETTERS_PROC, UTIL_C | DISPLAYHS_T | FLASH_ST, flash_ctx);
     // asm 000038AD: 	STI	AR0,*+AR7(FLASH_PROC)
 DHS0:
     // asm 000038AE: 	SLEEP	1
@@ -3103,8 +3105,9 @@ static int FLASH_PALS[] = {
 static void FLASH_LETTERS_PROC(PROC* p) {
     int palette;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

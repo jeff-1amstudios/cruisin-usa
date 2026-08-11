@@ -401,6 +401,8 @@ void COMM_DRONE_PTR_SORT(void) {
  *
  */
 void OM_DRONE(PROC* p) {
+    MAME_ASSERT_FUNCTION_ENTRY();
+    MAME_ASSERT_ORDERING("OM_DRONE");
     (void)p;
     // asm 0000A743: 	LDI	1,R0			;OTHER GUYS CAR NOW....
     // asm 0000A744: 	STI	R0,*+AR5(CAR_OM)

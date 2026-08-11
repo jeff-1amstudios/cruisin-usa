@@ -140,7 +140,10 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     OBJ* player_obj;
     PROC* player_proc;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
     case 1:
         goto PROC_RESUME_1;
     case 2:
@@ -320,8 +323,9 @@ void LOGO_PROC(PROC* p) {
     c3x_reg_t nframes;
     c3x_reg_t value;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

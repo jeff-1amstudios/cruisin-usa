@@ -23,7 +23,6 @@ extern VECTOR _VECTORA;
  */
 
 void RHO_DRONE(PROC* p);
-static void RHO_LP(PROC* p);
 static int CKCAROFF(PROC* p);
 void RHO_DIE(PROC* p);
 static void RHO_ISHIT(PROC* p);
@@ -199,8 +198,37 @@ void RHO_DRONE(PROC* p)
     VEHTAB* vehicle;
     OBJ* obj;
     OBJ* tracking_piece;
+    OBJ* next_piece;
     CARBLK* carblk;
+    c3x_reg_t distance;
+    c3x_reg_t speed;
+    c3x_reg_t desired_theta;
     c3x_reg_t road_theta;
+    c3x_reg_t theta_delta;
+    c3x_reg_t throttle;
+    c3x_reg_t steering_delta;
+    int frames;
+    int sound;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    case 5:
+        goto PROC_RESUME_5;
+    case 6:
+        goto PROC_RESUME_6;
+    case 7:
+        goto PROC_RESUME_7;
+    }
 
     // asm 00009790: 	LDI	0,R5
     // asm 00009791: 	STI	R5,@RHOFLAG
@@ -399,19 +427,13 @@ NOT_WEAVER:
     // asm 000097FA: 	STI	R0,*+AR5(CAR_OM)	;OTHER MACHINE IS IN CONTROL
     carblk->other_machine_controls = 1;
     // asm 000097FB: 	B	OM_DRONE		;GO DRONE IT
-    p->func = OM_DRONE;
-    OM_DRONE(p);
+    PROC_CONTINUE(OM_DRONE, 2);
     return;
 RHOLL1:
     // asm 000097FC: 	CALL	DRONE_PTR_ADD
     car_id = DRONE_PTR_ADD(carblk);
     // asm 000097FD: 	CALL	SEND_RHO_CREATE
     SEND_RHO_CREATE(obj, car_id, selected_index);
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    p->func = RHO_LP;
-    p->resume_state = 0;
-    RHO_LP(p);
-}
 
 /*
  *----------------------------------------------------------------------------
@@ -422,28 +444,9 @@ RHOLL1:
  *
  *
  */
-static void RHO_LP(PROC* p)
-{
-    OBJ* obj = p->ctx->RACER_DRONE.obj;
-    OBJ* tracking_piece;
-    OBJ* next_piece;
-    CARBLK* carblk = p->ctx->RACER_DRONE.carblk;
-    c3x_reg_t distance;
-    c3x_reg_t speed;
-    c3x_reg_t desired_theta;
-    c3x_reg_t theta_delta;
-    c3x_reg_t throttle;
-    c3x_reg_t steering_delta;
-    int frames;
-    int sound;
-
-    switch (p->resume_state) {
-    case 0:
-        break;
-    case 1:
-        goto PROC_RESUME_1;
-    }
 RHO_LP_TOP:
+    obj = p->ctx->RACER_DRONE.obj;
+    carblk = p->ctx->RACER_DRONE.carblk;
     // asm 000097FE: 	LDI	@SUSPEND_MODE,R0
     // asm 000097FF: 	CMPI	SM_HALT,R0
     // asm 00009800: 	BEQ	RHO_SLP
@@ -563,9 +566,7 @@ NOT_WEAVER_LP:
     // asm 00009830: 	LDI	*+AR5(CAR_BUMP),R0
     // asm 00009831: 	BNZ	RHO_ISHIT
     if (carblk->bump_flag != 0) {
-        p->func = RHO_ISHIT;
-        p->resume_state = 0;
-        RHO_ISHIT(p);
+        PROC_CONTINUE(RHO_ISHIT, 3);
         return;
     }
     // 	;make sure to check for relative speed for
@@ -613,7 +614,7 @@ NONOISE:
     // asm 00009846: 	CALL	CKCAROFF	;OFF THE UNIVERSE ???
     // asm 00009847: 	BZ	RHO_DIE		;YES
     if (!CKCAROFF(p)) {
-        RHO_DIE(p);
+        PROC_CONTINUE(RHO_DIE, 4);
         return;
     }
     // 	;
@@ -633,7 +634,7 @@ CHECK_DIST:
     // asm 0000984D: 	BGT	ALLOK66
     // asm 0000984E: 	BU	$	;probably RHO_DIE
     if ((p->ctx->RACER_DRONE.delta_last_oid >> 8) <= SECTIONIDX - DGROUP_COUNT) {
-        RHO_DIE(p);
+        PROC_CONTINUE(RHO_DIE, 5);
         return;
     }
 ALLOK66:
@@ -643,7 +644,7 @@ ALLOK66:
     next_piece = tracking_piece != NULL ? (OBJ*)tracking_piece->blink4 : NULL;
     // asm 00009851: 	BZ	RHO_DIE				;should we kill ourselves
     if (next_piece == NULL) {
-        RHO_DIE(p);
+        PROC_CONTINUE(RHO_DIE, 6);
         return;
     }
     // asm 00009852: 	LDI	*+AR7(DELTA_PLAYIT),R0
@@ -847,7 +848,7 @@ RHO_SLP:
     // asm 000098B7: 	CALL	CKCAROFF	;OFF THE UNIVERSE ???
     // asm 000098B8: 	BZ	RHO_DIE		;YES
     if (!CKCAROFF(p)) {
-        RHO_DIE(p);
+        PROC_CONTINUE(RHO_DIE, 7);
         return;
     }
     // asm 000098B9: 	SLEEP	1
@@ -911,6 +912,15 @@ void RHO_DIE(PROC* p)
     OBJ* obj = p->ctx->RACER_DRONE.obj;
     CARBLK* carblk = p->ctx->RACER_DRONE.carblk;
 
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("RHO_DIE");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 000098CC: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 000098CD: 	BZ	RHO_DIE1 		;NO, BLOW OUT...
     if (HEAD2HEAD_ON == 0) {
@@ -924,8 +934,7 @@ void RHO_DIE(PROC* p)
     // asm 000098D0: 	CALL	SEND_RHO_XSFER
     SEND_RHO_XSFER();
     // asm 000098D1: 	B	OM_DRONE		;CONTROL SWAPS TO OTHER MACHINE
-    p->func = OM_DRONE;
-    OM_DRONE(p);
+    PROC_CONTINUE(OM_DRONE, 1);
     return;
 RHO_DIE0:
     // asm 000098D2: 	LDI	*+AR5(CARNUM),R0	;GET ID
@@ -990,11 +999,17 @@ static void RHO_ISHIT(PROC* p)
     CARBLK* carblk = p->ctx->RACER_DRONE.carblk;
     u32 dead_id;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("RHO_ISHIT");
         break;
     case 1:
         goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
     }
     // asm 000098E4: 	LDI	*+AR4(OID),R0
     // asm 000098E5: 	ANDN	TYPE_M,R0
@@ -1010,11 +1025,11 @@ static void RHO_ISHIT(PROC* p)
     // asm 000098EA: 	CREATEC	SMOKE_PUFF,SPAWNER_C
     child_ctx = port_malloc(sizeof(PROC_CONTEXT));
     child_ctx->PUFF_PROC.source_obj = obj;
-    PRC_CREATE_CHILD(SMOKE_PUFF, SPAWNER_C, child_ctx);
+    CREATEC(SMOKE_PUFF, SPAWNER_C, child_ctx);
     // asm 000098ED: 	CREATEC	EXP_PUFF,SPAWNER_C
     child_ctx = port_malloc(sizeof(PROC_CONTEXT));
     child_ctx->PUFF_PROC.source_obj = obj;
-    PRC_CREATE_CHILD(EXP_PUFF, SPAWNER_C, child_ctx);
+    CREATEC(EXP_PUFF, SPAWNER_C, child_ctx);
     // asm 000098F0: 	LDI	10,AR6
     p->ctx->RACER_DRONE.rho_hit_smoke_count = 10;
 RHO_ISHITLP:
@@ -1032,7 +1047,7 @@ RHO_ISHITLP:
     if (p->ctx->RACER_DRONE.rho_hit_smoke_count >= 0) {
         child_ctx = port_malloc(sizeof(PROC_CONTEXT));
         child_ctx->PUFF_PROC.source_obj = obj;
-        PRC_CREATE_CHILD(SMOKE_PUFF, SPAWNER_C, child_ctx);
+        CREATEC(SMOKE_PUFF, SPAWNER_C, child_ctx);
     }
 NOSMK:
     // 	;dont disolve
@@ -1050,7 +1065,7 @@ NOSMK:
     // asm 000098FE: 	CMPI	AR0,AR1
     // asm 000098FF: 	BEQ	RHO_DIE
     if (tracking_piece == DYNALIST_TRUEBEGIN) {
-        RHO_DIE(p);
+        PROC_CONTINUE(RHO_DIE, 2);
         return;
     }
     // asm 00009900: 	LDI	*+AR0(OUSR1),R0
@@ -1059,7 +1074,7 @@ NOSMK:
     // asm 00009903: 	BLT	RHO_DIE
     if (tracking_piece == NULL || DYNALIST_TRUEBEGIN == NULL ||
         (int)tracking_piece->usr1 < (int)DYNALIST_TRUEBEGIN->usr1) {
-        RHO_DIE(p);
+        PROC_CONTINUE(RHO_DIE, 3);
         return;
     }
     // 	;for now we die out

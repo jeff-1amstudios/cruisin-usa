@@ -332,10 +332,14 @@ typedef struct DGROUP_ENTRY {
     int idx;
 } DGROUP_ENTRY;
 
+#define PROC_RESUME_STACK_SIZE 10
+
 typedef struct PROC {
     struct PROC* link;
     // u32 stack_ptr;
-    u32 resume_state;
+    u32 resume_states[PROC_RESUME_STACK_SIZE];
+    u32 current_resume_depth;
+    u32 yielded;
     u32 id;
     u32 sleep_ticks;
     PROC_FUNC func;
@@ -862,9 +866,6 @@ typedef struct PROC_CONTEXT {
             c3x_f32_t rho_xhead;
             int rho_hit_smoke_count;
             int breakdown_count;
-            int breakdown;
-            int breakdown_smoke_started;
-            int breakdown_count_initialized;
         } RACER_DRONE;
         struct {
             int background_color;

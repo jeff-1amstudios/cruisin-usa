@@ -84,6 +84,8 @@ static void NEXTPRC(PROC* proc) {
         if (proc->sleep_ticks == 0) {
             next_proc = proc->link;
             CURRENT_PROC = proc;
+            proc->current_resume_depth = 0;
+            proc->yielded = 0;
             proc->func(proc);
 
             if (CURRENT_PROC != proc) {
@@ -165,7 +167,11 @@ GETPROC0:
 
     // asm 0000A882: 	LDI	0,R0
     // asm 0000A883: 	STI	R0,*+AR0(PTIME)		;PLACE SLEEP TIME
-    proc->resume_state = 0;
+    for (int resume_depth = 0; resume_depth < PROC_RESUME_STACK_SIZE; resume_depth++) {
+        proc->resume_states[resume_depth] = 0;
+    }
+    proc->current_resume_depth = 0;
+    proc->yielded = 0;
     proc->sleep_ticks = 0;
 
     // asm 0000A884: 	STI	AR2,*+AR0(PWAKE)	;START ADDRESS OF PROCESS

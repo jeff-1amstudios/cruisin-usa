@@ -296,8 +296,9 @@ void RACER_DRONE(PROC* p) {
     int other_machine_controls;
     int no_turn;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -307,6 +308,12 @@ void RACER_DRONE(PROC* p) {
         goto PROC_RESUME_3;
     case 4:
         goto PROC_RESUME_4;
+    case 5:
+        goto PROC_RESUME_5;
+    case 6:
+        goto PROC_RESUME_6;
+    case 7:
+        goto PROC_RESUME_7;
     }
 
     // asm 000050F0: 	LDF	0,R0
@@ -506,7 +513,7 @@ NOOTHERPAL:
         other_machine_controls ^= ((rank >> 1) & 1);
         carblk->other_machine_controls = other_machine_controls;
         if (other_machine_controls != 0) {
-            OM_DRONE(p);
+            PROC_CONTINUE(OM_DRONE, 7);
             return;
         }
     }
@@ -534,10 +541,7 @@ RACE_ON:
     // asm 00005169: 	CALLGE	RACE_FIN
     tracking_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     if (((int)tracking_obj->usr1 >> 8) >= FINISH_ID) {
-        RACE_FIN(p);
-        if (p->func != RACER_DRONE) {
-            return;
-        }
+        PROC_CONTINUE(RACE_FIN, 5);
     }
     // asm 0000516A: 	CALL	RPASS	 			;CHECK FOR PASSING SOUND
     RPASS(p, obj, carblk);
@@ -815,10 +819,7 @@ HI_STLP:
     // asm 00005236: 	CMPI	@FINISH_ID,R0
     // asm 00005237: 	CALLGE	RACE_FIN
     if ((p->ctx->RACER_DRONE.delta_last_oid >> 8) >= FINISH_ID) {
-        RACE_FIN(p);
-        if (p->func != RACER_DRONE) {
-            return;
-        }
+        PROC_CONTINUE(RACE_FIN, 6);
     }
     // *CHECK IF CURRENT SECTION ON TRACK LIST
     // asm 00005238: 	LDI	@DYNALIST_END,AR2		;GET FURTHEST ROAD ID
@@ -977,13 +978,14 @@ static void RACE_FIN(PROC* p /*AR7*/) {
 
     obj = p->ctx->RACER_DRONE.obj;
     carblk = p->ctx->RACER_DRONE.carblk;
-    if (p->func == RACE_FIN) {
-        switch (p->resume_state) {
-        case 0:
-            break;
-        case 1:
-            goto PROC_RESUME_1;
-        }
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("RACE_FIN");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
     }
 
     // asm 000051E7: 	LDF	*+AR7(FINISHDIST),R0
@@ -1057,7 +1059,6 @@ RD0:
     // asm 0000520D: 	OR	O_NOCOLL,R0			;SET NON COLLIDE FLAG
     // asm 0000520E: 	STI	R0,*+AR4(OFLAGS)
     obj->flags |= O_NOCOLL; // SET NON COLLIDE FLAG
-    p->func = RACE_FIN;
 RDL:
     // asm 0000520F: 	CALL	GETTRAK
     GETTRAK(obj, carblk);

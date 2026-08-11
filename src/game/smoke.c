@@ -899,7 +899,7 @@ IMPACTED_PLAYER:
     // asm 000086F4: 	LDI	@PLYPROC,AR7
     // asm 000086F5: 	CREATEC	SPARK_PROC,UTIL_C|SPARK_T
     spark_ctx = port_malloc(sizeof(PROC_CONTEXT));
-    spark_proc = PRC_CREATE_CHILD((PROC_FUNC)SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
+    spark_proc = CREATEC((PROC_FUNC)SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
     // asm 000086F8: 	BC	IMPACT_SPARKX
     if (spark_proc == NULL) {
         goto IMPACT_SPARKX;

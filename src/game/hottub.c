@@ -791,8 +791,9 @@ static int BABE_FLAG_SCRIPT[] = {
 void BABE_WAVEFLAG(PROC* p) {
     int romdata;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

@@ -882,8 +882,9 @@ void CARPROC(PROC* p) {
     DYNAOBJ* dyna;
     int sleep_ticks;
 
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1402,8 +1403,9 @@ void DELCAR(CARBLK* carblk) {
 
 // *----------------------------------------------------------------------------
 void SCAN_OBJECTS(PROC* p) {
-    switch (p->resume_state) {
+    switch (PROC_RESUME_STATE) {
     case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

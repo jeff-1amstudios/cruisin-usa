@@ -91,7 +91,7 @@ OFFROAD_TMR = r0;
 `core/input.h` and `core/output.h` are what we should use to replace direct reads/writte of MMIO memory addresses like `@SWITCH1`, `@COMMPAL`, `@FIFO_ADDR`
 
 ## `PROC` functions
-Functions which take a `PROC *` argument are a executed as primitive co-routines. All local variables should be persisted in a function-specific `PROC_CONTEXT` field, and special care must be taken to make them correctly re-entrant. See `REQWAIT` in `comp.c` for an example of how to structure it.
+Functions which take a `PROC *` argument are executed as primitive co-routines. Follow [PROC translation](proc-translation.md) for resume-stack, `SLEEP`, `JSRP`, cross-function branch, shared-tail, and re-entry rules. All local variables needed across a possible sleep must be persisted in a function-specific `PROC_CONTEXT` field.
 
 ## Stub only files
 For sound, motion and network play modules, when you encounter their functions, prototype them correctly but dont implement. Return dummy values where needed. Mark them as UNIMPL_TODO().
