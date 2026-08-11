@@ -35,7 +35,7 @@ static void GET_COIN4(void);
 static void GET_UNITS_PER_CREDIT(void);
 static void GET_UNITS_FOR_BONUS(void);
 static void GET_MIN_UNITS(void);
-static int GET_CREDITS_TO_START(void);
+int GET_CREDITS_TO_START(void);
 static void GET_CREDITS_TO_CONTINUE(void);
 static void GET_SHOW_PARTIAL(void);
 static void GET_COIN1_COUNTER(void);
@@ -465,7 +465,7 @@ static void GET_MIN_UNITS(void) {
     UNIMPL();
 }
 
-static int GET_CREDITS_TO_START(void) {
+int GET_CREDITS_TO_START(void) {
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0

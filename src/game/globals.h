@@ -119,6 +119,9 @@ extern void_func_ptr BONUS_POSTLAUNCH[];
 // asm:  .globl CHALLENGE_RACE
 extern int CHALLENGE_RACE;
 
+// asm:  .globl WAS_HEAD2HEAD_ON
+extern int WAS_HEAD2HEAD_ON;
+
 // asm:  .globl NEXT_STARTUP,BONUS_WAVE
 extern int NEXT_STARTUP;
 
@@ -301,7 +304,7 @@ extern int SWITCHBUTS;
 extern int DIAG_ACTIVE;
 
 // asm:  .globl GAME_TIMER
-extern c3x_reg_t GAME_TIMER;
+extern c3x_f32_t GAME_TIMER;
 
 // asm:  .globl ST_POLYGONS
 extern int ST_POLYGONS;
@@ -540,7 +543,7 @@ extern int REAL_CHECKPOINTS;
 extern int FIRST_RACE;
 
 // asm:  .globl GAMEDIFF
-extern c3x_reg_t GAMEDIFF;
+extern c3x_f32_t GAMEDIFF;
 
 // asm:  .globl CHECKPOINT_NUM
 extern int CHECKPOINT_NUM;
@@ -621,17 +624,17 @@ extern int CHECKPOINT_TIME_BONUS;
 extern int _plyr1;
 
 // asm:  .globl STEERMX,STEERMN,STEERCT,STEERFR,PEDALMX,PEDALMN
-extern c3x_reg_t STEERMX;
+extern c3x_f32_t STEERMX;
 
-extern c3x_reg_t STEERMN;
+extern c3x_f32_t STEERMN;
 
-extern c3x_reg_t STEERCT;
+extern c3x_f32_t STEERCT;
 
-extern c3x_reg_t STEERFR;
+extern c3x_f32_t STEERFR;
 
-extern c3x_reg_t PEDALMX;
+extern c3x_f32_t PEDALMX;
 
-extern c3x_reg_t PEDALMN;
+extern c3x_f32_t PEDALMN;
 
 // asm:  .globl PLYSTAT,PLYCAR,PLYPROC,PLYCBLK
 extern int PLYSTAT;
@@ -741,7 +744,7 @@ extern int ATTR_MODEL;
 
 // wheel.asm
 // asm:  .globl WHEELPWR,WHEELPOS,WHEELMAX,WHEELVEL
-extern int WHEELPWR;
+extern c3x_f32_t WHEELPWR;
 
 extern int WHEELPOS;
 
@@ -1197,10 +1200,10 @@ void FILL_DITHER(void);
 void ISSUE_STARTGAME_TSEL(void);
 
 // asm:  .globl PLYR_INTRO
-void PLYR_INTRO(void);
+void PLYR_INTRO(PROC* p);
 
 // asm:  .globl ISSUE_STARTGAME
-void ISSUE_STARTGAME(void);
+void ISSUE_STARTGAME(PROC* p);
 
 // asm:  .globl WAIT_FOR_CHALLENGER
 void WAIT_FOR_CHALLENGER(void);
@@ -1215,13 +1218,13 @@ void HEAD2HEAD_LOGO_WAIT(void);
 void HEAD2HEAD_LOGO(void);
 
 // asm:  .globl CHOOSE_NEXT_RACE
-void CHOOSE_NEXT_RACE(void);
+void CHOOSE_NEXT_RACE(PROC* p);
 
 // asm:  .globl INIT_GAMELEG
 void INIT_GAMELEG(void);
 
 // asm:  .globl INIT_PEDALCHK,PEDALCHK
-void INIT_PEDALCHK(void);
+void INIT_PEDALCHK(int* pedal_released /*R5*/);
 
 void PEDALCHK(void);
 
@@ -1423,7 +1426,7 @@ void PLYR_CAR_INIT(void);
 void PLYR_INTRO_ENTER(void);
 
 // asm:  .globl _PLYR,DRONEGO,GETSPD,OVELADD
-void _PLYR(void);
+void _PLYR(PROC* p);
 
 void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta /*R2*/);
 

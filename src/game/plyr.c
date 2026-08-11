@@ -32,7 +32,7 @@ CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/);
 void BONUS_WAIT_LOOP(void);
 void PLYR_CAR_INIT(void);
 void PLYR_INTRO_ENTER(void);
-void _PLYR(void);
+void _PLYR(PROC* p);
 static void CAMCHKL(void);
 static void CAMCHKR(void);
 static void CAMCHKLR(void);
@@ -600,7 +600,7 @@ void PLYR_INTRO_ENTER(void) {
 }
 
 // *----------------------------------------------------------------------------
-void _PLYR(void) {
+void _PLYR(PROC* p) {
 PLYR_ENTER:
     // asm 000029EE: 	CALL	OBJ_GET			;INIT PLAYER OBJECT
     // asm 000029EF: 	LDI	AR0,AR4
@@ -4116,21 +4116,21 @@ void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/) {
  *ALL FLOATS
  */
 /* asm: PEDALMN	.bss	PEDALMN,1 */
-c3x_reg_t PEDALMN = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t PEDALMN;
 /* asm: PEDALMX	.bss	PEDALMX,1 */
-c3x_reg_t PEDALMX = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t PEDALMX;
 /* asm: STEERMN	.bss	STEERMN,1 */
-c3x_reg_t STEERMN = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t STEERMN;
 /* asm: STEERMX	.bss	STEERMX,1 */
-c3x_reg_t STEERMX = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t STEERMX;
 /* asm: STEERCT	.bss	STEERCT,1 */
-c3x_reg_t STEERCT = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t STEERCT;
 /* asm: BRAKEMN	.bss	BRAKEMN,1 */
-c3x_reg_t BRAKEMN = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t BRAKEMN;
 /* asm: BRAKEMX	.bss	BRAKEMX,1 */
-c3x_reg_t BRAKEMX = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t BRAKEMX;
 /* asm: STEERFR	.bss	STEERFR,1 */
-c3x_reg_t STEERFR = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t STEERFR;
 #define ADJ_COINMODE 0
 #define ADJ_GASMIN 1
 #define ADJ_GASMAX 2
@@ -4141,25 +4141,46 @@ c3x_reg_t STEERFR = C3X_INIT(1.0f, 0x0000000000ull);
 #define ADJ_BRAKEMAX 7
 
 void GETCMOS_VALUES(void) {
+    c3x_f32_t* values[] = {
+        &PEDALMN,
+        &PEDALMX,
+        &STEERMN,
+        &STEERMX,
+        &STEERCT,
+        &BRAKEMN,
+        &BRAKEMX,
+    };
+    c3x_reg_t steer_range;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 0000317C: 	PUSH	AR3
     // asm 0000317D: 	LDI	@PEDALMNI,AR3
     // asm 0000317E: 	LDI	ADJ_GASMIN,AR2
     // asm 0000317F: 	LDI	6,RC
     // asm 00003180: 	RPTB	CMOSALP
+    for (int adjustment = ADJ_GASMIN; adjustment <= ADJ_BRAKEMAX; ++adjustment) {
     // asm 00003181: 	PUSH	AR2
     // asm 00003182: 	CALL	ADJUSTMENT_READ
     // asm 00003183: 	POP	AR2
     // asm 00003184: 	FLOAT	R0
     // asm 00003185: 	STF	R0,*AR3++
-CMOSALP:
+        *values[adjustment - ADJ_GASMIN] = C3X_STF(C3X_FROM_INT(ADJUSTMENT_READ(adjustment)));
+
     // asm 00003186: ADDI	1,AR2
+    }
+
     // asm 00003187: 	LDF	@STEERMX,R0
+    steer_range = C3X_LDF(STEERMX);
+
     // asm 00003188: 	SUBF	@STEERMN,R0
+    steer_range = C3X_SUB(steer_range, C3X_LDF(STEERMN));
+
     // asm 00003189: 	STF	R0,@STEERFR
+    STEERFR = C3X_STF(steer_range);
+
     // asm 0000318A: 	POP	AR3
     // asm 0000318B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCMOS_VALUES", 0, 0);
-    UNIMPL();
 }
 
 /*

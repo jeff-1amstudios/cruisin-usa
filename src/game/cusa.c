@@ -188,7 +188,7 @@ int BGNDCOLA;
 /* asm: DIAG_ACTIVE	.bss	DIAG_ACTIVE,1 */
 int DIAG_ACTIVE;
 /* asm: GAME_TIMER	.bss	GAME_TIMER,1 */
-c3x_reg_t GAME_TIMER = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t GAME_TIMER = C3X_F32_INIT(1.0f);
 /* asm: SYSCNTL	pbss	SYSCNTL,1 */
 int SYSCNTL;
 /* asm: _pot0	pbss	_pot0,1 */
@@ -937,7 +937,7 @@ NOTASEC:
     // asm 00004CC6: 	LDF	@FLOAT_TIK,R0
 
     // asm 00004CC7: 	ADDF	@GAME_TIMER,R0
-    GAME_TIMER = C3X_ADD(GAME_TIMER, FLOAT_TIK);
+    GAME_TIMER = C3X_STF(C3X_ADD(GAME_TIMER, FLOAT_TIK));
     // asm 00004CC8: 	STF	R0,@GAME_TIMER
     // asm 00004CC9: NOTINGAME
     // asm 00004CC9: 	INCM	@INFRAMES		;increment number of frames passed since last screen switch

@@ -11,7 +11,7 @@ extern int POSE;
 // asm: 	pbss	lpot0,1			;LAST POT
 extern int lpot0;
 // asm: 	pbss	WHEELPWR,1	;FL
-extern int WHEELPWR;
+extern c3x_f32_t WHEELPWR;
 // asm: 	.bss	WHEELPOS,1
 extern int WHEELPOS;
 // asm: 	.bss	WHEELOUT,1

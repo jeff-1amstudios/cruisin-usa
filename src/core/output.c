@@ -4,6 +4,11 @@
 
 static int g_crusn_debug_output_quads;
 static int g_crusn_debug_output_pixels;
+static u32 g_crusn_comm_io;
+
+void port_output_comm_io(u32 value) {
+    g_crusn_comm_io = value;
+}
 
 typedef struct crusn_fpga_vertex {
     float x;

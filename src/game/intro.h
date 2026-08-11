@@ -23,7 +23,7 @@ extern int FIRST_RACE;
 // asm: 	.bss	POSES,1			;for the WHEEL
 extern int POSES;
 // asm: 	.bss	GAMEDIFF,1
-extern c3x_reg_t GAMEDIFF;
+extern c3x_f32_t GAMEDIFF;
 // asm: 	.bss	CHECKPOINT_NUM,1
 extern int CHECKPOINT_NUM;
 // asm: 	.bss	H2H_FLAGSTATE,1		;WAVEFLAG

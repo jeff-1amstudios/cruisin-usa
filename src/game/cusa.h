@@ -30,7 +30,7 @@ extern int BGNDCOLA;
 // asm: 	.bss	DIAG_ACTIVE,1
 extern int DIAG_ACTIVE;
 // asm: 	.bss	GAME_TIMER,1	;FL	minutes since last buyin
-extern c3x_reg_t GAME_TIMER;
+extern c3x_f32_t GAME_TIMER;
 // asm: 	pbss	SYSCNTL,1	;shadow location
 extern int SYSCNTL;
 // asm: 	pbss	_pot0,1		;steering wheel

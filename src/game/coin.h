@@ -32,4 +32,7 @@ extern int COUNTER_IDX;
 // asm: 	.bss	COUNTER_MODE,1
 extern int COUNTER_MODE;
 
+// asm: 	.def	GET_CREDITS_TO_START
+int GET_CREDITS_TO_START(void);
+
 #endif /* COIN_H */

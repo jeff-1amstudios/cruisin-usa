@@ -2,7 +2,9 @@
 #include "intro.h"
 #include "../core/input.h"
 #include "../core/machine.h"
+#include "../core/validator.h"
 #include "cmos.h"
+#include "coin.h"
 #include "comm.h"
 #include "delta.h"
 #include "error.h"
@@ -30,12 +32,12 @@ static void JINMSG(void);
 static void THROBIT(void);
 void WAIT_FOR_CHALLENGER(void);
 static void CHECK_ENDBONUS(void);
-static void WAIT_FOR_ENDBONUS(void);
+static void WAIT_FOR_ENDBONUS(int track_selection /*R6*/);
 void ISSUE_STARTGAME_TSEL(void);
-void ISSUE_STARTGAME(void);
-void PLYR_INTRO(void);
-void CHOOSE_NEXT_RACE(void);
-static void LOAD_NEW_SELECTION(void);
+void ISSUE_STARTGAME(PROC* p);
+void PLYR_INTRO(PROC* p);
+void CHOOSE_NEXT_RACE(PROC* p);
+static void LOAD_NEW_SELECTION(PROC* p);
 static void WATCH_PLYRS_CAR(void);
 void INIT_GAMELEG(void);
 static void CHOOSECAR(void);
@@ -55,7 +57,7 @@ static void CAR_DIMMER(void);
 static void LIGHT_INIT(void);
 static void LIGHT_OFF(void);
 static void LIGHT_ON(void);
-void INIT_PEDALCHK(void);
+void INIT_PEDALCHK(int* pedal_released /*R5*/);
 void GETCHOICE(void);
 void PEDALCHK(void);
 void RACESEL_TIMER(void);
@@ -63,7 +65,7 @@ static void WAITINTROTIMER(void);
 void INTROTIMER(void);
 void DIAL_ROUT(void);
 void ENDPLAYER(void);
-static void GAME_AVAILABLEP(void);
+static int GAME_AVAILABLEP(int* credits);
 void _start(PROC* p);
 static void ULTRA_PROC(PROC* p);
 void ULTRA_LOGO(void);
@@ -99,7 +101,6 @@ void ABORT_RESET_GALIL(void);
 extern const char XQ[];
 void SEND_CMD(char* cmd);
 void WAIT_ACK(void);
-void GET_CREDITS_TO_START(void);
 void GET_CREDITS_TO_CONTINUE(void);
 
 static tCHOOSE_CAR_ENTRY CCTAB[];
@@ -129,11 +130,13 @@ int FIRST_RACE;
 /* asm: POSES	.bss	POSES,1 */
 int POSES;
 /* asm: GAMEDIFF	.bss	GAMEDIFF,1 */
-c3x_reg_t GAMEDIFF;
+c3x_f32_t GAMEDIFF;
 /* asm: CHECKPOINT_NUM	.bss	CHECKPOINT_NUM,1 */
 int CHECKPOINT_NUM;
 /* asm: H2H_FLAGSTATE	.bss	H2H_FLAGSTATE,1 */
 int H2H_FLAGSTATE;
+/* asm: DCALL	.bss	DCALL,1		;IS CHOOSE TRANSMISSION ACTIVE? */
+int DCALL;
 static const char JINOW[] = "JOIN IN NOW";
 
 void HEAD2HEAD_LOGO_WAIT(void) {
@@ -571,8 +574,10 @@ CEBT:
 int BONUS_WAITFLAG;
 /* asm: OM_BONUS_WAITFLAG	pbss	OM_BONUS_WAITFLAG,1 */
 int OM_BONUS_WAITFLAG;
+/* asm: NOASK_LINK	.bss	NOASK_LINK,1 */
+int NOASK_LINK;
 
-static void WAIT_FOR_ENDBONUS(void) {
+static void WAIT_FOR_ENDBONUS(int track_selection /*R6*/) {
     // asm 0000169C: 	PUSHP	R6
     // asm 0000169F: 	SLEEP	2
     // asm 000016A1: 	CALL	CHECK_ENDBONUS
@@ -697,11 +702,24 @@ void ISSUE_STARTGAME_TSEL(void) {
     UNIMPL();
 }
 
-void ISSUE_STARTGAME(void) {
+void ISSUE_STARTGAME(PROC* p) {
+    switch (p->resume_state) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
     // asm 00001722: 	CLRI	R6
 LKAS534:
     // asm 00001723: 	LDI	@TRANSMISSION_ACTIVE,R0
     // asm 00001724: 	BZ	NOGAME
+    if (TRANSMISSION_ACTIVE == 0) {
+        goto NOGAME;
+    }
     // ;	LDI	@OM_MODE,R0
     // ;	AND	MMODE,R0
     // ;	CMPI	MGAME,R0
@@ -709,16 +727,36 @@ LKAS534:
     // *ELP CHANGE
     // asm 00001725: 	LDI	@FIRST_RACE,R0
     // asm 00001726: 	BNZ	NOTNND
+    if (FIRST_RACE != 0) {
+        goto NOTNND;
+    }
+
     // asm 00001727: 	LDI	@WAS_HEAD2HEAD_ON,R0
     // asm 00001728: 	BNZ	NOTNND
+    if (WAS_HEAD2HEAD_ON != 0) {
+        goto NOTNND;
+    }
+
     // asm 00001729: 	LDI	@OM_MODE,R0
     // asm 0000172A: 	AND	MMODE,R0
     // asm 0000172B: 	CMPI	MBONUS,R0
     // asm 0000172C: 	BEQ	NOGAME
+    if ((OM_MODE & MMODE) == MBONUS) {
+        goto NOGAME;
+    }
+
     // asm 0000172D: 	CMPI	MINIT,R0
     // asm 0000172E: 	BEQ	NOGAME
+    if ((OM_MODE & MMODE) == MINIT) {
+        goto NOGAME;
+    }
+
     // asm 0000172F: 	CMPI	MINSERT_COINS,R0
     // asm 00001730: 	BEQ	NOGAME
+    if ((OM_MODE & MMODE) == MINSERT_COINS) {
+        goto NOGAME;
+    }
+
 NOTNND:
     // 	;IF THE OTHER GAME IS:
     // 	;	 MBONUS
@@ -736,20 +774,41 @@ NOTNND:
     // asm 00001736: 	BEQ	DOIT6
     // asm 00001737: 	CMPI	MINIT,R0
     // asm 00001738: 	BNE	NODOIT6
+    if ((OM_MODE & MMODE) != MBONUS && (OM_MODE & MMODE) != MINSERT_COINS && (OM_MODE & MMODE) != MINIT) {
+        goto NODOIT6;
+    }
+
 DOIT6:
     // asm 00001739: 	JSRP	WAIT_FOR_ENDBONUS
+    WAIT_FOR_ENDBONUS(0);
+
 NODOIT6:
     // asm 0000173F: 	LDI	@WAS_HEAD2HEAD_ON,R0
     // asm 00001740: 	BNZ	DOITANY4
+    if (WAS_HEAD2HEAD_ON != 0) {
+        goto DOITANY4;
+    }
+
     // asm 00001741: 	LDI	@OM_BONUS_WAITFLAG,R0
     // asm 00001742: 	BNZ	DOITANY4
+    if (OM_BONUS_WAITFLAG != 0) {
+        goto DOITANY4;
+    }
+
     // asm 00001743: 	LDI	@_ATTR_MODE,R0
     // asm 00001744: 	CMPI	-7,R0
     // asm 00001745: 	BEQ	DOITANY4
+    if (_ATTR_MODE == -7) {
+        goto DOITANY4;
+    }
+
     // asm 00001746: 	LDI	@OM_MODE,R0
     // asm 00001747: 	AND	MMODE,R0
     // asm 00001748: 	CMPI	MATTR,R0
     // asm 00001749: 	BEQ	DOITANY4
+    if ((OM_MODE & MMODE) == MATTR) {
+        goto DOITANY4;
+    }
     // *ELP CHANGE
     // ;	BNE	PLAPA55
     // ;	LDI	@FIRST_RACE,R0
@@ -776,180 +835,408 @@ NODOIT6:
     // 	;
     // asm 0000174A: 	CMPI	MINTRO,R0
     // asm 0000174B: 	BNE	NOGAME
+    if ((OM_MODE & MMODE) != MINTRO) {
+        goto NOGAME;
+    }
+
     // ;	BU	NOGAME
     // *ELP END CHANGE
 DOITANY4:
     // asm 0000174C: 	CLRI	R0
     // asm 0000174D: 	STI	R0,@BONUS_WAITFLAG
+    BONUS_WAITFLAG = 0;
+
     // *ELP END CHANGE
     // asm 0000174E: 	CLRI	R0
     // asm 0000174F: 	STI	R0,@LINKEDP
+    LINKEDP = 0;
+
     // asm 00001750: 	CALL	SEND_START_GAME
+    SEND_START_GAME();
+
     // asm 00001751: 	LDI	30,AR5
+    p->ctx->ISSUE_STARTGAME.wait_frames = 30;
+
 WTFORRETVAL:
     // asm 00001752: 	DEC	AR5
+    p->ctx->ISSUE_STARTGAME.wait_frames -= 1;
+
     // asm 00001753: 	CMPI	0,AR5
     // asm 00001754: 	BLE	NTINLK
+    if (p->ctx->ISSUE_STARTGAME.wait_frames <= 0) {
+        goto NTINLK;
+    }
+
     // asm 00001755: 	SLEEP	1
+    SLEEP(1, 1);
+
     // *ELP CHANGE
     // asm 00001757: 	LDI	@TRANSMISSION_ACTIVE,R0
     // asm 00001758: 	BZ	NOGAME
+    if (TRANSMISSION_ACTIVE == 0) {
+        goto NOGAME;
+    }
+
     // *ELP END CHANGE
     // asm 00001759: 	LDI	@LINKEDP,R0	;0 = invalid
     // 				;1 = linked
     // 				;2 = not linked
     // asm 0000175A: 	BZ	WTFORRETVAL
+    if (LINKEDP == 0) {
+        goto WTFORRETVAL;
+    }
+
     // asm 0000175B: 	CMPI	1,R0
     // asm 0000175C: 	BNE	NTINLK
+    if (LINKEDP != 1) {
+        goto NTINLK;
+    }
+
     // asm 0000175D: 	LDI	1,R0
     // asm 0000175E: 	STI	R0,@HEAD2HEAD_ON
+    HEAD2HEAD_ON = 1;
+
     // asm 0000175F: 	INCAUD	AUD_H2HGAMES
+    INCAUD(AUD_H2HGAMES);
+
     // asm 00001761: 	CLRI	R0
     // asm 00001762: 	STI	R0,@OM_LINKWAIT
+    OM_LINKWAIT = 0;
+
     // asm 00001763: 	STI	R0,@MY_LINKWAIT
+    MY_LINKWAIT = 0;
+
 NTINLK:
     // asm 00001764: 	CLRI	R0
     // asm 00001765: 	STI	R0,@NOASK_LINK
+    NOASK_LINK = 0;
+
     // asm 00001766: 	RETP
+    return;
+
 NOGAME:
     // *ELP CHANGE
     // asm 0000176A: 	CALL	SEND_LINKCANCELLED
+    SEND_LINKCANCELLED();
+
     // asm 0000176B: 	SLEEP	1
+    SLEEP(1, 2);
+
     // *ELP END CHANGE
     // asm 0000176D: 	CALL	CLEAR_LINK
+    CLEAR_LINK();
+
     // asm 0000176E: 	LDI	1,R0
     // asm 0000176F: 	STI	R0,@NOASK_LINK
+    NOASK_LINK = 1;
+
     // asm 00001770: 	CALL	SETONE
+    SETONE();
+
     // asm 00001771: 	RETP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISSUE_STARTGAME", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void PLYR_INTRO(void) {
+void PLYR_INTRO(PROC* p) {
+    int unfinished_games;
+    int unfinished_games_found;
+    PROC_CONTEXT* ctx;
+
+    switch (p->resume_state) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto ALL_JOINUP;
+    case 4:
+        goto CNR_ENTER;
+    case 5:
+    case 6:
+        goto CALL_ISSUE_STARTGAME;
+    }
+
     // asm 00001775: 	LDI	RM_SINGLE,R0
     // asm 00001776: 	STI	R0,@RACE_MODE
+    RACE_MODE = RM_SINGLE;
+
     // asm 00001777: 	LDI	MINTRO|MGO,R0
     // asm 00001778: 	STI	R0,@_MODE
+    _MODE = MINTRO | MGO;
+
     // asm 00001779: 	CLRI	R0
     // asm 0000177A: 	STI	R0,@WAS_HEAD2HEAD_ON
+    WAS_HEAD2HEAD_ON = 0;
+
     // asm 0000177B: 	LDI	1,R0
     // asm 0000177C: 	STI	R0,@FIRST_RACE
+    FIRST_RACE = 1;
+
     // asm 0000177D: 	JSRP	ISSUE_STARTGAME
+CALL_ISSUE_STARTGAME:
+    ISSUE_STARTGAME(p);
+    if (p->sleep_ticks != 0) {
+        return;
+    }
+
     // asm 00001783: 	CALL	INIT_LASTHS_TABLE		;Initialize the table for players hs entries
+    INIT_LASTHS_TABLE(); // Initialize the table for players hs entries
+
     // asm 00001784: 	LDI	-1,R2
     // asm 00001785: 	SETADJ	ADJ_INITIALS
+    SETADJ(ADJ_INITIALS, -1);
+
     // asm 00001787: 	INCAUD	AUD_GAMENUMBER
+    INCAUD(AUD_GAMENUMBER);
+
     // asm 00001789: 	INCAUD	AUD_GAMES_START
+    INCAUD(AUD_GAMES_START);
+
     // asm 0000178B: 	CALL	HSTDEC
+    HSTDEC();
+
     // asm 0000178C: 	CLRI	R0
     // asm 0000178D: 	STI	R0,@BONUS_WAVE
+    BONUS_WAVE = 0;
+
     // asm 0000178E: 	LDF	1.0,R0
     // asm 0000178F: 	STF	R0,@GAMEDIFF
+    GAMEDIFF = C3X_STF(C3X_IMM_F32(1.0));
+
     // asm 00001790: 	READAUD	AUD_UNFINISHED_GAMES
+    unfinished_games = READAUD(AUD_UNFINISHED_GAMES);
+
     // asm 00001792: 	PUSH	R0
     // asm 00001793: 	READAUD	AUD_UNFINISHED_GAMES_FOUND
+    unfinished_games_found = READAUD(AUD_UNFINISHED_GAMES_FOUND);
+
     // asm 00001795: 	POP	R1
     // asm 00001796: 	CMPI	R1,R0
     // asm 00001797: 	BEQ	NOULOG
+    if (unfinished_games_found == unfinished_games) {
+        goto NOULOG;
+    }
+
     // asm 00001798: 	ERRON	U,EC_UNFINISHED
+    ERRON(EC_UNFINISHED);
+
     // asm 000017A0: 	LDI	R1,R2
     // asm 000017A1: 	SETAUD	AUD_UNFINISHED_GAMES_FOUND
+    AUDIT_WRITE(AUD_UNFINISHED_GAMES_FOUND, unfinished_games);
+
 NOULOG:
     // asm 000017A3: 	INCAUD	AUD_NUM_UNFINISHED
+    INCAUD(AUD_NUM_UNFINISHED);
+
     // asm 000017A5: 	LDI	1,R0				;SHUFFLE DRIVIN
     // asm 000017A6: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 1; // SHUFFLE DRIVIN
+
 CNR_ENTER:
     // asm 000017A7: 	LDP	@IN_RESET_MODE
     // asm 000017A8: 	LDI	@IN_RESET_MODE,R0
     // asm 000017A9: 	SETDP
     // asm 000017AA: 	BZ	CONTINUE
+    if (IN_RESET_MODE == 0) {
+        goto CONTINUE;
+    }
+
     // asm 000017AB: 	SLEEP	1
+    SLEEP(1, 1);
+
     // asm 000017AD: 	BU	CNR_ENTER
+    goto CNR_ENTER;
+
 CONTINUE:
     // asm 000017AE: 	SOND1	START_THEME
+    SOND1(START_THEME);
+
     // asm 000017B0: 	LDI	BUT_START,R0		;BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
     // asm 000017B1: 	STI	R0,@BUTTON_STATUS
+    BUTTON_STATUS = BUT_START; // BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
+
     // asm 000017B2: 	CLRI	R0			;INITIALIZE SCORE
     // asm 000017B3: 	STI	R0,@SCORE
+    SCORE = 0; // INITIALIZE SCORE
+
     // asm 000017B4: 	STI	R0,@END_OF_GAMEP	;END OF GAME FLAG
+    END_OF_GAMEP = 0; // END OF GAME FLAG
+
     // asm 000017B5: 	STI	R0,@_MPH
+    _MPH = 0;
+
     // asm 000017B6: 	STI	R0,@STARTSECTION	;BEGIN LEG OF JOURNEY
+    STARTSECTION = 0; // BEGIN LEG OF JOURNEY
+
     // asm 000017B7: 	STI	R0,@CAR_CHOICE_GOTTEN
+    CAR_CHOICE_GOTTEN = 0;
+
     // asm 000017B8: 	STI	R0,@CHOSEN_RACE
+    CHOSEN_RACE = 0;
+
     // asm 000017B9: 	LDI	-1,R0
     // asm 000017BA: 	STI	R0,@IS_HIDDEN
+    IS_HIDDEN = -1;
+
     // asm 000017BB: 	CALL	GETCMOS_VALUES
+    GETCMOS_VALUES();
+
     // asm 000017BC: 	CALL	INIT_PEDALCHK
+    INIT_PEDALCHK(&p->ctx->pedal_released);
+
     // asm 000017BD: 	CALL	OBJ_INIT
+    OBJ_INIT();
+
     // asm 000017BE: 	CALL	TEXT_INIT
+    TEXT_INIT();
+
     // asm 000017BF: 	JSRP	TRACK_SELECTION
+    TRACK_SELECTION();
+
     // asm 000017C5: 	LDI	@FIRST_RACE,R0
     // asm 000017C6: 	BZ	LOAD_NEW_SELECTION
+    if (FIRST_RACE == 0) {
+        p->func = LOAD_NEW_SELECTION;
+        p->resume_state = 0;
+        LOAD_NEW_SELECTION(p);
+        return;
+    }
+
     // asm 000017C7: 	CALL	INIT_PEDALCHK
+    INIT_PEDALCHK(&p->ctx->pedal_released);
+
     // asm 000017C8: 	CALL	OBJ_INIT
+    OBJ_INIT();
+
     // asm 000017C9: 	CALL	TEXT_INIT
+    TEXT_INIT();
+
     // asm 000017CA: 	CLRI	R0
     // asm 000017CB: 	STI	R0,@DCALL
+    DCALL = 0;
+
     // asm 000017CC: 	JSRP	CHOOSE_TRANSMISSION
+    CHOOSE_TRANSMISSION();
+
     // asm 000017D2: 	LDI	1,R0
     // asm 000017D3: 	STI	R0,@DCALL
+    DCALL = 1;
+
     // asm 000017D4: 	JSRP	CHOOSECAR
+    CHOOSECAR();
+
     // asm 000017DA: 	LDI	BUT_VIEW2,R0			;BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
     // asm 000017DB: 	STI	R0,@BUTTON_STATUS
+    BUTTON_STATUS = BUT_VIEW2; // BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
+
 WFSNP:
     // asm 000017DC: SLEEP	1
+    SLEEP(1, 2);
+
     // asm 000017DE: 	LDI	@START_NOW_P,R0
     // asm 000017DF: 	BZ	WFSNP
+    if (START_NOW_P == 0) {
+        goto WFSNP;
+    }
+
 ALL_JOINUP:
     // asm 000017E0: 	LDI	@_MODE,R0
     // asm 000017E1: 	OR	MINFIN,R0
     // asm 000017E2: 	STI	R0,@_MODE
+    _MODE |= MINFIN;
+
     // asm 000017E3: 	READAUD	ADJ_TIME_TO_START
     // asm 000017E5: 	MPYI	5,R0
     // asm 000017E6: 	ADDI	60,R0
     // asm 000017E7: 	STI	R0,@_countdown
+    _countdown = (READAUD(ADJ_TIME_TO_START) * 5) + 60;
+
     // asm 000017E8: 	CREATEC	WAVEFLAG,UTIL_C|MONKEY_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    PRC_CREATE_CHILD(WAVEFLAG, UTIL_C | MONKEY_T, ctx);
+
     // asm 000017EB: 	CALL	CLEANUP_TRACKSEL_PALS
+    CLEANUP_TRACKSEL_PALS();
+
     // asm 000017EC: 	LDI	UTIL_C|CHOOSECAR_T,R0
     // asm 000017ED: 	LDI	-1,R1
     // asm 000017EE: 	CALL	PRC_KILLALL
+    PRC_KILLALL(UTIL_C | CHOOSECAR_T, -1);
+
     // 	;
     // 	;SETUP THE GAME
     // 	;
     // asm 000017EF: 	CLRF	R0
     // asm 000017F0: 	STF	R0,@GAME_TIMER
+    GAME_TIMER = C3X_STF(C3X_FROM_INT(0));
+
     // asm 000017F1: 	INCAUD	AUD_NUM_BUYINS
+    INCAUD(AUD_NUM_BUYINS);
+
     // asm 000017F3: 	LDI	0AAh,R0
     // asm 000017F4: 	STI	R0,@BGNDCOLA
+    BGNDCOLA = 0xAA;
+
     // asm 000017F5: 	LDI	1,R0	    			;SET GAME FRAME RATE
     // asm 000017F6: 	STI	R0,@FRAMRATE
+    FRAMRATE = 1; // SET GAME FRAME RATE
+
     // asm 000017F7: 	STI	R0,@TIMECLR
+    TIMECLR = 1;
+
     // asm 000017F8: 	STI	R0,@DRONE_DISPATCH_P
+    DRONE_DISPATCH_P = 1;
+
     // asm 000017F9: 	CLRI	R0
     // asm 000017FA: 	STI	R0,@SCREENWIPE_DONE
+    SCREENWIPE_DONE = 0;
+
     // asm 000017FB: 	STI	R0,@NEXT_STARTUP
+    NEXT_STARTUP = 0;
+
     // asm 000017FC: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 0;
+
     // asm 000017FD: 	LDI	9,R0
     // asm 000017FE: 	STI	R0,@POSITION
+    POSITION = 9;
+
     // asm 000017FF: 	READAUD	ADJ_CHECKPOINT_BONUS
     // asm 00001801: 	STI	R0,@CHECKPOINT_TIME_BONUS
+    CHECKPOINT_TIME_BONUS = READAUD(ADJ_CHECKPOINT_BONUS);
+
     // asm 00001802: 	LDI	1,R0
     // asm 00001803: 	STI	R0,@NOAERASE
+    NOAERASE = 1;
+
     // 	;///////////////////////////////
     // asm 00001804: 	LDI	@FIRST_RACE,R0
     // asm 00001805: 	BZ	_PLYR
+    if (FIRST_RACE == 0) {
+        p->func = _PLYR;
+        p->resume_state = 0;
+        _PLYR(p);
+        return;
+    }
+
     // asm 00001806: 	CLRI	R2				;FIRST WAVE
     // asm 00001807: 	SETAUD	AUD_LAST_LEG
+    AUDIT_WRITE(AUD_LAST_LEG, 0); // FIRST WAVE
+
     // asm 00001809: 	LDF	1.0,R0
     // asm 0000180A: 	STF	R0,@WHEELPWR
+    WHEELPWR = C3X_STF(C3X_IMM_F32(1.0));
+
     // asm 0000180B: 	DIE
+    DIE();
+
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_INTRO", 0, 0);
-    UNIMPL();
 }
 
 /* asm: START_NOW_P	.bss	START_NOW_P,1 */
@@ -957,72 +1244,142 @@ int START_NOW_P;
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void CHOOSE_NEXT_RACE(void) {
+void CHOOSE_NEXT_RACE(PROC* p) {
+    switch (p->resume_state) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 0000180C: 	CALL	TEXT_INIT
+    TEXT_INIT();
+
     // asm 0000180D: 	LDI	UTIL_C|TEXTP_T,R0
     // asm 0000180E: 	LDI	-1,R1
     // asm 0000180F: 	CALL	PRC_KILLALL
+    PRC_KILLALL(UTIL_C | TEXTP_T, -1);
+
     // asm 00001810: 	LDI	PLYR_C|PLYR1_T,R0
     // asm 00001811: 	LDI	-1,R1
     // asm 00001812: 	CALL	PRC_KILLALL
+    PRC_KILLALL(PLYR_C | PLYR1_T, -1);
+
     // asm 00001813: 	LDI	@_MODE,R0
     // asm 00001814: 	ANDN	MINFIN|MWATER,R0
     // asm 00001815: 	STI	R0,@_MODE
+    _MODE &= ~(MINFIN | MWATER);
+
     // asm 00001816: 	CALL	OBJ_INIT
+    OBJ_INIT();
+
     // asm 00001817: 	CALL	DYNAOBJ_INIT	;init DYNAMIC OBJECTS
+    DYNAOBJ_INIT(); // init DYNAMIC OBJECTS
+
     // asm 00001818: 	CALL	CARB_INIT	;init CAR BLOCKS
+    CARB_INIT(); // init CAR BLOCKS
+
     // asm 00001819: 	CALL	INIT_RDDEBRIS	;initialize ROAD DEBRIS list(s)
+    INIT_RDDEBRIS(); // initialize ROAD DEBRIS list(s)
+
     // asm 0000181A: 	CLRI	R0
     // asm 0000181B: 	STI	R0,@FIRST_RACE
+    FIRST_RACE = 0;
+
     // 	;
     // asm 0000181C: 	SLEEP	4
+    SLEEP(4, 1);
+
     // 	;
     // asm 0000181E: 	BU	CNR_ENTER
+    p->func = PLYR_INTRO;
+    p->resume_state = 4;
+    PLYR_INTRO(p);
+    return;
+
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOOSE_NEXT_RACE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void LOAD_NEW_SELECTION(void) {
+static void LOAD_NEW_SELECTION(PROC* p) {
+    switch (p->resume_state) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 0000181F: 	LDI	@CHOSEN_RACE,AR0
     // asm 00001820: 	ADDI	@FULLSETUP_TABLEI,AR0
     // asm 00001821: 	LDI	*AR0,R0
     // asm 00001822: 	CALLU	R0
+    FULLSETUP_TABLE[CHOSEN_RACE]();
+
     // asm 00001823: 	LDI	MINTRO|MINFIN,R0
     // asm 00001824: 	STI	R0,@_MODE
+    _MODE = MINTRO | MINFIN;
+
     // asm 00001825: 	LDF	@START_POS+X,R0
     // asm 00001826: 	LDF	@START_POS+Y,R1
     // asm 00001827: 	LDF	@START_POS+Z,R2
     // asm 00001828: 	LDP	@_CAMERAPOS+X
     // asm 00001829: 	STF	R0,@_CAMERAPOS+X
+    _CAMERAPOS.X = C3X_STF(C3X_REG(START_POS[0]));
+
     // asm 0000182A: 	STF	R1,@_CAMERAPOS+Y
+    _CAMERAPOS.Y = C3X_STF(C3X_REG(START_POS[1]));
+
     // asm 0000182B: 	STF	R2,@_CAMERAPOS+Z
+    _CAMERAPOS.Z = C3X_STF(C3X_REG(START_POS[2]));
+
     // asm 0000182C: 	SETDP
     // asm 0000182D: 	LDI	@CHOSEN_RACE,AR0
     // asm 0000182E: 	ADDI	@RACE_STARTING_POINTSI,AR0
     // asm 0000182F: 	LDI	*AR0,R0
     // asm 00001830: 	STI	R0,@STARTSECTION
+    STARTSECTION = RACE_STARTING_POINTS[CHOSEN_RACE];
+
     // asm 00001831: 	CALL	BGD_INIT
+    BGD_INIT();
+
     // asm 00001832: 	CALL	INIT_GAMELEG
+    INIT_GAMELEG();
+
     // asm 00001833: 	LDI	MGAME,R0
     // asm 00001834: 	STI	R0,@_MODE
+    _MODE = MGAME;
+
     // asm 00001835: 	CALL	SCREENWIPE_OPEN
+    SCREENWIPE_OPEN();
+
     // asm 00001836: 	SLEEP	6
+    SLEEP(6, 1);
+
     // asm 00001838: 	LDI	MGAME|MHUD|MINFIN,R0
     // asm 00001839: 	STI	R0,@_MODE
+    _MODE = MGAME | MHUD | MINFIN;
+
     // asm 0000183A: 	LDI	@CHOSEN_RACE,AR0
     // asm 0000183B: 	ADDI	@BONUS_POSTLAUNCHI,AR0
     // asm 0000183C: 	LDI	*AR0,R0
     // asm 0000183D: 	CALLU	R0
+    BONUS_POSTLAUNCH[CHOSEN_RACE]();
+
     // asm 0000183E: 	LDI	BUT_VIEW2,R0			;BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
     // asm 0000183F: 	STI	R0,@BUTTON_STATUS
+    BUTTON_STATUS = BUT_VIEW2; // BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
+
     // asm 00001840: 	BU	ALL_JOINUP
+    p->func = PLYR_INTRO;
+    p->resume_state = 3;
+    PLYR_INTRO(p);
+    return;
+
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_NEW_SELECTION", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2354,16 +2711,28 @@ static void LIGHT_ON(void) {
  *	R5	AS A DEDICATED REG
  *
  */
-void INIT_PEDALCHK(void) {
+void INIT_PEDALCHK(int* pedal_released /*R5*/) {
+    int pedal_threshold;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00001C5B: 	CLRI	R5				;FLAG : HAS THE PEDAL BEEN RELEASEDP
+    *pedal_released = 0; // FLAG: HAS THE PEDAL BEEN RELEASED?
+
     // asm 00001C5C: 	LDI	@_pot1,R0
     // asm 00001C5D: 	FIX	@PEDALMN,R1
+    pedal_threshold = C3X_FIX(C3X_LDF(PEDALMN));
+
     // asm 00001C5E: 	ADDI	20,R1
+    pedal_threshold += 20;
+
     // asm 00001C5F: 	CMPI	R1,R0
     // asm 00001C60: 	LDIGE	1,R5				;GE -> IT HASN'T
+    if (_pot1 >= pedal_threshold) {
+        *pedal_released = 1; // GE -> IT HASN'T
+    }
+
     // asm 00001C61: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_PEDALCHK", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2893,28 +3262,39 @@ KK5:
  *	R0	CREDITS AVAILABLE
  *
  */
-static void GAME_AVAILABLEP(void) {
+static int GAME_AVAILABLEP(int* credits) {
+    int credits_to_start;
+
     // asm 00001D7F: 	PUSH	R2
     // asm 00001D80: 	PUSH	AR2
     // asm 00001D81: 	READADJ	ADJ_FREE_PLAY
+    *credits = READADJ(ADJ_FREE_PLAY);
     // asm 00001D83: 	CMPI	1,R0
     // asm 00001D84: 	BEQ	GA_TRUE
+    if (*credits == 1) {
+        goto GA_TRUE;
+    }
     // asm 00001D85: 	CALL	GET_CREDITS_TO_START
+    credits_to_start = GET_CREDITS_TO_START();
     // asm 00001D86: 	READAUD	AUD_CREDITS
+    *credits = READAUD(AUD_CREDITS);
     // asm 00001D88: 	CMPI	R1,R0
     // asm 00001D89: 	BLT	GA_FALSE
+    if (*credits < credits_to_start) {
+        goto GA_FALSE;
+    }
 GA_TRUE:
     // asm 00001D8A: 	SETC
     // asm 00001D8B: 	POP	AR2
     // asm 00001D8C: 	POP	R2
     // asm 00001D8D: 	RETS
+    return 1;
 GA_FALSE:
     // asm 00001D8E: 	CLRC
     // asm 00001D8F: 	POP	AR2
     // asm 00001D90: 	POP	R2
     // asm 00001D91: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GAME_AVAILABLEP", 0, 0);
-    UNIMPL();
+    return 0;
 }
 
 // *----------------------------------------------------------------------------
@@ -2926,8 +3306,19 @@ GA_FALSE:
  *
  */
 void _start(PROC* p) {
+    int credits;
+    int credits_to_start;
+    int mode;
+#if DEBUG
+    int main_mode;
+#endif
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00001D92: 	LDI	@_MODE,R0
+    mode = _MODE;
     // asm 00001D93: 	AND	MMODE,R0
+    mode &= MMODE;
     // asm 00001D94: 	CMPI	MCT,R0
     // asm 00001D95: 	BEQ	CN
     // asm 00001D96: 	CMPI	MBONUS,R0
@@ -2938,73 +3329,118 @@ void _start(PROC* p) {
     // asm 00001D9B: 	BEQ	CN
     // asm 00001D9C: 	CMPI	MINTRO,R0
     // asm 00001D9D: 	BNE	NOTINTRO
+    if (mode == MCT || mode == MBONUS || mode == MINSERT_COINS || mode == MINIT || mode == MINTRO) {
+        goto CN;
+    }
+    goto NOTINTRO;
 CN:
     // asm 00001D9E: LDI	1,R0
     // asm 00001D9F: 	STI	R0,@START_HIT
+    START_HIT = 1;
     // asm 00001DA0: 	DIE
+    DIE();
 NOTINTRO:
     // asm 00001DA1: NOTINSRT
     // asm 00001DA1: 	CMPI	MGAME,R0
     // asm 00001DA2: 	BEQ	_startX
+    if (mode == MGAME) {
+        goto _startX;
+    }
     // asm 00001DA3: 	CALL	GAME_AVAILABLEP
     // asm 00001DA4: 	BC	CANSTART
+    if (GAME_AVAILABLEP(&credits)) {
+        goto CANSTART;
+    }
     // 	;NO CREDITS TO START!
     // asm 00001DA5: 	LDI	@TEASE_COUNT,R0
     // asm 00001DA6: 	CMPI	0,R0
     // asm 00001DA7: 	BGT	_startX
+    if (TEASE_COUNT > 0) {
+        goto _startX;
+    }
     // asm 00001DA8: 	INC	R0
     // asm 00001DA9: 	STI	R0,@TEASE_COUNT
+    TEASE_COUNT++;
     // asm 00001DAA: 	SOND1	TEASE_TURNKEY
+    SOND1(TEASE_TURNKEY);
     // asm 00001DAC: 	DIE
+    DIE();
 CANSTART:
     // asm 00001DAD: 	CALL	GET_CREDITS_TO_START
+    credits_to_start = GET_CREDITS_TO_START();
     // asm 00001DAE: 	SUBI	R1,R0
+    credits -= credits_to_start;
     // asm 00001DAF: 	LDI	R0,R2
     // asm 00001DB0: 	CMPI	0,R2
     // asm 00001DB1: 	LDILT	0,R2
+    if (credits < 0) {
+        credits = 0;
+    }
     // asm 00001DB2: 	SETAUD	AUD_CREDITS		;DECREMENT CREDIT COUNT
+    AUDIT_WRITE(AUD_CREDITS, credits); // DECREMENT CREDIT COUNT
     // asm 00001DB4: 	LDI	0,R2
     // asm 00001DB5: 	LDI	AUD_BCREDITS,AR2
     // asm 00001DB6: 	CALL	AUDIT_WRITE
+    AUDIT_WRITE(AUD_BCREDITS, 0);
     // asm 00001DB7: startgame
     // asm 00001DB7: 	LDI	@_MODE,R0
+    mode = _MODE;
 #if DEBUG
     // asm: 	LDI	R0,R1
+    main_mode = mode;
     // asm: 	ANDN	MMODE,R0
+    mode &= ~MMODE;
     // asm: 	AND	MMODE,R1
+    main_mode &= MMODE;
     // asm: 	CMPI	MATTR,R1		;this kludge allows us, in debugging
     // asm: 	BEQ	CYCLEOUT		;more to cycle out of game mode into
+    if (main_mode == MATTR) {
+        goto CYCLEOUT;
+    }
     // asm: 	OR	MATTR,R1		;attract mode...
+    main_mode |= MATTR;
     // asm: 	STI	R1,@_MODE		;
+    _MODE = main_mode;
     // 	;
     // 	;SYSTEM SHUTDOWN, STRAIGHTLINE CODE NOW ACTIVE
     // 	;
     // asm: 	BR	CYCLE_ATTR
+    CYCLE_ATTR();
+    return;
     // 	;
     // 	;
 CYCLEOUT:
 #endif
     // asm 00001DB8: 	ANDN	MMODE,R0
+#if !DEBUG
+    mode &= ~MMODE;
+#endif
     // *ELP CHANGE February 8,1995
     // ;	OR	MGAME,R0
     // 	;we must begin the game in MINTRO
     // 	;
     // 	;
     // asm 00001DB9: 	OR	MINTRO,R0
+    mode |= MINTRO;
     // *ELP END CHANGE
     // asm 00001DBA: 	STI	R0,@_MODE
+    _MODE = mode;
     // asm 00001DBB: 	CLRI	R0
     // asm 00001DBC: 	STI	R0,@(_plyr1+PLY_CAR)
+    PLYCAR = NULL;
     // asm 00001DBD:         LDP     @FASTSTKI		;GET PAGE OF STORED ADDRESS
     // asm 00001DBE:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
+    // ignored: stack pointer restore
     // asm 00001DBF: 	LDI	1,AR2
     // asm 00001DC0: 	CALL	WAVE
+    WAVE(1);
     // asm 00001DC1: 	BR	COLD_ENTER		;RESET SYSTEM RUNNING
+    COLD_ENTER(); // RESET SYSTEM RUNNING
+    return;
 _startX:
     // asm 00001DC2: 	DIE
+    DIE();
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_start", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

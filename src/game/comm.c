@@ -1,6 +1,7 @@
 #include "comm.h"
 
 #include "../core/machine.h"
+#include "../core/output.h"
 #include "c30.h"
 #include "cmos.h"
 #include "commq.h"
@@ -154,23 +155,38 @@ void COMM_MASTER_SEND_SYNC(void) {
  *
  */
 void SETONE(void) {
+    u32 comm_io;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00007F7B: 	PUSH	R0
     // asm 00007F7C: 	PUSH	AR0
     // asm 00007F7D: 	CLRI	R0
     // asm 00007F7E: 	STI	R0,@TRANSMISSION_ACTIVE
+    TRANSMISSION_ACTIVE = 0;
+
     // asm 00007F7F: 	LDI	1,R0
     // asm 00007F80: 	STI	R0,@ONEFLAG
+    ONEFLAG = 1;
+
     // asm 00007F81: 	LDI	@DIPRAM,R0
     // asm 00007F82: 	TSTB	CMDP_MASTER,R0
     // asm 00007F83: 	LDIZ	C_C2|C_MAS,R0	;MASTER CASE SEND C2=1
+    comm_io = C_C2 | C_MAS; // MASTER CASE SEND C2=1
+
     // asm 00007F84: 	LDINZ	C_C1|C_SLA,R0	;SLAVE CASE SEND C1=1
+    if ((DIPRAM & CMDP_MASTER) != 0) {
+        comm_io = C_C1 | C_SLA; // SLAVE CASE SEND C1=1
+    }
+
     // asm 00007F85: 	B	ONEX
+    // Shared ONEX tail at 00007F90.
+    port_output_comm_io(comm_io << 16);
+
     // *
     // *CLR ONE PLAYER GAME (NO LINK)
     // *
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SETONE", 0, 0);
-    UNIMPL();
+    return;
 }
 
 void CLRONE(void) {

@@ -25,7 +25,7 @@ int POSE;
 /* asm: lpot0	pbss	lpot0,1 */
 int lpot0;
 /* asm: WHEELPWR	pbss	WHEELPWR,1 */
-int WHEELPWR;
+c3x_f32_t WHEELPWR;
 /* asm: WHEELPOS	.bss	WHEELPOS,1 */
 int WHEELPOS;
 /* asm: WHEELOUT	.bss	WHEELOUT,1 */

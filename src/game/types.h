@@ -697,12 +697,17 @@ typedef struct VIEWLIST_ENTRY {
 struct WAVEFLAG_ENTRY;
 
 typedef struct PROC_CONTEXT {
+    int pedal_released; // process-saved R5 used by INIT_PEDALCHK/PEDALCHK
+
     union {
         struct {
             int race_number;
             int oid_group;
             int flash_pal_index;
         } FLASH_LETTERS_PROC;
+        struct {
+            int wait_frames; // AR5 across ISSUE_STARTGAME's SLEEP
+        } ISSUE_STARTGAME;
         struct {
             int race_number;
             int white_pal;

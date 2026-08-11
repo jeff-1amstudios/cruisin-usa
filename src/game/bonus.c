@@ -99,6 +99,8 @@ int BONUS_WAVE;
 int FINISH_LINE;
 /* asm: DO_FOLDFLAG	.bss	DO_FOLDFLAG,1 */
 int DO_FOLDFLAG;
+/* asm: WAS_HEAD2HEAD_ON	.bss	WAS_HEAD2HEAD_ON,1 */
+int WAS_HEAD2HEAD_ON;
 #define NUM_LEGS 14
 
 static const char LEG1[] = "GOLDEN GATE PARK";

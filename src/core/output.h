@@ -3,6 +3,8 @@
 
 #include "port_types.h"
 
+void port_output_comm_io(u32 value);
+
 int port_output_fpga(
     int x1,
     int y1,

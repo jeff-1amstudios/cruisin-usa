@@ -53,21 +53,21 @@ extern int WHLTIM;
 // asm: 	.bss	WHLOLD,1
 extern int WHLOLD;
 // asm: 	.bss	PEDALMN,1		;GAS PEDAL MIN	 CMOS 0
-extern c3x_reg_t PEDALMN;
+extern c3x_f32_t PEDALMN;
 // asm: 	.bss	PEDALMX,1		;GAS PEDAL MAX	      1
-extern c3x_reg_t PEDALMX;
+extern c3x_f32_t PEDALMX;
 // asm: 	.bss	STEERMN,1		;STEERING MIN	      2
-extern c3x_reg_t STEERMN;
+extern c3x_f32_t STEERMN;
 // asm: 	.bss	STEERMX,1		;STEERING MAX	      3
-extern c3x_reg_t STEERMX;
+extern c3x_f32_t STEERMX;
 // asm: 	.bss	STEERCT,1		;STEERING CENTER      4
-extern c3x_reg_t STEERCT;
+extern c3x_f32_t STEERCT;
 // asm: 	.bss	BRAKEMN,1		;BRAKE PEDAL MIN      5
-extern c3x_reg_t BRAKEMN;
+extern c3x_f32_t BRAKEMN;
 // asm: 	.bss	BRAKEMX,1		;BRAKE PEDAL MAX      6
-extern c3x_reg_t BRAKEMX;
+extern c3x_f32_t BRAKEMX;
 // asm: 	.bss	STEERFR,1		;STEERING FREE
-extern c3x_reg_t STEERFR;
+extern c3x_f32_t STEERFR;
 void RANDSND(const int* sounds /*AR2*/, int range /*R0*/);
 void RANDVSND(const int* sounds /*AR2*/, int range /*R0*/, int volume /*R1*/);
 c3x_reg_t ROADIR(OBJ* track_obj /*AR0*/);

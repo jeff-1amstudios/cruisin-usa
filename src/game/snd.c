@@ -957,11 +957,11 @@ void SND_RESET_QUIET(void) {
     // asm 000092D5: 	LDP	@RESET_TIMER
     // asm 000092D6: 	LDI	1,R0
     // asm 000092D7: 	STI	R0,@RESET_TIMER
+    RESET_TIMER = 1;
     // asm 000092D8: 	STI	R0,@IN_RESET_MODE
+    IN_RESET_MODE = 1;
     // asm 000092D9: 	SETDP
     // asm 000092DA: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SND_RESET_QUIET", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -977,6 +977,17 @@ void SNDPROC(void) {
     // asm 000092DD: 	SETDP
     // asm 000092DE: 	CMPI	1,R0
     // asm 000092DF: 	BEQ	RESETMUNGE
+    if (IN_RESET_MODE == 1) {
+        // RESETMUNGE's hardware writes are stubbed, but its frame-visible
+        // reset timer and completion flag must still advance.
+        RESET_TIMER += 1;
+        if (RESET_TIMER == 6) {
+            IN_RESET_MODE = 0;
+            SET_MASTER_VOL(ADJUSTMENT_READ(ADJ_VOLUME));
+        }
+        return;
+    }
+
     // asm 000092E0: 	PUSH	R0
     // asm 000092E1: 	PUSH	R4
     // asm 000092E2: 	LDI	@SNDSTRI,AR0

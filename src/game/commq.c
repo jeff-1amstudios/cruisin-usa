@@ -226,7 +226,7 @@ ISDONE:
     // asm 00007695: 	STI	R0,@RBUFF_LEN
     // asm 00007696: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BUFFER", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -349,7 +349,7 @@ void COMMQ_PACKET_INIT(void) {
     // asm 000076BF: 	POP	R0
     // asm 000076C0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMMQ_PACKET_INIT", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -376,7 +376,7 @@ void COMMQ_READY_TO_SEND(void) {
     // asm 000076C8: 	POP	R0
     // asm 000076C9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COMMQ_READY_TO_SEND", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -431,7 +431,7 @@ MESSADDX:
     // asm 000076DF: 	POP	AR0
     // asm 000076E0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MESSAGE_ADD", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -487,7 +487,7 @@ MASBX:
 static void DECODE_NULL(void) {
     // asm 000076F1: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_NULL", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -528,7 +528,7 @@ static void DECODE_WAVEFL_READY(void) {
     // asm 000076FB: 	STI	R0,@H2H_FLAGSTATE
     // asm 000076FC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_WAVEFL_READY", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_WAVEFL_SET(void) {
@@ -536,7 +536,7 @@ static void DECODE_WAVEFL_SET(void) {
     // asm 000076FE: 	STI	R0,@H2H_FLAGSTATE
     // asm 000076FF: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_WAVEFL_SET", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_WAVEFL_GO(void) {
@@ -546,7 +546,7 @@ static void DECODE_WAVEFL_GO(void) {
     // asm 00007703: 	STI	R0,@_sectime
     // asm 00007704: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_WAVEFL_GO", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -559,7 +559,7 @@ static void SEND_LINKEDT(void) {
     // asm 00007708: 	POP	AR2
     // asm 00007709: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_LINKEDT", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void SEND_LINKEDF(void) {
@@ -569,7 +569,7 @@ static void SEND_LINKEDF(void) {
     // asm 0000770D: 	POP	AR2
     // asm 0000770E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_LINKEDF", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_LINKEDT(void) {
@@ -579,7 +579,7 @@ static void DECODE_LINKEDT(void) {
     // asm 00007712: 	POP	R0
     // asm 00007713: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_LINKEDT", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_LINKEDF(void) {
@@ -589,7 +589,7 @@ static void DECODE_LINKEDF(void) {
     // asm 00007717: 	POP	R0
     // asm 00007718: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_LINKEDF", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -688,7 +688,7 @@ DCMX:
     // asm 00007766: 	POP	R0
     // asm 00007767: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_MODE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -709,7 +709,7 @@ void SEND_CHECKPOINT(void) {
     // asm 0000776D: 	STI	R1,@MY_STATE
     // asm 0000776E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_CHECKPOINT", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -721,7 +721,7 @@ static void SEND_FINISH(void) {
     // asm 00007771: 	STI	R0,@MY_STATE
     // asm 00007772: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_FINISH", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -757,7 +757,7 @@ void SEND_MODE(void) {
     // asm 0000778D: 	BR	MESSAGE_ADD
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_MODE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -768,7 +768,7 @@ static void DECODE_LINKCANCELLED(void) {
     // asm 0000778F: 	STI	R0,@OM_LINKWAIT
     // asm 00007790: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_LINKCANCELLED", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -779,7 +779,7 @@ void SEND_LINKCANCELLED(void) {
     // asm 00007792: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_LINKCANCELLED", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -803,7 +803,7 @@ void SEND_START_GAME(void) {
     // asm 0000779B: 	STI	R0,@MY_LINKWAIT
     // asm 0000779C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_START_GAME", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -839,7 +839,7 @@ NOPE:
     // asm 000077B8: 	STI	R0,@OM_VEHICLE
     // asm 000077B9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_START_GAME", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -850,7 +850,7 @@ void SEND_END_GAME(void) {
     // asm 000077BB: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_END_GAME", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -864,7 +864,7 @@ static void DECODE_END_GAME(void) {
     // asm 000077BD: 	STI	R0,@HEAD2HEAD_ON
     // asm 000077BE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_END_GAME", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -884,7 +884,7 @@ void SEND_TIMECODE(void) {
     // asm 000077C9: 	BR	MESSAGE_ADD
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_TIMECODE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -904,7 +904,7 @@ void SEND_RACENUM(void) {
     // asm 000077D4: 	BR	MESSAGE_ADD
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RACENUM", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -928,7 +928,7 @@ static void DECODE_RACENUM(void) {
     // asm 000077E2: 	POP	R1
     // asm 000077E3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACENUM", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -941,7 +941,7 @@ static void DECODE_VEHICLE(void) {
     // asm 000077E7: 	STI	R0,@OM_VEHICLE
     // asm 000077E8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_VEHICLE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -957,7 +957,7 @@ void SEND_VEHICLE(void) {
     // asm 000077EF: 	BR	MESSAGE_ADD
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_VEHICLE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -982,7 +982,7 @@ static void DECODE_TIMECODE(void) {
     // asm 000077FF: 	POP	R0
     // asm 00007800: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_TIMECODE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1004,7 +1004,7 @@ void SEND_RHO_POS(void) {
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RHO_POS", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 void SEND_RACER_POS(void) {
@@ -1014,7 +1014,7 @@ void SEND_RACER_POS(void) {
     // asm 0000780C: 	B	SEND_CAR_POS
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RACER_POS", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 void SEND_PLAYERS_POS(void) {
@@ -1123,7 +1123,7 @@ MATLP:
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_PLAYERS_POS", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 void SEND_RHO_CREATE(OBJ* obj, int car_id, int vehicle_index) {
@@ -1145,7 +1145,7 @@ void SEND_RHO_CREATE(OBJ* obj, int car_id, int vehicle_index) {
     // asm 00007863: 	BR	MESSAGE_ADD
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RHO_CREATE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1187,7 +1187,7 @@ FD1:
     // *DECODE RHO CAR UPDATE
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_DRONE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_RHO_UPDATE(void) {
@@ -1202,7 +1202,7 @@ static void DECODE_RHO_UPDATE(void) {
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_UPDATE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_RACER_UPDATE(void) {
@@ -1227,7 +1227,7 @@ static void DECODE_RACER_UPDATE(void) {
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_UPDATE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_CAR_UPDATE(void) {
@@ -1343,7 +1343,7 @@ DECCARX:
     // asm 000078E0: 	ADDI	45,AR2	 		;BLOW IT OFF
     // asm 000078E1: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_CAR_UPDATE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1371,7 +1371,7 @@ DCRHOX:
     // *KILL OFF RACER
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_CREATE", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_RACER_KILL(void) {
@@ -1394,7 +1394,7 @@ DCRKX:
     // asm 00007902: 	RETS
     // *DECODE TRACK RANGE OTHER MACHINE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RACER_KILL", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_OM_TRACK(void) {
@@ -1415,7 +1415,7 @@ static void DECODE_OM_TRACK(void) {
     // asm 00007911: 	RETS
     // *SEND YOUR TRACK RANGE
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_OM_TRACK", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 void SEND_OM_TRACK(void) {
@@ -1443,7 +1443,7 @@ void SEND_OM_TRACK(void) {
     // asm 00007927: 	BR	MESSAGE_ADD
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_OM_TRACK", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1469,7 +1469,7 @@ SBLS:
     // asm 0000792B: BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_BSYNC3", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 static void DECODE_BSYNC3(void) {
@@ -1486,7 +1486,7 @@ static void DECODE_BSYNC3(void) {
     // asm 0000792D: 	STI	R0,@OM_BSYNC
     // asm 0000792E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BSYNC3", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1504,7 +1504,7 @@ static void DECODE_CHANGE_MUSIC(void) {
     // asm 00007937: 	POP	AR2
     // asm 00007938: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_CHANGE_MUSIC", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1520,7 +1520,7 @@ void SEND_CHANGE_MUSIC(void) {
     // asm 0000793F: 	CALL	MESSAGE_ADD
     // asm 00007940: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_CHANGE_MUSIC", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1534,7 +1534,7 @@ static void DECODE_COINDROP(void) {
     // asm 00007942: 	STI	R0,@COINDROP
     // asm 00007943: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_COINDROP", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1545,7 +1545,7 @@ void SEND_COINDROP(void) {
     // asm 00007945: 	BR	MESSAGE_ADD_SB
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_COINDROP", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1574,7 +1574,7 @@ static void DECODE_DIAGNOSTIC(void) {
     // asm 0000794C: 	CALL	SEND_DIAGNOSTIC
     // asm 0000794D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_DIAGNOSTIC", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------
@@ -1597,7 +1597,7 @@ static void SEND_DIAGNOSTIC(void) {
     // asm 0000795B: 	BR	MESSAGE_ADD
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_DIAGNOSTIC", 0, 0);
-    UNIMPL_TODO();
+    STUB();
 }
 
 // *----------------------------------------------------------------------------

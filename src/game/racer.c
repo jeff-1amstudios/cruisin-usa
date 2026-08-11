@@ -148,7 +148,7 @@ static c3x_reg_t GETDIFF(void) {
     // asm 000050C4: 	LDI	@HEAD2HEAD_ON,R1
     // asm 000050C5: 	LDFZ	@GAMEDIFF,R1
     // asm 000050C6: 	BZ	GD1
-    game_difficulty = HEAD2HEAD_ON == 0 ? GAMEDIFF : OM_DIFF;
+    game_difficulty = HEAD2HEAD_ON == 0 ? C3X_LDF(GAMEDIFF) : OM_DIFF;
 
     // asm 000050C7: 	LDF	@OM_DIFF,R1
     // asm 000050C8: 	CMPF	1.16,R1

@@ -176,7 +176,7 @@ void WAVE(int wave_index) {
     CLEARRDY = 1;
 
     WHEELPOS = READADJ(ADJ_STEERCENTER);
-    WHEELPWR = 0;
+    WHEELPWR = C3X_STF(C3X_FROM_INT(0));
     WHEELVEL = 0;
     COINOFF = 0;
     NOLONG_VEHICLES = 0;
@@ -192,6 +192,7 @@ void WAVE(int wave_index) {
 
     if (wave_index == 1) {
         BEGIN_GAME();
+        return;
     }
 
     // ;READ HARDWARE 0=CLOSED, 1=OPEN
@@ -406,13 +407,22 @@ static void LOAD_HIGH_SCORE(void) {
 }
 
 static void BEGIN_GAME(void) {
+    PROC_CONTEXT* ctx;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000093CB: 	CALL	SND_RESET_QUIET
+    SND_RESET_QUIET();
+
     // asm 000093CC: 	LDI	1,R0
     // asm 000093CD: 	STI	R0,@LOADED
+    LOADED = 1;
+
     // asm 000093CE: 	CREATE	PLYR_INTRO,PLYR_C|PLYR1_T	;PLAYERS PROCESS
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(PLYR_INTRO, PLYR_C | PLYR1_T, ctx); // PLAYERS PROCESS
+
     // asm 000093D1: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BEGIN_GAME", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
