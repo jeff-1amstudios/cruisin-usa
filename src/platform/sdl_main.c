@@ -18,17 +18,14 @@ static int g_measure_attract_timing;
 
 extern void MAINLOOP(void);
 
-static int crusn_free_play_requested(int argc, char* argv[]) {
-    const char* env_value = getenv("CRUSN_FREE_PLAY");
-    int enabled = env_value != NULL && strcmp(env_value, "0") != 0;
-
+static int crusn_free_play_enabled(int argc, char* argv[]) {
     for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "--free-play") == 0) {
-            enabled = 1;
+        if (strcmp(argv[i], "--no-free-play") == 0) {
+            return 0;
         }
     }
 
-    return enabled;
+    return 1;
 }
 
 void crusn_measure_attract_start(void) {
@@ -80,7 +77,7 @@ int main(int argc, char* argv[]) {
     crusn_machine machine;
     crusn_video video = { 0 };
     int running = 1;
-    int free_play = crusn_free_play_requested(argc, argv);
+    int free_play = crusn_free_play_enabled(argc, argv);
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS) != 0) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());

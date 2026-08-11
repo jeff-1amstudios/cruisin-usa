@@ -38,9 +38,9 @@ The system has two sides: a MAME-side trace generator and a port-side validator.
 
 The key point is that the validator is not recomputing anything itself. It is replaying a previously captured trace from the original game and checking that the port reaches the same observable state in the same order.
 
-Set `CRUSN_DISABLE_MAME_VALIDATION=1` when running the port to make every MAME
-validation call a no-op. This also prevents the validator from opening
-`mame_validate/mame.log`.
+MAME validation is disabled by default. Set `CRUSN_ENABLE_MAME_VALIDATION=1`
+when running the port to replay the captured trace. `tools/debug.sh` sets this
+automatically.
 
 ## How breakpoints are generated
 

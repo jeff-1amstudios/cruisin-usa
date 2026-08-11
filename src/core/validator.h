@@ -11,8 +11,6 @@ typedef enum MAME_VALIDATE_REG_KIND {
     MAME_VALIDATE_REG_KIND_STORED_FLOAT,
 } MAME_VALIDATE_REG_KIND;
 
-extern int mame_validate_disabled;
-
 void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
 void mame_validate_arg_sym_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);

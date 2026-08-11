@@ -15,7 +15,7 @@
 
 static FILE* g_validate_log;
 static int g_validate_maps_loaded;
-int mame_validate_disabled = 0;
+static int mame_validate_enabled = 0;
 static int print_oks = 0;
 static int abort_on_error = 1;
 static int fail_on_wrong_consumer = 0;
@@ -96,13 +96,13 @@ static void fail() {
 
 static int should_skip_validation(void) {
     if (!g_validate_environment_checked) {
-        if (getenv("CRUSN_DISABLE_MAME_VALIDATION") != NULL) {
-            mame_validate_disabled = 1;
+        if (getenv("CRUSN_ENABLE_MAME_VALIDATION") != NULL) {
+            mame_validate_enabled = 1;
         }
         g_validate_environment_checked = 1;
     }
 
-    return mame_validate_disabled || validate_log_exhausted;
+    return !mame_validate_enabled || validate_log_exhausted;
 }
 
 static int validate_failed(void) {

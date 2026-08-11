@@ -79,14 +79,15 @@ legally obtained version 4.5 main-data image at:
 roms/crusnusa45_maindata_interleaved.bin
 ```
 
-Run the game from the repository root. Unless you have generated a MAME
-validation capture, disable validation replay:
+Run the game from the repository root. Free play is enabled by default and MAME
+validation is disabled:
 
 ```sh
-CRUSN_DISABLE_MAME_VALIDATION=1 ./build/crusn --free-play
+./build/crusn
 ```
 
-Press <kbd>Return</kbd> for Start.
+Use `--no-free-play` to use the normal coin settings. Press <kbd>Return</kbd> for
+Start.
 
 ## Contributing
 
