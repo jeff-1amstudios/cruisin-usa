@@ -1,7 +1,7 @@
 # Cruis'n USA
 
-A work-in-progress port of the original *Cruis'n USA* arcade game from
-TMS320C30 assembly to portable C using SDL2.
+A work-in-progress port of the original [Cruis'n USA](https://en.wikipedia.org/wiki/Cruis%27n_USA) arcade game from
+[TMS320C30](https://en.wikipedia.org/wiki/TMS320) assembly to portable C using SDL2.
 
 The goal is **100% functional equivalence with the version 4.5 arcade ROM** on
 modern systems.
@@ -12,7 +12,7 @@ modern systems.
 
 ## Status
 
-The port currently reaches the attract sequence shown above. It is under active
+The port currently plays the attract sequence shown above. It is under active
 development and is not yet fully playable.
 
 ## Background
@@ -27,28 +27,50 @@ To recover the changes made between those versions, this project uses a
 the 4.4 source with the disassembled 4.5 program, allowing the code and data
 that actually shipped to be identified and restored.
 
-The original archive also omitted most game assets and their final IDs and
-memory locations. The walker recovers these from matched instructions. For
-example:
+- [4.4 to 4.5 changes](https://github.com/jeff-1amstudios/cruisin-usa/commit/2033b4e68533fe9055101752713465132aad751e)
 
-```asm
-LDA @red_car, AR1
+## Asset recovery
+The original archive also omits game assets and their final IDs and
+memory locations. The ROM walker recovers these from matched instructions. For
+example:
+1. We start with asm code that references an unknown value. [(link)](https://github.com/jeff-1amstudios/cruisin-usa/blob/643868980449fae3f40b2cad4e4422eebe4e9343/asm/BONUS.ASM#L665)
+```
+...
+CALL  KILL_THE_REANIMATORS		;cheering crowd
+LDL	  shared_PALETTES,AR2
+CALL  dealloc_section
+...
 ```
 
-Once this source instruction is aligned with the ROM, its compiled operand
-reveals the value of `@red_car`. The same process recovers asset IDs, function
-addresses, memory locations, and other missing constants.
+2. The walker matches that code to `0x00003AF4` in the 4.5 ROM so now we have
+```
+CODE:00003AF4    LDL	shared_PALETTES,AR2
+```
+3. At `00003AF4`, the disassembly shows us that the value being set on AR2 is a pointer to `0x0000A16A` so we know that `shared_PALETTES` should be defined as a pointer to `0x0000A16A` in the ROM and can now reference it in our ported C code.
 
-## Translation and validation
+The same process recovers asset IDs, palette numbers, function addresses, memory locations, and other missing constants.
+
+## Workflow
 
 AI is used to translate the game function by function, keeping the original
 assembly beside the generated C for review and debugging.
 
-Correctness is checked against the version 4.5 game running in **MAME**.
-Validation markers capture function entries, registers, and memory from MAME;
+Correctness is the key challenge on a project like this. Its "easy(!?)" enough to generate reasonable looking code, but much harder to know if it is really correct or not.
+
+In other c-based decomp projects, assembly-level correctness can be used, like https://github.com/dethrace-labs/dethrace or https://github.com/isledecomp/isle. Here, that is not possible as the original code is written in TMS320C assembly, not c.
+
+Instead, this project uses **MAME** running version 4.5 as the source of truth and checks behavior against it at runtime.
+Assertion markers capture function entries, registers, and memory from MAME;
 the port then replays the same sequence and stops at the first difference. See
 the [translation guide](docs/function-translation.md) and
 [debugging guide](docs/debugging.md) for details.
+
+This enables us to run a tight loop of 
+- writing code
+- asserting its behavior
+- observing differences vs MAME
+- patching
+- re-observing and repeat until it all matches.
 
 ## Building
 
