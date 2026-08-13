@@ -7,6 +7,7 @@
 #include "../core/machine.h"
 #include "../core/validator.h"
 #include "../game/cmos.h"
+#include "../game/cusa.h"
 #include "../game/globals.h"
 #include "sdl_video.h"
 
@@ -109,22 +110,23 @@ int main(int argc, char* argv[]) {
         ADJUSTMENT_WRITE(ADJ_FREE_PLAY, 1);
     }
 
-    const double int0_period = 1.0 / 60.0;
-    const double counter_frequency = (double)SDL_GetPerformanceFrequency();
+    const Uint64 counter_frequency = SDL_GetPerformanceFrequency();
     Uint64 previous_counter = SDL_GetPerformanceCounter();
-    double int0_accumulator = int0_period;
+    Uint64 int0_accumulator = counter_frequency;
 
     while (running) {
         Uint64 current_counter = SDL_GetPerformanceCounter();
-        int0_accumulator += (double)(current_counter - previous_counter) / counter_frequency;
+        int0_accumulator += (current_counter - previous_counter) * TIKS_PER_SECOND;
         previous_counter = current_counter;
 
-        while (int0_accumulator >= int0_period) {
+        while (int0_accumulator >= counter_frequency) {
             INT0();
-            int0_accumulator -= int0_period;
+            int0_accumulator -= counter_frequency;
         }
 
-        if (INFRAMES >= FRAMRATE) {
+        /* ZSORTWT raises CLEARRDY and the original MAINLOOP waits for INT0
+           to clear it before dispatching processes for another frame. */
+        if (INFRAMES >= FRAMRATE && CLEARRDY == 0) {
             MAINLOOP();
             crusn_yield_display_interrupt();
         } else {

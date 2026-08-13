@@ -111,7 +111,6 @@ static const char TPALNI[];
  */
 
 #define MEMTESTS 1
-#define TIKS_PER_SECOND 57
 /* asm: COMMINTM	fbss	COMMINTM,1 */
 int COMMINTM;
 // 				;INT2_M  if linked
@@ -877,6 +876,9 @@ NOSTOPWUPDT:
     // asm 00004CA8: 	CMPI	TIKS_PER_SECOND,R0
     // asm 00004CA9: 	BLT	NOTASEC
     r0 = _sectime;
+    if (_sectime < TIKS_PER_SECOND) {
+        goto NOTASEC;
+    }
     if (_sectime >= TIKS_PER_SECOND) {
         // asm 00004CAA: 	CLRI	R0
         r0 = 0;
@@ -1089,7 +1091,11 @@ static void READIO(void) {
     // asm 00004D25: 	STI	R0,@ATOD_R
     // asm 00004D26: 	LDI	*AR0,R2
     // asm 00004D27: 	SETDP
-    // The SDL port has no asynchronous A/D converter to trigger here.
+    // The SDL port has no asynchronous A/D converter to trigger ATODINT.
+    // Sample the host's steering channel here, at the point where the
+    // original starts that conversion, so gameplay still consumes _pot0.
+    port_sample_steering();
+    _pot0 = port_get_steering();
 
     // asm 00004D28: 	CLRI	R0
     // asm 00004D29: 	STI	R0,@RDPOT

@@ -250,37 +250,51 @@ void SETLGDIGITFONTDS(tSHADOW_TEXT* t) {
 static int FONTN43_A = lgnum43_I;
 
 void SETN43FONT(tTEXT* t /*AR0*/) {
+    int palette;
     // asm 000079D2: 	LDI	40,R0
     // asm 000079D3: 	STI	R0,*+AR0(TEXT_HEIGHT)
+    t->height = 40;
     // asm 000079D4: 	LDI	@FONTN43_A,R0
     // asm 000079D5: 	STI	R0,*+AR0(TEXT_IMG)
+    t->image_addr = FONTN43_A;
     // asm 000079D6: 	LDL	lgnum43_p,AR2
     // asm 000079D7: 	CALL	PAL_FIND
+    palette = PAL_FIND(lgnum43_p_ROM);
     // asm 000079D8: 	STI	R0,*+AR0(TEXT_PAL)
+    t->palette = palette;
     // asm 000079D9: 	LDI	@FONTN43TABI,R0
     // asm 000079DA: 	STI	R0,*+AR0(TEXT_ADDR)
+    t->text_addr = FONTN43TABI;
     // asm 000079DB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SETN43FONT", 0, 0);
-    UNIMPL();
+    return;
 }
 
 void SETN43FONTDS(tSHADOW_TEXT* t) {
+    int palette;
     // asm 000079DC: 	LDI	40,R0
     // asm 000079DD: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079DE: 	STI	R0,*+AR1(TEXT_HEIGHT)
+    t->front->height = 40;
+    t->shadow->height = 40;
     // asm 000079DF: 	LDI	@FONTN43_A,R0
     // asm 000079E0: 	STI	R0,*+AR0(TEXT_IMG)
     // asm 000079E1: 	STI	R0,*+AR1(TEXT_IMG)
+    t->front->image_addr = FONTN43_A;
+    t->shadow->image_addr = FONTN43_A;
     // asm 000079E2: 	LDL	lgnum43_p,AR2
     // asm 000079E3: 	CALL	PAL_FIND
+    palette = PAL_FIND(lgnum43_p_ROM);
     // asm 000079E4: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 000079E5: 	STI	R0,*+AR1(TEXT_PAL)
+    t->front->palette = palette;
+    t->shadow->palette = palette;
     // asm 000079E6: 	LDI	@FONTN43TABI,R0
     // asm 000079E7: 	STI	R0,*+AR0(TEXT_ADDR)
     // asm 000079E8: 	STI	R0,*+AR1(TEXT_ADDR)
+    t->front->text_addr = FONTN43TABI;
+    t->shadow->text_addr = FONTN43TABI;
     // asm 000079E9: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SETN43FONTDS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -310,22 +324,31 @@ void SET40FONT(tTEXT* t /*AR0*/) {
 }
 
 void SET40FONTDS(tSHADOW_TEXT* t) {
+    int palette;
     // asm 000079F4: 	LDI	42,R0
     // asm 000079F5: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079F6: 	STI	R0,*+AR1(TEXT_HEIGHT)
+    t->front->height = 42;
+    t->shadow->height = 42;
     // asm 000079F7: 	LDI	@FONT40_A,R0
     // asm 000079F8: 	STI	R0,*+AR0(TEXT_IMG)
     // asm 000079F9: 	STI	R0,*+AR1(TEXT_IMG)
+    t->front->image_addr = FONT40_A;
+    t->shadow->image_addr = FONT40_A;
     // asm 000079FA: 	LDL	ommdfont_p,AR2
     // asm 000079FB: 	CALL	PAL_FIND
+    palette = PAL_FIND(ommdfont_p_ROM);
     // asm 000079FC: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 000079FD: 	STI	R0,*+AR1(TEXT_PAL)
+    t->front->palette = palette;
+    t->shadow->palette = palette;
     // asm 000079FE: 	LDI	@FONT40TABI,R0
     // asm 000079FF: 	STI	R0,*+AR0(TEXT_ADDR)
     // asm 00007A00: 	STI	R0,*+AR1(TEXT_ADDR)
+    t->front->text_addr = FONT40TABI;
+    t->shadow->text_addr = FONT40TABI;
     // asm 00007A01: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET40FONTDS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -333,18 +356,23 @@ void SET40FONTDS(tSHADOW_TEXT* t) {
 // *----------------------------------------------------------------------------
 
 void SET12FONT(tTEXT* t /*AR0*/) {
+    int palette;
     // asm 00007A03: 	LDI	12,R0
     // asm 00007A04: 	STI	R0,*+AR0(TEXT_HEIGHT)
+    t->height = 12;
     // asm 00007A05: 	LDI	@FONT10_A,R0
     // asm 00007A06: 	STI	R0,*+AR0(TEXT_IMG)
+    t->image_addr = FONT10_A;
     // asm 00007A07: 	LDI	osg10fnt_p,AR2
     // asm 00007A08: 	CALL	PAL_FIND
+    palette = PAL_FIND(osg10fnt_p);
     // asm 00007A09: 	STI	R0,*+AR0(TEXT_PAL)
+    t->palette = palette;
     // asm 00007A0A: 	LDI	@OGSMFONT_TABI,R0
     // asm 00007A0B: 	STI	R0,*+AR0(TEXT_ADDR)
+    t->text_addr = OGSMFONT_TABI;
     // asm 00007A0C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET12FONT", 0, 0);
-    UNIMPL();
+    return;
 }
 
 void SET12FONTDS(tSHADOW_TEXT* t) {

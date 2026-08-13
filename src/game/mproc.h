@@ -1,6 +1,8 @@
 #ifndef MPROC_H
 #define MPROC_H
 
+#include <assert.h>
+
 #include "../core/port.h"
 
 /* Generated from asm/MPROC.EQU. */
@@ -69,14 +71,17 @@ void PRC_SLEEP(PROC* p, int ticks);
     return;                               \
     PROC_RESUME_##resume_number:
 
-#define JSRP(fn, resume_number)                     \
-    PROC_RESUME_STATE = resume_number;              \
-    PROC_RESUME_##resume_number:                    \
-    p->current_resume_depth += 1;                   \
-    fn(p);                                          \
-    p->current_resume_depth -= 1;                   \
-    if (p->yielded) {                               \
-        return;                                     \
+/* Initialize the child slot only on a fresh call; resume jumps past it. */
+#define JSRP(fn, resume_number)                                         \
+    PROC_RESUME_STATE = resume_number;                                  \
+    assert(p->current_resume_depth + 1 < PROC_RESUME_STACK_SIZE);        \
+    p->resume_states[p->current_resume_depth + 1] = 0;                   \
+    PROC_RESUME_##resume_number:                                        \
+    p->current_resume_depth += 1;                                       \
+    fn(p);                                                              \
+    p->current_resume_depth -= 1;                                       \
+    if (p->yielded) {                                                   \
+        return;                                                         \
     }
 
 /* A coroutine edge introduced only by C function boundaries, not an asm JSRP. */

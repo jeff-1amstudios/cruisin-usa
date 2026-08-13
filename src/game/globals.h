@@ -746,7 +746,7 @@ extern int ATTR_MODEL;
 // asm:  .globl WHEELPWR,WHEELPOS,WHEELMAX,WHEELVEL
 extern c3x_f32_t WHEELPWR;
 
-extern int WHEELPOS;
+extern c3x_f32_t WHEELPOS;
 
 extern c3x_reg_t WHEELMAX;
 
@@ -915,6 +915,8 @@ void VOLUME_DISPLAY(void);
 
 // asm:  .globl INSERT_MORE_COINS
 void INSERT_MORE_COINS(void);
+
+int GET_CREDITS_TO_CONTINUE(void);
 
 // asm:  .globl COIN_COUNTER
 void COIN_COUNTER(void);
@@ -1197,7 +1199,7 @@ void FILL_DITHER(void);
 
 // intro.asm
 // asm:  .globl ISSUE_STARTGAME_TSEL
-void ISSUE_STARTGAME_TSEL(void);
+void ISSUE_STARTGAME_TSEL(PROC* p);
 
 // asm:  .globl PLYR_INTRO
 void PLYR_INTRO(PROC* p);
@@ -1206,7 +1208,7 @@ void PLYR_INTRO(PROC* p);
 void ISSUE_STARTGAME(PROC* p);
 
 // asm:  .globl WAIT_FOR_CHALLENGER
-void WAIT_FOR_CHALLENGER(void);
+void WAIT_FOR_CHALLENGER(PROC* p);
 
 // asm:  .globl LOGO_SMALL
 void LOGO_SMALL(void);
@@ -1226,7 +1228,7 @@ void INIT_GAMELEG(void);
 // asm:  .globl INIT_PEDALCHK,PEDALCHK
 void INIT_PEDALCHK(int* pedal_released /*R5*/);
 
-void PEDALCHK(void);
+int PEDALCHK(int* pedal_released);
 
 // asm:  .globl GETCHOICE
 void GETCHOICE(void);
@@ -1255,7 +1257,7 @@ void RACESEL_TIMER(void);
 void ENDPLAYER(void);
 
 // asm:  .globl INSMORE
-void INSMORE(void);
+void INSMORE(PROC* p);
 
 // asm:  .globl LOAD_SHARED
 void LOAD_SHARED(void);
@@ -1695,9 +1697,9 @@ void GET_UNIT_WHEEL(void);
 void FIX_TRANSMISSION_SCREEN(void);
 
 // asm:  .globl CYCLE_PUSH,TURNTO_SELECT
-void CYCLE_PUSH(void);
+void CYCLE_PUSH(PROC* p);
 
-void TURNTO_SELECT(void);
+void TURNTO_SELECT(PROC* p);
 
 // asm:  .globl ADD_TO_DOOR_LIST
 void ADD_TO_DOOR_LIST(void);
@@ -1709,7 +1711,7 @@ void ENGINE_COLOR_INIT(void);
 void ENGINE_COLOR(void);
 
 // asm:  .globl TRACK_SELECTION
-void TRACK_SELECTION(void);
+void TRACK_SELECTION(PROC* p);
 
 // asm:  .globl CLEANUP_TRACKSEL_PALS
 void CLEANUP_TRACKSEL_PALS(void);

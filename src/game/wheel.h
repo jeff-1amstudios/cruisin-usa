@@ -13,7 +13,7 @@ extern int lpot0;
 // asm: 	pbss	WHEELPWR,1	;FL
 extern c3x_f32_t WHEELPWR;
 // asm: 	.bss	WHEELPOS,1
-extern int WHEELPOS;
+extern c3x_f32_t WHEELPOS;
 // asm: 	.bss	WHEELOUT,1
 extern c3x_reg_t WHEELOUT;
 // asm: 	.bss	WHEELMAX,1

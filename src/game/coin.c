@@ -36,7 +36,7 @@ static void GET_UNITS_PER_CREDIT(void);
 static void GET_UNITS_FOR_BONUS(void);
 static void GET_MIN_UNITS(void);
 int GET_CREDITS_TO_START(void);
-static void GET_CREDITS_TO_CONTINUE(void);
+int GET_CREDITS_TO_CONTINUE(void);
 static void GET_SHOW_PARTIAL(void);
 static void GET_COIN1_COUNTER(void);
 static void GET_COIN2_COUNTER(void);
@@ -482,7 +482,7 @@ int GET_CREDITS_TO_START(void) {
     return GETCOIN()->credits_to_start;
 }
 
-static void GET_CREDITS_TO_CONTINUE(void) {
+int GET_CREDITS_TO_CONTINUE(void) {
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
     // asm: 	PUSH	R0
@@ -496,6 +496,7 @@ static void GET_CREDITS_TO_CONTINUE(void) {
     // asm: 	POP	AR0
     // asm: 	RETS
     SCS = GETCOIN()->credits_to_continue;
+    return SCS;
 }
 
 // *----------------------------------------------------------------------------
@@ -1224,50 +1225,72 @@ static void WHITE10FNT(tSHADOW_TEXT* t) {
  */
 
 static void PRINT_CREDITS(void) {
+    int credits;
+    int partial_credits;
+    int show_partial;
     // asm 0000753B: 	CLRI	R7
     // asm 0000753C: 	STI	R7,@CREDITBUFFER	;STRING BUFFER
+    CREDITBUFFER[0] = '\0';
     // asm 0000753D: 	CALL	GET_SHOW_PARTIAL
+    GET_SHOW_PARTIAL();
+    show_partial = SCS;
     // asm 0000753E: 	LDI	R1,R4
     // asm 0000753F: 	READAUD	AUD_CREDITS		;DO WE HAVE ANY CREDITS?
+    credits = READAUD(AUD_CREDITS);
     // asm 00007541: 	LDI	R0,R2
     // asm 00007542: 	BNZ	DO_CREDITS		;Yes, then go print them
     // asm 00007543: 	CMPI	1,R4			;No, then check partial credits on?
     // asm 00007544: 	BEQ	CHKPCREDITS		;Yes, then go print the partial credits
+    if (credits == 0 && show_partial == 1)
+        goto CHKPCREDITS;
 DO_CREDITS:
     // asm 00007545: 	LDI	1,R7
     // asm 00007546: 	LDI	@FCBI,AR2
     // asm 00007547: 	CALL	_itoa
+    _itoa((char*)&FCB, credits);
     // asm 00007548: 	LDI	@CREDITBUFFI,AR0
     // asm 00007549: 	LDI	@FCBI,AR1
     // asm 0000754A: 	CALL	STRCAT
+    STRCAT(CREDITBUFFER, (char*)&FCB);
     // asm 0000754B: 	LDI	@CREDITBUFFI,AR0
     // asm 0000754C: 	LDI	@DBLSPCI,AR1
     // asm 0000754D: 	CALL	STRCAT
+    STRCAT(CREDITBUFFER, DBLSPCI);
 CHKPCREDITS:
     // asm 0000754E: 	READAUD	AUD_PCREDITS		;Are there any patial credits?
+    partial_credits = READAUD(AUD_PCREDITS);
     // asm 00007550: 	LDI	R0,R2
     // asm 00007551: 	BZ	NO_PCREDITS		;No, then skip this
     // asm 00007552: 	CMPI	0,R4			;Is partial credits on?
     // asm 00007553: 	BEQ	NO_PCREDITS		;No, then skip this
+    if (partial_credits == 0 || show_partial == 0)
+        goto NO_PCREDITS;
     // asm 00007554: 	LDI	1,R7
     // asm 00007555: 	LDI	@PCBI,AR2
     // asm 00007556: 	CALL	_itoa
+    _itoa((char*)&PCB, partial_credits);
     // asm 00007557: 	LDI	@CREDITBUFFI,AR0
     // asm 00007558: 	LDI	@PCBI,AR1
     // asm 00007559: 	CALL	STRCAT
+    STRCAT(CREDITBUFFER, (char*)&PCB);
     // asm 0000755A:  	LDI	@CREDITBUFFI,AR0
     // asm 0000755B: 	LDI	@NCBI,AR1
     // asm 0000755C: 	CALL	STRCAT
+    STRCAT(CREDITBUFFER, NCBI);
     // asm 0000755D: 	CALL	GET_UNITS_PER_CREDIT
+    GET_UNITS_PER_CREDIT();
     // asm 0000755E: 	LDI	R1,R2
     // asm 0000755F: 	LDI	@SCI,AR2
     // asm 00007560: 	CALL	_itoa
+    _itoa((char*)&SCS, SCS);
     // asm 00007561: 	LDI	@CREDITBUFFI,AR0
     // asm 00007562: 	LDI	@SCI,AR1
     // asm 00007563: 	CALL	STRCAT
+    STRCAT(CREDITBUFFER, (char*)&SCS);
     // asm 00007564: 	LDI	@CREDITBUFFI,AR0
     // asm 00007565: 	LDI	@SPCI,AR1
     // asm 00007566: 	CALL	STRCAT
+    STRCAT(CREDITBUFFER, SPCI);
 NO_PCREDITS:
     // asm 00007567: 	LDI	@CREDITBUFFI,AR0
     // asm 00007568: 	LDI	@CWI,AR1
@@ -1275,10 +1298,10 @@ NO_PCREDITS:
     // asm 0000756B: 	CMPI	1,R0
     // asm 0000756C: 	LDILE	@CWSI,AR1		;ONLY HAVE ON CREDIT USE SINGULAR "CREDIT"
     // asm 0000756D: 	CALL	STRCAT
+    STRCAT(CREDITBUFFER, credits <= 1 ? CWSI : CWI);
     // 	;
     // asm 0000756E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_CREDITS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
@@ -1351,6 +1374,7 @@ PRINT_TOSTART:
     FONT18REDDS(&t);
 FLASH_TOSTARTX:
     // asm 0000758E: 	RETS
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -1490,78 +1514,105 @@ void VOLUME_DISPLAY(void) {
  *
  */
 void INSERT_MORE_COINS(void) {
+    tSHADOW_TEXT text;
     // asm 000075DA: 	PUSH	R4
     // asm 000075DB: 	READADJ	ADJ_FREE_PLAY
     // asm 000075DD: 	CMPI	1,R0
     // asm 000075DE: 	BEQ	INSERT_COINSXM
+    if (READADJ(ADJ_FREE_PLAY) == 1)
+        goto INSERT_COINSXM;
     // asm 000075DF: 	CALL	PRINT_TOCONT
+    PRINT_TOCONT();
     // asm 000075E0: 	READAUD	AUD_CREDITS
     // asm 000075E2: 	LDI	R0,R1
     // asm 000075E3: 	READAUD	AUD_PCREDITS
     // asm 000075E5: 	ADDI	R0,R1
     // asm 000075E6: 	BNZ	ISMCC
+    if (READAUD(AUD_CREDITS) + READAUD(AUD_PCREDITS) != 0)
+        goto ISMCC;
     // asm 000075E7: 	CALL	FLASH_INSERTCOINSM
+    FLASH_INSERTCOINSM();
     // asm 000075E8: 	BU	INSERT_COINSXM
+    goto INSERT_COINSXM;
 ISMCC:
     // asm 000075E9: 	CALL	PRINT_CREDITS
+    PRINT_CREDITS();
     // asm 000075EA: 	LDI	@CREDITBUFFI,AR2
     // asm 000075EB: 	FLOAT	256,R2
     // asm 000075EC: 	FLOAT	237,R3
     // asm 000075ED: 	LDI	1,RC
     // asm 000075EE: 	CALL	TEXT_ADDDS
+    text = TEXT_ADDDS(CREDITBUFFER, C3X_FROM_INT(256), C3X_FROM_INT(237), 1);
     // asm 000075EF: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text.front->color |= TXT_CENTER;
     // asm 000075F2: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    text.shadow->color |= TXT_CENTER;
 INSERT_COINSXM:
     // asm 000075F5: 	POP	R4
     // asm 000075F6: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_MORE_COINS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
 static void FLASH_INSERTCOINSM(void) {
+    tSHADOW_TEXT text;
     // asm 000075F7: 	LDI	@ICF,R0
     // asm 000075F8: 	BGT	NO_INSERTCOINSM
     // asm 000075F9: 	SUBI	@NFRAMES,R0
     // asm 000075FA: 	CMPI	-30,R0
     // asm 000075FB: 	LDILT	1,R0
     // asm 000075FC: 	STI	R0,@ICF
+    if (ICF <= 0) {
+        ICF -= NFRAMES;
+        if (ICF < -30)
+            ICF = 1;
     // asm 000075FD: 	LDI	@INSERTCOINSI,AR2
     // asm 000075FE: 	FLOAT	256,R2
     // asm 000075FF: 	FLOAT	237,R3
     // asm 00007600: 	LDI	1,RC
     // asm 00007601: 	CALL	TEXT_ADDDS
+        text = TEXT_ADDDS(INSERTCOINSI, C3X_FROM_INT(256), C3X_FROM_INT(237), 1);
     // asm 00007602: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+        text.front->color |= TXT_CENTER;
     // asm 00007605: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+        text.shadow->color |= TXT_CENTER;
     // asm 00007608: 	BU	FLASH_INSERTCOINSXM
+        goto FLASH_INSERTCOINSXM;
+    }
 NO_INSERTCOINSM:
     // asm 00007609: 	LDI	@ICF,R0
     // asm 0000760A: 	ADDI	@NFRAMES,R0
     // asm 0000760B: 	CMPI	30,R0
     // asm 0000760C: 	LDIGT	-1,R0
     // asm 0000760D: 	STI	R0,@ICF
+    ICF += NFRAMES;
+    if (ICF > 30)
+        ICF = -1;
 FLASH_INSERTCOINSXM:
     // asm 0000760E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLASH_INSERTCOINSM", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
 static void PRINT_TOCONT(void) {
+    tSHADOW_TEXT text;
     // asm 0000760F: 	CALL	TOCONT_STRING
+    TOCONT_STRING();
     // asm 00007610: 	LDI	@TOSTARTBUFFI,AR2
     // asm 00007611: 	FLOAT	256,R2
     // asm 00007612: 	FLOAT	200,R3
     // asm 00007613: 	LDI	1,RC
     // asm 00007614: 	CALL	TEXT_ADDDS
+    text = TEXT_ADDDS(TOSTARTBUFFI, C3X_FROM_INT(256), C3X_FROM_INT(200), 1);
     // asm 00007615: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text.front->color |= TXT_CENTER;
     // asm 00007618: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    text.shadow->color |= TXT_CENTER;
     // asm 0000761B: TOCONTX
     // asm 0000761B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRINT_TOCONT", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------

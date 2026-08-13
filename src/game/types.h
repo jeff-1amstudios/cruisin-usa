@@ -703,6 +703,21 @@ struct WAVEFLAG_ENTRY;
 typedef struct PROC_CONTEXT {
     int pedal_released; // process-saved R5 used by INIT_PEDALCHK/PEDALCHK
 
+    /* These coroutine frames may be nested below another logical process, so
+       they cannot share the function-local union below. */
+    struct {
+        int track_selection;
+        int wait_frames;
+        OBJ* wait_objects[3];
+    } ISSUE_STARTGAME_FRAME;
+    struct {
+        tTEXT* prompt;
+        int watched_credits;
+        int start_enabled;
+        int start_delay;
+        int result;
+    } INSMORE_FRAME;
+
     union {
         struct {
             int race_number;
@@ -712,6 +727,32 @@ typedef struct PROC_CONTEXT {
         struct {
             int wait_frames; // AR5 across ISSUE_STARTGAME's SLEEP
         } ISSUE_STARTGAME;
+        struct {
+            OBJ* small_cursor;
+            OBJ* big_cursor;
+            void* rom_small_cursor;
+            void* rom_big_cursor;
+            int old_index;
+            int last_hidden_track;
+            int loop_count;
+            int feedback_count;
+            int motion_recalibration;
+            char motion_countdown[16];
+        } TRACK_SELECTION;
+        struct {
+            int loop_count;
+        } ZOOMINP;
+        struct {
+            int loop_count;
+        } TSEL_ZOOMOUTP;
+        struct {
+            OBJ* obj;
+            int loop_count;
+        } CENTER_THEONE;
+        struct {
+            OBJ* obj;
+            int script_index;
+        } TRACKSEL_ANIMATION;
         struct {
             int race_number;
             int white_pal;

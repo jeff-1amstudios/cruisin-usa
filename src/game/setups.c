@@ -61,55 +61,77 @@ void (*LOADSECTION_TABLE[14])(void);
 
 // *----------------------------------------------------------------------------
 void CLEANUP_PALS(void) {
+    int corn_palette;
     // asm 00008C0C: 	LDL	CORNPAL,AR2
     // asm 00008C0D: 	CALL	PAL_FIND_RAW
+    corn_palette = PAL_FIND_RAW((tPAL*)ROM_PTR(CORNPAL));
     // asm 00008C0E: 	BNC	DONTDEL
     // asm 00008C0F: 	LDL	CORNPAL,AR2
     // asm 00008C10: 	CALL	PAL_DELETE_RAW
+    if (corn_palette != -1) PAL_DELETE_RAW(corn_palette);
 DONTDEL:
     // asm 00008C11: 	LDL	tunnel2_PALETTES,AR2
     // asm 00008C12: 	CALL	dealloc_section
+    dealloc_section(tunnel2_PALETTES);
     // asm 00008C13: 	LDL	tunnel_PALETTES,AR2
     // asm 00008C14: 	CALL	dealloc_section
+    dealloc_section(tunnel_PALETTES);
     // asm 00008C15: 	LDL	thetrains_PALETTES,AR2
     // asm 00008C16: 	CALL	dealloc_section
+    dealloc_section(thetrains_PALETTES);
     // asm 00008C17: 	LDL	deserts_PALETTES,AR2
     // asm 00008C18: 	CALL	dealloc_section
+    dealloc_section(deserts_PALETTES);
     // asm 00008C19: 	LDL	ggate_PALETTES,AR2
     // asm 00008C1A: 	CALL	dealloc_section
+    dealloc_section(ggate_PALETTES);
     // asm 00008C1B: 	LDL	h280_PALETTES,AR2
     // asm 00008C1C: 	CALL	dealloc_section
+    dealloc_section(h280_PALETTES);
     // asm 00008C1D: 	LDL	bevhnred_PALETTES,AR2
     // asm 00008C1E: 	CALL	dealloc_section
+    dealloc_section(bevhnred_PALETTES);
     // asm 00008C1F: 	LDL	lafreeway_PALETTES,AR2
     // asm 00008C20: 	CALL	dealloc_section
+    dealloc_section(lafreeway_PALETTES);
     // asm 00008C21: 	LDL	deathvalley_PALETTES,AR2
     // asm 00008C22: 	CALL	dealloc_section
+    dealloc_section(deathvalley_PALETTES);
     // asm 00008C23: 	LDL	arizona_PALETTES,AR2
     // asm 00008C24: 	CALL	dealloc_section
+    dealloc_section(arizona_PALETTES);
     // asm 00008C25: 	LDL	mtrush_PALETTES,AR2
     // asm 00008C26: 	CALL	dealloc_section
+    dealloc_section(mtrush_PALETTES);
     // asm 00008C27: 	LDL	mwest_PALETTES,AR2
     // asm 00008C28: 	CALL	dealloc_section
+    dealloc_section(mwest_PALETTES);
     // asm 00008C29: 	LDL	chicago_PALETTES,AR2
     // asm 00008C2A: 	CALL	dealloc_section
+    dealloc_section(chicago_PALETTES);
     // asm 00008C2B: 	LDL	appl_PALETTES,AR2
     // asm 00008C2C: 	CALL	dealloc_section
+    dealloc_section(appl_PALETTES);
     // asm 00008C2D: 	LDL	dc_PALETTES,AR2
     // asm 00008C2E: 	CALL	dealloc_section
+    dealloc_section(dc_PALETTES);
     // asm 00008C2F: 	LDL	dc_shared_PALETTES,AR2
     // asm 00008C30: 	CALL	dealloc_section
+    dealloc_section(dc_shared_PALETTES);
     // asm 00008C31: 	LDL	finale_PALETTES,AR2
     // asm 00008C32: 	CALL	dealloc_section
+    dealloc_section(finale_PALETTES);
     // asm 00008C33: 	LDL	theheads_PALETTES,AR2
     // asm 00008C34: 	CALL	dealloc_section
+    dealloc_section(theheads_PALETTES);
     // asm 00008C35: 	LDL	press_PALETTES,AR2
     // asm 00008C36: 	CALL	dealloc_section
+    dealloc_section(press_PALETTES);
     // asm 00008C37: 	LDL	crace_PALETTES,AR2
     // asm 00008C38: 	CALL	dealloc_section
+    dealloc_section(crace_PALETTES);
     // asm 00008C39: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEANUP_PALS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------

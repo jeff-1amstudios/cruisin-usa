@@ -4,7 +4,7 @@
 
 int crusn_video_init(crusn_video* video) {
     video->window = SDL_CreateWindow(
-        "Cruis'n USA Port",
+        "Cruis'n USA 4.5",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         CRUSN_SCREEN_WIDTH * 2,

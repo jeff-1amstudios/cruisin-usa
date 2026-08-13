@@ -27,7 +27,7 @@ int lpot0;
 /* asm: WHEELPWR	pbss	WHEELPWR,1 */
 c3x_f32_t WHEELPWR;
 /* asm: WHEELPOS	.bss	WHEELPOS,1 */
-int WHEELPOS;
+c3x_f32_t WHEELPOS;
 /* asm: WHEELOUT	.bss	WHEELOUT,1 */
 c3x_reg_t WHEELOUT = C3X_INIT(1.0f, 0x0000000000ull);
 /* asm: WHEELMAX	.bss	WHEELMAX,1 */

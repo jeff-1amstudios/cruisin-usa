@@ -9,6 +9,7 @@
 #include "delta.h"
 #include "error.h"
 #include "globals.h"
+#include "hud.h"
 #include "macs.h"
 #include "motion.h"
 #include "mproc.h"
@@ -30,10 +31,11 @@ void HEAD2HEAD_LOGO(void);
 static void KABOSHP(void);
 static void JINMSG(void);
 static void THROBIT(void);
-void WAIT_FOR_CHALLENGER(void);
-static void CHECK_ENDBONUS(void);
-static void WAIT_FOR_ENDBONUS(int track_selection /*R6*/);
-void ISSUE_STARTGAME_TSEL(void);
+void WAIT_FOR_CHALLENGER(PROC* p);
+static int CHECK_ENDBONUS(void);
+static void WAIT_FOR_ENDBONUS(PROC* p);
+static void ISSUE_STARTGAME__tail(PROC* p);
+void ISSUE_STARTGAME_TSEL(PROC* p);
 void ISSUE_STARTGAME(PROC* p);
 void PLYR_INTRO(PROC* p);
 void CHOOSE_NEXT_RACE(PROC* p);
@@ -61,7 +63,7 @@ static void LIGHT_OFF(void);
 static void LIGHT_ON(void);
 void INIT_PEDALCHK(int* pedal_released /*R5*/);
 void GETCHOICE(void);
-void PEDALCHK(void);
+int PEDALCHK(int* pedal_released);
 void RACESEL_TIMER(void);
 static void WAITINTROTIMER(void);
 void INTROTIMER(void);
@@ -74,8 +76,8 @@ void ULTRA_LOGO(void);
 void LOGO_SMALL(void);
 void SET_ATTR(void);
 void CYCLE_ATTR(void);
-void INSMORE(void);
-static void COIN_CNTDOWN(void);
+void INSMORE(PROC* p);
+static void COIN_CNTDOWN(PROC* p);
 void LOAD_SHARED(void);
 static void SHOW_RACE_NAME(PROC* p);
 
@@ -95,7 +97,7 @@ typedef struct WAVEFLAG_ENTRY {
 #define RGBTAB_CPI RGBTAB_CP
 #define MOTION_ERROR_TIKS (57 * 5)
 
-extern int BOILEROBJ;
+extern OBJ* BOILEROBJ;
 void BOILERPLATE_INIT(void);
 int CHECK_MOTION_DIP(void);
 int CHECK_MOTION_PRESENT(void);
@@ -103,7 +105,7 @@ void ABORT_RESET_GALIL(void);
 extern const char XQ[];
 void SEND_CMD(char* cmd);
 void WAIT_ACK(void);
-void GET_CREDITS_TO_CONTINUE(void);
+int GET_CREDITS_TO_CONTINUE(void);
 
 static tCHOOSE_CAR_ENTRY CCTAB[];
 static int TRAFFIC_LL[7];
@@ -392,43 +394,81 @@ int FRAMELAG;
  *
  *
  */
-void WAIT_FOR_CHALLENGER(void) {
+void WAIT_FOR_CHALLENGER(PROC* p) {
+    tTEXT* text;
+    tSHADOW_TEXT shadow_text;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("WAIT_FOR_CHALLENGER");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    }
+
     // asm 00001617: 	LDI	5,R0
     // asm 00001618: 	STI	R0,@FRAMELAG
+    FRAMELAG = 5;
     // asm 00001619: 	CLRI	R0
     // asm 0000161A: 	STI	R0,@BOILEROBJ
+    BOILEROBJ = NULL;
     // 	;IF NO TRANSMISSIONS ARE HAPPENING
     // 	;(OTHER == SINGLE PLAYER) THEN IGNORE THIS MESS AND ASSUME
     // 	;SINGLE PLAYER
     // 	;
     // asm 0000161B: 	LDI	@TRANSMISSION_ACTIVE,R0
     // asm 0000161C: 	BZ	WFCLPXXX
+    if (TRANSMISSION_ACTIVE == 0)
+        goto WFCLPXXX;
     // asm 0000161D: 	LDI	@NOASK_LINK,R0
     // asm 0000161E: 	BNZ	WFCLPXXX
+    if (NOASK_LINK != 0)
+        goto WFCLPXXX;
     // asm 0000161F: 	LDI	@FIRST_RACE,R0
     // asm 00001620: 	BNZ	CHAHC
+    if (FIRST_RACE != 0)
+        goto CHAHC;
     // asm 00001621: 	CALL	BOILERPLATE_INIT
+    BOILERPLATE_INIT();
     // asm 00001622: 	LDI	AR0,AR2
     // asm 00001623: 	CALL	OBJ_INSERTP
+    if (BOILEROBJ != NULL)
+        OBJ_INSERTP(BOILEROBJ);
 CHAHC:
     // asm 00001624: 	CLRI	R0
     // asm 00001625: 	STI	R0,@START_HIT
+    START_HIT = 0;
     // asm 00001626: 	STI	R0,@miniidle
+    miniidle = 0;
     // asm 00001627: 	LDI	@_MODE,R0
     // asm 00001628: 	OR	MGO,R0
     // asm 00001629: 	STI	R0,@_MODE
+    _MODE |= MGO;
     // 	;if no challenger
     // asm 0000162A: 	LDI	20,R0
     // asm 0000162B: 	STI	R0,@_countdown
+    _countdown = 20;
     // asm 0000162C: 	CALL	SEND_VEHICLE
+    SEND_VEHICLE();
 WFCLP:
     // asm 0000162D: 	CALL	SEND_VEHICLE
+    SEND_VEHICLE();
     // asm 0000162E: 	LDI	@COINDROP,R0
     // asm 0000162F: 	BZ	NOWORRY
+    if (COINDROP == 0)
+        goto NOWORRY;
     // asm 00001630: 	CLRI	R0
     // asm 00001631: 	STI	R0,@COINDROP
+    COINDROP = 0;
     // asm 00001632: 	LDI	20,R1
     // asm 00001633: 	BU	JJFHF
+    _countdown = 20;
+    goto JJFHF;
 NOWORRY:
     // asm 00001634: 	LDI	@_countdown,R1
     // asm 00001635: 	LDI	@OM_MODE,R0
@@ -437,46 +477,69 @@ NOWORRY:
     // asm 00001638: 	LDIEQ	20,R1
     // asm 00001639: 	CMPI	MBONUS,R0
     // asm 0000163A: 	LDIEQ	20,R1
+    if ((OM_MODE & MMODE) == MINIT || (OM_MODE & MMODE) == MBONUS)
+        _countdown = 20;
 JJFHF:
     // asm 0000163B: STI	R1,@_countdown
     // 	;IF challenger found THEN wait until ready then exit
     // 	;
     // asm 0000163C: 	LDI	@HEAD2HEAD_ON,R0
     // asm 0000163D: 	BZ	BABAB
+    if (HEAD2HEAD_ON == 0)
+        goto BABAB;
     // asm 0000163E: 	LDI	@OM_VEHICLE,R0
     // asm 0000163F: 	BGE	WAITX		;WE'RE THERE DUDE!
+    if (OM_VEHICLE >= 0)
+        goto WAITX;
 BABAB:
     // asm 00001640: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00001641: 	BNZ	HHFBF
+    if (HEAD2HEAD_ON != 0)
+        goto HHFBF;
     // asm 00001642: 	LDI	@_countdown,R0
     // asm 00001643: 	BLE	WFCLPXXX
+    if (_countdown <= 0)
+        goto WFCLPXXX;
 HHFBF:
     // asm 00001644: 	LDI	@FRAMELAG,R0
     // asm 00001645: 	DEC	R0
     // asm 00001646: 	LDILT	0,R0
     // asm 00001647: 	STI	R0,@FRAMELAG
+    if (--FRAMELAG < 0)
+        FRAMELAG = 0;
     // asm 00001648: 	BGT	NOMSG768
+    if (FRAMELAG > 0)
+        goto NOMSG768;
     // asm 00001649: 	LDL	WFCHAL1,AR2
     // asm 0000164A: 	FLOAT	256,R2
     // asm 0000164B: 	FLOAT	100,R3
     // asm 0000164C: 	LDI	1,RC
     // asm 0000164D: 	CALL	TEXT_ADD
+    text = TEXT_ADD(WFCHAL1, C3X_FROM_INT(256), C3X_FROM_INT(100), 1);
     // asm 0000164E: 	CALL	SET40FONT
+    SET40FONT(text);
     // asm 0000164F: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 00001652: 	LDL	WFCHAL2,AR2
     // asm 00001653: 	FLOAT	256,R2
     // asm 00001654: 	FLOAT	146,R3
     // asm 00001655: 	LDI	1,RC
     // asm 00001656: 	CALL	TEXT_ADD
+    text = TEXT_ADD(WFCHAL2, C3X_FROM_INT(256), C3X_FROM_INT(146), 1);
     // asm 00001657: 	CALL	SET40FONT
+    SET40FONT(text);
     // asm 00001658: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
 NOMSG768:
     // 	;if it is a linked game AND he hasn't chosen his vehicle
     // 	;then wait for him to choose his vehicle
     // 	;
     // asm 0000165B: 	LDI	@HEAD2HEAD_ON,R0
     // asm 0000165C: 	BZ	BABAHH
+    if (HEAD2HEAD_ON == 0)
+        goto BABAHH;
     // asm 0000165D: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 0000165F: 	BU	WFCLP
 BABAHH:
     // *ELP CHANGE
@@ -492,32 +555,48 @@ BABAHH:
     // ;	AND	SW_VIEW0_H|SW_VIEW1_H|SW_VIEW2_H|SW_RADIO_H,R0
     // asm 00001662: 	AND	SW_VIEW2_H|SW_RADIO_H,R0
     // asm 00001663: 	BZ	JJFJFJ
+    if ((((u32)SWITCHBUTS >> 16) & (SW_VIEW2_H | SW_RADIO_H)) == 0)
+        goto JJFJFJ;
     // asm 00001664: 	LDI	@_countdown,R0
     // asm 00001665: 	DEC	R0
     // asm 00001666: 	LDILT	0,R0
     // asm 00001667: 	STI	R0,@_countdown
+    if (--_countdown < 0)
+        _countdown = 0;
 JJFJFJ:
     // *ELP END CHANGE
     // asm 00001668: 	LDI	@FRAMELAG,R0
     // asm 00001669: 	BGT	NOMSG123
+    if (FRAMELAG > 0)
+        goto NOMSG123;
     // asm 0000166A: 	CALL	WAITINTROTIMER
+    WAITINTROTIMER();
     // asm 0000166B: 	LDL	WFCHAL3,AR2
     // asm 0000166C: 	FLOAT	256,R2
     // asm 0000166D: 	FLOAT	192,R3
     // asm 0000166E: 	LDI	1,RC
     // asm 0000166F: 	CALL	TEXT_ADDDS
+    shadow_text = TEXT_ADDDS(WFCHAL3, C3X_FROM_INT(256), C3X_FROM_INT(192), 1);
     // asm 00001670: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    shadow_text.front->color |= TXT_CENTER;
     // asm 00001673: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
+    shadow_text.shadow->color |= TXT_CENTER;
 NOMSG123:
     // asm 00001676: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 00001678: 	BU	WFCLP
 WFCLPXXX:
     // asm 00001679: 	CLRI	R0
     // asm 0000167A: 	STI	R0,@MY_LINKWAIT
+    MY_LINKWAIT = 0;
     // asm 0000167B: 	STI	R0,@HEAD2HEAD_ON
+    HEAD2HEAD_ON = 0;
     // asm 0000167C: 	CALL	SEND_LINKCANCELLED
+    SEND_LINKCANCELLED();
     // asm 0000167D: 	SLEEP	1
+    SLEEP(1, 3);
     // asm 0000167F: 	CALL	SETONE		;1 PLAYER GAME
+    SETONE();
 WAITX:
     // 	;*****
     // 	;*****  WE CAN NO LONGER ACCEPT A DUDE
@@ -526,15 +605,20 @@ WAITX:
     // asm 00001680: 	LDI	@BOILEROBJ,AR2
     // asm 00001681: 	CMPI	0,AR2
     // asm 00001682: 	CALLNE	OBJ_DELETE
+    if (BOILEROBJ != NULL) {
+        OBJ_DELETE(BOILEROBJ);
+        BOILEROBJ = NULL;
+    }
     // asm 00001683: 	LDI	@_MODE,R0
     // asm 00001684: 	ANDN	MGO,R0
     // asm 00001685: 	STI	R0,@_MODE
+    _MODE &= ~MGO;
     // asm 00001686: 	LDI	5,R0			;so player doesn't puke (see near call)
     // asm 00001687: 	STI	R0,@_countdown
+    _countdown = 5;
     // asm 00001688: 	RETP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_FOR_CHALLENGER", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -550,7 +634,7 @@ WAITX:
  *
  *
  */
-static void CHECK_ENDBONUS(void) {
+static int CHECK_ENDBONUS(void) {
     // asm 0000168C: 	LDI	@TRANSMISSION_ACTIVE,R0
     // asm 0000168D: 	BZ	CEBT
     // asm 0000168E: 	LDI	@OM_BONUS_WAITFLAG,R0
@@ -563,13 +647,19 @@ static void CHECK_ENDBONUS(void) {
     // asm 00001695: 	AND	MMODE,R0
     // asm 00001696: 	CMPI	MATTR,R0
     // asm 00001697: 	BEQ	CEBT
+    if (TRANSMISSION_ACTIVE == 0 ||
+        OM_BONUS_WAITFLAG != 0 ||
+        OM_LINKWAIT != 0 ||
+        HEAD2HEAD_ON != 0 ||
+        (OM_MODE & MMODE) == MATTR)
+        goto CEBT;
     // asm 00001698: 	CLRC
     // asm 00001699: 	RETS
+    return 0;
 CEBT:
     // asm 0000169A: 	SETC
     // asm 0000169B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_ENDBONUS", 0, 0);
-    UNIMPL();
+    return 1;
 }
 
 /* asm: BONUS_WAITFLAG	pbss	BONUS_WAITFLAG,1 */
@@ -579,144 +669,231 @@ int OM_BONUS_WAITFLAG;
 /* asm: NOASK_LINK	.bss	NOASK_LINK,1 */
 int NOASK_LINK;
 
-static void WAIT_FOR_ENDBONUS(int track_selection /*R6*/) {
+static void WAIT_FOR_ENDBONUS(PROC* p) {
+    OBJ* obj;
+    tTEXT* text;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("WAIT_FOR_ENDBONUS");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    }
+
     // asm 0000169C: 	PUSHP	R6
     // asm 0000169F: 	SLEEP	2
+    SLEEP(2, 1);
     // asm 000016A1: 	CALL	CHECK_ENDBONUS
     // asm 000016A2: 	BC	ISGAME5
+    if (CHECK_ENDBONUS())
+        goto ISGAME5;
     // asm 000016A3: 	POPP	R6
     // asm 000016A6: 	CMPI	1,R6
     // asm 000016A7: 	BEQ	NOOBJSSS
+    if (p->ctx->ISSUE_STARTGAME_FRAME.track_selection == 1)
+        goto NOOBJSSS;
     // asm 000016A8: 	LDL	H2HPAL2,AR2
     // asm 000016A9: 	CALL	PAL_ALLOC_RAW
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(H2HPAL2_ROM));
     // asm 000016AA: 	LDL	H2HPAL3,AR2
     // asm 000016AB: 	CALL	PAL_ALLOC_RAW
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(H2HPAL3_ROM));
     // asm 000016AC: 	LDL	redhd1,AR2
     // asm 000016AD: 	LDI	0,R2
     // asm 000016AE: 	LDI	-60,R3
     // asm 000016AF: 	LDI	368,RC
     // asm 000016B0: 	CALL	OBJ_QMAKE
+    obj = OBJ_QMAKE(ROM_PTR(redhd1_ROM), 0, -60, 368);
     // asm 000016B1: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV|O_1PAL,R0
     // asm 000016B2: 	OR	*+AR0(OFLAGS),R0
     // asm 000016B3: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV | O_1PAL;
     // asm 000016B4: 	LDI	AR0,AR2
     // asm 000016B5: 	PUSHP	AR2
     // asm 000016B8: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(obj);
+    p->ctx->ISSUE_STARTGAME_FRAME.wait_objects[0] = obj;
     // asm 000016B9: 	LDI	AR2,AR0
     // asm 000016BA: 	LDL	H2HPAL2,AR2
     // asm 000016BB: 	CALL	PAL_FIND_RAW
     // asm 000016BC: 	STI	R0,*+AR0(OPAL)
+    obj->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(H2HPAL2_ROM));
     // asm 000016BD: 	LDL	yelhd1,AR2
     // asm 000016BE: 	LDI	0,R2
     // asm 000016BF: 	LDI	60,R3
     // asm 000016C0: 	LDI	368,RC
     // asm 000016C1: 	CALL	OBJ_QMAKE
+    obj = OBJ_QMAKE(ROM_PTR(yelhd1_ROM), 0, 60, 368);
     // asm 000016C2: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV|O_1PAL,R0
     // asm 000016C3: 	OR	*+AR0(OFLAGS),R0
     // asm 000016C4: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV | O_1PAL;
     // asm 000016C5: 	LDI	AR0,AR2
     // asm 000016C6: 	PUSHP	AR2
     // asm 000016C9: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(obj);
+    p->ctx->ISSUE_STARTGAME_FRAME.wait_objects[1] = obj;
     // asm 000016CA: 	LDI	AR2,AR0
     // asm 000016CB: 	LDL	H2HPAL2,AR2
     // asm 000016CC: 	CALL	PAL_FIND_RAW
     // asm 000016CD: 	STI	R0,*+AR0(OPAL)
+    obj->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(H2HPAL2_ROM));
     // asm 000016CE: 	LDL	big2,AR2
     // asm 000016CF: 	LDI	0,R2
     // asm 000016D0: 	LDI	0,R3
     // asm 000016D1: 	LDI	368,RC
     // asm 000016D2: 	CALL	OBJ_QMAKE
+    obj = OBJ_QMAKE(ROM_PTR(big2_ROM), 0, 0, 368);
     // asm 000016D3: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV|O_1PAL,R0
     // asm 000016D4: 	OR	*+AR0(OFLAGS),R0
     // asm 000016D5: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV | O_1PAL;
     // asm 000016D6: 	LDI	AR0,AR2
     // asm 000016D7: 	PUSHP	AR2
     // asm 000016DA: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(obj);
+    p->ctx->ISSUE_STARTGAME_FRAME.wait_objects[2] = obj;
     // asm 000016DB: 	LDI	AR2,AR0
     // asm 000016DC: 	LDL	H2HPAL3,AR2
     // asm 000016DD: 	CALL	PAL_FIND_RAW
     // asm 000016DE: 	STI	R0,*+AR0(OPAL)
+    obj->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(H2HPAL3_ROM));
     // asm 000016DF: 	BU	LKJASDFGD
+    goto LKJASDFGD;
 NOOBJSSS:
     // asm 000016E0: 	CALL	BOILERPLATE_INIT
+    BOILERPLATE_INIT();
     // asm 000016E1: 	LDI	AR0,AR2
     // asm 000016E2: 	CALL	OBJ_INSERTP
+    if (BOILEROBJ != NULL)
+        OBJ_INSERTP(BOILEROBJ);
 LKJASDFGD:
     // asm 000016E3: 	PUSHP	R6
 WAIT_FOR_ENDBONUS_LP:
     // asm 000016E6: 	LDI	1,R0
     // asm 000016E7: 	STI	R0,@BONUS_WAITFLAG
+    BONUS_WAITFLAG = 1;
     // asm 000016E8: 	LDL	WFCHAL1,AR2
     // asm 000016E9: 	FLOAT	256,R2
     // asm 000016EA: 	FLOAT	100,R3
     // asm 000016EB: 	LDI	1,RC
     // asm 000016EC: 	CALL	TEXT_ADD
+    text = TEXT_ADD(WFCHAL1, C3X_FROM_INT(256), C3X_FROM_INT(100), 1);
     // asm 000016ED: 	CALL	SET40FONT
+    SET40FONT(text);
     // asm 000016EE: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 000016F1: 	LDL	WFCHAL2,AR2
     // asm 000016F2: 	FLOAT	256,R2
     // asm 000016F3: 	FLOAT	160,R3
     // asm 000016F4: 	LDI	1,RC
     // asm 000016F5: 	CALL	TEXT_ADD
+    text = TEXT_ADD(WFCHAL2, C3X_FROM_INT(256), C3X_FROM_INT(160), 1);
     // asm 000016F6: 	CALL	SET40FONT
+    SET40FONT(text);
     // asm 000016F7: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 000016FA: 	CALL	CHECK_ENDBONUS
     // asm 000016FB: 	BC	ISGAME5
+    if (CHECK_ENDBONUS())
+        goto ISGAME5;
     // asm 000016FC: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 000016FE: 	BU	WAIT_FOR_ENDBONUS_LP
 ISGAME5:
     // asm 000016FF: 	CLRI	R0
     // asm 00001700: 	STI	R0,@BONUS_WAITFLAG
+    BONUS_WAITFLAG = 0;
     // asm 00001701: 	SLEEP	2
+    SLEEP(2, 3);
     // asm 00001703: 	POPP	R6
     // asm 00001706: 	CMPI	1,R6
     // asm 00001707: 	BEQ	NOJHASD
+    if (p->ctx->ISSUE_STARTGAME_FRAME.track_selection == 1)
+        goto NOJHASD;
     // asm 00001708: 	POPP	AR2
     // asm 0000170B: 	CALL	OBJ_DELETE
+    OBJ_DELETE(p->ctx->ISSUE_STARTGAME_FRAME.wait_objects[2]);
     // asm 0000170C: 	POPP	AR2
     // asm 0000170F: 	CALL	OBJ_DELETE
+    OBJ_DELETE(p->ctx->ISSUE_STARTGAME_FRAME.wait_objects[1]);
     // asm 00001710: 	POPP	AR2
     // asm 00001713: 	CALL	OBJ_DELETE
+    OBJ_DELETE(p->ctx->ISSUE_STARTGAME_FRAME.wait_objects[0]);
     // asm 00001714: 	LDL	H2HPAL2,AR2
     // asm 00001715: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(PAL_FIND_RAW((tPAL*)ROM_PTR(H2HPAL2_ROM)));
     // asm 00001716: 	LDL	H2HPAL3,AR2
     // asm 00001717: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(PAL_FIND_RAW((tPAL*)ROM_PTR(H2HPAL3_ROM)));
     // asm 00001718: 	BU	IURENDFL
 NOJHASD:
     // asm 00001719: 	LDI	@BOILEROBJ,AR2
     // asm 0000171A: 	CMPI	0,AR2
     // asm 0000171B: 	CALLNE	OBJ_DELETE
+    if (BOILEROBJ != NULL) {
+        OBJ_DELETE(BOILEROBJ);
+        BOILEROBJ = NULL;
+    }
 IURENDFL:
     // asm 0000171C: 	RETP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_FOR_ENDBONUS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void ISSUE_STARTGAME_TSEL(void) {
+void ISSUE_STARTGAME_TSEL(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00001720: 	LDI	1,R6
+    p->ctx->ISSUE_STARTGAME_FRAME.track_selection = 1;
     // asm 00001721: 	BU	LKAS534
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ISSUE_STARTGAME_TSEL", 0, 0);
-    UNIMPL();
+    PROC_CONTINUE(ISSUE_STARTGAME__tail, 1);
+    return;
 }
 
 void ISSUE_STARTGAME(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
         MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
+    // asm 00001722: 	CLRI	R6
+    p->ctx->ISSUE_STARTGAME_FRAME.track_selection = 0;
+    PROC_CONTINUE(ISSUE_STARTGAME__tail, 1);
+    return;
+}
+
+static void ISSUE_STARTGAME__tail(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
         MAME_ASSERT_ORDERING("ISSUE_STARTGAME");
         break;
     case 1:
         goto PROC_RESUME_1;
     case 2:
         goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
     }
 
-    // asm 00001722: 	CLRI	R6
 LKAS534:
     // asm 00001723: 	LDI	@TRANSMISSION_ACTIVE,R0
     // asm 00001724: 	BZ	NOGAME
@@ -783,7 +960,7 @@ NOTNND:
 
 DOIT6:
     // asm 00001739: 	JSRP	WAIT_FOR_ENDBONUS
-    WAIT_FOR_ENDBONUS(0);
+    JSRP(WAIT_FOR_ENDBONUS, 1);
 
 NODOIT6:
     // asm 0000173F: 	LDI	@WAS_HEAD2HEAD_ON,R0
@@ -858,20 +1035,20 @@ DOITANY4:
     SEND_START_GAME();
 
     // asm 00001751: 	LDI	30,AR5
-    p->ctx->ISSUE_STARTGAME.wait_frames = 30;
+    p->ctx->ISSUE_STARTGAME_FRAME.wait_frames = 30;
 
 WTFORRETVAL:
     // asm 00001752: 	DEC	AR5
-    p->ctx->ISSUE_STARTGAME.wait_frames -= 1;
+    p->ctx->ISSUE_STARTGAME_FRAME.wait_frames -= 1;
 
     // asm 00001753: 	CMPI	0,AR5
     // asm 00001754: 	BLE	NTINLK
-    if (p->ctx->ISSUE_STARTGAME.wait_frames <= 0) {
+    if (p->ctx->ISSUE_STARTGAME_FRAME.wait_frames <= 0) {
         goto NTINLK;
     }
 
     // asm 00001755: 	SLEEP	1
-    SLEEP(1, 1);
+    SLEEP(1, 2);
 
     // *ELP CHANGE
     // asm 00001757: 	LDI	@TRANSMISSION_ACTIVE,R0
@@ -923,7 +1100,7 @@ NOGAME:
     SEND_LINKCANCELLED();
 
     // asm 0000176B: 	SLEEP	1
-    SLEEP(1, 2);
+    SLEEP(1, 3);
 
     // *ELP END CHANGE
     // asm 0000176D: 	CALL	CLEAR_LINK
@@ -1049,6 +1226,8 @@ static void PLYR_INTRO__CNR_ENTER_tail(PROC* p) {
         goto PROC_RESUME_3;
     case 4:
         goto PROC_RESUME_4;
+    case 5:
+        goto PROC_RESUME_5;
     }
 
 CNR_ENTER:
@@ -1110,7 +1289,7 @@ CONTINUE:
     TEXT_INIT();
 
     // asm 000017BF: 	JSRP	TRACK_SELECTION
-    TRACK_SELECTION();
+    JSRP(TRACK_SELECTION, 5);
 
     // asm 000017C5: 	LDI	@FIRST_RACE,R0
     // asm 000017C6: 	BZ	LOAD_NEW_SELECTION
@@ -2766,6 +2945,10 @@ void INIT_PEDALCHK(int* pedal_released /*R5*/) {
 
 // *----------------------------------------------------------------------------
 void GETCHOICE(void) {
+    c3x_reg_t zone_width;
+    c3x_reg_t desired_wheel;
+    c3x_reg_t difference;
+    int steering_detent;
     // asm 00001C62: 	PUSHF	R4
     // asm 00001C63: 	PUSH	R4
     // asm 00001C64: 	LDI	@_MODE,R4
@@ -2774,38 +2957,61 @@ void GETCHOICE(void) {
     // asm 00001C67: 	FLOAT	@POSES,R1		;GET # POSES
     // asm 00001C68: 	LDF	@STEERFR,R0
     // asm 00001C69: 	CALL	DIV_F
+    zone_width = DIV_F(C3X_LDF(STEERFR), C3X_FROM_INT(POSES));
     // asm 00001C6A: 	LDF	R0,R1
     // asm 00001C6B: 	MPYF	0.5,R1
     // asm 00001C6C: 	FLOAT	@POSE,R2		;@CHOSEN_VEHICLE,R2
     // asm 00001C6D: 	MPYF	R0,R2
     // asm 00001C6E: 	ADDF	R1,R2	 		;MIDDLE OF ZONE
     // asm 00001C6F: 	ADDF	@STEERMN,R2		;ADD IN MINIMUM
+    desired_wheel = C3X_ADD(
+        C3X_ADD(C3X_MUL(zone_width, C3X_FROM_INT(POSE)),
+                C3X_MUL(zone_width, C3X_IMM_F32(0.5))),
+        C3X_LDF(STEERMN));
+    /* A keyboard key-down represents one wheel detent. Place the virtual
+       analog wheel just beyond the original 60% hysteresis threshold; after
+       POSE moves one zone, it is back inside that zone's deadband. */
+    steering_detent = port_take_steering_detent();
+    if (steering_detent != 0) {
+        _pot0 = C3X_FIX(C3X_ADD(desired_wheel,
+            C3X_MUL(C3X_MUL(zone_width, C3X_FROM_INT(steering_detent)),
+                C3X_IMM_F32(0.7))));
+        port_set_steering(_pot0);
+    }
     // asm 00001C70: 	CMPI	MINIT,R4
     // asm 00001C71: 	BEQ	GETCHA
+    if ((_MODE & MMODE) == MINIT) goto GETCHA;
     // asm 00001C72: 	STF	R2,@WHEELPOS
+    WHEELPOS = C3X_STF(desired_wheel);
 GETCHA:
     // asm 00001C73: 	SUBF	R3,R2
     // asm 00001C74: 	ABSF	R2,R3			;FIND DIFFERENCE
+    difference = C3X_ABS(C3X_SUB(desired_wheel, C3X_FROM_INT(_pot0)));
     // asm 00001C75: 	MPYF	0.6,R0		   	;SLIGHT HYSTERESIS
     // asm 00001C76: 	CMPF	R0,R3
     // asm 00001C77: 	BLE	GETCHX
+    if (C3X_LE(difference, C3X_MUL(zone_width, C3X_IMM_F32(0.6)))) goto GETCHX;
     // asm 00001C78: 	LDF	R2,R2
     // asm 00001C79: 	LDILT	1,R0
     // asm 00001C7A: 	LDIGE	-1,R0
     // asm 00001C7B: 	ADDI	@POSE,R0		;CHOSEN_VEHICLE,R0
+    int new_pose = POSE +
+        (C3X_LT(C3X_SUB(desired_wheel, C3X_FROM_INT(_pot0)), C3X_FROM_INT(0)) ? 1 : -1);
     // asm 00001C7C: 	LDFLT	0,R0
     // asm 00001C7D: 	CMPI	@POSES,R0
+    if (new_pose < 0) new_pose = 0;
     // asm 00001C7E: 	BLT	GETCH1
     // asm 00001C7F: 	LDI	@POSES,R0
     // asm 00001C80: 	SUBI	1,R0
+    if (new_pose >= POSES) new_pose = POSES - 1;
 GETCH1:
     // asm 00001C81: STI	R0,@POSE
+    POSE = new_pose;
 GETCHX:
     // asm 00001C82: 	POP	R4
     // asm 00001C83: 	POPF	R4
     // asm 00001C84: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCHOICE", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -2819,7 +3025,8 @@ GETCHX:
  *	C	TRUE
  *
  */
-void PEDALCHK(void) {
+int PEDALCHK(int* pedal_released) {
+    int pedal_threshold = C3X_FIX(C3X_LDF(PEDALMN)) + 20;
     // asm 00001C85: 	LDI	@_pot1,R0			;set in main IRQ
     // asm 00001C86: 	LDP	@PEDALMN
     // asm 00001C87: 	FIX	@PEDALMN,R1
@@ -2827,17 +3034,22 @@ void PEDALCHK(void) {
     // asm 00001C89: 	CMPI	R1,R0
     // asm 00001C8A: 	LDILT	0,R5
     // asm 00001C8B: 	BLT	SKIPKEY
+    if (_pot1 < pedal_threshold) {
+        *pedal_released = 0;
+        goto SKIPKEY;
+    }
     // asm 00001C8C: 	LDI	R5,R5				;IF the pedal has not yet been released
     // asm 00001C8D: 	BZ	PEDALTRUE			;up do not accept this as a valid pedal choice
+    if (*pedal_released == 0) goto PEDALTRUE;
 SKIPKEY:
     // asm 00001C8E: PEDALFALSE
     // asm 00001C8E: 	CLRC
     // asm 00001C8F: 	RETS
+    return 0;
 PEDALTRUE:
     // asm 00001C90: 	SETC
     // asm 00001C91: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PEDALCHK", 0, 0);
-    UNIMPL();
+    return 1;
 }
 
 // *----------------------------------------------------------------------------
@@ -3148,26 +3360,34 @@ NOTHHHH:
 
 // *----------------------------------------------------------------------------
 void RACESEL_TIMER(void) {
+    tTEXT* text;
     // asm 00001D38: 	LDI	@_countdown,R2
     // asm 00001D39: 	LDI	@COUNTDOWN_BUFI,AR2
     // asm 00001D3A: 	CALL	_itoa
+    _itoa((char*)COUNTDOWN_BUFI, _countdown);
     // asm 00001D3B: 	BUD	IT_E2
     // asm 00001D3C: 	FLOAT	256,R2
     // asm 00001D3D: 	FLOAT	253,R3
     // asm 00001D3E: 	LDI	1,RC
     // 	;---->	BUD	IT_E2
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RACESEL_TIMER", 0, 0);
-    UNIMPL();
+    text = TEXT_ADD((char*)COUNTDOWN_BUFI, C3X_FROM_INT(256), C3X_FROM_INT(253), 1);
+    text->color |= TXT_CENTER;
+    SETN43FONT(text);
+    text->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(lgnum43_coolyelo_ROM));
+    return;
 }
 
 // *----------------------------------------------------------------------------
 static void WAITINTROTIMER(void) {
+    tTEXT* text;
     // asm 00001D3F: 	FLOAT	215,R3
     // asm 00001D40: 	BU	LKJAFSD
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WAITINTROTIMER", 0, 0);
-    UNIMPL();
+    _itoa((char*)COUNTDOWN_BUFI, _countdown);
+    text = TEXT_ADD((char*)COUNTDOWN_BUFI, C3X_FROM_INT(256), C3X_FROM_INT(215), 1);
+    text->color |= TXT_CENTER;
+    SETN43FONT(text);
+    text->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(lgnum43_coolyelo_ROM));
+    return;
 }
 
 void INTROTIMER(void) {
@@ -3762,17 +3982,41 @@ static const char ICCI[] = "TO CONTINUE";
 static const char PSCI[] = "PRESS START";
 /* asm: SAVEDMODE	.bss	SAVEDMODE,1 */
 int SAVEDMODE;
+/* asm: miniidle	.bss	miniidle,1 */
+int miniidle;
 
-void INSMORE(void) {
+void INSMORE(PROC* p) {
+    int total_time;
+    int credits;
+    int required_credits;
+    int cancel_buttons;
+    tTEXT* text;
+    PROC_CONTEXT* countdown_ctx;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("INSMORE");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
     // asm 00001E2C: 	LDI	@_MODE,R0
     // asm 00001E2D: 	STI	R0,@SAVEDMODE
+    SAVEDMODE = _MODE;
     // asm 00001E2E: 	CALL	CHECK_MOTION_DIP
     // asm 00001E2F: 	BNZ	KFFDA
+    if (CHECK_MOTION_DIP() != 0)
+        goto KFFDA;
     // asm 00001E30: 	CALL	ABORT_RESET_GALIL
+    ABORT_RESET_GALIL();
     // asm 00001E31: 	LDI	0,R0
     // asm 00001E32: 	STI	R0,@MOTION_STOP_HIT
+    MOTION_STOP_HIT = 0;
     // asm 00001E33: 	STI	R0,@MOTION_SAFETY_ON
+    MOTION_SAFETY_ON = 0;
     // asm 00001E34: 	STI	R0,@WAITTIK
+    WAITTIK = 0;
 KFFDA:
     // 	;
     // asm 00001E35: 	LDF	@GAME_TIMER,R2
@@ -3781,126 +4025,196 @@ KFFDA:
     // asm 00001E38: 	READAUD	AUD_TOTAL_TIME
     // asm 00001E3A: 	ADDI	R0,R2
     // asm 00001E3B: 	SETAUD	AUD_TOTAL_TIME
+    total_time = READAUD(AUD_TOTAL_TIME) +
+        C3X_FIX(C3X_MUL(C3X_LDF(GAME_TIMER), C3X_IMM_F32(100)));
+    SETAUD(AUD_TOTAL_TIME, total_time);
     // asm 00001E3D: 	READAUD	AUD_NUM_BUYINS
     // asm 00001E3F: 	LDI	R0,R1
     // asm 00001E40: 	LDI	R2,R0
     // asm 00001E41: 	CALL	DIV_I30
     // asm 00001E42: 	LDI	R0,R2
     // asm 00001E43: 	SETAUD	AUD_AVG_TIME
+    credits = READAUD(AUD_NUM_BUYINS);
+    SETAUD(AUD_AVG_TIME, credits != 0 ? total_time / credits : 0);
     // 	;
     // asm 00001E45: 	LDI	20,R0
     // asm 00001E46: 	STI	R0,@_countdown
+    _countdown = 20;
     // asm 00001E47: 	CALL	SILENT
+    SILENT();
     // asm 00001E48: 	SOND1	DISCODUCK
+    ONESND(DISCODUCK);
     // asm 00001E4A: 	CLRI	R0
     // asm 00001E4B: 	STI	R0,@STOPWATCH_CNTL
+    STOPWATCH_CNTL = 0;
     // asm 00001E4C: 	STI	R0,@START_HIT
+    START_HIT = 0;
     // asm 00001E4D: 	LDI	@_MODE,R0
     // asm 00001E4E: 	ANDN	MMODE,R0
     // asm 00001E4F: 	OR	MINSERT_COINS|MGO,R0
     // asm 00001E50: 	STI	R0,@_MODE
+    _MODE = (_MODE & ~MMODE) | MINSERT_COINS | MGO;
     // asm 00001E51: 	LDI	@TROI,AR2
     // asm 00001E52: 	FLOAT	256,R2
     // asm 00001E53: 	FLOAT	100,R3
     // asm 00001E54: 	LDI	9999,RC
     // asm 00001E55: 	CALL	TEXT_ADD
+    text = TEXT_ADD(TROI, C3X_FROM_INT(256), C3X_FROM_INT(100), 9999);
     // asm 00001E56: 	CALL	SET40FONT
+    SET40FONT(text);
     // asm 00001E57: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 00001E5A: 	LDI	AR0,AR4			;SAVE POINTERS FOR TEXT CHANGE
+    p->ctx->INSMORE_FRAME.prompt = text; /* SAVE POINTER FOR TEXT CHANGE */
     // asm 00001E5B: 	LDI	@ICCI,AR2
     // asm 00001E5C: 	FLOAT	256,R2
     // asm 00001E5D: 	FLOAT	150,R3
     // asm 00001E5E: 	LDI	9999,RC
     // asm 00001E5F: 	CALL	TEXT_ADD
+    text = TEXT_ADD(ICCI, C3X_FROM_INT(256), C3X_FROM_INT(150), 9999);
     // asm 00001E60: 	CALL	SET40FONT
+    SET40FONT(text);
     // asm 00001E61: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 00001E64: 	CREATEC	COIN_CNTDOWN,034h
+    countdown_ctx = port_malloc(sizeof(*countdown_ctx));
+    CREATEC(COIN_CNTDOWN, 0x34, countdown_ctx);
     // asm 00001E67: 	READAUD	AUD_BCREDITS
     // asm 00001E69: 	LDI	R0,R4			;WATCH CREDITS
+    p->ctx->INSMORE_FRAME.watched_credits = READAUD(AUD_BCREDITS);
     // asm 00001E6A: 	CLRI	R5			;TO START TOGGLE
+    p->ctx->INSMORE_FRAME.start_enabled = 0;
     // asm 00001E6B: 	LDI	15,AR6			;wait at least 15 frames to continue
+    p->ctx->INSMORE_FRAME.start_delay = 15;
     // asm 00001E6C: 	LDI	0,R0
     // asm 00001E6D: 	STI	R0,@miniidle
+    miniidle = 0;
     // 	;wait for a coin to be dropped in
     // 	;if coins are in change text to PRESS START
 INSMORE_LP:
     // asm 00001E6E: 	CALL	INSERT_MORE_COINS
+    INSERT_MORE_COINS();
     // asm 00001E6F: 	READAUD	AUD_BCREDITS
     // asm 00001E71: 	CMPI	R0,R4
     // asm 00001E72: 	BEQ	NOINCTIM
+    credits = READAUD(AUD_BCREDITS);
+    if (credits == p->ctx->INSMORE_FRAME.watched_credits)
+        goto NOINCTIM;
     // asm 00001E73: 	LDI	R0,R4
+    p->ctx->INSMORE_FRAME.watched_credits = credits;
     // asm 00001E74: 	LDI	20,R0
     // asm 00001E75: 	STI	R0,@_countdown
+    _countdown = 20;
 NOINCTIM:
     // asm 00001E76: 	LDI	R5,R5
     // asm 00001E77: 	BNZ	CHECKHIT
+    if (p->ctx->INSMORE_FRAME.start_enabled != 0)
+        goto CHECKHIT;
     // asm 00001E78: 	READADJ	ADJ_FREE_PLAY
     // asm 00001E7A: 	CMPI	1,R0
     // asm 00001E7B: 	BEQ	FREEP
+    if (READADJ(ADJ_FREE_PLAY) == 1)
+        goto FREEP;
     // asm 00001E7C: 	READAUD	AUD_CREDITS
     // asm 00001E7E: 	CALL	GET_CREDITS_TO_CONTINUE
     // asm 00001E7F: 	CMPI	R1,R0
     // asm 00001E80: 	BLT	JUSTGOON
+    credits = READAUD(AUD_CREDITS);
+    required_credits = GET_CREDITS_TO_CONTINUE();
+    if (credits < required_credits)
+        goto JUSTGOON;
     // ;	CMPI	0,R0
     // ;	BEQ	JUSTGOON
 FREEP:
     // asm 00001E81: 	LDI	@PSCI,R0		;change the text
     // asm 00001E82: 	STI	R0,*+AR4(TEXT_PTR)
+    p->ctx->INSMORE_FRAME.prompt->ptr = (char*)PSCI;
     // asm 00001E83: 	LDI	1,R5
+    p->ctx->INSMORE_FRAME.start_enabled = 1;
     // asm 00001E84: 	LDI	@BUTTON_STATUS,R0
     // asm 00001E85: 	OR	BUT_START,R0
     // asm 00001E86: 	STI	R0,@BUTTON_STATUS
+    BUTTON_STATUS |= BUT_START;
 JUSTGOON:
     // 	;check to see if plyr hit start (decrement count)
     // asm 00001E87: 	LDI	R5,R5
     // asm 00001E88: 	BNZ	CANWT
+    if (p->ctx->INSMORE_FRAME.start_enabled != 0)
+        goto CANWT;
 TOSLP:
     // 	;HITTING THE BUTTON W/O CREDITS
     // asm 00001E89: 	LDI	@START_HIT,R0
     // asm 00001E8A: 	BZ	NRST
+    if (START_HIT == 0)
+        goto NRST;
     // asm 00001E8B: 	CLRI	R0
     // asm 00001E8C: 	STI	R0,@START_HIT
+    START_HIT = 0;
     // asm 00001E8D: 	LDI	20,R0
     // asm 00001E8E: 	STI	R0,@_countdown
+    _countdown = 20;
 NRST:
     // asm 00001E8F: 	LDI	@miniidle,R0	;only every 10th frame
     // asm 00001E90: 	CMPI	0,R0
     // asm 00001E91: 	LDI	@SWITCHBUTS,R0
     // asm 00001E92: 	LDL	SW_RADIO|SW_VIEW0|SW_VIEW1|SW_VIEW2,R1
     // asm 00001E93: 	AND	R1,R0
+    cancel_buttons = SWITCHBUTS & (SW_RADIO | SW_VIEW0 | SW_VIEW1 | SW_VIEW2);
     // asm 00001E94: 	BZ	TOSLP2
+    if (cancel_buttons == 0)
+        goto TOSLP2;
     // asm 00001E95: 	CMPI	R1,R0		;but if ALL are pressed...dont decrement
     // asm 00001E96: 	BEQ	TOSLP2
+    if (cancel_buttons == (SW_RADIO | SW_VIEW0 | SW_VIEW1 | SW_VIEW2))
+        goto TOSLP2;
     // asm 00001E97: 	LDI	@_countdown,R0
     // asm 00001E98: 	DEC	R0
     // asm 00001E99: 	STI	R0,@_countdown
+    _countdown--;
 TOSLP2:
     // asm 00001E9A: 	DEC	AR6
+    p->ctx->INSMORE_FRAME.start_delay--;
     // asm 00001E9B: 	CMPI	0,AR6
     // asm 00001E9C: 	BGT	CANWT
+    if (p->ctx->INSMORE_FRAME.start_delay > 0)
+        goto CANWT;
     // asm 00001E9D: 	LDI	@SWITCHBUTS,R0
     // asm 00001E9E: 	TSTB	SW_START,R0
     // asm 00001E9F: 	BZ	CANWT
+    if ((SWITCHBUTS & SW_START) == 0)
+        goto CANWT;
     // ;	LDI	AR5,R0		;if no decrement -> DONT
     // ;	BNZ	CANWT
     // asm 00001EA0: 	LDI	@_countdown,R0
     // asm 00001EA1: 	DEC	R0
     // asm 00001EA2: 	STI	R0,@_countdown
+    _countdown--;
     // asm 00001EA3: 	LDI	15,AR6			;wait at least 15 frames to continue
+    p->ctx->INSMORE_FRAME.start_delay = 15; /* wait at least 15 frames to continue */
 CANWT:
     // asm 00001EA4: 	LDI	@miniidle,R0
     // asm 00001EA5: 	INC	R0
     // asm 00001EA6: 	CMPI	25,R0
     // asm 00001EA7: 	LDIGE	0,R0
     // asm 00001EA8: 	STI	R0,@miniidle
+    miniidle++;
+    if (miniidle >= 25)
+        miniidle = 0;
     // asm 00001EA9: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00001EAB: 	LDI	@_countdown,R0
     // asm 00001EAC: 	BNZ	INSMORE_LP
+    if (_countdown != 0)
+        goto INSMORE_LP;
     // asm 00001EAD: 	CLRI	AR6
+    p->ctx->INSMORE_FRAME.result = 0;
     // asm 00001EAE: 	BU	RETURNTOPLYR
+    goto RETURNTOPLYR;
 CHECKHIT:
     // asm 00001EAF: 	LDI	@START_HIT,R0
     // asm 00001EB0: 	BZ	TOSLP
+    if (START_HIT == 0)
+        goto TOSLP;
     // 	;Secret Button Combo!!
     // 	;
     // 	;if the plyr holds all the view buttons and radio as he
@@ -3912,12 +4226,17 @@ CHECKHIT:
     // asm 00001EB5: 	AND	R1,R0
     // asm 00001EB6: 	CMPI	R1,R0
     // asm 00001EB7: 	BNE	NOSECRET_CRUISE
+    if ((SWITCHBUTS & (SW_RADIO | SW_VIEW0 | SW_VIEW1 | SW_VIEW2)) !=
+        (SW_RADIO | SW_VIEW0 | SW_VIEW1 | SW_VIEW2))
+        goto NOSECRET_CRUISE;
     // asm 00001EB8: 	LDI	RM_USA,R0
     // asm 00001EB9: 	STI	R0,@RACE_MODE
+    RACE_MODE = RM_USA;
 NOSECRET_CRUISE:
     // asm 00001EBA: 	LDI	0,R2
     // asm 00001EBB: 	LDI	AUD_BCREDITS,AR2
     // asm 00001EBC: 	CALL	AUDIT_WRITE
+    AUDIT_WRITE(AUD_BCREDITS, 0);
     // asm 00001EBD: 	READAUD	AUD_CREDITS
     // asm 00001EBF: 	CALL	GET_CREDITS_TO_CONTINUE
     // asm 00001EC0: 	SUBI	R1,R0
@@ -3925,33 +4244,46 @@ NOSECRET_CRUISE:
     // asm 00001EC1: 	LDILT	0,R0
     // asm 00001EC2: 	LDI	R0,R2
     // asm 00001EC3: 	SETAUD	AUD_CREDITS
+    credits = READAUD(AUD_CREDITS) - GET_CREDITS_TO_CONTINUE();
+    if (credits < 0)
+        credits = 0;
+    SETAUD(AUD_CREDITS, credits);
     // asm 00001EC5: 	LDI	@_MODE,R0
     // asm 00001EC6: 	ANDN	MMODE,R0
     // asm 00001EC7: 	OR	MGAME,R0
     // asm 00001EC8: 	STI	R0,@_MODE
+    _MODE = (_MODE & ~MMODE) | MGAME;
     // asm 00001EC9: 	LDI	1,R0
     // asm 00001ECA: 	STI	R0,@STOPWATCH_CNTL
+    STOPWATCH_CNTL = 1;
     // asm 00001ECB: 	LDI	60,R0
     // asm 00001ECC: 	STI	R0,@_countdown
+    _countdown = 60;
     // asm 00001ECD: 	LDI	1,AR6
+    p->ctx->INSMORE_FRAME.result = 1;
     // asm 00001ECE: 	LDI	@BUTTON_STATUS,R0
     // asm 00001ECF: 	ANDN	BUT_START,R0
     // asm 00001ED0: 	STI	R0,@BUTTON_STATUS
+    BUTTON_STATUS &= ~BUT_START;
     // asm 00001ED1: 	INCAUD	AUD_NUM_BUYINS
+    INCAUD(AUD_NUM_BUYINS);
 RETURNTOPLYR:
     // asm 00001ED3: 	LDI	@SAVEDMODE,R0
     // asm 00001ED4: 	STI	R0,@_MODE
+    _MODE = SAVEDMODE;
     // asm 00001ED5: 	LDI	034h,R0
     // asm 00001ED6: 	LDI	-1,R1
     // asm 00001ED7: 	CALL	PRC_KILLALL
+    PRC_KILLALL(0x34, -1);
     // asm 00001ED8: 	CALL	TEXT_INIT
+    TEXT_INIT();
     // asm 00001ED9: 	CALL	RESUME_TUNE_NT
+    RESUME_TUNE_NT();
     // asm 00001EDA: 	CLRF	R0
     // asm 00001EDB: 	STPF	R0,@GAME_TIMER
+    GAME_TIMER = C3X_STF(C3X_FROM_INT(0));
     // asm 00001EDC: 	RETP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INSMORE", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -3962,26 +4294,40 @@ RETURNTOPLYR:
  *
  *
  */
-static void COIN_CNTDOWN(void) {
+static void COIN_CNTDOWN(PROC* p) {
+    tTEXT* text;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("COIN_CNTDOWN");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
     // asm 00001EE0: 	LDI	@_countdown,R4
 COIN_CNTDOWN_LP:
     // asm 00001EE1: 	LDI	@_countdown,R2
     // asm 00001EE2: 	LDI	@COUNTDOWN_BUFI,AR2
     // asm 00001EE3: 	CALL	_itoa
+    _itoa((char*)COUNTDOWN_BUFI, _countdown);
     // asm 00001EE4: 	FLOAT	256,R2
     // asm 00001EE5: 	FLOAT	270,R3
     // asm 00001EE6: 	LDI	1,RC
     // asm 00001EE7: 	CALL	TEXT_ADD
+    text = TEXT_ADD((char*)COUNTDOWN_BUFI, C3X_FROM_INT(256), C3X_FROM_INT(270), 1);
     // asm 00001EE8: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 00001EEB: 	CALL	SETN43FONT
+    SETN43FONT(text);
     // asm 00001EEC: 	LDL	lgnum43_coolyelo,AR2
     // asm 00001EED: 	CALL	PAL_FIND_RAW
     // asm 00001EEE: 	STI	R0,*+AR0(TEXT_PAL)
+    text->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(lgnum43_coolyelo_ROM));
     // asm 00001EEF: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00001EF1: 	BU	COIN_CNTDOWN_LP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "COIN_CNTDOWN", 0, 0);
-    UNIMPL();
+    goto COIN_CNTDOWN_LP;
 }
 
 // *----------------------------------------------------------------------------

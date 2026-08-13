@@ -37,8 +37,8 @@ void GET_UNIT_WHEEL(void);
 static void TILE_PIECES(void);
 void FIX_TRANSMISSION_SCREEN(void);
 static void MOVE_PUSH_BOX(void);
-void TURNTO_SELECT(void);
-void CYCLE_PUSH(void);
+void TURNTO_SELECT(PROC* p);
+void CYCLE_PUSH(PROC* p);
 void ADD_TO_DOOR_LIST(void);
 void ENGINE_COLOR_INIT(void);
 void ENGINE_COLOR(void);
@@ -1035,18 +1035,32 @@ static int TRNTAB[] = {
     -1,
 };
 
-void TURNTO_SELECT(void) {
+void TURNTO_SELECT(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00005CEB: 	LDI	@TRNTABI,AR5
+    p->ctx->TRACKSEL_ANIMATION.script_index = 0;
 TURNLP:
     // asm 00005CEC: LDI	*AR5++,R0
     // asm 00005CED: 	CMPI	-1,R0
     // asm 00005CEE: 	BEQ	TURNTO_SELECT
+    if (TRNTAB[p->ctx->TRACKSEL_ANIMATION.script_index] < 0) {
+        p->ctx->TRACKSEL_ANIMATION.script_index = 0;
+    }
     // asm 00005CEF: 	STI	R0,*+AR4(OROMDATA)
+    p->ctx->TRACKSEL_ANIMATION.obj->romdata = ROM_PTR(
+        TRNTAB[p->ctx->TRACKSEL_ANIMATION.script_index++]);
     // asm 00005CF0: 	SLEEP	5
+    SLEEP(5, 1);
     // asm 00005CF2: 	BU	TURNLP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TURNTO_SELECT", 0, 0);
-    UNIMPL();
+    goto TURNLP;
 }
 
 // *----------------------------------------------------------------------------
@@ -1063,23 +1077,40 @@ static int CYCTAB[] = {
     -1,
 };
 
-void CYCLE_PUSH(void) {
+void CYCLE_PUSH(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
     // asm 00005CFB: 	LDI	@CYCTABI,AR5
+    p->ctx->TRACKSEL_ANIMATION.script_index = 0;
     // asm 00005CFC: 	SLEEP	16
+    SLEEP(16, 1);
 CYCLP:
     // asm 00005CFE: 	LDI	*AR5++,R0
     // asm 00005CFF: 	CMPI	-1,R0
     // asm 00005D00: 	BEQ	CYCLE_PUSH
+    if (CYCTAB[p->ctx->TRACKSEL_ANIMATION.script_index] < 0) {
+        p->ctx->TRACKSEL_ANIMATION.script_index = 0;
+    }
     // asm 00005D01: 	STI	R0,*+AR4(OROMDATA)
+    p->ctx->TRACKSEL_ANIMATION.obj->romdata = ROM_PTR(
+        CYCTAB[p->ctx->TRACKSEL_ANIMATION.script_index++]);
     // asm 00005D02: 	LDI	@NFRAMES,R1
     // asm 00005D03: 	LDI	6,R0
     // asm 00005D04: 	CALL	DIV_I30
     // asm 00005D05: 	LDI	R0,AR2
     // asm 00005D06: 	CALL	PRC_SLEEP
+    SLEEP(6 / NFRAMES, 2);
     // asm 00005D07: 	BU	CYCLP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CYCLE_PUSH", 0, 0);
-    UNIMPL();
+    goto CYCLP;
 }
 
 // *----------------------------------------------------------------------------

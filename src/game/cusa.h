@@ -5,6 +5,9 @@
 
 /* Generated from asm/CUSA.ASM. */
 
+// asm: TIKS_PER_SECOND	.set	57
+#define TIKS_PER_SECOND 57
+
 // CUSA.ASM
 // asm: 	fbss	COMMINTM,1	;0       if NON-linked
 extern int COMMINTM;
