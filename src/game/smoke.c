@@ -22,7 +22,7 @@ static void INIT_SMOKE(void);
 void SORT_SMOKE(void);
 void INIT_SPARK(void);
 static void REPLICATE_SPARK(void);
-void SPARK_PROC(void);
+void SPARK_PROC(PROC* p);
 static void INIT_COLLA_OBJS(PROC* p /*AR7*/);
 void WALL_SPARK(void);
 void IMPACT_SPARK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
@@ -596,7 +596,7 @@ REPSPARKX:
  *INPUT	PDATA = SETUP see equates at begining of file
  *Maintains several spark animations
  */
-void SPARK_PROC(void) {
+void SPARK_PROC(PROC* p) {
     // asm 0000861C: 	LDF	0,R7
     // asm 0000861D: 	LDI	*+AR7(CAR_BLOCK),AR5
 SSANI_LOOP:
@@ -686,6 +686,7 @@ SPARK_ANIX:
 NO_OBJ:
     // asm 0000866D: 	BR	NEXT_SPARK
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    (void)p;
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SPARK_PROC", 0, 0);
     UNIMPL();
 }
@@ -899,7 +900,7 @@ IMPACTED_PLAYER:
     // asm 000086F4: 	LDI	@PLYPROC,AR7
     // asm 000086F5: 	CREATEC	SPARK_PROC,UTIL_C|SPARK_T
     spark_ctx = port_malloc(sizeof(PROC_CONTEXT));
-    spark_proc = CREATEC((PROC_FUNC)SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
+    spark_proc = CREATEC(SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
     // asm 000086F8: 	BC	IMPACT_SPARKX
     if (spark_proc == NULL) {
         goto IMPACT_SPARKX;

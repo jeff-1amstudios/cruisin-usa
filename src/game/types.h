@@ -29,6 +29,17 @@ typedef unsigned short u16;
 
 typedef s32* tyco_stream_t;
 
+typedef struct BLTMOD2D_MODEL {
+    s32 radius;
+    s32 vertex_polygon_count;
+    s32 vertices[8];
+    s32 control_palette;
+    s32 vertex_indices;
+    s32 iv01;
+    s32 iv23;
+    s32 image_addr;
+} BLTMOD2D_MODEL;
+
 typedef void (*void_func_ptr)(void);
 
 typedef u32 word_addr_t;
@@ -703,6 +714,13 @@ struct WAVEFLAG_ENTRY;
 typedef struct PROC_CONTEXT {
     int pedal_released; // process-saved R5 used by INIT_PEDALCHK/PEDALCHK
 
+    struct {
+        int loop_count;
+    } CHOOSE_TRANSMISSION_FRAME;
+    struct {
+        int loop_count;
+    } OPEN_DOOR_PROC_FRAME;
+
     /* These coroutine frames may be nested below another logical process, so
        they cannot share the function-local union below. */
     struct {
@@ -749,6 +767,24 @@ typedef struct PROC_CONTEXT {
             OBJ* obj;
             int loop_count;
         } CENTER_THEONE;
+        struct {
+            OBJ* obj;
+            int loop_count;
+            c3x_reg_t x_velocity;
+        } TRANS_CENTER_THEONE;
+        struct {
+            OBJ* obj;
+            int loop_count;
+            c3x_reg_t y_velocity;
+        } DROP_TRANS_ELEMENT;
+        struct {
+            int loop_count;
+        } TILE_PIECES;
+        struct {
+            OBJ* left_obj;
+            OBJ* right_obj;
+            int loop_count;
+        } MOVE_PUSH_BOX;
         struct {
             OBJ* obj;
             int script_index;

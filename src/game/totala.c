@@ -12,12 +12,6 @@
  * Source module: asm/TOTALA.ASM
  */
 
-void _rdma(void);
-void _stuff_fpga(void);
-void BLTMOD2D_NOPAL(void);
-void BLTMOD2D(void);
-void BLTMOD2D_DS(void);
-
 #define AIVI _AIVI
 
 #define NOFIFO 0
@@ -49,21 +43,30 @@ int _ADDRL;
  *
  *
  */
-void _rdma(void) {
+void _rdma(int x1, int y1, int x2, int y2, int palette, int image_addr) {
     // asm 0000AEFC: 	STI	RS,@_ACMAP
+    _ACMAP = palette;
     // asm 0000AEFD: 	STI	RE,@_ADDRL
+    _ADDRL = image_addr;
     // asm 0000AEFE: 	STI	AR2,@_ARPS+0		;AX
+    _ARPS[0] = x1;
     // asm 0000AEFF: 	STI	AR2,@_ARPS+9		;DX
+    _ARPS[9] = x1;
     // asm 0000AF00: 	STI	R2,@_ARPS+1		;AY
+    _ARPS[1] = y1;
     // asm 0000AF01: 	STI	R2,@_ARPS+4		;BY
+    _ARPS[4] = y1;
     // asm 0000AF02: 	STI	R3,@_ARPS+3		;BX
+    _ARPS[3] = x2;
     // asm 0000AF03: 	STI	R3,@_ARPS+6		;CX
+    _ARPS[6] = x2;
     // asm 0000AF04: 	STI	RC,@_ARPS+7		;CY
+    _ARPS[7] = y2;
     // asm 0000AF05: 	STI	RC,@_ARPS+10		;DY
+    _ARPS[10] = y2;
     // 	;BU	_stuff_fpga
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_rdma", 0, 0);
-    UNIMPL();
+    _stuff_fpga();
 }
 
 // *----------------------------------------------------------------------------
@@ -118,6 +121,11 @@ LP1:
     // asm 0000AF27:  	STI	R0,*AR0
     // asm 0000AF27:  ||	LDI	*AR1++,R0			;addr
     // asm 0000AF28: 	STI	R0,*AR0
+    port_output_fpga(
+        _ARPS[0], _ARPS[1], _ARPS[3], _ARPS[4],
+        _ARPS[6], _ARPS[7], _ARPS[9], _ARPS[10],
+        _AIVI[0], _AIVI[1], _AIVI[2], _AIVI[3],
+        _ADDRL, _ACMAP, _ACNTL);
     // asm 0000AF29: 	LDP	@FIFO_INC
     // asm 0000AF2A: 	LDI	@FIFO_INC,R0
     // asm 0000AF2B: 	SETDP
@@ -132,32 +140,6 @@ LP1:
     // asm 0000AF34: 	POP	AR0
     // asm 0000AF35: 	RETS
 
-    int x1 = _ARPS[0];
-    int y1 = _ARPS[1];
-    int x2 = _ARPS[3];
-    int y2 = _ARPS[4];
-    int x3 = _ARPS[6];
-    int y3 = _ARPS[7];
-    int x4 = _ARPS[9];
-    int y4 = _ARPS[10];
-    int uv0 = _AIVI[0];
-    int uv1 = _AIVI[1];
-    int uv2 = _AIVI[2];
-    int uv3 = _AIVI[3];
-    int texture_base = _ADDRL;
-    int palette_base = _ACMAP;
-    int control = _ACNTL;
-
-    // asm 0000AEFE: 	STI	AR2,@_ARPS+0		;AX
-    // asm 0000AEFF: 	STI	AR2,@_ARPS+9		;DX
-    // asm 0000AF00: 	STI	R2,@_ARPS+1		;AY
-    // asm 0000AF01: 	STI	R2,@_ARPS+4		;BY
-    // asm 0000AF02: 	STI	R3,@_ARPS+3		;BX
-    // asm 0000AF03: 	STI	R3,@_ARPS+6		;CX
-    // asm 0000AF04: 	STI	RC,@_ARPS+7		;CY
-    // asm 0000AF05: 	STI	RC,@_ARPS+10		;DY
-
-    port_output_fpga(x1, y1, x2, y2, x3, y3, x4, y4, uv0, uv1, uv2, uv3, texture_base, palette_base, control);
 }
 
 // *----------------------------------------------------------------------------
@@ -209,71 +191,103 @@ LP1:
  *
  *
  */
-void BLTMOD2D_NOPAL(void) {
+void BLTMOD2D_NOPAL(const BLTMOD2D_MODEL* model, int x, int y, int control, int palette) {
     // asm 0000AF36: 	PUSHM	R0,R1,R2,R3,R4,R5,R6,R7
     // asm 0000AF3E: 	PUSHM	AR0,AR1,AR2,AR3
     // asm 0000AF42: 	BU	SKIPPALENTRY
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BLTMOD2D_NOPAL", 0, 0);
-    UNIMPL();
+    BLTMOD2D(model, x, y, control, 1, palette);
 }
 
-void BLTMOD2D(void) {
+void BLTMOD2D(const BLTMOD2D_MODEL* model, int x, int y, int control, int skip_palette, int palette) {
+    int palette_index;
+    tPALLIST_ENTRY* palette_entry;
+    int iv01;
+    int iv1;
+    int iv23;
+    int iv3;
+    int image_addr;
+    int x2;
+    int y2;
+
+    if (skip_palette) goto SKIPPALENTRY;
+
     // asm 0000AF43: 	PUSHM	R0,R1,R2,R3,R4,R5,R6,R7
     // asm 0000AF4B: 	PUSHM	AR0,AR1,AR2,AR3
     // asm 0000AF4F: 	LDI	*+AR2(10),AR0		;IMAGE PAL
+    palette_index = model->control_palette;
     // asm 0000AF50: 	RS	16,AR0
+    palette_index = (int)((u32)palette_index >> 16);
     // asm 0000AF51: 	ADDI	@_PALLISTI,AR0
+    palette_entry = &_PALLIST[palette_index];
     // asm 0000AF52: 	LDI	*AR0,RS
+    palette = palette_entry->ref_count_and_pal_code;
     // asm 0000AF53: 	RS	8,RS
+    palette >>= 8;
 SKIPPALENTRY:
     // asm 0000AF54: 	STI	R4,@_ACNTL
+    _ACNTL = control;
 #if DEBUG
     // asm: 	LDI	*+AR2(1),R0
     // asm: 	CMPI	3,R0
     // asm: 	BNE	$		;it should have 4 vertices and 1 polygon
+    SLOCKON(model->vertex_polygon_count != 3, "BLTMOD2D model must have four vertices and one polygon");
 #endif
     // asm 0000AF55: 	LDI	-16,R0
     // asm 0000AF56: 	LDI	*+AR2(12),R4
+    iv01 = model->iv01;
     // asm 0000AF57: 	STI	R4,@_AIVI
+    _AIVI[0] = iv01;
     // asm 0000AF58: 	LSH	R0,R4,R5
+    iv1 = (int)((u32)iv01 >> 16);
     // asm 0000AF59: 	STI	R5,@_AIVI+1
+    _AIVI[1] = iv1;
     // asm 0000AF5A: 	LDI	*+AR2(13),R6
+    iv23 = model->iv23;
     // asm 0000AF5B: 	STI	R6,@_AIVI+2
+    _AIVI[2] = iv23;
     // asm 0000AF5C: 	LSH	R0,R6,R7
+    iv3 = (int)((u32)iv23 >> 16);
     // asm 0000AF5D: 	STI	R7,@_AIVI+3
+    _AIVI[3] = iv3;
     // asm 0000AF5E: 	LDI	*+AR2(14),RE		;IMAGE ADDR
+    image_addr = model->image_addr;
     // asm 0000AF5F: 	PUSH	R3
     // asm 0000AF60: 	AND	0FFh,R4
+    iv01 &= 0xFF;
     // asm 0000AF61: 	AND	0FFh,R6
+    iv23 &= 0xFF;
     // asm 0000AF62: 	LDI	R2,AR2
     // asm 0000AF63: 	SUBI	R4,R6		;find xsize
+    iv23 -= iv01; // find xsize
     // asm 0000AF64: 	ADDI	R6,R2,R3	;add xsize to dest
+    x2 = x + iv23; // add xsize to dest
     // asm 0000AF65: 	POP	R2
     // asm 0000AF66: 	RS	8,R7
+    iv3 = (int)((u32)iv3 >> 8);
     // asm 0000AF67: 	AND	0FFh,R7		;find y size
+    iv3 &= 0xFF; // find y size
     // asm 0000AF68: 	ADDI	R7,R2,R0
+    y2 = y + iv3;
     // asm 0000AF69: 	LDI	R0,RC
     // asm 0000AF6A: 	CALL	_rdma
+    _rdma(x, y, x2, y2, palette, image_addr);
     // asm 0000AF6B: 	POPM	AR3,AR2,AR1,AR0
     // asm 0000AF6F: 	POPM	R7,R6,R5,R4,R3,R2,R1,R0
     // asm 0000AF77: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BLTMOD2D", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BLTMOD2D_DS(void) {
+void BLTMOD2D_DS(const BLTMOD2D_MODEL* model, int x, int y, int control) {
     // asm 0000AF78: 	PUSHM	R2,R3,R4
     // asm 0000AF7B: 	ADDI	2,R2
     // asm 0000AF7C: 	ADDI	2,R3
     // asm 0000AF7D: 	LDI	TM|ZS|NZR,R4
     // asm 0000AF7E: 	CALL	BLTMOD2D
+    BLTMOD2D(model, x + 2, y + 2, TM | ZS | NZR, 0, 0);
     // asm 0000AF7F: 	POPM	R4,R3,R2
     // asm 0000AF82: 	CALL	BLTMOD2D
+    BLTMOD2D(model, x, y, control, 0, 0);
     // asm 0000AF83: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BLTMOD2D_DS", 0, 0);
-    UNIMPL();
 }

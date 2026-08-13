@@ -45,14 +45,14 @@ static void PLYR_INTRO__ALL_JOINUP_tail(PROC* p);
 static void WATCH_PLYRS_CAR(void);
 void INIT_GAMELEG(void);
 static void CHOOSECAR(void);
-void THE_CAR_CHOICE_PROC(void);
+void THE_CAR_CHOICE_PROC(PROC* p);
 static void RAISE_DOOR(void);
 void ZOOMTOCAR(void);
 void GETTHECARS(void);
 void SHOW_CAR_STATISTICS(void);
 static void CLEANUP_DIMCAR_PALS(void);
 static void GETTHECAR(void);
-void ROUNDER(void);
+void ROUNDER(PROC* p);
 static void AFFECT_THE_CARS(void);
 static void HIDDEN_VEHICLES(void);
 static void RESET_ORIGINAL(void);
@@ -1228,6 +1228,8 @@ static void PLYR_INTRO__CNR_ENTER_tail(PROC* p) {
         goto PROC_RESUME_4;
     case 5:
         goto PROC_RESUME_5;
+    case 6:
+        goto PROC_RESUME_6;
     }
 
 CNR_ENTER:
@@ -1312,7 +1314,7 @@ CONTINUE:
     DCALL = 0;
 
     // asm 000017CC: 	JSRP	CHOOSE_TRANSMISSION
-    CHOOSE_TRANSMISSION();
+    JSRP(CHOOSE_TRANSMISSION, 6);
 
     // asm 000017D2: 	LDI	1,R0
     // asm 000017D3: 	STI	R0,@DCALL
@@ -1898,7 +1900,7 @@ JAJAKKA:
 /* asm: CAR_CHOICE_GOTTEN	.bss	CAR_CHOICE_GOTTEN,1 */
 int CAR_CHOICE_GOTTEN;
 
-void THE_CAR_CHOICE_PROC(void) {
+void THE_CAR_CHOICE_PROC(PROC* p) {
     // ;	SLEEP	15
     // asm 00001942: 	CLRI	R0
     // asm 00001943: 	STI	R0,@CAR_CHOICE_GOTTEN
@@ -1937,6 +1939,7 @@ CCLPX:
     // asm 0000195B: 	STI	R0,@CAR_CHOICE_GOTTEN
     // asm 0000195C: 	DIE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    (void)p;
     TRACE_EVENT(&g_crusn_machine->trace, "function", "THE_CAR_CHOICE_PROC", 0, 0);
     UNIMPL();
 }
@@ -2470,7 +2473,7 @@ static void GETTHECAR(void) {
  *
  *
  */
-void ROUNDER(void) {
+void ROUNDER(PROC* p) {
     // asm 00001AB0: 	LDL	CAR1PAL,AR2
     // asm 00001AB1: 	LDI	481h,AR3
     // asm 00001AB2: 	LDI	RNDR_C1_DYH,IR0
@@ -2572,6 +2575,7 @@ RLL:
     // asm 00001B10: 	SLEEP	1
     // asm 00001B12: 	BU	ROUNDERLP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    (void)p;
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROUNDER", 0, 0);
     UNIMPL();
 }
@@ -3391,25 +3395,39 @@ static void WAITINTROTIMER(void) {
 }
 
 void INTROTIMER(void) {
+    tTEXT* text;
+    c3x_reg_t x;
+    c3x_reg_t y;
+    int ticks;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00001D41: 	FLOAT	350,R3
+    y = C3X_FROM_INT(350);
 LKJAFSD:
     // asm 00001D42: 	PUSHF	R3
     // asm 00001D43: 	LDI	@_countdown,R2
     // asm 00001D44: 	LDI	@COUNTDOWN_BUFI,AR2
     // asm 00001D45: 	CALL	_itoa
+    _itoa((char*)COUNTDOWN_BUFI, _countdown);
     // asm 00001D46: 	POPF	R3
     // asm 00001D47: 	FLOAT	256,R2
+    x = C3X_FROM_INT(256);
     // asm 00001D48: 	LDI	1,RC
+    ticks = 1;
 IT_E2:
     // asm 00001D49: CALL	TEXT_ADD
+    text = TEXT_ADD((char*)COUNTDOWN_BUFI, x, y, ticks);
     // asm 00001D4A: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 00001D4D: 	CALL	SETN43FONT
+    SETN43FONT(text);
     // asm 00001D4E: 	LDL	lgnum43_coolyelo,AR2
     // asm 00001D4F: 	CALL	PAL_FIND_RAW
+    text->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(lgnum43_coolyelo_ROM));
     // asm 00001D50: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 00001D51: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INTROTIMER", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------

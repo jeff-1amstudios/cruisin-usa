@@ -591,7 +591,9 @@ static int read_next_validate_line(char* out_name, size_t out_name_size, VALIDAT
         unsigned int value = 0;
         int matched = sscanf(line, "ordering %127[^\r\n]", name_buf);
         if (matched != 1) {
-            matched = sscanf(line, "\xEF\xBB\xBF" "ordering %127[^\r\n]", name_buf);
+            matched = sscanf(line, "\xEF\xBB\xBF"
+                                   "ordering %127[^\r\n]",
+                name_buf);
         }
         if (matched == 1) {
             snprintf(out_name, out_name_size, "%s", name_buf);
@@ -606,7 +608,9 @@ static int read_next_validate_line(char* out_name, size_t out_name_size, VALIDAT
 
         matched = sscanf(line, "function %127s", name_buf);
         if (matched != 1) {
-            matched = sscanf(line, "\xEF\xBB\xBF" "function %127s", name_buf);
+            matched = sscanf(line, "\xEF\xBB\xBF"
+                                   "function %127s",
+                name_buf);
         }
         if (matched == 1) {
             snprintf(out_name, out_name_size, "%s", name_buf);
@@ -1253,6 +1257,8 @@ void mame_validate_exit_impl(const char* caller_file, int caller_line) {
 
     (void)caller_file;
     (void)caller_line;
+
+    exit(0);
 }
 
 void mame_assert_reg_at_addr_impl(

@@ -52,7 +52,7 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/);
 static void FLYCOLLP(PROC* p /*AR7*/);
 static void DEBSCAN(void);
 static void SIGNFALL(PROC* p /*AR7*/);
-static void TREESHAK(void);
+static void TREESHAK(PROC* p);
 static void FREESIGN(OBJ* sign_obj /*AR4*/);
 static void ADDSIGN(void);
 static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
@@ -1967,7 +1967,7 @@ HARDCOL2:
         FIND_YMATRIX(&sign_obj->omatrix, old_velocity_rotation);
         sign_obj->flags &= ~O_POSTER;
         sign_obj->flags |= 1u << O_3DROT_B;
-        PRC_CREATE_CHILD((PROC_FUNC)TREESHAKI, DRONE_C | FLYER_T, NULL);
+        PRC_CREATE_CHILD(TREESHAKI, DRONE_C | FLYER_T, NULL);
     }
 HARDCOL3:
     ONESND(POLESND);
@@ -2413,7 +2413,7 @@ SIGNFALP0:
  *
  */
 
-static void TREESHAK(void) {
+static void TREESHAK(PROC* p) {
     // *SHAKE IT FORWARD
     // asm 000023B0: 	LDF	R7,R2
     // asm 000023B1: 	LDPI	@MATRIXAI,AR2  		;GET TEMP STORE
@@ -2451,6 +2451,7 @@ TREESHKL:
     // asm 000023CF: 	STI	R0,*+AR4(OFLAGS)
     // asm 000023D0: 	BR	SUICIDE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    (void)p;
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TREESHAK", 0, 0);
     UNIMPL();
 }

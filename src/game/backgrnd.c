@@ -59,7 +59,7 @@ static void TRAIN_FWRD_MAKEB(void);
 static void TRAIN_FWRD_MAKE(OBJ* obj /*AR4*/);
 static void TRAIN_FWRDB(void);
 static void TRAIN_FWRD(PROC* p);
-void LOAD_SINGLE_SECTION_OFFSET(void);
+void LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
 
 #define NEW_GROUPI NEW_GROUP
 #define DGROUPSI DGROUPS
@@ -3033,7 +3033,8 @@ TRAINX:
  *
  *
  */
-void LOAD_SINGLE_SECTION_OFFSET(void) {
+void LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/) {
+    (void)rom_group;
     // asm 000044CC: 	PUSH	R4
     // asm 000044CD: 	PUSH	R5
     // asm 000044CE: 	PUSH	AR0

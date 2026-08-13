@@ -2,6 +2,7 @@
 .pycache/
 .vscode/
 build/
+build-c3x-default/
 cfg/
 roms/
 tools/port/log/

@@ -705,7 +705,7 @@ extern tPAL* EPALL;
 // asm:  .globl DOORLISTI,DOORLIST
 #define DOORLISTI DOORLIST
 
-extern int DOORLIST;
+extern OBJ* DOORLIST;
 
 // util.asm
 // asm:  .globl RAND,CRTCTLRAM,ACTIVE_SCREEN
@@ -774,7 +774,7 @@ void BABE_TROPHY(void);
 void BABE_WAVEFLAG(PROC* p);
 
 // asm:  .globl LOAD_SINGLE_SECTION_OFFSET
-void LOAD_SINGLE_SECTION_OFFSET(void);
+void LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
 
 // asm:  .globl FIND_STARTING_VALUES
 void FIND_STARTING_VALUES(void);
@@ -1275,7 +1275,7 @@ void DIAL_ROUT(void);
 void SHOW_CAR_STATISTICS(void);
 
 // asm:  .globl ROUNDER
-void ROUNDER(void);
+void ROUNDER(PROC* p);
 
 // asm:  .globl GETTHECARS
 void GETTHECARS(void);
@@ -1284,7 +1284,7 @@ void GETTHECARS(void);
 void ULTRA_LOGO(void);
 
 // asm:  .globl THE_CAR_CHOICE_PROC
-void THE_CAR_CHOICE_PROC(void);
+void THE_CAR_CHOICE_PROC(PROC* p);
 
 // leg.asm
 // asm:  .globl LEG_INIT
@@ -1643,7 +1643,7 @@ void VOLSNDFX(int sound_index, int volume);
 
 // spark.asm
 // asm:  .globl SPARK_PROC,SPARK_COLLA_PROC,OBJ_MOVE,WALL_SPARK,IMPACT_SPARK
-void SPARK_PROC(void);
+void SPARK_PROC(PROC* p);
 
 void OBJ_MOVE(void);
 
@@ -1660,7 +1660,7 @@ void INIT_SPARK(void);
 
 // trans.asm
 // asm:  .globl CHOOSE_TRANSMISSION
-void CHOOSE_TRANSMISSION(void);
+void CHOOSE_TRANSMISSION(PROC* p);
 
 // asm:  .globl SIDE_DOOR,TILTWORLD
 void SIDE_DOOR(void);
@@ -1669,14 +1669,14 @@ void SIDE_DOOR(void);
 void ZOOMTOCAR(void);
 
 // asm:  .globl DROPTHECYCLE,DROPTHETURN
-void DROPTHECYCLE(void);
+void DROPTHECYCLE(PROC* p);
 
-void DROPTHETURN(void);
+void DROPTHETURN(PROC* p);
 
 // asm:  .globl DROPTHEWHEEL,DROPTHEOTHER
-void DROPTHEWHEEL(void);
+void DROPTHEWHEEL(PROC* p);
 
-void DROPTHEOTHER(void);
+void DROPTHEOTHER(PROC* p);
 
 // asm:  .globl DOOR_OPENING
 void DOOR_OPENING(void);
@@ -1688,10 +1688,10 @@ void WHEEL_ROUT(void);
 void DOOR_ELEMENT_DELETE_ALL(void);
 
 // asm:  .globl DOOR_ELEMENT_DELETE
-void DOOR_ELEMENT_DELETE(void);
+void DOOR_ELEMENT_DELETE(OBJ* element /*AR2*/);
 
 // asm:  .globl GET_UNIT_WHEEL
-void GET_UNIT_WHEEL(void);
+c3x_reg_t GET_UNIT_WHEEL(void);
 
 // asm:  .globl FIX_TRANSMISSION_SCREEN
 void FIX_TRANSMISSION_SCREEN(void);
@@ -1702,13 +1702,13 @@ void CYCLE_PUSH(PROC* p);
 void TURNTO_SELECT(PROC* p);
 
 // asm:  .globl ADD_TO_DOOR_LIST
-void ADD_TO_DOOR_LIST(void);
+void ADD_TO_DOOR_LIST(OBJ* obj /*AR0*/);
 
 // asm:  .globl ENGINE_COLOR_INIT
 void ENGINE_COLOR_INIT(void);
 
 // asm:  .globl ENGINE_COLOR
-void ENGINE_COLOR(void);
+void ENGINE_COLOR(c3x_reg_t left_brightness /*R0*/);
 
 // asm:  .globl TRACK_SELECTION
 void TRACK_SELECTION(PROC* p);
@@ -1718,19 +1718,19 @@ void CLEANUP_TRACKSEL_PALS(void);
 
 // totala.asm
 // asm:  .globl BLTMOD2D_NOPAL
-void BLTMOD2D_NOPAL(void);
+void BLTMOD2D_NOPAL(const BLTMOD2D_MODEL* model, int x, int y, int control, int palette);
 
 // asm:  .globl _stuff_fpga
 void _stuff_fpga(void);
 
 // asm:  .globl _rdma
-void _rdma(void);
+void _rdma(int x1, int y1, int x2, int y2, int palette, int image_addr);
 
 // asm:  .globl BLTMOD2D
-void BLTMOD2D(void);
+void BLTMOD2D(const BLTMOD2D_MODEL* model, int x, int y, int control, int skip_palette, int palette);
 
 // asm:  .globl BLTMOD2D_DS
-void BLTMOD2D_DS(void);
+void BLTMOD2D_DS(const BLTMOD2D_MODEL* model, int x, int y, int control);
 
 // asm:  .globl SETPAGE0,SETPAGE1
 void SETPAGE0(void);

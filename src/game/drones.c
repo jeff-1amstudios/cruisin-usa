@@ -801,7 +801,7 @@ DOITR:
         goto RHO_DLP;
     }
     // asm 000066A7: 	CREATE	RHO_DRONE,DRONE_C|VEHICLE_T|DRNE_RHO
-    CREATE((PROC_FUNC)RHO_DRONE, DRONE_C | VEHICLE_T | DRNE_RHO, port_malloc(sizeof(PROC_CONTEXT)));
+    CREATE(RHO_DRONE, DRONE_C | VEHICLE_T | DRNE_RHO, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 000066AA: 	BU	RHO_DLP
     goto RHO_DLP;
 }

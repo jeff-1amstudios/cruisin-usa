@@ -59,7 +59,17 @@ u32 port_get_switch3(void) {
 
 void port_sample_steering(void) {
     /* Called from READIO at the emulated A/D sampling boundary. */
-    steering += steering_direction * 2;
+    if (steering_direction != 0) {
+        steering += steering_direction * 2;
+    } else if (steering < 128) {
+        steering += 2;
+        if (steering > 128)
+            steering = 128;
+    } else if (steering > 128) {
+        steering -= 2;
+        if (steering < 128)
+            steering = 128;
+    }
     if (steering < 0)
         steering = 0;
     if (steering > 255)
