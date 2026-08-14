@@ -14,6 +14,7 @@
 #include "motion.h"
 #include "mproc.h"
 #include "obj.h"
+#include "objects.h"
 #include "pall.h"
 #include "racer.h"
 #include "sndtab.h"
@@ -42,20 +43,20 @@ void CHOOSE_NEXT_RACE(PROC* p);
 static void LOAD_NEW_SELECTION(PROC* p);
 static void PLYR_INTRO__CNR_ENTER_tail(PROC* p);
 static void PLYR_INTRO__ALL_JOINUP_tail(PROC* p);
-static void WATCH_PLYRS_CAR(void);
+static void WATCH_PLYRS_CAR(OBJ* car);
 void INIT_GAMELEG(void);
-static void CHOOSECAR(void);
+static void CHOOSECAR(PROC* p);
 void THE_CAR_CHOICE_PROC(PROC* p);
-static void RAISE_DOOR(void);
-void ZOOMTOCAR(void);
+static void RAISE_DOOR(PROC* p);
+void ZOOMTOCAR(PROC* p);
 void GETTHECARS(void);
 void SHOW_CAR_STATISTICS(void);
 static void CLEANUP_DIMCAR_PALS(void);
 static void GETTHECAR(PROC* p, tPAL* raw_palette, int vehicle_id, int car_index);
 void ROUNDER(PROC* p);
 static void AFFECT_THE_CARS(PROC* p);
-static void HIDDEN_VEHICLES(void);
-static void RESET_ORIGINAL(void);
+static void HIDDEN_VEHICLES(PROC* p);
+static void RESET_ORIGINAL(int vehicle_index);
 static void AFFECTED_CAR(PROC* p, int vehicle_id, int car_index);
 static void CAR_DIMMER(int car_index, c3x_reg_t dimmer);
 static void LIGHT_INIT(void);
@@ -1228,6 +1229,8 @@ static void PLYR_INTRO__CNR_ENTER_tail(PROC* p) {
         goto PROC_RESUME_5;
     case 6:
         goto PROC_RESUME_6;
+    case 7:
+        goto PROC_RESUME_7;
     }
 
 CNR_ENTER:
@@ -1319,7 +1322,7 @@ CONTINUE:
     DCALL = 1;
 
     // asm 000017D4: 	JSRP	CHOOSECAR
-    CHOOSECAR();
+    JSRP(CHOOSECAR, 7);
 
     // asm 000017DA: 	LDI	BUT_VIEW2,R0			;BUTTON OVERWRITE (MAYBE USE MASK IN FUTURE)
     // asm 000017DB: 	STI	R0,@BUTTON_STATUS
@@ -1600,87 +1603,140 @@ static void LOAD_NEW_SELECTION(PROC* p) {
  *	AR4	PLYRS CAR
  *
  */
-static void WATCH_PLYRS_CAR(void) {
+static void WATCH_PLYRS_CAR(OBJ* car) {
+    c3x_reg_t camera_x;
+    c3x_reg_t camera_y;
+    c3x_reg_t camera_z;
+
     // asm 00001841: 	LDF	@START_RADY,R2
     // asm 00001842: 	LDI	@MATRIXAI,AR2
     // asm 00001843: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_REG(START_RADY));
     // asm 00001844: 	LDI	AR2,R2
     // asm 00001845: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 00001846: 	FLOAT	-PLYPOS2ZL,R0
     // asm 00001847: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(-PLYPOS2ZL));
     // asm 00001848: 	FLOAT	PLYPOS2YL,R0
     // asm 00001849: 	STF	R0,*+AR2(Y)
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(PLYPOS2YL));
     // asm 0000184A: 	LDI	@MATRIXAI,R2
     // asm 0000184B: 	LDI	AR2,R3
     // asm 0000184C: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // asm 0000184D: 	LDF	*+AR4(OPOSX),R0
     // asm 0000184E: 	LDF	*+AR4(OPOSY),R1
     // asm 0000184F: 	LDF	*+AR4(OPOSZ),R2
     // asm 00001850: 	ADDF	*+AR2(X),R0
+    camera_x = C3X_ADD(C3X_LDF(car->pos.X), C3X_LDF(VECTORAI.X));
     // asm 00001851: 	ADDF	*+AR2(Y),R1
+    camera_y = C3X_ADD(C3X_LDF(car->pos.Y), C3X_LDF(VECTORAI.Y));
     // asm 00001852: 	ADDF	*+AR2(Z),R2
+    camera_z = C3X_ADD(C3X_LDF(car->pos.Z), C3X_LDF(VECTORAI.Z));
     // asm 00001853: 	LDP	@_CAMERAPOS
     // asm 00001854: 	STF	R0,@_CAMERAPOS+X
+    _CAMERAPOS.X = C3X_STF(camera_x);
     // asm 00001855: 	STF	R1,@_CAMERAPOS+Y
+    _CAMERAPOS.Y = C3X_STF(camera_y);
     // asm 00001856: 	STF	R2,@_CAMERAPOS+Z
+    _CAMERAPOS.Z = C3X_STF(camera_z);
     // asm 00001857: 	SETDP
     // asm 00001858: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WATCH_PLYRS_CAR", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
 void INIT_GAMELEG(void) {
+    PROC_CONTEXT* ctx;
+    int rank;
+
     // asm 00001859: 	CLRI	R0
     // asm 0000185A: 	STI	R0,@SMOKE_COUNT
+    SMOKE_COUNT = 0;
     // asm 0000185B: 	STI	R0,@DID_TIMED_OUT
+    DID_TIMED_OUT = 0;
     // asm 0000185C: 	STI	R0,@CHECKPOINT_NUM
+    CHECKPOINT_NUM = 0;
     // asm 0000185D: 	STI	R0,@REAL_CHECKPOINTS
+    REAL_CHECKPOINTS = 0;
     // asm 0000185E: 	STI	R0,@MOTION_STOP_HIT
+    MOTION_STOP_HIT = 0;
     // asm 0000185F: 	STI	R0,@H2H_FLAGSTATE
+    H2H_FLAGSTATE = 0;
     // asm 00001860: 	LDI	2,R0
     // asm 00001861: 	STI	R0,@FRAMRATE
     FRAMRATE = 2;
     // asm 00001862: 	LDF	0,R0
     // asm 00001863: 	STF	R0,@ROADKILL_SOUND_TIMER
+    ROADKILL_SOUND_TIMER = C3X_LDF(C3X_STF(C3X_IMM_F32(0)));
     // asm 00001864: 	CREATE	RHO_DISPATCHER,SPAWNER_C|TRAFFIC_T
+    CREATE(RHO_DISPATCHER, SPAWNER_C | TRAFFIC_T, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 00001867: 	CREATE	SIGMA_DISPATCHER,SPAWNER_C|TRAFFIC_T
+    CREATE(SIGMA_DISPATCHER, SPAWNER_C | TRAFFIC_T, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 0000186A: 	CREATE	CPOINT_LIGHT,SPAWNER_C|COLORCYC_T
+    CREATE(CPOINT_LIGHT, SPAWNER_C | COLORCYC_T, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 0000186D: 	CREATEC	POSITION_FINDER,SPAWNER_C|TRAFFIC_T
+    CREATEC(POSITION_FINDER, SPAWNER_C | TRAFFIC_T, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 00001870: 	CREATE	MOVEIN_HUD_EQUIP,UTIL_C
+    CREATE(MOVEIN_HUD_EQUIP, UTIL_C, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 00001873: 	LDI	SM_HALT,R0
     // asm 00001874: 	STI	R0,@SUSPEND_MODE
     SUSPEND_MODE = SM_HALT;
     // asm 00001875: 	LDI	0,R4
+    rank = 0;
     // asm 00001876: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = rank;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00001879: 	LDI	1,R4
+    rank = 1;
     // asm 0000187A: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT)); ctx->RACER_DRONE.rank = rank; CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 0000187D: 	LDI	2,R4
+    rank = 2;
     // asm 0000187E: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT)); ctx->RACER_DRONE.rank = rank; CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00001881: 	LDI	3,R4
+    rank = 3;
     // asm 00001882: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT)); ctx->RACER_DRONE.rank = rank; CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00001885: 	LDI	4,R4
+    rank = 4;
     // asm 00001886: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT)); ctx->RACER_DRONE.rank = rank; CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00001889: 	LDI	5,R4
+    rank = 5;
     // asm 0000188A: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT)); ctx->RACER_DRONE.rank = rank; CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 0000188D: 	LDI	6,R4
+    rank = 6;
     // asm 0000188E: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT)); ctx->RACER_DRONE.rank = rank; CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00001891: 	LDI	7,R4
+    rank = 7;
     // asm 00001892: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT)); ctx->RACER_DRONE.rank = rank; CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00001895: 	LDI	9,R4
+    rank = 9;
     // asm 00001896: 	LDI	@DIPRAM,R0
     // asm 00001897: 	TSTB	DIP_COMMP,R0
     // asm 00001898: 	BNZ	BABA66
     // asm 00001899: 	TSTB	CMDP_MASTER,R0
     // asm 0000189A: 	BZ	BABA66
+    if ((DIPRAM & DIP_COMMP) == 0 && (DIPRAM & CMDP_MASTER) != 0) {
     // asm 0000189B: 	LDI	8,R4
+        rank = 8;
+    }
 BABA66:
     // asm 0000189C: 	CREATE	RACER_DRONE,DRONE_C
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->RACER_DRONE.rank = rank;
+    CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 0000189F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_GAMELEG", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -1739,7 +1795,7 @@ int RACE_STARTING_POINTS[] = {
 static c3x_f32_t XOFFSET[] = {
     C3X_F32_INIT(-1384.0f),
     C3X_F32_INIT(-448.0f),
-    C3X_F32_INIT(-464.0f),
+    C3X_F32_INIT(464.0f),
     C3X_F32_INIT(1424.0f)
 };
 
@@ -1750,45 +1806,88 @@ static c3x_f32_t XOFFSET[] = {
  *
  *
  */
-static void CHOOSECAR(void) {
+static void CHOOSECAR(PROC* p) {
+    tTEXT* text;
+    OBJ* obj;
+    c3x_reg_t x_offset;
+    c3x_reg_t z_offset;
+    int chosen_car;
+    int audit_index;
+    int car_index;
+    PROC_CONTEXT* ctx;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    }
+
     // asm 000018A6: 	LDI	@CHOSEN_RACE,AR0
     // asm 000018A7: 	ADDI	@FULLSETUP_TABLEI,AR0
     // asm 000018A8: 	LDI	*AR0,R0
     // asm 000018A9: 	CALLU	R0
+    FULLSETUP_TABLE[CHOSEN_RACE]();
     // asm 000018AA: 	LDI	@CHOSEN_RACE,AR0
     // asm 000018AB: 	ADDI	@RACE_STARTING_POINTSI,AR0
     // asm 000018AC: 	LDI	*AR0,R0
     // asm 000018AD: 	STI	R0,@STARTSECTION
+    STARTSECTION = RACE_STARTING_POINTS[CHOSEN_RACE];
     // asm 000018AE: 	CALL	BGD_INIT
+    BGD_INIT();
     // asm 000018AF: 	LDI	MINTRO|MINFIN|MWATER|MGO,R0
     // asm 000018B0: 	STI	R0,@_MODE
+    _MODE = MINTRO | MINFIN | MWATER | MGO;
     // asm 000018B1: 	CLRI	R0
     // asm 000018B2: 	STI	R0,@BGNDCOLA
+    BGNDCOLA = 0;
     // asm 000018B3: 	STI	R0,@START_HIT
+    START_HIT = 0;
     // asm 000018B4: 	CALL	TEXT_INIT
+    TEXT_INIT();
     // asm 000018B5: 	SOND1	CHOOSEUCAR
+    SOND1(CHOOSEUCAR);
     // asm 000018B7: 	CREATEC	HIDDEN_VEHICLES,UTIL_C|CHOOSECAR_T
+    CREATEC(HIDDEN_VEHICLES, UTIL_C | CHOOSECAR_T, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 000018BA: 	LDI	@CCTI,AR2
     // asm 000018BB: 	FLOAT	256,R2
     // asm 000018BC: 	FLOAT	50,R3
     // asm 000018BD: 	LDI	600,RC
     // asm 000018BE: 	CALL	TEXT_ADD
+    text = TEXT_ADD(CCT, C3X_FROM_INT(256), C3X_FROM_INT(50), 600);
     // asm 000018BF: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
+    text->color |= TXT_CENTER;
     // asm 000018C2: 	CALL	SET40FONT
+    SET40FONT(text);
 JT75:
     // asm 000018C3: LDI	@CAR_CHOICE_GOTTEN,R0
     // asm 000018C4: 	BNZ	KIBO
+    if (CAR_CHOICE_GOTTEN != 0) {
+        goto KIBO;
+    }
     // asm 000018C5: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000018C7: 	BU	JT75
+    goto JT75;
 KIBO:
     // asm 000018C8: 	LDL	crace_PALETTES,AR2
     // asm 000018C9: 	CALL	dealloc_section
+    dealloc_section(crace_PALETTES);
 XOFFSETI:
     // asm 000018CA: 	LDI	@CHOSEN_VEHICLE,AR0
     // asm 000018CB: 	ADDI	@XOFFSETI,AR0
     // asm 000018CC: 	LDF	*AR0,R6
+    x_offset = C3X_LDF(XOFFSET[CHOSEN_VEHICLE]);
     // asm 000018CD: 	FLOAT	576,R1
     // asm 000018CE: 	SUBRF	R1,R6
+    x_offset = C3X_SUB(C3X_FROM_INT(576), x_offset);
     // 	;if a slave then ALWAYS appear on right side
     // 	;
     // 	;
@@ -1797,60 +1896,93 @@ XOFFSETI:
     // asm 000018D1: 	BNZ	BABA
     // asm 000018D2: 	TSTB	CMDP_MASTER,R0
     // asm 000018D3: 	BZ	BABA
+    if ((DIPRAM & DIP_COMMP) != 0 || (DIPRAM & CMDP_MASTER) == 0) {
+        goto BABA;
+    }
     // asm 000018D4: 	FLOAT	LANESIZE,R1
     // asm 000018D5: 	ADDF	R1,R6
+    x_offset = C3X_ADD(x_offset, C3X_FROM_INT(1152));
 BABA:
     // asm 000018D6: 	LDF	@START_RADY,R2
     // asm 000018D7: 	LDI	@MATRIXAI,AR2
     // asm 000018D8: 	CALL	HPFIND_YMATRIX
+    HPFIND_YMATRIX(&MATRIXAI, C3X_REG(START_RADY));
     // asm 000018D9: 	LDI	AR2,R2
     // asm 000018DA: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 000018DB: 	STF	R6,*+AR2(X)
+    VECTORAI.X = C3X_STF(x_offset);
     // asm 000018DC: 	LDI	AR2,R3
     // asm 000018DD: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // asm 000018DE: 	LDF	*+AR2(X),R6
+    x_offset = C3X_LDF(VECTORAI.X);
     // asm 000018DF: 	LDF	*+AR2(Z),R7
+    z_offset = C3X_LDF(VECTORAI.Z);
     // asm 000018E0: 	LDI	@SINGLE_SECTION_TEMPPTR,R0
+    obj = SINGLE_SECTION_TEMPPTR;
 NLD:
     // asm 000018E1: LDI	R0,AR0
     // asm 000018E2: 	LDF	*+AR0(OPOSX),R0
     // asm 000018E3: 	ADDF	R6,R0
     // asm 000018E4: 	STF	R0,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), x_offset));
     // asm 000018E5: 	LDF	*+AR0(OPOSZ),R0
     // asm 000018E6: 	ADDF	R7,R0
     // asm 000018E7: 	STF	R0,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), z_offset));
     // asm 000018E8: 	LDI	*+AR0(OLINK2),R0
+    obj = (OBJ*)obj->link2;
     // asm 000018E9: 	BNZ	NLD
+    if (obj != NULL) {
+        goto NLD;
+    }
     // asm 000018EA: 	LDI	@CAMERAPOSI,AR2
     // asm 000018EB: 	LDF	*+AR2(X),R0
     // asm 000018EC: 	ADDF	R6,R0
     // asm 000018ED: 	STF	R0,*+AR2(X)
+    CAMERAPOSI.X = C3X_STF(C3X_ADD(C3X_LDF(CAMERAPOSI.X), x_offset));
     // asm 000018EE: 	LDF	*+AR2(Z),R0
     // asm 000018EF: 	ADDF	R7,R0
     // asm 000018F0: 	STF	R0,*+AR2(Z)
+    CAMERAPOSI.Z = C3X_STF(C3X_ADD(C3X_LDF(CAMERAPOSI.Z), z_offset));
     // asm 000018F1: 	LDL	CAR_ARRAY,AR3
     // asm 000018F2: 	LDI	3,AR5
+    car_index = 0;
 LNNN:
     // asm 000018F3: LDI	*AR3++,AR0
     // asm 000018F4: 	LDF	*+AR0(OPOSX),R0
     // asm 000018F5: 	ADDF	R6,R0
     // asm 000018F6: 	STF	R0,*+AR0(OPOSX)
+    CAR_ARRAY[car_index]->pos.X = C3X_STF(C3X_ADD(C3X_LDF(CAR_ARRAY[car_index]->pos.X), x_offset));
     // asm 000018F7: 	LDF	*+AR0(OPOSZ),R0
     // asm 000018F8: 	ADDF	R7,R0
     // asm 000018F9: 	STF	R0,*+AR0(OPOSZ)
+    CAR_ARRAY[car_index]->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(CAR_ARRAY[car_index]->pos.Z), z_offset));
     // asm 000018FA: 	DBU	AR5,LNNN
+    if (car_index++ < 3) {
+        goto LNNN;
+    }
     // asm 000018FB: 	LDI	@_MODE,R0
     // asm 000018FC: 	ANDN	MGO,R0
     // asm 000018FD: 	STI	R0,@_MODE
+    _MODE &= ~MGO;
     // asm 000018FE: 	LDI	5,R0		;WAVEFLAG routine properly sets this
     // asm 000018FF: 	STI	R0,@_countdown	;we just need to set so PLYR doesnt puke
+    _countdown = 5; // WAVEFLAG routine properly sets this; we just need to set so PLYR doesnt puke
     // asm 00001900: 	LDI	100h,R0		;FULL START INDEX
     // asm 00001901: 	STI	R0,@RACER_GRID_START
+    RACER_GRID_START = 0x100; // FULL START INDEX
     // asm 00001902: 	CALL	TEXT_INIT			;ELIMINATE THE 'CHOOSE CAR' TEXT
+    TEXT_INIT(); // ELIMINATE THE 'CHOOSE CAR' TEXT
     // asm 00001903: 	LDI	@CHOSEN_VEHICLE,R0
+    chosen_car = CHOSEN_VEHICLE;
     // asm 00001904: 	LDI	@IS_HIDDEN,R1
     // asm 00001905: 	CMPI	-1,R1
     // asm 00001906: 	BEQ	NOHIDE
+    if (IS_HIDDEN == -1) {
+        goto NOHIDE;
+    }
     // asm 00001907: 	PUSH	R0
     // asm 00001908: 	LDI	@CHOSEN_VEHICLE,AR2
     // asm 00001909: 	CMPI	5,AR2
@@ -1859,44 +1991,70 @@ LNNN:
     // asm 0000190C: 	LDIEQ	2,AR2
     // asm 0000190D: 	CMPI	7,AR2
     // asm 0000190E: 	LDIEQ	3,AR2
+    audit_index = CHOSEN_VEHICLE;
+    if (audit_index == 5) audit_index = 1;
+    if (audit_index == 6) audit_index = 2;
+    if (audit_index == 7) audit_index = 3;
     // asm 0000190F: 	ADDI	AUD_CAR_SELECTION+4,AR2
     // asm 00001910: 	CALL	AUDIT_INC
+    AUDIT_INC(AUD_CAR_SELECTION + 4 + audit_index);
     // asm 00001911: 	POP	R0
     // asm 00001912: 	ADDI	4,R0
+    chosen_car += 4;
     // asm 00001913: 	BU	TMP886
+    goto TMP886;
 NOHIDE:
     // asm 00001914: 	PUSH	R0
     // asm 00001915: 	LDI	@CHOSEN_VEHICLE,AR2
     // asm 00001916: 	ADDI	AUD_CAR_SELECTION,AR2
     // asm 00001917: 	CALL	AUDIT_INC
+    AUDIT_INC(AUD_CAR_SELECTION + CHOSEN_VEHICLE);
     // asm 00001918: 	POP	R0
 TMP886:
     // asm 00001919: STI	R0,@CHOOSENCAR
+    CHOOSENCAR = chosen_car;
     // asm 0000191A: 	LDI	UTIL_C|CHOOSECAR_T,R0
     // asm 0000191B: 	LDI	-1,R1
     // asm 0000191C: 	CALL	PRC_KILLALL
+    PRC_KILLALL(UTIL_C | CHOOSECAR_T, -1);
     // asm 0000191D: 	LDI	@DIPRAM,R0
     // asm 0000191E: 	TSTB	DIP_COMMP,R0
     // asm 0000191F: 	BNZ	JAJAKKA
+    if ((DIPRAM & DIP_COMMP) != 0) {
+        goto JAJAKKA;
+    }
     // asm 00001920: 	JSRP	WAIT_FOR_CHALLENGER
+    JSRP(WAIT_FOR_CHALLENGER, 2);
 JAJAKKA:
     // asm 00001926: 	CALL	INIT_GAMELEG
+    INIT_GAMELEG();
     // asm 00001927: 	CREATE	DROPTHEWHEEL,UTIL_C|CHOOSECAR_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(DROPTHEWHEEL, UTIL_C | CHOOSECAR_T, ctx);
     // asm 0000192A: 	CREATE	DROPTHECYCLE,UTIL_C|CHOOSECAR_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(DROPTHECYCLE, UTIL_C | CHOOSECAR_T, ctx);
     // asm 0000192D: 	CREATE	DROPTHETURN,UTIL_C|CHOOSECAR_T
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    CREATE(DROPTHETURN, UTIL_C | CHOOSECAR_T, ctx);
     // asm 00001930: 	CREATE	RAISE_DOOR,UTIL_C|CHOOSECAR_T	;in 50
+    CREATE(RAISE_DOOR, UTIL_C | CHOOSECAR_T, port_malloc(sizeof(PROC_CONTEXT)));
     // 		;(BECOMES PLYR PROC)
     // asm 00001933: 	CREATE	ZOOMTOCAR,UTIL_C|CHOOSECAR_T	;in 25 (TRANS.ASM)
+    CREATE(ZOOMTOCAR, UTIL_C | CHOOSECAR_T, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 00001936: 	SLEEP	70
+    SLEEP(70, 3);
     // asm 00001938: 	SLEEP	1
+    SLEEP(1, 4);
     // asm 0000193A: 	LDI	UTIL_C|CHOOSECAR_T,R0
     // asm 0000193B: 	LDI	-1,R1
     // asm 0000193C: 	CALL	PRC_KILLALL
+    PRC_KILLALL(UTIL_C | CHOOSECAR_T, -1);
     // asm 0000193D: 	CALL	CLEANUP_DIMCAR_PALS
+    CLEANUP_DIMCAR_PALS();
     // asm 0000193E: 	RETP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOOSECAR", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -1984,23 +2142,38 @@ CCLPX:
  *
  *
  */
-static void RAISE_DOOR(void) {
+static void RAISE_DOOR(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 0000195D: 	SOND1	GOPEN
+    SOND1(GOPEN);
     // asm 0000195F: 	LDI	49,AR5
+    p->ctx->OPEN_DOOR_PROC_FRAME.loop_count = 49;
     // asm 00001960: 	LDI	@CHOSEN_VEHICLE,AR2
     // asm 00001961: 	ADDI	501h,AR2
     // asm 00001962: 	CALL	OBJ_FIND_FIRST
+    p->ctx->OPEN_DOOR_PROC_FRAME.obj = OBJ_FIND_FIRST(CHOSEN_VEHICLE + 0x501);
     // asm 00001963: 	LDI	AR0,AR4
     // asm 00001964: RDLP
+RDLP:
     // asm 00001964: 	LDF	*+AR4(OPOSY),R0
     // asm 00001965: 	SUBF	14,R0
     // asm 00001966: 	STF	R0,*+AR4(OPOSY)
+    p->ctx->OPEN_DOOR_PROC_FRAME.obj->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(p->ctx->OPEN_DOOR_PROC_FRAME.obj->pos.Y), C3X_IMM_F32(14)));
     // asm 00001967: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00001969: 	DBU	AR5,RDLP
+    if (p->ctx->OPEN_DOOR_PROC_FRAME.loop_count-- > 0) {
+        goto RDLP;
+    }
     // asm 0000196A: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RAISE_DOOR", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------
@@ -2022,98 +2195,168 @@ static void RAISE_DOOR(void) {
  *
  *
  */
-void ZOOMTOCAR(void) {
+void ZOOMTOCAR(PROC* p) {
+    CARBLK* carblk;
+    c3x_reg_t target_x;
+    c3x_reg_t target_y;
+    c3x_reg_t target_z;
+    c3x_reg_t theta;
+    c3x_reg_t theta_delta;
+    c3x_reg_t y_delta;
+    c3x_reg_t distance_sq;
+    c3x_reg_t target_distance;
+    int vehicle_index;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
     // asm 0000196B: 	CLRI	R0
     // asm 0000196C: 	STI	R0,@START_NOW_P
+    START_NOW_P = 0;
     // asm 0000196D: 	LDI	@CHOSEN_VEHICLE,AR2
     // asm 0000196E: 	ADDI	481h,AR2
     // asm 0000196F: 	CALL	OBJ_FIND_FIRST
+    p->ctx->ZOOMTOCAR_FRAME.car = OBJ_FIND_FIRST(CHOSEN_VEHICLE + 0x481);
     // asm 00001970: 	LDI	AR0,AR4
     // asm 00001971: 	LDF	@START_RADY,R2
     // asm 00001972: 	LDI	@MATRIXAI,AR2
     // asm 00001973: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_REG(START_RADY));
     // asm 00001974: 	LDI	25,AR5
+    p->ctx->ZOOMTOCAR_FRAME.loop_count = 25;
     // asm 00001975: ZTCLP
+ZTCLP:
     // 	;NOW MOVE TO IN FRONT OF OBJECT
     // asm 00001975: 	LDF	@START_RADY,R2
     // asm 00001976: 	LDI	@MATRIXAI,AR2
     // asm 00001977: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_REG(START_RADY));
     // asm 00001978: 	LDI	AR2,R2
     // asm 00001979: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 0000197A: 	FLOAT	-PLYPOS2ZL,R0
     // asm 0000197B: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(-PLYPOS2ZL));
     // asm 0000197C: 	FLOAT	PLYPOS2YL,R0
     // asm 0000197D: 	STF	R0,*+AR2(Y)
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(PLYPOS2YL));
     // asm 0000197E: 	LDI	@MATRIXAI,R2
     // asm 0000197F: 	LDI	AR2,R3
     // asm 00001980: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // asm 00001981: 	LDF	*+AR4(OPOSX),R0
     // asm 00001982: 	LDF	*+AR4(OPOSY),R1
     // asm 00001983: 	LDF	*+AR4(OPOSZ),R2
     // asm 00001984: 	ADDF	*+AR2(X),R0
+    target_x = C3X_ADD(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->pos.X), C3X_LDF(VECTORAI.X));
     // asm 00001985: 	ADDF	*+AR2(Y),R1
+    target_y = C3X_ADD(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->pos.Y), C3X_LDF(VECTORAI.Y));
     // asm 00001986: 	ADDF	*+AR2(Z),R2
+    target_z = C3X_ADD(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->pos.Z), C3X_LDF(VECTORAI.Z));
     // asm 00001987: 	LDP	@_CAMERAPOS
     // asm 00001988: 	SUBF	@_CAMERAPOS+X,R0
     // asm 00001989: 	SUBF	@_CAMERAPOS+Y,R1
     // asm 0000198A: 	SUBF	@_CAMERAPOS+Z,R2
+    target_x = C3X_SUB(target_x, C3X_LDF(_CAMERAPOS.X));
+    target_y = C3X_SUB(target_y, C3X_LDF(_CAMERAPOS.Y));
+    target_z = C3X_SUB(target_z, C3X_LDF(_CAMERAPOS.Z));
     // asm 0000198B: 	MPYF	0.2,R0
+    target_x = C3X_MUL(target_x, C3X_IMM_F32(0.2));
     // asm 0000198C: 	MPYF	0.2,R1
+    target_y = C3X_MUL(target_y, C3X_IMM_F32(0.2));
     // asm 0000198D: 	MPYF	0.2,R2
+    target_z = C3X_MUL(target_z, C3X_IMM_F32(0.2));
     // asm 0000198E: 	ADDF	@_CAMERAPOS+X,R0
+    target_x = C3X_ADD(target_x, C3X_LDF(_CAMERAPOS.X));
     // asm 0000198F: 	ADDF	@_CAMERAPOS+Y,R1
+    target_y = C3X_ADD(target_y, C3X_LDF(_CAMERAPOS.Y));
     // asm 00001990: 	ADDF	@_CAMERAPOS+Z,R2
+    target_z = C3X_ADD(target_z, C3X_LDF(_CAMERAPOS.Z));
     // asm 00001991: 	STF	R0,@_CAMERAPOS+X
+    _CAMERAPOS.X = C3X_STF(target_x);
     // asm 00001992: 	STF	R1,@_CAMERAPOS+Y
+    _CAMERAPOS.Y = C3X_STF(target_y);
     // asm 00001993: 	STF	R2,@_CAMERAPOS+Z
+    _CAMERAPOS.Z = C3X_STF(target_z);
     // asm 00001994: 	SETDP
     // 	;TURN CAR TO FACE AWAY (SMOOTH)
     // asm 00001995: 	LDF	@START_RADY,R2
     // asm 00001996: 	CALL	NORMITS
+    theta = NORMITS(C3X_REG(START_RADY));
     // asm 00001997: 	LDF	R2,R0
     // asm 00001998: 	LDF	*+AR4(ORADY),R2
     // asm 00001999: 	CALL	NORMITS
+    p->ctx->ZOOMTOCAR_FRAME.car->rad.Y = C3X_STF(NORMITS(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->rad.Y)));
     // asm 0000199A: 	STF	R2,*+AR4(ORADY)
     // asm 0000199B: 	CALL	GETTHETADIFF
+    theta = C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->rad.Y);
+    theta_delta = GETTHETADIFF(NORMITS(C3X_REG(START_RADY)), theta);
     // asm 0000199C: 	ABSF	R0,R1
     // asm 0000199D: 	CMPF	0.04,R1
     // asm 0000199E: 	BLT	DOALL1
+    if (C3X_LT(C3X_ABS(theta_delta), C3X_IMM_F32(0.04))) {
+        goto DOALL1;
+    }
     // asm 0000199F: 	MPYF	0.10,R0
+    theta_delta = C3X_MUL(theta_delta, C3X_IMM_F32(0.10));
     // asm 000019A0: 	ADDF	R0,R2
+    theta = C3X_ADD(theta, theta_delta);
     // asm 000019A1: 	BU	IBO45A
+    goto IBO45A;
 DOALL1:
     // asm 000019A2: ADDF	R0,R2
+    theta = C3X_ADD(theta, theta_delta);
 IBO45A:
     // asm 000019A3: STF	R2,*+AR4(ORADY)
+    p->ctx->ZOOMTOCAR_FRAME.car->rad.Y = C3X_STF(theta);
     // asm 000019A4: 	LDI	AR4,AR2
     // asm 000019A5: 	ADDI	OMATRIX,AR2
     // asm 000019A6: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&p->ctx->ZOOMTOCAR_FRAME.car->omatrix, theta);
     // 	;LOWER CAR TO GROUND
     // asm 000019A7: 	LDF	*+AR4(OPOSY),R0
     // asm 000019A8: 	LDF	*+AR4(OUSR1),R1
     // asm 000019A9: 	SUBF	R0,R1,R0
+    y_delta = C3X_SUB(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->usr1_as_float), C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->pos.Y));
     // asm 000019AA: 	MPYF	0.15,R0
+    y_delta = C3X_MUL(y_delta, C3X_IMM_F32(0.15));
     // asm 000019AB: 	LDF	R0,R1
     // asm 000019AC: 	ADDF	*+AR4(OPOSY),R0
     // asm 000019AD: 	STF	R0,*+AR4(OPOSY)
+    p->ctx->ZOOMTOCAR_FRAME.car->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->pos.Y), y_delta));
     // asm 000019AE: 	LDI	@CHOSEN_VEHICLE,AR2
     // asm 000019AF: 	ADDI	401h,AR2
     // asm 000019B0: 	CALL	OBJ_FIND_FIRST
+    p->ctx->ZOOMTOCAR_FRAME.lift = OBJ_FIND_FIRST(CHOSEN_VEHICLE + 0x401);
     // asm 000019B1: 	LDF	*+AR0(OPOSY),R0
     // asm 000019B2: 	ADDF	R1,R0
     // asm 000019B3: 	STF	R0,*+AR0(OPOSY)
+    p->ctx->ZOOMTOCAR_FRAME.lift->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.lift->pos.Y), y_delta));
     // asm 000019B4: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000019B6: 	DBU	AR5,ZTCLP
+    if (p->ctx->ZOOMTOCAR_FRAME.loop_count-- > 0) {
+        goto ZTCLP;
+    }
     // 	;NOW SET ALL FACING PROPERLY
     // 	;
     // asm 000019B7: 	PUSH	AR4
     // asm 000019B8: 	LDI	@CHOSEN_VEHICLE,AR2
     // asm 000019B9: 	ADDI	481h,AR2
     // asm 000019BA: 	CALL	OBJ_FIND_FIRST
+    p->ctx->ZOOMTOCAR_FRAME.car = OBJ_FIND_FIRST(CHOSEN_VEHICLE + 0x481);
     // asm 000019BB: 	LDI	AR0,AR4
     // asm 000019BC: 	POP	AR4
     // asm 000019BD: 	LDI	PLYR_C|PLYR1_T,R0
     // asm 000019BE: 	STI	R0,*+AR7(PID)
+    p->id = PLYR_C | PLYR1_T;
     // *
     // *
     // *
@@ -2123,28 +2366,43 @@ IBO45A:
     // asm 000019C0: 	LDI	@CHOSEN_VEHICLE,AR2
     // asm 000019C1: 	CMPI	4,AR2
     // asm 000019C2: 	BLT	NDO
+    vehicle_index = CHOSEN_VEHICLE;
+    if (vehicle_index < 4) {
+        goto NDO;
+    }
     // asm 000019C3: 	SUBI	4,AR2
+    vehicle_index -= 4;
 NDO:
     // asm 000019C4: ADDI	401h,AR2
     // asm 000019C5: 	CALL	OBJ_FIND_FIRST
+    p->ctx->ZOOMTOCAR_FRAME.lift = OBJ_FIND_FIRST(vehicle_index + 0x401);
     // asm 000019C6: 	LDI	AR0,AR2
     // asm 000019C7: 	CALL	OBJ_DELETE
+    OBJ_DELETE(p->ctx->ZOOMTOCAR_FRAME.lift);
     // 	;TURN CAR TO FACE AWAY
     // asm 000019C8: 	LDF	*+AR4(ORADY),R2
     // asm 000019C9: 	LDF	@START_RADY,R0
     // asm 000019CA: 	CALL	GETTHETADIFF
+    theta = C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->rad.Y);
+    theta_delta = GETTHETADIFF(C3X_REG(START_RADY), theta);
     // asm 000019CB: 	ADDF	R0,R2
+    theta = C3X_ADD(theta, theta_delta);
     // asm 000019CC: 	STF	R2,*+AR4(ORADY)
+    p->ctx->ZOOMTOCAR_FRAME.car->rad.Y = C3X_STF(theta);
     // asm 000019CD: 	LDI	AR4,AR2
     // asm 000019CE: 	ADDI	OMATRIX,AR2
     // asm 000019CF: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&p->ctx->ZOOMTOCAR_FRAME.car->omatrix, theta);
     // 	;LOWER CAR TO GROUND
     // asm 000019D0: 	LDF	*+AR4(OPOSY),R0
     // asm 000019D1: 	LDF	*+AR4(OUSR1),R1
     // asm 000019D2: 	SUBF	R0,R1,R0
+    y_delta = C3X_SUB(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->usr1_as_float), C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->pos.Y));
     // asm 000019D3: 	ADDF	*+AR4(OPOSY),R0
     // asm 000019D4: 	STF	R0,*+AR4(OPOSY)
+    p->ctx->ZOOMTOCAR_FRAME.car->pos.Y = C3X_STF(C3X_ADD(y_delta, C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->pos.Y)));
     // asm 000019D5: 	SONDFX	ENGINESTART
+    SONDFX(ENGINESTART);
     // *
     // *
     // *
@@ -2152,29 +2410,45 @@ NDO:
     // asm 000019D8: 	LDI	@CHOSEN_VEHICLE,AR2
     // asm 000019D9: 	CMPI	4,AR2
     // asm 000019DA: 	BLT	NDO2
+    vehicle_index = CHOSEN_VEHICLE;
+    if (vehicle_index < 4) {
+        goto NDO2;
+    }
     // asm 000019DB: 	SUBI	4,AR2
+    vehicle_index -= 4;
 NDO2:
     // asm 000019DC: 	ADDI	481h,AR2
     // asm 000019DD: 	CALL	OBJ_FIND_FIRST
+    p->ctx->ZOOMTOCAR_FRAME.car = OBJ_FIND_FIRST(vehicle_index + 0x481);
     // asm 000019DE: 	LDI	AR0,AR4
     // asm 000019DF: 	LDI	AR4,AR2
     // asm 000019E0: 	CALL	OBJ_PULL
+    OBJ_PULL(p->ctx->ZOOMTOCAR_FRAME.car);
     // asm 000019E1: 	CALL	PLYR_CAR_INIT
+    PLYR_CAR_INIT(p, p->ctx->ZOOMTOCAR_FRAME.car);
     // asm 000019E2: 	LDF	1,R6
     // asm 000019E3: 	PUSH	AR5
     // asm 000019E4: 	PUSHFL	R6
     // asm 000019E6: 	LDI	*+AR4(OCARBLK),AR5
+    carblk = p->ctx->ZOOMTOCAR_FRAME.car->carblk;
     // asm 000019E7: 	STF	R6,*+AR5(CARSPEED)
+    carblk->speed = C3X_STF(C3X_IMM_F32(1));
     // asm 000019E8: 	LDF	@START_RADY,R6
     // asm 000019E9: 	STF	R6,*+AR5(CARYROT)
+    carblk->y_rotation = C3X_STF(C3X_REG(START_RADY));
     // asm 000019EA: 	STF	R6,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(C3X_REG(START_RADY));
     // asm 000019EB: 	STF	R6,*+AR5(CARDROT)
+    carblk->last_y_rotation = C3X_STF(C3X_REG(START_RADY));
     // asm 000019EC: 	CLRF	R2
     // asm 000019ED: 	CALL	DRONEGO
+    DRONEGO(p->ctx->ZOOMTOCAR_FRAME.car, carblk, C3X_FROM_INT(0));
     // asm 000019EE: 	POPFL	R6
     // asm 000019F0: 	POP	AR5
     // asm 000019F1: 	CALL	WATCH_PLYRS_CAR
+    WATCH_PLYRS_CAR(p->ctx->ZOOMTOCAR_FRAME.car);
     // asm 000019F2: 	SONDFX	STARTLINEREVS2
+    SONDFX(STARTLINEREVS2);
     // *
     // *NOW WE MOVE FORWARD AND INTO THE POSITION
     // *OF INSIDE LANE OF ROAD PIECE (OUSR1==0102h)
@@ -2184,18 +2458,25 @@ NDO2:
     // asm 000019F6: 	ANDN	0FFh,R1
     // asm 000019F7: 	LDI	*+AR0(OLINK4),AR0
     // asm 000019F8: 	LDI	AR0,AR5
+    p->ctx->ZOOMTOCAR_FRAME.tracking_obj = (OBJ*)DYNALIST_TRUEBEGIN->link4;
     // 	;MOVE FORWARD LOOP
     // 	;
 MOVELOOP:
     // asm 000019F9: 	LDF	*+AR5(OPOSX),R0
     // asm 000019FA: 	SUBF	*+AR4(OPOSX),R0
+    target_x = C3X_SUB(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.tracking_obj->pos.X), C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->pos.X));
     // asm 000019FB: 	MPYF	R0,R0
+    target_x = C3X_MUL(target_x, target_x);
     // asm 000019FC: 	LDF	*+AR5(OPOSZ),R1
     // asm 000019FD: 	SUBF	*+AR4(OPOSZ),R1
+    target_z = C3X_SUB(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.tracking_obj->pos.Z), C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->pos.Z));
     // asm 000019FE: 	MPYF	R1,R1
+    target_z = C3X_MUL(target_z, target_z);
     // asm 000019FF: 	ADDF	R1,R0
+    distance_sq = C3X_ADD(target_x, target_z);
     // asm 00001A00: 	LDF	R0,R4
     // asm 00001A01: 	FLOAT	700,R1
+    target_distance = C3X_FROM_INT(700);
     // 	;if a slave then ALWAYS appear on right side
     // 	;
     // asm 00001A02: 	LDI	@DIPRAM,R3
@@ -2203,43 +2484,64 @@ MOVELOOP:
     // asm 00001A04: 	BNZ	BABADUY
     // asm 00001A05: 	TSTB	CMDP_MASTER,R3
     // asm 00001A06: 	BZ	BABADUY
+    if ((DIPRAM & DIP_COMMP) != 0 || (DIPRAM & CMDP_MASTER) == 0) {
+        goto BABADUY;
+    }
     // asm 00001A07: 	FLOAT	LANESIZE,R3
     // asm 00001A08: 	ADDF	R3,R1
+    target_distance = C3X_ADD(target_distance, C3X_FROM_INT(1152));
 BABADUY:
     // asm 00001A09: 	MPYF	R1,R1
+    target_distance = C3X_MUL(target_distance, target_distance);
     // asm 00001A0A: 	CMPF	R1,R0
     // asm 00001A0B: 	BLE	IBODONE
+    if (C3X_LE(distance_sq, target_distance)) {
+        goto IBODONE;
+    }
     // asm 00001A0C: 	PUSH	AR5
     // asm 00001A0D: 	LDI	*+AR4(OCARBLK),AR5
     // asm 00001A0E: 	LDF	0.5,R0
     // asm 00001A0F: 	STF	R0,*+AR5(CARTHROTTLE)
+    carblk = p->ctx->ZOOMTOCAR_FRAME.car->carblk;
+    carblk->throttle = C3X_STF(C3X_IMM_F32(0.5));
     // asm 00001A10: 	CLRF	R2
     // asm 00001A11: 	CALL	DRONEGO
+    DRONEGO(p->ctx->ZOOMTOCAR_FRAME.car, carblk, C3X_FROM_INT(0));
     // asm 00001A12: 	POP	AR5
     // asm 00001A13: 	CALL	WATCH_PLYRS_CAR
+    WATCH_PLYRS_CAR(p->ctx->ZOOMTOCAR_FRAME.car);
     // asm 00001A14: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 00001A16: 	BU	MOVELOOP
+    goto MOVELOOP;
 IBODONE:
     // asm 00001A17: 	LDI	@DIPRAM,R3
     // asm 00001A18: 	TSTB	DIP_COMMP,R3
     // asm 00001A19: 	BNZ	BABADUY4
+    if ((DIPRAM & DIP_COMMP) != 0) {
+        goto BABADUY4;
+    }
     // asm 00001A1A: 	LDI	AR5,AR2
     // asm 00001A1B: 	TSTB	CMDP_MASTER,R3
     // asm 00001A1C: 	LDIZ	572,AR3
     // asm 00001A1D: 	LDINZ	1724,AR3
+    vehicle_index = (DIPRAM & CMDP_MASTER) == 0 ? 572 : 1724;
     // asm 00001A1E: 	FLOAT	AR3,R0
     // asm 00001A1F: 	STF	R0,*+AR7(DELTA_XLANE)
+    p->ctx->RACER_DRONE.delta_xlane = C3X_STF(C3X_FROM_INT(vehicle_index));
     // asm 00001A20: 	LDI	0,AR3
     // asm 00001A21: 	CALL	SPOS_INIT		;INIT STARTING POSITION
+    SPOS_INIT(p, p->ctx->ZOOMTOCAR_FRAME.car, p->ctx->ZOOMTOCAR_FRAME.tracking_obj, 0); // INIT STARTING POSITION
 BABADUY4:
     // asm 00001A22: 	LDI	1,R0
     // asm 00001A23: 	STI	R0,@START_NOW_P
+    START_NOW_P = 1;
     // asm 00001A24: 	LDI	MGAME|MINFIN|MWATER,R0	;NOT MGO NOT MHUD
     // asm 00001A25: 	STI	R0,@_MODE
+    _MODE = MGAME | MINFIN | MWATER; // NOT MGO NOT MHUD
     // asm 00001A26: 	BU	PLYR_INTRO_ENTER
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMTOCAR", 0, 0);
-    UNIMPL();
+    PLYR_INTRO_ENTER();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -2490,25 +2792,29 @@ static void CLEANUP_DIMCAR_PALS(void) {
     // asm 00001A8B: 	CALL	PAL_FIND_RAW
     // asm 00001A8C: 	LDI	R0,AR2
     // asm 00001A8D: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(PAL_FIND_RAW((tPAL*)ROM_PTR(flour_lghtof_ROM)));
     // asm 00001A8E: 	LDL	CAR1PAL,AR2
     // asm 00001A8F: 	CALL	PAL_FIND_RAW
     // asm 00001A90: 	LDI	R0,AR2
     // asm 00001A91: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(PAL_FIND_RAW(&CAR1PAL));
     // asm 00001A92: 	LDL	CAR2PAL,AR2
     // asm 00001A93: 	CALL	PAL_FIND_RAW
     // asm 00001A94: 	LDI	R0,AR2
     // asm 00001A95: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(PAL_FIND_RAW(&CAR2PAL));
     // asm 00001A96: 	LDL	CAR3PAL,AR2
     // asm 00001A97: 	CALL	PAL_FIND_RAW
     // asm 00001A98: 	LDI	R0,AR2
     // asm 00001A99: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(PAL_FIND_RAW(&CAR3PAL));
     // asm 00001A9A: 	LDL	CAR4PAL,AR2
     // asm 00001A9B: 	CALL	PAL_FIND_RAW
     // asm 00001A9C: 	LDI	R0,AR2
     // asm 00001A9D: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(PAL_FIND_RAW(&CAR4PAL));
     // asm 00001A9E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEANUP_DIMCAR_PALS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -2831,58 +3137,92 @@ static int HIDDEN_TABLE[] = {
     gtruck_ROM,
 };
 
-static void HIDDEN_VEHICLES(void) {
+static void HIDDEN_VEHICLES(PROC* p) {
+    OBJ* obj;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00001B29: 	LDI	-1,R0
     // asm 00001B2A: 	STI	R0,@IS_HIDDEN
+    IS_HIDDEN = -1;
 HIDDEN_VEHICLES_LP:
     // asm 00001B2B: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00001B2D: 	LDI	@CAR_CHOICE_GOTTEN,R0
     // asm 00001B2E: 	BZ	NSCD
+    if (CAR_CHOICE_GOTTEN == 0) {
+        goto NSCD;
+    }
     // asm 00001B2F: 	DIE
+    DIE();
 NSCD:
     // asm 00001B30: 	LDI	@SWITCHBUTS,R0
     // asm 00001B31: 	RS	16,R0
     // asm 00001B32: 	AND	SW_VIEW0_H|SW_VIEW1_H,R0
     // asm 00001B33: 	BZ	SETAS_ORIGINALS
+    if ((((u32)SWITCHBUTS >> 16) & (SW_VIEW0_H | SW_VIEW1_H)) == 0) {
+        goto SETAS_ORIGINALS;
+    }
 SETAS_HIDDEN:
     // asm 00001B34: 	LDI	@IS_HIDDEN,R0
     // asm 00001B35: 	CMPI	-1,R0
     // asm 00001B36: 	CALLNE	RESET_ORIGINAL
+    if (IS_HIDDEN != -1) {
+        RESET_ORIGINAL(IS_HIDDEN);
+    }
     // asm 00001B37: 	LDI	@CHOSEN_VEHICLE,AR2
     // ;	CMPI	1,AR2
     // ;	BEQ	HIDDEN_VEHICLES_LP
     // asm 00001B38: 	CMPI	3,AR2
     // asm 00001B39: 	BEQ	HIDDEN_VEHICLES_LP
+    if (CHOSEN_VEHICLE == 3) {
+        goto HIDDEN_VEHICLES_LP;
+    }
     // asm 00001B3A: 	STI	AR2,@IS_HIDDEN
+    IS_HIDDEN = CHOSEN_VEHICLE;
     // asm 00001B3B: 	ADDI	481h,AR2
     // asm 00001B3C: 	CALL	OBJ_FIND_FIRST
+    obj = OBJ_FIND_FIRST(CHOSEN_VEHICLE + 0x481);
     // asm 00001B3D: 	LDI	@CHOSEN_VEHICLE,AR2
     // asm 00001B3E: 	ADDI	@HIDDEN_TABLEI,AR2
     // asm 00001B3F: 	LDI	*AR2,R0
     // asm 00001B40: 	STI	R0,*+AR0(OROMDATA)
+    obj->romdata = ROM_PTR((word_addr_t)HIDDEN_TABLE[CHOSEN_VEHICLE]);
     // asm 00001B41: 	LDI	*+AR0(OFLAGS),R0
     // asm 00001B42: 	ANDN	O_1PAL,R0
     // asm 00001B43: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags &= ~O_1PAL;
     // asm 00001B44: 	BU	HIDDEN_VEHICLES_LP
+    goto HIDDEN_VEHICLES_LP;
 SETAS_ORIGINALS:
     // asm 00001B45: 	LDI	@IS_HIDDEN,R0
     // asm 00001B46: 	CMPI	-1,R0
     // asm 00001B47: 	BEQ	HIDDEN_VEHICLES_LP	;no one was hidden,
     // 					;just ignore
+    if (IS_HIDDEN == -1) {
+        goto HIDDEN_VEHICLES_LP; // no one was hidden, just ignore
+    }
     // asm 00001B48: 	CALL	RESET_ORIGINAL
+    RESET_ORIGINAL(IS_HIDDEN);
     // asm 00001B49: 	LDI	-1,R0
     // asm 00001B4A: 	STI	R0,@IS_HIDDEN
+    IS_HIDDEN = -1;
     // asm 00001B4B: 	BU	HIDDEN_VEHICLES_LP
-
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HIDDEN_VEHICLES", 0, 0);
-    UNIMPL();
+    goto HIDDEN_VEHICLES_LP;
 }
 
 // *PARAMETERS
 // *	R0	INDEX OF PREVIOUS VEHICLES
 // *
-static void RESET_ORIGINAL(void) {
+static void RESET_ORIGINAL(int vehicle_index) {
+    OBJ* obj;
+
     // 	;insert code here to set the old vehicle
     // 	;as
     // 	;
@@ -2890,17 +3230,19 @@ static void RESET_ORIGINAL(void) {
     // asm 00001B4D: 	LDI	R0,AR2
     // asm 00001B4E: 	ADDI	481h,AR2
     // asm 00001B4F: 	CALL	OBJ_FIND_FIRST
+    obj = OBJ_FIND_FIRST(vehicle_index + 0x481);
     // asm 00001B50: 	POP	AR2
     // asm 00001B51: 	MPYI	6,AR2
     // asm 00001B52: 	ADDI	@CCTABI,AR2
     // asm 00001B53: 	LDI	*+AR2(3),R0
     // asm 00001B54: 	STI	R0,*+AR0(OROMDATA)
+    obj->romdata = ROM_PTR(CCTAB[vehicle_index].romdata);
     // asm 00001B55: 	LDI	*+AR0(OFLAGS),R0
     // asm 00001B56: 	OR	O_1PAL,R0
     // asm 00001B57: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_1PAL;
     // asm 00001B58: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RESET_ORIGINAL", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------

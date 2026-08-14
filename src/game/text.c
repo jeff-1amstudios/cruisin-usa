@@ -44,7 +44,7 @@ void HIGHLIGHTN(void);
 #define TEXTTABLEFIXEDI FIXEDFONT
 #define OGSMFONT_TABI OGSMFONT_TAB
 
-static int FIXEDFONT;
+static FONTENTRY FIXEDFONT[43];
 
 /*
  *----------------------------------------------------------------------------
@@ -463,19 +463,30 @@ void SETFIXEDFONT(tTEXT* t /*AR0*/) {
 }
 
 void SETFIXEDFONTDS(tSHADOW_TEXT* t) {
+    int palette;
+
     // asm 00007A3D: 	LDI	6,R0
     // asm 00007A3E: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A3F: 	STI	R0,*+AR1(TEXT_HEIGHT)
+    t->front->height = 6;
+    t->shadow->height = 6;
     // asm 00007A40: 	LDI	@FIXEDFONT_A,R0
     // asm 00007A41: 	STI	R0,*+AR0(TEXT_IMG)
     // asm 00007A42: 	STI	R0,*+AR1(TEXT_IMG)
+    t->front->image_addr = FIXEDFONT_A;
+    t->shadow->image_addr = FIXEDFONT_A;
     // asm 00007A43: 	LDL	fixedfnt_tPAL,AR2
     // asm 00007A44: 	CALL	PAL_FIND_RAW
+    palette = PAL_FIND_RAW((tPAL*)ROM_PTR(fixedfnt_tPAL_ROM));
     // asm 00007A45: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 00007A46: 	STI	R0,*+AR1(TEXT_PAL)
+    t->front->palette = palette;
+    t->shadow->palette = palette;
     // asm 00007A47: 	LDI	@TEXTTABLEFIXEDI,R0
     // asm 00007A48: 	STI	R0,*+AR0(TEXT_ADDR)
     // asm 00007A49: 	STI	R0,*+AR1(TEXT_ADDR)
+    t->front->text_addr = TEXTTABLEFIXEDI;
+    t->shadow->text_addr = TEXTTABLEFIXEDI;
     // ;	LDF	*+AR1(TEXT_POSX),R0
     // ;	SUBF	-1,R0
     // ;	STF	R0,*+AR1(TEXT_POSX)
@@ -483,8 +494,7 @@ void SETFIXEDFONTDS(tSHADOW_TEXT* t) {
     // ;	SUBF	-1,R0
     // ;	STF	R0,*+AR1(TEXT_POSY)
     // asm 00007A4A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SETFIXEDFONTDS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -1084,7 +1094,32 @@ REGLP2:
 /* asm: FONTENT	0,128,135,7,1 */
 /* asm: FONTENT	0,136,143,7,1 */
 /* asm: FONTENT	0,144,151,7,1	;Z */
-static int FIXEDFONT;
+#define FIXED_FONT_ENTRY(x_start_, x_end_, y_start_) { 1u << 16, x_start_, x_end_, y_start_ }
+static FONTENTRY FIXEDFONT[43] = {
+    FIXED_FONT_ENTRY(64, 71, 0), FIXED_FONT_ENTRY(72, 79, 0),
+    FIXED_FONT_ENTRY(80, 87, 0), FIXED_FONT_ENTRY(88, 95, 0),
+    FIXED_FONT_ENTRY(96, 103, 0), FIXED_FONT_ENTRY(104, 111, 0),
+    FIXED_FONT_ENTRY(112, 119, 0), FIXED_FONT_ENTRY(120, 127, 0),
+    FIXED_FONT_ENTRY(128, 135, 0), FIXED_FONT_ENTRY(136, 143, 0),
+    FIXED_FONT_ENTRY(144, 151, 0), FIXED_FONT_ENTRY(152, 159, 0),
+    FIXED_FONT_ENTRY(160, 167, 0), FIXED_FONT_ENTRY(48, 55, 0),
+    FIXED_FONT_ENTRY(32, 39, 0), FIXED_FONT_ENTRY(40, 47, 0),
+    FIXED_FONT_ENTRY(56, 63, 0), FIXED_FONT_ENTRY(200, 207, 0),
+    FIXED_FONT_ENTRY(208, 215, 0), FIXED_FONT_ENTRY(216, 223, 0),
+    FIXED_FONT_ENTRY(224, 231, 0), FIXED_FONT_ENTRY(232, 239, 0),
+    FIXED_FONT_ENTRY(240, 247, 0), FIXED_FONT_ENTRY(248, 255, 0),
+    FIXED_FONT_ENTRY(0, 7, 7), FIXED_FONT_ENTRY(8, 15, 7),
+    FIXED_FONT_ENTRY(16, 23, 7), FIXED_FONT_ENTRY(24, 31, 7),
+    FIXED_FONT_ENTRY(32, 39, 7), FIXED_FONT_ENTRY(40, 47, 7),
+    FIXED_FONT_ENTRY(48, 55, 7), FIXED_FONT_ENTRY(56, 63, 7),
+    FIXED_FONT_ENTRY(64, 71, 7), FIXED_FONT_ENTRY(72, 79, 7),
+    FIXED_FONT_ENTRY(80, 87, 7), FIXED_FONT_ENTRY(88, 95, 7),
+    FIXED_FONT_ENTRY(96, 103, 7), FIXED_FONT_ENTRY(104, 111, 7),
+    FIXED_FONT_ENTRY(112, 119, 7), FIXED_FONT_ENTRY(120, 127, 7),
+    FIXED_FONT_ENTRY(128, 135, 7), FIXED_FONT_ENTRY(136, 143, 7),
+    FIXED_FONT_ENTRY(144, 151, 7),
+};
+#undef FIXED_FONT_ENTRY
 
 /*
  *----------------------------------------------------------------------------

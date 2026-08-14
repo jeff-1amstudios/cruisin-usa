@@ -1175,7 +1175,7 @@ void RBMATTR_CHECK(void);
 void INTO_TABLE_P(void);
 
 // asm:  .globl MOVEIN_HUD_EQUIP
-void MOVEIN_HUD_EQUIP(void);
+void MOVEIN_HUD_EQUIP(PROC* p);
 
 // asm:  .globl MOVEOUT_HUD_EQUIP
 void MOVEOUT_HUD_EQUIP(void);
@@ -1423,7 +1423,7 @@ void SECTION_ROUTINE(int routine_index /*AR0*/);
 void CHECKPOINT_HIT(void);
 
 // asm:  .globl PLYR_CAR_INIT
-void PLYR_CAR_INIT(void);
+void PLYR_CAR_INIT(PROC* p, OBJ* obj);
 
 // asm:  .globl PLYR_INTRO_ENTER
 void PLYR_INTRO_ENTER(void);
@@ -1667,7 +1667,7 @@ void CHOOSE_TRANSMISSION(PROC* p);
 void SIDE_DOOR(void);
 
 // asm:  .globl ZOOMTOCAR
-void ZOOMTOCAR(void);
+void ZOOMTOCAR(PROC* p);
 
 // asm:  .globl DROPTHECYCLE,DROPTHETURN
 void DROPTHECYCLE(PROC* p);

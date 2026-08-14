@@ -19,7 +19,7 @@
  * Source module: asm/HUD.ASM
  */
 
-void MOVEIN_HUD_EQUIP(void);
+void MOVEIN_HUD_EQUIP(PROC* p);
 void MOVEOUT_HUD_EQUIP(void);
 void HUD(void);
 void dealloc_section(tSECTION_ALLOC sec /*AR2*/);
@@ -68,29 +68,50 @@ int OFFROADBUFF[2];
 /* asm: MOVEIN_OFFSET	.bss	MOVEIN_OFFSET,1 */
 int MOVEIN_OFFSET;
 
-void MOVEIN_HUD_EQUIP(void) {
+void MOVEIN_HUD_EQUIP(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
     // asm 00009D0E: 	LDI	150,R0
     // asm 00009D0F: 	STI	R0,@MOVEIN_OFFSET
+    MOVEIN_OFFSET = 150;
 LIU8:
     // asm 00009D10: LDI	@_MODE,R0
     // asm 00009D11: 	TSTB	MHUD,R0
     // asm 00009D12: 	BNZ	M2L
+    if ((_MODE & MHUD) != 0) {
+        goto M2L;
+    }
     // asm 00009D13: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00009D15: 	BU	LIU8
 M2L:
     // asm 00009D16: LDI	25-1,AR5
+    p->ctx->MOVEIN_HUD_EQUIP_FRAME.loop_count = 25 - 1;
     // asm 00009D17: MIHEL
+MIHEL:
     // asm 00009D17: 	LDI	@MOVEIN_OFFSET,R0
     // asm 00009D18: 	SUBI	6,R0
     // asm 00009D19: 	STI	R0,@MOVEIN_OFFSET
+    MOVEIN_OFFSET -= 6;
     // asm 00009D1A: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 00009D1C: 	DBU	AR5,MIHEL
+    if (p->ctx->MOVEIN_HUD_EQUIP_FRAME.loop_count-- > 0) {
+        goto MIHEL;
+    }
     // asm 00009D1D: 	CLRI	R0
     // asm 00009D1E: 	STI	R0,@MOVEIN_OFFSET
+    MOVEIN_OFFSET = 0;
     // asm 00009D1F: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVEIN_HUD_EQUIP", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------

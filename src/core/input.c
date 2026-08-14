@@ -31,10 +31,6 @@ void port_handle_input(void) {
     steering_direction = new_steering_direction;
     accelerator = (keyboard[SDL_SCANCODE_UP] || keyboard[SDL_SCANCODE_W]) ? 255 : 0;
     brake = (keyboard[SDL_SCANCODE_DOWN] || keyboard[SDL_SCANCODE_S] || keyboard[SDL_SCANCODE_SPACE]) ? 255 : 0;
-    if (input_frame_counter % 400 == 0) {
-        switch1 &= ~SW_START;
-        printf("done enter\n");
-    }
     input_frame_counter++;
 }
 

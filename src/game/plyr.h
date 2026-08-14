@@ -79,7 +79,7 @@ int GETAUTO(CARBLK* carblk /*AR5*/);
 void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void BONUS_WAIT_LOOP(void);
-void PLYR_CAR_INIT(void);
+void PLYR_CAR_INIT(PROC* p, OBJ* obj);
 void DRONESND(OBJ* obj /*AR4*/, const int* sounds /*AR2*/, int range /*R0*/);
 void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/);
 

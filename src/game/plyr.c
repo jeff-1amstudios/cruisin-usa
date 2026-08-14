@@ -27,10 +27,10 @@ extern MATRIX _MATRIXB;
  * Source module: asm/PLYR.ASM
  */
 
-static void GETCARPARAM(void);
+static void GETCARPARAM(CARBLK* carblk, int vehicle);
 CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/);
 void BONUS_WAIT_LOOP(void);
-void PLYR_CAR_INIT(void);
+void PLYR_CAR_INIT(PROC* p, OBJ* obj);
 void PLYR_INTRO_ENTER(void);
 void _PLYR(PROC* p);
 static void CAMCHKL(void);
@@ -255,21 +255,27 @@ static tCARPARAM CARPARAMTAB[] = {
  *LOADS PARAMETERS INTO CAR BLOCK
  *TRASHES R0,AR2
  */
-static void GETCARPARAM(void) {
+static void GETCARPARAM(CARBLK* carblk, int vehicle) {
+    const tCARPARAM* parameters;
+
     // asm 00002939: 	LDI	@CARPARAMTABI,AR2
     // asm 0000293A: 	MPYI	CARPARAMTABL,R0
     // asm 0000293B: 	ADDI	R0,AR2
+    parameters = &CARPARAMTAB[vehicle];
     // asm 0000293C: 	LDF	*AR2++,R0
     // asm 0000293D: 	STF	R0,*+AR0(CARMAXACCEL)
+    carblk->max_accel = C3X_STF(C3X_LDF(parameters->max_accel));
     // asm 0000293E: 	LDF	*AR2++,R0
     // asm 0000293F: 	STF	R0,*+AR0(CARTRACTION)
+    carblk->traction = C3X_STF(C3X_LDF(parameters->traction));
     // asm 00002940: 	LDF	*AR2++,R0
     // asm 00002941: 	STF	R0,*+AR0(CARRDFR)
+    carblk->road_friction = C3X_STF(C3X_LDF(parameters->road_friction));
     // asm 00002942: 	LDF	*AR2++,R0
     // asm 00002943: 	STF	R0,*+AR0(CAROFRDFR)
+    carblk->offroad_friction = C3X_STF(C3X_LDF(parameters->offroad_friction));
     // asm 00002944: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCARPARAM", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void CLEAR_CARBLK(CARBLK* car) {
@@ -471,12 +477,21 @@ BONUS_WAIT_LP:
     UNIMPL();
 }
 
-void PLYR_CAR_INIT(void) {
+void PLYR_CAR_INIT(PROC* p, OBJ* obj) {
+    CARBLK* carblk;
+    int vehicle_index;
+
     // asm 00002987: 	STI	AR4,@PLYCAR		;INIT CAR PLAYER STRUCT
+    PLYCAR = obj; // INIT CAR PLAYER STRUCT
     // asm 00002988: 	STI	AR7,@PLYPROC
+    PLYPROC = p;
     // asm 00002989: 	LDI	@CHOOSENCAR,AR1
     // asm 0000298A: 	CMPI	4,AR1
     // asm 0000298B: 	BLT	DOGENRLB
+    vehicle_index = CHOOSENCAR;
+    if (vehicle_index < 4) {
+        goto DOGENRLB;
+    }
     // asm 0000298C: 	LDI	AR1,R0
     // asm 0000298D: 	CMPI	4,AR1
     // asm 0000298E: 	LDIEQ	JEEP_MOD,R0
@@ -486,6 +501,10 @@ void PLYR_CAR_INIT(void) {
     // asm 00002992: 	LDIEQ	PLYR_COPCAR_MOD,R0
     // asm 00002993: 	CMPI	7,AR1
     // asm 00002994: 	LDIEQ	3,R0
+    if (vehicle_index == 4) vehicle_index = JEEP_MOD;
+    if (vehicle_index == 5) vehicle_index = PLYR_SBUS_MOD;
+    if (vehicle_index == 6) vehicle_index = PLYR_COPCAR_MOD;
+    if (vehicle_index == 7) vehicle_index = 3;
     // asm 00002995: 	LDI	R0,AR1
 DOGENRLB:
     // asm 00002996: 	LDI	AR1,AR2
@@ -493,37 +512,55 @@ DOGENRLB:
     // asm 00002998: 	ADDI	@VEHICLE_TABLEI,AR1
     // asm 00002999: 	LDI	*+AR1(VEHTAB_MODEL),R1
     // asm 0000299A: 	STI	R1,*+AR4(OROMDATA)
+    obj->romdata = VEHICLE_TABLE[vehicle_index].model;
     // asm 0000299B: 	CALL	VEHICLE_ANI_INIT	;SETUP WHEEL ANIMATION
+    VEHICLE_ANI_INIT(vehicle_index, obj); // SETUP WHEEL ANIMATION
     // asm 0000299C: 	LDF	-1,R0
     // asm 0000299D: 	STF	R0,*+AR4(OUSR1)		;skid system flag
+    obj->usr1_as_float = C3X_STF(C3X_IMM_F32(-1)); // skid system flag
     // asm 0000299E: 	LDI	0,R0
     // asm 0000299F: 	STI	R0,@_MPH
+    _MPH = 0;
     // asm 000029A0: 	STI	R0,@OLDPLYAIR		;OLD AIRBORNE FLAG
+    OLDPLYAIR = 0; // OLD AIRBORNE FLAG
     // asm 000029A1: 	STI	R0,@PLAIRTIM		;CLEAR AIR TIMER
+    PLAIRTIM = 0; // CLEAR AIR TIMER
     // asm 000029A2: 	STI	R0,@ENGVOL		;ENGINE SOUND VOLUME
+    ENGVOL = 0; // ENGINE SOUND VOLUME
     // asm 000029A3: 	STI	AR7,*+AR4(OPLINK)	;SETUP OPLINK
+    obj->plink = p; // SETUP OPLINK
     // asm 000029A4: 	LDI	AR4,AR2
     // asm 000029A5: 	CALL	OBJ_INSERT	 	;INSERT SUCKER ON THE LIST
+    OBJ_INSERT(obj); // INSERT SUCKER ON THE LIST
     // asm 000029A6: 	LDF	0,R0
     // asm 000029A7: 	STF	R0,@OLDPLYSPD
+    OLDPLYSPD = C3X_LDF(C3X_STF(C3X_IMM_F32(0)));
     // asm 000029A8: 	LDI	@CHOOSENCAR,R0
     // asm 000029A9: 	CALL	_CARV0			;INIT CAR DATA STRUCT IN PROCESS
+    carblk = _CARV0(obj, CHOOSENCAR); // INIT CAR DATA STRUCT IN PROCESS
     // asm 000029AA: 	CALL	GETCARPARAM		;GET SPECIAL PLAYER CAR PARAMETERS
+    GETCARPARAM(carblk, CHOOSENCAR); // GET SPECIAL PLAYER CAR PARAMETERS
     // asm 000029AB: 	STI	AR0,@PLYCBLK
+    PLYCBLK = carblk;
     // asm 000029AC: 	LDI	PLYR_C,R0
     // asm 000029AD: 	STI	R0,*+AR0(CAR_ID)
+    carblk->debug_car_id = PLYR_C;
     // asm 000029AE: 	STI	R0,*+AR4(OID)
+    obj->id = PLYR_C;
     // asm 000029AF: 	LDI	@CHOSEN_TRANSMISSION,R0
     // asm 000029B0: 	STI	R0,*+AR0(CARTRANS)	;AUTO/MANUAL SWITCH
+    carblk->transmission = CHOSEN_TRANSMISSION; // AUTO/MANUAL SWITCH
     // asm 000029B1: 	LDF	2.0,R0
     // asm 000029B2: 	STF	R0,*+AR0(CARMASS)	;SET CAR MASS
+    carblk->mass = C3X_STF(C3X_IMM_F32(2.0)); // SET CAR MASS
     // asm 000029B3: 	LDI	11,R0
     // asm 000029B4: 	STPI	R0,@OFFROAD_TMR
+    OFFROAD_TMR = 11;
     // asm 000029B5: 	LDF	@STEERCT,R0		;STEERING CENTER
     // asm 000029B6: 	STF	R0,@WHEELPOS
+    WHEELPOS = C3X_STF(C3X_LDF(STEERCT));
     // asm 000029B7: 	RETS	;DONE INITIALIZING PLYR CAR
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_CAR_INIT", 0, 0);
-    UNIMPL();
+    return; // DONE INITIALIZING PLYR CAR
 }
 
 /*
