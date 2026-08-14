@@ -45,7 +45,7 @@ extern int CHOOSENCAR;
 // asm: 	.bss	CAR_CHOICE_GOTTEN,1
 extern int CAR_CHOICE_GOTTEN;
 // asm: 	.bss	CAR_ARRAY,4
-extern int CAR_ARRAY[];
+extern OBJ* CAR_ARRAY[];
 // asm: 	.bss	IS_HIDDEN,1
 extern int IS_HIDDEN;
 // asm: 	.bss	SPINCURR,1

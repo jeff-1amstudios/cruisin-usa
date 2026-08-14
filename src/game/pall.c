@@ -25,7 +25,7 @@ static void PALXFER_INIT(void);
 static PALXFER* PALXFER_GET(void);
 static void PALXFER_DEL(PALXFER* target);
 void PAL_DELETE(int palette_code /*AR2*/);
-void PAL_DIMMER(void);
+void PAL_DIMMER(const tPAL* source_palette, tPAL* ram_buffer, c3x_reg_t dimmer);
 
 #define PALROMI _PALROM
 #define PTTRAMI PTTRAM
@@ -770,8 +770,15 @@ DELP2:
  *
  *
  */
-void PAL_DIMMER(void)
+void PAL_DIMMER(const tPAL* source_palette, tPAL* ram_buffer, c3x_reg_t dimmer)
 {
+    u32 high_color;
+    u32 low_color;
+    u32 packed_source;
+    u32 scaled_component;
+    int palette_code;
+    int palette_word;
+
     // asm 00009FE1: 	PUSH	AR0
     // asm 00009FE2: 	PUSH	AR1
     // asm 00009FE3: 	PUSH	AR2
@@ -781,66 +788,104 @@ void PAL_DIMMER(void)
     // asm 00009FE8: 	PUSHFL	R7
     // asm 00009FEA: 	PUSH	AR1
     // asm 00009FEB: 	LDF	R0,R7
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00009FEC: 	LDI	*AR0++,R0
     // asm 00009FED: 	STI	R0,*AR1++
+    ram_buffer->flags_and_count = source_palette->flags_and_count;
+
     // asm 00009FEE: 	LDI	127,AR5
+    for (palette_word = 0; palette_word < 128; palette_word++) {
+
     // asm 00009FEF: PDMLP
     // asm 00009FEF: 	LDI	*AR0++,R4	;get src2
+        packed_source = source_palette->data[palette_word];
+
     // asm 00009FF0: 	LDI	R4,R1
     // asm 00009FF1: 	AND	01Fh,R1
     // asm 00009FF2: 	FLOAT	R1
     // asm 00009FF3: 	MPYF	R7,R1
     // asm 00009FF4: 	FIX	R1
+        low_color = (u32)C3X_FIX(C3X_MUL(C3X_FROM_INT(packed_source & 0x1F), dimmer));
+
     // asm 00009FF5: 	LDI	R4,R2		;--
     // asm 00009FF6: 	RS	5,R2
     // asm 00009FF7: 	AND	01Fh,R2
     // asm 00009FF8: 	FLOAT	R2
     // asm 00009FF9: 	MPYF	R7,R2
     // asm 00009FFA: 	FIX	R2
+        scaled_component = (u32)C3X_FIX(C3X_MUL(C3X_FROM_INT((packed_source >> 5) & 0x1F), dimmer));
+
     // asm 00009FFB: 	LS	5,R2
     // asm 00009FFC: 	OR	R2,R1
+        low_color |= scaled_component << 5;
+
     // asm 00009FFD: 	LDI	R4,R2		;--
     // asm 00009FFE: 	RS	10,R2
     // asm 00009FFF: 	AND	01Fh,R2
     // asm 0000A000: 	FLOAT	R2
     // asm 0000A001: 	MPYF	R7,R2
     // asm 0000A002: 	FIX	R2
+        scaled_component = (u32)C3X_FIX(C3X_MUL(C3X_FROM_INT((packed_source >> 10) & 0x1F), dimmer));
+
     // asm 0000A003: 	LS	10,R2
     // asm 0000A004: 	OR	R2,R1
+        low_color |= scaled_component << 10;
+
     // asm 0000A005: 	PUSH	R1
     // 	;----second word----------
     // asm 0000A006: 	RS	16,R4		;get src1(B)
+        packed_source >>= 16;
+
     // asm 0000A007: 	LDI	R4,R1
     // asm 0000A008: 	AND	01Fh,R1
     // asm 0000A009: 	FLOAT	R1
     // asm 0000A00A: 	MPYF	R7,R1
     // asm 0000A00B: 	FIX	R1
+        high_color = (u32)C3X_FIX(C3X_MUL(C3X_FROM_INT(packed_source & 0x1F), dimmer));
+
     // asm 0000A00C: 	LDI	R4,R2
     // asm 0000A00D: 	RS	5,R2
     // asm 0000A00E: 	AND	01Fh,R2
     // asm 0000A00F: 	FLOAT	R2
     // asm 0000A010: 	MPYF	R7,R2
     // asm 0000A011: 	FIX	R2
+        scaled_component = (u32)C3X_FIX(C3X_MUL(C3X_FROM_INT((packed_source >> 5) & 0x1F), dimmer));
+
     // asm 0000A012: 	LS	5,R2
     // asm 0000A013: 	OR	R2,R1
+        high_color |= scaled_component << 5;
+
     // asm 0000A014: 	LDI	R4,R2
     // asm 0000A015: 	RS	10,R2
     // asm 0000A016: 	AND	01Fh,R2
     // asm 0000A017: 	FLOAT	R2
     // asm 0000A018: 	MPYF	R7,R2
     // asm 0000A019: 	FIX	R2
+        scaled_component = (u32)C3X_FIX(C3X_MUL(C3X_FROM_INT((packed_source >> 10) & 0x1F), dimmer));
+
     // asm 0000A01A: 	LS	10,R2
     // asm 0000A01B: 	OR	R2,R1
+        high_color |= scaled_component << 10;
+
     // asm 0000A01C: 	POP	R2
     // asm 0000A01D: 	LS	16,R1
     // asm 0000A01E: 	OR	R2,R1
     // asm 0000A01F: 	STI	R1,*AR1++
+        ram_buffer->data[palette_word] = (high_color << 16) | low_color;
+
     // asm 0000A020: 	DBU	AR5,PDMLP
+    }
+
     // asm 0000A021: 	POP	AR2			;RECOVER RAM BUFFER ADDR
     // asm 0000A022: 	CALL	PAL_FIND_RAW
+    palette_code = PAL_FIND_RAW(ram_buffer);
+
     // asm 0000A023: 	LDI	*AR2++,R3
     // asm 0000A024: 	LDI	R0,R2
     // asm 0000A025: 	CALL	PAL_SET
+    PAL_SET(ram_buffer->data, (u32)palette_code, (u32)ram_buffer->flags_and_count);
+
     // asm 0000A026: 	POPFL	R7
     // asm 0000A028: 	POPFL	R6
     // asm 0000A02A: 	POP	R1
@@ -849,6 +894,4 @@ void PAL_DIMMER(void)
     // asm 0000A02D: 	POP	AR1
     // asm 0000A02E: 	POP	AR0
     // asm 0000A02F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_DIMMER", 0, 0);
-    UNIMPL();
 }

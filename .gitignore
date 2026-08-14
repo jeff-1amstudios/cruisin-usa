@@ -7,3 +7,4 @@ cfg/
 roms/
 tools/port/log/
 mame_validate/
+build-miniz-verify/

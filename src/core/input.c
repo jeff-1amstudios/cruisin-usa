@@ -7,6 +7,8 @@ static u32 switch1 = UINT32_MAX;
 static u32 switch2 = UINT32_MAX;
 static u32 switch3 = UINT32_MAX;
 static int steering = 128;
+static int accelerator;
+static int brake;
 static int steering_direction;
 static int steering_detent;
 
@@ -22,15 +24,15 @@ void port_handle_input(void) {
     if (keyboard[SDL_SCANCODE_RETURN] || keyboard[SDL_SCANCODE_KP_ENTER]) {
         switch1 &= ~SW_START;
     }
-    int new_steering_direction = (keyboard[SDL_SCANCODE_RIGHT] != 0) -
-        (keyboard[SDL_SCANCODE_LEFT] != 0);
-    if (new_steering_direction != 0 &&
-        new_steering_direction != steering_direction) {
+    int new_steering_direction = (keyboard[SDL_SCANCODE_RIGHT] != 0) - (keyboard[SDL_SCANCODE_LEFT] != 0);
+    if (new_steering_direction != 0 && new_steering_direction != steering_direction) {
         steering_detent = new_steering_direction;
     }
     steering_direction = new_steering_direction;
-    if (input_frame_counter == 400) {
-        // switch1 &= ~SW_START;
+    accelerator = (keyboard[SDL_SCANCODE_UP] || keyboard[SDL_SCANCODE_W]) ? 255 : 0;
+    brake = (keyboard[SDL_SCANCODE_DOWN] || keyboard[SDL_SCANCODE_S] || keyboard[SDL_SCANCODE_SPACE]) ? 255 : 0;
+    if (input_frame_counter % 400 == 0) {
+        switch1 &= ~SW_START;
         printf("done enter\n");
     }
     input_frame_counter++;
@@ -78,6 +80,14 @@ void port_sample_steering(void) {
 
 int port_get_steering(void) {
     return steering;
+}
+
+int port_get_accelerator(void) {
+    return accelerator;
+}
+
+int port_get_brake(void) {
+    return brake;
 }
 
 int port_take_steering_detent(void) {

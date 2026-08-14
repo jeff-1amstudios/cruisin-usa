@@ -571,7 +571,7 @@ ENTER2:
     } else {
         NFRAMES = INFRAMES; // SAVE FOR ALL CURRENT PROCESSES
     }
-    INFRAMES = 0;       // CLEAR INTERRUPT COUNTER
+    INFRAMES = 0; // CLEAR INTERRUPT COUNTER
 
     FRAMETIME = TIMEREC(); // SAVE THE FRAMETIME
 
@@ -1091,15 +1091,17 @@ static void READIO(void) {
     // asm 00004D25: 	STI	R0,@ATOD_R
     // asm 00004D26: 	LDI	*AR0,R2
     // asm 00004D27: 	SETDP
-    // The SDL port has no asynchronous A/D converter to trigger ATODINT.
-    // Sample the host's steering channel here, at the point where the
-    // original starts that conversion, so gameplay still consumes _pot0.
+    // The SDL port has no asynchronous A/D converter. Capture the host's
+    // steering position at the original conversion boundary; ATODINT reads
+    // all three host channels synchronously below.
     port_sample_steering();
-    _pot0 = port_get_steering();
 
     // asm 00004D28: 	CLRI	R0
     // asm 00004D29: 	STI	R0,@RDPOT
     RDPOT = 0;
+    ATODINT(); // steering conversion complete
+    ATODINT(); // accelerator conversion complete
+    ATODINT(); // brake conversion complete
 
     // ;THESE ARE SPECIAL ROUTINES WHICH ARE CALLED, *NOT* CREATED
     // ;FOR PROCESSES.
@@ -1234,6 +1236,13 @@ DTXX:
  *OPTIMIZED 9/14/93-ELP
  */
 static void ATODINT(void) {
+    c3x_reg_t raw_value;
+    c3x_reg_t previous_value;
+    c3x_reg_t filtered_value;
+    c3x_reg_t delta;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00004D80: 	PUSH	ST
     // asm 00004D81: 	PUSH	IE
     // asm 00004D82: 	PUSH	DP
@@ -1254,6 +1263,9 @@ static void ATODINT(void) {
     // asm 00004D91: 	LDP	@RDPOT			;WHICH POT TO READ?
     // asm 00004D92: 	LDI	@RDPOT,R0
     // asm 00004D93: 	BNZD	RDFOOT
+    if (RDPOT != 0) {
+        goto RDFOOT;
+    }
     // asm 00004D94: 	LDP	@SYSCNTL
     // asm 00004D95: 	LDI	@SYSCNTL,R1
     // asm 00004D96: 	ANDN	ATOD_RD,R1
@@ -1264,25 +1276,39 @@ static void ATODINT(void) {
     // asm 00004D99: 	CLRI	AR0
     // asm 00004D9A: 	LDP	@ATOD_R
     // asm 00004D9B: 	LDI	@ATOD_R,R1
+    raw_value = C3X_FROM_INT(port_get_steering());
     // asm 00004D9C: 	LDI	*AR0,R0
     // asm 00004D9D: 	LDP	@_pot0
     // asm 00004D9E: 	RS	24,R1
     // asm 00004D9F: 	FLOAT	R1
     // asm 00004DA0: 	FLOAT	@_pot0,R0
+    previous_value = C3X_FROM_INT(_pot0);
     // 	;MAXIMUM SLEW RATE
     // 	;
     // asm 00004DA1: 	SUBF	R0,R1
+    delta = C3X_SUB(raw_value, previous_value);
     // asm 00004DA2: 	CMPF	65,R1
     // asm 00004DA3: 	LDFGT	65,R1
+    if (C3X_GT(delta, C3X_IMM_F32(65))) {
+        delta = C3X_IMM_F32(65);
+    }
     // asm 00004DA4: 	CMPF	-65,R1
     // asm 00004DA5: 	LDFLT	-65,R1
+    if (C3X_LT(delta, C3X_IMM_F32(-65))) {
+        delta = C3X_IMM_F32(-65);
+    }
     // asm 00004DA6: 	ADDF	R0,R1
+    raw_value = C3X_ADD(delta, previous_value);
     // asm 00004DA7: 	MPYF	0.33,R1	  		;SMOOTH WHEEL A TAD
     // asm 00004DA8: 	MPYF	0.67,R0
     // asm 00004DA9: 	ADDF	R1,R0
+    filtered_value = C3X_ADD(
+        C3X_MUL(raw_value, C3X_IMM_F32(0.33)),
+        C3X_MUL(previous_value, C3X_IMM_F32(0.67)));
     // asm 00004DAA: 	FIX	R0
     // asm 00004DAB: 	STI	R0,@_pot0
-    // asm 00004DAC: NOSMOOTH1
+    _pot0 = C3X_FIX(filtered_value);
+NOSMOOTH1:
     // asm 00004DAC: 	LDP	@SYSCNTL
     // asm 00004DAD: 	LDI	@SYSCNTL,R0		;ACTUALLY WE SIGNAL A READ OF THE
     // asm 00004DAE: 	LDP	@SYSCNTLR		;HAVE A VALUE
@@ -1298,26 +1324,37 @@ static void ATODINT(void) {
     // asm 00004DB8: 	LDP	@RDPOT
     // asm 00004DB9: 	LDI	1,R0
     // asm 00004DBA: 	STI	R0,@RDPOT
+    RDPOT = 1;
     // 	;---->	BUD	EXITR
+    goto EXITR;
 RDFOOT:
     // asm 00004DBB: 	CMPI	1,R0
     // asm 00004DBC: 	BNED	RDBRAKE
+    if (RDPOT != 1) {
+        goto RDBRAKE;
+    }
     // asm 00004DBD: 	LDP	@SYSCNTLR
     // asm 00004DBE: 	STI	R1,@SYSCNTLR
     // asm 00004DBF: 	LDP	@ATOD_R			;READ GAS PEDAL
     // 	;---->	BNED	RDBRAKE
     // asm 00004DC0: 	CLRI	AR0
     // asm 00004DC1: 	LDI	@ATOD_R,R1
+    raw_value = C3X_FROM_INT(port_get_accelerator());
     // asm 00004DC2: 	LDI	*AR0,R0
     // asm 00004DC3: 	LDP	@_pot1
     // asm 00004DC4: 	RS	24,R1
     // asm 00004DC5: 	FLOAT	R1
     // asm 00004DC6: 	FLOAT	@_pot1,R0
+    previous_value = C3X_FROM_INT(_pot1);
     // asm 00004DC7: 	MPYF	0.33,R1	  		;SMOOTH A TAD
     // asm 00004DC8: 	MPYF	0.67,R0
     // asm 00004DC9: 	ADDF	R1,R0
+    filtered_value = C3X_ADD(
+        C3X_MUL(raw_value, C3X_IMM_F32(0.33)),
+        C3X_MUL(previous_value, C3X_IMM_F32(0.67)));
     // asm 00004DCA: 	FIX	R0
     // asm 00004DCB: 	STI	R0,@_pot1
+    _pot1 = C3X_FIX(filtered_value);
     // asm 00004DCC: 	LDP	@SYSCNTL
     // asm 00004DCD: 	LDI	@SYSCNTL,R0		;ACTUALLY WE SIGNAL A READ OF THE
     // asm 00004DCE: 	LDP	SYSCNTLR
@@ -1333,23 +1370,32 @@ RDFOOT:
     // asm 00004DD8: 	LDP	@RDPOT
     // asm 00004DD9: 	LDI	2,R0
     // asm 00004DDA: 	STI	R0,@RDPOT
+    RDPOT = 2;
     // 	;---->	BUD	EXITR
+    goto EXITR;
 RDBRAKE:
     // asm 00004DDB: 	CLRI	AR0
     // asm 00004DDC: 	LDI	@ATOD_R,R1		;READ BRAKE PEDAL
+    raw_value = C3X_FROM_INT(port_get_brake());
     // asm 00004DDD: 	LDI	*AR0,R0
     // asm 00004DDE: 	LDP	@_pot2
     // asm 00004DDF: 	RS	24,R1
     // asm 00004DE0: 	FLOAT	R1
     // asm 00004DE1: 	FLOAT	@_pot2,R0
+    previous_value = C3X_FROM_INT(_pot2);
     // asm 00004DE2: 	MPYF	0.25,R1	  		;SMOOTH A TAD
     // asm 00004DE3: 	MPYF	0.75,R0
     // asm 00004DE4: 	ADDF	R1,R0
+    filtered_value = C3X_ADD(
+        C3X_MUL(raw_value, C3X_IMM_F32(0.25)),
+        C3X_MUL(previous_value, C3X_IMM_F32(0.75)));
     // asm 00004DE5: 	FIX	R0
     // asm 00004DE6: 	STI	R0,@_pot2
+    _pot2 = C3X_FIX(filtered_value);
     // asm 00004DE7: 	LDP	@RDPOT
     // asm 00004DE8: 	LDI	3,R0
     // asm 00004DE9: 	STI	R0,@RDPOT
+    RDPOT = 3;
 EXITR:
     // asm 00004DEA: 	LDP	@CPU_WS
     // asm 00004DEB: 	POP	AR0
@@ -1364,8 +1410,7 @@ EXITR:
     // asm 00004DF4: 	POP	IE
     // asm 00004DF5: 	POP	ST
     // asm 00004DF6: 	RETI
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ATODINT", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -1405,23 +1450,23 @@ static void SWDISP(void) {
     while (edges != 0) {
         switch_index += 1;
 
-    // asm 00004DFF: 	LSH	-1,R3
+        // asm 00004DFF: 	LSH	-1,R3
         int triggered = (edges & 1u) != 0;
         edges >>= 1;
 
-    // asm 00004E00: 	BNC	SWTLP
+        // asm 00004E00: 	BNC	SWTLP
         if (!triggered) {
             continue;
         }
 
-    // ;	LDP	@SWTABI
-    // asm 00004E01: 	LDI	@SWTABI,AR0
-    // asm 00004E02:      	ADDI	R1,AR0
-    // asm 00004E03: 	LDI	*AR0,AR2	;GET WAKEUP
+        // ;	LDP	@SWTABI
+        // asm 00004E01: 	LDI	@SWTABI,AR0
+        // asm 00004E02:      	ADDI	R1,AR0
+        // asm 00004E03: 	LDI	*AR0,AR2	;GET WAKEUP
         wakeup = SWTAB[switch_index];
 
-    // asm 00004E04: 	CMPI	0,AR2
-    // asm 00004E05: 	BEQ	NOGPROC
+        // asm 00004E04: 	CMPI	0,AR2
+        // asm 00004E05: 	BEQ	NOGPROC
         if (wakeup != NULL) {
             // asm 00004E06: 	LDI	SPAWNER_C|SPWN_SWITCH_T,R2
             // asm 00004E07: 	CALL	PRC_CREATE	;R2=PID, AR2=WAKEUP ADDR
@@ -1429,8 +1474,8 @@ static void SWDISP(void) {
         }
 
         // asm: NOGPROC
-    // asm 00004E08: LDI	R3,R3
-    // asm 00004E09: 	BNZ	SWTLP
+        // asm 00004E08: LDI	R3,R3
+        // asm 00004E09: 	BNZ	SWTLP
     }
 
     // asm: SWSTX

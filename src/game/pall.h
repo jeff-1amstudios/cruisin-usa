@@ -33,6 +33,7 @@ extern int PTTRAM[];
 #define PALLISTI _PALLIST
 
 // asm: 	.globl	PALROMI
+extern tPAL* _PALROM[];
 #define PALROMI _PALROM
 
 // asm: 	.globl	PAL_INIT		;CLEAR ALLOCATION/TRANSFER TABLES
@@ -60,7 +61,7 @@ void PAL_DELETE(int palette_code /*AR2*/);
 void PAL_DELETE_RAW(int actual_palette_index /*AR2*/);
 
 // asm: 	.globl	PAL_DIMMER
-void PAL_DIMMER(void);
+void PAL_DIMMER(const tPAL* source_palette, tPAL* ram_buffer, c3x_reg_t dimmer);
 
 // asm: 	.globl	PAL_XFER		;TRANSFER THE PALETTES IN TRANS-RAM
 void PAL_XFER(void);

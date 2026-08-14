@@ -51,16 +51,16 @@ void ZOOMTOCAR(void);
 void GETTHECARS(void);
 void SHOW_CAR_STATISTICS(void);
 static void CLEANUP_DIMCAR_PALS(void);
-static void GETTHECAR(void);
+static void GETTHECAR(PROC* p, tPAL* raw_palette, int vehicle_id, int car_index);
 void ROUNDER(PROC* p);
-static void AFFECT_THE_CARS(void);
+static void AFFECT_THE_CARS(PROC* p);
 static void HIDDEN_VEHICLES(void);
 static void RESET_ORIGINAL(void);
-static void AFFECTED_CAR(void);
-static void CAR_DIMMER(void);
+static void AFFECTED_CAR(PROC* p, int vehicle_id, int car_index);
+static void CAR_DIMMER(int car_index, c3x_reg_t dimmer);
 static void LIGHT_INIT(void);
-static void LIGHT_OFF(void);
-static void LIGHT_ON(void);
+static void LIGHT_OFF(int car_index);
+static void LIGHT_ON(int car_index);
 void INIT_PEDALCHK(int* pedal_released /*R5*/);
 void GETCHOICE(void);
 int PEDALCHK(int* pedal_released);
@@ -98,6 +98,8 @@ typedef struct WAVEFLAG_ENTRY {
 #define MOTION_ERROR_TIKS (57 * 5)
 
 extern OBJ* BOILEROBJ;
+extern MATRIX _MATRIXA;
+extern VECTOR _VECTORA;
 void BOILERPLATE_INIT(void);
 int CHECK_MOTION_DIP(void);
 int CHECK_MOTION_PRESENT(void);
@@ -647,11 +649,7 @@ static int CHECK_ENDBONUS(void) {
     // asm 00001695: 	AND	MMODE,R0
     // asm 00001696: 	CMPI	MATTR,R0
     // asm 00001697: 	BEQ	CEBT
-    if (TRANSMISSION_ACTIVE == 0 ||
-        OM_BONUS_WAITFLAG != 0 ||
-        OM_LINKWAIT != 0 ||
-        HEAD2HEAD_ON != 0 ||
-        (OM_MODE & MMODE) == MATTR)
+    if (TRANSMISSION_ACTIVE == 0 || OM_BONUS_WAITFLAG != 0 || OM_LINKWAIT != 0 || HEAD2HEAD_ON != 0 || (OM_MODE & MMODE) == MATTR)
         goto CEBT;
     // asm 00001698: 	CLRC
     // asm 00001699: 	RETS
@@ -1702,6 +1700,7 @@ static tCHOOSE_CAR_ENTRY CCTAB[] = {
     { -448, -200, -4708, hotrodm_ROM, C3X_F32_INIT(3.141592654f), 0x0482 },
     { 464, -177, -4708, misslem_ROM, C3X_F32_INIT(3.141592654f), 0x0483 },
     { 1424, -147, -4708, testorm_ROM, C3X_F32_INIT(3.141592654f), 0x0484 },
+    { .x = -1 },
 };
 /* asm: CHOOSENCAR	.bss	CHOOSENCAR,1 */
 int CHOOSENCAR;
@@ -1735,6 +1734,13 @@ int RACE_STARTING_POINTS[] = {
     L_LEG12_BEGIN + 1,
     L_LEG13_BEGIN + 1,
     L_LEG14_BEGIN + 1,
+};
+
+static c3x_f32_t XOFFSET[] = {
+    C3X_F32_INIT(-1384.0f),
+    C3X_F32_INIT(-448.0f),
+    C3X_F32_INIT(-464.0f),
+    C3X_F32_INIT(1424.0f)
 };
 
 /*
@@ -1778,7 +1784,6 @@ KIBO:
     // asm 000018C8: 	LDL	crace_PALETTES,AR2
     // asm 000018C9: 	CALL	dealloc_section
 XOFFSETI:
-    // asm 000018CA: .word	XOFFSET
     // asm 000018CA: 	LDI	@CHOSEN_VEHICLE,AR0
     // asm 000018CB: 	ADDI	@XOFFSETI,AR0
     // asm 000018CC: 	LDF	*AR0,R6
@@ -1901,23 +1906,42 @@ JAJAKKA:
 int CAR_CHOICE_GOTTEN;
 
 void THE_CAR_CHOICE_PROC(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // ;	SLEEP	15
     // asm 00001942: 	CLRI	R0
     // asm 00001943: 	STI	R0,@CAR_CHOICE_GOTTEN
+    CAR_CHOICE_GOTTEN = 0;
     // asm 00001944: 	STI	R0,@START_HIT
+    START_HIT = 0;
     // *
     // *CHOOSE CAR LOOP
     // *
     // asm 00001945: 	LDI	12,R0
     // asm 00001946: 	STI	R0,@_countdown
+    _countdown = 12;
     // asm 00001947: 	CALL	INIT_PEDALCHK
+    INIT_PEDALCHK(&p->ctx->pedal_released);
 CCLP:
     // asm 00001948: 	LDI	@START_HIT,R0
     // asm 00001949: 	BNZ	CCLPX
+    if (START_HIT != 0) {
+        goto CCLPX;
+    }
     // asm 0000194A: 	CALL	GETCHOICE
+    GETCHOICE();
     // asm 0000194B: 	CALL	TRANSCHOICE
+    TRANSCHOICE();
     // asm 0000194C: 	CALL	DIAL_ROUT
+    DIAL_ROUT();
     // asm 0000194D: 	CALL	SHOW_CAR_STATISTICS
+    SHOW_CAR_STATISTICS();
     // 	;-------time remaining
     // 	;
     // asm 0000194E: 	LDL	time,AR2
@@ -1925,23 +1949,30 @@ CCLP:
     // asm 00001950: 	LDI	337,R3			;R3	POS Y
     // asm 00001951: 	LDI	TM|ZS,R4
     // asm 00001952: 	CALL	BLTMOD2D
+    BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(time_ROM), 242, 337, TM | ZS, 0, 0);
     // asm 00001953: 	CALL	PEDALCHK
+    if (PEDALCHK(&p->ctx->pedal_released)) {
+        goto CCLPX;
+    }
     // asm 00001954: 	BC	CCLPX
     // asm 00001955: 	CALL	INTROTIMER
+    INTROTIMER();
     // asm 00001956: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00001958: 	LDI	@_countdown,R0
     // asm 00001959: 	BGT	CCLP
+    if (_countdown > 0) {
+        goto CCLP;
+    }
 CCLPX:
     // *
     // *END CHOOSE CAR LOOP
     // *
     // asm 0000195A: 	LDI	1,R0
     // asm 0000195B: 	STI	R0,@CAR_CHOICE_GOTTEN
+    CAR_CHOICE_GOTTEN = 1;
     // asm 0000195C: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    (void)p;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "THE_CAR_CHOICE_PROC", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------
@@ -2215,60 +2246,111 @@ BABADUY4:
 
 // *----------------------------------------------------------------------------
 /* asm: CAR_ARRAY	.bss	CAR_ARRAY,4 */
-int CAR_ARRAY[4];
+OBJ* CAR_ARRAY[4];
 
 void GETTHECARS(void) {
+    const tCHOOSE_CAR_ENTRY* entry;
+    OBJ* obj;
+    c3x_reg_t radians;
+    int car_index;
+
     // asm 00001A27: 	LDF	@START_RADY,R2
     // asm 00001A28: 	LDI	@MATRIXAI,AR2
     // asm 00001A29: 	CALL	FIND_YMATRIX
+    MAME_ASSERT_FUNCTION_ENTRY();
+    FIND_YMATRIX(&MATRIXAI, C3X_REG(START_RADY));
+
     // asm 00001A2A: 	LDL	CAR_ARRAY,AR3
     // asm 00001A2B: 	LDI	@CCTABI,AR4
+    entry = CCTABI;
+
     // asm 00001A2C: 	CLRI	R4
+    car_index = 0;
+
 LISTLP:
     // asm 00001A2D: CALL	OBJ_GET
+    obj = OBJ_GET();
+
     // asm 00001A2E: 	LDI	@VECTORAI,AR2
     // asm 00001A2F: 	FLOAT	*AR4++,R1		;GET X POSITION
     // asm 00001A30: 	STF	R1,*+AR2(X)
+    VECTORAI.X = C3X_STF(C3X_FROM_INT(entry->x));
+
     // asm 00001A31: 	FLOAT	*AR4++,R1		;GET Y POSITION
     // asm 00001A32: 	STF	R1,*+AR2(Y)
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(entry->y));
+
     // asm 00001A33: 	FLOAT	*AR4++,R1		;GET Z POSITION
     // asm 00001A34: 	STF	R1,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(entry->z));
+
     // asm 00001A35: 	LDI	@MATRIXAI,R2
     // asm 00001A36: 	LDI	AR2,R3
     // asm 00001A37: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
+
     // asm 00001A38: 	LDF	*+AR2(X),R0
     // asm 00001A39: 	ADDF	@START_POS+X,R0
     // asm 00001A3A: 	STF	R0,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.X), C3X_REG(START_POS[0])));
+
     // asm 00001A3B: 	LDF	*+AR2(Y),R0
     // asm 00001A3C: 	ADDF	@START_POS+Y,R0
     // asm 00001A3D: 	STF	R0,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.Y), C3X_REG(START_POS[1])));
+
     // asm 00001A3E: 	LDF	*+AR2(Z),R0
     // asm 00001A3F: 	ADDF	@START_POS+Z,R0
     // asm 00001A40: 	STF	R0,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.Z), C3X_REG(START_POS[2])));
+
     // asm 00001A41: 	LDI	*AR4++,R0
     // asm 00001A42: 	STI	R0,*+AR0(OROMDATA)
+    obj->romdata = ROM_PTR(entry->romdata);
+
     // asm 00001A43: 	STI	AR0,*AR3++
+    CAR_ARRAY[car_index] = obj;
+
     // asm 00001A44: 	LDI	AR0,AR2
     // asm 00001A45: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
+
     // asm 00001A46: 	LDI	AR7,AR1
     // asm 00001A47: 	ADDI	PDATA,AR1
     // asm 00001A48: 	ADDI	R4,AR1
     // asm 00001A49: 	STI	AR0,*AR1
+    CURRENT_PROC->ctx->CHOOSE_TRANSMISSION_FRAME.cars[car_index] = obj;
+
     // asm 00001A4A: 	INC	R4
+    car_index++;
+
     // asm 00001A4B: 	LDF	*AR4++,R2
     // asm 00001A4C: 	ADDF	@START_RADY,R2
+    radians = C3X_ADD(C3X_LDF(entry->rady), C3X_REG(START_RADY));
+
     // asm 00001A4D: 	LDI	AR0,AR2
     // asm 00001A4E: 	ADDI	OMATRIX,AR2
     // asm 00001A4F: 	STF	R2,*+AR0(ORADY)
+    obj->rad.Y = C3X_STF(radians);
+
     // asm 00001A50: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&obj->omatrix, radians);
+
     // asm 00001A51: 	LDI	*AR4++,R0
     // asm 00001A52: 	STI	R0,*+AR0(OID)
+    obj->id = entry->oid;
+    MAME_ASSERT_REG(0x00001A53, "R0", &obj->id);
+
     // asm 00001A53: 	LDI	*AR4,R0
+    entry++;
+
     // asm 00001A54: 	CMPI	-1,R0
     // asm 00001A55: 	BNE	LISTLP
+    if (entry->x != -1) {
+        goto LISTLP;
+    }
+
     // asm 00001A56: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETTHECARS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2283,7 +2365,7 @@ LISTLP:
  */
 /* asm: SCS_TAB		.float	10,70,170,230 */
 /* asm: 	 */
-static c3x_f32_t SCS_TAB[] = {
+static const c3x_f32_t SCS_TAB[] = {
     C3X_F32_INIT(10.0f),
     C3X_F32_INIT(70.0f),
     C3X_F32_INIT(170.0f),
@@ -2291,8 +2373,18 @@ static c3x_f32_t SCS_TAB[] = {
 };
 
 void SHOW_CAR_STATISTICS(void) {
+    const char** text_cursor;
+    tSHADOW_TEXT text;
+    c3x_reg_t x;
+    c3x_reg_t y;
+    int text_index;
+
     // asm 00001A5C: 	LDI	@DCALL,R0
     // asm 00001A5D: 	RETSZ
+    MAME_ASSERT_FUNCTION_ENTRY();
+    if (DCALL == 0) {
+        return;
+    }
     // asm 00001A5E: 	PUSH	AR3
     // asm 00001A5F: 	PUSH	AR4
     // asm 00001A60: 	PUSH	AR5
@@ -2300,8 +2392,11 @@ void SHOW_CAR_STATISTICS(void) {
     // asm 00001A62: 	PUSH	AR7
     // asm 00001A63: 	LDI	@CHOSEN_VEHICLE,AR7
     // asm 00001A64: 	ADDI	@SCS_TABI,AR7
+    x = C3X_LDF(SCS_TAB[CHOSEN_VEHICLE]);
     // asm 00001A65: 	LDL	TITLES,AR5
+    text_cursor = TITLES;
     // asm 00001A66: 	LDI	5-1,AR3
+    text_index = 4;
 GBERLP:
     // asm 00001A67: LDI	*AR5++,AR2
     // asm 00001A68: 	LDF	*AR7,R2
@@ -2309,36 +2404,53 @@ GBERLP:
     // asm 00001A6A: 	FLOAT	AR3,R0
     // asm 00001A6B: 	MPYF	10,R0
     // asm 00001A6C: 	SUBF	R0,R3
+    y = C3X_SUB(C3X_FROM_INT(180), C3X_MUL(C3X_FROM_INT(text_index), C3X_IMM_F32(10)));
     // asm 00001A6D: 	LDI	1,RC
     // asm 00001A6E: 	CALL	TEXT_ADDDS
+    text = TEXT_ADDDS(*text_cursor++, x, y, 1);
     // asm 00001A6F: 	CALL	SETFIXEDFONTDS
+    SETFIXEDFONTDS(&text);
     // asm 00001A70: 	DBU	AR3,GBERLP
+    if (text_index-- > 0) {
+        goto GBERLP;
+    }
     // asm 00001A71: 	LDI	@CHOSEN_VEHICLE,AR5
     // asm 00001A72: 	ADDI	@TEXTTABSI,AR5
     // asm 00001A73: 	LDI	*AR5,AR5
+    text_cursor = TEXTTABSI[CHOSEN_VEHICLE];
     // asm 00001A74: 	LDI	5,AR3
+    text_index = 5;
     // asm 00001A75: GNNERLP
+GNNERLP:
     // asm 00001A75: 	LDI	*AR5++,AR2
     // asm 00001A76: 	LDF	*AR7,R2
     // asm 00001A77: 	ADDF	100,R2
+    x = C3X_ADD(C3X_LDF(SCS_TAB[CHOSEN_VEHICLE]), C3X_IMM_F32(100));
     // asm 00001A78: 	CMPI	6,AR3
     // asm 00001A79: 	LDFEQ	*AR7,R2
+    if (text_index == 6) {
+        x = C3X_LDF(SCS_TAB[CHOSEN_VEHICLE]);
+    }
     // asm 00001A7A: 	FLOAT	180,R3
     // asm 00001A7B: 	FLOAT	AR3,R0
     // asm 00001A7C: 	MPYF	10,R0
     // asm 00001A7D: 	SUBF	R0,R3
+    y = C3X_SUB(C3X_FROM_INT(180), C3X_MUL(C3X_FROM_INT(text_index), C3X_IMM_F32(10)));
     // asm 00001A7E: 	LDI	1,RC
     // asm 00001A7F: 	CALL	TEXT_ADDDS
+    text = TEXT_ADDDS(*text_cursor++, x, y, 1);
     // asm 00001A80: 	CALL	SETFIXEDFONTDS
+    SETFIXEDFONTDS(&text);
     // asm 00001A81: 	DBU	AR3,GNNERLP
+    if (text_index-- > 0) {
+        goto GNNERLP;
+    }
     // asm 00001A82: 	POP	AR7
     // asm 00001A83: 	POP	AR6
     // asm 00001A84: 	POP	AR5
     // asm 00001A85: 	POP	AR4
     // asm 00001A86: 	POP	AR3
     // asm 00001A87: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SHOW_CAR_STATISTICS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2444,26 +2556,49 @@ static void CLEANUP_DIMCAR_PALS(void) {
  *	IR1	INDEX OF VEHCILE
  *
  */
-static void GETTHECAR(void) {
+static void GETTHECAR(PROC* p, tPAL* raw_palette, int vehicle_id, int car_index) {
+    OBJ* car;
+    tPALETTE_CODE palette_code;
+    c3x_reg_t y;
+
     // asm 00001A9F: 	LDI	1,R0
     // asm 00001AA0: 	STI	R0,*AR2
+    MAME_ASSERT_FUNCTION_ENTRY();
+    raw_palette->flags_and_count = 1;
+
     // asm 00001AA1: 	CALL	PAL_ALLOC_RAW
+    palette_code = PAL_ALLOC_RAW(raw_palette);
+
     // asm 00001AA2: 	LDI	R0,R6
     // asm 00001AA3: 	LDI	AR3,AR2
     // asm 00001AA4: 	CALL	OBJ_FIND_FIRST
+    car = OBJ_FIND_FIRST(vehicle_id);
+
     // asm 00001AA5: 	BNC	$
+    SLOCKON(car == NULL, "INTRO\\GETTHECAR vehicle object not found");
+
     // asm 00001AA6: 	LDI	*+AR0(OFLAGS),R0
     // asm 00001AA7: 	OR	O_1PAL,R0
     // asm 00001AA8: 	STI	R0,*+AR0(OFLAGS)
+    car->flags |= O_1PAL;
+
     // asm 00001AA9: 	STI	R6,*+AR0(OPAL)
+    car->palette = palette_code;
+
     // asm 00001AAA: 	LDF	*+AR0(OPOSY),R0
+    y = C3X_LDF(car->pos.Y);
+
     // asm 00001AAB: 	STF	R0,*+AR7(IR0)
+    p->ctx->ROUNDER.car_desired_y[car_index] = C3X_STF(y);
+
     // asm 00001AAC: 	INC	IR0
     // asm 00001AAD: 	STF	R0,*+AR7(IR0)
+    p->ctx->ROUNDER.car_start_y[car_index] = C3X_STF(y);
+
     // asm 00001AAE: 	STF	R0,*+AR0(OUSR1)
+    car->usr1_as_float = C3X_STF(y);
+
     // asm 00001AAF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETTHECAR", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2474,70 +2609,115 @@ static void GETTHECAR(void) {
  *
  */
 void ROUNDER(PROC* p) {
+    OBJ* lift;
+    int new_car;
+    int old_car;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00001AB0: 	LDL	CAR1PAL,AR2
     // asm 00001AB1: 	LDI	481h,AR3
     // asm 00001AB2: 	LDI	RNDR_C1_DYH,IR0
     // asm 00001AB3: 	CALL	GETTHECAR
+    GETTHECAR(p, &CAR1PAL, 0x481, 0);
     // asm 00001AB4: 	LDL	CAR2PAL,AR2
     // asm 00001AB5: 	LDI	482h,AR3
     // asm 00001AB6: 	LDI	RNDR_C2_DYH,IR0
     // asm 00001AB7: 	CALL	GETTHECAR
+    GETTHECAR(p, &CAR2PAL, 0x482, 1);
     // asm 00001AB8: 	LDL	CAR3PAL,AR2
     // asm 00001AB9: 	LDI	483h,AR3
     // asm 00001ABA: 	LDI	RNDR_C3_DYH,IR0
     // asm 00001ABB: 	CALL	GETTHECAR
+    GETTHECAR(p, &CAR3PAL, 0x483, 2);
     // asm 00001ABC: 	LDL	CAR4PAL,AR2
     // asm 00001ABD: 	LDI	484h,AR3
     // asm 00001ABE: 	LDI	RNDR_C4_DYH,IR0
     // asm 00001ABF: 	CALL	GETTHECAR
+    GETTHECAR(p, &CAR4PAL, 0x484, 3);
     // asm 00001AC0: 	LDI	401h,AR2
     // asm 00001AC1: 	CALL	OBJ_FIND_FIRST
+    lift = OBJ_FIND_FIRST(0x401);
     // asm 00001AC2: 	LDF	*+AR0(OPOSY),R0
     // asm 00001AC3: 	STF	R0,*+AR7(RNDR_L1_DYH)
+    p->ctx->ROUNDER.lift_desired_y[0] = C3X_STF(C3X_LDF(lift->pos.Y));
     // asm 00001AC4: 	STF	R0,*+AR7(RNDR_L1_SYH)
+    p->ctx->ROUNDER.lift_start_y[0] = C3X_STF(C3X_LDF(lift->pos.Y));
     // asm 00001AC5: 	LDI	402h,AR2
     // asm 00001AC6: 	CALL	OBJ_FIND_FIRST
+    lift = OBJ_FIND_FIRST(0x402);
     // asm 00001AC7: 	LDF	*+AR0(OPOSY),R0
     // asm 00001AC8: 	STF	R0,*+AR7(RNDR_L2_DYH)
+    p->ctx->ROUNDER.lift_desired_y[1] = C3X_STF(C3X_LDF(lift->pos.Y));
     // asm 00001AC9: 	STF	R0,*+AR7(RNDR_L2_SYH)
+    p->ctx->ROUNDER.lift_start_y[1] = C3X_STF(C3X_LDF(lift->pos.Y));
     // asm 00001ACA: 	LDI	403h,AR2
     // asm 00001ACB: 	CALL	OBJ_FIND_FIRST
+    lift = OBJ_FIND_FIRST(0x403);
     // asm 00001ACC: 	LDF	*+AR0(OPOSY),R0
     // asm 00001ACD: 	STF	R0,*+AR7(RNDR_L3_DYH)
+    p->ctx->ROUNDER.lift_desired_y[2] = C3X_STF(C3X_LDF(lift->pos.Y));
     // asm 00001ACE: 	STF	R0,*+AR7(RNDR_L3_SYH)
+    p->ctx->ROUNDER.lift_start_y[2] = C3X_STF(C3X_LDF(lift->pos.Y));
     // asm 00001ACF: 	LDI	404h,AR2
     // asm 00001AD0: 	CALL	OBJ_FIND_FIRST
+    lift = OBJ_FIND_FIRST(0x404);
     // asm 00001AD1: 	LDF	*+AR0(OPOSY),R0
     // asm 00001AD2: 	STF	R0,*+AR7(RNDR_L4_DYH)
+    p->ctx->ROUNDER.lift_desired_y[3] = C3X_STF(C3X_LDF(lift->pos.Y));
     // asm 00001AD3: 	STF	R0,*+AR7(RNDR_L4_SYH)
+    p->ctx->ROUNDER.lift_start_y[3] = C3X_STF(C3X_LDF(lift->pos.Y));
     // asm 00001AD4: 	LDI	0,AR0
     // asm 00001AD5: 	LDF	0.5,R0
     // asm 00001AD6: 	CALL	CAR_DIMMER
+    CAR_DIMMER(0, C3X_IMM_F32(0.5));
     // asm 00001AD7: 	LDI	1,AR0
     // asm 00001AD8: 	LDF	0.5,R0
     // asm 00001AD9: 	CALL	CAR_DIMMER
+    CAR_DIMMER(1, C3X_IMM_F32(0.5));
     // asm 00001ADA: 	LDI	2,AR0
     // asm 00001ADB: 	LDF	0.5,R0
     // asm 00001ADC: 	CALL	CAR_DIMMER
+    CAR_DIMMER(2, C3X_IMM_F32(0.5));
     // asm 00001ADD: 	LDI	3,AR0
     // asm 00001ADE: 	LDF	0.5,R0
     // asm 00001ADF: 	CALL	CAR_DIMMER
+    CAR_DIMMER(3, C3X_IMM_F32(0.5));
     // asm 00001AE0: 	CALL	LIGHT_INIT
+    LIGHT_INIT();
     // asm 00001AE1: 	LDI	@CHOSEN_VEHICLE,R0
     // asm 00001AE2: 	STI	R0,@SPINCURR
+    SPINCURR = CHOSEN_VEHICLE;
     // asm 00001AE3: 	CLRI	R0
     // asm 00001AE4: 	STI	R0,*+AR7(PDATA)
+    p->ctx->ROUNDER.selected_car = 0;
 ROUNDERLP:
     // asm 00001AE5: 	LDI	@CHOSEN_VEHICLE,AR2
+    new_car = CHOSEN_VEHICLE;
     // asm 00001AE6: 	LDI	*+AR7(PDATA),R0
+    old_car = p->ctx->ROUNDER.selected_car;
     // asm 00001AE7: 	CMPI	R0,AR2
     // asm 00001AE8: 	BEQ	RLL
+    if (new_car == old_car) {
+        goto RLL;
+    }
     // asm 00001AE9: 	STI	AR2,*+AR7(PDATA)
+    p->ctx->ROUNDER.selected_car = new_car;
     // asm 00001AEA: 	LDI	@DCALL,R1
     // asm 00001AEB: 	BZ	NODO56
+    if (DCALL == 0) {
+        goto NODO56;
+    }
     // asm 00001AEC: 	PUSH	AR2
     // asm 00001AED: 	PUSH	R0
     // asm 00001AEE: 	SONDFX	HYDRO
+    SONDFX(HYDRO);
     // asm 00001AF0: 	POP	R0
     // asm 00001AF1: 	POP	AR2
 NODO56:
@@ -2548,13 +2728,16 @@ NODO56:
     // asm 00001AF6: 	LDF	*+AR7(IR0),R1
     // asm 00001AF7: 	DEC	IR0
     // asm 00001AF8: 	STF	R1,*+AR7(IR0)
+    p->ctx->ROUNDER.car_desired_y[old_car] = C3X_STF(C3X_LDF(p->ctx->ROUNDER.car_start_y[old_car]));
     // asm 00001AF9: 	PUSH	AR2
     // asm 00001AFA: 	LDI	R0,AR2
     // asm 00001AFB: 	CALL	LIGHT_OFF
+    LIGHT_OFF(old_car);
     // asm 00001AFC: 	POP	AR2
     // asm 00001AFD: 	LDI	R0,AR0
     // asm 00001AFE: 	LDF	0.5,R0
     // asm 00001AFF: 	CALL	CAR_DIMMER
+    CAR_DIMMER(old_car, C3X_IMM_F32(0.5));
     // asm 00001B00: 	LDI	AR2,IR0
     // asm 00001B01: 	MPYI	C_SIZE,IR0
     // asm 00001B02: 	ADDI	C_STRT,IR0
@@ -2564,20 +2747,22 @@ NODO56:
     // asm 00001B06: 	FLOAT	300,R1
     // asm 00001B07: 	SUBF	R1,R0
     // asm 00001B08: 	STF	R0,*+AR7(IR0)
+    p->ctx->ROUNDER.car_desired_y[new_car] = C3X_STF(C3X_SUB(C3X_LDF(p->ctx->ROUNDER.car_start_y[new_car]), C3X_FROM_INT(300)));
     // asm 00001B09: 	PUSH	AR2
     // asm 00001B0A: 	CALL	LIGHT_ON
+    LIGHT_ON(new_car);
     // asm 00001B0B: 	POP	AR2
     // asm 00001B0C: 	LDI	AR2,AR0
     // asm 00001B0D: 	LDF	1.0,R0
     // asm 00001B0E: 	CALL	CAR_DIMMER
+    CAR_DIMMER(new_car, C3X_IMM_F32(1.0));
 RLL:
     // asm 00001B0F: 	CALL	AFFECT_THE_CARS
+    AFFECT_THE_CARS(p);
     // asm 00001B10: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00001B12: 	BU	ROUNDERLP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    (void)p;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROUNDER", 0, 0);
-    UNIMPL();
+    goto ROUNDERLP;
 }
 
 // *----------------------------------------------------------------------------
@@ -2596,26 +2781,33 @@ RLL:
  *
  *
  */
-static void AFFECT_THE_CARS(void) {
+static void AFFECT_THE_CARS(PROC* p) {
     // asm 00001B13: 	LDI	481h,AR2
     // asm 00001B14: 	LDI	RNDR_C1_DYH,IR0
     // asm 00001B15: 	LDI	0,IR1
     // asm 00001B16: 	CALL	AFFECTED_CAR
+    MAME_ASSERT_FUNCTION_ENTRY();
+    AFFECTED_CAR(p, 0x481, 0);
+
     // asm 00001B17: 	LDI	482h,AR2
     // asm 00001B18: 	LDI	RNDR_C2_DYH,IR0
     // asm 00001B19: 	LDI	1,IR1
     // asm 00001B1A: 	CALL	AFFECTED_CAR
+    AFFECTED_CAR(p, 0x482, 1);
+
     // asm 00001B1B: 	LDI	483h,AR2
     // asm 00001B1C: 	LDI	RNDR_C3_DYH,IR0
     // asm 00001B1D: 	LDI	2,IR1
     // asm 00001B1E: 	CALL	AFFECTED_CAR
+    AFFECTED_CAR(p, 0x483, 2);
+
     // asm 00001B1F: 	LDI	484h,AR2
     // asm 00001B20: 	LDI	RNDR_C4_DYH,IR0
     // asm 00001B21: 	LDI	3,IR1
     // asm 00001B22: 	CALL	AFFECTED_CAR
+    AFFECTED_CAR(p, 0x484, 3);
+
     // asm 00001B23: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AFFECT_THE_CARS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2652,7 +2844,7 @@ NSCD:
     // asm 00001B31: 	RS	16,R0
     // asm 00001B32: 	AND	SW_VIEW0_H|SW_VIEW1_H,R0
     // asm 00001B33: 	BZ	SETAS_ORIGINALS
-    // asm 00001B34: SETAS_HIDDEN
+SETAS_HIDDEN:
     // asm 00001B34: 	LDI	@IS_HIDDEN,R0
     // asm 00001B35: 	CMPI	-1,R0
     // asm 00001B36: 	CALLNE	RESET_ORIGINAL
@@ -2681,14 +2873,15 @@ SETAS_ORIGINALS:
     // asm 00001B49: 	LDI	-1,R0
     // asm 00001B4A: 	STI	R0,@IS_HIDDEN
     // asm 00001B4B: 	BU	HIDDEN_VEHICLES_LP
-    // *PARAMETERS
-    // *	R0	INDEX OF PREVIOUS VEHICLES
-    // *
+
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HIDDEN_VEHICLES", 0, 0);
     UNIMPL();
 }
 
+// *PARAMETERS
+// *	R0	INDEX OF PREVIOUS VEHICLES
+// *
 static void RESET_ORIGINAL(void) {
     // 	;insert code here to set the old vehicle
     // 	;as
@@ -2726,79 +2919,127 @@ int SPINCURR;
  *
  *
  */
-static void AFFECTED_CAR(void) {
+static void AFFECTED_CAR(PROC* p, int vehicle_id, int car_index) {
+    OBJ* car;
+    OBJ* lift;
+    c3x_reg_t car_y;
+    c3x_reg_t angle;
+    c3x_reg_t angle_delta;
+    int chosen_vehicle;
+
     // asm 00001B59: 	CALL	OBJ_FIND_FIRST
+    MAME_ASSERT_FUNCTION_ENTRY();
+    car = OBJ_FIND_FIRST(vehicle_id);
     // asm 00001B5A: 	LDF	*+AR0(OPOSY),R0
+    car_y = C3X_LDF(car->pos.Y);
     // asm 00001B5B: 	LDF	*+AR7(IR0),R1
     // asm 00001B5C: 	SUBF	R0,R1,R0
     // asm 00001B5D: 	MPYF	0.15,R0
     // asm 00001B5E: 	ADDF	*+AR0(OPOSY),R0
+    car_y = C3X_ADD(C3X_MUL(C3X_SUB(C3X_LDF(p->ctx->ROUNDER.car_desired_y[car_index]), car_y), C3X_IMM_F32(0.15)), C3X_LDF(car->pos.Y));
     // asm 00001B5F: 	STF	R0,*+AR0(OPOSY)
+    car->pos.Y = C3X_STF(car_y);
     // asm 00001B60: 	PUSH	IR0
     // asm 00001B61: 	PUSH	AR0
     // asm 00001B62: 	LDI	AR0,AR1
     // asm 00001B63: 	SUBI	080h,AR2
     // asm 00001B64: 	CALL	OBJ_FIND_FIRST
+    lift = OBJ_FIND_FIRST(vehicle_id - 0x80);
     // asm 00001B65: 	LDF	*+AR1(OPOSY),R0
+    car_y = C3X_LDF(car->pos.Y);
     // asm 00001B66: 	INC	IR0
     // asm 00001B67: 	SUBF	*+AR7(IR0),R0
+    car_y = C3X_SUB(car_y, C3X_LDF(p->ctx->ROUNDER.car_start_y[car_index]));
     // asm 00001B68: 	ADDI	C_OFF2LIFT,IR0
     // asm 00001B69: 	ADDF	*+AR7(IR0),R0
+    car_y = C3X_ADD(car_y, C3X_LDF(p->ctx->ROUNDER.lift_desired_y[car_index]));
     // asm 00001B6A: 	STF	R0,*+AR0(OPOSY)
+    lift->pos.Y = C3X_STF(car_y);
     // asm 00001B6B: 	POP	AR0
     // asm 00001B6C: 	POP	IR0
     // asm 00001B6D: 	LDI	@SPINCURR,R0
     // asm 00001B6E: 	LDI	@CHOSEN_VEHICLE,R1
+    chosen_vehicle = CHOSEN_VEHICLE;
     // asm 00001B6F: 	CMPI	R0,R1
     // asm 00001B70: 	BEQ	IBOIBO
+    if (chosen_vehicle == SPINCURR) {
+        goto IBOIBO;
+    }
     // asm 00001B71: 	CMPI	R0,IR1
     // asm 00001B72: 	BNE	N12
+    if (car_index != SPINCURR) {
+        goto N12;
+    }
     // 	;track to PI
     // asm 00001B73: 	LDF	*+AR0(ORADY),R2
+    angle = C3X_LDF(car->rady);
     // asm 00001B74: 	LDLF	0.392699,R1
     // asm 00001B75: 	ADDF	R1,R2
+    angle = C3X_ADD(angle, C3X_F32(0.392699)); // c3x-lint: full-precision -- LDLF long immediate
     // asm 00001B76: 	CALL	NORMITS
+    angle = NORMITS(angle);
     // asm 00001B77: 	LDF	PI,R0
     // asm 00001B78: 	ADDF	@START_RADY,R0
+    angle_delta = C3X_ADD(C3X_IMM_F32(PI), C3X_REG(START_RADY));
     // asm 00001B79: 	PUSHFL	R2
     // asm 00001B7B: 	LDF	R0,R2
     // asm 00001B7C: 	CALL	NORMITS
+    angle_delta = NORMITS(angle_delta);
     // asm 00001B7D: 	LDF	R2,R0
     // asm 00001B7E: 	POPFL	R2
     // asm 00001B80: 	CALL	GETTHETADIFF
+    angle_delta = GETTHETADIFF(angle_delta, angle);
     // asm 00001B81: 	PUSHFL	R2
     // asm 00001B83: 	LDF	R0,R2
     // asm 00001B84: 	CALL	NORMITS
+    angle_delta = NORMITS(angle_delta);
     // asm 00001B85: 	LDF	R2,R0
     // asm 00001B86: 	POPFL	R2
     // asm 00001B88: 	CMPF	0.04,R0
     // asm 00001B89: 	BLT	DOALL
+    if (C3X_LT(angle_delta, C3X_IMM_F32(0.04))) {
+        goto DOALL;
+    }
     // asm 00001B8A: 	MPYF	0.10,R0
+    angle_delta = C3X_MUL(angle_delta, C3X_IMM_F32(0.10));
     // asm 00001B8B: 	ADDF	R0,R2
+    angle = C3X_ADD(angle, angle_delta);
     // asm 00001B8C: 	BU	IBO45
+    goto IBO45;
 DOALL:
     // asm 00001B8D: ADDF	R0,R2
+    angle = C3X_ADD(angle, angle_delta);
     // asm 00001B8E: 	LDI	@CHOSEN_VEHICLE,R1
+    chosen_vehicle = CHOSEN_VEHICLE;
     // asm 00001B8F: 	STI	R1,@SPINCURR
+    SPINCURR = chosen_vehicle;
 IBO45:
     // asm 00001B90: STF	R2,*+AR0(ORADY)
+    car->rady = C3X_STF(angle);
     // asm 00001B91: 	LDI	AR0,AR2
     // asm 00001B92: 	ADDI	OMATRIX,AR2
     // asm 00001B93: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&car->omatrix, angle);
 IBOIBO:
     // asm 00001B94: CMPI	R1,IR1
     // asm 00001B95: 	BNE	N12
+    if (car_index != chosen_vehicle) {
+        goto N12;
+    }
     // 	;just spin
     // asm 00001B96: 	LDF	*+AR0(ORADY),R2
+    angle = C3X_LDF(car->rady);
     // asm 00001B97: 	ADDF	0.1,R2
+    angle = C3X_ADD(angle, C3X_IMM_F32(0.1));
     // asm 00001B98: 	STF	R2,*+AR0(ORADY)
+    car->rady = C3X_STF(angle);
     // asm 00001B99: 	LDI	AR0,AR2
     // asm 00001B9A: 	ADDI	OMATRIX,AR2
     // asm 00001B9B: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&car->omatrix, angle);
 N12:
     // asm 00001B9C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "AFFECTED_CAR", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -2811,7 +3052,7 @@ N12:
  *	R0	(FL) DIMMER VALUE
  *
  */
-static void CAR_DIMMER(void) {
+static void CAR_DIMMER(int car_index, c3x_reg_t dimmer) {
     // asm 00001B9D: 	LDI	AR0,AR1
     // asm 00001B9E: 	ADDI	@CARPAL_TABLEI,AR1
     // asm 00001B9F: 	LDI	*AR1,AR1		;NOW HOLDS RAM LOCATION
@@ -2820,30 +3061,42 @@ static void CAR_DIMMER(void) {
     // asm 00001BA2: 	ADDI	@PALROMI,AR0
     // asm 00001BA3: 	LDI	*AR0,AR0
     // asm 00001BA4: 	CALL	PAL_DIMMER
+    MAME_ASSERT_FUNCTION_ENTRY();
+    PAL_DIMMER(PALROMI[CARSRCPAL_TAB[car_index]], CARPAL_TABLE[car_index], dimmer);
+
     // asm 00001BA5: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAR_DIMMER", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
+
+/* asm: 	.include	glight.pal */
 
 // *----------------------------------------------------------------------------
 static void LIGHT_INIT(void) {
     // asm 00001C27: 	PUSH	AR2
     // asm 00001C28: 	LDL	flour_lghtof,AR2
     // asm 00001C29: 	CALL	PAL_ALLOC_RAW
+    MAME_ASSERT_FUNCTION_ENTRY();
+    PAL_ALLOC_RAW((tPAL*)ROM_PTR(flour_lghtof_ROM));
+
     // asm 00001C2A: 	LDI	0,AR2
     // asm 00001C2B: 	CALL	LIGHT_OFF
+    LIGHT_OFF(0);
+
     // asm 00001C2C: 	LDI	1,AR2
     // asm 00001C2D: 	CALL	LIGHT_OFF
+    LIGHT_OFF(1);
+
     // asm 00001C2E: 	LDI	2,AR2
     // asm 00001C2F: 	CALL	LIGHT_OFF
+    LIGHT_OFF(2);
+
     // asm 00001C30: 	LDI	3,AR2
     // asm 00001C31: 	CALL	LIGHT_OFF
+    LIGHT_OFF(3);
+
     // asm 00001C32: 	POP	AR2
     // asm 00001C33: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LIGHT_INIT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2856,31 +3109,43 @@ static void LIGHT_INIT(void) {
  *	AR2	INDEX  (0 to 3)
  *
  */
-static void LIGHT_OFF(void) {
+static void LIGHT_OFF(int car_index) {
+    OBJ* lift;
+    OBJ* light;
+
     // asm 00001C34: 	PUSH	R0
     // asm 00001C35: 	PUSH	AR0
     // asm 00001C36: 	PUSH	AR2
     // asm 00001C37: 	ADDI	601h,AR2
     // asm 00001C38: 	PUSH	AR2
     // asm 00001C39: 	CALL	OBJ_FIND_FIRST
+    MAME_ASSERT_FUNCTION_ENTRY();
+    light = OBJ_FIND_FIRST(car_index + 0x601);
+
     // asm 00001C3A: 	LDL	flour_lghtof,AR2
     // asm 00001C3B: 	CALL	PAL_FIND_RAW
     // asm 00001C3C: 	STI	R0,*+AR0(OPAL)
+    light->palette = PAL_FIND_RAW((tPAL*)ROM_PTR(flour_lghtof_ROM));
+
     // asm 00001C3D: 	LDI	*+AR0(OFLAGS),R0
     // asm 00001C3E: 	OR	O_1PAL,R0
     // asm 00001C3F: 	STI	R0,*+AR0(OFLAGS)
+    light->flags |= O_1PAL;
+
     // asm 00001C40: 	POP	AR2
     // asm 00001C41: 	SUBI	200h,AR2
     // asm 00001C42: 	CALL	OBJ_FIND_FIRST
+    lift = OBJ_FIND_FIRST(car_index + 0x401);
+
     // asm 00001C43: 	LDI	*+AR0(OFLAGS),R0
     // asm 00001C44: 	ANDN	O_1PAL,R0
     // asm 00001C45: 	STI	R0,*+AR0(OFLAGS)
+    lift->flags &= ~O_1PAL;
+
     // asm 00001C46: 	POP	AR2
     // asm 00001C47: 	POP	AR0
     // asm 00001C48: 	POP	R0
     // asm 00001C49: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LIGHT_OFF", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2891,26 +3156,36 @@ static void LIGHT_OFF(void) {
  *as above
  *
  */
-static void LIGHT_ON(void) {
+static void LIGHT_ON(int car_index) {
+    OBJ* lift;
+    OBJ* light;
+
     // asm 00001C4A: 	PUSH	R0
     // asm 00001C4B: 	PUSH	AR0
     // asm 00001C4C: 	PUSH	AR2
     // asm 00001C4D: 	ADDI	601h,AR2
     // asm 00001C4E: 	CALL	OBJ_FIND_FIRST
+    MAME_ASSERT_FUNCTION_ENTRY();
+    light = OBJ_FIND_FIRST(car_index + 0x601);
+
     // asm 00001C4F: 	LDI	*+AR0(OFLAGS),R0
     // asm 00001C50: 	ANDN	O_1PAL,R0
     // asm 00001C51: 	STI	R0,*+AR0(OFLAGS)
+    light->flags &= ~O_1PAL;
+
     // asm 00001C52: 	SUBI	200h,AR2
     // asm 00001C53: 	CALL	OBJ_FIND_FIRST
+    lift = OBJ_FIND_FIRST(car_index + 0x401);
+
     // asm 00001C54: 	LDI	*+AR0(OFLAGS),R0
     // asm 00001C55: 	ANDN	O_1PAL,R0
     // asm 00001C56: 	STI	R0,*+AR0(OFLAGS)
+    lift->flags &= ~O_1PAL;
+
     // asm 00001C57: 	POP	AR2
     // asm 00001C58: 	POP	AR0
     // asm 00001C59: 	POP	R0
     // asm 00001C5A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LIGHT_ON", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2970,7 +3245,7 @@ void GETCHOICE(void) {
     // asm 00001C6F: 	ADDF	@STEERMN,R2		;ADD IN MINIMUM
     desired_wheel = C3X_ADD(
         C3X_ADD(C3X_MUL(zone_width, C3X_FROM_INT(POSE)),
-                C3X_MUL(zone_width, C3X_IMM_F32(0.5))),
+            C3X_MUL(zone_width, C3X_IMM_F32(0.5))),
         C3X_LDF(STEERMN));
     /* A keyboard key-down represents one wheel detent. Place the virtual
        analog wheel just beyond the original 60% hysteresis threshold; after
@@ -2984,7 +3259,8 @@ void GETCHOICE(void) {
     }
     // asm 00001C70: 	CMPI	MINIT,R4
     // asm 00001C71: 	BEQ	GETCHA
-    if ((_MODE & MMODE) == MINIT) goto GETCHA;
+    if ((_MODE & MMODE) == MINIT)
+        goto GETCHA;
     // asm 00001C72: 	STF	R2,@WHEELPOS
     WHEELPOS = C3X_STF(desired_wheel);
 GETCHA:
@@ -2994,20 +3270,22 @@ GETCHA:
     // asm 00001C75: 	MPYF	0.6,R0		   	;SLIGHT HYSTERESIS
     // asm 00001C76: 	CMPF	R0,R3
     // asm 00001C77: 	BLE	GETCHX
-    if (C3X_LE(difference, C3X_MUL(zone_width, C3X_IMM_F32(0.6)))) goto GETCHX;
+    if (C3X_LE(difference, C3X_MUL(zone_width, C3X_IMM_F32(0.6))))
+        goto GETCHX;
     // asm 00001C78: 	LDF	R2,R2
     // asm 00001C79: 	LDILT	1,R0
     // asm 00001C7A: 	LDIGE	-1,R0
     // asm 00001C7B: 	ADDI	@POSE,R0		;CHOSEN_VEHICLE,R0
-    int new_pose = POSE +
-        (C3X_LT(C3X_SUB(desired_wheel, C3X_FROM_INT(_pot0)), C3X_FROM_INT(0)) ? 1 : -1);
+    int new_pose = POSE + (C3X_LT(C3X_SUB(desired_wheel, C3X_FROM_INT(_pot0)), C3X_FROM_INT(0)) ? 1 : -1);
     // asm 00001C7C: 	LDFLT	0,R0
     // asm 00001C7D: 	CMPI	@POSES,R0
-    if (new_pose < 0) new_pose = 0;
+    if (new_pose < 0)
+        new_pose = 0;
     // asm 00001C7E: 	BLT	GETCH1
     // asm 00001C7F: 	LDI	@POSES,R0
     // asm 00001C80: 	SUBI	1,R0
-    if (new_pose >= POSES) new_pose = POSES - 1;
+    if (new_pose >= POSES)
+        new_pose = POSES - 1;
 GETCH1:
     // asm 00001C81: STI	R0,@POSE
     POSE = new_pose;
@@ -3044,9 +3322,11 @@ int PEDALCHK(int* pedal_released) {
     }
     // asm 00001C8C: 	LDI	R5,R5				;IF the pedal has not yet been released
     // asm 00001C8D: 	BZ	PEDALTRUE			;up do not accept this as a valid pedal choice
-    if (*pedal_released == 0) goto PEDALTRUE;
+    if (*pedal_released == 0)
+        goto PEDALTRUE;
 SKIPKEY:
-    // asm 00001C8E: PEDALFALSE
+
+PEDALFALSE:
     // asm 00001C8E: 	CLRC
     // asm 00001C8F: 	RETS
     return 0;
@@ -3443,15 +3723,25 @@ IT_E2:
 int LASTCHOICE;
 
 void DIAL_ROUT(void) {
+    int chosen_vehicle;
+
     // asm 00001D52: 	LDI	@POSE,AR2
+    MAME_ASSERT_FUNCTION_ENTRY();
+    chosen_vehicle = POSE;
     // asm 00001D53: 	CMPI	0,AR2
     // asm 00001D54: 	LDILT	0,AR2
+    if (chosen_vehicle < 0) {
+        chosen_vehicle = 0;
+    }
     // asm 00001D55: 	CMPI	3,AR2
     // asm 00001D56: 	LDIGT	3,AR2
+    if (chosen_vehicle > 3) {
+        chosen_vehicle = 3;
+    }
     // asm 00001D57: 	STPI	AR2,@CHOSEN_VEHICLE
+    CHOSEN_VEHICLE = chosen_vehicle;
+    MAME_ASSERT_REG(0x00001D58, "AR2", &CHOSEN_VEHICLE);
     // asm 00001D58: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAL_ROUT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -4043,8 +4333,7 @@ KFFDA:
     // asm 00001E38: 	READAUD	AUD_TOTAL_TIME
     // asm 00001E3A: 	ADDI	R0,R2
     // asm 00001E3B: 	SETAUD	AUD_TOTAL_TIME
-    total_time = READAUD(AUD_TOTAL_TIME) +
-        C3X_FIX(C3X_MUL(C3X_LDF(GAME_TIMER), C3X_IMM_F32(100)));
+    total_time = READAUD(AUD_TOTAL_TIME) + C3X_FIX(C3X_MUL(C3X_LDF(GAME_TIMER), C3X_IMM_F32(100)));
     SETAUD(AUD_TOTAL_TIME, total_time);
     // asm 00001E3D: 	READAUD	AUD_NUM_BUYINS
     // asm 00001E3F: 	LDI	R0,R1
@@ -4244,8 +4533,7 @@ CHECKHIT:
     // asm 00001EB5: 	AND	R1,R0
     // asm 00001EB6: 	CMPI	R1,R0
     // asm 00001EB7: 	BNE	NOSECRET_CRUISE
-    if ((SWITCHBUTS & (SW_RADIO | SW_VIEW0 | SW_VIEW1 | SW_VIEW2)) !=
-        (SW_RADIO | SW_VIEW0 | SW_VIEW1 | SW_VIEW2))
+    if ((SWITCHBUTS & (SW_RADIO | SW_VIEW0 | SW_VIEW1 | SW_VIEW2)) != (SW_RADIO | SW_VIEW0 | SW_VIEW1 | SW_VIEW2))
         goto NOSECRET_CRUISE;
     // asm 00001EB8: 	LDI	RM_USA,R0
     // asm 00001EB9: 	STI	R0,@RACE_MODE

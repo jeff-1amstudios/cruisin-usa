@@ -103,13 +103,32 @@ set(CRUSN_SOURCES
   src/platform/sdl_video.c
 )
 
+add_library(miniz STATIC
+  lib/miniz/miniz.c
+  lib/miniz/miniz_tdef.c
+  lib/miniz/miniz_tinfl.c
+  lib/miniz/miniz_zip.c
+)
+include(GenerateExportHeader)
+generate_export_header(miniz)
+target_compile_definitions(miniz PUBLIC MINIZ_STATIC_DEFINE)
+target_include_directories(miniz PUBLIC lib/miniz ${CMAKE_CURRENT_BINARY_DIR})
+
 add_executable(crusn)
 target_sources(crusn PRIVATE ${CRUSN_SOURCES})
+target_link_libraries(crusn PRIVATE miniz)
 
 add_custom_target(check-c3x-translation
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/check_c3x_translation.py
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   COMMENT "Checking translated C3X floating-point operations"
+  VERBATIM
+)
+
+add_custom_target(check-asm-source-sync
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/check_asm_source_sync.py
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMENT "Checking ordered ASM source comments"
   VERBATIM
 )
 

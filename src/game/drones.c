@@ -2395,7 +2395,7 @@ static int MODELTAB[] = {
 };
 /* asm: TEXTTABS	.word	VETETXT,RODRTXT,BULLTXT,FERRTXT */
 /* asm: 	 */
-static const char** TEXTTABS[] = {
+const char** TEXTTABS[] = {
     VETETXT,
     RODRTXT,
     BULLTXT,

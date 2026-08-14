@@ -716,10 +716,18 @@ typedef struct PROC_CONTEXT {
 
     struct {
         int loop_count;
+        OBJ* cars[4]; // PDATA..PDATA+3 populated by GETTHECARS
     } CHOOSE_TRANSMISSION_FRAME;
     struct {
         int loop_count;
     } OPEN_DOOR_PROC_FRAME;
+    struct {
+        int selected_car;
+        c3x_f32_t car_desired_y[4];
+        c3x_f32_t car_start_y[4];
+        c3x_f32_t lift_desired_y[4];
+        c3x_f32_t lift_start_y[4];
+    } ROUNDER;
 
     /* These coroutine frames may be nested below another logical process, so
        they cannot share the function-local union below. */

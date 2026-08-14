@@ -27,6 +27,7 @@ extern int _ATTR_MODE;
 extern const char* TITLES[];
 
 #define TEXTTABSI TEXTTABS
+extern const char** TEXTTABS[];
 
 // attrdrne.asm
 // asm:  .globl ATTRWAVE,LOAD_ATTR_LEG
@@ -774,7 +775,7 @@ void BABE_TROPHY(void);
 void BABE_WAVEFLAG(PROC* p);
 
 // asm:  .globl LOAD_SINGLE_SECTION_OFFSET
-void LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
+OBJ* LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
 
 // asm:  .globl FIND_STARTING_VALUES
 void FIND_STARTING_VALUES(void);

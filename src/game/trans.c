@@ -331,7 +331,8 @@ CTLPX:
     // asm 00005AA2: 	STI	R0,@CHOSEN_VEHICLE
     CHOSEN_VEHICLE = 1;
     // asm 00005AA3: 	CREATE	ROUNDER,UTIL_C|CHOOSECAR_T
-    CREATE(ROUNDER, UTIL_C | CHOOSECAR_T, NULL);
+    child_ctx = port_malloc(sizeof(*child_ctx));
+    CREATE(ROUNDER, UTIL_C | CHOOSECAR_T, child_ctx);
     // asm 00005AA6: 	CLRF	R0
     // asm 00005AA7: 	STF	R0,@DOORTHETA
     DOORTHETA = C3X_STF(C3X_FROM_INT(0));
@@ -348,6 +349,7 @@ CTLPX:
 // *----------------------------------------------------------------------------
 static void OPEN_DOOR_PROC(PROC* p) {
     c3x_reg_t camera_component;
+    PROC_CONTEXT* car_choice_ctx;
 
     switch (PROC_RESUME_STATE) {
     case 0:
@@ -359,7 +361,8 @@ static void OPEN_DOOR_PROC(PROC* p) {
     }
 
     // asm 00005AB4: 	CREATE	THE_CAR_CHOICE_PROC,UTIL_C
-    CREATE(THE_CAR_CHOICE_PROC, UTIL_C, NULL);
+    car_choice_ctx = port_malloc(sizeof(*car_choice_ctx));
+    CREATE(THE_CAR_CHOICE_PROC, UTIL_C, car_choice_ctx);
     // asm 00005AB7: 	LDI	@VECTORCI,AR2
     // asm 00005AB8: 	CLRF	R0
     // asm 00005AB9: 	STF	R0,*+AR2(X)

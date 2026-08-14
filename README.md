@@ -81,6 +81,9 @@ Dependencies:
 - A C11 compiler
 - Python 3
 
+ZIP support is provided by the vendored [miniz 3.1.2](lib/miniz/UPSTREAM.md);
+no system zlib installation is required.
+
 ```sh
 cmake -S . -B build
 cmake --build build
@@ -95,10 +98,10 @@ cmake --build build --target check-c3x-translation
 ## Running
 
 This project does not include arcade ROMs or missing game assets. Supply a
-legally obtained version 4.5 main-data image at:
+legally obtained version 4.5 MAME ROM set at:
 
 ```text
-roms/crusnusa45_maindata_interleaved.bin
+roms/crusnusa.zip
 ```
 
 Run the game from the repository root. Free play is enabled by default and MAME

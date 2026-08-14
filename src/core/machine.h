@@ -7,6 +7,7 @@
 
 enum {
 
+    CRUSN_PROGRAM_ROM_WORDS = 0x80000,
     CRUSN_ROM_WORDS = 0x280000,
     CRUSN_WAVERAM_WORDS = 0x1FFFFF,
     CRUSN_SCREEN_WIDTH = 512,
@@ -45,12 +46,13 @@ typedef struct crusn_machine {
 } crusn_machine;
 
 extern crusn_machine* g_crusn_machine;
-extern s32 crusn_rom_words[CRUSN_ROM_WORDS];
+extern u32 crusn_rom_words[CRUSN_ROM_WORDS];
 extern s32 crusn_waveram[CRUSN_WAVERAM_WORDS];
 
 #define crusn_mem_rd32(ADDR) crusn_mem_rd32_map(&g_crusn_machine->memory, (ADDR))
 #define crusn_mem_wr32(ADDR, VALUE) crusn_mem_wr32_map(&g_crusn_machine->memory, (ADDR), (VALUE))
-#define ROM_PTR(SYM) (&crusn_rom_words[(size_t)((word_addr_t)(SYM) - CRUSN_ROM_BASE)])
+/* Program-space addresses alias the first bank of the ROM's 0xC00000 data-space window. */
+#define ROM_PTR(SYM) (&crusn_rom_words[(size_t)((word_addr_t)(SYM) % CRUSN_ROM_BASE)])
 #define WAVERAM_PTR(SYM) (&crusn_waveram[(size_t)((word_addr_t)(SYM) - CRUSN_WAVERAM_BASE)])
 #define COLOROM_ADDR(ADDR) crusn_machine_colorram_addr((word_addr_t)(ADDR))
 

@@ -59,7 +59,7 @@ static void TRAIN_FWRD_MAKEB(void);
 static void TRAIN_FWRD_MAKE(OBJ* obj /*AR4*/);
 static void TRAIN_FWRDB(void);
 static void TRAIN_FWRD(PROC* p);
-void LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
+OBJ* LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
 
 #define NEW_GROUPI NEW_GROUP
 #define DGROUPSI DGROUPS
@@ -3033,8 +3033,13 @@ TRAINX:
  *
  *
  */
-void LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/) {
-    (void)rom_group;
+OBJ* LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/) {
+    const u32* rom_cursor;
+    OBJ* obj;
+    OBJ** next_link;
+    int count;
+    u32 model_rom_addr, id;
+
     // asm 000044CC: 	PUSH	R4
     // asm 000044CD: 	PUSH	R5
     // asm 000044CE: 	PUSH	AR0
@@ -3045,60 +3050,117 @@ void LOAD_SINGLE_SECTION_OFFSET(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/) {
     // asm 000044D3: 	PUSH	AR7
     // asm 000044D4: 	LDL	SINGLE_SECTION_TEMPPTR,AR6
     // asm 000044D5: 	SUBI	OLINK2,AR6
+    next_link = &SINGLE_SECTION_TEMPPTR;
+
     // asm 000044D6: 	LDI	AR2,AR5
     // asm 000044D7: 	INC	AR5
     // asm 000044D8: 	LDI	*AR5++,R4		;get number of objects to load
+    rom_cursor = (const u32*)rom_group + 1;
+    count = (int)crusn_read_u32(&rom_cursor); // ;get number of objects to load
+    MAME_ASSERT_REG(0x000044D9, "R4", &count);
+
     // asm: 	SLOCKON	LE,"BACKGRND\LOAD_SINGLE_SECTION GROUP ERROR"
+    SLOCKON(count <= 0, "BACKGRND\\LOAD_SINGLE_SECTION GROUP ERROR");
+
     // asm 000044D9: 	DEC	R4
+    count--;
+
     // asm 000044DA: 	LDF	@START_RADY,R2
     // asm 000044DB: 	LDI	@MATRIXAI,AR2
     // asm 000044DC: 	CALL	HPFIND_YMATRIX
+    HPFIND_YMATRIX(&MATRIXAI, C3X_REG(START_RADY));
+
     // asm 000044DD: 	CMPI	@OFREECNT,R4
     // asm: 	SLOCKON	GT,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS"
+    SLOCKON(count > OFREECNT, "BACKGRND\\LOAD_SINGLE_SECTION OUT OF OBJECTS");
+
 LS_L12O:
     // asm 000044DE: 	LDI	*AR5++,AR2		;GET MODEL PTR
     // asm 000044DF: 	CALL	OBJ_GETE
+    model_rom_addr = crusn_read_u32(&rom_cursor);
+    obj = OBJ_GETE(ROM_PTR(model_rom_addr)); // ;GET MODEL PTR
+
     // asm: 	SLOCKON	C,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS *FATAL*"
+    SLOCKON(obj == NULL, "BACKGRND\\LOAD_SINGLE_SECTION OUT OF OBJECTS *FATAL*");
+
     // asm 000044E0: 	BC	LS_ACTIVATE_XO
+    if (obj == NULL) {
+        goto LS_ACTIVATE_XO;
+    }
+
     // asm 000044E1: 	LDI	AR0,AR4
     // asm 000044E2: 	STI	AR4,*+AR6(OLINK2)
+    *next_link = obj;
+
     // asm 000044E3: 	LDI	AR4,AR6
+    next_link = (OBJ**)&obj->link2;
+
     // asm 000044E4: 	LDI	@VECTORAI,AR2
     // asm 000044E5: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 000044E6: 	STF	R1,*+AR2(X)
+    VECTORAI.X = C3X_STF(C3X_FROM_INT(crusn_read_s32(&rom_cursor)));
+
     // asm 000044E7: 	FLOAT	*AR5++,R1		;GET Y POSITION
     // asm 000044E8: 	STF	R1,*+AR2(Y)
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(crusn_read_s32(&rom_cursor)));
+
     // asm 000044E9: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 000044EA: 	STF	R1,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(crusn_read_s32(&rom_cursor)));
+
     // asm 000044EB: 	LDI	@MATRIXAI,R2
     // asm 000044EC: 	LDI	AR2,R3
     // asm 000044ED: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
+
     // asm 000044EE: 	LDF	*+AR2(X),R1
     // asm 000044EF: 	ADDF	@START_POS+X,R1
     // asm 000044F0: 	STF	R1,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.X), C3X_REG(START_POS[0])));
+
     // asm 000044F1: 	LDF	*+AR2(Y),R1
     // asm 000044F2: 	ADDF	@START_POS+Y,R1
     // asm 000044F3: 	STF	R1,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.Y), C3X_REG(START_POS[1])));
+
     // asm 000044F4: 	LDF	*+AR2(Z),R1
     // asm 000044F5: 	ADDF	@START_POS+Z,R1
     // asm 000044F6: 	STF	R1,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.Z), C3X_REG(START_POS[2])));
+
     // asm 000044F7: 	LDF	*AR5++,R2		;GET THE RADIANS FOR THE OBJECT
     // asm 000044F8: 	ADDF	@START_RADY,R2
     // asm 000044F9: 	STF	R2,*+AR4(ORADY)
+    obj->rad.Y = C3X_STF(C3X_ADD(crusn__read_f32(&rom_cursor), C3X_REG(START_RADY)));
+
     // asm 000044FA: 	LDI	AR4,AR2
     // asm 000044FB: 	ADDI	OMATRIX,AR2
     // asm 000044FC: 	CALL	HPFIND_YMATRIX
+    HPFIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rad.Y));
+
     // asm 000044FD: 	LDI	*AR5++,R1		;GET OBJECT ID (GENV STYLE)
     // asm 000044FE: 	LDI	R1,R2
     // asm 000044FF: 	AND	CLASS_M|TYPE_M|SUBTYPE_M,R1
     // asm 00004500: 	STI	R1,*+AR4(OID)
+    id = crusn_read_u32(&rom_cursor);
+    obj->id = id & (CLASS_M | TYPE_M | SUBTYPE_M);
+
     // asm 00004501: 	LDI	AR4,AR2
     // asm 00004502: 	CALL	OBJ_INSERT			;INSERT THE BABE
+    OBJ_INSERT(obj);
+
     // asm 00004503: 	SUBI	1,R4
     // asm 00004504: 	BGE	LS_L12O
+    count--;
+    if (count >= 0) {
+        goto LS_L12O;
+    }
+
 LS_ACTIVATE_XO:
     // asm 00004505: 	CLRI	R0
     // asm 00004506: 	STI	R0,*+AR6(OLINK2)
+    *next_link = NULL;
+
     // asm 00004507: 	LDI	@SINGLE_SECTION_TEMPPTR,R0
     // asm 00004508: 	POP	AR7
     // asm 00004509: 	POP	AR6
@@ -3109,8 +3171,7 @@ LS_ACTIVATE_XO:
     // asm 0000450E: 	POP	R5
     // asm 0000450F: 	POP	R4
     // asm 00004510: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_SINGLE_SECTION_OFFSET", 0, 0);
-    UNIMPL();
+    return SINGLE_SECTION_TEMPPTR;
 }
 
 // *----------------------------------------------------------------------------
