@@ -57,6 +57,7 @@ void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static c3x_reg_t GETBRAKE(void);
 void _off_brake(void);
 void _on_brake(void);
+static void _off_on_brake__tail(uint32_t* colors /*AR2*/);
 static c3x_reg_t GETPEDAL(void);
 static int GETGEAR(CARBLK* carblk /*AR5*/);
 static void GETMAN(void);
@@ -3133,6 +3134,29 @@ GETBX:
 
 // *----------------------------------------------------------------------------
 
+// asm 00002E27: HIREDI	.word	HIRED
+// asm 00002E28: HIRED	RGB	255,0,0
+static uint32_t HIRED[] = {
+    RGB(255, 0, 0),
+    // asm 00002E29: 	RGB	230,0,0
+    RGB(230, 0, 0),
+    // asm 00002E2A: 	RGB	215,0,0
+    RGB(215, 0, 0),
+    // asm 00002E2B: 	RGB	200,0,0
+    RGB(200, 0, 0),
+};
+// asm 00002E2C: OFFREDI	.word	OFFRED
+// asm 00002E2D: OFFRED	RGB	127,0,0
+static uint32_t OFFRED[] = {
+    RGB(127, 0, 0),
+    // asm 00002E2E: 	RGB	110,0,0
+    RGB(110, 0, 0),
+    // asm 00002E2F: 	RGB	105,0,0
+    RGB(105, 0, 0),
+    // asm 00002E30: 	RGB	100,0,0
+    RGB(100, 0, 0),
+};
+
 /*
  *
  *TURN ON/OFF BRAKE LIGHTS
@@ -3150,12 +3174,12 @@ void _off_brake(void) {
     // asm 00002E35: 	LDI	@BUTTON_STATUS,R2
     // asm 00002E36: 	ANDN	BUT_TAILS,R2
     // asm 00002E37: 	STI	R2,@BUTTON_STATUS
+    BUTTON_STATUS &= ~BUT_TAILS;
     // asm 00002E38: 	LDI	@OFFREDI,AR2
     // asm 00002E39: 	PUSH	AR2
     // asm 00002E3A: 	BU	L888
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    _off_on_brake__tail(OFFREDI);
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_off_brake", 0, 0);
-    UNIMPL();
 }
 
 void _on_brake(void) {
@@ -3166,37 +3190,56 @@ void _on_brake(void) {
     // asm 00002E3F: 	LDI	BUT_TAILS,R2
     // asm 00002E40: 	OR	@BUTTON_STATUS,R2
     // asm 00002E41: 	STI	R2,@BUTTON_STATUS
+    BUTTON_STATUS |= BUT_TAILS;
     // asm 00002E42: 	LDI	@HIREDI,AR2
     // asm 00002E43: 	PUSH	AR2
 L888:
+    _off_on_brake__tail(HIREDI);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "_on_brake", 0, 0);
+}
+
+static void _off_on_brake__tail(uint32_t* colors /*AR2*/) {
+    int color_count;
+    int palette_code;
+
     // asm 00002E44: LDI	@CHOOSENCAR,AR0
     // asm 00002E45: 	MPYI	VEHTAB_SIZE,AR0
     // asm 00002E46: 	ADDI	@VEHICLE_TABLEI,AR0
     // asm 00002E47: 	LDI	*+AR0(VEHTAB_TAILCNT),R3
+    color_count = (int)VEHICLE_TABLE[CHOOSENCAR].taillight_color_count;
     // asm 00002E48: 	BZ	NO_COLORS
+    if (color_count == 0) {
+        goto NO_COLORS;
+    }
     // asm 00002E49: 	LDI	*+AR0(VEHTAB_PAL),AR2
 #if DEBUG
     // asm: 	CMPI	0,AR2
     // asm: 	BEQ	$	;table entry not filled
+    if (VEHICLE_TABLE[CHOOSENCAR].model_palette == 0) {
+        ERRON(0);
+    }
 #endif
     // asm 00002E4A: 	CALL	PAL_FIND
+    palette_code = PAL_FIND((u32)VEHICLE_TABLE[CHOOSENCAR].model_palette);
     // asm 00002E4B: 	ADDI	256,R0
+    palette_code += 256;
     // asm 00002E4C: 	SUBI	R3,R0
+    palette_code -= color_count;
     // asm 00002E4D: 	LDI	R0,R2
     // asm 00002E4E: 	POP	AR2
     // asm 00002E4F: 	CALL	PAL_SET
+    PAL_SET(colors, (u32)palette_code, (u32)color_count);
 BRAK_X:
     // asm 00002E50: POP	R3
     // asm 00002E51: 	POP	R2
     // asm 00002E52: 	POP	AR2
     // asm 00002E53: 	POP	AR0
     // asm 00002E54: 	RETS
+    return;
 NO_COLORS:
     // asm 00002E55: 	POP	AR2
     // asm 00002E56: 	BU	BRAK_X
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "_on_brake", 0, 0);
-    UNIMPL();
+    goto BRAK_X;
 }
 
 /*
