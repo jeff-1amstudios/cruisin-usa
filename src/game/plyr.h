@@ -15,7 +15,7 @@ extern c3x_reg_t ZOOMDD;
 // asm: 	.bss	ZOOMDG,1	;ZOOM DIST GOAL
 extern c3x_reg_t ZOOMDG;
 // asm: 	.bss	ZOOMH,1		;CURRENT ZOOM HEIGHT
-extern int ZOOMH;
+extern c3x_reg_t ZOOMH;
 // asm: 	.bss	ZOOMHD,1
 extern c3x_reg_t ZOOMHD;
 // asm: 	.bss	ZOOMHG,1	;ZOOM HEIGHT GOAL
@@ -78,8 +78,9 @@ void GETRPM(CARBLK* carblk /*AR5*/);
 int GETAUTO(CARBLK* carblk /*AR5*/);
 void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-void BONUS_WAIT_LOOP(void);
+void BONUS_WAIT_LOOP(PROC* p);
 void PLYR_CAR_INIT(PROC* p, OBJ* obj);
+void PLYR_INTRO_ENTER(PROC* p);
 void DRONESND(OBJ* obj /*AR4*/, const int* sounds /*AR2*/, int range /*R0*/);
 void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/);
 

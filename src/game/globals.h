@@ -1426,7 +1426,7 @@ void CHECKPOINT_HIT(void);
 void PLYR_CAR_INIT(PROC* p, OBJ* obj);
 
 // asm:  .globl PLYR_INTRO_ENTER
-void PLYR_INTRO_ENTER(void);
+void PLYR_INTRO_ENTER(PROC* p);
 
 // asm:  .globl _PLYR,DRONEGO,GETSPD,OVELADD
 void _PLYR(PROC* p);
@@ -1467,7 +1467,7 @@ void MKFXSND(void);
 c3x_reg_t GETRDIR(OBJ* track_obj /*AR2*/);
 
 // asm:  .globl BONUS_WAIT_LOOP
-void BONUS_WAIT_LOOP(void);
+void BONUS_WAIT_LOOP(PROC* p);
 
 // asm:  .globl RACER_DRONE
 void RACER_DRONE(PROC* p);

@@ -2215,6 +2215,8 @@ void ZOOMTOCAR(PROC* p) {
         goto PROC_RESUME_1;
     case 2:
         goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
     }
 
     // asm 0000196B: 	CLRI	R0
@@ -2540,7 +2542,8 @@ BABADUY4:
     // asm 00001A25: 	STI	R0,@_MODE
     _MODE = MGAME | MINFIN | MWATER; // NOT MGO NOT MHUD
     // asm 00001A26: 	BU	PLYR_INTRO_ENTER
-    PLYR_INTRO_ENTER();
+    p->ctx->PLYR_INTRO_ENTER_FRAME.car = p->ctx->ZOOMTOCAR_FRAME.car;
+    PROC_CONTINUE(PLYR_INTRO_ENTER, 3);
     return;
 }
 

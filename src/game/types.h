@@ -736,6 +736,9 @@ typedef struct PROC_CONTEXT {
         int loop_count;
     } ZOOMTOCAR_FRAME;
     struct {
+        OBJ* car; // AR4 passed across the branch to PLYR_INTRO_ENTER
+    } PLYR_INTRO_ENTER_FRAME;
+    struct {
         int loop_count;
     } MOVEIN_HUD_EQUIP_FRAME;
 

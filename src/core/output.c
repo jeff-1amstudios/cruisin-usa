@@ -137,11 +137,12 @@ static void crusn_rasterize_triangle(
         return;
     }
 
+    /* The V-unit treats integer vertex endpoints as pixel sample positions. */
     for (int y = min_y; y <= max_y; ++y) {
-        float py = (float)y + 0.5f;
+        float py = (float)y;
 
         for (int x = min_x; x <= max_x; ++x) {
-            float px = (float)x + 0.5f;
+            float px = (float)x;
             float w0 = crusn_edge_function(v1->x, v1->y, v2->x, v2->y, px, py);
             float w1 = crusn_edge_function(v2->x, v2->y, v0->x, v0->y, px, py);
             float w2 = crusn_edge_function(v0->x, v0->y, v1->x, v1->y, px, py);
