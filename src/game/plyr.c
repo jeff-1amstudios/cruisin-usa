@@ -76,8 +76,8 @@ static void TUNCHK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void INBOUNDZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DRONINBZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void CURBCOL0(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-static void CURBSPIN(void);
-static void CURBSPN(void);
+static void CURBSPIN(c3x_reg_t road_direction /*R0*/, c3x_reg_t velocity_delta /*R2*/, CARBLK* carblk /*AR5*/);
+static void CURBSPN(c3x_reg_t road_direction /*R0*/, c3x_reg_t velocity_delta /*R2*/, CARBLK* carblk /*AR5*/);
 static void SOFTCURB(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 c3x_reg_t GETNXTRDIR(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static c3x_reg_t GETRDCAR(OBJ* track_obj /*AR2*/, OBJ* obj /*AR4*/);
@@ -4412,56 +4412,92 @@ CURBCOL2:
 }
 
 // *----------------------------------------------------------------------------
-static void CURBSPIN(void) {
+static void CURBSPIN(c3x_reg_t road_direction /*R0*/, c3x_reg_t velocity_delta /*R2*/, CARBLK* carblk /*AR5*/) {
+    c3x_reg_t body_rotation_delta;
+    c3x_reg_t rotation_delta;
+    c3x_reg_t spin_radians;
+
     // asm 00002FC4: 	ADDF	R0,R2
+    velocity_delta = C3X_ADD(velocity_delta, road_direction);
     // asm 00002FC5: 	STF	R2,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(velocity_delta);
     // asm 00002FC6: 	LDF	R0,R2
+    body_rotation_delta = road_direction;
     // asm 00002FC7: 	SUBF	*+AR5(CARYROT),R2	;CHECK YROT-ROAD DIRECTION
+    body_rotation_delta = C3X_SUB(body_rotation_delta, C3X_LDF(carblk->y_rotation)); // CHECK YROT-ROAD DIRECTION
     // asm 00002FC8: 	CALL	NORMITS
+    body_rotation_delta = NORMITS(body_rotation_delta);
     // asm 00002FC9: 	LDF	0.025,R0 		;RANDOM ROTATION VALUE
+    rotation_delta = C3X_IMM_F32(0.025); // RANDOM ROTATION VALUE
     // asm 00002FCA: 	CALL	FRAND
+    rotation_delta = FRAND(rotation_delta);
     // asm 00002FCB: 	ADDF	0.075,R0
+    rotation_delta = C3X_ADD(rotation_delta, C3X_IMM_F32(0.075));
     // asm 00002FCC: 	LDF	R2,R2			;CHECK SIGN
     // asm 00002FCD: 	BN	CURBSPIN1
     // asm 00002FCE: 	NEGF	R0
+    if (!C3X_LT(body_rotation_delta, C3X_IMM_F32(0))) {
+        rotation_delta = C3X_NEG(rotation_delta);
+    }
 CURBSPIN1:
     // asm 00002FCF: 	STF	R0,*+AR5(CARDROT)	;BODY DELTA
+    carblk->last_y_rotation = C3X_STF(rotation_delta); // BODY DELTA
     // asm 00002FD0: 	ABSF	R2			;CORRECTION FACTOR
+    body_rotation_delta = C3X_ABS(body_rotation_delta); // CORRECTION FACTOR
     // asm 00002FD1: 	ADDF	0.1,R2
+    body_rotation_delta = C3X_ADD(body_rotation_delta, C3X_IMM_F32(0.1));
     // asm 00002FD2: 	LDF	R2,R1
+    spin_radians = body_rotation_delta;
     // asm 00002FD3: 	CMPF	1.0,R2			;HARD HIT?
     // asm 00002FD4: 	LDFGT	3.14,R1			;YES...
+    if (C3X_GT(body_rotation_delta, C3X_IMM_F32(1.0))) {
+        spin_radians = C3X_IMM_F32(3.14);
+    }
     // asm 00002FD5: 	LDF	*+AR5(CARSPEED),R0
     // asm 00002FD6: 	CMPF	30,R0
     // asm 00002FD7: 	LDFLT	R2,R1
+    if (C3X_LT(C3X_LDF(carblk->speed), C3X_IMM_F32(30))) {
+        spin_radians = body_rotation_delta;
+    }
     // asm 00002FD8: 	STF	R1,*+AR5(CARSPRAD) 	;GO AROUND AT LEAST HALFWAY
+    carblk->spin_radians = C3X_STF(spin_radians); // GO AROUND AT LEAST HALFWAY
     // asm 00002FD9: 	LDI	1,R1
     // asm 00002FDA: 	STI	R1,*+AR5(CAR_SPIN)
+    carblk->spin_flag = 1;
 CURBCLX:
     // asm 00002FDB: RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CURBSPIN", 0, 0);
-    UNIMPL();
 }
 
 /*
  *----------------------------------------------------------------------------
  *SHORT CORRECTION SPIN
  */
-static void CURBSPN(void) {
+static void CURBSPN(c3x_reg_t road_direction /*R0*/, c3x_reg_t velocity_delta /*R2*/, CARBLK* carblk /*AR5*/) {
+    c3x_reg_t body_rotation_delta;
+
     // asm 00002FDC: 	ADDF	R0,R2
+    velocity_delta = C3X_ADD(velocity_delta, road_direction);
     // asm 00002FDD: 	STF	R2,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(velocity_delta);
     // asm 00002FDE: 	LDF	R0,R2
+    body_rotation_delta = road_direction;
     // asm 00002FDF: 	SUBF	*+AR5(CARYROT),R2	;CHECK YROT-ROAD DIRECTION
+    body_rotation_delta = C3X_SUB(body_rotation_delta, C3X_LDF(carblk->y_rotation)); // CHECK YROT-ROAD DIRECTION
     // asm 00002FE0: 	CALL	NORMITS
+    body_rotation_delta = NORMITS(body_rotation_delta);
     // asm 00002FE1: 	ABSF	R2,R3
     // asm 00002FE2: 	STF	R3,*+AR5(CARSPRAD) 	;SPIN THIS MUCH DUDES
+    carblk->spin_radians = C3X_STF(C3X_ABS(body_rotation_delta)); // SPIN THIS MUCH DUDES
     // asm 00002FE3: 	MPYF	0.10,R2
+    body_rotation_delta = C3X_MUL(body_rotation_delta, C3X_IMM_F32(0.10));
     // asm 00002FE4: 	STF	R2,*+AR5(CARDROT)	;BODY DELTA
+    carblk->last_y_rotation = C3X_STF(body_rotation_delta); // BODY DELTA
     // asm 00002FE5: 	LDI	1,R1
     // asm 00002FE6: 	STI	R1,*+AR5(CAR_SPIN)
+    carblk->spin_flag = 1;
     // asm 00002FE7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CURBSPN", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -4470,92 +4506,188 @@ static void CURBSPN(void) {
  *
  */
 static void SOFTCURB(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    c3x_reg_t road_direction;
+    c3x_reg_t direction_difference;
+    c3x_reg_t direction_sign;
+    c3x_reg_t relative_angle;
+    c3x_reg_t rotation_adjustment;
+    c3x_reg_t speed;
+
     // asm 00002FE8: 	CALL	ROADIR
+    road_direction = ROADIR(carblk);
     // asm 00002FE9: 	LDF	R0,R1
     // asm 00002FEA: 	CALL	GETNXTRDIR    		;DIRECTION CAR TO NEXT ROAD SEG.
+    direction_difference = GETNXTRDIR(obj, carblk); // DIRECTION CAR TO NEXT ROAD SEG.
     // asm 00002FEB: 	SUBF	R1,R0,R2
+    direction_difference = C3X_SUB(direction_difference, road_direction);
     // asm 00002FEC: 	CALL	NORMITS
+    direction_difference = NORMITS(direction_difference);
     // asm 00002FED: 	LDF	R2,R4			;CHECK DIRECTION
+    direction_sign = direction_difference; // CHECK DIRECTION
     // asm 00002FEE: 	LDFN	-0.1,R5			;GET RELATIVE ANGLE
     // asm 00002FEF: 	LDFNN	0.1,R5
+    relative_angle = C3X_LT(direction_sign, C3X_IMM_F32(0)) ? C3X_IMM_F32(-0.1) : C3X_IMM_F32(0.1); // GET RELATIVE ANGLE
     // asm 00002FF0: 	LDI	*+AR5(CAR_SPIN),R0  	;ALREADY SPINNING?
     // asm 00002FF1: 	BZ	SOFTCURB0		;NO
+    if (carblk->spin_flag == 0) {
+        goto SOFTCURB0; // NO
+    }
     // asm 00002FF2: 	CMPI	2,R0			;TIMED SPIN?
     // asm 00002FF3: 	BGE	SOFTCRB00		;YES
+    if (carblk->spin_flag >= 2) {
+        goto SOFTCRB00; // YES
+    }
     // asm 00002FF4: 	LDF	*+AR5(CARVROT),R0	;REFLECT THE MOTHER OUT
+    direction_difference = C3X_LDF(carblk->y_velocity_rotation); // REFLECT THE MOTHER OUT
     // asm 00002FF5: 	SUBF	R1,R0,R2
+    direction_difference = C3X_SUB(direction_difference, road_direction);
     // asm 00002FF6: 	CALL	NORMITS
+    direction_difference = NORMITS(direction_difference);
     // asm 00002FF7: 	ABSF	R2
+    direction_difference = C3X_ABS(direction_difference);
     // asm 00002FF8: 	CMPF	0.1,R2	      		;MINIMUM REFLECT
     // asm 00002FF9: 	LDFLT	0.1,R2
+    if (C3X_LT(direction_difference, C3X_IMM_F32(0.1))) {
+        direction_difference = C3X_IMM_F32(0.1); // MINIMUM REFLECT
+    }
     // asm 00002FFA: 	LDF	R4,R4
     // asm 00002FFB: 	LDFN	-1,R5			;GET RELATIVE ANGLE
     // asm 00002FFC: 	LDFNN	1,R5
+    relative_angle = C3X_LT(direction_sign, C3X_IMM_F32(0)) ? C3X_IMM_F32(-1) : C3X_IMM_F32(1); // GET RELATIVE ANGLE
     // asm 00002FFD: 	MPYF	R5,R2
+    direction_difference = C3X_MUL(direction_difference, relative_angle);
     // asm 00002FFE: 	ADDF	R1,R2
+    direction_difference = C3X_ADD(direction_difference, road_direction);
     // asm 00002FFF: 	STF	R2,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(direction_difference);
     // asm 00003000: 	RETS
+    goto SOFTVELX;
 SOFTCRB00:
     // asm 00003001: 	LDF	*+AR5(CARSPEED),R0	;TIMED SPIN
+    speed = C3X_LDF(carblk->speed); // TIMED SPIN
     // asm 00003002: 	CMPF	80,R0
     // asm 00003003: 	BLT	SOFTVELX		;SLOW TREECOL FIX
+    if (C3X_LT(speed, C3X_IMM_F32(80))) {
+        goto SOFTVELX; // SLOW TREECOL FIX
+    }
     // asm 00003004: 	B	SOFTVEL			;FAST, NEEDS CORRECTION
+    goto SOFTVEL; // FAST, NEEDS CORRECTION
     // *CHECK BODY ROTATION
 SOFTCURB0:
     // asm 00003005: 	LDF	*+AR5(CARYROT),R0
+    direction_difference = C3X_LDF(carblk->y_rotation);
     // asm 00003006: 	SUBF	R1,R0,R2
+    direction_difference = C3X_SUB(direction_difference, road_direction);
     // asm 00003007: 	CALL	NORMITS
+    direction_difference = NORMITS(direction_difference);
     // asm 00003008: 	LDF	R4,R4
     // asm 00003009: 	BN	SOFT10	     		;DELTA IS NEGATIVE
+    if (C3X_LT(direction_sign, C3X_IMM_F32(0))) {
+        goto SOFT10; // DELTA IS NEGATIVE
+    }
     // asm 0000300A: 	SUBF	R2,R5,R6
+    rotation_adjustment = C3X_SUB(relative_angle, direction_difference);
     // asm 0000300B: 	BLT	SOFTVEL			;ROTATION IS O.K.
+    if (C3X_LT(rotation_adjustment, C3X_IMM_F32(0))) {
+        goto SOFTVEL; // ROTATION IS O.K.
+    }
     // asm 0000300C: 	CMPF	0.1,R6			;MAX DELTA
     // asm 0000300D: 	LDFGT	0.1,R6
+    if (C3X_GT(rotation_adjustment, C3X_IMM_F32(0.1))) {
+        rotation_adjustment = C3X_IMM_F32(0.1); // MAX DELTA
+    }
     // asm 0000300E: 	B 	SOFT11
+    goto SOFT11;
 SOFT10:
     // asm 0000300F: 	SUBF	R2,R5,R6
+    rotation_adjustment = C3X_SUB(relative_angle, direction_difference);
     // asm 00003010: 	BGT	SOFTVEL			;ROTATION IS O.K.
+    if (C3X_GT(rotation_adjustment, C3X_IMM_F32(0))) {
+        goto SOFTVEL; // ROTATION IS O.K.
+    }
     // asm 00003011: 	CMPF	-0.1,R6			;MAX DELTA
     // asm 00003012: 	LDFLT	-0.1,R6
+    if (C3X_LT(rotation_adjustment, C3X_IMM_F32(-0.1))) {
+        rotation_adjustment = C3X_IMM_F32(-0.1); // MAX DELTA
+    }
 SOFT11:
     // asm 00003013: 	ADDF	*+AR5(CARYROT),R6  	;ADD IN ROTATION
+    rotation_adjustment = C3X_ADD(rotation_adjustment, C3X_LDF(carblk->y_rotation)); // ADD IN ROTATION
     // asm 00003014: 	STF	R6,*+AR5(CARYROT)
+    carblk->y_rotation = C3X_STF(rotation_adjustment);
     // *CHECK VELOCITY ROTATION
 SOFTVEL:
     // asm 00003015: LDF	*+AR5(CARSPEED),R0	;MINIMUM SPEED
+    speed = C3X_LDF(carblk->speed); // MINIMUM SPEED
     // asm 00003016: 	CMPF	20,R0
     // asm 00003017: 	LDFLT	20,R0
+    if (C3X_LT(speed, C3X_IMM_F32(20))) {
+        speed = C3X_IMM_F32(20);
+    }
     // asm 00003018: 	STF	R0,*+AR5(CARSPEED)
+    carblk->speed = C3X_STF(speed);
     // asm 00003019: 	LDF	*+AR5(CARVROT),R0
+    direction_difference = C3X_LDF(carblk->y_velocity_rotation);
     // asm 0000301A: 	SUBF	R1,R0,R2
+    direction_difference = C3X_SUB(direction_difference, road_direction);
     // asm 0000301B: 	CALL	NORMITS
+    direction_difference = NORMITS(direction_difference);
     // asm 0000301C: 	ABSF	R2,R3
     // asm 0000301D: 	CMPF	0.6,R3
     // asm 0000301E: 	BLT	SOFTV1
+    if (C3X_LT(C3X_ABS(direction_difference), C3X_IMM_F32(0.6))) {
+        goto SOFTV1;
+    }
     // asm 0000301F: 	LDF	R1,R0			;ROADIR->R0
     // asm 00003020: 	LDF	*+AR5(CARVROT),R1
     // asm 00003021: 	SUBF	R1,R0,R2
+    direction_difference = C3X_SUB(road_direction, C3X_LDF(carblk->y_velocity_rotation));
     // asm 00003022: 	B	CURBCOL1A
+    if (C3X_GT(C3X_ABS(direction_difference), C3X_IMM_F32(1.2))) {
+        CURBSPIN(road_direction, direction_difference, carblk);
+    } else {
+        CURBSPN(road_direction, direction_difference, carblk);
+    }
+    goto SOFTVELX;
 SOFTV1:
     // asm 00003023: LDF	R4,R4
     // asm 00003024: 	BN	SOFT20	     		;DELTA IS NEGATIVE
+    if (C3X_LT(direction_sign, C3X_IMM_F32(0))) {
+        goto SOFT20; // DELTA IS NEGATIVE
+    }
     // asm 00003025: 	SUBF	R2,R5
+    relative_angle = C3X_SUB(relative_angle, direction_difference);
     // asm 00003026: 	BLT	SOFTVELX		;ROTATION IS O.K.
+    if (C3X_LT(relative_angle, C3X_IMM_F32(0))) {
+        goto SOFTVELX; // ROTATION IS O.K.
+    }
     // asm 00003027: 	CMPF	0.1,R5			;MAX DELTA
     // asm 00003028: 	LDFGT	0.1,R5
+    if (C3X_GT(relative_angle, C3X_IMM_F32(0.1))) {
+        relative_angle = C3X_IMM_F32(0.1); // MAX DELTA
+    }
     // asm 00003029: 	B 	SOFT21
+    goto SOFT21;
 SOFT20:
     // asm 0000302A: SUBF	R2,R5
+    relative_angle = C3X_SUB(relative_angle, direction_difference);
     // asm 0000302B: 	BGT	SOFTVELX		;ROTATION IS O.K.
+    if (C3X_GT(relative_angle, C3X_IMM_F32(0))) {
+        goto SOFTVELX; // ROTATION IS O.K.
+    }
     // asm 0000302C: 	CMPF	-0.1,R5			;MAX DELTA
     // asm 0000302D: 	LDFLT	-0.1,R5
+    if (C3X_LT(relative_angle, C3X_IMM_F32(-0.1))) {
+        relative_angle = C3X_IMM_F32(-0.1); // MAX DELTA
+    }
 SOFT21:
     // asm 0000302E: ADDF	*+AR5(CARVROT),R5  	;ADD IN ROTATION
+    relative_angle = C3X_ADD(relative_angle, C3X_LDF(carblk->y_velocity_rotation)); // ADD IN ROTATION
     // asm 0000302F: 	STF	R5,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(relative_angle);
 SOFTVELX:
     // asm 00003030: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SOFTCURB", 0, 0);
-    UNIMPL();
 }
 
 /*
