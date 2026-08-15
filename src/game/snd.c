@@ -31,11 +31,11 @@ void SILENT(void);
 void CLRSNDDB(void);
 void GETPRI(void);
 void VOLSNDFX(int sound_index /*AR2*/, int volume /*R0*/);
-void KILLSNDFX(void);
-void PLYR_ENGINE(void);
+int KILLSNDFX(int sound_index /*AR2*/);
+void PLYR_ENGINE(int speed /*R0*/, int volume /*R1*/);
 void HARDSND(void);
 void ONESND(int sound_index);
-void SENDSND(void);
+void SENDSND(int sound_code /*AR2*/);
 static void RESETMUNGE(void);
 void SND_RESET_QUIET(void);
 void SNDPROC(void);
@@ -339,7 +339,7 @@ JI1:
     // asm 00009157: 	POP	AR2
     // asm 00009158: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_TRACK_VOL", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /* asm: DO_NOT_REENABLE_INT	.bss	DO_NOT_REENABLE_INT,1 */
@@ -607,7 +607,7 @@ NOSOUND_FX:
  *RETURNS CS IF SOUND ACTUALLY KILLED, OTHERWISE CC
  *
  */
-void KILLSNDFX(void) {
+int KILLSNDFX(int sound_index /*AR2*/) {
     // asm 000091E9: 	PUSH	AR2
     // asm 000091EA: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2
     // asm 000091EB: 	BNE	KILSFX1
@@ -625,7 +625,8 @@ KILSFX3:
     // asm 000091F6: 	POP	AR2
     // asm 000091F7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILLSNDFX", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
+    return 0;
 }
 
 // *----------------------------------------------------------------------------
@@ -640,7 +641,7 @@ KILSFX3:
  *
  *
  */
-void PLYR_ENGINE(void) {
+void PLYR_ENGINE(int speed /*R0*/, int volume /*R1*/) {
     // asm 000091F8: 	LS	8,R0
     // asm 000091F9: 	OR	R0,R1
     // asm 000091FA: 	LDI	1,R0
@@ -653,7 +654,7 @@ void PLYR_ENGINE(void) {
     // asm 00009201: 	B	SENDSND
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_ENGINE", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -770,7 +771,8 @@ SNDLDX:
  */
 #define SPACER 30 // # OF NOPs BETWEEN WRITES
 
-void SENDSND(void) {
+void SENDSND(int sound_code /*AR2*/) {
+    (void)sound_code;
     // asm 00009239: 	LDP	@IN_RESET_MODE
     // asm 0000923A: 	LDI	@IN_RESET_MODE,R0
     // asm 0000923B: 	SETDP
@@ -820,7 +822,7 @@ NIRM:
     // asm 0000926D: 	POP	AR3
     // asm 0000926E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SENDSND", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

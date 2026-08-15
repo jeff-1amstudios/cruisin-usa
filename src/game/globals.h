@@ -129,7 +129,7 @@ extern int NEXT_STARTUP;
 extern int BONUS_WAVE;
 
 // asm:  .globl MAXMPH,CAR_COLLS,MISC_COLLS
-extern int MAXMPH;
+extern c3x_f32_t MAXMPH;
 
 // asm:  .globl BONUS_TABLEI
 #define BONUS_TABLEI BONUS_TABLE
@@ -526,7 +526,7 @@ extern c3x_reg_t INFIN_CORRECT;
 extern c3x_reg_t VAR_ROAD_KFACTOR;
 
 // asm:  .globl MAXMPH_COUNT
-extern int MAXMPH_COUNT;
+extern c3x_f32_t MAXMPH_COUNT;
 
 // asm:  .globl BONUS_WAITFLAG
 extern int BONUS_WAITFLAG;
@@ -654,7 +654,7 @@ extern int OFFROAD_TMR;
 // asm:  .globl ZOOM,ZOOMI,ZOOMD
 #define ZOOMI ZOOMRAM
 
-extern c3x_reg_t ZOOMD;
+extern c3x_f32_t ZOOMD;
 
 // racer.asm
 // asm:  .globl RACER_PTRI
@@ -1113,11 +1113,11 @@ void SCREENWIPE_OPEN_PRC_FAST(void);
 
 // flame.asm
 // asm:  .globl FLAME_PRC,FLAMESORT,GETCARBODY
-void FLAME_PRC(void);
+void FLAME_PRC(PROC* p);
 
 void FLAMESORT(void);
 
-void GETCARBODY(void);
+MATRIX* GETCARBODY(OBJ* car /*AR2*/);
 
 // asm:  .globl FIND_NEXT_OBJ
 OBJ* FIND_NEXT_OBJ(OBJ* obj /*AR0*/, int oid /*R1*/);
@@ -1129,7 +1129,7 @@ void _outtextxyc(const char* string, int x, int y, int color);
 // asm:  .globl _itoa,_itoaLZ
 void _itoa(char* string_space /*AR2*/, int number /*R2*/);
 
-void _itoaLZ(void);
+void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/);
 
 // asm:  .globl _ftoa
 void _ftoa(void);
@@ -1193,10 +1193,10 @@ void HUD(void);
 void dealloc_section(tSECTION_ALLOC sec /*AR2*/);
 
 // asm:  .globl FILL_PLOT
-void FILL_PLOT(void);
+void FILL_PLOT(int x /*R0*/, int y /*R1*/, int width /*R2*/, int height /*R3*/);
 
 // asm:  .globl FILL_DITHER
-void FILL_DITHER(void);
+void FILL_DITHER(int x /*R0*/, int y /*R1*/, int width /*R2*/, int height /*R3*/);
 
 // intro.asm
 // asm:  .globl ISSUE_STARTGAME_TSEL
@@ -1376,7 +1376,7 @@ void FOLDMAP(void);
 void UNFOLDMAP(void);
 
 // asm:  .globl TIME2STR
-void TIME2STR(void);
+void TIME2STR(char* buffer /*AR2*/, int time /*R0*/);
 
 // asm:  .globl CVTTIME
 void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/);
@@ -1402,7 +1402,7 @@ void INITIALIZATION_MOTION_CHECK(void);
 void LATCH_ERROR(void);
 
 // asm:  .globl PLMOTION,INITIALIZE_GALIL
-void PLMOTION(void);
+void PLMOTION(CARBLK* carblk /*AR5*/);
 
 // asm:  .globl LEVEL_THE_MOTION
 void LEVEL_THE_MOTION(void);
@@ -1461,7 +1461,7 @@ void _VIEW2(PROC* p);
 void OVELNADD(OBJ* obj /*AR4*/);
 
 // asm:  .globl MKFXSND
-void MKFXSND(void);
+void MKFXSND(int sound_index /*AR2*/);
 
 // asm:  .globl GETRDIR
 c3x_reg_t GETRDIR(OBJ* track_obj /*AR2*/);
@@ -1482,7 +1482,7 @@ void PLSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 c3x_reg_t GETRDOFFSET(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 // asm:  .globl DIFF_CHANGE,DIFF_TRICKLE
-void DIFF_CHANGE(void);
+void DIFF_CHANGE(int position /*R0*/);
 
 // roadblck.asm
 // asm:  .globl INIT_RDDEBRIS,ADD_RDDEBRIS,FREE_RDDEBRIS
@@ -1576,7 +1576,7 @@ void CLEANUP_PALS(void);
 
 // smoke.asm
 // asm:  .globl SMOKE_PROC,TIRE_SMOKE_COUNT
-void SMOKE_PROC(void);
+void SMOKE_PROC(PROC* p);
 
 // asm:  .globl SORT_SMOKE
 void SORT_SMOKE(void);
@@ -1586,7 +1586,7 @@ void SORT_SMOKE(void);
 void SET_TUNE_LINKED(void);
 
 // asm:  .globl PLYR_ENGINE
-void PLYR_ENGINE(void);
+void PLYR_ENGINE(int speed /*R0*/, int volume /*R1*/);
 
 // asm:  .globl ONESND,ONESNDFX
 void ONESND(int sound_index);
@@ -1600,7 +1600,7 @@ void SNDPROC(void);
 void CLRSNDDB(void);
 
 // asm:  .globl SENDSND
-void SENDSND(void);
+void SENDSND(int sound_code /*AR2*/);
 
 // asm:  .globl SND_RESET_QUIET
 void SND_RESET_QUIET(void);
@@ -1637,7 +1637,7 @@ void CHANGE_STATION(void);
 void RADIO_BUT(PROC* p);
 
 // asm:  .globl KILLSNDFX
-void KILLSNDFX(void);
+int KILLSNDFX(int sound_index /*AR2*/);
 
 // asm:  .globl VOLSNDFX
 void VOLSNDFX(int sound_index, int volume);

@@ -69,6 +69,7 @@ static int FIXEDFONT_A = fixedfnt;
 /* asm: FONTDIGITSM_A	.word	dnums_I */
 /* asm: 	 */
 static int FONTDIGITSM_A = dnums_I;
+#define FONTDIGITLG_A FONTDIGITSM_A
 /* asm: FONT18_A	.word	font18_I */
 static int FONT18_A = font18_I;
 /* asm: TEXTTABLEFONT18	.word	FONT18_TAB */
@@ -175,35 +176,48 @@ tTEXT* TEXT_ADD(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks) {
 void SETSMDIGITFONT(tTEXT* t /*AR0*/) {
     // asm 000079A1: 	LDI	12,R0
     // asm 000079A2: 	STI	R0,*+AR0(TEXT_HEIGHT)
+    t->height = 12;
     // asm 000079A3: 	LDI	@FONTDIGITSM_A,R0
     // asm 000079A4: 	STI	R0,*+AR0(TEXT_IMG)
+    t->image_addr = FONTDIGITSM_A;
     // asm 000079A5: 	LDL	dnums_p,AR2
     // asm 000079A6: 	CALL	PAL_FIND
     // asm 000079A7: 	STI	R0,*+AR0(TEXT_PAL)
+    t->palette = PAL_FIND(dnums_p_ROM);
     // asm 000079A8: 	LDI	@FONTDIGSMI,R0
     // asm 000079A9: 	STI	R0,*+AR0(TEXT_ADDR)
+    t->text_addr = FONTDIGSMI;
     // asm 000079AA: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETSMDIGITFONT", 0, 0);
-    UNIMPL();
 }
 
 void SETSMDIGITFONTDS(tSHADOW_TEXT* t) {
+    int palette;
+
     // asm 000079AB: 	LDI	12,R0
     // asm 000079AC: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079AD: 	STI	R0,*+AR1(TEXT_HEIGHT)
+    t->front->height = 12;
+    t->shadow->height = 12;
     // asm 000079AE: 	LDI	@FONTDIGITSM_A,R0
     // asm 000079AF: 	STI	R0,*+AR0(TEXT_IMG)
     // asm 000079B0: 	STI	R0,*+AR1(TEXT_IMG)
+    t->front->image_addr = FONTDIGITSM_A;
+    t->shadow->image_addr = FONTDIGITSM_A;
     // asm 000079B1: 	LDL	dnums_p,AR2
     // asm 000079B2: 	CALL	PAL_FIND
+    palette = PAL_FIND(dnums_p_ROM);
     // asm 000079B3: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 000079B4: 	STI	R0,*+AR1(TEXT_PAL)
+    t->front->palette = palette;
+    t->shadow->palette = palette;
     // asm 000079B5: 	LDI	@FONTDIGSMI,R0
     // asm 000079B6: 	STI	R0,*+AR0(TEXT_ADDR)
     // asm 000079B7: 	STI	R0,*+AR1(TEXT_ADDR)
+    t->front->text_addr = FONTDIGSMI;
+    t->shadow->text_addr = FONTDIGSMI;
     // asm 000079B8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETSMDIGITFONTDS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -225,22 +239,32 @@ void SETLGDIGITFONT(tTEXT* t /*AR0*/) {
 }
 
 void SETLGDIGITFONTDS(tSHADOW_TEXT* t) {
+    int palette;
+
     // asm 000079C3: 	LDI	22,R0
     // asm 000079C4: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 000079C5: 	STI	R0,*+AR1(TEXT_HEIGHT)
+    t->front->height = 22;
+    t->shadow->height = 22;
     // asm 000079C6: 	LDI	@FONTDIGITLG_A,R0
     // asm 000079C7: 	STI	R0,*+AR0(TEXT_IMG)
     // asm 000079C8: 	STI	R0,*+AR1(TEXT_IMG)
+    t->front->image_addr = FONTDIGITLG_A;
+    t->shadow->image_addr = FONTDIGITLG_A;
     // asm 000079C9: 	LDL	dnums_p,AR2
     // asm 000079CA: 	CALL	PAL_FIND
+    palette = PAL_FIND(dnums_p_ROM);
     // asm 000079CB: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 000079CC: 	STI	R0,*+AR1(TEXT_PAL)
+    t->front->palette = palette;
+    t->shadow->palette = palette;
     // asm 000079CD: 	LDI	@FONTDIGLGI,R0
     // asm 000079CE: 	STI	R0,*+AR0(TEXT_ADDR)
     // asm 000079CF: 	STI	R0,*+AR1(TEXT_ADDR)
+    t->front->text_addr = FONTDIGLGI;
+    t->shadow->text_addr = FONTDIGLGI;
     // asm 000079D0: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SETLGDIGITFONTDS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

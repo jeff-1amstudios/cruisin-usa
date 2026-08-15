@@ -14,11 +14,13 @@
  * Source module: asm/SMOKE.ASM
  */
 
-void SMOKE_PROC(void);
-static void CREATE_SMOKE_OBJ(void);
-static void GET_OTHER_REAR(void);
-static void GET_REAR(void);
-static void INIT_SMOKE(void);
+void SMOKE_PROC(PROC* p);
+static int CREATE_SMOKE_OBJ(PROC* p /*AR7*/, c3x_reg_t z_offset /*R5*/);
+static DYNAOBJ* GET_OTHER_REAR(DYNAOBJ* wheel /*AR2*/);
+static DYNAOBJ* GET_REAR(OBJ* car /*AR2*/);
+static DYNAOBJ* GET_REAR__tail(DYNAOBJ* dynamic_obj /*R0*/);
+static void INIT_SMOKE(PROC* p /*AR7*/, OBJ* smoke_obj /*AR0*/, const int* animation /*AR1*/,
+                       DYNAOBJ* wheel /*AR2*/, int road_oid /*R4*/, c3x_reg_t z_offset /*R5*/);
 void SORT_SMOKE(void);
 void INIT_SPARK(void);
 static void REPLICATE_SPARK(void);
@@ -30,6 +32,8 @@ void ROAD_IMPACT_SPARK(void);
 void SKID_SPARK(void);
 static int TOO_MANY_SPARKS(void);
 void OBJ_MOVE(void);
+extern MATRIX _MATRIXA;
+extern VECTOR _VECTORA;
 
 #define SMOKEANII SMOKEANI
 #define SMOKE2ANII SMOKE2ANI
@@ -87,101 +91,173 @@ static int SMOKE2ANI[] = {
 #define SMOKE_PAL (PDATA + 1)
 #define SMOKE_OBJS (PDATA + 2)
 
-void SMOKE_PROC(void) {
+void SMOKE_PROC(PROC* p) {
+    OBJ* smoke_obj;
+    const int* animation;
+    c3x_reg_t movement;
+    c3x_reg_t road_height;
+    c3x_reg_t z_offset;
+    int active_smokes;
+    int smoke_index;
+    int frame;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 000084B8: 	LDI	@TIRE_SMOKE_COUNT,R0
     // asm 000084B9: 	CMPI	1,R0
     // asm 000084BA: 	BGE	SMOKE_DIE
+    if (TIRE_SMOKE_COUNT >= 1) {
+        goto SMOKE_DIE;
+    }
     // asm 000084BB: 	LDF	0,R7
+    p->ctx->SMOKE_PROC.delay_frames = C3X_IMM_F32(0);
     // asm 000084BC: 	LDL	bnout1_smoke,AR2
     // asm 000084BD: 	CALL	PAL_FIND_RAW
     // asm 000084BE: 	STI	R0,*+AR7(SMOKE_PAL)
+    p->ctx->SMOKE_PROC.palette = PAL_FIND_RAW((tPAL*)ROM_PTR(bnout1_smoke_ROM));
     // asm 000084BF: 	LDI	0,R0
     // asm 000084C0: 	STI	R0,*+AR7(NUM_SMOKES)
+    p->ctx->SMOKE_PROC.num_smokes = 0;
     // asm 000084C1: 	LDI	1,R0
     // asm 000084C2: 	STI	R0,@TIRE_SMOKE_COUNT
+    TIRE_SMOKE_COUNT = 1;
     // asm 000084C3: 	BR	SMOKELP_ENTRY
+    goto SMOKELP_ENTRY;
 SMOKE_PUFFLP:
     // asm 000084C4: 	LDI	0,R6
+    active_smokes = 0;
     // asm 000084C5: 	LDI	0,R5
+    smoke_index = 0;
     // asm 000084C6: 	LDI	SMOKE_OBJS,IR0
 SMPUFFLP1:
     // asm 000084C7: 	LDI	*+AR7(IR0),AR0
+    smoke_obj = p->ctx->SMOKE_PROC.smoke_objs[smoke_index];
     // asm 000084C8: 	CMPI	0,AR0
     // asm 000084C9: 	BEQ	SMPUFF1
+    if (smoke_obj == NULL) {
+        goto SMPUFF1;
+    }
     // asm 000084CA: 	LDI	*+AR0(OUSR1),AR1
+    animation = (const int*)smoke_obj->usr1;
     // asm 000084CB: 	LDI	*AR1++,R0
+    frame = *animation++;
     // asm 000084CC: 	BN	SMOKE_DONE
+    if (frame < 0) {
+        goto SMOKE_DONE;
+    }
     // asm 000084CD: 	STI	R0,*+AR0(OROMDATA)
+    smoke_obj->romdata = ROM_PTR((word_addr_t)frame);
     // asm 000084CE: 	STI	AR1,*+AR0(OUSR1)
+    smoke_obj->usr1 = (uintptr_t)animation;
     // asm 000084CF: 	LDI	@MATRIXAI,AR2
     // asm 000084D0: 	LDF	*+AR5(CARVROT),R2
     // asm 000084D1: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_LDF(p->ctx->SMOKE_PROC.carblk->y_velocity_rotation));
     // asm 000084D2: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 000084D3: 	FLOAT	@NFRAMES,R0
+    movement = C3X_FROM_INT(NFRAMES);
     // asm 000084D4: 	MPYF	*+AR5(CARSPEED),R0
+    movement = C3X_MUL(movement, C3X_LDF(p->ctx->SMOKE_PROC.carblk->speed));
     // asm 000084D5: 	MPYF	1.51,R0
+    movement = C3X_MUL(movement, C3X_IMM_F32(1.51));
     // asm 000084D6: 	SUBF	50,R0		;Constant speed less than the player is moving
+    movement = C3X_SUB(movement, C3X_IMM_F32(50)); // Constant speed less than the player is moving
     // asm 000084D7: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(movement);
     // asm 000084D8: 	LDI	@MATRIXAI,R2
     // asm 000084D9: 	LDI	AR2,R3
     // asm 000084DA: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // asm 000084DB: 	LDI	@VECTORAI,AR1
     // asm 000084DC: 	LDF	*+AR1(X),R0
     // asm 000084DD: 	ADDF	*+AR0(OPOSX),R0
     // asm 000084DE: 	STF	R0,*+AR0(OPOSX)
+    smoke_obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.X), C3X_LDF(smoke_obj->pos.X)));
     // asm 000084DF: 	LDF	*+AR1(Z),R0
     // asm 000084E0: 	ADDF	*+AR0(OPOSZ),R0
     // asm 000084E1: 	STF	R0,*+AR0(OPOSZ)
+    smoke_obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.Z), C3X_LDF(smoke_obj->pos.Z)));
     // asm 000084E2: 	PUSH	AR4
     // asm 000084E3: 	PUSH	IR0
     // asm 000084E4: 	PUSH	R5
     // asm 000084E5: 	LDI	AR0,AR4
     // asm 000084E6: 	ADDI	OPOSX,AR4
     // asm 000084E7: 	CALL	CAMSCAN
+    CAMSCAN(&smoke_obj->pos, &road_height);
     // asm 000084E8: 	POP	R5
     // asm 000084E9: 	POP	IR0
     // asm 000084EA: 	POP	AR4
     // asm 000084EB: 	LDI	*+AR7(IR0),AR0
     // asm 000084EC: 	ADDF	*+AR0(OPOSY),R0
     // asm 000084ED: 	STF	R0,*+AR0(OPOSY)
+    smoke_obj->pos.Y = C3X_STF(C3X_ADD(road_height, C3X_LDF(smoke_obj->pos.Y)));
     // asm 000084EE: 	ADDI	1,R6
+    active_smokes += 1;
 SMPUFF1:
     // asm 000084EF: 	ADDI	1,IR0
     // asm 000084F0: 	ADDI	1,R5
+    smoke_index += 1;
     // asm 000084F1: 	CMPI	*+AR7(NUM_SMOKES),R5
     // asm 000084F2: 	BNE	SMPUFFLP1
+    if (smoke_index != p->ctx->SMOKE_PROC.num_smokes) {
+        goto SMPUFFLP1;
+    }
     // asm 000084F3: SMOKE_CONT
     // asm 000084F3: 	CMPI	0,R6
     // asm 000084F4: 	BEQ	SMOKEX
+    if (active_smokes == 0) {
+        goto SMOKEX;
+    }
 SMOKELP_ENTRY:
     // asm 000084F5: 	LDF	0,R5
+    z_offset = C3X_IMM_F32(0);
     // asm 000084F6: 	LDI	*+AR5(CAR_SPIN),R0	;SPINNING?
     // asm 000084F7: 	BNE	SMOKEN
+    if (p->ctx->SMOKE_PROC.carblk->spin_flag != 0) {
+        goto SMOKEN; // SPINNING?
+    }
     // asm 000084F8: 	CMPF	0,R7
     // asm 000084F9: 	BNE	KLUDGE_MO
+    if (C3X_NE(p->ctx->SMOKE_PROC.delay_frames, C3X_IMM_F32(0))) {
+        goto KLUDGE_MO;
+    }
     // asm 000084FA: 	LDF	2,R7			;wait N more frames
+    p->ctx->SMOKE_PROC.delay_frames = C3X_IMM_F32(2); // wait N more frames
 SMOKEN:
     // asm 000084FB: 	CALL	CREATE_SMOKE_OBJ
+    CREATE_SMOKE_OBJ(p, z_offset);
 KLUDGE_MO:
     // asm 000084FC: 	SUBF	1.0,R7
+    p->ctx->SMOKE_PROC.delay_frames = C3X_SUB(p->ctx->SMOKE_PROC.delay_frames, C3X_IMM_F32(1.0));
     // asm 000084FD: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000084FF: 	BR	SMOKE_PUFFLP
+    goto SMOKE_PUFFLP;
 SMOKE_DONE:
     // asm 00008500: 	LDI	AR0,AR2
     // asm 00008501: 	PUSH	IR0
     // asm 00008502: 	CALL	OBJ_DELETE
+    OBJ_DELETE(smoke_obj);
     // asm 00008503: 	POP	IR0
     // asm 00008504: 	LDI	0,R0
     // asm 00008505: 	STI	R0,*+AR7(IR0)		;make null on list
+    p->ctx->SMOKE_PROC.smoke_objs[smoke_index] = NULL; // make null on list
     // asm 00008506: 	BR	SMPUFFLP1
+    goto SMPUFFLP1;
 SMOKEX:
     // asm 00008507: 	LDI	0,R0
     // asm 00008508: 	STI	R0,@TIRE_SMOKE_COUNT
+    TIRE_SMOKE_COUNT = 0;
 SMOKE_DIE:
     // asm 00008509: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SMOKE_PROC", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 /*
@@ -194,62 +270,107 @@ SMOKE_DIE:
  *Creates a puff of smoke
  */
 
-static void CREATE_SMOKE_OBJ(void) {
+static int CREATE_SMOKE_OBJ(PROC* p /*AR7*/, c3x_reg_t z_offset /*R5*/) {
+    OBJ* smoke_obj;
+    DYNAOBJ* rear_wheel;
+    DYNAOBJ* other_rear_wheel;
+    OBJ* road_obj;
+    MATRIX* body_matrix;
+    const int* animation;
+
     // asm 0000850A: 	LDI	*+AR7(NUM_SMOKES),R0
     // asm 0000850B: 	CMPI	1,R0
     // asm 0000850C: 	BLT	DO_SMOKE
+    if (p->ctx->SMOKE_PROC.num_smokes < 1) {
+        goto DO_SMOKE;
+    }
     // asm 0000850D: 	LDF	*+AR5(CARBRAKE),R0
     // asm 0000850E: 	CMPF	0.4,R0
     // asm 0000850F: 	BLT	CHECK_SKID
+    if (C3X_LT(C3X_LDF(p->ctx->SMOKE_PROC.carblk->brake), C3X_IMM_F32(0.4))) {
+        goto CHECK_SKID;
+    }
     // asm 00008510: 	LDF	*+AR5(CARSPEED),R0
     // asm 00008511: 	CMPF	20,R0
     // asm 00008512: 	BGT	OK_SMOKE
+    if (C3X_GT(C3X_LDF(p->ctx->SMOKE_PROC.carblk->speed), C3X_IMM_F32(20))) {
+        goto OK_SMOKE;
+    }
 CHECK_SKID:
     // asm 00008513: 	LDF	*+AR5(CARSKID),R0
     // asm 00008514: 	CMPF	0.25,R0
     // asm 00008515: 	BLT	NO_SMOKE			;NO SKID ACTIVE
+    if (C3X_LT(C3X_LDF(p->ctx->SMOKE_PROC.carblk->skid), C3X_IMM_F32(0.25))) {
+        goto NO_SMOKE; // NO SKID ACTIVE
+    }
 OK_SMOKE:
     // asm 00008516: 	LDI	*+AR7(NUM_SMOKES),R0
     // asm 00008517: 	CMPI	20,R0
     // asm 00008518: 	BGE	NO_SMOKE
+    if (p->ctx->SMOKE_PROC.num_smokes >= 20) {
+        goto NO_SMOKE;
+    }
 DO_SMOKE:
     // asm 00008519: 	LDI	AR4,AR2
     // asm 0000851A: 	CALL	GETCARBODY
+    body_matrix = GETCARBODY(p->ctx->SMOKE_PROC.car_obj);
     // asm 0000851B: 	LDI	AR0,AR2
     // asm 0000851C: 	LDI	AR4,R2
     // asm 0000851D: 	ADDI	OMATRIX,R2
     // asm 0000851E: 	LDI	@MATRIXAI,R3
     // asm 0000851F: 	CALL	CONCATMATV
+    CONCATMATV(body_matrix, (MATRIX*)&p->ctx->SMOKE_PROC.car_obj->omatrix, &MATRIXAI);
     // asm 00008520: 	LDI	@SMOKEANII,AR1
+    animation = SMOKEANII;
     // asm 00008521: 	LDF	*+AR5(CARSKID),R0
     // asm 00008522: 	CMPF	0.5,R0
     // asm 00008523: 	LDIGT	@SMOKE2ANII,AR1
+    if (C3X_GT(C3X_LDF(p->ctx->SMOKE_PROC.carblk->skid), C3X_IMM_F32(0.5))) {
+        animation = SMOKE2ANII;
+    }
     // asm 00008524: 	LDI	*+AR5(CAR_SPIN),R0	;SPINNING?
     // asm 00008525: 	LDINE	@SMOKE2ANII,AR1
+    if (p->ctx->SMOKE_PROC.carblk->spin_flag != 0) {
+        animation = SMOKE2ANII; // SPINNING?
+    }
     // asm 00008526: 	LDI	*AR1,AR2
     // asm 00008527: 	CALL	OBJ_GETE
+    smoke_obj = OBJ_GETE(ROM_PTR((word_addr_t)animation[0]));
     // asm 00008528: 	BC	CSOX
+    if (smoke_obj == NULL) {
+        goto CSOX;
+    }
     // asm 00008529: 	LDI	AR4,AR2
     // asm 0000852A: 	CALL	GET_REAR
+    rear_wheel = GET_REAR(p->ctx->SMOKE_PROC.car_obj);
     // asm 0000852B: 	PUSH	AR2
     // asm 0000852C: 	LDI	*+AR5(RR_PCOL),AR3
+    road_obj = OBJREF_TO_PTR(p->ctx->SMOKE_PROC.carblk->right_rear.collided_road_object);
     // asm 0000852D: 	LDI	*+AR3(OID),R4
     // asm 0000852E: 	CALL	INIT_SMOKE
+    INIT_SMOKE(p, smoke_obj, animation, rear_wheel, (int)road_obj->id, z_offset);
     // asm 0000852F: 	LDI	*AR1,AR2
     // asm 00008530: 	CALL	OBJ_GETE
+    smoke_obj = OBJ_GETE(ROM_PTR((word_addr_t)animation[0]));
     // asm 00008531: 	POP	AR2
     // asm 00008532: 	BC	CSOX
+    if (smoke_obj == NULL) {
+        goto CSOX;
+    }
     // asm 00008533: 	CALL	GET_OTHER_REAR
+    other_rear_wheel = GET_OTHER_REAR(rear_wheel);
     // asm 00008534: 	LDI	*+AR5(LR_PCOL),AR3
+    road_obj = OBJREF_TO_PTR(p->ctx->SMOKE_PROC.carblk->left_rear.collided_road_object);
     // asm 00008535: 	LDI	*+AR3(OID),R4
     // asm 00008536: 	CALL	INIT_SMOKE
+    INIT_SMOKE(p, smoke_obj, animation, other_rear_wheel, (int)road_obj->id, z_offset);
 CSOX:
     // asm 00008537: 	RETS
+    return smoke_obj == NULL;
 NO_SMOKE:
     // asm 00008538: 	SETC
     // asm 00008539: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CREATE_SMOKE_OBJ", 0, 0);
-    UNIMPL();
+    return 1;
 }
 
 /*
@@ -260,28 +381,39 @@ NO_SMOKE:
  * SCRAMBLES R0,R1
  */
 
-static void GET_OTHER_REAR(void) {
+static DYNAOBJ* GET_OTHER_REAR(DYNAOBJ* wheel /*AR2*/) {
     // asm 0000853A: 	LDI	*AR2,R0
+    DYNAOBJ* dynamic_obj = wheel->link;
     // asm 0000853B: 	BR	FBLOOP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_OTHER_REAR", 0, 0);
-    UNIMPL();
+    return GET_REAR__tail(dynamic_obj);
 }
 
-static void GET_REAR(void) {
+static DYNAOBJ* GET_REAR(OBJ* car /*AR2*/) {
+    DYNAOBJ* dynamic_obj;
+
     // asm 0000853C: 	LDI	*+AR2(ODYNALIST),R0
+    dynamic_obj = car->dynalist;
     // asm: 	SLOCKON	Z,"UTIL\CARPROC   dynamic objects not found"
+    SLOCKON(dynamic_obj == NULL, "UTIL\\CARPROC   dynamic objects not found");
+    return GET_REAR__tail(dynamic_obj);
+}
+
+static DYNAOBJ* GET_REAR__tail(DYNAOBJ* dynamic_obj /*R0*/) {
 FBLOOP:
     // asm 0000853D: 	LDI	R0,AR2
     // asm 0000853E: 	LDI	*+AR2(DYNAFLAG),R1
     // asm 0000853F: 	CMPI	1,R1
     // asm 00008540: 	BZ	FOUND_REAR		;1 = rear tire
+    if (dynamic_obj->flag == DYNAF_REARWHEEL) {
+        goto FOUND_REAR; // 1 = rear tire
+    }
     // asm 00008541: 	LDI	*AR2,R0
+    dynamic_obj = dynamic_obj->link;
     // asm 00008542: 	BR	FBLOOP
+    goto FBLOOP;
 FOUND_REAR:
     // asm 00008543: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_REAR", 0, 0);
-    UNIMPL();
+    return dynamic_obj;
 }
 
 /*
@@ -294,57 +426,77 @@ FOUND_REAR:
  *	R5 = ZOFFSET
  */
 
-static void INIT_SMOKE(void) {
+static void INIT_SMOKE(PROC* p /*AR7*/, OBJ* smoke_obj /*AR0*/, const int* animation /*AR1*/,
+                       DYNAOBJ* wheel /*AR2*/, int road_oid /*R4*/, c3x_reg_t z_offset /*R5*/) {
     // asm 00008544: 	PUSH	AR1
     // asm 00008545: 	LDI	*+AR7(NUM_SMOKES),R0
     // asm 00008546: 	ADDI	SMOKE_OBJS,R0
     // asm 00008547: 	LDI	R0,IR0
     // asm 00008548: 	STI	AR0,*+AR7(IR0)
+    p->ctx->SMOKE_PROC.smoke_objs[p->ctx->SMOKE_PROC.num_smokes] = smoke_obj;
     // ;	LDI	@SMOKEANII,AR1
     // asm 00008549: 	STI	AR1,*+AR0(OUSR1)	;pointer to animation table
+    smoke_obj->usr1 = (uintptr_t)animation; // pointer to animation table
     // asm 0000854A: 	CMPI	300h,R4
     // asm 0000854B: 	BNE	INSM1
+    if (road_oid != 0x300) {
+        goto INSM1;
+    }
     // asm 0000854C: 	LDI	*+AR7(SMOKE_PAL),R0
     // asm 0000854D: 	STI	R0,*+AR0(OPAL)
+    smoke_obj->palette = (u32)p->ctx->SMOKE_PROC.palette;
 INSM1:
     // asm 0000854E: 	LDI	*AR1,R0
     // asm 0000854F: 	STI	R0,*+AR0(OROMDATA)
+    smoke_obj->romdata = ROM_PTR((word_addr_t)animation[0]);
     // asm 00008550: 	LDI	PLYR_C|PLYR_SMOKE_S,R0
     // asm 00008551: 	STI	R0,*+AR0(OID)
+    smoke_obj->id = PLYR_C | PLYR_SMOKE_S;
     // asm 00008552: 	LDF	40,R0
     // asm 00008553: 	CALL	SFRAND
     // asm 00008554: 	ADDF	*+AR2(DYNACENTERX),R0
     // asm 00008555: 	STF	R0,*+AR0(OPOSX)
+    smoke_obj->pos.X = C3X_STF(C3X_ADD(SFRAND(C3X_IMM_F32(40)), C3X_LDF(wheel->center_x)));
     // asm 00008556: 	FLOAT	130,R0
     // asm 00008557: 	ADDF	*+AR2(DYNACENTERY),R0
     // asm 00008558: 	STF	R0,*+AR0(OPOSY)
+    smoke_obj->pos.Y = C3X_STF(C3X_ADD(C3X_FROM_INT(130), C3X_LDF(wheel->center_y)));
     // asm 00008559: 	LDF	*+AR2(DYNACENTERZ),R0
     // asm 0000855A: 	ADDF	R5,R0
     // asm 0000855B: 	STF	R0,*+AR0(OPOSZ)
+    smoke_obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(wheel->center_z), z_offset));
     // asm 0000855C: 	LDI	@MATRIXAI,R2
     // asm 0000855D: 	LDI	AR0,R3
     // asm 0000855E: 	ADDI	OPOSX,R3
     // asm 0000855F: 	LDI	R3,AR2
     // asm 00008560: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&smoke_obj->pos, &MATRIXAI, &smoke_obj->pos);
     // asm 00008561: 	LDF	*+AR0(OPOSX),R0
     // asm 00008562: 	ADDF	*+AR4(OPOSX),R0
     // asm 00008563: 	STF	R0,*+AR0(OPOSX)
+    smoke_obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(smoke_obj->pos.X),
+                                      C3X_LDF(p->ctx->SMOKE_PROC.car_obj->pos.X)));
     // asm 00008564: 	LDF	*+AR0(OPOSY),R0
     // asm 00008565: 	ADDF	*+AR4(OPOSY),R0
     // asm 00008566: 	STF	R0,*+AR0(OPOSY)
+    smoke_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(smoke_obj->pos.Y),
+                                      C3X_LDF(p->ctx->SMOKE_PROC.car_obj->pos.Y)));
     // asm 00008567: 	LDF	*+AR0(OPOSZ),R0
     // asm 00008568: 	ADDF	*+AR4(OPOSZ),R0
     // asm 00008569: 	STF	R0,*+AR0(OPOSZ)
+    smoke_obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(smoke_obj->pos.Z),
+                                      C3X_LDF(p->ctx->SMOKE_PROC.car_obj->pos.Z)));
     // asm 0000856A: 	ORM	O_POSTER|O_NOCOLL,*+AR0(OFLAGS)
+    smoke_obj->flags |= O_POSTER | O_NOCOLL;
     // asm 0000856D: 	LDI	AR0,AR2
     // asm 0000856E: 	CALL	OBJ_INSERT
+    OBJ_INSERT(smoke_obj);
     // asm 0000856F: 	LDI	*+AR7(NUM_SMOKES),R0
     // asm 00008570: 	ADDI	1,R0			;NOTE this instruction clears the CARRY
     // asm 00008571: 	STI	R0,*+AR7(NUM_SMOKES)
+    p->ctx->SMOKE_PROC.num_smokes += 1; // NOTE this instruction clears the CARRY
     // asm 00008572: 	POP	AR1
     // asm 00008573: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_SMOKE", 0, 0);
-    UNIMPL();
 }
 
 /*

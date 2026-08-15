@@ -3,6 +3,8 @@
 
 #include "port_types.h"
 
+#define PORT_STEERING_CENTER 128
+
 void port_handle_input(void);
 void port_sample_steering(void);
 int port_take_steering_detent(void);

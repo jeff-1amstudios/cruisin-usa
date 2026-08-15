@@ -837,6 +837,9 @@ typedef struct PROC_CONTEXT {
             int loop_count;
         } BLINK_FREEBE;
         struct {
+            int background_color;
+        } BONSCRN2;
+        struct {
             OBJ* obj;
             int loop_count;
             int script_index;
@@ -872,6 +875,22 @@ typedef struct PROC_CONTEXT {
             c3x_f32_t velocity_z;
             int smoke_counted;
         } PUFF_PROC;
+        struct {
+            OBJ* player_obj;       // AR6
+            OBJ* left_flame;       // AR4
+            OBJ* right_flame;      // AR5
+            MATRIX* body_matrix;   // PDATA+2
+            int frame_on;          // PDATA+1
+            int frames_remaining;  // R5
+        } FLAME_PRC;
+        struct {
+            OBJ* car_obj;          // AR4
+            CARBLK* carblk;        // AR5
+            int num_smokes;        // PDATA
+            int palette;           // PDATA+1
+            OBJ* smoke_objs[20];   // PDATA+2..
+            c3x_reg_t delay_frames; // R7
+        } SMOKE_PROC;
         struct {
             VECTOR collision_offset; // PDATA..PDATA+2
             int frame_on;             // PDATA+3

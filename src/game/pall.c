@@ -17,7 +17,7 @@
 
 void PAL_INIT(void);
 void PAL_XFER(void);
-void PAL_OVERWRITE(void);
+void PAL_OVERWRITE(u32 palette_to_overwrite /*R0*/, u32 source_palette /*R1*/);
 int PAL_FIND(u32 pal_index);
 int PAL_FIND_RAW(const tPAL* palette_source);
 void PAL_DELETE_RAW(int actual_palette_index /*AR2*/);
@@ -276,23 +276,31 @@ PALTRX:
  *
  *
  */
-void PAL_OVERWRITE(void)
+void PAL_OVERWRITE(u32 palette_to_overwrite /*R0*/, u32 source_palette /*R1*/)
 {
+    int palette_code;
+    tPAL* palette_source;
+
     // asm 00009EED: 	LDI	R0,AR2
     // asm 00009EEE: 	CALL	PAL_FIND
+    palette_code = PAL_FIND(palette_to_overwrite);
     // asm: 	SLOCKON	C,"PALL\PAL_OVERWRITE  FINDPAL FAILURE"
+    SLOCKON(palette_code < 0, "PALL\\PAL_OVERWRITE  FINDPAL FAILURE");
     // asm 00009EEF: 	RETSC
+    if (palette_code < 0) {
+        return;
+    }
     // asm 00009EF0: 	LDP	@PALROMI
     // asm 00009EF1: 	LDI	R1,AR2
     // asm 00009EF2: 	ADDI	@PALROMI,AR2
     // asm 00009EF3: 	LDI	*AR2,AR2
+    palette_source = PALROMI[source_palette];
     // 	;SETUP TRANSFER
     // asm 00009EF4: 	LDI	*AR2++,R3	;GET COUNT
     // asm 00009EF5: 	LDI	R0,R2		;GET DESTINATION
     // asm 00009EF6: 	CALL	PAL_SET
+    PAL_SET(palette_source->data, (u32)palette_code, (u32)palette_source->flags_and_count);
     // asm 00009EF7: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PAL_OVERWRITE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

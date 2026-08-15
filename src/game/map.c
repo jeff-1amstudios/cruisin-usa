@@ -14,6 +14,9 @@
 #include "validator.h"
 #include "vunit.h"
 
+extern MATRIX _MATRIXA;
+extern VECTOR _VECTORA;
+
 /*
  * Source module: asm/MAP.ASM
  */
@@ -25,7 +28,7 @@ void CLEAR_MAP_PALS(void);
 static void MAPPAL_ILLUM_INIT(void);
 static void MAP_ILLUM_COMPUTE(void);
 static void MAPPAL_ILLUM(void);
-void TIME2STR(void);
+void TIME2STR(char* buffer /*AR2*/, int time /*R0*/);
 void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/);
 void RADAR_PLOT(void);
 
@@ -1055,7 +1058,11 @@ int tmp_buffer[2];
  *	AR2	STRING SPACE
  *
  */
-void TIME2STR(void) {
+void TIME2STR(char* buffer /*AR2*/, int time /*R0*/) {
+    int hundredths;
+    int seconds;
+    int minutes;
+
     // asm 000060C4: 	PUSH	R0
     // asm 000060C5: 	PUSH	R1
     // asm 000060C6: 	PUSH	R2
@@ -1063,24 +1070,32 @@ void TIME2STR(void) {
     // asm 000060C8: 	PUSH	AR1
     // asm 000060C9: 	PUSH	AR2
     // asm 000060CA: 	CALL	CVTTIME
+    CVTTIME(time, &hundredths, &seconds, &minutes);
     // asm 000060CB: 	PUSH	R0
     // asm 000060CC: 	PUSH	R1
     // asm 000060CD: 	CALL	_itoa
+    _itoa(buffer, minutes);
     // asm 000060CE: 	LDI	AR2,AR0
     // asm 000060CF: 	LDI	@COLONI,AR1
     // asm 000060D0: 	CALL	STRCAT
+    STRCAT(buffer, COLONI);
     // asm 000060D1: 	POP	R2
     // asm 000060D2: 	LDI	@tmp_bufferI,AR2
     // asm 000060D3: 	CALL	_itoaLZ
+    _itoaLZ((char*)tmp_bufferI, seconds);
     // asm 000060D4: 	LDI	AR2,AR1
     // asm 000060D5: 	CALL	STRCAT
+    STRCAT(buffer, (char*)tmp_bufferI);
     // asm 000060D6: 	LDI	@COLONI,AR1
     // asm 000060D7: 	CALL	STRCAT
+    STRCAT(buffer, COLONI);
     // asm 000060D8: 	POP	R2
     // asm 000060D9: 	LDI	@tmp_bufferI,AR2
     // asm 000060DA: 	CALL	_itoaLZ
+    _itoaLZ((char*)tmp_bufferI, hundredths);
     // asm 000060DB: 	LDI	AR2,AR1
     // asm 000060DC: 	CALL	STRCAT
+    STRCAT(buffer, (char*)tmp_bufferI);
     // asm 000060DD: 	LDI	AR0,AR2
     // asm 000060DE: 	POP	AR2
     // asm 000060DF: 	POP	AR1
@@ -1090,7 +1105,6 @@ void TIME2STR(void) {
     // asm 000060E3: 	POP	R0
     // asm 000060E4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TIME2STR", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1207,68 +1221,111 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
 #define BLIPSIZE_Y 4
 #define BLIPSIZE_XH 2
 #define BLIPSIZE_YH 2
+#define h2p1a_I 0x03DF4
+#define h2p2b_I 0x03DF4
 /* asm: THIS_MACHINE_AHEAD	.bss	THIS_MACHINE_AHEAD,1 */
 int THIS_MACHINE_AHEAD;
 
 // *----------------------------------------------------------------------------
 void RADAR_PLOT(void) {
+    OBJ* player_obj;
+    OBJ* car_obj;
+    CARBLK* other_carblk;
+    OBJ* player_track_obj;
+    c3x_reg_t coordinate;
+    int radar_x;
+    int radar_y;
+    int outside_radar;
+
     // asm 0000610A: 	PUSH	AR4
     // asm 0000610B: 	LDI	@PLYCAR,AR4
+    player_obj = PLYCAR;
     // 	;background
     // asm 0000610C: 	LDI	CC|DITHER|8,R0
     // asm 0000610D: 	STI	R0,@_ACNTL
+    _ACNTL = CC | DITHER | 8;
     // asm 0000610E: 	LDI	RADAR_XMIN,R0
     // asm 0000610F: 	ADDI	@MOVEIN_OFFSET,R0
     // asm 00006110: 	STI	R0,@(_ARPS+(0*3))
+    _ARPS[0] = RADAR_XMIN + MOVEIN_OFFSET;
     // asm 00006111: 	STI	R0,@(_ARPS+(3*3))
+    _ARPS[9] = RADAR_XMIN + MOVEIN_OFFSET;
     // asm 00006112: 	LDI	RADAR_XMAX,R0
     // asm 00006113: 	ADDI	@MOVEIN_OFFSET,R0
     // asm 00006114: 	STI	R0,@(_ARPS+(1*3))
+    _ARPS[3] = RADAR_XMAX + MOVEIN_OFFSET;
     // asm 00006115: 	STI	R0,@(_ARPS+(2*3))
+    _ARPS[6] = RADAR_XMAX + MOVEIN_OFFSET;
     // asm 00006116: 	LDI	RADAR_YMIN,R0
     // asm 00006117: 	STI	R0,@(_ARPS+(0*3)+1)
+    _ARPS[1] = RADAR_YMIN;
     // asm 00006118: 	STI	R0,@(_ARPS+(1*3)+1)
+    _ARPS[4] = RADAR_YMIN;
     // asm 00006119: 	LDI	RADAR_YMAX,R0
     // asm 0000611A: 	STI	R0,@(_ARPS+(3*3)+1)
+    _ARPS[10] = RADAR_YMAX;
     // asm 0000611B: 	STI	R0,@(_ARPS+(2*3)+1)
+    _ARPS[7] = RADAR_YMAX;
     // asm 0000611C: 	CLRI	R0
     // asm 0000611D: 	STI	R0,@_ADDRL
+    _ADDRL = 0;
     // asm 0000611E: 	CLRI	R0
     // asm 0000611F: 	STI	R0,@_ACMAP
+    _ACMAP = 0;
     // asm 00006120: 	CALL	_stuff_fpga
+    _stuff_fpga();
     // asm 00006121: 	LDP	@(_CAMERARAD+Y)
     // asm 00006122: 	LDF	@(_CAMERARAD+Y),R2
     // asm 00006123: 	SETDP
     // asm 00006124: 	LDI	@MATRIXAI,AR2
     // asm 00006125: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_LDF(_CAMERARAD.Y));
     // asm 00006126: 	LDI	@CAR_LISTI,AR0
     // asm 00006127: 	SUBI	OLINK3,AR0
+    car_obj = CAR_LIST;
 RADAR_LP:
     // asm 00006128: 	LDI	*+AR0(OLINK3),R0
     // asm 00006129: 	BEQ	RADAR_X
+    if (car_obj == NULL) {
+        goto RADAR_X;
+    }
     // asm 0000612A: 	LDI	R0,AR0
     // asm 0000612B: 	LDI	CC|3,R0			;red (RACER)
+    _ACNTL = CC | 3; // red (RACER)
     // asm 0000612C: 	LDI	*+AR0(OID),R1
     // asm 0000612D: 	CMPI	DRONE_C|VEHICLE_T|DRNE_RACER,R1
     // asm 0000612E: 	LDINE	CC|0Ch,R0		;light gray (general racer)
+    if (car_obj->id != (DRONE_C | VEHICLE_T | DRNE_RACER)) {
+        _ACNTL = CC | 0x0C; // light gray (general racer)
+    }
     // asm 0000612F: 	STI	R0,@_ACNTL
     // asm 00006130: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 00006131: 	LDF	*+AR0(OPOSX),R0
     // asm 00006132: 	SUBF	*+AR4(OPOSX),R0
+    coordinate = C3X_SUB(C3X_LDF(car_obj->pos.X), C3X_LDF(player_obj->pos.X));
     // asm 00006133: 	LDLF	0.003,R1
     // asm 00006134: 	MPYF	R1,R0
+    coordinate = C3X_MUL(coordinate, C3X_F32(0.003)); // c3x-lint: full-precision -- LDLF long immediate
     // asm 00006135: 	STF	R0,*+AR2(X)
+    VECTORAI.X = C3X_STF(coordinate);
     // asm 00006136: 	LDF	*+AR0(OPOSZ),R0
     // asm 00006137: 	SUBF	*+AR4(OPOSZ),R0
+    coordinate = C3X_SUB(C3X_LDF(car_obj->pos.Z), C3X_LDF(player_obj->pos.Z));
     // asm 00006138: 	LDLF	0.003,R1
     // asm 00006139: 	MPYF	R1,R0
+    coordinate = C3X_MUL(coordinate, C3X_F32(0.003)); // c3x-lint: full-precision -- LDLF long immediate
     // asm 0000613A: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(coordinate);
     // asm 0000613B: 	LDI	@MATRIXAI,R2
     // asm 0000613C: 	LDI	AR2,R3
     // asm 0000613D: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // asm 0000613E: 	LDF	*+AR2(X),R0
     // asm 0000613F: 	FIX	R0
+    radar_x = C3X_FIX(C3X_LDF(VECTORAI.X));
     // asm 00006140: 	ADDI	RADAR_XCNTR-2,R0
+    radar_x += RADAR_XCNTR - 2;
     // 	;
     // 	;
     // 	;
@@ -1276,108 +1333,178 @@ RADAR_LP:
     // 	;
     // asm 00006141: 	LDI	@HEAD2HEAD_ON,R2		;are we playing HEAD2HEAD?
     // asm 00006142: 	BZ	NOTTHEOPLYR
+    if (HEAD2HEAD_ON == 0) {
+        goto NOTTHEOPLYR; // are we playing HEAD2HEAD?
+    }
     // asm 00006143: 	CMPI	@PLY2CAR,AR0		;is this the other PLAYER?
     // asm 00006144: 	BNE	NOTTHEOPLYR
+    if (car_obj != PLY2CAR) {
+        goto NOTTHEOPLYR; // is this the other PLAYER?
+    }
     // asm 00006145: 	CLRI	R6
+    outside_radar = 0;
     // asm 00006146: 	CMPI	RADAR_XMIN,R0
     // asm 00006147: 	LDILT	RADAR_XMIN,R0
     // asm 00006148: 	LDILT	1,R6
+    if (radar_x < RADAR_XMIN) {
+        radar_x = RADAR_XMIN;
+        outside_radar = 1;
+    }
     // asm 00006149: 	CMPI	RADAR_XMAX,R0
     // asm 0000614A: 	LDIGT	RADAR_XMAX,R0
     // asm 0000614B: 	LDIGT	1,R6
+    if (radar_x > RADAR_XMAX) {
+        radar_x = RADAR_XMAX;
+        outside_radar = 1;
+    }
     // asm 0000614C: 	ADDI	@MOVEIN_OFFSET,R0
+    radar_x += MOVEIN_OFFSET;
     // asm 0000614D: 	STI	R0,@(_ARPS+(0*3))
+    _ARPS[0] = radar_x;
     // asm 0000614E: 	STI	R0,@(_ARPS+(3*3))
+    _ARPS[9] = radar_x;
     // asm 0000614F: 	ADDI	3,R0
+    radar_x += 3;
     // asm 00006150: 	STI	R0,@(_ARPS+(1*3))
+    _ARPS[3] = radar_x;
     // asm 00006151: 	STI	R0,@(_ARPS+(2*3))
+    _ARPS[6] = radar_x;
     // asm 00006152: 	LDF	*+AR2(Z),R0
     // asm 00006153: 	MPYF	0.3,R0
+    coordinate = C3X_MUL(C3X_LDF(VECTORAI.Z), C3X_IMM_F32(0.3));
     // asm 00006154: 	FIX	R0
+    radar_y = C3X_FIX(coordinate);
     // asm 00006155: 	NEGI	R0
+    radar_y = -radar_y;
     // asm 00006156: 	ADDI	RADAR_YCNTR-2,R0
+    radar_y += RADAR_YCNTR - 2;
     // asm 00006157: 	CMPI	RADAR_YMIN,R0
     // asm 00006158: 	LDILT	RADAR_YMIN,R0
     // asm 00006159: 	LDILT	1,R6
+    if (radar_y < RADAR_YMIN) {
+        radar_y = RADAR_YMIN;
+        outside_radar = 1;
+    }
     // asm 0000615A: 	CMPI	RADAR_YMAX,R0
     // asm 0000615B: 	LDIGT	RADAR_YMAX,R0
     // asm 0000615C: 	LDIGT	1,R6
+    if (radar_y > RADAR_YMAX) {
+        radar_y = RADAR_YMAX;
+        outside_radar = 1;
+    }
     // asm 0000615D: 	STI	R0,@(_ARPS+(0*3)+1)
+    _ARPS[1] = radar_y;
     // asm 0000615E: 	STI	R0,@(_ARPS+(1*3)+1)
+    _ARPS[4] = radar_y;
     // asm 0000615F: 	ADDI	3,R0
+    radar_y += 3;
     // asm 00006160: 	STI	R0,@(_ARPS+(3*3)+1)
+    _ARPS[10] = radar_y;
     // asm 00006161: 	STI	R0,@(_ARPS+(2*3)+1)
+    _ARPS[7] = radar_y;
     // asm 00006162: 	LDL	H2HPAL1,AR2
     // asm 00006163: 	CALL	PAL_FIND_RAW
+    _ACMAP = PAL_FIND_RAW((tPAL*)ROM_PTR(H2HPAL1_ROM));
     // asm 00006164: 	STI	R0,@_ACMAP
     // asm 00006165: 	LDI	TM|ZS,R0		;red (RACER)
     // asm 00006166: 	STI	R0,@_ACNTL
+    _ACNTL = TM | ZS; // red (RACER)
     // asm 00006167: 	LDI	@DIPRAM,R0
     // asm 00006168: 	TSTB	CMDP_MASTER,R0
     // asm 00006169: 	BZ	GL14
+    if ((DIPRAM & CMDP_MASTER) == 0) {
+        goto GL14;
+    }
     // asm 0000616A: 	LDL	h2p1a_I,R0
     // asm 0000616B: 	STI	R0,@_ADDRL
+    _ADDRL = h2p1a_I;
     // asm 0000616C: 	LDI	@_ARPS+(0*3)+1,R0
     // asm 0000616D: 	SUBI	16,R0
     // asm 0000616E: 	STI	R0,@_ARPS+(0*3)+1
+    _ARPS[1] -= 16;
     // asm 0000616F: 	LDI	@_ARPS+(1*3)+1,R0
     // asm 00006170: 	SUBI	16,R0
     // asm 00006171: 	STI	R0,@_ARPS+(1*3)+1
+    _ARPS[4] -= 16;
     // asm 00006172: 	LDI	@_ARPS+(0*3),R0
     // asm 00006173: 	SUBI	13,R0
     // asm 00006174: 	STI	R0,@_ARPS+(0*3)
+    _ARPS[0] -= 13;
     // asm 00006175: 	LDI	@_ARPS+(3*3),R0
     // asm 00006176: 	SUBI	13,R0
     // asm 00006177: 	STI	R0,@_ARPS+(3*3)
+    _ARPS[9] -= 13;
     // asm 00006178: 	LDI	00038h,R0
     // asm 00006179: 	STI	R0,@_AIVI
+    _AIVI[0] = 0x0038;
     // asm 0000617A: 	LDI	00041h,R0
     // asm 0000617B: 	STI	R0,@_AIVI+1
+    _AIVI[1] = 0x0041;
     // asm 0000617C: 	LDI	00D41h,R0
     // asm 0000617D: 	STI	R0,@_AIVI+2
+    _AIVI[2] = 0x0D41;
     // asm 0000617E: 	LDI	00D38h,R0
     // asm 0000617F: 	STI	R0,@_AIVI+3
+    _AIVI[3] = 0x0D38;
     // asm 00006180: 	BU	GL15
+    goto GL15;
 GL14:
     // asm 00006181: LDL	h2p2b_I,R0
     // asm 00006182: 	STI	R0,@_ADDRL
+    _ADDRL = h2p2b_I;
     // asm 00006183: 	LDI	@_ARPS+(0*3)+1,R0
     // asm 00006184: 	SUBI	16,R0
     // asm 00006185: 	STI	R0,@_ARPS+(0*3)+1
+    _ARPS[1] -= 16;
     // asm 00006186: 	LDI	@_ARPS+(1*3)+1,R0
     // asm 00006187: 	SUBI	16,R0
     // asm 00006188: 	STI	R0,@_ARPS+(1*3)+1
+    _ARPS[4] -= 16;
     // asm 00006189: 	LDI	@_ARPS+(0*3),R0
     // asm 0000618A: 	SUBI	13,R0
     // asm 0000618B: 	STI	R0,@_ARPS+(0*3)
+    _ARPS[0] -= 13;
     // asm 0000618C: 	LDI	@_ARPS+(3*3),R0
     // asm 0000618D: 	SUBI	13,R0
     // asm 0000618E: 	STI	R0,@_ARPS+(3*3)
+    _ARPS[9] -= 13;
     // asm 0000618F: 	LDI	00041h,R0
     // asm 00006190: 	STI	R0,@_AIVI
+    _AIVI[0] = 0x0041;
     // asm 00006191: 	LDI	0004Bh,R0
     // asm 00006192: 	STI	R0,@_AIVI+1
+    _AIVI[1] = 0x004B;
     // asm 00006193: 	LDI	00D4Bh,R0
     // asm 00006194: 	STI	R0,@_AIVI+2
+    _AIVI[2] = 0x0D4B;
     // asm 00006195: 	LDI	00D41h,R0
     // asm 00006196: 	STI	R0,@_AIVI+3
+    _AIVI[3] = 0x0D41;
 GL15:
     // asm 00006197: 	CMPI	0,R6
     // asm 00006198: 	BEQ	DADA4
+    if (outside_radar == 0) {
+        goto DADA4;
+    }
     // 	;we have a case where the other player is either behind us
     // 	;or in front of us
     // 	;
     // asm 00006199: 	LDI	*+AR0(OCARBLK),AR1
+    other_carblk = car_obj->carblk;
     // asm 0000619A: 	LDI	*+AR1(CAR_OM),R0
 #if DEBUG
     // asm: 	BZ	$	;debugging please remove
 #endif
     // asm 0000619B: 	LDI	*+AR1(CARTRACK_ID),R0
+    player_track_obj = OBJREF_TO_PTR(PLYCBLK->closest_track_piece);
     // asm 0000619C: 	LDI	@PLYCBLK,AR2
     // asm 0000619D: 	LDI	*+AR2(CARTRAK),AR2
     // asm 0000619E: 	LDI	*+AR2(OUSR1),R1
     // asm 0000619F: 	CMPI	R1,R0
     // asm 000061A0: 	BLT	ISBEHIND
+    if ((int)other_carblk->track_id < (int)player_track_obj->usr1) {
+        goto ISBEHIND;
+    }
     // ;	BLE	ISBEHIND
     // ;	LDI	RADAR_XCNTR,R0
     // ;	ADDI	9,R0
@@ -1388,12 +1515,19 @@ GL15:
     // ;	STI	R0,@_ARPS+(3*3)
     // asm 000061A1: 	LDI	RADAR_YMIN,R0
     // asm 000061A2: 	ADDI	10,R0
+    radar_y = RADAR_YMIN + 10;
     // asm 000061A3: 	STI	R0,@_ARPS+(2*3)+1
+    _ARPS[7] = radar_y;
     // asm 000061A4: 	STI	R0,@_ARPS+(3*3)+1
+    _ARPS[10] = radar_y;
     // asm 000061A5: 	SUBI	20,R0
+    radar_y -= 20;
     // asm 000061A6: 	STI	R0,@_ARPS+(0*3)+1
+    _ARPS[1] = radar_y;
     // asm 000061A7: 	STI	R0,@_ARPS+(1*3)+1
+    _ARPS[4] = radar_y;
     // asm 000061A8: 	BU	DADA4
+    goto DADA4;
 ISBEHIND:
     // ;	LDI	RADAR_XCNTR,R0
     // ;	ADDI	9,R0
@@ -1404,64 +1538,117 @@ ISBEHIND:
     // ;	STI	R0,@_ARPS+(3*3)
     // asm 000061A9: 	LDI	RADAR_YMAX,R0
     // asm 000061AA: 	ADDI	10,R0
+    radar_y = RADAR_YMAX + 10;
     // asm 000061AB: 	STI	R0,@_ARPS+(2*3)+1
+    _ARPS[7] = radar_y;
     // asm 000061AC: 	STI	R0,@_ARPS+(3*3)+1
+    _ARPS[10] = radar_y;
     // asm 000061AD: 	SUBI	20,R0
+    radar_y -= 20;
     // asm 000061AE: 	STI	R0,@_ARPS+(0*3)+1
+    _ARPS[1] = radar_y;
     // asm 000061AF: 	STI	R0,@_ARPS+(1*3)+1
+    _ARPS[4] = radar_y;
 DADA4:
     // asm 000061B0: 	CALL	_stuff_fpga
+    _stuff_fpga();
     // asm 000061B1: 	CLRI	R0
     // asm 000061B2: 	STI	R0,@_ACMAP
+    _ACMAP = 0;
     // asm 000061B3: 	BU	RADAR_LP
+    goto RADAR_NEXT;
 NOTTHEOPLYR:
     // asm 000061B4: 	CMPI	RADAR_XMIN,R0
     // asm 000061B5: 	BLT	RADAR_LP
+    if (radar_x < RADAR_XMIN) {
+        goto RADAR_NEXT;
+    }
     // asm 000061B6: 	CMPI	RADAR_XMAX,R0
     // asm 000061B7: 	BGT	RADAR_LP
+    if (radar_x > RADAR_XMAX) {
+        goto RADAR_NEXT;
+    }
     // asm 000061B8: 	ADDI	@MOVEIN_OFFSET,R0
+    radar_x += MOVEIN_OFFSET;
     // asm 000061B9: 	STI	R0,@(_ARPS+(0*3))
+    _ARPS[0] = radar_x;
     // asm 000061BA: 	STI	R0,@(_ARPS+(3*3))
+    _ARPS[9] = radar_x;
     // asm 000061BB: 	ADDI	3,R0
+    radar_x += 3;
     // asm 000061BC: 	STI	R0,@(_ARPS+(1*3))
+    _ARPS[3] = radar_x;
     // asm 000061BD: 	STI	R0,@(_ARPS+(2*3))
+    _ARPS[6] = radar_x;
     // asm 000061BE: 	LDF	*+AR2(Z),R0
     // asm 000061BF: 	MPYF	0.3,R0
+    coordinate = C3X_MUL(C3X_LDF(VECTORAI.Z), C3X_IMM_F32(0.3));
     // asm 000061C0: 	FIX	R0
+    radar_y = C3X_FIX(coordinate);
     // asm 000061C1: 	NEGI	R0
+    radar_y = -radar_y;
     // asm 000061C2: 	ADDI	RADAR_YCNTR-2,R0
+    radar_y += RADAR_YCNTR - 2;
     // asm 000061C3: 	CMPI	RADAR_YMIN,R0
     // asm 000061C4: 	BLT	RADAR_LP
+    if (radar_y < RADAR_YMIN) {
+        goto RADAR_NEXT;
+    }
     // asm 000061C5: 	CMPI	RADAR_YMAX,R0
     // asm 000061C6: 	BGT	RADAR_LP
+    if (radar_y > RADAR_YMAX) {
+        goto RADAR_NEXT;
+    }
     // asm 000061C7: 	STI	R0,@(_ARPS+(0*3)+1)
+    _ARPS[1] = radar_y;
     // asm 000061C8: 	STI	R0,@(_ARPS+(1*3)+1)
+    _ARPS[4] = radar_y;
     // asm 000061C9: 	ADDI	3,R0
+    radar_y += 3;
     // asm 000061CA: 	STI	R0,@(_ARPS+(3*3)+1)
+    _ARPS[10] = radar_y;
     // asm 000061CB: 	STI	R0,@(_ARPS+(2*3)+1)
+    _ARPS[7] = radar_y;
     // asm 000061CC: 	CALL	_stuff_fpga
+    _stuff_fpga();
     // asm 000061CD: 	BU	RADAR_LP
+RADAR_NEXT:
+    car_obj = (OBJ*)(uintptr_t)car_obj->link3;
+    goto RADAR_LP;
 RADAR_X:
     // asm 000061CE: 	LDI	CC|1,R0
     // asm 000061CF: 	STI	R0,@_ACNTL
+    _ACNTL = CC | 1;
     // asm 000061D0: 	LDI	RADAR_XCNTR-2,R0
     // asm 000061D1: 	ADDI	@MOVEIN_OFFSET,R0
     // asm 000061D2: 	STI	R0,@(_ARPS+(0*3))
+    _ARPS[0] = (RADAR_XCNTR - 2) + MOVEIN_OFFSET;
     // asm 000061D3: 	STI	R0,@(_ARPS+(3*3))
+    _ARPS[9] = (RADAR_XCNTR - 2) + MOVEIN_OFFSET;
     // asm 000061D4: 	LDI	RADAR_XCNTR+1,R0
     // asm 000061D5: 	ADDI	@MOVEIN_OFFSET,R0
     // asm 000061D6: 	STI	R0,@(_ARPS+(1*3))
+    _ARPS[3] = (RADAR_XCNTR + 1) + MOVEIN_OFFSET;
     // asm 000061D7: 	STI	R0,@(_ARPS+(2*3))
+    _ARPS[6] = (RADAR_XCNTR + 1) + MOVEIN_OFFSET;
     // asm 000061D8: 	LDI	RADAR_YCNTR-2,R0
     // asm 000061D9: 	STI	R0,@(_ARPS+(0*3)+1)
+    _ARPS[1] = RADAR_YCNTR - 2;
     // asm 000061DA: 	STI	R0,@(_ARPS+(1*3)+1)
+    _ARPS[4] = RADAR_YCNTR - 2;
     // asm 000061DB: 	LDI	RADAR_YCNTR+1,R0
     // asm 000061DC: 	STI	R0,@(_ARPS+(3*3)+1)
+    _ARPS[10] = RADAR_YCNTR + 1;
     // asm 000061DD: 	STI	R0,@(_ARPS+(2*3)+1)
+    _ARPS[7] = RADAR_YCNTR + 1;
     // asm 000061DE: 	CALL	_stuff_fpga
+    _stuff_fpga();
     // asm 000061DF: 	POP	AR4
     // asm 000061E0: 	LDI	@HEAD2HEAD_ON,R0
     // asm 000061E1: 	BZ	NODOAP
+    if (HEAD2HEAD_ON == 0) {
+        goto NODOAP;
+    }
     // asm 000061E2: 	LDI	@PLY2CAR,AR0
     // asm 000061E3: 	LDI	*+AR0(OCARBLK),AR0
     // asm 000061E4: 	LDI	@PLYCBLK,AR1
@@ -1470,9 +1657,9 @@ RADAR_X:
     // asm 000061E7: 	CMPI	R0,R1
     // asm 000061E8: 	LDIGT	1,R0
     // asm 000061E9: 	LDILE	0,R0
+    THIS_MACHINE_AHEAD = PLYCBLK->track_id > PLY2CAR->carblk->track_id ? 1 : 0;
     // asm 000061EA: 	STI	R0,@THIS_MACHINE_AHEAD
 NODOAP:
     // asm 000061EB: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RADAR_PLOT", 0, 0);
-    UNIMPL();
 }

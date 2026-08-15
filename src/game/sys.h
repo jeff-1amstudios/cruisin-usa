@@ -391,6 +391,15 @@
 // asm: NCHAN		.set	4
 #define NCHAN 4
 
+// asm: SND_PRI		.set	0		;UH	priority (00=lowest, FF= highest)
+#define SND_PRI 0 // UH priority (00=lowest, FF= highest)
+
+// asm: SND_VOL		.set	5		;SD	VOLUME OF TRACK
+#define SND_VOL 5 // SD VOLUME OF TRACK
+
+// asm: SND_IDX		.set	6		;UH	INDEX OF SOUND
+#define SND_IDX 6 // UH INDEX OF SOUND
+
 // asm: SND_SIZ		.set	9		;SIZ
 #define SND_SIZ 9 // SIZ
 

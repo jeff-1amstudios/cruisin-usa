@@ -1236,6 +1236,7 @@ DTXX:
  *OPTIMIZED 9/14/93-ELP
  */
 static void ATODINT(void) {
+    int sampled_steering;
     c3x_reg_t raw_value;
     c3x_reg_t previous_value;
     c3x_reg_t filtered_value;
@@ -1276,7 +1277,8 @@ static void ATODINT(void) {
     // asm 00004D99: 	CLRI	AR0
     // asm 00004D9A: 	LDP	@ATOD_R
     // asm 00004D9B: 	LDI	@ATOD_R,R1
-    raw_value = C3X_FROM_INT(port_get_steering());
+    sampled_steering = port_get_steering();
+    raw_value = C3X_FROM_INT(sampled_steering);
     // asm 00004D9C: 	LDI	*AR0,R0
     // asm 00004D9D: 	LDP	@_pot0
     // asm 00004D9E: 	RS	24,R1
@@ -1308,6 +1310,11 @@ static void ATODINT(void) {
     // asm 00004DAA: 	FIX	R0
     // asm 00004DAB: 	STI	R0,@_pot0
     _pot0 = C3X_FIX(filtered_value);
+    /* A noise-free emulated wheel can otherwise stick one count below center:
+       FIX(128 * 0.33 + 127 * 0.67) is 127. */
+    if (sampled_steering == PORT_STEERING_CENTER) {
+        _pot0 = PORT_STEERING_CENTER;
+    }
 NOSMOOTH1:
     // asm 00004DAC: 	LDP	@SYSCNTL
     // asm 00004DAD: 	LDI	@SYSCNTL,R0		;ACTUALLY WE SIGNAL A READ OF THE

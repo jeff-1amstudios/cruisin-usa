@@ -3,6 +3,8 @@
 
 #include "port_types.h"
 
+extern int wireframe_mode;
+
 void port_output_comm_io(u32 value);
 
 int port_output_fpga(

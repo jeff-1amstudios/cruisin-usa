@@ -27,7 +27,7 @@ extern VECTOR _VECTORB;
  * Source module: asm/RACER.ASM
  */
 
-void DIFF_CHANGE(void);
+void DIFF_CHANGE(int position /*R0*/);
 static c3x_reg_t GETDIFF(void);
 void RACER_DRONE(PROC* p);
 static void RACE_FIN(PROC* p /*AR7*/);
@@ -107,19 +107,29 @@ int OM_TRACK_HI;
 /* asm: 	 */
 static int GMAX = 100000;
 
-void DIFF_CHANGE(void) {
+void DIFF_CHANGE(int position /*R0*/) {
+    c3x_reg_t difficulty_delta;
+
     // asm 000050B5: 	CMPI	1,R0
     // asm 000050B6: 	LDFZ	0.07,R1
     // asm 000050B7: 	LDFNZ	-0.035,R1
+    difficulty_delta = position == 1 ? C3X_IMM_F32(0.07) : C3X_IMM_F32(-0.035);
     // asm 000050B8: 	ADDF	@GAMEDIFF,R1
+    difficulty_delta = C3X_ADD(difficulty_delta, C3X_LDF(GAMEDIFF));
     // asm 000050B9: 	CMPF	1.25,R1
     // asm 000050BA: 	LDFGT	1.25,R1
+    if (C3X_GT(difficulty_delta, C3X_IMM_F32(1.25))) {
+        difficulty_delta = C3X_IMM_F32(1.25);
+    }
     // asm 000050BB: 	CMPF	0.8,R1
     // asm 000050BC: 	LDFLT	0.8,R1
+    if (C3X_LT(difficulty_delta, C3X_IMM_F32(0.8))) {
+        difficulty_delta = C3X_IMM_F32(0.8);
+    }
     // asm 000050BD: 	STF	R1,@GAMEDIFF
+    GAMEDIFF = C3X_STF(difficulty_delta);
     // asm 000050BE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIFF_CHANGE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -937,10 +947,9 @@ REENTER:
     p->ctx->RACER_DRONE.delta_tpiece = tracking_obj;
     // asm 00005268: 	CALL	GETTRAK	      		;GET CLOSEST ROAD SECT ->AR0
     GETTRAK(obj, carblk);
-    tracking_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 00005269: 	CALL	ROADIR			;GET RADIANS FOR ORIENTATION
     // asm 0000526A: 	LDF	R0,R2
-    road_theta = ROADIR(tracking_obj);
+    road_theta = ROADIR(carblk);
     // asm 0000526B: 	STF	R2,*+AR4(ORADY)
     obj->rad.Y = C3X_STF(road_theta);
     // asm 0000526C: 	STF	R2,*+AR5(CARYROT)
@@ -972,7 +981,6 @@ REENTER:
 static void RACE_FIN(PROC* p /*AR7*/) {
     OBJ* obj;
     CARBLK* carblk;
-    OBJ* track_obj;
     c3x_reg_t finish_distance;
     c3x_reg_t road_theta;
 
@@ -1062,11 +1070,10 @@ RD0:
 RDL:
     // asm 0000520F: 	CALL	GETTRAK
     GETTRAK(obj, carblk);
-    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 00005210: 	CALL	ROADIR
     // asm 00005211: 	ADDF	*+AR7(FINISHROT),R0
     // asm 00005212: 	STF	R0,*+AR5(CARYROT)
-    road_theta = ROADIR(track_obj);
+    road_theta = ROADIR(carblk);
     carblk->y_rotation = C3X_STF(C3X_ADD(road_theta, C3X_LDF(p->ctx->RACER_DRONE.finishrot)));
     // asm 00005213: 	CALL	DRONESTOP
     DRONESTOP(obj, carblk);

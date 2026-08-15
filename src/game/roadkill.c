@@ -18,7 +18,7 @@
  */
 
 void PLYRROADKILL(void);
-static void CHECK_COLLISION(void);
+static void CHECK_COLLISION(OBJ* car_obj /*AR0*/, OBJ* roadkill_obj /*AR1*/);
 static void CHECK_OFFSET(void);
 void ROADKILL_FLYERP(void);
 void ROADKILL_HIT(void);
@@ -74,7 +74,7 @@ static tROADKILL_TAB_ENTRY ROADKILL_TAB[] = {
     { deerc1_ROM, EXP3, (uintptr_t)DEER_PARTS, -400, 400 }, // DEER
 };
 /* asm: ROADKILLXZ	.bss	ROADKILLXZ,2 */
-int ROADKILLXZ[2];
+c3x_f32_t ROADKILLXZ[2];
 /*
  *----------------------------------------------------------------------------
  *----------------------------------------------------------------------------
@@ -87,27 +87,46 @@ int ROADKILLXZ[2];
 
 void PLYRROADKILL(void)
 {
+    OBJ* player_obj;
+    OBJ* roadkill_obj;
+
     // asm 00006946: 	LDI	@PLYCAR,AR0
+    player_obj = PLYCAR;
     // asm 00006947: 	CMPI	0,AR0
     // asm 00006948: 	BEQ	PLYRKX			;NO player at the moment
+    if (player_obj == NULL) {
+        goto PLYRKX; // ;NO player at the moment
+    }
     // asm 00006949: 	LDI	@OACTIVEI,AR1
+    roadkill_obj = OACTIVEI;
     // asm 0000694A: 	LDI	*AR1,R0
     // asm 0000694B: 	BEQ	PLYRKX
+    if (roadkill_obj == NULL) {
+        goto PLYRKX;
+    }
 FINDLP:
     // asm 0000694C: 	LDI	R0,AR1
     // asm 0000694D: 	LDI	*+AR1(OID),R0
     // asm 0000694E: 	AND	CLASS_M|TYPE_M,R0
     // asm 0000694F: 	CMPI	RDDEBRIS_C|TSC_ROADKILL,R0
     // asm 00006950: 	CALLEQ	CHECK_COLLISION
+    if ((roadkill_obj->id & (CLASS_M | TYPE_M)) == (RDDEBRIS_C | TSC_ROADKILL)) {
+        CHECK_COLLISION(player_obj, roadkill_obj);
+    }
     // asm 00006951: 	LDI	*AR1,R0
+    roadkill_obj = roadkill_obj->link;
     // asm 00006952: 	BNZ	FINDLP
+    if (roadkill_obj != NULL) {
+        goto FINDLP;
+    }
 PLYRKX:
     // asm 00006953: 	LDF	0,R0
     // asm 00006954: 	STF	R0,@ROADKILLXZ
+    ROADKILLXZ[0] = C3X_STF(C3X_IMM_F32(0));
     // asm 00006955: 	STF	R0,@ROADKILLXZ+1
+    ROADKILLXZ[1] = C3X_STF(C3X_IMM_F32(0));
     // asm 00006956: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRROADKILL", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -115,8 +134,10 @@ PLYRKX:
  *AR0	= CAR OBJECT TO CHECK
  *AR1	= ROADKILL OBJECT
  */
-static void CHECK_COLLISION(void)
+static void CHECK_COLLISION(OBJ* car_obj /*AR0*/, OBJ* roadkill_obj /*AR1*/)
 {
+    (void)car_obj;
+    (void)roadkill_obj;
     // asm 00006957: 	LDI	*+AR1(OID),R0
     // asm 00006958: 	AND	SUBTYPE_M,R0
     // asm 00006959: 	BZ	CCOLLX			;PARTS ARE NOT COLLIDEABLE
@@ -1404,17 +1425,24 @@ SPLAT_DONE:
 
 void DELETE_SPLAT(void)
 {
+    OBJ* splat_obj;
+
 DBSLP:
     // asm 00006C7D: 	LDI	PLYR_C|PLYR_SPLAT_S,AR2
     // asm 00006C7E: 	CALL	OBJ_FIND_FIRST_PRIORITY
+    splat_obj = OBJ_FIND_FIRST_PRIORITY(PLYR_C | PLYR_SPLAT_S);
     // asm 00006C7F: 	BNC	DBSX
+    if (splat_obj == NULL) {
+        goto DBSX;
+    }
     // asm 00006C80: 	LDI	AR0,AR2
     // asm 00006C81: 	CALL	OBJ_DELETE
+    OBJ_DELETE(splat_obj);
     // asm 00006C82: 	BR	DBSLP
+    goto DBSLP;
 DBSX:
     // asm 00006C83: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DELETE_SPLAT", 0, 0);
-    UNIMPL();
 }
 
 /*

@@ -67,7 +67,7 @@ void PAL_DIMMER(const tPAL* source_palette, tPAL* ram_buffer, c3x_reg_t dimmer);
 void PAL_XFER(void);
 
 // asm: 	.globl	PAL_OVERWRITE
-void PAL_OVERWRITE(void);
+void PAL_OVERWRITE(u32 palette_to_overwrite /*R0*/, u32 source_palette /*R1*/);
 
 // PALL.ASM
 // asm: 	.bss  	PALRAM,PALNUM		;ACTIVE PALETTES

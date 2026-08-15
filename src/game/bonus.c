@@ -40,8 +40,8 @@ void BONUS1(void);
 static void JSUB(void);
 static void DISPLAY_H2H_WINNER(void);
 static void OBJ_DELETE_HIGH_PRIORITY(void);
-static void BONUS_SCREEN(void);
-static void BONSCRN2(void);
+static void BONUS_SCREEN(PROC* p);
+static void BONSCRN2(PROC* p);
 static void CLINTON_SHOW(void);
 void BLINK_FREEBE(PROC* p);
 static void BACKUP_CAMERA(void);
@@ -80,15 +80,16 @@ void CLEAR_MAP_PALS(void);
 void VANITY_SUB(void);
 extern uintptr_t ISOFF;
 void RUT_ANI(OBJ* obj /*AR4*/);
-void HUNGH_ANI_REENTER(void);
+void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/);
 
 // static uintptr_t BONUS_POSTLAUNCH[];
 static int CONGRAT_SPEECH[4];
 static int FLAG_POS_TABLE[28];
 static const char NULLSTR5[];
+static void BONUS_LK(int next_startup, int bonus_wave);
 
 /* asm: MAXMPH	.bss	MAXMPH,1 */
-int MAXMPH;
+c3x_f32_t MAXMPH;
 /* asm: CHALLENGE_RACE	.bss	CHALLENGE_RACE,1 */
 int CHALLENGE_RACE;
 /* asm: NEXT_STARTUP	.bss	NEXT_STARTUP,1 */
@@ -353,50 +354,68 @@ void BONUS2(void) {
 void BONUS1(void) {
     // asm 00003996: LDI	L_LEG2_BEGIN+1,R0
     // asm 00003997: 	LDI	1,R1
+    BONUS_LK(L_LEG2_BEGIN + 1, 1);
+}
+
+static void BONUS_LK(int next_startup, int bonus_wave) {
 LK:
     // asm 00003998: STI	R0,@NEXT_STARTUP
+    NEXT_STARTUP = next_startup;
     // asm 00003999: 	STI	R1,@BONUS_WAVE
+    BONUS_WAVE = bonus_wave;
     // asm 0000399A: 	LDI	@_MODE,R0
     // asm 0000399B: 	LDI	R0,R1
     // asm 0000399C: 	AND	MMODE,R1
     // asm 0000399D: 	CMPI	MGAME,R1
     // asm 0000399E: 	RETSNE
+    if ((_MODE & MMODE) != MGAME) {
+        return;
+    }
     // asm 0000399F: 	ANDN	MMODE,R0
     // asm 000039A0: 	OR	MBONUS,R0
     // asm 000039A1: 	ANDN	MINTUNNEL,R0
     // asm 000039A2: 	STI	R0,@_MODE
+    _MODE = ((_MODE & ~MMODE) | MBONUS) & ~MINTUNNEL;
     // 	;;;	COMMUNICATIONS ALCHEMY
     // 	;;;
     // asm 000039A3: 	LDI	@MY_STATE,R0
     // asm 000039A4: 	OR	OMS_FINISHLINE,R0
     // asm 000039A5: 	STI	R0,@MY_STATE
+    MY_STATE |= OMS_FINISHLINE;
     // 	;DIFFICULTY ADJUSTMENTS
     // 	;
     // asm 000039A6: 	LDI	@POSITION,R0
     // asm 000039A7: 	CALL	DIFF_CHANGE
+    DIFF_CHANGE(POSITION);
     // 	;AUDIT MUMBO JUMBO
     // 	;
     // asm 000039A8: 	LDI	@BONUS_WAVE,R2
     // asm 000039A9: 	SETAUD	AUD_LAST_LEG
+    SETAUD(AUD_LAST_LEG, BONUS_WAVE);
     // asm 000039AB: 	LDI	@BONUS_WAVE,AR2
     // asm 000039AC: 	DEC	AR2
     // asm 000039AD: 	MPYI	2,AR2
     // asm 000039AE: 	ADDI	AUD_FINISH_GGATE,AR2
     // asm 000039AF: 	CALL	AUDIT_INC
+    AUDIT_INC(AUD_FINISH_GGATE + (BONUS_WAVE - 1) * 2);
     // asm 000039B0: 	CLRI	R0
     // asm 000039B1: 	STI	R0,@FIRST_RACE
+    FIRST_RACE = 0;
     // asm 000039B2: 	CALL	KILL_PLYR_SOUNDS
+    KILL_PLYR_SOUNDS();
     // asm 000039B3: 	LDI	MAX_DRONES,R0
     // asm 000039B4: 	STI	R0,@DD_MAX_DRONES
+    DD_MAX_DRONES = MAX_DRONES;
     // asm 000039B5: 	READAUD	ADJ_CHECKPOINT_BONUS
     // asm 000039B7: 	STI	R0,@CHECKPOINT_TIME_BONUS
+    CHECKPOINT_TIME_BONUS = READAUD(ADJ_CHECKPOINT_BONUS);
     // asm 000039B8: 	LDI	@PLYCAR,AR4
     // asm 000039B9: 	LDI	@PLYCBLK,AR5
     // asm 000039BA: 	CALL	FIND_PLAYERS_POSITION
+    FIND_PLAYERS_POSITION(PLYCAR, PLYCBLK);
     // asm 000039BB: 	CREATEC	BONUS_SCREEN,22
+    CREATEC(BONUS_SCREEN, 22, NULL);
     // asm 000039BE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS1", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -567,37 +586,62 @@ DELOBJX:
 /* asm: SAVED_COUNTDOWN	.bss	SAVED_COUNTDOWN,1 */
 int SAVED_COUNTDOWN;
 
-static void BONUS_SCREEN(void) {
+static void BONUS_SCREEN(PROC* p) {
+    int saved_background_color;
+    PROC_CONTEXT* bonus_ctx;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    }
+
     // asm 00003A46: 	LDI	@BGNDCOLA,R0
     // asm 00003A47: 	STI	R0,*+AR7(PDATA)
+    saved_background_color = BGNDCOLA;
     // asm 00003A48: 	LDI	@_countdown,R0
     // asm 00003A49: 	STI	R0,@SAVED_COUNTDOWN
+    SAVED_COUNTDOWN = _countdown;
     // asm 00003A4A: 	CLRI	R0
     // asm 00003A4B: 	STI	R0,@BGNDCOLA
+    BGNDCOLA = 0;
     // asm 00003A4C: 	CALL	SILENT
+    SILENT();
     // asm 00003A4D: 	CALL	SND_RESET_QUIET
+    SND_RESET_QUIET();
     // asm 00003A4E: 	CLRI	R0
     // asm 00003A4F: 	STI	R0,@STOPWATCH_CNTL
+    STOPWATCH_CNTL = 0;
     // asm 00003A50: 	STI	R0,@DO_FOLDFLAG
+    DO_FOLDFLAG = 0;
     // asm 00003A51: 	CALL	KILL_THEM
+    KILL_THEM();
     // asm 00003A52: 	LDI	0,R0			;SMOKE MAY BE KILLED, SO I HAVE TO RESET THIS
     // asm 00003A53: 	STI	R0,@TIRE_SMOKE_COUNT
+    TIRE_SMOKE_COUNT = 0; // ;SMOKE MAY BE KILLED, SO I HAVE TO RESET THIS
     // asm 00003A54: 	LDI	1,R0
     // asm 00003A55: 	STI	R0,@IGNORE_UPDATES
+    IGNORE_UPDATES = 1;
     // asm 00003A56: 	CALL	PRC_INIT
+    PRC_INIT();
     // asm 00003A57: 	CREATE	BONSCRN2,UTIL_C
+    bonus_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    bonus_ctx->BONSCRN2.background_color = saved_background_color;
+    CREATE(BONSCRN2, UTIL_C, bonus_ctx);
     // asm 00003A5A: 	CREATE	BONUS_WAIT_LOOP,PLYR_C|PLYR1_T
+    CREATE(BONUS_WAIT_LOOP, PLYR_C | PLYR1_T, NULL);
     // asm 00003A5D: 	CREATE	SCAN_OBJECTS,UTIL_C
+    CREATE(SCAN_OBJECTS, UTIL_C, NULL);
     // asm 00003A60: 	CALL	FIND_AND_REACTIVATE	;REACTIVATE CHEERING ANIMATIONS
+    FIND_AND_REACTIVATE(); // ;REACTIVATE CHEERING ANIMATIONS
 #if DEBUG
     // asm: 	CALL	VERIFY_CODE_INTEGRITY
 #endif
     // asm 00003A61:         LDP     @FASTSTKI		;GET PAGE OF STORED ADDRESS
     // asm 00003A62:         LDI	@FASTSTKI,SP		;LOAD THE ADDRESS INTO SP
     // asm 00003A63: 	BR	COLD_ENTER
+    COLD_ENTER();
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS_SCREEN", 0, 0);
-    UNIMPL();
 }
 
 /* asm: SPEEDHIT	.bss	SPEEDHIT,1 */
@@ -608,7 +652,8 @@ static int SPEEDHIT;
  *
  *
  */
-static void BONSCRN2(void) {
+static void BONSCRN2(PROC* p) {
+    (void)p;
     // asm 00003A64: 	LDI	@DID_TIMED_OUT,R0
     // asm 00003A65: 	BZ	DOREG3A
     // asm 00003A66: 	LDI	0,R0		;ELAPSED TIME OF 0 = DID NOT FINISH
@@ -1231,14 +1276,16 @@ int DID_TIMED_OUT;
 void TIMED_OUT(void) {
     // asm 00003C82: 	LDI	1,R0
     // asm 00003C83: 	STI	R0,@DID_TIMED_OUT
+    DID_TIMED_OUT = 1;
     // asm 00003C84: 	INCAUD	AUD_GAMES_EXPIRED
+    INCAUD(AUD_GAMES_EXPIRED);
     // asm 00003C86: 	LDI	@BONUS_WAVE,AR2
     // asm 00003C87: 	ADDI	@BONUS_TABLEI,AR2
     // asm 00003C88: 	LDI	*AR2,R0
     // asm 00003C89: 	CALLU	R0
+    BONUS_TABLEI[BONUS_WAVE]();
     // asm 00003C8A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TIMED_OUT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1247,19 +1294,24 @@ void TIMED_OUT(void) {
 static void KILL_PLYR_SOUNDS(void) {
     // asm 00003C8B: 	LDI	1000,AR2		;ENGINE RPM IDLE
     // asm 00003C8C: 	CALL	SENDSND
+    SENDSND(1000); // ;ENGINE RPM IDLE
     // asm 00003C8D: 	LDI	SKIDB,AR2 		;KILL LOOPERS WHILE SUSPENDED
     // asm 00003C8E: 	CALL	KILLSNDFX
+    KILLSNDFX(SKIDB); // ;KILL LOOPERS WHILE SUSPENDED
     // asm 00003C8F: 	LDI	SKIDC,AR2 		;KILL LOOPERS WHILE SUSPENDED
     // asm 00003C90: 	CALL	KILLSNDFX
+    KILLSNDFX(SKIDC); // ;KILL LOOPERS WHILE SUSPENDED
     // asm 00003C91: 	LDI	BRAKSND,AR2
     // asm 00003C92: 	CALL	KILLSNDFX
+    KILLSNDFX(BRAKSND);
     // asm 00003C93: 	LDI	TUNSND,AR2
     // asm 00003C94: 	CALL	KILLSNDFX
+    KILLSNDFX(TUNSND);
     // asm 00003C95: 	LDI	GRAVELA,AR2
     // asm 00003C96: 	CALL	KILLSNDFX
+    KILLSNDFX(GRAVELA);
     // asm 00003C97: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILL_PLYR_SOUNDS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2116,53 +2168,75 @@ void KILL_THEM(void) {
     // asm 00003F53: 	LDI	DRONE_C,R0
     // asm 00003F54: 	LDI	CLASS_M,R1
     // asm 00003F55: 	CALL	PRC_KILLALL
+    PRC_KILLALL(DRONE_C, CLASS_M);
     // 	;TRAFFIC
     // asm 00003F56: 	LDI	SPAWNER_C,R0
     // asm 00003F57: 	LDI	CLASS_M,R1
     // asm 00003F58: 	CALL	PRC_KILLALL
+    PRC_KILLALL(SPAWNER_C, CLASS_M);
     // 	;WAVEFLAG, MONKEYs
     // asm 00003F59: 	LDI	UTIL_C|MONKEY_T,R0
     // asm 00003F5A: 	LDI	CLASS_M|TYPE_M,R1
     // asm 00003F5B: 	CALL	PRC_KILLALL
+    PRC_KILLALL(UTIL_C | MONKEY_T, CLASS_M | TYPE_M);
     // 	;LBACK_WATCH
     // asm 00003F5C: 	LDI	UTIL_C|BACKGRND_T,R0
     // asm 00003F5D: 	LDI	-1,R1
     // asm 00003F5E: 	CALL	PRC_KILLALL
+    PRC_KILLALL(UTIL_C | BACKGRND_T, -1);
     // asm 00003F5F: 	CALL	DELETE_SPLAT
+    DELETE_SPLAT();
     // asm 00003F60: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILL_THEM", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
 static void FIND_AND_REACTIVATE(void) {
+    OBJ* obj;
+
     // asm 00003F61: 	PUSH	AR0
     // asm 00003F62: 	PUSH	AR4
     // asm 00003F63: 	LDI	@OACTIVE,AR0
+    obj = OACTIVE;
 FARLP:
     // asm 00003F64: LDI	*AR0,R0
     // asm 00003F65: 	BZ	FARX
+    if (obj == NULL) {
+        goto FARX;
+    }
     // asm 00003F66: 	LDI	R0,AR0
     // asm 00003F67: 	LDI	*+AR0(OID),R0
     // asm 00003F68: 	CMPI	RDDEBRIS_C|TSC_IGNORE|TSC_DUDE_S,R0
     // asm 00003F69: 	BNE	NOTRUT
+    if (obj->id != (RDDEBRIS_C | TSC_IGNORE | TSC_DUDE_S)) {
+        goto NOTRUT;
+    }
     // asm 00003F6A: 	LDI	AR0,AR4
     // asm 00003F6B: 	CALL	RUT_ANI
+    RUT_ANI(obj);
     // asm 00003F6C: 	BU	FARLP
+    obj = obj->link;
+    goto FARLP;
 NOTRUT:
     // asm 00003F6D: CMPI	RDDEBRIS_C|TSC_IGNORE|TSC_BABE_S,R0
     // asm 00003F6E: 	BNE	FARLP
+    if (obj->id != (RDDEBRIS_C | TSC_IGNORE | TSC_BABE_S)) {
+        obj = obj->link;
+        goto FARLP;
+    }
     // asm 00003F6F: 	LDI	AR0,AR4
     // asm 00003F70: 	CALL	HUNGH_ANI_REENTER
+    HUNGH_ANI_REENTER(obj);
     // asm 00003F71: 	BU	FARLP
+    obj = obj->link;
+    goto FARLP;
 FARX:
     // asm 00003F72: 	POP	AR4
     // asm 00003F73: 	POP	AR0
     // asm 00003F74: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_AND_REACTIVATE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

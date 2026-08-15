@@ -46,7 +46,7 @@ static void WATERANI_PROC(PROC* p);
 static void WATERFALL_SND(PROC* p);
 void AMBIENCE_SOUND(void);
 void HUNGH_ANI(OBJ* obj /*AR4*/);
-static void HUNGH_ANI_REENTER(void);
+void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/);
 static void PLACE_ON_ROAD(void);
 void RUT_ANI(OBJ* obj /*AR4*/);
 static void PLAINANI_PROC_SLOW(PROC* p);
@@ -2265,7 +2265,8 @@ HUNGH_NOPAL:
 
 // *----------------------------------------------------------------------------
 
-static void HUNGH_ANI_REENTER(void) {
+void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/) {
+    (void)obj;
     // asm 0000439F: 	PUSH	R0
     // asm 000043A0: 	PUSH	AR0
     // asm 000043A1: 	PUSH	AR2

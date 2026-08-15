@@ -19,7 +19,7 @@ extern c3x_reg_t TMATRIX[];
 // asm: 	.bss	COLVEL,1	;RELATIVE COLLISION VELOCITY
 extern c3x_f32_t COLVEL;
 // asm: 	.bss	PMULT,1  	;PLAYER SLOW COLLISION VELOCITY MULTIPLIER
-extern c3x_reg_t PMULT;
+extern c3x_f32_t PMULT;
 // asm: 	.bss	SPINTEMP,1
 extern c3x_f32_t SPINTEMP;
 // asm: 	FBSS	BOXSCRAM,50

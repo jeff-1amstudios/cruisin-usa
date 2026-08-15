@@ -13,7 +13,7 @@
 
 static void ENABLEGIE_font(void);
 void _ftoa(void);
-void _itoaLZ(void);
+void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/);
 void _itoa(char* string_space /*AR2*/, int number /*R2*/);
 void HEX2ASC(void);
 void _fill(int x1, int y1, int x2, int y2, int color);
@@ -86,7 +86,15 @@ void _ftoa(void) {
  *
  *INTEGER TO ASCIZ WITH LEADING ZERO
  */
-void _itoaLZ(void) {
+void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/) {
+    char digits[16];
+    int digit_count = 0;
+    int is_negative;
+    int pad_leading_zero = 0;
+    u32 packed_word = 0;
+    int shift = 0;
+    int digit_index;
+
     // asm 0000A779: 	PUSH	R0			;this entry includes a leading zero
     // asm 0000A77A: 	PUSH	R1			;if the value is 9 or less
     // asm 0000A77B: 	PUSH	R2			;
@@ -100,16 +108,48 @@ void _itoaLZ(void) {
     // asm 0000A783: 	CLRI	R7			;flag if negative
     // asm 0000A784: 	CMPI	0,R2
     // asm 0000A785: 	BZD	ISZERO2
+    if (number == 0) {
+        *(u32*)string_space = 0x00003030u;
+        return;
+    }
     // asm 0000A786: 	LDILT	1,R7
     // asm 0000A787: 	ABSI	R2
     // asm 0000A788: 	CLRI	R3
+    is_negative = number < 0;
+    if (is_negative) {
+        number = -number;
+    }
     // asm 0000A789: 	CMPI	9,R2
     // asm 0000A78A: 	BGT	itoa1
     // asm 0000A78B: 	LDI	1,AR7
+    if (number <= 9) {
+        pad_leading_zero = 1;
+    }
     // asm 0000A78C: 	BU	itoa1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    while (number > 0) {
+        digits[digit_count++] = (char)('0' + (number % 10));
+        number /= 10;
+    }
+    if (pad_leading_zero != 0) {
+        digits[digit_count++] = '0';
+    }
+    if (is_negative) {
+        packed_word = (u32)MINUS_CHAR;
+        shift = 8;
+    }
+    for (digit_index = digit_count - 1; digit_index >= 0; --digit_index) {
+        packed_word |= (u32)(unsigned char)digits[digit_index] << shift;
+        shift += 8;
+        if (shift >= 32) {
+            *(u32*)string_space = packed_word;
+            string_space += sizeof(u32);
+            packed_word = 0;
+            shift = 0;
+        }
+    }
+    *(u32*)string_space = packed_word;
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoaLZ", 0, 0);
-    UNIMPL();
 }
 
 void _itoa(char* string_space /*AR2*/, int number /*R2*/) {

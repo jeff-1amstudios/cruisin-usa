@@ -6,7 +6,7 @@
 static u32 switch1 = UINT32_MAX;
 static u32 switch2 = UINT32_MAX;
 static u32 switch3 = UINT32_MAX;
-static int steering = 128;
+static int steering = PORT_STEERING_CENTER;
 static int accelerator;
 static int brake;
 static int steering_direction;
@@ -22,6 +22,9 @@ void port_handle_input(void) {
     switch3 = UINT32_MAX;
 
     if (keyboard[SDL_SCANCODE_RETURN] || keyboard[SDL_SCANCODE_KP_ENTER]) {
+        switch1 &= ~SW_START;
+    }
+    if (input_frame_counter % 400 == 0) {
         switch1 &= ~SW_START;
     }
     int new_steering_direction = (keyboard[SDL_SCANCODE_RIGHT] != 0) - (keyboard[SDL_SCANCODE_LEFT] != 0);
@@ -59,14 +62,14 @@ void port_sample_steering(void) {
     /* Called from READIO at the emulated A/D sampling boundary. */
     if (steering_direction != 0) {
         steering += steering_direction * 2;
-    } else if (steering < 128) {
+    } else if (steering < PORT_STEERING_CENTER) {
         steering += 2;
-        if (steering > 128)
-            steering = 128;
-    } else if (steering > 128) {
+        if (steering > PORT_STEERING_CENTER)
+            steering = PORT_STEERING_CENTER;
+    } else if (steering > PORT_STEERING_CENTER) {
         steering -= 2;
-        if (steering < 128)
-            steering = 128;
+        if (steering < PORT_STEERING_CENTER)
+            steering = PORT_STEERING_CENTER;
     }
     if (steering < 0)
         steering = 0;

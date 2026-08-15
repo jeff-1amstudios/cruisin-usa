@@ -9,17 +9,17 @@
 // asm: 	.bss	OFFROAD_TMR,1
 extern int OFFROAD_TMR;
 // asm: 	.bss	ZOOMD,1		;CURRENT ZOOM DISTANCE
-extern c3x_reg_t ZOOMD;
+extern c3x_f32_t ZOOMD;
 // asm: 	.bss	ZOOMDD,1
-extern c3x_reg_t ZOOMDD;
+extern c3x_f32_t ZOOMDD;
 // asm: 	.bss	ZOOMDG,1	;ZOOM DIST GOAL
-extern c3x_reg_t ZOOMDG;
+extern c3x_f32_t ZOOMDG;
 // asm: 	.bss	ZOOMH,1		;CURRENT ZOOM HEIGHT
-extern c3x_reg_t ZOOMH;
+extern c3x_f32_t ZOOMH;
 // asm: 	.bss	ZOOMHD,1
-extern c3x_reg_t ZOOMHD;
+extern c3x_f32_t ZOOMHD;
 // asm: 	.bss	ZOOMHG,1	;ZOOM HEIGHT GOAL
-extern c3x_reg_t ZOOMHG;
+extern c3x_f32_t ZOOMHG;
 // asm: 	.bss	CAMVIEW,1	;CAMERA VIEW 1=THIRD PERSON
 extern int CAMVIEW;
 // asm: 	.bss	BRAKEON,1	;1=BRAKE PEDAL ON
@@ -70,10 +70,10 @@ extern c3x_f32_t BRAKEMX;
 extern c3x_f32_t STEERFR;
 void RANDSND(const int* sounds /*AR2*/, int range /*R0*/);
 void RANDVSND(const int* sounds /*AR2*/, int range /*R0*/, int volume /*R1*/);
-c3x_reg_t ROADIR(OBJ* track_obj /*AR0*/);
-void GETNXTRDIR(void);
+c3x_reg_t ROADIR(CARBLK* carblk /*AR5*/);
+c3x_reg_t GETNXTRDIR(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DRONINBZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-void INBOUNDZ(void);
+void INBOUNDZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void GETRPM(CARBLK* carblk /*AR5*/);
 int GETAUTO(CARBLK* carblk /*AR5*/);
 void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);

@@ -114,10 +114,10 @@ void WRECKST(void);
 extern int WRECKFLG;
 extern c3x_reg_t CHEAT;
 void DRONINBZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
-c3x_reg_t ROADIR(OBJ* track_obj /*AR0*/);
+c3x_reg_t ROADIR(CARBLK* carblk /*AR5*/);
 int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 extern const char PC2[];
-void GETNXTRDIR(void);
+c3x_reg_t GETNXTRDIR(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void RANDSND(const int* sounds /*AR2*/, int range /*R0*/);
 int COMPTRAK(void);
 void OM_DRONE(PROC* p);
@@ -143,7 +143,7 @@ c3x_reg_t TMATRIX[9];
 /* asm: COLVEL	.bss	COLVEL,1 */
 c3x_f32_t COLVEL = C3X_F32_INIT(1.0f);
 /* asm: PMULT	.bss	PMULT,1 */
-c3x_reg_t PMULT = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t PMULT = C3X_F32_INIT(1.0f);
 /* asm: SPINTEMP	.bss	SPINTEMP,1 */
 c3x_f32_t SPINTEMP = C3X_F32_INIT(1.0f);
 
@@ -1930,7 +1930,7 @@ DOREPEL:
     }
 HARDCOL00:
     carblk->spin_flag = 60;
-    angle_delta = C3X_SUB(ROADIR(car_obj), carblk->y_rotation);
+    angle_delta = C3X_SUB(ROADIR(carblk), carblk->y_rotation);
     while (C3X_GT(angle_delta, PII)) {
         angle_delta = C3X_SUB(angle_delta, TWOPII);
     }
@@ -3265,52 +3265,104 @@ void GETFLYMAT(void) {
  *
  */
 void COLSCAN(void) {
+    OBJ* player_obj;
+    OBJ* other_obj = NULL;
+    OBJ* next_obj;
+    VECTOR* collision_point;
+    c3x_reg_t player_x;
+    c3x_reg_t player_z;
+    c3x_reg_t player_radius;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t distance_sq;
+    c3x_reg_t combined_radius;
+    c3x_reg_t radius_sq;
+    c3x_reg_t speed_multiplier;
+
     // asm 000025E8: 	BD	COLSCL0
     // asm 000025E9: 	LDI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
+    player_obj = PLYCAR; // ;GET PLAYER CAR
     // asm 000025EA: 	LDI	@CAR_LISTI,AR1
+    next_obj = CAR_LIST;
     // asm 000025EB: 	SUBI	OLINK3,AR1		;SETUP INDEXING
     // ********B	COLSCL0
+    goto COLSCL0;
 COLSCLP0:
     // asm 000025EC: 	BNZD	COLSCL		    	;DONT COLLIDE DUDES...
+    if ((other_obj->flags & O_NOCOLL) != 0) { // ;DONT COLLIDE DUDES...
+        goto COLSCL;
+    }
     // asm 000025ED: 	SUBF	*+AR1(OPOSX),R2,R0
+    delta_x = C3X_SUB(player_x, C3X_LDF(other_obj->pos.X));
     // asm 000025EE: 	MPYF	R0,R0
+    delta_x = C3X_MUL(delta_x, delta_x);
     // asm 000025EF: 	SUBF	*+AR1(IR0),R3,R4
+    delta_z = C3X_SUB(player_z, C3X_LDF(other_obj->pos.Z));
     // ********BNZD	COLSCL
     // asm 000025F0: 	MPYF	R4,R4
+    delta_z = C3X_MUL(delta_z, delta_z);
     // asm 000025F1: 	ADDF	R0,R4
+    distance_sq = C3X_ADD(delta_z, delta_x);
     // asm 000025F2: 	FLOAT	*+AR1(ORAD),R1
+    combined_radius = C3X_FROM_INT(other_obj->radius);
     // asm 000025F3: 	ADDF	R5,R1
+    combined_radius = C3X_ADD(combined_radius, player_radius);
     // asm 000025F4: 	MPYF	R1,R1			;SQUARE THE RADIUS LENGTH
+    radius_sq = C3X_MUL(combined_radius, combined_radius); // ;SQUARE THE RADIUS LENGTH
     // asm 000025F5: 	CMPF	R1,R4	 		;ARE WE WITHIN RADIUS?
     // asm 000025F6: 	BGT	COLSCL
+    if (C3X_GT(distance_sq, radius_sq)) {
+        goto COLSCL;
+    }
     // asm 000025F7: 	CALL	COLCHK			;CHECK OUT COLLISION FURTHER
+    if (!COLCHK(player_obj, other_obj, &collision_point)) { // ;CHECK OUT COLLISION FURTHER
     // asm 000025F8: 	BNC	COLSCL0			;NO COLLIDE
+        goto COLSCL0; // ;NO COLLIDE
+    }
     // asm 000025F9: 	LDI	*+AR0(OCARBLK),AR4	;CHECK FOR LOW SPEED PLOW
     // asm 000025FA: 	LDF	*+AR4(CARSPEED),R0
+    speed_multiplier = C3X_LDF(player_obj->carblk->speed);
     // asm 000025FB: 	LDI	*+AR1(OCARBLK),AR5	;CHECK FOR LOW SPEED PLOW
     // asm 000025FC: 	ADDF	*+AR5(CARSPEED),R0
+    speed_multiplier = C3X_ADD(speed_multiplier, C3X_LDF(other_obj->carblk->speed));
     // asm 000025FD: 	CMPF	100,R0
     // asm 000025FE: 	LDFGT	100,R0
+    if (C3X_GT(speed_multiplier, C3X_IMM_F32(100.0f))) {
+        speed_multiplier = C3X_IMM_F32(100.0f);
+    }
     // asm 000025FF: 	SUBRF	100,R0
+    speed_multiplier = C3X_SUB(C3X_IMM_F32(100.0f), speed_multiplier);
     // asm 00002600: 	MPYF	0.02,R0
+    speed_multiplier = C3X_MUL(speed_multiplier, C3X_IMM_F32(0.02f));
     // asm 00002601: 	ADDF	1.0,R0
+    speed_multiplier = C3X_ADD(speed_multiplier, C3X_IMM_F32(1.0f));
     // asm 00002602: 	STF	R0,@PMULT		;SPEED MULTIPLIER
+    PMULT = C3X_STF(speed_multiplier); // ;SPEED MULTIPLIER
     // asm 00002603: 	B	COLDISP
+    COLDISP(player_obj, other_obj, collision_point);
+    return;
 COLSCL0:
     // asm 00002604: 	LDI	OPOSZ,IR0
     // asm 00002605: 	LDF	*+AR0(OPOSX),R2		;GET X COORD
+    player_x = C3X_LDF(player_obj->pos.X); // ;GET X COORD
     // asm 00002606: 	LDF	*+AR0(OPOSZ),R3		;GET Z COORD
+    player_z = C3X_LDF(player_obj->pos.Z); // ;GET Z COORD
     // asm 00002607: 	FLOAT	*+AR0(ORAD),R5		;GET SUCKERS RADIUS
+    player_radius = C3X_FROM_INT(player_obj->radius); // ;GET SUCKERS RADIUS
 COLSCL:
     // asm 00002608: 	LDI	*+AR1(OLINK3),R0
+    other_obj = next_obj;
     // asm 00002609: 	BNZD	COLSCLP0
     // asm 0000260A: 	LDI	R0,AR1
     // asm 0000260B: 	LDI	*+AR1(OFLAGS),R0
     // asm 0000260C: 	TSTB	O_NOCOLL,R0		;check non-collide flag
     // ********BNZD	COLSCLP0
+    if (other_obj != NULL) {
+        next_obj = (OBJ*)other_obj->link3;
+        goto COLSCLP0;
+    }
     // asm 0000260D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "COLSCAN", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -3903,9 +3955,9 @@ COLIN1:
         goto ZZZ1;
     }
     // asm 000026FA: 	MPYF	@PMULT,R2	       	;SLOW SPEED MULTIPLIER
-    velocity_x = C3X_MUL(PMULT, velocity_x);
+    velocity_x = C3X_MUL(C3X_LDF(PMULT), velocity_x);
     // asm 000026FB: 	MPYF	@PMULT,R3
-    velocity_z = C3X_MUL(PMULT, velocity_z);
+    velocity_z = C3X_MUL(C3X_LDF(PMULT), velocity_z);
 ZZZ1:
     // *ADD REPULSION VELOCITY	OBJECT 2
     // asm 000026FC: 	LDF	-10.0,R0    		;VELOCITY REPULSION CONSTANT
@@ -4666,12 +4718,11 @@ ANGM1:
  *
  */
 static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_direction_difference /*R2*/) {
-    OBJ* track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     c3x_reg_t road_direction;
     c3x_reg_t direction_difference;
 
     // asm 00002824: 	CALL	ROADIR			;GET DIRECTIONAL DIFFERENCE
-    road_direction = ROADIR(track_obj);
+    road_direction = ROADIR(carblk);
     // asm 00002825: 	LDF	*+AR5(CARVROT),R1
     // asm 00002826: 	SUBF	R1,R0,R2
     direction_difference = C3X_SUB(road_direction, C3X_LDF(carblk->y_velocity_rotation));

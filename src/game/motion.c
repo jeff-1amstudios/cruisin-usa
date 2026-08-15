@@ -28,7 +28,7 @@ void DIAG_MOTION_TESTZ(void);
 void DIAG_MOTION_TESTX(void);
 void DIAG_MOTION_TESTY(void);
 void DIAG_MOTION_BURNIN(void);
-void PLMOTION(void);
+void PLMOTION(CARBLK* carblk /*AR5*/);
 static void MOTION_SCALE_ENTER(void);
 void LEVEL_THE_MOTION(void);
 static void DOWNLOAD_PROGRAM(void);
@@ -195,6 +195,8 @@ int MOTION_NOT_ON;
 int MOTION_STOP_HIT;
 /* asm: MOTION_SAFETY_ON	.bss	MOTION_SAFETY_ON,1 */
 int MOTION_SAFETY_ON;
+/* asm: MOTION_SAFETY_TYPE	.bss	MOTION_SAFETY_TYPE,1 */
+int MOTION_SAFETY_TYPE;
 /* asm: MOTION_RCV_TIKS	.bss	MOTION_RCV_TIKS,1 */
 int MOTION_RCV_TIKS;
 /* asm: WAITTIK	.bss	WAITTIK,1 */
@@ -901,7 +903,7 @@ JJ7:
  *		Z=FRONT	   0=GROUND, 50000=FULL HEIGHT
  *
  */
-void PLMOTION(void) {
+void PLMOTION(CARBLK* carblk /*AR5*/) {
     // asm 0000473B: 	CALL	CHECK_MOTION_DIP
     // asm 0000473C: 	RETSNZ			;RETURN IF NON MOVING
     // asm 0000473D: 	LDI	@MOTION_STOP_HIT,R0
@@ -1154,7 +1156,7 @@ NO_MOTION_ERRORS:
     // *R4=Y RT REAR		-1.0->1.0
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLMOTION", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void MOTION_SCALE_ENTER(void) {
@@ -1553,7 +1555,7 @@ KKKII:
     // asm 0000491A: 	POP	R0
     // asm 0000491B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_CMD", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

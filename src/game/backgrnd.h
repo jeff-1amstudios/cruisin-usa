@@ -60,5 +60,6 @@ extern c3x_reg_t SECRADY;
 extern OBJ* SINGLE_SECTION_TEMPPTR;
 void HUNGH_ANI(OBJ* obj /*AR4*/);
 void RUT_ANI(OBJ* obj /*AR4*/);
+void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/);
 
 #endif /* BACKGRND_H */

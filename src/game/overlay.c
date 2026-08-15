@@ -523,11 +523,10 @@ static void TOWER_PAL_RESTORE(void) {
     // asm 0000ADBA: 	LDI	tower_p,R0		;ONE TO OVERWRITE
     // asm 0000ADBB: 	LDI	R0,R1			;WHAT TO OVERWRITE IT WITH
     // asm 0000ADBC: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(tower_p, tower_p);
     // asm 0000ADBD: 	POP	R2
     // asm 0000ADBE: 	POP	AR2
     // asm 0000ADBF: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TOWER_PAL_RESTORE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

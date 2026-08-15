@@ -6,6 +6,8 @@ static int g_crusn_debug_output_quads;
 static int g_crusn_debug_output_pixels;
 static u32 g_crusn_comm_io;
 
+int wireframe_mode = 0;
+
 void port_output_comm_io(u32 value) {
     g_crusn_comm_io = value;
 }
@@ -74,6 +76,34 @@ static int crusn_clamp_int(int value, int min, int max) {
     }
 
     return value;
+}
+
+static void crusn_draw_wireframe_line(int x0, int y0, int x1, int y1, u32* write_page_words) {
+    int dx = x1 > x0 ? x1 - x0 : x0 - x1;
+    int sx = x0 < x1 ? 1 : -1;
+    int dy = y1 > y0 ? y0 - y1 : y1 - y0;
+    int sy = y0 < y1 ? 1 : -1;
+    int error = dx + dy;
+
+    for (;;) {
+        if (x0 >= 0 && x0 < CRUSN_SCREEN_WIDTH && y0 >= 0 && y0 < CRUSN_SCREEN_HEIGHT) {
+            write_page_words[(y0 * CRUSN_SCREEN_WIDTH) + x0] = 0xffffffffu;
+            g_crusn_debug_output_pixels += 1;
+        }
+
+        if (x0 == x1 && y0 == y1) {
+            break;
+        }
+
+        if ((error * 2) >= dy) {
+            error += dy;
+            x0 += sx;
+        }
+        if ((error * 2) <= dx) {
+            error += dx;
+            y0 += sy;
+        }
+    }
 }
 
 static float crusn_min3f(float a, float b, float c) {
@@ -250,6 +280,14 @@ int port_output_fpga(
     vertices[3].v = (float)((uv3 >> 8) & 0xff);
 
     g_crusn_debug_output_quads += 1;
+
+    if (wireframe_mode) {
+        crusn_draw_wireframe_line(x1, y1, x2, y2, write_page_words);
+        crusn_draw_wireframe_line(x2, y2, x3, y3, write_page_words);
+        crusn_draw_wireframe_line(x3, y3, x4, y4, write_page_words);
+        crusn_draw_wireframe_line(x4, y4, x1, y1, write_page_words);
+        return 0;
+    }
 
     crusn_rasterize_triangle(
         &vertices[0],

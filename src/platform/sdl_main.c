@@ -109,6 +109,7 @@ int main(int argc, char* argv[]) {
     if (free_play) {
         ADJUSTMENT_WRITE(ADJ_FREE_PLAY, 1);
     }
+    ADJUSTMENT_WRITE(ADJ_GIRLS, 0);
 
     const Uint64 counter_frequency = SDL_GetPerformanceFrequency();
     Uint64 previous_counter = SDL_GetPerformanceCounter();

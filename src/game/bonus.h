@@ -7,7 +7,7 @@
 
 // BONUS.ASM
 // asm: 	.bss	MAXMPH,1		;FL
-extern int MAXMPH;
+extern c3x_f32_t MAXMPH;
 // asm: 	.bss	CHALLENGE_RACE,1	;FL 1= TRUE,0= FALSE
 extern int CHALLENGE_RACE;
 // asm: 	.bss	NEXT_STARTUP,1		;IDX

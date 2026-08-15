@@ -80,7 +80,7 @@ extern c3x_f32_t ENGFR[5];
 // asm: 	.globl	SPOS_INIT
 c3x_reg_t SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/);
 
-c3x_reg_t ROADIR(OBJ* track_obj /*AR0*/);
+c3x_reg_t ROADIR(CARBLK* carblk /*AR5*/);
 
 // asm: 	.GLOBL	GETRPM,GETAUTO,ENGFRI,GEARACTABI,ENGACTABI,GETRDIR
 void GETRPM(CARBLK* carblk /*AR5*/);

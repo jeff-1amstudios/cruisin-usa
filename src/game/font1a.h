@@ -13,7 +13,7 @@ void _itoa(char* string_space /*AR2*/, int number /*R2*/);
 void _pixel(int x, int y, int color);
 void _outtextxyc(const char* string, int x, int y, int color);
 void _fill(int x1, int y1, int x2, int y2, int color);
-void _itoaLZ(void);
+void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/);
 void HEX2ASC(void);
 
 #endif /* FONT1A_H */
