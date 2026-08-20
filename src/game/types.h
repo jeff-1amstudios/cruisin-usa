@@ -18,6 +18,7 @@
 #ifndef CRUISIN_USA_TYPES_H
 #define CRUISIN_USA_TYPES_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 typedef signed int s32;
@@ -316,6 +317,11 @@ typedef struct OBJ {
     };
     uintptr_t link4;
 } OBJ;
+
+_Static_assert(offsetof(OBJ, vel_y) == offsetof(OBJ, vel_x) + sizeof(c3x_f32_t),
+               "OBJ velocity components must be contiguous");
+_Static_assert(offsetof(OBJ, vel_z) == offsetof(OBJ, vel_y) + sizeof(c3x_f32_t),
+               "OBJ velocity components must be contiguous");
 
 extern OBJ OBJSTR[];
 
@@ -898,6 +904,8 @@ typedef struct PROC_CONTEXT {
             CARBLK* carblk;           // PDATA+5
             int num_sparks;           // PDATA+6
             OBJ* spark_objs[6];       // PDATA+7..
+            const int* spark_animations[6]; // host pointers represented separately from 32-bit OVELZ
+            c3x_reg_t delay_frames;    // R7
         } SPARK_PROC;
         struct {
             OBJ* obj;       // AR4

@@ -510,6 +510,7 @@ void SEND_WAVEFL_SET(void) {
 }
 
 void SEND_WAVEFL_GO(void) {
+    MAME_VALIDATOR_EXIT();
     // asm 000076F6: 	CLRI	R0
     // asm 000076F7: 	STI	R0,@_sectime
     // asm 000076F8: 	LDI	CB_WAVEFL_GO,AR2

@@ -309,19 +309,20 @@ static void RR_UNFREEZE(void) {
 static void BRIDGE_OFF(void) {
     // asm 0000AD62: 	LDI	@_MODE,R0
     // asm 0000AD63: 	ANDN	MBRIDGE,R0
+    _MODE &= ~MBRIDGE;
     // asm 0000AD64: 	STI	R0,@_MODE
     // asm 0000AD65: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BRIDGE_OFF", 0, 0);
-    UNIMPL();
 }
 
 static void BRIDGE_ON(void) {
+    MAME_VALIDATOR_EXIT();
     // asm 0000AD66: 	LDI	@_MODE,R0
     // asm 0000AD67: 	OR	MBRIDGE,R0
+    _MODE |= MBRIDGE;
     // asm 0000AD68: 	STI	R0,@_MODE
     // asm 0000AD69: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BRIDGE_ON", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

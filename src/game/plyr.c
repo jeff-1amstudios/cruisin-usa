@@ -851,6 +851,7 @@ static void PLYR_INTRO_JOIN_tail(PROC* p) {
     c3x_reg_t old_difference;
     c3x_reg_t candidate_difference;
     c3x_reg_t camera_height;
+    uint32_t observed_raw;
     int old_view;
     int old_gear;
     int new_gear;
@@ -1407,6 +1408,22 @@ CAM3RDX:
     // asm 00002B50: 	CALL	CAMYADJ			;YES, ADJUST CAMERA Y ABOVE ROAD
     CAMYADJ(&CAMERAPOSI); // YES, ADJUST CAMERA Y ABOVE ROAD
 PLYS1:
+    observed_raw = C3X_STORE(C3X_LDF(obj->pos.X));
+    MAME_ASSERT_MEM(0x00002B51, "d@(ar4+1)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->pos.Y));
+    MAME_ASSERT_MEM(0x00002B51, "d@(ar4+2)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(obj->pos.Z));
+    MAME_ASSERT_MEM(0x00002B51, "d@(ar4+3)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.X));
+    MAME_ASSERT_MEM(0x00002B51, "d@000809800", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Y));
+    MAME_ASSERT_MEM(0x00002B51, "d@000809801", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Z));
+    MAME_ASSERT_MEM(0x00002B51, "d@000809802", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(ZOOMD));
+    MAME_ASSERT_MEM(0x00002B51, "d@0000E89B", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(ZOOMH));
+    MAME_ASSERT_MEM(0x00002B51, "d@0000E89E", &observed_raw);
     // asm 00002B51: 	CALL	GETREV			;GET YOUR RPM'S, MAKE SOUND
     GETREV(carblk); // GET YOUR RPM'S, MAKE SOUND
     // asm 00002B52: 	CALL	PLYR_SNDS		;HANDLE SOME PLYR SOUNDS
@@ -1724,28 +1741,44 @@ static int CAMCHK(c3x_reg_t angle /*R0*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5
  *	R0	ADJUSTED ANGLE
  */
 static c3x_reg_t CAMROT(c3x_reg_t angle /*R0*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    c3x_reg_t direction;
+    c3x_reg_t correction;
+
+    (void)obj;
+    MAME_ASSERT_ARG_FLOAT("R0", &angle);
+
     // asm 00002BBD: PUSH	AR0
     // asm 00002BBE:  	PUSH	AR2
     // asm 00002BBF: 	LDF	R0,R3
     // asm 00002BC0: 	CALL	ROADIR			;R0=ROADIR
+    direction = ROADIR(carblk); // R0=ROADIR
     // asm 00002BC1: 	ADDF	R0,R3,R2
+    direction = C3X_ADD(direction, angle);
     // asm 00002BC2: 	CALL	NORMITS	      		;FIND DIRECTION
+    direction = NORMITS(direction); // FIND DIRECTION
     // asm 00002BC3: 	ABSF	R2,R1		      	;STOP OSCILLATION AROUND
     // asm 00002BC4: 	CMPF	0.1,R1
     // asm 00002BC5: 	BGT	CAMROT1
+    if (C3X_GT(C3X_ABS(direction), C3X_IMM_F32(0.1))) {
+        goto CAMROT1;
+    }
     // asm 00002BC6: 	NEGF	R2,R1
+    correction = C3X_NEG(direction); // STOP OSCILLATION AROUND
     // asm 00002BC7: 	B 	CAMROT2
+    goto CAMROT2;
 CAMROT1:
     // asm 00002BC8: 	LDF	R2,R2
     // asm 00002BC9: 	LDFN	0.1,R1
     // asm 00002BCA: 	LDFNN	-0.1,R1
+    correction = C3X_LT(direction, C3X_FROM_INT(0)) ? C3X_IMM_F32(0.1) : C3X_IMM_F32(-0.1);
 CAMROT2:
     // asm 00002BCB: 	ADDF	R1,R3,R0		;RETURN R0=ADJUSTED ANGLE
+    angle = C3X_ADD(angle, correction); // RETURN R0=ADJUSTED ANGLE
     // asm 00002BCC:  	POP	AR2
     // asm 00002BCD:  	POP	AR0
     // asm 00002BCE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMROT", 0, 0);
-    UNIMPL();
+    return angle;
 }
 
 /*
@@ -1856,43 +1889,72 @@ CAM1XX:
  *	AR5	PLAYER CAR
  */
 static void PLYONRD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    OBJ* track_obj;
+    c3x_reg_t road_direction;
+    c3x_reg_t lane_distance;
+    c3x_reg_t x_offset;
+    c3x_reg_t z_offset;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00002BF5: 	LDF	0,R0
+    road_direction = C3X_IMM_F32(0);
     // asm 00002BF6: 	STF	R0,*+AR5(CARSPRAD)
+    carblk->spin_radians = C3X_STF(road_direction);
     // asm 00002BF7: 	STF	R0,*+AR5(CARDROT)
+    carblk->last_y_rotation = C3X_STF(road_direction);
     // asm 00002BF8: 	LDI	0,R0
     // asm 00002BF9: 	STI	R0,*+AR5(CAR_SPIN)	;RESET SPIN FLAG
+    carblk->spin_flag = 0; // RESET SPIN FLAG
     // asm 00002BFA: 	STPI	R0,@WRECKFLG		;WRECK OFF
+    WRECKFLG = 0; // WRECK OFF
     // asm 00002BFB: 	LDI	AR4,AR0			;GET MATRIX BACK TO NORMAL
     // asm 00002BFC: 	ADDI	OMATRIX,AR0
     // asm 00002BFD: 	CALL	INITMAT
+    INITMAT((MATRIX*)&obj->omatrix); // GET MATRIX BACK TO NORMAL
     // asm 00002BFE: 	CALL    GETTRAK			;GET CLOSEST TRACK SEGMENT
+    GETTRAK(obj, carblk); // GET CLOSEST TRACK SEGMENT
+    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 00002BFF: 	LDF	*+AR0(OPOSX),R0		;NEW POSITION
     // asm 00002C00: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_LDF(track_obj->pos.X)); // NEW POSITION
     // asm 00002C01: 	LDF	*+AR0(OPOSZ),R0
     // asm 00002C02: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_LDF(track_obj->pos.Z));
     // asm 00002C03: 	LDF	*+AR0(OPOSY),R0
     // asm 00002C04: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_LDF(track_obj->pos.Y));
     // asm 00002C05: 	CALL  	ROADIR			;GET DIRECTION IN R0
+    road_direction = ROADIR(carblk); // GET DIRECTION IN R0
     // asm 00002C06: 	STF	R0,*+AR5(CARYROT)
+    carblk->y_rotation = C3X_STF(road_direction);
     // asm 00002C07: 	STF	R0,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(road_direction);
     // asm 00002C08: 	LDF	R0,R2
     // asm 00002C09: 	NEGF	R0
     // asm 00002C0A: 	LDP	@_CAMERARAD+Y
     // asm 00002C0B: 	STF	R0,@_CAMERARAD+Y	;UPDATE CAMERA YRAD
+    _CAMERARAD.Y = C3X_STF(C3X_NEG(road_direction)); // UPDATE CAMERA YRAD
     // asm 00002C0C: 	SETDP
     // asm 00002C0D: 	CALL	_SINE
+    z_offset = _SINE(road_direction);
     // asm 00002C0E: 	LDF	R0,R3
     // asm 00002C0F: 	CALL	_COSI
+    x_offset = _COSI(road_direction);
     // asm 00002C10: 	FLOAT	722,R1	    		;GET LANE DIST
+    lane_distance = C3X_FROM_INT(722); // GET LANE DIST
     // asm 00002C11: 	MPYF	R1,R0
+    x_offset = C3X_MUL(lane_distance, x_offset);
     // asm 00002C12: 	MPYF	R1,R3
+    z_offset = C3X_MUL(lane_distance, z_offset);
     // asm 00002C13: 	ADDF	*+AR4(OPOSX),R0
     // asm 00002C14: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), x_offset));
     // asm 00002C15: 	ADDF	*+AR4(OPOSZ),R3
     // asm 00002C16: 	STF	R3,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), z_offset));
     // asm 00002C17: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYONRD", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -5131,7 +5193,7 @@ PLYRSND1B:
         goto BOTX;
     }
     // asm 000030CC: 	CALL	INIT_SPARK
-    INIT_SPARK();
+    INIT_SPARK(obj);
     // asm 000030CD: 	SONDFX	BOTTOMOUT
     SONDFX(BOTTOMOUT);
     // asm 000030CF: 	LDI	0,R0

@@ -14,6 +14,7 @@ endif()
 
 option(CRUSN_TRACE "Enable native trace logging" ON)
 option(C3X_USE_HOST_FLOAT "Use native host floating point for translated C3x float operations" OFF)
+option(CRUSN_ENABLE_ASAN "Enable AddressSanitizer in Debug builds" OFF)
 
 find_package(SDL2 CONFIG QUIET)
 if(NOT SDL2_FOUND)
@@ -151,11 +152,13 @@ endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
   target_compile_options(crusn PRIVATE
-    $<$<CONFIG:Debug>:-fsanitize=address>
     $<$<CONFIG:Debug>:-fno-omit-frame-pointer>
     -Werror=return-type
   )
-  target_link_options(crusn PRIVATE $<$<CONFIG:Debug>:-fsanitize=address>)
+  if(CRUSN_ENABLE_ASAN)
+    target_compile_options(crusn PRIVATE $<$<CONFIG:Debug>:-fsanitize=address>)
+    target_link_options(crusn PRIVATE $<$<CONFIG:Debug>:-fsanitize=address>)
+  endif()
 endif()
 
 if(APPLE)

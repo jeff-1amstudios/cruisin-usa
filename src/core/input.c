@@ -12,6 +12,9 @@ static int brake;
 static int steering_direction;
 static int steering_detent;
 
+#define STEERING_KEY_STEP 2
+#define STEERING_CENTER_STEP 3
+
 int input_frame_counter = 0;
 
 void port_handle_input(void) {
@@ -24,7 +27,7 @@ void port_handle_input(void) {
     if (keyboard[SDL_SCANCODE_RETURN] || keyboard[SDL_SCANCODE_KP_ENTER]) {
         switch1 &= ~SW_START;
     }
-    if (input_frame_counter % 400 == 0) {
+    if (input_frame_counter % 200 == 0) {
         switch1 &= ~SW_START;
     }
     int new_steering_direction = (keyboard[SDL_SCANCODE_RIGHT] != 0) - (keyboard[SDL_SCANCODE_LEFT] != 0);
@@ -61,13 +64,13 @@ u32 port_get_switch3(void) {
 void port_sample_steering(void) {
     /* Called from READIO at the emulated A/D sampling boundary. */
     if (steering_direction != 0) {
-        steering += steering_direction * 2;
+        steering += steering_direction * STEERING_KEY_STEP;
     } else if (steering < PORT_STEERING_CENTER) {
-        steering += 2;
+        steering += STEERING_CENTER_STEP;
         if (steering > PORT_STEERING_CENTER)
             steering = PORT_STEERING_CENTER;
     } else if (steering > PORT_STEERING_CENTER) {
-        steering -= 2;
+        steering -= STEERING_CENTER_STEP;
         if (steering < PORT_STEERING_CENTER)
             steering = PORT_STEERING_CENTER;
     }

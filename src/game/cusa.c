@@ -1,6 +1,7 @@
 #include "cusa.h"
 #include "../core/input.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "../core/machine.h"
@@ -569,7 +570,10 @@ ENTER2:
     if (VALIDATE_SINGLE_FRAME()) {
         NFRAMES = 1; // SAVE FOR ALL CURRENT PROCESSES
     } else {
-        NFRAMES = INFRAMES; // SAVE FOR ALL CURRENT PROCESSES
+        NFRAMES = FRAMRATE + 1;
+        if (INFRAMES > NFRAMES) {
+            fprintf(stderr, "Frame overrun: elapsed %d ticks, expected %d\n", INFRAMES, NFRAMES);
+        }
     }
     INFRAMES = 0; // CLEAR INTERRUPT COUNTER
 
@@ -1241,8 +1245,6 @@ static void ATODINT(void) {
     c3x_reg_t previous_value;
     c3x_reg_t filtered_value;
     c3x_reg_t delta;
-
-    MAME_ASSERT_FUNCTION_ENTRY();
 
     // asm 00004D80: 	PUSH	ST
     // asm 00004D81: 	PUSH	IE

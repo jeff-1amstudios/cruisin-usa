@@ -7,8 +7,8 @@ int crusn_video_init(crusn_video* video) {
         "Cruis'n USA 4.5",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        CRUSN_SCREEN_WIDTH * 2,
-        CRUSN_SCREEN_HEIGHT * 2,
+        640,
+        480,
         SDL_WINDOW_RESIZABLE);
     if (video->window == NULL) {
         return -1;
@@ -16,6 +16,11 @@ int crusn_video_init(crusn_video* video) {
 
     video->renderer = SDL_CreateRenderer(video->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (video->renderer == NULL) {
+        crusn_video_shutdown(video);
+        return -1;
+    }
+
+    if (SDL_RenderSetLogicalSize(video->renderer, CRUSN_SCREEN_WIDTH, CRUSN_SCREEN_HEIGHT) != 0) {
         crusn_video_shutdown(video);
         return -1;
     }

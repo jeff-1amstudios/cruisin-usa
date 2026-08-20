@@ -243,6 +243,8 @@ static void LOADBEVERLY(void) {
     LOAD_SECTION_REQ(&SECbevhnred_SETUPS);
     // asm 00008C52: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADBEVERLY", 0, 0);
+
+    MAME_VALIDATOR_EXIT();
 }
 
 static void LOADLAFREEWAY(void) {
@@ -322,7 +324,6 @@ static void LOADCHICAGO(void) {
     // asm 00008C77: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADCHICAGO", 0, 0);
 
-    MAME_VALIDATOR_EXIT();
 }
 
 static void LOADINDIANA(void) {

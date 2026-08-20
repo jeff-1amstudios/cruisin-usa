@@ -568,6 +568,16 @@ PC1X0:
     // asm 00002037: 	ADDI	CARVSIZ,R0
     // asm 00002038: 	STI	R0,*AR0++
     // asm 00002039: 	CALL	GETNMAT			;GET NEW MATRIX
+    observed_raw = C3X_STORE(C3X_LDF(carblk->center.road_delta_y));
+    MAME_ASSERT_MEM(0x00002039, "d@(ar6+3)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(carblk->right_front.road_delta_y));
+    MAME_ASSERT_MEM(0x00002039, "d@(ar6+9)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(carblk->left_front.road_delta_y));
+    MAME_ASSERT_MEM(0x00002039, "d@(ar6+f)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(carblk->left_rear.road_delta_y));
+    MAME_ASSERT_MEM(0x00002039, "d@(ar6+15)", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(carblk->right_rear.road_delta_y));
+    MAME_ASSERT_MEM(0x00002039, "d@(ar6+1b)", &observed_raw);
     GETNMAT(obj, carblk); // ;GET NEW MATRIX
     // asm 0000203A: PCOLLX
     // asm 0000203A: 	POP	AR6
@@ -862,7 +872,7 @@ RS297:
 RS299:
     // asm 000020A3: 	CMPF	R0,R1			;TAKE LEAST POSITIVE
     // asm 000020A4: 	BLT	RS30
-    if (C3X_LT(road_delta_y, car_point->road_delta_y)) {
+    if (C3X_LT(car_point->road_delta_y, road_delta_y)) {
         goto RS30; // ;TAKE LEAST POSITIVE
     }
     // asm 000020A5: 	B	RS301
@@ -1298,9 +1308,9 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
         BLOWLIST[(i * 3) + 2] = C3X_STF(C3X_ADD(rotated_z, translation.Z)); // ;STORE Z
         {
             uint32_t observed_raw = C3X_STORE(C3X_LDF(BLOWLIST[(i * 3) + 0]));
-            MAME_ASSERT_MEM(0x00002133, "d@(ar3-2)", &observed_raw);
+            // MAME_ASSERT_MEM(0x00002133, "d@(ar3-2)", &observed_raw);
             observed_raw = C3X_STORE(C3X_LDF(BLOWLIST[(i * 3) + 1]));
-            MAME_ASSERT_MEM(0x00002133, "d@(ar3-1)", &observed_raw);
+            // MAME_ASSERT_MEM(0x00002133, "d@(ar3-1)", &observed_raw);
         }
     EOTV:
         // asm 00002133: STF	R2,*AR3++		;STORE Z

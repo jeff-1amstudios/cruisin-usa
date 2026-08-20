@@ -1646,7 +1646,7 @@ void VOLSNDFX(int sound_index, int volume);
 // asm:  .globl SPARK_PROC,SPARK_COLLA_PROC,OBJ_MOVE,WALL_SPARK,IMPACT_SPARK
 void SPARK_PROC(PROC* p);
 
-void OBJ_MOVE(void);
+void OBJ_MOVE(OBJ* obj /*AR2*/, c3x_reg_t frame_scale /*R1*/);
 
 void WALL_SPARK(void);
 
@@ -1657,7 +1657,7 @@ void SKID_SPARK(void);
 
 void ROAD_IMPACT_SPARK(void);
 
-void INIT_SPARK(void);
+void INIT_SPARK(OBJ* parent_obj /*AR4*/);
 
 // trans.asm
 // asm:  .globl CHOOSE_TRANSMISSION

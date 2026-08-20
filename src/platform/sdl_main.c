@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
 
         /* ZSORTWT raises CLEARRDY and the original MAINLOOP waits for INT0
            to clear it before dispatching processes for another frame. */
-        if (INFRAMES >= FRAMRATE && CLEARRDY == 0) {
+        if (INFRAMES >= FRAMRATE + 1 && CLEARRDY == 0) {
             MAINLOOP();
             crusn_yield_display_interrupt();
         } else {

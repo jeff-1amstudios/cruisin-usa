@@ -22,8 +22,8 @@ static DYNAOBJ* GET_REAR__tail(DYNAOBJ* dynamic_obj /*R0*/);
 static void INIT_SMOKE(PROC* p /*AR7*/, OBJ* smoke_obj /*AR0*/, const int* animation /*AR1*/,
                        DYNAOBJ* wheel /*AR2*/, int road_oid /*R4*/, c3x_reg_t z_offset /*R5*/);
 void SORT_SMOKE(void);
-void INIT_SPARK(void);
-static void REPLICATE_SPARK(void);
+void INIT_SPARK(OBJ* parent_obj /*AR4*/);
+static void REPLICATE_SPARK(PROC* p /*AR7*/);
 void SPARK_PROC(PROC* p);
 static void INIT_COLLA_OBJS(PROC* p /*AR7*/);
 void WALL_SPARK(void);
@@ -31,7 +31,7 @@ void IMPACT_SPARK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point 
 void ROAD_IMPACT_SPARK(void);
 void SKID_SPARK(void);
 static int TOO_MANY_SPARKS(void);
-void OBJ_MOVE(void);
+void OBJ_MOVE(OBJ* obj /*AR2*/, c3x_reg_t frame_scale /*R1*/);
 extern MATRIX _MATRIXA;
 extern VECTOR _VECTORA;
 
@@ -582,83 +582,136 @@ static int SPARKANI[] = {
 #define NUM_SPARKS (PDATA + 6)
 #define SPARK_OBJS (PDATA + 7)
 
-void INIT_SPARK(void) {
+void INIT_SPARK(OBJ* parent_obj /*AR4*/) {
+    PROC* spark_proc;
+    PROC_CONTEXT* spark_ctx;
+    CARBLK* carblk;
+    MATRIX* body_matrix;
+    OBJ* spark_obj;
+    c3x_reg_t x_offset;
+    int num_sparks;
+
     // asm 00008593: 	CALL	PUSHALL
     // asm 00008594: 	LDI	@_MODE,R0
     // asm 00008595: 	AND	MMODE,R0
     // asm 00008596: 	CMPI	MATTR,R0
     // asm 00008597: 	BEQ	INIT_SPARKX
+    if ((_MODE & MMODE) == MATTR) {
+        goto INIT_SPARKX;
+    }
     // asm 00008598: 	CALL	TOO_MANY_SPARKS
     // asm 00008599: 	BC	INIT_SPARKX
+    if (TOO_MANY_SPARKS()) {
+        goto INIT_SPARKX;
+    }
     // asm 0000859A: 	LDI	@PLYPROC,AR7
     // asm 0000859B: 	CREATEC	SPARK_PROC,UTIL_C|SPARK_T
+    spark_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    spark_proc = CREATEC(SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
     // asm 0000859E: 	BC	INIT_SPARKX
+    if (spark_proc == NULL) {
+        goto INIT_SPARKX;
+    }
     // asm 0000859F: 	LDI	AR0,AR7
     // asm 000085A0: 	STI	AR4,*+AR7(CAR_OBJ)
+    spark_ctx->SPARK_PROC.car_obj = parent_obj;
     // asm 000085A1: 	LDI	*+AR4(OCARBLK),AR5
+    carblk = parent_obj->carblk;
     // asm 000085A2: 	STI	AR5,*+AR7(CAR_BLOCK)
+    spark_ctx->SPARK_PROC.carblk = carblk;
     // asm 000085A3: 	LDI	0,R5
+    num_sparks = 0;
 IS_LOOP:
     // asm 000085A4: 	LDI	@SPARKANII,AR0
     // asm 000085A5: 	LDI	*AR0,AR2
     // asm 000085A6: 	CALL	OBJ_GETE
+    spark_obj = OBJ_GETE(ROM_PTR((word_addr_t)SPARKANII[0]));
     // asm 000085A7: 	BC	IS_LOOPX
+    if (spark_obj == NULL) {
+        goto IS_LOOPX;
+    }
     // asm 000085A8: 	LDI	*+AR0(OFLAGS),R0
     // asm 000085A9: 	OR	O_NOCOLL|O_POSTER,R0
     // asm 000085AA: 	STI	R0,*+AR0(OFLAGS)
+    spark_obj->flags |= O_NOCOLL | O_POSTER;
     // asm 000085AB: 	LDI	AR0,AR4
     // asm 000085AC: 	CALL	ADD_RDDEBRIS
+    ADD_RDDEBRIS(spark_obj);
     // asm 000085AD: 	LDI	RDDEBRIS_C|TSC_IGNORE|TSC_SPARK_S,R0
     // asm 000085AE: 	STI	R0,*+AR4(OID)
+    spark_obj->id = RDDEBRIS_C | TSC_IGNORE | TSC_SPARK_S;
     // asm 000085AF: 	LDI	R5,IR0
     // asm 000085B0: 	ADDI	SPARK_OBJS,IR0
     // asm 000085B1: 	STI	AR4,*+AR7(IR0)
+    spark_ctx->SPARK_PROC.spark_objs[num_sparks] = spark_obj;
     // asm 000085B2: 	LDI	*+AR7(CAR_OBJ),AR2	;Use the body of the cars matrix
     // asm 000085B3: 	CALL	GETCARBODY		;get the over rotation of the car body
+    body_matrix = GETCARBODY(spark_ctx->SPARK_PROC.car_obj);
     // asm 000085B4: 	LDI	AR0,AR2
     // asm 000085B5: 	LDI	*+AR7(CAR_OBJ),R2	;MATRIX = OVERROT+ROT of cars body
     // asm 000085B6: 	ADDI	OMATRIX,R2
     // asm 000085B7: 	LDI	AR4,R3
     // asm 000085B8: 	ADDI	OMATRIX,R3
     // asm 000085B9: 	CALL	CONCATMATV
+    CONCATMATV(body_matrix, (MATRIX*)&parent_obj->omatrix, (MATRIX*)&spark_obj->omatrix);
     // asm 000085BA: 	LDF	*+AR5(CARXPLUS),R0
     // asm 000085BB: 	SUBF	*+AR5(CARXMINUS),R0
+    x_offset = C3X_SUB(C3X_LDF(carblk->x_plus), C3X_LDF(carblk->x_minus));
     // asm 000085BC: 	CALL	FRAND
+    x_offset = FRAND(x_offset);
     // asm 000085BD: 	ADDF	*+AR5(CARXMINUS),R0
+    x_offset = C3X_ADD(x_offset, C3X_LDF(carblk->x_minus));
     // asm 000085BE: 	LDF	R0,R1
     // asm 000085BF: 	LDI	*+AR7(CAR_OBJ),AR0
     // asm 000085C0: 	LDF	*+AR0(OPOSX),R0		;Set the start point of the spark
     // asm 000085C1: 	ADDF	R1,R0
     // asm 000085C2: 	STF	R0,*+AR4(OPOSX)
+    spark_obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(parent_obj->pos.X), x_offset));
     // asm 000085C3: 	LDF	*+AR0(OPOSY),R0
     // asm 000085C4: 	STF	R0,*+AR4(OPOSY)
+    spark_obj->pos.Y = C3X_STF(C3X_LDF(parent_obj->pos.Y));
     // asm 000085C5: 	LDF	*+AR0(OPOSZ),R0
     // asm 000085C6: 	STF	R0,*+AR4(OPOSZ)
+    spark_obj->pos.Z = C3X_STF(C3X_LDF(parent_obj->pos.Z));
     // asm 000085C7: 	FLOAT	180,R0
     // asm 000085C8: 	STF	R0,*+AR4(OVELY)		;bottom of car
+    spark_obj->vel_y = C3X_STF(C3X_FROM_INT(180));
     // asm 000085C9: 	LDF	*+AR5(CARZMINUS),R0	;BACK
     // asm 000085CA: 	STF	R0,*+AR4(OVELZ)
+    spark_obj->vel_z = C3X_STF(C3X_LDF(carblk->z_minus));
     // asm 000085CB: 	LDI	AR4,AR2
     // asm 000085CC: 	LDF	1,R1			;absolute move(note frame rate dependant)
     // asm 000085CD: 	CALL	OBJ_MOVE		;Offset the starting point
+    OBJ_MOVE(spark_obj, C3X_IMM_F32(1));
     // asm 000085CE: 	LDI	@SPARKANII,R0
     // asm 000085CF: 	STI	R0,*+AR4(OVELZ)
+    spark_ctx->SPARK_PROC.spark_animations[num_sparks] = SPARKANII;
     // asm 000085D0: 	LDF	0,R0
     // asm 000085D1: 	STF	R0,*+AR4(OVELY)
+    spark_obj->vel_y = C3X_STF(C3X_IMM_F32(0));
     // asm 000085D2: 	LDI	AR4,AR2
     // asm 000085D3: 	CALL	OBJ_INSERT
+    OBJ_INSERT(spark_obj);
     // asm 000085D4: 	ADDI	1,R5
+    num_sparks += 1;
     // asm 000085D5: 	CMPI	6,R5
     // asm 000085D6: 	BLT	IS_LOOP
+    if (num_sparks < 6) {
+        goto IS_LOOP;
+    }
 IS_LOOPX:
     // asm 000085D7: 	CMPI	0,R5
     // asm 000085D8: 	BEQ	INIT_SPARK_KILL
+    if (num_sparks == 0) {
+        PRC_KILL(spark_proc);
+        goto INIT_SPARKX;
+    }
     // asm 000085D9: 	STI	R5,*+AR7(NUM_SPARKS)
+    spark_ctx->SPARK_PROC.num_sparks = num_sparks;
 INIT_SPARKX:
     // asm 000085DA: 	CALL	POPALL
     // asm 000085DB: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_SPARK", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
@@ -668,75 +721,116 @@ INIT_SPARKX:
  *	R7  = FL, NUMBER OF FRAMES SINCE LAST SPARK
  */
 
-static void REPLICATE_SPARK(void) {
+static void REPLICATE_SPARK(PROC* p /*AR7*/) {
+    OBJ* last_spark = NULL;
+    OBJ* spark_obj;
+    c3x_reg_t offset;
+    int spark_index;
+
     // asm 000085DC: 	LDI	*+AR7(NUM_SPARKS),R0
     // asm 000085DD: 	CMPI	4,R0
     // asm 000085DE: 	BGE	REPSPARKX
+    if (p->ctx->SPARK_PROC.num_sparks >= 4) {
+        goto REPSPARKX;
+    }
     // asm 000085DF: 	LDI	AR7,AR0
     // asm 000085E0: 	ADDI	SPARK_OBJS,AR0
     // asm 000085E1: 	LDI	0,R0
+    spark_index = 0;
 FIND_LAST_SPARKLP:
     // asm 000085E2: 	LDI	*AR0++,R1		;This loop will leave AR4 = to last NONZERO SPARK
     // asm 000085E3: 	LDINE	R1,AR4
+    if (p->ctx->SPARK_PROC.spark_objs[spark_index] != NULL) {
+        last_spark = p->ctx->SPARK_PROC.spark_objs[spark_index];
+    }
     // asm 000085E4: 	ADDI	1,R0
+    spark_index += 1;
     // asm 000085E5: 	CMPI	*+AR7(NUM_SPARKS),R0
     // asm 000085E6: 	BLT	FIND_LAST_SPARKLP
+    if (spark_index < p->ctx->SPARK_PROC.num_sparks) {
+        goto FIND_LAST_SPARKLP;
+    }
     // asm 000085E7: 	LDI	@SPARKANII,AR2
     // asm 000085E8: 	LDI	*AR2,AR2
     // asm 000085E9: 	CALL	OBJ_GETE
+    spark_obj = OBJ_GETE(ROM_PTR((word_addr_t)SPARKANII[0]));
     // asm 000085EA: 	BC	REPSPARKX
+    if (spark_obj == NULL) {
+        goto REPSPARKX;
+    }
     // asm 000085EB: 	LDI	*+AR0(OFLAGS),R0
     // asm 000085EC: 	OR	O_NOCOLL|O_POSTER,R0
     // asm 000085ED: 	STI	R0,*+AR0(OFLAGS)
+    spark_obj->flags |= O_NOCOLL | O_POSTER;
     // asm 000085EE: 	LDI	@MATRIXAI,AR2
     // asm 000085EF: 	LDF	*+AR5(CARVROT),R2
     // asm 000085F0: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_LDF(p->ctx->SPARK_PROC.carblk->y_velocity_rotation));
     // asm 000085F1: 	LDF	40,R0
     // asm 000085F2: 	CALL	SFRAND
+    offset = SFRAND(C3X_IMM_F32(40));
     // asm 000085F3: 	STF	R0,*+AR0(OPOSX)
+    spark_obj->pos.X = C3X_STF(offset);
     // asm 000085F4: 	LDF	90,R0
     // asm 000085F5: 	CALL	SFRAND
+    offset = SFRAND(C3X_IMM_F32(90));
     // asm 000085F6: 	STF	R0,*+AR0(OPOSY)
+    spark_obj->pos.Y = C3X_STF(offset);
     // asm 000085F7: 	FLOAT	@NFRAMES,R0
+    offset = C3X_FROM_INT(NFRAMES);
     // asm 000085F8: 	MPYF	50,R0			;Constant speed less than the player is moving
+    offset = C3X_MUL(offset, C3X_IMM_F32(50));
     // asm 000085F9: 	MPYF	R7,R0			;NUMBER OF FRAMES SINCE LAST SPARK CREATED
+    offset = C3X_MUL(offset, p->ctx->SPARK_PROC.delay_frames);
     // asm 000085FA: 	NEGF	R0			;OFFSET FROM LAST SPARK
+    offset = C3X_NEG(offset);
     // asm 000085FB: 	STF	R0,*+AR0(OPOSZ)
+    spark_obj->pos.Z = C3X_STF(offset);
     // asm 000085FC: 	LDI	AR0,AR2
     // asm 000085FD: 	ADDI	OPOSX,AR2
     // asm 000085FE: 	LDI	AR2,R3
     // asm 000085FF: 	LDI	@MATRIXAI,R2
     // asm 00008600: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&spark_obj->pos, &MATRIXAI, &spark_obj->pos);
     // asm 00008601: 	LDF	*+AR4(OPOSX),R0
     // asm 00008602: 	ADDF	*+AR0(OPOSX),R0
     // asm 00008603: 	STF	R0,*+AR0(OPOSX)
+    spark_obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(last_spark->pos.X), C3X_LDF(spark_obj->pos.X)));
     // asm 00008604: 	LDF	*+AR4(OPOSY),R0
     // asm 00008605: 	ADDF	*+AR0(OPOSY),R0
     // asm 00008606: 	STF	R0,*+AR0(OPOSY)
+    spark_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(last_spark->pos.Y), C3X_LDF(spark_obj->pos.Y)));
     // asm 00008607: 	LDF	*+AR4(OPOSZ),R0
     // asm 00008608: 	ADDF	*+AR0(OPOSZ),R0
     // asm 00008609: 	STF	R0,*+AR0(OPOSZ)
+    spark_obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(last_spark->pos.Z), C3X_LDF(spark_obj->pos.Z)));
     // asm 0000860A: 	LDI	*+AR7(NUM_SPARKS),AR2
     // asm 0000860B: 	ADDI	SPARK_OBJS,AR2
     // asm 0000860C: 	ADDI	AR7,AR2
     // asm 0000860D: 	STI	AR0,*AR2
+    p->ctx->SPARK_PROC.spark_objs[p->ctx->SPARK_PROC.num_sparks] = spark_obj;
     // asm 0000860E: 	LDF	*+AR4(OVELY),R0
     // asm 0000860F: 	STF	R0,*+AR0(OVELY)
+    spark_obj->vel_y = C3X_STF(C3X_LDF(last_spark->vel_y));
     // asm 00008610: 	LDI	*+AR7(NUM_SPARKS),R0
     // asm 00008611: 	ADDI	1,R0
     // asm 00008612: 	STI	R0,*+AR7(NUM_SPARKS)
+    p->ctx->SPARK_PROC.num_sparks += 1;
     // asm 00008613: 	LDI	AR0,AR4
     // asm 00008614: 	CALL	ADD_RDDEBRIS
+    ADD_RDDEBRIS(spark_obj);
     // asm 00008615: 	LDI	RDDEBRIS_C|TSC_IGNORE|TSC_SPARK_S,R0
     // asm 00008616: 	STI	R0,*+AR4(OID)
+    spark_obj->id = RDDEBRIS_C | TSC_IGNORE | TSC_SPARK_S;
     // asm 00008617: 	LDI	@SPARKANII,R0
     // asm 00008618: 	STI	R0,*+AR4(OVELZ)
+    p->ctx->SPARK_PROC.spark_animations[p->ctx->SPARK_PROC.num_sparks - 1] = SPARKANII;
     // asm 00008619: 	LDI	AR4,AR2
     // asm 0000861A: 	CALL	OBJ_INSERT
+    OBJ_INSERT(spark_obj);
 REPSPARKX:
     // asm 0000861B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "REPLICATE_SPARK", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
@@ -749,98 +843,178 @@ REPSPARKX:
  *Maintains several spark animations
  */
 void SPARK_PROC(PROC* p) {
+    const int* animation;
+    OBJ* spark_obj;
+    c3x_reg_t movement;
+    c3x_reg_t road_height;
+    int active_sparks;
+    int animation_frame;
+    int collision_found;
+    int spark_index;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 0000861C: 	LDF	0,R7
+    p->ctx->SPARK_PROC.delay_frames = C3X_IMM_F32(0);
     // asm 0000861D: 	LDI	*+AR7(CAR_BLOCK),AR5
 SSANI_LOOP:
     // asm 0000861E: 	LDI	0,R5		;SPARK ON
+    spark_index = 0;
     // asm 0000861F: 	LDI	0,R6		;NUMBER OF SPARKS STILL ACTIVE
+    active_sparks = 0;
 SS1:
     // asm 00008620: 	LDI	R5,IR0
     // asm 00008621: 	ADDI	SPARK_OBJS,IR0
     // asm 00008622: 	LDI	*+AR7(IR0),AR4
+    spark_obj = p->ctx->SPARK_PROC.spark_objs[spark_index];
     // asm 00008623: 	CMPI	0,AR4
     // asm 00008624: 	BEQ	NEXT_SPARK		;SPARK is no longer with us
+    if (spark_obj == NULL) {
+        goto NEXT_SPARK;
+    }
     // asm 00008625: 	LDI	*+AR4(OFLAGS),R0	;CHECK IF ALREADY OFF LIST
     // asm 00008626: 	TSTB	O_LIST_M,R0
     // asm 00008627: 	BZ	SPARK_ANIX			;YES, DELETE FROM LIST
+    if ((spark_obj->flags & O_LIST_M) == 0) {
+        goto SPARK_ANIX;
+    }
     // asm 00008628: 	LDI	*+AR4(OID),R0
     // asm 00008629: 	CMPI	RDDEBRIS_C|TSC_IGNORE|TSC_SPARK_S,R0
     // asm 0000862A: 	BNE	SPARK_ANIX		;not a spark???!!!
+    if (spark_obj->id != (RDDEBRIS_C | TSC_IGNORE | TSC_SPARK_S)) {
+        goto SPARK_ANIX;
+    }
     // asm 0000862B: 	LDI	*+AR4(OVELZ),AR6		;ANIMATION POINTER
+    animation = p->ctx->SPARK_PROC.spark_animations[spark_index];
     // asm 0000862C: 	LDI	*++AR6,R0
+    animation_frame = *++animation;
     // asm 0000862D: 	BN	SPARK_ANIX
+    if (animation_frame < 0) {
+        goto SPARK_ANIX;
+    }
     // asm 0000862E: 	STI	R0,*+AR4(OROMDATA)
+    spark_obj->romdata = ROM_PTR((word_addr_t)animation_frame);
     // asm 0000862F: 	STI	AR6,*+AR4(OVELZ)
+    p->ctx->SPARK_PROC.spark_animations[spark_index] = animation;
     // asm 00008630: 	LDI	*+AR4(ODIST),R0
     // asm 00008631: 	CMPI	1000,R0
     // asm 00008632: 	BLE	SPARK_ANIX
+    if (spark_obj->dist <= 1000) {
+        goto SPARK_ANIX;
+    }
     // asm 00008633: 	LDI	@MATRIXAI,AR2
     // asm 00008634: 	LDF	*+AR5(CARVROT),R2
     // asm 00008635: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_LDF(p->ctx->SPARK_PROC.carblk->y_velocity_rotation));
     // asm 00008636: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 00008637: 	FLOAT	@NFRAMES,R0
+    movement = C3X_FROM_INT(NFRAMES);
     // asm 00008638: 	MPYF	*+AR5(CARSPEED),R0
+    movement = C3X_MUL(movement, C3X_LDF(p->ctx->SPARK_PROC.carblk->speed));
     // asm 00008639: 	MPYF	1.5,R0
+    movement = C3X_MUL(movement, C3X_IMM_F32(1.5));
     // asm 0000863A: 	SUBF	100,R0		;Constant speed less than the player is moving
+    movement = C3X_SUB(movement, C3X_IMM_F32(100));
     // asm 0000863B: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(movement);
     // asm 0000863C: 	LDI	@MATRIXAI,R2
     // asm 0000863D: 	LDI	AR2,R3
     // asm 0000863E: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // asm 0000863F: 	LDI	@VECTORAI,AR1
     // asm 00008640: 	LDF	*+AR1(X),R0
     // asm 00008641: 	ADDF	*+AR4(OPOSX),R0
     // asm 00008642: 	STF	R0,*+AR4(OPOSX)
+    spark_obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.X), C3X_LDF(spark_obj->pos.X)));
     // asm 00008643: 	LDF	*+AR1(Z),R0
     // asm 00008644: 	ADDF	*+AR4(OPOSZ),R0
     // asm 00008645: 	STF	R0,*+AR4(OPOSZ)
+    spark_obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(VECTORAI.Z), C3X_LDF(spark_obj->pos.Z)));
     // asm 00008646: 	PUSH	AR4
     // asm 00008647: 	PUSH	IR0
     // asm 00008648: 	PUSH	R5
     // asm 00008649: 	ADDI	OPOSX,AR4
     // asm 0000864A: 	CALL	CAMSCAN
+    collision_found = CAMSCAN(&spark_obj->pos, &road_height);
     // asm 0000864B: 	POP	R5
     // asm 0000864C: 	POP	IR0
     // asm 0000864D: 	POP	AR4
     // asm 0000864E: 	BNC	SPARK_ANIX	;This spark is out of this world
+    if (!collision_found) {
+        goto SPARK_ANIX;
+    }
     // asm 0000864F: 	SUBF	*+AR4(OVELY),R0		;SPARKS OFFSET FROM THE GROUND
+    road_height = C3X_SUB(road_height, C3X_LDF(spark_obj->vel_y));
     // asm 00008650: 	ADDF	*+AR4(OPOSY),R0
+    road_height = C3X_ADD(road_height, C3X_LDF(spark_obj->pos.Y));
     // asm 00008651: 	STF	R0,*+AR4(OPOSY)
+    spark_obj->pos.Y = C3X_STF(road_height);
     // asm 00008652: 	ADDI	1,R6
+    active_sparks += 1;
 NEXT_SPARK:
     // asm 00008653: 	ADDI	1,R5
+    spark_index += 1;
     // asm 00008654: 	CMPI	*+AR7(NUM_SPARKS),R5
     // asm 00008655: 	BLT	SS1
+    if (spark_index < p->ctx->SPARK_PROC.num_sparks) {
+        goto SS1;
+    }
     // asm 00008656: 	CMPI	0,R6
     // asm 00008657: 	BEQ	SPARK_DIE
+    if (active_sparks == 0) {
+        goto SPARK_DIE;
+    }
     // asm 00008658: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 0000865A: 	ADDF	1,R7
+    p->ctx->SPARK_PROC.delay_frames =
+        C3X_ADD(p->ctx->SPARK_PROC.delay_frames, C3X_IMM_F32(1));
     // asm 0000865B: 	CMPF	2,R7			;WAIT NFRAMES
     // asm 0000865C: 	BNE	KLUDGE_MOFO
+    if (C3X_NE(p->ctx->SPARK_PROC.delay_frames, C3X_IMM_F32(2))) {
+        goto KLUDGE_MOFO;
+    }
     // asm 0000865D: 	CALL	REPLICATE_SPARK		;Will replicate the latest spark still active
+    REPLICATE_SPARK(p);
     // asm 0000865E: 	LDF	0,R7
+    p->ctx->SPARK_PROC.delay_frames = C3X_IMM_F32(0);
 KLUDGE_MOFO:
     // asm 0000865F: 	BR	SSANI_LOOP
+    goto SSANI_LOOP;
 SPARK_DIE:
     // asm 00008660: 	DIE
+    DIE();
 SPARK_ANIX:
     // asm 00008661: 	LDI	R5,IR0
     // asm 00008662: 	ADDI	SPARK_OBJS,IR0
     // asm 00008663: 	LDI	*+AR7(IR0),AR2
     // asm 00008664: 	LDI	0,R0
     // asm 00008665: 	STI	R0,*+AR7(IR0)		;COLOR THIS SPARK GONE
+    p->ctx->SPARK_PROC.spark_objs[spark_index] = NULL;
     // asm 00008666: 	LDI	*+AR2(OFLAGS),R0	;CHECK IF ALREADY OFF LIST
     // asm 00008667: 	TSTB	O_LIST_M,R0
     // asm 00008668: 	BZ	NO_OBJ
+    if ((spark_obj->flags & O_LIST_M) == 0) {
+        goto NO_OBJ;
+    }
     // asm 00008669: 	LDI	*+AR2(OID),R0
     // asm 0000866A: 	CMPI	RDDEBRIS_C|TSC_IGNORE|TSC_SPARK_S,R0
     // asm 0000866B: 	BNE	NO_OBJ			;not a spark???!!!
+    if (spark_obj->id != (RDDEBRIS_C | TSC_IGNORE | TSC_SPARK_S)) {
+        goto NO_OBJ;
+    }
     // asm 0000866C: 	CALL	OBJ_DELETE
+    OBJ_DELETE(spark_obj);
 NO_OBJ:
     // asm 0000866D: 	BR	NEXT_SPARK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    (void)p;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SPARK_PROC", 0, 0);
-    UNIMPL();
+    goto NEXT_SPARK;
 }
 
 /*
@@ -1175,55 +1349,91 @@ void SKID_SPARK(void) {
  *		C=0 if ok
  */
 static int TOO_MANY_SPARKS(void) {
+    PROC* proc;
+    int num_spark_procs;
+
     // asm 00008709: 	LDI	0,R2
+    num_spark_procs = 0;
     // asm 0000870A: 	LDI	@PACTIVEI,R0
+    proc = PACTIVE;
     // asm 0000870B: 	BZ	TMSXCC			;NULL LIST?
+    if (proc == NULL) {
+        goto TMSXCC;
+    }
 TMS_LP:
     // asm 0000870C: 	LDI	R0,AR0
     // asm 0000870D: 	LDI	*+AR0(PID),R0
     // asm 0000870E: 	TSTB	UTIL_C,R0
     // asm 0000870F: 	BZ	TMSLPE
+    if ((proc->id & UTIL_C) == 0) {
+        goto TMSLPE;
+    }
     // asm 00008710: 	AND	TYPE_M,R0
     // asm 00008711: 	CMPI	SPARK_T,R0
     // asm 00008712: 	BNE	TMSLPE
+    if ((proc->id & TYPE_M) != SPARK_T) {
+        goto TMSLPE;
+    }
     // asm 00008713: 	ADDI	1,R2
+    num_spark_procs += 1;
 TMSLPE:
     // asm 00008714: 	LDI	*AR0,R0
+    proc = proc->link;
     // asm 00008715: 	BNZ	TMS_LP
+    if (proc != NULL) {
+        goto TMS_LP;
+    }
     // ;	CMPI	5,R2
     // asm 00008716: 	CMPI	2,R2
     // asm 00008717: 	BLT	TMSXCC
+    if (num_spark_procs < 2) {
+        goto TMSXCC;
+    }
     // asm 00008718: 	SETC
     // asm 00008719: 	RETS
+    return 1;
 TMSXCC:
     // asm 0000871A: 	CLRC
     // asm 0000871B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TOO_MANY_SPARKS", 0, 0);
-    UNIMPL();
     return 0;
 }
 
-void OBJ_MOVE(void) {
+void OBJ_MOVE(OBJ* obj /*AR2*/, c3x_reg_t frame_scale /*R1*/) {
+    VECTOR velocity;
+    c3x_reg_t movement;
+
     // asm 0000871C: 	LDI	AR2,AR1
     // asm 0000871D: 	ADDI	OVELX,AR2
+    velocity.X = obj->vel_x;
+    velocity.Y = obj->vel_y;
+    velocity.Z = obj->vel_z;
     // asm 0000871E: 	LDI	AR1,R2
     // asm 0000871F: 	ADDI	OMATRIX,R2
     // asm 00008720: 	LDI	@VECTORAI,R3
     // asm 00008721: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&velocity, (MATRIX*)&obj->omatrix, &VECTORAI);
     // asm 00008722: 	LDI	@VECTORAI,AR0
     // asm 00008723: 	LDF	*+AR0(X),R0
     // asm 00008724: 	MPYF	R1,R0
+    movement = C3X_MUL(C3X_LDF(VECTORAI.X), frame_scale);
     // asm 00008725: 	ADDF	*+AR1(OPOSX),R0
+    movement = C3X_ADD(movement, C3X_LDF(obj->pos.X));
     // asm 00008726: 	STF	R0,*+AR1(OPOSX)
+    obj->pos.X = C3X_STF(movement);
     // asm 00008727: 	LDF	*+AR0(Y),R0
     // asm 00008728: 	MPYF	R1,R0
+    movement = C3X_MUL(C3X_LDF(VECTORAI.Y), frame_scale);
     // asm 00008729: 	ADDF	*+AR1(OPOSY),R0
+    movement = C3X_ADD(movement, C3X_LDF(obj->pos.Y));
     // asm 0000872A: 	STF	R0,*+AR1(OPOSY)
+    obj->pos.Y = C3X_STF(movement);
     // asm 0000872B: 	LDF	*+AR0(Z),R0
     // asm 0000872C: 	MPYF	R1,R0
+    movement = C3X_MUL(C3X_LDF(VECTORAI.Z), frame_scale);
     // asm 0000872D: 	ADDF	*+AR1(OPOSZ),R0
+    movement = C3X_ADD(movement, C3X_LDF(obj->pos.Z));
     // asm 0000872E: 	STF	R0,*+AR1(OPOSZ)
+    obj->pos.Z = C3X_STF(movement);
     // asm 0000872F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_MOVE", 0, 0);
-    UNIMPL();
+    return;
 }
