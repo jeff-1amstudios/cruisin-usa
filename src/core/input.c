@@ -28,7 +28,7 @@ void port_handle_input(void) {
         switch1 &= ~SW_START;
     }
     if (input_frame_counter % 200 == 0) {
-        switch1 &= ~SW_START;
+        // switch1 &= ~SW_START;
     }
     int new_steering_direction = (keyboard[SDL_SCANCODE_RIGHT] != 0) - (keyboard[SDL_SCANCODE_LEFT] != 0);
     if (new_steering_direction != 0 && new_steering_direction != steering_direction) {

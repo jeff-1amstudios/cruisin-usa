@@ -1024,68 +1024,120 @@ NO_OBJ:
  *Creates several spark animations
  */
 static void INIT_COLLA_OBJS(PROC* p /*AR7*/) {
+    OBJ* car_obj;
+    OBJ* spark_obj;
+    c3x_reg_t position;
+    c3x_reg_t x_offset;
+    c3x_reg_t y_offset;
+    c3x_reg_t z_offset;
+    int num_sparks;
+
     // asm 0000866E: 	LDI	0,R5
+    num_sparks = 0;
 ICO_LOOP:
     // asm 0000866F: 	LDI	@SPARKANII,AR0
     // asm 00008670: 	LDI	*AR0,AR2
     // asm 00008671: 	CALL	OBJ_GETE
+    spark_obj = OBJ_GETE(ROM_PTR((word_addr_t)SPARKANII[0]));
     // asm 00008672: 	BC	ICO_LOOPX		;out of objects
+    if (spark_obj == NULL) {
+        goto ICO_LOOPX;
+    }
     // asm 00008673: 	LDI	AR0,AR4
     // asm 00008674: 	LDI	*+AR4(OFLAGS),R0
     // asm 00008675: 	OR	O_NOCOLL|O_POSTER,R0
     // asm 00008676: 	STI	R0,*+AR4(OFLAGS)
+    spark_obj->flags |= O_NOCOLL | O_POSTER;
     // asm 00008677: 	CALL	ADD_RDDEBRIS
+    ADD_RDDEBRIS(spark_obj);
     // asm 00008678: 	LDI	RDDEBRIS_C|TSC_IGNORE|TSC_SPARK_S,R0
     // asm 00008679: 	STI	R0,*+AR4(OID)
+    spark_obj->id = RDDEBRIS_C | TSC_IGNORE | TSC_SPARK_S;
     // asm 0000867A: 	LDI	R5,IR0
     // asm 0000867B: 	ADDI	SPARK_OBJS,IR0
     // asm 0000867C: 	STI	AR4,*+AR7(IR0)
+    p->ctx->SPARK_PROC.spark_objs[num_sparks] = spark_obj;
     // asm 0000867D: 	FLOAT	60,R0			;calculate the random offset that this obj will have
+    x_offset = C3X_FROM_INT(60); // calculate the random offset that this obj will have
     // asm 0000867E: 	CALL	SFRAND
+    x_offset = SFRAND(x_offset);
     // asm 0000867F: 	LDF	R0,R1
     // asm 00008680: 	FLOAT	-60,R0
+    y_offset = C3X_FROM_INT(-60);
     // asm 00008681: 	CALL	FRAND
+    y_offset = FRAND(y_offset);
     // asm 00008682: 	ADDF	20,R0
+    y_offset = C3X_ADD(y_offset, C3X_IMM_F32(20));
     // asm 00008683: 	LDF	R0,R2
     // asm 00008684: 	FLOAT	60,R0
+    z_offset = C3X_FROM_INT(60);
     // asm 00008685: 	CALL	SFRAND
+    z_offset = SFRAND(z_offset);
     // asm 00008686: 	LDF	R0,R3
     // asm 00008687: 	LDI	*+AR7(CAR_OBJ),AR0
+    car_obj = p->ctx->SPARK_PROC.car_obj;
     // asm 00008688: 	LDF	*+AR7(COLL_X),R0		;Set the start point of the spark
+    position = C3X_LDF(p->ctx->SPARK_PROC.collision_offset.X); // Set the start point of the spark
     // asm 00008689: 	ADDF	R1,R0
+    position = C3X_ADD(position, x_offset);
     // asm 0000868A: 	ADDF	*+AR0(OPOSX),R0
+    position = C3X_ADD(position, C3X_LDF(car_obj->pos.X));
     // asm 0000868B: 	STF	R0,*+AR4(OPOSX)
+    spark_obj->pos.X = C3X_STF(position);
     // asm 0000868C: 	LDF	*+AR7(COLL_Y),R0
+    position = C3X_LDF(p->ctx->SPARK_PROC.collision_offset.Y);
     // asm 0000868D: 	ADDF	R2,R0
+    position = C3X_ADD(position, y_offset);
     // asm 0000868E: 	ADDF	-30,R0
+    position = C3X_ADD(position, C3X_IMM_F32(-30));
     // asm 0000868F: 	NEGF	R0,R1
+    y_offset = C3X_NEG(position);
     // asm 00008690: 	ADDF	180,R1				;AVERAGE car hight from road
+    y_offset = C3X_ADD(y_offset, C3X_IMM_F32(180)); // AVERAGE car hight from road
     // asm 00008691: 	STF	R1,*+AR4(OVELY)			;This will be used as the y offset
+    spark_obj->vel_y = C3X_STF(y_offset); // This will be used as the y offset
     // asm 00008692: 	ADDF	*+AR0(OPOSY),R0
+    position = C3X_ADD(position, C3X_LDF(car_obj->pos.Y));
     // asm 00008693: 	STF	R0,*+AR4(OPOSY)
+    spark_obj->pos.Y = C3X_STF(position);
     // asm 00008694: 	LDF	*+AR7(COLL_Z),R0
+    position = C3X_LDF(p->ctx->SPARK_PROC.collision_offset.Z);
     // asm 00008695: 	ADDF	R3,R0
+    position = C3X_ADD(position, z_offset);
     // asm 00008696: 	ADDF	*+AR0(OPOSZ),R0
+    position = C3X_ADD(position, C3X_LDF(car_obj->pos.Z));
     // asm 00008697: 	STF	R0,*+AR4(OPOSZ)
+    spark_obj->pos.Z = C3X_STF(position);
     // asm 00008698: 	LDI	@SPARKANII,R0
     // asm 00008699: 	STI	R0,*+AR4(OVELZ)
+    p->ctx->SPARK_PROC.spark_animations[num_sparks] = SPARKANII;
     // asm 0000869A: 	LDI	AR4,AR2
     // asm 0000869B: 	CALL	OBJ_INSERT
+    OBJ_INSERT(spark_obj);
     // asm 0000869C: 	ADDI	1,R5
+    num_sparks += 1;
     // asm 0000869D: 	CMPI	2,R5
     // asm 0000869E: 	BLT	ICO_LOOP
+    if (num_sparks < 2) {
+        goto ICO_LOOP;
+    }
 ICO_LOOPX:
     // asm 0000869F: 	CMPI	0,R5
     // asm 000086A0: 	BEQ	INIT_SPARK_KILL
+    if (num_sparks == 0) {
+        goto INIT_SPARK_KILL;
+    }
     // asm 000086A1: 	STI	R5,*+AR7(NUM_SPARKS)
+    p->ctx->SPARK_PROC.num_sparks = num_sparks;
     // asm 000086A2: 	RETS
+    return;
 INIT_SPARK_KILL:
     // asm 000086A3: 	LDI	AR7,AR2
     // asm 000086A4: 	LDI	0,AR7		;Stupid thing thinks I'm commiting suicide!
     // asm 000086A5: 	CALL	PRC_KILL
+    PRC_KILL(p); // Stupid thing thinks I'm commiting suicide!
     // asm 000086A6: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_COLLA_OBJS", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
