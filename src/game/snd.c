@@ -310,18 +310,39 @@ void RESUME_TUNE_NT(void) {
  *
  */
 void SET_MASTER_VOL(int volume) {
+    int volume_command;
+
     // asm 00009137: 	PUSH	AR2
     // asm 00009138: 	BUD	JI1
     // asm 00009139: 	PUSH	R0
     // asm 0000913A: 	PUSH	R1
     // asm 0000913B: 	LDI	055AAh,R0
-    crusn_audio_set_master_volume(volume);
     // 	;---->	BUD	JI1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    // asm 00009148: 	LDI	1,AR2
+    // asm 00009149: 	STI	AR2,@DO_NOT_REENABLE_INT
+    // asm 0000914A: 	LDI	R0,AR2
+    // asm 0000914B: 	CALL	SENDSND
+    SENDSND(0x55aa);
+    // asm 0000914C: 	AND	0FFh,R1
+    volume &= 0xff;
+    // asm 0000914D: 	CLRI	AR2
+    // asm 0000914E: 	STI	AR2,@DO_NOT_REENABLE_INT
+    // asm 0000914F: 	NOT	R1,R0
+    // asm 00009150: 	AND	0FFh,R0
+    volume_command = (~volume) & 0xff;
+    // asm 00009151: 	LS	8,R1
+    // asm 00009152: 	OR	R0,R1
+    volume_command |= volume << 8;
+    // asm 00009153: 	LDI	R1,AR2
+    // asm 00009154: 	CALL	SENDSND
+    SENDSND(volume_command);
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_MASTER_VOL", 0, 0);
 }
 
 void SET_TRACK_VOL(int track, int volume) {
+    int volume_command;
+
     // asm 0000913C: 	PUSH	AR2
     // asm 0000913D: 	PUSH	R0
     // asm 0000913E: 	PUSH	R1
@@ -335,21 +356,26 @@ void SET_TRACK_VOL(int track, int volume) {
     SNDSTR[track].volume = volume;
     // asm 00009146: 	POP	AR0
     // asm 00009147: 	ADDI	055ABh,R0
+    track += 0x55ab;
 JI1:
     // asm 00009148: 	LDI	1,AR2
     // asm 00009149: 	STI	AR2,@DO_NOT_REENABLE_INT
     // asm 0000914A: 	LDI	R0,AR2
     // asm 0000914B: 	CALL	SENDSND
+    SENDSND(track);
     // asm 0000914C: 	AND	0FFh,R1
+    volume &= 0xff;
     // asm 0000914D: 	CLRI	AR2
     // asm 0000914E: 	STI	AR2,@DO_NOT_REENABLE_INT
     // asm 0000914F: 	NOT	R1,R0
     // asm 00009150: 	AND	0FFh,R0
+    volume_command = (~volume) & 0xff;
     // asm 00009151: 	LS	8,R1
     // asm 00009152: 	OR	R0,R1
+    volume_command |= volume << 8;
     // asm 00009153: 	LDI	R1,AR2
     // asm 00009154: 	CALL	SENDSND
-    crusn_audio_set_channel_volume(track, volume);
+    SENDSND(volume_command);
     // asm 00009155: 	POP	R1
     // asm 00009156: 	POP	R0
     // asm 00009157: 	POP	AR2
@@ -433,18 +459,22 @@ WAITIT:
 void SILENT(void) {
     // asm 0000918E: 	PUSH	AR2
     // asm 0000918F: 	CALL	CLRSNDDB
+    CLRSNDDB();
     // asm 00009190: 	CLRI	AR2
     // asm 00009191: 	CALL	SENDSND
+    SENDSND(0);
     // asm 00009192: 	LDI	1256,AR2
     // asm 00009193: 	CALL	SENDSND
+    SENDSND(1256);
     // asm 00009194: 	LDI	1,AR2
     // asm 00009195: 	STI	AR2,@DO_NOT_REENABLE_INT
     // asm 00009196: 	LDI	055CCh,AR2
     // asm 00009197: 	CALL	SENDSND
+    SENDSND(0x55cc);
     // asm 00009198: 	LDI	0,AR2
     // asm 00009199: 	STI	AR2,@DO_NOT_REENABLE_INT
     // asm 0000919A: 	CALL	SENDSND
-    crusn_audio_stop_all();
+    SENDSND(0);
     // asm 0000919B: 	POP	AR2
     // asm 0000919C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SILENT", 0, 0);
@@ -698,21 +728,30 @@ int KILLSNDFX(int sound_index /*AR2*/) {
     // asm 000091E9: 	PUSH	AR2
     // asm 000091EA: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2
     // asm 000091EB: 	BNE	KILSFX1
+    if (SNDSTR[1].sound_index != (u32)sound_index)
+        goto KILSFX1;
     // asm 000091EC: 	SOND1	KILLCHAN1
+    ONESND(KILLCHAN1);
     // asm 000091EE: 	B	KILSFX3
+    goto KILSFX3;
 KILSFX1:
     // asm 000091EF: 	CMPI	@SNDSTR+2*(SND_SIZ)+SND_IDX,AR2
     // asm 000091F0: 	BNE	KILSFX2
+    if (SNDSTR[2].sound_index != (u32)sound_index)
+        goto KILSFX2;
     // asm 000091F1: 	SOND1	KILLCHAN2
+    ONESND(KILLCHAN2);
     // asm 000091F3: 	SETC
     // asm 000091F4: 	B	KILSFX3
 KILSFX2:
     // asm 000091F5: 	CLRC
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "KILLSNDFX", 0, 0);
+    return 0;
 KILSFX3:
     // asm 000091F6: 	POP	AR2
     // asm 000091F7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "KILLSNDFX", 0, 0);
-    return crusn_audio_kill_sound(sound_index);
+    return 1;
 }
 
 // *----------------------------------------------------------------------------
@@ -728,17 +767,22 @@ KILSFX3:
  *
  */
 void PLYR_ENGINE(int speed /*R0*/, int volume /*R1*/) {
+    int engine_command;
+
     // asm 000091F8: 	LS	8,R0
+    engine_command = speed << 8;
     // asm 000091F9: 	OR	R0,R1
+    engine_command |= volume;
     // asm 000091FA: 	LDI	1,R0
     // asm 000091FB: 	STI	R0,@DO_NOT_REENABLE_INT
     // asm 000091FC: 	LDI	055CCh,AR2
     // asm 000091FD: 	CALL	SENDSND
+    SENDSND(0x55cc);
     // asm 000091FE: 	CLRI	R0
     // asm 000091FF: 	STI	R0,@DO_NOT_REENABLE_INT
     // asm 00009200: 	LDI	R1,AR2
     // asm 00009201: 	B	SENDSND
-    crusn_audio_set_player_engine(speed, volume);
+    SENDSND(engine_command);
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_ENGINE", 0, 0);
 }
@@ -904,6 +948,8 @@ void SENDSND(int sound_code /*AR2*/) {
     // asm 0000923C: 	CMPI	0,R0
     // asm 0000923D: 	BEQ	NIRM
     // asm 0000923E: 	RETS
+    if (IN_RESET_MODE != 0)
+        return;
 NIRM:
     // asm 0000923F: 	PUSH	AR3
     // asm 00009240: 	LDL	9A0000h,AR3	;SND2
@@ -946,7 +992,7 @@ NIRM:
     // asm 0000926B: 	POPM	R1,R0
     // asm 0000926D: 	POP	AR3
     // asm 0000926E: 	RETS
-    crusn_audio_play_track(sound_code);
+    portable_audio_send_command(sound_code);
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SENDSND", 0, 0);
 }
 
@@ -968,6 +1014,7 @@ static void RESETMUNGE(void) {
     // asm 00009276: 	LDI	@RESET_TIMER,R0
     // asm 00009277: 	INC	R0
     // asm 00009278: 	STI	R0,@RESET_TIMER
+    RESET_TIMER += 1;
     // asm 00009279: 	SETDP
     // asm 0000927A: 	CMPI	2,R0
     // asm 0000927B: 	BNE	NOT_F1
@@ -1060,13 +1107,17 @@ NOT_F1:
 NOT_F4:
     // asm 000092C8: 	CMPI	6,R0
     // asm 000092C9: 	BNE	NOT_F6
+    if (RESET_TIMER != 6)
+        goto NOT_F6;
     // asm 000092CA: 	CLRI	R0
     // asm 000092CB: 	LDP	@IN_RESET_MODE
     // asm 000092CC: 	STI	R0,@IN_RESET_MODE
+    IN_RESET_MODE = 0;
     // asm 000092CD: 	SETDP
     // asm 000092CE: 	READADJ	ADJ_VOLUME
     // asm 000092D0: 	LDI	R0,R1
     // asm 000092D1: 	CALL	SET_MASTER_VOL
+    SET_MASTER_VOL(ADJUSTMENT_READ(ADJ_VOLUME));
     // 	;BU	RESETMUNGE_X
 NOT_F6:
 RESETMUNGE_X:
@@ -1074,7 +1125,6 @@ RESETMUNGE_X:
     // asm 000092D3: 	CALL	ENABLEGIE
     // asm 000092D4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESETMUNGE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1108,13 +1158,7 @@ void SNDPROC(void) {
     // asm 000092DE: 	CMPI	1,R0
     // asm 000092DF: 	BEQ	RESETMUNGE
     if (IN_RESET_MODE == 1) {
-        // RESETMUNGE's hardware writes are stubbed, but its frame-visible
-        // reset timer and completion flag must still advance.
-        RESET_TIMER += 1;
-        if (RESET_TIMER == 6) {
-            IN_RESET_MODE = 0;
-            SET_MASTER_VOL(ADJUSTMENT_READ(ADJ_VOLUME));
-        }
+        RESETMUNGE();
         return;
     }
 
@@ -1158,8 +1202,8 @@ SNDPLP:
  *
  */
 static void SNDUPD(SNDSTR_t* sound_channel) {
-    const int channel = (int)(sound_channel - SNDSTR);
     const crusn_sound_entry* sound_entry;
+    int sound_command;
     int sound_index;
 
     // ;this code allows for scripted sound calls.
@@ -1183,20 +1227,23 @@ static void SNDUPD(SNDSTR_t* sound_channel) {
     // asm 000092F3: 	STI	R0,*+AR0(SND_PRI)
     sound_channel->priority = sound_entry->priority_word;
     // asm 000092F4: 	LDI	*AR1,R0
+    sound_command = (int)sound_entry->dcs_track;
     // asm 000092F5: 	LDI	R0,AR2
     // asm 000092F6: 	AND	07FFFh,AR2
     // asm 000092F7: 	LDI	*+AR0(SND_STATUS),R0
     // asm 000092F8: 	BZ	JUSTGO
     // asm 000092F9: 	INC	AR2
+    if (sound_channel->status != 0)
+        sound_command += 1;
 JUSTGO:
     // asm 000092FA: 	CALL	SENDSND			;do the actually sending
-    crusn_audio_play_sound(channel, sound_index, sound_channel->volume);
+    SENDSND(sound_command);
     // asm 000092FB: 	LDI	*AR1++,R0		;EXTRACT TIMING DATA
     // asm 000092FC: 	RS	16,R0
     // asm 000092FD: 	STI	R0,*+AR0(SND_TMR)	;start countdown
     sound_channel->timer_countdown = sound_entry->duration_ticks;
     // asm 000092FE: 	STI	AR1,*+AR0(SND_ADDR)
-    sound_channel->current_addr = (u32)-1;
+    sound_channel->current_addr = (u32)(sound_index + 2);
     // asm 000092FF: 	CMPI	0,R0
     // asm 00009300: 	BGT	SNDUPX
     if (sound_channel->timer_countdown > 0)

@@ -10,7 +10,8 @@ typedef struct crusn_sound_entry {
 } crusn_sound_entry;
 
 const crusn_sound_entry* crusn_sound_entry_from_index(int sound_index);
+const crusn_sound_entry* crusn_sound_entry_from_dcs_track(unsigned dcs_track,
+    int* channel);
 size_t crusn_sound_entry_count(void);
 
 #endif
-

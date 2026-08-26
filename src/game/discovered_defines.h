@@ -74,7 +74,6 @@
 #define sky4_I 1622
 #define sky5_I 1878
 #define sky6_I 2134
-#define SNDTAB 34608
 #define testor_p 16
 #define tower_p 76
 #define trmeng1_p 221
