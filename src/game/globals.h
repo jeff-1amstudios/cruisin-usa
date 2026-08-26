@@ -686,7 +686,7 @@ extern void (*LOADSECTION_TABLE[])(void);
 extern int TIRE_SMOKE_COUNT;
 
 // asm:  .globl SNDSTR,SNDSTRI
-extern int SNDSTR[];
+extern SNDSTR_t SNDSTR[];
 
 #define SNDSTRI SNDSTR
 
@@ -874,7 +874,7 @@ void COLSCC(void);
 void COLSCAN(void);
 
 // asm:  .globl BOXSCAN
-void BOXSCAN(void);
+int BOXSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
 
 // asm:  .globl OBJSCAN
 int OBJSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
@@ -891,6 +891,7 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
 void DRONESND(OBJ* obj /*AR4*/, const int* sounds /*AR2*/, int range /*R0*/);
 
 void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/);
+extern int SCOLLTAB[];
 
 // asm:  .globl COLSGCK
 void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/);
@@ -1563,7 +1564,7 @@ void RRSTART_ENGINE(OBJ* obj /*AR4*/);
 void RRSTART_BOXCAR(OBJ* obj /*AR4*/);
 
 // asm:  .globl FLYCARP,CARSMASH,FLYTRAIN
-void FLYCARP(void);
+void FLYCARP(PROC* p /*AR7*/);
 
 // asm:  .globl DEADCARA
 void DEADCARA(void);
@@ -1591,7 +1592,7 @@ void PLYR_ENGINE(int speed /*R0*/, int volume /*R1*/);
 // asm:  .globl ONESND,ONESNDFX
 void ONESND(int sound_index);
 
-void ONESNDFX(int sound_index);
+int ONESNDFX(int sound_index);
 
 // asm:  .globl SNDPROC
 void SNDPROC(void);
@@ -1640,7 +1641,7 @@ void RADIO_BUT(PROC* p);
 int KILLSNDFX(int sound_index /*AR2*/);
 
 // asm:  .globl VOLSNDFX
-void VOLSNDFX(int sound_index, int volume);
+int VOLSNDFX(int sound_index, int volume);
 
 // spark.asm
 // asm:  .globl SPARK_PROC,SPARK_COLLA_PROC,OBJ_MOVE,WALL_SPARK,IMPACT_SPARK

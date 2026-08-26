@@ -61,7 +61,8 @@ extern int OM_DIAGVALUE;
 // asm: 	fbss	DIAGVALUE,1
 extern int DIAGVALUE;
 void SEND_RACER_POS(void);
-void SEND_RHO_POS(void);
+void SEND_RHO_POS(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/);
+#define SEND_FLY_POS SEND_RHO_POS
 void SEND_RHO_CREATE(OBJ* obj, int car_id, int vehicle_index);
 void FIND_DRONE(void);
 void SEND_OM_TRACK(void);

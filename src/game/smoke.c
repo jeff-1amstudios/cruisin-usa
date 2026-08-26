@@ -1323,6 +1323,7 @@ IMPACT_SPARKX:
 
 void ROAD_IMPACT_SPARK(void) {
     // asm 00008707: 	RETS
+    return;
     // ;	CALL	PUSHALL
     // ;
     // ;	CREATE	SPARK_COLLA_PROC,UTIL_C|SPARK_T
@@ -1352,8 +1353,6 @@ void ROAD_IMPACT_SPARK(void) {
     // ;ROAD_IMPACT_SPARKX
     // ;	CALL	POPALL
     // ;	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ROAD_IMPACT_SPARK", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1363,6 +1362,7 @@ void ROAD_IMPACT_SPARK(void) {
  */
 void SKID_SPARK(void) {
     // asm 00008708: 	RETS
+    return;
     // ;	CALL	PUSHALL
     // ;
     // ;	LDI	*+AR4(ODIST),R0
@@ -1390,8 +1390,6 @@ void SKID_SPARK(void) {
     // ;SKID_SPARKX
     // ;	CALL	POPALL
     // ;	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SKID_SPARK", 0, 0);
-    UNIMPL();
 }
 
 /*

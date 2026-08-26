@@ -5012,7 +5012,7 @@ WHLOFFX:
  *PLAYER COLLISION SOUND TABLE
  */
 /* asm: SCOLLTAB	.word	SCOLLA,SCOLLB,SCOLLC */
-static int SCOLLTAB[] = {
+int SCOLLTAB[] = {
     SCOLLA,
     SCOLLB,
     SCOLLC,
@@ -5136,12 +5136,12 @@ BACKREV:
     }
     // asm 000030B5: 	LDI	@SNDSTR+SND_SIZ+SND_PRI,R2	;CHECK TRACK1
     // asm 000030B6: 	BZ	BACKREV1
-    if (SNDSTR[SND_SIZ + SND_PRI] == 0) {
+    if (SNDSTR[1].priority == 0) {
         goto BACKREV1;
     }
     // asm 000030B7: 	LDI	@SNDSTR+(2*SND_SIZ)+SND_PRI,R2	;CHECK TRACK2
     // asm 000030B8: 	BNZ	PLAIR
-    if (SNDSTR[(2 * SND_SIZ) + SND_PRI] != 0) {
+    if (SNDSTR[2].priority != 0) {
         goto PLAIR;
     }
 BACKREV1:
@@ -5235,23 +5235,23 @@ NO_SMOKE:
     // asm 000030DE: 	LDI	@SNDSTR+SND_SIZ+SND_IDX,R2	;CHECK TRACK1
     // asm 000030DF: 	CMPI	SKIDB,R2
     // asm 000030E0: 	BEQ	SKIDAMP				;ALREADY SKIDDING
-    if (SNDSTR[SND_SIZ + SND_IDX] == SKIDB) {
+    if (SNDSTR[1].sound_index == SKIDB) {
         goto SKIDAMP; // ALREADY SKIDDING
     }
     // asm 000030E1: 	CMPI	SKIDC,R2
     // asm 000030E2: 	BEQ	SKIDAMP				;ALREADY SKIDDING
-    if (SNDSTR[SND_SIZ + SND_IDX] == SKIDC) {
+    if (SNDSTR[1].sound_index == SKIDC) {
         goto SKIDAMP; // ALREADY SKIDDING
     }
     // asm 000030E3: 	LDI	@SNDSTR+(2*SND_SIZ)+SND_IDX,R2	;CHECK TRACK2
     // asm 000030E4: 	CMPI	SKIDB,R2
     // asm 000030E5: 	BEQ	SKIDAMP1		  	;ALREADY SKIDDING
-    if (SNDSTR[(2 * SND_SIZ) + SND_IDX] == SKIDB) {
+    if (SNDSTR[2].sound_index == SKIDB) {
         goto SKIDAMP1; // ALREADY SKIDDING
     }
     // asm 000030E6: 	CMPI	SKIDC,R2
     // asm 000030E7: 	BEQ	SKIDAMP1			;ALREADY SKIDDING
-    if (SNDSTR[(2 * SND_SIZ) + SND_IDX] == SKIDC) {
+    if (SNDSTR[2].sound_index == SKIDC) {
         goto SKIDAMP1; // ALREADY SKIDDING
     }
     // *MAKE NEW SKID SOUND
@@ -5272,14 +5272,14 @@ NO_FLAME:
     goto SKIDX;
 SKIDAMP:
     // asm 000030F2: 	LDI	@SNDSTR+(SND_SIZ)+SND_VOL,R2	;VOLUME CHANGE?
-    current_volume = SNDSTR[SND_SIZ + SND_VOL]; // VOLUME CHANGE?
+    current_volume = SNDSTR[1].volume; // VOLUME CHANGE?
     // asm 000030F3: 	LDI	1,R0
     track = 1;
     // asm 000030F4: 	B	SKIDAMP10
     goto SKIDAMP10;
 SKIDAMP1:
     // asm 000030F5: 	LDI	@SNDSTR+(2*SND_SIZ)+SND_VOL,R2	;VOLUME CHANGE?
-    current_volume = SNDSTR[(2 * SND_SIZ) + SND_VOL]; // VOLUME CHANGE?
+    current_volume = SNDSTR[2].volume; // VOLUME CHANGE?
     // asm 000030F6: 	LDI	2,R0
     track = 2;
 SKIDAMP10:
@@ -5356,7 +5356,7 @@ BRAKSNDX:
     // asm 00003118: 	LDI	SPUTSND,AR2
     // asm 00003119: 	CMPI	@SNDSTR+2*(SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 0000311A: 	BZ	SPUTSNDX
-    if (SNDSTR[(2 * SND_SIZ) + SND_IDX] == SPUTSND) {
+    if (SNDSTR[2].sound_index == SPUTSND) {
         goto SPUTSNDX; // CHECK TRACK2
     }
     // asm 0000311B: 	CALL	ONESND
@@ -5460,12 +5460,12 @@ GRAVX:
 void MKFXSND(int sound_index /*AR2*/) {
     // asm 00003143: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 00003144: 	RETSZ
-    if (sound_index == SNDSTR[SND_SIZ + SND_IDX]) {
+    if (sound_index == SNDSTR[1].sound_index) {
         return;
     }
     // asm 00003145: 	CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 00003146: 	BNZ	ONESNDFX
-    if (sound_index != SNDSTR[(2 * SND_SIZ) + SND_IDX]) {
+    if (sound_index != SNDSTR[2].sound_index) {
         ONESNDFX(sound_index);
         return;
     }
@@ -5487,11 +5487,11 @@ static void MKVFXSND(int sound_index /*AR2*/, int volume /*R0*/) {
     saved_volume = volume; // SAVE VOLUME
     // asm 00003149: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 0000314A: 	BNZ	MKVFX1
-    if (SNDSTR[SND_SIZ + SND_IDX] != sound_index) {
+    if (SNDSTR[1].sound_index != sound_index) {
         goto MKVFX1; // CHECK TRACK1
     }
     // asm 0000314B: 	SUBPI	@SNDSTR+SND_SIZ+SND_VOL,R0	;CHECK TRACK1 VOLUME
-    volume -= SNDSTR[SND_SIZ + SND_VOL]; // CHECK TRACK1 VOLUME
+    volume -= SNDSTR[1].volume; // CHECK TRACK1 VOLUME
     // asm 0000314C: 	ABSI	R0
     if (volume < 0) {
         volume = -volume;
@@ -5508,12 +5508,12 @@ static void MKVFXSND(int sound_index /*AR2*/, int volume /*R0*/) {
 MKVFX1:
     // asm 00003151: 	CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 00003152: 	BNZ	VOLSNDFX		     	;DO NEW SOUND DUDES
-    if (SNDSTR[(2 * SND_SIZ) + SND_IDX] != sound_index) {
+    if (SNDSTR[2].sound_index != sound_index) {
         VOLSNDFX(sound_index, saved_volume); // DO NEW SOUND DUDES
         return;
     }
     // asm 00003153: 	SUBI	@SNDSTR+(2*SND_SIZ)+SND_VOL,R0	;CHECK TRACK2 VOLUME
-    volume -= SNDSTR[(2 * SND_SIZ) + SND_VOL]; // CHECK TRACK2 VOLUME
+    volume -= SNDSTR[2].volume; // CHECK TRACK2 VOLUME
     // asm 00003154: 	ABSI	R0
     if (volume < 0) {
         volume = -volume;

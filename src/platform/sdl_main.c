@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "../core/input.h"
+#include "../core/audio.h"
 #include "../core/machine.h"
 #include "../core/validator.h"
 #include "../game/cmos.h"
@@ -91,8 +92,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    if (crusn_audio_init("roms/crusnusa.zip") != 0) {
+        fprintf(stderr, "Failed to initialize audio\n");
+        crusn_machine_shutdown(&machine);
+        SDL_Quit();
+        return 1;
+    }
+
     if (crusn_video_init(&video) != 0) {
         fprintf(stderr, "Failed to initialize video: %s\n", SDL_GetError());
+        crusn_audio_shutdown();
         crusn_machine_shutdown(&machine);
         SDL_Quit();
         return 1;
@@ -137,6 +146,7 @@ int main(int argc, char* argv[]) {
     }
 
     crusn_video_shutdown(&video);
+    crusn_audio_shutdown();
     crusn_machine_shutdown(&machine);
     SDL_Quit();
     return 0;

@@ -23,12 +23,12 @@ extern c3x_f32_t PMULT;
 // asm: 	.bss	SPINTEMP,1
 extern c3x_f32_t SPINTEMP;
 // asm: 	FBSS	BOXSCRAM,50
-extern int BOXSCRAM[];
+extern c3x_f32_t BOXSCRAM[];
 // asm: 	.BSS	PLYRBEHIND,1
 extern int PLYRBEHIND;
 void COLSCC(void);
-void GETFLYMAT(void);
-void SEND_FLY_KILL(void);
+void GETFLYMAT(struct OBJ* obj /*AR4*/, struct PROC* p /*AR7*/);
+void SEND_FLY_KILL(struct OBJ* obj /*AR4*/, struct CARBLK* carblk /*AR5*/);
 void DECODE_FLY_KILL(void);
 void DECODE_FLY_XSFER(void);
 

@@ -60,7 +60,7 @@ void WRECK(void);
 void OM_DRONE(PROC* p);
 void SEND_RACER_POS(void);
 extern int WRECKFLG;
-void GETFLYMAT(void);
+void GETFLYMAT(OBJ* obj /*AR4*/, PROC* p /*AR7*/);
 
 static c3x_f32_t DIFFTAB[14];
 

@@ -12,8 +12,8 @@ static int brake;
 static int steering_direction;
 static int steering_detent;
 
-#define STEERING_KEY_STEP 2
-#define STEERING_CENTER_STEP 3
+#define STEERING_KEY_STEP 5
+#define STEERING_CENTER_STEP 5
 
 int input_frame_counter = 0;
 

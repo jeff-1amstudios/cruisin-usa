@@ -39,7 +39,7 @@ void DECODE_RHO_KILL(void);
 
 void OM_DRONE(PROC* p);
 void SEND_RHO_CREATE(OBJ* obj, int car_id, int vehicle_index);
-void SEND_RHO_POS(void);
+void SEND_RHO_POS(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/);
 int COMPTRAK(void);
 void DECODE_RACER_XSFER(void);
 void FIND_DRONE(void);
@@ -843,7 +843,7 @@ RHO_SLP:
     // asm 000098B5: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 000098B6: 	CALLNZ	SEND_RHO_POS		;SEND YOUR POSITION TO LINKED GAME
     if (HEAD2HEAD_ON != 0) {
-        SEND_RHO_POS();
+        SEND_RHO_POS(obj, carblk, p);
     }
     // asm 000098B7: 	CALL	CKCAROFF	;OFF THE UNIVERSE ???
     // asm 000098B8: 	BZ	RHO_DIE		;YES
@@ -1096,7 +1096,7 @@ RHOISHIT_SLP:
     // asm 0000990C: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 0000990D: 	CALLNZ	SEND_RHO_POS		;SEND YOUR POSITION TO LINKED GAME
     if (HEAD2HEAD_ON != 0) {
-        SEND_RHO_POS();
+        SEND_RHO_POS(obj, carblk, p);
     }
     // asm 0000990E: 	BU	RHO_ISHITLP
     goto RHO_ISHITLP;

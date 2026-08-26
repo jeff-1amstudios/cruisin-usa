@@ -4,6 +4,7 @@
 #include "c30.h"
 #include "cmos.h"
 #include "comm.h"
+#include "commq.h"
 #include "delta.h"
 #include "dirq.h"
 #include "globals.h"
@@ -28,8 +29,8 @@ extern MATRIX _MATRIXA;
 int CAMSCAN(VECTOR* point /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
 static int CAMSCANS(OBJ* list /*R0*/, VECTOR* point /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
 int OBJSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
-void BOXSCAN(void);
-static void BOXSCSUB(void);
+int BOXSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
+static void BOXSCSUB(OBJ* obj /*AR4*/, OBJ* list /*R0*/, c3x_reg_t quick_reject_limit /*R5*/, c3x_reg_t* lowest_height /*R7*/);
 void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
 void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/);
 static void RDSCNSUB(OBJ* scan_obj /*AR4*/, CARBLK* carblk /*AR6*/, OBJ* list /*R0*/);
@@ -55,13 +56,13 @@ static void SIGNFALL(PROC* p /*AR7*/);
 static void TREESHAK(PROC* p);
 static void FREESIGN(OBJ* sign_obj /*AR4*/);
 static void ADDSIGN(void);
-static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
-void FLYCARP(void);
-void SEND_FLY_KILL(void);
+static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/);
+void FLYCARP(PROC* p /*AR7*/);
+void SEND_FLY_KILL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DECODE_FLY_KILL(void);
-static void SEND_FLY_XSFER(void);
+static void SEND_FLY_XSFER(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/, int state /*R4*/);
 void DECODE_FLY_XSFER(void);
-void GETFLYMAT(void);
+void GETFLYMAT(OBJ* obj /*AR4*/, PROC* p /*AR7*/);
 #define PLYR_VS_DRONES COLSCAN
 void COLSCAN(void);
 #define DRONES_VS_DRONES CLDSCAN
@@ -100,11 +101,6 @@ void ATTR_COLLISION(void);
 #define DETHTAB1I DETHTAB1
 #define DETHTAB2I DETHTAB2
 #define FLYCARPI FLYCARP
-#define FLYCARPXXXXI FLYCARPXXXX
-#define FLYCARPXXXI FLYCARPXXX
-#define DEADLPI DEADLP
-#define FLYCARP0I FLYCARP
-#define FLYCARSTOPI FLYCARSTOP
 #define SCUPDTABI SCUPDTAB
 #define SCTABI SCTAB
 #define EQTABI EQTAB
@@ -127,6 +123,8 @@ void RANDVSND(const int* sounds /*AR2*/, int range /*R0*/, int volume /*R1*/);
 static c3x_f32_t* EQTAB[];
 static c3x_f32_t* LEQTAB[];
 static int SAGETAB[];
+static int DETHTAB1[];
+static int DETHTAB2[];
 static int SCUPDTAB[];
 static int SCTAB[];
 
@@ -303,14 +301,16 @@ int OBJSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/) {
 }
 
 /* asm: BOXSCRAM	FBSS	BOXSCRAM,50 */
-int BOXSCRAM[50];
+c3x_f32_t BOXSCRAM[50];
 
 /*
  *
  *CHECK ROAD OBJECTS ON ROAD LIST IN RANGE
  *
  */
-void BOXSCAN(void) {
+int BOXSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/) {
+    c3x_reg_t quick_reject_limit;
+    c3x_reg_t lowest_height;
     // asm 00001FB6: 	PUSH	AR5
     // asm 00001FB7: 	LDPI	@BOXSCRAMI,AR2
     // asm 00001FB8: 	LDI	AR4,AR0			;GET OBJ IN AR0 FOR GETBOX
@@ -323,20 +323,33 @@ void BOXSCAN(void) {
     // asm 00001FBF: 	CALL	GETBOX0			;GET BOX POINTS FOR OBJECT 1
     // asm 00001FC0: 	FLOAT	*+AR4(ORAD),R5	 	;GET ROAD RADIUS
     // asm 00001FC1: 	FLOAT	20000,R7		;DEFAULT CAR HT. ABOVE GROUND
+    GETBOX0(obj, BOXSCRAM,
+            C3X_IMM_F32(0.7), C3X_IMM_F32(0.7), C3X_IMM_F32(0.7),
+            C3X_IMM_F32(0.7), C3X_IMM_F32(1.0), C3X_IMM_F32(0.7)); // ;GET BOX POINTS FOR OBJECT 1
+    quick_reject_limit = C3X_FROM_INT(obj->radius); // ;GET ROAD RADIUS
+    lowest_height = C3X_FROM_INT(20000); // ;DEFAULT CAR HT. ABOVE GROUND
     // asm 00001FC2: 	LDPI	@DRIVE_LIST,R0
     // asm 00001FC3: 	CALL	BOXSCSUB
+    BOXSCSUB(obj, DRIVE_LIST, quick_reject_limit, &lowest_height);
     // asm 00001FC4: 	LDPI	@GROUND_LIST,R0
     // asm 00001FC5: 	CALL	BOXSCSUB
+    BOXSCSUB(obj, GROUND_LIST, quick_reject_limit, &lowest_height);
     // asm 00001FC6: 	POP	AR5
     // asm 00001FC7: 	LDF	R7,R0
     // asm 00001FC8: 	FLOAT 	20000,R7
     // asm 00001FC9: 	CMPF	R7,R0
     // asm 00001FCA: 	BLT	BS3X
+    *out_road_delta = lowest_height;
+    if (C3X_LT(lowest_height, C3X_FROM_INT(20000))) {
+        goto BS3X;
+    }
     // asm 00001FCB: 	CLRC	 			;NOTHING FOUND
     // asm 00001FCC: 	RETS
+    return 0;
 BS3X:
     // asm 00001FCD: 	SETC
     // asm 00001FCE: 	RETS
+    return 1;
     // *
     // *SCAN BOX FOR GROUND INTERSECTION
     // *R0=LIST
@@ -344,61 +357,102 @@ BS3X:
     // *R5=QUICK REJECT LIMIT
     // *R7=LOWEST HEIGHT SO FAR
     // *
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BOXSCAN", 0, 0);
-    UNIMPL();
 }
 
-static void BOXSCSUB(void) {
+static void BOXSCSUB(OBJ* obj /*AR4*/, OBJ* list /*R0*/, c3x_reg_t quick_reject_limit /*R5*/, c3x_reg_t* lowest_height /*R7*/) {
+    OBJ* road_obj;
+    c3x_reg_t object_x;
+    c3x_reg_t object_z;
+    c3x_reg_t delta_x;
+    c3x_reg_t delta_z;
+    c3x_reg_t combined_radius;
+    c3x_reg_t road_delta;
+    int i;
+
     // asm 00001FCF: 	BZ	BSCX  			;NULL LIST DUDES
+    if (list == NULL) {
+        goto BSCX;
+    }
     // asm 00001FD0: 	LDI	R0,AR2
+    road_obj = list;
     // asm 00001FD1: 	LDI	OPOSZ,IR1
 BS0:
     // asm 00001FD2: 	FLOAT	*+AR4(ORAD),R0		;GET BOX RADIUS
     // asm 00001FD3: 	LDF	*+AR4(OPOSZ),R4		;GET OBJECT Z
     // asm 00001FD4: 	LDF	*+AR4(OPOSX),R3		;GET OBJECT X
+    object_z = C3X_LDF(obj->pos.Z); // ;GET OBJECT Z
+    object_x = C3X_LDF(obj->pos.X); // ;GET OBJECT X
     // asm 00001FD5: 	SUBF	*+AR2(OPOSX),R3,R2
     // asm 00001FD6: 	SUBF	*+AR2(IR1),R4,R1
     // asm 00001FD7: 	MPYF	R1,R1
+    delta_x = C3X_SUB(object_x, C3X_LDF(road_obj->pos.X));
+    delta_z = C3X_SUB(object_z, C3X_LDF(road_obj->pos.Z));
 BS1:
     // asm 00001FD8: 	MPYF	R2,R2
     // asm 00001FD9: 	ADDF	R1,R2
     // asm 00001FDA: 	FLOAT	*+AR2(ORAD),R1	 	;GET ROAD RADIUS
     // asm 00001FDB: 	ADDF	R0,R1			;ADD AND SQUARE
     // asm 00001FDC: 	MPYF	R1,R1
+    delta_x = C3X_MUL(delta_x, delta_x);
+    delta_z = C3X_MUL(delta_z, delta_z);
+    combined_radius = C3X_ADD(C3X_FROM_INT(road_obj->radius), quick_reject_limit); // ;ADD AND SQUARE
+    combined_radius = C3X_MUL(combined_radius, combined_radius);
     // asm 00001FDD: 	CMPF	R1,R2	  		;TEST TRUE RADIUS
     // asm 00001FDE: 	BLT	BS2			;NO GO...
+    if (C3X_LT(C3X_ADD(delta_x, delta_z), combined_radius)) {
+        goto BS2;
+    }
     // asm 00001FDF: 	LDI	*+AR2(OLINK3),AR2
     // asm 00001FE0: 	LDI	AR2,R1
     // asm 00001FE1: 	BNZD	BS1
     // asm 00001FE2: 	SUBF	*+AR2(OPOSX),R3,R2
     // asm 00001FE3: 	SUBF	*+AR2(IR1),R4,R1
     // asm 00001FE4: 	MPYF	R1,R1
+    road_obj = (OBJ*)road_obj->link3;
+    if (road_obj != NULL) {
+        delta_x = C3X_SUB(object_x, C3X_LDF(road_obj->pos.X));
+        delta_z = C3X_SUB(object_z, C3X_LDF(road_obj->pos.Z));
+        goto BS1;
+    }
     // 	;---->	BNZ	BS1
     // asm 00001FE5: 	RETS
+    return;
     // *CHECK OUT POINT COLLISION
 BS2:
     // asm 00001FE6: 	PUSH	AR4
     // asm 00001FE7: 	LDPI	@BOXSCRAMI,AR4
     // asm 00001FE8: 	ADDI	18H,AR4
     // asm 00001FE9: 	LDI	7,AR5			;LOOP 8 BOX POINTS
+    for (i = 0; i < 8; i++) { // ;LOOP 8 BOX POINTS
     // asm 00001FEA: BSRDLP
     // asm 00001FEA: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
     // asm 00001FEB: 	BNC	BS10			;NOPE...
+        if (!_coll_road(road_obj, (VECTOR*)&BOXSCRAM[24 + i * 3], &road_delta)) { // ;XZ POINT COLLISION WITH ROAD OBJECT?
+            goto BS10;
+        }
     // asm 00001FEC: 	CMPF	R0,R7
     // asm 00001FED: 	LDFGT	R0,R7			;SAVE LOWEST POINT
+        if (C3X_LT(road_delta, *lowest_height)) {
+            *lowest_height = road_delta; // ;SAVE LOWEST POINT
+        }
 BS10:
     // asm 00001FEE: 	NOP	*AR4++(3)     		;CHECK NEXT POINT
     // asm 00001FEF: 	DB	AR5,BSRDLP
+        ;
+    }
     // asm 00001FF0: 	LDI	*+AR2(OLINK3),R0
     // asm 00001FF1: 	BNZD	BS0
     // asm 00001FF2: 	LDI	R0,AR2
     // asm 00001FF3: 	POP	AR4
     // asm 00001FF4: 	LDI	OPOSZ,IR1
+    road_obj = (OBJ*)road_obj->link3;
+    if (road_obj != NULL) {
+        goto BS0;
+    }
     // 	;---->	BNZ	BS0
 BSCX:
     // asm 00001FF5: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BOXSCSUB", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /*
@@ -2560,7 +2614,15 @@ static void ADDSIGN(void) {
 /* asm: 	 */
 #define CBUSI cbus_ROM
 
-static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/) {
+static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/) {
+    CARBLK* player_carblk;
+    CARBLK* drone_carblk;
+    PROC_CONTEXT* fly_ctx;
+    PROC* fly_proc;
+    c3x_reg_t value;
+    c3x_reg_t rotation_delta;
+    const int* sounds;
+    int sound_count;
     // asm 000023EF: 	PUSH	AR0
     // asm 000023F0: 	PUSH	AR1
     // asm 000023F1: 	PUSH	AR3
@@ -2569,46 +2631,75 @@ static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point
     // asm 000023F4: 	LDI	*+AR0(OCARBLK),AR3	;GET PLAYER'S CAR
     // asm 000023F5: 	LDI	AR1,AR4			;GET DRONE CAR OBJECT POINTER
     // asm 000023F6: 	LDI	*+AR4(OCARBLK),AR5	;GET DRONE CAR BLOCK
+    player_carblk = obj0->carblk; // ;GET PLAYER'S CAR
+    drone_carblk = obj1->carblk; // ;GET DRONE CAR BLOCK
     // asm 000023F7: 	LDI	@HEAD2HEAD_ON,R0
     // asm 000023F8: 	BZ	NOTLINKED
     // asm 000023F9: 	LDI	*+AR5(CAR_OM),R0    	;OTHER MACHINES CAR?
     // asm 000023FA: 	BNE	L78G			;YES SKIP FLYING STUFF
+    if (HEAD2HEAD_ON != 0 && drone_carblk->other_machine_controls != 0) { // ;OTHER MACHINES CAR?
+        goto L78G; // ;YES SKIP FLYING STUFF
+    }
 NOTLINKED:
     // asm 000023FB: 	LDI	1,R0
     // asm 000023FC: 	LSH	O_PROC_B,R0		;PROCESS BIT MASK IN OBJECT STRUCT
     // asm 000023FD: 	TSTB	*+AR1(OFLAGS),R0	;PROCESS ALREADY ACTIVE	?
     // asm 000023FE: 	BZ	FLYCAR0			;NO
+    if ((obj1->flags & O_PROC) == 0) { // ;PROCESS ALREADY ACTIVE ?
+        goto FLYCAR0; // ;NO
+    }
     // asm 000023FF: 	LDI	*+AR1(OPLINK),R0	;YES, KILL OFF DRONE PROCESS
     // asm 00002400: 	BZ	FLYCAR0
+    if (obj1->plink == NULL) {
+        goto FLYCAR0;
+    }
     // asm 00002401: 	LDI	R0,AR2
     // asm 00002402: 	CALL	PRC_KILL
+    PRC_KILL(obj1->plink);
     // asm 00002403: 	LDI	0,R0
     // asm 00002404: 	STI	R0,*+AR1(OPLINK)
+    obj1->plink = NULL;
 FLYCAR0:
     // asm 00002405: 	LDI	*+AR1(OFLAGS),R0
     // asm 00002406: 	TSTB	O_DYNAMIC,R0
     // asm 00002407: 	BZ	FLYCAR1
+    if ((obj1->flags & O_DYNAMIC) == 0) {
+        goto FLYCAR1;
+    }
     // asm 00002408: 	LDI	*+AR1(ORADZ),R0   	;KILL WHEEL SPINNER, LEANER PROCESS
     // asm 00002409: 	BZ	FLYCAR1
+    if (obj1->radz_ptr == 0) {
+        goto FLYCAR1;
+    }
     // asm 0000240A: 	LDI	R0,AR2
     // asm 0000240B: 	CALL	PRC_KILL
+    PRC_KILL((PROC*)obj1->radz_ptr);
     // asm 0000240C: 	LDI	0,R0
     // asm 0000240D: 	STI	R0,*+AR1(ORADZ)
+    obj1->radz_ptr = 0;
 FLYCAR1:
     // asm 0000240E: 	LDI	0,R0
     // asm 0000240F: 	STI	R0,*+AR5(CARSHAD)	;TURN OFF SHADOW
+    drone_carblk->shadow_flag = 0; // ;TURN OFF SHADOW
     // asm 00002410: 	LDF	0.10,R0 		;ADD RANDOM ROTATION
     // asm 00002411: 	CALL	SFRAND
     // asm 00002412: 	ADDF	*+AR3(CARVROT),R0
     // asm 00002413: 	STF	R0,*+AR5(CARVROT)
+    rotation_delta = SFRAND(C3X_IMM_F32(0.10)); // ;ADD RANDOM ROTATION
+    drone_carblk->y_velocity_rotation = C3X_STF(C3X_ADD(rotation_delta, C3X_LDF(player_carblk->y_velocity_rotation)));
     // asm 00002414: 	LDF	0.45,R0			;RANDOM SPEED MULTIPLIER
     // asm 00002415: 	CALL	FRAND
     // asm 00002416: 	ADDF	0.8,R0
     // asm 00002417: 	MPYF	0.75,R0
     // asm 00002418: 	LDF	*+AR5(CARMASS),R1	;DECREASE THROW BY MASS
     // asm 00002419: 	CALL	DIV_F
+    value = FRAND(C3X_IMM_F32(0.45)); // ;RANDOM SPEED MULTIPLIER
+    value = C3X_ADD(value, C3X_IMM_F32(0.8));
+    value = C3X_MUL(value, C3X_IMM_F32(0.75));
+    value = DIV_F(value, C3X_LDF(drone_carblk->mass)); // ;DECREASE THROW BY MASS
     // asm 0000241A: 	MPYF	*+AR3(CARSPEED),R0	;COMPUTE DRONE SPEED FROM PLAYER SPD
     // asm 0000241B: 	STF	R0,*+AR5(CARSPEED)	;STORE NEW DRONE SPEED
+    drone_carblk->speed = C3X_STF(C3X_MUL(value, C3X_LDF(player_carblk->speed))); // ;COMPUTE DRONE SPEED FROM PLAYER SPD
     // asm 0000241C: 	LDF	-0.3,R0
     // asm 0000241D: 	CALL	FRAND
     // asm 0000241E: 	ADDF	-0.2,R0
@@ -2616,81 +2707,146 @@ FLYCAR1:
     // asm 00002420: 	MPYF	*+AR3(CARSPEED),R0	;GET CURRENT SPEED
     // asm 00002421: 	CMPF	-65,R0
     // asm 00002422: 	LDFLT	-65,R0		  	;MAX VERTICAL VELOCITY
+    value = FRAND(C3X_IMM_F32(-0.3));
+    value = C3X_ADD(value, C3X_IMM_F32(-0.2));
+    value = C3X_MUL(value, C3X_IMM_F32(1.5)); // ;SPEEDFUDGE FACTOR
+    value = C3X_MUL(value, C3X_LDF(player_carblk->speed)); // ;GET CURRENT SPEED
+    if (C3X_LT(value, C3X_IMM_F32(-65))) {
+        value = C3X_IMM_F32(-65); // ;MAX VERTICAL VELOCITY
+    }
     // asm 00002423: 	STF	R0,*+AR1(OVELY)		;STUFF VERTICAL VELOCITY
+    obj1->vel_y = C3X_STF(value); // ;STUFF VERTICAL VELOCITY
     // asm 00002424: 	LDPI	@FLYCARPI,AR2		;GET SIGN FLY PROCESS
     // asm 00002425: 	LDI	DRONE_C|FLYER_T,R2
     // asm 00002426: 	CALL	PRC_CREATE_CHILD		;CREATE A CHILD PROCESS
+    fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    fly_ctx->FLYCARP.obj = obj1;
+    fly_proc = PRC_CREATE_CHILD(FLYCARPI, DRONE_C | FLYER_T, fly_ctx); // ;CREATE A CHILD PROCESS
     // asm 00002427: 	BC	L78G
+    if (fly_proc == NULL) {
+        goto L78G;
+    }
     // asm 00002428: 	STI	AR0,*+AR4(OPLINK)	;SAVE LINK
+    obj1->plink = fly_proc; // ;SAVE LINK
     // asm 00002429: 	LDI	1,R0
     // asm 0000242A: 	LSH	O_PROC_B,R0		;PROCESS BIT MASK IN OBJECT STRUCT
     // asm 0000242B: 	OR	*+AR4(OFLAGS),R0	;SET ATTACHED PROCESS FLAG
     // asm 0000242C: 	STI	R0,*+AR4(OFLAGS)
+    obj1->flags |= O_PROC; // ;SET ATTACHED PROCESS FLAG
 L78G:
     // asm 0000242D: LDF	*+AR3(CARSPEED),R0  	;CUT SPEED OF PLAYER
     // asm 0000242E: 	MPYF	0.5,R0
     // asm 0000242F: 	MPYF	@CHEAT,R0		;BOOST SPEED ON CHEAT
     // asm 00002430: 	MPYF	@CHEAT,R0		;BOOST SPEED ON CHEAT
     // asm 00002431: 	STF	R0,*+AR3(CARSPEED)
+    value = C3X_LDF(player_carblk->speed); // ;CUT SPEED OF PLAYER
+    value = C3X_MUL(value, C3X_IMM_F32(0.5));
+    value = C3X_MUL(value, C3X_REG(CHEAT)); // ;BOOST SPEED ON CHEAT
+    value = C3X_MUL(value, C3X_REG(CHEAT)); // ;BOOST SPEED ON CHEAT
+    player_carblk->speed = C3X_STF(value);
     // asm 00002432: 	MPYF	1.25,R0
     // asm 00002433: 	LDF	*+AR5(CARSPEED),R1	;KEEP FLYING CAR OUT FRONT
     // asm 00002434: 	CMPF	R0,R1
     // asm 00002435: 	LDFLT	R0,R1
     // asm 00002436: 	STF	R1,*+AR5(CARSPEED)
+    value = C3X_MUL(value, C3X_IMM_F32(1.25));
+    if (C3X_LT(C3X_LDF(drone_carblk->speed), value)) {
+        drone_carblk->speed = C3X_STF(value); // ;KEEP FLYING CAR OUT FRONT
+    }
     // *GET PLAYER CAR VELOCITY, SPIN
     // asm 00002437: 	LDI	@WRECKFLG,R0		;WRECK ON?
     // asm 00002438: 	BNE	FLY0			;YES, DONT START A NEW ONE
+    if (WRECKFLG != 0) {
+        goto FLY0; // ;YES, DONT START A NEW ONE
+    }
     // asm 00002439: 	LDI	400,AR2	    		;TOTAL WRECK PLAYER
     // asm 0000243A: 	CALL	RANDPER			;NO
     // asm 0000243B: 	BNC	FLY0
+    if (!RANDPER(400)) {
+        goto FLY0;
+    }
     // asm 0000243C: 	CALL	WRECKST			;START YOUR WRECK
+    WRECKST(); // ;START YOUR WRECK
     // asm 0000243D: 	LDI	@DETHTAB2I,AR2
     // asm 0000243E: 	LDI	4,R0
+    sounds = DETHTAB2;
+    sound_count = 4;
     // asm 0000243F: 	B	FLYCARXX
+    goto FLYCARXX;
 FLY0:
     // asm 00002440: 	LDPI	@CAMVIEW,R0
     // asm 00002441: 	BZ	FLY1
+    if (CAMVIEW == 0) {
+        goto FLY1;
+    }
     // asm 00002442: 	LDI	750,AR2
     // asm 00002443: 	CALL	RANDPER
     // asm 00002444: 	BC	FLY3	    		;SPIN SOMETIMES IN 3RD PERSON
+    if (RANDPER(750)) {
+        goto FLY3; // ;SPIN SOMETIMES IN 3RD PERSON
+    }
     // *FIRST PERSON
 FLY1:
     // asm 00002445: 	LDF	*+AR3(CARVROT),R0      	;REVERSE VELOCITY
     // asm 00002446: 	ADDF	3.14,R0
     // asm 00002447: 	STF	R0,*+AR3(CARVROT)
+    player_carblk->y_velocity_rotation = C3X_STF(C3X_ADD(C3X_LDF(player_carblk->y_velocity_rotation), C3X_IMM_F32(3.14))); // ;REVERSE VELOCITY
     // asm 00002448: 	LDF	0,R1
     // asm 00002449: 	LDI	15,R0			;REVERSE FOR 15 COUNT
+    rotation_delta = C3X_IMM_F32(0);
+    sound_count = 15; // ;REVERSE FOR 15 COUNT
     // asm 0000244A: 	B	FLYCARX
+    goto FLYCARX;
 FLY3:
     // asm 0000244B: 	LDF	3.14,R0			;SPIN HIM AROUND
     // asm 0000244C: 	STF	R0,*+AR3(CARSPRAD)
+    player_carblk->spin_radians = C3X_STF(C3X_IMM_F32(3.14)); // ;SPIN HIM AROUND
     // asm 0000244D: 	LDF	0.04,R0
     // asm 0000244E: 	CALL	SFRAND
     // asm 0000244F: 	LDF	R0,R0
     // asm 00002450: 	LDFGT	0.08,R1
     // asm 00002451: 	LDFLE	-0.08,R1
     // asm 00002452: 	ADDF	R0,R1
+    value = SFRAND(C3X_IMM_F32(0.04));
+    rotation_delta = C3X_ADD(C3X_GT(value, C3X_FROM_INT(0)) ? C3X_IMM_F32(0.08) : C3X_IMM_F32(-0.08), value);
     // asm 00002453: 	LDI	1,R0
+    sound_count = 1;
 FLYCARX:
     // asm 00002454: 	STF	R1,*+AR3(CARDROT)
     // asm 00002455: 	STI	R0,*+AR3(CAR_SPIN)
+    player_carblk->last_y_rotation = C3X_STF(rotation_delta);
+    player_carblk->spin_flag = sound_count;
     // asm 00002456: 	LDI	@DETHTAB1I,AR2
     // asm 00002457: 	LDI	8,R0
+    sounds = DETHTAB1;
+    sound_count = 8;
 FLYCARXX:
     // asm 00002458: 	LDI	*+AR1(OROMDATA),R1  	;CHECK FOR A BUS...
     // asm 00002459: 	CMPI	@SBUSI,R1
     // asm 0000245A: 	BNZ	FC00
+    if (obj1->romdata != ROM_PTR(SBUSI)) { // ;CHECK FOR A BUS...
+        goto FC00;
+    }
     // asm 0000245B: 	LDI	KIDSCREAM2,AR2
     // asm 0000245C: 	B	FC01
+    sound_count = KIDSCREAM2;
+    goto FC01;
 FC00:
     // asm 0000245D: 	CMPI	@CBUSI,R1
     // asm 0000245E: 	BNZ	FC02
+    if (obj1->romdata != ROM_PTR(CBUSI)) {
+        goto FC02;
+    }
     // asm 0000245F: 	LDI	ROAR,AR2
+    sound_count = ROAR;
 FC01:
     // asm 00002460: 	CALL	ONESNDFX
+    ONESNDFX(sound_count);
     // asm 00002461: 	B	FC03
+    goto FC03;
 FC02:
     // asm 00002462: 	CALL	RANDSND
+    RANDSND(sounds, sound_count);
 FC03:
     // asm 00002463: 	POP	AR5
     // asm 00002464: 	POP	AR4
@@ -2698,8 +2854,7 @@ FC03:
     // asm 00002466: 	POP	AR1
     // asm 00002467: 	POP	AR0
     // asm 00002468: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCAR", 0, 0);
-    UNIMPL();
+    return;
 }
 
 /* asm: DETHTAB1	.WORD	MDETHSCREAM2,MDETHSCREAM4,EXP1,EXP3 */
@@ -2738,92 +2893,176 @@ static int DETHTAB2[] = {
  *PDATA+6=MATRIX
  *
  */
-void FLYCARP(void) {
+void FLYCARP(PROC* p /*AR7*/) {
+    OBJ* obj;
+    CARBLK* carblk;
+    c3x_reg_t value;
+    c3x_reg_t angle;
+    c3x_reg_t speed;
+    c3x_reg_t vertical_velocity;
+    c3x_reg_t road_delta;
+    c3x_reg_t normalized_angle;
+    c3x_reg_t absolute_angle;
+    c3x_reg_t old_x_rate;
+    int done_flag;
+    int state;
+    int i;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    case 5:
+        goto PROC_RESUME_5;
+    }
+
+    obj = p->ctx->FLYCARP.obj;
+    carblk = obj->carblk;
     // *GET YOUR RADIANS
     // asm 00002478: 	LDF	0.2,R0
     // asm 00002479: 	CALL	SFRAND
     // asm 0000247A: 	STF	R0,*+AR7(PDATA)	  	;X RADIANS
+    p->ctx->FLYCARP.x_rate = C3X_STF(SFRAND(C3X_IMM_F32(0.2))); // ;X RADIANS
     // asm 0000247B: 	LDF	0.1,R0
     // asm 0000247C: 	CALL	SFRAND
     // asm 0000247D: 	STF	R0,*+AR7(PDATA+1)	;Y RADIANS
+    p->ctx->FLYCARP.y_rate = C3X_STF(SFRAND(C3X_IMM_F32(0.1))); // ;Y RADIANS
     // asm 0000247E: 	LDF	0,R0
     // asm 0000247F: 	STF	R0,*+AR7(PDATA+2)	;Z RADIANS
+    p->ctx->FLYCARP.z_rate = C3X_STF(C3X_IMM_F32(0)); // ;Z RADIANS
     // asm 00002480: 	LDF	0,R0
     // asm 00002481: 	STF	R0,*+AR7(PDATA+3)	;X RADIAN TOTAL
     // asm 00002482: 	STF	R0,*+AR7(PDATA+5)  	;Z RADIAN TOTAL
+    p->ctx->FLYCARP.x_total = C3X_STF(C3X_IMM_F32(0)); // ;X RADIAN TOTAL
+    p->ctx->FLYCARP.z_total = C3X_STF(C3X_IMM_F32(0)); // ;Z RADIAN TOTAL
     // asm 00002483: 	LDF	*+AR5(CARYROT),R0	;GET CAR Y ROT
     // asm 00002484: 	STF	R0,*+AR7(PDATA+4)
+    p->ctx->FLYCARP.y_total = C3X_STF(C3X_LDF(carblk->y_rotation)); // ;GET CAR Y ROT
 FLYCARP0:
+    obj = p->ctx->FLYCARP.obj;
+    carblk = obj->carblk;
     // asm 00002485: 	LDI	@SUSPEND_MODE,R0       	;WAIT IN SUSPEND MODE
     // asm 00002486: 	CMPI	SM_HALT,R0
     // asm 00002487: 	BZ	FLYCARSLP
+    if (SUSPEND_MODE == SM_HALT) { // ;WAIT IN SUSPEND MODE
+        goto FLYCARSLP;
+    }
     // asm 00002488: 	LDI	0,R4
     // asm 00002489: 	LDI	*+AR4(ODIST),R0		;OUT OF RANGE ??
     // asm 0000248A: 	CMPI	-6000,R0
     // asm 0000248B: 	BLT	FLYCARPXX   		;END THIS FARCE
+    state = 0;
+    if (obj->dist < -6000) {
+        goto FLYCARPXX; // ;END THIS FARCE
+    }
     // asm 0000248C: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
     // asm 0000248D: 	CALL	ROADSCAN
+    ROADSCAN(obj, carblk);
     // asm 0000248E: 	LDI	*+AR4(OCARBLK),AR5	;GET CAR DATA AREA
     // asm 0000248F: 	FLOATP	@NFRAMES,R1	 	;ADJUST MATRIX FOR FRAME COUNT
     // asm 00002490: 	LDF	*+AR7(PDATA),R0		;ACCUMULATE X RADIANS
     // asm 00002491: 	MPYF	R1,R0
     // asm 00002492: 	ADDF	*+AR7(PDATA+3),R0
     // asm 00002493: 	STF	R0,*+AR7(PDATA+3)
+    value = C3X_MUL(C3X_LDF(p->ctx->FLYCARP.x_rate), C3X_FROM_INT(NFRAMES));
+    p->ctx->FLYCARP.x_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->FLYCARP.x_total))); // ;ACCUMULATE X RADIANS
     // asm 00002494: 	LDF	*+AR7(PDATA+1),R0      	;ACCUMULATE Y RADIANS
     // asm 00002495: 	MPYF	R1,R0
     // asm 00002496: 	ADDF	*+AR7(PDATA+4),R0
     // asm 00002497: 	STF	R0,*+AR7(PDATA+4)
+    value = C3X_MUL(C3X_LDF(p->ctx->FLYCARP.y_rate), C3X_FROM_INT(NFRAMES));
+    p->ctx->FLYCARP.y_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->FLYCARP.y_total))); // ;ACCUMULATE Y RADIANS
     // ;	LDF	*+AR7(PDATA+2),R0 	;ACCUMULATE Z RADIANS
     // ;	MPYF	R1,R0
     // ;	ADDF	*+AR7(PDATA+5),R0
     // ;	STF	R0,*+AR7(PDATA+5)
     // asm 00002498: 	CALL	GETFLYMAT		;COMPUTE MATRICES
+    GETFLYMAT(obj, p); // ;COMPUTE MATRICES
     // *CONVERT CARVROT,CARSPEED TO OVELX, OVELZ
     // asm 00002499: 	LDF	*+AR5(CARVROT),R2
     // asm 0000249A: 	ADDF	1.57,R2		   	;CORRECT FOR 90 DEGREE ERROR
     // asm 0000249B: 	CALL	_SINE
+    angle = C3X_ADD(C3X_LDF(carblk->y_velocity_rotation), C3X_IMM_F32(1.57)); // ;CORRECT FOR 90 DEGREE ERROR
     // asm 0000249C: 	LDF	*+AR5(CARSPEED),R3
     // asm 0000249D: 	MPYF	R3,R0
     // asm 0000249E: 	STF	R0,*+AR4(OVELZ)	  	;CONVERT TO CARVROT, CARSPEED TO XZVEL
+    speed = C3X_LDF(carblk->speed);
+    obj->vel_z = C3X_STF(C3X_MUL(_SINE(angle), speed)); // ;CONVERT TO CARVROT, CARSPEED TO XZVEL
     // asm 0000249F: 	CALL	_COSI
     // asm 000024A0: 	MPYF	R3,R0
     // asm 000024A1: 	STF	R0,*+AR4(OVELX)
+    obj->vel_x = C3X_STF(C3X_MUL(_COSI(angle), speed));
     // asm 000024A2: 	CALL	OVELNADD		;UPDATE VELOCITIES
+    OVELNADD(obj); // ;UPDATE VELOCITIES
     // asm 000024A3: 	FLOATP	@NFRAMES,R2
     // asm 000024A4: 	MPYF	2,R2			;FRAME ADJUSTED GRAVITY
     // asm 000024A5: 	ADDF	*+AR4(OVELY),R2
     // asm 000024A6: 	STF	R2,*+AR4(OVELY)
+    vertical_velocity = C3X_ADD(C3X_LDF(obj->vel_y), C3X_MUL(C3X_FROM_INT(NFRAMES), C3X_IMM_F32(2))); // ;FRAME ADJUSTED GRAVITY
+    obj->vel_y = C3X_STF(vertical_velocity);
     // asm 000024A7: 	FLOAT	300,R1		  	;GOING DOWN TOO MUCH?
     // asm 000024A8: 	CMPF	R1,R2
     // asm 000024A9:  	BGT	FLYCARPXXX		;ABORT THE DUDE...
+    if (C3X_GT(vertical_velocity, C3X_FROM_INT(300))) {
+        goto FLYCARPXXX; // ;ABORT THE DUDE...
+    }
     // asm 000024AA: 	CALL	GETTRAK
+    GETTRAK(obj, carblk);
     // asm 000024AB: 	LDPI	@_MODE,R0
     // asm 000024AC: 	TSTB	MBRIDGE,R0		;ON BRIDGE?
     // asm 000024AD: 	CALLZ	DRONINBZ		;CHECK BOUNDS IF NO BRIDGE
+    if ((_MODE & MBRIDGE) == 0) {
+        DRONINBZ(obj, carblk); // ;CHECK BOUNDS IF NO BRIDGE
+    }
     // asm 000024AE: 	LDF	*+AR4(OVELY),R2		;GET VERTICAL VELOCITY
     // asm 000024AF: 	BN	FLYCARSLP		;WERE GOING UP IGNORE IT
+    if (C3X_LT(C3X_LDF(obj->vel_y), C3X_FROM_INT(0))) {
+        goto FLYCARSLP; // ;WERE GOING UP IGNORE IT
+    }
     // asm 000024B0: 	CALL	BOXSCAN		      	;KEEP FALLING!!!
     // asm 000024B1: 	BNC	FLYCARSLP
+    if (!BOXSCAN(obj, &road_delta)) { // ;KEEP FALLING!!!
+        goto FLYCARSLP;
+    }
     // *WERE OVER THE ROAD
     // asm 000024B2: FLYCROAD
     // asm 000024B2: 	LDF	R0,R0
     // asm 000024B3: 	BGT	FLYCARSLP		;WERE ABOVE GROUND
+    if (C3X_GT(road_delta, C3X_FROM_INT(0))) {
+        goto FLYCARSLP; // ;WERE ABOVE GROUND
+    }
     // *WE HIT THE GROUND DUDES
     // asm 000024B4: 	LDF	R0,R2			;Save for offseting sparks
     // asm 000024B5: 	ADDF	30,R2			;IMPACT_SPARKS uses this
     // asm 000024B6: 	CALL	ROAD_IMPACT_SPARK
+    ROAD_IMPACT_SPARK();
     // asm 000024B7: 	ADDF	*+AR4(OPOSY),R0		;SET HIM ON THE GROUND
     // asm 000024B8: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(road_delta, C3X_LDF(obj->pos.Y))); // ;SET HIM ON THE GROUND
     // asm 000024B9: 	LDF	*+AR4(OVELY),R2		;GET VERTICAL VELOCITY
     // ;	CMPF	20,R2          		;CHECK FOR MINIMUM
     // asm 000024BA: 	CMPF	35,R2          		;CHECK FOR MINIMUM
     // asm 000024BB: 	BLT	FLYCARSTOP0    		;TIME TO STOP
+    vertical_velocity = C3X_LDF(obj->vel_y);
+    if (C3X_LT(vertical_velocity, C3X_IMM_F32(35))) {
+        goto FLYCARSTOP0; // ;TIME TO STOP
+    }
     // asm 000024BC: FLYCROAD1
     // asm 000024BC: 	MPYF	-0.5,R2
     // asm 000024BD: 	STF	R2,*+AR4(OVELY)
+    obj->vel_y = C3X_STF(C3X_MUL(vertical_velocity, C3X_IMM_F32(-0.5)));
     // asm 000024BE: 	LDF     *+AR5(CARSPEED),R0	;CUT SPEED IN HALF
     // asm 000024BF: 	MPYF	0.5,R0
     // asm 000024C0: 	STF	R0,*+AR5(CARSPEED)
+    carblk->speed = C3X_STF(C3X_MUL(C3X_LDF(carblk->speed), C3X_IMM_F32(0.5))); // ;CUT SPEED IN HALF
     // ;	LDF	*+AR4(OVELX),R0		;CUT DOWN VELOCITIES
     // ;	MPYF	0.5,R0
     // ;	STF	R0,*+AR4(OVELX)
@@ -2833,9 +3072,11 @@ FLYCARP0:
     // asm 000024C1: 	LDF	*+AR7(PDATA),R0		;CUT DOWN SPIN
     // asm 000024C2: 	MPYF	0.5,R0
     // asm 000024C3: 	STF	R0,*+AR7(PDATA)
+    p->ctx->FLYCARP.x_rate = C3X_STF(C3X_MUL(C3X_LDF(p->ctx->FLYCARP.x_rate), C3X_IMM_F32(0.5))); // ;CUT DOWN SPIN
     // asm 000024C4: 	LDF	*+AR7(PDATA+1),R0
     // asm 000024C5: 	MPYF	0.5,R0
     // asm 000024C6: 	STF	R0,*+AR7(PDATA+1)
+    p->ctx->FLYCARP.y_rate = C3X_STF(C3X_MUL(C3X_LDF(p->ctx->FLYCARP.y_rate), C3X_IMM_F32(0.5)));
     // ;	LDF	*+AR7(PDATA+2),R0
     // ;	MPYF	0.5,R0
     // ;	STF	R0,*+AR7(PDATA+2)
@@ -2843,54 +3084,84 @@ FLYCARP0:
     // asm 000024C7: 	LDPI	@SCOLLTABI,AR2	   	;RANDOM COLLISION CRUNCH
     // asm 000024C8: 	LDI	3,R0
     // asm 000024C9: 	CALL	DRONESND
+    DRONESND(obj, SCOLLTAB, 3); // ;RANDOM COLLISION CRUNCH
 FLYCARSLP:
     // asm 000024CA: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 000024CB: 	CALLNZ	SEND_FLY_POS		;SEND YOUR POSITION TO LINKED GAME
+    if (HEAD2HEAD_ON != 0) {
+        SEND_FLY_POS(obj, carblk, p); // ;SEND YOUR POSITION TO LINKED GAME
+    }
     // asm 000024CC: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000024CE: 	B	FLYCARP0
+    goto FLYCARP0;
     // *ROTATE TO QUIESCENT STATE
 FLYCARSTOP0:
     // ;	CALL	GETCARVSPD		;CONVERT XVEL,ZVEL TO CARSPEED, CARVROT
 FLYCARSTOP:
+    obj = p->ctx->FLYCARP.obj;
+    carblk = obj->carblk;
     // asm 000024CF: 	LDI	@SUSPEND_MODE,R0       	;WAIT IN SUSPEND MODE
     // asm 000024D0: 	CMPI	SM_HALT,R0
     // asm 000024D1: 	BZ	FLYSTOPSLP
     // asm 000024D2: 	LDI	1,R4
+    if (SUSPEND_MODE == SM_HALT) { // ;WAIT IN SUSPEND MODE
+        goto FLYSTOPSLP;
+    }
+    state = 1;
     // asm 000024D3: 	LDI	*+AR4(ODIST),R0		;OUT OF RANGE ??
     // asm 000024D4: 	CMPI	-6000,R0
     // asm 000024D5: 	BLT	FLYCARPXX   		;END THIS FARCE
     // asm 000024D6: 	FLOAT	500,R0
+    if (obj->dist < -6000) {
+        goto FLYCARPXX; // ;END THIS FARCE
+    }
     // asm 000024D7: 	STF	R0,*+AR4(OVELY)		;FORCE ONTO GROUND
+    obj->vel_y = C3X_STF(C3X_FROM_INT(500)); // ;FORCE ONTO GROUND
     // asm 000024D8: 	LDF	*+AR5(CARVROT),R2
     // asm 000024D9: 	ADDF	1.57,R2		   	;CORRECT FOR 90 DEGREE ERROR
     // asm 000024DA: 	CALL	_SINE
     // asm 000024DB: 	LDF	*+AR5(CARSPEED),R3
+    angle = C3X_ADD(C3X_LDF(carblk->y_velocity_rotation), C3X_IMM_F32(1.57)); // ;CORRECT FOR 90 DEGREE ERROR
     // asm 000024DC: 	MPYF	R3,R0
     // asm 000024DD: 	STF	R0,*+AR4(OVELZ)	  	;CONVERT TO CARVROT, CARSPEED TO XZVEL
+    speed = C3X_LDF(carblk->speed);
+    obj->vel_z = C3X_STF(C3X_MUL(_SINE(angle), speed)); // ;CONVERT TO CARVROT, CARSPEED TO XZVEL
     // asm 000024DE: 	CALL	_COSI
     // asm 000024DF: 	MPYF	R3,R0
     // asm 000024E0: 	STF	R0,*+AR4(OVELX)
+    obj->vel_x = C3X_STF(C3X_MUL(_COSI(angle), speed));
     // asm 000024E1: 	LDF	*+AR5(CARDROT),R0
     // asm 000024E2: 	STF	R0,*+AR7(PDATA+1)	;GET Y SPIN
+    p->ctx->FLYCARP.y_rate = C3X_STF(C3X_LDF(carblk->last_y_rotation)); // ;GET Y SPIN
     // asm 000024E3: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
     // asm 000024E4: 	CALL	ROADSCAN
+    ROADSCAN(obj, carblk);
     // asm 000024E5: 	LDI	*+AR4(OCARBLK),AR5	;GET CAR DATA AREA
     // asm 000024E6: 	LDPI	@NFRAMES,RC	 	;ADJUST MATRIX FOR FRAME COUNT
     // asm 000024E7: 	SUBI	1,RC
     // asm 000024E8: 	RPTB	FLYCSTL
+    for (i = 0; i < NFRAMES; i++) {
     // asm 000024E9: 	LDF	*+AR4(OVELX),R0
     // asm 000024EA: 	MPYF	0.98,R0			;DECAY VELOCITY
     // asm 000024EB: 	STF	R0,*+AR4(OVELX)
     // asm 000024EC: 	ADDF	*+AR4(OPOSX),R0
     // asm 000024ED: 	STF	R0,*+AR4(OPOSX)
+        value = C3X_MUL(C3X_LDF(obj->vel_x), C3X_IMM_F32(0.98)); // ;DECAY VELOCITY
+        obj->vel_x = C3X_STF(value);
+        obj->pos.X = C3X_STF(C3X_ADD(value, C3X_LDF(obj->pos.X)));
     // asm 000024EE: 	LDF	*+AR4(OVELY),R0
     // asm 000024EF: 	ADDF	*+AR4(OPOSY),R0
     // asm 000024F0: 	STF	R0,*+AR4(OPOSY)
+        obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->vel_y), C3X_LDF(obj->pos.Y)));
     // asm 000024F1: 	LDF	*+AR4(OVELZ),R0
     // asm 000024F2: 	MPYF	0.98,R0			;DECAY VELOCITY
     // asm 000024F3: 	STF	R0,*+AR4(OVELZ)
     // asm 000024F4: 	ADDF	*+AR4(OPOSZ),R0
     // asm 000024F5: 	STF	R0,*+AR4(OPOSZ)
+        value = C3X_MUL(C3X_LDF(obj->vel_z), C3X_IMM_F32(0.98)); // ;DECAY VELOCITY
+        obj->vel_z = C3X_STF(value);
+        obj->pos.Z = C3X_STF(C3X_ADD(value, C3X_LDF(obj->pos.Z)));
     // asm 000024F6: 	LDF	*+AR7(PDATA),R0		;ACCUMULATE X RADIANS
     // ;	MPYF	0.97,R0  		;DAMP IT
     // asm 000024F7: 	MPYF	0.96,R0  		;DAMP IT
@@ -2907,33 +3178,63 @@ FLYCARSTOP:
     // ;	LDF	*+AR7(PDATA+2),R0 	;ACCUMULATE Z RADIANS
     // ;	ADDF	*+AR7(PDATA+5),R0
     // ;	STF	R0,*+AR7(PDATA+5)
+        value = C3X_MUL(C3X_LDF(p->ctx->FLYCARP.x_rate), C3X_IMM_F32(0.96)); // ;DAMP IT
+        p->ctx->FLYCARP.x_rate = C3X_STF(value); // ;CUT DOWN ROCK
+        p->ctx->FLYCARP.x_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->FLYCARP.x_total)));
+        value = C3X_MUL(C3X_LDF(p->ctx->FLYCARP.y_rate), C3X_IMM_F32(0.98)); // ;DAMP IT
+        p->ctx->FLYCARP.y_rate = C3X_STF(value); // ;CUT DOWN ROCK
+        carblk->last_y_rotation = C3X_STF(value); // ;STORE IN CAR STRUCTURE
+        p->ctx->FLYCARP.y_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->FLYCARP.y_total)));
     // asm 00002501: 	LDF	*+AR7(PDATA+3),R2	;CHECK TOTAL X RADIANS
     // asm 00002502: 	CALL	NORMITS
     // asm 00002503: 	ABSF	R2,R3
+        normalized_angle = NORMITS(C3X_LDF(p->ctx->FLYCARP.x_total)); // ;CHECK TOTAL X RADIANS
+        absolute_angle = C3X_ABS(normalized_angle);
     // asm 00002504: 	LDF	*+AR5(CARSPEED),R0	;DECAY SPEED
     // asm 00002505: 	MPYF	0.98,R0
     // asm 00002506: 	STF	R0,*+AR5(CARSPEED)
+        speed = C3X_MUL(C3X_LDF(carblk->speed), C3X_IMM_F32(0.98)); // ;DECAY SPEED
+        carblk->speed = C3X_STF(speed);
     // *CHECK FOR DONE...
     // asm 00002507: 	CMPF	10,R0	       		;SPEED DECAYED?
     // asm 00002508: 	BGT	FLYCSTP0	     	;NO, KEEP GOING...
+        if (C3X_GT(speed, C3X_IMM_F32(10))) {
+            goto FLYCSTP0; // ;NO, KEEP GOING...
+        }
     // asm 00002509: 	ABSF	*+AR5(CARDROT),R0	;GET ROTATE
     // asm 0000250A: 	ABSF	*+AR7(PDATA),R1	    	;ADD IN ROCK
     // asm 0000250B: 	ADDF	R0,R1
     // asm 0000250C: 	MPYF	10,R1	    		;GET IN RANGE
     // asm 0000250D: 	CMPF	0.02,R1			;PETERED OUT?
     // asm 0000250E: 	BGT	FLYCSTP0		;NO, KEEP GOING
+        value = C3X_ADD(C3X_ABS(C3X_LDF(carblk->last_y_rotation)), C3X_ABS(C3X_LDF(p->ctx->FLYCARP.x_rate))); // ;ADD IN ROCK
+        value = C3X_MUL(value, C3X_IMM_F32(10)); // ;GET IN RANGE
+        if (C3X_GT(value, C3X_IMM_F32(0.02))) {
+            goto FLYCSTP0; // ;NO, KEEP GOING
+        }
     // asm 0000250F: 	CMPF	0.2,R3			;RIGHT SIDE UP?
     // asm 00002510: 	BGT	FLYCSTP00		;NOPE...
+        if (C3X_GT(absolute_angle, C3X_IMM_F32(0.2))) {
+            goto FLYCSTP00; // ;NOPE...
+        }
     // asm 00002511: 	LDF	0,R3			;STRAIGHTEN HIM UP!!!
     // asm 00002512: 	STF	R3,*+AR7(PDATA+3)
+        p->ctx->FLYCARP.x_total = C3X_STF(C3X_IMM_F32(0)); // ;STRAIGHTEN HIM UP!!!
     // asm 00002513: 	LDI	2,R0
+        done_flag = 2;
     // asm 00002514: 	B	FLYCCC			;YES, TIME TO STOP
+        goto FLYCCC; // ;YES, TIME TO STOP
 FLYCSTP00:
     // asm 00002515: 	CMPF	2.95,R3			;UPSIDE DOWN?
     // asm 00002516: 	BLT	FLYCSTP0		;NOPE
+        if (C3X_LT(absolute_angle, C3X_IMM_F32(2.95))) {
+            goto FLYCSTP0; // ;NOPE
+        }
     // asm 00002517: FLYCSTP
     // asm 00002517: 	LDI	1,R0	 		;WERE DONE DUDES...
+        done_flag = 1; // ;WERE DONE DUDES...
     // asm 00002518: 	B	FLYCCC
+        goto FLYCCC;
     // *ACCELERATE X ROTATION
 FLYCSTP0:
     // asm 00002519: 	LDF	R2,R2
@@ -2943,6 +3244,12 @@ FLYCSTP0:
 FLYCSTP1:
     // asm 0000251D: 	CMPF	-1.57,R2
 FLYCSTP2:
+        value = C3X_LT(normalized_angle,
+                       C3X_LT(normalized_angle, C3X_FROM_INT(0)) ? C3X_IMM_F32(-1.57) : C3X_IMM_F32(1.57))
+                    ? C3X_IMM_F32(-0.01) : C3X_IMM_F32(0.01);
+        value = C3X_MUL(value, C3X_IMM_F32(0.4));
+        old_x_rate = C3X_LDF(p->ctx->FLYCARP.x_rate);
+        value = C3X_ADD(value, old_x_rate);
     // asm 0000251E: 	LDFLT	-0.01,R0
     // asm 0000251F: 	LDFGE	0.01,R0
     // asm 00002520: 	MPYF	0.4,R0
@@ -2950,41 +3257,74 @@ FLYCSTP2:
     // asm 00002522: 	LDF	*+AR7(PDATA),R1
     // asm 00002523: 	XOR	R0,R1,R2 		;CHECK FOR SIGN CHANGE- MAKE SOUND
     // asm 00002524: 	BNN	FLYCSTL			;NO SOUND
+        if (C3X_LT(value, C3X_FROM_INT(0)) == C3X_LT(old_x_rate, C3X_FROM_INT(0))) {
+            goto FLYCSTL; // ;NO SOUND
+        }
     // asm 00002525: 	ABSF	*+AR7(PDATA+3),R2	;CHECK IF AMPLITUDE BIG ENOUGH
     // asm 00002526: 	CALL	NORMITS
     // asm 00002527: 	ABSF	R2
     // asm 00002528: 	CMPF	0.08,R2
     // asm 00002529: 	BLT	FLYCSTL			;TOO SMALL OF A ROCK
+        absolute_angle = C3X_ABS(NORMITS(C3X_ABS(C3X_LDF(p->ctx->FLYCARP.x_total))));
+        if (C3X_LT(absolute_angle, C3X_IMM_F32(0.08))) {
+            goto FLYCSTL; // ;TOO SMALL OF A ROCK
+        }
     // asm 0000252A: 	CMPF	3.06,R2
     // asm 0000252B: 	BGT	FLYCSTL			;TOO SMALL OF A UPSIDE DOWN ROCK
+        if (C3X_GT(absolute_angle, C3X_IMM_F32(3.06))) {
+            goto FLYCSTL; // ;TOO SMALL OF AN UPSIDE DOWN ROCK
+        }
     // asm 0000252C: 	LDI	BOTTOMOUT,AR2		;MAKE BOTTOMOUT SOUND
     // asm 0000252D: 	PUSHF	R0
     // asm 0000252E: 	CALL	DRONESND1
+        DRONESND1(obj, BOTTOMOUT); // ;MAKE BOTTOMOUT SOUND
     // asm 0000252F: 	POPF	R0
 FLYCSTL:
     // asm 00002530: STF	R0,*+AR7(PDATA)		;ACCELERATE ROTATION
+        p->ctx->FLYCARP.x_rate = C3X_STF(value); // ;ACCELERATE ROTATION
     // asm 00002531: 	LDI	0,R0			;DONE FLAG
+        done_flag = 0; // ;DONE FLAG
 FLYCCC:
     // asm 00002532: 	PUSH	R0
     // asm 00002533: 	CALL	GETTRAK
     // asm 00002534: 	CALL	DRONINBZ		;CHECK BOUNDS
+        GETTRAK(obj, carblk);
+        DRONINBZ(obj, carblk); // ;CHECK BOUNDS
     // asm 00002535: 	CALL	GETFLYMAT
+        GETFLYMAT(obj, p);
     // asm 00002536: 	CALL	BOXSCAN		      	;KEEP FALLING!!!
+        if (!BOXSCAN(obj, &road_delta)) { // ;KEEP FALLING!!!
+            goto FLYCARSTP;
+        }
     // asm 00002537: 	POP	R1			;CLEAN STACK
     // asm 00002538: 	BNC	FLYCARSTP
     // asm 00002539: 	ADDF	*+AR4(OPOSY),R0		;SET HIM ON THE GROUND
     // asm 0000253A: 	STF	R0,*+AR4(OPOSY)
+        obj->pos.Y = C3X_STF(C3X_ADD(road_delta, C3X_LDF(obj->pos.Y))); // ;SET HIM ON THE GROUND
     // asm 0000253B: 	CALL	SKID_SPARK
+        SKID_SPARK();
     // asm 0000253C: 	LDI	R1,R1			;DONE
     // asm 0000253D: 	BNE	FLYCARSTP		;YESSAH
+        if (done_flag != 0) {
+            goto FLYCARSTP; // ;YESSAH
+        }
+    }
 FLYSTOPSLP:
     // asm 0000253E: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 0000253F: 	CALLNZ	SEND_FLY_POS		;SEND YOUR POSITION TO LINKED GAME
+    if (HEAD2HEAD_ON != 0) {
+        SEND_FLY_POS(obj, carblk, p); // ;SEND YOUR POSITION TO LINKED GAME
+    }
     // asm 00002540: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 00002542: 	B	FLYCARSTOP
+    goto FLYCARSTOP;
 FLYCARSTP:
     // asm 00002543: 	CMPI	2,R1
     // asm 00002544: 	BZ	DEADCAR			;RIGHT SIDE UP CARCASS
+    if (done_flag == 2) {
+        goto DEADCAR; // ;RIGHT SIDE UP CARCASS
+    }
     // ;	LDPI	@SCOLLTABI,AR2	   	;RANDOM COLLISION CRUNCH
     // ;	LDI	3,R0
     // ;	CALL	DRONESND
@@ -2996,17 +3336,31 @@ FLYCARSTP:
     // asm 00002547: 	OR	DEAD_VEH_T,R0
     // asm 00002548: 	LDF	0,R0			;CLEAR OUT THE SPEED
     // asm 00002549: 	STF	R0,*+AR5(CARSPEED)
+    carblk->speed = C3X_STF(C3X_IMM_F32(0)); // ;CLEAR OUT THE SPEED
     // *WAIT FOR OFFSCREEN
 FLYCARWT:
+    obj = p->ctx->FLYCARP.obj;
+    carblk = obj->carblk;
     // asm 0000254A: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 0000254B: 	CALLNZ	SEND_FLY_POS		;SEND YOUR POSITION TO LINKED GAME
+    if (HEAD2HEAD_ON != 0) {
+        SEND_FLY_POS(obj, carblk, p); // ;SEND YOUR POSITION TO LINKED GAME
+    }
     // asm 0000254C: 	SLEEP	1
+    SLEEP(1, 3);
     // asm 0000254E: 	LDI	1,R4			;STATE #
     // asm 0000254F: 	LDI	*+AR4(ODIST),R0	     	;OUT OF RANGE?
     // asm 00002550: 	CMPI	-6000,R0
     // asm 00002551: 	BLT	FLYCARPXX		;YES CLEAN IT UP...
+    state = 1; // ;STATE #
+    if (obj->dist < -6000) {
+        goto FLYCARPXX; // ;YES CLEAN IT UP...
+    }
     // asm 00002552: 	LDF	*+AR5(CARSPEED),R0	;ARE WE HIT???
     // asm 00002553: 	BZ	FLYCARWT		;NO, JUST WAIT
+    if (C3X_EQ(C3X_LDF(carblk->speed), C3X_FROM_INT(0))) {
+        goto FLYCARWT; // ;NO, JUST WAIT
+    }
     // *
     // *UPSIDE DOWN CAR IS HIT
     // *
@@ -3022,74 +3376,116 @@ FLYCARWT:
     // asm 00002554: 	LDF	0.1,R0		       	;ROCK HIM A LITTLE
     // asm 00002555: 	CALL	SFRAND
     // asm 00002556: 	STF	R0,*+AR7(PDATA)	  	;X RADIANS RATE
+    p->ctx->FLYCARP.x_rate = C3X_STF(SFRAND(C3X_IMM_F32(0.1))); // ;ROCK HIM A LITTLE
     // asm 00002557: 	B	FLYCARSTOP		;GO ROCK AND ROLL
+    goto FLYCARSTOP; // ;GO ROCK AND ROLL
     // *CLEAN UP THE MESS...
 FLYCARPXX:
     // asm 00002558: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 00002559: 	BZ	FLYCARPXXXX		;NOPE...
+    if (HEAD2HEAD_ON == 0) {
+        goto FLYCARPXXXX; // ;NOPE...
+    }
     // asm 0000255A: 	CALL	COMPTRAK 		;OTHER GUY BEHIND?
     // asm 0000255B: 	BLE	FLYCARPXXX		;NO KILL THE DUDE...
+    if (COMPTRAK() <= 0) {
+        goto FLYCARPXXX; // ;NO KILL THE DUDE...
+    }
     // asm 0000255C: 	CALL	SEND_FLY_XSFER
+    SEND_FLY_XSFER(obj, carblk, p, state);
     // asm 0000255D: 	BR	OM_DRONE		;CONTROL SWAPS TO OTHER MACHINE
+    PROC_CONTINUE(OM_DRONE, 5); // ;CONTROL SWAPS TO OTHER MACHINE
+    return;
 FLYCARPXXX:
     // asm 0000255E: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 0000255F: 	CALLNZ	SEND_FLY_KILL		;SEND YOUR POSITION TO LINKED GAME
+    if (HEAD2HEAD_ON != 0) {
+        SEND_FLY_KILL(obj, carblk); // ;SEND YOUR POSITION TO LINKED GAME
+    }
 FLYCARPXXXX:
     // asm 00002560: 	CALL	FREE_DRONE
+    FREE_DRONE(obj);
     // asm 00002561: 	LDI	AR5,AR2
     // asm 00002562: 	CALL	DELCAR
+    DELCAR(carblk);
     // asm 00002563: 	LDI	1,R0
     // asm 00002564: 	LSH	O_PROC_B,R0		;PROCESS BIT MASK IN OBJECT STRUCT
     // asm 00002565: 	XOR	*+AR4(OFLAGS),R0	;WIPE OUT PROCESS BIT
     // asm 00002566: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags ^= O_PROC; // ;WIPE OUT PROCESS BIT
     // asm 00002567: 	LDI	AR4,AR2
     // asm 00002568: 	CALL	OBJ_DELETE
+    OBJ_DELETE(obj);
     // asm 00002569: 	DIE
+    DIE();
     // *
     // *CAR IS RIGHT SIDE UP
     // *
 DEADCAR:
     // asm 0000256A: 	LDI	1,R0
     // asm 0000256B: 	STI	R0,*+AR5(CARSHAD) 	;TURN BACK ON THE SHADOW
+    carblk->shadow_flag = 1; // ;TURN BACK ON THE SHADOW
     // asm 0000256C: 	LDI	*+AR4(OID),R0
     // asm 0000256D: 	ANDN	TYPE_M,R0
     // asm 0000256E: 	OR	DEAD_VEH_T,R0
     // asm 0000256F: 	STI	R0,*+AR4(OID)
     // asm 00002570: 	STI	R0,*+AR5(CAR_ID)
     // asm 00002571: 	STI	R0,*+AR7(PID)
+    obj->id = (obj->id & ~TYPE_M) | DEAD_VEH_T;
+    carblk->debug_car_id = obj->id;
+    p->id = obj->id;
     // asm 00002572: 	CLRF	R0
     // asm 00002573: 	STF	R0,*+AR5(CARTHROTTLE)
     // asm 00002574: 	STF	R0,*+AR5(CARDROT)
     // asm 00002575: 	STF	R0,*+AR5(CARSPEED)
+    carblk->throttle = C3X_STF(C3X_IMM_F32(0));
+    carblk->last_y_rotation = C3X_STF(C3X_IMM_F32(0));
+    carblk->speed = C3X_STF(C3X_IMM_F32(0));
     // asm 00002576: 	LDF	*+AR7(PDATA+4),R0 	;GET Y ROTATION ORIENTATION
     // asm 00002577: 	STF	R0,*+AR5(CARVROT)
     // asm 00002578: 	STF	R0,*+AR5(CARYROT)
+    carblk->y_velocity_rotation = C3X_STF(C3X_LDF(p->ctx->FLYCARP.y_total)); // ;GET Y ROTATION ORIENTATION
+    carblk->y_rotation = C3X_STF(C3X_LDF(p->ctx->FLYCARP.y_total));
     // asm 00002579: 	LDI	0,R0
     // asm 0000257A: 	STI	R0,*+AR5(CAR_SPIN)	;CLEAR SPIN
+    carblk->spin_flag = 0; // ;CLEAR SPIN
 DEADLP:
+    obj = p->ctx->FLYCARP.obj;
+    carblk = obj->carblk;
     // asm 0000257B: 	LDI	2,R4
     // asm 0000257C: 	LDI	*+AR4(ODIST),R0	      	;DIE OFF WHEN OFFSCREEN
     // asm 0000257D: 	CMPI	-6000,R0
     // asm 0000257E: 	BLT	FLYCARPXX
+    state = 2;
+    if (obj->dist < -6000) {
+        goto FLYCARPXX; // ;DIE OFF WHEN OFFSCREEN
+    }
     // asm 0000257F: 	LDF	0,R2			;NO STEERING
     // asm 00002580: 	CALL	DRONEGO
+    DRONEGO(obj, carblk, C3X_IMM_F32(0)); // ;NO STEERING
     // asm 00002581: 	CALL	GETTRAK
+    GETTRAK(obj, carblk);
     // asm 00002582: DEADSLP
     // asm 00002582: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 00002583: 	CALLNZ	SEND_FLY_POS		;SEND YOUR POSITION TO LINKED GAME
+    if (HEAD2HEAD_ON != 0) {
+        SEND_FLY_POS(obj, carblk, p); // ;SEND YOUR POSITION TO LINKED GAME
+    }
     // asm 00002584: 	SLEEP	1
+    SLEEP(1, 4);
     // asm 00002586: 	B	DEADLP
+    goto DEADLP;
     // *
     // *KILL OFF FLY MESSAGE
     // *AR4= OBJECT
     // *AR5= CAR BLOCK
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYCARP", 0, 0);
-    UNIMPL();
 }
 
-void SEND_FLY_KILL(void) {
+void SEND_FLY_KILL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    (void)obj;
+    (void)carblk;
     // asm 00002587: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00002588: 	LDI	CB_FLY_KILL,R1
     // asm 00002589: 	STI	R1,*AR2
@@ -3102,7 +3498,7 @@ void SEND_FLY_KILL(void) {
     // *KILL OFF FLY
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_FLY_KILL", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 void DECODE_FLY_KILL(void) {
@@ -3114,7 +3510,7 @@ void DECODE_FLY_KILL(void) {
 DRKX:
     // asm 00002594: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_FLY_KILL", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /*
@@ -3126,7 +3522,11 @@ DRKX:
  *R4=  STATE PARAMETER
  *
  */
-static void SEND_FLY_XSFER(void) {
+static void SEND_FLY_XSFER(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/, int state /*R4*/) {
+    (void)obj;
+    (void)carblk;
+    (void)p;
+    (void)state;
     // asm 00002597: 	LDI	@COMMQ_TMP_BUFFI,AR2
     // asm 00002598: 	LDI	CB_FLY_XSFER,R1
     // asm 00002599: 	STI	R1,*AR2++		;SEND HEADER
@@ -3155,7 +3555,7 @@ SENDP:
     // *AR2=MESSAGE BUFFER
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_FLY_XSFER", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 void DECODE_FLY_XSFER(void) {
@@ -3201,7 +3601,7 @@ DFXX:
     // asm 000025D1: 	ADDI	25,AR2			;SKIP REST OF MESSAGE
     // asm 000025D2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_FLY_XSFER", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /* asm: FLYCARP0I	.WORD	FLYCARP */
@@ -3219,25 +3619,30 @@ DFXX:
  *R2,R3,AR2 TRASHED
  *
  */
-void GETFLYMAT(void) {
+void GETFLYMAT(OBJ* obj /*AR4*/, PROC* p /*AR7*/) {
     // asm 000025D6: 	LDF	*+AR7(PDATA+5),R2
     // asm 000025D7: 	LDI	AR4,AR2
     // asm 000025D8: 	ADDI	OMATRIX,AR2
     // asm 000025D9: 	CALL    FIND_ZMATRIX
+    FIND_ZMATRIX(&obj->omatrix, C3X_LDF(p->ctx->FLYCARP.z_total));
     // asm 000025DA: 	LDPI	@MATRIXAI,AR2
     // asm 000025DB: 	LDF	*+AR7(PDATA+3),R2
     // asm 000025DC: 	CALL    FIND_XMATRIX
+    FIND_XMATRIX(&MATRIXAI, C3X_LDF(p->ctx->FLYCARP.x_total));
     // asm 000025DD: 	LDI	AR4,R2
     // asm 000025DE: 	ADDI	OMATRIX,R2
     // asm 000025DF: 	LDI	R2,R3
     // asm 000025E0: 	CALL	CONCATMAT		;FORMULATE COMBINED MATRIX
+    CONCATMAT(&MATRIXAI, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix); // ;FORMULATE COMBINED MATRIX
     // asm 000025E1: 	LDPI	@MATRIXAI,AR2
     // asm 000025E2: 	LDF	*+AR7(PDATA+4),R2
     // asm 000025E3: 	CALL    FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_LDF(p->ctx->FLYCARP.y_total));
     // asm 000025E4: 	LDI	AR4,R2
     // asm 000025E5: 	ADDI	OMATRIX,R2
     // asm 000025E6: 	LDI	R2,R3
     // asm 000025E7: 	B	CONCATMAT		;FORMULATE COMBINED MATRIX
+    CONCATMAT(&MATRIXAI, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix); // ;FORMULATE COMBINED MATRIX
     // ;*
     // ;*CONVERT XVEL,ZVEL TO CARSPEED,CARVROT
     // ;*AR4=OBJECT
@@ -3259,8 +3664,6 @@ void GETFLYMAT(void) {
     // ;
     // ;	RETS
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GETFLYMAT", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -3766,7 +4169,7 @@ NTRN:
     // asm 000026A0: 	CMPF	R1,R0
     // asm 000026A1: 	BGT	FLYCAR		   	;FLY THE SUCKER...
     if (C3X_GT(speed, C3X_FROM_INT(160))) {
-        FLYCAR(obj0, obj1, collision_point);
+        FLYCAR(obj0, obj1);
         return;
     }
 COLDISP0:

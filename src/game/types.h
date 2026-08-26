@@ -508,7 +508,7 @@ typedef struct DYNAOBJ {
     DYNAFLAG flag;
 } DYNAOBJ;
 
-typedef struct SOUNDSTR {
+typedef struct SNDSTR_t {
     u32 priority;
     u32 timer;
     u32 timer_countdown;
@@ -518,7 +518,7 @@ typedef struct SOUNDSTR {
     u32 sound_index;
     u32 repeat_count;
     u32 status;
-} SOUNDSTR;
+} SNDSTR_t;
 
 typedef struct REGRAC {
     u32 position;
@@ -719,6 +719,16 @@ struct WAVEFLAG_ENTRY;
 
 typedef struct PROC_CONTEXT {
     int pedal_released; // process-saved R5 used by INIT_PEDALCHK/PEDALCHK
+
+    struct {
+        OBJ* obj;
+        c3x_f32_t x_rate;
+        c3x_f32_t y_rate;
+        c3x_f32_t z_rate;
+        c3x_f32_t x_total;
+        c3x_f32_t y_total;
+        c3x_f32_t z_total;
+    } FLYCARP;
 
     struct {
         int loop_count;

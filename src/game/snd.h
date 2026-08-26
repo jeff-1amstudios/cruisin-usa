@@ -11,7 +11,7 @@ extern int IN_RESET_MODE;
 // asm: 	fbss	RESET_TIMER,1		; jeff: was "RESET_TIMER,R0" which looks like a bug.
 extern int RESET_TIMER;
 // asm: 	.bss	SNDSTR,NCHAN*SND_SIZ
-extern int SNDSTR[];
+extern SNDSTR_t SNDSTR[];
 // asm: 	.bss	STATION_TIMEOUT,1
 extern int STATION_TIMEOUT;
 // asm: 	.bss	RS_X,1

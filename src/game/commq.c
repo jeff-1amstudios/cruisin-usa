@@ -53,7 +53,7 @@ static void DECODE_RACENUM(void);
 static void DECODE_VEHICLE(void);
 void SEND_VEHICLE(void);
 static void DECODE_TIMECODE(void);
-void SEND_RHO_POS(void);
+void SEND_RHO_POS(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/);
 void SEND_RACER_POS(void);
 void SEND_PLAYERS_POS(void);
 void SEND_RHO_CREATE(OBJ* obj, int car_id, int vehicle_index);
@@ -99,7 +99,7 @@ void DECODE_RHO_KILL(void);
 void DECODE_RHO_XSFER(void);
 void DECODE_FLY_KILL(void);
 void DECODE_FLY_XSFER(void);
-void SEND_FLY_KILL(void);
+void SEND_FLY_KILL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 extern int OM_TRACK_LO;
 extern int OM_TRACK_HI;
 
@@ -988,7 +988,11 @@ static void DECODE_TIMECODE(void) {
 
 // *----------------------------------------------------------------------------
 
-void SEND_RHO_POS(void) {
+/* asm: SEND_FLY_POS */
+void SEND_RHO_POS(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/) {
+    (void)obj;
+    (void)carblk;
+    (void)p;
     // asm 00007801: 	LDI	*+AR7(DELTA_LAST_OID),R0
     // asm 00007802: 	STI	R0,*+AR5(CARTRACK_ID)  	;SAVE TRACK ID
     // asm 00007803: 	LDI	CB_RHO_UPDATE,R0	;GET MESSAGE HEADER
@@ -1005,7 +1009,7 @@ void SEND_RHO_POS(void) {
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RHO_POS", 0, 0);
-    STUB();
+    UNIMPL_TODO();
 }
 
 void SEND_RACER_POS(void) {

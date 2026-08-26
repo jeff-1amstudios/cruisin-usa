@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(cruisin_usa_port C)
+project(cruisin_usa_port LANGUAGES C CXX)
 
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
@@ -38,6 +41,7 @@ set(CRUSN_SOURCES
   src/game/bonus.c
   src/game/bssstart.c
   src/core/c3x_float.c
+  src/core/dcs_audio.cpp
   src/game/chopper.c
   src/game/cksum.c
   src/game/cmos.c
@@ -101,6 +105,7 @@ set(CRUSN_SOURCES
   src/game/wave.c
   src/game/wheel.c
   src/platform/sdl_main.c
+  src/platform/sdl_audio.c
   src/platform/sdl_video.c
 )
 
@@ -115,9 +120,15 @@ generate_export_header(miniz)
 target_compile_definitions(miniz PUBLIC MINIZ_STATIC_DEFINE)
 target_include_directories(miniz PUBLIC lib/miniz ${CMAKE_CURRENT_BINARY_DIR})
 
+add_library(dcsdecoder_native STATIC
+  lib/dcsdecoder/DCSDecoder.cpp
+  lib/dcsdecoder/DCSDecoderNative.cpp
+)
+target_include_directories(dcsdecoder_native PUBLIC lib/dcsdecoder)
+
 add_executable(crusn)
 target_sources(crusn PRIVATE ${CRUSN_SOURCES})
-target_link_libraries(crusn PRIVATE miniz)
+target_link_libraries(crusn PRIVATE miniz dcsdecoder_native)
 
 add_custom_target(check-c3x-translation
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/check_c3x_translation.py

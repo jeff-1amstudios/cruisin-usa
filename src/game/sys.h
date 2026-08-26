@@ -394,11 +394,29 @@
 // asm: SND_PRI		.set	0		;UH	priority (00=lowest, FF= highest)
 #define SND_PRI 0 // UH priority (00=lowest, FF= highest)
 
+// asm: SND_TIM		.set	1		;UH	TIMER
+#define SND_TIM 1 // UH TIMER
+
+// asm: SND_TMR		.set	2		;UH	TIMER COUNTDOWN
+#define SND_TMR 2 // UH TIMER COUNTDOWN
+
+// asm: SND_ST		.set	3		;UH	ADDRESS OF SOUND TABLE (START)
+#define SND_ST 3 // UH ADDRESS OF SOUND TABLE (START)
+
+// asm: SND_ADDR	.set	4		;UH	ADDRESS OF SOUND TABLE (CURRENT POINTER)
+#define SND_ADDR 4 // UH ADDRESS OF SOUND TABLE (CURRENT POINTER)
+
 // asm: SND_VOL		.set	5		;SD	VOLUME OF TRACK
 #define SND_VOL 5 // SD VOLUME OF TRACK
 
 // asm: SND_IDX		.set	6		;UH	INDEX OF SOUND
 #define SND_IDX 6 // UH INDEX OF SOUND
+
+// asm: SND_REP		.set	7		;UH	REPEAT COUNT OF SOUND
+#define SND_REP 7 // UH REPEAT COUNT OF SOUND
+
+// asm: SND_STATUS	.set	8		;UH	FLAG FX SND increment ?
+#define SND_STATUS 8 // UH FLAG FX SND increment ?
 
 // asm: SND_SIZ		.set	9		;SIZ
 #define SND_SIZ 9 // SIZ
