@@ -47,7 +47,7 @@ static void WATERFALL_SND(PROC* p);
 void AMBIENCE_SOUND(void);
 void HUNGH_ANI(OBJ* obj /*AR4*/);
 void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/);
-static void PLACE_ON_ROAD(void);
+static void PLACE_ON_ROAD(OBJ* obj /*AR4*/);
 void RUT_ANI(OBJ* obj /*AR4*/);
 static void PLAINANI_PROC_SLOW(PROC* p);
 static void FLAGWAVE_TALL(OBJ* obj /*AR4*/);
@@ -2287,29 +2287,42 @@ void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/) {
     UNIMPL();
 }
 
-static void PLACE_ON_ROAD(void) {
+static void PLACE_ON_ROAD(OBJ* obj /*AR4*/) {
+    c3x_reg_t road_delta;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000043AF: 	CALL	ADD_RDDEBRIS
+    ADD_RDDEBRIS(obj);
     // asm 000043B0: 	PUSH	AR4
     // asm 000043B1: 	ADDI	OPOSX,AR4
     // asm 000043B2: 	CALL	CAMSCAN
+    CAMSCAN(&obj->pos, &road_delta);
     // asm 000043B3: 	POP	AR4
     // asm 000043B4: 	FIX	R0,R1		;Check for dude in the sign
     // asm 000043B5: 	CMPI	1000,R1
     // asm 000043B6: 	BGT	PORX
+    if (C3X_FIX(road_delta) > 1000) {
+        goto PORX;
+    }
     // asm 000043B7: 	LDF	*+AR4(OPOSY),R1
     // asm 000043B8: 	ADDF	R1,R0
     // asm 000043B9: 	SUBF   	45,R0
     // asm 000043BA: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_SUB(C3X_ADD(road_delta, C3X_LDF(obj->pos.Y)), C3X_IMM_F32(45)));
 PORX:
     // asm 000043BB: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLACE_ON_ROAD", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 void RUT_ANI(OBJ* obj /*AR4*/) {
-    (void)obj;
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000043BC: 	PUSH	R0
     // asm 000043BD: 	PUSH	AR0
     // asm 000043BE: 	PUSH	AR2
@@ -2322,35 +2335,65 @@ DORUT_ANI:
     // asm 000043C4: 	ANDN	O_1PAL,R0
     // asm 000043C5: 	OR	O_POSTER,R0
     // asm 000043C6: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags = (obj->flags & ~O_1PAL) | O_POSTER;
     // asm 000043C7: 	CALL	PLACE_ON_ROAD
+    PLACE_ON_ROAD(obj);
     // asm 000043C8: 	LDI	RDDEBRIS_C|TSC_IGNORE|TSC_DUDE_S,R0
     // asm 000043C9: 	STI	R0,*+AR4(OID)
+    obj->id = RDDEBRIS_C | TSC_IGNORE | TSC_DUDE_S;
     // asm 000043CA: 	LDI	AR6,AR5
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->BACKGRND_PLAINANI_PROC.obj = obj;
+    ctx->BACKGRND_PLAINANI_PROC.script = RUT_ANISI;
+    ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
     // asm 000043CB: 	CREATE	PLAINANI_LP_SLOW,SPAWNER_C|ANIMATION_T|7
+    proc = CREATE(PLAINANI_PROC_SLOW, SPAWNER_C | ANIMATION_T | 7, ctx);
     // asm 000043CE: 	BC	FWL1
     // asm 000043CF: 	BU	J2
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    if (proc != NULL) {
+        obj->plink = proc;
+        obj->flags |= 1u << O_PROC_B;
+    }
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RUT_ANI", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 static void PLAINANI_PROC_SLOW(PROC* p) {
+    PROC_CONTEXT* ctx = p->ctx;
+    int frame;
+    int sleep_ticks;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 000043D0: 	LDI	AR6,AR5
 PLAINANI_LP_SLOW:
     // asm 000043D1: 	LDI	*AR5++,R0
+    frame = ctx->BACKGRND_PLAINANI_PROC.script[ctx->BACKGRND_PLAINANI_PROC.script_index++];
     // asm 000043D2: 	BLT	PLAINANI_PROC_SLOW
+    if (frame < 0) {
+        ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
+        goto PLAINANI_LP_SLOW;
+    }
     // asm 000043D3: 	STI	R0,*+AR4(OROMDATA)
+    ctx->BACKGRND_PLAINANI_PROC.obj->romdata = ROM_PTR((word_addr_t)frame);
     // asm 000043D4: 	RANDN	4
+    sleep_ticks = RANDU0(4);
     // asm 000043D6: 	LDI	R0,R0
     // asm 000043D7: 	LDIZ	1,AR2
     // asm 000043D8: 	LDINZ	2,AR2
+    sleep_ticks = sleep_ticks == 0 ? 1 : 2;
     // asm 000043D9: 	ADDI	1,AR2
+    sleep_ticks += 1;
     // asm 000043DA: 	CALL	PRC_SLEEP
+    SLEEP(sleep_ticks, 1);
     // asm 000043DB: 	BU	PLAINANI_LP_SLOW
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PLAINANI_PROC_SLOW", 0, 0);
-    UNIMPL();
+    goto PLAINANI_LP_SLOW;
 }
 
 // *----------------------------------------------------------------------------

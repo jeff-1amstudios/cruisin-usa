@@ -85,6 +85,7 @@ c3x_reg_t ROADIR(CARBLK* carblk /*AR5*/);
 c3x_reg_t GETRDIR(OBJ* track_obj /*AR2*/);
 static c3x_reg_t GETRD1_tail(OBJ* track_obj /*AR2*/, OBJ* target_obj /*AR0*/);
 static void PLYRWHL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
+static int WALLHITAB[3];
 static void PLYR_SNDS(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void MKFXSND(int sound_index /*AR2*/);
 static void MKVFXSND(int sound_index /*AR2*/, int volume /*R0*/);
@@ -112,7 +113,7 @@ static void CHEATCK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 #define REVSNDTABI REVSNDTAB
 #define PEDALMNI PEDALMN
 
-void WRECK(void);
+void WRECK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/);
 void WRECKST(void);
 int COMPTRAK(void);
 
@@ -968,7 +969,7 @@ PLYRLP:
         goto PLYRSPD;
     }
     // asm 00002A6F: 	CALL	WRECK			;DO YOUR WRECK THING
-    WRECK(); // DO YOUR WRECK THING
+    WRECK(obj, carblk, p); // DO YOUR WRECK THING
     // asm 00002A70: 	CALL	INBOUNDZ		;KEEP IN BOUNDS
     INBOUNDZ(obj, carblk); // KEEP IN BOUNDS
     // asm 00002A71: 	B	PLYRCAM			;DONT CHANGE MATRIX OR CAMERA POS
@@ -4378,99 +4379,187 @@ DRONINBX:
  *HARD WALL REFLECT SPIN-OUT
  */
 static void CURBCOL0(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    c3x_reg_t absolute_velocity_delta;
+    c3x_reg_t distance;
+    c3x_reg_t next_road_direction;
+    c3x_reg_t penetration_angle;
+    c3x_reg_t repel_direction;
+    c3x_reg_t road_curve_delta;
+    c3x_reg_t road_direction;
+    c3x_reg_t speed;
+    c3x_reg_t velocity_delta;
+
     // asm 00002F75: 	LDI	*+AR4(OID),R0		;PLAYER?
     // asm 00002F76: 	AND	CLASS_M,R0
     // asm 00002F77: 	CMPI	PLYR_C,R0
     // asm 00002F78: 	BZ	CURBCOLP		;YES
+    if ((obj->id & CLASS_M) == PLYR_C) {
+        goto CURBCOLP; // YES
+    }
     // *DRONE HIT SOUND
     // asm 00002F79: 	LDI	@WALLHITABI,AR2		;MAKE A DRONE SOUND
     // asm 00002F7A: 	LDI	3,R0
     // asm 00002F7B: 	CALL	DRONESND
+    DRONESND(obj, WALLHITABI, 3); // MAKE A DRONE SOUND
     // asm 00002F7C: 	LDF	*+AR5(CARSPEED),R0	;SLOW DOWN DRONE
+    speed = C3X_LDF(carblk->speed); // SLOW DOWN DRONE
     // asm 00002F7D: 	MPYF	0.80,R0
+    speed = C3X_MUL(speed, C3X_IMM_F32(0.80));
     // asm 00002F7E: 	STF	R0,*+AR5(CARSPEED)
+    carblk->speed = C3X_STF(speed);
     // asm 00002F7F: 	B	CURBCOL
+    goto CURBCOL;
     // *PLAYER HIT SOUND
 CURBCOLP:
     // asm 00002F80: 	LDI	@WALLHITABI,AR2		;MAKE A SOUND
     // asm 00002F81: 	LDI	3,R0
     // asm 00002F82: 	CALL	RANDSND
+    RANDSND(WALLHITABI, 3); // MAKE A SOUND
 CURBCOL:
     // asm 00002F83: 	CALL	GETNXTRDIR    		;DIRECTION CAR TO NEXT ROAD SEG.
+    next_road_direction = GETNXTRDIR(obj, carblk); // DIRECTION CAR TO NEXT ROAD SEG.
     // asm 00002F84: 	LDF	R0,R4
     // asm 00002F85: 	CALL	ROADIR			;REFLECT VELOCITY
+    road_direction = ROADIR(carblk); // REFLECT VELOCITY
     // asm 00002F86: 	SUBF	R4,R0,R2
+    road_curve_delta = C3X_SUB(road_direction, next_road_direction);
     // asm 00002F87: 	CALL	NORMITS
+    road_curve_delta = NORMITS(road_curve_delta);
     // asm 00002F88: 	LDF	R2,R3
     // asm 00002F89: 	LDF	*+AR5(CARVROT),R1
     // asm 00002F8A: 	SUBF	R1,R0,R2
+    velocity_delta = C3X_SUB(road_direction, C3X_LDF(carblk->y_velocity_rotation));
     // asm 00002F8B: 	CALL	NORMITS
+    velocity_delta = NORMITS(velocity_delta);
     // *KICK DUDE BACK	INSTANTLY
     // *R0=ROADIR
     // *R2=ROADIR-CARVROT
     // asm 00002F8C: 	PUSHF	R2
     // asm 00002F8D: 	PUSHF	R0
     // asm 00002F8E: 	LDF	*+AR5(CARSPEED),R2
+    speed = C3X_LDF(carblk->speed);
     // asm 00002F8F: 	CMPF	15,R2
     // asm 00002F90: 	LDFLT	15,R2
+    if (C3X_LT(speed, C3X_IMM_F32(15))) {
+        speed = C3X_IMM_F32(15);
+    }
     // asm 00002F91: 	STF	R2,*+AR5(CARSPEED)	;MIN SPEED
+    carblk->speed = C3X_STF(speed); // MIN SPEED
     // asm 00002F92: 	FLOATP	@NFRAMES,R5
+    distance = C3X_FROM_INT(NFRAMES);
     // asm 00002F93: 	MPYF 	R2,R5			;TOTAL DISTANCE TRAVELED
+    distance = C3X_MUL(distance, speed); // TOTAL DISTANCE TRAVELED
     // asm 00002F94: 	LDF	-1.57,R4
+    repel_direction = C3X_IMM_F32(-1.57);
     // asm 00002F95: 	LDF	R3,R3
     // asm 00002F96: 	LDFN	1.57,R4
+    if (C3X_LT(road_curve_delta, C3X_IMM_F32(0))) {
+        repel_direction = C3X_IMM_F32(1.57);
+    }
     // asm 00002F97: 	ADDF	R4,R0,R2		;REPELL DIRECTION
+    repel_direction = C3X_ADD(road_direction, repel_direction); // REPELL DIRECTION
     // asm 00002F98: 	PUSHF	R2
     // asm 00002F99: 	SUBF	R1,R2			;FIND DIFFERENCE
+    penetration_angle = C3X_SUB(repel_direction, C3X_LDF(carblk->y_velocity_rotation)); // FIND DIFFERENCE
     // asm 00002F9A: 	CALL	_SINE
+    penetration_angle = _SINE(penetration_angle);
     // asm 00002F9B: 	ABSF	R0
+    penetration_angle = C3X_ABS(penetration_angle);
     // asm 00002F9C: 	MPYF	R0,R5			;ADJUST VELOCITY FOR PENETRATION ANGLE
+    distance = C3X_MUL(distance, penetration_angle); // ADJUST VELOCITY FOR PENETRATION ANGLE
     // asm 00002F9D: 	POPF	R2
     // asm 00002F9E: 	CALL	_COSI
+    penetration_angle = _COSI(repel_direction);
     // asm 00002F9F: 	MPYF	R0,R5,R4
+    penetration_angle = C3X_MUL(penetration_angle, distance);
     // asm 00002FA0: 	CALL	_SINE
+    repel_direction = _SINE(repel_direction);
     // asm 00002FA1: 	NEGF	R0			;-SIN
+    repel_direction = C3X_NEG(repel_direction); // -SIN
     // asm 00002FA2: 	MPYF	R0,R5,R5
+    repel_direction = C3X_MUL(repel_direction, distance);
     // asm 00002FA3: 	ADDF	*+AR4(OPOSX),R5		;ADJUST X
+    repel_direction = C3X_ADD(repel_direction, C3X_LDF(obj->pos.X)); // ADJUST X
     // asm 00002FA4: 	STF	R5,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(repel_direction);
     // asm 00002FA5: 	ADDF	*+AR4(OPOSZ),R4		;ADJUST Z
+    penetration_angle = C3X_ADD(penetration_angle, C3X_LDF(obj->pos.Z)); // ADJUST Z
     // asm 00002FA6: 	STF	R4,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(penetration_angle);
     // asm 00002FA7: 	CALL	WALL_SPARK
+    WALL_SPARK(obj, carblk);
     // asm 00002FA8: 	POPF	R0
     // asm 00002FA9: 	POPF	R2
     // *REFLECT VELOCITY
     // asm 00002FAA: 	XOR	R2,R3			;CHECK IF ALREADY GOING THE RIGHT WAY
     // asm 00002FAB: 	BN	CURBCOL1		;MOVING IN RIGHT DIRECTION
+    if (C3X_LT(velocity_delta, C3X_IMM_F32(0)) != C3X_LT(road_curve_delta, C3X_IMM_F32(0))) {
+        goto CURBCOL1; // MOVING IN RIGHT DIRECTION
+    }
     // asm 00002FAC: 	NEGF	R2			;NEED TO REFLECT VELOCITY
+    velocity_delta = C3X_NEG(velocity_delta); // NEED TO REFLECT VELOCITY
 CURBCOL1:
     // asm 00002FAD: 	LDI	*+AR5(CAR_SPIN),R1  	;ALREADY SPINNING?
     // asm 00002FAE: 	BNZ	CURBSPIN		;YES, SPIN SOME MORE...
+    if (carblk->spin_flag != 0) {
+        CURBSPIN(road_direction, velocity_delta, carblk); // YES, SPIN SOME MORE...
+        return;
+    }
     // asm 00002FAF: 	ABSF	R2,R3
+    absolute_velocity_delta = C3X_ABS(velocity_delta);
 CURBCOL1A:
     // asm 00002FB0: 	CMPF	1.2,R3
     // asm 00002FB1: 	BGT	CURBSPIN		;YES, SPIN THE DUDE
+    if (C3X_GT(absolute_velocity_delta, C3X_IMM_F32(1.2))) {
+        CURBSPIN(road_direction, velocity_delta, carblk); // YES, SPIN THE DUDE
+        return;
+    }
     // asm 00002FB2: 	CMPF	0.4,R3			;HARD BOUNCE?
     // asm 00002FB3: 	BGT	CURBSPN			;YES, SPIN THE DUDE
+    if (C3X_GT(absolute_velocity_delta, C3X_IMM_F32(0.4))) {
+        CURBSPN(road_direction, velocity_delta, carblk); // YES, SPIN THE DUDE
+        return;
+    }
     // asm 00002FB4: 	MPYF	0.3,R2			;CUT DOWN BOUNCE
+    velocity_delta = C3X_MUL(velocity_delta, C3X_IMM_F32(0.3)); // CUT DOWN BOUNCE
     // asm 00002FB5: 	MPYF	0.3,R3			;CUT DOWN BOUNCE
+    absolute_velocity_delta = C3X_MUL(absolute_velocity_delta, C3X_IMM_F32(0.3)); // CUT DOWN BOUNCE
     // asm 00002FB6: 	CMPF	0.03,R3			;MINIMUM KICKOUT
     // asm 00002FB7: 	BGE	CURBCOL2A
+    if (C3X_GE(absolute_velocity_delta, C3X_IMM_F32(0.03))) {
+        goto CURBCOL2A;
+    }
     // asm 00002FB8: 	LDF	R2,R2
     // asm 00002FB9: 	LDFLT	-0.03,R2
     // asm 00002FBA: 	LDFGT	0.03,R2
+    if (C3X_LT(velocity_delta, C3X_IMM_F32(0))) {
+        velocity_delta = C3X_IMM_F32(-0.03);
+    } else if (C3X_GT(velocity_delta, C3X_IMM_F32(0))) {
+        velocity_delta = C3X_IMM_F32(0.03);
+    }
 CURBCOL2A:
     // asm 00002FBB: 	CMPF	0.06,R3			;MAXIMUM KICKOUT
     // asm 00002FBC: 	BLE	CURBCOL2
+    if (C3X_LE(absolute_velocity_delta, C3X_IMM_F32(0.06))) {
+        goto CURBCOL2;
+    }
     // asm 00002FBD: 	LDF	R2,R2
     // asm 00002FBE: 	LDFLT	-0.06,R2
     // asm 00002FBF: 	LDFGT	0.06,R2
+    if (C3X_LT(velocity_delta, C3X_IMM_F32(0))) {
+        velocity_delta = C3X_IMM_F32(-0.06);
+    } else if (C3X_GT(velocity_delta, C3X_IMM_F32(0))) {
+        velocity_delta = C3X_IMM_F32(0.06);
+    }
 CURBCOL2:
     // asm 00002FC0: 	ADDF	R0,R2
+    velocity_delta = C3X_ADD(velocity_delta, road_direction);
     // asm 00002FC1: 	STF	R2,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(velocity_delta);
     // asm 00002FC2: 	STF	R2,*+AR5(CARYROT)	;ADJUST YROT <--- CARVROT
+    carblk->y_rotation = C3X_STF(velocity_delta); // ADJUST YROT <--- CARVROT
     // asm 00002FC3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CURBCOL0", 0, 0);
-    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -4807,6 +4896,10 @@ c3x_reg_t GETRDIR(OBJ* track_obj /*AR2*/) {
 
     // asm 0000303A: 	LDI	*+AR2(OLINK4),AR0
     next_track_obj = (OBJ*)track_obj->link4;
+    // A null C30 link reads interrupt vectors as coordinates; use a stable direction instead.
+    if (next_track_obj == NULL) {
+        return C3X_FROM_INT(0);
+    }
     return GETRD1_tail(track_obj, next_track_obj);
 }
 
@@ -5407,7 +5500,8 @@ TUNSNDX:
     // asm 0000312F: 	LDI	*+AR2(OID),R0
     // asm 00003130: 	CMPI	300h,R0
     // asm 00003131: 	LDINZ	127,R1
-    if (road_obj->id != 0x300) {
+    // A null C30 object pointer reads OID from vector address 0x0F, which is not road ID 0x300.
+    if (road_obj == NULL || road_obj->id != 0x300) {
         left_gravel_volume = 127;
     }
     // asm 00003132: 	LDI	*+AR5(RR_PCOL),AR2
@@ -5415,7 +5509,7 @@ TUNSNDX:
     // asm 00003133: 	LDI	*+AR2(OID),R0
     // asm 00003134: 	CMPI	300h,R0
     // asm 00003135: 	LDINZ	127,R2
-    if (road_obj->id != 0x300) {
+    if (road_obj == NULL || road_obj->id != 0x300) {
         right_gravel_volume = 127;
     }
     // asm 00003136: 	ADDI	R1,R2,R0

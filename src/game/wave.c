@@ -1263,7 +1263,7 @@ static void LOAD_VARIOUS_PALETTES(void) {
 /*
  *OVERWRITTEN ON TOWER PALETTE, AND RESTORED IN GGATE PARK
  */
-static tPAL tower_bgrey = {
+tPAL tower_bgrey = {
     0x080000000 | 256,
     { (0x00 << 16) | 0x021,
         (0x042 << 16) | 0x0463,

@@ -218,25 +218,34 @@ void CHECKPOINT_HIT(void) {
     // asm 0000AD33: 	PUSH	R0
     // asm 0000AD34: 	PUSH	AR2
     // asm 0000AD35: 	INCM	@REAL_CHECKPOINTS
+    REAL_CHECKPOINTS += 1;
     // asm 0000AD38: 	CMPI	@CHECKPOINT_NUM,R0
     // asm 0000AD39: 	BLE	CPHX
-JJGH:
+    if (REAL_CHECKPOINTS <= CHECKPOINT_NUM) {
+        goto CPHX;
+    }
     // asm 0000AD3A: 	CALL	SEND_CHECKPOINT		;not really send, but setup variables
+    SEND_CHECKPOINT(); // not really send, but setup variables
     // asm 0000AD3B: 	INCM	@CHECKPOINT_NUM
+    CHECKPOINT_NUM += 1;
     // asm 0000AD3E: 	LDI	@_countdown,R0
     // asm 0000AD3F: 	ADDI	@CHECKPOINT_TIME_BONUS,R0
     // asm 0000AD40: 	STI	R0,@_countdown
+    _countdown += CHECKPOINT_TIME_BONUS;
     // asm 0000AD41: 	LDI	@_MODE,R0
     // asm 0000AD42: 	AND	MMODE,R0
     // asm 0000AD43: 	CMPI	MGAME,R0
     // asm 0000AD44: 	BNE	CPHX
+    if ((_MODE & MMODE) != MGAME) {
+        goto CPHX;
+    }
     // asm 0000AD45: 	SONDFX	CHECKPT
+    SONDFX(CHECKPT);
 CPHX:
     // asm 0000AD47: 	POP	AR2
     // asm 0000AD48: 	POP	R0
     // asm 0000AD49: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECKPOINT_HIT", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -330,9 +339,9 @@ static void BRIDGE_ON(void) {
 // *----------------------------------------------------------------------------
 static void BOFFNC(void) {
     // asm 0000AD6A: 	CALL	BRIDGE_OFF
+    BRIDGE_OFF();
     // asm 0000AD6B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BOFFNC", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -471,14 +480,20 @@ static void CHANGE_TUNE(void) {
 
 // *----------------------------------------------------------------------------
 static void SET_BGNDCOL2BROWN(void) {
+    int value;
+
     // asm 0000ADA1: 	CALL	CHECKPOINT_HIT
+    CHECKPOINT_HIT();
     // asm 0000ADA2: 	LDIL	0984900h,R0		;want blue sky
+    value = 0x984900; // want blue sky
     // asm 0000ADA5: 	STI	R0,@BGNDCOLA
+    BGNDCOLA = value;
     // asm 0000ADA6: 	LDI	1,R0
+    value = 1;
     // asm 0000ADA7: 	STI	R0,@NOAERASE
+    NOAERASE = value;
     // asm 0000ADA8: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_BGNDCOL2BROWN", 0, 0);
-    UNIMPL();
 }
 
 static void TURNOFF_INFINITY(void) {
@@ -503,17 +518,28 @@ static void TURNON_INFINITY(void) {
 
 // *----------------------------------------------------------------------------
 static void TOWER_PAL_LD(void) {
+    u32 palette_index;
+    int palette_code;
+    tPAL* palette_source;
+    u32 destination;
+    u32 count;
+
     // 	;find the pal which tower is in
     // 	;do a palset with the new palette
     // asm 0000ADB1: 	LDI	tower_p,AR2
+    palette_index = tower_p;
     // asm 0000ADB2: 	CALL	PAL_FIND
+    palette_code = PAL_FIND(palette_index);
     // asm 0000ADB3: 	LDL	tower_bgrey,AR2
+    palette_source = &tower_bgrey;
     // asm 0000ADB4: 	LDI	R0,R2
+    destination = (u32)palette_code;
     // asm 0000ADB5: 	LDI	*AR2++,R3		;GET COUNT
+    count = (u32)palette_source->flags_and_count;
     // asm 0000ADB6: 	CALL	PAL_SET
+    PAL_SET(palette_source->data, destination, count);
     // asm 0000ADB7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TOWER_PAL_LD", 0, 0);
-    UNIMPL();
 }
 
 static void TOWER_PAL_RESTORE(void) {

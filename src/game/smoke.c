@@ -20,13 +20,13 @@ static DYNAOBJ* GET_OTHER_REAR(DYNAOBJ* wheel /*AR2*/);
 static DYNAOBJ* GET_REAR(OBJ* car /*AR2*/);
 static DYNAOBJ* GET_REAR__tail(DYNAOBJ* dynamic_obj /*R0*/);
 static void INIT_SMOKE(PROC* p /*AR7*/, OBJ* smoke_obj /*AR0*/, const int* animation /*AR1*/,
-                       DYNAOBJ* wheel /*AR2*/, int road_oid /*R4*/, c3x_reg_t z_offset /*R5*/);
+    DYNAOBJ* wheel /*AR2*/, int road_oid /*R4*/, c3x_reg_t z_offset /*R5*/);
 void SORT_SMOKE(void);
 void INIT_SPARK(OBJ* parent_obj /*AR4*/);
 static void REPLICATE_SPARK(PROC* p /*AR7*/);
 void SPARK_PROC(PROC* p);
 static void INIT_COLLA_OBJS(PROC* p /*AR7*/);
-void WALL_SPARK(void);
+void WALL_SPARK(OBJ* car_obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void IMPACT_SPARK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 void ROAD_IMPACT_SPARK(void);
 void SKID_SPARK(void);
@@ -427,7 +427,7 @@ FOUND_REAR:
  */
 
 static void INIT_SMOKE(PROC* p /*AR7*/, OBJ* smoke_obj /*AR0*/, const int* animation /*AR1*/,
-                       DYNAOBJ* wheel /*AR2*/, int road_oid /*R4*/, c3x_reg_t z_offset /*R5*/) {
+    DYNAOBJ* wheel /*AR2*/, int road_oid /*R4*/, c3x_reg_t z_offset /*R5*/) {
     // asm 00008544: 	PUSH	AR1
     // asm 00008545: 	LDI	*+AR7(NUM_SMOKES),R0
     // asm 00008546: 	ADDI	SMOKE_OBJS,R0
@@ -475,17 +475,17 @@ INSM1:
     // asm 00008562: 	ADDF	*+AR4(OPOSX),R0
     // asm 00008563: 	STF	R0,*+AR0(OPOSX)
     smoke_obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(smoke_obj->pos.X),
-                                      C3X_LDF(p->ctx->SMOKE_PROC.car_obj->pos.X)));
+        C3X_LDF(p->ctx->SMOKE_PROC.car_obj->pos.X)));
     // asm 00008564: 	LDF	*+AR0(OPOSY),R0
     // asm 00008565: 	ADDF	*+AR4(OPOSY),R0
     // asm 00008566: 	STF	R0,*+AR0(OPOSY)
     smoke_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(smoke_obj->pos.Y),
-                                      C3X_LDF(p->ctx->SMOKE_PROC.car_obj->pos.Y)));
+        C3X_LDF(p->ctx->SMOKE_PROC.car_obj->pos.Y)));
     // asm 00008567: 	LDF	*+AR0(OPOSZ),R0
     // asm 00008568: 	ADDF	*+AR4(OPOSZ),R0
     // asm 00008569: 	STF	R0,*+AR0(OPOSZ)
     smoke_obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(smoke_obj->pos.Z),
-                                      C3X_LDF(p->ctx->SMOKE_PROC.car_obj->pos.Z)));
+        C3X_LDF(p->ctx->SMOKE_PROC.car_obj->pos.Z)));
     // asm 0000856A: 	ORM	O_POSTER|O_NOCOLL,*+AR0(OFLAGS)
     smoke_obj->flags |= O_POSTER | O_NOCOLL;
     // asm 0000856D: 	LDI	AR0,AR2
@@ -974,8 +974,7 @@ NEXT_SPARK:
     // asm 00008658: 	SLEEP	1
     SLEEP(1, 1);
     // asm 0000865A: 	ADDF	1,R7
-    p->ctx->SPARK_PROC.delay_frames =
-        C3X_ADD(p->ctx->SPARK_PROC.delay_frames, C3X_IMM_F32(1));
+    p->ctx->SPARK_PROC.delay_frames = C3X_ADD(p->ctx->SPARK_PROC.delay_frames, C3X_IMM_F32(1));
     // asm 0000865B: 	CMPF	2,R7			;WAIT NFRAMES
     // asm 0000865C: 	BNE	KLUDGE_MOFO
     if (C3X_NE(p->ctx->SPARK_PROC.delay_frames, C3X_IMM_F32(2))) {
@@ -1149,80 +1148,142 @@ INIT_SPARK_KILL:
  * Creates sparks at position where the wall was hit
  */
 
-void WALL_SPARK(void) {
+void WALL_SPARK(OBJ* car_obj /*AR4*/, CARBLK* carblk /*AR5*/) {
+    PROC* spark_proc;
+    PROC_CONTEXT* spark_ctx;
+    OBJ* track_obj;
+    c3x_reg_t car_direction;
+    c3x_reg_t collision_x;
+    c3x_reg_t collision_z;
+    c3x_reg_t distance_to_center;
+    c3x_reg_t relative_angle;
+    c3x_reg_t road_direction;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000086A7: 	CALL	PUSHALL
     // asm 000086A8: 	LDI	@_MODE,R0
     // asm 000086A9: 	AND	MMODE,R0
     // asm 000086AA: 	CMPI	MATTR,R0
     // asm 000086AB: 	BEQ	WALL_SPARKX
+    if ((_MODE & MMODE) == MATTR) {
+        goto WALL_SPARKX;
+    }
     // asm 000086AC: 	CMPI	@PLYCAR,AR4
     // asm 000086AD: 	BNE	WALL_SPARKX		;Only work for the players car
+    if (car_obj != PLYCAR) {
+        goto WALL_SPARKX; // Only work for the players car
+    }
     // asm 000086AE: 	LDI	*+AR5(CARTRAK),R0
     // asm 000086AF: 	BZ	WALL_SPARKX		;DUDE IS NOT ON THE ROAD
+    if (carblk->closest_track_piece == 0) {
+        goto WALL_SPARKX; // DUDE IS NOT ON THE ROAD
+    }
     // asm 000086B0: 	CALL	TOO_MANY_SPARKS
     // asm 000086B1: 	BC	WALL_SPARKX
+    if (TOO_MANY_SPARKS()) {
+        goto WALL_SPARKX;
+    }
     // asm 000086B2: 	LDI	@PLYPROC,AR7
     // asm 000086B3: 	CREATEC	SPARK_PROC,UTIL_C|SPARK_T
+    spark_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    spark_proc = CREATEC(SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
     // asm 000086B6: 	BC	WALL_SPARKX
+    if (spark_proc == NULL) {
+        goto WALL_SPARKX;
+    }
     // asm 000086B7: 	LDI	AR0,AR7
     // asm 000086B8: 	STI	AR4,*+AR7(CAR_OBJ)
+    spark_ctx->SPARK_PROC.car_obj = car_obj;
     // asm 000086B9: 	STI	AR5,*+AR7(CAR_BLOCK)
+    spark_ctx->SPARK_PROC.carblk = carblk;
     // asm 000086BA: 	LDF	*+AR5(CARYROT),R2
     // asm 000086BB: 	LDI	@MATRIXAI,AR2
     // asm 000086BC: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&MATRIXAI, C3X_LDF(carblk->y_rotation));
     // ;find the angle of the car reletive to the track it is on
     // asm 000086BD: 	LDI	*+AR5(CARTRAK),R0
+    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 000086BE: 	LDI	R0,AR2
     // asm 000086BF: 	CALL	GETRDIR
+    road_direction = GETRDIR(track_obj);
     // asm 000086C0: 	LDF	R0,R2
     // ;	LDF	*+AR5(CARVROT),R2
     // asm 000086C1: 	CALL	NORMITS
+    road_direction = NORMITS(road_direction);
     // asm 000086C2: 	LDF	R2,R0
     // asm 000086C3: 	LDF	*+AR5(CARYROT),R2
+    car_direction = C3X_LDF(carblk->y_rotation);
     // asm 000086C4: 	CALL	NORMITS
+    car_direction = NORMITS(car_direction);
     // asm 000086C5: 	SUBF	R0,R2
+    relative_angle = C3X_SUB(car_direction, road_direction);
     // asm 000086C6: 	CALL	NORMITS
+    relative_angle = NORMITS(relative_angle);
     // ;find the side of the road the car is on
     // asm 000086C7: 	LDF	*+AR5(CARDIST2CNTR),R0		;- = right side ;+ = left side
+    distance_to_center = C3X_LDF(carblk->dist_to_center); // - = right side ;+ = left side
     // ;determine which corner of the car hit the wall
     // asm 000086C8: 	ABSF	R2,R1
     // asm 000086C9: 	CMPF	HALFPI,R1
     // asm 000086CA: 	BLT	FACINGFRONT
+    if (C3X_LT(C3X_ABS(relative_angle), C3X_IMM_F32(HALFPI))) {
+        goto FACINGFRONT;
+    }
     // asm 000086CB: 	NEGF	R0
+    distance_to_center = C3X_NEG(distance_to_center);
     // asm 000086CC: 	NEGF	R2
+    relative_angle = C3X_NEG(relative_angle);
 FACINGFRONT:
     // asm 000086CD: 	CMPF	0,R0			;which side is the wall?
     // asm 000086CE: 	BGT	LEFT_SIDE
-    // asm 000086CF: RIGHT_SIDE
+    if (C3X_GT(distance_to_center, C3X_IMM_F32(0))) {
+        goto LEFT_SIDE;
+    }
+RIGHT_SIDE:
     // asm 000086CF: 	LDF	*+AR5(CARXPLUS),R1
+    collision_x = C3X_LDF(carblk->x_plus);
     // asm 000086D0: 	CMPF	0,R2
     // asm 000086D1: 	LDFGT	*+AR5(CARZMINUS),R0	;BACK
     // asm 000086D2: 	LDFLE	*+AR5(CARZPLUS),R0	;FRONT
+    collision_z = C3X_GT(relative_angle, C3X_IMM_F32(0))
+                      ? C3X_LDF(carblk->z_minus)
+                      : C3X_LDF(carblk->z_plus);
     // asm 000086D3: 	BR	WALLS1
+    goto WALLS1;
 LEFT_SIDE:
     // asm 000086D4: 	LDF	*+AR5(CARXMINUS),R1
+    collision_x = C3X_LDF(carblk->x_minus);
     // asm 000086D5: 	CMPF	0,R2
     // asm 000086D6: 	LDFGT	*+AR5(CARZPLUS),R0	;FRONT
     // asm 000086D7: 	LDFLE	*+AR5(CARZMINUS),R0	;BACK
+    collision_z = C3X_GT(relative_angle, C3X_IMM_F32(0))
+                      ? C3X_LDF(carblk->z_plus)
+                      : C3X_LDF(carblk->z_minus);
 WALLS1:
     // ;get the coords of that corner
     // ;transform them based on the body of the car
     // asm 000086D8: 	STF	R1,*+AR7(COLL_X)
+    spark_ctx->SPARK_PROC.collision_offset.X = C3X_STF(collision_x);
     // asm 000086D9: 	STF	R0,*+AR7(COLL_Z)
+    spark_ctx->SPARK_PROC.collision_offset.Z = C3X_STF(collision_z);
     // asm 000086DA: 	LDF	-90,R0
     // asm 000086DB: 	STF	R0,*+AR7(COLL_Y)
+    spark_ctx->SPARK_PROC.collision_offset.Y = C3X_STF(C3X_IMM_F32(-90));
     // asm 000086DC: 	LDI	AR7,AR2
     // asm 000086DD: 	ADDI	COLL_X,AR2
     // asm 000086DE: 	LDI	AR2,R3
     // asm 000086DF: 	LDI	@MATRIXAI,R2
     // asm 000086E0: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&spark_ctx->SPARK_PROC.collision_offset, &MATRIXAI,
+               &spark_ctx->SPARK_PROC.collision_offset);
     // ;no go and make the spark objects
     // asm 000086E1: 	CALL	INIT_COLLA_OBJS
+    INIT_COLLA_OBJS(spark_proc);
 WALL_SPARKX:
     // asm 000086E2: 	CALL	POPALL
     // asm 000086E3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WALL_SPARK", 0, 0);
-    UNIMPL();
 }
 
 /*

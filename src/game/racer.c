@@ -55,7 +55,7 @@ static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, c3x_reg_t* width_
 static void RPASS(PROC* p /*AR7*/, OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 c3x_reg_t SPOS_INIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/, OBJ* tracking_obj /*AR2*/, int rank_forward /*AR3*/);
 void WRECKST(void);
-void WRECK(void);
+void WRECK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/);
 
 void OM_DRONE(PROC* p);
 void SEND_RACER_POS(void);
@@ -3072,109 +3072,176 @@ L874:
  *
  */
 void WRECKST(void) {
+    OBJ* obj;
+    CARBLK* carblk;
+    PROC* p;
+
     // asm 00005568: 	PUSH	AR4
     // asm 00005569: 	PUSH	AR5
     // asm 0000556A: 	PUSH	AR7
+    MAME_ASSERT_FUNCTION_ENTRY();
     // asm 0000556B: 	LDI	@PLYCAR,AR4
+    obj = PLYCAR;
     // asm 0000556C: 	LDI	@PLYCBLK,AR5
+    carblk = PLYCBLK;
     // asm 0000556D: 	LDI	@PLYPROC,AR7
+    p = PLYPROC;
     // asm 0000556E: 	LDI	@CAMVIEW,R0
     // asm 0000556F: 	STI	R0,*+AR7(PDATA+21)	;SAVE OLD VIEW...
+    p->ctx->CARPROC.wreck_old_view = CAMVIEW; // ;SAVE OLD VIEW...
     // asm 00005570: 	BNZ	WRKST1
+    if (CAMVIEW != 0) {
+        goto WRKST1;
+    }
     // asm 00005571: 	LDI	@VIEW2I,AR2
     // asm 00005572: 	LDI	UTIL_C,R2
     // asm 00005573: 	CALL	PRC_CREATE		   	;SETUP VIEW 1 IF FIRST PERSON
+    PRC_CREATE(_VIEW2, UTIL_C, NULL); // ;SETUP VIEW 1 IF FIRST PERSON
 WRKST1:
     // asm 00005574: 	LDF	*+AR5(CT_PRDYD),R0 	;DELTA Y TO ROAD
     // asm 00005575: 	ADDF	*+AR4(OPOSY),R0		;ADD Y POSTION OF CAR
     // asm 00005576: 	STF	R0,*+AR7(PDATA+20)	;ABSOLUTE Y OF ROAD
+    p->ctx->CARPROC.wreck_road_y = C3X_STF(C3X_ADD(C3X_LDF(carblk->center.road_delta_y), C3X_LDF(obj->pos.Y))); // ;ABSOLUTE Y OF ROAD
     // *GET YOUR RADIANS
     // asm 00005577: 	LDF	0.104,R0
     // asm 00005578: 	STF	R0,*+AR7(PDATA)	  	;X RADIANS
+    p->ctx->CARPROC.wreck_x_rate = C3X_STF(C3X_IMM_F32(0.104)); // ;X RADIANS
     // asm 00005579: 	LDF	0.104,R0
     // asm 0000557A: 	STF	R0,*+AR7(PDATA+1)	;Y RADIANS
+    p->ctx->CARPROC.wreck_y_rate = C3X_STF(C3X_IMM_F32(0.104)); // ;Y RADIANS
     // asm 0000557B: 	LDF	0,R0
     // asm 0000557C: 	STF	R0,*+AR7(PDATA+2)	;Z RADIANS
+    p->ctx->CARPROC.wreck_z_rate = C3X_STF(C3X_IMM_F32(0)); // ;Z RADIANS
     // asm 0000557D: 	LDF	0,R0
     // asm 0000557E: 	STF	R0,*+AR7(PDATA+3)	;X RADIAN TOTAL
+    p->ctx->CARPROC.wreck_x_total = C3X_STF(C3X_IMM_F32(0)); // ;X RADIAN TOTAL
     // asm 0000557F: 	STF	R0,*+AR7(PDATA+5)  	;Z RADIAN TOTAL
+    p->ctx->CARPROC.wreck_z_total = C3X_STF(C3X_IMM_F32(0)); // ;Z RADIAN TOTAL
     // asm 00005580: 	LDF	*+AR5(CARYROT),R0	;GET CAR Y ROT
     // asm 00005581: 	STF	R0,*+AR7(PDATA+4)
+    p->ctx->CARPROC.wreck_y_total = C3X_STF(C3X_LDF(carblk->y_rotation));
     // asm 00005582: 	LDF	-60,R0
     // asm 00005583: 	STF	R0,*+AR4(OVELY)		;STUFF VERTICAL VELOCITY
+    obj->vel_y = C3X_STF(C3X_IMM_F32(-60)); // ;STUFF VERTICAL VELOCITY
     // asm 00005584: 	LDI	1,R0	    		;SET WRECK FLAG
     // asm 00005585: 	STI	R0,@WRECKFLG
+    WRECKFLG = 1; // ;SET WRECK FLAG
     // asm 00005586: 	LDI	0,R0
     // asm 00005587: 	STI	R0,*+AR5(CARSHAD)	;TURN OFF SHADOW
+    carblk->shadow_flag = 0; // ;TURN OFF SHADOW
     // asm 00005588: 	POP	AR7
     // asm 00005589: 	POP	AR5
     // asm 0000558A: 	POP	AR4
     // asm 0000558B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WRECKST", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
-void WRECK(void) {
+void WRECK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/) {
+    c3x_reg_t frame_count;
+    c3x_reg_t value;
+    c3x_reg_t angle;
+    c3x_reg_t speed;
+    c3x_reg_t road_y;
+    c3x_reg_t vertical_velocity;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 0000558C: 	CALL	GETTRAK			;KEEP UPDATING YOUR TRACKER
+    GETTRAK(obj, carblk); // ;KEEP UPDATING YOUR TRACKER
     // asm 0000558D: 	FLOAT	@NFRAMES,R1	 	;ADJUST MATRIX FOR FRAME COUNT
+    frame_count = C3X_FROM_INT(NFRAMES); // ;ADJUST MATRIX FOR FRAME COUNT
     // asm 0000558E: 	LDF	*+AR7(PDATA),R0		;ACCUMULATE X RADIANS
     // asm 0000558F: 	MPYF	R1,R0
     // asm 00005590: 	ADDF	*+AR7(PDATA+3),R0
     // asm 00005591: 	STF	R0,*+AR7(PDATA+3)
+    value = C3X_MUL(C3X_LDF(p->ctx->CARPROC.wreck_x_rate), frame_count);
+    p->ctx->CARPROC.wreck_x_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->CARPROC.wreck_x_total))); // ;ACCUMULATE X RADIANS
     // asm 00005592: 	LDF	*+AR7(PDATA+1),R0      	;ACCUMULATE Y RADIANS
     // asm 00005593: 	MPYF	R1,R0
     // asm 00005594: 	ADDF	*+AR7(PDATA+4),R0
     // asm 00005595: 	STF	R0,*+AR7(PDATA+4)
+    value = C3X_MUL(C3X_LDF(p->ctx->CARPROC.wreck_y_rate), frame_count);
+    p->ctx->CARPROC.wreck_y_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->CARPROC.wreck_y_total))); // ;ACCUMULATE Y RADIANS
     // asm 00005596: 	LDF	*+AR7(PDATA+2),R0 	;ACCUMULATE Z RADIANS
     // asm 00005597: 	MPYF	R1,R0
     // asm 00005598: 	ADDF	*+AR7(PDATA+5),R0
     // asm 00005599: 	STF	R0,*+AR7(PDATA+5)
+    value = C3X_MUL(C3X_LDF(p->ctx->CARPROC.wreck_z_rate), frame_count);
+    p->ctx->CARPROC.wreck_z_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->CARPROC.wreck_z_total))); // ;ACCUMULATE Z RADIANS
     // asm 0000559A: 	CALL	GETFLYMAT		;COMPUTE MATRICES
+    GETFLYMAT(obj, p); // ;COMPUTE MATRICES
     // *CONVERT CARVROT,CARSPEED TO OVELX, OVELZ
     // asm 0000559B: 	LDF	*+AR5(CARVROT),R2
     // asm 0000559C: 	ADDF	1.57,R2		   	;CORRECT FOR 90 DEGREE ERROR
     // asm 0000559D: 	CALL	_SINE
+    angle = C3X_ADD(C3X_LDF(carblk->y_velocity_rotation), C3X_IMM_F32(1.57)); // ;CORRECT FOR 90 DEGREE ERROR
     // asm 0000559E: 	LDF	*+AR5(CARSPEED),R3
     // asm 0000559F: 	MPYF	R3,R0
     // asm 000055A0: 	STF	R0,*+AR4(OVELZ)	  	;CONVERT TO CARVROT, CARSPEED TO XZVEL
+    speed = C3X_LDF(carblk->speed);
+    obj->vel_z = C3X_STF(C3X_MUL(_SINE(angle), speed)); // ;CONVERT TO CARVROT, CARSPEED TO XZVEL
     // asm 000055A1: 	CALL	_COSI
     // asm 000055A2: 	MPYF	R3,R0
     // asm 000055A3: 	STF	R0,*+AR4(OVELX)
+    obj->vel_x = C3X_STF(C3X_MUL(_COSI(angle), speed));
     // asm 000055A4: 	CALL	OVELNADD		;UPDATE VELOCITIES
+    OVELNADD(obj); // ;UPDATE VELOCITIES
     // asm 000055A5: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
     // asm 000055A6: 	CALL	ROADSCAN		;CHECK WHEEL HITS
+    ROADSCAN(obj, obj->carblk); // ;CHECK WHEEL HITS
     // asm 000055A7: 	LDI	*+AR4(OCARBLK),AR5	;GET CAR DATA AREA
+    carblk = obj->carblk; // ;GET CAR DATA AREA
     // *KEEP Y ABOVE THE ROAD
     // asm 000055A8: 	LDI	*+AR5(CT_PCOL),R0
     // asm 000055A9: 	BZ	WRECK1
+    if (carblk->center.collided_road_object == 0) {
+        goto WRECK1;
+    }
     // asm 000055AA: 	LDF	*+AR5(CT_PRDYD),R0	;DELTA Y TO ROAD
     // asm 000055AB: 	ADDF	*+AR4(OPOSY),R0		;ADD Y POSTION OF CAR
     // asm 000055AC: 	LDF	R0,R1
+    road_y = C3X_ADD(C3X_LDF(carblk->center.road_delta_y), C3X_LDF(obj->pos.Y)); // ;ADD Y POSTION OF CAR
     // asm 000055AD: 	SUBF	*+AR7(PDATA+20),R0
     // asm 000055AE: 	ADDF	*+AR4(OPOSY),R0
     // asm 000055AF: 	STF	R0,*+AR4(OPOSY)
+    value = C3X_SUB(road_y, C3X_LDF(p->ctx->CARPROC.wreck_road_y));
+    obj->pos.Y = C3X_STF(C3X_ADD(value, C3X_LDF(obj->pos.Y)));
     // asm 000055B0: 	STF	R1,*+AR7(PDATA+20)	;SAVE NEW BASE LINE
+    p->ctx->CARPROC.wreck_road_y = C3X_STF(road_y); // ;SAVE NEW BASE LINE
     // *CHECK FOR THE END
 WRECK1:
     // asm 000055B1: 	FLOAT	@NFRAMES,R2
     // asm 000055B2: 	MPYF	2,R2			;FRAME ADJUSTED GRAVITY
     // asm 000055B3: 	ADDF	*+AR4(OVELY),R2
     // asm 000055B4: 	STF	R2,*+AR4(OVELY)
+    vertical_velocity = C3X_ADD(C3X_MUL(C3X_FROM_INT(NFRAMES), C3X_IMM_F32(2)), C3X_LDF(obj->vel_y)); // ;FRAME ADJUSTED GRAVITY
+    obj->vel_y = C3X_STF(vertical_velocity);
     // asm 000055B5: 	CMPF	60,R2
     // asm 000055B6: 	RETSLT				;NOT OVER YET
+    if (C3X_LT(vertical_velocity, C3X_IMM_F32(60))) {
+        TRACE_EVENT(&g_crusn_machine->trace, "function", "WRECK", 0, 0);
+        return; // ;NOT OVER YET
+    }
     // *END IT ALL
     // asm 000055B7: 	LDI	0,R0			;END IT ALL
     // asm 000055B8: 	STI	R0,@WRECKFLG
+    WRECKFLG = 0; // ;END IT ALL
     // asm 000055B9: 	LDI	1,R0
     // asm 000055BA: 	STI	R0,*+AR5(CARSHAD)	;TURN ON SHADOW
+    carblk->shadow_flag = 1; // ;TURN ON SHADOW
     // asm 000055BB: 	SONDFX	BOTTOMOUT		;BOTTOM OUT SOUND
+    SONDFX(BOTTOMOUT); // ;BOTTOM OUT SOUND
     // asm 000055BD: 	LDI	*+AR7(PDATA+21),R0	;RETURN TO FIRST PERSON?
     // asm 000055BE: 	BNZ	WRECKSLP
+    if (p->ctx->CARPROC.wreck_old_view != 0) {
+        goto WRECKSLP;
+    }
     // asm 000055BF: 	LDI	@VIEW0I,AR2
     // asm 000055C0: 	LDI	UTIL_C,R2
     // asm 000055C1: 	CALL	PRC_CREATE		   	;RETURN TO 1ST PERSON
+    PRC_CREATE(_VIEW0, UTIL_C, NULL); // ;RETURN TO 1ST PERSON
 WRECKSLP:
     // asm 000055C2: 	RETS
     // *
@@ -3267,5 +3334,4 @@ WRECKSLP:
     // ;DRAFTX
     // ;	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WRECK", 0, 0);
-    UNIMPL();
 }

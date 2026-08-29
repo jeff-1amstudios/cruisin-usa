@@ -879,9 +879,23 @@ typedef struct PROC_CONTEXT {
             CARBLK* carblk;        // AR5
             c3x_f32_t body_x_radians;  // R6
             c3x_f32_t old_car_speed;   // R7
-            c3x_f32_t old_orady;       // PDATA
-            c3x_f32_t body_z_radians;  // PDATA+1 / R5
-            c3x_f32_t wheel_x_radians; // PDATA+2
+            union {
+                c3x_f32_t old_orady;
+                c3x_f32_t wreck_x_rate;
+            }; // PDATA
+            union {
+                c3x_f32_t body_z_radians;
+                c3x_f32_t wreck_y_rate;
+            }; // PDATA+1 / R5
+            union {
+                c3x_f32_t wheel_x_radians;
+                c3x_f32_t wreck_z_rate;
+            }; // PDATA+2
+            c3x_f32_t wreck_x_total; // PDATA+3
+            c3x_f32_t wreck_y_total; // PDATA+4
+            c3x_f32_t wreck_z_total; // PDATA+5
+            c3x_f32_t wreck_road_y;  // PDATA+20
+            int wreck_old_view;      // PDATA+21
         } CARPROC;
         struct {
             OBJ* source_obj;

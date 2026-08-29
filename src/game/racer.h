@@ -111,7 +111,7 @@ extern int CARTMP1;
 int COMPTRAK(void);
 OBJ* FIND_DYNA(int coded_id /*R2*/);
 void DECODE_RACER_XSFER(void);
-void WRECK(void);
+void WRECK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/);
 void WRECKST(void);
 
 #endif /* RACER_H */

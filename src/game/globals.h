@@ -738,6 +738,9 @@ extern tPAL FIXEDPAL;
 // asm:  .globl ILLUM_PAL
 extern tPAL ILLUM_PAL;
 
+// asm:  .globl tower_bgrey
+extern tPAL tower_bgrey;
+
 // asm:  .globl TEASE_COUNT,ATTR_MODEL
 extern int TEASE_COUNT;
 
@@ -1649,7 +1652,7 @@ void SPARK_PROC(PROC* p);
 
 void OBJ_MOVE(OBJ* obj /*AR2*/, c3x_reg_t frame_scale /*R1*/);
 
-void WALL_SPARK(void);
+void WALL_SPARK(OBJ* car_obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 void IMPACT_SPARK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 

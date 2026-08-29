@@ -212,9 +212,8 @@ void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*
     // asm 000065D1: 	CLRI	R6		;CARS CLOSE TO SCREEN
     on_screen_cars = 0;
 
-    // The original temporarily stores the rank-4 process in PLYCAR while a new attract leg starts.
-    // Do not interpret that process as an OBJ; preserve the original call's zero rank increments.
-    player_pending = player_carblk == NULL || player_carblk->closest_track_piece == 0 ||
+    // A null C30 object pointer reads interrupt-vector memory; treat it as pending until PLYCAR is ready.
+    player_pending = player_obj == NULL || player_carblk == NULL || player_carblk->closest_track_piece == 0 ||
         ((uintptr_t)player_obj >= (uintptr_t)&PRCSTR[0] && (uintptr_t)player_obj < (uintptr_t)&PRCSTR[NUMPROC]);
     if (player_pending) {
         player_track_id = -1;
