@@ -450,22 +450,32 @@ void SET18FONT(tTEXT* t) {
 }
 
 void SET18FONTDS(tSHADOW_TEXT* t) {
+    int palette;
+
     // asm 00007A25: 	LDI	17,R0
     // asm 00007A26: 	STI	R0,*+AR0(TEXT_HEIGHT)
     // asm 00007A27: 	STI	R0,*+AR1(TEXT_HEIGHT)
+    t->front->height = 17;
+    t->shadow->height = 17;
     // asm 00007A28: 	LDI	@FONT18_A,R0
     // asm 00007A29: 	STI	R0,*+AR0(TEXT_IMG)
     // asm 00007A2A: 	STI	R0,*+AR1(TEXT_IMG)
+    t->front->image_addr = FONT18_A;
+    t->shadow->image_addr = FONT18_A;
     // asm 00007A2B: 	LDL	font18_p,AR2
     // asm 00007A2C: 	CALL	PAL_FIND
+    palette = PAL_FIND(font18_p_ROM);
     // asm 00007A2D: 	STI	R0,*+AR0(TEXT_PAL)
     // asm 00007A2E: 	STI	R0,*+AR1(TEXT_PAL)
+    t->front->palette = palette;
+    t->shadow->palette = palette;
     // asm 00007A2F: 	LDI	@TEXTTABLEFONT18,R0
     // asm 00007A30: 	STI	R0,*+AR0(TEXT_ADDR)
     // asm 00007A31: 	STI	R0,*+AR1(TEXT_ADDR)
+    t->front->text_addr = TEXTTABLEFONT18;
+    t->shadow->text_addr = TEXTTABLEFONT18;
     // asm 00007A32: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET18FONTDS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

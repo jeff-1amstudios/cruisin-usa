@@ -26,9 +26,9 @@ void ROADKILL_SETKILL(void);
 void OBJ_MOVE_GROUND(void);
 void GET_ROADKILL_TRACK(void);
 void PROC_COUNT(void);
-void COW_SPAWNER_PROC(void);
+void COW_SPAWNER_PROC(PROC* p);
 static void COW_PROC(void);
-void DEER_SPAWNER_PROC(void);
+void DEER_SPAWNER_PROC(PROC* p);
 static void DEER_PROC(void);
 static void INIT_DEER(void);
 static void INIT_COW(void);
@@ -37,9 +37,9 @@ static void MAKE_NOCOLL(void);
 static void DEER_BLOOD_PROC(void);
 void FLYING_PARTS(void);
 static void FLY_PARTS(void);
-void GEESE_SPAWNER(void);
+void GEESE_SPAWNER(PROC* p);
 static void GEESE_PROC(void);
-void BUG_SPAWNER_PROC(void);
+void BUG_SPAWNER_PROC(PROC* p);
 static void SPLAT_PROC(void);
 void DELETE_SPLAT(void);
 static void NEXT_ROAD(void);
@@ -455,8 +455,9 @@ PC1:
  *	CREATE	COW_SPAWNER_PROC,SPAWNER_C
  *
  */
-void COW_SPAWNER_PROC(void)
+void COW_SPAWNER_PROC(PROC* p)
 {
+    (void)p;
     // asm 00006A0C: 	READADJ	ADJ_ROADKILL
     // asm 00006A0E: 	CMPI	0,R0
     // asm 00006A0F: 	BEQ	CSPX
@@ -557,8 +558,9 @@ static int DEERANI[] = {
  *	CREATE	DEER_SPAWNER_PROC,SPAWNER_C
  *
  */
-void DEER_SPAWNER_PROC(void)
+void DEER_SPAWNER_PROC(PROC* p)
 {
+    (void)p;
     // asm 00006A48: 	READADJ	ADJ_ROADKILL
     // asm 00006A4A: 	CMPI	0,R0
     // asm 00006A4B: 	BEQ	DSPX
@@ -1039,8 +1041,9 @@ static tGEESE_DIR_ENTRY GEESE_DIR[] = {
 #define NUM_SPLATS (PDATA + 3)
 
 // *----------------------------------------------------------------------------
-void GEESE_SPAWNER(void)
+void GEESE_SPAWNER(PROC* p)
 {
+    (void)p;
     // asm 00006B3F: 	SLEEP	1
     // asm 00006B41: 	LDI	@PLYCAR,R0
     // asm 00006B42: 	BZ	GEESE_SPAWNER
@@ -1286,8 +1289,9 @@ static int BUG_ANI[] = {
     -1,
 };
 
-void BUG_SPAWNER_PROC(void)
+void BUG_SPAWNER_PROC(PROC* p)
 {
+    (void)p;
     // asm 00006C02: 	READADJ	ADJ_ROADKILL
     // asm 00006C04: 	CMPI	0,R0
     // asm 00006C05: 	BEQ	BSPX

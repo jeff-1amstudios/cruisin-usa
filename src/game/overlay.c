@@ -325,7 +325,6 @@ static void BRIDGE_OFF(void) {
 }
 
 static void BRIDGE_ON(void) {
-    MAME_VALIDATOR_EXIT();
     // asm 0000AD66: 	LDI	@_MODE,R0
     // asm 0000AD67: 	OR	MBRIDGE,R0
     _MODE |= MBRIDGE;

@@ -33,9 +33,9 @@ static void AGENTANI_PROC(void);
 static void POLITICAL_CARTOON_NOTICE(void);
 static void POLTXT(void);
 void CROWD_IT(void);
-void BABE_TROPHY(void);
-static void BABE_IBO(void);
-static void BABE_ANI(void);
+void BABE_TROPHY(PROC* p);
+static void BABE_IBO(PROC* p);
+static void BABE_ANI(PROC* p);
 void BABE_WAVEFLAG(PROC* p);
 
 #define ANI_HOTTUBI ANI_HOTTUB
@@ -607,90 +607,188 @@ void CROWD_IT(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void BABE_TROPHY(void) {
+void BABE_TROPHY(PROC* p) {
+    PROC* child_proc;
+    PROC_CONTEXT* child_ctx;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("BABE_TROPHY");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    case 5:
+        goto PROC_RESUME_5;
+    case 6:
+        goto PROC_RESUME_6;
+    case 7:
+        goto PROC_RESUME_7;
+    }
+
     // ;	SLEEP	6
     // asm 00008B5D: 	LDI	12,AR5
+    p->ctx->BABE_TROPHY_FRAME.loop_count = 12;
 DABLP3:
     // asm 00008B5E: SLEEP	1
+    SLEEP(1, 1);
     // asm 00008B60: 	SUBI	@NFRAMES,AR5
+    p->ctx->BABE_TROPHY_FRAME.loop_count -= NFRAMES;
     // asm 00008B61: 	CMPI	0,AR5
     // asm 00008B62: 	LDILT	0,AR5
+    if (p->ctx->BABE_TROPHY_FRAME.loop_count < 0) {
+        p->ctx->BABE_TROPHY_FRAME.loop_count = 0;
+    }
     // asm 00008B63: 	DBU	AR5,DABLP3
+    p->ctx->BABE_TROPHY_FRAME.loop_count -= 1;
+    if (p->ctx->BABE_TROPHY_FRAME.loop_count >= 0) {
+        goto DABLP3;
+    }
     // asm 00008B64: 	SOND1	GETREADYTUNE
+    SOND1(GETREADYTUNE);
     // asm 00008B66: 	CALL	OBJ_GET
+    p->ctx->BABE_TROPHY_FRAME.obj = OBJ_GET();
     // asm 00008B67: 	LDI	AR0,AR4
     // asm 00008B68: 	FLOAT	-50,R0
     // asm 00008B69: 	STF	R0,*+AR4(OPOSX)
+    p->ctx->BABE_TROPHY_FRAME.obj->pos.X = C3X_STF(C3X_FROM_INT(-50));
     // asm 00008B6A: 	FLOAT	310,R0
     // asm 00008B6B: 	STF	R0,*+AR4(OPOSY)
+    p->ctx->BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_FROM_INT(310));
     // asm 00008B6C: 	FLOAT	368,R0
     // asm 00008B6D: 	STF	R0,*+AR4(OPOSZ)
+    p->ctx->BABE_TROPHY_FRAME.obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
     // asm 00008B6E: 	LDI	*+AR4(OFLAGS),R0
     // asm 00008B6F: 	OR	O_POSTER|O_NOUROT|O_NOUNIV,R0
     // asm 00008B70: 	STI	R0,*+AR4(OFLAGS)
+    p->ctx->BABE_TROPHY_FRAME.obj->flags |= O_POSTER | O_NOUROT | O_NOUNIV;
     // asm 00008B71: 	LDL	here1,R0
     // asm 00008B72: 	STI	R0,*+AR4(OROMDATA)
+    p->ctx->BABE_TROPHY_FRAME.obj->romdata = ROM_PTR(here1_ROM);
     // asm 00008B73: 	READAUD	ADJ_GIRLS
     // asm 00008B75: 	CMPI	0,R0
     // asm 00008B76: 	BEQ	NODA
+    if (READAUD(ADJ_GIRLS) == 0) {
+        goto NODA;
+    }
     // asm 00008B77: 	LDI	AR4,AR2
     // asm 00008B78: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(p->ctx->BABE_TROPHY_FRAME.obj);
 NODA:
     // asm 00008B79: 	LDL	BABE_TROPHY_SCRIPT,AR6
+    p->ctx->BABE_TROPHY_FRAME.script_index = 0;
     // asm 00008B7A: 	STI	AR6,*+AR7(BABE_ASTRT)
+    p->ctx->BABE_TROPHY_FRAME.script_start = 0;
     // asm 00008B7B: 	LDI	11,AR5
+    p->ctx->BABE_TROPHY_FRAME.loop_count = 11;
     // asm 00008B7C: BABE_LP
+BABE_LP:
     // asm 00008B7C: 	LDF	*+AR4(OPOSY),R0
     // asm 00008B7D: 	SUBF	3,R0
     // asm 00008B7E: 	STF	R0,*+AR4(OPOSY)
+    p->ctx->BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_SUB(
+        C3X_LDF(p->ctx->BABE_TROPHY_FRAME.obj->pos.Y), C3X_IMM_F32(3)));
     // asm 00008B7F: 	CALL	BABE_ANI
+    BABE_ANI(p);
     // asm 00008B80: 	CALL	CROWD_IT
+    CROWD_IT();
     // asm 00008B81: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 00008B83: 	LDF	*+AR4(OPOSY),R0
     // asm 00008B84: 	SUBF	3,R0
     // asm 00008B85: 	STF	R0,*+AR4(OPOSY)
+    p->ctx->BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_SUB(
+        C3X_LDF(p->ctx->BABE_TROPHY_FRAME.obj->pos.Y), C3X_IMM_F32(3)));
     // asm 00008B86: 	CALL	CROWD_IT
+    CROWD_IT();
     // asm 00008B87: 	SLEEP	1
+    SLEEP(1, 3);
     // asm 00008B89: 	LDF	*+AR4(OPOSY),R0
     // asm 00008B8A: 	SUBF	3,R0
     // asm 00008B8B: 	STF	R0,*+AR4(OPOSY)
+    p->ctx->BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_SUB(
+        C3X_LDF(p->ctx->BABE_TROPHY_FRAME.obj->pos.Y), C3X_IMM_F32(3)));
     // asm 00008B8C: 	CALL	CROWD_IT
+    CROWD_IT();
     // asm 00008B8D: 	SLEEP	1
+    SLEEP(1, 4);
     // asm 00008B8F: 	DBU	AR5,BABE_LP
+    p->ctx->BABE_TROPHY_FRAME.loop_count -= 1;
+    if (p->ctx->BABE_TROPHY_FRAME.loop_count >= 0) {
+        goto BABE_LP;
+    }
     // asm 00008B90: 	LDI	13,AR5
+    p->ctx->BABE_TROPHY_FRAME.loop_count = 13;
 BBD:
     // asm 00008B91: CALL	BABE_ANI
+    BABE_ANI(p);
     // asm 00008B92: 	CALL	CROWD_IT
+    CROWD_IT();
     // asm 00008B93: 	SLEEP	3
+    SLEEP(3, 5);
     // asm 00008B95: 	DBU	AR5,BBD
+    p->ctx->BABE_TROPHY_FRAME.loop_count -= 1;
+    if (p->ctx->BABE_TROPHY_FRAME.loop_count >= 0) {
+        goto BBD;
+    }
     // asm 00008B96: 	SONDFX	CHICK_LAUGH
+    SONDFX(CHICK_LAUGH);
     // asm 00008B98: 	LDI	27,AR5
+    p->ctx->BABE_TROPHY_FRAME.loop_count = 27;
     // asm 00008B99: BABE_LP2
+BABE_LP2:
     // asm 00008B99: 	CALL	BABE_ANI
+    BABE_ANI(p);
     // asm 00008B9A: 	CALL	CROWD_IT
+    CROWD_IT();
     // asm 00008B9B: 	SLEEP	3
+    SLEEP(3, 6);
     // asm 00008B9D: 	DBU	AR5,BABE_LP2
+    p->ctx->BABE_TROPHY_FRAME.loop_count -= 1;
+    if (p->ctx->BABE_TROPHY_FRAME.loop_count >= 0) {
+        goto BABE_LP2;
+    }
     // ;	LDI	25-1,AR5
     // asm 00008B9E: 	LDI	50-1,AR5
+    p->ctx->BABE_TROPHY_FRAME.loop_count = 50 - 1;
 BABLP3:
     // asm 00008B9F: SLEEP	1
+    SLEEP(1, 7);
     // asm 00008BA1: 	SUBI	@NFRAMES,AR5
+    p->ctx->BABE_TROPHY_FRAME.loop_count -= NFRAMES;
     // asm 00008BA2: 	CMPI	0,AR5
     // asm 00008BA3: 	LDILT	0,AR5
+    if (p->ctx->BABE_TROPHY_FRAME.loop_count < 0) {
+        p->ctx->BABE_TROPHY_FRAME.loop_count = 0;
+    }
     // asm 00008BA4: 	DBU	AR5,BABLP3
+    p->ctx->BABE_TROPHY_FRAME.loop_count -= 1;
+    if (p->ctx->BABE_TROPHY_FRAME.loop_count >= 0) {
+        goto BABLP3;
+    }
     // asm 00008BA5: BABE_TROPHYX
     // asm 00008BA5: 	CREATEC	BABE_IBO,UTIL_C
+    child_ctx = port_malloc(sizeof(*child_ctx));
+    child_ctx->BABE_IBO.obj = p->ctx->BABE_TROPHY_FRAME.obj;
+    child_proc = CREATEC(BABE_IBO, UTIL_C, child_ctx);
     // asm 00008BA8: 	LDI	*+AR7(BABE_ASTRT),R0
     // asm 00008BA9: 	STI	R0,*+AR0(BABE_ASTRT)
+    if (child_proc != NULL) {
+        child_proc->ctx->BABE_IBO.script_start = p->ctx->BABE_TROPHY_FRAME.script_start;
+    }
     // asm 00008BAA: 	RETP
+    return;
     // *
     // *
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_TROPHY", 0, 0);
-    UNIMPL();
 }
 
-static void BABE_IBO(void) {
+static void BABE_IBO(PROC* p) {
     // asm 00008BAE: 	LDI	6,AR5
     // asm 00008BAF: BABE_LP3
     // asm 00008BAF: 	LDF	*+AR4(OPOSY),R0
@@ -713,13 +811,14 @@ static void BABE_IBO(void) {
     // asm 00008BC4: 	DIE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_IBO", 0, 0);
+    (void)p;
     UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void BABE_ANI(void) {
+static void BABE_ANI(PROC* p) {
     // asm 00008BC5: 	LONGROUT
 BABE_ANIKK:
     // asm: 	LDI	*AR6++,R0
@@ -731,6 +830,7 @@ BX:
     // asm: 	BU	BABE_ANIKK
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "BABE_ANI", 0, 0);
+    (void)p;
     UNIMPL();
 }
 

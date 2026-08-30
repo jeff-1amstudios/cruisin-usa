@@ -7,9 +7,9 @@
 
 // MAP.ASM
 // asm: 	.bss	MAPPAL13,1	;FL multiplier
-extern c3x_reg_t MAPPAL13;
+extern c3x_f32_t MAPPAL13;
 // asm: 	.bss	MAPPAL24,1	;FL multiplier
-extern c3x_reg_t MAPPAL24;
+extern c3x_f32_t MAPPAL24;
 // asm: 	.bss	STOPWATCH,1		;the counter
 extern int STOPWATCH;
 // asm: 	.bss	STOPWATCH_CNTL,1	;the controller	0 = stop, 1 = go

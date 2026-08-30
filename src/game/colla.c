@@ -718,6 +718,7 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
         // asm 00002057: 	ADDI	3,AR2
     LOOP:;
     }
+    carblk->road_contacts_scanned = 1;
     // asm 00002058: ADDI	6,R3
     // asm 00002059: 	CLRI	R0
     // asm 0000205A: 	STI	R0,*+AR6(CAR_ONROAD)

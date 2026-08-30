@@ -21,7 +21,7 @@
  */
 
 void MOVEIN_HUD_EQUIP(PROC* p);
-void MOVEOUT_HUD_EQUIP(void);
+void MOVEOUT_HUD_EQUIP(PROC* p);
 void HUD(void);
 void dealloc_section(tSECTION_ALLOC sec /*AR2*/);
 static void TACHOMETER_ANIMATE(void);
@@ -150,20 +150,34 @@ MIHEL:
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void MOVEOUT_HUD_EQUIP(void) {
+void MOVEOUT_HUD_EQUIP(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00009D20: 	LDI	25-1,AR5
+    p->ctx->MOVEOUT_HUD_EQUIP_FRAME.loop_count = 25 - 1;
     // asm 00009D21: MIHEL2
+MIHEL2:
     // asm 00009D21: 	LDI	@MOVEIN_OFFSET,R0
     // asm 00009D22: 	ADDI	6,R0
     // asm 00009D23: 	STI	R0,@MOVEIN_OFFSET
+    MOVEIN_OFFSET += 6;
     // asm 00009D24: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00009D26: 	DBU	AR5,MIHEL2
+    if (p->ctx->MOVEOUT_HUD_EQUIP_FRAME.loop_count-- > 0) {
+        goto MIHEL2;
+    }
     // asm 00009D27: 	LDI	150,R0
     // asm 00009D28: 	STI	R0,@MOVEIN_OFFSET
+    MOVEIN_OFFSET = 150;
     // asm 00009D29: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVEOUT_HUD_EQUIP", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------

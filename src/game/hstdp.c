@@ -19,17 +19,17 @@
  * Source module: asm/HSTDP.ASM
  */
 
-void ENTER_INITIALS(void);
-static void PEDALWT(void);
-void ENTERTEXT(void);
+void ENTER_INITIALS(PROC* p);
+static void PEDALWT(PROC* p);
+void ENTERTEXT(PROC* p);
 static void CREATE_ENTERTEXT(void);
 static void MAKE_CENTER(void);
 static void HSTD_TIMER(void);
 static void INSERT_INITS(void);
-void INTO_TABLE_P(void);
-static void CHECK_FIRST_TIME(void);
+int INTO_TABLE_P(void);
+static int CHECK_FIRST_TIME(PROC* p);
 static void CALC_TOTAL_ELAPSED(void);
-static void PRESS_CODE_ENTRY(void);
+static void PRESS_CODE_ENTRY(PROC* p);
 static void INIT_PRESS_OBJECTS(void);
 static void MAKE_NEW_MARQ(void);
 static void MOVE_PRESSB(void);
@@ -105,6 +105,8 @@ static int FLASH_PALS[5];
 #define PRESS_LASTY (-100)
 #define PRESS_TRAVELY (PRESS_LASTY - PRESS_STARTY)
 #define HIGH_SCORE_GROUP 0x200
+#define LETTER_SIZEX 120
+#define LETTER_YOFF (-12)
 /* asm: NUMTAB		.word	dzero,done,dtwo,dthree,dfour,dfive,dsix,dseven,deight,dnine */
 /* asm: 	 */
 static int NUMTAB[] = {
@@ -195,6 +197,8 @@ static int PLATE_LETTERS[] = {
 };
 #define LASTCHAR ((int)(sizeof(PLATE_LETTERS) / sizeof(PLATE_LETTERS[0])) - 1)
 static const char EIP[] = "ENTER INITIALS";
+/* asm: \t.bss\tPEDHIT,1 */
+int PEDHIT;
 // *----------------------------------------------------------------------------
 #define LETTER0 (PDATA + 3)
 #define LETTER1 (PDATA + 4)
@@ -232,88 +236,151 @@ static const char EIP[] = "ENTER INITIALS";
 #define GREY_PAL (PDATA + 34)
 
 // *----------------------------------------------------------------------------
-void ENTER_INITIALS(void) {
+void ENTER_INITIALS(PROC* p) {
+    OBJ* obj;
+    c3x_reg_t letter_x;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("ENTER_INITIALS");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    }
+
     // asm 000031A6: 	CALL	INTO_TABLE_P
+    p->ctx->ENTER_INITIALS_FRAME.place = INTO_TABLE_P();
+    p->ctx->ENTER_INITIALS_FRAME.race_number = BONUS_WAVE - 1;
     // asm 000031A7: 	BC	GOODENOUGH
+    if (p->ctx->ENTER_INITIALS_FRAME.place >= 0)
+        goto GOODENOUGH;
     // asm 000031A8: 	RETP		;NOPE, didn't make it
+    return; // ;NOPE, didn't make it
 GOODENOUGH:
     // asm 000031AC: 	STI	R0,*+AR7(PLACE)
     // ;Wait for LOADING TO END
     // asm 000031AD: 	LDI	1,R0
     // asm 000031AE: 	STI	R0,@NOSWAP
+    NOSWAP = 1;
     // asm 000031AF: 	LDI	0,R4
+    p->ctx->ENTER_INITIALS_FRAME.loading_clear_frames = 0;
 MSLP2:
     // asm 000031B0: 	LDI	@DECOMP_ACTIVE,R0
     // asm 000031B1: 	BNZ	MSLP3
+    if (DECOMP_ACTIVE != 0)
+        goto MSLP3;
     // asm 000031B2: 	ADDI	1,R4
+    p->ctx->ENTER_INITIALS_FRAME.loading_clear_frames += 1;
     // asm 000031B3: 	CMPI	3,R4
     // asm 000031B4: 	BGT	MSLPX				;Done Loading
+    if (p->ctx->ENTER_INITIALS_FRAME.loading_clear_frames > 3)
+        goto MSLPX; // ;Done Loading
 MSLP3:
     // asm 000031B5: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000031B7: 	BU	MSLP2
+    goto MSLP2;
 MSLPX:
     // asm 000031B8: 	LDI	0,R0
     // asm 000031B9: 	STI	R0,@NOAERASE
+    NOAERASE = 0;
     // asm 000031BA: 	CALL	SILENT
+    SILENT();
     // asm 000031BB: 	SOND1	ENTER_INITS_THEME	;Play the Initials entry theme
+    SOND1(ENTER_INITS_THEME); // ;Play the Initials entry theme
     // asm 000031BD: 	CALL	OBJ_INIT		;Zero out object data list pointers
+    OBJ_INIT(); // ;Zero out object data list pointers
     // asm 000031BE: 	CALL	TEXT_INIT
+    TEXT_INIT();
     // asm 000031BF: 	FLOAT	-512,R0
     // asm 000031C0: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(-512)));
     // asm 000031C1: 	LDI	@_MODE,R0
     // asm 000031C2: 	ANDN	MMODE|MWATER|MBRIDGE|MINTUNNEL,R0
     // asm 000031C3: 	OR	MINIT|MINFIN|MHS,R0
     // asm 000031C4: 	STI	R0,@_MODE
+    _MODE = (_MODE & ~(MMODE | MWATER | MBRIDGE | MINTUNNEL)) | MINIT | MINFIN | MHS;
     // asm 000031C5: 	LDI	UTIL_C|TEXTP_T,R0
     // asm 000031C6: 	LDI	-1,R1
     // asm 000031C7: 	CALL	PRC_KILLALL
+    PRC_KILLALL(UTIL_C | TEXTP_T, -1);
     // asm 000031C8: 	CLRI	R0			;Black background
     // asm 000031C9: 	STI	R0,@BGNDCOLA
+    BGNDCOLA = 0; // ;Black background
     // asm 000031CA: 	LDP	@_CAMERAPOS+X		;Initialize the camera
     // asm 000031CB: 	LDF	-24,R0
     // asm 000031CC: 	STF	R0,@_CAMERAPOS+X
+    _CAMERAPOS.X = C3X_STF(C3X_IMM_F32(-24)); // ;Initialize the camera
     // asm 000031CD: 	FLOAT	PRESS_STARTY,R0
     // asm 000031CE: 	STF	R0,@_CAMERAPOS+Y
+    _CAMERAPOS.Y = C3X_STF(C3X_FROM_INT(PRESS_STARTY));
     // asm 000031CF: 	FLOAT	PRESS_STARTZ,R0
     // asm 000031D0: 	STF	R0,@_CAMERAPOS+Z
+    _CAMERAPOS.Z = C3X_STF(C3X_FROM_INT(PRESS_STARTZ));
     // asm 000031D1: 	CLRF	R2
     // asm 000031D2: 	STF	R2,@_CAMERARAD+Y
+    _CAMERARAD.Y = C3X_STF(C3X_FROM_INT(0));
     // asm 000031D3: 	SETDP
     // asm 000031D4: 	LDI	@CAMERAMATRIXI,AR2
     // asm 000031D5: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&_CAMERAMATRIX, C3X_FROM_INT(0));
     // ;	CALL	CLEANUP_PALS
     // asm 000031D6: 	CALL	LOAD_FIXED_PALETTES
+    LOAD_FIXED_PALETTES();
     // asm 000031D7: 	LDL	press_PALETTES,AR2
     // asm 000031D8: 	CALL	HARDalloc_section
+    HARDalloc_section(press_PALETTES);
     // asm 000031D9: 	FIFO_CLRP	R0		;IS THE FIFO CLEAR
     // asm 000031DE: 	DMA_WT		R0
     // asm 000031E3: 	CALL	FIFO_RESET		;This will load the wave ram before continuing on
+    FIFO_RESET(); // ;This will load the wave ram before continuing on
     // asm 000031E4: 	LDI	1,R0
     // asm 000031E5: 	STI	R0,@HARD_SECTION_LOAD
+    HARD_SECTION_LOAD = 1;
     // asm 000031E6: 	LDL	_SECpress,AR2
     // asm 000031E7: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECpress);
     // asm 000031E8: 	LDL	scroll_white,AR2	;This is the palette for the letters
     // asm 000031E9: 	CALL	PAL_ALLOC_RAW
     // asm 000031EA: 	STI	R0,*+AR7(WHITE_PAL)
+    p->ctx->ENTER_INITIALS_FRAME.white_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(scroll_white_ROM)); // ;This is the palette for the letters
     // asm 000031EB: 	LDL	press_grp,AR2
     // asm 000031EC: 	CALL	LOAD_SINGLE_SECTION
+    LOAD_SINGLE_SECTION((LOAD_SINGLE_SECTION_GROUP*)ROM_PTR(press_grp_ROM));
     // asm 000031ED: 	CALL	INIT_PRESS_OBJECTS	;Go and set up pointers to special Objects
+    INIT_PRESS_OBJECTS(); // ;Go and set up pointers to special Objects
     // asm 000031EE: 	CALL	RESCAN
+    RESCAN();
     // asm 000031EF: 	LDI	0,R0
     // asm 000031F0: 	STI	R0,@NOSWAP
+    NOSWAP = 0;
     // asm 000031F1: 	LDI	LASTCHAR+1,R0			;Set the steering wheel selection
     // asm 000031F2: 	STI	R0,@POSES
+    POSES = LASTCHAR + 1; // ;Set the steering wheel selection
     // asm 000031F3: 	LDI	LASTCHAR/2,R0
     // asm 000031F4: 	STI	R0,@POSE
+    POSE = LASTCHAR / 2;
     // asm 000031F5: 	LDI	20,R0			;Set the number of seconds to enter your initials
     // asm 000031F6: 	STI	R0,@_countdown
+    _countdown = 20; // ;Set the number of seconds to enter your initials
     // 	;GET THE OBJECTS
     // 	;
     // asm 000031F7: 	LDL	scroll_gr2,AR2	;Palette used for the Letters on the bottom of the press
     // asm 000031F8: 	CALL	PAL_ALLOC_RAW
     // asm 000031F9: 	STI	R0,*+AR7(GREY_PAL)
+    p->ctx->ENTER_INITIALS_FRAME.grey_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(scroll_gr2_ROM)); // ;Palette used for the Letters on the bottom of the press
     // asm 000031FA: 	CALL	CHECK_FIRST_TIME
+    p->ctx->ENTER_INITIALS_FRAME.old_choice = CHECK_FIRST_TIME(p);
     // asm 000031FB: 	BC	PRESS_CODE_ENTRY
+    if (p->ctx->ENTER_INITIALS_FRAME.old_choice != 0) {
+        PROC_CONTINUE(PRESS_CODE_ENTRY, 2);
+        return;
+    }
     // asm 000031FC: 	LDI	*+AR7(WHITE_PAL),R4
     // asm 000031FD: 	FLOAT	-LETTER_SIZEX-LETTER_SIZEX/4,R5	;Position of the first letter
     // asm 000031FE: 	FLOAT	-103+LETTER_YOFF,R6
@@ -322,42 +389,73 @@ MSLPX:
     // asm 00003201: 	STI	R0,*+AR7(INITI0)
     // asm 00003202: 	STI	R0,*+AR7(INITI1)
     // asm 00003203: 	STI	R0,*+AR7(INITI2)
+    p->ctx->ENTER_INITIALS_FRAME.initial_chars[0] = ' ';
+    p->ctx->ENTER_INITIALS_FRAME.initial_chars[1] = ' ';
+    p->ctx->ENTER_INITIALS_FRAME.initial_chars[2] = ' ';
     // asm 00003204: 	LDL	pa,AR2			;Create the first Letter
     // asm 00003205: 	CALL	OBJ_GETE
+    obj = OBJ_GETE(ROM_PTR(pa_ROM)); // ;Create the first Letter
     // asm 00003206: 	STI	AR0,*+AR7(INIT0)
+    p->ctx->ENTER_INITIALS_FRAME.initial_objs[0] = obj;
     // asm 00003207: 	STI	R4,*+AR0(OPAL)
+    obj->palette = (u32)p->ctx->ENTER_INITIALS_FRAME.white_pal;
     // asm 00003208: 	STF	R5,*+AR0(OPOSX)
+    letter_x = C3X_FROM_INT(-LETTER_SIZEX - LETTER_SIZEX / 4); // ;Position of the first letter
+    obj->pos.X = C3X_STF(letter_x);
     // asm 00003209: 	STF	R6,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(-103 + LETTER_YOFF));
     // asm 0000320A: 	STF	R7,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(-PRESS_DIAM - 73));
     // asm 0000320B: 	FLOAT	LETTER_SIZEX,R0
     // asm 0000320C: 	ADDF	R0,R5
+    letter_x = C3X_ADD(letter_x, C3X_FROM_INT(LETTER_SIZEX));
     // asm 0000320D: 	LDI	AR0,AR2
     // asm 0000320E: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
     // asm 0000320F: 	LDL	po,AR2			;Create the second letter
     // asm 00003210: 	CALL	OBJ_GETE
+    obj = OBJ_GETE(ROM_PTR(po_ROM)); // ;Create the second letter
     // asm 00003211: 	STI	AR0,*+AR7(INIT1)
+    p->ctx->ENTER_INITIALS_FRAME.initial_objs[1] = obj;
     // asm 00003212: 	STI	R4,*+AR0(OPAL)
+    obj->palette = (u32)p->ctx->ENTER_INITIALS_FRAME.white_pal;
     // asm 00003213: 	STF	R5,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(letter_x);
     // asm 00003214: 	STF	R6,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(-103 + LETTER_YOFF));
     // asm 00003215: 	STF	R7,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(-PRESS_DIAM - 73));
     // asm 00003216: 	FLOAT	LETTER_SIZEX,R0
     // asm 00003217: 	ADDF	R0,R5
+    letter_x = C3X_ADD(letter_x, C3X_FROM_INT(LETTER_SIZEX));
     // asm 00003218: 	LDL	po,AR2			;Create the third letter
     // asm 00003219: 	CALL	OBJ_GETE
+    obj = OBJ_GETE(ROM_PTR(po_ROM)); // ;Create the third letter
     // asm 0000321A: 	STI	AR0,*+AR7(INIT2)
+    p->ctx->ENTER_INITIALS_FRAME.initial_objs[2] = obj;
     // asm 0000321B: 	STI	R4,*+AR0(OPAL)
+    obj->palette = (u32)p->ctx->ENTER_INITIALS_FRAME.white_pal;
     // asm 0000321C: 	STF	R5,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(letter_x);
     // asm 0000321D: 	STF	R6,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(-103 + LETTER_YOFF));
     // asm 0000321E: 	STF	R7,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(-PRESS_DIAM - 73));
     // asm 0000321F: 	CREATE	ENTERTEXT,SPAWNER_C	;This will slide in the text "ENTER INITIALS"
+    CREATE(ENTERTEXT, SPAWNER_C, NULL); // ;This will slide in the text "ENTER INITIALS"
     // asm 00003222: 	CLRI	AR5			;character index
+    p->ctx->ENTER_INITIALS_FRAME.character_index = 0; // ;character index
     // asm 00003223: 	LDF	@STEERCT,R0
     // asm 00003224: 	STF	R0,@WHEELPOS
+    WHEELPOS = C3X_STF(C3X_LDF(STEERCT));
     // asm 00003225: 	CALL	GETCHOICE	;READS the steering wheel, uses POSES = number of choices
+    GETCHOICE(); // ;READS the steering wheel, uses POSES = number of choices
     // asm 00003226: 	LDI	@POSE,R4	;On return POSE = Choice wheel is pointing at.
     // asm 00003227: 	STI	R4,*+AR7(OLDPOT0)
+    p->ctx->ENTER_INITIALS_FRAME.old_choice = POSE; // ;On return POSE = Choice wheel is pointing at.
     // asm 00003228: 	LDI	0,R0		;CLEAR OUT LEFT OVER START HIT
     // asm 00003229: 	STI	R0,@START_HIT
+    START_HIT = 0; // ;CLEAR OUT LEFT OVER START HIT
     // asm 0000322A: 	LDF	@PEDALMN,R0
     // asm 0000322B: 	LDF	@PEDALMX,R1
     // asm 0000322C: 	SUBF	R0,R1
@@ -366,20 +464,28 @@ MSLPX:
     // asm 0000322F: 	FIX	@PEDALMN,R0
     // asm 00003230: 	ADDI	R0,R1
     // asm 00003231: 	STI	R1,*+AR7(PEDTRIG)
+    p->ctx->ENTER_INITIALS_FRAME.pedal_trigger =
+        (C3X_FIX(C3X_SUB(C3X_LDF(PEDALMX), C3X_LDF(PEDALMN))) >> 1) + C3X_FIX(C3X_LDF(PEDALMN));
     // asm 00003232: 	LDI	0,AR6			;Set debounce counter to 0
+    p->ctx->ENTER_INITIALS_FRAME.debounce_counter = 0; // ;Set debounce counter to 0
     // ;	BR	PEDALWT
     // asm 00003233: 	LDI	1,R0
     // asm 00003234: 	STI	R0,@PEDHIT		;not touched
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTER_INITIALS", 0, 0);
-    UNIMPL();
+    PEDHIT = 1; // ;not touched
+    PROC_CONTINUE(PEDALWT, 3);
+    return;
 }
 
 // *ELP END CHANGE
 
 // ;This does a back space
 
-static void PEDALWT(void) {
+static void PEDALWT(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_ORDERING("PEDALWT");
+        break;
+    }
     // ;	LDI	@_countdown,R0
     // ;	BLE	EIML
     // ;
@@ -417,7 +523,7 @@ DE1:
  *----------------------------------------------------------------------------
  *This proc slides in the WORDS "ENTER INITIALS"
  */
-void ENTERTEXT(void) {
+void ENTERTEXT(PROC* p) {
     // asm 000032B2: 	FLOAT	616,R2			;XPOS
     // asm 000032B3: 	CALL	CREATE_ENTERTEXT
     // asm 000032B4: 	LDF	-6,R0
@@ -506,34 +612,60 @@ static void INSERT_INITS(void) {
  *RETURNS C = 1 PLAYER WILL MAKE IT INTO THE HS TABLE
  *	 C = 0 PLAYER WILL NOT MAKE IT
  */
-void INTO_TABLE_P(void) {
+int INTO_TABLE_P(void) {
+    int race_index;
+    int time_code;
+    int entry_index;
+
     // asm 000032E7: 	CALL	VALIDATE_HSTD_TABLES
+    VALIDATE_HSTD_TABLES();
     // 	;check check score if good enough to enter
     // 	;the hstd table
     // asm 000032E8: 	LDI	@BONUS_WAVE,R1
     // asm 000032E9: 	SUBI	1,R1
     // asm 000032EA: 	STI	R1,*+AR7(RACE_NUMBER)
+    race_index = BONUS_WAVE - 1;
     // asm 000032EB: 	LDI	R1,R0
     // asm 000032EC: 	MPYI	GT_SIZE,R0
     // asm 000032ED: 	ADDI	@GAMETRAKI,R0
     // asm 000032EE: 	LDI	R0,AR0
     // ;	LDI	*+AR0(GT_ETIME),R0
     // asm 000032EF: 	LDI	@ETIME,R0
+    time_code = ETIME;
     // asm 000032F0: 	CMPI	14,R1
     // asm 000032F1: 	CALLEQ	CALC_TOTAL_ELAPSED	;A call to ENTER_INITIALS WITH BONUS_WAVE =15 WILL
+    if (race_index == 14) {
+        int index;
+        time_code = 0;
+        for (index = 0; index < 14; index++) {
+            int leg_time = (int)((tagGAMETRAK*)GAMETRAK)[index].elapsed_time;
+            if (leg_time == 0) {
+                time_code = 0;
+                break;
+            }
+            time_code += leg_time;
+        }
+    }
     // asm 000032F2: 	CMPI	0,R0			;CHECK SF TO DC
     // asm 000032F3: 	BEQ	ITP1			;Did Not Finish this Race (DNF)
+    if (time_code == 0) {
+        goto ITP1;
+    }
     // asm 000032F4: 	CALL	CHECK_RACE_TABLE
+    entry_index = CHECK_RACE_TABLE(time_code, race_index);
     // asm 000032F5: 	CMPI	-1,R0
     // asm 000032F6: 	BNE	ITP2
+    if (entry_index != -1) {
+        goto ITP2;
+    }
 ITP1:
     // asm 000032F7: 	CLRC
     // asm 000032F8: 	RETS
+    return -1;
 ITP2:
     // asm 000032F9: 	SETC
     // asm 000032FA: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "INTO_TABLE_P", 0, 0);
-    UNIMPL();
+    return entry_index;
 }
 
 /*
@@ -543,30 +675,45 @@ ITP2:
  *SETS PLAYER LETTERS IF FOUND
  * INITI0-INITI2
  */
-static void CHECK_FIRST_TIME(void) {
+static int CHECK_FIRST_TIME(PROC* p) {
+    int initials;
+    int index;
+
     // asm 000032FB: 	READADJ	ADJ_INITIALS
+    initials = READADJ(ADJ_INITIALS);
     // asm 000032FD: 	CMPI	-1,R0
     // asm 000032FE: 	BNE	NOT_FIRST_TIME
+    if (initials != -1)
+        goto NOT_FIRST_TIME;
     // asm 000032FF: 	CLRC
     // asm 00003300: 	RETS
+    return 0;
 NOT_FIRST_TIME:
     // asm 00003301: 	LDI	' ',R1			;Just incase the initials have been corrupted
     // asm 00003302: 	STI	R1,*+AR7(INITI1)
     // asm 00003303: 	STI	R1,*+AR7(INITI2)
+    p->ctx->ENTER_INITIALS_FRAME.initial_chars[1] = ' '; // ;Just incase the initials have been corrupted
+    p->ctx->ENTER_INITIALS_FRAME.initial_chars[2] = ' ';
     // asm 00003304: 	LDI	AR7,AR0
     // asm 00003305: 	ADDI	INITI0,AR0
+    index = 0;
 NFTLP:
     // asm 00003306: 	LDI	R0,R1
     // asm 00003307: 	AND	0FFh,R1
     // asm 00003308: 	BEQ	NFTX
+    if ((initials & 0xff) == 0)
+        goto NFTX;
     // asm 00003309: 	STI	R1,*AR0++
+    p->ctx->ENTER_INITIALS_FRAME.initial_chars[index++] = initials & 0xff;
     // asm 0000330A: 	LSH	-8,R0
+    initials >>= 8;
     // asm 0000330B: 	BNE	NFTLP
+    if (initials != 0)
+        goto NFTLP;
 NFTX:
     // asm 0000330C: 	SETC
     // asm 0000330D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_FIRST_TIME", 0, 0);
-    UNIMPL();
+    return 1;
 }
 
 /*
@@ -623,7 +770,12 @@ CTEX:
 #define STAMP_SHAKE 7
 #define ARMS2 0x8A
 
-static void PRESS_CODE_ENTRY(void) {
+static void PRESS_CODE_ENTRY(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_ORDERING("PRESS_CODE_ENTRY");
+        break;
+    }
     // ;Put the letters on the bottom of the press
     // asm 0000331F: 	LDI	*+AR7(WHITE_PAL),R4
     // asm 00003320: 	FLOAT	-LETTER_SIZEX-LETTER_SIZEX/4,R5	;Position of the first letter

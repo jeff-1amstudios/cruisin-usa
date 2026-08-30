@@ -4199,6 +4199,10 @@ static int CKBND(CARBLK* carblk /*AR5*/) {
         road_obj = OBJREF_TO_PTR(car_point->collided_road_object);
         // asm 00002F34: 	BZ	CURBCKX			;WE GOT NOTHING, COLLIDE 'EM
         if (road_obj == NULL) {
+            if (!carblk->road_contacts_scanned) {
+                offroad = 1;
+                continue;
+            }
             goto CURBCKX;
         }
         // asm 00002F35: 	LDI	R0,AR0

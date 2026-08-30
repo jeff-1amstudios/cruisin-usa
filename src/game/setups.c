@@ -444,40 +444,56 @@ static void FULLSETUP_GGPARK(void) {
 static void FULLSETUP_SANFRAN(void) {
     // asm 00008CB2: 	LDL	_SECggate,AR2
     // asm 00008CB3: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECggate_SETUPS);
     // asm 00008CB4: 	CALL	LOAD_TUNNEL2
+    LOAD_TUNNEL2();
     // asm 00008CB5: 	LDL	ggate_PALETTES,AR2
     // asm 00008CB6: 	CALL	alloc_section
+    alloc_section(ggate_PALETTES);
     // asm 00008CB7: 	LDL	tunnel2_PALETTES,AR2
     // asm 00008CB8: 	CALL	alloc_section
+    alloc_section(tunnel2_PALETTES);
     // asm 00008CB9: 	FLOAT	-15,R0
     // asm 00008CBA: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(-15)));
     // asm 00008CBB: 	CALL	WATERON
+    WATERON();
     // asm 00008CBC: 	LDI	120,R0
     // asm 00008CBD: 	STI	R0,@DD_SLP
+    DD_SLP = 120;
     // asm 00008CBE: 	LDI	120,R0
     // asm 00008CBF: 	STI	R0,@DD_VAR
+    DD_VAR = 120;
     // asm 00008CC0: 	LDI	1,R0
     // asm 00008CC1: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008CC2: 	LDI	2,R0		;DISCO DUCK
     // asm 00008CC3: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 2; // ;DISCO DUCK
     // asm 00008CC4: 	LDL	shared_PALETTES,AR2
     // asm 00008CC5: 	CALL	dealloc_section
+    dealloc_section(shared_PALETTES);
     // asm 00008CC6: 	LDL	shared_PALETTES,AR2
     // asm 00008CC7: 	CALL	alloc_section
+    alloc_section(shared_PALETTES);
     // asm 00008CC8: 	LDL	_SECshared,AR2
     // asm 00008CC9: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECshared);
     // asm 00008CCA: 	LDI	0,R0
     // asm 00008CCB: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 0;
     // asm 00008CCC: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008CCD: 	LDI	L_LEG2_BEGIN,AR0
     // asm 00008CCE: 	LS	8,AR0
     // asm 00008CCF: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG2_BEGIN << 8;
     // asm 00008CD0: 	RS	8,AR0
     // asm 00008CD1: 	LDI	L_LEG2_END,AR1
     // asm 00008CD2: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG2_BEGIN, L_LEG2_END);
     // asm 00008CD3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_SANFRAN", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -485,39 +501,53 @@ static void FULLSETUP_SANFRAN(void) {
 // *----------------------------------------------------------------------------
 static void FULLSETUP_H280(void) {
     // asm 00008CD4: 	CALL	LOAD_TUNNEL2
+    LOAD_TUNNEL2();
     // asm 00008CD5: 	LDL	_SECh280,AR2
     // asm 00008CD6: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECh280_SETUPS);
     // asm 00008CD7: 	LDL	_SECdeserts,AR2
     // asm 00008CD8: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeserts_SETUPS);
     // asm 00008CD9: 	LDI	3,R0		;SPAGETTI
     // asm 00008CDA: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 3; // ;SPAGETTI
     // asm 00008CDB: 	LDI	60,R0
     // asm 00008CDC: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 00008CDD: 	LDI	100,R0
     // asm 00008CDE: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 00008CDF: 	LDI	0,R0
     // asm 00008CE0: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 0;
     // asm 00008CE1: 	LDI	0,R0
     // asm 00008CE2: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 0;
     // asm 00008CE3: 	LDL	deserts_PALETTES,AR2
     // asm 00008CE4: 	CALL	alloc_section
+    alloc_section(deserts_PALETTES);
     // asm 00008CE5: 	LDL	h280_PALETTES,AR2
     // asm 00008CE6: 	CALL	alloc_section
+    alloc_section(h280_PALETTES);
     // asm 00008CE7: 	FLOAT	55,R0
     // asm 00008CE8: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(55)));
     // asm 00008CE9: 	LDI	@_MODE,R0
     // asm 00008CEA: 	ANDN	MWATER,R0
     // asm 00008CEB: 	STI	R0,@_MODE
+    _MODE &= ~MWATER;
     // asm 00008CEC: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008CED: 	LDI	L_LEG3_BEGIN,AR0
     // asm 00008CEE: 	LS	8,AR0
     // asm 00008CEF: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG3_BEGIN << 8;
     // asm 00008CF0: 	RS	8,AR0
     // asm 00008CF1: 	LDI	L_LEG3_END,AR1
     // asm 00008CF2: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG3_BEGIN, L_LEG3_END);
     // asm 00008CF3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_H280", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -526,41 +556,57 @@ static void FULLSETUP_H280(void) {
 static void FULLSETUP_REDWOOD(void) {
     // asm 00008CF4: 	LDL	_SECdeserts,AR2
     // asm 00008CF5: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeserts_SETUPS);
     // asm 00008CF6: 	LDL	_SECh280,AR2
     // asm 00008CF7: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECh280_SETUPS);
     // asm 00008CF8: 	LDL	deserts_PALETTES,AR2
     // asm 00008CF9: 	CALL	alloc_section
+    alloc_section(deserts_PALETTES);
     // asm 00008CFA: 	LDL	h280_PALETTES,AR2
     // asm 00008CFB: 	CALL	alloc_section
+    alloc_section(h280_PALETTES);
     // asm 00008CFC: 	LDL	_SECbevhnred,AR2
     // asm 00008CFD: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECbevhnred_SETUPS);
     // asm 00008CFE: 	LDL	bevhnred_PALETTES,AR2
     // asm 00008CFF: 	CALL	alloc_section
+    alloc_section(bevhnred_PALETTES);
     // asm 00008D00: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008D01: 	LDI	0,R0		;MONSTER SURF
     // asm 00008D02: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 0; // ;MONSTER SURF
     // asm 00008D03: 	LDI	1,R0
     // asm 00008D04: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 1;
     // asm 00008D05: 	LDI	1,R0
     // asm 00008D06: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008D07: 	LDI	120,R0
     // asm 00008D08: 	STI	R0,@DD_SLP
+    DD_SLP = 120;
     // asm 00008D09: 	LDI	120,R0
     // asm 00008D0A: 	STI	R0,@DD_VAR
+    DD_VAR = 120;
     // asm 00008D0B: 	FLOAT	50,R0
     // asm 00008D0C: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(50)));
     // 	;load proper tunnel
     // asm 00008D0D: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008D0E: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008D0F: 	LDI	L_LEG4_BEGIN,AR0
     // asm 00008D10: 	LS	8,AR0
     // asm 00008D11: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG4_BEGIN << 8;
     // asm 00008D12: 	RS	8,AR0
     // asm 00008D13: 	LDI	L_LEG4_END,AR1
     // asm 00008D14: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG4_BEGIN, L_LEG4_END);
     // asm 00008D15: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_REDWOOD", 0, 0);
-    UNIMPL();
 }
 
 void LOAD_TUNNEL(void) {
@@ -633,33 +679,45 @@ static void FULLSETUP_BEVERLY(void) {
 // *----------------------------------------------------------------------------
 static void FULLSETUP_LAFREEWAY(void) {
     // asm 00008D3A: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008D3B: 	LDL	_SEClafreeway,AR2
     // asm 00008D3C: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SEClafreeway_SETUPS);
     // asm 00008D3D: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008D3E: 	LDI	2,R0		;DISCO DUCK
     // asm 00008D3F: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 2; // ;DISCO DUCK
     // asm 00008D40: 	LDI	0,R0
     // asm 00008D41: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 0;
     // asm 00008D42: 	LDI	1,R0
     // asm 00008D43: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008D44: 	FLOAT	35,R0
     // asm 00008D45: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(35)));
     // asm 00008D46: 	LDL	lafreeway_PALETTES,AR2
     // asm 00008D47: 	CALL	alloc_section
+    alloc_section(lafreeway_PALETTES);
     // asm 00008D48: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008D49: 	LDI	L_LEG6_BEGIN,AR0
     // asm 00008D4A: 	LS	8,AR0
     // asm 00008D4B: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG6_BEGIN << 8;
     // asm 00008D4C: 	RS	8,AR0
     // asm 00008D4D: 	LDI	L_LEG6_END,AR1
     // asm 00008D4E: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG6_BEGIN, L_LEG6_END);
     // asm 00008D4F: 	LDI	60,R0
     // asm 00008D50: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 00008D51: 	LDI	100,R0
     // asm 00008D52: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 00008D53: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_LAFREEWAY", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -668,40 +726,55 @@ static void FULLSETUP_LAFREEWAY(void) {
 static void FULLSETUP_DEATHVALLEY(void) {
     // asm 00008D54: 	LDL	_SECdeathvalley,AR2
     // asm 00008D55: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeathvalley_SETUPS);
     // asm 00008D56: 	LDL	_SECthetrains,AR2
     // asm 00008D57: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECthetrains_SETUPS);
     // asm 00008D58: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008D59: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008D5A: 	LDI	3,R0		;SPAGETTI
     // asm 00008D5B: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 3; // ;SPAGETTI
     // asm 00008D5C: 	LDI	1,R0
     // asm 00008D5D: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 1;
     // asm 00008D5E: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008D5F: 	FLOAT	55,R0
     // asm 00008D60: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(55)));
     // asm 00008D61: 	LDI	bottom2_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008D62: 	LDI	bottom2_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008D63: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(bottom2_gtmp_p, bottom2_gtmp_p);
     // ;	LDL	lafreeway_PALETTES,AR2
     // ;	CALL	dealloc_section
     // asm 00008D64: 	LDL	deathvalley_PALETTES,AR2
     // asm 00008D65: 	CALL	alloc_section
+    alloc_section(deathvalley_PALETTES);
     // asm 00008D66: 	LDL	thetrains_PALETTES,AR2
     // asm 00008D67: 	CALL	alloc_section
+    alloc_section(thetrains_PALETTES);
     // asm 00008D68: 	LDI	60,R0
     // asm 00008D69: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 00008D6A: 	LDI	100,R0
     // asm 00008D6B: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 00008D6C: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008D6D: 	LDI	L_LEG7_BEGIN,AR0
     // asm 00008D6E: 	LS	8,AR0
     // asm 00008D6F: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG7_BEGIN << 8;
     // asm 00008D70: 	RS	8,AR0
     // asm 00008D71: 	LDI	L_LEG7_END,AR1
     // asm 00008D72: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG7_BEGIN, L_LEG7_END);
     // asm 00008D73: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_DEATHVALLEY", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -710,38 +783,53 @@ static void FULLSETUP_DEATHVALLEY(void) {
 static void FULLSETUP_ARIZONA(void) {
     // asm 00008D74: 	LDL	tunnel_PALETTES,AR2
     // asm 00008D75: 	CALL	alloc_section
+    alloc_section(tunnel_PALETTES);
     // asm 00008D76: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008D77: 	LDL	deserts_PALETTES,AR2
     // asm 00008D78: 	CALL	alloc_section
+    alloc_section(deserts_PALETTES);
     // asm 00008D79: 	CALL	LOAD_TUNNEL
+    LOAD_TUNNEL();
     // asm 00008D7A: 	LDL	arizona_PALETTES,AR2
     // asm 00008D7B: 	CALL	alloc_section
+    alloc_section(arizona_PALETTES);
     // asm 00008D7C: 	LDL	_SECdeserts,AR2
     // asm 00008D7D: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdeserts_SETUPS);
     // asm 00008D7E: 	LDL	_SECarizona,AR2
     // asm 00008D7F: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECarizona_SETUPS);
     // asm 00008D80: 	LDI	1,R0		;SHUFFLE DRIVE
     // asm 00008D81: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 1; // ;SHUFFLE DRIVE
     // asm 00008D82: 	LDI	0,R0
     // asm 00008D83: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 0;
     // asm 00008D84: 	LDI	1,R0
     // asm 00008D85: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008D86: 	FLOAT	45,R0
     // asm 00008D87: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(45)));
     // asm 00008D88: 	LDI	60,R0
     // asm 00008D89: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 00008D8A: 	LDI	100,R0
     // asm 00008D8B: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 00008D8C: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008D8D: 	LDI	L_LEG8_BEGIN,AR0
     // asm 00008D8E: 	LS	8,AR0
     // asm 00008D8F: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG8_BEGIN << 8;
     // asm 00008D90: 	RS	8,AR0
     // asm 00008D91: 	LDI	L_LEG8_END,AR1
     // asm 00008D92: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG8_BEGIN, L_LEG8_END);
     // asm 00008D93: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_ARIZONA", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -805,45 +893,63 @@ static void FULLSETUP_GCANYON(void) {
 // *----------------------------------------------------------------------------
 static void FULLSETUP_IOWA(void) {
     // asm 00008DB3: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008DB4: 	LDI	7,R0		;BOGGIE
     // asm 00008DB5: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 7; // ;BOGGIE
     // asm 00008DB6: 	LDI	0,R0
     // asm 00008DB7: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 0;
     // asm 00008DB8: 	LDI	1,R0
     // asm 00008DB9: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008DBA: 	FLOAT	45,R0
     // asm 00008DBB: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(45)));
     // asm 00008DBC: 	LDL	_SECiowa_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008DBD: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_bottom_SETUPS);
     // asm 00008DBE: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008DBF: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_b2_SETUPS);
     // asm 00008DC0: 	LDL	_SECmwest,AR2
     // asm 00008DC1: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_SETUPS);
     // asm 00008DC2: 	LDI	75,R0
     // asm 00008DC3: 	STI	R0,@DD_SLP
+    DD_SLP = 75;
     // asm 00008DC4: 	LDI	125,R0
     // asm 00008DC5: 	STI	R0,@DD_VAR
+    DD_VAR = 125;
     // asm 00008DC6: 	LDL	mwest_PALETTES,AR2
     // asm 00008DC7: 	CALL	alloc_section
+    alloc_section(mwest_PALETTES);
     // asm 00008DC8: 	LDI	bottom_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008DC9: 	LDI	bottom3_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008DCA: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(bottom_gtmp_p, bottom3_gtmp_p);
     // asm 00008DCB: 	LDI	bottom2_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008DCC: 	LDI	btomwt_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008DCD: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(bottom2_gtmp_p, btomwt_gtmp_p);
     // asm 00008DCE: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008DCF: 	LDI	L_LEG10_BEGIN,AR0
     // asm 00008DD0: 	LS	8,AR0
     // asm 00008DD1: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG10_BEGIN << 8;
     // asm 00008DD2: 	RS	8,AR0
     // asm 00008DD3: 	LDI	L_LEG10_END,AR1
     // asm 00008DD4: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG10_BEGIN, L_LEG10_END);
     // asm 00008DD5: 	CREATE	BUG_SPAWNER_PROC,SPAWNER_C
+    CREATE(BUG_SPAWNER_PROC, SPAWNER_C, NULL);
     // asm 00008DD8: 	CREATE	GEESE_SPAWNER,SPAWNER_C
+    CREATE(GEESE_SPAWNER, SPAWNER_C, NULL);
     // asm 00008DDB: 	CREATE	DEER_SPAWNER_PROC,SPAWNER_C
+    CREATE(DEER_SPAWNER_PROC, SPAWNER_C, NULL);
     // asm 00008DDE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_IOWA", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -903,46 +1009,64 @@ static void FULLSETUP_CHICAGO(void) {
 // *----------------------------------------------------------------------------
 static void FULLSETUP_INDIANA(void) {
     // asm 00008DFC: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008DFD: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008DFE: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_b2_SETUPS);
     // asm 00008DFF: 	LDI	bottom2_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008E00: 	LDI	btomwt_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008E01: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(bottom2_gtmp_p, btomwt_gtmp_p);
     // asm 00008E02: 	LDI	4,R0		;VENTURE
     // asm 00008E03: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 4; // ;VENTURE
     // asm 00008E04: 	LDI	0,R0
     // asm 00008E05: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 0;
     // asm 00008E06: 	LDI	1,R0
     // asm 00008E07: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 1;
     // asm 00008E08: 	FLOAT	45,R0
     // asm 00008E09: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(45)));
     // asm 00008E0A: 	LDL	mwest_PALETTES,AR2
     // asm 00008E0B: 	CALL	alloc_section
+    alloc_section(mwest_PALETTES);
     // asm 00008E0C: 	LDL	_SECmwest_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008E0D: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_bottom_SETUPS);
     // asm 00008E0E: 	LDI	bottom_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008E0F: 	LDI	midwgras_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008E10: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(bottom_gtmp_p, midwgras_gtmp_p);
     // asm 00008E11: 	LDL	_SECmwest,AR2
     // asm 00008E12: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_SETUPS);
     // asm 00008E13: 	LDI	75,R0
     // asm 00008E14: 	STI	R0,@DD_SLP
+    DD_SLP = 75;
     // asm 00008E15: 	LDI	125,R0
     // asm 00008E16: 	STI	R0,@DD_VAR
+    DD_VAR = 125;
     // asm 00008E17: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008E18: 	LDI	L_LEG12_BEGIN,AR0
     // asm 00008E19: 	LS	8,AR0
     // asm 00008E1A: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG12_BEGIN << 8;
     // asm 00008E1B: 	RS	8,AR0
     // asm 00008E1C: 	LDI	L_LEG12_END,AR1
     // asm 00008E1D: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG12_BEGIN, L_LEG12_END);
     // asm 00008E1E: 	CREATE	BUG_SPAWNER_PROC,SPAWNER_C
+    CREATE(BUG_SPAWNER_PROC, SPAWNER_C, NULL);
     // asm 00008E21: 	CREATE	GEESE_SPAWNER,SPAWNER_C
+    CREATE(GEESE_SPAWNER, SPAWNER_C, NULL);
     // ;	CREATE	DEER_SPAWNER_PROC,SPAWNER_C
     // asm 00008E24: 	CREATE	COW_SPAWNER_PROC,SPAWNER_C
+    CREATE(COW_SPAWNER_PROC, SPAWNER_C, NULL);
     // asm 00008E27: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_INDIANA", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -950,42 +1074,57 @@ static void FULLSETUP_INDIANA(void) {
 // *----------------------------------------------------------------------------
 static void FULLSETUP_APPALACHIA(void) {
     // asm 00008E28: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008E29: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008E2A: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_b2_SETUPS);
     // asm 00008E2B: 	LDI	bottom2_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008E2C: 	LDI	btomwt_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008E2D: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(bottom2_gtmp_p, btomwt_gtmp_p);
     // asm 00008E2E: 	LDL	_SECmwest_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008E2F: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_bottom_SETUPS);
     // asm 00008E30: 	LDI	bottom_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008E31: 	LDI	midwgras_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008E32: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(bottom_gtmp_p, midwgras_gtmp_p);
     // asm 00008E33: 	LDI	5,R0		;STRAIGHT 2 4
     // asm 00008E34: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 5; // ;STRAIGHT 2 4
     // asm 00008E35: 	LDI	1,R0
     // asm 00008E36: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 1;
     // asm 00008E37: 	LDI	0,R0
     // asm 00008E38: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 0;
     // asm 00008E39: 	LDI	60,R0
     // asm 00008E3A: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 00008E3B: 	LDI	100,R0
     // asm 00008E3C: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 00008E3D: 	FLOAT	85,R0
     // asm 00008E3E: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(85)));
     // asm 00008E3F: 	LDL	appl_PALETTES,AR2
     // asm 00008E40: 	CALL	alloc_section
+    alloc_section(appl_PALETTES);
     // asm 00008E41: 	LDL	_SECappl,AR2
     // asm 00008E42: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECappl_SETUPS);
     // asm 00008E43: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008E44: 	LDI	L_LEG13_BEGIN,AR0
     // asm 00008E45: 	LS	8,AR0
     // asm 00008E46: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG13_BEGIN << 8;
     // asm 00008E47: 	RS	8,AR0
     // asm 00008E48: 	LDI	L_LEG13_END,AR1
     // asm 00008E49: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG13_BEGIN, L_LEG13_END);
     // asm 00008E4A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_APPALACHIA", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -993,43 +1132,60 @@ static void FULLSETUP_APPALACHIA(void) {
 // *----------------------------------------------------------------------------
 static void FULLSETUP_WASHINGTONDC(void) {
     // asm 00008E4B: 	CALL	WATEROFF
+    WATEROFF();
     // asm 00008E4C: 	LDL	_SECmwest_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008E4D: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECmwest_bottom_SETUPS);
     // asm 00008E4E: 	LDI	bottom_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008E4F: 	LDI	midwgras_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008E50: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(bottom_gtmp_p, midwgras_gtmp_p);
     // asm 00008E51: 	LDL	_SECiowa_b2,AR2		;in reality it just overwrites 'BOTTOM2.GTM'
     // asm 00008E52: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECiowa_b2_SETUPS);
     // asm 00008E53: 	LDI	bottom2_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008E54: 	LDI	btomwt_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008E55: 	CALL	PAL_OVERWRITE
+    PAL_OVERWRITE(bottom2_gtmp_p, btomwt_gtmp_p);
     // asm 00008E56: 	LDI	2,R0			;DISCO DUCK
     // asm 00008E57: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = 2; // ;DISCO DUCK
     // asm 00008E58: 	LDI	0,R0
     // asm 00008E59: 	STI	R0,@CHALLENGE_RACE
+    CHALLENGE_RACE = 0;
     // asm 00008E5A: 	STI	R0,@NOLONG_VEHICLES
+    NOLONG_VEHICLES = 0;
     // asm 00008E5B: 	FLOAT	45,R0
     // asm 00008E5C: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(45)));
     // asm 00008E5D: 	LDI	60,R0
     // asm 00008E5E: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 00008E5F: 	LDI	100,R0
     // asm 00008E60: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 00008E61: 	LDL	dc_PALETTES,AR2
     // asm 00008E62: 	CALL	alloc_section
+    alloc_section(dc_PALETTES);
     // asm 00008E63: 	LDL	dc_shared_PALETTES,AR2
     // asm 00008E64: 	CALL	alloc_section
+    alloc_section(dc_shared_PALETTES);
     // asm 00008E65: 	LDL	_SECdc_shared,AR2
     // asm 00008E66: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdc_shared);
     // asm 00008E67: 	LDL	_SECdc,AR2
     // asm 00008E68: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECdc_SETUPS);
     // asm 00008E69: 	CALL	LEG_INIT
+    LEG_INIT();
     // asm 00008E6A: 	LDI	L_LEG14_BEGIN,AR0
     // asm 00008E6B: 	LS	8,AR0
     // asm 00008E6C: 	STI	AR0,@FINISH_LINE
+    FINISH_LINE = L_LEG14_BEGIN << 8;
     // asm 00008E6D: 	RS	8,AR0
     // asm 00008E6E: 	LDI	L_LEG14_END,AR1
     // asm 00008E6F: 	CALL	LEG_GENERATE_MAP
+    LEG_GENERATE_MAP(L_LEG14_BEGIN, L_LEG14_END);
     // asm 00008E70: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FULLSETUP_WASHINGTONDC", 0, 0);
-    UNIMPL();
 }

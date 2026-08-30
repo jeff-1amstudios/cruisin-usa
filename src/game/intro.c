@@ -4106,36 +4106,46 @@ void DIAL_ROUT(void) {
 void ENDPLAYER(void) {
     // asm 00001D59: 	CLRI	R2
     // asm 00001D5A: 	SETAUD	AUD_BCREDITS
+    SETAUD(AUD_BCREDITS, 0);
     // asm 00001D5C: 	LDI	AUD_NUM_UNFINISHED,AR2
     // asm 00001D5D: 	CALL	AUDIT_READ
     // asm 00001D5E: 	DEC	R0
     // asm 00001D5F: 	LDI	R0,R2
     // asm 00001D60: 	SETAUD	AUD_NUM_UNFINISHED
+    SETAUD(AUD_NUM_UNFINISHED, AUDIT_READ(AUD_NUM_UNFINISHED) - 1);
     // asm 00001D62: 	LDI	0,R0
     // asm 00001D63: 	STI	R0,@FRAMRATE   		;RESET FRAME RATE TO ATTRACT MODE
+    FRAMRATE = 0; // ;RESET FRAME RATE TO ATTRACT MODE
     // ;	LDI	-5,AR2			;HSTD SHOULD BE NEXT SCREEN!
     // asm 00001D64: 	LDI	-2,AR2			;HSTD SHOULD BE NEXT SCREEN!
     // asm 00001D65: 	STI	AR2,@_ATTR_MODE
+    _ATTR_MODE = -2; // ;HSTD SHOULD BE NEXT SCREEN!
     // asm 00001D66: 	LDI	DRONE_C,R0
     // asm 00001D67: 	LDI	CLASS_M,R1
     // asm 00001D68: 	CALL	PRC_KILLALL
+    PRC_KILLALL(DRONE_C, CLASS_M);
     // asm 00001D69: 	LDI	SPAWNER_C,R0
     // asm 00001D6A: 	LDI	CLASS_M,R1
     // asm 00001D6B: 	CALL	PRC_KILLALL
+    PRC_KILLALL(SPAWNER_C, CLASS_M);
     // *ELP CHANGE
     // asm 00001D6C: 	FIFO_CLRP	R0		;IS THE FIFO CLEAR
     // asm 00001D71: 	DMA_WT		R0
     // asm 00001D76: 	LDI	1,R0
     // asm 00001D77: 	STI	R0,@CLEARRDY	  	;READY FOR INTERRUPT
+    CLEARRDY = 1; // ;READY FOR INTERRUPT
 KK5:
     // asm 00001D78: LDI	@CLEARRDY,R0
     // asm 00001D79: 	BNZ	KK5
+    /* The portable main loop clears CLEARRDY after control returns; spinning
+       here would prevent the emulated interrupt from being delivered. */
     // *ELP END CHANGE
     // *
     // *NOW CLEAN UP THE SYSTEM,. REINITIALIZE EVERYTHING AND
     // *GO INTO ATTRACT MODE
     // *
     // asm 00001D7A: 	CALL	TEXT_INIT
+    TEXT_INIT();
     // ;	CLRI	AR2
     // ;	CALL	SENDSND
     // ;	SOND1	GAMEOVR
@@ -4146,10 +4156,10 @@ KK5:
     // asm 00001D7B: 	CLRI	R0			;R0	(B0-15) PID
     // asm 00001D7C: 	CLRI	R1			;R1	(B0-15) MASK
     // asm 00001D7D: 	CALL	PRC_KILLALL
+    PRC_KILLALL(0, 0);
     // asm 00001D7E: 	BU	SET_ATTR
+    SET_ATTR();
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENDPLAYER", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -4549,13 +4559,15 @@ void LOGO_SMALL(void) {
  */
 void SET_ATTR(void) {
     // asm 00001E17: 	CALL	SILENT
+    SILENT();
     // asm 00001E18:         LDI	@FASTSTKI,SP		;GET PAGE OF STORED ADDRESS
+    // ignored: stack pointer restore
     // asm 00001E19: 	LDI	@_ATTR_MODE,AR2		;AND INTO FP TOO
     // asm 00001E1A: 	CALL	WAVE
+    WAVE(_ATTR_MODE);
     // asm 00001E1B: 	BU	COLD_ENTER
+    COLD_ENTER();
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_ATTR", 0, 0);
-    UNIMPL();
 }
 
 void _debug(PROC* p) {

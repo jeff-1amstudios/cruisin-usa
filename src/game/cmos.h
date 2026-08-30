@@ -689,7 +689,7 @@
 #define ADJUSTMENT_READ AUDIT_READ
 
 // asm: 	.globl	CHECK_RACE_TABLE,INSERT_TABLE_ENTRY
-void CHECK_RACE_TABLE(void);
+int CHECK_RACE_TABLE(int time_code /*R0*/, int race_index /*R1*/);
 
 void INSERT_TABLE_ENTRY(void);
 

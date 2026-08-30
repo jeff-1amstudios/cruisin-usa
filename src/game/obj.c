@@ -20,7 +20,7 @@ OBJ* OBJ_GET(void);
 static void GETDIST(OBJ* obj /*AR2*/);
 void OBJ_INSERTP(OBJ* obj /*AR2*/);
 void OBJ_INSERTLP(void);
-void OBJ_INSERTHP(void);
+void OBJ_INSERTHP(OBJ* obj /*AR2*/);
 void OBJ_INSERT(OBJ* obj /*AR2*/);
 OBJ* OBJ_FIND_FIRST_PRIORITY(int oid /*AR2*/);
 OBJ* OBJ_FIND_FIRST(int oid /*AR2*/);
@@ -497,15 +497,16 @@ void OBJ_INSERTLP(void) {
  *	AR2	OBJECT TO LINK IN
  *
  */
-void OBJ_INSERTHP(void) {
+void OBJ_INSERTHP(OBJ* obj /*AR2*/) {
     // asm 000070B8: 	PUSH	R0
     // asm 000070B9: 	LDI	@OHIGH_PRIORITY,R0
     // asm 000070BA: 	STI	R0,*+AR2(OLINK)
     // asm 000070BB: 	STI	AR2,@OHIGH_PRIORITY
     // asm 000070BC: 	POP	R0
     // asm 000070BD: 	RETS
+    obj->link = OHIGH_PRIORITY;
+    OHIGH_PRIORITY = obj;
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OBJ_INSERTHP", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1707,9 +1708,9 @@ void ISCAN(void) {
     ISCANL:
         // asm 000072A5: 	SUBF	*AR4,*+AR1(IR0),R6	;OYPOS-CAMERAPOSY
         obj_vector_y = C3X_SUB(obj->pos.Y, _CAMERAPOS.Y); // ;OYPOS-CAMERAPOSY
-                                                 // asm 000072A6: 	SUBF	*+AR4(1),*+AR1(IR1),R7	;OZPOS-CAMERAPOSZ
+                                                          // asm 000072A6: 	SUBF	*+AR4(1),*+AR1(IR1),R7	;OZPOS-CAMERAPOSZ
         obj_vector_z = C3X_SUB(obj->pos.Z, _CAMERAPOS.Z); // ;OZPOS-CAMERAPOSZ
-                                                 // asm 000072A7: 	MPYF    *-AR3(1),R5,R0
+                                                          // asm 000072A7: 	MPYF    *-AR3(1),R5,R0
         projected_dist = C3X_MUL(_CAMERAMATRIX.a20, obj_vector_x);
         // asm 000072A8: 	MPYF    *AR3,R6,R1
         projected_dist = C3X_ADD(projected_dist, C3X_MUL(_CAMERAMATRIX.a21, obj_vector_y));

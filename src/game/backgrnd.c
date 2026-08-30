@@ -85,7 +85,7 @@ static int SMOKE_ANI[7];
 static int CAR_FIRE_ANI[13];
 static int DC_MINIFOUNTAIN_ANI[7];
 static int DC_FOUNTAIN_ANI[6];
-static int BABE_PALIST[10];
+int BABE_PALIST[10];
 static const BGD_OROUTINE_ENTRY ROUTINE_TAB[];
 
 extern MATRIX _MATRIXA;
@@ -2204,7 +2204,7 @@ static int HUNGH_ANIS[] = {
 /* asm: BABE_PALIST */
 /* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
 /* asm: 	.word	ungh1_yellow,lift_p,ungh1_skin,bvwall_p */
-static int BABE_PALIST[] = {
+int BABE_PALIST[] = {
     ungh1_blue_ROM,
     logo_p,
     ungh1_green_ROM,

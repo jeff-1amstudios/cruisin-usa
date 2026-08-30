@@ -248,7 +248,7 @@ void OBJ_INSERT(OBJ* obj /*AR2*/);
 void OBJ_INSERTP(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_INSERTHP
-void OBJ_INSERTHP(void);
+void OBJ_INSERTHP(OBJ* obj /*AR2*/);
 
 // asm: 	.globl	OBJ_INSERTLP
 void OBJ_INSERTLP(void);

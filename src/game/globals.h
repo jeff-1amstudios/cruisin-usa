@@ -116,6 +116,7 @@ extern void (*FULLSETUP_TABLE[])(void);
 
 #define BONUS_POSTLAUNCHI BONUS_POSTLAUNCH
 extern void_func_ptr BONUS_POSTLAUNCH[];
+extern int BABE_PALIST[];
 
 // asm:  .globl CHALLENGE_RACE
 extern int CHALLENGE_RACE;
@@ -772,7 +773,7 @@ void AUDIT_DISPLAY(void);
 void CROWD_IT(void);
 
 // asm:  .globl BABE_TROPHY
-void BABE_TROPHY(void);
+void BABE_TROPHY(PROC* p);
 
 // asm:  .globl BABE_WAVEFLAG
 void BABE_WAVEFLAG(PROC* p);
@@ -1161,10 +1162,10 @@ c3x_reg_t _HPcos(c3x_reg_t x);
 void DISPLAY_HIGH_SCORES(PROC* p);
 
 // asm:  .globl ENTERTEXT
-void ENTERTEXT(void);
+void ENTERTEXT(PROC* p);
 
 // asm:  .globl ENTER_INITIALS
-void ENTER_INITIALS(void);
+void ENTER_INITIALS(PROC* p);
 
 // asm:  .globl MIDWAYSPINENTER
 void MIDWAYSPINENTER(void);
@@ -1176,13 +1177,13 @@ void LOGO_PROC(PROC* p);
 void RBMATTR_CHECK(void);
 
 // asm:  .globl INTO_TABLE_P
-void INTO_TABLE_P(void);
+int INTO_TABLE_P(void);
 
 // asm:  .globl MOVEIN_HUD_EQUIP
 void MOVEIN_HUD_EQUIP(PROC* p);
 
 // asm:  .globl MOVEOUT_HUD_EQUIP
-void MOVEOUT_HUD_EQUIP(void);
+void MOVEOUT_HUD_EQUIP(PROC* p);
 
 // asm:  .globl HARDalloc_section
 void HARDalloc_section(tSECTION_ALLOC sec);
@@ -1375,9 +1376,9 @@ void CLR_VECTORA(void);
 void SCALE_MATRIX(void);
 
 // asm:  .globl FOLDMAP,UNFOLDMAP
-void FOLDMAP(void);
+void FOLDMAP(PROC* p);
 
-void UNFOLDMAP(void);
+void UNFOLDMAP(PROC* p);
 
 // asm:  .globl TIME2STR
 void TIME2STR(char* buffer /*AR2*/, int time /*R0*/);
@@ -1386,7 +1387,7 @@ void TIME2STR(char* buffer /*AR2*/, int time /*R0*/);
 void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/);
 
 // asm:  .globl UNFOLDMAP_NOPAL
-void UNFOLDMAP_NOPAL(void);
+void UNFOLDMAP_NOPAL(PROC* p);
 
 // asm:  .globl RADAR_PLOT
 void RADAR_PLOT(void);
@@ -1518,22 +1519,22 @@ void OBJ_MOVE_GROUND(void);
 // asm:  .globl DELETE_SPLAT,BUG_SPAWNER_PROC,PLYRROADKILL
 void DELETE_SPLAT(void);
 
-void BUG_SPAWNER_PROC(void);
+void BUG_SPAWNER_PROC(PROC* p);
 
 void PLYRROADKILL(void);
 
 // asm:  .globl DEER_SPAWNER_PROC,DEER_EXPLODE,FLYING_PARTS
-void DEER_SPAWNER_PROC(void);
+void DEER_SPAWNER_PROC(PROC* p);
 
 void DEER_EXPLODE(void);
 
 void FLYING_PARTS(void);
 
 // asm:  .globl GEESE_SPAWNER
-void GEESE_SPAWNER(void);
+void GEESE_SPAWNER(PROC* p);
 
 // asm:  .globl COW_SPAWNER_PROC
-void COW_SPAWNER_PROC(void);
+void COW_SPAWNER_PROC(PROC* p);
 
 // routs.asm
 // asm:  .globl SQRT

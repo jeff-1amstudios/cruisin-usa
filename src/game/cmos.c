@@ -42,7 +42,7 @@ word_addr_t GET_TABLE_ADDR(int race_index /*R6*/, int entry_index /*R7*/);
 static void TABLE_ENTRY_WRITE(void);
 static void TABLE_ENTRY_WRITE0(void);
 RACEENTRY TABLE_ENTRY_READ(word_addr_t* addr /*AR2*/);
-void CHECK_RACE_TABLE(void);
+int CHECK_RACE_TABLE(int time_code /*R0*/, int race_index /*R1*/);
 void INSERT_TABLE_ENTRY(void);
 
 #define ADJUSTMENT_READ AUDIT_READ
@@ -1056,27 +1056,40 @@ RACEENTRY TABLE_ENTRY_READ(word_addr_t* addr /*AR2*/) {
  *	R0	{0...9}  = INDEX TO ENTER TABLE
  *
  */
-void CHECK_RACE_TABLE(void) {
+int CHECK_RACE_TABLE(int time_code /*R0*/, int race_index /*R1*/) {
+    word_addr_t addr;
+    int entry_index;
+    RACEENTRY entry;
     // asm 00009B43: 	PUSH	R0
     // asm 00009B44: 	LDI	R1,R6
     // asm 00009B45: 	CLRI	R7
     // asm 00009B46: 	CALL	GET_TABLE_ADDR
+    addr = GET_TABLE_ADDR(race_index, 0);
     // asm 00009B47: 	POP	R6
     // asm 00009B48: 	CLRI	R5		;RETURN INDEX
+    entry_index = 0; // ;RETURN INDEX
 NXTENT:
     // asm 00009B49: CALL	TABLE_ENTRY_READ
+    entry = TABLE_ENTRY_READ(&addr);
     // asm 00009B4A: 	CMPI	R0,R6
     // asm 00009B4B: 	BLT	INSERT_HERE
+    if (time_code < (int)entry.time) {
+        goto INSERT_HERE;
+    }
     // asm 00009B4C: 	INC	R5
+    entry_index += 1;
     // asm 00009B4D: 	CMPI	10,R5
     // asm 00009B4E: 	BLT	NXTENT
+    if (entry_index < NUM_ENTRIES_PER_RACE) {
+        goto NXTENT;
+    }
     // asm 00009B4F: 	LDI	-1,R0
     // asm 00009B50: 	RETS
+    return -1;
 INSERT_HERE:
     // asm 00009B51: 	LDI	R5,R0
     // asm 00009B52: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_RACE_TABLE", 0, 0);
-    UNIMPL();
+    return entry_index;
 }
 
 // *----------------------------------------------------------------------------

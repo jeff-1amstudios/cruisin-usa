@@ -553,7 +553,7 @@ void SEND_MOTOR_OFF(void) {
     // asm 00004624:         CALL    WAIT_ACK
     // asm 00004625: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_MOTOR_OFF", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void SEND_MOTOR_OFF_NO_RESET(void) {
@@ -589,7 +589,7 @@ MOTOFF_DONE:
     // asm 0000464E: 	FILL	1,200,500,390,0
     // asm 00004654: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_MOTOR_OFF_NO_RESET", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void INIT_MOTION_ERROROUT(void) {
@@ -638,7 +638,7 @@ FFFD:
     // asm 0000468E: 	FILL	1,250,500,350,0
     // asm 00004694: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_MOTION_ERROROUT", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /* asm: JJG	.word	MM0,MM1,MM2,MM3,MM4,MM5,MM6,MM7 */
@@ -712,7 +712,7 @@ WT500X:
     // asm 000046A2: 	POP	R0
     // asm 000046A3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT500", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /*
@@ -754,7 +754,7 @@ void DIAG_MOTION_TESTZ(void) {
     // asm 000046B3: 	BU	MOTION_BURNIN_J
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_MOTION_TESTZ", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 void DIAG_MOTION_TESTX(void) {
@@ -762,7 +762,7 @@ void DIAG_MOTION_TESTX(void) {
     // asm 000046B5: 	BU	MOTION_BURNIN_J
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_MOTION_TESTX", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 void DIAG_MOTION_TESTY(void) {
@@ -770,7 +770,7 @@ void DIAG_MOTION_TESTY(void) {
     // asm 000046B7: 	BU	MOTION_BURNIN_J
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_MOTION_TESTY", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 void DIAG_MOTION_BURNIN(void) {
@@ -884,7 +884,7 @@ JJ7:
     // asm 00004739: 	BNZ	MBI_LP
     // asm 0000473A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIAG_MOTION_BURNIN", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1246,7 +1246,7 @@ N77:
 N78:
     // asm 00004844: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_SCALE_ENTER", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1476,7 +1476,7 @@ DNF:
     // ;	CALL	WAIT_ACK
     // asm 000048E2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DOWNLOAD_PROGRAM", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1599,7 +1599,7 @@ void RESET_GALIL(void) {
     // asm 00004945: 	EINT
     // asm 00004946:         RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESET_GALIL", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1632,7 +1632,7 @@ void ABORT_RESET_GALIL(void) {
     // asm 00004963: 	CALL	WAIT_ACK
     // asm 00004964:         RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ABORT_RESET_GALIL", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1653,7 +1653,7 @@ void MOTION_DLPROG(void) {
     // asm 00004970: 	STI	R0,@MOTION_NOT_ON
     // asm 00004971: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOTION_DLPROG", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1685,7 +1685,7 @@ static void GALIL_ERROR(void) {
     // *WAIT R0 X MSEC
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GALIL_ERROR", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void WAITMSEC(void) {
@@ -1695,7 +1695,7 @@ WTMLP:
     // asm 000049A4: 	BGE	WTMLP
     // asm 000049A5: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAITMSEC", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1733,7 +1733,7 @@ CME_NO_MOTION_ERRORS:
     // asm 000049B6: 	POP	R0
     // asm 000049B7: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHECK_MOTION_ERROR", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1745,7 +1745,7 @@ void CLEAR_LATCH_ERROR(void) {
     // asm 000049C0: 	EINT
     // asm 000049C1: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CLEAR_LATCH_ERROR", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 /* asm: LATCHED_ERROR	.bss	LATCHED_ERROR,1 */
@@ -1799,7 +1799,7 @@ static void G_READY(void) {
     // *RET CC IF NO CHAR PRESENT
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "G_READY", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void G_CHAR(void) {
@@ -1833,7 +1833,7 @@ static void G_CHAR(void) {
     // *GET GALIL STRING
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "G_CHAR", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void G_STRING(void) {
@@ -1923,7 +1923,7 @@ GS2:
 GSX:
     // asm 00004A3E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "G_STRING", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -1970,7 +1970,7 @@ GHX:
     // *CS IF VALID
     // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "G_HEX", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 static void ASCIIHEX(void) {
@@ -1990,7 +1990,7 @@ ASCERR:
     // asm 00004A5D: 	CLRC
     // asm 00004A5E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ASCIIHEX", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -2013,7 +2013,7 @@ EXITL2:
     // asm 00004A6F: 	EINT
     // asm 00004A70:         RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_ACK", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -2025,7 +2025,7 @@ static void NO_RESPONSE(void) {
     // asm 00004A73: 	SETAUD	ADJ_MOTION_PRESENT
     // asm 00004A75: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "NO_RESPONSE", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -2050,7 +2050,7 @@ WAR1L:
 EXITL2A:
     // asm 00004A82:         RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WAIT_ACK_REAL", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -2100,7 +2100,7 @@ ULL3:
     // asm 00004AAC: 	DBU	AR5,ULLERR
     // asm 00004AAD: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "UPPER_LIMIT_ERROR", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------
@@ -2146,7 +2146,7 @@ LLL3:
     // asm 00004ADD: 	DBU	AR5,LLLERR
     // asm 00004ADE: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOWER_LIMIT_ERROR", 0, 0);
-    UNIMPL();
+    UNIMPL_TODO();
 }
 
 // *----------------------------------------------------------------------------

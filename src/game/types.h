@@ -319,9 +319,9 @@ typedef struct OBJ {
 } OBJ;
 
 _Static_assert(offsetof(OBJ, vel_y) == offsetof(OBJ, vel_x) + sizeof(c3x_f32_t),
-               "OBJ velocity components must be contiguous");
+    "OBJ velocity components must be contiguous");
 _Static_assert(offsetof(OBJ, vel_z) == offsetof(OBJ, vel_y) + sizeof(c3x_f32_t),
-               "OBJ velocity components must be contiguous");
+    "OBJ velocity components must be contiguous");
 
 extern OBJ OBJSTR[];
 
@@ -438,6 +438,9 @@ typedef struct CARBLK {
     u32 other_machine_controls;
     u32 car_num;
     u32 updated_this_frame;
+    // C30 STF-zeroes contact words to nonzero 0x80000000; track the first scan
+    // so C nulls can distinguish unscanned state from a real missing contact.
+    u32 road_contacts_scanned;
 } CARBLK;
 
 typedef struct LEG_PAYLOAD {
@@ -757,6 +760,15 @@ typedef struct PROC_CONTEXT {
     struct {
         int loop_count;
     } MOVEIN_HUD_EQUIP_FRAME;
+    struct {
+        int loop_count;
+    } MOVEOUT_HUD_EQUIP_FRAME;
+    struct {
+        OBJ* obj;
+        int loop_count;
+        int script_index;
+        int script_start;
+    } BABE_TROPHY_FRAME;
 
     /* These coroutine frames may be nested below another logical process, so
        they cannot share the function-local union below. */
@@ -772,6 +784,19 @@ typedef struct PROC_CONTEXT {
         int start_delay;
         int result;
     } INSMORE_FRAME;
+    struct {
+        OBJ* initial_objs[3];
+        int initial_chars[3];
+        int place;
+        int white_pal;
+        int grey_pal;
+        int race_number;
+        int old_choice;
+        int pedal_trigger;
+        int character_index;
+        int debounce_counter;
+        int loading_clear_frames;
+    } ENTER_INITIALS_FRAME;
 
     union {
         struct {
@@ -854,12 +879,81 @@ typedef struct PROC_CONTEXT {
         } BLINK_FREEBE;
         struct {
             int background_color;
+            int wait_count;
+            int palette_index;
+            int flag_index;
+            c3x_reg_t flag_y;
         } BONSCRN2;
+        struct {
+            OBJ* objects[4];
+            c3x_f32_t lead_x;
+            c3x_f32_t lead_y;
+            c3x_f32_t lead_z;
+            c3x_f32_t theta[4];
+            c3x_f32_t lead_theta;
+            MATRIX lead_matrix;
+            c3x_f32_t x_delta;
+            c3x_f32_t y_delta;
+            int loop_count;
+        } MAP_ANIMATION;
+        struct {
+            c3x_reg_t target_x;
+            c3x_reg_t target_z;
+            int loop_count;
+        } BACKUP_CAMERA;
+        struct {
+            int loop_count;
+        } FREE_RACE_ANNOUNCE;
+        struct {
+            tTEXT* front_text[2];
+            tTEXT* shadow_text[2];
+            c3x_reg_t posx;
+            int loop_count;
+        } SHOWLEG_PROC;
+        struct {
+            tTEXT* front_text[2];
+            tTEXT* shadow_text[2];
+            c3x_reg_t posx;
+            int loop_count;
+        } SHOWNEXTLEG_PROC;
+        struct {
+            OBJ* obj;
+            int loop_count;
+        } PLACE_FLAG_PROC;
+        struct {
+            tTEXT* label_front;
+            tTEXT* label_shadow;
+            tTEXT* value_front;
+            tTEXT* value_shadow;
+            c3x_reg_t label_posx;
+            c3x_reg_t value_posx;
+            int loop_count;
+            char buffer[32];
+        } BONS_TEXT;
+        struct {
+            tTEXT* front;
+            tTEXT* shadow;
+            const char* string;
+            int toggle;
+        } BONS_HOTTIME;
+        struct {
+            int position_index;
+            int ypos;
+            int loop_count;
+        } BONS_POSITION;
+        struct {
+            OBJ* objects[3];
+            int loop_count;
+        } DISPLAY_H2H_WINNER;
         struct {
             OBJ* obj;
             int loop_count;
             int script_index;
         } BABE_WAVEFLAG;
+        struct {
+            OBJ* obj;
+            int script_start;
+        } BABE_IBO;
         struct {
             int saved_mode;
             const struct WAVEFLAG_ENTRY* list_ptr;
@@ -875,10 +969,10 @@ typedef struct PROC_CONTEXT {
             int sleep_ticks;
         } RHO_DISPATCHER;
         struct {
-            OBJ* obj;              // AR4
-            CARBLK* carblk;        // AR5
-            c3x_f32_t body_x_radians;  // R6
-            c3x_f32_t old_car_speed;   // R7
+            OBJ* obj;                 // AR4
+            CARBLK* carblk;           // AR5
+            c3x_f32_t body_x_radians; // R6
+            c3x_f32_t old_car_speed;  // R7
             union {
                 c3x_f32_t old_orady;
                 c3x_f32_t wreck_x_rate;
@@ -906,33 +1000,33 @@ typedef struct PROC_CONTEXT {
             int smoke_counted;
         } PUFF_PROC;
         struct {
-            OBJ* player_obj;       // AR6
-            OBJ* left_flame;       // AR4
-            OBJ* right_flame;      // AR5
-            MATRIX* body_matrix;   // PDATA+2
-            int frame_on;          // PDATA+1
-            int frames_remaining;  // R5
+            OBJ* player_obj;      // AR6
+            OBJ* left_flame;      // AR4
+            OBJ* right_flame;     // AR5
+            MATRIX* body_matrix;  // PDATA+2
+            int frame_on;         // PDATA+1
+            int frames_remaining; // R5
         } FLAME_PRC;
         struct {
-            OBJ* car_obj;          // AR4
-            CARBLK* carblk;        // AR5
-            int num_smokes;        // PDATA
-            int palette;           // PDATA+1
-            OBJ* smoke_objs[20];   // PDATA+2..
+            OBJ* car_obj;           // AR4
+            CARBLK* carblk;         // AR5
+            int num_smokes;         // PDATA
+            int palette;            // PDATA+1
+            OBJ* smoke_objs[20];    // PDATA+2..
             c3x_reg_t delay_frames; // R7
         } SMOKE_PROC;
         struct {
-            VECTOR collision_offset; // PDATA..PDATA+2
-            int frame_on;             // PDATA+3
-            OBJ* car_obj;             // PDATA+4
-            CARBLK* carblk;           // PDATA+5
-            int num_sparks;           // PDATA+6
-            OBJ* spark_objs[6];       // PDATA+7..
+            VECTOR collision_offset;        // PDATA..PDATA+2
+            int frame_on;                   // PDATA+3
+            OBJ* car_obj;                   // PDATA+4
+            CARBLK* carblk;                 // PDATA+5
+            int num_sparks;                 // PDATA+6
+            OBJ* spark_objs[6];             // PDATA+7..
             const int* spark_animations[6]; // host pointers represented separately from 32-bit OVELZ
-            c3x_reg_t delay_frames;    // R7
+            c3x_reg_t delay_frames;         // R7
         } SPARK_PROC;
         struct {
-            OBJ* obj;       // AR4
+            OBJ* obj;        // AR4
             MATRIX rotation; // PDATA+2..
         } FLYCOLLP;
         struct {
@@ -946,14 +1040,14 @@ typedef struct PROC_CONTEXT {
             int script_index;  // AR5 - AR6
         } BACKGRND_PLAINANI_PROC;
         struct {
-            OBJ* obj;                        // AR4
-            c3x_f32_t speed;                 // R7
-            c3x_f32_t remaining_distance;    // R6
+            OBJ* obj;                     // AR4
+            c3x_f32_t speed;              // R7
+            c3x_f32_t remaining_distance; // R6
         } BACKGRND_PLANE_FWRD;
         struct {
-            OBJ* obj;                        // AR4
-            c3x_f32_t speed;                 // R7
-            c3x_f32_t remaining_distance;    // R6
+            OBJ* obj;                     // AR4
+            c3x_f32_t speed;              // R7
+            c3x_f32_t remaining_distance; // R6
         } BACKGRND_TRAIN_FWRD;
         struct {
             int decomp_count;
@@ -1040,7 +1134,7 @@ typedef struct PROC_CONTEXT {
             c3x_f32_t camera_lane;
             OBJ* objins;
             c3x_f32_t camyoff;
-            LEG_PAYLOAD* road_obj;  // synthetic state used to preserve AR4 road segment across calls
+            LEG_PAYLOAD* road_obj; // synthetic state used to preserve AR4 road segment across calls
             uintptr_t view_script; // synthetic state used to preserve AR6 across sleeps
             int frames_left;       // synthetic state used to preserve AR5 across sleeps
             c3x_f32_t watch_rady;  // synthetic state used to preserve R6 across WATCH_VIEW calls
