@@ -30,6 +30,16 @@ static int crusn_free_play_enabled(int argc, char* argv[]) {
     return 1;
 }
 
+static int crusn_sound_enabled(int argc, char* argv[]) {
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--no-sound") == 0) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 void crusn_measure_attract_start(void) {
     if (getenv("CRUSN_MEASURE_ATTRACT_TIMING") == NULL) {
         return;
@@ -80,8 +90,14 @@ int main(int argc, char* argv[]) {
     crusn_video video = { 0 };
     int running = 1;
     int free_play = crusn_free_play_enabled(argc, argv);
+    int sound = crusn_sound_enabled(argc, argv);
+    Uint32 sdl_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS) != 0) {
+    if (sound) {
+        sdl_flags |= SDL_INIT_AUDIO;
+    }
+
+    if (SDL_Init(sdl_flags) != 0) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         return 1;
     }
@@ -92,7 +108,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (portable_audio_init("roms/crusnusa.zip") != 0) {
+    if (sound && portable_audio_init("roms/crusnusa.zip") != 0) {
         fprintf(stderr, "Failed to initialize audio\n");
         crusn_machine_shutdown(&machine);
         SDL_Quit();
@@ -101,7 +117,9 @@ int main(int argc, char* argv[]) {
 
     if (crusn_video_init(&video) != 0) {
         fprintf(stderr, "Failed to initialize video: %s\n", SDL_GetError());
-        portable_audio_shutdown();
+        if (sound) {
+            portable_audio_shutdown();
+        }
         crusn_machine_shutdown(&machine);
         SDL_Quit();
         return 1;
@@ -146,7 +164,9 @@ int main(int argc, char* argv[]) {
     }
 
     crusn_video_shutdown(&video);
-    portable_audio_shutdown();
+    if (sound) {
+        portable_audio_shutdown();
+    }
     crusn_machine_shutdown(&machine);
     SDL_Quit();
     return 0;

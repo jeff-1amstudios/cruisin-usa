@@ -111,8 +111,8 @@ validation is disabled:
 ./build/crusn
 ```
 
-Use `--no-free-play` to use the normal coin settings. Press <kbd>Return</kbd> for
-Start.
+Use `--no-free-play` to use the normal coin settings, and `--no-sound` to run
+without initializing or playing audio. Press <kbd>Return</kbd> for Start.
 
 ## Contributing
 
