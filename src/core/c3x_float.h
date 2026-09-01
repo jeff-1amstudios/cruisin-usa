@@ -48,6 +48,7 @@ typedef struct {
 #define C3X_SUBF(src, dst) ((dst) = C3X_SUB((dst), (src)))
 #define C3X_SUBF3(src2, src1, dst) ((dst) = C3X_SUB((src1), (src2)))
 #define C3X_ADDI(src, dst) ((dst) = c3x_addi(C3X_REG(dst), C3X_REG(src)))
+#define C3X_LDI(src, dst) ((dst) = c3x_ldi(C3X_REG(dst), (int32_t)(src)))
 
 #else
 
@@ -84,6 +85,7 @@ typedef c3x_float c3x_reg_t;
 #define C3X_SUBF(src, dst) ((dst) = C3X_SUB((dst), (src)))
 #define C3X_SUBF3(src2, src1, dst) ((dst) = C3X_SUB((src1), (src2)))
 #define C3X_ADDI(src, dst) ((dst) = c3x_addi(C3X_REG(dst), C3X_REG(src)))
+#define C3X_LDI(src, dst) ((dst) = c3x_ldi(C3X_REG(dst), (int32_t)(src)))
 
 #endif
 
@@ -110,6 +112,7 @@ c3x_reg_t c3x_div(c3x_reg_t a, c3x_reg_t b);
 c3x_reg_t c3x_neg(c3x_reg_t value);
 c3x_reg_t c3x_abs(c3x_reg_t value);
 c3x_reg_t c3x_addi(c3x_reg_t dst, c3x_reg_t src);
+c3x_reg_t c3x_ldi(c3x_reg_t dst, int32_t src);
 int c3x_cmp(c3x_reg_t a, c3x_reg_t b);
 int c3x_fix(c3x_reg_t value);
 

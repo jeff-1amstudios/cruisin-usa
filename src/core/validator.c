@@ -13,6 +13,9 @@
 #include <stdnoreturn.h>
 #include <string.h>
 
+extern int INFRAMES;
+extern void INT0(void);
+
 static FILE* g_validate_log;
 static int g_validate_maps_loaded;
 static int mame_validate_enabled = 0;
@@ -735,12 +738,50 @@ static int mame_validate_timing_word(const char* name) {
     return (int)entry.word_value;
 }
 
+void mame_sync_word_impl(const char* caller_file, int caller_line, const char* name, void* ptr) {
+    VALIDATE_ENTRY entry;
+
+    if (should_skip_validation()) {
+        return;
+    }
+
+    validate_current_call_failed = 0;
+    if (read_next_validate_reg_word(caller_file, caller_line, name, name, &entry)) {
+        *(uint32_t*)ptr = entry.word_value;
+    }
+}
+
 int mame_validate_frame_ticks(void) {
     return mame_validate_timing_word("FRAME_TICKS");
 }
 
 int mame_validate_frame_mid_ticks(void) {
     return mame_validate_timing_word("FRAME_MID_TICKS");
+}
+
+int mame_validate_player_ticks(void) {
+    return mame_validate_timing_word("PLAYER_TICKS");
+}
+
+int mame_validate_race_start_ticks(void) {
+    return mame_validate_timing_word("RACE_START_TICKS");
+}
+
+void mame_sync_int0_phase_impl(const char* caller_file, int caller_line, const char* name) {
+    VALIDATE_ENTRY entry;
+
+    if (should_skip_validation()) {
+        return;
+    }
+
+    validate_current_call_failed = 0;
+    if (!read_next_validate_reg_word(caller_file, caller_line, name, name, &entry)) {
+        return;
+    }
+
+    while (INFRAMES < (int)entry.word_value) {
+        INT0();
+    }
 }
 
 int mame_validation_replay_started(void) {

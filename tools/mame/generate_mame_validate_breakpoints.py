@@ -23,6 +23,9 @@ VALIDATE_FUNCTION_ENTRY_RE = re.compile(
     r'(?:MAME_ASSERT_FUNCTION_ENTRY|MAME_VALIDATE_FUNCTION_ENTRY|mame_validate_function_entry)\(\s*\)\s*;'
 )
 VALIDATE_ORDERING_RE = re.compile(r'MAME_ASSERT_ORDERING\(\s*"(?P<message>[^"]+)"\s*\)\s*;')
+VALIDATE_INT0_PHASE_RE = re.compile(
+    r'MAME_SYNC_INT0_PHASE\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*\)\s*;'
+)
 VALIDATE_EXIT_RE = re.compile(r'(?:MAME_VALIDATOR_EXIT|MAME_VALIDATE_EXIT|mame_validate_exit)\(\s*\)\s*;')
 VALIDATE_REGION_AT_ADDR_RE = re.compile(
     r'(?:MAME_ASSERT_REGION_AT_ADDR|mame_validate_region_at_addr)\(\s*(?P<instr_addr>[^,]+)\s*,\s*"(?P<label>[^"]+)"\s*,\s*(?P<region_addr>[^,]+)\s*,\s*(?P<ptr>[^,]+)\s*,\s*(?P<word_count>[^)]+)\)\s*;'
@@ -435,6 +438,32 @@ def collect_breakpoints_for_file(
         )
 
     for index, line in enumerate(lines):
+        match = VALIDATE_INT0_PHASE_RE.search(strip_cpp_line_comment(line))
+        if not match:
+            continue
+
+        instruction_address = evaluate_constant_expr(match.group("instr_addr").strip(), resolved_defines)
+        if instruction_address is None:
+            raise ValueError(
+                f"{path}:{index + 1}: could not resolve INT0 phase address {match.group('instr_addr')!r}"
+            )
+        inframes_address = lookup_label_address("INFRAMES", address_map)
+        if inframes_address is None:
+            raise ValueError(f"{path}:{index + 1}: could not resolve INFRAMES")
+
+        entries.append(
+            BreakpointEntry(
+                label=match.group("label"),
+                variable_name="INFRAMES",
+                variable_address=inframes_address,
+                instruction_address=instruction_address,
+                array_length=None,
+                source_path=path,
+                source_line=index + 1,
+            )
+        )
+
+    for index, line in enumerate(lines):
         match = VALIDATE_EXIT_RE.search(strip_cpp_line_comment(line))
         if not match:
             continue
@@ -552,7 +581,9 @@ def collect_breakpoints_for_file(
         )
 
     for index, line in enumerate(lines):
-        parsed = parse_explicit_value_validation(line, ["MAME_ASSERT_MEM", "mame_validate_mem_at_addr"])
+        parsed = parse_explicit_value_validation(
+            line, ["MAME_ASSERT_MEM", "MAME_SYNC_MEM", "mame_validate_mem_at_addr"]
+        )
         if parsed is None:
             continue
 
@@ -641,6 +672,8 @@ def render_output(entries: Iterable[BreakpointEntry]) -> str:
         # physics at one step while the port replays any extra INT0 calls.
         rows.append('bpset 00004BED, 1, { logerror "validate FRAME_TICKS: 0x%08X\\n",r0; r0=1; g }')
         rows.append('bpset 00004C15, 1, { logerror "validate FRAME_MID_TICKS: 0x%08X\\n",d@0000C960; g }')
+        rows.append('bpset 00002A64, 1, { logerror "validate PLAYER_TICKS: 0x%08X\\n",d@0000C960; g }')
+        rows.append('bpset 00001D25, 1, { logerror "validate RACE_START_TICKS: 0x%08X\\n",d@0000C960; g }')
     if os.environ.get("CRUSN_VALIDATE_CLEAR_WATER_R0") == "1":
         # WATER_INFINITY consumes R0 as a float even though its current value
         # came from unrelated integer work. Clear the full extended register
@@ -653,7 +686,10 @@ def render_output(entries: Iterable[BreakpointEntry]) -> str:
         rows.append('bpset 00009307,1,{ ar2=1; g }')
         # Give every chooser the release-to-press edge expected by PEDALCHK.
         rows.append('bpset 00001C5B,1,{ d@0000C96B=0; g }')
-        rows.append('bpset 00001C61,1,{ d@0000C96B=FF; g }')
+        # The trace does not drive the four-position shifter, so explicitly
+        # select automatic before accepting the car. Otherwise a manual
+        # selection leaves the player car in neutral throughout the race.
+        rows.append('bpset 00001C61,1,{ d@0000C96B=FF; d@0000E663=0; g }')
     if os.environ.get("CRUSN_VALIDATE_ALIGN_SECTIME_PHASE") == "1":
         # The single-player GO path does not reset _sectime, so menu-time IRQ
         # timing otherwise determines which rendered frame loses a second.

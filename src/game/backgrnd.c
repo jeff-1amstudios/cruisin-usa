@@ -2402,7 +2402,8 @@ static void PLAINANI_PROC_SLOW(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // Created at PLAINANI_LP_SLOW, after the assembly function label.
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -2414,6 +2415,7 @@ PLAINANI_LP_SLOW:
     frame = ctx->BACKGRND_PLAINANI_PROC.script[ctx->BACKGRND_PLAINANI_PROC.script_index++];
     // asm 000043D2: 	BLT	PLAINANI_PROC_SLOW
     if (frame < 0) {
+        MAME_ASSERT_FUNCTION_ENTRY();
         ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
         goto PLAINANI_LP_SLOW;
     }
@@ -2539,7 +2541,8 @@ static void PLAINANI_PROC(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // Created at PLAINANI_LP, after the assembly function label.
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -2554,6 +2557,9 @@ PLAINANI_LP:
         ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
         goto PLAINANI_LP;
     }
+    // PLAINANI_PROC is duplicated in HOTTUB, so validation anchors this at
+    // the next unambiguous instruction (0x4415) on every loop iteration.
+    MAME_ASSERT_FUNCTION_ENTRY();
     // asm 00004415: 	STI	R0,*+AR4(OROMDATA)
     ctx->BACKGRND_PLAINANI_PROC.obj->romdata = ROM_PTR((word_addr_t)frame);
     // asm 00004416: 	RANDN	4

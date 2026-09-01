@@ -683,7 +683,7 @@ NOSMK:
     // asm 0000A52A: 	CMPI	R1,R0
     // asm 0000A52B: 	BLT	SIGMA_DIE
     if (OBJREF_TO_PTR(carblk->closest_track_piece) != NULL &&
-        ((int)OBJREF_TO_PTR(carblk->closest_track_piece)->usr1 >> 8) < DGROUPSI[DGROUP_COUNT].idx) {
+        ((int)OBJREF_TO_PTR(carblk->closest_track_piece)->usr1 >> 8) < DGROUPS[0].idx) {
         PROC_CONTINUE(SIGMA_DIE, 8);
         return;
     }

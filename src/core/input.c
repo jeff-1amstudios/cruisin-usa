@@ -42,8 +42,9 @@ void port_handle_input(void) {
 }
 
 u32 port_get_dipswitches(void) {
-    // 2 switches
-    return 0 | (DIP_COMMP | CMDP_MASTER) << 16;
+    // Match MAME's default cabinet configuration: linking off and this
+    // cabinet designated as master (CMDP_MASTER is active-low).
+    return DIP_COMMP << 16;
 }
 
 u32 port_get_commpal(void) {

@@ -33,6 +33,8 @@ void mame_assert_reg_at_addr_impl(
     const void* ptr,
     MAME_VALIDATE_REG_KIND reg_kind,
     uint32_t wiggle_room);
+void mame_sync_word_impl(const char* caller_file, int caller_line, const char* name, void* ptr);
+void mame_sync_int0_phase_impl(const char* caller_file, int caller_line, const char* name);
 
 #define mame_validate_arg_sym(name, ptr) mame_validate_arg_sym_impl(__FILE__, __LINE__, (name), (ptr))
 
@@ -54,6 +56,10 @@ void mame_assert_reg_at_addr_impl(
         (decimal_places) + 1)
 #define MAME_ASSERT_MEM(addr, mem_addr, ptr) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), MAME_VALIDATE_REG_KIND_WORD, 0)
+#define MAME_SYNC_MEM(addr, mem_addr, ptr) \
+    mame_sync_word_impl(__FILE__, __LINE__, (mem_addr), (ptr))
+#define MAME_SYNC_INT0_PHASE(addr, name) \
+    mame_sync_int0_phase_impl(__FILE__, __LINE__, (name))
 #define MAME_ASSERT_MEM_FLOAT(addr, mem_addr, ptr) \
     mame_assert_reg_at_addr_impl(__FILE__, __LINE__, (addr), (mem_addr), (ptr), \
         _Generic(*(ptr), c3x_f32_t: MAME_VALIDATE_REG_KIND_STORED_FLOAT, default: MAME_VALIDATE_REG_KIND_FLOAT), 0)
@@ -67,6 +73,8 @@ void mame_validate_abort_on_error(int abort);
 void mame_validate_fail_on_wrong_consumer(int enabled);
 int mame_validate_frame_ticks(void);
 int mame_validate_frame_mid_ticks(void);
+int mame_validate_player_ticks(void);
+int mame_validate_race_start_ticks(void);
 int mame_validation_replay_started(void);
 
 #endif

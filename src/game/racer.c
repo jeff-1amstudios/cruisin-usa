@@ -60,7 +60,7 @@ void WRECK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/);
 void OM_DRONE(PROC* p);
 void SEND_RACER_POS(void);
 extern int WRECKFLG;
-void GETFLYMAT(OBJ* obj /*AR4*/, PROC* p /*AR7*/);
+void GETFLYMAT(OBJ* obj /*AR4*/, c3x_f32_t x_total, c3x_f32_t y_total, c3x_f32_t z_total);
 
 static c3x_f32_t DIFFTAB[14];
 
@@ -3190,7 +3190,7 @@ void WRECK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/) {
     value = C3X_MUL(C3X_LDF(p->ctx->CARPROC.wreck_z_rate), frame_count);
     p->ctx->CARPROC.wreck_z_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->CARPROC.wreck_z_total))); // ;ACCUMULATE Z RADIANS
     // asm 0000559A: 	CALL	GETFLYMAT		;COMPUTE MATRICES
-    GETFLYMAT(obj, p); // ;COMPUTE MATRICES
+    GETFLYMAT(obj, p->ctx->CARPROC.wreck_x_total, p->ctx->CARPROC.wreck_y_total, p->ctx->CARPROC.wreck_z_total); // ;COMPUTE MATRICES
     // *CONVERT CARVROT,CARSPEED TO OVELX, OVELZ
     // asm 0000559B: 	LDF	*+AR5(CARVROT),R2
     // asm 0000559C: 	ADDF	1.57,R2		   	;CORRECT FOR 90 DEGREE ERROR

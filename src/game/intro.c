@@ -3628,7 +3628,11 @@ void INIT_PEDALCHK(int* pedal_released /*R5*/) {
     }
 
     if (getenv("CRUSN_VALIDATE_SCRIPT_CAR_CHOICE") != NULL) {
-        _pot1 = 0xFF; CHOSEN_TRANSMISSION = MANUAL_TRANSMISSION;
+        // The validation run does not script the four-position shifter. Keep
+        // the selected car in automatic so it starts in first instead of
+        // remaining in neutral for the entire trace.
+        _pot1 = 0xFF;
+        CHOSEN_TRANSMISSION = AUTO_TRANSMISSION;
     }
 
     // asm 00001C61: 	RETS
@@ -3805,6 +3809,7 @@ static void VALIDATE_GARAGE_TIMELINE(const char* event) {
 void WAVEFLAG(PROC* p) {
     const WAVEFLAG_ENTRY* entry;
     tTEXT* text;
+    int align_race_start_sound = 0;
 
     switch (PROC_RESUME_STATE) {
     case 0:
@@ -4014,8 +4019,8 @@ BABAD666:
     p->ctx->WAVEFLAG.saved_mode &= ~MSLINE;
     if (getenv("CRUSN_VALIDATE_ALIGN_SECTIME_PHASE") != NULL &&
         getenv("CRUSN_VALIDATE_ALIGN_SECTIME_PHASE")[0] == '1') {
-        /* The port takes two IRQs before the next process pass; MAME takes one. */
-        _sectime = -1;
+        /* Menu duration differs between the two runs; synchronize at GO. */
+        _sectime = 0;
     }
     MAME_ASSERT_ORDERING("RACE_TIMING_START");
     // asm 00001D0E: 	STI	R5,@_MODE
@@ -4062,7 +4067,29 @@ NANAD:
     // asm 00001D24: 	STI	R0,@SUSPEND_MODE
     SUSPEND_MODE = SM_GO;
     // asm 00001D25: 	SONDFX	PEELOUT
+    if (mame_validation_replay_started()) {
+        int race_start_ticks = mame_validate_race_start_ticks();
+        if (INFRAMES < race_start_ticks) {
+            // This is a phase-label difference at the race transition, not a
+            // missing completed interrupt. Replaying INT0 here would age the
+            // already-running sound channels a second time.
+            INFRAMES = race_start_ticks;
+            align_race_start_sound = 1;
+        }
+    }
     ONESNDFX(PEELOUT);
+    // Keep race-start sound timing tied to the same interrupt phase. Sound
+    // expiry can otherwise alter FX arbitration and the shared gameplay RNG.
+    MAME_ASSERT_MEM(0x00001D27, "d@0000C960", &INFRAMES);
+    MAME_ASSERT_MEM(0x00001D27, "d@0000E929", &SNDSTR[1].priority);
+    MAME_ASSERT_MEM(0x00001D27, "d@0000E92B", &SNDSTR[1].timer_countdown);
+    MAME_ASSERT_MEM(0x00001D27, "d@0000E932", &SNDSTR[2].priority);
+    MAME_ASSERT_MEM(0x00001D27, "d@0000E934", &SNDSTR[2].timer_countdown);
+    if (align_race_start_sound) {
+        // Preserve the sound-processor phase of MAME's two-tick transition
+        // frame without replaying unrelated INT0 work.
+        SNDPROC();
+    }
     // asm 00001D27: 	READAUD	ADJ_TIME_TO_START
     // asm 00001D29: 	MPYI	5,R0
     // asm 00001D2A: 	ADDI	60,R0

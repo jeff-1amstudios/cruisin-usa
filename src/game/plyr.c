@@ -973,6 +973,12 @@ PLYRLP:
     // asm 00002A61: 	CMPI	1,R0
     // asm 00002A62: 	LDIZ	@PLYRFIRST,R1
     // asm 00002A63: 	ADDI	R2,R1
+    if (mame_validation_replay_started()) {
+        int player_ticks = mame_validate_player_ticks();
+        while (INFRAMES < player_ticks) {
+            INT0();
+        }
+    }
     // asm 00002A64: 	STI	R1,@PLYRFIRST		;TIMER FOR PLAYER IN 1ST PLACE
     PLYRFIRST = (POSITION == 1 ? PLYRFIRST : -NFRAMES) + NFRAMES; // TIMER FOR HOW LONG PLAYER IN 1ST
     MAME_ASSERT_MEM(0x00002A65, "d@0000C96E", &_sectime);
@@ -3019,6 +3025,10 @@ void GETSPD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     int frames;
     int i;
 
+    // MAME may service INT0 during the expensive player update. Replaying the
+    // recorded phase here keeps interrupt-owned timers aligned before GETSPD
+    // consumes them, without guessing from a later derived-value mismatch.
+    MAME_SYNC_INT0_PHASE(0x00002D83, "GETSPD_TICKS");
     // asm 00002D83: 	LDI	*+AR5(CAR_AIRB),R0
     MAME_ASSERT_MEM(0x00002D83, "d@(ar5+20)", &carblk->rear_airborne);
     // asm 00002D84: 	BZ	GETSPD1	      		;NO AIR DUDE...
@@ -3181,17 +3191,20 @@ GETSPD10:
     // asm 00002DB6: 	LDF	2,R3			;DEFAULT CONSTANT
     friction = C3X_IMM_F32(2.0);
     // asm 00002DB7: 	LDI	@_countdown,R2		;TIMEOUT?
+    MAME_ASSERT_REG(0x00002DB8, "R2", &_countdown);
     // asm 00002DB8: 	LDFZ	0,R3			;YES, NO GRAVITY
     if (_countdown == 0) {
         friction = C3X_FROM_INT(0);
     }
     // asm 00002DB9: 	LDI	@_MODE,R2		;ON START LINE?
+    MAME_ASSERT_REG(0x00002DBA, "R2", &_MODE);
     // asm 00002DBA: 	TSTB	MGO,R2
     // asm 00002DBB: 	LDFZ	0,R3			;YIP, NO GRAVITY
     if ((_MODE & MGO) == 0) {
         friction = C3X_FROM_INT(0);
     }
     // asm 00002DBC: 	LDF	*+AR5(CARBRAKE),R2	;BRAKE ON?
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002DBD, "R2", &carblk->brake, 5);
     // asm 00002DBD: 	CMPF	0.5,R2
     // asm 00002DBE: 	LDFGT	0,R3			;YES, NO GRAV
     if (C3X_GT(carblk->brake, C3X_IMM_F32(0.5))) {
@@ -5426,6 +5439,15 @@ NO_SMOKE:
     skid_volume += 140;
     // *CHECK ALREADY ACTIVE
     // asm 000030DE: 	LDI	@SNDSTR+SND_SIZ+SND_IDX,R2	;CHECK TRACK1
+    // Sound effects share the gameplay RNG. Validate the arbitration inputs
+    // here so a missed/rejected effect is caught before it changes RANDU0's
+    // next consumer on a later frame.
+    MAME_SYNC_MEM(0x000030DE, "d@0000E929", &SNDSTR[1].priority);
+    MAME_SYNC_MEM(0x000030DE, "d@0000E92B", &SNDSTR[1].timer_countdown);
+    MAME_SYNC_MEM(0x000030DE, "d@0000E92F", &SNDSTR[1].sound_index);
+    MAME_SYNC_MEM(0x000030DE, "d@0000E932", &SNDSTR[2].priority);
+    MAME_SYNC_MEM(0x000030DE, "d@0000E934", &SNDSTR[2].timer_countdown);
+    MAME_SYNC_MEM(0x000030DE, "d@0000E938", &SNDSTR[2].sound_index);
     // asm 000030DF: 	CMPI	SKIDB,R2
     // asm 000030E0: 	BEQ	SKIDAMP				;ALREADY SKIDDING
     if (SNDSTR[1].sound_index == SKIDB) {

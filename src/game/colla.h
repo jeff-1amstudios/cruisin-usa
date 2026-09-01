@@ -27,7 +27,7 @@ extern c3x_f32_t BOXSCRAM[];
 // asm: 	.BSS	PLYRBEHIND,1
 extern int PLYRBEHIND;
 void COLSCC(void);
-void GETFLYMAT(struct OBJ* obj /*AR4*/, struct PROC* p /*AR7*/);
+void GETFLYMAT(struct OBJ* obj /*AR4*/, c3x_f32_t x_total, c3x_f32_t y_total, c3x_f32_t z_total);
 void SEND_FLY_KILL(struct OBJ* obj /*AR4*/, struct CARBLK* carblk /*AR5*/);
 void DECODE_FLY_KILL(void);
 void DECODE_FLY_XSFER(void);

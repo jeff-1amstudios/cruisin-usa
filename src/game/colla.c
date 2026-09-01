@@ -62,7 +62,7 @@ void SEND_FLY_KILL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DECODE_FLY_KILL(void);
 static void SEND_FLY_XSFER(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/, int state /*R4*/);
 void DECODE_FLY_XSFER(void);
-void GETFLYMAT(OBJ* obj /*AR4*/, PROC* p /*AR7*/);
+void GETFLYMAT(OBJ* obj /*AR4*/, c3x_f32_t x_total, c3x_f32_t y_total, c3x_f32_t z_total);
 #define PLYR_VS_DRONES COLSCAN
 void COLSCAN(void);
 #define DRONES_VS_DRONES CLDSCAN
@@ -72,8 +72,8 @@ static void COLDISP(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_poin
 static void SPINROT(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/, VECTOR* collision_point /*AR3*/, c3x_reg_t relative_x /*R0*/, c3x_reg_t relative_z /*R1*/);
 static void BEHINDCK(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/);
 static c3x_reg_t ANGMOM(CARBLK* carblk /*AR5*/, c3x_reg_t momentum /*R2*/, c3x_reg_t* out_r3);
-static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_direction_difference /*R2*/);
-static void SPINROT_FINISH(OBJ* hitter_obj, OBJ* obj, CARBLK* carblk, int entry, c3x_reg_t direction_difference);
+static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_direction_difference /*R2*/, c3x_reg_t* out_r3 /*R3*/);
+static void SPINROT_FINISH(OBJ* hitter_obj, OBJ* obj, CARBLK* carblk, int entry, c3x_reg_t direction_difference, c3x_reg_t live_r3);
 static void COLSND(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, c3x_reg_t impact_speed /*R0*/);
 int COLCHK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR** out_collision_point /*AR3*/);
 static c3x_f32_t* GETBOX(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/);
@@ -488,6 +488,7 @@ void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     // asm 00001FFB: 	PUSH	AR6
     // asm 00001FFC: 	CALL	ROADSCAN 		;GET POINT HEIGHTS
     ROADSCAN(obj, carblk); // ;GET POINT HEIGHTS
+    MAME_ASSERT_MEM(0x00001FFD, "d@(ar6+40)", &carblk->debug_car_id);
     observed_raw = C3X_STORE(C3X_LDF(carblk->center.y));
     MAME_ASSERT_MEM(0x00001FFD, "d@(ar6+1)", &observed_raw);
     // ****************************************************
@@ -601,19 +602,21 @@ PC1X0:
     // asm 0000202A: 	LDF	*+AR0(9),R2
     // asm 0000202B:       	CMPF	72,R2		;1 FOOT OFF GROUND?
     // asm 0000202C: 	LDILT	0,R1		;NO
-    if (C3X_LT(carblk->left_front.road_delta_y, C3X_FROM_INT(72))) {
+    if (C3X_LT(carblk->right_front.road_delta_y, C3X_FROM_INT(72))) {
         front_airborne = 0; // ;NO
     }
     // asm 0000202D: 	LDF	*+AR0(15),R2
     // asm 0000202E:       	CMPF	72,R2		;1 FOOT OFF GROUND?
     // asm 0000202F: 	LDILT	0,R1		;NO
-    if (C3X_LT(carblk->left_rear.road_delta_y, C3X_FROM_INT(72))) {
+    if (C3X_LT(carblk->left_front.road_delta_y, C3X_FROM_INT(72))) {
         front_airborne = 0; // ;NO
     }
     // asm 00002030: 	STI	R0,*+AR6(CAR_AIRB)
     // asm 00002031: 	STI	R1,*+AR6(CAR_AIRF)
     carblk->rear_airborne = rear_airborne;
     carblk->front_airborne = front_airborne;
+    MAME_ASSERT_MEM(0x00002032, "d@(ar6+20)", &carblk->rear_airborne);
+    MAME_ASSERT_MEM(0x00002032, "d@(ar6+1f)", &carblk->front_airborne);
     // asm 00002032: 	LDI	AR6,R0		     	;get suspension points in ram
     // asm 00002033: 	LDPI	@VLI,AR0		;rotate for universe etc.
     // asm 00002034: 	STI	R0,*AR0++
@@ -1938,6 +1941,7 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
     int sign_id;
     int sign_type;
     int sign_subtype;
+    int is_player_car;
     int i;
     PROC_CONTEXT* fly_ctx;
 
@@ -2105,6 +2109,13 @@ RUNOVER:
         fall_rate = C3X_IMM_F32(0.7);
     }
     MAME_ASSERT_REG_FLOAT(0x00002312, "R7", &fall_rate);
+    // Identify the exact car/sign pair at run-over collisions.  Matching the
+    // numeric calculations alone can hide one process consuming another
+    // car's validation event, which also changes player-only sound effects.
+    MAME_ASSERT_MEM(0x00002313, "d@(ar3+f)", &car_obj->id);
+    MAME_ASSERT_MEM(0x00002313, "d@(ar4+f)", &sign_obj->id);
+    is_player_car = car_obj == PLYCAR;
+    MAME_ASSERT_MEM(0x00002313, "ar3==d@0000E8A6", &is_player_car);
     FREESIGN(sign_obj);
     fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
     fly_ctx->SIGNFALL.obj = sign_obj;
@@ -2128,7 +2139,11 @@ RUNOV00:
     if (car_obj != PLYCAR) {
         goto COLSGCX0;
     }
-    ONESND(sign_id);
+    // asm 00002327: CALL ONESNDFX
+    // Run-over effects may use either FX track.  ONESND targets the channel
+    // encoded in the table entry and can incorrectly reject this sound when
+    // that channel is busy even though the other FX track is available.
+    ONESNDFX(sign_id);
     goto COLSGCX;
 COLSGCX0:
     DRONESND1(sign_obj, sign_id);
@@ -2985,7 +3000,7 @@ FLYCARP0:
     // ;	ADDF	*+AR7(PDATA+5),R0
     // ;	STF	R0,*+AR7(PDATA+5)
     // asm 00002498: 	CALL	GETFLYMAT		;COMPUTE MATRICES
-    GETFLYMAT(obj, p); // ;COMPUTE MATRICES
+    GETFLYMAT(obj, p->ctx->FLYCARP.x_total, p->ctx->FLYCARP.y_total, p->ctx->FLYCARP.z_total); // ;COMPUTE MATRICES
     // *CONVERT CARVROT,CARSPEED TO OVELX, OVELZ
     // asm 00002499: 	LDF	*+AR5(CARVROT),R2
     // asm 0000249A: 	ADDF	1.57,R2		   	;CORRECT FOR 90 DEGREE ERROR
@@ -3291,7 +3306,7 @@ FLYCCC:
         GETTRAK(obj, carblk);
         DRONINBZ(obj, carblk); // ;CHECK BOUNDS
     // asm 00002535: 	CALL	GETFLYMAT
-        GETFLYMAT(obj, p);
+        GETFLYMAT(obj, p->ctx->FLYCARP.x_total, p->ctx->FLYCARP.y_total, p->ctx->FLYCARP.z_total);
     // asm 00002536: 	CALL	BOXSCAN		      	;KEEP FALLING!!!
         if (!BOXSCAN(obj, &road_delta)) { // ;KEEP FALLING!!!
             goto FLYCARSTP;
@@ -3619,16 +3634,16 @@ DFXX:
  *R2,R3,AR2 TRASHED
  *
  */
-void GETFLYMAT(OBJ* obj /*AR4*/, PROC* p /*AR7*/) {
+void GETFLYMAT(OBJ* obj /*AR4*/, c3x_f32_t x_total, c3x_f32_t y_total, c3x_f32_t z_total) {
     // asm 000025D6: 	LDF	*+AR7(PDATA+5),R2
     // asm 000025D7: 	LDI	AR4,AR2
     // asm 000025D8: 	ADDI	OMATRIX,AR2
     // asm 000025D9: 	CALL    FIND_ZMATRIX
-    FIND_ZMATRIX(&obj->omatrix, C3X_LDF(p->ctx->FLYCARP.z_total));
+    FIND_ZMATRIX(&obj->omatrix, C3X_LDF(z_total));
     // asm 000025DA: 	LDPI	@MATRIXAI,AR2
     // asm 000025DB: 	LDF	*+AR7(PDATA+3),R2
     // asm 000025DC: 	CALL    FIND_XMATRIX
-    FIND_XMATRIX(&MATRIXAI, C3X_LDF(p->ctx->FLYCARP.x_total));
+    FIND_XMATRIX(&MATRIXAI, C3X_LDF(x_total));
     // asm 000025DD: 	LDI	AR4,R2
     // asm 000025DE: 	ADDI	OMATRIX,R2
     // asm 000025DF: 	LDI	R2,R3
@@ -3637,7 +3652,7 @@ void GETFLYMAT(OBJ* obj /*AR4*/, PROC* p /*AR7*/) {
     // asm 000025E1: 	LDPI	@MATRIXAI,AR2
     // asm 000025E2: 	LDF	*+AR7(PDATA+4),R2
     // asm 000025E3: 	CALL    FIND_YMATRIX
-    FIND_YMATRIX(&MATRIXAI, C3X_LDF(p->ctx->FLYCARP.y_total));
+    FIND_YMATRIX(&MATRIXAI, C3X_LDF(y_total));
     // asm 000025E4: 	LDI	AR4,R2
     // asm 000025E5: 	ADDI	OMATRIX,R2
     // asm 000025E6: 	LDI	R2,R3
@@ -4664,13 +4679,13 @@ static void SPINROT(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/, VECTOR* collision
     // asm 00002770: 	CMPI	1,R1
     // asm 00002771: 	BZ	SPINNIT			;YES...
     if (carblk->spin_flag == 1) {
-        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_SPINNIT, direction_difference);
+        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_SPINNIT, direction_difference, intensity);
         return;
     }
     // asm 00002772: 	CMPI	@PLYCAR,AR1		;PLAYERS CAR?
     // asm 00002773: 	BNZ	DRONESPIN
     if (obj != PLYCAR) {
-        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_DRONE, direction_difference);
+        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_DRONE, direction_difference, intensity);
         return;
     }
     // *PLAYER SPIN
@@ -4690,12 +4705,12 @@ static void SPINROT(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/, VECTOR* collision
         goto PLSPIN1;
     }
     // asm 00002777: 	CALL	CKBOUNCE
-    probability = CKBOUNCE(obj, carblk, &direction_difference);
+    probability = CKBOUNCE(obj, carblk, &direction_difference, &intensity);
     // CKBOUNCE clobbers R3; only its carry result is live at this point.
     // MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002778, "R3", &intensity, 5);
     // asm 00002778: 	BNC	SPINBUMP
     // asm 00002779: 	B	SPINBOUNCE
-    SPINROT_FINISH(hitter_obj, obj, carblk, probability ? SPINROT_ENTRY_BOUNCE : SPINROT_ENTRY_BUMP, direction_difference);
+    SPINROT_FINISH(hitter_obj, obj, carblk, probability ? SPINROT_ENTRY_BOUNCE : SPINROT_ENTRY_BUMP, direction_difference, intensity);
     return;
 PLSPIN1:
     // asm 0000277A: 	CMPF	100,R3
@@ -4710,10 +4725,10 @@ PLSPIN1:
         goto PLSPIN2;
     }
     // asm 0000277F: 	CALL	CKBOUNCE
-    probability = CKBOUNCE(obj, carblk, &direction_difference);
+    probability = CKBOUNCE(obj, carblk, &direction_difference, &intensity);
     // asm 00002780: 	BC	SPINBOUNCE	   	;DO A BOUNCE
     if (probability) {
-        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_BOUNCE, direction_difference);
+        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_BOUNCE, direction_difference, intensity);
         return;
     }
 PLSPIN2:
@@ -4723,7 +4738,7 @@ PLSPIN2:
     // asm 00002784: 	CALL	RANDPER
     // asm 00002785: 	BC	PSPINNIT       		;NORMAL SPIN
     // asm 00002786: 	B	SPINBUMP
-    SPINROT_FINISH(hitter_obj, obj, carblk, RANDPER(CAMVIEW != 0 ? 150 : 100) ? SPINROT_ENTRY_PSPINNIT : SPINROT_ENTRY_BUMP, direction_difference);
+    SPINROT_FINISH(hitter_obj, obj, carblk, RANDPER(CAMVIEW != 0 ? 150 : 100) ? SPINROT_ENTRY_PSPINNIT : SPINROT_ENTRY_BUMP, direction_difference, intensity);
     return;
 PLBIG:
     // asm 00002787: 	LDI	@CAMVIEW,R2
@@ -4732,14 +4747,14 @@ PLBIG:
     // asm 0000278A: 	CALL	RANDPER
     // asm 0000278B: 	BC	PSPINNIT       		;NORMAL SPIN
     if (RANDPER(CAMVIEW != 0 ? 500 : 250)) {
-        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_PSPINNIT, direction_difference);
+        SPINROT_FINISH(hitter_obj, obj, carblk, SPINROT_ENTRY_PSPINNIT, direction_difference, intensity);
         return;
     }
     // asm 0000278C: 	CALL	CKBOUNCE
-    probability = CKBOUNCE(obj, carblk, &direction_difference);
+    probability = CKBOUNCE(obj, carblk, &direction_difference, &intensity);
     // asm 0000278D: 	BC	SPINBOUNCE	   	;DO A BOUNCE
     // asm 0000278E: 	B	SPINBUMP
-    SPINROT_FINISH(hitter_obj, obj, carblk, probability ? SPINROT_ENTRY_BOUNCE : SPINROT_ENTRY_BUMP, direction_difference);
+    SPINROT_FINISH(hitter_obj, obj, carblk, probability ? SPINROT_ENTRY_BOUNCE : SPINROT_ENTRY_BUMP, direction_difference, intensity);
     return;
     // *
     // *CHECK IF PLAYER HIT FROM BEHIND
@@ -4775,9 +4790,9 @@ static void BEHINDCK(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/) {
     return;
 }
 
-static void SPINROT_FINISH(OBJ* hitter_obj, OBJ* obj, CARBLK* carblk, int entry, c3x_reg_t direction_difference) {
+static void SPINROT_FINISH(OBJ* hitter_obj, OBJ* obj, CARBLK* carblk, int entry, c3x_reg_t direction_difference, c3x_reg_t live_r3) {
     c3x_reg_t rotation_speed;
-    c3x_reg_t collision_intensity = C3X_LDF(COLVEL);
+    c3x_reg_t collision_intensity = live_r3;
     c3x_reg_t spin_radians = C3X_FROM_INT(0);
     c3x_reg_t value;
     int spin_time;
@@ -5096,7 +5111,7 @@ static c3x_reg_t ANGMOM(CARBLK* carblk /*AR5*/, c3x_reg_t momentum /*R2*/, c3x_r
     c3x_reg_t r3;
 
     // asm 0000281D: 	LDI	*+AR5(CAR_SPIN),R3 	;ADD IN EXISTING INERTIA
-    r3 = C3X_FROM_INT(carblk->spin_flag);
+    r3 = out_r3 != NULL ? *out_r3 : C3X_FROM_INT(0); C3X_LDI(carblk->spin_flag, r3);
     // asm 0000281E: 	BZ	ANGM1
     if (carblk->spin_flag == 0) {
         goto ANGM1;
@@ -5128,7 +5143,7 @@ ANGM1:
  *R2=YROT-ROADIR
  *
  */
-static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_direction_difference /*R2*/) {
+static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_direction_difference /*R2*/, c3x_reg_t* out_r3 /*R3*/) {
     c3x_reg_t road_direction;
     c3x_reg_t direction_difference;
 
@@ -5141,7 +5156,7 @@ static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_dir
     direction_difference = NORMITS(direction_difference);
     // asm 00002828: 	ABSF	R2,R3			;VELOCITY BACKWARDS?
     // asm 00002829: 	CMPF	1.75,R3
-    if (C3X_LT(C3X_ABS(direction_difference), C3X_IMM_F32(1.75))) {
+    if (C3X_LT((*out_r3 = C3X_ABS(direction_difference)), C3X_IMM_F32(1.75))) {
         goto CKBNCX;
     }
     // asm 0000282A: 	BLT	CKBNCX		      	;NO...
@@ -5152,7 +5167,7 @@ static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_dir
     direction_difference = NORMITS(direction_difference);
     // asm 0000282E: 	ABSF	R2,R3
     // asm 0000282F: 	CMPF	1.4,R3
-    if (C3X_GT(C3X_ABS(direction_difference), C3X_IMM_F32(1.4))) {
+    if (C3X_GT((*out_r3 = C3X_ABS(direction_difference)), C3X_IMM_F32(1.4))) {
         goto CKBNCX;
     }
     // asm 00002830: 	BGT	CKBNCX			;DIRECTION OUT OF RANGE

@@ -218,6 +218,24 @@ c3x_reg_t c3x_addi(c3x_reg_t dst, c3x_reg_t src) {
     return (c3x_reg_t){ (float)ldexp(result_mantissa, dst_exponent) };
 }
 
+c3x_reg_t c3x_ldi(c3x_reg_t dst, int32_t src) {
+    int exponent;
+    uint32_t mantissa_bits = (uint32_t)src;
+    uint32_t fraction;
+    double mantissa;
+
+    (void)c3x_host_mantissa_bits(dst.value, &exponent);
+    if (exponent == -128) {
+        return (c3x_reg_t){ 0.0f };
+    }
+
+    fraction = mantissa_bits & 0x7fffffffu;
+    mantissa = (mantissa_bits & 0x80000000u) == 0
+        ? 1.0 + ((double)fraction / 2147483648.0)
+        : -2.0 + ((double)fraction / 2147483648.0);
+    return (c3x_reg_t){ (float)ldexp(mantissa, exponent) };
+}
+
 int c3x_cmp(c3x_reg_t a, c3x_reg_t b) {
     return (a.value > b.value) - (a.value < b.value);
 }
@@ -647,6 +665,11 @@ c3x_reg_t c3x_abs(c3x_reg_t value) {
 c3x_reg_t c3x_addi(c3x_reg_t dst, c3x_reg_t src) {
     /* Integer instructions operate on the mantissas and preserve dst's exponent. */
     return c3x_pack(c3x_exponent(dst), c3x_mantissa(dst) + c3x_mantissa(src));
+}
+
+c3x_reg_t c3x_ldi(c3x_reg_t dst, int32_t src) {
+    /* LDI changes the 32-bit integer/mantissa region but not the exponent. */
+    return c3x_pack(c3x_exponent(dst), (uint32_t)src);
 }
 
 int c3x_cmp(c3x_reg_t a, c3x_reg_t b) {
