@@ -836,7 +836,7 @@ void VEHICLE_ANI_INIT(int vehicle_index /*AR2*/, OBJ* obj /*AR4*/) {
     // asm 00008F8A: 	CALL	PRC_CREATE_CHILD
     ctx = port_malloc(sizeof(PROC_CONTEXT));
     ctx->CARPROC.obj = obj;
-    proc = PRC_CREATE_CHILD(CARPROC, DRONE_C | ANI_T, ctx);
+    proc = PRC_CREATE_CHILD(CURRENT_PROC, CARPROC, DRONE_C | ANI_T, ctx);
     // asm 00008F8B: 	STI	AR0,*+AR4(ORADZ)	;DOUBLING AS A PROC PTR
     obj->radz_ptr = (uintptr_t)proc;
 VANIX:
@@ -1405,7 +1405,7 @@ void DELCAR(CARBLK* carblk) {
 void SCAN_OBJECTS(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

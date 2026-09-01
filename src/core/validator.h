@@ -65,5 +65,8 @@ void mame_validate_print_oks_on(void);
 void mame_validate_print_oks_off(void);
 void mame_validate_abort_on_error(int abort);
 void mame_validate_fail_on_wrong_consumer(int enabled);
+int mame_validate_frame_ticks(void);
+int mame_validate_frame_mid_ticks(void);
+int mame_validation_replay_started(void);
 
 #endif

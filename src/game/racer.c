@@ -1862,14 +1862,18 @@ int CKAHEAD(OBJ* other_obj /*AR2*/, CARBLK* other_carblk /*AR3*/, OBJ* obj /*AR4
     if (other_carblk == NULL || carblk == NULL) {
         return -1;
     }
-    other_track_obj = OBJREF_TO_PTR(other_carblk->closest_track_piece);
+    other_track_obj = OBJREF_IS_STF_ZERO(other_carblk->closest_track_piece)
+        ? OBJREF_STF_ZERO_VIEW()
+        : OBJREF_TO_PTR(other_carblk->closest_track_piece);
     // asm 0000539B: 	LDI	*+AR0(OUSR1),R0
     if (other_track_obj == NULL) {
         return -1;
     }
     other_track_id = (int)other_track_obj->usr1;
     // asm 0000539C: 	LDI	*+AR5(CARTRAK),AR0
-    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
+    track_obj = OBJREF_IS_STF_ZERO(carblk->closest_track_piece)
+        ? OBJREF_STF_ZERO_VIEW()
+        : OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 0000539D: 	CMPI	*+AR0(OUSR1),R0
     if (track_obj == NULL) {
         return -1;
@@ -2695,12 +2699,25 @@ static c3x_reg_t GETPV(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, c3x_reg_t* angl
     OBJ* track_obj;
     c3x_reg_t angle;
     c3x_reg_t perpendicular_velocity;
+    int track_missing;
+    uint32_t track_id;
 
     // asm 000054CF: 	LDI	*+AR2(OCARBLK),AR3
     carblk = obj->carblk;
     // asm 000054D0: 	PUSH	AR2
+    MAME_ASSERT_MEM(0x000054D1, "d@(ar3+59)", &carblk->car_num);
+    MAME_ASSERT_MEM(0x000054D1, "d@(ar3+40)", &carblk->debug_car_id);
+    track_missing = carblk->closest_track_piece == 0;
+    MAME_ASSERT_MEM(0x000054D1, "(d@(ar3+37)==0)", &track_missing);
     // asm 000054D1: 	LDI	*+AR3(CARTRAK),AR2
-    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
+    if (OBJREF_IS_STF_ZERO(carblk->closest_track_piece)) {
+        track_obj = OBJREF_STF_ZERO_VIEW();
+        track_id = 0x4EEF;
+    } else {
+        track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
+        track_id = (uint32_t)track_obj->usr1;
+    }
+    MAME_ASSERT_MEM(0x000054D2, "d@(ar2+1e)", &track_id);
     // asm 000054D2: 	CALL	GETRDIR	 		;R0= RADIANS
     angle = GETRDIR(track_obj); // ;R0= RADIANS
     // asm 000054D3: 	SUBF	*+AR3(CARVROT),R0
@@ -2747,7 +2764,9 @@ static void GETWIDTH(OBJ* obj /*AR2*/, CARBLK* carblk /*AR3*/, c3x_reg_t* width_
     (void)obj;
     // asm 000054DA: 	PUSH	AR2
     // asm 000054DB: 	LDI	*+AR3(CARTRAK),AR2
-    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
+    track_obj = OBJREF_IS_STF_ZERO(carblk->closest_track_piece)
+        ? OBJREF_STF_ZERO_VIEW()
+        : OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 000054DC: 	CALL	GETRDIR	 		;R0= RADIANS
     angle = GETRDIR(track_obj); // ;R0= RADIANS
     // asm 000054DD: 	POP	AR2

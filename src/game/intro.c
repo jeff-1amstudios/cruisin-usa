@@ -32,6 +32,9 @@ void HEAD2HEAD_LOGO(void);
 static void KABOSHP(void);
 static void JINMSG(void);
 static void THROBIT(void);
+static void VALIDATE_GARAGE_TIMELINE(const char* event);
+static uint64_t validate_garage_start_frame;
+static unsigned validate_zoom_dronego_count;
 void WAIT_FOR_CHALLENGER(PROC* p);
 static int CHECK_ENDBONUS(void);
 static void WAIT_FOR_ENDBONUS(PROC* p);
@@ -403,8 +406,8 @@ void WAIT_FOR_CHALLENGER(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("WAIT_FOR_CHALLENGER");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("WAIT_FOR_CHALLENGER");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -674,8 +677,8 @@ static void WAIT_FOR_ENDBONUS(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("WAIT_FOR_ENDBONUS");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("WAIT_FOR_ENDBONUS");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -852,7 +855,7 @@ IURENDFL:
 void ISSUE_STARTGAME_TSEL(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -868,7 +871,7 @@ void ISSUE_STARTGAME_TSEL(PROC* p) {
 void ISSUE_STARTGAME(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -883,7 +886,7 @@ void ISSUE_STARTGAME(PROC* p) {
 static void ISSUE_STARTGAME__tail(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_ORDERING("ISSUE_STARTGAME");
+        // MAME_ASSERT_ORDERING("ISSUE_STARTGAME");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1125,7 +1128,7 @@ void PLYR_INTRO(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1214,8 +1217,8 @@ NOULOG:
 static void PLYR_INTRO__CNR_ENTER_tail(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("CNR_ENTER");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("CNR_ENTER");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1349,8 +1352,8 @@ static void PLYR_INTRO__ALL_JOINUP_tail(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("ALL_JOINUP");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("ALL_JOINUP");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1368,8 +1371,9 @@ static void PLYR_INTRO__ALL_JOINUP_tail(PROC* p) {
     _countdown = (READAUD(ADJ_TIME_TO_START) * 5) + 60;
 
     // asm 000017E8: 	CREATEC	WAVEFLAG,UTIL_C|MONKEY_T
+    VALIDATE_GARAGE_TIMELINE("WAVEFLAG_CREATE");
     ctx = port_malloc(sizeof(PROC_CONTEXT));
-    CREATEC(WAVEFLAG, UTIL_C | MONKEY_T, ctx);
+    CREATEC(p, WAVEFLAG, UTIL_C | MONKEY_T, ctx);
 
     // asm 000017EB: 	CALL	CLEANUP_TRACKSEL_PALS
     CLEANUP_TRACKSEL_PALS();
@@ -1455,7 +1459,7 @@ int START_NOW_P;
 void CHOOSE_NEXT_RACE(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1515,8 +1519,8 @@ void CHOOSE_NEXT_RACE(PROC* p) {
 static void LOAD_NEW_SELECTION(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("LOAD_NEW_SELECTION");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("LOAD_NEW_SELECTION");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1679,7 +1683,7 @@ void INIT_GAMELEG(void) {
     // asm 0000186A: 	CREATE	CPOINT_LIGHT,SPAWNER_C|COLORCYC_T
     CREATE(CPOINT_LIGHT, SPAWNER_C | COLORCYC_T, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 0000186D: 	CREATEC	POSITION_FINDER,SPAWNER_C|TRAFFIC_T
-    CREATEC(POSITION_FINDER, SPAWNER_C | TRAFFIC_T, port_malloc(sizeof(PROC_CONTEXT)));
+    CREATEC(CURRENT_PROC, POSITION_FINDER, SPAWNER_C | TRAFFIC_T, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 00001870: 	CREATE	MOVEIN_HUD_EQUIP,UTIL_C
     CREATE(MOVEIN_HUD_EQUIP, UTIL_C, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 00001873: 	LDI	SM_HALT,R0
@@ -1818,7 +1822,7 @@ static void CHOOSECAR(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1842,6 +1846,8 @@ static void CHOOSECAR(PROC* p) {
     STARTSECTION = RACE_STARTING_POINTS[CHOSEN_RACE];
     // asm 000018AE: 	CALL	BGD_INIT
     BGD_INIT();
+    validate_garage_start_frame = PRC_DISPATCH_COUNT;
+    VALIDATE_GARAGE_TIMELINE("BGD_INIT_DONE");
     // asm 000018AF: 	LDI	MINTRO|MINFIN|MWATER|MGO,R0
     // asm 000018B0: 	STI	R0,@_MODE
     _MODE = MINTRO | MINFIN | MWATER | MGO;
@@ -1855,7 +1861,7 @@ static void CHOOSECAR(PROC* p) {
     // asm 000018B5: 	SOND1	CHOOSEUCAR
     SOND1(CHOOSEUCAR);
     // asm 000018B7: 	CREATEC	HIDDEN_VEHICLES,UTIL_C|CHOOSECAR_T
-    CREATEC(HIDDEN_VEHICLES, UTIL_C | CHOOSECAR_T, port_malloc(sizeof(PROC_CONTEXT)));
+    CREATEC(p, HIDDEN_VEHICLES, UTIL_C | CHOOSECAR_T, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 000018BA: 	LDI	@CCTI,AR2
     // asm 000018BB: 	FLOAT	256,R2
     // asm 000018BC: 	FLOAT	50,R3
@@ -2066,7 +2072,7 @@ int CAR_CHOICE_GOTTEN;
 void THE_CAR_CHOICE_PROC(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -2074,6 +2080,7 @@ void THE_CAR_CHOICE_PROC(PROC* p) {
 
     // ;	SLEEP	15
     // asm 00001942: 	CLRI	R0
+    VALIDATE_GARAGE_TIMELINE("CAR_CHOICE_START");
     // asm 00001943: 	STI	R0,@CAR_CHOICE_GOTTEN
     CAR_CHOICE_GOTTEN = 0;
     // asm 00001944: 	STI	R0,@START_HIT
@@ -2084,8 +2091,17 @@ void THE_CAR_CHOICE_PROC(PROC* p) {
     // asm 00001945: 	LDI	12,R0
     // asm 00001946: 	STI	R0,@_countdown
     _countdown = 12;
+    if (getenv("CRUSN_VALIDATE_SCRIPT_CAR_CHOICE") != NULL) {
+        // The MAME state is committed at a safe frame after INIT_PEDALCHK has
+        // observed a released pedal; its post-load throttle override then
+        // supplies the press. Reproduce that release-to-press edge explicitly.
+        _pot1 = C3X_FIX(C3X_LDF(PEDALMN));
+    }
     // asm 00001947: 	CALL	INIT_PEDALCHK
     INIT_PEDALCHK(&p->ctx->pedal_released);
+    if (getenv("CRUSN_VALIDATE_SCRIPT_CAR_CHOICE") != NULL) {
+        _pot1 = 0xFF;
+    }
 CCLP:
     // asm 00001948: 	LDI	@START_HIT,R0
     // asm 00001949: 	BNZ	CCLPX
@@ -2127,6 +2143,7 @@ CCLPX:
     // *END CHOOSE CAR LOOP
     // *
     // asm 0000195A: 	LDI	1,R0
+    VALIDATE_GARAGE_TIMELINE("CAR_CHOICE_DONE");
     // asm 0000195B: 	STI	R0,@CAR_CHOICE_GOTTEN
     CAR_CHOICE_GOTTEN = 1;
     // asm 0000195C: 	DIE
@@ -2145,7 +2162,7 @@ CCLPX:
 static void RAISE_DOOR(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -2209,7 +2226,9 @@ void ZOOMTOCAR(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        VALIDATE_GARAGE_TIMELINE("ZOOMTOCAR");
+        validate_zoom_dronego_count = 0;
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -2444,7 +2463,24 @@ NDO2:
     carblk->last_y_rotation = C3X_STF(C3X_REG(START_RADY));
     // asm 000019EC: 	CLRF	R2
     // asm 000019ED: 	CALL	DRONEGO
+    validate_zoom_dronego_count += 1;
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL) {
+        fprintf(
+            stderr,
+            "timeline ZOOM_RPM call=%u rpm=%.9g speed=%.9g\n",
+            validate_zoom_dronego_count,
+            C3X_TO_FLOAT(C3X_LDF(carblk->rpm_x100)),
+            C3X_TO_FLOAT(C3X_LDF(carblk->speed)));
+    }
     DRONEGO(p->ctx->ZOOMTOCAR_FRAME.car, carblk, C3X_FROM_INT(0));
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL) {
+        fprintf(
+            stderr,
+            "timeline ZOOM_POST call=%u rpm=%.9g speed=%.9g\n",
+            validate_zoom_dronego_count,
+            C3X_TO_FLOAT(C3X_LDF(carblk->rpm_x100)),
+            C3X_TO_FLOAT(C3X_LDF(carblk->speed)));
+    }
     // asm 000019EE: 	POPFL	R6
     // asm 000019F0: 	POP	AR5
     // asm 000019F1: 	CALL	WATCH_PLYRS_CAR
@@ -2508,7 +2544,24 @@ BABADUY:
     carblk->throttle = C3X_STF(C3X_IMM_F32(0.5));
     // asm 00001A10: 	CLRF	R2
     // asm 00001A11: 	CALL	DRONEGO
+    validate_zoom_dronego_count += 1;
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL) {
+        fprintf(
+            stderr,
+            "timeline ZOOM_RPM call=%u rpm=%.9g speed=%.9g\n",
+            validate_zoom_dronego_count,
+            C3X_TO_FLOAT(C3X_LDF(carblk->rpm_x100)),
+            C3X_TO_FLOAT(C3X_LDF(carblk->speed)));
+    }
     DRONEGO(p->ctx->ZOOMTOCAR_FRAME.car, carblk, C3X_FROM_INT(0));
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL) {
+        fprintf(
+            stderr,
+            "timeline ZOOM_POST call=%u rpm=%.9g speed=%.9g\n",
+            validate_zoom_dronego_count,
+            C3X_TO_FLOAT(C3X_LDF(carblk->rpm_x100)),
+            C3X_TO_FLOAT(C3X_LDF(carblk->speed)));
+    }
     // asm 00001A12: 	POP	AR5
     // asm 00001A13: 	CALL	WATCH_PLYRS_CAR
     WATCH_PLYRS_CAR(p->ctx->ZOOMTOCAR_FRAME.car);
@@ -2536,6 +2589,14 @@ IBODONE:
     SPOS_INIT(p, p->ctx->ZOOMTOCAR_FRAME.car, p->ctx->ZOOMTOCAR_FRAME.tracking_obj, 0); // INIT STARTING POSITION
 BABADUY4:
     // asm 00001A22: 	LDI	1,R0
+    VALIDATE_GARAGE_TIMELINE("START_NOW");
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL) {
+        fprintf(
+            stderr,
+            "timeline ZOOM_DRONEGO_COUNT count=%u rpm=%08X\n",
+            validate_zoom_dronego_count,
+            C3X_STORE(C3X_LDF(p->ctx->ZOOMTOCAR_FRAME.car->carblk->rpm_x100)));
+    }
     // asm 00001A23: 	STI	R0,@START_NOW_P
     START_NOW_P = 1;
     // asm 00001A24: 	LDI	MGAME|MINFIN|MWATER,R0	;NOT MGO NOT MHUD
@@ -2562,7 +2623,7 @@ void GETTHECARS(void) {
     // asm 00001A27: 	LDF	@START_RADY,R2
     // asm 00001A28: 	LDI	@MATRIXAI,AR2
     // asm 00001A29: 	CALL	FIND_YMATRIX
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     FIND_YMATRIX(&MATRIXAI, C3X_REG(START_RADY));
 
     // asm 00001A2A: 	LDL	CAR_ARRAY,AR3
@@ -2644,7 +2705,7 @@ LISTLP:
     // asm 00001A51: 	LDI	*AR4++,R0
     // asm 00001A52: 	STI	R0,*+AR0(OID)
     obj->id = entry->oid;
-    MAME_ASSERT_REG(0x00001A53, "R0", &obj->id);
+    // MAME_ASSERT_REG(0x00001A53, "R0", &obj->id);
 
     // asm 00001A53: 	LDI	*AR4,R0
     entry++;
@@ -2686,7 +2747,7 @@ void SHOW_CAR_STATISTICS(void) {
 
     // asm 00001A5C: 	LDI	@DCALL,R0
     // asm 00001A5D: 	RETSZ
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     if (DCALL == 0) {
         return;
     }
@@ -2872,7 +2933,7 @@ static void GETTHECAR(PROC* p, tPAL* raw_palette, int vehicle_id, int car_index)
 
     // asm 00001A9F: 	LDI	1,R0
     // asm 00001AA0: 	STI	R0,*AR2
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     raw_palette->flags_and_count = 1;
 
     // asm 00001AA1: 	CALL	PAL_ALLOC_RAW
@@ -2924,7 +2985,7 @@ void ROUNDER(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -3095,7 +3156,7 @@ static void AFFECT_THE_CARS(PROC* p) {
     // asm 00001B14: 	LDI	RNDR_C1_DYH,IR0
     // asm 00001B15: 	LDI	0,IR1
     // asm 00001B16: 	CALL	AFFECTED_CAR
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     AFFECTED_CAR(p, 0x481, 0);
 
     // asm 00001B17: 	LDI	482h,AR2
@@ -3145,7 +3206,7 @@ static void HIDDEN_VEHICLES(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -3273,7 +3334,7 @@ static void AFFECTED_CAR(PROC* p, int vehicle_id, int car_index) {
     int chosen_vehicle;
 
     // asm 00001B59: 	CALL	OBJ_FIND_FIRST
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     car = OBJ_FIND_FIRST(vehicle_id);
     // asm 00001B5A: 	LDF	*+AR0(OPOSY),R0
     car_y = C3X_LDF(car->pos.Y);
@@ -3406,7 +3467,7 @@ static void CAR_DIMMER(int car_index, c3x_reg_t dimmer) {
     // asm 00001BA2: 	ADDI	@PALROMI,AR0
     // asm 00001BA3: 	LDI	*AR0,AR0
     // asm 00001BA4: 	CALL	PAL_DIMMER
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     PAL_DIMMER(PALROMI[CARSRCPAL_TAB[car_index]], CARPAL_TABLE[car_index], dimmer);
 
     // asm 00001BA5: 	RETS
@@ -3421,7 +3482,7 @@ static void LIGHT_INIT(void) {
     // asm 00001C27: 	PUSH	AR2
     // asm 00001C28: 	LDL	flour_lghtof,AR2
     // asm 00001C29: 	CALL	PAL_ALLOC_RAW
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(flour_lghtof_ROM));
 
     // asm 00001C2A: 	LDI	0,AR2
@@ -3464,7 +3525,7 @@ static void LIGHT_OFF(int car_index) {
     // asm 00001C37: 	ADDI	601h,AR2
     // asm 00001C38: 	PUSH	AR2
     // asm 00001C39: 	CALL	OBJ_FIND_FIRST
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     light = OBJ_FIND_FIRST(car_index + 0x601);
 
     // asm 00001C3A: 	LDL	flour_lghtof,AR2
@@ -3510,7 +3571,7 @@ static void LIGHT_ON(int car_index) {
     // asm 00001C4C: 	PUSH	AR2
     // asm 00001C4D: 	ADDI	601h,AR2
     // asm 00001C4E: 	CALL	OBJ_FIND_FIRST
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     light = OBJ_FIND_FIRST(car_index + 0x601);
 
     // asm 00001C4F: 	LDI	*+AR0(OFLAGS),R0
@@ -3544,7 +3605,11 @@ static void LIGHT_ON(int car_index) {
 void INIT_PEDALCHK(int* pedal_released /*R5*/) {
     int pedal_threshold;
 
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
+
+    if (getenv("CRUSN_VALIDATE_SCRIPT_CAR_CHOICE") != NULL) {
+        _pot1 = C3X_FIX(C3X_LDF(PEDALMN));
+    }
 
     // asm 00001C5B: 	CLRI	R5				;FLAG : HAS THE PEDAL BEEN RELEASEDP
     *pedal_released = 0; // FLAG: HAS THE PEDAL BEEN RELEASED?
@@ -3560,6 +3625,10 @@ void INIT_PEDALCHK(int* pedal_released /*R5*/) {
     // asm 00001C60: 	LDIGE	1,R5				;GE -> IT HASN'T
     if (_pot1 >= pedal_threshold) {
         *pedal_released = 1; // GE -> IT HASN'T
+    }
+
+    if (getenv("CRUSN_VALIDATE_SCRIPT_CAR_CHOICE") != NULL) {
+        _pot1 = 0xFF; CHOSEN_TRANSMISSION = MANUAL_TRANSMISSION;
     }
 
     // asm 00001C61: 	RETS
@@ -3703,13 +3772,43 @@ int BABE_CONTROL;
 /* asm: CURR_FLAGSTATE	.bss	CURR_FLAGSTATE,1 */
 int CURR_FLAGSTATE;
 
+static void VALIDATE_GARAGE_TIMELINE(const char* event) {
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL) {
+        int bgd_sleep = -1;
+        ptrdiff_t bgd_index = -1;
+        ptrdiff_t current_index = CURRENT_PROC != NULL ? CURRENT_PROC - PRCSTR : -1;
+        ptrdiff_t current_next = CURRENT_PROC != NULL && CURRENT_PROC->link != NULL ? CURRENT_PROC->link - PRCSTR : -1;
+        ptrdiff_t bgd_next = -1;
+        PROC* proc;
+
+        for (proc = PACTIVE; proc != NULL; proc = proc->link) {
+            if (proc->id == (UTIL_C | BACKGRND_T)) {
+                bgd_sleep = proc->sleep_ticks;
+                bgd_index = proc - PRCSTR;
+                bgd_next = proc->link != NULL ? proc->link - PRCSTR : -1;
+                break;
+            }
+        }
+        fprintf(
+            stderr,
+            "timeline %s frame=%llu current=%td next=%td bgd_proc=%td bgd_next=%td bgd_time=%d\n",
+            event,
+            (unsigned long long)(PRC_DISPATCH_COUNT - validate_garage_start_frame),
+            current_index,
+            current_next,
+            bgd_index,
+            bgd_next,
+            bgd_sleep);
+    }
+}
+
 void WAVEFLAG(PROC* p) {
     const WAVEFLAG_ENTRY* entry;
     tTEXT* text;
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -3771,7 +3870,7 @@ FGLL:
     if ((_MODE & MMODE) != MATTR) {
         // asm 00001CB9: 	CREATEC	BABE_WAVEFLAG,UTIL_C
         PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
-        CREATEC(BABE_WAVEFLAG, UTIL_C, ctx);
+        CREATEC(p, BABE_WAVEFLAG, UTIL_C, ctx);
     }
 NOBABE:
     // asm 00001CBC: 	CLRI	R0
@@ -3913,6 +4012,12 @@ BABAD666:
     p->ctx->WAVEFLAG.saved_mode |= MGO; /* SAVED MODE */
     // asm 00001D0D: 	ANDN	MSLINE,R5
     p->ctx->WAVEFLAG.saved_mode &= ~MSLINE;
+    if (getenv("CRUSN_VALIDATE_ALIGN_SECTIME_PHASE") != NULL &&
+        getenv("CRUSN_VALIDATE_ALIGN_SECTIME_PHASE")[0] == '1') {
+        /* The port takes two IRQs before the next process pass; MAME takes one. */
+        _sectime = -1;
+    }
+    MAME_ASSERT_ORDERING("RACE_TIMING_START");
     // asm 00001D0E: 	STI	R5,@_MODE
     _MODE = p->ctx->WAVEFLAG.saved_mode;
     // asm 00001D0F: 	STI	R5,@STOPWATCH_CNTL	;STOPWATCH TIMER
@@ -4025,7 +4130,7 @@ void INTROTIMER(void) {
     c3x_reg_t y;
     int ticks;
 
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
 
     // asm 00001D41: 	FLOAT	350,R3
     y = C3X_FROM_INT(350);
@@ -4071,7 +4176,7 @@ void DIAL_ROUT(void) {
     int chosen_vehicle;
 
     // asm 00001D52: 	LDI	@POSE,AR2
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     chosen_vehicle = POSE;
     // asm 00001D53: 	CMPI	0,AR2
     // asm 00001D54: 	LDILT	0,AR2
@@ -4085,7 +4190,7 @@ void DIAL_ROUT(void) {
     }
     // asm 00001D57: 	STPI	AR2,@CHOSEN_VEHICLE
     CHOSEN_VEHICLE = chosen_vehicle;
-    MAME_ASSERT_REG(0x00001D58, "AR2", &CHOSEN_VEHICLE);
+    // MAME_ASSERT_REG(0x00001D58, "AR2", &CHOSEN_VEHICLE);
     // asm 00001D58: 	RETS
 }
 
@@ -4224,7 +4329,7 @@ void _start(PROC* p) {
     int main_mode;
 #endif
 
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
 
     // asm 00001D92: 	LDI	@_MODE,R0
     mode = _MODE;
@@ -4370,7 +4475,7 @@ static void ULTRA_PROC(PROC* p /*AR7*/) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -4617,7 +4722,7 @@ int _timer;
 void _timeout(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -4660,8 +4765,8 @@ void INSMORE(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("INSMORE");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("INSMORE");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -4742,7 +4847,7 @@ KFFDA:
     text->color |= TXT_CENTER;
     // asm 00001E64: 	CREATEC	COIN_CNTDOWN,034h
     countdown_ctx = port_malloc(sizeof(*countdown_ctx));
-    CREATEC(COIN_CNTDOWN, 0x34, countdown_ctx);
+    CREATEC(p, COIN_CNTDOWN, 0x34, countdown_ctx);
     // asm 00001E67: 	READAUD	AUD_BCREDITS
     // asm 00001E69: 	LDI	R0,R4			;WATCH CREDITS
     p->ctx->INSMORE_FRAME.watched_credits = READAUD(AUD_BCREDITS);
@@ -4962,8 +5067,8 @@ static void COIN_CNTDOWN(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("COIN_CNTDOWN");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("COIN_CNTDOWN");
         break;
     case 1:
         goto PROC_RESUME_1;

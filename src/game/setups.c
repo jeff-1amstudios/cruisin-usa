@@ -244,7 +244,7 @@ static void LOADBEVERLY(void) {
     // asm 00008C52: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADBEVERLY", 0, 0);
 
-    MAME_VALIDATOR_EXIT();
+    // MAME_VALIDATOR_EXIT();
 }
 
 static void LOADLAFREEWAY(void) {

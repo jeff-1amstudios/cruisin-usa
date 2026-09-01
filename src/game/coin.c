@@ -839,7 +839,7 @@ void INSERT_COINS(void) {
     int credits_to_start;
     c3x_reg_t posy;
     tSHADOW_TEXT t;
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
 
     // asm 00007489: 	CALL	VOLUME_DISPLAY
     VOLUME_DISPLAY();

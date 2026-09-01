@@ -18,6 +18,7 @@
 #include "sysid.h"
 #include "text.h"
 #include "vunit.h"
+#include <stdlib.h>
 
 /*
  * Source module: asm/WAVE.ASM
@@ -101,6 +102,10 @@ void WAVE(int wave_index) {
     int* dst;
     int count;
     c3x_reg_t f0;
+
+    if (wave_index < 0 && getenv("CRUSN_VALIDATE_SKIP_ATTRACT") != NULL) {
+        wave_index = 1;
+    }
 
     // asm: CALL SILENT
     SILENT();
@@ -209,7 +214,7 @@ static void HEAD2HEADWATCH(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

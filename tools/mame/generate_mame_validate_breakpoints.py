@@ -637,18 +637,54 @@ def render_output(entries: Iterable[BreakpointEntry]) -> str:
     if os.environ.get("CRUSN_VALIDATE_FORCE_FULL_ZSORT") == "1":
         rows.append('bpset 000071BC, 1, { d@0000C96F=1; g }')
     if os.environ.get("CRUSN_VALIDATE_SINGLE_FRAME") == "1":
-        rows.append('bpset 00004BED, 1, { r0=1; g }')
+        # Record the real number of IRQ ticks spent on the frame, then keep
+        # physics at one step while the port replays any extra INT0 calls.
+        rows.append('bpset 00004BED, 1, { logerror "validate FRAME_TICKS: 0x%08X\\n",r0; r0=1; g }')
+        rows.append('bpset 00004C15, 1, { logerror "validate FRAME_MID_TICKS: 0x%08X\\n",d@0000C960; g }')
     if os.environ.get("CRUSN_VALIDATE_CLEAR_WATER_R0") == "1":
         # WATER_INFINITY consumes R0 as a float even though its current value
         # came from unrelated integer work. Clear the full extended register
         # immediately before that multiply.
         rows.append('bpset 00008428, 1, { r0f=0; g }')
-    if os.environ.get("CRUSN_VALIDATE_FREEZE_COUNTDOWN") == "1":
-        # INT0 can occur at different points relative to process dispatch in
-        # MAME and the portable loop. Keep timer-dependent process behavior
-        # deterministic by presenting the same nonzero value at dispatch.
-        rows.append('bpset 0000A89D, 1, { d@0000E634=4B; g }')
+    if os.environ.get("CRUSN_VALIDATE_SKIP_ATTRACT") == "1":
+        # WAVE uses negative AR2 values for attract waves and 1 for normal
+        # game startup. Redirect through BEGIN_GAME rather than jumping into
+        # TRACK_SELECTION without its required process context.
+        rows.append('bpset 00009307,1,{ ar2=1; g }')
+        # Give every chooser the release-to-press edge expected by PEDALCHK.
+        rows.append('bpset 00001C5B,1,{ d@0000C96B=0; g }')
+        rows.append('bpset 00001C61,1,{ d@0000C96B=FF; g }')
+    if os.environ.get("CRUSN_VALIDATE_ALIGN_SECTIME_PHASE") == "1":
+        # The single-player GO path does not reset _sectime, so menu-time IRQ
+        # timing otherwise determines which rendered frame loses a second.
+        # Use the following instruction because 0x1D0E also carries the
+        # generated RACE_TIMING_START ordering breakpoint.
+        rows.append('bpset 00001D0F,1,{ d@0000C96E=0; g }')
+    # Do not suppress additional INT0 calls here. That experiment caused MAME
+    # watchdog resets and did not establish that IRQ cadence was the source of
+    # the late-race mismatch.
+    # rows.append('bpset 00004BD1,1,{ temp9=0; g }')
+    # rows.append('bpset 00004C45,temp9==0,{ temp9=1; g }')
+    # rows.append('bpset 00004C45,temp9!=0,{ pc=00004DF6; g }')
+    # Do not use temp0/temp2/temp3 as debugger scratch variables here: those
+    # names resolve to the game's TEMP globals and mutate emulated state.
+    # rows.append('bpset 000018AF,1,{ temp0=0; logerror "timeline BGD_INIT_DONE frame=%d\\n",temp0; g }')
+    # rows.append('bpset 00001942,1,{ logerror "timeline CAR_CHOICE_START frame=%d\\n",temp0; g }')
+    # rows.append('bpset 0000195A,1,{ logerror "timeline CAR_CHOICE_DONE frame=%d\\n",temp0; g }')
+    # rows.append('bpset 0000196B,1,{ logerror "timeline ZOOMTOCAR frame=%d bgd_time=%08X\\n",temp0,d@(temp2+4); g }')
+    # rows.append('bpset 00001A23,1,{ logerror "timeline START_NOW frame=%d current=%08X next=%08X bgd_next=%08X bgd_time=%08X rpm=%08X\\n",temp0,ar7,d@ar7,d@temp2,d@(temp2+4),d@(ar5+39); g }')
+    # rows.append('bpset 00003FF6,1,{ temp2=ar7; logerror "timeline BGD_WAKE frame=%d proc=%08X time=%08X next=%08X\\n",temp0,ar7,d@(ar7+4),d@ar7; g }')
+    # rows.append('bpset 000017E8,1,{ logerror "timeline WAVEFLAG_CREATE frame=%d current=%08X next=%08X bgd_proc=%08X bgd_next=%08X bgd_time=%08X bgd_wake=%08X\\n",temp0,ar7,d@ar7,temp2,d@temp2,d@(temp2+4),d@(temp2+2); g }')
+    # Override each smoothed ADC value immediately after its store. The main
+    # loop may sample inputs between ADC phases, so waiting for a complete scan
+    # would still expose validation to live host-controller input.
+    rows.append('bpset 00004DAD,1,{ d@0000C96A=80; g }')
+    # Keep the throttle fully depressed throughout race-mode validation.
+    rows.append('bpset 00004DCC,1,{ d@0000C96B=FF; g }')
+    rows.append('bpset 00004DE7,1,{ d@0000C96C=0; g }')
     rows.append('bpset 00008EE1, 1, { r0=0; g }')
+    # rows.append('bpset 0000824B,r6f>r2f,{ temp3=ar2; g }')
+    # rows.append('bpset 00008253,1,{ logerror "timeline HIGHEST_ROAD obj=%08X pos=(%08X,%08X,%08X) dist=%08X flags=%08X usr1=%08X y=%08X\\n",temp3,d@(temp3+1),d@(temp3+2),d@(temp3+3),d@(temp3+1C),d@(temp3+E),d@(temp3+1E),r6f; g }')
     rows.append("")
     return "\n".join(rows) + "g"
 

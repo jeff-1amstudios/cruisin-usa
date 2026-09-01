@@ -1398,15 +1398,30 @@ NXTDRONE:
     // asm 00007226: 	LDI	*+AR5(OCARBLK),AR0
     carblk = drone->carblk;
     // asm 00007227: 	LDI	*+AR0(CARPCOL),AR1		;ROAD COLL CNT
-    road_objects[0] = carblk != NULL ? OBJREF_TO_PTR(carblk->center.collided_road_object) : NULL;
+    road_objects[0] = carblk == NULL ? NULL :
+        (OBJREF_IS_STF_ZERO(carblk->center.collided_road_object)
+            ? OBJREF_STF_ZERO_VIEW()
+            : OBJREF_TO_PTR(carblk->center.collided_road_object));
     // asm 00007228: 	LDI	*+AR0(CARVSIZ+CARPCOL),AR2	;ROAD COLL RF
-    road_objects[1] = carblk != NULL ? OBJREF_TO_PTR(carblk->right_front.collided_road_object) : NULL;
+    road_objects[1] = carblk == NULL ? NULL :
+        (OBJREF_IS_STF_ZERO(carblk->right_front.collided_road_object)
+            ? OBJREF_STF_ZERO_VIEW()
+            : OBJREF_TO_PTR(carblk->right_front.collided_road_object));
     // asm 00007229: 	LDI	*+AR0((2*CARVSIZ)+CARPCOL),AR3	;ROAD COLL LF
-    road_objects[2] = carblk != NULL ? OBJREF_TO_PTR(carblk->left_front.collided_road_object) : NULL;
+    road_objects[2] = carblk == NULL ? NULL :
+        (OBJREF_IS_STF_ZERO(carblk->left_front.collided_road_object)
+            ? OBJREF_STF_ZERO_VIEW()
+            : OBJREF_TO_PTR(carblk->left_front.collided_road_object));
     // asm 0000722A: 	LDI	*+AR0((3*CARVSIZ)+CARPCOL),AR4	;ROAD COLL LR
-    road_objects[3] = carblk != NULL ? OBJREF_TO_PTR(carblk->left_rear.collided_road_object) : NULL;
+    road_objects[3] = carblk == NULL ? NULL :
+        (OBJREF_IS_STF_ZERO(carblk->left_rear.collided_road_object)
+            ? OBJREF_STF_ZERO_VIEW()
+            : OBJREF_TO_PTR(carblk->left_rear.collided_road_object));
     // asm 0000722B: 	LDI	*+AR0((4*CARVSIZ)+CARPCOL),AR5	;ROAD COLL RR
-    road_objects[4] = carblk != NULL ? OBJREF_TO_PTR(carblk->right_rear.collided_road_object) : NULL;
+    road_objects[4] = carblk == NULL ? NULL :
+        (OBJREF_IS_STF_ZERO(carblk->right_rear.collided_road_object)
+            ? OBJREF_STF_ZERO_VIEW()
+            : OBJREF_TO_PTR(carblk->right_rear.collided_road_object));
     // asm 0000722C: 	LDI	*+AR1(ODIST),R1
     // asm 0000722D: 	LDI	*+AR2(ODIST),R2
     // asm 0000722E: 	LDI	*+AR3(ODIST),R3

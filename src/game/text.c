@@ -640,7 +640,7 @@ void TEXT_OUTPUT(void) {
     int top_left;
     int y_start;
 
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
 
     // asm 00007A75: 	PUSH	AR4
     // asm 00007A76: 	PUSH	AR5

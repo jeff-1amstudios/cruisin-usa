@@ -264,7 +264,7 @@ WHEELLP:
     // asm 0000AECE: 	CALL	PRC_CREATE_CHILD
     ctx = port_malloc(sizeof(PROC_CONTEXT));
     ctx->CARPROC.obj = obj;
-    proc = PRC_CREATE_CHILD(DRONE_DANI_PROC, DRONE_C | ANI_T, ctx);
+    proc = PRC_CREATE_CHILD(CURRENT_PROC, DRONE_DANI_PROC, DRONE_C | ANI_T, ctx);
     // asm 0000AECF: 	STI	AR0,*+AR4(ORADZ)	;DOUBLING AS A PROC PTR
     obj->radz_ptr = (uintptr_t)proc;
 VANIX:

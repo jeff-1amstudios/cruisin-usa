@@ -4,9 +4,11 @@
 #include "../core/output.h"
 #include "globals.h"
 #include "macs.h"
+#include "mproc.h"
 #include "obj.h"
 #include "pall.h"
 #include "sys.h"
+#include "sysid.h"
 #include "validator.h"
 #include "vunit.h"
 
@@ -59,6 +61,7 @@ c3x_reg_t HIGHEST_ROADY_X = C3X_INIT(1.0f, 0x0000000000ull);
 c3x_reg_t VAR_ROAD_KFACTOR = C3X_INIT(1.0f, 0x0000000000ull);
 
 static void FIND_HIGHEST_ROADY(void) {
+    static int validate_bgd_phase_aligned;
     OBJ* obj;
     c3x_reg_t rotated_x;
     c3x_reg_t rotated_y;
@@ -68,6 +71,27 @@ static void FIND_HIGHEST_ROADY(void) {
     c3x_reg_t inverse_z;
     c3x_reg_t screen_x;
     c3x_reg_t screen_y;
+
+    if (!validate_bgd_phase_aligned && getenv("CRUSN_VALIDATE_ALIGN_BGD_PHASE") != NULL && getenv("CRUSN_VALIDATE_ALIGN_BGD_PHASE")[0] == '1') {
+        PROC* proc;
+
+        /*
+         * MAME commits debugger-requested saves at a later safe machine
+         * boundary.  The race capture therefore reaches its first infinity
+         * pass with BGD_WATCHER freshly asleep for three ticks, while a clean
+         * port startup reaches it one tick further through the same cycle.
+         * Align that validation-only phase once; normal game scheduling is
+         * unchanged.
+         */
+        for (proc = PACTIVE; proc != NULL; proc = proc->link) {
+            if (proc->id == (UTIL_C | BACKGRND_T)) {
+                proc->sleep_ticks = 3;
+                break;
+            }
+        }
+        validate_bgd_phase_aligned = 1;
+    }
+    MAME_ASSERT_ORDERING("RACE_INFINITY_FRAME");
 
     // asm 00008212: 	PUSH	R0
     // asm 00008213: 	PUSH	R1
@@ -102,14 +126,20 @@ FHRYLP:
         // asm 00008225: 	LDF	*+AR2(OPOSX),R0
         // asm 00008226: 	SUBF	@_CAMERAPOS+X,R0
         VECTORAI.X = C3X_STF(C3X_SUB(obj->pos.X, _CAMERAPOS.X));
+        // MAME_ASSERT_REG_FLOAT(0x00008227, "R0", &VECTORAI.X);
         // asm 00008227: 	STF	R0,*+AR1(X)
         // asm 00008228: 	LDF	*+AR2(OPOSY),R0
         // asm 00008229: 	SUBF	@_CAMERAPOS+Y,R0
         VECTORAI.Y = C3X_STF(C3X_SUB(obj->pos.Y, _CAMERAPOS.Y));
+        // MAME_ASSERT_REG_FLOAT(0x0000822A, "R0", &VECTORAI.Y);
         // asm 0000822A: 	STF	R0,*+AR1(Y)
         // asm 0000822B: 	LDF	*+AR2(OPOSZ),R0
+        // Numerically equal C30 positive and negative zero have different stored words.
+        // MAME_ASSERT_MEM(0x0000822C, "d@(ar2+3)", &obj->pos.Z);
+        // MAME_ASSERT_MEM(0x0000822C, "d@00809802", &observed_raw);
         // asm 0000822C: 	SUBF	@_CAMERAPOS+Z,R0
         VECTORAI.Z = C3X_STF(C3X_SUB(obj->pos.Z, _CAMERAPOS.Z));
+        // MAME_ASSERT_REG_FLOAT(0x0000822D, "R0", &VECTORAI.Z);
         // asm 0000822D: 	STF	R0,*+AR1(Z)
         // asm 0000822E: 	SETDP
         // asm 0000822F: 	LDI	AR1,AR0
@@ -131,6 +161,8 @@ FHRYLP:
         // asm 00008239: 	POPF	R3
         rotated_x = C3X_ADD(C3X_ADD(C3X_MUL(_CAMERAMATRIX.a00, VECTORAI.X), C3X_MUL(_CAMERAMATRIX.a01, VECTORAI.Y)), C3X_MUL(_CAMERAMATRIX.a02, VECTORAI.Z));
         rotated_y = C3X_ADD(C3X_ADD(C3X_MUL(_CAMERAMATRIX.a10, VECTORAI.X), C3X_MUL(_CAMERAMATRIX.a11, VECTORAI.Y)), C3X_MUL(_CAMERAMATRIX.a12, VECTORAI.Z));
+        // MAME_ASSERT_REG_FLOAT(0x0000823A, "R3", &rotated_x);
+        // MAME_ASSERT_REG_FLOAT(0x0000823A, "R2", &rotated_y);
         // asm 0000823A: 	LDI	*+AR2(ODIST),AR1
         inverse_index = obj->dist;
         // asm 0000823B: 	CMPI	0,AR1

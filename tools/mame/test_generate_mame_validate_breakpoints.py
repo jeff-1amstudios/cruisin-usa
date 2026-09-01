@@ -21,15 +21,15 @@ from mame.generate_mame_validate_breakpoints import (
 def test_extracts_example_breakpoint() -> None:
     address_map = parse_address_map(ROOT / "tools" / "ida" / "address.map")
     entries = collect_breakpoints_for_file(
-        ROOT / "src" / "game" / "cusa.c",
+        ROOT / "src" / "game" / "racer.c",
         address_map,
         parse_constant_defines(ROOT / "src"),
     )
-    screen0 = next(entry for entry in entries if entry.label == "SCREEN0")
-    assert screen0.variable_name == "SCREEN0"
-    assert screen0.instruction_address == 0x00004B5E
-    assert screen0.variable_address == 0x00900000
-    assert screen0.array_length == 0x40000
+    road_obstacles = next(entry for entry in entries if entry.label == "ROADOBSTAB")
+    assert road_obstacles.variable_name == "ROADOBSTAB"
+    assert road_obstacles.instruction_address == 0x000053DE
+    assert road_obstacles.variable_address == 0x0000E8DF
+    assert road_obstacles.array_length == 50
 
 
 def test_mame_validate_arg_uses_function_entry_and_register() -> None:

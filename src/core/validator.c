@@ -23,6 +23,12 @@ static int g_validate_log_line_number = 0;
 static int validate_log_exhausted = 0;
 static int validate_current_call_failed = 0;
 static int g_validate_environment_checked = 0;
+static const char* g_validate_start_function;
+static const char* g_validate_start_ordering;
+static int g_validate_start_function_reached = 1;
+static int g_validate_start_reached = 1;
+static int g_validate_start_ordering_occurrence = 1;
+static int g_validate_start_ordering_calls;
 
 static void validate_fail(
     const char* caller_file,
@@ -94,15 +100,35 @@ static void fail() {
     }
 }
 
-static int should_skip_validation(void) {
+static void check_validation_environment(void) {
     if (!g_validate_environment_checked) {
         if (getenv("CRUSN_ENABLE_MAME_VALIDATION") != NULL) {
             mame_validate_enabled = 1;
         }
+        g_validate_start_function = getenv("CRUSN_VALIDATE_START_FUNCTION");
+        g_validate_start_ordering = getenv("CRUSN_VALIDATE_START_ORDERING");
+        const char* ordering_occurrence = getenv("CRUSN_VALIDATE_START_ORDERING_OCCURRENCE");
+        if (ordering_occurrence != NULL) {
+            g_validate_start_ordering_occurrence = (int)strtol(ordering_occurrence, NULL, 10);
+            if (g_validate_start_ordering_occurrence < 1) {
+                g_validate_start_ordering_occurrence = 1;
+            }
+        }
+        if (g_validate_start_ordering != NULL && g_validate_start_ordering[0] != '\0') {
+            g_validate_start_reached = 0;
+        }
+        if (g_validate_start_function != NULL && g_validate_start_function[0] != '\0') {
+            g_validate_start_function_reached = 0;
+            g_validate_start_reached = 0;
+        }
         g_validate_environment_checked = 1;
     }
+}
 
-    return !mame_validate_enabled || validate_log_exhausted;
+static int should_skip_validation(void) {
+    check_validation_environment();
+
+    return !mame_validate_enabled || validate_log_exhausted || !g_validate_start_reached;
 }
 
 static int validate_failed(void) {
@@ -694,6 +720,34 @@ static int read_next_validate_reg_word(
     return 1;
 }
 
+static int mame_validate_timing_word(const char* name) {
+    VALIDATE_ENTRY entry;
+
+    if (should_skip_validation()) {
+        return 0;
+    }
+
+    validate_current_call_failed = 0;
+    if (!read_next_validate_reg_word(__FILE__, __LINE__, name, name, &entry)) {
+        return 0;
+    }
+
+    return (int)entry.word_value;
+}
+
+int mame_validate_frame_ticks(void) {
+    return mame_validate_timing_word("FRAME_TICKS");
+}
+
+int mame_validate_frame_mid_ticks(void) {
+    return mame_validate_timing_word("FRAME_MID_TICKS");
+}
+
+int mame_validation_replay_started(void) {
+    check_validation_environment();
+    return mame_validate_enabled && !validate_log_exhausted && g_validate_start_reached;
+}
+
 static void validate_reg_word_value_impl(
     const char* caller_file,
     int caller_line,
@@ -1113,6 +1167,39 @@ void mame_assert_function_entry_impl(const char* caller_file, int caller_line, c
     char expected_buf[160];
     char actual_buf[160];
 
+    check_validation_environment();
+    if (!mame_validate_enabled || validate_log_exhausted) {
+        return;
+    }
+
+    if (!g_validate_start_reached) {
+        if (strcmp(function_name, g_validate_start_function) != 0) {
+            return;
+        }
+
+        while (read_next_validate_line(actual_name, sizeof(actual_name), &entry)) {
+            if (entry.kind == VALIDATE_KIND_FUNCTION && strcmp(actual_name, g_validate_start_function) == 0) {
+                g_validate_start_function_reached = 1;
+                g_validate_start_reached =
+                    g_validate_start_ordering == NULL || g_validate_start_ordering[0] == '\0';
+                if (print_oks) {
+                    fprintf(
+                        stderr,
+                        "mame.log:%d function %s (validation start), consumer %s:%d\n",
+                        entry.line_number,
+                        function_name,
+                        basename_only(caller_file),
+                        caller_line);
+                    fflush(stderr);
+                }
+                return;
+            }
+        }
+
+        validate_warn_log_exhausted(caller_file, caller_line, function_name);
+        return;
+    }
+
     if (should_skip_validation()) {
         return;
     }
@@ -1169,6 +1256,48 @@ void mame_assert_ordering_impl(const char* caller_file, int caller_line, const c
     char actual_message[128];
     char expected_buf[160];
     char actual_buf[160];
+
+    check_validation_environment();
+    if (!mame_validate_enabled || validate_log_exhausted) {
+        return;
+    }
+
+    if (!g_validate_start_reached) {
+        if (!g_validate_start_function_reached || g_validate_start_ordering == NULL ||
+            strcmp(message, g_validate_start_ordering) != 0) {
+            return;
+        }
+
+        g_validate_start_ordering_calls += 1;
+        if (g_validate_start_ordering_calls < g_validate_start_ordering_occurrence) {
+            return;
+        }
+
+        int matching_occurrences = 0;
+        while (read_next_validate_line(actual_message, sizeof(actual_message), &entry)) {
+            if (entry.kind == VALIDATE_KIND_ORDERING && strcmp(actual_message, g_validate_start_ordering) == 0) {
+                matching_occurrences += 1;
+                if (matching_occurrences < g_validate_start_ordering_occurrence) {
+                    continue;
+                }
+                g_validate_start_reached = 1;
+                if (print_oks) {
+                    fprintf(
+                        stderr,
+                        "mame.log:%d ordering %s (validation start), consumer %s:%d\n",
+                        entry.line_number,
+                        message,
+                        basename_only(caller_file),
+                        caller_line);
+                    fflush(stderr);
+                }
+                return;
+            }
+        }
+
+        validate_warn_log_exhausted(caller_file, caller_line, message);
+        return;
+    }
 
     if (should_skip_validation()) {
         return;

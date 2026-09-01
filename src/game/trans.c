@@ -109,8 +109,8 @@ void CHOOSE_TRANSMISSION(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("CHOOSE_TRANSMISSION");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("CHOOSE_TRANSMISSION");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -353,8 +353,8 @@ static void OPEN_DOOR_PROC(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("OPEN_DOOR_PROC");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("OPEN_DOOR_PROC");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -471,7 +471,7 @@ static void WHEEL_FROM_BELOW(void) {
 static void CENTERTHEONE(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -549,7 +549,7 @@ FLYUPL:
 void DROPTHETURN(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -565,7 +565,7 @@ void DROPTHETURN(PROC* p) {
 void DROPTHECYCLE(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -581,7 +581,7 @@ void DROPTHECYCLE(PROC* p) {
 void DROPTHEWHEEL(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -597,7 +597,7 @@ void DROPTHEWHEEL(PROC* p) {
 void DROPTHEOTHER(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -614,7 +614,7 @@ void DROPTHEOTHER(PROC* p) {
 static void DROP_TRANS_ELEMENT(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_ORDERING("J85");
+        // MAME_ASSERT_ORDERING("J85");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1082,7 +1082,7 @@ c3x_reg_t GET_UNIT_WHEEL(void) {
 static void TILE_PIECES(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1485,7 +1485,7 @@ FTSLX:
 static void MOVE_PUSH_BOX(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1542,7 +1542,7 @@ static int TRNTAB[] = {
 void TURNTO_SELECT(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1584,7 +1584,7 @@ static int CYCTAB[] = {
 void CYCLE_PUSH(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

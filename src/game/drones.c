@@ -219,7 +219,9 @@ void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*
         player_track_id = -1;
     } else {
         // asm 000065D2: 	LDI	*+AR5(CARTRAK),AR6
-        player_track_obj = OBJREF_TO_PTR(player_carblk->closest_track_piece);
+        player_track_obj = OBJREF_IS_STF_ZERO(player_carblk->closest_track_piece)
+            ? OBJREF_STF_ZERO_VIEW()
+            : OBJREF_TO_PTR(player_carblk->closest_track_piece);
         // asm 000065D3: 	LDI	*+AR6(OUSR1),R1
         player_track_id = (int)player_track_obj->usr1;
     }
@@ -1957,7 +1959,9 @@ c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00006814: 	PUSH	AR4
     // asm 00006815: 	PUSH	AR5
     // asm 00006816: 	BU	RIDE_RIGHT_JOININ
-    track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
+    track_obj = OBJREF_IS_STF_ZERO(carblk->closest_track_piece)
+        ? OBJREF_STF_ZERO_VIEW()
+        : OBJREF_TO_PTR(carblk->closest_track_piece);
     if (track_obj == NULL) {
         return C3X_FROM_INT(0);
     }
@@ -2520,10 +2524,18 @@ int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk) {
         goto ISBEHIND;
     }
     // asm 00006923: 	LDI	*+AR0(CARTRAK),AR0
-    player_track = OBJREF_TO_PTR(PLYCBLK->closest_track_piece);
+    if (OBJREF_IS_STF_ZERO(PLYCBLK->closest_track_piece)) {
+        player_track = OBJREF_STF_ZERO_VIEW();
+    } else {
+        player_track = OBJREF_TO_PTR(PLYCBLK->closest_track_piece);
+    }
     // asm 00006924: 	LDI	*+AR0(OUSR1),R0
     // asm 00006925: 	LDI	*+AR5(CARTRAK),AR1
-    drone_track = OBJREF_TO_PTR(carblk->closest_track_piece);
+    if (OBJREF_IS_STF_ZERO(carblk->closest_track_piece)) {
+        drone_track = OBJREF_STF_ZERO_VIEW();
+    } else {
+        drone_track = OBJREF_TO_PTR(carblk->closest_track_piece);
+    }
     if (player_track == NULL || drone_track == NULL) {
         goto ISBEHIND;
     }

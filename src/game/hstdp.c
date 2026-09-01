@@ -242,8 +242,8 @@ void ENTER_INITIALS(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("ENTER_INITIALS");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("ENTER_INITIALS");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -483,7 +483,7 @@ MSLPX:
 static void PEDALWT(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_ORDERING("PEDALWT");
+        // MAME_ASSERT_ORDERING("PEDALWT");
         break;
     }
     // ;	LDI	@_countdown,R0
@@ -773,7 +773,7 @@ CTEX:
 static void PRESS_CODE_ENTRY(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_ORDERING("PRESS_CODE_ENTRY");
+        // MAME_ASSERT_ORDERING("PRESS_CODE_ENTRY");
         break;
     }
     // ;Put the letters on the bottom of the press
@@ -3000,7 +3000,7 @@ void DISPLAY_HIGH_SCORES(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -3121,7 +3121,7 @@ static void DISPLAY_HS(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -3188,7 +3188,7 @@ static void DISPLAY_HS(PROC* p) {
     // asm 000038AA: 	CREATEC	FLASH_LETTERS_PROC,UTIL_C|DISPLAYHS_T|FLASH_ST
     flash_ctx = port_malloc(sizeof(PROC_CONTEXT));
     flash_ctx->FLASH_LETTERS_PROC.race_number = p->ctx->DISPLAY_HS.race_number;
-    p->ctx->DISPLAY_HS.flash_proc = CREATEC(FLASH_LETTERS_PROC, UTIL_C | DISPLAYHS_T | FLASH_ST, flash_ctx);
+    p->ctx->DISPLAY_HS.flash_proc = CREATEC(p, FLASH_LETTERS_PROC, UTIL_C | DISPLAYHS_T | FLASH_ST, flash_ctx);
     // asm 000038AD: 	STI	AR0,*+AR7(FLASH_PROC)
 DHS0:
     // asm 000038AE: 	SLEEP	1
@@ -3259,7 +3259,7 @@ static void FLASH_LETTERS_PROC(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

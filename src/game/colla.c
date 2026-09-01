@@ -71,7 +71,7 @@ static c3x_reg_t REPELL(OBJ* obj0, OBJ* obj1, VECTOR* repulsion_vector);
 static void COLDISP(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 static void SPINROT(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/, VECTOR* collision_point /*AR3*/, c3x_reg_t relative_x /*R0*/, c3x_reg_t relative_z /*R1*/);
 static void BEHINDCK(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/);
-static c3x_reg_t ANGMOM(CARBLK* carblk /*AR5*/, c3x_reg_t momentum /*R2*/);
+static c3x_reg_t ANGMOM(CARBLK* carblk /*AR5*/, c3x_reg_t momentum /*R2*/, c3x_reg_t* out_r3);
 static int CKBOUNCE(OBJ* obj /*AR1*/, CARBLK* carblk /*AR5*/, c3x_reg_t* out_direction_difference /*R2*/);
 static void SPINROT_FINISH(OBJ* hitter_obj, OBJ* obj, CARBLK* carblk, int entry, c3x_reg_t direction_difference);
 static void COLSND(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, c3x_reg_t impact_speed /*R0*/);
@@ -718,7 +718,6 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
         // asm 00002057: 	ADDI	3,AR2
     LOOP:;
     }
-    carblk->road_contacts_scanned = 1;
     // asm 00002058: ADDI	6,R3
     // asm 00002059: 	CLRI	R0
     // asm 0000205A: 	STI	R0,*+AR6(CAR_ONROAD)
@@ -2032,7 +2031,7 @@ HARDCOL2:
         FIND_YMATRIX(&sign_obj->omatrix, old_velocity_rotation);
         sign_obj->flags &= ~O_POSTER;
         sign_obj->flags |= 1u << O_3DROT_B;
-        PRC_CREATE_CHILD(TREESHAKI, DRONE_C | FLYER_T, NULL);
+        PRC_CREATE_CHILD(CURRENT_PROC, TREESHAKI, DRONE_C | FLYER_T, NULL);
     }
 HARDCOL3:
     ONESND(POLESND);
@@ -2065,7 +2064,7 @@ FLYCOLL:
 CLLL1:
     fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
     fly_ctx->FLYCOLLP.obj = sign_obj;
-    sign_obj->plink = PRC_CREATE_CHILD(FLYCOLLPI, DRONE_C | FLYER_T, fly_ctx);
+    sign_obj->plink = PRC_CREATE_CHILD(CURRENT_PROC, FLYCOLLPI, DRONE_C | FLYER_T, fly_ctx);
     if (sign_obj->plink == NULL) {
         goto COLSGCX;
     }
@@ -2111,7 +2110,7 @@ RUNOVER:
     fly_ctx->SIGNFALL.obj = sign_obj;
     fly_ctx->SIGNFALL.rotation_delta = C3X_STF(fall_rate);
     fly_ctx->SIGNFALL.accumulated = C3X_STF(C3X_IMM_F32(0));
-    PRC_CREATE_CHILD(SIGNFALLI, DRONE_C | FLYER_T, fly_ctx);
+    PRC_CREATE_CHILD(CURRENT_PROC, SIGNFALLI, DRONE_C | FLYER_T, fly_ctx);
     sign_subtype = sign_obj->id & SUBTYPE_M;
     sign_id = SIGNSND;
     if (sign_subtype == TSC_R_SAGE) {
@@ -2722,7 +2721,7 @@ FLYCAR1:
     // asm 00002426: 	CALL	PRC_CREATE_CHILD		;CREATE A CHILD PROCESS
     fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
     fly_ctx->FLYCARP.obj = obj1;
-    fly_proc = PRC_CREATE_CHILD(FLYCARPI, DRONE_C | FLYER_T, fly_ctx); // ;CREATE A CHILD PROCESS
+    fly_proc = PRC_CREATE_CHILD(CURRENT_PROC, FLYCARPI, DRONE_C | FLYER_T, fly_ctx); // ;CREATE A CHILD PROCESS
     // asm 00002427: 	BC	L78G
     if (fly_proc == NULL) {
         goto L78G;
@@ -4692,7 +4691,8 @@ static void SPINROT(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/, VECTOR* collision
     }
     // asm 00002777: 	CALL	CKBOUNCE
     probability = CKBOUNCE(obj, carblk, &direction_difference);
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002778, "R3", &intensity, 5);
+    // CKBOUNCE clobbers R3; only its carry result is live at this point.
+    // MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002778, "R3", &intensity, 5);
     // asm 00002778: 	BNC	SPINBUMP
     // asm 00002779: 	B	SPINBOUNCE
     SPINROT_FINISH(hitter_obj, obj, carblk, probability ? SPINROT_ENTRY_BOUNCE : SPINROT_ENTRY_BUMP, direction_difference);
@@ -4924,7 +4924,7 @@ DSPIN1:
     spin_radians = C3X_IMM_F32(3.14);
 DSPIN0:
     // asm 000027D8: 	CALL	ANGMOM
-    rotation_speed = ANGMOM(carblk, rotation_speed);
+    rotation_speed = ANGMOM(carblk, rotation_speed, NULL);
     // asm 000027D9: 	STF	R2,*+AR5(CARDROT)
     carblk->last_y_rotation = C3X_STF(rotation_speed);
     // asm 000027DA: 	LDI	1,R0   			;SET RADIAN SPIN FLAG
@@ -4957,7 +4957,7 @@ SPINNIT:
     }
 SPINTM0:
     // asm 000027E5: 	CALL	ANGMOM
-    rotation_speed = ANGMOM(carblk, rotation_speed);
+    rotation_speed = ANGMOM(carblk, rotation_speed, NULL);
     // asm 000027E6: 	CMPI	@PLYCAR,AR1		;PLAYERS CAR?
     // asm 000027E7: 	LDFZ	0.08,R1			;PLAYER MIN
     // asm 000027E8: 	LDFNZ	0.02,R1			;DRONE MIN
@@ -5005,14 +5005,7 @@ SPINBUMP:
         rotation_speed = C3X_IMM_F32(-0.05);
     }
     // asm 000027FC: 	CALL	ANGMOM			;ADJUST ANGULAR MOMENTUM
-    rotation_speed = ANGMOM(carblk, rotation_speed);
-    if (carblk->spin_flag == 0) {
-        int exponent;
-        (void)frexp(C3X_TO_FLOAT(C3X_ABS(collision_intensity)), &exponent);
-        collision_intensity = C3X_F32(ldexp(1.0, exponent - 1)); // c3x-lint: full-precision -- preserves the extended register exponent across LDI
-    } else {
-        collision_intensity = C3X_MUL(C3X_LDF(carblk->last_y_rotation), C3X_IMM_F32(0.5));
-    }
+    rotation_speed = ANGMOM(carblk, rotation_speed, &collision_intensity);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x000027FD, "R2", &rotation_speed, 5);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x000027FD, "R3", &collision_intensity, 5);
     // asm 000027FD: 	CMPF	80,R3
@@ -5099,25 +5092,29 @@ SPINXXX:
     return;
 }
 
-static c3x_reg_t ANGMOM(CARBLK* carblk /*AR5*/, c3x_reg_t momentum /*R2*/) {
-    c3x_reg_t old_momentum;
+static c3x_reg_t ANGMOM(CARBLK* carblk /*AR5*/, c3x_reg_t momentum /*R2*/, c3x_reg_t* out_r3) {
+    c3x_reg_t r3;
 
     // asm 0000281D: 	LDI	*+AR5(CAR_SPIN),R3 	;ADD IN EXISTING INERTIA
+    r3 = C3X_FROM_INT(carblk->spin_flag);
     // asm 0000281E: 	BZ	ANGM1
     if (carblk->spin_flag == 0) {
         goto ANGM1;
     }
     // asm 0000281F: 	LDF	*+AR5(CARDROT),R3	;GET OLD MOMENTUM
-    old_momentum = C3X_LDF(carblk->last_y_rotation);
+    r3 = C3X_LDF(carblk->last_y_rotation);
     // asm 00002820: 	MPYF	0.5,R3	     		;FUDGE FACTOR
-    old_momentum = C3X_MUL(old_momentum, C3X_IMM_F32(0.5));
-    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002821, "R3", &old_momentum, 5);
+    r3 = C3X_MUL(r3, C3X_IMM_F32(0.5));
+    MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002821, "R3", &r3, 5);
     // asm 00002821: 	ADDF	R3,R2
-    momentum = C3X_ADD(old_momentum, momentum);
+    momentum = C3X_ADD(r3, momentum);
     // asm 00002822: 	MPYF	0.67,R2
     momentum = C3X_MUL(momentum, C3X_IMM_F32(0.67));
 ANGM1:
     // asm 00002823: 	RETS
+    if (out_r3 != NULL) {
+        *out_r3 = r3;
+    }
     return momentum;
 }
 

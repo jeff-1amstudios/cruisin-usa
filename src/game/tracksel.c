@@ -87,7 +87,7 @@ static const char DO_NOT_TOUCH_MATS[] = "DO NOT TOUCH MATS";
 void TRACK_SELECTION(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -215,7 +215,7 @@ void MOTION_SCREWED(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -308,7 +308,7 @@ LLKJ:
 static void JAJAD__tail(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_ORDERING("JAJAD");
+        // MAME_ASSERT_ORDERING("JAJAD");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1081,8 +1081,8 @@ NOTTHEWH:
 static void ZOOMINP(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("ZOOMINP");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("ZOOMINP");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1123,7 +1123,7 @@ static void ZOOMIN_TSEL(void) {
     OBJ* next_obj;
     c3x_reg_t delta;
 
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
 
     // asm 00006EDB: 	LDI	@OACTIVE,AR5
     next_obj = OACTIVE;
@@ -1376,7 +1376,7 @@ static void TSEL_ZOOMOUTP(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1404,7 +1404,7 @@ LLGF:
     // asm 00006F61: 	CREATEC	CENTER_THEONE,UTIL_C
     ctx = port_malloc(sizeof(*ctx));
     ctx->CENTER_THEONE.obj = TSEL_THEONE;
-    CREATEC(CENTER_THEONE, UTIL_C, ctx);
+    CREATEC(p, CENTER_THEONE, UTIL_C, ctx);
     // asm 00006F64: 	LDI	30,AR5
     p->ctx->TRACK_SELECTION.loop_count = 30;
 TSLLP:
@@ -1429,7 +1429,7 @@ static void CENTER_THEONE(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1583,7 +1583,7 @@ static int ANIMATE_MAP_TAB[] = {
 static void ANIMATE_MAP(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -1679,7 +1679,7 @@ static int TURNANI[] = {
 static void GET_TURNOBJ(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

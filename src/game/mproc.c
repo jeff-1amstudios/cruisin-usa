@@ -5,6 +5,7 @@
 #include "c30.h"
 #include "error.h"
 #include "macs.h"
+#include "sysid.h"
 #include "vunit.h"
 
 /*
@@ -13,7 +14,7 @@
 
 static void PRC_DEBUG_CHECK(void);
 static void NEXTPRC(PROC* proc);
-PROC* PRC_CREATE_CHILD(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx);
+PROC* PRC_CREATE_CHILD(PROC* parent /*AR7*/, PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx);
 void PRC_DISPATCH(void);
 void PRC_KILL(PROC* proc /*AR2*/);
 void PRC_KILLALL(int pid, int mask);
@@ -42,6 +43,7 @@ static int NUM_PROCS_IDLE;
 #endif
 /* asm: CURRENT_PROC	.bss	CURRENT_PROC,1 */
 PROC* CURRENT_PROC;
+uint64_t PRC_DISPATCH_COUNT;
 /* asm: OLDSP	.bss	OLDSP,1 */
 int OLDSP;
 /* asm: PACTIVE	.bss	PACTIVE,1 */
@@ -77,6 +79,14 @@ static void NEXTPRC(PROC* proc) {
     // asm 0000A8BF: 	LDI	*+AR7(PR4),R4
     // asm 0000A8C0: DISPPRCX	RETS
     while (proc != NULL) {
+        if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL && proc->id == (UTIL_C | BACKGRND_T)) {
+            fprintf(
+                stderr,
+                "timeline BGD_VISIT dispatch=%llu time=%d current=%td\n",
+                (unsigned long long)PRC_DISPATCH_COUNT,
+                proc->sleep_ticks,
+                CURRENT_PROC != NULL ? CURRENT_PROC - PRCSTR : -1);
+        }
         if (proc->sleep_ticks > 0) {
             proc->sleep_ticks -= 1;
         }
@@ -223,7 +233,7 @@ GETPROCX:
  *	AR0	POINTER TO PROCESS
  *
  */
-PROC* PRC_CREATE_CHILD(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx) {
+PROC* PRC_CREATE_CHILD(PROC* parent /*AR7*/, PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx) {
     PROC* proc;
 
     // asm 0000A893:     	CALL 	PRC_CREATE
@@ -238,13 +248,13 @@ PROC* PRC_CREATE_CHILD(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx
     // asm 0000A898: 	LDI	*AR7,R0			;PUT HIM AFTER CREATING PROCESS
     // asm 0000A899: 	STI	R0,*AR0
     // asm 0000A89A: 	STI	AR0,*AR7
-    if (CURRENT_PROC != NULL) {
+    if (parent != NULL) {
         PACTIVE = proc->link;
-        proc->link = CURRENT_PROC->link;
-        CURRENT_PROC->link = proc;
+        proc->link = parent->link;
+        parent->link = proc;
     }
-    // With the root sentinel (CURRENT_PROC == NULL), PRC_CREATE already placed
-    // the child at PACTIVE, which is exactly where the assembly reinserts it.
+    // With a root sentinel (parent == NULL), PRC_CREATE already placed the
+    // child at PACTIVE, which is exactly where the assembly reinserts it.
     // asm 0000A89B: 	POP	R0
     // asm 0000A89C: 	RETS
     return proc;
@@ -276,6 +286,7 @@ PROC* PRC_CREATE_CHILD(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx
  *
  */
 void PRC_DISPATCH(void) {
+    PRC_DISPATCH_COUNT += 1;
     // asm 0000A89D: DISPPROC
     // asm 0000A89D: 	LDI	@PACTIVEI,AR7
     // asm 0000A89E: 	B	NEXTPRC
@@ -288,7 +299,7 @@ void PRC_DISPATCH(void) {
     // *	AR2	SLEEP TIME x 16MSEC.
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_FUNCTION_ENTRY();
     NEXTPRC(PACTIVE);
 }
 

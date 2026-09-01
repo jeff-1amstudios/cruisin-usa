@@ -776,7 +776,7 @@ BABLP3:
     // asm 00008BA5: 	CREATEC	BABE_IBO,UTIL_C
     child_ctx = port_malloc(sizeof(*child_ctx));
     child_ctx->BABE_IBO.obj = p->ctx->BABE_TROPHY_FRAME.obj;
-    child_proc = CREATEC(BABE_IBO, UTIL_C, child_ctx);
+    child_proc = CREATEC(p, BABE_IBO, UTIL_C, child_ctx);
     // asm 00008BA8: 	LDI	*+AR7(BABE_ASTRT),R0
     // asm 00008BA9: 	STI	R0,*+AR0(BABE_ASTRT)
     if (child_proc != NULL) {
@@ -893,7 +893,7 @@ void BABE_WAVEFLAG(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;

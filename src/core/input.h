@@ -5,6 +5,8 @@
 
 #define PORT_STEERING_CENTER 128
 
+extern int input_frame_counter;
+
 void port_handle_input(void);
 void port_sample_steering(void);
 int port_take_steering_detent(void);

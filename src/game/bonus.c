@@ -421,7 +421,7 @@ LK:
     // asm 000039BA: 	CALL	FIND_PLAYERS_POSITION
     FIND_PLAYERS_POSITION(PLYCAR, PLYCBLK);
     // asm 000039BB: 	CREATEC	BONUS_SCREEN,22
-    CREATEC(BONUS_SCREEN, 22, NULL);
+    CREATEC(CURRENT_PROC, BONUS_SCREEN, 22, NULL);
     // asm 000039BE: 	RETS
 }
 
@@ -741,6 +741,8 @@ static void BONSCRN2(PROC* p) {
     int switch_code;
     int steer_delta;
 
+    MAME_VALIDATOR_EXIT();
+
     switch (PROC_RESUME_STATE) {
     case 0:
         MAME_ASSERT_FUNCTION_ENTRY();
@@ -865,7 +867,7 @@ PAPAPA44:
         goto COOLRET;
     }
     // asm 00003A92: 	CREATEC	FREE_RACE_ANNOUNCE,UTIL_C
-    CREATEC(FREE_RACE_ANNOUNCE, UTIL_C, port_malloc(sizeof(PROC_CONTEXT)));
+    CREATEC(CURRENT_PROC, FREE_RACE_ANNOUNCE, UTIL_C, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 00003A95: 	JSRP	BABE_TROPHY
     JSRP(BABE_TROPHY, 15);
 COOLRET:
@@ -1349,7 +1351,7 @@ FINFIN:
     // asm 00003BB6: 	STI	R0,@_MODE
     _MODE = (_MODE & ~(MGO | MMODE)) | MGAME | MINFIN;
     // asm 00003BB7: 	CREATEC	FOLDMAP,UTIL_C
-    CREATEC(FOLDMAP, UTIL_C, port_malloc(sizeof(PROC_CONTEXT)));
+    CREATEC(CURRENT_PROC, FOLDMAP, UTIL_C, port_malloc(sizeof(PROC_CONTEXT)));
     // asm 00003BBA: 	LDI	@BONUS_WAVE,AR0
     // asm 00003BBB: 	ADDI	@BONUS_POSTLAUNCHI,AR0
     // asm 00003BBC: 	LDI	*AR0,R0
@@ -2279,7 +2281,7 @@ static void PLACE_FLAG(int index) {
     // asm 00003DB7: 	CREATEC	PLACE_FLAG_PROC,UTIL_C
     ctx = port_malloc(sizeof(*ctx));
     ctx->PLACE_FLAG_PROC.obj = obj;
-    CREATEC(PLACE_FLAG_PROC, UTIL_C, ctx);
+    CREATEC(CURRENT_PROC, PLACE_FLAG_PROC, UTIL_C, ctx);
     // asm 00003DBA: 	SONDFX	MAPSTAR2
     SONDFX(MAPSTAR2);
     // asm 00003DBC: 	POP	RC

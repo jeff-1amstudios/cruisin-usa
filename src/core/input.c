@@ -1,5 +1,6 @@
 #include "input.h"
 #include <SDL.h>
+#include <stdlib.h>
 
 #include "../game/vunit.h"
 
@@ -27,15 +28,15 @@ void port_handle_input(void) {
     if (keyboard[SDL_SCANCODE_RETURN] || keyboard[SDL_SCANCODE_KP_ENTER]) {
         switch1 &= ~SW_START;
     }
-    // if (input_frame_counter % 200 == 0) {
-    //     switch1 &= ~SW_START;
-    // }
+    if (getenv("CRUSN_VALIDATE_SKIP_ATTRACT") == NULL && input_frame_counter % 200 == 0) {
+        switch1 &= ~SW_START;
+    }
     int new_steering_direction = (keyboard[SDL_SCANCODE_RIGHT] != 0) - (keyboard[SDL_SCANCODE_LEFT] != 0);
     if (new_steering_direction != 0 && new_steering_direction != steering_direction) {
         steering_detent = new_steering_direction;
     }
     steering_direction = new_steering_direction;
-    accelerator = (keyboard[SDL_SCANCODE_UP] || keyboard[SDL_SCANCODE_W]) ? 255 : 0;
+    accelerator = 255; // (keyboard[SDL_SCANCODE_UP] || keyboard[SDL_SCANCODE_W]) ? 255 : 0;
     brake = (keyboard[SDL_SCANCODE_DOWN] || keyboard[SDL_SCANCODE_S] || keyboard[SDL_SCANCODE_SPACE]) ? 255 : 0;
     input_frame_counter++;
 }

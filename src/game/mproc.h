@@ -21,6 +21,7 @@ extern PROC* PACTIVE;
 
 // asm: 	.globl	CURRENT_PROC,OLDSP
 extern PROC* CURRENT_PROC;
+extern uint64_t PRC_DISPATCH_COUNT;
 
 extern int OLDSP;
 
@@ -31,7 +32,7 @@ void PRC_INIT(void);
 PROC* PRC_CREATE(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx);
 
 // asm: 	.globl	PRC_CREATE_CHILD
-PROC* PRC_CREATE_CHILD(PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx);
+PROC* PRC_CREATE_CHILD(PROC* parent /*AR7*/, PROC_FUNC func /*AR2*/, int pid /*R2*/, PROC_CONTEXT* ctx);
 
 // asm: 	.globl	PRC_DISPATCH
 void PRC_DISPATCH(void);

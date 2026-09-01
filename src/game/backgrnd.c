@@ -439,6 +439,15 @@ NOO2d:
 // *----------------------------------------------------------------------------
 
 static void BGD_WATCHER(PROC* p) {
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL && PRC_DISPATCH_COUNT > 200) {
+        fprintf(
+            stderr,
+            "timeline BGD_WAKE frame=%llu proc=%td time=%d next=%td\n",
+            (unsigned long long)PRC_DISPATCH_COUNT,
+            p - PRCSTR,
+            p->sleep_ticks,
+            p->link != NULL ? p->link - PRCSTR : -1);
+    }
     TYCOHEADER section_header;
     DGROUP_ENTRY* dgroup;
     tyco_stream_t tyco_ptr;
@@ -448,15 +457,21 @@ static void BGD_WATCHER(PROC* p) {
     u32 flag;
     int mode;
     int routine_index;
+    uint32_t observed_raw;
     c3x_reg_t distance;
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_FUNCTION_ENTRY();
         break;
     case 1:
         goto PROC_RESUME_1;
     }
+
+    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.X));
+    MAME_ASSERT_MEM(0x00003FF4, "d@00809800", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Z));
+    MAME_ASSERT_MEM(0x00003FF5, "d@00809802", &observed_raw);
 
     // asm 00003FF4: 	LDI	@_MODE,R0
     // asm 00003FF5: 	AND	MMODE,R0
@@ -488,6 +503,25 @@ LLKK:
     if ((_MODE & MMODE) != MGAME) {
         goto NO_ACTIVATION;
     }
+    // MAME_ASSERT_ORDERING("RACE_BGD_FRAME");
+    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.X));
+    MAME_ASSERT_MEM(0x00003FFE, "d@00809800", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Z));
+    MAME_ASSERT_MEM(0x00003FFE, "d@00809802", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Y));
+    MAME_ASSERT_MEM(0x00003FFE, "d@00809801", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a00));
+    MAME_ASSERT_MEM(0x00003FFE, "d@00809809", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a01));
+    MAME_ASSERT_MEM(0x00003FFE, "d@0080980A", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a02));
+    MAME_ASSERT_MEM(0x00003FFE, "d@0080980B", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a10));
+    MAME_ASSERT_MEM(0x00003FFE, "d@0080980C", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a11));
+    MAME_ASSERT_MEM(0x00003FFE, "d@0080980D", &observed_raw);
+    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a12));
+    MAME_ASSERT_MEM(0x00003FFE, "d@0080980E", &observed_raw);
     // asm 00003FFE: 	LDI	@PLYCBLK,AR0
     // asm 00003FFF: 	LDI	*+AR0(CARTRAK),AR0
     closest_track_piece = OBJREF_TO_PTR(PLYCBLK->closest_track_piece);
@@ -732,6 +766,9 @@ NODEACT:
 BGD_SLP:
     // asm 00004067: 	SLEEP	3
     SLEEP(3, 1);
+    // Synchronize save-state validation on the first complete watcher wake
+    // after WAVEFLAG, so its periodic scheduler phase matches MAME.
+    // MAME_ASSERT_ORDERING("BGD_WATCHER_AFTER_SLEEP");
     // asm 00004069: 	B	BGD_WATCHER
     REENTER(BGD_WATCHER);
 }

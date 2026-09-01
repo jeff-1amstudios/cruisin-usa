@@ -136,13 +136,39 @@ int main(int argc, char* argv[]) {
     if (free_play) {
         ADJUSTMENT_WRITE(ADJ_FREE_PLAY, 1);
     }
-    ADJUSTMENT_WRITE(ADJ_GIRLS, 0);
+    // ADJUSTMENT_WRITE(ADJ_GIRLS, 0);
 
     const Uint64 counter_frequency = SDL_GetPerformanceFrequency();
     Uint64 previous_counter = SDL_GetPerformanceCounter();
     Uint64 int0_accumulator = counter_frequency;
+    const int deterministic_validation = getenv("CRUSN_ENABLE_MAME_VALIDATION") != NULL;
 
     while (running) {
+        if (deterministic_validation) {
+            if (mame_validation_replay_started()) {
+                int frame_ticks = mame_validate_frame_ticks();
+                while (INFRAMES < frame_ticks) {
+                    INT0();
+                }
+                MAINLOOP();
+                crusn_yield_display_interrupt();
+                continue;
+            }
+            /*
+             * Validation compares one emulated frame at a time. Driving INT0
+             * from wall time makes added diagnostics change the number of IRQ
+             * ticks between MAINLOOP calls, and therefore changes game state.
+             */
+            INT0();
+            if (INFRAMES >= FRAMRATE + 1 && CLEARRDY == 0) {
+                MAINLOOP();
+                crusn_yield_display_interrupt();
+            } else {
+                crusn_pump_events();
+            }
+            continue;
+        }
+
         Uint64 current_counter = SDL_GetPerformanceCounter();
         int0_accumulator += (current_counter - previous_counter) * TIKS_PER_SECOND;
         previous_counter = current_counter;

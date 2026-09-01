@@ -607,7 +607,7 @@ void INIT_SPARK(OBJ* parent_obj /*AR4*/) {
     // asm 0000859A: 	LDI	@PLYPROC,AR7
     // asm 0000859B: 	CREATEC	SPARK_PROC,UTIL_C|SPARK_T
     spark_ctx = port_malloc(sizeof(PROC_CONTEXT));
-    spark_proc = CREATEC(SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
+    spark_proc = CREATEC(PLYPROC, SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
     // asm 0000859E: 	BC	INIT_SPARKX
     if (spark_proc == NULL) {
         goto INIT_SPARKX;
@@ -1187,7 +1187,7 @@ void WALL_SPARK(OBJ* car_obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 000086B2: 	LDI	@PLYPROC,AR7
     // asm 000086B3: 	CREATEC	SPARK_PROC,UTIL_C|SPARK_T
     spark_ctx = port_malloc(sizeof(PROC_CONTEXT));
-    spark_proc = CREATEC(SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
+    spark_proc = CREATEC(PLYPROC, SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
     // asm 000086B6: 	BC	WALL_SPARKX
     if (spark_proc == NULL) {
         goto WALL_SPARKX;
@@ -1339,7 +1339,7 @@ IMPACTED_PLAYER:
     // asm 000086F4: 	LDI	@PLYPROC,AR7
     // asm 000086F5: 	CREATEC	SPARK_PROC,UTIL_C|SPARK_T
     spark_ctx = port_malloc(sizeof(PROC_CONTEXT));
-    spark_proc = CREATEC(SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
+    spark_proc = CREATEC(PLYPROC, SPARK_PROC, UTIL_C | SPARK_T, spark_ctx);
     // asm 000086F8: 	BC	IMPACT_SPARKX
     if (spark_proc == NULL) {
         goto IMPACT_SPARKX;

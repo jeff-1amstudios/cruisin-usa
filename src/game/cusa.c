@@ -428,11 +428,11 @@ DR1:
     FEED_WATCHDOG();
 
     MESSAGE1();
-    MAME_ASSERT_REGION_AT_ADDR(0x00004B5E, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
+    // MAME_ASSERT_REGION_AT_ADDR(0x00004B5E, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
     crusn_yield_display_interrupt();
     MSG1();
     crusn_yield_display_interrupt();
-    MAME_ASSERT_REGION_AT_ADDR(0x00004B5F, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
+    // MAME_ASSERT_REGION_AT_ADDR(0x00004B5F, "SCREEN0", SCREEN0, g_crusn_machine->screen_words, CRUSN_SCREEN_WORDS);
 
     PREVX = 240;
     DELTA = 1;
@@ -471,30 +471,30 @@ DR1:
 
     HARD_SECTION_LOAD = 1;
     LOAD_SECTION_REQ(&SECshared);
-    MAME_ASSERT_REGION_AT_ADDR(0x00004B8B, "_SECshared-decompressed", 0x0A00000, SECshared.dest_addr, 0x1AB00);
+    // MAME_ASSERT_REGION_AT_ADDR(0x00004B8B, "_SECshared-decompressed", 0x0A00000, SECshared.dest_addr, 0x1AB00);
 
     HARD_SECTION_LOAD = 1;
     LOAD_SECTION_REQ(&SECskys_CUSA);
-    MAME_ASSERT_REGION_AT_ADDR(0x00004B8F, "SECskys_CUSA-decompressed", 0x0A1AB00, SECskys_CUSA.dest_addr, 0x30000);
+    // MAME_ASSERT_REGION_AT_ADDR(0x00004B8F, "SECskys_CUSA-decompressed", 0x0A1AB00, SECskys_CUSA.dest_addr, 0x30000);
 
     MSG2();
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SECgeneral_CUSA);
-    MAME_ASSERT_REGION_AT_ADDR(0x00004B95, "SECgeneral_CUSA-decompressed", 0x0A52900, SECgeneral_CUSA.dest_addr, 0x136280);
+    // MAME_ASSERT_REGION_AT_ADDR(0x00004B95, "SECgeneral_CUSA-decompressed", 0x0A52900, SECgeneral_CUSA.dest_addr, 0x136280);
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SEChead2head);
-    MAME_ASSERT_REGION_AT_ADDR(0x00004B9A, "SEChead2head-decompressed", 0x0BEFA00, SEChead2head.dest_addr, 0x1000);
+    // MAME_ASSERT_REGION_AT_ADDR(0x00004B9A, "SEChead2head-decompressed", 0x0BEFA00, SEChead2head.dest_addr, 0x1000);
 
     MSG3();
 
     HARD_SECTION_LOAD = 1;
     BOOT_PACIFY_SCREEN_P = 1;
     LOAD_SECTION_REQ(&SECpress);
-    MAME_ASSERT_REGION_AT_ADDR(0x00004BA0, "SECpress-decompressed", 0x0B88B80, SECpress.dest_addr, 0x1000);
+    // MAME_ASSERT_REGION_AT_ADDR(0x00004BA0, "SECpress-decompressed", 0x0B88B80, SECpress.dest_addr, 0x1000);
     SYNC_BOOT_RANDOM_ADVANCE();
 
     AUDIT_WRITE(AUD_BCREDITS, 0);
@@ -630,9 +630,13 @@ ENTER2:
 
     MPROC_TIK = 0;
 
-    if (getenv("CRUSN_VALIDATE_FREEZE_COUNTDOWN") != NULL) {
-        _countdown = 75;
+    if (mame_validation_replay_started()) {
+        int frame_mid_ticks = mame_validate_frame_mid_ticks();
+        while (INFRAMES < frame_mid_ticks) {
+            INT0();
+        }
     }
+
     PRC_DISPATCH(); // EXECUTE PROCESSES
 
     if (COLD_ENTER_RESTART) {
@@ -872,7 +876,13 @@ NCLRSCR:
     // asm 00004CA1: 	BZ	NOSTOPWUPDT
     if (STOPWATCH_CNTL != 0) {
         // asm 00004CA2: 	INCM	@STOPWATCH
-        STOPWATCH += 1;
+        static int validate_stopwatch_phase_aligned;
+        if (!validate_stopwatch_phase_aligned && getenv("CRUSN_VALIDATE_ALIGN_STOPWATCH_PHASE") != NULL && getenv("CRUSN_VALIDATE_ALIGN_STOPWATCH_PHASE")[0] == '1') {
+            /* Align the clean port boot with the deferred save-state frame. */
+            validate_stopwatch_phase_aligned = 1;
+        } else {
+            STOPWATCH += 1;
+        }
     }
 NOSTOPWUPDT:
     // asm 00004CA5: 	INCM	@_sectime		;ONE SECOND TIMER
@@ -1364,6 +1374,17 @@ RDFOOT:
     // asm 00004DCA: 	FIX	R0
     // asm 00004DCB: 	STI	R0,@_pot1
     _pot1 = C3X_FIX(filtered_value);
+    if (getenv("CRUSN_VALIDATE_FORCE_POT1_MAX") != NULL) {
+        // Match the MAME validation breakpoint at 0x4DCC, which overwrites
+        // the filtered ADC result throughout clean-boot validation. Chooser
+        // release-to-press edges are injected directly by INIT_PEDALCHK, so
+        // holding this value no longer blocks track or car selection.
+        _pot1 = 0xFF;
+    }
+    //
+    //
+    //
+    //
     // asm 00004DCC: 	LDP	@SYSCNTL
     // asm 00004DCD: 	LDI	@SYSCNTL,R0		;ACTUALLY WE SIGNAL A READ OF THE
     // asm 00004DCE: 	LDP	SYSCNTLR

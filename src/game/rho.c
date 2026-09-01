@@ -313,12 +313,8 @@ NONOLONG:
     }
     // asm 000097BD: 	STI	AR2,*+AR7(DELTA_TPIECE)
     p->ctx->RACER_DRONE.delta_tpiece = tracking_piece;
-    /*
-     * AHEAD_OF_PLAYER_P dereferences CARTRAK on the first pass through
-     * RHO_LP.  No tracking update occurs between this initialization and
-     * that call, so seed it from the same road piece used by DELTA_TPIECE.
-     */
-    carblk->closest_track_piece = OBJ_TO_REF(tracking_piece);
+    // CARTRAK intentionally retains _CARV0's C30 STF-zero sentinel until the
+    // first normal GETTRAK update, matching the assembly's structure alias.
     // asm 000097BE: 	LDI	*+AR2(OUSR1),R0
     // asm 000097BF: 	STI	R0,*+AR7(DELTA_LAST_OID)
     p->ctx->RACER_DRONE.delta_last_oid = (int)tracking_piece->usr1;
@@ -1025,11 +1021,11 @@ static void RHO_ISHIT(PROC* p)
     // asm 000098EA: 	CREATEC	SMOKE_PUFF,SPAWNER_C
     child_ctx = port_malloc(sizeof(PROC_CONTEXT));
     child_ctx->PUFF_PROC.source_obj = obj;
-    CREATEC(SMOKE_PUFF, SPAWNER_C, child_ctx);
+    CREATEC(p, SMOKE_PUFF, SPAWNER_C, child_ctx);
     // asm 000098ED: 	CREATEC	EXP_PUFF,SPAWNER_C
     child_ctx = port_malloc(sizeof(PROC_CONTEXT));
     child_ctx->PUFF_PROC.source_obj = obj;
-    CREATEC(EXP_PUFF, SPAWNER_C, child_ctx);
+    CREATEC(p, EXP_PUFF, SPAWNER_C, child_ctx);
     // asm 000098F0: 	LDI	10,AR6
     p->ctx->RACER_DRONE.rho_hit_smoke_count = 10;
 RHO_ISHITLP:
@@ -1047,7 +1043,7 @@ RHO_ISHITLP:
     if (p->ctx->RACER_DRONE.rho_hit_smoke_count >= 0) {
         child_ctx = port_malloc(sizeof(PROC_CONTEXT));
         child_ctx->PUFF_PROC.source_obj = obj;
-        CREATEC(SMOKE_PUFF, SPAWNER_C, child_ctx);
+        CREATEC(p, SMOKE_PUFF, SPAWNER_C, child_ctx);
     }
 NOSMK:
     // 	;dont disolve

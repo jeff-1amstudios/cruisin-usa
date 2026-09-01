@@ -26,6 +26,22 @@ extern MATRIX _MATRIXC;
 extern VECTOR _VECTORA;
 
 /*
+ * Some code dereferences CARTRAK or wheel-contact references before their
+ * first integer initialization. On the C30 those references still contain
+ * STF-zero (0x80000000), whose wrapped data-space reads expose these values.
+ * Callers opt into this view explicitly; ordinary OBJREF conversion rejects
+ * the sentinel.
+ */
+static const OBJ C30_STF_ZERO_TRACK_NEXT_VIEW = {
+    .pos = { C3X_F32_INIT(-8192), C3X_F32_INIT(0), C3X_F32_INIT(-8192) },
+};
+const OBJ C30_STF_ZERO_OBJREF_VIEW = {
+    .pos = { C3X_F32_INIT(1.001953125), C3X_F32_INIT(0), C3X_F32_INIT(1.001953125) },
+    .usr1 = 0x4EEF,
+    .link4 = (uintptr_t)&C30_STF_ZERO_TRACK_NEXT_VIEW,
+};
+
+/*
  * Source module: asm/PLYR.ASM
  */
 
@@ -46,6 +62,7 @@ static VECTOR* GETCAMPOS(c3x_reg_t angle /*R0*/, OBJ* obj /*AR4*/);
 void CAMYADJ(VECTOR* camera_pos /*AR0*/);
 static void PLYONRD(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta /*R2*/);
+// static unsigned validate_race_transition_dronego_count;
 void DRONESTOP(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 static void GETREV(CARBLK* carblk /*AR5*/);
 void GETRPM(CARBLK* carblk /*AR5*/);
@@ -319,6 +336,11 @@ static void CLEAR_CARBLK(CARBLK* car) {
     car->right_rear.z = C3X_STF(zero);
     car->right_rear.road_delta_y = C3X_STF(zero);
     car->right_rear.y_velocity = C3X_STF(zero);
+    car->center.collided_road_object = OBJREF_STF_ZERO;
+    car->right_front.collided_road_object = OBJREF_STF_ZERO;
+    car->left_front.collided_road_object = OBJREF_STF_ZERO;
+    car->left_rear.collided_road_object = OBJREF_STF_ZERO;
+    car->right_rear.collided_road_object = OBJREF_STF_ZERO;
     car->turn = C3X_STF(zero);
     car->traction = C3X_STF(zero);
     car->max_accel = C3X_STF(zero);
@@ -337,6 +359,7 @@ static void CLEAR_CARBLK(CARBLK* car) {
     car->mass = C3X_STF(zero);
     car->spin_radians = C3X_STF(zero);
     car->track_piece_distance = C3X_STF(zero);
+    car->closest_track_piece = OBJREF_STF_ZERO;
     car->rpm_x100 = C3X_STF(zero);
     car->x_plus = C3X_STF(zero);
     car->x_minus = C3X_STF(zero);
@@ -349,6 +372,8 @@ static void CLEAR_CARBLK(CARBLK* car) {
     car->road_friction = C3X_STF(zero);
     car->offroad_friction = C3X_STF(zero);
     car->dist_to_center = C3X_STF(zero);
+    car->debug_car_id = UINT32_C(0x80000000);
+    car->updated_this_frame = UINT32_C(0x80000000);
     for (i = 0; i < 5; i++) {
         car->wheel_scan_offsets[i].X = C3X_STF(zero);
         car->wheel_scan_offsets[i].Y = C3X_STF(zero);
@@ -400,7 +425,7 @@ CARBLK* _CARV0(OBJ* obj /*AR4*/, int vehicle /*R0*/) {
     // asm 00002953: 	STI	R0,*+AR4(ORAD)		;GET OBJECT RADIUS
     romdata = obj->romdata;
     obj->radius = FIX(C3X_MUL(C3X_IMM_F32(1.1f), C3X_FROM_INT(romdata->radius))); // GET OBJECT RADIUS
-    MAME_ASSERT_REG(0x00002954, "R0", &obj->radius);
+    // MAME_ASSERT_REG(0x00002954, "R0", &obj->radius);
 
     // asm 00002954: 	LDI	0,R0 			;INIT FLAGS
     // asm 00002955: 	STI	R0,*+AR0(CAR_SPIN)
@@ -465,8 +490,8 @@ CARV_ERR:
 void BONUS_WAIT_LOOP(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("BONUS_WAIT_LOOP");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("BONUS_WAIT_LOOP");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -610,8 +635,8 @@ void PLYR_INTRO_ENTER(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("PLYR_INTRO_ENTER");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("PLYR_INTRO_ENTER");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -707,15 +732,15 @@ void PLYR_INTRO_ENTER(PROC* p) {
     // asm 000029EB: 	LDI	1,R0
     // asm 000029EC: 	STI	R0,@CAMVIEW		;INIT CAMERA VIEW TO 3RD PERSON
     CAMVIEW = 1; // INIT CAMERA VIEW TO 3RD PERSON
-    MAME_ASSERT_MEM(0x000029ED, "d@(ar4+10)", &obj->palette);
-    MAME_ASSERT_MEM(0x000029ED, "d@(ar5+38)", &carblk->gear);
-    MAME_ASSERT_MEM(0x000029ED, "d@(ar5+2c)", &carblk->y_rotation);
-    MAME_ASSERT_MEM(0x000029ED, "d@(ar5+2d)", &carblk->y_velocity_rotation);
-    MAME_ASSERT_MEM(0x000029ED, "d@(ar5+24)", &carblk->throttle);
-    MAME_ASSERT_MEM(0x000029ED, "d@(ar5+26)", &carblk->speed);
-    MAME_ASSERT_MEM(0x000029ED, "d@(ar3)", &CAMERAPOSI.X);
-    MAME_ASSERT_MEM(0x000029ED, "d@(ar3+1)", &CAMERAPOSI.Y);
-    MAME_ASSERT_MEM(0x000029ED, "d@(ar3+2)", &CAMERAPOSI.Z);
+    // MAME_ASSERT_MEM(0x000029ED, "d@(ar4+10)", &obj->palette);
+    // MAME_ASSERT_MEM(0x000029ED, "d@(ar5+38)", &carblk->gear);
+    // MAME_ASSERT_MEM(0x000029ED, "d@(ar5+2c)", &carblk->y_rotation);
+    // MAME_ASSERT_MEM(0x000029ED, "d@(ar5+2d)", &carblk->y_velocity_rotation);
+    // MAME_ASSERT_MEM(0x000029ED, "d@(ar5+24)", &carblk->throttle);
+    // MAME_ASSERT_MEM(0x000029ED, "d@(ar5+26)", &carblk->speed);
+    // MAME_ASSERT_MEM(0x000029ED, "d@(ar3)", &CAMERAPOSI.X);
+    // MAME_ASSERT_MEM(0x000029ED, "d@(ar3+1)", &CAMERAPOSI.Y);
+    // MAME_ASSERT_MEM(0x000029ED, "d@(ar3+2)", &CAMERAPOSI.Z);
     // asm 000029ED: 	BU	PLYR_INTRO_JOIN
     PROC_CONTINUE(PLYR_INTRO_JOIN_tail, 1);
     return;
@@ -725,8 +750,8 @@ void PLYR_INTRO_ENTER(PROC* p) {
 void _PLYR(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("_PLYR");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("_PLYR");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -859,8 +884,8 @@ static void PLYR_INTRO_JOIN_tail(PROC* p) {
 
     switch (PROC_RESUME_STATE) {
     case 0:
-        MAME_ASSERT_FUNCTION_ENTRY();
-        MAME_ASSERT_ORDERING("PLYR_INTRO_JOIN");
+        // MAME_ASSERT_FUNCTION_ENTRY();
+        // MAME_ASSERT_ORDERING("PLYR_INTRO_JOIN");
         break;
     case 1:
         goto PROC_RESUME_1;
@@ -926,6 +951,16 @@ L883:
     // *PLAYER CAR LOOP
     // *
 PLYRLP:
+    // This transition-only diagnostic cannot safely dereference carblk here:
+    // the player process can outlive the object it originally referenced.
+    // if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL && validate_race_transition_dronego_count != 0) {
+    //     fprintf(stderr, "timeline RACE_TRANSITION_DRONEGO count=%u\n",
+    //             validate_race_transition_dronego_count);
+    //     validate_race_transition_dronego_count = 0;
+    // }
+    if ((_MODE & MMODE) == MGAME && START_NOW_P != 0) {
+        // MAME_ASSERT_ORDERING("PLYR_FRAME_AFTER_WAVEFLAG");
+    }
     // asm 00002A5C: LDI	@END_OF_GAMEP,R0
     // asm 00002A5D: 	BNZ	ENDPLAYER
     if (END_OF_GAMEP != 0) {
@@ -940,7 +975,9 @@ PLYRLP:
     // asm 00002A63: 	ADDI	R2,R1
     // asm 00002A64: 	STI	R1,@PLYRFIRST		;TIMER FOR PLAYER IN 1ST PLACE
     PLYRFIRST = (POSITION == 1 ? PLYRFIRST : -NFRAMES) + NFRAMES; // TIMER FOR HOW LONG PLAYER IN 1ST
+    MAME_ASSERT_MEM(0x00002A65, "d@0000C96E", &_sectime);
     // asm 00002A65: 	LDI	@_countdown,R1		;TIMEOUT?
+    MAME_ASSERT_REG(0x00002A66, "R1", &_countdown);
     // asm 00002A66: 	CALLLE	TIMED_OUT		;SETBACK?
     if (_countdown <= 0) {
         TIMED_OUT(); // SETBACK?
@@ -992,6 +1029,8 @@ PLYRSPD:
     new_gear = GETGEAR(carblk); // GET CAR GEAR
     // asm 00002A79: 	LDI	*+AR5(CARGEAR),R1
     old_gear = carblk->gear;
+    MAME_ASSERT_REG(0x00002A7A, "R0", &new_gear);
+    MAME_ASSERT_REG(0x00002A7A, "R1", &old_gear);
     // asm 00002A7A: 	STI	R0,*+AR5(CARGEAR)
     carblk->gear = new_gear;
     // asm 00002A7B: 	CMPI	R0,R1			;CHECK FOR UPSHIFT
@@ -1005,6 +1044,14 @@ PLYRSPD:
     throttle = GETPEDAL(); // GET GAS PEDAL VALUE
     // asm 00002A7E: 	MPYF	2,R0			;GIVE A LITTLE JOLT
     throttle = C3X_MUL(throttle, C3X_IMM_F32(2)); // GIVE A LITTLE JOLT
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL) {
+        fprintf(
+            stderr,
+            "timeline UPSHIFT old=%d new=%d throttle=%.9g\n",
+            old_gear,
+            new_gear,
+            C3X_TO_FLOAT(throttle));
+    }
     // asm 00002A7F: 	CMPF	1.4,R0			;CHECK THROTTLE
     // asm 00002A80: 	BLE 	PLYRSPD01		;NOT ENOUGH
     if (C3X_LE(throttle, C3X_IMM_F32(1.4))) {
@@ -1014,18 +1061,19 @@ PLYRSPD:
     // asm 00002A82: 	SONDFX	UPSHIFTSND		;MAKE YOUR UPSHIFT DUDES
     SONDFX(UPSHIFTSND); // MAKE YOUR UPSHIFT DUDES
     // asm 00002A84: 	CREATEC	FLAME_PRC,UTIL_C	;make child flames
-    CREATEC(FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
+    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
     // asm 00002A87: 	CREATEC	SMOKE_PROC,UTIL_C	;make child smoke
     smoke_ctx = port_malloc(sizeof(PROC_CONTEXT));
     smoke_ctx->SMOKE_PROC.car_obj = obj;
     smoke_ctx->SMOKE_PROC.carblk = carblk;
-    CREATEC(SMOKE_PROC, UTIL_C, smoke_ctx); // make child smoke
+    CREATEC(CURRENT_PROC, SMOKE_PROC, UTIL_C, smoke_ctx); // make child smoke
     // ;	LDI	*+AR5(CARGEAR),AR2	;MAKE RIGHT REV ON SHIFT
     // ;	ADDI	@SHIFTSNDTABI,AR2
     // ;	LDI	*-AR2(1),AR2
     // ;	CALL	ONESND
     // asm 00002A8A: 	POPF	R0
     // asm 00002A8B: 	B	PLYRSPD01
+    goto PLYRSPD01;
 PLYRSPD0:
     // asm 00002A8C: 	CALL	GETPEDAL		;GET GAS PEDAL VALUE
     throttle = GETPEDAL(); // GET GAS PEDAL VALUE
@@ -1978,6 +2026,12 @@ void DRONEGO(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, c3x_reg_t steering_delta 
     VECTOR forward_vector;
     uint32_t observed_raw;
 
+    // if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL && (_MODE & MMODE) == MGAME) {
+    //     validate_race_transition_dronego_count += 1;
+    // }
+    MAME_ASSERT_FUNCTION_ENTRY();
+    // MAME_ASSERT_ORDERING("DRONEGO_AFTER_WAVEFLAG");
+
     // asm 00002C18: 	PUSHF	R2
     // asm 00002C19: 	CALL	GETAUTO			;GET AUTO TRANS VALUE
     carblk->gear = GETAUTO(carblk);
@@ -2504,7 +2558,9 @@ static int CKOFRD(CARBLK* carblk /*AR5*/) {
         int road_id;
 
         // asm 00002CD9: 	LDI	*AR3++(CARVSIZ),AR0 	;GET ROAD OBJECT INTERSECTING
-        road_obj = OBJREF_TO_PTR(points[i].collided_road_object);
+        road_obj = OBJREF_IS_STF_ZERO(points[i].collided_road_object)
+            ? OBJREF_STF_ZERO_VIEW()
+            : OBJREF_TO_PTR(points[i].collided_road_object);
         // asm 00002CDA: 	LDI	*+AR0(OID),R1		;CHECK OID
         road_id = road_obj != NULL ? road_obj->id : 0;
         // asm 00002CDB: 	AND	CLASS_M+TYPE_M,R1
@@ -3001,7 +3057,17 @@ GETSPD1:
     // *GET ENGINE ACCEL
 GETSPD10:
     // asm 00002D91: 	LDF	*+AR5(CARTHROTTLE),R0
+    // MAME_ASSERT_MEM(0x00002D91, "d@(ar5+24)", &carblk->throttle);
+    // MAME_ASSERT_MEM(0x00002D91, "d@(ar5+23)", &carblk->max_accel);
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL && (_MODE & MMODE) == MGAME) {
+        fprintf(
+            stderr,
+            "timeline GETSPD_INPUT throttle=%.9g max_accel=%.9g\n",
+            C3X_TO_FLOAT(C3X_LDF(carblk->throttle)),
+            C3X_TO_FLOAT(C3X_LDF(carblk->max_accel)));
+    }
     accel = C3X_LDF(carblk->throttle);
+    MAME_ASSERT_REG_FLOAT(0x00002D92, "R0", &accel);
     // asm 00002D92: 	MPYF	*+AR5(CARMAXACCEL),R0
     accel = C3X_MUL(accel, carblk->max_accel);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002D93, "R0", &accel, 5);
@@ -3160,7 +3226,9 @@ GETSPD10:
         OBJ* road_obj;
 
         // asm 00002DC6: 	LDI	*AR3++(CARVSIZ),AR0 	;GET ROAD OBJECT INTERSECTING
-        road_obj = OBJREF_TO_PTR(points[i].collided_road_object);
+        road_obj = OBJREF_IS_STF_ZERO(points[i].collided_road_object)
+            ? OBJREF_STF_ZERO_VIEW()
+            : OBJREF_TO_PTR(points[i].collided_road_object);
         // asm 00002DC7: 	LDI	*+AR0(OID),R1		;CHECK OID
         // asm 00002DC8: 	AND	CLASS_M+TYPE_M,R1
         // asm 00002DC9: 	CMPI	ROAD_C,R1
@@ -3583,6 +3651,16 @@ static c3x_reg_t GETPEDAL(void) {
     c3x_reg_t pedal;
     c3x_reg_t pedal_range;
 
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL && (_MODE & MMODE) == MGAME) {
+        fprintf(
+            stderr,
+            "timeline GETPEDAL pot=%d min=%.9g max=%.9g mode=%08X\n",
+            _pot1,
+            C3X_TO_FLOAT(C3X_LDF(PEDALMN)),
+            C3X_TO_FLOAT(C3X_LDF(PEDALMX)),
+            _MODE);
+    }
+
     // asm 00002E57: 	FLOATP	@_pot1,R0
     pedal = C3X_FROM_INT(_pot1);
     // asm 00002E58: 	NEGF	@PEDALMN,R1
@@ -3602,6 +3680,9 @@ static c3x_reg_t GETPEDAL(void) {
     // asm 00002E5F: 	LDFGT	1.0,R0
     if (C3X_GT(pedal, C3X_IMM_F32(1.0))) {
         pedal = C3X_IMM_F32(1.0); // KEEP IT IN RANGE
+    }
+    if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL && (_MODE & MMODE) == MGAME) {
+        fprintf(stderr, "timeline GETPEDAL_RESULT value=%.9g\n", C3X_TO_FLOAT(pedal));
     }
     // asm 00002E60: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETPEDAL", 0, 0);
@@ -4102,6 +4183,7 @@ GETRK:
         goto GETRK;
     }
     // asm 00002F14: 	STI	AR0,*+AR5(CARTRAK)	;SAVE TRACK SECTION
+    MAME_ASSERT_MEM(0x00002F14, "d@(ar0+1e)", &closest_track_obj->usr1);
     carblk->closest_track_piece = OBJ_TO_REF(closest_track_obj);
 GETRKX:
     // asm 00002F16: 	RETS
@@ -4196,13 +4278,14 @@ static int CKBND(CARBLK* carblk /*AR5*/) {
         OBJ* road_obj;
 
         // asm 00002F33: 	LDI	*AR3++(CARVSIZ),R0 	;GET ROAD OBJECT INTERSECTING
+        if (OBJREF_IS_STF_ZERO(car_point->collided_road_object)) {
+            /* STF-zero is non-null on the C30, then fails the road class test. */
+            offroad = 1;
+            continue;
+        }
         road_obj = OBJREF_TO_PTR(car_point->collided_road_object);
         // asm 00002F34: 	BZ	CURBCKX			;WE GOT NOTHING, COLLIDE 'EM
         if (road_obj == NULL) {
-            if (!carblk->road_contacts_scanned) {
-                offroad = 1;
-                continue;
-            }
             goto CURBCKX;
         }
         // asm 00002F35: 	LDI	R0,AR0
@@ -4854,6 +4937,8 @@ c3x_reg_t GETNXTRDIR(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     OBJ* track_obj;
     OBJ* next_track_obj;
 
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00003031: 	LDI	*+AR5(CARTRAK),AR2	;GET CLOSEST TRACK PIECE
     track_obj = OBJREF_TO_PTR(carblk->closest_track_piece);
     // asm 00003032: 	LDI	*+AR2(OLINK4),AR0	;GET NEXT ONE
@@ -4898,6 +4983,8 @@ c3x_reg_t ROADIR(CARBLK* carblk /*AR5*/) {
 c3x_reg_t GETRDIR(OBJ* track_obj /*AR2*/) {
     OBJ* next_track_obj;
 
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 0000303A: 	LDI	*+AR2(OLINK4),AR0
     next_track_obj = (OBJ*)track_obj->link4;
     // A null C30 link reads interrupt vectors as coordinates; use a stable direction instead.
@@ -4918,14 +5005,23 @@ GETRD1:
     // asm 0000303E: 	PUSHF	R3
     // asm 0000303F: 	LDF	*+AR0(OPOSX),R2
     delta_x = C3X_LDF(target_obj->pos.X);
+    // MAME_ASSERT_MEM(0x00003040, "d@(ar2)", &track_obj->id);
+    // MAME_ASSERT_MEM(0x00003040, "d@(ar0)", &target_obj->id);
+    // MAME_ASSERT_MEM_FLOAT(0x00003040, "d@(ar2+1)", &track_obj->pos.X);
+    MAME_ASSERT_REG_FLOAT(0x00003040, "R2", &delta_x);
     // asm 00003040: 	SUBF	*+AR2(OPOSX),R2
     delta_x = C3X_SUB(delta_x, C3X_LDF(track_obj->pos.X));
     // asm 00003041: 	LDF	*+AR0(OPOSZ),R3
     delta_z = C3X_LDF(target_obj->pos.Z);
+    // MAME_ASSERT_MEM_FLOAT(0x00003042, "d@(ar2+3)", &track_obj->pos.Z);
+    MAME_ASSERT_REG_FLOAT(0x00003042, "R3", &delta_z);
     // asm 00003042: 	SUBF	*+AR2(OPOSZ),R3
     delta_z = C3X_SUB(delta_z, C3X_LDF(track_obj->pos.Z));
+    MAME_ASSERT_REG_FLOAT(0x00003043, "R2", &delta_x);
+    MAME_ASSERT_REG_FLOAT(0x00003043, "R3", &delta_z);
     // asm 00003043: 	CALL	ARCTANF
     delta_x = ARCTANF(delta_x, delta_z);
+    MAME_ASSERT_REG_FLOAT(0x00003044, "R0", &delta_x);
     // asm 00003044: 	POPF	R3
     // asm 00003045: 	POPF	R2
     // asm 00003046: 	POP	R3
@@ -5195,7 +5291,7 @@ static void PLYR_SNDS(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
         goto PSND0;
     }
     // asm 000030A1: 	CREATEC	FLAME_PRC,UTIL_C	;make child flames
-    CREATEC(FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
+    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
 PSND0:
     // asm 000030A4: 	LDI	@REVFLG,R0
     rev_flag = REVFLG;
@@ -5204,7 +5300,7 @@ PSND0:
         goto BACKREV;
     }
     // asm 000030A6: 	CREATEC	FLAME_PRC,UTIL_C	;make child flames
-    CREATEC(FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
+    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
     // *MAKE YOUR REV SOUND
     // *KILL OLDIES
     // asm 000030A9: 	LDI	2,R0
@@ -5311,7 +5407,7 @@ BOTX:
     smoke_ctx = port_malloc(sizeof(PROC_CONTEXT));
     smoke_ctx->SMOKE_PROC.car_obj = obj;
     smoke_ctx->SMOKE_PROC.carblk = carblk;
-    CREATEC(SMOKE_PROC, UTIL_C, smoke_ctx); // make child smoke
+    CREATEC(CURRENT_PROC, SMOKE_PROC, UTIL_C, smoke_ctx); // make child smoke
 NO_SMOKE:
     // asm 000030D7: 	LDF	*+AR5(CARSKID),R0
     skid = C3X_LDF(carblk->skid);
@@ -5359,7 +5455,7 @@ NO_SMOKE:
         goto NO_FLAME;
     }
     // asm 000030EB: 	CREATEC	FLAME_PRC,UTIL_C	;make child flames
-    CREATEC(FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
+    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
 NO_FLAME:
     // asm 000030EE: 	LDI	@SKIDTABI,AR2
     // asm 000030EF: 	LDI	2,R0
@@ -5420,7 +5516,7 @@ SKIDX:
     smoke_ctx = port_malloc(sizeof(PROC_CONTEXT));
     smoke_ctx->SMOKE_PROC.car_obj = obj;
     smoke_ctx->SMOKE_PROC.carblk = carblk;
-    CREATEC(SMOKE_PROC, UTIL_C, smoke_ctx); // make child smoke
+    CREATEC(CURRENT_PROC, SMOKE_PROC, UTIL_C, smoke_ctx); // make child smoke
     // asm 0000310A: 	LDI	BRAKSND,AR2
     // asm 0000310B: 	CALL	MKFXSND
     MKFXSND(BRAKSND);

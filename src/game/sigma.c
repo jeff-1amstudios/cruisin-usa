@@ -248,11 +248,8 @@ DONTWORRY:
     }
     // asm 0000A457: 	STI	AR2,*+AR7(DELTA_TPIECE)
     p->ctx->RACER_DRONE.delta_tpiece = tracking_piece;
-    /*
-     * SIGMA_LP immediately asks AHEAD_OF_PLAYER_P to inspect CARTRAK,
-     * before the normal tracking update has run.
-     */
-    carblk->closest_track_piece = OBJ_TO_REF(tracking_piece);
+    // CARTRAK intentionally retains _CARV0's C30 STF-zero sentinel until the
+    // first normal GETTRAK update, matching the assembly's structure alias.
     // asm 0000A458: 	LDI	*+AR2(OUSR1),R0
     // asm 0000A459: 	STI	R0,*+AR7(DELTA_LAST_OID)
     p->ctx->RACER_DRONE.delta_last_oid = (int)tracking_piece->usr1;
@@ -379,13 +376,17 @@ NOTPSYCHO_LP:
     // asm 0000A4A1: 	LDI	*+AR0(OID),R0
     // asm 0000A4A2: 	IFI	R0,EQ,300h,NOSL2DIE
     wheel_on_road =
-        (OBJREF_TO_PTR(carblk->right_front.collided_road_object) != NULL &&
+        (!OBJREF_IS_STF_ZERO(carblk->right_front.collided_road_object) &&
+         OBJREF_TO_PTR(carblk->right_front.collided_road_object) != NULL &&
          OBJREF_TO_PTR(carblk->right_front.collided_road_object)->id == 0x300) ||
-        (OBJREF_TO_PTR(carblk->left_front.collided_road_object) != NULL &&
+        (!OBJREF_IS_STF_ZERO(carblk->left_front.collided_road_object) &&
+         OBJREF_TO_PTR(carblk->left_front.collided_road_object) != NULL &&
          OBJREF_TO_PTR(carblk->left_front.collided_road_object)->id == 0x300) ||
-        (OBJREF_TO_PTR(carblk->left_rear.collided_road_object) != NULL &&
+        (!OBJREF_IS_STF_ZERO(carblk->left_rear.collided_road_object) &&
+         OBJREF_TO_PTR(carblk->left_rear.collided_road_object) != NULL &&
          OBJREF_TO_PTR(carblk->left_rear.collided_road_object)->id == 0x300) ||
-        (OBJREF_TO_PTR(carblk->right_rear.collided_road_object) != NULL &&
+        (!OBJREF_IS_STF_ZERO(carblk->right_rear.collided_road_object) &&
+         OBJREF_TO_PTR(carblk->right_rear.collided_road_object) != NULL &&
          OBJREF_TO_PTR(carblk->right_rear.collided_road_object)->id == 0x300);
     // asm 0000A4A4: 	LDI	*+AR7(SIGMA_ONCE),R0
     // asm 0000A4A5: 	BZ	NOSL2DIE2
@@ -412,7 +413,7 @@ NOSL2DIE2:
     // asm 0000A4AD: 	CREATEC	EXP_PUFF,SPAWNER_C
     child_ctx = port_malloc(sizeof(PROC_CONTEXT));
     child_ctx->PUFF_PROC.source_obj = obj;
-    CREATEC(EXP_PUFF, SPAWNER_C, child_ctx);
+    CREATEC(p, EXP_PUFF, SPAWNER_C, child_ctx);
 NOBUMP:
     // 	;it the plyr is zooming by
     // 	;
@@ -654,7 +655,7 @@ BREAKDOWN:
     // asm 0000A519: 	CREATEC	SMOKE_PUFF,2
     child_ctx = port_malloc(sizeof(PROC_CONTEXT));
     child_ctx->PUFF_PROC.source_obj = obj;
-    CREATEC(SMOKE_PUFF, 2, child_ctx);
+    CREATEC(p, SMOKE_PUFF, 2, child_ctx);
     // asm 0000A51C: 	LDI	10,AR6
     p->ctx->RACER_DRONE.breakdown_count = 10;
 BREAKDOWNLP:
@@ -672,7 +673,7 @@ BREAKDOWNLP:
     if (p->ctx->RACER_DRONE.breakdown_count >= 0) {
         child_ctx = port_malloc(sizeof(PROC_CONTEXT));
         child_ctx->PUFF_PROC.source_obj = obj;
-        CREATEC(SMOKE_PUFF, 2, child_ctx);
+        CREATEC(p, SMOKE_PUFF, 2, child_ctx);
     }
 NOSMK:
     // asm 0000A526: 	LDI	*+AR5(CARTRAK),AR0

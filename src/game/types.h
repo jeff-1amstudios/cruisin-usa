@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <assert.h>
 
 typedef signed int s32;
 typedef unsigned int u32;
@@ -327,6 +328,23 @@ extern OBJ OBJSTR[];
 
 typedef u32 OBJREF;
 
+/*
+ * _CARV0 clears the mixed CARBLK with STF 0. A C30 floating-point zero is
+ * 0x80000000 in memory, so object-reference slots retain this non-null value
+ * until an integer store initializes them.
+ */
+#define OBJREF_STF_ZERO UINT32_C(0x80000000)
+
+extern const OBJ C30_STF_ZERO_OBJREF_VIEW;
+
+static inline int OBJREF_IS_STF_ZERO(OBJREF ref) {
+    return ref == OBJREF_STF_ZERO;
+}
+
+static inline OBJ* OBJREF_STF_ZERO_VIEW(void) {
+    return (OBJ*)&C30_STF_ZERO_OBJREF_VIEW;
+}
+
 static inline OBJREF OBJ_TO_REF(const OBJ* obj) {
     if (obj == 0) {
         return 0;
@@ -336,6 +354,11 @@ static inline OBJREF OBJ_TO_REF(const OBJ* obj) {
 
 static inline OBJ* OBJREF_TO_PTR(OBJREF ref) {
     if (ref == 0) {
+        return 0;
+    }
+    if (OBJREF_IS_STF_ZERO(ref)) {
+        /* Callers must reproduce the particular C30 pre-initialization use. */
+        assert(0 && "attempted to dereference an STF-zero OBJREF");
         return 0;
     }
     return &OBJSTR[ref - 1];
@@ -438,9 +461,6 @@ typedef struct CARBLK {
     u32 other_machine_controls;
     u32 car_num;
     u32 updated_this_frame;
-    // C30 STF-zeroes contact words to nonzero 0x80000000; track the first scan
-    // so C nulls can distinguish unscanned state from a real missing contact.
-    u32 road_contacts_scanned;
 } CARBLK;
 
 typedef struct LEG_PAYLOAD {
