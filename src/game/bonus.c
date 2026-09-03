@@ -254,108 +254,84 @@ void BONUS13(void) {
     // asm 00003972: LDI	L_LEG14_BEGIN+1,R0
     // asm 00003973: 	LDI	13,R1
     // asm 00003974: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS13", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG14_BEGIN + 1, 13);
 }
 
 void BONUS12(void) {
     // asm 00003975: LDI	L_LEG13_BEGIN+1,R0
     // asm 00003976: 	LDI	12,R1
     // asm 00003977: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS12", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG13_BEGIN + 1, 12);
 }
 
 void BONUS11(void) {
     // asm 00003978: LDI	L_LEG12_BEGIN+1,R0
     // asm 00003979: 	LDI	11,R1
     // asm 0000397A: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS11", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG12_BEGIN + 1, 11);
 }
 
 void BONUS10(void) {
     // asm 0000397B: LDI	L_LEG11_BEGIN+1,R0
     // asm 0000397C: 	LDI	10,R1
     // asm 0000397D: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS10", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG11_BEGIN + 1, 10);
 }
 
 void BONUS9(void) {
     // asm 0000397E: LDI	L_LEG10_BEGIN+1,R0
     // asm 0000397F: 	LDI	9,R1
     // asm 00003980: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS9", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG10_BEGIN + 1, 9);
 }
 
 void BONUS8(void) {
     // asm 00003981: LDI	L_LEG9_BEGIN+1,R0
     // asm 00003982: 	LDI	8,R1
     // asm 00003983: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS8", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG9_BEGIN + 1, 8);
 }
 
 void BONUS7(void) {
     // asm 00003984: LDI	L_LEG8_BEGIN+1,R0
     // asm 00003985: 	LDI	7,R1
     // asm 00003986: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS7", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG8_BEGIN + 1, 7);
 }
 
 void BONUS6(void) {
     // asm 00003987: LDI	L_LEG7_BEGIN+1,R0
     // asm 00003988: 	LDI	6,R1
     // asm 00003989: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS6", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG7_BEGIN + 1, 6);
 }
 
 void BONUS5(void) {
     // asm 0000398A: LDI	L_LEG6_BEGIN+1,R0
     // asm 0000398B: 	LDI	5,R1
     // asm 0000398C: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS5", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG6_BEGIN + 1, 5);
 }
 
 void BONUS4(void) {
     // asm 0000398D: LDI	L_LEG5_BEGIN+1,R0
     // asm 0000398E: 	LDI	4,R1
     // asm 0000398F: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS4", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG5_BEGIN + 1, 4);
 }
 
 void BONUS3(void) {
     // asm 00003990: LDI	L_LEG4_BEGIN+1,R0
     // asm 00003991: 	LDI	3,R1
     // asm 00003992: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS3", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG4_BEGIN + 1, 3);
 }
 
 void BONUS2(void) {
     // asm 00003993: LDI	L_LEG3_BEGIN+1,R0
     // asm 00003994: 	LDI	2,R1
     // asm 00003995: 	BU	LK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BONUS2", 0, 0);
-    UNIMPL();
+    BONUS_LK(L_LEG3_BEGIN + 1, 2);
 }
 
 void BONUS1(void) {
@@ -737,11 +713,11 @@ static void BONSCRN2(PROC* p) {
     PROC_CONTEXT* child_ctx;
     PROC* proc;
     tagGAMETRAK* game_track;
+    const tPALETTE_OVERWRITE_ENTRY* palette_entry;
+    tPAL* source_palette;
     int switch_mask;
     int switch_code;
     int steer_delta;
-
-    MAME_VALIDATOR_EXIT();
 
     switch (PROC_RESUME_STATE) {
     case 0:
@@ -972,9 +948,10 @@ PAPA45X:
     p->ctx->BONSCRN2.palette_index = 0;
     // asm 00003ADB: FIXPALLP
 FIXPALLP:
+    palette_entry = &BABE_PALISTI[p->ctx->BONSCRN2.palette_index];
     // asm 00003ADB: 	LDI	*+AR5,AR2
     // asm 00003ADC: 	CALL	PAL_FIND
-    switch_code = PAL_FIND((u32)BABE_PALISTI[p->ctx->BONSCRN2.palette_index * 2]);
+    switch_code = PAL_FIND(palette_entry->destination_palette_index);
     // asm 00003ADD: 	BC	FIXPAL1
     if (switch_code < 0) {
         goto FIXPAL1;
@@ -982,8 +959,8 @@ FIXPALLP:
     // asm 00003ADE: 	LDI	AR2,R0
     // asm 00003ADF: 	LDI	R0,R1
     // asm 00003AE0: 	CALL	PAL_OVERWRITE
-    PAL_OVERWRITE((u32)BABE_PALISTI[p->ctx->BONSCRN2.palette_index * 2],
-        (u32)BABE_PALISTI[p->ctx->BONSCRN2.palette_index * 2]);
+    source_palette = (tPAL*)ROM_PTR(palette_entry->source_palette_rom);
+    PAL_SET(source_palette->data, (u32)switch_code, (u32)source_palette->flags_and_count);
 FIXPAL1:
     // asm 00003AE1: 	NOP	*++AR5(2)
     // asm 00003AE2: 	DBU	AR6,FIXPALLP
@@ -1380,7 +1357,7 @@ FINFIN:
     // asm 00003BCB: 	LDI	AR0,AR2
     // asm 00003BCC: 	CALL	PRC_FOLLOW
     if (proc != NULL) {
-        PRC_FOLLOW();
+        PRC_FOLLOW(proc, p);
     }
     // asm 00003BCD: 	POP	AR7
     // asm 00003BCE: 	LDI	*+AR7(PDATA),R0

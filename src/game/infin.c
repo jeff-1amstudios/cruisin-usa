@@ -61,7 +61,7 @@ c3x_reg_t HIGHEST_ROADY_X = C3X_INIT(1.0f, 0x0000000000ull);
 c3x_reg_t VAR_ROAD_KFACTOR = C3X_INIT(1.0f, 0x0000000000ull);
 
 static void FIND_HIGHEST_ROADY(void) {
-    static int validate_bgd_phase_aligned;
+    static OBJ* validate_bgd_phase_player;
     OBJ* obj;
     c3x_reg_t rotated_x;
     c3x_reg_t rotated_y;
@@ -72,24 +72,38 @@ static void FIND_HIGHEST_ROADY(void) {
     c3x_reg_t screen_x;
     c3x_reg_t screen_y;
 
-    if (!validate_bgd_phase_aligned && getenv("CRUSN_VALIDATE_ALIGN_BGD_PHASE") != NULL && getenv("CRUSN_VALIDATE_ALIGN_BGD_PHASE")[0] == '1') {
+    if (validate_bgd_phase_player != PLYCAR && getenv("CRUSN_VALIDATE_ALIGN_BGD_PHASE") != NULL && getenv("CRUSN_VALIDATE_ALIGN_BGD_PHASE")[0] == '1') {
         PROC* proc;
+        PROC** linkp;
 
         /*
          * MAME commits debugger-requested saves at a later safe machine
          * boundary.  The race capture therefore reaches its first infinity
          * pass with BGD_WATCHER freshly asleep for three ticks, while a clean
          * port startup reaches it one tick further through the same cycle.
-         * Align that validation-only phase once; normal game scheduling is
-         * unchanged.
+         * Align that validation-only phase once per player-car launch; normal game
+         * scheduling is unchanged.
          */
-        for (proc = PACTIVE; proc != NULL; proc = proc->link) {
-            if (proc->id == (UTIL_C | BACKGRND_T)) {
-                proc->sleep_ticks = 3;
-                break;
+        if (validate_bgd_phase_player == NULL) {
+            for (proc = PACTIVE; proc != NULL; proc = proc->link) {
+                if (proc->id == (UTIL_C | BACKGRND_T)) {
+                    proc->sleep_ticks = 3;
+                    break;
+                }
+            }
+        } else if (PLYPROC != NULL) {
+            linkp = &PACTIVE;
+            while (*linkp != NULL && (*linkp)->id != (UTIL_C | BACKGRND_T)) {
+                linkp = &(*linkp)->link;
+            }
+            proc = *linkp;
+            if (proc != NULL && proc != PLYPROC && PLYPROC->link != proc) {
+                *linkp = proc->link;
+                proc->link = PLYPROC->link;
+                PLYPROC->link = proc;
             }
         }
-        validate_bgd_phase_aligned = 1;
+        validate_bgd_phase_player = PLYCAR;
     }
     MAME_ASSERT_ORDERING("RACE_INFINITY_FRAME");
 

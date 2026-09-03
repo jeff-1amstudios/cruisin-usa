@@ -1,8 +1,7 @@
 // From asm/HPMATH.C
 #include "hpmath.h"
 
-// c3x-lint: allow-c3x-f32 -- polynomial coefficients require register precision.
-
+// Exact C30 single-precision words emitted for the compiler's .float table.
 #include <math.h>
 
 #define BITS 23          /* There are 23 bits in the mantissa     */
@@ -13,16 +12,16 @@
 
 /* macros used in sin and cos */
 
-#define INVSPI 0.31830988618379067154
-#define HALFPI 1.57079632679489661923
+#define INVSPI C3X_LOAD(0xFE22F983u) /* .float 0.31830988618379067154 */
+#define HALFPI C3X_LOAD(0x00490FDBu) /* .float 1.57079632679489661923 */
 
 #define C1 3.140625
-#define C2 9.67653589793e-4
+#define C2 C3X_LOAD(0xF57DAA22u) /* .float 9.67653589793e-4 */
 
-#define R1 -0.1666665668e+0
-#define R2 0.8333025139e-2
-#define R3 -0.1980741872e-3
-#define R4 0.2601903036e-5
+#define R1 C3X_LOAD(0xFDD5555Cu) /* .float -0.1666665668e+0 */
+#define R2 C3X_LOAD(0xF908873Eu) /* .float 0.8333025139e-2 */
+#define R3 C3X_LOAD(0xF3B04DDEu) /* .float -0.1980741872e-3 */
+#define R4 C3X_LOAD(0xED2E9C5Bu) /* .float 0.2601903036e-5 */
 
 /*	HPsin() - High Precision sine
  *
@@ -42,12 +41,16 @@
  *	This will return the wrong result for x >= MAXINT * PI
  */
 c3x_reg_t _HPsin(c3x_reg_t x) {
-    c3x_reg_t d, y, xn, f, g, rg;
+    c3x_reg_t xn, f, g, rg;
+    c3x_reg_t scaled_index;
+    c3x_reg_t rounded_index;
     c3x_reg_t sgn = C3X_LT(x, C3X_FROM_INT(0)) ? C3X_FROM_INT(-1) : C3X_FROM_INT(1);
     int n;
 
     x = C3X_ABS(x);
-    n = c3x_fix(C3X_ADD(C3X_MUL(x, C3X_F32(INVSPI)), C3X_F32(0.5)));
+    scaled_index = C3X_MUL(x, INVSPI);
+    rounded_index = C3X_ADD(scaled_index, C3X_IMM_F32(0.5));
+    n = c3x_fix(rounded_index);
     xn = C3X_FROM_INT(n);
 
     /*
@@ -59,16 +62,28 @@ c3x_reg_t _HPsin(c3x_reg_t x) {
     /*
      * f = x - xn * PI (but mathematically more stable)
      */
-    f = C3X_SUB(C3X_SUB(x, C3X_MUL(xn, C3X_F32(C1))), C3X_MUL(xn, C3X_F32(C2)));
+    f = C3X_MUL(xn, C3X_IMM_F32(C1));
+    f = C3X_SUB(x, f);
+    rg = C3X_MUL(xn, C2);
+    f = C3X_SUB(f, rg);
 
     /*
      * determine polynomial expression
      */
     g = C3X_MUL(f, f);
 
-    rg = C3X_MUL(C3X_ADD(C3X_MUL(C3X_ADD(C3X_MUL(C3X_ADD(C3X_MUL(C3X_F32(R4), g), C3X_F32(R3)), g), C3X_F32(R2)), g), C3X_F32(R1)), g);
+    rg = C3X_MUL(R4, g);
+    rg = C3X_ADD(rg, R3);
+    rg = C3X_MUL(g, rg);
+    rg = C3X_ADD(rg, R2);
+    rg = C3X_MUL(g, rg);
+    rg = C3X_ADD(rg, R1);
+    rg = C3X_MUL(g, rg);
+    rg = C3X_MUL(f, rg);
+    rg = C3X_ADD(f, rg);
+    rg = C3X_MUL(sgn, rg);
 
-    return C3X_MUL(sgn, C3X_ADD(f, C3X_MUL(f, rg)));
+    return rg;
 }
 
 /*	HPcos() - High Precision Cosine
@@ -100,9 +115,9 @@ c3x_reg_t _HPcos(c3x_reg_t x) {
     /*
      * n = round(x/PI + 1/2) (can be rounded this way, since positive number)
      */
-    rounded_index = C3X_ADD(C3X_MUL(C3X_ADD(x, C3X_F32(HALFPI)), C3X_F32(INVSPI)), C3X_F32(0.5));
+    rounded_index = C3X_ADD(C3X_MUL(C3X_ADD(x, HALFPI), INVSPI), C3X_IMM_F32(0.5));
     n = c3x_fix(rounded_index);
-    xn = C3X_SUB(C3X_FROM_INT(n), C3X_F32(0.5));
+    xn = C3X_SUB(C3X_FROM_INT(n), C3X_IMM_F32(0.5));
 
     /*
      * if n is odd, negate the sign
@@ -112,19 +127,19 @@ c3x_reg_t _HPcos(c3x_reg_t x) {
     /*
      * f = x - xn * PI (but more mathematically stable)
      */
-    f = C3X_SUB(C3X_SUB(x, C3X_MUL(xn, C3X_F32(C1))), C3X_MUL(xn, C3X_F32(C2)));
+    f = C3X_SUB(C3X_SUB(x, C3X_MUL(xn, C3X_IMM_F32(C1))), C3X_MUL(xn, C2));
 
     /*
      * determine polynomial expression
      */
     g = C3X_MUL(f, f);
 
-    rg = C3X_MUL(C3X_F32(R4), g);
-    rg = C3X_ADD(rg, C3X_F32(R3));
+    rg = C3X_MUL(R4, g);
+    rg = C3X_ADD(rg, R3);
     rg = C3X_MUL(g, rg);
-    rg = C3X_ADD(rg, C3X_F32(R2));
+    rg = C3X_ADD(rg, R2);
     rg = C3X_MUL(g, rg);
-    rg = C3X_ADD(rg, C3X_F32(R1));
+    rg = C3X_ADD(rg, R1);
     rg = C3X_MUL(g, rg);
     rg = C3X_MUL(f, rg);
     f = C3X_ADD(f, rg);

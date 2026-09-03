@@ -85,7 +85,8 @@ static int SMOKE_ANI[7];
 static int CAR_FIRE_ANI[13];
 static int DC_MINIFOUNTAIN_ANI[7];
 static int DC_FOUNTAIN_ANI[6];
-int BABE_PALIST[10];
+static int OVERCARLIST[4];
+tPALETTE_OVERWRITE_ENTRY BABE_PALIST[5];
 static const BGD_OROUTINE_ENTRY ROUTINE_TAB[];
 
 extern MATRIX _MATRIXA;
@@ -798,6 +799,7 @@ static u32 BGD_ACTIVATE_TYCOGROUP(tyco_stream_t tyco_ptr /*AR2*/) {
     int object_count;
     u32 raw_id;
     u32 object_class;
+    c3x_reg_t object_radians;
 
     // asm 0000406B: 	PUSH	R4
     // asm 0000406C: 	PUSH	R5
@@ -1013,12 +1015,13 @@ ISOVER:
     // asm 000040E5: 	LDF	*AR5++,R2		;GET Y ROT
     // asm 000040E6: 	ADDF	@SECRADY,R2
     // asm 000040E7: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = C3X_STF(C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY));
-    MAME_ASSERT_REG_FLOAT(0x000040E8, "R2", &obj->rad.Y);
+    object_radians = C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY);
+    obj->rad.Y = C3X_STF(object_radians);
+    MAME_ASSERT_REG_FLOAT(0x000040E8, "R2", &object_radians);
     // asm 000040E8: 	LDI	AR4,AR2
     // asm 000040E9: 	ADDI	OMATRIX,AR2
     // asm 000040EA: 	CALL	HPFIND_YMATRIX
-    HPFIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rad.Y));
+    HPFIND_YMATRIX(&obj->omatrix, object_radians);
     // asm 000040EB: 	BU	JOIN_UP
     goto JOIN_UP;
 NOTREVERSED:
@@ -1046,12 +1049,13 @@ NOTREVERSED:
     // asm 000040FC: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
     // asm 000040FD: 	ADDF	@SECRADY,R2
     // asm 000040FE: 	STF	R2,*+AR4(ORADY)
-    obj->rad.Y = C3X_STF(C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY));
-    MAME_ASSERT_REG_FLOAT(0x000040FF, "R2", &obj->rad.Y);
+    object_radians = C3X_ADD(ROM_ParseFloat(*group_ptr++), SECRADY);
+    obj->rad.Y = C3X_STF(object_radians);
+    MAME_ASSERT_REG_FLOAT(0x000040FF, "R2", &object_radians);
     // asm 000040FF: 	LDI	AR4,AR2
     // asm 00004100: 	ADDI	OMATRIX,AR2
     // asm 00004101: 	CALL	HPFIND_YMATRIX
-    HPFIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rad.Y));
+    HPFIND_YMATRIX(&obj->omatrix, object_radians);
 JOIN_UP:
     // asm 00004102: 	LDI	*AR5++,R1		;LOAD OBJECT ID (GENV STYLE)
     raw_id = *group_ptr++;
@@ -1744,29 +1748,38 @@ static void BGD_OROUTINE(OBJ* obj /*AR4*/) {
 
 // *----------------------------------------------------------------------------
 static void OVERCAR(OBJ* obj /*AR4*/) {
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+
     // asm 00004236: 	PUSH	R0
     // asm 00004237: 	PUSH	R2
     // asm 00004238: 	PUSH	AR2
     // asm 00004239: 	CREATE	CARFORWARD,22
+    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx->BACKGRND_CARFORWARD.obj = obj;
+    proc = CREATE(CARFORWARD, 22, ctx);
     // asm 0000423C: 	STI	AR0,*+AR4(OPLINK)
+    obj->plink = proc;
     // asm 0000423D: 	LDI	SPAWNER_C,R0
     // asm 0000423E: 	STI	R0,*+AR0(PID)
+    proc->id = SPAWNER_C;
     // asm 0000423F: 	LDI	1,R0
     // asm 00004240: 	LS	O_PROC_B,R0
     // asm 00004241: 	OR	*+AR4(OFLAGS),R0
     // asm 00004242: 	ANDN	O_1PAL,R0
     // asm 00004243: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags = (obj->flags | (1u << O_PROC_B)) & ~O_1PAL;
     // asm 00004244: 	RANDN	4
     // asm 00004246: 	ADDI	@OVERCARLISTI,R0
     // asm 00004247: 	LDI	R0,AR2
     // asm 00004248: 	LDI	*AR2,AR2
     // asm 00004249: 	STI	AR2,*+AR4(OROMDATA)
+    obj->romdata = ROM_PTR(OVERCARLIST[RANDU0(4)]);
     // asm 0000424A: 	POP	AR2
     // asm 0000424B: 	POP	R2
     // asm 0000424C: 	POP	R0
     // asm 0000424D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "OVERCAR", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1782,80 +1795,120 @@ static int OVERCARLIST[] = {
 };
 
 static void CARFORWARD(PROC* p) {
+    OBJ* obj;
+    c3x_reg_t distance;
+    c3x_reg_t speed;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
+    obj = p->ctx->BACKGRND_CARFORWARD.obj;
     // asm 00004253: 	RANDN	50
     // asm 00004255: 	CMPI	25,R0
     // asm 00004256: 	BLT	CARSUP
+    if (RANDU0(50) >= 25) {
     // asm 00004257: 	CALL	CLR_VECTORA
+        CLR_VECTORA();
     // asm 00004258: 	FLOAT	16000,R0
     // asm 00004259: 	STF	R0,*+AR2(Z)
+        VECTORAI.Z = C3X_STF(C3X_FROM_INT(16000));
     // asm 0000425A: 	LDI	AR2,R3
     // asm 0000425B: 	LDI	AR4,R2
     // asm 0000425C: 	ADDI	OMATRIX,R2
     // asm 0000425D: 	CALL	MATRIX_MUL
+        MATRIX_MUL(&VECTORAI, (MATRIX*)&obj->omatrix, &VECTORAI);
     // asm 0000425E: 	LDF	*+AR4(OPOSX),R0
     // asm 0000425F: 	ADDF	*+AR2(X),R0
     // asm 00004260: 	STF	R0,*+AR4(OPOSX)
+        obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(VECTORAI.X)));
     // asm 00004261: 	LDF	*+AR4(OPOSY),R0
     // asm 00004262: 	ADDF	*+AR2(Y),R0
     // asm 00004263: 	STF	R0,*+AR4(OPOSY)
+        obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y)));
     // asm 00004264: 	LDF	*+AR4(OPOSZ),R0
     // asm 00004265: 	ADDF	*+AR2(Z),R0
     // asm 00004266: 	STF	R0,*+AR4(OPOSZ)
+        obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(VECTORAI.Z)));
     // asm 00004267: 	LDF	*+AR4(ORADY),R2
     // asm 00004268: 	ADDF	PI,R2
     // asm 00004269: 	STF	R2,*+AR4(ORADY)
+        obj->rad.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->rad.Y), C3X_IMM_F32(PI)));
     // asm 0000426A: 	LDI	AR4,AR2
     // asm 0000426B: 	ADDI	OMATRIX,AR2
     // asm 0000426C: 	CALL	FIND_YMATRIX
+        FIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rad.Y));
+    }
 CARSUP:
     // asm 0000426D: 	RANDN	500
     // asm 0000426F: 	FLOAT	R0
+    distance = C3X_FROM_INT(RANDU0(500));
     // asm 00004270: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 00004271: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(distance);
     // asm 00004272: 	LDI	AR2,R3
     // asm 00004273: 	LDI	AR4,R2
     // asm 00004274: 	ADDI	OMATRIX,R2
     // asm 00004275: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, (MATRIX*)&obj->omatrix, &VECTORAI);
     // asm 00004276: 	LDF	*+AR4(OPOSX),R0
     // asm 00004277: 	ADDF	*+AR2(X),R0
     // asm 00004278: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(VECTORAI.X)));
     // asm 00004279: 	LDF	*+AR4(OPOSY),R0
     // asm 0000427A: 	ADDF	*+AR2(Y),R0
     // asm 0000427B: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y)));
     // asm 0000427C: 	LDF	*+AR4(OPOSZ),R0
     // asm 0000427D: 	ADDF	*+AR2(Z),R0
     // asm 0000427E: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(VECTORAI.Z)));
     // asm 0000427F: 	RANDN	30
     // asm 00004281: 	FLOAT	R0
     // asm 00004282: 	LDF	R0,R6
     // asm 00004283: 	ADDF	50,R6
+    speed = C3X_ADD(C3X_FROM_INT(RANDU0(30)), C3X_IMM_F32(50));
     // asm 00004284: 	RANDN	3
     // asm 00004286: 	ADDI	1,R0
     // asm 00004287: 	FLOAT	R0
     // asm 00004288: 	MPYF	R0,R6
+    speed = C3X_MUL(speed, C3X_FROM_INT(RANDU0(3) + 1));
+    p->ctx->BACKGRND_CARFORWARD.speed = C3X_STF(speed);
 CARFORWARDLP:
     // asm 00004289: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 0000428A: 	LDF	R6,R0
     // asm 0000428B: 	MPYF	@NFRAMES,R0
     // asm 0000428C: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(C3X_MUL(speed, C3X_FROM_INT(NFRAMES)));
     // asm 0000428D: 	LDI	AR2,R3
     // asm 0000428E: 	LDI	AR4,R2
     // asm 0000428F: 	ADDI	OMATRIX,R2
     // asm 00004290: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, (MATRIX*)&obj->omatrix, &VECTORAI);
     // asm 00004291: 	LDF	*+AR4(OPOSX),R0
     // asm 00004292: 	ADDF	*+AR2(X),R0
     // asm 00004293: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(VECTORAI.X)));
     // asm 00004294: 	LDF	*+AR4(OPOSY),R0
     // asm 00004295: 	ADDF	*+AR2(Y),R0
     // asm 00004296: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y)));
     // asm 00004297: 	LDF	*+AR4(OPOSZ),R0
     // asm 00004298: 	ADDF	*+AR2(Z),R0
     // asm 00004299: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(VECTORAI.Z)));
     // asm 0000429A: 	SLEEP	1
+    SLEEP(1, 1);
+    obj = p->ctx->BACKGRND_CARFORWARD.obj;
+    speed = C3X_LDF(p->ctx->BACKGRND_CARFORWARD.speed);
     // asm 0000429C: 	BU	CARFORWARDLP
+    goto CARFORWARDLP;
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CARFORWARD", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1864,12 +1917,13 @@ CARFORWARDLP:
 static void ROAD_DEBRIS_CREATE_55GAL(OBJ* obj /*AR4*/) {
     // asm 0000429D: 	PUSH	R0
     // asm 0000429E: 	CALL	ADD_RDDEBRIS
+    ADD_RDDEBRIS(obj);
     // asm 0000429F: 	LDI	0731h,R0
     // asm 000042A0: 	STI	R0,*+AR4(OID)
+    obj->id = 0x731;
     // asm 000042A1: 	POP	R0
     // asm 000042A2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ROAD_DEBRIS_CREATE_55GAL", 0, 0);
-    UNIMPL_TODO();
 }
 
 static void ROAD_DEBRIS_CREATE(OBJ* obj /*AR4*/) {
@@ -2241,17 +2295,12 @@ static int HUNGH_ANIS[] = {
 /* asm: BABE_PALIST */
 /* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
 /* asm: 	.word	ungh1_yellow,lift_p,ungh1_skin,bvwall_p */
-int BABE_PALIST[] = {
-    ungh1_blue_ROM,
-    logo_p,
-    ungh1_green_ROM,
-    nintendo_p,
-    ungh1_silver_ROM,
-    map1_p,
-    ungh1_yellow_ROM,
-    lift_p,
-    ungh1_skin_ROM,
-    bvwall_p,
+tPALETTE_OVERWRITE_ENTRY BABE_PALIST[] = {
+    {ungh1_blue_ROM, logo_p},
+    {ungh1_green_ROM, nintendo_p},
+    {ungh1_silver_ROM, map1_p},
+    {ungh1_yellow_ROM, lift_p},
+    {ungh1_skin_ROM, bvwall_p},
 };
 
 void HUNGH_ANI(OBJ* obj /*AR4*/) {

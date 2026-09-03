@@ -1440,6 +1440,7 @@ void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, 
     if (local_minutes < 0) {
         local_minutes = 0;
     }
+
     MAME_ASSERT_REG(0x000060F2, "R2", &local_minutes);
     // asm 000060F2: 	MPYI	3300,R3
     // asm 000060F3: 	SUBI 	R3,R0

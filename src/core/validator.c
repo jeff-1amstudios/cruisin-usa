@@ -472,6 +472,11 @@ static void validate_fail(
 }
 
 static void validate_warn_log_exhausted(const char* caller_file, int caller_line, const char* name) {
+    const char* exit_on_log_end = getenv("CRUSN_VALIDATE_EXIT_ON_LOG_END");
+
+    if (exit_on_log_end != NULL && atoi(exit_on_log_end) != 0) {
+        exit(0);
+    }
     fprintf(
         stderr,
         "%s:%d: validation(%s) warning: reached end of mame.log before next validate line\n",

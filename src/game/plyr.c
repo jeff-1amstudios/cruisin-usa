@@ -36,7 +36,7 @@ static const OBJ C30_STF_ZERO_TRACK_NEXT_VIEW = {
     .pos = { C3X_F32_INIT(-8192), C3X_F32_INIT(0), C3X_F32_INIT(-8192) },
 };
 const OBJ C30_STF_ZERO_OBJREF_VIEW = {
-    .pos = { C3X_F32_INIT(1.001953125), C3X_F32_INIT(0), C3X_F32_INIT(1.001953125) },
+    .pos = { C3X_F32_INIT(1.002327561378479), C3X_F32_INIT(0), C3X_F32_INIT(1.0039302110671997) },
     .usr1 = 0x4EEF,
     .link4 = (uintptr_t)&C30_STF_ZERO_TRACK_NEXT_VIEW,
 };
@@ -748,6 +748,12 @@ void PLYR_INTRO_ENTER(PROC* p) {
 
 // *----------------------------------------------------------------------------
 void _PLYR(PROC* p) {
+    OBJ* obj;
+    OBJ* track_obj;
+    CARBLK* carblk;
+    c3x_reg_t road_direction;
+    c3x_reg_t lane_offset;
+
     switch (PROC_RESUME_STATE) {
     case 0:
         // MAME_ASSERT_FUNCTION_ENTRY();
@@ -758,23 +764,33 @@ void _PLYR(PROC* p) {
     }
 PLYR_ENTER:
     // asm 000029EE: 	CALL	OBJ_GET			;INIT PLAYER OBJECT
+    obj = OBJ_GET(); // INIT PLAYER OBJECT
     // asm 000029EF: 	LDI	AR0,AR4
     // asm 000029F0: 	CALL	PLYR_CAR_INIT
+    PLYR_CAR_INIT(p, obj);
     // asm 000029F1: 	LDF	@START_POS+X,R0
     // asm 000029F2: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_REG(START_POS[0]));
     // asm 000029F3: 	LDF	@START_POS+Y,R0
     // asm 000029F4: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_REG(START_POS[1]));
     // asm 000029F5: 	LDF	@START_POS+Z,R0
     // asm 000029F6: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_REG(START_POS[2]));
     // asm 000029F7: 	LDI	PLYR_C|PLYR1_T,R0
     // asm 000029F8: 	STI	R0,*+AR7(PID)
+    p->id = PLYR_C | PLYR1_T;
     // *INITIALIZE PLAYER COORD, FACING ANGLE
     // asm 000029F9: 	LDI	*+AR4(OCARBLK),AR5
+    carblk = obj->carblk;
     // asm 000029FA: 	CALL	GETTRAK
+    GETTRAK(obj, carblk);
     // asm 000029FB: 	LDI	*+AR5(CARTRAK),AR2
     // asm 000029FC: 	LDI	@DYNALIST_TRUEBEGIN,AR2
+    track_obj = DYNALIST_TRUEBEGIN;
     // asm 000029FD: 	LDI	*+AR2(OUSR1),R0
     // asm 000029FE: 	LDI	*+AR2(OLINK4),AR2	;SKIP FIRST GROUP
+    track_obj = (OBJ*)track_obj->link4; // SKIP FIRST GROUP
     // ;	ANDN	0FFh,R0
     // ;	ADDI	0100h,R0
     // ;L10	LDI	*+AR2(OLINK4),AR2	;SKIP FIRST GROUP
@@ -782,30 +798,42 @@ PLYR_ENTER:
     // ;	BGT	L10
     // asm 000029FF: 	LDF	*+AR2(OPOSX),R0
     // asm 00002A00: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_LDF(track_obj->pos.X));
     // asm 00002A01: 	LDF	*+AR2(OPOSY),R0
     // asm 00002A02: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_LDF(track_obj->pos.Y));
     // asm 00002A03: 	LDF	*+AR2(OPOSZ),R0
     // asm 00002A04: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_LDF(track_obj->pos.Z));
     // asm 00002A05: 	CALL	GETRDIR			;GET ANGLE OF ROAD
+    road_direction = GETRDIR(track_obj); // GET ANGLE OF ROAD
     // *INIT CAMERA
     // asm 00002A06: 	LDF	R0,R2
     // asm 00002A07: 	STF	R2,*+AR5(CARYROT)
+    carblk->y_rotation = C3X_STF(road_direction);
     // asm 00002A08: 	STF	R2,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(road_direction);
     // asm 00002A09: 	LDI	AR4,AR2
     // asm 00002A0A: 	ADDI	OMATRIX,AR2
     // asm 00002A0B: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&obj->omatrix, road_direction);
     // asm 00002A0C: 	NEGF	R2
     // asm 00002A0D: 	CALL	NORMITS
+    road_direction = NORMITS(C3X_NEG(road_direction));
     // asm 00002A0E: 	LDP	@_CAMERARAD+Y
     // asm 00002A0F: 	STF	R2,@_CAMERARAD+Y	;UPDATE CAMERA RAD
+    _CAMERARAD.Y = C3X_STF(road_direction); // UPDATE CAMERA RAD
     // asm 00002A10: 	SETDP
     // asm 00002A11: 	LDI	@CAMERAMATRIXI,AR2
     // asm 00002A12: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&CAMERAMATRIXI, road_direction);
     // *OFFSET THE CAR INTO LANE 1
     // asm 00002A13: 	LDI	AR4,R2
     // asm 00002A14: 	ADDI	OMATRIX,R2
     // asm 00002A15: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 00002A16: 	FLOAT	10*FEET,R0
+    lane_offset = C3X_FROM_INT(10 * FEET);
     // 	;
     // 	;if vehicle is a slave, then offset into lane #2
     // 	;
@@ -819,41 +847,57 @@ PLYR_ENTER:
     // asm 00002A1B: 	BZ	BABA
     // asm 00002A1C: 	FLOAT	LANESIZE,R1
     // asm 00002A1D: 	ADDF	R1,R0
+    if ((DIPRAM & DIP_COMMP) == 0 && (DIPRAM & CMDP_MASTER) != 0) {
+        lane_offset = C3X_ADD(lane_offset, C3X_FROM_INT(1152));
+    }
 BABA:
     // asm 00002A1E: 	STF	R0,*+AR2(X)
+    VECTORAI.X = C3X_STF(lane_offset);
     // asm 00002A1F: 	LDI	AR2,R3
     // asm 00002A20: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, (MATRIX*)&obj->omatrix, &VECTORAI);
     // asm 00002A21: 	LDI	R3,AR2
     // asm 00002A22: 	LDF	*+AR4(OPOSX),R0
     // asm 00002A23: 	ADDF	*+AR2(X),R0
     // asm 00002A24: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(VECTORAI.X)));
     // asm 00002A25: 	LDF	*+AR4(OPOSY),R0
     // asm 00002A26: 	ADDF	*+AR2(Y),R0
     // asm 00002A27: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y)));
     // asm 00002A28: 	LDF	*+AR4(OPOSZ),R0
     // asm 00002A29: 	ADDF	*+AR2(Z),R0
     // asm 00002A2A: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(VECTORAI.Z)));
     // *SET CAMERA POSITION
     // asm 00002A2B: 	LDI	@CAMERAMATRIXI,AR2
     // asm 00002A2C: 	LDI	AR2,R2
     // asm 00002A2D: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 00002A2E: 	FLOAT	-20*FEET,R0
     // asm 00002A2F: 	STF	R0,*+AR2(Y)
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(-20 * FEET));
     // asm 00002A30: 	FLOAT	(-20*FEET),R0
     // asm 00002A31: 	STF	R0,*+AR2(Z)
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(-20 * FEET));
     // asm 00002A32: 	LDI	AR2,R3
     // asm 00002A33: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &CAMERAMATRIXI, &VECTORAI);
     // asm 00002A34: 	LDI	@CAMERAPOSI,AR3		;INIT CAMERA POSITION
     // asm 00002A35: 	LDF	*+AR4(OPOSX),R0
     // asm 00002A36: 	ADDF	*+AR2(X),R0
     // asm 00002A37: 	STF	R0,*+AR3(X)		;CAMERA X
+    CAMERAPOSI.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(VECTORAI.X))); // CAMERA X
     // asm 00002A38: 	LDF	*+AR4(OPOSY),R0
     // asm 00002A39: 	ADDF	*+AR2(Y),R0
     // asm 00002A3A: 	STF	R0,*+AR3(Y)		;CAMERA Y
+    CAMERAPOSI.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y))); // CAMERA Y
     // asm 00002A3B: 	LDF	*+AR4(OPOSZ),R0
     // asm 00002A3C: 	ADDF	*+AR2(Z),R0
     // asm 00002A3D: 	STF	R0,*+AR3(Z)		;CAMERA Z
+    CAMERAPOSI.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(VECTORAI.Z))); // CAMERA Z
     // asm 00002A3E: 	CALL	RESCAN	     		;RESET ACTIVE OBJECT LIST
+    RESCAN(); // RESET ACTIVE OBJECT LIST
     // *CAMERA INIT
     PROC_CONTINUE(PLYR_INTRO_JOIN_tail, 1);
     return;

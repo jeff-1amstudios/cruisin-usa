@@ -59,7 +59,7 @@ PROC* PRC_FIND(int pid, int mask);
 void PRC_FINDNEXT(void);
 
 // asm: 	.globl	PRC_FOLLOW
-void PRC_FOLLOW(void);
+void PRC_FOLLOW(PROC* target /*AR2*/, PROC* proc /*AR7*/);
 
 // asm: 	.globl	SLEEP
 void PRC_SLEEP(PROC* p, int ticks);

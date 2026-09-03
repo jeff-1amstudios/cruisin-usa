@@ -116,7 +116,7 @@ extern void (*FULLSETUP_TABLE[])(void);
 
 #define BONUS_POSTLAUNCHI BONUS_POSTLAUNCH
 extern void_func_ptr BONUS_POSTLAUNCH[];
-extern int BABE_PALIST[];
+extern tPALETTE_OVERWRITE_ENTRY BABE_PALIST[];
 
 // asm:  .globl CHALLENGE_RACE
 extern int CHALLENGE_RACE;

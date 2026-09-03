@@ -114,7 +114,12 @@ void WAIT_ACK(void);
 int GET_CREDITS_TO_CONTINUE(void);
 
 static tCHOOSE_CAR_ENTRY CCTAB[];
-static int TRAFFIC_LL[7];
+typedef struct TRAFFIC_LIGHT_STEP {
+    int source_rom;
+    int delay;
+} TRAFFIC_LIGHT_STEP;
+
+static const TRAFFIC_LIGHT_STEP TRAFFIC_LL[3];
 
 typedef struct CPOINT_LIGHT_STEP {
     int delay;
@@ -5007,6 +5012,12 @@ CANWT:
     // asm 00001EAE: 	BU	RETURNTOPLYR
     goto RETURNTOPLYR;
 CHECKHIT:
+    /* Match the MAME validation breakpoint at 0x00001EAF. Free play enables
+       Start but does not synthesize the edge that INSMORE waits for. */
+    if (getenv("CRUSN_VALIDATE_FORCE_BONUS_START") != NULL &&
+        getenv("CRUSN_VALIDATE_FORCE_BONUS_START")[0] == '1') {
+        START_HIT = 1;
+    }
     // asm 00001EAF: 	LDI	@START_HIT,R0
     // asm 00001EB0: 	BZ	TOSLP
     if (START_HIT == 0)
@@ -5153,16 +5164,36 @@ void LOAD_SHARED(void) {
 // *----------------------------------------------------------------------------
 
 void TRAFFIC_LIGHT(PROC* p) {
-    MAME_ASSERT_FUNCTION_ENTRY();
+    int palette_code;
+    int source_rom;
+    int delay;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
     // asm 00001F0F: 	SLEEP	20
+    SLEEP(20, 1);
     // asm 00001F11: 	LDL	TRAFFIC_LL,AR5
+    p->ctx->TRAFFIC_LIGHT.step_index = 0;
 TLT_LP:
     // asm 00001F12: 	LDI	light_p,AR2
     // asm 00001F13: 	CALL	PAL_FIND
+    palette_code = PAL_FIND(light_p);
     // asm 00001F14: 	BNC	NSSD
-    // asm 00001F15: 	BR	SUICIDE
+    if (palette_code == -1) {
+        // asm 00001F15: 	BR	SUICIDE
+        DIE();
+    }
 NSSD:
     // asm 00001F16: 	LDI	*AR5++,AR2
+    source_rom = TRAFFIC_LL[p->ctx->TRAFFIC_LIGHT.step_index].source_rom;
     // asm 00001F17: 	CMPI	-1,AR2
     // asm 00001F18: 	BNE	CCC
     // asm 00001F19: 	LDL	TRAFFIC_LL,AR5
@@ -5171,25 +5202,26 @@ CCC:
     // asm 00001F1B: 	LDI	R0,R2
     // asm 00001F1C: 	LDIL	8000000Ah,R3	;16
     // asm 00001F1F: 	CALL	PAL_SET
+    PAL_SET(ROM_PTR(source_rom), (u32)palette_code, UINT32_C(0x8000000A));
     // asm 00001F20: 	LDI	*AR5++,AR2
+    delay = TRAFFIC_LL[p->ctx->TRAFFIC_LIGHT.step_index].delay;
+    p->ctx->TRAFFIC_LIGHT.step_index += 1;
+    if (p->ctx->TRAFFIC_LIGHT.step_index >= LEN(TRAFFIC_LL)) {
+        p->ctx->TRAFFIC_LIGHT.step_index = 0;
+    }
     // asm 00001F21: 	CALL	SLEEP
+    SLEEP(delay, 2);
     // asm 00001F22: 	BU	TLT_LP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TRAFFIC_LIGHT", 0, 0);
-    UNIMPL();
+    goto TLT_LP;
 }
 
 /* asm: TRAFFIC_LL	.word	light_yellowon,10,light_redon,32,light_greenon,32,-1 */
 /* asm: 	 */
 /* asm: 	 */
-static int TRAFFIC_LL[] = {
-    light_yellowon,
-    10,
-    light_redon,
-    32,
-    light_greenon,
-    32,
-    -1,
+static const TRAFFIC_LIGHT_STEP TRAFFIC_LL[] = {
+    { light_yellowon, 10 },
+    { light_redon, 32 },
+    { light_greenon, 32 },
     // ----------------------------------------------------------------------------
 };
 

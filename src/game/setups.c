@@ -68,7 +68,8 @@ void CLEANUP_PALS(void) {
     // asm 00008C0E: 	BNC	DONTDEL
     // asm 00008C0F: 	LDL	CORNPAL,AR2
     // asm 00008C10: 	CALL	PAL_DELETE_RAW
-    if (corn_palette != -1) PAL_DELETE_RAW(corn_palette);
+    if (corn_palette != -1)
+        PAL_DELETE_RAW(corn_palette);
 DONTDEL:
     // asm 00008C11: 	LDL	tunnel2_PALETTES,AR2
     // asm 00008C12: 	CALL	dealloc_section
@@ -323,7 +324,6 @@ static void LOADCHICAGO(void) {
     LOAD_SECTION_REQ(&SECchicago_SETUPS);
     // asm 00008C77: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOADCHICAGO", 0, 0);
-
 }
 
 static void LOADINDIANA(void) {
@@ -442,6 +442,8 @@ static void FULLSETUP_GGPARK(void) {
 
 // *----------------------------------------------------------------------------
 static void FULLSETUP_SANFRAN(void) {
+    // MAME_VALIDATOR_EXIT();
+
     // asm 00008CB2: 	LDL	_SECggate,AR2
     // asm 00008CB3: 	CALL	LOAD_SECTION_REQ
     LOAD_SECTION_REQ(&SECggate_SETUPS);

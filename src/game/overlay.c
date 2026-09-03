@@ -193,8 +193,7 @@ static void OVERLOCK(void) {
     // asm: 	BU	$
 #endif
     // asm 0000AD2F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "OVERLOCK", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -255,9 +254,9 @@ static void WATERON(void) {
     // asm 0000AD4A: 	LDI	@_MODE,R0
     // asm 0000AD4B: 	OR	MWATER,R0
     // asm 0000AD4C: 	STI	R0,@_MODE
+    _MODE |= MWATER;
     // asm 0000AD4D: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WATERON", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -267,9 +266,9 @@ static void WATEROFF(void) {
     // asm 0000AD4E: 	LDI	@_MODE,R0
     // asm 0000AD4F: 	ANDN	MWATER,R0
     // asm 0000AD50: 	STI	R0,@_MODE
+    _MODE &= ~MWATER;
     // asm 0000AD51: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WATEROFF", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -298,18 +297,19 @@ static void HELIEND(void) {
 static void RAILPRIME(void) {
     // asm 0000AD5B: 	CLRI	R0
     // asm 0000AD5C: 	STI	R0,@DD_MAX_DRONES
+    DD_MAX_DRONES = 0;
     // asm 0000AD5D: 	STI	R0,@FREEZE_IT
+    FREEZE_IT = 0;
     // asm 0000AD5E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RAILPRIME", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void RR_UNFREEZE(void) {
     // asm 0000AD5F: 	LDI	1,R0
     // asm 0000AD60: 	STI	R0,@FREEZE_IT
+    FREEZE_IT = 1;
     // asm 0000AD61: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RR_UNFREEZE", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -350,9 +350,9 @@ static void TUNNEL_ON(void) {
     // asm 0000AD6C: 	LDI	@_MODE,R0
     // asm 0000AD6D: 	OR	MINTUNNEL,R0
     // asm 0000AD6E: 	STI	R0,@_MODE
+    _MODE |= MINTUNNEL;
     // asm 0000AD6F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TUNNEL_ON", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -362,9 +362,9 @@ static void TUNNEL_OFF(void) {
     // asm 0000AD70: 	LDI	@_MODE,R0
     // asm 0000AD71: 	ANDN	MINTUNNEL,R0
     // asm 0000AD72: 	STI	R0,@_MODE
+    _MODE &= ~MINTUNNEL;
     // asm 0000AD73: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TUNNEL_OFF", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -372,8 +372,7 @@ static void TUNNEL_OFF(void) {
 // *----------------------------------------------------------------------------
 static void START_SANFRAN(void) {
     // asm 0000AD74: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "START_SANFRAN", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -383,15 +382,18 @@ static void BEACHON(void) {
     // asm 0000AD75: 	LDI	@_MODE,R0
     // asm 0000AD76: 	OR	MWATER,R0
     // asm 0000AD77: 	STI	R0,@_MODE
+    _MODE |= MWATER;
     // asm 0000AD78: 	LDI	MAX_DRONES,R0
     // asm 0000AD79: 	STI	R0,@DD_MAX_DRONES
+    DD_MAX_DRONES = MAX_DRONES;
     // asm 0000AD7A: 	LDI	60,R0
     // asm 0000AD7B: 	STI	R0,@DD_SLP
+    DD_SLP = 60;
     // asm 0000AD7C: 	LDI	100,R0
     // asm 0000AD7D: 	STI	R0,@DD_VAR
+    DD_VAR = 100;
     // asm 0000AD7E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "BEACHON", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -400,17 +402,21 @@ static void BEACHON(void) {
 static void REDWOOD_START(void) {
     // asm 0000AD7F: 	LDF	10,R0
     // asm 0000AD80: 	STF	R0,@VAR_ROAD_KFACTOR			;pixels UNDER (overshoot)
+    VAR_ROAD_KFACTOR = C3X_LDF(C3X_STF(C3X_IMM_F32(10))); // pixels UNDER (overshoot)
     // asm 0000AD81: 	FLOAT	75,R0	;75
     // asm 0000AD82: 	STF	R0,@INFIN_CORRECT
+    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(75)));
     // asm 0000AD83: 	LDI	4,R0
     // asm 0000AD84: 	STI	R0,@DD_MAX_DRONES
+    DD_MAX_DRONES = 4;
     // asm 0000AD85: 	LDI	120,R0
     // asm 0000AD86: 	STI	R0,@DD_SLP
+    DD_SLP = 120;
     // asm 0000AD87: 	LDI	120,R0
     // asm 0000AD88: 	STI	R0,@DD_VAR
+    DD_VAR = 120;
     // asm 0000AD89: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "REDWOOD_START", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -418,51 +424,51 @@ static void REDWOOD_START(void) {
 // *----------------------------------------------------------------------------
 static void LOOK_SANFRANCISCO(void) {
     // asm 0000AD8A: 	SONDFX	ER_SANFRANCISCO
+    SONDFX(ER_SANFRANCISCO);
     // asm 0000AD8C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_SANFRANCISCO", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void LOOK_REDWOOD(void) {
     // asm 0000AD8D: 	SONDFX	ER_REDWOOD
+    SONDFX(ER_REDWOOD);
     // asm 0000AD8F: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_REDWOOD", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void LOOK_MIDWEST(void) {
     // asm 0000AD90: 	SONDFX	ER_MIDWEST
+    SONDFX(ER_MIDWEST);
     // asm 0000AD92: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_MIDWEST", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void LOOK_MTRUSHMORE(void) {
     // asm 0000AD93: 	SONDFX	ER_MTRUSHMORE
+    SONDFX(ER_MTRUSHMORE);
     // asm 0000AD95: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_MTRUSHMORE", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void LOOK_DEATHVALLEY(void) {
     // asm 0000AD96: 	SONDFX	ER_DEATHVALLEY
+    SONDFX(ER_DEATHVALLEY);
     // asm 0000AD98: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_DEATHVALLEY", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void LOOK_GCANYON(void) {
     // asm 0000AD99: 	SONDFX	ER_GRANDCANYON
+    SONDFX(ER_GRANDCANYON);
     // asm 0000AD9B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_GCANYON", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void LOOK_HOLLYWOOD(void) {
     // asm 0000AD9C: 	SONDFX	ER_HOLLYWOOD
+    SONDFX(ER_HOLLYWOOD);
     // asm 0000AD9E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOOK_HOLLYWOOD", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -470,9 +476,9 @@ static void LOOK_HOLLYWOOD(void) {
 // *----------------------------------------------------------------------------
 static void CHANGE_TUNE(void) {
     // asm 0000AD9F: 	CALL	CHANGE_STATION
+    CHANGE_STATION();
     // asm 0000ADA0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHANGE_TUNE", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -499,18 +505,18 @@ static void TURNOFF_INFINITY(void) {
     // asm 0000ADA9: 	LDI	@_MODE,R0
     // asm 0000ADAA: 	ANDN	MINFIN,R0
     // asm 0000ADAB: 	STI	R0,@_MODE
+    _MODE &= ~MINFIN;
     // asm 0000ADAC: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TURNOFF_INFINITY", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void TURNON_INFINITY(void) {
     // asm 0000ADAD: 	LDI	@_MODE,R0
     // asm 0000ADAE: 	OR	MINFIN,R0
     // asm 0000ADAF: 	STI	R0,@_MODE
+    _MODE |= MINFIN;
     // asm 0000ADB0: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TURNON_INFINITY", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
@@ -561,7 +567,7 @@ static void TOWER_PAL_RESTORE(void) {
 static void END_OF_GAME(void) {
     // asm 0000ADC0: 	LDI	1,R0
     // asm 0000ADC1: 	STI	R0,@END_OF_GAMEP
+    END_OF_GAMEP = 1;
     // asm 0000ADC2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "END_OF_GAME", 0, 0);
-    UNIMPL();
+    return;
 }

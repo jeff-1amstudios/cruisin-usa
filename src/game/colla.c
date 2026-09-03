@@ -1358,8 +1358,8 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
         rotated_x = C3X_ADD(partial, C3X_MUL(temp_vertex.Z, matrix[2]));
         partial = C3X_ADD(C3X_MUL(temp_vertex.Y, matrix[4]), C3X_MUL(temp_vertex.X, matrix[3]));
         rotated_y = C3X_ADD(partial, C3X_MUL(temp_vertex.Z, matrix[5]));
-        partial = C3X_ADD(C3X_MUL(temp_vertex.Z, matrix[8]), C3X_MUL(temp_vertex.X, matrix[6]));
-        rotated_z = C3X_ADD(C3X_MUL(temp_vertex.Y, matrix[7]), partial);
+        partial = C3X_ADD(C3X_MUL(temp_vertex.Y, matrix[7]), C3X_MUL(temp_vertex.X, matrix[6]));
+        rotated_z = C3X_ADD(partial, C3X_MUL(temp_vertex.Z, matrix[8]));
         BLOWLIST[(i * 3) + 0] = C3X_STF(C3X_ADD(rotated_x, translation.X)); // ;STORE ROTATED X
         BLOWLIST[(i * 3) + 1] = C3X_STF(C3X_ADD(rotated_y, translation.Y)); // ;STORE ROTATED Y
         BLOWLIST[(i * 3) + 2] = C3X_STF(C3X_ADD(rotated_z, translation.Z)); // ;STORE Z
@@ -2035,7 +2035,26 @@ HARDCOL2:
         FIND_YMATRIX(&sign_obj->omatrix, old_velocity_rotation);
         sign_obj->flags &= ~O_POSTER;
         sign_obj->flags |= 1u << O_3DROT_B;
-        PRC_CREATE_CHILD(CURRENT_PROC, TREESHAKI, DRONE_C | FLYER_T, NULL);
+        // asm: LDF *+AR5(CARSPEED),R7 ;HIT CAR SPEED
+        // asm: MPYF 0.04,R7 ;FALL RATE BASED UPON VELOCITY
+        fall_rate = C3X_MUL(C3X_LDF(carblk->speed), C3X_IMM_F32(0.04));
+        // asm: CMPF 0.13,R7
+        // asm: LDFLT 0.13,R7
+        if (C3X_LT(fall_rate, C3X_IMM_F32(0.13))) {
+            fall_rate = C3X_IMM_F32(0.13);
+        }
+        // asm: CMPF 1.0,R7
+        // asm: LDFGT 1.0,R7
+        if (C3X_GT(fall_rate, C3X_IMM_F32(1.0))) {
+            fall_rate = C3X_IMM_F32(1.0);
+        }
+        // asm: LDPI @TREESHAKI,AR2 ;GET SIGN FALL PROCESS
+        // asm: LDI DRONE_C|FLYER_T,R2
+        // asm: CALL PRC_CREATE_CHILD ;CREATE A CHILD PROCESS
+        fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
+        fly_ctx->TREESHAK.obj = sign_obj;
+        fly_ctx->TREESHAK.rotation_delta = C3X_STF(fall_rate);
+        PRC_CREATE_CHILD(CURRENT_PROC, TREESHAKI, DRONE_C | FLYER_T, fly_ctx);
     }
 HARDCOL3:
     ONESND(POLESND);
@@ -2493,46 +2512,80 @@ SIGNFALP0:
  */
 
 static void TREESHAK(PROC* p) {
+    OBJ* sign_obj;
+    c3x_reg_t rotation_delta;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
+    sign_obj = p->ctx->TREESHAK.obj;
+    rotation_delta = C3X_LDF(p->ctx->TREESHAK.rotation_delta);
     // *SHAKE IT FORWARD
     // asm 000023B0: 	LDF	R7,R2
     // asm 000023B1: 	LDPI	@MATRIXAI,AR2  		;GET TEMP STORE
     // asm 000023B2: 	CALL    FIND_XMATRIX		;NEW MATRIX
+    FIND_XMATRIX(&MATRIXAI, rotation_delta); // GET TEMP STORE / NEW MATRIX
     // asm 000023B3: 	LDI	AR4,R2
     // asm 000023B4: 	ADDI	OMATRIX,R2
     // asm 000023B5: 	LDI	R2,R3
     // asm 000023B6: 	CALL	CONCATMAT
+    CONCATMAT(&MATRIXAI, (MATRIX*)&sign_obj->omatrix, (MATRIX*)&sign_obj->omatrix);
     // asm 000023B7: 	SLEEP	1
+    SLEEP(1, 1);
+    sign_obj = p->ctx->TREESHAK.obj;
+    rotation_delta = C3X_LDF(p->ctx->TREESHAK.rotation_delta);
     // *SHAKE IT BACK
     // asm 000023B9: 	LDI	3,AR6			;# FRAMES/SHAKE
+    p->ctx->TREESHAK.loop_count = 3;
     // asm 000023BA: 	MPYF	-0.40,R7     		;DAMP IT
+    rotation_delta = C3X_MUL(rotation_delta, C3X_IMM_F32(-0.40)); // DAMP IT
 TREESHKL:
     // asm 000023BB: 	LDF	R7,R2
     // ;	LDP	@MATRIXAI
     // asm 000023BC: 	LDPI	@MATRIXAI,AR2  		;GET TEMP STORE
     // asm 000023BD: 	CALL    FIND_XMATRIX		;NEW MATRIX
+    FIND_XMATRIX(&MATRIXAI, rotation_delta); // GET TEMP STORE / NEW MATRIX
     // asm 000023BE: 	LDI	AR4,R2
     // asm 000023BF: 	ADDI	OMATRIX,R2
     // asm 000023C0: 	LDI	R2,R3
     // asm 000023C1: 	CALL	CONCATMAT
+    CONCATMAT(&MATRIXAI, (MATRIX*)&sign_obj->omatrix, (MATRIX*)&sign_obj->omatrix);
     // asm 000023C2: 	SLEEP	1
+    p->ctx->TREESHAK.rotation_delta = C3X_STF(rotation_delta);
+    SLEEP(1, 2);
+    sign_obj = p->ctx->TREESHAK.obj;
+    rotation_delta = C3X_LDF(p->ctx->TREESHAK.rotation_delta);
     // asm 000023C4: 	DBU	AR6,TREESHKL
+    if (p->ctx->TREESHAK.loop_count-- > 0) {
+        goto TREESHKL;
+    }
     // asm 000023C5: TREESHKL1
     // asm 000023C5: 	LDI	3,AR6			;# FRAMES/SHAKE
+    p->ctx->TREESHAK.loop_count = 3;
     // asm 000023C6: 	MPYF	-0.6,R7     		;REVERSE IT
+    rotation_delta = C3X_MUL(rotation_delta, C3X_IMM_F32(-0.6)); // REVERSE IT
     // asm 000023C7: 	ABSF	R7,R0
     // asm 000023C8: 	CMPF	0.01,R0
     // asm 000023C9: 	BGT	TREESHKL
+    if (C3X_GT(C3X_ABS(rotation_delta), C3X_IMM_F32(0.01))) {
+        goto TREESHKL;
+    }
     // asm 000023CA: 	LDI	*+AR4(OFLAGS),R0	;MAKE IT A POSTER AGAIN
     // asm 000023CB: 	OR	O_POSTER,R0
     // asm 000023CC: 	LDI	1,R1			;CLR 3D ROTATION BIT
     // asm 000023CD: 	LS	O_3DROT_B,R1
     // asm 000023CE: 	ANDN	R1,R0
     // asm 000023CF: 	STI	R0,*+AR4(OFLAGS)
+    sign_obj->flags = (sign_obj->flags | O_POSTER) & ~(1u << O_3DROT_B);
     // asm 000023D0: 	BR	SUICIDE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    (void)p;
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "TREESHAK", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 /*

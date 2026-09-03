@@ -2,6 +2,7 @@
 .pycache/
 .vscode/
 build/
+build-asan/
 build-c3x-default/
 cfg/
 roms/

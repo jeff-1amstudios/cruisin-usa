@@ -2615,6 +2615,7 @@ SIDECKX:
     // *BLANK OUT TABLE SPACE
 GOTONE:
     // asm 000054AF: 	CALL	GETPV 			;GET PERPENDICULAR VELOCITY
+    closing_frames = C3X_LDF(C3X_STF(closing_frames));
     perpendicular_velocity = GETPV(obstacle_obj, obstacle_carblk, &angle); // ;GET PERPENDICULAR VELOCITY
     // asm 000054B0: 	POPF	R1
     // asm 000054B1: 	MPYF	R1,R0,R2		;PROJECTED OFFSET

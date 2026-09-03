@@ -666,6 +666,11 @@ typedef struct tPALLIST_ENTRY {
     int ref_count_and_pal_code;
 } tPALLIST_ENTRY;
 
+typedef struct tPALETTE_OVERWRITE_ENTRY {
+    u32 source_palette_rom;
+    u32 destination_palette_index;
+} tPALETTE_OVERWRITE_ENTRY;
+
 typedef struct tCAR_PALETTE_LIST {
     int count;
     tPAL* palette_addr[10];
@@ -889,6 +894,9 @@ typedef struct PROC_CONTEXT {
             int step_index;
         } CPOINT_LIGHT;
         struct {
+            int step_index;
+        } TRAFFIC_LIGHT;
+        struct {
             tTEXT* front_text;
             tTEXT* shadow_text;
             c3x_f32_t posx;
@@ -1055,10 +1063,19 @@ typedef struct PROC_CONTEXT {
             c3x_f32_t accumulated;    // R6
         } SIGNFALL;
         struct {
+            OBJ* obj;                 // AR4
+            c3x_f32_t rotation_delta; // R7
+            int loop_count;           // AR6
+        } TREESHAK;
+        struct {
             OBJ* obj;          // AR4
             const int* script; // AR6
             int script_index;  // AR5 - AR6
         } BACKGRND_PLAINANI_PROC;
+        struct {
+            OBJ* obj;        // AR4
+            c3x_f32_t speed; // R6
+        } BACKGRND_CARFORWARD;
         struct {
             OBJ* obj;                     // AR4
             c3x_f32_t speed;              // R7

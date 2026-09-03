@@ -18,6 +18,8 @@ GAME_BIN="$BUILD_DIR/crusn"
 : "${CRUSN_VALIDATE_FORCE_POT1_MAX:=1}"
 : "${CRUSN_VALIDATE_SCRIPT_CAR_CHOICE:=1}"
 : "${CRUSN_VALIDATE_SKIP_ATTRACT:=1}"
+: "${CRUSN_VALIDATE_FORCE_BONUS_START:=1}"
+: "${CRUSN_VALIDATE_EXIT_ON_LOG_END:=1}"
 export CRUSN_VALIDATE_SINGLE_FRAME
 export CRUSN_VALIDATE_CLEAR_WATER_R0
 export CRUSN_VALIDATE_START_FUNCTION
@@ -29,6 +31,8 @@ export CRUSN_VALIDATE_ALIGN_SECTIME_PHASE
 export CRUSN_VALIDATE_FORCE_POT1_MAX
 export CRUSN_VALIDATE_SCRIPT_CAR_CHOICE
 export CRUSN_VALIDATE_SKIP_ATTRACT
+export CRUSN_VALIDATE_FORCE_BONUS_START
+export CRUSN_VALIDATE_EXIT_ON_LOG_END
 export CRUSN_ENABLE_MAME_VALIDATION=1
 
 hash_file() {
@@ -54,7 +58,7 @@ cd "$ROOT_DIR"
 
 python3 tools/mame/generate_mame_validate_breakpoints.py
 
-current_hash="$(hash_file "$BREAKPOINT_FILE")"
+current_hash="$(hash_file "$BREAKPOINT_FILE")-$(hash_file "$ROOT_DIR/tools/mame/instrument.sh")"
 previous_hash=""
 
 if [[ -f "$BREAKPOINT_HASH_FILE" ]]; then
@@ -62,7 +66,7 @@ if [[ -f "$BREAKPOINT_HASH_FILE" ]]; then
 fi
 
 if [[ "$current_hash" != "$previous_hash" ]]; then
-    echo "Breakpoint script changed; refreshing MAME capture"
+    echo "MAME capture inputs changed; refreshing MAME capture"
     tools/mame/instrument.sh
     printf '%s\n' "$current_hash" > "$BREAKPOINT_HASH_FILE"
 else
@@ -77,4 +81,8 @@ fi
 # SDL_RENDER_DRIVER=software \
 # "$GAME_BIN"
 
-"$GAME_BIN" --no-sound
+if [[ "${CRUSN_DEBUG_LLDB:-0}" == "1" ]]; then
+    lldb --one-line run -- "$GAME_BIN" --no-sound
+else
+    "$GAME_BIN" --no-sound
+fi

@@ -23,7 +23,7 @@ void PRC_INIT(void);
 void PRC_XFER(void);
 void PRC_FINDNEXT(void);
 PROC* PRC_FIND(int pid, int mask);
-void PRC_FOLLOW(void);
+void PRC_FOLLOW(PROC* target /*AR2*/, PROC* proc /*AR7*/);
 
 #define PACTIVEI PACTIVE
 #define PFREEI PFREE
@@ -97,6 +97,13 @@ static void NEXTPRC(PROC* proc) {
             proc->current_resume_depth = 0;
             proc->yielded = 0;
             proc->func(proc);
+
+            /* SLEEP tail-transfers to NEXTPRC in the assembly.  Once that
+             * traversal returns, do not resume this caller's cached link: its
+             * process slot may have been killed and reused in the meantime. */
+            if (proc->yielded) {
+                return;
+            }
 
             if (CURRENT_PROC != proc) {
                 return;
@@ -750,30 +757,44 @@ FINDPROCX:
  *
  *
  */
-void PRC_FOLLOW(void) {
+void PRC_FOLLOW(PROC* target /*AR2*/, PROC* proc /*AR7*/) {
+    PROC** linkp;
+
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_FOLLOW", 0, 0);
     // asm 0000A94A: 	PUSH	R1
     // asm 0000A94B: 	PUSH	AR1
     // asm 0000A94C: 	PUSH	AR2
     // asm 0000A94D: 	PUSH	AR7
     // asm 0000A94E: 	LDI	@PACTIVEI,R1		;WE MUST FIND DEAD PROCESS TO LINK AROUND
+    linkp = &PACTIVE;
 PFOLLP:
     // asm 0000A94F: 	LDI	R1,AR1
     // asm 0000A950: 	LDI	*AR1,R1
     // asm 0000A951: 	ERRON	Z,EC_PROC|6		;LOCKUP ON END OF LIST FOUND
     // asm 0000A959: 	BZ	PROC_FOLLOW_X
+    if (*linkp == NULL) {
+        ERRON(EC_PROC | 6);
+        goto PROC_FOLLOW_X;
+    }
     // asm 0000A95A: 	CMPI	R1,AR7
     // asm 0000A95B: 	BNE	PFOLLP
+    if (*linkp != proc) {
+        linkp = &(*linkp)->link;
+        goto PFOLLP;
+    }
     // asm 0000A95C: 	LDI	*AR7,R1
     // asm 0000A95D: 	STI	R1,*AR1			;LINK AROUND
+    *linkp = proc->link;
     // asm 0000A95E: 	LDI	*AR2,R1
     // asm 0000A95F: 	STI	R1,*AR7
+    proc->link = target->link;
     // asm 0000A960: 	STI	AR7,*AR2
+    target->link = proc;
 PROC_FOLLOW_X:
     // asm 0000A961: 	POP	AR7
     // asm 0000A962: 	POP	AR2
     // asm 0000A963: 	POP	AR1
     // asm 0000A964: 	POP	R1
     // asm 0000A965: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRC_FOLLOW", 0, 0);
-    UNIMPL();
+    return;
 }

@@ -696,6 +696,11 @@ def render_output(entries: Iterable[BreakpointEntry]) -> str:
         # Use the following instruction because 0x1D0E also carries the
         # generated RACE_TIMING_START ordering breakpoint.
         rows.append('bpset 00001D0F,1,{ d@0000C96E=0; g }')
+    if os.environ.get("CRUSN_VALIDATE_FORCE_BONUS_START") == "1":
+        # INSMORE enables Start in free play but waits forever for the
+        # edge-triggered START_HIT flag. Supply that edge at CHECKHIT so the
+        # post-race validation trace can continue without interactive input.
+        rows.append('bpset 00001EAF,1,{ d@0000E661=1; g }')
     # Do not suppress additional INT0 calls here. That experiment caused MAME
     # watchdog resets and did not establish that IRQ cadence was the source of
     # the late-race mismatch.

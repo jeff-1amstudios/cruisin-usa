@@ -1948,7 +1948,13 @@ c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     c3x_reg_t a;
     c3x_reg_t b;
     c3x_reg_t c;
+    c3x_reg_t negative_a;
+    c3x_reg_t negative_b;
+    c3x_reg_t c_term_a;
+    c3x_reg_t c_term_b;
+    c3x_reg_t denominator_sq;
     c3x_reg_t denominator;
+    c3x_reg_t numerator;
     c3x_reg_t dist;
 
     // asm 0000680E: 	PUSH	R1
@@ -1981,11 +1987,19 @@ c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     b = C3X_SUB(next_track_obj->pos.X, track_obj->pos.X);
 
     // asm 0000682B..0000682F
-    c = C3X_NEG(C3X_ADD(C3X_MUL(a, track_obj->pos.X), C3X_MUL(b, track_obj->pos.Z)));
+    negative_a = C3X_NEG(a);
+    negative_b = C3X_NEG(b);
+    c_term_a = C3X_MUL(negative_a, track_obj->pos.X);
+    c_term_b = C3X_MUL(negative_b, track_obj->pos.Z);
+    c = C3X_ADD(c_term_a, c_term_b);
 
     // asm 00006832..00006839
-    denominator = SQRT(C3X_ADD(C3X_MUL(a, a), C3X_MUL(b, b)));
-    dist = C3X_DIV(C3X_ADD(C3X_ADD(C3X_MUL(a, obj->pos.X), C3X_MUL(b, obj->pos.Z)), c), denominator);
+    denominator_sq = C3X_ADD(C3X_MUL(a, a), C3X_MUL(b, b));
+    denominator = SQRT(denominator_sq);
+    a = C3X_LDF(C3X_STF(a));
+    c = C3X_LDF(C3X_STF(c));
+    numerator = C3X_ADD(C3X_ADD(C3X_MUL(a, obj->pos.X), C3X_MUL(b, obj->pos.Z)), c);
+    dist = DIV_F(numerator, denominator);
 
     return dist;
 }

@@ -275,6 +275,7 @@ static int CREATE_SMOKE_OBJ(PROC* p /*AR7*/, c3x_reg_t z_offset /*R5*/) {
     DYNAOBJ* rear_wheel;
     DYNAOBJ* other_rear_wheel;
     OBJ* road_obj;
+    int road_id;
     MATRIX* body_matrix;
     const int* animation;
 
@@ -347,8 +348,9 @@ DO_SMOKE:
     // asm 0000852C: 	LDI	*+AR5(RR_PCOL),AR3
     road_obj = OBJREF_TO_PTR(p->ctx->SMOKE_PROC.carblk->right_rear.collided_road_object);
     // asm 0000852D: 	LDI	*+AR3(OID),R4
+    road_id = road_obj != NULL ? (int)road_obj->id : 0;
     // asm 0000852E: 	CALL	INIT_SMOKE
-    INIT_SMOKE(p, smoke_obj, animation, rear_wheel, (int)road_obj->id, z_offset);
+    INIT_SMOKE(p, smoke_obj, animation, rear_wheel, road_id, z_offset);
     // asm 0000852F: 	LDI	*AR1,AR2
     // asm 00008530: 	CALL	OBJ_GETE
     smoke_obj = OBJ_GETE(ROM_PTR((word_addr_t)animation[0]));
@@ -362,8 +364,9 @@ DO_SMOKE:
     // asm 00008534: 	LDI	*+AR5(LR_PCOL),AR3
     road_obj = OBJREF_TO_PTR(p->ctx->SMOKE_PROC.carblk->left_rear.collided_road_object);
     // asm 00008535: 	LDI	*+AR3(OID),R4
+    road_id = road_obj != NULL ? (int)road_obj->id : 0;
     // asm 00008536: 	CALL	INIT_SMOKE
-    INIT_SMOKE(p, smoke_obj, animation, other_rear_wheel, (int)road_obj->id, z_offset);
+    INIT_SMOKE(p, smoke_obj, animation, other_rear_wheel, road_id, z_offset);
 CSOX:
     // asm 00008537: 	RETS
     return smoke_obj == NULL;

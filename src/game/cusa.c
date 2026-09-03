@@ -641,6 +641,12 @@ ENTER2:
 
     if (COLD_ENTER_RESTART) {
         COLD_ENTER_RESTART = 0;
+        if (mame_validation_replay_started()) {
+            int frame_ticks = mame_validate_frame_ticks();
+            while (INFRAMES < frame_ticks) {
+                INT0();
+            }
+        }
         goto ENTER2;
     }
 
