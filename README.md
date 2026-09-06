@@ -118,7 +118,10 @@ validation is disabled:
 ```
 
 Use `--no-free-play` to use the normal coin settings, and `--no-sound` to run
-without initializing or playing audio. Press <kbd>Return</kbd> for Start.
+without initializing or playing audio. `--girls` and `--no-girls` override the
+corresponding cabinet adjustment. For debugging, `--race-time SECONDS`
+overrides the normal race countdown in five-second steps. Press <kbd>Return</kbd>
+for Start.
 
 ## Contributing
 

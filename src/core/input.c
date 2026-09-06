@@ -30,7 +30,7 @@ void port_handle_input(void) {
     if (keyboard[SDL_SCANCODE_RETURN] || keyboard[SDL_SCANCODE_KP_ENTER]) {
         switch1 &= ~SW_START;
     }
-    if (getenv("CRUSN_VALIDATE_SKIP_ATTRACT") == NULL && input_frame_counter % 200 == 0) {
+    if (getenv("CRUSN_AUTO_START") != NULL && input_frame_counter % 200 == 0) {
         switch1 &= ~SW_START;
     }
     int new_steering_direction = (keyboard[SDL_SCANCODE_RIGHT] != 0) - (keyboard[SDL_SCANCODE_LEFT] != 0);
