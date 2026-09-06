@@ -25,7 +25,7 @@
     [(name) / 3] = { (priority), (time_and_code) >> 16, \
         (time_and_code) & 0x7fff }
 
-static const crusn_sound_entry SOUND_TABLE[] = {
+static const crusn_sound_entry SNDTAB[] = {
 
     //----------------------------------------------------------------------------
     // HOTTUB SCENE
@@ -390,7 +390,7 @@ const crusn_sound_entry* crusn_sound_entry_from_index(int sound_index) {
     if (sound_index < 0 || sound_index % 3 != 0
         || (size_t)(sound_index / 3) >= crusn_sound_entry_count())
         return 0;
-    return &SOUND_TABLE[sound_index / 3];
+    return &SNDTAB[sound_index / 3];
 }
 
 const crusn_sound_entry* crusn_sound_entry_from_dcs_track(unsigned dcs_track,
@@ -398,18 +398,18 @@ const crusn_sound_entry* crusn_sound_entry_from_dcs_track(unsigned dcs_track,
     size_t entry_index;
 
     for (entry_index = 0; entry_index < crusn_sound_entry_count(); ++entry_index) {
-        if (SOUND_TABLE[entry_index].dcs_track == dcs_track) {
-            *channel = (int)((SOUND_TABLE[entry_index].priority_word >> 8) & 0x0f);
-            return &SOUND_TABLE[entry_index];
+        if (SNDTAB[entry_index].dcs_track == dcs_track) {
+            *channel = (int)((SNDTAB[entry_index].priority_word >> 8) & 0x0f);
+            return &SNDTAB[entry_index];
         }
     }
 
     /* SNDFX selects its second effects channel by incrementing the command. */
     for (entry_index = 0; entry_index < crusn_sound_entry_count(); ++entry_index) {
-        int entry_channel = (int)((SOUND_TABLE[entry_index].priority_word >> 8) & 0x0f);
-        if (entry_channel == 1 && SOUND_TABLE[entry_index].dcs_track + 1 == dcs_track) {
+        int entry_channel = (int)((SNDTAB[entry_index].priority_word >> 8) & 0x0f);
+        if (entry_channel == 1 && SNDTAB[entry_index].dcs_track + 1 == dcs_track) {
             *channel = 2;
-            return &SOUND_TABLE[entry_index];
+            return &SNDTAB[entry_index];
         }
     }
 
@@ -417,5 +417,5 @@ const crusn_sound_entry* crusn_sound_entry_from_dcs_track(unsigned dcs_track,
 }
 
 size_t crusn_sound_entry_count(void) {
-    return sizeof(SOUND_TABLE) / sizeof(SOUND_TABLE[0]);
+    return sizeof(SNDTAB) / sizeof(SNDTAB[0]);
 }

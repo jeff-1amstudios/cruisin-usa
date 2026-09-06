@@ -642,7 +642,7 @@ void PLYR_INTRO_ENTER(PROC* p) {
         goto PROC_RESUME_1;
     }
 
-    obj = p->ctx->PLYR_INTRO_ENTER_FRAME.car;
+    obj = p->ctx.PLYR_INTRO_ENTER_FRAME.car;
     // asm 000029B8: 	LDI	*+AR4(OCARBLK),AR5
     carblk = obj->carblk;
     // asm 000029B9: 	LDI	0,R0		 	;NEUTRAL, PLEASE
@@ -1111,9 +1111,9 @@ PLYRSPD:
     // asm 00002A82: 	SONDFX	UPSHIFTSND		;MAKE YOUR UPSHIFT DUDES
     SONDFX(UPSHIFTSND); // MAKE YOUR UPSHIFT DUDES
     // asm 00002A84: 	CREATEC	FLAME_PRC,UTIL_C	;make child flames
-    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
+    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, &(PROC_CONTEXT){ 0 }); // make child flames
     // asm 00002A87: 	CREATEC	SMOKE_PROC,UTIL_C	;make child smoke
-    smoke_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    smoke_ctx = NEW_PROC_CONTEXT();
     smoke_ctx->SMOKE_PROC.car_obj = obj;
     smoke_ctx->SMOKE_PROC.carblk = carblk;
     CREATEC(CURRENT_PROC, SMOKE_PROC, UTIL_C, smoke_ctx); // make child smoke
@@ -5348,7 +5348,7 @@ static void PLYR_SNDS(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
         goto PSND0;
     }
     // asm 000030A1: 	CREATEC	FLAME_PRC,UTIL_C	;make child flames
-    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
+    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, &(PROC_CONTEXT){ 0 }); // make child flames
 PSND0:
     // asm 000030A4: 	LDI	@REVFLG,R0
     rev_flag = REVFLG;
@@ -5357,7 +5357,7 @@ PSND0:
         goto BACKREV;
     }
     // asm 000030A6: 	CREATEC	FLAME_PRC,UTIL_C	;make child flames
-    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
+    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, &(PROC_CONTEXT){ 0 }); // make child flames
     // *MAKE YOUR REV SOUND
     // *KILL OLDIES
     // asm 000030A9: 	LDI	2,R0
@@ -5461,7 +5461,7 @@ BOTX:
         goto NO_SMOKE;
     }
     // asm 000030D4: 	CREATEC	SMOKE_PROC,UTIL_C	;make child smoke
-    smoke_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    smoke_ctx = NEW_PROC_CONTEXT();
     smoke_ctx->SMOKE_PROC.car_obj = obj;
     smoke_ctx->SMOKE_PROC.carblk = carblk;
     CREATEC(CURRENT_PROC, SMOKE_PROC, UTIL_C, smoke_ctx); // make child smoke
@@ -5521,7 +5521,7 @@ NO_SMOKE:
         goto NO_FLAME;
     }
     // asm 000030EB: 	CREATEC	FLAME_PRC,UTIL_C	;make child flames
-    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, port_malloc(sizeof(PROC_CONTEXT))); // make child flames
+    CREATEC(CURRENT_PROC, FLAME_PRC, UTIL_C, &(PROC_CONTEXT){ 0 }); // make child flames
 NO_FLAME:
     // asm 000030EE: 	LDI	@SKIDTABI,AR2
     // asm 000030EF: 	LDI	2,R0
@@ -5579,7 +5579,7 @@ SKIDX:
         goto NOBRAKSND; // YES KILL SOUND
     }
     // asm 00003107: 	CREATEC	SMOKE_PROC,UTIL_C	;make child smoke
-    smoke_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    smoke_ctx = NEW_PROC_CONTEXT();
     smoke_ctx->SMOKE_PROC.car_obj = obj;
     smoke_ctx->SMOKE_PROC.carblk = carblk;
     CREATEC(CURRENT_PROC, SMOKE_PROC, UTIL_C, smoke_ctx); // make child smoke

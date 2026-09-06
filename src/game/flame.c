@@ -114,28 +114,28 @@ void FLAME_PRC(PROC* p) {
     // asm 0000ADC6: 	LDI	PLYR_C,AR2
     // asm 0000ADC7: 	CALL	OBJ_FIND_FIRST
     // asm 0000ADC8: 	BNC	FLAME_DIE		;IF there is no player object then bail.
-    p->ctx->FLAME_PRC.player_obj = OBJ_FIND_FIRST(PLYR_C);
-    if (p->ctx->FLAME_PRC.player_obj == NULL) {
+    p->ctx.FLAME_PRC.player_obj = OBJ_FIND_FIRST(PLYR_C);
+    if (p->ctx.FLAME_PRC.player_obj == NULL) {
         goto FLAME_DIE; // IF there is no player object then bail.
     }
     // asm 0000ADC9: 	LDI	AR0,AR6
     // asm 0000ADCA: 	LDI	*+AR0(OCARBLK),AR1
     // asm 0000ADCB: 	LDI	*+AR1(CAR_SPIN),R0
     // asm 0000ADCC: 	BNZ	FLAME_DIE			;YES, the no flames
-    if (p->ctx->FLAME_PRC.player_obj->carblk->spin_flag != 0) {
+    if (p->ctx.FLAME_PRC.player_obj->carblk->spin_flag != 0) {
         goto FLAME_DIE; // YES, then no flames
     }
     // asm 0000ADCD: 	LDI	AR0,AR2
     // asm 0000ADCE: 	CALL	GETCARBODY
-    p->ctx->FLAME_PRC.body_matrix = GETCARBODY(p->ctx->FLAME_PRC.player_obj);
+    p->ctx.FLAME_PRC.body_matrix = GETCARBODY(p->ctx.FLAME_PRC.player_obj);
     // asm 0000ADCF: 	STI	AR0,*+AR7(CARBODY_MATRIX)
     // asm 0000ADD0: 	LDI	0,R0
     // asm 0000ADD1: 	STI	R0,*+AR7(FRAME_ON)	;Reset animation counter
-    p->ctx->FLAME_PRC.frame_on = 0; // Reset animation counter
+    p->ctx.FLAME_PRC.frame_on = 0; // Reset animation counter
     // asm 0000ADD2: 	CALL	OBJ_GET
     // asm 0000ADD3: 	BC	FLAME_DIE
-    p->ctx->FLAME_PRC.left_flame = OBJ_GET();
-    if (p->ctx->FLAME_PRC.left_flame == NULL) {
+    p->ctx.FLAME_PRC.left_flame = OBJ_GET();
+    if (p->ctx.FLAME_PRC.left_flame == NULL) {
         goto FLAME_DIE;
     }
     // asm 0000ADD4: 	LDI	AR0,AR4			;Left flame
@@ -152,50 +152,50 @@ void FLAME_PRC(PROC* p) {
     // asm 0000ADDB: 	FLOAT	*+AR0(Z),R3
     flame_z = C3X_FROM_INT(flame_pos[2]);
     // asm 0000ADDC: 	STF	R1,*+AR4(OVELX)
-    p->ctx->FLAME_PRC.left_flame->vel_x = C3X_STF(flame_x);
+    p->ctx.FLAME_PRC.left_flame->vel_x = C3X_STF(flame_x);
     // asm 0000ADDD: 	STF	R2,*+AR4(OVELY)
-    p->ctx->FLAME_PRC.left_flame->vel_y = C3X_STF(flame_y);
+    p->ctx.FLAME_PRC.left_flame->vel_y = C3X_STF(flame_y);
     // asm 0000ADDE: 	STF	R3,*+AR4(OVELZ)
-    p->ctx->FLAME_PRC.left_flame->vel_z = C3X_STF(flame_z);
+    p->ctx.FLAME_PRC.left_flame->vel_z = C3X_STF(flame_z);
     // asm 0000ADDF: 	LDI	PLYR_C|PLYR_FLAMES_S,R0
     // asm 0000ADE0: 	STI	R0,*+AR4(OID)
-    p->ctx->FLAME_PRC.left_flame->id = PLYR_C | PLYR_FLAMES_S;
+    p->ctx.FLAME_PRC.left_flame->id = PLYR_C | PLYR_FLAMES_S;
     // asm 0000ADE1: 	CALL	OBJ_GET
     // asm 0000ADE2: 	BC	FLAME_DIE
-    p->ctx->FLAME_PRC.right_flame = OBJ_GET();
-    if (p->ctx->FLAME_PRC.right_flame == NULL) {
+    p->ctx.FLAME_PRC.right_flame = OBJ_GET();
+    if (p->ctx.FLAME_PRC.right_flame == NULL) {
         goto FLAME_DIE;
     }
     // asm 0000ADE3: 	LDI	AR0,AR5			;Right frame
     // asm 0000ADE4: 	LDF	PI,R0
     // asm 0000ADE5: 	STF	R0,*+AR5(ORADY)
-    p->ctx->FLAME_PRC.right_flame->rady = C3X_STF(C3X_IMM_F32(PI));
+    p->ctx.FLAME_PRC.right_flame->rady = C3X_STF(C3X_IMM_F32(PI));
     // asm 0000ADE6: 	FLOAT	180,R0
     (void)C3X_FROM_INT(180);
     // asm 0000ADE7: 	NEGF	R1			;opposite side
     flame_x = C3X_NEG(flame_x); // opposite side
     // asm 0000ADE8: 	STF	R1,*+AR5(OVELX)
-    p->ctx->FLAME_PRC.right_flame->vel_x = C3X_STF(flame_x);
+    p->ctx.FLAME_PRC.right_flame->vel_x = C3X_STF(flame_x);
     // asm 0000ADE9: 	STF	R2,*+AR5(OVELY)
-    p->ctx->FLAME_PRC.right_flame->vel_y = C3X_STF(flame_y);
+    p->ctx.FLAME_PRC.right_flame->vel_y = C3X_STF(flame_y);
     // asm 0000ADEA: 	STF	R3,*+AR5(OVELZ)
-    p->ctx->FLAME_PRC.right_flame->vel_z = C3X_STF(flame_z);
+    p->ctx.FLAME_PRC.right_flame->vel_z = C3X_STF(flame_z);
     // asm 0000ADEB: 	LDI	PLYR_C|PLYR_FLAMES_S,R0
     // asm 0000ADEC: 	STI	R0,*+AR5(OID)
-    p->ctx->FLAME_PRC.right_flame->id = PLYR_C | PLYR_FLAMES_S;
+    p->ctx.FLAME_PRC.right_flame->id = PLYR_C | PLYR_FLAMES_S;
     // asm 0000ADED: 	LDI	AR4,AR2
     // asm 0000ADEE: 	CALL	OBJ_INSERT
-    OBJ_INSERT(p->ctx->FLAME_PRC.left_flame);
+    OBJ_INSERT(p->ctx.FLAME_PRC.left_flame);
     // asm 0000ADEF: 	LDI	AR5,AR2
     // asm 0000ADF0: 	CALL	OBJ_INSERT
-    OBJ_INSERT(p->ctx->FLAME_PRC.right_flame);
+    OBJ_INSERT(p->ctx.FLAME_PRC.right_flame);
     // asm 0000ADF1: 	LDI	9-1,R5
-    p->ctx->FLAME_PRC.frames_remaining = 9 - 1;
+    p->ctx.FLAME_PRC.frames_remaining = 9 - 1;
 FLAME_ANI_LOOP:
     // asm 0000ADF2: 	LDI	*+AR6(OCARBLK),AR1
     // asm 0000ADF3: 	LDI	*+AR1(CAR_SPIN),R0
     // asm 0000ADF4: 	BNZ	FLAME_ANIX			;YES, the kill the flames
-    if (p->ctx->FLAME_PRC.player_obj->carblk->spin_flag != 0) {
+    if (p->ctx.FLAME_PRC.player_obj->carblk->spin_flag != 0) {
         goto FLAME_ANIX; // YES, then kill the flames
     }
     // asm 0000ADF5: 	LDI	*+AR7(CARBODY_MATRIX),AR2
@@ -203,42 +203,42 @@ FLAME_ANI_LOOP:
     // asm 0000ADF7: 	ADDI	OMATRIX,R2
     // asm 0000ADF8: 	LDI	@MATRIXAI,R3
     // asm 0000ADF9: 	CALL	CONCATMATV
-    CONCATMATV(p->ctx->FLAME_PRC.body_matrix, (MATRIX*)&p->ctx->FLAME_PRC.player_obj->omatrix, &MATRIXAI);
+    CONCATMATV(p->ctx.FLAME_PRC.body_matrix, (MATRIX*)&p->ctx.FLAME_PRC.player_obj->omatrix, &MATRIXAI);
     // asm 0000ADFA: 	LDI	@MATRIXAI,AR3
     // asm 0000ADFB: 	LDI	AR4,AR0
     // asm 0000ADFC: 	LDI	*+AR7(FRAME_ON),IR0
     // asm 0000ADFD: 	LDI	@FLAMEANII,AR1
     // asm 0000ADFE: 	CALL	animate_child
-    animate_child(p->ctx->FLAME_PRC.left_flame, p->ctx->FLAME_PRC.player_obj, &MATRIXAI, FLAMEANII,
-        p->ctx->FLAME_PRC.frame_on);
+    animate_child(p->ctx.FLAME_PRC.left_flame, p->ctx.FLAME_PRC.player_obj, &MATRIXAI, FLAMEANII,
+        p->ctx.FLAME_PRC.frame_on);
     // asm 0000ADFF: 	LDI	@MATRIXAI,AR3
     // asm 0000AE00: 	LDI	*+AR7(FRAME_ON),IR0
     // asm 0000AE01: 	LDI	@FLAMEANII,AR1
     // asm 0000AE02: 	LDI	AR5,AR0
     // asm 0000AE03: 	CALL	animate_child
-    p->ctx->FLAME_PRC.frame_on = animate_child(
-        p->ctx->FLAME_PRC.right_flame, p->ctx->FLAME_PRC.player_obj, &MATRIXAI, FLAMEANII,
-        p->ctx->FLAME_PRC.frame_on);
+    p->ctx.FLAME_PRC.frame_on = animate_child(
+        p->ctx.FLAME_PRC.right_flame, p->ctx.FLAME_PRC.player_obj, &MATRIXAI, FLAMEANII,
+        p->ctx.FLAME_PRC.frame_on);
     // asm 0000AE04: 	STI	R0,*+AR7(FRAME_ON)
     // asm 0000AE05: 	SLEEP	1
     SLEEP(1, 1);
     // asm 0000AE07: 	SUBI	1,R5
-    p->ctx->FLAME_PRC.frames_remaining -= 1;
+    p->ctx.FLAME_PRC.frames_remaining -= 1;
     // asm 0000AE08: 	BP	FLAME_ANI_LOOP
-    if (p->ctx->FLAME_PRC.frames_remaining >= 0) {
+    if (p->ctx.FLAME_PRC.frames_remaining >= 0) {
         goto FLAME_ANI_LOOP;
     }
 FLAME_ANIX:
     // asm 0000AE09: 	LDI	PLYR_C|PLYR_FLAMES_S,AR2
     // asm 0000AE0A: 	CALL	OBJ_FIND_FIRST
-    p->ctx->FLAME_PRC.left_flame = OBJ_FIND_FIRST(PLYR_C | PLYR_FLAMES_S);
+    p->ctx.FLAME_PRC.left_flame = OBJ_FIND_FIRST(PLYR_C | PLYR_FLAMES_S);
     // asm 0000AE0B: 	BNC	FLANX1
-    if (p->ctx->FLAME_PRC.left_flame == NULL) {
+    if (p->ctx.FLAME_PRC.left_flame == NULL) {
         goto FLANX1;
     }
     // asm 0000AE0C: 	LDI	AR0,AR2
     // asm 0000AE0D: 	CALL	OBJ_DELETE
-    OBJ_DELETE(p->ctx->FLAME_PRC.left_flame);
+    OBJ_DELETE(p->ctx.FLAME_PRC.left_flame);
     // asm 0000AE0E: 	BR	FLAME_ANIX
     goto FLAME_ANIX;
 FLANX1:

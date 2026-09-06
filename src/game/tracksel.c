@@ -122,9 +122,9 @@ KK5:
     LOAD_FIXED_PALETTES();
     // asm 00006CCC: 	LDI	-1,R0
     // asm 00006CCD: 	STI	R0,*+AR7(OLD_INDEX)
-    p->ctx->TRACK_SELECTION.old_index = -1;
+    p->ctx.TRACK_SELECTION.old_index = -1;
     // asm 00006CCE: 	STI	R0,*+AR7(LAST_HIDDEN_TRACK)
-    p->ctx->TRACK_SELECTION.last_hidden_track = -1;
+    p->ctx.TRACK_SELECTION.last_hidden_track = -1;
     // ;	CALL	CLEANUP_PALS
     // asm 00006CCF: 	LDL	crace_PALETTES,AR2
     // asm 00006CD0: 	CALL	alloc_section
@@ -234,7 +234,7 @@ L88:
     // asm 00006D0E: 	CALL	OBJ_INIT
     OBJ_INIT();
     // asm 00006D0F: 	LDI	10,AR5
-    p->ctx->TRACK_SELECTION.motion_recalibration = 10;
+    p->ctx.TRACK_SELECTION.motion_recalibration = 10;
 LLKJ:
     // asm 00006D10: LLKJ
     // asm 00006D10: 	LDI	@LLG1,AR2
@@ -276,14 +276,14 @@ LLKJ:
     // asm 00006D34: 	LDI	AR5,R2
     // asm 00006D35: 	LDI	@L88,AR2
     // asm 00006D36: 	CALL	_itoa
-    _itoa(p->ctx->TRACK_SELECTION.motion_countdown,
-        p->ctx->TRACK_SELECTION.motion_recalibration);
+    _itoa(p->ctx.TRACK_SELECTION.motion_countdown,
+        p->ctx.TRACK_SELECTION.motion_recalibration);
     // asm 00006D37: 	LDI	@L88,AR2
     // asm 00006D38: 	FLOAT	256,R2
     // asm 00006D39: 	FLOAT	260,R3
     // asm 00006D3A: 	LDI	60,RC
     // asm 00006D3B: 	CALL	TEXT_ADDDS
-    text = TEXT_ADDDS(p->ctx->TRACK_SELECTION.motion_countdown,
+    text = TEXT_ADDDS(p->ctx.TRACK_SELECTION.motion_countdown,
         C3X_FROM_INT(256), C3X_FROM_INT(260), 60);
     // asm 00006D3C: 	ORM	TXT_CENTER,*+AR0(TEXT_COLOR)
     text.front->color |= TXT_CENTER;
@@ -296,7 +296,7 @@ LLKJ:
     // asm 00006D45: 	SLEEP	60
     SLEEP(60, 1);
     // asm 00006D47: 	DBU	AR5,LLKJ
-    if (--p->ctx->TRACK_SELECTION.motion_recalibration >= 0)
+    if (--p->ctx.TRACK_SELECTION.motion_recalibration >= 0)
         goto LLKJ;
     // asm 00006D48: 	SLEEP	70
     SLEEP(70, 2);
@@ -377,7 +377,7 @@ NOT1ST:
     BOILERPLATE_DELETE();
     // asm 00006D68: 	CMPI	1,AR6
     // asm 00006D69: 	BNE	ENDPLAYER
-    if (p->ctx->INSMORE_FRAME.result != 1) {
+    if (p->ctx.INSMORE_FRAME.result != 1) {
         ENDPLAYER();
         return;
     }
@@ -398,7 +398,7 @@ NOBUYIN77:
     // asm 00006D78: 	STI	R0,@_countdown
     _countdown = 12;
     // asm 00006D79: 	CALL	INIT_PEDALCHK
-    INIT_PEDALCHK(&p->ctx->pedal_released);
+    INIT_PEDALCHK(&p->ctx.pedal_released);
     // asm 00006D7A: 	CLRI	R0
     // asm 00006D7B: 	STI	R0,@START_HIT
     START_HIT = 0;
@@ -413,7 +413,7 @@ NOBUYIN77:
         goto PRAJHFS;
 PRAPA:
     // asm 00006D81: 	LDI	8,AR5
-    p->ctx->TRACK_SELECTION.loop_count = 8;
+    p->ctx.TRACK_SELECTION.loop_count = 8;
 BABO:
     // asm 00006D82: BABO
     // asm 00006D82: 	CALL	GET_RACE_IDX
@@ -423,7 +423,7 @@ BABO:
     // asm 00006D84: 	SLEEP	1
     SLEEP(1, 3);
     // asm 00006D86: 	DBU	AR5,BABO
-    if (--p->ctx->TRACK_SELECTION.loop_count >= 0)
+    if (--p->ctx.TRACK_SELECTION.loop_count >= 0)
         goto BABO;
 PRAJHFS:
     // asm 00006D87: 	CLRI	R0
@@ -449,7 +449,7 @@ TRACK_SEL_LP:
         goto NOWAY;
     // asm 00006D8E: 	LDI	@OM_HIDDEN_ON,R1
     // asm 00006D8F: 	STI	R1,*+AR7(LAST_HIDDEN_TRACK)
-    p->ctx->TRACK_SELECTION.last_hidden_track = OM_HIDDEN_ON;
+    p->ctx.TRACK_SELECTION.last_hidden_track = OM_HIDDEN_ON;
     // asm 00006D90: 	STI	R0,@CHOSEN_RACE
     CHOSEN_RACE = OM_CHOSEN_RACE;
     // asm 00006D91: 	LDI	@OM_RACE_MODE,R0
@@ -493,7 +493,7 @@ NOWAY:
     // 	;	T->  accept the game
     // 	;
     // asm 00006DA9: 	CALL	PEDALCHK
-    if (PEDALCHK(&p->ctx->pedal_released))
+    if (PEDALCHK(&p->ctx.pedal_released))
         goto TSLPX;
     // asm 00006DAA: 	BC	TSLPX
     // asm 00006DAB: 	CALL	RACESEL_TIMER
@@ -515,7 +515,7 @@ TSLPX:
     // 	;
     // asm 00006DB0: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
     // asm 00006DB1: 	STI	R0,@HIDDEN_ON
-    HIDDEN_ON = p->ctx->TRACK_SELECTION.last_hidden_track;
+    HIDDEN_ON = p->ctx.TRACK_SELECTION.last_hidden_track;
     // asm 00006DB2: 	CALL	SEND_RACENUM
     SEND_RACENUM();
     // 	;IF we are a slave, then we must wait
@@ -530,18 +530,18 @@ TSLPX:
     if ((DIPRAM & CMDP_MASTER) == 0)
         goto NOTYETLNKD;
     // asm 00006DB8: 	LDI	20,AR5
-    p->ctx->TRACK_SELECTION.feedback_count = 20;
+    p->ctx.TRACK_SELECTION.feedback_count = 20;
 FEEDBACKLP:
     // asm 00006DB9: 	SLEEP	1
     SLEEP(1, 5);
     // asm 00006DBB: 	DEC	AR5
-    p->ctx->TRACK_SELECTION.feedback_count--;
+    p->ctx.TRACK_SELECTION.feedback_count--;
     // asm 00006DBC: 	CMPI	0,AR5
 #if CDEBUG
     // asm: 	BEQ	$
 #endif
     // asm 00006DBD: 	BEQ	NOTYETLNKD
-    if (p->ctx->TRACK_SELECTION.feedback_count == 0)
+    if (p->ctx.TRACK_SELECTION.feedback_count == 0)
         goto NOTYETLNKD;
     // asm 00006DBE: 	LDI	@OM_CHOSEN_RACE,R0
     // asm 00006DBF: 	CMPI	-1,R0
@@ -550,7 +550,7 @@ FEEDBACKLP:
         goto FEEDBACKLP;
     // asm 00006DC1: 	LDI	@OM_HIDDEN_ON,R1
     // asm 00006DC2: 	STI	R1,*+AR7(LAST_HIDDEN_TRACK)
-    p->ctx->TRACK_SELECTION.last_hidden_track = OM_HIDDEN_ON;
+    p->ctx.TRACK_SELECTION.last_hidden_track = OM_HIDDEN_ON;
     // asm 00006DC3: 	LDI	@OM_CHOSEN_RACE,R0
     // asm 00006DC4: 	STI	R0,@CHOSEN_RACE
     CHOSEN_RACE = OM_CHOSEN_RACE;
@@ -596,20 +596,20 @@ LKGGA:
     // asm 00006DD2: 	CMPI	*+AR0(OLINK2),AR4
     // asm 00006DD3: 	BNE	JJKKA
     // asm 00006DD4: 	STI	AR5,*+AR0(OLINK2)
-    if (p->ctx->TRACK_SELECTION.small_cursor != NULL) {
+    if (p->ctx.TRACK_SELECTION.small_cursor != NULL) {
         OBJ* link_obj = TSEL_HEAD;
-        while (link_obj != NULL && (OBJ*)link_obj->link2 != p->ctx->TRACK_SELECTION.small_cursor) {
+        while (link_obj != NULL && (OBJ*)link_obj->link2 != p->ctx.TRACK_SELECTION.small_cursor) {
             link_obj = (OBJ*)link_obj->link2;
         }
         if (link_obj != NULL)
-            link_obj->link2 = p->ctx->TRACK_SELECTION.small_cursor->link2;
+            link_obj->link2 = p->ctx.TRACK_SELECTION.small_cursor->link2;
     }
 ALLDNA:
     // asm 00006DD5: 	LDI	*+AR7(SMALL_CURSOR),AR2
     // asm 00006DD6: 	CALL	OBJ_DELETE
-    if (p->ctx->TRACK_SELECTION.small_cursor != NULL) {
-        OBJ_DELETE(p->ctx->TRACK_SELECTION.small_cursor);
-        p->ctx->TRACK_SELECTION.small_cursor = NULL;
+    if (p->ctx.TRACK_SELECTION.small_cursor != NULL) {
+        OBJ_DELETE(p->ctx.TRACK_SELECTION.small_cursor);
+        p->ctx.TRACK_SELECTION.small_cursor = NULL;
     }
     // 	;********************************************************************
     // 	;WAIT FOR DUAL PLAYER GAME HERE
@@ -665,7 +665,7 @@ NOTUSA_RACE:
     // 	;
     // asm 00006DEF: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
     // asm 00006DF0: 	STI	R0,@HIDDEN_ON
-    HIDDEN_ON = p->ctx->TRACK_SELECTION.last_hidden_track;
+    HIDDEN_ON = p->ctx.TRACK_SELECTION.last_hidden_track;
     // asm 00006DF1: 	CMPI	-1,R0
     // asm 00006DF2: 	BEQ	NO_HID1
     if (HIDDEN_ON == -1)
@@ -820,13 +820,13 @@ static void HIDDEN_TRACKS(PROC* p) {
     // asm 00006E3D: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
     // asm 00006E3E: 	CMPI	1,R0
     // asm 00006E3F: 	BEQ	HIDDTX
-    if (p->ctx->TRACK_SELECTION.last_hidden_track == 1)
+    if (p->ctx.TRACK_SELECTION.last_hidden_track == 1)
         goto HIDDTX;
     // asm 00006E40: 	CALL	RESTORE_HIDDEN
-    RESTORE_HIDDEN(p->ctx->TRACK_SELECTION.last_hidden_track);
+    RESTORE_HIDDEN(p->ctx.TRACK_SELECTION.last_hidden_track);
     // asm 00006E41: 	LDI	1,R0
     // asm 00006E42: 	STI	R0,*+AR7(LAST_HIDDEN_TRACK)
-    p->ctx->TRACK_SELECTION.last_hidden_track = 1;
+    p->ctx.TRACK_SELECTION.last_hidden_track = 1;
     // 	;replace
     // asm 00006E43: 	LDI	401h,AR2
     // asm 00006E44: 	CALL	OBJ_FIND_FIRST
@@ -852,13 +852,13 @@ NHT1:
     // asm 00006E4F: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
     // asm 00006E50: 	CMPI	2,R0
     // asm 00006E51: 	BEQ	HIDDTX
-    if (p->ctx->TRACK_SELECTION.last_hidden_track == 2)
+    if (p->ctx.TRACK_SELECTION.last_hidden_track == 2)
         goto HIDDTX;
     // asm 00006E52: 	CALL	RESTORE_HIDDEN
-    RESTORE_HIDDEN(p->ctx->TRACK_SELECTION.last_hidden_track);
+    RESTORE_HIDDEN(p->ctx.TRACK_SELECTION.last_hidden_track);
     // asm 00006E53: 	LDI	2,R0
     // asm 00006E54: 	STI	R0,*+AR7(LAST_HIDDEN_TRACK)
-    p->ctx->TRACK_SELECTION.last_hidden_track = 2;
+    p->ctx.TRACK_SELECTION.last_hidden_track = 2;
     // 	;replace
     // asm 00006E55: 	LDI	406h,AR2
     // asm 00006E56: 	CALL	OBJ_FIND_FIRST
@@ -884,13 +884,13 @@ NHT2:
     // asm 00006E61: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
     // asm 00006E62: 	CMPI	3,R0
     // asm 00006E63: 	BEQ	HIDDTX
-    if (p->ctx->TRACK_SELECTION.last_hidden_track == 3)
+    if (p->ctx.TRACK_SELECTION.last_hidden_track == 3)
         goto HIDDTX;
     // asm 00006E64: 	CALL	RESTORE_HIDDEN
-    RESTORE_HIDDEN(p->ctx->TRACK_SELECTION.last_hidden_track);
+    RESTORE_HIDDEN(p->ctx.TRACK_SELECTION.last_hidden_track);
     // asm 00006E65: 	LDI	3,R0
     // asm 00006E66: 	STI	R0,*+AR7(LAST_HIDDEN_TRACK)
-    p->ctx->TRACK_SELECTION.last_hidden_track = 3;
+    p->ctx.TRACK_SELECTION.last_hidden_track = 3;
     // 	;replace
     // asm 00006E67: 	LDI	409h,AR2
     // asm 00006E68: 	CALL	OBJ_FIND_FIRST
@@ -917,13 +917,13 @@ NHT3:
     // asm 00006E73: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R0
     // asm 00006E74: 	CMPI	-1,R0
     // asm 00006E75: 	BEQ	HIDDTX
-    if (p->ctx->TRACK_SELECTION.last_hidden_track == -1)
+    if (p->ctx.TRACK_SELECTION.last_hidden_track == -1)
         goto HIDDTX;
     // asm 00006E76: 	CALL	RESTORE_HIDDEN
-    RESTORE_HIDDEN(p->ctx->TRACK_SELECTION.last_hidden_track);
+    RESTORE_HIDDEN(p->ctx.TRACK_SELECTION.last_hidden_track);
     // asm 00006E77: 	LDI	-1,R0
     // asm 00006E78: 	STI	R0,*+AR7(LAST_HIDDEN_TRACK)
-    p->ctx->TRACK_SELECTION.last_hidden_track = -1;
+    p->ctx.TRACK_SELECTION.last_hidden_track = -1;
 HIDDTX:
     // asm 00006E79: 	RETS
     return;
@@ -968,7 +968,7 @@ NSND:
     // asm 00006E86: 	LDI	*+AR7(LAST_HIDDEN_TRACK),R1
     // asm 00006E87: 	CMPI	-1,R1
     // asm 00006E88: 	BEQ	NH
-    if (p->ctx->TRACK_SELECTION.last_hidden_track == -1)
+    if (p->ctx.TRACK_SELECTION.last_hidden_track == -1)
         goto NH;
     // asm 00006E89: 	CMPI	1,R0
     // asm 00006E8A: 	BNE	R55
@@ -977,7 +977,7 @@ NSND:
     // asm 00006E8B: 	CMPI	1,R1		;Hidden golden gate
     // asm 00006E8C: 	LDIEQ	11,AR3
     // asm 00006E8D: 	BNE	NH
-    if (p->ctx->TRACK_SELECTION.last_hidden_track != 1)
+    if (p->ctx.TRACK_SELECTION.last_hidden_track != 1)
         goto NH;
     display_index = 11;
     // asm 00006E8E: 	BU	R66
@@ -989,7 +989,7 @@ R55:
     // asm 00006E91: 	CMPI	2,R1
     // asm 00006E92: 	LDIEQ	12,AR3
     // asm 00006E93: 	BNE	NH
-    if (p->ctx->TRACK_SELECTION.last_hidden_track != 2)
+    if (p->ctx.TRACK_SELECTION.last_hidden_track != 2)
         goto NH;
     display_index = 12;
     // asm 00006E94: 	BU	R66
@@ -1001,7 +1001,7 @@ R56:
     // asm 00006E97: 	CMPI	3,R1
     // asm 00006E98: 	LDIEQ	13,AR3
     // asm 00006E99: 	BNE	NH
-    if (p->ctx->TRACK_SELECTION.last_hidden_track != 3)
+    if (p->ctx.TRACK_SELECTION.last_hidden_track != 3)
         goto NH;
     display_index = 13;
 R66:
@@ -1089,7 +1089,7 @@ static void ZOOMINP(PROC* p) {
     }
 
     // asm 00006ECD: 	LDI	20,AR4
-    p->ctx->TRACK_SELECTION.loop_count = 20;
+    p->ctx.TRACK_SELECTION.loop_count = 20;
 ZITSP:
     // asm 00006ECE: CALL	ZOOMIN_TSEL
     ZOOMIN_TSEL();
@@ -1107,8 +1107,8 @@ NOWAY543:
     // asm 00006ED4: 	SLEEP	1
     SLEEP(1, 1);
     // asm 00006ED6: 	DBU	AR4,ZITSP
-    p->ctx->TRACK_SELECTION.loop_count -= 1;
-    if (p->ctx->TRACK_SELECTION.loop_count >= 0) {
+    p->ctx.TRACK_SELECTION.loop_count -= 1;
+    if (p->ctx.TRACK_SELECTION.loop_count >= 0) {
         goto ZITSP;
     }
     // asm 00006ED7: 	RETP
@@ -1238,10 +1238,10 @@ FTSL:
     if (obj->id != 0x40c)
         goto NSC;
     // asm 00006F11: 	STI	AR0,*+AR7(SMALL_CURSOR)
-    p->ctx->TRACK_SELECTION.small_cursor = obj;
+    p->ctx.TRACK_SELECTION.small_cursor = obj;
     // asm 00006F12: 	LDI	*+AR0(OROMDATA),R0
     // asm 00006F13: 	STI	R0,*+AR7(ROM_SMALL_CURSOR)
-    p->ctx->TRACK_SELECTION.rom_small_cursor = obj->romdata;
+    p->ctx.TRACK_SELECTION.rom_small_cursor = obj->romdata;
     // asm 00006F14: 	CMPI	-1,R6
     // asm 00006F15: 	LDIEQ	AR0,R6
     if (first_obj == NULL)
@@ -1257,7 +1257,7 @@ NSC:
         goto NTRM1;
     // asm 00006F1A: 	LDI	AR0,AR4
     // asm 00006F1B: 	CREATE	CYCLE_PUSH,UTIL_C|CHOOSERACE_T
-    ctx = port_malloc(sizeof(*ctx));
+    ctx = NEW_PROC_CONTEXT();
     ctx->TRACKSEL_ANIMATION.obj = obj;
     CREATE(CYCLE_PUSH, UTIL_C | CHOOSERACE_T, ctx);
     // asm 00006F1E: 	LDI	AR4,AR0
@@ -1276,7 +1276,7 @@ NTRM1:
         goto NWHEL1;
     // asm 00006F25: 	LDI	AR0,AR4
     // asm 00006F26: 	CREATE	TURNTO_SELECT,UTIL_C|CHOOSERACE_T
-    ctx = port_malloc(sizeof(*ctx));
+    ctx = NEW_PROC_CONTEXT();
     ctx->TRACKSEL_ANIMATION.obj = obj;
     CREATE(TURNTO_SELECT, UTIL_C | CHOOSERACE_T, ctx);
     // asm 00006F29: 	LDI	AR4,AR0
@@ -1294,10 +1294,10 @@ NWHEL1:
     if (obj->id != 0x410)
         goto NBC;
     // asm 00006F30: 	STI	AR0,*+AR7(BIG_CURSOR)
-    p->ctx->TRACK_SELECTION.big_cursor = obj;
+    p->ctx.TRACK_SELECTION.big_cursor = obj;
     // asm 00006F31: 	LDI	*+AR0(OROMDATA),R0
     // asm 00006F32: 	STI	R0,*+AR7(ROM_BIG_CURSOR)
-    p->ctx->TRACK_SELECTION.rom_big_cursor = obj->romdata;
+    p->ctx.TRACK_SELECTION.rom_big_cursor = obj->romdata;
     // asm 00006F33: 	LDI	AR0,AR2
     // asm 00006F34: 	CALL	OBJ_DELETE
     OBJ_DELETE(obj);
@@ -1314,7 +1314,7 @@ NBC:
     // asm 00006F3B: 	PUSH	AR0
     // asm 00006F3C: 	LDI	AR0,AR4
     // asm 00006F3D: 	CREATE	ANIMATE_MAP,UTIL_C|CHOOSERACE_T
-    ctx = port_malloc(sizeof(*ctx));
+    ctx = NEW_PROC_CONTEXT();
     ctx->TRACKSEL_ANIMATION.obj = obj;
     CREATE(ANIMATE_MAP, UTIL_C | CHOOSERACE_T, ctx);
     // asm 00006F40: 	POP	AR0
@@ -1402,18 +1402,18 @@ LLGF:
     TSEL_THEONE = OBJ_FIND_FIRST(race_index + 0x400);
     // asm 00006F60: 	STI	AR0,@TSEL_THEONE
     // asm 00006F61: 	CREATEC	CENTER_THEONE,UTIL_C
-    ctx = port_malloc(sizeof(*ctx));
+    ctx = NEW_PROC_CONTEXT();
     ctx->CENTER_THEONE.obj = TSEL_THEONE;
     CREATEC(p, CENTER_THEONE, UTIL_C, ctx);
     // asm 00006F64: 	LDI	30,AR5
-    p->ctx->TRACK_SELECTION.loop_count = 30;
+    p->ctx.TRACK_SELECTION.loop_count = 30;
 TSLLP:
     // asm 00006F65: CALL	TSEL_ZOOMOUT
     TSEL_ZOOMOUT();
     // asm 00006F66: 	SLEEP	1
     SLEEP(1, 1);
     // asm 00006F68: 	DBU	AR5,TSLLP
-    if (--p->ctx->TRACK_SELECTION.loop_count >= 0)
+    if (--p->ctx.TRACK_SELECTION.loop_count >= 0)
         goto TSLLP;
     // asm 00006F69: 	RETP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1437,11 +1437,11 @@ static void CENTER_THEONE(PROC* p) {
         goto PROC_RESUME_2;
     }
     // asm 00006F6D: 	LDI	@TSEL_THEONE,AR4
-    obj = p->ctx->CENTER_THEONE.obj;
+    obj = p->ctx.CENTER_THEONE.obj;
     if (obj == NULL)
         DIE();
     // asm 00006F6E: 	LDI	15,AR5
-    p->ctx->CENTER_THEONE.loop_count = 15;
+    p->ctx.CENTER_THEONE.loop_count = 15;
 CTOLP:
     // asm 00006F6F: LDF	*+AR4(OPOSX),R0
     // asm 00006F70: 	MPYF	0.8,R0
@@ -1455,12 +1455,12 @@ CTOLP:
     CENTER_SUB1(obj);
     // asm 00006F76: 	SLEEP	1
     SLEEP(1, 1);
-    obj = p->ctx->CENTER_THEONE.obj;
+    obj = p->ctx.CENTER_THEONE.obj;
     // asm 00006F78: 	DBU	AR5,CTOLP
-    if (--p->ctx->CENTER_THEONE.loop_count >= 0)
+    if (--p->ctx.CENTER_THEONE.loop_count >= 0)
         goto CTOLP;
     // asm 00006F79: 	LDI	15,AR5
-    p->ctx->CENTER_THEONE.loop_count = 15;
+    p->ctx.CENTER_THEONE.loop_count = 15;
 CTOLPB:
     // asm 00006F7A: LDF	*+AR4(OPOSZ),R0
     // asm 00006F7B: 	MPYF	0.08,R0
@@ -1476,9 +1476,9 @@ CTOLPB:
     CENTER_SUB1(obj);
     // asm 00006F81: 	SLEEP	1
     SLEEP(1, 2);
-    obj = p->ctx->CENTER_THEONE.obj;
+    obj = p->ctx.CENTER_THEONE.obj;
     // asm 00006F83: 	DBU	AR5,CTOLPB
-    if (--p->ctx->CENTER_THEONE.loop_count >= 0)
+    if (--p->ctx.CENTER_THEONE.loop_count >= 0)
         goto CTOLPB;
     // asm 00006F84: 	DIE
     DIE();
@@ -1589,16 +1589,16 @@ static void ANIMATE_MAP(PROC* p) {
         goto PROC_RESUME_1;
     }
     // asm 00006FB7: 	LDI	@ANIMATE_MAP_TABI,AR5
-    p->ctx->TRACKSEL_ANIMATION.script_index = 0;
+    p->ctx.TRACKSEL_ANIMATION.script_index = 0;
 AMLP:
     // asm 00006FB8: 	LDI	*AR5++,R0
     // asm 00006FB9: 	BN	ANIMATE_MAP
-    if (ANIMATE_MAP_TAB[p->ctx->TRACKSEL_ANIMATION.script_index] < 0) {
-        p->ctx->TRACKSEL_ANIMATION.script_index = 0;
+    if (ANIMATE_MAP_TAB[p->ctx.TRACKSEL_ANIMATION.script_index] < 0) {
+        p->ctx.TRACKSEL_ANIMATION.script_index = 0;
     }
     // asm 00006FBA: 	STI	R0,*+AR4(OROMDATA)
-    p->ctx->TRACKSEL_ANIMATION.obj->romdata = ROM_PTR(
-        ANIMATE_MAP_TAB[p->ctx->TRACKSEL_ANIMATION.script_index++]);
+    p->ctx.TRACKSEL_ANIMATION.obj->romdata = ROM_PTR(
+        ANIMATE_MAP_TAB[p->ctx.TRACKSEL_ANIMATION.script_index++]);
     // asm 00006FBB: 	SLEEP	4
     SLEEP(4, 1);
     // asm 00006FBD: 	BU	AMLP
@@ -1621,16 +1621,16 @@ static void TRACK_SEL_CURSOR(PROC* p) {
     // asm 00006FBF: 	LDI	@CHOSEN_RACE,AR0
     // asm 00006FC0: 	CMPI	R0,AR0
     // asm 00006FC1: 	RETSEQ
-    if (p->ctx->TRACK_SELECTION.old_index == CHOSEN_RACE)
+    if (p->ctx.TRACK_SELECTION.old_index == CHOSEN_RACE)
         return;
     // asm 00006FC2: 	STI	AR0,*+AR7(OLD_INDEX)
-    p->ctx->TRACK_SELECTION.old_index = CHOSEN_RACE;
+    p->ctx.TRACK_SELECTION.old_index = CHOSEN_RACE;
     // asm 00006FC3: 	LDI	AR0,AR3
     // asm 00006FC4: 	LDI	AR0,AR2
     // asm 00006FC5: 	ADDI	400h,AR2
     // asm 00006FC6: 	CALL	OBJ_FIND_FIRST
     race_obj = OBJ_FIND_FIRST(CHOSEN_RACE + 0x400);
-    cursor = p->ctx->TRACK_SELECTION.small_cursor;
+    cursor = p->ctx.TRACK_SELECTION.small_cursor;
     if (race_obj == NULL || cursor == NULL)
         return;
     // asm 00006FC7: 	CMPI	5,AR3
@@ -1639,8 +1639,8 @@ static void TRACK_SEL_CURSOR(PROC* p) {
     // asm 00006FCA: 	LDI	*+AR7(SMALL_CURSOR),AR1
     // asm 00006FCB: 	STI	R0,*+AR1(OROMDATA)
     cursor->romdata = CHOSEN_RACE == 5
-        ? p->ctx->TRACK_SELECTION.rom_big_cursor
-        : p->ctx->TRACK_SELECTION.rom_small_cursor;
+        ? p->ctx.TRACK_SELECTION.rom_big_cursor
+        : p->ctx.TRACK_SELECTION.rom_small_cursor;
     // asm 00006FCC: 	LDF	*+AR0(OPOSX),R0
     // asm 00006FCD: 	STF	R0,*+AR1(OPOSX)
     cursor->pos.X = race_obj->pos.X;
@@ -1685,12 +1685,12 @@ static void GET_TURNOBJ(PROC* p) {
         goto PROC_RESUME_1;
     }
 
-    OBJ* obj = p->ctx->TRACKSEL_ANIMATION.obj;
+    OBJ* obj = p->ctx.TRACKSEL_ANIMATION.obj;
     if (obj == NULL)
         DIE();
     // asm 00006FDB: 	FLOAT	AR5,R5
     // asm 00006FDC: 	LDL	TURNANI,AR5
-    p->ctx->TRACKSEL_ANIMATION.script_index = 0;
+    p->ctx.TRACKSEL_ANIMATION.script_index = 0;
     // asm 00006FDD: 	CALL	OBJ_GET
     // asm 00006FDE: 	LDI	AR0,AR4
     // asm 00006FDF: 	STF	R6,*+AR4(OPOSX)
@@ -1708,14 +1708,14 @@ GETTOLP:
         DIE();
     // asm 00006FE8: 	LDI	*AR5++,R0
     // asm 00006FE9: 	BNN	JIJI
-    if (TURNANI[p->ctx->TRACKSEL_ANIMATION.script_index] < 0) {
-        p->ctx->TRACKSEL_ANIMATION.script_index = 0;
+    if (TURNANI[p->ctx.TRACKSEL_ANIMATION.script_index] < 0) {
+        p->ctx.TRACKSEL_ANIMATION.script_index = 0;
     }
     // asm 00006FEA: 	LDL	TURNANI,AR5
     // asm 00006FEB: 	LDI	*AR5++,R0
 JIJI:
     // asm 00006FEC: STI	R0,*+AR4(OROMDATA)
-    obj->romdata = ROM_PTR(TURNANI[p->ctx->TRACKSEL_ANIMATION.script_index++]);
+    obj->romdata = ROM_PTR(TURNANI[p->ctx.TRACKSEL_ANIMATION.script_index++]);
     // asm 00006FED: 	SLEEP	7
     SLEEP(7, 1);
     // asm 00006FEF: 	BU	GETTOLP
@@ -1786,7 +1786,7 @@ void BOILERPLATE_INIT(void) {
 
 // *----------------------------------------------------------------------------
 static void BOILERPLATE(void) {
-    OBJ* cursor = CURRENT_PROC->ctx->TRACK_SELECTION.small_cursor;
+    OBJ* cursor = CURRENT_PROC->ctx.TRACK_SELECTION.small_cursor;
     // asm 00007006: 	LDI	*+AR7(SMALL_CURSOR),AR2
     // asm 00007007: 	LDF	*+AR2(OPOSX),R0
     // asm 00007008: 	STF	R0,*+AR2(OCARBLK)
@@ -1809,7 +1809,7 @@ OBJ* BOILEROBJ;
 
 // *----------------------------------------------------------------------------
 static void BOILERPLATE_DELETE(void) {
-    OBJ* cursor = CURRENT_PROC->ctx->TRACK_SELECTION.small_cursor;
+    OBJ* cursor = CURRENT_PROC->ctx.TRACK_SELECTION.small_cursor;
     // asm 0000700E: 	LDI	@BOILEROBJ,AR2
     // asm 0000700F: 	CALL	OBJ_DELETE
     if (BOILEROBJ != NULL)

@@ -88,4 +88,6 @@ FONTENT		.MACRO	PRECEDING,XSTART,XEND,YSTART,TRAIL
 
 #define FIX(value) C3X_FIX(value)
 
+#define NEW_PROC_CONTEXT() &(PROC_CONTEXT){ 0 }
+
 #endif /* MACS_H */

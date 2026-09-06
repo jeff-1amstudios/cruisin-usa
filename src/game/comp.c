@@ -839,7 +839,7 @@ NOLOAD:
     // asm 0000A401: 	RETS
 
     if (DECOMP_ACTIVE != 0) {
-        PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+        PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
         ctx->REQWAIT.lsr = section_control;
         CREATE(REQWAIT, SPAWNER_C | LOAD_REQ_T, ctx);
         return;
@@ -869,7 +869,7 @@ static void REQWAIT(PROC* p) {
     }
     // asm 0000A406: 	LDI	AR4,AR2
     // asm 0000A407: 	CALL	LOAD_SECTION_REQ
-    LOAD_SECTION_REQ(p->ctx->REQWAIT.lsr);
+    LOAD_SECTION_REQ(p->ctx.REQWAIT.lsr);
     // asm 0000A408: 	DIE
     DIE();
 }

@@ -57,12 +57,12 @@ void _MIDWAYSPIN(PROC* p /*AR7*/) {
     }
 
     // asm 0000A966: 	LDI	0,AR6
-    p->ctx->MIDWAYSPIN.sound_ticks = 0;
+    p->ctx.MIDWAYSPIN.sound_ticks = 0;
 
     // asm 0000A967: 	LDI	@_ATTR_MODE,R0
     // asm 0000A968: 	CMPI	-2,R0
     // asm 0000A969: 	BNE	NO_NINTENDO
-    if (_ATTR_MODE == -2 && p->ctx->MIDWAYSPIN.attrwave == 0 && READADJ(ADJ_ATTRACT_MODE_SOUND) != 0) {
+    if (_ATTR_MODE == -2 && p->ctx.MIDWAYSPIN.attrwave == 0 && READADJ(ADJ_ATTRACT_MODE_SOUND) != 0) {
         // asm 0000A970: 	READADJ	ADJ_VOLUME		;make sure volume correct
         // asm 0000A972: 	LDI	R0,R1
         // asm 0000A973: 	CALL	SET_MASTER_VOL
@@ -75,7 +75,7 @@ void _MIDWAYSPIN(PROC* p /*AR7*/) {
         // asm 0000A978: 	BNZ	NO_NINTENDO
         if ((DIPRAM & DIP_COMMP) != 0 || (DIPRAM & CMDP_MASTER) == 0) {
             // asm 0000A979: 	LDI	890,AR6			;Length of sound
-            p->ctx->MIDWAYSPIN.sound_ticks = 890; // ;Length of sound
+            p->ctx.MIDWAYSPIN.sound_ticks = 890; // ;Length of sound
             // asm 0000A97A: 	SOND1	NINTENDO_SND
             SOND1(NINTENDO_SND);
         }
@@ -88,7 +88,7 @@ NO_NINTENDO:
     // asm 0000A97D: 	LDI	0,R0
     // asm 0000A97E: 	STI	R0,*+AR7(DECOMP_COUNT)
     // ;       STI     R0,*+AR7(CREATED_DCS)
-    p->ctx->MIDWAYSPIN.decomp_count = 0;
+    p->ctx.MIDWAYSPIN.decomp_count = 0;
 
     // asm 0000A97F: 	LDI	0,R0
     // asm 0000A980: 	STI	R0,@BGNDCOLA
@@ -103,7 +103,7 @@ NO_NINTENDO:
     // asm 0000A985: 	LDL	midway,AR2
     // asm 0000A986: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(midway_ROM));
-    p->ctx->MIDWAYSPIN.obj = obj;
+    p->ctx.MIDWAYSPIN.obj = obj;
 
 #if DEBUG
     // asm: 	BC	$
@@ -188,10 +188,10 @@ MSLP2:
     // asm 0000A9B2: 	SLEEP	1
     SLEEP(1, 1);
 
-    obj = p->ctx->MIDWAYSPIN.obj;
+    obj = p->ctx.MIDWAYSPIN.obj;
 
     // asm 0000A9B4: 	CALL	MSLP_CHECK
-    if (MSLP_CHECK(p, &p->ctx->MIDWAYSPIN.sound_ticks)) {
+    if (MSLP_CHECK(p, &p->ctx.MIDWAYSPIN.sound_ticks)) {
         CYCLE_ATTR();
         return;
     }
@@ -214,11 +214,11 @@ static int MSLP_CHECK(PROC* p /*AR7*/, int* sound_ticks /*AR6*/) {
     // asm 0000A9BA: 	LDI	*+AR7(DECOMP_COUNT),R0
     // asm 0000A9BB: 	ADDI	1,R0
     // asm 0000A9BC: 	STI	R0,*+AR7(DECOMP_COUNT)
-    p->ctx->MSLP_CHECK.decomp_count++;
+    p->ctx.MSLP_CHECK.decomp_count++;
 
     // asm 0000A9BD: 	CMPI	3,R0
     // asm 0000A9BE: 	BGT	MSLP4				;Done Loading
-    if (p->ctx->MSLP_CHECK.decomp_count <= 3) {
+    if (p->ctx.MSLP_CHECK.decomp_count <= 3) {
         return 0;
     }
 
@@ -323,7 +323,7 @@ void SPIN_CAR(PROC* p /*AR7*/) {
 
     // asm 0000A9F8: 	LDI	0,R0
     // asm 0000A9F9: 	STI	R0,*+AR7(DECOMP_COUNT)
-    p->ctx->SPIN_CAR.decomp_count = 0;
+    p->ctx.SPIN_CAR.decomp_count = 0;
 
     // asm 0000A9FA: 	LDIL	logo,AR2
     // asm 0000A9FD: 	CALL	OBJ_GETE
@@ -372,7 +372,7 @@ void SPIN_CAR(PROC* p /*AR7*/) {
     obj->pos.Z = C3X_STF(C3X_FROM_INT(1368));
 
     // asm 0000AA16: 	LDI	AR0,AR4
-    p->ctx->SPIN_CAR.obj = obj;
+    p->ctx.SPIN_CAR.obj = obj;
 
     // asm 0000AA17: 	LDF	-0.196,R2
     // asm 0000AA18: 	STF	R2,*+AR4(ORADX)
@@ -394,25 +394,25 @@ void SPIN_CAR(PROC* p /*AR7*/) {
     OBJ_INSERTP(obj);
 
     // asm 0000AA22: 	LDI	16,AR6
-    p->ctx->SPIN_CAR.ticks = 16;
+    p->ctx.SPIN_CAR.ticks = 16;
 
 SPIN_CAR_WAIT:
     // asm 0000AA23: 	SLEEP	1
     SLEEP(1, 1);
 
-    obj = p->ctx->SPIN_CAR.obj;
+    obj = p->ctx.SPIN_CAR.obj;
 
     // asm 0000AA25: 	SUBI	1,AR6
-    p->ctx->SPIN_CAR.ticks--;
+    p->ctx.SPIN_CAR.ticks--;
 
     // asm 0000AA26: 	CMPI	0,AR6
     // asm 0000AA27: 	BGT	SPIN_CAR_WAIT
-    if (p->ctx->SPIN_CAR.ticks > 0) {
+    if (p->ctx.SPIN_CAR.ticks > 0) {
         goto SPIN_CAR_WAIT;
     }
 
     // asm 0000AA28: 	LDI	550,AR6
-    p->ctx->SPIN_CAR.ticks = 550;
+    p->ctx.SPIN_CAR.ticks = 550;
 
 SPIN_CARLP:
     // asm 0000AA29: 	LDF	*+AR4(ORADY),R2
@@ -432,10 +432,10 @@ SPIN_CARLP:
     // asm 0000AA33: 	SLEEP	1
     SLEEP(1, 2);
 
-    obj = p->ctx->SPIN_CAR.obj;
+    obj = p->ctx.SPIN_CAR.obj;
 
     // asm 0000AA35: 	CALL	MSLP_CHECK
-    if (MSLP_CHECK(p, &p->ctx->SPIN_CAR.ticks)) {
+    if (MSLP_CHECK(p, &p->ctx.SPIN_CAR.ticks)) {
         CYCLE_ATTR();
         return;
     }

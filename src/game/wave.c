@@ -192,7 +192,7 @@ void WAVE(int wave_index) {
 
     // asm:
     // CREATE SCAN_OBJECTS,UTIL_C
-    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+    PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
     CREATE(SCAN_OBJECTS, UTIL_C, ctx);
 
     if (wave_index == 1) {
@@ -270,9 +270,9 @@ static void HIGH_SCORE(void) {
 
     _MODE = MATTR | MHS;
 
-    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+    PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
     CREATE(DISPLAY_HIGH_SCORES, UTIL_C, ctx);
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
 }
 
@@ -293,11 +293,11 @@ static void MIDSPIN(void) {
     LOAD_ATTR_LEG();
 
     // asm 00009392: 	CREATE	HEAD2HEADWATCH,UTIL_C
-    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+    PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
     CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
 
     // asm 00009395: 	LDI	@ATTRWAVE,AR6		;DCS LOGOSOUND will play only if 0
-    PROC_CONTEXT* ctx2 = port_malloc(sizeof(PROC_CONTEXT));
+    PROC_CONTEXT* ctx2 = NEW_PROC_CONTEXT();
     ctx->MIDWAYSPIN.attrwave = ATTRWAVE; // ;DCS LOGOSOUND will play only if 0
 
     // ;       LDI     3,AR2
@@ -332,11 +332,11 @@ static void MIDSPINHS(void) {
     _MODE = MATTR;
 
     // asm 000093A1: 	CREATE	SPIN_CAR,UTIL_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(SPIN_CAR, UTIL_C, ctx);
 
     // asm 000093A4: 	CREATE	HEAD2HEADWATCH,UTIL_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
 
     // asm 000093A7: 	RETS
@@ -352,7 +352,7 @@ static void RACELEG(void) {
     _MODE = MATTR;
 
     // asm 000093AC: 	CREATE	ATTRACT_DELTA,DRONE_C|DELTA_ATTR_S
-    PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+    PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
     CREATE(ATTRACT_DELTA, DRONE_C | DELTA_ATTR_S, ctx);
 
     // asm 000093AF: 	LDI	@ATTRWAVE,R0
@@ -363,11 +363,11 @@ static void RACELEG(void) {
     _timer = (ATTRWAVE == 4) ? (25 * 30) : (30 * 30);
 
     // asm 000093B4: 	CREATE	_timeout,UTIL_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(_timeout, UTIL_C, ctx);
 
     // asm 000093B7: 	CREATE	HEAD2HEADWATCH,UTIL_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
 
     // asm 000093BA: 	RETS
@@ -425,7 +425,7 @@ static void BEGIN_GAME(void) {
     LOADED = 1;
 
     // asm 000093CE: 	CREATE	PLYR_INTRO,PLYR_C|PLYR1_T	;PLAYERS PROCESS
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(PLYR_INTRO, PLYR_C | PLYR1_T, ctx); // PLAYERS PROCESS
 
     // asm 000093D1: 	RETS

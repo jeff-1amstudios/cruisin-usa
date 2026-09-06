@@ -1,5 +1,7 @@
 #include "mproc.h"
 
+#include <string.h>
+
 #include "../core/machine.h"
 #include "../core/validator.h"
 #include "c30.h"
@@ -198,7 +200,11 @@ GETPROC0:
     // asm 0000A885: 	STI	R2,*+AR0(PID)		;SET PROCESS TYPE
     proc->id = pid;
 
-    proc->ctx = ctx;
+    if (ctx != NULL) {
+        proc->ctx = *ctx;
+    } else {
+        memset(&proc->ctx, 0, sizeof(proc->ctx));
+    }
 
     // asm 0000A886: 	LDI	AR0,R0
     // asm 0000A887: 	ADDI	PSDATA,R0	  	;WHERE LOCAL STACK POINTER ACTUALLY IS
@@ -407,10 +413,6 @@ DIELP:
     while (*linkp != NULL) {
         if (*linkp == p) {
             *linkp = next_proc;
-            if (p->ctx != NULL) {
-                free(p->ctx);
-                p->ctx = NULL;
-            }
             NEXTPRC(next_proc);
             return;
         }
@@ -472,10 +474,6 @@ KILLP:
     proc->link = PFREE;
     // asm 0000A8F6: 	STI	AR2,*AR1
     PFREE = proc;
-    if (proc->ctx != NULL) {
-        free(proc->ctx);
-        proc->ctx = NULL;
-    }
 KILL_X:
 #if DEBUG
     // asm: 	PUSH	R0

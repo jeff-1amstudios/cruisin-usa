@@ -22,7 +22,7 @@ python3 tools/mame/generate_mame_validate_breakpoints.py
 # initial attract wave into the normal game/track-selection path.
 /opt/homebrew/Cellar/mame/0.287/bin/mame crusnusa -window -sound none \
     -debug -log -skip_gameinfo \
-    -seconds_to_run 200 \
+    -seconds_to_run 300 \
     -resolution 640x480 \
     -debugscript tools/mame/output/mame_validate_breakpoints.txt
 #mame crusnusa  -sound none -debug -skip_gameinfo

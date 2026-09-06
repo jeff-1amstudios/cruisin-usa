@@ -199,17 +199,24 @@ void SET_STATION(void) {
  *
  */
 void CHANGE_STATION(void) {
+    int station;
+
     // asm 00009105: 	PUSH	R0
     // asm 00009106: 	LDI	@TUNE_IDX,R0
+    station = TUNE_IDX;
     // asm 00009107: 	INC	R0
+    station += 1;
     // asm 00009108: 	CMPI	8,R0
     // asm 00009109: 	LDIGE	0,R0
+    if (station >= 8)
+        station = 0;
     // asm 0000910A: 	STI	R0,@TUNE_IDX
+    TUNE_IDX = station;
     // asm 0000910B: 	CALL	RESUME_TUNE
+    RESUME_TUNE();
     // asm 0000910C: 	POP	R0
     // asm 0000910D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CHANGE_STATION", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -251,6 +258,7 @@ void RESUME_TUNE(void) {
     // asm 0000911A: 	CLRI	AR6
 L987:
     // asm 0000911B: 	CALL	RESUME_TUNE_NT
+    RESUME_TUNE_NT();
     // asm 0000911C: 	LDI	UTIL_C|RADIOPROC_T,R0
     // asm 0000911D: 	LDI	-1,R1
     // asm 0000911E: 	CALL	PRC_FIND
@@ -260,8 +268,10 @@ L987:
 ISTHERE:
     // asm 00009124: 	LDI	40,R0
     // asm 00009125: 	STI	R0,@STATION_TIMEOUT
+    STATION_TIMEOUT = 40;
     // asm 00009126: 	LDI	0,R0
     // asm 00009127: 	STI	R0,@RS_X
+    RS_X = 0;
     // ;	LDI	0,R0
     // ;	LDI	150,R1
     // ;	CALL	SET_TRACK_VOL
@@ -270,12 +280,13 @@ ISTHERE:
     // asm 0000912A: 	LDI	@HEAD2HEAD_ON,R0
     // asm 0000912B: 	BZ	NOOMUS
     // asm 0000912C: 	CALL	SEND_CHANGE_MUSIC
+    if (HEAD2HEAD_ON != 0)
+        SEND_CHANGE_MUSIC();
 NOOMUS:
     // asm 0000912D: 	POP	AR6
     // asm 0000912E: 	POP	AR2
     // asm 0000912F: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RESUME_TUNE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

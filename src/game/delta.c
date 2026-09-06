@@ -49,7 +49,7 @@ CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/) {
 
     // asm 0000AE6A: 	LDI	*+AR7(DELTA_MODEL),R0
     // asm 0000AE6B: 	CALL	_CARV0			;RETURNS BLOCK PTR IN AR0
-    carblk = _CARV0(obj, p->ctx->RACER_DRONE.delta_model); // RETURNS BLOCK PTR IN AR0
+    carblk = _CARV0(obj, p->ctx.RACER_DRONE.delta_model); // RETURNS BLOCK PTR IN AR0
     if (carblk == NULL) {
         return NULL;
     }
@@ -59,8 +59,8 @@ CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/) {
     OBJ_INSERT(obj);
 
     // asm 0000AE6E: 	CALL	ADD_DRONE
-    p->ctx->RACER_DRONE.obj = obj;
-    p->ctx->RACER_DRONE.carblk = carblk;
+    p->ctx.RACER_DRONE.obj = obj;
+    p->ctx.RACER_DRONE.carblk = carblk;
     ADD_DRONE(obj);
 
     // asm 0000AE6F: 	STI	AR7,*+AR4(OPLINK)
@@ -74,7 +74,7 @@ CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/) {
 
     // asm 0000AE74: 	LDI	DM_NORMAL,R0
     // asm 0000AE75: 	STI	R0,*+AR7(DELTA_MODE)
-    p->ctx->RACER_DRONE.delta_mode = DM_NORMAL;
+    p->ctx.RACER_DRONE.delta_mode = DM_NORMAL;
 
     // asm 0000AE76: 	LDI	*+AR4(OCARBLK),AR5
     carblk = obj->carblk;
@@ -82,7 +82,7 @@ CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/) {
     // asm 0000AE77: 	LDF	THROTTLE_INIT,R0	;INITIALIZE THROTTLE AND BRAKE
     // asm 0000AE78: 	STF	R0,*+AR5(CARTHROTTLE)
     // INITIALIZE THROTTLE AND BRAKE
-    carblk->throttle =C3X_STF(C3X_IMM_F32(THROTTLE_INIT));
+    carblk->throttle = C3X_STF(C3X_IMM_F32(THROTTLE_INIT));
 
     // asm 0000AE79: 	CLRF	R0
     // asm 0000AE7A: 	STF	R0,*+AR5(CARBRAKE)
@@ -90,20 +90,20 @@ CARBLK* DELTA_OINIT(PROC* p /*AR7*/, OBJ* obj /*AR4*/) {
 
     // asm 0000AE7B: 	LDF	MAX_ACCEL_INIT,R0
     // asm 0000AE7C: 	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
-    carblk->max_accel =C3X_STF(C3X_IMM_F32(MAX_ACCEL_INIT)); // SET ACCEL POWER
+    carblk->max_accel = C3X_STF(C3X_IMM_F32(MAX_ACCEL_INIT)); // SET ACCEL POWER
 
     // asm 0000AE7D: 	LDF	1.0,R0
     // asm 0000AE7E: 	STF	R0,*+AR7(DELTA_THROTTLE)
-    p->ctx->RACER_DRONE.delta_throttle = C3X_STF(C3X_IMM_F32(1.0f));
+    p->ctx.RACER_DRONE.delta_throttle = C3X_STF(C3X_IMM_F32(1.0f));
 
     // asm 0000AE7F: 	LDI	0101h,R0		;SET THE STARTUP LAST KNOWN OID
     // asm 0000AE80: 	STI	R0,*+AR7(DELTA_LAST_OID)
-    p->ctx->RACER_DRONE.delta_last_oid = 0x0101; // SET THE STARTUP LAST KNOWN OID
+    p->ctx.RACER_DRONE.delta_last_oid = 0x0101; // SET THE STARTUP LAST KNOWN OID
 
     // asm 0000AE81: 	LDI	*+AR7(DELTA_MODEL),AR2
     // asm 0000AE82: 	MPYI	VEHTAB_SIZE,AR2
     // asm 0000AE83: 	ADDI	@VEHICLE_TABLEI,AR2
-    vehicle = &VEHICLE_TABLE[p->ctx->RACER_DRONE.delta_model];
+    vehicle = &VEHICLE_TABLE[p->ctx.RACER_DRONE.delta_model];
 
     // asm 0000AE84: 	LDF	*+AR2(VEHTAB_MASS),R0
     // asm 0000AE85: 	STF	R0,*+AR5(CARMASS)
@@ -194,38 +194,38 @@ static void DDYNA_INIT(tDDYNA_TABLE* table /*AR2*/, OBJ* obj /*AR4*/) {
     vertices = table->vertices;
     // asm 0000AEAB: 	RPTB	WHEELLP
     for (i = 0; i < table->axles; ++i) {
-    // asm 0000AEAC:  	CALL	GETDYNA	     		;LINK HIM INTO LIST
-    dyna = GETDYNA();
-    SLOCKON(dyna == NULL, "DELTA\\DDYNA_INIT out of dynamic objects");
-    if (dyna == NULL) {
-        return;
-    }
-    // asm 0000AEAD: 	STI	AR0,*AR3
-    *link = dyna;
-    // asm 0000AEAE: 	LDI	*AR2++,R0
-    // asm 0000AEAF: 	SUBI	R0,R6
-    vertices -= table->entries[i].vertices;
-    // asm 0000AEB0: 	SUBI	1,R0
-    // asm 0000AEB1: 	STI	R0,*+AR0(DYNANVERTS)
-    dyna->nverts = (u32)(table->entries[i].vertices - 1);
-    // asm 0000AEB2: 	FLOAT	*AR2++,R0
-    // asm 0000AEB3: 	STF	R0,*+AR0(DYNACENTERX)
-    // asm 0000AEB4: 	STF	R0,*+AR0(DYNATRANSX)
-    dyna->center_x = C3X_STF(C3X_FROM_INT(table->entries[i].center.X));
-    dyna->trans_x = C3X_STF(C3X_FROM_INT(table->entries[i].center.X));
-    // asm 0000AEB5: 	FLOAT	*AR2++,R0
-    // asm 0000AEB6: 	STF	R0,*+AR0(DYNACENTERY)
-    // asm 0000AEB7: 	STF	R0,*+AR0(DYNATRANSY)
-    dyna->center_y = C3X_STF(C3X_FROM_INT(table->entries[i].center.Y));
-    dyna->trans_y = C3X_STF(C3X_FROM_INT(table->entries[i].center.Y));
-    // asm 0000AEB8: 	FLOAT	*AR2++,R0
-    // asm 0000AEB9: 	STF	R0,*+AR0(DYNACENTERZ)
-    // asm 0000AEBA: 	STF	R0,*+AR0(DYNATRANSZ)
-    dyna->center_z = C3X_STF(C3X_FROM_INT(table->entries[i].center.Z));
-    dyna->trans_z = C3X_STF(C3X_FROM_INT(table->entries[i].center.Z));
-WHEELLP:
-    // asm 0000AEBB: LDI	AR0,AR3
-    link = &dyna->link;
+        // asm 0000AEAC:  	CALL	GETDYNA	     		;LINK HIM INTO LIST
+        dyna = GETDYNA();
+        SLOCKON(dyna == NULL, "DELTA\\DDYNA_INIT out of dynamic objects");
+        if (dyna == NULL) {
+            return;
+        }
+        // asm 0000AEAD: 	STI	AR0,*AR3
+        *link = dyna;
+        // asm 0000AEAE: 	LDI	*AR2++,R0
+        // asm 0000AEAF: 	SUBI	R0,R6
+        vertices -= table->entries[i].vertices;
+        // asm 0000AEB0: 	SUBI	1,R0
+        // asm 0000AEB1: 	STI	R0,*+AR0(DYNANVERTS)
+        dyna->nverts = (u32)(table->entries[i].vertices - 1);
+        // asm 0000AEB2: 	FLOAT	*AR2++,R0
+        // asm 0000AEB3: 	STF	R0,*+AR0(DYNACENTERX)
+        // asm 0000AEB4: 	STF	R0,*+AR0(DYNATRANSX)
+        dyna->center_x = C3X_STF(C3X_FROM_INT(table->entries[i].center.X));
+        dyna->trans_x = C3X_STF(C3X_FROM_INT(table->entries[i].center.X));
+        // asm 0000AEB5: 	FLOAT	*AR2++,R0
+        // asm 0000AEB6: 	STF	R0,*+AR0(DYNACENTERY)
+        // asm 0000AEB7: 	STF	R0,*+AR0(DYNATRANSY)
+        dyna->center_y = C3X_STF(C3X_FROM_INT(table->entries[i].center.Y));
+        dyna->trans_y = C3X_STF(C3X_FROM_INT(table->entries[i].center.Y));
+        // asm 0000AEB8: 	FLOAT	*AR2++,R0
+        // asm 0000AEB9: 	STF	R0,*+AR0(DYNACENTERZ)
+        // asm 0000AEBA: 	STF	R0,*+AR0(DYNATRANSZ)
+        dyna->center_z = C3X_STF(C3X_FROM_INT(table->entries[i].center.Z));
+        dyna->trans_z = C3X_STF(C3X_FROM_INT(table->entries[i].center.Z));
+    WHEELLP:
+        // asm 0000AEBB: LDI	AR0,AR3
+        link = &dyna->link;
     }
     // asm 0000AEBC:  	CALL	GETDYNA	     		;LINK HIM INTO LIST
     dyna = GETDYNA();
@@ -262,7 +262,7 @@ WHEELLP:
     // asm 0000AECC: 	LDI	@DRONE_DANI_PROCI,AR2
     // asm 0000AECD: 	LDI	DRONE_C|ANI_T,R2	;PID
     // asm 0000AECE: 	CALL	PRC_CREATE_CHILD
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->CARPROC.obj = obj;
     proc = PRC_CREATE_CHILD(CURRENT_PROC, DRONE_DANI_PROC, DRONE_C | ANI_T, ctx);
     // asm 0000AECF: 	STI	AR0,*+AR4(ORADZ)	;DOUBLING AS A PROC PTR
@@ -311,28 +311,28 @@ static void DRONE_DANI_PROC(PROC* p) {
     DYNAOBJ* dyna;
 
     switch (PROC_RESUME_STATE) {
-        case 0:
-            MAME_ASSERT_FUNCTION_ENTRY();
-            break;
-        case 1:
-            goto PROC_RESUME_1;
-        default:
-            break;
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    default:
+        break;
     }
 
     // asm 0000AED8: 	LDI	*+AR4(OCARBLK),AR5
-    obj = p->ctx->CARPROC.obj;
+    obj = p->ctx.CARPROC.obj;
     carblk = obj->carblk;
-    p->ctx->CARPROC.carblk = carblk;
+    p->ctx.CARPROC.carblk = carblk;
     // asm 0000AED9: 	LDF	0,R6	 		;INIT SPIN RADIANS
     // asm 0000AEDA: 	STF	R6,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
-    p->ctx->CARPROC.wheel_x_radians = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CARPROC.wheel_x_radians = C3X_STF(C3X_IMM_F32(0));
     // asm 0000AEDB: 	LDF	*+AR5(CARSPEED),R0	;INIT SPEED
     // asm 0000AEDC: 	LDF	R0,R7
-    p->ctx->CARPROC.old_car_speed = C3X_STF(C3X_LDF(carblk->speed));
+    p->ctx.CARPROC.old_car_speed = C3X_STF(C3X_LDF(carblk->speed));
 CARPROCL:
-    obj = p->ctx->CARPROC.obj;
-    carblk = p->ctx->CARPROC.carblk;
+    obj = p->ctx.CARPROC.obj;
+    carblk = p->ctx.CARPROC.carblk;
     // asm 0000AEDD: 	LDI	3,AR2	  		;SLEEP TIME
     // asm 0000AEDE: 	LDI	@SUSPEND_MODE,R0
     // asm 0000AEDF: 	CMPI	SM_HALT,R0
@@ -353,12 +353,12 @@ CARPROCL:
     // asm 0000AEE5: 	MPYF	0.02,R2   		;FUDGE FACTOR
     // asm 0000AEE6: 	ADDF	*+AR7(PDATA+2),R2
     // asm 0000AEE7: 	STF	R2,*+AR7(PDATA+2)	;SAVE WHEEL X RADIANS
-    p->ctx->CARPROC.wheel_x_radians = C3X_STF(C3X_ADD(
-        C3X_LDF(p->ctx->CARPROC.wheel_x_radians),
+    p->ctx.CARPROC.wheel_x_radians = C3X_STF(C3X_ADD(
+        C3X_LDF(p->ctx.CARPROC.wheel_x_radians),
         C3X_MUL(C3X_LDF(carblk->speed), C3X_IMM_F32(0.02f))));
     // asm 0000AEE8: 	LDI	@MATRIXBI,AR2		;GET X SPIN IN MATRIXB
     // asm 0000AEE9: 	CALL	FIND_XMATRIX
-    FIND_XMATRIX(&MATRIXBI, C3X_LDF(p->ctx->CARPROC.wheel_x_radians));
+    FIND_XMATRIX(&MATRIXBI, C3X_LDF(p->ctx.CARPROC.wheel_x_radians));
     // asm 0000AEEA: 	LDI	AR2,AR3			;SAVE REAR WHEEL MATRIX PTR
     // 	;STUFF YOUR DYNAMIC MATRICES
     // 	;

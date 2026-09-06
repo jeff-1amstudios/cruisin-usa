@@ -213,8 +213,7 @@ void FIND_PLAYERS_POSITION(OBJ* player_obj /*AR4*/, CARBLK* player_carblk /*AR5*
     on_screen_cars = 0;
 
     // A null C30 object pointer reads interrupt-vector memory; treat it as pending until PLYCAR is ready.
-    player_pending = player_obj == NULL || player_carblk == NULL || player_carblk->closest_track_piece == 0 ||
-        ((uintptr_t)player_obj >= (uintptr_t)&PRCSTR[0] && (uintptr_t)player_obj < (uintptr_t)&PRCSTR[NUMPROC]);
+    player_pending = player_obj == NULL || player_carblk == NULL || player_carblk->closest_track_piece == 0 || ((uintptr_t)player_obj >= (uintptr_t)&PRCSTR[0] && (uintptr_t)player_obj < (uintptr_t)&PRCSTR[NUMPROC]);
     if (player_pending) {
         player_track_id = -1;
     } else {
@@ -310,9 +309,9 @@ FPP1:
     proc = obj->plink;
     // asm 000065F5: 	LDI	*+AR2(STEALTHMODE),R0  	;0=ONSCRN,-1=BEHIND ST, 1=AHEAD STEALTH
     // asm 000065F6: 	BNE	NXTLP1
-    if (proc == NULL || proc->ctx->RACER_DRONE.stealthmode != 0) {
+    if (proc == NULL || proc->ctx.RACER_DRONE.stealthmode != 0) {
         if (proc != NULL) {
-            rank_increment = proc->ctx->RACER_DRONE.stealthmode > 0;
+            rank_increment = proc->ctx.RACER_DRONE.stealthmode > 0;
         }
         goto NXTLP1;
     }
@@ -520,23 +519,23 @@ DOIT:
     // ;	CALL	COP_ACTIVE	;NO SIGMAS MIXED WITH COPS
     // ;	BC	SIGDSP_LP
     // asm 0000663E: 	CREATE	SIGMA_DRONE,DRONE_C|VEHICLE_T|DRNE_SIGMA
-    sigma_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    sigma_ctx = NEW_PROC_CONTEXT();
     sigma_proc = CREATE(SIGMA_DRONE, DRONE_C | VEHICLE_T | DRNE_SIGMA, sigma_ctx);
     // asm 00006641: 	BC	SIGDSP_LP
     if (sigma_proc == NULL) {
         goto SIGDSP_LP;
     }
     // asm 00006642: 	LDI	AR0,AR5
-    p->ctx->SIGMA_DISPATCHER.sigma_proc = sigma_proc;
+    p->ctx.SIGMA_DISPATCHER.sigma_proc = sigma_proc;
 NOTYET:
     // asm 00006643: SLEEP	1
     SLEEP(1, 3);
     // asm 00006645: 	LDI	*+AR5(PAR4),AR4
-    sigma_proc = p->ctx->SIGMA_DISPATCHER.sigma_proc;
-    if (sigma_proc == NULL || sigma_proc->ctx == NULL) {
+    sigma_proc = p->ctx.SIGMA_DISPATCHER.sigma_proc;
+    if (sigma_proc == NULL) {
         goto SIGDSP_LP;
     }
-    sigma_obj = sigma_proc->ctx->RACER_DRONE.obj;
+    sigma_obj = sigma_proc->ctx.RACER_DRONE.obj;
     if (sigma_obj == NULL) {
         goto NOTYET;
     }
@@ -636,7 +635,7 @@ void RHO_DISPATCHER(PROC* p) {
     c3x_reg_t delta_z;
     c3x_reg_t distance;
 
-    rho_ctx = p->ctx;
+    rho_ctx = &p->ctx;
     switch (PROC_RESUME_STATE) {
     case 0:
         MAME_ASSERT_FUNCTION_ENTRY();
@@ -802,7 +801,7 @@ DOITR:
         goto RHO_DLP;
     }
     // asm 000066A7: 	CREATE	RHO_DRONE,DRONE_C|VEHICLE_T|DRNE_RHO
-    CREATE(RHO_DRONE, DRONE_C | VEHICLE_T | DRNE_RHO, port_malloc(sizeof(PROC_CONTEXT)));
+    CREATE(RHO_DRONE, DRONE_C | VEHICLE_T | DRNE_RHO, &(PROC_CONTEXT){ 0 });
     // asm 000066AA: 	BU	RHO_DLP
     goto RHO_DLP;
 }
@@ -853,7 +852,7 @@ void SET_DRONE_PAL(PROC* p, OBJ* obj) {
     // asm 000066BA: 	MPYI	VEHTAB_SIZE,AR2
     // asm 000066BB: 	ADDI	@VEHICLE_TABLEI,AR2
     // asm 000066BC: 	LDI	*+AR2(VEHTAB_PALTAB),AR2
-    palette_table = VEHICLE_TABLE[p->ctx->RACER_DRONE.delta_model].palette_table;
+    palette_table = VEHICLE_TABLE[p->ctx.RACER_DRONE.delta_model].palette_table;
     // asm 000066BD: 	LDI	*AR2++,R0
     // asm 000066BE: 	BZ	NO_EPALS
     if (palette_table == NULL || palette_table->count == 0) {
@@ -924,9 +923,9 @@ GL_LP:
         if (section_index == DGROUPSI[i].idx) {
             goto GL_FND;
         }
-    // asm 000066DA: 	BEQ	GL_FND
-    // asm 000066DB: 	ADDI	DGRP_SIZE,AR1
-    // asm 000066DC: 	DBU	AR0,GL_LP
+        // asm 000066DA: 	BEQ	GL_FND
+        // asm 000066DB: 	ADDI	DGRP_SIZE,AR1
+        // asm 000066DC: 	DBU	AR0,GL_LP
     }
     // asm 000066DD: 	CLRI	R0
     lane_mode = 0;
@@ -959,7 +958,7 @@ GL_FND:
  *	R0	FL DISTANCE TO PLAYER (IN VOXELS)
  *
  */
- c3x_reg_t DIST_TO_PLYR(OBJ* obj) {
+c3x_reg_t DIST_TO_PLYR(OBJ* obj) {
     c3x_reg_t dx;
     c3x_reg_t dz;
     // asm 000066E7: 	PUSH	AR3
@@ -1051,7 +1050,7 @@ c3x_reg_t GET_TRACK_POS_RVS_XLANE(PROC* p, OBJ* obj) {
     // asm 00006708: 	PUSHFL	R2
     // asm 0000670A: 	PUSH	AR2
     // asm 0000670B: 	LDI	*+AR7(DELTA_TPIECE),AR2
-    piece = p->ctx->RACER_DRONE.delta_tpiece;
+    piece = p->ctx.RACER_DRONE.delta_tpiece;
     // asm 0000670C: 	CALL	SUB_FUNCTION_RVS_XLANE		;GET LANE OFFSET (VECTOR A)
     SUB_FUNCTION_RVS_XLANE(p, piece);
     // asm 0000670D: 	BU	TRKP2
@@ -1082,7 +1081,7 @@ c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj) {
     // asm 00006710: 	PUSHFL	R2
     // asm 00006712: 	PUSH	AR2
     // asm 00006713: 	LDI	*+AR7(DELTA_TPIECE),AR2
-    piece = p->ctx->RACER_DRONE.delta_tpiece;
+    piece = p->ctx.RACER_DRONE.delta_tpiece;
     // asm 00006714: 	CALL	SUB_FUNCTION_RVS
     SUB_FUNCTION_RVS(p, piece);
     // asm 00006715: 	BU	TRKP2
@@ -1125,7 +1124,7 @@ c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj) {
     // asm 00006720: 	PUSHFL	R2
     // asm 00006722: 	PUSH	AR2
     // asm 00006723: 	LDI	*+AR7(DELTA_TPIECE),AR2
-    piece = p->ctx->RACER_DRONE.delta_tpiece;
+    piece = p->ctx.RACER_DRONE.delta_tpiece;
     // asm 00006724: TRACK_PIECE
     // asm 00006724: 	CALL	SUB_FUNCTION		;GET LANE OFFSET (VECTOR A)
     SUB_FUNCTION(p, piece);
@@ -1275,7 +1274,7 @@ c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece) {
     // asm 00006746: 	SUBF	HALFPI,R0
     theta = C3X_SUB(
         ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
-                 C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
+            C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
         C3X_IMM_F32(HALFPI));
     // asm 00006747: 	LDF	R0,R2				;FIND THETA
     // asm 00006748: 	PUSHF	R2
@@ -1287,7 +1286,7 @@ c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece) {
     FIND_YMATRIX(&MATRIXAI, theta);
     // asm 0000674D: 	LDI	*+AR7(DELTA_STATUS),AR0
     // asm 0000674E: 	AND	DELTA_STATUS_LANE,AR0
-    lane = p->ctx->RACER_DRONE.delta_status & DELTA_STATUS_LANE;
+    lane = p->ctx.RACER_DRONE.delta_status & DELTA_STATUS_LANE;
     // ;	LDPI	@LANEPI,AR1
     // asm 0000674F: 	LDI	@LANEPI,AR1
     // asm 00006750: 	ADDI	R0,AR1		;4 or 2 lane map?
@@ -1337,7 +1336,7 @@ SF_ENTER2:
     // asm 00006746: 	SUBF	HALFPI,R0
     theta = C3X_SUB(
         ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
-                 C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
+            C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
         C3X_IMM_F32(HALFPI));
     // asm 00006747: 	LDF	R0,R2				;FIND THETA
     // asm 00006748: 	PUSHF	R2
@@ -1349,7 +1348,7 @@ SF_ENTER2:
     FIND_YMATRIX(&MATRIXAI, theta);
     // asm 0000674D: 	LDI	*+AR7(DELTA_STATUS),AR0
     // asm 0000674E: 	AND	DELTA_STATUS_LANE,AR0
-    lane = p->ctx->RACER_DRONE.delta_status & DELTA_STATUS_LANE;
+    lane = p->ctx.RACER_DRONE.delta_status & DELTA_STATUS_LANE;
     // ;	LDPI	@LANEPI,AR1
     // asm 0000674F: 	LDI	@LANEPI,AR1
     // asm 00006750: 	ADDI	R0,AR1		;4 or 2 lane map?
@@ -1397,7 +1396,7 @@ c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece) {
     // asm 00006777: 	SUBF	HALFPI,R0
     theta = C3X_SUB(
         ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
-                 C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
+            C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
         C3X_IMM_F32(HALFPI));
     // asm 00006778: 	LDF	R0,R2				;FIND THETA
     // asm 00006779: 	PUSHF	R2
@@ -1406,7 +1405,7 @@ c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece) {
     // asm 0000677C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
     FIND_YMATRIX(&MATRIXAI, theta);
     // asm 0000677D: 	LDF	*+AR7(DELTA_XLANE),R0
-    VECTORAI.X = C3X_STF(C3X_LDF(p->ctx->RACER_DRONE.delta_xlane));
+    VECTORAI.X = C3X_STF(C3X_LDF(p->ctx.RACER_DRONE.delta_xlane));
     // asm 0000677E: 	BU	DELTA_JOININ
     // asm 00006754: 	LDI	@VECTORAI,AR2
     // asm 00006755: 	STF	R0,*+AR2(X)
@@ -1600,16 +1599,16 @@ void EXP_PUFF(PROC* p) {
     int model;
 
     switch (PROC_RESUME_STATE) {
-        case 0:
-            MAME_ASSERT_FUNCTION_ENTRY();
-            break;
-        case 1:
-            goto PROC_RESUME_1;
-        default:
-            break;
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    default:
+        break;
     }
 
-    source_obj = p->ctx->PUFF_PROC.source_obj;
+    source_obj = p->ctx.PUFF_PROC.source_obj;
     // asm 000067A9: 	LDL	40000,R0
     // asm 000067AA: 	CMPI	*+AR4(ODIST),R0
     // asm 000067AB: 	BLT	SUICIDE
@@ -1627,8 +1626,8 @@ void EXP_PUFF(PROC* p) {
     // asm 000067B0: 	LDI	@EXP_ANII,AR5
     // asm 000067B1: 	LDI	*AR5,AR0
     // asm 000067B2: 	STI	AR0,*+AR4(OROMDATA)
-    p->ctx->PUFF_PROC.obj = obj;
-    p->ctx->PUFF_PROC.script_index = 0;
+    p->ctx.PUFF_PROC.obj = obj;
+    p->ctx.PUFF_PROC.script_index = 0;
     obj->romdata = ROM_PTR(EXP_ANI[0]);
     // asm 000067B3: 	LDF	*+AR6(OPOSX),R0
     // asm 000067B4: 	STF	R0,*+AR4(OPOSX)
@@ -1645,13 +1644,13 @@ void EXP_PUFF(PROC* p) {
     // asm 000067BE: 	LDF	6,R0
     // asm 000067BF: 	CALL	SFRAND
     // asm 000067C0: 	LDF	R0,R6
-    p->ctx->PUFF_PROC.velocity_x = C3X_STF(SFRAND(C3X_IMM_F32(6)));
+    p->ctx.PUFF_PROC.velocity_x = C3X_STF(SFRAND(C3X_IMM_F32(6)));
     // asm 000067C1: 	LDF	6,R0
     // asm 000067C2: 	CALL	SFRAND
     // asm 000067C3: 	LDF	R0,R7
-    p->ctx->PUFF_PROC.velocity_z = C3X_STF(SFRAND(C3X_IMM_F32(6)));
+    p->ctx.PUFF_PROC.velocity_z = C3X_STF(SFRAND(C3X_IMM_F32(6)));
 EXP_PUFFLP:
-    obj = p->ctx->PUFF_PROC.obj;
+    obj = p->ctx.PUFF_PROC.obj;
     // asm 000067C4: 	LDL	40000,R0
     // asm 000067C5: 	CMPI	*+AR4(ODIST),R0
     // asm 000067C6: 	BLT	EXP_DIE
@@ -1661,15 +1660,15 @@ EXP_PUFFLP:
     // asm 000067C7: 	LDF	*+AR4(OPOSX),R0
     // asm 000067C8: 	ADDF	R6,R0
     // asm 000067C9: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx->PUFF_PROC.velocity_x)));
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx.PUFF_PROC.velocity_x)));
     // asm 000067CA: 	LDF	*+AR4(OPOSZ),R0
     // asm 000067CB: 	ADDF	R7,R0
     // asm 000067CC: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx->PUFF_PROC.velocity_z)));
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx.PUFF_PROC.velocity_z)));
     // asm 000067CD: 	LDI	*AR5++,AR0
     // asm 000067CE: 	CMPI	-1,AR0
     // asm 000067CF: 	BEQ	EXP_DIE
-    model = EXP_ANI[p->ctx->PUFF_PROC.script_index++];
+    model = EXP_ANI[p->ctx.PUFF_PROC.script_index++];
     if (model == -1) {
         goto EXP_DIE;
     }
@@ -2090,13 +2089,13 @@ void SMOKE_PUFF(PROC* p) {
     c3x_f32_t y_delta;
 
     switch (PROC_RESUME_STATE) {
-        case 0:
-            MAME_ASSERT_FUNCTION_ENTRY();
-            break;
-        case 1:
-            goto PROC_RESUME_1;
-        default:
-            break;
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    default:
+        break;
     }
 
     // asm 0000684D: 	LDI	@SMOKE_COUNT,R0
@@ -2108,8 +2107,8 @@ void SMOKE_PUFF(PROC* p) {
     // asm 00006850: 	INC	R0
     // asm 00006851: 	STI	R0,@SMOKE_COUNT
     SMOKE_COUNT += 1;
-    p->ctx->PUFF_PROC.smoke_counted = 1;
-    source_obj = p->ctx->PUFF_PROC.source_obj;
+    p->ctx.PUFF_PROC.smoke_counted = 1;
+    source_obj = p->ctx.PUFF_PROC.source_obj;
     // asm 00006852: 	LDL	40000,R0
     // asm 00006853: 	CMPI	*+AR4(ODIST),R0
     // asm 00006854: 	BLT	SUICIDE
@@ -2127,8 +2126,8 @@ void SMOKE_PUFF(PROC* p) {
     // asm 00006859: 	LDI	@SMOKE_ANII,AR5
     // asm 0000685A: 	LDI	*AR5,AR0
     // asm 0000685B: 	STI	AR0,*+AR4(OROMDATA)
-    p->ctx->PUFF_PROC.obj = obj;
-    p->ctx->PUFF_PROC.script_index = 0;
+    p->ctx.PUFF_PROC.obj = obj;
+    p->ctx.PUFF_PROC.script_index = 0;
     obj->romdata = ROM_PTR(SMOKE_ANI[0].model);
     // asm 0000685C: 	LDI	UTIL_C|SMOKE_T,R0
     // asm 0000685D: 	STI	R0,*+AR4(OID)
@@ -2150,7 +2149,7 @@ void SMOKE_PUFF(PROC* p) {
     // asm 0000686B: 	CALL	OBJ_INSERT
     OBJ_INSERT(obj);
 SMOKE_PUFFLP:
-    obj = p->ctx->PUFF_PROC.obj;
+    obj = p->ctx.PUFF_PROC.obj;
     // asm 0000686C: 	LDL	40000,R0
     // asm 0000686D: 	CMPI	*+AR4(ODIST),R0
     // asm 0000686E: 	BLT	SMOKE_DIE
@@ -2170,18 +2169,18 @@ SMOKE_PUFFLP:
     // asm 00006877: 	LDI	*AR5++,AR0
     // asm 00006878: 	CMPI	-1,AR0
     // asm 00006879: 	BEQ	SMOKE_DIE
-    model = SMOKE_ANI[p->ctx->PUFF_PROC.script_index].model;
+    model = SMOKE_ANI[p->ctx.PUFF_PROC.script_index].model;
     if (model == -1) {
         goto SMOKE_DIE;
     }
     // asm 0000687A: 	STI	AR0,*+AR4(OROMDATA)
     obj->romdata = ROM_PTR(model);
     // asm 0000687B: 	LDI	*AR5++,AR2
-    sleep_ticks = SMOKE_ANI[p->ctx->PUFF_PROC.script_index].ticks;
+    sleep_ticks = SMOKE_ANI[p->ctx.PUFF_PROC.script_index].ticks;
     // asm 0000687C: 	LDF	*+AR4(OPOSY),R0
     // asm 0000687D: 	SUBF	*AR5++,R0
-    y_delta = SMOKE_ANI[p->ctx->PUFF_PROC.script_index].y_delta;
-    p->ctx->PUFF_PROC.script_index += 1;
+    y_delta = SMOKE_ANI[p->ctx.PUFF_PROC.script_index].y_delta;
+    p->ctx.PUFF_PROC.script_index += 1;
     // asm 0000687E: 	STF	R0,*+AR4(OPOSY)
     obj->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(obj->pos.Y), C3X_LDF(y_delta)));
     // asm 0000687F: 	CALL	SLEEP
@@ -2195,14 +2194,14 @@ SMOKE_DIE:
     // asm: 	BLT	$
 #endif
     // asm 00006883: 	STI	R0,@SMOKE_COUNT
-    if (p->ctx->PUFF_PROC.smoke_counted) {
+    if (p->ctx.PUFF_PROC.smoke_counted) {
         SMOKE_COUNT -= 1;
-        p->ctx->PUFF_PROC.smoke_counted = 0;
+        p->ctx.PUFF_PROC.smoke_counted = 0;
     }
     // asm 00006884: 	LDI	AR4,AR2
     // asm 00006885: 	CALL	OBJ_DELETE
-    if (p->ctx->PUFF_PROC.obj != NULL) {
-        OBJ_DELETE(p->ctx->PUFF_PROC.obj);
+    if (p->ctx.PUFF_PROC.obj != NULL) {
+        OBJ_DELETE(p->ctx.PUFF_PROC.obj);
     }
     // asm 00006886: 	DIE
     DIE();
@@ -2578,9 +2577,9 @@ int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk) {
     // asm 00006931: 	ADDF	R1,R0
     drone_distance_sq = C3X_ADD(
         C3X_MUL(C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(obj->pos.X)),
-                C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(obj->pos.X))),
+            C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(obj->pos.X))),
         C3X_MUL(C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(obj->pos.Z)),
-                C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(obj->pos.Z))));
+            C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(obj->pos.Z))));
     // asm 00006932: 	LDI	@(_plyr1+PLY_CAR),AR1
     // asm 00006933: 	LDF	*+AR0(OPOSX),R2
     // asm 00006934: 	SUBF	*+AR1(OPOSX),R2
@@ -2591,9 +2590,9 @@ int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk) {
     // asm 00006939: 	ADDF	R2,R1
     player_distance_sq = C3X_ADD(
         C3X_MUL(C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(PLYCAR->pos.X)),
-                C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(PLYCAR->pos.X))),
+            C3X_SUB(C3X_LDF(reference_piece->pos.X), C3X_LDF(PLYCAR->pos.X))),
         C3X_MUL(C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(PLYCAR->pos.Z)),
-                C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(PLYCAR->pos.Z))));
+            C3X_SUB(C3X_LDF(reference_piece->pos.Z), C3X_LDF(PLYCAR->pos.Z))));
     // asm 0000693A: 	CMPF	R1,R0	;WHO IS CLOSER?
     // asm 0000693B: 	BLT	AHEADOF
     if (C3X_LT(drone_distance_sq, player_distance_sq)) {

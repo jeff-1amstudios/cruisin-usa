@@ -41,7 +41,7 @@ set(CRUSN_SOURCES
   src/game/bonus.c
   src/game/bssstart.c
   src/core/c3x_float.c
-  src/core/dcs_audio.cpp
+  src/core/dcs_board.cpp
   src/game/chopper.c
   src/game/cksum.c
   src/game/cmos.c
@@ -120,15 +120,25 @@ generate_export_header(miniz)
 target_compile_definitions(miniz PUBLIC MINIZ_STATIC_DEFINE)
 target_include_directories(miniz PUBLIC lib/miniz ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(dcsdecoder_native STATIC
-  lib/dcsdecoder/DCSDecoder.cpp
-  lib/dcsdecoder/DCSDecoderNative.cpp
+add_library(adsp2100 STATIC
+  lib/adsp2100/adsp2100.cpp
 )
-target_include_directories(dcsdecoder_native PUBLIC lib/dcsdecoder)
+target_include_directories(adsp2100 PUBLIC lib)
+target_compile_definitions(adsp2100 PRIVATE
+  LSB_FIRST
+  INLINE=inline
+  UINT32=uint32_t
+  HAS_ADSP2101=1
+  HAS_ADSP2105=1
+  strcpy_s=strcpy
+)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  target_compile_options(adsp2100 PRIVATE $<$<CONFIG:Debug>:-O2>)
+endif()
 
 add_executable(crusn)
 target_sources(crusn PRIVATE ${CRUSN_SOURCES})
-target_link_libraries(crusn PRIVATE miniz dcsdecoder_native)
+target_link_libraries(crusn PRIVATE miniz adsp2100)
 
 add_custom_target(check-c3x-translation
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/check_c3x_translation.py

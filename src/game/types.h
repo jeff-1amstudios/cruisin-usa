@@ -49,8 +49,8 @@ typedef u32 tPALETTE_CODE;
 
 struct CARBLK;
 struct PROC;
+typedef struct PROC PROC;
 typedef void (*PROC_FUNC)(struct PROC*);
-struct PROC_CONTEXT;
 struct tDDYNA_TABLE;
 struct tCAR_PALETTE_LIST;
 struct DYNATAB;
@@ -373,27 +373,6 @@ typedef struct DGROUP_ENTRY {
 } DGROUP_ENTRY;
 
 #define PROC_RESUME_STACK_SIZE 10
-
-typedef struct PROC {
-    struct PROC* link;
-    // u32 stack_ptr;
-    u32 resume_states[PROC_RESUME_STACK_SIZE];
-    u32 current_resume_depth;
-    u32 yielded;
-    u32 id;
-    u32 sleep_ticks;
-    PROC_FUNC func;
-    // u32 r4;
-    // u32 r5;
-    // c3x_f32_t r6;
-    // c3x_f32_t r7;
-    // u32 ar4;
-    // u32 ar5;
-    // u32 ar6;
-    // u32 data[35];       /* PDATA..PSDATA-1 */
-    // u32 stack_data[15]; /* PSDATA..PRCSIZ-1 */
-    struct PROC_CONTEXT* ctx; // jeff added to replace the proc-local register and stack
-} PROC;
 
 typedef struct TRACKSEL {
     u32 index;
@@ -1188,5 +1167,16 @@ typedef struct PROC_CONTEXT {
     };
 
 } PROC_CONTEXT;
+
+struct PROC {
+    PROC* link;
+    u32 resume_states[PROC_RESUME_STACK_SIZE];
+    u32 current_resume_depth;
+    u32 yielded;
+    u32 id;
+    u32 sleep_ticks;
+    PROC_FUNC func;
+    PROC_CONTEXT ctx;
+};
 
 #endif

@@ -154,14 +154,14 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
 
     // asm 000055C3: 	LDI	0,R0
     // asm 000055C4: 	STI	R0,*+AR7(OBJINS)
-    p->ctx->ATTRACT_DELTA.objins = 0;
-    p->ctx->ATTRACT_DELTA.cardis = C3X_STF(C3X_IMM_F32(1.0f));
+    p->ctx.ATTRACT_DELTA.objins = 0;
+    p->ctx.ATTRACT_DELTA.cardis = C3X_STF(C3X_IMM_F32(1.0f));
 
     // asm 000055C5: 	LDI	@ATTRWAVE,R4
     // asm 000055C6: 	LSH	-1,R4
     // asm 000055C7: 	STI	R4,*+AR7(LIST_NUM)
-    p->ctx->ATTRACT_DELTA.list_num = ATTRWAVE >> 1;
-    // MAME_ASSERT_REG(0x000055C8, "R4", &p->ctx->ATTRACT_DELTA.list_num);
+    p->ctx.ATTRACT_DELTA.list_num = ATTRWAVE >> 1;
+    // MAME_ASSERT_REG(0x000055C8, "R4", &p->ctx.ATTRACT_DELTA.list_num);
 
     // asm 000055C8: 	CALL	INIT_ATTR_LEG
     INIT_ATTR_LEG(p);
@@ -173,7 +173,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
 
     // asm 000055CB: 	CREATE	LOGO_PROC,UTIL_C
     {
-        PROC_CONTEXT* ctx = port_malloc(sizeof(PROC_CONTEXT));
+        PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
         CREATE(LOGO_PROC, UTIL_C, ctx);
     }
 
@@ -185,7 +185,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
 
     // asm 000055D1: 	LDI	-1,R0
     // asm 000055D2: 	STI	R0,*+AR7(CUT_PAN)
-    p->ctx->ATTRACT_DELTA.cut_pan = -1;
+    p->ctx.ATTRACT_DELTA.cut_pan = -1;
 
     // asm 000055D3: 	LDI	1,R0	    		;SET GAME FRAME RATE
     // asm 000055D4: 	STI	R0,@FRAMRATE
@@ -206,9 +206,9 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055DE: 	STI	AR0,@PLYCBLK
     player_proc = (PROC*)PLYCAR;
     player_obj = NULL;
-    if (player_proc != NULL && player_proc->ctx != NULL) {
-        player_obj = player_proc->ctx->RACER_DRONE.obj;
-        PLYCBLK = player_proc->ctx->RACER_DRONE.carblk;
+    if (player_proc != NULL) {
+        player_obj = player_proc->ctx.RACER_DRONE.obj;
+        PLYCBLK = player_proc->ctx.RACER_DRONE.carblk;
     }
     if (player_obj != NULL) {
         PLYCAR = player_obj;
@@ -221,11 +221,11 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
 
     // asm 000055E1: 	LDI	1,R0
     // asm 000055E2: 	STI	R0,*+AR7(CUT_PAN)
-    p->ctx->ATTRACT_DELTA.cut_pan = 1;
+    p->ctx.ATTRACT_DELTA.cut_pan = 1;
 
     // asm 000055E3: 	CALL	GET_LIST_ADDR
     view_script = GET_LIST_ADDR(p);
-    p->ctx->ATTRACT_DELTA.view_script = (uintptr_t)view_script;
+    p->ctx.ATTRACT_DELTA.view_script = (uintptr_t)view_script;
 
     // asm 000055E4: 	BR	DELTA_LOOP_ENTRY
     goto DELTA_LOOP_ENTRY;
@@ -233,7 +233,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
 aDELTA_LOOP:
     // asm 000055E5: 	LDI	*AR6,AR0
     // asm 000055E6: 	CALLU	AR0
-    view_script = (const AttractViewStep*)p->ctx->ATTRACT_DELTA.view_script;
+    view_script = (const AttractViewStep*)p->ctx.ATTRACT_DELTA.view_script;
     step = view_script;
     step->run_func();
 
@@ -243,7 +243,7 @@ ADELTA2:
 
     // asm 000055E8: 	SLEEP	1
     SLEEP(1, 2);
-    view_script = (const AttractViewStep*)p->ctx->ATTRACT_DELTA.view_script;
+    view_script = (const AttractViewStep*)p->ctx.ATTRACT_DELTA.view_script;
 
     // asm 000055EA: 	LDI	@NOSWAP,R0
     // asm 000055EB: 	BEQ	ADELTA2A
@@ -257,8 +257,8 @@ ADELTA2:
 ADELTA2A:
     // asm 000055EE: 	CMPI	0,AR5
     // asm 000055EF: 	BGT	aDELTA_LOOP
-    // MAME_ASSERT_REG(0x000055EF, "AR5", &p->ctx->ATTRACT_DELTA.frames_left);
-    if (p->ctx->ATTRACT_DELTA.frames_left > 0) {
+    // MAME_ASSERT_REG(0x000055EF, "AR5", &p->ctx.ATTRACT_DELTA.frames_left);
+    if (p->ctx.ATTRACT_DELTA.frames_left > 0) {
         goto aDELTA_LOOP;
     }
 
@@ -283,22 +283,22 @@ sDELTA_LOOP:
     // asm 000055F8: 	CALL	OBJ_INSERT			;INSERT PLAYER OBJECT
     // asm 000055F9: 	LDI	0,R0
     // asm 000055FA: 	STI	R0,*+AR7(OBJINS)
-    if (p->ctx->ATTRACT_DELTA.objins != 0) {
-        OBJ_INSERT(p->ctx->ATTRACT_DELTA.objins); // INSERT PLAYER OBJECT
-        p->ctx->ATTRACT_DELTA.objins = 0;
+    if (p->ctx.ATTRACT_DELTA.objins != 0) {
+        OBJ_INSERT(p->ctx.ATTRACT_DELTA.objins); // INSERT PLAYER OBJECT
+        p->ctx.ATTRACT_DELTA.objins = 0;
     }
 
 NO_OBJINS:
     // asm 000055FB: 	LDI	*AR6++,AR0
     // asm 000055FC: 	CALLU	AR0
     step = view_script;
-    p->ctx->ATTRACT_DELTA.view_script = (uintptr_t)step;
+    p->ctx.ATTRACT_DELTA.view_script = (uintptr_t)step;
     step->init_func();
 
     // asm 000055FD: 	LDI	*AR6++,AR5
-    p->ctx->ATTRACT_DELTA.frames_left = step->state.generic.stop_when_zero;
-    // MAME_ASSERT_REG(0x000055FE, "AR5", &p->ctx->ATTRACT_DELTA.frames_left);
-    p->ctx->ATTRACT_DELTA.view_script = (uintptr_t)step;
+    p->ctx.ATTRACT_DELTA.frames_left = step->state.generic.stop_when_zero;
+    // MAME_ASSERT_REG(0x000055FE, "AR5", &p->ctx.ATTRACT_DELTA.frames_left);
+    p->ctx.ATTRACT_DELTA.view_script = (uintptr_t)step;
 
     // asm 000055FE: 	B	ADELTA2
     goto ADELTA2;
@@ -340,7 +340,7 @@ void LOGO_PROC(PROC* p) {
     }
 
     // asm 00005601: 	LDI	AR0,AR4
-    p->ctx->LOGO_PROC.obj = obj;
+    p->ctx.LOGO_PROC.obj = obj;
 
     // asm 00005602: 	LDIL	logo,R0
     // asm 00005605: 	STI	R0,*+AR0(OROMDATA)
@@ -368,16 +368,16 @@ void LOGO_PROC(PROC* p) {
     obj->rad.X = C3X_STF(C3X_IMM_F32(LOGO_SPINZ));
 
     // asm 00005611: 	LDF	0,R7		;SPEED FACTOR
-    p->ctx->LOGO_PROC.speed_factor = C3X_STF(C3X_FROM_INT(0)); // SPEED FACTOR
+    p->ctx.LOGO_PROC.speed_factor = C3X_STF(C3X_FROM_INT(0)); // SPEED FACTOR
 
     // asm 00005612: 	LDI	LOGO_FLYIN_FRAMES,AR5
-    p->ctx->LOGO_PROC.frames_left = LOGO_FLYIN_FRAMES;
+    p->ctx.LOGO_PROC.frames_left = LOGO_FLYIN_FRAMES;
 
 LOGO_LOOP1:
     // asm 00005613: 	SLEEP	1
     SLEEP(1, 1);
 
-    obj = p->ctx->LOGO_PROC.obj;
+    obj = p->ctx.LOGO_PROC.obj;
 
     // asm 00005615: 	FLOAT	@NFRAMES,R6
     nframes = C3X_FROM_INT(NFRAMES);
@@ -395,7 +395,7 @@ LOGO_LOOP1:
         // asm 0000561F: 	CMPF	R1,R0
         // asm 00005620: 	LDFLT	R1,R0
         // asm 00005621: 	STF	R0,*+AR4(OPOSX)
-        value = C3X_MUL(C3X_SUB(C3X_FROM_INT(LOGO_ENDX), obj->pos.X), p->ctx->LOGO_PROC.speed_factor);
+        value = C3X_MUL(C3X_SUB(C3X_FROM_INT(LOGO_ENDX), obj->pos.X), p->ctx.LOGO_PROC.speed_factor);
         value = C3X_ADD(C3X_MUL(value, nframes), obj->pos.X);
         if (C3X_LT(value, C3X_FROM_INT(LOGO_ENDX))) {
             value = C3X_FROM_INT(LOGO_ENDX);
@@ -411,7 +411,7 @@ LOGO_LOOP1:
         // asm 00005628: 	CMPF	R1,R0
         // asm 00005629: 	LDFLT	R1,R0
         // asm 0000562A: 	STF	R0,*+AR4(OPOSY)
-        value = C3X_MUL(C3X_SUB(C3X_FROM_INT(LOGO_ENDY), obj->pos.Y), p->ctx->LOGO_PROC.speed_factor);
+        value = C3X_MUL(C3X_SUB(C3X_FROM_INT(LOGO_ENDY), obj->pos.Y), p->ctx.LOGO_PROC.speed_factor);
         value = C3X_ADD(C3X_MUL(value, nframes), obj->pos.Y);
         if (C3X_LT(value, C3X_FROM_INT(LOGO_ENDY))) {
             value = C3X_FROM_INT(LOGO_ENDY);
@@ -419,7 +419,7 @@ LOGO_LOOP1:
         obj->pos.Y = C3X_STF(value);
 
         // asm 0000562B: 	ADDF	0.03,R7
-        p->ctx->LOGO_PROC.speed_factor = C3X_STF(C3X_ADD(p->ctx->LOGO_PROC.speed_factor, C3X_IMM_F32(0.03)));
+        p->ctx.LOGO_PROC.speed_factor = C3X_STF(C3X_ADD(p->ctx.LOGO_PROC.speed_factor, C3X_IMM_F32(0.03)));
     }
 
 LOGO2:
@@ -460,11 +460,11 @@ LOGO2:
     FIND_ZMATRIX(&obj->omatrix, C3X_LDF(obj->rad.X));
 
     // asm 00005641: 	SUBI	@NFRAMES,AR5
-    p->ctx->LOGO_PROC.frames_left -= NFRAMES;
+    p->ctx.LOGO_PROC.frames_left -= NFRAMES;
 
     // asm 00005642: 	CMPI	0,AR5
     // asm 00005643: 	BP	LOGO_LOOP1
-    if (p->ctx->LOGO_PROC.frames_left > 0) {
+    if (p->ctx.LOGO_PROC.frames_left > 0) {
         goto LOGO_LOOP1;
     }
 
@@ -478,7 +478,7 @@ static const AttractViewStep* GET_LIST_ADDR(PROC* p /*AR7*/) {
     // asm 00005645: 	LDI	*+AR7(LIST_NUM),AR6
     // asm 00005646: 	ADDI	@VIEWLISTI,AR6
     // asm 00005647: 	LDI	*AR6,AR6
-    const AttractViewStep* view_script = VIEWLIST[p->ctx->ATTRACT_DELTA.list_num];
+    const AttractViewStep* view_script = VIEWLIST[p->ctx.ATTRACT_DELTA.list_num];
 
     // asm 00005648: 	RETS
     return view_script;
@@ -579,7 +579,7 @@ static const AttractViewStep CHICAGO_LIST[] = {
 // *----------------------------------------------------------------------------
 static void INIT_STARTING(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
 
     // asm 00005649: 	LDI	-350,R0
     // asm 0000564A: 	FLOAT	R0,R1
@@ -609,7 +609,7 @@ static void INIT_STARTING(void) {
 // *----------------------------------------------------------------------------
 static void INIT_WATCH(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     const AttractViewStep* step;
     LEG_PAYLOAD* road_obj;
     LEG_PAYLOAD* previous_road;
@@ -731,7 +731,7 @@ INIW2:
 // *----------------------------------------------------------------------------
 static void INIT_REVERS_CUP(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
 
     // asm 00005696: 	LDI	-350,R0
     // asm 00005697: 	FLOAT	R0,R1
@@ -761,7 +761,7 @@ static void INIT_REVERS_CUP(void) {
 // *----------------------------------------------------------------------------
 static void INIT_CATCHUP(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
 
     // asm 000056A5: 	LDI	-350,R0
     // asm 000056A6: 	FLOAT	R0,R1
@@ -791,7 +791,7 @@ static void INIT_CATCHUP(void) {
 // *----------------------------------------------------------------------------
 static void INIT_LEAD(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
 
     // asm 000056B4: 	LDI	-300,R0
     // asm 000056B5: 	FLOAT	R0,R1
@@ -822,7 +822,7 @@ static void INIT_LEAD(void) {
 static void INITROAD_VIEW(int direction_to_search /*R0*/, int distance_to_start_with /*R1*/, int position_to_follow /*R2*/,
     c3x_reg_t rady_offset /*R3*/) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     OBJ* car_obj;
     LEG_PAYLOAD* road_obj;
     c3x_f32_t stored_rady_offset;
@@ -904,7 +904,7 @@ OK_FOUNDIT:
 // *----------------------------------------------------------------------------
 static void WATCH_VIEW(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     OBJ* car_obj;
     c3x_reg_t delta_x;
     c3x_reg_t delta_z;
@@ -973,7 +973,7 @@ NO_WHOOSH:
 // *----------------------------------------------------------------------------
 static void REV_ROAD_VIEW(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     CARBLK* carblk;
     c3x_reg_t car_speed;
 
@@ -999,7 +999,7 @@ static c3x_reg_t ACCEL_RATE = C3X_INIT(0.000002f, 0xED0637BD05ull);
 
 static void ROAD_VIEW(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     OBJ* closest_racer;
     CARBLK* carblk;
     c3x_reg_t car_speed;
@@ -1075,7 +1075,7 @@ RV1:
 // *----------------------------------------------------------------------------
 static void LEAD_VIEW(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     CARBLK* carblk;
     c3x_reg_t car_speed;
 
@@ -1099,7 +1099,7 @@ static void LEAD_VIEW(void) {
 // *----------------------------------------------------------------------------
 static void MOVE_ROAD_CAMERA(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     LEG_PAYLOAD* road_obj;
     LEG_PAYLOAD* next_road;
     c3x_f32_t camera_rady_offset;
@@ -1263,7 +1263,7 @@ MRCX:
 
 static void NEXT_ROAD(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     LEG_PAYLOAD* road_obj;
     LEG_PAYLOAD* next_road;
     c3x_reg_t current_distance_squared;
@@ -1338,7 +1338,7 @@ fcrx:
 
 static void GETCAMDIR(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     LEG_PAYLOAD* road_obj;
     LEG_PAYLOAD* target_road;
     c3x_f32_t camera_rady_offset;
@@ -1429,7 +1429,7 @@ static void GETCAMDIR(void) {
  */
 static void SET_LANE(c3x_reg_t smoothing /*R2*/) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     OBJ* car_obj;
     PROC* proc;
     c3x_reg_t lane_center;
@@ -1443,7 +1443,7 @@ static void SET_LANE(c3x_reg_t smoothing /*R2*/) {
     // asm 000057D5: 	FLOAT	1000,R1			;Offset to center of right lanes
     lane_center = C3X_FROM_INT(1000); // ;Offset to center of right lanes
     // asm 000057D6: 	LDF	*+AR0(ROADOFFSET),R0
-    road_offset = (proc != NULL && proc->ctx != NULL) ? C3X_LDF(proc->ctx->RACER_DRONE.road_offset) : C3X_FROM_INT(0);
+    road_offset = proc != NULL ? C3X_LDF(proc->ctx.RACER_DRONE.road_offset) : C3X_FROM_INT(0);
     // asm 000057D7: 	BP	SL1
     // asm 000057D8: 	NEGF	R1
     if (C3X_LE(road_offset, C3X_FROM_INT(0))) {
@@ -1474,7 +1474,7 @@ SL2:
 // *----------------------------------------------------------------------------
 static void INIT_LANE(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
 
     // asm 000057E4: 	LDF	*+AR7(CAMERA_LANE),R3
     // asm 000057E5: 	CALL	DO_LANE_POS
@@ -1491,7 +1491,7 @@ static void INIT_LANE(void) {
 
 static void DO_LANE_POS(c3x_reg_t lane_offset /*R3*/) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     c3x_reg_t road_rady;
     LEG_PAYLOAD* road_obj;
 
@@ -1690,7 +1690,7 @@ FRXX:
 
 static c3x_reg_t FIND_CLOSEST_RACER(OBJ** closest_racer /*AR1*/) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     OBJ* car_obj;
     c3x_f32_t camera_rady_offset;
     c3x_reg_t best_distance;
@@ -1816,10 +1816,10 @@ static LEG_PAYLOAD* GET_MAP_CARBLK(OBJ* car_obj /*AR0*/) {
     // asm 00005875: 	LDI	*+AR0(OPLINK),AR2
     // asm 00005876: 	LDI	*+AR2(DELTA_SPTR),AR4
     proc = car_obj != NULL ? car_obj->plink : NULL;
-    road_obj = (proc != NULL && proc->ctx != NULL) ? (LEG_PAYLOAD*)proc->ctx->RACER_DRONE.delta_sptr : NULL;
+    road_obj = proc != NULL ? (LEG_PAYLOAD*)proc->ctx.RACER_DRONE.delta_sptr : NULL;
     // asm 00005877: 	LDI	*+AR2(STEALTHMODE),R0	;ARE YOU A STEALTHY BITCH?
     // asm 00005878: 	BNZ	GMSX
-    if (proc == NULL || proc->ctx == NULL || proc->ctx->RACER_DRONE.stealthmode == 0) { // ;ARE YOU A STEALTHY BITCH?
+    if (proc == NULL || proc->ctx.RACER_DRONE.stealthmode == 0) { // ;ARE YOU A STEALTHY BITCH?
         // asm 00005879: 	LDI	*+AR0(OCARBLK),AR4
         // asm 0000587A: 	LDI	*+AR4(CARTRAK),AR4	;Get the track piece the car is on
         carblk = car_obj != NULL ? car_obj->carblk : NULL;
@@ -1863,7 +1863,7 @@ FIND_LP:
 }
 
 static void INITVIEW1_VIEW(void) {
-    PROC_CONTEXT* ctx = CURRENT_PROC->ctx;
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
 
     // asm 00005886: 	LDI	0,R1
     // asm 00005887: 	STI	R0,*+AR7(CAMERA_VIEW)
@@ -1881,7 +1881,7 @@ static void INITVIEW1_VIEW(void) {
 }
 
 static void CUT_TO_VIEW2(void) {
-    PROC_CONTEXT* ctx = CURRENT_PROC->ctx;
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
     OBJ* car_obj;
 
     // asm 0000588E: 	LDI	1,R0			;Don't smooth while spinning
@@ -1906,7 +1906,7 @@ static void CUT_TO_VIEW2(void) {
 }
 
 static void INITVIEW2_VIEW(void) {
-    PROC_CONTEXT* ctx = CURRENT_PROC->ctx;
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
 
     // asm 00005899: 	LDI	@PLYCAR,AR4
     ctx->ATTRACT_DELTA.carobj = PLYCAR;
@@ -1937,7 +1937,7 @@ static void INITVIEW3_VIEW(void) {
 }
 
 static void FACE_FRONT(void) {
-    PROC_CONTEXT* ctx = CURRENT_PROC->ctx;
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
     OBJ* car_obj = ctx->ATTRACT_DELTA.carobj;
     CARBLK* carblk;
     c3x_reg_t angle;
@@ -2092,7 +2092,7 @@ FFX:
  */
 static c3x_reg_t SMOOTH_VECTOR(c3x_reg_t radians /*R0*/, c3x_reg_t smoothing /*R2*/) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     CARBLK* carblk;
     c3x_reg_t unsmoothed;
 
@@ -2176,7 +2176,7 @@ static c3x_reg_t NORM_VECTOR(c3x_reg_t radians /*R0*/) {
 // *----------------------------------------------------------------------------
 
 static void SET_SMOOTH_VIEW(c3x_reg_t x /*R0*/, c3x_reg_t y /*R1*/, c3x_reg_t z /*R2*/, c3x_reg_t rady_offset /*R3*/) {
-    PROC_CONTEXT* ctx = CURRENT_PROC->ctx;
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
     c3x_f32_t values[4];
 
     // asm 00005914: 	LDI	0,AR5			;Set AR5 for init
@@ -2211,7 +2211,7 @@ static void SET_SMOOTH_VIEW(c3x_reg_t x /*R0*/, c3x_reg_t y /*R1*/, c3x_reg_t z 
 }
 
 static void SMOOTH_VIEW(void) {
-    PROC_CONTEXT* ctx = CURRENT_PROC->ctx;
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
     OBJ* car_obj = ctx->ATTRACT_DELTA.carobj;
     OBJ* track_obj;
     c3x_f32_t camera_values[3];
@@ -2278,7 +2278,7 @@ SMOOTH_VIEWX:
 static const c3x_f32_t ZOOMACCEL = C3X_F32_INIT(0.006f);
 
 static void ZOOM_CAMERA(void) {
-    PROC_CONTEXT* ctx = CURRENT_PROC->ctx;
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
     OBJ* car_obj = ctx->ATTRACT_DELTA.carobj;
     c3x_f32_t camera_values[4];
     c3x_f32_t target_values[4];
@@ -2310,12 +2310,12 @@ static void ZOOM_CAMERA(void) {
     memcpy(target_values, ctx->ATTRACT_DELTA.newcamera_xyzr, sizeof(target_values));
     // asm 0000594B: 	RPTB	ZOOMLP
     for (i = 0; i < 4; i++) {
-    // asm 0000594C: 	LDF	*AR1++,R2
-    // asm 0000594D: 	SUBF	*AR0,R2
-    // asm 0000594E: 	MPYF	R0,R2
-    // asm 0000594F: 	ADDF	*AR0,R2
-ZOOMLP:
-    // asm 00005950: STF	R2,*AR0++
+        // asm 0000594C: 	LDF	*AR1++,R2
+        // asm 0000594D: 	SUBF	*AR0,R2
+        // asm 0000594E: 	MPYF	R0,R2
+        // asm 0000594F: 	ADDF	*AR0,R2
+    ZOOMLP:
+        // asm 00005950: STF	R2,*AR0++
         camera_values[i] = C3X_STF(C3X_ADD(C3X_MUL(C3X_SUB(C3X_LDF(target_values[i]), C3X_LDF(camera_values[i])), zoom_velocity), C3X_LDF(camera_values[i])));
     }
     memcpy(ctx->ATTRACT_DELTA.camera_xyzr, camera_values, sizeof(camera_values));
@@ -2329,15 +2329,15 @@ ZOOMLP:
         if (C3X_GT(C3X_ABS(C3X_LDF(camera_values[2])), C3X_IMM_F32(100))) {
             goto ZOOMX;
         }
-    // asm 00005957: 	LDI	*+AR4(OFLAGS),R0	;CHECK IF ALREADY OFF LIST
-    // asm 00005958: 	TSTB	O_LIST_M,R0
-    // asm 00005959: 	BZ	ZOOMX			;YES, DONT DELETE
-    // asm 0000595A: 	LDI	AR4,AR2		;IN first person
-    // asm 0000595B: 	CALL	OBJ_PULL
+        // asm 00005957: 	LDI	*+AR4(OFLAGS),R0	;CHECK IF ALREADY OFF LIST
+        // asm 00005958: 	TSTB	O_LIST_M,R0
+        // asm 00005959: 	BZ	ZOOMX			;YES, DONT DELETE
+        // asm 0000595A: 	LDI	AR4,AR2		;IN first person
+        // asm 0000595B: 	CALL	OBJ_PULL
         if ((car_obj->flags & O_LIST_M) != 0) {
             OBJ_PULL(car_obj);
         }
-    // asm 0000595C: 	BR	ZOOMX
+        // asm 0000595C: 	BR	ZOOMX
         goto ZOOMX;
     }
 ZOOM1:
@@ -2354,8 +2354,8 @@ ZOOM1:
     // asm 00005964: 	CALL	OBJ_INSERT			;INSERT PLAYER OBJECT
     if ((car_obj->flags & O_LIST_M) == 0) {
         OBJ_INSERT(car_obj); // ;INSERT PLAYER OBJECT
-    // asm 00005965: 	LDI	1,R0
-    // asm 00005966: 	STI	R0,*+AR7(CUT_PAN)
+                             // asm 00005965: 	LDI	1,R0
+                             // asm 00005966: 	STI	R0,*+AR7(CUT_PAN)
         ctx->ATTRACT_DELTA.cut_pan = 1;
     }
 ZOOMX:
@@ -2374,7 +2374,7 @@ ZOOMX:
  */
 static void UPDATE_CAMERA(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     c3x_f32_t* dst;
     c3x_f32_t* src;
     int i;
@@ -2488,7 +2488,7 @@ UPCAMX:
 // *----------------------------------------------------------------------------
 static void CAMERA_HORIZON_PROJECTION(void) {
     PROC* p = CURRENT_PROC;
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
 
     // asm 0000598D: 	LDF	*+AR7(NEW_RADX),R2
     // asm 0000598E: 	CALL	_SINE
@@ -2598,7 +2598,7 @@ NO_MUSIC:
     // asm 000059B1: 	CALLU	R0
     FULLSETUP_TABLE[BONUS_WAVE]();
     // asm 000059B2: 	LDF	@INFIN_CORRECT,R0
-    p->ctx->ATTRACT_DELTA.camera_infin = C3X_STF((c3x_reg_t)INFIN_CORRECT);
+    p->ctx.ATTRACT_DELTA.camera_infin = C3X_STF((c3x_reg_t)INFIN_CORRECT);
     // asm 000059B3: 	STF	R0,*+AR7(CAMERA_INFIN)
     // asm 000059B4: 	CALL	OBJ_INIT
     OBJ_INIT();
@@ -2637,7 +2637,7 @@ NO_MUSIC:
     // asm 000059C7: 	POP	AR7
     // asm 000059C8: 	LDI	*+AR7(PDATA),R0
     // asm 000059C9: 	STI	R0,@BGNDCOLA
-    BGNDCOLA = p->ctx->ATTRACT_DELTA.background_color;
+    BGNDCOLA = p->ctx.ATTRACT_DELTA.background_color;
     // asm 000059CA: 	LDI	1,R0
     // asm 000059CB: 	STI	R0,@NOAERASE
     NOAERASE = 1;
@@ -2645,7 +2645,7 @@ NO_MUSIC:
     OHIGH_PRIORITY = 0;
     // asm 000059CD: 	STI	R0,@OHIGH_PRIORITY
     // asm 000059CE: 	CREATE	WAVEFLAG,UTIL_C|MONKEY_T
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(WAVEFLAG, UTIL_C | MONKEY_T, ctx);
     // asm 000059D1: 	CALL	ATTR_INIT_GAMELEG
     ATTR_INIT_GAMELEG();
@@ -2671,43 +2671,43 @@ static void ATTR_INIT_GAMELEG(void) {
     PROC* proc;
 
     // asm 000059DA: 	CREATE	RHO_DISPATCHER,SPAWNER_C|TRAFFIC_T
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(RHO_DISPATCHER, SPAWNER_C | TRAFFIC_T, ctx);
     // asm 000059DD: 	CREATE	SIGMA_DISPATCHER,SPAWNER_C|TRAFFIC_T
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(SIGMA_DISPATCHER, SPAWNER_C | TRAFFIC_T, ctx);
     // asm 000059E0: 	CREATE	CPOINT_LIGHT,SPAWNER_C|COLORCYC_T
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(CPOINT_LIGHT, SPAWNER_C | COLORCYC_T, ctx);
     // asm 000059E3: 	CREATE	POSITION_FINDER,SPAWNER_C|TRAFFIC_T
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     CREATE(POSITION_FINDER, SPAWNER_C | TRAFFIC_T, ctx);
     // asm 000059E6: 	LDI	SM_HALT,R0
     // asm 000059E7: 	STI	R0,@SUSPEND_MODE
     SUSPEND_MODE = SM_HALT;
     // asm 000059E8: 	LDI	0,R4
     // asm 000059E9: 	CREATE	RACER_DRONE,DRONE_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->RACER_DRONE.rank = 0;
     CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059EC: 	LDI	1,R4
     // asm 000059ED: 	CREATE	RACER_DRONE,DRONE_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->RACER_DRONE.rank = 1;
     CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059F0: 	LDI	2,R4
     // asm 000059F1: 	CREATE	RACER_DRONE,DRONE_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->RACER_DRONE.rank = 2;
     CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059F4: 	LDI	3,R4
     // asm 000059F5: 	CREATE	RACER_DRONE,DRONE_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->RACER_DRONE.rank = 3;
     CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059F8: 	LDI	4,R4
     // asm 000059F9: 	CREATE	RACER_DRONE,DRONE_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->RACER_DRONE.rank = 4;
     proc = CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 000059FC: 	STI	AR0,@PLYCAR
@@ -2716,22 +2716,22 @@ static void ATTR_INIT_GAMELEG(void) {
 
     // asm 000059FD: 	LDI	5,R4
     // asm 000059FE: 	CREATE	RACER_DRONE,DRONE_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->RACER_DRONE.rank = 5;
     CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00005A01: 	LDI	6,R4
     // asm 00005A02: 	CREATE	RACER_DRONE,DRONE_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->RACER_DRONE.rank = 6;
     CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00005A05: 	LDI	7,R4
     // asm 00005A06: 	CREATE	RACER_DRONE,DRONE_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->RACER_DRONE.rank = 7;
     CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00005A09: 	LDI	9,R4
     // asm 00005A0A: 	CREATE	RACER_DRONE,DRONE_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->RACER_DRONE.rank = 9;
     CREATE(RACER_DRONE, DRONE_C, ctx);
     // asm 00005A0D: 	RETS

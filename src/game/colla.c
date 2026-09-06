@@ -324,10 +324,10 @@ int BOXSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/) {
     // asm 00001FC0: 	FLOAT	*+AR4(ORAD),R5	 	;GET ROAD RADIUS
     // asm 00001FC1: 	FLOAT	20000,R7		;DEFAULT CAR HT. ABOVE GROUND
     GETBOX0(obj, BOXSCRAM,
-            C3X_IMM_F32(0.7), C3X_IMM_F32(0.7), C3X_IMM_F32(0.7),
-            C3X_IMM_F32(0.7), C3X_IMM_F32(1.0), C3X_IMM_F32(0.7)); // ;GET BOX POINTS FOR OBJECT 1
-    quick_reject_limit = C3X_FROM_INT(obj->radius); // ;GET ROAD RADIUS
-    lowest_height = C3X_FROM_INT(20000); // ;DEFAULT CAR HT. ABOVE GROUND
+        C3X_IMM_F32(0.7), C3X_IMM_F32(0.7), C3X_IMM_F32(0.7),
+        C3X_IMM_F32(0.7), C3X_IMM_F32(1.0), C3X_IMM_F32(0.7)); // ;GET BOX POINTS FOR OBJECT 1
+    quick_reject_limit = C3X_FROM_INT(obj->radius);            // ;GET ROAD RADIUS
+    lowest_height = C3X_FROM_INT(20000);                       // ;DEFAULT CAR HT. ABOVE GROUND
     // asm 00001FC2: 	LDPI	@DRIVE_LIST,R0
     // asm 00001FC3: 	CALL	BOXSCSUB
     BOXSCSUB(obj, DRIVE_LIST, quick_reject_limit, &lowest_height);
@@ -423,21 +423,21 @@ BS2:
     // asm 00001FE7: 	LDPI	@BOXSCRAMI,AR4
     // asm 00001FE8: 	ADDI	18H,AR4
     // asm 00001FE9: 	LDI	7,AR5			;LOOP 8 BOX POINTS
-    for (i = 0; i < 8; i++) { // ;LOOP 8 BOX POINTS
-    // asm 00001FEA: BSRDLP
-    // asm 00001FEA: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
-    // asm 00001FEB: 	BNC	BS10			;NOPE...
+    for (i = 0; i < 8; i++) {                                                     // ;LOOP 8 BOX POINTS
+                                                                                  // asm 00001FEA: BSRDLP
+                                                                                  // asm 00001FEA: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
+                                                                                  // asm 00001FEB: 	BNC	BS10			;NOPE...
         if (!_coll_road(road_obj, (VECTOR*)&BOXSCRAM[24 + i * 3], &road_delta)) { // ;XZ POINT COLLISION WITH ROAD OBJECT?
             goto BS10;
         }
-    // asm 00001FEC: 	CMPF	R0,R7
-    // asm 00001FED: 	LDFGT	R0,R7			;SAVE LOWEST POINT
+        // asm 00001FEC: 	CMPF	R0,R7
+        // asm 00001FED: 	LDFGT	R0,R7			;SAVE LOWEST POINT
         if (C3X_LT(road_delta, *lowest_height)) {
             *lowest_height = road_delta; // ;SAVE LOWEST POINT
         }
-BS10:
-    // asm 00001FEE: 	NOP	*AR4++(3)     		;CHECK NEXT POINT
-    // asm 00001FEF: 	DB	AR5,BSRDLP
+    BS10:
+        // asm 00001FEE: 	NOP	*AR4++(3)     		;CHECK NEXT POINT
+        // asm 00001FEF: 	DB	AR5,BSRDLP
         ;
     }
     // asm 00001FF0: 	LDI	*+AR2(OLINK3),R0
@@ -547,19 +547,19 @@ PC1X0:
             // asm 00002011: 	LDF	*+AR0(CARPYV),R1	;GRAVITY ACCELERATES Y VEL
             // asm 00002012: 	ADDF	R2,R1
             next_y_velocity = C3X_ADD(car_point->y_velocity, gravity); // ;GRAVITY ACCELERATES Y VEL
-                                                               // asm 00002013: 	LDI	*+AR0(CARPCOL),R4	;CHECK GRAVITY TYPE
-                                                               // asm 00002014: 	BZ	PC1B
-                                                               // asm 00002015: 	LDI	R4,AR3
-                                                               // asm 00002016: 	LDI	*+AR3(OID),R4
-                                                               // asm 00002017: 	AND	CLASS_M+TYPE_M,R4
-                                                               // asm 00002018: 	CMPI	ROAD_C+LOGRAV_T,R4
-                                                               // ;	BNE	PC1AA
-                                                               // ;	NOP
-                                                               // ;PC1AA
-                                                               // asm 00002019: 	BEQ	PC1B			;LOGRAVITY SECTION?
-                                                               // asm 0000201A: 	LDF	R2,R4
-                                                               // asm 0000201B: 	MPYF	4,R4			;NO, GRAV X 4
-                                                               // asm 0000201C: 	ADDF	R4,R1
+                                                                       // asm 00002013: 	LDI	*+AR0(CARPCOL),R4	;CHECK GRAVITY TYPE
+                                                                       // asm 00002014: 	BZ	PC1B
+                                                                       // asm 00002015: 	LDI	R4,AR3
+                                                                       // asm 00002016: 	LDI	*+AR3(OID),R4
+                                                                       // asm 00002017: 	AND	CLASS_M+TYPE_M,R4
+                                                                       // asm 00002018: 	CMPI	ROAD_C+LOGRAV_T,R4
+                                                                       // ;	BNE	PC1AA
+                                                                       // ;	NOP
+                                                                       // ;PC1AA
+                                                                       // asm 00002019: 	BEQ	PC1B			;LOGRAVITY SECTION?
+                                                                       // asm 0000201A: 	LDF	R2,R4
+                                                                       // asm 0000201B: 	MPYF	4,R4			;NO, GRAV X 4
+                                                                       // asm 0000201C: 	ADDF	R4,R1
             if (car_point->collided_road_object != 0) {
                 OBJ* collided_road_object = OBJREF_TO_PTR(car_point->collided_road_object);
 
@@ -694,7 +694,7 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
         MAME_ASSERT_MEM(0x0000204E, "d@(ar3+1)", &observed_raw);
         // *ADD IN X,Z OFFSETS
         // asm 0000204E: 	ADDF	R1,*AR3,R0
-        car_point->x =C3X_STF(C3X_ADD(car_point->x, obj->pos.X));
+        car_point->x = C3X_STF(C3X_ADD(car_point->x, obj->pos.X));
         observed_raw = C3X_STORE(C3X_LDF(car_point->x));
         MAME_ASSERT_MEM(0x00002050, "d@(ar3)", &observed_raw);
         // asm 0000204F: 	ADDF	R4,*+AR3(1),R0
@@ -717,7 +717,7 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
         car_point->collided_road_object = 0; // ;CLEAR COLLISION OBJECT
         // asm 00002055: 	ADDF	R5,*+AR3(IR0),R0
         // asm 00002056: 	STF	R0,*+AR3(2)
-        car_point->z =C3X_STF(C3X_ADD(car_point->z, obj->pos.Z));
+        car_point->z = C3X_STF(C3X_ADD(car_point->z, obj->pos.Z));
         // asm 00002057: 	ADDI	3,AR2
     LOOP:;
     }
@@ -873,7 +873,7 @@ RS2:
     car_point = &carblk->center;
     // asm 0000208D: 	LDI	CARVNUM-1,AR5		;LOOP ALL POINTS
     i = CARVNUM - 1;
-	RS3LP:
+RS3LP:
     // asm 0000208E: 	LDI	*+AR4(CARPCOL),R1	;CHECK PRIOR COLLISION...
     // asm 0000208F: 	BZ	RS300			;NOPE, SCAN ON...
     if (car_point->collided_road_object == 0) {
@@ -943,10 +943,10 @@ RS300:
 RS301:
     // asm 000020A8: 	STF	R0,*+AR4(CARPRDYD)		;SAVE ROAD Y DELTA
 #ifndef C3X_USE_HOST_FLOAT
-    {
-        uint32_t observed_result = (uint32_t)road_delta_y.bits;
-        MAME_ASSERT_REG(0x000020A8, "R0", &observed_result);
-    }
+{
+    uint32_t observed_result = (uint32_t)road_delta_y.bits;
+    MAME_ASSERT_REG(0x000020A8, "R0", &observed_result);
+}
 #endif
     car_point->road_delta_y = C3X_STF(road_delta_y); // ;SAVE ROAD Y DELTA
     {
@@ -1169,7 +1169,7 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     matrix->a00 = normal->Y; // ;X
     // asm 000020E2: 	NEGF	R0			;-N2
     // asm 000020E3: 	STF	R0,*+AR2(1)		;Y
-    matrix->a01 =C3X_STF(C3X_NEG(normal->X)); // ;Y
+    matrix->a01 = C3X_STF(C3X_NEG(normal->X)); // ;Y
     // asm 000020E4: 	CLRF	R1
     // asm 000020E5: 	STF	R1,*+AR2(2)		;Z
     matrix->a02 = C3X_STF(C3X_FROM_INT(0)); // ;Z
@@ -1196,19 +1196,19 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // asm 000020EA: 	MPYF	*+AR3(IR0),*+AR2(1),R1	;U3*V2
     // asm 000020EB: 	SUBF	R1,R0
     // asm 000020EC: 	STF	R0,*+AR3(6)
-    matrix->a20 =C3X_STF(C3X_SUB(C3X_MUL(matrix->a01, matrix->a12), C3X_MUL(matrix->a02, matrix->a11)));
+    matrix->a20 = C3X_STF(C3X_SUB(C3X_MUL(matrix->a01, matrix->a12), C3X_MUL(matrix->a02, matrix->a11)));
     // asm 000020ED: 	MPYF	*+AR3(IR0),*AR2,R0	;U3*V1
     // asm 000020EE: 	MPYF	*AR3,*+AR2(IR0),R1	;U1*V3
     // asm 000020EF: 	SUBF	R1,R0
     // asm 000020F0: 	STF	R0,*+AR3(7)
-    matrix->a21 =C3X_STF(C3X_SUB(C3X_MUL(matrix->a02, matrix->a10), C3X_MUL(matrix->a00, matrix->a12)));
+    matrix->a21 = C3X_STF(C3X_SUB(C3X_MUL(matrix->a02, matrix->a10), C3X_MUL(matrix->a00, matrix->a12)));
     observed_raw = C3X_STORE(C3X_LDF(matrix->a21));
     MAME_ASSERT_MEM(0x000020F1, "d@(ar3+7)", &observed_raw);
     // asm 000020F1: 	MPYF	*AR3,*+AR2(1),R0	;U1*V2
     // asm 000020F2: 	MPYF	*+AR3(1),*AR2,R1	;U2*V1
     // asm 000020F3: 	SUBF	R1,R0
     // asm 000020F4: 	STF	R0,*+AR3(8)
-    matrix->a22 =C3X_STF(C3X_SUB(C3X_MUL(matrix->a00, matrix->a11), C3X_MUL(matrix->a01, matrix->a10)));
+    matrix->a22 = C3X_STF(C3X_SUB(C3X_MUL(matrix->a00, matrix->a11), C3X_MUL(matrix->a01, matrix->a10)));
     // asm 000020F5: 	ADDI	3,AR2
     // asm 000020F6: 	CALL	NORMALIZE		;normalize(&N);
     NORMALIZE((VECTOR*)&matrix->a20);
@@ -1247,7 +1247,7 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/) {
     // Do not use MAME_ASSERT_MEM on float storage here: MAME is reading raw
     // TMS320C3x float bits from memory, while the port stores host IEEE floats.
     // asm 000020FD: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y =C3X_STF(C3X_SUB(carblk->center.y, carblk->wheel_scan_offsets[0].Y));
+    obj->pos.Y = C3X_STF(C3X_SUB(carblk->center.y, carblk->wheel_scan_offsets[0].Y));
     MAME_ASSERT_REG_FLOAT(0x000020FE, "R0", &obj->pos.Y);
     // asm 000020FE: 	RETS
 }
@@ -2051,7 +2051,7 @@ HARDCOL2:
         // asm: LDPI @TREESHAKI,AR2 ;GET SIGN FALL PROCESS
         // asm: LDI DRONE_C|FLYER_T,R2
         // asm: CALL PRC_CREATE_CHILD ;CREATE A CHILD PROCESS
-        fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
+        fly_ctx = NEW_PROC_CONTEXT();
         fly_ctx->TREESHAK.obj = sign_obj;
         fly_ctx->TREESHAK.rotation_delta = C3X_STF(fall_rate);
         PRC_CREATE_CHILD(CURRENT_PROC, TREESHAKI, DRONE_C | FLYER_T, fly_ctx);
@@ -2085,7 +2085,7 @@ FLYCOLL:
         PRC_KILL(sign_obj->plink);
     }
 CLLL1:
-    fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    fly_ctx = NEW_PROC_CONTEXT();
     fly_ctx->FLYCOLLP.obj = sign_obj;
     sign_obj->plink = PRC_CREATE_CHILD(CURRENT_PROC, FLYCOLLPI, DRONE_C | FLYER_T, fly_ctx);
     if (sign_obj->plink == NULL) {
@@ -2136,7 +2136,7 @@ RUNOVER:
     is_player_car = car_obj == PLYCAR;
     MAME_ASSERT_MEM(0x00002313, "ar3==d@0000E8A6", &is_player_car);
     FREESIGN(sign_obj);
-    fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    fly_ctx = NEW_PROC_CONTEXT();
     fly_ctx->SIGNFALL.obj = sign_obj;
     fly_ctx->SIGNFALL.rotation_delta = C3X_STF(fall_rate);
     fly_ctx->SIGNFALL.accumulated = C3X_STF(C3X_IMM_F32(0));
@@ -2198,16 +2198,15 @@ static void FLYCOLLP(PROC* p /*AR7*/) {
     int volume;
     int sound_index;
 
-    switch (PROC_RESUME_STATE)
-    {
-        case 0:
-            MAME_ASSERT_FUNCTION_ENTRY();
-            break;
-        case 1:
-            goto PROC_RESUME_1;
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
     }
 
-    obj = p->ctx->FLYCOLLP.obj;
+    obj = p->ctx.FLYCOLLP.obj;
 
     // asm 00002334: 	LDF	0.2,R0
     // asm 00002335: 	CALL	SFRAND
@@ -2216,7 +2215,7 @@ static void FLYCOLLP(PROC* p /*AR7*/) {
     // asm 00002337: 	LDI	AR7,AR2
     // asm 00002338: 	ADDI	PDATA+2,AR2		;STORE MATRIX PDATA+2
     // asm 00002339: 	CALL    FIND_XMATRIX
-    FIND_XMATRIX(&p->ctx->FLYCOLLP.rotation, angle);
+    FIND_XMATRIX(&p->ctx.FLYCOLLP.rotation, angle);
     // asm 0000233A: 	LDPI	@MATRIXAI,AR2
     // asm 0000233B: 	LDF	0.1,R0
     // asm 0000233C: 	CALL	SFRAND
@@ -2228,9 +2227,9 @@ static void FLYCOLLP(PROC* p /*AR7*/) {
     // asm 00002340: 	ADDI	PDATA+2,R2
     // asm 00002341: 	LDI	R2,R3
     // asm 00002342: 	CALL	CONCATMAT
-    CONCATMAT(&p->ctx->FLYCOLLP.rotation, &_MATRIXA, &p->ctx->FLYCOLLP.rotation);
+    CONCATMAT(&p->ctx.FLYCOLLP.rotation, &_MATRIXA, &p->ctx.FLYCOLLP.rotation);
 FLYCOLP0:
-    obj = p->ctx->FLYCOLLP.obj;
+    obj = p->ctx.FLYCOLLP.obj;
     // ;	LDI	*+AR4(OFLAGS),R0	;CHECK IF OBJECT ACTIVE, EXISTS
     // ;	AND	O_LIST_M,R0
     // ;	CMPI	O_LIST0,R0
@@ -2249,7 +2248,7 @@ FLYCOLP0:
     // asm 0000234A: 	CALL	CONCATMAT
     // asm 0000234B: 	DBU	AR6,FLYCOLPL
     while (frame_count-- > 0) {
-        CONCATMAT(&p->ctx->FLYCOLLP.rotation, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
+        CONCATMAT(&p->ctx.FLYCOLLP.rotation, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
     }
     // asm 0000234C: 	CALL	OVELNADD		;UPDATE VELOCITIES
     OVELNADD(obj);
@@ -2453,8 +2452,8 @@ static void SIGNFALL(PROC* p /*AR7*/) {
         break;
     }
 
-    sign_obj = p->ctx->SIGNFALL.obj;
-    rotation_delta = C3X_LDF(p->ctx->SIGNFALL.rotation_delta);
+    sign_obj = p->ctx.SIGNFALL.obj;
+    rotation_delta = C3X_LDF(p->ctx.SIGNFALL.rotation_delta);
     // asm 0000239C: 	LDF	0,R6
     accumulated = C3X_IMM_F32(0);
 SIGNFALP:
@@ -2484,12 +2483,12 @@ SIGNFALP0:
     // asm 000023A9: 	CALL	CONCATMAT
     CONCATMAT(&MATRIXAI, (MATRIX*)&sign_obj->omatrix, (MATRIX*)&sign_obj->omatrix);
     // asm 000023AA: 	SLEEP	1
-    p->ctx->SIGNFALL.rotation_delta = C3X_STF(rotation_delta);
-    p->ctx->SIGNFALL.accumulated = C3X_STF(accumulated);
+    p->ctx.SIGNFALL.rotation_delta = C3X_STF(rotation_delta);
+    p->ctx.SIGNFALL.accumulated = C3X_STF(accumulated);
     SLEEP(1, 1);
-    sign_obj = p->ctx->SIGNFALL.obj;
-    rotation_delta = C3X_LDF(p->ctx->SIGNFALL.rotation_delta);
-    accumulated = C3X_LDF(p->ctx->SIGNFALL.accumulated);
+    sign_obj = p->ctx.SIGNFALL.obj;
+    rotation_delta = C3X_LDF(p->ctx.SIGNFALL.rotation_delta);
+    accumulated = C3X_LDF(p->ctx.SIGNFALL.accumulated);
     // asm 000023AC: 	CMPF	1.5,R6
     // asm 000023AD: 	BLT	SIGNFALP   		;LOOP TIL DONE
     if (C3X_LT(accumulated, C3X_IMM_F32(1.5))) {
@@ -2525,8 +2524,8 @@ static void TREESHAK(PROC* p) {
         goto PROC_RESUME_2;
     }
 
-    sign_obj = p->ctx->TREESHAK.obj;
-    rotation_delta = C3X_LDF(p->ctx->TREESHAK.rotation_delta);
+    sign_obj = p->ctx.TREESHAK.obj;
+    rotation_delta = C3X_LDF(p->ctx.TREESHAK.rotation_delta);
     // *SHAKE IT FORWARD
     // asm 000023B0: 	LDF	R7,R2
     // asm 000023B1: 	LDPI	@MATRIXAI,AR2  		;GET TEMP STORE
@@ -2539,11 +2538,11 @@ static void TREESHAK(PROC* p) {
     CONCATMAT(&MATRIXAI, (MATRIX*)&sign_obj->omatrix, (MATRIX*)&sign_obj->omatrix);
     // asm 000023B7: 	SLEEP	1
     SLEEP(1, 1);
-    sign_obj = p->ctx->TREESHAK.obj;
-    rotation_delta = C3X_LDF(p->ctx->TREESHAK.rotation_delta);
+    sign_obj = p->ctx.TREESHAK.obj;
+    rotation_delta = C3X_LDF(p->ctx.TREESHAK.rotation_delta);
     // *SHAKE IT BACK
     // asm 000023B9: 	LDI	3,AR6			;# FRAMES/SHAKE
-    p->ctx->TREESHAK.loop_count = 3;
+    p->ctx.TREESHAK.loop_count = 3;
     // asm 000023BA: 	MPYF	-0.40,R7     		;DAMP IT
     rotation_delta = C3X_MUL(rotation_delta, C3X_IMM_F32(-0.40)); // DAMP IT
 TREESHKL:
@@ -2558,17 +2557,17 @@ TREESHKL:
     // asm 000023C1: 	CALL	CONCATMAT
     CONCATMAT(&MATRIXAI, (MATRIX*)&sign_obj->omatrix, (MATRIX*)&sign_obj->omatrix);
     // asm 000023C2: 	SLEEP	1
-    p->ctx->TREESHAK.rotation_delta = C3X_STF(rotation_delta);
+    p->ctx.TREESHAK.rotation_delta = C3X_STF(rotation_delta);
     SLEEP(1, 2);
-    sign_obj = p->ctx->TREESHAK.obj;
-    rotation_delta = C3X_LDF(p->ctx->TREESHAK.rotation_delta);
+    sign_obj = p->ctx.TREESHAK.obj;
+    rotation_delta = C3X_LDF(p->ctx.TREESHAK.rotation_delta);
     // asm 000023C4: 	DBU	AR6,TREESHKL
-    if (p->ctx->TREESHAK.loop_count-- > 0) {
+    if (p->ctx.TREESHAK.loop_count-- > 0) {
         goto TREESHKL;
     }
     // asm 000023C5: TREESHKL1
     // asm 000023C5: 	LDI	3,AR6			;# FRAMES/SHAKE
-    p->ctx->TREESHAK.loop_count = 3;
+    p->ctx.TREESHAK.loop_count = 3;
     // asm 000023C6: 	MPYF	-0.6,R7     		;REVERSE IT
     rotation_delta = C3X_MUL(rotation_delta, C3X_IMM_F32(-0.6)); // REVERSE IT
     // asm 000023C7: 	ABSF	R7,R0
@@ -2700,13 +2699,13 @@ static void FLYCAR(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/) {
     // asm 000023F5: 	LDI	AR1,AR4			;GET DRONE CAR OBJECT POINTER
     // asm 000023F6: 	LDI	*+AR4(OCARBLK),AR5	;GET DRONE CAR BLOCK
     player_carblk = obj0->carblk; // ;GET PLAYER'S CAR
-    drone_carblk = obj1->carblk; // ;GET DRONE CAR BLOCK
+    drone_carblk = obj1->carblk;  // ;GET DRONE CAR BLOCK
     // asm 000023F7: 	LDI	@HEAD2HEAD_ON,R0
     // asm 000023F8: 	BZ	NOTLINKED
     // asm 000023F9: 	LDI	*+AR5(CAR_OM),R0    	;OTHER MACHINES CAR?
     // asm 000023FA: 	BNE	L78G			;YES SKIP FLYING STUFF
     if (HEAD2HEAD_ON != 0 && drone_carblk->other_machine_controls != 0) { // ;OTHER MACHINES CAR?
-        goto L78G; // ;YES SKIP FLYING STUFF
+        goto L78G;                                                        // ;YES SKIP FLYING STUFF
     }
 NOTLINKED:
     // asm 000023FB: 	LDI	1,R0
@@ -2714,7 +2713,7 @@ NOTLINKED:
     // asm 000023FD: 	TSTB	*+AR1(OFLAGS),R0	;PROCESS ALREADY ACTIVE	?
     // asm 000023FE: 	BZ	FLYCAR0			;NO
     if ((obj1->flags & O_PROC) == 0) { // ;PROCESS ALREADY ACTIVE ?
-        goto FLYCAR0; // ;NO
+        goto FLYCAR0;                  // ;NO
     }
     // asm 000023FF: 	LDI	*+AR1(OPLINK),R0	;YES, KILL OFF DRONE PROCESS
     // asm 00002400: 	BZ	FLYCAR0
@@ -2777,7 +2776,7 @@ FLYCAR1:
     // asm 00002422: 	LDFLT	-65,R0		  	;MAX VERTICAL VELOCITY
     value = FRAND(C3X_IMM_F32(-0.3));
     value = C3X_ADD(value, C3X_IMM_F32(-0.2));
-    value = C3X_MUL(value, C3X_IMM_F32(1.5)); // ;SPEEDFUDGE FACTOR
+    value = C3X_MUL(value, C3X_IMM_F32(1.5));              // ;SPEEDFUDGE FACTOR
     value = C3X_MUL(value, C3X_LDF(player_carblk->speed)); // ;GET CURRENT SPEED
     if (C3X_LT(value, C3X_IMM_F32(-65))) {
         value = C3X_IMM_F32(-65); // ;MAX VERTICAL VELOCITY
@@ -2787,7 +2786,7 @@ FLYCAR1:
     // asm 00002424: 	LDPI	@FLYCARPI,AR2		;GET SIGN FLY PROCESS
     // asm 00002425: 	LDI	DRONE_C|FLYER_T,R2
     // asm 00002426: 	CALL	PRC_CREATE_CHILD		;CREATE A CHILD PROCESS
-    fly_ctx = port_malloc(sizeof(PROC_CONTEXT));
+    fly_ctx = NEW_PROC_CONTEXT();
     fly_ctx->FLYCARP.obj = obj1;
     fly_proc = PRC_CREATE_CHILD(CURRENT_PROC, FLYCARPI, DRONE_C | FLYER_T, fly_ctx); // ;CREATE A CHILD PROCESS
     // asm 00002427: 	BC	L78G
@@ -2992,30 +2991,30 @@ void FLYCARP(PROC* p /*AR7*/) {
         goto PROC_RESUME_5;
     }
 
-    obj = p->ctx->FLYCARP.obj;
+    obj = p->ctx.FLYCARP.obj;
     carblk = obj->carblk;
     // *GET YOUR RADIANS
     // asm 00002478: 	LDF	0.2,R0
     // asm 00002479: 	CALL	SFRAND
     // asm 0000247A: 	STF	R0,*+AR7(PDATA)	  	;X RADIANS
-    p->ctx->FLYCARP.x_rate = C3X_STF(SFRAND(C3X_IMM_F32(0.2))); // ;X RADIANS
+    p->ctx.FLYCARP.x_rate = C3X_STF(SFRAND(C3X_IMM_F32(0.2))); // ;X RADIANS
     // asm 0000247B: 	LDF	0.1,R0
     // asm 0000247C: 	CALL	SFRAND
     // asm 0000247D: 	STF	R0,*+AR7(PDATA+1)	;Y RADIANS
-    p->ctx->FLYCARP.y_rate = C3X_STF(SFRAND(C3X_IMM_F32(0.1))); // ;Y RADIANS
+    p->ctx.FLYCARP.y_rate = C3X_STF(SFRAND(C3X_IMM_F32(0.1))); // ;Y RADIANS
     // asm 0000247E: 	LDF	0,R0
     // asm 0000247F: 	STF	R0,*+AR7(PDATA+2)	;Z RADIANS
-    p->ctx->FLYCARP.z_rate = C3X_STF(C3X_IMM_F32(0)); // ;Z RADIANS
+    p->ctx.FLYCARP.z_rate = C3X_STF(C3X_IMM_F32(0)); // ;Z RADIANS
     // asm 00002480: 	LDF	0,R0
     // asm 00002481: 	STF	R0,*+AR7(PDATA+3)	;X RADIAN TOTAL
     // asm 00002482: 	STF	R0,*+AR7(PDATA+5)  	;Z RADIAN TOTAL
-    p->ctx->FLYCARP.x_total = C3X_STF(C3X_IMM_F32(0)); // ;X RADIAN TOTAL
-    p->ctx->FLYCARP.z_total = C3X_STF(C3X_IMM_F32(0)); // ;Z RADIAN TOTAL
+    p->ctx.FLYCARP.x_total = C3X_STF(C3X_IMM_F32(0)); // ;X RADIAN TOTAL
+    p->ctx.FLYCARP.z_total = C3X_STF(C3X_IMM_F32(0)); // ;Z RADIAN TOTAL
     // asm 00002483: 	LDF	*+AR5(CARYROT),R0	;GET CAR Y ROT
     // asm 00002484: 	STF	R0,*+AR7(PDATA+4)
-    p->ctx->FLYCARP.y_total = C3X_STF(C3X_LDF(carblk->y_rotation)); // ;GET CAR Y ROT
+    p->ctx.FLYCARP.y_total = C3X_STF(C3X_LDF(carblk->y_rotation)); // ;GET CAR Y ROT
 FLYCARP0:
-    obj = p->ctx->FLYCARP.obj;
+    obj = p->ctx.FLYCARP.obj;
     carblk = obj->carblk;
     // asm 00002485: 	LDI	@SUSPEND_MODE,R0       	;WAIT IN SUSPEND MODE
     // asm 00002486: 	CMPI	SM_HALT,R0
@@ -3040,20 +3039,20 @@ FLYCARP0:
     // asm 00002491: 	MPYF	R1,R0
     // asm 00002492: 	ADDF	*+AR7(PDATA+3),R0
     // asm 00002493: 	STF	R0,*+AR7(PDATA+3)
-    value = C3X_MUL(C3X_LDF(p->ctx->FLYCARP.x_rate), C3X_FROM_INT(NFRAMES));
-    p->ctx->FLYCARP.x_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->FLYCARP.x_total))); // ;ACCUMULATE X RADIANS
+    value = C3X_MUL(C3X_LDF(p->ctx.FLYCARP.x_rate), C3X_FROM_INT(NFRAMES));
+    p->ctx.FLYCARP.x_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx.FLYCARP.x_total))); // ;ACCUMULATE X RADIANS
     // asm 00002494: 	LDF	*+AR7(PDATA+1),R0      	;ACCUMULATE Y RADIANS
     // asm 00002495: 	MPYF	R1,R0
     // asm 00002496: 	ADDF	*+AR7(PDATA+4),R0
     // asm 00002497: 	STF	R0,*+AR7(PDATA+4)
-    value = C3X_MUL(C3X_LDF(p->ctx->FLYCARP.y_rate), C3X_FROM_INT(NFRAMES));
-    p->ctx->FLYCARP.y_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->FLYCARP.y_total))); // ;ACCUMULATE Y RADIANS
+    value = C3X_MUL(C3X_LDF(p->ctx.FLYCARP.y_rate), C3X_FROM_INT(NFRAMES));
+    p->ctx.FLYCARP.y_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx.FLYCARP.y_total))); // ;ACCUMULATE Y RADIANS
     // ;	LDF	*+AR7(PDATA+2),R0 	;ACCUMULATE Z RADIANS
     // ;	MPYF	R1,R0
     // ;	ADDF	*+AR7(PDATA+5),R0
     // ;	STF	R0,*+AR7(PDATA+5)
     // asm 00002498: 	CALL	GETFLYMAT		;COMPUTE MATRICES
-    GETFLYMAT(obj, p->ctx->FLYCARP.x_total, p->ctx->FLYCARP.y_total, p->ctx->FLYCARP.z_total); // ;COMPUTE MATRICES
+    GETFLYMAT(obj, p->ctx.FLYCARP.x_total, p->ctx.FLYCARP.y_total, p->ctx.FLYCARP.z_total); // ;COMPUTE MATRICES
     // *CONVERT CARVROT,CARSPEED TO OVELX, OVELZ
     // asm 00002499: 	LDF	*+AR5(CARVROT),R2
     // asm 0000249A: 	ADDF	1.57,R2		   	;CORRECT FOR 90 DEGREE ERROR
@@ -3140,11 +3139,11 @@ FLYCARP0:
     // asm 000024C1: 	LDF	*+AR7(PDATA),R0		;CUT DOWN SPIN
     // asm 000024C2: 	MPYF	0.5,R0
     // asm 000024C3: 	STF	R0,*+AR7(PDATA)
-    p->ctx->FLYCARP.x_rate = C3X_STF(C3X_MUL(C3X_LDF(p->ctx->FLYCARP.x_rate), C3X_IMM_F32(0.5))); // ;CUT DOWN SPIN
+    p->ctx.FLYCARP.x_rate = C3X_STF(C3X_MUL(C3X_LDF(p->ctx.FLYCARP.x_rate), C3X_IMM_F32(0.5))); // ;CUT DOWN SPIN
     // asm 000024C4: 	LDF	*+AR7(PDATA+1),R0
     // asm 000024C5: 	MPYF	0.5,R0
     // asm 000024C6: 	STF	R0,*+AR7(PDATA+1)
-    p->ctx->FLYCARP.y_rate = C3X_STF(C3X_MUL(C3X_LDF(p->ctx->FLYCARP.y_rate), C3X_IMM_F32(0.5)));
+    p->ctx.FLYCARP.y_rate = C3X_STF(C3X_MUL(C3X_LDF(p->ctx.FLYCARP.y_rate), C3X_IMM_F32(0.5)));
     // ;	LDF	*+AR7(PDATA+2),R0
     // ;	MPYF	0.5,R0
     // ;	STF	R0,*+AR7(PDATA+2)
@@ -3167,7 +3166,7 @@ FLYCARSLP:
 FLYCARSTOP0:
     // ;	CALL	GETCARVSPD		;CONVERT XVEL,ZVEL TO CARSPEED, CARVROT
 FLYCARSTOP:
-    obj = p->ctx->FLYCARP.obj;
+    obj = p->ctx.FLYCARP.obj;
     carblk = obj->carblk;
     // asm 000024CF: 	LDI	@SUSPEND_MODE,R0       	;WAIT IN SUSPEND MODE
     // asm 000024D0: 	CMPI	SM_HALT,R0
@@ -3201,7 +3200,7 @@ FLYCARSTOP:
     obj->vel_x = C3X_STF(C3X_MUL(_COSI(angle), speed));
     // asm 000024E1: 	LDF	*+AR5(CARDROT),R0
     // asm 000024E2: 	STF	R0,*+AR7(PDATA+1)	;GET Y SPIN
-    p->ctx->FLYCARP.y_rate = C3X_STF(C3X_LDF(carblk->last_y_rotation)); // ;GET Y SPIN
+    p->ctx.FLYCARP.y_rate = C3X_STF(C3X_LDF(carblk->last_y_rotation)); // ;GET Y SPIN
     // asm 000024E3: 	LDI	*+AR4(OCARBLK),R3	;GET CAR DATA AREA
     // asm 000024E4: 	CALL	ROADSCAN
     ROADSCAN(obj, carblk);
@@ -3210,169 +3209,170 @@ FLYCARSTOP:
     // asm 000024E7: 	SUBI	1,RC
     // asm 000024E8: 	RPTB	FLYCSTL
     for (i = 0; i < NFRAMES; i++) {
-    // asm 000024E9: 	LDF	*+AR4(OVELX),R0
-    // asm 000024EA: 	MPYF	0.98,R0			;DECAY VELOCITY
-    // asm 000024EB: 	STF	R0,*+AR4(OVELX)
-    // asm 000024EC: 	ADDF	*+AR4(OPOSX),R0
-    // asm 000024ED: 	STF	R0,*+AR4(OPOSX)
+        // asm 000024E9: 	LDF	*+AR4(OVELX),R0
+        // asm 000024EA: 	MPYF	0.98,R0			;DECAY VELOCITY
+        // asm 000024EB: 	STF	R0,*+AR4(OVELX)
+        // asm 000024EC: 	ADDF	*+AR4(OPOSX),R0
+        // asm 000024ED: 	STF	R0,*+AR4(OPOSX)
         value = C3X_MUL(C3X_LDF(obj->vel_x), C3X_IMM_F32(0.98)); // ;DECAY VELOCITY
         obj->vel_x = C3X_STF(value);
         obj->pos.X = C3X_STF(C3X_ADD(value, C3X_LDF(obj->pos.X)));
-    // asm 000024EE: 	LDF	*+AR4(OVELY),R0
-    // asm 000024EF: 	ADDF	*+AR4(OPOSY),R0
-    // asm 000024F0: 	STF	R0,*+AR4(OPOSY)
+        // asm 000024EE: 	LDF	*+AR4(OVELY),R0
+        // asm 000024EF: 	ADDF	*+AR4(OPOSY),R0
+        // asm 000024F0: 	STF	R0,*+AR4(OPOSY)
         obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->vel_y), C3X_LDF(obj->pos.Y)));
-    // asm 000024F1: 	LDF	*+AR4(OVELZ),R0
-    // asm 000024F2: 	MPYF	0.98,R0			;DECAY VELOCITY
-    // asm 000024F3: 	STF	R0,*+AR4(OVELZ)
-    // asm 000024F4: 	ADDF	*+AR4(OPOSZ),R0
-    // asm 000024F5: 	STF	R0,*+AR4(OPOSZ)
+        // asm 000024F1: 	LDF	*+AR4(OVELZ),R0
+        // asm 000024F2: 	MPYF	0.98,R0			;DECAY VELOCITY
+        // asm 000024F3: 	STF	R0,*+AR4(OVELZ)
+        // asm 000024F4: 	ADDF	*+AR4(OPOSZ),R0
+        // asm 000024F5: 	STF	R0,*+AR4(OPOSZ)
         value = C3X_MUL(C3X_LDF(obj->vel_z), C3X_IMM_F32(0.98)); // ;DECAY VELOCITY
         obj->vel_z = C3X_STF(value);
         obj->pos.Z = C3X_STF(C3X_ADD(value, C3X_LDF(obj->pos.Z)));
-    // asm 000024F6: 	LDF	*+AR7(PDATA),R0		;ACCUMULATE X RADIANS
-    // ;	MPYF	0.97,R0  		;DAMP IT
-    // asm 000024F7: 	MPYF	0.96,R0  		;DAMP IT
-    // asm 000024F8: 	STF	R0,*+AR7(PDATA)		;CUT DOWN ROCK
-    // asm 000024F9: 	ADDF	*+AR7(PDATA+3),R0
-    // asm 000024FA: 	STF	R0,*+AR7(PDATA+3)
-    // asm 000024FB: 	LDF	*+AR7(PDATA+1),R0      	;ACCUMULATE Y RADIANS
-    // ;	MPYF	0.985,R0  		;DAMP IT
-    // asm 000024FC: 	MPYF	0.98,R0  		;DAMP IT
-    // asm 000024FD: 	STF	R0,*+AR7(PDATA+1)	;CUT DOWN ROCK
-    // asm 000024FE: 	STF	R0,*+AR5(CARDROT)	;STORE IN CAR STRUCTURE
-    // asm 000024FF: 	ADDF	*+AR7(PDATA+4),R0
-    // asm 00002500: 	STF	R0,*+AR7(PDATA+4)
-    // ;	LDF	*+AR7(PDATA+2),R0 	;ACCUMULATE Z RADIANS
-    // ;	ADDF	*+AR7(PDATA+5),R0
-    // ;	STF	R0,*+AR7(PDATA+5)
-        value = C3X_MUL(C3X_LDF(p->ctx->FLYCARP.x_rate), C3X_IMM_F32(0.96)); // ;DAMP IT
-        p->ctx->FLYCARP.x_rate = C3X_STF(value); // ;CUT DOWN ROCK
-        p->ctx->FLYCARP.x_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->FLYCARP.x_total)));
-        value = C3X_MUL(C3X_LDF(p->ctx->FLYCARP.y_rate), C3X_IMM_F32(0.98)); // ;DAMP IT
-        p->ctx->FLYCARP.y_rate = C3X_STF(value); // ;CUT DOWN ROCK
-        carblk->last_y_rotation = C3X_STF(value); // ;STORE IN CAR STRUCTURE
-        p->ctx->FLYCARP.y_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx->FLYCARP.y_total)));
-    // asm 00002501: 	LDF	*+AR7(PDATA+3),R2	;CHECK TOTAL X RADIANS
-    // asm 00002502: 	CALL	NORMITS
-    // asm 00002503: 	ABSF	R2,R3
-        normalized_angle = NORMITS(C3X_LDF(p->ctx->FLYCARP.x_total)); // ;CHECK TOTAL X RADIANS
+        // asm 000024F6: 	LDF	*+AR7(PDATA),R0		;ACCUMULATE X RADIANS
+        // ;	MPYF	0.97,R0  		;DAMP IT
+        // asm 000024F7: 	MPYF	0.96,R0  		;DAMP IT
+        // asm 000024F8: 	STF	R0,*+AR7(PDATA)		;CUT DOWN ROCK
+        // asm 000024F9: 	ADDF	*+AR7(PDATA+3),R0
+        // asm 000024FA: 	STF	R0,*+AR7(PDATA+3)
+        // asm 000024FB: 	LDF	*+AR7(PDATA+1),R0      	;ACCUMULATE Y RADIANS
+        // ;	MPYF	0.985,R0  		;DAMP IT
+        // asm 000024FC: 	MPYF	0.98,R0  		;DAMP IT
+        // asm 000024FD: 	STF	R0,*+AR7(PDATA+1)	;CUT DOWN ROCK
+        // asm 000024FE: 	STF	R0,*+AR5(CARDROT)	;STORE IN CAR STRUCTURE
+        // asm 000024FF: 	ADDF	*+AR7(PDATA+4),R0
+        // asm 00002500: 	STF	R0,*+AR7(PDATA+4)
+        // ;	LDF	*+AR7(PDATA+2),R0 	;ACCUMULATE Z RADIANS
+        // ;	ADDF	*+AR7(PDATA+5),R0
+        // ;	STF	R0,*+AR7(PDATA+5)
+        value = C3X_MUL(C3X_LDF(p->ctx.FLYCARP.x_rate), C3X_IMM_F32(0.96)); // ;DAMP IT
+        p->ctx.FLYCARP.x_rate = C3X_STF(value);                             // ;CUT DOWN ROCK
+        p->ctx.FLYCARP.x_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx.FLYCARP.x_total)));
+        value = C3X_MUL(C3X_LDF(p->ctx.FLYCARP.y_rate), C3X_IMM_F32(0.98)); // ;DAMP IT
+        p->ctx.FLYCARP.y_rate = C3X_STF(value);                             // ;CUT DOWN ROCK
+        carblk->last_y_rotation = C3X_STF(value);                           // ;STORE IN CAR STRUCTURE
+        p->ctx.FLYCARP.y_total = C3X_STF(C3X_ADD(value, C3X_LDF(p->ctx.FLYCARP.y_total)));
+        // asm 00002501: 	LDF	*+AR7(PDATA+3),R2	;CHECK TOTAL X RADIANS
+        // asm 00002502: 	CALL	NORMITS
+        // asm 00002503: 	ABSF	R2,R3
+        normalized_angle = NORMITS(C3X_LDF(p->ctx.FLYCARP.x_total)); // ;CHECK TOTAL X RADIANS
         absolute_angle = C3X_ABS(normalized_angle);
-    // asm 00002504: 	LDF	*+AR5(CARSPEED),R0	;DECAY SPEED
-    // asm 00002505: 	MPYF	0.98,R0
-    // asm 00002506: 	STF	R0,*+AR5(CARSPEED)
+        // asm 00002504: 	LDF	*+AR5(CARSPEED),R0	;DECAY SPEED
+        // asm 00002505: 	MPYF	0.98,R0
+        // asm 00002506: 	STF	R0,*+AR5(CARSPEED)
         speed = C3X_MUL(C3X_LDF(carblk->speed), C3X_IMM_F32(0.98)); // ;DECAY SPEED
         carblk->speed = C3X_STF(speed);
-    // *CHECK FOR DONE...
-    // asm 00002507: 	CMPF	10,R0	       		;SPEED DECAYED?
-    // asm 00002508: 	BGT	FLYCSTP0	     	;NO, KEEP GOING...
+        // *CHECK FOR DONE...
+        // asm 00002507: 	CMPF	10,R0	       		;SPEED DECAYED?
+        // asm 00002508: 	BGT	FLYCSTP0	     	;NO, KEEP GOING...
         if (C3X_GT(speed, C3X_IMM_F32(10))) {
             goto FLYCSTP0; // ;NO, KEEP GOING...
         }
-    // asm 00002509: 	ABSF	*+AR5(CARDROT),R0	;GET ROTATE
-    // asm 0000250A: 	ABSF	*+AR7(PDATA),R1	    	;ADD IN ROCK
-    // asm 0000250B: 	ADDF	R0,R1
-    // asm 0000250C: 	MPYF	10,R1	    		;GET IN RANGE
-    // asm 0000250D: 	CMPF	0.02,R1			;PETERED OUT?
-    // asm 0000250E: 	BGT	FLYCSTP0		;NO, KEEP GOING
-        value = C3X_ADD(C3X_ABS(C3X_LDF(carblk->last_y_rotation)), C3X_ABS(C3X_LDF(p->ctx->FLYCARP.x_rate))); // ;ADD IN ROCK
-        value = C3X_MUL(value, C3X_IMM_F32(10)); // ;GET IN RANGE
+        // asm 00002509: 	ABSF	*+AR5(CARDROT),R0	;GET ROTATE
+        // asm 0000250A: 	ABSF	*+AR7(PDATA),R1	    	;ADD IN ROCK
+        // asm 0000250B: 	ADDF	R0,R1
+        // asm 0000250C: 	MPYF	10,R1	    		;GET IN RANGE
+        // asm 0000250D: 	CMPF	0.02,R1			;PETERED OUT?
+        // asm 0000250E: 	BGT	FLYCSTP0		;NO, KEEP GOING
+        value = C3X_ADD(C3X_ABS(C3X_LDF(carblk->last_y_rotation)), C3X_ABS(C3X_LDF(p->ctx.FLYCARP.x_rate))); // ;ADD IN ROCK
+        value = C3X_MUL(value, C3X_IMM_F32(10));                                                             // ;GET IN RANGE
         if (C3X_GT(value, C3X_IMM_F32(0.02))) {
             goto FLYCSTP0; // ;NO, KEEP GOING
         }
-    // asm 0000250F: 	CMPF	0.2,R3			;RIGHT SIDE UP?
-    // asm 00002510: 	BGT	FLYCSTP00		;NOPE...
+        // asm 0000250F: 	CMPF	0.2,R3			;RIGHT SIDE UP?
+        // asm 00002510: 	BGT	FLYCSTP00		;NOPE...
         if (C3X_GT(absolute_angle, C3X_IMM_F32(0.2))) {
             goto FLYCSTP00; // ;NOPE...
         }
-    // asm 00002511: 	LDF	0,R3			;STRAIGHTEN HIM UP!!!
-    // asm 00002512: 	STF	R3,*+AR7(PDATA+3)
-        p->ctx->FLYCARP.x_total = C3X_STF(C3X_IMM_F32(0)); // ;STRAIGHTEN HIM UP!!!
-    // asm 00002513: 	LDI	2,R0
+        // asm 00002511: 	LDF	0,R3			;STRAIGHTEN HIM UP!!!
+        // asm 00002512: 	STF	R3,*+AR7(PDATA+3)
+        p->ctx.FLYCARP.x_total = C3X_STF(C3X_IMM_F32(0)); // ;STRAIGHTEN HIM UP!!!
+                                                          // asm 00002513: 	LDI	2,R0
         done_flag = 2;
-    // asm 00002514: 	B	FLYCCC			;YES, TIME TO STOP
+        // asm 00002514: 	B	FLYCCC			;YES, TIME TO STOP
         goto FLYCCC; // ;YES, TIME TO STOP
-FLYCSTP00:
-    // asm 00002515: 	CMPF	2.95,R3			;UPSIDE DOWN?
-    // asm 00002516: 	BLT	FLYCSTP0		;NOPE
+    FLYCSTP00:
+        // asm 00002515: 	CMPF	2.95,R3			;UPSIDE DOWN?
+        // asm 00002516: 	BLT	FLYCSTP0		;NOPE
         if (C3X_LT(absolute_angle, C3X_IMM_F32(2.95))) {
             goto FLYCSTP0; // ;NOPE
         }
-    // asm 00002517: FLYCSTP
-    // asm 00002517: 	LDI	1,R0	 		;WERE DONE DUDES...
+        // asm 00002517: FLYCSTP
+        // asm 00002517: 	LDI	1,R0	 		;WERE DONE DUDES...
         done_flag = 1; // ;WERE DONE DUDES...
-    // asm 00002518: 	B	FLYCCC
+                       // asm 00002518: 	B	FLYCCC
         goto FLYCCC;
-    // *ACCELERATE X ROTATION
-FLYCSTP0:
-    // asm 00002519: 	LDF	R2,R2
-    // asm 0000251A: 	BN	FLYCSTP1
-    // asm 0000251B: 	CMPF	1.57,R2
-    // asm 0000251C: 	B 	FLYCSTP2
-FLYCSTP1:
-    // asm 0000251D: 	CMPF	-1.57,R2
-FLYCSTP2:
+        // *ACCELERATE X ROTATION
+    FLYCSTP0:
+        // asm 00002519: 	LDF	R2,R2
+        // asm 0000251A: 	BN	FLYCSTP1
+        // asm 0000251B: 	CMPF	1.57,R2
+        // asm 0000251C: 	B 	FLYCSTP2
+    FLYCSTP1:
+        // asm 0000251D: 	CMPF	-1.57,R2
+    FLYCSTP2:
         value = C3X_LT(normalized_angle,
-                       C3X_LT(normalized_angle, C3X_FROM_INT(0)) ? C3X_IMM_F32(-1.57) : C3X_IMM_F32(1.57))
-                    ? C3X_IMM_F32(-0.01) : C3X_IMM_F32(0.01);
+                    C3X_LT(normalized_angle, C3X_FROM_INT(0)) ? C3X_IMM_F32(-1.57) : C3X_IMM_F32(1.57))
+            ? C3X_IMM_F32(-0.01)
+            : C3X_IMM_F32(0.01);
         value = C3X_MUL(value, C3X_IMM_F32(0.4));
-        old_x_rate = C3X_LDF(p->ctx->FLYCARP.x_rate);
+        old_x_rate = C3X_LDF(p->ctx.FLYCARP.x_rate);
         value = C3X_ADD(value, old_x_rate);
-    // asm 0000251E: 	LDFLT	-0.01,R0
-    // asm 0000251F: 	LDFGE	0.01,R0
-    // asm 00002520: 	MPYF	0.4,R0
-    // asm 00002521: 	ADDF	*+AR7(PDATA),R0
-    // asm 00002522: 	LDF	*+AR7(PDATA),R1
-    // asm 00002523: 	XOR	R0,R1,R2 		;CHECK FOR SIGN CHANGE- MAKE SOUND
-    // asm 00002524: 	BNN	FLYCSTL			;NO SOUND
+        // asm 0000251E: 	LDFLT	-0.01,R0
+        // asm 0000251F: 	LDFGE	0.01,R0
+        // asm 00002520: 	MPYF	0.4,R0
+        // asm 00002521: 	ADDF	*+AR7(PDATA),R0
+        // asm 00002522: 	LDF	*+AR7(PDATA),R1
+        // asm 00002523: 	XOR	R0,R1,R2 		;CHECK FOR SIGN CHANGE- MAKE SOUND
+        // asm 00002524: 	BNN	FLYCSTL			;NO SOUND
         if (C3X_LT(value, C3X_FROM_INT(0)) == C3X_LT(old_x_rate, C3X_FROM_INT(0))) {
             goto FLYCSTL; // ;NO SOUND
         }
-    // asm 00002525: 	ABSF	*+AR7(PDATA+3),R2	;CHECK IF AMPLITUDE BIG ENOUGH
-    // asm 00002526: 	CALL	NORMITS
-    // asm 00002527: 	ABSF	R2
-    // asm 00002528: 	CMPF	0.08,R2
-    // asm 00002529: 	BLT	FLYCSTL			;TOO SMALL OF A ROCK
-        absolute_angle = C3X_ABS(NORMITS(C3X_ABS(C3X_LDF(p->ctx->FLYCARP.x_total))));
+        // asm 00002525: 	ABSF	*+AR7(PDATA+3),R2	;CHECK IF AMPLITUDE BIG ENOUGH
+        // asm 00002526: 	CALL	NORMITS
+        // asm 00002527: 	ABSF	R2
+        // asm 00002528: 	CMPF	0.08,R2
+        // asm 00002529: 	BLT	FLYCSTL			;TOO SMALL OF A ROCK
+        absolute_angle = C3X_ABS(NORMITS(C3X_ABS(C3X_LDF(p->ctx.FLYCARP.x_total))));
         if (C3X_LT(absolute_angle, C3X_IMM_F32(0.08))) {
             goto FLYCSTL; // ;TOO SMALL OF A ROCK
         }
-    // asm 0000252A: 	CMPF	3.06,R2
-    // asm 0000252B: 	BGT	FLYCSTL			;TOO SMALL OF A UPSIDE DOWN ROCK
+        // asm 0000252A: 	CMPF	3.06,R2
+        // asm 0000252B: 	BGT	FLYCSTL			;TOO SMALL OF A UPSIDE DOWN ROCK
         if (C3X_GT(absolute_angle, C3X_IMM_F32(3.06))) {
             goto FLYCSTL; // ;TOO SMALL OF AN UPSIDE DOWN ROCK
         }
-    // asm 0000252C: 	LDI	BOTTOMOUT,AR2		;MAKE BOTTOMOUT SOUND
-    // asm 0000252D: 	PUSHF	R0
-    // asm 0000252E: 	CALL	DRONESND1
+        // asm 0000252C: 	LDI	BOTTOMOUT,AR2		;MAKE BOTTOMOUT SOUND
+        // asm 0000252D: 	PUSHF	R0
+        // asm 0000252E: 	CALL	DRONESND1
         DRONESND1(obj, BOTTOMOUT); // ;MAKE BOTTOMOUT SOUND
-    // asm 0000252F: 	POPF	R0
-FLYCSTL:
-    // asm 00002530: STF	R0,*+AR7(PDATA)		;ACCELERATE ROTATION
-        p->ctx->FLYCARP.x_rate = C3X_STF(value); // ;ACCELERATE ROTATION
-    // asm 00002531: 	LDI	0,R0			;DONE FLAG
-        done_flag = 0; // ;DONE FLAG
-FLYCCC:
-    // asm 00002532: 	PUSH	R0
-    // asm 00002533: 	CALL	GETTRAK
-    // asm 00002534: 	CALL	DRONINBZ		;CHECK BOUNDS
+        // asm 0000252F: 	POPF	R0
+    FLYCSTL:
+        // asm 00002530: STF	R0,*+AR7(PDATA)		;ACCELERATE ROTATION
+        p->ctx.FLYCARP.x_rate = C3X_STF(value); // ;ACCELERATE ROTATION
+                                                // asm 00002531: 	LDI	0,R0			;DONE FLAG
+        done_flag = 0;                          // ;DONE FLAG
+    FLYCCC:
+        // asm 00002532: 	PUSH	R0
+        // asm 00002533: 	CALL	GETTRAK
+        // asm 00002534: 	CALL	DRONINBZ		;CHECK BOUNDS
         GETTRAK(obj, carblk);
         DRONINBZ(obj, carblk); // ;CHECK BOUNDS
-    // asm 00002535: 	CALL	GETFLYMAT
-        GETFLYMAT(obj, p->ctx->FLYCARP.x_total, p->ctx->FLYCARP.y_total, p->ctx->FLYCARP.z_total);
-    // asm 00002536: 	CALL	BOXSCAN		      	;KEEP FALLING!!!
+                               // asm 00002535: 	CALL	GETFLYMAT
+        GETFLYMAT(obj, p->ctx.FLYCARP.x_total, p->ctx.FLYCARP.y_total, p->ctx.FLYCARP.z_total);
+        // asm 00002536: 	CALL	BOXSCAN		      	;KEEP FALLING!!!
         if (!BOXSCAN(obj, &road_delta)) { // ;KEEP FALLING!!!
             goto FLYCARSTP;
         }
-    // asm 00002537: 	POP	R1			;CLEAN STACK
-    // asm 00002538: 	BNC	FLYCARSTP
-    // asm 00002539: 	ADDF	*+AR4(OPOSY),R0		;SET HIM ON THE GROUND
-    // asm 0000253A: 	STF	R0,*+AR4(OPOSY)
+        // asm 00002537: 	POP	R1			;CLEAN STACK
+        // asm 00002538: 	BNC	FLYCARSTP
+        // asm 00002539: 	ADDF	*+AR4(OPOSY),R0		;SET HIM ON THE GROUND
+        // asm 0000253A: 	STF	R0,*+AR4(OPOSY)
         obj->pos.Y = C3X_STF(C3X_ADD(road_delta, C3X_LDF(obj->pos.Y))); // ;SET HIM ON THE GROUND
-    // asm 0000253B: 	CALL	SKID_SPARK
+                                                                        // asm 0000253B: 	CALL	SKID_SPARK
         SKID_SPARK();
-    // asm 0000253C: 	LDI	R1,R1			;DONE
-    // asm 0000253D: 	BNE	FLYCARSTP		;YESSAH
+        // asm 0000253C: 	LDI	R1,R1			;DONE
+        // asm 0000253D: 	BNE	FLYCARSTP		;YESSAH
         if (done_flag != 0) {
             goto FLYCARSTP; // ;YESSAH
         }
@@ -3407,7 +3407,7 @@ FLYCARSTP:
     carblk->speed = C3X_STF(C3X_IMM_F32(0)); // ;CLEAR OUT THE SPEED
     // *WAIT FOR OFFSCREEN
 FLYCARWT:
-    obj = p->ctx->FLYCARP.obj;
+    obj = p->ctx.FLYCARP.obj;
     carblk = obj->carblk;
     // asm 0000254A: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 0000254B: 	CALLNZ	SEND_FLY_POS		;SEND YOUR POSITION TO LINKED GAME
@@ -3444,7 +3444,7 @@ FLYCARWT:
     // asm 00002554: 	LDF	0.1,R0		       	;ROCK HIM A LITTLE
     // asm 00002555: 	CALL	SFRAND
     // asm 00002556: 	STF	R0,*+AR7(PDATA)	  	;X RADIANS RATE
-    p->ctx->FLYCARP.x_rate = C3X_STF(SFRAND(C3X_IMM_F32(0.1))); // ;ROCK HIM A LITTLE
+    p->ctx.FLYCARP.x_rate = C3X_STF(SFRAND(C3X_IMM_F32(0.1))); // ;ROCK HIM A LITTLE
     // asm 00002557: 	B	FLYCARSTOP		;GO ROCK AND ROLL
     goto FLYCARSTOP; // ;GO ROCK AND ROLL
     // *CLEAN UP THE MESS...
@@ -3512,13 +3512,13 @@ DEADCAR:
     // asm 00002576: 	LDF	*+AR7(PDATA+4),R0 	;GET Y ROTATION ORIENTATION
     // asm 00002577: 	STF	R0,*+AR5(CARVROT)
     // asm 00002578: 	STF	R0,*+AR5(CARYROT)
-    carblk->y_velocity_rotation = C3X_STF(C3X_LDF(p->ctx->FLYCARP.y_total)); // ;GET Y ROTATION ORIENTATION
-    carblk->y_rotation = C3X_STF(C3X_LDF(p->ctx->FLYCARP.y_total));
+    carblk->y_velocity_rotation = C3X_STF(C3X_LDF(p->ctx.FLYCARP.y_total)); // ;GET Y ROTATION ORIENTATION
+    carblk->y_rotation = C3X_STF(C3X_LDF(p->ctx.FLYCARP.y_total));
     // asm 00002579: 	LDI	0,R0
     // asm 0000257A: 	STI	R0,*+AR5(CAR_SPIN)	;CLEAR SPIN
     carblk->spin_flag = 0; // ;CLEAR SPIN
 DEADLP:
-    obj = p->ctx->FLYCARP.obj;
+    obj = p->ctx.FLYCARP.obj;
     carblk = obj->carblk;
     // asm 0000257B: 	LDI	2,R4
     // asm 0000257C: 	LDI	*+AR4(ODIST),R0	      	;DIE OFF WHEN OFFSCREEN
@@ -3797,8 +3797,8 @@ COLSCLP0:
     }
     // asm 000025F7: 	CALL	COLCHK			;CHECK OUT COLLISION FURTHER
     if (!COLCHK(player_obj, other_obj, &collision_point)) { // ;CHECK OUT COLLISION FURTHER
-    // asm 000025F8: 	BNC	COLSCL0			;NO COLLIDE
-        goto COLSCL0; // ;NO COLLIDE
+                                                            // asm 000025F8: 	BNC	COLSCL0			;NO COLLIDE
+        goto COLSCL0;                                       // ;NO COLLIDE
     }
     // asm 000025F9: 	LDI	*+AR0(OCARBLK),AR4	;CHECK FOR LOW SPEED PLOW
     // asm 000025FA: 	LDF	*+AR4(CARSPEED),R0
@@ -4852,11 +4852,16 @@ static void SPINROT_FINISH(OBJ* hitter_obj, OBJ* obj, CARBLK* carblk, int entry,
     int probability;
 
     switch (entry) {
-        case SPINROT_ENTRY_BOUNCE: goto SPINBOUNCE;
-        case SPINROT_ENTRY_DRONE: goto DRONESPIN;
-        case SPINROT_ENTRY_PSPINNIT: goto PSPINNIT;
-        case SPINROT_ENTRY_SPINNIT: goto SPINNIT;
-        default: goto SPINBUMP;
+    case SPINROT_ENTRY_BOUNCE:
+        goto SPINBOUNCE;
+    case SPINROT_ENTRY_DRONE:
+        goto DRONESPIN;
+    case SPINROT_ENTRY_PSPINNIT:
+        goto PSPINNIT;
+    case SPINROT_ENTRY_SPINNIT:
+        goto SPINNIT;
+    default:
+        goto SPINBUMP;
     }
 
     // *
@@ -5164,7 +5169,8 @@ static c3x_reg_t ANGMOM(CARBLK* carblk /*AR5*/, c3x_reg_t momentum /*R2*/, c3x_r
     c3x_reg_t r3;
 
     // asm 0000281D: 	LDI	*+AR5(CAR_SPIN),R3 	;ADD IN EXISTING INERTIA
-    r3 = out_r3 != NULL ? *out_r3 : C3X_FROM_INT(0); C3X_LDI(carblk->spin_flag, r3);
+    r3 = out_r3 != NULL ? *out_r3 : C3X_FROM_INT(0);
+    C3X_LDI(carblk->spin_flag, r3);
     // asm 0000281E: 	BZ	ANGM1
     if (carblk->spin_flag == 0) {
         goto ANGM1;
@@ -5383,27 +5389,27 @@ int COLCHK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR** out_collision_point /*
     // asm 0000286E: 	LDPI	@EQTABI,AR2
     // asm 0000286F: 	LDI	11,RC 			;DO 2 X 6 EQUATIONS
     for (equation_index = 0; equation_index < 12; equation_index++) {
-    // asm 00002870: 	RPTB	PLANEQ
-    // asm 00002871: 	PUSH	AR2
-    // asm 00002872: 	CALL	GEN_NORMAL		;GETS NORMAL VECTOR
+        // asm 00002870: 	RPTB	PLANEQ
+        // asm 00002871: 	PUSH	AR2
+        // asm 00002872: 	CALL	GEN_NORMAL		;GETS NORMAL VECTOR
         face_points = (VECTOR**)&EQTAB[equation_index * 3];
         normal = (VECTOR*)equation_storage;
         GEN_NORMAL(face_points, normal);
-    // asm 00002873: 	POP	AR2
-    // asm 00002874: 	LDI	*AR2++(3),AR3		;GET FIRST POINT
+        // asm 00002873: 	POP	AR2
+        // asm 00002874: 	LDI	*AR2++(3),AR3		;GET FIRST POINT
         point = EQTAB[equation_index * 3];
-    // asm 00002875: 	MPYF	*AR0++,*AR3++,R0   	;COMPUTE DOT PRODUCT
+        // asm 00002875: 	MPYF	*AR0++,*AR3++,R0   	;COMPUTE DOT PRODUCT
         product_x = C3X_MUL(C3X_LDF(normal->X), C3X_LDF(point[0]));
-    // asm 00002876: 	MPYF	*AR0++,*AR3++,R1
+        // asm 00002876: 	MPYF	*AR0++,*AR3++,R1
         product_y = C3X_MUL(C3X_LDF(normal->Y), C3X_LDF(point[1]));
-    // asm 00002877: 	MPYF	*AR0++,*AR3++,R0
+        // asm 00002877: 	MPYF	*AR0++,*AR3++,R0
         product_z = C3X_MUL(C3X_LDF(normal->Z), C3X_LDF(point[2]));
-    // asm 00002877: ||	ADDF	R0,R1,R2
+        // asm 00002877: ||	ADDF	R0,R1,R2
         dot_product = C3X_ADD(product_x, product_y);
-    // asm 00002878: 	ADDF	R0,R2
+        // asm 00002878: 	ADDF	R0,R2
         dot_product = C3X_ADD(dot_product, product_z);
-PLANEQ:
-    // asm 00002879: STF	R2,*AR0++		;SAVE DOT PRODUCT
+    PLANEQ:
+        // asm 00002879: STF	R2,*AR0++		;SAVE DOT PRODUCT
         equation_storage[3] = C3X_STF(dot_product);
         equation_storage += 4;
     }
@@ -5415,37 +5421,37 @@ PLANEQ:
     point = &BLOWLIST[72];
     // asm 0000287D: 	LDI	7,AR4 			;DO 8 POINTS
     for (point_index = 0; point_index < 8; point_index++) {
-    // asm 0000287E: PNTCKL0
-    // asm 0000287E: 	LDI	AR0,AR2
+        // asm 0000287E: PNTCKL0
+        // asm 0000287E: 	LDI	AR0,AR2
         equation = &BLOWLIST[96];
-    // asm 0000287F: 	LDI	5,RC 			;DO 6 EQUATIONS
+        // asm 0000287F: 	LDI	5,RC 			;DO 6 EQUATIONS
         for (equation_index = 0; equation_index < 6; equation_index++) {
-    // asm 00002880: 	RPTB	EQCHK0
-    // asm 00002881: 	MPYF	*AR2++,*-AR3(1),R0
+            // asm 00002880: 	RPTB	EQCHK0
+            // asm 00002881: 	MPYF	*AR2++,*-AR3(1),R0
             product_x = C3X_MUL(C3X_LDF(equation[0]), C3X_LDF(point[0]));
-    // asm 00002882: 	MPYF	*AR2++,*AR3,R1
+            // asm 00002882: 	MPYF	*AR2++,*AR3,R1
             product_y = C3X_MUL(C3X_LDF(equation[1]), C3X_LDF(point[1]));
-    // asm 00002883: 	MPYF	*AR2++,*+AR3(1),R0
+            // asm 00002883: 	MPYF	*AR2++,*+AR3(1),R0
             product_z = C3X_MUL(C3X_LDF(equation[2]), C3X_LDF(point[2]));
-    // asm 00002883: ||	ADDF	R0,R1,R2
+            // asm 00002883: ||	ADDF	R0,R1,R2
             dot_product = C3X_ADD(product_x, product_y);
-    // asm 00002884: 	ADDF	R0,R2
+            // asm 00002884: 	ADDF	R0,R2
             dot_product = C3X_ADD(dot_product, product_z);
-    // asm 00002885: 	CMPF	*AR2++,R2
-    // asm 00002886: 	BLT	PNTNXT0			;THIS POINT FAILED, GET A NEW ONE
+            // asm 00002885: 	CMPF	*AR2++,R2
+            // asm 00002886: 	BLT	PNTNXT0			;THIS POINT FAILED, GET A NEW ONE
             if (C3X_LT(dot_product, C3X_LDF(equation[3]))) {
                 goto PNTNXT0;
             }
             equation += 4;
         }
-EQCHK0:
-    // asm 00002887: NOP
-    // asm 00002888: 	BU	GOTCOL			;GOT A COLLISION
+    EQCHK0:
+        // asm 00002887: NOP
+        // asm 00002888: 	BU	GOTCOL			;GOT A COLLISION
         goto GOTCOL;
-PNTNXT0:
-    // asm 00002889: 	NOP	*AR3++(3)
+    PNTNXT0:
+        // asm 00002889: 	NOP	*AR3++(3)
         point += 3;
-    // asm 0000288A: 	DBU	AR4,PNTCKL0
+        // asm 0000288A: 	DBU	AR4,PNTCKL0
     }
     // *CHECK POINTS OBJ0 VS EQ OBJ1
     // asm 0000288B: 	ADDI	24,AR0			;GET OBJ1 EQUATION BASE
@@ -5455,37 +5461,37 @@ PNTNXT0:
     point = &BLOWLIST[24];
     // asm 0000288E: 	LDI	7,AR4 			;DO 8 POINTS
     for (point_index = 0; point_index < 8; point_index++) {
-    // asm 0000288F: PNTCKL1
-    // asm 0000288F: 	LDI	AR0,AR2
+        // asm 0000288F: PNTCKL1
+        // asm 0000288F: 	LDI	AR0,AR2
         equation = &BLOWLIST[120];
-    // asm 00002890: 	LDI	5,RC 			;DO 6 EQUATIONS
+        // asm 00002890: 	LDI	5,RC 			;DO 6 EQUATIONS
         for (equation_index = 0; equation_index < 6; equation_index++) {
-    // asm 00002891: 	RPTB	EQCHK1
-    // asm 00002892: 	MPYF	*AR2++,*-AR3(1),R0
+            // asm 00002891: 	RPTB	EQCHK1
+            // asm 00002892: 	MPYF	*AR2++,*-AR3(1),R0
             product_x = C3X_MUL(C3X_LDF(equation[0]), C3X_LDF(point[0]));
-    // asm 00002893: 	MPYF	*AR2++,*AR3,R1
+            // asm 00002893: 	MPYF	*AR2++,*AR3,R1
             product_y = C3X_MUL(C3X_LDF(equation[1]), C3X_LDF(point[1]));
-    // asm 00002894: 	MPYF	*AR2++,*+AR3(1),R0
+            // asm 00002894: 	MPYF	*AR2++,*+AR3(1),R0
             product_z = C3X_MUL(C3X_LDF(equation[2]), C3X_LDF(point[2]));
-    // asm 00002894: ||	ADDF	R0,R1,R2
+            // asm 00002894: ||	ADDF	R0,R1,R2
             dot_product = C3X_ADD(product_x, product_y);
-    // asm 00002895: 	ADDF	R0,R2
+            // asm 00002895: 	ADDF	R0,R2
             dot_product = C3X_ADD(dot_product, product_z);
-    // asm 00002896: 	CMPF	*AR2++,R2
-    // asm 00002897: 	BLT	PNTNXT1			;THIS POINT FAILED, GET A NEW ONE
+            // asm 00002896: 	CMPF	*AR2++,R2
+            // asm 00002897: 	BLT	PNTNXT1			;THIS POINT FAILED, GET A NEW ONE
             if (C3X_LT(dot_product, C3X_LDF(equation[3]))) {
                 goto PNTNXT1;
             }
             equation += 4;
         }
-EQCHK1:
-    // asm 00002898: NOP
-    // asm 00002899: 	BU	GOTCOL			;GOT A COLLISION
+    EQCHK1:
+        // asm 00002898: NOP
+        // asm 00002899: 	BU	GOTCOL			;GOT A COLLISION
         goto GOTCOL;
-PNTNXT1:
-    // asm 0000289A: 	NOP	*AR3++(3)
+    PNTNXT1:
+        // asm 0000289A: 	NOP	*AR3++(3)
         point += 3;
-    // asm 0000289B: 	DBU	AR4,PNTCKL1
+        // asm 0000289B: 	DBU	AR4,PNTCKL1
     }
     // asm 0000289C: 	CLRC				;NO COLLISION
     // asm 0000289D: 	POP	AR1

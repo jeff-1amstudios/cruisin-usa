@@ -7,14 +7,16 @@
 static u32 switch1 = UINT32_MAX;
 static u32 switch2 = UINT32_MAX;
 static u32 switch3 = UINT32_MAX;
-static int steering = PORT_STEERING_CENTER;
+static float steering = PORT_STEERING_CENTER;
 static int accelerator;
 static int brake;
 static int steering_direction;
 static int steering_detent;
 
-#define STEERING_KEY_STEP 5
-#define STEERING_CENTER_STEP 5
+#define STEERING_HALF_RANGE 127.0f
+#define STEERING_LIMIT 0.90f
+#define STEERING_PRESS_RATE 0.04f
+#define STEERING_RETURN_RATE 0.10f
 
 int input_frame_counter = 0;
 
@@ -64,17 +66,18 @@ u32 port_get_switch3(void) {
 }
 
 void port_sample_steering(void) {
+    float target;
+
     /* Called from READIO at the emulated A/D sampling boundary. */
     if (steering_direction != 0) {
-        steering += steering_direction * STEERING_KEY_STEP;
-    } else if (steering < PORT_STEERING_CENTER) {
-        steering += STEERING_CENTER_STEP;
-        if (steering > PORT_STEERING_CENTER)
-            steering = PORT_STEERING_CENTER;
-    } else if (steering > PORT_STEERING_CENTER) {
-        steering -= STEERING_CENTER_STEP;
-        if (steering < PORT_STEERING_CENTER)
-            steering = PORT_STEERING_CENTER;
+        /* A key applies force to a spring-loaded wheel. Approach a capped
+           target quickly near center and progressively more slowly near the
+           end stop, retaining fractional movement between A/D samples. */
+        target = PORT_STEERING_CENTER +
+            steering_direction * STEERING_HALF_RANGE * STEERING_LIMIT;
+        steering += (target - steering) * STEERING_PRESS_RATE;
+    } else {
+        steering += (PORT_STEERING_CENTER - steering) * STEERING_RETURN_RATE;
     }
     if (steering < 0)
         steering = 0;
@@ -83,7 +86,7 @@ void port_sample_steering(void) {
 }
 
 int port_get_steering(void) {
-    return steering;
+    return (int)(steering + 0.5f);
 }
 
 int port_get_accelerator(void) {

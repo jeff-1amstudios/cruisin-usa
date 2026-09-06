@@ -1755,7 +1755,7 @@ static void OVERCAR(OBJ* obj /*AR4*/) {
     // asm 00004237: 	PUSH	R2
     // asm 00004238: 	PUSH	AR2
     // asm 00004239: 	CREATE	CARFORWARD,22
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->BACKGRND_CARFORWARD.obj = obj;
     proc = CREATE(CARFORWARD, 22, ctx);
     // asm 0000423C: 	STI	AR0,*+AR4(OPLINK)
@@ -1806,40 +1806,40 @@ static void CARFORWARD(PROC* p) {
         goto PROC_RESUME_1;
     }
 
-    obj = p->ctx->BACKGRND_CARFORWARD.obj;
+    obj = p->ctx.BACKGRND_CARFORWARD.obj;
     // asm 00004253: 	RANDN	50
     // asm 00004255: 	CMPI	25,R0
     // asm 00004256: 	BLT	CARSUP
     if (RANDU0(50) >= 25) {
-    // asm 00004257: 	CALL	CLR_VECTORA
+        // asm 00004257: 	CALL	CLR_VECTORA
         CLR_VECTORA();
-    // asm 00004258: 	FLOAT	16000,R0
-    // asm 00004259: 	STF	R0,*+AR2(Z)
+        // asm 00004258: 	FLOAT	16000,R0
+        // asm 00004259: 	STF	R0,*+AR2(Z)
         VECTORAI.Z = C3X_STF(C3X_FROM_INT(16000));
-    // asm 0000425A: 	LDI	AR2,R3
-    // asm 0000425B: 	LDI	AR4,R2
-    // asm 0000425C: 	ADDI	OMATRIX,R2
-    // asm 0000425D: 	CALL	MATRIX_MUL
+        // asm 0000425A: 	LDI	AR2,R3
+        // asm 0000425B: 	LDI	AR4,R2
+        // asm 0000425C: 	ADDI	OMATRIX,R2
+        // asm 0000425D: 	CALL	MATRIX_MUL
         MATRIX_MUL(&VECTORAI, (MATRIX*)&obj->omatrix, &VECTORAI);
-    // asm 0000425E: 	LDF	*+AR4(OPOSX),R0
-    // asm 0000425F: 	ADDF	*+AR2(X),R0
-    // asm 00004260: 	STF	R0,*+AR4(OPOSX)
+        // asm 0000425E: 	LDF	*+AR4(OPOSX),R0
+        // asm 0000425F: 	ADDF	*+AR2(X),R0
+        // asm 00004260: 	STF	R0,*+AR4(OPOSX)
         obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(VECTORAI.X)));
-    // asm 00004261: 	LDF	*+AR4(OPOSY),R0
-    // asm 00004262: 	ADDF	*+AR2(Y),R0
-    // asm 00004263: 	STF	R0,*+AR4(OPOSY)
+        // asm 00004261: 	LDF	*+AR4(OPOSY),R0
+        // asm 00004262: 	ADDF	*+AR2(Y),R0
+        // asm 00004263: 	STF	R0,*+AR4(OPOSY)
         obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y)));
-    // asm 00004264: 	LDF	*+AR4(OPOSZ),R0
-    // asm 00004265: 	ADDF	*+AR2(Z),R0
-    // asm 00004266: 	STF	R0,*+AR4(OPOSZ)
+        // asm 00004264: 	LDF	*+AR4(OPOSZ),R0
+        // asm 00004265: 	ADDF	*+AR2(Z),R0
+        // asm 00004266: 	STF	R0,*+AR4(OPOSZ)
         obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(VECTORAI.Z)));
-    // asm 00004267: 	LDF	*+AR4(ORADY),R2
-    // asm 00004268: 	ADDF	PI,R2
-    // asm 00004269: 	STF	R2,*+AR4(ORADY)
+        // asm 00004267: 	LDF	*+AR4(ORADY),R2
+        // asm 00004268: 	ADDF	PI,R2
+        // asm 00004269: 	STF	R2,*+AR4(ORADY)
         obj->rad.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->rad.Y), C3X_IMM_F32(PI)));
-    // asm 0000426A: 	LDI	AR4,AR2
-    // asm 0000426B: 	ADDI	OMATRIX,AR2
-    // asm 0000426C: 	CALL	FIND_YMATRIX
+        // asm 0000426A: 	LDI	AR4,AR2
+        // asm 0000426B: 	ADDI	OMATRIX,AR2
+        // asm 0000426C: 	CALL	FIND_YMATRIX
         FIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rad.Y));
     }
 CARSUP:
@@ -1877,7 +1877,7 @@ CARSUP:
     // asm 00004287: 	FLOAT	R0
     // asm 00004288: 	MPYF	R0,R6
     speed = C3X_MUL(speed, C3X_FROM_INT(RANDU0(3) + 1));
-    p->ctx->BACKGRND_CARFORWARD.speed = C3X_STF(speed);
+    p->ctx.BACKGRND_CARFORWARD.speed = C3X_STF(speed);
 CARFORWARDLP:
     // asm 00004289: 	CALL	CLR_VECTORA
     CLR_VECTORA();
@@ -1904,8 +1904,8 @@ CARFORWARDLP:
     obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(VECTORAI.Z)));
     // asm 0000429A: 	SLEEP	1
     SLEEP(1, 1);
-    obj = p->ctx->BACKGRND_CARFORWARD.obj;
-    speed = C3X_LDF(p->ctx->BACKGRND_CARFORWARD.speed);
+    obj = p->ctx.BACKGRND_CARFORWARD.obj;
+    speed = C3X_LDF(p->ctx.BACKGRND_CARFORWARD.speed);
     // asm 0000429C: 	BU	CARFORWARDLP
     goto CARFORWARDLP;
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -1951,7 +1951,7 @@ static void SMOKE_STACK(OBJ* obj /*AR4*/) {
     // asm 000042AB: 	NOP
     // asm 000042AC: 	LDI	@SMOKE_ANII,AR6
     // 	;---->	BUD	MAKEPPP
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->BACKGRND_PLAINANI_PROC.obj = obj;
     ctx->BACKGRND_PLAINANI_PROC.script = SMOKE_ANII;
     ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
@@ -2296,11 +2296,11 @@ static int HUNGH_ANIS[] = {
 /* asm: 	.word	ungh1_blue,logo_p,ungh1_green,nintendo_p,ungh1_silver,map1_p */
 /* asm: 	.word	ungh1_yellow,lift_p,ungh1_skin,bvwall_p */
 tPALETTE_OVERWRITE_ENTRY BABE_PALIST[] = {
-    {ungh1_blue_ROM, logo_p},
-    {ungh1_green_ROM, nintendo_p},
-    {ungh1_silver_ROM, map1_p},
-    {ungh1_yellow_ROM, lift_p},
-    {ungh1_skin_ROM, bvwall_p},
+    { ungh1_blue_ROM, logo_p },
+    { ungh1_green_ROM, nintendo_p },
+    { ungh1_silver_ROM, map1_p },
+    { ungh1_yellow_ROM, lift_p },
+    { ungh1_skin_ROM, bvwall_p },
 };
 
 void HUNGH_ANI(OBJ* obj /*AR4*/) {
@@ -2428,7 +2428,7 @@ DORUT_ANI:
     // asm 000043C9: 	STI	R0,*+AR4(OID)
     obj->id = RDDEBRIS_C | TSC_IGNORE | TSC_DUDE_S;
     // asm 000043CA: 	LDI	AR6,AR5
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->BACKGRND_PLAINANI_PROC.obj = obj;
     ctx->BACKGRND_PLAINANI_PROC.script = RUT_ANISI;
     ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
@@ -2445,7 +2445,7 @@ DORUT_ANI:
 
 // *----------------------------------------------------------------------------
 static void PLAINANI_PROC_SLOW(PROC* p) {
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     int frame;
     int sleep_ticks;
 
@@ -2533,7 +2533,7 @@ static void FLAGWAVE(OBJ* obj /*AR4*/) {
     script_index = RANDU0(7);
     // asm 000043FB: 	LDI	AR6,AR5
     // asm 000043FC: 	ADDI	R0,AR5
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->BACKGRND_PLAINANI_PROC.obj = obj;
     ctx->BACKGRND_PLAINANI_PROC.script = FLAGANII;
     ctx->BACKGRND_PLAINANI_PROC.script_index = script_index;
@@ -2547,7 +2547,7 @@ static void FLAGWAVE(OBJ* obj /*AR4*/) {
     goto J2;
 MAKEPPP:
     // asm 00004402: 	CREATE	PLAINANI_PROC,SPAWNER_C|ANIMATION_T
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->BACKGRND_PLAINANI_PROC.obj = obj;
     ctx->BACKGRND_PLAINANI_PROC.script = FLAGANII;
     ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
@@ -2584,7 +2584,7 @@ FWL1:
  *
  */
 static void PLAINANI_PROC(PROC* p) {
-    PROC_CONTEXT* ctx = p->ctx;
+    PROC_CONTEXT* ctx = &p->ctx;
     int frame;
     int sleep_ticks;
 
@@ -2908,7 +2908,7 @@ static void OHARE_PLANE(OBJ* obj /*AR4*/) {
     // asm 00004454: 	SONDFX	JETFLYBY
     ONESNDFX(JETFLYBY);
     // asm 00004456: 	CREATE	PLANE_FWRD,UTIL_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->BACKGRND_PLANE_FWRD.obj = obj;
     proc = CREATE(PLANE_FWRD, UTIL_C, ctx);
     // asm 00004459: 	STI	AR0,*+AR4(OPLINK)
@@ -2940,7 +2940,7 @@ static void PLANE_FWRD(PROC* p) {
         goto PROC_RESUME_1;
     }
 
-    obj = p->ctx->BACKGRND_PLANE_FWRD.obj;
+    obj = p->ctx.BACKGRND_PLANE_FWRD.obj;
     // asm 00004462: 	FLOAT	250,R7
     speed = C3X_FROM_INT(250);
     // asm 00004463: 	FLOAT	32000,R6
@@ -2998,12 +2998,12 @@ PLANE_FWL:
         DIE();
     }
     // asm 00004481: 	SLEEP	1
-    p->ctx->BACKGRND_PLANE_FWRD.speed = C3X_STF(speed);
-    p->ctx->BACKGRND_PLANE_FWRD.remaining_distance = C3X_STF(remaining_distance);
+    p->ctx.BACKGRND_PLANE_FWRD.speed = C3X_STF(speed);
+    p->ctx.BACKGRND_PLANE_FWRD.remaining_distance = C3X_STF(remaining_distance);
     SLEEP(1, 1);
-    obj = p->ctx->BACKGRND_PLANE_FWRD.obj;
-    speed = C3X_LDF(p->ctx->BACKGRND_PLANE_FWRD.speed);
-    remaining_distance = C3X_LDF(p->ctx->BACKGRND_PLANE_FWRD.remaining_distance);
+    obj = p->ctx.BACKGRND_PLANE_FWRD.obj;
+    speed = C3X_LDF(p->ctx.BACKGRND_PLANE_FWRD.speed);
+    remaining_distance = C3X_LDF(p->ctx.BACKGRND_PLANE_FWRD.remaining_distance);
     // asm 00004483: 	BU	PLANE_FWL
     goto PLANE_FWL;
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
@@ -3039,7 +3039,7 @@ static void TRAIN_FWRD_MAKE(OBJ* obj /*AR4*/) {
     // asm 00004491: 	PUSH	AR2
     // asm 00004492: 	PUSH	R2
     // asm 00004493: 	CREATE	TRAIN_FWRD,UTIL_C
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
+    ctx = NEW_PROC_CONTEXT();
     ctx->BACKGRND_TRAIN_FWRD.obj = obj;
     proc = CREATE(TRAIN_FWRD, UTIL_C, ctx);
     // asm 00004496: 	STI	AR0,*+AR4(OPLINK)
@@ -3084,7 +3084,7 @@ static void TRAIN_FWRD(PROC* p) {
         goto PROC_RESUME_1;
     }
 
-    obj = p->ctx->BACKGRND_TRAIN_FWRD.obj;
+    obj = p->ctx.BACKGRND_TRAIN_FWRD.obj;
     // asm 000044A6: 	FLOAT	150,R7
     speed = C3X_FROM_INT(150);
     // asm 000044A7: 	FLOAT	32000,R6
@@ -3132,12 +3132,12 @@ TRAIN_FWL:
         goto TRAINX;
     }
     // asm 000044C1: 	SLEEP	1
-    p->ctx->BACKGRND_TRAIN_FWRD.speed = C3X_STF(speed);
-    p->ctx->BACKGRND_TRAIN_FWRD.remaining_distance = C3X_STF(remaining_distance);
+    p->ctx.BACKGRND_TRAIN_FWRD.speed = C3X_STF(speed);
+    p->ctx.BACKGRND_TRAIN_FWRD.remaining_distance = C3X_STF(remaining_distance);
     SLEEP(1, 1);
-    obj = p->ctx->BACKGRND_TRAIN_FWRD.obj;
-    speed = C3X_LDF(p->ctx->BACKGRND_TRAIN_FWRD.speed);
-    remaining_distance = C3X_LDF(p->ctx->BACKGRND_TRAIN_FWRD.remaining_distance);
+    obj = p->ctx.BACKGRND_TRAIN_FWRD.obj;
+    speed = C3X_LDF(p->ctx.BACKGRND_TRAIN_FWRD.speed);
+    remaining_distance = C3X_LDF(p->ctx.BACKGRND_TRAIN_FWRD.remaining_distance);
     // asm 000044C3: 	BU	TRAIN_FWL
     goto TRAIN_FWL;
 TRAINX:

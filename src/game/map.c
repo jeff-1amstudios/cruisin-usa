@@ -153,7 +153,7 @@ void UNFOLDMAP_NOPAL(PROC* p) {
     // asm 00005E17: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(map1_ROM));
     // asm 00005E18: 	STI	AR0,*+AR7(MAP1OBJ)
-    p->ctx->MAP_ANIMATION.objects[0] = obj;
+    p->ctx.MAP_ANIMATION.objects[0] = obj;
     // asm 00005E19: 	LDI	R6,R0
     // asm 00005E1A: 	OR	*+AR0(OFLAGS),R0
     // asm 00005E1B: 	OR	O_1PAL,R0
@@ -168,7 +168,7 @@ void UNFOLDMAP_NOPAL(PROC* p) {
     // asm 00005E21: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(map2_ROM));
     // asm 00005E22: 	STI	AR0,*+AR7(MAP2OBJ)
-    p->ctx->MAP_ANIMATION.objects[1] = obj;
+    p->ctx.MAP_ANIMATION.objects[1] = obj;
     // asm 00005E23: 	LDI	R6,R0
     // asm 00005E24: 	OR	*+AR0(OFLAGS),R0
     // asm 00005E25: 	OR	O_1PAL,R0
@@ -183,7 +183,7 @@ void UNFOLDMAP_NOPAL(PROC* p) {
     // asm 00005E2B: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(map3_ROM));
     // asm 00005E2C: 	STI	AR0,*+AR7(MAP3OBJ)
-    p->ctx->MAP_ANIMATION.objects[2] = obj;
+    p->ctx.MAP_ANIMATION.objects[2] = obj;
     // asm 00005E2D: 	LDI	R6,R0
     // asm 00005E2E: 	OR	*+AR0(OFLAGS),R0
     // asm 00005E2F: 	OR	O_1PAL,R0
@@ -198,7 +198,7 @@ void UNFOLDMAP_NOPAL(PROC* p) {
     // asm 00005E35: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(map4_ROM));
     // asm 00005E36: 	STI	AR0,*+AR7(MAP4OBJ)
-    p->ctx->MAP_ANIMATION.objects[3] = obj;
+    p->ctx.MAP_ANIMATION.objects[3] = obj;
     // asm 00005E37: 	LDI	R6,R0
     // asm 00005E38: 	OR	*+AR0(OFLAGS),R0
     // asm 00005E39: 	OR	O_1PAL,R0
@@ -211,32 +211,32 @@ void UNFOLDMAP_NOPAL(PROC* p) {
     OBJ_INSERTP(obj);
     // asm 00005E3E: 	LDF	M1ST,R0
     // asm 00005E3F: 	STF	R0,*+AR7(MAP1T)
-    p->ctx->MAP_ANIMATION.theta[0] = C3X_STF(C3X_IMM_F32(M1ST));
+    p->ctx.MAP_ANIMATION.theta[0] = C3X_STF(C3X_IMM_F32(M1ST));
     // asm 00005E40: 	LDF	M2ST,R0
     // asm 00005E41: 	STF	R0,*+AR7(MAP2T)
-    p->ctx->MAP_ANIMATION.theta[1] = C3X_STF(C3X_IMM_F32(M2ST));
+    p->ctx.MAP_ANIMATION.theta[1] = C3X_STF(C3X_IMM_F32(M2ST));
     // asm 00005E42: 	LDF	M3ST,R0
     // asm 00005E43: 	STF	R0,*+AR7(MAP3T)
-    p->ctx->MAP_ANIMATION.theta[2] = C3X_STF(C3X_IMM_F32(M3ST));
+    p->ctx.MAP_ANIMATION.theta[2] = C3X_STF(C3X_IMM_F32(M3ST));
     // asm 00005E44: 	LDF	M4ST,R0
     // asm 00005E45: 	STF	R0,*+AR7(MAP4T)
-    p->ctx->MAP_ANIMATION.theta[3] = C3X_STF(C3X_IMM_F32(M4ST));
+    p->ctx.MAP_ANIMATION.theta[3] = C3X_STF(C3X_IMM_F32(M4ST));
     // asm 00005E46: 	CLRF	R0
     // asm 00005E47: 	STF	R0,*+AR7(MAPLPX)
-    p->ctx->MAP_ANIMATION.lead_x = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_x = C3X_STF(C3X_IMM_F32(0));
     // asm 00005E48: 	STF	R0,*+AR7(MAPLPY)
-    p->ctx->MAP_ANIMATION.lead_y = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_y = C3X_STF(C3X_IMM_F32(0));
     // asm 00005E49: 	FLOAT	3368,R0	;368
     // asm 00005E4A: 	STF	R0,*+AR7(MAPLPZ)
-    p->ctx->MAP_ANIMATION.lead_z = C3X_STF(C3X_FROM_INT(3368)); // 368
+    p->ctx.MAP_ANIMATION.lead_z = C3X_STF(C3X_FROM_INT(3368)); // 368
     // asm 00005E4B: 	LDF	HALFPI,R2
     // asm 00005E4C: 	STF	R2,*+AR7(MAPLTX)
-    p->ctx->MAP_ANIMATION.lead_theta = C3X_STF(C3X_IMM_F32(HALFPI));
+    p->ctx.MAP_ANIMATION.lead_theta = C3X_STF(C3X_IMM_F32(HALFPI));
     // asm 00005E4D: 	LDI	AR7,AR2
     // asm 00005E4E: 	ADDI	MAPLMAT,AR2
     // asm 00005E4F: 	CALL	FIND_XMATRIX
-    FIND_XMATRIX(&p->ctx->MAP_ANIMATION.lead_matrix,
-        C3X_LDF(p->ctx->MAP_ANIMATION.lead_theta));
+    FIND_XMATRIX(&p->ctx.MAP_ANIMATION.lead_matrix,
+        C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta));
     // asm 00005E50: 	LDF	0.2,R0
     // asm 00005E51: 	STF	R0,@MAPPAL24
     MAPPAL24 = C3X_STF(C3X_IMM_F32(0.2));
@@ -244,7 +244,7 @@ void UNFOLDMAP_NOPAL(PROC* p) {
     // asm 00005E53: 	STF	R0,@MAPPAL13
     MAPPAL13 = C3X_STF(C3X_IMM_F32(0.6));
     // asm 00005E54: 	LDI	MAP_ITERATIONS-1,AR5
-    p->ctx->MAP_ANIMATION.loop_count = MAP_ITERATIONS - 1;
+    p->ctx.MAP_ANIMATION.loop_count = MAP_ITERATIONS - 1;
     // asm 00005E55: UNFOLD_LP
 UNFOLD_LP:
     // ;	CALL	MAP_ILLUM_COMPUTE
@@ -259,7 +259,7 @@ UNFOLD_LP:
     // asm 00005E5B: 	CALL	MAPPAL_ILLUM
     MAPPAL_ILLUM();
     // asm 00005E5C: 	LDF	*+AR7(MAPLPZ),R0
-    value = C3X_LDF(p->ctx->MAP_ANIMATION.lead_z);
+    value = C3X_LDF(p->ctx.MAP_ANIMATION.lead_z);
     // asm 00005E5D: 	FLOAT	368,R1
     // asm 00005E5E: 	SUBF	R0,R1
     // asm 00005E5F: 	MPYF	0.25,R1
@@ -269,42 +269,42 @@ UNFOLD_LP:
     // asm 00005E61: 	FLOAT	368,R1
     // asm 00005E62: 	CMPI	0,AR5
     // asm 00005E63: 	LDFEQ	R1,R0
-    if (p->ctx->MAP_ANIMATION.loop_count == 0) {
+    if (p->ctx.MAP_ANIMATION.loop_count == 0) {
         value = C3X_FROM_INT(368);
     }
     // asm 00005E64: 	STF	R0,*+AR7(MAPLPZ)
-    p->ctx->MAP_ANIMATION.lead_z = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.lead_z = C3X_STF(value);
     // asm 00005E65: 	LDF	*+AR7(MAPLTX),R2
     // asm 00005E66: 	MPYF	0.9,R2
-    value = C3X_MUL(C3X_LDF(p->ctx->MAP_ANIMATION.lead_theta), C3X_IMM_F32(0.9));
+    value = C3X_MUL(C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta), C3X_IMM_F32(0.9));
     // asm 00005E67: 	CLRF	R1
     // asm 00005E68: 	CMPI	0,AR5
     // asm 00005E69: 	LDFEQ	R1,R2
-    if (p->ctx->MAP_ANIMATION.loop_count == 0) {
+    if (p->ctx.MAP_ANIMATION.loop_count == 0) {
         value = C3X_IMM_F32(0);
     }
     // asm 00005E6A: 	STF	R2,*+AR7(MAPLTX)
-    p->ctx->MAP_ANIMATION.lead_theta = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.lead_theta = C3X_STF(value);
     // asm 00005E6B: 	LDI	AR7,AR2
     // asm 00005E6C: 	ADDI	MAPLMAT,AR2
     // asm 00005E6D: 	CALL	FIND_XMATRIX
-    FIND_XMATRIX(&p->ctx->MAP_ANIMATION.lead_matrix, value);
+    FIND_XMATRIX(&p->ctx.MAP_ANIMATION.lead_matrix, value);
     // asm 00005E6E: 	LDI	*+AR7(MAP2OBJ),AR4
-    obj = p->ctx->MAP_ANIMATION.objects[1];
+    obj = p->ctx.MAP_ANIMATION.objects[1];
     // asm 00005E6F: 	LDF	*+AR7(MAPLPX),R0
     // asm 00005E70: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_x));
+    obj->pos.X = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_x));
     // asm 00005E71: 	LDF	*+AR7(MAPLPY),R0
     // asm 00005E72: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_y));
+    obj->pos.Y = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_y));
     // asm 00005E73: 	LDF	*+AR7(MAPLPZ),R0
     // asm 00005E74: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_z));
+    obj->pos.Z = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_z));
     // asm 00005E75: 	LDF	*+AR7(MAP2T),R2
     // asm 00005E76: 	ADDF	@M2STDI,R2
-    value = C3X_ADD(C3X_LDF(p->ctx->MAP_ANIMATION.theta[1]), C3X_LDF(M4STDI));
+    value = C3X_ADD(C3X_LDF(p->ctx.MAP_ANIMATION.theta[1]), C3X_LDF(M4STDI));
     // asm 00005E77: 	STF	R2,*+AR7(MAP2T)
-    p->ctx->MAP_ANIMATION.theta[1] = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.theta[1] = C3X_STF(value);
     // asm 00005E78: 	LDI	AR4,AR2
     // asm 00005E79: 	ADDI	OMATRIX,AR2
     // asm 00005E7A: 	CALL	FIND_YMATRIX
@@ -313,24 +313,24 @@ UNFOLD_LP:
     // asm 00005E7C: 	ADDI	MAPLMAT,R2
     // asm 00005E7D: 	LDI	AR2,R3
     // asm 00005E7E: 	CALL	CONCATMAT
-    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx->MAP_ANIMATION.lead_matrix,
+    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx.MAP_ANIMATION.lead_matrix,
         (MATRIX*)&obj->omatrix);
     // asm 00005E7F: 	LDI	*+AR7(MAP3OBJ),AR4
-    obj = p->ctx->MAP_ANIMATION.objects[2];
+    obj = p->ctx.MAP_ANIMATION.objects[2];
     // asm 00005E80: 	LDF	*+AR7(MAPLPX),R0
     // asm 00005E81: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_x));
+    obj->pos.X = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_x));
     // asm 00005E82: 	LDF	*+AR7(MAPLPY),R0
     // asm 00005E83: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_y));
+    obj->pos.Y = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_y));
     // asm 00005E84: 	LDF	*+AR7(MAPLPZ),R0
     // asm 00005E85: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_z));
+    obj->pos.Z = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_z));
     // asm 00005E86: 	LDF	*+AR7(MAP3T),R2
     // asm 00005E87: 	ADDF	@M3STDI,R2
-    value = C3X_ADD(C3X_LDF(p->ctx->MAP_ANIMATION.theta[2]), C3X_LDF(M3STDI));
+    value = C3X_ADD(C3X_LDF(p->ctx.MAP_ANIMATION.theta[2]), C3X_LDF(M3STDI));
     // asm 00005E88: 	STF	R2,*+AR7(MAP3T)
-    p->ctx->MAP_ANIMATION.theta[2] = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.theta[2] = C3X_STF(value);
     // asm 00005E89: 	LDI	AR4,AR2
     // asm 00005E8A: 	ADDI	OMATRIX,AR2
     // asm 00005E8B: 	CALL	FIND_YMATRIX
@@ -339,19 +339,19 @@ UNFOLD_LP:
     // asm 00005E8D: 	ADDI	MAPLMAT,R2
     // asm 00005E8E: 	LDI	AR2,R3
     // asm 00005E8F: 	CALL	CONCATMAT
-    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx->MAP_ANIMATION.lead_matrix,
+    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx.MAP_ANIMATION.lead_matrix,
         (MATRIX*)&obj->omatrix);
     // asm 00005E90: 	LDF	*+AR7(MAP2T),R2
     // asm 00005E91: 	LDI	@MATRIXAI,AR2
     // asm 00005E92: 	CALL	FIND_YMATRIX
-    FIND_YMATRIX(&_MATRIXA, C3X_LDF(p->ctx->MAP_ANIMATION.theta[1]));
+    FIND_YMATRIX(&_MATRIXA, C3X_LDF(p->ctx.MAP_ANIMATION.theta[1]));
     // asm 00005E93: 	LDI	AR7,R2
     // asm 00005E94: 	ADDI	MAPLMAT,R2
     // asm 00005E95: 	LDI	AR2,R3
     // asm 00005E96: 	CALL	CONCATMAT
-    CONCATMAT(&_MATRIXA, &p->ctx->MAP_ANIMATION.lead_matrix, &_MATRIXA);
+    CONCATMAT(&_MATRIXA, &p->ctx.MAP_ANIMATION.lead_matrix, &_MATRIXA);
     // asm 00005E97: 	LDI	*+AR7(MAP1OBJ),AR4
-    obj = p->ctx->MAP_ANIMATION.objects[0];
+    obj = p->ctx.MAP_ANIMATION.objects[0];
     // asm 00005E98: 	CALL	CLR_VECTORA
     CLR_VECTORA();
     // asm 00005E99: 	FLOAT	-127,R0
@@ -365,20 +365,20 @@ UNFOLD_LP:
     // asm 00005E9F: 	LDF	*+AR4(OPOSX),R0
     // asm 00005EA0: 	ADDF	*+AR7(MAPLPX),R0
     // asm 00005EA1: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx->MAP_ANIMATION.lead_x)));
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx.MAP_ANIMATION.lead_x)));
     // asm 00005EA2: 	LDF	*+AR4(OPOSY),R0
     // asm 00005EA3: 	ADDF	*+AR7(MAPLPY),R0
     // asm 00005EA4: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(p->ctx->MAP_ANIMATION.lead_y)));
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(p->ctx.MAP_ANIMATION.lead_y)));
     // asm 00005EA5: 	LDF	*+AR4(OPOSZ),R0
     // asm 00005EA6: 	ADDF	*+AR7(MAPLPZ),R0
     // asm 00005EA7: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx->MAP_ANIMATION.lead_z)));
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx.MAP_ANIMATION.lead_z)));
     // asm 00005EA8: 	LDF	*+AR7(MAP1T),R2
     // asm 00005EA9: 	ADDF	@M1STDI,R2
-    value = C3X_ADD(C3X_LDF(p->ctx->MAP_ANIMATION.theta[0]), C3X_LDF(M3STDI));
+    value = C3X_ADD(C3X_LDF(p->ctx.MAP_ANIMATION.theta[0]), C3X_LDF(M3STDI));
     // asm 00005EAA: 	STF	R2,*+AR7(MAP1T)
-    p->ctx->MAP_ANIMATION.theta[0] = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.theta[0] = C3X_STF(value);
     // asm 00005EAB: 	LDI	AR4,AR2
     // asm 00005EAC: 	ADDI	OMATRIX,AR2
     // asm 00005EAD: 	CALL	FIND_YMATRIX
@@ -387,19 +387,19 @@ UNFOLD_LP:
     // asm 00005EAF: 	ADDI	MAPLMAT,R2
     // asm 00005EB0: 	LDI	AR2,R3
     // asm 00005EB1: 	CALL	CONCATMAT
-    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx->MAP_ANIMATION.lead_matrix,
+    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx.MAP_ANIMATION.lead_matrix,
         (MATRIX*)&obj->omatrix);
     // asm 00005EB2: 	LDF	*+AR7(MAP3T),R2
     // asm 00005EB3: 	LDI	@MATRIXAI,AR2
     // asm 00005EB4: 	CALL	FIND_YMATRIX
-    FIND_YMATRIX(&_MATRIXA, C3X_LDF(p->ctx->MAP_ANIMATION.theta[2]));
+    FIND_YMATRIX(&_MATRIXA, C3X_LDF(p->ctx.MAP_ANIMATION.theta[2]));
     // asm 00005EB5: 	LDI	AR7,R2
     // asm 00005EB6: 	ADDI	MAPLMAT,R2
     // asm 00005EB7: 	LDI	AR2,R3
     // asm 00005EB8: 	CALL	CONCATMAT
-    CONCATMAT(&_MATRIXA, &p->ctx->MAP_ANIMATION.lead_matrix, &_MATRIXA);
+    CONCATMAT(&_MATRIXA, &p->ctx.MAP_ANIMATION.lead_matrix, &_MATRIXA);
     // asm 00005EB9: 	LDI	*+AR7(MAP4OBJ),AR4
-    obj = p->ctx->MAP_ANIMATION.objects[3];
+    obj = p->ctx.MAP_ANIMATION.objects[3];
     // asm 00005EBA: 	CALL	CLR_VECTORA
     CLR_VECTORA();
     // asm 00005EBB: 	FLOAT	128,R0
@@ -413,20 +413,20 @@ UNFOLD_LP:
     // asm 00005EC1: 	LDF	*+AR4(OPOSX),R0
     // asm 00005EC2: 	ADDF	*+AR7(MAPLPX),R0
     // asm 00005EC3: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx->MAP_ANIMATION.lead_x)));
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx.MAP_ANIMATION.lead_x)));
     // asm 00005EC4: 	LDF	*+AR4(OPOSY),R0
     // asm 00005EC5: 	ADDF	*+AR7(MAPLPY),R0
     // asm 00005EC6: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(p->ctx->MAP_ANIMATION.lead_y)));
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(p->ctx.MAP_ANIMATION.lead_y)));
     // asm 00005EC7: 	LDF	*+AR4(OPOSZ),R0
     // asm 00005EC8: 	ADDF	*+AR7(MAPLPZ),R0
     // asm 00005EC9: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx->MAP_ANIMATION.lead_z)));
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx.MAP_ANIMATION.lead_z)));
     // asm 00005ECA: 	LDF	*+AR7(MAP4T),R2
     // asm 00005ECB: 	ADDF	@M4STDI,R2
-    value = C3X_ADD(C3X_LDF(p->ctx->MAP_ANIMATION.theta[3]), C3X_LDF(M4STDI));
+    value = C3X_ADD(C3X_LDF(p->ctx.MAP_ANIMATION.theta[3]), C3X_LDF(M4STDI));
     // asm 00005ECC: 	STF	R2,*+AR7(MAP4T)
-    p->ctx->MAP_ANIMATION.theta[3] = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.theta[3] = C3X_STF(value);
     // asm 00005ECD: 	LDI	AR4,AR2
     // asm 00005ECE: 	ADDI	OMATRIX,AR2
     // asm 00005ECF: 	CALL	FIND_YMATRIX
@@ -435,13 +435,13 @@ UNFOLD_LP:
     // asm 00005ED1: 	ADDI	MAPLMAT,R2
     // asm 00005ED2: 	LDI	AR2,R3
     // asm 00005ED3: 	CALL	CONCATMAT
-    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx->MAP_ANIMATION.lead_matrix,
+    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx.MAP_ANIMATION.lead_matrix,
         (MATRIX*)&obj->omatrix);
     // asm 00005ED4: 	SLEEP	1
     SLEEP(1, 1);
     // asm 00005ED6: 	DBU	AR5,UNFOLD_LP
-    p->ctx->MAP_ANIMATION.loop_count -= 1;
-    if (p->ctx->MAP_ANIMATION.loop_count >= 0) {
+    p->ctx.MAP_ANIMATION.loop_count -= 1;
+    if (p->ctx.MAP_ANIMATION.loop_count >= 0) {
         goto UNFOLD_LP;
     }
     // ;
@@ -477,22 +477,22 @@ UNFOLD_LP:
     // asm 00005EDB: 	LDI	*+AR0(OFLAGS),R0
     // asm 00005EDC: 	ANDN	O_1PAL,R0
     // asm 00005EDD: 	STI	R0,*+AR0(OFLAGS)
-    p->ctx->MAP_ANIMATION.objects[0]->flags &= ~O_1PAL;
+    p->ctx.MAP_ANIMATION.objects[0]->flags &= ~O_1PAL;
     // asm 00005EDE: 	LDI	*+AR7(MAP2OBJ),AR0
     // asm 00005EDF: 	LDI	*+AR0(OFLAGS),R0
     // asm 00005EE0: 	ANDN	O_1PAL,R0
     // asm 00005EE1: 	STI	R0,*+AR0(OFLAGS)
-    p->ctx->MAP_ANIMATION.objects[1]->flags &= ~O_1PAL;
+    p->ctx.MAP_ANIMATION.objects[1]->flags &= ~O_1PAL;
     // asm 00005EE2: 	LDI	*+AR7(MAP3OBJ),AR0
     // asm 00005EE3: 	LDI	*+AR0(OFLAGS),R0
     // asm 00005EE4: 	ANDN	O_1PAL,R0
     // asm 00005EE5: 	STI	R0,*+AR0(OFLAGS)
-    p->ctx->MAP_ANIMATION.objects[2]->flags &= ~O_1PAL;
+    p->ctx.MAP_ANIMATION.objects[2]->flags &= ~O_1PAL;
     // asm 00005EE6: 	LDI	*+AR7(MAP4OBJ),AR0
     // asm 00005EE7: 	LDI	*+AR0(OFLAGS),R0
     // asm 00005EE8: 	ANDN	O_1PAL,R0
     // asm 00005EE9: 	STI	R0,*+AR0(OFLAGS)
-    p->ctx->MAP_ANIMATION.objects[3]->flags &= ~O_1PAL;
+    p->ctx.MAP_ANIMATION.objects[3]->flags &= ~O_1PAL;
     // asm 00005EEA: 	DIE
     DIE();
 }
@@ -542,7 +542,7 @@ void FOLDMAP(PROC* p) {
     // asm 00005EF9: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(map1_ROM));
     // asm 00005EFA: 	STI	AR0,*+AR7(MAP1OBJ)
-    p->ctx->MAP_ANIMATION.objects[0] = obj;
+    p->ctx.MAP_ANIMATION.objects[0] = obj;
     // asm 00005EFB: 	LDI	R6,R0
     // asm 00005EFC: 	OR	*+AR0(OFLAGS),R0
     // asm 00005EFD: 	OR	O_1PAL,R0
@@ -557,7 +557,7 @@ void FOLDMAP(PROC* p) {
     // asm 00005F03: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(map2_ROM));
     // asm 00005F04: 	STI	AR0,*+AR7(MAP2OBJ)
-    p->ctx->MAP_ANIMATION.objects[1] = obj;
+    p->ctx.MAP_ANIMATION.objects[1] = obj;
     // asm 00005F05: 	LDI	R6,R0
     // asm 00005F06: 	OR	*+AR0(OFLAGS),R0
     // asm 00005F07: 	OR	O_1PAL,R0
@@ -572,7 +572,7 @@ void FOLDMAP(PROC* p) {
     // asm 00005F0D: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(map3_ROM));
     // asm 00005F0E: 	STI	AR0,*+AR7(MAP3OBJ)
-    p->ctx->MAP_ANIMATION.objects[2] = obj;
+    p->ctx.MAP_ANIMATION.objects[2] = obj;
     // asm 00005F0F: 	LDI	R6,R0
     // asm 00005F10: 	OR	*+AR0(OFLAGS),R0
     // asm 00005F11: 	OR	O_1PAL,R0
@@ -587,7 +587,7 @@ void FOLDMAP(PROC* p) {
     // asm 00005F17: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(map4_ROM));
     // asm 00005F18: 	STI	AR0,*+AR7(MAP4OBJ)
-    p->ctx->MAP_ANIMATION.objects[3] = obj;
+    p->ctx.MAP_ANIMATION.objects[3] = obj;
     // asm 00005F19: 	LDI	R6,R0
     // asm 00005F1A: 	OR	*+AR0(OFLAGS),R0
     // asm 00005F1B: 	OR	O_1PAL,R0
@@ -600,36 +600,36 @@ void FOLDMAP(PROC* p) {
     OBJ_INSERTP(obj);
     // asm 00005F20: 	CLRF	R0
     // asm 00005F21: 	STF	R0,*+AR7(MAP1T)
-    p->ctx->MAP_ANIMATION.theta[0] = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.theta[0] = C3X_STF(C3X_IMM_F32(0));
     // asm 00005F22: 	STF	R0,*+AR7(MAP2T)
-    p->ctx->MAP_ANIMATION.theta[1] = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.theta[1] = C3X_STF(C3X_IMM_F32(0));
     // asm 00005F23: 	STF	R0,*+AR7(MAP3T)
-    p->ctx->MAP_ANIMATION.theta[2] = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.theta[2] = C3X_STF(C3X_IMM_F32(0));
     // asm 00005F24: 	STF	R0,*+AR7(MAP4T)
-    p->ctx->MAP_ANIMATION.theta[3] = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.theta[3] = C3X_STF(C3X_IMM_F32(0));
     // asm 00005F25: 	CLRF	R0
     // asm 00005F26: 	STF	R0,*+AR7(MAPLPX)
-    p->ctx->MAP_ANIMATION.lead_x = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_x = C3X_STF(C3X_IMM_F32(0));
     // asm 00005F27: 	STF	R0,*+AR7(MAPLPY)
-    p->ctx->MAP_ANIMATION.lead_y = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_y = C3X_STF(C3X_IMM_F32(0));
     // asm 00005F28: 	FLOAT	368,R0	;368
     // asm 00005F29: 	STF	R0,*+AR7(MAPLPZ)
-    p->ctx->MAP_ANIMATION.lead_z = C3X_STF(C3X_FROM_INT(368)); // 368
+    p->ctx.MAP_ANIMATION.lead_z = C3X_STF(C3X_FROM_INT(368)); // 368
     // asm 00005F2A: 	CLRF	R2
     // asm 00005F2B: 	STF	R2,*+AR7(MAPLTX)
-    p->ctx->MAP_ANIMATION.lead_theta = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_theta = C3X_STF(C3X_IMM_F32(0));
     // asm 00005F2C: 	LDI	AR7,AR2
     // asm 00005F2D: 	ADDI	MAPLMAT,AR2
     // asm 00005F2E: 	CALL	FIND_XMATRIX
-    FIND_XMATRIX(&p->ctx->MAP_ANIMATION.lead_matrix,
-        C3X_LDF(p->ctx->MAP_ANIMATION.lead_theta));
+    FIND_XMATRIX(&p->ctx.MAP_ANIMATION.lead_matrix,
+        C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta));
     // asm 00005F2F: 	LDF	1,R0
     // asm 00005F30: 	STF	R0,*+AR7(MAPXD)
-    p->ctx->MAP_ANIMATION.x_delta = C3X_STF(C3X_IMM_F32(1));
+    p->ctx.MAP_ANIMATION.x_delta = C3X_STF(C3X_IMM_F32(1));
     // asm 00005F31: 	STF	R0,*+AR7(MAPYD)
-    p->ctx->MAP_ANIMATION.y_delta = C3X_STF(C3X_IMM_F32(1));
+    p->ctx.MAP_ANIMATION.y_delta = C3X_STF(C3X_IMM_F32(1));
     // asm 00005F32: 	LDI	MAP_ITERATIONS-1,AR5
-    p->ctx->MAP_ANIMATION.loop_count = MAP_ITERATIONS - 1;
+    p->ctx.MAP_ANIMATION.loop_count = MAP_ITERATIONS - 1;
     // asm 00005F33: FOLD_LP
 FOLD_LP:
     // asm 00005F33: 	CALL	MAP_ILLUM_COMPUTE
@@ -648,26 +648,26 @@ FOLD_LP:
 #endif
     // asm 00005F38: 	LDF	*+AR7(MAPXD),R1
     // asm 00005F39: 	MPYF	1.20,R1
-    delta = C3X_MUL(C3X_LDF(p->ctx->MAP_ANIMATION.x_delta), C3X_IMM_F32(1.20));
+    delta = C3X_MUL(C3X_LDF(p->ctx.MAP_ANIMATION.x_delta), C3X_IMM_F32(1.20));
     // asm 00005F3A: 	STF	R1,*+AR7(MAPXD)
-    p->ctx->MAP_ANIMATION.x_delta = C3X_STF(delta);
+    p->ctx.MAP_ANIMATION.x_delta = C3X_STF(delta);
     // asm 00005F3B: 	LDF	*+AR7(MAPLPX),R0
     // asm 00005F3C: 	ADDF	R1,R0
     // asm 00005F3D: 	STF	R0,*+AR7(MAPLPX)
-    p->ctx->MAP_ANIMATION.lead_x = C3X_STF(
-        C3X_ADD(C3X_LDF(p->ctx->MAP_ANIMATION.lead_x), delta));
+    p->ctx.MAP_ANIMATION.lead_x = C3X_STF(
+        C3X_ADD(C3X_LDF(p->ctx.MAP_ANIMATION.lead_x), delta));
     // asm 00005F3E: 	LDF	*+AR7(MAPYD),R1
     // asm 00005F3F: 	MPYF	1.2,R1
-    delta = C3X_MUL(C3X_LDF(p->ctx->MAP_ANIMATION.y_delta), C3X_IMM_F32(1.2));
+    delta = C3X_MUL(C3X_LDF(p->ctx.MAP_ANIMATION.y_delta), C3X_IMM_F32(1.2));
     // asm 00005F40: 	STF	R1,*+AR7(MAPYD)
-    p->ctx->MAP_ANIMATION.y_delta = C3X_STF(delta);
+    p->ctx.MAP_ANIMATION.y_delta = C3X_STF(delta);
     // asm 00005F41: 	LDF	*+AR7(MAPLPY),R0
     // asm 00005F42: 	SUBF	R1,R0
     // asm 00005F43: 	STF	R0,*+AR7(MAPLPY)
-    p->ctx->MAP_ANIMATION.lead_y = C3X_STF(
-        C3X_SUB(C3X_LDF(p->ctx->MAP_ANIMATION.lead_y), delta));
+    p->ctx.MAP_ANIMATION.lead_y = C3X_STF(
+        C3X_SUB(C3X_LDF(p->ctx.MAP_ANIMATION.lead_y), delta));
     // asm 00005F44: 	LDF	*+AR7(MAPLPZ),R0
-    value = C3X_LDF(p->ctx->MAP_ANIMATION.lead_z);
+    value = C3X_LDF(p->ctx.MAP_ANIMATION.lead_z);
     // asm 00005F45: 	FLOAT	3368,R1
     // asm 00005F46: 	SUBF	R0,R1
     // asm 00005F47: 	MPYF	0.05,R1
@@ -677,48 +677,48 @@ FOLD_LP:
     // asm 00005F49: 	FLOAT	3368,R1
     // asm 00005F4A: 	CMPI	0,AR5
     // asm 00005F4B: 	LDFEQ	R1,R0
-    if (p->ctx->MAP_ANIMATION.loop_count == 0) {
+    if (p->ctx.MAP_ANIMATION.loop_count == 0) {
         value = C3X_FROM_INT(3368);
     }
     // asm 00005F4C: 	STF	R0,*+AR7(MAPLPZ)
-    p->ctx->MAP_ANIMATION.lead_z = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.lead_z = C3X_STF(value);
     // asm 00005F4D: 	LDF	*+AR7(MAPLTX),R2
     // asm 00005F4E: 	LDF	HALFPI,R0
     // asm 00005F4F: 	SUBF	R2,R0
     // asm 00005F50: 	MPYF	0.1,R0
     delta = C3X_MUL(C3X_SUB(C3X_IMM_F32(HALFPI),
-                             C3X_LDF(p->ctx->MAP_ANIMATION.lead_theta)),
+                             C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta)),
         C3X_IMM_F32(0.1));
     // asm 00005F51: 	ADDF	R0,R2
-    value = C3X_ADD(C3X_LDF(p->ctx->MAP_ANIMATION.lead_theta), delta);
+    value = C3X_ADD(C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta), delta);
     // asm 00005F52: 	LDF	HALFPI,R1
     // asm 00005F53: 	CMPI	0,AR5
     // asm 00005F54: 	LDFEQ	R1,R2
-    if (p->ctx->MAP_ANIMATION.loop_count == 0) {
+    if (p->ctx.MAP_ANIMATION.loop_count == 0) {
         value = C3X_IMM_F32(HALFPI);
     }
     // asm 00005F55: 	STF	R2,*+AR7(MAPLTX)
-    p->ctx->MAP_ANIMATION.lead_theta = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.lead_theta = C3X_STF(value);
     // asm 00005F56: 	LDI	AR7,AR2
     // asm 00005F57: 	ADDI	MAPLMAT,AR2
     // asm 00005F58: 	CALL	FIND_XMATRIX
-    FIND_XMATRIX(&p->ctx->MAP_ANIMATION.lead_matrix, value);
+    FIND_XMATRIX(&p->ctx.MAP_ANIMATION.lead_matrix, value);
     // asm 00005F59: 	LDI	*+AR7(MAP2OBJ),AR4
-    obj = p->ctx->MAP_ANIMATION.objects[1];
+    obj = p->ctx.MAP_ANIMATION.objects[1];
     // asm 00005F5A: 	LDF	*+AR7(MAPLPX),R0
     // asm 00005F5B: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_x));
+    obj->pos.X = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_x));
     // asm 00005F5C: 	LDF	*+AR7(MAPLPY),R0
     // asm 00005F5D: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_y));
+    obj->pos.Y = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_y));
     // asm 00005F5E: 	LDF	*+AR7(MAPLPZ),R0
     // asm 00005F5F: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_z));
+    obj->pos.Z = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_z));
     // asm 00005F60: 	LDF	*+AR7(MAP2T),R2
     // asm 00005F61: 	SUBF	@M2STDI,R2
-    value = C3X_SUB(C3X_LDF(p->ctx->MAP_ANIMATION.theta[1]), C3X_LDF(M4STDI));
+    value = C3X_SUB(C3X_LDF(p->ctx.MAP_ANIMATION.theta[1]), C3X_LDF(M4STDI));
     // asm 00005F62: 	STF	R2,*+AR7(MAP2T)
-    p->ctx->MAP_ANIMATION.theta[1] = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.theta[1] = C3X_STF(value);
     // asm 00005F63: 	LDI	AR4,AR2
     // asm 00005F64: 	ADDI	OMATRIX,AR2
     // asm 00005F65: 	CALL	FIND_YMATRIX
@@ -727,26 +727,26 @@ FOLD_LP:
     // asm 00005F67: 	ADDI	MAPLMAT,R2
     // asm 00005F68: 	LDI	AR2,R3
     // asm 00005F69: 	CALL	CONCATMAT
-    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx->MAP_ANIMATION.lead_matrix,
+    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx.MAP_ANIMATION.lead_matrix,
         (MATRIX*)&obj->omatrix);
     // 	;					OBJECT 2
     // 	;----------------------------------------------------------------------
     // asm 00005F6A: 	LDI	*+AR7(MAP3OBJ),AR4
-    obj = p->ctx->MAP_ANIMATION.objects[2];
+    obj = p->ctx.MAP_ANIMATION.objects[2];
     // asm 00005F6B: 	LDF	*+AR7(MAPLPX),R0
     // asm 00005F6C: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_x));
+    obj->pos.X = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_x));
     // asm 00005F6D: 	LDF	*+AR7(MAPLPY),R0
     // asm 00005F6E: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_y));
+    obj->pos.Y = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_y));
     // asm 00005F6F: 	LDF	*+AR7(MAPLPZ),R0
     // asm 00005F70: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_LDF(p->ctx->MAP_ANIMATION.lead_z));
+    obj->pos.Z = C3X_STF(C3X_LDF(p->ctx.MAP_ANIMATION.lead_z));
     // asm 00005F71: 	LDF	*+AR7(MAP3T),R2
     // asm 00005F72: 	SUBF	@M3STDI,R2
-    value = C3X_SUB(C3X_LDF(p->ctx->MAP_ANIMATION.theta[2]), C3X_LDF(M3STDI));
+    value = C3X_SUB(C3X_LDF(p->ctx.MAP_ANIMATION.theta[2]), C3X_LDF(M3STDI));
     // asm 00005F73: 	STF	R2,*+AR7(MAP3T)
-    p->ctx->MAP_ANIMATION.theta[2] = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.theta[2] = C3X_STF(value);
     // asm 00005F74: 	LDI	AR4,AR2
     // asm 00005F75: 	ADDI	OMATRIX,AR2
     // asm 00005F76: 	CALL	FIND_YMATRIX
@@ -755,21 +755,21 @@ FOLD_LP:
     // asm 00005F78: 	ADDI	MAPLMAT,R2
     // asm 00005F79: 	LDI	AR2,R3
     // asm 00005F7A: 	CALL	CONCATMAT
-    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx->MAP_ANIMATION.lead_matrix,
+    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx.MAP_ANIMATION.lead_matrix,
         (MATRIX*)&obj->omatrix);
     // 	;					OBJECT 3
     // 	;----------------------------------------------------------------------
     // asm 00005F7B: 	LDF	*+AR7(MAP2T),R2			;MATRIX FOR TRANSLATION
     // asm 00005F7C: 	LDI	@MATRIXAI,AR2
     // asm 00005F7D: 	CALL	FIND_YMATRIX
-    FIND_YMATRIX(&_MATRIXA, C3X_LDF(p->ctx->MAP_ANIMATION.theta[1]));
+    FIND_YMATRIX(&_MATRIXA, C3X_LDF(p->ctx.MAP_ANIMATION.theta[1]));
     // asm 00005F7E: 	LDI	AR7,R2
     // asm 00005F7F: 	ADDI	MAPLMAT,R2
     // asm 00005F80: 	LDI	AR2,R3
     // asm 00005F81: 	CALL	CONCATMAT
-    CONCATMAT(&_MATRIXA, &p->ctx->MAP_ANIMATION.lead_matrix, &_MATRIXA);
+    CONCATMAT(&_MATRIXA, &p->ctx.MAP_ANIMATION.lead_matrix, &_MATRIXA);
     // asm 00005F82: 	LDI	*+AR7(MAP1OBJ),AR4
-    obj = p->ctx->MAP_ANIMATION.objects[0];
+    obj = p->ctx.MAP_ANIMATION.objects[0];
     // asm 00005F83: 	CALL	CLR_VECTORA
     CLR_VECTORA();
     // asm 00005F84: 	FLOAT	-127,R0
@@ -783,20 +783,20 @@ FOLD_LP:
     // asm 00005F8A: 	LDF	*+AR4(OPOSX),R0
     // asm 00005F8B: 	ADDF	*+AR7(MAPLPX),R0
     // asm 00005F8C: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx->MAP_ANIMATION.lead_x)));
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx.MAP_ANIMATION.lead_x)));
     // asm 00005F8D: 	LDF	*+AR4(OPOSY),R0
     // asm 00005F8E: 	ADDF	*+AR7(MAPLPY),R0
     // asm 00005F8F: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(p->ctx->MAP_ANIMATION.lead_y)));
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(p->ctx.MAP_ANIMATION.lead_y)));
     // asm 00005F90: 	LDF	*+AR4(OPOSZ),R0
     // asm 00005F91: 	ADDF	*+AR7(MAPLPZ),R0
     // asm 00005F92: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx->MAP_ANIMATION.lead_z)));
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx.MAP_ANIMATION.lead_z)));
     // asm 00005F93: 	LDF	*+AR7(MAP1T),R2
     // asm 00005F94: 	SUBF	@M1STDI,R2
-    value = C3X_SUB(C3X_LDF(p->ctx->MAP_ANIMATION.theta[0]), C3X_LDF(M3STDI));
+    value = C3X_SUB(C3X_LDF(p->ctx.MAP_ANIMATION.theta[0]), C3X_LDF(M3STDI));
     // asm 00005F95: 	STF	R2,*+AR7(MAP1T)
-    p->ctx->MAP_ANIMATION.theta[0] = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.theta[0] = C3X_STF(value);
     // asm 00005F96: 	LDI	AR4,AR2
     // asm 00005F97: 	ADDI	OMATRIX,AR2
     // asm 00005F98: 	CALL	FIND_YMATRIX
@@ -805,21 +805,21 @@ FOLD_LP:
     // asm 00005F9A: 	ADDI	MAPLMAT,R2
     // asm 00005F9B: 	LDI	AR2,R3
     // asm 00005F9C: 	CALL	CONCATMAT
-    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx->MAP_ANIMATION.lead_matrix,
+    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx.MAP_ANIMATION.lead_matrix,
         (MATRIX*)&obj->omatrix);
     // 	;					OBJECT 1
     // 	;----------------------------------------------------------------------
     // asm 00005F9D: 	LDF	*+AR7(MAP3T),R2			;MATRIX FOR TRANSLATION
     // asm 00005F9E: 	LDI	@MATRIXAI,AR2
     // asm 00005F9F: 	CALL	FIND_YMATRIX
-    FIND_YMATRIX(&_MATRIXA, C3X_LDF(p->ctx->MAP_ANIMATION.theta[2]));
+    FIND_YMATRIX(&_MATRIXA, C3X_LDF(p->ctx.MAP_ANIMATION.theta[2]));
     // asm 00005FA0: 	LDI	AR7,R2
     // asm 00005FA1: 	ADDI	MAPLMAT,R2
     // asm 00005FA2: 	LDI	AR2,R3
     // asm 00005FA3: 	CALL	CONCATMAT
-    CONCATMAT(&_MATRIXA, &p->ctx->MAP_ANIMATION.lead_matrix, &_MATRIXA);
+    CONCATMAT(&_MATRIXA, &p->ctx.MAP_ANIMATION.lead_matrix, &_MATRIXA);
     // asm 00005FA4: 	LDI	*+AR7(MAP4OBJ),AR4
-    obj = p->ctx->MAP_ANIMATION.objects[3];
+    obj = p->ctx.MAP_ANIMATION.objects[3];
     // asm 00005FA5: 	CALL	CLR_VECTORA
     CLR_VECTORA();
     // asm 00005FA6: 	FLOAT	128,R0
@@ -833,20 +833,20 @@ FOLD_LP:
     // asm 00005FAC: 	LDF	*+AR4(OPOSX),R0
     // asm 00005FAD: 	ADDF	*+AR7(MAPLPX),R0
     // asm 00005FAE: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx->MAP_ANIMATION.lead_x)));
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(p->ctx.MAP_ANIMATION.lead_x)));
     // asm 00005FAF: 	LDF	*+AR4(OPOSY),R0
     // asm 00005FB0: 	ADDF	*+AR7(MAPLPY),R0
     // asm 00005FB1: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(p->ctx->MAP_ANIMATION.lead_y)));
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(p->ctx.MAP_ANIMATION.lead_y)));
     // asm 00005FB2: 	LDF	*+AR4(OPOSZ),R0
     // asm 00005FB3: 	ADDF	*+AR7(MAPLPZ),R0
     // asm 00005FB4: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx->MAP_ANIMATION.lead_z)));
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(p->ctx.MAP_ANIMATION.lead_z)));
     // asm 00005FB5: 	LDF	*+AR7(MAP4T),R2
     // asm 00005FB6: 	SUBF	@M4STDI,R2
-    value = C3X_SUB(C3X_LDF(p->ctx->MAP_ANIMATION.theta[3]), C3X_LDF(M4STDI));
+    value = C3X_SUB(C3X_LDF(p->ctx.MAP_ANIMATION.theta[3]), C3X_LDF(M4STDI));
     // asm 00005FB7: 	STF	R2,*+AR7(MAP4T)
-    p->ctx->MAP_ANIMATION.theta[3] = C3X_STF(value);
+    p->ctx.MAP_ANIMATION.theta[3] = C3X_STF(value);
     // asm 00005FB8: 	LDI	AR4,AR2
     // asm 00005FB9: 	ADDI	OMATRIX,AR2
     // asm 00005FBA: 	CALL	FIND_YMATRIX
@@ -855,29 +855,29 @@ FOLD_LP:
     // asm 00005FBC: 	ADDI	MAPLMAT,R2
     // asm 00005FBD: 	LDI	AR2,R3
     // asm 00005FBE: 	CALL	CONCATMAT
-    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx->MAP_ANIMATION.lead_matrix,
+    CONCATMAT((MATRIX*)&obj->omatrix, &p->ctx.MAP_ANIMATION.lead_matrix,
         (MATRIX*)&obj->omatrix);
     // 	;					OBJECT 4
     // 	;--------------------------------------------------------------------
     // asm 00005FBF: 	SLEEP	1
     SLEEP(1, 1);
     // asm 00005FC1: 	DBU	AR5,FOLD_LP
-    p->ctx->MAP_ANIMATION.loop_count -= 1;
-    if (p->ctx->MAP_ANIMATION.loop_count >= 0) {
+    p->ctx.MAP_ANIMATION.loop_count -= 1;
+    if (p->ctx.MAP_ANIMATION.loop_count >= 0) {
         goto FOLD_LP;
     }
     // asm 00005FC2: 	LDI	*+AR7(MAP1OBJ),AR2
     // asm 00005FC3: 	CALL	OBJ_DELETE
-    OBJ_DELETE(p->ctx->MAP_ANIMATION.objects[0]);
+    OBJ_DELETE(p->ctx.MAP_ANIMATION.objects[0]);
     // asm 00005FC4: 	LDI	*+AR7(MAP2OBJ),AR2
     // asm 00005FC5: 	CALL	OBJ_DELETE
-    OBJ_DELETE(p->ctx->MAP_ANIMATION.objects[1]);
+    OBJ_DELETE(p->ctx.MAP_ANIMATION.objects[1]);
     // asm 00005FC6: 	LDI	*+AR7(MAP3OBJ),AR2
     // asm 00005FC7: 	CALL	OBJ_DELETE
-    OBJ_DELETE(p->ctx->MAP_ANIMATION.objects[2]);
+    OBJ_DELETE(p->ctx.MAP_ANIMATION.objects[2]);
     // asm 00005FC8: 	LDI	*+AR7(MAP4OBJ),AR2
     // asm 00005FC9: 	CALL	OBJ_DELETE
-    OBJ_DELETE(p->ctx->MAP_ANIMATION.objects[3]);
+    OBJ_DELETE(p->ctx.MAP_ANIMATION.objects[3]);
     // asm 00005FCA: 	CALL	CLEAR_MAP_PALS
     CLEAR_MAP_PALS();
     // asm 00005FCB: 	DIE
@@ -993,7 +993,7 @@ static void MAP_ILLUM_COMPUTE(PROC* p) {
     c3x_reg_t value;
 
     // asm 00005FED: 	LDF	*+AR7(MAP1T),R0
-    value = C3X_LDF(p->ctx->MAP_ANIMATION.theta[0]);
+    value = C3X_LDF(p->ctx.MAP_ANIMATION.theta[0]);
     // asm 00005FEE: 	ADDF	HALFPI,R0
     value = C3X_ADD(value, C3X_IMM_F32(HALFPI));
     // asm 00005FEF: 	MPYF	@FORMULA1,R0
@@ -1007,7 +1007,7 @@ static void MAP_ILLUM_COMPUTE(PROC* p) {
     // asm 00005FF3: 	STF	R0,@MAPPAL13
     MAPPAL13 = C3X_STF(value);
     // asm 00005FF4: 	LDF	*+AR7(MAP2T),R0
-    value = C3X_LDF(p->ctx->MAP_ANIMATION.theta[1]);
+    value = C3X_LDF(p->ctx.MAP_ANIMATION.theta[1]);
     // asm 00005FF5: 	ADDF	HALFPI,R0
     value = C3X_ADD(value, C3X_IMM_F32(HALFPI));
     // asm 00005FF6: 	MPYF	@FORMULA1,R0

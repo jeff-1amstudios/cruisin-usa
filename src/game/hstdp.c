@@ -254,10 +254,10 @@ void ENTER_INITIALS(PROC* p) {
     }
 
     // asm 000031A6: 	CALL	INTO_TABLE_P
-    p->ctx->ENTER_INITIALS_FRAME.place = INTO_TABLE_P();
-    p->ctx->ENTER_INITIALS_FRAME.race_number = BONUS_WAVE - 1;
+    p->ctx.ENTER_INITIALS_FRAME.place = INTO_TABLE_P();
+    p->ctx.ENTER_INITIALS_FRAME.race_number = BONUS_WAVE - 1;
     // asm 000031A7: 	BC	GOODENOUGH
-    if (p->ctx->ENTER_INITIALS_FRAME.place >= 0)
+    if (p->ctx.ENTER_INITIALS_FRAME.place >= 0)
         goto GOODENOUGH;
     // asm 000031A8: 	RETP		;NOPE, didn't make it
     return; // ;NOPE, didn't make it
@@ -268,17 +268,17 @@ GOODENOUGH:
     // asm 000031AE: 	STI	R0,@NOSWAP
     NOSWAP = 1;
     // asm 000031AF: 	LDI	0,R4
-    p->ctx->ENTER_INITIALS_FRAME.loading_clear_frames = 0;
+    p->ctx.ENTER_INITIALS_FRAME.loading_clear_frames = 0;
 MSLP2:
     // asm 000031B0: 	LDI	@DECOMP_ACTIVE,R0
     // asm 000031B1: 	BNZ	MSLP3
     if (DECOMP_ACTIVE != 0)
         goto MSLP3;
     // asm 000031B2: 	ADDI	1,R4
-    p->ctx->ENTER_INITIALS_FRAME.loading_clear_frames += 1;
+    p->ctx.ENTER_INITIALS_FRAME.loading_clear_frames += 1;
     // asm 000031B3: 	CMPI	3,R4
     // asm 000031B4: 	BGT	MSLPX				;Done Loading
-    if (p->ctx->ENTER_INITIALS_FRAME.loading_clear_frames > 3)
+    if (p->ctx.ENTER_INITIALS_FRAME.loading_clear_frames > 3)
         goto MSLPX; // ;Done Loading
 MSLP3:
     // asm 000031B5: 	SLEEP	1
@@ -348,7 +348,7 @@ MSLPX:
     // asm 000031E8: 	LDL	scroll_white,AR2	;This is the palette for the letters
     // asm 000031E9: 	CALL	PAL_ALLOC_RAW
     // asm 000031EA: 	STI	R0,*+AR7(WHITE_PAL)
-    p->ctx->ENTER_INITIALS_FRAME.white_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(scroll_white_ROM)); // ;This is the palette for the letters
+    p->ctx.ENTER_INITIALS_FRAME.white_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(scroll_white_ROM)); // ;This is the palette for the letters
     // asm 000031EB: 	LDL	press_grp,AR2
     // asm 000031EC: 	CALL	LOAD_SINGLE_SECTION
     LOAD_SINGLE_SECTION((LOAD_SINGLE_SECTION_GROUP*)ROM_PTR(press_grp_ROM));
@@ -373,11 +373,11 @@ MSLPX:
     // asm 000031F7: 	LDL	scroll_gr2,AR2	;Palette used for the Letters on the bottom of the press
     // asm 000031F8: 	CALL	PAL_ALLOC_RAW
     // asm 000031F9: 	STI	R0,*+AR7(GREY_PAL)
-    p->ctx->ENTER_INITIALS_FRAME.grey_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(scroll_gr2_ROM)); // ;Palette used for the Letters on the bottom of the press
+    p->ctx.ENTER_INITIALS_FRAME.grey_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(scroll_gr2_ROM)); // ;Palette used for the Letters on the bottom of the press
     // asm 000031FA: 	CALL	CHECK_FIRST_TIME
-    p->ctx->ENTER_INITIALS_FRAME.old_choice = CHECK_FIRST_TIME(p);
+    p->ctx.ENTER_INITIALS_FRAME.old_choice = CHECK_FIRST_TIME(p);
     // asm 000031FB: 	BC	PRESS_CODE_ENTRY
-    if (p->ctx->ENTER_INITIALS_FRAME.old_choice != 0) {
+    if (p->ctx.ENTER_INITIALS_FRAME.old_choice != 0) {
         PROC_CONTINUE(PRESS_CODE_ENTRY, 2);
         return;
     }
@@ -389,16 +389,16 @@ MSLPX:
     // asm 00003201: 	STI	R0,*+AR7(INITI0)
     // asm 00003202: 	STI	R0,*+AR7(INITI1)
     // asm 00003203: 	STI	R0,*+AR7(INITI2)
-    p->ctx->ENTER_INITIALS_FRAME.initial_chars[0] = ' ';
-    p->ctx->ENTER_INITIALS_FRAME.initial_chars[1] = ' ';
-    p->ctx->ENTER_INITIALS_FRAME.initial_chars[2] = ' ';
+    p->ctx.ENTER_INITIALS_FRAME.initial_chars[0] = ' ';
+    p->ctx.ENTER_INITIALS_FRAME.initial_chars[1] = ' ';
+    p->ctx.ENTER_INITIALS_FRAME.initial_chars[2] = ' ';
     // asm 00003204: 	LDL	pa,AR2			;Create the first Letter
     // asm 00003205: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(pa_ROM)); // ;Create the first Letter
     // asm 00003206: 	STI	AR0,*+AR7(INIT0)
-    p->ctx->ENTER_INITIALS_FRAME.initial_objs[0] = obj;
+    p->ctx.ENTER_INITIALS_FRAME.initial_objs[0] = obj;
     // asm 00003207: 	STI	R4,*+AR0(OPAL)
-    obj->palette = (u32)p->ctx->ENTER_INITIALS_FRAME.white_pal;
+    obj->palette = (u32)p->ctx.ENTER_INITIALS_FRAME.white_pal;
     // asm 00003208: 	STF	R5,*+AR0(OPOSX)
     letter_x = C3X_FROM_INT(-LETTER_SIZEX - LETTER_SIZEX / 4); // ;Position of the first letter
     obj->pos.X = C3X_STF(letter_x);
@@ -416,9 +416,9 @@ MSLPX:
     // asm 00003210: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(po_ROM)); // ;Create the second letter
     // asm 00003211: 	STI	AR0,*+AR7(INIT1)
-    p->ctx->ENTER_INITIALS_FRAME.initial_objs[1] = obj;
+    p->ctx.ENTER_INITIALS_FRAME.initial_objs[1] = obj;
     // asm 00003212: 	STI	R4,*+AR0(OPAL)
-    obj->palette = (u32)p->ctx->ENTER_INITIALS_FRAME.white_pal;
+    obj->palette = (u32)p->ctx.ENTER_INITIALS_FRAME.white_pal;
     // asm 00003213: 	STF	R5,*+AR0(OPOSX)
     obj->pos.X = C3X_STF(letter_x);
     // asm 00003214: 	STF	R6,*+AR0(OPOSY)
@@ -432,9 +432,9 @@ MSLPX:
     // asm 00003219: 	CALL	OBJ_GETE
     obj = OBJ_GETE(ROM_PTR(po_ROM)); // ;Create the third letter
     // asm 0000321A: 	STI	AR0,*+AR7(INIT2)
-    p->ctx->ENTER_INITIALS_FRAME.initial_objs[2] = obj;
+    p->ctx.ENTER_INITIALS_FRAME.initial_objs[2] = obj;
     // asm 0000321B: 	STI	R4,*+AR0(OPAL)
-    obj->palette = (u32)p->ctx->ENTER_INITIALS_FRAME.white_pal;
+    obj->palette = (u32)p->ctx.ENTER_INITIALS_FRAME.white_pal;
     // asm 0000321C: 	STF	R5,*+AR0(OPOSX)
     obj->pos.X = C3X_STF(letter_x);
     // asm 0000321D: 	STF	R6,*+AR0(OPOSY)
@@ -444,7 +444,7 @@ MSLPX:
     // asm 0000321F: 	CREATE	ENTERTEXT,SPAWNER_C	;This will slide in the text "ENTER INITIALS"
     CREATE(ENTERTEXT, SPAWNER_C, NULL); // ;This will slide in the text "ENTER INITIALS"
     // asm 00003222: 	CLRI	AR5			;character index
-    p->ctx->ENTER_INITIALS_FRAME.character_index = 0; // ;character index
+    p->ctx.ENTER_INITIALS_FRAME.character_index = 0; // ;character index
     // asm 00003223: 	LDF	@STEERCT,R0
     // asm 00003224: 	STF	R0,@WHEELPOS
     WHEELPOS = C3X_STF(C3X_LDF(STEERCT));
@@ -452,7 +452,7 @@ MSLPX:
     GETCHOICE(); // ;READS the steering wheel, uses POSES = number of choices
     // asm 00003226: 	LDI	@POSE,R4	;On return POSE = Choice wheel is pointing at.
     // asm 00003227: 	STI	R4,*+AR7(OLDPOT0)
-    p->ctx->ENTER_INITIALS_FRAME.old_choice = POSE; // ;On return POSE = Choice wheel is pointing at.
+    p->ctx.ENTER_INITIALS_FRAME.old_choice = POSE; // ;On return POSE = Choice wheel is pointing at.
     // asm 00003228: 	LDI	0,R0		;CLEAR OUT LEFT OVER START HIT
     // asm 00003229: 	STI	R0,@START_HIT
     START_HIT = 0; // ;CLEAR OUT LEFT OVER START HIT
@@ -464,10 +464,9 @@ MSLPX:
     // asm 0000322F: 	FIX	@PEDALMN,R0
     // asm 00003230: 	ADDI	R0,R1
     // asm 00003231: 	STI	R1,*+AR7(PEDTRIG)
-    p->ctx->ENTER_INITIALS_FRAME.pedal_trigger =
-        (C3X_FIX(C3X_SUB(C3X_LDF(PEDALMX), C3X_LDF(PEDALMN))) >> 1) + C3X_FIX(C3X_LDF(PEDALMN));
+    p->ctx.ENTER_INITIALS_FRAME.pedal_trigger = (C3X_FIX(C3X_SUB(C3X_LDF(PEDALMX), C3X_LDF(PEDALMN))) >> 1) + C3X_FIX(C3X_LDF(PEDALMN));
     // asm 00003232: 	LDI	0,AR6			;Set debounce counter to 0
-    p->ctx->ENTER_INITIALS_FRAME.debounce_counter = 0; // ;Set debounce counter to 0
+    p->ctx.ENTER_INITIALS_FRAME.debounce_counter = 0; // ;Set debounce counter to 0
     // ;	BR	PEDALWT
     // asm 00003233: 	LDI	1,R0
     // asm 00003234: 	STI	R0,@PEDHIT		;not touched
@@ -692,8 +691,8 @@ NOT_FIRST_TIME:
     // asm 00003301: 	LDI	' ',R1			;Just incase the initials have been corrupted
     // asm 00003302: 	STI	R1,*+AR7(INITI1)
     // asm 00003303: 	STI	R1,*+AR7(INITI2)
-    p->ctx->ENTER_INITIALS_FRAME.initial_chars[1] = ' '; // ;Just incase the initials have been corrupted
-    p->ctx->ENTER_INITIALS_FRAME.initial_chars[2] = ' ';
+    p->ctx.ENTER_INITIALS_FRAME.initial_chars[1] = ' '; // ;Just incase the initials have been corrupted
+    p->ctx.ENTER_INITIALS_FRAME.initial_chars[2] = ' ';
     // asm 00003304: 	LDI	AR7,AR0
     // asm 00003305: 	ADDI	INITI0,AR0
     index = 0;
@@ -704,7 +703,7 @@ NFTLP:
     if ((initials & 0xff) == 0)
         goto NFTX;
     // asm 00003309: 	STI	R1,*AR0++
-    p->ctx->ENTER_INITIALS_FRAME.initial_chars[index++] = initials & 0xff;
+    p->ctx.ENTER_INITIALS_FRAME.initial_chars[index++] = initials & 0xff;
     // asm 0000330A: 	LSH	-8,R0
     initials >>= 8;
     // asm 0000330B: 	BNE	NFTLP
@@ -3030,7 +3029,7 @@ void DISPLAY_HIGH_SCORES(PROC* p) {
     // asm 00003867: 	STI	R0,@RADIO_HS_SHADOW
     RADIO_HS_SHADOW = 0;
     // asm 00003868: 	LDI	@ATTRWAVE,AR5
-    p->ctx->DISPLAY_HIGH_SCORES.attrwave = ATTRWAVE;
+    p->ctx.DISPLAY_HIGH_SCORES.attrwave = ATTRWAVE;
 DHSLOOP:
     // asm 00003869: 	CLRI	AR0
     // ;	LDP	@SWITCH3
@@ -3042,12 +3041,12 @@ DHSLOOP:
     // asm 0000386A: 	LDI	AR5,AR6
     // asm 0000386B: 	CREATE	DISPLAY_HS,UTIL_C|DISPLAYHS_T
 
-    ctx = port_malloc(sizeof(PROC_CONTEXT));
-    ctx->DISPLAY_HS.race_number = p->ctx->DISPLAY_HIGH_SCORES.attrwave;
+    ctx = NEW_PROC_CONTEXT();
+    ctx->DISPLAY_HS.race_number = p->ctx.DISPLAY_HIGH_SCORES.attrwave;
     CREATE(DISPLAY_HS, UTIL_C | DISPLAYHS_T, ctx);
     // asm 0000386E: 	LDI	AR0,AR4			;Save PROC incase we need to kill it latter
     // asm 0000386F: 	LDI	30*7,AR6		;Sleep 7 seconds
-    p->ctx->DISPLAY_HIGH_SCORES.sleep_ticks = 30 * 7;
+    p->ctx.DISPLAY_HIGH_SCORES.sleep_ticks = 30 * 7;
 DHSWAIT:
     // asm 00003870: 	SLEEP	1
     SLEEP(1, 1);
@@ -3067,30 +3066,30 @@ DHSWAIT:
         // asm 00003876: 	CMPI	-1,R0			;First trigger
         // asm 00003877: 	LDIEQ	-1,AR5			;First trigger set level = -1 (DHSNEXT WILL INC)
         if (RADIO_HS_SWITCH == -1) {
-            p->ctx->DISPLAY_HIGH_SCORES.attrwave = -1;
+            p->ctx.DISPLAY_HIGH_SCORES.attrwave = -1;
         }
         // asm 00003878: 	BR	DHSNEXT
         goto DHSNEXT;
     }
 DHSNOBUT:
     // asm 00003879: 	DBU	AR6,DHSWAIT
-    p->ctx->DISPLAY_HIGH_SCORES.sleep_ticks -= 1;
-    if (p->ctx->DISPLAY_HIGH_SCORES.sleep_ticks >= 0) {
+    p->ctx.DISPLAY_HIGH_SCORES.sleep_ticks -= 1;
+    if (p->ctx.DISPLAY_HIGH_SCORES.sleep_ticks >= 0) {
         goto DHSWAIT;
     }
 
     // asm 0000387A: 	CALL	OBJ_INIT	;initialize object system (ERASE OLD OBJECTS)
     OBJ_INIT();
     // asm 0000387B: 	ADDI	1,AR5
-    p->ctx->DISPLAY_HIGH_SCORES.attrwave += 1;
+    p->ctx.DISPLAY_HIGH_SCORES.attrwave += 1;
     // asm 0000387C: 	CMPI	15,AR5
     // asm 0000387D: 	BGE	DHSLOOPX
-    if (p->ctx->DISPLAY_HIGH_SCORES.attrwave >= 15) {
+    if (p->ctx.DISPLAY_HIGH_SCORES.attrwave >= 15) {
         goto DHSLOOPX;
     }
     // asm 0000387E: 	TSTB	1,AR5
     // asm 0000387F: 	BNE	DHSLOOP
-    if ((p->ctx->DISPLAY_HIGH_SCORES.attrwave & 1) != 0) {
+    if ((p->ctx.DISPLAY_HIGH_SCORES.attrwave & 1) != 0) {
         goto DHSLOOP;
     }
 DHSLOOPX:
@@ -3099,10 +3098,10 @@ DHSLOOPX:
     return;
 DHSNEXT:
     // asm 00003881: 	ADDI	1,AR5
-    p->ctx->DISPLAY_HIGH_SCORES.attrwave += 1;
+    p->ctx.DISPLAY_HIGH_SCORES.attrwave += 1;
     // asm 00003882: 	CMPI	15,AR5
     // asm 00003883: 	BGE	DHSLOOPX
-    if (p->ctx->DISPLAY_HIGH_SCORES.attrwave >= 15) {
+    if (p->ctx.DISPLAY_HIGH_SCORES.attrwave >= 15) {
         goto DHSLOOPX;
     }
     // asm 00003884: 	LDI	UTIL_C|DISPLAYHS_T,R0	;KILL THE OLD PROCS OFF
@@ -3137,7 +3136,7 @@ static void DISPLAY_HS(PROC* p) {
     // Passed by parent proc through child PROC_CONTEXT setup in DISPLAY_HIGH_SCORES.
     // asm 0000388A: 	LDL	scroll_white,AR2
     // asm 0000388B: 	CALL	PAL_FIND_RAW
-    p->ctx->DISPLAY_HS.white_pal = PAL_FIND_RAW((tPAL*)ROM_PTR(scroll_white_ROM));
+    p->ctx.DISPLAY_HS.white_pal = PAL_FIND_RAW((tPAL*)ROM_PTR(scroll_white_ROM));
     // asm 0000388C: 	STI	R0,*+AR7(WHITE_PAL)
     // asm 0000388D: 	LDI	0,R0
     // asm 0000388E: 	STI	R0,@NOAERASE
@@ -3165,7 +3164,7 @@ static void DISPLAY_HS(PROC* p) {
     // asm 0000389D: 	CALL	DELETE_PRESS_OBJECTS	;Loose the extra stuff used for the name entry
     DELETE_PRESS_OBJECTS();
     // asm 0000389E: 	CALL	FIND_ALL_PLATES
-    FIND_ALL_PLATES(p->ctx->DISPLAY_HS.race_number, p->ctx->DISPLAY_HS.white_pal);
+    FIND_ALL_PLATES(p->ctx.DISPLAY_HS.race_number, p->ctx.DISPLAY_HS.white_pal);
     // asm 0000389F: 	CALL	FIX_PLATES		;Init the plates zpos for the fly in
     FIX_PLATES();
     // asm 000038A0: 	FLOAT	120,R2			;Adjust the plates y position for the new Marqee
@@ -3181,14 +3180,14 @@ static void DISPLAY_HS(PROC* p) {
         OBJ_PULL(obj);
     }
     // asm 000038A7: 	CALL	DISPLAY_HSTEXT
-    DISPLAY_HSTEXT(p->ctx->DISPLAY_HS.race_number);
+    DISPLAY_HSTEXT(p->ctx.DISPLAY_HS.race_number);
     // asm 000038A8: 	CALL	RESCAN			;Make sure all these changes are shown the next display
     RESCAN();
     // asm 000038A9: 	LDI	*+AR7(RACE_NUMBER),R4
     // asm 000038AA: 	CREATEC	FLASH_LETTERS_PROC,UTIL_C|DISPLAYHS_T|FLASH_ST
-    flash_ctx = port_malloc(sizeof(PROC_CONTEXT));
-    flash_ctx->FLASH_LETTERS_PROC.race_number = p->ctx->DISPLAY_HS.race_number;
-    p->ctx->DISPLAY_HS.flash_proc = CREATEC(p, FLASH_LETTERS_PROC, UTIL_C | DISPLAYHS_T | FLASH_ST, flash_ctx);
+    flash_ctx = NEW_PROC_CONTEXT();
+    flash_ctx->FLASH_LETTERS_PROC.race_number = p->ctx.DISPLAY_HS.race_number;
+    p->ctx.DISPLAY_HS.flash_proc = CREATEC(p, FLASH_LETTERS_PROC, UTIL_C | DISPLAYHS_T | FLASH_ST, flash_ctx);
     // asm 000038AD: 	STI	AR0,*+AR7(FLASH_PROC)
 DHS0:
     // asm 000038AE: 	SLEEP	1
@@ -3204,7 +3203,7 @@ DHS0:
     // asm 000038B5: 	SLEEP	30*2
     SLEEP(30 * 2, 2);
     // asm 000038B7: 	LDI	HS_ZOOM-1,AR6
-    p->ctx->DISPLAY_HS.zoom_count = HS_ZOOM - 1;
+    p->ctx.DISPLAY_HS.zoom_count = HS_ZOOM - 1;
     // asm 000038B8: DHS1
 DHS1:
     // asm 000038B8: 	SLEEP	1
@@ -3223,16 +3222,16 @@ DHS1:
     // asm 000038C3: 	STF	R0,@_CAMERAPOS+Z
     // asm 000038C4: 	SETDP
     // asm 000038C5: 	DBU	AR6,DHS1
-    p->ctx->DISPLAY_HS.zoom_count -= 1;
-    if (p->ctx->DISPLAY_HS.zoom_count >= 0) {
+    p->ctx.DISPLAY_HS.zoom_count -= 1;
+    if (p->ctx.DISPLAY_HS.zoom_count >= 0) {
         goto DHS1;
     }
     // asm 000038C6: 	SLEEP	30*2			;Pause to see last few names
     SLEEP(30 * 2, 4);
     // asm 000038C8: 	LDI	*+AR7(FLASH_PROC),AR2
     // asm 000038C9: 	CALL	PRC_KILL
-    PRC_KILL(p->ctx->DISPLAY_HS.flash_proc);
-    p->ctx->DISPLAY_HS.flash_proc = NULL;
+    PRC_KILL(p->ctx.DISPLAY_HS.flash_proc);
+    p->ctx.DISPLAY_HS.flash_proc = NULL;
     // asm 000038CA: 	DIE
     DIE();
 }
@@ -3270,29 +3269,29 @@ static void FLASH_LETTERS_PROC(PROC* p) {
 #if FLASH_ON == 1
     // asm 000038CD: 	LDI	R4,R1
     // asm 000038CE: 	CALL	CHECK_LASTHS
-    p->ctx->FLASH_LETTERS_PROC.oid_group = CHECK_LASTHS(p->ctx->FLASH_LETTERS_PROC.race_number);
+    p->ctx.FLASH_LETTERS_PROC.oid_group = CHECK_LASTHS(p->ctx.FLASH_LETTERS_PROC.race_number);
     // asm 000038CF: 	CMPI	-1,R0
     // asm 000038D0: 	BEQ	FLASH_LOCK
-    if (p->ctx->FLASH_LETTERS_PROC.oid_group == -1) {
+    if (p->ctx.FLASH_LETTERS_PROC.oid_group == -1) {
         goto FLASH_LOCK;
     }
     // asm 000038D1: 	ADDI	16,R0
-    p->ctx->FLASH_LETTERS_PROC.oid_group += 16;
+    p->ctx.FLASH_LETTERS_PROC.oid_group += 16;
     // asm 000038D2: 	LDI	1,R4
     // asm 000038D3: 	LSH	R0,R4
-    p->ctx->FLASH_LETTERS_PROC.oid_group = 1 << p->ctx->FLASH_LETTERS_PROC.oid_group;
+    p->ctx.FLASH_LETTERS_PROC.oid_group = 1 << p->ctx.FLASH_LETTERS_PROC.oid_group;
     // asm 000038D4: 	OR	HIGH_SCORE_GROUP,R4		;Make this part of the High Score group
-    p->ctx->FLASH_LETTERS_PROC.oid_group |= HIGH_SCORE_GROUP; // ;Make this part of the High Score group
+    p->ctx.FLASH_LETTERS_PROC.oid_group |= HIGH_SCORE_GROUP; // ;Make this part of the High Score group
     // asm 000038D5: 	LDI	@FLASH_PALSI,AR6
-    p->ctx->FLASH_LETTERS_PROC.flash_pal_index = 0;
+    p->ctx.FLASH_LETTERS_PROC.flash_pal_index = 0;
 FLASH_LOOP:
     // asm 000038D6: 	LDI	*AR6,R0
-    palette = FLASH_PALS[p->ctx->FLASH_LETTERS_PROC.flash_pal_index];
+    palette = FLASH_PALS[p->ctx.FLASH_LETTERS_PROC.flash_pal_index];
     // asm 000038D7: 	LDIN	@FLASH_PALSI,AR6
     // asm 000038D8: 	LDIN	*AR6++,R0			;THIS will increment allways
-    p->ctx->FLASH_LETTERS_PROC.flash_pal_index += 1; // ;THIS will increment allways
-    if (FLASH_PALS[p->ctx->FLASH_LETTERS_PROC.flash_pal_index] == -1) {
-        p->ctx->FLASH_LETTERS_PROC.flash_pal_index = 0;
+    p->ctx.FLASH_LETTERS_PROC.flash_pal_index += 1; // ;THIS will increment allways
+    if (FLASH_PALS[p->ctx.FLASH_LETTERS_PROC.flash_pal_index] == -1) {
+        p->ctx.FLASH_LETTERS_PROC.flash_pal_index = 0;
     }
     // asm 000038D9: 	PUSH	R0
     // asm 000038DA: 	LDI	200,AR2
@@ -3303,7 +3302,7 @@ FLASH_LOOP:
         palette = scroll_whiteI;
     }
     // asm 000038DE: 	CALL	FLASH_LETTERS
-    FLASH_LETTERS(palette, p->ctx->FLASH_LETTERS_PROC.oid_group);
+    FLASH_LETTERS(palette, p->ctx.FLASH_LETTERS_PROC.oid_group);
     // asm 000038DF: 	SLEEP	6
     SLEEP(6, 1);
     // asm 000038E1: 	BR	FLASH_LOOP

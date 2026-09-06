@@ -127,7 +127,7 @@ LIU8:
     // asm 00009D15: 	BU	LIU8
 M2L:
     // asm 00009D16: LDI	25-1,AR5
-    p->ctx->MOVEIN_HUD_EQUIP_FRAME.loop_count = 25 - 1;
+    p->ctx.MOVEIN_HUD_EQUIP_FRAME.loop_count = 25 - 1;
     // asm 00009D17: MIHEL
 MIHEL:
     // asm 00009D17: 	LDI	@MOVEIN_OFFSET,R0
@@ -137,7 +137,7 @@ MIHEL:
     // asm 00009D1A: 	SLEEP	1
     SLEEP(1, 2);
     // asm 00009D1C: 	DBU	AR5,MIHEL
-    if (p->ctx->MOVEIN_HUD_EQUIP_FRAME.loop_count-- > 0) {
+    if (p->ctx.MOVEIN_HUD_EQUIP_FRAME.loop_count-- > 0) {
         goto MIHEL;
     }
     // asm 00009D1D: 	CLRI	R0
@@ -160,7 +160,7 @@ void MOVEOUT_HUD_EQUIP(PROC* p) {
     }
 
     // asm 00009D20: 	LDI	25-1,AR5
-    p->ctx->MOVEOUT_HUD_EQUIP_FRAME.loop_count = 25 - 1;
+    p->ctx.MOVEOUT_HUD_EQUIP_FRAME.loop_count = 25 - 1;
     // asm 00009D21: MIHEL2
 MIHEL2:
     // asm 00009D21: 	LDI	@MOVEIN_OFFSET,R0
@@ -170,7 +170,7 @@ MIHEL2:
     // asm 00009D24: 	SLEEP	1
     SLEEP(1, 1);
     // asm 00009D26: 	DBU	AR5,MIHEL2
-    if (p->ctx->MOVEOUT_HUD_EQUIP_FRAME.loop_count-- > 0) {
+    if (p->ctx.MOVEOUT_HUD_EQUIP_FRAME.loop_count-- > 0) {
         goto MIHEL2;
     }
     // asm 00009D27: 	LDI	150,R0

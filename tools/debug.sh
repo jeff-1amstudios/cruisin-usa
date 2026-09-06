@@ -81,8 +81,15 @@ fi
 # SDL_RENDER_DRIVER=software \
 # "$GAME_BIN"
 
-if [[ "${CRUSN_DEBUG_LLDB:-0}" == "1" ]]; then
-    lldb --one-line run -- "$GAME_BIN" --no-sound
-else
+if [[ "${CRUSN_DEBUG_NO_LLDB:-0}" == "1" ]]; then
     "$GAME_BIN" --no-sound
+else
+    lldb --batch \
+        -o run \
+        -k "thread backtrace all" \
+        -k "register read" \
+        -k "frame variable" \
+        -k "disassemble --frame --mixed" \
+        -k "process kill" \
+        -- "$GAME_BIN" --no-sound
 fi

@@ -84,6 +84,12 @@ Dependencies:
 ZIP support is provided by the vendored [miniz 3.1.2](lib/miniz/UPSTREAM.md);
 no system zlib installation is required.
 
+DCS sound-board emulation uses the vendored
+[ADSP-21xx interpreter](lib/adsp2100/README.md), originally written by Aaron
+Giles for MAME and distributed under the
+[BSD 3-Clause license](lib/adsp2100/LICENSE). It replaces the previously
+vendored DCSExplorer decoder.
+
 ```sh
 cmake -S . -B build
 cmake --build build
