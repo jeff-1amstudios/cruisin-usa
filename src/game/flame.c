@@ -10,6 +10,7 @@
 #include "sys.h"
 #include "sysid.h"
 #include "text.h"
+#include "validator.h"
 #include "vunit.h"
 
 /*
@@ -327,36 +328,69 @@ set_frame:
  */
 
 void FLAMESORT(void) {
+    OBJ* cursor;
+    OBJ* flame1;
+    OBJ* flame2;
+    OBJ* player;
+    OBJ* after_player;
+    u32 flame1_flags;
+    u32 flame2_flags;
+
     // asm 0000AE35: 	LDI	@OACTIVE,AR0
+    cursor = OACTIVE;
     // asm 0000AE36: 	CMPI	0,AR0
     // asm 0000AE37: 	BEQ	FLMSORTX		;NO LIST... NO GO
+    if (cursor == NULL) {
+        goto FLMSORTX;
+    }
     // asm 0000AE38: FLMSORT_LOOP
     // asm 0000AE38: 	LDI	PLYR_C|PLYR_FLAMES_S,R1
     // asm 0000AE39: 	CALL	FIND_NEXT_OBJ
+    flame1 = FIND_NEXT_OBJ(cursor, PLYR_C | PLYR_FLAMES_S);
     // asm 0000AE3A: 	BC	FLMSORTX
+    if (flame1 == NULL) {
+        goto FLMSORTX;
+    }
     // asm 0000AE3B: 	LDI	AR0,AR4
     // asm 0000AE3C: 	CALL	FIND_NEXT_OBJ
+    flame2 = FIND_NEXT_OBJ(flame1, PLYR_C | PLYR_FLAMES_S);
     // asm 0000AE3D: 	BC	FLMSORTX
+    if (flame2 == NULL) {
+        goto FLMSORTX;
+    }
     // asm 0000AE3E: 	LDI	AR0,AR5
     // asm 0000AE3F: 	LDI	*+AR4(OFLAGS),R0	;SAVE the flages
+    flame1_flags = flame1->flags;
     // asm 0000AE40: 	LDI	*+AR5(OFLAGS),R1	;SAVE the flages
+    flame2_flags = flame2->flags;
     // asm 0000AE41: 	LDI	AR4,AR2
     // asm 0000AE42: 	CALL	OBJ_PULL
+    OBJ_PULL(flame1);
     // asm 0000AE43: 	LDI	AR5,AR2
     // asm 0000AE44: 	CALL	OBJ_PULL
+    OBJ_PULL(flame2);
     // asm 0000AE45: 	STI	R0,*+AR4(OFLAGS)	;RESTORE the flags
+    flame1->flags = flame1_flags;
     // asm 0000AE46: 	STI	R1,*+AR5(OFLAGS)	;RESTORE the flags
+    flame2->flags = flame2_flags;
     // asm 0000AE47: 	LDI	PLYR_C,AR2
     // asm 0000AE48: 	CALL	OBJ_FIND_FIRST
+    player = OBJ_FIND_FIRST(PLYR_C);
     // asm 0000AE49: 	BNC	FLMSORTX		;NO PLAYER?
+    if (player == NULL) {
+        goto FLMSORTX;
+    }
     // asm 0000AE4A: 	STI	AR5,*AR4		;Link flame2 to flame1
+    flame1->link = flame2;
     // asm 0000AE4B: 	LDI	*AR0,R0			;Get link to next object
+    after_player = player->link;
     // asm 0000AE4C: 	STI	AR4,*AR0		;link the flames to the players object
+    player->link = flame1;
     // asm 0000AE4D: 	STI	R0,*AR5			;link back in the object behind the player
+    flame2->link = after_player;
 FLMSORTX:
     // asm 0000AE4E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLAMESORT", 0, 0);
-    UNIMPL_TODO();
 }
 
 /*

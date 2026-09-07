@@ -1943,7 +1943,9 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
     int sign_subtype;
     int is_player_car;
     int i;
+    int coconut_count;
     PROC_CONTEXT* fly_ctx;
+    PROC_CONTEXT* coconut_ctx;
 
     GETBOX(car_obj, BLOWLIST);
 
@@ -1975,7 +1977,34 @@ CSGLNEQ:
     }
 HARDCOL:
     if ((sign_id & (CLASS_M | TYPE_M | SUBTYPE_M)) == (TSIGN_C | TSC_IMMOBILE | TSC_V_PALM)) {
-        UNIMPL_TODO();
+        // asm: PUSH R0
+        // asm: PUSH R2
+        // asm: PUSH AR0
+        // asm: PUSH AR2
+        // asm: PUSH AR3
+        // asm: PUSH AR5
+        // asm: LDI AR0,AR5 ;parent object
+        // asm: RANDN 3
+        coconut_count = RANDU0(3);
+        // asm: LDI R0,AR3
+        MAME_ASSERT_REG(0x00002250, "R0", &coconut_count);
+LL88:
+        // asm: .globl DROP_COCONUTS
+        // asm: CREATE DROP_COCONUTS,TSIGN_C|TSC_IMMOBILE|TSC_V_PALM
+        coconut_ctx = NEW_PROC_CONTEXT();
+        coconut_ctx->DROP_COCONUTS.parent = car_obj;
+        CREATE(DROP_COCONUTS, TSIGN_C | TSC_IMMOBILE | TSC_V_PALM, coconut_ctx);
+        // asm: DBU AR3,LL88
+        if (coconut_count-- != 0) {
+            goto LL88;
+        }
+        // asm: POP AR5
+        // asm: POP AR3
+        // asm: POP AR2
+        // asm: POP AR0
+        // asm: POP R2
+        // asm: POP R0
+        // asm: BU DOREPEL
         goto DOREPEL;
     }
 NOTCOCONUT:

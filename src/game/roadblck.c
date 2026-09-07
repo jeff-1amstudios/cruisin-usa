@@ -170,106 +170,197 @@ static c3x_reg_t MAXDIST = C3X_INIT(9999999999.0f, 0x211502f900ull);
 
 // *
 void DEBRIS_SORT(void) {
+    OBJ* debris;
+    OBJ* current;
+    OBJ* previous;
+    OBJ* next;
+    OBJ* road;
+    OBJ* closest;
+    OBJ* insert_after;
+    c3x_reg_t closest_distance;
+    c3x_reg_t dx;
+    c3x_reg_t dz;
+    c3x_reg_t distance;
+    u32 list_flags;
+
     // 	;PULL FLYING DEBRIS FROM THE LIST
     // 	;
     // asm 0000AFA5: 	BUD	DSORTNXT
     // asm 0000AFA6: 	NOP
     // asm 0000AFA7: 	LDI	0,AR4			;INIT DRONE LIST HEADER
+    debris = NULL;
     // asm 0000AFA8: 	LDI	@OACTIVEI,AR1		;GET OBJECT LIST POINTER
+    current = OACTIVEI;
+    previous = NULL;
     // 	;---->	BD DSORTNXT     	;GO GET FIRST ELEMENT
+    goto DSORTNXT;
 DSORTL:
     // asm 0000AFA9: 	AND	CLASS_M,R1
     // asm 0000AFAA: 	CMPI	RDDEBRIS_C,R1
     // asm 0000AFAB: 	BNE	DSORTNXT
+    if ((current->id & CLASS_M) != RDDEBRIS_C) {
+        goto DSORTNXT;
+    }
     // *FOUND DEBRIS, DELINK IT
     // asm 0000AFAC: 	LDI	*AR1,R0			;GET POINTER TO NEXT ELEMENT
+    next = current->link;
     // asm 0000AFAD: 	STI	R0,*AR0			;LINK AROUND DUDE
+    if (previous == NULL) {
+        OACTIVEI = next;
+    } else {
+        previous->link = next;
+    }
     // asm 0000AFAE: 	STI	AR4,*AR1		;LINK HIM INTO TEMP LIST
+    current->link = debris;
     // asm 0000AFAF: 	LDI	AR1,AR4
+    debris = current;
     // asm 0000AFB0: 	LDI	AR0,AR1
+    current = previous;
 DSORTNXT:
     // asm 0000AFB1: 	LDI	*AR1,R0
+    next = current == NULL ? OACTIVEI : current->link;
     // asm 0000AFB2: 	BNZD	DSORTL
     // asm 0000AFB3: 	LDI	AR1,AR0			;AR4=PREVIOUS-1 LINK
     // asm 0000AFB4: 	LDI	R0,AR1
+    previous = current;
+    current = next;
     // asm 0000AFB5: 	LDI	*+AR1(OID),R1
     // 	;------>BNZD	DSORTL
+    if (current != NULL) {
+        goto DSORTL;
+    }
     // asm 0000AFB6: DSORTX
     // *INSERT DEBRIS ON OBJECT LIST
     // asm 0000AFB6: 	LDPI	@DYNALIST_BEGIN,R5	;ANY ROAD LIST?
+    road = DYNALIST_BEGIN;
     // asm 0000AFB7: 	BNZD	IDB1
     // asm 0000AFB8: 	LDI	OPOSZ,IR0  		;GET Z INDEX
     // asm 0000AFB9: 	LDI	AR4,R0	   		;GET HEADER
     // asm 0000AFBA: 	NOP
     // 	;---->	BNZD	IDB1		;GO LOOP...
     // asm 0000AFBB: 	B	IDBX			;WERE DONE, NULL LIST
+    if (road == NULL || debris == NULL) {
+        goto IDBX;
+    }
 DBINSLP:
     // asm 0000AFBC: 	LDI	*+AR4(OUSR1),R0		;DO WE HAVE A LINK
+    closest = (OBJ*)debris->usr1;
     // asm 0000AFBD: 	LDI	R0,AR5
     // asm 0000AFBE: 	BZ	GETRK0			;NO, GET A NEW ONE
+    if (closest == NULL) {
+        goto GETRK0;
+    }
     // asm 0000AFBF: 	LDI	*+AR5(OFLAGS),R1	;BELIEVE THAT WE ARE
     // asm 0000AFC0: 	AND	O_LIST_M,R1		;CHECK VALID LIST..
+    list_flags = closest->flags & O_LIST_M;
     // asm 0000AFC1: 	BNZ	GETLINK			;ON A REAL LIST
+    if (list_flags != 0) {
+        goto GETLINK;
+    }
 GETRK0:
     // asm 0000AFC2: 	LDF	*+AR4(OPOSX),R3
     // asm 0000AFC3: 	LDF	*+AR4(OPOSZ),R4
+    closest = road;
+    closest_distance = MAXDIST;
+    current = road;
 GETRK:
     // asm 0000AFC4: 	SUBF	*+AR2(OPOSX),R3,R0
+    dx = C3X_SUB(C3X_LDF(debris->pos.X), C3X_LDF(current->pos.X));
     // asm 0000AFC5: 	MPYF	R0,R0
     // asm 0000AFC6: 	SUBF	*+AR2(IR0),R4,R1
+    dz = C3X_SUB(C3X_LDF(debris->pos.Z), C3X_LDF(current->pos.Z));
     // asm 0000AFC7: 	MPYF	R1,R1
     // asm 0000AFC8: 	ADDF	R0,R1
+    distance = C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz));
     // asm 0000AFC9: 	CMPF	R1,R2
     // asm 0000AFCA: 	LDIGT	AR2,AR5
     // asm 0000AFCB: 	LDFGT	R1,R2
+    if (C3X_GT(closest_distance, distance)) {
+        closest = current;
+        closest_distance = distance;
+    }
     // asm 0000AFCC: GETRKL
     // asm 0000AFCC: 	LDI	*+AR2(OLINK4),R0
+    current = (OBJ*)current->link4;
     // asm 0000AFCD: 	BNZD	GETRK
     // asm 0000AFCE: 	LDI	R0,AR2
     // asm 0000AFCF: 	NOP
     // asm 0000AFD0: 	NOP
     // 	;---->	BNZ	GETRK
+    if (current != NULL) {
+        goto GETRK;
+    }
     // asm 0000AFD1: 	STI	AR5,*+AR4(OUSR1)	;SAVE LINK
+    debris->usr1 = (uintptr_t)closest;
     // asm 0000AFD2: 	LDI	*+AR5(OFLAGS),R1	;BELIEVE THAT WE ARE
     // asm 0000AFD3: 	AND	O_LIST_M,R1		;ON THE SAME LIST
+    list_flags = closest->flags & O_LIST_M;
 GETLINK:
     // asm 0000AFD4: 	LDI	*+AR4(OFLAGS),R2	;CHANGE LIST STATUS IF NECESSARY
     // asm 0000AFD5: 	ANDN	O_LIST_M,R2
     // asm 0000AFD6: 	OR	R2,R1
     // asm 0000AFD7: 	STI	R1,*+AR4(OFLAGS)
+    debris->flags = (debris->flags & ~O_LIST_M) | list_flags;
     // *
     // *SORT PAST SHOULDER PIECES
     // asm 0000AFD8: 	LDI	@_MODE,R0
     // asm 0000AFD9: 	AND	MMODE,R0
     // asm 0000AFDA: 	CMPI	MBONUS,R0
     // asm 0000AFDB: 	BNE	SHDONE
+    insert_after = closest;
+    if ((_MODE & MMODE) != MBONUS) {
+        goto SHDONE;
+    }
     // asm 0000AFDC: 	LDI	AR5,AR1
 SHLOOP:
     // asm 0000AFDD: 	LDI	AR1,AR5
     // asm 0000AFDE: 	LDI	*AR5,R0
     // asm 0000AFDF: 	LDI	R0,AR1
+    current = insert_after->link;
     // asm 0000AFE0: 	BZ	SHDONE
+    if (current == NULL) {
+        goto SHDONE;
+    }
     // asm 0000AFE1: 	LDI	*+AR1(OID),R0
     // asm 0000AFE2: 	CMPI	310H,R0
     // asm 0000AFE3: 	BZ	SHLOOP
+    if (current->id == 0x310) {
+        insert_after = current;
+        goto SHLOOP;
+    }
     // asm 0000AFE4: 	CMPI	400H,R0
     // asm 0000AFE5: 	BZ	SHLOOP
+    if (current->id == 0x400) {
+        insert_after = current;
+        goto SHLOOP;
+    }
     // asm 0000AFE6: 	CMPI	40AH,R0
     // asm 0000AFE7: 	BZ	SHLOOP
+    if (current->id == 0x40A) {
+        insert_after = current;
+        goto SHLOOP;
+    }
 SHDONE:
     // asm 0000AFE8: 	LDI	*AR5,R1			;GET HIS LINK
+    next = insert_after->link;
     // asm 0000AFE9: 	LDI	*AR4,R0			;GET OUR LINK
+    current = debris->link;
     // asm 0000AFEA: 	STI	AR4,*AR5		;HE LINKS TO US
+    insert_after->link = debris;
     // asm 0000AFEB: 	STI	R1,*AR4			;WE LINK TO IT
+    debris->link = next;
     // asm 0000AFEC: 	LDI	R0,AR4
+    debris = current;
 IDB1:
     // asm 0000AFED: 	BNED	DBINSLP
     // asm 0000AFEE: 	LDI	R5,AR2			;GET ROAD LIST HEADER
     // asm 0000AFEF: 	LDI	R5,AR5			;INITIAL CLOSEST CANDIDATE
     // asm 0000AFF0: 	LDF	@MAXDIST,R2    		;INITIAL DISTANCE (INFINITY)
     // 	;---->	BNED	DBINSLP
+    if (debris != NULL) {
+        goto DBINSLP;
+    }
 IDBX:
     // asm 0000AFF1: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DEBRIS_SORT", 0, 0);
-    UNIMPL_TODO();
 }

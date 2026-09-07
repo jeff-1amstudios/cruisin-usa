@@ -7,5 +7,6 @@ build-c3x-default/
 cfg/
 roms/
 tools/port/log/
+tools/mame/output/
 mame_validate/
 build-miniz-verify/

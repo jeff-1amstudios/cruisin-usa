@@ -442,7 +442,11 @@ DR1:
 
     // clear_timer_ram_48_floats();
 
-    RAND = 0;
+    if (getenv("CRUSN_ENABLE_MAME_VALIDATION") != NULL) {
+        RAND = 0;
+    } else {
+        RAND = 0x5A5A5A5A;
+    }
 
     LOAD_FIXED_PALETTES();
     INIT_SYSTEM();
@@ -2020,6 +2024,10 @@ static c3x_reg_t TIMEREC(void) {
 
 static void SYNC_BOOT_RANDOM_ADVANCE(void) {
     int i;
+
+    if (getenv("CRUSN_ENABLE_MAME_VALIDATION") == NULL) {
+        return;
+    }
 
     // The original board keeps servicing the 60 Hz IRQ during the boot hard
     // section loads above. INT0 calls RANDOM once per frame, but the port does

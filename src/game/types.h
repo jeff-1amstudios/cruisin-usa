@@ -728,6 +728,10 @@ typedef struct PROC_CONTEXT {
     int pedal_released; // process-saved R5 used by INIT_PEDALCHK/PEDALCHK
 
     struct {
+        OBJ* parent;
+    } DROP_COCONUTS;
+
+    struct {
         OBJ* obj;
         c3x_f32_t x_rate;
         c3x_f32_t y_rate;

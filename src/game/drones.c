@@ -46,7 +46,7 @@ int PRECOLLIDE_PLYR(OBJ* obj, CARBLK* carblk);
 c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 c3x_reg_t PLYR_RIDE_RIGHT(void);
 void SMOKE_PUFF(PROC* p);
-void DROP_COCONUTS(void);
+void DROP_COCONUTS(PROC* p);
 int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk);
 
 #define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
@@ -2255,7 +2255,7 @@ static const SMOKE_ANI_ENTRY SMOKE_ANI[] = {
 /* asm: COCONUT_COUNT	.bss	COCONUT_COUNT,1 */
 int COCONUT_COUNT;
 
-void DROP_COCONUTS(void) {
+void DROP_COCONUTS(PROC* p) {
     // asm 00006888: 	LDI	@COCONUT_COUNT,R0
     // asm 00006889: 	CMPI	5,R0
     // asm 0000688A: 	BGE	SUICIDE

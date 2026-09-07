@@ -1073,7 +1073,7 @@ void EXP_PUFF(PROC* p);
 
 void SMOKE_PUFF(PROC* p);
 
-void DROP_COCONUTS(void);
+void DROP_COCONUTS(PROC* p);
 
 // asm:  .globl SIGMA_DISPATCHER,RHO_DISPATCHER
 void SIGMA_DISPATCHER(PROC* p);

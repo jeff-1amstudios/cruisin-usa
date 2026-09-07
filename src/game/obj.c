@@ -1162,12 +1162,19 @@ done_sort:
         return; /* Don't do player and drones in HIGH SCORE MODE */
     }
 
+    // asm 000071D7: 	CALL	PLYRDLINK     		;DELINK PLAYER
     PLYRDLINK(); /* DELINK PLAYER */
+    // asm 000071D8: 	CALL	DRONESORT
     DRONESORT();
+    // asm 000071D9: 	CALL	DEBRIS_SORT
     DEBRIS_SORT();
+    // asm 000071DA: 	CALL	PLYRSORT		;LINK IN PLAYER
     PLYRSORT(); /* LINK IN PLAYER */
+    // asm 000071DB: 	CALL	SORT_SMOKE
     SORT_SMOKE();
+    // asm 000071DC: 	CALL	FLAMESORT
     FLAMESORT();
+
 }
 
 // *-----------------------------------------------------------------------------

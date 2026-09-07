@@ -8,6 +8,7 @@
 #include "pall.h"
 #include "sys.h"
 #include "sysid.h"
+#include "validator.h"
 #include "vunit.h"
 
 /*
@@ -509,47 +510,88 @@ INSM1:
  *
  */
 void SORT_SMOKE(void) {
+    OBJ* player;
+    OBJ* stop;
+    OBJ* current;
+    OBJ* previous;
+    OBJ* next;
+
     // asm 00008574: 	LDI	PLYR_C,AR2
     // asm 00008575: 	CALL	OBJ_FIND_FIRST
+    player = OBJ_FIND_FIRST(PLYR_C);
     // asm 00008576: 	BNC	SORT_SMOKEX
+    if (player == NULL) {
+        goto SORT_SMOKEX;
+    }
     // asm 00008577: 	LDI	AR0,AR5
+    previous = player;
     // asm 00008578: 	LDI	AR5,AR6			;Stop when AR6 is reached
+    stop = player;
     // asm 00008579: 	LDI	@OACTIVE,AR4
+    current = OACTIVE;
     // asm 0000857A: 	LDI	AR4,AR2
 SSLOOP:
     // asm 0000857B: 	CMPI	AR4,AR6
     // asm 0000857C: 	BEQ	SORT_SMOKEX		;Reached the object we linked behind
+    if (current == stop) {
+        goto SORT_SMOKEX;
+    }
     // asm 0000857D: 	CMPI	0,AR4
     // asm 0000857E: 	BEQ	SORT_SMOKEX
+    if (current == NULL) {
+        goto SORT_SMOKEX;
+    }
     // asm 0000857F: 	LDI	*+AR4(OID),R0
     // asm 00008580: 	CMPI	PLYR_C|PLYR_SMOKE_S,R0
     // asm 00008581: 	BNE	SSLOOPEND
+    if (current->id != (PLYR_C | PLYR_SMOKE_S)) {
+        goto SSLOOPEND;
+    }
     // asm 00008582: 	CMPI	@OACTIVE,AR4		;First item in list?
     // asm 00008583: 	BNE	UNLINK
+    if (current != OACTIVE) {
+        goto UNLINK;
+    }
     // asm 00008584: 	LDI	*AR4,R0
+    next = current->link;
 #if DEBUG
     // asm: 	BEQ	$		;The smoke should never be the only item displayed
 #endif
     // asm 00008585: 	STI	R0,@OACTIVE
+    OACTIVE = next;
     // asm 00008586: 	BR	LINK
+    goto LINK;
 UNLINK:
     // asm 00008587: 	LDI	*AR4,R0
+    next = current->link;
     // asm 00008588: 	STI	R0,*AR2
+    previous->link = next;
 LINK:
     // asm 00008589: 	LDI	*AR5,R1		;get object after AR5
+    next = current->link;
+    {
+        OBJ* after_player = player->link;
     // asm 0000858A: 	STI	AR4,*AR5	;Link this object to AR5
+        player->link = current;
     // asm 0000858B: 	STI	R1,*AR4		;Link the next object to AR4
+        current->link = after_player;
+    }
     // asm 0000858C: 	LDI	AR4,AR5
+    player = current;
     // asm 0000858D: 	LDI	R0,AR4
+    current = next;
     // asm 0000858E: 	BR	SSLOOP
+    goto SSLOOP;
 SSLOOPEND:
     // asm 0000858F: 	LDI	AR4,AR2		;AR2 = last object for unlinking
+    previous = current;
     // asm 00008590: 	LDI	*AR4,AR4
+    current = current->link;
     // asm 00008591: 	BR	SSLOOP
+    goto SSLOOP;
 SORT_SMOKEX:
     // asm 00008592: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SORT_SMOKE", 0, 0);
-    UNIMPL_TODO();
 }
 
 /* asm: SPARKANI */
