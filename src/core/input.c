@@ -2,7 +2,10 @@
 #include <SDL.h>
 #include <stdlib.h>
 
+#include "../game/sys.h"
 #include "../game/vunit.h"
+
+extern int _MODE;
 
 static u32 switch1 = UINT32_MAX;
 static u32 switch2 = UINT32_MAX;
@@ -38,7 +41,10 @@ void port_handle_input(void) {
         steering_detent = new_steering_direction;
     }
     steering_direction = new_steering_direction;
-    accelerator = 255; // (keyboard[SDL_SCANCODE_UP] || keyboard[SDL_SCANCODE_W]) ? 255 : 0;
+    accelerator = (keyboard[SDL_SCANCODE_UP] || keyboard[SDL_SCANCODE_W]) ? 255 : 0;
+    if (getenv("CRUSN_AUTO_START") != NULL) {
+        accelerator = 255;
+    }
     brake = (keyboard[SDL_SCANCODE_DOWN] || keyboard[SDL_SCANCODE_S] || keyboard[SDL_SCANCODE_SPACE]) ? 255 : 0;
     input_frame_counter++;
 }
@@ -73,10 +79,9 @@ void port_sample_steering(void) {
         /* A key applies force to a spring-loaded wheel. Approach a capped
            target quickly near center and progressively more slowly near the
            end stop, retaining fractional movement between A/D samples. */
-        target = PORT_STEERING_CENTER +
-            steering_direction * STEERING_HALF_RANGE * STEERING_LIMIT;
+        target = PORT_STEERING_CENTER + steering_direction * STEERING_HALF_RANGE * STEERING_LIMIT;
         steering += (target - steering) * STEERING_PRESS_RATE;
-    } else {
+    } else if ((_MODE & MMODE) == MGAME) {
         steering += (PORT_STEERING_CENTER - steering) * STEERING_RETURN_RATE;
     }
     if (steering < 0)

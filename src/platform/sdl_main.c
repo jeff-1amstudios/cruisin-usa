@@ -105,11 +105,30 @@ static void crusn_pump_events(void) {
 }
 
 void crusn_yield_display_interrupt(void) {
+    static Uint64 fps_interval_start;
+    static unsigned int fps_frame_count;
+
     crusn_pump_events();
 
     if (crusn_video_present(g_display_video, g_display_machine) != 0) {
         fprintf(stderr, "Failed to present frame: %s\n", SDL_GetError());
         *g_display_running = 0;
+    }
+
+    Uint64 current_counter = SDL_GetPerformanceCounter();
+    if (fps_interval_start == 0) {
+        fps_interval_start = current_counter;
+    }
+    fps_frame_count++;
+
+    Uint64 elapsed_counter = current_counter - fps_interval_start;
+    Uint64 counter_frequency = SDL_GetPerformanceFrequency();
+    if (elapsed_counter >= counter_frequency) {
+        double fps = (double)fps_frame_count * (double)counter_frequency / (double)elapsed_counter;
+        printf("FPS: %.1f\n", fps);
+        fflush(stdout);
+        fps_interval_start = current_counter;
+        fps_frame_count = 0;
     }
 
     // SDL_Delay(100);

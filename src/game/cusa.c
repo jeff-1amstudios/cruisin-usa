@@ -1384,7 +1384,7 @@ RDFOOT:
     // asm 00004DCA: 	FIX	R0
     // asm 00004DCB: 	STI	R0,@_pot1
     _pot1 = C3X_FIX(filtered_value);
-    if (getenv("CRUSN_VALIDATE_FORCE_POT1_MAX") != NULL) {
+    if (getenv("CRUSN_ENABLE_MAME_VALIDATION") != NULL) {
         // Match the MAME validation breakpoint at 0x4DCC, which overwrites
         // the filtered ADC result throughout clean-boot validation. Chooser
         // release-to-press edges are injected directly by INIT_PEDALCHK, so
