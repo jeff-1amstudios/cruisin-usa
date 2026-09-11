@@ -2,14 +2,16 @@
 
 #include <stdlib.h>
 
-int crusn_video_init(crusn_video* video) {
+int crusn_video_init(crusn_video* video, int fullscreen) {
+    Uint32 window_flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE;
+
     video->window = SDL_CreateWindow(
         "Cruis'n USA 4.5",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         640,
         480,
-        SDL_WINDOW_RESIZABLE);
+        window_flags);
     if (video->window == NULL) {
         return -1;
     }

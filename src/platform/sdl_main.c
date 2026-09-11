@@ -25,6 +25,7 @@ typedef struct crusn_options {
     int sound;
     int girls;
     int race_time;
+    int windowed;
 } crusn_options;
 
 static int process_args(int argc, char* argv[], crusn_options* options) {
@@ -34,6 +35,7 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
     options->sound = 1;
     options->girls = -1;
     options->race_time = 0;
+    options->windowed = 0;
 
     for (int i = 1; i < argc; ++i) {
         const char* value = NULL;
@@ -46,6 +48,8 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
             options->girls = 1;
         } else if (strcmp(argv[i], "--no-girls") == 0) {
             options->girls = 0;
+        } else if (strcmp(argv[i], "--window") == 0) {
+            options->windowed = 1;
         } else if (strncmp(argv[i], prefix, sizeof(prefix) - 1) == 0) {
             value = argv[i] + sizeof(prefix) - 1;
         } else if (strcmp(argv[i], "--race-time") == 0 && i + 1 < argc) {
@@ -167,7 +171,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (crusn_video_init(&video) != 0) {
+    if (crusn_video_init(&video, !options.windowed) != 0) {
         fprintf(stderr, "Failed to initialize video: %s\n", SDL_GetError());
         if (options.sound) {
             portable_audio_shutdown();

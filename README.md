@@ -117,7 +117,8 @@ validation is disabled:
 ./build/crusn
 ```
 
-Use `--no-free-play` to use the normal coin settings, and `--no-sound` to run
+The game starts fullscreen by default. Use `--window` to run it in a resizable
+window. Use `--no-free-play` to use the normal coin settings, and `--no-sound` to run
 without initializing or playing audio. `--girls` and `--no-girls` override the
 corresponding cabinet adjustment. For debugging, `--race-time SECONDS`
 overrides the normal race countdown in five-second steps. Press <kbd>Return</kbd>

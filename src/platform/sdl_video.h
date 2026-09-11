@@ -11,7 +11,7 @@ typedef struct crusn_video {
     SDL_Texture* texture;
 } crusn_video;
 
-int crusn_video_init(crusn_video* video);
+int crusn_video_init(crusn_video* video, int fullscreen);
 void crusn_video_shutdown(crusn_video* video);
 int crusn_video_present(crusn_video* video, const crusn_machine* machine);
 
