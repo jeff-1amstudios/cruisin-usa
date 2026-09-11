@@ -33,10 +33,36 @@ void port_handle_input(void) {
     if (keyboard[SDL_SCANCODE_RETURN] || keyboard[SDL_SCANCODE_KP_ENTER]) {
         switch1 &= ~SW_START;
     }
+    if (keyboard[SDL_SCANCODE_1]) {
+        switch1 &= ~SW_1ST;
+    }
+    if (keyboard[SDL_SCANCODE_2]) {
+        switch1 &= ~SW_2ND;
+    }
+    if (keyboard[SDL_SCANCODE_3]) {
+        switch1 &= ~SW_3RD;
+    }
+    if (keyboard[SDL_SCANCODE_4]) {
+        switch1 &= ~SW_4TH;
+    }
+    if (keyboard[SDL_SCANCODE_R]) {
+        switch3 &= ~SW_RADIO_H;
+    }
+    if (keyboard[SDL_SCANCODE_F1]) {
+        switch3 &= ~SW_VIEW0_H;
+    }
+    if (keyboard[SDL_SCANCODE_F2]) {
+        switch3 &= ~SW_VIEW1_H;
+    }
+    if (keyboard[SDL_SCANCODE_F3]) {
+        switch3 &= ~SW_VIEW2_H;
+    }
     if (getenv("CRUSN_AUTO_START") != NULL && input_frame_counter % 200 == 0) {
         switch1 &= ~SW_START;
     }
-    int new_steering_direction = (keyboard[SDL_SCANCODE_RIGHT] != 0) - (keyboard[SDL_SCANCODE_LEFT] != 0);
+    int steer_right = keyboard[SDL_SCANCODE_RIGHT] || keyboard[SDL_SCANCODE_D];
+    int steer_left = keyboard[SDL_SCANCODE_LEFT] || keyboard[SDL_SCANCODE_A];
+    int new_steering_direction = (steer_right != 0) - (steer_left != 0);
     if (new_steering_direction != 0 && new_steering_direction != steering_direction) {
         steering_detent = new_steering_direction;
     }
