@@ -80,7 +80,7 @@ fi
 # "$GAME_BIN"
 
 if [[ "${CRUSN_DEBUG_NO_LLDB:-0}" == "1" ]]; then
-    "$GAME_BIN" --no-sound
+    "$GAME_BIN" --no-sound --window
 else
     lldb --batch \
         -o run \
@@ -89,5 +89,5 @@ else
         -k "frame variable" \
         -k "disassemble --frame --mixed" \
         -k "process kill" \
-        -- "$GAME_BIN" --no-sound
+        -- "$GAME_BIN" --no-sound --window
 fi

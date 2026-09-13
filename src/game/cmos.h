@@ -691,7 +691,9 @@
 // asm: 	.globl	CHECK_RACE_TABLE,INSERT_TABLE_ENTRY
 int CHECK_RACE_TABLE(int time_code /*R0*/, int race_index /*R1*/);
 
-void INSERT_TABLE_ENTRY(void);
+void INSERT_TABLE_ENTRY(int time_code /*R0*/, int initial1 /*R1*/, int initial2 /*R2*/,
+                        int initial3 /*R3*/, int position /*R4*/, int entry_index /*R5*/,
+                        int race_index /*R6*/);
 
 // asm: 	.globl	TABLE_ENTRY_READ,GET_TABLE_ADDR
 RACEENTRY TABLE_ENTRY_READ(word_addr_t* addr /*AR2*/);

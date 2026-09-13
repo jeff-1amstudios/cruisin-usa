@@ -112,7 +112,7 @@ void DRONESND(OBJ* obj /*AR4*/, const int* sounds /*AR2*/, int range /*R0*/);
 void DRONESND1(OBJ* obj /*AR4*/, int sound_index /*AR2*/);
 void GETCMOS_VALUES(void);
 static void CAMMATSAV(void);
-static void CAMMATAVG(void);
+static void CAMMATAVG(CARBLK* carblk /*AR5*/);
 static void CHEATCK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 
 #define ZOOMI ZOOMRAM
@@ -142,6 +142,8 @@ static c3x_reg_t DISTCON;
 static c3x_reg_t SPDCON;
 c3x_f32_t GEARACTAB[5];
 c3x_f32_t ENGACTAB[20];
+/* CAMMATSAV/CAMMATAVG use this instead of the assembly's temporary stack block. */
+static MATRIX SAVED_CAMERA_MATRIX;
 
 /*
  *----------------------------------------------------------------------------
@@ -1337,7 +1339,7 @@ PLYRCAM:
     CONCATMAT(&CAMERAMATRIXI, &MATRIXCI, &CAMERAMATRIXI);
     // ****************************
     // asm 00002AF9: 	CALL	CAMMATAVG
-    CAMMATAVG();
+    CAMMATAVG(carblk);
     // *************************
     // asm 00002AFA: 	BR	CAM3RDX
     goto CAM3RDX;
@@ -5973,19 +5975,27 @@ void GETCMOS_VALUES(void) {
  *PUSH CAMERA MATRIX
  */
 static void CAMMATSAV(void) {
+    const c3x_f32_t* source;
+    c3x_f32_t* destination;
+
     // asm 0000318C: 	POP	BK
     // asm 0000318D:      	LDI	SP,AR0
     // asm 0000318E: 	ADDI	9,SP
     // asm 0000318F: 	LDI	@CAMERAMATRIXI,AR1
+    source = (const c3x_f32_t*)&CAMERAMATRIXI;
+    destination = (c3x_f32_t*)&SAVED_CAMERA_MATRIX;
     // asm 00003190: 	LDF	*AR1++,R0
     // asm 00003191: 	RPTS	7
     // asm 00003192: 	LDF	*AR1++,R0
     // asm 00003192: ||	STF	R0,*++AR0
+    for (int i = 0; i < 8; ++i) {
+        destination[i] = C3X_STF(C3X_LDF(source[i]));
+    }
     // asm 00003193: 	STF	R0,*++AR0
+    destination[8] = C3X_STF(C3X_LDF(source[8]));
     // asm 00003194: 	B	BK
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMMATSAV", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -5994,27 +6004,44 @@ static void CAMMATSAV(void) {
  *----------------------------------------------------------------------------
  *CAMERA MATRIX AVERAGE
  */
-static void CAMMATAVG(void) {
+static void CAMMATAVG(CARBLK* carblk /*AR5*/) {
+    const c3x_f32_t* saved;
+    c3x_f32_t* camera;
+    c3x_reg_t saved_component;
+    c3x_reg_t camera_component;
+
     // asm 00003195: 	POP	BK
     // asm 00003196: 	LDI	*+AR5(CAR_SPIN),R0	;DONT AVG IN SPIN DUDES
     // asm 00003197: 	CMPI	1,R0
     // asm 00003198: 	BEQ	CAMMATX
+    if (carblk->spin_flag == 1) {
+        goto CAMMATX; // DONT AVG IN SPIN DUDES
+    }
     // asm 00003199:      	LDI	SP,AR1
     // asm 0000319A: 	SUBI	8,AR1
     // asm 0000319B: 	LDI	@CAMERAMATRIXI,AR0
+    saved = (const c3x_f32_t*)&SAVED_CAMERA_MATRIX;
+    camera = (c3x_f32_t*)&CAMERAMATRIXI;
     // asm 0000319C: 	LDI	8,RC
     // asm 0000319D: 	RPTB	CAMAVG
+    for (int i = 0; i < 9; ++i) {
     // asm 0000319E: 	LDF	*AR1++,R0
+        saved_component = C3X_LDF(saved[i]);
     // asm 0000319F: 	MPYF	0.80,R0
+        saved_component = C3X_MUL(saved_component, C3X_IMM_F32(0.80));
     // asm 000031A0: 	LDF	*AR0,R1
+        camera_component = C3X_LDF(camera[i]);
     // asm 000031A1: 	MPYF	0.20,R1
+        camera_component = C3X_MUL(camera_component, C3X_IMM_F32(0.20));
     // asm 000031A2: 	ADDF	R0,R1
+        camera_component = C3X_ADD(camera_component, saved_component);
 CAMAVG:
     // asm 000031A3: STF	R1,*AR0++
+        camera[i] = C3X_STF(camera_component);
+    }
 CAMMATX:
     // asm 000031A4: SUBI	9,SP
     // asm 000031A5: 	B	BK
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMMATAVG", 0, 0);
-    UNIMPL();
 }

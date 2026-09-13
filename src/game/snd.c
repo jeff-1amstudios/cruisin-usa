@@ -154,18 +154,30 @@ KILLME:
 
 // *----------------------------------------------------------------------------
 void RADIO_BUT(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 000090FB: 	LDPI	@_MODE,R0
     // asm 000090FC: 	AND	MMODE,R0
     // asm 000090FD: 	CMPI	MGAME,R0
     // ;	BNE	SUICIDE
     // asm 000090FE: 	BEQ	RBMGAME
+    if ((_MODE & MMODE) == MGAME) {
+        goto RBMGAME;
+    }
     // asm 000090FF: 	BR	RBMATTR_CHECK	;This code is in hstdp.asm
+    PROC_CONTINUE(RBMATTR_CHECK, 1);
+    return;
 RBMGAME:
     // asm 00009100: 	CALL	CHANGE_STATION
+    CHANGE_STATION();
     // asm 00009101: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_BUT", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------

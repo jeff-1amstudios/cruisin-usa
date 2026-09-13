@@ -48,6 +48,7 @@ void AMBIENCE_SOUND(void);
 void HUNGH_ANI(OBJ* obj /*AR4*/);
 void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/);
 static void PLACE_ON_ROAD(OBJ* obj /*AR4*/);
+static void DORUT_ANI_BODY(OBJ* obj /*AR4*/);
 void RUT_ANI(OBJ* obj /*AR4*/);
 static void PLAINANI_PROC_SLOW(PROC* p);
 static void FLAGWAVE_TALL(OBJ* obj /*AR4*/);
@@ -2304,7 +2305,15 @@ tPALETTE_OVERWRITE_ENTRY BABE_PALIST[] = {
 };
 
 void HUNGH_ANI(OBJ* obj /*AR4*/) {
-    (void)obj;
+    const tPALETTE_OVERWRITE_ENTRY* palette_entry;
+    tPAL* source_palette;
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+    int palette_index;
+    int palette_code;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00004377: 	PUSH	R0
     // asm 00004378: 	PUSH	AR0
     // asm 00004379: 	PUSH	AR2
@@ -2316,43 +2325,74 @@ void HUNGH_ANI(OBJ* obj /*AR4*/) {
     // asm 00004380: 	POP	AR2
     // asm 00004381: 	CMPI	0,R0
     // asm 00004382: 	BEQ	DORUT_ANI
+    if (READAUD(ADJ_GIRLS) == 0) {
+        DORUT_ANI_BODY(obj);
+        TRACE_EVENT(&g_crusn_machine->trace, "function", "HUNGH_ANI", 0, 0);
+        return;
+    }
     // asm 00004383: 	LDI	@HUNGH_ANISI,AR6
     // asm 00004384: 	LDI	*+AR4(OFLAGS),R0
     // ;	ANDN	O_1PAL,R0
     // asm 00004385: 	OR	O_POSTER,R0
     // asm 00004386: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_POSTER;
     // asm 00004387: 	LDI	5,AR2
     // asm 00004388: 	CALL	RANDU0
+    palette_index = RANDU0(5);
     // asm 00004389: 	CMPI	4,R0
     // asm 0000438A: 	BEQ	HUNGH_NOPAL
+    if (palette_index == 4) {
+        goto HUNGH_NOPAL;
+    }
     // asm 0000438B: 	MPYI	2,R0
     // asm 0000438C: 	ADDI	@BABE_PALISTI,R0
     // asm 0000438D: 	LDI	R0,AR5
+    palette_entry = &BABE_PALISTI[palette_index];
     // asm 0000438E: 	LDI	*+AR5,AR2
     // asm 0000438F: 	CALL	PAL_FIND
+    palette_code = PAL_FIND(palette_entry->destination_palette_index);
     // asm 00004390: 	BC	HUNGH_NOPAL
+    if (palette_code < 0) {
+        goto HUNGH_NOPAL;
+    }
     // asm 00004391: 	LDI	R0,R2
     // asm 00004392: 	LDI	*AR5,AR2
     // asm 00004393: 	LDI	*AR2++,R3
+    source_palette = (tPAL*)ROM_PTR(palette_entry->source_palette_rom);
     // asm 00004394: 	CALL	PAL_SET
+    PAL_SET(source_palette->data, (u32)palette_code, (u32)source_palette->flags_and_count);
     // asm 00004395: 	STI	R0,*+AR4(OPAL)
+    obj->palette = (u32)palette_code;
 HUNGH_NOPAL:
     // asm 00004396: 	CALL	PLACE_ON_ROAD
+    PLACE_ON_ROAD(obj);
     // asm 00004397: 	LDI	RDDEBRIS_C|TSC_IGNORE|TSC_BABE_S,R0
     // asm 00004398: 	STI	R0,*+AR4(OID)
+    obj->id = RDDEBRIS_C | TSC_IGNORE | TSC_BABE_S;
     // asm 00004399: 	LDI	AR6,AR5
+    ctx = NEW_PROC_CONTEXT();
+    ctx->BACKGRND_PLAINANI_PROC.obj = obj;
+    ctx->BACKGRND_PLAINANI_PROC.script = HUNGH_ANISI;
+    ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
     // asm 0000439A: 	CREATE	PLAINANI_LP_SLOW,SPAWNER_C|ANIMATION_T|7
+    proc = CREATE(PLAINANI_PROC_SLOW, SPAWNER_C | ANIMATION_T | 7, ctx);
     // asm 0000439D: 	BC	FWL1
     // asm 0000439E: 	BU	J2
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    if (proc != NULL) {
+        obj->plink = proc;
+        obj->flags |= 1u << O_PROC_B;
+    }
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HUNGH_ANI", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/) {
-    (void)obj;
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 0000439F: 	PUSH	R0
     // asm 000043A0: 	PUSH	AR0
     // asm 000043A1: 	PUSH	AR2
@@ -2364,13 +2404,21 @@ void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/) {
     // ;	ANDN	O_1PAL,R0
     // asm 000043A7: 	OR	O_POSTER,R0
     // asm 000043A8: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_POSTER;
     // asm 000043A9: 	LDI	AR6,AR5
+    ctx = NEW_PROC_CONTEXT();
+    ctx->BACKGRND_PLAINANI_PROC.obj = obj;
+    ctx->BACKGRND_PLAINANI_PROC.script = HUNGH_ANISI;
+    ctx->BACKGRND_PLAINANI_PROC.script_index = 0;
     // asm 000043AA: 	CREATE	PLAINANI_LP_SLOW,SPAWNER_C|ANIMATION_T|7
+    proc = CREATE(PLAINANI_PROC_SLOW, SPAWNER_C | ANIMATION_T | 7, ctx);
     // asm 000043AD: 	BC	FWL1
     // asm 000043AE: 	BU	J2
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
+    if (proc != NULL) {
+        obj->plink = proc;
+        obj->flags |= 1u << O_PROC_B;
+    }
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HUNGH_ANI_REENTER", 0, 0);
-    UNIMPL();
 }
 
 static void PLACE_ON_ROAD(OBJ* obj /*AR4*/) {
@@ -2404,9 +2452,6 @@ PORX:
 // *----------------------------------------------------------------------------
 
 void RUT_ANI(OBJ* obj /*AR4*/) {
-    PROC_CONTEXT* ctx;
-    PROC* proc;
-
     MAME_ASSERT_FUNCTION_ENTRY();
 
     // asm 000043BC: 	PUSH	R0
@@ -2415,6 +2460,14 @@ void RUT_ANI(OBJ* obj /*AR4*/) {
     // asm 000043BF: 	PUSH	AR5
     // asm 000043C0: 	PUSH	AR6
     // asm 000043C1: 	PUSH	R2
+    DORUT_ANI_BODY(obj);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUT_ANI", 0, 0);
+}
+
+static void DORUT_ANI_BODY(OBJ* obj /*AR4*/) {
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+
 DORUT_ANI:
     // asm 000043C2: 	LDI	@RUT_ANISI,AR6
     // asm 000043C3: 	LDI	*+AR4(OFLAGS),R0
@@ -2440,7 +2493,6 @@ DORUT_ANI:
         obj->plink = proc;
         obj->flags |= 1u << O_PROC_B;
     }
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RUT_ANI", 0, 0);
 }
 
 // *----------------------------------------------------------------------------

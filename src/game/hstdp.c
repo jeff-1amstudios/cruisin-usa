@@ -3,6 +3,7 @@
 #include "../core/machine.h"
 #include "cmos.h"
 #include "globals.h"
+#include "hud.h"
 #include "macs.h"
 #include "mproc.h"
 #include "obj.h"
@@ -19,29 +20,33 @@
  * Source module: asm/HSTDP.ASM
  */
 
+extern MATRIX _MATRIXA;
+extern VECTOR _VECTORA;
+
 void ENTER_INITIALS(PROC* p);
-static void PEDALWT(PROC* p);
+static void EIML(PROC* p);
 void ENTERTEXT(PROC* p);
-static void CREATE_ENTERTEXT(void);
-static void MAKE_CENTER(void);
+static tSHADOW_TEXT CREATE_ENTERTEXT(c3x_reg_t x /*R2*/);
+static void MAKE_CENTER(tSHADOW_TEXT* text /*AR4, AR5*/);
 static void HSTD_TIMER(void);
 static void INSERT_INITS(void);
 int INTO_TABLE_P(void);
 static int CHECK_FIRST_TIME(PROC* p);
-static void CALC_TOTAL_ELAPSED(void);
+static int CALC_TOTAL_ELAPSED(void);
 static void PRESS_CODE_ENTRY(PROC* p);
+static void PRESS_CODE(PROC* p);
 static void INIT_PRESS_OBJECTS(void);
 static void MAKE_NEW_MARQ(void);
 static void MOVE_PRESSB(void);
 static void MOVE_BIGLET_PRESS(void);
 static void POS_SCROLLB(void);
 static void ADJUST_ROLLERS(void);
-static void FIND_ROLLER(void);
-static void SPIN_ROLLERS(void);
-static void MOVE_PLAYERS_LETTERS(void);
+static OBJ* FIND_ROLLER(c3x_reg_t x /*R2*/);
+static void SPIN_ROLLERS(c3x_reg_t amount /*R0*/);
+static void MOVE_PLAYERS_LETTERS(c3x_reg_t x_amount /*R0*/);
 static void MAKE_PLAYERS_PLATE(void);
 static void INI_PLAYERS_BOLTS(void);
-static void FLY_BOLT(void);
+static void FLY_BOLT(PROC* p);
 static OBJ* OBJ_FIND(int oid /*R1*/);
 static OBJ* OBJ_FIND_NEXT(OBJ* obj, int oid /*R1*/);
 static OBJ* OBJ_GFIND(int oid_group_bit /*R1*/);
@@ -67,7 +72,7 @@ static c3x_reg_t FLY_PLATES(c3x_reg_t amount /*R0*/);
 static void DISPLAY_HSTEXT(int race_number);
 static void ENTER_HSTEXT(int race_number);
 static void INIT_LOGO(void);
-void RBMATTR_CHECK(void);
+void RBMATTR_CHECK(PROC* p);
 
 #define PLATE_LETTERSI PLATE_LETTERS
 #define THREED_LETTERSI THREED_LETTERS
@@ -234,6 +239,22 @@ int PEDHIT;
 #define CAMZ (PDATA + 32)
 #define RACE_NUMBER (PDATA + 33)
 #define GREY_PAL (PDATA + 34)
+
+// *----------------------------------------------------------------------------
+void START_HIGH_SCORE_INPUT_TEST(void) {
+    PROC_CONTEXT* ctx;
+
+    INIT_SYSTEM();
+    GETCMOS_VALUES();
+    BONUS_WAVE = 1;
+    ETIME = 1;
+    RACE_MODE = RM_SINGLE;
+    ADJUSTMENT_WRITE(ADJ_INITIALS, -1);
+
+    CREATE(SCAN_OBJECTS, UTIL_C, NULL);
+    ctx = NEW_PROC_CONTEXT();
+    CREATE(ENTER_INITIALS, UTIL_C, ctx);
+}
 
 // *----------------------------------------------------------------------------
 void ENTER_INITIALS(PROC* p) {
@@ -471,20 +492,238 @@ MSLPX:
     // asm 00003233: 	LDI	1,R0
     // asm 00003234: 	STI	R0,@PEDHIT		;not touched
     PEDHIT = 1; // ;not touched
-    PROC_CONTINUE(PEDALWT, 3);
+    PROC_CONTINUE(EIML, 3);
     return;
 }
 
-// *ELP END CHANGE
+static void EIML(PROC* p) {
+    OBJ* selected_obj;
+    OBJ* next_obj;
+    int selection;
+    int frame_index;
+    int character;
 
-// ;This does a back space
-
-static void PEDALWT(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
-        // MAME_ASSERT_ORDERING("PEDALWT");
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("EIML");
         break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
     }
+
+    for (;;) {
+    // asm 00003235: 	CMPI	0,AR6
+    // asm 00003236: 	BNE	TOSLP2
+    if (p->ctx.ENTER_INITIALS_FRAME.debounce_counter != 0) {
+        goto TOSLP2;
+    }
+    // asm 00003237: 	LDI	@SWITCHBUTS,R0
+    // asm 00003238: 	LDL	SW_RADIO|SW_VIEW0|SW_VIEW1|SW_VIEW2,R1
+    // asm 00003239: 	AND	R1,R0
+    // asm 0000323A: 	BZ	TOSLP2
+    if ((SWITCHBUTS & (SW_RADIO | SW_VIEW0 | SW_VIEW1 | SW_VIEW2)) == 0) {
+        goto TOSLP2;
+    }
+    // asm 0000323B: 	LDI	@_countdown,R0
+    // asm 0000323C: 	DEC	R0
+    // asm 0000323D: 	STI	R0,@_countdown
+    _countdown -= 1;
+    // asm 0000323E: 	LDI	2,AR6
+    p->ctx.ENTER_INITIALS_FRAME.debounce_counter = 2;
+TOSLP2:
+    // asm 0000323F: 	CMPI	0,AR6
+    // asm 00003240: 	BEQ	TOSLP3
+    if (p->ctx.ENTER_INITIALS_FRAME.debounce_counter == 0) {
+        goto TOSLP3;
+    }
+    // asm 00003241: 	SUBI	1,AR6
+    p->ctx.ENTER_INITIALS_FRAME.debounce_counter -= 1;
+TOSLP3:
+    // asm 00003242: 	CALL	GETCHOICE	;READS the steering wheel, uses POSES = number of choices
+    GETCHOICE(); // ;READS the steering wheel, uses POSES = number of choices
+    // asm 00003243: 	LDI	@POSE,R4	;On return POSE = Choice wheel is pointing at.
+    selection = POSE; // ;On return POSE = Choice wheel is pointing at.
+    // asm 00003244: 	CMPI	LASTCHAR,R4
+    // asm 00003245: 	LDIGT	LASTCHAR,R4
+    if (selection > LASTCHAR) {
+        selection = LASTCHAR;
+    }
+    // asm 00003246: 	CMPI	0,R4
+    // asm 00003247: 	LDILT	0,R4
+    if (selection < 0) {
+        selection = 0;
+    }
+    // asm 00003248: 	LDI	*+AR7(OLDPOT0),R1
+    // asm 00003249: 	STI	R4,*+AR7(OLDPOT0)
+    // asm 0000324A: 	ADDI	R1,R4
+    // asm 0000324B: 	RS	1,R4
+    frame_index = (selection + p->ctx.ENTER_INITIALS_FRAME.old_choice) >> 1;
+    p->ctx.ENTER_INITIALS_FRAME.old_choice = selection;
+    // asm 0000324C: 	LDI	R4,R0
+    // asm 0000324D: 	CMPI	LASTCHAR,R0
+    // asm 0000324E: 	LDIGT	LASTCHAR,R0
+    if (frame_index > LASTCHAR) {
+        frame_index = LASTCHAR;
+    }
+    // asm 0000324F: 	ADDI	@PLATE_LETTERSI,R0	;Add in the start of the Letter table
+    // asm 00003250: 	LDI	R0,AR0
+    // asm 00003251: 	LDI	*AR0,AR1		;Get the ROM pointer to the image the letter will use
+    // asm 00003252: 	LDI	AR7,AR0
+    // asm 00003253: 	ADDI	INIT0,AR0		;GET index to which letter we are on
+    // asm 00003254: 	ADDI	AR5,AR0
+    // asm 00003255: 	LDI	*AR0,AR0
+    selected_obj = p->ctx.ENTER_INITIALS_FRAME.initial_objs[p->ctx.ENTER_INITIALS_FRAME.character_index];
+    // asm 00003256: 	LDI	*+AR7(WHITE_PAL),R0
+    // asm 00003257: 	STI	R0,*+AR0(OPAL)
+    selected_obj->palette = (u32)p->ctx.ENTER_INITIALS_FRAME.white_pal;
+    // asm 00003258: 	STI	AR1,*+AR0(OROMDATA)	;Set the ROM point of the object for this leter
+    selected_obj->romdata = ROM_PTR(PLATE_LETTERSI[frame_index]); // ;Set the ROM point of the object for this leter
+    // asm 00003259: 	LDI	AR7,AR0
+    // asm 0000325A: 	ADDI	INITI0,AR0
+    // asm 0000325B: 	ADDI	AR5,AR0			;AR5 = which letter 0-2
+    // asm 0000325C: 	LDI	R4,R0
+    character = frame_index;
+    // asm 0000325D: 	CMPI	LASTCHAR,R0
+    // asm 0000325E: 	LDIGE	' ',R0
+    // asm 0000325F: 	BGE	EMIL1A
+    if (character >= LASTCHAR) {
+        character = ' ';
+        goto EMIL1A;
+    }
+    // asm 00003260: 	CMPI	RUB+1,R0
+    // asm 00003261: 	BLT	EMIL1
+    if (character < RUB + 1) {
+        goto EMIL1;
+    }
+    // asm 00003262: 	ADDI	'0'-RUB-1,R0
+    character += '0' - RUB - 1;
+    // asm 00003263: 	BR	EMIL1A
+    goto EMIL1A;
+EMIL1:
+    // asm 00003264: 	ADDI	'A',R0			;TRANSLATE BACK TO ASCII
+    character += 'A'; // ;TRANSLATE BACK TO ASCII
+EMIL1A:
+    // asm 00003265: 	STI	R0,*AR0			;initial index SET THE LETTER
+    p->ctx.ENTER_INITIALS_FRAME.initial_chars[p->ctx.ENTER_INITIALS_FRAME.character_index] = character;
+    // asm 00003266: 	LDI	@_countdown,R0
+    // asm 00003267: 	BLE	DOTRIG			;Out of time, then auto trigger the next letter
+    if (_countdown <= 0) {
+        goto DOTRIG;
+    }
+    // asm 00003268: 	LDI	@START_HIT,R0
+    // asm 00003269: 	BNZ	DOTRIG
+    if (START_HIT != 0) {
+        goto DOTRIG;
+    }
+    // *ELP CHANGE
+    // asm 0000326A: 	LDI	@_pot1,R0
+    // asm 0000326B: 	CMPI	*+AR7(PEDTRIG),R0
+    // asm 0000326C: 	BGE	TRIGPOTCHK
+    if (_pot1 >= p->ctx.ENTER_INITIALS_FRAME.pedal_trigger) {
+        goto TRIGPOTCHK;
+    }
+    // asm 0000326D: 	CLRI	R0
+    // asm 0000326E: 	STI	R0,@PEDHIT
+    PEDHIT = 0;
+    // asm 0000326F: 	BU	NOTRIG
+    goto NOTRIG;
+TRIGPOTCHK:
+    // asm 00003270: 	LDI	@PEDHIT,R1
+    // asm 00003271: 	CMPI	1,R1
+    // asm 00003272: 	BEQ	NOTRIG
+    if (PEDHIT == 1) {
+        goto NOTRIG;
+    }
+    // asm 00003273: 	LDI	1,R0
+    // asm 00003274: 	STI	R0,@PEDHIT
+    PEDHIT = 1;
+    // *ELP END CHANGE
+DOTRIG:
+    // asm 00003275: 	LDI	@_countdown,R0
+    // asm 00003276: 	BZ	DT1			;If out of time don't decrement
+    if (_countdown == 0) {
+        goto DT1;
+    }
+    // asm 00003277: 	LDI	20,R0			;Set the number of seconds to enter your initials
+    // asm 00003278: 	STI	R0,@_countdown
+    _countdown = 20; // ;Set the number of seconds to enter your initials
+DT1:
+    // asm 00003279: 	CLRI	R0
+    // asm 0000327A: 	STI	R0,@START_HIT
+    START_HIT = 0;
+    // asm 0000327B: 	LDI	AR7,AR0
+    // asm 0000327C: 	ADDI	INIT0,AR0
+    // asm 0000327D: 	ADDI	AR5,AR0
+    selected_obj = p->ctx.ENTER_INITIALS_FRAME.initial_objs[p->ctx.ENTER_INITIALS_FRAME.character_index];
+    // asm 0000327E: 	CMPI	RUB,R4
+    // asm 0000327F: 	BNE	NOTBCKSPC
+    if (frame_index != RUB) {
+        goto NOTBCKSPC;
+    }
+    // asm 00003280: 	LDI	@_countdown,R0
+    // asm 00003281: 	BGT	DORUB			;Out of time?
+    if (_countdown > 0) {
+        goto DORUB;
+    }
+    // asm 00003282: 	LDI	LASTCHAR,R4		;FORCE END
+    frame_index = LASTCHAR; // ;FORCE END
+    // asm 00003283: 	LDI	AR7,AR0			;Put a space in the position the RUB was in
+    // asm 00003284: 	ADDI	INITI0,AR0
+    // asm 00003285: 	ADDI	AR5,AR0			;AR5 = which letter 0-2
+    // asm 00003286: 	LDI	' ',R0
+    // asm 00003287: 	STI	R0,*AR0
+    p->ctx.ENTER_INITIALS_FRAME.initial_chars[p->ctx.ENTER_INITIALS_FRAME.character_index] = ' '; // ;Put a space in the position the RUB was in
+    // asm 00003288: 	BR	NOTBCKSPC		;THIS WILL BAIL CORRECTLY
+    goto NOTBCKSPC; // ;THIS WILL BAIL CORRECTLY
+DORUB:
+    // asm 00003289: 	CMPI	0,AR5			;if char[0] then dont backspace
+    // asm 0000328A: 	BEQ	PEDALWT
+    if (p->ctx.ENTER_INITIALS_FRAME.character_index == 0) {
+        goto PEDALWT;
+    }
+    // ;This does a back space
+    // asm 0000328B: 	LDI	*AR0,AR2
+    // asm 0000328C: 	CALL	OBJ_PULL			;Get rid of the letter on
+    OBJ_PULL(selected_obj); // ;Get rid of the letter on
+    // asm 0000328D: 	DEC	AR5			;AR5 = LETTER on
+    p->ctx.ENTER_INITIALS_FRAME.character_index -= 1; // ;AR5 = LETTER on
+    // asm 0000328E: 	BR	PEDALWT
+    goto PEDALWT;
+NOTBCKSPC:
+    // asm 0000328F: 	LDI	AR7,AR1
+    // asm 00003290: 	ADDI	INIT0,AR1		;GET index to the last letter we are on
+    // asm 00003291: 	ADDI	AR5,AR1
+    // asm 00003292: 	LDI	*AR1,AR1
+    selected_obj = p->ctx.ENTER_INITIALS_FRAME.initial_objs[p->ctx.ENTER_INITIALS_FRAME.character_index];
+    // asm 00003293: 	LDI	*+AR7(GREY_PAL),R0
+    // asm 00003294: 	STI	R0,*+AR1(OPAL)
+    selected_obj->palette = (u32)p->ctx.ENTER_INITIALS_FRAME.grey_pal;
+    // asm 00003295: 	LDI	*+AR1(OROMDATA),R1	;Set the ROM point of the object for this leter
+    // asm 00003296: 	CMPI	LASTCHAR,R4
+    // asm 00003297: 	BEQ	DONE_ENTRY
+    if (frame_index == LASTCHAR) {
+        goto DONE_ENTRY;
+    }
+    // asm 00003298: 	INC	AR5
+    p->ctx.ENTER_INITIALS_FRAME.character_index += 1;
+    // asm 00003299: 	CMPI	3,AR5
+    // asm 0000329A: 	BGE	DONE_ENTRY
+    if (p->ctx.ENTER_INITIALS_FRAME.character_index >= 3) {
+        goto DONE_ENTRY;
+    }
+    // asm 0000329B: 	INC	AR0
+    // asm 0000329C: 	LDI	*AR0,AR2
+    next_obj = p->ctx.ENTER_INITIALS_FRAME.initial_objs[p->ctx.ENTER_INITIALS_FRAME.character_index];
+    // asm 0000329D: 	STI	R1,*+AR2(OROMDATA)	;Set the ROM point of the object for this leter
+    next_obj->romdata = selected_obj->romdata; // ;Set the ROM point of the object for this leter
+    // asm 0000329E: 	CALL	OBJ_INSERT		;Add the next letters object
+    OBJ_INSERT(next_obj); // ;Add the next letters object
+    // asm 0000329F: 	SONDFX	CHOOSE_LETTER
+    SONDFX(CHOOSE_LETTER);
+PEDALWT:
     // ;	LDI	@_countdown,R0
     // ;	BLE	EIML
     // ;
@@ -497,14 +736,22 @@ static void PEDALWT(PROC* p) {
     // ;	BGE	PEDALWT
 NOTRIG:
     // asm 000032A1: 	CALL	HSTD_TIMER
+    HSTD_TIMER();
     // asm 000032A2: 	CALL	POS_SCROLLB
+    POS_SCROLLB();
     // asm 000032A3: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000032A5: 	BR	EIML
+    continue;
 DONE_ENTRY:
     // asm 000032A6: 	CMPI	LASTCHAR,R4
     // asm 000032A7: 	BNE	DE1
+    if (frame_index != LASTCHAR) {
+        goto DE1;
+    }
     // asm 000032A8: 	LDI	AR1,AR2
     // asm 000032A9: 	CALL	OBJ_PULL
+    OBJ_PULL(selected_obj);
 DE1:
     // asm 000032AA: 	LDI	*+AR7(INITI2),R2	;Create string for initial entry
     // asm 000032AB: 	LSH	8,R2
@@ -512,10 +759,14 @@ DE1:
     // asm 000032AD: 	LSH	8,R2
     // asm 000032AE: 	OR	*+AR7(INITI0),R2
     // asm 000032AF: 	SETADJ	ADJ_INITIALS
+    character = (p->ctx.ENTER_INITIALS_FRAME.initial_chars[2] << 8) |
+                p->ctx.ENTER_INITIALS_FRAME.initial_chars[1];
+    character = (character << 8) | p->ctx.ENTER_INITIALS_FRAME.initial_chars[0];
+    ADJUSTMENT_WRITE(ADJ_INITIALS, character);
     // asm 000032B1: 	BR	PRESS_CODE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PEDALWT", 0, 0);
-    UNIMPL();
+    PROC_CONTINUE(PRESS_CODE, 2);
+    return;
+    }
 }
 
 /*
@@ -523,22 +774,42 @@ DE1:
  *This proc slides in the WORDS "ENTER INITIALS"
  */
 void ENTERTEXT(PROC* p) {
+    tSHADOW_TEXT text;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    }
+
     // asm 000032B2: 	FLOAT	616,R2			;XPOS
     // asm 000032B3: 	CALL	CREATE_ENTERTEXT
+    text = CREATE_ENTERTEXT(C3X_FROM_INT(616)); // ;XPOS
+    p->ctx.ENTERTEXT_FRAME.front = text.front;
+    p->ctx.ENTERTEXT_FRAME.shadow = text.shadow;
     // asm 000032B4: 	LDF	-6,R0
     // asm 000032B5: 	STF	R0,*+AR4(TEXT_VELX)
+    text.front->velx = C3X_STF(C3X_IMM_F32(-6));
     // asm 000032B6: 	STF	R0,*+AR5(TEXT_VELX)
+    text.shadow->velx = C3X_STF(C3X_IMM_F32(-6));
     // asm 000032B7: 	SLEEP	60
+    SLEEP(60, 1);
     // asm 000032B9: 	SONDFX	WELCOME
+    SONDFX(WELCOME);
     // asm 000032BB: 	CLRF	R0
     // asm 000032BC: 	STF	R0,*+AR4(TEXT_VELX)
+    p->ctx.ENTERTEXT_FRAME.front->velx = C3X_STF(C3X_FROM_INT(0));
     // asm 000032BD: 	STF	R0,*+AR5(TEXT_VELX)
+    p->ctx.ENTERTEXT_FRAME.shadow->velx = C3X_STF(C3X_FROM_INT(0));
 ET0:
     // asm 000032BE: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 000032C0: 	BR	ET0			;THIS PROC GETS KILLED BY PRESS_CODE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ENTERTEXT", 0, 0);
-    UNIMPL();
+    goto ET0; // ;THIS PROC GETS KILLED BY PRESS_CODE
 }
 
 // *----------------------------------------------------------------------------
@@ -547,49 +818,68 @@ ET0:
  *----------------------------------------------------------------------------
  *PARAMETERS	R2 = XPOS
  */
-static void CREATE_ENTERTEXT(void) {
+static tSHADOW_TEXT CREATE_ENTERTEXT(c3x_reg_t x /*R2*/) {
+    tSHADOW_TEXT text;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000032C1: 	LDI	@EIPI,AR2		;enter initials	string
     // asm 000032C2: 	FLOAT	254,R3			;YPOS
     // asm 000032C3: 	LDI	9999,RC			;JIFFYS TO DISPLAY (INDEFINATLY)
     // asm 000032C4: 	CALL	TEXT_ADDDS
+    text = TEXT_ADDDS(EIPI, x, C3X_FROM_INT(254), 9999); // ;enter initials string; JIFFYS TO DISPLAY (INDEFINATLY)
     // asm 000032C5: 	CALL	MAKE_CENTER
+    MAKE_CENTER(&text);
     // asm 000032C6: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CREATE_ENTERTEXT", 0, 0);
-    UNIMPL();
+    return text;
 }
 
 // *----------------------------------------------------------------------------
-static void MAKE_CENTER(void) {
+static void MAKE_CENTER(tSHADOW_TEXT* text /*AR4, AR5*/) {
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000032C7: 	LDI	AR0,AR4
     // asm 000032C8: 	LDI	AR1,AR5
     // asm 000032C9: 	ORM	TXT_CENTER,*+AR4(TEXT_COLOR)
+    text->front->color |= TXT_CENTER;
     // asm 000032CC: 	ORM	TXT_CENTER,*+AR5(TEXT_COLOR)
+    text->shadow->color |= TXT_CENTER;
     // asm 000032CF: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_CENTER", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 static void HSTD_TIMER(void) {
+    tSHADOW_TEXT text;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000032D0: 	LDI	@_countdown,R2
     // asm 000032D1: 	LDI	@COUNTDOWN_BUFI,AR2
     // asm 000032D2: 	CALL	_itoa
+    _itoa((char*)COUNTDOWN_BUFI, _countdown);
     // asm 000032D3: 	FLOAT	256,R2
     // asm 000032D4: 	FLOAT	343,R3			;YPOS
     // asm 000032D5: 	LDI	1,RC
     // asm 000032D6: 	CALL	TEXT_ADDDS
+    text = TEXT_ADDDS((char*)COUNTDOWN_BUFI, C3X_FROM_INT(256), C3X_FROM_INT(343), 1); // ;YPOS
     // asm 000032D7: 	PUSH	AR4
     // asm 000032D8: 	PUSH	AR5
     // asm 000032D9: 	CALL	MAKE_CENTER
+    MAKE_CENTER(&text);
     // asm 000032DA: 	POP	AR5
     // asm 000032DB: 	POP	AR4
     // asm 000032DC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HSTD_TIMER", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 static void INSERT_INITS(void) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000032DD: 	LDI	@SCORE,R0
     // asm 000032DE: 	LDI	*+AR7(INITI0),R1
     // asm 000032DF: 	LDI	*+AR7(INITI1),R2
@@ -598,10 +888,14 @@ static void INSERT_INITS(void) {
     // asm 000032E2: 	LDI	*+AR7(PLACE),R5
     // asm 000032E3: 	LDI	*+AR7(RACE_NUMBER),R6
     // asm 000032E4: 	CALL	INSERT_TABLE_ENTRY
+    INSERT_TABLE_ENTRY(SCORE, ctx->ENTER_INITIALS_FRAME.initial_chars[0],
+                       ctx->ENTER_INITIALS_FRAME.initial_chars[1],
+                       ctx->ENTER_INITIALS_FRAME.initial_chars[2], 0,
+                       ctx->ENTER_INITIALS_FRAME.place,
+                       ctx->ENTER_INITIALS_FRAME.race_number);
     // asm 000032E5: 	LDI	*+AR7(RACE_NUMBER),R1
     // asm 000032E6: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_INITS", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -728,20 +1022,36 @@ NFTX:
  *R0 = total elapsed time
  *R0 = 0, did not finish
  */
-static void CALC_TOTAL_ELAPSED(void) {
+static int CALC_TOTAL_ELAPSED(void) {
+    int race_index;
+    int total_elapsed;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 0000330E: 	PUSH	R1
     // asm 0000330F: 	PUSH	R2
     // asm 00003310: 	PUSH	AR0
     // asm 00003311: 	LDI	@GAMETRAKI,AR0
     // asm 00003312: 	LDI	13,R1
     // asm 00003313: 	LDI	0,R2
+    race_index = 0;
+    total_elapsed = 0;
 CTELP:
     // asm 00003314: 	LDI	*+AR0(GT_ETIME),R0
     // asm 00003315: 	BEQ	CTEX			;Did Not Finish this Race (DNF)
+    if (((tagGAMETRAK*)GAMETRAK)[race_index].elapsed_time == 0) {
+        total_elapsed = 0;
+        goto CTEX; // ;Did Not Finish this Race (DNF)
+    }
     // asm 00003316: 	ADDI	R0,R2
+    total_elapsed += (int)((tagGAMETRAK*)GAMETRAK)[race_index].elapsed_time;
     // asm 00003317: 	ADDI	GT_SIZE,AR0
+    race_index += 1;
     // asm 00003318: 	SUBI	1,R1
     // asm 00003319: 	BP	CTELP
+    if (race_index <= 13) {
+        goto CTELP;
+    }
     // asm 0000331A: 	LDI	R2,R0
 CTEX:
     // asm 0000331B: 	POP	AR0
@@ -749,7 +1059,7 @@ CTEX:
     // asm 0000331D: 	POP	R1
     // asm 0000331E: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CALC_TOTAL_ELAPSED", 0, 0);
-    UNIMPL();
+    return total_elapsed;
 }
 
 /*
@@ -768,365 +1078,575 @@ CTEX:
 #define STAMP_FRAMES 4
 #define STAMP_SHAKE 7
 #define ARMS2 0x8A
+#define CAM_RADX (-0.393)
+#define ROT_FRAMES 40
+#define left_stop (-5000)
+#define cam_left_stop (-4700)
+#define zoomin_stop (-1300)
+#define zoomout_stop (-2100)
+#define PLACE_ENDRADX 4.71239
+#define FRAME 0x85
+#define MARQLET 0x8C
+#define PLATE_ZOFF (ROLLER_ZOFF - 140)
+#define FIRST_BOLT 0x30
 
 static void PRESS_CODE_ENTRY(PROC* p) {
+    OBJ* obj;
+    c3x_reg_t letter_x;
+
     switch (PROC_RESUME_STATE) {
     case 0:
-        // MAME_ASSERT_ORDERING("PRESS_CODE_ENTRY");
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("PRESS_CODE_ENTRY");
         break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
     }
     // ;Put the letters on the bottom of the press
     // asm 0000331F: 	LDI	*+AR7(WHITE_PAL),R4
     // asm 00003320: 	FLOAT	-LETTER_SIZEX-LETTER_SIZEX/4,R5	;Position of the first letter
+    letter_x = C3X_FROM_INT(-LETTER_SIZEX - LETTER_SIZEX / 4); // ;Position of the first letter
     // asm 00003321: 	FLOAT	-103+LETTER_YOFF,R6
     // asm 00003322: 	FLOAT	-PRESS_DIAM-73,R7
     // asm 00003323: 	LDI	*+AR7(INITI0),AR2			;Create the first Letter
     // asm 00003324: 	CALL	ASCII_TO_OBJ
+    obj = ASCII_TO_OBJ(p->ctx.ENTER_INITIALS_FRAME.initial_chars[0]);
     // asm 00003325: 	STI	AR0,*+AR7(INIT0)
+    p->ctx.ENTER_INITIALS_FRAME.initial_objs[0] = obj;
     // asm 00003326: 	STI	R4,*+AR0(OPAL)
+    obj->palette = (u32)p->ctx.ENTER_INITIALS_FRAME.white_pal;
     // asm 00003327: 	STF	R5,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(letter_x);
     // asm 00003328: 	STF	R6,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(-103 + LETTER_YOFF));
     // asm 00003329: 	STF	R7,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(-PRESS_DIAM - 73));
     // asm 0000332A: 	FLOAT	LETTER_SIZEX,R0
     // asm 0000332B: 	ADDF	R0,R5
+    letter_x = C3X_ADD(letter_x, C3X_FROM_INT(LETTER_SIZEX));
     // asm 0000332C: 	LDI	*+AR7(INITI0),AR2
     // asm 0000332D: 	CMPI	' ',AR2
     // asm 0000332E: 	BEQ	NOINS0
+    if (p->ctx.ENTER_INITIALS_FRAME.initial_chars[0] == ' ') {
+        goto NOINS0;
+    }
     // asm 0000332F: 	LDI	AR0,AR2
     // asm 00003330: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
 NOINS0:
     // asm 00003331: 	LDI	*+AR7(INITI1),AR2			;Create the first Letter
     // asm 00003332: 	CALL	ASCII_TO_OBJ
+    obj = ASCII_TO_OBJ(p->ctx.ENTER_INITIALS_FRAME.initial_chars[1]);
     // asm 00003333: 	STI	AR0,*+AR7(INIT1)
+    p->ctx.ENTER_INITIALS_FRAME.initial_objs[1] = obj;
     // asm 00003334: 	STI	R4,*+AR0(OPAL)
+    obj->palette = (u32)p->ctx.ENTER_INITIALS_FRAME.white_pal;
     // asm 00003335: 	STF	R5,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(letter_x);
     // asm 00003336: 	STF	R6,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(-103 + LETTER_YOFF));
     // asm 00003337: 	STF	R7,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(-PRESS_DIAM - 73));
     // asm 00003338: 	FLOAT	LETTER_SIZEX,R0
     // asm 00003339: 	ADDF	R0,R5
+    letter_x = C3X_ADD(letter_x, C3X_FROM_INT(LETTER_SIZEX));
     // asm 0000333A: 	LDI	*+AR7(INITI1),AR2
     // asm 0000333B: 	CMPI	' ',AR2
     // asm 0000333C: 	BEQ	NOINS1
+    if (p->ctx.ENTER_INITIALS_FRAME.initial_chars[1] == ' ') {
+        goto NOINS1;
+    }
     // asm 0000333D: 	LDI	AR0,AR2
     // asm 0000333E: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
 NOINS1:
     // asm 0000333F: 	LDI	*+AR7(INITI2),AR2			;Create the first Letter
     // asm 00003340: 	CALL	ASCII_TO_OBJ
+    obj = ASCII_TO_OBJ(p->ctx.ENTER_INITIALS_FRAME.initial_chars[2]);
     // asm 00003341: 	STI	AR0,*+AR7(INIT2)
+    p->ctx.ENTER_INITIALS_FRAME.initial_objs[2] = obj;
     // asm 00003342: 	STI	R4,*+AR0(OPAL)
+    obj->palette = (u32)p->ctx.ENTER_INITIALS_FRAME.white_pal;
     // asm 00003343: 	STF	R5,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(letter_x);
     // asm 00003344: 	STF	R6,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(-103 + LETTER_YOFF));
     // asm 00003345: 	STF	R7,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(-PRESS_DIAM - 73));
     // asm 00003346: 	LDI	*+AR7(INITI2),AR2
     // asm 00003347: 	CMPI	' ',AR2
     // asm 00003348: 	BEQ	NOINS2
+    if (p->ctx.ENTER_INITIALS_FRAME.initial_chars[2] == ' ') {
+        goto NOINS2;
+    }
     // asm 00003349: 	LDI	AR0,AR2
     // asm 0000334A: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
 NOINS2:
     // asm 0000334B: 	SONDFX	WELCOME
+    SONDFX(WELCOME);
     // *ELP CHANGE
     // asm 0000334D: 	PUSHP	AR5
     // 	;SLEEP	60
     // asm 00003350: 	LDI	30-1,AR5
+    p->ctx.ENTER_INITIALS_FRAME.press_counter = 30 - 1;
 PAPA35:
     // asm 00003351: LDI	@START_HIT,R0
     // asm 00003352: 	BNZ	PAPA35X
+    if (START_HIT != 0) {
+        goto PAPA35X;
+    }
     // asm 00003353: 	SUBI	@NFRAMES,AR5
+    p->ctx.ENTER_INITIALS_FRAME.press_counter -= NFRAMES;
     // asm 00003354: 	CMPI	0,AR5
     // asm 00003355: 	LDILT	0,AR5
+    if (p->ctx.ENTER_INITIALS_FRAME.press_counter < 0) {
+        p->ctx.ENTER_INITIALS_FRAME.press_counter = 0;
+    }
     // asm 00003356: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00003358: 	DBU	AR5,PAPA35
+    p->ctx.ENTER_INITIALS_FRAME.press_counter -= 1;
+    if (p->ctx.ENTER_INITIALS_FRAME.press_counter >= 0) {
+        goto PAPA35;
+    }
 PAPA35X:
     // asm 00003359: 	POPP	AR5
     // *ELP END CHANGE
     // ;FALL INTO PRESS CODE
-PRESS_CODE:
+    PROC_CONTINUE(PRESS_CODE, 2);
+    return;
+}
+
+static void PRESS_CODE(PROC* p) {
+    PROC_CONTEXT* ctx = &p->ctx;
+    OBJ* obj;
+    c3x_reg_t value;
+    c3x_reg_t delta;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("PRESS_CODE");
+        break;
+    case 1: goto PROC_RESUME_1;
+    case 2: goto PROC_RESUME_2;
+    case 3: goto PROC_RESUME_3;
+    case 4: goto PROC_RESUME_4;
+    case 5: goto PROC_RESUME_5;
+    case 6: goto PROC_RESUME_6;
+    case 7: goto PROC_RESUME_7;
+    case 8: goto PROC_RESUME_8;
+    case 9: goto PROC_RESUME_9;
+    case 10: goto PROC_RESUME_10;
+    case 11: goto PROC_RESUME_11;
+    case 12: goto PROC_RESUME_12;
+    case 13: goto PROC_RESUME_13;
+    case 14: goto PROC_RESUME_14;
+    case 15: goto PROC_RESUME_15;
+    }
+
     // asm 0000335C: 	LDI	SPAWNER_C,R0		;KILL ENTERTEXT
     // asm 0000335D: 	LDI	CLASS_M,R1
     // asm 0000335E: 	CALL	PRC_KILLALL
+    PRC_KILLALL(SPAWNER_C, CLASS_M);
     // asm 0000335F: 	CALL	TEXT_INIT
+    TEXT_INIT();
     // asm 00003360: 	CLRI	R0
     // asm 00003361: 	STI	R0,@START_HIT
+    START_HIT = 0;
     // asm 00003362: 	LDI	0,R0
     // asm 00003363: 	STI	R0,@FRAMRATE   		;RESET FRAME RATE TO ATTRACT MODE
+    FRAMRATE = 0; // ;RESET FRAME RATE TO ATTRACT MODE
     // asm 00003364: 	SONDFX	DOPEN
+    SONDFX(DOPEN);
     // asm 00003366: 	LDI	*+AR7(RACE_NUMBER),R1
     // asm 00003367: 	LDI	R1,R0
     // asm 00003368: 	MPYI	GT_SIZE,R0
     // asm 00003369: 	ADDI	@GAMETRAKI,R0
     // asm 0000336A: 	LDI	R0,AR0
     // asm 0000336B: 	LDI	*+AR0(GT_ETIME),R0
+    SCORE = (int)((tagGAMETRAK*)GAMETRAK)[ctx->ENTER_INITIALS_FRAME.race_number].elapsed_time;
     // asm 0000336C: 	CMPI	14,R1
     // asm 0000336D: 	CALLZ	CALC_TOTAL_ELAPSED
+    if (ctx->ENTER_INITIALS_FRAME.race_number == 14) {
+        SCORE = CALC_TOTAL_ELAPSED();
+    }
     // asm 0000336E: 	STI	R0,@SCORE
     // asm 0000336F: 	CALL	INSERT_INITS
+    INSERT_INITS();
     // asm 00003370: 	STI	R0,@SCORE
     // asm 00003371: 	CALL	FIND_PLATES		;Set up the High score display board
+    FIND_PLATES(ctx->ENTER_INITIALS_FRAME.race_number, ctx->ENTER_INITIALS_FRAME.place,
+                SCORE, ctx->ENTER_INITIALS_FRAME.white_pal,
+                &ctx->ENTER_INITIALS_FRAME.missing_plate_obj); // ;Set up the High score display board
     // asm 00003372: 	LDI	0,R0
     // asm 00003373: 	STI	R0,@_countdown
+    _countdown = 0;
     // asm 00003374: 	CALL	ADJUST_ROLLERS
+    ADJUST_ROLLERS();
     // asm 00003375: 	CALL	ENTER_HSTEXT
+    ENTER_HSTEXT(ctx->ENTER_INITIALS_FRAME.race_number);
     // asm 00003376: 	FLOAT	-1950,R2
     // asm 00003377: 	LDI	HIGH_SCORE_GROUP,R1		;High score group
     // asm 00003378: 	CALL	OBJ_MOVY_GROUP
+    OBJ_MOVY_GROUP(HIGH_SCORE_GROUP, C3X_FROM_INT(-1950));
     // asm 00003379: 	LDI	*+AR7(MISPLATEOBJ),AR2
     // asm 0000337A: 	CALL	OBJ_PULL			;Loose the plate in the players place
+    OBJ_PULL(ctx->ENTER_INITIALS_FRAME.missing_plate_obj); // ;Loose the plate in the players place
     // asm 0000337B: 	CALL	INI_PLAYERS_BOLTS		;Move them into position to fly
+    INI_PLAYERS_BOLTS(); // ;Move them into position to fly
     // asm 0000337C: 	LDI	5,R1
     // asm 0000337D: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(5);
     // asm 0000337E: 	FLOAT	-2000,R0
     // asm 0000337F: 	LDF	*+AR0(OPOSY),R1
     // asm 00003380: 	ADDF	R0,R1
     // asm 00003381: 	STF	R1,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_FROM_INT(-2000)));
     // asm 00003382: 	LDI	8,R1
     // asm 00003383: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(8);
     // asm 00003384: 	FLOAT	-2000,R0
     // asm 00003385: 	LDF	*+AR0(OPOSY),R1
     // asm 00003386: 	ADDF	R0,R1
     // asm 00003387: 	STF	R1,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_FROM_INT(-2000)));
     // asm 00003388: 	LDI	*+AR7(SCROLLBOBJ),AR2	;LOOSE THE WHEEL AND IT's LETTERS
     // asm 00003389: 	CALL	OBJ_PULL
+    OBJ_PULL(ctx->ENTER_INITIALS_FRAME.scroll_bar_obj);
+PRA0:
     // asm 0000338A: PRA0					;LOOSE THE LETTERS ON THE FRAME
     // asm 0000338A: 	LDI	MARQLET,R1
     // asm 0000338B: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(MARQLET);
     // asm 0000338C: 	BC	PRA
+    if (obj == NULL) goto PRA;
     // asm 0000338D: 	LDI	AR0,AR2
     // asm 0000338E: 	CALL	OBJ_DELETE
+    OBJ_DELETE(obj);
     // asm 0000338F: 	BR	PRA0
+    goto PRA0;
 PRA:
     // ;Pan the camera back,pull back the frame,rotate the press down,
     // ;and scroll the plate in on the rollers
     // asm 00003390: 	FLOAT	PRESS_FRAMES,R1		;Pan camera to correct y
     // asm 00003391: 	FLOAT	PRESS_TRAVELY,R0
     // asm 00003392: 	CALL	DIV_F			;PRESS_TRAVELZ/PRESS_FRAMES
+    delta = DIV_F(C3X_FROM_INT(PRESS_TRAVELY), C3X_FROM_INT(PRESS_FRAMES)); // ;PRESS_TRAVELZ/PRESS_FRAMES
     // asm 00003393: 	LDP	@_CAMERAPOS+Y
     // asm 00003394: 	ADDF	@_CAMERAPOS+Y,R0
     // asm 00003395: 	STF	R0,@_CAMERAPOS+Y
+    CAMERAPOSI.Y = C3X_STF(C3X_ADD(C3X_LDF(CAMERAPOSI.Y), delta));
     // asm 00003396: 	SETDP
     // asm 00003397: 	FLOAT	PRESS_FRAMES,R1		;Pan camera back
     // asm 00003398: 	FLOAT	PRESS_TRAVELZ,R0
     // asm 00003399: 	CALL	DIV_F			;PRESS_TRAVELZ/PRESS_FRAMES
+    delta = DIV_F(C3X_FROM_INT(PRESS_TRAVELZ), C3X_FROM_INT(PRESS_FRAMES)); // ;PRESS_TRAVELZ/PRESS_FRAMES
     // asm 0000339A: 	LDP	@_CAMERAPOS+Z
     // asm 0000339B: 	ADDF	@_CAMERAPOS+Z,R0
     // asm 0000339C: 	STF	R0,@_CAMERAPOS+Z
+    CAMERAPOSI.Z = C3X_STF(C3X_ADD(C3X_LDF(CAMERAPOSI.Z), delta));
     // asm 0000339D: 	SETDP
     // asm 0000339E: 	FLOAT	PRESS_FRAMES-1,R1	;Rotate press down
     // asm 0000339F: 	LDF	PRESS_RADX,R0
     // asm 000033A0: 	CALL	DIV_F			;PRESS_RADX/PRESS_FRAMES
+    delta = DIV_F(C3X_IMM_F32(PRESS_RADX), C3X_FROM_INT(PRESS_FRAMES - 1)); // ;PRESS_RADX/PRESS_FRAMES
     // asm 000033A1: 	LDI	*+AR7(PRESSOBJ),AR0
     // asm 000033A2: 	LDF	*+AR0(ORADX),R2
     // asm 000033A3: 	SUBF	R0,R2
     // asm 000033A4: 	STF	R2,*+AR0(ORADX)
+    ctx->ENTER_INITIALS_FRAME.press_obj->radx = C3X_STF(C3X_SUB(C3X_LDF(ctx->ENTER_INITIALS_FRAME.press_obj->radx), delta));
     // asm 000033A5: 	LDI	AR0,AR2
     // asm 000033A6: 	ADDI	OMATRIX,AR2
     // asm 000033A7: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&ctx->ENTER_INITIALS_FRAME.press_obj->omatrix, C3X_LDF(ctx->ENTER_INITIALS_FRAME.press_obj->radx));
     // asm 000033A8: 	FLOAT	PRESS_FRAMES,R1		;Pull the frame back
     // asm 000033A9: 	FLOAT	-2000,R0
     // asm 000033AA: 	CALL	DIV_F			;-2000/PRESS_FRAMES
+    delta = DIV_F(C3X_FROM_INT(-2000), C3X_FROM_INT(PRESS_FRAMES)); // ;-2000/PRESS_FRAMES
     // ;	LDI	*+AR7(FRAMEOBJ),AR0
     // asm 000033AB: 	LDI	FRAME,R1
     // asm 000033AC: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(FRAME);
     // asm 000033AD: 	BC	PRA2
+    if (obj == NULL) goto PRA2;
 PRA1:
     // asm 000033AE: 	LDF	*+AR0(OPOSZ),R2
     // asm 000033AF: 	ADDF	R0,R2
     // asm 000033B0: 	STF	R2,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), delta));
     // asm 000033B1: 	CALL	OBJ_FIND_NEXT
+    obj = OBJ_FIND_NEXT(obj, FRAME);
     // asm 000033B2: 	BNC	PRA1
+    if (obj != NULL) goto PRA1;
 PRA2:
     // asm 000033B3: 	CALL	MOVE_PRESSB		;Move the bottom of the press reletive to the press
+    MOVE_PRESSB(); // ;Move the bottom of the press reletive to the press
     // asm 000033B4: 	CALL	MOVE_BIGLET_PRESS	;Move the letters reletive to the bottom of the press
+    MOVE_BIGLET_PRESS(); // ;Move the letters reletive to the bottom of the press
     // asm 000033B5: 	LDI	*+AR7(PRESSOBJ),AR0		;Spin the rollers until press is rotated all the way down
     // asm 000033B6: 	LDF	*+AR0(ORADX),R2
     // asm 000033B7: 	CMPF	-0.01309,R2
     // asm 000033B8: 	BLE	PR0A
+    if (C3X_LE(C3X_LDF(ctx->ENTER_INITIALS_FRAME.press_obj->radx), C3X_IMM_F32(-0.01309))) goto PR0A;
     // asm 000033B9: 	FLOAT	PRESS_FRAMES,R1
     // asm 000033BA: 	LDF	ROLLER_TRAVEL,R0
     // asm 000033BB: 	CALL	DIV_F			;PRESS_TRAVELZ/PRESS_FRAMES
+    delta = DIV_F(C3X_IMM_F32(ROLLER_TRAVEL), C3X_FROM_INT(PRESS_FRAMES)); // ;PRESS_TRAVELZ/PRESS_FRAMES
     // asm 000033BC: 	CALL	SPIN_ROLLERS		;Spin rollers also moves the plate
+    SPIN_ROLLERS(delta); // ;Spin rollers also moves the plate
     // asm 000033BD: 	SLEEP	1
+    SLEEP(1, 1);
     // *ELP CHANGE
     // asm 000033BF: 	LDI	@START_HIT,R0
     // asm 000033C0: 	BZ	PRA
+    if (START_HIT == 0) goto PRA;
     // ;	BR	PRA
     // *ELP END CHANGE
 PR0A:
     // asm 000033C1: 	LDI	FRAME,R1
     // asm 000033C2: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(FRAME);
     // asm 000033C3: 	BC	PR0A2
+    if (obj == NULL) goto PR0A2;
     // asm 000033C4: 	LDI	AR0,AR2
     // asm 000033C5: 	CALL	OBJ_DELETE
+    OBJ_DELETE(obj);
     // asm 000033C6: 	BR	PR0A
+    goto PR0A;
 PR0A2:
     // asm 000033C7: 	SONDFX	HYDRO
+    SONDFX(HYDRO);
     // *ELP CHANGE
     // 	;SLEEP	10
     // asm 000033C9: 	SLEEP	5
+    SLEEP(5, 2);
     // *ELP END CHANGE
 PR0:
     // *ELP CHANGE
     // asm 000033CB: 	LDI	@START_HIT,R0
     // asm 000033CC: 	BNZ	PR1
+    if (START_HIT != 0) goto PR1;
     // *ELP END CHANGE
     // ;Move the Press and Arms down to stamp
     // asm 000033CD: 	FLOAT	ARM_FRAMES,R1
     // asm 000033CE: 	FLOAT	ARM_TRAVEL,R0
     // asm 000033CF: 	CALL	DIV_F			;ARM_TRAVEL/ARM_FRAMES
+    delta = DIV_F(C3X_FROM_INT(ARM_TRAVEL), C3X_FROM_INT(ARM_FRAMES)); // ;ARM_TRAVEL/ARM_FRAMES
     // asm 000033D0: 	LDI	*+AR7(PRESSOBJ),AR0
     // asm 000033D1: 	LDF	*+AR0(OPOSY),R2
     // asm 000033D2: 	ADDF	R0,R2
     // asm 000033D3: 	STF	R2,*+AR0(OPOSY)
+    ctx->ENTER_INITIALS_FRAME.press_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.press_obj->pos.Y), delta));
     // asm 000033D4: 	PUSHF	R0
     // asm 000033D5: 	CALL	MOVE_PRESSB
+    MOVE_PRESSB();
     // asm 000033D6: 	CALL	MOVE_BIGLET_PRESS
+    MOVE_BIGLET_PRESS();
     // asm 000033D7: 	POPF	R0
     // asm 000033D8: 	LDI	*+AR7(ARMSOBJ),AR0
     // asm 000033D9: 	LDF	*+AR0(OPOSY),R2
     // asm 000033DA: 	ADDF	R0,R2
     // asm 000033DB: 	STF	R2,*+AR0(OPOSY)
+    ctx->ENTER_INITIALS_FRAME.arms_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.arms_obj->pos.Y), delta));
     // asm 000033DC: 	FLOAT	ARM_BOTTOM,R0
     // asm 000033DD: 	CMPF	R0,R2
     // asm 000033DE: 	BGE	PR1
+    if (C3X_GE(C3X_LDF(ctx->ENTER_INITIALS_FRAME.arms_obj->pos.Y), C3X_FROM_INT(ARM_BOTTOM))) goto PR1;
     // asm 000033DF: 	SLEEP	1
+    SLEEP(1, 3);
     // asm 000033E1: 	BR	PR0
+    goto PR0;
 PR1:
     // asm 000033E2: 	SONDFX	STAMP
+    SONDFX(STAMP);
     // asm 000033E4: 	SONDFX	STAMP1
+    SONDFX(STAMP1);
     // ;STAMP
     // asm 000033E6: 	LDI	*+AR7(INITI0),R0
     // asm 000033E7: 	LDI	*+AR7(INIT0),AR2
     // asm 000033E8: 	CMPI	' ',R0
     // asm 000033E9: 	BEQ	PR1A1
     // asm 000033EA: 	CALL	OBJ_PULL
+    if (ctx->ENTER_INITIALS_FRAME.initial_chars[0] != ' ') OBJ_PULL(ctx->ENTER_INITIALS_FRAME.initial_objs[0]);
 PR1A1:
     // asm 000033EB: 	LDI	*+AR7(INITI1),R0
     // asm 000033EC: 	LDI	*+AR7(INIT1),AR2
     // asm 000033ED: 	CMPI	' ',R0
     // asm 000033EE: 	BEQ	PR1A2
     // asm 000033EF: 	CALL	OBJ_PULL
+    if (ctx->ENTER_INITIALS_FRAME.initial_chars[1] != ' ') OBJ_PULL(ctx->ENTER_INITIALS_FRAME.initial_objs[1]);
 PR1A2:
     // asm 000033F0: 	LDI	*+AR7(INITI2),R0
     // asm 000033F1: 	LDI	*+AR7(INIT2),AR2
     // asm 000033F2: 	CMPI	' ',R0
     // asm 000033F3: 	BEQ	PR1A3
     // asm 000033F4: 	CALL	OBJ_PULL
+    if (ctx->ENTER_INITIALS_FRAME.initial_chars[2] != ' ') OBJ_PULL(ctx->ENTER_INITIALS_FRAME.initial_objs[2]);
 PR1A3:
     // asm 000033F5: 	LDI	STAMP_FRAMES,AR5
+    ctx->ENTER_INITIALS_FRAME.stamp_counter = STAMP_FRAMES;
+PR1A:
     // asm 000033F6: PR1A
     // *ELP CHANGE
     // asm 000033F6: 	LDI	@START_HIT,R0
     // asm 000033F7: 	BNZ	PR1ZZZ
+    if (START_HIT != 0) goto PR1ZZZ;
     // *ELP END CHANGE
     // asm 000033F8: 	FLOAT	STAMP_SHAKE,R0
     // asm 000033F9: 	LDP	@_CAMERAPOS+Y
     // asm 000033FA: 	ADDF	@_CAMERAPOS+Y,R0
     // asm 000033FB: 	STF	R0,@_CAMERAPOS+Y
+    CAMERAPOSI.Y = C3X_STF(C3X_ADD(C3X_LDF(CAMERAPOSI.Y), C3X_FROM_INT(STAMP_SHAKE)));
     // asm 000033FC: 	SETDP
     // asm 000033FD: 	SLEEP	1
+    SLEEP(1, 4);
     // asm 000033FF: 	FLOAT	STAMP_SHAKE,R0
     // asm 00003400: 	NEGF	R0
     // asm 00003401: 	LDP	@_CAMERAPOS+Y
     // asm 00003402: 	ADDF	@_CAMERAPOS+Y,R0
     // asm 00003403: 	STF	R0,@_CAMERAPOS+Y
+    CAMERAPOSI.Y = C3X_STF(C3X_ADD(C3X_LDF(CAMERAPOSI.Y), C3X_NEG(C3X_FROM_INT(STAMP_SHAKE))));
     // asm 00003404: 	SETDP
     // asm 00003405: 	SLEEP	1
+    SLEEP(1, 5);
     // asm 00003407: 	DBU	AR5,PR1A
+    ctx->ENTER_INITIALS_FRAME.stamp_counter -= 1;
+    if (ctx->ENTER_INITIALS_FRAME.stamp_counter >= 0) goto PR1A;
     // asm 00003408: 	FLOAT	PRESS_LASTY,R0
     // asm 00003409: 	LDP	@_CAMERAPOS+Y
     // asm 0000340A: 	STF	R0,@_CAMERAPOS+Y
+    CAMERAPOSI.Y = C3X_STF(C3X_FROM_INT(PRESS_LASTY));
     // asm 0000340B: 	SETDP
     // *ELP CHANGE
     // 	;SLEEP	6
     // asm 0000340C: 	SLEEP	3
+    SLEEP(3, 6);
     // *ELP END CHANGE
 PR1ZZZ:
     // asm 0000340E: 	CALL	MAKE_PLAYERS_PLATE
+    MAKE_PLAYERS_PLATE();
 PR2:
     // *ELP CHANGE
     // asm 0000340F: 	LDI	@START_HIT,R0
     // asm 00003410: 	BNZ	PR2A
+    if (START_HIT != 0) goto PR2A;
     // *ELP END CHANGE
     // ;PULL press up
     // asm 00003411: 	CALL	MOVE_PRESSB
+    MOVE_PRESSB();
     // asm 00003412: 	FLOAT	ARM_FRAMES,R1
     // asm 00003413: 	FLOAT	ARM_TRAVEL,R0
     // asm 00003414: 	NEGF	R0
     // asm 00003415: 	CALL	DIV_F			;ARM_TRAVEL/ARM_FRAMES
+    delta = DIV_F(C3X_NEG(C3X_FROM_INT(ARM_TRAVEL)), C3X_FROM_INT(ARM_FRAMES)); // ;ARM_TRAVEL/ARM_FRAMES
     // asm 00003416: 	LDI	*+AR7(PRESSOBJ),AR0
     // asm 00003417: 	LDF	*+AR0(OPOSY),R2
     // asm 00003418: 	ADDF	R0,R2
     // asm 00003419: 	STF	R2,*+AR0(OPOSY)
+    ctx->ENTER_INITIALS_FRAME.press_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.press_obj->pos.Y), delta));
     // asm 0000341A: 	LDI	*+AR7(ARMSOBJ),AR0
     // asm 0000341B: 	LDF	*+AR0(OPOSY),R2
     // asm 0000341C: 	ADDF	R0,R2
     // asm 0000341D: 	STF	R2,*+AR0(OPOSY)
+    ctx->ENTER_INITIALS_FRAME.arms_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.arms_obj->pos.Y), delta));
     // asm 0000341E: 	FLOAT	ARM_START,R0
     // asm 0000341F: 	CMPF	R0,R2
     // asm 00003420: 	BLE	PR2A
+    if (C3X_LE(C3X_LDF(ctx->ENTER_INITIALS_FRAME.arms_obj->pos.Y), C3X_FROM_INT(ARM_START))) goto PR2A;
     // asm 00003421: 	SLEEP	1
+    SLEEP(1, 7);
     // asm 00003423: 	BR	PR2
+    goto PR2;
 PR2A:
     // ;Rotate the camera up
     // asm 00003424: 	SONDFX	DOPEN
+    SONDFX(DOPEN);
     // asm 00003426: 	LDP	@_CAMERAPOS
     // asm 00003427: 	LDF	@_CAMERAPOS,R0
     // asm 00003428: 	LDF	@_CAMERAPOS+Y,R1
     // asm 00003429: 	LDF	@_CAMERAPOS+Z,R2
     // asm 0000342A: 	SETDP
     // asm 0000342B: 	STF	R0,*+AR7(CAMX)
+    ctx->ENTER_INITIALS_FRAME.saved_camera.X = C3X_STF(C3X_LDF(CAMERAPOSI.X));
     // asm 0000342C: 	STF	R1,*+AR7(CAMY)
+    ctx->ENTER_INITIALS_FRAME.saved_camera.Y = C3X_STF(C3X_LDF(CAMERAPOSI.Y));
     // asm 0000342D: 	STF	R2,*+AR7(CAMZ)
+    ctx->ENTER_INITIALS_FRAME.saved_camera.Z = C3X_STF(C3X_LDF(CAMERAPOSI.Z));
     // asm 0000342E: 	LDI	ROT_FRAMES-1,AR6
+    ctx->ENTER_INITIALS_FRAME.rotation_counter = ROT_FRAMES - 1;
+PR2AA:
     // asm 0000342F: PR2AA
     // *ELP CHANGE
     // asm 0000342F: 	LDI	@START_HIT,R0
     // asm 00003430: 	BNZ	PR2A1
+    if (START_HIT != 0) goto PR2A1;
     // *ELP END CHANGE
     // asm 00003431: 	LDI	*+AR7(PRESSOBJ),AR0
     // asm 00003432: 	FLOAT	-50,R0
     // asm 00003433: 	LDF	*+AR0(OPOSY),R2
     // asm 00003434: 	ADDF	R0,R2
     // asm 00003435: 	STF	R2,*+AR0(OPOSY)
+    ctx->ENTER_INITIALS_FRAME.press_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.press_obj->pos.Y), C3X_FROM_INT(-50)));
     // asm 00003436: 	LDI	*+AR7(ARMSOBJ),AR0
     // asm 00003437: 	LDF	*+AR0(OPOSY),R2
     // asm 00003438: 	ADDF	R0,R2
     // asm 00003439: 	STF	R2,*+AR0(OPOSY)
+    ctx->ENTER_INITIALS_FRAME.arms_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.arms_obj->pos.Y), C3X_FROM_INT(-50)));
     // asm 0000343A: 	LDI	*+AR7(BPRESSOBJ),AR0
     // asm 0000343B: 	LDF	*+AR0(OPOSY),R2
     // asm 0000343C: 	ADDF	R0,R2
     // asm 0000343D: 	STF	R2,*+AR0(OPOSY)
+    ctx->ENTER_INITIALS_FRAME.bottom_press_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.bottom_press_obj->pos.Y), C3X_FROM_INT(-50)));
     // asm 0000343E: 	LDI	ARMS2,R1
     // asm 0000343F: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(ARMS2);
     // asm 00003440: 	LDF	*+AR0(OPOSY),R2
     // asm 00003441: 	ADDF	R0,R2
     // asm 00003442: 	STF	R2,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_FROM_INT(-50)));
     // asm 00003443: 	CALL	OBJ_FIND_NEXT
+    obj = OBJ_FIND_NEXT(obj, ARMS2);
     // asm 00003444: 	LDF	*+AR0(OPOSY),R2
     // asm 00003445: 	ADDF	R0,R2
     // asm 00003446: 	STF	R2,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_FROM_INT(-50)));
     // asm 00003447: 	FLOAT	ROT_FRAMES,R1		;Pan camera to correct y
     // asm 00003448: 	LDF	CAM_RADX,R0
     // asm 00003449: 	CALL	DIV_F
+    delta = DIV_F(C3X_IMM_F32(CAM_RADX), C3X_FROM_INT(ROT_FRAMES));
     // asm 0000344A: 	LDP	@_CAMERARAD
     // asm 0000344B: 	LDF	@_CAMERARAD,R2
     // asm 0000344C: 	ADDF	R0,R2
     // asm 0000344D: 	STF	R2,@_CAMERARAD
+    CAMERARADI.X = C3X_STF(C3X_ADD(C3X_LDF(CAMERARADI.X), delta));
     // asm 0000344E: 	SETDP
     // asm 0000344F: 	LDI	@CAMERAMATRIXI,AR2
     // asm 00003450: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&CAMERAMATRIXI, C3X_LDF(CAMERARADI.X));
     // asm 00003451: 	NEGF	R2
     // asm 00003452: 	LDI	@MATRIXAI,AR2
     // asm 00003453: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&MATRIXAI, C3X_NEG(C3X_LDF(CAMERARADI.X)));
     // asm 00003454: 	LDI	@MATRIXAI,R2
     // asm 00003455: 	LDI	AR7,AR2
     // asm 00003456: 	ADDI	CAMX,AR2
     // asm 00003457: 	LDI	@CAMERAPOSI,R3
     // asm 00003458: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&ctx->ENTER_INITIALS_FRAME.saved_camera, &MATRIXAI, &CAMERAPOSI);
     // asm 00003459: 	SLEEP	1
+    SLEEP(1, 8);
     // asm 0000345B: 	DBU	AR6,PR2AA
+    ctx->ENTER_INITIALS_FRAME.rotation_counter -= 1;
+    if (ctx->ENTER_INITIALS_FRAME.rotation_counter >= 0) goto PR2AA;
     // ;Scroll plate left,pan camera left with th plate;ZOOM IN;ZOOM OUT
     // asm 0000345C: 	SONDFX	GOPEN
+    SONDFX(GOPEN);
     // asm 0000345E: 	LDF	0.00,R6			;AR5 is speed of rotation
+    ctx->ENTER_INITIALS_FRAME.roller_speed = C3X_IMM_F32(0.00); // ;AR5 is speed of rotation
 PR2A1:
     // *ELP CHANGE
     // asm 0000345F: 	LDI	@START_HIT,R0
@@ -1138,7 +1658,9 @@ PR2A1:
     // asm 00003462: 	ADDF	0.04,R6	 		;ACCELERATE
     // *ELP END CHANGE
     // ;	ADDF	0.01,R6	 		;ACCELERATE
+    ctx->ENTER_INITIALS_FRAME.roller_speed = C3X_ADD(ctx->ENTER_INITIALS_FRAME.roller_speed, C3X_IMM_F32(0.04)); // ;ACCELERATE
     // asm 00003463: 	CALL	SPIN_ROLLERS
+    SPIN_ROLLERS(C3X_SUB(ctx->ENTER_INITIALS_FRAME.roller_speed, C3X_IMM_F32(0.04)));
     // asm 00003464: 	LDI	*+AR7(PLATEOBJ),AR0
     // asm 00003465: 	LDF	*+AR0(OPOSX),R0
     // asm 00003466: 	SUBF	*+AR7(CAMX),R0
@@ -1151,6 +1673,9 @@ PR2A1:
     // asm 0000346A: 	CMPF	R1,R0
     // asm 0000346B: 	LDFLT	R1,R0
     // asm 0000346C: 	STF	R0,*+AR7(CAMX)
+    value = C3X_ADD(C3X_MUL(C3X_SUB(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.X), C3X_LDF(ctx->ENTER_INITIALS_FRAME.saved_camera.X)), C3X_IMM_F32(0.40)), C3X_LDF(ctx->ENTER_INITIALS_FRAME.saved_camera.X));
+    if (C3X_LT(value, C3X_FROM_INT(cam_left_stop))) value = C3X_FROM_INT(cam_left_stop);
+    ctx->ENTER_INITIALS_FRAME.saved_camera.X = C3X_STF(value);
     // asm 0000346D: 	LDF	R0,R3
     // asm 0000346E: 	FLOAT	zoomin_stop,R4
     // asm 0000346F: 	FLOAT	zoomout_stop,R5
@@ -1170,29 +1695,41 @@ PR2A1:
     // asm 00003479: 	CMPF	R5,R0
     // asm 0000347A: 	LDFLT	R5,R0			;to small
     // asm 0000347B: 	STF	R0,*+AR7(CAMZ)
+    value = C3X_GE(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.X), C3X_FROM_INT(-2500)) ? C3X_FROM_INT(zoomin_stop) : C3X_FROM_INT(zoomout_stop);
+    value = C3X_ADD(C3X_MUL(C3X_SUB(value, C3X_LDF(ctx->ENTER_INITIALS_FRAME.saved_camera.Z)), C3X_IMM_F32(0.2)), C3X_LDF(ctx->ENTER_INITIALS_FRAME.saved_camera.Z));
+    if (C3X_GT(value, C3X_FROM_INT(zoomin_stop))) value = C3X_FROM_INT(zoomin_stop);
+    if (C3X_LT(value, C3X_FROM_INT(zoomout_stop))) value = C3X_FROM_INT(zoomout_stop);
+    ctx->ENTER_INITIALS_FRAME.saved_camera.Z = C3X_STF(value);
     // asm 0000347C: 	LDP	@_CAMERARAD
     // asm 0000347D: 	LDF	@_CAMERARAD,R2
     // asm 0000347E: 	SETDP
     // asm 0000347F: 	NEGF	R2
     // asm 00003480: 	LDI	@MATRIXAI,AR2
     // asm 00003481: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&MATRIXAI, C3X_NEG(C3X_LDF(CAMERARADI.X)));
     // asm 00003482: 	LDI	@MATRIXAI,R2
     // asm 00003483: 	LDI	AR7,AR2
     // asm 00003484: 	ADDI	CAMX,AR2
     // asm 00003485: 	LDI	@CAMERAPOSI,R3
     // asm 00003486: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&ctx->ENTER_INITIALS_FRAME.saved_camera, &MATRIXAI, &CAMERAPOSI);
     // asm 00003487: 	CALL	ADJUST_ROLLERS
+    ADJUST_ROLLERS();
     // asm 00003488: 	SLEEP	1
+    SLEEP(1, 9);
     // asm 0000348A: 	LDI	*+AR7(PLATEOBJ),AR0
     // asm 0000348B: 	LDF	*+AR0(OPOSX),R0
     // asm 0000348C: 	FLOAT	-2500,R1
     // asm 0000348D: 	CMPF	R1,R0
     // asm 0000348E: 	BGE	PR2A2
+    if (C3X_GE(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.X), C3X_FROM_INT(-2500))) goto PR2A2;
     // *ELP CHANGE
     // asm 0000348F: 	ADDF	-0.08,R6	 		;DEACCELERATE (MUST BE TWICE ACCELERATE)
     // *ELP END CHANGE
     // asm 00003490: 	CMPF	0.02,R6
     // asm 00003491: 	LDFN	0.02,R6
+    ctx->ENTER_INITIALS_FRAME.roller_speed = C3X_ADD(ctx->ENTER_INITIALS_FRAME.roller_speed, C3X_IMM_F32(-0.08)); // ;DEACCELERATE (MUST BE TWICE ACCELERATE)
+    if (C3X_LT(ctx->ENTER_INITIALS_FRAME.roller_speed, C3X_IMM_F32(0))) ctx->ENTER_INITIALS_FRAME.roller_speed = C3X_IMM_F32(0.02);
     // ;	ADDF	-0.02,R6	 		;DEACCELERATE (MUST BE TWICE ACCELERATE)
     // ;	CMPF	0.01,R6
     // ;	LDFN	0.01,R6
@@ -1202,11 +1739,13 @@ PR2A2:
     // asm 00003494: 	FLOAT	left_stop,R1
     // asm 00003495: 	CMPF	R1,R0
     // asm 00003496: 	BGE	PR2A1
+    if (C3X_GE(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.X), C3X_FROM_INT(left_stop))) goto PR2A1;
     // ;Flip the plate up on end 90deg
 PR2A3:
     // *ELP CHANGE
     // asm 00003497: 	LDI	@START_HIT,R0
     // asm 00003498: 	BNZ	PR3B
+    if (START_HIT != 0) goto PR3B;
     // *ELP END CHANGE
     // asm 00003499: 	LDI	*+AR7(PLATEOBJ),AR2
     // asm 0000349A: 	LDF	0.15708,R2
@@ -1214,64 +1753,90 @@ PR2A3:
     // asm 0000349C: 	CMPF	HALFPI,R2
     // asm 0000349D: 	LDFGT	HALFPI,R2
     // asm 0000349E: 	STF	R2,*+AR2(ORADX)
+    value = C3X_ADD(C3X_IMM_F32(0.15708), C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->radx));
+    if (C3X_GT(value, C3X_IMM_F32(HALFPI))) value = C3X_IMM_F32(HALFPI);
+    ctx->ENTER_INITIALS_FRAME.plate_obj->radx = C3X_STF(value);
     // asm 0000349F: 	ADDI	OMATRIX,AR2
     // asm 000034A0: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&ctx->ENTER_INITIALS_FRAME.plate_obj->omatrix, value);
     // asm 000034A1: 	LDI	*+AR7(PLATEOBJ),AR2	;Setup the offset for the bottom of the plate
     // asm 000034A2: 	LDF	0,R0
     // asm 000034A3: 	STF	R0,*+AR2(OVELX)
+    ctx->ENTER_INITIALS_FRAME.plate_obj->vel_x = C3X_STF(C3X_IMM_F32(0));
     // asm 000034A4: 	STF	R0,*+AR2(OVELY)
+    ctx->ENTER_INITIALS_FRAME.plate_obj->vel_y = C3X_STF(C3X_IMM_F32(0));
     // asm 000034A5: 	FLOAT	-156,R0
     // asm 000034A6: 	STF	R0,*+AR2(OVELZ)
+    ctx->ENTER_INITIALS_FRAME.plate_obj->vel_z = C3X_STF(C3X_FROM_INT(-156));
     // asm 000034A7: 	LDI	*+AR7(PLATEOBJ),R2
     // asm 000034A8: 	ADDI	OMATRIX,R2
     // asm 000034A9: 	ADDI	OVELX,AR2
     // asm 000034AA: 	LDI	AR2,R3
     // asm 000034AB: 	CALL	MATRIX_MUL
+    MATRIX_MUL((VECTOR*)&ctx->ENTER_INITIALS_FRAME.plate_obj->vel_x,
+               (MATRIX*)&ctx->ENTER_INITIALS_FRAME.plate_obj->omatrix,
+               (VECTOR*)&ctx->ENTER_INITIALS_FRAME.plate_obj->vel_x);
     // asm 000034AC: 	LDI	*+AR7(PLATEOBJ),AR0
     // asm 000034AD: 	FLOAT	PLATE_ZOFF,R0
     // asm 000034AE: 	ADDF	*+AR0(OVELZ),R0
     // asm 000034AF: 	STF	R0,*+AR0(OPOSZ)
+    ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Z = C3X_STF(C3X_ADD(C3X_FROM_INT(PLATE_ZOFF), C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->vel_z)));
     // asm 000034B0: 	FLOAT	610,R0
     // asm 000034B1: 	ADDF	*+AR0(OVELY),R0
     // asm 000034B2: 	STF	R0,*+AR0(OPOSY)
+    ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Y = C3X_STF(C3X_ADD(C3X_FROM_INT(610), C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->vel_y)));
     // asm 000034B3: 	LDF	0,R0			;No x movement
     // asm 000034B4: 	CALL	MOVE_PLAYERS_LETTERS
+    MOVE_PLAYERS_LETTERS(C3X_IMM_F32(0)); // ;No x movement
     // asm 000034B5: 	SLEEP	1
+    SLEEP(1, 10);
     // asm 000034B7: 	LDI	*+AR7(PLATEOBJ),AR0
     // asm 000034B8: 	LDF	*+AR0(ORADX),R2
     // asm 000034B9: 	CMPF	HALFPI,R2
     // asm 000034BA: 	BNE	PR2A3
+    if (!C3X_EQ(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->radx), C3X_IMM_F32(HALFPI))) goto PR2A3;
     // ;Put the plate onto the wall
     // asm 000034BB: 	SONDFX	WIPE4
+    SONDFX(WIPE4);
     // ;	FLOAT	PRESS_LASTY,R0
     // ;	STF	R0,*+AR7(CAMY)
     // ;	FLOAT	PRESS_LASTZ,R0
     // ;	STF	R0,*+AR7(CAMZ)
     // asm 000034BD: 	LDI	PLACE_FRAMES-1,AR5
+    ctx->ENTER_INITIALS_FRAME.place_counter = PLACE_FRAMES - 1;
+PR3:
     // asm 000034BE: PR3
     // asm 000034BE: 	FLOAT	PLACE_FRAMES,R1
     // asm 000034BF: 	LDF	PLACE_ENDRADX,R0
     // asm 000034C0: 	SUBF	HALFPI,R0		;Allready rotated 90deg
     // asm 000034C1: 	CALL	DIV_F
+    value = DIV_F(C3X_SUB(C3X_IMM_F32(PLACE_ENDRADX), C3X_IMM_F32(HALFPI)), C3X_FROM_INT(PLACE_FRAMES));
     // asm 000034C2: 	LDI	*+AR7(PLATEOBJ),AR2
     // asm 000034C3: 	ADDF	*+AR2(ORADX),R0
     // asm 000034C4: 	CMPF	PLACE_ENDRADX,R0
     // asm 000034C5: 	LDFGT	PLACE_ENDRADX,R0
     // asm 000034C6: 	STF	R0,*+AR2(ORADX)
+    value = C3X_ADD(value, C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->radx));
+    if (C3X_GT(value, C3X_IMM_F32(PLACE_ENDRADX))) value = C3X_IMM_F32(PLACE_ENDRADX);
+    ctx->ENTER_INITIALS_FRAME.plate_obj->radx = C3X_STF(value);
     // asm 000034C7: 	LDF	R0,R2
     // asm 000034C8: 	ADDI	OMATRIX,AR2
     // asm 000034C9: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&ctx->ENTER_INITIALS_FRAME.plate_obj->omatrix, value);
     // asm 000034CA: 	LDI	*+AR7(MISPLATEOBJ),AR2
     // asm 000034CB: 	LDI	*+AR7(PLATEOBJ),AR0
     // asm 000034CC: 	LDF	*+AR2(OPOSY),R0
     // asm 000034CD: 	SUBF	*+AR0(OPOSY),R0
     // asm 000034CE: 	FLOAT	AR5,R1
     // asm 000034CF: 	CALL	DIV_F
+    delta = DIV_F(C3X_SUB(C3X_LDF(ctx->ENTER_INITIALS_FRAME.missing_plate_obj->pos.Y), C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Y)), C3X_FROM_INT(ctx->ENTER_INITIALS_FRAME.place_counter));
     // asm 000034D0: 	LDF	R0,R2
     // asm 000034D1: 	ADDF	*+AR0(OPOSY),R0
     // asm 000034D2: 	STF	R0,*+AR0(OPOSY)
+    ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Y), delta));
     // asm 000034D3: 	CMPF	*+AR7(CAMY),R0
     // asm 000034D4: 	BGT	PR3A			;Don't move the camera until the plate is above center
+    if (C3X_GT(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Y), C3X_LDF(ctx->ENTER_INITIALS_FRAME.saved_camera.Y))) goto PR3A; // ;Don't move the camera until the plate is above center
     // asm 000034D5: 	SUBF	*+AR7(CAMY),R0
     // asm 000034D6: 	MPYF	0.20,R0
     // asm 000034D7: 	ADDF	*+AR7(CAMY),R0
@@ -1279,84 +1844,120 @@ PR2A3:
     // asm 000034D9: 	CMPF	R1,R0
     // asm 000034DA: 	LDFLT	R1,R0
     // asm 000034DB: 	STF	R0,*+AR7(CAMY)
+    value = C3X_ADD(C3X_MUL(C3X_SUB(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Y), C3X_LDF(ctx->ENTER_INITIALS_FRAME.saved_camera.Y)), C3X_IMM_F32(0.20)), C3X_LDF(ctx->ENTER_INITIALS_FRAME.saved_camera.Y));
+    if (C3X_LT(value, C3X_FROM_INT(-2150))) value = C3X_FROM_INT(-2150);
+    ctx->ENTER_INITIALS_FRAME.saved_camera.Y = C3X_STF(value);
 PR3A:
     // asm 000034DC: 	LDF	*+AR2(OPOSZ),R0
     // asm 000034DD: 	SUBF	*+AR0(OPOSZ),R0
     // asm 000034DE: 	FLOAT	AR5,R1
     // asm 000034DF: 	CALL	DIV_F
+    delta = DIV_F(C3X_SUB(C3X_LDF(ctx->ENTER_INITIALS_FRAME.missing_plate_obj->pos.Z), C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Z)), C3X_FROM_INT(ctx->ENTER_INITIALS_FRAME.place_counter));
     // asm 000034E0: 	LDF	R0,R2
     // asm 000034E1: 	ADDF	*+AR0(OPOSZ),R0
     // asm 000034E2: 	STF	R0,*+AR0(OPOSZ)
+    ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.Z), delta));
     // asm 000034E3: 	LDF	*+AR2(OPOSX),R0
     // asm 000034E4: 	SUBF	*+AR0(OPOSX),R0
     // asm 000034E5: 	FLOAT	AR5,R1
     // asm 000034E6: 	CALL	DIV_F
+    delta = DIV_F(C3X_SUB(C3X_LDF(ctx->ENTER_INITIALS_FRAME.missing_plate_obj->pos.X), C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.X)), C3X_FROM_INT(ctx->ENTER_INITIALS_FRAME.place_counter));
     // asm 000034E7: 	LDF	R0,R2
     // asm 000034E8: 	ADDF	*+AR0(OPOSX),R0
     // asm 000034E9: 	STF	R0,*+AR0(OPOSX)
+    ctx->ENTER_INITIALS_FRAME.plate_obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.X), delta));
     // asm 000034EA: 	LDI	*+AR7(PLATEOBJ),AR0
     // asm 000034EB: 	LDF	R2,R0
     // asm 000034EC: 	NEGF	R0
     // asm 000034ED: 	CALL	MOVE_PLAYERS_LETTERS
+    MOVE_PLAYERS_LETTERS(C3X_NEG(delta));
     // asm 000034EE: 	FLOAT	ROT_FRAMES,R1		;Pan camera to correct y
     // asm 000034EF: 	LDF	-CAM_RADX,R0
     // asm 000034F0: 	CALL	DIV_F
+    delta = DIV_F(C3X_IMM_F32(-CAM_RADX), C3X_FROM_INT(ROT_FRAMES));
     // asm 000034F1: 	LDP	@_CAMERARAD
     // asm 000034F2: 	LDF	@_CAMERARAD,R2
     // asm 000034F3: 	ADDF	R0,R2
     // asm 000034F4: 	CMPF	-0.01,R2
     // asm 000034F5: 	LDFGT	0,R2
     // asm 000034F6: 	STF	R2,@_CAMERARAD
+    value = C3X_ADD(C3X_LDF(CAMERARADI.X), delta);
+    if (C3X_GT(value, C3X_IMM_F32(-0.01))) value = C3X_IMM_F32(0);
+    CAMERARADI.X = C3X_STF(value);
     // asm 000034F7: 	SETDP
     // asm 000034F8: 	LDI	@CAMERAMATRIXI,AR2
     // asm 000034F9: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&CAMERAMATRIXI, C3X_LDF(CAMERARADI.X));
     // asm 000034FA: 	NEGF	R2
     // asm 000034FB: 	LDI	@MATRIXAI,AR2
     // asm 000034FC: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&MATRIXAI, C3X_NEG(C3X_LDF(CAMERARADI.X)));
     // asm 000034FD: 	LDI	@MATRIXAI,R2
     // asm 000034FE: 	LDI	AR7,AR2
     // asm 000034FF: 	ADDI	CAMX,AR2
     // asm 00003500: 	LDI	@CAMERAPOSI,R3
     // asm 00003501: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&ctx->ENTER_INITIALS_FRAME.saved_camera, &MATRIXAI, &CAMERAPOSI);
     // asm 00003502: 	SLEEP	1
+    SLEEP(1, 11);
     // asm 00003504: 	DBU	AR5,PR3
+    ctx->ENTER_INITIALS_FRAME.place_counter -= 1;
+    if (ctx->ENTER_INITIALS_FRAME.place_counter >= 0) goto PR3;
     // ;Now fly the bolts in
     // asm 00003505: 	LDI	*+AR7(PLACE),R4	;Calculate the first bolts object number
     // asm 00003506: 	MPYI	4,R4
     // asm 00003507: 	ADDI	FIRST_BOLT,R4
     // asm 00003508: 	LDI	3,AR5
+    ctx->ENTER_INITIALS_FRAME.bolt_id = ctx->ENTER_INITIALS_FRAME.place * 4 + FIRST_BOLT;
+    ctx->ENTER_INITIALS_FRAME.bolt_counter = 3;
 PR3B:
     // *ELP CHANGE
     // asm 00003509: 	LDI	@START_HIT,R0
     // asm 0000350A: 	BNZ	PR3BA
+    if (START_HIT != 0) goto PR3BA;
     // *ELP END CHANGE
     // asm 0000350B: 	LDI	R4,R1
     // asm 0000350C: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(ctx->ENTER_INITIALS_FRAME.bolt_id);
     // asm 0000350D: 	BC	PR3BA
+    if (obj == NULL) goto PR3BA;
     // asm 0000350E: 	LDI	AR0,AR4
     // asm 0000350F: 	CREATE	FLY_BOLT,UTIL_C
+    {
+        PROC_CONTEXT* bolt_ctx = NEW_PROC_CONTEXT();
+        bolt_ctx->FLY_BOLT_FRAME.bolt_obj = obj;
+        CREATE(FLY_BOLT, UTIL_C, bolt_ctx);
+    }
     // *ELP CHANGE
     // 	;SLEEP	15
     // asm 00003512: 	SLEEP	6
+    SLEEP(6, 12);
     // *ELP END CHANGE
     // asm 00003514: 	ADDI	1,R4
+    ctx->ENTER_INITIALS_FRAME.bolt_id += 1;
     // asm 00003515: 	DBU	AR5,PR3B
+    ctx->ENTER_INITIALS_FRAME.bolt_counter -= 1;
+    if (ctx->ENTER_INITIALS_FRAME.bolt_counter >= 0) goto PR3B;
 PR3BA:
     // *ELP CHANGE
     // asm 00003516: 	LDI	@START_HIT,R0
     // asm 00003517: 	BNZ	PR5A
+    if (START_HIT != 0) goto PR5A;
     // *ELP END CHANGE
     // ;If not in top 5 skip the pan up
     // asm 00003518: 	LDI	*+AR7(PLACE),R0
     // asm 00003519: 	CMPI	4,R0
     // asm 0000351A: 	BGT	PR5A
+    if (ctx->ENTER_INITIALS_FRAME.place > 4) goto PR5A;
     // ;Continue to pan the camera to the top of the highscore table
 PR4A:
     // *ELP CHANGE
     // asm 0000351B: 	LDI	@START_HIT,R0
     // asm 0000351C: 	BNZ	PR5A
+    if (START_HIT != 0) goto PR5A;
     // *ELP END CHANGE
     // asm 0000351D: 	SLEEP	1
+    SLEEP(1, 13);
     // asm 0000351F: 	LDP	@_CAMERAPOS+Y
     // asm 00003520: 	LDF	@_CAMERAPOS+Y,R0
     // asm 00003521: 	ADDF	-20,R0
@@ -1364,144 +1965,217 @@ PR4A:
     // asm 00003523: 	CMPF	R1,R0
     // asm 00003524: 	LDFLT	R1,R0
     // asm 00003525: 	STF	R0,@_CAMERAPOS+Y
+    value = C3X_ADD(C3X_LDF(CAMERAPOSI.Y), C3X_IMM_F32(-20));
+    if (C3X_LT(value, C3X_FROM_INT(-2150))) value = C3X_FROM_INT(-2150);
+    CAMERAPOSI.Y = C3X_STF(value);
     // asm 00003526: 	SETDP
     // asm 00003527: 	CMPF	R1,R0
     // asm 00003528: 	BNE	PR4A
+    if (!C3X_EQ(value, C3X_FROM_INT(-2150))) goto PR4A;
 PR5A:
     // asm 00003529: 	LDL	plate_darkp,AR2
     // asm 0000352A: 	CALL	PAL_ALLOC_RAW
     // asm 0000352B: 	STI	R0,*+AR7(darkp_pal)
+    ctx->ENTER_INITIALS_FRAME.dark_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(plate_darkp_ROM));
     // asm 0000352C: 	LDL	plate_medp,AR2
     // asm 0000352D: 	CALL	PAL_ALLOC_RAW
     // asm 0000352E: 	STI	R0,*+AR7(medp_pal)
+    ctx->ENTER_INITIALS_FRAME.med_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(plate_medp_ROM));
     // asm 0000352F: 	LDL	plate_lightp,AR2
     // asm 00003530: 	CALL	PAL_ALLOC_RAW
     // asm 00003531: 	STI	R0,*+AR7(lightp_pal)
+    ctx->ENTER_INITIALS_FRAME.light_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(plate_lightp_ROM));
     // asm 00003532: 	LDL	plate_lightp1,AR2
     // asm 00003533: 	CALL	PAL_ALLOC_RAW
     // asm 00003534: 	STI	R0,*+AR7(lightp1_pal)
+    ctx->ENTER_INITIALS_FRAME.light1_pal = PAL_ALLOC_RAW((tPAL*)ROM_PTR(plate_lightp1_ROM));
     // *ELP CHANGE
     // asm 00003535: 	LDI	@START_HIT,R0
     // asm 00003536: 	BNZ	PRESSCODEX2
+    if (START_HIT != 0) goto PRESSCODEX2;
     // *ELP END CHANGE
     // asm 00003537: 	LDI	*+AR7(RACE_NUMBER),R4
     // asm 00003538: 	CREATEC	FLASH_LETTERS_PROC,UTIL_C
+    {
+        PROC_CONTEXT* flash_ctx = NEW_PROC_CONTEXT();
+        flash_ctx->FLASH_LETTERS_PROC.race_number = ctx->ENTER_INITIALS_FRAME.race_number;
+        ctx->ENTER_INITIALS_FRAME.flash_proc = CREATEC(p, FLASH_LETTERS_PROC, UTIL_C, flash_ctx);
+    }
     // asm 0000353B: 	STI	AR0,*+AR7(FLASH_PROC)
     // asm 0000353C: PRESS_CODEX
     // ;	SLEEP	60
     // *ELP CHANGE
     // 	;SLEEP	90
     // asm 0000353C: 	SLEEP	30
+    SLEEP(30, 14);
     // *ELP END CHANGE
     // asm 0000353E: 	SOND1	CLOSING
+    SOND1(CLOSING);
 PRESSCODEX2:
     // *ELP CHANGE
     // 	;CREATE	UNFOLDMAP_NOPAL,UTIL_C
     // asm 00003540: 	CREATE	UNFOLDMAP,UTIL_C
+    CREATE(UNFOLDMAP, UTIL_C, NULL);
     // 	;SLEEP	40
     // asm 00003543: 	SLEEP	20
+    SLEEP(20, 15);
     // *ELP END CHANGE
     // asm 00003545: 	LDI	*+AR7(FLASH_PROC),AR2
     // asm 00003546: 	CALL	PRC_KILL
+    PRC_KILL(ctx->ENTER_INITIALS_FRAME.flash_proc);
     // asm 00003547: 	LDL	press_PALETTES,AR2
     // asm 00003548: 	CALL	dealloc_section
+    dealloc_section(press_PALETTES);
     // asm 00003549: 	LDI	*+AR7(GREY_PAL),AR2
     // asm 0000354A: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(ctx->ENTER_INITIALS_FRAME.grey_pal);
     // asm 0000354B: 	LDI	*+AR7(WHITE_PAL),AR2
     // asm 0000354C: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(ctx->ENTER_INITIALS_FRAME.white_pal);
     // asm 0000354D: 	LDI	*+AR7(darkp_pal),AR2
     // asm 0000354E: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(ctx->ENTER_INITIALS_FRAME.dark_pal);
     // asm 0000354F: 	LDI	*+AR7(medp_pal),AR2
     // asm 00003550: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(ctx->ENTER_INITIALS_FRAME.med_pal);
     // asm 00003551: 	LDI	*+AR7(lightp_pal),AR2
     // asm 00003552: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(ctx->ENTER_INITIALS_FRAME.light_pal);
     // asm 00003553: 	LDI	*+AR7(lightp1_pal),AR2
     // asm 00003554: 	CALL	PAL_DELETE_RAW
+    PAL_DELETE_RAW(ctx->ENTER_INITIALS_FRAME.light1_pal);
     // asm 00003555: 	LDI	@_MODE,R0
     // asm 00003556: 	ANDN	MMODE|MINFIN|MHS,R0
     // asm 00003557: 	OR	MBONUS,R0
     // asm 00003558: 	STI	R0,@_MODE
+    _MODE = (_MODE & ~(MMODE | MINFIN | MHS)) | MBONUS;
     // asm 00003559: 	RETP
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRESS_CODE_ENTRY", 0, 0);
-    UNIMPL();
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "PRESS_CODE", 0, 0);
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-#define FRAME 0x85
 #define SCROLLB 0x86
 #define PRESS 0x87
 #define PRESSB 0x88
 #define ARMS 0x89
 #define PLATE 0x8B
-#define MARQLET 0x8C
-#define PLATE_ZOFF (ROLLER_ZOFF - 140)
 
 static void INIT_PRESS_OBJECTS(void) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+    OBJ* obj;
+    OBJ* next_obj;
+    int object_type;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 0000355D: 	LDI	9h,R1
     // asm 0000355E: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(0x09);
     // asm 0000355F: 	LDI	AR0,AR2
     // asm 00003560: 	CALL	OBJ_PULL
+    OBJ_PULL(obj);
     // asm 00003561: 	LDI	81h,R1
     // asm 00003562: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(0x81);
     // asm 00003563: 	LDI	AR0,AR2
     // asm 00003564: 	CALL	OBJ_DELETE
+    OBJ_DELETE(obj);
     // asm 00003565: 	LDI	82h,R1
     // asm 00003566: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(0x82);
     // asm 00003567: 	LDI	AR0,AR2
     // asm 00003568: 	CALL	OBJ_DELETE
+    OBJ_DELETE(obj);
     // asm 00003569: 	LDI	83h,R1
     // asm 0000356A: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(0x83);
     // asm 0000356B: 	LDI	AR0,AR2
     // asm 0000356C: 	CALL	OBJ_DELETE
+    OBJ_DELETE(obj);
     // asm 0000356D: 	LDI	@OACTIVEI,AR0
     // asm 0000356E: 	LDI	*AR0,AR5
+    obj = OACTIVE;
 FPO:
     // asm 0000356F: LDI	AR5,R0
     // asm 00003570: 	BZ	FPOX
+    if (obj == NULL) {
+        goto FPOX;
+    }
     // asm 00003571: 	LDI	R0,AR0
     // asm 00003572: 	LDI	*AR0,AR5
+    next_obj = obj->link;
     // asm 00003573: 	LDI	*+AR0(OID),R0
     // asm 00003574: 	AND	0FFh,R0
+    object_type = (int)(obj->id & 0xff);
     // asm 00003575: 	CMPI	PRESS,R0
     // asm 00003576: 	BNE	FPO1
+    if (object_type != PRESS) {
+        goto FPO1;
+    }
     // asm 00003577: 	STI	AR0,*+AR7(PRESSOBJ)
+    ctx->ENTER_INITIALS_FRAME.press_obj = obj;
     // asm 00003578: 	LDF	PRESS_RADX,R2
     // asm 00003579: 	STF	R2,*+AR0(ORADX)
+    obj->radx = C3X_STF(C3X_IMM_F32(PRESS_RADX));
     // asm 0000357A: 	LDI	AR0,AR2
     // asm 0000357B: 	ADDI	OMATRIX,AR2
     // asm 0000357C: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&obj->omatrix, C3X_LDF(obj->radx));
     // asm 0000357D: 	BR	FPLE
+    goto FPLE;
 FPO1:
     // asm 0000357E: 	LDI	*+AR0(OID),R0
     // asm 0000357F: 	AND	0FFh,R0
     // asm 00003580: 	CMPI	PRESSB,R0
     // asm 00003581: 	BNE	FPO1A
+    if (object_type != PRESSB) {
+        goto FPO1A;
+    }
     // asm 00003582: 	STI	AR0,*+AR7(BPRESSOBJ)
+    ctx->ENTER_INITIALS_FRAME.bottom_press_obj = obj;
     // asm 00003583: 	BR	FPLE
+    goto FPLE;
 FPO1A:
     // asm 00003584: 	CMPI	PLATE,R0
     // asm 00003585: 	BNE	FPO3
+    if (object_type != PLATE) {
+        goto FPO3;
+    }
     // asm 00003586: 	STI	AR0,*+AR7(PLATEOBJ)
+    ctx->ENTER_INITIALS_FRAME.plate_obj = obj;
     // asm 00003587: 	LDF	*+AR0(OPOSZ),R2
     // asm 00003588: 	FLOAT	PLATE_ZOFF,R0
     // asm 00003589: 	ADDF	R0,R2
     // asm 0000358A: 	STF	R2,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_FROM_INT(PLATE_ZOFF)));
     // asm 0000358B: 	BR	FPLE
+    goto FPLE;
 FPO3:
     // asm 0000358C: 	CMPI	ARMS,R0
     // asm 0000358D: 	BNE	FPO4
+    if (object_type != ARMS) {
+        goto FPO4;
+    }
     // asm 0000358E: 	STI	AR0,*+AR7(ARMSOBJ)
+    ctx->ENTER_INITIALS_FRAME.arms_obj = obj;
     // asm 0000358F: 	BR	FPLE
+    goto FPLE;
 FPO4:
     // asm 00003590: 	CMPI	SCROLLB,R0
     // asm 00003591: 	BNE	FPO6
+    if (object_type != SCROLLB) {
+        goto FPO6;
+    }
     // asm 00003592: 	LDI	*+AR7(WHITE_PAL),R2	;This is the palette for the letters
     // asm 00003593: 	STI	R2,*+AR0(OPAL)
+    obj->palette = (u32)ctx->ENTER_INITIALS_FRAME.white_pal; // ;This is the palette for the letters
     // asm 00003594: 	STI	AR0,*+AR7(SCROLLBOBJ)
+    ctx->ENTER_INITIALS_FRAME.scroll_bar_obj = obj;
     // asm 00003595: 	BR	FPLE
+    goto FPLE;
 FPO6:
     // ;	CMPI	FRAME,R0
     // ;	BNE	FPO7
@@ -1510,12 +2184,15 @@ FPO6:
     // asm 00003597: FPO7
 FPLE:
     // asm 00003597: 	BR	FPO
+    obj = next_obj;
+    goto FPO;
 FPOX:
     // asm 00003598: 	CALL	MOVE_PRESSB
+    MOVE_PRESSB();
     // asm 00003599: 	CALL	MAKE_NEW_MARQ
+    MAKE_NEW_MARQ();
     // asm 0000359A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_PRESS_OBJECTS", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1524,6 +2201,10 @@ FPOX:
  */
 
 static void MAKE_NEW_MARQ(void) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // ;	LDI	5,R1
     // ;	CALL	OBJ_FIND
     // ;	RETSC
@@ -1567,101 +2248,175 @@ static void MAKE_NEW_MARQ(void) {
     // asm 000035A0: 	FLOAT	-341,R4
     // asm 000035A1: 	LDI	MARQLET,R6	;ID
     // asm 000035A2: 	CALL	PRINT3D
+    PRINT3D(LEG_NAMESI[ctx->ENTER_INITIALS_FRAME.race_number],
+            C3X_FROM_INT(-24),
+            C3X_FROM_INT(-710 + 83),
+            C3X_FROM_INT(-341),
+            MARQLET);
     // asm 000035A3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_NEW_MARQ", 0, 0);
-    UNIMPL();
 }
 
 static void MOVE_PRESSB(void) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+    OBJ* press_obj;
+    OBJ* bottom_press_obj;
+    OBJ* scroll_bar_obj;
+    c3x_reg_t angle;
+    c3x_reg_t radius;
+    c3x_reg_t translated;
+    c3x_reg_t lower_limit;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000035A4: 	LDI	*+AR7(PRESSOBJ),AR0
+    press_obj = ctx->ENTER_INITIALS_FRAME.press_obj;
     // asm 000035A5: 	LDI	*+AR7(BPRESSOBJ),AR2		;The PRESS OWNS the plate
+    bottom_press_obj = ctx->ENTER_INITIALS_FRAME.bottom_press_obj; // ;The PRESS OWNS the plate
     // asm 000035A6: 	LDF	*+AR0(ORADX),R2		;Get rotation of the PRESS
+    angle = C3X_LDF(press_obj->radx); // ;Get rotation of the PRESS
     // asm 000035A7: 	ADDI	OMATRIX,AR2
     // asm 000035A8: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&bottom_press_obj->omatrix, angle);
     // asm 000035A9: 	LDF	*+AR0(ORADX),R2		;Get rotation of the PRESS
+    angle = C3X_LDF(press_obj->radx); // ;Get rotation of the PRESS
     // asm 000035AA: 	LDI	*+AR7(SCROLLBOBJ),AR2
+    scroll_bar_obj = ctx->ENTER_INITIALS_FRAME.scroll_bar_obj;
     // asm 000035AB: 	ADDI	OMATRIX,AR2
     // asm 000035AC: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&scroll_bar_obj->omatrix, angle);
     // asm 000035AD: 	LDI	*+AR7(BPRESSOBJ),AR2		;The PRESS OWNS the plate
     // asm 000035AE: 	LDI	*+AR7(SCROLLBOBJ),AR3
     // asm 000035AF: 	FLOAT	PRESS_DIAM,R1
+    radius = C3X_FROM_INT(PRESS_DIAM);
     // asm 000035B0: 	ADDF	60,R1
+    radius = C3X_ADD(radius, C3X_IMM_F32(60));
     // asm 000035B1: 	LDF	*+AR0(ORADX),R2		;Get rotation of the PRESS
+    angle = C3X_LDF(press_obj->radx); // ;Get rotation of the PRESS
     // asm 000035B2: 	STF	R2,*+AR2(ORADX)
+    bottom_press_obj->radx = C3X_STF(angle);
     // asm 000035B3: 	STF	R2,*+AR3(ORADX)
+    scroll_bar_obj->radx = C3X_STF(angle);
     // asm 000035B4: 	CALL	_SINE
     // asm 000035B5: 	NEGF	R0
     // asm 000035B6: 	MPYF3	R0,R1,R3
+    translated = C3X_MUL(C3X_NEG(_SINE(angle)), radius);
     // asm 000035B7: 	ADDF	*+AR0(OPOSZ),R3		;Translated and offset Z
+    translated = C3X_ADD(translated, C3X_LDF(press_obj->pos.Z)); // ;Translated and offset Z
     // asm 000035B8: 	STF	R3,*+AR2(OPOSZ)
+    bottom_press_obj->pos.Z = C3X_STF(translated);
     // asm 000035B9: 	ADDF	1,R3			;Ensure that the letters are behind pressb
+    translated = C3X_ADD(translated, C3X_IMM_F32(1)); // ;Ensure that the letters are behind pressb
     // asm 000035BA: 	STF	R3,*+AR3(OPOSZ)
+    scroll_bar_obj->pos.Z = C3X_STF(translated);
     // asm 000035BB: 	CALL	_COSI
     // asm 000035BC: 	MPYF3	R0,R1,R3
+    translated = C3X_MUL(_COSI(angle), radius);
     // asm 000035BD: 	FLOAT	ARM_BOTTOM+PRESS_DIAM,R2
+    lower_limit = C3X_FROM_INT(ARM_BOTTOM + PRESS_DIAM);
     // asm 000035BE: 	ADDF	*+AR0(OPOSY),R3
+    translated = C3X_ADD(translated, C3X_LDF(press_obj->pos.Y));
     // asm 000035BF: 	CMPF	R2,R3
     // asm 000035C0: 	LDFGT	R2,R3
+    if (C3X_GT(translated, lower_limit)) {
+        translated = lower_limit;
+    }
     // asm 000035C1: 	STF	R3,*+AR2(OPOSY)		;Translated And OFFSET Y
+    bottom_press_obj->pos.Y = C3X_STF(translated); // ;Translated And OFFSET Y
     // asm 000035C2: 	STF	R3,*+AR3(OPOSY)		;Translated And OFFSET Y
+    scroll_bar_obj->pos.Y = C3X_STF(translated); // ;Translated And OFFSET Y
     // asm 000035C3: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVE_PRESSB", 0, 0);
-    UNIMPL();
 }
 
 static void MOVE_BIGLET_PRESS(void) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+    OBJ* press_obj;
+    OBJ* first_obj;
+    OBJ* obj;
+    c3x_reg_t angle;
+    c3x_reg_t position;
+    int index;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 000035C4: 	LDI	*+AR7(PRESSOBJ),AR0
+    press_obj = ctx->ENTER_INITIALS_FRAME.press_obj;
     // asm 000035C5: 	LDI	*+AR7(INIT0),AR2
+    first_obj = ctx->ENTER_INITIALS_FRAME.initial_objs[0];
     // asm 000035C6: 	LDF	*+AR0(ORADX),R2		;Get rotation of the PRESS
     // asm 000035C7: 	ABSF	R2
     // asm 000035C8: 	ADDF	-HALFPI,R2
+    angle = C3X_ADD(C3X_ABS(C3X_LDF(press_obj->radx)), C3X_IMM_F32(-HALFPI));
     // asm 000035C9: 	STF	R2,*+AR2(ORADX)
+    first_obj->radx = C3X_STF(angle);
     // asm 000035CA: 	PUSH	AR2
     // asm 000035CB: 	LDF	*+AR0(ORADX),R2		;Get rotation of the PRESS
     // asm 000035CC: 	LDI	@MATRIXAI,AR2
     // asm 000035CD: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&MATRIXAI, C3X_LDF(press_obj->radx));
     // asm 000035CE: 	LDI	@VECTORAI,AR1
     // asm 000035CF: 	LDF	0,R2
     // asm 000035D0: 	STF	R2,*AR1
+    VECTORAI.X = C3X_STF(C3X_IMM_F32(0));
     // asm 000035D1: 	FLOAT	PRESS_DIAM+60+13,R2
     // asm 000035D2: 	STF	R2,*+AR1(1)
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(PRESS_DIAM + 60 + 13));
     // asm 000035D3: 	FLOAT	-98,R2
     // asm 000035D4: 	STF	R2,*+AR1(2)
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(-98));
     // asm 000035D5: 	LDI	@VECTORAI,AR2
     // asm 000035D6: 	LDI	@MATRIXAI,R2
     // asm 000035D7: 	LDI	AR2,R3
     // asm 000035D8: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
     // asm 000035D9: 	POP	AR2
     // asm 000035DA: 	LDI	@VECTORAI,AR1
     // asm 000035DB: 	FLOAT	ARM_BOTTOM+PRESS_DIAM+13,R2
     // asm 000035DC: 	LDF	*+AR0(OPOSY),R3
     // asm 000035DD: 	ADDF	*+AR1(1),R3
+    position = C3X_ADD(C3X_LDF(press_obj->pos.Y), C3X_LDF(VECTORAI.Y));
     // asm 000035DE: 	CMPF	R2,R3
     // asm 000035DF: 	LDFGT	R2,R3
+    if (C3X_GT(position, C3X_FROM_INT(ARM_BOTTOM + PRESS_DIAM + 13))) {
+        position = C3X_FROM_INT(ARM_BOTTOM + PRESS_DIAM + 13);
+    }
     // asm 000035E0: 	STF	R3,*+AR2(OPOSY)		;Translated And OFFSET Y
+    first_obj->pos.Y = C3X_STF(position); // ;Translated And OFFSET Y
     // asm 000035E1: 	LDF	*+AR0(OPOSZ),R3
     // asm 000035E2: 	ADDF	*+AR1(2),R3
+    position = C3X_ADD(C3X_LDF(press_obj->pos.Z), C3X_LDF(VECTORAI.Z));
     // asm 000035E3: 	STF	R3,*+AR2(OPOSZ)		;Translated And OFFSET Z
+    first_obj->pos.Z = C3X_STF(position); // ;Translated And OFFSET Z
     // asm 000035E4: 	LDI	*+AR7(INIT0),AR0	;Now use the first letter to set the rest
     // asm 000035E5: 	LDI	0,R4
+    index = 0;
 MPB:
     // asm 000035E6: 	LDI	INIT0,IR0
     // asm 000035E7: 	ADDI	R4,IR0
     // asm 000035E8: 	LDI	*+AR7(IR0),AR2
+    obj = ctx->ENTER_INITIALS_FRAME.initial_objs[index];
     // asm 000035E9: 	LDF	*+AR0(OPOSY),R3		;Translated and offset Y
     // asm 000035EA: 	STF	R3,*+AR2(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_LDF(first_obj->pos.Y));
     // asm 000035EB: 	LDF	*+AR0(OPOSZ),R3		;Translated and offset Z
     // asm 000035EC: 	STF	R3,*+AR2(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_LDF(first_obj->pos.Z));
     // asm 000035ED: 	LDF	*+AR0(ORADX),R2		;Get rotation of the PRESS
     // asm 000035EE: 	STF	R2,*+AR2(ORADX)
+    obj->radx = C3X_STF(C3X_LDF(first_obj->radx));
     // asm 000035EF: 	ADDI	OMATRIX,AR2
     // asm 000035F0: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&obj->omatrix, C3X_LDF(obj->radx));
     // asm 000035F1: 	ADDI	1,R4
+    index += 1;
     // asm 000035F2: 	CMPI	3,R4
     // asm 000035F3: 	BNE	MPB
+    if (index != 3) {
+        goto MPB;
+    }
     // asm 000035F4: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVE_BIGLET_PRESS", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1720,27 +2475,49 @@ static int SCROLLBTAB[] = {
 };
 
 static void POS_SCROLLB(void) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+    OBJ* obj;
+    c3x_reg_t position;
+    int selection;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 0000361B: 	LDI	*+AR7(SCROLLBOBJ),AR2
+    obj = ctx->ENTER_INITIALS_FRAME.scroll_bar_obj;
     // asm 0000361C: 	LDI	@POSE,R2		;POSITION of the STEERING WHEEL
+    selection = POSE; // ;POSITION of the STEERING WHEEL
     // asm 0000361D: 	CMPI	LASTCHAR,R2
     // asm 0000361E: 	LDIGT	LASTCHAR,R2
+    if (selection > LASTCHAR) {
+        selection = LASTCHAR;
+    }
     // asm 0000361F: 	LDI	@SCROLLBTABI,AR1
     // asm 00003620: 	ADDI	R2,AR1
     // asm 00003621: 	FLOAT	*AR1,R2
+    position = C3X_FROM_INT(SCROLLBTABI[selection]);
     // asm 00003622: 	ADDF	-24,R2
+    position = C3X_ADD(position, C3X_IMM_F32(-24));
     // asm 00003623: 	SUBF	*+AR2(OPOSX),R2
+    position = C3X_SUB(position, C3X_LDF(obj->pos.X));
     // asm 00003624: 	MPYF	0.50,R2
+    position = C3X_MUL(position, C3X_IMM_F32(0.50));
     // asm 00003625: 	ADDF	*+AR2(OPOSX),R2
+    position = C3X_ADD(position, C3X_LDF(obj->pos.X));
     // asm 00003626: 	STF	R2,*+AR2(OPOSX)
+    obj->pos.X = C3X_STF(position);
     // asm 00003627: 	LDI	@POSE,R2		;POSITION of the STEERING WHEEL
     // asm 00003628: 	CMPI	*+AR2(OVELX),R2
     // asm 00003629: 	BEQ	POSBX
+    if (POSE == obj->vel_x_int) {
+        goto POSBX;
+    }
     // asm 0000362A: 	STI	R2,*+AR2(OVELX)
+    obj->vel_x_int = POSE;
     // asm 0000362B: 	SONDFX	LETTER_RIGHT
+    SONDFX(LETTER_RIGHT);
 POSBX:
     // asm 0000362D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "POS_SCROLLB", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1753,33 +2530,51 @@ POSBX:
 #define ROLLER_GROUP 0x400
 
 static void ADJUST_ROLLERS(void) {
+    c3x_reg_t camera_x;
+    c3x_reg_t roller_index;
+    c3x_reg_t target_x;
+    OBJ* roller;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 0000362E: 	LDP	@_CAMERAPOS
     // asm 0000362F: 	LDF	@_CAMERAPOS,R4
     // asm 00003630: 	SETDP
     // asm 00003631: 	LDF	0,R3
+    camera_x = C3X_LDF(CAMERAPOSI.X);
+    roller_index = C3X_IMM_F32(0);
 ADJRL:
     // asm 00003632: 	FLOAT	246,R2
     // asm 00003633: 	MPYF	R3,R2
     // asm 00003634: 	ADDF	R4,R2
+    target_x = C3X_ADD(C3X_MUL(C3X_FROM_INT(246), roller_index), camera_x);
     // asm 00003635: 	CALL	FIND_ROLLER
+    roller = FIND_ROLLER(target_x);
     // asm 00003636: 	FLOAT	ROLLER_ZOFF,R2
     // asm 00003637: 	ADDF	R3,R2
     // asm 00003638: 	ADDF	-11,R2
     // asm 00003639: 	STF	R2,*+AR2(OPOSZ)
+    roller->pos.Z = C3X_STF(C3X_ADD(C3X_ADD(C3X_FROM_INT(ROLLER_ZOFF), roller_index), C3X_IMM_F32(-11)));
     // asm 0000363A: 	FLOAT	-246,R2
     // asm 0000363B: 	MPYF	R3,R2
     // asm 0000363C: 	ADDF	R4,R2
+    target_x = C3X_ADD(C3X_MUL(C3X_FROM_INT(-246), roller_index), camera_x);
     // asm 0000363D: 	CALL	FIND_ROLLER
+    roller = FIND_ROLLER(target_x);
     // asm 0000363E: 	FLOAT	ROLLER_ZOFF,R2
     // asm 0000363F: 	ADDF	R3,R2
     // asm 00003640: 	ADDF	-11,R2
     // asm 00003641: 	STF	R2,*+AR2(OPOSZ)
+    roller->pos.Z = C3X_STF(C3X_ADD(C3X_ADD(C3X_FROM_INT(ROLLER_ZOFF), roller_index), C3X_IMM_F32(-11)));
     // asm 00003642: 	ADDF	1,R3
+    roller_index = C3X_ADD(roller_index, C3X_IMM_F32(1));
     // asm 00003643: 	CMPF	7,R3
     // asm 00003644: 	BNE	ADJRL
+    if (!C3X_EQ(roller_index, C3X_IMM_F32(7))) {
+        goto ADJRL;
+    }
     // asm 00003645: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ADJUST_ROLLERS", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1789,27 +2584,46 @@ ADJRL:
  *	 RETURNS	AR2 points to closest roller
  */
 
-static void FIND_ROLLER(void) {
+static OBJ* FIND_ROLLER(c3x_reg_t x /*R2*/) {
+    OBJ* obj;
+    OBJ* closest;
+    c3x_reg_t closest_distance;
+    c3x_reg_t distance;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00003646: 	PUSH	R3			;R3 is used by the routine that calls this
     // asm 00003647: 	PUSHF	R3
     // asm 00003648: 	LDI	ROLLER_GROUP,R1			;Roller Group
     // asm 00003649: 	CALL	OBJ_GFIND
+    obj = OBJ_GFIND(ROLLER_GROUP);
     // asm 0000364A: 	FLOAT	32000,R3		;ANY large number will do
     // asm 0000364B: 	LDI	AR0,AR2			;Make sure AR2 points to something
+    closest_distance = C3X_FROM_INT(32000); // ;ANY large number will do
+    closest = obj; // ;Make sure AR2 points to something
 FRL:
     // asm 0000364C: 	LDF	*+AR0(OPOSX),R0
     // asm 0000364D: 	SUBF	R2,R0
     // asm 0000364E: 	ABSF	R0
+    distance = C3X_ABS(C3X_SUB(C3X_LDF(obj->pos.X), x));
     // asm 0000364F: 	CMPF	R3,R0
     // asm 00003650: 	LDFLT	R0,R3
     // asm 00003651: 	LDILT	AR0,AR2
+    if (C3X_LT(distance, closest_distance)) {
+        closest_distance = distance;
+        closest = obj;
+    }
     // asm 00003652: 	CALL	OBJ_GFIND_NEXT
+    obj = OBJ_GFIND_NEXT(obj, ROLLER_GROUP);
     // asm 00003653: 	BNC	FRL
+    if (obj != NULL) {
+        goto FRL;
+    }
     // asm 00003654: 	POPF	R3
     // asm 00003655: 	POP	R3
     // asm 00003656: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_ROLLER", 0, 0);
-    UNIMPL();
+    return closest;
 }
 
 // *----------------------------------------------------------------------------
@@ -1817,30 +2631,47 @@ FRL:
 // *----------------------------------------------------------------------------
 #define ROLLER_DIAM 111
 
-static void SPIN_ROLLERS(void) {
+static void SPIN_ROLLERS(c3x_reg_t amount /*R0*/) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+    OBJ* obj;
+    c3x_reg_t angle;
+    c3x_reg_t distance;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00003657: 	LDI	ROLLER_GROUP,R1		;Roller group
     // asm 00003658: 	CALL	OBJ_GFIND
+    obj = OBJ_GFIND(ROLLER_GROUP);
 SR0:
     // asm 00003659: 	LDF	*+AR0(ORADZ),R2
     // asm 0000365A: 	ADDF	R0,R2
     // asm 0000365B: 	STF	R2,*+AR0(ORADZ)
+    angle = C3X_ADD(C3X_LDF(obj->radz), amount);
+    obj->radz = C3X_STF(angle);
     // asm 0000365C: 	LDI	AR0,AR2
     // asm 0000365D: 	ADDI	OMATRIX,AR2
     // asm 0000365E: 	CALL	FIND_ZMATRIX
+    FIND_ZMATRIX(&obj->omatrix, angle);
     // asm 0000365F: 	CALL	OBJ_GFIND_NEXT
+    obj = OBJ_GFIND_NEXT(obj, ROLLER_GROUP);
     // asm 00003660: 	BNC	SR0
+    if (obj != NULL) {
+        goto SR0;
+    }
     // ;NOW move the plate
     // asm 00003661: 	LDI	*+AR7(PLATEOBJ),AR0
     // asm 00003662: 	FLOAT	ROLLER_DIAM,R1
     // asm 00003663: 	MPYF	R1,R0		;R = 111, R0 = RADS rotated
     // 				;Circumfrence = 2*PI*R NOTE R0=2PI/THETA
+    distance = C3X_MUL(C3X_FROM_INT(ROLLER_DIAM), amount); // ;R = 111, R0 = RADS rotated
     // asm 00003664: 	LDF	*+AR0(OPOSX),R2
     // asm 00003665: 	SUBF	R0,R2
     // asm 00003666: 	STF	R2,*+AR0(OPOSX)
+    ctx->ENTER_INITIALS_FRAME.plate_obj->pos.X = C3X_STF(C3X_SUB(C3X_LDF(ctx->ENTER_INITIALS_FRAME.plate_obj->pos.X), distance));
     // asm 00003667: 	CALL	MOVE_PLAYERS_LETTERS
+    MOVE_PLAYERS_LETTERS(distance);
     // asm 00003668: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SPIN_ROLLERS", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1850,83 +2681,139 @@ SR0:
  *
  */
 
-static void MOVE_PLAYERS_LETTERS(void) {
+static void MOVE_PLAYERS_LETTERS(c3x_reg_t x_amount /*R0*/) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+    OBJ* obj;
+    OBJ* plate_obj;
+    int group_bit;
+    c3x_reg_t angle;
+    c3x_reg_t y;
+    c3x_reg_t z;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00003669: 	PUSH	R6
     // asm 0000366A: 	PUSHF	R6
     // asm 0000366B: 	LDI	*+AR7(PLACE),R2
     // asm 0000366C: 	ADDI	16,R2
     // asm 0000366D: 	LDI	1,R1
     // asm 0000366E: 	LSH	R2,R1
+    group_bit = 1 << (ctx->ENTER_INITIALS_FRAME.place + 16);
     // asm 0000366F: 	CALL	OBJ_GFIND
+    obj = OBJ_GFIND(group_bit);
     // asm 00003670: 	BC	MPLX			;They haven't been made yet
+    if (obj == NULL) {
+        goto MPLX; // ;They haven't been made yet
+    }
     // asm 00003671: 	LDI	*+AR7(PLATEOBJ),AR1
+    plate_obj = ctx->ENTER_INITIALS_FRAME.plate_obj;
     // asm 00003672: 	LDF	*+AR1(ORADX),R2
     // asm 00003673: 	ADDF	HALFPI,R2
+    angle = C3X_ADD(C3X_LDF(plate_obj->radx), C3X_IMM_F32(HALFPI));
     // asm 00003674: 	FLOAT	LETTER_YOFF,R3
     // asm 00003675: 	ADDF	*+AR1(OPOSY),R3
+    y = C3X_ADD(C3X_FROM_INT(LETTER_YOFF), C3X_LDF(plate_obj->pos.Y));
     // asm 00003676: 	LDF	*+AR1(OPOSZ),R4
     // asm 00003677: 	SUBF	1,R4			;Make sure the letters are in front
+    z = C3X_SUB(C3X_LDF(plate_obj->pos.Z), C3X_IMM_F32(1)); // ;Make sure the letters are in front
 MPL1:
     // asm 00003678: 	LDF	*+AR0(OPOSX),R5
     // asm 00003679: 	SUBF	R0,R5
     // asm 0000367A: 	STF	R5,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(C3X_SUB(C3X_LDF(obj->pos.X), x_amount));
     // asm 0000367B: 	STF	R3,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(y);
     // asm 0000367C: 	STF	R4,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(z);
     // asm 0000367D: 	LDF	*+AR0(ORADX),R6
     // asm 0000367E: 	CMPF	-PI,R6
     // asm 0000367F: 	BEQ	MPL2
+    if (C3X_EQ(C3X_LDF(obj->radx), C3X_IMM_F32(-PI))) {
+        goto MPL2;
+    }
     // asm 00003680: 	LDI	AR0,AR2
     // asm 00003681: 	ADDI	OMATRIX,AR2
     // asm 00003682: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&obj->omatrix, angle);
 MPL2:
     // asm 00003683: 	CALL	OBJ_GFIND_NEXT
+    obj = OBJ_GFIND_NEXT(obj, group_bit);
     // asm 00003684: 	BNC	MPL1
+    if (obj != NULL) {
+        goto MPL1;
+    }
 MPLX:
     // asm 00003685: 	POPF	R6
     // asm 00003686: 	POP	R6
     // asm 00003687: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MOVE_PLAYERS_LETTERS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 static void MAKE_PLAYERS_PLATE(void) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+    word_addr_t addr;
+    RACEENTRY entry;
+    int letters[3];
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00003688: 	LDI	*+AR7(RACE_NUMBER),R6			;Race number
     // asm 00003689: 	LDI	*+AR7(PLACE),R7				;Entry number
     // asm 0000368A: 	CALL	GET_TABLE_ADDR
+    addr = GET_TABLE_ADDR(ctx->ENTER_INITIALS_FRAME.race_number, ctx->ENTER_INITIALS_FRAME.place);
     // asm 0000368B: 	CALL	TABLE_ENTRY_READ
+    entry = TABLE_ENTRY_READ(&addr);
     // asm 0000368C: 	STI	R1,*+AR7(LETTER0)
+    letters[0] = entry.init1;
     // asm 0000368D: 	STI	R2,*+AR7(LETTER1)
+    letters[1] = entry.init2;
     // asm 0000368E: 	STI	R3,*+AR7(LETTER2)
+    letters[2] = entry.init3;
     // asm 0000368F: 	LDI	*+AR7(PLATEOBJ),AR0
     // asm 00003690: 	LDI	*+AR7(PLACE),R1
     // asm 00003691: 	CALL	CREATE_LETTERS
+    CREATE_LETTERS(ctx->ENTER_INITIALS_FRAME.plate_obj, ctx->ENTER_INITIALS_FRAME.place,
+                   letters, ctx->ENTER_INITIALS_FRAME.white_pal);
     // asm 00003692: 	LDF	0,R0
     // asm 00003693: 	CALL	MOVE_PLAYERS_LETTERS
+    MOVE_PLAYERS_LETTERS(C3X_IMM_F32(0));
     // asm 00003694: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MAKE_PLAYERS_PLATE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
-#define FIRST_BOLT 0x30
-
 static void INI_PLAYERS_BOLTS(void) {
+    PROC_CONTEXT* ctx = &CURRENT_PROC->ctx;
+    OBJ* obj;
+    int object_id;
+    int count;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00003695: 	LDI	*+AR7(PLACE),R1	;Calculate the first bolts object number
     // asm 00003696: 	MPYI	4,R1
     // asm 00003697: 	ADDI	FIRST_BOLT,R1
+    object_id = ctx->ENTER_INITIALS_FRAME.place * 4 + FIRST_BOLT;
     // asm 00003698: 	LDI	3,AR5
+    count = 3;
+IPB1:
     // asm 00003699: IPB1
     // asm 00003699: 	CALL	OBJ_FIND
+    obj = OBJ_FIND(object_id);
     // asm 0000369A: 	BC	IPBX
+    if (obj == NULL) goto IPBX;
     // asm 0000369B: 	FLOAT	-2500,R0
     // asm 0000369C: 	STF	R0,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(-2500));
     // asm 0000369D: 	ADDI	1,R1
+    object_id += 1;
     // asm 0000369E: 	DBU	AR5,IPB1
+    count -= 1;
+    if (count >= 0) goto IPB1;
 IPBX:
     // asm 0000369F: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INI_PLAYERS_BOLTS", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -1934,28 +2821,52 @@ IPBX:
  *PROC 	FLY BOLT
  *
  */
-static void FLY_BOLT(void) {
+static void FLY_BOLT(PROC* p) {
+    OBJ* obj;
+    c3x_reg_t value;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 000036A0: 	SONDFX	DD2
+    SONDFX(DD2);
     // asm 000036A2: 	LDI	15,AR5
+    p->ctx.FLY_BOLT_FRAME.frame_counter = 15;
     // asm 000036A3: FBL
+FBL:
+    obj = p->ctx.FLY_BOLT_FRAME.bolt_obj;
     // asm 000036A3: 	FLOAT	1000,R1
     // asm 000036A4: 	LDF	*+AR4(OPOSZ),R3
     // asm 000036A5: 	SUBF	R3,R1
     // asm 000036A6: 	MPYF	0.24,R1
     // asm 000036A7: 	ADDF	*+AR4(OPOSZ),R1
     // asm 000036A8: 	STF	R1,*+AR4(OPOSZ)
+    value = C3X_MUL(C3X_SUB(C3X_FROM_INT(1000), C3X_LDF(obj->pos.Z)), C3X_IMM_F32(0.24));
+    obj->pos.Z = C3X_STF(C3X_ADD(value, C3X_LDF(obj->pos.Z)));
     // asm 000036A9: 	LDF	*+AR4(ORADZ),R2		;Now spin the little fckers
     // asm 000036AA: 	ADDF	0.0873,R2
     // asm 000036AB: 	STF	R2,*+AR4(ORADZ)
+    value = C3X_ADD(C3X_LDF(obj->radz), C3X_IMM_F32(0.0873)); // ;Now spin the little fckers
+    obj->radz = C3X_STF(value);
     // asm 000036AC: 	LDI	AR4,AR2
     // asm 000036AD: 	ADDI	OMATRIX,AR2
     // asm 000036AE: 	CALL	FIND_ZMATRIX
+    FIND_ZMATRIX(&obj->omatrix, value);
     // asm 000036AF: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000036B1: 	DBU	AR5,FBL
+    p->ctx.FLY_BOLT_FRAME.frame_counter -= 1;
+    if (p->ctx.FLY_BOLT_FRAME.frame_counter >= 0) goto FBL;
     // asm 000036B2: 	DIE
+    PRC_SUICIDE(p);
+    return;
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FLY_BOLT", 0, 0);
-    UNIMPL();
 }
 
 /*
@@ -3565,26 +4476,37 @@ RACE_TEXT:
 #define LOGO_Z (368 * 2)
 
 static void INIT_LOGO(void) {
+    OBJ* obj;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00003939: 	CALL	OBJ_GET
+    obj = OBJ_GET();
     // asm 0000393A: 	BC	LOGOX
+    if (obj == NULL) goto LOGOX;
     // asm 0000393B: 	LDI	AR0,AR4
     // asm 0000393C: 	LDIL	logo,R0
     // asm 0000393F: 	STI	R0,*+AR0(OROMDATA)
+    obj->romdata = ROM_PTR(logo_ROM);
     // asm 00003940: 	LDI	O_IROT|O_NOROT|O_NOUROT|O_NOUNIV,R0
     // asm 00003941: 	OR	*+AR0(OFLAGS),R0
     // asm 00003942: 	STI	R0,*+AR0(OFLAGS)
+    obj->flags |= O_IROT | O_NOROT | O_NOUROT | O_NOUNIV;
     // asm 00003943: 	FLOAT	LOGO_X,R0
     // asm 00003944: 	STF	R0,*+AR0(OPOSX)
+    obj->pos.X = C3X_STF(C3X_FROM_INT(LOGO_X));
     // asm 00003945: 	FLOAT	LOGO_Y,R0
     // asm 00003946: 	STF	R0,*+AR0(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(LOGO_Y));
     // asm 00003947: 	FLOAT	LOGO_Z,R0
     // asm 00003948: 	STF	R0,*+AR0(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(LOGO_Z));
     // asm 00003949: 	LDI	AR0,AR2
     // asm 0000394A: 	CALL	OBJ_INSERTP
+    OBJ_INSERTP(obj);
 LOGOX:
     // asm 0000394B: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INIT_LOGO", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -3600,16 +4522,25 @@ int RADIO_HS_SHADOW;
 /* asm: RADIO_HS_SWITCH	.bss	RADIO_HS_SWITCH,1 */
 int RADIO_HS_SWITCH;
 
-void RBMATTR_CHECK(void) {
+void RBMATTR_CHECK(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    }
+
     // asm 0000394C: 	LDI	@_MODE,R0
     // asm 0000394D: 	TSTB	MHS,R0		;IN HS DISPLAY?
     // asm 0000394E: 	BEQ	RBMCX
+    if ((_MODE & MHS) == 0) goto RBMCX;
     // asm 0000394F: 	LDI	@RADIO_HS_SWITCH,R0
     // asm 00003950: 	SUBI	1,R0
     // asm 00003951: 	STI	R0,@RADIO_HS_SWITCH
+    RADIO_HS_SWITCH -= 1;
 RBMCX:
     // asm 00003952: 	DIE
+    PRC_SUICIDE(p);
+    return;
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "RBMATTR_CHECK", 0, 0);
-    UNIMPL();
 }

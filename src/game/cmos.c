@@ -34,16 +34,18 @@ void _wr_cw(word_addr_t addr, int value);
 int _rd_cwR(word_addr_t addr);
 void _wr_cwR(word_addr_t addr, int value);
 void INIT_LASTHS_TABLE(void);
-static void UPDATE_LASTHS(void);
+static void UPDATE_LASTHS(int race_number /*R6*/, int entry_number /*R7*/);
 int CHECK_LASTHS(int race_number /*R1*/);
 void INIT_HSTD_TABLES(void);
 int VALIDATE_HSTD_TABLES(void);
 word_addr_t GET_TABLE_ADDR(int race_index /*R6*/, int entry_index /*R7*/);
-static void TABLE_ENTRY_WRITE(void);
-static void TABLE_ENTRY_WRITE0(void);
+static void TABLE_ENTRY_WRITE(word_addr_t* addr /*AR2*/, const RACEENTRY* entry /*AR1*/);
+static void TABLE_ENTRY_WRITE0(word_addr_t* addr /*AR2*/, RACEENTRY entry /*R0-R4*/);
 RACEENTRY TABLE_ENTRY_READ(word_addr_t* addr /*AR2*/);
 int CHECK_RACE_TABLE(int time_code /*R0*/, int race_index /*R1*/);
-void INSERT_TABLE_ENTRY(void);
+void INSERT_TABLE_ENTRY(int time_code /*R0*/, int initial1 /*R1*/, int initial2 /*R2*/,
+                        int initial3 /*R3*/, int position /*R4*/, int entry_index /*R5*/,
+                        int race_index /*R6*/);
 
 #define ADJUSTMENT_READ AUDIT_READ
 #define CMOSI CMOS
@@ -659,7 +661,11 @@ ILT_LP:
  *	R6 = RACE NUMBER
  *	R7 = ENTRY NUMBER
  */
-static void UPDATE_LASTHS(void) {
+static void UPDATE_LASTHS(int race_number /*R6*/, int entry_number /*R7*/) {
+    word_addr_t addr;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00009AAA: 	PUSH	AR2
     // asm 00009AAB: 	PUSH	R0
     // asm 00009AAC: 	PUSH	R2
@@ -669,18 +675,20 @@ static void UPDATE_LASTHS(void) {
     // asm 00009AB0: 	LDI	NUM_TABLES+1,R6
     // asm 00009AB1: 	LDI	0,R7
     // asm 00009AB2: 	CALL	GET_TABLE_ADDR
+    addr = GET_TABLE_ADDR(NUM_TABLES + 1, 0);
     // asm 00009AB3: 	MPYI	4,R0		;4 bytes per word
     // asm 00009AB4: 	ADDI	R0,AR2
+    addr += (word_addr_t)(race_number * 4); // ;4 bytes per word
     // asm 00009AB5: 	POP	R7
     // asm 00009AB6: 	LDI	R7,R2
     // asm 00009AB7: 	CALL	_wr_cw
+    _wr_cw(addr, entry_number);
     // asm 00009AB8: 	POP	R6
     // asm 00009AB9: 	POP	R2
     // asm 00009ABA: 	POP	R0
     // asm 00009ABB: 	POP	AR2
     // asm 00009ABC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "UPDATE_LASTHS", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -918,7 +926,11 @@ word_addr_t GET_TABLE_ADDR(int race_index /*R6*/, int entry_index /*R7*/) {
  *
  *
  */
-static void TABLE_ENTRY_WRITE(void) {
+static void TABLE_ENTRY_WRITE(word_addr_t* addr /*AR2*/, const RACEENTRY* entry /*AR1*/) {
+    RACEENTRY values;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00009B07: 	PUSH	R0
     // asm 00009B08: 	PUSH	R1
     // asm 00009B09: 	PUSH	R2
@@ -926,6 +938,7 @@ static void TABLE_ENTRY_WRITE(void) {
     // asm 00009B0B: 	PUSH	AR1
     // asm 00009B0C: 	LDI	*AR1++,R0
     // asm 00009B0D: 	LDI	*AR1++,R1
+    values = *entry;
     // asm 00009B0E: 	LDI	R1,R2
     // asm 00009B0F: 	RS	8,R2
     // asm 00009B10: 	LDI	R1,R3
@@ -934,6 +947,7 @@ static void TABLE_ENTRY_WRITE(void) {
     // asm 00009B13: 	RS	24,R4
     // asm 00009B14: 	POP	AR1
     // asm 00009B15: 	BU	TEWL1
+    TABLE_ENTRY_WRITE0(addr, values);
     // *
     // *PARAMETERS
     // *	R0	TIME CODE
@@ -946,10 +960,11 @@ static void TABLE_ENTRY_WRITE(void) {
     // *
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TABLE_ENTRY_WRITE", 0, 0);
-    UNIMPL();
 }
 
-static void TABLE_ENTRY_WRITE0(void) {
+static void TABLE_ENTRY_WRITE0(word_addr_t* addr /*AR2*/, RACEENTRY entry /*R0-R4*/) {
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00009B16: 	PUSH	R0
     // asm 00009B17: 	PUSH	R1
     // asm 00009B18: 	PUSH	R2
@@ -958,6 +973,8 @@ TEWL1:
     // asm 00009B1A: 	PUSH	R2
     // asm 00009B1B: 	LDI	R0,R2
     // asm 00009B1C: 	CALL	_wr_cw
+    _wr_cw(*addr, (int)entry.time);
+    *addr += 4;
     // asm 00009B1D: 	POP	R2
     // asm 00009B1E: 	PUSH	R1
     // asm 00009B1F: 	CMOS_ON
@@ -966,12 +983,16 @@ TEWL1:
     // asm 00009B21: 	POP	R1
     // asm 00009B22: 	LS	24,R1
     // asm 00009B23: 	STI	R1,*AR2++
+    crusn_mem_wr32((*addr)++, (u32)entry.init1 << 24);
     // asm 00009B24: 	LS	24,R2
     // asm 00009B25: 	STI	R2,*AR2++
+    crusn_mem_wr32((*addr)++, (u32)entry.init2 << 24);
     // asm 00009B26: 	LS	24,R3
     // asm 00009B27: 	STI	R3,*AR2++
+    crusn_mem_wr32((*addr)++, (u32)entry.init3 << 24);
     // asm 00009B28: 	LS	24,R4
     // asm 00009B29: 	STI	R4,*AR2++
+    crusn_mem_wr32((*addr)++, entry.rank << 24);
     // asm 00009B2A: 	CMOS_WP_ON
     // asm 00009B2B: 	CMOS_OFF
     // asm 00009B2C: 	POP	R3
@@ -980,7 +1001,6 @@ TEWL1:
     // asm 00009B2F: 	POP	R0
     // asm 00009B30: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TABLE_ENTRY_WRITE0", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1110,7 +1130,15 @@ INSERT_HERE:
  *
  *
  */
-void INSERT_TABLE_ENTRY(void) {
+void INSERT_TABLE_ENTRY(int time_code /*R0*/, int initial1 /*R1*/, int initial2 /*R2*/,
+                        int initial3 /*R3*/, int position /*R4*/, int entry_index /*R5*/,
+                        int race_index /*R6*/) {
+    word_addr_t addr;
+    int copy_index;
+    RACEENTRY entry;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00009B53: 	PUSH	R0
     // asm 00009B54: 	PUSH	R1
     // asm 00009B55: 	PUSH	R2
@@ -1118,27 +1146,46 @@ void INSERT_TABLE_ENTRY(void) {
     // asm 00009B57: 	PUSH	R4
     // asm 00009B58: 	PUSH	R5
     // asm 00009B59: 	LDI	NUM_ENTRIES_PER_RACE-2,R7	;Start at position 8
+    copy_index = NUM_ENTRIES_PER_RACE - 2; // ;Start at position 8
     // asm 00009B5A: 	CALL	GET_TABLE_ADDR
+    addr = GET_TABLE_ADDR(race_index, copy_index);
     // asm 00009B5B: 	CMPI	9,R5
     // asm 00009B5C: 	BGE	ITLX
+    if (entry_index >= 9) {
+        goto ITLX;
+    }
 ITEL:
     // asm 00009B5D: CALL	TABLE_ENTRY_READ
+    entry = TABLE_ENTRY_READ(&addr);
     // asm 00009B5E: 	CALL	TABLE_ENTRY_WRITE0	;This uses the registers as input instead of *AR1
+    TABLE_ENTRY_WRITE0(&addr, entry); // ;This uses the registers as input instead of *AR1
     // asm 00009B5F: 	NOP	*AR2--(TE_SIZE*3)
+    addr -= TE_SIZE * 3;
     // asm 00009B60: 	DEC	R7
+    copy_index -= 1;
     // asm 00009B61: 	CMPI	R5,R7
     // asm 00009B62: 	BGE	ITEL				;Copy down position including where inserting
+    if (copy_index >= entry_index) {
+        goto ITEL; // ;Copy down position including where inserting
+    }
 ITLX:
     // asm 00009B63: POP	R7
     // asm 00009B64: 	CALL	GET_TABLE_ADDR			;Get the ADDR of the insert point
+    addr = GET_TABLE_ADDR(race_index, entry_index); // ;Get the ADDR of the insert point
     // asm 00009B65: 	POP	R4
     // asm 00009B66: 	POP	R3
     // asm 00009B67: 	POP	R2
     // asm 00009B68: 	POP	R1
     // asm 00009B69: 	POP	R0
     // asm 00009B6A: 	CALL	TABLE_ENTRY_WRITE0	;This uses the registers as input instead of *AR1
+    entry.time = (u32)time_code;
+    entry.init1 = initial1;
+    entry.init2 = initial2;
+    entry.init3 = initial3;
+    entry.rank = (u32)position;
+    TABLE_ENTRY_WRITE0(&addr, entry); // ;This uses the registers as input instead of *AR1
     // asm 00009B6B: 	CALL	UPDATE_LASTHS
+    UPDATE_LASTHS(race_index, entry_index);
     // asm 00009B6C: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INSERT_TABLE_ENTRY", 0, 0);
-    UNIMPL();
 }

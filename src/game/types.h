@@ -274,7 +274,10 @@ typedef struct OBJ {
     u32 id;
     u32 palette;
 
-    c3x_f32_t vel_x;
+    union {
+        c3x_f32_t vel_x;
+        int vel_x_int;
+    };
     c3x_f32_t vel_y;
     c3x_f32_t vel_z;
 
@@ -794,6 +797,14 @@ typedef struct PROC_CONTEXT {
     } INSMORE_FRAME;
     struct {
         OBJ* initial_objs[3];
+        OBJ* plate_obj;
+        OBJ* press_obj;
+        OBJ* bottom_press_obj;
+        OBJ* scroll_bar_obj;
+        OBJ* arms_obj;
+        OBJ* missing_plate_obj;
+        PROC* flash_proc;
+        VECTOR saved_camera;
         int initial_chars[3];
         int place;
         int white_pal;
@@ -803,10 +814,29 @@ typedef struct PROC_CONTEXT {
         int pedal_trigger;
         int character_index;
         int debounce_counter;
+        int press_counter;
+        int stamp_counter;
+        int rotation_counter;
+        int place_counter;
+        int bolt_id;
+        int bolt_counter;
+        c3x_reg_t roller_speed;
+        int dark_pal;
+        int med_pal;
+        int light_pal;
+        int light1_pal;
         int loading_clear_frames;
     } ENTER_INITIALS_FRAME;
 
     union {
+        struct {
+            tTEXT* front;
+            tTEXT* shadow;
+        } ENTERTEXT_FRAME;
+        struct {
+            OBJ* bolt_obj;
+            int frame_counter;
+        } FLY_BOLT_FRAME;
         struct {
             int race_number;
             int oid_group;

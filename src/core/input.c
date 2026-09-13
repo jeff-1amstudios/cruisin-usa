@@ -17,9 +17,9 @@ static int steering_direction;
 static int steering_detent;
 
 #define STEERING_HALF_RANGE 127.0f
-#define STEERING_LIMIT 0.90f
+#define STEERING_LIMIT 1.f
 #define STEERING_PRESS_RATE 0.04f
-#define STEERING_RETURN_RATE 0.10f
+#define STEERING_RETURN_RATE 0.5f
 
 int input_frame_counter = 0;
 

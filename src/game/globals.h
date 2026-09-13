@@ -1174,7 +1174,7 @@ void MIDWAYSPINENTER(void);
 void LOGO_PROC(PROC* p);
 
 // asm:  .globl RBMATTR_CHECK
-void RBMATTR_CHECK(void);
+void RBMATTR_CHECK(PROC* p);
 
 // asm:  .globl INTO_TABLE_P
 int INTO_TABLE_P(void);

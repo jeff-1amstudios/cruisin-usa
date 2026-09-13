@@ -10,6 +10,7 @@
 #include "../game/cmos.h"
 #include "../game/cusa.h"
 #include "../game/globals.h"
+#include "../game/hstdp.h"
 #include "sdl_video.h"
 
 static crusn_machine* g_display_machine;
@@ -26,6 +27,7 @@ typedef struct crusn_options {
     int girls;
     int race_time;
     int windowed;
+    int test_highscore_input;
 } crusn_options;
 
 static int process_args(int argc, char* argv[], crusn_options* options) {
@@ -36,6 +38,7 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
     options->girls = -1;
     options->race_time = 0;
     options->windowed = 0;
+    options->test_highscore_input = 0;
 
     for (int i = 1; i < argc; ++i) {
         const char* value = NULL;
@@ -50,6 +53,8 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
             options->girls = 0;
         } else if (strcmp(argv[i], "--window") == 0) {
             options->windowed = 1;
+        } else if (strcmp(argv[i], "--test-highscore-input") == 0) {
+            options->test_highscore_input = 1;
         } else if (strncmp(argv[i], prefix, sizeof(prefix) - 1) == 0) {
             value = argv[i] + sizeof(prefix) - 1;
         } else if (strcmp(argv[i], "--race-time") == 0 && i + 1 < argc) {
@@ -197,6 +202,9 @@ int main(int argc, char* argv[]) {
     }
     if (options.girls >= 0) {
         ADJUSTMENT_WRITE(ADJ_GIRLS, options.girls);
+    }
+    if (options.test_highscore_input) {
+        START_HIGH_SCORE_INPUT_TEST();
     }
 
     const Uint64 counter_frequency = SDL_GetPerformanceFrequency();

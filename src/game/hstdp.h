@@ -13,4 +13,7 @@ extern int RADIO_HS_SHADOW;
 // asm: 	.bss	RADIO_HS_SWITCH,1
 extern int RADIO_HS_SWITCH;
 
+/* Portable test entry point for the first-race initials screen. */
+void START_HIGH_SCORE_INPUT_TEST(void);
+
 #endif /* HSTDP_H */
