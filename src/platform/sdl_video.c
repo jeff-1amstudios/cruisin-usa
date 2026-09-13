@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-int crusn_video_init(crusn_video* video, int fullscreen) {
+int crusn_video_init(crusn_video* video, int fullscreen, int bilinear) {
     Uint32 window_flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE;
 
     video->window = SDL_CreateWindow(
@@ -34,6 +34,13 @@ int crusn_video_init(crusn_video* video, int fullscreen) {
         CRUSN_SCREEN_WIDTH,
         CRUSN_SCREEN_HEIGHT);
     if (video->texture == NULL) {
+        crusn_video_shutdown(video);
+        return -1;
+    }
+
+    if (SDL_SetTextureScaleMode(
+            video->texture,
+            bilinear ? SDL_ScaleModeLinear : SDL_ScaleModeNearest) != 0) {
         crusn_video_shutdown(video);
         return -1;
     }
