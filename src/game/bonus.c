@@ -1377,6 +1377,9 @@ FINFIN:
     DID_TIMED_OUT = 0;
     // asm 00003BD9: 	CALL	INIT_GAMELEG
     INIT_GAMELEG();
+    // Original game bugfix: keep subsequent USA tour legs at the same 28.5 Hz
+    // gameplay frame rate used by the first leg and by standalone races.
+    FRAMRATE = 1;
     // asm 00003BDA: 	DIE
     DIE();
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
