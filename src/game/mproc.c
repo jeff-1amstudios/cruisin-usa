@@ -56,8 +56,6 @@ PROC PRCSTR[NUMPROC];
 
 // *----------------------------------------------------------------------------
 static void NEXTPRC(PROC* proc) {
-    PROC* next_proc;
-
     // asm 0000A8AC: NEXTPRC	LDI	*AR7,R0			;GET NEXT PROC, SET Z FLAG
     // asm 0000A8AD: NP1	BZD	DISPPRCX
     // asm 0000A8AE: 	LDI	R0,AR7			;PUT IT IN AR7
@@ -94,24 +92,20 @@ static void NEXTPRC(PROC* proc) {
         }
 
         if (proc->sleep_ticks == 0) {
-            next_proc = proc->link;
             CURRENT_PROC = proc;
             proc->current_resume_depth = 0;
             proc->yielded = 0;
             proc->func(proc);
 
-            /* SLEEP tail-transfers to NEXTPRC in the assembly.  Once that
-             * traversal returns, do not resume this caller's cached link: its
-             * process slot may have been killed and reused in the meantime. */
-            if (proc->yielded) {
-                return;
-            }
-
+            /* EXEC is reached from a single NEXTPRC traversal in the
+             * assembly. SLEEP and SUICIDE tail-transfer back to NEXTPRC;
+             * neither creates a nested scheduler invocation. */
             if (CURRENT_PROC != proc) {
-                return;
+                proc = CURRENT_PROC;
+                continue;
             }
 
-            proc = next_proc;
+            proc = proc->link;
             continue;
         }
 
@@ -347,7 +341,8 @@ void PRC_SLEEP(PROC* p, int ticks) {
     // asm 0000A8AA: 	STI	AR5,*+AR7(PAR5)
     // asm 0000A8AB: 	STI	AR6,*+AR7(PAR6)
     p->sleep_ticks = ticks;
-    NEXTPRC(p->link);
+    /* Assembly resets SP and tail-transfers to NEXTPRC here.  Returning to
+     * the one active NEXTPRC loop performs that transfer in portable C. */
 }
 
 // *----------------------------------------------------------------------------
@@ -413,14 +408,17 @@ DIELP:
     while (*linkp != NULL) {
         if (*linkp == p) {
             *linkp = next_proc;
-            NEXTPRC(next_proc);
+            /* The delayed branch loads the updated successor through AR1/AR7
+             * before NEXTPRC continues. Carry that same process to the active
+             * C dispatcher; a link cached before EXEC would be stale if this
+             * process inserted a child after itself. */
+            CURRENT_PROC = next_proc;
             return;
         }
         linkp = &(*linkp)->link;
     }
 
     ERRON(EC_PROC | ET_DELETE);
-    NEXTPRC(next_proc);
 }
 
 // *----------------------------------------------------------------------------

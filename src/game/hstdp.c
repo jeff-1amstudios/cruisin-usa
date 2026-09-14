@@ -23,6 +23,7 @@
 extern MATRIX _MATRIXA;
 extern VECTOR _VECTORA;
 
+static void HIGH_SCORE_INPUT_TEST_PROC(PROC* p);
 void ENTER_INITIALS(PROC* p);
 static void EIML(PROC* p);
 void ENTERTEXT(PROC* p);
@@ -241,6 +242,21 @@ int PEDHIT;
 #define GREY_PAL (PDATA + 34)
 
 // *----------------------------------------------------------------------------
+static void HIGH_SCORE_INPUT_TEST_PROC(PROC* p) {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
+    /* ENTER_INITIALS is an assembly subroutine entered with JSRP, not a root
+     * process. Preserve that call shape in the synthetic test entry. */
+    JSRP(ENTER_INITIALS, 1);
+    DIE();
+}
+
+// *----------------------------------------------------------------------------
 void START_HIGH_SCORE_INPUT_TEST(void) {
     PROC_CONTEXT* ctx;
 
@@ -253,7 +269,7 @@ void START_HIGH_SCORE_INPUT_TEST(void) {
 
     CREATE(SCAN_OBJECTS, UTIL_C, NULL);
     ctx = NEW_PROC_CONTEXT();
-    CREATE(ENTER_INITIALS, UTIL_C, ctx);
+    CREATE(HIGH_SCORE_INPUT_TEST_PROC, UTIL_C, ctx);
 }
 
 // *----------------------------------------------------------------------------
@@ -1609,11 +1625,14 @@ PR2AA:
     // asm 00003442: 	STF	R2,*+AR0(OPOSY)
     obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_FROM_INT(-50)));
     // asm 00003443: 	CALL	OBJ_FIND_NEXT
-    obj = OBJ_FIND_NEXT(obj, ARMS2);
     // asm 00003444: 	LDF	*+AR0(OPOSY),R2
     // asm 00003445: 	ADDF	R0,R2
     // asm 00003446: 	STF	R2,*+AR0(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_FROM_INT(-50)));
+    /* Disabled: the v4.5 press_grp contains only one ARMS2 object, so the
+     * original second lookup returns zero and its move only corrupts TMS word
+     * address OPOSY (2).  Native C would instead dereference a null pointer. */
+    // obj = OBJ_FIND_NEXT(obj, ARMS2);
+    // obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_FROM_INT(-50)));
     // asm 00003447: 	FLOAT	ROT_FRAMES,R1		;Pan camera to correct y
     // asm 00003448: 	LDF	CAM_RADX,R0
     // asm 00003449: 	CALL	DIV_F
