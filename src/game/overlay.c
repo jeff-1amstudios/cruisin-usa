@@ -276,19 +276,20 @@ static void WATEROFF(void) {
 // *----------------------------------------------------------------------------
 static void HELISTART(void) {
     // asm 0000AD52: 	CREATE	CHOPPER,DRONE_C|VEHICLE_T|DRNE_SIGMA
+    CREATE(CHOPPER, DRONE_C | VEHICLE_T | DRNE_SIGMA, NEW_PROC_CONTEXT());
     // asm 0000AD55: 	CLRI	R0
     // asm 0000AD56: 	STI	R0,@HELI_ABORT
+    HELI_ABORT = 0;
     // asm 0000AD57: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HELISTART", 0, 0);
-    UNIMPL();
+    return;
 }
 
 static void HELIEND(void) {
     // asm 0000AD58: 	LDI	1,R0
     // asm 0000AD59: 	STI	R0,@HELI_ABORT
+    HELI_ABORT = 1;
     // asm 0000AD5A: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HELIEND", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------

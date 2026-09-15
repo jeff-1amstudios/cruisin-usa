@@ -31,13 +31,13 @@ c3x_reg_t DIST_TO_PLYR(OBJ* obj);
 void INIT_TRACKING_PIECE(void);
 c3x_reg_t GET_TRACK_POS_RVS_XLANE(PROC* p, OBJ* obj);
 c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj);
-void DELTA_GET_TRACK_POS(void);
+c3x_reg_t DELTA_GET_TRACK_POS(PROC* p, OBJ* obj);
 c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj);
 c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece);
 c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece);
 c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece);
 #define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
-void DELTA_SUB_FUNCTION(void);
+c3x_reg_t DELTA_SUB_FUNCTION(PROC* p, OBJ* piece);
 void INIT_DRONES(void);
 void ADD_DRONE(OBJ* obj /*AR4*/);
 void FREE_DRONE(OBJ* obj);
@@ -1104,16 +1104,35 @@ c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj) {
     return dx;
 }
 
-void DELTA_GET_TRACK_POS(void) {
+c3x_reg_t DELTA_GET_TRACK_POS(PROC* p, OBJ* obj) {
+    OBJ* piece;
+    c3x_reg_t dx;
+    c3x_reg_t dz;
     // asm 00006716: 	PUSHFL	R1
     // asm 00006718: 	PUSHFL	R2
     // asm 0000671A: 	PUSH	AR2
     // asm 0000671B: 	LDI	*+AR7(DELTA_TPIECE),AR2
+    piece = p->ctx.RACER_DRONE.delta_tpiece;
     // asm 0000671C: 	CALL	DELTA_SUB_FUNCTION		;GET LANE OFFSET (VECTOR A)
+    DELTA_SUB_FUNCTION(p, piece); // GET LANE OFFSET (VECTOR A)
     // asm 0000671D: 	BU	TRKP2
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DELTA_GET_TRACK_POS", 0, 0);
-    UNIMPL();
+    // asm 00006725: 	LDF	*+AR2(OPOSX),R2		;X
+    // asm 00006726: 	SUBF	*+AR4(OPOSX),R2
+    dx = C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(obj->pos.X));
+    // asm 00006727: 	LDF	*+AR2(OPOSZ),R1		;Z
+    // asm 00006728: 	SUBF	*+AR4(OPOSZ),R1
+    dz = C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(obj->pos.Z));
+    // asm 00006729: 	MPYF	R2,R2
+    // asm 0000672A: 	MPYF	R1,R1
+    // asm 0000672B: 	ADDF	R1,R2
+    // asm 0000672C: 	CALL	SQRT
+    dx = SQRT(C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz)));
+    // asm 0000672D: DISTANCE_OK
+    // asm 0000672D: 	POP	AR2
+    // asm 0000672E: 	POPFL	R2
+    // asm 00006730: 	POPFL	R1
+    // asm 00006732: 	RETS
+    return dx;
 }
 
 c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj) {
@@ -1427,12 +1446,16 @@ c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece) {
     return theta;
 }
 
-void DELTA_SUB_FUNCTION(void) {
+c3x_reg_t DELTA_SUB_FUNCTION(PROC* p, OBJ* piece) {
+    OBJ* next_piece;
+    c3x_reg_t theta;
     // asm 0000676B: 	PUSH	AR0
     // asm 0000676C: 	PUSHFL	R0
     // asm 0000676E: 	PUSHFL	R3
     // asm 00006770: 	LDI	*+AR2(OLINK4),R0
+    next_piece = (OBJ*)piece->link4;
     // asm: 	SLOCKON	Z,"DRONES\DELTA_SUB_FUNCTION  OLINK4 to NULL"
+    SLOCKON(next_piece == NULL, "DRONES\\DELTA_SUB_FUNCTION OLINK4 to NULL");
 SFENTER66:
     // asm 00006771: 	LDI	R0,AR0
     // asm 00006772: 	LDF	*+AR0(OPOSX),R2
@@ -1441,16 +1464,23 @@ SFENTER66:
     // asm 00006775: 	SUBF	*+AR2(OPOSZ),R3
     // asm 00006776: 	CALL	ARCTANF
     // asm 00006777: 	SUBF	HALFPI,R0
+    theta = C3X_SUB(ARCTANF(
+        C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
+        C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
+        C3X_IMM_F32(HALFPI));
     // asm 00006778: 	LDF	R0,R2				;FIND THETA
     // asm 00006779: 	PUSHF	R2
     // asm 0000677A: 	PUSH	AR2
     // asm 0000677B: 	LDI	@MATRIXAI,AR2
     // asm 0000677C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
+    FIND_YMATRIX(&MATRIXAI, theta); // FIND Y MATRIX (FOR LANE OFFSETTING)
     // asm 0000677D: 	LDF	*+AR7(DELTA_XLANE),R0
+    VECTORAI.X = C3X_STF(C3X_LDF(p->ctx.RACER_DRONE.delta_xlane));
     // asm 0000677E: 	BU	DELTA_JOININ
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DELTA_SUB_FUNCTION", 0, 0);
-    UNIMPL();
+    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
+    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
+    return theta;
 }
 
 // *----------------------------------------------------------------------------

@@ -314,10 +314,12 @@ typedef struct OBJ {
     union {
         uintptr_t link2;
         uintptr_t usr2;
+        c3x_f32_t usr2_as_float;
     };
     union {
         uintptr_t link3;
         uintptr_t usr3;
+        c3x_f32_t usr3_as_float;
     };
     uintptr_t link4;
 } OBJ;
@@ -996,6 +998,14 @@ typedef struct PROC_CONTEXT {
             int script_index;
         } BABE_WAVEFLAG;
         struct {
+            OBJ* objects[4];          // PDATA..PDATA+3
+            c3x_f32_t factor;         // PDATA+7
+            c3x_reg_t entry_factor;   // R0 at the shared L55 entry
+            c3x_reg_t angle;          // R6 across SLEEP
+            c3x_reg_t offset;         // R7 across SLEEP
+            int loop_count;           // AR5 across SLEEP
+        } SCREENWIPE;
+        struct {
             OBJ* obj;
             int script_start;
         } BABE_IBO;
@@ -1164,6 +1174,50 @@ typedef struct PROC_CONTEXT {
             int rho_hit_smoke_count;
             int breakdown_count;
         } RACER_DRONE;
+        struct {
+            int rank;
+            OBJ* obj;                 // AR4
+            CARBLK* carblk;           // AR5
+            int delta_status;
+            c3x_f32_t delta_rady_delta;
+            int delta_init;
+            c3x_f32_t delta_throttle;
+            OBJ* delta_tracking_piece;
+            int delta_mode;
+            LEG* delta_sptr;
+            int delta_last_oid;
+            int delta_pstat;
+            int delta_playit;
+            c3x_f32_t delta_lane;
+            c3x_f32_t delta_plyrdist;
+            c3x_f32_t delta_old_plyrdist;
+            int delta_model;
+            int delta_lane_switch_tmr;
+            c3x_f32_t delta_xlane;
+            c3x_f32_t delta_min_throttle;
+            c3x_f32_t delta_max_throttle;
+            PROC* animation_proc;     // CD_ANIPROC
+            int mode;                 // CD_MODE
+            c3x_f32_t acceleration;   // CD_ACC
+            c3x_f32_t speed;          // CD_SPEED
+            int bomb_timer;           // CD_BOMBTIK
+            c3x_f32_t true_speed;     // CD_TSPEED
+            c3x_f32_t old_true_speed; // CD_TSPEED_OLD
+            c3x_f32_t fly_direction;  // CD_FLYTDIR
+            c3x_f32_t desired_height; // CD_DHEIGHT
+            c3x_f32_t old_height;     // CD_ODHEIGHT
+            OBJ* closest_road;        // CD_CLOSEROAD
+            int ahead_of_player;      // CD_AHEADP
+            int pass_count;
+            int bomb_count;
+            int max_passes;
+            int max_bombs;
+            int last_pass;
+            int do_attack;
+            int flyaway_count;        // AR5 across SLEEP
+            c3x_f32_t flyaway_drop;   // R7 across SLEEP
+            c3x_f32_t blade_radians;  // R6 across SLEEP in CHOPPERANI
+        } CHOPPER;
         struct {
             int background_color;
             int cut_pan;

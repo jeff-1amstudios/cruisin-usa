@@ -202,6 +202,7 @@
 #define here4_ROM 0x00C2EF6F
 #define here5_ROM 0x00C2EF7F
 #define here6_ROM 0x00C2EF8F
+#define helli_ROM 0x00C5F2C7
 #define hilly1_ROM 0x00CD0702
 #define hilly2_ROM 0x00CD0712
 #define hilly3_ROM 0x00CD0722

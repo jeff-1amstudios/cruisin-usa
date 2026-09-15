@@ -842,10 +842,10 @@ void BONUS14(void);
 
 // chopper.asm
 // asm:  .globl CHOPPER
-void CHOPPER(void);
+void CHOPPER(PROC* p);
 
 // asm:  .globl GET_CLOSEST_TRAK
-void GET_CLOSEST_TRAK(void);
+OBJ* GET_CLOSEST_TRAK(OBJ* obj);
 
 // cmos.asm
 // asm:  .globl RESET_DAILY_CMOS,HSTDEC
@@ -1105,16 +1105,16 @@ void SETUP_DIAG_SCREEN(void);
 void SCREENWIPE_OPEN(void);
 
 // asm:  .globl SCREENWIPE_OPEN_PRC
-void SCREENWIPE_OPEN_PRC(void);
+void SCREENWIPE_OPEN_PRC(PROC* p);
 
 // asm:  .globl SCREENWIPE_CLOSE
 void SCREENWIPE_CLOSE(void);
 
 // asm:  .globl SCREENWIPE_CLOSE_PRC
-void SCREENWIPE_CLOSE_PRC(void);
+void SCREENWIPE_CLOSE_PRC(PROC* p);
 
 // asm:  .globl SCREENWIPE_OPEN_PRC_FAST
-void SCREENWIPE_OPEN_PRC_FAST(void);
+void SCREENWIPE_OPEN_PRC_FAST(PROC* p);
 
 // flame.asm
 // asm:  .globl FLAME_PRC,FLAMESORT,GETCARBODY

@@ -2041,7 +2041,14 @@ PRESSCODEX2:
     // *ELP END CHANGE
     // asm 00003545: 	LDI	*+AR7(FLASH_PROC),AR2
     // asm 00003546: 	CALL	PRC_KILL
-    PRC_KILL(ctx->ENTER_INITIALS_FRAME.flash_proc);
+    /* Original bug: pressing Start/Enter again during the post-initials
+       animation skips CREATEC above, but the assembly still calls PRC_KILL.
+       FLASH_PROC aliases OLDPOT0 there, so a debug arcade build locks up while
+       trying to kill that non-process value; the retail build logs and returns. */
+    if (ctx->ENTER_INITIALS_FRAME.flash_proc != NULL) {
+        PRC_KILL(ctx->ENTER_INITIALS_FRAME.flash_proc);
+        ctx->ENTER_INITIALS_FRAME.flash_proc = NULL;
+    }
     // asm 00003547: 	LDL	press_PALETTES,AR2
     // asm 00003548: 	CALL	dealloc_section
     dealloc_section(press_PALETTES);

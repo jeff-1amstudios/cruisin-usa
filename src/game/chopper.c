@@ -3,6 +3,7 @@
 #include "../core/machine.h"
 #include "cmos.h"
 #include "delta.h"
+#include "discovered_labels.h"
 #include "globals.h"
 #include "macs.h"
 #include "mproc.h"
@@ -18,18 +19,23 @@
  * Source module: asm/CHOPPER.ASM
  */
 
-static void DIRECT_ATTACK(void);
-static void ONCOMMING_BUZZ(void);
-void CHOPPER(void);
-static void FORWARD_BUZZ(void);
-static void FLYAWAY(void);
-static void CHOPPER_DIE(void);
-static void FIND_YX_MATRIX(void);
-static void SETDYNAOBJ(void);
-static void CHOPPERANI(void);
-static void FSL_MOVE(void);
-static void HELI_SND(void);
-void GET_CLOSEST_TRAK(void);
+static void DIRECT_ATTACK(PROC* p);
+static void ONCOMMING_BUZZ(PROC* p);
+static void CHOPPER_PASS(PROC* p);
+void CHOPPER(PROC* p);
+static void FORWARD_BUZZ(PROC* p);
+static void FLYAWAY(PROC* p);
+static void CHOPPER_DIE(PROC* p);
+static void FIND_YX_MATRIX(OBJ* obj);
+static void SETDYNAOBJ(PROC* p, OBJ* obj);
+static void CHOPPERANI(PROC* p);
+static void FSL_MOVE(PROC* p, c3x_reg_t theta_delta, c3x_reg_t speed);
+static void HELI_SND(PROC* p);
+OBJ* GET_CLOSEST_TRAK(OBJ* obj);
+
+extern MATRIX _MATRIXA;
+extern MATRIX _MATRIXB;
+extern VECTOR _VECTORA;
 
 /*
  *----------------------------------------------------------------------------
@@ -85,19 +91,12 @@ int HELI_ABORT;
 /* asm: 	 */
 /* asm: 	 */
 /* asm: 	 */
-static int CHOPPERDYNA[] = {
+static const DYNATAB CHOPPERDYNA = {
     1, // #OF DYNAS-1
-    0,
-    -206,
-    14, // blades
-    3,  // VERTS-1
-    1,  // DYNAFLAG
-    0,
-    0,
-    0,  // main body
-    94, // VERTS-1
-    1,  // DYNAFLAG
-    // ----------------------------------------------------------------------------
+    {
+        { { C3X_F32_INIT(0), C3X_F32_INIT(-206), C3X_F32_INIT(14) }, 3, 1 }, // blades
+        { { C3X_F32_INIT(0), C3X_F32_INIT(0), C3X_F32_INIT(0) }, 94, 1 }, // main body
+    },
 };
 
 /*
@@ -110,21 +109,55 @@ static int CHOPPERDYNA[] = {
  *
  *
  */
-static void DIRECT_ATTACK(void)
+static void DIRECT_ATTACK(PROC* p)
 {
+    OBJ* next_piece;
+    OBJ* piece;
+    c3x_reg_t distance;
+    c3x_reg_t divisor;
+    c3x_reg_t road_delta;
+    c3x_reg_t speed;
+    c3x_reg_t theta_delta;
+    int frames;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("DIRECT_ATTACK");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    default:
+        break;
+    }
+
     // 	;
     // 	;DEBUG	only attack player when he is in the first position
     // 	;
     // asm 00007C6E: 	LDI	@POSITION,R0
     // asm 00007C6F: 	CMPI	1,R0
     // asm 00007C70: 	BNE	FLYAWAY
+    if (POSITION != 1) {
+        PROC_CONTINUE(FLYAWAY, 2);
+        return;
+    }
     // 	;
     // 	;
     // asm 00007C71: 	CALL	DIST_TO_PLYR
+    distance = DIST_TO_PLYR(p->ctx.CHOPPER.obj);
     // asm 00007C72: 	LDF	*+AR7(DELTA_PLYRDIST),R1
     // asm 00007C73: 	STF	R0,*+AR7(DELTA_PLYRDIST)
     // asm 00007C74: 	STF	R1,*+AR7(DELTA_OPLYRDIST)
+    p->ctx.CHOPPER.delta_old_plyrdist = p->ctx.CHOPPER.delta_plyrdist;
+    p->ctx.CHOPPER.delta_plyrdist = C3X_STF(distance);
     // asm 00007C75: 	CALL	HELI_SND
+    HELI_SND(p);
     // 	;see if we should track the next piece
 CHECK_DIST28:
     // asm 00007C76: 	LDI	*+AR7(DELTA_LAST_OID),R0	;CHECK TO SEE IF IT IS IN THE RANGE
@@ -133,29 +166,49 @@ CHECK_DIST28:
     // asm 00007C79: 	SUBPI	@DGROUP_COUNT,R1
     // asm 00007C7A: 	CMPI	R1,R0
     // asm 00007C7B: 	BLE	FLYAWAY		;CHOPPER_DIE
+    if ((p->ctx.CHOPPER.delta_last_oid >> 8) <= SECTIONIDX - DGROUP_COUNT) {
+        PROC_CONTINUE(FLYAWAY, 3);
+        return;
+    }
     // asm 00007C7C: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00007C7D: 	LDI	*+AR2(OBLINK4),R0
     // asm 00007C7E: 	BZ	FLYAWAY	;CHOPPER_DIE
+    piece = p->ctx.CHOPPER.delta_tracking_piece;
+    next_piece = (OBJ*)piece->blink4;
+    if (next_piece == NULL) {
+        PROC_CONTINUE(FLYAWAY, 4);
+        return;
+    }
     // asm 00007C7F: 	LDI	@PLYCBLK,AR2
     // asm 00007C80: 	LDF	*+AR2(CARDIST2CNTR),R0
     // asm 00007C81: 	STF	R0,*+AR7(DELTA_XLANE)
+    p->ctx.CHOPPER.delta_xlane = C3X_STF(C3X_LDF(PLYCBLK->dist_to_center));
     // asm 00007C82: 	CALL	GET_TRACK_POS_RVS_XLANE		;CHECK IF WE SHOULD ADVANCE
+    distance = GET_TRACK_POS_RVS_XLANE(p, p->ctx.CHOPPER.obj); // CHECK IF WE SHOULD ADVANCE
     // asm 00007C83: 	FLOAT	5000,R1				;TO THE NEXT ROADPIECE
     // asm 00007C84: 	CMPF	R1,R0
     // asm 00007C85: 	BGT	THIS_PIECE28
+    if (C3X_GT(distance, C3X_FROM_INT(5000))) goto THIS_PIECE28;
     // asm 00007C86: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00007C87: 	LDI	*+AR2(OBLINK4),R0
     // asm 00007C88: 	STI	R0,*+AR7(DELTA_TPIECE)
+    p->ctx.CHOPPER.delta_tracking_piece = next_piece;
     // asm 00007C89: 	LDI	R0,AR0
     // asm 00007C8A: 	LDI	*+AR0(OUSR1),R0
     // asm 00007C8B: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
+    p->ctx.CHOPPER.delta_last_oid = (int)next_piece->usr1; // SAVE THE LAST KNOWN VALID OID
     // asm 00007C8C: 	BU	CHECK_DIST28
+    goto CHECK_DIST28;
 THIS_PIECE28:
     // asm 00007C8D: 	FLOATP	@NFRAMES,R1
     // asm 00007C8E: 	MPYF	*+AR7(CD_TSPEED),R1
     // asm 00007C8F: 	LDFLE	30,R1			;if 0 or less assume 30 voxel per frame
+    divisor = C3X_MUL(C3X_FROM_INT(NFRAMES), C3X_LDF(p->ctx.CHOPPER.true_speed));
+    if (C3X_LE(divisor, C3X_FROM_INT(0))) divisor = C3X_IMM_F32(30);
     // asm 00007C90: 	CALL	DIV_F			;R0/R1 (distance to piece/speed) -> # frames to achieve
+    distance = DIV_F(distance, divisor); // R0/R1 (distance to piece/speed) -> # frames to achieve
     // asm 00007C91: 	FIX	R0,R7
+    frames = C3X_FIX(distance);
     // asm 00007C92: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00007C93: 	LDP	@_VECTORA		;lane position
     // asm 00007C94: 	LDF	*+AR2(OPOSX),R2		;X
@@ -164,49 +217,67 @@ THIS_PIECE28:
     // asm 00007C97: 	LDF	*+AR2(OPOSZ),R3		;Z
     // asm 00007C98: 	SUBF	*+AR4(OPOSZ),R3
     // asm 00007C99: 	ADDF	@_VECTORA+Z,R3
+    piece = p->ctx.CHOPPER.delta_tracking_piece;
+    distance = C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(p->ctx.CHOPPER.obj->pos.X));
+    distance = C3X_ADD(distance, C3X_LDF(_VECTORA.X));
+    divisor = C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(p->ctx.CHOPPER.obj->pos.Z));
+    divisor = C3X_ADD(divisor, C3X_LDF(_VECTORA.Z));
     // asm 00007C9A: 	SETDP
     // 	;find the theta delta to this position
     // 	;
     // asm 00007C9B: 	CALL	ARCTANF			;-> R0
     // asm 00007C9C: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
+    theta_delta = C3X_SUB(ARCTANF(distance, divisor), C3X_IMM_F32(HALFPI)); // DESIRED THETA
     // asm 00007C9D:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 00007C9E: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
+    theta_delta = GETTHETADIFF(theta_delta, C3X_LDF(p->ctx.CHOPPER.obj->rady));
     // asm 00007C9F: 	FLOAT	R7,R1			;theta / number of turns to achieve
     // asm 00007CA0: 	SUBF	1,R1
+    divisor = C3X_SUB(C3X_FROM_INT(frames), C3X_IMM_F32(1));
     // asm 00007CA1: 	BLE	NODIV8
     // asm 00007CA2: 	CALL	DIV_F			;-> R0
+    if (C3X_GT(divisor, C3X_FROM_INT(0))) theta_delta = DIV_F(theta_delta, divisor);
 NODIV8:
     // asm 00007CA3: 	CMPF	0.3926,R0		;PI/8 (maximum turning radius)
     // asm 00007CA4: 	LDFGT	0.3926,R0
+    if (C3X_GT(theta_delta, C3X_IMM_F32(0.3926))) theta_delta = C3X_IMM_F32(0.3926);
     // asm 00007CA5: 	CMPF	-0.3926,R0
     // asm 00007CA6: 	LDFLT	-0.3926,R0
+    if (C3X_LT(theta_delta, C3X_IMM_F32(-0.3926))) theta_delta = C3X_IMM_F32(-0.3926);
     // asm 00007CA7: 	STF	R0,*+AR7(DELTA_RADYDELTA)
+    p->ctx.CHOPPER.delta_rady_delta = C3X_STF(theta_delta);
     // asm 00007CA8: 	PUSH	AR4
     // asm 00007CA9: 	ADDI	OPOSX,AR4
     // asm 00007CAA: 	CALL	CAMSCAN
     // asm 00007CAB: 	POP	AR4
     // asm 00007CAC: 	BNC	LLK28
+    if (!CAMSCAN(&p->ctx.CHOPPER.obj->pos, &road_delta)) goto LLK28;
     // asm 00007CAD: 	NEGF	R0
     // asm 00007CAE: 	FLOAT	-300,R1
     // asm 00007CAF: 	SUBF	R1,R0
     // asm 00007CB0: 	NEGF	R0
     // asm 00007CB1: 	ADDF	*+AR4(OPOSY),R0
     // asm 00007CB2: 	STF	R0,*+AR7(CD_DHEIGHT)
+    p->ctx.CHOPPER.desired_height = C3X_STF(C3X_ADD(
+        C3X_SUB(road_delta, C3X_FROM_INT(300)), C3X_LDF(p->ctx.CHOPPER.obj->pos.Y)));
 LLK28:
     // asm 00007CB3: 	LDF	*+AR7(CD_SPEED),R0
     // asm 00007CB4: 	ADDF	*+AR7(CD_ACC),R0
     // asm 00007CB5: 	FLOAT	MAX_SPEED,R1
     // asm 00007CB6: 	CMPF	R1,R0
     // asm 00007CB7: 	LDFGT	R1,R0
+    speed = C3X_ADD(C3X_LDF(p->ctx.CHOPPER.speed), C3X_LDF(p->ctx.CHOPPER.acceleration));
+    if (C3X_GT(speed, C3X_FROM_INT(MAX_SPEED))) speed = C3X_FROM_INT(MAX_SPEED);
     // asm 00007CB8: 	STF	R0,*+AR7(CD_SPEED)
+    p->ctx.CHOPPER.speed = C3X_STF(speed);
     // asm 00007CB9: 	LDF	*+AR7(DELTA_RADYDELTA),R2
     // asm 00007CBA: 	LDF	*+AR7(CD_SPEED),R3
     // asm 00007CBB: 	CALL	FSL_MOVE
+    FSL_MOVE(p, theta_delta, speed);
     // asm 00007CBC: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00007CBE: 	BU	DIRECT_ATTACK
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DIRECT_ATTACK", 0, 0);
-    UNIMPL();
+    REENTER(DIRECT_ATTACK);
 }
 
 // *----------------------------------------------------------------------------
@@ -219,8 +290,35 @@ LLK28:
  *
  *
  */
-static void ONCOMMING_BUZZ(void)
+static void ONCOMMING_BUZZ(PROC* p)
 {
+    OBJ* next_piece;
+    OBJ* piece;
+    c3x_reg_t distance;
+    c3x_reg_t divisor;
+    c3x_reg_t road_delta;
+    c3x_reg_t speed;
+    c3x_reg_t theta;
+    c3x_reg_t theta_delta;
+    int frames;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("ONCOMMING_BUZZ");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    default:
+        break;
+    }
+
     // asm 00007CBF: 	LDF	0,R0
     // asm 00007CC0: 	STF	R0,*+AR4(ORADX)
     // asm 00007CC1: 	STF	R0,*+AR4(ORADY)
@@ -228,46 +326,74 @@ static void ONCOMMING_BUZZ(void)
     // asm 00007CC3: 	STF	R0,*+AR4(OVELX)
     // asm 00007CC4: 	STF	R0,*+AR4(OVELY)
     // asm 00007CC5: 	STF	R0,*+AR4(OVELZ)
+    p->ctx.CHOPPER.obj->radx = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->rady = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->usr1_as_float = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->vel_x = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->vel_y = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->vel_z = C3X_STF(C3X_IMM_F32(0));
     // 	;
     // 	;find where player is
     // asm 00007CC6: 	LDI	@PLYCBLK,AR2
     // asm 00007CC7: 	LDF	*+AR2(CARDIST2CNTR),R0
     // asm 00007CC8: 	STF	R0,*+AR7(DELTA_XLANE)
+    p->ctx.CHOPPER.delta_xlane = C3X_STF(C3X_LDF(PLYCBLK->dist_to_center));
     // asm 00007CC9: 	LDI	@DYNALIST_END,AR2
     // asm 00007CCA: 	LDI	*+AR2(OBLINK4),AR2
     // asm 00007CCB: 	LDI	*+AR2(OBLINK4),AR2
+    piece = DYNALIST_END;
+    piece = (OBJ*)piece->blink4;
+    piece = (OBJ*)piece->blink4;
     // asm 00007CCC: 	STI	AR2,*+AR7(DELTA_TPIECE)
+    p->ctx.CHOPPER.delta_tracking_piece = piece;
     // asm 00007CCD: 	LDI	*+AR2(OUSR1),R0
     // asm 00007CCE: 	STI	R0,*+AR7(DELTA_LAST_OID)
+    p->ctx.CHOPPER.delta_last_oid = (int)piece->usr1;
     // asm 00007CCF: 	CALL	SUB_FUNCTION_RVS_XLANE		;MATRIXA,VECTORA,R2
+    theta = SUB_FUNCTION_RVS_XLANE(p, piece); // MATRIXA,VECTORA,R2
     // asm 00007CD0: 	LDP	@_VECTORA
     // asm 00007CD1: 	LDF	*+AR2(OPOSX),R0
     // asm 00007CD2: 	ADDF	@_VECTORA+X,R0
     // asm 00007CD3: 	STF	R0,*+AR4(OPOSX)
+    p->ctx.CHOPPER.obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(piece->pos.X), C3X_LDF(_VECTORA.X)));
     // asm 00007CD4: 	LDF	*+AR2(OPOSY),R0
     // asm 00007CD5: 	FLOAT	1000,R1
     // asm 00007CD6: 	SUBF	R1,R0
     // asm 00007CD7: 	ADDF	@_VECTORA+Y,R0
     // asm 00007CD8: 	STF	R0,*+AR4(OPOSY)
+    p->ctx.CHOPPER.obj->pos.Y = C3X_STF(C3X_ADD(
+        C3X_SUB(C3X_LDF(piece->pos.Y), C3X_FROM_INT(1000)), C3X_LDF(_VECTORA.Y)));
     // asm 00007CD9: 	LDF	*+AR2(OPOSZ),R0
     // asm 00007CDA: 	ADDF	@_VECTORA+Z,R0
     // asm 00007CDB: 	STF	R0,*+AR4(OPOSZ)
+    p->ctx.CHOPPER.obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(piece->pos.Z), C3X_LDF(_VECTORA.Z)));
     // asm 00007CDC: 	SETDP
     // 	;initialize Ytheta to the intentional direction
     // asm 00007CDD: 	STF	R2,*+AR4(ORADY)
     // asm 00007CDE: 	STF	R2,*+AR7(DELTA_RADYDELTA)
+    p->ctx.CHOPPER.obj->rady = C3X_STF(theta);
+    p->ctx.CHOPPER.delta_rady_delta = C3X_STF(theta);
     // asm 00007CDF: 	LDI	AR4,AR2
     // asm 00007CE0: 	ADDI	OMATRIX,AR2
     // asm 00007CE1: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&p->ctx.CHOPPER.obj->omatrix, theta);
 ONBUZZ_L:
     // asm 00007CE2: 	CALL	DIST_TO_PLYR
+    distance = DIST_TO_PLYR(p->ctx.CHOPPER.obj);
     // asm 00007CE3: 	LDF	*+AR7(DELTA_PLYRDIST),R1
     // asm 00007CE4: 	STF	R0,*+AR7(DELTA_PLYRDIST)
     // asm 00007CE5: 	STF	R1,*+AR7(DELTA_OPLYRDIST)
+    p->ctx.CHOPPER.delta_old_plyrdist = p->ctx.CHOPPER.delta_plyrdist;
+    p->ctx.CHOPPER.delta_plyrdist = C3X_STF(distance);
     // asm 00007CE6: 	FLOAT	22000,R2
     // asm 00007CE7: 	CMPF	R2,R0
     // asm 00007CE8: 	BLE	FLYAWAY
+    if (C3X_LE(distance, C3X_FROM_INT(22000))) {
+        PROC_CONTINUE(FLYAWAY, 2);
+        return;
+    }
     // asm 00007CE9: 	CALL	HELI_SND
+    HELI_SND(p);
     // 	;see if we should track the next piece
 CHECK_DIST2:
     // asm 00007CEA: 	LDI	*+AR7(DELTA_LAST_OID),R0	;CHECK TO SEE IF IT IS IN THE RANGE
@@ -276,29 +402,49 @@ CHECK_DIST2:
     // asm 00007CED: 	SUBPI	@DGROUP_COUNT,R1
     // asm 00007CEE: 	CMPI	R1,R0
     // asm 00007CEF: 	BLE	CHOPPER_DIE
+    if ((p->ctx.CHOPPER.delta_last_oid >> 8) <= SECTIONIDX - DGROUP_COUNT) {
+        PROC_CONTINUE(CHOPPER_DIE, 3);
+        return;
+    }
     // asm 00007CF0: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00007CF1: 	LDI	*+AR2(OBLINK4),R0
     // asm 00007CF2: 	BZ	CHOPPER_DIE
+    piece = p->ctx.CHOPPER.delta_tracking_piece;
+    next_piece = (OBJ*)piece->blink4;
+    if (next_piece == NULL) {
+        PROC_CONTINUE(CHOPPER_DIE, 4);
+        return;
+    }
     // asm 00007CF3: 	LDI	@PLYCBLK,AR2
     // asm 00007CF4: 	LDF	*+AR2(CARDIST2CNTR),R0
     // asm 00007CF5: 	STF	R0,*+AR7(DELTA_XLANE)
+    p->ctx.CHOPPER.delta_xlane = C3X_STF(C3X_LDF(PLYCBLK->dist_to_center));
     // asm 00007CF6: 	CALL	GET_TRACK_POS_RVS_XLANE		;CHECK IF WE SHOULD ADVANCE
+    distance = GET_TRACK_POS_RVS_XLANE(p, p->ctx.CHOPPER.obj); // CHECK IF WE SHOULD ADVANCE
     // asm 00007CF7: 	FLOAT	5000,R1				;TO THE NEXT ROADPIECE
     // asm 00007CF8: 	CMPF	R1,R0
     // asm 00007CF9: 	BGT	THIS_PIECE2
+    if (C3X_GT(distance, C3X_FROM_INT(5000))) goto THIS_PIECE2;
     // asm 00007CFA: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00007CFB: 	LDI	*+AR2(OBLINK4),R0
     // asm 00007CFC: 	STI	R0,*+AR7(DELTA_TPIECE)
+    p->ctx.CHOPPER.delta_tracking_piece = next_piece;
     // asm 00007CFD: 	LDI	R0,AR0
     // asm 00007CFE: 	LDI	*+AR0(OUSR1),R0
     // asm 00007CFF: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
+    p->ctx.CHOPPER.delta_last_oid = (int)next_piece->usr1; // SAVE THE LAST KNOWN VALID OID
     // asm 00007D00: 	BU	CHECK_DIST2
+    goto CHECK_DIST2;
 THIS_PIECE2:
     // asm 00007D01: 	FLOATP	@NFRAMES,R1
     // asm 00007D02: 	MPYF	*+AR7(CD_TSPEED),R1
     // asm 00007D03: 	LDFLE	30,R1			;if 0 or less assume 30 voxel per frame
+    divisor = C3X_MUL(C3X_FROM_INT(NFRAMES), C3X_LDF(p->ctx.CHOPPER.true_speed));
+    if (C3X_LE(divisor, C3X_FROM_INT(0))) divisor = C3X_IMM_F32(30);
     // asm 00007D04: 	CALL	DIV_F			;R0/R1 (distance to piece/speed) -> # frames to achieve
+    distance = DIV_F(distance, divisor); // R0/R1 (distance to piece/speed) -> # frames to achieve
     // asm 00007D05: 	FIX	R0,R7
+    frames = C3X_FIX(distance);
     // asm 00007D06: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00007D07: 	LDP	@_VECTORA		;lane position
     // asm 00007D08: 	LDF	*+AR2(OPOSX),R2		;X
@@ -307,49 +453,65 @@ THIS_PIECE2:
     // asm 00007D0B: 	LDF	*+AR2(OPOSZ),R3		;Z
     // asm 00007D0C: 	SUBF	*+AR4(OPOSZ),R3
     // asm 00007D0D: 	ADDF	@_VECTORA+Z,R3
+    piece = p->ctx.CHOPPER.delta_tracking_piece;
+    distance = C3X_ADD(C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(p->ctx.CHOPPER.obj->pos.X)), C3X_LDF(_VECTORA.X));
+    divisor = C3X_ADD(C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(p->ctx.CHOPPER.obj->pos.Z)), C3X_LDF(_VECTORA.Z));
     // asm 00007D0E: 	SETDP
     // 	;find the theta delta to this position
     // 	;
     // asm 00007D0F: 	CALL	ARCTANF			;-> R0
     // asm 00007D10: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
+    theta_delta = C3X_SUB(ARCTANF(distance, divisor), C3X_IMM_F32(HALFPI)); // DESIRED THETA
     // asm 00007D11:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 00007D12: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
+    theta_delta = GETTHETADIFF(theta_delta, C3X_LDF(p->ctx.CHOPPER.obj->rady));
     // asm 00007D13: 	FLOAT	R7,R1			;theta / number of turns to achieve
     // asm 00007D14: 	SUBF	1,R1
+    divisor = C3X_SUB(C3X_FROM_INT(frames), C3X_IMM_F32(1));
     // asm 00007D15: 	BLE	NODIV
     // asm 00007D16: 	CALL	DIV_F			;-> R0
+    if (C3X_GT(divisor, C3X_FROM_INT(0))) theta_delta = DIV_F(theta_delta, divisor);
 NODIV:
     // asm 00007D17: 	CMPF	0.3926,R0		;PI/8 (maximum turning radius)
     // asm 00007D18: 	LDFGT	0.3926,R0
+    if (C3X_GT(theta_delta, C3X_IMM_F32(0.3926))) theta_delta = C3X_IMM_F32(0.3926);
     // asm 00007D19: 	CMPF	-0.3926,R0
     // asm 00007D1A: 	LDFLT	-0.3926,R0
+    if (C3X_LT(theta_delta, C3X_IMM_F32(-0.3926))) theta_delta = C3X_IMM_F32(-0.3926);
     // asm 00007D1B: 	STF	R0,*+AR7(DELTA_RADYDELTA)
+    p->ctx.CHOPPER.delta_rady_delta = C3X_STF(theta_delta);
     // asm 00007D1C: 	PUSH	AR4
     // asm 00007D1D: 	ADDI	OPOSX,AR4
     // asm 00007D1E: 	CALL	CAMSCAN
     // asm 00007D1F: 	POP	AR4
     // asm 00007D20: 	BNC	LLK2
+    if (!CAMSCAN(&p->ctx.CHOPPER.obj->pos, &road_delta)) goto LLK2;
     // asm 00007D21: 	NEGF	R0
     // asm 00007D22: 	FLOAT	-1300,R1
     // asm 00007D23: 	SUBF	R1,R0
     // asm 00007D24: 	NEGF	R0
     // asm 00007D25: 	ADDF	*+AR4(OPOSY),R0
     // asm 00007D26: 	STF	R0,*+AR7(CD_DHEIGHT)
+    p->ctx.CHOPPER.desired_height = C3X_STF(C3X_ADD(
+        C3X_SUB(road_delta, C3X_FROM_INT(1300)), C3X_LDF(p->ctx.CHOPPER.obj->pos.Y)));
 LLK2:
     // asm 00007D27: 	LDF	*+AR7(CD_SPEED),R0
     // asm 00007D28: 	ADDF	*+AR7(CD_ACC),R0
     // asm 00007D29: 	FLOAT	MAX_SPEED,R1
     // asm 00007D2A: 	CMPF	R1,R0
     // asm 00007D2B: 	LDFGT	R1,R0
+    speed = C3X_ADD(C3X_LDF(p->ctx.CHOPPER.speed), C3X_LDF(p->ctx.CHOPPER.acceleration));
+    if (C3X_GT(speed, C3X_FROM_INT(MAX_SPEED))) speed = C3X_FROM_INT(MAX_SPEED);
     // asm 00007D2C: 	STF	R0,*+AR7(CD_SPEED)
+    p->ctx.CHOPPER.speed = C3X_STF(speed);
     // asm 00007D2D: 	LDF	*+AR7(DELTA_RADYDELTA),R2
     // asm 00007D2E: 	LDF	*+AR7(CD_SPEED),R3
     // asm 00007D2F: 	CALL	FSL_MOVE
+    FSL_MOVE(p, theta_delta, speed);
     // asm 00007D30: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00007D32: 	BU	ONBUZZ_L
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "ONCOMMING_BUZZ", 0, 0);
-    UNIMPL();
+    goto ONBUZZ_L;
 }
 
 // *----------------------------------------------------------------------------
@@ -587,82 +749,195 @@ LLK2:
  *
  *
  */
-void CHOPPER(void)
+void CHOPPER(PROC* p)
 {
+    OBJ* obj;
+    CARBLK* carblk;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    default:
+        break;
+    }
+
     // 	;BEGIN INITIALIZATION CODE
     // 	;
     // asm 00007D33: 	LDI	@(_plyr1+PLY_PROC),AR2	;FIRST SETUP THAT WE FOLLOW THE PLAYERS PROC
     // asm 00007D34: 	CALL	PRC_FOLLOW
+    PRC_FOLLOW(PLYPROC, p);
     // asm 00007D35: 	CALL	OBJ_GET
+    obj = OBJ_GET();
     // asm 00007D36: 	BC	SUICIDE
+    if (obj == NULL) DIE();
     // asm 00007D37: 	LDI	AR0,AR4
     // asm 00007D38: 	LDIL	helli,R0
     // asm 00007D3B: 	STI	R0,*+AR4(OROMDATA)
+    obj->romdata = ROM_PTR(helli_ROM);
     // asm 00007D3C: 	CLRF	R0
     // asm 00007D3D: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_FROM_INT(0));
     // asm 00007D3E: 	FLOAT	-20,R0
     // asm 00007D3F: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_FROM_INT(-20));
     // asm 00007D40: 	FLOAT	3500,R0
     // asm 00007D41: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_FROM_INT(3500));
     // asm 00007D42: 	LDI	AR4,AR2
     // asm 00007D43: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
     // asm 00007D44: 	CALL	_CARV0
+    carblk = _CARV0(obj, 0);
     // asm 00007D45: 	LDI	*+AR4(OCARBLK),AR5
     // asm 00007D46: 	CALL	SETDYNAOBJ
+    p->ctx.CHOPPER.obj = obj;
+    p->ctx.CHOPPER.carblk = carblk;
+    SETDYNAOBJ(p, obj);
     // asm 00007D47: 	LDF	0,R2
     // asm 00007D48: 	STF	R2,*+AR4(ORADX)
     // asm 00007D49: 	STF	R2,*+AR4(ORADY)
     // asm 00007D4A: 	STF	R2,*+AR4(CRADZ)
+    obj->radx = C3X_STF(C3X_IMM_F32(0));
+    obj->rady = C3X_STF(C3X_IMM_F32(0));
+    obj->usr1_as_float = C3X_STF(C3X_IMM_F32(0));
     // asm 00007D4B: 	LDI	AR4,AR2
     // asm 00007D4C: 	ADDI	OMATRIX,AR2
     // asm 00007D4D: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&obj->omatrix, C3X_IMM_F32(0));
     // asm 00007D4E: 	CLRI	R0
     // asm 00007D4F: 	STI	R0,*+AR7(CD_PASS_COUNT)
     // asm 00007D50: 	STI	R0,*+AR7(CD_BOMB_COUNT)
+    p->ctx.CHOPPER.pass_count = 0;
+    p->ctx.CHOPPER.bomb_count = 0;
     // asm 00007D51: 	LDI	DRONE_C|HELICOPTER,R0
     // asm 00007D52: 	STI	R0,*+AR4(OID)
+    obj->id = DRONE_C | HELICOPTER;
     // asm 00007D53: 	STI	R0,*+AR7(PID)
+    p->id = DRONE_C | HELICOPTER;
     // asm 00007D54: 	STI	AR7,*+AR4(OPLINK)
+    obj->plink = p;
     // asm 00007D55: 	RANDN	2
     // asm 00007D57: 	ADDI	1,R0
     // asm 00007D58: 	STI	R0,*+AR7(CD_MAX_PASSES)
+    p->ctx.CHOPPER.max_passes = RANDU0(2) + 1;
     // asm 00007D59: 	CLRI	R0
     // asm 00007D5A: 	STI	R0,*+AR7(CD_DOATTACK)
+    p->ctx.CHOPPER.do_attack = 0;
     // 	;
     // 	;END OF INITIALIZATION CODE
     // asm 00007D5B: 	CLRI	R0
     // asm 00007D5C: 	STI	R0,*+AR7(CD_LASTPASS)
+    p->ctx.CHOPPER.last_pass = 0;
     // 	;what type of pass to make?
-CHOPPER_PASS:
+    PROC_CONTINUE(CHOPPER_PASS, 1);
+    return;
+}
+
+static void CHOPPER_PASS(PROC* p)
+{
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_ORDERING("CHOPPER_PASS");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    case 5:
+        goto PROC_RESUME_5;
+    default:
+        break;
+    }
+
+    for (;;) {
     // asm 00007D5D: 	LDI	@HELI_ABORT,R0
     // asm 00007D5E: 	BNZ	CHOPPER_DIE
+    if (HELI_ABORT != 0) {
+        PROC_CONTINUE(CHOPPER_DIE, 1);
+        return;
+    }
     // asm 00007D5F: 	LDI	*+AR7(CD_LASTPASS),R0
     // asm 00007D60: 	BNZ	CHOPPER_DIE
+    if (p->ctx.CHOPPER.last_pass != 0) {
+        PROC_CONTINUE(CHOPPER_DIE, 4);
+        return;
+    }
     // asm 00007D61: 	LDI	*+AR7(CD_PASS_COUNT),R0
     // asm 00007D62: 	INC	R0
     // asm 00007D63: 	CMPI	*+AR7(CD_MAX_PASSES),R0
     // asm 00007D64: 	BGT	DOTHEMOVE
+    if (p->ctx.CHOPPER.pass_count + 1 > p->ctx.CHOPPER.max_passes) goto DOTHEMOVE;
     // asm 00007D65: 	STI	R0,*+AR7(CD_PASS_COUNT)
+    p->ctx.CHOPPER.pass_count += 1;
     // asm 00007D66: 	BU	ONCOMMING_BUZZ
+    PROC_CONTINUE(ONCOMMING_BUZZ, 2);
+    continue;
 DOTHEMOVE:
     // asm 00007D67: 	LDI	1,R0
     // asm 00007D68: 	STI	R0,*+AR7(CD_LASTPASS)
+    p->ctx.CHOPPER.last_pass = 1;
     // asm 00007D69: 	RANDN	2
     // asm 00007D6B: 	STI	R0,*+AR7(CD_DOATTACK)
+    p->ctx.CHOPPER.do_attack = RANDU0(2);
     // asm 00007D6C: 	LDI	R0,R0
     // asm 00007D6D: 	BNZ	ONCOMMING_BUZZ
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOPPER", 0, 0);
-    UNIMPL();
+    if (p->ctx.CHOPPER.do_attack != 0) {
+        PROC_CONTINUE(ONCOMMING_BUZZ, 5);
+        continue;
+    }
+    PROC_CONTINUE(FORWARD_BUZZ, 3);
+    }
 }
 
-static void FORWARD_BUZZ(void)
+static void FORWARD_BUZZ(PROC* p)
 {
+    OBJ* next_piece;
+    OBJ* piece;
+    OBJ* player_piece;
+    c3x_reg_t distance;
+    c3x_reg_t divisor;
+    c3x_reg_t player_distance;
+    c3x_reg_t road_delta;
+    c3x_reg_t speed;
+    c3x_reg_t speed_limit;
+    c3x_reg_t theta;
+    c3x_reg_t theta_delta;
+    int frames;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("FORWARD_BUZZ");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
+    case 4:
+        goto PROC_RESUME_4;
+    case 5:
+        goto PROC_RESUME_5;
+    case 6:
+        goto PROC_RESUME_6;
+    default:
+        break;
+    }
+
     // 	;FORWARD BUZZ INIT. CODE
     // 	;
     // asm 00007D6E: 	RANDN	20
     // asm 00007D70: 	ADDI	20,R0
     // asm 00007D71: 	STI	R0,*+AR7(CD_MAX_BOMBS)
+    p->ctx.CHOPPER.max_bombs = RANDU0(20) + 20;
     // asm 00007D72: 	LDF	0,R0
     // asm 00007D73: 	STF	R0,*+AR4(ORADX)
     // asm 00007D74: 	STF	R0,*+AR4(ORADY)
@@ -670,63 +945,98 @@ static void FORWARD_BUZZ(void)
     // asm 00007D76: 	STF	R0,*+AR4(OVELX)
     // asm 00007D77: 	STF	R0,*+AR4(OVELY)
     // asm 00007D78: 	STF	R0,*+AR4(OVELZ)
+    p->ctx.CHOPPER.obj->radx = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->rady = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->usr1_as_float = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->vel_x = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->vel_y = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.CHOPPER.obj->vel_z = C3X_STF(C3X_IMM_F32(0));
     // 	;
     // 	;find where player is
     // asm 00007D79: 	LDI	@PLYCBLK,AR2
     // asm 00007D7A: 	NEGF	*+AR2(CARDIST2CNTR),R0
     // asm 00007D7B: 	STF	R0,*+AR7(DELTA_XLANE)
+    p->ctx.CHOPPER.delta_xlane = C3X_STF(C3X_NEG(C3X_LDF(PLYCBLK->dist_to_center)));
     // asm 00007D7C: 	LDI	*+AR2(CARTRAK),AR2
     // asm 00007D7D: 	LDI	*+AR2(OBLINK4),AR2
+    piece = OBJREF_TO_PTR(PLYCBLK->closest_track_piece);
+    piece = (OBJ*)piece->blink4;
     // asm 00007D7E: 	STI	AR2,*+AR7(DELTA_TPIECE)
+    p->ctx.CHOPPER.delta_tracking_piece = piece;
     // asm 00007D7F: 	LDI	*+AR2(OUSR1),R0
     // asm 00007D80: 	STI	R0,*+AR7(DELTA_LAST_OID)
+    p->ctx.CHOPPER.delta_last_oid = (int)piece->usr1;
     // asm 00007D81: 	CALL	DELTA_SUB_FUNCTION			;MATRIXA,VECTORA,R2
+    theta = DELTA_SUB_FUNCTION(p, piece); // MATRIXA,VECTORA,R2
     // asm 00007D82: 	LDP	@_VECTORA
     // asm 00007D83: 	LDF	*+AR2(OPOSX),R0
     // asm 00007D84: 	ADDF	@_VECTORA+X,R0
     // asm 00007D85: 	STF	R0,*+AR4(OPOSX)
+    p->ctx.CHOPPER.obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(piece->pos.X), C3X_LDF(_VECTORA.X)));
     // asm 00007D86: 	LDF	*+AR2(OPOSY),R0
     // asm 00007D87: 	FLOAT	1000,R1
     // asm 00007D88: 	SUBF	R1,R0
     // asm 00007D89: 	ADDF	@_VECTORA+Y,R0
     // asm 00007D8A: 	STF	R0,*+AR4(OPOSY)
+    p->ctx.CHOPPER.obj->pos.Y = C3X_STF(C3X_ADD(
+        C3X_SUB(C3X_LDF(piece->pos.Y), C3X_FROM_INT(1000)), C3X_LDF(_VECTORA.Y)));
     // asm 00007D8B: 	LDF	*+AR2(OPOSZ),R0
     // asm 00007D8C: 	ADDF	@_VECTORA+Z,R0
     // asm 00007D8D: 	STF	R0,*+AR4(OPOSZ)
+    p->ctx.CHOPPER.obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(piece->pos.Z), C3X_LDF(_VECTORA.Z)));
     // asm 00007D8E: 	SETDP
     // 	;initialize Ytheta to the intentional direction
     // asm 00007D8F: 	STF	R2,*+AR4(ORADY)
     // asm 00007D90: 	STF	R2,*+AR7(DELTA_RADYDELTA)
+    p->ctx.CHOPPER.obj->rady = C3X_STF(theta);
+    p->ctx.CHOPPER.delta_rady_delta = C3X_STF(theta);
     // asm 00007D91: 	LDI	AR4,AR2
     // asm 00007D92: 	ADDI	OMATRIX,AR2
     // asm 00007D93: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&p->ctx.CHOPPER.obj->omatrix, theta);
     // asm 00007D94: 	FLOAT	60,R0
     // asm 00007D95: 	STF	R0,*+AR7(CD_ACC)
+    p->ctx.CHOPPER.acceleration = C3X_STF(C3X_FROM_INT(60));
     // asm 00007D96: 	LDI	0,R0
     // asm 00007D97: 	STI	R0,*+AR7(CD_BOMBTIK)
+    p->ctx.CHOPPER.bomb_timer = 0;
     // asm 00007D98: 	LDI	CM_DB,R0
     // asm 00007D99: 	STI	R0,*+AR7(CD_MODE)
+    p->ctx.CHOPPER.mode = CM_DB;
     // 	;
     // 	;END FORWARD BUZZ INIT. CODE
 CHOPPER_L:
     // asm 00007D9A: 	LDI	@HELI_ABORT,R0
     // asm 00007D9B: 	BNZ	FLYAWAY
+    if (HELI_ABORT != 0) {
+        PROC_CONTINUE(FLYAWAY, 2);
+        return;
+    }
     // asm 00007D9C: 	LDI	@PLYCBLK,AR2
     // asm 00007D9D: 	NEGF	*+AR2(CARDIST2CNTR),R0
     // asm 00007D9E: 	STF	R0,*+AR7(DELTA_XLANE)
+    p->ctx.CHOPPER.delta_xlane = C3X_STF(C3X_NEG(C3X_LDF(PLYCBLK->dist_to_center)));
     // ;	LDF	*+AR2(CARSPEED),R1
     // ;	CMPF	60,R1
     // ;	BGT	NOCIRC
     // ;	JSRP	CIRCLE_JOIN
     // ;NOCIRC
     // asm 00007D9F: 	CALL	DIST_TO_PLYR
+    distance = DIST_TO_PLYR(p->ctx.CHOPPER.obj);
     // asm 00007DA0: 	LDF	*+AR7(DELTA_PLYRDIST),R1
     // asm 00007DA1: 	STF	R0,*+AR7(DELTA_PLYRDIST)
     // asm 00007DA2: 	STF	R1,*+AR7(DELTA_OPLYRDIST)
+    p->ctx.CHOPPER.delta_old_plyrdist = p->ctx.CHOPPER.delta_plyrdist;
+    p->ctx.CHOPPER.delta_plyrdist = C3X_STF(distance);
     // asm 00007DA3: 	FLOAT	10000,R2
     // asm 00007DA4: 	CMPF	R2,R0
     // asm 00007DA5: 	BGT	FLYAWAY
+    if (C3X_GT(distance, C3X_FROM_INT(10000))) {
+        PROC_CONTINUE(FLYAWAY, 3);
+        return;
+    }
     // asm 00007DA6: 	CALL	HELI_SND
+    HELI_SND(p);
     // 	;see if we should track the next piece
 CHECK_DIST:
     // asm 00007DA7: 	LDI	*+AR7(DELTA_LAST_OID),R0	;CHECK TO SEE IF IT IS IN THE RANGE
@@ -735,27 +1045,43 @@ CHECK_DIST:
     // asm 00007DAA: 	SUBI	@DGROUP_COUNT,R1
     // asm 00007DAB: 	CMPI	R1,R0
     // asm 00007DAC: 	BLE	CHOPPER_DIE
+    if ((p->ctx.CHOPPER.delta_last_oid >> 8) <= SECTIONIDX - DGROUP_COUNT) {
+        PROC_CONTINUE(CHOPPER_DIE, 4);
+        return;
+    }
     // asm 00007DAD: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00007DAE: 	LDI	*+AR2(OLINK4),R0
     // asm 00007DAF: 	BZ	CHOPPER_SLP
+    piece = p->ctx.CHOPPER.delta_tracking_piece;
+    next_piece = (OBJ*)piece->link4;
+    if (next_piece == NULL) goto CHOPPER_SLP;
     // 	;old xlane determination code position
     // asm 00007DB0: 	CALL	DELTA_GET_TRACK_POS		;CHECK IF WE SHOULD ADVANCE
+    distance = DELTA_GET_TRACK_POS(p, p->ctx.CHOPPER.obj); // CHECK IF WE SHOULD ADVANCE
     // asm 00007DB1: 	FLOAT	5000,R1				;TO THE NEXT ROADPIECE
     // asm 00007DB2: 	CMPF	R1,R0
     // asm 00007DB3: 	BGT	THIS_PIECE
+    if (C3X_GT(distance, C3X_FROM_INT(5000))) goto THIS_PIECE;
     // asm 00007DB4: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00007DB5: 	LDI	*+AR2(OLINK4),R0
     // asm 00007DB6: 	STI	R0,*+AR7(DELTA_TPIECE)
+    p->ctx.CHOPPER.delta_tracking_piece = next_piece;
     // asm 00007DB7: 	LDI	R0,AR0
     // asm 00007DB8: 	LDI	*+AR0(OUSR1),R0
     // asm 00007DB9: 	STI	R0,*+AR7(DELTA_LAST_OID)	;SAVE THE LAST KNOWN VALID OID
+    p->ctx.CHOPPER.delta_last_oid = (int)next_piece->usr1; // SAVE THE LAST KNOWN VALID OID
     // asm 00007DBA: 	BU	CHECK_DIST
+    goto CHECK_DIST;
 THIS_PIECE:
     // asm 00007DBB: 	FLOAT	@NFRAMES,R1
     // asm 00007DBC: 	MPYF	*+AR7(CD_TSPEED),R1
     // asm 00007DBD: 	LDFLE	30,R1			;if 0 or less assume 30 voxel per frame
+    divisor = C3X_MUL(C3X_FROM_INT(NFRAMES), C3X_LDF(p->ctx.CHOPPER.true_speed));
+    if (C3X_LE(divisor, C3X_FROM_INT(0))) divisor = C3X_IMM_F32(30);
     // asm 00007DBE: 	CALL	DIV_F			;R0/R1 (distance to piece/speed) -> # frames to achieve
+    distance = DIV_F(distance, divisor); // R0/R1 (distance to piece/speed) -> # frames to achieve
     // asm 00007DBF: 	FIX	R0,R7
+    frames = C3X_FIX(distance);
     // asm 00007DC0: 	LDI	*+AR7(DELTA_TPIECE),AR2
     // asm 00007DC1: 	LDP	@_VECTORA		;lane position
     // asm 00007DC2: 	LDF	*+AR2(OPOSX),R2		;X
@@ -764,43 +1090,61 @@ THIS_PIECE:
     // asm 00007DC5: 	LDF	*+AR2(OPOSZ),R3		;Z
     // asm 00007DC6: 	SUBF	*+AR4(OPOSZ),R3
     // asm 00007DC7: 	ADDF	@_VECTORA+Z,R3
+    piece = p->ctx.CHOPPER.delta_tracking_piece;
+    distance = C3X_ADD(C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(p->ctx.CHOPPER.obj->pos.X)), C3X_LDF(_VECTORA.X));
+    divisor = C3X_ADD(C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(p->ctx.CHOPPER.obj->pos.Z)), C3X_LDF(_VECTORA.Z));
     // asm 00007DC8: 	SETDP
     // 	;find the theta delta to this position
     // 	;
     // asm 00007DC9: 	CALL	ARCTANF			;-> R0
     // asm 00007DCA: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
+    theta_delta = C3X_SUB(ARCTANF(distance, divisor), C3X_IMM_F32(HALFPI)); // DESIRED THETA
     // asm 00007DCB:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 00007DCC: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
+    theta_delta = GETTHETADIFF(theta_delta, C3X_LDF(p->ctx.CHOPPER.obj->rady));
     // asm 00007DCD: 	FLOAT	R7,R1			;theta / number of turns to achieve
     // asm 00007DCE: 	SUBF	1,R1
+    divisor = C3X_SUB(C3X_FROM_INT(frames), C3X_IMM_F32(1));
     // asm 00007DCF: 	BLE	NODIV2
     // asm 00007DD0: 	CALL	DIV_F			;-> R0
+    if (C3X_GT(divisor, C3X_FROM_INT(0))) theta_delta = DIV_F(theta_delta, divisor);
 NODIV2:
     // asm 00007DD1: 	CMPF	0.3926,R0		;PI/8 (maximum turning radius)
     // asm 00007DD2: 	LDFGT	0.3926,R0
+    if (C3X_GT(theta_delta, C3X_IMM_F32(0.3926))) theta_delta = C3X_IMM_F32(0.3926);
     // asm 00007DD3: 	CMPF	-0.3926,R0
     // asm 00007DD4: 	LDFLT	-0.3926,R0
+    if (C3X_LT(theta_delta, C3X_IMM_F32(-0.3926))) theta_delta = C3X_IMM_F32(-0.3926);
     // asm 00007DD5: 	STF	R0,*+AR7(DELTA_RADYDELTA)
+    p->ctx.CHOPPER.delta_rady_delta = C3X_STF(theta_delta);
     // asm 00007DD6: 	CALL	GET_CLOSEST_TRAK
+    p->ctx.CHOPPER.closest_road = GET_CLOSEST_TRAK(p->ctx.CHOPPER.obj);
     // asm 00007DD7: 	STI	AR0,*+AR7(CD_CLOSEROAD)
     // asm 00007DD8: 	LDF	*+AR7(CD_ODHEIGHT),R0
     // asm 00007DD9: 	STF	R0,*+AR7(CD_DHEIGHT)
+    p->ctx.CHOPPER.desired_height = p->ctx.CHOPPER.old_height;
     // asm 00007DDA: 	LDI	*+AR7(CD_CLOSEROAD),AR0
     // asm 00007DDB: 	FIX	*+AR0(OPOSY),R0
     // asm 00007DDC: 	SUBI	1300,R0
     // asm 00007DDD: 	FLOAT	R0
     // asm 00007DDE: 	STF	R0,*+AR7(CD_DHEIGHT)
+    p->ctx.CHOPPER.desired_height = C3X_STF(C3X_FROM_INT(
+        C3X_FIX(C3X_LDF(p->ctx.CHOPPER.closest_road->pos.Y)) - 1300));
     // asm 00007DDF: 	LDI	*+AR7(CD_CLOSEROAD),AR0
     // asm 00007DE0: 	LDI	*+AR0(OUSR1),R0
     // asm 00007DE1: 	LDI	@PLYCBLK,AR1
     // asm 00007DE2: 	LDI	*+AR1(CARTRAK),AR2
     // asm 00007DE3: 	LDI	*+AR2(OUSR1),R1
     // asm 00007DE4: 	CMPI	R1,R0
+    player_piece = OBJREF_TO_PTR(PLYCBLK->closest_track_piece);
     // asm 00007DE5: 	BLT	ISBEND
+    if ((int)p->ctx.CHOPPER.closest_road->usr1 < (int)player_piece->usr1) goto ISBEND;
     // asm 00007DE6: 	BGT	ISAHED
+    if ((int)p->ctx.CHOPPER.closest_road->usr1 > (int)player_piece->usr1) goto ISAHED;
     // 	;tied case, must be exact
     // 	;
     // asm 00007DE7: 	LDI	*+AR2(OLINK4),AR2
+    piece = (OBJ*)player_piece->link4;
     // asm 00007DE8: 	LDI	@PLYCAR,AR0
     // asm 00007DE9: 	LDF	*+AR0(OPOSX),R0
     // asm 00007DEA: 	SUBF	*+AR2(OPOSX),R0
@@ -809,6 +1153,10 @@ NODIV2:
     // asm 00007DED: 	SUBF	*+AR2(OPOSZ),R1
     // asm 00007DEE: 	MPYF	R1,R1
     // asm 00007DEF: 	ADDF	R1,R0
+    distance = C3X_SUB(C3X_LDF(PLYCAR->pos.X), C3X_LDF(piece->pos.X));
+    distance = C3X_MUL(distance, distance);
+    road_delta = C3X_SUB(C3X_LDF(PLYCAR->pos.Z), C3X_LDF(piece->pos.Z));
+    player_distance = C3X_ADD(distance, C3X_MUL(road_delta, road_delta));
     // asm 00007DF0: 	LDF	*+AR4(OPOSX),R2
     // asm 00007DF1: 	SUBF	*+AR2(OPOSX),R2
     // asm 00007DF2: 	MPYF	R2,R2
@@ -816,15 +1164,23 @@ NODIV2:
     // asm 00007DF4: 	SUBF	*+AR2(OPOSZ),R1
     // asm 00007DF5: 	MPYF	R1,R1
     // asm 00007DF6: 	ADDF	R2,R1
+    distance = C3X_SUB(C3X_LDF(p->ctx.CHOPPER.obj->pos.X), C3X_LDF(piece->pos.X));
+    distance = C3X_MUL(distance, distance);
+    road_delta = C3X_SUB(C3X_LDF(p->ctx.CHOPPER.obj->pos.Z), C3X_LDF(piece->pos.Z));
+    distance = C3X_ADD(distance, C3X_MUL(road_delta, road_delta));
     // asm 00007DF7: 	CMPF	R0,R1
     // asm 00007DF8: 	BGT	ISBEND
+    if (C3X_GT(distance, player_distance)) goto ISBEND;
+ISAHED:
     // asm 00007DF9: ISAHED	;is ahead of
     // asm 00007DF9: 	LDI	1,R0
     // asm 00007DFA: 	STI	R0,*+AR7(CD_AHEADP)
+    p->ctx.CHOPPER.ahead_of_player = 1;
     // asm 00007DFB: 	LDF	*+AR7(DELTA_PLYRDIST),R1
     // asm 00007DFC: 	FLOAT	1750,R2
     // asm 00007DFD: 	CMPF	R2,R1
     // asm 00007DFE: 	BLT	LITTLE
+    if (C3X_LT(C3X_LDF(p->ctx.CHOPPER.delta_plyrdist), C3X_FROM_INT(1750))) goto LITTLE;
     // asm 00007DFF: 	LDF	*+AR7(CD_SPEED),R0
     // asm 00007E00: 	LDF	R0,R2
     // asm 00007E01: 	MPYF	1.1,R2
@@ -835,22 +1191,35 @@ NODIV2:
     // asm 00007E06: 	LDFGT	R1,R0
     // asm 00007E07: 	CMPF	R2,R0				;never rad change on our vel.
     // asm 00007E08: 	LDFGT	R2,R0
+    speed = C3X_ADD(C3X_LDF(p->ctx.CHOPPER.speed), C3X_LDF(p->ctx.CHOPPER.acceleration));
+    speed_limit = C3X_MUL(C3X_LDF(p->ctx.CHOPPER.speed), C3X_IMM_F32(1.1));
+    player_distance = C3X_MUL(C3X_LDF(PLYCBLK->speed), C3X_IMM_F32(1.5));
+    if (C3X_GT(speed, player_distance)) speed = player_distance;
+    if (C3X_GT(speed, speed_limit)) speed = speed_limit;
     // asm 00007E09: 	STF	R0,*+AR7(CD_SPEED)
+    p->ctx.CHOPPER.speed = C3X_STF(speed);
     // asm 00007E0A: 	BU	L88
+    goto L88;
 ISBEND:
     // asm 00007E0B: 	CLRI	R0
     // asm 00007E0C: 	STI	R0,*+AR7(CD_AHEADP)
+    p->ctx.CHOPPER.ahead_of_player = 0;
     // asm 00007E0D: 	LDF	*+AR7(DELTA_PLYRDIST),R1
     // asm 00007E0E: 	FLOAT	3500,R2
     // asm 00007E0F: 	CMPF	R2,R1
     // asm 00007E10: 	BLT	LITTLE
+    if (C3X_LT(C3X_LDF(p->ctx.CHOPPER.delta_plyrdist), C3X_FROM_INT(3500))) goto LITTLE;
     // asm 00007E11: 	LDF	*+AR1(CARSPEED),R0
     // asm 00007E12: 	MPYF	3,R0
     // asm 00007E13: 	FLOAT	600,R1
     // asm 00007E14: 	CMPF	R1,R0
     // asm 00007E15: 	LDFLT	R1,R0
+    speed = C3X_MUL(C3X_LDF(PLYCBLK->speed), C3X_IMM_F32(3));
+    if (C3X_LT(speed, C3X_FROM_INT(600))) speed = C3X_FROM_INT(600);
     // asm 00007E16: 	STF	R0,*+AR7(CD_SPEED)
+    p->ctx.CHOPPER.speed = C3X_STF(speed);
     // asm 00007E17: 	BU	L88
+    goto L88;
 LITTLE:
     // asm 00007E18: 	LDF	*+AR7(CD_SPEED),R2
     // asm 00007E19: 	MPYF	1.1,R2
@@ -861,107 +1230,183 @@ LITTLE:
     // asm 00007E1E: 	LDFLT	R1,R0
     // asm 00007E1F: 	CMPF	R2,R0
     // asm 00007E20: 	LDFGT	R2,R0
+    speed_limit = C3X_MUL(C3X_LDF(p->ctx.CHOPPER.speed), C3X_IMM_F32(1.1));
+    speed = C3X_MUL(C3X_LDF(PLYCBLK->speed), C3X_IMM_F32(2.0));
+    if (C3X_LT(speed, C3X_FROM_INT(500))) speed = C3X_FROM_INT(500);
+    if (C3X_GT(speed, speed_limit)) speed = speed_limit;
     // asm 00007E21: 	STF	R0,*+AR7(CD_SPEED)
+    p->ctx.CHOPPER.speed = C3X_STF(speed);
 L88:
     // asm 00007E22: LDF	*+AR7(DELTA_RADYDELTA),R2
     // asm 00007E23: 	LDF	*+AR7(CD_SPEED),R3
     // asm 00007E24: 	CALL	FSL_MOVE
+    FSL_MOVE(p, C3X_LDF(p->ctx.CHOPPER.delta_rady_delta), C3X_LDF(p->ctx.CHOPPER.speed));
     // asm 00007E25: 	LDI	*+AR7(CD_MODE),R4
     // asm 00007E26: 	CMPI	CM_DB,R4
     // asm 00007E27: 	BNE	NO_BOMBS
+    if (p->ctx.CHOPPER.mode != CM_DB) goto NO_BOMBS;
     // asm 00007E28: 	LDI	*+AR7(CD_BOMBTIK),R0
     // asm 00007E29: 	DEC	R0
     // asm 00007E2A: 	STI	R0,*+AR7(CD_BOMBTIK)
     // asm 00007E2B: 	BGT	NO_BOMBS
+    p->ctx.CHOPPER.bomb_timer -= 1;
+    if (p->ctx.CHOPPER.bomb_timer > 0) goto NO_BOMBS;
     // asm 00007E2C: 	LDI	*+AR7(CD_AHEADP),R0
     // asm 00007E2D: 	BZ	NO_BOMBS
+    if (p->ctx.CHOPPER.ahead_of_player == 0) goto NO_BOMBS;
     // asm 00007E2E: 	LDI	@POSITION,R0
     // asm 00007E2F: 	CMPI	1,R0
     // asm 00007E30: 	BNE	FLYAWAY
+    if (POSITION != 1) {
+        PROC_CONTINUE(FLYAWAY, 5);
+        return;
+    }
     // asm 00007E31: 	FLOAT	2300,R0
     // asm 00007E32: 	CMPF	*+AR7(DELTA_PLYRDIST),R0
     // asm 00007E33: 	BGT	NO_BOMBS
+    if (C3X_GT(C3X_FROM_INT(2300), C3X_LDF(p->ctx.CHOPPER.delta_plyrdist))) goto NO_BOMBS;
     // asm 00007E34: 	RANDN	10
     // asm 00007E36: 	ADDI	10,R0
     // asm 00007E37: 	STI	R0,*+AR7(CD_BOMBTIK)
+    p->ctx.CHOPPER.bomb_timer = RANDU0(10) + 10;
     // asm 00007E38: 	LDI	R0,R4
     // asm 00007E39: 	LDI	*+AR7(CD_BOMB_COUNT),R0
     // asm 00007E3A: 	INC	R0
     // asm 00007E3B: 	CMPI	*+AR7(CD_MAX_BOMBS),R0
     // asm 00007E3C: 	BGT	FLYAWAY		;NO_BOMBS
+    if (p->ctx.CHOPPER.bomb_count + 1 > p->ctx.CHOPPER.max_bombs) {
+        PROC_CONTINUE(FLYAWAY, 6);
+        return;
+    }
     // asm 00007E3D: 	STI	R0,*+AR7(CD_BOMB_COUNT)
+    p->ctx.CHOPPER.bomb_count += 1;
     // ;	CREATE	BOMB_PROC,3434
 NO_BOMBS:
 CHOPPER_SLP:
     // asm 00007E3E: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00007E40: 	B	CHOPPER_L
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FORWARD_BUZZ", 0, 0);
-    UNIMPL();
+    goto CHOPPER_L;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void FLYAWAY(void)
+static void FLYAWAY(PROC* p)
 {
+    c3x_reg_t distance;
+    c3x_reg_t direction;
+    c3x_reg_t height;
+    c3x_reg_t speed;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("FLYAWAY");
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    default:
+        break;
+    }
+
     // asm 00007E41: 	CLRI	AR6			;flag
     // asm 00007E42: 	LDI	100,AR5
+    p->ctx.CHOPPER.flyaway_count = 100;
     // asm 00007E43: 	LDF	-10,R7
+    p->ctx.CHOPPER.flyaway_drop = C3X_STF(C3X_IMM_F32(-10));
     // asm 00007E44: 	LDF	0.015,R0
     // asm 00007E45: 	CALL	SFRAND
+    direction = SFRAND(C3X_IMM_F32(0.015));
     // asm 00007E46: 	LDF	R0,R0
     // asm 00007E47: 	BLT	KKII
     // asm 00007E48: 	ADDF	0.01,R0
+    if (C3X_GE(direction, C3X_FROM_INT(0))) {
+        direction = C3X_ADD(direction, C3X_IMM_F32(0.01));
     // asm 00007E49: 	BU	KKUU
 KKII:
+    ;
     // asm 00007E4A: SUBF	0.01,R0
+    } else {
+        direction = C3X_SUB(direction, C3X_IMM_F32(0.01));
+    }
 KKUU:
+    ;
     // asm 00007E4B: STF	R0,*+AR7(CD_FLYTDIR)
+    p->ctx.CHOPPER.fly_direction = C3X_STF(direction);
+FLYAWAY_LP:
     // asm 00007E4C: FLYAWAY_LP
     // asm 00007E4C: 	CALL	DIST_TO_PLYR
+    distance = DIST_TO_PLYR(p->ctx.CHOPPER.obj);
     // asm 00007E4D: 	STF	R0,*+AR7(DELTA_PLYRDIST)
+    p->ctx.CHOPPER.delta_plyrdist = C3X_STF(distance);
     // asm 00007E4E: 	CALL	HELI_SND
+    HELI_SND(p);
     // asm 00007E4F: 	SUBF	3,R7
     // asm 00007E50: 	CMPF	-95,R7
     // asm 00007E51: 	LDFLT	-95,R7
+    p->ctx.CHOPPER.flyaway_drop = C3X_STF(C3X_SUB(
+        C3X_LDF(p->ctx.CHOPPER.flyaway_drop), C3X_IMM_F32(3)));
+    if (C3X_LT(C3X_LDF(p->ctx.CHOPPER.flyaway_drop), C3X_IMM_F32(-95))) {
+        p->ctx.CHOPPER.flyaway_drop = C3X_STF(C3X_IMM_F32(-95));
+    }
     // asm 00007E52: 	LDF	*+AR7(CD_DHEIGHT),R1
     // asm 00007E53: 	ADDF	R7,R1
     // asm 00007E54: 	STF	R1,*+AR7(CD_DHEIGHT)
+    height = C3X_ADD(C3X_LDF(p->ctx.CHOPPER.desired_height),
+        C3X_LDF(p->ctx.CHOPPER.flyaway_drop));
+    p->ctx.CHOPPER.desired_height = C3X_STF(height);
     // asm 00007E55: 	LDF	*+AR7(CD_SPEED),R0
     // asm 00007E56: 	ADDF	*+AR7(CD_ACC),R0
     // asm 00007E57: 	FLOAT	MAX_SPEED,R1
     // asm 00007E58: 	CMPF	R1,R0
     // asm 00007E59: 	LDFGT	R1,R0
+    speed = C3X_ADD(C3X_LDF(p->ctx.CHOPPER.speed), C3X_LDF(p->ctx.CHOPPER.acceleration));
+    if (C3X_GT(speed, C3X_FROM_INT(MAX_SPEED))) speed = C3X_FROM_INT(MAX_SPEED);
     // asm 00007E5A: 	STF	R0,*+AR7(CD_SPEED)
+    p->ctx.CHOPPER.speed = C3X_STF(speed);
     // asm 00007E5B: 	LDF	*+AR7(CD_SPEED),R3
     // asm 00007E5C: 	LDF	*+AR7(CD_FLYTDIR),R2
     // asm 00007E5D: 	CALL	FSL_MOVE
+    FSL_MOVE(p, C3X_LDF(p->ctx.CHOPPER.fly_direction), speed);
     // asm 00007E5E: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00007E60: 	DBU	AR5,FLYAWAY_LP
+    if (p->ctx.CHOPPER.flyaway_count-- != 0) goto FLYAWAY_LP;
     // asm 00007E61: 	BU	CHOPPER_PASS
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FLYAWAY", 0, 0);
-    UNIMPL();
+    return;
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CHOPPER_DIE(void)
+static void CHOPPER_DIE(PROC* p)
 {
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        MAME_ASSERT_ORDERING("CHOPPER_DIE");
+        break;
+    default:
+        break;
+    }
+
     // asm 00007E62: 	LDI	*+AR4(OCARBLK),AR2
     // asm 00007E63: 	CALL	DELCAR
+    DELCAR(p->ctx.CHOPPER.obj->carblk);
     // asm 00007E64: 	LDI	AR4,AR2
     // asm 00007E65: 	CALL	OBJ_DELETE
+    OBJ_DELETE(p->ctx.CHOPPER.obj);
     // asm 00007E66: 	LDI	HELI_SNDLP,AR2		;may want to add in volume effects
     // asm 00007E67: 	CALL	KILLSNDFX
+    KILLSNDFX(HELI_SNDLP);
     // asm 00007E68: 	LDI	*+AR7(CD_ANIPROC),AR2
     // asm 00007E69: 	CALL	PRC_KILL
+    PRC_KILL(p->ctx.CHOPPER.animation_proc);
     // asm 00007E6A: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOPPER_DIE", 0, 0);
-    UNIMPL();
+    /* Propagate this terminal branch through the C-only coroutine frames. */
+    p->yielded = 1;
+    DIE();
 }
 
 // *----------------------------------------------------------------------------
@@ -973,96 +1418,147 @@ static void CHOPPER_DIE(void)
  *	AR4	OBJECT
  *
  */
-static void FIND_YX_MATRIX(void)
+static void FIND_YX_MATRIX(OBJ* obj)
 {
     // asm 00007E6B: 	LDF	*+AR4(ORADY),R2
     // asm 00007E6C: 	LDI	AR4,AR2
     // asm 00007E6D: 	ADDI	OMATRIX,AR2
     // asm 00007E6E: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rady));
     // asm 00007E6F: 	LDI	@MATRIXAI,AR2
     // asm 00007E70: 	LDF	*+AR4(ORADX),R2
     // asm 00007E71: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&_MATRIXA, C3X_LDF(obj->radx));
     // asm 00007E72: 	LDI	@MATRIXAI,R2
     // asm 00007E73: 	LDI	AR4,R3
     // asm 00007E74: 	ADDI	OMATRIX,R3
     // asm 00007E75: 	LDI	R3,AR2
     // asm 00007E76: 	CALL	CONCATMAT
+    CONCATMAT(&_MATRIXA, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
     // asm 00007E77: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_YX_MATRIX", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void SETDYNAOBJ(void)
+static void SETDYNAOBJ(PROC* p, OBJ* obj)
 {
+    const DYNATAB_ENTRY* entry;
+    DYNAOBJ** link = (DYNAOBJ**)&obj->dynalist;
+    DYNAOBJ* dyna = NULL;
+    PROC_CONTEXT child_ctx = { 0 };
+    PROC* animation_proc;
+    int i;
+
     // asm 00007E78: 	LDI	O_DYNAMIC,R0	 	;MAKE PARENT OBJECT DYNAMIC
     // asm 00007E79: 	OR	*+AR4(OFLAGS),R0
     // asm 00007E7A: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_DYNAMIC;
     // asm 00007E7B: 	LDL	CHOPPERDYNA,AR2
     // asm 00007E7C: 	LDI	AR4,AR3
     // asm 00007E7D: 	ADDI	ODYNALIST,AR3
     // *INIT DYNA OBJECTS
     // asm 00007E7E: 	LDI	*AR2++,RC		;GET DYNAMIC OBJECT COUNT
+    for (i = 0; i <= CHOPPERDYNA.count_minus_1; i++) {
+        entry = &CHOPPERDYNA.entries[i];
     // asm 00007E7F: 	RPTB	CHOPLP
     // asm 00007E80:  	CALL	GETDYNA	     		;LINK HIM INTO LIST
+        dyna = GETDYNA(); // LINK HIM INTO LIST
     // asm 00007E81: 	STI	AR0,*AR3
+        *link = dyna;
     // asm 00007E82: 	LDF	*AR2++,R0
     // asm 00007E83: 	STF	R0,*+AR0(DYNACENTERX)
     // asm 00007E84: 	STF	R0,*+AR0(DYNATRANSX)
+        dyna->center_x = C3X_STF(C3X_LDF(entry->center.X));
+        dyna->trans_x = C3X_STF(C3X_LDF(entry->center.X));
     // asm 00007E85: 	LDF	*AR2++,R0
     // asm 00007E86: 	STF	R0,*+AR0(DYNACENTERY)
     // asm 00007E87: 	STF	R0,*+AR0(DYNATRANSY)
+        dyna->center_y = C3X_STF(C3X_LDF(entry->center.Y));
+        dyna->trans_y = C3X_STF(C3X_LDF(entry->center.Y));
     // asm 00007E88: 	LDF	*AR2++,R0
     // asm 00007E89: 	STF	R0,*+AR0(DYNACENTERZ)
     // asm 00007E8A: 	STF	R0,*+AR0(DYNATRANSZ)
+        dyna->center_z = C3X_STF(C3X_LDF(entry->center.Z));
+        dyna->trans_z = C3X_STF(C3X_LDF(entry->center.Z));
     // asm 00007E8B: 	LDI	*AR2++,R0
     // asm 00007E8C: 	STI	R0,*+AR0(DYNANVERTS)
+        dyna->nverts = entry->verts_minus_1;
     // asm 00007E8D: 	LDI	*AR2++,R0
     // asm 00007E8E: 	STI	R0,*+AR0(DYNAFLAG)
+        dyna->flag = entry->flag;
     // asm 00007E8F: 	STI	AR4,*+AR0(DYNAPARENT)
+        dyna->parent = obj;
 CHOPLP:
     // asm 00007E90: LDI	AR0,AR3
+        link = &dyna->link;
+    }
     // asm 00007E91: 	LDI	0,R0
     // asm 00007E92: 	STI	R0,*AR3			;LAST LINK IS ZERO, DUDES
+    *link = NULL; // LAST LINK IS ZERO, DUDES
     // asm 00007E93: 	LDI	AR3,AR0
     // asm 00007E94: 	ADDI	DYNAMATRIX,AR0
     // asm 00007E95: 	CALL	INITMAT
+    INITMAT((MATRIX*)&dyna->omatrix);
     // asm 00007E96: 	LDL	CHOPPERANI,AR2
     // asm 00007E97: 	LDI	DRONE_C|ANI_T,R2
     // asm 00007E98: 	CALL	PRC_CREATE_CHILD
+    child_ctx.CHOPPER.obj = obj;
+    animation_proc = PRC_CREATE_CHILD(p, CHOPPERANI, DRONE_C | ANI_T, &child_ctx);
     // asm 00007E99: 	STI	AR0,*+AR7(CD_ANIPROC)
+    p->ctx.CHOPPER.animation_proc = animation_proc;
     // asm 00007E9A: 	STI	AR0,*+AR4(ORADZ)
+    obj->radz_ptr = (uintptr_t)animation_proc;
     // asm 00007E9B: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SETDYNAOBJ", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-static void CHOPPERANI(void)
+static void CHOPPERANI(PROC* p)
 {
+    DYNAOBJ* dyna;
+    c3x_reg_t frame_delta;
+    c3x_reg_t radians;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    default:
+        break;
+    }
+
     // asm 00007E9C: 	LONGROUT
     // asm: 	CLRF	R6
+    p->ctx.CHOPPER.blade_radians = C3X_STF(C3X_FROM_INT(0));
 CANILP:
     // asm: 	LDI	*+AR4(ODYNALIST),R0
     // asm: 	LDI	R0,AR0
+    dyna = (DYNAOBJ*)p->ctx.CHOPPER.obj->dynalist;
     // asm: 	LDF	R6,R2
+    radians = C3X_LDF(p->ctx.CHOPPER.blade_radians);
     // asm: 	FLOAT	@NFRAMES,R0
+    frame_delta = C3X_FROM_INT(NFRAMES);
     // asm: 	MPYF	0.6,R0
+    frame_delta = C3X_MUL(frame_delta, C3X_IMM_F32(0.6));
     // asm: 	ADDF	R0,R2
+    radians = C3X_ADD(radians, frame_delta);
     // asm: 	CALL	NORMITS
+    radians = NORMITS(radians);
     // asm: 	LDF	R2,R6
+    p->ctx.CHOPPER.blade_radians = C3X_STF(radians);
     // asm: 	LDI	AR0,AR2
     // asm: 	ADDI	DYNAMATRIX,AR2
     // asm: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&dyna->omatrix, radians);
     // asm: 	SLEEP	1
+    SLEEP(1, 1);
     // asm: 	BU	CANILP
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CHOPPERANI", 0, 0);
-    UNIMPL();
+    goto CANILP;
+    // asm: 	END_LONGROUT
 }
 
 // *----------------------------------------------------------------------------
@@ -1076,8 +1572,16 @@ CANILP:
  *	R3	SPEED
  *
  */
-static void FSL_MOVE(void)
+static void FSL_MOVE(PROC* p, c3x_reg_t theta_delta, c3x_reg_t speed)
 {
+    OBJ* obj = p->ctx.CHOPPER.obj;
+    c3x_reg_t height_delta;
+    c3x_reg_t old_true_speed;
+    c3x_reg_t roll;
+    c3x_reg_t true_speed;
+    c3x_reg_t velocity;
+    c3x_reg_t y_velocity;
+
     // ;	LDP	@NFRAMES
     // ;	FLOAT	@NFRAMES,R0
     // ;	MPYF	R0,R3
@@ -1086,86 +1590,120 @@ static void FSL_MOVE(void)
     // 	;
     // asm 00007E9D: 	LDF	*+AR7(CD_DHEIGHT),R0
     // asm 00007E9E: 	SUBF	*+AR4(OPOSY),R0
+    height_delta = C3X_SUB(C3X_LDF(p->ctx.CHOPPER.desired_height), C3X_LDF(obj->pos.Y));
     // asm 00007E9F: 	LDF	*+AR4(OVELY),R1
     // asm 00007EA0: 	MPYF	0.85,R1
     // asm 00007EA1: 	MPYF	0.15,R0
     // asm 00007EA2: 	ADDF	R0,R1
+    y_velocity = C3X_ADD(C3X_MUL(C3X_LDF(obj->vel_y), C3X_IMM_F32(0.85)),
+        C3X_MUL(height_delta, C3X_IMM_F32(0.15)));
     // asm 00007EA3: 	CMPF	60,R1
     // asm 00007EA4: 	LDFGT	60,R1
+    if (C3X_GT(y_velocity, C3X_IMM_F32(60))) y_velocity = C3X_IMM_F32(60);
     // asm 00007EA5: 	CMPF	-60,R1
     // asm 00007EA6: 	LDFLT	-60,R1
+    if (C3X_LT(y_velocity, C3X_IMM_F32(-60))) y_velocity = C3X_IMM_F32(-60);
     // asm 00007EA7: 	STF	R1,*+AR4(OVELY)
+    obj->vel_y = C3X_STF(y_velocity);
     // asm 00007EA8: 	PUSHF	R2
     // asm 00007EA9: 	ADDF	*+AR4(ORADY),R2
     // asm 00007EAA:  	STF	R2,*+AR4(ORADY)
+    obj->rady = C3X_STF(C3X_ADD(theta_delta, C3X_LDF(obj->rady)));
     // asm 00007EAB: 	LDI	@MATRIXAI,AR2
     // asm 00007EAC: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&_MATRIXA, C3X_LDF(obj->rady));
     // asm 00007EAD: 	LDI	AR2,R2
     // asm 00007EAE: 	CALL	CLR_VECTORA
+    CLR_VECTORA();
     // asm 00007EAF: 	STF	R3,*+AR2(Z)
+    _VECTORA.Z = C3X_STF(speed);
     // asm 00007EB0: 	LDF	*+AR4(OVELY),R0
     // asm 00007EB1: 	STF	R0,*+AR2(Y)
+    _VECTORA.Y = C3X_STF(C3X_LDF(obj->vel_y));
     // asm 00007EB2: 	LDI	AR2,R3
     // asm 00007EB3: 	CALL	MATRIX_MUL
+    MATRIX_MUL(&_VECTORA, &_MATRIXA, &_VECTORA);
     // asm 00007EB4: 	LDF	*+AR2(X),R0
     // asm 00007EB5: 	LDF	*+AR4(OVELX),R1
     // asm 00007EB6: 	MPYF	0.1,R0
     // asm 00007EB7: 	MPYF	0.9,R1
     // asm 00007EB8: 	ADDF	R1,R0
+    velocity = C3X_ADD(C3X_MUL(C3X_LDF(_VECTORA.X), C3X_IMM_F32(0.1)),
+        C3X_MUL(C3X_LDF(obj->vel_x), C3X_IMM_F32(0.9)));
     // asm 00007EB9: 	STF	R0,*+AR4(OVELX)
+    obj->vel_x = C3X_STF(velocity);
     // asm 00007EBA: 	FLOAT	@NFRAMES,R1
     // asm 00007EBB: 	MPYF	R1,R0
     // asm 00007EBC: 	ADDF	*+AR4(OPOSX),R0
     // asm 00007EBD: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_MUL(C3X_FROM_INT(NFRAMES), velocity), C3X_LDF(obj->pos.X)));
     // asm 00007EBE: 	LDF	*+AR2(Y),R0
     // asm 00007EBF: 	LDF	*+AR4(OVELY),R1
     // asm 00007EC0: 	MPYF	0.9,R0
     // asm 00007EC1: 	MPYF	0.1,R1
     // asm 00007EC2: 	ADDF	R1,R0
+    velocity = C3X_ADD(C3X_MUL(C3X_LDF(_VECTORA.Y), C3X_IMM_F32(0.9)),
+        C3X_MUL(C3X_LDF(obj->vel_y), C3X_IMM_F32(0.1)));
     // asm 00007EC3: 	STF	R0,*+AR4(OVELY)
+    obj->vel_y = C3X_STF(velocity);
     // ;	FLOAT	@NFRAMES,R1
     // ;	MPYF	R1,R0
     // asm 00007EC4: 	ADDF	*+AR4(OPOSY),R0
     // asm 00007EC5: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(velocity, C3X_LDF(obj->pos.Y)));
     // asm 00007EC6: 	LDF	*+AR2(Z),R0
     // asm 00007EC7: 	LDF	*+AR4(OVELZ),R1
     // asm 00007EC8: 	MPYF	0.1,R0
     // asm 00007EC9: 	MPYF	0.9,R1
     // asm 00007ECA: 	ADDF	R1,R0
+    velocity = C3X_ADD(C3X_MUL(C3X_LDF(_VECTORA.Z), C3X_IMM_F32(0.1)),
+        C3X_MUL(C3X_LDF(obj->vel_z), C3X_IMM_F32(0.9)));
     // asm 00007ECB: 	STF	R0,*+AR4(OVELZ)
+    obj->vel_z = C3X_STF(velocity);
     // asm 00007ECC: 	FLOAT	@NFRAMES,R1
     // asm 00007ECD: 	MPYF	R1,R0
     // asm 00007ECE: 	ADDF	*+AR4(OPOSZ),R0
     // asm 00007ECF: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_MUL(C3X_FROM_INT(NFRAMES), velocity), C3X_LDF(obj->pos.Z)));
     // asm 00007ED0:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 00007ED1: 	LDI	AR4,AR2
     // asm 00007ED2: 	ADDI	OMATRIX,AR2
     // asm 00007ED3: 	CALL	FIND_YMATRIX
+    FIND_YMATRIX(&obj->omatrix, C3X_LDF(obj->rady));
     // asm 00007ED4: 	LDF	*+AR7(CD_TSPEED),R0
     // asm 00007ED5: 	LDF	*+AR4(ORADX),R2
     // asm 00007ED6: 	LDI	@MATRIXBI,AR2
     // asm 00007ED7: 	CALL	FIND_XMATRIX
+    FIND_XMATRIX(&_MATRIXB, C3X_LDF(obj->radx));
     // asm 00007ED8: 	POPF	R2
     // asm 00007ED9: 	MPYF	25,R2
     // asm 00007EDA: 	LDF	*+AR4(CRADZ),R0
     // asm 00007EDB: 	MPYF	0.1,R2
     // asm 00007EDC: 	MPYF	0.9,R0
     // asm 00007EDD: 	ADDF	R0,R2
+    roll = C3X_ADD(C3X_MUL(C3X_MUL(theta_delta, C3X_IMM_F32(25)), C3X_IMM_F32(0.1)),
+        C3X_MUL(C3X_LDF(obj->usr1_as_float), C3X_IMM_F32(0.9)));
     // asm 00007EDE: 	CMPF	0.4,R2
     // asm 00007EDF: 	LDFGT	0.4,R2
+    if (C3X_GT(roll, C3X_IMM_F32(0.4))) roll = C3X_IMM_F32(0.4);
     // asm 00007EE0: 	CMPF	-0.4,R2
     // asm 00007EE1: 	LDFLT	-0.4,R2
+    if (C3X_LT(roll, C3X_IMM_F32(-0.4))) roll = C3X_IMM_F32(-0.4);
     // asm 00007EE2: 	STF	R2,*+AR4(CRADZ)
+    obj->usr1_as_float = C3X_STF(roll);
     // asm 00007EE3: 	LDI	@MATRIXAI,AR2
     // asm 00007EE4: 	CALL	FIND_ZMATRIX
+    FIND_ZMATRIX(&_MATRIXA, roll);
     // asm 00007EE5: 	LDI	@MATRIXBI,AR2
     // asm 00007EE6: 	LDI	@MATRIXAI,R2
     // asm 00007EE7: 	LDI	AR2,R3
     // asm 00007EE8: 	CALL	CONCATMATV		;X * Z -> matA
+    CONCATMATV(&_MATRIXB, &_MATRIXA, &_MATRIXB); // X * Z -> matA
     // asm 00007EE9: 	LDI	AR4,R2
     // asm 00007EEA: 	ADDI	OMATRIX,R2
     // asm 00007EEB: 	LDI	R2,R3
     // asm 00007EEC: 	CALL	CONCATMATV
+    CONCATMATV(&_MATRIXB, (MATRIX*)&obj->omatrix, (MATRIX*)&obj->omatrix);
     // 	;FIND WHAT OUR SPEED ACTUAL IS
     // asm 00007EED: 	LDF	*+AR4(OVELX),R2
     // asm 00007EEE: 	MPYF	R2,R2
@@ -1176,17 +1714,25 @@ static void FSL_MOVE(void)
     // asm 00007EF3: 	MPYF	R1,R1
     // asm 00007EF4: 	ADDF	R1,R2
     // asm 00007EF5: 	CALL	SQRT
+    true_speed = SQRT(C3X_ADD(C3X_ADD(
+        C3X_MUL(C3X_LDF(obj->vel_x), C3X_LDF(obj->vel_x)),
+        C3X_MUL(C3X_LDF(obj->vel_y), C3X_LDF(obj->vel_y))),
+        C3X_MUL(C3X_LDF(obj->vel_z), C3X_LDF(obj->vel_z))));
     // asm 00007EF6: 	LDF	*+AR7(CD_TSPEED),R1
+    old_true_speed = C3X_LDF(p->ctx.CHOPPER.true_speed);
     // asm 00007EF7: 	STF	R0,*+AR7(CD_TSPEED)
+    p->ctx.CHOPPER.true_speed = C3X_STF(true_speed);
     // asm 00007EF8: 	STF	R1,*+AR7(CD_TSPEED_OLD)
+    p->ctx.CHOPPER.old_true_speed = C3X_STF(old_true_speed);
     // asm 00007EF9: 	CALL	DIV_F30
+    true_speed = DIV_F30(true_speed, old_true_speed);
     // asm 00007EFA: 	CMPF	1.0,R0
     // asm 00007EFB: 	LDFGT	1.0,R0
+    if (C3X_GT(true_speed, C3X_IMM_F32(1.0))) true_speed = C3X_IMM_F32(1.0);
     // asm 00007EFC: 	MPYF	0.2,R0
     // asm 00007EFD: 	STF	R0,*+AR4(ORADX)
+    obj->radx = C3X_STF(C3X_MUL(true_speed, C3X_IMM_F32(0.2)));
     // asm 00007EFE: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "FSL_MOVE", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -1417,54 +1963,77 @@ static void FSL_MOVE(void)
 */
 
 // *----------------------------------------------------------------------------
-static void HELI_SND(void)
+static void HELI_SND(PROC* p)
 {
+    c3x_reg_t distance;
+    int volume;
+
     // asm 00007EFF: 	LDI	HELI_SNDLP,AR2		;may want to add in volume effects
     // asm 00007F00: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 00007F01: 	BEQ	IS_T1
+    if (SNDSTR[1].sound_index == HELI_SNDLP) goto IS_T1;
     // asm 00007F02: 	CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 00007F03: 	BEQ	IS_T2
+    if (SNDSTR[2].sound_index == HELI_SNDLP) goto IS_T2;
     // asm 00007F04: 	CALL	ONESNDFX
+    ONESNDFX(HELI_SNDLP);
     // asm 00007F05: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 00007F06: 	BNE	NOT_T1
+    if (SNDSTR[1].sound_index != HELI_SNDLP) goto NOT_T1;
 IS_T1:
     // asm 00007F07: 	LDF	*+AR7(DELTA_PLYRDIST),R0
     // asm 00007F08: 	FLOAT	20000,R1
     // asm 00007F09: 	CMPF	R1,R0
     // asm 00007F0A: 	LDFGT	R1,R0
+    distance = C3X_LDF(p->ctx.CHOPPER.delta_plyrdist);
+    if (C3X_GT(distance, C3X_FROM_INT(20000))) distance = C3X_FROM_INT(20000);
     // asm 00007F0B: 	SUBRF	R1,R0
     // asm 00007F0C: 	MPYFL	0.00005,R0
     // ;	MPYF	64,R0
     // ;	ADDF	191,R0
     // asm 00007F0D: 	MPYF	127,R0
     // asm 00007F0E: 	ADDF	128,R0
+    distance = C3X_ADD(C3X_MUL(C3X_MUL(
+        C3X_SUB(C3X_FROM_INT(20000), distance), C3X_F32(0.00005)), // c3x-lint: full-precision -- MPYFL long immediate
+        C3X_IMM_F32(127)), C3X_IMM_F32(128));
     // asm 00007F0F: 	FIX	R0,R1
+    volume = C3X_FIX(distance);
     // asm 00007F10: 	LDI	1,R0
     // asm 00007F11: 	CALL	SET_TRACK_VOL
+    SET_TRACK_VOL(1, volume);
     // asm 00007F12: 	BU	HEND
+    goto HEND;
 NOT_T1:
     // asm 00007F13: CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 00007F14: 	BNE	NOT_T2
+    if (SNDSTR[2].sound_index != HELI_SNDLP) goto NOT_T2;
 IS_T2:
     // asm 00007F15: 	LDF	*+AR7(DELTA_PLYRDIST),R0
     // asm 00007F16: 	FLOAT	20000,R1
     // asm 00007F17: 	CMPF	R1,R0
     // asm 00007F18: 	LDFGT	R1,R0
+    distance = C3X_LDF(p->ctx.CHOPPER.delta_plyrdist);
+    if (C3X_GT(distance, C3X_FROM_INT(20000))) distance = C3X_FROM_INT(20000);
     // asm 00007F19: 	SUBRF	R1,R0
     // asm 00007F1A: 	MPYFL	0.00005,R0
     // ;	MPYF	64,R0
     // ;	ADDF	191,R0
     // asm 00007F1B: 	MPYF	127,R0
     // asm 00007F1C: 	ADDF	128,R0
+    distance = C3X_ADD(C3X_MUL(C3X_MUL(
+        C3X_SUB(C3X_FROM_INT(20000), distance), C3X_F32(0.00005)), // c3x-lint: full-precision -- MPYFL long immediate
+        C3X_IMM_F32(127)), C3X_IMM_F32(128));
     // asm 00007F1D: 	FIX	R0,R1
+    volume = C3X_FIX(distance);
     // asm 00007F1E: 	LDI	2,R0
     // asm 00007F1F: 	CALL	SET_TRACK_VOL
+    SET_TRACK_VOL(2, volume);
     // asm 00007F20: 	BU	HEND
+    goto HEND;
 NOT_T2:
 HEND:
     // asm 00007F21: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HELI_SND", 0, 0);
-    UNIMPL();
+    ;
 }
 
 // *----------------------------------------------------------------------------
@@ -1476,21 +2045,33 @@ HEND:
  *	AR0	ROAD OBJECT
  *
  */
-void GET_CLOSEST_TRAK(void)
+OBJ* GET_CLOSEST_TRAK(OBJ* obj)
 {
+    OBJ* closest = NULL;
+    OBJ* road;
+    c3x_reg_t closest_distance;
+    c3x_reg_t distance;
+    c3x_reg_t dx;
+    c3x_reg_t dz;
+
     // asm 00007F22: 	LDI	@DRIVE_LIST,R0
     // asm 00007F23: 	BZ	GETRKX  		;NULL LIST DUDES
+    if (DRIVE_LIST == NULL) goto GETRKX; // NULL LIST DUDES
     // asm 00007F24: 	LDI	0,AR0			;CLOSEST ROAD SEGMENT INDEX
     // asm 00007F25: 	FLOAT	7FFFH,R2		;INITIAL CLOSEST DISTANCE
     // asm 00007F26: 	MPYF	R2,R2
+    closest_distance = C3X_FROM_INT(0x7fff);
+    closest_distance = C3X_MUL(closest_distance, closest_distance);
     // asm 00007F27: 	LDF	*+AR4(OPOSX),R3
     // asm 00007F28: 	LDF	*+AR4(OPOSZ),R4
     // asm 00007F29: 	LDI	R0,AR2
+    road = DRIVE_LIST;
 GETRK:
     // asm 00007F2A: 	LDI	*+AR2(OID),R0	    	;IS THIS REAL ROAD?
     // asm 00007F2B: 	AND	0FF0H,R0
     // asm 00007F2C: 	CMPI	300H,R0
     // asm 00007F2D: 	BNE	GETRKL			;NOPE...
+    if ((road->id & 0x0ff0) != 0x0300) goto GETRKL; // NOPE...
     // asm 00007F2E: 	LDF	R3,R0
     // asm 00007F2F: 	SUBF	*+AR2(OPOSX),R0
     // asm 00007F30: 	MPYF	R0,R0
@@ -1498,20 +2079,28 @@ GETRK:
     // asm 00007F32: 	SUBF	*+AR2(OPOSZ),R1
     // asm 00007F33: 	MPYF	R1,R1
     // asm 00007F34: 	ADDF	R0,R1
+    dx = C3X_SUB(C3X_LDF(obj->pos.X), C3X_LDF(road->pos.X));
+    dz = C3X_SUB(C3X_LDF(obj->pos.Z), C3X_LDF(road->pos.Z));
+    distance = C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz));
     // asm 00007F35: 	CMPF	R1,R2
     // asm 00007F36: 	BLE	GETRKL
+    if (C3X_LE(closest_distance, distance)) goto GETRKL;
     // asm 00007F37: 	LDI	AR2,AR0
     // asm 00007F38: 	LDF	R1,R2
+    closest = road;
+    closest_distance = distance;
 GETRKL:
     // asm 00007F39: 	LDI	*+AR2(OLINK3),R0
     // asm 00007F3A: 	BNZD	GETRK
     // asm 00007F3B: 	LDI	R0,AR2
     // asm 00007F3C: 	NOP
     // asm 00007F3D: 	NOP
+    road = (OBJ*)road->link3;
+    if (road != NULL) goto GETRK;
     // 	;---->	BNZ	GETRK
     // ;	STI	AR0,*+AR5(CARTRAK)	;SAVE TRACK SECTION
 GETRKX:
     // asm 00007F3E: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "GET_CLOSEST_TRAK", 0, 0);
-    UNIMPL();
+    ;
+    return closest;
 }

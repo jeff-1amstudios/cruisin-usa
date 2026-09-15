@@ -231,10 +231,10 @@ c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj);
 c3x_reg_t GET_TRACK_POS_RVS_XLANE(PROC* p, OBJ* obj);
 
 // asm: 	.globl	 DELTA_GET_TRACK_POS
-void DELTA_GET_TRACK_POS(void);
+c3x_reg_t DELTA_GET_TRACK_POS(PROC* p, OBJ* obj);
 
 // asm: 	.globl	 DELTA_SUB_FUNCTION
-void DELTA_SUB_FUNCTION(void);
+c3x_reg_t DELTA_SUB_FUNCTION(PROC* p, OBJ* piece);
 
 // ***	SIGMA.ASM
 // asm: 	.globl	 SIGMA_DRONE
@@ -249,7 +249,7 @@ void RHO_DIE(PROC* p);
 
 // ***	CHOPPER.ASM
 // asm: 	.globl	 CHOPPER
-void CHOPPER(void);
+void CHOPPER(PROC* p);
 
 // ***	COPCAR.ASM
 // asm: 	.globl	 AHEAD_OF_PLAYER_P
