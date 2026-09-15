@@ -2256,134 +2256,231 @@ static const SMOKE_ANI_ENTRY SMOKE_ANI[] = {
 int COCONUT_COUNT;
 
 void DROP_COCONUTS(PROC* p) {
+    OBJ* parent;
+    OBJ* obj;
+    c3x_reg_t value;
+    int sound;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
+    default:
+        break;
+    }
+
     // asm 00006888: 	LDI	@COCONUT_COUNT,R0
     // asm 00006889: 	CMPI	5,R0
     // asm 0000688A: 	BGE	SUICIDE
+    if (COCONUT_COUNT >= 5) {
+        DIE();
+    }
     // asm 0000688B: 	INC	R0
     // asm 0000688C: 	STI	R0,@COCONUT_COUNT
+    COCONUT_COUNT += 1;
     // asm 0000688D: 	CALL	OBJ_GET
+    obj = OBJ_GET();
     // asm 0000688E: 	BC	SUICIDE
+    if (obj == NULL) {
+        DIE();
+    }
     // asm 0000688F: 	LDI	AR0,AR4
+    p->ctx.DROP_COCONUTS.obj = obj;
+    parent = p->ctx.DROP_COCONUTS.parent;
     // asm 00006890: 	LDF	*+AR5(OPOSX),R0
     // asm 00006891: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_LDF(parent->pos.X));
     // asm 00006892: 	LDF	*+AR5(OPOSY),R0
     // asm 00006893: 	FLOAT	1500,R1
     // asm 00006894: 	SUBF	R1,R0
     // asm 00006895: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(parent->pos.Y), C3X_FROM_INT(1500)));
     // asm 00006896: 	LDF	*+AR5(OPOSZ),R0
     // asm 00006897: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_LDF(parent->pos.Z));
     // asm 00006898: 	LDL	coco1,R0
     // asm 00006899: 	STI	R0,*+AR4(OROMDATA)
+    obj->romdata = ROM_PTR(coco1_ROM);
     // asm 0000689A: 	LDI	*+AR4(OFLAGS),R0
     // asm 0000689B: 	OR	O_POSTER,R0
     // asm 0000689C: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= O_POSTER;
     // asm 0000689D: 	LDI	AR4,AR2
     // asm 0000689E: 	CALL	OBJ_INSERT
+    OBJ_INSERT(obj);
     // asm 0000689F: 	LDI	@_MODE,R0
     // asm 000068A0: 	AND	MMODE,R0
     // asm 000068A1: 	CMPI	MATTR,R0
     // asm 000068A2: 	BEQ	NSND1
     // asm 000068A3: 	SONDFX	COCONUTLOW
+    if ((_MODE & MMODE) != MATTR) {
+        SONDFX(COCONUTLOW);
+    }
 NSND1:
     // asm 000068A5: 	LDF	*+AR4(OPOSY),R0
     // asm 000068A6: 	STF	R0,*+AR7(PDATA+1)	;save initial base Y
+    p->ctx.DROP_COCONUTS.initial_base_y = C3X_STF(C3X_LDF(obj->pos.Y)); // ;save initial base Y
     // asm 000068A7: 	CALL	OBJSCAN
+    OBJSCAN(obj, &value);
     // asm 000068A8: 	STF	R0,*+AR7(PDATA)
+    p->ctx.DROP_COCONUTS.road_delta = C3X_STF(value);
     // asm 000068A9: 	RANDN	20
     // asm 000068AB: 	MPYI	3,R0
     // asm 000068AC: 	FLOAT	R0
     // asm 000068AD: 	ADDF	20,R0
     // asm 000068AE: 	STF	R0,*+AR4(OVELY)
+    obj->vel_y = C3X_STF(C3X_ADD(C3X_FROM_INT(RANDU0(20) * 3), C3X_IMM_F32(20)));
     // asm 000068AF: 	RANDN	20
     // asm 000068B1: 	MPYI	3,R0
     // asm 000068B2: 	FLOAT	R0
     // asm 000068B3: 	SUBF	30,R0
     // asm 000068B4: 	ADDF	*+AR4(OPOSX),R0
     // asm 000068B5: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_SUB(C3X_FROM_INT(RANDU0(20) * 3), C3X_IMM_F32(30)), C3X_LDF(obj->pos.X)));
     // asm 000068B6: 	RANDN	20
     // asm 000068B8: 	MPYI	3,R0
     // asm 000068B9: 	FLOAT	R0
     // asm 000068BA: 	SUBF	30,R0
     // asm 000068BB: 	ADDF	*+AR4(OPOSZ),R0
     // asm 000068BC: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_SUB(C3X_FROM_INT(RANDU0(20) * 3), C3X_IMM_F32(30)), C3X_LDF(obj->pos.Z)));
     // asm 000068BD: 	CLRI	R0
     // asm 000068BE: 	STI	R0,*+AR7(PDATA+2)
+    p->ctx.DROP_COCONUTS.bounce_count = 0;
     // asm 000068BF: 	CLRF	R0
     // asm 000068C0: 	STF	R0,*+AR4(OVELX)
     // asm 000068C1: 	STF	R0,*+AR4(OVELZ)
+    obj->vel_x = C3X_STF(C3X_FROM_INT(0));
+    obj->vel_z = C3X_STF(C3X_FROM_INT(0));
 DROPLP:
+    obj = p->ctx.DROP_COCONUTS.obj;
+    parent = p->ctx.DROP_COCONUTS.parent;
     // asm 000068C2: 	LDI	*+AR4(ODIST),R0
     // asm 000068C3: 	BN	DROPCOCOKILL
+    if (obj->dist < 0) {
+        goto DROPCOCOKILL;
+    }
     // asm 000068C4: 	CMPI	20000,R0
     // asm 000068C5: 	BGT	DROPCOCOKILL
+    if (obj->dist > 20000) {
+        goto DROPCOCOKILL;
+    }
     // asm 000068C6: 	LDF	*+AR4(OVELY),R0
     // asm 000068C7: 	ADDF	25,R0
     // asm 000068C8: 	FLOAT	450,R1
     // asm 000068C9: 	CMPF	R1,R0
     // asm 000068CA: 	LDFGT	R1,R0
     // asm 000068CB: 	STF	R0,*+AR4(OVELY)
+    value = C3X_ADD(C3X_LDF(obj->vel_y), C3X_IMM_F32(25));
+    if (C3X_GT(value, C3X_FROM_INT(450))) {
+        value = C3X_FROM_INT(450);
+    }
+    obj->vel_y = C3X_STF(value);
     // asm 000068CC: 	LDF	*+AR4(OPOSX),R0
     // asm 000068CD: 	ADDF	*+AR4(OVELX),R0
     // asm 000068CE: 	STF	R0,*+AR4(OPOSX)
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_LDF(obj->vel_x)));
     // asm 000068CF: 	LDF	*+AR4(OPOSZ),R0
     // asm 000068D0: 	ADDF	*+AR4(OVELZ),R0
     // asm 000068D1: 	STF	R0,*+AR4(OPOSZ)
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), C3X_LDF(obj->vel_z)));
     // asm 000068D2: 	LDF	*+AR4(OPOSY),R0
     // asm 000068D3: 	ADDF	*+AR4(OVELY),R0
     // asm 000068D4: 	STF	R0,*+AR4(OPOSY)
+    value = C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(obj->vel_y));
+    obj->pos.Y = C3X_STF(value);
     // asm 000068D5: 	CMPF	*+AR5(OPOSY),R0
     // asm 000068D6: 	BLT	FRSL
+    if (C3X_LT(value, C3X_LDF(parent->pos.Y))) {
+        goto FRSL;
+    }
     // asm 000068D7: 	LDI	*+AR7(PDATA+2),R0
     // asm 000068D8: 	BNZ	NOTINITIAL
+    if (p->ctx.DROP_COCONUTS.bounce_count != 0) {
+        goto NOTINITIAL;
+    }
     // asm 000068D9: 	RANDN	30
     // asm 000068DB: 	MPYI	3,R0
     // asm 000068DC: 	FLOAT	R0
     // asm 000068DD: 	SUBF	45,R0
     // asm 000068DE: 	STF	R0,*+AR4(OVELX)
+    obj->vel_x = C3X_STF(C3X_SUB(C3X_FROM_INT(RANDU0(30) * 3), C3X_IMM_F32(45)));
     // asm 000068DF: 	RANDN	30
     // asm 000068E1: 	MPYI	3,R0
     // asm 000068E2: 	FLOAT	R0
     // asm 000068E3: 	SUBF	45,R0
     // asm 000068E4: 	STF	R0,*+AR4(OVELZ)
+    obj->vel_z = C3X_STF(C3X_SUB(C3X_FROM_INT(RANDU0(30) * 3), C3X_IMM_F32(45)));
     // asm 000068E5: 	BU	LLKK
+    goto LLKK;
 NOTINITIAL:
     // asm 000068E6: 	CMPI	3,R0
     // asm 000068E7: 	BEQ	HOLDTOSLEEP
+    if (p->ctx.DROP_COCONUTS.bounce_count == 3) {
+        goto HOLDTOSLEEP;
+    }
     // asm 000068E8: 	LDF	*+AR4(OVELX),R0
     // asm 000068E9: 	MPYF	0.5,R0
     // asm 000068EA: 	STF	R0,*+AR4(OVELX)
+    obj->vel_x = C3X_STF(C3X_MUL(C3X_LDF(obj->vel_x), C3X_IMM_F32(0.5)));
     // asm 000068EB: 	LDF	*+AR4(OVELZ),R0
     // asm 000068EC: 	MPYF	0.5,R0
     // asm 000068ED: 	STF	R0,*+AR4(OVELZ)
+    obj->vel_z = C3X_STF(C3X_MUL(C3X_LDF(obj->vel_z), C3X_IMM_F32(0.5)));
 LLKK:
     // asm 000068EE: 	LDI	*+AR7(PDATA+2),R0
     // asm 000068EF: 	INC	R0
     // asm 000068F0: 	STI	R0,*+AR7(PDATA+2)
+    p->ctx.DROP_COCONUTS.bounce_count += 1;
     // asm 000068F1: 	LDF	*+AR4(OVELY),R0
     // asm 000068F2: 	CMPF	3,R0
     // asm 000068F3: 	BLE	HOLDTOSLEEP
+    value = C3X_LDF(obj->vel_y);
+    if (C3X_LE(value, C3X_IMM_F32(3))) {
+        goto HOLDTOSLEEP;
+    }
     // asm 000068F4: 	MPYF	-0.5,R0
     // asm 000068F5: 	STF	R0,*+AR4(OVELY)
+    value = C3X_MUL(value, C3X_IMM_F32(-0.5));
+    obj->vel_y = C3X_STF(value);
     // asm 000068F6: 	ADDF	*+AR4(OPOSY),R0
     // asm 000068F7: 	STF	R0,*+AR4(OPOSY)
+    obj->pos.Y = C3X_STF(C3X_ADD(value, C3X_LDF(obj->pos.Y)));
     // asm 000068F8: 	LDI	@_MODE,R0
     // asm 000068F9: 	AND	MMODE,R0
     // asm 000068FA: 	CMPI	MATTR,R0
     // asm 000068FB: 	BEQ	NSND2
+    if ((_MODE & MMODE) == MATTR) {
+        goto NSND2;
+    }
     // asm 000068FC: 	RANDN	1
+    sound = RANDU0(1);
     // asm 000068FE: 	LDI	R0,R0
     // asm 000068FF: 	LDIZ	COCONUTHI,AR2
     // asm 00006900: 	LDINZ	COCONUTLOW,AR2
     // asm 00006901: 	CALL	ONESNDFX
+    ONESNDFX(sound == 0 ? COCONUTHI : COCONUTLOW);
 NSND2:
 FRSL:
     // asm 00006902: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00006904: 	BU	DROPLP
+    goto DROPLP;
 HOLDTOSLEEP:
+    obj = p->ctx.DROP_COCONUTS.obj;
     // asm 00006905: 	LDI	*+AR4(ODIST),R0
     // asm 00006906: 	BN	DROPCOCOKILL
+    if (obj->dist < 0) {
+        goto DROPCOCOKILL;
+    }
     // asm 00006907: 	SLEEP	1
+    SLEEP(1, 2);
     // asm 00006909: 	B	HOLDTOSLEEP
+    goto HOLDTOSLEEP;
 DROPCOCOKILL:
     // asm 0000690A: 	LDI	@COCONUT_COUNT,R0
     // asm 0000690B: 	DEC	R0
@@ -2391,12 +2488,12 @@ DROPCOCOKILL:
     // asm: 	BLT	$
 #endif
     // asm 0000690C: 	STI	R0,@COCONUT_COUNT
+    COCONUT_COUNT -= 1;
     // asm 0000690D: 	LDI	AR4,AR2
     // asm 0000690E: 	CALL	OBJ_DELETE
+    OBJ_DELETE(obj);
     // asm 0000690F: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "DROP_COCONUTS", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------

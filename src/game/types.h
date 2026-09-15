@@ -732,6 +732,10 @@ typedef struct PROC_CONTEXT {
 
     struct {
         OBJ* parent;
+        OBJ* obj;
+        c3x_f32_t road_delta;
+        c3x_f32_t initial_base_y;
+        int bounce_count;
     } DROP_COCONUTS;
 
     struct {
