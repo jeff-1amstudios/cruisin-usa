@@ -85,6 +85,7 @@ void SECTION_ROUTINE(int routine_index /*AR0*/) {
     // asm 0000ACFE: 	CALLU	AR0
     routine();
     // asm 0000ACFF: 	RETS
+OL:;
 }
 
 // *----------------------------------------------------------------------------
@@ -223,6 +224,7 @@ void CHECKPOINT_HIT(void) {
     if (REAL_CHECKPOINTS <= CHECKPOINT_NUM) {
         goto CPHX;
     }
+JJGH:
     // asm 0000AD3A: 	CALL	SEND_CHECKPOINT		;not really send, but setup variables
     SEND_CHECKPOINT(); // not really send, but setup variables
     // asm 0000AD3B: 	INCM	@CHECKPOINT_NUM
