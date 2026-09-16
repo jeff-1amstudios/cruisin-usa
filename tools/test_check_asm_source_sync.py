@@ -165,6 +165,28 @@ class CheckAsmSourceSyncTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.assertEqual(compare_pair(c_path, asm_path, root), [])
 
+    def test_real_labels_allow_comments_and_null_statements(self) -> None:
+        root, asm_path, c_path, temporary = self.make_pair(
+            "TEST:\nFIRST:\n\tLDI\t1,R0\nSECOND:\n\tRETS\n",
+            "FIRST: // source comment\n"
+            "// asm: \tLDI\t1,R0\n"
+            "SECOND:;\n"
+            "// asm: \tRETS\n",
+        )
+        self.addCleanup(temporary.cleanup)
+        self.assertEqual(compare_pair(c_path, asm_path, root), [])
+
+    def test_real_label_takes_precedence_over_same_named_function(self) -> None:
+        root, asm_path, c_path, temporary = self.make_pair(
+            "EARLY:\n\tLDI\t1,R0\nTEST:\n\tRETS\n",
+            "EARLY:\n"
+            "// asm: \tLDI\t1,R0\n"
+            "TEST:\n"
+            "// asm: \tRETS\n",
+        )
+        self.addCleanup(temporary.cleanup)
+        self.assertEqual(compare_pair(c_path, asm_path, root), [])
+
     def test_commented_label_does_not_satisfy_source_label(self) -> None:
         root, asm_path, c_path, temporary = self.make_pair(
             "TEST:\nLOOP\n\tRETS\n",

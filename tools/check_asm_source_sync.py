@@ -30,7 +30,9 @@ import shared_lib as ccm
 SOURCE_MODULE_RE = re.compile(r"Source module:\s*(asm/[A-Za-z0-9_.-]+)", re.IGNORECASE)
 C_ASM_RE = re.compile(r"^\s*//\s*asm:(.*)$")
 C_NUMBERED_ASM_RE = re.compile(r"^\s*//\s*asm\s+[0-9A-Fa-f]{8}:(.*)$")
-C_LABEL_RE = re.compile(r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*):\s*$")
+C_LABEL_RE = re.compile(
+    r"^\s*([_A-Za-z.$?@][_A-Za-z0-9.$?@]*):\s*(?:;\s*)?(?://.*)?$"
+)
 BARE_LABEL_RE = re.compile(r"^[_A-Za-z.$?@][_A-Za-z0-9.$?@]*:?\s*$")
 LABEL_WITH_BODY_RE = re.compile(
     r"^([_A-Za-z.$?@][_A-Za-z0-9.$?@]*):?\s+(.+)$"
@@ -436,12 +438,17 @@ def c_events_for_file(
     """Build the C event stream without assigning events to functions."""
     events: list[SourceLine] = []
     functions_by_line: dict[int, list[CFunction]] = {}
+    real_labels = {
+        match.group(1)
+        for raw in raw_lines
+        if (match := C_LABEL_RE.match(raw)) is not None
+    }
     for function in find_c_functions("\n".join(raw_lines)):
         functions_by_line.setdefault(function.open_line, []).append(function)
 
     for number, raw in enumerate(raw_lines, 1):
         for function in functions_by_line.get(number, []):
-            if function.name in code_labels:
+            if function.name in code_labels and function.name not in real_labels:
                 events.append(SourceLine(path, number, function.name))
 
         match = C_NUMBERED_ASM_RE.match(raw) or C_ASM_RE.match(raw)

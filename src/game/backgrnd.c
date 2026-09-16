@@ -465,11 +465,18 @@ static void BGD_WATCHER(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
         // MAME_ASSERT_FUNCTION_ENTRY();
-        break;
+        goto BGD_WATCHER;
     case 1:
         goto PROC_RESUME_1;
+    case 2:
+        goto PROC_RESUME_2;
     }
 
+BGD_SLP:
+    // asm 00003FF2: 	SLEEP	1
+    SLEEP(1, 2);
+
+BGD_WATCHER:
     observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.X));
     MAME_ASSERT_MEM(0x00003FF4, "d@00809800", &observed_raw);
     observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Z));
@@ -765,7 +772,6 @@ NODEACT:
     // asm: 	SLOCKON	GE,"BACKGRND\LBACK_WATCH ERRONEOUS DGROUP_COUNT GE"
     SLOCKON(DGROUP_COUNT >= MAX_DGROUPS, "BACKGRND\\BACK_WATCH ERRONEOUS DGROUP_COUNT GE");
 #endif
-BGD_SLP:
     // asm 00004067: 	SLEEP	3
     SLEEP(3, 1);
     // Synchronize save-state validation on the first complete watcher wake
@@ -1725,23 +1731,38 @@ c3x_reg_t GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/) {
  *
  */
 static void BGD_OROUTINE(OBJ* obj /*AR4*/) {
+    const BGD_OROUTINE_ENTRY* entry = ROUTINE_TABI;
+
     // asm 00004223: 	PUSH	R0
     // asm 00004224: 	PUSH	R1
     // asm 00004225: 	PUSH	AR0
     // asm 00004226: 	LDI	*+AR4(OID),R0
     // asm 00004227: 	LDI	@ROUTINE_TABI,AR0
-    for (const BGD_OROUTINE_ENTRY* entry = ROUTINE_TABI; entry->object_id != 0; entry++) {
-        // asm 00004228: BGDORLP	CMPI	*AR0,R0
+BGDORLP:
+    while (entry->object_id != 0) {
+        // asm 00004228: 	CMPI	*AR0,R0
+        // asm 00004229: 	BEQ	BGD_RFND
         if (entry->object_id == obj->id) {
-            // asm 0000422D: BGD_RFND	LDI	*+AR0,R0
-            // asm 0000422E: 	CALLU	R0
-            entry->func(obj);
-            break;
+            goto BGD_RFND;
         }
 
         // asm 0000422A: 	LDI	*AR0++(2),R1
         // asm 0000422B: 	BNZ	BGDORLP
+        entry++;
     }
+    // asm 0000422C: 	POP	AR0
+    // asm 0000422D: 	POP	R1
+    // asm 0000422E: 	POP	R0
+    // asm 0000422F: 	RETS
+    return;
+
+BGD_RFND:
+    // asm 00004230: 	LDI	*+AR0,R0
+    // asm 00004231: 	CALLU	R0
+    entry->func(obj);
+    // asm 00004232: 	POP	AR0
+    // asm 00004233: 	POP	R1
+    // asm 00004234: 	POP	R0
     // asm 00004235: 	RETS
 }
 
@@ -2719,12 +2740,12 @@ OBJ* LOAD_SINGLE_SECTION(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/) {
     count = (int)crusn_read_u32(&rom_cursor); // ;get number of objects to load
     MAME_ASSERT_REG(0x0000442A, "R4", &count);
 
-    // asm: 	SLOCKON	LE, BACKGRND\\LOAD_SINGLE_SECTION GROUP ERROR
+    // asm: 	SLOCKON	LE,"BACKGRND\LOAD_SINGLE_SECTION GROUP ERROR"
     SLOCKON(count <= 0, "BACKGRND\\LOAD_SINGLE_SECTION GROUP ERROR");
 
     // asm 0000442A: 	DEC	R4
     // asm 0000442B: 	CMPI	@OFREECNT,R4
-    // asm: 	SLOCKON	GT,"BACKGRND\\LOAD_SINGLE_SECTION OUT OF OBJECTS"
+    // asm: 	SLOCKON	GT,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS"
     count--;
     SLOCKON(count > OFREECNT, "BACKGRND\\LOAD_SINGLE_SECTION OUT OF OBJECTS");
 
@@ -2734,7 +2755,7 @@ LS_L12:
     model_rom_addr = crusn_read_u32(&rom_cursor);
     obj = OBJ_GETE(ROM_PTR(model_rom_addr)); // ;GET MODEL PTR
 
-    // asm: 	SLOCKON	C,"BACKGRND\\LOAD_SINGLE_SECTION OUT OF OBJECTS *FATAL*"
+    // asm: 	SLOCKON	C,"BACKGRND\LOAD_SINGLE_SECTION OUT OF OBJECTS *FATAL*"
     SLOCKON(obj == NULL, "BACKGRND\\LOAD_SINGLE_SECTION OUT OF OBJECTS *FATAL*");
     // asm 0000442E: 	BC	LS_ACTIVATE_X
     if (obj == NULL) {
