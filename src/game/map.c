@@ -1063,6 +1063,7 @@ static void MAPPAL_ILLUM(void) {
     // asm 00006012: 	LDI	R0,AR5
     // asm 00006013: 	LS	1,AR5
     // asm 00006014: 	RS	2,AR5
+L894:
     // asm 00006015: L894
     // asm 00006015: 	LDI	*AR3++,R4	;get src2 (TRUE)
     // asm 00006016: 	LDI	R4,R0
@@ -1171,6 +1172,7 @@ JAJA4:
     // asm 00006065: 	LDI	R0,AR5
     // asm 00006066: 	LS	1,AR5
     // asm 00006067: 	RS	2,AR5
+L894D:
     // asm 00006068: L894D
     // asm 00006068: 	LDI	*AR3++,R4	;get src2 (TRUE)
     // asm 00006069: 	LDI	R4,R0
