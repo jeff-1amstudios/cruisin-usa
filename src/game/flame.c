@@ -343,6 +343,7 @@ void FLAMESORT(void) {
     if (cursor == NULL) {
         goto FLMSORTX;
     }
+FLMSORT_LOOP:
     // asm 0000AE38: FLMSORT_LOOP
     // asm 0000AE38: 	LDI	PLYR_C|PLYR_FLAMES_S,R1
     // asm 0000AE39: 	CALL	FIND_NEXT_OBJ
