@@ -215,6 +215,7 @@ H2HLE:
     // asm 0000157F: 	FLOAT	160,R6	;60+4*25
     // asm 00001580: 	FLOAT	4000,R7			;big2
     // asm 00001581: 	LDI	25,AR5
+H2HLLP:
     // asm 00001582: H2HLLP
     // asm 00001582: 	LDI	*+AR7(PDATA+1),AR0	;red (bottom)
     // asm 00001583: 	STF	R6,*+AR0(OPOSY)
@@ -353,8 +354,11 @@ NOJINMSG:
 }
 
 // *----------------------------------------------------------------------------
+// asm: 	ADDF	@l?,:REG:
+// asm: 	SUBF	@l?,:REG:
 static void THROBIT(void) {
     // asm 000015F2: 	LDI	1,AR5
+THROBLP1:
     // asm 000015F3: THROBLP1
     // asm 000015F3: 	LDF	*+AR4(OPOSZ),R0
     // asm 000015F4: 	SUBF	R6,R0
@@ -377,6 +381,7 @@ KKGKG:
     // asm 00001606: 	SLEEP	1
     // asm 00001608: 	DBU	AR5,KKGKG
     // asm 00001609: 	LDI	1,AR5
+THROBLP2:
     // asm 0000160A: THROBLP2
     // asm 0000160A: 	LDF	*+AR4(OPOSZ),R0
     // asm 0000160B: 	ADDF	R6,R0
@@ -1364,6 +1369,7 @@ static void PLYR_INTRO__ALL_JOINUP_tail(PROC* p) {
         goto PROC_RESUME_1;
     }
 
+ALL_JOINUP:
     // asm 000017E0: 	LDI	@_MODE,R0
     // asm 000017E1: 	OR	MINFIN,R0
     // asm 000017E2: 	STI	R0,@_MODE
@@ -4134,7 +4140,7 @@ NOTHHHH:
     if ((_MODE & MMODE) != MATTR) {
         RESUME_TUNE_NT();
     }
-    // asm 00001D37:  	DIE
+    // asm 00001D37: 	DIE
     DIE();
 }
 
@@ -4404,6 +4410,7 @@ CN:
     // asm 00001DA0: 	DIE
     DIE();
 NOTINTRO:
+NOTINSRT:
     // asm 00001DA1: NOTINSRT
     // asm 00001DA1: 	CMPI	MGAME,R0
     // asm 00001DA2: 	BEQ	_startX
@@ -4446,6 +4453,7 @@ CANSTART:
     // asm 00001DB5: 	LDI	AUD_BCREDITS,AR2
     // asm 00001DB6: 	CALL	AUDIT_WRITE
     AUDIT_WRITE(AUD_BCREDITS, 0);
+startgame:
     // asm 00001DB7: startgame
     // asm 00001DB7: 	LDI	@_MODE,R0
     mode = _MODE;
@@ -4723,11 +4731,11 @@ void SET_ATTR(void) {
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
 }
 
-void _debug(PROC* p) {
-    CYCLE_ATTR();
+void CYCLE_ATTR(void) {
+    _debug(NULL);
 }
 
-void CYCLE_ATTR(void) {
+void _debug(PROC* p) {
     // asm 00001E1C: 	CALL	SILENT
     SILENT();
 
