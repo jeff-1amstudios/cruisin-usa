@@ -170,6 +170,7 @@ void COMM_DRONE(void) {
     // asm 0000A69F: 	LDIEQ	PLYR_COPCAR_MOD,R0
     // asm 0000A6A0: 	CMPI	7,AR1
     // asm 0000A6A1: 	LDIEQ	3,R0
+DOGENRLB:
     // asm 0000A6A2: DOGENRLB
     // asm 0000A6A2: 	STI	R0,*+AR7(DELTA_MODEL)
     // asm 0000A6A3: 	LDI	R0,AR2
@@ -338,11 +339,17 @@ COMMDRNE_LP:
 
 // *----------------------------------------------------------------------------
 void COMM_DRONE_PTR_SORT(void) {
+    // asm 0000A723: 	LDI	@COMM_DRONE_PTR,AR6
     OBJ* comm_drone = COMM_DRONE_PTR;
+    // asm 0000A724: 	LDI	@PLY2CAR,AR4
     OBJ* player2 = PLY2CAR;
 
+REGULAR:;
+    // asm 0000A725: REGULAR
+    // asm 0000A725: 	LDI	*+AR4(ODIST),IR1
     s32 ir1 = player2->dist;
 
+    // asm 0000A726: 	ASH	-4,IR1			;quickly divide by 16
     ir1 >>= 4; /* quickly divide by 16 */
 
     /*
@@ -354,42 +361,70 @@ void COMM_DRONE_PTR_SORT(void) {
      *
      * So INVTAB[ir1] is loaded, then inverted.
      */
+    // asm 0000A727: 	LDI	@INVTABI,AR2		;inverse table dedicated ptr
+    // asm 0000A728: 	LDF	*+AR2(IR1),R0
+    // asm 0000A729: 	CALL	INV_F30
     c3x_reg_t scale = INV_F30(C3X_LDF(INVTAB[ir1]));
 
+    // asm 0000A72A: 	CMPF	16,R0
+    // asm 0000A72B: 	LDFLT	16,R0
     if (C3X_LT(scale, C3X_FROM_INT(16))) {
         scale = C3X_FROM_INT(16);
     }
 
+    // asm 0000A72C: 	STF	R0,*+AR6(OMAT00)
+    // asm 0000A72D: 	STF	R0,*+AR6(OMAT11)
+    // asm 0000A72E: 	STF	R0,*+AR6(OMAT22)
     comm_drone->omatrix.mat00 = C3X_STF(scale);
     comm_drone->omatrix.mat11 = C3X_STF(scale);
     comm_drone->omatrix.mat22 = C3X_STF(scale);
 
+    // asm 0000A72F: 	LDF	*+AR4(OPOSX),R0
+    // asm 0000A730: 	STF	R0,*+AR6(OPOSX)
     comm_drone->pos.X = C3X_STF(C3X_REG(player2->pos.X));
 
     {
+        // asm 0000A731: 	LDF	*+AR4(OPOSY),R0
         c3x_reg_t y = C3X_LDF(player2->pos.Y);
+        // asm 0000A732: 	FLOAT	35,R1
+        // asm 0000A733: 	MPYF	*+AR6(OMAT00),R1
         c3x_reg_t offset = C3X_MUL(C3X_FROM_INT(35), comm_drone->omatrix.mat00);
 
+        // asm 0000A734: 	SUBF	R1,R0
         y = C3X_SUB(y, offset);
+        // asm 0000A735: 	SUBF	20,R0
         y = C3X_SUB(y, C3X_FROM_INT(20));
 
+        // asm 0000A736: 	STF	R0,*+AR6(OPOSY)
         comm_drone->pos.Y = C3X_STF(y);
     }
 
+    // asm 0000A737: 	LDF	*+AR4(OPOSZ),R0
+    // asm 0000A738: 	STF	R0,*+AR6(OPOSZ)
     comm_drone->pos.Z = C3X_STF(C3X_REG(player2->pos.Z));
 
+    // asm 0000A739: 	LDI	AR6,AR2
+    // asm 0000A73A: 	CALL	OBJ_PULL
     OBJ_PULL(comm_drone);
 
     /*
      * Insert comm_drone immediately after player2 in the object list.
      */
+    // asm 0000A73B: 	LDI	*AR4,R0
+    // asm 0000A73C: 	STI	R0,*AR6
     comm_drone->link = player2->link;
+    // asm 0000A73D: 	STI	AR6,*AR4
     player2->link = comm_drone;
 
     /*
      * Preserve comm_drone flags, but replace its list bits with player2's.
      */
+    // asm 0000A73E: 	LDI	*+AR4(OFLAGS),R0
+    // asm 0000A73F: 	AND	O_LIST_M,R0
+    // asm 0000A740: 	OR	*+AR6(OFLAGS),R0
+    // asm 0000A741: 	STI	R0,*+AR6(OFLAGS)
     comm_drone->flags = (comm_drone->flags | (player2->flags & O_LIST_M));
+    // asm 0000A742: 	RETS
 }
 
 // *----------------------------------------------------------------------------
