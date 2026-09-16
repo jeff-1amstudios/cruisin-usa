@@ -152,6 +152,7 @@ void HOTTUB_SCENE(void) {
     // asm 00008A17: 	STI	R0,@NOAERASE
     // asm 00008A18: 	LDI	180,AR5
     // ;	LDI	210,AR5
+HOTTUB_LPB:
     // asm 00008A19: HOTTUB_LPB
     // asm 00008A19: 	LDI	@CAMERAPOSI,AR6
     // asm 00008A1A: 	LDF	*+AR6(Z),R0
@@ -181,6 +182,7 @@ void HOTTUB_SCENE(void) {
     // asm 00008A35: 	SONDFX	CROWD1
     // asm 00008A37: 	SONDFX	CROWDROAR
     // asm 00008A39: 	LDI	100,AR5
+HOTTUB_LPB2:
     // asm 00008A3A: HOTTUB_LPB2
     // asm 00008A3A: 	LDI	@CAMERAPOSI,AR6
     // asm 00008A3B: 	LDF	*+AR6(Z),R0
@@ -772,6 +774,7 @@ BABLP3:
     if (p->ctx.BABE_TROPHY_FRAME.loop_count >= 0) {
         goto BABLP3;
     }
+BABE_TROPHYX:
     // asm 00008BA5: BABE_TROPHYX
     // asm 00008BA5: 	CREATEC	BABE_IBO,UTIL_C
     child_ctx = NEW_PROC_CONTEXT();
@@ -790,6 +793,7 @@ BABLP3:
 
 static void BABE_IBO(PROC* p) {
     // asm 00008BAE: 	LDI	6,AR5
+BABE_LP3:
     // asm 00008BAF: BABE_LP3
     // asm 00008BAF: 	LDF	*+AR4(OPOSY),R0
     // asm 00008BB0: 	ADDF	15,R0
