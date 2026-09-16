@@ -2021,6 +2021,7 @@ PR5A:
         ctx->ENTER_INITIALS_FRAME.flash_proc = CREATEC(p, FLASH_LETTERS_PROC, UTIL_C, flash_ctx);
     }
     // asm 0000353B: 	STI	AR0,*+AR7(FLASH_PROC)
+PRESS_CODEX:
     // asm 0000353C: PRESS_CODEX
     // ;	SLEEP	60
     // *ELP CHANGE
@@ -2207,6 +2208,7 @@ FPO6:
     // ;	BNE	FPO7
     // ;	STI	AR0,*+AR7(FRAMEOBJ)
     // asm 00003596: 	BR	FPLE
+FPO7:
     // asm 00003597: FPO7
 FPLE:
     // asm 00003597: 	BR	FPO
@@ -3028,6 +3030,7 @@ OGFIND:
     // asm 000036E5: 	TSTB	R1,R0
     // asm 000036E6: 	BZ	OGFIND
     // asm 000036E7: 	CLRC
+O_GFOUND:
     // asm 000036E8: O_GFOUND			;GOT IT
     // asm 000036E8: 	POP	AR5
     // asm 000036E9: 	POPF	R0
@@ -4423,6 +4426,7 @@ FLPL:
         last_plate_z = C3X_LDF(plate_obj->pos.Z);
         // asm 00003921: 	SUBF	1,R3
         letter_z = C3X_SUB(last_plate_z, C3X_FROM_INT(1));
+FLPL1:
         // asm 00003922: FLPL1
         // asm 00003922: 	LDI	R2,R1
         // asm 00003923: 	LSH	1,R2
@@ -4466,16 +4470,16 @@ static void DISPLAY_HSTEXT(int race_number) {
 
     // asm 0000392E: 	FLOAT	-910,R3
     // asm 0000392F: 	BR	RACE_TEXT
-    // asm 00003931: 	LDI	*+AR7(RACE_NUMBER),AR2
-    // asm 00003932: 	ADDI	@LEG_NAMESI,AR2
-    // asm 00003933: 	LDI	*AR2,AR2
+    // shared asm 00003931: 	LDI	*+AR7(RACE_NUMBER),AR2
+    // shared asm 00003932: 	ADDI	@LEG_NAMESI,AR2
+    // shared asm 00003933: 	LDI	*AR2,AR2
     race_text = (const char*)LEG_NAMES[race_number];
-    // asm 00003934: 	FLOAT	-4700,R2
-    // asm 00003935: 	FLOAT	-301,R4
-    // asm 00003936: 	LDI	0,R6	;ID
-    // asm 00003937: 	CALL	PRINT3D
+    // shared asm 00003934: 	FLOAT	-4700,R2
+    // shared asm 00003935: 	FLOAT	-301,R4
+    // shared asm 00003936: 	LDI	0,R6	;ID
+    // shared asm 00003937: 	CALL	PRINT3D
     PRINT3D(race_text, C3X_FROM_INT(-4700), C3X_FROM_INT(-910), C3X_FROM_INT(-301), 0);
-    // asm 00003938: 	RETS
+    // shared asm 00003938: 	RETS
     return;
 }
 
