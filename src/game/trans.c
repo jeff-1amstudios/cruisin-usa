@@ -1742,6 +1742,7 @@ void ENGINE_COLOR(c3x_reg_t left_brightness /*R0*/) {
     // asm 00005D3E: 	STI	R0,*AR0++
     EPALL->flags_and_count = (chrome_palette->flags_and_count & ~0x0fff) + 64;
     // asm 00005D3F: 	LDI	31,AR5
+L894:
     // asm 00005D40: L894
     // asm 00005D40: 	LDI	*AR3++,R4	;get src2 (TRUE)
     // asm 00005D41: 	LDI	R4,R5
@@ -1860,6 +1861,7 @@ void ENGINE_COLOR(c3x_reg_t left_brightness /*R0*/) {
     // asm 00005DA6: 	STI	R0,*AR0++
     EPALR->flags_and_count = (chrome_palette->flags_and_count & ~0x0fff) + 64;
     // asm 00005DA7: 	LDI	31,AR5
+L894D:
     // asm 00005DA8: L894D
     // asm 00005DA8: 	LDI	*AR3++,R4	;get src2 (TRUE)
     // asm 00005DA9: 	LDI	R4,R5
