@@ -4,6 +4,13 @@
 
 int crusn_video_init(crusn_video* video, int fullscreen, int bilinear) {
     Uint32 window_flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE;
+    Uint32 renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+    const char* validation_realtime = getenv("CRUSN_VALIDATE_REALTIME");
+
+    if (getenv("CRUSN_ENABLE_MAME_VALIDATION") != NULL &&
+        validation_realtime != NULL && validation_realtime[0] == '0') {
+        renderer_flags = SDL_RENDERER_SOFTWARE;
+    }
 
     video->window = SDL_CreateWindow(
         "Cruis'n USA 4.5",
@@ -16,7 +23,7 @@ int crusn_video_init(crusn_video* video, int fullscreen, int bilinear) {
         return -1;
     }
 
-    video->renderer = SDL_CreateRenderer(video->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    video->renderer = SDL_CreateRenderer(video->window, -1, renderer_flags);
     if (video->renderer == NULL) {
         crusn_video_shutdown(video);
         return -1;

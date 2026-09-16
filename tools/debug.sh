@@ -78,10 +78,11 @@ fi
 /opt/homebrew/bin/cmake -S "$ROOT_DIR" -B "$BUILD_DIR"
 /opt/homebrew/bin/cmake --build "$BUILD_DIR"
 
-# SDL_VIDEODRIVER=dummy \
-# SDL_AUDIODRIVER=dummy \
-# SDL_RENDER_DRIVER=software \
-# "$GAME_BIN"
+if [[ "$CRUSN_VALIDATE_REALTIME" == "0" ]]; then
+    export SDL_VIDEODRIVER=dummy
+    export SDL_AUDIODRIVER=dummy
+    export SDL_RENDER_DRIVER=software
+fi
 
 if [[ "${CRUSN_DEBUG_NO_LLDB:-0}" == "1" ]]; then
     "$GAME_BIN" --no-sound --window
