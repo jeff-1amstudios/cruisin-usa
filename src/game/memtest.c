@@ -498,6 +498,7 @@ void TEST_STATIC_CHIPS(void)
     // asm 00006308: 	LDL	BASICS_RAM,AR5
     // asm 00006309: 	LDI	3,AR6
     // asm 0000630A: 	LDL	STATIC_TABLE,AR4
+TSTBL1A:
     // asm 0000630B: TSTBL1A
     // asm 0000630B: 	LDI	*+AR4(CTT_TESTTAB),AR0
     // asm 0000630C: 	LDI	*AR0++,AR2
@@ -650,6 +651,7 @@ static void BLINK_DIGITS(void)
     // asm 00006360: 	DEC	AR4
     // asm 00006361: 	CMPI	0,AR4
     // asm 00006362: 	BLT	BDL1X
+BDL1:
     // asm 00006363: BDL1
     // asm 00006363: 	CALL	LLED_ON
     // asm 00006364: 	LDIL	8000000,RC
@@ -668,6 +670,7 @@ BDL1X:
     // asm 00006376: 	DEC	AR4
     // asm 00006377: 	CMPI	0,AR4
     // asm 00006378: 	BLT	BDL2X
+BDL2:
     // asm 00006379: BDL2
     // asm 00006379: 	CALL	LLED_ON
     // asm 0000637A: 	LDIL	8000000,RC
@@ -982,6 +985,7 @@ static void TEST_BASICS(void)
     // asm 00006478: 	LDL	BASICS_RAM,AR5
     // asm 00006479: 	LDI	5,AR6
     // asm 0000647A: 	LDL	CHIPTEST_TABLE,AR4
+TSTBL1:
     // asm 0000647B: TSTBL1
     // asm 0000647B: 	LDI	*+AR4(CTT_TESTTAB),AR0
     // asm 0000647C: 	LDI	*AR0++,AR2
@@ -1030,6 +1034,7 @@ static void TEST_BASICS(void)
     // asm 000064EC: 	LDL	BASICS_RAM,AR5
     // asm 000064ED: 	LDI	9,AR6
     // asm 000064EE: 	LDL	CHIPTEST_TABLE,AR4
+TSTBL2:
     // asm 000064EF: TSTBL2
     // asm 000064EF: 	LDI	*AR5++,R0		;SAVE RESULTS
     // asm 000064F0: 	LDIZ	COL_GREEN,RS
@@ -1063,6 +1068,7 @@ static void TEST_BASICS(void)
     // 	;
     // asm 0000650A: 	LDI	3,AR6
     // asm 0000650B: 	LDL	STATIC_TABLE,AR4
+TSTBL2C:
     // asm 0000650C: TSTBL2C
     // asm 0000650C: 	LDI	COL_GREEN,RS
     // asm 0000650D: 	LDI	*+AR4(CTT_MINX),AR2
@@ -1153,10 +1159,12 @@ static void RAMTEST_REAL(void)
     // asm 0000653F: 	DEC	AR0
     // asm 00006540: 	DEC	R2		;LENGTH OF CHECK
     // asm 00006541: 	LDI	R2,AR4
+RAMTST0:
     // asm 00006542: RAMTST0
     // asm 00006542: 	LDI	AR2,AR1		;GET ADDRESS
     // asm 00006543: 	LDI	R4,R0		;GET RANDOM # STARTING POINT
     // *WRITE RANDOM NUMBERS TO RAM
+RAMTST1:
     // asm 00006544: RAMTST1
     // asm 00006544: 	LDI	R0,R1
     // asm 00006545: 	LSH	1,R0
@@ -1180,6 +1188,7 @@ LKKK:
     // asm 00006554: 	LDI	R2,AR4		;LENGTH
     // asm 00006555: 	XOR	R0,R1
     // asm 00006556: 	LDIN	2,R6		;	BNN	RAMTST4
+RAMTST3:
     // asm 00006557: RAMTST3
     // asm 00006557: 	OR	R6,R0		;	OR	2,R0
     // 				;RAMTST4
@@ -1202,6 +1211,7 @@ JJJH:
     // asm 00006566: 	XOR	R0,R1
     // asm 00006567: 	LDIN	2,R6		;	BNN	RAMTST4
     // 	;---->	DBUD	AR4,RAMTST3
+RAMRPT:
     // asm 00006568: RAMRPT
     // asm 00006568: 	DBU	AR0,RAMTST0
     // asm 00006569: 	CLRI	R0		;IS GOOD RAM
