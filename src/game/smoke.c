@@ -210,6 +210,7 @@ SMPUFF1:
     if (smoke_index != p->ctx.SMOKE_PROC.num_smokes) {
         goto SMPUFFLP1;
     }
+SMOKE_CONT:
     // asm 000084F3: SMOKE_CONT
     // asm 000084F3: 	CMPI	0,R6
     // asm 000084F4: 	BEQ	SMOKEX
