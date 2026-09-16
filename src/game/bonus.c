@@ -21,7 +21,7 @@
  */
 
 static void BONUS_SANFRAN(void);
-#define BONUS_GGATE BONUS_BEVHILLS
+static void BONUS_GGATE(void);
 static void BONUS_BEVHILLS(void);
 static void BONUSNULL(void);
 void BONUS14(void);
@@ -67,7 +67,6 @@ void KILL_THEM(void);
 static void FIND_AND_REACTIVATE(void);
 static void KILL_THE_REANIMATORS(void);
 
-#define BONUS_GGATE BONUS_BEVHILLS
 #define LEG_NAMESI LEG_NAMES
 #define GAMETRAKI GAMETRAK
 #define BUFFERSI BIGBUFFER
@@ -204,6 +203,10 @@ static void BONUS_SANFRAN(void) {
     BONUS_BEVHILLS();
 }
 
+static void BONUS_GGATE(void) {
+    BONUS_BEVHILLS();
+}
+
 static void BONUS_BEVHILLS(void) {
     // asm 0000396B: 	LDI	@_MODE,R0
     // asm 0000396C: 	OR	MWATER,R0
@@ -212,6 +215,7 @@ static void BONUS_BEVHILLS(void) {
 }
 
 static void BONUSNULL(void) {
+    // asm 0000396E: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -835,7 +839,7 @@ PAPAPA44:
     SONDFX(CROWDROAR);
     // asm 00003A8D: 	SOND1	CHICKCHEER		;CHAN3
     SOND1(CHICKCHEER); // ;CHAN3
-    // asm 00003A8F: JJDDHH
+JJDDHH:
     // asm 00003A8F: 	LDI	@POSITION,R0
     // asm 00003A90: 	CMPI	1,R0
     // asm 00003A91: 	BNE	COOLRET
