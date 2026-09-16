@@ -328,6 +328,7 @@ static void JAJAD__tail(PROC* p) {
         goto PROC_RESUME_8;
     }
 
+JAJAD:
     // 	;******
     // 	;******
     // 	;******  NORMAL GAME MODE...
