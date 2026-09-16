@@ -166,24 +166,41 @@ OBJ* SAVED_PLY2CAR;
 void CLEAR_LINK(void) {
     int i;
 
-    // asm:
+    // asm 0000766B: 	LDI	@PLY2CAR,R0
+    // asm 0000766C: 	STI	R0,@SAVED_PLY2CAR
     SAVED_PLY2CAR = PLY2CAR;
 
+    // asm 0000766D: 	CLRI	R0
+    // asm 0000766E: 	STI	R0,@MY_STATE
     MY_STATE = 0;
+    // asm 0000766F: 	STI	R0,@OM_STATE
     OM_STATE = 0;
+    // asm 00007670: 	STI	R0,@OM_MODE
     OM_MODE = 0;
+    // asm 00007671: 	STI	R0,@HEAD2HEAD_ON
     HEAD2HEAD_ON = 0;
+    // asm 00007672: 	STI	R0,@MY_LINKWAIT
     MY_LINKWAIT = 0;
+    // asm 00007673: 	STI	R0,@OM_LINKWAIT
     OM_LINKWAIT = 0;
+    // asm 00007674: 	STI	R0,@PLY2CAR
     PLY2CAR = 0;
+    // asm 00007675: 	STI	R0,@CAR_LIST
     CAR_LIST = NULL;
 
+    // asm 00007676: 	LDI	@RACER_PTRI,AR0
+    // asm 00007677: 	RPTS	10-1
+    // asm 00007678: 	STI	R0,*AR0++
     for (i = 0; i < 10; ++i) {
         RACER_PTR[i] = 0;
     }
 
+    // asm 00007679: 	LDI	-1,R0
+    // asm 0000767A: 	STI	R0,@OM_CHOSEN_RACE
     OM_CHOSEN_RACE = -1;
+    // asm 0000767B: 	STI	R0,@OM_VEHICLE
     OM_VEHICLE = -1;
+    // asm 0000767C: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -344,6 +361,7 @@ void COMMQ_PACKET_INIT(void) {
     // ;	STI	R0,@FILLBUFF_LEN_PTR
     // asm 000076BC: 	CLRI	R0
     // asm 000076BD: 	STI	R0,@SEND_BUFFER_A_LEN
+CMQIX:
     // asm 000076BE: CMQIX
     // asm 000076BE: 	CALL	SEND_MODE
     // asm 000076BF: 	POP	R0
@@ -924,6 +942,7 @@ static void DECODE_RACENUM(void) {
     // asm 000077DF: 	LS	8,R0
     // asm 000077E0: 	RS	24,R0
     // asm 000077E1: 	STI	R0,@OM_CHOSEN_RACE
+NOTHIDDEN:
     // asm 000077E2: NOTHIDDEN
     // asm 000077E2: 	POP	R1
     // asm 000077E3: 	RETS
@@ -987,11 +1006,14 @@ static void DECODE_TIMECODE(void) {
 
 // *----------------------------------------------------------------------------
 
-/* asm: SEND_FLY_POS */
-void SEND_RHO_POS(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/) {
+#undef SEND_FLY_POS
+#define SEND_RHO_POS_IMPL SEND_RHO_POS
+void SEND_RHO_POS_IMPL(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/) {
     (void)obj;
     (void)carblk;
     (void)p;
+SEND_FLY_POS:
+SEND_RHO_POS:
     // asm 00007801: 	LDI	*+AR7(DELTA_LAST_OID),R0
     // asm 00007802: 	STI	R0,*+AR5(CARTRACK_ID)  	;SAVE TRACK ID
     // asm 00007803: 	LDI	CB_RHO_UPDATE,R0	;GET MESSAGE HEADER
@@ -1010,6 +1032,8 @@ void SEND_RHO_POS(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/) {
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_RHO_POS", 0, 0);
     UNIMPL_TODO();
 }
+#undef SEND_RHO_POS_IMPL
+#define SEND_FLY_POS SEND_RHO_POS
 
 void SEND_RACER_POS(void) {
     // asm 00007809: 	LDI	*+AR7(DELTA_LAST_OID),R0
@@ -1194,7 +1218,11 @@ FD1:
     STUB();
 }
 
-static void DECODE_RHO_UPDATE(void) {
+#undef DECODE_FLY_UPDATE
+#define DECODE_RHO_UPDATE_IMPL DECODE_RHO_UPDATE
+static void DECODE_RHO_UPDATE_IMPL(void) {
+DECODE_FLY_UPDATE:
+DECODE_RHO_UPDATE:
     // asm 00007875: 	LDI	@IGNORE_UPDATES,R0
     // asm 00007876: 	BNZ	DECCARX
     // asm 00007877: 	CALL	FIND_DRONE
@@ -1208,6 +1236,8 @@ static void DECODE_RHO_UPDATE(void) {
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_RHO_UPDATE", 0, 0);
     STUB();
 }
+#undef DECODE_RHO_UPDATE_IMPL
+#define DECODE_FLY_UPDATE DECODE_RHO_UPDATE
 
 static void DECODE_RACER_UPDATE(void) {
     // asm 0000787B: 	LDI	@IGNORE_UPDATES,R0
@@ -1453,7 +1483,12 @@ void SEND_OM_TRACK(void) {
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
-void SEND_BSYNC3(void) {
+#undef SEND_BSYNC0
+#undef SEND_BSYNC1
+#undef SEND_BSYNC2
+#define SEND_BSYNC_IMPL SEND_BSYNC3
+void SEND_BSYNC_IMPL(void) {
+SEND_BSYNC0:
     // ;	LDI	0,R0
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC0,AR2
@@ -1462,10 +1497,13 @@ void SEND_BSYNC3(void) {
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC1,AR2
     // ;	BU	SBLS
+SEND_BSYNC1:
     // ;	LDI	2,R0
     // ;	STI	R0,@BSYNC
     // ;	LDI	CB_BONUS_SYNC2,AR2
     // ;	BU	SBLS
+SEND_BSYNC2:
+SEND_BSYNC3:
     // asm 00007928: 	LDI	3,R0
     // asm 00007929: 	STI	R0,@BSYNC
     // asm 0000792A: 	LDI	CB_BONUS_SYNC3,AR2
@@ -1475,14 +1513,26 @@ SBLS:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SEND_BSYNC3", 0, 0);
     STUB();
 }
+#undef SEND_BSYNC_IMPL
+#define SEND_BSYNC0 SEND_BSYNC3
+#define SEND_BSYNC1 SEND_BSYNC3
+#define SEND_BSYNC2 SEND_BSYNC3
 
-static void DECODE_BSYNC3(void) {
+#undef DECODE_BSYNC0
+#undef DECODE_BSYNC1
+#undef DECODE_BSYNC2
+#define DECODE_BSYNC_IMPL DECODE_BSYNC3
+static void DECODE_BSYNC_IMPL(void) {
+DECODE_BSYNC0:
     // ;	LDI	0,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
+DECODE_BSYNC1:
     // ;	LDI	1,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
+DECODE_BSYNC2:
+DECODE_BSYNC3:
     // ;	LDI	2,R0
     // ;	STI	R0,@OM_BSYNC
     // ;	RETS
@@ -1492,6 +1542,10 @@ static void DECODE_BSYNC3(void) {
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DECODE_BSYNC3", 0, 0);
     STUB();
 }
+#undef DECODE_BSYNC_IMPL
+#define DECODE_BSYNC0 DECODE_BSYNC3
+#define DECODE_BSYNC1 DECODE_BSYNC3
+#define DECODE_BSYNC2 DECODE_BSYNC3
 
 // *----------------------------------------------------------------------------
 
