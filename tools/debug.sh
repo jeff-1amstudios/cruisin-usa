@@ -19,7 +19,8 @@ GAME_BIN="$BUILD_DIR/crusn"
 : "${CRUSN_VALIDATE_SKIP_ATTRACT:=1}"
 : "${CRUSN_VALIDATE_FORCE_BONUS_START:=1}"
 : "${CRUSN_VALIDATE_EXIT_ON_LOG_END:=1}"
-: "${CRUSN_VALIDATE_SECONDS_TO_RUN:=90}"
+: "${CRUSN_VALIDATE_SECONDS_TO_RUN:=120}"
+: "${CRUSN_VALIDATE_PORT_TIMEOUT_SECONDS:=130}"
 export CRUSN_VALIDATE_SINGLE_FRAME
 export CRUSN_VALIDATE_CLEAR_WATER_R0
 export CRUSN_VALIDATE_START_FUNCTION
@@ -52,6 +53,39 @@ hash_file() {
     exit 1
 }
 
+run_with_timeout() {
+    local timeout_seconds="$1"
+    shift
+
+    python3 - "$timeout_seconds" "$@" <<'PY'
+import os
+import signal
+import subprocess
+import sys
+
+timeout_seconds = float(sys.argv[1])
+command = sys.argv[2:]
+process = subprocess.Popen(command, start_new_session=True)
+
+try:
+    return_code = process.wait(timeout=timeout_seconds)
+except subprocess.TimeoutExpired:
+    print(
+        f"Port exceeded {timeout_seconds:g}s; terminating process group",
+        file=sys.stderr,
+    )
+    os.killpg(process.pid, signal.SIGTERM)
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        os.killpg(process.pid, signal.SIGKILL)
+        process.wait()
+    sys.exit(124)
+
+sys.exit(return_code if return_code >= 0 else 128 - return_code)
+PY
+}
+
 mkdir -p "$(dirname "$BREAKPOINT_FILE")"
 
 cd "$ROOT_DIR"
@@ -82,9 +116,11 @@ fi
 # "$GAME_BIN"
 
 if [[ "${CRUSN_DEBUG_NO_LLDB:-0}" == "1" ]]; then
-    "$GAME_BIN" --no-sound --window
+    run_with_timeout "$CRUSN_VALIDATE_PORT_TIMEOUT_SECONDS" \
+        "$GAME_BIN" --no-sound --window
 else
-    lldb --batch \
+    run_with_timeout "$CRUSN_VALIDATE_PORT_TIMEOUT_SECONDS" \
+        lldb --batch \
         -o run \
         -k "thread backtrace all" \
         -k "register read" \
