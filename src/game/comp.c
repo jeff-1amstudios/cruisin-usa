@@ -154,6 +154,7 @@ static u32 INPUT_BITS(DECOMP_STATE* state) {
     // asm 0000A2E2: 	LSH	R1,R0
     // asm 0000A2E3: 	ADDI	CURRENT_CODE_BITS,BIT_ADDR
     // asm 0000A2E4: 	RETS
+MULTIWORD:;
     // asm 0000A2E5: MULTIWORD
     // asm 0000A2E5: 	LDI	*AR0++,R1
     // asm 0000A2E6: 	LSH	BIT_ADDR,R1		;left justify
@@ -421,6 +422,7 @@ void DECOMPRESS_PROC(void) {
     // ;	LDI	SOFT_WS,R1
     // ;	AND	0DFFFh,ST		;turn off GIE.
     // ;	POP	IE
+DECOMPRESS_TOPLP2:
     // asm 0000A35D: DECOMPRESS_TOPLP2
     // asm 0000A35D: 	CALL	PUSHALL
     // asm 0000A35E: 	CALL	RESTORE_DECOMP_REGS
@@ -478,6 +480,7 @@ DECODEL3i:
     // asm 0000A387: 	LDI	*+AR5(PARENT_CODE),AR5		;code = DICT[code].parent_code
     // asm 0000A388: 	CMPI	255,AR5
     // asm 0000A389: 	BGT	DECODEL3i
+DECODEL1i:
     // asm 0000A38A: DECODEL1i
     // asm 0000A38A: 	LDI	AR5,character
     // asm 0000A38B: 	LDI	AR5,R0				;setup the first write
