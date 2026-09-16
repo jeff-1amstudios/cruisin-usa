@@ -210,6 +210,7 @@ BIGLOOP:
     // 	;R7  Y Height
     // 	;
     // asm 0000ABF0: 	LDI	ERR_SIZE-1,AR5
+ONE_LOG:
     // asm 0000ABF1: ONE_LOG
     // asm 0000ABF1: 	CALL	_rd_cw
     // asm 0000ABF2: 	LDI	R0,R2
