@@ -23,6 +23,7 @@ extern VECTOR _VECTORA;
  */
 
 void RHO_DRONE(PROC* p);
+void RHO_START(PROC* p);
 static int CKCAROFF(PROC* p);
 void RHO_DIE(PROC* p);
 static void RHO_ISHIT(PROC* p);
@@ -189,6 +190,15 @@ static int RHO_TABLE[] = {
 int RHOFLAG;
 /* asm: RHOPAL	.bss	RHOPAL,1 */
 int RHOPAL;
+
+void RHO_START(PROC* p) {
+    // asm 0000978C: 	STI	AR6,@RHOPAL
+    // asm 0000978D: 	STI	R4,@RHOFLAG		;SAVE CAR ID #
+    // asm 0000978E: 	LDI	R5,R0			;INDEX #
+    // asm 0000978F: 	B	IBOIBO
+    (void)p;
+    UNIMPL_TODO();
+}
 
 void RHO_DRONE(PROC* p) {
     int selected_index;
@@ -438,7 +448,7 @@ RHOLL1:
  *
  *
  */
-RHO_LP_TOP:
+RHO_LP:
     obj = p->ctx.RACER_DRONE.obj;
     carblk = p->ctx.RACER_DRONE.carblk;
     // asm 000097FE: 	LDI	@SUSPEND_MODE,R0
@@ -698,6 +708,7 @@ THIS_PIECE:
     // asm 0000986E: 	SUBF	*+AR4(OPOSZ),R3
     // asm 0000986F: 	ADDF	@_VECTORA+Z,R3
     // asm 00009870: 	SETDP
+JOINUP998:
     // asm 00009871: JOINUP998
     // 	;find the theta delta to this position
     // 	;
@@ -848,7 +859,7 @@ RHO_SLP:
     // asm 000098B9: 	SLEEP	1
     SLEEP(1, 1);
     // asm 000098BB: 	BU	RHO_LP
-    goto RHO_LP_TOP;
+    goto RHO_LP;
 }
 
 /*
