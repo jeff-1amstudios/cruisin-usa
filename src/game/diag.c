@@ -465,6 +465,7 @@ void HARD_LOAD_DIAGPAL(void) {
     // asm 00000660: 	LDIL	COLORAM,AR1
     // asm 00000663: 	LDI	*AR2++,AR0
     // asm 00000664: 	DEC	AR0
+LODLP:
     // asm 00000665: LODLP
     // asm 00000665: 	LDI	*AR2++,R0
     // asm 00000666: 	STI	R0,*AR1++
@@ -539,6 +540,7 @@ static void ENTER_DIAG_INIT(void) {
 // *----------------------------------------------------------------------------
 void ENTER_DIAG(void) {
     // asm 00000699: 	CALL	ENTER_DIAG_INIT
+ENTER_DIAG2:
     // asm 0000069A: ENTER_DIAG2
     // asm 0000069A: 	CLRI	R0
     // asm 0000069B: 	STI	R0,@BUTTON_STATUS
@@ -639,6 +641,7 @@ static void MONITOR_DIAGNOSTICS(void) {
     // 	;20 down
     // asm 000006D3: 	LDI	20,AR7
     // asm 000006D4: 	LDI	0,AR6
+LINLOP:
     // asm 000006D5: LINLOP
     // asm 000006D5: 	CMPI	20,AR6
     // asm 000006D6: 	LDIEQ	19,AR6
@@ -653,6 +656,7 @@ static void MONITOR_DIAGNOSTICS(void) {
     // 	;VLINES
     // asm 000006DF: 	LDI	32,AR7
     // asm 000006E0: 	LDI	0,AR6
+VLINLOP:
     // asm 000006E1: VLINLOP
     // asm 000006E1: 	CMPI	16,AR6
     // asm 000006E2: 	LDIEQ	15,AR6
@@ -716,6 +720,7 @@ BLUELP:
     // asm 00000710: 	CLRI	R3		;color
     // asm 00000711: 	LDI	50,R2		;starting Y coordinate
     // asm 00000712: 	LDI	3,AR4
+WHOLELP:
     // asm 00000713: WHOLELP
     // asm 00000713: 	LDI	R3,R4
     // asm 00000714: 	LDI	50,AR5		;lines per mess
@@ -903,6 +908,7 @@ static void ASCII_TO_BINARY(void) {
     // asm 00000882: 	LDI	0,R0	;output
     // asm 00000883: 	LDI	80h,R1	;mask
     // asm 00000884: 	LDI	7,AR3
+ATBLP:
     // asm 00000885: ATBLP
     // asm 00000885: 	TSTB	R1,R2
     // asm 00000886: 	LDIZ	'0',R3
@@ -957,6 +963,7 @@ DSS:
     // asm 000008B4: 	ADDI	12,RC
     // asm 000008B5: 	LDI	COL_RED,RS
     // asm 000008B6: 	CALL	_fill
+NOPLOT:
     // asm 000008B7: NOPLOT
     // asm 000008B7: 	B	DSS
 DONEDSS:
@@ -1180,6 +1187,7 @@ static uintptr_t ISOFF = (uintptr_t)&OFFTEXT;
 static void SHOW_DIPSWITCH_STATUS(void) {
     // asm 00000942: 	LDI	7,AR5
     // asm 00000943: 	LDI	1,R4		;Index Number
+SDS_LP:
     // asm 00000944: SDS_LP
     // asm 00000944: 	TSTB	80h,R7
     // asm 00000945: 	LDIZ	@ISON,AR2
@@ -1575,6 +1583,7 @@ HANMENL:
     // asm 00000A80: 	CMPI	20,AR7
     // asm 00000A81: 	LDIGT	20,AR7
     // asm 00000A82: 	DEC	AR7
+HANMENL_PLOT:
     // asm 00000A83: HANMENL_PLOT
     // asm 00000A83: 	LDI	COL_VDGREY,RC
     // asm 00000A84: 	CMPI	R0,R6
@@ -1841,6 +1850,7 @@ static void STEERING_WHEEL_TEST(void) {
     // asm 00000B6F: 	CLRI	R6
     // *	R0	BYTE TO SEND TO WHEEL
     // asm 00000B70: 	LDI	127,AR5
+SWTLP1:
     // asm 00000B71: SWTLP1
     // asm 00000B71: 	INC	R6
     // asm 00000B72: 	CMPI	127,R6
@@ -1859,6 +1869,7 @@ static void STEERING_WHEEL_TEST(void) {
     // asm 00000B82: 	TEXTITT	"MOVING WHEEL TO RIGHT",20,140
     // asm 00000B86: 	CLRI	R6
     // asm 00000B87: 	LDI	127,AR5
+SWTLP3:
     // asm 00000B88: SWTLP3
     // asm 00000B88: 	INC	R6
     // asm 00000B89: 	CMPI	127,R6
@@ -3141,6 +3152,7 @@ NCHNG:
 DOEXIT:
     // asm 00000EC3: 	CMPI	0,R5
     // asm 00000EC4: 	BEQ	CYN_YES
+CYN_NO:
     // asm 00000EC5: CYN_NO
     // asm 00000EC5: 	CLRC
     // asm 00000EC6: 	RETS
@@ -4296,7 +4308,7 @@ NM3:
     // asm 000011E5: 	BZ	NM4
     // asm 000011E6: 	FILL	32,82,128,118,COL_RED
 NM4:
-    // asm 000011EC: RETS
+    // asm 000011EC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MSC_MAT_STEPPED", 0, 0);
     UNIMPL();
 }
@@ -4330,7 +4342,7 @@ NM3A:
     // asm 00001216: 	BZ	NM4A
     // asm 00001217: 	FILL	32,82,128,118,COL_RED
 NM4A:
-    // asm 0000121D: RETS
+    // asm 0000121D: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "MSC_MAT_NOTPLUGGED", 0, 0);
     UNIMPL();
 }
