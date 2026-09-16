@@ -219,7 +219,7 @@ J22AB:
     // asm 0000150F: LDI	R0,R2
     // asm 00001510: 	LDI	@bufferI,AR2
     // asm 00001511: 	CALL	_itoa
-    // asm 00001512: J22A
+J22A:
     // asm 00001512: 	LDI	R5,R3
     // asm 00001513: 	LDI	250,R2
     // asm 00001514: 	LDI	DEFAULT_COLOR,RC
