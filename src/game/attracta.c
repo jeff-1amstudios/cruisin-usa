@@ -62,6 +62,11 @@ void _MIDWAYSPIN(PROC* p /*AR7*/) {
     // asm 0000A967: 	LDI	@_ATTR_MODE,R0
     // asm 0000A968: 	CMPI	-2,R0
     // asm 0000A969: 	BNE	NO_NINTENDO
+    // asm 0000A96A: 	LDI	@ATTRWAVE,R0
+    // asm 0000A96B: 	BNE	NO_NINTENDO
+    // asm 0000A96C: 	READADJ	ADJ_ATTRACT_MODE_SOUND
+    // asm 0000A96E: 	CMPI	0,R0
+    // asm 0000A96F: 	BEQ	NO_NINTENDO
     if (_ATTR_MODE == -2 && p->ctx.MIDWAYSPIN.attrwave == 0 && READADJ(ADJ_ATTRACT_MODE_SOUND) != 0) {
         // asm 0000A970: 	READADJ	ADJ_VOLUME		;make sure volume correct
         // asm 0000A972: 	LDI	R0,R1
@@ -74,6 +79,7 @@ void _MIDWAYSPIN(PROC* p /*AR7*/) {
         // asm 0000A977: 	TSTB	CMDP_MASTER,R0
         // asm 0000A978: 	BNZ	NO_NINTENDO
         if ((DIPRAM & DIP_COMMP) != 0 || (DIPRAM & CMDP_MASTER) == 0) {
+DOMUS:
             // asm 0000A979: 	LDI	890,AR6			;Length of sound
             p->ctx.MIDWAYSPIN.sound_ticks = 890; // ;Length of sound
             // asm 0000A97A: 	SOND1	NINTENDO_SND
@@ -113,6 +119,7 @@ NO_NINTENDO:
     }
 #endif
 
+    // asm 0000A987: 	LDI	AR0,AR4
     // asm 0000A988: 	CLRF	R0
     // asm 0000A989: 	STF	R0,*+AR4(OPOSX)
     // ;       FLOAT   -480,R0
@@ -219,6 +226,8 @@ static int MSLP_CHECK(PROC* p /*AR7*/, int* sound_ticks /*AR6*/) {
     // asm 0000A9BD: 	CMPI	3,R0
     // asm 0000A9BE: 	BGT	MSLP4				;Done Loading
     if (p->ctx.MSLP_CHECK.decomp_count <= 3) {
+MSLP3:
+        // asm 0000A9BF: 	RETS
         return 0;
     }
 
@@ -278,7 +287,7 @@ void MIDWAYSPINENTER(void) {
     // asm 0000A9E3: 	LDF	*+AR4(ORADY),R0
     // asm 0000A9E4: 	STF	R0,*+AR4(OUSR1)
     // asm 0000A9E5: 	LDI	690,AR5
-    // asm 0000A9E6: MSLP1a
+MSLP1a:
     // asm 0000A9E6: 	LDF	*+AR4(OUSR1),R0		;ORADY
     // asm 0000A9E7: 	ADDF	0.0174539,R0
     // asm 0000A9E8: 	STF	R0,*+AR4(OUSR1)
@@ -496,7 +505,7 @@ static void DEMOTHANKS(void) {
     // asm 0000AA4D: 	STI	R0,@BGNDCOLA	;COLORAM
     // asm 0000AA4E: 	LDI	2,AR5
     // asm 0000AA4F: 	LDI	@DEMOTHANKS_LISTI,AR4
-    // asm 0000AA50: DTLP
+DTLP:
     // asm 0000AA50: 	FLOAT	256,R2
     // asm 0000AA51: 	FLOAT	*AR4++,R3
     // asm 0000AA52: 	LDI	*AR4++,AR2

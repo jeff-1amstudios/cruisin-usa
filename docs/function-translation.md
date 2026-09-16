@@ -102,4 +102,5 @@ After implementing a significant function, if possible, add a mame assertion to 
 Run `cmake --build <build-directory> --target check-asm-source-sync` to verify
 that every assembly instruction is represented by a matching `// asm:` comment,
 that every executable assembly label is represented by a C label or same-named
-C function, and that they remain in source order.
+C function, and that they remain in source order. The validator compares one
+module-wide event stream; C function boundaries do not own or hide ASM ranges.

@@ -130,6 +130,41 @@ class CheckAsmSourceSyncTests(unittest.TestCase):
         self.assertTrue(any("RETS" in error for error in errors))
         self.assertTrue(any("LOOP" in error for error in errors))
 
+    def test_function_with_no_asm_comments_does_not_hide_its_body(self) -> None:
+        root, asm_path, c_path, temporary = self.make_pair(
+            "TEST:\n\tLDI\t1,R0\nNEXT:\n\tADDI\t1,R0\n\tRETS\n",
+            "// asm: \tLDI\t1,R0\n",
+        )
+        c_path.write_text(
+            "/* Source module: asm/TEST.ASM */\n"
+            "void TEST(void) {\n"
+            "// asm: \tLDI\t1,R0\n"
+            "}\n"
+            "void NEXT(void) {\n"
+            "}\n",
+            encoding="utf-8",
+        )
+        self.addCleanup(temporary.cleanup)
+        errors = compare_pair(c_path, asm_path, root)
+        self.assertTrue(any("ADDI" in error for error in errors))
+        self.assertTrue(any("RETS" in error for error in errors))
+
+    def test_function_entry_is_not_confused_by_preceding_macro(self) -> None:
+        root, asm_path, c_path, temporary = self.make_pair(
+            "TEST:\n\tRETS\n",
+            "// asm: \tRETS\n",
+        )
+        c_path.write_text(
+            "/* Source module: asm/TEST.ASM */\n"
+            "#define CREATED_DCS (PDATA + 1)\n"
+            "void TEST(void) {\n"
+            "// asm: \tRETS\n"
+            "}\n",
+            encoding="utf-8",
+        )
+        self.addCleanup(temporary.cleanup)
+        self.assertEqual(compare_pair(c_path, asm_path, root), [])
+
     def test_commented_label_does_not_satisfy_source_label(self) -> None:
         root, asm_path, c_path, temporary = self.make_pair(
             "TEST:\nLOOP\n\tRETS\n",
@@ -153,7 +188,7 @@ class CheckAsmSourceSyncTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.assertEqual(compare_pair(c_path, asm_path, root), [])
 
-    def test_translation_helper_can_own_a_shared_asm_tail(self) -> None:
+    def test_translation_helper_preserves_global_stream_order(self) -> None:
         root, asm_path, c_path, temporary = self.make_pair(
             "TEST:\n\tLDI\t1,R0\nTAIL\tSUBI\t1,R0\n\tRETS\n",
             "// asm 00000001: \tLDI\t1,R0\n",

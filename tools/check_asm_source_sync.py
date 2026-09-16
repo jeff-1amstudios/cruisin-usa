@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Check that ASM instructions and labels inside C functions mirror their source.
+"""Check that C translations mirror the ordered event stream of their ASM source.
 
 Both ``// asm:`` and ``// asm ADDRESS:`` comments are compared in order.  Only
 instructions and executable-code labels are compared; data declarations and
 data labels are deliberately left out of the stream.  An ASM label must be a
-real C label or a same-named C function, not merely a comment.  Function ranges
-end at the next function represented in the C file, never at decorative
-separators in the ASM source.
+real C label or a same-named C function, not merely a comment.  C function
+boundaries have no bearing on the comparison: each associated ASM module and
+its C translation form one ordered stream.
 """
 
 from __future__ import annotations
@@ -229,10 +229,25 @@ def find_c_functions(text: str) -> list[CFunction]:
 
     for index, char in enumerate(masked):
         if char == "{" and depth == 0:
-            header = masked[top_level_boundary:index]
-            match = re.search(r"([_A-Za-z][_A-Za-z0-9]*)\s*\([^;{}]*\)\s*$", header, re.S)
-            if match is not None and match.group(1) not in {"if", "for", "while", "switch"}:
-                active_name = match.group(1)
+            header = masked[top_level_boundary:index].rstrip()
+            name: str | None = None
+            if header.endswith(")"):
+                paren_depth = 0
+                for header_index in range(len(header) - 1, -1, -1):
+                    if header[header_index] == ")":
+                        paren_depth += 1
+                    elif header[header_index] == "(":
+                        paren_depth -= 1
+                        if paren_depth == 0:
+                            match = re.search(
+                                r"([_A-Za-z][_A-Za-z0-9]*)\s*$",
+                                header[:header_index],
+                            )
+                            if match is not None:
+                                name = match.group(1)
+                            break
+            if name is not None and name not in {"if", "for", "while", "switch"}:
+                active_name = name
                 active_open_line = bisect.bisect_right(line_offsets, index)
             depth = 1
             continue
@@ -252,14 +267,6 @@ def find_c_functions(text: str) -> list[CFunction]:
         if depth == 0 and char == ";":
             top_level_boundary = index + 1
     return functions
-
-
-def asm_label_name(raw: str) -> str | None:
-    if raw[:1].isspace():
-        return None
-    code = strip_asm_inline_comment(raw).strip()
-    match = re.match(r"^([_A-Za-z.$?@][_A-Za-z0-9.$?@]*):?(?:\s+.*)?$", code)
-    return match.group(1) if match is not None else None
 
 
 @lru_cache(maxsize=None)
@@ -301,12 +308,58 @@ def asm_operation_names(
     return operations
 
 
+def executable_asm_labels(
+    repo_root: Path,
+    asm_path: Path,
+    raw_lines: list[str],
+    data_only_macros: frozenset[str] = frozenset(),
+) -> frozenset[str]:
+    """Return labels known to name code, preferring the ROM-list classification."""
+    labels_path = repo_root / "tools" / "ida" / "log" / "romlst_labels.tsv"
+    module = asm_path.stem.upper()
+    labels: set[str] = set()
+    found_module = False
+    if labels_path.is_file():
+        for raw in labels_path.read_text(encoding="utf-8").splitlines()[1:]:
+            columns = raw.split("\t")
+            if len(columns) < 4 or columns[2].upper() != module:
+                continue
+            found_module = True
+            if columns[3].lower() in {"code", "label"}:
+                labels.add(columns[0])
+    if found_module:
+        return frozenset(labels)
+
+    # Standalone/test sources do not have a ROM-list log. Infer labels from
+    # the first substantive line following them, while still excluding data.
+    for index, raw in enumerate(raw_lines):
+        if raw[:1].isspace():
+            continue
+        code = strip_asm_inline_comment(raw).strip()
+        if BARE_LABEL_RE.fullmatch(code) and bare_label_precedes_code(
+            raw_lines, index, data_only_macros
+        ):
+            labels.add(code.removesuffix(":"))
+            continue
+        match = LABEL_WITH_BODY_RE.fullmatch(code)
+        if match is None:
+            continue
+        operation = match.group(2).split(None, 1)[0]
+        if (
+            not operation.startswith(".")
+            and operation.lower() not in NON_CODE_OPERATIONS
+            and operation.upper() not in data_only_macros
+        ):
+            labels.add(match.group(1))
+    return frozenset(labels)
+
+
 def parse_asm_events(
     raw: str,
     path: Path,
     number: int,
     data_only_macros: frozenset[str] = frozenset(),
-    code_label_lines: frozenset[int] = frozenset(),
+    code_labels: frozenset[str] = frozenset(),
 ) -> list[SourceLine]:
     stripped = raw.strip()
     if not stripped or stripped.startswith(("*", ";")):
@@ -318,14 +371,15 @@ def parse_asm_events(
         operation = code.split(None, 1)[0].lower()
         if operation in NON_CODE_OPERATIONS or operation.upper() in data_only_macros:
             return []
-        return [SourceLine(path, number, stripped)]
+        return [SourceLine(path, number, code)]
     if BARE_LABEL_RE.fullmatch(code):
-        if number in code_label_lines:
-            return [SourceLine(path, number, code.removesuffix(":"))]
+        label = code.removesuffix(":")
+        if label in code_labels:
+            return [SourceLine(path, number, label)]
         return []
-    match = LABEL_WITH_BODY_RE.fullmatch(stripped)
+    match = LABEL_WITH_BODY_RE.fullmatch(code)
     if match is None:
-        return [SourceLine(path, number, stripped)]
+        return [SourceLine(path, number, code)]
     operation = match.group(2).split(None, 1)[0].lower()
     if (
         operation.startswith(".")
@@ -333,10 +387,11 @@ def parse_asm_events(
         or operation.upper() in data_only_macros
     ):
         return []
-    return [
-        SourceLine(path, number, match.group(1)),
-        SourceLine(path, number, match.group(2).strip()),
-    ]
+    events = []
+    if match.group(1) in code_labels:
+        events.append(SourceLine(path, number, match.group(1)))
+    events.append(SourceLine(path, number, match.group(2).strip()))
+    return events
 
 
 def parse_c_comment_events(
@@ -344,46 +399,63 @@ def parse_c_comment_events(
     path: Path,
     number: int,
     operations: set[str],
+    data_only_macros: frozenset[str] = frozenset(),
 ) -> list[SourceLine]:
     # The comment format contributes one space after ':'.  Preserve a following
     # tab because it distinguishes an instruction from a flush-left label.
     if payload.startswith(" "):
         payload = payload[1:]
-    if payload.startswith("\t"):
-        return [SourceLine(path, number, payload.strip())]
     stripped = payload.strip()
     if not stripped:
-        return [SourceLine(path, number, "")]
+        return []
     code = strip_asm_inline_comment(stripped).strip()
+    if not code or code.startswith("."):
+        return []
+    operation = code.split(None, 1)[0]
+    if operation.lower() in NON_CODE_OPERATIONS or operation.upper() in data_only_macros:
+        return []
+    if payload.startswith("\t"):
+        return [SourceLine(path, number, code)]
     if BARE_LABEL_RE.fullmatch(code):
         # A label written in an asm comment is still only a comment.  Labels
         # must be represented by a real C label or by the C function itself.
         return []
-    match = LABEL_WITH_BODY_RE.fullmatch(stripped)
+    match = LABEL_WITH_BODY_RE.fullmatch(code)
     if match is None or match.group(1).upper() in operations:
-        return [SourceLine(path, number, stripped)]
+        return [SourceLine(path, number, code)]
     return [SourceLine(path, number, match.group(2).strip())]
 
 
-def c_events_for_function(
+def c_events_for_file(
     path: Path,
     raw_lines: list[str],
-    function: CFunction,
     operations: set[str],
-) -> tuple[list[SourceLine], int]:
+    code_labels: frozenset[str],
+    data_only_macros: frozenset[str] = frozenset(),
+) -> list[SourceLine]:
+    """Build the C event stream without assigning events to functions."""
     events: list[SourceLine] = []
-    asm_comment_count = 0
-    for number in range(function.open_line, function.close_line + 1):
-        raw = raw_lines[number - 1]
+    functions_by_line: dict[int, list[CFunction]] = {}
+    for function in find_c_functions("\n".join(raw_lines)):
+        functions_by_line.setdefault(function.open_line, []).append(function)
+
+    for number, raw in enumerate(raw_lines, 1):
+        for function in functions_by_line.get(number, []):
+            if function.name in code_labels:
+                events.append(SourceLine(path, number, function.name))
+
         match = C_NUMBERED_ASM_RE.match(raw) or C_ASM_RE.match(raw)
         if match is not None:
-            asm_comment_count += 1
-            events.extend(parse_c_comment_events(match.group(1), path, number, operations))
+            events.extend(
+                parse_c_comment_events(
+                    match.group(1), path, number, operations, data_only_macros
+                )
+            )
             continue
         label_match = C_LABEL_RE.match(raw)
-        if label_match is not None and label_match.group(1) not in {"case", "default"}:
+        if label_match is not None and label_match.group(1) in code_labels:
             events.append(SourceLine(path, number, label_match.group(1)))
-    return events, asm_comment_count
+    return events
 
 
 def asm_key(text: str) -> str:
@@ -450,117 +522,71 @@ def discover_c_files(repo_root: Path) -> list[Path]:
     return sorted(result)
 
 
-def compare_pair(c_path: Path, asm_path: Path, repo_root: Path) -> list[str]:
-    c_text = c_path.read_text(encoding="utf-8")
-    c_raw_lines = c_text.splitlines()
-    functions = find_c_functions(c_text)
+def compare_module(c_paths: list[Path], asm_path: Path, repo_root: Path) -> list[str]:
+    """Compare an ASM module with the global stream from its associated C files."""
     asm_raw_lines = asm_path.read_text(encoding="utf-8").splitlines()
     data_macros = data_only_macro_names(repo_root)
     operations = asm_operation_names(asm_raw_lines, data_macros)
-    code_label_lines = frozenset(
-        number
-        for number, raw in enumerate(asm_raw_lines, 1)
-        if not raw[:1].isspace()
-        and BARE_LABEL_RE.fullmatch(strip_asm_inline_comment(raw).strip())
-        and bare_label_precedes_code(asm_raw_lines, number - 1, data_macros)
+    code_labels = executable_asm_labels(
+        repo_root, asm_path, asm_raw_lines, data_macros
     )
 
     asm_lines: list[SourceLine] = []
-    event_index_at_line: list[int] = []
     for index, raw in enumerate(asm_raw_lines):
-        event_index_at_line.append(len(asm_lines))
         asm_lines.extend(
             parse_asm_events(
                 raw,
                 asm_path,
                 index + 1,
                 data_macros,
-                code_label_lines,
+                code_labels,
             )
         )
 
-    audited: list[tuple[CFunction, list[SourceLine]]] = []
-    for function in functions:
-        c_lines, comment_count = c_events_for_function(
-            c_path, c_raw_lines, function, operations
+    c_lines: list[SourceLine] = []
+    for c_path in sorted(c_paths):
+        c_lines.extend(
+            c_events_for_file(
+                c_path,
+                c_path.read_text(encoding="utf-8").splitlines(),
+                operations,
+                code_labels,
+                data_macros,
+            )
         )
-        if comment_count:
-            audited.append((function, c_lines))
 
-    name_label_indexes: dict[str, int] = {}
-    wanted_names = {function.name for function, _lines in audited}
-    for line_index, raw in enumerate(asm_raw_lines):
-        name = asm_label_name(raw)
-        if name in wanted_names and name not in name_label_indexes:
-            name_label_indexes[name] = event_index_at_line[line_index]
-
-    # Map each C function to its ASM entry.  Translation-only helpers used for
-    # shared tails have no same-named ASM label, so anchor those at their first
-    # C instruction comment when that event is unique in the module.
-    anchors: dict[str, tuple[int, int]] = {}
     errors: list[str] = []
-    asm_keys = [asm_key(line.text) for line in asm_lines]
-    for function, c_lines in audited:
-        label_index = name_label_indexes.get(function.name)
-        if label_index is not None:
-            # The function definition itself represents its same-named ASM
-            # entry label.  Compare the body beginning with the next event.
-            anchors[function.name] = (label_index + 1, label_index)
+    matcher = difflib.SequenceMatcher(
+        None,
+        [asm_key(line.text) for line in asm_lines],
+        [asm_key(line.text) for line in c_lines],
+        autojunk=False,
+    )
+    for tag, asm_start, asm_end, c_start, c_end in matcher.get_opcodes():
+        if tag == "equal":
             continue
-        if not c_lines:
-            errors.append(
-                f"{c_path.relative_to(repo_root)}:{function.open_line}: "
-                f"{function.name}: has asm comments but no comparable events"
-            )
-            continue
-        first_key = asm_key(c_lines[0].text)
-        candidates = [index for index, key in enumerate(asm_keys) if key == first_key]
-        if len(candidates) != 1:
-            errors.append(
-                f"{c_path.relative_to(repo_root)}:{function.open_line}: {function.name}: "
-                f"no matching ASM function label and first event {c_lines[0].text!r} "
-                f"has {len(candidates)} possible source locations"
-            )
-            continue
-        anchors[function.name] = (candidates[0], candidates[0])
-
-    boundary_indexes = sorted({boundary for _begin, boundary in anchors.values()})
-    for function, c_lines in audited:
-        anchor = anchors.get(function.name)
-        if anchor is None:
-            continue
-        begin, boundary = anchor
-        later_boundaries = [index for index in boundary_indexes if index > boundary]
-        end = later_boundaries[0] if later_boundaries else len(asm_lines)
-        expected_lines = asm_lines[begin:end]
-
-        matcher = difflib.SequenceMatcher(
-            None,
-            [asm_key(line.text) for line in expected_lines],
-            [asm_key(line.text) for line in c_lines],
-            autojunk=False,
-        )
-        for tag, asm_start, asm_end, c_start, c_end in matcher.get_opcodes():
-            if tag == "equal":
-                continue
-            if tag in {"delete", "replace"}:
-                for line in expected_lines[asm_start:asm_end]:
-                    errors.append(
-                        f"{line.location(repo_root)}: {function.name}: "
-                        f"missing or out-of-order asm line: {line.text}"
-                    )
-            if tag in {"insert", "replace"}:
-                for line in c_lines[c_start:c_end]:
-                    errors.append(
-                        f"{line.location(repo_root)}: {function.name}: "
-                        f"extra, invented, or out-of-order asm label/instruction: {line.text}"
-                    )
+        if tag in {"delete", "replace"}:
+            for line in asm_lines[asm_start:asm_end]:
+                errors.append(
+                    f"{line.location(repo_root)}: "
+                    f"missing or out-of-order asm label/instruction: {line.text}"
+                )
+        if tag in {"insert", "replace"}:
+            for line in c_lines[c_start:c_end]:
+                errors.append(
+                    f"{line.location(repo_root)}: "
+                    f"extra, invented, or out-of-order asm label/instruction: {line.text}"
+                )
     return errors
+
+
+def compare_pair(c_path: Path, asm_path: Path, repo_root: Path) -> list[str]:
+    return compare_module([c_path], asm_path, repo_root)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Compare ordered ASM instructions and labels in C functions with their ASM source."
+        description="Compare each ASM module's ordered labels/instructions with its C translation."
     )
     parser.add_argument(
         "files",
@@ -596,6 +622,7 @@ def main() -> int:
         if not c_paths:
             raise ValueError("no associated C files found")
 
+        modules: dict[Path, list[Path]] = {}
         errors: list[str] = []
         for c_path in c_paths:
             asm_path = source_module_for_c(c_path, repo_root)
@@ -605,7 +632,9 @@ def main() -> int:
                     f"{asm_path.relative_to(repo_root)}"
                 )
                 continue
-            errors.extend(compare_pair(c_path, asm_path, repo_root))
+            modules.setdefault(asm_path.resolve(), []).append(c_path)
+        for asm_path, associated_c_paths in sorted(modules.items()):
+            errors.extend(compare_module(associated_c_paths, asm_path, repo_root))
     except (OSError, UnicodeError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
@@ -614,12 +643,12 @@ def main() -> int:
         print("\n".join(errors))
         print(
             f"\nASM source sync failed with {len(errors)} difference(s) "
-            f"across {len(c_paths)} file pair(s).",
+            f"across {len(modules)} module(s).",
             file=sys.stderr,
         )
         return 1
 
-    print(f"ASM source sync passed across {len(c_paths)} file pair(s).")
+    print(f"ASM source sync passed across {len(modules)} module(s).")
     return 0
 
 

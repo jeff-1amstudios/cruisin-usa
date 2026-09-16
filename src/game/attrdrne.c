@@ -931,7 +931,7 @@ static void WATCH_VIEW(void) {
     camera_rady = C3X_NEG(camera_rady);
     // asm 000056F4: 	STF	R0,*+AR7(NEW_RADY)
     ctx->ATTRACT_DELTA.new_rady = C3X_STF(camera_rady);
-    // asm 000056F5: WV1
+WV1:
     // asm 000056F5: 	LDI	AR7,R2
     // asm 000056F6: 	ADDI	NEW_RADX,R2
     // asm 000056F7: 	LDI	AR7,AR2
@@ -1619,11 +1619,17 @@ FR0:
     for (place = 0; place < pass_count; place++) { // ;Find the next best
         // asm 00005820: 	LDI	0,R4
         // asm 00005821: 	LDI	@CAR_LISTI,AR0		;Scan the list of car objects
+        // asm 00005822: 	SUBI	OLINK3,AR0
         best_road_obj = NULL;
         chosen_obj = NULL;                                                          // ;Scan the list of car objects
         for (car_obj = CAR_LIST; car_obj != NULL; car_obj = (OBJ*)car_obj->link3) { // ;They are linked by OLINK3
+FR1:
+            // asm 00005823: 	LDI	*+AR0(OLINK3),AR0
+            // asm 00005824: 	CMPI	0,AR0
+            // asm 00005825: 	BEQ	FRX
             // asm 00005826: 	LDI	*+AR0(OID),R0			;Is this a racer?
             // asm 00005827: 	CMPI	DRONE_C|VEHICLE_T|DRNE_RACER,R0
+            // asm 00005828: 	BNE	FR1
             if (car_obj->id != (DRONE_C | VEHICLE_T | DRNE_RACER)) { // ;Is this a racer?
                 continue;
             }
@@ -1633,17 +1639,26 @@ FR0:
                 continue;
             }
             // asm 0000582A: 	CMPI	AR4,R3			;Best position looking for
+            // asm 0000582B: 	BLT	FR1
             if (road_obj > upper_bound) { // ;Best position looking for
                 continue;
             }
             // asm 0000582C: 	CMPI	AR4,R4			;Greatest entry in the LEG_MAP wins
+            // asm 0000582D: 	BGT	FR1
             if (best_road_obj != NULL && road_obj < best_road_obj) { // ;Greatest entry in the LEG_MAP wins
                 continue;
             }
             // asm 0000582E: 	LDI	IR0,IR1			;WHILE ((IR0>0) && (*+AR3(IR1++) != AR0))
             duplicate = 0;
+FR2A:
+            // asm 0000582F: 	SUBI	1,IR1
+            // asm 00005830: 	CMPI	0,IR1
+            // asm 00005831: 	BN	FR2B
             for (i = place - 1; i >= 0; i--) {
+FR2:
                 // asm 00005832: 	CMPI	*+AR3(IR1),AR0		;IF THIS CAR IS ALLREADY ON LIST, Then Get NEXT
+                // asm 00005833: 	BEQ	FR1
+                // asm 00005834: 	BR	FR2A
                 if (chosen_cars[i] == car_obj) { // ;IF THIS CAR IS ALLREADY ON LIST, Then Get NEXT
                     duplicate = 1;
                     break;
@@ -1652,17 +1667,21 @@ FR0:
             if (duplicate != 0) {
                 continue;
             }
+FR2B:
             // asm 00005835: 	LDI	AR4,R4
             // asm 00005836: 	LDI	AR0,AR1			;Set the pointer to the cars obj
+            // asm 00005837: 	BU	FR1
             best_road_obj = road_obj;
             chosen_obj = car_obj; // ;Set the pointer to the cars obj
         }
+FRX:
         // asm 00005838: 	STI	AR1,*+AR3(IR0)
         chosen_cars[place] = chosen_obj;
         // asm 00005839: 	ADDI	1,IR0
         // asm 0000583A: 	LDI	R4,R3
         upper_bound = best_road_obj;
         // asm 0000583B: 	SUBI	1,R2
+        // asm 0000583C: 	BP	FR0
         if (chosen_obj == NULL) {
             break;
         }
@@ -1718,8 +1737,12 @@ static c3x_reg_t FIND_CLOSEST_RACER(OBJ** closest_racer /*AR1*/) {
     memcpy(&camera_rady_offset, &ctx->ATTRACT_DELTA.camera_xyzr[3], sizeof(camera_rady_offset));
 FCR1:
     for (car_obj = CAR_LIST; car_obj != NULL; car_obj = (OBJ*)car_obj->link3) {
+        // asm 0000584B: 	LDI	*+AR0(OLINK3),AR0
+        // asm 0000584C: 	CMPI	0,AR0
+        // asm 0000584D: 	BEQ	FCRX
         // asm 0000584E: 	LDI	*+AR0(OID),R0
         // asm 0000584F: 	CMPI	DRONE_C|VEHICLE_T|DRNE_RACER,R0	;Racer drones only
+        // asm 00005850: 	BNE	FCR1
         if (car_obj->id != (DRONE_C | VEHICLE_T | DRNE_RACER)) { // ;Racer drones only
             continue;
         }
@@ -1760,6 +1783,7 @@ FCR1:
             best_distance = distance;
             *closest_racer = car_obj;
         }
+        // asm 00005869: 	BU	FCR1
     }
 FCRX:
     // asm 0000586A: 	LDF	R5,R0
@@ -1855,7 +1879,7 @@ FIND_LP:
     while (road_obj->as_fixed.id < road_id) {
         road_obj++;
     }
-    // asm 00005884: FINDX
+FINDX:
     // asm 00005884: 	SUBI	7,AR4
     // asm 00005885: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "FIND_MAP", 0, 0);
@@ -1952,7 +1976,7 @@ static void FACE_FRONT(void) {
     if ((car_obj->flags & O_LIST_M) != 0) {
         goto SECOND_PERSON;
     }
-    // asm 000058AD: FIRST_PERSON				;NO, Then in first person
+FIRST_PERSON:
     // asm 000058AD: 	LDI	0,R0
     // asm 000058AE: 	STI	R0,@CAMVIEW
     CAMVIEW = 0;
@@ -2056,7 +2080,7 @@ FFX3:
     // asm 000058EA: 	STF	R0,*+AR7(NEW_RADZ)
     ctx->ATTRACT_DELTA.new_radx = C3X_STF(C3X_IMM_F32(0));
     ctx->ATTRACT_DELTA.new_radz = C3X_STF(C3X_IMM_F32(0));
-    // asm 000058EB: FFX4
+FFX4:
     // asm 000058EB: 	LDI	AR7,R2
     // asm 000058EC: 	ADDI	NEW_RADX,R2
     // asm 000058ED: 	LDI	AR7,AR2
@@ -2140,14 +2164,6 @@ static void SERIOUSLY_NORMALIZE(void) {
     // asm 0000590A: 	MPYF	@TWOPII,R1		;MOD 6.28
     // asm 0000590B: 	POPF	R0
     // asm 0000590C: 	SUBF	R1,R0
-NORM_VECTOR:
-    // asm 0000590D: 	LDF	0,R1 			;NORMALIZE DIFFERENCE
-    // asm 0000590E: 	CMPF	3.14,R0
-    // asm 0000590F: 	LDFGT	-6.28,R1
-    // asm 00005910: 	CMPF	-3.14,R0
-    // asm 00005911: 	LDFLT	6.28,R1
-    // asm 00005912: 	ADDF	R1,R0
-    // asm 00005913: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SERIOUSLY_NORMALIZE", 0, 0);
     UNIMPL();
 }
@@ -2417,6 +2433,7 @@ static void UPDATE_CAMERA(void) {
         // asm 0000597C: 	LDI	8,RC
         // asm 0000597D: 	RPTB	loopA
         // asm 0000597E: 	LDF	*AR1++,R1
+loopA:
         // asm 0000597F: STF	R1,*AR0++
         for (i = 0; i < 9; i++) {
             dst[i] = src[i];
@@ -2432,6 +2449,7 @@ SMOOTH_MATRIX:
     // asm 00005985: 	LDF	*AR1++,R1
     // asm 00005986: 	MPYF	0.80,R1
     // asm 00005987: 	ADDF	R0,R1
+loop:
     // asm 00005988: STF	R1,*AR0++
     for (i = 0; i < 9; i++) {
         dst[i] = C3X_STF(C3X_ADD(C3X_MUL(dst[i], C3X_IMM_F32(0.20)), C3X_MUL(src[i], C3X_IMM_F32(0.80))));
