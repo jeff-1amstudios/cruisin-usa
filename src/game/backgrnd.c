@@ -465,7 +465,7 @@ static void BGD_WATCHER(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
         // MAME_ASSERT_FUNCTION_ENTRY();
-        goto BGD_WATCHER_ENTRY;
+        goto BGD_WATCHER;
     case 1:
         goto PROC_RESUME_1;
     case 2:
@@ -476,7 +476,7 @@ BGD_SLP:
     // asm 00003FF2: 	SLEEP	1
     SLEEP(1, 1);
 
-BGD_WATCHER_ENTRY:
+BGD_WATCHER:
     observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.X));
     MAME_ASSERT_MEM(0x00003FF4, "d@00809800", &observed_raw);
     observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Z));
