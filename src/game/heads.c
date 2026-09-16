@@ -26,8 +26,8 @@ void VANITY_SUB(PROC* p);
 static tSHADOW_TEXT GETT(const char* string, c3x_reg_t x, c3x_reg_t y);
 static void CENTEREM(tSHADOW_TEXT* text);
 static void RIGHTEM(tSHADOW_TEXT* text);
-static void KRIS(PROC* p);
-static void ADAMSTOPRIBYL(PROC* p);
+static void KRIS_proc(PROC* p);
+static void ADAMSTOPRIBYL_proc(PROC* p);
 
 #define HEADTYPE 0x88D0
 
@@ -662,11 +662,26 @@ NOTSPEC4:
     child_ctx = NEW_PROC_CONTEXT();
     child_ctx->KRIS.front = text.front;
     child_ctx->KRIS.shadow = text.shadow;
-    CREATE(KRIS, HEADTYPE, child_ctx);
+    CREATE(KRIS_proc, HEADTYPE, child_ctx);
     // asm 0000A274: 	POP	AR5
     // asm 0000A275: 	POP	AR4
     // asm 0000A276: 	BU	DTLP2
     goto DTLP2;
+KRIS:
+    // asm 0000A277: 	SLEEP	1
+    // asm 0000A279: 	LDF	*+AR4(TEXT_POSX),R0
+    // asm 0000A27A: 	FLOAT	259,R1
+    // asm 0000A27B: 	SUBF	R0,R1
+    // asm 0000A27C: 	MPYF	0.05,R1
+    // asm 0000A27D: 	ADDF	R1,R0
+    // asm 0000A27E: 	STF	R0,*+AR4(TEXT_POSX)
+    // asm 0000A27F: 	LDF	*+AR5(TEXT_POSX),R0
+    // asm 0000A280: 	FLOAT	256,R1
+    // asm 0000A281: 	SUBF	R0,R1
+    // asm 0000A282: 	MPYF	0.05,R1
+    // asm 0000A283: 	ADDF	R1,R0
+    // asm 0000A284: 	STF	R0,*+AR5(TEXT_POSX)
+    // asm 0000A285: 	BU	KRIS
 NOTSPEC99:
     // asm 0000A286: 	CMPI	3,R7
     // asm 0000A287: 	BNE	NOTSPEC3
@@ -688,11 +703,21 @@ NOTSPEC99:
     child_ctx = NEW_PROC_CONTEXT();
     child_ctx->ADAMSTOPRIBYL.front = text.front;
     child_ctx->ADAMSTOPRIBYL.shadow = text.shadow;
-    CREATE(ADAMSTOPRIBYL, HEADTYPE, child_ctx);
+    CREATE(ADAMSTOPRIBYL_proc, HEADTYPE, child_ctx);
     // asm 0000A294: 	POP	AR5
     // asm 0000A295: 	POP	AR4
     // asm 0000A296: 	BU	DTLP2
     goto DTLP2;
+ADAMSTOPRIBYL:
+    // asm 0000A298: 	SLEEP	1
+    // asm 0000A29A: 	LDF	*+AR4(TEXT_POSY),R0
+    // asm 0000A29B: 	FLOAT	250,R1
+    // asm 0000A29C: 	CMPF	R1,R0
+    // asm 0000A29D: 	BGT	ADAMSTOPRIBYL
+    // asm 0000A29E: 	LDI	@CHISPRIB,R0
+    // asm 0000A29F: 	STI	R0,*+AR4(TEXT_PTR)
+    // asm 0000A2A0: 	STI	R0,*+AR5(TEXT_PTR)
+    // asm 0000A2A1: 	DIE
 NOTSPEC3:
     // asm 0000A2A2: 	CMPI	-1,R7
     // asm 0000A2A3: 	BEQ	WTD55
@@ -746,7 +771,7 @@ WTD55:
     return;
 }
 
-static void KRIS(PROC* p) {
+static void KRIS_proc(PROC* p) {
     c3x_reg_t position;
     c3x_reg_t delta;
 
@@ -758,35 +783,36 @@ static void KRIS(PROC* p) {
         goto PROC_RESUME_1;
     }
 
+    // asm 0000A277:
 KRIS_LOOP:
-    // asm 0000A277: SLEEP	1
+    // shared asm 0000A277: SLEEP	1
     SLEEP(1, 1);
-    // asm 0000A279: 	LDF	*+AR4(TEXT_POSX),R0
+    // shared asm 0000A279: 	LDF	*+AR4(TEXT_POSX),R0
     position = C3X_LDF(p->ctx.KRIS.front->posx);
-    // asm 0000A27A: 	FLOAT	259,R1
-    // asm 0000A27B: 	SUBF	R0,R1
-    // asm 0000A27C: 	MPYF	0.05,R1
-    // asm 0000A27D: 	ADDF	R1,R0
+    // shared asm 0000A27A: 	FLOAT	259,R1
+    // shared asm 0000A27B: 	SUBF	R0,R1
+    // shared asm 0000A27C: 	MPYF	0.05,R1
+    // shared asm 0000A27D: 	ADDF	R1,R0
     delta = C3X_MUL(C3X_SUB(C3X_FROM_INT(259), position), C3X_IMM_F32(0.05));
-    // asm 0000A27E: 	STF	R0,*+AR4(TEXT_POSX)
+    // shared asm 0000A27E: 	STF	R0,*+AR4(TEXT_POSX)
     p->ctx.KRIS.front->posx = C3X_STF(C3X_ADD(position, delta));
-    // asm 0000A27F: 	LDF	*+AR5(TEXT_POSX),R0
+    // shared asm 0000A27F: 	LDF	*+AR5(TEXT_POSX),R0
     position = C3X_LDF(p->ctx.KRIS.shadow->posx);
-    // asm 0000A280: 	FLOAT	256,R1
-    // asm 0000A281: 	SUBF	R0,R1
-    // asm 0000A282: 	MPYF	0.05,R1
-    // asm 0000A283: 	ADDF	R1,R0
+    // shared asm 0000A280: 	FLOAT	256,R1
+    // shared asm 0000A281: 	SUBF	R0,R1
+    // shared asm 0000A282: 	MPYF	0.05,R1
+    // shared asm 0000A283: 	ADDF	R1,R0
     delta = C3X_MUL(C3X_SUB(C3X_FROM_INT(256), position), C3X_IMM_F32(0.05));
-    // asm 0000A284: 	STF	R0,*+AR5(TEXT_POSX)
+    // shared asm 0000A284: 	STF	R0,*+AR5(TEXT_POSX)
     p->ctx.KRIS.shadow->posx = C3X_STF(C3X_ADD(position, delta));
-    // asm 0000A285: 	BU	KRIS
+    // shared asm 0000A285: 	BU	KRIS
     goto KRIS_LOOP;
 }
 
 /* asm: CHISPRIB SPTR "CHRISTINE PRIBYL" */
 static const char CHISPRIB[] = "CHRISTINE PRIBYL";
 
-static void ADAMSTOPRIBYL(PROC* p) {
+static void ADAMSTOPRIBYL_proc(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
         MAME_ASSERT_FUNCTION_ENTRY();
@@ -795,22 +821,23 @@ static void ADAMSTOPRIBYL(PROC* p) {
         goto PROC_RESUME_1;
     }
 
+    // asm 0000A298:
 ADAMSTOPRIBYL_LOOP:
-    // asm 0000A298: 	SLEEP	1
+    // shared asm 0000A298: 	SLEEP	1
     SLEEP(1, 1);
-    // asm 0000A29A: 	LDF	*+AR4(TEXT_POSY),R0
-    // asm 0000A29B: 	FLOAT	250,R1
-    // asm 0000A29C: 	CMPF	R1,R0
-    // asm 0000A29D: 	BGT	ADAMSTOPRIBYL
+    // shared asm 0000A29A: 	LDF	*+AR4(TEXT_POSY),R0
+    // shared asm 0000A29B: 	FLOAT	250,R1
+    // shared asm 0000A29C: 	CMPF	R1,R0
+    // shared asm 0000A29D: 	BGT	ADAMSTOPRIBYL
     if (C3X_GT(C3X_LDF(p->ctx.ADAMSTOPRIBYL.front->posy), C3X_FROM_INT(250))) {
         goto ADAMSTOPRIBYL_LOOP;
     }
-    // asm 0000A29E: 	LDI	@CHISPRIB,R0
-    // asm 0000A29F: 	STI	R0,*+AR4(TEXT_PTR)
-    // asm 0000A2A0: 	STI	R0,*+AR5(TEXT_PTR)
+    // shared asm 0000A29E: 	LDI	@CHISPRIB,R0
+    // shared asm 0000A29F: 	STI	R0,*+AR4(TEXT_PTR)
+    // shared asm 0000A2A0: 	STI	R0,*+AR5(TEXT_PTR)
     p->ctx.ADAMSTOPRIBYL.front->ptr = (char*)CHISPRIB;
     p->ctx.ADAMSTOPRIBYL.shadow->ptr = (char*)CHISPRIB;
-    // asm 0000A2A1: 	DIE
+    // shared asm 0000A2A1: 	DIE
     DIE();
 }
 
