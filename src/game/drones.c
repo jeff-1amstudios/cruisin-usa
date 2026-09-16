@@ -33,6 +33,7 @@ c3x_reg_t GET_TRACK_POS_RVS_XLANE(PROC* p, OBJ* obj);
 c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj);
 c3x_reg_t DELTA_GET_TRACK_POS(PROC* p, OBJ* obj);
 c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj);
+static c3x_reg_t TRKP2(OBJ* piece, OBJ* obj);
 c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece);
 c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece);
 c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece);
@@ -1045,8 +1046,6 @@ LPP:
  */
 c3x_reg_t GET_TRACK_POS_RVS_XLANE(PROC* p, OBJ* obj) {
     OBJ* piece;
-    c3x_reg_t dx;
-    c3x_reg_t dz;
     // asm 00006706: 	PUSHFL	R1
     // asm 00006708: 	PUSHFL	R2
     // asm 0000670A: 	PUSH	AR2
@@ -1055,29 +1054,11 @@ c3x_reg_t GET_TRACK_POS_RVS_XLANE(PROC* p, OBJ* obj) {
     // asm 0000670C: 	CALL	SUB_FUNCTION_RVS_XLANE		;GET LANE OFFSET (VECTOR A)
     SUB_FUNCTION_RVS_XLANE(p, piece);
     // asm 0000670D: 	BU	TRKP2
-    // shared asm 00006725: 	LDF	*+AR2(OPOSX),R2		;X
-    // shared asm 00006726: 	SUBF	*+AR4(OPOSX),R2
-    dx = C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(obj->pos.X));
-    // shared asm 00006727: 	LDF	*+AR2(OPOSZ),R1		;Z
-    // shared asm 00006728: 	SUBF	*+AR4(OPOSZ),R1
-    dz = C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(obj->pos.Z));
-    // shared asm 00006729: 	MPYF	R2,R2
-    // shared asm 0000672A: 	MPYF	R1,R1
-    // shared asm 0000672B: 	ADDF	R1,R2
-    // shared asm 0000672C: 	CALL	SQRT
-    dx = SQRT(C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz)));
-    // shared asm 0000672D: DISTANCE_OK
-    // shared asm 0000672D: 	POP	AR2
-    // shared asm 0000672E: 	POPFL	R2
-    // shared asm 00006730: 	POPFL	R1
-    // shared asm 00006732: 	RETS
-    return dx;
+    return TRKP2(piece, obj);
 }
 
 c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj) {
     OBJ* piece;
-    c3x_reg_t dx;
-    c3x_reg_t dz;
     // asm 0000670E: 	PUSHFL	R1
     // asm 00006710: 	PUSHFL	R2
     // asm 00006712: 	PUSH	AR2
@@ -1086,29 +1067,11 @@ c3x_reg_t GET_TRACK_POS_RVS(PROC* p, OBJ* obj) {
     // asm 00006714: 	CALL	SUB_FUNCTION_RVS
     SUB_FUNCTION_RVS(p, piece);
     // asm 00006715: 	BU	TRKP2
-    // shared asm 00006725: 	LDF	*+AR2(OPOSX),R2		;X
-    // shared asm 00006726: 	SUBF	*+AR4(OPOSX),R2
-    dx = C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(obj->pos.X));
-    // shared asm 00006727: 	LDF	*+AR2(OPOSZ),R1		;Z
-    // shared asm 00006728: 	SUBF	*+AR4(OPOSZ),R1
-    dz = C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(obj->pos.Z));
-    // shared asm 00006729: 	MPYF	R2,R2
-    // shared asm 0000672A: 	MPYF	R1,R1
-    // shared asm 0000672B: 	ADDF	R1,R2
-    // shared asm 0000672C: 	CALL	SQRT
-    dx = SQRT(C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz)));
-    // shared asm 0000672D: DISTANCE_OK
-    // shared asm 0000672D: 	POP	AR2
-    // shared asm 0000672E: 	POPFL	R2
-    // shared asm 00006730: 	POPFL	R1
-    // shared asm 00006732: 	RETS
-    return dx;
+    return TRKP2(piece, obj);
 }
 
 c3x_reg_t DELTA_GET_TRACK_POS(PROC* p, OBJ* obj) {
     OBJ* piece;
-    c3x_reg_t dx;
-    c3x_reg_t dz;
     // asm 00006716: 	PUSHFL	R1
     // asm 00006718: 	PUSHFL	R2
     // asm 0000671A: 	PUSH	AR2
@@ -1117,29 +1080,11 @@ c3x_reg_t DELTA_GET_TRACK_POS(PROC* p, OBJ* obj) {
     // asm 0000671C: 	CALL	DELTA_SUB_FUNCTION		;GET LANE OFFSET (VECTOR A)
     DELTA_SUB_FUNCTION(p, piece); // GET LANE OFFSET (VECTOR A)
     // asm 0000671D: 	BU	TRKP2
-    // shared asm 00006725: 	LDF	*+AR2(OPOSX),R2		;X
-    // shared asm 00006726: 	SUBF	*+AR4(OPOSX),R2
-    dx = C3X_SUB(C3X_LDF(piece->pos.X), C3X_LDF(obj->pos.X));
-    // shared asm 00006727: 	LDF	*+AR2(OPOSZ),R1		;Z
-    // shared asm 00006728: 	SUBF	*+AR4(OPOSZ),R1
-    dz = C3X_SUB(C3X_LDF(piece->pos.Z), C3X_LDF(obj->pos.Z));
-    // shared asm 00006729: 	MPYF	R2,R2
-    // shared asm 0000672A: 	MPYF	R1,R1
-    // shared asm 0000672B: 	ADDF	R1,R2
-    // shared asm 0000672C: 	CALL	SQRT
-    dx = SQRT(C3X_ADD(C3X_MUL(dx, dx), C3X_MUL(dz, dz)));
-    // shared asm 0000672D: DISTANCE_OK
-    // shared asm 0000672D: 	POP	AR2
-    // shared asm 0000672E: 	POPFL	R2
-    // shared asm 00006730: 	POPFL	R1
-    // shared asm 00006732: 	RETS
-    return dx;
+    return TRKP2(piece, obj);
 }
 
 c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj) {
     OBJ* piece;
-    c3x_reg_t dx;
-    c3x_reg_t dz;
     // asm 0000671E: 	PUSHFL	R1
     // asm 00006720: 	PUSHFL	R2
     // asm 00006722: 	PUSH	AR2
@@ -1149,7 +1094,12 @@ TRACK_PIECE:
     // asm 00006724: TRACK_PIECE
     // asm 00006724: 	CALL	SUB_FUNCTION		;GET LANE OFFSET (VECTOR A)
     SUB_FUNCTION(p, piece);
-TRKP2:
+    return TRKP2(piece, obj);
+}
+
+static c3x_reg_t TRKP2(OBJ* piece, OBJ* obj) {
+    c3x_reg_t dx;
+    c3x_reg_t dz;
 #if DEBUG
     // asm: 	LDI	*+AR2(OUSR1),R1
     // asm: 	SLOCKON	LT,"DRONES\GET_TRACK_POS  probably tracking a deleted object"
