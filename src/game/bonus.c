@@ -81,7 +81,7 @@ static void KILL_THE_REANIMATORS(void);
 #define BABE_PALISTI BABE_PALIST
 void MOTION_SCREWED(PROC* p);
 void CLEAR_MAP_PALS(void);
-void VANITY_SUB(void);
+void VANITY_SUB(PROC* p);
 extern uintptr_t ISOFF;
 void RUT_ANI(OBJ* obj /*AR4*/);
 void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/);
@@ -1405,6 +1405,8 @@ static void CLINTON_SHOW(PROC* p) {
         goto PROC_RESUME_1;
     case 2:
         goto PROC_RESUME_2;
+    case 3:
+        goto PROC_RESUME_3;
     }
     // asm 00003BDB: 	LDI	RM_SINGLE,R0
     // asm 00003BDC: 	STI	R0,@RACE_MODE
@@ -1510,7 +1512,7 @@ NOENTR2:
     INCAUD(AUD_TOTAL_FREEGAMES);
 JAJD:
     // asm 00003C21: 	JSRP	VANITY_SUB
-    VANITY_SUB();
+    JSRP(VANITY_SUB, 3);
     // asm 00003C27: 	LDI	-2,R0
     // asm 00003C28: 	STI	R0,@_ATTR_MODE
     _ATTR_MODE = -2;

@@ -64,7 +64,8 @@ class CheckAsmSourceSyncTests(unittest.TestCase):
         root, asm_path, c_path, temporary = self.make_pair(
             "TEST:\n\tLDI\t1,R0\nLOOP\tADDI\t1,R0\t; increment\n\tRETS\n",
             "// asm: \tLDI\t1,R0\nint x = 1;\n"
-            "// asm: LOOP\tADDI\t1,R0\t; increment\n"
+            "LOOP:\n"
+            "// asm: \tADDI\t1,R0\t; increment\n"
             "// asm: \tRETS\n",
         )
         self.addCleanup(temporary.cleanup)
@@ -114,6 +115,40 @@ class CheckAsmSourceSyncTests(unittest.TestCase):
             "LOOP:\n"
             "// asm 00000001: \tSUBI\t1,R0\n"
             "// asm 00000002: \tRETS\n",
+        )
+        self.addCleanup(temporary.cleanup)
+        self.assertEqual(compare_pair(c_path, asm_path, root), [])
+
+    def test_separator_does_not_hide_missing_instructions(self) -> None:
+        root, asm_path, c_path, temporary = self.make_pair(
+            "TEST:\n\tLDI\t1,R0\n*----------------\nLOOP\n\tADDI\t1,R0\n\tRETS\n",
+            "// asm: \tLDI\t1,R0\n",
+        )
+        self.addCleanup(temporary.cleanup)
+        errors = compare_pair(c_path, asm_path, root)
+        self.assertTrue(any("ADDI" in error for error in errors))
+        self.assertTrue(any("RETS" in error for error in errors))
+        self.assertTrue(any("LOOP" in error for error in errors))
+
+    def test_commented_label_does_not_satisfy_source_label(self) -> None:
+        root, asm_path, c_path, temporary = self.make_pair(
+            "TEST:\nLOOP\n\tRETS\n",
+            "// LOOP\n// asm: \tRETS\n",
+        )
+        self.addCleanup(temporary.cleanup)
+        errors = compare_pair(c_path, asm_path, root)
+        self.assertTrue(any("missing or out-of-order" in error and "LOOP" in error for error in errors))
+
+    def test_data_only_macro_is_not_an_instruction(self) -> None:
+        root, asm_path, c_path, temporary = self.make_pair(
+            "ROW .macro VALUE\n"
+            "\t.word\tVALUE\n"
+            "\t.endm\n"
+            "TEST:\n"
+            "\tLDI\t1,R0\n"
+            "TABLE ROW 7\n"
+            "\tRETS\n",
+            "// asm: \tLDI\t1,R0\n// asm: \tRETS\n",
         )
         self.addCleanup(temporary.cleanup)
         self.assertEqual(compare_pair(c_path, asm_path, root), [])

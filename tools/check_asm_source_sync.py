@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Check that ASM comments inside C functions mirror their ASM functions.
+"""Check that ASM instructions and labels inside C functions mirror their source.
 
-Both ``// asm:`` and ``// asm ADDRESS:`` comments are compared in order.
-Function-local C labels join the same event stream, allowing labels attached to
-instructions in the ASM source to be checked too.  This catches omissions and
-reorderings as well as assembly invented during translation.
+Both ``// asm:`` and ``// asm ADDRESS:`` comments are compared in order.  Only
+instructions and executable-code labels are compared; data declarations and
+data labels are deliberately left out of the stream.  An ASM label must be a
+real C label or a same-named C function, not merely a comment.  Function ranges
+end at the next function represented in the C file, never at decorative
+separators in the ASM source.
 """
 
 from __future__ import annotations
@@ -15,7 +17,14 @@ import difflib
 import re
 import sys
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
+
+IDA_DIR = Path(__file__).resolve().parent / "ida"
+if str(IDA_DIR) not in sys.path:
+    sys.path.append(str(IDA_DIR))
+
+import shared_lib as ccm
 
 
 SOURCE_MODULE_RE = re.compile(r"Source module:\s*(asm/[A-Za-z0-9_.-]+)", re.IGNORECASE)
@@ -35,6 +44,7 @@ NON_CODE_OPERATIONS = {
     "lobss",
     "pbss",
     "phibss",
+    "romdata",
 }
 
 
@@ -103,7 +113,11 @@ def is_asm_code_line(raw_line: str) -> bool:
     return not operation.startswith(".") and operation not in NON_CODE_OPERATIONS
 
 
-def bare_label_precedes_code(lines: list[str], label_index: int) -> bool:
+def bare_label_precedes_code(
+    lines: list[str],
+    label_index: int,
+    data_only_macros: frozenset[str] = frozenset(),
+) -> bool:
     """Return whether a bare label names executable code rather than data."""
     for raw in lines[label_index + 1 :]:
         stripped = raw.strip()
@@ -112,7 +126,7 @@ def bare_label_precedes_code(lines: list[str], label_index: int) -> bool:
         code = strip_asm_inline_comment(raw).strip()
         if not code:
             continue
-        if BARE_LABEL_RE.fullmatch(code):
+        if not raw[:1].isspace() and BARE_LABEL_RE.fullmatch(code):
             continue
         if code.startswith("."):
             # Conditional/section controls do not decide what the label names;
@@ -124,9 +138,17 @@ def bare_label_precedes_code(lines: list[str], label_index: int) -> bool:
         match = LABEL_WITH_BODY_RE.fullmatch(code) if not raw[:1].isspace() else None
         if match is not None:
             operation = match.group(2).split(None, 1)[0].lower()
-            return not operation.startswith(".") and operation not in NON_CODE_OPERATIONS
+            return (
+                not operation.startswith(".")
+                and operation not in NON_CODE_OPERATIONS
+                and operation.upper() not in data_only_macros
+            )
         operation = code.split(None, 1)[0].lower()
-        return not operation.startswith(".") and operation not in NON_CODE_OPERATIONS
+        return (
+            not operation.startswith(".")
+            and operation not in NON_CODE_OPERATIONS
+            and operation.upper() not in data_only_macros
+        )
     return False
 
 
@@ -136,7 +158,11 @@ def read_asm_code_lines(path: Path) -> list[SourceLine]:
         SourceLine(path, number, raw.strip())
         for number, raw in enumerate(raw_lines, 1)
         if is_asm_code_line(raw)
-        or (BARE_LABEL_RE.fullmatch(raw.strip()) is not None and bare_label_precedes_code(raw_lines, number - 1))
+        or (
+            not raw[:1].isspace()
+            and BARE_LABEL_RE.fullmatch(raw.strip()) is not None
+            and bare_label_precedes_code(raw_lines, number - 1)
+        )
     ]
 
 
@@ -236,24 +262,52 @@ def asm_label_name(raw: str) -> str | None:
     return match.group(1) if match is not None else None
 
 
-def asm_operation_names(raw_lines: list[str]) -> set[str]:
+@lru_cache(maxsize=None)
+def data_only_macro_names(repo_root: Path) -> frozenset[str]:
+    """Return source macros whose expansion contains no executable operation."""
+    macros = ccm.parse_macros(repo_root)
+    symbols = ccm.parse_set_symbols(repo_root)
+    symbols["DEBUG"] = 0
+    cache: dict[str, bool] = {}
+    return frozenset(
+        name.upper()
+        for name in macros
+        if not ccm.macro_emits_executable(name, macros, symbols, cache, set())
+    )
+
+
+def asm_operation_names(
+    raw_lines: list[str], data_only_macros: frozenset[str] = frozenset()
+) -> set[str]:
     operations: set[str] = set()
     for raw in raw_lines:
         code = strip_asm_inline_comment(raw).strip()
         if not code or code.startswith(".") or code.startswith(("*", ";")):
             continue
         if raw[:1].isspace():
-            operations.add(code.split(None, 1)[0].upper())
+            operation = code.split(None, 1)[0].upper()
+            if operation.lower() not in NON_CODE_OPERATIONS and operation not in data_only_macros:
+                operations.add(operation)
             continue
         match = LABEL_WITH_BODY_RE.fullmatch(code)
         if match is not None:
             operation = match.group(2).split(None, 1)[0]
-            if not operation.startswith("."):
+            if (
+                not operation.startswith(".")
+                and operation.lower() not in NON_CODE_OPERATIONS
+                and operation.upper() not in data_only_macros
+            ):
                 operations.add(operation.upper())
     return operations
 
 
-def parse_asm_events(raw: str, path: Path, number: int) -> list[SourceLine]:
+def parse_asm_events(
+    raw: str,
+    path: Path,
+    number: int,
+    data_only_macros: frozenset[str] = frozenset(),
+    code_label_lines: frozenset[int] = frozenset(),
+) -> list[SourceLine]:
     stripped = raw.strip()
     if not stripped or stripped.startswith(("*", ";")):
         return []
@@ -262,16 +316,22 @@ def parse_asm_events(raw: str, path: Path, number: int) -> list[SourceLine]:
         return []
     if raw[:1].isspace():
         operation = code.split(None, 1)[0].lower()
-        if operation in NON_CODE_OPERATIONS:
+        if operation in NON_CODE_OPERATIONS or operation.upper() in data_only_macros:
             return []
         return [SourceLine(path, number, stripped)]
     if BARE_LABEL_RE.fullmatch(code):
-        return [SourceLine(path, number, code.removesuffix(":"))]
+        if number in code_label_lines:
+            return [SourceLine(path, number, code.removesuffix(":"))]
+        return []
     match = LABEL_WITH_BODY_RE.fullmatch(stripped)
     if match is None:
         return [SourceLine(path, number, stripped)]
     operation = match.group(2).split(None, 1)[0].lower()
-    if operation.startswith(".") or operation in NON_CODE_OPERATIONS:
+    if (
+        operation.startswith(".")
+        or operation in NON_CODE_OPERATIONS
+        or operation.upper() in data_only_macros
+    ):
         return []
     return [
         SourceLine(path, number, match.group(1)),
@@ -296,14 +356,13 @@ def parse_c_comment_events(
         return [SourceLine(path, number, "")]
     code = strip_asm_inline_comment(stripped).strip()
     if BARE_LABEL_RE.fullmatch(code):
-        return [SourceLine(path, number, code.removesuffix(":"))]
+        # A label written in an asm comment is still only a comment.  Labels
+        # must be represented by a real C label or by the C function itself.
+        return []
     match = LABEL_WITH_BODY_RE.fullmatch(stripped)
     if match is None or match.group(1).upper() in operations:
         return [SourceLine(path, number, stripped)]
-    return [
-        SourceLine(path, number, match.group(1)),
-        SourceLine(path, number, match.group(2).strip()),
-    ]
+    return [SourceLine(path, number, match.group(2).strip())]
 
 
 def c_events_for_function(
@@ -314,41 +373,16 @@ def c_events_for_function(
 ) -> tuple[list[SourceLine], int]:
     events: list[SourceLine] = []
     asm_comment_count = 0
-    previous_was_c_label = False
-    previous_was_comment_label = False
     for number in range(function.open_line, function.close_line + 1):
         raw = raw_lines[number - 1]
         match = C_NUMBERED_ASM_RE.match(raw) or C_ASM_RE.match(raw)
         if match is not None:
             asm_comment_count += 1
-            comment_events = parse_c_comment_events(match.group(1), path, number, operations)
-            if (
-                previous_was_c_label
-                and comment_events
-                and events
-                and asm_key(comment_events[0].text) == asm_key(events[-1].text)
-            ):
-                comment_events = comment_events[1:]
-            events.extend(comment_events)
-            previous_was_comment_label = bool(
-                comment_events and BARE_LABEL_RE.fullmatch(comment_events[-1].text)
-            )
-            previous_was_c_label = False
+            events.extend(parse_c_comment_events(match.group(1), path, number, operations))
             continue
         label_match = C_LABEL_RE.match(raw)
         if label_match is not None and label_match.group(1) not in {"case", "default"}:
-            if not (
-                previous_was_comment_label
-                and events
-                and asm_key(events[-1].text) == asm_key(label_match.group(1))
-            ):
-                events.append(SourceLine(path, number, label_match.group(1)))
-            previous_was_c_label = True
-            previous_was_comment_label = False
-            continue
-        if raw.strip():
-            previous_was_c_label = False
-            previous_was_comment_label = False
+            events.append(SourceLine(path, number, label_match.group(1)))
     return events, asm_comment_count
 
 
@@ -421,16 +455,29 @@ def compare_pair(c_path: Path, asm_path: Path, repo_root: Path) -> list[str]:
     c_raw_lines = c_text.splitlines()
     functions = find_c_functions(c_text)
     asm_raw_lines = asm_path.read_text(encoding="utf-8").splitlines()
-    operations = asm_operation_names(asm_raw_lines)
+    data_macros = data_only_macro_names(repo_root)
+    operations = asm_operation_names(asm_raw_lines, data_macros)
+    code_label_lines = frozenset(
+        number
+        for number, raw in enumerate(asm_raw_lines, 1)
+        if not raw[:1].isspace()
+        and BARE_LABEL_RE.fullmatch(strip_asm_inline_comment(raw).strip())
+        and bare_label_precedes_code(asm_raw_lines, number - 1, data_macros)
+    )
 
     asm_lines: list[SourceLine] = []
     event_index_at_line: list[int] = []
-    separator_indexes: list[int] = []
     for index, raw in enumerate(asm_raw_lines):
         event_index_at_line.append(len(asm_lines))
-        if re.match(r"^\s*\*[-]{8,}\s*$", raw):
-            separator_indexes.append(len(asm_lines))
-        asm_lines.extend(parse_asm_events(raw, asm_path, index + 1))
+        asm_lines.extend(
+            parse_asm_events(
+                raw,
+                asm_path,
+                index + 1,
+                data_macros,
+                code_label_lines,
+            )
+        )
 
     audited: list[tuple[CFunction, list[SourceLine]]] = []
     for function in functions:
@@ -449,13 +496,15 @@ def compare_pair(c_path: Path, asm_path: Path, repo_root: Path) -> list[str]:
 
     # Map each C function to its ASM entry.  Translation-only helpers used for
     # shared tails have no same-named ASM label, so anchor those at their first
-    # C label/comment event when that event is unique in the module.
+    # C instruction comment when that event is unique in the module.
     anchors: dict[str, tuple[int, int]] = {}
     errors: list[str] = []
     asm_keys = [asm_key(line.text) for line in asm_lines]
     for function, c_lines in audited:
         label_index = name_label_indexes.get(function.name)
         if label_index is not None:
+            # The function definition itself represents its same-named ASM
+            # entry label.  Compare the body beginning with the next event.
             anchors[function.name] = (label_index + 1, label_index)
             continue
         if not c_lines:
@@ -482,11 +531,7 @@ def compare_pair(c_path: Path, asm_path: Path, repo_root: Path) -> list[str]:
             continue
         begin, boundary = anchor
         later_boundaries = [index for index in boundary_indexes if index > boundary]
-        later_separators = [index for index in separator_indexes if index > begin]
-        end = min(
-            later_boundaries[0] if later_boundaries else len(asm_lines),
-            later_separators[0] if later_separators else len(asm_lines),
-        )
+        end = later_boundaries[0] if later_boundaries else len(asm_lines)
         expected_lines = asm_lines[begin:end]
 
         matcher = difflib.SequenceMatcher(
@@ -508,14 +553,14 @@ def compare_pair(c_path: Path, asm_path: Path, repo_root: Path) -> list[str]:
                 for line in c_lines[c_start:c_end]:
                     errors.append(
                         f"{line.location(repo_root)}: {function.name}: "
-                        f"extra, invented, or out-of-order asm/C label: {line.text}"
+                        f"extra, invented, or out-of-order asm label/instruction: {line.text}"
                     )
     return errors
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Compare ordered ASM comments in C functions with their ASM source."
+        description="Compare ordered ASM instructions and labels in C functions with their ASM source."
     )
     parser.add_argument(
         "files",

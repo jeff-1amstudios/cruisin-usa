@@ -1627,6 +1627,9 @@ static void CLR_PBSS(void) {
 static int RAM_BSSEND = 0x01EFFF;
 
 void CLR_RAM(void) {
+
+    // todo: this is expected to clear *all* bss
+    FRAMRATE = 0;
 }
 
 // *----------------------------------------------------------------------------

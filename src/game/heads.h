@@ -7,10 +7,11 @@
 
 // HEADS.ASM
 // asm: 	.bss	YINCREMENT,1
-extern c3x_reg_t YINCREMENT;
+extern c3x_f32_t YINCREMENT;
 // asm: 	.bss	FONTUSED,1
-extern int FONTUSED;
-void VANITY(void);
-void VANITY_SUB(void);
+typedef void (*HEADS_FONT_FUNC)(tSHADOW_TEXT* text);
+extern HEADS_FONT_FUNC FONTUSED;
+void VANITY(PROC* p);
+void VANITY_SUB(PROC* p);
 
 #endif /* HEADS_H */

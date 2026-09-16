@@ -786,7 +786,9 @@ LLL:
     // asm 0000A3EB: 	CALL	RESTORE_DECOMP_REGS
     RESTORE_DECOMP_REGS(&state);
 
-    crusn_yield_display_interrupt();
+    if (!crusn_should_skip_boot_screen()) {
+        crusn_yield_display_interrupt();
+    }
 
     // asm 0000A3EC: 	RETS
     return;

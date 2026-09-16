@@ -760,7 +760,7 @@ extern int WHEELVEL;
 extern int POSE;
 
 // asm:  .globl VANITY
-void VANITY(void);
+void VANITY(PROC* p);
 
 void LOAD_ATTR_LEG(void);
 

@@ -1256,6 +1256,18 @@ typedef struct PROC_CONTEXT {
             OBJ* obj;
             c3x_f32_t radians;
         } ULTRA_PROC;
+        struct {
+            int table_index;
+            c3x_reg_t y;
+        } VANITY_SUB;
+        struct {
+            tTEXT* front;
+            tTEXT* shadow;
+        } KRIS;
+        struct {
+            tTEXT* front;
+            tTEXT* shadow;
+        } ADAMSTOPRIBYL;
     };
 
 } PROC_CONTEXT;

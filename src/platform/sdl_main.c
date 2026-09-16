@@ -18,6 +18,7 @@ static crusn_video* g_display_video;
 static int* g_display_running;
 static Uint64 g_attract_start_counter;
 static int g_measure_attract_timing;
+static int g_skip_boot_screen;
 
 extern void MAINLOOP(void);
 
@@ -29,6 +30,7 @@ typedef struct crusn_options {
     int windowed;
     int bilinear;
     int test_highscore_input;
+    int skip_boot_screen;
 } crusn_options;
 
 static int process_args(int argc, char* argv[], crusn_options* options) {
@@ -41,6 +43,7 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
     options->windowed = 0;
     options->bilinear = 1;
     options->test_highscore_input = 0;
+    options->skip_boot_screen = 1;
 
     for (int i = 1; i < argc; ++i) {
         const char* value = NULL;
@@ -59,6 +62,8 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
             options->bilinear = 0;
         } else if (strcmp(argv[i], "--test-highscore-input") == 0) {
             options->test_highscore_input = 1;
+        } else if (strcmp(argv[i], "--no-skip-boot-screen") == 0) {
+            options->skip_boot_screen = 0;
         } else if (strncmp(argv[i], prefix, sizeof(prefix) - 1) == 0) {
             value = argv[i] + sizeof(prefix) - 1;
         } else if (strcmp(argv[i], "--race-time") == 0 && i + 1 < argc) {
@@ -147,6 +152,10 @@ void crusn_yield_display_interrupt(void) {
     // SDL_Delay(100);
 }
 
+int crusn_should_skip_boot_screen(void) {
+    return g_skip_boot_screen;
+}
+
 int main(int argc, char* argv[]) {
     crusn_machine machine;
     crusn_video video = { 0 };
@@ -157,6 +166,7 @@ int main(int argc, char* argv[]) {
     if (process_args(argc, argv, &options) != 0) {
         return 1;
     }
+    g_skip_boot_screen = options.skip_boot_screen;
     sdl_flags = SDL_INIT_VIDEO | SDL_INIT_EVENTS;
     if (options.sound) {
         sdl_flags |= SDL_INIT_AUDIO;

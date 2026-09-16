@@ -1,5 +1,6 @@
 #include "wave.h"
 
+#include "../core/input.h"
 #include "../core/machine.h"
 #include "../core/validator.h"
 #include "attracta.h"
@@ -200,10 +201,18 @@ void WAVE(int wave_index) {
         return;
     }
 
-    // ;READ HARDWARE 0=CLOSED, 1=OPEN
-    // if (((~SWITCH3) & (SW_VIEW0_H | SW_VIEW1_H | SW_VIEW2_H)) == (SW_VIEW1_H | SW_VIEW2_H)) {
-    //     goto CREDITS;
-    // }
+    // asm: CLRI AR0
+    // asm: LDP @SWITCH3
+    // asm: NOT @SWITCH3,R0        ;READ HARDWARE 0=CLOSED, 1=OPEN
+    // asm: LDI *AR0,R2            ;Loff
+    // asm: SETDP
+    // asm: AND SW_VIEW0_H|SW_VIEW1_H|SW_VIEW2_H,R0
+    // asm: CMPI SW_VIEW1_H|SW_VIEW2_H,R0
+    // asm: BEQ CREDITS
+    if (((~port_get_switch3()) & (SW_VIEW0_H | SW_VIEW1_H | SW_VIEW2_H)) == (SW_VIEW1_H | SW_VIEW2_H)) {
+        CREDITS();
+        return;
+    }
 
     // ((void (*)(void))_ATTR_WAVETABI[wave_index])();
     ATTR_WAVETAB_END[wave_index]();
@@ -389,11 +398,12 @@ CREDITS:
 // 	;these are not cycled, they are special routines
 static void CREDITS(void) {
     // asm 000093BD: 	CREATE	VANITY,UTIL_C
+    PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
+    CREATE(VANITY, UTIL_C, ctx);
     // asm 000093C0: 	LDI	-1,R0
     // asm 000093C1: 	STI	R0,@_ATTR_MODE
+    _ATTR_MODE = -1;
     // asm 000093C2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "CREDITS", 0, 0);
-    UNIMPL();
 }
 
 static void LOAD_HIGH_SCORE(void) {
@@ -405,13 +415,13 @@ static void LOAD_HIGH_SCORE(void) {
     // asm 000093C8: 	LDI	-1,R0
     // asm 000093C9: 	STI	R0,@_ATTR_MODE
     // asm 000093CA: 	RETS
-    // *
-    // *NOTE	ANY GAME STARTUP CODE & PROC INITS ARE CALLED/CREATED IN INTRO.ASM
-    // *
     TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_HIGH_SCORE", 0, 0);
     UNIMPL();
 }
 
+// *
+// *NOTE	ANY GAME STARTUP CODE & PROC INITS ARE CALLED/CREATED IN INTRO.ASM
+// *
 static void BEGIN_GAME(void) {
     PROC_CONTEXT* ctx;
 
