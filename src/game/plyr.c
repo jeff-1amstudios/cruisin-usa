@@ -1034,6 +1034,7 @@ PLYRLP:
     if (_countdown <= 0) {
         TIMED_OUT(); // SETBACK?
     }
+DONT_TIMEOUT:
     // asm 00002A67: DONT_TIMEOUT
     // *CHECK FOR BONUS SCREEN
     // *	!!!! DO NOT REMOVE THIS CODE
@@ -1051,6 +1052,7 @@ PLYRLP:
     obj = PLYCAR; // GET PLAYER CAR OBJECT
     // asm 00002A6C: 	LDI	*+AR4(OCARBLK),AR5
     carblk = obj->carblk;
+PLYRSPD00:
     // asm 00002A6D: PLYRSPD00
     // asm 00002A6D: 	LDI	@WRECKFLG,R0		;WRECK?
     // asm 00002A6E: 	BZ	PLYRSPD
@@ -1293,6 +1295,7 @@ PLYRCAM:
         goto CAM3RD;
     }
     // *FIRST PERSON CAMERA
+CAM1ST:
     // asm 00002ADB: CAM1ST
     // ****************************
     // asm 00002ADB: 	CALL	CAMMATSAV
@@ -1536,6 +1539,7 @@ PLYS1:
     // asm 00002B55: 	CALL	PLYR_RIDE_RIGHT		;FIND DISTANCE TO CENTER OF ROAD
     // asm 00002B56: 	STF	R0,*+AR5(CARDIST2CNTR)
     carblk->dist_to_center = C3X_STF(PLYR_RIDE_RIGHT()); // FIND DISTANCE TO CENTER OF ROAD
+PLYSLP:
     // asm 00002B57: PLYSLP
     // asm 00002B57: 	LDI	@HEAD2HEAD_ON,R0
     // asm 00002B58: 	BZ	NOPLINK
@@ -1757,6 +1761,7 @@ static int CAMCHK0(c3x_reg_t angle /*R0*/, VECTOR* camera_pos /*AR0*/, c3x_reg_t
     // asm 00002BA8: 	LDI	AR0,AR4			;POINT TO XYZ OF CAMERA
     // asm 00002BA9: 	CALL	CAMSCAN
     collided = CAMSCAN(&VECTORAI, &road_height);
+CAMCHKRX:
     // asm 00002BAA: CAMCHKRX
     // asm 00002BAA: 	POP	AR4
     // asm 00002BAB: 	POP	AR0
@@ -2567,6 +2572,7 @@ GETSK1:
     // ;	MPYF	0.05,R0			;DIVIDE BY 25
     // asm 00002CCD: 	MPYF	0.045,R0 		;DIVIDE BY 25
     skid = C3X_MUL(skid, C3X_IMM_F32(0.045));
+GETSKX:
     // asm 00002CCE: GETSKX
     // asm 00002CCE: 	CMPF	1.0,R0
     // asm 00002CCF: 	LDFGT	1.0,R0
@@ -3421,6 +3427,7 @@ FRIC1:
     brake_friction = C3X_ADD(brake_friction, C3X_IMM_F32(1.0));
     // asm 00002DF7: 	MPYF	R4,R5
     brake_friction = C3X_MUL(brake_friction, factor);
+GETSP22:
     // asm 00002DF8: GETSP22
 #ifndef C3X_USE_HOST_FLOAT
     observed_raw = (uint32_t)friction.bits;
@@ -3593,8 +3600,8 @@ GETBX:
 
 // *----------------------------------------------------------------------------
 
-// asm 00002E27: HIREDI	.word	HIRED
-// asm 00002E28: HIRED	RGB	255,0,0
+/* asm: HIREDI	.word	HIRED */
+/* asm: HIRED	RGB	255,0,0 */
 static uint32_t HIRED[] = {
     RGB(255, 0, 0),
     // asm 00002E29: 	RGB	230,0,0
@@ -3604,8 +3611,8 @@ static uint32_t HIRED[] = {
     // asm 00002E2B: 	RGB	200,0,0
     RGB(200, 0, 0),
 };
-// asm 00002E2C: OFFREDI	.word	OFFRED
-// asm 00002E2D: OFFRED	RGB	127,0,0
+/* asm: OFFREDI	.word	OFFRED */
+/* asm: OFFRED	RGB	127,0,0 */
 static uint32_t OFFRED[] = {
     RGB(127, 0, 0),
     // asm 00002E2E: 	RGB	110,0,0
@@ -4180,7 +4187,7 @@ ZOOMUP3:
     // asm 00002EFB: 	STF	R2,@ZOOMD
     ZOOMD = C3X_STF(zoom_distance);
 ZOOMUPX:
-    // asm 00002EFC: RETS
+    // asm 00002EFC: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "ZOOMUP", 0, 0);
 }
 
@@ -4211,7 +4218,13 @@ void GETTRAK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
         return;
     }
 
-    // asm 00002F00..00002F06
+    // asm 00002F00: 	PUSH	IR0
+    // asm 00002F01: 	LDI	OPOSZ,IR0
+    // asm 00002F02: 	FLOAT	7FFFH,R2		;INITIAL CLOSEST DISTANCE
+    // asm 00002F03: 	MPYF	R2,R2
+    // asm 00002F04: 	LDF	*+AR4(OPOSX),R3
+    // asm 00002F05: 	LDF	*+AR4(OPOSZ),R4
+    // asm 00002F06: 	LDI	R0,AR2
     closest_dist2 = C3X_MUL(C3X_FROM_INT(32767), C3X_FROM_INT(32767));
     track_obj = (OBJ*)(uintptr_t)DYNALIST_BEGIN;
 GETRK:
@@ -4230,6 +4243,7 @@ GETRK:
         closest_track_obj = track_obj;
         closest_dist2 = dist2;
     }
+GETRKL:
     // asm 00002F0F: GETRKL
     // asm 00002F0F: 	LDI	*+AR2(OLINK4),R0
     // asm 00002F10: 	BNZD	GETRK
@@ -4244,7 +4258,8 @@ GETRK:
     // asm 00002F14: 	STI	AR0,*+AR5(CARTRAK)	;SAVE TRACK SECTION
     MAME_ASSERT_MEM(0x00002F14, "d@(ar0+1e)", &closest_track_obj->usr1);
     carblk->closest_track_piece = OBJ_TO_REF(closest_track_obj);
-GETRKX:
+    // asm 00002F15: 	POP	IR0
+GETRKX:;
     // asm 00002F16: 	RETS
 }
 
@@ -4284,6 +4299,7 @@ static void BACKCK(CARBLK* carblk /*AR5*/) {
     if (C3X_LT(C3X_ABS(direction_difference), C3X_IMM_F32(1.75))) {
         goto BACKCKX; // NO
     }
+BACKCK1:
     // asm 00002F23: BACKCK1
     // asm 00002F23: 	LDF	1.0,R0			;SET RADIAN SPIN COUNT
     // asm 00002F24: 	STF	R0,*+AR5(CARSPRAD)
@@ -4296,6 +4312,7 @@ static void BACKCK(CARBLK* carblk /*AR5*/) {
         rotation_delta = C3X_IMM_F32(-0.12);
     }
     // asm 00002F28: 	LDI	1,R1
+BACKCK2:
     // asm 00002F29: BACKCK2
     // asm 00002F29: 	STF	R0,*+AR5(CARDROT)	;SPIN HIM BACK
     carblk->last_y_rotation = C3X_STF(rotation_delta); // SPIN HIM BACK
@@ -4444,6 +4461,7 @@ static void TUNCHK(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     }
     // asm 00002F61: 	STF	R0,*+AR5(CARSPEED)
     carblk->speed = C3X_STF(speed);
+TUNCHKX:
     // asm 00002F62: TUNCHKX
     // asm 00002F62: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TUNCHK", 0, 0);
@@ -4480,6 +4498,7 @@ void INBOUNDZ(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
         SOFTCURB(obj, carblk); // SOFT REPELL OFFROAD
         return;
     }
+CURBCKLX:
     // asm 00002F6A: CURBCKLX
     // asm 00002F6A: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INBOUNDZ", 0, 0);
@@ -4762,7 +4781,7 @@ CURBSPIN1:
     // asm 00002FDA: 	STI	R1,*+AR5(CAR_SPIN)
     carblk->spin_flag = 1;
 CURBCLX:
-    // asm 00002FDB: RETS
+    // asm 00002FDB: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CURBSPIN", 0, 0);
 }
 
@@ -5088,7 +5107,7 @@ GETRD1:
     // asm 00003048: 	SUBF	HALFPI,R0
     delta_x = C3X_SUB(delta_x, C3X_IMM_F32(HALFPI));
 ROADIRX:
-    // asm 00003049: RETS
+    // asm 00003049: 	RETS
     MAME_ASSERT_REG_FLOAT(0x00003049, "R0", &delta_x);
     return delta_x;
 }
@@ -5254,7 +5273,7 @@ PWHLXX:
     // asm 00003083: 	STF	R0,@WHEELPOS
     WHEELPOS = C3X_STF(wheel_position);
 WHLOFFX:
-    // asm 00003084: RETS
+    // asm 00003084: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRWHL", 0, 0);
 }
 
@@ -5686,6 +5705,7 @@ TUNSNDX:
     if (gravel_volume == 0) {
         goto NOGRAV;
     }
+GRAVEL:
     // asm 00003138: GRAVEL
     // asm 00003138: 	LDF	*+AR5(CARSPEED),R1
     // asm 00003139: 	CMPF	1.0,R1
@@ -5708,6 +5728,7 @@ NOGRAV:
     // asm 00003140: 	SONDFX  BOTTOMOUT
     SONDFX(BOTTOMOUT);
 GRAVX:
+PLSNDX:
     // asm 00003142: PLSNDX
     // asm 00003142: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYR_SNDS", 0, 0);
@@ -5731,7 +5752,7 @@ void MKFXSND(int sound_index /*AR2*/) {
         ONESNDFX(sound_index);
         return;
     }
-MKFXSNDX:
+MKFXSNDX:;
     // asm 00003147: 	RETS
 }
 
@@ -5954,6 +5975,7 @@ void GETCMOS_VALUES(void) {
         // asm 00003185: 	STF	R0,*AR3++
         *values[adjustment - ADJ_GASMIN] = C3X_STF(C3X_FROM_INT(ADJUSTMENT_READ(adjustment)));
 
+CMOSALP:;
         // asm 00003186: ADDI	1,AR2
     }
 
