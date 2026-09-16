@@ -55,7 +55,10 @@ OBJ* ROAD_DEBRIS;
 
 // *----------------------------------------------------------------------------
 void INIT_RDDEBRIS(void) {
+    // asm 0000AF85: 	CLRI	R0
+    // asm 0000AF86: 	STPI	R0,@ROAD_DEBRIS
     ROAD_DEBRIS = NULL;
+    // asm 0000AF87: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -229,6 +232,7 @@ DSORTNXT:
     if (current != NULL) {
         goto DSORTL;
     }
+DSORTX:
     // asm 0000AFB6: DSORTX
     // *INSERT DEBRIS ON OBJECT LIST
     // asm 0000AFB6: 	LDPI	@DYNALIST_BEGIN,R5	;ANY ROAD LIST?
@@ -279,6 +283,7 @@ GETRK:
         closest = current;
         closest_distance = distance;
     }
+GETRKL:
     // asm 0000AFCC: GETRKL
     // asm 0000AFCC: 	LDI	*+AR2(OLINK4),R0
     current = (OBJ*)current->link4;
