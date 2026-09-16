@@ -475,6 +475,11 @@ static void validate_warn_log_exhausted(const char* caller_file, int caller_line
     const char* exit_on_log_end = getenv("CRUSN_VALIDATE_EXIT_ON_LOG_END");
 
     if (exit_on_log_end != NULL && atoi(exit_on_log_end) != 0) {
+        fprintf(
+            stderr,
+            "validator: consumed %d trace lines; reached end of mame.log, exiting\n",
+            g_validate_log_line_number);
+        fflush(stderr);
         exit(0);
     }
     fprintf(
