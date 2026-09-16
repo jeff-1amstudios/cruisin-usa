@@ -12,6 +12,8 @@
 #include "validator.h"
 #include "vunit.h"
 
+#undef INFINITY
+
 /*
  * Source module: asm/INFIN.ASM
  */
@@ -249,6 +251,7 @@ FHRY_X:
     // asm 0000825A: 	POP	R1
     // asm 0000825B: 	POP	R0
     // asm 0000825C: 	RETS
+INFINITY:;
 }
 
 // *----------------------------------------------------------------------------
@@ -932,7 +935,6 @@ c3x_reg_t INFIN_CORRECT = C3X_INIT(1.0f, 0x0000000000ull);
 //
 //
 static void TRANS_PTS(int vertex_count /*AR4*/, const c3x_f32_t* src /*AR5*/, c3x_f32_t* dst /*AR6*/, c3x_reg_t x_offset /*R6*/, c3x_reg_t y_offset /*R7*/) {
-TRANS_LP:
     // ;	LDF	@AMOUNT_CLIPPED,R4
     // asm 000083D4: 	LDF	@INFIN_CORRECT,R7
     y_offset = INFIN_CORRECT;
@@ -947,6 +949,7 @@ TRANS_LP:
     // ;	MPYF	R2,R0
     // ;	ADDF	R0,R7
     // ;	;R1 is distance
+TRANS_LP:
     // asm 000083D5: TRANS_LP
     // asm 000083D5: 	LDI	@VECTORAI,AR2
     // asm 000083D6: 	LDF	*AR5++,R0			;load src [X Y Z]
