@@ -122,6 +122,34 @@ static void crusn_pump_events(void) {
     port_handle_input();
 }
 
+static void crusn_pace_validation_frame(int frame_ticks) {
+    static Uint64 next_frame_counter;
+    const char* realtime = getenv("CRUSN_VALIDATE_REALTIME");
+    const Uint64 counter_frequency = SDL_GetPerformanceFrequency();
+    const Uint64 frame_duration =
+        (Uint64)frame_ticks * counter_frequency / TIKS_PER_SECOND;
+    Uint64 current_counter;
+
+    if (realtime == NULL || realtime[0] != '1' || frame_ticks <= 0) {
+        return;
+    }
+
+    current_counter = SDL_GetPerformanceCounter();
+    if (next_frame_counter == 0 || current_counter > next_frame_counter + counter_frequency) {
+        next_frame_counter = current_counter;
+    }
+    next_frame_counter += frame_duration;
+
+    while (current_counter < next_frame_counter) {
+        Uint64 remaining_ms =
+            (next_frame_counter - current_counter) * 1000 / counter_frequency;
+        if (remaining_ms > 1) {
+            SDL_Delay((Uint32)(remaining_ms - 1));
+        }
+        current_counter = SDL_GetPerformanceCounter();
+    }
+}
+
 void crusn_yield_display_interrupt(void) {
     static Uint64 fps_interval_start;
     static unsigned int fps_frame_count;
@@ -235,6 +263,7 @@ int main(int argc, char* argv[]) {
                 }
                 MAINLOOP();
                 crusn_yield_display_interrupt();
+                crusn_pace_validation_frame(frame_ticks);
                 continue;
             }
             /*
@@ -244,8 +273,10 @@ int main(int argc, char* argv[]) {
              */
             INT0();
             if (INFRAMES >= FRAMRATE + 1 && CLEARRDY == 0) {
+                int frame_ticks = INFRAMES;
                 MAINLOOP();
                 crusn_yield_display_interrupt();
+                crusn_pace_validation_frame(frame_ticks);
             } else {
                 crusn_pump_events();
             }
