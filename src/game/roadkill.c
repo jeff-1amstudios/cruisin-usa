@@ -332,6 +332,7 @@ void ROADKILL_SETKILL(void)
     // asm 000069CB: 	ADDI	@ROADKILL_TABI,AR3
     // asm 000069CC: 	LDI	*+AR3(RKT_DEATH),AR0
     // asm 000069CD: 	STI	AR0,*+AR1(OROMDATA)
+RS1:
     // asm 000069CE: RS1
     // asm 000069CE: 	LDI	-1,AR0
     // asm 000069CF: 	STI	AR0,*+AR4(OLINK4)
@@ -399,6 +400,7 @@ void GET_ROADKILL_TRACK(void)
     // asm 000069ED: 	LDI	*+AR2(CARTRAK),R0
     // asm 000069EE: 	LDI	R0,AR0
     // asm 000069EF: 	LDI	20,AR1
+GRT_FF:
     // asm 000069F0: GRT_FF
     // asm 000069F0: 	LDI	AR0,AR2
     // asm 000069F1: 	LDI	R0,AR0
@@ -605,6 +607,7 @@ DEERANI_LOOP:
     // asm 00006A64: 	LDIN	@DEERANII,AR6
     // asm 00006A65: 	LDI	*AR6,R0
     // asm 00006A66: 	STI	R0,*+AR4(OROMDATA)
+DEER_SLEEP:
     // asm 00006A67: DEER_SLEEP
     // asm 00006A67: 	SLEEP	3			;frame rate of 3
     // asm 00006A69: 	BR	DEERANI_LOOP		;Ultimatly backgrnd or colla will kill this proc
@@ -1187,6 +1190,7 @@ GEESELP:
     // asm 00006BB2: 	SUBF	R1,R0
     // asm 00006BB3: 	ADDF	*+AR4(OPOSY),R0
     // asm 00006BB4: 	STF	R0,*+AR4(OPOSY)
+OFF_MAP:
     // asm 00006BB5: OFF_MAP
     // asm 00006BB5: 	LDI	AR6,AR2
     // asm 00006BB6: 	LDI	*+AR7(DIRECTION),R2
@@ -1205,6 +1209,7 @@ GEESELP:
     // asm 00006BC3: 	ADDI	30*4,AR0		;track sections beyond the player
     // asm 00006BC4: 	CMPI	AR0,AR6
     // asm 00006BC5: 	BGE	GEESE_DONE
+GEESE_SLEEP:
     // asm 00006BC6: GEESE_SLEEP
     // asm 00006BC6: 	SLEEP	1
     // asm 00006BC8: 	READADJ	ADJ_ROADKILL
@@ -1418,6 +1423,7 @@ SPLAT_LP2:
 SPLAT_DONE:
     // asm 00006C78: 	LDI	AR4,AR2
     // asm 00006C79: 	CALL	OBJ_DELETE
+SPLAT_DIE:
     // asm 00006C7A: SPLAT_DIE
     // asm 00006C7A: 	LDI	BUGBUZZ,AR2		;Make sure that it dies (it loops)
     // asm 00006C7B: 	CALL	KILLSNDFX
@@ -1539,6 +1545,7 @@ FIND_LP:
     // asm 00006CB2: 	LDI	*AR2++(4),R0
     // asm 00006CB3: 	CMPI	R2,R0
     // asm 00006CB4: 	BLT	FIND_LP
+FINDX:
     // asm 00006CB5: FINDX
     // asm 00006CB5: 	SUBI	7,AR2
     // asm 00006CB6: 	RETS
