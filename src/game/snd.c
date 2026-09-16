@@ -342,23 +342,23 @@ void SET_MASTER_VOL(int volume) {
     // asm 0000913B: 	LDI	055AAh,R0
     // 	;---->	BUD	JI1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    // asm 00009148: 	LDI	1,AR2
-    // asm 00009149: 	STI	AR2,@DO_NOT_REENABLE_INT
-    // asm 0000914A: 	LDI	R0,AR2
-    // asm 0000914B: 	CALL	SENDSND
+    // shared asm 00009148: 	LDI	1,AR2
+    // shared asm 00009149: 	STI	AR2,@DO_NOT_REENABLE_INT
+    // shared asm 0000914A: 	LDI	R0,AR2
+    // shared asm 0000914B: 	CALL	SENDSND
     SENDSND(0x55aa);
-    // asm 0000914C: 	AND	0FFh,R1
+    // shared asm 0000914C: 	AND	0FFh,R1
     volume &= 0xff;
-    // asm 0000914D: 	CLRI	AR2
-    // asm 0000914E: 	STI	AR2,@DO_NOT_REENABLE_INT
-    // asm 0000914F: 	NOT	R1,R0
-    // asm 00009150: 	AND	0FFh,R0
+    // shared asm 0000914D: 	CLRI	AR2
+    // shared asm 0000914E: 	STI	AR2,@DO_NOT_REENABLE_INT
+    // shared asm 0000914F: 	NOT	R1,R0
+    // shared asm 00009150: 	AND	0FFh,R0
     volume_command = (~volume) & 0xff;
-    // asm 00009151: 	LS	8,R1
-    // asm 00009152: 	OR	R0,R1
+    // shared asm 00009151: 	LS	8,R1
+    // shared asm 00009152: 	OR	R0,R1
     volume_command |= volume << 8;
-    // asm 00009153: 	LDI	R1,AR2
-    // asm 00009154: 	CALL	SENDSND
+    // shared asm 00009153: 	LDI	R1,AR2
+    // shared asm 00009154: 	CALL	SENDSND
     SENDSND(volume_command);
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_MASTER_VOL", 0, 0);
 }
@@ -456,8 +456,8 @@ void RESET_SNDBRD(void) {
     // asm 0000917D: 	LDI	500,RC
     // asm 0000917E: 	MPYI	1000,RC
     // asm 0000917F: 	RPTB	WAITIT
-WAITIT:
-    // asm 00009180: NOP
+WAITIT:;
+    // asm 00009180: 	NOP
     // asm 00009181: 	LDI	0FF1Ch,R0
     // asm 00009182: 	LDI	0FB1Ch,R1
     // asm 00009183: 	STI	R0,@SOUND
@@ -1111,6 +1111,7 @@ static void RESETMUNGE(void) {
     // asm 000092B7: 	NOP
     // asm 000092B8: 	BU	RESETMUNGE_X
 NOT_F1:
+NOT_F2:
     // asm 000092B9: NOT_F2
     // asm 000092B9: 	CMPI	4,R0
     // asm 000092BA: 	BNE	NOT_F4
