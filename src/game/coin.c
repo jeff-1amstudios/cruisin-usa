@@ -216,6 +216,7 @@ CHECK_CREDITSLP:
     // asm 00007396: 	CALL	GET_MIN_UNITS
     // asm 00007397: 	CMPI	R1,R2
     // asm 00007398: 	BLT	NOINC
+SKIP_MIN:
     // asm 00007399: SKIP_MIN
     // asm 00007399: 	CALL	GET_UNITS_PER_CREDIT
     // asm 0000739A: 	CMPI	R1,R2
@@ -234,6 +235,7 @@ CHECK_CREDITSLP:
     // asm 000073AA: 	SETAUD	AUD_CREDITS
     // asm 000073AC: 	POP	R2
     // asm 000073AD: 	INCAUD	AUD_PAID_CREDITS
+NOINCCRD:
     // asm 000073AF: NOINCCRD
     // asm 000073AF: 	POP	R2
     // asm 000073B0: 	BU	CHECK_CREDITSLP
@@ -336,6 +338,7 @@ char** GETCOINTXT(void) {
  */
 
 // *----------------------------------------------------------------------------
+// asm: 	LONGROUT
 static void GET_COIN1(void) {
     // asm: 	PUSH	AR0
     // asm: 	PUSH	AR2
@@ -745,6 +748,7 @@ void INIT_CUSTOM_COIN(void) {
     CUSTOM_COINTAB.coin_denom[1] = (packed_fields >> 8) & 0xFF;
     CUSTOM_COINTAB.coin_denom[2] = (packed_fields >> 16) & 0xFF;
     CUSTOM_COINTAB.coin_denom[3] = (packed_fields >> 24) & 0xFF;
+ICCX:;
     // asm 0000744B: ICCX
     // asm 0000744B: 	RETS
 }
@@ -962,9 +966,11 @@ DO_COINAGE:
     // asm 000074C6: 	ADDF	22,R3
     posy = C3X_ADD(posy, C3X_FROM_INT(22));
 
+    // asm 000074C7: 	FLOAT	256,R2
     // asm 000074C8: 	CALL	PRINT_COINAGE
     PRINT_COINAGE(C3X_FROM_INT(256), posy);
 
+INSERT_COINSX:;
     // asm 000074C9: INSERT_COINSX
     // asm 000074C9: 	RETS
 }
@@ -996,6 +1002,9 @@ static void FLASH_INSERTCOINS(c3x_reg_t posy) {
 }
 
 static void SHOW_INSERTCOINS(c3x_reg_t posy /*R3*/) {
+    // asm 000074D0: 	LDI	@INSERTCOINSI,AR2
+    // asm 000074D1: 	FLOAT	256,R2
+    // asm 000074D2: 	LDI	1,RC
     // asm 000074D3: 	CALL	TEXT_ADDDS
     tSHADOW_TEXT t = TEXT_ADDDS(INSERTCOINS, C3X_FROM_INT(256), posy, 1);
 
@@ -1610,6 +1619,7 @@ static void PRINT_TOCONT(void) {
     text.front->color |= TXT_CENTER;
     // asm 00007618: 	ORM	TXT_CENTER,*+AR1(TEXT_COLOR)
     text.shadow->color |= TXT_CENTER;
+TOCONTX:
     // asm 0000761B: TOCONTX
     // asm 0000761B: 	RETS
     return;
