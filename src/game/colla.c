@@ -39,14 +39,10 @@ static void GETNMAT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR6*/);
 int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/);
 void _makbox(OBJ* obj /*AR4*/);
 void COLSCC(void);
-#define PLYR_VS_DEBRIS PLYRDEBRIS
-static void PLYRDEBRIS(void);
-#define PLYR_VS_SIGN PLYRSIGN
-static void PLYRSIGN(void);
-#define DRONE_VS_DEBRIS DRONDEBRIS
-static void DRONDEBRIS(void);
-#define DRONE_VS_SIGN DRONSIGN
-static void DRONSIGN(void);
+static void PLYR_VS_DEBRIS(void);
+static void PLYR_VS_SIGN(void);
+static void DRONE_VS_DEBRIS(void);
+static void DRONE_VS_SIGN(void);
 static void DRONEPTL(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/);
 static void COLPOINT(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/);
 void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/);
@@ -63,10 +59,8 @@ void DECODE_FLY_KILL(void);
 static void SEND_FLY_XSFER(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/, PROC* p /*AR7*/, int state /*R4*/);
 void DECODE_FLY_XSFER(void);
 void GETFLYMAT(OBJ* obj /*AR4*/, c3x_f32_t x_total, c3x_f32_t y_total, c3x_f32_t z_total);
-#define PLYR_VS_DRONES COLSCAN
-void COLSCAN(void);
-#define DRONES_VS_DRONES CLDSCAN
-static void CLDSCAN(void);
+void PLYR_VS_DRONES(void);
+static void DRONES_VS_DRONES(void);
 static c3x_reg_t REPELL(OBJ* obj0, OBJ* obj1, VECTOR* repulsion_vector);
 static void COLDISP(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR* collision_point /*AR3*/);
 static void SPINROT(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/, VECTOR* collision_point /*AR3*/, c3x_reg_t relative_x /*R0*/, c3x_reg_t relative_z /*R1*/);
@@ -80,12 +74,6 @@ static c3x_f32_t* GETBOX(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/);
 static c3x_f32_t* GETBOX0(OBJ* obj /*AR0*/, c3x_f32_t* storage /*AR2*/, c3x_reg_t xminus_mult /*R0*/, c3x_reg_t yminus_mult /*R1*/, c3x_reg_t zminus_mult /*R2*/, c3x_reg_t xplus_mult /*R3*/, c3x_reg_t yplus_mult /*R4*/, c3x_reg_t zplus_mult /*R5*/);
 void ATTR_COLLISION(void);
 
-#define PLYR_VS_DEBRIS PLYRDEBRIS
-#define PLYR_VS_SIGN PLYRSIGN
-#define DRONE_VS_DEBRIS DRONDEBRIS
-#define DRONE_VS_SIGN DRONSIGN
-#define PLYR_VS_DRONES COLSCAN
-#define DRONES_VS_DRONES CLDSCAN
 #define VLI VL
 #define TNORMI TNORM
 #define TVECT1I TVECT1
@@ -166,15 +154,16 @@ enum {
  *
  */
 int CAMSCAN(VECTOR* point /*AR4*/, c3x_reg_t* out_road_delta /*R0*/) {
+    int found;
+
     // asm 00001F8B: 	LDPI	@DRIVE_LIST,R0
-    if (CAMSCANS(DRIVE_LIST, point, out_road_delta)) {
-        // asm 00001F8C: 	CALL	CAMSCANS
-        // asm 00001F8D: 	RETSC
+    // asm 00001F8C: 	CALL	CAMSCANS
+    found = CAMSCANS(DRIVE_LIST, point, out_road_delta);
+    // asm 00001F8D: 	RETSC
+    if (found) {
         TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCAN", 0, 0);
         return 1;
     }
-    // asm 00001F8C: 	CALL	CAMSCANS
-    // asm 00001F8D: 	RETSC
     // asm 00001F8E: 	LDPI	@GROUND_LIST,R0
     return CAMSCANS(GROUND_LIST, point, out_road_delta);
     // *FALL THRU TO CAMSCANS
@@ -189,17 +178,11 @@ static int CAMSCANS(OBJ* list /*R0*/, VECTOR* point /*AR4*/, c3x_reg_t* out_road
     c3x_reg_t delta_z;
     c3x_reg_t distance_squared;
     c3x_reg_t radius;
+    int collision;
 
     // asm 00001F8F: 	BZ	CMSX  			;NULL LIST DUDES
     if (list == NULL) { // ;NULL LIST DUDES
-        // asm 00001FAD: 	FLOAT	0,R0		;DEFAULT HT.
-        if (out_road_delta != NULL) {
-            *out_road_delta = C3X_FROM_INT(0); // ;DEFAULT HT.
-        }
-        // asm 00001FAE: 	CLRC
-        // asm 00001FAF: 	RETS
-        TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCANS", 0, 0);
-        return 0;
+        goto CMSX;
     }
     // asm 00001F90: 	LDI	R0,AR2
     road_obj = list;
@@ -250,14 +233,14 @@ CMS1:
     // *CHECK OUT POINT COLLISION
 CMS2:
     // asm 00001FA4: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
-    if (_coll_road(road_obj, point, out_road_delta)) { // ;XZ POINT COLLISION WITH ROAD OBJECT?
-        // asm 00001FA5: 	BNC	CMS1L
-        // asm 00001FA6: 	RETS				;RETURN COLLISION VALUE
-        TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCANS", 0, 0);
-        return 1; // ;RETURN COLLISION VALUE
-    }
+    collision = _coll_road(road_obj, point, out_road_delta); // ;XZ POINT COLLISION WITH ROAD OBJECT?
     // asm 00001FA5: 	BNC	CMS1L
+    if (!collision) {
+        goto CMS1L;
+    }
     // asm 00001FA6: 	RETS				;RETURN COLLISION VALUE
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMSCANS", 0, 0);
+    return 1; // ;RETURN COLLISION VALUE
 CMS1L:
     // asm 00001FA7: 	LDI	*+AR2(OLINK3),AR2
     // asm 00001FA8: 	LDI	AR2,R1
@@ -297,7 +280,7 @@ int OBJSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/) {
     // asm 00001FB2: 	CALL	CAMSCAN	      		;AR4=XYZ, RET R0=HT, CS=ROAD,CC=NO ROAD
     return CAMSCAN(point, out_road_delta); // ;AR4=XYZ, RET R0=HT, CS=ROAD,CC=NO ROAD
     // asm 00001FB3: 	POP	AR4
-    // asm 00001FB4:  	RETS
+    // asm 00001FB4: 	RETS
 }
 
 /* asm: BOXSCRAM	FBSS	BOXSCRAM,50 */
@@ -424,9 +407,9 @@ BS2:
     // asm 00001FE8: 	ADDI	18H,AR4
     // asm 00001FE9: 	LDI	7,AR5			;LOOP 8 BOX POINTS
     for (i = 0; i < 8; i++) {                                                     // ;LOOP 8 BOX POINTS
-                                                                                  // asm 00001FEA: BSRDLP
-                                                                                  // asm 00001FEA: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
-                                                                                  // asm 00001FEB: 	BNC	BS10			;NOPE...
+    BSRDLP:
+        // asm 00001FEA: 	CALL	_coll_road		;XZ POINT COLLISION WITH ROAD OBJECT?
+        // asm 00001FEB: 	BNC	BS10			;NOPE...
         if (!_coll_road(road_obj, (VECTOR*)&BOXSCRAM[24 + i * 3], &road_delta)) { // ;XZ POINT COLLISION WITH ROAD OBJECT?
             goto BS10;
         }
@@ -494,7 +477,7 @@ void CAR_ROAD_COLL(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     // ****************************************************
     // *WE HAVE FOUND HEIGHT FOR ALL SUSPENSION POINTS
     // *GET NEW PLAYER MATRIX
-    // asm 00001FFD: PC1XX
+PC1XX:
     // asm 00001FFD: 	LDI	*+AR6(CT_PCOL),R0  	;NO ROAD COLLISION CENTER POINT
     // asm 00001FFE: 	BZ	PC1X0
     // asm 00001FFF: 	LDI	R0,AR0
@@ -576,7 +559,7 @@ PC1X0:
             }
         PC2A:
             // asm 00002020: 	STF	R1,*+AR0(CARPYV)	;ADD VELOCITY TO HEIGHT
-            // asm 00002021: PC2B
+        PC2B:
             // asm 00002021: 	ADDF	*+AR0(CARPY),R1
             // asm 00002022: 	STF	R1,*+AR0(CARPY)
             car_point->y_velocity = C3X_STF(next_y_velocity);
@@ -636,7 +619,7 @@ PC1X0:
     observed_raw = C3X_STORE(C3X_LDF(carblk->right_rear.road_delta_y));
     MAME_ASSERT_MEM(0x00002039, "d@(ar6+1b)", &observed_raw);
     GETNMAT(obj, carblk); // ;GET NEW MATRIX
-    // asm 0000203A: PCOLLX
+PCOLLX:
     // asm 0000203A: 	POP	AR6
     // asm 0000203B: 	POP	AR5
     // asm 0000203C: 	POP	AR4
@@ -644,6 +627,7 @@ PC1X0:
     // asm 0000203E: 	POP	R5
     // asm 0000203F: 	POP	R4
     // asm 00002040: 	RETS
+    ;
 }
 
 /*
@@ -769,13 +753,12 @@ void ROADSCAN(OBJ* obj /*AR4*/, CARBLK* carblk /*R3*/) {
     // asm 0000206F: 	LDI	R1,R1			;ALL WHEELS ON ROAD?
     // asm 00002070: 	BZ	PC3X			;YES...WERE DONE
     if (missing_wheel == 0) {
-        return;
+        goto PC3X;
     }
     // *OFF ROAD- CHECK OUT GROUND LIST
-    // asm 00002071: PC3A
+PC3A:
     // asm 00002071: 	LDPI	@GROUND_LIST,R0
     // asm 00002072: 	CALL	RDSCNSUB
-PC3A:
     RDSCNSUB(obj, carblk, GROUND_LIST);
     // ;	LDI	0,R1
     // ;	LDI	*+AR6(CT_PCOL),R0	;CHECK COLLISION...
@@ -793,6 +776,7 @@ PC3A:
     // ;	NOP				;TRAP HERE
 PC3X:
     // asm 00002073: 	RETS
+    ;
 }
 
 /*
@@ -980,6 +964,7 @@ RS3L:
     }
 RDSCNX:
     // asm 000020B3: 	RETS
+    ;
 }
 
 /*
@@ -1321,9 +1306,11 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
     // asm 0000210F: 	LDI	R2,AR1			;create translation (TRANS = OBJPOS - COLLPOS)
     // asm 00002110: 	LDF	*+AR2(OPOSX),R0
     // asm 00002111: 	SUBF	*AR1++,R0
+    // asm 00002112: 	STF	R0,*-AR6(1)		;transvector.x
     translation.X = C3X_STF(C3X_SUB(obj->pos.X, point->X)); // ;transvector.x
     // asm 00002113: 	LDF	*+AR2(OPOSY),R0
     // asm 00002114: 	SUBF	*AR1++,R0
+    // asm 00002115: 	STF	R0,*AR6			;transvector.y
     translation.Y = C3X_STF(C3X_SUB(obj->pos.Y, point->Y)); // ;transvector.y
     // asm 00002116: 	LDF	*+AR2(OPOSZ),R0
     // asm 00002117: 	SUBF	*AR1,R0
@@ -1354,11 +1341,32 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
         // *MULTIPLY BY ROTATION MATRIX
         // *AND ADD TRANSLATION (IN THAT ORDER)
         // *
+        // asm 00002126: 	MPYF3	*AR5++,R3,R0
+        // asm 00002126:  ||	STF	R2,*+AR7(1)  		;STORE OUT Z ELEMENT
+        // asm 00002127: 	MPYF3	*AR5++,R4,R1
+        // asm 00002128: 	MPYF3	*AR5++,*+AR7(1),R1
+        // asm 00002128:  ||	ADDF3	R0,R1,R2
         partial = C3X_ADD(C3X_MUL(temp_vertex.Y, matrix[1]), C3X_MUL(temp_vertex.X, matrix[0]));
+        // asm 00002129: 	MPYF3	*AR5++,*-AR7(1),R0
+        // asm 00002129:  ||	ADDF3	R1,R2,R2
+        // asm 0000212A: 	ADDF	*-AR6(1),R2		;*blowlist++   += translation[X]
         rotated_x = C3X_ADD(partial, C3X_MUL(temp_vertex.Z, matrix[2]));
+        // asm 0000212B: 	MPYF3	*AR5++,R4,R1
+        // asm 0000212B:  ||	STF	R2,*AR3++ 		;STORE ROTATED X
+        // asm 0000212C: 	MPYF3	*AR5++,*+AR7(1),R1
+        // asm 0000212C:  ||	ADDF3	R0,R1,R2
         partial = C3X_ADD(C3X_MUL(temp_vertex.Y, matrix[4]), C3X_MUL(temp_vertex.X, matrix[3]));
+        // asm 0000212D: 	MPYF3	*AR5++,*-AR7(1),R0
+        // asm 0000212D:  ||	ADDF3	R1,R2,R3
+        // asm 0000212E: 	ADDF	*AR6,R3			;*blowlist++   += translation[Y]
         rotated_y = C3X_ADD(partial, C3X_MUL(temp_vertex.Z, matrix[5]));
+        // asm 0000212F: 	MPYF3	*AR5++,R4,R1
+        // asm 0000212F:  ||	STF	R3,*AR3++		;STORE ROTATED Y
+        // asm 00002130: 	MPYF3	*AR5--(IR0),*+AR7(1),R1
+        // asm 00002130:  ||	ADDF3	R0,R1,R2
         partial = C3X_ADD(C3X_MUL(temp_vertex.Y, matrix[7]), C3X_MUL(temp_vertex.X, matrix[6]));
+        // asm 00002131: 	ADDF	R1,R2			;FORM ROTATED Z
+        // asm 00002132: 	ADDF	*+AR6(1),R2		;ADD IN TRANSLATION Z
         rotated_z = C3X_ADD(partial, C3X_MUL(temp_vertex.Z, matrix[8]));
         BLOWLIST[(i * 3) + 0] = C3X_STF(C3X_ADD(rotated_x, translation.X)); // ;STORE ROTATED X
         BLOWLIST[(i * 3) + 1] = C3X_STF(C3X_ADD(rotated_y, translation.Y)); // ;STORE ROTATED Y
@@ -1422,7 +1430,7 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
         // asm 00002148: 	CMPI	AR5,AR6		;CHECK FOR QUAD OR TRIANGLE
         // asm 00002149: 	BZD	VLTRI
         if (v3_index != v4_index) {
-            // asm 0000214A: VLQUAD
+        VLQUAD:
             // asm 0000214A: 	SUBF	*+AR5(IR0),*+AR6(IR0),R0	;-A
             edge_a = C3X_SUB(vertex4[2], vertex3[2]);
             // asm 0000214B: 	SUBF	*+AR6(IR1),*+AR5(IR1),R1	;-B
@@ -1494,6 +1502,15 @@ int _obj_coll(OBJ* obj /*AR2*/, VECTOR* point /*R2*/) {
         // asm 0000216B: 	CLRC
         ;
     }
+    // asm 0000216C: 	POP	AR7
+    // asm 0000216D: 	POP	AR6
+    // asm 0000216E: 	POP	AR5
+    // asm 0000216F: 	POP	AR4
+    // asm 00002170: 	POP	AR3
+    // asm 00002171: 	POP	AR1
+    // asm 00002172: 	POP	R5
+    // asm 00002173: 	POP	R4
+    // asm 00002174: 	RETS
     return 0;
 
 VLCOLL:
@@ -1507,6 +1524,16 @@ VLCOLL:
     VL[0] = (VECTOR*)hit_vertex1;
     VL[1] = (VECTOR*)hit_vertex2;
     VL[2] = (VECTOR*)hit_vertex3;
+    // asm 0000217B: 	SETC
+    // asm 0000217C: 	POP	AR7
+    // asm 0000217D: 	POP	AR6
+    // asm 0000217E: 	POP	AR5
+    // asm 0000217F: 	POP	AR4
+    // asm 00002180: 	POP	AR3
+    // asm 00002181: 	POP	AR1
+    // asm 00002182: 	POP	R5
+    // asm 00002183: 	POP	R4
+    // asm 00002184: 	RETS
     return 1;
 }
 
@@ -1702,28 +1729,26 @@ void _makbox(OBJ* obj /*AR4*/) {
  *
  */
 void COLSCC(void) {
-    u32 mode = _MODE & MMODE; /* MAKE SURE MODE IS IN GAME */
+    u32 mode;
 
-    if (mode == MATTR) {  /* cm */
-        ATTR_COLLISION(); /* cm */
+    // asm 000021D0: 	LDPI	@_MODE,R0	   	;MAKE SURE MODE IS IN GAME
+    // asm 000021D1: 	AND	MMODE,R0
+    mode = _MODE & MMODE; // ;MAKE SURE MODE IS IN GAME
+    // asm 000021D2: 	CMPI	MATTR,R0		;cm
+    // asm 000021D3: 	BEQ	ATTR_COLLISION		;cm
+    if (mode == MATTR) {
+        ATTR_COLLISION();
         return;
     }
 
+    // asm 000021D4: 	CMPI	MGAME,R0
+    // asm 000021D5: 	BNE	COLSCCX
     if (mode != MGAME) {
-        return;
+        goto COLSCCX;
     }
 
-    /*
-     * ROOT PROCESS
-     *
-     * Original sets:
-     *   AR7 = &PACTIVE
-     *
-     * This probably matters because some collision routines may call
-     * process-related helpers expecting AR7 to be the root process/list node.
-     * In C, only keep this if your mproc layer needs current/root context.
-     */
-    CURRENT_PROC = NULL; /* or PRC_ROOT / &PACTIVE sentinel, depending on your design */
+    // asm 000021D6: 	LDI	@PACTIVEI,AR7	      	;ROOT PROCESS
+    CURRENT_PROC = NULL;
 
     /*
      * TEST CODE
@@ -1731,14 +1756,25 @@ void COLSCC(void) {
      * CKRAD();
      */
 
-    COLSCAN();      /* PLAYER VS. DRONES */
-    CLDSCAN();      /* DRONES VS. DRONES */
-    PLYRSIGN();     /* PLAYER VS. SIGNS, POLES, TREES */
-    PLYRDEBRIS();   /* PLAYER VS. ROAD DEBRIS */
-    DRONSIGN();     /* DRONES VS. SIGNS, POLES, TREES */
-    DRONDEBRIS();   /* DRONES VS. ROAD DEBRIS */
-    PLYRROADKILL(); /* PLAYER VS. ROADKILL */
-    DEBSCAN();      /* CLEAR OUT DEAD DEBRIS */
+    // asm 000021D7: 	CALL	COLSCAN			;PLAYER VS. DRONES
+    PLYR_VS_DRONES();
+    // asm 000021D8: 	CALL	CLDSCAN			;DRONES VS. DRONES
+    DRONES_VS_DRONES();
+    // asm 000021D9: 	CALL	PLYRSIGN		;PLAYER VS. SIGNS, POLES, TREES
+    PLYR_VS_SIGN();
+    // asm 000021DA: 	CALL	PLYRDEBRIS		;PLAYER VS. ROAD DEBRIS
+    PLYR_VS_DEBRIS();
+    // asm 000021DB: 	CALL	DRONSIGN		;DRONES VS. SIGNS, POLES, TREES
+    DRONE_VS_SIGN();
+    // asm 000021DC: 	CALL	DRONDEBRIS		;DRONES VS. ROAD DEBRIS
+    DRONE_VS_DEBRIS();
+    // asm 000021DD: 	CALL	PLYRROADKILL		;PLAYER VS. ROADKILL
+    PLYRROADKILL();
+    // asm 000021DE: 	CALL	DEBSCAN			;CLEAR OUT DEAD DEBRIS
+    DEBSCAN();
+COLSCCX:
+    // asm 000021DF: 	RETS
+    ;
 }
 
 void ATTR_COLLISION(void) {
@@ -1751,8 +1787,11 @@ void ATTR_COLLISION(void) {
      * use to set MATTR mode during high score
      * display while in the attract mode.
      */
+    // asm 000021E0: 	LDI	@_MODE,R0	;This check makes sure the code is not active
+    // asm 000021E1: 	TSTB	MHS,R0		;during the high score display. Thus allowing
+    // asm 000021E2: 	BNZ	NO_ATTR_COL	;use to set MATTR mode during high score
     if (_MODE & MHS) {
-        return;
+        goto NO_ATTR_COL;
     }
 
     /*
@@ -1761,12 +1800,20 @@ void ATTR_COLLISION(void) {
      * Original:
      *   AR7 = &PACTIVE
      */
+    // asm 000021E3: 	LDI	@PACTIVEI,AR7	      	;ROOT PROCESS
     CURRENT_PROC = NULL;
 
-    CLDSCAN();    /* DRONES VS. DRONES */
-    DRONSIGN();   /* DRONES VS. SIGNS, POLES, TREES */
-    DRONDEBRIS(); /* DRONES VS. ROAD DEBRIS */
-    DEBSCAN();    /* CLEAR OUT DEAD DEBRIS */
+    // asm 000021E4: 	CALL	CLDSCAN			;DRONES VS. DRONES
+    DRONES_VS_DRONES();
+    // asm 000021E5: 	CALL	DRONSIGN		;DRONES VS. SIGNS, POLES, TREES
+    DRONE_VS_SIGN();
+    // asm 000021E6: 	CALL	DRONDEBRIS		;DRONES VS. ROAD DEBRIS
+    DRONE_VS_DEBRIS();
+    // asm 000021E7: 	CALL	DEBSCAN			;CLEAR OUT DEAD DEBRIS
+    DEBSCAN();
+NO_ATTR_COL:
+    // asm 000021E8: 	RETS
+    ;
 }
 
 /*
@@ -1774,7 +1821,8 @@ void ATTR_COLLISION(void) {
  *PLAYER COLLIDE WITH DEBRIS
  *
  */
-static void PLYRDEBRIS(void) {
+static void PLYR_VS_DEBRIS(void) {
+PLYRDEBRIS:
     // asm 000021E9: 	LDPI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000021EA: 	LDPI	@ROAD_DEBRISI,AR1
     // asm 000021EB: 	B	COLPOINT
@@ -1784,7 +1832,8 @@ static void PLYRDEBRIS(void) {
     COLPOINT(PLYCAR, &ROAD_DEBRIS);
 }
 
-static void PLYRSIGN(void) {
+static void PLYR_VS_SIGN(void) {
+PLYRSIGN:
     // asm 000021EC: 	LDPI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     // asm 000021ED: 	LDPI	@SIGN_LISTI,AR1
     // asm 000021EE: 	B	COLPOINT
@@ -1794,7 +1843,8 @@ static void PLYRSIGN(void) {
     COLPOINT(PLYCAR, &SIGN_LIST);
 }
 
-static void DRONDEBRIS(void) {
+static void DRONE_VS_DEBRIS(void) {
+DRONDEBRIS:
     // asm 000021EF: 	LDPI	@ROAD_DEBRISI,AR1
     // asm 000021F0: 	B	DRONEPT
     // *
@@ -1803,8 +1853,10 @@ static void DRONDEBRIS(void) {
     DRONEPTL(CAR_LIST, &ROAD_DEBRIS);
 }
 
-static void DRONSIGN(void) {
+static void DRONE_VS_SIGN(void) {
+DRONSIGN:
     // asm 000021F1: 	LDPI	@SIGN_LISTI,AR1
+DRONEPT:
     // asm 000021F2: 	LDPI	@CAR_LIST,R0	 	;GET LIST AND CHECK NULL
     // asm 000021F3: 	LDI	R0,AR0
     // asm 000021F4: 	RETSZ
@@ -1947,36 +1999,84 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
     PROC_CONTEXT* fly_ctx;
     PROC_CONTEXT* coconut_ctx;
 
+    // asm: 	PUSH	AR0
+    // asm: 	PUSH	AR1
+    // asm: 	LDPI	@BLOWLISTI,AR2
+    // asm: 	CALL	GETBOX			;GET BOX POINTS FOR OBJECT 1
     GETBOX(car_obj, BLOWLIST);
 
+    // *CHECK 4 LINE EQUATIONS FOR BOTTOM OF CAR
+    // *PT 2-6-7-3
+    // asm: 	LDPI	@LEQTABI,AR2
+    // asm: 	LDI	3,RC 			;DO 4 EQUATIONS
+    // asm: 	RPTB	CSGLNEQ
     for (i = 0; i < 4; i++) {
+        // asm: 	LDI	*AR2++,AR3		;GET 2 POINTS
         c3x_f32_t* point0 = LEQTAB[i];
+        // asm: 	LDI	*AR2,AR4
         c3x_f32_t* point1 = LEQTAB[i + 1];
+        // asm: 	SUBF	*+AR3(1),*+AR4(1),R0	;A
         c3x_reg_t a = C3X_SUB(point1[1], point0[1]);
+        // asm: 	SUBF	*-AR4(1),*-AR3(1),R1	;B
         c3x_reg_t b = C3X_SUB(point0[-1], point1[-1]);
+        // asm: 	MPYF	R0,*-AR3(1),R2
+        // asm: 	MPYF	R1,*+AR3(1),R3
+        // asm: 	ADDF	R3,R2
+        // asm: 	NEGF	R2			;C
         c3x_reg_t c = C3X_NEG(C3X_ADD(C3X_MUL(a, point0[-1]), C3X_MUL(b, point0[1])));
+        // *EVALUATE THE POINT
+        // asm: 	MPYF	*+AR1(OPOSX),R0		;AX
+        // asm: 	MPYF	*+AR1(OPOSZ),R1		;BZ
+        // asm: 	ADDF	R0,R1
+        // asm: 	ADDF	R1,R2
         c3x_reg_t eval = C3X_ADD(C3X_ADD(C3X_MUL(a, sign_obj->pos.X), C3X_MUL(b, sign_obj->pos.Z)), c);
+        // asm: 	BLE	COLSGCX
         if (C3X_LE(eval, C3X_FROM_INT(0))) {
             goto COLSGCX;
         }
     }
 CSGLNEQ:
+    // asm: 	NOP
+    // *GOT A COLLISION
+    // *CHECK TYPE
+    // asm: 	LDI	*+AR0(OCARBLK),AR5	;GET VELOCITY DIRECTION
+    // asm: 	LDI	*+AR1(OID),R0
+    // asm: 	AND	TYPE_M,R0
     sign_id = sign_obj->id;
     sign_type = sign_id & TYPE_M;
+    // asm: 	CMPI	TSC_IGNORE,R0
+    // asm: 	BEQ	SIGN_IGNORE
     if (sign_type == TSC_IGNORE) {
         goto SIGN_IGNORE;
     }
+    // asm: 	LDI	*+AR1(OID),R0
+    // asm: 	AND	CLASS_M|TYPE_M,R0
+    // asm: 	CMPI	RDDEBRIS_C|TSC_ROADKILL,R0
+    // asm: 	BEQ	ROADKILL
     if ((sign_id & (CLASS_M | TYPE_M)) == (RDDEBRIS_C | TSC_ROADKILL)) {
         goto ROADKILL;
     }
+    // asm: 	LDI	*+AR1(OID),R0
+    // asm: 	AND	TYPE_M,R0
+    // asm: 	CMPI	TSC_FLYING,R0
+    // asm: 	BEQ	FLYCOLL
     if (sign_type == TSC_FLYING) {
         goto FLYCOLL;
     }
+    // asm: 	CMPI	TSC_RUNOVER,R0
+    // asm: 	BEQ	RUNOVER
     if (sign_type == TSC_RUNOVER) {
         goto RUNOVER;
     }
 HARDCOL:
-    if ((sign_id & (CLASS_M | TYPE_M | SUBTYPE_M)) == (TSIGN_C | TSC_IMMOBILE | TSC_V_PALM)) {
+    // asm: 	LDI	*+AR1(OID),R0
+    // asm: 	AND	CLASS_M|TYPE_M|SUBTYPE_M,R0
+    // asm: 	CMPI	TSIGN_C|TSC_IMMOBILE|TSC_V_PALM,R0
+    // asm: 	BNE	NOTCOCONUT
+    if ((sign_id & (CLASS_M | TYPE_M | SUBTYPE_M)) != (TSIGN_C | TSC_IMMOBILE | TSC_V_PALM)) {
+        goto NOTCOCONUT;
+    }
+    {
         // asm: PUSH R0
         // asm: PUSH R2
         // asm: PUSH AR0
@@ -2008,25 +2108,52 @@ LL88:
         goto DOREPEL;
     }
 NOTCOCONUT:
+    // asm: 	AND	TYPE_M,R0		;REDWOODS MUST NOT GET KNOCKED OVER
+    // asm: 	CMPI	TSC_HARD,R0
+    // asm: 	BNE	RUNOVER
     if ((sign_id & TYPE_M) != TSC_HARD) {
         goto RUNOVER;
     }
 DOREPEL:
+    // asm: 	CALL	REPELL
     repulsion_magnitude = REPELL(car_obj, sign_obj, &repulsion_vector);
+    // asm: 	MPYF	*AR2,R0,R1 			;X REPELL
+    // asm: 	MPYF	*+AR2(2),R0		     	;Z REPELL
+    // asm: 	ADDF	*+AR0(OPOSX),R1			;REPELL THE SUCKER (AR0)
+    // asm: 	ADDF	*+AR0(OPOSZ),R0
+    // asm: 	STF	R1,*+AR0(OPOSX)
+    // asm: 	STF	R0,*+AR0(OPOSZ)
     car_obj->pos.X = C3X_STF(C3X_ADD(car_obj->pos.X, C3X_MUL(repulsion_vector.X, repulsion_magnitude)));
     car_obj->pos.Z = C3X_STF(C3X_ADD(car_obj->pos.Z, C3X_MUL(repulsion_vector.Z, repulsion_magnitude)));
+    // asm: 	LDF	*+AR5(CARSPEED),R2    		;GOING FAST???
+    // asm: 	MPYF	0.6,R2
+    // asm: 	CMPF	37,R2				;MINIMUM SPEED VALUE
+    // asm: 	LDFLT	37,R2
+    // asm: 	STF	R2,*+AR5(CARSPEED)		;REVERSE SPEED
     carblk->speed = C3X_STF(C3X_MUL(carblk->speed, C3X_IMM_F32(0.6)));
+    // asm: 	BLT	HARDCOL00			;YES,SPINOUT
     if (C3X_LT(carblk->speed, C3X_FROM_INT(37))) {
         carblk->speed = C3X_STF(C3X_FROM_INT(37));
         MAME_ASSERT_REG_FLOAT(0x0000226A, "R2", &carblk->speed);
         goto HARDCOL00;
     }
     MAME_ASSERT_REG_FLOAT(0x0000226A, "R2", &carblk->speed);
+    // asm: 	LDI	500,AR2				;STRAIGHT OR SPINNER?
+    // asm: 	CALL	RANDPER
+    // asm: 	BC	HARDCOL1			;SPINNER...
     if (RANDPER(500) != 0) {
         goto HARDCOL1;
     }
 HARDCOL00:
+    // asm: 	LDI	60,R0				;SPIN COUNT
+    // asm: 	STI	R0,*+AR5(CAR_SPIN)
     carblk->spin_flag = 60;
+    // asm: 	LDI	AR0,AR4
+    // asm: 	CALL	GETNXTRDIR
+    // asm: 	LDI	AR4,AR0
+    // asm: 	LDF	R0,R2
+    // asm: 	SUBF	*+AR5(CARYROT),R2
+    // asm: 	CALL	NORMITS
     angle_delta = C3X_SUB(ROADIR(carblk), carblk->y_rotation);
     while (C3X_GT(angle_delta, PII)) {
         angle_delta = C3X_SUB(angle_delta, TWOPII);
@@ -2034,14 +2161,32 @@ HARDCOL00:
     while (C3X_LE(angle_delta, C3X_NEG(PII))) {
         angle_delta = C3X_ADD(angle_delta, TWOPII);
     }
+    // asm: 	LDF	R2,R2
+    // asm: 	LDFGT	0.02,R0
+    // asm: 	LDFLE	-0.02,R0
     carblk->last_y_rotation = C3X_STF(C3X_GT(angle_delta, C3X_FROM_INT(0)) ? C3X_IMM_F32(0.02) : C3X_IMM_F32(-0.02));
+    // asm: 	B	HARDCOL2			;STORE DROT, SET VROT
     goto HARDCOL2;
 HARDCOL1:
+    // asm: 	LDI	1,R0				;SPIN THE DUDE
+    // asm: 	STI	R0,*+AR5(CAR_SPIN)
     carblk->spin_flag = 1;
+    // asm: 	LDF	3.14,R1				;SET 180 MIN SPIN
+    // asm: 	STF	R1,*+AR5(CARSPRAD)
     carblk->spin_radians = C3X_STF(C3X_IMM_F32(3.14));
+    // asm: 	LDF	0.1,R0		 		;GET ROTATION AMOUNT
     carblk->last_y_rotation = C3X_STF(C3X_IMM_F32(0.1));
 HARDCOL2:
+    // asm: 	STF	R0,*+AR5(CARDROT)
+    // asm: 	LDPI	@VECTORAI,AR2    		;COMPUTE REPULSION VECTOR
+    // asm: 	LDF	*AR2,R2
+    // asm: 	LDF	*+AR2(2),R3
+    // asm: 	CALL	ARCTANF
+    // asm: 	SUBF	1.57,R0
     angle_delta = C3X_SUB(ARCTANF(C3X_LDF(repulsion_vector.Z), C3X_LDF(repulsion_vector.X)), C3X_IMM_F32(1.57));
+    // asm: 	SUBF	*+AR5(CARVROT),R0
+    // asm: 	LDF	R0,R2
+    // asm: 	CALL	NORMITS
     angle_delta = C3X_SUB(angle_delta, carblk->y_velocity_rotation);
     while (C3X_GT(angle_delta, PII)) {
         angle_delta = C3X_SUB(angle_delta, TWOPII);
@@ -2049,110 +2194,245 @@ HARDCOL2:
     while (C3X_LE(angle_delta, C3X_NEG(PII))) {
         angle_delta = C3X_ADD(angle_delta, TWOPII);
     }
+    // asm: 	ABSF	R2
+    // asm: 	CMPF	1.57,R2
+    // asm: 	BLT	HARDCOL3
     if (C3X_LT(C3X_ABS(angle_delta), C3X_IMM_F32(1.57))) {
         goto HARDCOL3;
     }
+    // asm: 	LDF	*+AR5(CARVROT),R2		;REVERSE VELOCITY
+    // asm: 	LDF	R2,R3
+    // asm: 	ADDF	3.14,R2
+    // asm: 	CALL	NORMITS
     old_velocity_rotation = C3X_LDF(carblk->y_velocity_rotation);
-    carblk->y_velocity_rotation = C3X_STF(C3X_ADD(carblk->y_velocity_rotation, C3X_IMM_F32(3.14)));
-    while (C3X_GT(carblk->y_velocity_rotation, PII)) {
-        carblk->y_velocity_rotation = C3X_STF(C3X_SUB(carblk->y_velocity_rotation, TWOPII));
+    angle_delta = C3X_ADD(old_velocity_rotation, C3X_IMM_F32(3.14));
+    while (C3X_GT(angle_delta, PII)) {
+        angle_delta = C3X_SUB(angle_delta, TWOPII);
     }
-    while (C3X_LE(carblk->y_velocity_rotation, C3X_NEG(PII))) {
-        carblk->y_velocity_rotation = C3X_STF(C3X_ADD(carblk->y_velocity_rotation, TWOPII));
+    while (C3X_LE(angle_delta, C3X_NEG(PII))) {
+        angle_delta = C3X_ADD(angle_delta, TWOPII);
     }
-    if ((sign_id & TYPE_M) != TSC_HARD) {
-        FIND_YMATRIX(&sign_obj->omatrix, old_velocity_rotation);
-        sign_obj->flags &= ~O_POSTER;
-        sign_obj->flags |= 1u << O_3DROT_B;
-        // asm: LDF *+AR5(CARSPEED),R7 ;HIT CAR SPEED
-        // asm: MPYF 0.04,R7 ;FALL RATE BASED UPON VELOCITY
-        fall_rate = C3X_MUL(C3X_LDF(carblk->speed), C3X_IMM_F32(0.04));
-        // asm: CMPF 0.13,R7
-        // asm: LDFLT 0.13,R7
-        if (C3X_LT(fall_rate, C3X_IMM_F32(0.13))) {
-            fall_rate = C3X_IMM_F32(0.13);
-        }
-        // asm: CMPF 1.0,R7
-        // asm: LDFGT 1.0,R7
-        if (C3X_GT(fall_rate, C3X_IMM_F32(1.0))) {
-            fall_rate = C3X_IMM_F32(1.0);
-        }
-        // asm: LDPI @TREESHAKI,AR2 ;GET SIGN FALL PROCESS
-        // asm: LDI DRONE_C|FLYER_T,R2
-        // asm: CALL PRC_CREATE_CHILD ;CREATE A CHILD PROCESS
-        fly_ctx = NEW_PROC_CONTEXT();
-        fly_ctx->TREESHAK.obj = sign_obj;
-        fly_ctx->TREESHAK.rotation_delta = C3X_STF(fall_rate);
-        PRC_CREATE_CHILD(CURRENT_PROC, TREESHAKI, DRONE_C | FLYER_T, fly_ctx);
+    // asm: 	STF	R2,*+AR5(CARVROT)
+    carblk->y_velocity_rotation = C3X_STF(angle_delta);
+    // *SHAKE THE TREE
+    // asm: 	LDI	*+AR1(OID),R0
+    // asm: 	AND	TYPE_M,R0
+    // asm: 	CMPI	TSC_HARD,R0
+    // asm: 	BEQ	HARDCOL3
+    if ((sign_id & TYPE_M) == TSC_HARD) {
+        goto HARDCOL3;
     }
+    // asm: 	LDF	R3,R2
+    // asm: 	LDI	AR1,AR2		 	;FORM OMATRIX POINTER
+    // asm: 	ADDI	OMATRIX,AR2		;STUFF
+    // asm: 	CALL    FIND_YMATRIX		;NEW MATRIX
+    FIND_YMATRIX(&sign_obj->omatrix, old_velocity_rotation);
+    // asm: 	LDI	AR1,AR4			;GET SIGN OBJECT POINTER
+    // asm: 	LDI	*+AR4(OFLAGS),R0	;MAKE IT SELF ROTATING
+    // asm: 	ANDN	O_POSTER,R0
+    sign_obj->flags &= ~O_POSTER;
+    // asm: 	LDI	1,R1			;SET 3D ROTATION BIT
+    // asm: 	LS	O_3DROT_B,R1
+    // asm: 	OR	R1,R0
+    // asm: 	STI	R0,*+AR4(OFLAGS)
+    sign_obj->flags |= 1u << O_3DROT_B;
+    // asm: 	LDF	*+AR5(CARSPEED),R7	;HIT CAR SPEED
+    // asm: 	MPYF	0.04,R7		   	;FALL RATE BASED UPON VELOCITY
+    fall_rate = C3X_MUL(C3X_LDF(carblk->speed), C3X_IMM_F32(0.04));
+    // asm: 	CMPF	0.13,R7
+    // asm: 	LDFLT	0.13,R7
+    if (C3X_LT(fall_rate, C3X_IMM_F32(0.13))) {
+        fall_rate = C3X_IMM_F32(0.13);
+    }
+    // asm: 	CMPF	1.0,R7
+    // asm: 	LDFGT	1.0,R7
+    if (C3X_GT(fall_rate, C3X_IMM_F32(1.0))) {
+        fall_rate = C3X_IMM_F32(1.0);
+    }
+    // asm: 	LDPI	@TREESHAKI,AR2		;GET SIGN FALL PROCESS
+    // asm: 	LDI	DRONE_C|FLYER_T,R2
+    // asm: 	CALL	PRC_CREATE_CHILD		;CREATE A CHILD PROCESS
+    fly_ctx = NEW_PROC_CONTEXT();
+    fly_ctx->TREESHAK.obj = sign_obj;
+    fly_ctx->TREESHAK.rotation_delta = C3X_STF(fall_rate);
+    PRC_CREATE_CHILD(CURRENT_PROC, TREESHAKI, DRONE_C | FLYER_T, fly_ctx);
 HARDCOL3:
+    // asm: 	SONDFX	POLESND			;MAKE SOUND
     ONESND(POLESND);
+    // asm: 	B	COLSGCX
     goto COLSGCX;
 ROADKILL:
+    // asm: 	LDI	1,R0
+    // asm: 	STI	R0,*+AR1(OCARBLK)
     sign_obj->carblk = (CARBLK*)(uintptr_t)1;
+    // asm: 	CALL	ROADKILL_HIT		;MAKE A SOUND
     ROADKILL_HIT();
+    // asm: 	CALL	ROADKILL_FLYERP
     ROADKILL_FLYERP();
+    // asm: 	BC	FLYCOLL
+    // asm: 	B	COLSGCX
     goto COLSGCX;
 FLYCOLL:
+    // asm: 	LDF	*+AR0(OPOSY),R0		;MAKE SURE HEIGHT IS CLOSE
+    // asm: 	SUBF	*+AR1(OPOSY),R0
+    // asm: 	ABSF	R0
     height_delta = C3X_ABS(C3X_SUB(car_obj->pos.Y, sign_obj->pos.Y));
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x000022B5, "R0", &height_delta, 5);
+    // asm: 	FLOAT	250,R1
+    // asm: 	CMPF	R1,R0
+    // asm: 	BGT	COLSGCX
     if (C3X_GT(height_delta, C3X_FROM_INT(250))) {
         goto COLSGCX;
     }
+    // asm: 	LDF	0.10,R0 		;ADD RANDOM ROTATION
+    // asm: 	CALL	SFRAND
+    // asm: 	LDF	R0,R2
+    // asm: 	ADDF	*+AR5(CARVROT),R2
     angle_delta = C3X_ADD(SFRAND(C3X_IMM_F32(0.10)), carblk->y_velocity_rotation);
+    // asm: 	LDF	0.65,R0			;RANDOM SPEED MULTIPLIER
+    // asm: 	CALL	FRAND
+    // asm: 	LDF	R0,R1
+    // asm: 	ADDF	0.8,R1
+    // asm: 	MPYF	1.5,R1			;SPEEDFUDGE FACTOR
     hit_speed = C3X_MUL(C3X_MUL(C3X_ADD(FRAND(C3X_IMM_F32(0.65)), C3X_IMM_F32(0.8)), C3X_IMM_F32(1.5)), carblk->speed);
+    // asm: 	CALL	_SINE
+    // asm: 	NEGF	R0,R3
     sign_obj->vel_x = C3X_STF(C3X_MUL(C3X_NEG(_SINE(angle_delta)), hit_speed));
     MAME_ASSERT_REG_FLOAT(0x000022C7, "R3", &sign_obj->vel_x);
+    // asm: 	CALL	_COSI
+    // asm: 	MPYF	*+AR5(CARSPEED),R1	;GET CURRENT SPEED
+    // asm: 	MPYF	R1,R3
+    // asm: 	MPYF	R1,R0
+    // asm: 	STF	R3,*+AR1(OVELX)	       	;SETUP VELOCITIES
+    // asm: 	STF	R0,*+AR1(OVELZ)
     sign_obj->vel_z = C3X_STF(C3X_MUL(_COSI(angle_delta), hit_speed));
     MAME_ASSERT_REG_FLOAT(0x000022C8, "R0", &sign_obj->vel_z);
+    // asm: 	LDF	-0.3,R0
+    // asm: 	CALL	FRAND
+    // asm: 	ADDF	-0.2,R0
+    // asm: 	MPYF	1.5,R0			;SPEEDFUDGE FACTOR
+    // asm: 	MPYF	*+AR5(CARSPEED),R0	;GET CURRENT SPEED
+    // asm: 	CMPF	-65,R0
+    // asm: 	LDFLT	-65,R0		  	;MAX VERTICAL VELOCITY
     sign_obj->vel_y = C3X_STF(C3X_MUL(C3X_MUL(C3X_SUB(FRAND(C3X_IMM_F32(-0.3)), C3X_IMM_F32(0.2)), C3X_IMM_F32(1.5)), carblk->speed));
     if (C3X_LT(sign_obj->vel_y, C3X_FROM_INT(-65))) {
         sign_obj->vel_y = C3X_STF(C3X_FROM_INT(-65));
     }
     MAME_ASSERT_REG_FLOAT(0x000022D0, "R0", &sign_obj->vel_y);
-    if ((sign_obj->flags & (1u << O_PROC_B)) != 0 && sign_obj->plink != NULL) {
-        PRC_KILL(sign_obj->plink);
+    // asm: 	STF	R0,*+AR1(OVELY)		;STUFF VERTICAL VELOCITY
+    // asm: 	LDI	AR1,AR4			;GET SIGN OBJECT POINTER
+    // asm: 	LDI	AR0,AR3			;SAVE CAR OBJECT
+    // asm: 	LDI	1,R0
+    // asm: 	LSH	O_PROC_B,R0		;PROCESS BIT MASK IN OBJECT STRUCT
+    // asm: 	TSTB	*+AR4(OFLAGS),R0	;PROCESS ALREADY ACTIVE	?
+    // asm: 	LDINZ	*+AR4(OPLINK),AR2	;YES, KILL HIM OFF...
+    // asm: 	BZ	CLLL1
+    if ((sign_obj->flags & (1u << O_PROC_B)) == 0) {
+        goto CLLL1;
     }
+    // asm: 	CALL	PRC_KILL		;DONT FUCK WITH THIS PRIBYL!!!!
+    PRC_KILL(sign_obj->plink);
 CLLL1:
+    // asm: 	LDPI	@FLYCOLLPI,AR2		;GET SIGN FLY PROCESS
+    // asm: 	LDI	DRONE_C|FLYER_T,R2
+    // asm: 	CALL	PRC_CREATE_CHILD		;CREATE A CHILD PROCESS
     fly_ctx = NEW_PROC_CONTEXT();
     fly_ctx->FLYCOLLP.obj = sign_obj;
     sign_obj->plink = PRC_CREATE_CHILD(CURRENT_PROC, FLYCOLLPI, DRONE_C | FLYER_T, fly_ctx);
+    // asm: 	BC	COLSGCX			;NOTHING AVAILABLE, QUIT
     if (sign_obj->plink == NULL) {
         goto COLSGCX;
     }
+    // asm: 	STI	AR0,*+AR4(OPLINK)	;SAVE PROCESS LINK
+    // asm: 	LDI	1,R0
+    // asm: 	LSH	O_3DROT_B,R0		;FLAG CAN AS NON-2D OPTIMIZABLE
+    // asm: 	LDI	1,R1
+    // asm: 	LSH	O_PROC_B,R1		;PROCESS BIT MASK IN OBJECT STRUCT
+    // asm: 	ADDI	R1,R0
+    // asm: 	OR	*+AR4(OFLAGS),R0	;SET YOUR FLAGS...
+    // asm: 	STI	R0,*+AR4(OFLAGS)
     sign_obj->flags |= (1u << O_3DROT_B) | (1u << O_PROC_B);
+    // asm: 	LDI	0,R0			;KILL OFF GROUP REFERENCE
+    // asm: 	STI	R0,*+AR4(OLINK2)
     sign_obj->link2 = 0;
+    // *GET SOUND FOR SAWHORSE/DRUM HIT
+    // asm: 	LDI	*+AR4(OID),R2
+    // asm: 	LDI	R2,R0
+    // asm: 	AND	TYPE_M,R0
     sign_type = sign_obj->id & TYPE_M;
-    if (sign_type == TSC_ROADKILL) {
-        ROADKILL_SETKILL();
-        goto COLSGCX;
+    // asm: 	CMPI	TSC_ROADKILL,R0
+    // asm: 	BNE	KLFD
+    if (sign_type != TSC_ROADKILL) {
+        goto KLFD;
     }
+    // asm: 	CALL	ROADKILL_SETKILL
+    ROADKILL_SETKILL();
+    // asm: 	BU	COLSGCX
+    goto COLSGCX;
 KLFD:
+    // asm: 	AND	SUBTYPE_M,R2
     sign_subtype = sign_obj->id & SUBTYPE_M;
-    if (car_obj == PLYCAR) {
-        ONESND((sign_subtype == RDD_55GAL) ? DRUMSND : SIGNSND);
-        goto COLSGCX;
+    // asm: 	CMPI	@PLYCAR,AR3		;PLAYERS CAR?
+    // asm: 	BNZ	FLYCOLL1		;NO...
+    if (car_obj != PLYCAR) {
+        goto FLYCOLL1;
     }
+    // asm: 	CMPI	RDD_55GAL,R2
+    // asm: 	LDIEQ	DRUMSND,AR2
+    // asm: 	LDINE	SIGNSND,AR2
+    sign_id = (sign_subtype == RDD_55GAL) ? DRUMSND : SIGNSND;
+    // asm: 	CALL	ONESNDFX
+    ONESNDFX(sign_id);
+    // asm: 	B	COLSGCX
+    goto COLSGCX;
 FLYCOLL1:
+    // asm: 	CMPI	RDD_55GAL,R2
+    // asm: 	LDIEQ	DRMBNCE,AR2
+    // asm: 	LDINE	DSIGNSND,AR2
     sign_id = (sign_subtype == RDD_55GAL) ? DRMBNCE : DSIGNSND;
+    // asm: 	B	COLSGCX0
     goto COLSGCX0;
 RUNOVER:
+    // asm: 	LDF	*+AR5(CARVROT),R2
+    // asm: 	LDI	AR1,AR2		 	;FORM OMATRIX POINTER
+    // asm: 	ADDI	OMATRIX,AR2		;STUFF
+    // asm: 	CALL    FIND_YMATRIX		;NEW MATRIX
     FIND_YMATRIX(&sign_obj->omatrix, C3X_LDF(carblk->y_velocity_rotation));
+    // asm: 	LDI	AR1,AR4			;GET SIGN OBJECT POINTER
+    // asm: 	LDI	AR0,AR3			;SAVE CAR OBJECT
+    // asm: 	LDI	*+AR4(OFLAGS),R0	;MAKE IT SELF ROTATING
+    // asm: 	ANDN	O_POSTER,R0
+    // asm: 	STI	R0,*+AR4(OFLAGS)
     sign_obj->flags &= ~O_POSTER;
+    // asm: 	LDF	*+AR5(CARSPEED),R7	;HIT CAR SPEED
+    // asm: 	LDF	R7,R6
+    // asm: 	MPYF	0.2,R6
     hit_speed = C3X_LDF(carblk->speed);
     speed_delta = C3X_MUL(hit_speed, C3X_IMM_F32(0.2));
+    // asm: 	CMPF	10,R6
+    // asm: 	LDFLT	10,R6
     if (C3X_LT(speed_delta, C3X_FROM_INT(10))) {
         speed_delta = C3X_FROM_INT(10);
     }
+    // asm: 	CMPF	R6,R7
+    // asm: 	LDFLT	R7,R6
     if (C3X_LT(hit_speed, speed_delta)) {
         speed_delta = hit_speed;
     }
+    // asm: 	LDF	R7,R5
+    // asm: 	SUBF	R6,R5
+    // asm: 	STF	R5,*+AR5(CARSPEED)
     carblk->speed = C3X_STF(C3X_SUB(hit_speed, speed_delta));
     MAME_ASSERT_REG_FLOAT(0x0000230C, "R5", &carblk->speed);
+    // asm: 	MPYF	0.03,R7		   	;FALL RATE BASED UPON VELOCITY
     fall_rate = C3X_MUL(hit_speed, C3X_IMM_F32(0.03));
+    // asm: 	CMPF	0.1,R7
+    // asm: 	LDFLT	0.1,R7
     if (C3X_LT(fall_rate, C3X_IMM_F32(0.1))) {
         fall_rate = C3X_IMM_F32(0.1);
     }
+    // asm: 	CMPF	0.7,R7
+    // asm: 	LDFGT	0.7,R7
     if (C3X_GT(fall_rate, C3X_IMM_F32(0.7))) {
         fall_rate = C3X_IMM_F32(0.7);
     }
@@ -2164,39 +2444,67 @@ RUNOVER:
     MAME_ASSERT_MEM(0x00002313, "d@(ar4+f)", &sign_obj->id);
     is_player_car = car_obj == PLYCAR;
     MAME_ASSERT_MEM(0x00002313, "ar3==d@0000E8A6", &is_player_car);
+    // asm: 	CALL	FREESIGN		;GET SIGN OFF LIST
     FREESIGN(sign_obj);
+    // asm: 	LDPI	@SIGNFALLI,AR2		;GET SIGN FALL PROCESS
+    // asm: 	LDI	DRONE_C|FLYER_T,R2
+    // asm: 	CALL	PRC_CREATE_CHILD		;CREATE A CHILD PROCESS
     fly_ctx = NEW_PROC_CONTEXT();
     fly_ctx->SIGNFALL.obj = sign_obj;
     fly_ctx->SIGNFALL.rotation_delta = C3X_STF(fall_rate);
     fly_ctx->SIGNFALL.accumulated = C3X_STF(C3X_IMM_F32(0));
     PRC_CREATE_CHILD(CURRENT_PROC, SIGNFALLI, DRONE_C | FLYER_T, fly_ctx);
+    // asm: 	LDI	*+AR4(OID),R0
+    // asm: 	AND	SUBTYPE_M,R0
     sign_subtype = sign_obj->id & SUBTYPE_M;
+    // asm: 	LDI	SIGNSND,AR2    		;DEFAULT SOUND
     sign_id = SIGNSND;
-    if (sign_subtype == TSC_R_SAGE) {
-        sign_id = SAGETAB[RANDU0(5)];
-        goto RUNOV00;
+    // asm: 	CMPI	TSC_R_SAGE,R0
+    // asm: 	BNZ	RUNOV0
+    if (sign_subtype != TSC_R_SAGE) {
+        goto RUNOV0;
     }
+    // asm: 	LDI	5,AR2
+    // asm: 	CALL	RANDU0
+    // asm: 	ADDI	@SAGETABI,R0
+    // asm: 	LDI	R0,AR2
+    // asm: 	LDI	*AR2,AR2
+    sign_id = SAGETAB[RANDU0(5)];
+    // asm: 	B	RUNOV00
+    goto RUNOV00;
 RUNOV0:
+    // asm: 	CMPI	TSC_R_POLE,R0
+    // asm: 	LDIZ	DONGSND,AR2
     if (sign_subtype == TSC_R_POLE) {
         sign_id = DONGSND;
     }
+    // asm: 	CMPI	TSC_R_LAMPPOST,R0
+    // asm: 	LDIZ	LAMPSND,AR2
     if (sign_subtype == TSC_R_LAMPPOST) {
         sign_id = LAMPSND;
     }
 RUNOV00:
+    // asm: 	CMPI	@PLYCAR,AR3		;PLAYERS CAR?
+    // asm: 	BNZ	COLSGCX0		;NO...
     if (car_obj != PLYCAR) {
         goto COLSGCX0;
     }
-    // asm 00002327: CALL ONESNDFX
+    // asm: 	CALL	ONESNDFX
     // Run-over effects may use either FX track.  ONESND targets the channel
     // encoded in the table entry and can incorrectly reject this sound when
     // that channel is busy even though the other FX track is available.
     ONESNDFX(sign_id);
+    // asm: 	B	COLSGCX
     goto COLSGCX;
 COLSGCX0:
+    // asm: 	CALL	DRONESND1
     DRONESND1(sign_obj, sign_id);
 SIGN_IGNORE:
 COLSGCX:
+    // asm: 	POP	AR1
+    // asm: 	POP	AR0
+    // asm: 	RETS
+    ;
 }
 
 /* asm: SAGETAB	 .WORD	SAGESND,SAGESND1,SAGESND2,SAGESND3,SAGESND */
@@ -2268,7 +2576,7 @@ FLYCOLP0:
     // asm 00002343: 	LDPI	@NFRAMES,AR6	 	;ADJUST MATRIX FOR FRAME COUNT
     // asm 00002344: 	SUBI	1,AR6
     frame_count = NFRAMES;
-    // asm 00002345: FLYCOLPL
+FLYCOLPL:
     // asm 00002345: 	LDI	AR7,R2	  		;ROTATE THE SUCKER
     // asm 00002346: 	ADDI	PDATA+2,R2
     // asm 00002347: 	LDI	AR4,AR2
@@ -2303,7 +2611,7 @@ FLYCOLP0:
     }
     // asm 00002356: 	BNC	FLYCSLP			;OFF THE MAP
     // *WERE OVER THE ROAD
-    // asm 00002357: FLYROAD
+FLYROAD:
     // asm 00002357: 	FLOAT	155,R1 			;HT OF DRUM/SAWHORSE
     ground_height = C3X_FROM_INT(155);
     // asm 00002358: 	LDI	*+AR4(OID),R2		;ROADKILL DOESN'T BOUNCE
@@ -2594,7 +2902,7 @@ TREESHKL:
     if (p->ctx.TREESHAK.loop_count-- > 0) {
         goto TREESHKL;
     }
-    // asm 000023C5: TREESHKL1
+TREESHKL1:
     // asm 000023C5: 	LDI	3,AR6			;# FRAMES/SHAKE
     p->ctx.TREESHAK.loop_count = 3;
     // asm 000023C6: 	MPYF	-0.6,R7     		;REVERSE IT
@@ -3129,7 +3437,7 @@ FLYCARP0:
         goto FLYCARSLP;
     }
     // *WERE OVER THE ROAD
-    // asm 000024B2: FLYCROAD
+FLYCROAD:
     // asm 000024B2: 	LDF	R0,R0
     // asm 000024B3: 	BGT	FLYCARSLP		;WERE ABOVE GROUND
     if (C3X_GT(road_delta, C3X_FROM_INT(0))) {
@@ -3151,7 +3459,7 @@ FLYCARP0:
     if (C3X_LT(vertical_velocity, C3X_IMM_F32(35))) {
         goto FLYCARSTOP0; // ;TIME TO STOP
     }
-    // asm 000024BC: FLYCROAD1
+FLYCROAD1:
     // asm 000024BC: 	MPYF	-0.5,R2
     // asm 000024BD: 	STF	R2,*+AR4(OVELY)
     obj->vel_y = C3X_STF(C3X_MUL(vertical_velocity, C3X_IMM_F32(-0.5)));
@@ -3326,7 +3634,7 @@ FLYCARSTOP:
         if (C3X_LT(absolute_angle, C3X_IMM_F32(2.95))) {
             goto FLYCSTP0; // ;NOPE
         }
-        // asm 00002517: FLYCSTP
+    FLYCSTP:
         // asm 00002517: 	LDI	1,R0	 		;WERE DONE DUDES...
         done_flag = 1; // ;WERE DONE DUDES...
                        // asm 00002518: 	B	FLYCCC
@@ -3562,7 +3870,7 @@ DEADLP:
     DRONEGO(obj, carblk, C3X_IMM_F32(0)); // ;NO STEERING
     // asm 00002581: 	CALL	GETTRAK
     GETTRAK(obj, carblk);
-    // asm 00002582: DEADSLP
+DEADSLP:
     // asm 00002582: 	LDI	@HEAD2HEAD_ON,R0    	;HEAD 2 HEAD RACE???
     // asm 00002583: 	CALLNZ	SEND_FLY_POS		;SEND YOUR POSITION TO LINKED GAME
     if (HEAD2HEAD_ON != 0) {
@@ -3774,7 +4082,7 @@ void GETFLYMAT(OBJ* obj /*AR4*/, c3x_f32_t x_total, c3x_f32_t y_total, c3x_f32_t
  *	AR1	ADDRESS OF LIST HEADER
  *
  */
-void COLSCAN(void) {
+void PLYR_VS_DRONES(void) {
     OBJ* player_obj;
     OBJ* other_obj = NULL;
     OBJ* next_obj;
@@ -3789,6 +4097,7 @@ void COLSCAN(void) {
     c3x_reg_t radius_sq;
     c3x_reg_t speed_multiplier;
 
+COLSCAN:
     // asm 000025E8: 	BD	COLSCL0
     // asm 000025E9: 	LDI	@_plyr1+PLY_CAR,AR0	;GET PLAYER CAR
     player_obj = PLYCAR; // ;GET PLAYER CAR
@@ -3886,7 +4195,7 @@ COLSCL:
  *	AR1	ADDRESS OF LIST HEADER
  *
  */
-static void CLDSCAN(void) {
+static void DRONES_VS_DRONES(void) {
     OBJ* obj0;
     OBJ* obj1;
     VECTOR* collision_point;
@@ -3895,6 +4204,8 @@ static void CLDSCAN(void) {
     c3x_reg_t distance_sq;
     c3x_reg_t combined_radius;
     c3x_reg_t radius_sq;
+
+CLDSCAN:
 
     // asm 0000260E: 	LDPI	@CAR_LIST,R0	 	;GET LIST AND CHECK NULL
     obj0 = CAR_LIST;
@@ -4552,7 +4863,7 @@ ZZZ1:
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002718, "R0", &velocity_x, 5);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002718, "R1", &velocity_z, 5);
     SPINROT(obj0, obj1, collision_point, velocity_x, velocity_z);
-    // asm 00002719: COLDSP30
+COLDSP30:
     // asm 00002719: 	PUSH	AR1
     // asm 0000271A: 	PUSH	AR0
     // asm 0000271B: 	PUSH	AR1
@@ -4571,7 +4882,7 @@ ZZZ1:
     SPINROT(obj1, obj0, collision_point, velocity_x, velocity_z);
     // asm 00002724: 	POP	AR0
     // asm 00002725: 	POP	AR1
-    // asm 00002726: COLDSPX
+COLDSPX:
     // asm 00002726: 	RETS	       	       	;FOR NOW DUDES
     return;
 }
@@ -4777,7 +5088,7 @@ static void SPINROT(OBJ* hitter_obj /*AR0*/, OBJ* obj /*AR1*/, VECTOR* collision
     // *AR1	OBJECT
     // *AR5	CAR BLOCK POINTER
     // *
-    // asm 00002774: PLYRSPIN
+PLYRSPIN:
     // asm 00002774: 	CALL	BEHINDCK		;CHECK IF PLAYER HIT FROM BEHIND
     BEHINDCK(hitter_obj, obj);
     MAME_ASSERT_REG_FLOAT_WIGGLE(0x00002775, "R3", &intensity, 5);
@@ -5450,7 +5761,7 @@ int COLCHK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR** out_collision_point /*
     point = &BLOWLIST[72];
     // asm 0000287D: 	LDI	7,AR4 			;DO 8 POINTS
     for (point_index = 0; point_index < 8; point_index++) {
-        // asm 0000287E: PNTCKL0
+    PNTCKL0:
         // asm 0000287E: 	LDI	AR0,AR2
         equation = &BLOWLIST[96];
         // asm 0000287F: 	LDI	5,RC 			;DO 6 EQUATIONS
@@ -5474,7 +5785,7 @@ int COLCHK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR** out_collision_point /*
             equation += 4;
         }
     EQCHK0:
-        // asm 00002887: NOP
+        // asm 00002887: 	NOP
         // asm 00002888: 	BU	GOTCOL			;GOT A COLLISION
         goto GOTCOL;
     PNTNXT0:
@@ -5490,7 +5801,7 @@ int COLCHK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR** out_collision_point /*
     point = &BLOWLIST[24];
     // asm 0000288E: 	LDI	7,AR4 			;DO 8 POINTS
     for (point_index = 0; point_index < 8; point_index++) {
-        // asm 0000288F: PNTCKL1
+    PNTCKL1:
         // asm 0000288F: 	LDI	AR0,AR2
         equation = &BLOWLIST[120];
         // asm 00002890: 	LDI	5,RC 			;DO 6 EQUATIONS
@@ -5514,7 +5825,7 @@ int COLCHK(OBJ* obj0 /*AR0*/, OBJ* obj1 /*AR1*/, VECTOR** out_collision_point /*
             equation += 4;
         }
     EQCHK1:
-        // asm 00002898: NOP
+        // asm 00002898: 	NOP
         // asm 00002899: 	BU	GOTCOL			;GOT A COLLISION
         goto GOTCOL;
     PNTNXT1:

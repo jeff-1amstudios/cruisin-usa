@@ -875,7 +875,8 @@ void _makbox(OBJ* obj /*AR4*/);
 void COLSCC(void);
 
 // asm:  .globl COLSCAN,COLSCPRC
-void COLSCAN(void);
+void PLYR_VS_DRONES(void);
+#define COLSCAN PLYR_VS_DRONES
 
 // asm:  .globl BOXSCAN
 int BOXSCAN(OBJ* obj /*AR4*/, c3x_reg_t* out_road_delta /*R0*/);
