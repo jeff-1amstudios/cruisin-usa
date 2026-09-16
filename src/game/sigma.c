@@ -382,6 +382,7 @@ NOTPSYCHO_LP:
     if (!wheel_on_road && p->ctx.RACER_DRONE.sigma_once != 0) {
         goto BREAKDOWN;
     }
+NOSL2DIE:
     // asm 0000A4A7: NOSL2DIE
     // asm 0000A4A7: 	LDI	1,R0
     // asm 0000A4A8: 	STI	R0,*+AR7(SIGMA_ONCE)
@@ -553,6 +554,7 @@ THIS_PIECE:
     // asm 0000A4F6: 	SUBF	*+AR4(OPOSZ),R3
     // asm 0000A4F7: 	ADDF	@_VECTORA+Z,R3
     // asm 0000A4F8: 	SETDP
+JOINUP998:
     // asm 0000A4F9: JOINUP998
     // 	;find the theta delta to this position
     // 	;
