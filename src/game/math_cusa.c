@@ -109,6 +109,7 @@ c3x_reg_t _SINE(c3x_reg_t theta /*R2*/) {
     int index;
 
     // asm 00009530: 	LDF	R2,R0
+SINE0:
     // asm 00009531: PUSH	AR0
 
     // asm 00009532: 	BGE	NOTNEG
@@ -540,6 +541,7 @@ c3x_reg_t NORMIT(c3x_reg_t radians /*R2*/) {
     radians = C3X_FROM_INT(fixed_radians);
     // asm 00009566: 	MPYF	@RADFORMI,R2
     radians = C3X_MUL(radians, RADFORMI);
+NORMCHKL:
     // asm 00009567: NORMCHKL
     // asm 00009567: 	RETS
     return radians;
@@ -566,6 +568,7 @@ c3x_reg_t ARCTANF(c3x_reg_t x /*R2*/, c3x_reg_t y /*R3*/) {
     c3x_reg_t ratio;
     int table_index;
 
+_arctanf:
     // asm 00009568: _arctanf
     // asm 00009568: 	PUSH	R1
     // asm 00009569: 	PUSHF	R1
@@ -894,13 +897,13 @@ FM1:
     // asm 000095A9:  ||	STF	R0,*AR2++			;A(0,1)=SZ*CY
     dest[1] = C3X_STF(STF_F32(C3X_MUL(sz, cy))); // ;A(0,1)=SZ*CY
 
-    // asm 000095AB:  ||	STF	R2,*AR2++			;A(0,2)=-SY
     dest[2] = C3X_STF(STF_F32(C3X_NEG(sy))); // ;A(0,2)=-SY
 
     // asm 000095AA: 	MPYF	*-AR3(1),*+AR3(0),R0		;SX*SY
     sx_sy = C3X_MUL(sx, sy); // ;SX*SY
 
     // asm 000095AB: 	MPYF	*+AR1(1),R0,R1			;SX*SY*CZ
+    // asm 000095AB:  ||	STF	R2,*AR2++			;A(0,2)=-SY
     // asm 000095AC: 	MPYF	*-AR1(1),*+AR3(1),R2		;CX*SZ
     // asm 000095AD: 	SUBF	R2,R1
     cx_sz = C3X_MUL(cx, sz);                       // ;CX*SZ
@@ -910,24 +913,26 @@ FM1:
     // asm 000095AE:  ||	STF	R1,*AR2++			;A(1,0)=SX*SY*SZ-CX*SZ
     // asm 000095AF: 	MPYF	*-AR1(1),*+AR1(1),R1		;CX*CZ
     // asm 000095B0: 	ADDF	R1,R0
+    // asm 000095B1: 	STF	R0,*AR2++			;A(1,1)= SX*SY*SZ+CX*CZ
     cx_cz = C3X_MUL(cx, cz);                       // ;CX*CZ
     dest[4] = C3X_STF(STF_F32(C3X_ADD(C3X_MUL(sz, sx_sy), cx_cz))); // ;A(1,1)= SX*SY*SZ+CX*CZ
 
     // asm 000095B2: 	MPYF	*-AR3(1),*+AR1(0),R0
+    // asm 000095B3: 	MPYF	*+AR3(0),R1,R1			;SY*(CX*CZ)
     // asm 000095B3:  ||	STF	R0,*AR2++			;A(1,2)= SX*CY
     dest[5] = C3X_STF(STF_F32(C3X_MUL(sx, cy))); // ;A(1,2)= SX*CY
-
-    // asm 000095B3: 	MPYF	*+AR3(0),R1,R1			;SY*(CX*CZ)
     // asm 000095B4: 	MPYF	*-AR3(1),*+AR3(1),R0		;SX*SZ
     // asm 000095B5: 	ADDF	R1,R0
     dest[6] = C3X_STF(STF_F32(C3X_ADD(C3X_MUL(sy, cx_cz), C3X_MUL(sx, sz)))); // ;A(2,0)= CX*SY*CZ+SX*SZ
 
     // asm 000095B6: 	MPYF	*+AR3(0),R2,R2
+    // asm 000095B6:  ||	STF	R0,*AR2++			;A(2,0)= CX*SY*CZ+SX*SZ
     // asm 000095B7: 	MPYF	*-AR3(1),*+AR1(1),R0
+    // asm 000095B8: 	MPYF	*-AR1(1),*+AR1(0),R1		;CX*CY
     // asm 000095B8:  ||	SUBF	R0,R2
+    // asm 000095B9: 	STF	R2,*AR2++			;A(2,1)= CX*SY*SZ-SX*CZ
     dest[7] = C3X_STF(STF_F32(C3X_SUB(C3X_MUL(sy, cx_sz), C3X_MUL(sx, cz)))); // ;A(2,1)= CX*SY*SZ-SX*CZ
 
-    // asm 000095B8: 	MPYF	*-AR1(1),*+AR1(0),R1		;CX*CY
     // asm 000095BA: 	STF	R1,*AR2--(8)			;A(2,2)= CX*CY
     dest[8] = C3X_STF(STF_F32(C3X_MUL(cx, cy))); // ;A(2,2)= CX*CY
 
@@ -1001,8 +1006,11 @@ void FIND_XMATRIX(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
  *	R2	SOURCE RADIANS
  *
  */
-void _find_Ymatrix(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
+#undef FIND_YMATRIX
+void _find_Ymatrix_impl(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
     c3x_f32_t* dest = destp;
+FIND_YMATRIX:
+_find_Ymatrix:
     // asm 000095D8: 	PUSH	R0
     // asm 000095D9: 	PUSHF	R0
     // asm 000095DA: 	CALL	_COSI
@@ -1032,6 +1040,12 @@ void _find_Ymatrix(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
     // asm 000095E9: 	POP	R0
     // asm 000095EA: 	RETS
 }
+#define FIND_YMATRIX_EXPORT _find_Ymatrix
+void FIND_YMATRIX_EXPORT(void* destp, c3x_reg_t radians) {
+    _find_Ymatrix_impl(destp, radians);
+}
+#undef FIND_YMATRIX_EXPORT
+#define FIND_YMATRIX _find_Ymatrix
 
 // *----------------------------------------------------------------------------
 
@@ -1178,10 +1192,27 @@ void FIND_ZMATRIX(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
  *
  */
 void INITMAT(MATRIX* mat /*AR0*/) {
+    // asm 00009625: 	POP	BK			;RETURN ADDRESS
+    // asm 00009626: 	PUSH	R0
+    // asm 00009627: 	PUSHF	R0
+    // asm 00009628: 	LDF	1.0,R0
+    // asm 00009629: 	STF	R0,*AR0
+    // asm 0000962A: 	STF	R0,*+AR0(4)
+    // asm 0000962B: 	STF	R0,*+AR0(8)
     mat->a00 = C3X_STF(C3X_FROM_INT(1));
     mat->a11 = C3X_STF(C3X_FROM_INT(1));
     mat->a22 = C3X_STF(C3X_FROM_INT(1));
 
+    // asm 0000962C: 	LDF	0,R0
+    // asm 0000962D: 	STF	R0,*+AR0(1)
+    // asm 0000962E: 	STF	R0,*+AR0(2)
+    // asm 0000962F: 	STF	R0,*+AR0(3)
+    // asm 00009630: 	STF	R0,*+AR0(5)
+    // asm 00009631: 	STF	R0,*+AR0(6)
+    // asm 00009632: 	BUD	BK
+    // asm 00009633: 	STF	R0,*+AR0(7)
+    // asm 00009634: 	POPF	R0
+    // asm 00009635: 	POP	R0
     mat->a01 = C3X_STF(C3X_FROM_INT(0));
     mat->a02 = C3X_STF(C3X_FROM_INT(0));
     mat->a10 = C3X_STF(C3X_FROM_INT(0));
