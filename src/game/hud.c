@@ -29,8 +29,7 @@ void FILL_DITHER(int x /*R0*/, int y /*R1*/, int width /*R2*/, int height /*R3*/
 void FILL_PLOT(int x /*R0*/, int y /*R1*/, int width /*R2*/, int height /*R3*/);
 static int GEARPAL[];
 
-#define SECTION_PALETTE_ALLOC HARDalloc_section
-#define alloc_section HARDalloc_section
+#undef alloc_section
 #define COUNTDOWN_BUFI COUNTDOWN_BUF
 #define MPH_BUFFERI MPH_BUFFER
 #define STOPBUFFI STOPBUFFER
@@ -613,6 +612,8 @@ ISKPH:
     MAXMPH_COUNT = C3X_STF(frame_count);
     // asm 00009E20: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "HUD", 0, 0);
+SECTION_PALETTE_ALLOC:;
+alloc_section:;
 }
 
 // *----------------------------------------------------------------------------
