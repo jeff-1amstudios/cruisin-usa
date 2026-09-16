@@ -465,7 +465,7 @@ static void BGD_WATCHER(PROC* p) {
     switch (PROC_RESUME_STATE) {
     case 0:
         // MAME_ASSERT_FUNCTION_ENTRY();
-        goto BGD_WATCHER;
+        goto BGD_WATCHER_ENTRY;
     case 1:
         goto PROC_RESUME_1;
     case 2:
@@ -474,9 +474,9 @@ static void BGD_WATCHER(PROC* p) {
 
 BGD_SLP:
     // asm 00003FF2: 	SLEEP	1
-    SLEEP(1, 2);
+    SLEEP(1, 1);
 
-BGD_WATCHER:
+BGD_WATCHER_ENTRY:
     observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.X));
     MAME_ASSERT_MEM(0x00003FF4, "d@00809800", &observed_raw);
     observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Z));
@@ -773,7 +773,7 @@ NODEACT:
     SLOCKON(DGROUP_COUNT >= MAX_DGROUPS, "BACKGRND\\BACK_WATCH ERRONEOUS DGROUP_COUNT GE");
 #endif
     // asm 00004067: 	SLEEP	3
-    SLEEP(3, 1);
+    SLEEP(3, 2);
     // Synchronize save-state validation on the first complete watcher wake
     // after WAVEFLAG, so its periodic scheduler phase matches MAME.
     // MAME_ASSERT_ORDERING("BGD_WATCHER_AFTER_SLEEP");
