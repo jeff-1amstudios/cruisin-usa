@@ -55,65 +55,6 @@ PROC* PFREE;
 PROC PRCSTR[NUMPROC];
 
 // *----------------------------------------------------------------------------
-static void NEXTPRC(PROC* proc) {
-    // asm 0000A8AC: NEXTPRC	LDI	*AR7,R0			;GET NEXT PROC, SET Z FLAG
-    // asm 0000A8AD: NP1	BZD	DISPPRCX
-    // asm 0000A8AE: 	LDI	R0,AR7			;PUT IT IN AR7
-    // asm 0000A8AF: 	LDI	*+AR7(PTIME),R0		;IS SLEEP TIME ZERO?
-    // asm 0000A8B0: 	SUBI	1,R0
-    // asm 0000A8B1: 	BGTD	NP1
-    // asm 0000A8B2: 	STI	R0,*+AR7(PTIME)
-    // asm 0000A8B3: 	LDI	*AR7,R0			;GET NEXT PROC
-    // asm 0000A8B4: 	NOP				;FOR DELAYED BRANCH
-    // asm 0000A8B5: EXEC
-    // asm 0000A8B5: 	STI	SP,@OLDSP
-    // asm 0000A8B6: 	STI	AR7,@CURRENT_PROC	;SAVE CURRENT PROCESS POINTER
-    // asm 0000A8B7: 	LDI	*+AR7(PAR6),AR6
-    // asm 0000A8B8: 	LDI	*+AR7(PAR5),AR5
-    // asm 0000A8B9: 	LDI	*+AR7(PAR4),AR4
-    // asm 0000A8BA: 	LDF	*+AR7(PR7),R7
-    // asm 0000A8BB: 	LDI	*+AR7(PWAKE),R0
-    // asm 0000A8BC: 	BUD	R0
-    // asm 0000A8BD: 	LDF	*+AR7(PR6),R6
-    // asm 0000A8BE: 	LDI	*+AR7(PR5),R5
-    // asm 0000A8BF: 	LDI	*+AR7(PR4),R4
-    // asm 0000A8C0: DISPPRCX	RETS
-    while (proc != NULL) {
-        if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL && proc->id == (UTIL_C | BACKGRND_T)) {
-            fprintf(
-                stderr,
-                "timeline BGD_VISIT dispatch=%llu time=%d current=%td\n",
-                (unsigned long long)PRC_DISPATCH_COUNT,
-                proc->sleep_ticks,
-                CURRENT_PROC != NULL ? CURRENT_PROC - PRCSTR : -1);
-        }
-        if (proc->sleep_ticks > 0) {
-            proc->sleep_ticks -= 1;
-        }
-
-        if (proc->sleep_ticks == 0) {
-            CURRENT_PROC = proc;
-            proc->current_resume_depth = 0;
-            proc->yielded = 0;
-            proc->func(proc);
-
-            /* EXEC is reached from a single NEXTPRC traversal in the
-             * assembly. SLEEP and SUICIDE tail-transfer back to NEXTPRC;
-             * neither creates a nested scheduler invocation. */
-            if (CURRENT_PROC != proc) {
-                proc = CURRENT_PROC;
-                continue;
-            }
-
-            proc = proc->link;
-            continue;
-        }
-
-        proc = proc->link;
-    }
-}
-
-// *----------------------------------------------------------------------------
 static void PRC_DEBUG_CHECK(void) {
 #if DEBUG
     // asm: 	PUSH	R0
@@ -294,6 +235,7 @@ PROC* PRC_CREATE_CHILD(PROC* parent /*AR7*/, PROC_FUNC func /*AR2*/, int pid /*R
  */
 void PRC_DISPATCH(void) {
     PRC_DISPATCH_COUNT += 1;
+DISPPROC:
     // asm 0000A89D: DISPPROC
     // asm 0000A89D: 	LDI	@PACTIVEI,AR7
     // asm 0000A89E: 	B	NEXTPRC
@@ -311,6 +253,7 @@ void PRC_DISPATCH(void) {
 }
 
 void PRC_SLEEP(PROC* p, int ticks) {
+SLEEP:
     // asm 0000A89F: 	POP	R0
     // asm 0000A8A0: 	STI	R0,*+AR7(PWAKE)		;SAVE WAKEUP ADDRESS
 #if DEBUG
@@ -343,6 +286,69 @@ void PRC_SLEEP(PROC* p, int ticks) {
     p->sleep_ticks = ticks;
     /* Assembly resets SP and tail-transfers to NEXTPRC here.  Returning to
      * the one active NEXTPRC loop performs that transfer in portable C. */
+}
+
+// *----------------------------------------------------------------------------
+
+static void NEXTPRC(PROC* proc) {
+    // asm 0000A8AC: NEXTPRC	LDI	*AR7,R0			;GET NEXT PROC, SET Z FLAG
+NP1:
+    // asm 0000A8AD: NP1	BZD	DISPPRCX
+    // asm 0000A8AE: 	LDI	R0,AR7			;PUT IT IN AR7
+    // asm 0000A8AF: 	LDI	*+AR7(PTIME),R0		;IS SLEEP TIME ZERO?
+    // asm 0000A8B0: 	SUBI	1,R0
+    // asm 0000A8B1: 	BGTD	NP1
+    // asm 0000A8B2: 	STI	R0,*+AR7(PTIME)
+    // asm 0000A8B3: 	LDI	*AR7,R0			;GET NEXT PROC
+    // asm 0000A8B4: 	NOP				;FOR DELAYED BRANCH
+EXEC:
+    // asm 0000A8B5: EXEC
+    // asm 0000A8B5: 	STI	SP,@OLDSP
+    // asm 0000A8B6: 	STI	AR7,@CURRENT_PROC	;SAVE CURRENT PROCESS POINTER
+    // asm 0000A8B7: 	LDI	*+AR7(PAR6),AR6
+    // asm 0000A8B8: 	LDI	*+AR7(PAR5),AR5
+    // asm 0000A8B9: 	LDI	*+AR7(PAR4),AR4
+    // asm 0000A8BA: 	LDF	*+AR7(PR7),R7
+    // asm 0000A8BB: 	LDI	*+AR7(PWAKE),R0
+    // asm 0000A8BC: 	BUD	R0
+    // asm 0000A8BD: 	LDF	*+AR7(PR6),R6
+    // asm 0000A8BE: 	LDI	*+AR7(PR5),R5
+    // asm 0000A8BF: 	LDI	*+AR7(PR4),R4
+DISPPRCX:
+    // asm 0000A8C0: DISPPRCX	RETS
+    while (proc != NULL) {
+        if (getenv("CRUSN_VALIDATE_TRACE_GARAGE") != NULL && proc->id == (UTIL_C | BACKGRND_T)) {
+            fprintf(
+                stderr,
+                "timeline BGD_VISIT dispatch=%llu time=%d current=%td\n",
+                (unsigned long long)PRC_DISPATCH_COUNT,
+                proc->sleep_ticks,
+                CURRENT_PROC != NULL ? CURRENT_PROC - PRCSTR : -1);
+        }
+        if (proc->sleep_ticks > 0) {
+            proc->sleep_ticks -= 1;
+        }
+
+        if (proc->sleep_ticks == 0) {
+            CURRENT_PROC = proc;
+            proc->current_resume_depth = 0;
+            proc->yielded = 0;
+            proc->func(proc);
+
+            /* EXEC is reached from a single NEXTPRC traversal in the
+             * assembly. SLEEP and SUICIDE tail-transfer back to NEXTPRC;
+             * neither creates a nested scheduler invocation. */
+            if (CURRENT_PROC != proc) {
+                proc = CURRENT_PROC;
+                continue;
+            }
+
+            proc = proc->link;
+            continue;
+        }
+
+        proc = proc->link;
+    }
 }
 
 // *----------------------------------------------------------------------------
@@ -622,26 +628,44 @@ void PRC_INIT(void) {
     PROC* proc;
     int i;
 
-    // asm:
-    // *INITIALIZE PROCESS DATA STRUCTURES
-
-    // ZERO ACTIVE POINTER
+    // asm 0000A920: 	PUSH	R0
+    // asm 0000A921: 	PUSH	AR0
+    // asm 0000A922: 	PUSH	AR1
+    // asm 0000A923: 	LDI	@PACTIVEI,AR0		;ZERO ACTIVE POINTER
+    // asm 0000A924: 	LDI	0,R0
+    // asm 0000A925: 	STI	R0,*AR0
     PACTIVE = NULL;
 
-    // GET FREE POINTER
+    // asm 0000A926: 	LDI	@PFREEI,AR0		;GET FREE POINTER
+    // asm 0000A927: 	LDI	@PRCSTRI,AR1
     proc = PRCSTR;
     PFREE = proc;
 
+    // asm 0000A928: 	LDI	NUMPROC-1,RC
+    // asm 0000A929: 	RPTB	PINITL
     for (i = 0; i < NUMPROC - 1; ++i) {
+        // asm 0000A92A: 	STI	AR1,*AR0
+        // asm 0000A92B: 	LDI	AR1,AR0
+PINITL:
+        // asm 0000A92C: PINITL	ADDI	PRCSIZ,AR1
         proc->link = &PRCSTR[i + 1];
         proc++;
     }
+    // asm 0000A92D: 	LDI	0,R0
+    // asm 0000A92E: 	STI	R0,*AR0
     proc->link = NULL;
 
 #if DEBUG
+    // asm: 	STI	R0,@NUM_PROCS_ACTIVE
     NUM_PROCS_ACTIVE = 0;
+    // asm: 	LDI	NUMPROC,R0
+    // asm: 	STI	R0,@NUM_PROCS_IDLE
     NUM_PROCS_IDLE = NUMPROC;
 #endif
+    // asm 0000A92F: 	POP	AR1
+    // asm 0000A930: 	POP	AR0
+    // asm 0000A931: 	POP	R0
+    // asm 0000A932: 	RETS
 }
 
 // *----------------------------------------------------------------------------
