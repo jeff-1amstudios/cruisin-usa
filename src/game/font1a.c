@@ -30,7 +30,7 @@ extern int COMMINTM;
 
 // *----------------------------------------------------------------------------
 static void ENABLEGIE_font(void) {
-    // asm 0000A75C: RETI
+    // asm 0000A75C: 	RETI
 }
 
 // *----------------------------------------------------------------------------
@@ -175,10 +175,6 @@ void _itoa(char* string_space /*AR2*/, int number /*R2*/) {
     // asm 0000A798: 	CMPI	0,R2
     // asm 0000A799: 	BZD	ISZERO
     if (number == 0) {
-        // asm 0000A7D3: 	BUD	itoaX
-        // asm 0000A7D4: 	LDI	030h,R0			;case when number is zero
-        // asm 0000A7D5: 	STI	R0,*AR2
-        // asm 0000A7D6: 	LDI	8,R0
         *(u32*)string_space = 0x00000030u; // ;case when number is zero
         // MAME_ASSERT_REG_AT_ADDR(0x0000A7D6, "R0", &((u32){0x00000030u}));
         return;
@@ -283,6 +279,7 @@ ISZERO:
     // asm 0000A7D5: 	STI	R0,*AR2
     // asm 0000A7D6: 	LDI	8,R0
     // 	;---->	BUD	itoaX
+    ;
 }
 
 // *----------------------------------------------------------------------------
@@ -388,11 +385,37 @@ void _fill(int x1, int y1, int x2, int y2, int color) {
     int x;
     int y;
 
-    for (y = y1; y <= y2; ++y) {
-        for (x = x1; x <= x2; ++x) {
-            _pixel(x, y, color);
-        }
+    x = x1;
+    y = y1;
+
+    // asm 0000A810: 	PUSH	AR2
+FILLLP1:
+    // asm 0000A811: 	PUSH	R3
+    // asm 0000A812: 	LDI	RS,R3
+    // asm 0000A813: 	CALL	_pixel
+    _pixel(x, y, color);
+
+    // asm 0000A814: 	POP	R3
+    // asm 0000A815: 	INC	AR2
+    ++x;
+    // asm 0000A816: 	CMPI	AR2,R3
+    // asm 0000A817: 	BGE	FILLLP1
+    if (x <= x2) {
+        goto FILLLP1;
     }
+    // asm 0000A818: 	POP	AR2
+    // asm 0000A819: 	PUSH	AR2
+    x = x1;
+
+    // asm 0000A81A: 	INC	R2
+    ++y;
+    // asm 0000A81B: 	CMPI	R2,RC
+    // asm 0000A81C: 	BGE	FILLLP1
+    if (y <= y2) {
+        goto FILLLP1;
+    }
+    // asm 0000A81D: 	POP	AR2
+    // asm 0000A81E: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -414,37 +437,118 @@ void _fill(int x1, int y1, int x2, int y2, int color) {
  *
  */
 void _outtextxyc(const char* string /*AR2*/, int x /*R2*/, int y /*R3*/, int color /*RC*/) {
-    const unsigned char* string_ptr;
+    const u32* string_ptr;
     unsigned int glyph_index;
     unsigned int row_bits;
+    int shift;
     int ch;
     int row;
     int col;
 
-    string_ptr = (const unsigned char*)string;
+    string_ptr = (const u32*)string;
 
-    for (;;) {
-        ch = *string_ptr++;
-        if (ch == 0) {
-            return;
-        }
-        if (ch == ' ') {
-            x += 8;
-            continue;
-        }
+    // asm 0000A81F: 	PUSH	R4
+    // asm 0000A820: 	PUSH	R5
 
-        glyph_index = (unsigned int)(ch - '(') * 7u;
-        for (row = 0; row < 7; ++row) {
-            row_bits = (unsigned int)_font1[glyph_index + (unsigned int)row] & 0xffu;
-            for (col = 0; col < 8; ++col) {
-                if ((row_bits & (1u << (7 - col))) != 0) {
-                    _pixel(x + col, y + row, color);
-                }
-            }
-        }
-
-        x += 8;
+    // asm 0000A821: 	LDI	3,RS
+    // asm 0000A822: 	CLRI	RS
+    shift = 0;
+OLP:
+    // asm 0000A823: 	CMPI	-32,RS
+    // asm 0000A824: 	BNE	REGLP
+    if (shift == -32) {
+        // asm 0000A825: 	CLRI	RS
+        shift = 0;
+        // asm 0000A826: 	NOP	*AR2++
+        ++string_ptr;
     }
+REGLP:
+    // asm 0000A827: 	LDI	*AR2,AR0
+    // asm 0000A828: 	LSH	RS,AR0
+    ch = (int)((*string_ptr >> -shift) & 0xffu);
+    // asm 0000A829: 	SUBI	8,RS
+    shift -= 8;
+    // asm 0000A82A: 	AND	0FFh,AR0
+    // asm 0000A82B: 	CMPI	0,AR0
+    // asm 0000A82C: 	BZ	oucX
+    if (ch == 0) {
+        goto oucX;
+    }
+    // asm 0000A82D: 	CMPI	' ',AR0
+    // asm 0000A82E: 	BEQ	NXTCHAR
+    if (ch == ' ') {
+        goto NXTCHAR;
+    }
+    // asm 0000A82F: 	SUBI	'(',AR0			;the start of the font
+    glyph_index = (unsigned int)(ch - '(');
+
+    // ;NOW PLOT OT THE CHARACTER
+    // asm 0000A830: 	MPYI	7,AR0			;index to character
+    glyph_index *= 7u;
+    // asm 0000A831: 	ADDI	@_font1I,AR0		;pointing to font data
+
+    // asm 0000A832: 	LDI	7,R5			;Y count
+    row = 0;
+OUTRLP:
+    // asm 0000A833: 	LDI	*AR0++,R1
+    row_bits = (unsigned int)_font1[glyph_index + (unsigned int)row] & 0xffu;
+    // asm 0000A834: 	LS	24,R1
+    // asm 0000A835: 	LDI	8,R4
+    col = 0;
+LOOP1:
+    // asm 0000A836: 	ASH	1,R1
+    // asm 0000A837: 	BNC	NPLOT
+    if ((row_bits & (1u << (7 - col))) != 0) {
+        // asm 0000A838: 	PUSH	AR2
+        // asm 0000A839: 	PUSH	R2
+        // asm 0000A83A: 	PUSH	R3
+
+        // asm 0000A83B: 	LDI	R2,AR2
+        // asm 0000A83C: 	LDI	R3,R2
+        // asm 0000A83D: 	LDI	RC,R3
+        // asm 0000A83E: 	CALL	_pixel
+        _pixel(x, y, color);
+
+        // asm 0000A83F: 	POP	R3
+        // asm 0000A840: 	POP	R2
+        // asm 0000A841: 	POP	AR2
+    }
+
+NPLOT:
+    // asm 0000A842: 	INC	R2			;advance to next pixel
+    ++x;
+    // asm 0000A843: 	DEC	R4
+    ++col;
+    // asm 0000A844: 	BGT	LOOP1
+    if (col < 8) {
+        goto LOOP1;
+    }
+
+    // asm 0000A845: 	SUBI	8,R2			;reset X position
+    x -= 8;
+    // asm 0000A846: 	INC	R3			;increment Y position
+    ++y;
+
+    // asm 0000A847: 	DEC	R5
+    ++row;
+    // asm 0000A848: 	BGT	OUTRLP
+    if (row < 7) {
+        goto OUTRLP;
+    }
+
+    // asm 0000A849: 	SUBI	7,R3			;reset Y position
+    y -= 7;
+NXTCHAR:
+    // asm 0000A84A: 	ADDI	8,R2			;to next X position
+    x += 8;
+    // asm 0000A84B: 	BU	OLP
+    goto OLP;
+
+oucX:
+    // asm 0000A84C: 	POP	R5
+    // asm 0000A84D: 	POP	R4
+    // asm 0000A84E: 	RETS
+    ;
 }
 
 // *----------------------------------------------------------------------------
@@ -469,9 +573,46 @@ void _outtextxyc(const char* string /*AR2*/, int x /*R2*/, int y /*R3*/, int col
  *
  */
 void _pixel(int x, int y, int color) {
-    if (x >= CRUSN_SCREEN_WIDTH || y < 0 || y >= CRUSN_SCREEN_HEIGHT) {
-        return;
-    }
+    word_addr_t screen_address;
 
-    crusn_mem_wr32((word_addr_t)ACTIVE_SCREEN + ((word_addr_t)y << 9) + (word_addr_t)x, (u32)color);
+    // asm 0000A84F: 	PUSH	AR1
+    // asm 0000A850: 	PUSH	AR2
+    // asm 0000A851: 	PUSH	R2
+
+    // asm 0000A852: 	PUSH	IE
+
+    // asm 0000A853: 	LDP	@COMMINTM
+    // asm 0000A854: 	LDI	@COMMINTM,IE
+    // asm 0000A855: 	SETDP
+
+    // asm 0000A856: 	LDP	@CPU_WS
+    // asm 0000A857: 	LDI	HARD_WS,AR1
+    // asm 0000A858: 	AND	0DFFFh,ST		;turn off GIE.
+    // asm 0000A859: 	POP	IE
+
+    // asm 0000A85A: 	STI	AR1,@CPU_WS		;SET WAITSTATE MODE
+    // asm 0000A85B: 	SETDP
+
+    // asm 0000A85C: 	LDI	0,AR1			;DUMMY READ ADDR
+    // asm 0000A85D: 	LSH	9,R2
+    // asm 0000A85E: 	ADDI	@ACTIVE_SCREEN,AR2	;GET CURRENT SCREEN PAGE
+    screen_address = (word_addr_t)ACTIVE_SCREEN + (word_addr_t)x;
+    // asm 0000A85F: 	ADDI	R2,AR2
+    screen_address += (word_addr_t)y << 9;
+
+    // asm 0000A860: 	LDP	@CPU_WS
+    // asm 0000A861: 	STI	R3,*AR2			;store to screen
+    crusn_mem_wr32(screen_address, (u32)color);
+    // asm 0000A862: 	LDI	*AR1,R2			;DUMMY READ
+    // asm 0000A863: 	LDI	SOFT_WS,R2
+    // asm 0000A864: 	STI	R2,@CPU_WS
+    // asm 0000A865: 	SETDP
+
+    // asm 0000A866: 	CALL	ENABLEGIE_font
+    ENABLEGIE_font();
+
+    // asm 0000A867: 	POP	R2
+    // asm 0000A868: 	POP	AR2
+    // asm 0000A869: 	POP	AR1
+    // asm 0000A86A: 	RETS
 }
