@@ -30,8 +30,7 @@ static void HIGH_SCORE(void);
 static void MIDSPIN(void);
 static void MIDSPINHS(void);
 static void RACELEG(void);
-#define HIGH_SCORE_INI THANKS
-static void THANKS(void);
+static void HIGH_SCORE_INI(void);
 static void CREDITS(void);
 static void LOAD_HIGH_SCORE(void);
 static void BEGIN_GAME(void);
@@ -40,7 +39,6 @@ void LOAD_FIXED_PALETTES(void);
 void LOAD_STARTUP_PALS(void);
 static void LOAD_VARIOUS_PALETTES(void);
 
-#define HIGH_SCORE_INI THANKS
 #define VEHICLE_TABLEI VEHICLE_TABLE
 
 extern int OLD_BUTTON_STATUS;
@@ -76,7 +74,7 @@ typedef void (*WAVE_FUNC)(void);
 static WAVE_FUNC ATTR_WAVETAB[] = {
     HEAD2HEAD_WAIT,
     CREDITS,    //;MUST BE -6
-    THANKS,     //;MUST BE - 5
+    HIGH_SCORE_INI, //;MUST BE - 5 (THANKS aliases this entry in the ASM)
     MIDSPINHS,  //;-4
     RACELEG,    //;-3
     MIDSPIN,    //;-2
@@ -99,103 +97,147 @@ void WAVE(int wave_index) {
     int saved_counter_mode;
     int saved_coin_counter1;
     int saved_coin_counter2;
-    int* src;
-    int* dst;
-    int count;
-    c3x_reg_t f0;
-
     if (wave_index < 0 && getenv("CRUSN_VALIDATE_SKIP_ATTRACT") != NULL) {
         wave_index = 1;
     }
 
+    // asm: POP AR7                 ;return addr
     // asm: CALL SILENT
     SILENT();
 
     // ;CLEAR ALL RAM AND RELOAD CODE
     // ;
     // ;CLEAR INTERNAL RAM
-    // for (dst = (int*)RAM0, count = 0; count < 2048; ++count) {
-    //     *dst++ = 0;
-    // }
+    // asm: CLRI R0                 ;CLEAR INTERNAL RAM
+    // asm: LDIL RAM0,AR0
+    // asm: RPTS 2047
+    // asm: STI R0,*AR0++
+    // The portable build has no C30 internal RAM window to clear here.
 
-    // asm:
-    // CALL COMM_ENABLE_INT2
+    // asm: CALL COMM_ENABLE_INT2
     COMM_ENABLE_INT2();
 
-    // saved_counter_idx = COUNTER_IDX;
-    // saved_counter_mode = COUNTER_MODE;
-    // saved_coin_counter1 = COIN_COUNTER1;
-    // saved_coin_counter2 = COIN_COUNTER2;
+    // asm: LDI @COUNTER_IDX,R0
+    // asm: PUSH R0
+    saved_counter_idx = COUNTER_IDX;
+    // asm: LDI @COUNTER_MODE,R0
+    // asm: PUSH R0
+    saved_counter_mode = COUNTER_MODE;
+    // asm: LDI @COIN_COUNTER1,R0
+    // asm: PUSH R0
+    saved_coin_counter1 = COIN_COUNTER1;
+    // asm: LDI @COIN_COUNTER2,R0
+    // asm: PUSH R0
+    saved_coin_counter2 = COIN_COUNTER2;
 
-    // asm:
-    // CALL CLR_RAM            ;CLEAR BSS SPACE
+    // asm: CALL CLR_RAM            ;CLEAR BSS SPACE
     CLR_RAM();
 
-    // COIN_COUNTER2 = saved_coin_counter2;
-    // COIN_COUNTER1 = saved_coin_counter1;
-    // COUNTER_MODE = saved_counter_mode;
-    // COUNTER_IDX = saved_counter_idx;
+    // asm: POP R0
+    // asm: STI R0,@COIN_COUNTER2
+    COIN_COUNTER2 = saved_coin_counter2;
+    // asm: POP R0
+    // asm: STI R0,@COIN_COUNTER1
+    COIN_COUNTER1 = saved_coin_counter1;
+    // asm: POP R0
+    // asm: STI R0,@COUNTER_MODE
+    COUNTER_MODE = saved_counter_mode;
+    // asm: POP R0
+    // asm: STI R0,@COUNTER_IDX
+    COUNTER_IDX = saved_counter_idx;
 
     // ;RELOAD GAME CODE
     // ;SOURCE ADDRESS
     // ;DESINATION ADDRESS
     // ;COPY THE PROGRAM INTO
     // ;FAST RAM
-    // src = (int*)0;
-    // dst = (int*)(0x4000 << 8);
-    // for (count = 0; count < (0x1000 << 4); ++count) {
-    //     *dst++ = *src++;
-    // }
+    // asm: LDI 0,AR1               ;SOURCE ADDRESS
+    // asm: LDI 4000h,AR3           ;DESINATION ADDRESS
+    // asm: LS 8,AR3
+    // asm: LDI 1000h,RC            ;COPY THE PROGRAM INTO
+    // asm: LS 4,RC                 ;FAST RAM
+    // asm: RPTB LD_RAM
+    // asm: LDI *AR1++,R0
+LD_RAM:
+    // asm: LD_RAM STI R0,*AR3++
+    // The native program image is already loaded by the host executable.
+
+    // asm: PUSH AR7
+    // asm: PUSH AR2
 
 #if DEBUG
-    // asm:
-    // CALL VERIFY_CODE_INTEGRITY
+    // asm: CALL VERIFY_CODE_INTEGRITY
     VERIFY_CODE_INTEGRITY();
 #endif
 
-    // asm:
-    // CALL CLRONE    ;CAN NOW BE DUAL PLAYER
+    // asm: CALL CLRONE    ;CAN NOW BE DUAL PLAYER
     CLRONE();
 
-    // asm:
-    // CALL INIT_SYSTEM
+    // asm: CALL INIT_SYSTEM
     INIT_SYSTEM();
 
+    // asm: LDP @_CAMERARAD
+    // asm: CLRF R0
+    // asm: STF R0,@_CAMERARAD+X
     _CAMERARAD.X = C3X_STF(C3X_FROM_INT(0));
+    // asm: STF R0,@_CAMERARAD+Y
     _CAMERARAD.Y = C3X_STF(C3X_FROM_INT(0));
+    // asm: STF R0,@_CAMERARAD+Z
     _CAMERARAD.Z = C3X_STF(C3X_FROM_INT(0));
+    // asm: STF R0,@_CAMERAPOS+X
     _CAMERAPOS.X = C3X_STF(C3X_FROM_INT(0));
+    // asm: STF R0,@_CAMERAPOS+Y
     _CAMERAPOS.Y = C3X_STF(C3X_FROM_INT(0));
+    // asm: STF R0,@_CAMERAPOS+Z
     _CAMERAPOS.Z = C3X_STF(C3X_FROM_INT(0));
+    // asm: STF R0,@_LIGHT+Z
     _LIGHT.Z = C3X_STF(C3X_FROM_INT(0));
+    // asm: LDF 0.707,R0
+    // asm: STF R0,@_LIGHT+X
     _LIGHT.X = C3X_STF(C3X_IMM_F32(0.707f));
+    // asm: STF R0,@_LIGHT+Y
     _LIGHT.Y = C3X_STF(C3X_IMM_F32(0.707f));
+    // asm 0000933A: 	SETDP
 
-    // asm:
-    // CALL INIT_CUSTOM_COIN    ;Set the CUSTOM SETUP in RAM
+    // asm: CALL INIT_CUSTOM_COIN    ;Set the CUSTOM SETUP in RAM
     INIT_CUSTOM_COIN();
 
-    // asm:
+    // asm: LDI @CAMERAMATRIXI,AR0
+    // asm: CALL INITMAT
     INITMAT(&_CAMERAMATRIX);
 
+    // asm: FLOAT 35,R0
+    // asm: STF R0,@INFIN_CORRECT
     INFIN_CORRECT = C3X_FROM_INT(35);
+    // asm: LDI 1,R0
+    // asm: STI R0,@CLEARRDY
     CLEARRDY = 1;
 
+    // asm: READADJ ADJ_STEERCENTER
+    // asm: FLOAT R0
+    // asm: STF R0,@WHEELPOS
     WHEELPOS = C3X_STF(C3X_FROM_INT(READADJ(ADJ_STEERCENTER)));
+    // asm: CLRF R0
+    // asm: STF R0,@WHEELPWR
     WHEELPWR = C3X_STF(C3X_FROM_INT(0));
+    // asm: STF R0,@WHEELVEL
     WHEELVEL = 0;
+    // asm: CLRI R0
+    // asm: STI R0,@COINOFF
     COINOFF = 0;
+    // asm: STI R0,@NOLONG_VEHICLES
     NOLONG_VEHICLES = 0;
 
-    // asm:
-    // CALL LOAD_FIXED_PALETTES
+    // asm: CALL LOAD_FIXED_PALETTES
     LOAD_FIXED_PALETTES();
 
-    // asm:
-    // CREATE SCAN_OBJECTS,UTIL_C
+    // asm: CREATE SCAN_OBJECTS,UTIL_C
     PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
     CREATE(SCAN_OBJECTS, UTIL_C, ctx);
+    // asm: POP AR2
 
+    // asm: CMPI 1,AR2
+    // asm: BEQ BEGIN_GAME
     if (wave_index == 1) {
         BEGIN_GAME();
         return;
@@ -205,7 +247,7 @@ void WAVE(int wave_index) {
     // asm: LDP @SWITCH3
     // asm: NOT @SWITCH3,R0        ;READ HARDWARE 0=CLOSED, 1=OPEN
     // asm: LDI *AR0,R2            ;Loff
-    // asm: SETDP
+    // asm 00009358: 	SETDP
     // asm: AND SW_VIEW0_H|SW_VIEW1_H|SW_VIEW2_H,R0
     // asm: CMPI SW_VIEW1_H|SW_VIEW2_H,R0
     // asm: BEQ CREDITS
@@ -214,8 +256,12 @@ void WAVE(int wave_index) {
         return;
     }
 
-    // ((void (*)(void))_ATTR_WAVETABI[wave_index])();
+    // asm: LDI AR2,AR0
+    // asm: ADDI @_ATTR_WAVETABI,AR0
+    // asm: LDI *AR0,R0
+    // asm: CALLU R0
     ATTR_WAVETAB_END[wave_index]();
+    // asm 0000935E: 	RETS
 }
 
 static void HEAD2HEADWATCH(PROC* p) {
@@ -266,23 +312,33 @@ static void HEAD2HEAD_WAIT(void) {
     // asm 00009377: 	ANDN	BUT_VIEWS,R0
     // asm 00009378: 	STI	R0,@BUTTON_STATUS
     // asm 00009379: 	CREATE	HEAD2HEAD_LOGO_WAIT,UTIL_C
+    PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
+    CREATE((PROC_FUNC)HEAD2HEAD_LOGO_WAIT, UTIL_C, ctx);
     // asm 0000937C: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "HEAD2HEAD_WAIT", 0, 0);
-    UNIMPL();
 }
 
 static void HIGH_SCORE(void) {
+    // asm: LDI @BUTTON_STATUS,R0
+    // asm: ANDN BUT_VIEWS,R0
+    // asm: STI R0,@BUTTON_STATUS
     BUTTON_STATUS &= ~BUT_VIEWS;
 
     /* Kick start the light routine */
+    // asm: LDI -1,R0
+    // asm: STI R0,@OLD_BUTTON_STATUS
     OLD_BUTTON_STATUS = -1;
 
+    // asm: LDI MATTR|MHS,R0
+    // asm: STI R0,@_MODE
     _MODE = MATTR | MHS;
 
+    // asm: CREATE DISPLAY_HIGH_SCORES,UTIL_C
     PROC_CONTEXT* ctx = NEW_PROC_CONTEXT();
     CREATE(DISPLAY_HIGH_SCORES, UTIL_C, ctx);
+    // asm: CREATE HEAD2HEADWATCH,UTIL_C
     ctx = NEW_PROC_CONTEXT();
     CREATE(HEAD2HEADWATCH, UTIL_C, ctx);
+    // asm 0000938A: 	RETS
 }
 
 static void MIDSPIN(void) {
@@ -382,17 +438,12 @@ static void RACELEG(void) {
     // asm 000093BA: 	RETS
 }
 
-static void THANKS(void) {
+static void HIGH_SCORE_INI(void) {
+THANKS:
     // asm 000093BB: 	CALL	LOAD_HIGH_SCORE
+    LOAD_HIGH_SCORE();
     // asm 000093BC: 	BU	HIGH_SCORE
-    // 	;these are not cycled, they are special routines
-CREDITS:
-    // asm 000093BD: 	CREATE	VANITY,UTIL_C
-    // asm 000093C0: 	LDI	-1,R0
-    // asm 000093C1: 	STI	R0,@_ATTR_MODE
-    // asm 000093C2: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "THANKS", 0, 0);
-    UNIMPL();
+    HIGH_SCORE();
 }
 
 // 	;these are not cycled, they are special routines
@@ -408,15 +459,17 @@ static void CREDITS(void) {
 
 static void LOAD_HIGH_SCORE(void) {
     // asm 000093C3: 	CALL	FIFO_RESET
+    FIFO_RESET();
     // asm 000093C4: 	LDI	1,R0
     // asm 000093C5: 	STI	R0,@HARD_SECTION_LOAD
+    HARD_SECTION_LOAD = 1;
     // asm 000093C6: 	LDL	_SECpress,AR2
     // asm 000093C7: 	CALL	LOAD_SECTION_REQ
+    LOAD_SECTION_REQ(&SECpress);
     // asm 000093C8: 	LDI	-1,R0
     // asm 000093C9: 	STI	R0,@_ATTR_MODE
+    _ATTR_MODE = -1;
     // asm 000093CA: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_HIGH_SCORE", 0, 0);
-    UNIMPL();
 }
 
 // *
@@ -445,13 +498,22 @@ static void BEGIN_GAME(void) {
 
 // *----------------------------------------------------------------------------
 void INIT_SYSTEM(void) {
+    // asm: CALL PRC_INIT           ;initialize process system
     PRC_INIT();      // ;initialize process system
+    // asm: CALL OBJ_INIT           ;initialize object system
     OBJ_INIT();      //;initialize object system
+    // asm: CALL TEXT_INIT          ;initialize text system
     TEXT_INIT();     //;initialize text system
+    // asm: CALL INIT_DRONES        ;initialize DRONE tracker system
     INIT_DRONES();   // ;initialize DRONE tracker system
+    // asm: CALL DYNAOBJ_INIT       ;initialize DYNAMIC OBJECTS
     DYNAOBJ_INIT();  //;initialize DYNAMIC OBJECTS
+    // asm: CALL CARB_INIT          ;initialize CAR BLOCKS
     CARB_INIT();     //;initialize CAR BLOCKS
+    // asm: CALL INIT_RDDEBRIS      ;initialize ROAD DEBRIS list(s)
     INIT_RDDEBRIS(); //;initialize ROAD DEBRIS list(s)
+    // asm: CLRI R0
+    // asm: STI R0,@_sectime
     _sectime = 0;
     // asm 000093DB: 	RETS
 }
@@ -539,29 +601,62 @@ tPAL ILLUM_PAL = {
  *
  */
 void LOAD_FIXED_PALETTES(void) {
-    tPALETTE_CODE fixed_palette_code;
-
+    // asm: CALL PAL_INIT
     PAL_INIT();
 
-    fixed_palette_code = PAL_ALLOC_RAW(&FIXEDPAL);
+    // asm: LDL FIXEDPAL,AR2
+    // asm: CALL PAL_ALLOC_RAW
+    PAL_ALLOC_RAW(&FIXEDPAL);
 
-    crusn_mem_wr32(COLORAM + 0xFF, fixed_palette_code);
+    // asm: CLRI R0
+    // asm: LDP @COLORAM
+    // asm: STI R0,@COLORAM+0FFh
+    crusn_mem_wr32(COLORAM + 0xFF, 0);
+    // asm 00009402: 	SETDP
 
+    // asm: LDL fixedfnt_tPAL,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(fixedfnt_tPAL_ROM));
+    // asm: LDL ILLUM_PAL,AR2       ;only 1 palette
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW(&ILLUM_PAL);
+    // asm: LDL lgnum43_coolyelo,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(lgnum43_coolyelo_ROM));
+    // asm: LDL font18_white,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(font18_white_ROM));
+    // asm: LDL dnums_amber,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(dnums_amber_ROM));
+    // asm: CALL LOAD_VARIOUS_PALETTES ;mixed palettes
     LOAD_VARIOUS_PALETTES();
+    // asm: LDL shared_PALETTES,AR2
+    // asm: CALL HARDalloc_section
     HARDalloc_section(shared_PALETTES);
+    // asm: LDI sky1_p,AR2
+    // asm: CALL PAL_ALLOC
     PAL_ALLOC(sky1_p);
+    // asm: LDL osg10fnt_white,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(osg10fnt_white_ROM));
+    // asm: LDL bnout1_smoke,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(bnout1_smoke_ROM));
+    // asm: LDL H2HPAL1,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(H2HPAL1_ROM));
+    // asm: LDL H2HPAL2,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(H2HPAL2_ROM));
+    // asm: LDL H2HPAL3,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(H2HPAL3_ROM));
 
+    // asm: LDL general_PALETTES,AR2
+    // asm: CALL HARDalloc_section
     HARDalloc_section(general_PALETTES);
+    // asm 0000941E: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -571,8 +666,7 @@ void LOAD_STARTUP_PALS(void) {
     // asm 0000941F: 	LDL	ggate_PALETTES,AR2
     // asm 00009420: 	CALL	HARDalloc_section
     // asm 00009421: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "LOAD_STARTUP_PALS", 0, 0);
-    UNIMPL();
+    HARDalloc_section(ggate_PALETTES);
 }
 
 // *----------------------------------------------------------------------------
@@ -1246,33 +1340,72 @@ static tCAR_PALETTE_LIST PTRUCKGPAL = {
 };
 
 static void LOAD_VARIOUS_PALETTES(void) {
+    // asm: LDL caravan_redyelo,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(caravan_redyelo_ROM));
+    // asm: LDL caravan_yelogrey,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(caravan_yelogrey_ROM));
 
+    // asm: LDL hotrod_yellow,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(hotrod_yellow_ROM));
+    // asm: LDL hotrod_brtblue,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(hotrod_brtblue_ROM));
 
+    // asm: LDL missle_yellow,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(missle_yellow_ROM));
+    // asm: LDL missle_red,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(missle_red_ROM));
+    // asm: LDL missle_blue,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(missle_blue_ROM));
 
+    // asm: LDL jeep_red,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(jeep_red_ROM));
+    // asm: LDL jeep_yellow,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(jeep_yellow_ROM));
 
+    // asm: LDL cvette_blue,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(cvette_blue_ROM));
+    // asm: LDL cvette_red,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(cvette_red_ROM));
+    // asm: LDL cvette_purple,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(cvette_purple_ROM));
 
+    // asm: LDL testor_blue,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(testor_blue_ROM));
+    // asm: LDL testor_grape,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(testor_grape_ROM));
 
+    // asm: LDL gtruck_bluep,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(gtruck_bluep_ROM));
 
+    // asm: LDL muscle_yellow,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(muscle_yellow_ROM));
+    // asm: LDL muscle_green,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(muscle_green_ROM));
 
+    // asm: LDL ptruckg_purple,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(ptruckg_purple_ROM));
+    // asm: LDL ptruckg_yellr,AR2
+    // asm: CALL PAL_ALLOC_RAW
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(ptruckg_yellr_ROM));
+    // asm 0000952C: 	RETS
 }
 
 /*
