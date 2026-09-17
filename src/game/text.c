@@ -85,7 +85,12 @@ static int FONT10_A = osg10fnt_I;
 
 // *----------------------------------------------------------------------------
 void TEXT_INIT(void) {
-    // asm:
+    // asm: 	LDI	@TEXT_LISTI,AR2
+    // asm: 	LDI	@TEXT_FREEI,R2
+    // asm: 	LDI	@TEXT_ACTIVEI,R3
+    // asm: 	LDI	NUM_TEXTS-1,RC
+    // asm: 	LDI	TEXT_SIZ,RS
+    // asm: 	CALL	INIT_LINKED_LIST
     INIT_LINKED_LIST(
         TEXT_LIST,            /* AR2 */
         (void**)&TEXT_FREE,   /* R2 */
@@ -94,7 +99,10 @@ void TEXT_INIT(void) {
         sizeof(tTEXT)         /* RS */
     );
 
+    // asm: 	LDI	NUM_TEXTS,R2
+    // asm: 	STI	R2,@TEXT_FREE_COUNT
     TEXT_FREE_COUNT = NUM_TEXTS;
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -120,15 +128,29 @@ tSHADOW_TEXT TEXT_ADDDS(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks) {
     // MAME_ASSERT_ARG_FLOAT("R2", &x);
     // MAME_ASSERT_ARG_FLOAT("R3", &y);
 
+    // asm: 	PUSH	AR2
+    // asm: 	CALL	TEXT_ADD
     front = TEXT_ADD(text, x, y, ticks);
+    // asm: 	POP	AR2
+    // asm: 	LDI	AR0,AR1
+    // asm: 	CALL	TEXT_ADD
     shadow = TEXT_ADD(text, x, y, ticks);
+    // asm: 	LDI	TXT_NRZ,R0
+    // asm: 	STI	R0,*+AR0(TEXT_COLOR)
     shadow->color = TXT_NRZ;
+    // asm: 	LDF	R2,R0
+    // asm: 	ADDF	2,R0
+    // asm: 	STF	R0,*+AR0(TEXT_POSX)
     shadow->posx = C3X_STF(C3X_ADD(x, C3X_FROM_INT(2)));
+    // asm: 	LDF	R3,R0
+    // asm: 	ADDF	2,R0
+    // asm: 	STF	R0,*+AR0(TEXT_POSY)
     shadow->posy = C3X_STF(C3X_ADD(y, C3X_FROM_INT(2)));
 
     tSHADOW_TEXT ret;
     ret.front = front;
     ret.shadow = shadow;
+    // asm: 	RETS
     return ret;
 }
 
@@ -142,9 +164,17 @@ void TEXT_ADD1(void) {
 tTEXT* TEXT_ADD(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks) {
     tTEXT* t;
 
+    // asm: 	PUSH	AR2
+    // asm: 	PUSH	R2
+    // asm: 	PUSHF	R2
+    // asm: 	LDI	@TEXT_FREEI,AR2
+    // asm: 	LDI	@TEXT_ACTIVEI,R2
+    // asm: 	CALL	GET_LLIST
     t = GET_LLIST((void**)&TEXT_FREE, (void**)&TEXT_ACTIVE);
 
 #if DEBUG
+    // asm: 	CMPI	0,AR0
+    // asm: 	BZ	$
     if (t == NULL) {
         for (;;) {
             /* debug lockup */
@@ -152,20 +182,36 @@ tTEXT* TEXT_ADD(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks) {
     }
 #endif
 
+    // asm: 	LDI	@TEXT_FREE_COUNT,R2
+    // asm: 	DEC	R2
+    // asm: 	STI	R2,@TEXT_FREE_COUNT
     TEXT_FREE_COUNT--;
 
+    // asm: 	POPF	R2
+    // asm: 	POP	R2
+    // asm: 	POP	AR2
+    // asm: 	STI	AR2,*+AR0(TEXT_PTR)
     t->ptr = text;
+    // asm: 	STF	R2,*+AR0(TEXT_POSX)
     t->posx = C3X_STF(x);
+    // asm: 	STF	R3,*+AR0(TEXT_POSY)
     t->posy = C3X_STF(y);
 
+    // asm: 	STI	RC,*+AR0(TEXT_TIKS)
     t->tiks = ticks;
 
+    // asm: 	CLRI	R0
+    // asm: 	STI	R0,*+AR0(TEXT_COLOR)
     t->color = 0; /* clear the flags */
 
+    // asm: 	CLRF	R0
+    // asm: 	STF	R0,*+AR0(TEXT_VELX)
     t->velx = C3X_STF(C3X_FROM_INT(0));
+    // asm: 	STF	R0,*+AR0(TEXT_VELY)
     t->vely = C3X_STF(C3X_FROM_INT(0));
 
     /* set default font */
+    // asm: 	BU	SET18FONT
     SET18FONT(t);
     return t;
 }
@@ -562,6 +608,15 @@ static int STRLEN(const tTEXT* text /*AR2*/) {
     str = text->ptr;
     length = 0; // ;length of string
 STRLP:
+    // asm: 	CMPI	-32,RS
+    // asm: 	BNE	STLP2
+    // asm: 	CLRI	RS
+    // asm: 	NOP	*AR2++
+STLP2:
+    // asm: 	LDI	*AR2,AR0
+    // asm: 	LSH	RS,AR0
+    // asm: 	SUBI	8,RS
+    // asm: 	AND	0FFh,AR0
     ch = (unsigned char)*str++;
 
     // asm 00007A5B: 	CMPI	0,AR0
@@ -700,6 +755,15 @@ NO_RIGHT:
 TEXT_RET:
     // asm 00007A8C: 	CLRI	RS
 OLP:
+    // asm: 	CMPI	-32,RS
+    // asm: 	BNE	REGLP
+    // asm: 	CLRI	RS
+    // asm: 	NOP	*AR2++
+REGLP:
+    // asm: 	LDI	*AR2,AR0
+    // asm: 	LSH	RS,AR0
+    // asm: 	SUBI	8,RS
+    // asm: 	AND	0FFh,AR0
     ch = (unsigned char)*str++;
 
     // asm 00007A95: 	CMPI	0,AR0
@@ -887,8 +951,12 @@ ISFROZEN:
     next_text = text->link;
 
     // asm 00007AE2: 	LDI	@TEXT_ACTIVEI,R1	;get free list pointer
+DELLP:
     // asm 00007AE3: LDI	R1,AR1
     // asm 00007AE4: 	LDI	*AR1,R1
+#if DEBUG
+    // asm: 	BZ	$
+#endif
     // asm 00007AE5: 	CMPI	R1,AR4
     // asm 00007AE6: 	BNE	DELLP
     // asm 00007AE7: 	LDI	*AR4,R1
@@ -1059,7 +1127,7 @@ REGLP1:
     // asm 00007B3A: 	CLRI	R0
     // asm 00007B3B: 	NOP	*AR0++
     // asm 00007B3C: 	STI	R0,*AR0			;IN THE CASE OF NULL ALIGNED
-REGLP2:
+REGLP2:;
     // asm 00007B3D: 	CMPI	0,AR4
     // asm 00007B3E: 	BNZ	SCLP1
     // asm 00007B3F: 	POP	AR4
