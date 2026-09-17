@@ -28,7 +28,7 @@ int AUDIT_ADD(int index, int value);
 int AUDIT_READ(int index);
 int ADJUSTMENT_WRITE(int index, int value);
 int AUDIT_WRITE(int index, int value);
-static int AUDIT_WRITE_ADJ(int index, int value);
+#define AUDIT_WRITE_ADJ AUDIT_WRITE
 int _rd_cw(word_addr_t addr);
 void _wr_cw(word_addr_t addr, int value);
 int _rd_cwR(word_addr_t addr);
@@ -67,32 +67,69 @@ void GETCOIN_DEFAULT(void);
  *
  */
 void HSTDEC(void) {
-    int value = AUDIT_READ(ADJ_ACTUALHSTDRESET) - 1;
+    int value;
 
+    // asm: 	READAUD	ADJ_ACTUALHSTDRESET
+    value = AUDIT_READ(ADJ_ACTUALHSTDRESET);
+    // asm: 	SUBI	1,R0
+    value -= 1;
+    // asm: 	LDILT	0,R0
     if (value < 0) {
         value = 0;
     }
 
+    // asm: 	LDI	R0,R2
+    // asm: 	SETADJ	ADJ_ACTUALHSTDRESET
     ADJUSTMENT_WRITE(ADJ_ACTUALHSTDRESET, value);
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
 void CMOS_ON_C(void) {
+    // asm: 	PUSH	DP
+    // asm: 	LDP	@CPU_WS
+    // asm: 	LDI	CMOS_WS,R1
+    // asm: 	STI	R1,@CPU_WS
     // crusn_mem_wr32(CPU_WS, CMOS_WS);
+    // asm: 	POP	DP
+    // asm: 	RETS
 }
 
 void CMOS_OFF_C(void) {
+    // asm: 	PUSH	DP
+    // asm: 	LDP	@CPU_WS
+    // asm: 	LDI	SOFT_WS,R1
+    // asm: 	STI	R1,@CPU_WS
     // crusn_mem_wr32(CPU_WS, SOFT_WS);
+    // asm: 	POP	DP
+    // asm: 	RETS
 }
 
 void CMOS_WPON_C(void) {
+    // asm: 	PUSH	DP
+    // asm: 	LDP	@CMOS_WP_WORD_SHADOW
+    // asm: 	LDI	@CMOS_WP_WORD_SHADOW,R1
+    // asm: 	AND	0F00h,R1
+    // asm: 	LDP	@CMOS_WP_WORD
+    // asm: 	STI	R1,@CMOS_WP_WORD
     // crusn_mem_wr32(CMOS_WP_WORD, (u32)(CMOS_WP_WORD_SHADOW & 0x0F00));
+    // asm: 	POP	DP
+    // asm: 	RETS
 }
 
 void CMOS_WPOFF_C(void) {
+    // asm: 	PUSH	DP
+    // asm: 	LDP	@CMOS_WP_WORD_SHADOW
+    // asm: 	LDI	@CMOS_WP_WORD_SHADOW,R1
+    // asm: 	AND	0F00h,R1
+    // asm: 	LDP	@CMOS_WP_WORD
+    // asm: 	OR	CMOS_WP,R1
+    // asm: 	STI	R1,@CMOS_WP_WORD
     // crusn_mem_wr32(CMOS_WP_WORD, (u32)((CMOS_WP_WORD_SHADOW & 0x0F00) | CMOS_WP));
+    // asm: 	POP	DP
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -108,28 +145,48 @@ void CMOS_WPOFF_C(void) {
  *
  */
 int VALIDATE_CMOS(void) {
-    int partial_credits = AUDIT_READ(AUD_PCREDITS);
-    int credits = AUDIT_READ(AUD_CREDITS);
-    int hstd_ok;
+    int partial_credits;
+    int credits;
 
+    // asm: 	READAUD	AUD_PCREDITS
+    partial_credits = AUDIT_READ(AUD_PCREDITS);
+    // asm: 	LDI	R0,R2
+    // asm: 	CMPI	10,R0
+    // asm: 	LDIGT	10,R2
     if (partial_credits > 10) {
         partial_credits = 10;
-    } else if (partial_credits < 0) {
+    }
+    // asm: 	CMPI	0,R0
+    // asm: 	LDILT	0,R2
+    if (partial_credits < 0) {
         partial_credits = 0;
     }
+    // asm: 	SETAUD	AUD_PCREDITS
     AUDIT_WRITE(AUD_PCREDITS, partial_credits);
 
+    // asm: 	READAUD	AUD_CREDITS
+    credits = AUDIT_READ(AUD_CREDITS);
+    // asm: 	LDI	R0,R2
+    // asm: 	CMPI	30,R0
+    // asm: 	LDIGT	30,R2
     if (credits > 30) {
         credits = 30;
-    } else if (credits < 0) {
+    }
+    // asm: 	CMPI	0,R0
+    // asm: 	LDILT	0,R2
+    if (credits < 0) {
         credits = 0;
     }
+    // asm: 	SETAUD	AUD_CREDITS
     AUDIT_WRITE(AUD_CREDITS, credits);
 
-    hstd_ok = VALIDATE_HSTD_TABLES();
+    // asm: 	CALL	VALIDATE_HSTD_TABLES
+    VALIDATE_HSTD_TABLES();
+    // asm: 	CALL	VERIFY_ADJUSTMENTS_ACCURACY
     VERIFY_ADJUSTMENTS_ACCURACY();
 
-    // CLRC
+    // asm: 	CLRC
+    // asm: 	RETS
     return 0;
 }
 
@@ -143,11 +200,34 @@ int VALIDATE_CMOS(void) {
  *
  */
 void RESET_BOOKKEEPING(void) {
-    int index;
+    word_addr_t addr;
+    int remaining;
 
-    for (index = MAX_ADJUSTMENTS + 1; index < NUM_AUDITS; ++index) {
-        _wr_cw((word_addr_t)CMOSI + (word_addr_t)(index * 4), 0);
+    // asm: 	PUSH	R0
+    // asm: 	PUSH	R2
+    // asm: 	PUSH	AR2
+    // asm: 	PUSH	AR4
+    // ;erase AUDITS
+    // asm: 	LDI	(NUM_AUDITS-MAX_ADJUSTMENTS)-1,AR4
+    remaining = (NUM_AUDITS - MAX_ADJUSTMENTS) - 1;
+    // asm: 	LDI	@CMOSI,AR2
+    // asm: 	ADDI	(MAX_ADJUSTMENTS+1)<<2,AR2
+    addr = (word_addr_t)CMOSI + (word_addr_t)((MAX_ADJUSTMENTS + 1) * 4);
+    // asm: 	CLRI	R2
+RBLP:
+    // asm: 	CALL	_wr_cw
+    _wr_cw(addr, 0);
+    addr += 4;
+    // asm: 	DBU	AR4,RBLP
+    remaining -= 1;
+    if (remaining >= 0) {
+        goto RBLP;
     }
+    // asm: 	POP	AR4
+    // asm: 	POP	AR2
+    // asm: 	POP	R2
+    // asm: 	POP	R0
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -253,14 +333,64 @@ static const ADJUSTMENT_RANGE VERIFY_ADJUSTMENTS_ACCURACYTAB[] = {
 static void VERIFY_ADJUSTMENTS_ACCURACY(void) {
     int index;
 
-    for (index = 0; index < NUM_ADJUSTMENTS; ++index) {
-        int value = AUDIT_READ(index);
-        const ADJUSTMENT_RANGE* range = &VERIFY_ADJUSTMENTS_ACCURACYTAB[index];
+    // asm: 	PUSH	R0
+    // asm: 	PUSH	R1
+    // asm: 	PUSH	R2
+    // asm: 	PUSH	R3
+    // asm: 	PUSH	R4
+    // asm: 	PUSH	AR2
+    // asm: 	PUSH	AR5
+    // asm: 	PUSH	AR6
+    // asm: 	CLRI	AR5
+    index = 0;
+    // asm: 	LDL	VERIFY_ADJUSTMENTS_ACCURACYTAB,AR6
+VAALP:
+    {
+        int value;
+        const ADJUSTMENT_RANGE* range;
 
-        if (value < range->low || value > range->high) {
-            ADJUSTMENT_WRITE(index, range->default_value);
+        // asm: 	LDI	AR5,AR2
+        // asm: 	CALL	AUDIT_READ
+        value = AUDIT_READ(index); // ;R0 = ADJUSTMENT VALUE
+        // asm: 	LDI	*AR6++,R1
+        // asm: 	LDI	*AR6++,R2
+        // asm: 	LDI	*AR6++,R3
+        range = &VERIFY_ADJUSTMENTS_ACCURACYTAB[index];
+
+        // asm: 	CMPI	R1,R0
+        // asm: 	BLT	DORST
+        if (value < range->low) {
+            goto DORST;
         }
+        // asm: 	CMPI	R2,R0
+        // asm: 	BLE	NORST
+        if (value <= range->high) {
+            goto NORST;
+        }
+
+DORST:
+        // asm: 	LDI	R3,R2
+        // asm: 	LDI	AR5,AR2
+        // asm: 	CALL	ADJUSTMENT_WRITE
+        ADJUSTMENT_WRITE(index, range->default_value);
     }
+NORST:
+    // asm: 	INC	AR5
+    index += 1;
+    // asm: 	CMPI	NUM_ADJUSTMENTS,AR5
+    // asm: 	BLT	VAALP
+    if (index < NUM_ADJUSTMENTS) {
+        goto VAALP;
+    }
+    // asm: 	POP	AR6
+    // asm: 	POP	AR5
+    // asm: 	POP	AR2
+    // asm: 	POP	R4
+    // asm: 	POP	R3
+    // asm: 	POP	R2
+    // asm: 	POP	R1
+    // asm: 	POP	R0
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -269,19 +399,69 @@ static void VERIFY_ADJUSTMENTS_ACCURACY(void) {
 void RESET_ADJUSTMENTS(void) {
     int index;
     int checksum;
+    int coin_mode;
 
-    for (index = 0; index < NUM_ADJUSTMENTS; ++index) {
+    // asm: 	PUSH	R0
+    // asm: 	PUSH	R1
+    // asm: 	PUSH	R2
+    // asm: 	PUSH	R3
+    // asm: 	PUSH	AR2
+    // asm: 	PUSH	AR5
+    // asm: 	PUSH	AR6
+    // asm: 	CLRI	AR5
+    index = 0;
+    // asm: 	LDL	VERIFY_ADJUSTMENTS_ACCURACYTAB,AR6
+VAALP2:
+    // asm: 	LDI	*AR6++,R2
+    // asm: 	LDI	*AR6++,R2
+    // asm: 	LDI	*AR6++,R2
+    // asm: 	LDI	AR5,AR2
+    // asm: 	CALL	AUDIT_WRITE
+    {
         AUDIT_WRITE(index, VERIFY_ADJUSTMENTS_ACCURACYTAB[index].default_value);
     }
-
-    GETCOIN_DEFAULT();
-
-    if (AUDIT_READ(ADJ_COINMODE) > VERIFY_ADJUSTMENTS_ACCURACYTAB[ADJ_COINMODE].high) {
-        ADJUSTMENT_WRITE(ADJ_COINMODE, VERIFY_ADJUSTMENTS_ACCURACYTAB[ADJ_COINMODE].default_value);
+    // asm: 	INC	AR5
+    index += 1;
+    // asm: 	CMPI	NUM_ADJUSTMENTS,AR5
+    // asm: 	BLT	VAALP2
+    if (index < NUM_ADJUSTMENTS) {
+        goto VAALP2;
     }
 
+    // asm: 	CALL	GETCOIN_DEFAULT
+    GETCOIN_DEFAULT();
+
+    // ;Now check to see if the dipswitch setting is a valid coinmode
+    // asm: 	LDL	VERIFY_ADJUSTMENTS_ACCURACYTAB,AR2
+    // asm: 	LDI	ADJ_COINMODE,R0
+    // asm: 	MPYI	3,R0
+    // asm: 	ADDI	R0,AR2
+    // asm: 	LDI	*+AR2,R0
+    // asm: 	CMPI	R0,R2
+    // asm: 	LDIGT	*+AR2(2),R2
+    // The current GETCOIN_DEFAULT translation stores its result directly;
+    // the original leaves the same value in R2 for this write.
+    coin_mode = AUDIT_READ(ADJ_COINMODE);
+    if (coin_mode > VERIFY_ADJUSTMENTS_ACCURACYTAB[ADJ_COINMODE].low) {
+        coin_mode = VERIFY_ADJUSTMENTS_ACCURACYTAB[ADJ_COINMODE].default_value;
+    }
+    // asm: 	LDI	ADJ_COINMODE,AR2
+    // asm: 	CALL	ADJUSTMENT_WRITE
+    ADJUSTMENT_WRITE(ADJ_COINMODE, coin_mode);
+
+    // asm: 	CALL	CHECKSUMGEN_ADJ
     checksum = CHECKSUMGEN_ADJ();
+    // asm: 	LDI	R0,R2
+    // asm: 	SETAUD	ADJ_CHECKSUM
     AUDIT_WRITE(ADJ_CHECKSUM, checksum);
+    // asm: 	POP	AR6
+    // asm: 	POP	AR5
+    // asm: 	POP	AR2
+    // asm: 	POP	R3
+    // asm: 	POP	R2
+    // asm: 	POP	R1
+    // asm: 	POP	R0
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -295,13 +475,34 @@ void RESET_ADJUSTMENTS(void) {
  *
  */
 static int CHECKSUMGEN_ADJ(void) {
-    int checksum = 0;
+    int checksum;
     int index;
 
-    for (index = 0; index < NUM_ADJUSTMENTS; ++index) {
-        checksum += AUDIT_READ(index);
+    // asm: 	PUSH	R1
+    // asm: 	PUSH	AR2
+    // asm: 	PUSH	AR5
+    // asm: 	CLRI	AR5
+    index = 0;
+    // asm: 	CLRI	R1
+    checksum = 0;
+VAALP3:
+    // asm: 	LDI	AR5,AR2
+    // asm: 	CALL	AUDIT_READ
+    // asm: 	ADDI	R0,R1
+    checksum += AUDIT_READ(index); // ;R0 = ADJUSTMENT VALUE
+    // asm: 	INC	AR5
+    index += 1;
+    // asm: 	CMPI	NUM_ADJUSTMENTS,AR5
+    // asm: 	BLT	VAALP3
+    if (index < NUM_ADJUSTMENTS) {
+        goto VAALP3;
     }
 
+    // asm: 	LDI	R1,R0
+    // asm: 	POP	AR5
+    // asm: 	POP	AR2
+    // asm: 	POP	R1
+    // asm: 	RETS
     return checksum;
 }
 
@@ -350,7 +551,22 @@ static int CHECKSUMGEN_ADJ(void) {
  *
  */
 int AUDIT_INC(int index) {
-    return AUDIT_ADD(index, 1);
+    word_addr_t addr;
+    int value;
+
+    // asm: 	LS	2,AR2
+    // asm: 	ADDI	@CMOSI,AR2
+    addr = (word_addr_t)CMOSI + (word_addr_t)(index * 4);
+    // asm: 	CALL	_rd_cw
+    value = _rd_cw(addr);
+    // asm: 	NOP	*AR2--(4)
+    // asm: 	ADDI	1,R0
+    value += 1;
+    // asm: 	LDI	R0,R2
+    // asm: 	CALL	_wr_cw
+    _wr_cw(addr, value);
+    // asm: 	RETS
+    return value;
 }
 
 // *----------------------------------------------------------------------------
@@ -367,8 +583,20 @@ int AUDIT_INC(int index) {
  *
  */
 int AUDIT_ADD(int index, int value) {
-    int new_value = AUDIT_READ(index) + value;
-    AUDIT_WRITE(index, new_value);
+    word_addr_t addr;
+    int new_value;
+
+    // asm: 	LS	2,AR2
+    // asm: 	ADDI	@CMOSI,AR2
+    addr = (word_addr_t)CMOSI + (word_addr_t)(index * 4);
+    // asm: 	CALL	_rd_cw
+    new_value = _rd_cw(addr);
+    // asm: 	NOP	*AR2--(4)
+    // asm: 	ADDI	R0,R2
+    new_value += value;
+    // asm: 	CALL	_wr_cw
+    _wr_cw(addr, new_value);
+    // asm: 	RETS
     return new_value;
 }
 
@@ -384,8 +612,17 @@ int AUDIT_ADD(int index, int value) {
  *	R0	AUDIT VALUE
  *
  */
-int AUDIT_READ(int index) {
-    return _rd_cw((u32)CMOSI + (u32)(index * 4));
+int ADJUSTMENT_READ(int index) {
+    word_addr_t addr;
+
+AUDIT_READ:
+    // asm: 	LS	2,AR2
+    // asm: 	ADDI	@CMOSI,AR2
+    addr = (word_addr_t)CMOSI + (word_addr_t)(index * 4);
+    // asm: 	CALL	_rd_cw
+    // asm: 	NOP	*AR2--(4)
+    // asm: 	RETS
+    return _rd_cw(addr);
 }
 
 // *----------------------------------------------------------------------------
@@ -404,10 +641,16 @@ int AUDIT_READ(int index) {
 int ADJUSTMENT_WRITE(int index, int value) {
     int checksum;
 
+    // asm: 	CALL	AUDIT_WRITE_ADJ
     AUDIT_WRITE_ADJ(index, value);
+    // asm: 	CALL	CHECKSUMGEN_ADJ
     checksum = CHECKSUMGEN_ADJ();
+    // asm: 	LDI	R0,R2
+    // asm: 	LDI	ADJ_CHECKSUM,AR2
+    // asm: 	CALL	AUDIT_WRITE_ADJ
     AUDIT_WRITE_ADJ(ADJ_CHECKSUM, checksum);
-    return value;
+    // asm: 	RETS
+    return checksum;
 }
 
 // *----------------------------------------------------------------------------
@@ -424,12 +667,18 @@ int ADJUSTMENT_WRITE(int index, int value) {
  *
  */
 int AUDIT_WRITE(int index, int value) {
-    AUDIT_WRITE_ADJ(index, value);
-    return value;
-}
+    word_addr_t addr;
 
-static int AUDIT_WRITE_ADJ(int index, int value) {
-    _wr_cw((u32)CMOSI + (u32)(index * 4), value);
+    // asm: 	CMPI	NUM_ADJUSTMENTS,AR2
+    // asm: 	BLT	$
+AUDIT_WRITE_ADJ:
+    // asm: 	LS	2,AR2
+    // asm: 	ADDI	@CMOSI,AR2
+    addr = (word_addr_t)CMOSI + (word_addr_t)(index * 4);
+    // asm: 	CALL	_wr_cw
+    _wr_cw(addr, value);
+    // asm: 	NOP	*AR2--(4)
+    // asm: 	RETS
     return value;
 }
 
@@ -471,15 +720,45 @@ static int AUDIT_WRITE_ADJ(int index, int value) {
  *	AR2	INCREMENTED TO NEXT ENTRY IN CMOS
  */
 int _rd_cw(word_addr_t addr) {
-    u32 value = 0;
-    int i;
+    u32 value;
+    u32 next_byte;
 
+    // asm: 	PUSH	R1
+    // asm: 	CMOS_ON
     CMOS_ON_C();
-    for (i = 0; i < 4; ++i) {
-        value = (value << 8) | ((crusn_mem_rd32(addr + (word_addr_t)i) >> 24) & 0xffu);
-    }
+    // asm: 	NOP
+    // asm: 	LDI	*AR2++,R0
+    value = crusn_mem_rd32(addr++);
+    // asm: 	RS	24,R0
+    value >>= 24;
+    // asm: 	LS	8,R0
+    value <<= 8;
+    // asm: 	LDI	*AR2++,R1
+    next_byte = crusn_mem_rd32(addr++);
+    // asm: 	RS	24,R1
+    next_byte >>= 24;
+    // asm: 	OR	R1,R0
+    value |= next_byte;
+    // asm: 	LS	8,R0
+    value <<= 8;
+    // asm: 	LDI	*AR2++,R1
+    next_byte = crusn_mem_rd32(addr++);
+    // asm: 	RS	24,R1
+    next_byte >>= 24;
+    // asm: 	OR	R1,R0
+    value |= next_byte;
+    // asm: 	LS	8,R0
+    value <<= 8;
+    // asm: 	LDI	*AR2++,R1
+    next_byte = crusn_mem_rd32(addr);
+    // asm: 	RS	24,R1
+    next_byte >>= 24;
+    // asm: 	OR	R1,R0
+    value |= next_byte;
+    // asm: 	CMOS_OFF
     CMOS_OFF_C();
-
+    // asm: 	POP	R1
+    // asm: 	RETS
     return (int)value;
 }
 
@@ -499,15 +778,37 @@ int _rd_cw(word_addr_t addr) {
  */
 void _wr_cw(word_addr_t addr, int value) {
     u32 raw = (u32)value;
-    int i;
 
+    // asm: 	PUSH	R1
+    // asm: 	PUSH	R2
+    // asm: 	PUSH	R3
+    // asm: 	CMOS_ON
     CMOS_ON_C();
+    // asm: 	CMOS_WP_OFF
     CMOS_WPOFF_C();
-    for (i = 0; i < 4; ++i) {
-        crusn_mem_wr32(addr + (word_addr_t)i, raw << (i * 8));
-    }
+    // asm: 	NOP
+    // asm: 	STI	R2,*AR2++
+    crusn_mem_wr32(addr++, raw);
+    // asm: 	LS	8,R2
+    raw <<= 8;
+    // asm: 	STI	R2,*AR2++
+    crusn_mem_wr32(addr++, raw);
+    // asm: 	LS	8,R2
+    raw <<= 8;
+    // asm: 	STI	R2,*AR2++
+    crusn_mem_wr32(addr++, raw);
+    // asm: 	LS	8,R2
+    raw <<= 8;
+    // asm: 	STI	R2,*AR2++
+    crusn_mem_wr32(addr, raw);
+    // asm: 	CMOS_WP_ON
     CMOS_WPON_C();
+    // asm: 	CMOS_OFF
     CMOS_OFF_C();
+    // asm: 	POP	R3
+    // asm: 	POP	R2
+    // asm: 	POP	R1
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -525,15 +826,45 @@ void _wr_cw(word_addr_t addr, int value) {
  *
  */
 int _rd_cwR(word_addr_t addr) {
-    u32 value = 0;
-    int i;
+    u32 value;
+    u32 next_byte;
 
+    // asm: 	PUSH	R1
+    // asm: 	CMOS_ON
     CMOS_ON_C();
-    for (i = 0; i < 4; ++i) {
-        value |= ((crusn_mem_rd32(addr + (word_addr_t)i) >> 24) & 0xffu) << (i * 8);
-    }
+    // asm: 	NOP
+    // asm: 	LDI	*AR2++,R0
+    value = crusn_mem_rd32(addr++);
+    // asm: 	RS	24,R0
+    value >>= 24;
+    // asm: 	LDI	*AR2++,R1
+    next_byte = crusn_mem_rd32(addr++);
+    // asm: 	RS	24,R1
+    next_byte >>= 24;
+    // asm: 	LS	8,R1
+    next_byte <<= 8;
+    // asm: 	OR	R1,R0
+    value |= next_byte;
+    // asm: 	LDI	*AR2++,R1
+    next_byte = crusn_mem_rd32(addr++);
+    // asm: 	RS	24,R1
+    next_byte >>= 24;
+    // asm: 	LS	16,R1
+    next_byte <<= 16;
+    // asm: 	OR	R1,R0
+    value |= next_byte;
+    // asm: 	LDI	*AR2++,R1
+    next_byte = crusn_mem_rd32(addr);
+    // asm: 	RS	24,R1
+    next_byte >>= 24;
+    // asm: 	LS	24,R1
+    next_byte <<= 24;
+    // asm: 	OR	R1,R0
+    value |= next_byte;
+    // asm: 	CMOS_OFF
     CMOS_OFF_C();
-
+    // asm: 	POP	R1
+    // asm: 	RETS
     return (int)value;
 }
 
@@ -553,15 +884,51 @@ int _rd_cwR(word_addr_t addr) {
  */
 void _wr_cwR(word_addr_t addr, int value) {
     u32 raw = (u32)value;
-    int i;
+    u32 byte;
 
+    // asm: 	PUSH	R1
+    // asm: 	PUSH	R2
+    // asm: 	PUSH	R3
+    // asm: 	LDI	R2,R3
+    byte = raw;
+    // asm: 	LS	24,R3
+    byte <<= 24;
+    // asm: 	CMOS_ON
     CMOS_ON_C();
+    // asm: 	CMOS_WP_OFF
     CMOS_WPOFF_C();
-    for (i = 0; i < 4; ++i) {
-        crusn_mem_wr32(addr + (word_addr_t)i, ((raw >> (i * 8)) & 0xffu) << 24);
-    }
+    // asm: 	NOP
+    // asm: 	STI	R3,*AR2++
+    crusn_mem_wr32(addr++, byte);
+    // asm: 	LDI	R2,R3
+    byte = raw;
+    // asm: 	RS	8,R3
+    byte >>= 8;
+    // asm: 	LS	24,R3
+    byte <<= 24;
+    // asm: 	STI	R3,*AR2++
+    crusn_mem_wr32(addr++, byte);
+    // asm: 	LDI	R2,R3
+    byte = raw;
+    // asm: 	RS	16,R3
+    byte >>= 16;
+    // asm: 	LS	24,R3
+    byte <<= 24;
+    // asm: 	STI	R3,*AR2++
+    crusn_mem_wr32(addr++, byte);
+    // asm: 	RS	24,R2
+    raw >>= 24;
+    // asm: 	LS	24,R3
+    // asm: 	STI	R2,*AR2++
+    crusn_mem_wr32(addr, raw);
+    // asm: 	CMOS_WP_ON
     CMOS_WPON_C();
+    // asm: 	CMOS_OFF
     CMOS_OFF_C();
+    // asm: 	POP	R3
+    // asm: 	POP	R2
+    // asm: 	POP	R1
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -642,8 +1009,8 @@ void INIT_LASTHS_TABLE(void) {
     // asm 00009AA5: 	LDI	-1,R2
     // asm 00009AA6: 	LDI	14,AR5
     // asm 00009AA7: ILT_LP
-    // asm 00009AA7: 	CALL	_wr_cw
 ILT_LP:
+    // asm 00009AA7: 	CALL	_wr_cw
     _wr_cw(addr, -1);
     addr += 4;
     // asm 00009AA8: 	DBU	AR5,ILT_LP
