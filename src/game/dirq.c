@@ -370,7 +370,9 @@ void DIRQ(void) {
 // *NOTE	entry point is near the bottom of the routine
 // *
 
-static void DISPLAY(OBJ* obj /*AR0*/) {
+#undef DISPLAY
+#define DISPLAY_IMPL DISPLAY
+static void DISPLAY_IMPL(OBJ* obj /*AR0*/) {
     MATRIX object_matrix;
     u32 flags;
     const u32* rom_ptr;
@@ -387,9 +389,6 @@ static void DISPLAY(OBJ* obj /*AR0*/) {
     c3x_reg_t rotated_trans_y;
     c3x_reg_t rotated_trans_z;
 
-    // DISPLAY entry point moved from bottom of function
-    // asm 00000166: 	LDI	*AR0,R0
-    // asm 00000167: 	BNZ	NEXTOBJ
     if (obj == NULL) {
         return;
     }
@@ -634,12 +633,12 @@ NO_DEGRADE:
     // asm 000000C5: 	LDI	*AR1++,R4		;get RADIUS of object
     // asm 000000C6: 	ADDI	R2,R4,R3
     // asm 000000C7: 	CMPI	LOW_CLIP_LEVEL,R3	;attempt to toss on Z distance
-    // asm 000000C8: 	BLTD	DISPLAY_NEXT			;is it to close?
+    // asm 000000C8: 	BLTD	DISPLAY			;is it to close?
     // asm 000000C9: 	SUBI	R4,R3
     // asm 000000CA: 	SUBI	R4,R3
     // asm 000000CB: 	CMPI	@HIGH_CLIP_LEV8,R3
     // 	;----> BLTD	DISPLAY
-    // asm 000000CC: 	BGTD	DISPLAY_NEXT
+    // asm 000000CC: 	BGTD	DISPLAY
     // asm 000000CD: 	ADDI	R4,R3
     // asm 000000CE: 	LDIN	0,R3			;KEEP IT IN RANGE
     // asm 000000CF: 	LSH	-4,R3			;quickly divide by 16
@@ -654,22 +653,22 @@ NO_DEGRADE:
     // asm 000000D7: 	MPYF	*AR6,R1,R3		;project Y position
     // asm 000000D8: 	ADDF	R4,R3,R2
     // asm 000000D9: 	ADDF	@SCRNHYI,R2
-    // asm 000000DA: 	BLTD	DISPLAY_NEXT			;BR-> above the screen
+    // asm 000000DA: 	BLTD	DISPLAY			;BR-> above the screen
     // asm 000000DB: 	NOP				;PAD FOR DELAYED BRANCH
     // asm 000000DC: 	SUBF	R4,R3
     // asm 000000DD: 	CMPF	@SCRNHYI,R3
     // 	;---->BLT DISPLAY
-    // asm 000000DE: 	BGTD	DISPLAY_NEXT			;BR-> below the screen
+    // asm 000000DE: 	BGTD	DISPLAY			;BR-> below the screen
     // asm 000000DF: 	MPYF	*-AR6(1),R1,R3	   	;project X position
     // asm 000000E0: 	ADDF	R4,R3,R2
     // asm 000000E1: 	ADDF	@SCRNHXI,R2
     // 	;---->BGT DISPLAY
-    // asm 000000E2: 	BLTD	DISPLAY_NEXT			;BR-> too far to the left
+    // asm 000000E2: 	BLTD	DISPLAY			;BR-> too far to the left
     // asm 000000E3: 	NOP			   	;PAD FOR DELAYED BRANCH
     // asm 000000E4: 	SUBF	R4,R3
     // asm 000000E5: 	CMPF	@SCRNHXI,R3
     // 	;---->BLT DISPLAY
-    // asm 000000E6: 	BGTD	DISPLAY_NEXT			;BR-> too far to the right
+    // asm 000000E6: 	BGTD	DISPLAY			;BR-> too far to the right
     // 	;***
     // 	;***	END TRIVIAL REJECTION, WE CAN PROBABLY SEE IT
     // 	;***
@@ -720,7 +719,7 @@ CHECKTHEREG:
     // asm 00000103: 	LDI	@POSTERMATI,AR5
     // asm 00000104: 	NOP
     // 	;---> BLED VT
-    // asm 00000105: 	B	DISPLAY_NEXT
+    // asm 00000105: 	B	DISPLAY
 REGULAR:
     // asm 00000106: 	LDI	@transmatrixI,AR3
     // asm 00000107: 	TSTB	O_NOROT,R6		;if this object is not self-orienting
@@ -887,7 +886,7 @@ POLYPOLY_ENTER:
     // asm 00000163: 	POP	BK
     // asm 00000164: 	RS	16,BK
     // asm 00000165: 	CALL	PLOTPOLY
-DISPLAY_NEXT:
+DISPLAY:
     // asm 00000166: 	LDI	*AR0,R0
     // asm 00000167: 	BNZ	NEXTOBJ
 DISPLAYX:
@@ -910,7 +909,7 @@ TRANS2D:
     // asm 00000172: 	LDI	@POSTERMAT2DI,AR5
     // asm 00000173: 	NOP
     // 	;---> BLED VT2
-    // asm 00000174: 	B	DISPLAY_NEXT
+    // asm 00000174: 	B	DISPLAY
 REGULAR1:
     // *STANDARD ROTATIONAL CASE
     // *	AR4	- src1		(usually the objects matrix)
@@ -1008,6 +1007,7 @@ EOVCTR2:
     // asm 000001BB: 	BU	POLYPOLY_ENTER
 
 }
+#undef DISPLAY_IMPL
 
     // *DYNAMIC OBJECT
 static void DYNAMIC_OBJECT(OBJ* obj, const u32* rom_ptr, const MATRIX* object_camera_matrix) {
@@ -1029,7 +1029,7 @@ static void DYNAMIC_OBJECT(OBJ* obj, const u32* rom_ptr, const MATRIX* object_ca
     // ;	BZ	NOTDEGRADEPOSS
     // asm 000001BC: 	LDI	*+AR0(ODIST),R0		;FORGET CLOSE DYNAMICS
     // asm 000001BD: 	CMPI	250,R0
-    // asm 000001BE: 	BLTD	DISPLAY_NEXT
+    // asm 000001BE: 	BLTD	DISPLAY
     if (obj->dist < 250) {
         return;
     }
@@ -1718,34 +1718,19 @@ CLIPIT:
 
         packed_vertices = (int)polygon->vertices_4_3_2_1;
 
-        // asm 000002C0: 	LDI	*+AR1(1),R3		;read internal vertices (v4|v3|v2|v1)
-        // asm 000002C1: 	AND	R7,R3,AR4
         v1 = packed_vertices & 0xff;
-        // asm 000002C2: 	ADDI	1,IR1
-        // asm 000002C3: 	MPYI	3,AR4			;V1
         base1 = v1 * 3;
-        // asm 000002C4: 	LSH	-8,R3
-        // asm 000002C5: 	AND	R7,R3,AR5
         v2 = (packed_vertices >> 8) & 0xff;
-        // asm 000002C6: 	MPYI	3,AR5			;V2
         base2 = v2 * 3;
-        // asm 000002C7: 	LSH	-8,R3
-        // asm 000002C8: 	AND	R7,R3,AR2
         v3 = (packed_vertices >> 16) & 0xff;
-        // asm 000002C9: 	MPYI	3,AR2			;V3
         base3 = v3 * 3;
-        // asm 000002CA: 	LSH	-8,R3
-        // asm 000002CB: 	AND	R7,R3,AR3
         v4 = (packed_vertices >> 24) & 0xff;
-        // asm 000002CC: 	MPYI	3,AR3			;V4
         base4 = v4 * 3;
         vertex1 = &BLOWLIST[base1];
         vertex2 = &BLOWLIST[base2];
         vertex3 = &BLOWLIST[base3];
         vertex4 = &BLOWLIST[base4];
 
-        // *CHECK ALL Z'S <=0
-        // asm 000002CD: 	LDF	*+AR4(IR1),R0
     z1 = C3X_LDF(vertex1[2]);
     z2 = C3X_LDF(vertex2[2]);
     z3 = C3X_LDF(vertex3[2]);
@@ -1754,18 +1739,10 @@ CLIPIT:
             goto DIRQ_POLYLP;
         }
 
-        // *CHECK HIDDEN SURFACE REMOVAL
-        // asm 000002D8: 	SUBF	*+AR4(IR0),*+AR5(IR0),R1	;dx = ax - bx
-        // asm 000002D9: 	SUBF	*+AR4(IR1),*+AR5(IR1),R3	;dy = ay - by
-        // asm 000002DA: 	SUBF	*+AR5(IR0),*+AR2(IR0),R0	;ex = cx - bx
         dx = C3X_SUB(vertex2[0], vertex1[0]);
         dy = C3X_SUB(vertex2[1], vertex1[1]);
         ex = C3X_SUB(vertex3[0], vertex2[0]);
-        // asm 000002DB: 	MPYF	R3,R0				;ex = dy * ex
-        // asm 000002DB:   ||	SUBF	*+AR5(IR1),*+AR2(IR1),R2	;ey = cy - by
         ey = C3X_SUB(vertex3[1], vertex2[1]);
-        // asm 000002DC: 	MPYF	R2,R1				;ey = dx * ey
-        // asm 000002DD: 	SUBF	R1,R0				;ey = ey - ex
         if (C3X_GT(C3X_SUB(C3X_MUL(dy, ex), C3X_MUL(dx, ey)), C3X_FROM_INT(0))) {
             goto DIRQ_POLYLP;
         }
@@ -1779,9 +1756,7 @@ CLIPIT:
             }
         }
 
-        // asm 000002E9: 	LDI	*AR1++(2),R2		;get control word/palette
         control_word = (int)polygon->palnum_and_cntl;
-        // asm 000002EA: 	LSH	R6,R2,R0		;SHIFT 16 TO RIGHT
         clip = CLIPCK(vertex1, vertex2, vertex3, vertex4, clipram);
         if (clip != 0) {
             control_word = (int)polygon->palnum_and_cntl;
@@ -1791,11 +1766,7 @@ CLIPIT:
             continue;
         }
         palette_index = (int)((u32)control_word >> 16);
-        // asm 000002EB: 	ADDI	R0,BK,AR4
-        // asm 000002EC: 	LSH	R6,*AR4,R0		;PALETTE->R0
         palette_base = (_PALLIST[palette_index].ref_count_and_pal_code >> 16) << 8;
-        // asm 000002EC:  ||	STI	R2,*AR7
-        // asm 000002ED:  	LSH	8,R0			;not a good way to do this fix l8r -7/14/93
 
         clip_vertex = clipram;
         port_output_fpga(
@@ -3120,6 +3091,14 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
 
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLOTILLUM", 0, 0);
 
+    // asm: 	PUSH	AR0
+    // asm: 	LSH	-16,R6
+    // asm: 	AND	0FFh,R6
+    // asm: 	LDIL	FIFO_STATUS,AR0
+    // asm: 	LDI	FIFO_ADDR>>16,AR7
+    // asm: 	LS	16,AR7
+    // asm: 	LDI	BK,AR6
+ILLUM_PLOTPOLYLP:
     for (polygon_index = 0; polygon_index <= polygon_count_minus_one; polygon_index++, polygons++) {
         int packed_vertices;
         const c3x_f32_t* vertex1;
@@ -3159,7 +3138,6 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
         // asm 000005B2: 	MPYI	3,AR2
         vertex3 = &BLOWLIST[((packed_vertices >> 16) & 0xff) * 3];
 
-        // asm: 	v4
         vertex4 = &BLOWLIST[((packed_vertices >> 24) & 0xff) * 3];
 
         // asm 000005B3: 	SUBF	*+AR4(IR0),*+AR5(IR0),R1	;dx = ax - bx
@@ -3168,9 +3146,9 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
         dy = C3X_SUB(vertex1[1], vertex2[1]);
         // asm 000005B5: 	SUBF	*+AR2(IR0),*+AR5(IR0),R0	;ex = cx - bx
         ex = C3X_SUB(vertex3[0], vertex2[0]);
+        // asm 000005B6: 	MPYF	R5,R0,R0			;ex = dy * ex
         // asm 000005B6:   ||	SUBF	*+AR2(IR1),*+AR5(IR1),R2	;ey = cy - by
         ey = C3X_SUB(vertex3[1], vertex2[1]);
-        // asm 000005B6: 	MPYF	R5,R0,R0			;ex = dy * ex
         // asm 000005B7: 	MPYF	R1,R2			;ey = dx * ey
         // asm 000005B8: 	SUBF	R0,R2			;ey = ey - ex
         // asm 000005B9: 	BGT	ZCLIP		;if back facing DONT PLOT
@@ -3178,6 +3156,7 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
             continue;
         }
 
+ILLUM1:
         // asm 000005BA: 	LDI	*AR1++,R7			;get control word
         control_word = (int)polygons->cntl;
         // ;	LDP	@tmpmatY			;DP loaded with low memory area
@@ -3193,6 +3172,7 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
         // asm 000005BF:  ||	STF	R4,*AR3
         // asm 000005C0: 	NOP 	*AR5++(8)		   	;FAST ADD TO AR5
         // asm 000005C1: 	MPYF	*AR5--,R5,R0
+        // asm 000005C1:  ||	STF	R5,*+AR3(1)
         // asm 000005C2: 	MPYF	*AR5--,*AR3,R1
         // asm 000005C3: 	MPYF	*AR5--,*-AR3(1),R0
         // asm 000005C3:  ||	ADDF	R0,R1,R2
@@ -3213,6 +3193,7 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
         // asm 000005CB: 	ADDF	R0,R3,R3
         rotated_normal_x = C3X_ADD(C3X_ADD(C3X_MUL(ROTATION_MATRIX.a00, normal_x), C3X_MUL(ROTATION_MATRIX.a01, normal_y)), C3X_MUL(ROTATION_MATRIX.a02, normal_z));
 
+        // asm: 	LDI	@LIGHTIY,AR5
         // asm 000005CD: 	MPYF	*-AR5(1),R3,R3
         // asm 000005CE: 	MPYF	*AR5,R2,R2
         // asm 000005CF: 	MPYF	*+AR5(1),R1,R1
@@ -3234,8 +3215,26 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
         control_word = FASTCC | illumination_index;
 
         // asm 000005D7: 	LDI	200h,R5		;second palette
+ILLUMFF:
+        // asm: 	LDI	*AR0,R0
+        // asm: 	AND	FIFO_STATUS_MAX_FLAG,R0
+        // asm: 	BNZ	ILLUMFF
         // asm 000005DB: 	STI	R7,*AR7
         // asm 000005DC: 	STI	R5,*AR7
+        // asm: 	LDI	*AR1++,AR2
+        // asm: 	CLRI	R3
+        // asm: 	LDI	3,RC
+        // asm: 	RPTB	LP1
+        // asm: 	LDI	AR2,AR3
+        // asm: 	LSH	R3,AR3
+        // asm: 	AND	0FFh,AR3
+        // asm: 	MPYI	3,AR3
+        // asm: 	SUBI	8,R3
+        // asm: 	FIX	*+AR3(IR0),R0
+        // asm: 	FIX	*+AR3(IR1),R0
+        // asm:  ||	STI	R0,*AR7
+LP1:
+        // asm: 	STI	R0,*AR7
         port_output_fpga(
             FIX(vertex1[0]),
             FIX(vertex1[1]),
@@ -3252,8 +3251,23 @@ static void PLOTILLUM(OBJ* obj, const ROM_ILLUM_POLYGON* polygons, int polygon_c
             0,
             0x200,
             control_word);
+        // asm: 	LDI	*+AR0(FIFO_INC-FIFO_STATUS),R0
+ILLUM_POLYLP:;
+        // asm: 	DBU	AR6,ILLUM_PLOTPOLYLP
     }
 
+    // asm: 	POP	AR0
+    // asm: 	RETS
+ZCLIP:
+    // asm: 	ADDI	5,AR1
+    // asm: 	DBU	AR6,ILLUM_PLOTPOLYLP
+    // asm: 	POP	AR0
+    // asm: 	RETS
+ZCLIP1:
+    // asm: 	ADDI	5,AR1
+    // asm: 	DBU	AR6,ILLUM_PLOTPOLYLP
+    // asm: 	POP	AR0
+    // asm: 	RETS
     (void)obj;
 }
 // *warning moving this to top of file will crash program ask ti why
