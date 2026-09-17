@@ -36,9 +36,12 @@ c3x_reg_t GET_TRACK_POS(PROC* p, OBJ* obj);
 static c3x_reg_t TRKP2(OBJ* piece, OBJ* obj);
 c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece);
 c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece);
+static c3x_reg_t SF_ENTER2__tail(PROC* p, OBJ* piece, OBJ* next_piece);
+static c3x_reg_t DELTA_JOININ__tail(c3x_reg_t theta, c3x_reg_t lane_offset);
 c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece);
 #define SUB_FUNCTION_XLANE DELTA_SUB_FUNCTION
 c3x_reg_t DELTA_SUB_FUNCTION(PROC* p, OBJ* piece);
+static c3x_reg_t SFENTER66__tail(PROC* p, OBJ* piece, OBJ* next_piece);
 void INIT_DRONES(void);
 void ADD_DRONE(OBJ* obj /*AR4*/);
 void FREE_DRONE(OBJ* obj);
@@ -46,6 +49,7 @@ void EXP_PUFF(PROC* p);
 int PRECOLLIDE_PLYR(OBJ* obj, CARBLK* carblk);
 c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/);
 c3x_reg_t PLYR_RIDE_RIGHT(void);
+static c3x_reg_t RIDE_RIGHT_JOININ__tail(OBJ* obj, CARBLK* carblk);
 void SMOKE_PUFF(PROC* p);
 void DROP_COCONUTS(PROC* p);
 int AHEAD_OF_PLAYER_P(OBJ* obj, CARBLK* carblk);
@@ -1226,9 +1230,6 @@ DISTANCE_OK:
  */
 c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece) {
     OBJ* next_piece;
-    c3x_reg_t theta;
-    int lane_mode;
-    int lane;
     // asm 00006733: 	PUSH	AR0
     // asm 00006734: 	PUSHFL	R0
     // asm 00006736: 	PUSHFL	R3
@@ -1237,60 +1238,11 @@ c3x_reg_t SUB_FUNCTION_RVS(PROC* p, OBJ* piece) {
     // asm: 	SLOCKON	Z,"DRONES\SUB_FUNCTION_RVS  OBLINK4 to NULL"
     SLOCKON(next_piece == NULL, "DRONES\\SUB_FUNCTION_RVS OBLINK4 to NULL");
     // asm 00006739: 	BU	SF_ENTER2
-    // shared asm 00006740: 	LDI	R0,AR0
-    // shared asm 00006741: 	LDF	*+AR0(OPOSX),R2
-    // shared asm 00006742: 	SUBF	*+AR2(OPOSX),R2
-    // shared asm 00006743: 	LDF	*+AR0(OPOSZ),R3
-    // shared asm 00006744: 	SUBF	*+AR2(OPOSZ),R3
-    // shared asm 00006745: 	CALL	ARCTANF
-    // shared asm 00006746: 	SUBF	HALFPI,R0
-    theta = C3X_SUB(
-        ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
-            C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
-        C3X_IMM_F32(HALFPI));
-    // shared asm 00006747: 	LDF	R0,R2				;FIND THETA
-    // shared asm 00006748: 	PUSHF	R2
-    // shared asm 00006749: 	CALL	GET_LANES
-    lane_mode = GET_LANES(piece);
-    // shared asm 0000674A: 	PUSH	AR2
-    // shared asm 0000674B: 	LDI	@MATRIXAI,AR2
-    // shared asm 0000674C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
-    FIND_YMATRIX(&MATRIXAI, theta);
-    // shared asm 0000674D: 	LDI	*+AR7(DELTA_STATUS),AR0
-    // shared asm 0000674E: 	AND	DELTA_STATUS_LANE,AR0
-    lane = p->ctx.RACER_DRONE.delta_status & DELTA_STATUS_LANE;
-    // ;	LDPI	@LANEPI,AR1
-    // shared asm 0000674F: 	LDI	@LANEPI,AR1
-    // shared asm 00006750: 	ADDI	R0,AR1		;4 or 2 lane map?
-    // shared asm 00006751: 	LDI	*AR1,R0
-    // shared asm 00006752: 	ADDI	R0,AR0		;which lane?
-    // shared asm 00006753: 	LDF	*AR0,R0
-    VECTORAI.X = C3X_STF(C3X_LDF(LANEP[lane_mode][lane]));
-    // shared asm 00006754: 	LDI	@VECTORAI,AR2
-    // shared asm 00006755: 	STF	R0,*+AR2(X)
-    // shared asm 00006756: 	CLRF	R0
-    // shared asm 00006757: 	STF	R0,*+AR2(Y)
-    // shared asm 00006758: 	STF	R0,*+AR2(Z)
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
-    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
-    // shared asm 00006759: 	LDI	AR2,R3
-    // shared asm 0000675A: 	LDI	@MATRIXAI,R2
-    // shared asm 0000675B: 	CALL	MATRIX_MUL			;COMPUTE THE LANE OFFSET IN VECTORA
-    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
-    // shared asm 0000675C: 	POP	AR2
-    // shared asm 0000675D: 	POPF	R2
-    // shared asm 0000675E: 	POPFL	R3
-    // shared asm 00006760: 	POPFL	R0
-    // shared asm 00006762: 	POP	AR0
-    // shared asm 00006763: 	RETS
-    return theta;
+    return SF_ENTER2__tail(p, piece, next_piece);
 }
 
 c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece) {
     OBJ* next_piece;
-    c3x_reg_t theta;
-    int lane_mode;
-    int lane;
     // asm 0000673A: 	PUSH	AR0
     // asm 0000673B: 	PUSHFL	R0
     // asm 0000673D: 	PUSHFL	R3
@@ -1298,6 +1250,16 @@ c3x_reg_t SUB_FUNCTION(PROC* p, OBJ* piece) {
     next_piece = (OBJ*)piece->link4;
     // asm: 	SLOCKON	Z,"DRONES\SUB_FUNCTION  OLINK4 to NULL"
     SLOCKON(next_piece == NULL, "DRONES\\SUB_FUNCTION OLINK4 to NULL");
+    return SF_ENTER2__tail(p, piece, next_piece);
+}
+
+static c3x_reg_t SF_ENTER2__tail(PROC* p, OBJ* piece, OBJ* next_piece) {
+    c3x_reg_t theta;
+    c3x_reg_t saved_theta;
+    c3x_reg_t lane_offset;
+    int lane_mode;
+    int lane;
+
 SF_ENTER2:
     // asm 00006740: 	LDI	R0,AR0
     // asm 00006741: 	LDF	*+AR0(OPOSX),R2
@@ -1312,6 +1274,7 @@ SF_ENTER2:
         C3X_IMM_F32(HALFPI));
     // asm 00006747: 	LDF	R0,R2				;FIND THETA
     // asm 00006748: 	PUSHF	R2
+    saved_theta = C3X_LDF(C3X_STF(theta));
     // asm 00006749: 	CALL	GET_LANES
     lane_mode = GET_LANES(piece);
     // asm 0000674A: 	PUSH	AR2
@@ -1327,10 +1290,15 @@ SF_ENTER2:
     // asm 00006751: 	LDI	*AR1,R0
     // asm 00006752: 	ADDI	R0,AR0		;which lane?
     // asm 00006753: 	LDF	*AR0,R0
-    VECTORAI.X = C3X_STF(C3X_LDF(LANEP[lane_mode][lane]));
+    lane_offset = C3X_LDF(LANEP[lane_mode][lane]);
+    return DELTA_JOININ__tail(saved_theta, lane_offset);
+}
+
+static c3x_reg_t DELTA_JOININ__tail(c3x_reg_t theta, c3x_reg_t lane_offset) {
 DELTA_JOININ:
     // asm 00006754: 	LDI	@VECTORAI,AR2
     // asm 00006755: 	STF	R0,*+AR2(X)
+    VECTORAI.X = C3X_STF(lane_offset);
     // asm 00006756: 	CLRF	R0
     // asm 00006757: 	STF	R0,*+AR2(Y)
     // asm 00006758: 	STF	R0,*+AR2(Z)
@@ -1351,7 +1319,6 @@ DELTA_JOININ:
 
 c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece) {
     OBJ* next_piece;
-    c3x_reg_t theta;
     // asm 00006764: 	PUSH	AR0
     // asm 00006765: 	PUSHFL	R0
     // asm 00006767: 	PUSHFL	R3
@@ -1359,49 +1326,11 @@ c3x_reg_t SUB_FUNCTION_RVS_XLANE(PROC* p, OBJ* piece) {
     next_piece = (OBJ*)piece->blink4;
     SLOCKON(next_piece == NULL, "DRONES\\SUB_FUNCTION_RVS_XLANE OBLINK4 to NULL");
     // asm 0000676A: 	BU	SFENTER66
-    // shared asm 00006771: 	LDI	R0,AR0
-    // shared asm 00006772: 	LDF	*+AR0(OPOSX),R2
-    // shared asm 00006773: 	SUBF	*+AR2(OPOSX),R2
-    // shared asm 00006774: 	LDF	*+AR0(OPOSZ),R3
-    // shared asm 00006775: 	SUBF	*+AR2(OPOSZ),R3
-    // shared asm 00006776: 	CALL	ARCTANF
-    // shared asm 00006777: 	SUBF	HALFPI,R0
-    theta = C3X_SUB(
-        ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
-            C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
-        C3X_IMM_F32(HALFPI));
-    // shared asm 00006778: 	LDF	R0,R2				;FIND THETA
-    // shared asm 00006779: 	PUSHF	R2
-    // shared asm 0000677A: 	PUSH	AR2
-    // shared asm 0000677B: 	LDI	@MATRIXAI,AR2
-    // shared asm 0000677C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
-    FIND_YMATRIX(&MATRIXAI, theta);
-    // shared asm 0000677D: 	LDF	*+AR7(DELTA_XLANE),R0
-    VECTORAI.X = C3X_STF(C3X_LDF(p->ctx.RACER_DRONE.delta_xlane));
-    // shared asm 0000677E: 	BU	DELTA_JOININ
-    // shared asm 00006754: 	LDI	@VECTORAI,AR2
-    // shared asm 00006755: 	STF	R0,*+AR2(X)
-    // shared asm 00006756: 	CLRF	R0
-    // shared asm 00006757: 	STF	R0,*+AR2(Y)
-    // shared asm 00006758: 	STF	R0,*+AR2(Z)
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
-    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
-    // shared asm 00006759: 	LDI	AR2,R3
-    // shared asm 0000675A: 	LDI	@MATRIXAI,R2
-    // shared asm 0000675B: 	CALL	MATRIX_MUL			;COMPUTE THE LANE OFFSET IN VECTORA
-    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
-    // shared asm 0000675C: 	POP	AR2
-    // shared asm 0000675D: 	POPF	R2
-    // shared asm 0000675E: 	POPFL	R3
-    // shared asm 00006760: 	POPFL	R0
-    // shared asm 00006762: 	POP	AR0
-    // shared asm 00006763: 	RETS
-    return theta;
+    return SFENTER66__tail(p, piece, next_piece);
 }
 
 c3x_reg_t DELTA_SUB_FUNCTION(PROC* p, OBJ* piece) {
     OBJ* next_piece;
-    c3x_reg_t theta;
     // asm 0000676B: 	PUSH	AR0
     // asm 0000676C: 	PUSHFL	R0
     // asm 0000676E: 	PUSHFL	R3
@@ -1409,6 +1338,14 @@ c3x_reg_t DELTA_SUB_FUNCTION(PROC* p, OBJ* piece) {
     next_piece = (OBJ*)piece->link4;
     // asm: 	SLOCKON	Z,"DRONES\DELTA_SUB_FUNCTION  OLINK4 to NULL"
     SLOCKON(next_piece == NULL, "DRONES\\DELTA_SUB_FUNCTION OLINK4 to NULL");
+    return SFENTER66__tail(p, piece, next_piece);
+}
+
+static c3x_reg_t SFENTER66__tail(PROC* p, OBJ* piece, OBJ* next_piece) {
+    c3x_reg_t theta;
+    c3x_reg_t saved_theta;
+    c3x_reg_t lane_offset;
+
 SFENTER66:
     // asm 00006771: 	LDI	R0,AR0
     // asm 00006772: 	LDF	*+AR0(OPOSX),R2
@@ -1423,17 +1360,15 @@ SFENTER66:
         C3X_IMM_F32(HALFPI));
     // asm 00006778: 	LDF	R0,R2				;FIND THETA
     // asm 00006779: 	PUSHF	R2
+    saved_theta = C3X_LDF(C3X_STF(theta));
     // asm 0000677A: 	PUSH	AR2
     // asm 0000677B: 	LDI	@MATRIXAI,AR2
     // asm 0000677C: 	CALL	FIND_YMATRIX			;FIND Y MATRIX (FOR LANE OFFSETTING)
     FIND_YMATRIX(&MATRIXAI, theta); // FIND Y MATRIX (FOR LANE OFFSETTING)
     // asm 0000677D: 	LDF	*+AR7(DELTA_XLANE),R0
-    VECTORAI.X = C3X_STF(C3X_LDF(p->ctx.RACER_DRONE.delta_xlane));
+    lane_offset = C3X_LDF(p->ctx.RACER_DRONE.delta_xlane);
     // asm 0000677E: 	BU	DELTA_JOININ
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
-    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
-    MATRIX_MUL(&VECTORAI, &MATRIXAI, &VECTORAI);
-    return theta;
+    return DELTA_JOININ__tail(saved_theta, lane_offset);
 }
 
 // *----------------------------------------------------------------------------
@@ -1940,20 +1875,6 @@ NOT_IMMINENT:
  *
  */
 c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
-    OBJ* track_obj;
-    OBJ* next_track_obj;
-    c3x_reg_t a;
-    c3x_reg_t b;
-    c3x_reg_t c;
-    c3x_reg_t negative_a;
-    c3x_reg_t negative_b;
-    c3x_reg_t c_term_a;
-    c3x_reg_t c_term_b;
-    c3x_reg_t denominator_sq;
-    c3x_reg_t denominator;
-    c3x_reg_t numerator;
-    c3x_reg_t dist;
-
     // asm 0000680E: 	PUSH	R1
     // asm 0000680F: 	PUSHFL	R2
     // asm 00006811: 	PUSH	R3
@@ -1962,43 +1883,7 @@ c3x_reg_t DRONE_RIDE_RIGHT(OBJ* obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 00006814: 	PUSH	AR4
     // asm 00006815: 	PUSH	AR5
     // asm 00006816: 	BU	RIDE_RIGHT_JOININ
-    track_obj = OBJREF_IS_STF_ZERO(carblk->closest_track_piece)
-        ? OBJREF_STF_ZERO_VIEW()
-        : OBJREF_TO_PTR(carblk->closest_track_piece);
-    if (track_obj == NULL) {
-        return C3X_FROM_INT(0);
-    }
-
-    // shared asm 00006823: 	LDI	*+AR5(CARTRAK),AR2
-    // shared asm 00006824: 	LDI	*+AR2(OLINK4),R0
-    next_track_obj = (OBJ*)track_obj->link4;
-    if (next_track_obj == NULL) {
-        return C3X_FROM_INT(0);
-    }
-
-    // shared asm 00006827: 	LDF	*+AR2(OPOSZ),R0
-    // shared asm 00006828: 	SUBF	*+AR0(OPOSZ),R0		;A = Uy - Vy
-    a = C3X_SUB(track_obj->pos.Z, next_track_obj->pos.Z);
-    // shared asm 00006829: 	LDF	*+AR0(OPOSX),R1
-    // shared asm 0000682A: 	SUBF	*+AR2(OPOSX),R1		;B = Vx - Ux
-    b = C3X_SUB(next_track_obj->pos.X, track_obj->pos.X);
-
-    // asm 0000682B..0000682F
-    negative_a = C3X_NEG(a);
-    negative_b = C3X_NEG(b);
-    c_term_a = C3X_MUL(negative_a, track_obj->pos.X);
-    c_term_b = C3X_MUL(negative_b, track_obj->pos.Z);
-    c = C3X_ADD(c_term_a, c_term_b);
-
-    // asm 00006832..00006839
-    denominator_sq = C3X_ADD(C3X_MUL(a, a), C3X_MUL(b, b));
-    denominator = SQRT(denominator_sq);
-    a = C3X_LDF(C3X_STF(a));
-    c = C3X_LDF(C3X_STF(c));
-    numerator = C3X_ADD(C3X_ADD(C3X_MUL(a, obj->pos.X), C3X_MUL(b, obj->pos.Z)), c);
-    dist = DIV_F(numerator, denominator);
-
-    return dist;
+    return RIDE_RIGHT_JOININ__tail(obj, carblk);
 }
 
 c3x_reg_t PLYR_RIDE_RIGHT(void) {
@@ -2017,36 +1902,82 @@ c3x_reg_t PLYR_RIDE_RIGHT(void) {
     // asm 00006820: 	CMPI	0,AR4
     // asm 00006821: 	BEQ	PRR_ONRITE
     // asm 00006822: 	LDI	*+AR4(OCARBLK),AR5
+    return RIDE_RIGHT_JOININ__tail(PLYCAR, PLYCAR->carblk);
+}
+
+static c3x_reg_t RIDE_RIGHT_JOININ__tail(OBJ* obj, CARBLK* carblk) {
+    OBJ* track_obj;
+    OBJ* next_track_obj;
+    c3x_reg_t a;
+    c3x_reg_t b;
+    c3x_reg_t c;
+    c3x_reg_t negative_a;
+    c3x_reg_t negative_b;
+    c3x_reg_t c_term_a;
+    c3x_reg_t c_term_b;
+    c3x_reg_t denominator_sq;
+    c3x_reg_t denominator;
+    c3x_reg_t numerator;
+    c3x_reg_t dist;
+    c3x_reg_t saved_a;
+    c3x_reg_t saved_c;
+
 RIDE_RIGHT_JOININ:
     // asm 00006823: 	LDI	*+AR5(CARTRAK),AR2
+    track_obj = OBJREF_IS_STF_ZERO(carblk->closest_track_piece)
+        ? OBJREF_STF_ZERO_VIEW()
+        : OBJREF_TO_PTR(carblk->closest_track_piece);
+    if (track_obj == NULL) {
+        return C3X_FROM_INT(0);
+    }
     // asm 00006824: 	LDI	*+AR2(OLINK4),R0
+    next_track_obj = (OBJ*)track_obj->link4;
     // asm 00006825: 	BZ	PRR_ONRITE
+    if (next_track_obj == NULL) {
+        return C3X_FROM_INT(0);
+    }
     // asm 00006826: 	LDI	R0,AR0
     // asm 00006827: 	LDF	*+AR2(OPOSZ),R0
     // asm 00006828: 	SUBF	*+AR0(OPOSZ),R0		;A = Uy - Vy
+    a = C3X_SUB(C3X_LDF(track_obj->pos.Z), C3X_LDF(next_track_obj->pos.Z));
     // asm 00006829: 	LDF	*+AR0(OPOSX),R1
     // asm 0000682A: 	SUBF	*+AR2(OPOSX),R1		;B = Vx - Ux
+    b = C3X_SUB(C3X_LDF(next_track_obj->pos.X), C3X_LDF(track_obj->pos.X));
     // asm 0000682B: 	NEGF	R0,R2
+    negative_a = C3X_NEG(a);
     // asm 0000682C: 	NEGF	R1,R3
+    negative_b = C3X_NEG(b);
     // asm 0000682D: 	MPYF	*+AR2(OPOSX),R2
+    c_term_a = C3X_MUL(negative_a, C3X_LDF(track_obj->pos.X));
     // asm 0000682E: 	MPYF	*+AR2(OPOSZ),R3
+    c_term_b = C3X_MUL(negative_b, C3X_LDF(track_obj->pos.Z));
     // asm 0000682F: 	ADDF	R3,R2			;C = -(A Ux + B Uy)
+    c = C3X_ADD(c_term_a, c_term_b);
     // ;	NEGF	R2
     // asm 00006830: 	PUSHF	R0
+    saved_a = C3X_LDF(C3X_STF(a));
     // asm 00006831: 	PUSHF	R2
+    saved_c = C3X_LDF(C3X_STF(c));
     // asm 00006832: 	MPYF	R0,R0,R0
     // asm 00006833: 	MPYF	R1,R1,R2
     // asm 00006834: 	ADDF	R0,R2
+    denominator_sq = C3X_ADD(C3X_MUL(a, a), C3X_MUL(b, b));
     // asm 00006835: 	CALL	SQRT
+    denominator = SQRT(denominator_sq);
     // asm 00006836: 	LDF	R0,R3
     // asm 00006837: 	POPF	R2
+    c = saved_c;
     // asm 00006838: 	POPF	R0
+    a = saved_a;
     // asm 00006839: 	MPYF	*+AR4(OPOSX),R0
     // asm 0000683A: 	MPYF	*+AR4(OPOSZ),R1
     // asm 0000683B: 	ADDF	R1,R0
     // asm 0000683C: 	ADDF	R2,R0
+    numerator = C3X_ADD(
+        C3X_ADD(C3X_MUL(a, C3X_LDF(obj->pos.X)), C3X_MUL(b, C3X_LDF(obj->pos.Z))), c);
     // asm 0000683D: 	LDF	R3,R1
     // asm 0000683E: 	CALL	DIV_F
+    dist = DIV_F(numerator, denominator);
     // asm 0000683F: 	LDF	R0,R0			;dist = (A Ux + B Uy + C)/sqrt(A^2 + B^2)
     // asm 00006840: 	BLT	PRR_ONRITE
 PRR_NONRITE:
@@ -2064,7 +1995,7 @@ PRR_X:
     // asm 00006849: 	POPFL	R2
     // asm 0000684B: 	POP	R1
     // asm 0000684C: 	RETS
-    return DRONE_RIDE_RIGHT(PLYCAR, PLYCAR->carblk);
+    return dist;
 }
 
 // *----------------------------------------------------------------------------
