@@ -72,29 +72,54 @@ static int num_palettes = 253;
  *
  */
 void PAL_INIT(void) {
+    // asm: 	PUSH	R0
+    // asm: 	PUSH	AR0
+
     // Clear palette transfer RAM.
     // Note: this is PALNUM * 3 words, not PALNUM * sizeof(PALXFER).
     // So PTTRAMI may not include the link field, or this may be a separate table.
+    // asm: 	LDP	@PTTRAMI
+    // asm: 	LDI	@PTTRAMI,AR0
+    // asm: 	LDI	0,R0
+    // asm: 	RPTS	(PALNUM*3)-1
+    // asm: 	STI	R0,*AR0++
     for (int i = 0; i < PALNUM * 3; i++) {
         PTTRAMI[i] = 0;
     }
 
     // Clear allocation state for palette RAM slots.
+    // asm: 	LDP	@PALRAMI
+    // asm: 	LDI	@PALRAMI,AR0
+    // asm: 	RPTS	PALNUM-1
+    // asm: 	STI	R0,*AR0++
     for (int i = 0; i < PALNUM; i++) {
         PALRAMI[i] = 0;
     }
 
     // Clear raw palette source lookup by slot.
+    // asm: 	LDP	@RAWLOCSI
+    // asm: 	LDI	@RAWLOCSI,AR0
+    // asm: 	RPTS	PALNUM-1
+    // asm: 	STI	R0,*AR0++
     for (int i = 0; i < PALNUM; i++) {
         RAWLOCSI[i] = NULL;
     }
 
     // Clear PCOMP/source-index palette refcount table.
+    // asm: 	LDP	@PALLISTI
+    // asm: 	LDI	@PALLISTI,AR0
+    // asm: 	RPTS	num_palettes-1
+    // asm: 	STI	R0,*AR0++
     for (int i = 0; i < num_palettes; i++) {
         PALLISTI[i].ref_count_and_pal_code = 0;
     }
 
+    // asm: 	CALL	PALXFER_INIT
     PALXFER_INIT();
+
+    // asm: 	POP	AR0
+    // asm: 	POP	R0
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -317,31 +342,34 @@ void PAL_OVERWRITE(u32 palette_to_overwrite /*R0*/, u32 source_palette /*R1*/)
  *
  */
 int PAL_FIND(u32 pal_index) {
+    int ref_count_and_pal_code;
+
     // asm 00009EF8: 	PUSH	AR2
     // asm 00009EF9: 	SETC		 	;ASSUME PALETTE NOT FOUND
     // asm 00009EFA: 	LDP	@PALLISTI
     // asm 00009EFB: 	ADDI	@PALLISTI,AR2
     // asm 00009EFC: 	LDI	*AR2,R0
+    ref_count_and_pal_code = PALLISTI[pal_index].ref_count_and_pal_code;
     // asm 00009EFD: 	BZ	FPLXEX
+    if (ref_count_and_pal_code == 0) {
+        goto FPLXEX;
+    }
     // asm 00009EFE: 	LSH	-16,R0
     // asm 00009EFF: 	LSH	8,R0
+    ref_count_and_pal_code = (ref_count_and_pal_code >> 16) << 8;
     // asm 00009F00: 	CLRC	    		;WE FOUND IT DUDES...
-    // asm 00009F01: FPLX
+FPLX:
     // asm 00009F01: 	POP	AR2
     // asm 00009F02: 	RETS
+    return ref_count_and_pal_code;
+
+FPLXEX:
     // ;edbg
     // ;	BU	$
     // asm 00009F03: 	SETC
     // asm 00009F04: 	POP	AR2
     // asm 00009F05: 	RETS
-    int ref_count_and_pal_code;
-
-    ref_count_and_pal_code = PALLISTI[pal_index].ref_count_and_pal_code;
-    if (ref_count_and_pal_code == 0) {
-        return -1;
-    }
-
-    return (ref_count_and_pal_code >> 16) << 8;
+    return -1;
 }
 
 // *----------------------------------------------------------------------------
@@ -365,16 +393,28 @@ int PAL_FIND(u32 pal_index) {
  *
  */
 int PAL_FIND_RAW(const tPAL* palette_source) {
+    int slot;
+
     // asm 00009F06: 	PUSH	AR0
     // asm 00009F07: 	LDI	-1,R0
+    slot = -1;
     // asm 00009F08: 	LDP	@RAWLOCSI
     // asm 00009F09: 	LDI	@RAWLOCSI,AR0
+FINDRLP:
     // asm 00009F0A: ADDI	1,R0
+    slot++;
     // asm 00009F0B: 	CMPI	AR2,*AR0++
     // asm 00009F0C: 	BEQ	FOUNDRAW
+    if (RAWLOCSI[slot] == palette_source) {
+        goto FOUNDRAW;
+    }
     // asm 00009F0D: 	CMPI	PALNUM,R0
     // asm 00009F0E: 	BLE	FINDRLP
+    if (slot < PALNUM - 1) {
+        goto FINDRLP;
+    }
     // asm 00009F0F: 	LDI	-1,R0
+    slot = -1;
     // ;	.if	DEBUG
     // ;edbg	;DBG DBG
     // ;	BU	$
@@ -383,17 +423,15 @@ int PAL_FIND_RAW(const tPAL* palette_source) {
     // asm 00009F10: 	CLRC
     // asm 00009F11: 	POP	AR0
     // asm 00009F12: 	RETS
+    return slot;
+
+FOUNDRAW:
     // asm 00009F13: 	LSH	8,R0
+    slot <<= 8;
     // asm 00009F14: 	SETC
     // asm 00009F15: 	POP	AR0
     // asm 00009F16: 	RETS
-    for (int slot = 0; slot < PALNUM; slot++) {
-        if (RAWLOCSI[slot] == palette_source) {
-            return slot << 8;
-        }
-    }
-
-    return -1;
+    return slot;
 }
 
 // *----------------------------------------------------------------------------
@@ -449,51 +487,108 @@ void PAL_DELETE_RAW(int actual_palette_index /*AR2*/)
  *
  */
 tPALETTE_CODE PAL_ALLOC(u32 pal_index) {
-    tPALLIST_ENTRY* entry = &_PALLIST[pal_index];
+    tPALLIST_ENTRY* entry;
+    tPAL* pal_src;
+    int slot;
+    int scan_slot;
+    int marker;
+    u32 count;
+    u32 palette_code;
+
+    // asm: 	PUSHM	R2,R3,AR1,AR0,AR2
 
     /* LOOK IF ALREADY ALLOCATED */
-    if (entry->ref_count_and_pal_code != 0) {
-        /* YES, INCREMENT AND RETURN */
-        entry->ref_count_and_pal_code++;
-
-        // Upper 16 bits store the palette slot.
-        return ((entry->ref_count_and_pal_code >> 16) << 8);
+    // asm: 	LDI	@PALLISTI,AR1
+    // asm: 	ADDI	AR2,AR1
+    entry = &PALLISTI[pal_index];
+    // asm: 	LDI	*AR1,R0	     	;ALREADY ALLOCATED?
+    palette_code = (u32)entry->ref_count_and_pal_code;
+    // asm: 	BZ	GPL0		;NO...
+    if (entry->ref_count_and_pal_code == 0) {
+        goto GPL0;
     }
+    /* YES, INCREMENT AND RETURN */
+    // asm: 	ADDI	1,R0		;YES, INCREMENT AND RETURN
+    entry->ref_count_and_pal_code++;
+    palette_code++;
+    // asm: 	STI	R0,*AR1
+    // asm: 	B	GPLX		;RETURN...
+    goto GPLX;
 
+GPL0:
     /* FIND A FREE ONE */
     /* LOOK FOR FREE CELL */
-    int slot = -1;
-
-    for (int i = 0; i < PALNUM; ++i) {
-        if (PALRAM[i] == 0) {
-            slot = i;
-            break;
+    // asm: 	LDP	@PALRAMI	 	;LOOK FOR FREE CELL
+    // asm: 	LDI	@PALRAMI,AR0
+    // asm: 	LDI	PALNUM-1,RC
+    scan_slot = 0;
+    // asm: 	LDI	*AR0++,R0 	;GET FIRST ONE
+    marker = PALRAMI[scan_slot++];
+    // asm: 	RPTB	GPLP
+    // asm: 	BZ	GETPL		;GOT A EMPTY
+    if (marker == 0) {
+        slot = 0;
+        goto GETPL;
+    }
+GPLP:
+    // asm: 	LDI	*AR0++,R0	;GET NEXT ONE
+    while (scan_slot < PALNUM) {
+        marker = PALRAMI[scan_slot];
+        if (marker == 0) {
+            slot = scan_slot;
+            goto GETPL;
         }
+        scan_slot++;
     }
+GPERR:
+    // asm: 	ERRON	U,77h
+    ERRON(0x77);
+    // asm: 	B	GPLX
+    goto GPLX;
 
-    if (slot < 0) {
-        /* ERROR NONE LEFT */
-        ERRON(0x77);
-        return 0;
-    }
-
-    tPAL* pal_src = PALROMI[pal_index];
+GETPL:
+    // asm: 	LDI	AR2,R2
+    // asm: 	LDP	PALROMI
+    // asm: 	ADDI	@PALROMI,AR2
+    // asm: 	LDI	*AR2,AR2	;NOW HOLDS RAM LOCATION
+    pal_src = PALROMI[pal_index];
 
     /* MAKE SURE A BIT IS SET */
-    PALRAMI[slot] = pal_index | 0x8000;
+    // asm: 	OR	8000H,R2	;MAKE SURE A BIT IS SET
+    // asm: 	STI	R2,*-AR0(1)	;MARK PALETTE AS TAKEN
+    PALRAMI[slot] = (int)(pal_index | 0x8000u);
 
     /* GET PALETTE CODE */
-    entry->ref_count_and_pal_code = ((u32)slot << 16) | 1;
+    // asm: 	SUBI	PALNUM-1,RC	;GET PALETTE CODE
+    // asm: 	NEGI	RC,R0
+    // asm: 	LSH	16,R0
+    palette_code = (u32)slot << 16;
+    // asm: 	ADDI	1,R0		;INC COUNT
+    palette_code += 1;
+    // asm: 	STI	R0,*AR1
+    entry->ref_count_and_pal_code = (int)palette_code;
 
     /* SETUP TRANSFER */
     /* GET COUNT */
-    u32 count = pal_src->flags_and_count;
+    // asm: 	LDI	*AR2++,R3	;GET COUNT
+    count = (u32)pal_src->flags_and_count;
 
     /* GET DESTINATION */
-    PAL_SET(pal_src->data, (u32)slot << 8, count);
+    // asm: 	LDI	R0,R2		;GET DESTINATION
+    // asm: 	LSH	-16,R2
+    // asm: 	LSH	8,R2
+    // asm: 	CALL	PAL_SET
+    PAL_SET(pal_src->data, (palette_code >> 16) << 8, count);
+    // asm: 	SUBI	1,AR2		;RESTORE AR2
 
     /* SHIFT DOWN CODE */
-    return (u32)slot << 8;
+GPLX:
+    // asm: 	LSH	-16,R0		;SHIFT DOWN CODE
+    palette_code = (palette_code >> 16) << 8;
+    // asm: 	LSH	8,R0
+    // asm: 	POPM	AR2,AR0,AR1,R3,R2
+    // asm: 	RETS
+    return palette_code;
 }
 
 // *----------------------------------------------------------------------------
@@ -512,40 +607,88 @@ tPALETTE_CODE PAL_ALLOC(u32 pal_index) {
  *
  */
 tPALETTE_CODE PAL_ALLOC_RAW(tPAL* palette_source) {
-    int slot = -1;
+    int slot;
+    int scan_slot;
+    int marker;
+    uint32_t count;
+    uint32_t palette_code;
+
+    // asm: 	PUSHM	R2,R3,AR1,AR0,AR2
 
     // mame_validate_arg("AR2", palette_source);
 
-    for (int i = 0; i < PALNUM; i++) {
-        if (PALRAMI[i] == 0) {
-            slot = i;
-            break;
+    /* FIND A FREE ONE */
+    // asm: 	LDP	@PALRAMI	 	;LOOK FOR FREE CELL
+    // asm: 	LDI	@PALRAMI,AR0
+    // asm: 	LDI	PALNUM-1,RC
+    scan_slot = 0;
+    // asm: 	LDI	*AR0++,R0 	;GET FIRST ONE
+    marker = PALRAMI[scan_slot++];
+    // asm: 	RPTB	RPLP
+    // asm: 	BZ	RAWPL		;GOT A EMPTY
+    if (marker == 0) {
+        slot = 0;
+        goto RAWPL;
+    }
+RPLP:
+    // asm: 	LDI	*AR0++,R0	;GET NEXT ONE
+    while (scan_slot < PALNUM) {
+        marker = PALRAMI[scan_slot];
+        if (marker == 0) {
+            slot = scan_slot;
+            goto RAWPL;
         }
+        scan_slot++;
     }
+    // asm: 	ERRON	U,78h
+    ERRON(0x78);
+    // asm: 	B	RAWPEX		;UNTIL WE COME UP WITH A BETTER IDEA
+    palette_code = 0;
+    goto RAWPEX;
 
-    if (slot < 0) {
-        ERRON(0x78);
-        return 0; // original likely never returns normally
-    }
-
+RAWPL:
     // Raw palettes are marked as taken, but not associated with a PCOMP index.
+    // asm: 	LDI	-1,R2
+    // asm: 	STI	R2,*-AR0(1)	;MARK PALETTE AS TAKEN
     PALRAMI[slot] = UINT32_MAX;
 
-    // First word of source is the transfer count.
-    uint32_t count = palette_source->flags_and_count;
+    // asm: 	SUBI	PALNUM-1,RC	;GET PALETTE CODE
+    // asm: 	NEGI	RC,R0
+    // asm: 	LSH	16,R0
+    palette_code = (uint32_t)slot << 16;
+    // asm: 	ADDI	1,R0		;INC COUNT
+    palette_code += 1;
 
+    // First word of source is the transfer count.
+    // asm: 	LDI	*AR2++,R3	;GET COUNT
+    count = (uint32_t)palette_source->flags_and_count;
     // mame_validate_reg_at_addr(0x00009F76, "R3", &count);
 
     // Hardware palette destination is slot in bits 8-15, color index 0 in bits 0-7.
-    uint32_t palette_code = (uint32_t)slot << 8;
-
-    PAL_SET(palette_source->data, palette_code, count);
+    // asm: 	LDI	R0,R2		;GET DESTINATION
+    // asm: 	LSH	-16,R2
+    // asm: 	LSH	8,R2
+    // asm: 	CALL	PAL_SET
+    PAL_SET(palette_source->data, (palette_code >> 16) << 8, count);
+    // asm: 	SUBI	1,AR2		;RESTORE AR2
+RPLX:
+    // asm: 	LSH	-16,R0		;SHIFT DOWN CODE
+    palette_code >>= 16;
 
     // Remember the original raw palette record pointer, including count header.
+    // asm: 	LDI	R0,AR0
+    // asm: 	LDP	@RAWLOCSI
+    // asm: 	ADDI	@RAWLOCSI,AR0
+    // asm: 	STI	AR2,*AR0
     RAWLOCSI[slot] = palette_source;
 
     // mame_validate_reg_at_addr(0x00009F86, "R0", &palette_code);
 
+RAWPEX:
+    // asm: 	LSH	8,R0
+    palette_code <<= 8;
+    // asm: 	POPM	AR2,AR0,AR1,R3,R2
+    // asm: 	RETS
     return palette_code;
 }
 
@@ -570,22 +713,44 @@ tPALETTE_CODE PAL_ALLOC_RAW(tPAL* palette_source) {
 void PAL_SET(uint32_t* src, uint32_t destPaletteColor, uint32_t count) {
     PALXFER* xfer;
 
-    xfer = PALXFER_GET(); // get/free/allocate a transfer slot
+    // asm: 	PUSH	R0
+    // asm: 	PUSH	AR0
 
+    // asm: 	DINT
+    DINT();
+    // asm: 	CALL	PALXFER_GET
+    xfer = PALXFER_GET();
+
+    // asm: 	STI	AR2,*+AR0(PALX_SADDR)	;SAVE SOURCE ADDR
     xfer->source_addr = src;
 
     // Build full Color RAM destination address.
     // COLORAM high address bits are combined with palette/color offset.
+    // asm: 	LDI	COLORAM>>16,RC		;ADD IN COLORAM ADDRESS
+    // asm: 	LSH	16,RC			;SHIFT IT IN PLACE
+    // asm: 	ADDI	R2,RC			;CONVERTED TO ADDRESS
+    // asm: 	STI	RC,*+AR0(PALX_DADDR)	;SAVE DEST ADDR
     xfer->dest_addr = COLOROM_ADDR((COLORAM & 0xFFFF0000) + destPaletteColor);
 
+    // asm: 	STI	R3,*+AR0(PALX_COUNT)	;SAVE WORD COUNT
     xfer->count = count;
 
-#ifdef DEBUG
-    // TODO
-    // if (xfer->dest_addr < COLRAML || xfer->dest_addr > COLRAMH) {
-    //     ERRON(0x88);
-    // }
+    // asm: 	CALL	ENABLEGIE
+    ENABLEGIE();
+
+#if DEBUG
+    // asm: 	NOP
+    // asm: 	NOP
+    // asm: 	NOP
+    // asm: 	CMPI	@COLRAML,RC
+    // asm: 	ERRON	LT,88
+    // asm: 	CMPI	@COLRAMH,RC
+    // asm: 	ERRON	GT,88
 #endif
+
+    // asm: 	POP	AR0
+    // asm: 	POP	R0
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -601,14 +766,42 @@ PALXFER PALXFER_STR[NXFER_PALS];
 
 // *----------------------------------------------------------------------------
 void PALXFER_INIT(void) {
-    PALXFER_ACTIVE = NULL;
-    PALXFER_FREEI = PALXFER_STRI;
+    PALXFER** link;
+    PALXFER* next;
 
-    for (u32 i = 0; i < NXFER_PALS - 1; i++) {
-        PALXFER_STRI[i].link = &PALXFER_STRI[i + 1];
+    // asm: 	PUSH	R0
+    // asm: 	PUSH	AR0
+    // asm: 	PUSH	AR1
+
+    // asm: 	CLRI	R0
+    // asm: 	STI	R0,@PALXFER_ACTIVE
+    PALXFER_ACTIVE = NULL;
+
+    // asm: 	LDI	@PALXFER_FREEI,AR0	 	;GET FREE POINTER
+    link = &PALXFER_FREEI;
+    // asm: 	LDI	@PALXFER_STRI,AR1
+    next = PALXFER_STRI;
+    // asm: 	LDI	NXFER_PALS-1,RC
+
+    // asm: 	RPTB	PXIL
+    for (u32 i = 0; i < NXFER_PALS; i++) {
+        // asm: 	STI	AR1,*AR0
+        *link = next;
+        // asm: 	LDI	AR1,AR0
+        link = &next->link;
+PXIL:
+        // asm: 	ADDI	PALX_SIZE,AR1
+        next++;
     }
 
-    PALXFER_STRI[NXFER_PALS - 1].link = NULL;
+    // asm: 	LDI	0,R0
+    // asm: 	STI	R0,*AR0
+    *link = NULL;
+
+    // asm: 	POP	AR1
+    // asm: 	POP	AR0
+    // asm: 	POP	R0
+    // asm: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -622,23 +815,39 @@ void PALXFER_INIT(void) {
  *
  */
 static PALXFER* PALXFER_GET(void) {
+    // asm: 	PUSH	R0
+    // asm: 	LDI	1,R0
+    // asm: 	STI	R0,@PALXFER_AVAILABLE_P
     PALXFER_AVAILABLE_P = 1;
 
+    // asm: 	LDI	@PALXFER_FREE,AR0
     PALXFER* xfer = PALXFER_FREE;
 
-#ifdef DEBUG
+#if DEBUG
+    // asm: 	CMPI	0,AR0
+    // asm: 	BNE	CNT
     if (xfer == NULL) {
+        // asm: 	EINT
+        // asm: 	BU	$
         abort();
     }
 #endif
 
+CNT:
     // unlink from free list
+    // asm: 	LDI	*+AR0(PALX_LINK),R0
+    // asm: 	STI	R0,@PALXFER_FREE
     PALXFER_FREE = (PALXFER*)xfer->link;
 
     // push onto active list
+    // asm: 	LDI	@PALXFER_ACTIVE,R0
+    // asm: 	STI	R0,*+AR0(PALX_LINK)
     xfer->link = PALXFER_ACTIVE;
+    // asm: 	STI	AR0,@PALXFER_ACTIVE
     PALXFER_ACTIVE = xfer;
 
+    // asm: 	POP	R0
+    // asm: 	RETS
     return xfer;
 }
 
@@ -753,6 +962,7 @@ DELP1:
     slot = entry >> 16;
     PALRAMI[slot] = 0;
 DELP2:
+    ;
     // asm 00009FDE: 	POP	AR0
     // asm 00009FDF: 	POP	R0
     // asm 00009FE0: 	RETS
@@ -803,9 +1013,9 @@ void PAL_DIMMER(const tPAL* source_palette, tPAL* ram_buffer, c3x_reg_t dimmer)
     ram_buffer->flags_and_count = source_palette->flags_and_count;
 
     // asm 00009FEE: 	LDI	127,AR5
-    for (palette_word = 0; palette_word < 128; palette_word++) {
+    palette_word = 0;
 
-    // asm 00009FEF: PDMLP
+PDMLP:
     // asm 00009FEF: 	LDI	*AR0++,R4	;get src2
         packed_source = source_palette->data[palette_word];
 
@@ -883,7 +1093,10 @@ void PAL_DIMMER(const tPAL* source_palette, tPAL* ram_buffer, c3x_reg_t dimmer)
         ram_buffer->data[palette_word] = (high_color << 16) | low_color;
 
     // asm 0000A020: 	DBU	AR5,PDMLP
-    }
+        palette_word++;
+        if (palette_word < 128) {
+            goto PDMLP;
+        }
 
     // asm 0000A021: 	POP	AR2			;RECOVER RAM BUFFER ADDR
     // asm 0000A022: 	CALL	PAL_FIND_RAW
