@@ -33,7 +33,7 @@ void CLRSCRN0(void);
 void CLR255(void);
 void CLR511(void);
 void SCRNFIL(void);
-word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one);
+void SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one);
 void CLRCRAM(void);
 uint32_t RANDOM(void);
 c3x_reg_t FRAND(c3x_reg_t limit /*R0*/);
@@ -106,13 +106,13 @@ static u32 DMA_SETUP_SHADOW = DMA_SETUP_INIT;
 #if DEBUG
 
 static void TVBP(void) {
-    // asm: RETS
+    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TVBP", 0, 0);
     UNIMPL();
 }
 
 static void TVBPX(void) {
-    // asm: RETS
+    // asm: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "TVBPX", 0, 0);
     UNIMPL();
 }
@@ -201,9 +201,13 @@ P1:
  *CALL ONLY DURING VBLANK
  *
  */
-void FASTCLR1(void) {
+#undef FASTCLR0
+#define FASTCLR_IMPL FASTCLR1
+void FASTCLR_IMPL(void) {
     word_addr_t start_addr;
 
+FASTCLR0:
+FASTCLR1:
     // asm 00008E95: 	LDI	@NOAERASE,R0
     // asm 00008E96: 	RETSNZ
     if (NOAERASE != 0) {
@@ -227,12 +231,12 @@ void FASTCLR1(void) {
     SCREEN_FILL(start_addr, 0, (u32)SCRSIZI);
     // asm 00008EA0: 	RETS
 }
+#undef FASTCLR_IMPL
+#define FASTCLR0 FASTCLR1
 
 // *----------------------------------------------------------------------------
 
-static void port_clear_screen(word_addr_t start_addr) {
-    SCREEN_FILL(start_addr, 0, (u32)SCRSIZI);
-}
+static void port_clear_screen(word_addr_t start_addr);
 
 /*
  *----------------------------------------------------------------------------
@@ -240,15 +244,37 @@ static void port_clear_screen(word_addr_t start_addr) {
  *
  */
 void CLRSCRN(void) {
+    // asm 00008EA1: 	CALL	CLRSCRN0
     CLRSCRN0();
+    CLRSCRN1();
 }
 
 void CLRSCRN1(void) {
+    // asm 00008EA2: 	PUSH	AR2
+    // asm 00008EA3: 	LDI	@SCREEN1I,AR2
+    // asm 00008EA4: 	B	CLRSC00
     port_clear_screen((word_addr_t)SCREEN1I);
 }
 
 void CLRSCRN0(void) {
+    // asm 00008EA5: 	PUSH	AR2
+    // asm 00008EA6: 	LDI	@SCREEN0I,AR2
     port_clear_screen((word_addr_t)SCREEN0I);
+}
+
+static void port_clear_screen(word_addr_t start_addr) {
+CLRSC00:
+    // asm 00008EA7: 	PUSH	R3
+    // asm 00008EA8: 	LDI	@SCRSIZI,R3
+CLRSC01:
+    // asm 00008EA9: 	PUSH	R2
+    // asm 00008EAA: 	LDI	0,R2
+    // asm 00008EAB: 	CALL	SCREEN_FILL
+    SCREEN_FILL(start_addr, 0, (u32)SCRSIZI);
+    // asm 00008EAC: 	POP	R2
+    // asm 00008EAD: 	POP	R3
+    // asm 00008EAE: 	POP	AR2
+    // asm 00008EAF: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -259,6 +285,11 @@ void CLRSCRN0(void) {
  *
  */
 void CLR255(void) {
+    // asm 00008EB0: 	PUSH	AR2
+    // asm 00008EB1: 	PUSH	R3
+    // asm 00008EB2: 	LDI	@LINE255I,AR2
+    // asm 00008EB3: 	LDI	1023,R3		;ONE ROW ONLY
+    // asm 00008EB4: 	B	CLRSC01
     SCREEN_FILL((word_addr_t)LINE255I, 0, 1023);
 }
 
@@ -270,6 +301,11 @@ void CLR255(void) {
  *
  */
 void CLR511(void) {
+    // asm 00008EB5: 	PUSH	AR2
+    // asm 00008EB6: 	PUSH	R3
+    // asm 00008EB7: 	LDI	@LINE511I,AR2
+    // asm 00008EB8: 	LDI	1023,R3		;ONE ROW ONLY
+    // asm 00008EB9: 	B	CLRSC01
     SCREEN_FILL((word_addr_t)LINE511I, 0, 1023);
 }
 
@@ -280,6 +316,10 @@ void CLR511(void) {
  *FILL SCREEN
  */
 void SCRNFIL(void) {
+    // asm 00008EBA: 	LDI	@SCREEN0I,AR2
+    // asm 00008EBB: 	LDI	@FILSIZI,R3
+    // asm 00008EBC: 	LDI	@FILWORD,R2	;fill it with some crud
+    // asm 00008EBD: 	B	SCREEN_FILL
     SCREEN_FILL((word_addr_t)SCREEN0I, (u32)FILWORD, (u32)FILSIZI);
 }
 
@@ -295,14 +335,38 @@ void SCRNFIL(void) {
  *	count_minus_one	COUNT-1
  *
  */
-word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one) {
+void SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one) {
     word_addr_t addr = start_addr;
 
+    // asm 00008EC0: 	PUSH	R0
+    // asm 00008EC1: 	PUSH	AR1
+    // asm 00008EC2: 	PUSH	AR2
+    // asm 00008EC3: 	PUSH	IE
+    // asm 00008EC4: 	LDP	@COMMINTM
+    // asm 00008EC5: 	LDI	@COMMINTM,IE
+    // asm 00008EC6: 	SETDP
+    // asm 00008EC7: 	PUSH	DP
+    // asm 00008EC8: 	LDP	@CPU_WS
+    // asm 00008EC9: 	LDI	0,AR1
+    // asm 00008ECA: 	LDI	R3,RC
+    // asm 00008ECB: 	LDI	HARD_WS,R0
+    // asm 00008ECC: 	STI	R0,@CPU_WS
+    // asm 00008ECD: 	RPTB	CLRSCL
+    // asm 00008ECE: 	STI	R2,*AR2++
     for (u32 i = 0; i <= count_minus_one; ++i) {
         crusn_mem_wr32(addr++, color);
     }
-
-    return addr;
+CLRSCL:;
+    // asm 00008ECF: 	LDI	*AR1,R0		;DUMMY READ FOR WAIT STATE SHIT
+    // asm 00008ED0: 	LDP	@CPU_WS
+    // asm 00008ED1: 	LDI	SOFT_WS,R0
+    // asm 00008ED2: 	STI	R0,@CPU_WS
+    // asm 00008ED3: 	POP	DP
+    // asm 00008ED4: 	POP	IE
+    // asm 00008ED5: 	POP	AR2
+    // asm 00008ED6: 	POP	AR1
+    // asm 00008ED7: 	POP	R0
+    // asm 00008ED8: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -589,20 +653,35 @@ void INIT_LINKED_LIST(void* start_addr /*AR2*/, void** free_list /*R2*/, void** 
     void** linkp;
     int i;
 
-    // ZERO ACTIVE POINTER
+    // asm 00008F19: 	PUSH	R0
+    // asm 00008F1A: 	PUSH	AR0
+    // asm 00008F1B: 	LDI	R3,AR0		;ZERO ACTIVE POINTER
+    // asm 00008F1C: 	LDI	0,R0
+    // asm 00008F1D: 	STI	R0,*AR0
     *active_list = NULL;
 
-    // GET FREE POINTER
+    // asm 00008F1E: 	LDI	R2,AR0	 	;GET FREE POINTER
     linkp = free_list;
+    // asm 00008F1F: 	LDI	RS,R0		;SAVE THE SIZE
     entry = (char*)start_addr;
 
-    for (i = 0; i < length_minus_1; ++i) {
+    // asm 00008F20: 	RPTB	INIT_LL
+    // asm 00008F21: 	STI	AR2,*AR0
+    // asm 00008F22: 	LDI	AR2,AR0
+    for (i = 0; i <= length_minus_1; ++i) {
         *linkp = entry;
         linkp = (void**)entry;
+    INIT_LL:
+        // asm 00008F23: 	ADDI	R0,AR2
         entry += size;
     }
 
+    // asm 00008F24: 	LDI	0,R0
+    // asm 00008F25: 	STI	R0,*AR0
     *linkp = NULL;
+    // asm 00008F26: 	POP	AR0
+    // asm 00008F27: 	POP	R0
+    // asm 00008F28: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -630,17 +709,42 @@ void* GET_LLIST(void** free_list, void** active_list) {
     void* elem;
     void* next;
 
+    // asm 00008F29: 	PUSH	R1
+    // asm 00008F2A: 	PUSH	AR1
+    // asm 00008F2B: 	LDI	*AR2,R0
     elem = *free_list;
+    // asm: 	SLOCKON	Z,"GET_LLIST  out of elements"
     SLOCKON(elem == NULL, "GET_LLIST  out of elements");
+    // asm 00008F2C: 	BZ	GETLL_ERR
+    if (elem == NULL) {
+        goto GETLL_ERR;
+    }
 
+    // asm 00008F2D: 	LDI	R0,AR0
+    // asm 00008F2E: 	LDI	*AR0,AR0
     next = *(void**)elem;
+    // asm 00008F2F: 	STI	AR0,*AR2		;and update free list
     *free_list = next; /* and update free list */
 
     /* insert into the active list */
+    // asm 00008F30: 	LDI	R2,AR1			;get ptr to active
+    // asm 00008F31: 	LDI	R0,AR0			;get ptr to element
+    // asm 00008F32: 	LDI	*AR1,R1			;get 1st element in active
+    // asm 00008F33: 	STI	R1,*AR0			;link element into element
     *(void**)elem = *active_list;
+    // asm 00008F34: 	STI	AR0,*AR1			;store element into active
     *active_list = elem;
 
+    // asm 00008F35: 	SETC
+GETLL_X:
+    // asm 00008F36: 	POP	AR1
+    // asm 00008F37: 	POP	R1
+    // asm 00008F38: 	RETS
     return elem;
+GETLL_ERR:
+    // asm 00008F39: 	CLRC
+    // asm 00008F3A: 	BU	GETLL_X
+    return NULL;
 }
 
 // *----------------------------------------------------------------------------
@@ -1207,6 +1311,17 @@ DYNAOBJ* DYNAACTIVE; // port added
 
 // *----------------------------------------------------------------------------
 void DYNAOBJ_INIT(void) {
+    // asm 00009018: 	PUSH	AR2
+    // asm 00009019: 	PUSH	R2
+    // asm 0000901A: 	PUSH	R3
+    // asm 0000901B: 	PUSH	RC
+    // asm 0000901C: 	PUSH	RS
+    // asm 0000901D: 	LDI	@DYNALISTI,AR2
+    // asm 0000901E: 	LDI	@DYNAFREEI,R2
+    // asm 0000901F: 	LDI	@NULLI,R3
+    // asm 00009020: 	LDI	NUM_DYNAS-1,RC
+    // asm 00009021: 	LDI	DYNASIZE,RS
+    // asm 00009022: 	CALL	INIT_LINKED_LIST
     INIT_LINKED_LIST(
         DYNALIST,            /* AR2 */
         (void**)&DYNAFREE,   /* R2 */
@@ -1214,6 +1329,12 @@ void DYNAOBJ_INIT(void) {
         NUM_DYNAS - 1,       /* RC */
         sizeof(DYNAOBJ)      /* RS */
     );
+    // asm 00009023: 	POP	RS
+    // asm 00009024: 	POP	RC
+    // asm 00009025: 	POP	R3
+    // asm 00009026: 	POP	R2
+    // asm 00009027: 	POP	AR2
+    // asm 00009028: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -1311,16 +1432,27 @@ void CARB_INIT(void) {
     CARBLK** freep;
     int i;
 
-    // asm:
+    // asm 00009041: 	LDI	@CARFREEI,AR0
     freep = &CARFREE;
+    // asm 00009042: 	LDI	@CARLISTI,AR1
 
-    for (i = 0; i < NUM_CARS - 1; i++) {
+    // asm 00009043: 	LDI	NUM_CARS-1,RC
+    // asm 00009044: 	RPTB	CARINTL
+    // asm 00009045: 	STI	AR1,*AR0
+    // asm 00009046: 	LDI	AR1,AR0
+    for (i = 0; i <= NUM_CARS - 1; i++) {
         *freep = &CARLIST[i];
         freep = (CARBLK**)&CARLIST[i];
+    CARINTL:;
+        // asm 00009047: 	ADDI	CARSIZ,AR1
     }
 
+    // asm 00009048: 	LDI	0,R0
+    // asm 00009049: 	STI	R0,*AR0
     *freep = NULL;
+    // asm 0000904A: 	STPI	R0,@CAR_COUNT
     CAR_COUNT = 0;
+    // asm 0000904B: 	RETS
 }
 
 // *----------------------------------------------------------------------------
@@ -1424,12 +1556,64 @@ void SCAN_OBJECTS(PROC* p) {
 
 // *----------------------------------------------------------------------------
 void PUSHALL(void) {
+    // asm 0000906A: 	POP	BK
+    // asm 0000906B: 	PUSH	AR0
+    // asm 0000906C: 	PUSH	AR1
+    // asm 0000906D: 	PUSH	AR2
+    // asm 0000906E: 	PUSH	AR3
+    // asm 0000906F: 	PUSH	AR4
+    // asm 00009070: 	PUSH	AR5
+    // asm 00009071: 	PUSH	AR6
+    // asm 00009072: 	PUSH	AR7
+    // asm 00009073: 	PUSH	R0
+    // asm 00009074: 	PUSH	R1
+    // asm 00009075: 	PUSH	R2
+    // asm 00009076: 	PUSH	R3
+    // asm 00009077: 	PUSH	R4
+    // asm 00009078: 	PUSH	R5
+    // asm 00009079: 	PUSH	R6
+    // asm 0000907A: 	PUSH	R7
+    // asm 0000907B: 	PUSHF	R0
+    // asm 0000907C: 	PUSHF	R1
+    // asm 0000907D: 	PUSHF	R2
+    // asm 0000907E: 	PUSHF	R3
+    // asm 0000907F: 	PUSHF	R4
+    // asm 00009080: 	PUSHF	R5
+    // asm 00009081: 	PUSHF	R6
+    // asm 00009082: 	PUSHF	R7
+    // asm 00009083: 	BU	BK
 }
 
 // *----------------------------------------------------------------------------
 
 // *----------------------------------------------------------------------------
 void POPALL(void) {
+    // asm 00009084: 	POP	BK
+    // asm 00009085: 	POPF	R7
+    // asm 00009086: 	POPF	R6
+    // asm 00009087: 	POPF	R5
+    // asm 00009088: 	POPF	R4
+    // asm 00009089: 	POPF	R3
+    // asm 0000908A: 	POPF	R2
+    // asm 0000908B: 	POPF	R1
+    // asm 0000908C: 	POPF	R0
+    // asm 0000908D: 	POP	R7
+    // asm 0000908E: 	POP	R6
+    // asm 0000908F: 	POP	R5
+    // asm 00009090: 	POP	R4
+    // asm 00009091: 	POP	R3
+    // asm 00009092: 	POP	R2
+    // asm 00009093: 	POP	R1
+    // asm 00009094: 	POP	R0
+    // asm 00009095: 	POP	AR7
+    // asm 00009096: 	POP	AR6
+    // asm 00009097: 	POP	AR5
+    // asm 00009098: 	POP	AR4
+    // asm 00009099: 	POP	AR3
+    // asm 0000909A: 	POP	AR2
+    // asm 0000909B: 	POP	AR1
+    // asm 0000909C: 	POP	AR0
+    // asm 0000909D: 	BU	BK
 }
 
 // *----------------------------------------------------------------------------

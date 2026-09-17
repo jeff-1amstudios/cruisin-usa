@@ -1753,7 +1753,7 @@ void CLRSCRN0(void);
 
 void CLRSCRN1(void);
 
-word_addr_t SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one);
+void SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one);
 
 // asm:  .globl CLR255,CLR511,SCRNFIL
 void CLR255(void);
