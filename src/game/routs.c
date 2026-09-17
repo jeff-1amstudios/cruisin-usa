@@ -75,7 +75,9 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/);
  *	Cycles: 40
  *
  */
-c3x_reg_t DIV_F30(c3x_reg_t u, c3x_reg_t v)
+#undef DIV_F
+#define DIV_F_IMPL DIV_F30
+c3x_reg_t DIV_F_IMPL(c3x_reg_t u, c3x_reg_t v)
 {
     c3x_reg_t reciprocal;
     c3x_reg_t correction;
@@ -83,6 +85,11 @@ c3x_reg_t DIV_F30(c3x_reg_t u, c3x_reg_t v)
     int exponent;
     int i;
 
+DIV_F:
+DIV_F30:
+    // asm: 	POP	BK
+    // asm: 	PUSH	R2
+    // asm: 	PUSHF	R2
     // asm: 	PUSHF	R1	;SAVE THE SIGN
     // asm: 	PUSHF	R0	;Save u (dividend)
     u = C3X_LDF(C3X_STF(u));
@@ -110,6 +117,15 @@ c3x_reg_t DIV_F30(c3x_reg_t u, c3x_reg_t v)
         reciprocal = C3X_MUL(reciprocal, correction);
     }
 
+    // asm: 	MPYF	R2,R1,R0
+    // asm: 	SUBRF	2.0,R0
+    // asm: 	MPYF	R0,R2
+    // asm: 	MPYF	R2,R1,R0
+    // asm: 	SUBRF	2.0,R0
+    // asm: 	MPYF	R0,R2
+    // asm: 	MPYF	R2,R1,R0
+    // asm: 	SUBRF	2.0,R0
+    // asm: 	MPYF	R0,R2
     // asm: 	RND	R2
     reciprocal = C3X_RND(reciprocal);
 
@@ -124,23 +140,34 @@ c3x_reg_t DIV_F30(c3x_reg_t u, c3x_reg_t v)
 
     // asm: 	RND	R1
     reciprocal = C3X_RND(reciprocal);
+    // asm: 	POPF	R0
     // asm: 	MPYF	R1,R0
     u = C3X_MUL(u, reciprocal);
 
     // asm: 	NEGF	R0,R1
     negative_reciprocal = C3X_NEG(u);
+    // asm: 	POPF	R2
+    // asm: 	BD	BK
     // asm: 	LDFN	R1,R0
     if (C3X_LT(v, C3X_FROM_INT(0))) {
         u = negative_reciprocal;
     }
+    // asm: 	POPF	R2
+    // asm: 	POP	R2
 
     return u;
 }
+#undef DIV_F_IMPL
+#define DIV_F DIV_F30
 
 // *----------------------------------------------------------------------------
 
-void DIV_I30(void)
+#undef DIV_I
+#define DIV_I_IMPL DIV_I30
+void DIV_I_IMPL(void)
 {
+DIV_I:
+DIV_I30:
     // 	;
     // 	;Determine sign of result.	Get absolute value of operands.
     // 	;
@@ -201,6 +228,8 @@ zero:
     TRACE_EVENT(&g_crusn_machine->trace, "function", "DIV_I30", 0, 0);
     UNIMPL();
 }
+#undef DIV_I_IMPL
+#define DIV_I DIV_I30
 
 // *----------------------------------------------------------------------------
 
@@ -347,6 +376,19 @@ zerob:
  *
  */
 c3x_reg_t INV_F30(c3x_reg_t v) {
+    // asm: 	POP	BK
+    // asm: 	PUSH	R2
+    // asm: 	PUSHF	R2
+    // asm: 	PUSHF	R0
+    // asm: 	ABSF	R0
+    // asm: 	PUSHF	R0
+    // asm: 	POP	R1
+    // asm: 	ASH	-24,R1
+    // asm: 	NEGI	R1
+    // asm: 	SUBI	1,R1
+    // asm: 	ASH	24,R1
+    // asm: 	PUSH	R1
+    // asm: 	POPF	R1
     c3x_reg_t magnitude = C3X_ABS(v);
     c3x_reg_t estimate;
     c3x_reg_t correction;
@@ -357,15 +399,38 @@ c3x_reg_t INV_F30(c3x_reg_t v) {
     // x[0] = 1.0 * 2**(-e-1), followed by four Newton iterations.
     estimate = C3X_LOAD(initial_raw);
     for (int i = 0; i < 4; i++) {
+        // asm: 	MPYF	R1,R0,R2
+        // asm: 	SUBRF	2.0,R2
+        // asm: 	MPYF	R2,R1
         correction = C3X_SUB(C3X_IMM_F32(2.0), C3X_MUL(estimate, magnitude));
         estimate = C3X_MUL(estimate, correction);
     }
 
+    // asm: 	MPYF	R1,R0,R2
+    // asm: 	SUBRF	2.0,R2
+    // asm: 	MPYF	R2,R1
+    // asm: 	MPYF	R1,R0,R2
+    // asm: 	SUBRF	2.0,R2
+    // asm: 	MPYF	R2,R1
+    // asm: 	MPYF	R1,R0,R2
+    // asm: 	SUBRF	2.0,R2
+    // asm: 	MPYF	R2,R1
     // The assembly rounds x[4], then uses a less cancellation-prone final
     // iteration: x[5] = x[4] * (1 - v*x[4]) + x[4].
+    // asm: 	RND	R1
     estimate = C3X_RND(estimate);
+    // asm: 	MPYF	R1,R0,R2
+    // asm: 	SUBRF	1.0,R2
+    // asm: 	MPYF	R1,R2
+    // asm: 	ADDF	R2,R1,R0
     correction = C3X_SUB(C3X_IMM_F32(1.0), C3X_MUL(estimate, magnitude));
     result = C3X_ADD(C3X_MUL(estimate, correction), estimate);
+    // asm: 	NEGF	R0,R1
+    // asm: 	POPF	R2
+    // asm: 	BD	BK
+    // asm: 	LDFN	R1,R0
+    // asm: 	POPF	R2
+    // asm: 	POP	R2
     return C3X_LT(v, C3X_FROM_INT(0)) ? C3X_NEG(result) : result;
 }
 
@@ -575,6 +640,10 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/)
         return x;
     }
 
+    // asm: 	PUSH	R1
+    // asm: 	PUSHF	R1
+    // asm: 	PUSH	R2
+    // asm: 	PUSHF	R2
     // asm 0000A623: 	MPYF	2.0,R2		;add a rounding bit in exponent
     r2 = C3X_MUL(x, C3X_FROM_INT(2));
     // asm 0000A624: 	PUSHF	R2		;push x as float
@@ -646,6 +715,11 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/)
     // asm 0000A644: 	RND	R1
     r1 = C3X_RND(r1);
 
+    // asm: 	POPF	R2
+    // asm: 	POP	R2
     // asm 0000A649: 	MPYF	R2,R1,R0	;sqrt(x) = x * sqrt(1/x)
+    // asm: 	POPF	R1
+    // asm: 	POP	R1
+    // asm: 	RETS
     return C3X_MUL(x, r1);
 }
