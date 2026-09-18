@@ -1196,7 +1196,11 @@ ZWPRIOK:
     }
     // asm 000071D3: 	BR	ZSORTWL			;START OVER AT THE BEGINNING
     /* The original keeps sorting until INT0 clears CLEARRDY. The portable
-     * main loop delivers that interrupt after ZSORTWT returns. */
+     * main loop delivers that interrupt after ZSORTWT returns, so finish a
+     * complete sort here and return once a pass makes no changes. */
+    if (changed) {
+        goto ZSORTWL;
+    }
     goto ZSWTX;
 
 ZSWTX:
