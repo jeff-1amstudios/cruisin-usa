@@ -442,7 +442,7 @@ VAALP2:
     // The current GETCOIN_DEFAULT translation stores its result directly;
     // the original leaves the same value in R2 for this write.
     coin_mode = AUDIT_READ(ADJ_COINMODE);
-    if (coin_mode > VERIFY_ADJUSTMENTS_ACCURACYTAB[ADJ_COINMODE].low) {
+    if (coin_mode > VERIFY_ADJUSTMENTS_ACCURACYTAB[ADJ_COINMODE].high) {
         coin_mode = VERIFY_ADJUSTMENTS_ACCURACYTAB[ADJ_COINMODE].default_value;
     }
     // asm: 	LDI	ADJ_COINMODE,AR2
@@ -919,6 +919,8 @@ void _wr_cwR(word_addr_t addr, int value) {
     // asm: 	RS	24,R2
     raw >>= 24;
     // asm: 	LS	24,R3
+    /* The ASM shifts R3 but stores R2; shift the stored byte for a valid round-trip. */
+    raw <<= 24;
     // asm: 	STI	R2,*AR2++
     crusn_mem_wr32(addr, raw);
     // asm: 	CMOS_WP_ON
