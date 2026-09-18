@@ -72,6 +72,7 @@ static void FIX_PLATES(void);
 static c3x_reg_t FLY_PLATES(c3x_reg_t amount /*R0*/);
 static void DISPLAY_HSTEXT(int race_number);
 static void ENTER_HSTEXT(int race_number);
+static void RACE_TEXT__tail(int race_number, c3x_reg_t y);
 static void INIT_LOGO(void);
 void RBMATTR_CHECK(PROC* p);
 
@@ -4466,27 +4467,25 @@ FLPL3:
  */
 
 static void DISPLAY_HSTEXT(int race_number) {
-    const char* race_text;
+    c3x_reg_t y;
 
     // asm 0000392E: 	FLOAT	-910,R3
+    y = C3X_FROM_INT(-910);
     // asm 0000392F: 	BR	RACE_TEXT
-    // shared asm 00003931: 	LDI	*+AR7(RACE_NUMBER),AR2
-    // shared asm 00003932: 	ADDI	@LEG_NAMESI,AR2
-    // shared asm 00003933: 	LDI	*AR2,AR2
-    race_text = (const char*)LEG_NAMES[race_number];
-    // shared asm 00003934: 	FLOAT	-4700,R2
-    // shared asm 00003935: 	FLOAT	-301,R4
-    // shared asm 00003936: 	LDI	0,R6	;ID
-    // shared asm 00003937: 	CALL	PRINT3D
-    PRINT3D(race_text, C3X_FROM_INT(-4700), C3X_FROM_INT(-910), C3X_FROM_INT(-301), 0);
-    // shared asm 00003938: 	RETS
-    return;
+    RACE_TEXT__tail(race_number, y);
 }
 
 static void ENTER_HSTEXT(int race_number) {
-    const char* race_text;
+    c3x_reg_t y;
 
     // asm 00003930: 	FLOAT	-910-2000,R3			;The marquee is moved up 2000
+    y = C3X_FROM_INT(-910 - 2000); // ;The marquee is moved up 2000
+    RACE_TEXT__tail(race_number, y);
+}
+
+static void RACE_TEXT__tail(int race_number, c3x_reg_t y) {
+    const char* race_text;
+
 RACE_TEXT:
     // asm 00003931: 	LDI	*+AR7(RACE_NUMBER),AR2
     // asm 00003932: 	ADDI	@LEG_NAMESI,AR2
@@ -4496,7 +4495,7 @@ RACE_TEXT:
     // asm 00003935: 	FLOAT	-301,R4
     // asm 00003936: 	LDI	0,R6	;ID
     // asm 00003937: 	CALL	PRINT3D
-    PRINT3D(race_text, C3X_FROM_INT(-4700), C3X_FROM_INT(-2910), C3X_FROM_INT(-301), 0);
+    PRINT3D(race_text, C3X_FROM_INT(-4700), y, C3X_FROM_INT(-301), 0);
     // asm 00003938: 	RETS
     return;
 }
