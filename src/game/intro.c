@@ -27,7 +27,7 @@
  * Source module: asm/INTRO.ASM
  */
 
-void HEAD2HEAD_LOGO_WAIT(void);
+void HEAD2HEAD_LOGO_WAIT(PROC* p);
 void HEAD2HEAD_LOGO(void);
 static void KABOSHP(void);
 static void JINMSG(void);
@@ -154,7 +154,8 @@ int H2H_FLAGSTATE;
 int DCALL;
 static const char JINOW[] = "JOIN IN NOW";
 
-void HEAD2HEAD_LOGO_WAIT(void) {
+void HEAD2HEAD_LOGO_WAIT(PROC* p) {
+    (void)p;
     // asm 0000154D: 	LDI	1,AR6
     // asm 0000154E: 	BU	H2HLE
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION

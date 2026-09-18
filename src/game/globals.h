@@ -1221,7 +1221,7 @@ void WAIT_FOR_CHALLENGER(PROC* p);
 void LOGO_SMALL(void);
 
 // asm:  .globl HEAD2HEAD_LOGO_WAIT
-void HEAD2HEAD_LOGO_WAIT(void);
+void HEAD2HEAD_LOGO_WAIT(PROC* p);
 
 // asm:  .globl HEAD2HEAD_LOGO
 void HEAD2HEAD_LOGO(void);
