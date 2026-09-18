@@ -30,6 +30,7 @@ void RESUME_TUNE(void);
 void RESUME_TUNE_NT(void);
 void SET_MASTER_VOL(int volume);
 void SET_TRACK_VOL(int track, int volume);
+static void JI1__tail(int first_command, int volume);
 void RESET_SNDBRD(void);
 void SILENT(void);
 void CLRSNDDB(void);
@@ -333,8 +334,6 @@ void RESUME_TUNE_NT(void) {
  *
  */
 void SET_MASTER_VOL(int volume) {
-    int volume_command;
-
     // asm 00009137: 	PUSH	AR2
     // asm 00009138: 	BUD	JI1
     // asm 00009139: 	PUSH	R0
@@ -342,35 +341,17 @@ void SET_MASTER_VOL(int volume) {
     // asm 0000913B: 	LDI	055AAh,R0
     // 	;---->	BUD	JI1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    // shared asm 00009148: 	LDI	1,AR2
-    // shared asm 00009149: 	STI	AR2,@DO_NOT_REENABLE_INT
-    // shared asm 0000914A: 	LDI	R0,AR2
-    // shared asm 0000914B: 	CALL	SENDSND
-    SENDSND(0x55aa);
-    // shared asm 0000914C: 	AND	0FFh,R1
-    volume &= 0xff;
-    // shared asm 0000914D: 	CLRI	AR2
-    // shared asm 0000914E: 	STI	AR2,@DO_NOT_REENABLE_INT
-    // shared asm 0000914F: 	NOT	R1,R0
-    // shared asm 00009150: 	AND	0FFh,R0
-    volume_command = (~volume) & 0xff;
-    // shared asm 00009151: 	LS	8,R1
-    // shared asm 00009152: 	OR	R0,R1
-    volume_command |= volume << 8;
-    // shared asm 00009153: 	LDI	R1,AR2
-    // shared asm 00009154: 	CALL	SENDSND
-    SENDSND(volume_command);
+    JI1__tail(0x55aa, volume);
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_MASTER_VOL", 0, 0);
 }
 
 void SET_TRACK_VOL(int track, int volume) {
-    int volume_command;
-
     // asm 0000913C: 	PUSH	AR2
     // asm 0000913D: 	PUSH	R0
     // asm 0000913E: 	PUSH	R1
     // asm 0000913F: 	LDI	1,AR2
     // asm 00009140: 	STI	AR2,@DO_NOT_REENABLE_INT
+    DO_NOT_REENABLE_INT = 1;
     // asm 00009141: 	PUSH	AR0
     // asm 00009142: 	LDI	R0,AR0
     // asm 00009143: 	MPYI	SND_SIZ,AR0
@@ -380,16 +361,25 @@ void SET_TRACK_VOL(int track, int volume) {
     // asm 00009146: 	POP	AR0
     // asm 00009147: 	ADDI	055ABh,R0
     track += 0x55ab;
+    JI1__tail(track, volume);
+    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_TRACK_VOL", 0, 0);
+}
+
+static void JI1__tail(int first_command, int volume) {
+    int volume_command;
+
 JI1:
     // asm 00009148: 	LDI	1,AR2
     // asm 00009149: 	STI	AR2,@DO_NOT_REENABLE_INT
+    DO_NOT_REENABLE_INT = 1;
     // asm 0000914A: 	LDI	R0,AR2
     // asm 0000914B: 	CALL	SENDSND
-    SENDSND(track);
+    SENDSND(first_command);
     // asm 0000914C: 	AND	0FFh,R1
     volume &= 0xff;
     // asm 0000914D: 	CLRI	AR2
     // asm 0000914E: 	STI	AR2,@DO_NOT_REENABLE_INT
+    DO_NOT_REENABLE_INT = 0;
     // asm 0000914F: 	NOT	R1,R0
     // asm 00009150: 	AND	0FFh,R0
     volume_command = (~volume) & 0xff;
@@ -403,7 +393,6 @@ JI1:
     // asm 00009156: 	POP	R0
     // asm 00009157: 	POP	AR2
     // asm 00009158: 	RETS
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_TRACK_VOL", 0, 0);
 }
 
 /* asm: DO_NOT_REENABLE_INT	.bss	DO_NOT_REENABLE_INT,1 */
