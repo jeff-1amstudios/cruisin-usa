@@ -91,6 +91,7 @@ void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/) {
     int digit_count = 0;
     int is_negative;
     int pad_leading_zero = 0;
+    unsigned int magnitude;
     u32 packed_word = 0;
     int shift = 0;
     int digit_index;
@@ -109,27 +110,28 @@ void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/) {
     // asm 0000A784: 	CMPI	0,R2
     // asm 0000A785: 	BZD	ISZERO2
     if (number == 0) {
-        *(u32*)string_space = 0x00003030u;
+        string_space[0] = '0';
+        string_space[1] = '0';
+        string_space[2] = '\0';
+        string_space[3] = '\0';
         return;
     }
     // asm 0000A786: 	LDILT	1,R7
     // asm 0000A787: 	ABSI	R2
     // asm 0000A788: 	CLRI	R3
     is_negative = number < 0;
-    if (is_negative) {
-        number = -number;
-    }
+    magnitude = is_negative ? 0u - (unsigned int)number : (unsigned int)number;
     // asm 0000A789: 	CMPI	9,R2
     // asm 0000A78A: 	BGT	itoa1
     // asm 0000A78B: 	LDI	1,AR7
-    if (number <= 9) {
+    if (magnitude <= 9u) {
         pad_leading_zero = 1;
     }
     // asm 0000A78C: 	BU	itoa1
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    while (number > 0) {
-        digits[digit_count++] = (char)('0' + (number % 10));
-        number /= 10;
+    while (magnitude > 0u) {
+        digits[digit_count++] = (char)('0' + (magnitude % 10u));
+        magnitude /= 10u;
     }
     if (pad_leading_zero != 0) {
         digits[digit_count++] = '0';
@@ -142,13 +144,19 @@ void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/) {
         packed_word |= (u32)(unsigned char)digits[digit_index] << shift;
         shift += 8;
         if (shift >= 32) {
-            *(u32*)string_space = packed_word;
+            string_space[0] = (char)(packed_word & 0xffu);
+            string_space[1] = (char)((packed_word >> 8) & 0xffu);
+            string_space[2] = (char)((packed_word >> 16) & 0xffu);
+            string_space[3] = (char)((packed_word >> 24) & 0xffu);
             string_space += sizeof(u32);
             packed_word = 0;
             shift = 0;
         }
     }
-    *(u32*)string_space = packed_word;
+    string_space[0] = (char)(packed_word & 0xffu);
+    string_space[1] = (char)((packed_word >> 8) & 0xffu);
+    string_space[2] = (char)((packed_word >> 16) & 0xffu);
+    string_space[3] = (char)((packed_word >> 24) & 0xffu);
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoaLZ", 0, 0);
 }
 
@@ -157,6 +165,7 @@ void _itoa(char* string_space /*AR2*/, int number /*R2*/) {
     int digit_count = 0;
     int is_negative = 0;
     int pad_leading_zero = 0;
+    unsigned int magnitude;
     u32 packed_word = 0;
     int shift = 0;
     int digit_index;
@@ -175,7 +184,10 @@ void _itoa(char* string_space /*AR2*/, int number /*R2*/) {
     // asm 0000A798: 	CMPI	0,R2
     // asm 0000A799: 	BZD	ISZERO
     if (number == 0) {
-        *(u32*)string_space = 0x00000030u; // ;case when number is zero
+        string_space[0] = '0'; // ;case when number is zero
+        string_space[1] = '\0';
+        string_space[2] = '\0';
+        string_space[3] = '\0';
         // MAME_ASSERT_REG_AT_ADDR(0x0000A7D6, "R0", &((u32){0x00000030u}));
         return;
     }
@@ -185,9 +197,7 @@ void _itoa(char* string_space /*AR2*/, int number /*R2*/) {
     // asm 0000A79C: 	ABSI	R2
     // asm 0000A79D: 	CLRI	R3
     is_negative = number < 0;
-    if (is_negative) {
-        number = -number;
-    }
+    magnitude = is_negative ? 0u - (unsigned int)number : (unsigned int)number;
 itoa1:
     // asm 0000A79E: LDI	10,R1			;this loop generates the ASCII
     // asm 0000A79F: 	LDI	R2,R0			;pieces and pushes them on the stack
@@ -200,9 +210,9 @@ itoa1:
     // asm 0000A7A6: 	CALL	DIV_I30
     // asm 0000A7A7: 	LDI	R0,R2
     // asm 0000A7A8: 	BGT	itoa1
-    while (number > 0) {
-        digits[digit_count++] = (char)('0' + (number % 10)); // ;pieces and pushes them on the stack
-        number /= 10;
+    while (magnitude > 0u) {
+        digits[digit_count++] = (char)('0' + (magnitude % 10u)); // ;pieces and pushes them on the stack
+        magnitude /= 10u;
     }
 
     // asm 0000A7A9: 	CMPI	1,AR7
@@ -239,7 +249,10 @@ LOOP2:
         packed_word |= (u32)(unsigned char)digits[digit_index] << shift;
         shift += 8;
         if (shift >= 32) {
-            *(u32*)string_space = packed_word;
+            string_space[0] = (char)(packed_word & 0xffu);
+            string_space[1] = (char)((packed_word >> 8) & 0xffu);
+            string_space[2] = (char)((packed_word >> 16) & 0xffu);
+            string_space[3] = (char)((packed_word >> 24) & 0xffu);
             string_space += sizeof(u32);
             packed_word = 0;
             shift = 0;
@@ -253,7 +266,10 @@ DALOP:
     // asm 0000A7C1: 	OR	R0,R1
     // asm 0000A7C2: 	STI	R1,*AR2
     // asm 0000A7C3: 	LDI	R6,R0
-    *(u32*)string_space = packed_word; // ;NULL terminator
+    string_space[0] = (char)(packed_word & 0xffu); // ;NULL terminator
+    string_space[1] = (char)((packed_word >> 8) & 0xffu);
+    string_space[2] = (char)((packed_word >> 16) & 0xffu);
+    string_space[3] = (char)((packed_word >> 24) & 0xffu);
     // MAME_ASSERT_REG_AT_ADDR(0x0000A7C2, "R1", &packed_word);
 itoaX:
     // asm 0000A7C4: 	POP	R7
@@ -385,10 +401,13 @@ void _fill(int x1, int y1, int x2, int y2, int color) {
     int x;
     int y;
 
+    // asm 0000A810: 	PUSH	AR2
+    if (x1 > x2 || y1 > y2) {
+        return;
+    }
+
     x = x1;
     y = y1;
-
-    // asm 0000A810: 	PUSH	AR2
 FILLLP1:
     // asm 0000A811: 	PUSH	R3
     // asm 0000A812: 	LDI	RS,R3
@@ -437,37 +456,30 @@ FILLLP1:
  *
  */
 void _outtextxyc(const char* string /*AR2*/, int x /*R2*/, int y /*R3*/, int color /*RC*/) {
-    const u32* string_ptr;
+    const unsigned char* string_ptr;
     unsigned int glyph_index;
     unsigned int row_bits;
-    int shift;
     int ch;
     int row;
     int col;
 
-    string_ptr = (const u32*)string;
+    string_ptr = (const unsigned char*)string;
 
     // asm 0000A81F: 	PUSH	R4
     // asm 0000A820: 	PUSH	R5
 
     // asm 0000A821: 	LDI	3,RS
     // asm 0000A822: 	CLRI	RS
-    shift = 0;
 OLP:
     // asm 0000A823: 	CMPI	-32,RS
     // asm 0000A824: 	BNE	REGLP
-    if (shift == -32) {
-        // asm 0000A825: 	CLRI	RS
-        shift = 0;
-        // asm 0000A826: 	NOP	*AR2++
-        ++string_ptr;
-    }
+    // asm 0000A825: 	CLRI	RS
+    // asm 0000A826: 	NOP	*AR2++
 REGLP:
     // asm 0000A827: 	LDI	*AR2,AR0
     // asm 0000A828: 	LSH	RS,AR0
-    ch = (int)((*string_ptr >> -shift) & 0xffu);
+    ch = (int)*string_ptr++;
     // asm 0000A829: 	SUBI	8,RS
-    shift -= 8;
     // asm 0000A82A: 	AND	0FFh,AR0
     // asm 0000A82B: 	CMPI	0,AR0
     // asm 0000A82C: 	BZ	oucX
@@ -480,6 +492,9 @@ REGLP:
         goto NXTCHAR;
     }
     // asm 0000A82F: 	SUBI	'(',AR0			;the start of the font
+    if (ch < '(' || ch > '`') {
+        goto NXTCHAR;
+    }
     glyph_index = (unsigned int)(ch - '(');
 
     // ;NOW PLOT OT THE CHARACTER
@@ -578,6 +593,10 @@ void _pixel(int x, int y, int color) {
     // asm 0000A84F: 	PUSH	AR1
     // asm 0000A850: 	PUSH	AR2
     // asm 0000A851: 	PUSH	R2
+
+    if (x < 0 || x >= CRUSN_SCREEN_WIDTH || y < 0 || y >= CRUSN_SCREEN_HEIGHT) {
+        return;
+    }
 
     // asm 0000A852: 	PUSH	IE
 
