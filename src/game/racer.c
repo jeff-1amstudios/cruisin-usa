@@ -1174,6 +1174,8 @@ REENTER:
     // asm 00005267: 	STI	AR2,*+AR7(DELTA_TPIECE)
     tracking_obj = FIND_DYNA(p->ctx.RACER_DRONE.delta_last_oid);
     if (tracking_obj == NULL) {
+        /* DIE must unwind the artificial RACER_REENTER/coroutine boundaries. */
+        p->yielded = 1;
         DIE();
     }
     p->ctx.RACER_DRONE.delta_tpiece = tracking_obj;
