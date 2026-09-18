@@ -2183,6 +2183,7 @@ static void ERROR_TRAP(void) {
 
 // *----------------------------------------------------------------------------
 void FIFO_RESET(void) {
+    /* The host renderer has no hardware FIFO to reset. */
     // asm:	DINT
     // asm:	LDP @SYSCNTL
     // asm:	LDI @SYSCNTL,R0
@@ -2190,19 +2191,15 @@ void FIFO_RESET(void) {
     // asm:	ANDN 1,R1
     // asm:	LDP @SYSCNTLR
     // asm:	STI R1,@SYSCNTLR
-    crusn_mem_wr32(SYSCNTLR, (u32)(SYSCNTL & ~1));
     // asm:	STI R0,@SYSCNTLR
-    crusn_mem_wr32(SYSCNTLR, (u32)SYSCNTL);
     // asm:	EINT
 
     // asm:	LDP @FIFO_CONTROL
     // asm:	LDI FIFO_CONTROL_DMA_RUNSEL|FIFO_CONTROL_FIFO_RST,R0
     // asm:	STI R0,@FIFO_CONTROL
-    crusn_mem_wr32(FIFO_CONTROL, FIFO_CONTROL_DMA_RUNSEL | FIFO_CONTROL_FIFO_RST);
     // asm:	NOP
     // asm:	LDI FIFO_CONTROL_DMA_RUNSEL,R0
     // asm:	STI R0,@FIFO_CONTROL
-    crusn_mem_wr32(FIFO_CONTROL, FIFO_CONTROL_DMA_RUNSEL);
     // asm:	SETDP
     // asm:	RETS
 }
@@ -2367,22 +2364,19 @@ TIMEL1:
 
 // *----------------------------------------------------------------------------
 static c3x_reg_t TIMEREC(void) {
-    c3x_reg_t t;
-
+    /* Host frame timing is not backed by the original hardware timer. */
     // asm:	PUSH DP
     // asm:	PUSH AR0
     // asm:	LDP @TIMER_CNTR1
     // asm:	FLOAT @TIMER_CNTR1,R0
-    t = C3X_FROM_INT((int)crusn_mem_rd32(TIMER_CNTR1));
     // asm:	LDP @TIMEX
     // asm:	LDI @TIMEX,AR0
     // asm:	STF R0,*AR0++
-    *TIMEX++ = C3X_STF(t); // SAVE THE INDEX
     // asm:	STI AR0,@TIMEX
     // asm:	POP AR0
     // asm:	POP DP
     // asm:	RETS
-    return t;
+    return C3X_IMM_F32(0);
 }
 
 // *----------------------------------------------------------------------------
