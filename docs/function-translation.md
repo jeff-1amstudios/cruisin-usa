@@ -8,6 +8,7 @@ Translate the specified assembly function into c. Where practical, keep the c co
 - First, determine the function prototype - args and return value. Use developer comments along with the code to help understand and name the arguments.
 - Correctness is your number 1 job. You must not invent anything except translating the assembly code into C.
 - You must NEVER re-order or remove the commented asm lines.
+- Preserve branch direction and label order where practical.
 - Preserve function boundaries exactly. Do not move work across caller/callee boundaries, even if the resulting C would look cleaner.
 - Do not precompute a callee's result in the caller, do not move helper calls from callee to caller (or vice versa), and do not "inline by hand" behavior across function boundaries.
 - You can introduce new function variables (declare at top of function)
