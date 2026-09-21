@@ -12,16 +12,16 @@
 
 /* macros used in sin and cos */
 
-#define INVSPI C3X_LOAD(0xFE22F983u) /* .float 0.31830988618379067154 */
-#define HALFPI C3X_LOAD(0x00490FDBu) /* .float 1.57079632679489661923 */
+#define INVSPI C3X_FROM_RAW32(0xFE22F983u) /* .float 0.31830988618379067154 */
+#define HALFPI C3X_FROM_RAW32(0x00490FDBu) /* .float 1.57079632679489661923 */
 
 #define C1 3.140625
-#define C2 C3X_LOAD(0xF57DAA22u) /* .float 9.67653589793e-4 */
+#define C2 C3X_FROM_RAW32(0xF57DAA22u) /* .float 9.67653589793e-4 */
 
-#define R1 C3X_LOAD(0xFDD5555Cu) /* .float -0.1666665668e+0 */
-#define R2 C3X_LOAD(0xF908873Eu) /* .float 0.8333025139e-2 */
-#define R3 C3X_LOAD(0xF3B04DDEu) /* .float -0.1980741872e-3 */
-#define R4 C3X_LOAD(0xED2E9C5Bu) /* .float 0.2601903036e-5 */
+#define R1 C3X_FROM_RAW32(0xFDD5555Cu) /* .float -0.1666665668e+0 */
+#define R2 C3X_FROM_RAW32(0xF908873Eu) /* .float 0.8333025139e-2 */
+#define R3 C3X_FROM_RAW32(0xF3B04DDEu) /* .float -0.1980741872e-3 */
+#define R4 C3X_FROM_RAW32(0xED2E9C5Bu) /* .float 0.2601903036e-5 */
 
 /*	HPsin() - High Precision sine
  *
@@ -49,7 +49,7 @@ c3x_reg_t _HPsin(c3x_reg_t x) {
 
     x = C3X_ABS(x);
     scaled_index = C3X_MUL(x, INVSPI);
-    rounded_index = C3X_ADD(scaled_index, C3X_IMM_F32(0.5));
+    rounded_index = C3X_ADD_IMM(scaled_index, 0.5);
     n = c3x_fix(rounded_index);
     xn = C3X_FROM_INT(n);
 
@@ -62,7 +62,7 @@ c3x_reg_t _HPsin(c3x_reg_t x) {
     /*
      * f = x - xn * PI (but mathematically more stable)
      */
-    f = C3X_MUL(xn, C3X_IMM_F32(C1));
+    f = C3X_MUL_IMM(xn, C1);
     f = C3X_SUB(x, f);
     rg = C3X_MUL(xn, C2);
     f = C3X_SUB(f, rg);
@@ -115,9 +115,9 @@ c3x_reg_t _HPcos(c3x_reg_t x) {
     /*
      * n = round(x/PI + 1/2) (can be rounded this way, since positive number)
      */
-    rounded_index = C3X_ADD(C3X_MUL(C3X_ADD(x, HALFPI), INVSPI), C3X_IMM_F32(0.5));
+    rounded_index = C3X_ADD_IMM(C3X_MUL(C3X_ADD(x, HALFPI), INVSPI), 0.5);
     n = c3x_fix(rounded_index);
-    xn = C3X_SUB(C3X_FROM_INT(n), C3X_IMM_F32(0.5));
+    xn = C3X_SUB_IMM(C3X_FROM_INT(n), 0.5);
 
     /*
      * if n is odd, negate the sign
@@ -127,7 +127,7 @@ c3x_reg_t _HPcos(c3x_reg_t x) {
     /*
      * f = x - xn * PI (but more mathematically stable)
      */
-    f = C3X_SUB(C3X_SUB(x, C3X_MUL(xn, C3X_IMM_F32(C1))), C3X_MUL(xn, C2));
+    f = C3X_SUB(C3X_SUB(x, C3X_MUL_IMM(xn, C1)), C3X_MUL(xn, C2));
 
     /*
      * determine polynomial expression

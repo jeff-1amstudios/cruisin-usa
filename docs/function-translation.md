@@ -29,15 +29,16 @@ If you get stuck, stop, and explain the problem. Don't start inventing things in
 | Assembly source | C translation |
 |---|---|
 | `LDF 0.25,R0` | `value = C3X_IMM_F32(0.25);` |
-| `ADDF 0.25,R0` | `value = C3X_ADD(value, C3X_IMM_F32(0.25));` |
-| `SUBF 0.25,R0` | `value = C3X_SUB(value, C3X_IMM_F32(0.25));` |
-| `MPYF 0.25,R0` | `value = C3X_MUL(value, C3X_IMM_F32(0.25));` |
-| `CMPF 0.25,R0` | Compare against `C3X_IMM_F32(0.25)` |
+| `ADDF 0.25,R0` | `value = C3X_ADD_IMM(value, 0.25);` |
+| `SUBF 0.25,R0` | `value = C3X_SUB_IMM(value, 0.25);` |
+| `SUBRF 0.25,R0` | `value = C3X_RSUB_IMM(0.25, value);` |
+| `MPYF 0.25,R0` | `value = C3X_MUL_IMM(value, 0.25);` |
+| `CMPF 0.25,R0` | Use the appropriate comparison helper, such as `C3X_GT_IMM(value, 0.25)` |
 | `LDF @VALUE,R0`, where `VALUE` is `.float` data | `value = C3X_LDF(VALUE);` |
 | `FLOAT R0,R1` | `value = C3X_FROM_INT(integer_value);` |
 | `STF R0,*AR0` | `destination = C3X_STF(value);` |
 | Static `.float` data | `static const c3x_f32_t VALUE = C3X_F32_INIT(readable_value);` |
-| A runtime high-precision algorithm constant | `C3X_F32(value)` |
+| A runtime high-precision algorithm constant | `C3X_REG_FROM_DOUBLE(value)` |
 
 All floating instruction immediates use `C3X_IMM_F32`, including:
 
@@ -46,14 +47,16 @@ All floating instruction immediates use `C3X_IMM_F32`, including:
 - conditional forms such as `LDFGT 0.5,R0`;
 - reverse and three-operand forms.
 
-Do not translate a floating instruction immediate using a raw C literal, `C3X_F32`, or `C3X_FROM_INT`. `C3X_FROM_INT` is only for an actual `FLOAT` instruction or an equivalent integer-to-floating conversion. `C3X_F32` is not the default literal wrapper; use it only when the source genuinely requires full C3X register precision rather than the instruction-immediate encoding.
+For arithmetic and comparisons, use the `_IMM` helper matching the instruction instead of manually wrapping the operand. `C3X_IMM_F32` remains appropriate when an immediate is loaded, assigned, stored, or passed to another function. `C3X_STF_IMM(value)` and `C3X_STF_INT(value)` are the compact forms of `C3X_STF(C3X_IMM_F32(value))` and `C3X_STF(C3X_FROM_INT(value))`.
+
+Do not translate a floating instruction immediate using an unmarked raw C literal, `C3X_REG_FROM_DOUBLE`, or `C3X_FROM_INT`. `C3X_FROM_INT` is only for an actual `FLOAT` instruction or an equivalent integer-to-floating conversion. `C3X_REG_FROM_DOUBLE` is not the default literal wrapper; use it only when the source genuinely requires full C3X register precision rather than the instruction-immediate encoding.
 
 Use `c3x_f32_t` for static `.float` data and `c3x_reg_t` for values held at
 register precision. Convert memory data with `C3X_LDF` before using it in
 floating-point arithmetic. Keeping the types distinct makes arithmetic on an
 unloaded table or constant a compile-time error.
 
-`C3X_STF` represents the precision change caused by storing a register through the C30 single-memory format. Use it on the value assigned by every translated `STF`; do not spell it as `C3X_LOAD(C3X_STORE(...))`.
+`C3X_STF` represents the precision change caused by storing a register through the C30 single-memory format. Use it on the value assigned by every translated `STF`. `C3X_FROM_RAW32` and `C3X_TO_RAW32` are reserved for converting the raw 32-bit memory encoding at ROM, validation, and serialization boundaries.
 
 Run `cmake --build <build-directory> --target check-c3x-translation` after translating floating-point code.
 

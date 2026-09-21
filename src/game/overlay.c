@@ -405,10 +405,10 @@ static void BEACHON(void) {
 static void REDWOOD_START(void) {
     // asm 0000AD7F: 	LDF	10,R0
     // asm 0000AD80: 	STF	R0,@VAR_ROAD_KFACTOR			;pixels UNDER (overshoot)
-    VAR_ROAD_KFACTOR = C3X_LDF(C3X_STF(C3X_IMM_F32(10))); // pixels UNDER (overshoot)
+    VAR_ROAD_KFACTOR = C3X_STF_IMM(10); // pixels UNDER (overshoot)
     // asm 0000AD81: 	FLOAT	75,R0	;75
     // asm 0000AD82: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(75)));
+    INFIN_CORRECT = C3X_STF_INT(75);
     // asm 0000AD83: 	LDI	4,R0
     // asm 0000AD84: 	STI	R0,@DD_MAX_DRONES
     DD_MAX_DRONES = 4;

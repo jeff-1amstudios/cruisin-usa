@@ -89,7 +89,7 @@ static const char IAMSLAVE[];
 static const char TPALI[];
 static const char TPALNI[];
 
-#define FLOAT_TIK C3X_F32(0.000292397f) // c3x-lint: full-precision -- loaded from .float data
+#define FLOAT_TIK C3X_REG_FROM_DOUBLE(0.000292397f) // c3x-lint: full-precision -- loaded from .float data
 
 /*
  *----------------------------------------------------------------------------
@@ -180,7 +180,7 @@ int ERRORN;
 /* asm: ERRORO	.bss	ERRORO,1 */
 int ERRORO;
 /* asm: FRAMETIME	.bss	FRAMETIME,1 */
-c3x_reg_t FRAMETIME = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t FRAMETIME = C3X_F32_INIT(1.0f);
 /* asm: SWITCHBUTS	.bss	SWITCHBUTS,1 */
 int SWITCHBUTS;
 /* asm: BGNDCOLA	.bss	BGNDCOLA,1 */
@@ -751,7 +751,7 @@ ENTER2:
 
     // asm: CALL TIMEREC
     // asm: STF R0,@FRAMETIME
-    FRAMETIME = TIMEREC(); // SAVE THE FRAMETIME
+    FRAMETIME = C3X_STF(TIMEREC()); // SAVE THE FRAMETIME
 
     // asm: CALL TIMERESET
     TIMERESET();
@@ -1547,12 +1547,12 @@ static void ATODINT(void) {
     delta = C3X_SUB(raw_value, previous_value);
     // asm 00004DA2: 	CMPF	65,R1
     // asm 00004DA3: 	LDFGT	65,R1
-    if (C3X_GT(delta, C3X_IMM_F32(65))) {
+    if (C3X_GT_IMM(delta, 65)) {
         delta = C3X_IMM_F32(65);
     }
     // asm 00004DA4: 	CMPF	-65,R1
     // asm 00004DA5: 	LDFLT	-65,R1
-    if (C3X_LT(delta, C3X_IMM_F32(-65))) {
+    if (C3X_LT_IMM(delta, -65)) {
         delta = C3X_IMM_F32(-65);
     }
     // asm 00004DA6: 	ADDF	R0,R1
@@ -1561,8 +1561,8 @@ static void ATODINT(void) {
     // asm 00004DA8: 	MPYF	0.67,R0
     // asm 00004DA9: 	ADDF	R1,R0
     filtered_value = C3X_ADD(
-        C3X_MUL(raw_value, C3X_IMM_F32(0.33)),
-        C3X_MUL(previous_value, C3X_IMM_F32(0.67)));
+        C3X_MUL_IMM(raw_value, 0.33),
+        C3X_MUL_IMM(previous_value, 0.67));
     // asm 00004DAA: 	FIX	R0
     // asm 00004DAB: 	STI	R0,@_pot0
     _pot0 = C3X_FIX(filtered_value);
@@ -1613,8 +1613,8 @@ RDFOOT:
     // asm 00004DC8: 	MPYF	0.67,R0
     // asm 00004DC9: 	ADDF	R1,R0
     filtered_value = C3X_ADD(
-        C3X_MUL(raw_value, C3X_IMM_F32(0.33)),
-        C3X_MUL(previous_value, C3X_IMM_F32(0.67)));
+        C3X_MUL_IMM(raw_value, 0.33),
+        C3X_MUL_IMM(previous_value, 0.67));
     // asm 00004DCA: 	FIX	R0
     // asm 00004DCB: 	STI	R0,@_pot1
     _pot1 = C3X_FIX(filtered_value);
@@ -1661,8 +1661,8 @@ RDBRAKE:
     // asm 00004DE3: 	MPYF	0.75,R0
     // asm 00004DE4: 	ADDF	R1,R0
     filtered_value = C3X_ADD(
-        C3X_MUL(raw_value, C3X_IMM_F32(0.25)),
-        C3X_MUL(previous_value, C3X_IMM_F32(0.75)));
+        C3X_MUL_IMM(raw_value, 0.25),
+        C3X_MUL_IMM(previous_value, 0.75));
     // asm 00004DE5: 	FIX	R0
     // asm 00004DE6: 	STI	R0,@_pot2
     _pot2 = C3X_FIX(filtered_value);
@@ -2291,7 +2291,7 @@ static void TIMERESET(void) {
     // asm:	LDF @TIMEFRAME,R0
     frame_count = C3X_LDF(TIMEFRAME);
     // asm:	ADDF 1,R0
-    frame_count = C3X_ADD(frame_count, C3X_IMM_F32(1));
+    frame_count = C3X_ADD_IMM(frame_count, 1);
     // asm:	STF R0,@TIMEFRAME
     TIMEFRAME = C3X_STF(frame_count);
 
@@ -2340,7 +2340,7 @@ TIMEL1:
     TIMECLR = 0;
     // asm:	LDF 0,R0
     // asm:	STF R0,@TIMEFRAME
-    TIMEFRAME = C3X_STF(C3X_IMM_F32(0));
+    TIMEFRAME = C3X_STF_IMM(0);
     // asm:	LDI @TIMERAMI,AR0
 
     /*
@@ -2349,7 +2349,7 @@ TIMEL1:
     // asm:	RPTS 47
     // asm:	STF R0,*AR0++
     for (int i = 0; i < 48; i++) {
-        TIMERAM[i] = C3X_STF(C3X_IMM_F32(0));
+        TIMERAM[i] = C3X_STF_IMM(0);
     }
 
     // asm:	POP DP

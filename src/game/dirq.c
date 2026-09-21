@@ -155,10 +155,10 @@ VECTOR TMPMAT;
 /* asm: tmpmatY			.word	TMPMAT+1 */
 // uintptr_t tmpmatY = (uintptr_t)(TMPMAT + 1);
 /* asm: SCRNHXI			.float	SCRNHX */
-c3x_reg_t SCRNHXI = C3X_INIT(SCRNHX, 0x0800000000ull);
+c3x_f32_t SCRNHXI = C3X_F32_INIT(SCRNHX);
 /* asm: SCRNHYI			.float	SCRNHY */
 /* asm: 	 */
-c3x_reg_t SCRNHYI = C3X_INIT(SCRNHY, 0x0748000000ull);
+c3x_f32_t SCRNHYI = C3X_F32_INIT(SCRNHY);
 /* asm: HIGH_CLIP_LEV8		.word	80000		;MATHEMATICAL LIMIT */
 /* asm: 	 */
 /* asm: 	 */
@@ -533,7 +533,7 @@ NOBREAK_CONTINUE:
 
         blow_index = vertex_index * 3;
         BLOWLIST[blow_index] = C3X_STF(C3X_ADD(C3X_MUL(world_x, inverse_z), SCRNHXI));
-        BLOWLIST[blow_index + 1] = C3X_STF(C3X_ADD(C3X_MUL(C3X_MUL(world_y, inverse_z), C3X_IMM_F32(1.04)), SCRNHYI));
+        BLOWLIST[blow_index + 1] = C3X_STF(C3X_ADD(C3X_MUL_IMM(C3X_MUL(world_y, inverse_z), 1.04), SCRNHYI));
         BLOWLIST[blow_index + 2] = C3X_STF(world_z);
     }
 
@@ -1264,7 +1264,7 @@ DYNALP:
         c3x_reg_t inverse_z = C3X_LDF(INVTAB[inverse_index]);
         BLOWLIST[blow_index] = C3X_STF(C3X_ADD(C3X_MUL(world_x, inverse_z), SCRNHXI));
         BLOWLIST[blow_index + 1] =
-            C3X_STF(C3X_ADD(C3X_MUL(C3X_MUL(world_y, inverse_z), C3X_IMM_F32(1.04)), SCRNHYI));
+            C3X_STF(C3X_ADD(C3X_MUL_IMM(C3X_MUL(world_y, inverse_z), 1.04), SCRNHYI));
         BLOWLIST[blow_index + 2] = C3X_STF(world_z);
     }
     // asm 00000221: 	LDI	*AR1++,R3
@@ -1431,7 +1431,7 @@ DYNASHD:
         c3x_reg_t inverse_z = C3X_LDF(INVTAB[inverse_index]);
         BLOWLIST[blow_index] = C3X_STF(C3X_ADD(C3X_MUL(rotated_x, inverse_z), SCRNHXI));
         BLOWLIST[blow_index + 1] =
-            C3X_STF(C3X_ADD(C3X_MUL(C3X_MUL(rotated_y, inverse_z), C3X_IMM_F32(1.04)), SCRNHYI));
+            C3X_STF(C3X_ADD(C3X_MUL_IMM(C3X_MUL(rotated_y, inverse_z), 1.04), SCRNHYI));
         BLOWLIST[blow_index + 2] = C3X_STF(rotated_z);
     }
     // *GET COORDS IN ORDER, ADD IN ROAD DIFF
@@ -1500,9 +1500,9 @@ NOSHAD:
     // asm 0000028A: 	STF	R0,*AR3++    		;STORE NULL X,Y,Z
     for (int shadow_vertex = 0; shadow_vertex < 4; ++shadow_vertex) {
         int blow_index = (vertex_cursor + shadow_vertex) * 3;
-        BLOWLIST[blow_index] = C3X_STF(C3X_FROM_INT(-1000));
-        BLOWLIST[blow_index + 1] = C3X_STF(C3X_FROM_INT(-1000));
-        BLOWLIST[blow_index + 2] = C3X_STF(C3X_FROM_INT(-1000));
+        BLOWLIST[blow_index] = C3X_STF_INT(-1000);
+        BLOWLIST[blow_index + 1] = C3X_STF_INT(-1000);
+        BLOWLIST[blow_index + 2] = C3X_STF_INT(-1000);
     }
     // asm 0000028B: 	LDI	@transmatrixI,AR5	;RESTORE MATRIX POINTER
     // asm 0000028C: 	BU	DYNALPX
@@ -3163,12 +3163,12 @@ ILLUM1:
         // asm 000005BB: 	LDI	@tmpmatY,AR3
         // asm 000005BC: 	LDI	@transmatrixI,AR5		;these are in same memory area
         // asm 000005BD: 	LDF	*AR1++,R3			;get the NORMAL.x
-        normal_x = C3X_LOAD(polygons->nx);
+        normal_x = C3X_FROM_RAW32(polygons->nx);
         // asm 000005BE: 	LDF	*AR1++,R4			;	       .y
-        normal_y = C3X_LOAD(polygons->ny);
+        normal_y = C3X_FROM_RAW32(polygons->ny);
         // asm 000005BE:  ||	STF	R3,*-AR3(1)
         // asm 000005BF: 	LDF	*AR1++,R5			;	       .z
-        normal_z = C3X_LOAD(polygons->nz);
+        normal_z = C3X_FROM_RAW32(polygons->nz);
         // asm 000005BF:  ||	STF	R4,*AR3
         // asm 000005C0: 	NOP 	*AR5++(8)		   	;FAST ADD TO AR5
         // asm 000005C1: 	MPYF	*AR5--,R5,R0
@@ -3204,7 +3204,7 @@ ILLUM1:
         // asm 000005D2: 	MPYF	-8,R5
         // asm 000005D3: 	ADDF	8,R5
         // asm 000005D4: 	FIX	R5
-        illumination_index = FIX(C3X_ADD(C3X_ADD(C3X_MUL(illumination, C3X_FROM_INT(-8)), C3X_FROM_INT(8)), C3X_IMM_F32(0.5f)));
+        illumination_index = FIX(C3X_ADD_IMM(C3X_ADD(C3X_MUL(illumination, C3X_FROM_INT(-8)), C3X_FROM_INT(8)), 0.5f));
         if (illumination_index < 0) {
             illumination_index = 0;
         } else if (illumination_index > 15) {

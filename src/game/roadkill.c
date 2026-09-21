@@ -122,9 +122,9 @@ FINDLP:
 PLYRKX:
     // asm 00006953: 	LDF	0,R0
     // asm 00006954: 	STF	R0,@ROADKILLXZ
-    ROADKILLXZ[0] = C3X_STF(C3X_IMM_F32(0));
+    ROADKILLXZ[0] = C3X_STF_IMM(0);
     // asm 00006955: 	STF	R0,@ROADKILLXZ+1
-    ROADKILLXZ[1] = C3X_STF(C3X_IMM_F32(0));
+    ROADKILLXZ[1] = C3X_STF_IMM(0);
     // asm 00006956: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLYRROADKILL", 0, 0);
 }
@@ -250,9 +250,9 @@ RKFPX:
 }
 
 /* asm: SOUNDTIME	.float	0.00204678	;7(1/60)/57 of a minute */
-static c3x_reg_t SOUNDTIME = C3X_INIT(0.00204678f, 0xf706234500ull);
+static const c3x_f32_t SOUNDTIME = C3X_F32_INIT(0.00204678f);
 /* asm: ROADKILL_SOUND_TIMER	.bss	ROADKILL_SOUND_TIMER,1 */
-c3x_reg_t ROADKILL_SOUND_TIMER = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t ROADKILL_SOUND_TIMER = C3X_F32_INIT(1.0f);
 
 void ROADKILL_HIT(void)
 {
@@ -680,7 +680,7 @@ INIT_DEERX:
 
 /* asm: SPINSPEEDF	.float	0.0002 */
 /* asm: 	 */
-static c3x_reg_t SPINSPEEDF = C3X_INIT(0.0002f, 0xf351b71700ull);
+static const c3x_f32_t SPINSPEEDF = C3X_F32_INIT(0.0002f);
 /* asm: COW_PARTS */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */
 /* asm: 	.word	deerc1,1,deerc1,1,deerc2,0,deerc2,0,deerc3,0,deerc4,0 */

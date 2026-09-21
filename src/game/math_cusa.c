@@ -123,7 +123,7 @@ NOTNEG:
     // asm 00009535: MPYF	@FORMULA,R0
     // asm 00009536: 	ADDF	0.5,R0		;ROUND THE SUCKER
     // asm 00009537: 	FIX	R0		;get a raw index
-    index = FIX(C3X_ADD(C3X_MUL(theta, FORMULA), C3X_IMM_F32(0.5f))); // ;ROUND THE SUCKER / ;get a raw index
+    index = FIX(C3X_ADD_IMM(C3X_MUL(theta, FORMULA), 0.5f)); // ;ROUND THE SUCKER / ;get a raw index
 
     // asm 00009538: 	AND	3FFh,R0
     index &= 0x3ff;
@@ -978,16 +978,16 @@ void FIND_XMATRIX(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
     dest[7] = C3X_STF(C3X_NEG(dest[5]));
     // asm 000095CE: 	LDF	1,R0
     // asm 000095CF: 	STF	R0,*+AR2(A00)
-    dest[0] = C3X_STF(C3X_FROM_INT(1));
+    dest[0] = C3X_STF_INT(1);
     // asm 000095D0: 	CLRF	R0
     // asm 000095D1: 	STF	R0,*+AR2(A01)
-    dest[1] = C3X_STF(C3X_FROM_INT(0));
+    dest[1] = C3X_STF_INT(0);
     // asm 000095D2: 	STF	R0,*+AR2(A02)
-    dest[2] = C3X_STF(C3X_FROM_INT(0));
+    dest[2] = C3X_STF_INT(0);
     // asm 000095D3: 	STF	R0,*+AR2(A10)
-    dest[3] = C3X_STF(C3X_FROM_INT(0));
+    dest[3] = C3X_STF_INT(0);
     // asm 000095D4: 	STF	R0,*+AR2(A20)
-    dest[6] = C3X_STF(C3X_FROM_INT(0));
+    dest[6] = C3X_STF_INT(0);
     // asm 000095D5: 	POPF	R0
     // asm 000095D6: 	POP	R0
     // asm 000095D7: 	RETS
@@ -1026,16 +1026,16 @@ _find_Ymatrix:
     dest[2] = C3X_STF(C3X_NEG(dest[6]));
     // asm 000095E1: 	LDF	1,R0
     // asm 000095E2: 	STF	R0,*+AR2(A11)
-    dest[4] = C3X_STF(C3X_FROM_INT(1));
+    dest[4] = C3X_STF_INT(1);
     // asm 000095E3: 	CLRF	R0
     // asm 000095E4: 	STF	R0,*+AR2(A01)
-    dest[1] = C3X_STF(C3X_FROM_INT(0));
+    dest[1] = C3X_STF_INT(0);
     // asm 000095E5: 	STF	R0,*+AR2(A10)
-    dest[3] = C3X_STF(C3X_FROM_INT(0));
+    dest[3] = C3X_STF_INT(0);
     // asm 000095E6: 	STF	R0,*+AR2(A12)
-    dest[5] = C3X_STF(C3X_FROM_INT(0));
+    dest[5] = C3X_STF_INT(0);
     // asm 000095E7: 	STF	R0,*+AR2(A21)
-    dest[7] = C3X_STF(C3X_FROM_INT(0));
+    dest[7] = C3X_STF_INT(0);
     // asm 000095E8: 	POPF	R0
     // asm 000095E9: 	POP	R0
     // asm 000095EA: 	RETS
@@ -1105,17 +1105,17 @@ void HPFIND_YMATRIX(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
 
     // asm 00009600: 	LDF	1,R0
     // asm 00009601: 	STF	R0,*+AR2(A11)
-    dest[4] = C3X_STF(C3X_FROM_INT(1));
+    dest[4] = C3X_STF_INT(1);
 
     // asm 00009602: 	CLRF	R0
     // asm 00009603: 	STF	R0,*+AR2(A01)
-    dest[1] = C3X_STF(C3X_FROM_INT(0));
+    dest[1] = C3X_STF_INT(0);
     // asm 00009604: 	STF	R0,*+AR2(A10)
-    dest[3] = C3X_STF(C3X_FROM_INT(0));
+    dest[3] = C3X_STF_INT(0);
     // asm 00009605: 	STF	R0,*+AR2(A12)
-    dest[5] = C3X_STF(C3X_FROM_INT(0));
+    dest[5] = C3X_STF_INT(0);
     // asm 00009606: 	STF	R0,*+AR2(A21)
-    dest[7] = C3X_STF(C3X_FROM_INT(0));
+    dest[7] = C3X_STF_INT(0);
 
     // asm 00009607: 	POPF	R4
     // asm 00009608: 	POP	R4
@@ -1163,17 +1163,17 @@ void FIND_ZMATRIX(void* destp /*AR2*/, c3x_reg_t radians /*R2*/) {
 
     // asm 0000961B: 	LDF	1,R0
     // asm 0000961C: 	STF	R0,*+AR2(A22)
-    dest->a22 = C3X_STF(C3X_FROM_INT(1));
+    dest->a22 = C3X_STF_INT(1);
 
     // asm 0000961D: 	CLRF	R0
     // asm 0000961E: 	STF	R0,*+AR2(A02)
     // asm 0000961F: 	STF	R0,*+AR2(A12)
     // asm 00009620: 	STF	R0,*+AR2(A20)
     // asm 00009621: 	STF	R0,*+AR2(A21)
-    dest->a02 = C3X_STF(C3X_FROM_INT(0));
-    dest->a12 = C3X_STF(C3X_FROM_INT(0));
-    dest->a20 = C3X_STF(C3X_FROM_INT(0));
-    dest->a21 = C3X_STF(C3X_FROM_INT(0));
+    dest->a02 = C3X_STF_INT(0);
+    dest->a12 = C3X_STF_INT(0);
+    dest->a20 = C3X_STF_INT(0);
+    dest->a21 = C3X_STF_INT(0);
 
     // asm 00009622: 	POPF	R0
     // asm 00009623: 	POP	R0
@@ -1199,9 +1199,9 @@ void INITMAT(MATRIX* mat /*AR0*/) {
     // asm 00009629: 	STF	R0,*AR0
     // asm 0000962A: 	STF	R0,*+AR0(4)
     // asm 0000962B: 	STF	R0,*+AR0(8)
-    mat->a00 = C3X_STF(C3X_FROM_INT(1));
-    mat->a11 = C3X_STF(C3X_FROM_INT(1));
-    mat->a22 = C3X_STF(C3X_FROM_INT(1));
+    mat->a00 = C3X_STF_INT(1);
+    mat->a11 = C3X_STF_INT(1);
+    mat->a22 = C3X_STF_INT(1);
 
     // asm 0000962C: 	LDF	0,R0
     // asm 0000962D: 	STF	R0,*+AR0(1)
@@ -1213,12 +1213,12 @@ void INITMAT(MATRIX* mat /*AR0*/) {
     // asm 00009633: 	STF	R0,*+AR0(7)
     // asm 00009634: 	POPF	R0
     // asm 00009635: 	POP	R0
-    mat->a01 = C3X_STF(C3X_FROM_INT(0));
-    mat->a02 = C3X_STF(C3X_FROM_INT(0));
-    mat->a10 = C3X_STF(C3X_FROM_INT(0));
-    mat->a12 = C3X_STF(C3X_FROM_INT(0));
-    mat->a20 = C3X_STF(C3X_FROM_INT(0));
-    mat->a21 = C3X_STF(C3X_FROM_INT(0));
+    mat->a01 = C3X_STF_INT(0);
+    mat->a02 = C3X_STF_INT(0);
+    mat->a10 = C3X_STF_INT(0);
+    mat->a12 = C3X_STF_INT(0);
+    mat->a20 = C3X_STF_INT(0);
+    mat->a21 = C3X_STF_INT(0);
 }
 
 // *----------------------------------------------------------------------------
@@ -1355,9 +1355,9 @@ void CLR_VECTORA(void) {
     // asm 00009666: 	STF	R0,*AR2
     // asm 00009667: 	STF	R0,*+AR2(1)
     // asm 00009668: 	STF	R0,*+AR2(2)
-    _VECTORA.X = C3X_STF(C3X_FROM_INT(0));
-    _VECTORA.Y = C3X_STF(C3X_FROM_INT(0));
-    _VECTORA.Z = C3X_STF(C3X_FROM_INT(0));
+    _VECTORA.X = C3X_STF_INT(0);
+    _VECTORA.Y = C3X_STF_INT(0);
+    _VECTORA.Z = C3X_STF_INT(0);
     // asm 00009669: 	POPF	R0
     // asm 0000966A: 	POP	R0
     // asm 0000966B: 	RETS

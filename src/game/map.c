@@ -63,8 +63,6 @@ static u32 scale_packed_palette_word(u32 packed_word, c3x_reg_t multiplier);
 #define M3ST (-HALFPI)
 #define M4ST HALFPI
 // 	;THETA DELTAs
-#define M1STD C3X_INIT(0.052359877f, 0xFB56774F75ull)    // HALFPI/30
-#define M2STD C3X_INIT(-0.052359877f, 0xFBA988B08Aull) //-HALFPI/30
 #define M3STD 0.052359877    // HALFPI/30
 #define M4STD (-0.052359877) //-HALFPI/30
 /* asm: M3STDI	.float	M1STD */
@@ -211,27 +209,27 @@ void UNFOLDMAP_NOPAL(PROC* p) {
     OBJ_INSERTP(obj);
     // asm 00005E3E: 	LDF	M1ST,R0
     // asm 00005E3F: 	STF	R0,*+AR7(MAP1T)
-    p->ctx.MAP_ANIMATION.theta[0] = C3X_STF(C3X_IMM_F32(M1ST));
+    p->ctx.MAP_ANIMATION.theta[0] = C3X_STF_IMM(M1ST);
     // asm 00005E40: 	LDF	M2ST,R0
     // asm 00005E41: 	STF	R0,*+AR7(MAP2T)
-    p->ctx.MAP_ANIMATION.theta[1] = C3X_STF(C3X_IMM_F32(M2ST));
+    p->ctx.MAP_ANIMATION.theta[1] = C3X_STF_IMM(M2ST);
     // asm 00005E42: 	LDF	M3ST,R0
     // asm 00005E43: 	STF	R0,*+AR7(MAP3T)
-    p->ctx.MAP_ANIMATION.theta[2] = C3X_STF(C3X_IMM_F32(M3ST));
+    p->ctx.MAP_ANIMATION.theta[2] = C3X_STF_IMM(M3ST);
     // asm 00005E44: 	LDF	M4ST,R0
     // asm 00005E45: 	STF	R0,*+AR7(MAP4T)
-    p->ctx.MAP_ANIMATION.theta[3] = C3X_STF(C3X_IMM_F32(M4ST));
+    p->ctx.MAP_ANIMATION.theta[3] = C3X_STF_IMM(M4ST);
     // asm 00005E46: 	CLRF	R0
     // asm 00005E47: 	STF	R0,*+AR7(MAPLPX)
-    p->ctx.MAP_ANIMATION.lead_x = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_x = C3X_STF_IMM(0);
     // asm 00005E48: 	STF	R0,*+AR7(MAPLPY)
-    p->ctx.MAP_ANIMATION.lead_y = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_y = C3X_STF_IMM(0);
     // asm 00005E49: 	FLOAT	3368,R0	;368
     // asm 00005E4A: 	STF	R0,*+AR7(MAPLPZ)
-    p->ctx.MAP_ANIMATION.lead_z = C3X_STF(C3X_FROM_INT(3368)); // 368
+    p->ctx.MAP_ANIMATION.lead_z = C3X_STF_INT(3368); // 368
     // asm 00005E4B: 	LDF	HALFPI,R2
     // asm 00005E4C: 	STF	R2,*+AR7(MAPLTX)
-    p->ctx.MAP_ANIMATION.lead_theta = C3X_STF(C3X_IMM_F32(HALFPI));
+    p->ctx.MAP_ANIMATION.lead_theta = C3X_STF_IMM(HALFPI);
     // asm 00005E4D: 	LDI	AR7,AR2
     // asm 00005E4E: 	ADDI	MAPLMAT,AR2
     // asm 00005E4F: 	CALL	FIND_XMATRIX
@@ -239,10 +237,10 @@ void UNFOLDMAP_NOPAL(PROC* p) {
         C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta));
     // asm 00005E50: 	LDF	0.2,R0
     // asm 00005E51: 	STF	R0,@MAPPAL24
-    MAPPAL24 = C3X_STF(C3X_IMM_F32(0.2));
+    MAPPAL24 = C3X_STF_IMM(0.2);
     // asm 00005E52: 	LDF	0.6,R0
     // asm 00005E53: 	STF	R0,@MAPPAL13
-    MAPPAL13 = C3X_STF(C3X_IMM_F32(0.6));
+    MAPPAL13 = C3X_STF_IMM(0.6);
     // asm 00005E54: 	LDI	MAP_ITERATIONS-1,AR5
     p->ctx.MAP_ANIMATION.loop_count = MAP_ITERATIONS - 1;
     // asm 00005E55: UNFOLD_LP
@@ -251,11 +249,11 @@ UNFOLD_LP:
     // asm 00005E55: 	LDF	@MAPPAL24,R0
     // asm 00005E56: 	ADDF	0.0266,R0
     // asm 00005E57: 	STF	R0,@MAPPAL24
-    MAPPAL24 = C3X_STF(C3X_ADD(C3X_LDF(MAPPAL24), C3X_IMM_F32(0.0266)));
+    MAPPAL24 = C3X_STF(C3X_ADD_IMM(C3X_LDF(MAPPAL24), 0.0266));
     // asm 00005E58: 	LDF	@MAPPAL13,R0
     // asm 00005E59: 	ADDF	0.0133,R0
     // asm 00005E5A: 	STF	R0,@MAPPAL13
-    MAPPAL13 = C3X_STF(C3X_ADD(C3X_LDF(MAPPAL13), C3X_IMM_F32(0.0133)));
+    MAPPAL13 = C3X_STF(C3X_ADD_IMM(C3X_LDF(MAPPAL13), 0.0133));
     // asm 00005E5B: 	CALL	MAPPAL_ILLUM
     MAPPAL_ILLUM();
     // asm 00005E5C: 	LDF	*+AR7(MAPLPZ),R0
@@ -263,7 +261,7 @@ UNFOLD_LP:
     // asm 00005E5D: 	FLOAT	368,R1
     // asm 00005E5E: 	SUBF	R0,R1
     // asm 00005E5F: 	MPYF	0.25,R1
-    delta = C3X_MUL(C3X_SUB(C3X_FROM_INT(368), value), C3X_IMM_F32(0.25));
+    delta = C3X_MUL_IMM(C3X_SUB(C3X_FROM_INT(368), value), 0.25);
     // asm 00005E60: 	ADDF	R1,R0
     value = C3X_ADD(value, delta);
     // asm 00005E61: 	FLOAT	368,R1
@@ -276,7 +274,7 @@ UNFOLD_LP:
     p->ctx.MAP_ANIMATION.lead_z = C3X_STF(value);
     // asm 00005E65: 	LDF	*+AR7(MAPLTX),R2
     // asm 00005E66: 	MPYF	0.9,R2
-    value = C3X_MUL(C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta), C3X_IMM_F32(0.9));
+    value = C3X_MUL_IMM(C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta), 0.9);
     // asm 00005E67: 	CLRF	R1
     // asm 00005E68: 	CMPI	0,AR5
     // asm 00005E69: 	LDFEQ	R1,R2
@@ -356,7 +354,7 @@ UNFOLD_LP:
     CLR_VECTORA();
     // asm 00005E99: 	FLOAT	-127,R0
     // asm 00005E9A: 	STF	R0,*+AR2(X)
-    _VECTORA.X = C3X_STF(C3X_FROM_INT(-127));
+    _VECTORA.X = C3X_STF_INT(-127);
     // asm 00005E9B: 	LDI	@MATRIXAI,R2
     // asm 00005E9C: 	LDI	AR4,R3
     // asm 00005E9D: 	ADDI	OPOSX,R3
@@ -404,7 +402,7 @@ UNFOLD_LP:
     CLR_VECTORA();
     // asm 00005EBB: 	FLOAT	128,R0
     // asm 00005EBC: 	STF	R0,*+AR2(X)
-    _VECTORA.X = C3X_STF(C3X_FROM_INT(128));
+    _VECTORA.X = C3X_STF_INT(128);
     // asm 00005EBD: 	LDI	@MATRIXAI,R2
     // asm 00005EBE: 	LDI	AR4,R3
     // asm 00005EBF: 	ADDI	OPOSX,R3
@@ -600,24 +598,24 @@ void FOLDMAP(PROC* p) {
     OBJ_INSERTP(obj);
     // asm 00005F20: 	CLRF	R0
     // asm 00005F21: 	STF	R0,*+AR7(MAP1T)
-    p->ctx.MAP_ANIMATION.theta[0] = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.theta[0] = C3X_STF_IMM(0);
     // asm 00005F22: 	STF	R0,*+AR7(MAP2T)
-    p->ctx.MAP_ANIMATION.theta[1] = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.theta[1] = C3X_STF_IMM(0);
     // asm 00005F23: 	STF	R0,*+AR7(MAP3T)
-    p->ctx.MAP_ANIMATION.theta[2] = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.theta[2] = C3X_STF_IMM(0);
     // asm 00005F24: 	STF	R0,*+AR7(MAP4T)
-    p->ctx.MAP_ANIMATION.theta[3] = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.theta[3] = C3X_STF_IMM(0);
     // asm 00005F25: 	CLRF	R0
     // asm 00005F26: 	STF	R0,*+AR7(MAPLPX)
-    p->ctx.MAP_ANIMATION.lead_x = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_x = C3X_STF_IMM(0);
     // asm 00005F27: 	STF	R0,*+AR7(MAPLPY)
-    p->ctx.MAP_ANIMATION.lead_y = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_y = C3X_STF_IMM(0);
     // asm 00005F28: 	FLOAT	368,R0	;368
     // asm 00005F29: 	STF	R0,*+AR7(MAPLPZ)
-    p->ctx.MAP_ANIMATION.lead_z = C3X_STF(C3X_FROM_INT(368)); // 368
+    p->ctx.MAP_ANIMATION.lead_z = C3X_STF_INT(368); // 368
     // asm 00005F2A: 	CLRF	R2
     // asm 00005F2B: 	STF	R2,*+AR7(MAPLTX)
-    p->ctx.MAP_ANIMATION.lead_theta = C3X_STF(C3X_IMM_F32(0));
+    p->ctx.MAP_ANIMATION.lead_theta = C3X_STF_IMM(0);
     // asm 00005F2C: 	LDI	AR7,AR2
     // asm 00005F2D: 	ADDI	MAPLMAT,AR2
     // asm 00005F2E: 	CALL	FIND_XMATRIX
@@ -625,9 +623,9 @@ void FOLDMAP(PROC* p) {
         C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta));
     // asm 00005F2F: 	LDF	1,R0
     // asm 00005F30: 	STF	R0,*+AR7(MAPXD)
-    p->ctx.MAP_ANIMATION.x_delta = C3X_STF(C3X_IMM_F32(1));
+    p->ctx.MAP_ANIMATION.x_delta = C3X_STF_IMM(1);
     // asm 00005F31: 	STF	R0,*+AR7(MAPYD)
-    p->ctx.MAP_ANIMATION.y_delta = C3X_STF(C3X_IMM_F32(1));
+    p->ctx.MAP_ANIMATION.y_delta = C3X_STF_IMM(1);
     // asm 00005F32: 	LDI	MAP_ITERATIONS-1,AR5
     p->ctx.MAP_ANIMATION.loop_count = MAP_ITERATIONS - 1;
     // asm 00005F33: FOLD_LP
@@ -648,7 +646,7 @@ FOLD_LP:
 #endif
     // asm 00005F38: 	LDF	*+AR7(MAPXD),R1
     // asm 00005F39: 	MPYF	1.20,R1
-    delta = C3X_MUL(C3X_LDF(p->ctx.MAP_ANIMATION.x_delta), C3X_IMM_F32(1.20));
+    delta = C3X_MUL_IMM(C3X_LDF(p->ctx.MAP_ANIMATION.x_delta), 1.20);
     // asm 00005F3A: 	STF	R1,*+AR7(MAPXD)
     p->ctx.MAP_ANIMATION.x_delta = C3X_STF(delta);
     // asm 00005F3B: 	LDF	*+AR7(MAPLPX),R0
@@ -658,7 +656,7 @@ FOLD_LP:
         C3X_ADD(C3X_LDF(p->ctx.MAP_ANIMATION.lead_x), delta));
     // asm 00005F3E: 	LDF	*+AR7(MAPYD),R1
     // asm 00005F3F: 	MPYF	1.2,R1
-    delta = C3X_MUL(C3X_LDF(p->ctx.MAP_ANIMATION.y_delta), C3X_IMM_F32(1.2));
+    delta = C3X_MUL_IMM(C3X_LDF(p->ctx.MAP_ANIMATION.y_delta), 1.2);
     // asm 00005F40: 	STF	R1,*+AR7(MAPYD)
     p->ctx.MAP_ANIMATION.y_delta = C3X_STF(delta);
     // asm 00005F41: 	LDF	*+AR7(MAPLPY),R0
@@ -671,7 +669,7 @@ FOLD_LP:
     // asm 00005F45: 	FLOAT	3368,R1
     // asm 00005F46: 	SUBF	R0,R1
     // asm 00005F47: 	MPYF	0.05,R1
-    delta = C3X_MUL(C3X_SUB(C3X_FROM_INT(3368), value), C3X_IMM_F32(0.05));
+    delta = C3X_MUL_IMM(C3X_SUB(C3X_FROM_INT(3368), value), 0.05);
     // asm 00005F48: 	ADDF	R1,R0
     value = C3X_ADD(value, delta);
     // asm 00005F49: 	FLOAT	3368,R1
@@ -686,9 +684,7 @@ FOLD_LP:
     // asm 00005F4E: 	LDF	HALFPI,R0
     // asm 00005F4F: 	SUBF	R2,R0
     // asm 00005F50: 	MPYF	0.1,R0
-    delta = C3X_MUL(C3X_SUB(C3X_IMM_F32(HALFPI),
-                             C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta)),
-        C3X_IMM_F32(0.1));
+    delta = C3X_MUL_IMM(C3X_RSUB_IMM(HALFPI, C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta)), 0.1);
     // asm 00005F51: 	ADDF	R0,R2
     value = C3X_ADD(C3X_LDF(p->ctx.MAP_ANIMATION.lead_theta), delta);
     // asm 00005F52: 	LDF	HALFPI,R1
@@ -774,7 +770,7 @@ FOLD_LP:
     CLR_VECTORA();
     // asm 00005F84: 	FLOAT	-127,R0
     // asm 00005F85: 	STF	R0,*+AR2(X)
-    _VECTORA.X = C3X_STF(C3X_FROM_INT(-127));
+    _VECTORA.X = C3X_STF_INT(-127);
     // asm 00005F86: 	LDI	@MATRIXAI,R2
     // asm 00005F87: 	LDI	AR4,R3
     // asm 00005F88: 	ADDI	OPOSX,R3
@@ -824,7 +820,7 @@ FOLD_LP:
     CLR_VECTORA();
     // asm 00005FA6: 	FLOAT	128,R0
     // asm 00005FA7: 	STF	R0,*+AR2(X)
-    _VECTORA.X = C3X_STF(C3X_FROM_INT(128));
+    _VECTORA.X = C3X_STF_INT(128);
     // asm 00005FA8: 	LDI	@MATRIXAI,R2
     // asm 00005FA9: 	LDI	AR4,R3
     // asm 00005FAA: 	ADDI	OPOSX,R3
@@ -995,29 +991,29 @@ static void MAP_ILLUM_COMPUTE(PROC* p) {
     // asm 00005FED: 	LDF	*+AR7(MAP1T),R0
     value = C3X_LDF(p->ctx.MAP_ANIMATION.theta[0]);
     // asm 00005FEE: 	ADDF	HALFPI,R0
-    value = C3X_ADD(value, C3X_IMM_F32(HALFPI));
+    value = C3X_ADD_IMM(value, HALFPI);
     // asm 00005FEF: 	MPYF	@FORMULA1,R0
     value = C3X_MUL(value, C3X_LDF(FORMULA1));
     // asm 00005FF0: 	SUBRF	1.0,R0
-    value = C3X_SUB(C3X_IMM_F32(1.0), value);
+    value = C3X_RSUB_IMM(1.0, value);
     // asm 00005FF1: 	MPYF	0.7,R0
-    value = C3X_MUL(value, C3X_IMM_F32(0.7));
+    value = C3X_MUL_IMM(value, 0.7);
     // asm 00005FF2: 	ADDF	0.3,R0
-    value = C3X_ADD(value, C3X_IMM_F32(0.3));
+    value = C3X_ADD_IMM(value, 0.3);
     // asm 00005FF3: 	STF	R0,@MAPPAL13
     MAPPAL13 = C3X_STF(value);
     // asm 00005FF4: 	LDF	*+AR7(MAP2T),R0
     value = C3X_LDF(p->ctx.MAP_ANIMATION.theta[1]);
     // asm 00005FF5: 	ADDF	HALFPI,R0
-    value = C3X_ADD(value, C3X_IMM_F32(HALFPI));
+    value = C3X_ADD_IMM(value, HALFPI);
     // asm 00005FF6: 	MPYF	@FORMULA1,R0
     value = C3X_MUL(value, C3X_LDF(FORMULA1));
     // asm 00005FF7: 	SUBRF	1.0,R0
-    value = C3X_SUB(C3X_IMM_F32(1.0), value);
+    value = C3X_RSUB_IMM(1.0, value);
     // asm 00005FF8: 	MPYF	0.7,R0
-    value = C3X_MUL(value, C3X_IMM_F32(0.7));
+    value = C3X_MUL_IMM(value, 0.7);
     // asm 00005FF9: 	ADDF	0.3,R0
-    value = C3X_ADD(value, C3X_IMM_F32(0.3));
+    value = C3X_ADD_IMM(value, 0.3);
     // asm 00005FFA: 	STF	R0,@MAPPAL24
     MAPPAL24 = C3X_STF(value);
     // asm 00005FFB: 	CALL	MAPPAL_ILLUM
@@ -1418,12 +1414,12 @@ void TIME2STR(char* buffer /*AR2*/, int time /*R0*/) {
  *
  */
 /* asm: MINFACT	.FLOAT	0.000303030303		;1/(55*60) */
-static c3x_reg_t MINFACT = C3X_INIT(0.000303030303f, 0xF41EE00A00ull);
+static const c3x_f32_t MINFACT = C3X_F32_INIT(0.000303030303f);
 /* asm: SECFACT	.FLOAT	0.018181818		;1/55 */
-static c3x_reg_t SECFACT = C3X_INIT(0.018181818f, 0xFA14F20936ull);
+static const c3x_f32_t SECFACT = C3X_F32_INIT(0.018181818f);
 /* asm: HUNFACT	.FLOAT	1.818181818		;100/55 */
 /* asm: 	 */
-static c3x_reg_t HUNFACT = C3X_INIT(1.818181818f, 0x0068BA2F00ull);
+static const c3x_f32_t HUNFACT = C3X_F32_INIT(1.818181818f);
 
 void CVTTIME(int time_code /*R0*/, int* hundredths /*R0*/, int* seconds /*R1*/, int* minutes /*R2*/) {
     int local_minutes;
@@ -1602,7 +1598,7 @@ RADAR_LP:
     coordinate = C3X_SUB(C3X_LDF(car_obj->pos.X), C3X_LDF(player_obj->pos.X));
     // asm 00006133: 	LDLF	0.003,R1
     // asm 00006134: 	MPYF	R1,R0
-    coordinate = C3X_MUL(coordinate, C3X_F32(0.003)); // c3x-lint: full-precision -- LDLF long immediate
+    coordinate = C3X_MUL(coordinate, C3X_REG_FROM_DOUBLE(0.003)); // c3x-lint: full-precision -- LDLF long immediate
     // asm 00006135: 	STF	R0,*+AR2(X)
     VECTORAI.X = C3X_STF(coordinate);
     // asm 00006136: 	LDF	*+AR0(OPOSZ),R0
@@ -1610,7 +1606,7 @@ RADAR_LP:
     coordinate = C3X_SUB(C3X_LDF(car_obj->pos.Z), C3X_LDF(player_obj->pos.Z));
     // asm 00006138: 	LDLF	0.003,R1
     // asm 00006139: 	MPYF	R1,R0
-    coordinate = C3X_MUL(coordinate, C3X_F32(0.003)); // c3x-lint: full-precision -- LDLF long immediate
+    coordinate = C3X_MUL(coordinate, C3X_REG_FROM_DOUBLE(0.003)); // c3x-lint: full-precision -- LDLF long immediate
     // asm 0000613A: 	STF	R0,*+AR2(Z)
     VECTORAI.Z = C3X_STF(coordinate);
     // asm 0000613B: 	LDI	@MATRIXAI,R2
@@ -1667,7 +1663,7 @@ RADAR_LP:
     _ARPS[6] = radar_x;
     // asm 00006152: 	LDF	*+AR2(Z),R0
     // asm 00006153: 	MPYF	0.3,R0
-    coordinate = C3X_MUL(C3X_LDF(VECTORAI.Z), C3X_IMM_F32(0.3));
+    coordinate = C3X_MUL_IMM(C3X_LDF(VECTORAI.Z), 0.3);
     // asm 00006154: 	FIX	R0
     radar_y = C3X_FIX(coordinate);
     // asm 00006155: 	NEGI	R0
@@ -1878,7 +1874,7 @@ NOTTHEOPLYR:
     _ARPS[6] = radar_x;
     // asm 000061BE: 	LDF	*+AR2(Z),R0
     // asm 000061BF: 	MPYF	0.3,R0
-    coordinate = C3X_MUL(C3X_LDF(VECTORAI.Z), C3X_IMM_F32(0.3));
+    coordinate = C3X_MUL_IMM(C3X_LDF(VECTORAI.Z), 0.3);
     // asm 000061C0: 	FIX	R0
     radar_y = C3X_FIX(coordinate);
     // asm 000061C1: 	NEGI	R0

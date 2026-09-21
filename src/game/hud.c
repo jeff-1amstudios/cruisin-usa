@@ -34,7 +34,7 @@ static int GEARPAL[];
 #define MPH_BUFFERI MPH_BUFFER
 #define STOPBUFFI STOPBUFFER
 
-extern c3x_reg_t CHEAT;
+extern c3x_f32_t CHEAT;
 
 typedef struct HUD_POSITION_ENTRY {
     u32 score_model;
@@ -485,7 +485,7 @@ NBEEP:
     // asm 00009DD9: 	FLOAT	@_MPH,R2
     value = C3X_FROM_INT(_MPH);
     // asm 00009DDA: 	MPYF	1.6666,R2
-    value = C3X_MUL(value, C3X_IMM_F32(1.6666));
+    value = C3X_MUL_IMM(value, 1.6666);
     // asm 00009DDB: 	FIX	R2
     speed = C3X_FIX(value);
     // asm 00009DDC: 	BU	ISKPH
@@ -717,7 +717,7 @@ LP89:
     // asm 00009E54: 	LDF	*+AR0(CARRPM),R0
     rpm = C3X_LDF(PLYCBLK->rpm_x100);
     // asm 00009E55: 	MPYF	0.4583,R0		;22/48
-    rpm = C3X_MUL(rpm, C3X_IMM_F32(0.4583)); // 22/48
+    rpm = C3X_MUL_IMM(rpm, 0.4583); // 22/48
     // ;	MPYF	0.729,R0		;35/48
     // ;	MPYF	0.6041,R0		;29/48
     // asm 00009E56: 	FIX	R0

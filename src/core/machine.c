@@ -176,7 +176,7 @@ s32 crusn_read_s32(const u32** cursor) {
 }
 
 c3x_reg_t crusn__read_f32(const u32** cursor) {
-    return C3X_LOAD(crusn_read_u32(cursor));
+    return C3X_FROM_RAW32(crusn_read_u32(cursor));
 }
 
 void crusn_machine_decode_screen_argb8888(const crusn_machine* machine, u32* dst_pixels, size_t dst_pitch_bytes) {

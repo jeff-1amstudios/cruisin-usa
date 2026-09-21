@@ -659,13 +659,13 @@ DABLP3:
     // asm 00008B67: 	LDI	AR0,AR4
     // asm 00008B68: 	FLOAT	-50,R0
     // asm 00008B69: 	STF	R0,*+AR4(OPOSX)
-    p->ctx.BABE_TROPHY_FRAME.obj->pos.X = C3X_STF(C3X_FROM_INT(-50));
+    p->ctx.BABE_TROPHY_FRAME.obj->pos.X = C3X_STF_INT(-50);
     // asm 00008B6A: 	FLOAT	310,R0
     // asm 00008B6B: 	STF	R0,*+AR4(OPOSY)
-    p->ctx.BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_FROM_INT(310));
+    p->ctx.BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF_INT(310);
     // asm 00008B6C: 	FLOAT	368,R0
     // asm 00008B6D: 	STF	R0,*+AR4(OPOSZ)
-    p->ctx.BABE_TROPHY_FRAME.obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
+    p->ctx.BABE_TROPHY_FRAME.obj->pos.Z = C3X_STF_INT(368);
     // asm 00008B6E: 	LDI	*+AR4(OFLAGS),R0
     // asm 00008B6F: 	OR	O_POSTER|O_NOUROT|O_NOUNIV,R0
     // asm 00008B70: 	STI	R0,*+AR4(OFLAGS)
@@ -694,8 +694,7 @@ BABE_LP:
     // asm 00008B7C: 	LDF	*+AR4(OPOSY),R0
     // asm 00008B7D: 	SUBF	3,R0
     // asm 00008B7E: 	STF	R0,*+AR4(OPOSY)
-    p->ctx.BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_SUB(
-        C3X_LDF(p->ctx.BABE_TROPHY_FRAME.obj->pos.Y), C3X_IMM_F32(3)));
+    p->ctx.BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_LDF(p->ctx.BABE_TROPHY_FRAME.obj->pos.Y), 3));
     // asm 00008B7F: 	CALL	BABE_ANI
     BABE_ANI(p);
     // asm 00008B80: 	CALL	CROWD_IT
@@ -705,8 +704,7 @@ BABE_LP:
     // asm 00008B83: 	LDF	*+AR4(OPOSY),R0
     // asm 00008B84: 	SUBF	3,R0
     // asm 00008B85: 	STF	R0,*+AR4(OPOSY)
-    p->ctx.BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_SUB(
-        C3X_LDF(p->ctx.BABE_TROPHY_FRAME.obj->pos.Y), C3X_IMM_F32(3)));
+    p->ctx.BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_LDF(p->ctx.BABE_TROPHY_FRAME.obj->pos.Y), 3));
     // asm 00008B86: 	CALL	CROWD_IT
     CROWD_IT();
     // asm 00008B87: 	SLEEP	1
@@ -714,8 +712,7 @@ BABE_LP:
     // asm 00008B89: 	LDF	*+AR4(OPOSY),R0
     // asm 00008B8A: 	SUBF	3,R0
     // asm 00008B8B: 	STF	R0,*+AR4(OPOSY)
-    p->ctx.BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_SUB(
-        C3X_LDF(p->ctx.BABE_TROPHY_FRAME.obj->pos.Y), C3X_IMM_F32(3)));
+    p->ctx.BABE_TROPHY_FRAME.obj->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_LDF(p->ctx.BABE_TROPHY_FRAME.obj->pos.Y), 3));
     // asm 00008B8C: 	CALL	CROWD_IT
     CROWD_IT();
     // asm 00008B8D: 	SLEEP	1
@@ -921,13 +918,13 @@ void BABE_WAVEFLAG(PROC* p) {
     p->ctx.BABE_WAVEFLAG.obj = OBJ_GET();
     // asm 00008BDA: 	LDI	AR0,AR4
     // asm 00008BDB: 	FLOAT	-350,R0
-    p->ctx.BABE_WAVEFLAG.obj->pos.X = C3X_STF(C3X_FROM_INT(-350));
+    p->ctx.BABE_WAVEFLAG.obj->pos.X = C3X_STF_INT(-350);
     // asm 00008BDC: 	STF	R0,*+AR4(OPOSX)
     // asm 00008BDD: 	FLOAT	40,R0
-    p->ctx.BABE_WAVEFLAG.obj->pos.Y = C3X_STF(C3X_FROM_INT(40));
+    p->ctx.BABE_WAVEFLAG.obj->pos.Y = C3X_STF_INT(40);
     // asm 00008BDE: 	STF	R0,*+AR4(OPOSY)
     // asm 00008BDF: 	FLOAT	368,R0
-    p->ctx.BABE_WAVEFLAG.obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
+    p->ctx.BABE_WAVEFLAG.obj->pos.Z = C3X_STF_INT(368);
     // asm 00008BE0: 	STF	R0,*+AR4(OPOSZ)
     // asm 00008BE1: 	LDI	*+AR4(OFLAGS),R0
     // asm 00008BE2: 	OR	O_POSTER|O_NOUROT|O_NOUNIV,R0

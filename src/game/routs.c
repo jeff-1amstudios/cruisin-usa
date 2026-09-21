@@ -106,13 +106,13 @@ DIV_F30:
     // asm: 	ASH	24,R2
     // asm: 	PUSH	R2
     // asm: 	POPF	R2
-    reciprocal = C3X_F32(ldexp(1.0, -exponent - 1)); // c3x-lint: full-precision -- constructs an extended register exponent
+    reciprocal = C3X_REG_FROM_DOUBLE(ldexp(1.0, -exponent - 1)); // c3x-lint: full-precision -- constructs an extended register exponent
 
     for (i = 0; i < 4; i++) {
         // asm: 	MPYF	R2,R1,R0
         correction = C3X_MUL(divisor, reciprocal);
         // asm: 	SUBRF	2.0,R0
-        correction = C3X_SUB(C3X_IMM_F32(2.0), correction);
+        correction = C3X_RSUB_IMM(2.0, correction);
         // asm: 	MPYF	R0,R2
         reciprocal = C3X_MUL(reciprocal, correction);
     }
@@ -132,7 +132,7 @@ DIV_F30:
     // asm: 	MPYF	R2,R1,R0
     correction = C3X_MUL(divisor, reciprocal);
     // asm: 	SUBRF	1.0,R0
-    correction = C3X_SUB(C3X_IMM_F32(1.0), correction);
+    correction = C3X_RSUB_IMM(1.0, correction);
     // asm: 	MPYF	R2,R0
     correction = C3X_MUL(reciprocal, correction);
     // asm: 	ADDF	R0,R2,R1
@@ -393,16 +393,16 @@ c3x_reg_t INV_F30(c3x_reg_t v) {
     c3x_reg_t estimate;
     c3x_reg_t correction;
     c3x_reg_t result;
-    int exponent = (int8_t)(C3X_STORE(magnitude) >> 24);
+    int exponent = (int8_t)(C3X_TO_RAW32(magnitude) >> 24);
     uint32_t initial_raw = (uint32_t)(int8_t)(-exponent - 1) << 24;
 
     // x[0] = 1.0 * 2**(-e-1), followed by four Newton iterations.
-    estimate = C3X_LOAD(initial_raw);
+    estimate = C3X_FROM_RAW32(initial_raw);
     for (int i = 0; i < 4; i++) {
         // asm: 	MPYF	R1,R0,R2
         // asm: 	SUBRF	2.0,R2
         // asm: 	MPYF	R2,R1
-        correction = C3X_SUB(C3X_IMM_F32(2.0), C3X_MUL(estimate, magnitude));
+        correction = C3X_RSUB_IMM(2.0, C3X_MUL(estimate, magnitude));
         estimate = C3X_MUL(estimate, correction);
     }
 
@@ -423,7 +423,7 @@ c3x_reg_t INV_F30(c3x_reg_t v) {
     // asm: 	SUBRF	1.0,R2
     // asm: 	MPYF	R1,R2
     // asm: 	ADDF	R2,R1,R0
-    correction = C3X_SUB(C3X_IMM_F32(1.0), C3X_MUL(estimate, magnitude));
+    correction = C3X_RSUB_IMM(1.0, C3X_MUL(estimate, magnitude));
     result = C3X_ADD(C3X_MUL(estimate, correction), estimate);
     // asm: 	NEGF	R0,R1
     // asm: 	POPF	R2
@@ -649,15 +649,15 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/)
     // asm 0000A624: 	PUSHF	R2		;push x as float
     // asm 0000A625: 	POP	R1		;pop as int
     // asm 0000A626: 	ASH	-25,R1		;e = exponent(x) / 2
-    exponent_half = (int32_t)C3X_STORE(r2) >> 25;
+    exponent_half = (int32_t)C3X_TO_RAW32(r2) >> 25;
     // asm 0000A627: 	NEGI	R1		;negate exponent
     // asm 0000A628: 	ASH	24,R1	 	;shift into place
     // asm 0000A629: 	PUSH	R1		;push as int
     // asm 0000A62A: 	POPF	R1		;pop as float
     initial_raw = (uint32_t)(-exponent_half) << 24;
-    r1 = C3X_LOAD(initial_raw);
+    r1 = C3X_FROM_RAW32(initial_raw);
     // asm 0000A62B: 	MPYF	0.25,R2		;remove rounding bit
-    r2 = C3X_MUL(r2, C3X_IMM_F32(0.25));
+    r2 = C3X_MUL_IMM(r2, 0.25);
 
     // asm 0000A62C: 	MPYF	R1,R1,R0
     // asm 0000A62D: 	MPYF	R2,R0
@@ -665,7 +665,7 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/)
     // asm 0000A62F: 	MPYF	R0,R1
     r0 = C3X_MUL(r1, r1);
     r0 = C3X_MUL(r0, r2);
-    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r0 = C3X_RSUB_IMM(1.5, r0);
     r1 = C3X_MUL(r1, r0);
 
     // asm 0000A630: 	RND	R1
@@ -676,7 +676,7 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/)
     r1 = C3X_RND(r1);
     r0 = C3X_MUL(r1, r1);
     r0 = C3X_MUL(r0, r2);
-    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r0 = C3X_RSUB_IMM(1.5, r0);
     r1 = C3X_MUL(r1, r0);
 
     // asm 0000A635: 	RND	R1
@@ -687,7 +687,7 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/)
     r1 = C3X_RND(r1);
     r0 = C3X_MUL(r1, r1);
     r0 = C3X_MUL(r0, r2);
-    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r0 = C3X_RSUB_IMM(1.5, r0);
     r1 = C3X_MUL(r1, r0);
 
     // asm 0000A63A: 	RND	R1
@@ -698,7 +698,7 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/)
     r1 = C3X_RND(r1);
     r0 = C3X_MUL(r1, r1);
     r0 = C3X_MUL(r0, r2);
-    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r0 = C3X_RSUB_IMM(1.5, r0);
     r1 = C3X_MUL(r1, r0);
 
     // asm 0000A63F: 	RND	R1
@@ -709,7 +709,7 @@ c3x_reg_t SQRT(c3x_reg_t x /*R2*/)
     r1 = C3X_RND(r1);
     r0 = C3X_MUL(r1, r1);
     r0 = C3X_MUL(r0, r2);
-    r0 = C3X_SUB(C3X_IMM_F32(1.5), r0);
+    r0 = C3X_RSUB_IMM(1.5, r0);
     r1 = C3X_MUL(r1, r0);
 
     // asm 0000A644: 	RND	R1

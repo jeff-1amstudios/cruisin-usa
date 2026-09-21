@@ -9,6 +9,6 @@
 // asm: 	.bss	ROADKILLXZ,2
 extern c3x_f32_t ROADKILLXZ[];
 // asm: 	.bss	ROADKILL_SOUND_TIMER,1
-extern c3x_reg_t ROADKILL_SOUND_TIMER;
+extern c3x_f32_t ROADKILL_SOUND_TIMER;
 
 #endif /* ROADKILL_H */

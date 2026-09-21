@@ -439,7 +439,7 @@ NOBUMP:
     // asm 0000A4BE: 	LDF	*+AR0(CARSPEED),R0
     // asm 0000A4BF: 	CMPF	127,R0
     // asm 0000A4C0: 	BLT	NOYELL
-    if (C3X_LT(C3X_LDF(PLYCBLK->speed), C3X_IMM_F32(127))) {
+    if (C3X_LT_IMM(C3X_LDF(PLYCBLK->speed), 127)) {
         goto NOYELL;
     }
     // asm 0000A4C1: 	LDI	1,R0
@@ -560,10 +560,8 @@ JOINUP998:
     // 	;
     // asm 0000A4F9: 	CALL	ARCTANF			;-> R0
     // asm 0000A4FA: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
-    desired_theta = C3X_SUB(
-        ARCTANF(C3X_ADD(C3X_SUB(C3X_LDF(tracking_piece->pos.X), C3X_LDF(obj->pos.X)), C3X_LDF(VECTORAI.X)),
-            C3X_ADD(C3X_SUB(C3X_LDF(tracking_piece->pos.Z), C3X_LDF(obj->pos.Z)), C3X_LDF(VECTORAI.Z))),
-        C3X_IMM_F32(HALFPI));
+    desired_theta = C3X_SUB_IMM(ARCTANF(C3X_ADD(C3X_SUB(C3X_LDF(tracking_piece->pos.X), C3X_LDF(obj->pos.X)), C3X_LDF(VECTORAI.X)),
+            C3X_ADD(C3X_SUB(C3X_LDF(tracking_piece->pos.Z), C3X_LDF(obj->pos.Z)), C3X_LDF(VECTORAI.Z))), HALFPI);
     // asm 0000A4FB:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 0000A4FC: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
     theta_delta = GETTHETADIFF(desired_theta, C3X_LDF(obj->rad.Y));
@@ -585,9 +583,7 @@ NODIV:
     // asm 0000A504: 	LDF	*+AR7(DELTA_THROTTLE),R2
     // asm 0000A505: 	MPYF	0.01,R2
     // asm 0000A506: 	STF	R2,*+AR5(CARTHROTTLE)
-    carblk->throttle = C3X_STF(C3X_MUL(
-        C3X_LDF(p->ctx.RACER_DRONE.delta_throttle),
-        C3X_IMM_F32(0.01f)));
+    carblk->throttle = C3X_STF(C3X_MUL_IMM(C3X_LDF(p->ctx.RACER_DRONE.delta_throttle), 0.01f));
     // asm 0000A507: 	BU	L99
     goto L99;
 NOTPRECOL:
@@ -600,17 +596,17 @@ NOTPRECOL:
     // asm 0000A50D: 	LDFGT	MAX_SIGMA_THROTTLE,R2
     // asm 0000A50E: 	STF	R2,*+AR7(DELTA_THROTTLE)
     // asm 0000A50F: 	STF	R2,*+AR5(CARTHROTTLE)
-    throttle = C3X_MUL(C3X_LDF(p->ctx.RACER_DRONE.delta_throttle), C3X_IMM_F32(1.01f));
-    if (C3X_LT(throttle, C3X_IMM_F32(MIN_THROTTLE)))
+    throttle = C3X_MUL_IMM(C3X_LDF(p->ctx.RACER_DRONE.delta_throttle), 1.01f);
+    if (C3X_LT_IMM(throttle, MIN_THROTTLE))
         throttle = C3X_IMM_F32(MIN_THROTTLE);
-    if (C3X_GT(throttle, C3X_IMM_F32(MAX_SIGMA_THROTTLE)))
+    if (C3X_GT_IMM(throttle, MAX_SIGMA_THROTTLE))
         throttle = C3X_IMM_F32(MAX_SIGMA_THROTTLE);
     p->ctx.RACER_DRONE.delta_throttle = C3X_STF(throttle);
     carblk->throttle = C3X_STF(throttle);
 L99:
     // asm 0000A510: 	LDF	*+AR7(DELTA_RADYDELTA),R2
     // asm 0000A511: 	MPYF	1.95,R2			;depending on plyr.asm this may have to
-    steering_delta = C3X_MUL(C3X_LDF(p->ctx.RACER_DRONE.delta_radydelta), C3X_IMM_F32(1.95f));
+    steering_delta = C3X_MUL_IMM(C3X_LDF(p->ctx.RACER_DRONE.delta_radydelta), 1.95f);
     MAME_ASSERT_REG_FLOAT(0x0000A512, "R2", &steering_delta);
     // asm 0000A512: 	CALL	DRONE_RIDE_RIGHT	;FIND DISTANCE TO CENTER OF ROAD
     // asm 0000A513: 	STF	R0,*+AR5(CARDIST2CNTR)
@@ -680,7 +676,7 @@ NOSMK:
     }
     // asm 0000A52C: 	CLRF	R2
     // asm 0000A52D: 	STF	R2,*+AR5(CARTHROTTLE)
-    carblk->throttle = C3X_STF(C3X_FROM_INT(0));
+    carblk->throttle = C3X_STF_INT(0);
     // asm 0000A52E: 	CALL	DRONEGO
     DRONEGO(obj, carblk, C3X_FROM_INT(0));
     // asm 0000A52F: 	CALL	GETTRAK

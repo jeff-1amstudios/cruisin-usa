@@ -41,7 +41,7 @@ static c3x_f32_t INFINPOINTS[102];
 static c3x_f32_t WATERPOS[78];
 
 /* asm: CAMRADY	.bss	CAMRADY,1 */
-c3x_reg_t CAMRADY = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t CAMRADY = C3X_F32_INIT(1.0f);
 /*
  *----------------------------------------------------------------------------
  *SEARCH THE ROAD OBJECTS AND FIND THE HIGHEST POSITIONED OBJECT.
@@ -56,11 +56,11 @@ c3x_reg_t CAMRADY = C3X_INIT(1.0f, 0x0000000000ull);
  */
 #define HIGH_CLIP_LEVEL ((5000 - 1)) // ACTUAL # OF ENTRIES
 /* asm: HIGHEST_ROADY	.bss	HIGHEST_ROADY,1 */
-c3x_reg_t HIGHEST_ROADY = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t HIGHEST_ROADY = C3X_F32_INIT(1.0f);
 /* asm: HIGHEST_ROADY_X	.bss	HIGHEST_ROADY_X,1 */
-c3x_reg_t HIGHEST_ROADY_X = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t HIGHEST_ROADY_X = C3X_F32_INIT(1.0f);
 /* asm: VAR_ROAD_KFACTOR	.bss	VAR_ROAD_KFACTOR,1 */
-c3x_reg_t VAR_ROAD_KFACTOR = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t VAR_ROAD_KFACTOR = C3X_F32_INIT(1.0f);
 
 static void FIND_HIGHEST_ROADY(void) {
     static OBJ* validate_bgd_phase_player;
@@ -119,7 +119,7 @@ static void FIND_HIGHEST_ROADY(void) {
     // asm 00008219: 	FLOAT	512,R6
     highest_roady = C3X_FROM_INT(512);
     // asm 0000821A: 	STPF	R6,@HIGHEST_ROADY
-    HIGHEST_ROADY = highest_roady;
+    HIGHEST_ROADY = C3X_STF(highest_roady);
     // asm 0000821B: 	CLRF	R7			;CORRESPONDING Z POS
     highest_roady_x = C3X_FROM_INT(0); // ;CORRESPONDING Z POS
     // asm 0000821C: 	LDI	@DYNALIST_BEGIN,AR2
@@ -238,10 +238,10 @@ NOCHANCE:
     }
     // asm 00008253: 	STPF	R6,@HIGHEST_ROADY
     MAME_ASSERT_REG_FLOAT(0x00008253, "R6", &highest_roady);
-    HIGHEST_ROADY = highest_roady;
+    HIGHEST_ROADY = C3X_STF(highest_roady);
     // asm 00008254: 	STPF	R7,@HIGHEST_ROADY_X	;SAVE X VALUE
     MAME_ASSERT_REG_FLOAT(0x00008254, "R7", &highest_roady_x);
-    HIGHEST_ROADY_X = highest_roady_x; // ;SAVE X VALUE
+    HIGHEST_ROADY_X = C3X_STF(highest_roady_x); // ;SAVE X VALUE
 FHRY_X:
     // asm 00008255: 	POP	AR2
     // asm 00008256: 	POP	R7
@@ -271,21 +271,21 @@ INFINITY:;
 c3x_reg_t AMOUNT_CLIPPED;
 /* asm: FORMULA		.float	-244.4619926	;(6*256)/2PI  (convert radians to length of infinity plane) */
 /* asm: 	 */
-static c3x_reg_t FORMULA = C3X_INIT(-244.4619926f, 0x078B89BADAull);
+static const c3x_f32_t FORMULA = C3X_F32_INIT(-244.4619926f);
 /* asm: LOWVAL		.float	-1536 */
-static c3x_reg_t LOWVAL = C3X_INIT(-1536.0f, 0x0AC0000000ull);
+static const c3x_f32_t LOWVAL = C3X_F32_INIT(-1536.0f);
 /* asm: HIGHVAL		.float	1536 */
 /* asm: 	 */
-static c3x_reg_t HIGHVAL = C3X_INIT(1536.0f, 0x0A40000000ull);
+static const c3x_f32_t HIGHVAL = C3X_F32_INIT(1536.0f);
 /* asm: LOIVAL		.word	-768 */
 static int LOIVAL = -768;
 /* asm: HIGHIVAL	.word	1536 */
 /* asm: 	 */
 static int HIGHIVAL = 1536;
 /* asm: INFPROJ		.float	0.0064 */
-static c3x_reg_t INFPROJ = C3X_INIT(0.0064f, 0xF851B71758ull);
+static const c3x_f32_t INFPROJ = C3X_F32_INIT(0.0064f);
 /* asm: INFVAL		.float  80000 */
-static c3x_reg_t INFVAL = C3X_INIT(80000.0f, 0x101C400000ull);
+static const c3x_f32_t INFVAL = C3X_F32_INIT(80000.0f);
 
 /*
  *
@@ -346,7 +346,7 @@ void INFINITY_CUSA(void) {
 INFF1:
     // asm 00008275: 	STF	R2,@CAMRADY
     MAME_ASSERT_REG_FLOAT(0x00008275, "R2", &camera_rady);
-    CAMRADY = camera_rady;
+    CAMRADY = C3X_STF(camera_rady);
     // 	;
     // 	;FIND HORIZON X OFFSET
     // asm 00008276: 	MPYF	@FORMULA,R2
@@ -381,7 +381,7 @@ OK554:
     CONCATMAT(&MATRIXAI, &_CAMERAMATRIX, &MATRIXAI);
     // 	;GET Y HEIGHT OF CLIP ELEMENT
     // asm 00008285: 	LDF	@HIGHEST_ROADY,R0
-    clip_amount = HIGHEST_ROADY;
+    clip_amount = C3X_LDF(HIGHEST_ROADY);
     MAME_ASSERT_REG_FLOAT(0x00008286, "R0", &HIGHEST_ROADY);
     // asm 00008286: 	ADDF	25,R0
     clip_amount = C3X_ADD(clip_amount, C3X_FROM_INT(25));
@@ -411,7 +411,7 @@ OK554:
     // asm 00008291: 	LDI	@BLOWLISTI,AR6
     // asm 00008292: 	LDI	33,AR4
     // asm 00008293: 	CALL	TRANS_PTS
-    TRANS_PTS(33, INFINPOINTS, BLOWLIST, horizon_xf, INFIN_CORRECT);
+    TRANS_PTS(33, INFINPOINTS, BLOWLIST, horizon_xf, C3X_LDF(INFIN_CORRECT));
     // asm 00008294: 	LDI	sky1_p,AR2
     // asm 00008295: 	CALL	PAL_FIND
     // asm 00008296: 	LDI	R0,AR2
@@ -490,8 +490,8 @@ LOOP:
         // asm 000082BF: 	LDF	@HIGHEST_ROADY,R0
         // asm 000082C0: 	STF	R0,*+AR1(Y)
         // asm 000082C1: 	CALL	DIST_PT2LINE
-        VECTORCI.X = C3X_STF(HIGHEST_ROADY_X);
-        VECTORCI.Y = C3X_STF(HIGHEST_ROADY);
+        VECTORCI.X = HIGHEST_ROADY_X;
+        VECTORCI.Y = HIGHEST_ROADY;
         dist_to_line = DIST_PT2LINE(&line, &VECTORCI);
         MAME_ASSERT_REG_FLOAT(0x000082C2, "R0", &dist_to_line);
         // asm 000082C2: 	POP	BK
@@ -921,7 +921,7 @@ static INFINITY_POLYGON_ENTRY BLUESKY[] = {
     { sky1_p, sky6_I },
 };
 /* asm: INFIN_CORRECT	.bss	INFIN_CORRECT,1 */
-c3x_reg_t INFIN_CORRECT = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t INFIN_CORRECT = C3X_F32_INIT(1.0f);
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -937,7 +937,7 @@ c3x_reg_t INFIN_CORRECT = C3X_INIT(1.0f, 0x0000000000ull);
 static void TRANS_PTS(int vertex_count /*AR4*/, const c3x_f32_t* src /*AR5*/, c3x_f32_t* dst /*AR6*/, c3x_reg_t x_offset /*R6*/, c3x_reg_t y_offset /*R7*/) {
     // ;	LDF	@AMOUNT_CLIPPED,R4
     // asm 000083D4: 	LDF	@INFIN_CORRECT,R7
-    y_offset = INFIN_CORRECT;
+    y_offset = C3X_LDF(INFIN_CORRECT);
     // ;	FLOAT	8000,R0
     // ;	MPYF	10,R0
     // ;	LDP	@_CAMERARAD
@@ -984,7 +984,7 @@ LKJ2:
     // asm 000083EA: 	MPYF	1.04,R0
     // asm 000083EB: 	LDP	@SCRNHYI
     // asm 000083EC: 	ADDF	@SCRNHYI,R0
-    dst[1] = C3X_STF(C3X_ADD(C3X_MUL(dst[1], C3X_IMM_F32(1.04f)), SCRNHYI));
+    dst[1] = C3X_STF(C3X_ADD(C3X_MUL_IMM(dst[1], 1.04f), SCRNHYI));
     // asm 000083ED: 	STF	R0,*AR6++(2)
     dst += 3;
     // asm 000083EE: 	DEC	AR4
@@ -1022,7 +1022,7 @@ LKJ25:
     // asm 00008404: 	MPYF	1.04,R0
     // asm 00008405: 	LDP	@SCRNHYI
     // asm 00008406: 	ADDF	@SCRNHYI,R0
-    dst[1] = C3X_STF(C3X_ADD(C3X_MUL(dst[1], C3X_IMM_F32(1.04f)), SCRNHYI));
+    dst[1] = C3X_STF(C3X_ADD(C3X_MUL_IMM(dst[1], 1.04f), SCRNHYI));
     // asm 00008407: 	STF	R0,*AR6++(2)
     dst += 3;
     // asm 00008408: 	DBU	AR4,TRANS_LP
@@ -1108,7 +1108,7 @@ ok24a:
     // asm 0000842C: 	LDF	R0,R7
     // asm 0000842D: 	NEGF	R7
     camera_y_vector_y = C3X_LDF(_CAMERAMATRIX.a11);
-    water_y = DIV_F(C3X_MUL(C3X_IMM_F32(0), INFVAL), camera_y_vector_y); // R0 is caller-clobbered; validation pins it to zero.
+    water_y = DIV_F(C3X_MUL_IMM(INFVAL, 0), camera_y_vector_y); // R0 is caller-clobbered; validation pins it to zero.
     water_y = C3X_MUL(water_y, INFPROJ);
     water_y = C3X_NEG(water_y);
     MAME_ASSERT_REG_FLOAT(0x0000842E, "R7", &water_y);

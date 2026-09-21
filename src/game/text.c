@@ -206,9 +206,9 @@ tTEXT* TEXT_ADD(const char* text, c3x_reg_t x, c3x_reg_t y, int ticks) {
 
     // asm: 	CLRF	R0
     // asm: 	STF	R0,*+AR0(TEXT_VELX)
-    t->velx = C3X_STF(C3X_FROM_INT(0));
+    t->velx = C3X_STF_INT(0);
     // asm: 	STF	R0,*+AR0(TEXT_VELY)
-    t->vely = C3X_STF(C3X_FROM_INT(0));
+    t->vely = C3X_STF_INT(0);
 
     /* set default font */
     // asm: 	BU	SET18FONT

@@ -1268,10 +1268,8 @@ SF_ENTER2:
     // asm 00006744: 	SUBF	*+AR2(OPOSZ),R3
     // asm 00006745: 	CALL	ARCTANF
     // asm 00006746: 	SUBF	HALFPI,R0
-    theta = C3X_SUB(
-        ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
-            C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
-        C3X_IMM_F32(HALFPI));
+    theta = C3X_SUB_IMM(ARCTANF(C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
+            C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))), HALFPI);
     // asm 00006747: 	LDF	R0,R2				;FIND THETA
     // asm 00006748: 	PUSHF	R2
     saved_theta = C3X_LDF(C3X_STF(theta));
@@ -1302,8 +1300,8 @@ DELTA_JOININ:
     // asm 00006756: 	CLRF	R0
     // asm 00006757: 	STF	R0,*+AR2(Y)
     // asm 00006758: 	STF	R0,*+AR2(Z)
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
-    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.Y = C3X_STF_INT(0);
+    VECTORAI.Z = C3X_STF_INT(0);
     // asm 00006759: 	LDI	AR2,R3
     // asm 0000675A: 	LDI	@MATRIXAI,R2
     // asm 0000675B: 	CALL	MATRIX_MUL			;COMPUTE THE LANE OFFSET IN VECTORA
@@ -1354,10 +1352,9 @@ SFENTER66:
     // asm 00006775: 	SUBF	*+AR2(OPOSZ),R3
     // asm 00006776: 	CALL	ARCTANF
     // asm 00006777: 	SUBF	HALFPI,R0
-    theta = C3X_SUB(ARCTANF(
+    theta = C3X_SUB_IMM(ARCTANF(
         C3X_SUB(C3X_LDF(next_piece->pos.X), C3X_LDF(piece->pos.X)),
-        C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))),
-        C3X_IMM_F32(HALFPI));
+        C3X_SUB(C3X_LDF(next_piece->pos.Z), C3X_LDF(piece->pos.Z))), HALFPI);
     // asm 00006778: 	LDF	R0,R2				;FIND THETA
     // asm 00006779: 	PUSHF	R2
     saved_theta = C3X_LDF(C3X_STF(theta));
@@ -1609,7 +1606,7 @@ EXP_PUFFLP:
     // asm 000067D1: 	LDF	*+AR4(OPOSY),R0
     // asm 000067D2: 	SUBF	10,R0
     // asm 000067D3: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(obj->pos.Y), C3X_IMM_F32(10)));
+    obj->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_LDF(obj->pos.Y), 10));
     // asm 000067D4: 	SLEEP	1
     SLEEP(1, 1);
     // asm 000067D6: 	BU	EXP_PUFFLP
@@ -1776,12 +1773,12 @@ int PRECOLLIDE_PLYR(OBJ* obj, CARBLK* carblk) {
     // asm 000067E1: 	MPYF	@NFRAMES,R0
     // asm 000067E2: 	MPYF	5,R0
     // asm 000067E3: 	STF	R0,*+AR3(Z)
-    VECTORAI.Z = C3X_STF(C3X_MUL(C3X_MUL(C3X_LDF(carblk->speed), C3X_FROM_INT(NFRAMES)), C3X_IMM_F32(5)));
+    VECTORAI.Z = C3X_STF(C3X_MUL_IMM(C3X_MUL(C3X_LDF(carblk->speed), C3X_FROM_INT(NFRAMES)), 5));
     // asm 000067E4: 	CLRF	R0
     // asm 000067E5: 	STF	R0,*+AR3(X)
     // asm 000067E6: 	STF	R0,*+AR3(Y)
-    VECTORAI.X = C3X_STF(C3X_FROM_INT(0));
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.X = C3X_STF_INT(0);
+    VECTORAI.Y = C3X_STF_INT(0);
     // asm 000067E7: 	LDI	@MATRIXAI,AR2
     // asm 000067E8: 	LDF	*+AR5(CARVROT),R2
     // asm 000067E9: 	CALL	FIND_YMATRIX
@@ -2263,29 +2260,29 @@ NSND1:
     // asm 000068AC: 	FLOAT	R0
     // asm 000068AD: 	ADDF	20,R0
     // asm 000068AE: 	STF	R0,*+AR4(OVELY)
-    obj->vel_y = C3X_STF(C3X_ADD(C3X_FROM_INT(RANDU0(20) * 3), C3X_IMM_F32(20)));
+    obj->vel_y = C3X_STF(C3X_ADD_IMM(C3X_FROM_INT(RANDU0(20) * 3), 20));
     // asm 000068AF: 	RANDN	20
     // asm 000068B1: 	MPYI	3,R0
     // asm 000068B2: 	FLOAT	R0
     // asm 000068B3: 	SUBF	30,R0
     // asm 000068B4: 	ADDF	*+AR4(OPOSX),R0
     // asm 000068B5: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_ADD(C3X_SUB(C3X_FROM_INT(RANDU0(20) * 3), C3X_IMM_F32(30)), C3X_LDF(obj->pos.X)));
+    obj->pos.X = C3X_STF(C3X_ADD(C3X_SUB_IMM(C3X_FROM_INT(RANDU0(20) * 3), 30), C3X_LDF(obj->pos.X)));
     // asm 000068B6: 	RANDN	20
     // asm 000068B8: 	MPYI	3,R0
     // asm 000068B9: 	FLOAT	R0
     // asm 000068BA: 	SUBF	30,R0
     // asm 000068BB: 	ADDF	*+AR4(OPOSZ),R0
     // asm 000068BC: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_ADD(C3X_SUB(C3X_FROM_INT(RANDU0(20) * 3), C3X_IMM_F32(30)), C3X_LDF(obj->pos.Z)));
+    obj->pos.Z = C3X_STF(C3X_ADD(C3X_SUB_IMM(C3X_FROM_INT(RANDU0(20) * 3), 30), C3X_LDF(obj->pos.Z)));
     // asm 000068BD: 	CLRI	R0
     // asm 000068BE: 	STI	R0,*+AR7(PDATA+2)
     p->ctx.DROP_COCONUTS.bounce_count = 0;
     // asm 000068BF: 	CLRF	R0
     // asm 000068C0: 	STF	R0,*+AR4(OVELX)
     // asm 000068C1: 	STF	R0,*+AR4(OVELZ)
-    obj->vel_x = C3X_STF(C3X_FROM_INT(0));
-    obj->vel_z = C3X_STF(C3X_FROM_INT(0));
+    obj->vel_x = C3X_STF_INT(0);
+    obj->vel_z = C3X_STF_INT(0);
 DROPLP:
     obj = p->ctx.DROP_COCONUTS.obj;
     parent = p->ctx.DROP_COCONUTS.parent;
@@ -2305,7 +2302,7 @@ DROPLP:
     // asm 000068C9: 	CMPF	R1,R0
     // asm 000068CA: 	LDFGT	R1,R0
     // asm 000068CB: 	STF	R0,*+AR4(OVELY)
-    value = C3X_ADD(C3X_LDF(obj->vel_y), C3X_IMM_F32(25));
+    value = C3X_ADD_IMM(C3X_LDF(obj->vel_y), 25);
     if (C3X_GT(value, C3X_FROM_INT(450))) {
         value = C3X_FROM_INT(450);
     }
@@ -2338,13 +2335,13 @@ DROPLP:
     // asm 000068DC: 	FLOAT	R0
     // asm 000068DD: 	SUBF	45,R0
     // asm 000068DE: 	STF	R0,*+AR4(OVELX)
-    obj->vel_x = C3X_STF(C3X_SUB(C3X_FROM_INT(RANDU0(30) * 3), C3X_IMM_F32(45)));
+    obj->vel_x = C3X_STF(C3X_SUB_IMM(C3X_FROM_INT(RANDU0(30) * 3), 45));
     // asm 000068DF: 	RANDN	30
     // asm 000068E1: 	MPYI	3,R0
     // asm 000068E2: 	FLOAT	R0
     // asm 000068E3: 	SUBF	45,R0
     // asm 000068E4: 	STF	R0,*+AR4(OVELZ)
-    obj->vel_z = C3X_STF(C3X_SUB(C3X_FROM_INT(RANDU0(30) * 3), C3X_IMM_F32(45)));
+    obj->vel_z = C3X_STF(C3X_SUB_IMM(C3X_FROM_INT(RANDU0(30) * 3), 45));
     // asm 000068E5: 	BU	LLKK
     goto LLKK;
 NOTINITIAL:
@@ -2356,11 +2353,11 @@ NOTINITIAL:
     // asm 000068E8: 	LDF	*+AR4(OVELX),R0
     // asm 000068E9: 	MPYF	0.5,R0
     // asm 000068EA: 	STF	R0,*+AR4(OVELX)
-    obj->vel_x = C3X_STF(C3X_MUL(C3X_LDF(obj->vel_x), C3X_IMM_F32(0.5)));
+    obj->vel_x = C3X_STF(C3X_MUL_IMM(C3X_LDF(obj->vel_x), 0.5));
     // asm 000068EB: 	LDF	*+AR4(OVELZ),R0
     // asm 000068EC: 	MPYF	0.5,R0
     // asm 000068ED: 	STF	R0,*+AR4(OVELZ)
-    obj->vel_z = C3X_STF(C3X_MUL(C3X_LDF(obj->vel_z), C3X_IMM_F32(0.5)));
+    obj->vel_z = C3X_STF(C3X_MUL_IMM(C3X_LDF(obj->vel_z), 0.5));
 LLKK:
     // asm 000068EE: 	LDI	*+AR7(PDATA+2),R0
     // asm 000068EF: 	INC	R0
@@ -2370,12 +2367,12 @@ LLKK:
     // asm 000068F2: 	CMPF	3,R0
     // asm 000068F3: 	BLE	HOLDTOSLEEP
     value = C3X_LDF(obj->vel_y);
-    if (C3X_LE(value, C3X_IMM_F32(3))) {
+    if (C3X_LE_IMM(value, 3)) {
         goto HOLDTOSLEEP;
     }
     // asm 000068F4: 	MPYF	-0.5,R0
     // asm 000068F5: 	STF	R0,*+AR4(OVELY)
-    value = C3X_MUL(value, C3X_IMM_F32(-0.5));
+    value = C3X_MUL_IMM(value, -0.5);
     obj->vel_y = C3X_STF(value);
     // asm 000068F6: 	ADDF	*+AR4(OPOSY),R0
     // asm 000068F7: 	STF	R0,*+AR4(OPOSY)

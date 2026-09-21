@@ -1180,10 +1180,10 @@ void SEND_RHO_CREATE(OBJ* obj, int car_id, int vehicle_index) {
 
 // *MATRIX DECODE CONSTANT
 /* asm: MATCON	.FLOAT	0.00003125		;1/32000 */
-static c3x_reg_t MATCON = C3X_INIT(0.00003125f, 0xF103126E97ull);
+static const c3x_f32_t MATCON = C3X_F32_INIT(0.00003125f);
 /* asm: RADCON	.FLOAT	0.001			;1/1000 */
 /* asm: 	 */
-static c3x_reg_t RADCON = C3X_INIT(0.001f, 0xF603126E97ull);
+static const c3x_f32_t RADCON = C3X_F32_INIT(0.001f);
 /*
  *
  *FIND DRONE CAR

@@ -425,7 +425,7 @@ static void FULLSETUP_GGPARK(void) {
     PAL_ALLOC_RAW((tPAL*)ROM_PTR(CORNPAL));
     // asm 00008CAA: 	FLOAT	-15,R0
     // asm 00008CAB: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_FROM_INT(-15);
+    INFIN_CORRECT = C3X_STF_INT(-15);
     // asm 00008CAC: 	CALL	WATERON
     WATERON();
     // asm 00008CAD: 	CALL	LEG_INIT
@@ -457,7 +457,7 @@ static void FULLSETUP_SANFRAN(void) {
     alloc_section(tunnel2_PALETTES);
     // asm 00008CB9: 	FLOAT	-15,R0
     // asm 00008CBA: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(-15)));
+    INFIN_CORRECT = C3X_STF_INT(-15);
     // asm 00008CBB: 	CALL	WATERON
     WATERON();
     // asm 00008CBC: 	LDI	120,R0
@@ -533,7 +533,7 @@ static void FULLSETUP_H280(void) {
     alloc_section(h280_PALETTES);
     // asm 00008CE7: 	FLOAT	55,R0
     // asm 00008CE8: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(55)));
+    INFIN_CORRECT = C3X_STF_INT(55);
     // asm 00008CE9: 	LDI	@_MODE,R0
     // asm 00008CEA: 	ANDN	MWATER,R0
     // asm 00008CEB: 	STI	R0,@_MODE
@@ -593,7 +593,7 @@ static void FULLSETUP_REDWOOD(void) {
     DD_VAR = 120;
     // asm 00008D0B: 	FLOAT	50,R0
     // asm 00008D0C: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(50)));
+    INFIN_CORRECT = C3X_STF_INT(50);
     // 	;load proper tunnel
     // asm 00008D0D: 	CALL	LOAD_TUNNEL
     LOAD_TUNNEL();
@@ -661,7 +661,7 @@ static void FULLSETUP_BEVERLY(void) {
     NOLONG_VEHICLES = 1;
     // asm 00008D30: 	FLOAT	45,R0
     // asm 00008D31: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_FROM_INT(45);
+    INFIN_CORRECT = C3X_STF_INT(45);
     // asm 00008D32: 	CALL	LEG_INIT
     LEG_INIT();
     // asm 00008D33: 	LDI	L_LEG5_BEGIN,AR0
@@ -698,7 +698,7 @@ static void FULLSETUP_LAFREEWAY(void) {
     NOLONG_VEHICLES = 1;
     // asm 00008D44: 	FLOAT	35,R0
     // asm 00008D45: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(35)));
+    INFIN_CORRECT = C3X_STF_INT(35);
     // asm 00008D46: 	LDL	lafreeway_PALETTES,AR2
     // asm 00008D47: 	CALL	alloc_section
     alloc_section(lafreeway_PALETTES);
@@ -746,7 +746,7 @@ static void FULLSETUP_DEATHVALLEY(void) {
     NOLONG_VEHICLES = 1;
     // asm 00008D5F: 	FLOAT	55,R0
     // asm 00008D60: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(55)));
+    INFIN_CORRECT = C3X_STF_INT(55);
     // asm 00008D61: 	LDI	bottom2_gtmp_p,R0	;ONE TO OVERWRITE
     // asm 00008D62: 	LDI	bottom2_gtmp_p,R1	;WHAT TO OVERWRITE IT WITH
     // asm 00008D63: 	CALL	PAL_OVERWRITE
@@ -813,7 +813,7 @@ static void FULLSETUP_ARIZONA(void) {
     NOLONG_VEHICLES = 1;
     // asm 00008D86: 	FLOAT	45,R0
     // asm 00008D87: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(45)));
+    INFIN_CORRECT = C3X_STF_INT(45);
     // asm 00008D88: 	LDI	60,R0
     // asm 00008D89: 	STI	R0,@DD_SLP
     DD_SLP = 60;
@@ -866,7 +866,7 @@ static void FULLSETUP_GCANYON(void) {
     NOLONG_VEHICLES = 0;
     // asm 00008DA3: 	FLOAT	55,R0
     // asm 00008DA4: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(55)));
+    INFIN_CORRECT = C3X_STF_INT(55);
     // asm 00008DA5: 	LDL	mtrush_PALETTES,AR2
     // asm 00008DA6: 	CALL	alloc_section
     alloc_section(mtrush_PALETTES);
@@ -907,7 +907,7 @@ static void FULLSETUP_IOWA(void) {
     NOLONG_VEHICLES = 1;
     // asm 00008DBA: 	FLOAT	45,R0
     // asm 00008DBB: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(45)));
+    INFIN_CORRECT = C3X_STF_INT(45);
     // asm 00008DBC: 	LDL	_SECiowa_bottom,AR2	;in reality it just overwrites 'BOTTOM.GTM'
     // asm 00008DBD: 	CALL	LOAD_SECTION_REQ
     LOAD_SECTION_REQ(&SECiowa_bottom_SETUPS);
@@ -979,7 +979,7 @@ static void FULLSETUP_CHICAGO(void) {
     CHALLENGE_RACE = 1;
     // asm 00008DEA: 	FLOAT	55,R0
     // asm 00008DEB: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(55)));
+    INFIN_CORRECT = C3X_STF_INT(55);
     // asm 00008DEC: 	LDL	thetrains_PALETTES,AR2
     // asm 00008DED: 	CALL	alloc_section
     alloc_section(thetrains_PALETTES);
@@ -1030,7 +1030,7 @@ static void FULLSETUP_INDIANA(void) {
     NOLONG_VEHICLES = 1;
     // asm 00008E08: 	FLOAT	45,R0
     // asm 00008E09: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(45)));
+    INFIN_CORRECT = C3X_STF_INT(45);
     // asm 00008E0A: 	LDL	mwest_PALETTES,AR2
     // asm 00008E0B: 	CALL	alloc_section
     alloc_section(mwest_PALETTES);
@@ -1108,7 +1108,7 @@ static void FULLSETUP_APPALACHIA(void) {
     DD_VAR = 100;
     // asm 00008E3D: 	FLOAT	85,R0
     // asm 00008E3E: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(85)));
+    INFIN_CORRECT = C3X_STF_INT(85);
     // asm 00008E3F: 	LDL	appl_PALETTES,AR2
     // asm 00008E40: 	CALL	alloc_section
     alloc_section(appl_PALETTES);
@@ -1159,7 +1159,7 @@ static void FULLSETUP_WASHINGTONDC(void) {
     NOLONG_VEHICLES = 0;
     // asm 00008E5B: 	FLOAT	45,R0
     // asm 00008E5C: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_LDF(C3X_STF(C3X_FROM_INT(45)));
+    INFIN_CORRECT = C3X_STF_INT(45);
     // asm 00008E5D: 	LDI	60,R0
     // asm 00008E5E: 	STI	R0,@DD_SLP
     DD_SLP = 60;

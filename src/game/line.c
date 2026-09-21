@@ -122,12 +122,12 @@ void _line(int x0, int y0, int x1, int y1, int color) {
 
     // asm: CMPF	1.0,R7
     // asm: BGT	L14
-    if (C3X_GT(x_delta, C3X_IMM_F32(1.0))) {
+    if (C3X_GT_IMM(x_delta, 1.0)) {
         goto L14;
     }
     // asm: CMPF	-1.0,R7
     // asm: BLT	L14
-    if (C3X_LT(x_delta, C3X_IMM_F32(-1.0))) {
+    if (C3X_LT_IMM(x_delta, -1.0)) {
         goto L14;
     }
 
@@ -165,7 +165,7 @@ L5:
     x = C3X_FROM_INT(x0);
     // asm: CMPF	0,R7
     // asm: BGT	L10
-    if (C3X_GT(x_delta, C3X_IMM_F32(0))) {
+    if (C3X_GT_IMM(x_delta, 0)) {
         goto L10;
     }
 
@@ -277,7 +277,7 @@ L17:
     y = C3X_FROM_INT(y0);
     // asm: CMPF	0,R7
     // asm: BGT	L22
-    if (C3X_GT(y_delta, C3X_IMM_F32(0))) {
+    if (C3X_GT_IMM(y_delta, 0)) {
         goto L22;
     }
 

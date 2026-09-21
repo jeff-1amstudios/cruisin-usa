@@ -201,7 +201,7 @@ LGF7:
     NOSWAP = 0;
     // asm 00005A49: 	FLOAT	@_pot0,R0
     // asm 00005A4A: 	STF	R0,@GUWP
-    GUWP = C3X_STF(C3X_FROM_INT(_pot0));
+    GUWP = C3X_STF_INT(_pot0);
     // *
     // *CHOOSE TRANSMISSION LOOP
     // *
@@ -224,7 +224,7 @@ CTLP:
     // asm 00005A55: 	FLOAT	204,R1
     // asm 00005A56: 	CALL	DIV_F30
     engine_brightness = DIV_F30(
-        C3X_ADD(C3X_LDF(CT_CURSOR->pos.X), C3X_IMM_F32(101)),
+        C3X_ADD_IMM(C3X_LDF(CT_CURSOR->pos.X), 101),
         C3X_FROM_INT(204));
     // asm 00005A57: 	CALL	ENGINE_COLOR
     ENGINE_COLOR(engine_brightness);
@@ -262,10 +262,10 @@ CTLPX:
     // asm 00005A6B: 	CALL	CLR_VECTORA
     // asm 00005A6C: 	FLOAT	-650,R0
     // asm 00005A6D: 	STF	R0,*+AR2(Y)
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(-650));
+    VECTORAI.Y = C3X_STF_INT(-650);
     // asm 00005A6E: 	FLOAT	-28000,R0
     // asm 00005A6F: 	STF	R0,*+AR2(Z)
-    VECTORAI.Z = C3X_STF(C3X_FROM_INT(-28000));
+    VECTORAI.Z = C3X_STF_INT(-28000);
     // asm 00005A70: 	LDI	@MATRIXAI,R2
     // asm 00005A71: 	LDI	AR2,R3
     // asm 00005A72: 	CALL	MATRIX_MUL
@@ -335,7 +335,7 @@ CTLPX:
     CREATE(ROUNDER, UTIL_C | CHOOSECAR_T, child_ctx);
     // asm 00005AA6: 	CLRF	R0
     // asm 00005AA7: 	STF	R0,@DOORTHETA
-    DOORTHETA = C3X_STF(C3X_FROM_INT(0));
+    DOORTHETA = C3X_STF_INT(0);
     // asm 00005AA8: 	SONDFX	DOPEN
     SONDFX(DOPEN);
     // asm 00005AAA: 	JSRP	OPEN_DOOR_PROC
@@ -366,12 +366,12 @@ static void OPEN_DOOR_PROC(PROC* p) {
     // asm 00005AB7: 	LDI	@VECTORCI,AR2
     // asm 00005AB8: 	CLRF	R0
     // asm 00005AB9: 	STF	R0,*+AR2(X)
-    VECTORCI.X = C3X_STF(C3X_FROM_INT(0));
+    VECTORCI.X = C3X_STF_INT(0);
     // asm 00005ABA: 	STF	R0,*+AR2(Y)
-    VECTORCI.Y = C3X_STF(C3X_FROM_INT(0));
+    VECTORCI.Y = C3X_STF_INT(0);
     // asm 00005ABB: 	FLOAT	-8500,R0
     // asm 00005ABC: 	STF	R0,*+AR2(Z)
-    VECTORCI.Z = C3X_STF(C3X_FROM_INT(-8500));
+    VECTORCI.Z = C3X_STF_INT(-8500);
     // asm 00005ABD: 	LDI	@MATRIXAI,R2
     // asm 00005ABE: 	LDI	AR2,R3
     // asm 00005ABF: 	CALL	MATRIX_MUL
@@ -390,7 +390,7 @@ IJH:
     // asm 00005AC7: LDF	@DOORTHETA,R0
     // asm 00005AC8: 	ADDF	0.0628,R0
     // asm 00005AC9: 	STF	R0,@DOORTHETA
-    DOORTHETA = C3X_STF(C3X_ADD(C3X_LDF(DOORTHETA), C3X_IMM_F32(0.0628)));
+    DOORTHETA = C3X_STF(C3X_ADD_IMM(C3X_LDF(DOORTHETA), 0.0628));
     // asm 00005ACA: 	PUSH	AR4
     // asm 00005ACB: 	CALL	DOOR_OPENING
     DOOR_OPENING();
@@ -403,7 +403,7 @@ IJH:
     // asm 00005AD2: 	ADDF	*+AR0(X),R0
     // asm 00005AD3: 	STF	R0,*+AR0(X)
     camera_component = C3X_SUB(C3X_LDF(VECTORCI.X), C3X_LDF(_CAMERAPOS.X));
-    camera_component = C3X_MUL(camera_component, C3X_IMM_F32(0.15));
+    camera_component = C3X_MUL_IMM(camera_component, 0.15);
     _CAMERAPOS.X = C3X_STF(C3X_ADD(camera_component, C3X_LDF(_CAMERAPOS.X)));
     // asm 00005AD4: 	LDF	*+AR1(Z),R0
     // asm 00005AD5: 	SUBF	*+AR0(Z),R0
@@ -411,7 +411,7 @@ IJH:
     // asm 00005AD7: 	ADDF	*+AR0(Z),R0
     // asm 00005AD8: 	STF	R0,*+AR0(Z)
     camera_component = C3X_SUB(C3X_LDF(VECTORCI.Z), C3X_LDF(_CAMERAPOS.Z));
-    camera_component = C3X_MUL(camera_component, C3X_IMM_F32(0.15));
+    camera_component = C3X_MUL_IMM(camera_component, 0.15);
     _CAMERAPOS.Z = C3X_STF(C3X_ADD(camera_component, C3X_LDF(_CAMERAPOS.Z)));
     // asm 00005AD9: 	SLEEP	1
     SLEEP(1, 1);
@@ -451,17 +451,17 @@ static void WHEEL_FROM_BELOW(void) {
     // asm 00005AED: 	LDF	*+AR0(OPOSY),R0
     // asm 00005AEE: 	SUBF	8,R0
     // asm 00005AEF: 	STF	R0,*+AR0(OPOSY)
-    CT_WHEEL->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(CT_WHEEL->pos.Y), C3X_IMM_F32(8)));
+    CT_WHEEL->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_LDF(CT_WHEEL->pos.Y), 8));
     // asm 00005AF0: 	LDI	@CT_PUSHTOCYCLE,AR0
     // asm 00005AF1: 	LDF	*+AR0(OPOSY),R0
     // asm 00005AF2: 	SUBF	8,R0
     // asm 00005AF3: 	STF	R0,*+AR0(OPOSY)
-    CT_PUSHTOCYCLE->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(CT_PUSHTOCYCLE->pos.Y), C3X_IMM_F32(8)));
+    CT_PUSHTOCYCLE->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_LDF(CT_PUSHTOCYCLE->pos.Y), 8));
     // asm 00005AF4: 	LDI	@CT_TURNTOSEL,AR0
     // asm 00005AF5: 	LDF	*+AR0(OPOSY),R0
     // asm 00005AF6: 	SUBF	8,R0
     // asm 00005AF7: 	STF	R0,*+AR0(OPOSY)
-    CT_TURNTOSEL->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(CT_TURNTOSEL->pos.Y), C3X_IMM_F32(8)));
+    CT_TURNTOSEL->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_LDF(CT_TURNTOSEL->pos.Y), 8));
     // asm 00005AF8: 	RETS
 }
 
@@ -499,11 +499,11 @@ CTOLP:
     // asm 00005B05: LDF	*+AR4(OPOSX),R0
     // asm 00005B06: 	MPYF	0.8,R0
     // asm 00005B07: 	STF	R0,*+AR4(OPOSX)
-    p->ctx.TRANS_CENTER_THEONE.obj->pos.X = C3X_STF(C3X_MUL(C3X_LDF(p->ctx.TRANS_CENTER_THEONE.obj->pos.X), C3X_IMM_F32(0.8)));
+    p->ctx.TRANS_CENTER_THEONE.obj->pos.X = C3X_STF(C3X_MUL_IMM(C3X_LDF(p->ctx.TRANS_CENTER_THEONE.obj->pos.X), 0.8));
     // asm 00005B08: 	LDF	*+AR4(OPOSY),R0
     // asm 00005B09: 	MPYF	0.8,R0
     // asm 00005B0A: 	STF	R0,*+AR4(OPOSY)
-    p->ctx.TRANS_CENTER_THEONE.obj->pos.Y = C3X_STF(C3X_MUL(C3X_LDF(p->ctx.TRANS_CENTER_THEONE.obj->pos.Y), C3X_IMM_F32(0.8)));
+    p->ctx.TRANS_CENTER_THEONE.obj->pos.Y = C3X_STF(C3X_MUL_IMM(C3X_LDF(p->ctx.TRANS_CENTER_THEONE.obj->pos.Y), 0.8));
     // asm 00005B0B: 	SLEEP	1
     SLEEP(1, 1);
     // asm 00005B0D: 	DBU	AR5,CTOLP
@@ -516,13 +516,13 @@ FLYUPL:
     // asm 00005B10: 	LDF	*+AR4(ORADX),R2
     // asm 00005B11: 	SUBF	0.1,R2
     // asm 00005B12: 	STF	R2,*+AR4(ORADX)
-    p->ctx.TRANS_CENTER_THEONE.obj->rad.X = C3X_STF(C3X_SUB(C3X_LDF(p->ctx.TRANS_CENTER_THEONE.obj->rad.X), C3X_IMM_F32(0.1)));
+    p->ctx.TRANS_CENTER_THEONE.obj->rad.X = C3X_STF(C3X_SUB_IMM(C3X_LDF(p->ctx.TRANS_CENTER_THEONE.obj->rad.X), 0.1));
     // asm 00005B13: 	LDI	AR4,AR2
     // asm 00005B14: 	ADDI	OMATRIX,AR2
     // asm 00005B15: 	CALL	FIND_XMATRIX
     FIND_XMATRIX(&p->ctx.TRANS_CENTER_THEONE.obj->omatrix, C3X_LDF(p->ctx.TRANS_CENTER_THEONE.obj->rad.X));
     // asm 00005B16: 	MPYF	1.4,R6
-    p->ctx.TRANS_CENTER_THEONE.x_velocity = C3X_MUL(p->ctx.TRANS_CENTER_THEONE.x_velocity, C3X_IMM_F32(1.4));
+    p->ctx.TRANS_CENTER_THEONE.x_velocity = C3X_MUL_IMM(p->ctx.TRANS_CENTER_THEONE.x_velocity, 1.4);
     // asm 00005B17: 	MPYF	1.4,R7
     // asm 00005B18: 	LDF	*+AR4(OPOSX),R0
     // asm 00005B19: 	ADDF	R6,R0
@@ -635,7 +635,7 @@ DTOLP:
     // asm 00005B34: 	STF	R0,*+AR4(OPOSY)
     p->ctx.DROP_TRANS_ELEMENT.obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(p->ctx.DROP_TRANS_ELEMENT.obj->pos.Y), p->ctx.DROP_TRANS_ELEMENT.y_velocity));
     // asm 00005B35: 	MPYF	2,R6
-    p->ctx.DROP_TRANS_ELEMENT.y_velocity = C3X_MUL(p->ctx.DROP_TRANS_ELEMENT.y_velocity, C3X_IMM_F32(2));
+    p->ctx.DROP_TRANS_ELEMENT.y_velocity = C3X_MUL_IMM(p->ctx.DROP_TRANS_ELEMENT.y_velocity, 2);
     // asm 00005B36: 	SLEEP	1
     SLEEP(1, 1);
     // asm 00005B38: 	DBU	AR5,DTOLP
@@ -673,14 +673,14 @@ DOLS:
                 // asm 00005B47: 	LDF	*+AR4(OPOSX),R0
                 // asm 00005B48: 	ADDF	15,R0
                 // asm 00005B49: 	STF	R0,*+AR4(OPOSX)
-                obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.X), C3X_IMM_F32(15)));
+                obj->pos.X = C3X_STF(C3X_ADD_IMM(C3X_LDF(obj->pos.X), 15));
                 // asm 00005B4A: 	BU	DOLS
             } else {
             NTLTS:
                 // asm 00005B4B: 	LDF	*+AR4(OPOSX),R0
                 // asm 00005B4C: 	SUBF	15,R0
                 // asm 00005B4D: 	STF	R0,*+AR4(OPOSX)
-                obj->pos.X = C3X_STF(C3X_SUB(C3X_LDF(obj->pos.X), C3X_IMM_F32(15)));
+                obj->pos.X = C3X_STF(C3X_SUB_IMM(C3X_LDF(obj->pos.X), 15));
                 // asm 00005B4E: 	BU	DOLS
             }
         }
@@ -849,11 +849,11 @@ void WHEEL_ROUT(void) {
     // asm 00005B93: 	LDI	@CT_CURSOR,AR2
     // asm 00005B94: 	CMPF	0.1,R0
     // asm 00005B95: 	LDFLT	0.0,R0
-    if (C3X_LT(unit_wheel, C3X_IMM_F32(0.1)))
+    if (C3X_LT_IMM(unit_wheel, 0.1))
         unit_wheel = C3X_IMM_F32(0.0);
     // asm 00005B96: 	CMPF	0.9,R0
     // asm 00005B97: 	LDFGT	1.0,R0
-    if (C3X_GT(unit_wheel, C3X_IMM_F32(0.9)))
+    if (C3X_GT_IMM(unit_wheel, 0.9))
         unit_wheel = C3X_IMM_F32(1.0);
     // asm 00005B98: 	CMPF	0.5,R0
     // asm 00005B99: 	BLT	ISL
@@ -861,14 +861,14 @@ void WHEEL_ROUT(void) {
     // asm 00005B9B: 	BGT	ISR
     // asm 00005B9C: 	CMPI	AUTO_TRANSMISSION,R1
     // asm 00005B9D: 	BEQ	ISLT
-    if (C3X_LT(unit_wheel, C3X_IMM_F32(0.5))) {
-        if (C3X_LT(unit_wheel, C3X_IMM_F32(0.45)))
+    if (C3X_LT_IMM(unit_wheel, 0.5)) {
+        if (C3X_LT_IMM(unit_wheel, 0.45))
             goto ISLT;
         if (CHOSEN_TRANSMISSION == MANUAL_TRANSMISSION)
             goto ISR;
         goto ISLT;
     }
-    if (!C3X_GT(unit_wheel, C3X_IMM_F32(0.55)) && CHOSEN_TRANSMISSION == AUTO_TRANSMISSION)
+    if (!C3X_GT_IMM(unit_wheel, 0.55) && CHOSEN_TRANSMISSION == AUTO_TRANSMISSION)
         goto ISLT;
 ISR:
     // asm 00005B9E: LDF	*+AR2(OPOSX),R2
@@ -877,8 +877,8 @@ ISR:
     // asm 00005BA1: 	MPYF	0.22,R0
     // asm 00005BA2: 	ADDF	*+AR2(OPOSX),R0
     // asm 00005BA3: 	STF	R0,*+AR2(OPOSX)
-    target_x = C3X_SUB(C3X_IMM_F32(101), C3X_LDF(CT_CURSOR->pos.X));
-    target_x = C3X_MUL(target_x, C3X_IMM_F32(0.22));
+    target_x = C3X_RSUB_IMM(101, C3X_LDF(CT_CURSOR->pos.X));
+    target_x = C3X_MUL_IMM(target_x, 0.22);
     CT_CURSOR->pos.X = C3X_STF(C3X_ADD(target_x, C3X_LDF(CT_CURSOR->pos.X)));
     // asm 00005BA4: 	LDI	MANUAL_TRANSMISSION,R0
     // asm 00005BA5: 	STI	R0,@CHOSEN_TRANSMISSION
@@ -897,8 +897,8 @@ ISLT:
     // asm 00005BAE: 	MPYF	0.22,R0
     // asm 00005BAF: 	ADDF	*+AR2(OPOSX),R0
     // asm 00005BB0: 	STF	R0,*+AR2(OPOSX)
-    target_x = C3X_SUB(C3X_IMM_F32(-101), C3X_LDF(CT_CURSOR->pos.X));
-    target_x = C3X_MUL(target_x, C3X_IMM_F32(0.22));
+    target_x = C3X_RSUB_IMM(-101, C3X_LDF(CT_CURSOR->pos.X));
+    target_x = C3X_MUL_IMM(target_x, 0.22);
     CT_CURSOR->pos.X = C3X_STF(C3X_ADD(target_x, C3X_LDF(CT_CURSOR->pos.X)));
     // asm 00005BB1: 	LDI	AUTO_TRANSMISSION,R0
     // asm 00005BB2: 	STI	R0,@CHOSEN_TRANSMISSION
@@ -911,7 +911,7 @@ ISDN2:
     steering_max = C3X_LDF(STEERMX);
     inset = C3X_SUB(steering_max, steering_min);
     // asm 00005BB6: 	MPYF	0.2,R3
-    inset = C3X_MUL(inset, C3X_IMM_F32(0.2));
+    inset = C3X_MUL_IMM(inset, 0.2);
     // asm 00005BB7: 	ADDF	R3,R1
     steering_min = C3X_ADD(steering_min, inset);
     // asm 00005BB8: 	SUBF	R3,R2
@@ -1028,7 +1028,7 @@ void TRANSCHOICE(void) {
     // asm 00005BE3: 	MPYF	R0,R2
     angle = C3X_MUL(wheel_position, angle);
     // asm 00005BE4: 	SUBF	HALFPI,R2
-    angle = C3X_SUB(angle, C3X_IMM_F32(HALFPI));
+    angle = C3X_SUB_IMM(angle, HALFPI);
     // asm 00005BE5: 	NEGF	R2
     angle = C3X_NEG(angle);
     // asm 00005BE6: 	LDI	@CT_WHEEL,AR2
@@ -1058,9 +1058,9 @@ c3x_reg_t GET_UNIT_WHEEL(void) {
     wheel_position = C3X_FROM_INT(_pot0);
     // asm 00005BEB: 	LDF	@GUWP,R1
     // asm 00005BEC: 	MPYF	0.2,R0
-    wheel_position = C3X_MUL(wheel_position, C3X_IMM_F32(0.2));
+    wheel_position = C3X_MUL_IMM(wheel_position, 0.2);
     // asm 00005BED: 	MPYF	0.8,R1
-    steering_range = C3X_MUL(C3X_LDF(GUWP), C3X_IMM_F32(0.8));
+    steering_range = C3X_MUL_IMM(C3X_LDF(GUWP), 0.8);
     // asm 00005BEE: 	ADDF	R1,R0
     wheel_position = C3X_ADD(wheel_position, steering_range);
     // asm 00005BEF: 	STF	R0,@GUWP
@@ -1100,7 +1100,7 @@ TP_LP:
     // asm 00005BF9: 	LDF	*+AR4(ORADZ),R2
     // asm 00005BFA: 	ADDF	0.3,R2
     // asm 00005BFB: 	STF	R2,*+AR4(ORADZ)
-    CT_AUTO->rad.Z = C3X_STF(C3X_ADD(C3X_LDF(CT_AUTO->rad.Z), C3X_IMM_F32(0.3)));
+    CT_AUTO->rad.Z = C3X_STF(C3X_ADD_IMM(C3X_LDF(CT_AUTO->rad.Z), 0.3));
     // asm 00005BFC: 	LDI	AR4,AR2
     // asm 00005BFD: 	ADDI	OMATRIX,AR2
     // asm 00005BFE: 	CALL	FIND_ZMATRIX
@@ -1108,16 +1108,16 @@ TP_LP:
     // asm 00005BFF: 	LDF	*+AR4(OPOSY),R0	;300, 400
     // asm 00005C00: 	SUBF	13.3,R0
     // asm 00005C01: 	STF	R0,*+AR4(OPOSY)
-    CT_AUTO->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(CT_AUTO->pos.Y), C3X_IMM_F32(13.3)));
+    CT_AUTO->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_LDF(CT_AUTO->pos.Y), 13.3));
     // asm 00005C02: 	LDF	*+AR4(OPOSX),R0
     // asm 00005C03: 	SUBF	8,R0
     // asm 00005C04: 	STF	R0,*+AR4(OPOSX)
-    CT_AUTO->pos.X = C3X_STF(C3X_SUB(C3X_LDF(CT_AUTO->pos.X), C3X_IMM_F32(8)));
+    CT_AUTO->pos.X = C3X_STF(C3X_SUB_IMM(C3X_LDF(CT_AUTO->pos.X), 8));
     // asm 00005C05: 	LDI	@CT_MAN,AR4
     // asm 00005C06: 	LDF	*+AR4(ORADZ),R2
     // asm 00005C07: 	SUBF	0.3,R2
     // asm 00005C08: 	STF	R2,*+AR4(ORADZ)
-    CT_MAN->rad.Z = C3X_STF(C3X_SUB(C3X_LDF(CT_MAN->rad.Z), C3X_IMM_F32(0.3)));
+    CT_MAN->rad.Z = C3X_STF(C3X_SUB_IMM(C3X_LDF(CT_MAN->rad.Z), 0.3));
     // asm 00005C09: 	LDI	AR4,AR2
     // asm 00005C0A: 	ADDI	OMATRIX,AR2
     // asm 00005C0B: 	CALL	FIND_ZMATRIX
@@ -1125,11 +1125,11 @@ TP_LP:
     // asm 00005C0C: 	LDF	*+AR4(OPOSY),R0
     // asm 00005C0D: 	SUBF	13.3,R0
     // asm 00005C0E: 	STF	R0,*+AR4(OPOSY)
-    CT_MAN->pos.Y = C3X_STF(C3X_SUB(C3X_LDF(CT_MAN->pos.Y), C3X_IMM_F32(13.3)));
+    CT_MAN->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_LDF(CT_MAN->pos.Y), 13.3));
     // asm 00005C0F: 	LDF	*+AR4(OPOSX),R0
     // asm 00005C10: 	ADDF	8,R0
     // asm 00005C11: 	STF	R0,*+AR4(OPOSX)
-    CT_MAN->pos.X = C3X_STF(C3X_ADD(C3X_LDF(CT_MAN->pos.X), C3X_IMM_F32(8)));
+    CT_MAN->pos.X = C3X_STF(C3X_ADD_IMM(C3X_LDF(CT_MAN->pos.X), 8));
     // asm 00005C12: 	SLEEP	1
     SLEEP(1, 2);
     // asm 00005C14: 	DBU	AR5,TP_LP
@@ -1227,8 +1227,8 @@ FTSL:
     // asm 00005C31: 	FLOAT	368,R1
     // asm 00005C32: 	STF	R1,*+AR0(OPOSZ)
     // asm 00005C33: 	STF	R1,*+AR0(OVELZ)
-    obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
-    obj->vel_z = C3X_STF(C3X_FROM_INT(368));
+    obj->pos.Z = C3X_STF_INT(368);
+    obj->vel_z = C3X_STF_INT(368);
     // asm 00005C34: 	LDI	*+AR0(OID),R0
     // asm 00005C35: 	AND	0FFh,R0
     object_id = obj->id & 0xffu;
@@ -1335,7 +1335,7 @@ NOTREN:
         obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_FROM_INT(400)));
         // asm 00005C70: 	LDF	9.0,R2
         // asm 00005C71: 	STF	R2,*+AR0(ORADZ)
-        obj->rad.Z = C3X_STF(C3X_IMM_F32(9.0));
+        obj->rad.Z = C3X_STF_IMM(9.0);
         // asm 00005C72: 	LDI	AR0,AR2
         // asm 00005C73: 	ADDI	OMATRIX,AR2
         // asm 00005C74: 	CALL	FIND_ZMATRIX
@@ -1379,7 +1379,7 @@ NOTMAN:
         obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_FROM_INT(400)));
         // asm 00005C8E: 	LDF	-9.0,R2
         // asm 00005C8F: 	STF	R2,*+AR0(ORADZ)
-        obj->rad.Z = C3X_STF(C3X_IMM_F32(-9.0));
+        obj->rad.Z = C3X_STF_IMM(-9.0);
         // asm 00005C90: 	LDI	AR0,AR2
         // asm 00005C91: 	ADDI	OMATRIX,AR2
         // asm 00005C92: 	CALL	FIND_ZMATRIX
@@ -1502,19 +1502,19 @@ MVPBL:
     // asm 00005CD3: 	LDF	*+AR4(OPOSX),R0
     // asm 00005CD4: 	ADDF	4,R0
     // asm 00005CD5: 	STF	R0,*+AR4(OPOSX)
-    p->ctx.MOVE_PUSH_BOX.left_obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(p->ctx.MOVE_PUSH_BOX.left_obj->pos.X), C3X_IMM_F32(4)));
+    p->ctx.MOVE_PUSH_BOX.left_obj->pos.X = C3X_STF(C3X_ADD_IMM(C3X_LDF(p->ctx.MOVE_PUSH_BOX.left_obj->pos.X), 4));
     // asm 00005CD6: 	LDF	*+AR4(OPOSY),R0
     // asm 00005CD7: 	ADDF	3,R0
     // asm 00005CD8: 	STF	R0,*+AR4(OPOSY)
-    p->ctx.MOVE_PUSH_BOX.left_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(p->ctx.MOVE_PUSH_BOX.left_obj->pos.Y), C3X_IMM_F32(3)));
+    p->ctx.MOVE_PUSH_BOX.left_obj->pos.Y = C3X_STF(C3X_ADD_IMM(C3X_LDF(p->ctx.MOVE_PUSH_BOX.left_obj->pos.Y), 3));
     // asm 00005CD9: 	LDF	*+AR6(OPOSX),R0
     // asm 00005CDA: 	ADDF	-4,R0
     // asm 00005CDB: 	STF	R0,*+AR6(OPOSX)
-    p->ctx.MOVE_PUSH_BOX.right_obj->pos.X = C3X_STF(C3X_ADD(C3X_LDF(p->ctx.MOVE_PUSH_BOX.right_obj->pos.X), C3X_IMM_F32(-4)));
+    p->ctx.MOVE_PUSH_BOX.right_obj->pos.X = C3X_STF(C3X_ADD_IMM(C3X_LDF(p->ctx.MOVE_PUSH_BOX.right_obj->pos.X), -4));
     // asm 00005CDC: 	LDF	*+AR6(OPOSY),R0
     // asm 00005CDD: 	ADDF	3,R0
     // asm 00005CDE: 	STF	R0,*+AR6(OPOSY)
-    p->ctx.MOVE_PUSH_BOX.right_obj->pos.Y = C3X_STF(C3X_ADD(C3X_LDF(p->ctx.MOVE_PUSH_BOX.right_obj->pos.Y), C3X_IMM_F32(3)));
+    p->ctx.MOVE_PUSH_BOX.right_obj->pos.Y = C3X_STF(C3X_ADD_IMM(C3X_LDF(p->ctx.MOVE_PUSH_BOX.right_obj->pos.Y), 3));
     // asm 00005CDF: 	SLEEP	1
     SLEEP(1, 1);
     // asm 00005CE1: 	DBU	AR5,MVPBL
@@ -1721,11 +1721,11 @@ void ENGINE_COLOR(c3x_reg_t left_brightness /*R0*/) {
     clamped_brightness = left_brightness;
     // asm 00005D31: 	CMPF	0.08,R0
     // asm 00005D32: 	LDFLT	0,R0
-    if (C3X_LT(clamped_brightness, C3X_IMM_F32(0.08)))
+    if (C3X_LT_IMM(clamped_brightness, 0.08))
         clamped_brightness = C3X_IMM_F32(0);
     // asm 00005D33: 	CMPF	0.92,R0
     // asm 00005D34: 	LDFGT	1.0,R0
-    if (C3X_GT(clamped_brightness, C3X_IMM_F32(0.92)))
+    if (C3X_GT_IMM(clamped_brightness, 0.92))
         clamped_brightness = C3X_IMM_F32(1.0);
     (void)clamped_brightness;
     // asm 00005D35: 	LDI	@EPALL,AR0
@@ -1836,7 +1836,7 @@ L894:
     // asm 00005D95: 	DBU	AR5,L894
     // asm 00005D96: 	LDF	1.0,R0
     // asm 00005D97: 	SUBF	R7,R0,R7
-    interpolation_amount = C3X_SUB(C3X_IMM_F32(1.0), interpolation_amount);
+    interpolation_amount = C3X_RSUB_IMM(1.0, interpolation_amount);
     // asm 00005D98: 	LDI	@EPALL,AR2
     // asm 00005D99: 	CALL	PAL_FIND_RAW
     palette_code = PAL_FIND_RAW(EPALL);

@@ -296,7 +296,7 @@ NONOLONG:
     }
     // asm 000097B0: 	LDF	MAX_ACCEL_INIT,R0
     // asm 000097B1: 	STF	R0,*+AR5(CARMAXACCEL)	;SET ACCEL POWER
-    carblk->max_accel = C3X_STF(C3X_IMM_F32(MAX_ACCEL_INIT));
+    carblk->max_accel = C3X_STF_IMM(MAX_ACCEL_INIT);
     // asm 000097B2: 	LDI	*+AR4(OID),R0
     // asm 000097B3: 	STI	R0,*+AR5(CAR_ID)
     carblk->debug_car_id = obj->id;
@@ -382,7 +382,7 @@ NONOLONG:
     // asm 000097DE: 	LDF	@GAME_TIMER,R0		;first minute - dont swerve
     // asm 000097DF: 	CMPF	1.1,R0
     // asm 000097E0: 	BLT	NOT_WEAVER
-    if (C3X_LT(GAME_TIMER, C3X_IMM_F32(1.1))) {
+    if (C3X_LT_IMM(GAME_TIMER, 1.1)) {
         goto NOT_WEAVER;
     }
     // ;	RANDN	10	;1 in 10 chance
@@ -393,7 +393,7 @@ NONOLONG:
     p->ctx.RACER_DRONE.delta_playit = RHO_WEAVER;
     // asm 000097E3: 	FLOAT	576,R0
     // asm 000097E4: 	STF	R0,*+AR7(DELTA_XLANE)
-    p->ctx.RACER_DRONE.delta_xlane = C3X_STF(C3X_FROM_INT(576));
+    p->ctx.RACER_DRONE.delta_xlane = C3X_STF_INT(576);
     // asm 000097E5: 	LDI	30,R0
     // asm 000097E6: 	STI	R0,*+AR7(DELTA_PSTAT)
     p->ctx.RACER_DRONE.delta_pstat = 30;
@@ -402,7 +402,7 @@ NONOLONG:
     // asm 000097E9: 	ADDF	0.25,R0
     // asm 000097EA: 	STF	R0,*+AR7(RHO_THETA_DELTA)
     p->ctx.RACER_DRONE.rho_theta_delta = C3X_STF(
-        C3X_ADD(FRAND(C3X_IMM_F32(0.1)), C3X_IMM_F32(0.25)));
+        C3X_ADD_IMM(FRAND(C3X_IMM_F32(0.1)), 0.25));
     // asm 000097EB: 	FLOAT	520,R0
     // asm 000097EC: 	CALL	FRAND
     // asm 000097ED: 	FLOAT	2600,R1
@@ -415,7 +415,7 @@ NONOLONG:
     // asm 000097F2: 	STF	R0,*+AR7(RHO_XHEAD)
     p->ctx.RACER_DRONE.rho_xhead = C3X_STF(SFRAND(C3X_FROM_INT(576)));
     // asm 000097F3: 	CLRF	R6			;SIN
-    p->ctx.RACER_DRONE.rho_theta = C3X_STF(C3X_FROM_INT(0));
+    p->ctx.RACER_DRONE.rho_theta = C3X_STF_INT(0);
 NOT_WEAVER:
     // asm 000097F4: 	LDI	@RHOFLAG,R0		;CREATED BY OTHER MACHINE?
     // asm 000097F5: 	BZ	RHOLL1			;NO...
@@ -530,7 +530,7 @@ DONTABORT:
     // asm 0000981B: 	ADDF	0.25,R0
     // asm 0000981C: 	STF	R0,*+AR7(RHO_THETA_DELTA)
     p->ctx.RACER_DRONE.rho_theta_delta = C3X_STF(
-        C3X_ADD(FRAND(C3X_IMM_F32(0.1)), C3X_IMM_F32(0.25)));
+        C3X_ADD_IMM(FRAND(C3X_IMM_F32(0.1)), 0.25));
     // asm 0000981D: 	FLOAT	520,R0
     // asm 0000981E: 	CALL	FRAND
     // asm 0000981F: 	FLOAT	2600,R1
@@ -714,13 +714,11 @@ JOINUP998:
     // 	;
     // asm 00009871: 	CALL	ARCTANF			;-> R0
     // asm 00009872: 	SUBF	HALFPI,R0		;R0	DESIRED THETA (float)
-    desired_theta = C3X_SUB(
-        ARCTANF(
+    desired_theta = C3X_SUB_IMM(ARCTANF(
             C3X_ADD(C3X_SUB(C3X_LDF(tracking_piece->pos.X), C3X_LDF(obj->pos.X)),
                 C3X_LDF(VECTORAI.X)),
             C3X_ADD(C3X_SUB(C3X_LDF(tracking_piece->pos.Z), C3X_LDF(obj->pos.Z)),
-                C3X_LDF(VECTORAI.Z))),
-        C3X_IMM_F32(HALFPI));
+                C3X_LDF(VECTORAI.Z))), HALFPI);
     // asm 00009873:  	LDF	*+AR4(ORADY),R2		;R2	CURRENT THETA
     // asm 00009874: 	CALL	GETTHETADIFF		;->R0	THETA DELTA (float)
     theta_delta = GETTHETADIFF(desired_theta, C3X_LDF(obj->rad.Y));
@@ -808,27 +806,25 @@ LLL88:
     // asm 000098A3: 	LDF	*+AR7(DELTA_THROTTLE),R2
     // asm 000098A4: 	MPYF	0.01,R2
     // asm 000098A5: 	STF	R2,*+AR5(CARTHROTTLE)
-    carblk->throttle = C3X_STF(C3X_MUL(
-        C3X_LDF(p->ctx.RACER_DRONE.delta_throttle), C3X_IMM_F32(0.01)));
+    carblk->throttle = C3X_STF(C3X_MUL_IMM(C3X_LDF(p->ctx.RACER_DRONE.delta_throttle), 0.01));
     // asm 000098A6: 	BU	L99
     goto L99;
 NOTPRECOL:
     // 	;set throttle
     // asm 000098A7: 	CLRF	R2
     // asm 000098A8: 	STF	R2,*+AR5(CARBRAKE)
-    carblk->brake = C3X_STF(C3X_FROM_INT(0));
+    carblk->brake = C3X_STF_INT(0);
     // asm 000098A9: 	LDF	*+AR7(DELTA_THROTTLE),R2
     // asm 000098AA: 	MPYF	1.01,R2
     // asm 000098AB: 	CMPF	MIN_THROTTLE,R2
     // asm 000098AC: 	LDFLT	MIN_THROTTLE,R2
     // asm 000098AD: 	CMPF	MAX_THROTTLE,R2
     // asm 000098AE: 	LDFGT	MAX_THROTTLE,R2
-    throttle = C3X_MUL(
-        C3X_LDF(p->ctx.RACER_DRONE.delta_throttle), C3X_IMM_F32(1.01));
-    if (C3X_LT(throttle, C3X_IMM_F32(MIN_THROTTLE))) {
+    throttle = C3X_MUL_IMM(C3X_LDF(p->ctx.RACER_DRONE.delta_throttle), 1.01);
+    if (C3X_LT_IMM(throttle, MIN_THROTTLE)) {
         throttle = C3X_IMM_F32(MIN_THROTTLE);
     }
-    if (C3X_GT(throttle, C3X_IMM_F32(MAX_THROTTLE))) {
+    if (C3X_GT_IMM(throttle, MAX_THROTTLE)) {
         throttle = C3X_IMM_F32(MAX_THROTTLE);
     }
     // asm 000098AF: 	STF	R2,*+AR7(DELTA_THROTTLE)
@@ -838,8 +834,7 @@ NOTPRECOL:
 L99:
     // asm 000098B1: 	LDF	*+AR7(DELTA_RADYDELTA),R2
     // asm 000098B2: 	MPYF	2.50,R2			;depending on plyr.asm this may have to
-    steering_delta = C3X_MUL(
-        C3X_LDF(p->ctx.RACER_DRONE.delta_radydelta), C3X_IMM_F32(2.50));
+    steering_delta = C3X_MUL_IMM(C3X_LDF(p->ctx.RACER_DRONE.delta_radydelta), 2.50);
     // asm 000098B3: 	CALL	DRONEGO
     DRONEGO(obj, carblk, steering_delta);
     // asm 000098B4: 	CALL	GETTRAK
@@ -1079,12 +1074,12 @@ NOSMK:
     // 	;for now we die out
     // asm 00009904: 	CLRF	R2
     // asm 00009905: 	STF	R2,*+AR7(DELTA_THROTTLE)
-    p->ctx.RACER_DRONE.delta_throttle = C3X_STF(C3X_FROM_INT(0));
+    p->ctx.RACER_DRONE.delta_throttle = C3X_STF_INT(0);
     // asm 00009906: 	STF	R2,*+AR5(CARTHROTTLE)
-    carblk->throttle = C3X_STF(C3X_FROM_INT(0));
+    carblk->throttle = C3X_STF_INT(0);
     // ;	LDF	*+AR7(DELTA_RADYDELTA),R2
     // asm 00009907: 	STF	R2,*+AR7(DELTA_RADYDELTA)
-    p->ctx.RACER_DRONE.delta_radydelta = C3X_STF(C3X_FROM_INT(0));
+    p->ctx.RACER_DRONE.delta_radydelta = C3X_STF_INT(0);
     // asm 00009908: 	CALL	DRONEGO
     DRONEGO(obj, carblk, C3X_FROM_INT(0));
     // asm 00009909: 	CALL	GETTRAK

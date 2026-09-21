@@ -167,9 +167,9 @@ SMPUFFLP1:
     // asm 000084D4: 	MPYF	*+AR5(CARSPEED),R0
     movement = C3X_MUL(movement, C3X_LDF(p->ctx.SMOKE_PROC.carblk->speed));
     // asm 000084D5: 	MPYF	1.51,R0
-    movement = C3X_MUL(movement, C3X_IMM_F32(1.51));
+    movement = C3X_MUL_IMM(movement, 1.51);
     // asm 000084D6: 	SUBF	50,R0		;Constant speed less than the player is moving
-    movement = C3X_SUB(movement, C3X_IMM_F32(50)); // Constant speed less than the player is moving
+    movement = C3X_SUB_IMM(movement, 50); // Constant speed less than the player is moving
     // asm 000084D7: 	STF	R0,*+AR2(Z)
     VECTORAI.Z = C3X_STF(movement);
     // asm 000084D8: 	LDI	@MATRIXAI,R2
@@ -227,7 +227,7 @@ SMOKELP_ENTRY:
     }
     // asm 000084F8: 	CMPF	0,R7
     // asm 000084F9: 	BNE	KLUDGE_MO
-    if (C3X_NE(p->ctx.SMOKE_PROC.delay_frames, C3X_IMM_F32(0))) {
+    if (C3X_NE_IMM(p->ctx.SMOKE_PROC.delay_frames, 0)) {
         goto KLUDGE_MO;
     }
     // asm 000084FA: 	LDF	2,R7			;wait N more frames
@@ -237,7 +237,7 @@ SMOKEN:
     CREATE_SMOKE_OBJ(p, z_offset);
 KLUDGE_MO:
     // asm 000084FC: 	SUBF	1.0,R7
-    p->ctx.SMOKE_PROC.delay_frames = C3X_SUB(p->ctx.SMOKE_PROC.delay_frames, C3X_IMM_F32(1.0));
+    p->ctx.SMOKE_PROC.delay_frames = C3X_SUB_IMM(p->ctx.SMOKE_PROC.delay_frames, 1.0);
     // asm 000084FD: 	SLEEP	1
     SLEEP(1, 1);
     // asm 000084FF: 	BR	SMOKE_PUFFLP
@@ -290,20 +290,20 @@ static int CREATE_SMOKE_OBJ(PROC* p /*AR7*/, c3x_reg_t z_offset /*R5*/) {
     // asm 0000850D: 	LDF	*+AR5(CARBRAKE),R0
     // asm 0000850E: 	CMPF	0.4,R0
     // asm 0000850F: 	BLT	CHECK_SKID
-    if (C3X_LT(C3X_LDF(p->ctx.SMOKE_PROC.carblk->brake), C3X_IMM_F32(0.4))) {
+    if (C3X_LT_IMM(C3X_LDF(p->ctx.SMOKE_PROC.carblk->brake), 0.4)) {
         goto CHECK_SKID;
     }
     // asm 00008510: 	LDF	*+AR5(CARSPEED),R0
     // asm 00008511: 	CMPF	20,R0
     // asm 00008512: 	BGT	OK_SMOKE
-    if (C3X_GT(C3X_LDF(p->ctx.SMOKE_PROC.carblk->speed), C3X_IMM_F32(20))) {
+    if (C3X_GT_IMM(C3X_LDF(p->ctx.SMOKE_PROC.carblk->speed), 20)) {
         goto OK_SMOKE;
     }
 CHECK_SKID:
     // asm 00008513: 	LDF	*+AR5(CARSKID),R0
     // asm 00008514: 	CMPF	0.25,R0
     // asm 00008515: 	BLT	NO_SMOKE			;NO SKID ACTIVE
-    if (C3X_LT(C3X_LDF(p->ctx.SMOKE_PROC.carblk->skid), C3X_IMM_F32(0.25))) {
+    if (C3X_LT_IMM(C3X_LDF(p->ctx.SMOKE_PROC.carblk->skid), 0.25)) {
         goto NO_SMOKE; // NO SKID ACTIVE
     }
 OK_SMOKE:
@@ -328,7 +328,7 @@ DO_SMOKE:
     // asm 00008521: 	LDF	*+AR5(CARSKID),R0
     // asm 00008522: 	CMPF	0.5,R0
     // asm 00008523: 	LDIGT	@SMOKE2ANII,AR1
-    if (C3X_GT(C3X_LDF(p->ctx.SMOKE_PROC.carblk->skid), C3X_IMM_F32(0.5))) {
+    if (C3X_GT_IMM(C3X_LDF(p->ctx.SMOKE_PROC.carblk->skid), 0.5)) {
         animation = SMOKE2ANII;
     }
     // asm 00008524: 	LDI	*+AR5(CAR_SPIN),R0	;SPINNING?
@@ -722,7 +722,7 @@ IS_LOOP:
     spark_obj->pos.Z = C3X_STF(C3X_LDF(parent_obj->pos.Z));
     // asm 000085C7: 	FLOAT	180,R0
     // asm 000085C8: 	STF	R0,*+AR4(OVELY)		;bottom of car
-    spark_obj->vel_y = C3X_STF(C3X_FROM_INT(180));
+    spark_obj->vel_y = C3X_STF_INT(180);
     // asm 000085C9: 	LDF	*+AR5(CARZMINUS),R0	;BACK
     // asm 000085CA: 	STF	R0,*+AR4(OVELZ)
     spark_obj->vel_z = C3X_STF(C3X_LDF(carblk->z_minus));
@@ -735,7 +735,7 @@ IS_LOOP:
     spark_ctx->SPARK_PROC.spark_animations[num_sparks] = SPARKANII;
     // asm 000085D0: 	LDF	0,R0
     // asm 000085D1: 	STF	R0,*+AR4(OVELY)
-    spark_obj->vel_y = C3X_STF(C3X_IMM_F32(0));
+    spark_obj->vel_y = C3X_STF_IMM(0);
     // asm 000085D2: 	LDI	AR4,AR2
     // asm 000085D3: 	CALL	OBJ_INSERT
     OBJ_INSERT(spark_obj);
@@ -826,7 +826,7 @@ FIND_LAST_SPARKLP:
     // asm 000085F7: 	FLOAT	@NFRAMES,R0
     offset = C3X_FROM_INT(NFRAMES);
     // asm 000085F8: 	MPYF	50,R0			;Constant speed less than the player is moving
-    offset = C3X_MUL(offset, C3X_IMM_F32(50));
+    offset = C3X_MUL_IMM(offset, 50);
     // asm 000085F9: 	MPYF	R7,R0			;NUMBER OF FRAMES SINCE LAST SPARK CREATED
     offset = C3X_MUL(offset, p->ctx.SPARK_PROC.delay_frames);
     // asm 000085FA: 	NEGF	R0			;OFFSET FROM LAST SPARK
@@ -966,9 +966,9 @@ SS1:
     // asm 00008638: 	MPYF	*+AR5(CARSPEED),R0
     movement = C3X_MUL(movement, C3X_LDF(p->ctx.SPARK_PROC.carblk->speed));
     // asm 00008639: 	MPYF	1.5,R0
-    movement = C3X_MUL(movement, C3X_IMM_F32(1.5));
+    movement = C3X_MUL_IMM(movement, 1.5);
     // asm 0000863A: 	SUBF	100,R0		;Constant speed less than the player is moving
-    movement = C3X_SUB(movement, C3X_IMM_F32(100));
+    movement = C3X_SUB_IMM(movement, 100);
     // asm 0000863B: 	STF	R0,*+AR2(Z)
     VECTORAI.Z = C3X_STF(movement);
     // asm 0000863C: 	LDI	@MATRIXAI,R2
@@ -1021,10 +1021,10 @@ NEXT_SPARK:
     // asm 00008658: 	SLEEP	1
     SLEEP(1, 1);
     // asm 0000865A: 	ADDF	1,R7
-    p->ctx.SPARK_PROC.delay_frames = C3X_ADD(p->ctx.SPARK_PROC.delay_frames, C3X_IMM_F32(1));
+    p->ctx.SPARK_PROC.delay_frames = C3X_ADD_IMM(p->ctx.SPARK_PROC.delay_frames, 1);
     // asm 0000865B: 	CMPF	2,R7			;WAIT NFRAMES
     // asm 0000865C: 	BNE	KLUDGE_MOFO
-    if (C3X_NE(p->ctx.SPARK_PROC.delay_frames, C3X_IMM_F32(2))) {
+    if (C3X_NE_IMM(p->ctx.SPARK_PROC.delay_frames, 2)) {
         goto KLUDGE_MOFO;
     }
     // asm 0000865D: 	CALL	REPLICATE_SPARK		;Will replicate the latest spark still active
@@ -1113,7 +1113,7 @@ ICO_LOOP:
     // asm 00008681: 	CALL	FRAND
     y_offset = FRAND(y_offset);
     // asm 00008682: 	ADDF	20,R0
-    y_offset = C3X_ADD(y_offset, C3X_IMM_F32(20));
+    y_offset = C3X_ADD_IMM(y_offset, 20);
     // asm 00008683: 	LDF	R0,R2
     // asm 00008684: 	FLOAT	60,R0
     z_offset = C3X_FROM_INT(60);
@@ -1135,11 +1135,11 @@ ICO_LOOP:
     // asm 0000868D: 	ADDF	R2,R0
     position = C3X_ADD(position, y_offset);
     // asm 0000868E: 	ADDF	-30,R0
-    position = C3X_ADD(position, C3X_IMM_F32(-30));
+    position = C3X_ADD_IMM(position, -30);
     // asm 0000868F: 	NEGF	R0,R1
     y_offset = C3X_NEG(position);
     // asm 00008690: 	ADDF	180,R1				;AVERAGE car hight from road
-    y_offset = C3X_ADD(y_offset, C3X_IMM_F32(180)); // AVERAGE car hight from road
+    y_offset = C3X_ADD_IMM(y_offset, 180); // AVERAGE car hight from road
     // asm 00008691: 	STF	R1,*+AR4(OVELY)			;This will be used as the y offset
     spark_obj->vel_y = C3X_STF(y_offset); // This will be used as the y offset
     // asm 00008692: 	ADDF	*+AR0(OPOSY),R0
@@ -1275,7 +1275,7 @@ void WALL_SPARK(OBJ* car_obj /*AR4*/, CARBLK* carblk /*AR5*/) {
     // asm 000086C8: 	ABSF	R2,R1
     // asm 000086C9: 	CMPF	HALFPI,R1
     // asm 000086CA: 	BLT	FACINGFRONT
-    if (C3X_LT(C3X_ABS(relative_angle), C3X_IMM_F32(HALFPI))) {
+    if (C3X_LT_IMM(C3X_ABS(relative_angle), HALFPI)) {
         goto FACINGFRONT;
     }
     // asm 000086CB: 	NEGF	R0
@@ -1285,7 +1285,7 @@ void WALL_SPARK(OBJ* car_obj /*AR4*/, CARBLK* carblk /*AR5*/) {
 FACINGFRONT:
     // asm 000086CD: 	CMPF	0,R0			;which side is the wall?
     // asm 000086CE: 	BGT	LEFT_SIDE
-    if (C3X_GT(distance_to_center, C3X_IMM_F32(0))) {
+    if (C3X_GT_IMM(distance_to_center, 0)) {
         goto LEFT_SIDE;
     }
 RIGHT_SIDE:
@@ -1294,7 +1294,7 @@ RIGHT_SIDE:
     // asm 000086D0: 	CMPF	0,R2
     // asm 000086D1: 	LDFGT	*+AR5(CARZMINUS),R0	;BACK
     // asm 000086D2: 	LDFLE	*+AR5(CARZPLUS),R0	;FRONT
-    collision_z = C3X_GT(relative_angle, C3X_IMM_F32(0))
+    collision_z = C3X_GT_IMM(relative_angle, 0)
         ? C3X_LDF(carblk->z_minus)
         : C3X_LDF(carblk->z_plus);
     // asm 000086D3: 	BR	WALLS1
@@ -1305,7 +1305,7 @@ LEFT_SIDE:
     // asm 000086D5: 	CMPF	0,R2
     // asm 000086D6: 	LDFGT	*+AR5(CARZPLUS),R0	;FRONT
     // asm 000086D7: 	LDFLE	*+AR5(CARZMINUS),R0	;BACK
-    collision_z = C3X_GT(relative_angle, C3X_IMM_F32(0))
+    collision_z = C3X_GT_IMM(relative_angle, 0)
         ? C3X_LDF(carblk->z_plus)
         : C3X_LDF(carblk->z_minus);
 WALLS1:
@@ -1317,7 +1317,7 @@ WALLS1:
     spark_ctx->SPARK_PROC.collision_offset.Z = C3X_STF(collision_z);
     // asm 000086DA: 	LDF	-90,R0
     // asm 000086DB: 	STF	R0,*+AR7(COLL_Y)
-    spark_ctx->SPARK_PROC.collision_offset.Y = C3X_STF(C3X_IMM_F32(-90));
+    spark_ctx->SPARK_PROC.collision_offset.Y = C3X_STF_IMM(-90);
     // asm 000086DC: 	LDI	AR7,AR2
     // asm 000086DD: 	ADDI	COLL_X,AR2
     // asm 000086DE: 	LDI	AR2,R3

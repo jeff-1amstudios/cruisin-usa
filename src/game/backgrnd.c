@@ -113,7 +113,7 @@ int STARTSECTION;
 /* asm: START_POS	.bss	START_POS,3 */
 c3x_reg_t START_POS[3];
 /* asm: START_RADY	.bss	START_RADY,1 */
-c3x_reg_t START_RADY = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t START_RADY = C3X_F32_INIT(1.0f);
 /* asm: DRIVE_LIST	.bss	DRIVE_LIST,1 */
 OBJ* DRIVE_LIST;
 /* asm: CAR_LIST	.bss	CAR_LIST,1 */
@@ -246,7 +246,7 @@ NOWARP:
     START_POS[2] = ROM_ParseFloat(*++tyco_ptr);
     // asm 00003F9B: 	LDF	*++AR1,R2
     // asm 00003F9C: 	STF	R2,@START_RADY
-    START_RADY = ROM_ParseFloat(*++tyco_ptr);
+    START_RADY = C3X_STF(ROM_ParseFloat(*++tyco_ptr));
 
     MAME_ASSERT_REG_FLOAT(0x00003F9D, "R2", &START_RADY);
     // asm 00003F9D: 	RETS
@@ -477,9 +477,9 @@ BGD_SLP:
     SLEEP(1, 1);
 
 BGD_WATCHER:
-    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.X));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(CAMERAPOSI.X));
     MAME_ASSERT_MEM(0x00003FF4, "d@00809800", &observed_raw);
-    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Z));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(CAMERAPOSI.Z));
     MAME_ASSERT_MEM(0x00003FF5, "d@00809802", &observed_raw);
 
     // asm 00003FF4: 	LDI	@_MODE,R0
@@ -513,23 +513,23 @@ LLKK:
         goto NO_ACTIVATION;
     }
     // MAME_ASSERT_ORDERING("RACE_BGD_FRAME");
-    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.X));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(CAMERAPOSI.X));
     MAME_ASSERT_MEM(0x00003FFE, "d@00809800", &observed_raw);
-    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Z));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(CAMERAPOSI.Z));
     MAME_ASSERT_MEM(0x00003FFE, "d@00809802", &observed_raw);
-    observed_raw = C3X_STORE(C3X_LDF(CAMERAPOSI.Y));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(CAMERAPOSI.Y));
     MAME_ASSERT_MEM(0x00003FFE, "d@00809801", &observed_raw);
-    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a00));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(_CAMERAMATRIX.a00));
     MAME_ASSERT_MEM(0x00003FFE, "d@00809809", &observed_raw);
-    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a01));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(_CAMERAMATRIX.a01));
     MAME_ASSERT_MEM(0x00003FFE, "d@0080980A", &observed_raw);
-    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a02));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(_CAMERAMATRIX.a02));
     MAME_ASSERT_MEM(0x00003FFE, "d@0080980B", &observed_raw);
-    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a10));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(_CAMERAMATRIX.a10));
     MAME_ASSERT_MEM(0x00003FFE, "d@0080980C", &observed_raw);
-    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a11));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(_CAMERAMATRIX.a11));
     MAME_ASSERT_MEM(0x00003FFE, "d@0080980D", &observed_raw);
-    observed_raw = C3X_STORE(C3X_LDF(_CAMERAMATRIX.a12));
+    observed_raw = C3X_TO_RAW32(C3X_LDF(_CAMERAMATRIX.a12));
     MAME_ASSERT_MEM(0x00003FFE, "d@0080980E", &observed_raw);
     // asm 00003FFE: 	LDI	@PLYCBLK,AR0
     // asm 00003FFF: 	LDI	*+AR0(CARTRAK),AR0
@@ -792,7 +792,7 @@ int TYCOFLAG;
 /* asm: PASS1	.bss	PASS1,1 */
 int PASS1;
 /* asm: SECRADY	.bss	SECRADY,1 */
-c3x_reg_t SECRADY = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t SECRADY = C3X_F32_INIT(1.0f);
 
 static u32 BGD_ACTIVATE_TYCOGROUP(tyco_stream_t tyco_ptr /*AR2*/) {
     tyco_stream_t section_ptr;
@@ -837,7 +837,7 @@ static u32 BGD_ACTIVATE_TYCOGROUP(tyco_stream_t tyco_ptr /*AR2*/) {
         // asm 0000407F: 	LDI	AR0,AR4
         if (corn_obj != NULL) {
             // asm 00004080: 	LDF	-0.2,R2
-            corn_obj->rad.Y = C3X_STF(C3X_IMM_F32(-0.2f));
+            corn_obj->rad.Y = C3X_STF_IMM(-0.2f);
             // asm 00004081: 	LDI	AR4,AR2
             // asm 00004082: 	ADDI	OMATRIX,AR2
             // asm 00004083: 	CALL	FIND_YMATRIX
@@ -910,12 +910,12 @@ REG_LD:
 NOEXTRA:
     // asm 000040A9: 	LDF	*+AR7(TB_RADY),R0
     // asm 000040AA: 	STF	R0,@SECRADY
-    SECRADY = ROM_ParseFloat(section_ptr[TB_RADY]);
+    SECRADY = C3X_STF(ROM_ParseFloat(section_ptr[TB_RADY]));
     // asm 000040AB: 	LDI	@MATRIXAI,AR2		;Group rotation matrix
     // asm 000040AC: 	LDF	@SECRADY,R2
     MAME_ASSERT_REG_FLOAT(0x000040AD, "R2", &SECRADY);
     // asm 000040AD: 	CALL	HPFIND_YMATRIX		;require High Precision
-    HPFIND_YMATRIX(&MATRIXAI, SECRADY);
+    HPFIND_YMATRIX(&MATRIXAI, C3X_LDF(SECRADY));
     // asm 000040AE: 	LDI	*+AR7(TB_GROUP),AR5	;Group pointer
     MAME_ASSERT_REG(0x000040AF, "AR5", &section_ptr[TB_GROUP]);
     group_ptr = ROM_PTR(section_ptr[TB_GROUP]);
@@ -955,10 +955,10 @@ L12:
     // asm 000040BE: 	PUSH	R0
     // asm 000040BF: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 000040C0: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_FROM_INT(*group_ptr++));
+    obj->pos.X = C3X_STF_INT(*group_ptr++);
     MAME_ASSERT_REG_FLOAT(0x000040C0, "R1", &obj->pos.X);
     // asm 000040C1: 	FLOAT	*AR5++,R1		;GET Y POSITION
-    obj->pos.Y = C3X_STF(C3X_FROM_INT(*group_ptr++));
+    obj->pos.Y = C3X_STF_INT(*group_ptr++);
     MAME_ASSERT_REG_FLOAT(0x000040C5, "R1", &obj->pos.Y);
     // asm 000040C2: 	LDI	@TYCOFLAG,R0
     // asm 000040C3: 	TSTB	SC_REVERSE,R0
@@ -966,7 +966,7 @@ L12:
     // asm 000040C5: 	STF	R1,*+AR4(OPOSY)
     // asm 000040C6: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 000040C7: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_FROM_INT(*group_ptr++));
+    obj->pos.Z = C3X_STF_INT(*group_ptr++);
     MAME_ASSERT_REG_FLOAT(0x000040C7, "R1", &obj->pos.Z);
     if ((TYCOFLAG & SC_REVERSE) == 0) {
         goto NOTREVERSED;
@@ -1266,7 +1266,7 @@ CHECK2:
                 // asm 0000416E: 	LDINZ	TB_RVS_RADY,IR0
                 // asm 0000416F: 	LDF	*+AR7(IR0),R0
                 // asm 00004170: 	STPF	R0,@SECRADY
-                SECRADY = C3X_LOAD(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
+                SECRADY = C3X_STF(C3X_FROM_RAW32(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]));
             }
         UHNO2:
             // asm 00004171: 	POP	IR0
@@ -1315,7 +1315,7 @@ CHECK2II:
                 // asm 0000418B: 	LDINZ	TB_RVS_RADY,IR0
                 // asm 0000418C: 	LDF	*+AR7(IR0),R0
                 // asm 0000418D: 	STPF	R0,@SECRADY
-                SECRADY = C3X_LOAD(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]);
+                SECRADY = C3X_STF(C3X_FROM_RAW32(section_ptr[(flag & SC_OVERLAY) != 0 ? TB_RVS_RADY : (TB_RVS_RADY - 1)]));
             }
         UHNO:
             // asm 0000418E: 	POP	IR0
@@ -1837,7 +1837,7 @@ static void CARFORWARD(PROC* p) {
         CLR_VECTORA();
         // asm 00004258: 	FLOAT	16000,R0
         // asm 00004259: 	STF	R0,*+AR2(Z)
-        VECTORAI.Z = C3X_STF(C3X_FROM_INT(16000));
+        VECTORAI.Z = C3X_STF_INT(16000);
         // asm 0000425A: 	LDI	AR2,R3
         // asm 0000425B: 	LDI	AR4,R2
         // asm 0000425C: 	ADDI	OMATRIX,R2
@@ -1858,7 +1858,7 @@ static void CARFORWARD(PROC* p) {
         // asm 00004267: 	LDF	*+AR4(ORADY),R2
         // asm 00004268: 	ADDF	PI,R2
         // asm 00004269: 	STF	R2,*+AR4(ORADY)
-        obj->rad.Y = C3X_STF(C3X_ADD(C3X_LDF(obj->rad.Y), C3X_IMM_F32(PI)));
+        obj->rad.Y = C3X_STF(C3X_ADD_IMM(C3X_LDF(obj->rad.Y), PI));
         // asm 0000426A: 	LDI	AR4,AR2
         // asm 0000426B: 	ADDI	OMATRIX,AR2
         // asm 0000426C: 	CALL	FIND_YMATRIX
@@ -1893,7 +1893,7 @@ CARSUP:
     // asm 00004281: 	FLOAT	R0
     // asm 00004282: 	LDF	R0,R6
     // asm 00004283: 	ADDF	50,R6
-    speed = C3X_ADD(C3X_FROM_INT(RANDU0(30)), C3X_IMM_F32(50));
+    speed = C3X_ADD_IMM(C3X_FROM_INT(RANDU0(30)), 50);
     // asm 00004284: 	RANDN	3
     // asm 00004286: 	ADDI	1,R0
     // asm 00004287: 	FLOAT	R0
@@ -2464,7 +2464,7 @@ static void PLACE_ON_ROAD(OBJ* obj /*AR4*/) {
     // asm 000043B8: 	ADDF	R1,R0
     // asm 000043B9: 	SUBF   	45,R0
     // asm 000043BA: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_SUB(C3X_ADD(road_delta, C3X_LDF(obj->pos.Y)), C3X_IMM_F32(45)));
+    obj->pos.Y = C3X_STF(C3X_SUB_IMM(C3X_ADD(road_delta, C3X_LDF(obj->pos.Y)), 45));
 PORX:
     // asm 000043BB: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "PLACE_ON_ROAD", 0, 0);
@@ -2771,17 +2771,17 @@ LS_L12:
 
     // asm 00004432: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 00004433: 	STF	R1,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_FROM_INT(crusn_read_s32(&rom_cursor)));
+    obj->pos.X = C3X_STF_INT(crusn_read_s32(&rom_cursor));
     MAME_ASSERT_REG_FLOAT(0x00004433, "R1", &obj->pos.X);
 
     // asm 00004434: 	FLOAT	*AR5++,R1		;GET Y POSITION
     // asm 00004435: 	STF	R1,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_FROM_INT(crusn_read_s32(&rom_cursor)));
+    obj->pos.Y = C3X_STF_INT(crusn_read_s32(&rom_cursor));
     MAME_ASSERT_REG_FLOAT(0x00004435, "R1", &obj->pos.Y);
 
     // asm 00004436: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 00004437: 	STF	R1,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_FROM_INT(crusn_read_s32(&rom_cursor)));
+    obj->pos.Z = C3X_STF_INT(crusn_read_s32(&rom_cursor));
     MAME_ASSERT_REG_FLOAT(0x00004437, "R1", &obj->pos.Z);
 
     // asm 00004438: 	LDF	*AR5++,R2		;SET THE RADIANS FOR THE OBJECT
@@ -3019,14 +3019,14 @@ static void PLANE_FWRD(PROC* p) {
     // asm 00004463: 	FLOAT	32000,R6
     remaining_distance = C3X_FROM_INT(32000);
     // asm 00004464: 	MPYF	4,R6
-    remaining_distance = C3X_MUL(remaining_distance, C3X_IMM_F32(4));
+    remaining_distance = C3X_MUL_IMM(remaining_distance, 4);
     // *
     // *
 PLANE_FWL:
     // asm 00004465: 	LDF	*+AR4(ORADY),R2
     angle = C3X_LDF(obj->rad.Y);
     // asm 00004466: 	ADDF	HALFPI,R2
-    angle = C3X_ADD(angle, C3X_IMM_F32(HALFPI));
+    angle = C3X_ADD_IMM(angle, HALFPI);
     // asm 00004467: 	LDI	@MATRIXAI,AR2
     // asm 00004468: 	CALL	FIND_YMATRIX
     FIND_YMATRIX(&MATRIXAI, angle);
@@ -3051,9 +3051,7 @@ PLANE_FWL:
     // asm 00004476: 	ADDF	*+AR2(Y),R0
     // asm 00004477: 	ADDF	50,R0
     // asm 00004478: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_ADD(
-        C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y)),
-        C3X_IMM_F32(50)));
+    obj->pos.Y = C3X_STF(C3X_ADD_IMM(C3X_ADD(C3X_LDF(obj->pos.Y), C3X_LDF(VECTORAI.Y)), 50));
     // asm 00004479: 	LDF	*+AR4(OPOSZ),R0
     // asm 0000447A: 	ADDF	*+AR2(Z),R0
     // asm 0000447B: 	STF	R0,*+AR4(OPOSZ)
@@ -3163,7 +3161,7 @@ static void TRAIN_FWRD(PROC* p) {
     // asm 000044A7: 	FLOAT	32000,R6
     remaining_distance = C3X_FROM_INT(32000);
     // asm 000044A8: 	MPYF	3,R6
-    remaining_distance = C3X_MUL(remaining_distance, C3X_IMM_F32(3));
+    remaining_distance = C3X_MUL_IMM(remaining_distance, 3);
 J765:
     // *
     // *
@@ -3307,15 +3305,15 @@ LS_L12O:
     // asm 000044E4: 	LDI	@VECTORAI,AR2
     // asm 000044E5: 	FLOAT	*AR5++,R1		;GET X POSITION
     // asm 000044E6: 	STF	R1,*+AR2(X)
-    VECTORAI.X = C3X_STF(C3X_FROM_INT(crusn_read_s32(&rom_cursor)));
+    VECTORAI.X = C3X_STF_INT(crusn_read_s32(&rom_cursor));
 
     // asm 000044E7: 	FLOAT	*AR5++,R1		;GET Y POSITION
     // asm 000044E8: 	STF	R1,*+AR2(Y)
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(crusn_read_s32(&rom_cursor)));
+    VECTORAI.Y = C3X_STF_INT(crusn_read_s32(&rom_cursor));
 
     // asm 000044E9: 	FLOAT	*AR5++,R1		;GET Z POSITION
     // asm 000044EA: 	STF	R1,*+AR2(Z)
-    VECTORAI.Z = C3X_STF(C3X_FROM_INT(crusn_read_s32(&rom_cursor)));
+    VECTORAI.Z = C3X_STF_INT(crusn_read_s32(&rom_cursor));
 
     // asm 000044EB: 	LDI	@MATRIXAI,R2
     // asm 000044EC: 	LDI	AR2,R3

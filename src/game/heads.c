@@ -58,7 +58,7 @@ TTEST:
     // asm 0000A1A8: 	LDF	*+AR4(TEXT_POSY),R0
     // asm 0000A1A9: 	CMPF	-25,R0
     // asm 0000A1AA: 	BGT	TEXTDELERLP
-    if (C3X_GT(C3X_LDF(text->posy), C3X_IMM_F32(-25))) {
+    if (C3X_GT_IMM(C3X_LDF(text->posy), -25)) {
         previous_link = &text->link;
         text = text->link;
         if (text == NULL) {
@@ -363,9 +363,9 @@ static void VANITY_HEADS(PROC* p) {
     // asm 0000A1CF: 	STF	R0,*+AR6(X)
     // asm 0000A1D0: 	STF	R0,*+AR6(Y)
     // asm 0000A1D1: 	STF	R0,*+AR6(Z)
-    _CAMERAPOS.X = C3X_STF(C3X_FROM_INT(0));
-    _CAMERAPOS.Y = C3X_STF(C3X_FROM_INT(0));
-    _CAMERAPOS.Z = C3X_STF(C3X_FROM_INT(0));
+    _CAMERAPOS.X = C3X_STF_INT(0);
+    _CAMERAPOS.Y = C3X_STF_INT(0);
+    _CAMERAPOS.Z = C3X_STF_INT(0);
     // asm 0000A1D2: 	LDL	theheads_PALETTES,AR2
     // asm 0000A1D3: 	CALL	alloc_section
     alloc_section(theheads_PALETTES);
@@ -400,7 +400,7 @@ VANHDLP:
     // asm 0000A1EC: 	POP	AR0
     // asm 0000A1ED: 	MPYF	130,R0
     // asm 0000A1EE: 	STF	R0,*+AR0(OPOSX)
-    obj->pos.X = C3X_STF(C3X_MUL(_HPsin(angle), C3X_IMM_F32(130)));
+    obj->pos.X = C3X_STF(C3X_MUL_IMM(_HPsin(angle), 130));
     // asm 0000A1EF: 	LDF	R6,R2
     // ;	CALL	_COSI
     // asm 0000A1F0: 	PUSH	AR0
@@ -408,17 +408,17 @@ VANHDLP:
     // asm 0000A1F2: 	POP	AR0
     // asm 0000A1F3: 	MPYF	130,R0
     // asm 0000A1F4: 	STF	R0,*+AR0(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_MUL(_HPcos(angle), C3X_IMM_F32(130)));
+    obj->pos.Y = C3X_STF(C3X_MUL_IMM(_HPcos(angle), 130));
     // asm 0000A1F5: 	FLOAT	368,R0
     // asm 0000A1F6: 	STF	R0,*+AR0(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
+    obj->pos.Z = C3X_STF_INT(368);
     // asm 0000A1F7: 	STF	R6,*+AR0(ORADY)
     obj->rady = C3X_STF(angle);
     // asm 0000A1F8: 	LDI	AR0,AR2
     // asm 0000A1F9: 	CALL	OBJ_INSERT
     OBJ_INSERT(obj);
     // asm 0000A1FA: 	SUBF	0.571,R6
-    angle = C3X_SUB(angle, C3X_IMM_F32(0.571));
+    angle = C3X_SUB_IMM(angle, 0.571);
     // asm 0000A1FB: 	B	VANHDLP
     goto VANHDLP;
 VHIX:
@@ -436,18 +436,18 @@ VOLP:
     // asm 0000A200: 	LDF	*+AR0(ORADY),R2
     // asm 0000A201: 	ADDF	0.01,R2
     // asm 0000A202: 	STF	R2,*+AR0(ORADY)
-    angle = C3X_ADD(C3X_LDF(obj->rady), C3X_IMM_F32(0.01));
+    angle = C3X_ADD_IMM(C3X_LDF(obj->rady), 0.01);
     obj->rady = C3X_STF(angle);
     // asm 0000A203: 	LDF	R2,R6
     // asm 0000A204: 	CALL	_SINE
     // asm 0000A205: 	MPYF	130,R0
     // asm 0000A206: 	STF	R0,*+AR0(OPOSX)
-    obj->pos.X = C3X_STF(C3X_MUL(_SINE(angle), C3X_IMM_F32(130)));
+    obj->pos.X = C3X_STF(C3X_MUL_IMM(_SINE(angle), 130));
     // asm 0000A207: 	LDF	R6,R2
     // asm 0000A208: 	CALL	_COSI
     // asm 0000A209: 	MPYF	130,R0
     // asm 0000A20A: 	STF	R0,*+AR0(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_MUL(_COSI(angle), C3X_IMM_F32(130)));
+    obj->pos.Y = C3X_STF(C3X_MUL_IMM(_COSI(angle), 130));
     // asm 0000A20B: 	BU	VOLP
     obj = obj->link;
     goto VOLP;
@@ -531,16 +531,16 @@ void VANITY_SUB(PROC* p) {
     // asm 0000A225: 	STF	R2,*+AR6(X)
     // asm 0000A226: 	STF	R2,*+AR6(Y)
     // asm 0000A227: 	STF	R2,*+AR6(Z)
-    _CAMERAPOS.X = C3X_STF(C3X_FROM_INT(0));
-    _CAMERAPOS.Y = C3X_STF(C3X_FROM_INT(0));
-    _CAMERAPOS.Z = C3X_STF(C3X_FROM_INT(0));
+    _CAMERAPOS.X = C3X_STF_INT(0);
+    _CAMERAPOS.Y = C3X_STF_INT(0);
+    _CAMERAPOS.Z = C3X_STF_INT(0);
     // asm 0000A228: 	LDI	@CAMERARADI,AR6
     // asm 0000A229: 	STF	R2,*+AR6(X)
     // asm 0000A22A: 	STF	R2,*+AR6(Y)
     // asm 0000A22B: 	STF	R2,*+AR6(Z)
-    _CAMERARAD.X = C3X_STF(C3X_FROM_INT(0));
-    _CAMERARAD.Y = C3X_STF(C3X_FROM_INT(0));
-    _CAMERARAD.Z = C3X_STF(C3X_FROM_INT(0));
+    _CAMERARAD.X = C3X_STF_INT(0);
+    _CAMERARAD.Y = C3X_STF_INT(0);
+    _CAMERARAD.Z = C3X_STF_INT(0);
     // asm 0000A22C: 	LDI	@CAMERAMATRIXI,AR2
     // asm 0000A22D: 	CALL	FIND_YMATRIX
     FIND_YMATRIX(&_CAMERAMATRIX, C3X_FROM_INT(0));
@@ -558,7 +558,7 @@ void VANITY_SUB(PROC* p) {
     FONTUSED = SET18FONTDS_WHITE;
     // asm 0000A238: 	LDF	24,R0
     // asm 0000A239: 	STF	R0,@YINCREMENT
-    YINCREMENT = C3X_STF(C3X_IMM_F32(24));
+    YINCREMENT = C3X_STF_IMM(24);
     // asm 0000A23A: 	FLOAT	420,R6
     p->ctx.VANITY_SUB.y = C3X_FROM_INT(420);
     // asm 0000A23B: 	LDI	2,AR5
@@ -577,7 +577,7 @@ KKPD:
     // asm 0000A241: 	SLEEP	1
     SLEEP(1, 2);
     // asm 0000A243: 	SUBF	1,R6
-    p->ctx.VANITY_SUB.y = C3X_SUB(p->ctx.VANITY_SUB.y, C3X_IMM_F32(1));
+    p->ctx.VANITY_SUB.y = C3X_SUB_IMM(p->ctx.VANITY_SUB.y, 1);
     // asm 0000A244: 	BU	KKPD
     goto KKPD;
 JJDDA:
@@ -593,7 +593,7 @@ JJDDA:
     FONTUSED = entry->font;
     // asm 0000A24A: 	LDF	10,R0
     // asm 0000A24B: 	STF	R0,@YINCREMENT
-    YINCREMENT = C3X_STF(C3X_IMM_F32(10));
+    YINCREMENT = C3X_STF_IMM(10);
     // asm 0000A24C: 	BU	KKPD
     goto KKPD;
 NOT10:
@@ -793,7 +793,7 @@ KRIS_LOOP:
     // shared asm 0000A27B: 	SUBF	R0,R1
     // shared asm 0000A27C: 	MPYF	0.05,R1
     // shared asm 0000A27D: 	ADDF	R1,R0
-    delta = C3X_MUL(C3X_SUB(C3X_FROM_INT(259), position), C3X_IMM_F32(0.05));
+    delta = C3X_MUL_IMM(C3X_SUB(C3X_FROM_INT(259), position), 0.05);
     // shared asm 0000A27E: 	STF	R0,*+AR4(TEXT_POSX)
     p->ctx.KRIS.front->posx = C3X_STF(C3X_ADD(position, delta));
     // shared asm 0000A27F: 	LDF	*+AR5(TEXT_POSX),R0
@@ -802,7 +802,7 @@ KRIS_LOOP:
     // shared asm 0000A281: 	SUBF	R0,R1
     // shared asm 0000A282: 	MPYF	0.05,R1
     // shared asm 0000A283: 	ADDF	R1,R0
-    delta = C3X_MUL(C3X_SUB(C3X_FROM_INT(256), position), C3X_IMM_F32(0.05));
+    delta = C3X_MUL_IMM(C3X_SUB(C3X_FROM_INT(256), position), 0.05);
     // shared asm 0000A284: 	STF	R0,*+AR5(TEXT_POSX)
     p->ctx.KRIS.shadow->posx = C3X_STF(C3X_ADD(position, delta));
     // shared asm 0000A285: 	BU	KRIS
@@ -875,8 +875,8 @@ static tSHADOW_TEXT GETT(const char* string, c3x_reg_t x, c3x_reg_t y) {
     // asm 0000A2C2: 	LDF	-1,R0
     // asm 0000A2C3: 	STF	R0,*+AR0(TEXT_VELY)
     // asm 0000A2C4: 	STF	R0,*+AR1(TEXT_VELY)
-    text.front->vely = C3X_STF(C3X_IMM_F32(-1));
-    text.shadow->vely = C3X_STF(C3X_IMM_F32(-1));
+    text.front->vely = C3X_STF_IMM(-1);
+    text.shadow->vely = C3X_STF_IMM(-1);
     // asm 0000A2C5: 	LDI	@FONTUSED,R0
     // asm 0000A2C6: 	CALLU	R0
     FONTUSED(&text);

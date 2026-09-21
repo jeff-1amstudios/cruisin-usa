@@ -35,7 +35,7 @@ extern PROC* PLYPROC;
 // asm: 	.bss	PLYCBLK,1	;End Plyr Struct
 extern CARBLK* PLYCBLK;
 // asm: 	.bss	OLDPLYSPD,1	;OLD PLAYER SPEED
-extern c3x_reg_t OLDPLYSPD;
+extern c3x_f32_t OLDPLYSPD;
 // asm: 	.bss	OLDPLYAIR,1	;OLD PLAYER AIRBORNE
 extern int OLDPLYAIR;
 // asm: 	.bss	PLYRFIRST,1	;TICKS PLAYER IN 1ST PLACE
@@ -43,9 +43,9 @@ extern int PLYRFIRST;
 // asm: 	.bss	PLAIRTIM,1	;TIMER FOR AIR SOUND DISABLE
 extern int PLAIRTIM;
 // asm: 	.bss	CHEATACC,1
-extern c3x_reg_t CHEATACC;
+extern c3x_f32_t CHEATACC;
 // asm: 	.bss	CHEAT,1
-extern c3x_reg_t CHEAT;
+extern c3x_f32_t CHEAT;
 // asm: 	.BSS	ENGVOL,1
 extern int ENGVOL;
 // asm: 	.bss	WHLTIM,1

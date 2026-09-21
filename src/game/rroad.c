@@ -36,12 +36,12 @@ int FREEZE_IT;
 /* asm: COLL_POS	.bss	COLL_POS,3 */
 static int COLL_POS[3];
 /* asm: THE_TRAIN_SPEED	.bss	THE_TRAIN_SPEED,1 */
-c3x_reg_t THE_TRAIN_SPEED = C3X_INIT(1.0f, 0x0000000000ull);
+c3x_f32_t THE_TRAIN_SPEED = C3X_F32_INIT(1.0f);
 /* asm: KILL_TRAIN	.bss	KILL_TRAIN,1 */
 int KILL_TRAIN;
 /* asm: COLL_DIST	.float	117465.0	;distance to collision from engine start */
 /* asm: 	 */
-static c3x_reg_t COLL_DIST = C3X_INIT(117465.0f, 0x10656c8000ull);
+static const c3x_f32_t COLL_DIST = C3X_F32_INIT(117465.0f);
 #define TRAIN_SPEED 240
 #define TRAIN_SPEED_MIN 170
 #define TRAIN_SPEED_MAX 280

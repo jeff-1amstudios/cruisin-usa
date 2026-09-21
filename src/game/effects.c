@@ -165,8 +165,7 @@ SWCL1:
         C3X_LDF(p->ctx.SCREENWIPE.factor), p->ctx.SCREENWIPE.offset);
     // ;	MPYF	1.1,R7
     // asm: 	ADDF	0.2,R6
-    p->ctx.SCREENWIPE.angle = C3X_ADD(
-        p->ctx.SCREENWIPE.angle, C3X_IMM_F32(0.2));
+    p->ctx.SCREENWIPE.angle = C3X_ADD_IMM(p->ctx.SCREENWIPE.angle, 0.2);
     // asm: 	LDF	R6,R2
     // asm: 	LDPI	@MATRIXAI,AR2
     // asm: 	CALL	FIND_ZMATRIX
@@ -318,11 +317,9 @@ void SCREENWIPE_CLOSE_PRC(PROC* p) {
     // asm: SWCL1C
 SWCL1C:
     // asm: 	MPYF	0.91,R7
-    p->ctx.SCREENWIPE.offset = C3X_MUL(
-        C3X_IMM_F32(0.91), p->ctx.SCREENWIPE.offset);
+    p->ctx.SCREENWIPE.offset = C3X_MUL_IMM(p->ctx.SCREENWIPE.offset, 0.91);
     // asm: 	SUBF	0.2,R6
-    p->ctx.SCREENWIPE.angle = C3X_SUB(
-        p->ctx.SCREENWIPE.angle, C3X_IMM_F32(0.2));
+    p->ctx.SCREENWIPE.angle = C3X_SUB_IMM(p->ctx.SCREENWIPE.angle, 0.2);
     // asm: 	LDF	R6,R2
     // asm: 	LDI	@MATRIXAI,AR2
     // asm: 	CALL	FIND_ZMATRIX
@@ -447,7 +444,7 @@ static void GET_EFFECTS_OBJS(PROC* p) {
     obj->romdata = ROM_PTR(romdata);
     // asm: 	FLOAT	368,R0
     // asm: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
+    obj->pos.Z = C3X_STF_INT(368);
     // asm: 	LDI	AR4,AR2
     // asm: 	CALL	OBJ_INSERTP
     OBJ_INSERTP(obj);
@@ -474,7 +471,7 @@ static void GET_EFFECTS_OBJS(PROC* p) {
     obj->romdata = ROM_PTR(romdata);
     // asm: 	FLOAT	368,R0
     // asm: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
+    obj->pos.Z = C3X_STF_INT(368);
     // asm: 	LDI	AR0,AR2
     // asm: 	CALL	OBJ_INSERTP
     OBJ_INSERTP(obj);
@@ -501,7 +498,7 @@ static void GET_EFFECTS_OBJS(PROC* p) {
     obj->romdata = ROM_PTR(romdata);
     // asm: 	FLOAT	368,R0
     // asm: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
+    obj->pos.Z = C3X_STF_INT(368);
     // asm: 	LDI	AR4,AR2
     // asm: 	CALL	OBJ_INSERTP
     OBJ_INSERTP(obj);
@@ -528,7 +525,7 @@ static void GET_EFFECTS_OBJS(PROC* p) {
     obj->romdata = ROM_PTR(romdata);
     // asm: 	FLOAT	368,R0
     // asm: 	STF	R0,*+AR4(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_FROM_INT(368));
+    obj->pos.Z = C3X_STF_INT(368);
     // asm: 	LDI	AR4,AR2
     // asm: 	CALL	OBJ_INSERTP
     OBJ_INSERTP(obj);

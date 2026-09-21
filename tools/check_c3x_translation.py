@@ -15,7 +15,7 @@ SOURCE_FILES = sorted((*SOURCE_ROOT.rglob("*.c"), *SOURCE_ROOT.rglob("*.h")))
 DECIMAL = re.compile(r"(?<![\w.])[-+]?(?:\d+\.\d*|\.\d+)(?:[eE][-+]?\d+)?[fFlL]?(?![\w.])")
 C3X_ARITHMETIC = re.compile(r"\bC3X_(?:ADD|SUB|MUL|DIV|EQ|NE|LT|LE|GT|GE)\s*\(")
 ALLOWED_VALUE = re.compile(
-    r"\bC3X_(?:IMM_F32|F32|F32_INIT|INIT|LDF|FROM_INT)\s*\((?:[^()]|\([^()]*\))*\)"
+    r"\bC3X_(?:IMM_F32|REG_FROM_DOUBLE|F32_INIT|LDF|FROM_INT)\s*\((?:[^()]|\([^()]*\))*\)"
 )
 ASM_FLOAT_SYMBOL = re.compile(
     r"//\s*asm\b.*\b(?:"
@@ -23,6 +23,14 @@ ASM_FLOAT_SYMBOL = re.compile(
     r")[A-Z]*\s+([+-]?[A-Za-z_.$][A-Za-z0-9_.$]*)\s*(?:,|$)"
 )
 ASM_REGISTER = re.compile(r"^(?:A?R\d+|IR\d+|BK|RC|RS|RE)$", re.IGNORECASE)
+IMM_ARGUMENT_INDEX = {
+    **{
+        f"C3X_{operation}_IMM": 1
+        for operation in ("ADD", "SUB", "MUL", "DIV", "EQ", "NE", "LT", "LE", "GT", "GE")
+    },
+    "C3X_RSUB_IMM": 0,
+    "C3X_STF_IMM": 0,
+}
 
 
 def strip_comments_and_strings(text: str) -> str:
@@ -37,6 +45,54 @@ def line_number(text: str, offset: int) -> int:
     return text.count("\n", 0, offset) + 1
 
 
+def matching_paren(text: str, opening: int) -> int | None:
+    depth = 0
+    for index in range(opening, len(text)):
+        if text[index] == "(":
+            depth += 1
+        elif text[index] == ")":
+            depth -= 1
+            if depth == 0:
+                return index
+    return None
+
+
+def argument_ranges(text: str, opening: int, closing: int) -> list[tuple[int, int]]:
+    ranges: list[tuple[int, int]] = []
+    depth = 0
+    start = opening + 1
+    for index in range(start, closing):
+        if text[index] == "(":
+            depth += 1
+        elif text[index] == ")":
+            depth -= 1
+        elif text[index] == "," and depth == 0:
+            ranges.append((start, index))
+            start = index + 1
+    ranges.append((start, closing))
+    return ranges
+
+
+def mask_immediate_arguments(text: str) -> str:
+    """Blank operands whose enclosing API explicitly gives them immediate semantics."""
+    result = list(text)
+    names = "|".join(map(re.escape, IMM_ARGUMENT_INDEX))
+    for match in re.finditer(rf"\b({names})\s*\(", text):
+        opening = text.find("(", match.start())
+        closing = matching_paren(text, opening)
+        if closing is None:
+            continue
+        ranges = argument_ranges(text, opening, closing)
+        argument_index = IMM_ARGUMENT_INDEX[match.group(1)]
+        if argument_index >= len(ranges):
+            continue
+        start, end = ranges[argument_index]
+        for index in range(start, end):
+            if result[index] != "\n":
+                result[index] = " "
+    return "".join(result)
+
+
 def report(errors: list[str], path: Path, line: int, message: str) -> None:
     errors.append(f"{path.relative_to(ROOT)}:{line}: {message}")
 
@@ -45,15 +101,30 @@ def check_file(path: Path, errors: list[str]) -> None:
     original = path.read_text(encoding="utf-8")
     code = strip_comments_and_strings(original)
 
-    for match in re.finditer(r"\bC3X_SHORT_F32\b", code):
-        report(errors, path, line_number(code, match.start()), "use C3X_IMM_F32")
+    deprecated = {
+        "C3X_SHORT_F32": "C3X_IMM_F32",
+        "C3X_F32": "C3X_REG_FROM_DOUBLE",
+        "C3X_LOAD": "C3X_FROM_RAW32",
+        "C3X_STORE": "C3X_TO_RAW32",
+        "C3X_MPYF": "an explicit C3X_MUL assignment",
+        "C3X_MPYF3": "an explicit C3X_MUL assignment",
+        "C3X_ADDF": "an explicit C3X_ADD assignment",
+        "C3X_ADDF3": "an explicit C3X_ADD assignment",
+        "C3X_SUBF": "an explicit C3X_SUB assignment",
+        "C3X_SUBF3": "an explicit C3X_SUB assignment",
+    }
+    for old_name, replacement in deprecated.items():
+        for match in re.finditer(rf"\b{old_name}\b", code):
+            report(
+                errors,
+                path,
+                line_number(code, match.start()),
+                f"use {replacement} instead of {old_name}",
+            )
 
-    for match in re.finditer(r"C3X_LOAD\s*\(\s*C3X_STORE\s*\(", code):
-        report(errors, path, line_number(code, match.start()), "use C3X_STF")
-
-    allow_full_precision_file = "c3x-lint: allow-c3x-f32" in original
+    allow_full_precision_file = "c3x-lint: allow-reg-from-double" in original
     if path.is_relative_to(ROOT / "src" / "game") and not allow_full_precision_file:
-        for match in re.finditer(r"\bC3X_F32\s*\(", code):
+        for match in re.finditer(r"\bC3X_REG_FROM_DOUBLE\s*\(", code):
             line = line_number(code, match.start())
             source_line = original.splitlines()[line - 1]
             if "c3x-lint: full-precision" not in source_line:
@@ -61,7 +132,7 @@ def check_file(path: Path, errors: list[str]) -> None:
                     errors,
                     path,
                     line,
-                    "C3X_F32 requires an explicit full-precision lint annotation; "
+                    "C3X_REG_FROM_DOUBLE requires an explicit full-precision lint annotation; "
                     "instruction immediates use C3X_IMM_F32",
                 )
 
@@ -99,14 +170,14 @@ def check_file(path: Path, errors: list[str]) -> None:
         storage_alias_use = re.compile(
             rf"(?<![\w.]){re.escape(operand)}I(?![\w.])"
         )
-        masked = immediate.sub("", translated)
+        masked = mask_immediate_arguments(immediate.sub("", translated))
         if symbol_use.search(masked) or storage_alias_use.search(masked):
             report(
                 errors,
                 path,
                 index + 1,
                 f"assembly {operand} is a floating instruction immediate; "
-                f"use C3X_IMM_F32({operand})",
+                f"use an _IMM operation or C3X_IMM_F32({operand})",
             )
 
     # Examine complete semicolon-terminated statements so multiline arithmetic
@@ -117,7 +188,7 @@ def check_file(path: Path, errors: list[str]) -> None:
         statement_end = statement_match.end()
         statement = code[statement_start:statement_end]
         if C3X_ARITHMETIC.search(statement):
-            masked = ALLOWED_VALUE.sub("", statement)
+            masked = ALLOWED_VALUE.sub("", mask_immediate_arguments(statement))
             decimal = DECIMAL.search(masked)
             if decimal:
                 report(
@@ -125,7 +196,7 @@ def check_file(path: Path, errors: list[str]) -> None:
                     path,
                     line_number(code, statement_start + decimal.start()),
                     f"raw floating literal {decimal.group(0)!r} in C3X arithmetic; "
-                    "use C3X_IMM_F32 for an instruction immediate",
+                    "use the operation's _IMM form for an instruction immediate",
                 )
         statement_start = statement_end
 

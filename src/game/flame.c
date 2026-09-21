@@ -170,7 +170,7 @@ void FLAME_PRC(PROC* p) {
     // asm 0000ADE3: 	LDI	AR0,AR5			;Right frame
     // asm 0000ADE4: 	LDF	PI,R0
     // asm 0000ADE5: 	STF	R0,*+AR5(ORADY)
-    p->ctx.FLAME_PRC.right_flame->rady = C3X_STF(C3X_IMM_F32(PI));
+    p->ctx.FLAME_PRC.right_flame->rady = C3X_STF_IMM(PI);
     // asm 0000ADE6: 	FLOAT	180,R0
     (void)C3X_FROM_INT(180);
     // asm 0000ADE7: 	NEGF	R1			;opposite side

@@ -903,7 +903,7 @@ SHOW_COINAGE:
     posy = C3X_ADD(posy, C3X_FROM_INT(44));
 
     // asm 000074A3: 	MPYF	-0.5,R3
-    posy = C3X_MUL(posy, C3X_IMM_F32(-0.5));
+    posy = C3X_MUL_IMM(posy, -0.5);
 
     // asm 000074A4: 	FLOAT	345,R0			;Center of text hight
     // asm 000074A5: 	ADDF	R0,R3
@@ -1148,7 +1148,7 @@ static void PRINT_COINAGE(c3x_reg_t x, c3x_reg_t y) {
         goto PRINT_COINAGEX;
     }
 
-    y = C3X_ADD(y, C3X_IMM_F32(FONT10_HIGHT));
+    y = C3X_ADD_IMM(y, FONT10_HIGHT);
     t = TEXT_ADDDS(coin_text->message_lines[1], x, y, 1);
     t.front->color |= TXT_CENTER;
     t.shadow->color |= TXT_CENTER;
@@ -1159,7 +1159,7 @@ static void PRINT_COINAGE(c3x_reg_t x, c3x_reg_t y) {
         goto PRINT_COINAGEX;
     }
 
-    y = C3X_ADD(y, C3X_IMM_F32(FONT10_HIGHT));
+    y = C3X_ADD_IMM(y, FONT10_HIGHT);
     t = TEXT_ADDDS(coin_text->message_lines[2], x, y, 1);
     t.front->color |= TXT_CENTER;
     t.shadow->color |= TXT_CENTER;
@@ -1196,12 +1196,12 @@ static c3x_reg_t GET_COINAGE_HIGHT(void) {
     // asm 0000752D: 	BEQ	GCHX
     if (coin_text[1] != 0) {
         // asm 0000752E: 	ADDF	FONT10_HIGHT,R3
-        height = C3X_ADD(height, C3X_IMM_F32(FONT10_HIGHT));
+        height = C3X_ADD_IMM(height, FONT10_HIGHT);
         // asm 0000752F: 	LDI	*+AR0(2),R0
         // asm 00007530: 	BEQ	GCHX
         if (coin_text[2] != 0) {
             // asm 00007531: 	ADDF	FONT10_HIGHT,R3
-            height = C3X_ADD(height, C3X_IMM_F32(FONT10_HIGHT));
+            height = C3X_ADD_IMM(height, FONT10_HIGHT);
         }
     }
 GCHX:

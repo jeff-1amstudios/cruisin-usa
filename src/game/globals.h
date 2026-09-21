@@ -60,7 +60,7 @@ extern int STARTSECTION;
 
 extern c3x_reg_t START_POS[];
 
-extern c3x_reg_t START_RADY;
+extern c3x_f32_t START_RADY;
 
 // asm:  .globl DGROUPSI
 #define DGROUPSI DGROUPS
@@ -445,9 +445,9 @@ extern c3x_f32_t BLOWLIST[];
 #define INVTABI INVTAB
 
 // asm:  .globl SCRNHXI,SCRNHYI
-extern c3x_reg_t SCRNHXI;
+extern c3x_f32_t SCRNHXI;
 
-extern c3x_reg_t SCRNHYI;
+extern c3x_f32_t SCRNHYI;
 
 // asm:  .globl LOW_TOSS_LEVELI,LOW_CLIP_LEVELI,HIGH_CLIP_LEVELI,HIGH_CLIP_LEV8,MAXZI
 extern int HIGH_CLIP_LEV8;
@@ -521,10 +521,10 @@ extern int _MPH;
 #define COUNTDOWN_BUFI COUNTDOWN_BUF
 
 // asm:  .globl INFIN_CORRECT
-extern c3x_reg_t INFIN_CORRECT;
+extern c3x_f32_t INFIN_CORRECT;
 
 // asm:  .globl VAR_ROAD_KFACTOR
-extern c3x_reg_t VAR_ROAD_KFACTOR;
+extern c3x_f32_t VAR_ROAD_KFACTOR;
 
 // asm:  .globl MAXMPH_COUNT
 extern c3x_f32_t MAXMPH_COUNT;
@@ -666,7 +666,7 @@ extern int NOLONG_VEHICLES;
 extern OBJ* ROAD_DEBRIS;
 
 // asm:  .globl ROADKILL_SOUND_TIMER
-extern c3x_reg_t ROADKILL_SOUND_TIMER;
+extern c3x_f32_t ROADKILL_SOUND_TIMER;
 
 // asm:  .globl DIV_F,DIV_F30
 #define DIV_F DIV_F30
@@ -753,7 +753,7 @@ extern c3x_f32_t WHEELPWR;
 
 extern c3x_f32_t WHEELPOS;
 
-extern c3x_reg_t WHEELMAX;
+extern c3x_f32_t WHEELMAX;
 
 extern int WHEELVEL;
 

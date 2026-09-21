@@ -174,12 +174,12 @@ NOT_RACE1:
     // asm 00006CF2: 	LDP	@_CAMERAPOS
     // asm 00006CF3: 	CLRF	R0
     // asm 00006CF4: 	STF	R0,@_CAMERAPOS+X
-    _CAMERAPOS.X = C3X_STF(C3X_FROM_INT(0));
+    _CAMERAPOS.X = C3X_STF_INT(0);
     // asm 00006CF5: 	STF	R0,@_CAMERAPOS+Y
-    _CAMERAPOS.Y = C3X_STF(C3X_FROM_INT(0));
+    _CAMERAPOS.Y = C3X_STF_INT(0);
     // asm 00006CF6: 	FLOAT	-368,R0
     // asm 00006CF7: 	STF	R0,@_CAMERAPOS+Z
-    _CAMERAPOS.Z = C3X_STF(C3X_FROM_INT(-368));
+    _CAMERAPOS.Z = C3X_STF_INT(-368);
     // asm 00006CF8: 	SETDP
     // asm 00006CF9: 	LDI	TRACK_SELECTION_LIST_LEN+1,R0
     // asm 00006CFA: 	STI	R0,@POSES
@@ -1141,12 +1141,10 @@ ZISL:
     // asm 00006EE0: 	LDF	*+AR0(OVELZ),R0
     // asm 00006EE1: 	SUBF	*+AR0(OPOSZ),R0
     // asm 00006EE2: 	MPYF	0.42,R0	;.15
-    delta = C3X_MUL(
-        C3X_SUB(C3X_LDF(obj->vel_z), C3X_LDF(obj->pos.Z)),
-        C3X_IMM_F32(0.42));
+    delta = C3X_MUL_IMM(C3X_SUB(C3X_LDF(obj->vel_z), C3X_LDF(obj->pos.Z)), 0.42);
     // asm 00006EE3: 	CMPF	-5,R0
     // asm 00006EE4: 	BGT	JJDD
-    if (C3X_GT(delta, C3X_IMM_F32(-5))) {
+    if (C3X_GT_IMM(delta, -5)) {
         goto JJDD;
     }
     // asm 00006EE5: 	ADDF	*+AR0(OPOSZ),R0
@@ -1160,7 +1158,7 @@ JJDD:
     obj->pos.Z = C3X_STF(C3X_LDF(obj->vel_z));
     // asm 00006EEA: 	CLRF	R2
     // asm 00006EEB: 	STF	R2,*+AR0(ORADZ)
-    obj->rad.Z = C3X_STF(C3X_FROM_INT(0));
+    obj->rad.Z = C3X_STF_INT(0);
     // asm 00006EEC: 	LDI	AR0,AR2
     // asm 00006EED: 	ADDI	OMATRIX,AR2
     // asm 00006EEE: 	CALL	FIND_ZMATRIX
@@ -1171,7 +1169,7 @@ HGF:
     // asm 00006EF0: 	LDF	*+AR0(ORADZ),R2
     // asm 00006EF1: 	MPYF	0.65,R2
     // asm 00006EF2: 	STF	R2,*+AR0(ORADZ)
-    obj->rad.Z = C3X_STF(C3X_MUL(C3X_LDF(obj->rad.Z), C3X_IMM_F32(0.65)));
+    obj->rad.Z = C3X_STF(C3X_MUL_IMM(C3X_LDF(obj->rad.Z), 0.65));
     // asm 00006EF3: 	LDI	AR0,AR2
     // asm 00006EF4: 	ADDI	OMATRIX,AR2
     // asm 00006EF5: 	CALL	FIND_ZMATRIX
@@ -1447,11 +1445,11 @@ CTOLP:
     // asm 00006F6F: LDF	*+AR4(OPOSX),R0
     // asm 00006F70: 	MPYF	0.8,R0
     // asm 00006F71: 	STF	R0,*+AR4(OPOSX)
-    obj->pos.X = C3X_STF(C3X_MUL(C3X_LDF(obj->pos.X), C3X_IMM_F32(0.8)));
+    obj->pos.X = C3X_STF(C3X_MUL_IMM(C3X_LDF(obj->pos.X), 0.8));
     // asm 00006F72: 	LDF	*+AR4(OPOSY),R0
     // asm 00006F73: 	MPYF	0.8,R0
     // asm 00006F74: 	STF	R0,*+AR4(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_MUL(C3X_LDF(obj->pos.Y), C3X_IMM_F32(0.8)));
+    obj->pos.Y = C3X_STF(C3X_MUL_IMM(C3X_LDF(obj->pos.Y), 0.8));
     // asm 00006F75: 	CALL	CENTER_SUB1
     CENTER_SUB1(obj);
     // asm 00006F76: 	SLEEP	1
@@ -1469,7 +1467,7 @@ CTOLPB:
     // asm 00006F7D: 	LDFLT	50,R0
     // asm 00006F7E: 	ADDF	*+AR4(OPOSZ),R0
     // asm 00006F7F: 	STF	R0,*+AR4(OPOSZ)
-    delta = C3X_MUL(C3X_LDF(obj->pos.Z), C3X_IMM_F32(0.08));
+    delta = C3X_MUL_IMM(C3X_LDF(obj->pos.Z), 0.08);
     if (C3X_LT(delta, C3X_FROM_INT(50)))
         delta = C3X_FROM_INT(50);
     obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), delta));
@@ -1542,19 +1540,19 @@ LKGG:
     // asm 00006FA2: 	MPYF	0.1,R0
     // asm 00006FA3: 	ADDF	*+AR0(OPOSX),R0
     // asm 00006FA4: 	STF	R0,*+AR0(OPOSX)
-    obj->pos.X = C3X_STF(C3X_MUL(C3X_LDF(obj->pos.X), C3X_IMM_F32(1.1)));
+    obj->pos.X = C3X_STF(C3X_MUL_IMM(C3X_LDF(obj->pos.X), 1.1));
     // asm 00006FA5: 	LDF	*+AR0(OPOSY),R0
     // asm 00006FA6: 	MPYF	0.1,R0
     // asm 00006FA7: 	ADDF	*+AR0(OPOSY),R0
     // asm 00006FA8: 	STF	R0,*+AR0(OPOSY)
-    obj->pos.Y = C3X_STF(C3X_MUL(C3X_LDF(obj->pos.Y), C3X_IMM_F32(1.1)));
+    obj->pos.Y = C3X_STF(C3X_MUL_IMM(C3X_LDF(obj->pos.Y), 1.1));
     // asm 00006FA9: 	LDF	*+AR0(OPOSZ),R0
     // asm 00006FAA: 	MPYF	0.08,R0
     // asm 00006FAB: 	CMPF	50,R0
     // asm 00006FAC: 	LDFLT	50,R0
     // asm 00006FAD: 	ADDF	*+AR0(OPOSZ),R0
     // asm 00006FAE: 	STF	R0,*+AR0(OPOSZ)
-    c3x_reg_t delta = C3X_MUL(C3X_LDF(obj->pos.Z), C3X_IMM_F32(0.08));
+    c3x_reg_t delta = C3X_MUL_IMM(C3X_LDF(obj->pos.Z), 0.08);
     if (C3X_LT(delta, C3X_FROM_INT(50)))
         delta = C3X_FROM_INT(50);
     obj->pos.Z = C3X_STF(C3X_ADD(C3X_LDF(obj->pos.Z), delta));
@@ -1796,7 +1794,7 @@ static void BOILERPLATE(void) {
     cursor->usr1_as_float = cursor->pos.X;
     // asm 00007009: 	FLOAT	-6000,R0
     // asm 0000700A: 	STF	R0,*+AR2(OPOSX)
-    cursor->pos.X = C3X_STF(C3X_FROM_INT(-6000));
+    cursor->pos.X = C3X_STF_INT(-6000);
     // asm 0000700B: 	LDI	@BOILEROBJ,AR2
     // asm 0000700C: 	CALL	OBJ_INSERTP
     OBJ_INSERTP(BOILEROBJ);

@@ -155,7 +155,7 @@ void ATTRACT_DELTA(PROC* p /*AR7*/) {
     // asm 000055C3: 	LDI	0,R0
     // asm 000055C4: 	STI	R0,*+AR7(OBJINS)
     p->ctx.ATTRACT_DELTA.objins = 0;
-    p->ctx.ATTRACT_DELTA.cardis = C3X_STF(C3X_IMM_F32(1.0f));
+    p->ctx.ATTRACT_DELTA.cardis = C3X_STF_IMM(1.0f);
 
     // asm 000055C5: 	LDI	@ATTRWAVE,R4
     // asm 000055C6: 	LSH	-1,R4
@@ -357,7 +357,7 @@ void LOGO_PROC(PROC* p) {
 
     // asm 0000560B: 	FLOAT	LOGO_STARTZ,R0
     // asm 0000560C: 	STF	R0,*+AR0(OPOSZ)
-    obj->pos.Z = C3X_STF(C3X_FROM_INT(LOGO_STARTZ));
+    obj->pos.Z = C3X_STF_INT(LOGO_STARTZ);
 
     // asm 0000560D: 	LDI	AR0,AR2
     // asm 0000560E: 	CALL	OBJ_INSERTP
@@ -365,10 +365,10 @@ void LOGO_PROC(PROC* p) {
 
     // asm 0000560F: 	LDF	LOGO_SPINZ,R0
     // asm 00005610: 	STF	R0,*+AR4(ORADX)
-    obj->rad.X = C3X_STF(C3X_IMM_F32(LOGO_SPINZ));
+    obj->rad.X = C3X_STF_IMM(LOGO_SPINZ);
 
     // asm 00005611: 	LDF	0,R7		;SPEED FACTOR
-    p->ctx.LOGO_PROC.speed_factor = C3X_STF(C3X_FROM_INT(0)); // SPEED FACTOR
+    p->ctx.LOGO_PROC.speed_factor = C3X_STF_INT(0); // SPEED FACTOR
 
     // asm 00005612: 	LDI	LOGO_FLYIN_FRAMES,AR5
     p->ctx.LOGO_PROC.frames_left = LOGO_FLYIN_FRAMES;
@@ -419,7 +419,7 @@ LOGO_LOOP1:
         obj->pos.Y = C3X_STF(value);
 
         // asm 0000562B: 	ADDF	0.03,R7
-        p->ctx.LOGO_PROC.speed_factor = C3X_STF(C3X_ADD(p->ctx.LOGO_PROC.speed_factor, C3X_IMM_F32(0.03)));
+        p->ctx.LOGO_PROC.speed_factor = C3X_STF(C3X_ADD_IMM(p->ctx.LOGO_PROC.speed_factor, 0.03));
     }
 
 LOGO2:
@@ -451,7 +451,7 @@ LOGO2:
     value = C3X_MUL(DIV_F(C3X_IMM_F32(LOGO_SPINZ), C3X_FROM_INT(LOGO_FLYIN_FRAMES)), nframes);
     obj->rad.X = C3X_STF(C3X_SUB(obj->rad.X, value));
     if (C3X_GT(obj->rad.X, C3X_FROM_INT(0))) {
-        obj->rad.X = C3X_STF(C3X_FROM_INT(0));
+        obj->rad.X = C3X_STF_INT(0);
     }
 
     // asm 0000563E: 	LDI	AR4,AR2
@@ -584,7 +584,7 @@ static void INIT_STARTING(void) {
     // asm 00005649: 	LDI	-350,R0
     // asm 0000564A: 	FLOAT	R0,R1
     // asm 0000564B: 	STF	R1,*+AR7(CAMYOFF)
-    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_FROM_INT(-350));
+    ctx->ATTRACT_DELTA.camyoff = C3X_STF_INT(-350);
     // asm 0000564C: 	LDI	4,R0		;direction to search in
     // asm 0000564D: 	LDI	1,R1		;distance to start with
     // asm 0000564E: 	LDI	8,R2		;Position to follow
@@ -626,7 +626,7 @@ static void INIT_WATCH(void) {
     // asm 00005659: 	STI	R0,*+AR7(CUT_PAN)
     ctx->ATTRACT_DELTA.cut_pan = 1;
     // asm 0000565A: 	LDF	0,R0
-    zero = C3X_STF(C3X_IMM_F32(0));
+    zero = C3X_STF_IMM(0);
     // asm 0000565B: 	STF	R0,*+AR7(CAMERA_XYZR+3)		;Reset the offset
     memcpy(&ctx->ATTRACT_DELTA.camera_xyzr[3], &zero, sizeof(zero)); // ;Reset the offset
     // asm 0000565C: 	LDI	*AR6++,R2				;READ the track ID from the VIEWLIST
@@ -663,17 +663,17 @@ INIW2:
     // asm 0000566C: 	LDI	-300,R0
     // asm 0000566D: 	FLOAT	R0,R1
     // asm 0000566E: 	STF	R1,*+AR7(CAMYOFF)
-    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_FROM_INT(-300));
+    ctx->ATTRACT_DELTA.camyoff = C3X_STF_INT(-300);
     // asm 0000566F: 	ADDI	*+AR4(Y),R0
     // asm 00005670: 	FLOAT	R0
     // asm 00005671: 	STF	R0,*+AR7(NEW_POSY)
-    ctx->ATTRACT_DELTA.new_posy = C3X_STF(C3X_FROM_INT(road_obj->as_fixed.pos_y_with_lane_flag - 300));
+    ctx->ATTRACT_DELTA.new_posy = C3X_STF_INT(road_obj->as_fixed.pos_y_with_lane_flag - 300);
     // asm 00005672: 	FLOAT	*+AR4(X),R0
     // asm 00005673: 	STF	R0,*+AR7(NEW_POSX)
-    ctx->ATTRACT_DELTA.new_posx = C3X_STF(C3X_FROM_INT(road_obj->as_fixed.pos_x));
+    ctx->ATTRACT_DELTA.new_posx = C3X_STF_INT(road_obj->as_fixed.pos_x);
     // asm 00005674: 	FLOAT	*+AR4(Z),R0
     // asm 00005675: 	STF	R0,*+AR7(NEW_POSZ)
-    ctx->ATTRACT_DELTA.new_posz = C3X_STF(C3X_FROM_INT(road_obj->as_fixed.pos_z));
+    ctx->ATTRACT_DELTA.new_posz = C3X_STF_INT(road_obj->as_fixed.pos_z);
     // asm 00005676: 	LDI	AR4,AR2
     // asm 00005677: 	ADDI	-4,AR2
     previous_road = road_obj - 1;
@@ -698,7 +698,7 @@ INIW2:
     // asm 00005685: 	FLOAT	R3
     delta_y = C3X_FROM_INT(previous_road->as_fixed.pos_y_with_lane_flag - road_obj->as_fixed.pos_y_with_lane_flag);
     // asm 00005686: 	MPYF	1.8,R3
-    delta_y = C3X_MUL(C3X_IMM_F32(1.8), delta_y);
+    delta_y = C3X_MUL_IMM(delta_y, 1.8);
     // asm 00005687: 	CALL	ARCTANF
     camera_radx = ARCTANF(horizontal_distance, delta_y);
     // asm 00005688: 	CALL	NORM_VECTOR
@@ -706,14 +706,14 @@ INIW2:
     // asm 00005689: 	NEGF	R0
     camera_radx = C3X_NEG(camera_radx);
     // asm 0000568A: 	ADDF	0.09,R0		;Offset for VIEWX
-    camera_radx = C3X_ADD(camera_radx, C3X_IMM_F32(0.09)); // ;Offset for VIEWX
+    camera_radx = C3X_ADD_IMM(camera_radx, 0.09); // ;Offset for VIEWX
     // asm 0000568B: 	STF	R0,*+AR7(NEW_RADX)
     ctx->ATTRACT_DELTA.new_radx = C3X_STF(camera_radx);
     // asm 0000568C: 	FLOAT	-2500,R3
     // asm 0000568D: 	CALL	DO_LANE_POS
     DO_LANE_POS(C3X_FROM_INT(-2500));
     // asm 0000568E: 	LDF	-100,R6			;SMALL number for a rad
-    ctx->ATTRACT_DELTA.watch_rady = C3X_STF(C3X_IMM_F32(-100)); // ;SMALL number for a rad
+    ctx->ATTRACT_DELTA.watch_rady = C3X_STF_IMM(-100); // ;SMALL number for a rad
     // asm 0000568F: 	CALL	WATCH_VIEW
     WATCH_VIEW();
     // asm 00005690: 	LDF	*+AR7(NEW_RADY),R6	;Save initial value
@@ -736,7 +736,7 @@ static void INIT_REVERS_CUP(void) {
     // asm 00005696: 	LDI	-350,R0
     // asm 00005697: 	FLOAT	R0,R1
     // asm 00005698: 	STF	R1,*+AR7(CAMYOFF)
-    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_FROM_INT(-350));
+    ctx->ATTRACT_DELTA.camyoff = C3X_STF_INT(-350);
     // asm 00005699: 	LDI	4,R0		;direction to search in
     // asm 0000569A: 	LDI	1,R1		;distance to start with
     // asm 0000569B: 	LDI	5,R2		;Position to follow
@@ -766,7 +766,7 @@ static void INIT_CATCHUP(void) {
     // asm 000056A5: 	LDI	-350,R0
     // asm 000056A6: 	FLOAT	R0,R1
     // asm 000056A7: 	STF	R1,*+AR7(CAMYOFF)
-    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_FROM_INT(-350));
+    ctx->ATTRACT_DELTA.camyoff = C3X_STF_INT(-350);
     // asm 000056A8: 	LDI	4,R0		;direction to search in
     // asm 000056A9: 	LDI	1,R1		;distance to start with
     // asm 000056AA: 	LDI	5,R2		;Position to follow
@@ -796,7 +796,7 @@ static void INIT_LEAD(void) {
     // asm 000056B4: 	LDI	-300,R0
     // asm 000056B5: 	FLOAT	R0,R1
     // asm 000056B6: 	STF	R1,*+AR7(CAMYOFF)
-    ctx->ATTRACT_DELTA.camyoff = C3X_STF(C3X_FROM_INT(-300));
+    ctx->ATTRACT_DELTA.camyoff = C3X_STF_INT(-300);
     // asm 000056B7: 	LDI	-4,R0
     // asm 000056B8: 	LDI	1,R1
     // asm 000056B9: 	LDI	0,R2
@@ -840,7 +840,7 @@ static void INITROAD_VIEW(int direction_to_search /*R0*/, int distance_to_start_
     memcpy(&ctx->ATTRACT_DELTA.camera_xyzr[3], &stored_rady_offset, sizeof(stored_rady_offset));
     // asm 000056C7: 	LDF	0,R0
     // asm 000056C8: 	STF	R0,*+AR7(CAMERA_ACCEL)
-    ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_FROM_INT(0));
+    ctx->ATTRACT_DELTA.camera_accel = C3X_STF_INT(0);
     // asm 000056C9: 	LDI	1,R0
     // asm 000056CA: 	STI	R0,*+AR7(CUT_PAN)
     ctx->ATTRACT_DELTA.cut_pan = 1;
@@ -887,16 +887,16 @@ OK_FOUNDIT:
     // MAME_ASSERT_MEM(0x000056E0, "d@(ar4+3)", &ctx->ATTRACT_DELTA.road_obj->as_fixed.id);
     // asm 000056E1: 	FLOAT	*+AR4(X),R0
     // asm 000056E2: 	STF	R0,*+AR7(NEW_POSX)
-    ctx->ATTRACT_DELTA.new_posx = C3X_STF(C3X_FROM_INT(road_obj->as_fixed.pos_x));
+    ctx->ATTRACT_DELTA.new_posx = C3X_STF_INT(road_obj->as_fixed.pos_x);
     // MAME_ASSERT_REG_FLOAT(0x000056E2, "R0", &ctx->ATTRACT_DELTA.new_posx);
     // asm 000056E3: 	FIX	*+AR7(CAMYOFF),R0
     // asm 000056E4: 	ADDI	*+AR4(Y),R0
     // asm 000056E5: 	FLOAT	R0
     // asm 000056E6: 	STF	R0,*+AR7(NEW_POSY)
-    ctx->ATTRACT_DELTA.new_posy = C3X_STF(C3X_FROM_INT(road_obj->as_fixed.pos_y_with_lane_flag + FIX(ctx->ATTRACT_DELTA.camyoff)));
+    ctx->ATTRACT_DELTA.new_posy = C3X_STF_INT(road_obj->as_fixed.pos_y_with_lane_flag + FIX(ctx->ATTRACT_DELTA.camyoff));
     // asm 000056E7: 	FLOAT	*+AR4(Z),R0
     // asm 000056E8: 	STF	R0,*+AR7(NEW_POSZ)
-    ctx->ATTRACT_DELTA.new_posz = C3X_STF(C3X_FROM_INT(road_obj->as_fixed.pos_z));
+    ctx->ATTRACT_DELTA.new_posz = C3X_STF_INT(road_obj->as_fixed.pos_z);
     // asm 000056E9: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "INITROAD_VIEW", 0, 0);
 }
@@ -924,7 +924,7 @@ static void WATCH_VIEW(void) {
     // asm 000056F0: 	CALL	NORM_VECTOR
     camera_rady = NORM_VECTOR(camera_rady);
     // asm 000056F1: 	SUBF	HALFPI,R0
-    camera_rady = C3X_SUB(camera_rady, C3X_IMM_F32(HALFPI));
+    camera_rady = C3X_SUB_IMM(camera_rady, HALFPI);
     // asm 000056F2: 	CALL	NORM_VECTOR
     camera_rady = NORM_VECTOR(camera_rady);
     // asm 000056F3: 	NEGF	R0
@@ -958,11 +958,11 @@ WV1:
     rady_difference = C3X_SUB(C3X_LDF(ctx->ATTRACT_DELTA.watch_rady), C3X_LDF(ctx->ATTRACT_DELTA.new_rady));
     // asm 00005705: 	CMPF	0.18,R0			;9deg	diff
     // asm 00005706: 	BLT	NO_WHOOSH
-    if (C3X_LT(rady_difference, C3X_IMM_F32(0.18))) { // ;9deg diff
+    if (C3X_LT_IMM(rady_difference, 0.18)) { // ;9deg diff
         goto NO_WHOOSH;
     }
     // asm 00005707: 	LDF	-100,R6				;do only once
-    ctx->ATTRACT_DELTA.watch_rady = C3X_STF(C3X_IMM_F32(-100)); // ;do only once
+    ctx->ATTRACT_DELTA.watch_rady = C3X_STF_IMM(-100); // ;do only once
     // asm 00005708: 	SOND1	WHOOSH
     SOND1(WHOOSH);
 NO_WHOOSH:
@@ -984,7 +984,7 @@ static void REV_ROAD_VIEW(void) {
     car_speed = carblk != NULL ? C3X_LDF(carblk->speed) : C3X_FROM_INT(0);
     // asm 0000570E: 	MPYF	1.8,R0
     // asm 0000570F: 	STF	R0,*+AR7(CAMERA_VEL)	;Set initial camera velocity
-    ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_MUL(car_speed, C3X_IMM_F32(1.8))); // ;Set initial camera velocity
+    ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_MUL_IMM(car_speed, 1.8)); // ;Set initial camera velocity
     // asm 00005710: 	LDF	0.6,R2
     // asm 00005711: 	CALL	SET_LANE
     SET_LANE(C3X_IMM_F32(0.6));
@@ -995,7 +995,7 @@ static void REV_ROAD_VIEW(void) {
 }
 
 /* asm: ACCEL_RATE	.float	0.000002 */
-static c3x_reg_t ACCEL_RATE = C3X_INIT(0.000002f, 0xED0637BD05ull);
+static const c3x_f32_t ACCEL_RATE = C3X_F32_INIT(0.000002f);
 
 static void ROAD_VIEW(void) {
     PROC* p = CURRENT_PROC;
@@ -1019,7 +1019,7 @@ static void ROAD_VIEW(void) {
         if (ctx->ATTRACT_DELTA.carobj != closest_racer) {
             // asm 0000571A: 	LDF	0,R2
             // asm 0000571B: 	STF	R2,*+AR7(CAMERA_ACCEL)
-            ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_FROM_INT(0));
+            ctx->ATTRACT_DELTA.camera_accel = C3X_STF_INT(0);
             // asm 0000571C: 	STI	AR1,*+AR7(CAROBJ)	;FOUND a NEW CAR
             // asm 0000571D: 	STI	AR1,@PLYCAR
             ctx->ATTRACT_DELTA.carobj = closest_racer; // ;FOUND a NEW CAR
@@ -1035,9 +1035,9 @@ static void ROAD_VIEW(void) {
         // asm 00005722: 	LDF	*+AR7(CAMERA_ACCEL),R2
         // asm 00005723: 	LDF	*+AR7(CARDIS),R1
         // asm 00005724: 	MPYF	0.6,R1
-        cardis_scaled = C3X_MUL(ctx->ATTRACT_DELTA.cardis, C3X_IMM_F32(0.6));
+        cardis_scaled = C3X_MUL_IMM(ctx->ATTRACT_DELTA.cardis, 0.6);
         // asm 00005725: 	CMPF	R0,R1			;Are we half way there yet?
-        accel_step = ACCEL_RATE;
+        accel_step = C3X_LDF(ACCEL_RATE);
         if (C3X_LE(distance, cardis_scaled)) { // ;Are we half way there yet?
             // asm 00005726: 	BLT	RV1B
             // asm 00005727: 	NEGF	R3
@@ -1049,11 +1049,11 @@ static void ROAD_VIEW(void) {
         // asm 0000572A: 	STF	R2,*+AR7(CAMERA_ACCEL)
         ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_ADD(ctx->ATTRACT_DELTA.camera_accel, accel_step));
         if (C3X_LT(ctx->ATTRACT_DELTA.camera_accel, C3X_FROM_INT(0))) {
-            ctx->ATTRACT_DELTA.camera_accel = C3X_STF(C3X_FROM_INT(0));
+            ctx->ATTRACT_DELTA.camera_accel = C3X_STF_INT(0);
         }
         // asm 0000572B: 	MPYF	R0,R2			;Factor in overall distance
         // asm 0000572C: 	ADDF	1.6,R2
-        lane_target = C3X_ADD(C3X_MUL(ctx->ATTRACT_DELTA.camera_accel, distance), C3X_IMM_F32(1.6)); // ;Factor in overall distance
+        lane_target = C3X_ADD_IMM(C3X_MUL(ctx->ATTRACT_DELTA.camera_accel, distance), 1.6); // ;Factor in overall distance
         // asm 0000572D: 	LDI	*+AR1(OCARBLK),AR0
         // asm 0000572E: 	LDF	*+AR0(CARSPEED),R0
         carblk = closest_racer->carblk;
@@ -1086,7 +1086,7 @@ static void LEAD_VIEW(void) {
     car_speed = carblk != NULL ? C3X_LDF(carblk->speed) : C3X_FROM_INT(0);
     // asm 00005738: 	MPYF	1.51,R0
     // asm 00005739: 	STF	R0,*+AR7(CAMERA_VEL)	;Set initial camera velocity
-    ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_MUL(car_speed, C3X_IMM_F32(1.51))); // ;Set initial camera velocity
+    ctx->ATTRACT_DELTA.camera_vel = C3X_STF(C3X_MUL_IMM(car_speed, 1.51)); // ;Set initial camera velocity
     // asm 0000573A: 	LDF	0.6,R2
     // asm 0000573B: 	CALL	SET_LANE
     SET_LANE(C3X_IMM_F32(0.6));
@@ -1148,8 +1148,8 @@ MRC1:
     // asm 00005752: 	LDF	0,R0
     // asm 00005753: 	STF	R0,*+AR2(X)
     // asm 00005754: 	STF	R0,*+AR2(Y)
-    VECTORAI.X = C3X_STF(C3X_FROM_INT(0));
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.X = C3X_STF_INT(0);
+    VECTORAI.Y = C3X_STF_INT(0);
     // asm 00005755: 	LDF	*+AR7(CAMERA_VEL),R0
     // asm 00005756: 	FLOAT	@NFRAMES,R1
     // asm 00005757: 	MPYF	R1,R0
@@ -1176,9 +1176,9 @@ MRC1:
     // asm 00005765: 	ADDI	NEW_POSX,AR4
     // asm 00005766: 	CALL	CAMSCAN
     {
-        uint32_t observed_raw = C3X_STORE(C3X_LDF(ctx->ATTRACT_DELTA.new_posx));
+        uint32_t observed_raw = C3X_TO_RAW32(C3X_LDF(ctx->ATTRACT_DELTA.new_posx));
         // MAME_ASSERT_MEM(0x00005766, "d@(ar4)", &observed_raw);
-        observed_raw = C3X_STORE(C3X_LDF(ctx->ATTRACT_DELTA.new_posz));
+        observed_raw = C3X_TO_RAW32(C3X_LDF(ctx->ATTRACT_DELTA.new_posz));
         // MAME_ASSERT_MEM(0x00005766, "d@(ar4+2)", &observed_raw);
     }
     if (CAMSCAN((VECTOR*)&ctx->ATTRACT_DELTA.new_posx, &road_height)) {
@@ -1219,7 +1219,7 @@ USE_SLOPE:
     // asm 0000577C: 	SUBI	*+AR4(Y),R0
     // asm 0000577D: 	FLOAT	R0
     // asm 0000577E: 	MPYF	1.05,R0		;FUDGE FACTOR
-    slope_y = C3X_MUL(C3X_FROM_INT(next_road->as_fixed.pos_y_with_lane_flag - road_obj->as_fixed.pos_y_with_lane_flag), C3X_IMM_F32(1.05)); // ;FUDGE FACTOR
+    slope_y = C3X_MUL_IMM(C3X_FROM_INT(next_road->as_fixed.pos_y_with_lane_flag - road_obj->as_fixed.pos_y_with_lane_flag), 1.05); // ;FUDGE FACTOR
     // asm 0000577F: 	CALL	DIV_F
     slope_y = DIV_F(slope_y, slope_length);
     // asm 00005780: 	LDI	@VECTORAI,AR0
@@ -1236,8 +1236,7 @@ USE_SLOPE:
     // asm 0000578A: 	ADDF	*+AR7(NEW_POSY),R1
     // asm 0000578B: 	STF	R1,*+AR7(NEW_POSY)
     ctx->ATTRACT_DELTA.new_posy = C3X_STF(C3X_ADD(ctx->ATTRACT_DELTA.new_posy,
-        C3X_MUL(C3X_SUB(C3X_FROM_INT(road_obj->as_fixed.pos_y_with_lane_flag - 400), ctx->ATTRACT_DELTA.new_posy),
-            C3X_IMM_F32(0.04))));
+        C3X_MUL_IMM(C3X_SUB(C3X_FROM_INT(road_obj->as_fixed.pos_y_with_lane_flag - 400), ctx->ATTRACT_DELTA.new_posy), 0.04)));
 NO_SLOPE:
     // asm 0000578C: 	LDI	AR7,R2
     // asm 0000578D: 	ADDI	NEW_RADX,R2
@@ -1376,8 +1375,8 @@ static void GETCAMDIR(void) {
     // asm 000057B5: 	LDF	0,R0
     // asm 000057B6: 	STF	R0,*+AR2(Y)
     // asm 000057B7: 	STF	R0,*+AR2(Z)
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
-    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.Y = C3X_STF_INT(0);
+    VECTORAI.Z = C3X_STF_INT(0);
     // asm 000057B8: 	LDF	*+AR7(CAMERA_LANE),R0
     // asm 000057B9: 	STF	R0,*+AR2(X)
     VECTORAI.X = C3X_STF(C3X_REG(ctx->ATTRACT_DELTA.camera_lane));
@@ -1417,8 +1416,8 @@ static void GETCAMDIR(void) {
     // asm 000057CF: 	LDF	0,R0
     // asm 000057D0: 	STF	R0,*+AR7(NEW_RADX)
     // asm 000057D1: 	STF	R0,*+AR7(NEW_RADZ)
-    ctx->ATTRACT_DELTA.new_radx = C3X_STF(C3X_FROM_INT(0));
-    ctx->ATTRACT_DELTA.new_radz = C3X_STF(C3X_FROM_INT(0));
+    ctx->ATTRACT_DELTA.new_radx = C3X_STF_INT(0);
+    ctx->ATTRACT_DELTA.new_radz = C3X_STF_INT(0);
     // asm 000057D2: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "GETCAMDIR", 0, 0);
 }
@@ -1454,10 +1453,10 @@ SL1:
     // ;	MPYF	0.40,R0			;Move to just inside where the car is.
     // asm 000057DA: 	MPYF	0.30,R0			;Move to just inside where the car is.
     // asm 000057DB: 	ADDF	R1,R0
-    lane_offset = C3X_ADD(C3X_MUL(C3X_SUB(road_offset, lane_center), C3X_IMM_F32(0.30)), lane_center); // ;Move to just inside where the car is.
+    lane_offset = C3X_ADD(C3X_MUL_IMM(C3X_SUB(road_offset, lane_center), 0.30), lane_center); // ;Move to just inside where the car is.
     // asm 000057DC: 	CMPF	1.0,R2
     // asm 000057DD: 	BEQ	SL2
-    if (C3X_NE(smoothing, C3X_IMM_F32(1.0f))) {
+    if (C3X_NE_IMM(smoothing, 1.0f)) {
         // asm 000057DE: 	SUBF	*+AR7(CAMERA_LANE),R0
         // asm 000057DF: 	MPYF	R2,R0
         // asm 000057E0: 	ADDF	*+AR7(CAMERA_LANE),R0
@@ -1511,8 +1510,8 @@ static void DO_LANE_POS(c3x_reg_t lane_offset /*R3*/) {
     // asm 000057F0: 	LDF	0,R0
     // asm 000057F1: 	STF	R0,*+AR2(Y)
     // asm 000057F2: 	STF	R0,*+AR2(Z)
-    VECTORAI.Y = C3X_STF(C3X_FROM_INT(0));
-    VECTORAI.Z = C3X_STF(C3X_FROM_INT(0));
+    VECTORAI.Y = C3X_STF_INT(0);
+    VECTORAI.Z = C3X_STF_INT(0);
     // asm 000057F3: 	POPF	R0
     // asm 000057F4: 	STF	R0,*+AR2(X)
     VECTORAI.X = C3X_STF(lane_offset);
@@ -1726,10 +1725,10 @@ static c3x_reg_t FIND_CLOSEST_RACER(OBJ** closest_racer /*AR1*/) {
     // asm 00005846: 	MPYF	R5,R5
     // asm 00005847: 	MPYF	R5,R5		;BIG F'N NUMBER
     best_distance = C3X_FROM_INT(30000);
-    C3X_MPYF(best_distance, best_distance);
-    C3X_MPYF(best_distance, best_distance);
-    C3X_MPYF(best_distance, best_distance);
-    C3X_MPYF(best_distance, best_distance); // ;BIG F'N NUMBER
+    best_distance = C3X_MUL(best_distance, best_distance);
+    best_distance = C3X_MUL(best_distance, best_distance);
+    best_distance = C3X_MUL(best_distance, best_distance);
+    best_distance = C3X_MUL(best_distance, best_distance); // ;BIG F'N NUMBER
     // asm 00005848: 	LDI	@CAR_LISTI,AR0		;Scane the linked list of cars
     // asm 00005849: 	SUBI	OLINK3,AR0
     // asm 0000584A: 	LDI	0,AR1
@@ -1764,7 +1763,7 @@ FCR1:
         // asm 0000585B: 	ABSF	R0
         // asm 0000585C: 	CMPF	0.78,R0			;Within +/- 45deg?
         // asm 0000585D: 	BGT	FCR1			;Nop this car is beside us or behind us
-        if (C3X_GT(angle_delta, C3X_IMM_F32(0.78))) { // ;Within +/- 45deg? / ;Nop this car is beside us or behind us
+        if (C3X_GT_IMM(angle_delta, 0.78)) { // ;Within +/- 45deg? / ;Nop this car is beside us or behind us
             continue;
         }
         // asm 0000585E: 	LDF	*+AR0(OPOSX),R0		;Now compute the distance to the car
@@ -1988,14 +1987,14 @@ FIRST_PERSON:
     CPYIMAT((OBJ_MATRIX*)&ctx->ATTRACT_DELTA.new_matrix, (MATRIX*)&car_obj->omatrix); // ;Copy the cars matrix into NEW_MATRIX
     // asm 000058B4: 	LDF	0,R0
     // asm 000058B5: 	STF	R0,*+AR5(CARROT)	;NO OVERROTATION IN CORNER
-    carblk->over_rotation = C3X_STF(C3X_IMM_F32(0)); // ;NO OVERROTATION IN CORNER
+    carblk->over_rotation = C3X_STF_IMM(0); // ;NO OVERROTATION IN CORNER
     // asm 000058B6: 	LDF	0,R0
     // asm 000058B7: 	STF	R0,*+AR7(NEW_RADY)		;NOTE this is not used for first person
-    ctx->ATTRACT_DELTA.new_rady = C3X_STF(C3X_IMM_F32(0)); // ;NOTE this is not used for first person
+    ctx->ATTRACT_DELTA.new_rady = C3X_STF_IMM(0); // ;NOTE this is not used for first person
     // asm 000058B8: 	LDF	*+AR5(CARXLEAN),R0
     // asm 000058B9: 	MPYF	-0.7,R0			;NEGATE AND SCALE
     // asm 000058BA: 	SUBF	*+AR7(NEW_RADX),R0
-    angle = C3X_SUB(C3X_MUL(C3X_LDF(carblk->x_lean), C3X_IMM_F32(-0.7)), C3X_LDF(ctx->ATTRACT_DELTA.new_radx));
+    angle = C3X_SUB(C3X_MUL_IMM(C3X_LDF(carblk->x_lean), -0.7), C3X_LDF(ctx->ATTRACT_DELTA.new_radx));
     // asm 000058BB: 	LDF	0.20,R2
     // asm 000058BC: 	CALL	SMOOTH_VECTOR
     angle = SMOOTH_VECTOR(angle, C3X_IMM_F32(0.20));
@@ -2005,7 +2004,7 @@ FIRST_PERSON:
     // asm 000058BF: 	LDF	*+AR5(CARZLEAN),R0  	;GET Z LEAN FACTOR
     // asm 000058C0: 	MPYF	-0.5,R0			;NEGATE AND SCALE
     // asm 000058C1: 	STF	R0,*+AR7(NEW_RADZ)
-    ctx->ATTRACT_DELTA.new_radz = C3X_STF(C3X_MUL(C3X_LDF(carblk->z_lean), C3X_IMM_F32(-0.5)));
+    ctx->ATTRACT_DELTA.new_radz = C3X_STF(C3X_MUL_IMM(C3X_LDF(carblk->z_lean), -0.5));
     // asm 000058C2: 	LDI	@MATRIXCI,AR2
     // asm 000058C3: 	LDI	AR7,R2
     // asm 000058C4: 	ADDI	NEW_RADX,R2
@@ -2043,7 +2042,7 @@ SECOND_PERSON:
     // asm 000058D8: 	ADDF3	R3,R2,R1
     // asm 000058D9: 	CMPF	0,R1
     // asm 000058DA: 	BNE	FFX1
-    if (!C3X_EQ(C3X_ADD(C3X_LDF(car_obj->vel_x), C3X_LDF(car_obj->vel_z)), C3X_IMM_F32(0))) {
+    if (!C3X_EQ_IMM(C3X_ADD(C3X_LDF(car_obj->vel_x), C3X_LDF(car_obj->vel_z)), 0)) {
         goto FFX1;
     }
     // asm 000058DB: 	NEGF	*+AR5(CARYROT),R0	;If stopped don't use the velocity
@@ -2078,8 +2077,8 @@ FFX3:
     // asm 000058E8: 	LDF	0,R0
     // asm 000058E9: 	STF	R0,*+AR7(NEW_RADX)
     // asm 000058EA: 	STF	R0,*+AR7(NEW_RADZ)
-    ctx->ATTRACT_DELTA.new_radx = C3X_STF(C3X_IMM_F32(0));
-    ctx->ATTRACT_DELTA.new_radz = C3X_STF(C3X_IMM_F32(0));
+    ctx->ATTRACT_DELTA.new_radx = C3X_STF_IMM(0);
+    ctx->ATTRACT_DELTA.new_radz = C3X_STF_IMM(0);
 FFX4:
     // asm 000058EB: 	LDI	AR7,R2
     // asm 000058EC: 	ADDI	NEW_RADX,R2
@@ -2091,11 +2090,11 @@ FFX4:
     // asm 000058F1: 	ADDI	NEW_POSX,AR0
     // asm 000058F2: 	CALL	CAMYADJ			;MAKE sure the camera doesn't go below the road
     {
-        uint32_t observed_raw = C3X_STORE(C3X_LDF(ctx->ATTRACT_DELTA.new_posx));
+        uint32_t observed_raw = C3X_TO_RAW32(C3X_LDF(ctx->ATTRACT_DELTA.new_posx));
         // MAME_ASSERT_MEM(0x000058F2, "d@(ar0)", &observed_raw);
-        observed_raw = C3X_STORE(C3X_LDF(ctx->ATTRACT_DELTA.new_posy));
+        observed_raw = C3X_TO_RAW32(C3X_LDF(ctx->ATTRACT_DELTA.new_posy));
         // MAME_ASSERT_MEM(0x000058F2, "d@(ar0+1)", &observed_raw);
-        observed_raw = C3X_STORE(C3X_LDF(ctx->ATTRACT_DELTA.new_posz));
+        observed_raw = C3X_TO_RAW32(C3X_LDF(ctx->ATTRACT_DELTA.new_posz));
         // MAME_ASSERT_MEM(0x000058F2, "d@(ar0+2)", &observed_raw);
     }
     CAMYADJ((VECTOR*)&ctx->ATTRACT_DELTA.new_posx); // ;MAKE sure the camera doesn't go below the road
@@ -2135,7 +2134,7 @@ static c3x_reg_t SMOOTH_VECTOR(c3x_reg_t radians /*R0*/, c3x_reg_t smoothing /*R
         smoothing = C3X_ABS(unsmoothed);
         // asm 000058FC: 	CMPF	0.78,R2 	;Is this within 45 degrees?
         // asm 000058FD: 	BLT	SVX
-        if (C3X_GE(smoothing, C3X_IMM_F32(0.78))) { // ;Is this within 45 degrees?
+        if (C3X_GE_IMM(smoothing, 0.78)) { // ;Is this within 45 degrees?
                                                     // asm 000058FE: 	LDF	R3,R0		;NO, Then don't smooth the pig (PROBABLY JUST CHANGED CAMERA ANGLE)
             radians = unsmoothed;                   // ;NO, Then don't smooth the pig (PROBABLY JUST CHANGED CAMERA ANGLE)
             goto SV1;
@@ -2175,7 +2174,7 @@ static c3x_reg_t NORM_VECTOR(c3x_reg_t radians /*R0*/) {
     offset = C3X_FROM_INT(0); // ;NORMALIZE DIFFERENCE
     // asm 0000590E: 	CMPF	3.14,R0
     // asm 0000590F: 	LDFGT	-6.28,R1
-    if (C3X_GT(radians, C3X_IMM_F32(3.14))) {
+    if (C3X_GT_IMM(radians, 3.14)) {
         offset = C3X_NEG(C3X_IMM_F32(6.28));
     }
     // asm 00005910: 	CMPF	-3.14,R0
@@ -2208,7 +2207,7 @@ static void SET_SMOOTH_VIEW(c3x_reg_t x /*R0*/, c3x_reg_t y /*R1*/, c3x_reg_t z 
     memcpy(ctx->ATTRACT_DELTA.newcamera_xyzr, values, sizeof(values));
     // asm 00005919: 	LDF	0,R4
     // asm 0000591A: 	STF	R4,*+AR7(ZOOMVEL)
-    ctx->ATTRACT_DELTA.zoomvel = C3X_STF(C3X_IMM_F32(0));
+    ctx->ATTRACT_DELTA.zoomvel = C3X_STF_IMM(0);
     // asm 0000591B: 	LDI	*+AR7(CUT_PAN),R4
     // asm 0000591C: 	BEQ	SMOOTH_VIEW
     if (ctx->ATTRACT_DELTA.cut_pan == 0) {
@@ -2312,7 +2311,7 @@ static void ZOOM_CAMERA(void) {
     zoom_velocity = C3X_ADD(zoom_velocity, C3X_LDF(ZOOMACCEL));
     // asm 00005943: 	CMPF	0.2,R0
     // asm 00005944: 	LDFGT	0.2,R0
-    if (C3X_GT(zoom_velocity, C3X_IMM_F32(0.2))) {
+    if (C3X_GT_IMM(zoom_velocity, 0.2)) {
         zoom_velocity = C3X_IMM_F32(0.2);
     }
     // asm 00005945: 	STF	R0,*+AR7(ZOOMVEL)
@@ -2342,7 +2341,7 @@ static void ZOOM_CAMERA(void) {
     // asm 00005955: 	CMPF	100,R0
     // asm 00005956: 	BGT	ZOOMX
     if (ctx->ATTRACT_DELTA.camera_view == 0) {
-        if (C3X_GT(C3X_ABS(C3X_LDF(camera_values[2])), C3X_IMM_F32(100))) {
+        if (C3X_GT_IMM(C3X_ABS(C3X_LDF(camera_values[2])), 100)) {
             goto ZOOMX;
         }
         // asm 00005957: 	LDI	*+AR4(OFLAGS),R0	;CHECK IF ALREADY OFF LIST
@@ -2360,7 +2359,7 @@ ZOOM1:
     // asm 0000595D: 	ABSF	*+AR7(CAMERA_XYZR+2),R0
     // asm 0000595E: 	CMPF	100,R0
     // asm 0000595F: 	BLT	ZOOMX
-    if (C3X_LT(C3X_ABS(C3X_LDF(camera_values[2])), C3X_IMM_F32(100))) {
+    if (C3X_LT_IMM(C3X_ABS(C3X_LDF(camera_values[2])), 100)) {
         goto ZOOMX;
     }
     // asm 00005960: 	LDI	*+AR4(OFLAGS),R0	;CHECK IF ALREADY ON LIST
@@ -2452,7 +2451,7 @@ SMOOTH_MATRIX:
 loop:
     // asm 00005988: STF	R1,*AR0++
     for (i = 0; i < 9; i++) {
-        dst[i] = C3X_STF(C3X_ADD(C3X_MUL(dst[i], C3X_IMM_F32(0.20)), C3X_MUL(src[i], C3X_IMM_F32(0.80))));
+        dst[i] = C3X_STF(C3X_ADD(C3X_MUL_IMM(dst[i], 0.20), C3X_MUL_IMM(src[i], 0.80)));
     }
 UPCAMX:
     // asm 00005989: 	CALL	CAMERA_HORIZON_PROJECTION
@@ -2514,7 +2513,7 @@ static void CAMERA_HORIZON_PROJECTION(void) {
     // asm 00005990: 	MPYF	R1,R0
     // asm 00005991: 	ADDF	*+AR7(CAMERA_INFIN),R0
     // asm 00005992: 	STF	R0,@INFIN_CORRECT
-    INFIN_CORRECT = C3X_ADD(C3X_MUL(_SINE(C3X_LDF(ctx->ATTRACT_DELTA.new_radx)), C3X_FROM_INT(512)), ctx->ATTRACT_DELTA.camera_infin);
+    INFIN_CORRECT = C3X_STF(C3X_ADD(C3X_MUL(_SINE(C3X_LDF(ctx->ATTRACT_DELTA.new_radx)), C3X_FROM_INT(512)), ctx->ATTRACT_DELTA.camera_infin));
     // asm 00005993: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "CAMERA_HORIZON_PROJECTION", 0, 0);
 }
@@ -2616,7 +2615,7 @@ NO_MUSIC:
     // asm 000059B1: 	CALLU	R0
     FULLSETUP_TABLE[BONUS_WAVE]();
     // asm 000059B2: 	LDF	@INFIN_CORRECT,R0
-    p->ctx.ATTRACT_DELTA.camera_infin = C3X_STF((c3x_reg_t)INFIN_CORRECT);
+    p->ctx.ATTRACT_DELTA.camera_infin = C3X_STF(C3X_LDF(INFIN_CORRECT));
     // asm 000059B3: 	STF	R0,*+AR7(CAMERA_INFIN)
     // asm 000059B4: 	CALL	OBJ_INIT
     OBJ_INIT();

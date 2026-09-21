@@ -169,7 +169,7 @@ FREEDR_X:
  *
  */
 /* asm: MAXDIST	.FLOAT	9999999999.0  		;A VERY LARGE NUMBER */
-static c3x_reg_t MAXDIST = C3X_INIT(9999999999.0f, 0x211502f900ull);
+static const c3x_f32_t MAXDIST = C3X_F32_INIT(9999999999.0f);
 
 // *
 void DEBRIS_SORT(void) {
@@ -265,7 +265,7 @@ GETRK0:
     // asm 0000AFC2: 	LDF	*+AR4(OPOSX),R3
     // asm 0000AFC3: 	LDF	*+AR4(OPOSZ),R4
     closest = road;
-    closest_distance = MAXDIST;
+    closest_distance = C3X_LDF(MAXDIST);
     current = road;
 GETRK:
     // asm 0000AFC4: 	SUBF	*+AR2(OPOSX),R3,R0
