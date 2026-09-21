@@ -44,7 +44,7 @@ static void DC_FOUNTAIN(OBJ* obj /*AR4*/);
 static void WATERFALL(OBJ* obj /*AR4*/);
 static void WATERANI_PROC(PROC* p);
 static void WATERFALL_SND(PROC* p);
-void AMBIENCE_SOUND(void);
+void AMBIENCE_SOUND(int sound_index /*AR2*/, int volume /*R2*/);
 void HUNGH_ANI(OBJ* obj /*AR4*/);
 void HUNGH_ANI_REENTER(OBJ* obj /*AR4*/);
 static void PLACE_ON_ROAD(OBJ* obj /*AR4*/);
@@ -2120,7 +2120,10 @@ static int WATERFALL_ANI[] = {
 };
 
 static void WATERFALL(OBJ* obj /*AR4*/) {
-    (void)obj;
+    PROC_CONTEXT* ctx;
+    PROC* proc;
+
+    MAME_ASSERT_FUNCTION_ENTRY();
     // asm 000042FF: 	PUSH	R0
     // asm 00004300: 	PUSH	AR0
     // asm 00004301: 	PUSH	AR2
@@ -2128,15 +2131,27 @@ static void WATERFALL(OBJ* obj /*AR4*/) {
     // asm 00004303: 	PUSH	AR6
     // asm 00004304: 	PUSH	R2
     // asm 00004305: 	CREATE	WATERFALL_SND,SPAWNER_C|ANIMATION_T
+    ctx = NEW_PROC_CONTEXT();
+    ctx->BACKGRND_WATERFALL_SND.obj = obj;
+    CREATE(WATERFALL_SND, SPAWNER_C | ANIMATION_T, ctx);
     // asm 00004308: 	LDI	@WATERFALL_ANII,AR6
+    ctx = NEW_PROC_CONTEXT();
+    ctx->BACKGRND_WATERANI_PROC.obj = obj;
+    ctx->BACKGRND_WATERANI_PROC.script = WATERFALL_ANII;
+    ctx->BACKGRND_WATERANI_PROC.script_index = 0;
     // asm 00004309: 	CREATE	WATERANI_PROC,SPAWNER_C|ANIMATION_T
+    proc = CREATE(WATERANI_PROC, SPAWNER_C | ANIMATION_T, ctx);
     // asm 0000430C: 	BC	FWL1A
+    if (proc == NULL) goto FWL1A;
+    goto J262;
 J262:
     // asm 0000430D: STI	AR0,*+AR4(OPLINK)
+    obj->plink = proc;
     // asm 0000430E: 	LDI	1,R0
     // asm 0000430F: 	LS	O_PROC_B,R0
     // asm 00004310: 	OR	*+AR4(OFLAGS),R0
     // asm 00004311: 	STI	R0,*+AR4(OFLAGS)
+    obj->flags |= 1u << O_PROC_B;
 FWL1A:
     // asm 00004312: POP	R2
     // asm 00004313: 	POP	AR6
@@ -2146,7 +2161,6 @@ FWL1A:
     // asm 00004317: 	POP	R0
     // asm 00004318: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "WATERFALL", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2161,20 +2175,40 @@ FWL1A:
  *
  */
 static void WATERANI_PROC(PROC* p) {
+    PROC_CONTEXT* ctx = &p->ctx;
+    int frame;
+    int sleep_ticks;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+WATERANI_PROC_RESTART:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00004319: 	LDI	AR6,AR5
+    ctx->BACKGRND_WATERANI_PROC.script_index = 0;
 WATERANI_LP:
     // asm 0000431A: 	LDI	*AR5++,R0
+    frame = ctx->BACKGRND_WATERANI_PROC.script[ctx->BACKGRND_WATERANI_PROC.script_index++];
     // asm 0000431B: 	BLT	WATERANI_PROC
+    if (frame < 0) goto WATERANI_PROC_RESTART;
     // asm 0000431C: 	STI	R0,*+AR4(OROMDATA)
+    MAME_ASSERT_REG(0x0000431C, "R0", &frame);
+    ctx->BACKGRND_WATERANI_PROC.obj->romdata = ROM_PTR((word_addr_t)frame);
     // asm 0000431D: 	RANDN	4
+    sleep_ticks = RANDU0(4);
     // asm 0000431F: 	LDI	R0,R0
     // asm 00004320: 	LDIZ	1,AR2
     // asm 00004321: 	LDINZ	2,AR2
+    sleep_ticks = sleep_ticks == 0 ? 1 : 2;
     // asm 00004322: 	CALL	PRC_SLEEP
+    SLEEP(sleep_ticks, 1);
     // asm 00004323: 	BU	WATERANI_LP
+    goto WATERANI_LP;
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WATERANI_PROC", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2188,39 +2222,74 @@ WATERANI_LP:
  *
  */
 static void WATERFALL_SND(PROC* p) {
+    OBJ* obj = p->ctx.BACKGRND_WATERFALL_SND.obj;
+    int distance;
+    int volume;
+    c3x_reg_t factor;
+    c3x_reg_t scaled_volume;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+WATERFALL_SND_LOOP:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
     // asm 00004324: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 00004326: 	LDI	*+AR4(ODIST),R0
+    distance = obj->dist;
     // asm 00004327: 	LDFN	4.0,R1
+    if (distance < 0) factor = C3X_IMM_F32(4.0);
     // asm 00004328: 	LDFNN	1.0,R1
+    else factor = C3X_IMM_F32(1.0);
     // asm 00004329: 	CMPI	-20000,R0
     // asm 0000432A: 	BGT	WF1
+    if (distance > -20000) goto WF1;
     // asm 0000432B: 	LDI	@CAMVIEW,R2
     // asm 0000432C: 	BNE	WF0
+    if (CAMVIEW != 0) goto WF0;
     // asm 0000432D: 	LDI	@PLYCBLK,AR0
     // asm 0000432E: 	LDI   	*+AR0(CAR_SPIN),R2
     // asm 0000432F: 	BNE	WF1
+    if (PLYCBLK->spin_flag != 0) goto WF1;
 WF0:
     // asm 00004330: 	LDI	WATERFALLSND,AR2 	;KILL OFF SOUND
     // asm 00004331: 	CALL	KILLSNDFX
+    KILLSNDFX(WATERFALLSND);
     // asm 00004332: 	DIE
+    DIE();
 WF1:
     // asm 00004333: 	FLOAT	R0,R2
+    scaled_volume = C3X_FROM_INT(distance);
     // asm 00004334: 	MPYF	R1,R2
+    scaled_volume = C3X_MUL(scaled_volume, factor);
     // asm 00004335: 	ABSF	R2
+    scaled_volume = C3X_ABS(scaled_volume);
     // asm 00004336: 	MPYF	0.01,R2
+    scaled_volume = C3X_MUL_IMM(scaled_volume, 0.01);
     // asm 00004337: 	MPYF	0.1,R2 			;0-50
+    scaled_volume = C3X_MUL_IMM(scaled_volume, 0.1);
     // asm 00004338: 	SUBRF	75,R2
+    scaled_volume = C3X_RSUB_IMM(75, scaled_volume);
     // asm 00004339: 	BN	WATERFALL_SND
+    if (C3X_LT_IMM(scaled_volume, 0)) goto WATERFALL_SND_LOOP;
     // asm 0000433A: 	MPYF	7,R2
+    scaled_volume = C3X_MUL_IMM(scaled_volume, 7);
     // asm 0000433B: 	FIX	R2
+    volume = C3X_FIX(scaled_volume);
     // asm 0000433C: 	CMPI	255,R2
     // asm 0000433D: 	LDIGT	255,R2
+    if (volume > 255) volume = 255;
+    MAME_ASSERT_REG(0x0000433E, "R2", &volume);
     // asm 0000433E: 	LDI	WATERFALLSND,AR2
     // asm 0000433F: 	CALL	AMBIENCE_SOUND
+    AMBIENCE_SOUND(WATERFALLSND, volume);
     // asm 00004340: 	BU	WATERFALL_SND
+    goto WATERFALL_SND_LOOP;
     // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "WATERFALL_SND", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -2235,31 +2304,40 @@ WF1:
  *	R2	VOLUME (0-255)
  *
  */
-void AMBIENCE_SOUND(void) {
+void AMBIENCE_SOUND(int sound_index /*AR2*/, int volume /*R2*/) {
+    MAME_ASSERT_FUNCTION_ENTRY();
+
     // asm 00004341: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 00004342: 	BEQ	IS_T1
+    if (SNDSTR[1].sound_index == (u32)sound_index) goto IS_T1;
     // asm 00004343: 	CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 00004344: 	BEQ	IS_T2
+    if (SNDSTR[2].sound_index == (u32)sound_index) goto IS_T2;
     // asm 00004345: 	CALL	ONESNDFX
+    ONESNDFX(sound_index);
     // asm 00004346: 	CMPI	@SNDSTR+SND_SIZ+SND_IDX,AR2	;CHECK TRACK1
     // asm 00004347: 	BNE	NOT_T1
+    if (SNDSTR[1].sound_index != (u32)sound_index) goto NOT_T1;
 IS_T1:
     // asm 00004348: 	LDI	R2,R1				;volume
     // asm 00004349: 	LDI	1,R0
     // asm 0000434A: 	CALL	SET_TRACK_VOL
+    SET_TRACK_VOL(1, volume);
     // asm 0000434B: 	BU	HEND
+    goto HEND;
 NOT_T1:
     // asm 0000434C: CMPI	@SNDSTR+(2*SND_SIZ)+SND_IDX,AR2	;CHECK TRACK2
     // asm 0000434D: 	BNE	NOT_T2
+    if (SNDSTR[2].sound_index != (u32)sound_index) goto NOT_T2;
 IS_T2:
     // asm 0000434E: 	LDI	R2,R1
     // asm 0000434F: 	LDI	2,R0
     // asm 00004350: 	CALL	SET_TRACK_VOL
+    SET_TRACK_VOL(2, volume);
 NOT_T2:
 HEND:
     // asm 00004351: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "AMBIENCE_SOUND", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------

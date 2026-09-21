@@ -1100,6 +1100,14 @@ typedef struct PROC_CONTEXT {
             int script_index;  // AR5 - AR6
         } BACKGRND_PLAINANI_PROC;
         struct {
+            OBJ* obj;          // AR4
+            const int* script; // AR6
+            int script_index;  // AR5 - AR6
+        } BACKGRND_WATERANI_PROC;
+        struct {
+            OBJ* obj; // AR4
+        } BACKGRND_WATERFALL_SND;
+        struct {
             OBJ* obj;        // AR4
             c3x_f32_t speed; // R6
         } BACKGRND_CARFORWARD;

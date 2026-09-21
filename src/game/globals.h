@@ -797,7 +797,7 @@ OBJ* LOAD_SINGLE_SECTION(LOAD_SINGLE_SECTION_GROUP* rom_group /*AR2*/);
 c3x_reg_t GET_XZ_DISTANCE(VECTOR* v1 /*AR2*/, VECTOR* v2 /*R2*/);
 
 // asm:  .globl AMBIENCE_SOUND
-void AMBIENCE_SOUND(void);
+void AMBIENCE_SOUND(int sound_index /*AR2*/, int volume /*R2*/);
 
 // asm:  .globl KILL_THEM
 void KILL_THEM(void);
