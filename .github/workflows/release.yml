@@ -1,0 +1,120 @@
+name: Build release artifacts
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: brew install sdl2 ninja
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build --parallel
+      - name: Package binary and symbols
+        run: |
+          mkdir -p dist/crusn-macos
+          cp build/crusn dist/crusn-macos/
+          sdl_lib=$(otool -L build/crusn | awk '/libSDL2.*dylib/ { print $1; exit }')
+          test -n "$sdl_lib"
+          cp "$sdl_lib" dist/crusn-macos/libSDL2-2.0.0.dylib
+          install_name_tool -change "$sdl_lib" '@executable_path/libSDL2-2.0.0.dylib' dist/crusn-macos/crusn
+          dsymutil build/crusn -o dist/crusn-macos/crusn.dSYM
+          cmake -E chdir dist cmake -E tar cf crusn-macos.zip --format=zip crusn-macos
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crusn-macos
+          path: dist/crusn-macos.zip
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev ninja-build patchelf
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build --parallel
+      - name: Package binary and symbols
+        run: |
+          mkdir -p dist/crusn-linux
+          cp build/crusn dist/crusn-linux/
+          sdl_lib=$(ldd build/crusn | awk '/libSDL2-2.0.so.0/ { print $3; exit }')
+          test -n "$sdl_lib"
+          cp "$sdl_lib" dist/crusn-linux/libSDL2-2.0.so.0
+          patchelf --set-rpath '$ORIGIN' dist/crusn-linux/crusn
+          objcopy --only-keep-debug dist/crusn-linux/crusn dist/crusn-linux/crusn.debug
+          strip --strip-debug dist/crusn-linux/crusn
+          (cd dist/crusn-linux && objcopy --add-gnu-debuglink=crusn.debug crusn)
+          cmake -E chdir dist cmake -E tar cf crusn-linux.zip --format=zip crusn-linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crusn-linux
+          path: dist/crusn-linux.zip
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-SDL2
+            mingw-w64-ucrt-x86_64-python
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build --parallel
+      - name: Package binary and runtime DLLs
+        run: |
+          mkdir -p dist/crusn-windows
+          cp build/crusn.exe dist/crusn-windows/
+          cp /ucrt64/bin/SDL2.dll /ucrt64/bin/libgcc_s_seh-1.dll /ucrt64/bin/libstdc++-6.dll /ucrt64/bin/libwinpthread-1.dll dist/crusn-windows/
+          cmake -E chdir dist cmake -E tar cf crusn-windows.zip --format=zip crusn-windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crusn-windows
+          path: dist/crusn-windows.zip
+          if-no-files-found: error
+
+  publish:
+    if: github.event_name == 'release'
+    needs: [macos, linux, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: crusn-*
+          merge-multiple: true
+          path: dist
+      - name: Attach artifacts to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$RELEASE_TAG" dist/crusn-macos.zip dist/crusn-linux.zip dist/crusn-windows.zip --clobber

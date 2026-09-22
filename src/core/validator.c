@@ -2,7 +2,9 @@
 #include "c3x_float.h"
 #include "machine.h"
 
+#ifndef _WIN32
 #include <dlfcn.h>
+#endif
 #include <inttypes.h>
 #include <math.h>
 #include <stdbool.h>
@@ -375,6 +377,10 @@ static int lookup_map_address_by_name(const VALIDATE_SYMBOL_MAP* map, const char
 }
 
 static const char* lookup_port_symbol_name(const void* ptr) {
+#ifdef _WIN32
+    (void)ptr;
+    return NULL;
+#else
     Dl_info info;
     uintptr_t slide;
     uintptr_t runtime_address;
@@ -386,6 +392,7 @@ static const char* lookup_port_symbol_name(const void* ptr) {
     slide = (uintptr_t)info.dli_fbase - g_port_map.link_base;
     runtime_address = (uintptr_t)ptr - slide;
     return lookup_map_name_by_address(&g_port_map, runtime_address);
+#endif
 }
 
 static const char* lookup_rom_symbol_name(uint32_t address) {
@@ -399,6 +406,11 @@ static int lookup_rom_symbol_address(const char* name, uint32_t* out_address) {
 }
 
 static int lookup_function_rom_address(const void* address, uint32_t* out_address) {
+#ifdef _WIN32
+    (void)address;
+    (void)out_address;
+    return 0;
+#else
     Dl_info info;
     const char* symbol_name;
     const char* normalized_name;
@@ -414,6 +426,7 @@ static int lookup_function_rom_address(const void* address, uint32_t* out_addres
     symbol_name = info.dli_sname;
     normalized_name = strip_macho_prefix(symbol_name);
     return lookup_rom_symbol_address(normalized_name, out_address);
+#endif
 }
 
 static int lookup_caller_breakpoint_address(const void* return_address, uint32_t* out_address) {

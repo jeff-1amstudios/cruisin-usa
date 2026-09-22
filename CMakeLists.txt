@@ -156,6 +156,10 @@ add_custom_target(check-asm-source-sync
 
 target_include_directories(crusn PRIVATE src src/core src/platform src/game)
 
+if(TARGET SDL2::SDL2main)
+  target_link_libraries(crusn PRIVATE SDL2::SDL2main)
+endif()
+
 if(TARGET SDL2::SDL2)
   target_link_libraries(crusn PRIVATE SDL2::SDL2)
 else()
