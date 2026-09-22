@@ -11,6 +11,11 @@
 #include "sys.h"
 #include "vunit.h"
 
+// ELOOP is an ASM label here; some C libraries also define it as an errno macro.
+#ifdef ELOOP
+#undef ELOOP
+#endif
+
 /*
  * Source module: asm/MEMTEST.ASM
  */
