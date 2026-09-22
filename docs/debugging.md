@@ -67,7 +67,6 @@ For larger validations, the generator may emit `save` commands instead of printi
 Canonical validation markers:
 - `MAME_ASSERT_ARG(name, ptr)`: validate an integer register argument at original function entry.
 - `MAME_ASSERT_ARG_FLOAT(name, ptr)`: validate a float register argument at original function entry.
-- `mame_validate_arg_sym(name, ptr)`: validate a symbol-valued argument at original function entry.
 - `MAME_ASSERT_FUNCTION_ENTRY()`: validate that the next ordered replay event is entry to the same function.
 - `MAME_VALIDATOR_EXIT()`: emit an exit breakpoint when you want MAME to stop at that function entry.
 - `MAME_ASSERT_REGION_AT_ADDR(...)`: validate a memory region at an explicit original instruction address.

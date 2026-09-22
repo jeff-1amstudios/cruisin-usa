@@ -134,7 +134,6 @@ void MAKE_IWINDOW(void);
 // asm: 	.bss	SOFT_AUDIT,1
 extern int SOFT_AUDIT;
 // asm: 	.bss	buffer,20
-extern int buffer[];
 // asm: 	.bss	_opot0,1
 extern int _opot0;
 // asm: 	.bss	_opot1,1

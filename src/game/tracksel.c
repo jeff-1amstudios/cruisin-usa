@@ -276,7 +276,7 @@ LLKJ:
     // asm 00006D34: 	LDI	AR5,R2
     // asm 00006D35: 	LDI	@L88,AR2
     // asm 00006D36: 	CALL	_itoa
-    _itoa(p->ctx.TRACK_SELECTION.motion_countdown,
+    crusn_itoa(p->ctx.TRACK_SELECTION.motion_countdown,
         p->ctx.TRACK_SELECTION.motion_recalibration);
     // asm 00006D37: 	LDI	@L88,AR2
     // asm 00006D38: 	FLOAT	256,R2

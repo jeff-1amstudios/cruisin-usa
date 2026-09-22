@@ -11,9 +11,8 @@ typedef enum MAME_VALIDATE_REG_KIND {
     MAME_VALIDATE_REG_KIND_STORED_FLOAT,
 } MAME_VALIDATE_REG_KIND;
 
-void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
-void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
-void mame_validate_arg_sym_impl(const char* caller_file, int caller_line, const char* name, const void* ptr);
+void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* function_name, const char* name, const void* ptr);
+void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* function_name, const char* name, const void* ptr);
 void mame_assert_function_entry_impl(const char* caller_file, int caller_line, const char* function_name);
 void mame_assert_ordering_impl(const char* caller_file, int caller_line, const char* message);
 void mame_validate_exit_impl(const char* caller_file, int caller_line);
@@ -36,10 +35,8 @@ void mame_assert_reg_at_addr_impl(
 void mame_sync_word_impl(const char* caller_file, int caller_line, const char* name, void* ptr);
 void mame_sync_int0_phase_impl(const char* caller_file, int caller_line, const char* name);
 
-#define mame_validate_arg_sym(name, ptr) mame_validate_arg_sym_impl(__FILE__, __LINE__, (name), (ptr))
-
-#define MAME_ASSERT_ARG(name, ptr) mame_validate_arg_impl(__FILE__, __LINE__, (name), (ptr))
-#define MAME_ASSERT_ARG_FLOAT(name, ptr) mame_assert_arg_float_impl(__FILE__, __LINE__, (name), (ptr))
+#define MAME_ASSERT_ARG(name, ptr) mame_validate_arg_impl(__FILE__, __LINE__, __func__, (name), (ptr))
+#define MAME_ASSERT_ARG_FLOAT(name, ptr) mame_assert_arg_float_impl(__FILE__, __LINE__, __func__, (name), (ptr))
 #define MAME_VALIDATOR_EXIT() mame_validate_exit_impl(__FILE__, __LINE__)
 #define MAME_ASSERT_REGION_AT_ADDR(addr, name, region_addr, ptr, word_count) \
     mame_validate_region_at_addr_impl(__FILE__, __LINE__, (addr), (name), (region_addr), (ptr), (word_count))

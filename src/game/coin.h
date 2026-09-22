@@ -10,7 +10,6 @@
 extern int COINOFF;
 
 // asm: 	.bss	buffer,2
-extern int buffer[];
 // asm: 	.bss	FCB,1
 extern int FCB;
 // asm: 	.bss	PCB,1

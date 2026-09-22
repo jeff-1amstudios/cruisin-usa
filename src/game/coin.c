@@ -782,7 +782,7 @@ INICC_LP:
 }
 
 /* asm: buffer	.bss	buffer,2 */
-int buffer[2];
+static int buffer[2];
 static const char CTS_STR[] = " TO START";
 static const char CTC_STR[] = " TO CONTINUE";
 /* asm: FCB	.bss	FCB,1 */
@@ -1256,7 +1256,7 @@ DO_CREDITS:
     // asm 00007545: 	LDI	1,R7
     // asm 00007546: 	LDI	@FCBI,AR2
     // asm 00007547: 	CALL	_itoa
-    _itoa((char*)&FCB, credits);
+    crusn_itoa((char*)&FCB, credits);
     // asm 00007548: 	LDI	@CREDITBUFFI,AR0
     // asm 00007549: 	LDI	@FCBI,AR1
     // asm 0000754A: 	CALL	STRCAT
@@ -1277,7 +1277,7 @@ CHKPCREDITS:
     // asm 00007554: 	LDI	1,R7
     // asm 00007555: 	LDI	@PCBI,AR2
     // asm 00007556: 	CALL	_itoa
-    _itoa((char*)&PCB, partial_credits);
+    crusn_itoa((char*)&PCB, partial_credits);
     // asm 00007557: 	LDI	@CREDITBUFFI,AR0
     // asm 00007558: 	LDI	@PCBI,AR1
     // asm 00007559: 	CALL	STRCAT
@@ -1291,7 +1291,7 @@ CHKPCREDITS:
     // asm 0000755E: 	LDI	R1,R2
     // asm 0000755F: 	LDI	@SCI,AR2
     // asm 00007560: 	CALL	_itoa
-    _itoa((char*)&SCS, SCS);
+    crusn_itoa((char*)&SCS, SCS);
     // asm 00007561: 	LDI	@CREDITBUFFI,AR0
     // asm 00007562: 	LDI	@SCI,AR1
     // asm 00007563: 	CALL	STRCAT
@@ -1398,7 +1398,7 @@ static void TOSTART_STRING(void) {
     // asm 00007594: 	LDI	@FCBI,AR2
     // asm 00007595: 	CALL	_itoa
     SCS = GET_CREDITS_TO_START();
-    _itoa((char*)&FCB, SCS);
+    crusn_itoa((char*)&FCB, SCS);
 
     // asm 00007596: 	LDI	@TOSTARTBUFFI,AR0
     // asm 00007597: 	LDI	@FCBI,AR1
@@ -1457,7 +1457,7 @@ static void TOCONT_STRING(void) {
     // asm 000075BC: 	RETS
     TOSTARTBUFFER[0] = '\0';
     GET_CREDITS_TO_CONTINUE();
-    _itoa((char*)&FCB, SCS);
+    crusn_itoa((char*)&FCB, SCS);
     STRCAT(TOSTARTBUFFER, (char*)&FCB);
     STRCAT(TOSTARTBUFFER, SPCI);
     GET_CREDITS_TO_CONTINUE();

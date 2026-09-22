@@ -14,7 +14,7 @@
 static void ENABLEGIE_font(void);
 void _ftoa(void);
 void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/);
-void _itoa(char* string_space /*AR2*/, int number /*R2*/);
+void crusn_itoa(char* string_space /*AR2*/, int number /*R2*/);
 void HEX2ASC(void);
 void _fill(int x1, int y1, int x2, int y2, int color);
 void _outtextxyc(const char* string, int x, int y, int color);
@@ -160,6 +160,8 @@ void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/) {
     TRACE_EVENT(&g_crusn_machine->trace, "function", "_itoaLZ", 0, 0);
 }
 
+// Keep the ASM label visible to the source-sync checker while avoiding the Windows CRT symbol.
+#define _itoa crusn_itoa
 void _itoa(char* string_space /*AR2*/, int number /*R2*/) {
     char digits[16];
     int digit_count = 0;

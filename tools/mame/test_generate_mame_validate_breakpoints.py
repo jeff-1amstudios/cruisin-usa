@@ -40,34 +40,7 @@ def test_mame_validate_arg_uses_function_entry_and_register() -> None:
             textwrap.dedent(
                 """
                 uint32_t PAL_ALLOC_RAW(void* palette_source) {
-                    mame_validate_arg("AR2", palette_source);
-                    return 0;
-                }
-                """
-            ).strip()
-            + "\n"
-        )
-        sample_map = tmp / "address.map"
-        sample_map.write_text(" 0000:00009F5A       PAL_ALLOC_RAW\n")
-
-        entries = collect_breakpoints(tmp, parse_address_map(sample_map))
-        assert len(entries) == 1
-        assert entries[0].instruction_address == 0x00009F5A
-        assert (
-            entries[0].format_mame()
-            == 'bpset 00009F5A, 1, { logerror "validate AR2: 0x%08X, sample.c:2\\n", ar2; g }'
-        )
-
-
-def test_mame_validate_arg_sym_uses_function_entry_and_register() -> None:
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmp = pathlib.Path(tmpdir)
-        sample_c = tmp / "sample.c"
-        sample_c.write_text(
-            textwrap.dedent(
-                """
-                uint32_t PAL_ALLOC_RAW(void* palette_source) {
-                    mame_validate_arg_sym("AR2", palette_source);
+                    MAME_ASSERT_ARG("AR2", palette_source);
                     return 0;
                 }
                 """
@@ -94,7 +67,7 @@ def test_mame_validate_arg_float_uses_function_entry_and_float_register_label() 
             textwrap.dedent(
                 """
                 uint32_t TEXT_ADDDS(const char* text, float x, float y, int ticks) {
-                    mame_validate_arg_float("R3", &y);
+                    MAME_ASSERT_ARG_FLOAT("R3", &y);
                     return 0;
                 }
                 """
@@ -514,7 +487,7 @@ def test_function_entry_groups_before_other_function_entry_validations() -> None
                 """
                 uint32_t SET_SOMETHING(uint32_t value) {
                     MAME_VALIDATE_FUNCTION_ENTRY();
-                    mame_validate_arg("R0", &value);
+                    MAME_ASSERT_ARG("R0", &value);
                     return value;
                 }
                 """
@@ -536,8 +509,6 @@ def main() -> int:
     print("ok: real cusa.c SCREEN0 validate site resolves to 0x00004B5E / 0x00900000")
     test_mame_validate_arg_uses_function_entry_and_register()
     print("ok: mame_validate_arg emits a function-entry register breakpoint")
-    test_mame_validate_arg_sym_uses_function_entry_and_register()
-    print("ok: mame_validate_arg_sym emits a function-entry register breakpoint")
     test_mame_validate_arg_float_uses_function_entry_and_float_register_label()
     print("ok: mame_validate_arg_float emits a function-entry float register breakpoint")
     test_mame_validate_function_entry_uses_function_entry_and_name()

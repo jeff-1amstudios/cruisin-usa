@@ -753,7 +753,7 @@ BLOCKLP:
  *
  */
 /* asm: buffer	.bss	buffer,20 */
-int buffer[20];
+static int buffer[20];
 /* asm: _opot0	.bss	_opot0,1 */
 int _opot0;
 /* asm: _opot1	.bss	_opot1,1 */

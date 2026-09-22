@@ -1365,7 +1365,7 @@ void TIME2STR(char* buffer /*AR2*/, int time /*R0*/) {
     // asm 000060CB: 	PUSH	R0
     // asm 000060CC: 	PUSH	R1
     // asm 000060CD: 	CALL	_itoa
-    _itoa(buffer, minutes);
+    crusn_itoa(buffer, minutes);
     // asm 000060CE: 	LDI	AR2,AR0
     // asm 000060CF: 	LDI	@COLONI,AR1
     // asm 000060D0: 	CALL	STRCAT

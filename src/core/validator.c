@@ -1,14 +1,7 @@
-#if defined(__linux__) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
-#endif
-
 #include "validator.h"
 #include "c3x_float.h"
 #include "machine.h"
 
-#ifndef _WIN32
-#include <dlfcn.h>
-#endif
 #include <inttypes.h>
 #include <math.h>
 #include <stdbool.h>
@@ -57,10 +50,8 @@ typedef struct VALIDATE_SYMBOL_ENTRY {
 typedef struct VALIDATE_SYMBOL_MAP {
     VALIDATE_SYMBOL_ENTRY* entries;
     size_t count;
-    uintptr_t link_base;
 } VALIDATE_SYMBOL_MAP;
 
-static VALIDATE_SYMBOL_MAP g_port_map;
 static VALIDATE_SYMBOL_MAP g_address_map;
 
 typedef enum VALIDATE_KIND {
@@ -173,13 +164,6 @@ static VALIDATE_SYMBOL_ENTRY* reserve_symbol_entry(VALIDATE_SYMBOL_MAP* map) {
     return &map->entries[map->count++];
 }
 
-static const char* strip_macho_prefix(const char* name) {
-    if (name[0] == '_') {
-        return name + 1;
-    }
-    return name;
-}
-
 static const char* basename_only(const char* path) {
     const char* slash;
 
@@ -255,59 +239,6 @@ static int validate_wrong_consumer(
     return 0;
 }
 
-static void load_port_map(VALIDATE_SYMBOL_MAP* out_map, const char* path) {
-    char line[512];
-    bool in_symbols = false;
-    FILE* map = fopen(path, "r");
-    if (map == NULL) {
-        return;
-    }
-
-    while (fgets(line, sizeof(line), map) != NULL) {
-        char* end = NULL;
-        char* name_start = NULL;
-        char raw_name[128];
-        uintptr_t address = 0;
-
-        if (!in_symbols) {
-            if (strncmp(line, "# Symbols:", 10) == 0) {
-                in_symbols = true;
-            }
-            continue;
-        }
-
-        if (strncmp(line, "0x", 2) != 0) {
-            continue;
-        }
-
-        address = (uintptr_t)strtoull(line, &end, 16);
-        if (end == line) {
-            continue;
-        }
-
-        name_start = strrchr(line, ']');
-        if (name_start == NULL) {
-            continue;
-        }
-        name_start += 1;
-        while (*name_start == ' ' || *name_start == '\t') {
-            name_start++;
-        }
-
-        if (sscanf(name_start, "%127s", raw_name) == 1) {
-            VALIDATE_SYMBOL_ENTRY* entry = reserve_symbol_entry(out_map);
-            const char* normalized = strip_macho_prefix(raw_name);
-            entry->address = address;
-            snprintf(entry->name, sizeof(entry->name), "%s", normalized);
-            if (strcmp(raw_name, "__mh_execute_header") == 0) {
-                out_map->link_base = address;
-            }
-        }
-    }
-
-    fclose(map);
-}
-
 static void load_address_map(VALIDATE_SYMBOL_MAP* out_map, const char* path) {
     char line[512];
     FILE* map = fopen(path, "r");
@@ -333,17 +264,8 @@ static void load_validate_maps(void) {
         return;
     }
 
-    load_port_map(&g_port_map, "build/port.map");
-    if (g_port_map.count == 0) {
-        load_port_map(&g_port_map, "port.map");
-    }
     load_address_map(&g_address_map, "tools/ida/address.map");
 
-    if (g_port_map.count == 0 || g_port_map.link_base == 0) {
-        fprintf(stderr, "validator: failed to load port.map symbols\n");
-        fflush(stderr);
-        fail();
-    }
     if (g_address_map.count == 0) {
         fprintf(stderr, "validator: failed to load tools/ida/address.map symbols\n");
         fflush(stderr);
@@ -351,16 +273,6 @@ static void load_validate_maps(void) {
     }
 
     g_validate_maps_loaded = 1;
-}
-
-static const char* lookup_map_name_by_address(const VALIDATE_SYMBOL_MAP* map, uintptr_t address) {
-    size_t index;
-    for (index = 0; index < map->count; ++index) {
-        if (map->entries[index].address == address) {
-            return map->entries[index].name;
-        }
-    }
-    return NULL;
 }
 
 static int lookup_map_address_by_name(const VALIDATE_SYMBOL_MAP* map, const char* name, uint32_t* out_address) {
@@ -380,89 +292,9 @@ static int lookup_map_address_by_name(const VALIDATE_SYMBOL_MAP* map, const char
     return 0;
 }
 
-static const char* lookup_port_symbol_name(const void* ptr) {
-#ifdef _WIN32
-    (void)ptr;
-    return NULL;
-#else
-    Dl_info info;
-    uintptr_t slide;
-    uintptr_t runtime_address;
-
-    load_validate_maps();
-    if (dladdr(ptr, &info) == 0 || info.dli_fbase == NULL) {
-        return NULL;
-    }
-    slide = (uintptr_t)info.dli_fbase - g_port_map.link_base;
-    runtime_address = (uintptr_t)ptr - slide;
-    return lookup_map_name_by_address(&g_port_map, runtime_address);
-#endif
-}
-
-static const char* lookup_rom_symbol_name(uint32_t address) {
-    load_validate_maps();
-    return lookup_map_name_by_address(&g_address_map, address);
-}
-
 static int lookup_rom_symbol_address(const char* name, uint32_t* out_address) {
     load_validate_maps();
     return lookup_map_address_by_name(&g_address_map, name, out_address);
-}
-
-static int lookup_function_rom_address(const void* address, uint32_t* out_address) {
-#ifdef _WIN32
-    (void)address;
-    (void)out_address;
-    return 0;
-#else
-    Dl_info info;
-    const char* symbol_name;
-    const char* normalized_name;
-
-    if (address == NULL || out_address == NULL) {
-        return 0;
-    }
-
-    if (dladdr(address, &info) == 0 || info.dli_sname == NULL) {
-        return 0;
-    }
-
-    symbol_name = info.dli_sname;
-    normalized_name = strip_macho_prefix(symbol_name);
-    return lookup_rom_symbol_address(normalized_name, out_address);
-#endif
-}
-
-static int lookup_caller_breakpoint_address(const void* return_address, uint32_t* out_address) {
-    return lookup_function_rom_address(return_address, out_address);
-}
-
-static int lookup_rom_word_address(const void* ptr, uint32_t* out_address) {
-    crusn_machine* machine = g_crusn_machine;
-    uintptr_t base;
-    uintptr_t target;
-    size_t offset_words;
-
-    if (machine == NULL || machine->rom_words == NULL || out_address == NULL) {
-        return 0;
-    }
-
-    base = (uintptr_t)machine->rom_words;
-    target = (uintptr_t)ptr;
-    if (target < base) {
-        return 0;
-    }
-
-    offset_words = (size_t)((target - base) / sizeof(*machine->rom_words));
-    if (base + (offset_words * sizeof(*machine->rom_words)) != target) {
-        return 0;
-    }
-    if (offset_words >= machine->rom_word_count) {
-        return 0;
-    }
-
-    *out_address = machine->memory.rom.base + (uint32_t)offset_words;
-    return 1;
 }
 
 static void validate_fail(
@@ -565,65 +397,6 @@ static void validate_pass_word(
             value,
             caller_basename,
             caller_line);
-        fflush(stderr);
-    }
-}
-
-static void validate_pass_arg(
-    const char* caller_file,
-    int caller_line,
-    const char* reg_name,
-    const char* symbol_name,
-    const VALIDATE_ENTRY* entry) {
-    const char* caller_basename = basename_only(caller_file);
-
-    validate_wrong_consumer(caller_file, caller_line, reg_name, entry);
-
-    if (print_oks) {
-        fprintf(
-            stderr,
-            "mame.log:%d %s=%s, consumer %s:%d\n",
-            entry->line_number,
-            reg_name,
-            symbol_name,
-            caller_basename,
-            caller_line);
-        fflush(stderr);
-    }
-}
-
-static void validate_pass_arg_rom(
-    const char* caller_file,
-    int caller_line,
-    const char* reg_name,
-    uint32_t rom_address,
-    const VALIDATE_ENTRY* entry) {
-    const char* caller_basename = basename_only(caller_file);
-
-    validate_wrong_consumer(caller_file, caller_line, reg_name, entry);
-
-    if (print_oks) {
-        const char* symbol_name = lookup_rom_symbol_name(rom_address);
-
-        if (symbol_name != NULL) {
-            fprintf(
-                stderr,
-                "mame.log:%d %s=%s, consumer %s:%d\n",
-                entry->line_number,
-                reg_name,
-                symbol_name,
-                caller_basename,
-                caller_line);
-        } else {
-            fprintf(
-                stderr,
-                "mame.log:%d %s=0x%08" PRIX32 ", consumer %s:%d\n",
-                entry->line_number,
-                reg_name,
-                rom_address,
-                caller_basename,
-                caller_line);
-        }
         fflush(stderr);
     }
 }
@@ -1130,82 +903,8 @@ static void validate_region(
     }
 }
 
-void mame_validate_arg_sym_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
-    char actual_name[128];
-    char expected_buf[128];
-    char actual_buf[128];
-    VALIDATE_ENTRY entry;
-    const char* expected_symbol;
-    const char* actual_symbol;
-    uint32_t expected_rom_address = 0;
-
-    if (should_skip_validation()) {
-        return;
-    }
-
-    validate_current_call_failed = 0;
-
-    expected_symbol = lookup_port_symbol_name(ptr);
-
-    if (!read_next_validate_line(actual_name, sizeof(actual_name), &entry)) {
-        validate_warn_log_exhausted(caller_file, caller_line, name);
-        return;
-    }
-
-    if (validate_wrong_consumer(caller_file, caller_line, name, &entry)) {
-        return;
-    }
-
-    if (strcmp(actual_name, name) != 0) {
-        snprintf(expected_buf, sizeof(expected_buf), "%s", name);
-        snprintf(actual_buf, sizeof(actual_buf), "%s", actual_name);
-        validate_fail(caller_file, caller_line, entry.line_number, name, "register name mismatch", expected_buf, actual_buf);
-        return;
-    }
-
-    if (entry.kind != VALIDATE_KIND_WORD) {
-        validate_fail(caller_file, caller_line, entry.line_number, name, "validate line kind mismatch", "<word>", "<non-word>");
-        return;
-    }
-
-    if (expected_symbol == NULL) {
-        if (!lookup_rom_word_address(ptr, &expected_rom_address)) {
-            snprintf(actual_buf, sizeof(actual_buf), "%p", ptr);
-            validate_fail(caller_file, caller_line, entry.line_number, name, "address not found in port.map", "<mapped symbol or ROM address>", actual_buf);
-            return;
-        }
-        if (entry.word_value != expected_rom_address) {
-            snprintf(expected_buf, sizeof(expected_buf), "0x%08" PRIX32, expected_rom_address);
-            snprintf(actual_buf, sizeof(actual_buf), "0x%08" PRIX32, entry.word_value);
-            validate_fail(caller_file, caller_line, entry.line_number, name, "ROM pointer mismatch", expected_buf, actual_buf);
-            return;
-        }
-        validate_pass_arg_rom(caller_file, caller_line, name, expected_rom_address, &entry);
-        return;
-    }
-
-    actual_symbol = lookup_rom_symbol_name(entry.word_value);
-    if (actual_symbol == NULL) {
-        snprintf(expected_buf, sizeof(expected_buf), "%s", expected_symbol);
-        snprintf(actual_buf, sizeof(actual_buf), "0x%08" PRIX32, entry.word_value);
-        validate_fail(caller_file, caller_line, entry.line_number, name, "ROM address not found in address.map", expected_buf, actual_buf);
-        return;
-    }
-
-    if (strcmp(expected_symbol, actual_symbol) != 0) {
-        snprintf(expected_buf, sizeof(expected_buf), "%s", expected_symbol);
-        snprintf(actual_buf, sizeof(actual_buf), "%s (%s=0x%08" PRIX32 ")", actual_symbol, actual_name, entry.word_value);
-        validate_fail(caller_file, caller_line, entry.line_number, name, "symbol name mismatch", expected_buf, actual_buf);
-        return;
-    }
-
-    validate_pass_arg(caller_file, caller_line, name, expected_symbol, &entry);
-}
-
-void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
+void mame_validate_arg_impl(const char* caller_file, int caller_line, const char* function_name, const char* name, const void* ptr) {
     uint32_t breakpoint_address = 0;
-    void* return_address = __builtin_return_address(0);
-    char actual_buf[64];
 
     if (should_skip_validation()) {
         return;
@@ -1213,16 +912,15 @@ void mame_validate_arg_impl(const char* caller_file, int caller_line, const char
 
     validate_current_call_failed = 0;
 
-    if (!lookup_caller_breakpoint_address(return_address, &breakpoint_address)) {
-        snprintf(actual_buf, sizeof(actual_buf), "%p", return_address);
+    if (!lookup_rom_symbol_address(function_name, &breakpoint_address)) {
         validate_fail(
             caller_file,
             caller_line,
             g_validate_log_line_number + 1,
             name,
-            "caller function address not found in address.map",
+            "function name not found in address.map",
             "<mapped function symbol>",
-            actual_buf);
+            function_name);
         return;
     }
 
@@ -1418,10 +1116,8 @@ void mame_assert_ordering_impl(const char* caller_file, int caller_line, const c
     }
 }
 
-void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* name, const void* ptr) {
+void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const char* function_name, const char* name, const void* ptr) {
     uint32_t breakpoint_address = 0;
-    void* return_address = __builtin_return_address(0);
-    char actual_buf[64];
 
     if (should_skip_validation()) {
         return;
@@ -1429,16 +1125,15 @@ void mame_assert_arg_float_impl(const char* caller_file, int caller_line, const 
 
     validate_current_call_failed = 0;
 
-    if (!lookup_caller_breakpoint_address(return_address, &breakpoint_address)) {
-        snprintf(actual_buf, sizeof(actual_buf), "%p", return_address);
+    if (!lookup_rom_symbol_address(function_name, &breakpoint_address)) {
         validate_fail(
             caller_file,
             caller_line,
             g_validate_log_line_number + 1,
             name,
-            "caller function address not found in address.map",
+            "function name not found in address.map",
             "<mapped function symbol>",
-            actual_buf);
+            function_name);
         return;
     }
 
