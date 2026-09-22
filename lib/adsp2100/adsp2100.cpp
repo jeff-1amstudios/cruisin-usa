@@ -681,7 +681,7 @@ static void debugger()
 		// read a command
 		printf("$ ");
 		if (fgets(buf, sizeof(buf), stdin) == nullptr)
-			strcpy_s(buf, "\x1A");
+			strcpy(buf, "\x1A");
 
 		// trim leading and trailing spaces
 		char *p;
@@ -695,7 +695,7 @@ static void debugger()
 		if (*p == 0 && repeatCommand != nullptr)
 		{
 			// empty command - repeat last g, t, or p command
-			strcpy_s(buf, repeatCommand);
+			strcpy(buf, repeatCommand);
 		}
 
 		// presume the command isn't one that auto-repeats

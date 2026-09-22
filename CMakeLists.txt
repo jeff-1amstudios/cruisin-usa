@@ -130,7 +130,6 @@ target_compile_definitions(adsp2100 PRIVATE
   UINT32=uint32_t
   HAS_ADSP2101=1
   HAS_ADSP2105=1
-  strcpy_s=strcpy
 )
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
   target_compile_options(adsp2100 PRIVATE $<$<CONFIG:Debug>:-O2>)
