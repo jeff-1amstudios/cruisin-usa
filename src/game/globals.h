@@ -158,6 +158,7 @@ extern int HELI_ABORT;
 
 // asm:  .globl FLYCOLLPI
 #define FLYCOLLPI FLYCOLLP
+void FLYCOLLP(PROC* p);
 
 // coin.asm
 // asm:  .globl ICF
@@ -1503,19 +1504,19 @@ void DEBRIS_SORT(void);
 
 // roadkill.asm
 // asm:  .globl ROADKILL_HIT,ROADKILL_FLYERP
-void ROADKILL_HIT(void);
+void ROADKILL_HIT(OBJ* car_obj /*AR0*/, OBJ* roadkill_obj /*AR1*/);
 
-void ROADKILL_FLYERP(void);
+int ROADKILL_FLYERP(OBJ* roadkill_obj /*AR1*/, CARBLK* carblk /*AR5*/);
 
 // asm:  .globl ROADKILL_SETKILL
-void ROADKILL_SETKILL(void);
+void ROADKILL_SETKILL(OBJ* roadkill_obj /*AR1*/);
 
 // asm:  .globl GET_ROADKILL_TRACK,PROC_COUNT,OBJ_MOVE_GROUND
-void GET_ROADKILL_TRACK(void);
+OBJ* GET_ROADKILL_TRACK(OBJ* obj /*AR4*/);
 
-void PROC_COUNT(void);
+int PROC_COUNT(int pid /*R2*/);
 
-void OBJ_MOVE_GROUND(void);
+int OBJ_MOVE_GROUND(OBJ* obj /*AR4*/, c3x_reg_t height /*R1*/);
 
 // asm:  .globl DELETE_SPLAT,BUG_SPAWNER_PROC,PLYRROADKILL
 void DELETE_SPLAT(void);
@@ -1527,9 +1528,9 @@ void PLYRROADKILL(void);
 // asm:  .globl DEER_SPAWNER_PROC,DEER_EXPLODE,FLYING_PARTS
 void DEER_SPAWNER_PROC(PROC* p);
 
-void DEER_EXPLODE(void);
+void DEER_EXPLODE(OBJ* deer /*AR1*/, CARBLK* car /*AR5*/);
 
-void FLYING_PARTS(void);
+void FLYING_PARTS(OBJ* obj /*AR1*/, CARBLK* car /*AR5*/);
 
 // asm:  .globl GEESE_SPAWNER
 void GEESE_SPAWNER(PROC* p);

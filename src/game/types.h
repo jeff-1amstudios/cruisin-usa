@@ -733,6 +733,39 @@ typedef struct PROC_CONTEXT {
     int pedal_released; // process-saved R5 used by INIT_PEDALCHK/PEDALCHK
 
     struct {
+        OBJ* obj;
+        int animation_index;
+    } DEER_PROC;
+    struct {
+        OBJ* obj;
+        c3x_f32_t loop_count;
+        c3x_f32_t total_frames;
+    } COW_PROC;
+    struct {
+        OBJ* obj;
+        LEG_PAYLOAD* map_entry;
+        int initial_speed;
+        int initial_direction;
+        c3x_f32_t initial_dir_rad;
+        c3x_f32_t speed;
+        c3x_f32_t dir_rad;
+        int direction;
+        int num_splats;
+        int animation_index;
+    } GEESE_PROC;
+    struct {
+        OBJ* obj;
+        const int* animation;
+        int animation_index;
+        c3x_reg_t fall_rate;
+    } SPLAT_PROC;
+    struct {
+        OBJ* obj;
+        CARBLK* car;
+        int animation_index;
+    } DEER_BLOOD_PROC;
+
+    struct {
         OBJ* parent;
         OBJ* obj;
         c3x_f32_t road_delta;

@@ -46,7 +46,7 @@ static void DRONE_VS_SIGN(void);
 static void DRONEPTL(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/);
 static void COLPOINT(OBJ* car_obj /*AR0*/, OBJ** list_head /*AR1*/);
 void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/);
-static void FLYCOLLP(PROC* p /*AR7*/);
+void FLYCOLLP(PROC* p /*AR7*/);
 static void DEBSCAN(void);
 static void SIGNFALL(PROC* p /*AR7*/);
 static void TREESHAK(PROC* p);
@@ -1996,6 +1996,7 @@ void COLSGCK(OBJ* car_obj /*AR0*/, OBJ* sign_obj /*AR1*/) {
     int is_player_car;
     int i;
     int coconut_count;
+    int roadkill_flyer;
     PROC_CONTEXT* fly_ctx;
     PROC_CONTEXT* coconut_ctx;
 
@@ -2266,10 +2267,11 @@ ROADKILL:
     // asm: 	STI	R0,*+AR1(OCARBLK)
     sign_obj->carblk = (CARBLK*)(uintptr_t)1;
     // asm: 	CALL	ROADKILL_HIT		;MAKE A SOUND
-    ROADKILL_HIT();
+    ROADKILL_HIT(car_obj, sign_obj);
     // asm: 	CALL	ROADKILL_FLYERP
-    ROADKILL_FLYERP();
+    roadkill_flyer = ROADKILL_FLYERP(sign_obj, carblk);
     // asm: 	BC	FLYCOLL
+    if (roadkill_flyer) goto FLYCOLL;
     // asm: 	B	COLSGCX
     goto COLSGCX;
 FLYCOLL:
@@ -2366,7 +2368,7 @@ CLLL1:
         goto KLFD;
     }
     // asm: 	CALL	ROADKILL_SETKILL
-    ROADKILL_SETKILL();
+    ROADKILL_SETKILL(sign_obj);
     // asm: 	BU	COLSGCX
     goto COLSGCX;
 KLFD:
@@ -2523,7 +2525,7 @@ static int SAGETAB[] = {
  *
  */
 
-static void FLYCOLLP(PROC* p /*AR7*/) {
+void FLYCOLLP(PROC* p /*AR7*/) {
     OBJ* obj;
     c3x_reg_t angle;
     c3x_reg_t road_delta;
