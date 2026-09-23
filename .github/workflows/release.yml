@@ -12,35 +12,88 @@ permissions:
 
 jobs:
   macos:
+    name: CI MacOS arm64-x64
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set package name
+        id: package
+        run: |
+          version=$(git describe --tags --always --dirty)
+          echo "filename=crusn-${version}-macos-arm64-x64.dmg" >> "$GITHUB_OUTPUT"
       - name: Install dependencies
-        run: brew install sdl2 ninja
+        run: brew install ninja
+      - name: Set up SDL
+        uses: libsdl-org/setup-sdl@main
+        with:
+          add-to-environment: true
+          build-type: Release
+          cmake-arguments: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"'
+          cmake-generator: Ninja
+          discriminator: arm64-x64
+          version: 2-latest
       - name: Build
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
+            -DCRUSN_MACOS_BUNDLE=ON
           cmake --build build --parallel
-      - name: Package binary and symbols
+      - name: Package application and symbols
+        env:
+          PACKAGE_FILE: ${{ steps.package.outputs.filename }}
         run: |
-          mkdir -p dist/crusn-macos
-          cp build/crusn dist/crusn-macos/
-          sdl_lib=$(otool -L build/crusn | awk '/libSDL2.*dylib/ { print $1; exit }')
+          app="build/Cruis'n USA.app"
+          executable="$app/Contents/MacOS/Cruis'n USA"
+          frameworks="$app/Contents/Frameworks"
+          mkdir -p "$frameworks" dist/dmg
+
+          sdl_lib=$(otool -L "$executable" | awk '/SDL2\.framework.*SDL2|libSDL2.*dylib/ { print $1; exit }')
           test -n "$sdl_lib"
-          cp "$sdl_lib" dist/crusn-macos/libSDL2-2.0.0.dylib
-          install_name_tool -change "$sdl_lib" '@executable_path/libSDL2-2.0.0.dylib' dist/crusn-macos/crusn
-          dsymutil build/crusn -o dist/crusn-macos/crusn.dSYM
-          cmake -E chdir dist cmake -E tar cf crusn-macos.zip --format=zip crusn-macos
+          case "$sdl_lib" in
+            *.framework/*)
+              framework_root="${sdl_lib%%.framework/*}.framework"
+              framework_relative="${sdl_lib#*.framework/}"
+              cp -R "$framework_root" "$frameworks/"
+              install_name_tool -change "$sdl_lib" "@executable_path/../Frameworks/SDL2.framework/$framework_relative" "$executable"
+              codesign --force --sign - "$frameworks/SDL2.framework"
+              ;;
+            *)
+              sdl_name=$(basename "$sdl_lib")
+              sdl_source="$sdl_lib"
+              case "$sdl_source" in
+                @rpath/*) sdl_source="$(pkg-config --variable=libdir sdl2)/$sdl_name" ;;
+              esac
+              cp "$sdl_source" "$frameworks/$sdl_name"
+              install_name_tool -change "$sdl_lib" "@executable_path/../Frameworks/$sdl_name" "$executable"
+              codesign --force --sign - "$frameworks/$sdl_name"
+              ;;
+          esac
+
+          codesign --force --sign - "$app"
+          cp -R "$app" dist/dmg/
+          dsymutil "$executable" -o "dist/dmg/Cruis'n USA.dSYM"
+          hdiutil create -volname "Cruis'n USA" -srcfolder dist/dmg -ov -format UDZO "dist/$PACKAGE_FILE"
       - uses: actions/upload-artifact@v4
         with:
-          name: crusn-macos
-          path: dist/crusn-macos.zip
+          name: ${{ steps.package.outputs.filename }}
+          path: dist/${{ steps.package.outputs.filename }}
           if-no-files-found: error
 
   linux:
+    name: CI Linux x64
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set package name
+        id: package
+        run: |
+          version=$(git describe --tags --always --dirty)
+          echo "filename=crusn-${version}-linux-x64.tar.gz" >> "$GITHUB_OUTPUT"
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -50,30 +103,35 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build --parallel
       - name: Package binary and symbols
+        env:
+          PACKAGE_FILE: ${{ steps.package.outputs.filename }}
         run: |
-          mkdir -p dist/crusn-linux
-          cp build/crusn dist/crusn-linux/
+          mkdir -p dist/package
+          cp build/crusn dist/package/
           sdl_lib=$(ldd build/crusn | awk '/libSDL2-2.0.so.0/ { print $3; exit }')
           test -n "$sdl_lib"
-          cp "$sdl_lib" dist/crusn-linux/libSDL2-2.0.so.0
-          patchelf --set-rpath '$ORIGIN' dist/crusn-linux/crusn
-          objcopy --only-keep-debug dist/crusn-linux/crusn dist/crusn-linux/crusn.debug
-          strip --strip-debug dist/crusn-linux/crusn
-          (cd dist/crusn-linux && objcopy --add-gnu-debuglink=crusn.debug crusn)
-          cmake -E chdir dist cmake -E tar cf crusn-linux.zip --format=zip crusn-linux
+          cp "$sdl_lib" dist/package/libSDL2-2.0.so.0
+          patchelf --set-rpath '$ORIGIN' dist/package/crusn
+          objcopy --only-keep-debug dist/package/crusn dist/package/crusn.debug
+          strip --strip-debug dist/package/crusn
+          (cd dist/package && objcopy --add-gnu-debuglink=crusn.debug crusn)
+          cmake -E chdir dist/package cmake -E tar czf "../$PACKAGE_FILE" .
       - uses: actions/upload-artifact@v4
         with:
-          name: crusn-linux
-          path: dist/crusn-linux.zip
+          name: ${{ steps.package.outputs.filename }}
+          path: dist/${{ steps.package.outputs.filename }}
           if-no-files-found: error
 
   windows:
+    name: CI Windows x64
     runs-on: windows-latest
     defaults:
       run:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
@@ -84,20 +142,27 @@ jobs:
             mingw-w64-ucrt-x86_64-ninja
             mingw-w64-ucrt-x86_64-SDL2
             mingw-w64-ucrt-x86_64-python
+      - name: Set package name
+        id: package
+        run: |
+          version=$(git describe --tags --always --dirty)
+          echo "filename=crusn-${version}-windows-x64.zip" >> "$GITHUB_OUTPUT"
       - name: Build
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build --parallel
       - name: Package binary and runtime DLLs
+        env:
+          PACKAGE_FILE: ${{ steps.package.outputs.filename }}
         run: |
-          mkdir -p dist/crusn-windows
-          cp build/crusn.exe dist/crusn-windows/
-          cp /ucrt64/bin/SDL2.dll /ucrt64/bin/libgcc_s_seh-1.dll /ucrt64/bin/libstdc++-6.dll /ucrt64/bin/libwinpthread-1.dll dist/crusn-windows/
-          cmake -E chdir dist cmake -E tar cf crusn-windows.zip --format=zip crusn-windows
+          mkdir -p dist/package
+          cp build/crusn.exe dist/package/
+          cp /ucrt64/bin/SDL2.dll /ucrt64/bin/libgcc_s_seh-1.dll /ucrt64/bin/libstdc++-6.dll /ucrt64/bin/libwinpthread-1.dll dist/package/
+          cmake -E chdir dist/package cmake -E tar cf "../$PACKAGE_FILE" --format=zip .
       - uses: actions/upload-artifact@v4
         with:
-          name: crusn-windows
-          path: dist/crusn-windows.zip
+          name: ${{ steps.package.outputs.filename }}
+          path: dist/${{ steps.package.outputs.filename }}
           if-no-files-found: error
 
   publish:
@@ -117,4 +182,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$RELEASE_TAG" dist/crusn-macos.zip dist/crusn-linux.zip dist/crusn-windows.zip --clobber
+        run: gh release upload "$RELEASE_TAG" dist/* --clobber

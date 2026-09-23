@@ -95,15 +95,16 @@ cmake -S . -B build
 cmake --build build
 ```
 
-Every push and pull request builds macOS, Linux, and Windows ZIP artifacts;
+Every push and pull request builds macOS, Linux, and Windows artifacts;
 a failed build or packaging step fails the corresponding check. Publishing a
-GitHub release attaches all three ZIPs to the release after they build. You
+GitHub release attaches all three packages to the release after they build. You
 can also run the **Build release artifacts** workflow manually. These use
 CMake's `RelWithDebInfo` mode:
-the macOS ZIP includes a matching `.dSYM`, the Linux ZIP includes a `.debug`
-file, and the Windows executable retains its DWARF debug symbols. Each ZIP
-includes SDL2, but no game ROMs. Run the executable from a directory containing
-`roms/crusnusa.zip`.
+the universal macOS DMG contains an application bundle and matching `.dSYM`,
+the Linux `.tar.gz` contains a `.debug` file, and the Windows ZIP retains DWARF
+debug symbols in the executable. Packages use names such as
+`crusn-VERSION-macos-arm64-x64.dmg`, include SDL2, and omit game ROMs. Run the
+executable from a directory containing `roms/crusnusa.zip`.
 
 To check translated C3x floating-point operations:
 

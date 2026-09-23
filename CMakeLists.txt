@@ -18,6 +18,7 @@ endif()
 option(CRUSN_TRACE "Enable native trace logging" ON)
 option(C3X_USE_HOST_FLOAT "Use native host floating point for translated C3x float operations" OFF)
 option(CRUSN_ENABLE_ASAN "Enable AddressSanitizer in Debug builds" OFF)
+option(CRUSN_MACOS_BUNDLE "Build a macOS application bundle" OFF)
 
 find_package(SDL2 CONFIG QUIET)
 if(NOT SDL2_FOUND)
@@ -138,6 +139,15 @@ endif()
 add_executable(crusn)
 target_sources(crusn PRIVATE ${CRUSN_SOURCES})
 target_link_libraries(crusn PRIVATE miniz adsp2100)
+
+if(APPLE AND CRUSN_MACOS_BUNDLE)
+  set_target_properties(crusn PROPERTIES
+    MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_BUNDLE_NAME "Cruis'n USA"
+    MACOSX_BUNDLE_GUI_IDENTIFIER "com.1amstudios.cruisn-usa"
+    OUTPUT_NAME "Cruis'n USA"
+  )
+endif()
 
 add_custom_target(check-c3x-translation
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/check_c3x_translation.py
