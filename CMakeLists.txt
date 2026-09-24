@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 
+option(CRUSN_MACOS_BUNDLE "Build a macOS application bundle" OFF)
+if(APPLE AND CRUSN_MACOS_BUNDLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version")
+endif()
+
 project(cruisin_usa_port LANGUAGES C CXX)
 
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
@@ -18,7 +23,6 @@ endif()
 option(CRUSN_TRACE "Enable native trace logging" ON)
 option(C3X_USE_HOST_FLOAT "Use native host floating point for translated C3x float operations" OFF)
 option(CRUSN_ENABLE_ASAN "Enable AddressSanitizer in Debug builds" OFF)
-option(CRUSN_MACOS_BUNDLE "Build a macOS application bundle" OFF)
 
 find_package(SDL2 CONFIG QUIET)
 if(NOT SDL2_FOUND)

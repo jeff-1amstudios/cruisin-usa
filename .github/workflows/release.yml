@@ -21,7 +21,7 @@ jobs:
       - name: Set package name
         id: package
         run: |
-          version=$(git describe --tags --always --dirty)
+          version=$(git describe --tags --always)
           echo "filename=crusn-${version}-macos-arm64-x64.dmg" >> "$GITHUB_OUTPUT"
       - name: Install dependencies
         run: brew install ninja
@@ -30,7 +30,7 @@ jobs:
         with:
           add-to-environment: true
           build-type: Release
-          cmake-arguments: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"'
+          cmake-arguments: '-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0'
           cmake-generator: Ninja
           discriminator: arm64-x64
           version: 2-latest
@@ -103,7 +103,7 @@ jobs:
       - name: Set package name
         id: package
         run: |
-          version=$(git describe --tags --always --dirty)
+          version=$(git describe --tags --always)
           echo "filename=crusn-${version}-linux-x64.tar.gz" >> "$GITHUB_OUTPUT"
       - name: Install dependencies
         run: |
@@ -157,7 +157,7 @@ jobs:
       - name: Set package name
         id: package
         run: |
-          version=$(git describe --tags --always --dirty)
+          version=$(git describe --tags --always)
           echo "filename=crusn-${version}-windows-x64.zip" >> "$GITHUB_OUTPUT"
       - name: Build
         run: |
