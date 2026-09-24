@@ -75,6 +75,17 @@ jobs:
           codesign --force --sign - "$app"
           cp -R "$app" dist/dmg/
           dsymutil "$executable" -o "dist/dmg/Cruis'n USA.dSYM"
+          cat > dist/dmg/README.txt <<'EOF'
+          Copy Cruis'n USA.app to a writable folder, then create a roms folder
+          beside the app containing a legally obtained crusnusa.zip ROM set.
+
+          Expected layout:
+            Cruis'n USA.app
+            roms/crusnusa.zip
+
+          This development build is not notarized. On first launch, Control-click
+          the app, choose Open, then confirm Open in the macOS dialog.
+          EOF
           hdiutil create -volname "Cruis'n USA" -srcfolder dist/dmg -ov -format UDZO "dist/$PACKAGE_FILE"
       - uses: actions/upload-artifact@v4
         with:
@@ -137,6 +148,7 @@ jobs:
           msystem: UCRT64
           update: true
           install: >-
+            git
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
