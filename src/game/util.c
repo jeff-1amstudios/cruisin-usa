@@ -337,6 +337,9 @@ void SCRNFIL(void) {
  */
 void SCREEN_FILL(word_addr_t start_addr, u32 color, u32 count_minus_one) {
     word_addr_t addr = start_addr;
+#ifdef CRUISN_PORTABLE
+    crusn_machine_extend_screen_fill(g_crusn_machine, start_addr, color, count_minus_one);
+#endif
 
     // asm 00008EC0: 	PUSH	R0
     // asm 00008EC1: 	PUSH	AR1

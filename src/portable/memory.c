@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "machine.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -117,6 +118,9 @@ void crusn_mem_wr32_map(crusn_memory_map* memory, word_addr_t addr, u32 value) {
     assert(offset < region->word_count);
 
     region->words[offset] = value;
+    if (g_crusn_machine != NULL && memory == &g_crusn_machine->memory && region == &memory->screen) {
+        crusn_machine_mirror_screen_write(g_crusn_machine, offset, value);
+    }
 }
 
 void* port_malloc(size_t size) {

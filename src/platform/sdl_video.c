@@ -75,10 +75,27 @@ void crusn_video_shutdown(crusn_video* video) {
     }
 }
 
+static int crusn_video_set_width(crusn_video* video, int width) {
+    int current_width;
+    if (SDL_QueryTexture(video->texture, NULL, NULL, &current_width, NULL) != 0) return -1;
+    if (current_width == width) return 0;
+    SDL_Texture* replacement = SDL_CreateTexture(video->renderer, SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING, width, CRUSN_SCREEN_HEIGHT);
+    if (replacement == NULL) return -1;
+    if (SDL_RenderSetLogicalSize(video->renderer, width, CRUSN_SCREEN_HEIGHT) != 0) {
+        SDL_DestroyTexture(replacement);
+        return -1;
+    }
+    SDL_DestroyTexture(video->texture);
+    video->texture = replacement;
+    return 0;
+}
+
 int crusn_video_present(crusn_video* video, const crusn_machine* machine) {
     u32* pixels;
     int pitch;
 
+    if (crusn_video_set_width(video, crusn_render_width(machine)) != 0) return -1;
     if (SDL_SetTextureScaleMode(video->texture,
             video->bilinear ? SDL_ScaleModeLinear : SDL_ScaleModeNearest) != 0) {
         return -1;
@@ -103,6 +120,7 @@ int crusn_video_present(crusn_video* video, const crusn_machine* machine) {
 }
 
 int crusn_video_present_pixels(crusn_video* video, const u32* pixels) {
+    if (crusn_video_set_width(video, CRUSN_SCREEN_WIDTH) != 0) return -1;
     if (SDL_SetTextureScaleMode(video->texture, SDL_ScaleModeNearest) != 0) return -1;
     if (SDL_UpdateTexture(video->texture, NULL, pixels, CRUSN_SCREEN_WIDTH * (int)sizeof(*pixels)) != 0 ||
         SDL_RenderClear(video->renderer) != 0 ||

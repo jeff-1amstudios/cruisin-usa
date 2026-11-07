@@ -44,7 +44,8 @@
   var Module = {
     canvas,
     noInitialRun: true,
-    arguments: params.has('rom-url') ? ['--rom-url', params.get('rom-url')] : [],
+    arguments: [...(params.has('rom-url') ? ['--rom-url', params.get('rom-url')] : []),
+      ...(params.get('widescreen') === '1' ? ['--widescreen'] : [])],
     preRun: [function() {
       FS.mkdir('/roms');
       FS.mount(IDBFS, {}, '/roms');
@@ -61,6 +62,7 @@
       status.textContent = 'Choose a ROM ZIP or press Start to download.';
     },
     onGameStarted() {
+      if (params.get('widescreen') === '1') canvas.style.aspectRatio = '712 / 400';
       picker.disabled = true;
       retry.disabled = true;
       status.textContent = '';

@@ -26,7 +26,7 @@ def check(path, chain, seen, errors):
             else:
                 check(resolved, trail[:-1], seen, errors)
     if ROOT / 'src/game' in path.parents and '__EMSCRIPTEN__' in source:
-        errors.add(f'{path.relative_to(ROOT)}: use CRUSIN_PORTABLE for game divergences')
+        errors.add(f'{path.relative_to(ROOT)}: use CRUISN_PORTABLE for game divergences')
 
 
 def main():

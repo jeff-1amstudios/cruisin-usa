@@ -2,7 +2,7 @@
 
 The native SDL application and the Emscripten/WebAssembly application share the
 translated game and a startup flow. No changes in `src/game` are required.
-`CRUSIN_PORTABLE` is defined for both builds; future game divergences must use
+`CRUISN_PORTABLE` is defined for both builds; future game divergences must use
 that guard, and game code must access host services through portable headers.
 
 ## Source layout
@@ -122,3 +122,7 @@ Browser verification should cover fresh download, visible progress, invalid URL
 and retry, local import, reload with a restored cache, keyboard input, mute,
 fullscreen, and returning from a background tab. Chrome, Firefox, and Safari
 should be checked before a public release. Touch/gamepad input is not added.
+
+Use `?widescreen=1` to opt into the wider world view with centered UI. The SDL
+texture switches from the original startup dimensions to 712×400 when the game
+starts. Original aspect remains the default.

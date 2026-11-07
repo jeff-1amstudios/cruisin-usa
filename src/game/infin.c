@@ -200,15 +200,27 @@ FHRYLP:
         // asm 00008242: 	ADDF	@SCRNHXI,R3		;this is the clip level (in Y)
         // asm 00008243: 	CMPF	0,R3
         // asm 00008244: 	BLT	NOCHANCE
+#ifdef CRUISN_PORTABLE
+        if (C3X_LT(screen_x, C3X_FROM_INT(-crusn_render_x_offset(g_crusn_machine)))) {
+            goto NOCHANCE;
+        }
+#else
         if (C3X_LT(screen_x, C3X_FROM_INT(0))) {
             goto NOCHANCE;
         }
+#endif
         // asm 00008245: 	FLOAT	512,R0
         // asm 00008246: 	CMPF	R0,R3
         // asm 00008247: 	BGT	NOCHANCE
+#ifdef CRUISN_PORTABLE
+        if (C3X_GT(screen_x, C3X_FROM_INT(512 + crusn_render_x_offset(g_crusn_machine)))) {
+            goto NOCHANCE;
+        }
+#else
         if (C3X_GT(screen_x, C3X_FROM_INT(512))) {
             goto NOCHANCE;
         }
+#endif
         // asm 00008248: 	MPYF	*AR1,R2
         screen_y = C3X_ADD(C3X_MUL(rotated_y, inverse_z), SCRNHYI);
         // asm 00008249: 	ADDF	@SCRNHYI,R2		;this is the clip level (in Y)

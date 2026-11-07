@@ -1949,9 +1949,18 @@ static void CLIP(int* clipram /*AR0*/, int palette_base /*R0*/, int control_word
     // asm 00000336: 	AND	*+AR0(4),R0
     // asm 00000337: 	AND	*+AR0(6),R0
     // asm 00000338: 	BND	CLIPX	    		;ALL X <0 REJECT
+#ifdef CRUISN_PORTABLE
+    if (((clipram[0] + crusn_render_x_offset(g_crusn_machine)) &
+         (clipram[2] + crusn_render_x_offset(g_crusn_machine)) &
+         (clipram[4] + crusn_render_x_offset(g_crusn_machine)) &
+         (clipram[6] + crusn_render_x_offset(g_crusn_machine))) < 0) {
+        goto CLIPX;
+    }
+#else
     if ((clipram[0] & clipram[2] & clipram[4] & clipram[6]) < 0) {
         goto CLIPX;
     }
+#endif
     // *X ALL POSTIVE CASE
     // asm 00000339: 	LDI	511,R1
     // asm 0000033A: 	SUBI	*AR0,R1,R2
@@ -1964,9 +1973,18 @@ static void CLIP(int* clipram /*AR0*/, int palette_base /*R0*/, int control_word
     // asm 00000340: 	SUBI	*+AR0(6),R1
     // asm 00000341: 	AND	R1,R2
     // asm 00000342: 	BND	CLIPX			;ALL X >511 REJECT
+#ifdef CRUISN_PORTABLE
+    if (((511 + crusn_render_x_offset(g_crusn_machine) - clipram[0]) &
+         (511 + crusn_render_x_offset(g_crusn_machine) - clipram[2]) &
+         (511 + crusn_render_x_offset(g_crusn_machine) - clipram[4]) &
+         (511 + crusn_render_x_offset(g_crusn_machine) - clipram[6])) < 0) {
+        goto CLIPX;
+    }
+#else
     if (((511 - clipram[0]) & (511 - clipram[2]) & (511 - clipram[4]) & (511 - clipram[6])) < 0) {
         goto CLIPX;
     }
+#endif
     // *Y ALL POSTIVE CASE
     // asm 00000343: 	LDI	399,R1
     // asm 00000344: 	SUBI	*+AR0(1),R1,R2
@@ -2087,12 +2105,24 @@ CLIP0:
     // asm 00000374: 	AND	*+AR0(6),R0
     // 	;-------->BGTD	CLIPDONE  	;YES...EXIT
     // asm 00000375: 	BND	CLIPOP	    		;ALL X <0 REJECT
+#ifdef CRUISN_PORTABLE
+    if (((entry[0] + crusn_render_x_offset(g_crusn_machine)) &
+         (entry[2] + crusn_render_x_offset(g_crusn_machine)) &
+         (entry[4] + crusn_render_x_offset(g_crusn_machine)) &
+         (entry[6] + crusn_render_x_offset(g_crusn_machine))) < 0) {
+        if (entry_count <= 0) {
+            goto CLIPDONE;
+        }
+        goto CLIPOP;
+    }
+#else
     if ((entry[0] & entry[2] & entry[4] & entry[6]) < 0) {
         if (entry_count <= 0) {
             goto CLIPDONE;
         }
         goto CLIPOP;
     }
+#endif
     // *X ALL POSTIVE CASE
     // asm 00000376: 	LDI	511,R1
     // asm 00000377: 	SUBI	*AR0,R1,R2
@@ -2105,12 +2135,24 @@ CLIP0:
     // asm 0000037D: 	SUBI	*+AR0(6),R1
     // asm 0000037E: 	AND	R1,R2
     // asm 0000037F: 	BND	CLIPOP			;ALL X >511 REJECT
+#ifdef CRUISN_PORTABLE
+    if (((511 + crusn_render_x_offset(g_crusn_machine) - entry[0]) &
+         (511 + crusn_render_x_offset(g_crusn_machine) - entry[2]) &
+         (511 + crusn_render_x_offset(g_crusn_machine) - entry[4]) &
+         (511 + crusn_render_x_offset(g_crusn_machine) - entry[6])) < 0) {
+        if (entry_count <= 0) {
+            goto CLIPDONE;
+        }
+        goto CLIPOP;
+    }
+#else
     if (((511 - entry[0]) & (511 - entry[2]) & (511 - entry[4]) & (511 - entry[6])) < 0) {
         if (entry_count <= 0) {
             goto CLIPDONE;
         }
         goto CLIPOP;
     }
+#endif
     // *Y ALL POSTIVE CASE
     // asm 00000380: 	LDI	399,R1
     // asm 00000381: 	SUBI	*+AR0(1),R1,R2

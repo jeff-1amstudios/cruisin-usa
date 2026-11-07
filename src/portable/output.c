@@ -81,6 +81,8 @@ static int crusn_clamp_int(int value, int min, int max) {
 }
 
 static void crusn_draw_wireframe_line(int x0, int y0, int x1, int y1, u32* write_page_words) {
+    const int width = crusn_render_width(g_crusn_machine);
+    const int offset = crusn_render_x_offset(g_crusn_machine);
     int dx = x1 > x0 ? x1 - x0 : x0 - x1;
     int sx = x0 < x1 ? 1 : -1;
     int dy = y1 > y0 ? y0 - y1 : y1 - y0;
@@ -88,8 +90,8 @@ static void crusn_draw_wireframe_line(int x0, int y0, int x1, int y1, u32* write
     int error = dx + dy;
 
     for (;;) {
-        if (x0 >= 0 && x0 < CRUSN_SCREEN_WIDTH && y0 >= 0 && y0 < CRUSN_SCREEN_HEIGHT) {
-            write_page_words[(y0 * CRUSN_SCREEN_WIDTH) + x0] = 0xffffffffu;
+        if (x0 >= -offset && x0 < CRUSN_SCREEN_WIDTH + offset && y0 >= 0 && y0 < CRUSN_SCREEN_HEIGHT) {
+            write_page_words[(y0 * width) + x0 + offset] = 0xffffffffu;
             g_crusn_debug_output_pixels += 1;
         }
 
@@ -200,6 +202,8 @@ static void crusn_rasterize_quad(
     int palette_base,
     int control,
     u32* write_page_words) {
+    const int width = crusn_render_width(g_crusn_machine);
+    const int offset = crusn_render_x_offset(g_crusn_machine);
     crusn_fpga_edge forward_edges[3];
     crusn_fpga_edge backward_edges[3];
     const crusn_fpga_edge* left_edge;
@@ -309,12 +313,14 @@ static void crusn_rasterize_quad(
         du_dx = (int)du_dx_float;
         dv_dx = (int)dv_dx_float;
 
-        if (start_x_int < 0) {
-            u += -start_x_int * du_dx;
-            v += -start_x_int * dv_dx;
-            start_x_int = 0;
+        const int min_x = -offset;
+        const int max_x = CRUSN_SCREEN_WIDTH + offset;
+        if (start_x_int < min_x) {
+            u += (min_x - start_x_int) * du_dx;
+            v += (min_x - start_x_int) * dv_dx;
+            start_x_int = min_x;
         }
-        stop_x_int = crusn_clamp_int(stop_x_int, 0, CRUSN_SCREEN_WIDTH);
+        stop_x_int = crusn_clamp_int(stop_x_int, min_x, max_x);
 
         for (int x = start_x_int; x < stop_x_int; ++x) {
             u32 color_index;
@@ -348,7 +354,7 @@ static void crusn_rasterize_quad(
             }
 
             pixel = color_index;
-            write_page_words[(y * CRUSN_SCREEN_WIDTH) + x] = pixel;
+            write_page_words[(y * width) + x + offset] = pixel;
             g_crusn_debug_output_pixels += 1;
             u += du_dx;
             v += dv_dx;
@@ -396,7 +402,7 @@ int port_output_fpga(
     zero_suppress = (control & ZS) != 0;
     nonzero_replace = (control & NZR) != 0;
     dither = (control & DITHER) != 0;
-    write_page_words = crusn_machine_screen_page(g_crusn_machine, g_crusn_machine->write_page_index);
+    write_page_words = crusn_machine_render_page(g_crusn_machine, g_crusn_machine->write_page_index);
 
     vertices[0].x = (float)x1 + 0.5f;
     vertices[0].y = (float)y1 + 0.5f;

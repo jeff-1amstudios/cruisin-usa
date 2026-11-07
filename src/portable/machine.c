@@ -6,6 +6,53 @@
 #include <stdlib.h>
 #include <string.h>
 
+static int g_widescreen;
+
+void crusn_set_widescreen(int enabled) {
+    g_widescreen = enabled != 0;
+}
+
+int crusn_render_width(const crusn_machine* machine) {
+    return machine->render_width ? machine->render_width : CRUSN_SCREEN_WIDTH;
+}
+
+int crusn_render_x_offset(const crusn_machine* machine) {
+    return (crusn_render_width(machine) - CRUSN_SCREEN_WIDTH) / 2;
+}
+
+u32* crusn_machine_render_page(const crusn_machine* machine, int page_index) {
+    if (machine->wide_screen_words != NULL) {
+        return machine->wide_screen_words + (page_index > 0 ? 1 : 0) *
+            (size_t)crusn_render_width(machine) * CRUSN_SCREEN_HEIGHT;
+    }
+    return crusn_machine_screen_page(machine, page_index);
+}
+
+void crusn_machine_mirror_screen_write(crusn_machine* machine, size_t offset, u32 value) {
+    if (machine->wide_screen_words == NULL) return;
+    size_t page = offset / CRUSN_SCREEN_WORDS;
+    size_t pixel = offset % CRUSN_SCREEN_WORDS;
+    if (page >= CRUSN_SCREEN_PAGES || pixel >= CRUSN_SCREEN_WIDTH * CRUSN_SCREEN_HEIGHT) return;
+    crusn_machine_render_page(machine, (int)page)[
+        (pixel / CRUSN_SCREEN_WIDTH) * crusn_render_width(machine) +
+        pixel % CRUSN_SCREEN_WIDTH + crusn_render_x_offset(machine)] = value;
+}
+
+void crusn_machine_extend_screen_fill(crusn_machine* machine, word_addr_t address,
+                                      u32 color, u32 count_minus_one) {
+    if (machine->wide_screen_words == NULL) return;
+    /* Only full-page fills extend into the new margins. Partial writes retain
+       the hardware's 512-pixel addressing and are mirrored individually. */
+    if (address < machine->memory.screen.base) return;
+    size_t offset = address - machine->memory.screen.base;
+    if (offset % CRUSN_SCREEN_WORDS != 0 || offset / CRUSN_SCREEN_WORDS >= CRUSN_SCREEN_PAGES ||
+        count_minus_one < CRUSN_SCREEN_WIDTH * CRUSN_SCREEN_HEIGHT - 1) return;
+    u32* pixels = crusn_machine_render_page(machine, (int)(offset / CRUSN_SCREEN_WORDS));
+    for (size_t i = 0; i < (size_t)crusn_render_width(machine) * CRUSN_SCREEN_HEIGHT; ++i) {
+        pixels[i] = color;
+    }
+}
+
 crusn_machine* g_crusn_machine = NULL;
 u32 crusn_rom_words[CRUSN_ROM_WORDS] = { 0 };
 s32 crusn_waveram[CRUSN_WAVERAM_WORDS] = { 0 };
@@ -99,17 +146,18 @@ c3x_reg_t crusn__read_f32(const u32** cursor) {
 }
 
 void crusn_machine_decode_screen_argb8888(const crusn_machine* machine, u32* dst_pixels, size_t dst_pitch_bytes) {
+    const int width = crusn_render_width(machine);
     size_t y;
     size_t x;
     const u32* display_page_words;
 
-    display_page_words = crusn_machine_screen_page(machine, machine->display_page_index);
+    display_page_words = crusn_machine_render_page(machine, machine->display_page_index);
 
     for (y = 0; y < CRUSN_SCREEN_HEIGHT; ++y) {
-        const u32* src_row = &display_page_words[y * CRUSN_SCREEN_WIDTH];
+        const u32* src_row = &display_page_words[y * width];
         u32* dst_row = (u32*)((unsigned char*)dst_pixels + (y * dst_pitch_bytes));
 
-        for (x = 0; x < CRUSN_SCREEN_WIDTH; ++x) {
+        for (x = 0; x < width; ++x) {
             u32 pixel = src_row[x];
 
             if ((pixel & 0xFFFF0000u) != 0u) {
@@ -131,6 +179,7 @@ void crusn_machine_decode_screen_argb8888(const crusn_machine* machine, u32* dst
 int crusn_machine_init(crusn_machine* machine) {
     memset(machine, 0, sizeof(*machine));
 
+    machine->render_width = g_widescreen ? CRUSN_WIDE_SCREEN_WIDTH : CRUSN_SCREEN_WIDTH;
     machine->rom_words = crusn_rom_words;
     machine->rom_word_count = CRUSN_ROM_WORDS;
 
@@ -143,6 +192,10 @@ int crusn_machine_init(crusn_machine* machine) {
     machine->cmos_word_count = CRUSN_CMOS_WORDS;
     machine->colorram_word_count = CRUSN_COLORRAM_WORDS;
     machine->timer_word_count = CRUSN_TIMER_WORDS;
+    if (g_widescreen) {
+        machine->wide_screen_words = calloc((size_t)machine->render_width * CRUSN_SCREEN_HEIGHT * CRUSN_SCREEN_PAGES, sizeof(u32));
+        if (machine->wide_screen_words == NULL) return -1;
+    }
     machine->ram_words = calloc(machine->ram_word_count, sizeof(*machine->ram_words));
     machine->screen_words = calloc(machine->screen_word_count, sizeof(*machine->screen_words));
     machine->cmos_words = calloc(machine->cmos_word_count, sizeof(*machine->cmos_words));
@@ -184,6 +237,8 @@ int crusn_machine_init(crusn_machine* machine) {
 void crusn_machine_shutdown(crusn_machine* machine) {
     free(machine->ram_words);
     free(machine->screen_words);
+    free(machine->wide_screen_words);
+    machine->wide_screen_words = NULL;
     free(machine->cmos_words);
     free(machine->colorram_words);
     free(machine->timer_words);
@@ -232,6 +287,10 @@ void crusn_machine_clear_screen_page(crusn_machine* machine, int page_index) {
 
     visible_words = (size_t)CRUSN_SCREEN_WIDTH * (size_t)CRUSN_SCREEN_HEIGHT;
     memset(screen_page_words, 0, visible_words * sizeof(*screen_page_words));
+    if (machine->wide_screen_words != NULL) {
+        memset(crusn_machine_render_page(machine, page_index), 0,
+               (size_t)crusn_render_width(machine) * CRUSN_SCREEN_HEIGHT * sizeof(u32));
+    }
 }
 
 void crusn_machine_tick(crusn_machine* machine) {
@@ -254,7 +313,9 @@ void crusn_machine_tick(crusn_machine* machine) {
 int crusn_machine_dump_screen_bmp(
     const crusn_machine* machine, const u32* screen_words, const u32* colorram_words, const char* path) {
     FILE* fp;
-    const unsigned width = CRUSN_SCREEN_WIDTH;
+    const int own_page = machine != NULL &&
+        (screen_words == machine->screen_page_words[0] || screen_words == machine->screen_page_words[1]);
+    const unsigned width = own_page ? (unsigned)crusn_render_width(machine) : CRUSN_SCREEN_WIDTH;
     const unsigned height = CRUSN_SCREEN_HEIGHT;
     const unsigned row_size = width * 4u;
     const unsigned pixel_bytes = row_size * height;
@@ -266,6 +327,9 @@ int crusn_machine_dump_screen_bmp(
         return -1;
     }
 
+    if (own_page) {
+        screen_words = crusn_machine_render_page(machine, screen_words == machine->screen_page_words[1]);
+    }
     fp = fopen(path, "wb");
     if (fp == NULL) {
         return -1;
@@ -296,11 +360,11 @@ int crusn_machine_dump_screen_bmp(
     }
 
     for (y = 0; y < CRUSN_SCREEN_HEIGHT; ++y) {
-        const u32* src_row = &screen_words[y * CRUSN_SCREEN_WIDTH];
+        const u32* src_row = &screen_words[y * width];
         u32* dst_row = (u32*)((unsigned char*)pixels + (y * row_size));
         unsigned x;
 
-        for (x = 0; x < CRUSN_SCREEN_WIDTH; ++x) {
+        for (x = 0; x < width; ++x) {
             u32 pixel = src_row[x];
 
             if ((pixel & 0xFFFF0000u) != 0u) {

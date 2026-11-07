@@ -44,6 +44,7 @@ typedef struct crusn_options {
     int girls;
     int race_time;
     int windowed;
+    int widescreen;
     int bilinear;
     int test_highscore_input;
     int skip_boot_screen;
@@ -104,6 +105,7 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
     options->girls = -1;
     options->race_time = 0;
     options->windowed = 0;
+    options->widescreen = 0;
     options->bilinear = 1;
     options->test_highscore_input = 0;
     options->skip_boot_screen = 1;
@@ -125,6 +127,8 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
             options->girls = 1;
         } else if (strcmp(argv[i], "--no-girls") == 0) {
             options->girls = 0;
+        } else if (strcmp(argv[i], "--widescreen") == 0) {
+            options->widescreen = 1;
         } else if (strcmp(argv[i], "--window") == 0) {
             options->windowed = 1;
         } else if (strcmp(argv[i], "--no-bilinear") == 0) {
@@ -275,6 +279,7 @@ static void crusn_shutdown(void) {
 }
 
 static int crusn_start_game(void) {
+    crusn_set_widescreen(g_app.options.widescreen && getenv("CRUSN_ENABLE_MAME_VALIDATION") == NULL);
     if (crusn_machine_init(&g_app.machine) != 0) {
         snprintf(g_app.startup.message, sizeof(g_app.startup.message), "Failed to initialize machine");
         return -1;

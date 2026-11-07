@@ -12,6 +12,7 @@ enum {
     CRUSN_WAVERAM_WORDS = 0x1FFFFF,
     CRUSN_SCREEN_WIDTH = 512,
     CRUSN_SCREEN_HEIGHT = 400,
+    CRUSN_WIDE_SCREEN_WIDTH = 712,
     CRUSN_SCREEN_WORDS = 0x40000,
     CRUSN_SCREEN_PAGES = 2,
     CRUSN_SCREEN_TOTAL_WORDS = CRUSN_SCREEN_WORDS * CRUSN_SCREEN_PAGES,
@@ -41,6 +42,8 @@ typedef struct crusn_machine {
     int display_page_index;
     int write_page_index;
     int frame_counter;
+    int render_width;
+    u32* wide_screen_words;
     u32 translation_stack[CRUSN_TRANSLATION_STACK_WORDS];
     size_t translation_stack_top;
 } crusn_machine;
@@ -56,6 +59,13 @@ extern s32 crusn_waveram[CRUSN_WAVERAM_WORDS];
 #define WAVERAM_PTR(SYM) (&crusn_waveram[(size_t)((word_addr_t)(SYM) - CRUSN_WAVERAM_BASE)])
 #define COLOROM_ADDR(ADDR) crusn_machine_colorram_addr((word_addr_t)(ADDR))
 
+/* Set before initialization. Original mode remains the default. */
+void crusn_set_widescreen(int enabled);
+int crusn_render_width(const crusn_machine* machine);
+int crusn_render_x_offset(const crusn_machine* machine);
+u32* crusn_machine_render_page(const crusn_machine* machine, int page_index);
+void crusn_machine_mirror_screen_write(crusn_machine* machine, size_t offset, u32 value);
+void crusn_machine_extend_screen_fill(crusn_machine* machine, word_addr_t address, u32 color, u32 count_minus_one);
 int crusn_machine_init(crusn_machine* machine);
 void crusn_machine_shutdown(crusn_machine* machine);
 void crusn_machine_tick(crusn_machine* machine);
