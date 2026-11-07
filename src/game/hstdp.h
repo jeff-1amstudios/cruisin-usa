@@ -1,7 +1,7 @@
 #ifndef HSTDP_H
 #define HSTDP_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/HSTDP.ASM. */
 

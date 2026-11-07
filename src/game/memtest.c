@@ -1,6 +1,6 @@
 
 #include "memtest.h"
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "c30.h"
 #include "checksum.h"
 #include "cksum.h"

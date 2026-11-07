@@ -1,7 +1,7 @@
 #ifndef TRACKSEL_H
 #define TRACKSEL_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/TRACKSEL.ASM. */
 

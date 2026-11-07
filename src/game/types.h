@@ -26,7 +26,7 @@ typedef signed int s32;
 typedef unsigned int u32;
 typedef unsigned short u16;
 #ifndef CRUSN_PORT_TYPES_H
-#include "../core/port_types.h"
+#include "../portable/port_types.h"
 #endif
 
 typedef s32* tyco_stream_t;

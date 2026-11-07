@@ -1,8 +1,8 @@
 #include "dirq.h"
 
-#include "../core/machine.h"
-#include "../core/output.h"
-#include "../core/validator.h"
+#include "../portable/machine.h"
+#include "../portable/output.h"
+#include "../portable/validator.h"
 #include "backgrnd.h"
 #include "c30.h"
 #include "globals.h"

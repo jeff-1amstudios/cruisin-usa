@@ -1,7 +1,7 @@
 #ifndef BSSSTART_H
 #define BSSSTART_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/BSSSTART.ASM. */
 

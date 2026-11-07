@@ -6,4 +6,4 @@ board wrapper. The instruction core originated in MAME and is vendored here in
 standalone form.
 
 The port-specific DCS memory map, ROM banking, command latch, interrupt, and
-SPORT autobuffer integration live in src/core/dcs_board.cpp.
+SPORT autobuffer integration live in src/portable/dcs_board.cpp.

@@ -1,7 +1,7 @@
 #ifndef DRONES_H
 #define DRONES_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/DRONES.ASM. */
 

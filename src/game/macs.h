@@ -1,8 +1,8 @@
 #ifndef MACS_H
 #define MACS_H
 
-#include "../core/machine.h"
-#include "../core/port.h"
+#include "../portable/machine.h"
+#include "../portable/port.h"
 
 /* Generated from asm/MACS.EQU. */
 

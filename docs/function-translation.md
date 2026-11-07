@@ -92,7 +92,7 @@ OFFROAD_TMR = r0;
 ```
 
 ## Emulated hardware
-`core/input.h` and `core/output.h` are what we should use to replace direct reads/writte of MMIO memory addresses like `@SWITCH1`, `@COMMPAL`, `@FIFO_ADDR`
+`portable/input.h` and `portable/output.h` are what we should use to replace direct reads/writte of MMIO memory addresses like `@SWITCH1`, `@COMMPAL`, `@FIFO_ADDR`
 
 ## `PROC` functions
 Functions which take a `PROC *` argument are executed as primitive co-routines. Follow [PROC translation](proc-translation.md) for resume-stack, `SLEEP`, `JSRP`, cross-function branch, shared-tail, and re-entry rules. All local variables needed across a possible sleep must be persisted in a function-specific `PROC_CONTEXT` field.

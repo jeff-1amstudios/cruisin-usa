@@ -1,7 +1,7 @@
 #ifndef SYS_H
 #define SYS_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/SYS.EQU. */
 

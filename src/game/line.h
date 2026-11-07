@@ -1,7 +1,7 @@
 #ifndef LINE_H
 #define LINE_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/LINE.ASM. */
 

@@ -8,10 +8,10 @@
 #include <unistd.h>
 #endif
 
-#include "../core/audio.h"
-#include "../core/input.h"
-#include "../core/machine.h"
-#include "../core/validator.h"
+#include "../portable/audio.h"
+#include "../portable/input.h"
+#include "../portable/machine.h"
+#include "../portable/validator.h"
 #include "../game/cmos.h"
 #include "../game/cusa.h"
 #include "../game/globals.h"

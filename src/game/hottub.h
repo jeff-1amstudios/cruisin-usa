@@ -1,7 +1,7 @@
 #ifndef HOTTUB_H
 #define HOTTUB_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/HOTTUB.ASM. */
 

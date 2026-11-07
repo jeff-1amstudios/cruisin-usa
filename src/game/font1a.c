@@ -1,6 +1,6 @@
 #include "font1a.h"
 
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "c30.h"
 #include "macs.h"
 #include "text.h"

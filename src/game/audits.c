@@ -1,6 +1,6 @@
 
 #include "audits.h"
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "c30.h"
 #include "cmos.h"
 #include "diag.h"

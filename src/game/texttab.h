@@ -2,7 +2,7 @@
 #ifndef TEXTTAB_H
 #define TEXTTAB_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /*
  * Hand-maintained translation of asm/TEXTTAB.ASM.

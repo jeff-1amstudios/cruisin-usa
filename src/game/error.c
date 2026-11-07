@@ -1,6 +1,6 @@
 
 #include "error.h"
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "cmos.h"
 #include "diag.h"
 #include "globals.h"

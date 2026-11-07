@@ -8899,7 +8899,7 @@
       "asm_declaration_line": 477,
       "asm_file": "asm/DIAG.ASM",
       "c_declaration": "uint8_t* buffer;",
-      "c_file": "src/core/validator.c",
+      "c_file": "src/portable/validator.c",
       "c_line": 728,
       "c_type_class": "pointer",
       "directive": "bss",

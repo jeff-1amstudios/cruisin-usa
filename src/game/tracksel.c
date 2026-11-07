@@ -1,6 +1,6 @@
 
 #include "tracksel.h"
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "cmos.h"
 #include "comm.h"
 #include "comp.h"

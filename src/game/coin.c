@@ -1,7 +1,7 @@
 #include "coin.h"
 
-#include "../core/machine.h"
-#include "../core/validator.h"
+#include "../portable/machine.h"
+#include "../portable/validator.h"
 #include "cmos.h"
 #include "cointab.h"
 #include "diag.h"

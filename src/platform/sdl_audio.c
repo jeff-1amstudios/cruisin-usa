@@ -1,11 +1,11 @@
-#include "../core/audio.h"
+#include "../portable/audio.h"
 
 #include <SDL.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "../core/dcs_board.h"
+#include "../portable/dcs_board.h"
 
 typedef struct crusn_audio_state {
     SDL_AudioDeviceID device;

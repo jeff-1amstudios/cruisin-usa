@@ -1,7 +1,7 @@
 #ifndef SNDTAB_H
 #define SNDTAB_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/SNDTAB.EQU. */
 

@@ -3,8 +3,8 @@
 #include <math.h>
 #include <string.h>
 
-#include "../core/machine.h"
-#include "../core/romreader.h"
+#include "../portable/machine.h"
+#include "../portable/romreader.h"
 #include "cmos.h"
 #include "cornobj.h"
 #include "globals.h"

@@ -3,7 +3,7 @@
 
 #include <assert.h>
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/MPROC.EQU. */
 

@@ -1,7 +1,7 @@
 #ifndef CORNOBJ_H
 #define CORNOBJ_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/CORNOBJ.EQU. */
 

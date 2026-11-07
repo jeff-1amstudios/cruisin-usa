@@ -1,7 +1,7 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/ERROR.EQU. */
 

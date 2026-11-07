@@ -1,7 +1,7 @@
 #ifndef RACER_H
 #define RACER_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/RACER.EQU. */
 

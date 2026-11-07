@@ -1,8 +1,8 @@
 #include "wave.h"
 
-#include "../core/input.h"
-#include "../core/machine.h"
-#include "../core/validator.h"
+#include "../portable/input.h"
+#include "../portable/machine.h"
+#include "../portable/validator.h"
 #include "attracta.h"
 #include "c30.h"
 #include "cmos.h"

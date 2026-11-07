@@ -1,8 +1,8 @@
 // NOEDIT
 #include "texttab.h"
 
-#include "../core/machine.h"
-#include "../core/port.h"
+#include "../portable/machine.h"
+#include "../portable/port.h"
 #include "macs.h"
 #include "text.h"
 

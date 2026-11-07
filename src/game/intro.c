@@ -1,8 +1,8 @@
 
 #include "intro.h"
-#include "../core/input.h"
-#include "../core/machine.h"
-#include "../core/validator.h"
+#include "../portable/input.h"
+#include "../portable/machine.h"
+#include "../portable/validator.h"
 #include "cmos.h"
 #include "coin.h"
 #include "comm.h"

@@ -1,7 +1,7 @@
 #ifndef EFFECTS_H
 #define EFFECTS_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/EFFECTS.ASM. */
 

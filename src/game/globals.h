@@ -1,7 +1,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 typedef struct LOAD_SECTION_REQ_ARG LOAD_SECTION_REQ_ARG;
 

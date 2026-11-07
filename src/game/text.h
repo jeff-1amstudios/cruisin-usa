@@ -1,7 +1,7 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/TEXT.EQU. */
 

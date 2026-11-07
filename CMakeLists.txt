@@ -32,21 +32,21 @@ endif()
 
 set(CRUSN_SOURCES
 
-  src/core/input.c
-  src/core/output.c
-  src/core/machine.c
-  src/core/memory.c
-  src/core/romreader.c
-  src/core/trace.c
-  src/core/validator.c
+  src/portable/input.c
+  src/portable/output.c
+  src/portable/machine.c
+  src/portable/memory.c
+  src/portable/romreader.c
+  src/portable/trace.c
+  src/portable/validator.c
   src/game/attrdrne.c
   src/game/attracta.c
   src/game/audits.c
   src/game/backgrnd.c
   src/game/bonus.c
   src/game/bssstart.c
-  src/core/c3x_float.c
-  src/core/dcs_board.cpp
+  src/portable/c3x_float.c
+  src/portable/dcs_board.cpp
   src/game/chopper.c
   src/game/cksum.c
   src/game/cmos.c
@@ -170,7 +170,7 @@ add_custom_target(check-asm-source-sync
   VERBATIM
 )
 
-target_include_directories(crusn PRIVATE src src/core src/platform src/game)
+target_include_directories(crusn PRIVATE src src/portable src/platform src/game)
 
 if(TARGET SDL2::SDL2main)
   target_link_libraries(crusn PRIVATE SDL2::SDL2main)

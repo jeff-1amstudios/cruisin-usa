@@ -1,5 +1,5 @@
 
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "cmos.h"
 #include "cornobj.h"
 #include "discovered_labels.h"

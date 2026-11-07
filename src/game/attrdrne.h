@@ -1,7 +1,7 @@
 #ifndef ATTRDRNE_H
 #define ATTRDRNE_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/ATTRDRNE.ASM. */
 

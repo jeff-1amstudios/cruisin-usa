@@ -1,6 +1,6 @@
 
 #include "trans.h"
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "cmos.h"
 #include "delta.h"
 #include "discovered_labels.h"

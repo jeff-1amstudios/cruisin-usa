@@ -1,5 +1,5 @@
-#include "../core/machine.h"
-#include "../core/port.h"
+#include "../portable/machine.h"
+#include "../portable/port.h"
 /*
  * Source module: asm/OVERLAY.ASM
  */

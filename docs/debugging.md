@@ -2,7 +2,7 @@
 
 We are translating the original TMS320C30 asm source code into portable C. At this stage the main task is usually to debug behavior in translated `.c` code against the original arcade implementation.
 
-Validation exists so we can compare the port's behavior against values produced by MAME running the original game. The validator lives in `src/core/validator`.
+Validation exists so we can compare the port's behavior against values produced by MAME running the original game. The validator lives in `src/portable/validator`.
 
 When validation fails, you will usually see output like `/Users/j.harris/code/cruisin-usa/src/game/text.c:692: validation(R0) failed; expected 0x00000050 but was 0x00000059`.
 
@@ -33,7 +33,7 @@ The system has two sides: a MAME-side trace generator and a port-side validator.
 1. Fix code / add validation macros in the translated C code.
 2. Run `tools/debug.sh`.
   -  `tools/mame/output/mame_validate_breakpoints.txt` is updated and MAME runs with that debugger script
-  - Our port is build and run. `src/core/validator.c` opens `mame_validate/mame.log` and consumes entries in order as the port reaches each validation call.
+  - Our port is build and run. `src/portable/validator.c` opens `mame_validate/mame.log` and consumes entries in order as the port reaches each validation call.
   - If the current port value does not match the next expected MAME value, the validator reports the mismatch and usually aborts immediately.
 
 The key point is that the validator is not recomputing anything itself. It is replaying a previously captured trace from the original game and checking that the port reaches the same observable state in the same order.

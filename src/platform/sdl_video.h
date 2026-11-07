@@ -3,7 +3,7 @@
 
 #include <SDL.h>
 
-#include "../core/machine.h"
+#include "../portable/machine.h"
 
 typedef struct crusn_video {
     SDL_Window* window;

@@ -2,8 +2,8 @@
 
 #include <string.h>
 
-#include "../core/audio.h"
-#include "../core/machine.h"
+#include "../portable/audio.h"
+#include "../portable/machine.h"
 #include "cmos.h"
 #include "comm.h"
 #include "discovered_labels.h"

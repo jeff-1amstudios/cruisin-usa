@@ -1,7 +1,7 @@
 #ifndef BONUS_H
 #define BONUS_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/BONUS.ASM. */
 

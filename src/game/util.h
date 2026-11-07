@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/UTIL.ASM. */
 

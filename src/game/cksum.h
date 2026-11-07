@@ -1,7 +1,7 @@
 #ifndef CKSUM_H
 #define CKSUM_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/CKSUM.EQU. */
 

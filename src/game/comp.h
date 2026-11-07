@@ -1,8 +1,8 @@
 #ifndef COMP_H
 #define COMP_H
 
-#include "../core/memory.h"
-#include "../core/port.h"
+#include "../portable/memory.h"
+#include "../portable/port.h"
 
 /* Generated from asm/COMP.ASM. */
 

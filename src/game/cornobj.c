@@ -1,5 +1,5 @@
 
-#include "../core/machine.h"
+#include "../portable/machine.h"
 
 /*
  * Source module: asm/CORNOBJ.ASM

@@ -1,7 +1,7 @@
 
 #include "infin.h"
-#include "../core/machine.h"
-#include "../core/output.h"
+#include "../portable/machine.h"
+#include "../portable/output.h"
 #include "globals.h"
 #include "macs.h"
 #include "mproc.h"

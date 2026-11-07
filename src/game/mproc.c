@@ -2,8 +2,8 @@
 
 #include <string.h>
 
-#include "../core/machine.h"
-#include "../core/validator.h"
+#include "../portable/machine.h"
+#include "../portable/validator.h"
 #include "c30.h"
 #include "error.h"
 #include "macs.h"

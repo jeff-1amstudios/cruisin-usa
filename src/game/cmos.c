@@ -1,6 +1,6 @@
 #include "cmos.h"
 
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "c30.h"
 #include "globals.h"
 #include "macs.h"

@@ -1,7 +1,7 @@
 #ifndef ROUTS_H
 #define ROUTS_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/ROUTS.ASM. */
 

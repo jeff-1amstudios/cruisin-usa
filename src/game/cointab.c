@@ -1,7 +1,7 @@
 // NOEDIT
 
-#include "../core/machine.h"
-#include "../core/port.h"
+#include "../portable/machine.h"
+#include "../portable/port.h"
 #include "c30.h"
 #include "cmos.h"
 #include "globals.h"

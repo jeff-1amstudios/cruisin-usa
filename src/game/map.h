@@ -1,7 +1,7 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/MAP.ASM. */
 

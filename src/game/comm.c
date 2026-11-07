@@ -1,7 +1,7 @@
 #include "comm.h"
 
-#include "../core/machine.h"
-#include "../core/output.h"
+#include "../portable/machine.h"
+#include "../portable/output.h"
 #include "c30.h"
 #include "cmos.h"
 #include "commq.h"

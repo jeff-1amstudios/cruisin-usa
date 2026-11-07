@@ -1,7 +1,7 @@
 #ifndef COIN_H
 #define COIN_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/COIN.ASM. */
 

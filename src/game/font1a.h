@@ -1,7 +1,7 @@
 #ifndef FONT1A_H
 #define FONT1A_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/FONT1A.ASM. */
 

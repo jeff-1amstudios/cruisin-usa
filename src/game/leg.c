@@ -1,6 +1,6 @@
 
 #include "leg.h"
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "discovered_labels.h"
 #include "globals.h"
 #include "macs.h"

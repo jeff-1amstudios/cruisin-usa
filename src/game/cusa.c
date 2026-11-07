@@ -1,12 +1,12 @@
 #include "cusa.h"
-#include "../core/input.h"
+#include "../portable/input.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../core/machine.h"
-#include "../core/port.h"
-#include "../core/validator.h"
+#include "../portable/machine.h"
+#include "../portable/port.h"
+#include "../portable/validator.h"
 #include "bssstart.h"
 #include "c30.h"
 #include "checksum.h"

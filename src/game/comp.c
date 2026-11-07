@@ -1,5 +1,5 @@
 #include "comp.h"
-#include "../core/port.h"
+#include "../portable/port.h"
 #include "c30.h"
 #include "globals.h"
 #include "macs.h"

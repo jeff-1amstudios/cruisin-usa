@@ -1,7 +1,7 @@
 #ifndef RHO_H
 #define RHO_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/RHO.ASM. */
 

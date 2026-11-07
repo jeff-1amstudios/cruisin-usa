@@ -939,7 +939,7 @@ def render_storage_header(
     out.append(f"#ifndef {guard}")
     out.append(f"#define {guard}")
     out.append("")
-    out.append('#include "../core/port.h"')
+    out.append('#include "../portable/port.h"')
     out.append("")
     out.append(f"/* Generated from asm/{src_path.name}. */")
     out.append("")
@@ -2679,7 +2679,7 @@ def render_equ_header(
     out.append(f"#ifndef {guard}")
     out.append(f"#define {guard}")
     out.append("")
-    out.append('#include "../core/port.h"')
+    out.append('#include "../portable/port.h"')
     out.append("")
     out.append(f"/* Generated from asm/{src_path.name}. */")
     if banner_comments:
@@ -3785,7 +3785,7 @@ def render_module(
     exported_function_names = set(collect_module_globl_function_names(lines, symbol_table))
     out: list[str] = []
     out.append('')
-    out.append('#include "../core/machine.h"')
+    out.append('#include "../portable/machine.h"')
     for header in headers:
         out.append(f'#include "{header}"')
     out.append("")

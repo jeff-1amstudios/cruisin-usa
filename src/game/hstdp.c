@@ -1,6 +1,6 @@
 #include "hstdp.h"
 
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "cmos.h"
 #include "globals.h"
 #include "hud.h"

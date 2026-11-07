@@ -25,7 +25,7 @@ asm/
   ...
 
 src/
-  core/
+  portable/
     machine.h
     machine.c
     memory.h

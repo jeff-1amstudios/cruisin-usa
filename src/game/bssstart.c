@@ -1,6 +1,6 @@
 
 #include "bssstart.h"
-#include "../core/machine.h"
+#include "../portable/machine.h"
 #include "macs.h"
 
 /*

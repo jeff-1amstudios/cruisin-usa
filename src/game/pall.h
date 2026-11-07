@@ -1,7 +1,7 @@
 #ifndef PALL_H
 #define PALL_H
 
-#include "../core/port.h"
+#include "../portable/port.h"
 
 /* Generated from asm/PALL.EQU. */
 
