@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __APPLE__
+#include <limits.h>
+#include <unistd.h>
+#endif
+
 #include "../core/audio.h"
 #include "../core/input.h"
 #include "../core/machine.h"
@@ -32,6 +37,37 @@ typedef struct crusn_options {
     int test_highscore_input;
     int skip_boot_screen;
 } crusn_options;
+
+#ifdef __APPLE__
+static void crusn_use_bundle_parent_directory(const char* executable_path) {
+    char resolved_path[PATH_MAX];
+    char rom_path[PATH_MAX];
+    char* bundle_suffix;
+    char* app_name;
+
+    if (access("roms/crusnusa.zip", R_OK) == 0 ||
+        realpath(executable_path, resolved_path) == NULL) {
+        return;
+    }
+
+    bundle_suffix = strstr(resolved_path, ".app/Contents/MacOS/");
+    if (bundle_suffix == NULL) {
+        return;
+    }
+
+    *bundle_suffix = '\0';
+    app_name = strrchr(resolved_path, '/');
+    if (app_name == NULL) {
+        return;
+    }
+    *app_name = '\0';
+
+    if (snprintf(rom_path, sizeof(rom_path), "%s/roms/crusnusa.zip", resolved_path) < (int)sizeof(rom_path) &&
+        access(rom_path, R_OK) == 0) {
+        (void)chdir(resolved_path);
+    }
+}
+#endif
 
 static int process_args(int argc, char* argv[], crusn_options* options) {
     const char prefix[] = "--race-time=";
@@ -190,6 +226,10 @@ int main(int argc, char* argv[]) {
     crusn_options options;
     int running = 1;
     Uint32 sdl_flags;
+
+#ifdef __APPLE__
+    crusn_use_bundle_parent_directory(argv[0]);
+#endif
 
     if (process_args(argc, argv, &options) != 0) {
         return 1;

@@ -264,7 +264,7 @@ void START_HIGH_SCORE_INPUT_TEST(void) {
     INIT_SYSTEM();
     GETCMOS_VALUES();
     BONUS_WAVE = 1;
-    ETIME = 1;
+    CRUSN_ETIME = 1;
     RACE_MODE = RM_SINGLE;
     ADJUSTMENT_WRITE(ADJ_INITIALS, -1);
 
@@ -875,7 +875,7 @@ static void HSTD_TIMER(void) {
     // asm 000032D0: 	LDI	@_countdown,R2
     // asm 000032D1: 	LDI	@COUNTDOWN_BUFI,AR2
     // asm 000032D2: 	CALL	_itoa
-    _itoa((char*)COUNTDOWN_BUFI, _countdown);
+    crusn_itoa((char*)COUNTDOWN_BUFI, _countdown);
     // asm 000032D3: 	FLOAT	256,R2
     // asm 000032D4: 	FLOAT	343,R3			;YPOS
     // asm 000032D5: 	LDI	1,RC
@@ -941,7 +941,7 @@ int INTO_TABLE_P(void) {
     // asm 000032EE: 	LDI	R0,AR0
     // ;	LDI	*+AR0(GT_ETIME),R0
     // asm 000032EF: 	LDI	@ETIME,R0
-    time_code = ETIME;
+    time_code = CRUSN_ETIME;
     // asm 000032F0: 	CMPI	14,R1
     // asm 000032F1: 	CALLEQ	CALC_TOTAL_ELAPSED	;A call to ENTER_INITIALS WITH BONUS_WAVE =15 WILL
     if (race_index == 14) {
@@ -3393,7 +3393,7 @@ static void MAKE_NUMBERS(int score, int place) {
     // asm 00003760: 	LDI	AR7,AR2
     // asm 00003761: 	ADDI	TEMP_STR,AR2
     // asm 00003762: 	CALL	_itoa
-    _itoa(temp_str, score);
+    crusn_itoa(temp_str, score);
     // asm 00003763: 	CALL	FORMAT_NUM
     FORMAT_NUM(temp_str, digits);
     // asm 00003764: 	LDI	AR7,AR4
@@ -3498,7 +3498,7 @@ static void MAKE_TIME(int time_code, int place) {
     // asm 00003792: 	LDI	AR7,AR2
     // asm 00003793: 	ADDI	TEMP_STR,AR2
     // asm 00003794: 	CALL	_itoa
-    _itoa(temp_str, minutes);
+    crusn_itoa(temp_str, minutes);
     // asm 00003795: 	CALL	FORMAT_NUM
     FORMAT_NUM(temp_str, digits);
     // asm 00003796: 	LDI	AR7,AR4

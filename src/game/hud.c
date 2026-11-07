@@ -293,7 +293,7 @@ OFJN:
     // asm 00009D63: 	LDI	@OFFROAD_TMR,R2
     // asm 00009D64: 	LDL	OFFROADBUFF,AR2
     // asm 00009D65: 	CALL	_itoa
-    _itoa((char*)OFFROADBUFF, OFFROAD_TMR);
+    crusn_itoa((char*)OFFROADBUFF, OFFROAD_TMR);
     // asm 00009D66: 	FLOAT	256,R2
     // asm 00009D67: 	FLOAT	30,R3
     // asm 00009D68: 	LDI	1,RC
@@ -406,7 +406,7 @@ ISDNN:
     // asm 00009DAE: 	LDI	@_countdown,R2
     // asm 00009DAF: 	LDI	@COUNTDOWN_BUFI,AR2
     // asm 00009DB0: 	CALL	_itoa
-    _itoa((char*)COUNTDOWN_BUFI, _countdown);
+    crusn_itoa((char*)COUNTDOWN_BUFI, _countdown);
     // asm 00009DB1: 	FLOAT	256,R2
     // asm 00009DB2: 	FLOAT	24,R3
     // asm 00009DB3: 	FLOAT	@MOVEIN_OFFSET,R0
@@ -496,7 +496,7 @@ ISMPH:
 ISKPH:
     // asm 00009DDE: LDI	@MPH_BUFFERI,AR2
     // asm 00009DDF: 	CALL	_itoa
-    _itoa((char*)MPH_BUFFERI, speed);
+    crusn_itoa((char*)MPH_BUFFERI, speed);
     // asm 00009DE0: 	FLOAT	66,R2
     // asm 00009DE1: 	FLOAT	@MOVEIN_OFFSET,R0
     // asm 00009DE2: 	SUBF	R0,R2

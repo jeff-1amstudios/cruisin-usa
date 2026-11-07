@@ -14,10 +14,10 @@ from typing import DefaultDict, Dict, Iterable, List, Optional
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 VALIDATE_ARG_RE = re.compile(
-    r'(?:MAME_ASSERT_ARG|mame_validate_arg)(?:_sym)?\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
+    r'MAME_ASSERT_ARG\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_ARG_FLOAT_RE = re.compile(
-    r'(?:MAME_ASSERT_ARG_FLOAT|mame_validate_arg_float)\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
+    r'MAME_ASSERT_ARG_FLOAT\(\s*"(?P<label>[^"]+)"\s*,\s*(?P<expr>[^)]+)\)\s*;'
 )
 VALIDATE_FUNCTION_ENTRY_RE = re.compile(
     r'(?:MAME_ASSERT_FUNCTION_ENTRY|MAME_VALIDATE_FUNCTION_ENTRY|mame_validate_function_entry)\(\s*\)\s*;'

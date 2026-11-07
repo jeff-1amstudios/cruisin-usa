@@ -159,7 +159,7 @@ const char* LEG_NAMES[] = {
 
 int GAMETRAK[NUM_LEGS * sizeof(tagGAMETRAK)];
 /* asm: ETIME	.bss	ETIME,1 */
-int ETIME;
+int CRUSN_ETIME;
 // ;etime,#,maxmph
 /* asm: BUFFERSI	.word	BIGBUFFER */
 #define BUFFERSI BIGBUFFER
@@ -767,12 +767,12 @@ static void BONSCRN2(PROC* p) {
     // asm 00003A66: 	LDI	0,R0		;ELAPSED TIME OF 0 = DID NOT FINISH
     // asm 00003A67: 	STI	R0,@ETIME
     if (DID_TIMED_OUT != 0) {
-        ETIME = 0; // ;ELAPSED TIME OF 0 = DID NOT FINISH
+        CRUSN_ETIME = 0; // ;ELAPSED TIME OF 0 = DID NOT FINISH
     }
 DOREG3A:
     // asm 00003A68: LDI	@STOPWATCH,R0
     // asm 00003A69: 	STI	R0,@ETIME
-    ETIME = STOPWATCH;
+    CRUSN_ETIME = STOPWATCH;
     // *ELP CHANGE
     // 	;TURN ON LINK HERE... ALL LISTEN
     // 	;
@@ -1041,7 +1041,7 @@ DDF1:
     game_track->collisions = 1;
     // asm 00003B0B: 	LDI	@ETIME,R0
     // asm 00003B0C: 	STI	R0,*+AR0(GT_ETIME)
-    game_track->elapsed_time = (u32)ETIME;
+    game_track->elapsed_time = (u32)CRUSN_ETIME;
     // asm 00003B0D: 	LDI	@RACE_MODE,R0
     // asm 00003B0E: 	CMPI	RM_USA,R0
     // asm 00003B0F: 	BNE	NOTNIN2
@@ -2429,7 +2429,7 @@ KJL:
     // asm 00003DFE: 	LDI	AR7,AR2
     // asm 00003DFF: 	ADDI	PDATA,AR2
     // asm 00003E00: 	CALL	_itoa
-    _itoa(bonus_maxmph, C3X_FIX(value));
+    crusn_itoa(bonus_maxmph, C3X_FIX(value));
     // asm 00003E01: 	FLOAT	512,R2
     // asm 00003E02: 	FLOAT	20,R3
     // asm 00003E03: 	LDI	999,RC
@@ -3002,7 +3002,7 @@ static void BONS_ETIME(PROC* p) {
     }
     // asm 00003EFB: 	LDI	0,R0		;ELAPSED TIME OF 0 = DID NOT FINISH
     // asm 00003EFC: 	STI	R0,@ETIME
-    ETIME = 0; // ;ELAPSED TIME OF 0 = DID NOT FINISH
+    CRUSN_ETIME = 0; // ;ELAPSED TIME OF 0 = DID NOT FINISH
     // asm 00003EFD: 	LDL	EXPIRED,AR2
     value_string = EXPIRED;
     // asm 00003EFE: 	BU	LREG3
@@ -3010,11 +3010,11 @@ static void BONS_ETIME(PROC* p) {
 DOREG3:
     // asm 00003EFF: LDI	@STOPWATCH,R0
     // asm 00003F00: 	STI	R0,@ETIME
-    ETIME = STOPWATCH;
+    CRUSN_ETIME = STOPWATCH;
     // asm 00003F01: 	LDI	AR7,AR2
     // asm 00003F02: 	ADDI	PDATA,AR2
     // asm 00003F03: 	CALL	TIME2STR
-    TIME2STR(p->ctx.BONS_TEXT.buffer, ETIME);
+    TIME2STR(p->ctx.BONS_TEXT.buffer, CRUSN_ETIME);
     value_string = p->ctx.BONS_TEXT.buffer;
 LREG3:
     // asm 00003F04: 	FLOAT	512,R2

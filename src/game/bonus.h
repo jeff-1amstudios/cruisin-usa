@@ -21,7 +21,7 @@ extern int DO_FOLDFLAG;
 // asm: 		.bss	GAMETRAK,NUM_LEGS*GT_SIZE
 extern int GAMETRAK[];
 // asm: 		.bss	ETIME,1
-extern int ETIME;
+extern int CRUSN_ETIME;
 // asm: 	.bss	UNFOLDFLAG,1
 extern int UNFOLDFLAG;
 // asm: 	.bss	SAVED_COUNTDOWN,1

@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 
+option(CRUSN_MACOS_BUNDLE "Build a macOS application bundle" OFF)
+if(APPLE AND CRUSN_MACOS_BUNDLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version")
+endif()
+
 project(cruisin_usa_port LANGUAGES C CXX)
 
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
@@ -130,7 +135,6 @@ target_compile_definitions(adsp2100 PRIVATE
   UINT32=uint32_t
   HAS_ADSP2101=1
   HAS_ADSP2105=1
-  strcpy_s=strcpy
 )
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
   target_compile_options(adsp2100 PRIVATE $<$<CONFIG:Debug>:-O2>)
@@ -139,6 +143,15 @@ endif()
 add_executable(crusn)
 target_sources(crusn PRIVATE ${CRUSN_SOURCES})
 target_link_libraries(crusn PRIVATE miniz adsp2100)
+
+if(APPLE AND CRUSN_MACOS_BUNDLE)
+  set_target_properties(crusn PROPERTIES
+    MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_BUNDLE_NAME "Cruis'n USA"
+    MACOSX_BUNDLE_GUI_IDENTIFIER "com.1amstudios.cruisn-usa"
+    OUTPUT_NAME "Cruis'n USA"
+  )
+endif()
 
 add_custom_target(check-c3x-translation
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/check_c3x_translation.py
@@ -155,6 +168,10 @@ add_custom_target(check-asm-source-sync
 )
 
 target_include_directories(crusn PRIVATE src src/core src/platform src/game)
+
+if(TARGET SDL2::SDL2main)
+  target_link_libraries(crusn PRIVATE SDL2::SDL2main)
+endif()
 
 if(TARGET SDL2::SDL2)
   target_link_libraries(crusn PRIVATE SDL2::SDL2)

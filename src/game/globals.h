@@ -102,7 +102,7 @@ extern OBJ* SINGLE_SECTION_TEMPPTR;
 extern int BSSSTART;
 
 // asm:  .globl ETIME
-extern int ETIME;
+extern int CRUSN_ETIME;
 
 // asm:  .globl DO_FOLDFLAG
 extern int DO_FOLDFLAG;
@@ -1134,7 +1134,7 @@ OBJ* FIND_NEXT_OBJ(OBJ* obj /*AR0*/, int oid /*R1*/);
 void _outtextxyc(const char* string, int x, int y, int color);
 
 // asm:  .globl _itoa,_itoaLZ
-void _itoa(char* string_space /*AR2*/, int number /*R2*/);
+void crusn_itoa(char* string_space /*AR2*/, int number /*R2*/);
 
 void _itoaLZ(char* string_space /*AR2*/, int number /*R2*/);
 
@@ -1247,7 +1247,7 @@ void CPOINT_LIGHT(PROC* p);
 // asm:  .globl _debug,_start
 void _debug(PROC* p);
 
-void _start(PROC* p);
+void INTRO_START(PROC* p);
 
 // asm:  .globl _timeout,_timer
 void _timeout(PROC* p);

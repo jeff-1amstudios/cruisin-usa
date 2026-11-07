@@ -1804,7 +1804,7 @@ SWSTX:;
 static PROC_FUNC SWTAB[] = {
     COIN1,     // 00000001 SW_COIN1	(COIN.ASM)
     COIN2,     // 00000002 SW_COIN2 	(COIN.ASM)
-    _start,    // 00000004 START		(INTRO.ASM)
+    INTRO_START,    // 00000004 START		(INTRO.ASM)
     0,         // 00000008
     0,         // 00000010 SW_DIAG	(DIAG.ASM)
     0,         // 00000020
