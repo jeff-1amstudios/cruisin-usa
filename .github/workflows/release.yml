@@ -108,11 +108,13 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libsdl2-dev ninja-build patchelf
+          sudo apt-get install -y libsdl2-dev libcurl4-openssl-dev ninja-build patchelf
       - name: Build
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build --parallel
+          cmake --build build --target startup-probe check-game-portable-boundary
+          python3 tools/test_startup.py build/startup-probe
       - name: Package binary and symbols
         env:
           PACKAGE_FILE: ${{ steps.package.outputs.filename }}
@@ -152,6 +154,7 @@ jobs:
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-curl
             mingw-w64-ucrt-x86_64-SDL2
             mingw-w64-ucrt-x86_64-python
       - name: Set package name
@@ -163,13 +166,39 @@ jobs:
         run: |
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build build --parallel
+          cmake --build build --target startup-probe check-game-portable-boundary
+          python tools/test_startup.py build/startup-probe.exe
       - name: Package binary and runtime DLLs
         env:
           PACKAGE_FILE: ${{ steps.package.outputs.filename }}
         run: |
           mkdir -p dist/package
           cp build/crusn.exe dist/package/
-          cp /ucrt64/bin/SDL2.dll /ucrt64/bin/libgcc_s_seh-1.dll /ucrt64/bin/libstdc++-6.dll /ucrt64/bin/libwinpthread-1.dll dist/package/
+          # Resolve the full curl/TLS/SDL runtime dependency tree.
+          export CRUSN_RUNTIME_BIN="$(cygpath -w /ucrt64/bin)"
+          python - <<'PYTHON'
+          import os
+          import pathlib
+          import re
+          import shutil
+          import subprocess
+          package = pathlib.Path('dist/package')
+          pending = [package / 'crusn.exe']
+          copied = set()
+          runtime_bin = pathlib.Path(os.environ['CRUSN_RUNTIME_BIN'])
+          while pending:
+              binary = pending.pop()
+              imports = subprocess.check_output(['objdump', '-p', str(binary)], text=True)
+              for name in re.findall(r'DLL Name: (\S+)', imports):
+                  source = runtime_bin / name
+                  if source.is_file() and name.lower() not in copied:
+                      copied.add(name.lower())
+                      target = package / name
+                      shutil.copy2(source, target)
+                      pending.append(target)
+          PYTHON
+          # The OpenSSL curl backend uses this bundle for HTTPS verification.
+          cp /ucrt64/etc/ssl/certs/ca-bundle.crt dist/package/curl-ca-bundle.crt
           cmake -E chdir dist/package cmake -E tar cf "../$PACKAGE_FILE" --format=zip .
       - uses: actions/upload-artifact@v4
         with:
@@ -177,9 +206,72 @@ jobs:
           path: dist/${{ steps.package.outputs.filename }}
           if-no-files-found: error
 
+  web:
+    name: CI WebAssembly
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: '4.0.19'
+          actions-cache-folder: emsdk-cache
+      - name: Build web port
+        run: |
+          emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=Release -DCRUSN_TRACE=OFF
+          cmake --build build-web --parallel
+          cmake --build build-web --target check-game-portable-boundary
+      - name: Package web build
+        run: |
+          version=$(git describe --tags --always)
+          cmake -E chdir build-web cmake -E tar cf "../crusn-${version}-web.zip" --format=zip crusn.html crusn.js crusn.wasm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crusn-web
+          path: crusn-*-web.zip
+          if-no-files-found: error
+
+      - name: Configure GitHub Pages
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/configure-pages@v5
+      - name: Stage GitHub Pages site
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        run: |
+          mkdir -p build-web/pages
+          cp build-web/crusn.html build-web/pages/index.html
+          cp build-web/crusn.js build-web/crusn.wasm build-web/pages/
+      - name: Upload GitHub Pages site
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build-web/pages
+
+  deploy-pages:
+    name: Deploy web game to GitHub Pages
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: web
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
   publish:
     if: github.event_name == 'release'
-    needs: [macos, linux, windows]
+    needs: [macos, linux, windows, web]
     runs-on: ubuntu-latest
     permissions:
       contents: write

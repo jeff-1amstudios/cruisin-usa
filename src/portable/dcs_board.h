@@ -12,6 +12,7 @@ enum { DCS_BOARD_SAMPLE_RATE = 31250 };
 
 typedef struct dcs_board dcs_board;
 
+int dcs_board_validate_roms(const char* zip_path, char* error, size_t error_size);
 dcs_board* dcs_board_create(const char* zip_path, char* error, size_t error_size);
 void dcs_board_destroy(dcs_board* board);
 void dcs_board_send_command(dcs_board* board, uint16_t command);

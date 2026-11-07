@@ -24,14 +24,21 @@ option(CRUSN_TRACE "Enable native trace logging" ON)
 option(C3X_USE_HOST_FLOAT "Use native host floating point for translated C3x float operations" OFF)
 option(CRUSN_ENABLE_ASAN "Enable AddressSanitizer in Debug builds" OFF)
 
-find_package(SDL2 CONFIG QUIET)
-if(NOT SDL2_FOUND)
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(SDL2 REQUIRED sdl2)
+set(CRUSN_ROM_URL "https://archive.org/download/crusnusa/crusnusa.zip" CACHE STRING "ROM download URL (empty disables automatic download)")
+if(NOT EMSCRIPTEN)
+  find_package(SDL2 CONFIG QUIET)
+  if(NOT SDL2_FOUND)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SDL2 REQUIRED sdl2)
+  endif()
+  find_package(CURL 7.68 REQUIRED)
 endif()
 
 set(CRUSN_SOURCES
 
+  src/portable/rom.c
+  src/portable/startup.c
+  src/portable/startup_ui.c
   src/portable/input.c
   src/portable/output.c
   src/portable/machine.c
@@ -146,6 +153,45 @@ endif()
 add_executable(crusn)
 target_sources(crusn PRIVATE ${CRUSN_SOURCES})
 target_link_libraries(crusn PRIVATE miniz adsp2100)
+target_compile_definitions(crusn PRIVATE CRUSIN_PORTABLE=1 CRUSN_ROM_URL="${CRUSN_ROM_URL}")
+if(EMSCRIPTEN)
+  target_sources(crusn PRIVATE src/platform/web_download.c)
+  target_compile_options(crusn PRIVATE -sUSE_SDL=2 -fexceptions)
+  target_link_options(crusn PRIVATE
+    -sUSE_SDL=2 -sFETCH=1 -sALLOW_MEMORY_GROWTH=1
+    -sINITIAL_MEMORY=134217728 -sMAXIMUM_MEMORY=536870912
+    -sSTACK_SIZE=8388608 -sFORCE_FILESYSTEM=1 -lidbfs.js -fexceptions
+    "-sEXPORTED_RUNTIME_METHODS=['FS','callMain']"
+    "--shell-file=${CMAKE_SOURCE_DIR}/src/platform/web/shell.html"
+  )
+  set_target_properties(crusn PROPERTIES SUFFIX ".html")
+  set_property(TARGET crusn APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/src/platform/web/shell.html")
+else()
+  target_sources(crusn PRIVATE src/platform/native_download.c)
+  target_link_libraries(crusn PRIVATE CURL::libcurl)
+  add_executable(startup-probe EXCLUDE_FROM_ALL
+    tools/startup_probe.c src/portable/startup.c src/portable/rom.c
+    src/portable/dcs_board.cpp src/platform/native_download.c)
+  target_include_directories(startup-probe PRIVATE src src/portable src/game)
+  target_link_libraries(startup-probe PRIVATE miniz adsp2100 CURL::libcurl)
+endif()
+
+# Compile the same translated core for deterministic native/Wasm comparisons.
+set(CRUSN_PROBE_SOURCES ${CRUSN_SOURCES})
+list(FILTER CRUSN_PROBE_SOURCES EXCLUDE REGEX "^src/platform/|^src/portable/(input|startup|startup_ui)\\.c$")
+add_executable(game-probe EXCLUDE_FROM_ALL tools/game_probe.c ${CRUSN_PROBE_SOURCES})
+target_include_directories(game-probe PRIVATE src src/portable src/game)
+target_compile_definitions(game-probe PRIVATE CRUSIN_PORTABLE=1)
+target_link_libraries(game-probe PRIVATE miniz adsp2100)
+if(C3X_USE_HOST_FLOAT)
+  target_compile_definitions(game-probe PRIVATE C3X_USE_HOST_FLOAT=1)
+endif()
+if(EMSCRIPTEN)
+  set_target_properties(game-probe PROPERTIES SUFFIX ".js")
+  target_compile_options(game-probe PRIVATE -fexceptions)
+  target_link_options(game-probe PRIVATE -fexceptions -sENVIRONMENT=node -sNODERAWFS=1
+    -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=134217728 -sSTACK_SIZE=8388608)
+endif()
 
 if(APPLE AND CRUSN_MACOS_BUNDLE)
   set_target_properties(crusn PROPERTIES
@@ -155,6 +201,13 @@ if(APPLE AND CRUSN_MACOS_BUNDLE)
     OUTPUT_NAME "Cruis'n USA"
   )
 endif()
+
+add_custom_target(check-game-portable-boundary
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/check_game_portable_boundary.py
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMENT "Checking game code uses only portable host interfaces"
+  VERBATIM
+)
 
 add_custom_target(check-c3x-translation
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/check_c3x_translation.py
@@ -172,15 +225,16 @@ add_custom_target(check-asm-source-sync
 
 target_include_directories(crusn PRIVATE src src/portable src/platform src/game)
 
-if(TARGET SDL2::SDL2main)
-  target_link_libraries(crusn PRIVATE SDL2::SDL2main)
-endif()
-
-if(TARGET SDL2::SDL2)
-  target_link_libraries(crusn PRIVATE SDL2::SDL2)
-else()
-  target_include_directories(crusn PRIVATE ${SDL2_INCLUDE_DIRS})
-  target_link_libraries(crusn PRIVATE ${SDL2_LINK_LIBRARIES})
+if(NOT EMSCRIPTEN)
+  if(TARGET SDL2::SDL2main)
+    target_link_libraries(crusn PRIVATE SDL2::SDL2main)
+  endif()
+  if(TARGET SDL2::SDL2)
+    target_link_libraries(crusn PRIVATE SDL2::SDL2)
+  else()
+    target_include_directories(crusn PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(crusn PRIVATE ${SDL2_LINK_LIBRARIES})
+  endif()
 endif()
 
 if(CRUSN_TRACE)
@@ -202,7 +256,9 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
   endif()
 endif()
 
-if(APPLE)
+if(EMSCRIPTEN)
+  # Native linker-map syntax is not accepted by wasm-ld.
+elseif(APPLE)
   target_link_options(crusn PRIVATE "LINKER:SHELL:-map ${CMAKE_BINARY_DIR}/port.map")
 else()
   target_link_options(crusn PRIVATE "LINKER:-Map=${CMAKE_BINARY_DIR}/port.map")

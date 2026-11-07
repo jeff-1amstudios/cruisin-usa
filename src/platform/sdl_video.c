@@ -3,7 +3,12 @@
 #include <stdlib.h>
 
 int crusn_video_init(crusn_video* video, int fullscreen, int bilinear) {
+    video->bilinear = bilinear;
     Uint32 window_flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE;
+#ifdef __EMSCRIPTEN__
+    window_flags = SDL_WINDOW_RESIZABLE;
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
+#endif
     Uint32 renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
     const char* validation_realtime = getenv("CRUSN_VALIDATE_REALTIME");
 
@@ -74,6 +79,10 @@ int crusn_video_present(crusn_video* video, const crusn_machine* machine) {
     u32* pixels;
     int pitch;
 
+    if (SDL_SetTextureScaleMode(video->texture,
+            video->bilinear ? SDL_ScaleModeLinear : SDL_ScaleModeNearest) != 0) {
+        return -1;
+    }
     if (SDL_LockTexture(video->texture, NULL, (void**)&pixels, &pitch) != 0) {
         return -1;
     }
@@ -89,6 +98,17 @@ int crusn_video_present(crusn_video* video, const crusn_machine* machine) {
         return -1;
     }
 
+    SDL_RenderPresent(video->renderer);
+    return 0;
+}
+
+int crusn_video_present_pixels(crusn_video* video, const u32* pixels) {
+    if (SDL_SetTextureScaleMode(video->texture, SDL_ScaleModeNearest) != 0) return -1;
+    if (SDL_UpdateTexture(video->texture, NULL, pixels, CRUSN_SCREEN_WIDTH * (int)sizeof(*pixels)) != 0 ||
+        SDL_RenderClear(video->renderer) != 0 ||
+        SDL_RenderCopy(video->renderer, video->texture, NULL, NULL) != 0) {
+        return -1;
+    }
     SDL_RenderPresent(video->renderer);
     return 0;
 }

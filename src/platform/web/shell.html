@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cruis'n USA</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #111c28; color: #e4edf5; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; }
+    main { width: min(100%, 960px); text-align: center; padding: 16px; box-sizing: border-box; }
+    canvas { display: block; width: 100%; aspect-ratio: 512 / 400; background: #111c28; outline: none; }
+    button, .file { font: inherit; padding: 10px 16px; background: #283c50; color: inherit; border: 1px solid #456077; border-radius: 4px; cursor: pointer; }
+    button:focus-visible, .file:focus-within { outline: 2px solid #54d9e8; }
+    button:disabled { opacity: .5; cursor: default; }
+    nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 16px 0; }
+    input[type=file] { max-width: 230px; }
+    p { color: #aebfce; font-size: 14px; }
+    #status { min-height: 20px; }
+  </style>
+</head>
+<body>
+<main>
+  <canvas id="canvas" width="512" height="400" tabindex="0" aria-label="Cruis'n USA game"></canvas>
+  <nav>
+    <button id="start" disabled>Start</button>
+    <label class="file">ROM ZIP <input id="rom" type="file" accept=".zip" disabled></label>
+    <button id="retry" disabled>Retry download</button>
+    <button id="sound" disabled>Enable sound</button>
+    <button id="fullscreen">Fullscreen</button>
+  </nav>
+  <p id="status" role="status">Loading WebAssembly…</p>
+  <p>Enter: Start · WASD / arrows: drive · Space: brake · 1–4: gears · R: radio · F1–F3: views</p>
+</main>
+<script>
+  const canvas = document.getElementById('canvas');
+  const start = document.getElementById('start');
+  const picker = document.getElementById('rom');
+  const retry = document.getElementById('retry');
+  const status = document.getElementById('status');
+  const sound = document.getElementById('sound');
+  let ready = false;
+  let started = false;
+  const params = new URLSearchParams(location.search);
+  var Module = {
+    canvas,
+    noInitialRun: true,
+    arguments: params.has('rom-url') ? ['--rom-url', params.get('rom-url')] : [],
+    preRun: [function() {
+      FS.mkdir('/roms');
+      FS.mount(IDBFS, {}, '/roms');
+      addRunDependency('rom-cache');
+      FS.syncfs(true, function(error) {
+        if (error) console.warn('ROM cache unavailable; continuing without restored data', error);
+        removeRunDependency('rom-cache');
+      });
+    }],
+    onRuntimeInitialized() {
+      ready = true;
+      start.disabled = false;
+      picker.disabled = false;
+      status.textContent = 'Choose a ROM ZIP or press Start to download.';
+    },
+    onGameStarted() {
+      picker.disabled = true;
+      retry.disabled = true;
+      status.textContent = '';
+      const audio = Module.SDL2 && Module.SDL2.audioContext;
+      if (audio) {
+        sound.disabled = false;
+        const update = () => { sound.textContent = audio.state === 'running' ? 'Mute' : 'Enable sound'; };
+        audio.addEventListener('statechange', update);
+        update();
+      }
+    },
+    onAbort(error) { status.textContent = 'Unable to run: ' + error; },
+    print: console.log,
+    printErr: console.error
+  };
+  function begin() {
+    if (!ready || started) return;
+    started = true;
+    start.disabled = true;
+    retry.disabled = false;
+    status.textContent = '';
+    Module.callMain(Module.arguments);
+    canvas.focus();
+  }
+  async function importRom(file) {
+    if (!file || !ready || picker.disabled) return;
+    if (file.size > 64 * 1024 * 1024) { status.textContent = 'ROM ZIP exceeds the 64 MB limit.'; return; }
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (!started) begin();
+      if (!Module._crusn_can_import()) return;
+      Module.FS.writeFile('/roms/crusnusa.zip.part', bytes);
+      Module._crusn_import_rom();
+      status.textContent = '';
+      canvas.focus();
+    } catch (error) { status.textContent = 'Unable to read ROM: ' + error.message; }
+  }
+  sound.addEventListener('click', () => {
+    const audio = Module.SDL2 && Module.SDL2.audioContext;
+    if (audio) {
+      const operation = audio.state === 'running' ? audio.suspend() : audio.resume();
+      operation.catch(error => { status.textContent = 'Audio: ' + error.message; });
+    }
+    canvas.focus();
+  });
+  start.addEventListener('click', begin);
+  picker.addEventListener('change', () => { importRom(picker.files[0]); picker.value = ''; });
+  retry.addEventListener('click', () => { Module._crusn_retry_download(); canvas.focus(); });
+  document.getElementById('fullscreen').addEventListener('click', () => {
+    canvas.requestFullscreen().catch(error => { status.textContent = error.message; });
+    canvas.focus();
+  });
+  canvas.addEventListener('contextmenu', event => event.preventDefault());
+  canvas.addEventListener('keydown', event => {
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','F1','F2','F3'].includes(event.key)) event.preventDefault();
+  });
+  document.addEventListener('dragover', event => event.preventDefault());
+  document.addEventListener('drop', event => { event.preventDefault(); importRom(event.dataTransfer.files[0]); });
+  window.addEventListener('error', event => { status.textContent = event.message; });
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

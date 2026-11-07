@@ -10,3 +10,6 @@ tools/port/log/
 tools/mame/output/
 mame_validate/
 build-miniz-verify/
+
+build-web/
+build-web-native/

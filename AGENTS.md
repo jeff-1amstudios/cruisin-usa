@@ -9,3 +9,12 @@ We can validate behavior through MAME instrumentation. Read docs/debugging.md
 
 ## TMS320c3 docs
 See docs/tms320 folder
+
+## Portable and platform boundary
+Game code in `src/game` must depend only on interfaces in `src/portable` for
+host services. Do not include headers from `src/platform`, SDL, or Emscripten
+in game code, including through transitive headers. Host-specific backends
+implement the portable interfaces in `src/platform`. Guard any required
+portable divergence in `src/game` with `CRUSIN_PORTABLE`.
+Run `cmake --build <build-directory> --target check-game-portable-boundary`
+after changing this boundary.

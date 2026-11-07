@@ -293,6 +293,18 @@ void adsp2100_host_write_pm(uint32_t address, uint32_t value)
     gBoard->program[address & 0x3fff] = value;
 }
 
+extern "C" int dcs_board_validate_roms(const char* zipPath, char* error, size_t errorSize)
+{
+    std::array<std::vector<uint8_t>, kLastSoundChip + 1> roms;
+    if (!LoadSoundROMs(zipPath, roms, error, errorSize) ||
+        !ValidateSoundROMs(roms, error, errorSize)) return -1;
+    if (FindSoftBootOffset(roms[kFirstSoundChip]) == 0) {
+        SetError(error, errorSize, "Cruis'n USA DCS soft-boot image was not found");
+        return -1;
+    }
+    return 0;
+}
+
 extern "C" dcs_board* dcs_board_create(const char* zipPath, char* error, size_t errorSize)
 {
     if (zipPath == nullptr || gBoard != nullptr) {

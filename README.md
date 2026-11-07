@@ -78,6 +78,7 @@ Dependencies:
 
 - CMake 3.20+
 - SDL2
+- libcurl 7.68+ (native downloads)
 - A C11 compiler
 - Python 3
 
@@ -134,6 +135,46 @@ without initializing or playing audio. `--girls` and `--no-girls` override the
 corresponding cabinet adjustment. For debugging, `--race-time SECONDS`
 overrides the normal race countdown in five-second steps. Press <kbd>Return</kbd>
 for Start.
+
+## Browser build
+
+[Play the web version](https://jeff-1amstudios.github.io/cruisin-usa/).
+Every push builds the web port; successful web builds on `main` deploy
+automatically to GitHub Pages.
+
+
+The Emscripten build compiles the same translated C/C++ to WebAssembly and uses
+SDL2's OpenGL ES renderer through WebGL. Install and activate Emscripten 4.0.19
+(the version used in CI), then run:
+
+```sh
+emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=Release -DCRUSN_TRACE=OFF
+cmake --build build-web --parallel
+python3 -m http.server 8000 --directory build-web
+```
+
+Open `http://localhost:8000/crusn.html`. Select a local ROM ZIP or press Start
+to download it. The default download URL is
+`https://archive.org/download/crusnusa/crusnusa.zip`. Override it at build time with
+`-DCRUSN_ROM_URL=https://your-server/crusnusa.zip`, or override it in the browser
+with `?rom-url=https%3A%2F%2Fyour-server%2Fcrusnusa.zip`. Cross-origin downloads
+require the ROM server to allow CORS. HTTPS pages must use HTTPS download URLs.
+
+Both native and browser builds show the same embedded-font progress/error UI
+before starting the game. Downloads and local imports are validated before
+replacing the cached ROM. Browser ROMs are cached in IndexedDB; native ROMs use
+`roms/crusnusa.zip` in the working directory. Native builds also accept
+`--rom-url URL` or the `CRUSN_ROM_URL` environment variable. An empty URL disables
+automatic downloading. Drop a local ZIP onto the native startup window to import
+it, and press R to retry a failed download.
+
+Deploy `crusn.html`, `crusn.js`, and `crusn.wasm` together on a static HTTP(S)
+server that serves `.wasm` as `application/wasm`. No ROM data is bundled.
+Boot/loading screens are skipped in the web build. If the browser suspends
+sound, use Enable sound or interact with the canvas. Keyboard controls are
+supported; touch controls and gamepads are not implemented yet.
+
+See [web port details](docs/web-port.md) for architecture and verification.
 
 ## Contributing
 
