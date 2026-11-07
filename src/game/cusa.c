@@ -792,7 +792,7 @@ ENTER2:
         switch (_MODE & MMODE) {
         case MGAME:
         case MBONUS:
-DOIT8:
+        DOIT8:
             // asm: CALL HUD
             HUD(); // HEADS UP DISPLAY (GAME MODE ONLY)
             break;
@@ -833,7 +833,7 @@ NODO555:
     // asm: CALL CHECKDIAG
     CHECKDIAG(); // JUMP TO DIAGNOSTICS?
     // asm: CALL SWDISP
-    SWDISP();    // DISPATCH ANY SWITCH PROCESSES
+    SWDISP(); // DISPATCH ANY SWITCH PROCESSES
 
     // asm: CALL COLSCC
     COLSCC();
@@ -1106,7 +1106,7 @@ NTEST:
                 FASTCLR0();
                 // asm 00004C9D: 	B	DN_PAGE
             } else {
-PAGE1:
+            PAGE1:
                 // asm 00004C9E: CALL	SETPAGE0
                 SETPAGE0();
                 // asm 00004C9F: 	CALL	FASTCLR1
@@ -1747,7 +1747,7 @@ SWTLP:
             PRC_CREATE(wakeup, SPAWNER_C | SPWN_SWITCH_T, NULL);
         }
 
-NOGPROC:;
+    NOGPROC:;
         // asm 00004E08: LDI	R3,R3
         // asm 00004E09: 	BNZ	SWTLP
     }
@@ -1802,38 +1802,38 @@ SWSTX:;
 /* asm: 	 */
 /* asm: 	 */
 static PROC_FUNC SWTAB[] = {
-    COIN1,     // 00000001 SW_COIN1	(COIN.ASM)
-    COIN2,     // 00000002 SW_COIN2 	(COIN.ASM)
-    INTRO_START,    // 00000004 START		(INTRO.ASM)
-    0,         // 00000008
-    0,         // 00000010 SW_DIAG	(DIAG.ASM)
-    0,         // 00000020
-    SERV_COIN, // 00000040 SW_COINSRV	(COIN.ASM)
-    COIN3,     // 00000080
-    0,         // 00000100
-    0,         // 00000200
-    0,         // 00000400
-    0,         // 00000800
-    0,         // 00001000
-    0,         // 00002000
-    COIN4,     // 00004000
-    0,         // 00008000
-    0,         // 00010000 BRAKE
-    RADIO_BUT, // 00020000 RADIO (OLD ABORT)
-    0,         // 00040000 LOW
-    _debug,    // 00080000 DEBUG
-    _VIEW0,    // 00100000 VIEW0
-    _VIEW1,    // 00200000 VIEW1
-    _VIEW2,    // 00400000 VIEW2
-    0,         // 00800000 VIEW4
-    0,         // 01000000
-    0,         // 02000000
-    0,         // 04000000
-    0,         // 08000000
-    0,         // 10000000
-    0,         // 20000000
-    0,         // 40000000
-    0,         // 80000000
+    COIN1,       // 00000001 SW_COIN1	(COIN.ASM)
+    COIN2,       // 00000002 SW_COIN2 	(COIN.ASM)
+    INTRO_START, // 00000004 START		(INTRO.ASM)
+    0,           // 00000008
+    0,           // 00000010 SW_DIAG	(DIAG.ASM)
+    0,           // 00000020
+    SERV_COIN,   // 00000040 SW_COINSRV	(COIN.ASM)
+    COIN3,       // 00000080
+    0,           // 00000100
+    0,           // 00000200
+    0,           // 00000400
+    0,           // 00000800
+    0,           // 00001000
+    0,           // 00002000
+    COIN4,       // 00004000
+    0,           // 00008000
+    0,           // 00010000 BRAKE
+    RADIO_BUT,   // 00020000 RADIO (OLD ABORT)
+    0,           // 00040000 LOW
+    _debug,      // 00080000 DEBUG
+    _VIEW0,      // 00100000 VIEW0
+    _VIEW1,      // 00200000 VIEW1
+    _VIEW2,      // 00400000 VIEW2
+    0,           // 00800000 VIEW4
+    0,           // 01000000
+    0,           // 02000000
+    0,           // 04000000
+    0,           // 08000000
+    0,           // 10000000
+    0,           // 20000000
+    0,           // 40000000
+    0,           // 80000000
     // ----------------------------------------------------------------------------
 };
 
@@ -2325,7 +2325,7 @@ static void TIMERESET(void) {
         TIMERAM[i + 16] = C3X_STF(t);
         // asm:	MPYF R0,R1
         t = C3X_MUL(inv_frame, t);
-TIMELP:
+    TIMELP:
         // asm:	STF R1,*+AR0(31)
         TIMERAM[i + 32] = C3X_STF(t);
     }
@@ -2417,10 +2417,10 @@ static void MESSAGE1(void) {
     crusn_mem_wr32(COLORAM + 0x001u, (uint32_t)-1); // white
     // asm:	LDI 06000h,R0
     // asm:	STI R0,@9E0003h
-    crusn_mem_wr32(COLORAM + 0x003u, 0x06000u);     // red
+    crusn_mem_wr32(COLORAM + 0x003u, 0x06000u); // red
     // asm:	LDI 0294Ah,R0
     // asm:	STI R0,@9E000Bh
-    crusn_mem_wr32(COLORAM + 0x00Bu, 0x0294Au);     // grey
+    crusn_mem_wr32(COLORAM + 0x00Bu, 0x0294Au); // grey
     // asm:	SETDP
 
     // asm:	CALL CLRSCRN
@@ -2465,7 +2465,7 @@ static void MESSAGE1(void) {
     const char* link_status = LINKDISABLED;
     // asm:	BU HJSADF
     if ((dipsw & DIP_COMMP) == 0) {
-DODOIBO:
+    DODOIBO:
         // asm:	TSTB CMDP_MASTER,R0
         // asm:	LDIZ @IAMMASTER,AR2
         // asm:	LDINZ @IAMSLAVE,AR2

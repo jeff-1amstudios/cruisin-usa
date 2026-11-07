@@ -6,6 +6,7 @@
 #include "../core/machine.h"
 #include "cmos.h"
 #include "comm.h"
+#include "discovered_labels.h"
 #include "globals.h"
 #include "macs.h"
 #include "mproc.h"
@@ -20,9 +21,9 @@
  * Source module: asm/SND.ASM
  */
 
-static void RADIO_SHOW(void);
+static void RADIO_SHOW(PROC* p);
 void RADIO_BUT(PROC* p);
-void SET_STATION(void);
+void SET_STATION(int station /*AR2*/);
 void CHANGE_STATION(void);
 void SET_TUNE_LINKED(void);
 void SET_TUNE(void);
@@ -119,36 +120,73 @@ int STATION_TIMEOUT;
 /* asm: RS_X	.bss	RS_X,1 */
 int RS_X;
 
-static void RADIO_SHOW(void) {
+static void RADIO_SHOW(PROC* p) {
+    int station;
+    const char* station_text;
+    c3x_reg_t text_x;
+    c3x_reg_t text_y;
+    int text_ticks;
+    const BLTMOD2D_MODEL* model;
+    int model_x;
+    int model_y;
+    int model_control;
+
+    switch (PROC_RESUME_STATE) {
+    case 0:
+        MAME_ASSERT_FUNCTION_ENTRY();
+        break;
+    case 1:
+        goto PROC_RESUME_1;
+    }
+
+RADIO_SHOW_LOOP:
     // asm 000090E1: 	LDI	@TUNE_IDX,AR2
+    station = TUNE_IDX;
     // asm 000090E2: 	ADDI	@STATION_TEXTI,AR2
     // asm 000090E3: 	LDI	*AR2,AR2
+    station_text = STATION_TEXTI[station];
     // asm 000090E4: 	FLOAT	210,R2
+    text_x = C3X_FROM_INT(210);
     // asm 000090E5: 	FLOAT	370,R3
+    text_y = C3X_FROM_INT(370);
     // asm 000090E6: 	LDI	1,RC
+    text_ticks = 1;
     // asm 000090E7: 	CALL	TEXT_ADDDS
+    TEXT_ADDDS(station_text, text_x, text_y, text_ticks);
     // asm 000090E8: 	LDL	cdd,AR2
+    model = (const BLTMOD2D_MODEL*)ROM_PTR(cdd_ROM);
     // asm 000090E9: 	LDI	160,R2
+    model_x = 160;
     // asm 000090EA: 	LDI	360,R3
+    model_y = 360;
     // asm 000090EB: 	LDI	TM|ZS,R4
+    model_control = TM | ZS;
     // asm 000090EC: 	CALL	BLTMOD2D_DS
+    BLTMOD2D_DS(model, model_x, model_y, model_control);
     // asm 000090ED: 	SLEEP	1
+    SLEEP(1, 1);
     // asm 000090EF: 	LDI	@_MODE,R0
     // asm 000090F0: 	AND	MMODE,R0
     // asm 000090F1: 	CMPI	MGAME,R0
     // asm 000090F2: 	BNE	KILLME
+    if ((_MODE & MMODE) != MGAME)
+        goto KILLME;
     // asm 000090F3: 	LDI	@STATION_TIMEOUT,R0
     // asm 000090F4: 	DEC	R0
     // asm 000090F5: 	STI	R0,@STATION_TIMEOUT
+    STATION_TIMEOUT -= 1;
     // asm 000090F6: 	BLE	SUICIDE
+    if (STATION_TIMEOUT <= 0) {
+        DIE();
+    }
     // asm 000090F7: 	BU	RADIO_SHOW
+    goto RADIO_SHOW_LOOP;
 KILLME:
     // asm 000090F8: 	CLRI	R0
     // asm 000090F9: 	STI	R0,@STATION_TIMEOUT
+    STATION_TIMEOUT = 0;
     // asm 000090FA: 	DIE
-    // WARNING CHECK FOR FALLTHROUGH TO NEXT FUNCTION
-    TRACE_EVENT(&g_crusn_machine->trace, "function", "RADIO_SHOW", 0, 0);
-    UNIMPL();
+    DIE();
 }
 
 // *----------------------------------------------------------------------------
@@ -189,18 +227,21 @@ RBMGAME:
  *	AR2	STATION #
  *
  */
-void SET_STATION(void) {
+void SET_STATION(int station /*AR2*/) {
 #if DEBUG
     // asm: 	CMPI	0,AR2
     // asm: 	BLT	$
+    assert(station >= 0);
     // asm: 	CMPI	NUM_STATIONS,AR2
     // asm: 	BGE	$
+    assert(station < NUM_STATIONS);
 #endif
     // asm 00009102: 	STI	AR2,@TUNE_IDX
+    TUNE_IDX = station;
     // asm 00009103: 	CALL	RESUME_TUNE
+    RESUME_TUNE();
     // asm 00009104: 	RETS
     TRACE_EVENT(&g_crusn_machine->trace, "function", "SET_STATION", 0, 0);
-    UNIMPL();
 }
 
 // *----------------------------------------------------------------------------
@@ -266,6 +307,8 @@ void SET_TUNE(void) {
 }
 
 void RESUME_TUNE(void) {
+    PROC* radio_proc;
+
     // asm 00009118: 	PUSH	AR2
     // asm 00009119: 	PUSH	AR6
     // asm 0000911A: 	CLRI	AR6
@@ -275,9 +318,13 @@ L987:
     // asm 0000911C: 	LDI	UTIL_C|RADIOPROC_T,R0
     // asm 0000911D: 	LDI	-1,R1
     // asm 0000911E: 	CALL	PRC_FIND
+    radio_proc = PRC_FIND(UTIL_C | RADIOPROC_T, -1);
     // asm 0000911F: 	CMPI	0,AR0
     // asm 00009120: 	BNE	ISTHERE
+    if (radio_proc != NULL)
+        goto ISTHERE;
     // asm 00009121: 	CREATE	RADIO_SHOW,UTIL_C|RADIOPROC_T
+    CREATE(RADIO_SHOW, UTIL_C | RADIOPROC_T, NULL);
 ISTHERE:
     // asm 00009124: 	LDI	40,R0
     // asm 00009125: 	STI	R0,@STATION_TIMEOUT

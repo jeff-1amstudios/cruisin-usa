@@ -1635,7 +1635,7 @@ void RESUME_TUNE_NT(void);
 void GETPRI(void);
 
 // asm:  .globl SET_STATION
-void SET_STATION(void);
+void SET_STATION(int station /*AR2*/);
 
 // asm:  .globl CHANGE_STATION
 void CHANGE_STATION(void);
