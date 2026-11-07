@@ -123,6 +123,9 @@ add_library(miniz STATIC
 include(GenerateExportHeader)
 generate_export_header(miniz)
 target_compile_definitions(miniz PUBLIC MINIZ_STATIC_DEFINE)
+target_compile_definitions(miniz PRIVATE
+  $<$<PLATFORM_ID:Linux>:_POSIX_C_SOURCE=200809L>
+)
 target_include_directories(miniz PUBLIC lib/miniz ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(adsp2100 STATIC
