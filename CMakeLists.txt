@@ -32,6 +32,16 @@ if(NOT EMSCRIPTEN)
     pkg_check_modules(SDL2 REQUIRED sdl2)
   endif()
   find_package(CURL 7.68 REQUIRED)
+  if(APPLE)
+    # Only native_download.c uses curl. FindCURL can expose the SDK's entire
+    # usr/include directory, which breaks libc++'s include_next header lookup
+    # when explicitly added to C++ compilation.
+    get_target_property(CRUSN_CURL_INCLUDE_DIRS CURL::libcurl INTERFACE_INCLUDE_DIRECTORIES)
+    if(CRUSN_CURL_INCLUDE_DIRS)
+      set_property(TARGET CURL::libcurl PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        "$<$<COMPILE_LANGUAGE:C>:${CRUSN_CURL_INCLUDE_DIRS}>")
+    endif()
+  endif()
 endif()
 
 set(CRUSN_SOURCES

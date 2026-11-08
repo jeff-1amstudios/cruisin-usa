@@ -10,7 +10,8 @@ Run `./build/crusn --window --widescreen` from this checkout, with the ROM at
 `&widescreen=1` to an existing query). Original aspect remains the default.
 MAME validation forces original mode.
 
-The first version uses 712×400 with a centered 512×400 UI. It preserves original
+The world viewport uses 712×400 with menus and results in a centered 512×400
+area. The race HUD uses edge anchors, as described below. It preserves original
 projected coordinates, expands horizontal rejection/rasterization bounds to
 -100 through 611, and translates X only at framebuffer addressing. This preserves
 rasterization/texture interpolation in the original center region. Separate wide
@@ -33,15 +34,30 @@ widescreen attract run completed without AddressSanitizer errors.
 
 Interactive SDL presentation could not be tested in this execution environment:
 SDL reports that no displays are available. Browser compilation/runtime and all
-track/camera combinations remain unverified. HUD edge anchoring, live aspect
-changes, and individual full-screen artwork/wipe policies remain follow-up work.
+track/camera combinations remain unverified. Live aspect changes and individual
+full-screen artwork/wipe policies remain follow-up work.
 This is an opt-in first milestone, not a claim of complete widescreen coverage.
 
-For this machine's SDK header search issue, the successful native build used a
-copy of the SDK's `curl/` headers under `/tmp/cruisin-curl-headers` and configured
-`-DCURL_INCLUDE_DIR=/tmp/cruisin-curl-headers`. That avoids adding the entire SDK
-C include directory ahead of libc++ headers. No repository toolchain changes
-are needed for the workaround.
+On macOS, CMake restricts curl's include directories to C compilation, since
+only `native_download.c` uses curl. This prevents an SDK-wide curl include path
+from interfering with libc++ header lookup in the C++ sound-board code. No
+temporary header copies or custom `CURL_INCLUDE_DIR` setting are required.
+
+## Race HUD anchors
+
+Only `HUD()` and its radar move to the viewport edges: elapsed time and speed
+shift left by half the added width; position, RPM/gear, and radar shift right by
+the same amount. Artwork, unit/transmission labels, digits, shadows, and radar
+markers move together. Countdown and central messages retain their centered
+coordinates. Entrance/exit animation offsets remain intact, including while the
+race HUD slides out in `MBONUS`; separate bonus/results elements are unchanged.
+All game-side changes are guarded by `CRUISN_PORTABLE`.
+
+`./build/game-probe 1900 --check-hud --dump /tmp/hud.bmp` renders the actual HUD
+against a blank background and checks its pixel placement at original and wide
+widths. It covers 240 race/finish, transmission, MPH/KPH, position, and animation
+combinations. Text is rendered through `TEXT_OUTPUT()`, so the checks include
+deferred text and shadows rather than just immediate artwork.
 
 True widescreen is feasible, but requires changes to game projection, background
 coverage, render-target storage, and UI placement. SDL scaling alone can stretch

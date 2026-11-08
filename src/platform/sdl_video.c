@@ -2,7 +2,17 @@
 
 #include <stdlib.h>
 
-int crusn_video_init(crusn_video* video, int fullscreen, int bilinear) {
+int crusn_video_init(crusn_video* video, int fullscreen, int bilinear, int widescreen) {
+    int window_width = 640;
+    int window_height = 480;
+#ifndef __EMSCRIPTEN__
+    if (!fullscreen && widescreen) {
+        window_width = CRUSN_WIDE_SCREEN_WIDTH * 5 / 4;
+        window_height = CRUSN_SCREEN_HEIGHT * 5 / 4;
+    }
+#else
+    (void)widescreen;
+#endif
     video->bilinear = bilinear;
     Uint32 window_flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : SDL_WINDOW_RESIZABLE;
 #ifdef __EMSCRIPTEN__
@@ -21,8 +31,8 @@ int crusn_video_init(crusn_video* video, int fullscreen, int bilinear) {
         "Cruis'n USA 4.5",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        640,
-        480,
+        window_width,
+        window_height,
         window_flags);
     if (video->window == NULL) {
         return -1;

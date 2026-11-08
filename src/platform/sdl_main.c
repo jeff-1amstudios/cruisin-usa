@@ -437,7 +437,8 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         return 1;
     }
-    if (crusn_video_init(&g_app.video, !g_app.options.windowed, g_app.options.bilinear) != 0) {
+    if (crusn_video_init(&g_app.video, !g_app.options.windowed, g_app.options.bilinear,
+            g_app.options.widescreen && getenv("CRUSN_ENABLE_MAME_VALIDATION") == NULL) != 0) {
         fprintf(stderr, "Failed to initialize video: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;

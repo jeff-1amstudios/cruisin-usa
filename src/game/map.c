@@ -1528,6 +1528,9 @@ void RADAR_PLOT(void) {
     int radar_x;
     int radar_y;
     int outside_radar;
+#ifdef CRUISN_PORTABLE
+    const int hud_x_offset = crusn_render_x_offset(g_crusn_machine);
+#endif
 
     // asm 0000610A: 	PUSH	AR4
     // asm 0000610B: 	LDI	@PLYCAR,AR4
@@ -1540,14 +1543,26 @@ void RADAR_PLOT(void) {
     // asm 0000610F: 	ADDI	@MOVEIN_OFFSET,R0
     // asm 00006110: 	STI	R0,@(_ARPS+(0*3))
     _ARPS[0] = RADAR_XMIN + MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    _ARPS[0] += hud_x_offset;
+#endif
     // asm 00006111: 	STI	R0,@(_ARPS+(3*3))
     _ARPS[9] = RADAR_XMIN + MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    _ARPS[9] += hud_x_offset;
+#endif
     // asm 00006112: 	LDI	RADAR_XMAX,R0
     // asm 00006113: 	ADDI	@MOVEIN_OFFSET,R0
     // asm 00006114: 	STI	R0,@(_ARPS+(1*3))
     _ARPS[3] = RADAR_XMAX + MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    _ARPS[3] += hud_x_offset;
+#endif
     // asm 00006115: 	STI	R0,@(_ARPS+(2*3))
     _ARPS[6] = RADAR_XMAX + MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    _ARPS[6] += hud_x_offset;
+#endif
     // asm 00006116: 	LDI	RADAR_YMIN,R0
     // asm 00006117: 	STI	R0,@(_ARPS+(0*3)+1)
     _ARPS[1] = RADAR_YMIN;
@@ -1651,6 +1666,9 @@ RADAR_LP:
     }
     // asm 0000614C: 	ADDI	@MOVEIN_OFFSET,R0
     radar_x += MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    radar_x += hud_x_offset;
+#endif
     // asm 0000614D: 	STI	R0,@(_ARPS+(0*3))
     _ARPS[0] = radar_x;
     // asm 0000614E: 	STI	R0,@(_ARPS+(3*3))
@@ -1862,6 +1880,9 @@ NOTTHEOPLYR:
     }
     // asm 000061B8: 	ADDI	@MOVEIN_OFFSET,R0
     radar_x += MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    radar_x += hud_x_offset;
+#endif
     // asm 000061B9: 	STI	R0,@(_ARPS+(0*3))
     _ARPS[0] = radar_x;
     // asm 000061BA: 	STI	R0,@(_ARPS+(3*3))
@@ -1915,14 +1936,26 @@ RADAR_X:
     // asm 000061D1: 	ADDI	@MOVEIN_OFFSET,R0
     // asm 000061D2: 	STI	R0,@(_ARPS+(0*3))
     _ARPS[0] = (RADAR_XCNTR - 2) + MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    _ARPS[0] += hud_x_offset;
+#endif
     // asm 000061D3: 	STI	R0,@(_ARPS+(3*3))
     _ARPS[9] = (RADAR_XCNTR - 2) + MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    _ARPS[9] += hud_x_offset;
+#endif
     // asm 000061D4: 	LDI	RADAR_XCNTR+1,R0
     // asm 000061D5: 	ADDI	@MOVEIN_OFFSET,R0
     // asm 000061D6: 	STI	R0,@(_ARPS+(1*3))
     _ARPS[3] = (RADAR_XCNTR + 1) + MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    _ARPS[3] += hud_x_offset;
+#endif
     // asm 000061D7: 	STI	R0,@(_ARPS+(2*3))
     _ARPS[6] = (RADAR_XCNTR + 1) + MOVEIN_OFFSET;
+#ifdef CRUISN_PORTABLE
+    _ARPS[6] += hud_x_offset;
+#endif
     // asm 000061D8: 	LDI	RADAR_YCNTR-2,R0
     // asm 000061D9: 	STI	R0,@(_ARPS+(0*3)+1)
     _ARPS[1] = RADAR_YCNTR - 2;

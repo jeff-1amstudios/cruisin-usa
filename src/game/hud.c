@@ -197,6 +197,10 @@ void HUD(void) {
     const HUD_POSITION_ENTRY* position_entry;
     c3x_reg_t value;
     c3x_reg_t frame_count;
+#ifdef CRUISN_PORTABLE
+    /* This race HUD also stays anchored while sliding out in MBONUS. */
+    const int hud_x_offset = crusn_render_x_offset(g_crusn_machine);
+#endif
 
     // asm 00009D2A: 	CALL	TACHOMETER_ANIMATE
     TACHOMETER_ANIMATE();
@@ -313,7 +317,11 @@ NOT_OFFROAD:
     // asm 00009D73: 	LDI	290,R3			;R3	POS Y
     // asm 00009D74: 	LDI	TM|ZS,R4
     // asm 00009D75: 	CALL	BLTMOD2D
+#ifdef CRUISN_PORTABLE
+    BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(rpm_ROM), 420 + MOVEIN_OFFSET + hud_x_offset, 290, TM | ZS, 0, 0);
+#else
     BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(rpm_ROM), 420 + MOVEIN_OFFSET, 290, TM | ZS, 0, 0);
+#endif
     // asm 00009D76: 	LDI	@CHOSEN_TRANSMISSION,R0
     // asm 00009D77: 	CMPI	AUTO_TRANSMISSION,R0
     // asm 00009D78: 	BEQ	ISAUTOTRNS
@@ -326,7 +334,11 @@ NOT_OFFROAD:
     // asm 00009D7C: 	LDI	380,R3			;R3	POS Y
     // asm 00009D7D: 	LDI	TM|ZS,R4
     // asm 00009D7E: 	CALL	BLTMOD2D
+#ifdef CRUISN_PORTABLE
+    BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(rpmman_ROM), 463 + MOVEIN_OFFSET + hud_x_offset, 380, TM | ZS, 0, 0);
+#else
     BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(rpmman_ROM), 463 + MOVEIN_OFFSET, 380, TM | ZS, 0, 0);
+#endif
     // asm 00009D7F: 	BU	DNDNL
     goto DNDNL;
 ISAUTOTRNS:
@@ -336,7 +348,11 @@ ISAUTOTRNS:
     // asm 00009D83: 	LDI	380,R3			;R3	POS Y
     // asm 00009D84: 	LDI	TM|ZS,R4
     // asm 00009D85: 	CALL	BLTMOD2D
+#ifdef CRUISN_PORTABLE
+    BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(rpmauto_ROM), 470 + MOVEIN_OFFSET + hud_x_offset, 380, TM | ZS, 0, 0);
+#else
     BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(rpmauto_ROM), 470 + MOVEIN_OFFSET, 380, TM | ZS, 0, 0);
+#endif
 DNDNL:
     // 	;show gear digit
     // 	;
@@ -352,6 +368,9 @@ DNDNL:
     // asm 00009D8E: 	LDI	1,RC
     // asm 00009D8F: 	CALL	TEXT_ADD
     text = TEXT_ADD(GEARS[PLYCBLK->gear], C3X_ADD(C3X_FROM_INT(458), C3X_FROM_INT(MOVEIN_OFFSET)), C3X_FROM_INT(360), 1);
+#ifdef CRUISN_PORTABLE
+    text->posx = C3X_STF(C3X_ADD(C3X_LDF(text->posx), C3X_FROM_INT(hud_x_offset)));
+#endif
     // asm 00009D90: 	CALL	SETSMDIGITFONT
     SETSMDIGITFONT(text);
 GEARI:
@@ -366,7 +385,11 @@ GEARS:
     // asm 00009D94: 	LDI	335,R3			;R3	POS Y
     // asm 00009D95: 	LDI	TM|ZS,R4
     // asm 00009D96: 	CALL	BLTMOD2D
+#ifdef CRUISN_PORTABLE
+    BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(mph_ROM), -MOVEIN_OFFSET - hud_x_offset, 335, TM | ZS, 0, 0);
+#else
     BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(mph_ROM), -MOVEIN_OFFSET, 335, TM | ZS, 0, 0);
+#endif
     // asm 00009D97: 	READAUD	ADJ_MPHORKPM
     // asm 00009D99: 	CMPI	0,R0
     // asm 00009D9A: 	BEQ	ISMPHT
@@ -379,7 +402,11 @@ GEARS:
     // asm 00009D9E: 	LDI	385,R3			;R3	POS Y
     // asm 00009D9F: 	LDI	TM|ZS,R4
     // asm 00009DA0: 	CALL	BLTMOD2D
+#ifdef CRUISN_PORTABLE
+    BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(kph_ROM), 50 - MOVEIN_OFFSET - hud_x_offset, 385, TM | ZS, 0, 0);
+#else
     BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(kph_ROM), 50 - MOVEIN_OFFSET, 385, TM | ZS, 0, 0);
+#endif
     // asm 00009DA1: 	BU	ISDNN
     goto ISDNN;
 ISMPHT:
@@ -389,7 +416,11 @@ ISMPHT:
     // asm 00009DA5: 	LDI	385,R3			;R3	POS Y
     // asm 00009DA6: 	LDI	TM|ZS,R4
     // asm 00009DA7: 	CALL	BLTMOD2D
+#ifdef CRUISN_PORTABLE
+    BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(mphmph_ROM), 50 - MOVEIN_OFFSET - hud_x_offset, 385, TM | ZS, 0, 0);
+#else
     BLTMOD2D((const BLTMOD2D_MODEL*)ROM_PTR(mphmph_ROM), 50 - MOVEIN_OFFSET, 385, TM | ZS, 0, 0);
+#endif
 ISDNN:
     // 	;-------time remaining
     // 	;
@@ -504,6 +535,10 @@ ISKPH:
     // asm 00009DE4: 	LDI	1,RC
     // asm 00009DE5: 	CALL	TEXT_ADDDS
     shadow_text = TEXT_ADDDS((char*)MPH_BUFFERI, C3X_SUB(C3X_FROM_INT(66), C3X_FROM_INT(MOVEIN_OFFSET)), C3X_FROM_INT(346), 1);
+#ifdef CRUISN_PORTABLE
+    shadow_text.front->posx = C3X_STF(C3X_SUB(C3X_LDF(shadow_text.front->posx), C3X_FROM_INT(hud_x_offset)));
+    shadow_text.shadow->posx = C3X_STF(C3X_SUB(C3X_LDF(shadow_text.shadow->posx), C3X_FROM_INT(hud_x_offset)));
+#endif
     // asm 00009DE6: 	CALL	SETLGDIGITFONTDS
     SETLGDIGITFONTDS(&shadow_text);
     // asm 00009DE7: 	ORM	TXT_RIGHT,*+AR0(TEXT_COLOR)
@@ -526,14 +561,22 @@ ISKPH:
     // asm 00009DF4: 	LDI	106,R2
     // asm 00009DF5: 	LDI	30,R3
     // asm 00009DF6: 	CALL	FILL_DITHER
+#ifdef CRUISN_PORTABLE
+    FILL_DITHER(8 - hud_x_offset, 19 - MOVEIN_OFFSET, 106, 30);
+#else
     FILL_DITHER(8, 19 - MOVEIN_OFFSET, 106, 30);
+#endif
     // asm 00009DF7: 	LDL	elap,AR2
     // asm 00009DF8: 	LDI	10,R2			;R2	POS X
     // asm 00009DF9: 	LDI	20,R3			;R3	POS Y
     // asm 00009DFA: 	SUBI	@MOVEIN_OFFSET,R3
     // asm 00009DFB: 	LDI	TM|ZS,R4
     // asm 00009DFC: 	CALL	BLTMOD2D_DS
+#ifdef CRUISN_PORTABLE
+    BLTMOD2D_DS((const BLTMOD2D_MODEL*)ROM_PTR(elap_ROM), 10 - hud_x_offset, 20 - MOVEIN_OFFSET, TM | ZS);
+#else
     BLTMOD2D_DS((const BLTMOD2D_MODEL*)ROM_PTR(elap_ROM), 10, 20 - MOVEIN_OFFSET, TM | ZS);
+#endif
     // asm 00009DFD: 	LDI	@STOPWATCH,R0
     MAME_SYNC_MEM(0x00009DFD, "d@0000E88F", &STOPWATCH);
     // asm 00009DFE: 	LDI	@STOPBUFFI,AR2
@@ -546,6 +589,10 @@ ISKPH:
     // asm 00009E04: 	LDI	1,RC
     // asm 00009E05: 	CALL	TEXT_ADDDS
     shadow_text = TEXT_ADDDS((char*)STOPBUFFI, C3X_FROM_INT(20), C3X_SUB(C3X_FROM_INT(33), C3X_FROM_INT(MOVEIN_OFFSET)), 1);
+#ifdef CRUISN_PORTABLE
+    shadow_text.front->posx = C3X_STF(C3X_SUB(C3X_LDF(shadow_text.front->posx), C3X_FROM_INT(hud_x_offset)));
+    shadow_text.shadow->posx = C3X_STF(C3X_SUB(C3X_LDF(shadow_text.shadow->posx), C3X_FROM_INT(hud_x_offset)));
+#endif
     // asm 00009E06: 	CALL	SETSMDIGITFONTDS
     SETSMDIGITFONTDS(&shadow_text);
     // 	;-------POSITION
@@ -563,15 +610,24 @@ ISKPH:
     // asm 00009E0F: 	SUBI	@MOVEIN_OFFSET,R3
     // asm 00009E10: 	LDI	TM|ZS,R4
     // asm 00009E11: 	CALL	BLTMOD2D_DS
+#ifdef CRUISN_PORTABLE
+    BLTMOD2D_DS((const BLTMOD2D_MODEL*)ROM_PTR(position_entry->score_model), 415 + position_entry->score_x_offset + hud_x_offset,
+                20 - MOVEIN_OFFSET, TM | ZS);
+#else
     BLTMOD2D_DS((const BLTMOD2D_MODEL*)ROM_PTR(position_entry->score_model), 415 + position_entry->score_x_offset,
                 20 - MOVEIN_OFFSET, TM | ZS);
+#endif
     // asm 00009E12: 	LDI	*AR4++,AR2
     // asm 00009E13: 	LDI	450,R2
     // asm 00009E14: 	LDI	20,R3
     // asm 00009E15: 	SUBI	@MOVEIN_OFFSET,R3
     // asm 00009E16: 	LDI	TM|ZS,R4
     // asm 00009E17: 	CALL	BLTMOD2D_DS
+#ifdef CRUISN_PORTABLE
+    BLTMOD2D_DS((const BLTMOD2D_MODEL*)ROM_PTR(position_entry->suffix_model), 450 + hud_x_offset, 20 - MOVEIN_OFFSET, TM | ZS);
+#else
     BLTMOD2D_DS((const BLTMOD2D_MODEL*)ROM_PTR(position_entry->suffix_model), 450, 20 - MOVEIN_OFFSET, TM | ZS);
+#endif
     // asm 00009E18: POS_TABLE
 #if SECTION_COUNTER
     // 	;-------DEBUGGING SECTION_COUNTER

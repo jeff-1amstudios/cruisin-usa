@@ -68,12 +68,16 @@ static void check_render_pages(crusn_machine* machine) {
     puts("Render page, fill, pixel-write, rasterization, and decode checks passed");
 }
 
+#include "hud_layout_probe.h"
+
 int main(int argc, char** argv) {
     crusn_machine machine;
     const char* dump_path = NULL;
     int check_render = 0;
+    int check_hud = 0;
     for (int i = 2; i < argc; ++i) {
         if (strcmp(argv[i], "--widescreen") == 0) crusn_set_widescreen(1);
+        else if (strcmp(argv[i], "--check-hud") == 0) { check_hud = 1; crusn_set_widescreen(1); }
         else if (strcmp(argv[i], "--check-render") == 0) check_render = 1;
         else if (strcmp(argv[i], "--dump") == 0 && i + 1 < argc) dump_path = argv[++i];
         else return 2;
@@ -102,6 +106,7 @@ int main(int argc, char** argv) {
             printf("tick=%d mode=%x screen=%08x\n", tick, _MODE, hash);
         }
     }
+    if (check_hud) check_hud_layout(&machine);
     if (dump_path != NULL && crusn_machine_dump_screen_bmp(&machine,
             crusn_machine_screen_page(&machine, machine.display_page_index),
             machine.colorram_words, dump_path) != 0) {
