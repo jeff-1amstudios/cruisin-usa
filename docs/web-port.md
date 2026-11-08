@@ -123,7 +123,8 @@ and retry, local import, reload with a restored cache, keyboard input, mute,
 fullscreen, and returning from a background tab. Chrome, Firefox, and Safari
 should be checked before a public release. Touch/gamepad input is not added.
 
-Use `?widescreen=1` to opt into the wider world view with the race HUD anchored
-to the viewport edges. Menus and results remain centered. The SDL
+Browser mode defaults to the wider world view with the race HUD anchored
+to the viewport edges. Use `?widescreen=0` to select the original aspect ratio.
+Menus and results remain centered. The SDL
 texture switches from the original startup dimensions to 712×400 when the game
-starts. Original aspect remains the default.
+starts in widescreen mode.

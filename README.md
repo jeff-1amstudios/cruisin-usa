@@ -133,7 +133,8 @@ The game starts fullscreen by default. Use `--window` to run it in a resizable
 window. Add `--widescreen` for an optional 712×400 view that reveals extra scenery
 on both sides and anchors the race HUD to the viewport edges. Menus and results
 remain centered. Original mode remains the
-default; MAME validation uses original mode. See [widescreen details](docs/widescreen.md).
+native default; the browser defaults to widescreen (`?widescreen=0` opts out).
+MAME validation uses original mode. See [widescreen details](docs/widescreen.md).
 Use `--no-free-play` to use the normal coin settings, and `--no-sound` to run
 without initializing or playing audio. `--girls` and `--no-girls` override the
 corresponding cabinet adjustment. For debugging, `--race-time SECONDS`

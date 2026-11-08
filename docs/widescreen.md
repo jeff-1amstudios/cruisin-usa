@@ -6,8 +6,9 @@ original pipeline. A first implementation now exists on branch `widescreen`.
 ## First implementation
 
 Run `./build/crusn --window --widescreen` from this checkout, with the ROM at
-`roms/crusnusa.zip`. In the browser, add `?widescreen=1` (or append
-`&widescreen=1` to an existing query). Original aspect remains the default.
+`roms/crusnusa.zip`. Browser mode defaults to widescreen; use `?widescreen=0`
+(or append `&widescreen=0` to an existing query) for the original aspect ratio.
+Native mode defaults to the original aspect ratio.
 MAME validation forces original mode.
 
 The world viewport uses 712×400 with menus and results in a centered 512×400
@@ -36,7 +37,7 @@ Interactive SDL presentation could not be tested in this execution environment:
 SDL reports that no displays are available. Browser compilation/runtime and all
 track/camera combinations remain unverified. Live aspect changes and individual
 full-screen artwork/wipe policies remain follow-up work.
-This is an opt-in first milestone, not a claim of complete widescreen coverage.
+This is an initial implementation, not a claim of complete widescreen coverage.
 
 On macOS, CMake restricts curl's include directories to C compilation, since
 only `native_download.c` uses curl. This prevents an SDK-wide curl include path

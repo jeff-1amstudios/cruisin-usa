@@ -105,7 +105,11 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
     options->girls = -1;
     options->race_time = 0;
     options->windowed = 0;
+#ifdef __EMSCRIPTEN__
+    options->widescreen = 1;
+#else
     options->widescreen = 0;
+#endif
     options->bilinear = 1;
     options->test_highscore_input = 0;
     options->skip_boot_screen = 1;
@@ -129,6 +133,8 @@ static int process_args(int argc, char* argv[], crusn_options* options) {
             options->girls = 0;
         } else if (strcmp(argv[i], "--widescreen") == 0) {
             options->widescreen = 1;
+        } else if (strcmp(argv[i], "--no-widescreen") == 0) {
+            options->widescreen = 0;
         } else if (strcmp(argv[i], "--window") == 0) {
             options->windowed = 1;
         } else if (strcmp(argv[i], "--no-bilinear") == 0) {
